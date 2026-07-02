@@ -533,7 +533,15 @@ function fmtClock(sec){sec=Math.round(sec);const h=Math.floor(sec/3600),m=Math.f
 function fmtTempo(sec){if(sec==null||!isFinite(sec))return'—';return fmtClock(sec);}
 function parseTimeStr(str){
   if(!str)return null;
-  const m=String(str).trim().match(/^(\d{1,2})[:.](\d{1,2})(?:[:.](\d{1,2}))?$/);
+  const s=String(str).trim().replace(/[,.]/g,':');
+  if(/^\d{3,6}$/.test(s)){ /* samo cifre: 433=4:33, 4233=42:33, 10203=1:02:03 */
+    const se=+s.slice(-2);if(se>59)return null;
+    const rest=s.slice(0,-2);
+    if(rest.length<=2)return(+rest)*60+se;
+    const mi=+rest.slice(-2);if(mi>59)return null;
+    return(+rest.slice(0,-2))*3600+mi*60+se;
+  }
+  const m=s.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/);
   if(!m)return null;
   let h=0,mi,se;
   if(m[3]!=null){h=+m[1];mi=+m[2];se=+m[3];}else{mi=+m[1];se=+m[2];}
@@ -725,7 +733,7 @@ function formHTML(d){
   const tempo=(l.km&&l.sec)?fmtTempo(l.sec/l.km)+' /km':'—';
   return `<div class="f-grid" data-day="${d.id}">
     <div class="f-field"><label>Distanca (km) <span class="f-req">*</span></label><input type="text" inputmode="decimal" data-f="km" value="${l.km!=null?String(l.km).replace('.',','):''}" placeholder="npr. 8"></div>
-    <div class="f-field"><label>Vreme <span class="f-req">*</span></label><input type="text" inputmode="numeric" data-f="sec" value="${l.sec?fmtClock(l.sec):''}" placeholder="mm:ss"></div>
+    <div class="f-field"><label>Vreme <span class="f-req">*</span></label><input type="text" inputmode="numeric" data-f="sec" value="${l.sec?fmtClock(l.sec):''}" placeholder="4233 = 42:33"></div>
     <div class="f-field"><label>Pros. tempo</label><div class="calc" data-tempo>${tempo}</div></div>
     <div class="f-field"><label>Pros. puls</label><input type="text" inputmode="numeric" data-f="hr" value="${l.hr!=null?l.hr:''}" placeholder="bpm"></div>
     <div class="f-field"><label>RPE (1–10)</label><select data-f="rpe">${opt(l.rpe,1,10)}</select></div>
@@ -1037,7 +1045,7 @@ function renderPred(){
   pc.rows.forEach(({r,a,pred})=>{
     h+=`<div class="prow">
       <div class="pi"><div class="pl">${r.l}</div><div class="pm">Q ${fmtKm(r.q)} km · plan ${fmtTempo(r.pt)} /km · plan 5K ${fmtClock(r.p5k)}</div></div>
-      <input class="ptin" inputmode="numeric" placeholder="m:ss" value="${a?fmtTempo(a):''}" data-pin="${r.id}">
+      <input class="ptin" inputmode="numeric" placeholder="356 = 3:56" value="${a?fmtTempo(a):''}" data-pin="${r.id}">
       <div class="pout" data-pout="${r.id}">${poutHTML(r,pred)}</div>
     </div>`;
   });
