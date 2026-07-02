@@ -298,7 +298,8 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 <script>
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
-const START='2026-06-22', RACE='2026-09-24', SCHEMA=1, LS_KEY='sub19-v1';
+const START='2026-06-22', RACE='2026-09-24', SCHEMA=2, LS_KEY='sub19-v1';
+const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
 
 const PLAN=[
@@ -512,6 +513,8 @@ function seedState(){return {
   {date:'2026-06-29',kg:81}
  ],
  pred:{p1:265,p2:236},
+ predLock:{},
+ strava:null,
  ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}
 };}
 
@@ -572,7 +575,7 @@ function migrate(o){
   if(!o||typeof o!=='object')return null;
   if(!o.log)return null;
   o.v=o.v||1;
-  /* buduće migracije: if(o.v<2){...; o.v=2;} — postojeći unosi se NIKAD ne brišu */
+  if(o.v<2){o.strava=o.strava||null;o.predLock=o.predLock||{};o.v=2;} /* v1→v2: Strava sync polja — postojeći unosi se NIKAD ne brišu */
   o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
   o.v=SCHEMA;
   return o;
@@ -629,6 +632,28 @@ function backupDue(today){
   if(!base)return false;
   if(S.ui.snooze&&today<S.ui.snooze)return false;
   return today>=addD(base,7);
+}
+/* ---- Strava: rep-distance (m) po kvalitetnim danima, za detekciju radnih lapova ---- */
+const QS={
+ n1d3:[4000],n2d3:[800],n2d5:[2000],n3d3:[1000],n3d5:[2500],n4d3:[1000],n4d5:[2000],
+ n5d3:[1000],n5d5:[3000],n6d3:[1000],n6d5:[4000],n8d3:[800],n8d5:[5000],n9d3:[1000],
+ n9d5:[6000],n10d3:[1000],n10d5:[6000],n11d3:[2000,600],n11d5:[6000],n12d3:[1200],
+ n12d5:[4000],n13d3:[400],n13d5:[3000],n14d2:[200]
+};
+function predRowFor(d){
+  if(d.tag!=='int'&&d.tag!=='tempo')return null;
+  const c=PRED.filter(r=>r.w===d.week.w&&(d.tag==='int'?r.l.includes('Intervali'):(r.l.includes('Tempo')||r.l.includes('Ritam'))));
+  return c.length?c[0].id:null;
+}
+function pickClosest(list,planKm){
+  return list.reduce((b,x)=>Math.abs(x.distance/1000-planKm)<Math.abs(b.distance/1000-planKm)?x:b);
+}
+function workLapsTempo(laps,specs){
+  const work=laps.filter(L=>specs.some(m=>Math.abs(L.distance-m)/m<=0.12));
+  if(!work.length)return null;
+  const dist=work.reduce((s,L)=>s+L.distance,0),t=work.reduce((s,L)=>s+(L.moving_time||L.elapsed_time||0),0);
+  if(!dist||!t)return null;
+  return Math.round(t/(dist/1000));
 }
 /*==DOM==*/
 
@@ -741,6 +766,7 @@ function formHTML(d){
     <div class="f-field"><label>Telesna masa (kg)</label><input type="text" inputmode="decimal" data-f="kg" value="${l.kg!=null?String(l.kg).replace('.',','):''}" placeholder="npr. 80,5"></div>
     <div class="f-field"><label>Datum</label><input type="date" data-f="ts" value="${l.ts||d.date||TODAY}"></div>
     <div class="f-field full"><label>Beleška</label><textarea data-f="note" placeholder="Kako je bilo…">${esc(l.note||'')}</textarea></div>
+    ${l.src==='strava'?`<div class="note-src" style="grid-column:1/-1;margin-top:0">⛓ Podaci povučeni sa Strave${l.lock?' · ručno korigovano (sync više ne prepisuje)':''}</div>`:''}
   </div>`;
 }
 function bindForm(root,d){
@@ -757,6 +783,7 @@ function bindForm(root,d){
       else if(f==='rpe'||f==='knee'){l[f]=inp.value===''?null:+inp.value;}
       else if(f==='ts'){if(inp.value)l.ts=inp.value;}
       else{l[f]=inp.value;}
+      if(l.src==='strava'&&(f==='km'||f==='sec'||f==='hr'))l.lock=true; /* ručna korekcija ima trajnu prednost */
       const t=g.querySelector('[data-tempo]');
       if(t)t.textContent=(l.km&&l.sec)?fmtTempo(l.sec/l.km)+' /km':'—';
       syncSide(d);save();
@@ -1059,6 +1086,7 @@ function renderPred(){
       if(inp.value.trim()==='')delete S.pred[id];
       else if(v)S.pred[id]=v;
       else return;
+      S.predLock[id]=true; /* ručni unos ima trajnu prednost nad sync-om */
       save();
       const r=PRED.find(x=>x.id===id);
       const pred=S.pred[id]?riegel(S.pred[id],r.q):null;
@@ -1105,14 +1133,28 @@ function openSettings(){
     <div class="btnrow"><button class="btn ghost" id="s-imp">Uvezi backup</button></div>
     <input type="file" id="s-file" accept=".json,application/json" style="display:none">
     <hr class="sep">
+    <div class="card-t">Strava</div>
+    ${S.strava
+      ?`<div class="note-src" style="margin:0 0 10px">Povezan${S.strava.athlete?': '+esc(S.strava.athlete):''} · poslednji sync: ${S.strava.lastSync?new Date(S.strava.lastSync).toLocaleString('sr-RS'):'nikad'}</div>
+        <div class="btnrow" style="margin-top:0"><button class="btn" id="st-sync">Sinhronizuj sada</button><button class="btn ghost sm" id="st-off">Otkači</button></div>
+        <div class="note-src">Pravila: Strava ima prednost nad ručnim unosom; ručna korekcija polja (km/vreme/puls) trajno štiti taj trening od prepisivanja; 2 trčanja istog dana → uzima se ono bliže planiranoj kilometraži; tempo intervala/tempa se čita iz lapova i upisuje u Predikciju.</div>`
+      :`<div class="btnrow" style="margin-top:0"><button class="btn" id="st-on" style="background:#FC4C02">Poveži Stravu</button></div>
+        <div class="note-src">Automatski uvoz trčanja (distanca, vreme, puls) i tempa kvalitetnih sesija iz lapova.</div>`}
+    <hr class="sep">
     <div class="note-src">Poslednji backup: ${S.ui.lastBackup?fmtDY(S.ui.lastBackup):'nikad'} · Šema podataka: v${S.v} · Plan: ${TOTAL_TR} treninga / ${fmtKm(PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · Izvor: Plan_SUB-19_5K_v5.xlsx · Trka: 24.09.2026.</div>
   `);
   $('#s-exp').onclick=exportBackup;
   $('#s-imp').onclick=()=>$('#s-file').click();
   $('#s-file').onchange=e=>importBackup(e.target.files[0]);
+  const so=$('#st-on'),ss=$('#st-sync'),sf=$('#st-off');
+  if(so)so.onclick=stravaConnect;
+  if(ss)ss.onclick=()=>{ss.disabled=true;ss.textContent='Sinhronizujem…';stravaSync(true).finally(()=>closeSheet());};
+  if(sf)sf.onclick=stravaDisconnect;
 }
 function exportBackup(){
-  const data={app:'SUB-19',exportedAt:new Date().toISOString(),state:S};
+  const copy=JSON.parse(JSON.stringify(S));
+  delete copy.strava; /* tokeni ne idu u backup fajl */
+  const data={app:'SUB-19',exportedAt:new Date().toISOString(),state:copy};
   const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -1131,10 +1173,100 @@ function importBackup(file){
       const st=migrate(raw.state||raw);
       if(!st){alert('Fajl nije prepoznat kao SUB-19 backup.');return;}
       if(!confirm(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${Object.keys(st.log).length} trening-unosa, ${st.knee.length} koleno, ${st.kg.length} težina.\n\nNastaviti?`))return;
+      st.strava=st.strava||S.strava; /* konekcija se ne gubi uvozom */
       S=st;save();closeSheet();
     }catch(e){alert('Greška pri čitanju fajla: '+e.message);}
   };
   fr.readAsText(file);
+}
+
+/* ---------- STRAVA ---------- */
+function stravaConnect(){
+  location.href='https://www.strava.com/oauth/authorize?client_id='+STRAVA_CLIENT_ID
+    +'&response_type=code&redirect_uri='+encodeURIComponent(location.origin+'/')
+    +'&approval_prompt=auto&scope=activity:read_all';
+}
+function stravaDisconnect(){
+  if(!confirm('Otkači Stravu? Uvezeni podaci ostaju, samo prestaje sinhronizacija.'))return;
+  S.strava=null;save();closeSheet();
+}
+async function ensureToken(){
+  if(!S.strava)throw new Error('Strava nije povezana');
+  if(S.strava.expiresAt*1000>Date.now()+300000)return;
+  const r=await fetch('/api/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.strava.refresh})});
+  const j=await r.json();
+  if(!r.ok||!j.access_token)throw new Error('Osvežavanje tokena nije uspelo'+(j.message?': '+j.message:''));
+  S.strava.access=j.access_token;S.strava.refresh=j.refresh_token||S.strava.refresh;S.strava.expiresAt=j.expires_at;save();
+}
+async function stApi(path){
+  await ensureToken();
+  const r=await fetch('https://www.strava.com/api/v3'+path,{headers:{Authorization:'Bearer '+S.strava.access}});
+  if(!r.ok)throw new Error('Strava API greška '+r.status);
+  return r.json();
+}
+async function stravaSync(manual){
+  if(!S.strava){if(manual)alert('Strava nije povezana.');return;}
+  try{
+    const after=Math.floor(s2d(START).getTime()/1000);
+    const acts=[];let page=1;
+    while(page<=4){
+      const b=await stApi('/athlete/activities?after='+after+'&per_page=100&page='+page);
+      acts.push(...b);
+      if(b.length<100)break;page++;
+    }
+    const runs=acts.filter(a=>a.type==='Run'||a.sport_type==='Run');
+    const byDate={};
+    runs.forEach(a=>{const dt=String(a.start_date_local||'').slice(0,10);if(dt)(byDate[dt]=byDate[dt]||[]).push(a);});
+    let imp=0,props=0;
+    for(const date of Object.keys(byDate)){
+      const d=BY_DATE[date];
+      if(!d||d.rest||d.km==null)continue;           /* samo trkački dani plana */
+      const a=pickClosest(byDate[date],d.km);        /* 2 trčanja isti dan → bliže planu */
+      const l=S.log[d.id]||(S.log[d.id]={});
+      if(!l.lock){                                   /* ručna korekcija ima trajnu prednost */
+        l.status='done';
+        l.km=Math.round(a.distance/10)/100;
+        l.sec=a.moving_time;
+        if(a.average_heartrate)l.hr=Math.round(a.average_heartrate);
+        l.ts=date;l.src='strava';l.stravaId=a.id;
+        syncSide(d);imp++;
+      }
+      if((d.tag==='int'||d.tag==='tempo')&&QS[d.id]){
+        const rowId=predRowFor(d);
+        if(rowId&&!S.predLock[rowId]){
+          try{
+            const laps=await stApi('/activities/'+a.id+'/laps');
+            const t=workLapsTempo(laps,QS[d.id]);
+            if(t){S.pred[rowId]=t;props++;}
+          }catch(e){}
+        }
+      }
+    }
+    S.strava.lastSync=Date.now();save();
+    renderHeader();PAGES[ACTIVE]();
+    if(manual)alert('Sinhronizacija gotova.\nAžurirano trčanja: '+imp+'\nUpisano tempa u Predikciju: '+props);
+  }catch(e){
+    if(manual)alert('Sync nije uspeo: '+e.message);
+  }
+}
+function handleOAuthReturn(){
+  const q=new URLSearchParams(location.search);
+  const code=q.get('code');
+  if(!code)return;
+  const scope=q.get('scope')||'';
+  history.replaceState(null,'',location.pathname);
+  fetch('/api/auth?code='+encodeURIComponent(code)).then(r=>r.json()).then(j=>{
+    if(j.access_token){
+      S.strava={access:j.access_token,refresh:j.refresh_token,expiresAt:j.expires_at,
+        athlete:j.athlete?((j.athlete.firstname||'')+' '+(j.athlete.lastname||'')).trim():'',
+        scope:scope,lastSync:0};
+      save();
+      alert('Strava povezana'+(S.strava.athlete?' — '+S.strava.athlete:'')+'.');
+      stravaSync(true);
+    }else{
+      alert('Povezivanje nije uspelo: '+(j.message||JSON.stringify(j.errors||j)));
+    }
+  }).catch(e=>alert('Povezivanje nije uspelo: '+e.message));
 }
 
 /* ---------- INIT ---------- */
@@ -1143,6 +1275,8 @@ $('#btn-gear').onclick=openSettings;
 $('#backdrop').onclick=closeSheet;
 renderHeader();
 setPage('danas');
+handleOAuthReturn();
+if(S.strava&&navigator.onLine&&Date.now()-(S.strava.lastSync||0)>3600000)stravaSync(false);
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
