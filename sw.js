@@ -1,7 +1,7 @@
 /* SUB-19 service worker — offline keširanje.
    Pri svakoj izmeni aplikacije podigni broj verzije (v1 -> v2 ...):
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti. */
-const CACHE = 'sub19-cache-v1';
+const CACHE = 'sub19-cache-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
