@@ -1135,7 +1135,7 @@ function openSettings(){
     <hr class="sep">
     <div class="card-t">Strava</div>
     ${S.strava
-      ?`<div class="note-src" style="margin:0 0 10px">Povezan${S.strava.athlete?': '+esc(S.strava.athlete):''} · poslednji sync: ${S.strava.lastSync?new Date(S.strava.lastSync).toLocaleString('sr-RS'):'nikad'}</div>
+      ?`<div class="note-src" style="margin:0 0 10px">Povezan${S.strava.athlete?': '+esc(S.strava.athlete):''} · poslednji sync: ${S.strava.lastSync?new Date(S.strava.lastSync).toLocaleString('sr-RS'):'nikad'} · scope: ${esc(S.strava.scope||'?')}</div>
         <div class="btnrow" style="margin-top:0"><button class="btn" id="st-sync">Sinhronizuj sada</button><button class="btn ghost sm" id="st-off">Otkači</button></div>
         <div class="note-src">Pravila: Strava ima prednost nad ručnim unosom; ručna korekcija polja (km/vreme/puls) trajno štiti taj trening od prepisivanja; 2 trčanja istog dana → uzima se ono bliže planiranoj kilometraži; tempo intervala/tempa se čita iz lapova i upisuje u Predikciju.</div>`
       :`<div class="btnrow" style="margin-top:0"><button class="btn" id="st-on" style="background:#FC4C02">Poveži Stravu</button></div>
@@ -1198,11 +1198,18 @@ async function ensureToken(){
   if(!r.ok||!j.access_token)throw new Error('Osvežavanje tokena nije uspelo'+(j.message?': '+j.message:''));
   S.strava.access=j.access_token;S.strava.refresh=j.refresh_token||S.strava.refresh;S.strava.expiresAt=j.expires_at;save();
 }
-async function stApi(path){
+async function stApi(path,_retried){
   await ensureToken();
   const r=await fetch('https://www.strava.com/api/v3'+path,{headers:{Authorization:'Bearer '+S.strava.access}});
-  if(!r.ok)throw new Error('Strava API greška '+r.status);
-  return r.json();
+  if(r.ok)return r.json();
+  let body=null;try{body=await r.json();}catch(e){}
+  const msg=(body&&body.message)?body.message:'';
+  if(r.status===401&&!_retried){
+    /* istekao/opozvan access token — jedan forsirani refresh pa ponovi */
+    try{S.strava.expiresAt=0;await ensureToken();return stApi(path,true);}catch(e){}
+  }
+  if(r.status===429)throw new Error('Strava rate limit (429) — sačekaj do isteka 15-min prozora pa pokušaj ponovo'+(msg?' · '+msg:''));
+  throw new Error('Strava '+r.status+(msg?' — '+msg:'')+(body&&body.errors?' · '+JSON.stringify(body.errors):''));
 }
 async function stravaSync(manual){
   if(!S.strava){if(manual)alert('Strava nije povezana.');return;}
@@ -1233,7 +1240,7 @@ async function stravaSync(manual){
       }
       if((d.tag==='int'||d.tag==='tempo')&&QS[d.id]){
         const rowId=predRowFor(d);
-        if(rowId&&!S.predLock[rowId]){
+        if(rowId&&!S.predLock[rowId]&&S.pred[rowId]==null){ /* povuci lapove samo jednom — štednja API kvote */
           try{
             const laps=await stApi('/activities/'+a.id+'/laps');
             const t=workLapsTempo(laps,QS[d.id]);
