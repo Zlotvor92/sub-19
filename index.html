@@ -197,6 +197,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .wseg-in:focus{border-color:var(--cyan)}
 .wseg-in::placeholder{color:var(--txt3);font-weight:600}
 .wseg-out{min-width:120px;text-align:right}
+.btn-ai{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;font-weight:800;font-size:.88rem;color:var(--txt);cursor:pointer}
+.btn-ai:active{opacity:.7}
+.btn-ai:disabled{opacity:.5}
+.ai-out{margin-top:10px;font-size:.85rem;line-height:1.55;color:var(--txt2);white-space:pre-wrap}
+.ai-out.err{color:var(--red,#ff5a5a)}
 
 /* banner backup */
 .bban{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px dashed rgba(255,255,255,.18);border-radius:14px;padding:11px 14px;margin-bottom:14px;font-size:.82rem;font-weight:600;color:var(--txt2)}
@@ -306,7 +311,8 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='7'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='8'; /* mora se poklapati sa APP_VERSION u sw.js */
+const ANALYZE_SECRET='PROMENI_ME_ISTA_VREDNOST_KAO_APP_SHARED_SECRET_NA_VERCELU'; /* NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
 
@@ -857,6 +863,11 @@ function formHTML(d){
     });
     workBlock+=`</div>`;
   }
+  const canAnalyze=(d.tag==='int'||d.tag==='tempo')&&l.km&&l.sec;
+  const aiBlock=canAnalyze?`<div class="f-field full" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
+      <button type="button" id="ai-go-${d.id}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
+      <div id="ai-out-${d.id}" class="ai-out"></div>
+    </div>`:'';
   return `<div class="f-grid" data-day="${d.id}">
     <div class="f-field"><label>Distanca (km) <span class="f-req">*</span></label><input type="text" inputmode="decimal" data-f="km" value="${l.km!=null?String(l.km).replace('.',','):''}" placeholder="npr. 8"></div>
     <div class="f-field"><label>Vreme <span class="f-req">*</span></label><input type="text" inputmode="numeric" data-f="sec" value="${l.sec?fmtClock(l.sec):''}" placeholder="4233 = 42:33"></div>
@@ -868,6 +879,7 @@ function formHTML(d){
     <div class="f-field"><label>Datum</label><input type="date" data-f="ts" value="${l.ts||d.date||TODAY}"></div>
     <div class="f-field full"><label>Beleška</label><textarea data-f="note" placeholder="Kako je bilo…">${esc(l.note||'')}</textarea></div>
     ${workBlock}
+    ${aiBlock}
     ${l.src==='strava'?`<div class="note-src" style="grid-column:1/-1;margin-top:0">⛓ Podaci povučeni sa Strave${l.lock?' · ručno korigovano (sync više ne prepisuje)':''}</div>`:''}
   </div>`;
 }
@@ -909,6 +921,41 @@ function bindForm(root,d){
     inp.addEventListener('input',wh);
     inp.addEventListener('change',wh);
   });
+  /* AI analiza — šalje SAMO podatke koje app već ima (nema novog Strava poziva) */
+  const aiBtn=g.querySelector(`#ai-go-${d.id}`);
+  if(aiBtn){
+    aiBtn.addEventListener('click',async()=>{
+      const out=g.querySelector(`#ai-out-${d.id}`);
+      aiBtn.disabled=true; aiBtn.textContent='Analiziram…';
+      out.className='ai-out'; out.textContent='';
+      const l=S.log[d.id]||{};
+      const predIds=predRowsFor(d);
+      const mainPid=predIds[0];
+      const r=mainPid?PRED.find(x=>x.id===mainPid):null;
+      const payload={
+        session:{ desc:d.desc||'', planPace: r?fmtTempo(r.pt):'—', q: r?r.q:null },
+        entered:{
+          workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
+          km:l.km??null, time:l.sec?fmtClock(l.sec):null,
+          hr:l.hr??null, rpe:l.rpe??null, note:l.note||''
+        }
+      };
+      try{
+        const resp=await fetch('/api/analyze',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','x-app-secret':ANALYZE_SECRET},
+          body:JSON.stringify(payload)
+        });
+        const data=await resp.json();
+        if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška: '+(data.error||'nepoznata'); }
+        else { out.textContent=data.text; }
+      }catch(e){
+        out.className='ai-out err'; out.textContent='Nema veze sa serverom.';
+      }finally{
+        aiBtn.disabled=false; aiBtn.textContent='🤖 Analiziraj trening (AI)';
+      }
+    });
+  }
 }
 function syncSide(d){
   const l=S.log[d.id];if(!l)return;
