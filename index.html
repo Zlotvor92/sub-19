@@ -306,7 +306,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='5'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='7'; /* mora se poklapati sa APP_VERSION u sw.js */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
 
@@ -718,10 +718,23 @@ function vdotDeltaHTML(predId,paceSec){
 function pickClosest(list,planKm){
   return list.reduce((b,x)=>Math.abs(x.distance/1000-planKm)<Math.abs(b.distance/1000-planKm)?x:b);
 }
-function workLapsTempo(laps,specs){
-  const work=laps.filter(L=>specs.some(m=>Math.abs(L.distance-m)/m<=0.12));
+function workLapsTempo(laps,specs,expectedReps){
+  if(!laps||!laps.length)return null;
+  const paceOf=L=>((L.moving_time||L.elapsed_time)/(L.distance/1000));
+  /* kandidati: lapovi čija distanca odgovara nekom repu (±15%) i imaju validno vreme */
+  let cand=laps.filter(L=>L.distance>0&&(L.moving_time||L.elapsed_time)>0
+    && specs.some(m=>Math.abs(L.distance-m)/m<=0.15));
+  if(!cand.length)return null;
+  /* VARIJANTA C sa zaštitom: radni intervali su NAJBRŽI lapovi te distance i
+     međusobno konzistentni (isti ciljani tempo). WU/CD/hod su iste distance ali
+     dramatično sporiji. Sidro = najbrži lap; zadrži sve unutar 25% od njega.
+     Time se WU/CD (koji su isto npr. 1.00 km) odbacuju, a svi pravi radni ostaju
+     bez obzira koliko ih je (pokriva i otkazivanje — 3 umesto 5). */
+  const fastest=Math.min(...cand.map(paceOf));
+  const work=cand.filter(L=>paceOf(L)<=fastest*1.25);
   if(!work.length)return null;
-  const dist=work.reduce((s,L)=>s+L.distance,0),t=work.reduce((s,L)=>s+(L.moving_time||L.elapsed_time||0),0);
+  const dist=work.reduce((s,L)=>s+L.distance,0);
+  const t=work.reduce((s,L)=>s+(L.moving_time||L.elapsed_time||0),0);
   if(!dist||!t)return null;
   return Math.round(t/(dist/1000));
 }
