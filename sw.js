@@ -1,11 +1,19 @@
 /* SUB-19 service worker — offline keširanje.
-   Pri svakoj izmeni aplikacije podigni broj verzije (v1 -> v2 ...):
-   stari keš se briše, a PODACI u localStorage OSTAJU netaknuti. */
-const CACHE = 'sub19-cache-v4';
+   Pri svakoj izmeni aplikacije podigni CACHE broj i APP_VERSION:
+   stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
+   Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
+   čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
+const CACHE = 'sub19-cache-v5';
+const APP_VERSION = '5';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  /* NE skipWaiting ovde — čeka SKIP_WAITING poruku (klik na "Osveži"). */
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
 });
 
 self.addEventListener('activate', e => {
