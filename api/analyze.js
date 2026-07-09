@@ -22,9 +22,22 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const secret = req.headers['x-app-secret'];
-  if (!process.env.APP_SHARED_SECRET || secret !== process.env.APP_SHARED_SECRET) {
-    res.status(401).json({ error: 'Neautorizovano.' });
+  const secretRaw = req.headers['x-app-secret'];
+  const expected = process.env.APP_SHARED_SECRET;
+  const secretMatch = !!expected && secretRaw === expected;
+  if (!secretMatch) {
+    /* PRIVREMENA DIJAGNOSTIKA — ne otkriva pravu tajnu, samo dužine i
+       da/ne poklapanja, da nađemo tačan uzrok bez dalјeg nagađanja.
+       Ukloniti posle rešavanja problema (vratiti prostu 401 poruku). */
+    res.status(401).json({
+      error: 'Neautorizovano.',
+      debug: {
+        envVarPostoji: !!expected,
+        envVarDuzina: expected ? expected.length : null,
+        primljenoDuzina: secretRaw ? secretRaw.length : null,
+        poklapaSeBezRazmaka: !!expected && !!secretRaw && expected.trim() === secretRaw.trim()
+      }
+    });
     return;
   }
 
