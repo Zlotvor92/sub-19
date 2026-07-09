@@ -311,7 +311,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='9'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='10'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='PROMENI_ME_ISTA_VREDNOST_KAO_APP_SHARED_SECRET_NA_VERCELU'; /* NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -953,7 +953,10 @@ function bindForm(root,d){
           out.textContent='Server nije vratio ispravan odgovor (HTTP '+resp.status+'). Najverovatnije api/analyze.js još nije deployovan na Vercel-u — proveri da li je fajl commit-ovan i da je deploy završen.';
           return;
         }
-        if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
+        if(!resp.ok){
+          out.className='ai-out err';
+          out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata')+(data.debug?('\n\nDIJAGNOSTIKA: '+JSON.stringify(data.debug)):'');
+        }
         else { out.textContent=data.text; }
       }catch(e){
         out.className='ai-out err'; out.textContent='Pravi mrežni prekid (offline / nema signala).';
