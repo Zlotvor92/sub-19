@@ -311,7 +311,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='12'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='13'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -942,6 +942,12 @@ function bindForm(root,d){
       aiBtn.disabled=true; aiBtn.textContent='Analiziram…';
       out.className='ai-out'; out.textContent='';
       const l=S.log[d.id]||{};
+      /* PRIVREMENA DIJAGNOSTIKA — pokazuje šta je stvarno sačuvano pre slanja.
+         Ukloniti kad rešimo zašto HR/kadenca po krugu ne stižu. */
+      const lapsInfo = Array.isArray(l.laps)&&l.laps.length
+        ? ('SAČUVANO '+l.laps.length+' krugova. Prvi krug: '+JSON.stringify(l.laps[0]))
+        : 'NEMA sačuvanih po-krug podataka (l.laps prazan). Verovatno stari index.html na telefonu ili sync nije povukao lapove posle v12.';
+      out.className='ai-out'; out.textContent='DIJAGNOSTIKA (v'+APP_VERSION+'): '+lapsInfo+'\n\nŠaljem LLM-u…';
       const predIds=predRowsFor(d);
       const mainPid=predIds[0];
       const r=mainPid?PRED.find(x=>x.id===mainPid):null;
@@ -968,7 +974,7 @@ function bindForm(root,d){
           return;
         }
         if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
-        else { out.textContent=data.text; }
+        else { out.textContent=(out.textContent.split('\n\nŠaljem')[0])+'\n\n--- LLM ODGOVOR ---\n'+data.text; }
       }catch(e){
         out.className='ai-out err'; out.textContent='Pravi mrežni prekid (offline / nema signala).';
       }finally{
