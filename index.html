@@ -311,7 +311,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='13'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='14'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -747,14 +747,19 @@ function workLapsTempo(laps,specs){
 }
 /* Po-krug podaci radnih intervala za LLM analizu (tempo, puls, kadenca po krugu).
    Isti lapovi kao workLapsTempo — samo bogatije čitanje. Vraća niz ili []. */
-function workLapsDetail(laps,specs){
+/* Po-krug podaci radnih intervala za LLM analizu.
+   VAŽNO: Strava /laps endpoint NE vraća puls po krugu (average_heartrate),
+   ali vraća average_cadence i average_watts. Imena polja su average_*, ne avg_*.
+   Puls po krugu se mora povući iz HR streama i mapirati na lapove (radi se
+   posebno u stravaSync preko start_index/end_index). */
+function workLapsDetail(laps,specs,hrByLap){
   const work=workLapsSelect(laps,specs);
   return work.map((L,i)=>({
     i:i+1,
     paceSec:Math.round((L.moving_time||L.elapsed_time)/(L.distance/1000)),
-    avgHr:L.avg_hr!=null?Math.round(L.avg_hr):null,
-    maxHr:L.max_hr!=null?Math.round(L.max_hr):null,
-    cadence:L.avg_cadence!=null?Math.round(L.avg_cadence):null
+    avgHr:(hrByLap&&hrByLap[i]!=null)?Math.round(hrByLap[i]):null,
+    cadence:L.average_cadence!=null?Math.round(L.average_cadence):null,
+    watts:L.average_watts!=null?Math.round(L.average_watts):null
   }));
 }
 /*==DOM==*/
@@ -942,12 +947,6 @@ function bindForm(root,d){
       aiBtn.disabled=true; aiBtn.textContent='Analiziram…';
       out.className='ai-out'; out.textContent='';
       const l=S.log[d.id]||{};
-      /* PRIVREMENA DIJAGNOSTIKA — pokazuje šta je stvarno sačuvano pre slanja.
-         Ukloniti kad rešimo zašto HR/kadenca po krugu ne stižu. */
-      const lapsInfo = Array.isArray(l.laps)&&l.laps.length
-        ? ('SAČUVANO '+l.laps.length+' krugova. Prvi krug: '+JSON.stringify(l.laps[0]))
-        : 'NEMA sačuvanih po-krug podataka (l.laps prazan). Verovatno stari index.html na telefonu ili sync nije povukao lapove posle v12.';
-      out.className='ai-out'; out.textContent='DIJAGNOSTIKA (v'+APP_VERSION+'): '+lapsInfo+'\n\nŠaljem LLM-u…';
       const predIds=predRowsFor(d);
       const mainPid=predIds[0];
       const r=mainPid?PRED.find(x=>x.id===mainPid):null;
@@ -974,7 +973,7 @@ function bindForm(root,d){
           return;
         }
         if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
-        else { out.textContent=(out.textContent.split('\n\nŠaljem')[0])+'\n\n--- LLM ODGOVOR ---\n'+data.text; }
+        else { out.textContent=data.text; }
       }catch(e){
         out.className='ai-out err'; out.textContent='Pravi mrežni prekid (offline / nema signala).';
       }finally{
@@ -1412,9 +1411,26 @@ async function stravaSync(manual){
             const laps=await stApi('/activities/'+a.id+'/laps');
             const t=workLapsTempo(laps,QS[d.id]);
             if(t){S.pred[rowId]=t;recordVdot(rowId,t);props++;}
-            /* iz ISTIH lapova sačuvaj po-krug detalje (puls/kadenca po radnom
-               intervalu) za dublju LLM analizu — bez dodatnog API poziva */
-            const detail=workLapsDetail(laps,QS[d.id]);
+            /* Puls po krugu: /laps ga NE vraća, pa povlačimo HR stream i
+               mapiramo na radne lapove preko start_index/end_index. */
+            let hrByLap=null;
+            try{
+              const work=workLapsSelect(laps,QS[d.id]);
+              if(work.length){
+                const st=await stApi('/activities/'+a.id+'/streams?keys=heartrate&key_by_type=true');
+                const hr=st&&st.heartrate&&Array.isArray(st.heartrate.data)?st.heartrate.data:null;
+                if(hr&&hr.length){
+                  hrByLap=work.map(L=>{
+                    const s=L.start_index, e=L.end_index;
+                    if(s==null||e==null||e<s)return null;
+                    let sum=0,n=0;
+                    for(let k=s;k<=e&&k<hr.length;k++){ if(hr[k]!=null){sum+=hr[k];n++;} }
+                    return n?sum/n:null;
+                  });
+                }
+              }
+            }catch(e){}
+            const detail=workLapsDetail(laps,QS[d.id],hrByLap);
             if(detail.length && S.log[d.id]) S.log[d.id].laps=detail;
           }catch(e){}
         }
