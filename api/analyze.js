@@ -109,7 +109,7 @@ Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}${lapsBlock}`;
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 600,
+        max_tokens: 4000, /* Sonnet 5: adaptive thinking uvek uključen i troši iz budžeta; 600 je bilo premalo (thinking pojede sve, ostane 0 za tekst -> prazan odgovor). Plaća se stvarno korišćeno, ne max. */
         system: sys,
         messages: [{ role: 'user', content: userMsg }]
       })
@@ -129,7 +129,8 @@ Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}${lapsBlock}`;
       .trim();
 
     if (!text) {
-      res.status(502).json({ error: 'LLM je vratio prazan odgovor.' });
+      const sr = data.stop_reason || 'nepoznato';
+      res.status(502).json({ error: 'LLM je vratio prazan odgovor (stop_reason: '+sr+'). Ako je max_tokens — treba veći budžet.' });
       return;
     }
 
