@@ -14,7 +14,7 @@
    URL-a koji bi ti trošio Anthropic kvotu. Prava zaštita bi tražila pravi
    login sistem, što je van okvira "najmanje moguće verzije". */
 
-const MODEL = 'claude-sonnet-4-5'; /* Sonnet 4.5 — bolji srpski i dublja analiza od Haiku. Cena $3/$15 po Mtok (3x Haiku), ali za male analize i dalje centi po pozivu. */
+const MODEL = 'claude-sonnet-5'; /* Sonnet 5 — noviji model. Uvodna cena $2/$10 do 31.08.2026, potom $3/$15. */
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
