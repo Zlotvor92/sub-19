@@ -311,7 +311,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='14'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='15'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -745,13 +745,30 @@ function workLapsTempo(laps,specs){
   if(!dist||!t)return null;
   return Math.round(t/(dist/1000));
 }
-/* Po-krug podaci radnih intervala za LLM analizu (tempo, puls, kadenca po krugu).
-   Isti lapovi kao workLapsTempo — samo bogatije čitanje. Vraća niz ili []. */
-/* Po-krug podaci radnih intervala za LLM analizu.
-   VAŽNO: Strava /laps endpoint NE vraća puls po krugu (average_heartrate),
-   ali vraća average_cadence i average_watts. Imena polja su average_*, ne avg_*.
-   Puls po krugu se mora povući iz HR streama i mapirati na lapove (radi se
-   posebno u stravaSync preko start_index/end_index). */
+/* Po-kilometarski presek za KONTINUIRANA trčanja (lako/LR) — nema radnih
+   intervala, pa merimo puls/kadencu/tempo svakog kilometra kroz celo trčanje.
+   Iz distance streama nalazimo gde svaki km počinje/završava, pa prosečimo HR i
+   kadencu unutar tog opsega. Vraća niz {km, paceSec, hr, cadence}. */
+function perKmDetail(streams){
+  if(!streams)return [];
+  const dist=streams.distance&&streams.distance.data, hr=streams.heartrate&&streams.heartrate.data,
+        cad=streams.cadence&&streams.cadence.data, time=streams.time&&streams.time.data;
+  if(!Array.isArray(dist)||!dist.length)return [];
+  const out=[]; let kmIdx=1, startI=0;
+  for(let i=0;i<dist.length;i++){
+    if(dist[i]>=kmIdx*1000){
+      const seg=(arr)=>{ if(!arr)return null; let s=0,n=0; for(let k=startI;k<=i&&k<arr.length;k++){if(arr[k]!=null){s+=arr[k];n++;}} return n?s/n:null; };
+      const dt=(time&&time[i]!=null&&time[startI]!=null)?(time[i]-time[startI]):null;
+      out.push({km:kmIdx, paceSec: dt!=null?Math.round(dt):null, hr: seg(hr)!=null?Math.round(seg(hr)):null, cadence: seg(cad)!=null?Math.round(seg(cad)):null});
+      startI=i; kmIdx++;
+    }
+  }
+  return out;
+}
+/* Po-krug podaci radnih intervala za LLM analizu (tempo, puls, kadenca, watts po krugu).
+   VAŽNO: Strava /laps NE vraća puls po krugu (average_heartrate), ali vraća
+   average_cadence i average_watts (imena polja su average_*, ne avg_*). Puls po
+   krugu se povlači iz HR streama i mapira preko start_index/end_index u stravaSync. */
 function workLapsDetail(laps,specs,hrByLap){
   const work=workLapsSelect(laps,specs);
   return work.map((L,i)=>({
@@ -881,7 +898,7 @@ function formHTML(d){
     });
     workBlock+=`</div>`;
   }
-  const canAnalyze=(d.tag==='int'||d.tag==='tempo')&&l.km&&l.sec;
+  const canAnalyze=(d.tag==='int'||d.tag==='tempo'||d.tag==='lako'||d.tag==='lr')&&l.km&&l.sec;
   const aiBlock=canAnalyze?`<div class="f-field full" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
       <button type="button" id="ai-go-${d.id}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
       <div id="ai-out-${d.id}" class="ai-out"></div>
@@ -944,19 +961,26 @@ function bindForm(root,d){
   if(aiBtn){
     aiBtn.addEventListener('click',async()=>{
       const out=g.querySelector(`#ai-out-${d.id}`);
+      const l=S.log[d.id]||(S.log[d.id]={});
+      /* Limit 2 analize po treningu — da se ne troši kvota bez granice */
+      if((l.aiCount||0)>=2){
+        out.className='ai-out err';
+        out.textContent='Iskorišćene su 2 analize za ovaj trening (limit). Analiza se ne menja za iste podatke, pa nema potrebe za ponavljanjem.';
+        return;
+      }
       aiBtn.disabled=true; aiBtn.textContent='Analiziram…';
       out.className='ai-out'; out.textContent='';
-      const l=S.log[d.id]||{};
       const predIds=predRowsFor(d);
       const mainPid=predIds[0];
       const r=mainPid?PRED.find(x=>x.id===mainPid):null;
       const payload={
-        session:{ desc:d.desc||'', planPace: r?fmtTempo(r.pt):'—', q: r?r.q:null },
+        session:{ desc:d.desc||'', planPace: r?fmtTempo(r.pt):'—', q: r?r.q:null, tag:d.tag },
         entered:{
           workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
           km:l.km??null, time:l.sec?fmtClock(l.sec):null,
           hr:l.hr??null, rpe:l.rpe??null, note:l.note||'',
-          laps: Array.isArray(l.laps)&&l.laps.length?l.laps:null
+          laps: Array.isArray(l.laps)&&l.laps.length?l.laps:null,
+          perKm: Array.isArray(l.perKm)&&l.perKm.length?l.perKm:null
         }
       };
       try{
@@ -973,7 +997,7 @@ function bindForm(root,d){
           return;
         }
         if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
-        else { out.textContent=data.text; }
+        else { out.textContent=data.text; l.aiCount=(l.aiCount||0)+1; save(); }
       }catch(e){
         out.className='ai-out err'; out.textContent='Pravi mrežni prekid (offline / nema signala).';
       }finally{
@@ -1434,6 +1458,14 @@ async function stravaSync(manual){
             if(detail.length && S.log[d.id]) S.log[d.id].laps=detail;
           }catch(e){}
         }
+      } else if((d.tag==='lako'||d.tag==='lr') && S.log[d.id] && !S.log[d.id].perKm && !l.lock){
+        /* Kontinuirana trčanja (lako/LR): povuci streamove i sačuvaj po-km presek
+           (puls/kadenca/tempo svakog km) za analizu drifta i kadence. Samo jednom. */
+        try{
+          const st=await stApi('/activities/'+a.id+'/streams?keys=distance,heartrate,cadence,time&key_by_type=true');
+          const perKm=perKmDetail(st);
+          if(perKm.length && S.log[d.id]) S.log[d.id].perKm=perKm;
+        }catch(e){}
       }
     }
     S.strava.lastSync=Date.now();save();
