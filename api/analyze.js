@@ -14,7 +14,7 @@
    URL-a koji bi ti trošio Anthropic kvotu. Prava zaštita bi tražila pravi
    login sistem, što je van okvira "najmanje moguće verzije". */
 
-const MODEL = 'claude-haiku-4-5-20251001';
+const MODEL = 'claude-sonnet-4-5'; /* Sonnet 4.5 — bolji srpski i dublja analiza od Haiku. Cena $3/$15 po Mtok (3x Haiku), ali za male analize i dalje centi po pozivu. */
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -96,7 +96,7 @@ Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}${lapsBlock}`;
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 400,
+        max_tokens: 600,
         system: sys,
         messages: [{ role: 'user', content: userMsg }]
       })
