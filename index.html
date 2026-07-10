@@ -311,7 +311,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='16'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='17'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -1292,9 +1292,90 @@ function renderPred(){
     </div>
     <div style="font-size:.75rem;color:var(--txt3);margin-top:4px">Početni VDOT (PB 20:37): ${bv} · cilj 18:50–19:00 ≈ VDOT ${Math.round(vdotFrom5k(1130)*10)/10}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
   </div>`;
+  h+=`<div class="card"><div class="card-t">VDOT trend kroz vreme</div><div id="vdottrend">${chartVdotTrend()}</div>
+    <button type="button" id="trend-go" class="btn-ai" style="margin-top:10px">📈 Objasni trend (AI)</button>
+    <div id="trend-out" class="ai-out"></div></div>`;
   h+=`<div class="card"><div class="card-t">Predikcija 5K kroz plan · cilj 19:00</div><div id="pchart">${chartPred(pc)}</div></div>`;
   h+=`<div class="card" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: 18:50–19:00. Kad NAJBRŽA predikcija stabilno padne ispod 19:00 (na više sesija), matematički si spreman.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
   el.innerHTML=h;
+  const tBtn=el.querySelector('#trend-go');
+  if(tBtn){
+    tBtn.addEventListener('click',async()=>{
+      const out=el.querySelector('#trend-out');
+      const sum=trendSummary();
+      if(sum.treninzi.length<3){
+        out.className='ai-out err';
+        out.textContent='Za trend analizu treba bar 3 odrađena treninga. Trenutno: '+sum.treninzi.length+'. Nakupljaj kroz nedelje.';
+        return;
+      }
+      tBtn.disabled=true; tBtn.textContent='Analiziram trend…';
+      out.className='ai-out'; out.textContent='';
+      try{
+        const resp=await fetch('/api/analyze',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','x-app-secret':ANALYZE_SECRET},
+          body:JSON.stringify({trend:sum})
+        });
+        let data;
+        try{ data=await resp.json(); }catch{ out.className='ai-out err'; out.textContent='Server nije vratio ispravan odgovor (HTTP '+resp.status+').'; return; }
+        if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
+        else { out.textContent=data.text; }
+      }catch(e){ out.className='ai-out err'; out.textContent='Nema veze sa serverom.'; }
+      finally{ tBtn.disabled=false; tBtn.textContent='📈 Objasni trend (AI)'; }
+    });
+  }
+}
+/* VDOT trend kroz vreme — crta vdotLog kao liniju. Vidi se raste li forma. */
+function chartVdotTrend(){
+  const vl=(S.vdotLog||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1);
+  if(vl.length<2) return '<div style="color:var(--txt3);font-size:.8rem;padding:12px 0">Trend se prikazuje kad bude bar 2 zabeležene VDOT vrednosti. Nakupljaj kroz treninge.</div>';
+  const W=340,H=150,L=32,R=8,B=126,T=10;
+  const vals=vl.map(e=>e.vdot);
+  const bv=baselineVdot(), goal=Math.round(vdotFrom5k(1130)*10)/10;
+  const lo=Math.min(bv,goal,...vals)-1, hi=Math.max(bv,goal,...vals)+1;
+  const X=i=>L+(vl.length===1?0:i/(vl.length-1)*(W-L-R));
+  const Y=v=>B-((v-lo)/(hi-lo))*(B-T);
+  let g='';
+  // horizontalne linije: baseline i cilj
+  g+=`<line x1="${L}" y1="${Y(goal).toFixed(1)}" x2="${W-R}" y2="${Y(goal).toFixed(1)}" stroke="var(--green)" stroke-width="1" stroke-dasharray="4 3" opacity="0.6"/>`;
+  g+=`<text x="${W-R}" y="${(Y(goal)-4).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--green)">cilj ${goal}</text>`;
+  g+=`<line x1="${L}" y1="${Y(bv).toFixed(1)}" x2="${W-R}" y2="${Y(bv).toFixed(1)}" stroke="var(--txt3)" stroke-width="1" stroke-dasharray="2 3" opacity="0.5"/>`;
+  // linija VDOT
+  let pts=vl.map((e,i)=>`${X(i).toFixed(1)},${Y(e.vdot).toFixed(1)}`).join(' ');
+  g+=`<polyline points="${pts}" fill="none" stroke="var(--cyan)" stroke-width="2"/>`;
+  vl.forEach((e,i)=>{ g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(e.vdot).toFixed(1)}" r="3" fill="var(--cyan)"/>`; });
+  // labele prve i zadnje vrednosti
+  g+=`<text x="${X(0).toFixed(1)}" y="${(Y(vl[0].vdot)-7).toFixed(1)}" font-size="10" font-weight="700" fill="var(--txt2)">${vl[0].vdot}</text>`;
+  g+=`<text x="${X(vl.length-1).toFixed(1)}" y="${(Y(vl[vl.length-1].vdot)-7).toFixed(1)}" text-anchor="end" font-size="10" font-weight="700" fill="var(--cyan)">${vl[vl.length-1].vdot}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${g}</svg>`;
+}
+/* Sažetak svih treninga za LLM trend analizu. NE šalje pun po-krug niz (previše),
+   nego sažme svaki trening: datum, tip, tempo, drift (prvi->poslednji puls), kadenca. */
+function trendSummary(){
+  const out=[];
+  DATED.forEach(d=>{
+    const l=S.log[d.id]; if(!l||l.status!=='done')return;
+    const row={date:l.ts||d.date, tag:d.tag};
+    if(Array.isArray(l.laps)&&l.laps.length){
+      const hrs=l.laps.map(x=>x.avgHr).filter(x=>x!=null);
+      const cads=l.laps.map(x=>x.cadence).filter(x=>x!=null);
+      row.tempo=l.laps.length?Math.round(l.laps.reduce((s,x)=>s+x.paceSec,0)/l.laps.length):null;
+      if(hrs.length>=2){row.driftStart=hrs[0];row.driftEnd=hrs[hrs.length-1];row.drift=hrs[hrs.length-1]-hrs[0];}
+      if(cads.length)row.cadence=Math.round(cads.reduce((s,x)=>s+x,0)/cads.length);
+    } else if(Array.isArray(l.perKm)&&l.perKm.length){
+      const hrs=l.perKm.map(x=>x.hr).filter(x=>x!=null);
+      const cads=l.perKm.map(x=>x.cadence).filter(x=>x!=null);
+      if(hrs.length>=2){row.driftStart=hrs[0];row.driftEnd=hrs[hrs.length-1];row.drift=hrs[hrs.length-1]-hrs[0];}
+      if(cads.length)row.cadence=Math.round(cads.reduce((s,x)=>s+x,0)/cads.length);
+    } else {
+      if(l.km&&l.sec)row.tempo=Math.round(l.sec/l.km);
+      if(l.hr)row.avgHr=l.hr;
+    }
+    out.push(row);
+  });
+  // VDOT istorija
+  const vl=(S.vdotLog||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1).map(e=>({date:e.ts,vdot:e.vdot}));
+  return {treninzi:out, vdot:vl, baseline:baselineVdot(), cilj:Math.round(vdotFrom5k(1130)*10)/10};
 }
 function chartPred(pc){
   const W=340,H=152,L=36,R=8,B=128,T=10;
