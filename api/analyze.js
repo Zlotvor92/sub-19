@@ -57,7 +57,7 @@ Piši na srpskom jeziku, JEDNOSTAVNIM i tačnim rečenicama. Proveri gramatiku �
 
 Strogo se drži ovoga:
 - Uporedi ostvaren tempo radnog dela sa planiranim — reci da li je brže/sporije/tačno, i za koliko sekundi po km.
-- AKO SU DATI PODACI PO KRUGU (puls, kadenca po svakom radnom intervalu): ovo je najvažniji deo. Analiziraj da li puls RASTE kroz intervale pri istom tempu — to je kardiovaskularni drift i znači da izdržljivost na tom tempu treba graditi (ne brzina). Reci konkretno koliko je puls porastao (npr. "prvi interval 162, poslednji 174"). Komentariši kadencu: 88-95 je zdravo za taj tempo, ispod 85 bi značilo predugačak korak. Ako je puls stabilan kroz intervale — to je znak dobre izdržljivosti, pohvali to konkretno.
+- AKO SU DATI PODACI PO KRUGU (puls, kadenca, snaga po svakom radnom intervalu): ovo je najvažniji deo. Analiziraj da li puls RASTE kroz intervale pri istom tempu — to je kardiovaskularni drift i znači da izdržljivost na tom tempu treba graditi (ne brzina). Reci konkretno koliko je puls porastao (npr. "prvi interval 162, poslednji 174"). Komentariši kadencu: 88-95 je zdravo za taj tempo, ispod 85 bi značilo predugačak korak. Ako je snaga (watts) data i opada kroz intervale uz isti tempo, to je dodatni znak zamora. Ako je puls stabilan kroz intervale — to je znak dobre izdržljivosti, pohvali to konkretno.
 - AKO NEMA podataka po krugu, koristi prosečan puls i RPE kao grubu ocenu napora, ali reci da bez podataka po krugu ne možeš proceniti drift.
 - NIKAD ne izmišljaj konkretne buduće tempove, VDOT brojeve ili preporuke za sledeći trening — to računa aplikacija. Tvoj posao je da protumačiš OVAJ trening.
 - Ako neki podatak izgleda beznačajan (npr. par stotina metara viška od zaokruživanja WU/CD), ne troši rečenice na njega.
@@ -70,8 +70,8 @@ Strogo se drži ovoga:
       entered.laps.map(L =>
         `Interval ${L.i}: tempo ${fmtPace(L.paceSec)}/km` +
         (L.avgHr!=null?`, puls ${L.avgHr}`:'') +
-        (L.maxHr!=null?` (max ${L.maxHr})`:'') +
-        (L.cadence!=null?`, kadenca ${L.cadence}`:'')
+        (L.cadence!=null?`, kadenca ${L.cadence}`:'') +
+        (L.watts!=null?`, snaga ${L.watts}W`:'')
       ).join('\n');
   }
 
