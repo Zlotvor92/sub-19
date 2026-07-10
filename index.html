@@ -311,8 +311,8 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='10'; /* mora se poklapati sa APP_VERSION u sw.js */
-const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
+const APP_VERSION='12'; /* mora se poklapati sa APP_VERSION u sw.js */
+const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
 
@@ -724,25 +724,38 @@ function vdotDeltaHTML(predId,paceSec){
 function pickClosest(list,planKm){
   return list.reduce((b,x)=>Math.abs(x.distance/1000-planKm)<Math.abs(b.distance/1000-planKm)?x:b);
 }
-function workLapsTempo(laps,specs,expectedReps){
-  if(!laps||!laps.length)return null;
+/* Zajednička selekcija radnih lapova (varijanta C sa zaštitom) — koriste je i
+   workLapsTempo (za VDOT) i workLapsDetail (za po-krug analizu). Radni intervali
+   su NAJBRŽI lapovi ciljane distance i međusobno konzistentni; WU/CD/hod su iste
+   distance ali dramatično sporiji. Sidro = najbrži lap, zadrži unutar 25%. */
+function workLapsSelect(laps,specs){
+  if(!laps||!laps.length)return [];
   const paceOf=L=>((L.moving_time||L.elapsed_time)/(L.distance/1000));
-  /* kandidati: lapovi čija distanca odgovara nekom repu (±15%) i imaju validno vreme */
-  let cand=laps.filter(L=>L.distance>0&&(L.moving_time||L.elapsed_time)>0
+  const cand=laps.filter(L=>L.distance>0&&(L.moving_time||L.elapsed_time)>0
     && specs.some(m=>Math.abs(L.distance-m)/m<=0.15));
-  if(!cand.length)return null;
-  /* VARIJANTA C sa zaštitom: radni intervali su NAJBRŽI lapovi te distance i
-     međusobno konzistentni (isti ciljani tempo). WU/CD/hod su iste distance ali
-     dramatično sporiji. Sidro = najbrži lap; zadrži sve unutar 25% od njega.
-     Time se WU/CD (koji su isto npr. 1.00 km) odbacuju, a svi pravi radni ostaju
-     bez obzira koliko ih je (pokriva i otkazivanje — 3 umesto 5). */
+  if(!cand.length)return [];
   const fastest=Math.min(...cand.map(paceOf));
-  const work=cand.filter(L=>paceOf(L)<=fastest*1.25);
+  return cand.filter(L=>paceOf(L)<=fastest*1.25);
+}
+function workLapsTempo(laps,specs){
+  const work=workLapsSelect(laps,specs);
   if(!work.length)return null;
   const dist=work.reduce((s,L)=>s+L.distance,0);
   const t=work.reduce((s,L)=>s+(L.moving_time||L.elapsed_time||0),0);
   if(!dist||!t)return null;
   return Math.round(t/(dist/1000));
+}
+/* Po-krug podaci radnih intervala za LLM analizu (tempo, puls, kadenca po krugu).
+   Isti lapovi kao workLapsTempo — samo bogatije čitanje. Vraća niz ili []. */
+function workLapsDetail(laps,specs){
+  const work=workLapsSelect(laps,specs);
+  return work.map((L,i)=>({
+    i:i+1,
+    paceSec:Math.round((L.moving_time||L.elapsed_time)/(L.distance/1000)),
+    avgHr:L.avg_hr!=null?Math.round(L.avg_hr):null,
+    maxHr:L.max_hr!=null?Math.round(L.max_hr):null,
+    cadence:L.avg_cadence!=null?Math.round(L.avg_cadence):null
+  }));
 }
 /*==DOM==*/
 
@@ -937,7 +950,8 @@ function bindForm(root,d){
         entered:{
           workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
           km:l.km??null, time:l.sec?fmtClock(l.sec):null,
-          hr:l.hr??null, rpe:l.rpe??null, note:l.note||''
+          hr:l.hr??null, rpe:l.rpe??null, note:l.note||'',
+          laps: Array.isArray(l.laps)&&l.laps.length?l.laps:null
         }
       };
       try{
@@ -953,10 +967,7 @@ function bindForm(root,d){
           out.textContent='Server nije vratio ispravan odgovor (HTTP '+resp.status+'). Najverovatnije api/analyze.js još nije deployovan na Vercel-u — proveri da li je fajl commit-ovan i da je deploy završen.';
           return;
         }
-        if(!resp.ok){
-          out.className='ai-out err';
-          out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata')+(data.debug?('\n\nDIJAGNOSTIKA: '+JSON.stringify(data.debug)):'');
-        }
+        if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
         else { out.textContent=data.text; }
       }catch(e){
         out.className='ai-out err'; out.textContent='Pravi mrežni prekid (offline / nema signala).';
@@ -1395,6 +1406,10 @@ async function stravaSync(manual){
             const laps=await stApi('/activities/'+a.id+'/laps');
             const t=workLapsTempo(laps,QS[d.id]);
             if(t){S.pred[rowId]=t;recordVdot(rowId,t);props++;}
+            /* iz ISTIH lapova sačuvaj po-krug detalje (puls/kadenca po radnom
+               intervalu) za dublju LLM analizu — bez dodatnog API poziva */
+            const detail=workLapsDetail(laps,QS[d.id]);
+            if(detail.length && S.log[d.id]) S.log[d.id].laps=detail;
           }catch(e){}
         }
       }
