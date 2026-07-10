@@ -24,20 +24,8 @@ module.exports = async function handler(req, res) {
 
   const secretRaw = req.headers['x-app-secret'];
   const expected = process.env.APP_SHARED_SECRET;
-  const secretMatch = !!expected && secretRaw === expected;
-  if (!secretMatch) {
-    /* PRIVREMENA DIJAGNOSTIKA — ne otkriva pravu tajnu, samo dužine i
-       da/ne poklapanja, da nađemo tačan uzrok bez dalјeg nagađanja.
-       Ukloniti posle rešavanja problema (vratiti prostu 401 poruku). */
-    res.status(401).json({
-      error: 'Neautorizovano.',
-      debug: {
-        envVarPostoji: !!expected,
-        envVarDuzina: expected ? expected.length : null,
-        primljenoDuzina: secretRaw ? secretRaw.length : null,
-        poklapaSeBezRazmaka: !!expected && !!secretRaw && expected.trim() === secretRaw.trim()
-      }
-    });
+  if (!expected || secretRaw !== expected) {
+    res.status(401).json({ error: 'Neautorizovano.' });
     return;
   }
 
@@ -65,25 +53,38 @@ module.exports = async function handler(req, res) {
 
   const sys = `Ti si trkački trener koji analizira JEDAN konkretan trening za trkača koji se sprema za 5K ispod 19:00 (Jack Daniels VDOT metodologija). Dobijaš plan sesije i šta je ostvareno.
 
-Piši na srpskom, 4-6 rečenica, direktno, bez fraza tipa "odličan posao" bez pokrića u brojevima.
+Piši na srpskom jeziku, JEDNOSTAVNIM i tačnim rečenicama. Proveri gramatiku — piši kratke, jasne rečenice umesto dugačkih. Ne koristi reči za koje nisi siguran. 4-7 rečenica, direktno.
 
 Strogo se drži ovoga:
 - Uporedi ostvaren tempo radnog dela sa planiranim — reci da li je brže/sporije/tačno, i za koliko sekundi po km.
-- Ako imaš prosečan puls i RPE, koristi ih kao kontekst napora (npr. "puls/RPE deluju visoko za taj tempo" ili obrnuto) — ali NAGLASI da je to prosek cele sesije, ne po krugu, pa ne možeš proceniti da li je napor rastao ili opadao tokom treninga.
-- NIKAD ne izmišljaj konkretne buduće tempove, VDOT brojeve ili preporuke za sledeći trening — to računa aplikacija na osnovu formule, ne ti. Tvoj posao je da protumačiš OVAJ trening, ne da planiraš sledeći.
-- Ako podataka nema dovoljno za neku ocenu, reci to eksplicitno umesto da nagađaš ili uopštavaš.
-- Bez generičkih motivacionih fraza koje ne prate iz brojeva.`;
+- AKO SU DATI PODACI PO KRUGU (puls, kadenca po svakom radnom intervalu): ovo je najvažniji deo. Analiziraj da li puls RASTE kroz intervale pri istom tempu — to je kardiovaskularni drift i znači da izdržljivost na tom tempu treba graditi (ne brzina). Reci konkretno koliko je puls porastao (npr. "prvi interval 162, poslednji 174"). Komentariši kadencu: 88-95 je zdravo za taj tempo, ispod 85 bi značilo predugačak korak. Ako je puls stabilan kroz intervale — to je znak dobre izdržljivosti, pohvali to konkretno.
+- AKO NEMA podataka po krugu, koristi prosečan puls i RPE kao grubu ocenu napora, ali reci da bez podataka po krugu ne možeš proceniti drift.
+- NIKAD ne izmišljaj konkretne buduće tempove, VDOT brojeve ili preporuke za sledeći trening — to računa aplikacija. Tvoj posao je da protumačiš OVAJ trening.
+- Ako neki podatak izgleda beznačajan (npr. par stotina metara viška od zaokruživanja WU/CD), ne troši rečenice na njega.
+- Bez generičkih motivacionih fraza. Svaka rečenica mora da prati iz brojeva.`;
+
+  let lapsBlock = '';
+  if (Array.isArray(entered.laps) && entered.laps.length) {
+    const fmtPace = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+    lapsBlock = '\n\nPODACI PO RADNOM KRUGU (najvažnije za analizu):\n' +
+      entered.laps.map(L =>
+        `Interval ${L.i}: tempo ${fmtPace(L.paceSec)}/km` +
+        (L.avgHr!=null?`, puls ${L.avgHr}`:'') +
+        (L.maxHr!=null?` (max ${L.maxHr})`:'') +
+        (L.cadence!=null?`, kadenca ${L.cadence}`:'')
+      ).join('\n');
+  }
 
   const userMsg = `PLAN SESIJE: ${cap(session.desc, 500)}
 Planiran tempo radnog dela: ${cap(session.planPace, 20)}
 Ciljna distanca radnog dela: ${session.q ?? '—'} km
 
 OSTVARENO:
-Tempo radnog dela: ${cap(entered.workPace, 20) || 'nije unet'}
+Tempo radnog dela (prosek): ${cap(entered.workPace, 20) || 'nije unet'}
 Ukupna distanca: ${entered.km ?? '—'} km, vreme: ${cap(entered.time, 20) ?? '—'}
 Prosečan puls (cela sesija): ${entered.hr ?? 'nije unet'}
 RPE (1-10): ${entered.rpe ?? 'nije unet'}
-Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}`;
+Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}${lapsBlock}`;
 
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
