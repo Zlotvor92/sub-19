@@ -51,27 +51,40 @@ module.exports = async function handler(req, res) {
   // Osnovna sanitizacija dužine — sprečava slučajno ogroman payload da ne pojede kvotu.
   const cap = (s, n) => (typeof s === 'string' ? s.slice(0, n) : s);
 
+  const isEasy = session.tag === 'lako' || session.tag === 'lr';
   const sys = `Ti si trkački trener koji analizira JEDAN konkretan trening za trkača koji se sprema za 5K ispod 19:00 (Jack Daniels VDOT metodologija). Dobijaš plan sesije i šta je ostvareno.
 
 Piši na srpskom jeziku, JEDNOSTAVNIM i tačnim rečenicama. Proveri gramatiku — piši kratke, jasne rečenice umesto dugačkih. Ne koristi reči za koje nisi siguran. 4-7 rečenica, direktno.
 
-Strogo se drži ovoga:
+${isEasy ? `OVO JE LAGANO/DUGO TRČANJE (E-zona po Danielsu). Cilj lakog trčanja je nizak, stabilan puls i oporavak — NE brzina. Analiziraj ovako:
+- DA LI JE LAKO STVARNO BILO LAKO: na lakom trčanju puls treba da bude nizak i stabilan. Ako puls kroz kilometre RASTE značajno (kardiovaskularni drift na laganom tempu) ili je generalno visok, trkač je trčao PREBRZO — lako trčanje nije bilo lako. To je česta greška. Reci to jasno ako vidiš.
+- KADENCA: na laganom tempu kadenca često padne (šljapkanje). Ako je kadenca ispod 85, predloži da je podigne ka 85-90 čak i pri sporom trčanju — kraći, brži koraci štede zglobove. Ako je 85+, pohvali.
+- DRIFT PO KILOMETRIMA: reci konkretno kako se puls kretao (npr. "prvi km 140, poslednji 155, porast od 15" ). Mali drift (par otkucaja) je normalan. Veliki drift na laganom tempu = trčao prebrzo ili loš oporavak/hidratacija.` : `OVO JE KVALITETNO TRČANJE (intervali/tempo).
 - Uporedi ostvaren tempo radnog dela sa planiranim — reci da li je brže/sporije/tačno, i za koliko sekundi po km.
-- AKO SU DATI PODACI PO KRUGU (puls, kadenca, snaga po svakom radnom intervalu): ovo je najvažniji deo. Analiziraj da li puls RASTE kroz intervale pri istom tempu — to je kardiovaskularni drift i znači da izdržljivost na tom tempu treba graditi (ne brzina). Reci konkretno koliko je puls porastao (npr. "prvi interval 162, poslednji 174"). Komentariši kadencu: 88-95 je zdravo za taj tempo, ispod 85 bi značilo predugačak korak. Ako je snaga (watts) data i opada kroz intervale uz isti tempo, to je dodatni znak zamora. Ako je puls stabilan kroz intervale — to je znak dobre izdržljivosti, pohvali to konkretno.
-- AKO NEMA podataka po krugu, koristi prosečan puls i RPE kao grubu ocenu napora, ali reci da bez podataka po krugu ne možeš proceniti drift.
-- NIKAD ne izmišljaj konkretne buduće tempove, VDOT brojeve ili preporuke za sledeći trening — to računa aplikacija. Tvoj posao je da protumačiš OVAJ trening.
-- Ako neki podatak izgleda beznačajan (npr. par stotina metara viška od zaokruživanja WU/CD), ne troši rečenice na njega.
+- AKO SU DATI PODACI PO KRUGU (puls, kadenca, snaga po radnom intervalu): analiziraj da li puls RASTE kroz intervale pri istom tempu — kardiovaskularni drift, znači izdržljivost na tom tempu treba graditi (ne brzina). Reci konkretno koliko je porastao. Kadenca 88-95 je zdravo, ispod 85 predugačak korak. Snaga (watts) koja opada uz isti tempo = zamor. Stabilan puls = dobra izdržljivost, pohvali.`}
+
+Zajedničko pravilo:
+- NIKAD ne izmišljaj konkretne buduće tempove, VDOT brojeve ili preporuke za sledeći trening — to računa aplikacija. Tumačiš OVAJ trening.
+- Ako neki podatak izgleda beznačajan (par stotina metara viška od zaokruživanja), ne troši rečenice na njega.
 - Bez generičkih motivacionih fraza. Svaka rečenica mora da prati iz brojeva.`;
 
+  const fmtPace = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
   let lapsBlock = '';
   if (Array.isArray(entered.laps) && entered.laps.length) {
-    const fmtPace = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
     lapsBlock = '\n\nPODACI PO RADNOM KRUGU (najvažnije za analizu):\n' +
       entered.laps.map(L =>
         `Interval ${L.i}: tempo ${fmtPace(L.paceSec)}/km` +
         (L.avgHr!=null?`, puls ${L.avgHr}`:'') +
         (L.cadence!=null?`, kadenca ${L.cadence}`:'') +
         (L.watts!=null?`, snaga ${L.watts}W`:'')
+      ).join('\n');
+  }
+  if (Array.isArray(entered.perKm) && entered.perKm.length) {
+    lapsBlock += '\n\nPODACI PO KILOMETRU (za drift i kadencu kroz celo trčanje):\n' +
+      entered.perKm.map(K =>
+        `km ${K.km}: tempo ${K.paceSec!=null?fmtPace(K.paceSec):'—'}/km` +
+        (K.hr!=null?`, puls ${K.hr}`:'') +
+        (K.cadence!=null?`, kadenca ${K.cadence}`:'')
       ).join('\n');
   }
 
