@@ -42,7 +42,13 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const { session, entered } = body || {};
+  const { session, entered, trend } = body || {};
+
+  // TREND ANALIZA — poseban tip zahteva (svi treninzi od početka plana)
+  if (trend) {
+    return handleTrend(trend, res);
+  }
+
   if (!session || !entered) {
     res.status(400).json({ error: 'Nedostaju podaci o sesiji (session/entered).' });
     return;
@@ -134,6 +140,70 @@ Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}${lapsBlock}`;
       return;
     }
 
+    res.status(200).json({ text });
+  } catch (e) {
+    res.status(500).json({ error: 'Greška na serveru.', detail: String(e).slice(0, 200) });
+  }
+}
+
+/* ===== TREND ANALIZA — svi treninzi kroz vreme ===== */
+async function handleTrend(trend, res) {
+  const fmtPace = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  const treninzi = Array.isArray(trend.treninzi) ? trend.treninzi : [];
+  const vdot = Array.isArray(trend.vdot) ? trend.vdot : [];
+
+  const sys = `Ti si trkački trener koji analizira TREND FORME kroz ceo trenažni period za trkača koji cilja 5K ispod 19:00 (Jack Daniels VDOT). Dobijaš sažetak svih treninga i istoriju VDOT-a.
+
+Piši na srpskom, jednostavnim tačnim rečenicama. 6-9 rečenica. Fokus je na TRENDU, ne na pojedinačnom treningu.
+
+Analiziraj:
+- DA LI SE DRIFT PULSA SMANJUJE kroz vreme (za kvalitetne treninge sa driftom): ako je pre 3 nedelje drift bio +15 a sad +8 pri istom tempu, to je JAK znak da izdržljivost raste — kaži to konkretno sa brojevima. Ako drift raste ili stoji, to je znak da napredak stagnira.
+- DA LI VDOT RASTE ka cilju: uporedi prve i poslednje vrednosti, reci koliko je porastao i da li tempo napretka vodi ka cilju.
+- KADENCA kroz vreme: da li se popravlja ili pada.
+- DA LI SU LAKA TRČANJA ostajala lagana (nizak drift) ili je trkač konstantno preforsirao.
+- Konkretna, iskrena procena: ide li ka sub-19 ili ne, i šta je najveći ograničavajući faktor sada.
+
+NIKAD ne izmišljaj tačne buduće tempove ni VDOT projekcije sa lažnom preciznošću. Ako trend nije jasan ili ima premalo podataka, reci to pošteno. Bez praznih motivacionih fraza — svaka rečenica prati iz brojeva.`;
+
+  let msg = `CILJ: VDOT ${trend.cilj} (5K ispod 19:00). POČETNI VDOT: ${trend.baseline}.\n\nISTORIJA VDOT-a (hronološki):\n`;
+  msg += vdot.length ? vdot.map(v => `${v.date}: ${v.vdot}`).join('\n') : '(nema zabeleženih VDOT vrednosti)';
+  msg += `\n\nSVI ODRAĐENI TRENINZI (hronološki):\n`;
+  msg += treninzi.map(t => {
+    let s = `${t.date} [${t.tag}]`;
+    if (t.tempo != null) s += `, tempo ${fmtPace(t.tempo)}/km`;
+    if (t.drift != null) s += `, drift ${t.driftStart}→${t.driftEnd} (${t.drift>=0?'+':''}${t.drift})`;
+    if (t.cadence != null) s += `, kadenca ${t.cadence}`;
+    if (t.avgHr != null) s += `, pros. puls ${t.avgHr}`;
+    return s;
+  }).join('\n');
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 4000,
+        system: sys,
+        messages: [{ role: 'user', content: msg }]
+      })
+    });
+    if (!r.ok) {
+      const errText = await r.text();
+      res.status(502).json({ error: 'LLM poziv nije uspeo.', detail: errText.slice(0, 300) });
+      return;
+    }
+    const data = await r.json();
+    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+    if (!text) {
+      const sr = data.stop_reason || 'nepoznato';
+      res.status(502).json({ error: 'LLM je vratio prazan odgovor (stop_reason: '+sr+').' });
+      return;
+    }
     res.status(200).json({ text });
   } catch (e) {
     res.status(500).json({ error: 'Greška na serveru.', detail: String(e).slice(0, 200) });
