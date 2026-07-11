@@ -311,7 +311,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='19'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='20'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -672,7 +672,7 @@ function baselineVdot(){ /* početni VDOT iz PB (20:37) — referenca */
 }
 /* Zabeleži VDOT iz kvalitetne sesije. Vraća {vdot, prev, delta, dir} ili null.
    Prigušenje: jedna sesija je šum — pomeramo VDOT samo delimično ka izmerenom. */
-function recordVdot(predId, paceSec){
+function recordVdot(predId, paceSec, dateOverride){
   const r=PRED.find(x=>x.id===predId);
   if(!r||!paceSec)return null;
   const measured=Math.round(vdotFromQuality(paceSec,r.q)*10)/10;
@@ -680,7 +680,7 @@ function recordVdot(predId, paceSec){
   /* prigušenje 40%: pomeri 40% puta ka izmerenom (jedna sesija ne pomera VDOT skroz) */
   const smoothed=Math.round((prev+(measured-prev)*0.4)*10)/10;
   const delta=Math.round((smoothed-prev)*10)/10;
-  const entry={id:predId, ts:TODAY, measured, vdot:smoothed, prev, delta};
+  const entry={id:predId, ts:dateOverride||TODAY, measured, vdot:smoothed, prev, delta};
   S.vdotLog=S.vdotLog||[];
   /* ako već postoji unos za ovu sesiju, zameni ga (ne dupliraj) */
   const ix=S.vdotLog.findIndex(e=>e.id===predId);
@@ -1446,7 +1446,7 @@ function trendSummary(){
   const out=[];
   DATED.forEach(d=>{
     const l=S.log[d.id]; if(!l||l.status!=='done')return;
-    const row={date:l.ts||d.date, tag:d.tag};
+    const row={date:l.runDate||l.ts||d.date, tag:d.tag};
     if(Array.isArray(l.laps)&&l.laps.length){
       const hrs=l.laps.map(x=>x.avgHr).filter(x=>x!=null);
       const cads=l.laps.map(x=>x.cadence).filter(x=>x!=null);
@@ -1592,6 +1592,7 @@ async function stravaSync(manual){
       if(!d||d.rest||d.km==null)continue;           /* samo trkački dani plana */
       const a=pickClosest(byDate[date],d.km);        /* 2 trčanja isti dan → bliže planu */
       const l=S.log[d.id]||(S.log[d.id]={});
+      l.runDate=date; /* pravi datum trčanja iz Strave — NE dira se ručnim izmenama, koristi ga trend */
       if(!l.lock){                                   /* ručna korekcija ima trajnu prednost */
         l.status='done';
         l.km=Math.round(a.distance/10)/100;
@@ -1613,7 +1614,7 @@ async function stravaSync(manual){
               const totT=segs.reduce((s,x)=>s+x.paceSec*x.distM/1000,0);
               const totD=segs.reduce((s,x)=>s+x.distM,0);
               const t=Math.round(totT/(totD/1000));
-              if(t){S.pred[rowId]=t;recordVdot(rowId,t);props++;}
+              if(t){S.pred[rowId]=t;recordVdot(rowId,t,date);props++;}
               if(S.log[d.id]) S.log[d.id].laps=segs;
             } else {
               /* FALLBACK 1: po-km presek iz istih streamova (kontinuiran kvalitetni
@@ -1626,7 +1627,7 @@ async function stravaSync(manual){
               try{
                 const laps=await stApi('/activities/'+a.id+'/laps');
                 const t=workLapsTempo(laps,QS[d.id]);
-                if(t){S.pred[rowId]=t;recordVdot(rowId,t);props++;}
+                if(t){S.pred[rowId]=t;recordVdot(rowId,t,date);props++;}
               }catch(e){}
             }
           }catch(e){}
