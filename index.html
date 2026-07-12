@@ -311,7 +311,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='20'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='21'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -688,6 +688,24 @@ function recordVdot(predId, paceSec, dateOverride){
   S.vdotLog.push(entry);
   return {vdot:smoothed, prev, delta, dir: delta>0.05?'up':delta<-0.05?'down':'flat', measured};
 }
+/* Uskladi datume VDOT istorije sa PRAVIM datumima trčanja (runDate iz Strave).
+   VDOT unosi nastali pre v20 nose datum sinhronizacije umesto datuma trčanja,
+   a sync ih ne prepravlja (preskače već povučene treninge radi štednje kvote).
+   Ovo ih ispravi direktno: id sesije -> dan u planu -> runDate. Idempotentno. */
+function fixVdotDates(){
+  if(!Array.isArray(S.vdotLog)||!S.vdotLog.length)return false;
+  const p2d={};
+  DATED.forEach(d=>{ predRowsFor(d).forEach(pid=>{ if(!(pid in p2d))p2d[pid]=d.id; }); });
+  let changed=false;
+  S.vdotLog.forEach(e=>{
+    const did=p2d[e.id]; if(!did)return;
+    const l=S.log[did]; if(!l)return;
+    const real=l.runDate||null;
+    if(real&&e.ts!==real){ e.ts=real; changed=true; }
+  });
+  if(changed) S.vdotLog.sort((a,b)=>a.ts<b.ts?-1:a.ts>b.ts?1:0);
+  return changed;
+}
 function backupDue(today){
   const base=S.ui.lastBackup||S.ui.firstRun;
   if(!base)return false;
@@ -1038,7 +1056,7 @@ function bindForm(root,d){
       const v=parseTimeStr(inp.value);
       if(inp.value.trim()===''){ delete S.pred[pid]; delete S.predLock[pid];
         const ix=(S.vdotLog||[]).findIndex(e=>e.id===pid); if(ix>=0)S.vdotLog.splice(ix,1);
-      } else if(v){ S.pred[pid]=v; S.predLock[pid]=true; recordVdot(pid,v); }
+      } else if(v){ S.pred[pid]=v; S.predLock[pid]=true; const dl=S.log[d.id]; recordVdot(pid,v,(dl&&(dl.runDate||dl.ts))||d.date); }
       else return;
       save();
       const out=g.querySelector(`[data-wout="${pid}"]`);
@@ -1642,6 +1660,7 @@ async function stravaSync(manual){
         }catch(e){}
       }
     }
+    fixVdotDates(); /* uskladi VDOT datume sa pravim datumima trčanja */
     S.strava.lastSync=Date.now();save();
     renderHeader();PAGES[ACTIVE]();
     if(manual)alert('Sinhronizacija gotova.\nAžurirano trčanja: '+imp+'\nUpisano tempa u Predikciju: '+props);
@@ -1673,6 +1692,7 @@ function handleOAuthReturn(){
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>setPage(b.dataset.pg));
 $('#btn-gear').onclick=openSettings;
 $('#backdrop').onclick=closeSheet;
+if(fixVdotDates())save(); /* jednokratna popravka VDOT datuma iz postojećih runDate */
 renderHeader();
 setPage('danas');
 handleOAuthReturn();
