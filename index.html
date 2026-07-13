@@ -310,8 +310,8 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 <script>
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
-const START='2026-06-22', RACE='2026-09-24', SCHEMA=3, LS_KEY='sub19-v1';
-const APP_VERSION='21'; /* mora se poklapati sa APP_VERSION u sw.js */
+const START='2026-06-22', RACE='2026-09-24', SCHEMA=4, LS_KEY='sub19-v1';
+const APP_VERSION='22'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -533,6 +533,7 @@ function seedState(){return {
  pred:{p1:265,p2:236},
  predLock:{},
  vdotLog:[],
+ moves:{},
  strava:null,
  ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}
 };}
@@ -545,6 +546,7 @@ function addD(s,n){const d=s2d(s);d.setDate(d.getDate()+n);return d2s(d);}
 function diffD(a,b){return Math.round((s2d(b)-s2d(a))/86400000);}
 function todayStr(){return d2s(new Date());}
 const DOW=['Pon','Uto','Sre','Čet','Pet','Sub','Ned'];
+function dowOf(s){return DOW[(s2d(s).getDay()+6)%7];} /* naziv dana IZ DATUMA — ispravno i posle zamene dana (d.dow ostaje izvorna pozicija, ne prati swap) */
 const DOWL=['ponedeljak','utorak','sreda','četvrtak','petak','subota','nedelja'];
 const MES=['januara','februara','marta','aprila','maja','juna','jula','avgusta','septembra','oktobra','novembra','decembra'];
 function fmtD(s){const d=s2d(s);return pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.';}
@@ -591,12 +593,54 @@ function vdotFromQuality(paceSec,qKm){ return vdotFrom5k(riegel(paceSec,qKm)); }
 
 /* ============ IZVEDENE STRUKTURE PLANA ============ */
 const BY_ID={},BY_DATE={},DATED=[];
-PLAN.forEach(w=>{w.days.forEach(d=>{
-  d.week=w;
-  if(!d.test){d.date=addD(w.start,d.dow);BY_DATE[d.date]=d;DATED.push(d);}
-  BY_ID[d.id]=d;
-});});
-DATED.sort((a,b)=>a.date<b.date?-1:1);
+/* Gradi/prepravlja BY_DATE i DATED prema TRENUTNOM S.moves (zamena dana).
+   d.origDate = nepromenljiva izvorna pozicija iz plana (postavlja se JEDNOM).
+   d.date = efektivni datum (original, osim ako je dan pomeren preko S.moves).
+   POZIV: (a) jednom odmah posle učitavanja S (S mora postojati — vidi ispod),
+   (b) posle svakog swapDays(), (c) posle undoWeekMoves(). Zbog toga što ovo
+   MUTIRA d.date na istom objektu, sav ostali kod (sync, kartice, kalendar)
+   automatski vidi efektivni raspored bez ijedne dodatne izmene. */
+function rebuildDateIndex(){
+  for(const k in BY_DATE) delete BY_DATE[k];
+  DATED.length=0;
+  PLAN.forEach(w=>{w.days.forEach(d=>{
+    d.week=w;
+    BY_ID[d.id]=d;
+    if(!d.test){
+      if(!d.origDate) d.origDate=addD(w.start,d.dow);
+      d.date=(S.moves&&S.moves[d.id])||d.origDate;
+      BY_DATE[d.date]=d; DATED.push(d);
+    }
+  });});
+  DATED.sort((a,b)=>a.date<b.date?-1:1);
+}
+/* Zamena dva dana unutar ISTE nedelje. Odbija: nepostojeći/test dan, različite
+   nedelje, ili ako je BILO KOJI od dva dana već odrađen (istorija se ne diraj).
+   Ako se dan vrati na svoju izvornu poziciju, brišemo ga iz S.moves (drži mapu
+   čistom — dvostruki swap A↔B pa opet A↔B ostavlja S.moves prazan). */
+function swapDays(idA,idB){
+  const a=BY_ID[idA], b=BY_ID[idB];
+  if(!a||!b||a.test||b.test) return {ok:false,err:'nepostojeći dan'};
+  if(a.week!==b.week) return {ok:false,err:'van iste nedelje'};
+  const done=id=>S.log[id]&&S.log[id].status==='done';
+  if(done(idA)||done(idB)) return {ok:false,err:'odrađen dan se ne pomera'};
+  const dA=a.date, dB=b.date;
+  S.moves=S.moves||{};
+  if(dB===a.origDate) delete S.moves[idA]; else S.moves[idA]=dB;
+  if(dA===b.origDate) delete S.moves[idB]; else S.moves[idB]=dA;
+  rebuildDateIndex(); save();
+  return {ok:true};
+}
+/* Vraća SVE dane jedne nedelje na izvorni raspored iz plana (briše njihove
+   S.moves unose). Pojedinačni undo jednog dana bi ostavio nekonzistentan par,
+   zato je undo uvek na nivou cele nedelje. */
+function undoWeekMoves(w){
+  if(!S.moves)return false;
+  let changed=false;
+  w.days.forEach(d=>{ if(!d.test && S.moves[d.id]!=null){ delete S.moves[d.id]; changed=true; } });
+  if(changed){ rebuildDateIndex(); save(); }
+  return changed;
+}
 const TOTAL_TR=PLAN.reduce((n,w)=>n+w.days.filter(d=>!d.rest).length,0); /* dinamički; 72 posle dodatih laganih dana u N10/N11 */
 function weekPlanKm(w){return w.days.reduce((s,d)=>s+(d.km||0),0);}
 function weekOf(dateStr){for(const w of PLAN){const end=addD(w.start,6);if(dateStr>=w.start&&dateStr<=end)return w;}return null;}
@@ -611,7 +655,8 @@ function migrate(o){
   o.v=o.v||1;
   if(o.v<2){o.strava=o.strava||null;o.predLock=o.predLock||{};o.v=2;} /* v1→v2: Strava sync polja — postojeći unosi se NIKAD ne brišu */
   if(o.v<3){o.vdotLog=o.vdotLog||[];o.v=3;} /* v2→v3: VDOT istorija forme — postojeći unosi netaknuti */
-  o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.vdotLog=o.vdotLog||[];o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
+  if(o.v<4){o.moves=o.moves||{};o.v=4;} /* v3→v4: zamena dana (swap) — postojeći raspored netaknut (prazna mapa = sve na originalnim mestima) */
+  o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
   o.v=SCHEMA;
   return o;
 }
@@ -892,6 +937,7 @@ function workLapsDetail(laps,specs,hrByLap){
 
 /* ============ DOM SLOJ ============ */
 let S=loadState();save();
+rebuildDateIndex(); /* prvo punjenje BY_ID/BY_DATE/DATED — sad kad S.moves postoji */
 const TODAY=todayStr();
 const $=s=>document.querySelector(s);
 const PAGES={danas:renderDanas,plan:renderPlan,prog:renderProg,koleno:renderKnee,pred:renderPred};
@@ -950,7 +996,7 @@ function renderDanas(){
 }
 function nextLine(from){
   const nx=DATED.find(x=>x.date>from&&!x.rest);
-  return nx?`<div class="note-src">Sledeći trening: ${DOW[nx.dow]} ${fmtD(nx.date)} — ${tagName(nx.tag)}${nx.km?' · '+fmtKm(nx.km)+' km':''}</div>`:'';
+  return nx?`<div class="note-src">Sledeći trening: ${dowOf(nx.date)} ${fmtD(nx.date)} — ${tagName(nx.tag)}${nx.km?' · '+fmtKm(nx.km)+' km':''}</div>`:'';
 }
 function dayCard(d){
   const s=stFor(d.id);
@@ -959,7 +1005,7 @@ function dayCard(d){
       <span class="tag ${d.tag}">${tagName(d.tag)}</span>
       <span class="st ${s}">${s==='done'?'Odrađen':s==='skip'?'Preskočen':'Predstoji'}</span>
     </div>
-    <div style="font-size:.72rem;color:var(--txt2);font-weight:700;margin-bottom:8px">N${d.week.w}${d.date?' · '+DOW[d.dow]+' '+fmtD(d.date):' · opciono, kraj nedelje'}</div>
+    <div style="font-size:.72rem;color:var(--txt2);font-weight:700;margin-bottom:8px">N${d.week.w}${d.date?' · '+dowOf(d.date)+' '+fmtD(d.date):' · opciono, kraj nedelje'}</div>
     <div class="desc">${esc(d.desc)}</div>`;
   c+=`<div class="meta">${d.km!=null?`<div><b>${fmtKm(d.km)} km</b>plan</div>`:''}<div><b>${fmtKm(weekPlanKm(d.week))} km</b>nedelja N${d.week.w}</div><div><b>${weekDone(d.week)}/${weekCountable(d.week)}</b>treninga</div></div>`;
   if(s==='pending')c+=`<div class="btnrow"><button class="btn" data-a="done">Završi trening</button><button class="btn ghost" data-a="skip">Preskoči</button></div>`;
@@ -1153,7 +1199,7 @@ function renderPlan(){
       const title=d.rest?(d.desc||'Odmor'):d.desc.split('\n')[0];
       const t=d.rest?'div':'button';
       h+=`<${t} class="day"${d.rest?'':` data-d="${d.id}"`}>
-        <div class="day-d">${d.test?'TEST':DOW[d.dow]}${d.date?`<small>${fmtD(d.date)}</small>`:''}</div>
+        <div class="day-d">${d.test?'TEST':dowOf(d.date)}${d.date?`<small>${fmtD(d.date)}</small>`:''}</div>
         <div class="day-t" style="${d.rest?'color:var(--txt3)':''}">${esc(title)}</div>
         <div class="day-km">${d.km!=null?fmtKm(d.km):''}</div>
         ${d.rest?'<span class="st rest">—</span>':`<span class="st ${s}">${s==='done'?'✓':s==='skip'?'⏭':'○'}</span>`}
@@ -1182,10 +1228,41 @@ function closeSheet(){
   document.body.style.overflow='';
   PAGES[ACTIVE]();renderHeader();
 }
+/* UI za zamenu dana — dugme + select kandidata iz ISTE nedelje. Kandidat mora:
+   ne biti test dan, ne biti isti dan, ne biti već odrađen. Ako je TRENUTNI dan
+   već odrađen, kandidata nema (odrađeni dan se ne pomera ni kao izvor ni kao
+   cilj) — isti disabled prikaz kao i za "nema kandidata" slučaj. */
+function swapBlockHTML(d){
+  if(d.test) return '';
+  const doneId=id=>S.log[id]&&S.log[id].status==='done';
+  const cands=doneId(d.id)?[]:d.week.days.filter(x=>!x.test&&x.id!==d.id&&!doneId(x.id));
+  let h=`<div class="f-field full" style="margin-top:4px"><label>Raspored</label>`;
+  if(!cands.length){
+    h+=`<button type="button" class="btn ghost sm" disabled style="width:100%">⇄ Zameni sa drugim danom</button>
+    <div style="font-size:.72rem;color:var(--txt3);margin-top:6px">Nema dostupnih dana — odrađeni dani se ne pomeraju.</div>`;
+  } else {
+    h+=`<button type="button" id="swap-toggle" class="btn ghost sm" style="width:100%">⇄ Zameni sa drugim danom</button>
+    <div id="swap-panel" style="display:none;margin-top:10px">
+      <select id="swap-target">${cands.map(x=>
+        `<option value="${x.id}">${dowOf(x.date)} ${fmtD(x.date)} — ${x.rest?'Odmor':esc(tagName(x.tag))}${x.km?' · '+fmtKm(x.km)+' km':''}</option>`
+      ).join('')}</select>
+      <button type="button" id="swap-confirm" class="btn sm" style="width:100%;margin-top:8px">Zameni</button>
+      <div id="swap-err" style="font-size:.72rem;color:var(--red);margin-top:6px;display:none"></div>
+    </div>`;
+  }
+  if(S.moves&&S.moves[d.id]!=null){
+    h+=`<div style="font-size:.72rem;color:var(--txt3);margin-top:8px">Pomeren sa ${fmtDY(d.origDate)}.</div>`;
+  }
+  if(d.week.days.some(x=>!x.test&&S.moves&&S.moves[x.id]!=null)){
+    h+=`<button type="button" id="swap-undo-week" class="btn ghost sm" style="width:100%;margin-top:8px">Vrati raspored nedelje na plan</button>`;
+  }
+  h+=`</div>`;
+  return h;
+}
 function openDaySheet(id){
   const d=BY_ID[id],s=stFor(id);
   openSheet(`
-    <div class="sh-t">N${d.week.w} · ${d.test?'TEST (opciono)':DOW[d.dow]+' '+fmtDY(d.date)}</div>
+    <div class="sh-t">N${d.week.w} · ${d.test?'TEST (opciono)':dowOf(d.date)+' '+fmtDY(d.date)}</div>
     <div class="sh-s">${tagName(d.tag)}${d.km!=null?' · plan '+fmtKm(d.km)+' km':''}</div>
     <div class="desc" style="font-size:.85rem">${esc(d.desc)}</div>
     <div class="seg" id="seg">
@@ -1194,6 +1271,7 @@ function openDaySheet(id){
       <button data-s="skip" class="c-skip ${s==='skip'?'on':''}">Preskočen</button>
     </div>
     ${formHTML(d)}
+    ${swapBlockHTML(d)}
     ${S.log[id]?`<div class="btnrow"><button class="btn danger" id="del-log">Obriši unos</button></div>`:''}
     <div class="note-src">Sve izmene se čuvaju automatski.</div>
   `);
@@ -1214,6 +1292,28 @@ function openDaySheet(id){
     S.knee=S.knee.filter(k=>k.src!==id);
     S.kg=S.kg.filter(k=>k.src!==id);
     save();closeSheet();
+  };
+  const swapToggle=sh.querySelector('#swap-toggle');
+  if(swapToggle)swapToggle.onclick=()=>{
+    const p=sh.querySelector('#swap-panel');
+    p.style.display=p.style.display==='none'?'block':'none';
+  };
+  const swapConfirm=sh.querySelector('#swap-confirm');
+  if(swapConfirm)swapConfirm.onclick=()=>{
+    const tgt=sh.querySelector('#swap-target').value;
+    const res=swapDays(id,tgt);
+    if(res.ok){ closeSheet(); }
+    else {
+      const e=sh.querySelector('#swap-err');
+      e.textContent='Zamena nije uspela: '+(res.err||'nepoznata greška');
+      e.style.display='block';
+    }
+  };
+  const swapUndo=sh.querySelector('#swap-undo-week');
+  if(swapUndo)swapUndo.onclick=()=>{
+    if(!confirm('Vratiti sve pomerene dane ove nedelje na originalni raspored iz plana?'))return;
+    undoWeekMoves(d.week);
+    closeSheet();
   };
 }
 
@@ -1554,7 +1654,7 @@ function importBackup(file){
       if(!st){alert('Fajl nije prepoznat kao SUB-19 backup.');return;}
       if(!confirm(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${Object.keys(st.log).length} trening-unosa, ${st.knee.length} koleno, ${st.kg.length} težina.\n\nNastaviti?`))return;
       st.strava=st.strava||S.strava; /* konekcija se ne gubi uvozom */
-      S=st;save();closeSheet();
+      S=st;rebuildDateIndex();save();closeSheet();
     }catch(e){alert('Greška pri čitanju fajla: '+e.message);}
   };
   fr.readAsText(file);
