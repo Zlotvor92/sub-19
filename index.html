@@ -311,7 +311,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=4, LS_KEY='sub19-v1';
-const APP_VERSION='22'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='23'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -1194,7 +1194,10 @@ function renderPlan(){
       </button>
       <div class="wk-bar"><i style="width:${ct?Math.round(dn/ct*100):0}%"></i></div>
       <div class="wk-body">`;
-    w.days.forEach(d=>{
+    w.days.slice().sort((a,b)=>{
+      const da=a.date||'9999-99-99', db=b.date||'9999-99-99';
+      return da<db?-1:da>db?1:0;
+    }).forEach(d=>{
       const s=d.rest?null:stFor(d.id);
       const title=d.rest?(d.desc||'Odmor'):d.desc.split('\n')[0];
       const t=d.rest?'div':'button';
