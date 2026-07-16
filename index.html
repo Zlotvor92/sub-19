@@ -120,6 +120,9 @@ main{padding:14px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .day-t{flex:1;font-size:.85rem;line-height:1.35}
 .day-t small{display:block;color:var(--txt3);font-size:.72rem;margin-top:2px}
 .day-km{font-size:.8rem;color:var(--txt2);font-variant-numeric:tabular-nums;min-width:44px;text-align:right}
+.swap-list{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card2)}
+.day.swap-sel{background:rgba(255,45,85,.14);box-shadow:inset 3px 0 0 var(--pink)}
+.day.swap-lock{opacity:.4;pointer-events:none}
 
 /* forma */
 .f-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
@@ -311,7 +314,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=4, LS_KEY='sub19-v1';
-const APP_VERSION='23'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='24'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
@@ -1193,7 +1196,8 @@ function renderPlan(){
         <div class="wk-km"><b>${fmtKm(rk)} / ${fmtKm(pk)} km</b>${dn}/${ct} tren.</div>
       </button>
       <div class="wk-bar"><i style="width:${ct?Math.round(dn/ct*100):0}%"></i></div>
-      <div class="wk-body">`;
+      <div class="wk-body">
+      <button class="day" data-sw="${w.w}" style="justify-content:center;color:var(--pink);font-weight:800;font-size:.82rem;min-height:44px">⇄ Pomeri treninge</button>`;
     w.days.slice().sort((a,b)=>{
       const da=a.date||'9999-99-99', db=b.date||'9999-99-99';
       return da<db?-1:da>db?1:0;
@@ -1217,6 +1221,7 @@ function renderPlan(){
     b.closest('.wk').classList.toggle('open');
   });
   el.querySelectorAll('.day[data-d]').forEach(b=>b.onclick=()=>openDaySheet(b.dataset.d));
+  el.querySelectorAll('.day[data-sw]').forEach(b=>b.onclick=()=>openWeekSwap(+b.dataset.sw));
 }
 
 /* ---------- SHEET ---------- */
@@ -1231,36 +1236,62 @@ function closeSheet(){
   document.body.style.overflow='';
   PAGES[ACTIVE]();renderHeader();
 }
-/* UI za zamenu dana — dugme + select kandidata iz ISTE nedelje. Kandidat mora:
-   ne biti test dan, ne biti isti dan, ne biti već odrađen. Ako je TRENUTNI dan
-   već odrađen, kandidata nema (odrađeni dan se ne pomera ni kao izvor ni kao
-   cilj) — isti disabled prikaz kao i za "nema kandidata" slučaj. */
-function swapBlockHTML(d){
-  if(d.test) return '';
+/* ---------- POMERANJE TRENINGA (centralni ekran, cela nedelja odjednom) ----------
+   Dodir prvog dana ga izabere, dodir drugog im zameni mesta. Odrađeni dani su
+   zaključani (istorija se ne pomera). NE koristi <select> — CSS mu skida native
+   strelicu (appearance:none), pa nema vidljivog znaka da je dodirljiv. */
+let SWAP_SEL=null, SWAP_ERR='';
+function weekSwapHTML(w){
   const doneId=id=>S.log[id]&&S.log[id].status==='done';
-  const cands=doneId(d.id)?[]:d.week.days.filter(x=>!x.test&&x.id!==d.id&&!doneId(x.id));
-  let h=`<div class="f-field full" style="margin-top:4px"><label>Raspored</label>`;
-  if(!cands.length){
-    h+=`<button type="button" class="btn ghost sm" disabled style="width:100%">⇄ Zameni sa drugim danom</button>
-    <div style="font-size:.72rem;color:var(--txt3);margin-top:6px">Nema dostupnih dana — odrađeni dani se ne pomeraju.</div>`;
-  } else {
-    h+=`<button type="button" id="swap-toggle" class="btn ghost sm" style="width:100%">⇄ Zameni sa drugim danom</button>
-    <div id="swap-panel" style="display:none;margin-top:10px">
-      <select id="swap-target">${cands.map(x=>
-        `<option value="${x.id}">${dowOf(x.date)} ${fmtD(x.date)} — ${x.rest?'Odmor':esc(tagName(x.tag))}${x.km?' · '+fmtKm(x.km)+' km':''}</option>`
-      ).join('')}</select>
-      <button type="button" id="swap-confirm" class="btn sm" style="width:100%;margin-top:8px">Zameni</button>
-      <div id="swap-err" style="font-size:.72rem;color:var(--red);margin-top:6px;display:none"></div>
-    </div>`;
-  }
-  if(S.moves&&S.moves[d.id]!=null){
-    h+=`<div style="font-size:.72rem;color:var(--txt3);margin-top:8px">Pomeren sa ${fmtDY(d.origDate)}.</div>`;
-  }
-  if(d.week.days.some(x=>!x.test&&S.moves&&S.moves[x.id]!=null)){
-    h+=`<button type="button" id="swap-undo-week" class="btn ghost sm" style="width:100%;margin-top:8px">Vrati raspored nedelje na plan</button>`;
-  }
+  const days=w.days.filter(x=>!x.test).slice().sort((a,b)=>{
+    const da=a.date||'9999-99-99', db=b.date||'9999-99-99';
+    return da<db?-1:da>db?1:0;
+  });
+  const moved=w.days.some(x=>!x.test&&S.moves&&S.moves[x.id]!=null);
+  const selD=SWAP_SEL?BY_ID[SWAP_SEL]:null;
+  let h=`<div class="sh-t">Pomeranje treninga · N${w.w}</div>
+    <div class="sh-s">${selD?`Izabrano: ${dowOf(selD.date)} ${fmtD(selD.date)} — dodirni dan sa kojim menja mesto`:'Dodirni dan koji hoćeš da pomeriš'}</div>`;
+  if(SWAP_ERR)h+=`<div style="font-size:.75rem;color:var(--red);margin-bottom:10px">${esc(SWAP_ERR)}</div>`;
+  h+=`<div class="swap-list">`;
+  days.forEach(d=>{
+    const locked=doneId(d.id), sel=SWAP_SEL===d.id, tag=locked?'div':'button';
+    const title=d.rest?(d.desc||'Odmor'):d.desc.split('\n')[0];
+    h+=`<${tag} class="day${sel?' swap-sel':''}${locked?' swap-lock':''}"${locked?'':` data-swd="${d.id}"`}>
+      <div class="day-d">${dowOf(d.date)}<small>${fmtD(d.date)}</small></div>
+      <div class="day-t" style="${d.rest?'color:var(--txt3)':''}">${esc(title)}${S.moves&&S.moves[d.id]!=null?`<small>pomeren sa ${fmtD(d.origDate)}</small>`:''}</div>
+      <div class="day-km">${d.km!=null?fmtKm(d.km):''}</div>
+      <span class="st ${locked?'done':sel?'skip':'pending'}">${locked?'✓':sel?'⇄':'○'}</span>
+    </${tag}>`;
+  });
   h+=`</div>`;
+  if(moved)h+=`<div class="btnrow" style="margin-top:14px"><button class="btn ghost" id="swap-undo">Vrati raspored nedelje na plan</button></div>`;
+  h+=`<div class="note-src">Odrađeni dani (✓) se ne pomeraju — istorija ostaje netaknuta. Zamena je moguća unutar iste nedelje.</div>`;
   return h;
+}
+function openWeekSwap(wNum){
+  const w=PLAN.find(x=>x.w===wNum);
+  if(!w)return;
+  SWAP_SEL=null;SWAP_ERR='';
+  renderWeekSwap(w);
+}
+function renderWeekSwap(w){
+  openSheet(weekSwapHTML(w));
+  SWAP_ERR=''; /* greška se prikaže jednom, pa se čisti pri sledećem crtanju */
+  const sh=$('#sheet');
+  sh.querySelectorAll('[data-swd]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.swd;
+    if(!SWAP_SEL){SWAP_SEL=id;renderWeekSwap(w);return;}      /* prvi dodir: izbor */
+    if(SWAP_SEL===id){SWAP_SEL=null;renderWeekSwap(w);return;} /* isti dan: poništi izbor */
+    const res=swapDays(SWAP_SEL,id);                           /* drugi dodir: zamena */
+    SWAP_SEL=null;
+    if(!res.ok)SWAP_ERR='Zamena nije uspela: '+(res.err||'nepoznata greška');
+    renderWeekSwap(w);
+  });
+  const undo=sh.querySelector('#swap-undo');
+  if(undo)undo.onclick=()=>{
+    if(!confirm('Vratiti sve pomerene dane ove nedelje na originalni raspored iz plana?'))return;
+    undoWeekMoves(w);SWAP_SEL=null;renderWeekSwap(w);
+  };
 }
 function openDaySheet(id){
   const d=BY_ID[id],s=stFor(id);
@@ -1274,7 +1305,6 @@ function openDaySheet(id){
       <button data-s="skip" class="c-skip ${s==='skip'?'on':''}">Preskočen</button>
     </div>
     ${formHTML(d)}
-    ${swapBlockHTML(d)}
     ${S.log[id]?`<div class="btnrow"><button class="btn danger" id="del-log">Obriši unos</button></div>`:''}
     <div class="note-src">Sve izmene se čuvaju automatski.</div>
   `);
@@ -1295,28 +1325,6 @@ function openDaySheet(id){
     S.knee=S.knee.filter(k=>k.src!==id);
     S.kg=S.kg.filter(k=>k.src!==id);
     save();closeSheet();
-  };
-  const swapToggle=sh.querySelector('#swap-toggle');
-  if(swapToggle)swapToggle.onclick=()=>{
-    const p=sh.querySelector('#swap-panel');
-    p.style.display=p.style.display==='none'?'block':'none';
-  };
-  const swapConfirm=sh.querySelector('#swap-confirm');
-  if(swapConfirm)swapConfirm.onclick=()=>{
-    const tgt=sh.querySelector('#swap-target').value;
-    const res=swapDays(id,tgt);
-    if(res.ok){ closeSheet(); }
-    else {
-      const e=sh.querySelector('#swap-err');
-      e.textContent='Zamena nije uspela: '+(res.err||'nepoznata greška');
-      e.style.display='block';
-    }
-  };
-  const swapUndo=sh.querySelector('#swap-undo-week');
-  if(swapUndo)swapUndo.onclick=()=>{
-    if(!confirm('Vratiti sve pomerene dane ove nedelje na originalni raspored iz plana?'))return;
-    undoWeekMoves(d.week);
-    closeSheet();
   };
 }
 
