@@ -58,7 +58,7 @@ module.exports = async function handler(req, res) {
   const cap = (s, n) => (typeof s === 'string' ? s.slice(0, n) : s);
 
   const isEasy = session.tag === 'lako' || session.tag === 'lr';
-  const sys = `Ti si trkački trener koji analizira JEDAN konkretan trening za trkača koji se sprema za 5K ispod 19:00 (Jack Daniels VDOT metodologija). Dobijaš plan sesije i šta je ostvareno.
+  const sys = `Ti si trkački trener koji analizira JEDAN konkretan trening za trkača koji se sprema za 5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20) (Jack Daniels VDOT metodologija). Dobijaš plan sesije i šta je ostvareno.
 
 Piši na srpskom jeziku, JEDNOSTAVNIM i tačnim rečenicama. Proveri gramatiku — piši kratke, jasne rečenice umesto dugačkih. Ne koristi reči za koje nisi siguran. 4-7 rečenica, direktno.
 
@@ -153,7 +153,7 @@ async function handleTrend(trend, res) {
   const treninzi = Array.isArray(trend.treninzi) ? trend.treninzi : [];
   const vdot = Array.isArray(trend.vdot) ? trend.vdot : [];
 
-  const sys = `Ti si trkački trener koji analizira TREND FORME kroz ceo trenažni period za trkača koji cilja 5K ispod 19:00 (Jack Daniels VDOT). Dobijaš sažetak svih treninga i istoriju VDOT-a.
+  const sys = `Ti si trkački trener koji analizira TREND FORME kroz ceo trenažni period za trkača koji cilja 5K oko 19:30 (siguran sub-20) (Jack Daniels VDOT). Dobijaš sažetak svih treninga i istoriju VDOT-a.
 
 Piši na srpskom, jednostavnim tačnim rečenicama. 6-9 rečenica. Fokus je na TRENDU, ne na pojedinačnom treningu.
 
@@ -162,11 +162,11 @@ Analiziraj:
 - DA LI VDOT RASTE ka cilju: uporedi prve i poslednje vrednosti, reci koliko je porastao i da li tempo napretka vodi ka cilju.
 - KADENCA kroz vreme: da li se popravlja ili pada.
 - DA LI SU LAKA TRČANJA ostajala lagana (nizak drift) ili je trkač konstantno preforsirao.
-- Konkretna, iskrena procena: ide li ka sub-19 ili ne, i šta je najveći ograničavajući faktor sada.
+- Konkretna, iskrena procena: ide li ka cilju 19:30 ili ne, i šta je najveći ograničavajući faktor sada.
 
 NIKAD ne izmišljaj tačne buduće tempove ni VDOT projekcije sa lažnom preciznošću. Ako trend nije jasan ili ima premalo podataka, reci to pošteno. Bez praznih motivacionih fraza — svaka rečenica prati iz brojeva.`;
 
-  let msg = `CILJ: VDOT ${trend.cilj} (5K ispod 19:00). POČETNI VDOT: ${trend.baseline}.\n\nISTORIJA VDOT-a (hronološki):\n`;
+  let msg = `CILJ: VDOT ${trend.cilj} (5K ~19:30). POČETNI VDOT: ${trend.baseline}.\n\nISTORIJA VDOT-a (hronološki):\n`;
   msg += vdot.length ? vdot.map(v => `${v.date}: ${v.vdot}`).join('\n') : '(nema zabeleženih VDOT vrednosti)';
   msg += `\n\nSVI ODRAĐENI TRENINZI (hronološki):\n`;
   msg += treninzi.map(t => {
