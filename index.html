@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>SUB-19 · Trkački plan</title>
+<title>SUB-20 · Trkački plan</title>
 <meta name="theme-color" content="#0A0A0F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SUB-19">
+<meta name="apple-mobile-web-app-title" content="SUB-20">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
@@ -268,7 +268,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 
 <header>
   <div>
-    <div class="h-title">SUB<span>-19</span></div>
+    <div class="h-title">SUB<span>-20</span></div>
     <div class="h-sub" id="h-sub"></div>
   </div>
   <button class="h-gear" id="btn-gear" aria-label="Podešavanja">
@@ -314,10 +314,10 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=5, LS_KEY='sub19-v1';
-const APP_VERSION='25'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='26'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
-const CILJ='18:50–19:00', CILJ_TEMPO='3:46–3:48 /km';
+const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
 
 const PLAN=[
 {w:1,start:'2026-06-22',focus:'TEMPO nedelja',days:[
@@ -360,27 +360,27 @@ const PLAN=[
 {w:4,start:'2026-07-13',focus:'Int + Tempo',days:[
  {id:'n4d1',dow:0,tag:'lako',km:9,desc:`9 km lako  +  SNAGA — Plavi blok (kao N3)`},
  {id:'n4d2',dow:1,rest:true},
- {id:'n4d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 5×1000 m @ 3:55/km (2 min hod) + 1 km CD`},
+ {id:'n4d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 5×1000 m @ 4:00/km (2 min hod) + 1 km CD`},
  {id:'n4d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (kao N3)`},
- {id:'n4d5',dow:4,tag:'tempo',km:10,desc:`Tempo (broken) — 2 km WU + 3×2 km @ ~4:16/km (75 s float) + 2 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
+ {id:'n4d5',dow:4,tag:'tempo',km:10,desc:`Tempo (broken) — 2 km WU + 3×2 km @ ~4:28/km (75 s float) + 2 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
  {id:'n4d6',dow:5,rest:true},
  {id:'n4d7',dow:6,tag:'lr',km:10,desc:`10 km LR  ·  23% nedelje`}
 ]},
 {w:5,start:'2026-07-20',focus:'Int + Tempo',days:[
  {id:'n5d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA — Plavi blok (AKO potpuno bez bola, uvedi Lateral Step Down 3×8 TT)`},
  {id:'n5d2',dow:1,rest:true},
- {id:'n5d3',dow:2,tag:'int',km:10,desc:`Intervali — 2.5 km WU + 6×1000 m @ 3:54/km (2 min hod) + 1.5 km CD`},
+ {id:'n5d3',dow:2,tag:'int',km:10,desc:`Intervali — 2.5 km WU + 5×1000 m @ 3:58/km (2 min hod) + 2.5 km CD`},
  {id:'n5d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (RFE Split Squat 3×8 TT; Side Plank Hip Abduction 3×10)`},
- {id:'n5d5',dow:4,tag:'tempo',km:11,desc:`Tempo (broken, duže reps) — 2.5 km WU + 2×3 km @ ~4:15/km (90 s float) + 2.5 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
+ {id:'n5d5',dow:4,tag:'tempo',km:11,desc:`Tempo (broken, duže reps) — 2.5 km WU + 2×3 km @ ~4:25/km (90 s float) + 2.5 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
  {id:'n5d6',dow:5,rest:true},
  {id:'n5d7',dow:6,tag:'lr',km:11,desc:`11 km LR  ·  24% nedelje`}
 ]},
 {w:6,start:'2026-07-27',focus:'Int + Tempo',days:[
  {id:'n6d1',dow:0,tag:'lako',km:11,desc:`11 km lako  +  SNAGA — Plavi blok (kao N5)`},
  {id:'n6d2',dow:1,rest:true},
- {id:'n6d3',dow:2,tag:'int',km:11,desc:`Intervali — 1.5 km WU + 5×1000 m @ 3:52/km (2.5 min hod) + 1 km CD`},
+ {id:'n6d3',dow:2,tag:'int',km:11,desc:`Intervali — 1.5 km WU + 5×1000 m @ 3:55/km (2.5 min hod) + 1 km CD`},
  {id:'n6d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (kao N5)`},
- {id:'n6d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 3 km WU + 4 km NEPREKIDNO @ ~4:15/km + 3 km CD  ·  prva neprekidna; plafon HR 170, prekini ako HR probije pre kilometara  ← lagano ako koleno reaguje`},
+ {id:'n6d5',dow:4,tag:'tempo',km:10,desc:`Tempo (broken, duži blok) — 2 km WU + 4 km + 2 km @ ~4:25/km (75 s float) + 2 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
  {id:'n6d6',dow:5,rest:true},
  {id:'n6d7',dow:6,tag:'lr',km:12,desc:`12 km LR  ·  25% nedelje`},
  {id:'n6t',test:true,tag:'test',km:null,desc:`Kontrolisani 3–5 km ili parkrun — rekalibriši tempo Faze 3 prema rezultatu (kraj N6, opciono)`}
@@ -402,41 +402,41 @@ const PLAN=[
 • Single Leg Deadlift: 3×10 (16 kg)
 • Single Leg Deficit Heel Raise: 3×10 (8 kg)`},
  {id:'n8d2',dow:1,rest:true},
- {id:'n8d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 6×800 m @ 3:50/km (2 min hod) + 1 km CD`},
+ {id:'n8d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 6×1000 m @ 3:55/km (2 min hod) + 1 km CD`},
  {id:'n8d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (Faza 3):
 • Drop Jump: 3×6 (uvodi se TEK sada, samo ako je koleno čisto)
 • Explosive Step Up: 3×6
 • RFE Split Squat (Goblet): 3×8 (8 kg)
 • Side Plank Hip Abduction: 3×12 po strani
 • Seated Deficit Heel Raise: 3×12 (16 kg)`},
- {id:'n8d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 2 km WU + 5 km @ 4:12/km + 2 km CD  ← 4 km lako ako je sreda bila teška`},
+ {id:'n8d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 2 km WU + 6 km NEPREKIDNO @ ~4:25/km + 2 km CD  ·  prvi vezani 6 km  ← 4 km lako ako je sreda bila teška`},
  {id:'n8d6',dow:5,rest:true},
  {id:'n8d7',dow:6,tag:'lr',km:12,desc:`12 km LR  ·  24% nedelje`}
 ]},
 {w:9,start:'2026-08-17',focus:'Int + Tempo',days:[
  {id:'n9d1',dow:0,tag:'lako',km:11,desc:`11 km lako  +  SNAGA — Plavi blok (Faza 3, kao N8)`},
  {id:'n9d2',dow:1,rest:true},
- {id:'n9d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 5×1000 m @ 3:50/km (2 min hod) + 1 km CD`},
+ {id:'n9d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 6×1000 m @ 3:52/km (2 min hod) + 1 km CD`},
  {id:'n9d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (Faza 3, kao N8)`},
- {id:'n9d5',dow:4,tag:'tempo',km:11,desc:`Tempo — 2 km WU + 6 km @ 4:10/km + 2 km CD`},
+ {id:'n9d5',dow:4,tag:'tempo',km:11,desc:`Tempo — 2 km WU + 6 km @ 4:22/km + 2 km CD`},
  {id:'n9d6',dow:5,rest:true},
  {id:'n9d7',dow:6,tag:'lr',km:14,desc:`14 km LR  ·  24% nedelje`}
 ]},
 {w:10,start:'2026-08-24',focus:'Jak blok 1 · Int + Tempo',days:[
  {id:'n10d1',dow:0,tag:'lako',km:11,desc:`11 km lako  +  SNAGA — Plavi blok (kao N8)`},
  {id:'n10d2',dow:1,tag:'lako',km:4,desc:`4 km lako (Z2) — dodatni aerobni obim (progresija N10: 46 → 50 km)`},
- {id:'n10d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 5×1000 m @ 3:48/km (2.5 min hod) + 1 km CD`},
+ {id:'n10d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 6×1000 m @ 3:50/km (2.5 min hod) + 1 km CD  ·  kapija: kad ovo držiš, prelazimo na duže repove`},
  {id:'n10d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (kao N8)`},
- {id:'n10d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 2 km WU + 6 km @ 4:08/km + 2 km CD`},
+ {id:'n10d5',dow:4,tag:'tempo',km:10,desc:`🔥 TIME TRIAL — 3 km WU + 3 km TT (kontrolisan maks. napor, cilj ~3:53–3:55/km) + 4 km CD  ·  kontrola forme i finalna kalibracija`},
  {id:'n10d6',dow:5,rest:true},
  {id:'n10d7',dow:6,tag:'lr',km:15,desc:`15 km LR  ·  24% nedelje`}
 ]},
 {w:11,start:'2026-08-31',focus:'Jak blok 2 · Int + Tempo',days:[
  {id:'n11d1',dow:0,tag:'lako',km:11,desc:`11 km lako  +  SNAGA — Plavi blok (držimo opterećenje visokim)`},
  {id:'n11d2',dow:1,tag:'lako',km:8,desc:`8 km lako (Z2) — dodatni aerobni obim (progresija N11: 46 → 54 km, vrhunac pred taper)`},
- {id:'n11d3',dow:2,tag:'int',km:11,desc:`Intervali — 1.5 km WU + 2×2 km @ 3:50/km (2 min hod) + 3×600 m @ 3:44/km (90 s hod) + 1 km CD`},
+ {id:'n11d3',dow:2,tag:'int',km:11,desc:`Intervali — 1.5 km WU + 4×1500 m @ 3:50/km (2.5 min hod) + 2 km CD`},
  {id:'n11d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (držimo opterećenje visokim)`},
- {id:'n11d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 2 km WU + 6 km @ 4:08/km + 2 km CD`},
+ {id:'n11d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 2 km WU + 6 km @ 4:18/km + 2 km CD`},
  {id:'n11d6',dow:5,rest:true},
  {id:'n11d7',dow:6,tag:'lr',km:14,desc:`14 km LR  ·  24% nedelje`},
  {id:'n11t',test:true,tag:'test',km:null,desc:`Kontrolisani napor — poslednja provera tempa pred taper (kraj N11, opciono)`}
@@ -444,26 +444,26 @@ const PLAN=[
 {w:12,start:'2026-09-07',focus:'Specifični ritam',days:[
  {id:'n12d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA — Plavi blok (poslednji težak trening snage)`},
  {id:'n12d2',dow:1,rest:true},
- {id:'n12d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 4×1200 m @ 3:46–3:48/km (2.5 min hod) + 1 km CD`},
+ {id:'n12d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 3×2000 m @ 3:50/km (2.5 min hod) + 1.5 km CD`},
  {id:'n12d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (poslednja teška pliometrija)`},
- {id:'n12d5',dow:4,tag:'tempo',km:9,desc:`Trkački ritam — 2 km WU + 4 km neprekidno @ 3:48/km (ciljni) + 3 km CD  ·  proba sub-19 ritma`},
+ {id:'n12d5',dow:4,tag:'tempo',km:9,desc:`Trkački ritam — 2 km WU + 4 km neprekidno @ 3:54–3:58/km (ciljni) + 3 km CD  ·  proba ciljnog ritma 19:30`},
  {id:'n12d6',dow:5,rest:true},
  {id:'n12d7',dow:6,tag:'lr',km:13,desc:`13 km LR  ·  24% nedelje`}
 ]},
 {w:13,start:'2026-09-14',focus:'Taper — serije na 2, eksplozivno i daleko od otkaza',days:[
  {id:'n13d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA TAPER (Plavi): Diagonal Pogo 2×30 s, Box Jump 2×4, SL Deadlift 2×6 (8 kg) — bez doskoka pod opterećenjem`},
  {id:'n13d2',dow:1,rest:true},
- {id:'n13d3',dow:2,tag:'int',km:5,desc:`1.5 km WU + 5×400 m @ 3:46/km (90 s hod) + 1 km CD`},
+ {id:'n13d3',dow:2,tag:'int',km:5,desc:`1.5 km WU + 5×400 m @ 3:50/km (90 s hod) + 1 km CD`},
  {id:'n13d4',dow:3,tag:'snaga',km:null,desc:`Odmor  +  SNAGA TAPER (Crveni): Drop Jump 2×4, Explosive Step Up 2×4, RFE Split Squat 2×6 TT`},
- {id:'n13d5',dow:4,tag:'tempo',km:8,desc:`2 km WU + 3 km tempo @ 4:08/km + 3 km CD`},
+ {id:'n13d5',dow:4,tag:'tempo',km:8,desc:`2 km WU + 3 km tempo @ 4:15/km + 3 km CD`},
  {id:'n13d6',dow:5,rest:true},
  {id:'n13d7',dow:6,tag:'lr',km:7,desc:`7 km LR lagano  ·  23% nedelje`}
 ]},
 {w:14,start:'2026-09-21',focus:'TRKAČKA NEDELJA — bez opterećenja za noge u teretani',days:[
  {id:'n14d1',dow:0,tag:'lako',km:3,desc:`3 km shakeout (skroz lagano) + samo lagani core (bez nogu)`},
- {id:'n14d2',dow:1,tag:'int',km:3.7,desc:`1.5 km WU + 6×200 m @ 3:44/km (200 m hod) + 1 km CD (aktivacija)`},
+ {id:'n14d2',dow:1,tag:'int',km:3.7,desc:`1.5 km WU + 6×200 m @ 3:48/km (200 m hod) + 1 km CD (aktivacija)`},
  {id:'n14d3',dow:2,tag:'lako',km:2,desc:`2 km shakeout + lagana mobilnost celog tela`},
- {id:'n14d4',dow:3,tag:'trka',km:5,desc:`🏁 TRKA 5 km — Cilj: 18:50–19:00 / Ritam: 3:46–3:48/km`}
+ {id:'n14d4',dow:3,tag:'trka',km:5,desc:`🏁 TRKA 5 km — Cilj: 19:20–19:30 / Ritam: 3:52–3:54/km`}
 ]}
 ];
 
@@ -474,26 +474,26 @@ const PRED=[
  {id:'p2b',w:2, l:'N2 · Tempo',     q:4,   pt:260, p5k:1318},
  {id:'p3', w:3, l:'N3 · Tempo',     q:5,   pt:258, p5k:1290},
  {id:'p3b',w:3, l:'N3 · Intervali', q:5,   pt:236, p5k:1180},
- {id:'p4', w:4, l:'N4 · Intervali', q:5,   pt:235, p5k:1175},
- {id:'p4b',w:4, l:'N4 · Tempo',     q:6,   pt:256, p5k:1266},
- {id:'p5', w:5, l:'N5 · Tempo',     q:6,   pt:255, p5k:1261.128},
- {id:'p5b',w:5, l:'N5 · Intervali', q:6,   pt:234, p5k:1157},
- {id:'p6', w:6, l:'N6 · Intervali', q:5,   pt:232, p5k:1160},
- {id:'p7', w:6, l:'N6 · Tempo',     q:4,   pt:255, p5k:1292.185},
- {id:'p8', w:8, l:'N8 · Intervali', q:4.8, pt:230, p5k:1152.82},
- {id:'p9', w:8, l:'N8 · Tempo',     q:5,   pt:252, p5k:1260},
- {id:'p10',w:9, l:'N9 · Intervali', q:5,   pt:230, p5k:1150},
- {id:'p11',w:9, l:'N9 · Tempo',     q:6,   pt:250, p5k:1236.4},
- {id:'p12',w:10,l:'N10 · Intervali',q:5,   pt:228, p5k:1140},
- {id:'p13',w:10,l:'N10 · Tempo',    q:6,   pt:248, p5k:1226.509},
- {id:'p14',w:11,l:'N11 · Intervali',q:5.8, pt:230, p5k:1139.804},
- {id:'p15',w:11,l:'N11 · Tempo',    q:6,   pt:248, p5k:1226.509},
- {id:'p16',w:11,l:'N11 · Tempo',    q:5,   pt:228, p5k:1140},
- {id:'p17',w:12,l:'N12 · Intervali',q:4.8, pt:227, p5k:1137.783},
- {id:'p18',w:12,l:'N12 · Ritam',    q:4,   pt:228, p5k:1155.366},
- {id:'p19',w:13,l:'N13 · Intervali',q:2,   pt:226, p5k:1193.864},
- {id:'p20',w:13,l:'N13 · Tempo',    q:3,   pt:248, p5k:1278.594},
- {id:'p21',w:14,l:'N14 · Intervali',q:1.2, pt:224, p5k:1220.128}
+ {id:'p4', w:4, l:'N4 · Intervali', q:5,   pt:240, p5k:1200},
+ {id:'p4b',w:4, l:'N4 · Tempo',     q:6,   pt:268, p5k:1325.421},
+ {id:'p5', w:5, l:'N5 · Tempo',     q:6,   pt:265, p5k:1310.584},
+ {id:'p5b',w:5, l:'N5 · Intervali', q:5,   pt:238, p5k:1190},
+ {id:'p6', w:6, l:'N6 · Intervali', q:5,   pt:235, p5k:1175},
+ {id:'p7', w:6, l:'N6 · Tempo',     q:6,   pt:265, p5k:1310.584},
+ {id:'p8', w:8, l:'N8 · Intervali', q:6,   pt:235, p5k:1162.216},
+ {id:'p9', w:8, l:'N8 · Tempo',     q:6,   pt:265, p5k:1310.584},
+ {id:'p10',w:9, l:'N9 · Intervali', q:6,   pt:232, p5k:1147.38},
+ {id:'p11',w:9, l:'N9 · Tempo',     q:6,   pt:262, p5k:1295.748},
+ {id:'p12',w:10,l:'N10 · Intervali',q:6,   pt:230, p5k:1137.488},
+ {id:'p13',w:10,l:'N10 · Tempo',    q:3,   pt:233, p5k:1201.26},
+ {id:'p14',w:11,l:'N11 · Intervali',q:6,   pt:230, p5k:1137.488},
+ {id:'p15',w:11,l:'N11 · Tempo',    q:6,   pt:258, p5k:1275.965},
+ {id:'p16',w:11,l:'N11 · Tempo',    q:5,   pt:234, p5k:1170},
+ {id:'p17',w:12,l:'N12 · Intervali',q:6,   pt:230, p5k:1137.488},
+ {id:'p18',w:12,l:'N12 · Ritam',    q:4,   pt:236, p5k:1195.905},
+ {id:'p19',w:13,l:'N13 · Intervali',q:2,   pt:230, p5k:1214.994},
+ {id:'p20',w:13,l:'N13 · Tempo',    q:3,   pt:255, p5k:1314.683},
+ {id:'p21',w:14,l:'N14 · Intervali',q:1.2, pt:228, p5k:1241.916}
 ];
 
 /* Weight Tracker — ciljna linija iz sheeta */
@@ -583,7 +583,7 @@ function riegel(tempoSec,q){return tempoSec*q*Math.pow(5/q,1.06);}
 /* ===== Daniels-Gilbert VDOT (za rekalibraciju forme) =====
    VDOT se računa iz Riegel-ekvivalent-5K-vremena kvalitetne sesije,
    konzistentno sa predikcijom. Plan NE prati čist VDOT→zona mapiranje
-   (tempo je namerno postavljen ka cilju sub-19 ≈ VDOT 53, ne ka trenutnom
+   (plan gradi od trenutne forme ~20:40 ka cilju 19:30 ≈ VDOT 51.1; ne ka trenutnom
    PB ≈ VDOT 48), zato zonske tempove ne izvodimo iz VDOT-a. */
 function vo2(tMin){ return 0.8+0.1894393*Math.exp(-0.012778*tMin)+0.2989558*Math.exp(-0.1932605*tMin); }
 function vdotFromRace(distM,sec){
@@ -811,8 +811,8 @@ function backupDue(today){
 /* ---- Strava: rep-distance (m) po kvalitetnim danima, za detekciju radnih lapova ---- */
 const QS={
  n1d3:[4000],n2d3:[800],n2d5:[2000],n3d3:[1000],n3d5:[2500],n4d3:[1000],n4d5:[2000],
- n5d3:[1000],n5d5:[3000],n6d3:[1000],n6d5:[4000],n8d3:[800],n8d5:[5000],n9d3:[1000],
- n9d5:[6000],n10d3:[1000],n10d5:[6000],n11d3:[2000,600],n11d5:[6000],n12d3:[1200],
+ n5d3:[1000],n5d5:[3000],n6d3:[1000],n6d5:[4000,2000],n8d3:[1000],n8d5:[6000],n9d3:[1000],
+ n9d5:[6000],n10d3:[1000],n10d5:[3000],n11d3:[1500],n11d5:[6000],n12d3:[2000],
  n12d5:[4000],n13d3:[400],n13d5:[3000],n14d2:[200]
 };
 function predRowFor(d){
@@ -1617,7 +1617,7 @@ function renderPred(){
   const el=$('#pg-pred');
   const pc=predCalc();
   const stat=x=>x?fmtClock(x.pred):'—';
-  const col=x=>x&&x.pred<1140?'var(--green)':'var(--txt)';
+  const col=x=>x&&x.pred<1170?'var(--green)':'var(--txt)';
   const cv=currentVdot(), bv=baselineVdot();
   const vdotDelta=cv!=null?Math.round((cv-bv)*10)/10:null;
   const vArrow=vdotDelta>0.05?'↑':vdotDelta<-0.05?'↓':'→';
@@ -1631,13 +1631,13 @@ function renderPred(){
       <div class="big" style="font-size:2rem;color:${vCol}">${cv!=null?cv:bv}</div>
       <div style="color:${vCol};font-weight:800">${vArrow}${vdotDelta!=null?(vdotDelta>0?' +':' ')+vdotDelta:''}</div>
     </div>
-    <div style="font-size:.75rem;color:var(--txt3);margin-top:4px">Početni VDOT (PB 20:37): ${bv} · cilj 18:50–19:00 ≈ VDOT ${Math.round(vdotFrom5k(1130)*10)/10}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
+    <div style="font-size:.75rem;color:var(--txt3);margin-top:4px">Početni VDOT (PB 20:37): ${bv} · cilj 19:20–19:30 ≈ VDOT ${Math.round(vdotFrom5k(1170)*10)/10}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
   </div>`;
   h+=`<div class="card"><div class="card-t">VDOT trend kroz vreme</div><div id="vdottrend">${chartVdotTrend()}</div>
     <button type="button" id="trend-go" class="btn-ai" style="margin-top:10px">📈 Objasni trend (AI)</button>
     <div id="trend-out" class="ai-out"></div></div>`;
-  h+=`<div class="card"><div class="card-t">Predikcija 5K kroz plan · cilj 19:00</div><div id="pchart">${chartPred(pc)}</div></div>`;
-  h+=`<div class="card" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: 18:50–19:00. Kad NAJBRŽA predikcija stabilno padne ispod 19:00 (na više sesija), matematički si spreman.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
+  h+=`<div class="card"><div class="card-t">Predikcija 5K kroz plan · cilj 19:30</div><div id="pchart">${chartPred(pc)}</div></div>`;
+  h+=`<div class="card" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: 19:20–19:30 — margina koja i na lošiji dan iznosi sub-20. Kad NAJBRŽA predikcija stabilno padne ispod 19:30 (na više sesija), matematički si spreman.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
   el.innerHTML=h;
   const tBtn=el.querySelector('#trend-go');
   if(tBtn){
@@ -1672,7 +1672,7 @@ function chartVdotTrend(){
   if(vl.length<2) return '<div style="color:var(--txt3);font-size:.8rem;padding:12px 0">Trend se prikazuje kad bude bar 2 zabeležene VDOT vrednosti. Nakupljaj kroz treninge.</div>';
   const W=340,H=150,L=32,R=8,B=126,T=10;
   const vals=vl.map(e=>e.vdot);
-  const bv=baselineVdot(), goal=Math.round(vdotFrom5k(1130)*10)/10;
+  const bv=baselineVdot(), goal=Math.round(vdotFrom5k(1170)*10)/10;
   const lo=Math.min(bv,goal,...vals)-1, hi=Math.max(bv,goal,...vals)+1;
   const X=i=>L+(vl.length===1?0:i/(vl.length-1)*(W-L-R));
   const Y=v=>B-((v-lo)/(hi-lo))*(B-T);
@@ -1716,7 +1716,7 @@ function trendSummary(){
   });
   // VDOT istorija
   const vl=(S.vdotLog||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1).map(e=>({date:e.ts,vdot:e.vdot}));
-  return {treninzi:out, vdot:vl, baseline:baselineVdot(), cilj:Math.round(vdotFrom5k(1130)*10)/10};
+  return {treninzi:out, vdot:vl, baseline:baselineVdot(), cilj:Math.round(vdotFrom5k(1170)*10)/10};
 }
 function chartPred(pc){
   const W=340,H=152,L=36,R=8,B=128,T=10;
@@ -1725,12 +1725,12 @@ function chartPred(pc){
   const Y=m=>B-(Math.max(lo,Math.min(hi,m))-lo)/(hi-lo)*(B-T);
   let g='';
   [18,19,20,21,22].forEach(v=>{g+=`<line class="gl" x1="${L}" y1="${Y(v).toFixed(1)}" x2="${W-R}" y2="${Y(v).toFixed(1)}"/><text class="ax" x="${L-4}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end">${v}:00</text>`;});
-  g+=`<line x1="${L}" y1="${Y(19).toFixed(1)}" x2="${W-R}" y2="${Y(19).toFixed(1)}" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  g+=`<line x1="${L}" y1="${Y(19.5).toFixed(1)}" x2="${W-R}" y2="${Y(19.5).toFixed(1)}" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
   g+=`<polyline fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5" points="${PRED.map((r,i)=>X(i).toFixed(1)+','+Y(r.p5k/60).toFixed(1)).join(' ')}"/>`;
   const ent=pc.rows.map((x,i)=>({p:x.pred,i})).filter(x=>x.p!=null);
   if(ent.length>1)g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2" points="${ent.map(x=>X(x.i).toFixed(1)+','+Y(x.p/60).toFixed(1)).join(' ')}"/>`;
   ent.forEach(x=>g+=`<circle cx="${X(x.i).toFixed(1)}" cy="${Y(x.p/60).toFixed(1)}" r="3.6" fill="var(--pink)"/>`);
-  g+=`<text class="ax" x="${W-R}" y="${(Y(19)-5).toFixed(1)}" text-anchor="end" fill="var(--cyan)">cilj 19:00</text>`;
+  g+=`<text class="ax" x="${W-R}" y="${(Y(19.5)-5).toFixed(1)}" text-anchor="end" fill="var(--cyan)">cilj 19:30</text>`;
   return svgW(W,H,g);
 }
 
