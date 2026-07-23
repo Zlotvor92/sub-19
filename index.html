@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='33'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='34'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -964,6 +964,43 @@ function vdotDeltaHTML(predId,paceSec){
 }
 function pickClosest(list,planKm){
   return list.reduce((b,x)=>Math.abs(x.distance/1000-planKm)<Math.abs(b.distance/1000-planKm)?x:b);
+}
+/* Strava trčanje BEZ direktnog poklapanja datuma (npr. trčao utorak umesto
+   planiranog ponedeljka) — nađe najbliži PENDING trkački dan iste nedelje sa
+   sličnom kilometražom, i pomeri plan preko POSTOJEĆEG swapDays (55 testova,
+   uvek reverzibilno preko "Vrati raspored nedelje"). Konzervativni pragovi
+   (±2 dana, km razlika ≤30%) — bolje da propusti nesiguran slučaj nego da
+   pogrešno zameni dane. Ne dira dane koji već imaju direktan par (rest se
+   preskače jer nema šta da izgubi zamenom, ali VEĆ ODRAĐEN trkački dan na
+   tom datumu ostaje netaknut). */
+function autoRealign(byDate){
+  const DAY_WINDOW=2, KM_TOL=0.30;
+  const used=new Set();
+  let moved=0;
+  Object.keys(byDate).forEach(date=>{
+    const occupant=BY_DATE[date];
+    if(occupant && !occupant.rest && occupant.km!=null)return; /* već ima pravi trkački dan — glavna petlja to rešava */
+    if(occupant && occupant.test)return;                        /* test dan se ne pomera */
+    const orphanWeek=weekOf(date);
+    if(!orphanWeek)return;                                      /* van opsega plana — nema gde da se pomeri */
+    const runKm=Math.max(...byDate[date].map(a=>a.distance/1000));
+    let best=null,bestDiff=Infinity;
+    DATED.forEach(d=>{
+      if(d.rest||d.km==null)return;
+      if(d.week!==orphanWeek)return;                            /* swapDays zahteva istu nedelju */
+      if(used.has(d.id))return;
+      if(stFor(d.id)==='done')return;                           /* odrađeno se ne dira */
+      const dd=Math.abs(diffD(d.date,date));
+      if(dd===0||dd>DAY_WINDOW)return;
+      if(Math.abs(d.km-runKm)/d.km>KM_TOL)return;
+      if(dd<bestDiff){bestDiff=dd;best=d;}
+    });
+    if(best && occupant){
+      const res=swapDays(best.id,occupant.id);
+      if(res.ok){used.add(best.id);moved++;}
+    }
+  });
+  return moved;
 }
 /* Zajednička selekcija radnih lapova (varijanta C sa zaštitom) — koriste je i
    workLapsTempo (za VDOT) i workLapsDetail (za po-krug analizu). Radni intervali
@@ -3108,6 +3145,7 @@ async function stravaSync(manual){
     const runs=acts.filter(a=>a.type==='Run'||a.sport_type==='Run');
     const byDate={};
     runs.forEach(a=>{const dt=String(a.start_date_local||'').slice(0,10);if(dt)(byDate[dt]=byDate[dt]||[]).push(a);});
+    const moved=autoRealign(byDate); /* pomeri plan PRE glavne petlje da odmah nađe par */
     let imp=0,props=0;
     for(const date of Object.keys(byDate)){
       const d=BY_DATE[date];
@@ -3168,7 +3206,7 @@ async function stravaSync(manual){
     fixVdotDates(); /* uskladi VDOT datume sa pravim datumima trčanja */
     S.strava.lastSync=Date.now();save();
     renderHeader();PAGES[ACTIVE]();
-    if(manual)alert('Sinhronizacija gotova.\nAžurirano trčanja: '+imp+'\nUpisano tempa u Predikciju: '+props);
+    if(manual)alert('Sinhronizacija gotova.\nAžurirano trčanja: '+imp+'\nUpisano tempa u Predikciju: '+props+(moved?'\nAutomatski pomereno (drugi dan od plana): '+moved:''));
   }catch(e){
     if(manual)alert('Sync nije uspeo: '+e.message);
   }
