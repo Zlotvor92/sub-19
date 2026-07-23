@@ -354,10 +354,22 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='44'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='46'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
+/* Opis cilja AKTIVNOG plana — koristi se i u AI promptu i u Progres UI-ju.
+   BEZ ovoga su oba mesta imala TVOJ cilj (5K ~19:30) tvrdo ukucan, čak i dok
+   je generisan plan (npr. maraton za druga) aktivan — AI bi sudio tuđ
+   maratonski tempo kroz prizmu tvog 5K cilja. Za tvoj plan vraća IDENTIČAN
+   tekst kao pre (nulta izmena za tebe), za generisan plan gradi iz meta. */
+function goalCtxText(){
+  if(!S.genPlan) return '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)';
+  const m=(S.genPlan.meta)||{};
+  const name=m.raceName||'trka';
+  const t=m.goalSec||m.predictedSec;
+  return t!=null ? `${name} — procenjeno vreme ~${fmtClock(t)} (na osnovu unetog PB-a)` : name;
+}
 
 const PLAN=[
 {w:1,start:'2026-06-22',focus:'TEMPO nedelja',days:[
@@ -791,7 +803,7 @@ function undoWeekMoves(w){
 }
 let TOTAL_TR=PLAN.reduce((n,w)=>n+w.days.filter(d=>!d.rest).length,0); /* dinamički; 72 posle dodatih laganih dana u N10/N11 */
 function weekPlanKm(w){return w.days.reduce((s,d)=>s+(d.km||0),0);}
-function weekOf(dateStr){for(const w of PLAN){const end=addD(w.start,6);if(dateStr>=w.start&&dateStr<=end)return w;}return null;}
+function weekOf(dateStr){for(const w of CUR_PLAN){const end=addD(w.start,6);if(dateStr>=w.start&&dateStr<=end)return w;}return null;}
 function tagName(t){return{lako:'Lako',tempo:'Tempo',int:'Intervali',lr:'Dugo (LR)',snaga:'Snaga',odmor:'Odmor',trka:'TRKA',test:'Test'}[t]||t;}
 /* Specifičan tip sesije kad postoji (Fartlek/Repeticije/Maratonski tempo/...
    — samo generisani planovi imaju d.session.kind), inače generička oznaka
@@ -1367,6 +1379,7 @@ function bindForm(root,d){
       const r=mainPid?CUR_PRED.find(x=>x.id===mainPid):null;
       const payload={
         session:{ desc:d.desc||'', planPace: r?fmtTempo(effectivePace(d,r)):'—', q: r?r.q:null, tag:d.tag },
+        goalCtx: goalCtxText(),
         entered:{
           workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
           km:l.km??null, time:l.sec?fmtClock(l.sec):null,
@@ -3156,8 +3169,9 @@ function renderPred(){
   h+=`<div class="card"><div class="card-t">VDOT trend kroz vreme</div><div id="vdottrend">${chartVdotTrend()}</div>
     <button type="button" id="trend-go" class="btn-ai" style="margin-top:10px">📈 Objasni trend (AI)</button>
     <div id="trend-out" class="ai-out"></div></div>`;
-  h+=`<div class="card"><div class="card-t">Predikcija 5K kroz plan · cilj 19:30</div><div id="pchart">${chartPred(pc)}</div></div>`;
-  h+=`<div class="card" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: 19:20–19:30 — margina koja i na lošiji dan iznosi sub-20. Kad NAJBRŽA predikcija stabilno padne ispod 19:30 (na više sesija), matematički si spreman.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
+  const predRaceName=S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K';
+  h+=`<div class="card"><div class="card-t">Predikcija ${predRaceName} kroz plan</div><div id="pchart">${chartPred(pc)}</div></div>`;
+  h+=`<div class="card" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?goalCtxText():'19:20–19:30 — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
   el.innerHTML=h;
   const tBtn=el.querySelector('#trend-go');
   if(tBtn){
@@ -3175,7 +3189,7 @@ function renderPred(){
         const resp=await fetch('/api/analyze',{
           method:'POST',
           headers:{'Content-Type':'application/json','x-app-secret':ANALYZE_SECRET},
-          body:JSON.stringify({trend:sum})
+          body:JSON.stringify({trend:sum, goalCtx: goalCtxText()})
         });
         let data;
         try{ data=await resp.json(); }catch{ out.className='ai-out err'; out.textContent='Server nije vratio ispravan odgovor (HTTP '+resp.status+').'; return; }
