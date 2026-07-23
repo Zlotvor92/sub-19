@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='39'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='40'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -932,14 +932,14 @@ function predRowFor(d){
   const c=CUR_PRED.filter(r=>{
     if(r.w!==d.week.w)return false;
     const l=r.l.toLowerCase();
-    return d.tag==='int'?(l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')):(l.includes('tempo')||l.includes('ritam')||l.includes('progresivno'));
+    return d.tag==='int'?(l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')||l.includes('piramida')):(l.includes('tempo')||l.includes('ritam')||l.includes('progresivno'));
   });
   return c.length?c[0].id:null;
 }
 /* sve predikcijske sesije za dan (dan tag određuje tip: int->Intervali, tempo->Tempo/Ritam) */
 function predRowsFor(d){
   if(d.tag!=='int'&&d.tag!=='tempo')return [];
-  const rows=CUR_PRED.filter(r=>{ if(r.w!==d.week.w)return false; const l=r.l.toLowerCase(); return d.tag==='int'?(l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')):(l.includes('tempo')||l.includes('ritam')||l.includes('progresivno')); }).map(r=>r.id);
+  const rows=CUR_PRED.filter(r=>{ if(r.w!==d.week.w)return false; const l=r.l.toLowerCase(); return d.tag==='int'?(l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')||l.includes('piramida')):(l.includes('tempo')||l.includes('ritam')||l.includes('progresivno')); }).map(r=>r.id);
   if(!rows.length)return [];
   /* SUDAR: izmenom tipa u nedelji može nastati VIŠE dana istog kvaliteta, a
      predikcijski red je jedan. Bez ovoga bi dva dana pisala u isti VDOT unos.
@@ -1720,9 +1720,17 @@ function assess(pb, weeks, intensity, goalSec, raceDistM){
 
 /* ---------- struktura sesija ---------- */
 function pickReps(workKm, wkIdx, weeks){
-  /* rani deo ciklusa: duži oporavci/kraći radovi → kasnije duži radovi; meni iz etalona */
-  const menu = wkIdx/weeks < 0.25 ? [800,1000] : wkIdx/weeks < 0.7 ? [1000] : [1000,1200];
-  const rep = menu[Math.min(menu.length-1, Math.floor((wkIdx/weeks)*menu.length))];
+  /* Širi meni (bio samo 3 vrednosti ukupno — do 12 UZASTOPNIH identičnih
+     nedelja na dužim planovima, empirijski potvrđeno testom). Isti pravac
+     progresije (kraće rano, duže kasno), ali finiji koraci kroz sredinu
+     umesto jedne ravne vrednosti na 45% ciklusa. */
+  const phase = wkIdx/weeks;
+  const menu = phase<0.20 ? [800,1000]
+             : phase<0.40 ? [1000,800]
+             : phase<0.55 ? [1000,1200]
+             : phase<0.75 ? [1200,1000]
+             : [1000,1200];
+  const rep = menu[wkIdx % menu.length];
   const n = Math.max(3, Math.round(workKm*1000/rep));
   return { rep, n };
 }
@@ -1837,6 +1845,20 @@ function mkIntervals(dow,w,weeks,vol,pI){
    rada, plafon min(8km, 5% nedelje) — sve citirano (Daniels). Uvodi se
    PRVO u ciklusu (Faza II "Early Quality"), fazi se izbacuje kad I postaje
    prioritet (Faza III — potvrđeno pretragom pre implementacije). */
+/* Piramida (400-800-1200-800-400m) — periodična varijacija u I-fazi.
+   Istraživanje (pyramid/ladder workout literatura): fiziološki NE prevazilazi
+   uniformne repove (isti trenažni cilj), glavna, dobro potvrđena vrednost je
+   PROTIV MONOTONIJE na dugim ciklusima ("your mind quits before your legs
+   do") — zato periodična, ne zamena uniformnih repova. Ista I-pace kroz sve
+   noge (pojednostavljeno nasuprot "konstantan napor" pristupu). Ukupno:
+   3.6km rada, nezavisno skalirano (kao i fartlek — postojeći obrazac). */
+function sessPyramid(dow,wuKm,reps,paceSec,restSec,cdKm,kind){
+  const session={type:'pyramid',kind:kind||'Piramida',wuKm,reps,paceSec,restSec,cdKm,overrides:{}};
+  return {dow,tag:'int',km:sessKm(session),desc:sessDesc(session),session};
+}
+function mkPyramid(dow,pI){
+  return sessPyramid(dow,1.5,[400,800,1200,800,400],pI,90,1);
+}
 function mkRepetition(dow,vol,pR){
   const total=Math.min(vol*0.05, 8);
   const repM=300; /* tipično 200-300m (izvori: "400m hard/jog", "200m ili 300m") */
@@ -1900,9 +1922,15 @@ function mkRacePace(dow,vol,racePace,label){
 function buildQuality(w,weeks,slotRole,effQ,vol,pI,pT,pE,isTaper1,dow,racePace,qMix,pM,pR,raceName){
   const phase=w/weeks;
   const fartlekEvery = qMix==='threshold' ? 4 : 3; /* HM: manje VO2max-varijeteta, više praga — Daniels: HM finalna faza = isključivo threshold */
+  /* Piramida: periodična varijacija u I-fazi (v. mkPyramid) — period 8,
+     pomereno na ostatak 5 da NE kolidira ni sa deload (w%4===0) ni sa
+     fartlek pomerajem ispod (w%4===2) — nijedna vrednost w%8===5 (5,13,21,29)
+     nije deljiva sa 4, pa se nikad ne poklopi ni sa jednim od ta dva. */
+  const wantsPyramid = w%8===5 && phase>=0.25 && phase<0.80;
   if(effQ===1){
     if(isTaper1) return sessInt(dow,1.5,5,400,Math.max(pI,racePace),90,1);
     if(phase<0.25) return mkRepetition(dow,vol,pR); /* Faza II "Early Quality" (potvrđeno pretragom) — R pre I/T */
+    if(wantsPyramid) return mkPyramid(dow,pI);
     const mod=w%3;
     if(mod===0 && phase<0.72) return mkFartlek(dow,w,pI,pE);
     if(mod===2) return mkTempoCont(dow,vol,pT);
@@ -1911,7 +1939,12 @@ function buildQuality(w,weeks,slotRole,effQ,vol,pI,pT,pE,isTaper1,dow,racePace,q
   if(slotRole==='q1'){
     if(isTaper1) return sessInt(dow,1.5,5,400,Math.max(pI,racePace),90,1);
     if(phase<0.25) return mkRepetition(dow,vol,pR); /* isto — već testirana rotacija netaknuta od phase>=0.25 */
-    if(w%fartlekEvery===0 && phase<0.72) return mkFartlek(dow,w,pI,pE);
+    if(wantsPyramid) return mkPyramid(dow,pI);
+    /* FIX: fartlekEvery(4 za HM)===DELOAD_EVERY(4) je pravio mrtav kod —
+       uslov se UVEK poklapao sa deload nedeljom (koja se u potpunosti
+       preskače pre nego što ovaj kod uopšte izvrši). Pomereno za +2 —
+       ista učestalost ("svake 4."), više se nikad ne poklapa sa deload-om. */
+    if((w+2)%fartlekEvery===0 && phase<0.72) return mkFartlek(dow,w,pI,pE);
     return mkIntervals(dow,w,weeks,vol,pI);
   }
   /* q2 */
@@ -1948,6 +1981,7 @@ function buildQuality(w,weeks,slotRole,effQ,vol,pI,pT,pE,isTaper1,dow,racePace,q
 function fmtRest(sec){ return (sec>=60 && sec%60===0) ? Math.round(sec/60)+' min' : sec+' s'; }
 function sessKm(s){
   if(s.type==='int')    return r1(s.wuKm + s.reps*s.repM/1000 + s.cdKm + Math.max(s.reps-1,0)*0.15);
+  if(s.type==='pyramid')return r1(s.wuKm + s.reps.reduce((a,b)=>a+b,0)/1000 + s.cdKm + (s.reps.length-1)*0.15);
   if(s.type==='fartlek')return r1(s.wuKm + s.cdKm + s.reps*(s.repSec/s.paceSec + s.restSec/s.easyPaceSec));
   if(s.type==='prog')   return r1(s.qKm);
   return r1(s.wuKm + s.qKm + s.cdKm); /* tempo kontinuirani */
@@ -1957,6 +1991,8 @@ function sessDesc(s){
     const restWord = s.kind==='Tempo (broken)' ? 'float' : 'hod';
     return `${s.kind} — ${s.wuKm} km WU + ${s.reps}×${s.repM} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} ${restWord}) + ${s.cdKm} km CD`;
   }
+  if(s.type==='pyramid')
+    return `${s.kind} — ${s.wuKm} km WU + ${s.reps.join('-')} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} hod između) + ${s.cdKm} km CD`;
   if(s.type==='fartlek')
     return `Fartlek — ${s.wuKm} km WU + ${s.reps}×${s.repSec} s brzo @ ~${fmtP(s.paceSec)}/km (${s.restSec} s lagani džog) + ${s.cdKm} km CD`;
   if(s.type==='prog')
@@ -2001,6 +2037,7 @@ function predRow(w,tip,q,pt,raceDistM){ raceDistM=raceDistM||5000; return { w, l
    (npr. promenjena dužina ponavljanja mora da promeni i šta sync traži u lapovima). */
 function sessQKm(ses){
   if(ses.type==='int')    return r1(ses.reps*ses.repM/1000);
+  if(ses.type==='pyramid')return r1(ses.reps.reduce((a,b)=>a+b,0)/1000);
   if(ses.type==='fartlek')return r1(ses.reps*ses.repSec/ses.paceSec);
   if(ses.type==='prog')   return r1(ses.qKm/3); /* T deo = poslednja trećina */
   return ses.qKm;
@@ -2010,6 +2047,7 @@ function deriveQS(weeks){
   weeks.forEach(w=>w.days.forEach(d=>{
     if(!d.session) return;
     if(d.session.type==='int') qs['n'+w.w+'d'+d.dow]=[d.session.repM];               /* i broken tempo — lapovi po repM */
+    else if(d.session.type==='pyramid') qs['n'+w.w+'d'+d.dow]=d.session.reps.slice();   /* piramida — lapovi su VEĆ niz različitih dužina */
     else if(d.session.type==='tempo') qs['n'+w.w+'d'+d.dow]=[Math.round(d.session.qKm*1000)];
     /* fartlek/prog: bez lap-spec — vremenski/kontinuirani, nema pouzdane detekcije */
   }));
@@ -2141,6 +2179,7 @@ function generatePlan(inp){
     const ses=dayObj.session;
     plan.pred.push(predRow(w, ses.kind, sessQKm(ses), ses.paceSec, raceDistM));
     if(ses.type==='int') plan.qs['n'+w+'d'+dayObj.dow]=[ses.repM];
+    else if(ses.type==='pyramid') plan.qs['n'+w+'d'+dayObj.dow]=ses.reps.slice();
     else if(ses.type==='tempo') plan.qs['n'+w+'d'+dayObj.dow]=[Math.round(ses.qKm*1000)];
   }
 
@@ -2731,6 +2770,22 @@ function renderWeekSwap(w){
     undoWeekMoves(w);SWAP_SEL=null;renderWeekSwap(w);
   };
 }
+/* Kratko uputstvo za izvođenje po tipu sesije — ključ je sessKind(d) izlaz,
+   radi identično za hardkodovan i generisan plan (bez dodatne logike).
+   Fokus na kvalitetne tipove gde tehnika/pristup stvarno menja efekat. */
+const SESS_GUIDE={
+  'Intervali':'Isti tempo na svakom ponavljanju — ne kreni brže na prvom. Opušten, kontrolisan oblik i kad je teško.',
+  'Repeticije':'Pun odmor između ponavljanja, ne delimičan — ovo je brzina i ekonomija trčanja, ne izdržljivost na pragu. Opušteno, ne na silu.',
+  'Tempo':'"Udobno teško" — kratku rečenicu možeš da izgovoriš, razgovor ne. Isti napor od početka do kraja, ne kreni prebrzo.',
+  'Tempo (broken)':'Isti tempo/napor kao neprekidan tempo — kratka pauza je predah, ne resetovanje. Cilj: ceo trening deluje kao jedan neprekidan napor.',
+  'Fartlek':'Napor, ne štoperica — ubrzanja su snažan gurnjaj, ne sprint. Potpuno se opusti u lakim delovima.',
+  'Progresivno':'Kreni namerno lagano — svaki sledeći deo brži od prethodnog. Najčešća greška je prebrz početak.',
+  'Piramida':'Isti NAPOR na svakoj deonici, ne isti tempo — kraće deonice prirodno idu brže. Ne kreni prejako na najkraćoj da ne "pukneš" na vrhu piramide.',
+  'Maratonski tempo':'Tačno tvoj ciljani tempo trke — ovo je proba, ne dodatni napor preko toga. Iskoristi za vežbanje ishrane/hidratacije ako je dovoljno dugo.',
+  '10K tempo (ciljni ritam)':'Tačno tvoj ciljani tempo trke — disciplina tempa, ne guranje preko toga.',
+  'HM tempo (ciljni ritam)':'Tačno tvoj ciljani tempo trke — disciplina tempa, ne guranje preko toga.',
+  'Dugo (LR)':'Ravnomeran, lak tempo — trebalo bi da razgovaraš bez zadihanosti. Ako poslednji km oseti teže od prvog, kreni sporije sledeći put.',
+};
 function openDaySheet(id){
   const d=BY_ID[id],s=stFor(id);
   const isRest=!!d.rest; /* odmor se ne loguje — prikaz bez forme, samo izmena */
@@ -2738,6 +2793,7 @@ function openDaySheet(id){
     <div class="sh-t">N${d.week.w} · ${d.test?'TEST (opciono)':dowOf(d.date)+' '+fmtDY(d.date)}</div>
     <div class="sh-s">${sessKind(d)}${d.km!=null?' · plan '+fmtKm(d.km)+' km':''}${S.alts&&S.alts[id]?' · izmenjen':''}</div>
     ${isRest?'':`<div class="desc" style="font-size:.85rem">${esc(d.desc)}</div>`}
+    ${!isRest&&SESS_GUIDE[sessKind(d)]?`<div class="note-src" style="margin-top:6px">💡 ${esc(SESS_GUIDE[sessKind(d)])}</div>`:''}
     ${isRest?'':`<div class="seg" id="seg">
       <button data-s="pending" class="${s==='pending'?'on':''}">Predstoji</button>
       <button data-s="done" class="c-done ${s==='done'?'on':''}">Odrađen</button>
