@@ -316,7 +316,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=5, LS_KEY='sub19-v1';
-const APP_VERSION='29'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='30'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -670,11 +670,14 @@ function setAlt(id,alt){
   const planTag=d.origRest?'odmor':d.origTag;
   const km=alt.tag==='odmor'?null:(alt.km!=null&&alt.km!==''&&!isNaN(alt.km)?+alt.km:null);
   const desc=alt.tag==='odmor'?'Odmor':(alt.desc||'');
-  /* identično planu → briši unos umesto da ga čuvaš */
-  if(alt.tag===planTag && km===(d.origKm!=null?d.origKm:null) && desc===(d.origDesc||(d.origRest?'Odmor':''))){
+  const pace=(alt.tag==='int'||alt.tag==='tempo')&&alt.pace!=null&&!isNaN(alt.pace)&&alt.pace>0?Math.round(alt.pace):null;
+  /* identično planu I bez ručnog cilja tempa → briši unos umesto da ga čuvaš.
+     Ako je pace eksplicitno postavljen, unos ostaje čak i kad se tag/km/desc
+     slažu sa planom — to je i dalje namerna izmena (samo cilja tempo, ne strukturu). */
+  if(alt.tag===planTag && km===(d.origKm!=null?d.origKm:null) && desc===(d.origDesc||(d.origRest?'Odmor':'')) && pace==null){
     delete S.alts[id];
   } else {
-    S.alts[id]={tag:alt.tag,km:km,desc:desc};
+    S.alts[id]={tag:alt.tag,km:km,desc:desc,pace:pace};
   }
   rebuildDateIndex();save();
   return {ok:true};
@@ -817,6 +820,26 @@ const QS={
  n9d5:[6000],n10d3:[1000],n10d5:[3000],n11d3:[1500],n11d5:[6000],n12d3:[2000],
  n12d5:[4000],n13d3:[400],n13d5:[3000],n14d2:[200]
 };
+/* Pokušaj čitanja cilja tempa direktno iz teksta opisa — "@ 4:10/km",
+   "~4:25/km", ili opseg "3:52–3:54/km" (uzima sredinu opsega). Vraća sekunde
+   ili null ako ništa nije prepoznato. Best-effort — za sesije sa VIŠE tempova
+   u tekstu (npr. over/under) hvata PRVI pomen, korisnik po potrebi doradi ručno. */
+function extractPaceFromDesc(desc){
+  if(!desc)return null;
+  const m=String(desc).match(/(\d{1,2}):(\d{2})(?:\s*[–\-]\s*(\d{1,2}):(\d{2}))?\s*\/\s*km/);
+  if(!m)return null;
+  const s1=(+m[1])*60+(+m[2]);
+  if(m[3]!=null){ const s2=(+m[3])*60+(+m[4]); return Math.round((s1+s2)/2); }
+  return s1;
+}
+/* Efektivni ciljni tempo za dan/PRED-red: ručna izmena (S.alts[d.id].pace) ima
+   prednost nad kodno-fiksiranom PRED tabelom. "Izmeni trening" ne dodiruje PRED
+   (deljen je između više dana/nedelja), pa je ovo jedina tačka gde se cilj koji
+   VIDI korisnik (opis) i cilj koji koriste AI/kartica (pt) mogu razdvojiti. */
+function effectivePace(d,r){
+  const a=S.alts&&S.alts[d.id];
+  return (a&&a.pace!=null)?a.pace:(r?r.pt:null);
+}
 function predRowFor(d){
   if(d.tag!=='int'&&d.tag!=='tempo')return null;
   const c=PRED.filter(r=>r.w===d.week.w&&(d.tag==='int'?r.l.includes('Intervali'):(r.l.includes('Tempo')||r.l.includes('Ritam'))));
@@ -1109,8 +1132,9 @@ function formHTML(d){
     predIds.forEach(pid=>{
       const r=PRED.find(x=>x.id===pid);
       const cur=S.pred[pid];
+      const ep=effectivePace(d,r);
       workBlock+=`<div class="wseg" data-wseg="${pid}" data-q="${r.q}">
-        <div class="wseg-l">${esc(r.l.split('·')[1]||r.l)} · plan ${fmtTempo(r.pt)} /km · Q ${fmtKm(r.q)} km</div>
+        <div class="wseg-l">${esc(r.l.split('·')[1]||r.l)} · plan ${fmtTempo(ep)} /km${S.alts&&S.alts[d.id]&&S.alts[d.id].pace!=null?' <small style="color:var(--pink)">(tvoj cilj)</small>':''} · Q ${fmtKm(r.q)} km</div>
         <input class="wseg-in" inputmode="numeric" placeholder="356 = 3:56" value="${cur?fmtTempo(cur):''}" data-wpin="${pid}">
         <div class="wseg-out" data-wout="${pid}">${vdotDeltaHTML(pid,cur)}</div>
       </div>`;
@@ -1193,7 +1217,7 @@ function bindForm(root,d){
       const mainPid=predIds[0];
       const r=mainPid?PRED.find(x=>x.id===mainPid):null;
       const payload={
-        session:{ desc:d.desc||'', planPace: r?fmtTempo(r.pt):'—', q: r?r.q:null, tag:d.tag },
+        session:{ desc:d.desc||'', planPace: r?fmtTempo(effectivePace(d,r)):'—', q: r?r.q:null, tag:d.tag },
         entered:{
           workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
           km:l.km??null, time:l.sec?fmtClock(l.sec):null,
@@ -1315,19 +1339,31 @@ function altSheetHTML(d){
     h+=`<div class="f-field full" style="margin-top:10px"><label>Opis</label>
       <textarea id="alt-desc" placeholder="Šta se radi...">${esc(cur.desc)}</textarea></div>`;
   }
+  if(cur.tag==='int'||cur.tag==='tempo'){
+    h+=`<div class="f-field full" style="margin-top:10px"><label>Ciljni tempo radnog dela (m:ss/km)</label>
+      <div style="font-size:.72rem;color:var(--txt3);margin-bottom:6px">Ovo vidi AI analiza i kartica treninga kao "plan" — nezavisno od podrazumevanog cilja te nedelje.</div>
+      <div style="display:flex;gap:8px">
+        <input type="text" inputmode="numeric" id="alt-pace" placeholder="410 = 4:10" value="${cur.pace!=null?fmtTempo(cur.pace):''}" style="flex:1">
+        <button type="button" id="alt-pace-auto" class="btn ghost sm" style="flex:none">🔍 Iz opisa</button>
+      </div></div>`;
+  }
   h+=`<div class="btnrow" style="margin-top:14px"><button class="btn" id="alt-save">Sačuvaj</button></div>`;
   if(edited)h+=`<div class="btnrow" style="margin-top:8px"><button class="btn ghost" id="alt-reset">Vrati na plan</button></div>`;
   h+=`<div class="note-src">Plan se ne menja — ovo je izmena samo za ovaj dan i uvek se vraća. Odrađeni treninzi se ne menjaju.</div>`;
   return h;
 }
 function readAltFields(sh){
-  const k=sh.querySelector('#alt-km'), t=sh.querySelector('#alt-desc');
+  const k=sh.querySelector('#alt-km'), t=sh.querySelector('#alt-desc'), p=sh.querySelector('#alt-pace');
   if(k&&k.value!==undefined)ALT_DRAFT.km=k.value===''?null:parseFloat(String(k.value).replace(',','.'));
   if(t&&t.value!==undefined)ALT_DRAFT.desc=t.value;
+  if(p&&p.value!==undefined)ALT_DRAFT.pace=p.value===''?null:parseTimeStr(p.value);
 }
 function openAltSheet(id){
   const d=BY_ID[id];if(!d)return;
-  ALT_DRAFT={tag:d.rest?'odmor':d.tag,km:d.km,desc:d.desc||''};ALT_ERR='';
+  const existing=S.alts&&S.alts[id];
+  let pace=existing&&existing.pace!=null?existing.pace:extractPaceFromDesc(d.desc);
+  if(pace==null){ const pid=predRowFor(d); const r=pid?PRED.find(x=>x.id===pid):null; if(r)pace=r.pt; }
+  ALT_DRAFT={tag:d.rest?'odmor':d.tag,km:d.km,desc:d.desc||'',pace:pace};ALT_ERR='';
   renderAltSheet(d);
 }
 function renderAltSheet(d){
@@ -1348,6 +1384,14 @@ function renderAltSheet(d){
     const res=setAlt(d.id,ALT_DRAFT);
     if(res.ok){ALT_DRAFT=null;closeSheet();}
     else{ALT_ERR='Izmena nije moguća: '+(res.err||'nepoznata greška');renderAltSheet(d);}
+  };
+  const pa=sh.querySelector('#alt-pace-auto');
+  if(pa)pa.onclick=()=>{
+    readAltFields(sh); /* uzmi trenutno otkucan opis, ne stari */
+    const found=extractPaceFromDesc(ALT_DRAFT.desc);
+    if(found!=null){ ALT_DRAFT.pace=found; }
+    else { ALT_ERR='Nije prepoznat tempo u opisu (format "@ m:ss/km") — unesi ručno.'; }
+    renderAltSheet(d);
   };
   const rs=sh.querySelector('#alt-reset');
   if(rs)rs.onclick=()=>{
