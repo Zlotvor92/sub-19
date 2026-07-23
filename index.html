@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='34'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='35'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1741,23 +1741,46 @@ function pickReps(workKm, wkIdx, weeks){
          preparing for a marathon" (izuzetak je SAMO ultra, van dometa).
    Konačan LR = najmanji od (a) i (b), ali nikad ispod invarijante.
    Izuzetak invarijante: SAMO trkačka nedelja (trka je najkraća sesija). */
-function danielsLRCapKm(vol, pLRsecPerKm){
+function danielsLRCapKm(vol, pLRsecPerKm, isMarathon){
+  if(isMarathon){
+    /* Maraton: LR MORA dostići apsolutnu distancu specifičnosti (~28-32km),
+       bez obzira na nedeljni obim — Danielsov 150-min/25% pravilo je
+       kalibrisano za KRAĆE distance gde je LR dopunski dan, ne stub
+       specifičnosti (Higdon/Pfitzinger/McMillan konvencija: 29-32km peak
+       long run je standard nezavisno od ukupnog obima). Procenat raste sa
+       obimom (više prostora → veći dozvoljen udeo), plafon ~32km. */
+    const pct = vol<45?0.55: vol<65?0.50: vol<85?0.42: 0.36;
+    return Math.min(vol*pct, 32);
+  }
   if(vol<64) return vol*0.30;
   const pctCap = vol*0.25;
   const timeCapKm = pLRsecPerKm>0 ? (150*60)/pLRsecPerKm : Infinity;
   return Math.min(pctCap, timeCapKm);
 }
-function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm){
+function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon){
   const qSum=qKms.reduce((a,b)=>a+b,0);
   const maxQ=qKms.length?Math.max(...qKms):0;
   let rem=Math.max(vol-qSum, 3);
-  const danCap=danielsLRCapKm(vol, pLRsecPerKm||0);
+  const danCap=danielsLRCapKm(vol, pLRsecPerKm||0, isMarathon);
   if(easyCount===0) return { lr:r1(Math.min(Math.max(rem, maxQ*1.1), Math.max(danCap,maxQ*1.05))), easies:[] };
   const capF = runDays>=5?0.32: runDays===4?0.36: runDays===3?0.50:0.68;
-  const cap = Math.min(vol*capF, danCap);
+  /* Za maraton, runDays-bazirani capF NIJE relevantan (danCap već obuhvata
+     odgovarajuće skaliranje po obimu) — bez ovog izuzetka capF (npr. 32%)
+     tiho pobeđuje podignut danCap i poništava celu maraton-ispravku. */
+  const cap = isMarathon ? danCap : Math.min(vol*capF, danCap);
   const floor = Math.max(maxQ*1.05, 4);           /* invarijanta: LR mora biti > najveće kvalitetne sesije */
-  let lr = Math.max(rem*0.45, maxQ*1.12, (rem/(easyCount+1))*1.3);
-  lr = Math.min(lr, cap, rem-3*easyCount);
+  let lr;
+  if(isMarathon){
+    /* Maraton cilja DIREKTNO ka cap-u (apsolutna specifičnost), ne
+       proporcionalno ka rem — rem*0.45 sistematski daje premalo kad
+       kvalitetne sesije (posebno kasniji M-tempo dani) pojedu značajan deo
+       nedelje, pa cap nikad ne bude ni dostignut (otkriveno testom: LR/vol%
+       ostajao zaglavljen na ~29% čak i posle podizanja cap-a). */
+    lr = Math.min(cap, rem - 2.5*easyCount);
+  } else {
+    lr = Math.max(rem*0.45, maxQ*1.12, (rem/(easyCount+1))*1.3);
+    lr = Math.min(lr, cap, rem-3*easyCount);
+  }
   lr = Math.max(lr, Math.min(floor, rem-2.5*easyCount)); /* invarijanta > cap KADA je moguće, ali ne beskonačno */
   const wgt=[1.15,1,0.9,0.85,0.8,0.75].slice(0,easyCount);
   const wsum=wgt.reduce((a,b)=>a+b,0);
@@ -2125,7 +2148,7 @@ function generatePlan(inp){
     } else if(w <= baseWeeks){
       /* FAZA 1 (bazna) — samo lako trčanje + obavezne strides, bez kvaliteta.
          Gradi aerobnu bazu i obim pre nego što kvalitetni ciklus počne. */
-      const alloc=allocEasyLR(vol, [], runDays-1, runDays, pLR);
+      const alloc=allocEasyLR(vol, [], runDays-1, runDays, pLR, prof.useM);
       let ei=0;
       for(let dow=1; dow<=7; dow++){
         const role=slots[dow];
@@ -2166,7 +2189,7 @@ function generatePlan(inp){
         const role=slots[d];
         return role==='easy' || ((role==='q1'||role==='q2') && !sessions[d]);
       }).length;
-      const alloc=allocEasyLR(vol, qKms, easyDowsCount, runDays, pLR);
+      const alloc=allocEasyLR(vol, qKms, easyDowsCount, runDays, pLR, prof.useM);
       let ei=0;
       for(let dow=1; dow<=7; dow++){
         const role=slots[dow];
