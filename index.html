@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='40'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='41'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1749,7 +1749,16 @@ function pickReps(workKm, wkIdx, weeks){
          preparing for a marathon" (izuzetak je SAMO ultra, van dometa).
    Konačan LR = najmanji od (a) i (b), ali nikad ispod invarijante.
    Izuzetak invarijante: SAMO trkačka nedelja (trka je najkraća sesija). */
-function danielsLRCapKm(vol, pLRsecPerKm, isMarathon, isPeakStretch){
+function danielsLRCapKm(vol, pLRsecPerKm, isMarathon, isPeakStretch, isTaper){
+  if(isMarathon && isTaper){
+    /* Taper: obim je NAMERNO nizak (odmor pred trku), ne "nizak obim kod
+       skromnog trkača" — formula za nizak-obim (16/vol+0.28) bi POGREŠNO
+       protumačila nizak taper vol kao "guraj procenat gore da stigneš normu",
+       ostavljajući LR jedva smanjen (npr. 32km vrhunac -> 24km taper, samo
+       24% pada dok su intervali/tempo drastično skraćeni). Fiksnih ~35%
+       (isti kao standardna, nepojačana formula) — LR se STVARNO smanjuje. */
+    return vol*0.35;
+  }
   if(isMarathon){
     /* Maraton: LR MORA dostići apsolutnu distancu specifičnosti (~28-32km),
        bez obzira na nedeljni obim — Danielsov 150-min/25% pravilo je
@@ -1773,11 +1782,11 @@ function danielsLRCapKm(vol, pLRsecPerKm, isMarathon, isPeakStretch){
   const timeCapKm = pLRsecPerKm>0 ? (150*60)/pLRsecPerKm : Infinity;
   return Math.min(pctCap, timeCapKm);
 }
-function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon, isPeakStretch){
+function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon, isPeakStretch, isTaper){
   const qSum=qKms.reduce((a,b)=>a+b,0);
   const maxQ=qKms.length?Math.max(...qKms):0;
   let rem=Math.max(vol-qSum, 3);
-  const danCap=danielsLRCapKm(vol, pLRsecPerKm||0, isMarathon, isPeakStretch);
+  const danCap=danielsLRCapKm(vol, pLRsecPerKm||0, isMarathon, isPeakStretch, isTaper);
   if(easyCount===0) return { lr:r1(Math.min(Math.max(rem, maxQ*1.1), Math.max(danCap,maxQ*1.05))), easies:[] };
   const capF = runDays>=5?0.32: runDays===4?0.36: runDays===3?0.50:0.68;
   /* Za maraton, runDays-bazirani capF NIJE relevantan (danCap već obuhvata
@@ -2092,11 +2101,24 @@ function nextMonday(ds){
   if(wd!==0)d.setUTCDate(d.getUTCDate()+(7-wd));
   return d.toISOString().slice(0,10);
 }
+/* Ogledalo nextMonday — nedelja KOJOJ dan pripada, ne sledeća. Isti UTC
+   obrazac (ista klasa buga bi se ponovila da se ovde pomeša lokalno/UTC). */
+function mondayOfWeek(ds){
+  const d=new Date(ds);
+  const wd=(d.getUTCDay()+6)%7;            /* 0=Pon */
+  d.setUTCDate(d.getUTCDate()-wd);
+  return d.toISOString().slice(0,10);
+}
 function generatePlan(inp){
   const raceDistM = inp.raceDistM||5000;
   const prof = DIST_PROFILES[raceDistM];
   if(!prof) return { error: 'Nepodržana ciljna distanca. Podržano: 5K, 10K, polumaraton, maraton.' };
-  const start = nextMonday(inp.startDate);
+  /* Plan kreće OD DANA generisanja, ne od sledećeg ponedeljka (korisnikov
+     zahtev — ranije se gubilo do 6 dana čekanja). Nedelja 1 zadržava PRAVU
+     pon-ned strukturu (LR/kvalitet dani i dalje znače stvarni dan u nedelji)
+     — dani PRE datuma generisanja se filtriraju na kraju funkcije, ne
+     preraspodeljuju. Nedelja 2+ ostaju normalne pune pon-ned nedelje. */
+  const start = mondayOfWeek(inp.startDate);
   const daysN = Math.round((new Date(inp.raceDate) - new Date(start)) / 86400000);
   const weeks = Math.floor(daysN/7) + 1;
   const maxWeeks = 104; /* bezbednosni plafon (2 god.) protiv degenerisanog unosa (npr. pogrešan datum), NE ograničenje planiranja — korisnik sme da se sprema koliko god unapred želi */
@@ -2261,7 +2283,7 @@ function generatePlan(inp){
       /* Poslednje 3 "prave" nedelje pred taper (ne deload, ne taper/trka sama) —
          tu forsiramo dostizanje 28.5km norme ako standardna formula ne bi stigla. */
       const isPeakStretch = prof.useM && !isDeload && !isTaper1 && !isRace && (weeks-w)<=3;
-      const alloc=allocEasyLR(vol, qKms, easyDowsCount, runDays, pLR, prof.useM, isPeakStretch);
+      const alloc=allocEasyLR(vol, qKms, easyDowsCount, runDays, pLR, prof.useM, isPeakStretch, isTaper1);
       let ei=0;
       for(let dow=1; dow<=7; dow++){
         const role=slots[dow];
@@ -2286,6 +2308,15 @@ function generatePlan(inp){
       }
     }
     plan.weeks.push({ w, vol: r1(days.reduce((s,d)=>s+(d.km||0),0)), days, deload:isDeload });
+  }
+  /* Filtriraj dane PRE datuma generisanja iz nedelje 1 (v. komentar kod
+     `start` gore) — samo nedelja 1 može imati dane pre inp.startDate, jer je
+     start=mondayOfWeek (može biti u prošlosti), a sve ostale nedelje počinju
+     tačno 7*n dana kasnije, uvek na ili posle inp.startDate. */
+  if(plan.weeks.length){
+    const w1=plan.weeks[0];
+    w1.days=w1.days.filter(d=>addD(start,d.dow-1)>=inp.startDate);
+    w1.vol=r1(w1.days.reduce((s,d)=>s+(d.km||0),0));
   }
   return plan;
 }
