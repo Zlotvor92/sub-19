@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='42'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='43'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1780,20 +1780,25 @@ function danielsLRCapKm(vol, pLRsecPerKm, isMarathon, isPeakStretch, isTaper){
     return vol*0.35;
   }
   if(isMarathon){
-    /* Maraton: LR MORA dostići apsolutnu distancu specifičnosti (~28-32km),
-       bez obzira na nedeljni obim — Danielsov 150-min/25% pravilo je
-       kalibrisano za KRAĆE distance gde je LR dopunski dan, ne stub
-       specifičnosti (Higdon/Pfitzinger/McMillan konvencija: 29-32km peak
-       long run je standard nezavisno od ukupnog obima). Procenat raste sa
-       obimom (više prostora → veći dozvoljen udeo), plafon ~32km. */
-    let pct = Math.min(0.65, 16/vol + 0.28);  /* glatka kriva, bez oštrih ivica na granicama */
+    /* PRAVI BUG NAĐEN TESTOM (korisnikova slika: N11, 65% nedelje u JEDNOM
+       trčanju, 3.7/3.2km "lakih" dana pored 27.8km LR — "OGROMAN RIZIK OD
+       POVREDE"): "16/vol+0.28" formula je bila zamišljena SAMO za poslednje
+       vrhunačke nedelje, ali se primenjivala kao OSNOVA za baš svaku nedelju
+       — LR% je rastao kontinuirano kroz CEO plan (37% već u N1, do 65% na
+       deload nedeljama), ne samo na kraju. Deload nedelje su bile NAJGORE
+       (nizak vol te nedelje → formula ga tumači kao "guraj gore").
+       Ispravka: obična nedelja dobija SKROMAN, FIKSAN procenat — bez
+       "nizak-obim-podigni" logike uopšte. Vrhunačke nedelje (isPeakStretch)
+       i dalje ciljaju direktno normu specifičnosti (28.5km), ali sa ovim
+       skromnim procentom kao POD, ne sa eksplozivnom formulom kao osnovom. */
+    const basePct = 0.33; /* skroman skok preko standardnih 25-30% (kraće distance) — maratonu treba malo više LR naglaska, ne 65% */
+    let pct = basePct;
     if(isPeakStretch){
-      /* Poslednje 1-3 "prave" nedelje pred taper: ako standardna (stroža)
-         formula ne bi stigla do 28.5km norme za specifičnost maratona, DOZVOLI
-         veći udeo SAMO ovde — ostatak plana ostaje po strožoj krivoj. Plafon
-         0.70 (umesto 0.65) da izbegnemo apsurdan udeo na ekstremno niskom obimu. */
+      /* Poslednje 1-3 "prave" nedelje pred taper: cilja DIREKTNO 28.5km normu,
+         SAMO ovde — ostatak plana ostaje na skromnom basePct. Plafon 0.70
+         da izbegnemo apsurdan udeo na ekstremno niskom obimu. */
       const neededPct = Math.min(0.70, 28.5/vol);
-      pct = Math.max(pct, neededPct);
+      pct = Math.max(basePct, neededPct);
     }
     return Math.min(vol*pct, 32);
   }
