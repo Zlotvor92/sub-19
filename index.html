@@ -155,6 +155,42 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 /* grafikoni */
 .chart{width:100%;height:auto;display:block;margin-top:4px}
 .ax{font-size:8.5px;fill:var(--txt3);font-weight:600}
+.ob-wrap{max-width:480px;margin:0 auto;padding:calc(var(--sat) + 24px) 20px 40px;min-height:100dvh}
+.ob-progress{display:flex;gap:6px;margin-bottom:26px}
+.ob-progress i{flex:1;height:3px;border-radius:3px;background:var(--card2);transition:background .3s}
+.ob-progress i.on{background:var(--pink)}
+.ob-progress i.done{background:var(--green)}
+.ob-step{display:none;animation:fadein .25s ease}
+.ob-step.active{display:block}
+.ob-eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pink);margin-bottom:8px}
+.ob-h1{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;line-height:1.25}
+.ob-sub{font-size:.85rem;color:var(--txt2);line-height:1.5;margin-bottom:24px}
+.ob-field{margin-bottom:16px}
+.ob-field label{display:block;font-size:.72rem;font-weight:700;color:var(--txt2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+.ob-field input[type=date],.ob-field input[type=text],.ob-field input[type=number]{
+  width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+  font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--txt);outline:none;
+}
+.ob-field input:focus{border-color:var(--pink)}
+.ob-row3{display:flex;gap:10px;align-items:end}
+.ob-colon{text-align:center;font-weight:800;color:var(--txt3);padding-bottom:14px}
+.ob-chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.ob-chip{padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:.85rem;font-weight:700;color:var(--txt2)}
+.ob-chip.on{background:var(--pink);border-color:var(--pink);color:#fff}
+.ob-vdot{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:20px 0;opacity:0;max-height:0;overflow:hidden;transition:opacity .4s ease,max-height .4s ease}
+.ob-vdot.show{opacity:1;max-height:200px;margin:20px 0}
+.ob-vring{width:64px;height:64px;flex:none}
+.ob-vtrack{fill:none;stroke:rgba(255,255,255,.1);stroke-width:6}
+.ob-vval{fill:none;stroke:var(--cyan);stroke-width:6;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)}
+.ob-vnum{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
+.ob-vlbl{font-size:.74rem;color:var(--txt2);line-height:1.4;margin-top:2px}
+.ob-icard{width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.ob-icard.on{border-color:var(--cyan);background:var(--card2)}
+.ob-icard b{display:block;font-size:.95rem;margin-bottom:4px}
+.ob-icard span{display:block;font-size:.76rem;color:var(--txt2);line-height:1.4}
+.ob-icard .ob-tag{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);margin-top:6px}
+.ob-btnrow{display:flex;gap:10px;margin-top:24px}
+.ob-err{color:var(--red);font-size:.78rem;font-weight:600;margin-top:6px;min-height:16px}
 .chart-info{font-size:9.5px;fill:var(--pink);font-weight:800}
 .chart-hint{font-size:8.5px;fill:var(--txt3);font-weight:600;font-style:italic}
 .gl{stroke:rgba(255,255,255,.06);stroke-width:1}
@@ -268,6 +304,8 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 </head>
 <body>
 
+<div id="wizard" style="display:none"></div>
+
 <header>
   <div>
     <div class="h-title">SUB<span>-20</span></div>
@@ -315,8 +353,8 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 <script>
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
-const START='2026-06-22', RACE='2026-09-24', SCHEMA=5, LS_KEY='sub19-v1';
-const APP_VERSION='30'; /* mora se poklapati sa APP_VERSION u sw.js */
+const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
+const APP_VERSION='33'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -540,6 +578,7 @@ function seedState(){return {
  vdotLog:[],
  moves:{},
  alts:{},
+ genPlan:null,
  strava:null,
  ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}
 };}
@@ -597,6 +636,43 @@ function vdotFrom5k(sec){ return vdotFromRace(5000,sec); }
 /* VDOT iz kvalitetne sesije: ostvaren tempo + dužina Q-segmenta -> Riegel 5K -> VDOT */
 function vdotFromQuality(paceSec,qKm){ return vdotFrom5k(riegel(paceSec,qKm)); }
 
+/* ============ AKTIVNI PLAN (hardkodovan ILI generisan) ============
+   CUR_PLAN/CUR_PRED su ono što SAV ostali kod čita — nikad direktno PLAN/PRED.
+   Default (S.genPlan===null) = CUR_PLAN=PLAN, CUR_PRED=PRED: ponašanje IDENTIČNO
+   kao pre ove izmene, ni jedan bajt drugačije za postojeće korisnike. */
+let CUR_PLAN=null, CUR_PRED=null;
+/* generatePlan() izlaz nema d.id ni week.start — dodeljujemo ih JEDNOM ovde,
+   istom konvencijom kao hardkodovan PLAN (n{nedelja}d{dan}, dow 0-6→d1-d7),
+   da SVI ID-vezani sistemi (S.alts, S.moves, S.log, S.vdotLog, predRowsFor)
+   rade identično nad generisanim planom. */
+function adaptGeneratedPlan(gen){
+  if(!gen||gen.error||!Array.isArray(gen.weeks))return null;
+  const startMon=gen.meta&&gen.meta.start;
+  if(!startMon)return null;
+  const weeks=gen.weeks.map((w,wi)=>({
+    w:w.w!=null?w.w:wi+1,
+    start:addD(startMon,wi*7),
+    focus:w.deload?'DELOAD':'',
+    days:w.days.map((d,di)=>{
+      const dow0=d.dow-1; /* NORMALIZACIJA: engine.js dow je 1-7 (Pon=1), V2 očekuje 0-6 (Pon=0) */
+      return {...d,dow:dow0,id:'g'+(w.w!=null?w.w:wi+1)+'d'+(dow0+1)};
+    })
+  }));
+  const pred=gen.pred.map((r,i)=>({...r,id:'g'+r.w+'_'+i}));
+  return {weeks,pred,meta:gen.meta};
+}
+function setActivePlan(){
+  if(S.genPlan){
+    /* klon, NE direktna referenca — rebuildDateIndex mutira d.week (kružno!) i
+       _orig/origX polja na objektima; S.genPlan mora ostati čist za save(). */
+    const clone=JSON.parse(JSON.stringify({weeks:S.genPlan.weeks,pred:S.genPlan.pred}));
+    CUR_PLAN=clone.weeks;
+    CUR_PRED=clone.pred;
+  } else {
+    CUR_PLAN=PLAN;
+    CUR_PRED=PRED;
+  }
+}
 /* ============ IZVEDENE STRUKTURE PLANA ============ */
 const BY_ID={},BY_DATE={},DATED=[];
 /* Gradi/prepravlja BY_DATE i DATED prema TRENUTNOM S.moves (zamena dana).
@@ -609,7 +685,7 @@ const BY_ID={},BY_DATE={},DATED=[];
 function rebuildDateIndex(){
   for(const k in BY_DATE) delete BY_DATE[k];
   DATED.length=0;
-  PLAN.forEach(w=>{w.days.forEach(d=>{
+  CUR_PLAN.forEach(w=>{w.days.forEach(d=>{
     d.week=w;
     BY_ID[d.id]=d;
     /* originali iz plana — snimaju se JEDNOM i nikad se ne menjaju.
@@ -634,7 +710,7 @@ function rebuildDateIndex(){
   });});
   DATED.sort((a,b)=>a.date<b.date?-1:1);
   /* MORA posle primene S.alts — dan pretvoren u odmor menja ukupan broj treninga */
-  TOTAL_TR=PLAN.reduce((n,w)=>n+w.days.filter(d=>!d.rest).length,0);
+  TOTAL_TR=CUR_PLAN.reduce((n,w)=>n+w.days.filter(d=>!d.rest).length,0);
 }
 /* Zamena dva dana unutar ISTE nedelje. Odbija: nepostojeći/test dan, različite
    nedelje, ili ako je BILO KOJI od dva dana već odrađen (istorija se ne diraj).
@@ -700,6 +776,13 @@ let TOTAL_TR=PLAN.reduce((n,w)=>n+w.days.filter(d=>!d.rest).length,0); /* dinami
 function weekPlanKm(w){return w.days.reduce((s,d)=>s+(d.km||0),0);}
 function weekOf(dateStr){for(const w of PLAN){const end=addD(w.start,6);if(dateStr>=w.start&&dateStr<=end)return w;}return null;}
 function tagName(t){return{lako:'Lako',tempo:'Tempo',int:'Intervali',lr:'Dugo (LR)',snaga:'Snaga',odmor:'Odmor',trka:'TRKA',test:'Test'}[t]||t;}
+/* Specifičan tip sesije kad postoji (Fartlek/Repeticije/Maratonski tempo/...
+   — samo generisani planovi imaju d.session.kind), inače generička oznaka
+   po tagu (tvoj hardkodovan plan nema .session, pa ovde ništa ne menja). */
+function sessKind(d){
+  if(d.rest)return tagName('odmor');
+  return (d.session&&d.session.kind)?d.session.kind:tagName(d.tag);
+}
 
 /* ============ STANJE + STORAGE ============ */
 let LS_OK=true;try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){LS_OK=false;}
@@ -712,7 +795,8 @@ function migrate(o){
   if(o.v<3){o.vdotLog=o.vdotLog||[];o.v=3;} /* v2→v3: VDOT istorija forme — postojeći unosi netaknuti */
   if(o.v<4){o.moves=o.moves||{};o.v=4;} /* v3→v4: zamena dana (swap) — postojeći raspored netaknut (prazna mapa = sve na originalnim mestima) */
   if(o.v<5){o.alts=o.alts||{};o.v=5;} /* v4→v5: izmena tipa treninga — prazna mapa = svi dani po planu */
-  o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
+  if(o.v<6){o.genPlan=o.genPlan||null;o.v=6;} /* v5→v6: generisan plan — null = koristi hardkodovan PLAN (BEZ IZMENE za postojeće korisnike) */
+  o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
   o.v=SCHEMA;
   return o;
 }
@@ -731,7 +815,7 @@ function realKmDay(d){const l=S.log[d.id];if(!l||l.status!=='done')return 0;retu
 function weekRealKm(w){return w.days.reduce((s,d)=>s+realKmDay(d),0);}
 function weekDone(w){return w.days.filter(d=>!d.rest&&stFor(d.id)==='done').length;}
 function weekCountable(w){return w.days.filter(d=>!d.rest).length;}
-function totalDone(){return PLAN.reduce((n,w)=>n+weekDone(w),0);}
+function totalDone(){return CUR_PLAN.reduce((n,w)=>n+weekDone(w),0);}
 function streak(today){
   let cur=today,n=0;
   const t=BY_DATE[today];
@@ -774,7 +858,7 @@ function baselineVdot(){ /* početni VDOT iz PB (20:37) — referenca */
 /* Zabeleži VDOT iz kvalitetne sesije. Vraća {vdot, prev, delta, dir} ili null.
    Prigušenje: jedna sesija je šum — pomeramo VDOT samo delimično ka izmerenom. */
 function recordVdot(predId, paceSec, dateOverride){
-  const r=PRED.find(x=>x.id===predId);
+  const r=CUR_PRED.find(x=>x.id===predId);
   if(!r||!paceSec)return null;
   const measured=Math.round(vdotFromQuality(paceSec,r.q)*10)/10;
   const prev=currentVdot()!=null?currentVdot():baselineVdot();
@@ -842,13 +926,20 @@ function effectivePace(d,r){
 }
 function predRowFor(d){
   if(d.tag!=='int'&&d.tag!=='tempo')return null;
-  const c=PRED.filter(r=>r.w===d.week.w&&(d.tag==='int'?r.l.includes('Intervali'):(r.l.includes('Tempo')||r.l.includes('Ritam'))));
+  /* case-INSENSITIVE — labele iz generatora imaju malo slovo usred fraze
+     ("Maratonski tempo", "10K tempo (ciljni ritam)"), ne samo na početku
+     ("N1 · Tempo"). Case-sensitive .includes('Tempo') bi promašio baš ove. */
+  const c=CUR_PRED.filter(r=>{
+    if(r.w!==d.week.w)return false;
+    const l=r.l.toLowerCase();
+    return d.tag==='int'?(l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')):(l.includes('tempo')||l.includes('ritam')||l.includes('progresivno'));
+  });
   return c.length?c[0].id:null;
 }
 /* sve predikcijske sesije za dan (dan tag određuje tip: int->Intervali, tempo->Tempo/Ritam) */
 function predRowsFor(d){
   if(d.tag!=='int'&&d.tag!=='tempo')return [];
-  const rows=PRED.filter(r=>r.w===d.week.w&&(d.tag==='int'?r.l.includes('Intervali'):(r.l.includes('Tempo')||r.l.includes('Ritam')))).map(r=>r.id);
+  const rows=CUR_PRED.filter(r=>{ if(r.w!==d.week.w)return false; const l=r.l.toLowerCase(); return d.tag==='int'?(l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')):(l.includes('tempo')||l.includes('ritam')||l.includes('progresivno')); }).map(r=>r.id);
   if(!rows.length)return [];
   /* SUDAR: izmenom tipa u nedelji može nastati VIŠE dana istog kvaliteta, a
      predikcijski red je jedan. Bez ovoga bi dva dana pisala u isti VDOT unos.
@@ -1024,6 +1115,7 @@ function workLapsDetail(laps,specs,hrByLap){
 
 /* ============ DOM SLOJ ============ */
 let S=loadState();save();
+setActivePlan(); /* CUR_PLAN/CUR_PRED — pre rebuildDateIndex, koji ih čita */
 rebuildDateIndex(); /* prvo punjenje BY_ID/BY_DATE/DATED — sad kad S.moves postoji */
 const TODAY=todayStr();
 const $=s=>document.querySelector(s);
@@ -1083,13 +1175,13 @@ function renderDanas(){
 }
 function nextLine(from){
   const nx=DATED.find(x=>x.date>from&&!x.rest);
-  return nx?`<div class="note-src">Sledeći trening: ${dowOf(nx.date)} ${fmtD(nx.date)} — ${tagName(nx.tag)}${nx.km?' · '+fmtKm(nx.km)+' km':''}</div>`:'';
+  return nx?`<div class="note-src">Sledeći trening: ${dowOf(nx.date)} ${fmtD(nx.date)} — ${sessKind(nx)}${nx.km?' · '+fmtKm(nx.km)+' km':''}</div>`:'';
 }
 function dayCard(d){
   const s=stFor(d.id);
   let c=`<div class="card" id="tcard">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-      <span class="tag ${d.tag}">${tagName(d.tag)}</span>
+      <span class="tag ${d.tag}">${sessKind(d)}</span>
       <span class="st ${s}">${s==='done'?'Odrađen':s==='skip'?'Preskočen':'Predstoji'}</span>
     </div>
     <div style="font-size:.72rem;color:var(--txt2);font-weight:700;margin-bottom:8px">N${d.week.w}${d.date?' · '+dowOf(d.date)+' '+fmtD(d.date):' · opciono, kraj nedelje'}</div>
@@ -1130,7 +1222,7 @@ function formHTML(d){
       <label style="font-weight:800;color:var(--txt)">Radni deo — ostvaren tempo (m:ss /km)</label>
       <div style="font-size:.72rem;color:var(--txt3);margin-bottom:8px">Tempo samog kvalitetnog segmenta (bez WU/CD). Puni predikciju i računa VDOT formu.</div>`;
     predIds.forEach(pid=>{
-      const r=PRED.find(x=>x.id===pid);
+      const r=CUR_PRED.find(x=>x.id===pid);
       const cur=S.pred[pid];
       const ep=effectivePace(d,r);
       workBlock+=`<div class="wseg" data-wseg="${pid}" data-q="${r.q}">
@@ -1215,7 +1307,7 @@ function bindForm(root,d){
       out.className='ai-out'; out.textContent='';
       const predIds=predRowsFor(d);
       const mainPid=predIds[0];
-      const r=mainPid?PRED.find(x=>x.id===mainPid):null;
+      const r=mainPid?CUR_PRED.find(x=>x.id===mainPid):null;
       const payload={
         session:{ desc:d.desc||'', planPace: r?fmtTempo(effectivePace(d,r)):'—', q: r?r.q:null, tag:d.tag },
         entered:{
@@ -1271,7 +1363,7 @@ function donePop(){
 function renderPlan(){
   const el=$('#pg-plan');
   let h='';
-  PLAN.forEach(w=>{
+  CUR_PLAN.forEach(w=>{
     const pk=weekPlanKm(w),rk=weekRealKm(w),dn=weekDone(w),ct=weekCountable(w);
     const cur=weekOf(TODAY)===w;
     h+=`<div class="wk${openW.has(w.w)?' open':''}" data-w="${w.w}">
@@ -1362,7 +1454,7 @@ function openAltSheet(id){
   const d=BY_ID[id];if(!d)return;
   const existing=S.alts&&S.alts[id];
   let pace=existing&&existing.pace!=null?existing.pace:extractPaceFromDesc(d.desc);
-  if(pace==null){ const pid=predRowFor(d); const r=pid?PRED.find(x=>x.id===pid):null; if(r)pace=r.pt; }
+  if(pace==null){ const pid=predRowFor(d); const r=pid?CUR_PRED.find(x=>x.id===pid):null; if(r)pace=r.pt; }
   ALT_DRAFT={tag:d.rest?'odmor':d.tag,km:d.km,desc:d.desc||'',pace:pace};ALT_ERR='';
   renderAltSheet(d);
 }
@@ -1399,6 +1491,1096 @@ function renderAltSheet(d){
     clearAlt(d.id);ALT_DRAFT=null;closeSheet();
   };
 }
+/* ============ ENGINE.JS (V3 generator, portovan doslovno) ============
+   module.exports linije su no-op u browseru (nema 'module' globala) — bezbedno. */
+'use strict';
+/* ============================================================
+   SUB-19 GENERATOR v3 — deterministički engine plana (5K, 5 dana/ned)
+   Tempi: Daniels–Gilbert jednačine (objavljene):
+     VO2(v)      = -4.60 + 0.182258·v + 0.000104·v²        [v u m/min]
+     %VO2max(t)  = 0.8 + 0.1894393·e^(-0.012778·t) + 0.2989558·e^(-0.1932605·t)   [t u min]
+   VDOT = VO2(v_trke) / %VO2max(t_trke)
+   Intenzitetske tačke (Daniels zone, sredine opsega): I=100% vVO2max,
+   T=88%, E=70%, LR=68%, M=80% — konstante zona su izbor unutar
+   objavljenih opsega, kalibrisane na etalon plan (v. testove).
+   Rast VDOT-a po nedelji (heuristika, kalibrisana na etalon):
+     konzervativno 0.15 · standard 0.25 · agresivno 0.36
+   ============================================================ */
+
+const Z = { I: 1.00, T: 0.88, M: 0.80, E: 0.70, LR: 0.68, R: 1.05 };
+/* Stope rasta VDOT/nedeljno:
+   kons 0.15 i std 0.25 — unutar Danielsove trenerske smernice (~1 poen / 4–6 ned.,
+   'Daniels' Running Formula'; ekspertska heuristika, NE kontrolisana studija).
+   agr 0.43 — kalibrisano na dokumentovanu putanju autora plana (20:37→cilj 18:55 za 14 ned.,
+   uz paralelno mršavljenje i nizak trenažni staž) — plafon, uz obaveznu ogradu u UI. */
+const RAMP = { kons: 0.15, std: 0.25, agr: 0.43 };
+const GROW_MAX = 1.08;          /* maks. +8% nedeljnog volumena */
+const DELOAD_EVERY = 4;         /* svaka 4. nedelja */
+const DELOAD_F = 0.73;          /* deload = 73% prethodne (etalon: 32/44) */
+const TAPER_F = 0.65;           /* pretposlednja = 65% vrhunca (etalon: 30/46) */
+const RACEWK_F = 0.30;          /* trkačka nedelja ≈ 30% vrhunca */
+const LR_SHARE = 0.24;          /* LR ≈ 24% nedelje (etalon: 23–25%) */
+const RAMP_CAP_WEEKS = 20;      /* inženjerski izbor (NE izmerena fiziološka granica): linearna
+  ekstrapolacija forme preko ovog broja nedelja bi projektovala apsurdan skok (npr. +20 VDOT
+  poena na 50 nedelja). Rast se ograničava na max 20 ned. neprekidnog linearnog napredovanja,
+  dalje se forma DRŽI (plato) — ovo NE ograničava dužinu samog plana, samo trajanje "rampe". */
+
+/* ============================================================
+   buildDaySlots — PROMENLJIVI BROJ DANA TRČANJA (2–7) + BROJ
+   KVALITETNIH SESIJA (1–2). Ovo je INŽENJERSKA ODLUKA, ne naučna
+   formula — nema objavljene konstante za "koliko kvalitetnih
+   sesija za koliki broj dana". Pravilo koje primenjujem (šire
+   rasprostranjena trenerska konvencija, ne izmerena vrednost):
+   broj TEŠKIH dana ne raste linearno sa ukupnim brojem dana —
+   razlika ide u broj LAKIH dana. Zato je kvalitet ograničen na
+   najviše 2, i na najviše 1 kada je runDays ≤ 3 (nema prostora
+   za oporavak između dva teška dana uz samo 2–3 dana ukupno).
+   Nedelja: LR je UVEK dow=7 (Ned) — fiksan izbor, ne konfigurabilno.
+   Kvalitet se postavlja na proporcionalne pozicije unutar preostalih
+   dana (radi ravnomernog razmaka), NE na fiksne "poslednje" pozicije
+   — kod runDays=4,quality=2 ovo se DOKAZANO poklapa sa etalonom
+   (Pon lako / Sre intervali / Pet tempo / Ned LR), što je jedina
+   konfiguracija sa realnom validacijom. Sve ostale kombinacije su
+   inženjerska ekstrapolacija bez etalon-provere. */
+function buildDaySlots(runDays, qualityCount, prefs){
+  runDays = Math.max(2, Math.min(7, Math.round(runDays)));
+  const effQ = runDays<=3 ? Math.min(qualityCount,1) : Math.min(qualityCount,2);
+  /* KORISNIČKI IZBOR DANA (opciono): prefs = { lrDow: 1–7, qDows: [1–7,...] }.
+     Bez prefs — ponašanje IDENTIČNO ranijem (LR nedelja, proporcionalni raspored). */
+  const lrDow = (prefs && prefs.lrDow>=1 && prefs.lrDow<=7) ? Math.round(prefs.lrDow) : 7;
+  const slots = {1:'rest',2:'rest',3:'rest',4:'rest',5:'rest',6:'rest',7:'rest'};
+  slots[lrDow]='lr';
+  let qSel = (prefs && Array.isArray(prefs.qDows) ? prefs.qDows : [])
+    .map(Math.round).filter(d=>d>=1&&d<=7&&d!==lrDow);
+  qSel = [...new Set(qSel)].slice(0, effQ).sort((a,b)=>a-b);
+  const ORDER=[1,3,5,2,6,4,7].filter(d=>d!==lrDow && !qSel.includes(d));
+  const need = runDays-1-qSel.length;
+  const chosen = qSel.concat(ORDER.slice(0, Math.max(need,0))).sort((a,b)=>a-b);
+  const len=chosen.length;
+  if(qSel.length){
+    /* eksplicitan izbor: raniji dan = q1 (VO2 familija), kasniji = q2 (prag) */
+    chosen.forEach(dow=>{
+      if(dow===qSel[0]) slots[dow]='q1';
+      else if(qSel[1]!=null && dow===qSel[1]) slots[dow]='q2';
+      else slots[dow]='easy';
+    });
+    /* ako je izabran samo 1 a effQ=2 — drugi kvalitet ide proporcionalno na preostale */
+    if(qSel.length===1 && effQ===2){
+      const rest=chosen.filter(d=>slots[d]==='easy');
+      if(rest.length){ slots[rest[Math.min(rest.length-1, Math.round(rest.length*2/3))]]='q2'; }
+    }
+  }else{
+    function idx(fracNum,fracDen){ return Math.min(len-1, Math.max(0, Math.round(len*fracNum/fracDen))); }
+    let qIdx=[];
+    if(effQ===2) qIdx=[idx(1,3), idx(2,3)];
+    else if(effQ===1) qIdx=[idx(1,2)];
+    qIdx = [...new Set(qIdx)];
+    chosen.forEach((dow,i)=>{
+      if(qIdx[0]===i) slots[dow]='q1';
+      else if(qIdx[1]===i) slots[dow]='q2';
+      else slots[dow]='easy';
+    });
+  }
+  return slots;
+}
+/* Upozorenja za korisnički izbor dana — NE blokira (sve je izmenjivo, filozofija
+   vlasnika), samo kaže. Hard/easy princip: dva teška dana zaredom (kvalitet ili LR)
+   su trenerska konvencija koju treba izbeći; uključuje prelaz Ned→Pon. */
+function dayPrefWarnings(slots){
+  const N=['Pon','Uto','Sre','Čet','Pet','Sub','Ned'];
+  const hard=d=>slots[d]==='q1'||slots[d]==='q2'||slots[d]==='lr';
+  const out=[];
+  for(let d=1; d<=7; d++){
+    const nxt = d===7 ? 1 : d+1;
+    if(hard(d) && hard(nxt)) out.push(`Teški dani zaredom: ${N[d-1]} → ${N[nxt-1]} — hard/easy princip preporučuje lak dan ili odmor između.`);
+  }
+  return out;
+}
+/* Bira dan za snagu: prvi 'rest' dan u nedelji (jednostavno, generičko pravilo — snaga je opciona/samostalna, ne zahteva optimalan raspored). null ako nema slobodnog dana. */
+function pickStrengthDay(slots){
+  for(let d=1; d<=6; d++) if(slots[d]==='rest') return d;
+  return null;
+}
+
+function vo2AtV(v){ return -4.60 + 0.182258*v + 0.000104*v*v; }
+function vAtVo2(vo2){ /* inverz kvadratne */ 
+  const a=0.000104,b=0.182258,c=-4.60-vo2;
+  return (-b+Math.sqrt(b*b-4*a*c))/(2*a);
+}
+function pctVo2max(tMin){ return 0.8 + 0.1894393*Math.exp(-0.012778*tMin) + 0.2989558*Math.exp(-0.1932605*tMin); }
+function vdotFromRace(distM, sec){
+  const tMin=sec/60, v=distM/tMin;
+  return vo2AtV(v)/pctVo2max(tMin);
+}
+/* tempo (sec/km) za zonu pri datom VDOT-u */
+function paceForZone(vdot, zone){
+  const v = vAtVo2(vdot * Z[zone]);   /* m/min */
+  return Math.round(60000 / v);        /* sec/km */
+}
+/* vreme trke (sec) koje odgovara VDOT-u na distM — rešava se iterativno */
+function raceTimeForVdot(vdot, distM){
+  let t = distM/ (vAtVo2(vdot)); /* početna procena: tempo na 100% */
+  for(let i=0;i<40;i++){
+    const v = distM/t;                        /* m/min */
+    const f = vo2AtV(v)/pctVo2max(t) - vdot;  /* koren */
+    const dt = 0.01;
+    const v2 = distM/(t+dt);
+    const f2 = vo2AtV(v2)/pctVo2max(t+dt) - vdot;
+    const d = (f2-f)/dt;
+    if(Math.abs(d)<1e-9) break;
+    t = t - f/d;
+    if(Math.abs(f)<1e-6) break;
+  }
+  return Math.round(t*60);
+}
+/* INVERZ od paceForZone: opservirani tempo (sec/km) na datoj zoni -> implicirani VDOT.
+   paceForZone je monotono opadajuća funkcija VDOT-a (viša forma = brži tempo) -> binarna pretraga. */
+function vdotFromPace(paceSecKm, zone){
+  let lo=20, hi=85;
+  for(let i=0;i<40;i++){
+    const mid=(lo+hi)/2;
+    if(paceForZone(mid,zone) > paceSecKm) lo=mid; else hi=mid;
+  }
+  return (lo+hi)/2;
+}
+const r1=x=>Math.round(x*10)/10;
+function fmtP(sec){const m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0');}
+function riegelDist(sec, fromM, toM){ return sec*Math.pow(toM/fromM,1.06); } /* PREIMENOVANO iz riegel() — V2 već ima riegel(tempoSec,q) sa DRUGAČIJIM potpisom/značenjem; bez preimenovanja bi kasnija (engine.js) definicija tiho pregazila raniju (V2), praveći NaN u postojećem PRED sistemu */
+
+/* ---------- realnost cilja ---------- */
+/* ============================================================
+   PODRŽANE CILJNE DISTANCE. Ultra NIJE uključen — namerno.
+   Daniels sam tretira ultra treninge kao posebno poglavlje,
+   eksplicitno IZUZETO iz 150-min LR pravila ("unless preparing
+   for ultraevents"). Matematički: pctVo2max(t) teži ka 80% kako
+   t→∞ (asimptota u formuli) — za napore od 6-30+ sati to nije
+   validirano niti verovatno tačno (realni održivi %VO2max pada
+   mnogo niže zbog glikogena/termoregulacije/GI, što formula
+   kalibrisana na rezultate do maratona ne modeluje).
+   minWeeks je inženjerska bezbednosna granica (Daniels-ovi
+   maratonski planovi u praksi traju 18+ nedelja), NE fiziološki
+   zakon — plan ispod ovoga fizički radi, samo je rizičniji. */
+const DIST_PROFILES = {
+  5000:    { name:'5K',          minWeeks:6,  useM:false, qMix:'speed' },
+  10000:   { name:'10K',         minWeeks:8,  useM:false, qMix:'speed' },
+  21097.5: { name:'Polumaraton', minWeeks:10, useM:false, qMix:'threshold' },
+  42195:   { name:'Maraton',     minWeeks:12, useM:true,  qMix:'marathon' }
+};
+function assess(pb, weeks, intensity, goalSec, raceDistM){
+  raceDistM = raceDistM||5000;
+  const vdot0 = vdotFromRace(pb.distM, pb.sec);
+  const rampW = Math.min(Math.max(weeks-2, 1), RAMP_CAP_WEEKS);
+  const vdotGoal = vdot0 + RAMP[intensity]*rampW;
+  const predictedSec = raceTimeForVdot(vdotGoal, raceDistM);
+  const out = { vdot0:r1(vdot0), vdotGoal:r1(vdotGoal), predictedSec, realno:null, goalVdot:null };
+  if(goalSec){
+    const gv = vdotFromRace(raceDistM, goalSec);
+    out.goalVdot = r1(gv);
+    out.realno = gv <= vdotGoal + 0.3;             /* tolerancija zaokruživanja */
+  }
+  return out;
+}
+
+/* ---------- struktura sesija ---------- */
+function pickReps(workKm, wkIdx, weeks){
+  /* rani deo ciklusa: duži oporavci/kraći radovi → kasnije duži radovi; meni iz etalona */
+  const menu = wkIdx/weeks < 0.25 ? [800,1000] : wkIdx/weeks < 0.7 ? [1000] : [1000,1200];
+  const rep = menu[Math.min(menu.length-1, Math.floor((wkIdx/weeks)*menu.length))];
+  const n = Math.max(3, Math.round(workKm*1000/rep));
+  return { rep, n };
+}
+
+/* ============================================================
+   RASPODELA VOLUMENA — LR INVARIJANTA
+   Fiksno 24%-pravilo (etalon) je UKLONJENO na zahtev vlasnika plana.
+   Zamena: (1) LR je NAJDUŽE trčanje nedelje — tvrda invarijanta, jača
+   od svih ostalih ograničenja; (2) gornja granica LR-a kombinuje DVA
+   nezavisna Danielsova pravila, potvrđena pretragom pre implementacije:
+     (a) broj-dana-strukturni cap (≥5 dana ≈32%, niže za manje dana —
+         inženjerski, jer na 2-3 dana LR matematički MORA biti >50%)
+     (b) Danielsov volumen-cap: <64 km/ned → 30% nedelje; ≥64 km/ned →
+         min(25% nedelje, 150 minuta) — VAŽI ČAK I ZA MARATON, Daniels
+         eksplicitno: "longest steady run... 150 minutes, even if
+         preparing for a marathon" (izuzetak je SAMO ultra, van dometa).
+   Konačan LR = najmanji od (a) i (b), ali nikad ispod invarijante.
+   Izuzetak invarijante: SAMO trkačka nedelja (trka je najkraća sesija). */
+function danielsLRCapKm(vol, pLRsecPerKm){
+  if(vol<64) return vol*0.30;
+  const pctCap = vol*0.25;
+  const timeCapKm = pLRsecPerKm>0 ? (150*60)/pLRsecPerKm : Infinity;
+  return Math.min(pctCap, timeCapKm);
+}
+function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm){
+  const qSum=qKms.reduce((a,b)=>a+b,0);
+  const maxQ=qKms.length?Math.max(...qKms):0;
+  let rem=Math.max(vol-qSum, 3);
+  const danCap=danielsLRCapKm(vol, pLRsecPerKm||0);
+  if(easyCount===0) return { lr:r1(Math.min(Math.max(rem, maxQ*1.1), Math.max(danCap,maxQ*1.05))), easies:[] };
+  const capF = runDays>=5?0.32: runDays===4?0.36: runDays===3?0.50:0.68;
+  const cap = Math.min(vol*capF, danCap);
+  const floor = Math.max(maxQ*1.05, 4);           /* invarijanta: LR mora biti > najveće kvalitetne sesije */
+  let lr = Math.max(rem*0.45, maxQ*1.12, (rem/(easyCount+1))*1.3);
+  lr = Math.min(lr, cap, rem-3*easyCount);
+  lr = Math.max(lr, Math.min(floor, rem-2.5*easyCount)); /* invarijanta > cap KADA je moguće, ali ne beskonačno */
+  const wgt=[1.15,1,0.9,0.85,0.8,0.75].slice(0,easyCount);
+  const wsum=wgt.reduce((a,b)=>a+b,0);
+  let easies=wgt.map(x=>Math.max(3, r1((rem-lr)*x/wsum)));
+  const mx=Math.max(...easies);
+  if(mx>=lr){
+    /* Bezbednosno pravilo "lak dan < LR" mora ostati strogo, ali margina od
+       10% (0.9) je bila proizvoljno velika i nepotrebno je bacala kilometražu
+       kad ima malo lakih dana (npr. 1 na runDays=4) — otkriveno testom pri
+       uvođenju tešnjeg Daniels-capa za maraton, latentno i pre toga. Margina
+       smanjena na 3% (0.97) — i dalje strogo ispod LR, samo manje rasipanja. */
+    const sc=(lr*0.97)/mx;
+    easies=easies.map(e=>Math.max(3,r1(e*sc)));
+  }
+  lr=r1(Math.max(lr, floor));
+  return { lr, easies };
+}
+
+/* ============================================================
+   ROTACIJA KVALITETNIH SESIJA — planovi NISU kopija etalona.
+   q1 (VO2 familija): intervali; svaka 3. nedelja (faza <72%) = FARTLEK
+     (McMillan: 10–12×1 min @ ~I tempo / 1 min džog).
+   q2 (prag familija): rana faza (<35%) = broken tempo (Daniels 'cruise',
+     ≤~10–12% nedelje na T); srednja = naizmenično kontinuirani tempo
+     (~20 min, Daniels) / progresivni run; kasna = kontinuirani uz race-tempo.
+   Interval Q-km = 10% nedelje (kompromis: Daniels cap 8% ↔ etalon 15% —
+   inženjerska odluka, dokumentovana, nije naučna konstanta).
+   quality=1: jedini kvalitet rotira int/tempo/fartlek po nedelji. */
+function mkIntervals(dow,w,weeks,vol,pI){
+  const qI=Math.max(2.4, Math.min(vol*0.10, 6));
+  const {rep,n}=pickReps(qI,w,weeks);
+  return sessInt(dow,1.5,n,rep,pI,120,1);
+}
+/* R (Repetition) — 105%+ VO2max, max 2 min/rep, odmor 1:2-1:3 po VREMENU
+   rada, plafon min(8km, 5% nedelje) — sve citirano (Daniels). Uvodi se
+   PRVO u ciklusu (Faza II "Early Quality"), fazi se izbacuje kad I postaje
+   prioritet (Faza III — potvrđeno pretragom pre implementacije). */
+function mkRepetition(dow,vol,pR){
+  const total=Math.min(vol*0.05, 8);
+  const repM=300; /* tipično 200-300m (izvori: "400m hard/jog", "200m ili 300m") */
+  const reps=Math.max(4, Math.round(total*1000/repM));
+  const restSec=Math.round((repM/1000)*pR*2.5); /* odmor ~1:2.5 po vremenu, sredina citiranog opsega 1:2-1:3 */
+  return sessInt(dow,1.5,reps,repM,pR,restSec,1,'Repeticije');
+}
+function mkFartlek(dow,w,pI,pE){
+  const n=Math.min(12, 8+Math.floor(w/4));
+  return sessFartlek(dow,1.5,n,60,60,pI,1,pE);
+}
+function mkTempoCont(dow,vol,pT,fixKm){
+  /* Daniels: kontinuiran tempo ograničen na ~20 min BEZ OBZIRA na volumen —
+     to je i razlog zašto postoji odvojen "broken" tip (mkBroken) za veći
+     ukupan obim na T tempu. Fiksni 6km plafon je UKLONJEN — 20-minutni
+     vremenski plafon je jedini pravi limit i već je bio u formuli. */
+  const qT=fixKm!=null?fixKm:r1(Math.max(3, Math.min(vol*0.10, (20*60)/pT)));
+  return sessTempo(dow,2,qT,pT,2);
+}
+function mkBroken(dow,w,weeks,vol,pT){
+  /* Daniels cruise-interval reps: 1,6-3,2 km (1-2 milje), rad:odmor ~5:1.
+     Ukupan obim na T tempu: 12% nedelje (postojalo i pre). Fiksni 7km
+     plafon je UKLONJEN — bio je niži od same 12% smernice već na 60+ km/ned
+     nedeljama (maraton), praveći plafon jedinim ograničavajućim faktorom
+     umesto volumena. Dužina repa raste sa fazom ciklusa (isto načelo kao
+     kod čistih intervala): kraći rep rano (1,6km), duži kasnije (do 3,2km —
+     Danielsova GORNJA granica za cruise intervale, ne izmišljen broj). */
+  const total=Math.max(3.6, vol*0.12);
+  const phase=w/weeks;
+  /* mkBroken se poziva SAMO dok je phase<0.30-0.35 (v. buildQuality) — pragovi
+     su zato preskalirani na taj STVARNO dostižan opseg, ne na ceo ciklus
+     (raniji 0.3/0.6 prag bi ostavio gornje pragove kao mrtav kod). */
+  const repKm = phase<0.15 ? 1.6 : phase<0.25 ? 2.0 : 2.4;
+  const reps=Math.max(2, Math.round(total/repKm));
+  const repM=Math.round(repKm*1000/100)*100;
+  return sessInt(dow,2,reps,repM,pT,90,2,'Tempo (broken)');
+}
+function mkProg(dow,vol,pT,pE){
+  const total=r1(Math.max(5, Math.min(vol*0.20, 10)));
+  return sessProg(dow,total,pT,pE);
+}
+/* M (Marathon pace) — 75-84% VO2max (Z.M=0.80, sredina opsega), potvrđeno
+   pretragom pre implementacije. Plafon: min(110 min, 29 km) po sesiji —
+   računam ekvivalent u km preko pM (sec/km), ne fiksni broj. Koristi se
+   SAMO za qMix='marathon' — za HM/10K/5K ova zona se ne koristi (HM tempo
+   je praktično isti kao T, nema potrebe za posebnom zonom — Daniels). */
+function mkMarathonPace(dow,vol,pM){
+  const timeCapKm=(110*60)/pM;
+  const q=r1(Math.max(5, Math.min(vol*0.22, timeCapKm, 29)));
+  return sessTempo(dow,1.5,q,pM,1.5,'Maratonski tempo');
+}
+/* Race-pace sesija — tempo TAČNO na ciljnom tempu trke (racePace = Riegel/VDOT
+   ishod, NE izmišljena %VO2max zona). Samo za 10K/HM: 5K već ima I≈race u
+   završnici, maraton ima M-tempo koji JESTE race pace. Trajanje umereno jer je
+   race pace zahtevan. "Practicing race pace" — svi izvori navode kao legitimno,
+   i direktno pokriva Danielsov POZNATI nedostatak (nema 10K/HM-specific pace). */
+function mkRacePace(dow,vol,racePace,label){
+  const q=r1(Math.max(3, Math.min(vol*0.12, 8)));
+  return sessTempo(dow,2,q,racePace,2,label);
+}
+function buildQuality(w,weeks,slotRole,effQ,vol,pI,pT,pE,isTaper1,dow,racePace,qMix,pM,pR,raceName){
+  const phase=w/weeks;
+  const fartlekEvery = qMix==='threshold' ? 4 : 3; /* HM: manje VO2max-varijeteta, više praga — Daniels: HM finalna faza = isključivo threshold */
+  if(effQ===1){
+    if(isTaper1) return sessInt(dow,1.5,5,400,Math.max(pI,racePace),90,1);
+    if(phase<0.25) return mkRepetition(dow,vol,pR); /* Faza II "Early Quality" (potvrđeno pretragom) — R pre I/T */
+    const mod=w%3;
+    if(mod===0 && phase<0.72) return mkFartlek(dow,w,pI,pE);
+    if(mod===2) return mkTempoCont(dow,vol,pT);
+    return mkIntervals(dow,w,weeks,vol,pI);
+  }
+  if(slotRole==='q1'){
+    if(isTaper1) return sessInt(dow,1.5,5,400,Math.max(pI,racePace),90,1);
+    if(phase<0.25) return mkRepetition(dow,vol,pR); /* isto — već testirana rotacija netaknuta od phase>=0.25 */
+    if(w%fartlekEvery===0 && phase<0.72) return mkFartlek(dow,w,pI,pE);
+    return mkIntervals(dow,w,weeks,vol,pI);
+  }
+  /* q2 */
+  if(qMix==='marathon'){
+    if(isTaper1) return mkTempoCont(dow,vol,pT,3);
+    if(phase<0.30) return mkBroken(dow,w,weeks,vol,pT);
+    if(phase<0.55) return (w%2===1)? mkProg(dow,vol,pT,pE) : mkTempoCont(dow,vol,pT);
+    return mkMarathonPace(dow,vol,pM); /* poslednja ~45% ciklusa: M-tempo dominira — Daniels "Final Quality" faza je maraton-specifična */
+  }
+  /* 10K/HM: race-pace sesija u završnoj fazi — pokriva Danielsov poznati
+     nedostatak (nema 10K/HM-specific pace). 5K isključen (I≈race u završnici). */
+  const wantsRacePace = (raceName==='10K' || raceName==='Polumaraton');
+  if(isTaper1) return mkTempoCont(dow,vol,pT,3);
+  if(phase<0.35) return mkBroken(dow,w,weeks,vol,pT);
+  if(phase>=0.60 && wantsRacePace){
+    const label = raceName==='10K' ? '10K tempo (ciljni ritam)' : 'HM tempo (ciljni ritam)';
+    return (w%2===1)? mkRacePace(dow,vol,racePace,label) : mkTempoCont(dow,vol,pT);
+  }
+  if(phase<0.75) return (w%2===1)? mkProg(dow,vol,pT,pE) : mkTempoCont(dow,vol,pT);
+  return mkTempoCont(dow,vol,pT);
+}
+
+/* ---------- glavni generator ---------- */
+/* inp: {startDate, raceDate, pb:{distM,sec}, weeklyKm, intensity, goalSec?} */
+/* ============================================================
+   IZMENJIVA SESIJA — v1 (tempo + dužina ponavljanja + pauza + broj
+   ponavljanja, sva 4 polja). Plan je skelet iz VDOT-a; korisnik sme
+   ručno da prepravi bilo koje od ova 4 polja po sesiji. desc/km se
+   NE peku unapred — računaju se IZ session objekta, uvek iznova.
+   Obim: samo redovne 'int'/'tempo' dane (ne deload — nema kvalitetnih
+   dana; ne trkačku nedelju — aktivacioni 200m dan ima drugačiji
+   model pauze, distancni a ne vremenski, nije pokriven ovom v1).
+   ============================================================ */
+function fmtRest(sec){ return (sec>=60 && sec%60===0) ? Math.round(sec/60)+' min' : sec+' s'; }
+function sessKm(s){
+  if(s.type==='int')    return r1(s.wuKm + s.reps*s.repM/1000 + s.cdKm + Math.max(s.reps-1,0)*0.15);
+  if(s.type==='fartlek')return r1(s.wuKm + s.cdKm + s.reps*(s.repSec/s.paceSec + s.restSec/s.easyPaceSec));
+  if(s.type==='prog')   return r1(s.qKm);
+  return r1(s.wuKm + s.qKm + s.cdKm); /* tempo kontinuirani */
+}
+function sessDesc(s){
+  if(s.type==='int'){
+    const restWord = s.kind==='Tempo (broken)' ? 'float' : 'hod';
+    return `${s.kind} — ${s.wuKm} km WU + ${s.reps}×${s.repM} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} ${restWord}) + ${s.cdKm} km CD`;
+  }
+  if(s.type==='fartlek')
+    return `Fartlek — ${s.wuKm} km WU + ${s.reps}×${s.repSec} s brzo @ ~${fmtP(s.paceSec)}/km (${s.restSec} s lagani džog) + ${s.cdKm} km CD`;
+  if(s.type==='prog')
+    return `Progresivno — ${s.qKm} km: prve 2/3 @ ~${fmtP(s.easyPaceSec)}/km → poslednja trećina @ ${fmtP(s.paceSec)}/km`;
+  return `${s.kind||'Tempo'} — ${s.wuKm} km WU + ${s.qKm} km @ ${fmtP(s.paceSec)}/km + ${s.cdKm} km CD`;
+}
+function sessInt(dow,wuKm,reps,repM,paceSec,restSec,cdKm,kind){
+  const session={type:'int',kind:kind||'Intervali',wuKm,reps,repM,paceSec,restSec,cdKm,overrides:{}};
+  return {dow,tag:kind==='Tempo (broken)'?'tempo':'int',km:sessKm(session),desc:sessDesc(session),session};
+}
+function sessTempo(dow,wuKm,qKm,paceSec,cdKm,kind){
+  const session={type:'tempo',kind:kind||'Tempo',wuKm,qKm,paceSec,cdKm,overrides:{}};
+  return {dow,tag:'tempo',km:sessKm(session),desc:sessDesc(session),session};
+}
+/* Fartlek — struktura po McMillan smernici: 10–12 × 1 min surge (malo brže od 5K
+   tempa ≈ naš I-tempo) / 1 min lagani džog. Vremenski surge-ovi → NEMA pouzdane
+   Strava lap-detekcije po distanci (deriveQS ga preskače); Race Predictor red
+   se emituje (surge-km @ surge tempo), popunjava se ručno. */
+function sessFartlek(dow,wuKm,n,surgeSec,easySec,paceSec,cdKm,easyPaceSec){
+  const session={type:'fartlek',kind:'Fartlek',wuKm,cdKm,reps:n,repSec:surgeSec,restSec:easySec,paceSec,easyPaceSec,overrides:{}};
+  return {dow,tag:'int',km:sessKm(session),desc:sessDesc(session),session};
+}
+/* Progresivni run: prve 2/3 lako, poslednja trećina na T tempu. */
+function sessProg(dow,totalKm,endPaceSec,easyPaceSec){
+  const session={type:'prog',kind:'Progresivno',qKm:totalKm,paceSec:endPaceSec,easyPaceSec,wuKm:0,cdKm:0,overrides:{}};
+  return {dow,tag:'tempo',km:sessKm(session),desc:sessDesc(session),session};
+}
+/* Primenjuje ručnu izmenu JEDNOG polja; mutira i vraća isti day objekat.
+   field za 'int': paceSec | repM | reps | restSec | wuKm | cdKm
+   field za 'tempo': paceSec | qKm | wuKm | cdKm */
+function applyEdit(day, field, value){
+  if(!day.session) throw new Error('Ovaj dan nema izmenjivu sesiju (deload/trkačka nedelja/lako/LR/snaga/odmor).');
+  day.session[field]=value;
+  day.session.overrides[field]=true;
+  day.km=sessKm(day.session);
+  day.desc=sessDesc(day.session);
+  return day;
+}
+function predRow(w,tip,q,pt,raceDistM){ raceDistM=raceDistM||5000; return { w, l:'N'+w+' · '+tip, q, pt, p5k: Math.round(riegelDist(pt*q, q*1000, raceDistM)) }; }
+/* Predikcija i QS (Strava lap-detekcija) IZVEDENI iz trenutnog stanja sesija —
+   pozivati posle bilo koje applyEdit, tako da oba ostanu dosledna izmeni
+   (npr. promenjena dužina ponavljanja mora da promeni i šta sync traži u lapovima). */
+function sessQKm(ses){
+  if(ses.type==='int')    return r1(ses.reps*ses.repM/1000);
+  if(ses.type==='fartlek')return r1(ses.reps*ses.repSec/ses.paceSec);
+  if(ses.type==='prog')   return r1(ses.qKm/3); /* T deo = poslednja trećina */
+  return ses.qKm;
+}
+function deriveQS(weeks){
+  const qs={};
+  weeks.forEach(w=>w.days.forEach(d=>{
+    if(!d.session) return;
+    if(d.session.type==='int') qs['n'+w.w+'d'+d.dow]=[d.session.repM];               /* i broken tempo — lapovi po repM */
+    else if(d.session.type==='tempo') qs['n'+w.w+'d'+d.dow]=[Math.round(d.session.qKm*1000)];
+    /* fartlek/prog: bez lap-spec — vremenski/kontinuirani, nema pouzdane detekcije */
+  }));
+  return qs;
+}
+function derivePred(weeks,raceDistM){
+  const pred=[];
+  weeks.forEach(w=>w.days.forEach(d=>{
+    if(!d.session) return;
+    pred.push(predRow(w.w, d.session.kind, sessQKm(d.session), d.session.paceSec, raceDistM));
+  }));
+  return pred;
+}
+/* Prenosi ZAKLJUČANA (ručno izmenjena) polja iz starih nedelja na sveže
+   regenerisane — koristi ga recalibratedPlan da rekalibracija ne pregazi
+   ručne izmene. Vraća fresh (mutiran) niz nedelja. */
+function mergeOverrides(freshWeeks, oldWeeks){
+  const oldByKey={};
+  (oldWeeks||[]).forEach(w=>w.days.forEach(d=>{ if(d.session) oldByKey[w.w+'-'+d.dow]=d.session; }));
+  freshWeeks.forEach(w=>w.days.forEach(d=>{
+    if(!d.session) return;
+    const old=oldByKey[w.w+'-'+d.dow];
+    if(!old) return;
+    if(old.type!==d.session.type) return; /* rotacija promenila tip sesije na tom slotu — polja nisu prenosiva */
+    let touched=false;
+    Object.keys(old.overrides||{}).forEach(f=>{
+      if(old.overrides[f]){ d.session[f]=old[f]; d.session.overrides[f]=true; touched=true; }
+    });
+    if(touched){ d.km=sessKm(d.session); d.desc=sessDesc(d.session); }
+  }));
+  return freshWeeks;
+}
+
+function nextMonday(ds){
+  /* KRITIČNO: mora biti dosledno UTC. new Date(ds+'T00:00:00') tumači se kao
+     LOKALNO vreme, a new Date(ds) (bez vremena) kao UTC po ES spec-u — mešanje
+     te dve konvencije je ranije davalo pogrešan datum (unazad 1 dan) u SVAKOJ
+     vremenskoj zoni ispred UTC (Beograd, ceo istočni deo sveta), pošto browser
+     radi u korisnikovoj lokalnoj zoni, ne u serverskom/test okruženju. */
+  const d=new Date(ds);
+  const wd=(d.getUTCDay()+6)%7;            /* 0=Pon */
+  if(wd!==0)d.setUTCDate(d.getUTCDate()+(7-wd));
+  return d.toISOString().slice(0,10);
+}
+function generatePlan(inp){
+  const raceDistM = inp.raceDistM||5000;
+  const prof = DIST_PROFILES[raceDistM];
+  if(!prof) return { error: 'Nepodržana ciljna distanca. Podržano: 5K, 10K, polumaraton, maraton.' };
+  const start = nextMonday(inp.startDate);
+  const daysN = Math.round((new Date(inp.raceDate) - new Date(start)) / 86400000);
+  const weeks = Math.floor(daysN/7) + 1;
+  const maxWeeks = 104; /* bezbednosni plafon (2 god.) protiv degenerisanog unosa (npr. pogrešan datum), NE ograničenje planiranja — korisnik sme da se sprema koliko god unapred želi */
+  if(weeks < prof.minWeeks) return { error: `Manje od ${prof.minWeeks} nedelja do trke (minimum za ${prof.name}) — puna periodizacija nije moguća.` };
+  if(weeks > maxWeeks) return { error: `Više od ${maxWeeks} nedelja (2 godine) — proveri datum trke, verovatno je pogrešno unet.` };
+  const runDays = Math.max(2, Math.min(7, Math.round(inp.runDays||4)));
+  const qWant = Math.max(1, Math.min(2, Math.round(inp.quality||2)));
+  const slots = buildDaySlots(runDays, qWant, { lrDow: inp.lrDow, qDows: inp.qDows });
+  const dayWarnings = dayPrefWarnings(slots);
+  const effQ = Object.values(slots).filter(r=>r==='q1'||r==='q2').length;
+  const a = assess(inp.pb, weeks, inp.intensity, inp.goalSec||null, raceDistM);
+  a.start = start;
+
+  /* ============================================================
+     FAZA 1 (bazna) — samo lako trčanje + strides, bez kvaliteta.
+     Daniels: Faza I = aerobna baza, PRESKAČE se ako si trenirao
+     redovno. Km SAM NE razlikuje početnika od treniranog trkača
+     niskog obima (npr. 22 km/ned strukturirano = treniran). Zato
+     dve informacije: nizak km I eksplicitna potvrda da NIJE trenirao
+     redovno. <30 km je inženjerski prag (NE Danielsov broj); trajanje
+     fiksno 4 nedelje. Aktivira se samo ako posle baze ostaje pun
+     periodizovan ciklus (minWeeks). Default trainedRecently=true
+     (stari pozivi bez ovog polja NE dobijaju bazu — non-breaking). */
+  const BASE_THRESHOLD_KM = 30;   /* inženjerski prag, ne Danielsov podatak */
+  const BASE_WEEKS = 4;
+  const trainedRecently = inp.trainedRecently !== false; /* default true */
+  const wantsBase = (inp.weeklyKm < BASE_THRESHOLD_KM) && !trainedRecently && (weeks >= prof.minWeeks + BASE_WEEKS);
+  const baseWeeks = wantsBase ? BASE_WEEKS : 0;
+  const qualWeeks = weeks - baseWeeks;  /* nedelje u kojima se odvija kvalitetni ciklus */
+
+  /* volumen: start→vrhunac uz +8% cap, deload svake 4., taper 2 nedelje (NEPROMENJENO — kalibrisano na etalon, distancno-agnostičko po dizajnu) */
+  const vols=[]; let cur=Math.max(15, Math.min(inp.weeklyKm, 90));
+  /* peakTarget = compound rast starta preko svih RAMPNIH nedelja (ukupne minus
+     taper minus deloadovi), tako da se vrhunac dostigne TAČNO pred taper — ne na
+     sredini plana. Fiksni cur*2.1 je dostizao vrhunac prerano na dugim planovima
+     → plateau i nazubljeno oscilirање oko cap-a posle svakog deloada (bug na 20+
+     ned. planovima). Gornje granice (cur+weeks*2.2, 90) zadržane. */
+  const deloadCount = Math.floor((weeks-2)/DELOAD_EVERY);
+  const rampSteps = Math.max(weeks - 2 - deloadCount, 1);
+  const peakTarget = Math.min(cur*Math.pow(GROW_MAX, rampSteps), cur + weeks*2.2, 90);
+  for(let w=1; w<=weeks; w++){
+    if(w===weeks){ vols.push(r1(peak(vols)*RACEWK_F)); }
+    else if(w===weeks-1){ vols.push(r1(peak(vols.length?vols:[cur])*TAPER_F)); }
+    else if(w<=baseWeeks){
+      /* Bazne nedelje: postepen blag rast od starta (deo iste rampe, ne nezavisan
+         niz). Bez ovoga kvalitetni ciklus posle baze skače kao da baze nema. */
+      if(w===baseWeeks && baseWeeks>=DELOAD_EVERY && w%DELOAD_EVERY===0){ vols.push(r1(vols[vols.length-1]*DELOAD_F)); }
+      else { cur = vols.length? Math.min(vols[vols.length-1]*GROW_MAX, peakTarget) : cur; vols.push(r1(cur)); }
+    }
+    else if(w%DELOAD_EVERY===0 && w<weeks-2){ vols.push(r1(vols[vols.length-1]*DELOAD_F)); }
+    else{
+      const prev = vols.length?vols[vols.length-1]:cur/GROW_MAX;
+      const base = (w>1 && (w-1)%DELOAD_EVERY===0) ? vols[vols.length-2] : prev;
+      cur = Math.min(base*GROW_MAX, peakTarget);
+      vols.push(r1(cur));
+    }
+  }
+  function peak(arr){ return Math.max(...arr, cur); }
+
+  const rampWeeks = Math.min(weeks-2, RAMP_CAP_WEEKS);
+  const racePace = Math.round((inp.goalSec||a.predictedSec)/(raceDistM/1000));
+  const raceDow = daysN - (weeks-1)*7 + 1; /* 1..7 unutar poslednje nedelje */
+  const plan={ weeks:[], pred:[], qs:{}, meta:{...a, weeks, intensity:inp.intensity, racePace, runDays, quality:effQ, dayWarnings, raceDistM, raceName:prof.name, baseWeeks} };
+  const strengthDow = (runDays<=5) ? pickStrengthDay(slots) : null;
+
+  function D(dow,tag,km,desc){ return {dow,tag,km,desc}; }
+  function REST(dow,desc){ return {dow,rest:true,desc:desc||null}; }
+  function pushPredQs(dayObj,w){
+    const ses=dayObj.session;
+    plan.pred.push(predRow(w, ses.kind, sessQKm(ses), ses.paceSec, raceDistM));
+    if(ses.type==='int') plan.qs['n'+w+'d'+dayObj.dow]=[ses.repM];
+    else if(ses.type==='tempo') plan.qs['n'+w+'d'+dayObj.dow]=[Math.round(ses.qKm*1000)];
+  }
+
+  for(let w=1; w<=weeks; w++){
+    const vdotW = a.vdot0 + (a.vdotGoal-a.vdot0)*Math.min(w,rampWeeks)/rampWeeks;
+    /* Specifičnost tek u POSLEDNJIH 6 nedelja pred taper — APSOLUTAN broj,
+       ne razlomak (w/weeks). Razlomak (weekPhase) se loše skalira na duge
+       planove (maraton 40+ ned.): pošto VDOT plato nastupa na FIKSNIH 20
+       nedelja (RAMP_CAP_WEEKS) bez obzira na dužinu plana, razlomak-prag bi
+       na dugom planu presekao već ravan plato veštačkim usporavanjem na
+       pola puta — dokazano testom (N25 3:28/km vs N45 4:04/km na istom
+       platou, trebalo bi identično). Apsolutan broj (poslednjih 6 nedelja)
+       ispravno prati "etalon N8-N13" nameru nezavisno od ukupne dužine. */
+    const pI = (weeks - w)<=6 ? Math.max(paceForZone(vdotW,'I'), racePace) : paceForZone(vdotW,'I');
+    const pT=paceForZone(vdotW,'T'), pE=paceForZone(vdotW,'E'), pLR=paceForZone(vdotW,'LR');
+    const pM=paceForZone(vdotW,'M'); /* koristi se samo kad prof.useM (maraton) — bezopasno računati uvek */
+    const pR=paceForZone(vdotW,'R'); /* koristi se samo u ranoj fazi (phase<0.25) — bezopasno računati uvek */
+    const vol=vols[w-1];
+    const isDeload = w%DELOAD_EVERY===0 && w<weeks-2;
+    const isTaper1 = w===weeks-1, isRace = w===weeks;
+    const days=[];
+
+    if(isRace){
+      /* trkačka nedelja pozicionirana po STVARNOM danu trke, ne fiksno četvrtak */
+      const rp=racePace;
+      const distKm=(raceDistM/1000).toFixed(1).replace(/\.0$/,'').replace('.',',');
+      const mk={
+        [raceDow-3]: dw=>D(dw,'lako',3,`3 km shakeout (skroz lagano) + lagani core`),
+        [raceDow-2]: dw=>D(dw,'int',3.7,`1.5 km WU + 6×200 m @ ${fmtP(Math.max(rp-4,pI-6))}/km (200 m hod) + 1 km CD (aktivacija)`),
+        [raceDow-1]: dw=>D(dw,'lako',2,`2 km shakeout + lagana mobilnost`),
+        [raceDow]:   dw=>D(dw,'trka',raceDistM/1000,`🏁 TRKA ${distKm} km (${prof.name}) — cilj ${fmtP(inp.goalSec||a.predictedSec)} / ritam ${fmtP(rp)}/km`)
+      };
+      for(let dw=1; dw<=raceDow; dw++){ days.push(mk[dw]? mk[dw](dw) : REST(dw)); }
+      if(raceDow-2>=1){ plan.pred.push(predRow(w,'Intervali',1.2,Math.max(rp-4,pI-6),raceDistM)); plan.qs['n'+w+'d'+(raceDow-2)]=[200]; }
+    } else if(w <= baseWeeks){
+      /* FAZA 1 (bazna) — samo lako trčanje + obavezne strides, bez kvaliteta.
+         Gradi aerobnu bazu i obim pre nego što kvalitetni ciklus počne. */
+      const alloc=allocEasyLR(vol, [], runDays-1, runDays, pLR);
+      let ei=0;
+      for(let dow=1; dow<=7; dow++){
+        const role=slots[dow];
+        if(role==='rest'){
+          if(dow===strengthDow) days.push(D(dow,'snaga',null,`Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)`));
+          else days.push(REST(dow));
+          continue;
+        }
+        if(role==='lr'){
+          days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km lako-dugo (Z2) @ ~${fmtP(pLR)}/km — bazna faza, bez kvaliteta`));
+          continue;
+        }
+        /* strides na svakom drugom lakom danu tokom baze (Daniels: strides kroz sve faze) */
+        const km=alloc.easies[ei]!=null?alloc.easies[ei]:4;
+        const strides = (ei%2===0) ? ' + 6×20 s strides (lagani ubrzani koraci, pun oporavak)' : '';
+        days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
+        ei++;
+      }
+    } else {
+      /* kvalitetne sesije po slotovima (deload: nema kvaliteta; prva kval. nedelja: samo q1, kao uvodna) */
+      const qualW = w - baseWeeks;         /* redni broj unutar kvalitetnog ciklusa (1-indeksiran) */
+      const isFirstQualWeek = qualW===1;
+      const sessions={};
+      for(let dow=1; dow<=7; dow++){
+        const role=slots[dow];
+        if(role!=='q1' && role!=='q2') continue;
+        if(isDeload) continue;
+        if(isFirstQualWeek && role==='q2') continue;
+        if(isFirstQualWeek && role==='q1'){ /* uvodna: kontinuirani tempo umesto intervala */
+          const qT=r1(Math.max(2, Math.min(vol*0.18, (20*60)/pT, 5)));
+          sessions[dow]=sessTempo(dow,2,qT,pT,2);
+          continue;
+        }
+        sessions[dow]=buildQuality(qualW,qualWeeks,role,effQ,vol,pI,pT,pE,isTaper1,dow,racePace,prof.qMix,pM,pR,prof.name);
+      }
+      const qKms=Object.values(sessions).map(d=>d.km||0);
+      const easyDowsCount=[1,2,3,4,5,6,7].filter(d=>{
+        const role=slots[d];
+        return role==='easy' || ((role==='q1'||role==='q2') && !sessions[d]);
+      }).length;
+      const alloc=allocEasyLR(vol, qKms, easyDowsCount, runDays, pLR);
+      let ei=0;
+      for(let dow=1; dow<=7; dow++){
+        const role=slots[dow];
+        if(role==='rest'){
+          if(dow===strengthDow) days.push(D(dow,'snaga',null,`Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)`));
+          else days.push(REST(dow));
+          continue;
+        }
+        if(role==='lr'){
+          days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km LR (Z2) @ ~${fmtP(pLR)}/km — najduže trčanje nedelje`));
+          continue;
+        }
+        if(sessions[dow]){ days.push(sessions[dow]); pushPredQs(sessions[dow],w); continue; }
+        const km=alloc.easies[ei]!=null?alloc.easies[ei]:4;
+        /* Strides na prvom lakom danu SVAKE kval. nedelje (Daniels: kroz sve faze,
+           redovno — ne povremeno). Izostaju samo u taper1 (izbeći dodatni neuro-
+           stres neposredno pred trku). Deload: kraći set. */
+        const strides = isTaper1 ? ''
+          : (ei===0 ? (isDeload ? ' + 4×15 s strides (lagani ubrzani koraci)' : ' + 6×20 s strides (lagani ubrzani koraci, pun oporavak)') : '');
+        days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
+        ei++;
+      }
+    }
+    plan.weeks.push({ w, vol: r1(days.reduce((s,d)=>s+(d.km||0),0)), days, deload:isDeload });
+  }
+  return plan;
+}
+
+if(typeof module!=='undefined')module.exports={vdotFromRace,paceForZone,raceTimeForVdot,generatePlan,assess,fmtP,Z,RAMP,buildDaySlots,pickStrengthDay,dayPrefWarnings};
+
+/* ============================================================
+   ADAPTIVNO REKALIBRISANJE — v3.1
+   Damping težine po tipu sesije: inženjerski izbor (NE izmerena
+   konstanta), obrazloženje: intervalne sesije nose grešku od pauza
+   (već utvrđeno kod Race Predictora — ZADNJA/NAJBRŽA prvenstveno
+   iz kontinuiranih sesija). Manji korak za intervale, veći za
+   tempo/ritam. Podložno promeni.
+   ============================================================ */
+const ALPHA = { int: 0.12, tempo: 0.28, rain_default: 0.15 };
+
+/* Nova ocena VDOT-a iz JEDNE sesije, sa prigušenjem prema prethodnoj
+   (zaglađenoj) vrednosti. sessionType: 'int' | 'tempo'. zone: 'I' | 'T'. */
+function recalibrate(vdotSmoothed, sessionPaceSecKm, zone, sessionType){
+  const vObs = vdotFromPace(sessionPaceSecKm, zone);
+  const a = ALPHA[sessionType] || ALPHA.rain_default;
+  return { vdotObs: r1(vObs), vdotNew: r1(vdotSmoothed + a*(vObs - vdotSmoothed)), alpha:a };
+}
+
+/* Ponovo generiše SAMO preostale nedelje (>=currentWeekIdx) sa ispravljenom
+   putanjom, tako što izračuna "virtuelni PB" koji bi originalnom formulom,
+   primenjenom od nedelje 1, dao tačno vdotNowSmoothed na trenutnoj nedelji.
+   Odrađene nedelje (< currentWeekIdx) se ne diraju — istorija je nepromenljiva.
+   oldWeeksForMerge (opciono): ako je prosleđeno, ručno zaključana polja
+   (session.overrides) iz njih se prenose na sveže regenerisane nedelje —
+   rekalibracija ne sme da pregazi korisnikovu ručnu izmenu tempa/dužine/
+   pauze/broja ponavljanja. Bez ovog parametra, ponašanje je IDENTIČNO
+   ranijoj verziji (ništa se ne menja za postojeće pozive/testove). */
+function recalibratedPlan(originalInput, currentWeekIdx, vdotNowSmoothed, oldWeeksForMerge){
+  const weeksTotal = Math.round((new Date(originalInput.raceDate) - new Date(nextMonday(originalInput.startDate))) / 604800000) + 1;
+  const rampWeeks = Math.min(weeksTotal - 2, RAMP_CAP_WEEKS);
+  const backdated = vdotNowSmoothed - RAMP[originalInput.intensity] * Math.min(currentWeekIdx-1, rampWeeks);
+  const virtualPbSec = raceTimeForVdot(Math.max(backdated, 20), 5000);
+  /* KRITIČNO: racePace mora ostati stabilan. Ako korisnik NIJE zadao goalSec,
+     bez ove linije bi generatePlan iznutra računao FRESH predictedSec iz
+     VEŠTAČKE (backdated) putanje — koja može ispasti sporija od stvarne
+     trenutne forme (vdotNowSmoothed), jer predstavlja projekciju do KRAJA
+     plana, ne trenutno stanje. Taj (pogrešno spor) racePace onda kroz
+     Math.max(paceForZone(vdotW,'I'), racePace) veštački uspori intervale —
+     korisnik uneseta TAČNO taj (već usporen) tempo i VDOT mu ispravno
+     "opadne" na taj usporen broj, iako je trening odradio bez odstupanja.
+     Rešenje: ako nema eksplicitnog cilja, koristi predikciju iz STVARNE
+     trenutne forme kao stabilan oslonac, ne iz veštačke putanje. */
+  const raceDistM = originalInput.raceDistM||5000;
+  const stableGoalSec = originalInput.goalSec || raceTimeForVdot(vdotNowSmoothed, raceDistM);
+  const replanned = generatePlan({ ...originalInput, pb:{ distM:5000, sec:virtualPbSec }, goalSec: stableGoalSec });
+  if(replanned.error) return replanned;
+  const weeksSlice = replanned.weeks.slice(currentWeekIdx-1);
+  if(oldWeeksForMerge){
+    mergeOverrides(weeksSlice, oldWeeksForMerge);
+    return {
+      weeks: weeksSlice,
+      pred: derivePred(weeksSlice),
+      qs: deriveQS(weeksSlice),
+      meta: { ...replanned.meta, vdotAtRecal: r1(vdotNowSmoothed), recalWeek: currentWeekIdx }
+    };
+  }
+  return {
+    weeks: weeksSlice,
+    pred: replanned.pred.filter(p=>p.w>=currentWeekIdx),
+    qs: Object.fromEntries(Object.entries(replanned.qs).filter(([k])=>+k.match(/\d+/)[0] >= currentWeekIdx)),
+    meta: { ...replanned.meta, vdotAtRecal: r1(vdotNowSmoothed), recalWeek: currentWeekIdx }
+  };
+}
+
+/* ============================================================
+   POVREDA-SVESTAN RE-ENTRY — v3.1
+   Bez izmišljene "X dana pauze = Y dana rampe" formule. Umesto toga:
+   plan po povratku kreće od STVARNO poslednje ostvarene nedeljne
+   zapremine (ne od originalno planirane za tu nedelju), a već
+   testiran GROW_MAX (+8%/ned.) iz generatora vraća volumen na krivu.
+   Tempo/VDOT se NE pogađa unapred — koriguje ga recalibrate() na
+   osnovu prve stvarne sesije posle povratka.
+   ============================================================ */
+function reentryPlan(originalInput, resumeWeekIdx, lastRealizedVolKm, vdotAtPause){
+  const weeksTotal = Math.round((new Date(originalInput.raceDate) - new Date(nextMonday(originalInput.startDate))) / 604800000) + 1;
+  const weeksLeft = weeksTotal - resumeWeekIdx + 1;
+  if(weeksLeft < 4) return { error:'Manje od 4 nedelje do trke posle pauze — pun re-entry nije moguć. Cilj treba ručno preispitati.' };
+  const backdated = vdotAtPause - RAMP[originalInput.intensity] * Math.min(resumeWeekIdx-1, Math.min(weeksTotal-2, RAMP_CAP_WEEKS));
+  const virtualPbSec = raceTimeForVdot(Math.max(backdated,20), 5000);
+  const raceDistM = originalInput.raceDistM||5000; /* ista ispravka kao recalibratedPlan — stabilan racePace, ne iz veštačke putanje */
+  const stableGoalSec = originalInput.goalSec || raceTimeForVdot(vdotAtPause, raceDistM);
+  const replanned = generatePlan({ ...originalInput, pb:{ distM:5000, sec:virtualPbSec }, goalSec: stableGoalSec });
+  if(replanned.error) return replanned;
+  /* prva nedelja po povratku: cap na lastRealizedVolKm umesto plana; GROW_MAX dalje sam vraća krivu */
+  const w0 = replanned.weeks[resumeWeekIdx-1];
+  const scale = w0.vol>0 ? Math.min(lastRealizedVolKm*GROW_MAX, w0.vol)/w0.vol : 1;
+  const first = { ...w0, vol:r1(w0.vol*scale), days:w0.days.map(d=>d.km!=null?{...d,km:r1(d.km*scale)}:d), reentry:true };
+  return { weeks:[first, ...replanned.weeks.slice(resumeWeekIdx)], pred:replanned.pred.filter(p=>p.w>=resumeWeekIdx), meta:replanned.meta };
+}
+
+if(typeof module!=='undefined')module.exports=Object.assign(module.exports,{vdotFromPace,recalibrate,recalibratedPlan,reentryPlan,ALPHA,GROW_MAX});
+
+/* ============================================================
+   RACE PREDICTOR — OPSEG (nadogradnja POSTOJEĆEG Riegel mehanizma
+   u v2 aplikaciji, riegel(tempoSec,q) — NE deo VDOT generatora.
+   workLapsTempo ovde je VERNA KOPIJA funkcije već aktivne u v2
+   index.html (Strava sync) — duplirana radi samostalne testabilnosti
+   pre porta; logika mora ostati identična na oba mesta.
+   ============================================================ */
+function genWorkLapsTempo(laps, specs, tol=0.12){ /* PREIMENOVANO iz workLapsTempo() — V2 već ima svoju, pažljivo doteranu verziju (workLapsSelect-baziranu, iz Strava lap-reading debugginga); bez preimenovanja bi ova prostija verzija tiho pregazila V2-ovu i DEGRADIRALA sync tačnost bez ijedne greške koja bi to signalizirala */
+  const work=laps.filter(L=>specs.some(m=>Math.abs(L.distance-m)/m<=tol));
+  if(!work.length)return null;
+  const dist=work.reduce((s,L)=>s+L.distance,0), t=work.reduce((s,L)=>s+(L.moving_time||L.elapsed_time||0),0);
+  if(!dist||!t)return null;
+  return Math.round(t/(dist/1000));
+}
+/* Donja granica: prvi radni lap -> poslednji radni lap, UKLJUČUJUĆI sve između (oporavke).
+   WU pre prvog i CD posle poslednjeg ostaju isključeni — isto ograničenje kao gornja granica. */
+function blockTempo(laps, specs, tol=0.12){
+  const idx = laps.map((L,i)=>({i,hit:specs.some(m=>Math.abs(L.distance-m)/m<=tol)})).filter(x=>x.hit).map(x=>x.i);
+  if(!idx.length) return null;
+  const block = laps.slice(idx[0], idx[idx.length-1]+1);
+  const dist=block.reduce((s,L)=>s+L.distance,0), t=block.reduce((s,L)=>s+(L.moving_time||L.elapsed_time||0),0);
+  if(!dist||!t) return null;
+  return Math.round(t/(dist/1000));
+}
+const riegelV2 = (tempoSecPerKm,qKm) => tempoSecPerKm*qKm*Math.pow(5/qKm,1.06);
+/* Vraća {hi,lo,hiPace,loPace} za intervalne sesije sa lap podacima, ili null
+   (pozivalac tada koristi postojeći jedan-broj tok — kontinuirane sesije / ručni unos). */
+function predictRange(laps, specs, qKm){
+  if(!laps || !laps.length) return null;
+  const hiPace=genWorkLapsTempo(laps,specs), loPace=blockTempo(laps,specs);
+  if(hiPace==null||loPace==null) return null;
+  return { hi:Math.round(riegelV2(hiPace,qKm)), lo:Math.round(riegelV2(loPace,qKm)), hiPace, loPace };
+}
+
+if(typeof module!=='undefined')module.exports=Object.assign(module.exports,{sessInt,sessTempo,sessKm,sessDesc,applyEdit,deriveQS,derivePred,mergeOverrides,predRow,fmtRest});
+if(typeof module!=='undefined')module.exports=Object.assign(module.exports,{workLapsTempo,blockTempo,predictRange,riegelV2,danielsLRCapKm,DIST_PROFILES});
+
+/* ---------- GENERATOR PLANA (wizard, portovano iz V3 sub19-gen) ----------
+   UI/validacija prenete skoro doslovno iz V3. finishOnboarding je PREPISAN
+   za V2: umesto V3-ovog S.meta/S.plan, ide kroz adaptGeneratedPlan() → 
+   S.genPlan → setActivePlan()/rebuildDateIndex() — isti V2-domaći mehanizam
+   koji već koristi tvoj hardkodovan plan. */
+const $$=s=>Array.from(document.querySelectorAll(s));
+function clampDigits(v,n){ v=String(v).replace(/\D/g,''); return v.slice(0,n); }
+const PB_SANITY={ 5000:[720,5999], 10000:[1500,5999], 21097.5:[3300,14400], 42195:[6900,25200] };
+const HOURS_FROM=21097;
+const VDOT_CIRC=169.6;
+const TOTAL_STEPS=4;
+let obStep=1;
+let wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, lrDow:7, qDays:[], intensity:'std', goalMin:'', goalSec:'' };
+function pbUsesHours(){ return wiz.pbDist>=HOURS_FROM; }
+function pbTotalSec(){
+  const h=pbUsesHours()?(+wiz.pbH||0):0, m=+wiz.pbMin, s=+wiz.pbSec;
+  if(wiz.pbMin===''||wiz.pbSec===''||isNaN(m)||isNaN(s)||s>59) return null;
+  if(pbUsesHours()&&m>59) return null;
+  const t=h*3600+m*60+s;
+  return t>0?t:null;
+}
+function pbSanityOk(){
+  const t=pbTotalSec(); if(t==null) return false;
+  const [lo,hi]=PB_SANITY[wiz.pbDist]||[60,99999];
+  return t>=lo&&t<=hi;
+}
+function pbSanityMsg(){
+  const t=pbTotalSec();
+  if(t==null) return '';
+  const [lo,hi]=PB_SANITY[wiz.pbDist]||[0,0];
+  if(t<lo) return 'Vreme je brže od realnog opsega za izabranu distancu — proveri unos.';
+  if(t>hi) return 'Vreme je sporije od opsega koji plan podržava za tu distancu — proveri unos.';
+  return '';
+}
+function openWizard(){
+  wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, lrDow:7, qDays:[], intensity:'std', goalMin:'', goalSec:'' };
+  obStep=1;
+  closeSheet();
+  document.querySelector('header').style.display='none';
+  document.querySelector('main').style.display='none';
+  $('#tabbar').style.display='none';
+  $('#wizard').style.display='';
+  renderOnboard();
+}
+function closeWizard(){
+  $('#wizard').style.display='none';
+  document.querySelector('header').style.display='';
+  document.querySelector('main').style.display='';
+  $('#tabbar').style.display='';
+  renderHeader();
+  PAGES[ACTIVE]();
+}
+function renderOnboard(){
+  const el=$('#wizard');
+  el.innerHTML=`<div class="ob-wrap">
+    <div class="ob-btnrow" style="margin:0 0 10px;justify-content:flex-end">
+      <button type="button" class="btn ghost sm" id="obCancel" style="flex:none">✕ Otkaži</button>
+    </div>
+    <div class="ob-progress" id="ob-progress"></div>
+    <div class="ob-step active" data-step="1">
+      <div class="ob-eyebrow">Korak 1 / 4</div>
+      <div class="ob-h1">Za koju trku se sprema?</div>
+      <div class="ob-sub">Podržane distance: 5K, 10K, polumaraton, maraton. Struktura plana (dugo trčanje, tempo rad) zavisi od ovoga.</div>
+      <div class="ob-field"><label>Ciljna distanca</label>
+        <div class="ob-chiprow" id="raceDistChips">
+          <button type="button" class="ob-chip on" data-v="5000">5K</button>
+          <button type="button" class="ob-chip" data-v="10000">10K</button>
+          <button type="button" class="ob-chip" data-v="21097.5">Polumaraton</button>
+          <button type="button" class="ob-chip" data-v="42195">Maraton</button>
+        </div>
+      </div>
+      <div class="ob-field"><label>Datum trke</label><input type="date" id="in-raceDate" min="${todayStr()}"></div>
+      <div class="ob-err" id="ob-err-1"></div>
+    </div>
+    <div class="ob-step" data-step="2">
+      <div class="ob-eyebrow">Korak 2 / 4</div>
+      <div class="ob-h1">Skorašnji rezultat</div>
+      <div class="ob-sub">Bilo koja skorija trka na poznatoj distanci. Iz ovoga se računaju svi tempi u planu.</div>
+      <div class="ob-field"><label>Distanca</label>
+        <div class="ob-chiprow" id="pbDistChips">
+          <button type="button" class="ob-chip on" data-v="5000">5 km</button>
+          <button type="button" class="ob-chip" data-v="10000">10 km</button>
+          <button type="button" class="ob-chip" data-v="21097.5">Polumaraton</button>
+          <button type="button" class="ob-chip" data-v="42195">Maraton</button>
+        </div>
+      </div>
+      <div class="ob-field"><label>Vreme</label>
+        <div class="ob-row3">
+          <div id="pbHwrap" style="display:none;flex:1"><input type="number" id="in-pbH" placeholder="h" inputmode="numeric"></div>
+          <div class="ob-colon" id="pbHcolon" style="display:none">:</div>
+          <div style="flex:1"><input type="number" id="in-pbMin" placeholder="min" inputmode="numeric"></div>
+          <div class="ob-colon">:</div>
+          <div style="flex:1"><input type="number" id="in-pbSec" placeholder="sek" inputmode="numeric"></div>
+        </div>
+      </div>
+      <div class="ob-vdot" id="vdotWrap">
+        <svg class="ob-vring" viewBox="0 0 64 64">
+          <circle class="ob-vtrack" cx="32" cy="32" r="27"/>
+          <circle class="ob-vval" id="vdotArc" cx="32" cy="32" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
+        </svg>
+        <div><div class="ob-vnum" id="vdotNum">—</div><div class="ob-vlbl">VDOT — ovaj broj određuje svaki tempo u planu</div></div>
+      </div>
+      <div class="ob-err" id="ob-err-2"></div>
+    </div>
+    <div class="ob-step" data-step="3">
+      <div class="ob-eyebrow">Korak 3 / 4</div>
+      <div class="ob-h1">Kako trči nedeljno?</div>
+      <div class="ob-sub">Prosečna nedeljna kilometraža poslednje 2–3 nedelje, i koliko dana želi da trči.</div>
+      <div class="ob-field"><label>Nedeljno (km)</label><input type="number" id="in-weeklyKm" placeholder="npr. 22" min="5" max="120"></div>
+      <div class="ob-field"><label>Da li je trčao/la redovno zadnjih mesec dana?</label>
+        <div class="ob-chiprow" id="trainedChips">
+          <button type="button" class="ob-chip on" data-v="yes">Da, redovno</button>
+          <button type="button" class="ob-chip" data-v="no">Ne / tek počinje</button>
+        </div>
+        <div class="ob-sub" style="margin:8px 0 0;font-size:.72rem">Ako nije trčao/la redovno i obim je nizak, plan počinje sa 4 nedelje <b>bazne faze</b> — samo lagano trčanje, tek onda ubrzanja i intervali.</div>
+      </div>
+      <div class="ob-field"><label>Dana trčanja nedeljno</label>
+        <div class="ob-chiprow" id="runDaysChips">
+          <button type="button" class="ob-chip" data-v="2">2</button><button type="button" class="ob-chip" data-v="3">3</button>
+          <button type="button" class="ob-chip on" data-v="4">4</button><button type="button" class="ob-chip" data-v="5">5</button>
+          <button type="button" class="ob-chip" data-v="6">6</button><button type="button" class="ob-chip" data-v="7">7</button>
+        </div>
+      </div>
+      <div class="ob-field"><label>Dan za dugo trčanje (LR)</label>
+        <div class="ob-chiprow" id="lrDowChips">
+          <button type="button" class="ob-chip" data-v="1">Pon</button><button type="button" class="ob-chip" data-v="2">Uto</button>
+          <button type="button" class="ob-chip" data-v="3">Sre</button><button type="button" class="ob-chip" data-v="4">Čet</button>
+          <button type="button" class="ob-chip" data-v="5">Pet</button><button type="button" class="ob-chip" data-v="6">Sub</button>
+          <button type="button" class="ob-chip on" data-v="7">Ned</button>
+        </div>
+      </div>
+      <div class="ob-err" id="ob-err-3"></div>
+    </div>
+    <div class="ob-step" data-step="4">
+      <div class="ob-eyebrow">Korak 4 / 4</div>
+      <div class="ob-h1">Koliki intenzitet?</div>
+      <div class="ob-sub">Koliko brzo forma treba da raste kroz plan.</div>
+      <div class="ob-field"><label>Kvalitetnih (bržih) treninga nedeljno</label>
+        <div class="ob-chiprow" id="qualityChips">
+          <button type="button" class="ob-chip" data-v="1">1</button>
+          <button type="button" class="ob-chip on" data-v="2">2</button>
+        </div>
+        <div class="ob-sub" style="margin:8px 0 0;font-size:.72rem">Na ≤3 dana trčanja plan forsira 1 kvalitet.</div>
+      </div>
+      <div class="ob-field"><label>Dani za kvalitet — opciono (prazno = automatski)</label>
+        <div class="ob-chiprow" id="qDayChips">
+          <button type="button" class="ob-chip" data-v="1">Pon</button><button type="button" class="ob-chip" data-v="2">Uto</button>
+          <button type="button" class="ob-chip" data-v="3">Sre</button><button type="button" class="ob-chip" data-v="4">Čet</button>
+          <button type="button" class="ob-chip" data-v="5">Pet</button><button type="button" class="ob-chip" data-v="6">Sub</button>
+          <button type="button" class="ob-chip" data-v="7">Ned</button>
+        </div>
+      </div>
+      <div class="ob-field">
+        <button type="button" class="ob-icard" data-v="kons"><b>Konzervativno</b><span>Postepen, oprezan rast forme.</span><span class="ob-tag">Danielsova smernica</span></button>
+        <button type="button" class="ob-icard on" data-v="std"><b>Standardno</b><span>Uobičajen tempo napretka za trenirane trkače.</span><span class="ob-tag">Danielsova smernica</span></button>
+        <button type="button" class="ob-icard" data-v="agr"><b>Agresivno</b><span>Brz rast — realno uglavnom uz nizak trenažni staž ili paralelan gubitak telesne mase.</span><span class="ob-tag">Kalibrisano na jedan dokumentovan slučaj</span></button>
+      </div>
+      <div class="ob-field"><label>Ciljno vreme (opciono)</label>
+        <div class="ob-row3">
+          <div><input type="number" id="in-goalMin" placeholder="min" min="0" max="60"></div>
+          <div class="ob-colon">:</div>
+          <div><input type="number" id="in-goalSec" placeholder="sek" min="0" max="59"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-btnrow">
+      <button type="button" class="btn ghost" id="obBack" style="display:none">Nazad</button>
+      <button type="button" class="btn" id="obNext">Dalje</button>
+    </div>
+  </div>`;
+  bindOnboardEvents();
+  goObStep(1);
+}
+function renderObProgress(){
+  const el=$('#ob-progress'); el.innerHTML='';
+  for(let i=1;i<=TOTAL_STEPS;i++){
+    const d=document.createElement('i');
+    if(i<obStep) d.className='done'; else if(i===obStep) d.className='on';
+    el.appendChild(d);
+  }
+}
+function obStepValid(n){
+  if(n===1) return !!wiz.raceDate;
+  if(n===2) return pbSanityOk();
+  if(n===3) return wiz.weeklyKm!==''&&+wiz.weeklyKm>0;
+  return true;
+}
+function goObStep(n){
+  obStep=n;
+  $$('.ob-step').forEach(s=>s.classList.toggle('active', +s.dataset.step===n));
+  $('#obBack').style.display=n>1?'':'none';
+  $('#obNext').textContent=n===TOTAL_STEPS?'Generiši plan':'Dalje';
+  renderObProgress();
+  $('#obNext').disabled=!obStepValid(n);
+}
+function syncHoursUI(){
+  const on=pbUsesHours();
+  $('#pbHwrap').style.display=on?'':'none';
+  $('#pbHcolon').style.display=on?'':'none';
+  if(!on&&wiz.pbH!==''){
+    const folded=(+wiz.pbH||0)*60+(+wiz.pbMin||0);
+    wiz.pbH='';$('#in-pbH').value='';
+    if(folded>0&&folded<=99){ wiz.pbMin=String(folded); $('#in-pbMin').value=wiz.pbMin; }
+  }
+}
+function updateVdotPreview(){
+  const wrap=$('#vdotWrap');
+  const sec=pbTotalSec();
+  if(sec==null||!pbSanityOk()){ wrap.classList.remove('show'); return; }
+  const vd=vdotFromRace(wiz.pbDist, sec);
+  $('#vdotNum').textContent=vd.toFixed(1);
+  const frac=Math.max(0,Math.min(1,(vd-25)/(65-25)));
+  $('#vdotArc').style.strokeDashoffset=VDOT_CIRC*(1-frac);
+  wrap.classList.add('show');
+}
+function bindOnboardEvents(){
+  $('#obCancel').addEventListener('click',()=>{
+    if(!confirm('Otkazati generisanje plana?'))return;
+    closeWizard();
+  });
+  $('#in-raceDate').addEventListener('input',e=>{ wiz.raceDate=e.target.value; goObStep(obStep); });
+  $$('#raceDistChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
+    $$('#raceDistChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
+    wiz.raceDist=+c.dataset.v;
+  }));
+  $$('#pbDistChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
+    $$('#pbDistChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
+    wiz.pbDist=+c.dataset.v; syncHoursUI(); goObStep(obStep); updateVdotPreview();
+  }));
+  $('#in-pbH').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,1); wiz.pbH=e.target.value; goObStep(obStep); updateVdotPreview(); });
+  $('#in-pbMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.pbMin=e.target.value; goObStep(obStep); updateVdotPreview(); });
+  $('#in-pbSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.pbSec=e.target.value; goObStep(obStep); updateVdotPreview(); });
+  $('#in-weeklyKm').addEventListener('input',e=>{ wiz.weeklyKm=e.target.value; goObStep(obStep); });
+  $$('#trainedChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
+    $$('#trainedChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
+    wiz.trainedRecently = c.dataset.v==='yes';
+  }));
+  $$('#runDaysChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
+    $$('#runDaysChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.runDays=+c.dataset.v;
+  }));
+  $$('#lrDowChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
+    $$('#lrDowChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.lrDow=+c.dataset.v;
+    const i=wiz.qDays.indexOf(wiz.lrDow);
+    if(i>=0){ wiz.qDays.splice(i,1); const b=document.querySelector(`#qDayChips .ob-chip[data-v="${wiz.lrDow}"]`); if(b)b.classList.remove('on'); }
+  }));
+  $$('#qualityChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
+    $$('#qualityChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.quality=+c.dataset.v;
+    while(wiz.qDays.length>wiz.quality){ const rm=wiz.qDays.shift(); const b=document.querySelector(`#qDayChips .ob-chip[data-v="${rm}"]`); if(b)b.classList.remove('on'); }
+  }));
+  $$('#qDayChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
+    const v=+c.dataset.v; if(v===wiz.lrDow) return;
+    const i=wiz.qDays.indexOf(v);
+    if(i>=0){ wiz.qDays.splice(i,1); c.classList.remove('on'); return; }
+    wiz.qDays.push(v); c.classList.add('on');
+    while(wiz.qDays.length>wiz.quality){ const rm=wiz.qDays.shift(); const b=document.querySelector(`#qDayChips .ob-chip[data-v="${rm}"]`); if(b)b.classList.remove('on'); }
+  }));
+  $$('.ob-icard').forEach(c=>c.addEventListener('click',()=>{
+    $$('.ob-icard').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.intensity=c.dataset.v;
+  }));
+  $('#in-goalMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalMin=e.target.value; });
+  $('#in-goalSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalSec=e.target.value; });
+  $('#obBack').addEventListener('click',()=>goObStep(obStep-1));
+  $('#obNext').addEventListener('click',()=>{
+    if(!obStepValid(obStep))return;
+    if(obStep<TOTAL_STEPS){ goObStep(obStep+1); return; }
+    finishOnboarding();
+  });
+}
+/* V2-DOMAĆA verzija (V3 je ovde imala S.meta/S.plan/indexPlan — različit sistem).
+   Ide kroz isti put kao tvoj hardkodovan plan: adaptGeneratedPlan() dodeljuje
+   id/datume, S.genPlan čuva REZULTAT (čist, bez runtime mutacija — vidi Fazu 1),
+   setActivePlan()+rebuildDateIndex() aktiviraju ga. */
+function finishOnboarding(){
+  const pbSec=pbTotalSec();
+  const goalSec=(wiz.goalMin!==''&&wiz.goalSec!=='') ? (+wiz.goalMin)*60+(+wiz.goalSec) : null;
+  const meta={
+    startDate: todayStr(), raceDate: wiz.raceDate, raceDistM: wiz.raceDist,
+    pb:{ distM:wiz.pbDist, sec:pbSec }, weeklyKm:+wiz.weeklyKm,
+    runDays:wiz.runDays, quality:wiz.quality, lrDow:wiz.lrDow, qDows:wiz.qDays.slice(),
+    intensity:wiz.intensity, goalSec, trainedRecently:wiz.trainedRecently
+  };
+  const plan=generatePlan(meta);
+  if(plan.error){ $('#ob-err-1').textContent=plan.error; goObStep(1); return; }
+  const adapted=adaptGeneratedPlan(plan);
+  if(!adapted){ $('#ob-err-1').textContent='Neočekivana greška pri generisanju plana.'; goObStep(1); return; }
+  S.genPlan=adapted;
+  /* nov plan → stari alts/moves/log ne pripadaju novim ID-jevima; čisto polazište */
+  S.alts={};S.moves={};S.log={};S.pred={};S.predLock={};S.vdotLog=[];
+  setActivePlan();rebuildDateIndex();save();
+  closeWizard();
+}
+
 /* ---------- POMERANJE TRENINGA (centralni ekran, cela nedelja odjednom) ----------
    Dodir prvog dana ga izabere, dodir drugog im zameni mesta. Odrađeni dani su
    zaključani (istorija se ne pomera). NE koristi <select> — CSS mu skida native
@@ -1432,7 +2614,7 @@ function weekSwapHTML(w){
   return h;
 }
 function openWeekSwap(wNum){
-  const w=PLAN.find(x=>x.w===wNum);
+  const w=CUR_PLAN.find(x=>x.w===wNum);
   if(!w)return;
   SWAP_SEL=null;SWAP_ERR='';
   renderWeekSwap(w);
@@ -1461,7 +2643,7 @@ function openDaySheet(id){
   const isRest=!!d.rest; /* odmor se ne loguje — prikaz bez forme, samo izmena */
   openSheet(`
     <div class="sh-t">N${d.week.w} · ${d.test?'TEST (opciono)':dowOf(d.date)+' '+fmtDY(d.date)}</div>
-    <div class="sh-s">${tagName(isRest?'odmor':d.tag)}${d.km!=null?' · plan '+fmtKm(d.km)+' km':''}${S.alts&&S.alts[id]?' · izmenjen':''}</div>
+    <div class="sh-s">${sessKind(d)}${d.km!=null?' · plan '+fmtKm(d.km)+' km':''}${S.alts&&S.alts[id]?' · izmenjen':''}</div>
     ${isRest?'':`<div class="desc" style="font-size:.85rem">${esc(d.desc)}</div>`}
     ${isRest?'':`<div class="seg" id="seg">
       <button data-s="pending" class="${s==='pending'?'on':''}">Predstoji</button>
@@ -1549,13 +2731,13 @@ function chartWeeks(){
   const max=48,gw=(W-L-6)/14;
   let g='';
   if(CHART_SEL.week!=null){
-    const w=PLAN.find(x=>x.w===CHART_SEL.week);
+    const w=CUR_PLAN.find(x=>x.w===CHART_SEL.week);
     g+=`<text class="chart-info" x="${L}" y="14" text-anchor="start">N${w.w} · plan ${fmtKm(weekPlanKm(w))} km · urađeno ${fmtKm(weekRealKm(w))} km</text>`;
   } else {
     g+=`<text class="chart-hint" x="${L}" y="14" text-anchor="start">Dodirni nedelju za detalje</text>`;
   }
   [0,12,24,36,48].forEach(v=>{const y=B-(v/max)*(B-T);g+=`<line class="gl" x1="${L}" y1="${y}" x2="${W-2}" y2="${y}"/><text class="ax" x="${L-4}" y="${y+3}" text-anchor="end">${v}</text>`;});
-  PLAN.forEach((w,i)=>{
+  CUR_PLAN.forEach((w,i)=>{
     const x=L+i*gw+2.5,sel=CHART_SEL.week===w.w;
     const ph=(weekPlanKm(w)/max)*(B-T),rh=(weekRealKm(w)/max)*(B-T);
     g+=`<rect x="${x}" y="${B-ph}" width="${gw/2-1.5}" height="${Math.max(ph,1)}" rx="2" fill="${sel?'rgba(255,255,255,.34)':'rgba(255,255,255,.16)'}"/>`;
@@ -1598,7 +2780,7 @@ function chartWeight(){
 }
 function chartTempo(){
   const runs=[];
-  PLAN.forEach(w=>w.days.forEach(d=>{
+  CUR_PLAN.forEach(w=>w.days.forEach(d=>{
     const l=S.log[d.id];
     if(l&&l.status==='done'&&l.km>0&&l.sec>0)runs.push({date:l.ts||d.date||'',t:l.sec/l.km});
   }));
@@ -1822,6 +3004,13 @@ function openSettings(){
     <div class="btnrow"><button class="btn ghost" id="s-imp">Uvezi backup</button></div>
     <input type="file" id="s-file" accept=".json,application/json" style="display:none">
     <hr class="sep">
+    <div class="card-t">Plan</div>
+    ${S.genPlan
+      ?`<div class="note-src" style="margin:0 0 10px">Aktivan: generisan plan (${CUR_PLAN.length} nedelja)</div>
+        <div class="btnrow" style="margin-top:0"><button class="btn ghost" id="pl-revert">Vrati na moj plan</button></div>`
+      :`<div class="btnrow" style="margin-top:0"><button class="btn" id="pl-gen">🧙 Generiši novi plan (za drugara)</button></div>
+        <div class="note-src">Napravi poseban plan za nekog drugog — tvoj plan ostaje netaknut.</div>`}
+    <hr class="sep">
     <div class="card-t">Strava</div>
     ${S.strava
       ?`<div class="note-src" style="margin:0 0 10px">Povezan${S.strava.athlete?': '+esc(S.strava.athlete):''} · poslednji sync: ${S.strava.lastSync?new Date(S.strava.lastSync).toLocaleString('sr-RS'):'nikad'} · scope: ${esc(S.strava.scope||'?')}</div>
@@ -1830,7 +3019,7 @@ function openSettings(){
       :`<div class="btnrow" style="margin-top:0"><button class="btn" id="st-on" style="background:#FC4C02">Poveži Stravu</button></div>
         <div class="note-src">Automatski uvoz trčanja (distanca, vreme, puls) i tempa kvalitetnih sesija iz lapova.</div>`}
     <hr class="sep">
-    <div class="note-src">Poslednji backup: ${S.ui.lastBackup?fmtDY(S.ui.lastBackup):'nikad'} · Verzija: ${APP_VERSION} · Šema podataka: v${S.v} · Plan: ${TOTAL_TR} treninga / ${fmtKm(PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · Izvor: Plan_SUB-19_5K_v5.xlsx · Trka: 24.09.2026.</div>
+    <div class="note-src">Poslednji backup: ${S.ui.lastBackup?fmtDY(S.ui.lastBackup):'nikad'} · Verzija: ${APP_VERSION} · Šema podataka: v${S.v} · Plan: ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · Izvor: ${S.genPlan?'generisan planom':'Plan_SUB-19_5K_v5.xlsx'}${S.genPlan?'':' · Trka: 24.09.2026.'}</div>
   `);
   $('#s-exp').onclick=exportBackup;
   $('#s-imp').onclick=()=>$('#s-file').click();
@@ -1839,6 +3028,12 @@ function openSettings(){
   if(so)so.onclick=stravaConnect;
   if(ss)ss.onclick=()=>{ss.disabled=true;ss.textContent='Sinhronizujem…';stravaSync(true).finally(()=>closeSheet());};
   if(sf)sf.onclick=stravaDisconnect;
+  const pg=$('#pl-gen'),pr=$('#pl-revert');
+  if(pg)pg.onclick=openWizard;
+  if(pr)pr.onclick=()=>{
+    if(!confirm('Vratiti se na tvoj originalni plan? Generisan plan se TRAJNO briše (napredak/unosi uz njega takođe) — nema arhive.'))return;
+    S.genPlan=null;setActivePlan();rebuildDateIndex();save();closeSheet();
+  };
 }
 function exportBackup(){
   const copy=JSON.parse(JSON.stringify(S));
@@ -1863,7 +3058,7 @@ function importBackup(file){
       if(!st){alert('Fajl nije prepoznat kao SUB-19 backup.');return;}
       if(!confirm(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${Object.keys(st.log).length} trening-unosa, ${st.knee.length} koleno, ${st.kg.length} težina.\n\nNastaviti?`))return;
       st.strava=st.strava||S.strava; /* konekcija se ne gubi uvozom */
-      S=st;rebuildDateIndex();save();closeSheet();
+      S=st;setActivePlan();rebuildDateIndex();save();closeSheet();
     }catch(e){alert('Greška pri čitanju fajla: '+e.message);}
   };
   fr.readAsText(file);
