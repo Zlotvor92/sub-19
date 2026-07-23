@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='36'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='39'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1741,7 +1741,7 @@ function pickReps(workKm, wkIdx, weeks){
          preparing for a marathon" (izuzetak je SAMO ultra, van dometa).
    Konačan LR = najmanji od (a) i (b), ali nikad ispod invarijante.
    Izuzetak invarijante: SAMO trkačka nedelja (trka je najkraća sesija). */
-function danielsLRCapKm(vol, pLRsecPerKm, isMarathon){
+function danielsLRCapKm(vol, pLRsecPerKm, isMarathon, isPeakStretch){
   if(isMarathon){
     /* Maraton: LR MORA dostići apsolutnu distancu specifičnosti (~28-32km),
        bez obzira na nedeljni obim — Danielsov 150-min/25% pravilo je
@@ -1749,7 +1749,15 @@ function danielsLRCapKm(vol, pLRsecPerKm, isMarathon){
        specifičnosti (Higdon/Pfitzinger/McMillan konvencija: 29-32km peak
        long run je standard nezavisno od ukupnog obima). Procenat raste sa
        obimom (više prostora → veći dozvoljen udeo), plafon ~32km. */
-    const pct = vol<40?0.62: vol<55?0.58: vol<70?0.50: vol<90?0.42: 0.36;
+    let pct = Math.min(0.65, 16/vol + 0.28);  /* glatka kriva, bez oštrih ivica na granicama */
+    if(isPeakStretch){
+      /* Poslednje 1-3 "prave" nedelje pred taper: ako standardna (stroža)
+         formula ne bi stigla do 28.5km norme za specifičnost maratona, DOZVOLI
+         veći udeo SAMO ovde — ostatak plana ostaje po strožoj krivoj. Plafon
+         0.70 (umesto 0.65) da izbegnemo apsurdan udeo na ekstremno niskom obimu. */
+      const neededPct = Math.min(0.70, 28.5/vol);
+      pct = Math.max(pct, neededPct);
+    }
     return Math.min(vol*pct, 32);
   }
   if(vol<64) return vol*0.30;
@@ -1757,11 +1765,11 @@ function danielsLRCapKm(vol, pLRsecPerKm, isMarathon){
   const timeCapKm = pLRsecPerKm>0 ? (150*60)/pLRsecPerKm : Infinity;
   return Math.min(pctCap, timeCapKm);
 }
-function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon){
+function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon, isPeakStretch){
   const qSum=qKms.reduce((a,b)=>a+b,0);
   const maxQ=qKms.length?Math.max(...qKms):0;
   let rem=Math.max(vol-qSum, 3);
-  const danCap=danielsLRCapKm(vol, pLRsecPerKm||0, isMarathon);
+  const danCap=danielsLRCapKm(vol, pLRsecPerKm||0, isMarathon, isPeakStretch);
   if(easyCount===0) return { lr:r1(Math.min(Math.max(rem, maxQ*1.1), Math.max(danCap,maxQ*1.05))), easies:[] };
   const capF = runDays>=5?0.32: runDays===4?0.36: runDays===3?0.50:0.68;
   /* Za maraton, runDays-bazirani capF NIJE relevantan (danCap već obuhvata
@@ -1776,7 +1784,18 @@ function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon){
        kvalitetne sesije (posebno kasniji M-tempo dani) pojedu značajan deo
        nedelje, pa cap nikad ne bude ni dostignut (otkriveno testom: LR/vol%
        ostajao zaglavljen na ~29% čak i posle podizanja cap-a). */
-    lr = Math.min(cap, rem - 2.5*easyCount);
+    if(isPeakStretch){
+      /* Vrhunačke nedelje (poslednje 1-3 pred taper): LR cilja SAM cap, čak i
+         ako to znači da premaši rem — te nedelje maratonski tempo postane
+         dovoljno dugačak da rem sam po sebi padne ispod 28.5km, pa je čist
+         cap-limit i dalje premalo (otkriveno testom: cap=28.5 ali rem=22,
+         Math.min ih je i dalje sekao na 22). Dostizanje norme specifičnosti
+         ima prednost nad strogim poklapanjem ciljanog nedeljnog obima baš u
+         ove 1-3 nedelje — nedelja ispadne malo veća od plana. */
+      lr = cap;
+    } else {
+      lr = Math.min(cap, rem - 2.5*easyCount);
+    }
   } else {
     lr = Math.max(rem*0.45, maxQ*1.12, (rem/(easyCount+1))*1.3);
     lr = Math.min(lr, cap, rem-3*easyCount);
@@ -2077,7 +2096,12 @@ function generatePlan(inp){
      (npr. 18km/ned) inače ne stigne do dovoljno visokog vrhunca za pravi
      dugačak long run u razumnom broju nedelja. LOKALNA promenljiva — NE dira
      globalnu GROW_MAX (koju koristi reentryPlan, nepromenjen). */
-  const growMax = prof.useM ? 1.10 : GROW_MAX;
+  const growMax = prof.useM ? ({kons:1.08,std:1.10,agr:1.12}[inp.intensity]||1.10) : GROW_MAX;
+  /* NAPOMENA: kod NISKOG polaznog obima (~16-18km/ned) + Konzervativno (8%),
+     dugo trčanje može ostati ispod 28km cilja (npr. 20.7-27.4km u testu) —
+     matematička posledica sporijeg rasta, ne greška. Od ~25km/ned start naviše
+     čak i Konzervativno dostiže pun cilj. Korisnik svesno prihvata ovaj
+     kompromis biranjem Konzervativno. */
   /* peakTarget = compound rast starta preko svih RAMPNIH nedelja (ukupne minus
      taper minus deloadovi), tako da se vrhunac dostigne TAČNO pred taper — ne na
      sredini plana. Fiksni cur*2.1 je dostizao vrhunac prerano na dugim planovima
@@ -2195,7 +2219,10 @@ function generatePlan(inp){
         const role=slots[d];
         return role==='easy' || ((role==='q1'||role==='q2') && !sessions[d]);
       }).length;
-      const alloc=allocEasyLR(vol, qKms, easyDowsCount, runDays, pLR, prof.useM);
+      /* Poslednje 3 "prave" nedelje pred taper (ne deload, ne taper/trka sama) —
+         tu forsiramo dostizanje 28.5km norme ako standardna formula ne bi stigla. */
+      const isPeakStretch = prof.useM && !isDeload && !isTaper1 && !isRace && (weeks-w)<=3;
+      const alloc=allocEasyLR(vol, qKms, easyDowsCount, runDays, pLR, prof.useM, isPeakStretch);
       let ei=0;
       for(let dow=1; dow<=7; dow++){
         const role=slots[dow];
