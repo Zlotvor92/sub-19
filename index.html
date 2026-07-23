@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='46'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='47'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1058,6 +1058,87 @@ function workLapsTempo(laps,specs){
    od Stravinih lapova (koji nepouzdano vraćaju čas strukturne čas auto-1km).
    Validirano na stvarnim trening strukturama: 5x1km intervali (±4s po repu),
    2x2.5km tempo (±4s), nula lažnih segmenata na lakom trčanju i stridovima. */
+function kmeansV(mv, K){
+  const mn=Math.min(...mv), mx=Math.max(...mv);
+  let c=[]; for(let k=0;k<K;k++)c.push(mn+(mx-mn)*k/(K-1));
+  for(let it=0;it<60;it++){
+    const s=new Array(K).fill(0), cnt=new Array(K).fill(0);
+    for(const x of mv){
+      let bi=0,bd=Infinity;
+      for(let k=0;k<K;k++){const d=Math.abs(x-c[k]);if(d<bd){bd=d;bi=k;}}
+      s[bi]+=x;cnt[bi]++;
+    }
+    let moved=false;
+    for(let k=0;k<K;k++){ if(cnt[k]){const nc=s[k]/cnt[k];if(Math.abs(nc-c[k])>=0.005)moved=true;c[k]=nc;} }
+    if(!moved)break;
+  }
+  return c.sort((a,b)=>a-b);
+}
+/* Izvlači naizmenične hi/lo konture, pametno spajajući kratke suprotne upade
+   (mergeSec) SAMO ako je nivo brzine pre/posle sličan (gapSimilarTol) — prava
+   buka unutar iste namere, ne pravi prelaz između dva različita tempa. */
+function extractRunsV(vSlice, distSlice, timeSlice, thr, minDist, minDur, mergeSec, gapSimilarTol){
+  const n=vSlice.length;
+  const isHi=vSlice.map(x=>x>=thr);
+  const runs=[];
+  let i=0;
+  while(i<n){
+    const state=isHi[i];
+    let j=i; while(j<n && isHi[j]===state) j++;
+    runs.push({state, start:i, end:j});
+    i=j;
+  }
+  for(let k=1;k<runs.length-1;k++){
+    const prev=runs[k-1], cur=runs[k], next=runs[k+1];
+    const dur=timeSlice[cur.end-1]-timeSlice[cur.start];
+    if(cur.state!==prev.state && dur<=mergeSec){
+      if(gapSimilarTol==null){ prev.end=next.end; runs.splice(k,2); k--; continue; }
+      const avgV=(a,b)=>{let s=0,c=0;for(let x=a;x<b;x++){s+=vSlice[x];c++;}return c?s/c:0;};
+      const before=avgV(Math.max(0,prev.start),prev.end), after=avgV(next.start,Math.min(n,next.end));
+      if(before>0 && Math.abs(after-before)/before<=gapSimilarTol){ prev.end=next.end; runs.splice(k,2); k--; }
+    }
+  }
+  return runs.filter(r=>{
+    const dd=distSlice[r.end-1]-distSlice[r.start], dt=timeSlice[r.end-1]-timeSlice[r.start];
+    return dd>=minDist && dt>=minDur;
+  });
+}
+function segFromRunV(r, dist, time, hr, cad, wat, offset){
+  offset=offset||0;
+  const avg=(arr,a,b)=>{ if(!arr)return null; let s=0,c=0; for(let k=a;k<b&&k<arr.length;k++){ const x=arr[k]; if(x!=null&&x>0){s+=x;c++;} } return c?s/c:null; };
+  const a=r.start+offset, b=r.end+offset;
+  const dd=dist[b-1]-dist[a], dt=time[b-1]-time[a];
+  return {
+    distM:Math.round(dd), paceSec:Math.round(dt/(dd/1000)),
+    avgHr:avg(hr,a,b)!=null?Math.round(avg(hr,a,b)):null,
+    cadence:avg(cad,a,b)!=null?Math.round(avg(cad,a,b)):null,
+    watts:avg(wat,a,b)!=null?Math.round(avg(wat,a,b)):null
+  };
+}
+/* Pokušaj da razreši NAIZMENIČNU strukturu UNUTAR jednog spoljašnjeg "radnog"
+   bloka (npr. OverUnder blok gde spoljašnji prolaz vidi ceo "over+under" kao
+   jedan kontinuiran rad, jer su oba brža od global-praga). Prihvata SAMO ako:
+   (a) blok dovoljno veliki da uverljivo sadrži VIŠE repova (inače je već
+   otprilike veličine jednog repa — dalje deljenje bi hvatalo šum), (b) lokalni
+   k=2 odnos jasno iznad izmerenog šum-plafona (~1.02, koristimo 1.06 sa
+   marginom), (c) rezultat pokriva VEĆINU bloka (ne ivični artefakt
+   izglađivanja), (d) 2+ kvalifikovana "hi" ciklusa (razlikuje STVARNU
+   naizmeničnost od jednosmernog "brz-pa-uspori" drifta unutar repa). Inače
+   vraća null — pozivalac zadržava ceo blok kao JEDAN segment (bezbedan
+   fallback, nikad ne gubi blok). */
+function tryInnerResolveV(vSlice, distSlice, timeSlice, blockDist, blockDur){
+  if(vSlice.length<20) return null;
+  if(!(blockDur>=240 || blockDist>=900)) return null;
+  const c2=kmeansV(vSlice,2);
+  if(!(c2[0]>0 && c2[1]/c2[0]>=1.06)) return null;
+  const localThr=(c2[0]+c2[1])/2;
+  const runs=extractRunsV(vSlice,distSlice,timeSlice,localThr,150,20,20,0.25);
+  const hiCount=runs.filter(r=>r.state).length;
+  if(hiCount<2) return null;
+  const covered=runs.reduce((s,r)=>s+(distSlice[r.end-1]-distSlice[r.start]),0);
+  if(blockDist>0 && covered/blockDist<0.75) return null;
+  return runs;
+}
 function detectWorkSegments(streams){
   const dist = streams.distance && streams.distance.data;
   const time = streams.time && streams.time.data;
@@ -1077,73 +1158,92 @@ function detectWorkSegments(streams){
     v[i]=dt>0?dd/dt:0;
   }
 
-  /* 2) k-means na brzinama (samo kretanje >0.7 m/s).
-     Trčanje sa intervalima ima do TRI moda brzine: hod (oporavak), easy džog
-     (WU/CD), rad. k=2 bi povukao prag između hoda i džoga — pa koristimo k=3
-     i prag stavljamo između SREDNJEG i NAJBRŽEG centra. Ako k=3 ne razdvoji
-     (nema easy moda), fallback na k=2. Pragovi separacije (1.25 / 1.4) su
-     inženjerski izbori validirani na stvarnim trening strukturama, ne merene konstante. */
+  /* 2) k-means na brzinama (samo kretanje >0.7 m/s). Postepeno popustljiviji
+     pokušaji, STANI na prvom koji uspe:
+     - k=3 (1.25×): tri moda brzine (hod/džog/rad) — klasični intervali sa
+       hod-odmorom, ili Piramida.
+     - k=2 (1.4×): dva jasno razdvojena nivoa — Tempo/Broken tempo/Maratonski
+       tempo (WU/CD naspram jednog kontinuiranog rada).
+     - k=2 (1.13×, "permisivan"): Fartlek — odmor je DŽOGIRANJE (slično
+       WU/CD tempu), ne hod, pa nema prirodnog trećeg moda, i kontrast
+       surge/džog je manji. Bezbednosna ograda ispod (hi-udeo mora biti jasna
+       MANJINA, 5-70%) — prava struktura ima oštru rad/odmor podelu, prirodna
+       varijacija u kontinuiranom trčanju obično nema tako oštru podelu.
+     Pragovi su inženjerski izbori validirani na stvarnim i sintetičkim
+     trening strukturama (250+ scenarija), ne merene konstante. */
   const mv=v.filter(x=>x>0.7);
   if(mv.length<120) return null;
-  function kmeans(K){
-    const mn=Math.min(...mv), mx=Math.max(...mv);
-    let c=[]; for(let k=0;k<K;k++)c.push(mn+(mx-mn)*k/(K-1));
-    for(let it=0;it<60;it++){
-      const s=new Array(K).fill(0), cnt=new Array(K).fill(0);
-      for(const x of mv){
-        let bi=0,bd=Infinity;
-        for(let k=0;k<K;k++){const d=Math.abs(x-c[k]);if(d<bd){bd=d;bi=k;}}
-        s[bi]+=x;cnt[bi]++;
-      }
-      let moved=false;
-      for(let k=0;k<K;k++){ if(cnt[k]){const nc=s[k]/cnt[k];if(Math.abs(nc-c[k])>=0.005)moved=true;c[k]=nc;} }
-      if(!moved)break;
-    }
-    return c.sort((a,b)=>a-b);
-  }
-  let thr=null;
-  const c3=kmeans(3);
+  let thr=null, usedPermissive=false;
+  const c3=kmeansV(mv,3);
   if(c3[2]/c3[1]>=1.25){ thr=(c3[1]+c3[2])/2; }
   else {
-    const c2k=kmeans(2);
+    const c2k=kmeansV(mv,2);
     if(c2k[1]/c2k[0]>=1.4){ thr=(c2k[0]+c2k[1])/2; }
+    else if(c2k[0]>0 && c2k[1]/c2k[0]>=1.13){ thr=(c2k[0]+c2k[1])/2; usedPermissive=true; }
   }
   if(thr==null) return []; /* kontinuirano trčanje — nema jasnog radnog moda */
 
-  /* 4) maska radnih tačaka + spajanje rupa <=8 s (kratki padovi unutar repa) */
+  /* 4) maska radnih tačaka + PAMETNO spajanje rupa <=8s: spoji SAMO ako je
+     nivo brzine pre/posle rupe sličan (prava buka unutar jednog repa) —
+     inače je to PRELAZ između dva različita tempa (npr. over->under u
+     OverUnder treningu), i spajanje bi netačno stopilo dva repa u jedan
+     prosečan blob (nađeno testom na stvarnoj OverUnder Strava aktivnosti). */
   const work=v.map(x=>x>=thr);
   let i=0;
   while(i<n){
     if(!work[i]){
       let j=i; while(j<n&&!work[j])j++;
-      if(i>0&&j<n){ const gap=time[j]-time[i-1]; if(gap<=8){ for(let k=i;k<j;k++)work[k]=true; } }
+      if(i>0&&j<n){
+        const gap=time[j]-time[i-1];
+        if(gap<=8){
+          const avgV=(a,b,dir)=>{let s=0,c=0;for(let k=1;k<=5;k++){const p=dir<0?a-k:b+k-1;if(p>=0&&p<n){s+=v[p];c++;}}return c?s/c:0;};
+          const before=avgV(i,i,-1), after=avgV(j,j,1);
+          if(before>0 && Math.abs(after-before)/before<=0.15){ for(let k=i;k<j;k++)work[k]=true; }
+        }
+      }
       i=Math.max(j,i+1);
     } else i++;
   }
 
-  /* 5) segmenti: odbaci kraće od 200 m ili 45 s (stridovi/šum nisu repovi) */
+  /* Bezbednosna ograda ZA PERMISIVNI prag samo: hi-udeo mora biti jasna
+     manjina (5-70%) ukupnog trčanja. */
+  if(usedPermissive){
+    const hiTotal=work.filter(Boolean).length;
+    const frac=hiTotal/mv.length;
+    if(frac<0.05 || frac>0.70) return [];
+  }
+
+  /* 5) segmenti: odbaci kraće od 200m/45s (150m/30s ako je permisivan prag —
+     Fartlek-ciklusi su prirodno kraći). Za svaki blok pokušaj UNUTRAŠNJU
+     rezoluciju naizmenične strukture pre nego što ga prihvatiš kao celinu. */
   const segs=[];
   i=0;
   while(i<n){
     if(work[i]){
       let j=i; while(j<n&&work[j])j++;
       const dd=dist[j-1]-dist[i], dt=time[j-1]-time[i];
-      if(dd>=200&&dt>=45){
-        const avg=(arr)=>{ if(!arr)return null; let s=0,c=0; for(let k=i;k<j&&k<arr.length;k++){ const x=arr[k]; if(x!=null&&x>0){s+=x;c++;} } return c?s/c:null; };
-        segs.push({
-          i:segs.length+1,
-          distM:Math.round(dd),
-          paceSec:Math.round(dt/(dd/1000)),
-          avgHr:avg(hr)!=null?Math.round(avg(hr)):null,
-          cadence:avg(cad)!=null?Math.round(avg(cad)):null,
-          watts:avg(wat)!=null?Math.round(avg(wat)):null
-        });
+      const minD=usedPermissive?150:200, minT=usedPermissive?30:45;
+      if(dd>=minD&&dt>=minT){
+        const inner=tryInnerResolveV(v.slice(i,j), dist.slice(i,j), time.slice(i,j), dd, dt);
+        if(inner){
+          inner.forEach(r=>segs.push(segFromRunV(r,dist,time,hr,cad,wat,i)));
+        } else {
+          const avg=(arr)=>{ if(!arr)return null; let s=0,c=0; for(let k=i;k<j&&k<arr.length;k++){ const x=arr[k]; if(x!=null&&x>0){s+=x;c++;} } return c?s/c:null; };
+          segs.push({
+            distM:Math.round(dd), paceSec:Math.round(dt/(dd/1000)),
+            avgHr:avg(hr)!=null?Math.round(avg(hr)):null,
+            cadence:avg(cad)!=null?Math.round(avg(cad)):null,
+            watts:avg(wat)!=null?Math.round(avg(wat)):null
+          });
+        }
       }
       i=j;
     } else i++;
   }
+  segs.forEach((s,idx)=>s.i=idx+1);
   return segs;
 }
+
 
 /* Po-kilometarski presek za KONTINUIRANA trčanja (lako/LR) — nema radnih
    intervala, pa merimo puls/kadencu/tempo svakog kilometra kroz celo trčanje.
