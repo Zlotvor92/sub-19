@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='35'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='36'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1749,7 +1749,7 @@ function danielsLRCapKm(vol, pLRsecPerKm, isMarathon){
        specifičnosti (Higdon/Pfitzinger/McMillan konvencija: 29-32km peak
        long run je standard nezavisno od ukupnog obima). Procenat raste sa
        obimom (više prostora → veći dozvoljen udeo), plafon ~32km. */
-    const pct = vol<45?0.55: vol<65?0.50: vol<85?0.42: 0.36;
+    const pct = vol<40?0.62: vol<55?0.58: vol<70?0.50: vol<90?0.42: 0.36;
     return Math.min(vol*pct, 32);
   }
   if(vol<64) return vol*0.30;
@@ -2072,6 +2072,12 @@ function generatePlan(inp){
 
   /* volumen: start→vrhunac uz +8% cap, deload svake 4., taper 2 nedelje (NEPROMENJENO — kalibrisano na etalon, distancno-agnostičko po dizajnu) */
   const vols=[]; let cur=Math.max(15, Math.min(inp.weeklyKm, 90));
+  /* Maraton: blago pojačan nedeljni rast (10% umesto 8%) — i dalje unutar
+     uobičajenih bezbednih granica ("10% pravilo"), ali nizak polazni obim
+     (npr. 18km/ned) inače ne stigne do dovoljno visokog vrhunca za pravi
+     dugačak long run u razumnom broju nedelja. LOKALNA promenljiva — NE dira
+     globalnu GROW_MAX (koju koristi reentryPlan, nepromenjen). */
+  const growMax = prof.useM ? 1.10 : GROW_MAX;
   /* peakTarget = compound rast starta preko svih RAMPNIH nedelja (ukupne minus
      taper minus deloadovi), tako da se vrhunac dostigne TAČNO pred taper — ne na
      sredini plana. Fiksni cur*2.1 je dostizao vrhunac prerano na dugim planovima
@@ -2079,7 +2085,7 @@ function generatePlan(inp){
      ned. planovima). Gornje granice (cur+weeks*2.2, 90) zadržane. */
   const deloadCount = Math.floor((weeks-2)/DELOAD_EVERY);
   const rampSteps = Math.max(weeks - 2 - deloadCount, 1);
-  const peakTarget = Math.min(cur*Math.pow(GROW_MAX, rampSteps), cur + weeks*2.2, 90);
+  const peakTarget = Math.min(cur*Math.pow(growMax, rampSteps), cur + weeks*2.2, 90);
   for(let w=1; w<=weeks; w++){
     if(w===weeks){ vols.push(r1(peak(vols)*RACEWK_F)); }
     else if(w===weeks-1){ vols.push(r1(peak(vols.length?vols:[cur])*TAPER_F)); }
@@ -2087,13 +2093,13 @@ function generatePlan(inp){
       /* Bazne nedelje: postepen blag rast od starta (deo iste rampe, ne nezavisan
          niz). Bez ovoga kvalitetni ciklus posle baze skače kao da baze nema. */
       if(w===baseWeeks && baseWeeks>=DELOAD_EVERY && w%DELOAD_EVERY===0){ vols.push(r1(vols[vols.length-1]*DELOAD_F)); }
-      else { cur = vols.length? Math.min(vols[vols.length-1]*GROW_MAX, peakTarget) : cur; vols.push(r1(cur)); }
+      else { cur = vols.length? Math.min(vols[vols.length-1]*growMax, peakTarget) : cur; vols.push(r1(cur)); }
     }
     else if(w%DELOAD_EVERY===0 && w<weeks-2){ vols.push(r1(vols[vols.length-1]*DELOAD_F)); }
     else{
-      const prev = vols.length?vols[vols.length-1]:cur/GROW_MAX;
+      const prev = vols.length?vols[vols.length-1]:cur/growMax;
       const base = (w>1 && (w-1)%DELOAD_EVERY===0) ? vols[vols.length-2] : prev;
-      cur = Math.min(base*GROW_MAX, peakTarget);
+      cur = Math.min(base*growMax, peakTarget);
       vols.push(r1(cur));
     }
   }
