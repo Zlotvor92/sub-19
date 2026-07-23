@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='47'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='48'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -810,6 +810,13 @@ function tagName(t){return{lako:'Lako',tempo:'Tempo',int:'Intervali',lr:'Dugo (L
    po tagu (tvoj hardkodovan plan nema .session, pa ovde ništa ne menja). */
 function sessKind(d){
   if(d.rest)return tagName('odmor');
+  /* Ako je dan RUČNO izmenjen (Izmeni trening), d.session i dalje nosi
+     ORIGINALNU (pre-izmene) strukturu — potreban je za deriveQS/PRED
+     usklađivanje (linije 2200+, namerno tako, prati "originalno planiran"
+     slot). Ali za PRIKAZ (ova funkcija: oznaka na kartici + SESS_GUIDE savet)
+     to je zastarelo — nađeno testom: Piramida dan promenjen u obično lako
+     trčanje i dalje je prikazivao "Piramida" i savet o piramidalnom tempu. */
+  if(S.alts&&S.alts[d.id])return tagName(d.tag);
   return (d.session&&d.session.kind)?d.session.kind:tagName(d.tag);
 }
 
