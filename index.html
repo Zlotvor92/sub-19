@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='43'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='44'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1846,14 +1846,16 @@ function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon, isP
   const wgt=[1.15,1,0.9,0.85,0.8,0.75].slice(0,easyCount);
   const wsum=wgt.reduce((a,b)=>a+b,0);
   let easies=wgt.map(x=>Math.max(3, r1((rem-lr)*x/wsum)));
+  /* PRAVI BUG (korisnikova slika: 28.5km LR nedeljom, 26.6km "lako" ODMAH
+     ponedeljkom — "za 24h osoba će trčati 50km"). Staro pravilo je samo
+     tražilo "lak dan < LR" (margina 3%) — kad je runDays mali (npr. 4) i
+     obim velik, JEDINI preostali lak dan upija SVE što ostane, i 29.2km je
+     tehnički "ispod" 29.7km LR ali NIJE lak dan, to je drugi long run.
+     Nova granica: lak dan ne sme preći 50% LR-a — čvrsto, ne "malo manje". */
   const mx=Math.max(...easies);
-  if(mx>=lr){
-    /* Bezbednosno pravilo "lak dan < LR" mora ostati strogo, ali margina od
-       10% (0.9) je bila proizvoljno velika i nepotrebno je bacala kilometražu
-       kad ima malo lakih dana (npr. 1 na runDays=4) — otkriveno testom pri
-       uvođenju tešnjeg Daniels-capa za maraton, latentno i pre toga. Margina
-       smanjena na 3% (0.97) — i dalje strogo ispod LR, samo manje rasipanja. */
-    const sc=(lr*0.97)/mx;
+  const easyCeil=lr*0.50;
+  if(mx>=easyCeil && mx>0){
+    const sc=easyCeil/mx;
     easies=easies.map(e=>Math.max(3,r1(e*sc)));
   }
   lr=r1(Math.max(lr, floor));
@@ -1873,7 +1875,10 @@ function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon, isP
 function mkIntervals(dow,w,weeks,vol,pI){
   const qI=Math.max(2.4, Math.min(vol*0.10, 6));
   const {rep,n}=pickReps(qI,w,weeks);
-  return sessInt(dow,1.5,n,rep,pI,120,1);
+  /* WU/CD blago produženi (1.5/1 -> 2/1.5) — korisnikov predlog: apsorbuje
+     deo viška kilometraže kroz kvalitetne dane umesto da SVE ide na jedini
+     preostali lak dan (komplementarno uz stvarnu gornju granicu iznad). */
+  return sessInt(dow,2,n,rep,pI,120,1.5);
 }
 /* R (Repetition) — 105%+ VO2max, max 2 min/rep, odmor 1:2-1:3 po VREMENU
    rada, plafon min(8km, 5% nedelje) — sve citirano (Daniels). Uvodi se
@@ -1898,7 +1903,7 @@ function mkRepetition(dow,vol,pR){
   const repM=300; /* tipično 200-300m (izvori: "400m hard/jog", "200m ili 300m") */
   const reps=Math.max(4, Math.round(total*1000/repM));
   const restSec=Math.round((repM/1000)*pR*2.5); /* odmor ~1:2.5 po vremenu, sredina citiranog opsega 1:2-1:3 */
-  return sessInt(dow,1.5,reps,repM,pR,restSec,1,'Repeticije');
+  return sessInt(dow,2,reps,repM,pR,restSec,1.5,'Repeticije'); /* WU/CD produženi, isti razlog kao mkIntervals */
 }
 function mkFartlek(dow,w,pI,pE){
   const n=Math.min(12, 8+Math.floor(w/4));
@@ -2286,7 +2291,14 @@ function generatePlan(inp){
           continue;
         }
         /* strides na svakom drugom lakom danu tokom baze (Daniels: strides kroz sve faze) */
-        const km=alloc.easies[ei]!=null?alloc.easies[ei]:4;
+        let km=alloc.easies[ei]!=null?alloc.easies[ei]:4;
+        /* Isto među-nedeljno susedstvo kao u kvalitetnom ciklusu ispod — bazna
+           faza ima LR dane isto tako, ista opasnost postoji. */
+        if(dow===1 && slots[7]==='lr' && plan.weeks.length>0){
+          const prevW=plan.weeks[plan.weeks.length-1];
+          const prevLR=Math.max(...prevW.days.filter(d=>d.tag==='lr').map(d=>d.km||0),0);
+          if(prevLR>0) km=Math.min(km, r1(prevLR*0.50));
+        }
         const strides = (ei%2===0) ? ' + 6×20 s strides (lagani ubrzani koraci, pun oporavak)' : '';
         days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
         ei++;
@@ -2330,7 +2342,18 @@ function generatePlan(inp){
           continue;
         }
         if(sessions[dow]){ days.push(sessions[dow]); pushPredQs(sessions[dow],w); continue; }
-        const km=alloc.easies[ei]!=null?alloc.easies[ei]:4;
+        let km=alloc.easies[ei]!=null?alloc.easies[ei]:4;
+        /* MEĐU-NEDELJNO susedstvo (korisnikova slika: LR nedeljom, "lako" ODMAH
+           ponedeljkom SLEDEĆE nedelje — 24h razmak). Deljenje na allocEasyLR po
+           nedelji ovo ne vidi: nedelja W+1 ima SVOJ (možda veći) LR, pa capovanje
+           unutar allocEasyLR poredi ponedeljak sa POGREŠNIM (svojim) LR-om, ne sa
+           STVARNIM susedom iz nedelje W. Ovde imam oboje — pravi lrDow (izveden iz
+           slots) i već izgrađenu prethodnu nedelju — pa capujem prema STVARNOM susedu. */
+        if(dow===1 && slots[7]==='lr' && plan.weeks.length>0){
+          const prevW=plan.weeks[plan.weeks.length-1];
+          const prevLR=Math.max(...prevW.days.filter(d=>d.tag==='lr').map(d=>d.km||0),0);
+          if(prevLR>0) km=Math.min(km, r1(prevLR*0.50));
+        }
         /* Strides na prvom lakom danu SVAKE kval. nedelje (Daniels: kroz sve faze,
            redovno — ne povremeno). Izostaju samo u taper1 (izbeći dodatni neuro-
            stres neposredno pred trku). Deload: kraći set. */
