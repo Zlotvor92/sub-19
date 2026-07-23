@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='41'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='42'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -661,6 +661,11 @@ function adaptGeneratedPlan(gen){
   const pred=gen.pred.map((r,i)=>({...r,id:'g'+r.w+'_'+i}));
   return {weeks,pred,meta:gen.meta};
 }
+/* Datumi AKTIVNOG plana. START/RACE konstante su tvrdo kodovane za hardkodovan
+   plan (22.06/24.09.2026) — za generisan plan su potpuno pogrešne (merenjem:
+   pokazivalo "50 dana do trke" kad je prava trka za 305 dana). Sve što je
+   ranije čitalo START/RACE direktno sad čita ove. */
+let CUR_START=START, CUR_RACE=RACE;
 function setActivePlan(){
   if(S.genPlan){
     /* klon, NE direktna referenca — rebuildDateIndex mutira d.week (kružno!) i
@@ -668,9 +673,14 @@ function setActivePlan(){
     const clone=JSON.parse(JSON.stringify({weeks:S.genPlan.weeks,pred:S.genPlan.pred}));
     CUR_PLAN=clone.weeks;
     CUR_PRED=clone.pred;
+    const m=S.genPlan.meta||{};
+    CUR_START=CUR_PLAN.length?CUR_PLAN[0].start:START;
+    CUR_RACE=m.raceDate||(CUR_PLAN.length?addD(CUR_PLAN[CUR_PLAN.length-1].start,6):RACE);
   } else {
     CUR_PLAN=PLAN;
     CUR_PRED=PRED;
+    CUR_START=START;
+    CUR_RACE=RACE;
   }
 }
 /* ============ IZVEDENE STRUKTURE PLANA ============ */
@@ -704,7 +714,12 @@ function rebuildDateIndex(){
     }
     if(!d.test){
       if(!d.origDate) d.origDate=addD(w.start,d.dow);
-      d.date=(S.moves&&S.moves[d.id])||d.origDate;
+      /* Datum iz S.moves se VALIDIRA pre primene — swapDays uvek piše ispravan
+         format, ali importBackup prihvata proizvoljan JSON (pokvaren/ručno
+         izmenjen backup), pa bi neispravan string inače propao pravo u d.date
+         i pokvario sortiranje/prikaz svuda nizvodno. */
+      const mv=S.moves&&S.moves[d.id];
+      d.date=(typeof mv==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(mv))?mv:d.origDate;
       BY_DATE[d.date]=d; DATED.push(d);
     }
   });});
@@ -719,6 +734,7 @@ function rebuildDateIndex(){
 function swapDays(idA,idB){
   const a=BY_ID[idA], b=BY_ID[idB];
   if(!a||!b||a.test||b.test) return {ok:false,err:'nepostojeći dan'};
+  if(idA===idB) return {ok:false,err:'isti dan'}; /* UI ovo već sprečava (drugi dodir istog dana = poništi izbor), ali broj pozivalaca raste (autoRealign) — jeftino osiguranje protiv besmislenog S.moves unosa */
   if(a.week!==b.week) return {ok:false,err:'van iste nedelje'};
   const done=id=>S.log[id]&&S.log[id].status==='done';
   if(done(idA)||done(idB)) return {ok:false,err:'odrađen dan se ne pomera'};
@@ -744,6 +760,7 @@ function setAlt(id,alt){
   if(!alt||!alt.tag)return {ok:false,err:'tip nije izabran'};
   S.alts=S.alts||{};
   const planTag=d.origRest?'odmor':d.origTag;
+  if(alt.tag!=='odmor'&&alt.km!=null&&alt.km!==''&&!isNaN(alt.km)&&+alt.km<0)return {ok:false,err:'kilometraža ne može biti negativna'};
   const km=alt.tag==='odmor'?null:(alt.km!=null&&alt.km!==''&&!isNaN(alt.km)?+alt.km:null);
   const desc=alt.tag==='odmor'?'Odmor':(alt.desc||'');
   const pace=(alt.tag==='int'||alt.tag==='tempo')&&alt.pace!=null&&!isNaN(alt.pace)&&alt.pace>0?Math.round(alt.pace):null;
@@ -820,9 +837,9 @@ function streak(today){
   let cur=today,n=0;
   const t=BY_DATE[today];
   if(t&&!t.rest&&stFor(t.id)!=='done')cur=addD(today,-1);
-  while(cur>=START){
+  while(cur>=CUR_START){
     const d=BY_DATE[cur];
-    if(!d){if(cur>RACE){cur=addD(cur,-1);continue;}break;}
+    if(!d){if(cur>CUR_RACE){cur=addD(cur,-1);continue;}break;}
     if(d.rest){n++;}
     else if(stFor(d.id)==='done'){n++;}
     else break;
@@ -925,6 +942,7 @@ function effectivePace(d,r){
   return (a&&a.pace!=null)?a.pace:(r?r.pt:null);
 }
 function predRowFor(d){
+  if(!d||!d.week)return null; /* nedelja 1 sad može imati samo 1-2 dana (start od dana generisanja) — pozivaoci legitimno ne nađu dan traženog tipa; padati na tome bi obelilo ceo ekran umesto da graciozno vrati prazno */
   if(d.tag!=='int'&&d.tag!=='tempo')return null;
   /* case-INSENSITIVE — labele iz generatora imaju malo slovo usred fraze
      ("Maratonski tempo", "10K tempo (ciljni ritam)"), ne samo na početku
@@ -938,6 +956,7 @@ function predRowFor(d){
 }
 /* sve predikcijske sesije za dan (dan tag određuje tip: int->Intervali, tempo->Tempo/Ritam) */
 function predRowsFor(d){
+  if(!d||!d.week)return [];
   if(d.tag!=='int'&&d.tag!=='tempo')return [];
   const rows=CUR_PRED.filter(r=>{ if(r.w!==d.week.w)return false; const l=r.l.toLowerCase(); return d.tag==='int'?(l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')||l.includes('piramida')):(l.includes('tempo')||l.includes('ritam')||l.includes('progresivno')); }).map(r=>r.id);
   if(!rows.length)return [];
@@ -1166,11 +1185,12 @@ function fmtDY(s){const d=s2d(s);return pad2(d.getDate())+'.'+pad2(d.getMonth()+
 
 function renderHeader(){
   let t;
-  if(TODAY<START)t='Start: 22.06.2026. · Trka: 24.09.2026.';
-  else if(TODAY>RACE)t='Plan završen · Trka: 24.09.2026.';
+  const nW=CUR_PLAN.length;
+  if(TODAY<CUR_START)t='Start: '+fmtDY(CUR_START)+' · Trka: '+fmtDY(CUR_RACE);
+  else if(TODAY>CUR_RACE)t='Plan završen · Trka: '+fmtDY(CUR_RACE);
   else{
-    const w=weekOf(TODAY),dd=diffD(TODAY,RACE);
-    t=(w?'Nedelja '+w.w+' / 14 · ':'')+(dd===0?'DANAS JE TRKA 🏁':dd+' '+plDan(dd)+' do trke');
+    const w=weekOf(TODAY),dd=diffD(TODAY,CUR_RACE);
+    t=(w?'Nedelja '+w.w+' / '+nW+' · ':'')+(dd===0?'DANAS JE TRKA 🏁':dd+' '+plDan(dd)+' do trke');
   }
   $('#h-sub').textContent=t;
 }
@@ -1187,18 +1207,18 @@ function setPage(p){
 /* ---------- DANAS ---------- */
 function renderDanas(){
   const el=$('#pg-danas');
-  const dd=diffD(TODAY,RACE),st=streak(TODAY);
+  const dd=diffD(TODAY,CUR_RACE),st=streak(TODAY);
   let h='';
   if(backupDue(TODAY))h+=`<div class="bban"><span style="flex:1">Uradi backup podataka.</span><button id="bb-do">Izvezi</button><button id="bb-later" style="color:var(--txt3)">Kasnije</button></div>`;
   h+=`<div class="hero">
-    <div class="card"><div class="big" style="color:var(--pink)">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">čet 24.09.2026.</div></div>
+    <div class="card"><div class="big" style="color:var(--pink)">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
     <div class="card"><div class="big" style="color:var(--green)">${st}</div><div class="big-sub">${plDan(st)} po planu</div><div class="big-sub" style="color:var(--txt3)">🔥 streak</div></div>
   </div>`;
   h+=`<div style="font-size:.8rem;color:var(--txt2);font-weight:700;margin:2px 2px 10px">${fmtDL(TODAY)}</div>`;
   const d=BY_DATE[TODAY];
   if(!d){
-    if(TODAY<START)h+=`<div class="card empty">Plan počinje u ponedeljak 22.06.2026.</div>`;
-    else h+=`<div class="card empty">Plan je završen. Rezultat trke je u tabu Plan → N14.</div>`;
+    if(TODAY<CUR_START)h+=`<div class="card empty">Plan počinje ${fmtDL(CUR_START)}.</div>`;
+    else h+=`<div class="card empty">Plan je završen. Rezultat trke je u tabu Plan → N${CUR_PLAN.length}.</div>`;
   }else if(d.rest){
     h+=`<div class="card"><span class="tag odmor">Odmor</span><div class="desc">${esc(d.desc||'Dan odmora po planu.')}</div>${nextLine(TODAY)}</div>`;
   }else{
@@ -1406,7 +1426,7 @@ function renderPlan(){
     h+=`<div class="wk${openW.has(w.w)?' open':''}" data-w="${w.w}">
       <button class="wk-h">
         <div class="wk-n" style="${cur?'color:var(--pink)':''}">N${w.w}</div>
-        <div class="wk-i"><div class="wk-d">${fmtD(w.start)} – ${fmtD(addD(w.start,w.w===14?3:6))}${cur?' · tekuća nedelja':''}</div><div class="wk-f">${esc(w.focus)}</div></div>
+        <div class="wk-i"><div class="wk-d">${fmtD(w.start)} – ${fmtD(addD(w.start,w.w===CUR_PLAN.length?3:6))}${cur?' · tekuća nedelja':''}</div><div class="wk-f">${esc(w.focus)}</div></div>
         <div class="wk-km"><b>${fmtKm(rk)} / ${fmtKm(pk)} km</b>${dn}/${ct} tren.</div>
       </button>
       <div class="wk-bar"><i style="width:${ct?Math.round(dn/ct*100):0}%"></i></div>
@@ -1464,7 +1484,7 @@ function altSheetHTML(d){
   h+=`<div class="f-field full"><label>Tip treninga</label>${segBtns(ALT_TYPES.slice(0,3))}${segBtns(ALT_TYPES.slice(3))}</div>`;
   if(cur.tag!=='odmor'){
     h+=`<div class="f-field full" style="margin-top:10px"><label>Kilometraža</label>
-      <input type="number" inputmode="decimal" step="0.1" id="alt-km" value="${cur.km!=null?cur.km:''}" placeholder="prazno = bez km (npr. snaga)"></div>`;
+      <input type="number" inputmode="decimal" step="0.1" min="0" id="alt-km" value="${cur.km!=null?cur.km:''}" placeholder="prazno = bez km (npr. snaga)"></div>`;
     h+=`<div class="f-field full" style="margin-top:10px"><label>Opis</label>
       <textarea id="alt-desc" placeholder="Šta se radi...">${esc(cur.desc)}</textarea></div>`;
   }
@@ -2113,6 +2133,14 @@ function generatePlan(inp){
   const raceDistM = inp.raceDistM||5000;
   const prof = DIST_PROFILES[raceDistM];
   if(!prof) return { error: 'Nepodržana ciljna distanca. Podržano: 5K, 10K, polumaraton, maraton.' };
+  /* Odbrana od degenerisanog ulaza — wizard ovo već blokira (pbTotalSec vraća
+     null za 0, obStepValid(2) pada), ali bez ove provere NaN bi tiho procurio
+     kroz sve tempo formule u OPISE treninga ("@ ~NaN:NaN/km") umesto da se
+     odbije čistom greškom. */
+  if(!inp.pb || !(inp.pb.sec>0) || !(inp.pb.distM>0))
+    return { error: 'Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).' };
+  if(!(inp.weeklyKm>0))
+    return { error: 'Nedeljna kilometraža mora biti veća od nule.' };
   /* Plan kreće OD DANA generisanja, ne od sledećeg ponedeljka (korisnikov
      zahtev — ranije se gubilo do 6 dana čekanja). Nedelja 1 zadržava PRAVU
      pon-ned strukturu (LR/kvalitet dani i dalje znače stvarni dan u nedelji)
@@ -2192,7 +2220,7 @@ function generatePlan(inp){
   const rampWeeks = Math.min(weeks-2, RAMP_CAP_WEEKS);
   const racePace = Math.round((inp.goalSec||a.predictedSec)/(raceDistM/1000));
   const raceDow = daysN - (weeks-1)*7 + 1; /* 1..7 unutar poslednje nedelje */
-  const plan={ weeks:[], pred:[], qs:{}, meta:{...a, weeks, intensity:inp.intensity, racePace, runDays, quality:effQ, dayWarnings, raceDistM, raceName:prof.name, baseWeeks} };
+  const plan={ weeks:[], pred:[], qs:{}, meta:{...a, weeks, intensity:inp.intensity, racePace, runDays, quality:effQ, dayWarnings, raceDistM, raceName:prof.name, baseWeeks, raceDate:inp.raceDate} };
   const strengthDow = (runDays<=5) ? pickStrengthDay(slots) : null;
 
   function D(dow,tag,km,desc){ return {dow,tag,km,desc}; }
@@ -2315,8 +2343,20 @@ function generatePlan(inp){
      tačno 7*n dana kasnije, uvek na ili posle inp.startDate. */
   if(plan.weeks.length){
     const w1=plan.weeks[0];
-    w1.days=w1.days.filter(d=>addD(start,d.dow-1)>=inp.startDate);
+    const keep=d=>addD(start,d.dow-1)>=inp.startDate;
+    const removed=w1.days.filter(d=>!keep(d));
+    w1.days=w1.days.filter(keep);
     w1.vol=r1(w1.days.reduce((s,d)=>s+(d.km||0),0));
+    /* Uklonjeni dani moraju povući i SVOJ PRED red i qs ključ — inače ostaje
+       predikcijski red za trening koji više ne postoji (korisnik ga vidi u
+       Predikciji, ali nijedan dan ga ne može popuniti) i mrtav qs ključ za
+       Strava lap-detekciju. */
+    removed.forEach(d=>{
+      delete plan.qs['n'+w1.w+'d'+d.dow];
+      if(!d.session) return;
+      const i=plan.pred.findIndex(p=>p.w===w1.w && p.l==='N'+w1.w+' · '+d.session.kind);
+      if(i>=0) plan.pred.splice(i,1);
+    });
   }
   return plan;
 }
@@ -2862,7 +2902,7 @@ function openDaySheet(id){
 function svgW(w,h,inner){return `<svg class="chart" viewBox="0 0 ${w} ${h}">${inner}</svg>`;}
 function renderProg(){
   const el=$('#pg-prog');
-  const w=weekOf(TODAY)||(TODAY<START?PLAN[0]:PLAN[13]);
+  const w=weekOf(TODAY)||(TODAY<CUR_START?CUR_PLAN[0]:CUR_PLAN[CUR_PLAN.length-1]);
   const pk=weekPlanKm(w),rk=weekRealKm(w),dn=weekDone(w),ct=weekCountable(w);
   const c1=2*Math.PI*62,c2=2*Math.PI*42;
   const f1=pk?Math.min(rk/pk,1):0,f2=ct?Math.min(dn/ct,1):0;
@@ -2908,15 +2948,28 @@ function renderProg(){
 }
 function chartWeeks(){
   const W=340,H=168,L=26,B=146,T=24; /* T/B pomereni za 16px da napravi mesta info-liniji na vrhu */
-  const max=48,gw=(W-L-6)/14;
+  /* Širina trake i Y-skala su DINAMIČKE — bile su tvrdo kodovane na 14 nedelja
+     i 48 km (mere tvog hardkodovanog plana). Generisan plan ide do 45+ nedelja
+     i 90+ km/ned, pa su trake izlazile ~3x van okvira (x do 994 u okviru 320),
+     a visine ~2x preko vrha grafikona — ceo Progres grafikon nečitljiv. */
+  const nW=Math.max(CUR_PLAN.length,1);
+  const gw=(W-L-6)/nW;
+  const peakKm=Math.max(...CUR_PLAN.map(w=>Math.max(weekPlanKm(w),weekRealKm(w))),1);
+  const max=Math.ceil(peakKm/12)*12; /* zaokruži naviše na višekratnik 12 — mreža ostaje na okruglim brojevima */
+  const ticks=[0,max*0.25,max*0.5,max*0.75,max].map(v=>Math.round(v));
   let g='';
-  if(CHART_SEL.week!=null){
-    const w=CUR_PLAN.find(x=>x.w===CHART_SEL.week);
-    g+=`<text class="chart-info" x="${L}" y="14" text-anchor="start">N${w.w} · plan ${fmtKm(weekPlanKm(w))} km · urađeno ${fmtKm(weekRealKm(w))} km</text>`;
+  const selW=CHART_SEL.week!=null?CUR_PLAN.find(x=>x.w===CHART_SEL.week):null;
+  /* selW može biti null i kad CHART_SEL.week NIJE null — npr. izabrana N30 na
+     44-nedeljnom generisanom planu, pa "Vrati na moj plan" (14 nedelja):
+     stara selekcija preživi (CHART_SEL je van S), find vrati undefined i
+     .w je bacao TypeError → pad celog Progres taba. */
+  if(selW){
+    g+=`<text class="chart-info" x="${L}" y="14" text-anchor="start">N${selW.w} · plan ${fmtKm(weekPlanKm(selW))} km · urađeno ${fmtKm(weekRealKm(selW))} km</text>`;
   } else {
+    if(CHART_SEL.week!=null)CHART_SEL.week=null; /* očisti mrtvu selekciju */
     g+=`<text class="chart-hint" x="${L}" y="14" text-anchor="start">Dodirni nedelju za detalje</text>`;
   }
-  [0,12,24,36,48].forEach(v=>{const y=B-(v/max)*(B-T);g+=`<line class="gl" x1="${L}" y1="${y}" x2="${W-2}" y2="${y}"/><text class="ax" x="${L-4}" y="${y+3}" text-anchor="end">${v}</text>`;});
+  ticks.forEach(v=>{const y=B-(v/max)*(B-T);g+=`<line class="gl" x1="${L}" y1="${y}" x2="${W-2}" y2="${y}"/><text class="ax" x="${L-4}" y="${y+3}" text-anchor="end">${v}</text>`;});
   CUR_PLAN.forEach((w,i)=>{
     const x=L+i*gw+2.5,sel=CHART_SEL.week===w.w;
     const ph=(weekPlanKm(w)/max)*(B-T),rh=(weekRealKm(w)/max)*(B-T);
@@ -2936,7 +2989,7 @@ function chartWeight(){
   let g='';
   const act=S.kg.slice().sort((a,b)=>a.date<b.date?-1:1);
   if(CHART_SEL.wt!=null && act[CHART_SEL.wt]){
-    const a=act[CHART_SEL.wt], wIdx=Math.round(1+diffD(START,a.date)/7);
+    const a=act[CHART_SEL.wt], wIdx=Math.round(1+diffD(CUR_START,a.date)/7);
     const t=WT_TARGET.find(x=>x.w===wIdx);
     g+=`<text class="chart-info" x="${L}" y="14" text-anchor="start">N${wIdx} · plan ${t?fmtNum(t.kg,1):'—'} kg · uneto ${fmtNum(a.kg,1)} kg</text>`;
   } else {
@@ -2946,7 +2999,7 @@ function chartWeight(){
   [1,4,7,10,14].forEach(i=>{g+=`<text class="ax" x="${X(i)}" y="${B+12}" text-anchor="middle">N${i}</text>`;});
   g+=`<polyline fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4 4" points="${WT_TARGET.map(t=>X(t.w)+','+Y(t.kg)).join(' ')}"/>`;
   if(act.length){
-    const pts=act.map(a=>({x:X(1+diffD(START,a.date)/7),y:Y(a.kg)}));
+    const pts=act.map(a=>({x:X(1+diffD(CUR_START,a.date)/7),y:Y(a.kg)}));
     if(pts.length>1)g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2" points="${pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}"/>`;
     pts.forEach((p,i)=>{
       const sel=CHART_SEL.wt===i;
@@ -3278,7 +3331,7 @@ async function stApi(path,_retried){
 async function stravaSync(manual){
   if(!S.strava){if(manual)alert('Strava nije povezana.');return;}
   try{
-    const after=Math.floor(s2d(START).getTime()/1000);
+    const after=Math.floor(s2d(CUR_START).getTime()/1000);
     const acts=[];let page=1;
     while(page<=4){
       const b=await stApi('/athlete/activities?after='+after+'&per_page=100&page='+page);
