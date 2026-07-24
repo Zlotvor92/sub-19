@@ -241,7 +241,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .btn-ai{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;font-weight:800;font-size:.88rem;color:var(--txt);cursor:pointer}
 .btn-ai:active{opacity:.7}
 .btn-ai:disabled{opacity:.5}
-.ai-out{margin-top:10px;font-size:.85rem;line-height:1.55;color:var(--txt2);white-space:pre-wrap}
+.ai-out{margin-top:10px;font-size:.85rem;line-height:1.55;color:var(--txt2)}
+.ai-out p{margin:0 0 10px}
+.ai-out p:last-child{margin-bottom:0}
+.ai-out strong{color:var(--txt);font-weight:700}
 .ai-out.err{color:var(--red,#ff5a5a)}
 
 /* banner backup */
@@ -354,7 +357,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='53'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='54'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -630,6 +633,17 @@ function parseTimeStr(str){
   return h*3600+mi*60+se;
 }
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+/* Usko markdown->HTML SAMO za ono što AI analiza stvarno vraća: **bold** i
+   pasusi (prazan red = novi pasus). esc() se primenjuje PRE parsiranja
+   markdown sintakse, tako da bilo šta u tekstu (uključujući < > &) ostaje
+   bezbedno kao tekst, ne kao HTML — **bold** markeri se ubacuju POSLE
+   escape-a, pa jedino oni postaju stvarni <strong> tag. */
+function mdToHtml(text){
+  if(!text)return '';
+  const escaped=esc(text);
+  const bolded=escaped.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  return bolded.split(/\n\n+/).map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+}
 /* Riegel: T2 = T1 × (5 / Q)^1.06 */
 function riegel(tempoSec,q){return tempoSec*q*Math.pow(5/q,1.06);}
 
@@ -1578,7 +1592,7 @@ function bindForm(root,d){
           return;
         }
         if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
-        else { out.textContent=data.text; l.aiCount=(l.aiCount||0)+1; save(); }
+        else { out.innerHTML=mdToHtml(data.text); l.aiCount=(l.aiCount||0)+1; save(); }
       }catch(e){
         out.className='ai-out err'; out.textContent='Pravi mrežni prekid (offline / nema signala).';
       }finally{
@@ -3390,7 +3404,7 @@ function renderPred(){
         let data;
         try{ data=await resp.json(); }catch{ out.className='ai-out err'; out.textContent='Server nije vratio ispravan odgovor (HTTP '+resp.status+').'; return; }
         if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
-        else { out.textContent=data.text; }
+        else { out.innerHTML=mdToHtml(data.text); }
       }catch(e){ out.className='ai-out err'; out.textContent='Nema veze sa serverom.'; }
       finally{ tBtn.disabled=false; tBtn.textContent='📈 Objasni trend (AI)'; }
     });
