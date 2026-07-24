@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='52'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='53'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -3466,7 +3466,15 @@ function chartPred(pc){
   [18,19,20,21,22].forEach(v=>{g+=`<line class="gl" x1="${L}" y1="${Y(v).toFixed(1)}" x2="${W-R}" y2="${Y(v).toFixed(1)}"/><text class="ax" x="${L-4}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end">${v}:00</text>`;});
   g+=`<line x1="${L}" y1="${Y(19.5).toFixed(1)}" x2="${W-R}" y2="${Y(19.5).toFixed(1)}" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
   g+=`<polyline fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5" points="${CUR_PRED.map((r,i)=>X(i).toFixed(1)+','+Y(r.p5k/60).toFixed(1)).join(' ')}"/>`;
-  const ent=pc.rows.map((x,i)=>({p:x.pred,i})).filter(x=>x.p!=null);
+  /* Crveni niz staje TAČNO na pc.last (hronološki poslednji unos, isto merilo
+     kao "ZADNJA predikcija" broj) — NE na svaki red koji ima S.pred vrednost.
+     Bez ovoga: ako bilo koji red DALJE u nedeljnom redosledu ima vrednost
+     (npr. unet van redosleda, ili bez odgovarajućeg vdotLog unosa — VDOT
+     grafikon ga onda ispravno ne vidi, ali stari kod ovde JESTE crtao),
+     crvena linija je "skakala" napred na taj red umesto da stane gde je
+     korisnikov stvaran napredak, praveći vizuelno neslaganje sa brojem gore. */
+  const lastIdx=pc.last?pc.rows.indexOf(pc.last):-1;
+  const ent=pc.rows.map((x,i)=>({p:x.pred,i})).filter(x=>x.p!=null && (lastIdx<0 || x.i<=lastIdx));
   if(ent.length>1)g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2" points="${ent.map(x=>X(x.i).toFixed(1)+','+Y(x.p/60).toFixed(1)).join(' ')}"/>`;
   ent.forEach(x=>g+=`<circle cx="${X(x.i).toFixed(1)}" cy="${Y(x.p/60).toFixed(1)}" r="3.6" fill="var(--pink)"/>`);
   g+=`<text class="ax" x="${W-R}" y="${(Y(19.5)-5).toFixed(1)}" text-anchor="end" fill="var(--cyan)">cilj 19:30</text>`;
