@@ -434,7 +434,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='60'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='61'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1645,7 +1645,16 @@ function formHTML(d){
     workBlock+=`</div>`;
   }
   const canAnalyze=(d.tag==='int'||d.tag==='tempo'||d.tag==='lako'||d.tag==='lr')&&l.km&&l.sec;
+  const hasLaps=Array.isArray(l.laps)&&l.laps.length>0;
+  const hasPerKm=Array.isArray(l.perKm)&&l.perKm.length>0;
+  const plKrug=n=>{ const n2=n%100; if(n2>=11&&n2<=14)return 'krugova'; const n1=n%10; return n1===1?'krug':(n1>=2&&n1<=4?'kruga':'krugova'); };
+  const dataNote=hasLaps
+    ? `📊 AI dobija PO KRUGU (${l.laps.length} ${plKrug(l.laps.length)}) — puls/kadenca/tempo za svaki posebno.`
+    : hasPerKm
+      ? `📊 AI dobija po KILOMETRU (${l.perKm.length} km) — nema podelu po intervalu.`
+      : `📊 AI dobija SAMO PROSEK cele sesije — nema podatke po krugu ni po kilometru.`;
   const aiBlock=canAnalyze?`<div class="f-field full" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
+      <div class="ai-datasrc" style="font-size:.72rem;color:var(--txt3);margin-bottom:8px">${dataNote}</div>
       <button type="button" id="ai-go-${d.id}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
       <div id="ai-out-${d.id}" class="ai-out"></div>
     </div>`:'';
