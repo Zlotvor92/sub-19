@@ -18,16 +18,15 @@
    $0.30/$2.50 po milion tokena za standardni 3.5 Flash poziv). */
 
 const MODEL = 'gemini-3.5-flash'; /* stabilan (ne "preview"), besplatan nivo dostupan avgust 2026 */
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+const FALLBACK_MODEL = 'gemini-2.5-flash'; /* zreliji, manje pod pritiskom — koristi se SAMO ako primarni model ostane nedostupan i posle ponovnog pokušaja */
+const urlFor = m => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`;
+const sleep = ms => new Promise(res => setTimeout(res, ms));
 
-/* Jedan poziv ka Gemini generateContent — deli ga i handler i handleTrend.
-   thinkingLevel:"low" jer je zadatak (4-9 rečenica iz strukturiranih brojeva)
-   direktan, ne treba duboko rezonovanje — brže je i jeftinije. maxOutputTokens
-   ostaje izdašan (uključuje "thinking" tokene po Gemini cenovniku — ako je
-   prebudžet mali, model potroši sve na razmišljanje i vrati prazan tekst,
-   ista zamka koju smo ranije pogodili sa Claude-om). */
-async function callGemini(systemText, userText) {
-  const r = await fetch(GEMINI_URL, {
+/* Jedan pokušaj poziva ka datom modelu. Vraća {ok:true,text} ili
+   {ok:false,status,error,detail,retryable} — retryable=true samo za 503
+   (Google eksplicitno: "Spikes in demand are usually temporary"). */
+async function tryModel(model, systemText, userText) {
+  const r = await fetch(urlFor(model), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -45,7 +44,7 @@ async function callGemini(systemText, userText) {
 
   if (!r.ok) {
     const errText = await r.text();
-    return { ok: false, status: 502, error: 'LLM poziv nije uspeo.', detail: errText.slice(0, 300) };
+    return { ok: false, status: r.status===503?502:502, error: 'LLM poziv nije uspeo.', detail: errText.slice(0, 300), retryable: r.status===503 };
   }
 
   const data = await r.json();
@@ -58,9 +57,31 @@ async function callGemini(systemText, userText) {
 
   if (!text) {
     const fr = (cand && cand.finishReason) || 'nepoznato';
-    return { ok: false, status: 502, error: 'LLM je vratio prazan odgovor (finishReason: ' + fr + '). Ako je MAX_TOKENS — treba veći budžet.' };
+    return { ok: false, status: 502, error: 'LLM je vratio prazan odgovor (finishReason: ' + fr + '). Ako je MAX_TOKENS — treba veći budžet.', retryable: false };
   }
   return { ok: true, text };
+}
+
+/* Jedan kratak ponovni pokušaj na ISTOM modelu (Google: "usually temporary"),
+   pa PREBACIVANJE na stabilniji model ako i to ne uspe. Ukupno najviše 3
+   pokušaja, kratak zastoj — ostaje bezbedno unutar Vercel serverless
+   vremenskog limita. */
+async function callGemini(systemText, userText) {
+  let out = await tryModel(MODEL, systemText, userText);
+  if (out.ok) return out;
+
+  if (out.retryable) {
+    await sleep(900);
+    out = await tryModel(MODEL, systemText, userText);
+    if (out.ok) return out;
+  }
+
+  if (out.retryable) {
+    const fb = await tryModel(FALLBACK_MODEL, systemText, userText);
+    return fb; // ok ili ne — fallback-ov rezultat je poslednja reč (najnoviji podatak)
+  }
+
+  return out; // nije bilo retryable (npr. prazan odgovor) — fallback ne bi pomogao
 }
 
 module.exports = async function handler(req, res) {
