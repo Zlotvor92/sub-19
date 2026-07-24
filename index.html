@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='49'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='50'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -877,7 +877,7 @@ function kneeStatus(today){
   return{cls:'ok',t:'Koleno OK',s:'0 = bez bola · 3–5 = pazi · 6+ = stani · 3+ dana ≥3 u 7 dana = fizijatar'};
 }
 function predCalc(){
-  const rows=PRED.map(r=>{const a=S.pred[r.id];return{r,a,pred:a?riegel(a,r.q):null};});
+  const rows=CUR_PRED.map(r=>{const a=S.pred[r.id];return{r,a,pred:a?riegel(a,r.q):null};});
   const entered=rows.filter(x=>x.pred!=null);
   const last=entered.length?entered[entered.length-1]:null;
   const best=entered.length?entered.reduce((m,x)=>x.pred<m.pred?x:m):null;
@@ -3389,10 +3389,19 @@ function trendSummary(){
   DATED.forEach(d=>{
     const l=S.log[d.id]; if(!l||l.status!=='done')return;
     const row={date:l.runDate||l.ts||d.date, tag:d.tag};
+    /* Zaključan ručan unos (S.predLock) je EKSPLICITNA korisnikova potvrda/
+       ispravka ostvarenog tempa — mora imati prednost nad l.laps, koji mogu
+       biti STARIJI (npr. auto-sinhronizovani PRE nego što je korisnik uočio
+       da je stvarno trčao drugačiju strukturu i ručno ispravio tempo).
+       Nađeno testom: korisnik ručno ispravio tempo na 4:10, AI trend i dalje
+       kritikovao stare Strava lapove @ 3:55. Drift/kadenca i dalje dolaze iz
+       lapova kad postoje — ispravka tempa ne poništava taj (odvojen) signal. */
+    const lockedPid=predRowsFor(d).find(pid=>S.predLock&&S.predLock[pid]&&S.pred&&S.pred[pid]!=null);
+    if(lockedPid) row.tempo=S.pred[lockedPid];
     if(Array.isArray(l.laps)&&l.laps.length){
       const hrs=l.laps.map(x=>x.avgHr).filter(x=>x!=null);
       const cads=l.laps.map(x=>x.cadence).filter(x=>x!=null);
-      row.tempo=l.laps.length?Math.round(l.laps.reduce((s,x)=>s+x.paceSec,0)/l.laps.length):null;
+      if(row.tempo==null)row.tempo=l.laps.length?Math.round(l.laps.reduce((s,x)=>s+x.paceSec,0)/l.laps.length):null;
       if(hrs.length>=2){row.driftStart=hrs[0];row.driftEnd=hrs[hrs.length-1];row.drift=hrs[hrs.length-1]-hrs[0];}
       if(cads.length)row.cadence=Math.round(cads.reduce((s,x)=>s+x,0)/cads.length);
     } else if(Array.isArray(l.perKm)&&l.perKm.length){
@@ -3401,7 +3410,7 @@ function trendSummary(){
       if(hrs.length>=2){row.driftStart=hrs[0];row.driftEnd=hrs[hrs.length-1];row.drift=hrs[hrs.length-1]-hrs[0];}
       if(cads.length)row.cadence=Math.round(cads.reduce((s,x)=>s+x,0)/cads.length);
     } else {
-      if(l.km&&l.sec)row.tempo=Math.round(l.sec/l.km);
+      if(row.tempo==null && l.km&&l.sec)row.tempo=Math.round(l.sec/l.km);
       if(l.hr)row.avgHr=l.hr;
     }
     out.push(row);
