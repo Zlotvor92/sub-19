@@ -15,20 +15,23 @@
 <style>
 :root{
   --bg:#0A0A0F; --card:#16161D; --card2:#1D1D26; --line:rgba(255,255,255,.08);
-  --txt:#F5F5F7; --txt2:#9C9CA8; --txt3:#63636E;
+  --txt:#F5F5F7; --txt2:#9C9CA8; --txt3:#7A7A86; /* posvetljeno sa #63636E (3.3:1 -> 4.66:1, HIG minimum) */
   --pink:#FA2E55; --green:#9BE821; --cyan:#00D5FA; --amber:#FFB020; --red:#FF453A;
+  --pink-dim:rgba(250,46,85,.14); --green-dim:rgba(155,232,33,.14);
   --r:18px; --tab-h:58px;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{font-size:16px}
 body{
-  background:var(--bg); color:var(--txt); min-height:100dvh;
+  background:radial-gradient(ellipse 600px 300px at 50% -10%, rgba(250,46,85,.07), transparent),var(--bg);
+  color:var(--txt); min-height:100dvh;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
   -webkit-font-smoothing:antialiased; touch-action:manipulation; overscroll-behavior-y:none;
 }
 button,input,select,textarea{font:inherit;color:inherit}
 button{background:none;border:0;cursor:pointer;touch-action:manipulation}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 
 /* ---------- header ---------- */
 header{
@@ -53,6 +56,8 @@ main{padding:14px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 
 /* ---------- cards ---------- */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.card.accent{border-color:rgba(250,46,85,.22);background:linear-gradient(180deg,rgba(250,46,85,.05),var(--card) 65%)}
+.card.info{border-left:2px solid var(--cyan)}
 .card-t{font-size:.72rem;font-weight:700;color:var(--txt2);letter-spacing:.09em;text-transform:uppercase;margin-bottom:12px}
 .big{font-size:3.4rem;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
 .big-sub{font-size:.8rem;color:var(--txt2);font-weight:600;margin-top:6px}
@@ -75,6 +80,7 @@ main{padding:14px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .tag.test{background:rgba(0,213,250,.14);color:var(--cyan)}
 .desc{white-space:pre-line;font-size:.92rem;line-height:1.5;color:var(--txt)}
 .meta{display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.meta b{font-variant-numeric:tabular-nums}
 .meta div{font-size:.75rem;color:var(--txt2)}
 .meta b{display:block;font-size:1.15rem;color:var(--txt);font-variant-numeric:tabular-nums;margin-bottom:2px}
 
@@ -113,7 +119,12 @@ main{padding:14px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .wk-bar i{display:block;height:100%;background:var(--green);transition:width .5s ease}
 .wk-body{display:none;border-top:1px solid var(--line)}
 .wk.open .wk-body{display:block}
-.day{width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line);text-align:left;min-height:52px}
+.day{width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px 13px 13px;border-bottom:1px solid var(--line);border-left:3px solid transparent;text-align:left;min-height:52px}
+.day.t-lako{border-left-color:rgba(0,213,250,.5)}
+.day.t-tempo,.day.t-int{border-left-color:var(--pink)}
+.day.t-lr{border-left-color:var(--green)}
+.day.t-snaga{border-left-color:rgba(255,176,32,.5)}
+.day.t-rest{border-left-color:transparent;opacity:.55}
 .day:last-child{border-bottom:0}
 .day:active{background:var(--card2)}
 .day-d{font-size:.75rem;font-weight:800;color:var(--txt2);min-width:34px}
@@ -141,13 +152,16 @@ input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;ba
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;margin-top:-10.5px;box-shadow:0 1px 6px rgba(0,0,0,.5)}
 .range-v{float:right;font-weight:800;font-variant-numeric:tabular-nums;color:var(--txt)}
 
-/* prstenovi */
-.rings-wrap{display:flex;align-items:center;gap:18px}
-.rings{width:150px;height:150px;flex:none}
-.ring-track{fill:none;stroke-width:15;stroke-linecap:round;opacity:.16}
-.ring-val{fill:none;stroke-width:15;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)}
-.rings-leg{flex:1}
-.rl{margin-bottom:12px}
+/* gauge (luk) + pilule za treninge — zamena za dupli prsten */
+.gauge-wrap{margin-top:4px}
+.gauge-num{font-size:2.5rem;font-weight:800;letter-spacing:-.02em;text-align:center;margin-top:-42px;font-variant-numeric:tabular-nums}
+.gauge-num small{font-size:1.05rem;font-weight:700;color:var(--txt3)}
+.gauge-lbl{text-align:center;font-size:.75rem;color:var(--txt3);margin-top:2px}
+.pips-row{display:flex;gap:6px;justify-content:center;margin-top:16px}
+.pip{width:32px;height:8px;border-radius:4px;background:rgba(255,255,255,.08)}
+.pip.done{background:var(--green)}
+.pips-lbl{text-align:center;font-size:.72rem;color:var(--txt3);margin-top:8px}
+.pips-lbl b{color:var(--green);font-weight:700;font-variant-numeric:tabular-nums}
 .rl:last-child{margin-bottom:0}
 .rl b{display:block;font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .rl span{font-size:.72rem;font-weight:700;letter-spacing:.04em}
@@ -241,8 +255,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .btn-ai{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;font-weight:800;font-size:.88rem;color:var(--txt);cursor:pointer}
 .btn-ai:active{opacity:.7}
 .btn-ai:disabled{opacity:.5}
-.ai-out{margin-top:10px;font-size:.85rem;line-height:1.55;color:var(--txt2)}
-.ai-out p{margin:0 0 10px}
+.ai-out{margin-top:10px;font-size:.85rem;line-height:1.6;color:var(--txt2)}
+.ai-out p{margin:0 0 11px;padding-left:10px;border-left:2px solid var(--pink-dim)}
 .ai-out p:last-child{margin-bottom:0}
 .ai-out strong{color:var(--txt);font-weight:700}
 .ai-out.err{color:var(--red,#ff5a5a)}
@@ -357,7 +371,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='54'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='55'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1413,7 +1427,7 @@ function renderDanas(){
   let h='';
   if(backupDue(TODAY))h+=`<div class="bban"><span style="flex:1">Uradi backup podataka.</span><button id="bb-do">Izvezi</button><button id="bb-later" style="color:var(--txt3)">Kasnije</button></div>`;
   h+=`<div class="hero">
-    <div class="card"><div class="big" style="color:var(--pink)">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
+    <div class="card accent"><div class="big" style="color:var(--pink)">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
     <div class="card"><div class="big" style="color:var(--green)">${st}</div><div class="big-sub">${plDan(st)} po planu</div><div class="big-sub" style="color:var(--txt3)">🔥 streak</div></div>
   </div>`;
   h+=`<div style="font-size:.8rem;color:var(--txt2);font-weight:700;margin:2px 2px 10px">${fmtDL(TODAY)}</div>`;
@@ -1438,7 +1452,8 @@ function nextLine(from){
 }
 function dayCard(d){
   const s=stFor(d.id);
-  let c=`<div class="card" id="tcard">
+  const isQuality=d.tag==='int'||d.tag==='tempo';
+  let c=`<div class="card${isQuality?' accent':''}" id="tcard">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
       <span class="tag ${d.tag}">${sessKind(d)}</span>
       <span class="st ${s}">${s==='done'?'Odrađen':s==='skip'?'Preskočen':'Predstoji'}</span>
@@ -1642,7 +1657,7 @@ function renderPlan(){
       const s=d.rest?null:stFor(d.id);
       const title=d.rest?(d.desc||'Odmor'):d.desc.split('\n')[0];
       const t='button'; /* i dani odmora su otvorljivi — da se mogu izmeniti u trening */
-      h+=`<${t} class="day" data-d="${d.id}">
+      h+=`<${t} class="day t-${d.rest?'rest':d.tag}" data-d="${d.id}">
         <div class="day-d">${d.test?'TEST':dowOf(d.date)}${d.date?`<small>${fmtD(d.date)}</small>`:''}</div>
         <div class="day-t" style="${d.rest?'color:var(--txt3)':''}">${esc(title)}</div>
         <div class="day-km">${d.km!=null?fmtKm(d.km):''}</div>
@@ -3151,27 +3166,39 @@ function openDaySheet(id){
 
 /* ---------- PROGRES ---------- */
 function svgW(w,h,inner){return `<svg class="chart" viewBox="0 0 ${w} ${h}">${inner}</svg>`;}
+function gaugeSVG(frac){
+  const cx=150,cy=110,r=88,sw=16;
+  const startA=225,endA=495; // 270° raspon, praznina centrirana na dnu (verifikovano)
+  const toXY=(deg)=>{ const rad=(deg-90)*Math.PI/180; return [cx+r*Math.cos(rad), cy+r*Math.sin(rad)]; };
+  const arcPath=(a1,a2)=>{
+    const [x1,y1]=toXY(a1),[x2,y2]=toXY(a2);
+    const large=(a2-a1)%360>180?1:0;
+    return `M${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)}`;
+  };
+  const valA=startA+(endA-startA)*Math.max(0,Math.min(1,frac));
+  let g=`<defs><linearGradient id="progGauge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--pink)"/><stop offset="100%" stop-color="#ff8aa0"/>
+    </linearGradient></defs>`;
+  g+=`<path d="${arcPath(startA,endA)}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="${sw}" stroke-linecap="round"/>`;
+  if(frac>0)g+=`<path d="${arcPath(startA,valA)}" fill="none" stroke="url(#progGauge)" stroke-width="${sw}" stroke-linecap="round"/>`;
+  return `<svg width="100%" height="150" viewBox="0 0 300 150">${g}</svg>`;
+}
 function renderProg(){
   const el=$('#pg-prog');
   const w=weekOf(TODAY)||(TODAY<CUR_START?CUR_PLAN[0]:CUR_PLAN[CUR_PLAN.length-1]);
   const pk=weekPlanKm(w),rk=weekRealKm(w),dn=weekDone(w),ct=weekCountable(w);
-  const c1=2*Math.PI*62,c2=2*Math.PI*42;
-  const f1=pk?Math.min(rk/pk,1):0,f2=ct?Math.min(dn/ct,1):0;
+  const f1=pk?Math.min(rk/pk,1):0;
   const done=totalDone(),pct=done/TOTAL_TR*100;
+  let pipsHTML='';
+  for(let i=0;i<ct;i++)pipsHTML+=`<div class="pip${i<dn?' done':''}"></div>`;
   el.innerHTML=`
-  <div class="card">
+  <div class="card accent">
     <div class="card-t">Tekuća nedelja — N${w.w}</div>
-    <div class="rings-wrap">
-      <svg class="rings" viewBox="0 0 150 150">
-        <circle class="ring-track" cx="75" cy="75" r="62" stroke="var(--pink)"/>
-        <circle class="ring-val" cx="75" cy="75" r="62" stroke="var(--pink)" stroke-dasharray="${c1}" stroke-dashoffset="${c1}" data-off="${c1*(1-f1)}"/>
-        <circle class="ring-track" cx="75" cy="75" r="42" stroke="var(--green)"/>
-        <circle class="ring-val" cx="75" cy="75" r="42" stroke="var(--green)" stroke-dasharray="${c2}" stroke-dashoffset="${c2}" data-off="${c2*(1-f2)}"/>
-      </svg>
-      <div class="rings-leg">
-        <div class="rl"><span style="color:var(--pink)">KILOMETRAŽA</span><b>${fmtKm(rk)} / ${fmtKm(pk)} km</b></div>
-        <div class="rl"><span style="color:var(--green)">TRENINZI</span><b>${dn} / ${ct}</b></div>
-      </div>
+    <div class="gauge-wrap">
+      ${gaugeSVG(f1)}
+      <div class="gauge-num">${fmtKm(rk)}<small> / ${fmtKm(pk)} km</small></div>
+      <div class="gauge-lbl">${Math.round(f1*100)}% nedeljne kilometraže</div>
+      ${ct?`<div class="pips-row">${pipsHTML}</div><div class="pips-lbl"><b>${dn}</b> / ${ct} treninga odrađeno</div>`:''}
     </div>
   </div>
   <div class="card">
@@ -3183,9 +3210,6 @@ function renderProg(){
   <div class="card"><div class="card-t">Nedeljna kilometraža — plan vs. realizovano</div>${chartWeeks()}</div>
   <div class="card"><div class="card-t">Telesna masa — cilj vs. stvarno</div>${chartWeight()}</div>
   <div class="card"><div class="card-t">Prosečan tempo — odrađena trčanja</div>${chartTempo()}</div>`;
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    el.querySelectorAll('.ring-val').forEach(r=>r.style.strokeDashoffset=r.dataset.off);
-  }));
   el.querySelectorAll('[data-wk]').forEach(b=>b.onclick=()=>{
     const w=+b.dataset.wk;
     CHART_SEL.week=CHART_SEL.week===w?null:w; /* isti dodir opet = poništi izbor */
@@ -3251,7 +3275,16 @@ function chartWeight(){
   g+=`<polyline fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4 4" points="${WT_TARGET.map(t=>X(t.w)+','+Y(t.kg)).join(' ')}"/>`;
   if(act.length){
     const pts=act.map(a=>({x:X(1+diffD(CUR_START,a.date)/7),y:Y(a.kg)}));
-    if(pts.length>1)g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2" points="${pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}"/>`;
+    if(pts.length>1){
+      g+=`<defs><linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--pink)" stop-opacity=".32"/>
+            <stop offset="100%" stop-color="var(--pink)" stop-opacity="0"/>
+          </linearGradient></defs>`;
+      const line=pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+      const area=`${pts[0].x.toFixed(1)},${B} ${line} ${pts[pts.length-1].x.toFixed(1)},${B}`;
+      g+=`<polygon points="${area}" fill="url(#wtGrad)"/>`;
+      g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2.25" stroke-linejoin="round" points="${line}"/>`;
+    }
     pts.forEach((p,i)=>{
       const sel=CHART_SEL.wt===i;
       g+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${sel?4.8:3.4}" fill="var(--pink)"${sel?' stroke="#fff" stroke-width="1"':''}/>`;
@@ -3277,8 +3310,20 @@ function chartTempo(){
   const Y=v=>T+(v-lo)/(hi-lo)*(B-T);
   let g='';
   [lo+(hi-lo)*.12,(lo+hi)/2,hi-(hi-lo)*.12].forEach(v=>{g+=`<line class="gl" x1="${L}" y1="${Y(v).toFixed(1)}" x2="${W-R}" y2="${Y(v).toFixed(1)}"/><text class="ax" x="${L-4}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end">${fmtTempo(v)}</text>`;});
-  if(runs.length>1)g+=`<polyline fill="none" stroke="var(--cyan)" stroke-width="2" points="${runs.map((r,i)=>X(i).toFixed(1)+','+Y(r.t).toFixed(1)).join(' ')}"/>`;
-  runs.forEach((r,i)=>g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(r.t).toFixed(1)}" r="3.4" fill="var(--cyan)"/>`);
+  if(runs.length>1){
+    g+=`<defs><linearGradient id="tempoGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--cyan)" stop-opacity=".3"/>
+          <stop offset="100%" stop-color="var(--cyan)" stop-opacity="0"/>
+        </linearGradient></defs>`;
+    const line=runs.map((r,i)=>X(i).toFixed(1)+','+Y(r.t).toFixed(1)).join(' ');
+    const area=`${X(0).toFixed(1)},${B} ${line} ${X(runs.length-1).toFixed(1)},${B}`;
+    g+=`<polygon points="${area}" fill="url(#tempoGrad)"/>`;
+    g+=`<polyline fill="none" stroke="var(--cyan)" stroke-width="2.25" stroke-linejoin="round" points="${line}"/>`;
+  }
+  runs.forEach((r,i)=>{
+    const last=i===runs.length-1;
+    g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(r.t).toFixed(1)}" r="${last?4.2:3.2}" fill="${last?'var(--bg)':'var(--cyan)'}" stroke="${last?'var(--cyan)':'none'}" stroke-width="2"/>`;
+  });
   g+=`<text class="ax" x="${W-R}" y="${B+12}" text-anchor="end">gore = brže</text>`;
   return svgW(W,H,g);
 }
@@ -3422,16 +3467,27 @@ function chartVdotTrend(){
   const Y=v=>B-((v-lo)/(hi-lo))*(B-T);
   let g='';
   // horizontalne linije: baseline i cilj
-  g+=`<line x1="${L}" y1="${Y(goal).toFixed(1)}" x2="${W-R}" y2="${Y(goal).toFixed(1)}" stroke="var(--green)" stroke-width="1" stroke-dasharray="4 3" opacity="0.6"/>`;
-  g+=`<text x="${W-R}" y="${(Y(goal)-4).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--green)">cilj ${goal}</text>`;
+  g+=`<line x1="${L}" y1="${Y(goal).toFixed(1)}" x2="${W-R}" y2="${Y(goal).toFixed(1)}" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  g+=`<text x="${W-R}" y="${(Y(goal)-4).toFixed(1)}" text-anchor="end" font-size="9" font-weight="700" fill="var(--cyan)">cilj ${goal}</text>`;
   g+=`<line x1="${L}" y1="${Y(bv).toFixed(1)}" x2="${W-R}" y2="${Y(bv).toFixed(1)}" stroke="var(--txt3)" stroke-width="1" stroke-dasharray="2 3" opacity="0.5"/>`;
-  // linija VDOT
-  let pts=vl.map((e,i)=>`${X(i).toFixed(1)},${Y(e.vdot).toFixed(1)}`).join(' ');
-  g+=`<polyline points="${pts}" fill="none" stroke="var(--cyan)" stroke-width="2"/>`;
-  vl.forEach((e,i)=>{ g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(e.vdot).toFixed(1)}" r="3" fill="var(--cyan)"/>`; });
+  // linija VDOT sa gradijent-ispunom (dosledno sa Predikcija grafikonom)
+  const pts=vl.map((e,i)=>[X(i),Y(e.vdot)]);
+  const lineStr=pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  g+=`<defs><linearGradient id="vdotGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--pink)" stop-opacity=".38"/>
+        <stop offset="55%" stop-color="var(--pink)" stop-opacity=".08"/>
+        <stop offset="100%" stop-color="var(--pink)" stop-opacity="0"/>
+      </linearGradient></defs>`;
+  const area=`${pts[0][0].toFixed(1)},${B} ${lineStr} ${pts[pts.length-1][0].toFixed(1)},${B}`;
+  g+=`<polygon points="${area}" fill="url(#vdotGrad)"/>`;
+  g+=`<polyline points="${lineStr}" fill="none" stroke="var(--pink)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>`;
+  pts.forEach((p,i)=>{
+    const last=i===pts.length-1;
+    g+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${last?4.4:3.2}" fill="${last?'var(--bg)':'var(--pink)'}" stroke="${last?'var(--pink)':'none'}" stroke-width="2"/>`;
+  });
   // labele prve i zadnje vrednosti
-  g+=`<text x="${X(0).toFixed(1)}" y="${(Y(vl[0].vdot)-7).toFixed(1)}" font-size="10" font-weight="700" fill="var(--txt2)">${vl[0].vdot}</text>`;
-  g+=`<text x="${X(vl.length-1).toFixed(1)}" y="${(Y(vl[vl.length-1].vdot)-7).toFixed(1)}" text-anchor="end" font-size="10" font-weight="700" fill="var(--cyan)">${vl[vl.length-1].vdot}</text>`;
+  g+=`<text x="${X(0).toFixed(1)}" y="${(Y(vl[0].vdot)-9).toFixed(1)}" font-size="10" font-weight="700" fill="var(--txt2)">${vl[0].vdot}</text>`;
+  g+=`<text x="${X(vl.length-1).toFixed(1)}" y="${(Y(vl[vl.length-1].vdot)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--pink)">${vl[vl.length-1].vdot}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${g}</svg>`;
 }
 /* Sažetak svih treninga za LLM trend analizu. NE šalje pun po-krug niz (previše),
@@ -3489,8 +3545,21 @@ function chartPred(pc){
      korisnikov stvaran napredak, praveći vizuelno neslaganje sa brojem gore. */
   const lastIdx=pc.last?pc.rows.indexOf(pc.last):-1;
   const ent=pc.rows.map((x,i)=>({p:x.pred,i})).filter(x=>x.p!=null && (lastIdx<0 || x.i<=lastIdx));
-  if(ent.length>1)g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2" points="${ent.map(x=>X(x.i).toFixed(1)+','+Y(x.p/60).toFixed(1)).join(' ')}"/>`;
-  ent.forEach(x=>g+=`<circle cx="${X(x.i).toFixed(1)}" cy="${Y(x.p/60).toFixed(1)}" r="3.6" fill="var(--pink)"/>`);
+  if(ent.length>1){
+    g+=`<defs><linearGradient id="predGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--pink)" stop-opacity=".38"/>
+          <stop offset="55%" stop-color="var(--pink)" stop-opacity=".08"/>
+          <stop offset="100%" stop-color="var(--pink)" stop-opacity="0"/>
+        </linearGradient></defs>`;
+    const line=ent.map(x=>X(x.i).toFixed(1)+','+Y(x.p/60).toFixed(1)).join(' ');
+    const area=`${X(ent[0].i).toFixed(1)},${B} ${line} ${X(ent[ent.length-1].i).toFixed(1)},${B}`;
+    g+=`<polygon points="${area}" fill="url(#predGrad)"/>`;
+    g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round" points="${line}"/>`;
+  }
+  ent.forEach((x,idx)=>{
+    const last=idx===ent.length-1;
+    g+=`<circle cx="${X(x.i).toFixed(1)}" cy="${Y(x.p/60).toFixed(1)}" r="${last?4.4:3.2}" fill="${last?'var(--bg)':'var(--pink)'}" stroke="${last?'var(--pink)':'none'}" stroke-width="2"/>`;
+  });
   g+=`<text class="ax" x="${W-R}" y="${(Y(19.5)-5).toFixed(1)}" text-anchor="end" fill="var(--cyan)">cilj 19:30</text>`;
   return svgW(W,H,g);
 }
