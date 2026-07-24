@@ -18,6 +18,7 @@
   --txt:#F5F5F7; --txt2:#9C9CA8; --txt3:#7A7A86; /* posvetljeno sa #63636E (3.3:1 -> 4.66:1, HIG minimum) */
   --pink:#FA2E55; --green:#9BE821; --cyan:#00D5FA; --amber:#FFB020; --red:#FF453A;
   --pink-dim:rgba(250,46,85,.14); --green-dim:rgba(155,232,33,.14);
+  --line-soft:rgba(255,255,255,.05);
   --r:18px; --tab-h:58px;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
 }
@@ -36,31 +37,31 @@ button{background:none;border:0;cursor:pointer;touch-action:manipulation}
 /* ---------- header ---------- */
 header{
   position:sticky;top:0;z-index:30;
-  padding:calc(var(--sat) + 10px) 18px 10px;
+  padding:calc(var(--sat) + 14px) 18px 14px;
   display:flex;align-items:center;justify-content:space-between;
-  background:rgba(10,10,15,.78);
+  background:rgba(10,10,15,.82);
   -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
   border-bottom:1px solid var(--line);
 }
 .h-title{font-weight:800;font-size:1.05rem;letter-spacing:.06em}
 .h-title span{color:var(--pink)}
-.h-sub{font-size:.72rem;color:var(--txt2);margin-top:2px;font-weight:600;letter-spacing:.02em}
+.h-sub{font-size:.72rem;color:var(--txt2);margin-top:3px;font-weight:600;letter-spacing:.02em}
 .h-gear{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:var(--txt2)}
 .h-gear:active{transform:scale(.9);color:var(--txt)}
 
 /* ---------- pages ---------- */
-main{padding:14px 16px calc(var(--tab-h) + var(--sab) + 26px)}
+main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .page{display:none;animation:fadein .22s ease}
 .page.active{display:block}
 @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* ---------- cards ---------- */
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
-.card.accent{border-color:rgba(250,46,85,.22);background:linear-gradient(180deg,rgba(250,46,85,.05),var(--card) 65%)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.card.accent{border-color:rgba(250,46,85,.25);background:linear-gradient(180deg,rgba(250,46,85,.06),var(--card) 65%)}
 .card.info{border-left:2px solid var(--cyan)}
-.card-t{font-size:.72rem;font-weight:700;color:var(--txt2);letter-spacing:.09em;text-transform:uppercase;margin-bottom:12px}
+.card-t{font-size:.68rem;font-weight:700;color:var(--txt3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:12px}
 .big{font-size:3.4rem;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
-.big-sub{font-size:.8rem;color:var(--txt2);font-weight:600;margin-top:6px}
+.big-sub{font-size:.82rem;color:var(--txt2);font-weight:400;line-height:1.55;margin-top:10px}
 
 /* hero danas */
 .hero{display:flex;gap:12px;margin-bottom:14px}
@@ -69,16 +70,30 @@ main{padding:14px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .pill{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.78rem;font-weight:700;color:var(--txt2)}
 
 /* trening kartica */
-.tag{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:10px}
-.tag.lako{background:rgba(0,213,250,.14);color:var(--cyan)}
-.tag.tempo{background:rgba(250,46,85,.14);color:var(--pink)}
-.tag.int{background:rgba(250,46,85,.18);color:var(--pink)}
-.tag.lr{background:rgba(155,232,33,.14);color:var(--green)}
-.tag.snaga{background:rgba(255,176,32,.14);color:var(--amber)}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:10px}
+.tag::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.tag.odmor::before{display:none}
+.tag.lako{background:rgba(255,255,255,.07);color:var(--txt3)}
+.tag.tempo{background:rgba(255,176,32,.14);color:var(--amber)}
+.tag.int{background:rgba(250,46,85,.16);color:var(--pink)}
+.tag.lr{background:rgba(0,213,250,.14);color:var(--cyan)}
+.tag.snaga{background:rgba(155,232,33,.14);color:var(--green)}
 .tag.odmor{background:rgba(255,255,255,.08);color:var(--txt2)}
 .tag.trka{background:var(--pink);color:#fff}
 .tag.test{background:rgba(0,213,250,.14);color:var(--cyan)}
 .desc{white-space:pre-line;font-size:.92rem;line-height:1.5;color:var(--txt)}
+/* strukturirani prikaz sesije (Zagrevanje / Radni deo / Odmor / Smirivanje) — iz mockup-a */
+.sess-struct{margin-top:12px;display:flex;flex-direction:column}
+.sess-row{display:flex;align-items:baseline;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line-soft)}
+.sess-row:first-child{border-top:0}
+.sess-row .k{font-size:.78rem;color:var(--txt3);flex:none}
+.sess-row .v{font-size:.92rem;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.sess-row .v.hl{color:var(--pink);font-size:1.02rem}
+.sess-note{margin-top:10px;font-size:.78rem;line-height:1.5;color:var(--txt3)}
+/* legenda ispod grafikona — iz mockup-a */
+.legend{display:flex;flex-wrap:wrap;gap:16px;padding:10px 4px 0;font-size:.72rem;color:var(--txt3)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:7px;height:7px;border-radius:50%;display:block;flex:none}
 .meta{display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .meta b{font-variant-numeric:tabular-nums}
 .meta div{font-size:.75rem;color:var(--txt2)}
@@ -117,20 +132,39 @@ main{padding:14px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .wk-km b{display:block;font-size:.95rem;color:var(--txt);font-variant-numeric:tabular-nums}
 .wk-bar{height:3px;background:var(--card2)}
 .wk-bar i{display:block;height:100%;background:var(--green);transition:width .5s ease}
-.wk-body{display:none;border-top:1px solid var(--line)}
-.wk.open .wk-body{display:block}
-.day{width:100%;display:flex;align-items:center;gap:12px;padding:13px 16px 13px 13px;border-bottom:1px solid var(--line);border-left:3px solid transparent;text-align:left;min-height:52px}
-.day.t-lako{border-left-color:rgba(0,213,250,.5)}
-.day.t-tempo,.day.t-int{border-left-color:var(--pink)}
-.day.t-lr{border-left-color:var(--green)}
-.day.t-snaga{border-left-color:rgba(255,176,32,.5)}
-.day.t-rest{border-left-color:transparent;opacity:.55}
-.day:last-child{border-bottom:0}
+.wk-body{display:none;border-top:1px solid var(--line);background:var(--bg);padding:10px}
+.wk.open .wk-body{display:flex;flex-direction:column;gap:8px}
+/* dan = KARTICA (usklađeno sa mockup-om: odvojene kartice sa razmakom, ne ravni redovi) */
+.day{width:100%;display:flex;align-items:center;gap:12px;text-align:left;
+  background:var(--card);border:1px solid var(--line);border-left:3px solid transparent;
+  border-radius:12px;padding:13px 14px 13px 12px}
+.day.t-lako{border-left-color:rgba(122,122,134,.75)}
+.day.t-tempo{border-left-color:var(--amber)}
+.day.t-int{border-left-color:var(--pink)}
+.day.t-lr{border-left-color:var(--cyan)}
+.day.t-snaga{border-left-color:rgba(155,232,33,.7)}
+.day.t-test,.day.t-trka{border-left-color:var(--cyan)}
+.day.t-rest{border-left-color:transparent;opacity:.5}
 .day:active{background:var(--card2)}
-.day-d{font-size:.75rem;font-weight:800;color:var(--txt2);min-width:34px}
-.day-t{flex:1;font-size:.85rem;line-height:1.35}
-.day-t small{display:block;color:var(--txt3);font-size:.72rem;margin-top:2px}
-.day-km{font-size:.8rem;color:var(--txt2);font-variant-numeric:tabular-nums;min-width:44px;text-align:right}
+.day-d{flex:0 0 40px;text-align:center}
+.day-d .dw{display:block;font-size:.6rem;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em}
+.day-d .dn{display:block;font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums;margin-top:1px}
+.day-mid{flex:1;min-width:0}
+.day-type{font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.t-lako .day-type{color:var(--txt3)}
+.t-tempo .day-type{color:var(--amber)}
+.t-int .day-type{color:var(--pink)}
+.t-lr .day-type{color:var(--cyan)}
+.t-snaga .day-type{color:var(--green)}
+.t-test .day-type,.t-trka .day-type{color:var(--cyan)}
+.t-rest .day-type{color:var(--txt3)}
+.day-desc{font-size:.8rem;color:var(--txt2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-km{flex:0 0 auto;font-size:.9rem;font-weight:700;color:var(--txt2);font-variant-numeric:tabular-nums}
+.day-st{flex:0 0 20px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:800}
+.day-st.done{background:var(--green);color:#0A0A0F}
+.day-st.pending{border:1.5px solid var(--line)}
+.day-st.skip{background:rgba(255,176,32,.2);color:var(--amber)}
+.day-st.rest{opacity:0}
 .swap-list{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card2)}
 .day.swap-sel{background:rgba(255,45,85,.14);box-shadow:inset 3px 0 0 var(--pink)}
 .day.swap-lock{opacity:.4;pointer-events:none}
@@ -140,6 +174,16 @@ main{padding:14px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .f-field{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
 .f-field.full{grid-column:1/-1}
 .f-field label{display:block;font-size:.66rem;font-weight:700;color:var(--txt2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.wseg-wrap{background:linear-gradient(180deg,rgba(250,46,85,.06),var(--card2) 70%);border-color:rgba(250,46,85,.2)}
+.wseg-title{display:block;font-size:.7rem;font-weight:800;color:var(--txt);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.more-details{padding:0;background:transparent;border:1px solid var(--line);border-radius:12px}
+.more-details summary{list-style:none;padding:11px 14px;font-size:.78rem;font-weight:700;color:var(--txt2);display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.more-details summary::-webkit-details-marker{display:none}
+.more-details summary::after{content:'▾';color:var(--txt3);transition:transform .2s}
+.more-details[open] summary::after{transform:rotate(180deg)}
+.more-details[open] summary{border-bottom:1px solid var(--line)}
+.more-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+.more-grid .f-field{background:var(--card);padding:9px 12px}
 .f-field input[type=text],.f-field input[type=number],.f-field input[type=date],.f-field textarea,.f-field select{
   width:100%;background:none;border:0;outline:none;font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--txt);
   -webkit-appearance:none;appearance:none;
@@ -228,6 +272,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .krow .kd{font-size:.78rem;font-weight:700}
 .krow .kn{font-size:.78rem;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .krow .ka{font-size:.68rem;color:var(--txt3);font-weight:700}
+/* mapa tela (Povrede) */
+.bodytoggle{display:flex;gap:8px;margin-bottom:10px}
+.bodytoggle button{flex:1;padding:9px;border-radius:10px;background:var(--card2);border:1px solid var(--line);font-size:.78rem;font-weight:700;color:var(--txt2)}
+.bodytoggle button.on{background:var(--pink-dim);border-color:rgba(250,46,85,.35);color:var(--pink)}
+.bodywrap{display:flex;justify-content:center;padding:4px 0 2px}
+.bodymap{width:186px;height:auto;max-width:100%;display:block}
+.bp{fill:#282833;stroke:var(--card);stroke-width:1.4;cursor:pointer;transition:fill .15s}
+.bp:active{fill:#3c3c4a}
+.bp.l0{fill:rgba(155,232,33,.32)}
+.bp.l1{fill:rgba(255,176,32,.42)}
+.bp.l2{fill:rgba(255,176,32,.8)}
+.bp.l3{fill:var(--red)}
+.bodylegend{display:flex;flex-wrap:wrap;gap:11px;justify-content:center;padding-top:8px;font-size:.7rem;color:var(--txt2)}
+.bodylegend span{display:flex;align-items:center;gap:5px}
+.bodylegend i{width:10px;height:10px;border-radius:3px;display:block;background:#282833;flex:none}
+.bodylegend i.l0{background:rgba(155,232,33,.32)}
+.bodylegend i.l1{background:rgba(255,176,32,.42)}
+.bodylegend i.l2{background:rgba(255,176,32,.8)}
+.bodylegend i.l3{background:var(--red)}
 
 /* predikcija */
 .pstat{display:flex;gap:12px;margin-bottom:14px}
@@ -358,8 +421,8 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
     <span>Progres</span>
   </button>
   <button data-pg="koleno">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.2-5 3.6 10 2.2-5H21"/></svg>
-    <span>Koleno</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.3" r="2.3"/><path d="M12 6.8v7.4M12 8.6 7.4 11M12 8.6l4.6 2.4M12 14.2 9.2 21M12 14.2 14.8 21"/></svg>
+    <span>Povrede</span>
   </button>
   <button data-pg="pred">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-2.5 4L18 12H5"/></svg>
@@ -371,7 +434,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='55'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='59'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -836,6 +899,72 @@ function tagName(t){return{lako:'Lako',tempo:'Tempo',int:'Intervali',lr:'Dugo (L
 /* Specifičan tip sesije kad postoji (Fartlek/Repeticije/Maratonski tempo/...
    — samo generisani planovi imaju d.session.kind), inače generička oznaka
    po tagu (tvoj hardkodovan plan nema .session, pa ovde ništa ne menja). */
+/* Kratak opis SAMOG RADNOG dela — za listu u Plan tabu (jedan red, bez WU/CD
+   šuma). Preko session objekta kad postoji (generisani planovi), inače parsira
+   d.desc (tvoj hardkodovan plan). */
+function sessCore(d){
+  if(!d||d.rest)return (d&&d.desc)||'Odmor';
+  const s=d.session;
+  if(s){
+    if(s.type==='int'&&s.reps&&s.repM)     return `${s.reps}×${s.repM} m @ ${fmtTempo(s.paceSec)}/km`;
+    if(s.type==='pyramid'&&Array.isArray(s.reps)) return `${s.reps.join('-')} m @ ${fmtTempo(s.paceSec)}/km`;
+    if(s.type==='tempo'&&s.qKm)            return `${fmtKm(s.qKm)} km @ ${fmtTempo(s.paceSec)}/km`;
+    if(s.type==='fartlek'&&s.reps)         return `${s.reps}× ${s.repSec} s @ ${fmtTempo(s.paceSec)}/km`;
+  }
+  const desc=d.desc||'';
+  const afterWU=desc.split(/km\s*WU\s*\+\s*/i)[1];
+  if(afterWU){
+    const core=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*CD/i)[0].trim();
+    if(core)return core;
+  }
+  /* nije kvalitetna sesija (lako/LR/snaga) — očisti zagrade, ostavi suštinu */
+  return desc.replace(/\s*\([^)]*\)/g,'').replace(/\s+/g,' ').trim()||desc;
+}
+/* Strukturirani redovi sesije za Danas karticu: [[labela, vrednost, istaknuto?]].
+   Vraća null ako se ne može pouzdano razložiti — pozivalac tada prikaže sirov opis. */
+function sessBreakdown(d){
+  if(!d||d.rest)return null;
+  const rows=[];
+  const s=d.session;
+  if(s){
+    if(s.wuKm)rows.push(['Zagrevanje',fmtKm(s.wuKm)+' km']);
+    let work=null;
+    if(s.type==='int'&&s.reps&&s.repM)work=`${s.reps} × ${s.repM} m @ ${fmtTempo(s.paceSec)}/km`;
+    else if(s.type==='pyramid'&&Array.isArray(s.reps))work=`${s.reps.join('-')} m @ ${fmtTempo(s.paceSec)}/km`;
+    else if(s.type==='tempo'&&s.qKm)work=`${fmtKm(s.qKm)} km @ ${fmtTempo(s.paceSec)}/km`;
+    else if(s.type==='fartlek'&&s.reps)work=`${s.reps} × ${s.repSec} s @ ${fmtTempo(s.paceSec)}/km`;
+    if(work)rows.push(['Radni deo',work,true]);
+    if(s.restSec)rows.push(['Odmor',s.restSec>=60?Math.round(s.restSec/60)+' min':s.restSec+' s']);
+    if(s.cdKm)rows.push(['Smirivanje',fmtKm(s.cdKm)+' km']);
+    return rows.length>=2?rows:null;
+  }
+  const desc=d.desc||'';
+  const mWU=desc.match(/([\d.,]+)\s*km\s*WU/i);
+  const mCD=desc.match(/([\d.,]+)\s*km\s*CD/i);
+  const afterWU=desc.split(/km\s*WU\s*\+\s*/i)[1];
+  let work=null;
+  if(afterWU)work=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*CD/i)[0].trim();
+  const mRest=desc.match(/\((\s*\d+\s*(?:min|s)\b[^)]*)\)/i);
+  if(mWU)rows.push(['Zagrevanje',mWU[1].replace(',','.')+' km']);
+  if(work)rows.push(['Radni deo',work,true]);
+  if(mRest)rows.push(['Odmor',mRest[1].trim()]);
+  if(mCD)rows.push(['Smirivanje',mCD[1].replace(',','.')+' km']);
+  return rows.length>=2?rows:null;
+}
+/* Dodatne napomene iz opisa koje NISU deo strukture (npr. "plafon HR 170",
+   "kontrolisan maks. napor") — da se ne izgube kad prikazujemo strukturirano. */
+function sessNote(d){
+  const desc=(d&&d.desc)||'';
+  /* gledaj SAMO deo posle crte (opis rada) — inače se kvalifikator iz naziva
+     sesije ("Tempo (broken, duže reps) — ...") lažno pokupi kao napomena */
+  const body=desc.includes('—')?desc.slice(desc.indexOf('—')+1):desc;
+  const parts=[];
+  const paren=body.match(/\(([^)]+)\)/);
+  if(paren&&!/^\s*\d+(?:[.,]\d+)?\s*(?:min|s)\b/i.test(paren[1]))parts.push(paren[1].trim());
+  const tail=body.match(/km\s*CD\s*[·•]\s*(.+)$/i);
+  if(tail)parts.push(tail[1].trim());
+  return parts.join(' · ');
+}
 function sessKind(d){
   if(d.rest)return tagName('odmor');
   /* Ako je dan RUČNO izmenjen (Izmeni trening), d.session i dalje nosi
@@ -902,7 +1031,7 @@ function kneeStatus(today){
   if(ge3>=3)return{cls:'stop',t:'FIZIJATAR',s:'3+ dana sa bolom ≥3 u poslednjih 7 dana — zakaži pregled.'};
   if(mx>=6)return{cls:'stop',t:'STANI',s:'Bol 6+ u poslednjih 7 dana. Pravilo iz plana: stani.'};
   if(mx>=3)return{cls:'warn',t:'PAZI',s:'Bol 3–5 u poslednjih 7 dana. Prati i smanji ako raste.'};
-  return{cls:'ok',t:'Koleno OK',s:'0 = bez bola · 3–5 = pazi · 6+ = stani · 3+ dana ≥3 u 7 dana = fizijatar'};
+  return{cls:'ok',t:'Bez povreda',s:'0 = bez bola · 3–5 = pazi · 6+ = stani · 3+ dana ≥3 u 7 dana = fizijatar'};
 }
 /* Zona direktno iz PRED reda oznake (r.l = 'NX · Tip') — POUZDANIJE od
    dan->sessKind puta: tvoj hardkodovan plan ima generičan d.tag (samo
@@ -1458,8 +1587,17 @@ function dayCard(d){
       <span class="tag ${d.tag}">${sessKind(d)}</span>
       <span class="st ${s}">${s==='done'?'Odrađen':s==='skip'?'Preskočen':'Predstoji'}</span>
     </div>
-    <div style="font-size:.72rem;color:var(--txt2);font-weight:700;margin-bottom:8px">N${d.week.w}${d.date?' · '+dowOf(d.date)+' '+fmtD(d.date):' · opciono, kraj nedelje'}</div>
-    <div class="desc">${esc(d.desc)}</div>`;
+    <div style="font-size:.72rem;color:var(--txt2);font-weight:700;margin-bottom:8px">N${d.week.w}${d.date?' · '+dowOf(d.date)+' '+fmtD(d.date):' · opciono, kraj nedelje'}</div>`;
+  const rows=sessBreakdown(d);
+  if(rows){
+    c+=`<div class="sess-struct">`;
+    rows.forEach(r=>{ c+=`<div class="sess-row"><span class="k">${esc(r[0])}</span><span class="v${r[2]?' hl':''}">${esc(r[1])}</span></div>`; });
+    c+=`</div>`;
+    const note=sessNote(d);
+    if(note)c+=`<div class="sess-note">${esc(note)}</div>`;
+  } else {
+    c+=`<div class="desc">${esc(d.desc)}</div>`;
+  }
   c+=`<div class="meta">${d.km!=null?`<div><b>${fmtKm(d.km)} km</b>plan</div>`:''}<div><b>${fmtKm(weekPlanKm(d.week))} km</b>nedelja N${d.week.w}</div><div><b>${weekDone(d.week)}/${weekCountable(d.week)}</b>treninga</div></div>`;
   if(s==='pending')c+=`<div class="btnrow"><button class="btn" data-a="done">Završi trening</button><button class="btn ghost" data-a="skip">Preskoči</button></div>`;
   else if(s==='skip')c+=`<div class="btnrow"><button class="btn ghost" data-a="done">Ipak sam odradio</button><button class="btn ghost sm" data-a="pending">Vrati</button></div>`;
@@ -1492,9 +1630,8 @@ function formHTML(d){
   const predIds=(d.tag==='int'||d.tag==='tempo')?predRowsFor(d):[];
   let workBlock='';
   if(predIds.length){
-    workBlock=`<div class="f-field full" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
-      <label style="font-weight:800;color:var(--txt)">Radni deo — ostvaren tempo (m:ss /km)</label>
-      <div style="font-size:.72rem;color:var(--txt3);margin-bottom:8px">Tempo samog kvalitetnog segmenta (bez WU/CD). Puni predikciju i računa VDOT formu.</div>`;
+    workBlock=`<div class="f-field full wseg-wrap">
+      <label class="wseg-title">Radni deo — ostvaren tempo</label>`;
     predIds.forEach(pid=>{
       const r=CUR_PRED.find(x=>x.id===pid);
       const cur=S.pred[pid];
@@ -1517,12 +1654,15 @@ function formHTML(d){
     <div class="f-field"><label>Vreme <span class="f-req">*</span></label><input type="text" inputmode="numeric" data-f="sec" value="${l.sec?fmtClock(l.sec):''}" placeholder="4233 = 42:33"></div>
     <div class="f-field"><label>Pros. tempo</label><div class="calc" data-tempo>${tempo}</div></div>
     <div class="f-field"><label>Pros. puls</label><input type="text" inputmode="numeric" data-f="hr" value="${l.hr!=null?l.hr:''}" placeholder="bpm"></div>
+    ${workBlock}
+    <details class="f-field full more-details"><summary>Više detalja (RPE, koleno, masa, datum, beleška)</summary>
+    <div class="more-grid">
     <div class="f-field"><label>RPE (1–10)</label><select data-f="rpe">${opt(l.rpe,1,10)}</select></div>
     <div class="f-field"><label>Bol u kolenu (0–10)</label><select data-f="knee">${opt(l.knee,0,10)}</select></div>
     <div class="f-field"><label>Telesna masa (kg)</label><input type="text" inputmode="decimal" data-f="kg" value="${l.kg!=null?String(l.kg).replace('.',','):''}" placeholder="npr. 80,5"></div>
     <div class="f-field"><label>Datum</label><input type="date" data-f="ts" value="${l.ts||d.date||TODAY}"></div>
     <div class="f-field full"><label>Beleška</label><textarea data-f="note" placeholder="Kako je bilo…">${esc(l.note||'')}</textarea></div>
-    ${workBlock}
+    </div></details>
     ${aiBlock}
     ${l.src==='strava'?`<div class="note-src" style="grid-column:1/-1;margin-top:0">⛓ Podaci povučeni sa Strave${l.lock?' · ručno korigovano (sync više ne prepisuje)':''}</div>`:''}
   </div>`;
@@ -1654,14 +1794,16 @@ function renderPlan(){
       const da=a.date||'9999-99-99', db=b.date||'9999-99-99';
       return da<db?-1:da>db?1:0;
     }).forEach(d=>{
-      const s=d.rest?null:stFor(d.id);
-      const title=d.rest?(d.desc||'Odmor'):d.desc.split('\n')[0];
+      const s=d.rest?'rest':stFor(d.id);
       const t='button'; /* i dani odmora su otvorljivi — da se mogu izmeniti u trening */
       h+=`<${t} class="day t-${d.rest?'rest':d.tag}" data-d="${d.id}">
-        <div class="day-d">${d.test?'TEST':dowOf(d.date)}${d.date?`<small>${fmtD(d.date)}</small>`:''}</div>
-        <div class="day-t" style="${d.rest?'color:var(--txt3)':''}">${esc(title)}</div>
-        <div class="day-km">${d.km!=null?fmtKm(d.km):''}</div>
-        ${d.rest?'<span class="st rest">—</span>':`<span class="st ${s}">${s==='done'?'✓':s==='skip'?'⏭':'○'}</span>`}
+        <div class="day-d"><span class="dw">${d.test?'TT':dowOf(d.date)}</span>${d.date?`<span class="dn">${pad2(s2d(d.date).getDate())}</span>`:''}</div>
+        <div class="day-mid">
+          <div class="day-type">${d.rest?'Odmor':esc(sessKind(d))}</div>
+          <div class="day-desc">${esc(d.rest?(d.desc||'—'):sessCore(d))}</div>
+        </div>
+        <div class="day-km">${d.km!=null?fmtKm(d.km)+' km':''}</div>
+        <span class="day-st ${s}">${s==='done'?'✓':s==='skip'?'⏭':''}</span>
       </${t}>`;
     });
     h+=`</div></div>`;
@@ -3329,19 +3471,104 @@ function chartTempo(){
 }
 
 /* ---------- KOLENO ---------- */
+/* ============ MAPA TELA (Povrede) ============ */
+const BODY_PARTS={
+  'glava':'Glava','vrat':'Vrat','grudi':'Grudi','trbuh':'Trbuh','prepone':'Prepone',
+  'gornja-ledja':'Gornja leđa','donja-ledja':'Donja leđa',
+  'rame-L':'Levo rame','rame-D':'Desno rame',
+  'nadlaktica-L':'Leva nadlaktica','nadlaktica-D':'Desna nadlaktica',
+  'podlaktica-L':'Leva podlaktica','podlaktica-D':'Desna podlaktica',
+  'saka-L':'Leva šaka','saka-D':'Desna šaka',
+  'kuk-L':'Levi kuk','kuk-D':'Desni kuk',
+  'gluteus-L':'Levi gluteus','gluteus-D':'Desni gluteus',
+  'kvadriceps-L':'Levi kvadriceps','kvadriceps-D':'Desni kvadriceps',
+  'zadnja-loza-L':'Leva zadnja loža','zadnja-loza-D':'Desna zadnja loža',
+  'koleno-L':'Levo koleno','koleno-D':'Desno koleno',
+  'potkolenica-L':'Leva potkolenica','potkolenica-D':'Desna potkolenica',
+  'list-L':'Levi list','list-D':'Desni list',
+  'ahilova-L':'Leva Ahilova','ahilova-D':'Desna Ahilova',
+  'stopalo-L':'Levo stopalo','stopalo-D':'Desno stopalo',
+  'peta-L':'Leva peta','peta-D':'Desna peta'
+};
+function partName(p){ return p&&BODY_PARTS[p]?BODY_PARTS[p]:(p?p:'Opšte'); }
+/* Najnoviji nivo bola za deo tela u poslednjih `days` dana (null ako nema unosa). */
+function partLevel(part,days){
+  days=days||14;
+  const from=addD(TODAY,-days);
+  const es=(S.knee||[]).filter(k=>k.part===part&&k.date>=from&&k.date<=TODAY)
+                       .sort((a,b)=>a.date<b.date?1:-1);
+  return es.length?es[0].pain:null;
+}
+function painClass(v){ return v==null?'':v>=6?'l3':v>=3?'l2':v>=1?'l1':'l0'; }
+/* SVG silueta — delovi definisani za LEVU stranu ekrana (x<100), desna se ogleda.
+   Prednji pogled: leva strana ekrana = DESNA strana tela (kao u ogledalu naopako —
+   gledaš osobu spreda). Zadnji pogled: leva strana ekrana = LEVA strana tela. */
+function bodyMapSVG(view){
+  const MIR='transform="translate(200,0) scale(-1,1)"';
+  const P=(id,d)=>{
+    const lv=partLevel(id), c=painClass(lv);
+    return `<path class="bp ${c}" data-bp="${id}" d="${d}"><title>${esc(partName(id))}${lv!=null?' — bol '+lv:''}</title></path>`;
+  };
+  const E=(id)=>{
+    const lv=partLevel(id), c=painClass(lv);
+    return `<ellipse class="bp ${c}" data-bp="${id}" cx="100" cy="38" rx="22" ry="29"><title>${esc(partName(id))}${lv!=null?' — bol '+lv:''}</title></ellipse>`;
+  };
+  let g=E('glava')+P('vrat','M89,60 L89,80 Q100,87 111,80 L111,60 Q100,68 89,60 Z');
+  const side=s=>
+     P('rame-'+s,'M76,80 Q61,82 54,96 Q50,106 53,118 L67,112 Q67,91 76,80 Z')
+    +P('nadlaktica-'+s,'M53,120 Q49,144 47,168 L61,172 Q64,146 67,114 Z')
+    +P('podlaktica-'+s,'M47,170 Q45,196 46,220 L59,222 Q61,198 61,174 Z')
+    +P('saka-'+s,'M46,222 Q43,238 47,250 Q55,254 59,246 Q61,234 59,224 Z');
+  if(view==='front'){
+    g+=P('grudi','M76,80 Q100,71 124,80 L128,142 Q100,151 72,142 Z')
+      +P('trbuh','M72,144 Q100,153 128,144 L124,196 Q100,205 76,196 Z')
+      +P('prepone','M76,198 Q100,207 124,198 L120,234 Q100,247 80,234 Z');
+    const leg=s=>P('kuk-'+s,'M76,198 L80,234 Q86,242 95,240 L95,202 Q84,204 76,198 Z')
+      +P('kvadriceps-'+s,'M80,236 Q74,278 78,318 L97,320 Q100,278 96,242 Q88,244 80,236 Z')
+      +P('koleno-'+s,'M78,320 L97,322 L97,352 L79,350 Z')
+      +P('potkolenica-'+s,'M79,352 Q75,390 81,426 L96,426 Q99,390 97,354 Z')
+      +P('stopalo-'+s,'M81,422 Q77,444 80,454 Q91,460 104,454 L103,430 Z');
+    g+=side('D')+leg('D')+`<g ${MIR}>`+side('L')+leg('L')+`</g>`;
+  }else{
+    g+=P('gornja-ledja','M76,80 Q100,71 124,80 L128,146 Q100,155 72,146 Z')
+      +P('donja-ledja','M72,148 Q100,157 128,148 L124,196 Q100,205 76,196 Z');
+    const leg=s=>P('gluteus-'+s,'M76,198 Q70,220 80,238 Q89,246 96,239 L96,202 Q84,204 76,198 Z')
+      +P('zadnja-loza-'+s,'M80,238 Q74,280 78,318 L97,320 Q100,280 96,244 Q88,246 80,238 Z')
+      +P('koleno-'+s,'M78,320 L97,322 L97,352 L79,350 Z')
+      +P('list-'+s,'M79,352 Q71,384 80,412 L96,412 Q100,384 97,354 Z')
+      +P('ahilova-'+s,'M80,409 L96,409 L95,438 L82,438 Z')
+      +P('peta-'+s,'M82,432 Q78,450 83,458 Q92,462 98,455 L97,438 Z');
+    g+=side('L')+leg('L')+`<g ${MIR}>`+side('D')+leg('D')+`</g>`;
+  }
+  return `<svg viewBox="0 0 200 470" class="bodymap">${g}</svg>`;
+}
 function renderKnee(){
   const el=$('#pg-koleno');
   const ks=kneeStatus(TODAY);
   const list=S.knee.slice().sort((a,b)=>a.date<b.date?1:-1);
+  const view=(S.ui&&S.ui.bodyView)==='back'?'back':'front';
+  const active=Object.keys(BODY_PARTS).map(p=>({p,lv:partLevel(p)})).filter(x=>x.lv!=null&&x.lv>=1).sort((a,b)=>b.lv-a.lv);
   let h=`<div class="kb ${ks.cls}"><div><div>${ks.t}</div><small>${ks.s}</small></div></div>`;
+  h+=`<div class="card"><div class="card-t">Mapa tela — dodirni deo koji te boli</div>
+    <div class="bodytoggle"><button data-bv="front" class="${view==='front'?'on':''}">Prednja</button><button data-bv="back" class="${view==='back'?'on':''}">Zadnja</button></div>
+    <div class="bodywrap">${bodyMapSVG(view)}</div>
+    <div class="bodylegend"><span><i class="l0"></i>0</span><span><i class="l1"></i>1–2</span><span><i class="l2"></i>3–5</span><span><i class="l3"></i>6+</span><span style="color:var(--txt3)">· poslednjih 14 dana</span></div>
+  </div>`;
+  if(active.length){
+    h+=`<div class="card"><div class="card-t">Aktivno — poslednjih 14 dana</div>`+
+      active.map(x=>`<button class="krow" data-bp2="${x.p}"><div class="kp ${x.lv>=6?'p2':'p1'}">${x.lv}</div><div class="ki"><div class="kd">${esc(partName(x.p))}</div></div></button>`).join('')+`</div>`;
+  }
   h+=`<div class="card"><div class="card-t">Bol (0–10) kroz vreme</div>${chartKnee()}</div>`;
   h+=`<div class="btnrow" style="margin:0 0 14px"><button class="btn ghost" id="k-add">+ Dodaj unos</button></div>`;
-  h+=`<div class="card">`+(list.length?list.map(k=>`
+  h+=`<div class="card"><div class="card-t">Istorija</div>`+(list.length?list.map(k=>`
     <button class="krow" data-k="${k.id}">
       <div class="kp ${k.pain>=6?'p2':k.pain>=1?'p1':'p0'}">${k.pain}</div>
-      <div class="ki"><div class="kd">${DOW[(s2d(k.date).getDay()+6)%7]} ${fmtD(k.date)} <span class="ka">· ${esc(k.act)}${k.src?' · iz treninga':''}</span></div>${k.note?`<div class="kn">${esc(k.note)}</div>`:''}</div>
+      <div class="ki"><div class="kd">${esc(partName(k.part))} <span class="ka">· ${DOW[(s2d(k.date).getDay()+6)%7]} ${fmtD(k.date)} · ${esc(k.act)}${k.src?' · iz treninga':''}</span></div>${k.note?`<div class="kn">${esc(k.note)}</div>`:''}</div>
     </button>`).join(''):`<div class="empty">Nema unosa.</div>`)+`</div>`;
   el.innerHTML=h;
+  el.querySelectorAll('[data-bv]').forEach(b=>b.onclick=()=>{S.ui.bodyView=b.dataset.bv;save();renderKnee();});
+  el.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>openKneeSheet(null,b.dataset.bp));
+  el.querySelectorAll('[data-bp2]').forEach(b=>b.onclick=()=>openKneeSheet(null,b.dataset.bp2));
   $('#k-add').onclick=()=>openKneeSheet(null);
   el.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>openKneeSheet(b.dataset.k));
 }
@@ -3362,14 +3589,17 @@ function chartKnee(){
   g+=`<text class="ax" x="${L}" y="${B+12}">${fmtD(d0)}</text><text class="ax" x="${W-R}" y="${B+12}" text-anchor="end">${fmtD(d1)}</text>`;
   return svgW(W,H,g);
 }
-function openKneeSheet(id){
-  const k=id?S.knee.find(x=>x.id===id):{date:TODAY,act:'Trčanje',pain:0,note:''};
+function openKneeSheet(id,presetPart){
+  const k=id?S.knee.find(x=>x.id===id):{date:TODAY,act:'Trčanje',pain:0,note:'',part:presetPart||null};
   if(id&&!k)return;
   const acts=['Trčanje','Snaga','Odmor','Drugo'];
+  const partOpts=`<option value=""${!k.part?' selected':''}>Opšte (bez dela tela)</option>`+
+    Object.keys(BODY_PARTS).map(p=>`<option value="${p}"${k.part===p?' selected':''}>${BODY_PARTS[p]}</option>`).join('');
   openSheet(`
-    <div class="sh-t">${id?'Unos — koleno':'Novi unos — koleno'}</div>
+    <div class="sh-t">${id?'Unos — '+partName(k.part):'Novi unos'+(k.part?' — '+partName(k.part):'')}</div>
     <div class="sh-s">${k.src?'Vezan za trening — izmena treninga ažurira ovaj unos':'Ručni unos'}</div>
     <div class="f-grid">
+      <div class="f-field full"><label>Deo tela</label><select id="kf-part">${partOpts}</select></div>
       <div class="f-field"><label>Datum</label><input type="date" id="kf-date" value="${k.date}"></div>
       <div class="f-field"><label>Aktivnost</label><select id="kf-act">${acts.map(a=>`<option${a===k.act?' selected':''}>${a}</option>`).join('')}</select></div>
       <div class="f-field full"><label>Bol (0–10) <span class="range-v" id="kf-pv">${k.pain}</span></label><input type="range" id="kf-pain" min="0" max="10" step="1" value="${k.pain}"></div>
@@ -3384,6 +3614,7 @@ function openKneeSheet(id){
     if(id){k.pain=+e.target.value;save();}else{k.pain=+e.target.value;}
   };
   if(id){
+    sh.querySelector('#kf-part').onchange=e=>{k.part=e.target.value||null;save();renderKnee();};
     sh.querySelector('#kf-date').onchange=e=>{if(e.target.value){k.date=e.target.value;S.knee.sort((a,b)=>a.date<b.date?-1:1);save();}};
     sh.querySelector('#kf-act').onchange=e=>{k.act=e.target.value;save();};
     sh.querySelector('#kf-note').oninput=e=>{k.note=e.target.value;save();};
@@ -3393,9 +3624,9 @@ function openKneeSheet(id){
     };
   }else{
     sh.querySelector('#kf-save').onclick=()=>{
-      S.knee.push({id:'k'+Date.now(),src:null,date:sh.querySelector('#kf-date').value||TODAY,act:sh.querySelector('#kf-act').value,pain:k.pain,note:sh.querySelector('#kf-note').value.trim()});
+      S.knee.push({id:'k'+Date.now(),src:null,date:sh.querySelector('#kf-date').value||TODAY,act:sh.querySelector('#kf-act').value,pain:k.pain,note:sh.querySelector('#kf-note').value.trim(),part:sh.querySelector('#kf-part').value||null});
       S.knee.sort((a,b)=>a.date<b.date?-1:1);
-      save();closeSheet();
+      save();closeSheet();renderKnee();
     };
   }
 }
@@ -3414,19 +3645,21 @@ function renderPred(){
     <div class="card"><div class="big" id="ps-last" style="font-size:1.9rem;color:${col(pc.last)}">${stat(pc.last)}</div><div class="big-sub">ZADNJA predikcija</div></div>
     <div class="card"><div class="big" id="ps-best" style="font-size:1.9rem;color:${col(pc.best)}">${stat(pc.best)}</div><div class="big-sub">NAJBRŽA predikcija</div></div>
   </div>`;
-  h+=`<div class="card"><div class="card-t">Trenutna forma (VDOT)</div>
+  h+=`<div class="card accent"><div class="card-t">Trenutna forma (VDOT)</div>
     <div style="display:flex;align-items:baseline;gap:10px">
-      <div class="big" style="font-size:2rem;color:${vCol}">${cv!=null?cv:bv}</div>
-      <div style="color:${vCol};font-weight:800">${vArrow}${vdotDelta!=null?(vdotDelta>0?' +':' ')+vdotDelta:''}</div>
+      <div class="big" style="font-size:2.6rem;letter-spacing:-.01em">${cv!=null?cv:bv}</div>
+      <div style="color:${vCol};font-weight:800;font-size:1rem">${vArrow}${vdotDelta!=null?(vdotDelta>0?' +':' ')+vdotDelta:''}</div>
     </div>
     <div style="font-size:.75rem;color:var(--txt3);margin-top:4px">Početni VDOT (PB 20:37): ${bv} · cilj 19:20–19:30 ≈ VDOT ${Math.round(vdotFrom5k(1170)*10)/10}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
   </div>`;
   h+=`<div class="card"><div class="card-t">VDOT trend kroz vreme</div><div id="vdottrend">${chartVdotTrend()}</div>
+    <div class="legend"><span><i style="background:var(--cyan)"></i>cilj ${Math.round(vdotFrom5k(1170)*10)/10}</span><span><i style="background:var(--pink)"></i>tvoja forma</span></div>
     <button type="button" id="trend-go" class="btn-ai" style="margin-top:10px">📈 Objasni trend (AI)</button>
     <div id="trend-out" class="ai-out"></div></div>`;
   const predRaceName=S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K';
-  h+=`<div class="card"><div class="card-t">Predikcija ${predRaceName} kroz plan</div><div id="pchart">${chartPred(pc)}</div></div>`;
-  h+=`<div class="card" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?goalCtxText():'19:20–19:30 — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
+  h+=`<div class="card"><div class="card-t">Predikcija ${predRaceName} kroz plan</div><div id="pchart">${chartPred(pc)}</div>
+    <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span></div></div>`;
+  h+=`<div class="card info" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?goalCtxText():'19:20–19:30 — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
   el.innerHTML=h;
   const tBtn=el.querySelector('#trend-go');
   if(tBtn){
