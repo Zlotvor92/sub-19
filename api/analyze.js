@@ -27,9 +27,12 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MO
    prebudžet mali, model potroši sve na razmišljanje i vrati prazan tekst,
    ista zamka koju smo ranije pogodili sa Claude-om). */
 async function callGemini(systemText, userText) {
-  const r = await fetch(`${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`, {
+  const r = await fetch(GEMINI_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': process.env.GEMINI_API_KEY
+    },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: systemText }] },
       contents: [{ parts: [{ text: userText }] }],
