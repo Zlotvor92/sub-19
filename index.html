@@ -434,7 +434,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='59'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='60'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1746,7 +1746,7 @@ function bindForm(root,d){
           out.textContent='Server nije vratio ispravan odgovor (HTTP '+resp.status+'). Najverovatnije api/analyze.js još nije deployovan na Vercel-u — proveri da li je fajl commit-ovan i da je deploy završen.';
           return;
         }
-        if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
+        if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata')+(data.detail?' — '+data.detail:''); }
         else { out.innerHTML=mdToHtml(data.text); l.aiCount=(l.aiCount||0)+1; save(); }
       }catch(e){
         out.className='ai-out err'; out.textContent='Pravi mrežni prekid (offline / nema signala).';
@@ -3681,7 +3681,7 @@ function renderPred(){
         });
         let data;
         try{ data=await resp.json(); }catch{ out.className='ai-out err'; out.textContent='Server nije vratio ispravan odgovor (HTTP '+resp.status+').'; return; }
-        if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata'); }
+        if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata')+(data.detail?' — '+data.detail:''); }
         else { out.innerHTML=mdToHtml(data.text); }
       }catch(e){ out.className='ai-out err'; out.textContent='Nema veze sa serverom.'; }
       finally{ tBtn.disabled=false; tBtn.textContent='📈 Objasni trend (AI)'; }
