@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='50'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='51'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -521,31 +521,31 @@ const PLAN=[
 
 /* Race Predictor — redovi doslovno iz sheeta (plan5k u sekundama, kako su sačuvani) */
 const PRED=[
- {id:'p1', w:1, l:'N1 · Tempo',     q:4,   pt:262, p5k:1310},
- {id:'p2', w:2, l:'N2 · Intervali', q:4.8, pt:238, p5k:1192.918},
- {id:'p2b',w:2, l:'N2 · Tempo',     q:4,   pt:260, p5k:1318},
- {id:'p3', w:3, l:'N3 · Tempo',     q:5,   pt:258, p5k:1290},
- {id:'p3b',w:3, l:'N3 · Intervali', q:5,   pt:236, p5k:1180},
- {id:'p4', w:4, l:'N4 · Intervali', q:5,   pt:240, p5k:1200},
- {id:'p4b',w:4, l:'N4 · Tempo',     q:6,   pt:268, p5k:1325.421},
- {id:'p5', w:5, l:'N5 · Tempo',     q:6,   pt:265, p5k:1310.584},
- {id:'p5b',w:5, l:'N5 · Intervali', q:5,   pt:238, p5k:1190},
- {id:'p6', w:6, l:'N6 · Intervali', q:5,   pt:235, p5k:1175},
- {id:'p7', w:6, l:'N6 · Tempo',     q:6,   pt:265, p5k:1310.584},
- {id:'p8', w:8, l:'N8 · Intervali', q:6,   pt:235, p5k:1162.216},
- {id:'p9', w:8, l:'N8 · Tempo',     q:6,   pt:265, p5k:1310.584},
- {id:'p10',w:9, l:'N9 · Intervali', q:6,   pt:232, p5k:1147.38},
- {id:'p11',w:9, l:'N9 · Tempo',     q:6,   pt:262, p5k:1295.748},
- {id:'p12',w:10,l:'N10 · Intervali',q:6,   pt:230, p5k:1137.488},
- {id:'p13',w:10,l:'N10 · Tempo',    q:3,   pt:233, p5k:1201.26},
- {id:'p14',w:11,l:'N11 · Intervali',q:6,   pt:230, p5k:1137.488},
- {id:'p15',w:11,l:'N11 · Tempo',    q:6,   pt:258, p5k:1275.965},
- {id:'p16',w:11,l:'N11 · Tempo',    q:5,   pt:234, p5k:1170},
- {id:'p17',w:12,l:'N12 · Intervali',q:6,   pt:230, p5k:1137.488},
+ {id:'p1', w:1, l:'N1 · Tempo',     q:4,   pt:262, p5k:1232},
+ {id:'p2', w:2, l:'N2 · Intervali', q:4.8, pt:238, p5k:1242},
+ {id:'p2b',w:2, l:'N2 · Tempo',     q:4,   pt:260, p5k:1222},
+ {id:'p3', w:3, l:'N3 · Tempo',     q:5,   pt:258, p5k:1212},
+ {id:'p3b',w:3, l:'N3 · Intervali', q:5,   pt:236, p5k:1231},
+ {id:'p4', w:4, l:'N4 · Intervali', q:5,   pt:240, p5k:1253},
+ {id:'p4b',w:4, l:'N4 · Tempo',     q:6,   pt:268, p5k:1262},
+ {id:'p5', w:5, l:'N5 · Tempo',     q:6,   pt:265, p5k:1247},
+ {id:'p5b',w:5, l:'N5 · Intervali', q:5,   pt:238, p5k:1242},
+ {id:'p6', w:6, l:'N6 · Intervali', q:5,   pt:235, p5k:1226},
+ {id:'p7', w:6, l:'N6 · Tempo',     q:6,   pt:265, p5k:1247},
+ {id:'p8', w:8, l:'N8 · Intervali', q:6,   pt:235, p5k:1226},
+ {id:'p9', w:8, l:'N8 · Tempo',     q:6,   pt:265, p5k:1247},
+ {id:'p10',w:9, l:'N9 · Intervali', q:6,   pt:232, p5k:1209},
+ {id:'p11',w:9, l:'N9 · Tempo',     q:6,   pt:262, p5k:1232},
+ {id:'p12',w:10,l:'N10 · Intervali',q:6,   pt:230, p5k:1198},
+ {id:'p13',w:10,l:'N10 · Tempo',    q:3,   pt:233, p5k:1089},
+ {id:'p14',w:11,l:'N11 · Intervali',q:6,   pt:230, p5k:1198},
+ {id:'p15',w:11,l:'N11 · Tempo',    q:6,   pt:258, p5k:1212},
+ {id:'p16',w:11,l:'N11 · Tempo',    q:5,   pt:234, p5k:1094},
+ {id:'p17',w:12,l:'N12 · Intervali',q:6,   pt:230, p5k:1198},
  {id:'p18',w:12,l:'N12 · Ritam',    q:4,   pt:236, p5k:1195.905},
- {id:'p19',w:13,l:'N13 · Intervali',q:2,   pt:230, p5k:1214.994},
- {id:'p20',w:13,l:'N13 · Tempo',    q:3,   pt:255, p5k:1314.683},
- {id:'p21',w:14,l:'N14 · Intervali',q:1.2, pt:228, p5k:1241.916}
+ {id:'p19',w:13,l:'N13 · Intervali',q:2,   pt:230, p5k:1198},
+ {id:'p20',w:13,l:'N13 · Tempo',    q:3,   pt:255, p5k:1198},
+ {id:'p21',w:14,l:'N14 · Intervali',q:1.2, pt:228, p5k:1187}
 ];
 
 /* Weight Tracker — ciljna linija iz sheeta */
@@ -876,8 +876,37 @@ function kneeStatus(today){
   if(mx>=3)return{cls:'warn',t:'PAZI',s:'Bol 3–5 u poslednjih 7 dana. Prati i smanji ako raste.'};
   return{cls:'ok',t:'Koleno OK',s:'0 = bez bola · 3–5 = pazi · 6+ = stani · 3+ dana ≥3 u 7 dana = fizijatar'};
 }
+/* Zona direktno iz PRED reda oznake (r.l = 'NX · Tip') — POUZDANIJE od
+   dan->sessKind puta: tvoj hardkodovan plan ima generičan d.tag (samo
+   'tempo'/'int'), pa bi npr. "Ritam" (ciljna-tempo proba, mora ostati na
+   Riegel/race-ekvivalentnoj logici) i "Tempo" (submaksimalan, mora na zonu T)
+   preko istog dana kolabirali u isti sessKind — oznaka PRED reda tu razliku
+   već nosi tačno (nađeno testom: p18 "Ritam" bio pogrešno zona-mapiran kroz
+   dan-lookup jer taj dan ima generičan tag:'tempo'). Radi identično za oba
+   tipa plana — generisan plan takođe piše tip u l preko predRow(). */
+function zoneForPredRow(r){
+  if(!r||!r.l)return null;
+  const tip=r.l.split(' · ')[1];
+  return tip!=null?ZONE_FOR_KIND[tip]:null;
+}
 function predCalc(){
-  const rows=CUR_PRED.map(r=>{const a=S.pred[r.id];return{r,a,pred:a?riegel(a,r.q):null};});
+  /* ISTI princip kao recordVdot popravka: direktan riegel(tempo,q) tretira
+     UNET tempo kao da JE trka (max napor). Za Tempo sesije (namerno
+     submaksimalne, ~88% VO2max) ovo sistematski PREOCENJUJE vreme (predviđa
+     GORE nego što stvarno jeste), dok Intervali (blizu 100%) ostaju tačni —
+     naizmenično Tempo/Intervali na IDENTIČNOJ formi je pravilo cik-cak
+     22:20/20:10/22:20... (potvrđeno testom), ne stvarnu nedeljnu oscilaciju.
+     Ispravka: prvo ispravan VDOT (zona-svesno), TEK ONDA vreme iz tog VDOT-a. */
+  const raceDistM=(S.genPlan&&S.genPlan.meta&&S.genPlan.meta.raceDistM)||5000;
+  const rows=CUR_PRED.map(r=>{
+    const a=S.pred[r.id];
+    let pred=null;
+    if(a){
+      const zone=zoneForPredRow(r);
+      pred = zone!=null ? raceTimeForVdot(vdotFromPace(a,zone),raceDistM) : Math.round(riegelDist(a*r.q,r.q*1000,raceDistM));
+    }
+    return {r,a,pred};
+  });
   const entered=rows.filter(x=>x.pred!=null);
   const last=entered.length?entered[entered.length-1]:null;
   const best=entered.length?entered.reduce((m,x)=>x.pred<m.pred?x:m):null;
@@ -896,7 +925,9 @@ function baselineVdot(){ /* početni VDOT iz PB (20:37) — referenca */
 function recordVdot(predId, paceSec, dateOverride, kind){
   const r=CUR_PRED.find(x=>x.id===predId);
   if(!r||!paceSec)return null;
-  const zone=kind!=null?ZONE_FOR_KIND[kind]:null;
+  /* Zona: PRVENSTVENO iz PRED reda oznake (pouzdanije, v. zoneForPredRow),
+     kind-parametar je fallback za pozivaoce koji (još) ne prosleđuju r. */
+  const zone=zoneForPredRow(r) ?? (kind!=null?ZONE_FOR_KIND[kind]:null);
   const measured=zone!=null
     ? Math.round(vdotFromPace(paceSec,zone)*10)/10
     : Math.round(vdotFromQuality(paceSec,r.q)*10)/10;
@@ -939,18 +970,13 @@ function fixVdotDates(){
    tempo je već trajno sačuvan u S.pred[predId], pa se ništa ne gubi. */
 function recomputeVdotZones(){
   if(!Array.isArray(S.vdotLog)||!S.vdotLog.length)return false;
-  const p2d={};
-  DATED.forEach(d=>{ predRowsFor(d).forEach(pid=>{ if(!(pid in p2d))p2d[pid]=d.id; }); });
   const sorted=S.vdotLog.slice().sort((a,b)=>(a.ts||'')<(b.ts||'')?-1:(a.ts||'')>(b.ts||'')?1:0);
   let changed=false, prevVal=baselineVdot();
   sorted.forEach(e=>{
     if(!e.vdotMigrated){
       const paceSec=S.pred[e.id];
-      const did=p2d[e.id];
-      const d=did?BY_ID[did]:null;
-      const kind=d?sessKind(d):null;
-      const zone=(kind!=null&&ZONE_FOR_KIND[kind])?ZONE_FOR_KIND[kind]:null;
       const rr=CUR_PRED.find(x=>x.id===e.id);
+      const zone=rr?zoneForPredRow(rr):null;
       if(paceSec!=null && rr){
         const measured=zone!=null ? r1(vdotFromPace(paceSec,zone)) : r1(vdotFromQuality(paceSec,rr.q));
         const smoothed=r1(prevVal+(measured-prevVal)*0.4);
@@ -2241,7 +2267,12 @@ function applyEdit(day, field, value){
   day.desc=sessDesc(day.session);
   return day;
 }
-function predRow(w,tip,q,pt,raceDistM){ raceDistM=raceDistM||5000; return { w, l:'N'+w+' · '+tip, q, pt, p5k: Math.round(riegelDist(pt*q, q*1000, raceDistM)) }; }
+function predRow(w,tip,q,pt,raceDistM){
+  raceDistM=raceDistM||5000;
+  const zone=ZONE_FOR_KIND[tip];
+  const p5k=zone!=null ? Math.round(raceTimeForVdot(vdotFromPace(pt,zone),raceDistM)) : Math.round(riegelDist(pt*q, q*1000, raceDistM));
+  return { w, l:'N'+w+' · '+tip, q, pt, p5k };
+}
 /* Predikcija i QS (Strava lap-detekcija) IZVEDENI iz trenutnog stanja sesija —
    pozivati posle bilo koje applyEdit, tako da oba ostanu dosledna izmeni
    (npr. promenjena dužina ponavljanja mora da promeni i šta sync traži u lapovima). */
@@ -3422,12 +3453,12 @@ function trendSummary(){
 function chartPred(pc){
   const W=340,H=152,L=36,R=8,B=128,T=10;
   const lo=17.8,hi=22.8;
-  const X=i=>L+i/(PRED.length-1)*(W-L-R);
+  const X=i=>L+i/(CUR_PRED.length-1)*(W-L-R);
   const Y=m=>B-(Math.max(lo,Math.min(hi,m))-lo)/(hi-lo)*(B-T);
   let g='';
   [18,19,20,21,22].forEach(v=>{g+=`<line class="gl" x1="${L}" y1="${Y(v).toFixed(1)}" x2="${W-R}" y2="${Y(v).toFixed(1)}"/><text class="ax" x="${L-4}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end">${v}:00</text>`;});
   g+=`<line x1="${L}" y1="${Y(19.5).toFixed(1)}" x2="${W-R}" y2="${Y(19.5).toFixed(1)}" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
-  g+=`<polyline fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5" points="${PRED.map((r,i)=>X(i).toFixed(1)+','+Y(r.p5k/60).toFixed(1)).join(' ')}"/>`;
+  g+=`<polyline fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5" points="${CUR_PRED.map((r,i)=>X(i).toFixed(1)+','+Y(r.p5k/60).toFixed(1)).join(' ')}"/>`;
   const ent=pc.rows.map((x,i)=>({p:x.pred,i})).filter(x=>x.p!=null);
   if(ent.length>1)g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2" points="${ent.map(x=>X(x.i).toFixed(1)+','+Y(x.p/60).toFixed(1)).join(' ')}"/>`;
   ent.forEach(x=>g+=`<circle cx="${X(x.i).toFixed(1)}" cy="${Y(x.p/60).toFixed(1)}" r="3.6" fill="var(--pink)"/>`);
