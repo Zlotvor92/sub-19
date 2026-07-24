@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='48'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='49'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -893,10 +893,13 @@ function baselineVdot(){ /* početni VDOT iz PB (20:37) — referenca */
 }
 /* Zabeleži VDOT iz kvalitetne sesije. Vraća {vdot, prev, delta, dir} ili null.
    Prigušenje: jedna sesija je šum — pomeramo VDOT samo delimično ka izmerenom. */
-function recordVdot(predId, paceSec, dateOverride){
+function recordVdot(predId, paceSec, dateOverride, kind){
   const r=CUR_PRED.find(x=>x.id===predId);
   if(!r||!paceSec)return null;
-  const measured=Math.round(vdotFromQuality(paceSec,r.q)*10)/10;
+  const zone=kind!=null?ZONE_FOR_KIND[kind]:null;
+  const measured=zone!=null
+    ? Math.round(vdotFromPace(paceSec,zone)*10)/10
+    : Math.round(vdotFromQuality(paceSec,r.q)*10)/10;
   const prev=currentVdot()!=null?currentVdot():baselineVdot();
   /* prigušenje 40%: pomeri 40% puta ka izmerenom (jedna sesija ne pomera VDOT skroz) */
   const smoothed=Math.round((prev+(measured-prev)*0.4)*10)/10;
@@ -925,6 +928,39 @@ function fixVdotDates(){
     if(real&&e.ts!==real){ e.ts=real; changed=true; }
   });
   if(changed) S.vdotLog.sort((a,b)=>a.ts<b.ts?-1:a.ts>b.ts?1:0);
+  return changed;
+}
+/* Prekalkuliše POSTOJEĆU VDOT istoriju sa ispravnom, zona-svesnom formulom
+   (vdotFromPace umesto Riegel-a — v. ZONE_FOR_KIND komentar). BEZ ovoga bi
+   ispravka važila samo za NAREDNE sesije, a već zabeležena "haotična" istorija
+   (npr. tempo na RPE 6-7 pogrešno tretiran kao svoj-maksimalan trka rezultat)
+   bi ostala pogrešno prikazana. Idempotentno (e.vdotMigrated flag) — bezbedno
+   pozvati na SVAKOM startu, isti obrazac kao fixVdotDates. Original ostvaren
+   tempo je već trajno sačuvan u S.pred[predId], pa se ništa ne gubi. */
+function recomputeVdotZones(){
+  if(!Array.isArray(S.vdotLog)||!S.vdotLog.length)return false;
+  const p2d={};
+  DATED.forEach(d=>{ predRowsFor(d).forEach(pid=>{ if(!(pid in p2d))p2d[pid]=d.id; }); });
+  const sorted=S.vdotLog.slice().sort((a,b)=>(a.ts||'')<(b.ts||'')?-1:(a.ts||'')>(b.ts||'')?1:0);
+  let changed=false, prevVal=baselineVdot();
+  sorted.forEach(e=>{
+    if(!e.vdotMigrated){
+      const paceSec=S.pred[e.id];
+      const did=p2d[e.id];
+      const d=did?BY_ID[did]:null;
+      const kind=d?sessKind(d):null;
+      const zone=(kind!=null&&ZONE_FOR_KIND[kind])?ZONE_FOR_KIND[kind]:null;
+      const rr=CUR_PRED.find(x=>x.id===e.id);
+      if(paceSec!=null && rr){
+        const measured=zone!=null ? r1(vdotFromPace(paceSec,zone)) : r1(vdotFromQuality(paceSec,rr.q));
+        const smoothed=r1(prevVal+(measured-prevVal)*0.4);
+        const delta=r1(smoothed-prevVal);
+        if(e.measured!==measured||e.vdot!==smoothed){ e.measured=measured; e.prev=prevVal; e.vdot=smoothed; e.delta=delta; changed=true; }
+      }
+      e.vdotMigrated=true; changed=true; /* obeleži obrađeno čak i kad nema paceSec/PRED reda (siroče) — ne pokušavaj ponovo svaki put */
+    }
+    prevVal=e.vdot;
+  });
   return changed;
 }
 function backupDue(today){
@@ -1458,7 +1494,7 @@ function bindForm(root,d){
       const v=parseTimeStr(inp.value);
       if(inp.value.trim()===''){ delete S.pred[pid]; delete S.predLock[pid];
         const ix=(S.vdotLog||[]).findIndex(e=>e.id===pid); if(ix>=0)S.vdotLog.splice(ix,1);
-      } else if(v){ S.pred[pid]=v; S.predLock[pid]=true; const dl=S.log[d.id]; recordVdot(pid,v,(dl&&(dl.runDate||dl.ts))||d.date); }
+      } else if(v){ S.pred[pid]=v; S.predLock[pid]=true; const dl=S.log[d.id]; recordVdot(pid,v,(dl&&(dl.runDate||dl.ts))||d.date,sessKind(d)); }
       else return;
       save();
       const out=g.querySelector(`[data-wout="${pid}"]`);
@@ -1685,6 +1721,21 @@ function renderAltSheet(d){
    ============================================================ */
 
 const Z = { I: 1.00, T: 0.88, M: 0.80, E: 0.70, LR: 0.68, R: 1.05 };
+/* Mapiranje sessKind() -> Danielsova zona, za ISPRAVNO računanje VDOT-a iz
+   ostvarenog tempa kvalitetne sesije. KRITIČNO: tempo/interval sesije se
+   NAMERNO trče submaksimalno (T-tempo ~88% VO2max, ne trka ~95-98%) — stari
+   pristup (Riegel, pretpostavlja MAKSIMALAN napor kao kod trke) je sistematski
+   PODCENJIVAO VDOT na baš tim sesijama. vdotFromPace(tempo, zona) ispravno
+   računa "koji VDOT bi ovaj tempo bio TAČNO ta zona", ne "kao da je ovo bio
+   svop-maksimalan trka rezultat". "ciljni ritam" sesije (10K/HM race-pace)
+   su NAMERNO izostavljene — one JESU simulacija trke, Riegel ostaje ispravan
+   pristup baš za njih. */
+const ZONE_FOR_KIND = {
+  'Intervali':'I', 'Fartlek':'I', 'Piramida':'I',
+  'Repeticije':'R',
+  'Tempo':'T', 'Tempo (broken)':'T', 'Progresivno':'T',
+  'Maratonski tempo':'M'
+};
 /* Stope rasta VDOT/nedeljno:
    kons 0.15 i std 0.25 — unutar Danielsove trenerske smernice (~1 poen / 4–6 ned.,
    'Daniels' Running Formula'; ekspertska heuristika, NE kontrolisana studija).
@@ -3519,7 +3570,7 @@ async function stravaSync(manual){
               const totT=segs.reduce((s,x)=>s+x.paceSec*x.distM/1000,0);
               const totD=segs.reduce((s,x)=>s+x.distM,0);
               const t=Math.round(totT/(totD/1000));
-              if(t){S.pred[rowId]=t;recordVdot(rowId,t,date);props++;}
+              if(t){S.pred[rowId]=t;recordVdot(rowId,t,date,sessKind(d));props++;}
               if(S.log[d.id]) S.log[d.id].laps=segs;
             } else {
               /* FALLBACK 1: po-km presek iz istih streamova (kontinuiran kvalitetni
@@ -3533,7 +3584,7 @@ async function stravaSync(manual){
               if(QS[d.id])try{
                 const laps=await stApi('/activities/'+a.id+'/laps');
                 const t=workLapsTempo(laps,QS[d.id]);
-                if(t){S.pred[rowId]=t;recordVdot(rowId,t,date);props++;}
+                if(t){S.pred[rowId]=t;recordVdot(rowId,t,date,sessKind(d));props++;}
               }catch(e){}
             }
           }catch(e){}
@@ -3581,6 +3632,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>setPage(b.datas
 $('#btn-gear').onclick=openSettings;
 $('#backdrop').onclick=closeSheet;
 if(fixVdotDates())save(); /* jednokratna popravka VDOT datuma iz postojećih runDate */
+if(recomputeVdotZones())save(); /* jednokratna popravka VDOT formule (zona umesto Riegel) na postojećoj istoriji */
 renderHeader();
 setPage('danas');
 handleOAuthReturn();
