@@ -18,7 +18,7 @@
    $0.30/$2.50 po milion tokena za standardni 3.5 Flash poziv). */
 
 const MODEL = 'gemini-3.5-flash'; /* stabilan (ne "preview"), besplatan nivo dostupan avgust 2026 */
-const FALLBACK_MODEL = 'gemini-2.5-flash'; /* zreliji, manje pod pritiskom — koristi se SAMO ako primarni model ostane nedostupan i posle ponovnog pokušaja */
+const FALLBACK_MODEL = 'gemini-3.5-flash-lite'; /* ISTA (3.x) generacija kao primarni — gemini-2.5-flash je testom potvrđen NEDOSTUPAN novim nalozima (404 "no longer available to new users", nije bilo vidljivo iz cenovnika), pa rezerva mora biti iz generacije koja je stvarno otvorena za nov nalog. Odvojen (lakši) model = odvojen kapacitet od punog 3.5 Flash. */
 const urlFor = m => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`;
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
