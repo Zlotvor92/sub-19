@@ -24,7 +24,12 @@ const sleep = ms => new Promise(res => setTimeout(res, ms));
 
 /* Jedan pokušaj poziva ka datom modelu. Vraća {ok:true,text} ili
    {ok:false,status,error,detail,retryable} — retryable=true samo za 503
-   (Google eksplicitno: "Spikes in demand are usually temporary"). */
+   (Google eksplicitno: "Spikes in demand are usually temporary").
+   thinkingLevel:'medium' — potvrđeno kao PODRAZUMEVANA vrednost baš za
+   gemini-3.5-flash (Google-ova "What's new in Gemini 3.5 Flash" stranica:
+   "Available values: minimal, low, medium (default), and high"). Besplatan
+   nivo = nema razloga za štednju na tome, a medium daje realnije rezonovanje
+   od low bez skoka na najsporiji/najskuplji (za nas nebitan trošak) high. */
 async function tryModel(model, systemText, userText) {
   const r = await fetch(urlFor(model), {
     method: 'POST',
@@ -36,8 +41,8 @@ async function tryModel(model, systemText, userText) {
       systemInstruction: { parts: [{ text: systemText }] },
       contents: [{ parts: [{ text: userText }] }],
       generationConfig: {
-        maxOutputTokens: 4000,
-        thinkingConfig: { thinkingLevel: 'low' }
+        maxOutputTokens: 8000,
+        thinkingConfig: { thinkingLevel: 'medium' }
       }
     })
   });
