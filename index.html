@@ -354,7 +354,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='51'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='52'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -537,10 +537,10 @@ const PRED=[
  {id:'p10',w:9, l:'N9 · Intervali', q:6,   pt:232, p5k:1209},
  {id:'p11',w:9, l:'N9 · Tempo',     q:6,   pt:262, p5k:1232},
  {id:'p12',w:10,l:'N10 · Intervali',q:6,   pt:230, p5k:1198},
- {id:'p13',w:10,l:'N10 · Tempo',    q:3,   pt:233, p5k:1089},
+ {id:'p13',w:10,l:'N10 · Test',    q:3,   pt:233, p5k:1201.26},
  {id:'p14',w:11,l:'N11 · Intervali',q:6,   pt:230, p5k:1198},
  {id:'p15',w:11,l:'N11 · Tempo',    q:6,   pt:258, p5k:1212},
- {id:'p16',w:11,l:'N11 · Tempo',    q:5,   pt:234, p5k:1094},
+ {id:'p16',w:11,l:'N11 · Test',    q:5,   pt:234, p5k:1170},
  {id:'p17',w:12,l:'N12 · Intervali',q:6,   pt:230, p5k:1198},
  {id:'p18',w:12,l:'N12 · Ritam',    q:4,   pt:236, p5k:1195.905},
  {id:'p19',w:13,l:'N13 · Intervali',q:2,   pt:230, p5k:1198},
@@ -908,7 +908,14 @@ function predCalc(){
     return {r,a,pred};
   });
   const entered=rows.filter(x=>x.pred!=null);
-  const last=entered.length?entered[entered.length-1]:null;
+  /* "ZADNJA predikcija" mora biti HRONOLOŠKI najnovija (po stvarnom datumu
+     unosa), ne poslednja PO REDOSLEDU NEDELJA plana — entered[entered.length-1]
+     je bio čisto pozicijski (bio bi pogrešan da bilo koji kasnije-nedeljni red
+     ima unos van redosleda, npr. test/TT dan unet pre redovnog rasporeda). */
+  const tsFor=id=>{ const e=(S.vdotLog||[]).find(x=>x.id===id); return e?e.ts:null; };
+  const last=entered.length
+    ? entered.reduce((m,x)=>{ const tm=tsFor(m.r.id), tx=tsFor(x.r.id); return (tx&&(!tm||tx>tm))?x:m; }, entered[0])
+    : null;
   const best=entered.length?entered.reduce((m,x)=>x.pred<m.pred?x:m):null;
   return{rows,entered,last,best};
 }
