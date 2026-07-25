@@ -324,6 +324,26 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .ob-btnrow .btn{flex:1;min-height:52px}
 .ob-btnrow .btn.ghost{flex:0 0 34%}
+/* predvidjanje na dan trke */
+.ob-preds{display:flex;flex-direction:column;gap:2px}
+.ob-pred{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:11px;
+  border:1px solid transparent;background:rgba(255,255,255,.02)}
+.ob-pred.on{background:rgba(250,46,85,.1);border-color:rgba(250,46,85,.32)}
+.ob-pred i{flex:1;font-style:normal;font-size:.8rem;font-weight:700;color:var(--txt2)}
+.ob-pred.on i{color:var(--txt)}
+.ob-pred b{font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.ob-pred.on b{color:var(--pink)}
+.ob-pred s{flex:0 0 78px;text-align:right;text-decoration:none;font-size:.66rem;
+  font-weight:700;color:var(--txt3);letter-spacing:.02em}
+.ob-verdict{margin-top:13px;padding:12px 13px;border-radius:11px;font-size:.8rem;line-height:1.5;
+  color:var(--txt2);border-left:2px solid var(--txt3);background:rgba(255,255,255,.03)}
+.ob-verdict b{color:var(--txt);font-weight:700}
+.ob-verdict.good{border-left-color:var(--green)}
+.ob-verdict.good b{color:var(--green)}
+.ob-verdict.warn{border-left-color:var(--amber)}
+.ob-verdict.warn b{color:var(--amber)}
+.ob-verdict.bad{border-left-color:var(--red)}
+.ob-verdict.bad b{color:var(--red)}
 .ob-err{color:var(--red);font-size:.78rem;font-weight:600;margin-top:10px;min-height:16px}
 .chart-info{font-size:9.5px;fill:var(--pink);font-weight:800}
 .chart-hint{font-size:8.5px;fill:var(--txt3);font-weight:600;font-style:italic}
@@ -510,7 +530,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='62'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='63'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -2161,7 +2181,7 @@ function vdotFromPace(paceSecKm, zone){
   return (lo+hi)/2;
 }
 const r1=x=>Math.round(x*10)/10;
-function fmtP(sec){const m=Math.floor(sec/60),s=sec%60;return m+':'+String(s).padStart(2,'0');}
+function fmtP(sec){return fmtClock(sec);} /* delegira: identicno za <1h (tempi), ali HM/maraton cilj daje 3:30:00 umesto 210:00 */
 function riegelDist(sec, fromM, toM){ return sec*Math.pow(toM/fromM,1.06); } /* PREIMENOVANO iz riegel() — V2 već ima riegel(tempoSec,q) sa DRUGAČIJIM potpisom/značenjem; bez preimenovanja bi kasnija (engine.js) definicija tiho pregazila raniju (V2), praveći NaN u postojećem PRED sistemu */
 
 /* ---------- realnost cilja ---------- */
@@ -2997,8 +3017,27 @@ const HOURS_FROM=21097;
 const VDOT_CIRC=169.6;
 const TOTAL_STEPS=4;
 let obStep=1;
-let wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, lrDow:7, qDays:[], intensity:'std', goalMin:'', goalSec:'' };
+let wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, lrDow:7, qDays:[], intensity:'std', goalH:'', goalMin:'', goalSec:'' };
 function pbUsesHours(){ return wiz.pbDist>=HOURS_FROM; }
+/* Ciljno vreme: HM i maraton se mere u SATIMA, pa polje dobija i h. Isti prag
+   (HOURS_FROM) kao za skorasnji rezultat, ali gleda CILJNU distancu. */
+function goalUsesHours(){ return wiz.raceDist>=HOURS_FROM; }
+function goalTotalSec(){
+  const h=goalUsesHours()?(+wiz.goalH||0):0, m=+wiz.goalMin, s=+wiz.goalSec;
+  if(wiz.goalMin===''||wiz.goalSec===''||isNaN(m)||isNaN(s)||s>59) return null;
+  if(goalUsesHours()&&m>59) return null;
+  const t=h*3600+m*60+s;
+  return t>0?t:null;
+}
+/* Broj nedelja — ISTA formula kao u generatePlan, da predvidjanje odgovara planu
+   koji ce se stvarno napraviti, a ne priblizno. */
+function wizWeeks(){
+  if(!wiz.raceDate) return null;
+  const start=mondayOfWeek(todayStr());
+  const daysN=Math.round((new Date(wiz.raceDate)-new Date(start))/86400000);
+  const w=Math.floor(daysN/7)+1;
+  return w>0?w:null;
+}
 function pbTotalSec(){
   const h=pbUsesHours()?(+wiz.pbH||0):0, m=+wiz.pbMin, s=+wiz.pbSec;
   if(wiz.pbMin===''||wiz.pbSec===''||isNaN(m)||isNaN(s)||s>59) return null;
@@ -3020,7 +3059,7 @@ function pbSanityMsg(){
   return '';
 }
 function openWizard(){
-  wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, lrDow:7, qDays:[], intensity:'std', goalMin:'', goalSec:'' };
+  wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, lrDow:7, qDays:[], intensity:'std', goalH:'', goalMin:'', goalSec:'' };
   obStep=1;
   closeSheet();
   document.querySelector('header').style.display='none';
@@ -3182,14 +3221,17 @@ function renderOnboard(){
           <button type="button" class="ob-chip" data-v="7">Ned</button>
         </div>
       </div>
+      <div class="ob-card accent" id="ob-outlook"></div>
       <div class="ob-card">
         <div class="ob-ct">Ciljno vreme <span class="ob-opt">— opciono</span></div>
         <div class="ob-row3">
-          <div><span class="ob-unit">min</span><input type="number" id="in-goalMin" placeholder="min" min="0" max="60" inputmode="numeric"></div>
+          <div id="goalHwrap" style="display:none"><span class="ob-unit">h</span><input type="number" id="in-goalH" placeholder="h" min="0" max="9" inputmode="numeric"></div>
+          <div class="ob-colon" id="goalHcolon" style="display:none">:</div>
+          <div><span class="ob-unit">min</span><input type="number" id="in-goalMin" placeholder="min" min="0" max="99" inputmode="numeric"></div>
           <div class="ob-colon">:</div>
           <div><span class="ob-unit">sek</span><input type="number" id="in-goalSec" placeholder="sek" min="0" max="59" inputmode="numeric"></div>
         </div>
-        <div class="ob-hint">Ostavi prazno i plan koristi predikciju iz tvoje forme. Upiši broj ako imaš konkretan cilj na umu.</div>
+        <div class="ob-hint">Ostavi prazno i plan koristi predviđanje iz tvoje forme. Upiši vreme ako imaš konkretan cilj — reći ću koliko je realan.</div>
       </div>
     </div>
     </div>
@@ -3223,8 +3265,24 @@ function goObStep(n){
   $('#obBack').style.display=n>1?'':'none';
   $('#obNext').textContent=n===TOTAL_STEPS?'Napravi plan':'Dalje';
   updateWeeksHint();
+  syncGoalHoursUI();
+  renderOutlook();
   renderObProgress();
   $('#obNext').disabled=!obStepValid(n);
+}
+/* Prikaz/skrivanje h polja za CILJ + sklapanje vrednosti kad se distanca promeni
+   sa duge na kratku (isti obrazac kao syncHoursUI za skorasnji rezultat). */
+function syncGoalHoursUI(){
+  const on=goalUsesHours();
+  const w=$('#goalHwrap'), col=$('#goalHcolon');
+  if(!w||!col) return;
+  w.style.display=on?'':'none';
+  col.style.display=on?'':'none';
+  if(!on&&wiz.goalH!==''){
+    const folded=(+wiz.goalH||0)*60+(+wiz.goalMin||0);
+    wiz.goalH='';$('#in-goalH').value='';
+    if(folded>0&&folded<=99){ wiz.goalMin=String(folded); $('#in-goalMin').value=wiz.goalMin; }
+  }
 }
 function syncHoursUI(){
   const on=pbUsesHours();
@@ -3238,6 +3296,67 @@ function syncHoursUI(){
 }
 /* Napomena pod datumom trke: koliko nedelja ima do trke i da li je to dovoljno
    za izabranu distancu (minWeeks iz DIST_PROFILES). Racuna umesto korisnika. */
+/* ============ PREDVIĐANJE NA DAN TRKE ============
+   Do sada je assess() računao predictedSec i realno (da li je cilj dostižan),
+   ali se to NIGDE nije prikazivalo — polje "ciljno vreme" je tražilo broj i
+   ćutalo o njemu. Ovo prikazuje predviđanje za SVA TRI intenziteta i, ako je
+   cilj unet, kaže koji intenzitet ga stvarno dostiže.
+   Koristi iste funkcije kao generator (assess/RAMP), ne parelelnu matematiku. */
+const OB_INTENS=[['kons','Konzervativno'],['std','Standardno'],['agr','Agresivno']];
+function outlookData(){
+  const pbSec=pbTotalSec(), weeks=wizWeeks();
+  if(pbSec==null||!pbSanityOk()||weeks==null) return null;
+  const prof=DIST_PROFILES[wiz.raceDist]; if(!prof) return null;
+  if(weeks<prof.minWeeks) return { short:true, weeks, minWeeks:prof.minWeeks, name:prof.name };
+  const pb={distM:wiz.pbDist, sec:pbSec};
+  const rows=OB_INTENS.map(([k,lbl])=>{
+    const a=assess(pb, weeks, k, null, wiz.raceDist);
+    return { k, lbl, sec:a.predictedSec, vdot:a.vdotGoal };
+  });
+  return { rows, weeks, name:prof.name, goal:goalTotalSec() };
+}
+function renderOutlook(){
+  const el=$('#ob-outlook'); if(!el) return;
+  const d=outlookData();
+  if(!d){ el.innerHTML='<div class="ob-ct">Predviđanje na dan trke</div><div class="ob-hint">Unesi skorašnji rezultat i datum trke da bi se predviđanje izračunalo.</div>'; return; }
+  if(d.short){ el.innerHTML=`<div class="ob-ct">Predviđanje na dan trke</div><div class="ob-hint">${d.weeks} nedelja je manje od minimuma za ${esc(d.name)} (<b>${d.minWeeks}</b>) — plan se ne može napraviti, pa ni predvideti.</div>`; return; }
+  let h=`<div class="ob-ct">Predviđanje na dan trke <span class="ob-opt">— ${d.weeks} nedelja, ${esc(d.name)}</span></div>`;
+  h+=`<div class="ob-preds">`;
+  d.rows.forEach(r=>{
+    const sel=r.k===wiz.intensity;
+    const hits=d.goal!=null&&r.sec<=d.goal;
+    h+=`<div class="ob-pred${sel?' on':''}">
+      <i>${esc(r.lbl)}</i>
+      <b>${fmtClock(r.sec)}</b>
+      <s>${d.goal!=null?(hits?'stiže cilj':'ne stiže'):'VDOT '+r.vdot.toFixed(1)}</s>
+    </div>`;
+  });
+  h+=`</div>`;
+  if(d.goal!=null){
+    const reach=d.rows.find(r=>r.sec<=d.goal);          /* najblaži koji stiže */
+    const sel=d.rows.find(r=>r.k===wiz.intensity);
+    const agr=d.rows[d.rows.length-1];
+    let v;
+    if(!reach){
+      const diff=agr.sec-d.goal;
+      v=`<b>Cilj ${fmtClock(d.goal)} nije realan za ovaj plan.</b> Brži je ${fmtClock(diff)} i od najagresivnijeg scenarija (${fmtClock(agr.sec)}). Realno bi tražio više nedelja ili veći nedeljni obim.`;
+    } else if(reach.k===d.rows[0].k){
+      v=`<b>Cilj ${fmtClock(d.goal)} je dostižan i najoprežnijim pristupom</b> (${fmtClock(reach.sec)}). Slobodno ciljaj brže.`;
+    } else if(reach.k==='agr'){
+      v=`<b>Cilj ${fmtClock(d.goal)} je na granici</b> — dostiže ga samo Agresivno (${fmtClock(reach.sec)}), a to je realno uglavnom uz nizak trenažni staž ili paralelan gubitak telesne mase.`;
+    } else {
+      v=`<b>Cilj ${fmtClock(d.goal)} je realan</b> — dostiže ga ${esc(reach.lbl)} (${fmtClock(reach.sec)}).`;
+    }
+    if(reach&&sel&&sel.sec>d.goal){
+      /* samo kad cilj JESTE dostizan — inace je suvisno, vec smo rekli da nije realan */
+      v+=` Trenutno je izabrano ${esc(sel.lbl)} (${fmtClock(sel.sec)}) — prebaci na ${esc(reach.lbl)}.`;
+    }
+    h+=`<div class="ob-verdict${!reach?' bad':(reach.k==='agr'?' warn':' good')}">${v}</div>`;
+  } else {
+    h+=`<div class="ob-hint">Upiši ciljno vreme ispod pa ću reći koliko je realno.</div>`;
+  }
+  el.innerHTML=h;
+}
 function updateWeeksHint(){
   const el=$('#ob-weeks-hint'); if(!el)return;
   if(!wiz.raceDate){ el.textContent=''; return; }
@@ -3272,15 +3391,17 @@ function bindOnboardEvents(){
     if(!confirm('Otkazati generisanje plana?'))return;
     closeWizard();
   });
-  $('#in-raceDate').addEventListener('input',e=>{ wiz.raceDate=e.target.value; goObStep(obStep); });
+  $('#in-raceDate').addEventListener('input',e=>{ wiz.raceDate=e.target.value; goObStep(obStep); renderOutlook(); });
   $$('#raceDistChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#raceDistChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
     wiz.raceDist=+c.dataset.v;
-    updateWeeksHint(); /* minWeeks zavisi od distance — napomena se mora presloziti */
+    updateWeeksHint();     /* minWeeks zavisi od distance */
+    syncGoalHoursUI();     /* HM/maraton -> ciljno vreme dobija h polje */
+    renderOutlook();       /* predvidjanje se racuna za NOVU distancu */
   }));
   $$('#pbDistChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#pbDistChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
-    wiz.pbDist=+c.dataset.v; syncHoursUI(); goObStep(obStep); updateVdotPreview();
+    wiz.pbDist=+c.dataset.v; syncHoursUI(); goObStep(obStep); updateVdotPreview(); renderOutlook();
   }));
   $('#in-pbH').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,1); wiz.pbH=e.target.value; goObStep(obStep); updateVdotPreview(); });
   $('#in-pbMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.pbMin=e.target.value; goObStep(obStep); updateVdotPreview(); });
@@ -3311,9 +3432,11 @@ function bindOnboardEvents(){
   }));
   $$('.ob-icard').forEach(c=>c.addEventListener('click',()=>{
     $$('.ob-icard').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.intensity=c.dataset.v;
+    renderOutlook(); /* izabran intenzitet je istaknut u predvidjanju i pominje se u proceni cilja */
   }));
-  $('#in-goalMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalMin=e.target.value; });
-  $('#in-goalSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalSec=e.target.value; });
+  $('#in-goalH').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,1); wiz.goalH=e.target.value; renderOutlook(); });
+  $('#in-goalMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalMin=e.target.value; renderOutlook(); });
+  $('#in-goalSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalSec=e.target.value; renderOutlook(); });
   $('#obBack').addEventListener('click',()=>goObStep(obStep-1));
   $('#obNext').addEventListener('click',()=>{
     if(!obStepValid(obStep))return;
@@ -3327,7 +3450,7 @@ function bindOnboardEvents(){
    setActivePlan()+rebuildDateIndex() aktiviraju ga. */
 function finishOnboarding(){
   const pbSec=pbTotalSec();
-  const goalSec=(wiz.goalMin!==''&&wiz.goalSec!=='') ? (+wiz.goalMin)*60+(+wiz.goalSec) : null;
+  const goalSec=goalTotalSec();
   const meta={
     startDate: todayStr(), raceDate: wiz.raceDate, raceDistM: wiz.raceDist,
     pb:{ distM:wiz.pbDist, sec:pbSec }, weeklyKm:+wiz.weeklyKm,
