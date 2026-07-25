@@ -213,42 +213,118 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 /* grafikoni */
 .chart{width:100%;height:auto;display:block;margin-top:4px}
 .ax{font-size:8.5px;fill:var(--txt3);font-weight:600}
-.ob-wrap{max-width:480px;margin:0 auto;padding:calc(var(--sat) + 24px) 20px 40px;min-height:100dvh}
-.ob-progress{display:flex;gap:6px;margin-bottom:26px}
-.ob-progress i{flex:1;height:3px;border-radius:3px;background:var(--card2);transition:background .3s}
-.ob-progress i.on{background:var(--pink)}
-.ob-progress i.done{background:var(--green)}
+/* ===== WIZARD (redizajn v62) — ista imena klasa, novi izgled ===== */
+.ob-wrap{max-width:480px;margin:0 auto;min-height:100dvh;position:relative}
+/* lepljivo zaglavlje: brend + traka napretka sa IMENIMA koraka */
+.ob-top{position:sticky;top:0;z-index:10;padding:calc(var(--sat) + 14px) 16px 12px;
+  background:rgba(10,10,15,.82);-webkit-backdrop-filter:blur(20px) saturate(180%);
+  backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--line)}
+.ob-toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ob-brand{font-weight:800;font-size:.95rem;letter-spacing:.06em}
+.ob-brand span{color:var(--pink)}
+.ob-x{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:var(--txt3);font-size:1.05rem;background:var(--card2);flex:none}
+.ob-x:active{transform:scale(.92);color:var(--txt)}
+.ob-progress{display:flex;gap:6px}
+.ob-seg{flex:1;display:flex;flex-direction:column;gap:5px}
+.ob-seg i{display:block;height:3px;border-radius:2px;background:var(--line-soft);transition:background .3s}
+.ob-seg.done i{background:var(--txt3)}
+.ob-seg.on i{background:var(--pink)}
+.ob-seg b{font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--txt3)}
+.ob-seg.done b{color:var(--txt2)}
+.ob-seg.on b{color:var(--pink)}
+.ob-body{padding:20px 16px 100px}
 .ob-step{display:none;animation:fadein .25s ease}
 .ob-step.active{display:block}
-.ob-eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--pink);margin-bottom:8px}
-.ob-h1{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;line-height:1.25}
-.ob-sub{font-size:.85rem;color:var(--txt2);line-height:1.5;margin-bottom:24px}
-.ob-field{margin-bottom:16px}
-.ob-field label{display:block;font-size:.72rem;font-weight:700;color:var(--txt2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+.ob-eyebrow{font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--pink)}
+.ob-h1{font-size:1.72rem;font-weight:800;letter-spacing:-.025em;line-height:1.12;margin-top:7px}
+.ob-sub{font-size:.86rem;color:var(--txt2);line-height:1.5;margin-top:9px}
+/* polja grupisana u kartice — dosledno sa ostatkom app */
+.ob-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-top:16px}
+.ob-card.accent{border-color:rgba(250,46,85,.25);
+  background:linear-gradient(180deg,rgba(250,46,85,.06),var(--card) 65%)}
+.ob-ct{font-size:.68rem;font-weight:700;color:var(--txt3);letter-spacing:.09em;
+  text-transform:uppercase;margin-bottom:12px}
+.ob-opt{font-size:.66rem;font-weight:700;color:var(--txt3);letter-spacing:.04em;text-transform:none}
+.ob-hint{font-size:.75rem;line-height:1.5;color:var(--txt3);margin-top:10px}
+.ob-hint b{color:var(--txt2);font-weight:700}
+.ob-field{margin:0}
+.ob-field label{display:block;font-size:.68rem;font-weight:700;color:var(--txt3);letter-spacing:.09em;
+  text-transform:uppercase;margin-bottom:12px}
+.ob-card input[type=date],.ob-card input[type=text],.ob-card input[type=number],
 .ob-field input[type=date],.ob-field input[type=text],.ob-field input[type=number]{
-  width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
-  font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--txt);outline:none;
-}
-.ob-field input:focus{border-color:var(--pink)}
-.ob-row3{display:flex;gap:10px;align-items:end}
-.ob-colon{text-align:center;font-weight:800;color:var(--txt3);padding-bottom:14px}
-.ob-chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.ob-chip{padding:10px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:.85rem;font-weight:700;color:var(--txt2)}
-.ob-chip.on{background:var(--pink);border-color:var(--pink);color:#fff}
-.ob-vdot{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:20px 0;opacity:0;max-height:0;overflow:hidden;transition:opacity .4s ease,max-height .4s ease}
-.ob-vdot.show{opacity:1;max-height:200px;margin:20px 0}
-.ob-vring{width:64px;height:64px;flex:none}
-.ob-vtrack{fill:none;stroke:rgba(255,255,255,.1);stroke-width:6}
-.ob-vval{fill:none;stroke:var(--cyan);stroke-width:6;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)}
-.ob-vnum{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
-.ob-vlbl{font-size:.74rem;color:var(--txt2);line-height:1.4;margin-top:2px}
-.ob-icard{width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
-.ob-icard.on{border-color:var(--cyan);background:var(--card2)}
-.ob-icard b{display:block;font-size:.95rem;margin-bottom:4px}
-.ob-icard span{display:block;font-size:.76rem;color:var(--txt2);line-height:1.4}
-.ob-icard .ob-tag{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);margin-top:6px}
-.ob-btnrow{display:flex;gap:10px;margin-top:24px}
-.ob-err{color:var(--red);font-size:.78rem;font-weight:600;margin-top:6px;min-height:16px}
+  width:100%;min-width:0;max-width:100%;min-height:52px;background:var(--card2);
+  border:1px solid var(--line);border-radius:13px;padding:0 15px;font-size:1.05rem;
+  font-weight:700;outline:none;font-variant-numeric:tabular-nums}
+.ob-card input:focus,.ob-field input:focus{border-color:var(--pink)}
+.ob-card input::placeholder,.ob-field input::placeholder{color:var(--txt3);font-weight:600}
+/* iOS: native date polje ima FIKSNU unutrasnju sirinu i ne slusa width:100% (prelivalo
+   je preko kartice). Ukidamo native izgled + vlastita SVG ikona (pointer-events:none)
+   da polje i dalje jasno cita kao dodirljiva kontrola. */
+.ob-datewrap{position:relative}
+.ob-datewrap input[type=date]{-webkit-appearance:none;appearance:none;padding-right:48px;text-align:left}
+.ob-datewrap input[type=date]::-webkit-date-and-time-value{width:100%;text-align:left;margin:0}
+.ob-datewrap input[type=date]::-webkit-datetime-edit{text-align:left}
+.ob-datewrap input[type=date]::-webkit-calendar-picker-indicator{opacity:0}
+.ob-datewrap .ob-cal{position:absolute;right:15px;top:50%;transform:translateY(-50%);
+  pointer-events:none;color:var(--txt3);display:flex;align-items:center}
+.ob-row3{display:flex;gap:9px;align-items:flex-end}
+.ob-row3>div{flex:1}
+.ob-colon{flex:none!important;font-size:1.3rem;font-weight:800;color:var(--txt3);padding-bottom:12px}
+.ob-unit{display:block;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--txt3);margin-bottom:5px}
+/* pilule: min 44px za dodir */
+.ob-chiprow{display:flex;gap:8px;flex-wrap:wrap}
+.ob-chip{min-height:44px;padding:0 16px;border-radius:999px;background:var(--card2);
+  border:1px solid var(--line);font-size:.85rem;font-weight:700;color:var(--txt2);
+  display:inline-flex;align-items:center}
+.ob-chip.on{background:var(--pink-dim);border-color:rgba(250,46,85,.4);color:var(--pink)}
+/* dani u JEDAN red (bilo prelamanje na dva) */
+.ob-chiprow.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.ob-chiprow.week .ob-chip{padding:0;justify-content:center;font-size:.76rem}
+.ob-chiprow.d6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.ob-chiprow.d6 .ob-chip{padding:0;justify-content:center}
+/* VDOT: potpis wizarda — broj iz kog izlazi svaki tempo */
+.ob-vdot{opacity:0;max-height:0;overflow:hidden;padding:0 18px;margin-top:0;
+  transition:opacity .4s ease,max-height .4s ease,margin-top .4s ease,padding .4s ease}
+.ob-vdot.show{opacity:1;max-height:280px;margin-top:16px;padding:18px}
+.ob-vrow{display:flex;align-items:center;gap:18px}
+.ob-vring{width:82px;height:82px;flex:none}
+.ob-vtrack{fill:none;stroke:rgba(255,255,255,.09);stroke-width:6}
+.ob-vval{fill:none;stroke:var(--pink);stroke-width:6;stroke-linecap:round;
+  transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)}
+.ob-vnum{font-size:2.5rem;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.ob-vlbl{font-size:.78rem;color:var(--txt2);line-height:1.45;margin-top:6px}
+.ob-vlbl b{color:var(--txt);font-weight:700}
+.ob-vpaces{display:flex;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.ob-vp{flex:1;text-align:center}
+.ob-vp i{display:block;font-style:normal;font-size:.6rem;font-weight:800;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--txt3)}
+.ob-vp b{display:block;font-size:.95rem;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums}
+/* kartice intenziteta */
+.ob-icard{width:100%;text-align:left;background:var(--card2);border:1px solid var(--line);
+  border-radius:14px;padding:15px;margin-bottom:9px;display:block}
+.ob-icard:last-child{margin-bottom:0}
+.ob-icard.on{background:linear-gradient(180deg,rgba(250,46,85,.09),var(--card2) 70%);
+  border-color:rgba(250,46,85,.45)}
+.ob-ih{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ob-icard b{font-size:1rem;font-weight:800}
+.ob-icard.on b{color:var(--pink)}
+.ob-radio{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--line);flex:none}
+.ob-icard.on .ob-radio{border-color:var(--pink);
+  background:radial-gradient(circle,var(--pink) 0 42%,transparent 46%)}
+.ob-icard p{font-size:.8rem;line-height:1.45;color:var(--txt2);margin-top:6px}
+.ob-icard .ob-tag{display:block;font-size:.62rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--txt3);margin-top:9px}
+.ob-icard.on .ob-tag{color:rgba(250,46,85,.75)}
+/* lepljiva dugmad: uvek dostupna bez skrolovanja */
+.ob-btnrow{position:fixed;bottom:0;left:0;right:0;z-index:12;display:flex;gap:10px;
+  max-width:480px;margin:0 auto;padding:14px 16px calc(var(--sab) + 16px);
+  background:linear-gradient(to top,var(--bg) 58%,rgba(10,10,15,.86));
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.ob-btnrow .btn{flex:1;min-height:52px}
+.ob-btnrow .btn.ghost{flex:0 0 34%}
+.ob-err{color:var(--red);font-size:.78rem;font-weight:600;margin-top:10px;min-height:16px}
 .chart-info{font-size:9.5px;fill:var(--pink);font-weight:800}
 .chart-hint{font-size:8.5px;fill:var(--txt3);font-weight:600;font-style:italic}
 .gl{stroke:rgba(255,255,255,.06);stroke-width:1}
@@ -434,7 +510,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='61'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='62'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -2964,30 +3040,44 @@ function closeWizard(){
 function renderOnboard(){
   const el=$('#wizard');
   el.innerHTML=`<div class="ob-wrap">
-    <div class="ob-btnrow" style="margin:0 0 10px;justify-content:flex-end">
-      <button type="button" class="btn ghost sm" id="obCancel" style="flex:none">✕ Otkaži</button>
+    <div class="ob-top">
+      <div class="ob-toprow">
+        <div class="ob-brand">SUB<span>-20</span></div>
+        <button type="button" class="ob-x" id="obCancel">✕</button>
+      </div>
+      <div class="ob-progress" id="ob-progress"></div>
     </div>
-    <div class="ob-progress" id="ob-progress"></div>
+    <div class="ob-body">
     <div class="ob-step active" data-step="1">
-      <div class="ob-eyebrow">Korak 1 / 4</div>
-      <div class="ob-h1">Za koju trku se sprema?</div>
-      <div class="ob-sub">Podržane distance: 5K, 10K, polumaraton, maraton. Struktura plana (dugo trčanje, tempo rad) zavisi od ovoga.</div>
-      <div class="ob-field"><label>Ciljna distanca</label>
+      <div class="ob-eyebrow">Korak 1 od 4</div>
+      <div class="ob-h1">Za koju trku se spremaš?</div>
+      <div class="ob-sub">Distanca određuje strukturu plana — koliko raste dugo trčanje i koliko tempo rada ima u nedelji.</div>
+      <div class="ob-card">
+        <div class="ob-ct">Ciljna distanca</div>
         <div class="ob-chiprow" id="raceDistChips">
           <button type="button" class="ob-chip on" data-v="5000">5K</button>
           <button type="button" class="ob-chip" data-v="10000">10K</button>
           <button type="button" class="ob-chip" data-v="21097.5">Polumaraton</button>
           <button type="button" class="ob-chip" data-v="42195">Maraton</button>
         </div>
+        <div class="ob-hint">5K traži najmanje <b>6 nedelja</b>, maraton <b>12</b>. Plan se skraćuje ili produžava prema datumu trke.</div>
       </div>
-      <div class="ob-field"><label>Datum trke</label><input type="date" id="in-raceDate" min="${todayStr()}"></div>
-      <div class="ob-err" id="ob-err-1"></div>
+      <div class="ob-card">
+        <div class="ob-ct">Datum trke</div>
+        <div class="ob-datewrap">
+          <input type="date" id="in-raceDate" min="${todayStr()}">
+          <span class="ob-cal"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/></svg></span>
+        </div>
+        <div class="ob-hint" id="ob-weeks-hint"></div>
+        <div class="ob-err" id="ob-err-1"></div>
+      </div>
     </div>
     <div class="ob-step" data-step="2">
-      <div class="ob-eyebrow">Korak 2 / 4</div>
-      <div class="ob-h1">Skorašnji rezultat</div>
-      <div class="ob-sub">Bilo koja skorija trka na poznatoj distanci. Iz ovoga se računaju svi tempi u planu.</div>
-      <div class="ob-field"><label>Distanca</label>
+      <div class="ob-eyebrow">Korak 2 od 4</div>
+      <div class="ob-h1">Šta si poslednje istrčao?</div>
+      <div class="ob-sub">Bilo koja skorija trka na poznatoj distanci. Iz ovog jednog rezultata izlaze svi tempi u planu.</div>
+      <div class="ob-card">
+        <div class="ob-ct">Distanca</div>
         <div class="ob-chiprow" id="pbDistChips">
           <button type="button" class="ob-chip on" data-v="5000">5 km</button>
           <button type="button" class="ob-chip" data-v="10000">10 km</button>
@@ -2995,84 +3085,113 @@ function renderOnboard(){
           <button type="button" class="ob-chip" data-v="42195">Maraton</button>
         </div>
       </div>
-      <div class="ob-field"><label>Vreme</label>
+      <div class="ob-card">
+        <div class="ob-ct">Vreme</div>
         <div class="ob-row3">
-          <div id="pbHwrap" style="display:none;flex:1"><input type="number" id="in-pbH" placeholder="h" inputmode="numeric"></div>
+          <div id="pbHwrap" style="display:none"><span class="ob-unit">h</span><input type="number" id="in-pbH" placeholder="h" inputmode="numeric"></div>
           <div class="ob-colon" id="pbHcolon" style="display:none">:</div>
-          <div style="flex:1"><input type="number" id="in-pbMin" placeholder="min" inputmode="numeric"></div>
+          <div><span class="ob-unit">min</span><input type="number" id="in-pbMin" placeholder="min" inputmode="numeric"></div>
           <div class="ob-colon">:</div>
-          <div style="flex:1"><input type="number" id="in-pbSec" placeholder="sek" inputmode="numeric"></div>
+          <div><span class="ob-unit">sek</span><input type="number" id="in-pbSec" placeholder="sek" inputmode="numeric"></div>
         </div>
+        <div class="ob-err" id="ob-err-2"></div>
       </div>
-      <div class="ob-vdot" id="vdotWrap">
-        <svg class="ob-vring" viewBox="0 0 64 64">
-          <circle class="ob-vtrack" cx="32" cy="32" r="27"/>
-          <circle class="ob-vval" id="vdotArc" cx="32" cy="32" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
-        </svg>
-        <div><div class="ob-vnum" id="vdotNum">—</div><div class="ob-vlbl">VDOT — ovaj broj određuje svaki tempo u planu</div></div>
+      <div class="ob-card accent ob-vdot" id="vdotWrap">
+        <div class="ob-ct">Tvoja forma</div>
+        <div class="ob-vrow">
+          <svg class="ob-vring" viewBox="0 0 64 64">
+            <circle class="ob-vtrack" cx="32" cy="32" r="27"/>
+            <circle class="ob-vval" id="vdotArc" cx="32" cy="32" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
+          </svg>
+          <div>
+            <div class="ob-vnum" id="vdotNum">—</div>
+            <div class="ob-vlbl">VDOT — jedan broj iz kog se računa <b>svaki</b> tempo u planu.</div>
+          </div>
+        </div>
+        <div class="ob-vpaces" id="vdotPaces"></div>
       </div>
-      <div class="ob-err" id="ob-err-2"></div>
     </div>
     <div class="ob-step" data-step="3">
-      <div class="ob-eyebrow">Korak 3 / 4</div>
-      <div class="ob-h1">Kako trči nedeljno?</div>
-      <div class="ob-sub">Prosečna nedeljna kilometraža poslednje 2–3 nedelje, i koliko dana želi da trči.</div>
-      <div class="ob-field"><label>Nedeljno (km)</label><input type="number" id="in-weeklyKm" placeholder="npr. 22" min="5" max="120"></div>
-      <div class="ob-field"><label>Da li je trčao/la redovno zadnjih mesec dana?</label>
+      <div class="ob-eyebrow">Korak 3 od 4</div>
+      <div class="ob-h1">Koliko trčiš nedeljno?</div>
+      <div class="ob-sub">Prosek poslednjih 2–3 nedelje. Plan raste odavde — ne od nule i ne od željene kilometraže.</div>
+      <div class="ob-card">
+        <div class="ob-ct">Nedeljna kilometraža</div>
+        <input type="number" id="in-weeklyKm" placeholder="npr. 22" min="5" max="120" inputmode="numeric">
+        <div class="ob-err" id="ob-err-3"></div>
+      </div>
+      <div class="ob-card">
+        <div class="ob-ct">Trčao redovno poslednjih mesec dana?</div>
         <div class="ob-chiprow" id="trainedChips">
           <button type="button" class="ob-chip on" data-v="yes">Da, redovno</button>
-          <button type="button" class="ob-chip" data-v="no">Ne / tek počinje</button>
+          <button type="button" class="ob-chip" data-v="no">Ne / tek počinjem</button>
         </div>
-        <div class="ob-sub" style="margin:8px 0 0;font-size:.72rem">Ako nije trčao/la redovno i obim je nizak, plan počinje sa 4 nedelje <b>bazne faze</b> — samo lagano trčanje, tek onda ubrzanja i intervali.</div>
+        <div class="ob-hint">Ako nisi trčao redovno i obim je nizak, plan počinje sa <b>4 nedelje bazne faze</b> — samo lagano trčanje, pa tek onda ubrzanja i intervali.</div>
       </div>
-      <div class="ob-field"><label>Dana trčanja nedeljno</label>
-        <div class="ob-chiprow" id="runDaysChips">
+      <div class="ob-card">
+        <div class="ob-ct">Dana trčanja nedeljno</div>
+        <div class="ob-chiprow d6" id="runDaysChips">
           <button type="button" class="ob-chip" data-v="2">2</button><button type="button" class="ob-chip" data-v="3">3</button>
           <button type="button" class="ob-chip on" data-v="4">4</button><button type="button" class="ob-chip" data-v="5">5</button>
           <button type="button" class="ob-chip" data-v="6">6</button><button type="button" class="ob-chip" data-v="7">7</button>
         </div>
       </div>
-      <div class="ob-field"><label>Dan za dugo trčanje (LR)</label>
-        <div class="ob-chiprow" id="lrDowChips">
+      <div class="ob-card">
+        <div class="ob-ct">Dan za dugo trčanje</div>
+        <div class="ob-chiprow week" id="lrDowChips">
           <button type="button" class="ob-chip" data-v="1">Pon</button><button type="button" class="ob-chip" data-v="2">Uto</button>
           <button type="button" class="ob-chip" data-v="3">Sre</button><button type="button" class="ob-chip" data-v="4">Čet</button>
           <button type="button" class="ob-chip" data-v="5">Pet</button><button type="button" class="ob-chip" data-v="6">Sub</button>
           <button type="button" class="ob-chip on" data-v="7">Ned</button>
         </div>
       </div>
-      <div class="ob-err" id="ob-err-3"></div>
     </div>
     <div class="ob-step" data-step="4">
-      <div class="ob-eyebrow">Korak 4 / 4</div>
-      <div class="ob-h1">Koliki intenzitet?</div>
-      <div class="ob-sub">Koliko brzo forma treba da raste kroz plan.</div>
-      <div class="ob-field"><label>Kvalitetnih (bržih) treninga nedeljno</label>
+      <div class="ob-eyebrow">Korak 4 od 4</div>
+      <div class="ob-h1">Koliko brzo da raste forma?</div>
+      <div class="ob-sub">Ovo određuje koliko se tempi pooštravaju kroz nedelje — ne koliko ćeš trčati.</div>
+      <div class="ob-card">
+        <div class="ob-ct">Kvalitetnih treninga nedeljno</div>
         <div class="ob-chiprow" id="qualityChips">
           <button type="button" class="ob-chip" data-v="1">1</button>
           <button type="button" class="ob-chip on" data-v="2">2</button>
         </div>
-        <div class="ob-sub" style="margin:8px 0 0;font-size:.72rem">Na ≤3 dana trčanja plan forsira 1 kvalitet.</div>
+        <div class="ob-hint">Na <b>3 dana trčanja ili manje</b> plan forsira 1 kvalitet — dva bi bila previše na tako mali obim.</div>
       </div>
-      <div class="ob-field"><label>Dani za kvalitet — opciono (prazno = automatski)</label>
-        <div class="ob-chiprow" id="qDayChips">
+      <div class="ob-card">
+        <div class="ob-ct">Tempo napretka</div>
+        <button type="button" class="ob-icard" data-v="kons">
+          <div class="ob-ih"><b>Konzervativno</b><span class="ob-radio"></span></div>
+          <p>Postepen, oprezan rast forme.</p><span class="ob-tag">Danielsova smernica</span>
+        </button>
+        <button type="button" class="ob-icard on" data-v="std">
+          <div class="ob-ih"><b>Standardno</b><span class="ob-radio"></span></div>
+          <p>Uobičajen tempo napretka za trenirane trkače.</p><span class="ob-tag">Danielsova smernica</span>
+        </button>
+        <button type="button" class="ob-icard" data-v="agr">
+          <div class="ob-ih"><b>Agresivno</b><span class="ob-radio"></span></div>
+          <p>Brz rast — realno uglavnom uz nizak trenažni staž ili paralelan gubitak telesne mase.</p><span class="ob-tag">Kalibrisano na jedan dokumentovan slučaj</span>
+        </button>
+      </div>
+      <div class="ob-card">
+        <div class="ob-ct">Dani za kvalitet <span class="ob-opt">— prazno = automatski</span></div>
+        <div class="ob-chiprow week" id="qDayChips">
           <button type="button" class="ob-chip" data-v="1">Pon</button><button type="button" class="ob-chip" data-v="2">Uto</button>
           <button type="button" class="ob-chip" data-v="3">Sre</button><button type="button" class="ob-chip" data-v="4">Čet</button>
           <button type="button" class="ob-chip" data-v="5">Pet</button><button type="button" class="ob-chip" data-v="6">Sub</button>
           <button type="button" class="ob-chip" data-v="7">Ned</button>
         </div>
       </div>
-      <div class="ob-field">
-        <button type="button" class="ob-icard" data-v="kons"><b>Konzervativno</b><span>Postepen, oprezan rast forme.</span><span class="ob-tag">Danielsova smernica</span></button>
-        <button type="button" class="ob-icard on" data-v="std"><b>Standardno</b><span>Uobičajen tempo napretka za trenirane trkače.</span><span class="ob-tag">Danielsova smernica</span></button>
-        <button type="button" class="ob-icard" data-v="agr"><b>Agresivno</b><span>Brz rast — realno uglavnom uz nizak trenažni staž ili paralelan gubitak telesne mase.</span><span class="ob-tag">Kalibrisano na jedan dokumentovan slučaj</span></button>
-      </div>
-      <div class="ob-field"><label>Ciljno vreme (opciono)</label>
+      <div class="ob-card">
+        <div class="ob-ct">Ciljno vreme <span class="ob-opt">— opciono</span></div>
         <div class="ob-row3">
-          <div><input type="number" id="in-goalMin" placeholder="min" min="0" max="60"></div>
+          <div><span class="ob-unit">min</span><input type="number" id="in-goalMin" placeholder="min" min="0" max="60" inputmode="numeric"></div>
           <div class="ob-colon">:</div>
-          <div><input type="number" id="in-goalSec" placeholder="sek" min="0" max="59"></div>
+          <div><span class="ob-unit">sek</span><input type="number" id="in-goalSec" placeholder="sek" min="0" max="59" inputmode="numeric"></div>
         </div>
+        <div class="ob-hint">Ostavi prazno i plan koristi predikciju iz tvoje forme. Upiši broj ako imaš konkretan cilj na umu.</div>
       </div>
+    </div>
     </div>
     <div class="ob-btnrow">
       <button type="button" class="btn ghost" id="obBack" style="display:none">Nazad</button>
@@ -3082,11 +3201,13 @@ function renderOnboard(){
   bindOnboardEvents();
   goObStep(1);
 }
+const OB_STEP_NAMES=['Trka','Rezultat','Obim','Intenzitet'];
 function renderObProgress(){
   const el=$('#ob-progress'); el.innerHTML='';
   for(let i=1;i<=TOTAL_STEPS;i++){
-    const d=document.createElement('i');
-    if(i<obStep) d.className='done'; else if(i===obStep) d.className='on';
+    const d=document.createElement('div');
+    d.className='ob-seg'+(i<obStep?' done':i===obStep?' on':'');
+    d.innerHTML='<i></i><b>'+esc(OB_STEP_NAMES[i-1]||('Korak '+i))+'</b>';
     el.appendChild(d);
   }
 }
@@ -3100,7 +3221,8 @@ function goObStep(n){
   obStep=n;
   $$('.ob-step').forEach(s=>s.classList.toggle('active', +s.dataset.step===n));
   $('#obBack').style.display=n>1?'':'none';
-  $('#obNext').textContent=n===TOTAL_STEPS?'Generiši plan':'Dalje';
+  $('#obNext').textContent=n===TOTAL_STEPS?'Napravi plan':'Dalje';
+  updateWeeksHint();
   renderObProgress();
   $('#obNext').disabled=!obStepValid(n);
 }
@@ -3114,6 +3236,21 @@ function syncHoursUI(){
     if(folded>0&&folded<=99){ wiz.pbMin=String(folded); $('#in-pbMin').value=wiz.pbMin; }
   }
 }
+/* Napomena pod datumom trke: koliko nedelja ima do trke i da li je to dovoljno
+   za izabranu distancu (minWeeks iz DIST_PROFILES). Racuna umesto korisnika. */
+function updateWeeksHint(){
+  const el=$('#ob-weeks-hint'); if(!el)return;
+  if(!wiz.raceDate){ el.textContent=''; return; }
+  const wks=Math.floor(diffD(todayStr(), wiz.raceDate)/7);
+  const prof=DIST_PROFILES[wiz.raceDist]||DIST_PROFILES[5000];
+  if(wks<1){ el.innerHTML='Trka je <b>ove nedelje</b> — previše blizu za plan.'; return; }
+  const plNed=n=>{const m=n%10,h=n%100;return(m===1&&h!==11)?'nedelja':(m>=2&&m<=4&&(h<12||h>14))?'nedelje':'nedelja';};
+  let t=`Od danas do trke: <b>${wks} ${plNed(wks)}</b> — `;
+  t += wks<prof.minWeeks
+    ? `${prof.name} traži najmanje <b>${prof.minWeeks}</b>. Plan će biti skraćen, sa manje prostora za rast forme.`
+    : `dovoljno za pun ${prof.name} ciklus sa deload nedeljom i taperom.`;
+  el.innerHTML=t;
+}
 function updateVdotPreview(){
   const wrap=$('#vdotWrap');
   const sec=pbTotalSec();
@@ -3122,6 +3259,12 @@ function updateVdotPreview(){
   $('#vdotNum').textContent=vd.toFixed(1);
   const frac=Math.max(0,Math.min(1,(vd-25)/(65-25)));
   $('#vdotArc').style.strokeDashoffset=VDOT_CIRC*(1-frac);
+  /* tempovi koji IZLAZE iz ovog broja — pokazuje zasto se rezultat uopste unosi */
+  const pw=$('#vdotPaces');
+  if(pw){
+    pw.innerHTML=[['Lako','E'],['Tempo','T'],['Interval','I'],['Rep','R']]
+      .map(([lbl,z])=>`<div class="ob-vp"><i>${lbl}</i><b>${fmtTempo(paceForZone(vd,z))}</b></div>`).join('');
+  }
   wrap.classList.add('show');
 }
 function bindOnboardEvents(){
@@ -3133,6 +3276,7 @@ function bindOnboardEvents(){
   $$('#raceDistChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#raceDistChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
     wiz.raceDist=+c.dataset.v;
+    updateWeeksHint(); /* minWeeks zavisi od distance — napomena se mora presloziti */
   }));
   $$('#pbDistChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#pbDistChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
