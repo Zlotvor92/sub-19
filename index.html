@@ -530,7 +530,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='63'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='64'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -3779,42 +3779,87 @@ function painClass(v){ return v==null?'':v>=6?'l3':v>=3?'l2':v>=1?'l1':'l0'; }
 /* SVG silueta — delovi definisani za LEVU stranu ekrana (x<100), desna se ogleda.
    Prednji pogled: leva strana ekrana = DESNA strana tela (kao u ogledalu naopako —
    gledaš osobu spreda). Zadnji pogled: leva strana ekrana = LEVA strana tela. */
+/* ===== SILUETA (v64) — anatomske proporcije, Bezier krive =====
+   Orijentiri (y): 6 teme · 66 vilica · 87 linija ramena · 104 pazuh · 158 dno
+   grudi · 188 struk (najuže) · 200 karlica · 250 međunožje · 337 vrh kolena
+   · 367 dno kolena · 433 skočni zglob · 459 stopalo.
+   Provereno merenjem: 7,50 glava visine (ljudski raspon 7,5–8), ramena 2,11
+   širine glave (atletski ~2), ramena su NAJŠIRA tačka figure, ruke se sužavaju
+   ka telu nadole, struk uži od grudi (51 vs 68 jedinica), stopala se ne
+   preklapaju u sredini (zazor 8,4). Delovi se definišu za LEVU stranu ekrana
+   (x<100) i ogledaju — zato jedan opis pokriva oba ekstremiteta. */
+const BODY_HEAD=`M100,6 C113,6 124.5,17 125,33 C125.5,45 121.5,56 114,62
+  C110,65 105,66.5 100,66.5 C95,66.5 90,65 86,62 C78.5,56 74.5,45 75,33
+  C75.5,17 87,6 100,6 Z`;
+const BODY_NECK=`M90,59 C90,69 89,75 85.5,81 C83.5,84 82,86 81,87.5
+  L119,87.5 C118,86 116.5,84 114.5,81 C111,75 110,69 110,59
+  C107,64 103.5,66 100,66 C96.5,66 93,64 90,59 Z`;
+const BODY_F_CHEST=`M81,87.5 C74,89.5 69,95.5 67,104.5 C65,118 65,140 68,158
+  C80,163 120,163 132,158 C135,140 135,118 133,104.5
+  C131,95.5 126,89.5 119,87.5 C112,91.5 88,91.5 81,87.5 Z`;
+const BODY_F_ABS=`M68,158 C69.5,168 73,178 74,186 C74.2,192 73,197 72,200
+  L128,200 C127,197 125.8,192 126,186 C127,178 130.5,168 132,158
+  C120,163 80,163 68,158 Z`;
+const BODY_B_UP=`M81,87.5 C74,89.5 69,95.5 67,104.5 C65,120 65,144 68,162
+  C80,167 120,167 132,162 C135,144 135,120 133,104.5
+  C131,95.5 126,89.5 119,87.5 C112,91.5 88,91.5 81,87.5 Z`;
+const BODY_B_LO=`M68,162 C69.5,171 73,180 74,188 C74.2,193 73,198 72,200
+  L128,200 C127,198 125.8,193 126,188 C127,180 130.5,171 132,162
+  C120,167 80,167 68,162 Z`;
+const BODY_F_GROIN=`M87,200 L113,200 L113,250 C109,253 105,255 100,255.5
+  C95,255 91,253 87,250 Z`;
+const BODY_DELT=`M81,87.5 C71,88.5 60.5,93 53.5,102 C48.5,109 46.5,118 47.5,127
+  C48,133 49,138 50.5,142 L66,136 C64.5,124 64.5,112 67,104.5 C69,95.5 74,89.5 81,87.5 Z`;
+const BODY_UPARM=`M50.5,142 C49,157 49,174 50.5,189 C51,194 51.8,197 52.5,199
+  C56.5,201.5 61.5,201.5 64.5,199 C64.5,192 64,180 65,166 C65.5,154 65.8,144 66,136 Z`;
+const BODY_FOARM=`M52.5,199 C51,213 51,228 52.5,241 C53,246 53.8,249 54.5,251
+  C57.5,253 61,253 63,251 C63.5,246 64,238 64.2,228 C64.4,214 64.4,205 64.5,199
+  C61.5,201.5 56.5,201.5 52.5,199 Z`;
+const BODY_HAND=`M54.5,251 C53,259 52.5,268 53,276 C53.5,282 56,285.5 60,286
+  C63.5,286 65.5,283 66,277 C66.5,270 66,262 65,255 C64.6,253 64,252 63,251
+  C61,253 57.5,253 54.5,251 Z`;
+const BODY_HIP=`M72,200 C71,210 71.5,222 74,232 C76.5,241 80,247 84.5,250 L87,250 L87,200 Z`;
+/* U ZADNJEM pogledu prepone nisu vidljive — gluteusi pokrivaju celu karlicu,
+   pa se šire do sredine (2 jedinice zazora u sredini = prirodan žleb). */
+const BODY_GLUTE=`M72,200 C69.5,212 69,226 72,238 C76,248 84,254.5 92,255.5
+  C95,255.8 97,255.5 99,254.5 L99,200 Z`;
+const BODY_QUAD=`M74,252 C70,265 68.5,282 70,302 C71,318 73,329 75.5,337
+  L97,337 C98.5,320 99,298 98,276 C97.5,264 97,254 97,249 C91,253 80,253 74,252 Z`;
+const BODY_HAM=`M74,250 C70,264 68.5,284 70,304 C71,319 73,330 75.5,337
+  L97,337 C98.5,321 99,299 98,277 C97.5,265 97,255 97,251 C91,255 80,255 74,250 Z`;
+const BODY_KNEE=`M75.5,337 C74.5,346 74.5,357 76,367 L96.5,367 C97.5,357 97.5,346 97,337 Z`;
+const BODY_SHIN=`M76,367 C74,382 73,400 74.5,418 C75.5,427 77,433 78.5,437
+  L95,437 C96,428 96.5,414 96.5,396 C96.5,382 96.5,373 96.5,367 Z`;
+const BODY_CALF=`M76,367 C72,381 70.5,396 72,409 C73,417 75,422 77.5,425
+  L94.5,425 C96,419 96.5,408 96.5,394 C96.5,381 96.5,373 96.5,367 Z`;
+const BODY_ACHIL=`M77.5,421 L94.5,421 C94.5,428 94.5,434 94,438 L79.5,438
+  C78.5,432 78,426 77.5,421 Z`;
+const BODY_FOOT=`M77,433 L95.5,433 C96.2,441 95.8,450 94,455
+  C90.5,459.5 81.5,460.5 75,458.5 C70.8,457 69,453.5 69.6,448.5 C70.6,441.5 73.2,436 77,433 Z`;
+const BODY_HEEL=`M78,430 L94,430 C94.2,438 93.6,447 92,452 C89,457 82,457.8 77,455
+  C74,453 73,449 74,444 C75,437 76.6,432.4 78,430 Z`;
 function bodyMapSVG(view){
   const MIR='transform="translate(200,0) scale(-1,1)"';
   const P=(id,d)=>{
     const lv=partLevel(id), c=painClass(lv);
     return `<path class="bp ${c}" data-bp="${id}" d="${d}"><title>${esc(partName(id))}${lv!=null?' — bol '+lv:''}</title></path>`;
   };
-  const E=(id)=>{
-    const lv=partLevel(id), c=painClass(lv);
-    return `<ellipse class="bp ${c}" data-bp="${id}" cx="100" cy="38" rx="22" ry="29"><title>${esc(partName(id))}${lv!=null?' — bol '+lv:''}</title></ellipse>`;
-  };
-  let g=E('glava')+P('vrat','M89,60 L89,80 Q100,87 111,80 L111,60 Q100,68 89,60 Z');
-  const side=s=>
-     P('rame-'+s,'M76,80 Q61,82 54,96 Q50,106 53,118 L67,112 Q67,91 76,80 Z')
-    +P('nadlaktica-'+s,'M53,120 Q49,144 47,168 L61,172 Q64,146 67,114 Z')
-    +P('podlaktica-'+s,'M47,170 Q45,196 46,220 L59,222 Q61,198 61,174 Z')
-    +P('saka-'+s,'M46,222 Q43,238 47,250 Q55,254 59,246 Q61,234 59,224 Z');
+  let g=P('glava',BODY_HEAD)+P('vrat',BODY_NECK);
+  const arm=s=>P('rame-'+s,BODY_DELT)+P('nadlaktica-'+s,BODY_UPARM)
+    +P('podlaktica-'+s,BODY_FOARM)+P('saka-'+s,BODY_HAND);
   if(view==='front'){
-    g+=P('grudi','M76,80 Q100,71 124,80 L128,142 Q100,151 72,142 Z')
-      +P('trbuh','M72,144 Q100,153 128,144 L124,196 Q100,205 76,196 Z')
-      +P('prepone','M76,198 Q100,207 124,198 L120,234 Q100,247 80,234 Z');
-    const leg=s=>P('kuk-'+s,'M76,198 L80,234 Q86,242 95,240 L95,202 Q84,204 76,198 Z')
-      +P('kvadriceps-'+s,'M80,236 Q74,278 78,318 L97,320 Q100,278 96,242 Q88,244 80,236 Z')
-      +P('koleno-'+s,'M78,320 L97,322 L97,352 L79,350 Z')
-      +P('potkolenica-'+s,'M79,352 Q75,390 81,426 L96,426 Q99,390 97,354 Z')
-      +P('stopalo-'+s,'M81,422 Q77,444 80,454 Q91,460 104,454 L103,430 Z');
-    g+=side('D')+leg('D')+`<g ${MIR}>`+side('L')+leg('L')+`</g>`;
+    g+=P('grudi',BODY_F_CHEST)+P('trbuh',BODY_F_ABS)+P('prepone',BODY_F_GROIN);
+    const leg=s=>P('kuk-'+s,BODY_HIP)+P('kvadriceps-'+s,BODY_QUAD)
+      +P('koleno-'+s,BODY_KNEE)+P('potkolenica-'+s,BODY_SHIN)+P('stopalo-'+s,BODY_FOOT);
+    /* prednji pogled: leva strana ekrana = DESNA strana tela */
+    g+=arm('D')+leg('D')+`<g ${MIR}>`+arm('L')+leg('L')+`</g>`;
   }else{
-    g+=P('gornja-ledja','M76,80 Q100,71 124,80 L128,146 Q100,155 72,146 Z')
-      +P('donja-ledja','M72,148 Q100,157 128,148 L124,196 Q100,205 76,196 Z');
-    const leg=s=>P('gluteus-'+s,'M76,198 Q70,220 80,238 Q89,246 96,239 L96,202 Q84,204 76,198 Z')
-      +P('zadnja-loza-'+s,'M80,238 Q74,280 78,318 L97,320 Q100,280 96,244 Q88,246 80,238 Z')
-      +P('koleno-'+s,'M78,320 L97,322 L97,352 L79,350 Z')
-      +P('list-'+s,'M79,352 Q71,384 80,412 L96,412 Q100,384 97,354 Z')
-      +P('ahilova-'+s,'M80,409 L96,409 L95,438 L82,438 Z')
-      +P('peta-'+s,'M82,432 Q78,450 83,458 Q92,462 98,455 L97,438 Z');
-    g+=side('L')+leg('L')+`<g ${MIR}>`+side('D')+leg('D')+`</g>`;
+    g+=P('gornja-ledja',BODY_B_UP)+P('donja-ledja',BODY_B_LO);
+    const leg=s=>P('gluteus-'+s,BODY_GLUTE)+P('zadnja-loza-'+s,BODY_HAM)
+      +P('koleno-'+s,BODY_KNEE)+P('list-'+s,BODY_CALF)
+      +P('ahilova-'+s,BODY_ACHIL)+P('peta-'+s,BODY_HEEL);
+    /* zadnji pogled: leva strana ekrana = LEVA strana tela */
+    g+=arm('L')+leg('L')+`<g ${MIR}>`+arm('D')+leg('D')+`</g>`;
   }
   return `<svg viewBox="0 0 200 470" class="bodymap">${g}</svg>`;
 }
