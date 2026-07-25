@@ -530,7 +530,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='64'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='65'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -991,7 +991,15 @@ function undoWeekMoves(w){
 let TOTAL_TR=PLAN.reduce((n,w)=>n+w.days.filter(d=>!d.rest).length,0); /* dinamički; 72 posle dodatih laganih dana u N10/N11 */
 function weekPlanKm(w){return w.days.reduce((s,d)=>s+(d.km||0),0);}
 function weekOf(dateStr){for(const w of CUR_PLAN){const end=addD(w.start,6);if(dateStr>=w.start&&dateStr<=end)return w;}return null;}
-function tagName(t){return{lako:'Lako',tempo:'Tempo',int:'Intervali',lr:'Dugo (LR)',snaga:'Snaga',odmor:'Odmor',trka:'TRKA',test:'Test'}[t]||t;}
+/* Poznati tipovi treninga. Sve van ovog skupa je NEPOVERLJIVO — moze doci iz
+   uvezenog backup fajla (S.alts[id].tag, genPlan session.kind). */
+const TAGS={lako:'Lako',tempo:'Tempo',int:'Intervali',lr:'Dugo (LR)',snaga:'Snaga',odmor:'Odmor',trka:'TRKA',test:'Test'};
+/* Ranije: `[t]||t` — vracalo je SIROV ulaz za nepoznat tag, pa je zlonameran
+   backup mogao da ubaci HTML kroz ime tipa treninga. Sad neutralan tekst. */
+function tagName(t){return TAGS[t]||'Trening';}
+/* Ime CSS klase sme biti samo iz poznatog skupa — inace bi se atribut
+   class="tag ${t}" mogao razbiti navodnikom iz uvezenog fajla. */
+function safeTag(t){return TAGS[t]?t:'';}
 /* Specifičan tip sesije kad postoji (Fartlek/Repeticije/Maratonski tempo/...
    — samo generisani planovi imaju d.session.kind), inače generička oznaka
    po tagu (tvoj hardkodovan plan nema .session, pa ovde ništa ne menja). */
@@ -1673,14 +1681,14 @@ function renderDanas(){
 }
 function nextLine(from){
   const nx=DATED.find(x=>x.date>from&&!x.rest);
-  return nx?`<div class="note-src">Sledeći trening: ${dowOf(nx.date)} ${fmtD(nx.date)} — ${sessKind(nx)}${nx.km?' · '+fmtKm(nx.km)+' km':''}</div>`:'';
+  return nx?`<div class="note-src">Sledeći trening: ${dowOf(nx.date)} ${fmtD(nx.date)} — ${esc(sessKind(nx))}${nx.km?' · '+fmtKm(nx.km)+' km':''}</div>`:'';
 }
 function dayCard(d){
   const s=stFor(d.id);
   const isQuality=d.tag==='int'||d.tag==='tempo';
   let c=`<div class="card${isQuality?' accent':''}" id="tcard">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-      <span class="tag ${d.tag}">${sessKind(d)}</span>
+      <span class="tag ${safeTag(d.tag)}">${esc(sessKind(d))}</span>
       <span class="st ${s}">${s==='done'?'Odrađen':s==='skip'?'Preskočen':'Predstoji'}</span>
     </div>
     <div style="font-size:.72rem;color:var(--txt2);font-weight:700;margin-bottom:8px">N${d.week.w}${d.date?' · '+dowOf(d.date)+' '+fmtD(d.date):' · opciono, kraj nedelje'}</div>`;
@@ -1901,7 +1909,7 @@ function renderPlan(){
     }).forEach(d=>{
       const s=d.rest?'rest':stFor(d.id);
       const t='button'; /* i dani odmora su otvorljivi — da se mogu izmeniti u trening */
-      h+=`<${t} class="day t-${d.rest?'rest':d.tag}" data-d="${d.id}">
+      h+=`<${t} class="day t-${d.rest?'rest':safeTag(d.tag)}" data-d="${esc(d.id)}">
         <div class="day-d"><span class="dw">${d.test?'TT':dowOf(d.date)}</span>${d.date?`<span class="dn">${pad2(s2d(d.date).getDate())}</span>`:''}</div>
         <div class="day-mid">
           <div class="day-type">${d.rest?'Odmor':esc(sessKind(d))}</div>
@@ -3546,7 +3554,7 @@ function openDaySheet(id){
   const isRest=!!d.rest; /* odmor se ne loguje — prikaz bez forme, samo izmena */
   openSheet(`
     <div class="sh-t">N${d.week.w} · ${d.test?'TEST (opciono)':dowOf(d.date)+' '+fmtDY(d.date)}</div>
-    <div class="sh-s">${sessKind(d)}${d.km!=null?' · plan '+fmtKm(d.km)+' km':''}${S.alts&&S.alts[id]?' · izmenjen':''}</div>
+    <div class="sh-s">${esc(sessKind(d))}${d.km!=null?' · plan '+fmtKm(d.km)+' km':''}${S.alts&&S.alts[id]?' · izmenjen':''}</div>
     ${isRest?'':`<div class="desc" style="font-size:.85rem">${esc(d.desc)}</div>`}
     ${!isRest&&SESS_GUIDE[sessKind(d)]?`<div class="note-src" style="margin-top:6px">💡 ${esc(SESS_GUIDE[sessKind(d)])}</div>`:''}
     ${isRest?'':`<div class="seg" id="seg">
