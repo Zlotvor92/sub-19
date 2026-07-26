@@ -530,7 +530,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='65'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='67'; /* mora se poklapati sa APP_VERSION u sw.js */
 const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
@@ -1104,7 +1104,7 @@ function loadState(){
   const s=seedState();s.ui.firstRun=todayStr();
   return s;
 }
-function save(){const j=JSON.stringify(S);if(LS_OK)localStorage.setItem(LS_KEY,j);else MEM=j;}
+function save(){const j=JSON.stringify(S);if(LS_OK)localStorage.setItem(LS_KEY,j);else MEM=j;if(typeof sbSchedulePush==='function')sbSchedulePush();} /* lokalno ostaje izvor istine; sinhronizacija je odlozen dodatak */
 
 /* ============ STATISTIKE ============ */
 function stFor(id){const l=S.log[id];return l&&l.status?l.status:'pending';}
@@ -4136,6 +4136,14 @@ function openSettings(){
     <div class="btnrow" style="margin-top:2px"><button class="btn" id="s-exp">Izvezi backup (JSON)</button></div>
     <div class="btnrow"><button class="btn ghost" id="s-imp">Uvezi backup</button></div>
     <input type="file" id="s-file" accept=".json,application/json" style="display:none">
+    ${sbOn()?`<hr class="sep">
+    <div class="card-t">Nalog i sinhronizacija</div>
+    ${sbAuthed()
+      ? `<div class="note-src" style="margin:0 0 10px">Prijavljen: ${esc(SB.email||'—')} · ${SB.seenAt?('sinhronizovano '+new Date(SB.seenAt).toLocaleString('sr-RS')):'još nije sinhronizovano'}</div>
+         <div class="btnrow"><button class="btn" id="sb-sync">Sinhronizuj sada</button><button class="btn ghost" id="sb-out">Odjavi se</button></div>
+         <div class="note-src" style="margin-top:8px">Podaci i dalje žive na ovom uređaju — server je rezervna kopija. Radi i bez signala.</div>`
+      : `<div class="btnrow"><button class="btn" id="sb-in">Prijavi se Google nalogom</button></div>
+         <div class="note-src" style="margin-top:8px">Bez prijave sve radi kao i do sad, samo bez rezervne kopije na serveru.</div>`}`:''}
     <hr class="sep">
     <div class="card-t">Plan</div>
     ${S.genPlan
@@ -4155,6 +4163,14 @@ function openSettings(){
     <div class="note-src">Poslednji backup: ${S.ui.lastBackup?fmtDY(S.ui.lastBackup):'nikad'} · Verzija: ${APP_VERSION} · Šema podataka: v${S.v} · Plan: ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · Izvor: ${S.genPlan?'generisan planom':'Plan_SUB-19_5K_v5.xlsx'}${S.genPlan?'':' · Trka: 24.09.2026.'}</div>
   `);
   $('#s-exp').onclick=exportBackup;
+  if($('#sb-in'))   $('#sb-in').onclick=sbLogin;
+  if($('#sb-out'))  $('#sb-out').onclick=()=>{ if(confirm('Odjaviti se? Podaci na ovom uređaju ostaju.')){ sbLogout(); closeSheet(); } };
+  if($('#sb-sync')) $('#sb-sync').onclick=async e=>{
+    const b=e.target; b.disabled=true; b.textContent='Sinhronizujem…';
+    const ok=await sbPush();
+    b.textContent=ok?'Sinhronizovano ✓':'Nije uspelo';
+    setTimeout(()=>{ b.disabled=false; b.textContent='Sinhronizuj sada'; },1800);
+  };
   $('#s-imp').onclick=()=>$('#s-file').click();
   $('#s-file').onchange=e=>importBackup(e.target.files[0]);
   const so=$('#st-on'),ss=$('#st-sync'),sf=$('#st-off');
@@ -4198,10 +4214,31 @@ function importBackup(file){
 }
 
 /* ---------- STRAVA ---------- */
+/* CSRF zastita OAuth toka. Bez `state` parametra napadac moze da posalje
+   link `…/?code=NJEGOV_KOD` — tvoja aplikacija bi se povezala na NJEGOV
+   Strava nalog i pocela da uvlaci njegove treninge kao tvoje. `state` je
+   nasumican niz koji pravimo pre odlaska i proveravamo po povratku.
+   localStorage (ne sessionStorage) jer PWA na iOS-u ume da izgubi sesijsko
+   skladiste pri povratku sa spoljne stranice. Rok 10 minuta. */
+const STRAVA_STATE_KEY='sub19_st_state';
+function stravaMakeState(){
+  const st='s'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+  try{ localStorage.setItem(STRAVA_STATE_KEY, JSON.stringify({st,exp:Date.now()+600000})); }catch(e){}
+  return st;
+}
+function stravaCheckState(got){
+  let saved=null;
+  try{ saved=JSON.parse(localStorage.getItem(STRAVA_STATE_KEY)||'null'); }catch(e){}
+  try{ localStorage.removeItem(STRAVA_STATE_KEY); }catch(e){}   /* jednokratno */
+  if(!saved||!saved.st) return false;
+  if(Date.now()>saved.exp) return false;
+  return got===saved.st;
+}
 function stravaConnect(){
   location.href='https://www.strava.com/oauth/authorize?client_id='+STRAVA_CLIENT_ID
     +'&response_type=code&redirect_uri='+encodeURIComponent(location.origin+'/')
-    +'&approval_prompt=auto&scope=activity:read_all';
+    +'&approval_prompt=auto&scope=activity:read_all'
+    +'&state='+encodeURIComponent(stravaMakeState());
 }
 function stravaDisconnect(){
   if(!confirm('Otkači Stravu? Uvezeni podaci ostaju, samo prestaje sinhronizacija.'))return;
@@ -4312,7 +4349,12 @@ function handleOAuthReturn(){
   const code=q.get('code');
   if(!code)return;
   const scope=q.get('scope')||'';
+  const gotState=q.get('state')||'';
   history.replaceState(null,'',location.pathname);
+  if(!stravaCheckState(gotState)){
+    alert('Povezivanje odbijeno — bezbednosna provera nije prošla.\n\nOvo se dešava ako si otvorio link za povezivanje sa strane, ili je prošlo previše vremena. Pokreni povezivanje ponovo iz Podešavanja.');
+    return;
+  }
   fetch('/api/auth?code='+encodeURIComponent(code)).then(r=>r.json()).then(j=>{
     if(j.access_token){
       S.strava={access:j.access_token,refresh:j.refresh_token,expiresAt:j.expires_at,
@@ -4333,9 +4375,191 @@ $('#btn-gear').onclick=openSettings;
 $('#backdrop').onclick=closeSheet;
 if(fixVdotDates())save(); /* jednokratna popravka VDOT datuma iz postojećih runDate */
 if(recomputeVdotZones())save(); /* jednokratna popravka VDOT formule (zona umesto Riegel) na postojećoj istoriji */
+/* ==========================================================================
+   SUPABASE — rezerva i sinhronizacija (PUT A: localStorage je izvor istine)
+
+   Načelo: aplikacija radi POTPUNO ISTO ako ovo nije podešeno ili korisnik
+   nije prijavljen. Sve ispod je dodatak, nikad uslov. Nema spoljne
+   biblioteke (sirov fetch) — PWA mora da radi offline, a CDN skripta bi to
+   pokvarila prvim gubitkom signala.
+
+   PODESI: SB_URL i SB_ANON iz Supabase → Project Settings → API.
+   ANON kljuc je javan po dizajnu — bezbednost nosi RLS, ne tajnost kljuca.
+   ========================================================================== */
+let SB_URL='';      /* npr. 'https://abcdefgh.supabase.co' — POPUNI */
+let SB_ANON='';     /* 'eyJhbGciOi...' (anon public) — POPUNI */
+const SB_KEY='sub19_sb';   /* ODVOJENO od LS_KEY — uvoz backup-a menja S, sesija mora preziveti */
+
+let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:null};
+let SB_TIMER=null, SB_BUSY=false;
+
+/* Deklaracije funkcija (ne const strelice) — podizu se, pa save() sme da ih
+   zove i pre nego sto izvrsavanje stigne do ovog bloka. Sa `const` je to bio
+   ReferenceError pri pokretanju (temporal dead zone). */
+function sbOn(){ return !!(SB_URL&&SB_ANON); }
+function sbAuthed(){ return sbOn()&&!!SB&&!!SB.access&&!!SB.userId; }
+
+function sbLoad(){
+  try{ const r=localStorage.getItem(SB_KEY); if(r) SB=Object.assign(SB,JSON.parse(r)); }catch(e){}
+  if(!SB.deviceId){ SB.deviceId='d'+Math.random().toString(36).slice(2,10); sbSave(); }
+}
+function sbSave(){ try{ localStorage.setItem(SB_KEY,JSON.stringify(SB)); }catch(e){} }
+
+/* --- ciste funkcije (testabilne bez mreze) --- */
+
+/* Sta se salje na server. Strava tokeni se NAMERNO izostavljaju: nisu potrebni
+   drugom uredjaju (tamo se Strava poveze ponovo, jedan klik), a cuvanje OAuth
+   tokena u bazi bez pravog proksija je rizik bez koristi. */
+function sbPayload(state){
+  const c=JSON.parse(JSON.stringify(state));
+  delete c.strava;
+  return c;
+}
+/* Odluka pri pokretanju: 'push' (server prazan) - 'ok' (isti) - 'ask' (server
+   ima izmene koje nismo videli — PITAJ, ne gazi tiho). */
+function sbDecide(seenAt, remoteAt){
+  if(!remoteAt) return 'push';
+  if(!seenAt) return 'ask';
+  if(remoteAt===seenAt) return 'ok';
+  return remoteAt>seenAt ? 'ask' : 'push';
+}
+/* Google vraca tokene u hash-u URL-a (#access_token=...). Strava koristi
+   ?code= — razliciti mehanizmi, ne sudaraju se. */
+function sbParseHash(hash){
+  if(!hash||hash.indexOf('access_token')<0) return null;
+  const q=new URLSearchParams(hash.replace(/^#/,''));
+  const a=q.get('access_token'); if(!a) return null;
+  return { access:a, refresh:q.get('refresh_token')||null,
+           expiresAt: Date.now()+ (parseInt(q.get('expires_in')||'3600',10)*1000) };
+}
+/* Email i id iz JWT-a — bez dodatnog kruga ka serveru. */
+function sbClaims(jwt){
+  try{
+    const p=jwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    const j=JSON.parse(decodeURIComponent(escape(atob(p+'==='.slice((p.length+3)%4)))));
+    return { email:j.email||null, userId:j.sub||null };
+  }catch(e){ return {email:null,userId:null}; }
+}
+
+/* --- mreza --- */
+function sbHead(){ return {'apikey':SB_ANON,'Authorization':'Bearer '+SB.access,'Content-Type':'application/json'}; }
+
+async function sbEnsure(){
+  if(!sbAuthed()) return false;
+  if(Date.now() < SB.expiresAt-60000) return true;
+  if(!SB.refresh) return false;
+  try{
+    const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',
+      {method:'POST',headers:{'apikey':SB_ANON,'Content-Type':'application/json'},
+       body:JSON.stringify({refresh_token:SB.refresh})});
+    if(!r.ok) return false;
+    const j=await r.json();
+    SB.access=j.access_token; SB.refresh=j.refresh_token||SB.refresh;
+    SB.expiresAt=Date.now()+((j.expires_in||3600)*1000);
+    sbSave(); return true;
+  }catch(e){ return false; }
+}
+
+function sbLogin(){
+  if(!sbOn()){ alert('Supabase nije podesen (SB_URL / SB_ANON u kodu).'); return; }
+  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/');
+}
+function sbLogout(){
+  SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
+  sbSave();
+  alert('Odjavljen. Podaci na ovom uredjaju su netaknuti.');
+}
+
+/* Vreme poslednje izmene na serveru — jeftin upit, samo jedna kolona. */
+async function sbRemoteAt(){
+  if(!await sbEnsure()) return undefined;
+  const r=await fetch(SB_URL+'/rest/v1/user_state?select=updated_at&user_id=eq.'+SB.userId,{headers:sbHead()});
+  if(!r.ok) return undefined;
+  const j=await r.json();
+  return (j&&j[0]) ? j[0].updated_at : null;   /* null = red ne postoji */
+}
+
+async function sbPush(){
+  if(!sbAuthed()||SB_BUSY) return false;
+  if(!await sbEnsure()) return false;
+  SB_BUSY=true;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/user_state',{
+      method:'POST',
+      headers:Object.assign(sbHead(),{'Prefer':'resolution=merge-duplicates,return=representation'}),
+      body:JSON.stringify({user_id:SB.userId,data:sbPayload(S),
+        device_id:SB.deviceId,app_version:APP_VERSION})});
+    if(!r.ok) return false;
+    const j=await r.json();
+    if(j&&j[0]&&j[0].updated_at){ SB.seenAt=j[0].updated_at; sbSave(); }
+    return true;
+  }catch(e){ return false; }
+  finally{ SB_BUSY=false; }
+}
+
+async function sbPull(){
+  if(!sbAuthed()) return false;
+  if(!await sbEnsure()) return false;
+  const r=await fetch(SB_URL+'/rest/v1/user_state?select=data,updated_at&user_id=eq.'+SB.userId,{headers:sbHead()});
+  if(!r.ok) return false;
+  const j=await r.json();
+  if(!j||!j[0]||!j[0].data) return false;
+  const keepStrava=S.strava;                 /* veza sa Stravom je po uredjaju */
+  S=migrate(j[0].data);
+  S.strava=keepStrava||null;
+  SB.seenAt=j[0].updated_at; sbSave();
+  setActivePlan(); rebuildDateIndex(); save();
+  renderHeader(); setPage(ACTIVE);
+  return true;
+}
+
+/* save() ovo okida — odlozeno, jer se save() zove i na svaki pritisak tastera. */
+function sbSchedulePush(){
+  /* save() se zove i pri pokretanju, PRE nego sto izvrsavanje stigne do
+     `let SB` na dnu fajla. Tada je SB u "temporal dead zone" i svaki dodir —
+     ukljucujuci `typeof SB` — baca ReferenceError (typeof je bezbedan samo
+     za NEdeklarisane promenljive, ne za let/const koje jos nisu dosle na red).
+     Zato try/catch, ne provera. */
+  try{ if(!sbAuthed()) return; }catch(e){ return; }
+  clearTimeout(SB_TIMER);
+  SB_TIMER=setTimeout(()=>{ sbPush(); }, 4000);
+}
+
+/* Pri pokretanju: ako server ima izmene koje ovaj uredjaj nije video — PITAJ.
+   Nikad tiho ne gazi, jer je stanje jedan blob: pregaziti znaci izgubiti
+   celu drugu sesiju, ne samo sukobljeno polje. */
+async function sbInit(){
+  if(!sbOn()) return;
+  sbLoad();
+  const h=sbParseHash(location.hash);
+  if(h){
+    Object.assign(SB,h,sbClaims(h.access));
+    SB.seenAt=null;
+    sbSave();
+    history.replaceState(null,'',location.pathname);
+  }
+  if(!sbAuthed()) return;
+  let remoteAt;
+  try{ remoteAt=await sbRemoteAt(); }catch(e){ return; }
+  if(remoteAt===undefined) return;                    /* nema signala — radi lokalno */
+  const d=sbDecide(SB.seenAt, remoteAt);
+  if(d==='push'){ sbPush(); return; }
+  if(d==='ok') return;
+  const kada=new Date(remoteAt).toLocaleString('sr-RS');
+  if(confirm('Na drugom uredjaju postoje noviji podaci ('+kada+').\n\nOK = povuci ih (lokalne izmene na ovom uredjaju se gube)\nOtkazi = zadrzi lokalne i posalji ih na server'))
+    await sbPull();
+  else await sbPush();
+}
+
+/* Poslednja prilika da se posalje pre nego sto se stranica zatvori. */
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden'&&sbAuthed()){ clearTimeout(SB_TIMER); sbPush(); }
+});
+
 renderHeader();
 setPage('danas');
 handleOAuthReturn();
+sbInit();
 if(S.strava&&navigator.onLine&&Date.now()-(S.strava.lastSync||0)>3600000)stravaSync(false);
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
   let refreshing=false;
