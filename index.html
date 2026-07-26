@@ -545,7 +545,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='68'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='70'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2116,9 +2116,29 @@ function buildDaySlots(runDays, qualityCount, prefs){
   let qSel = (prefs && Array.isArray(prefs.qDows) ? prefs.qDows : [])
     .map(Math.round).filter(d=>d>=1&&d<=7&&d!==lrDow);
   qSel = [...new Set(qSel)].slice(0, effQ).sort((a,b)=>a-b);
-  const ORDER=[1,3,5,2,6,4,7].filter(d=>d!==lrDow && !qSel.includes(d));
-  const need = runDays-1-qSel.length;
-  const chosen = qSel.concat(ORDER.slice(0, Math.max(need,0))).sort((a,b)=>a-b);
+
+  /* IZBOR KONKRETNIH DANA TRČANJA (prefs.runDows).
+     Ranije se biralo samo KOLIKO dana; lagana trčanja je raspoređivao
+     generator po fiksnom redosledu. Korisnik koji trči utorkom i četvrtkom
+     dobijao bi ih ponedeljkom i sredom — s pravom bi rekao da mu plan nije
+     ispoštovan. Sada, ako su dani izabrani, koriste se TAČNO ti. */
+  let runSel = (prefs && Array.isArray(prefs.runDows) ? prefs.runDows : [])
+    .map(Math.round).filter(d=>d>=1&&d<=7);
+  runSel = [...new Set(runSel)].sort((a,b)=>a-b);
+
+  let chosen;
+  if(runSel.length>=2){
+    /* LR i kvalitet moraju biti među izabranim danima — UI to i sprečava,
+       ali ako podatak dođe iz backup-a ili starije verzije, ne rušimo se. */
+    if(!runSel.includes(lrDow)) runSel.push(lrDow);
+    runSel=[...new Set(runSel)].sort((a,b)=>a-b);
+    qSel=qSel.filter(d=>runSel.includes(d));
+    chosen = runSel.filter(d=>d!==lrDow).sort((a,b)=>a-b);
+  }else{
+    const ORDER=[1,3,5,2,6,4,7].filter(d=>d!==lrDow && !qSel.includes(d));
+    const need = runDays-1-qSel.length;
+    chosen = qSel.concat(ORDER.slice(0, Math.max(need,0))).sort((a,b)=>a-b);
+  }
   const len=chosen.length;
   if(qSel.length){
     /* eksplicitan izbor: raniji dan = q1 (VO2 familija), kasniji = q2 (prag) */
@@ -2675,7 +2695,7 @@ function generatePlan(inp){
   if(weeks > maxWeeks) return { error: `Više od ${maxWeeks} nedelja (2 godine) — proveri datum trke, verovatno je pogrešno unet.` };
   const runDays = Math.max(2, Math.min(7, Math.round(inp.runDays||4)));
   const qWant = Math.max(1, Math.min(2, Math.round(inp.quality||2)));
-  const slots = buildDaySlots(runDays, qWant, { lrDow: inp.lrDow, qDows: inp.qDows });
+  const slots = buildDaySlots(runDays, qWant, { lrDow: inp.lrDow, qDows: inp.qDows, runDows: inp.runDows });
   const dayWarnings = dayPrefWarnings(slots);
   const effQ = Object.values(slots).filter(r=>r==='q1'||r==='q2').length;
   const a = assess(inp.pb, weeks, inp.intensity, inp.goalSec||null, raceDistM);
@@ -3043,7 +3063,7 @@ const HOURS_FROM=21097;
 const VDOT_CIRC=169.6;
 const TOTAL_STEPS=4;
 let obStep=1;
-let wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, lrDow:7, qDays:[], intensity:'std', goalH:'', goalMin:'', goalSec:'' };
+let wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, runDows:[], lrDow:7, lrDowManual:false, qDays:[], intensity:'std', goalH:'', goalMin:'', goalSec:'' };
 function pbUsesHours(){ return wiz.pbDist>=HOURS_FROM; }
 /* Ciljno vreme: HM i maraton se mere u SATIMA, pa polje dobija i h. Isti prag
    (HOURS_FROM) kao za skorasnji rezultat, ali gleda CILJNU distancu. */
@@ -3085,7 +3105,7 @@ function pbSanityMsg(){
   return '';
 }
 function openWizard(){
-  wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, lrDow:7, qDays:[], intensity:'std', goalH:'', goalMin:'', goalSec:'' };
+  wiz={ raceDist:5000, raceDate:'', pbDist:5000, pbH:'', pbMin:'', pbSec:'', weeklyKm:'', trainedRecently:true, runDays:4, quality:2, runDows:[], lrDow:7, lrDowManual:false, qDays:[], intensity:'std', goalH:'', goalMin:'', goalSec:'' };
   obStep=1;
   closeSheet();
   document.querySelector('header').style.display='none';
@@ -3194,6 +3214,16 @@ function renderOnboard(){
         <div class="ob-hint">Ako nisi trčao redovno i obim je nizak, plan počinje sa <b>4 nedelje bazne faze</b> — samo lagano trčanje, pa tek onda ubrzanja i intervali.</div>
       </div>
       <div class="ob-card">
+        <div class="ob-ct">Koji dani ti odgovaraju za trčanje? <span class="ob-opt">— opciono</span></div>
+        <div class="ob-chiprow week" id="runDowChips">
+          <button type="button" class="ob-chip" data-v="1">Pon</button><button type="button" class="ob-chip" data-v="2">Uto</button>
+          <button type="button" class="ob-chip" data-v="3">Sre</button><button type="button" class="ob-chip" data-v="4">Čet</button>
+          <button type="button" class="ob-chip" data-v="5">Pet</button><button type="button" class="ob-chip" data-v="6">Sub</button>
+          <button type="button" class="ob-chip" data-v="7">Ned</button>
+        </div>
+        <div class="ob-hint" id="runDowHint">Ostavi prazno i plan sam raspoređuje dane. Izaberi konkretne ako imaš fiksne obaveze — tada se koriste <b>tačno ti dani</b>.</div>
+      </div>
+      <div class="ob-card" id="runDaysCard">
         <div class="ob-ct">Dana trčanja nedeljno</div>
         <div class="ob-chiprow d6" id="runDaysChips">
           <button type="button" class="ob-chip" data-v="2">2</button><button type="button" class="ob-chip" data-v="3">3</button>
@@ -3291,6 +3321,7 @@ function goObStep(n){
   $('#obBack').style.display=n>1?'':'none';
   $('#obNext').textContent=n===TOTAL_STEPS?'Napravi plan':'Dalje';
   updateWeeksHint();
+  syncRunDowUI();
   syncGoalHoursUI();
   renderOutlook();
   renderObProgress();
@@ -3383,6 +3414,48 @@ function renderOutlook(){
   }
   el.innerHTML=h;
 }
+/* Uskladjuje UI posle izbora dana trcanja:
+   - broj dana prati izbor (i sam izbor se zakljucava da se ne protivrece)
+   - dani za LR i kvalitet koji NISU izabrani postaju nedostupni
+   - ako je LR/kvalitet bio na danu koji je upravo iskljucen, premesta se */
+function syncRunDowUI(){
+  const sel=(wiz.runDows||[]).slice().sort((a,b)=>a-b);   /* polje moze izostati */
+  const on=sel.length>=2;
+  const card=$('#runDaysCard'), hint=$('#runDowHint');
+
+  if(on){
+    wiz.runDays=sel.length;
+    $$('#runDaysChips .ob-chip').forEach(x=>x.classList.toggle('on', +x.dataset.v===sel.length));
+    if(card) card.style.display='none';       /* broj sledi iz izbora — ne pitaj dvaput */
+    if(hint) hint.innerHTML='Izabrano <b>'+sel.length+'</b> '+(sel.length===1?'dan':(sel.length<5?'dana':'dana'))+' — plan koristi <b>tačno</b> te dane.';
+  }else{
+    if(card) card.style.display='';
+    if(hint) hint.innerHTML='Ostavi prazno i plan sam raspoređuje dane. Izaberi konkretne ako imaš fiksne obaveze — tada se koriste <b>tačno ti dani</b>.';
+  }
+
+  /* LR i kvalitet: samo izabrani dani su dostupni */
+  const dostupan=d=>!on||sel.includes(d);
+  $$('#lrDowChips .ob-chip').forEach(x=>{
+    const v=+x.dataset.v, ok=dostupan(v);
+    x.disabled=!ok; x.style.opacity=ok?'':'.3';
+    if(!ok&&wiz.lrDow===v){ x.classList.remove('on'); wiz.lrDow=null; }
+  });
+  /* Dok korisnik SAM ne izabere dan za dugo trcanje, drzimo ga na POSLEDNJEM
+     izabranom danu i preracunavamo na svaku izmenu. Inace bi ostao tamo gde je
+     slucajno pao kad su bila izabrana samo dva dana. */
+  if(on && (!wiz.lrDowManual || !sel.includes(wiz.lrDow))){
+    wiz.lrDow=sel[sel.length-1];
+    $$('#lrDowChips .ob-chip').forEach(x=>x.classList.toggle('on', +x.dataset.v===wiz.lrDow));
+  }
+  $$('#qDayChips .ob-chip').forEach(x=>{
+    const v=+x.dataset.v, ok=dostupan(v)&&v!==wiz.lrDow;
+    x.disabled=!ok; x.style.opacity=ok?'':'.3';
+    if(!ok){
+      const i=wiz.qDays.indexOf(v);
+      if(i>=0){ wiz.qDays.splice(i,1); x.classList.remove('on'); }
+    }
+  });
+}
 function updateWeeksHint(){
   const el=$('#ob-weeks-hint'); if(!el)return;
   if(!wiz.raceDate){ el.textContent=''; return; }
@@ -3440,10 +3513,23 @@ function bindOnboardEvents(){
   $$('#runDaysChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#runDaysChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.runDays=+c.dataset.v;
   }));
+  /* Izbor konkretnih dana trcanja. Kad su izabrani, oni ODREDJUJU i broj dana,
+     a izbor dana za dugo trcanje / kvalitet se ogranicava na njih — da korisnik
+     ne moze da izabere kvalitet u dan kada uopste ne trci. */
+  $$('#runDowChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
+    const v=+c.dataset.v;
+    const i=wiz.runDows.indexOf(v);
+    if(i>=0){ wiz.runDows.splice(i,1); c.classList.remove('on'); }
+    else { wiz.runDows.push(v); c.classList.add('on'); }
+    wiz.runDows.sort((a,b)=>a-b);
+    syncRunDowUI();
+  }));
   $$('#lrDowChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
-    $$('#lrDowChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.lrDow=+c.dataset.v;
+    $$('#lrDowChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
+    wiz.lrDow=+c.dataset.v; wiz.lrDowManual=true;   /* korisnik je sam izabrao — ne diramo vise */
     const i=wiz.qDays.indexOf(wiz.lrDow);
     if(i>=0){ wiz.qDays.splice(i,1); const b=document.querySelector(`#qDayChips .ob-chip[data-v="${wiz.lrDow}"]`); if(b)b.classList.remove('on'); }
+    syncRunDowUI();
   }));
   $$('#qualityChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#qualityChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.quality=+c.dataset.v;
@@ -3480,7 +3566,8 @@ function finishOnboarding(){
   const meta={
     startDate: todayStr(), raceDate: wiz.raceDate, raceDistM: wiz.raceDist,
     pb:{ distM:wiz.pbDist, sec:pbSec }, weeklyKm:+wiz.weeklyKm,
-    runDays:wiz.runDays, quality:wiz.quality, lrDow:wiz.lrDow, qDows:wiz.qDays.slice(),
+    runDays:wiz.runDays, quality:wiz.quality, lrDow:wiz.lrDow,
+    qDows:(wiz.qDays||[]).slice(), runDows:(wiz.runDows||[]).slice(),   /* polja mogu izostati (stariji backup) — ne rusimo se */
     intensity:wiz.intensity, goalSec, trainedRecently:wiz.trainedRecently
   };
   const plan=generatePlan(meta);
