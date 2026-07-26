@@ -344,6 +344,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .ob-verdict.warn b{color:var(--amber)}
 .ob-verdict.bad{border-left-color:var(--red)}
 .ob-verdict.bad b{color:var(--red)}
+/* kapija za prijavu — pokriva celu aplikaciju dok nema naloga */
+#sb-gate{position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;
+  padding:24px;background:radial-gradient(ellipse 600px 340px at 50% 8%, rgba(250,46,85,.10), transparent),var(--bg)}
+.gate-in{width:100%;max-width:400px;text-align:center}
+.gate-brand{font-weight:800;font-size:1.5rem;letter-spacing:.06em;margin-bottom:28px}
+.gate-brand span{color:var(--pink)}
+.gate-h1{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.gate-sub{font-size:.88rem;color:var(--txt2);line-height:1.55;margin-top:12px}
+.gate-btn{width:100%;min-height:54px;margin-top:26px;border-radius:14px;background:var(--pink);
+  color:#fff;font-size:1rem;font-weight:800}
+.gate-btn:active{transform:scale(.98)}
+.gate-btn:disabled{background:rgba(250,46,85,.35)}
+.gate-err{margin-top:14px;font-size:.8rem;line-height:1.5;color:var(--red);
+  background:rgba(255,69,58,.1);border-radius:11px;padding:11px 13px;text-align:left}
+.gate-note{margin-top:18px;font-size:.75rem;color:var(--txt3)}
 .ob-err{color:var(--red);font-size:.78rem;font-weight:600;margin-top:10px;min-height:16px}
 .chart-info{font-size:9.5px;fill:var(--pink);font-weight:800}
 .chart-hint{font-size:8.5px;fill:var(--txt3);font-weight:600;font-style:italic}
@@ -530,8 +545,11 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='67'; /* mora se poklapati sa APP_VERSION u sw.js */
-const ANALYZE_SECRET='acavolimasunajvisenasvetu123456789'; /* usklađeno sa APP_SHARED_SECRET na Vercel-u. NIJE prava tajna (vidljivo u kodu) — samo prag protiv slučajnog trošenja kvote */
+const APP_VERSION='68'; /* mora se poklapati sa APP_VERSION u sw.js */
+/* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
+   dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
+   korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
+   pa se kvota moze meriti po korisniku. */
 const STRAVA_CLIENT_ID='259960';
 const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
 /* Opis cilja AKTIVNOG plana — koristi se i u AI promptu i u Progres UI-ju.
@@ -1849,7 +1867,7 @@ function bindForm(root,d){
       try{
         const resp=await fetch('/api/analyze',{
           method:'POST',
-          headers:{'Content-Type':'application/json','x-app-secret':ANALYZE_SECRET},
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
           body:JSON.stringify(payload)
         });
         let data;
@@ -4005,7 +4023,7 @@ function renderPred(){
       try{
         const resp=await fetch('/api/analyze',{
           method:'POST',
-          headers:{'Content-Type':'application/json','x-app-secret':ANALYZE_SECRET},
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
           body:JSON.stringify({trend:sum, goalCtx: goalCtxText()})
         });
         let data;
@@ -4247,7 +4265,7 @@ function stravaDisconnect(){
 async function ensureToken(){
   if(!S.strava)throw new Error('Strava nije povezana');
   if(S.strava.expiresAt*1000>Date.now()+300000)return;
-  const r=await fetch('/api/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.strava.refresh})});
+  const r=await fetch('/api/refresh',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},body:JSON.stringify({refresh_token:S.strava.refresh})});
   const j=await r.json();
   if(!r.ok||!j.access_token)throw new Error('Osvežavanje tokena nije uspelo'+(j.message?': '+j.message:''));
   S.strava.access=j.access_token;S.strava.refresh=j.refresh_token||S.strava.refresh;S.strava.expiresAt=j.expires_at;save();
@@ -4386,8 +4404,12 @@ if(recomputeVdotZones())save(); /* jednokratna popravka VDOT formule (zona umest
    PODESI: SB_URL i SB_ANON iz Supabase → Project Settings → API.
    ANON kljuc je javan po dizajnu — bezbednost nosi RLS, ne tajnost kljuca.
    ========================================================================== */
-let SB_URL='https://clnsxvtulvoeqakchydz.supabase.co';      /* npr. 'https://abcdefgh.supabase.co' — POPUNI */
-let SB_ANON='sb_publishable_aMLazdC_D_brROmOml1T7g_BM8j_ntj';     /* 'eyJhbGciOi...' (anon public) — POPUNI */
+let SB_URL='https://clnsxvtulvoeqakchydz.supabase.co';
+let SB_ANON='sb_publishable_aMLazdC_D_brROmOml1T7g_BM8j_ntj';
+/* Publishable kljuc je JAVAN po dizajnu — Supabase izricito kaze da je bezbedan
+   u izvornom kodu i veb stranicama. Zastitu nosi RLS (svaki korisnik vidi samo
+   svoj red), ne tajnost kljuca. Nikad ovde ne sme doci `sb_secret_...` — taj
+   zaobilazi sva RLS pravila. */
 const SB_KEY='sub19_sb';   /* ODVOJENO od LS_KEY — uvoz backup-a menja S, sesija mora preziveti */
 
 let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:null};
@@ -4398,6 +4420,17 @@ let SB_TIMER=null, SB_BUSY=false;
    ReferenceError pri pokretanju (temporal dead zone). */
 function sbOn(){ return !!(SB_URL&&SB_ANON); }
 function sbAuthed(){ return sbOn()&&!!SB&&!!SB.access&&!!SB.userId; }
+/* KLJUCNA RAZLIKA od sbAuthed(): gleda da li NALOG postoji, ne da li je
+   pristupni token trenutno vazeci. Token istice na sat vremena — da kapija
+   gleda njega, aplikacija bi se zakljucala svaki put kad si bez signala.
+   Refresh token traje mnogo duze i obnavlja se kad mreza postoji. */
+function sbHasSession(){ return sbOn()&&!!SB&&!!SB.userId&&!!SB.refresh; }
+/* Vazeci pristupni token za pozive ka nasim /api putanjama. Prazan niz ako
+   ga nema — server tada vrati 401, a UI to prikaze kao gresku. */
+async function sbToken(){
+  try{ if(!await sbEnsure()) return ''; }catch(e){ return ''; }
+  return SB.access||'';
+}
 
 function sbLoad(){
   try{ const r=localStorage.getItem(SB_KEY); if(r) SB=Object.assign(SB,JSON.parse(r)); }catch(e){}
@@ -4467,7 +4500,7 @@ function sbLogin(){
 function sbLogout(){
   SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
   sbSave();
-  alert('Odjavljen. Podaci na ovom uredjaju su netaknuti.');
+  sbShowGate('');   /* nalog je obavezan — nazad na kapiju */
 }
 
 /* Vreme poslednje izmene na serveru — jeftin upit, samo jedna kolona. */
@@ -4525,11 +4558,40 @@ function sbSchedulePush(){
   SB_TIMER=setTimeout(()=>{ sbPush(); }, 4000);
 }
 
+/* ---- KAPIJA ZA PRIJAVU ----
+   Nalog je OBAVEZAN, mreza nije. Kapija propusta cim postoji sesija
+   (sbHasSession), pa aplikacija radi i bez signala — na stazi, u teretani,
+   u avionu. Zakljucava se tek na odjavu ili ako sesija nestane. */
+function sbShowGate(msg){
+  let g=document.getElementById('sb-gate');
+  if(!g){
+    g=document.createElement('div');
+    g.id='sb-gate';
+    document.body.appendChild(g);
+  }
+  g.innerHTML=`
+    <div class="gate-in">
+      <div class="gate-brand">SUB<span>-20</span></div>
+      <div class="gate-h1">Prijavi se da nastaviš</div>
+      <div class="gate-sub">Nalog čuva tvoj plan i istoriju treninga na serveru — ako izgubiš telefon ili obrišeš podatke pretraživača, sve je i dalje tu.</div>
+      <button type="button" class="gate-btn" id="gate-go">Prijavi se Google nalogom</button>
+      ${msg?`<div class="gate-err">${esc(msg)}</div>`:''}
+      <div class="gate-note">Posle prijave aplikacija radi i bez interneta.</div>
+    </div>`;
+  g.style.display='flex';
+  const b=document.getElementById('gate-go');
+  if(b) b.onclick=()=>{ b.disabled=true; b.textContent='Otvaram Google…'; sbLogin(); };
+}
+function sbHideGate(){
+  const g=document.getElementById('sb-gate');
+  if(g) g.style.display='none';
+}
+
 /* Pri pokretanju: ako server ima izmene koje ovaj uredjaj nije video — PITAJ.
    Nikad tiho ne gazi, jer je stanje jedan blob: pregaziti znaci izgubiti
    celu drugu sesiju, ne samo sukobljeno polje. */
 async function sbInit(){
-  if(!sbOn()) return;
+  if(!sbOn()) return;          /* nije podeseno — aplikacija radi bez naloga */
   sbLoad();
   const h=sbParseHash(location.hash);
   if(h){
@@ -4538,7 +4600,14 @@ async function sbInit(){
     sbSave();
     history.replaceState(null,'',location.pathname);
   }
-  if(!sbAuthed()) return;
+  /* greska sa Google strane (odbio, zatvorio prozor…) */
+  const err=(location.hash||'').indexOf('error')>=0
+    ? decodeURIComponent(((/error_description=([^&]*)/.exec(location.hash)||[])[1]||'').replace(/\+/g,' '))
+    : '';
+  if(err) history.replaceState(null,'',location.pathname);
+
+  if(!sbHasSession()){ sbShowGate(err||''); return; }
+  sbHideGate();
   let remoteAt;
   try{ remoteAt=await sbRemoteAt(); }catch(e){ return; }
   if(remoteAt===undefined) return;                    /* nema signala — radi lokalno */
