@@ -4386,8 +4386,8 @@ if(recomputeVdotZones())save(); /* jednokratna popravka VDOT formule (zona umest
    PODESI: SB_URL i SB_ANON iz Supabase → Project Settings → API.
    ANON kljuc je javan po dizajnu — bezbednost nosi RLS, ne tajnost kljuca.
    ========================================================================== */
-let SB_URL='';      /* npr. 'https://abcdefgh.supabase.co' — POPUNI */
-let SB_ANON='';     /* 'eyJhbGciOi...' (anon public) — POPUNI */
+let SB_URL='https://clnsxvtulvoeqakchydz.supabase.co';      /* npr. 'https://abcdefgh.supabase.co' — POPUNI */
+let SB_ANON='sb_publishable_aMLazdC_D_brROmOml1T7g_BM8j_ntj';     /* 'eyJhbGciOi...' (anon public) — POPUNI */
 const SB_KEY='sub19_sb';   /* ODVOJENO od LS_KEY — uvoz backup-a menja S, sesija mora preziveti */
 
 let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:null};
