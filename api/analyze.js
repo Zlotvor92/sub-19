@@ -4,18 +4,21 @@
    novo povlačenje podataka.
 
    OBAVEZNO pre deploy-a, u Vercel Project Settings -> Environment Variables:
-   - GEMINI_API_KEY      (https://aistudio.google.com/apikey — besplatan nivo)
-   - APP_SHARED_SECRET   (bilo koji string koji ti izmisliš, npr. dugačak random)
-   Isti APP_SHARED_SECRET mora biti i u index.html (ANALYZE_SECRET konstanta).
-   Ovo NIJE prava bezbednost (tajna je vidljiva u frontend kodu ako neko
-   otvori dev tools) — to je prag protiv slučajnog/automatskog pogađanja
-   URL-a koji bi ti trošio Gemini kvotu. Prava zaštita bi tražila pravi
-   login sistem, što je van okvira "najmanje moguće verzije".
+   - GEMINI_API_KEY       (https://aistudio.google.com/apikey — besplatan nivo)
+   - SUPABASE_URL         (https://<ref>.supabase.co)
+   - SUPABASE_ANON_KEY    (sb_publishable_... — javan po dizajnu)
+
+   APP_SHARED_SECRET VIŠE NIJE POTREBAN i može se obrisati. Zamenila ga je
+   prava prijava: zahtev mora nositi Supabase sesiju korisnika, koju server
+   proverava kod Supabase-a. Time se zna KO zove (kvota po korisniku), a ne
+   oslanja se na tajnu koja je ionako bila vidljiva u frontend kodu.
 
    NAPOMENA O BESPLATNOM NIVOU: Google na besplatnom nivou koristi tekst
    zahteva/odgovora za poboljšanje svojih proizvoda (za razliku od plaćenog
    nivoa). Ako to ne želiš, treba prebaciti na plaćen nivo (i dalje jeftino:
    $0.30/$2.50 po milion tokena za standardni 3.5 Flash poziv). */
+
+import { requireUser } from './_auth.js';
 
 const MODEL = 'gemini-3.5-flash'; /* stabilan (ne "preview"), besplatan nivo dostupan avgust 2026 */
 const FALLBACK_MODEL = 'gemini-3.5-flash-lite'; /* ISTA (3.x) generacija kao primarni — gemini-2.5-flash je testom potvrđen NEDOSTUPAN novim nalozima (404 "no longer available to new users", nije bilo vidljivo iz cenovnika), pa rezerva mora biti iz generacije koja je stvarno otvorena za nov nalog. Odvojen (lakši) model = odvojen kapacitet od punog 3.5 Flash. */
@@ -96,16 +99,18 @@ async function callGemini(systemText, userText) {
   return out; // ni 503 ni 429 — fallback ne bi pomogao (npr. prazan odgovor)
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Samo POST.' });
     return;
   }
 
-  const secretRaw = req.headers['x-app-secret'];
-  const expected = process.env.APP_SHARED_SECRET;
-  if (!expected || secretRaw !== expected) {
-    res.status(401).json({ error: 'Neautorizovano.' });
+  /* Ranije: deljena tajna iz frontenda (`x-app-secret`) — vidljiva svakome ko
+     otvori dev tools, dakle nikakva zastita. Sada: Supabase sesija korisnika,
+     pa se zna KO zove i kvota se moze meriti po korisniku. */
+  const auth = await requireUser(req);
+  if (!auth.ok) {
+    res.status(auth.status).json({ error: auth.error });
     return;
   }
 

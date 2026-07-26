@@ -21,6 +21,8 @@
    client_secret. Pravi lek je autentifikacija zahteva (Supabase JWT), ne
    dodatna zaglavlja. Ozbiljnost je ipak niska: da bi neko imao refresh_token,
    morao bi već da ima pristup uređaju žrtve. */
+import { requireUser } from './_auth.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -30,6 +32,12 @@ export default async function handler(req, res) {
   if (!ct.includes('application/json')) {
     return res.status(415).json({ message: 'Očekuje se Content-Type: application/json.' });
   }
+
+  /* Zahteva prijavljenog korisnika. Ranije je putanja bila potpuno otvorena —
+     svako je mogao da je pozove i, uz ukraden refresh token, koristi NAS
+     client_secret da kuje pristupne tokene. */
+  const auth = await requireUser(req);
+  if (!auth.ok) return res.status(auth.status).json({ message: auth.error });
 
   let rt = '';
   try {
