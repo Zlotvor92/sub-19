@@ -3,8 +3,8 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v71';
-const APP_VERSION = '71';
+const CACHE = 'sub19-cache-v72';
+const APP_VERSION = '72';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('message', e => {
@@ -28,12 +28,16 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const u = new URL(e.request.url);
   if (u.pathname.startsWith('/api/') || u.hostname.endsWith('strava.com')) return; /* uvek mreža, nikad keš */
-  if (e.request.mode === 'navigate') {
-    /* network-first: nova verzija stiže čim ima interneta, offline radi iz keša */
+  /* index.html I manifest.json: network-first. Manifest se čita retko (add-to-homescreen,
+     periodična provera OS-a) — cena mrežnog poziva je zanemarljiva, a zauzvrat nestaje CELA
+     klasa greške "promenio sam manifest, zaboravio da podignem CACHE verziju" (tačno ono
+     što se upravo desilo: naziv aplikacije ostao zaglavljen na staroj vrednosti). */
+  if (e.request.mode === 'navigate' || u.pathname.endsWith('/manifest.json')) {
+    const key = u.pathname.endsWith('/manifest.json') ? './manifest.json' : './index.html';
     e.respondWith(
       fetch(e.request)
-        .then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put('./index.html', cp)); return r; })
-        .catch(() => caches.match('./index.html'))
+        .then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put(key, cp)); return r; })
+        .catch(() => caches.match(key))
     );
     return;
   }
