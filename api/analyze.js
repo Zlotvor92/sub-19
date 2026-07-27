@@ -44,7 +44,7 @@ async function requireUser(req) {
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
-    return { ok: true, userId: u.id, email: u.email || null };
+    return { ok: true, userId: u.id, email: u.email || null, token: m[1] };
   } catch (e) {
     return { ok: false, status: 503, error: 'Provera prijave trenutno nije moguća.' };
   }
@@ -144,6 +144,33 @@ export default async function handler(req, res) {
     return;
   }
 
+  /* Dnevni limit poziva po korisniku — Google prijava je otvorena svima,
+     bez ovoga bi skripta mogla da isprazni Gemini kvotu. Atomsko (Postgres
+     funkcija, ne "procitaj pa upisi") da paralelni zahtevi ne zaobidju limit.
+     30/dan je dovoljno velikodusno za stvarnu upotrebu, premalo za automatsko
+     iscrpljivanje. */
+  const DAILY_LIMIT = 30;
+  try {
+    const rl = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_api_usage', {
+      method: 'POST',
+      headers: {
+        apikey: process.env.SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + auth.token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_limit: DAILY_LIMIT })
+    });
+    if (!rl.ok) {
+      const errBody = await rl.text();
+      if (errBody.includes('DAILY_LIMIT_EXCEEDED')) {
+        res.status(429).json({ error: 'Dnevni limit AI analiza (' + DAILY_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
+        return;
+      }
+      // Funkcija/tabela možda još nije podešena u Supabase-u — ne blokiramo
+      // korisnika zbog toga, samo nastavljamo bez brojanja za ovaj poziv.
+    }
+  } catch (e) { /* isto — mrezni problem ovde ne sme da obori celu analizu */ }
+
   if (!process.env.GEMINI_API_KEY) {
     res.status(500).json({ error: 'GEMINI_API_KEY nije podešen na serveru.' });
     return;
@@ -158,7 +185,10 @@ export default async function handler(req, res) {
   }
 
   const { session, entered, trend, goalCtx } = body || {};
-  const goalDesc = (typeof goalCtx === 'string' && goalCtx.trim()) ? goalCtx.trim() : '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)';
+  /* goalCtx ranije bez ikakvog ogranicenja -> direktno u systemInstruction.
+     Neograniceno = i prompt injection prostor i nacin da se nadmasi tokenski
+     budzet. 200 znakova je vise nego dovoljno za "5K oko 19:30" stil opisa. */
+  const goalDesc = (typeof goalCtx === 'string' && goalCtx.trim()) ? goalCtx.trim().slice(0, 200) : '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)';
 
   // TREND ANALIZA — poseban tip zahteva (svi treninzi od početka plana)
   if (trend) {
@@ -194,9 +224,10 @@ Zajedničko pravilo:
 
   const fmtPace = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
   let lapsBlock = '';
+  const MAX_ITEMS = 50; /* i najduzi maraton ima ~42 km-splita; 50 je siguran plafon */
   if (Array.isArray(entered.laps) && entered.laps.length) {
     lapsBlock = '\n\nPODACI PO RADNOM KRUGU (najvažnije za analizu):\n' +
-      entered.laps.map(L =>
+      entered.laps.slice(0, MAX_ITEMS).map(L =>
         `Interval ${L.i}${L.distM?` (${L.distM}m)`:''}: tempo ${fmtPace(L.paceSec)}/km` +
         (L.avgHr!=null?`, puls ${L.avgHr}`:'') +
         (L.cadence!=null?`, kadenca ${L.cadence}`:'') +
@@ -205,7 +236,7 @@ Zajedničko pravilo:
   }
   if (Array.isArray(entered.perKm) && entered.perKm.length) {
     lapsBlock += '\n\nPODACI PO KILOMETRU (za drift i kadencu kroz celo trčanje):\n' +
-      entered.perKm.map(K =>
+      entered.perKm.slice(0, MAX_ITEMS).map(K =>
         `km ${K.km}: tempo ${K.paceSec!=null?fmtPace(K.paceSec):'—'}/km` +
         (K.hr!=null?`, puls ${K.hr}`:'') +
         (K.cadence!=null?`, kadenca ${K.cadence}`:'')
@@ -235,8 +266,9 @@ Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}${lapsBlock}`;
 /* ===== TREND ANALIZA — svi treninzi kroz vreme ===== */
 async function handleTrend(trend, res, goalDesc) {
   const fmtPace = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
-  const treninzi = Array.isArray(trend.treninzi) ? trend.treninzi : [];
-  const vdot = Array.isArray(trend.vdot) ? trend.vdot : [];
+  const MAX_HIST = 150; /* velikodusno za punu istoriju više ciklusa plana */
+  const treninzi = (Array.isArray(trend.treninzi) ? trend.treninzi : []).slice(0, MAX_HIST);
+  const vdot = (Array.isArray(trend.vdot) ? trend.vdot : []).slice(0, MAX_HIST);
 
   const sys = `Ti si trkački trener koji analizira TREND FORME kroz ceo trenažni period za trkača koji cilja ${goalDesc} (Jack Daniels VDOT). Dobijaš sažetak svih treninga i istoriju VDOT-a.
 

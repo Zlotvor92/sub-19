@@ -27,7 +27,15 @@ function checkCron(req) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
   const h = req.headers.authorization || req.headers.Authorization || '';
-  return h === 'Bearer ' + secret;
+  const want = 'Bearer ' + secret;
+  /* Konstantno-vremensko poređenje — obično === bi teoretski moglo da procuri
+     dužinu/prefiks kroz vreme izvršavanja. Preko mreže je ovo praktično jako
+     teško iskoristiti (šum mrežnog kašnjenja guta signal), ali je jeftino da
+     se uradi ispravno. */
+  if (h.length !== want.length) return false;
+  let diff = 0;
+  for (let i = 0; i < h.length; i++) diff |= h.charCodeAt(i) ^ want.charCodeAt(i);
+  return diff === 0;
 }
 
 async function fetchStats(url, key) {
