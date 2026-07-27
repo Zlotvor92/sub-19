@@ -545,7 +545,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='70'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='71'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -4349,11 +4349,30 @@ function stravaDisconnect(){
   if(!confirm('Otkači Stravu? Uvezeni podaci ostaju, samo prestaje sinhronizacija.'))return;
   S.strava=null;save();closeSheet();
 }
+/* Naše /api putanje mogu vratiti i NE-JSON: kad se serverless funkcija sruši,
+   Vercel pošalje HTML "A server error has occurred". Direktan `r.json()` tada
+   baca poruku parsera ("...is not valid JSON" / "The string did not match the
+   expected pattern") koja korisniku ne znači ništa i skriva pravi uzrok.
+   Ovo uvek vraća upotrebljivu poruku. */
+async function apiJson(resp){
+  const txt=await resp.text();
+  let data=null;
+  try{ data=JSON.parse(txt); }catch(e){}
+  if(data) return { ok:resp.ok, data };
+  /* nije JSON — server je pao ili vratio stranicu */
+  const kratko=(txt||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,120);
+  return { ok:false, data:null,
+    error: resp.status===401 ? 'Nisi prijavljen — prijavi se ponovo.'
+         : resp.status===404 ? 'Serverska putanja ne postoji (proveri da su fajlovi u api/ folderu).'
+         : 'Server je vratio grešku ('+resp.status+')'+(kratko?': '+kratko:'') };
+}
 async function ensureToken(){
   if(!S.strava)throw new Error('Strava nije povezana');
   if(S.strava.expiresAt*1000>Date.now()+300000)return;
   const r=await fetch('/api/refresh',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},body:JSON.stringify({refresh_token:S.strava.refresh})});
-  const j=await r.json();
+  const res=await apiJson(r);
+  if(!res.data) throw new Error('Osvežavanje Strava tokena nije uspelo — '+res.error);
+  const j=res.data;
   if(!r.ok||!j.access_token)throw new Error('Osvežavanje tokena nije uspelo'+(j.message?': '+j.message:''));
   S.strava.access=j.access_token;S.strava.refresh=j.refresh_token||S.strava.refresh;S.strava.expiresAt=j.expires_at;save();
 }
@@ -4460,7 +4479,11 @@ function handleOAuthReturn(){
     alert('Povezivanje odbijeno — bezbednosna provera nije prošla.\n\nOvo se dešava ako si otvorio link za povezivanje sa strane, ili je prošlo previše vremena. Pokreni povezivanje ponovo iz Podešavanja.');
     return;
   }
-  fetch('/api/auth?code='+encodeURIComponent(code)).then(r=>r.json()).then(j=>{
+  fetch('/api/auth?code='+encodeURIComponent(code)).then(async r=>{
+    const res=await apiJson(r);
+    if(!res.data) throw new Error(res.error);   /* HTML stranica greske umesto JSON-a */
+    return res.data;
+  }).then(j=>{
     if(j.access_token){
       S.strava={access:j.access_token,refresh:j.refresh_token,expiresAt:j.expires_at,
         athlete:j.athlete?((j.athlete.firstname||'')+' '+(j.athlete.lastname||'')).trim():'',
