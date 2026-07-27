@@ -4632,9 +4632,14 @@ async function sbEnsure(){
 
 function sbLogin(){
   if(!sbOn()){ alert('Supabase nije podesen (SB_URL / SB_ANON u kodu).'); return; }
-  const st=sbMakeState();
-  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/')
-    +'&state='+encodeURIComponent(st);  /* dodatan sloj — nasa provera ne zavisi od toga da Supabase ovo vrati */
+  sbMakeState();
+  /* NAMERNO se ne prosledjuje &state= Supabase-u. Supabase GoTrue koristi taj
+     isti naziv parametra INTERNO za sopstvenu CSRF zastitu prema Google-u —
+     nasa vrednost bi se sudarila sa njegovom (potvrdjeno: identican slucaj
+     prijavljen na supabase/auth GitHub-u, zavrsava sa "bad_oauth_state").
+     Nasa zastita (sbCheckState) je cisto lokalna — upisan marker se proverava
+     posle povratka, bez oslanjanja na to da nam Supabase bilo sta vrati. */
+  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/');
 }
 function sbLogout(){
   SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
