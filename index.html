@@ -545,7 +545,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='74'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='75'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1780,18 +1780,18 @@ function formHTML(d){
       <button type="button" id="ai-go-${d.id}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
       <div id="ai-out-${d.id}" class="ai-out"></div>
     </div>`:'';
-  return `<div class="f-grid" data-day="${d.id}">
+  return `<div class="f-grid" data-day="${esc(d.id)}">
     <div class="f-field"><label>Distanca (km) <span class="f-req">*</span></label><input type="text" inputmode="decimal" data-f="km" value="${l.km!=null?String(l.km).replace('.',','):''}" placeholder="npr. 8"></div>
     <div class="f-field"><label>Vreme <span class="f-req">*</span></label><input type="text" inputmode="numeric" data-f="sec" value="${l.sec?fmtClock(l.sec):''}" placeholder="4233 = 42:33"></div>
     <div class="f-field"><label>Pros. tempo</label><div class="calc" data-tempo>${tempo}</div></div>
-    <div class="f-field"><label>Pros. puls</label><input type="text" inputmode="numeric" data-f="hr" value="${l.hr!=null?l.hr:''}" placeholder="bpm"></div>
+    <div class="f-field"><label>Pros. puls</label><input type="text" inputmode="numeric" data-f="hr" value="${l.hr!=null?esc(l.hr):''}" placeholder="bpm"></div>
     ${workBlock}
     <details class="f-field full more-details"><summary>Više detalja (RPE, koleno, masa, datum, beleška)</summary>
     <div class="more-grid">
     <div class="f-field"><label>RPE (1–10)</label><select data-f="rpe">${opt(l.rpe,1,10)}</select></div>
     <div class="f-field"><label>Bol u kolenu (0–10)</label><select data-f="knee">${opt(l.knee,0,10)}</select></div>
-    <div class="f-field"><label>Telesna masa (kg)</label><input type="text" inputmode="decimal" data-f="kg" value="${l.kg!=null?String(l.kg).replace('.',','):''}" placeholder="npr. 80,5"></div>
-    <div class="f-field"><label>Datum</label><input type="date" data-f="ts" value="${l.ts||d.date||TODAY}"></div>
+    <div class="f-field"><label>Telesna masa (kg)</label><input type="text" inputmode="decimal" data-f="kg" value="${l.kg!=null?esc(String(l.kg).replace('.',',')):''}" placeholder="npr. 80,5"></div>
+    <div class="f-field"><label>Datum</label><input type="date" data-f="ts" value="${esc(l.ts||d.date||TODAY)}"></div>
     <div class="f-field full"><label>Beleška</label><textarea data-f="note" placeholder="Kako je bilo…">${esc(l.note||'')}</textarea></div>
     </div></details>
     ${aiBlock}
@@ -1975,7 +1975,7 @@ function altSheetHTML(d){
   h+=`<div class="f-field full"><label>Tip treninga</label>${segBtns(ALT_TYPES.slice(0,3))}${segBtns(ALT_TYPES.slice(3))}</div>`;
   if(cur.tag!=='odmor'){
     h+=`<div class="f-field full" style="margin-top:10px"><label>Kilometraža</label>
-      <input type="number" inputmode="decimal" step="0.1" min="0" id="alt-km" value="${cur.km!=null?cur.km:''}" placeholder="prazno = bez km (npr. snaga)"></div>`;
+      <input type="number" inputmode="decimal" step="0.1" min="0" id="alt-km" value="${cur.km!=null?esc(cur.km):''}" placeholder="prazno = bez km (npr. snaga)"></div>`;
     h+=`<div class="f-field full" style="margin-top:10px"><label>Opis</label>
       <textarea id="alt-desc" placeholder="Šta se radi...">${esc(cur.desc)}</textarea></div>`;
   }
@@ -3996,7 +3996,7 @@ function renderKnee(){
   h+=`<div class="btnrow" style="margin:0 0 14px"><button class="btn ghost" id="k-add">+ Dodaj unos</button></div>`;
   h+=`<div class="card"><div class="card-t">Istorija</div>`+(list.length?list.map(k=>`
     <button class="krow" data-k="${k.id}">
-      <div class="kp ${k.pain>=6?'p2':k.pain>=1?'p1':'p0'}">${k.pain}</div>
+      <div class="kp ${k.pain>=6?'p2':k.pain>=1?'p1':'p0'}">${esc(k.pain)}</div>
       <div class="ki"><div class="kd">${esc(partName(k.part))} <span class="ka">· ${DOW[(s2d(k.date).getDay()+6)%7]} ${fmtD(k.date)} · ${esc(k.act)}${k.src?' · iz treninga':''}</span></div>${k.note?`<div class="kn">${esc(k.note)}</div>`:''}</div>
     </button>`).join(''):`<div class="empty">Nema unosa.</div>`)+`</div>`;
   el.innerHTML=h;
@@ -4030,13 +4030,13 @@ function openKneeSheet(id,presetPart){
   const partOpts=`<option value=""${!k.part?' selected':''}>Opšte (bez dela tela)</option>`+
     Object.keys(BODY_PARTS).map(p=>`<option value="${p}"${k.part===p?' selected':''}>${BODY_PARTS[p]}</option>`).join('');
   openSheet(`
-    <div class="sh-t">${id?'Unos — '+partName(k.part):'Novi unos'+(k.part?' — '+partName(k.part):'')}</div>
+    <div class="sh-t">${id?'Unos — '+esc(partName(k.part)):'Novi unos'+(k.part?' — '+esc(partName(k.part)):'')}</div>
     <div class="sh-s">${k.src?'Vezan za trening — izmena treninga ažurira ovaj unos':'Ručni unos'}</div>
     <div class="f-grid">
       <div class="f-field full"><label>Deo tela</label><select id="kf-part">${partOpts}</select></div>
-      <div class="f-field"><label>Datum</label><input type="date" id="kf-date" value="${k.date}"></div>
+      <div class="f-field"><label>Datum</label><input type="date" id="kf-date" value="${esc(k.date)}"></div>
       <div class="f-field"><label>Aktivnost</label><select id="kf-act">${acts.map(a=>`<option${a===k.act?' selected':''}>${a}</option>`).join('')}</select></div>
-      <div class="f-field full"><label>Bol (0–10) <span class="range-v" id="kf-pv">${k.pain}</span></label><input type="range" id="kf-pain" min="0" max="10" step="1" value="${k.pain}"></div>
+      <div class="f-field full"><label>Bol (0–10) <span class="range-v" id="kf-pv">${esc(k.pain)}</span></label><input type="range" id="kf-pain" min="0" max="10" step="1" value="${esc(k.pain)}"></div>
       <div class="f-field full"><label>Beleška</label><textarea id="kf-note" placeholder="Gde, kada, kako…">${esc(k.note)}</textarea></div>
     </div>
     <div class="btnrow">${id?`<button class="btn danger" id="kf-del">Obriši unos</button>`:`<button class="btn" id="kf-save">Dodaj</button>`}</div>
@@ -4090,10 +4090,10 @@ function renderPred(){
     <div class="legend"><span><i style="background:var(--cyan)"></i>cilj ${Math.round(vdotFrom5k(1170)*10)/10}</span><span><i style="background:var(--pink)"></i>tvoja forma</span></div>
     <button type="button" id="trend-go" class="btn-ai" style="margin-top:10px">📈 Objasni trend (AI)</button>
     <div id="trend-out" class="ai-out"></div></div>`;
-  const predRaceName=S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K';
+  const predRaceName=esc(S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K');
   h+=`<div class="card"><div class="card-t">Predikcija ${predRaceName} kroz plan</div><div id="pchart">${chartPred(pc)}</div>
     <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span></div></div>`;
-  h+=`<div class="card info" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?goalCtxText():'19:20–19:30 — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
+  h+=`<div class="card info" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?esc(goalCtxText()):'19:20–19:30 — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
   el.innerHTML=h;
   const tBtn=el.querySelector('#trend-go');
   if(tBtn){
@@ -4326,8 +4326,15 @@ function importBackup(file){
    localStorage (ne sessionStorage) jer PWA na iOS-u ume da izgubi sesijsko
    skladiste pri povratku sa spoljne stranice. Rok 10 minuta. */
 const STRAVA_STATE_KEY='sub19_st_state';
+/* Kriptografski nasumican niz — Math.random() NIJE bezbedan za bezbednosne
+   tokene (predvidljiv PRNG). crypto.getRandomValues jeste, podrzano svuda
+   gde postoji fetch(). */
+function secureRandomToken(){
+  const a=new Uint8Array(20); crypto.getRandomValues(a);
+  return Array.from(a,b=>b.toString(16).padStart(2,'0')).join('');
+}
 function stravaMakeState(){
-  const st='s'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+  const st=secureRandomToken();
   try{ localStorage.setItem(STRAVA_STATE_KEY, JSON.stringify({st,exp:Date.now()+600000})); }catch(e){}
   return st;
 }
@@ -4523,6 +4530,24 @@ let SB_ANON='sb_publishable_aMLazdC_D_brROmOml1T7g_BM8j_ntj';
    svoj red), ne tajnost kljuca. Nikad ovde ne sme doci `sb_secret_...` — taj
    zaobilazi sva RLS pravila. */
 const SB_KEY='sub19_sb';   /* ODVOJENO od LS_KEY — uvoz backup-a menja S, sesija mora preziveti */
+const SB_STATE_KEY='sub19_sb_state';
+/* CSRF/sesijska otmica preko Google prijave — ISTA klasa napada kao kod Strave,
+   ista odbrana. Bez ovoga: napadac posalje link
+   `…/#access_token=NJEGOV_JWT&refresh_token=…`, zrtva ga otvori, sbInit()
+   bezuslovno usvoji NJEGOVU sesiju. Odatle: sbPush() gura zrtvine podatke
+   u napadacev red, ili sbPull() povuce napadacev JSON u zrtvinu app. */
+function sbMakeState(){
+  const st=secureRandomToken();
+  try{ localStorage.setItem(SB_STATE_KEY, JSON.stringify({st,exp:Date.now()+600000})); }catch(e){}
+  return st;
+}
+function sbCheckState(){
+  let saved=null;
+  try{ saved=JSON.parse(localStorage.getItem(SB_STATE_KEY)||'null'); }catch(e){}
+  try{ localStorage.removeItem(SB_STATE_KEY); }catch(e){}   /* jednokratno */
+  if(!saved||!saved.st) return false;
+  return Date.now()<=saved.exp;
+}
 
 let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:null};
 let SB_TIMER=null, SB_BUSY=false;
@@ -4607,7 +4632,9 @@ async function sbEnsure(){
 
 function sbLogin(){
   if(!sbOn()){ alert('Supabase nije podesen (SB_URL / SB_ANON u kodu).'); return; }
-  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/');
+  const st=sbMakeState();
+  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/')
+    +'&state='+encodeURIComponent(st);  /* dodatan sloj — nasa provera ne zavisi od toga da Supabase ovo vrati */
 }
 function sbLogout(){
   SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
@@ -4705,7 +4732,15 @@ function sbHideGate(){
 async function sbInit(){
   if(!sbOn()) return;          /* nije podeseno — aplikacija radi bez naloga */
   sbLoad();
-  const h=sbParseHash(location.hash);
+  let h=sbParseHash(location.hash);
+  /* SRZ POPRAVKE: hash SA tokenima se prihvata SAMO ako je OVAJ pretrazivac
+     nedavno pokrenuo sbLogin() (marker postavljen i nedeljno pre isteka).
+     Bez ovoga, bilo ko ko otvori link sa tudjim #access_token= tiho preuzima
+     napadacevu sesiju — proveri sbCheckState() PRE Object.assign, ne posle. */
+  if(h&&!sbCheckState()){
+    h=null;
+    history.replaceState(null,'',location.pathname);
+  }
   if(h){
     Object.assign(SB,h,sbClaims(h.access));
     SB.seenAt=null;
