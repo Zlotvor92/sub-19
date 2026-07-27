@@ -45,6 +45,13 @@ export default async function handler(req, res) {
   const auth = await requireUser(req);
   if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
 
+  /* Jasna poruka odmah, umesto da se cita iz Resend-ove sirove greske
+     (tacno ono sto se desilo: REPORT_TO nedostajao, korisnik je video
+     "Missing `to` field" i morao da nagadja sta to znaci). */
+  const missing = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'RESEND_API_KEY', 'REPORT_TO', 'REPORT_FROM']
+    .filter(k => !process.env[k]);
+  if (missing.length) return res.status(500).json({ error: 'Nedostaju env varijable: ' + missing.join(', ') });
+
   /* Dnevni limit — ista atomska funkcija kao za AI analizu, ODVOJEN brojač
      (bug_report_usage, ne api_usage) da koriscenje jednog ne blokira drugo. */
   const DAILY_LIMIT = 10;
