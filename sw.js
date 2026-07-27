@@ -3,8 +3,8 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v72';
-const APP_VERSION = '72';
+const CACHE = 'sub19-cache-v73';
+const APP_VERSION = '73';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('message', e => {
@@ -28,16 +28,18 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const u = new URL(e.request.url);
   if (u.pathname.startsWith('/api/') || u.hostname.endsWith('strava.com')) return; /* uvek mreža, nikad keš */
-  /* index.html I manifest.json: network-first. Manifest se čita retko (add-to-homescreen,
-     periodična provera OS-a) — cena mrežnog poziva je zanemarljiva, a zauzvrat nestaje CELA
-     klasa greške "promenio sam manifest, zaboravio da podignem CACHE verziju" (tačno ono
-     što se upravo desilo: naziv aplikacije ostao zaglavljen na staroj vrednosti). */
-  if (e.request.mode === 'navigate' || u.pathname.endsWith('/manifest.json')) {
-    const key = u.pathname.endsWith('/manifest.json') ? './manifest.json' : './index.html';
+  /* SVE iz ASSETS spiska: network-first. Ranije je ovo važilo samo za index.html i
+     manifest.json — pa se ISTA greška ponovila na ikonicama (promenio fajl, korisnik
+     ne vidi promenu jer je stari keš i dalje tu). ASSETS je mali spisak (par KB ukupno),
+     cena mrežne provere je zanemarljiva — zato ide na CEO spisak, ne fajl-po-fajl kad
+     god se neki od njih sledeći put promeni. */
+  const key = ASSETS.find(a => u.pathname === a.replace(/^\.\//, '/') || u.pathname.endsWith(a.replace(/^\./, '')));
+  if (e.request.mode === 'navigate' || key) {
+    const cacheKey = key || './index.html';
     e.respondWith(
       fetch(e.request)
-        .then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put(key, cp)); return r; })
-        .catch(() => caches.match(key))
+        .then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put(cacheKey, cp)); return r; })
+        .catch(() => caches.match(cacheKey))
     );
     return;
   }
