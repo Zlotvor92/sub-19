@@ -545,7 +545,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='77'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='78'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -4613,11 +4613,14 @@ function sbSave(){ try{ localStorage.setItem(SB_KEY,JSON.stringify(SB)); }catch(
    tokena u bazi bez pravog proksija je rizik bez koristi. */
 function sbPayload(state){
   const c=JSON.parse(JSON.stringify(state));
-  /* Tokeni NIKAD ne idu na server (isto kao pre) — ali vreme poslednje
-     sinhronizacije je bezopasan podatak, i izveštaj ga treba da vidi da bi
-     mogao da kaže "poslednji Strava sync: juče u 18:32", ne samo da nagađa
-     iz posrednog signala. */
-  c.strava = state.strava ? { lastSync: state.strava.lastSync || null } : null;
+  /* Tokeni (access/refresh) NIKAD ne idu na server. Ime i vreme sinhronizacije
+     su bezopasni — već se prikazuju u samoj app Podešavanjima bez ikakve
+     zaštite, pa nema razloga da ih izveštaj ne vidi. */
+  c.strava = state.strava ? {
+    lastSync: state.strava.lastSync || null,
+    athlete: state.strava.athlete || null,
+    scope: state.strava.scope || null
+  } : null;
   return c;
 }
 /* Odluka pri pokretanju: 'push' (server prazan) - 'ok' (isti) - 'ask' (server
