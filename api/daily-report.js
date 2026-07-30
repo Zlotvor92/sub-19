@@ -1,37 +1,43 @@
 /* SUB-20 · Dnevni izveštaj — Vercel Cron, jednom dnevno (vidi vercel.json).
 
-   TOK:
-   1) Vercel sam poziva ovu putanju, šalje CRON_SECRET kao Authorization header
-      (dokumentovano Vercel ponašanje — mi samo uporedimo da se poklapa).
-   2) Povučemo app_stats pogled (agregatni brojevi, već testiran) preko
-      SUPABASE_SERVICE_ROLE_KEY — ovo je JEDINO mesto u celom projektu gde je
-      service_role ključ ispravan izbor: čisto serversko, nikad ne dodiruje
-      frontend, i svrha mu je baš da zaobiđe RLS radi administrativnog uvida.
-   3) Odvojeno, u SOPSTVENOM try/catch, povučemo listu prijavljenih naloga
-      (email, poslednja prijava) preko Supabase Admin API-ja. Ovo je manje
-      sigurna putanja (oblik odgovora nije isto potvrđen kao za app_stats),
-      pa ako padne, OSNOVNI izveštaj sa brojevima svejedno stiže.
-   4) Pošaljemo HTML mejl preko Resend-a (RESEND_API_KEY).
+   IZMENA (v2): Ranije se "aktivnost" merila kroz user_state.updated_at —
+   vreme POSLEDNJEG USPEŠNOG UPISA u Supabase. To je POSREDAN signal: ako
+   pozadinska sinhronizacija nije uspela (token istekao u tom trenutku, app
+   zatvorena pre nego što je odloženi upis stigao da se izvrši — sync je
+   odložen 4s posle svakog save()), lokalni podaci su ažurni a Supabase to
+   ne zna, pa izveštaj pokazuje lažno staru "poslednju aktivnost".
 
-   POTREBNE Vercel Environment Variables (Settings → Environment Variables):
-   - CRON_SECRET              (bilo koji dug nasumičan string — Vercel ga šalje sam)
-   - SUPABASE_URL             (isti kao za ostale api/ fajlove)
-   - SUPABASE_SERVICE_ROLE_KEY (Project Settings → API Keys → service_role —
-                                 NIKAD u frontend, samo ovde)
-   - RESEND_API_KEY           (resend.com, besplatan nivo dovoljan)
-   - REPORT_TO                (mejl adresa na koju izveštaj stiže — tvoja)
-   - REPORT_FROM               (npr. 'SUB-20 <onboarding@resend.dev>' dok ne
-                                 verifikuješ sopstveni domen na Resend-u) */
+   Sada se čita SADRŽAJ podataka (user_state.data, isti JSON koji app čuva),
+   i iz njega se IZVLAČI: poslednji stvarno odrađen trening (log status=done,
+   po ts polju — datum kad je STVARNO trčano, ne planiran dan), km ove
+   nedelje, poslednji Strava sync. Direktan signal, ne posredan.
+
+   AI korišćenje se NE čita iz user_state (analiza se ne čuva u stanju) —
+   čita se iz api_usage tabele, koja VEĆ postoji za dnevni limit i sama
+   po sebi je tačan zapis "kog dana je ovaj korisnik pozvao AI analizu".
+
+   TOK:
+   1) Vercel poziva ovu putanju, CRON_SECRET provera (nepromenjeno).
+   2) app_stats pogled — agregatni brojevi za vrh mejla (nepromenjeno).
+   3) SIROV user_state.data za SVAKOG korisnika (NOVO) — service_role
+      zaobilazi RLS namerno, ovo je jedino mesto gde taj ključ sme da postoji.
+   4) api_usage dani sa pozivima > 0, po korisniku (NOVO) — za "poslednja AI
+      analiza".
+   5) Lista naloga (email) preko Admin API-ja — kao pre.
+   6) Sve se spaja po user_id u JEDNU tabelu po korisniku. Svaki od koraka
+      3-5 je u SOPSTVENOM try/catch — ako neki padne, ostali podaci i dalje
+      stižu, samo se ta kolona prikaže kao nepoznata.
+   7) Mejl preko Resend-a.
+
+   POTREBNE Vercel Environment Variables — NEPROMENJENO od ranije verzije:
+   CRON_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY,
+   REPORT_TO, REPORT_FROM. */
 
 function checkCron(req) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
   const h = req.headers.authorization || req.headers.Authorization || '';
   const want = 'Bearer ' + secret;
-  /* Konstantno-vremensko poređenje — obično === bi teoretski moglo da procuri
-     dužinu/prefiks kroz vreme izvršavanja. Preko mreže je ovo praktično jako
-     teško iskoristiti (šum mrežnog kašnjenja guta signal), ali je jeftino da
-     se uradi ispravno. */
   if (h.length !== want.length) return false;
   let diff = 0;
   for (let i = 0; i < h.length; i++) diff |= h.charCodeAt(i) ^ want.charCodeAt(i);
@@ -47,9 +53,27 @@ async function fetchStats(url, key) {
   return (rows && rows[0]) || {};
 }
 
-/* Odvojeno od fetchStats — namerno manje pouzdano (Admin API oblik odgovora
-   nije potvrđen sa istim nivoom sigurnosti), pa NIKAD ne sme da obori ceo
-   izveštaj ako padne. Pozivalac ovo hvata u sopstveni try/catch. */
+async function fetchRawUserState(url, key) {
+  const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/user_state?select=user_id,data,updated_at', {
+    headers: { apikey: key, Authorization: 'Bearer ' + key }
+  });
+  if (!r.ok) throw new Error('user_state upit nije uspeo (' + r.status + ')');
+  return await r.json();
+}
+
+async function fetchAiUsageDays(url, key) {
+  const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/api_usage?select=user_id,day,calls&calls=gt.0&order=day.desc', {
+    headers: { apikey: key, Authorization: 'Bearer ' + key }
+  });
+  if (!r.ok) throw new Error('api_usage upit nije uspeo (' + r.status + ')');
+  const rows = await r.json();
+  const lastByUser = {};
+  for (const row of rows) {
+    if (!(row.user_id in lastByUser)) lastByUser[row.user_id] = row.day;
+  }
+  return lastByUser;
+}
+
 async function fetchUserList(url, key) {
   const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=200', {
     headers: { apikey: key, Authorization: 'Bearer ' + key }
@@ -58,41 +82,116 @@ async function fetchUserList(url, key) {
   const j = await r.json();
   const users = Array.isArray(j) ? j : (Array.isArray(j.users) ? j.users : []);
   return users.map(u => ({
+    id: u.id,
     email: u.email || '(bez email-a)',
     created: u.created_at || null,
     lastSignIn: u.last_sign_in_at || null
   }));
 }
 
+function mondayOfWeekUTC(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  const wd = (d.getUTCDay() + 6) % 7;
+  d.setUTCDate(d.getUTCDate() - wd);
+  return d.toISOString().slice(0, 10);
+}
+
+function deriveActivity(data, todayStr) {
+  const log = (data && data.log) || {};
+  const entries = Object.values(log).filter(e => e && e.status === 'done');
+
+  let lastWorkout = null;
+  for (const e of entries) {
+    const d = e.ts;
+    if (d && typeof d === 'string' && (!lastWorkout || d > lastWorkout.date)) {
+      lastWorkout = { date: d, km: typeof e.km === 'number' ? e.km : null };
+    }
+  }
+
+  const monday = mondayOfWeekUTC(todayStr);
+  let weekKm = 0;
+  for (const e of entries) {
+    if (typeof e.ts === 'string' && e.ts >= monday && e.ts <= todayStr && typeof e.km === 'number') {
+      weekKm += e.km;
+    }
+  }
+
+  const lastStravaSync = (data && data.strava && data.strava.lastSync)
+    ? new Date(data.strava.lastSync).toISOString() : null;
+
+  return {
+    lastWorkoutDate: lastWorkout ? lastWorkout.date : null,
+    weekKm: Math.round(weekKm * 10) / 10,
+    lastStravaSync
+  };
+}
+
 function fmtDate(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('sr-RS', { day: '2-digit', month: '2-digit', year: 'numeric' })
     + ' ' + d.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' });
+}
+function fmtDateOnly(ymd) {
+  if (!ymd) return '—';
+  const parts = ymd.split('-');
+  const y = parts[0], m = parts[1], d = parts[2];
+  return d && m && y ? (d + '.' + m + '.' + y + '.') : '—';
 }
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function buildHtml(stats, users, usersError) {
+function mergeRows(users, rawStates, aiDays, todayStr) {
+  const stateById = {};
+  for (const row of (rawStates || [])) stateById[row.user_id] = row;
+
+  return (users || []).map(u => {
+    const st = stateById[u.id];
+    const act = st ? deriveActivity(st.data, todayStr) : { lastWorkoutDate: null, weekKm: 0, lastStravaSync: null };
+    return {
+      email: u.email,
+      created: u.created,
+      lastSignIn: u.lastSignIn,
+      lastWorkoutDate: act.lastWorkoutDate,
+      weekKm: act.weekKm,
+      lastStravaSync: act.lastStravaSync,
+      lastAiDay: (aiDays && aiDays[u.id]) || null
+    };
+  });
+}
+
+function buildHtml(stats, rows, errors, todayStr) {
   const row = (label, val) =>
     `<tr><td style="padding:6px 14px;color:#7A7A86;font-size:13px">${esc(label)}</td>` +
     `<td style="padding:6px 14px;font-weight:700;font-size:15px">${esc(val)}</td></tr>`;
 
   let usersHtml;
-  if (usersError) {
-    usersHtml = `<p style="color:#7A7A86;font-size:13px">Lista korisnika nije uspela ovog puta: ${esc(usersError)}. Brojevi gore su i dalje tačni.</p>`;
-  } else if (!users.length) {
+  if (errors.users) {
+    usersHtml = `<p style="color:#7A7A86;font-size:13px">Lista korisnika nije uspela: ${esc(errors.users)}. Brojevi gore su i dalje tačni.</p>`;
+  } else if (!rows.length) {
     usersHtml = `<p style="color:#7A7A86;font-size:13px">Nema registrovanih korisnika.</p>`;
   } else {
-    usersHtml = `<table style="border-collapse:collapse;width:100%;font-size:13px">
-      <tr style="text-align:left;color:#7A7A86"><th style="padding:6px 14px">Email</th><th style="padding:6px 14px">Registrovan</th><th style="padding:6px 14px">Poslednja prijava</th></tr>
-      ${users.map(u => `<tr><td style="padding:5px 14px">${esc(u.email)}</td><td style="padding:5px 14px">${esc(fmtDate(u.created))}</td><td style="padding:5px 14px">${esc(fmtDate(u.lastSignIn))}</td></tr>`).join('')}
-      </table>`;
+    const th = t => `<th style="padding:6px 10px;white-space:nowrap">${t}</th>`;
+    const td = t => `<td style="padding:5px 10px;white-space:nowrap">${t}</td>`;
+    usersHtml = `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:12px">
+      <tr style="text-align:left;color:#7A7A86">${th('Email')}${th('Poslednji trening')}${th('Km ove nedelje')}${th('Strava sync')}${th('AI analiza')}${th('Prijava')}</tr>
+      ${rows.map(u => `<tr>
+        ${td(esc(u.email))}
+        ${td(esc(fmtDateOnly(u.lastWorkoutDate)))}
+        ${td(esc(u.weekKm) + ' km')}
+        ${td(esc(fmtDate(u.lastStravaSync)))}
+        ${td(esc(fmtDateOnly(u.lastAiDay)))}
+        ${td(esc(fmtDate(u.lastSignIn)))}
+      </tr>`).join('')}
+      </table></div>
+      ${errors.rawState ? `<p style="color:#7A7A86;font-size:12px;margin-top:8px">Napomena: podaci o treningu nisu uspeli da se učitaju (${esc(errors.rawState)}) — kolone treninga mogu biti prazne.</p>` : ''}
+      ${errors.aiUsage ? `<p style="color:#7A7A86;font-size:12px;margin-top:4px">Napomena: AI korišćenje nije uspelo da se učita (${esc(errors.aiUsage)}).</p>` : ''}`;
   }
 
-  return `<div style="font-family:-apple-system,sans-serif;max-width:520px;margin:0 auto;padding:20px;background:#0A0A0F;color:#F5F5F7">
+  return `<div style="font-family:-apple-system,sans-serif;max-width:640px;margin:0 auto;padding:20px;background:#0A0A0F;color:#F5F5F7">
     <div style="font-weight:800;font-size:18px;margin-bottom:4px">SUB<span style="color:#FA2E55">-20</span> — dnevni izveštaj</div>
     <div style="color:#7A7A86;font-size:12px;margin-bottom:18px">${esc(new Date().toLocaleDateString('sr-RS', { day: '2-digit', month: 'long', year: 'numeric' }))}</div>
     <table style="border-collapse:collapse;width:100%;background:#16161D;border-radius:12px;overflow:hidden;margin-bottom:22px">
@@ -101,11 +200,9 @@ function buildHtml(stats, users, usersError) {
       ${row('Aktivnih (7 dana)', stats.aktivnih_7d ?? 0)}
       ${row('Aktivnih (30 dana)', stats.aktivnih_30d ?? 0)}
       ${row('Novih (7 dana)', stats.novih_7d ?? 0)}
-      ${row('Prosek treninga/korisnik', stats.prosek_treninga ?? '—')}
-      ${row('Prosek VDOT unosa/korisnik', stats.prosek_vdot_unosa ?? '—')}
       ${row('Sa generisanim planom', stats.sa_generisanim_planom ?? 0)}
     </table>
-    <div style="font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#7A7A86;margin-bottom:8px">Registrovani korisnici</div>
+    <div style="font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#7A7A86;margin-bottom:8px">Aktivnost po korisniku</div>
     ${usersHtml}
   </div>`;
 }
@@ -129,14 +226,23 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: 'Statistika nije uspela: ' + e.message });
   }
 
-  let users = [], usersError = null;
-  try {
-    users = await fetchUserList(url, svcKey);
-  } catch (e) {
-    usersError = e.message; /* namerno ne rušimo ceo izveštaj zbog ovoga */
-  }
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const errors = {};
 
-  const html = buildHtml(stats, users, usersError);
+  let users = [];
+  try { users = await fetchUserList(url, svcKey); }
+  catch (e) { errors.users = e.message; }
+
+  let rawStates = [];
+  try { rawStates = await fetchRawUserState(url, svcKey); }
+  catch (e) { errors.rawState = e.message; }
+
+  let aiDays = {};
+  try { aiDays = await fetchAiUsageDays(url, svcKey); }
+  catch (e) { errors.aiUsage = e.message; }
+
+  const rows = mergeRows(users, rawStates, aiDays, todayStr);
+  const html = buildHtml(stats, rows, errors, todayStr);
 
   try {
     const r = await fetch('https://api.resend.com/emails', {
