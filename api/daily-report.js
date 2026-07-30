@@ -118,11 +118,18 @@ function deriveActivity(data, todayStr) {
 
   const lastStravaSync = (data && data.strava && data.strava.lastSync)
     ? new Date(data.strava.lastSync).toISOString() : null;
+  /* "Povezan" = objekat postoji uopšte (OAuth uspešno završen bar jednom),
+     ne da li je TRENUTNI token još važeći — to bi tražilo živ poziv ka
+     Stravi, nepotrebno za ovaj izveštaj. */
+  const stravaConnected = !!(data && data.strava);
+  const stravaAthlete = (data && data.strava && data.strava.athlete) || null;
 
   return {
     lastWorkoutDate: lastWorkout ? lastWorkout.date : null,
     weekKm: Math.round(weekKm * 10) / 10,
-    lastStravaSync
+    lastStravaSync,
+    stravaConnected,
+    stravaAthlete
   };
 }
 
@@ -150,7 +157,7 @@ function mergeRows(users, rawStates, aiDays, todayStr) {
 
   return (users || []).map(u => {
     const st = stateById[u.id];
-    const act = st ? deriveActivity(st.data, todayStr) : { lastWorkoutDate: null, weekKm: 0, lastStravaSync: null };
+    const act = st ? deriveActivity(st.data, todayStr) : { lastWorkoutDate: null, weekKm: 0, lastStravaSync: null, stravaConnected: false, stravaAthlete: null };
     return {
       email: u.email,
       created: u.created,
@@ -158,6 +165,8 @@ function mergeRows(users, rawStates, aiDays, todayStr) {
       lastWorkoutDate: act.lastWorkoutDate,
       weekKm: act.weekKm,
       lastStravaSync: act.lastStravaSync,
+      stravaConnected: act.stravaConnected,
+      stravaAthlete: act.stravaAthlete,
       lastAiDay: (aiDays && aiDays[u.id]) || null
     };
   });
@@ -176,13 +185,16 @@ function buildHtml(stats, rows, errors, todayStr) {
   } else {
     const th = t => `<th style="padding:6px 10px;white-space:nowrap">${t}</th>`;
     const td = t => `<td style="padding:5px 10px;white-space:nowrap">${t}</td>`;
+    const stravaCell = u => u.stravaConnected
+      ? esc(u.stravaAthlete || '(bez imena)') + '<br><span style="color:#7A7A86;font-size:11px">sync ' + esc(fmtDate(u.lastStravaSync)) + '</span>'
+      : '<span style="color:#7A7A86">nije povezano</span>';
     usersHtml = `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:12px">
-      <tr style="text-align:left;color:#7A7A86">${th('Email')}${th('Poslednji trening')}${th('Km ove nedelje')}${th('Strava sync')}${th('AI analiza')}${th('Prijava')}</tr>
+      <tr style="text-align:left;color:#7A7A86">${th('Email')}${th('Poslednji trening')}${th('Km ove nedelje')}${th('Strava')}${th('AI analiza')}${th('Prijava')}</tr>
       ${rows.map(u => `<tr>
         ${td(esc(u.email))}
         ${td(esc(fmtDateOnly(u.lastWorkoutDate)))}
         ${td(esc(u.weekKm) + ' km')}
-        ${td(esc(fmtDate(u.lastStravaSync)))}
+        ${td(stravaCell(u))}
         ${td(esc(fmtDateOnly(u.lastAiDay)))}
         ${td(esc(fmtDate(u.lastSignIn)))}
       </tr>`).join('')}
