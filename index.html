@@ -142,6 +142,7 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .day.t-tempo{border-left-color:var(--amber)}
 .day.t-int{border-left-color:var(--pink)}
 .day.t-lr{border-left-color:var(--cyan)}
+.day.t-rw{border-left-color:rgba(0,213,250,.55)}
 .day.t-snaga{border-left-color:rgba(155,232,33,.7)}
 .day.t-test,.day.t-trka{border-left-color:var(--cyan)}
 .day.t-rest{border-left-color:transparent;opacity:.5}
@@ -155,6 +156,7 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .t-tempo .day-type{color:var(--amber)}
 .t-int .day-type{color:var(--pink)}
 .t-lr .day-type{color:var(--cyan)}
+.t-rw .day-type{color:rgba(0,213,250,.9)}
 .t-snaga .day-type{color:var(--green)}
 .t-test .day-type,.t-trka .day-type{color:var(--cyan)}
 .t-rest .day-type{color:var(--txt3)}
@@ -545,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='84'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='86'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1011,7 +1013,7 @@ function weekPlanKm(w){return w.days.reduce((s,d)=>s+(d.km||0),0);}
 function weekOf(dateStr){for(const w of CUR_PLAN){const end=addD(w.start,6);if(dateStr>=w.start&&dateStr<=end)return w;}return null;}
 /* Poznati tipovi treninga. Sve van ovog skupa je NEPOVERLJIVO — moze doci iz
    uvezenog backup fajla (S.alts[id].tag, genPlan session.kind). */
-const TAGS={lako:'Lako',tempo:'Tempo',int:'Intervali',lr:'Dugo (LR)',snaga:'Snaga',odmor:'Odmor',trka:'TRKA',test:'Test'};
+const TAGS={lako:'Lako',rw:'Trčanje/hod',tempo:'Tempo',int:'Intervali',lr:'Dugo (LR)',snaga:'Snaga',odmor:'Odmor',trka:'TRKA',test:'Test'};
 /* Ranije: `[t]||t` — vracalo je SIROV ulaz za nepoznat tag, pa je zlonameran
    backup mogao da ubaci HTML kroz ime tipa treninga. Sad neutralan tekst. */
 function tagName(t){return TAGS[t]||'Trening';}
@@ -1101,6 +1103,7 @@ function runWalkText(rw){
    Aplikacija RPE već skuplja POSLE treninga; ovo je druga strana — cilj PRE. */
 const RPE_TARGET = {
   lako:  { min:3, max:4,  txt:'Razgovorno — možeš da pričaš u punim rečenicama' },
+  rw:    { min:3, max:4,  txt:'Razgovorno — deo za trčanje mora ostati lagan' },
   lr:    { min:4, max:5,  txt:'Razgovorno do postojano' },
   tempo: { min:7, max:8,  txt:'Prijatno teško — kratke rečenice' },
   int:   { min:8, max:9,  txt:'Teško — ubrzano disanje, bez pričanja' },
@@ -2975,13 +2978,65 @@ function generatePlan(inp){
      periodizovan ciklus (minWeeks). Default trainedRecently=true
      (stari pozivi bez ovog polja NE dobijaju bazu — non-breaking). */
   const BASE_THRESHOLD_KM = 30;   /* inženjerski prag, ne Danielsov podatak */
-  const BASE_WEEKS = 4;
   const trainedRecently = inp.trainedRecently !== false; /* default true */
-  const wantsBase = (inp.weeklyKm < BASE_THRESHOLD_KM) && !trainedRecently && (weeks >= prof.minWeeks + BASE_WEEKS);
-  const baseWeeks = wantsBase ? BASE_WEEKS : 0;
   /* Run/walk za pocetnike — evidencija (Galloway + istrazivanja kod starijih
      pocetnika): nize stope povreda i veca istrajnost nego neprekidno trcanje. */
   const useRunWalk = needsRunWalk(inp.weeklyKm, trainedRecently);
+
+  /* BAZNA FAZA — trajanje se VEZUJE za run/walk lestvicu.
+     Ranije fiksno 4 nedelje, sto je davalo besmislen plan: covek u N4 jos
+     radi 2 min trcanja / 1 min hoda, a u N5 dobija tempo na 6:09/km i
+     neprekidno dugo trcanje od 7.7 km. Kvalitet sme da udje TEK kad je
+     preslo na neprekidno trcanje — lestvica traje 8 nedelja, pa i baza. */
+  const RW_LADDER_WEEKS = 8;
+  const BASE_WEEKS = useRunWalk ? RW_LADDER_WEEKS : 4;
+  /* Ko treba bazu: pocetnik kome treba run/walk, ILI nizak obim bez redovnog
+     treninga (postojece pravilo). Mora ostati dovoljno nedelja za pun ciklus. */
+  const wantsBase = (useRunWalk || ((inp.weeklyKm < BASE_THRESHOLD_KM) && !trainedRecently))
+                    && (weeks >= prof.minWeeks + 2);
+  /* Ako plan nije dovoljno dug za punu bazu, daje se koliko moze — ali nikad
+     toliko da ne ostane bar minWeeks za periodizovan ciklus. */
+  const baseWeeks = wantsBase ? Math.max(0, Math.min(BASE_WEEKS, weeks - prof.minWeeks)) : 0;
+  /* Ako pocetniku nije stalo punih 8 nedelja baze, plan je prekratak da se
+     run/walk lestvica zavrsi pre nego sto kvalitet udje. Ne blokiramo — ali
+     se KAZE, umesto da tiho dobije tempo dok je jos na 2:1. */
+  /* STRUKTURNI PLAFON OBIMA (nadjen auditom).
+     Dugo trcanje je ograniceno na capF% nedelje, a svaki lagan dan na 50%
+     dugog trcanja. Te dve granice zajedno prave maksimum koji zavisi ISKLJUCIVO
+     od broja dana trcanja — ne od trazenog obima. Izmereno kroz generisanje
+     planova na 20-80 km/ned:
+        4 dana ~54 km   5 dana ~64 km   6 dana ~73 km   7 dana ~81 km
+     Bez ovog upozorenja, trkac koji trci 70 km/ned i izabere 4 dana dobijao je
+     plan koji dostize 54 km — MANJE nego sto vec trci, tiho, bez ijedne reci.
+     Granice se NE dizu (postoje iz bezbednosnih razloga: lagan dan koji se
+     priblizi dugom trcanju vise nije lagan dan) — nego se kaze istina. */
+  const VOL_CEIL_BY_DAYS = { 2:34, 3:45, 4:54, 5:64, 6:73, 7:81 };
+  const volCeil = VOL_CEIL_BY_DAYS[runDays] || 81;
+  if(inp.weeklyKm > volCeil){
+    const trebaDana = Object.keys(VOL_CEIL_BY_DAYS).map(Number)
+      .filter(d => VOL_CEIL_BY_DAYS[d] >= inp.weeklyKm).sort((a,b)=>a-b)[0];
+    dayWarnings.push('Na ' + runDays + ' dana trčanja plan realno dostiže oko ' + volCeil +
+      ' km/ned — manje od traženih ' + inp.weeklyKm + ' km. Razlog: dugo trčanje i lagani dani imaju ' +
+      'bezbednosne granice, pa se veći obim ne može rasporediti na tako malo dana.' +
+      (trebaDana ? ' Za ' + inp.weeklyKm + ' km trebalo bi ti ' + trebaDana + ' dana trčanja.'
+                 : ' Za toliki obim trebalo bi ti 7 dana trčanja, i verovatno dupli treninzi.'));
+  }
+
+  /* DONJA granica — ogledalo gornje. Svaki dan trcanja ima pod od ~3 km
+     (ispod toga trening nema smisla), pa runDays*3 je minimum koji plan moze
+     da isporuci. Trazenih 5 km na 6 dana = 0.8 km po treningu; plan tada daje
+     18 km i deload ne moze da smanji ispod poda. */
+  const volFloor = runDays * 3;
+  if(inp.weeklyKm > 0 && inp.weeklyKm < volFloor){
+    dayWarnings.push('Na ' + runDays + ' dana trčanja minimum je oko ' + volFloor +
+      ' km/ned (ispod ~3 km po treningu nema smisla). Tražio si ' + inp.weeklyKm +
+      ' km — plan će biti veći od toga. Za tako nizak obim uzmi manje dana trčanja.');
+  }
+
+  if(useRunWalk && baseWeeks < RW_LADDER_WEEKS){
+    dayWarnings.push('Plan je kratak za početnika: run/walk lestvica traje 8 nedelja, a ovde staje ' +
+      baseWeeks + '. Kvalitetni treninzi počinju dok si još na pauzama za hod — uzmi ih blaže, ili pomeri trku.');
+  }
   const qualWeeks = weeks - baseWeeks;  /* nedelje u kojima se odvija kvalitetni ciklus */
 
   /* volumen: start→vrhunac uz +8% cap, deload svake 4., taper 2 nedelje (NEPROMENJENO — kalibrisano na etalon, distancno-agnostičko po dizajnu) */
@@ -3011,7 +3066,12 @@ function generatePlan(inp){
     else if(w<=baseWeeks){
       /* Bazne nedelje: postepen blag rast od starta (deo iste rampe, ne nezavisan
          niz). Bez ovoga kvalitetni ciklus posle baze skače kao da baze nema. */
-      if(w===baseWeeks && baseWeeks>=DELOAD_EVERY && w%DELOAD_EVERY===0){ vols.push(r1(vols[vols.length-1]*DELOAD_F)); }
+      /* BUG (nadjen auditom): deload se ranije primenjivao SAMO ako je bazna
+         nedelja ujedno i POSLEDNJA (w===baseWeeks). Ali nedelja se oznacava kao
+         deload cim je w%4===0 — pa je npr. N4 od 8 baznih nedelja nosila oznaku
+         DELOAD a dobijala normalan rast (izmereno: N3=11.3km, N4=11.7km). Sada
+         se deload primenjuje na SVAKU cetvrtu baznu nedelju, kao i drugde. */
+      if(w%DELOAD_EVERY===0 && vols.length){ vols.push(r1(vols[vols.length-1]*DELOAD_F)); }
       else { cur = vols.length? Math.min(vols[vols.length-1]*growMax, peakTarget) : cur; vols.push(r1(cur)); }
     }
     else if(w%DELOAD_EVERY===0 && w<weeks-2){ vols.push(r1(vols[vols.length-1]*DELOAD_F)); }
@@ -3086,7 +3146,7 @@ function generatePlan(inp){
         if(role==='lr'){
           const rwLR = useRunWalk ? runWalkFor(w, inp.weeklyKm, trainedRecently) : null;
           if(rwLR){
-            const dLR = D(dow,'lr',alloc.lr,`${alloc.lr} km — ${runWalkText(rwLR)}, najduži te nedelje`);
+            const dLR = D(dow,'rw',alloc.lr,`${alloc.lr} km — ${runWalkText(rwLR)}, najduži te nedelje`);
             dLR.runWalk = { runSec:rwLR.runSec, walkSec:rwLR.walkSec, label:rwLR.label };
             days.push(dLR);
           } else {
@@ -3107,7 +3167,7 @@ function generatePlan(inp){
         if(rw){
           /* Pocetnik: lagani dan je run/walk. Strides se NE dodaju — ubrzanja
              pretpostavljaju osnovu koju ovaj korisnik jos gradi. */
-          const dd = D(dow,'lako',km,`${km} km — ${runWalkText(rw)}, lagano`);
+          const dd = D(dow,'rw',km,`${km} km — ${runWalkText(rw)}`);
           dd.runWalk = { runSec:rw.runSec, walkSec:rw.walkSec, label:rw.label };
           days.push(dd);
         } else {
@@ -3151,7 +3211,16 @@ function generatePlan(inp){
           continue;
         }
         if(role==='lr'){
-          days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km LR (Z2) @ ~${fmtP(pLR)}/km — najduže trčanje nedelje`));
+          const rwL = useRunWalk ? runWalkFor(w, inp.weeklyKm, trainedRecently) : null;
+          if(rwL){
+            /* Dugo trcanje MORA ostati run/walk dok je covek na lestvici —
+               inace bi posle 3 km trcanje/hod dobio 7.7 km neprekidno. */
+            const dL = D(dow,'rw',alloc.lr,`${alloc.lr} km — ${runWalkText(rwL)}, najduži te nedelje`);
+            dL.runWalk = { runSec:rwL.runSec, walkSec:rwL.walkSec, label:rwL.label };
+            days.push(dL);
+          } else {
+            days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km LR (Z2) @ ~${fmtP(pLR)}/km — najduže trčanje nedelje`));
+          }
           continue;
         }
         if(sessions[dow]){ days.push(sessions[dow]); pushPredQs(sessions[dow],w); continue; }
@@ -3175,7 +3244,7 @@ function generatePlan(inp){
           /* Pocetnik i u kvalitetnoj fazi: LAGANI dani ostaju run/walk dok
              lestvica ne dodje do neprekidnog. Kvalitetni dani (int/tempo) NISU
              run/walk — oni imaju sopstvenu strukturu sa pauzama. */
-          const ddQ = D(dow,'lako',km,`${km} km — ${runWalkText(rwQ)}, lagano`);
+          const ddQ = D(dow,'rw',km,`${km} km — ${runWalkText(rwQ)}`);
           ddQ.runWalk = { runSec:rwQ.runSec, walkSec:rwQ.walkSec, label:rwQ.label };
           days.push(ddQ);
         } else {
@@ -3184,6 +3253,32 @@ function generatePlan(inp){
           days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
         }
         ei++;
+      }
+    }
+    /* IZRAVNAVANJE RASTA (nadjeno auditom).
+       Ciljni niz obima uredno postuje +8% (10% maraton), ali STVARNI zbir
+       dana odstupa jer su kvalitetne sesije diskretne (ne mogu 3.7 intervala).
+       Izmereno pre popravke: medijana 6.4% ali 35% nedelja preko 8%, najgore
+       18.6%. Ovde se visak SECE, i to iskljucivo sa LAGANIH dana — kvalitet i
+       dugo trcanje se ne diraju (imaju svoju strukturu i namenu), a pod od
+       3 km po danu se postuje. Deload/taper/trka se preskacu. */
+    if(!isDeload && !isTaper1 && !isRace && plan.weeks.length){
+      const prevVol = plan.weeks[plan.weeks.length-1].days.reduce((s,d)=>s+(d.km||0),0);
+      const capRast = prof.useM ? 1.10 : GROW_MAX;
+      const limit = prevVol * capRast;
+      let sada = days.reduce((s,d)=>s+(d.km||0),0);
+      if(prevVol > 0 && sada > limit){
+        const laki = days.filter(d=>(d.tag==='lako'||d.tag==='rw') && d.km > 3);
+        let visak = sada - limit;
+        /* skracuje od NAJDUZEG laganog dana nanize — ravnomernije nego redom */
+        laki.sort((a,b)=>b.km-a.km);
+        for(const d of laki){
+          if(visak <= 0.05) break;
+          const moze = d.km - 3;
+          const skini = Math.min(moze, visak);
+          if(skini > 0){ d.km = r1(d.km - skini); visak -= skini;
+            d.desc = (d.desc||'').replace(/^[\d.,]+ km/, d.km + ' km'); }
+        }
       }
     }
     plan.weeks.push({ w, vol: r1(days.reduce((s,d)=>s+(d.km||0),0)), days, deload:isDeload });
