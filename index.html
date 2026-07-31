@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='86'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='88'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1036,9 +1036,9 @@ function sessCore(d){
     if(s.type==='fartlek'&&s.reps)         return `${s.reps}× ${s.repSec} s @ ${fmtTempo(s.paceSec)}/km`;
   }
   const desc=d.desc||'';
-  const afterWU=desc.split(/km\s*WU\s*\+\s*/i)[1];
+  const afterWU=desc.split(/km\s*(?:WU|zagrevanje)\s*\+\s*/i)[1];
   if(afterWU){
-    const core=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*CD/i)[0].trim();
+    const core=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*(?:CD|smirivanje)/i)[0].trim();
     if(core)return core;
   }
   /* nije kvalitetna sesija (lako/LR/snaga) — očisti zagrade, ostavi suštinu */
@@ -1155,11 +1155,11 @@ function sessBreakdown(d){
     return rows.length>=2?rows:null;
   }
   const desc=d.desc||'';
-  const mWU=desc.match(/([\d.,]+)\s*km\s*WU/i);
-  const mCD=desc.match(/([\d.,]+)\s*km\s*CD/i);
-  const afterWU=desc.split(/km\s*WU\s*\+\s*/i)[1];
+  const mWU=desc.match(/([\d.,]+)\s*km\s*(?:WU|zagrevanje)/i);
+  const mCD=desc.match(/([\d.,]+)\s*km\s*(?:CD|smirivanje)/i);
+  const afterWU=desc.split(/km\s*(?:WU|zagrevanje)\s*\+\s*/i)[1];
   let work=null;
-  if(afterWU)work=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*CD/i)[0].trim();
+  if(afterWU)work=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*(?:CD|smirivanje)/i)[0].trim();
   const mRest=desc.match(/\((\s*\d+\s*(?:min|s)\b[^)]*)\)/i);
   if(mWU)rows.push(['Zagrevanje',mWU[1].replace(',','.')+' km']);
   if(work)rows.push(['Radni deo',work,true]);
@@ -1180,7 +1180,7 @@ function sessNote(d){
   const parts=[];
   const paren=body.match(/\(([^)]+)\)/);
   if(paren&&!/^\s*\d+(?:[.,]\d+)?\s*(?:min|s)\b/i.test(paren[1]))parts.push(paren[1].trim());
-  const tail=body.match(/km\s*CD\s*[·•]\s*(.+)$/i);
+  const tail=body.match(/km\s*(?:CD|smirivanje)\s*[·•]\s*(.+)$/i);
   if(tail)parts.push(tail[1].trim());
   return parts.join(' · ');
 }
@@ -2725,7 +2725,7 @@ function mkBroken(dow,w,weeks,vol,pT){
   const repKm = phase<0.15 ? 1.6 : phase<0.25 ? 2.0 : 2.4;
   const reps=Math.max(2, Math.round(total/repKm));
   const repM=Math.round(repKm*1000/100)*100;
-  return sessInt(dow,2,reps,repM,pT,90,2,'Tempo (broken)');
+  return sessInt(dow,2,reps,repM,pT,90,2,'Tempo isprekidan');
 }
 function mkProg(dow,vol,pT,pE){
   const total=r1(Math.max(5, Math.min(vol*0.20, 10)));
@@ -2809,7 +2809,15 @@ function buildQuality(w,weeks,slotRole,effQ,vol,pI,pT,pE,isTaper1,dow,racePace,q
    dana; ne trkačku nedelju — aktivacioni 200m dan ima drugačiji
    model pauze, distancni a ne vremenski, nije pokriven ovom v1).
    ============================================================ */
-function fmtRest(sec){ return (sec>=60 && sec%60===0) ? Math.round(sec/60)+' min' : sec+' s'; }
+/* Pauza: ispod 90 s u sekundama, iznad u minutima. Ranije je davalo
+   "164 s hod" / "179 s hod" — tacno, ali se ne cita kao vreme koje covek
+   meri na stazi. Sada "2:45 min". */
+function fmtRest(sec){
+  if(sec % 60 === 0 && sec >= 60) return Math.round(sec/60)+' min';  /* tacan minut uvek kao minut */
+  if(sec < 90) return sec+' s';
+  const m=Math.floor(sec/60), s=sec%60;
+  return m+':'+String(s).padStart(2,'0')+' min';
+}
 function sessKm(s){
   if(s.type==='int')    return r1(s.wuKm + s.reps*s.repM/1000 + s.cdKm + Math.max(s.reps-1,0)*0.15);
   if(s.type==='pyramid')return r1(s.wuKm + s.reps.reduce((a,b)=>a+b,0)/1000 + s.cdKm + (s.reps.length-1)*0.15);
@@ -2819,20 +2827,20 @@ function sessKm(s){
 }
 function sessDesc(s){
   if(s.type==='int'){
-    const restWord = s.kind==='Tempo (broken)' ? 'float' : 'hod';
-    return `${s.kind} — ${s.wuKm} km WU + ${s.reps}×${s.repM} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} ${restWord}) + ${s.cdKm} km CD`;
+    const restWord = s.kind==='Tempo isprekidan' ? 'laganog trčanja' : 'hoda';
+    return `${s.kind} — ${s.wuKm} km zagrevanje + ${s.reps}×${s.repM} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} ${restWord}) + ${s.cdKm} km smirivanje`;
   }
   if(s.type==='pyramid')
-    return `${s.kind} — ${s.wuKm} km WU + ${s.reps.join('-')} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} hod između) + ${s.cdKm} km CD`;
+    return `${s.kind} — ${s.wuKm} km zagrevanje + ${s.reps.join('-')} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} hoda između ponavljanja) + ${s.cdKm} km smirivanje`;
   if(s.type==='fartlek')
-    return `Fartlek — ${s.wuKm} km WU + ${s.reps}×${s.repSec} s brzo @ ~${fmtP(s.paceSec)}/km (${s.restSec} s lagani džog) + ${s.cdKm} km CD`;
+    return `Fartlek — ${s.wuKm} km zagrevanje + ${s.reps}×${s.repSec} s brzo @ ~${fmtP(s.paceSec)}/km (${s.restSec} s laganog trčanja) + ${s.cdKm} km smirivanje`;
   if(s.type==='prog')
-    return `Progresivno — ${s.qKm} km: prve 2/3 @ ~${fmtP(s.easyPaceSec)}/km → poslednja trećina @ ${fmtP(s.paceSec)}/km`;
-  return `${s.kind||'Tempo'} — ${s.wuKm} km WU + ${s.qKm} km @ ${fmtP(s.paceSec)}/km + ${s.cdKm} km CD`;
+    return `Progresivno — ${s.qKm} km: prve dve trećine @ ~${fmtP(s.easyPaceSec)}/km → poslednja trećina @ ${fmtP(s.paceSec)}/km`;
+  return `${s.kind||'Tempo'} — ${s.wuKm} km zagrevanje + ${s.qKm} km @ ${fmtP(s.paceSec)}/km + ${s.cdKm} km smirivanje`;
 }
 function sessInt(dow,wuKm,reps,repM,paceSec,restSec,cdKm,kind){
   const session={type:'int',kind:kind||'Intervali',wuKm,reps,repM,paceSec,restSec,cdKm,overrides:{}};
-  return {dow,tag:kind==='Tempo (broken)'?'tempo':'int',km:sessKm(session),desc:sessDesc(session),session};
+  return {dow,tag:kind==='Tempo isprekidan'?'tempo':'int',km:sessKm(session),desc:sessDesc(session),session};
 }
 function sessTempo(dow,wuKm,qKm,paceSec,cdKm,kind){
   const session={type:'tempo',kind:kind||'Tempo',wuKm,qKm,paceSec,cdKm,overrides:{}};
@@ -3125,7 +3133,7 @@ function generatePlan(inp){
       const distKm=(raceDistM/1000).toFixed(1).replace(/\.0$/,'').replace('.',',');
       const mk={
         [raceDow-3]: dw=>D(dw,'lako',3,`3 km shakeout (skroz lagano) + lagani core`),
-        [raceDow-2]: dw=>D(dw,'int',3.7,`1.5 km WU + 6×200 m @ ${fmtP(Math.max(rp-4,pI-6))}/km (200 m hod) + 1 km CD (aktivacija)`),
+        [raceDow-2]: dw=>D(dw,'int',3.7,`1.5 km zagrevanje + 6×200 m @ ${fmtP(Math.max(rp-4,pI-6))}/km (200 m hoda) + 1 km smirivanje — aktivacija`),
         [raceDow-1]: dw=>D(dw,'lako',2,`2 km shakeout + lagana mobilnost`),
         [raceDow]:   dw=>D(dw,'trka',raceDistM/1000,`🏁 TRKA ${distKm} km (${prof.name}) — cilj ${fmtP(inp.goalSec||a.predictedSec)} / ritam ${fmtP(rp)}/km`)
       };
@@ -3146,7 +3154,7 @@ function generatePlan(inp){
         if(role==='lr'){
           const rwLR = useRunWalk ? runWalkFor(w, inp.weeklyKm, trainedRecently) : null;
           if(rwLR){
-            const dLR = D(dow,'rw',alloc.lr,`${alloc.lr} km — ${runWalkText(rwLR)}, najduži te nedelje`);
+            const dLR = D(dow,'rw',alloc.lr,`${alloc.lr} km — ${runWalkText(rwLR)}, najduže trčanje te nedelje`);
             dLR.runWalk = { runSec:rwLR.runSec, walkSec:rwLR.walkSec, label:rwLR.label };
             days.push(dLR);
           } else {
@@ -3171,7 +3179,7 @@ function generatePlan(inp){
           dd.runWalk = { runSec:rw.runSec, walkSec:rw.walkSec, label:rw.label };
           days.push(dd);
         } else {
-          const strides = (ei%2===0) ? ' + 6×20 s strides (lagani ubrzani koraci, pun oporavak)' : '';
+          const strides = (ei%2===0) ? ' + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)' : '';
           days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
         }
         ei++;
@@ -3215,11 +3223,11 @@ function generatePlan(inp){
           if(rwL){
             /* Dugo trcanje MORA ostati run/walk dok je covek na lestvici —
                inace bi posle 3 km trcanje/hod dobio 7.7 km neprekidno. */
-            const dL = D(dow,'rw',alloc.lr,`${alloc.lr} km — ${runWalkText(rwL)}, najduži te nedelje`);
+            const dL = D(dow,'rw',alloc.lr,`${alloc.lr} km — ${runWalkText(rwL)}, najduže trčanje te nedelje`);
             dL.runWalk = { runSec:rwL.runSec, walkSec:rwL.walkSec, label:rwL.label };
             days.push(dL);
           } else {
-            days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km LR (Z2) @ ~${fmtP(pLR)}/km — najduže trčanje nedelje`));
+            days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km LR (Z2) @ ~${fmtP(pLR)}/km — najduže trčanje te nedelje`));
           }
           continue;
         }
@@ -3249,7 +3257,7 @@ function generatePlan(inp){
           days.push(ddQ);
         } else {
           const strides = isTaper1 ? ''
-            : (ei===0 ? (isDeload ? ' + 4×15 s strides (lagani ubrzani koraci)' : ' + 6×20 s strides (lagani ubrzani koraci, pun oporavak)') : '');
+            : (ei===0 ? (isDeload ? ' + 4×15 s ubrzanja (lagani ubrzani koraci)' : ' + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)') : '');
           days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
         }
         ei++;
@@ -3263,7 +3271,14 @@ function generatePlan(inp){
        dugo trcanje se ne diraju (imaju svoju strukturu i namenu), a pod od
        3 km po danu se postuje. Deload/taper/trka se preskacu. */
     if(!isDeload && !isTaper1 && !isRace && plan.weeks.length){
-      const prevVol = plan.weeks[plan.weeks.length-1].days.reduce((s,d)=>s+(d.km||0),0);
+      /* BUG koji sam sam napravio: posle DELOAD nedelje obim NAMERNO skace
+         nazad — to je smisao deloada. Poredjenje sa deload nedeljom je videlo
+         +41% i seklo lagane dane do poda od 3 km (izmereno: 3 km lako pored
+         17 km dugog trcanja). Isti obrazac koji vols[] vec koristi: kad je
+         prethodna nedelja bila deload, poredi se sa nedeljom PRE nje. */
+      const prevW = plan.weeks[plan.weeks.length-1];
+      const baseW = (prevW.deload && plan.weeks.length>=2) ? plan.weeks[plan.weeks.length-2] : prevW;
+      const prevVol = baseW.days.reduce((s,d)=>s+(d.km||0),0);
       const capRast = prof.useM ? 1.10 : GROW_MAX;
       const limit = prevVol * capRast;
       let sada = days.reduce((s,d)=>s+(d.km||0),0);
@@ -3283,6 +3298,34 @@ function generatePlan(inp){
     }
     plan.weeks.push({ w, vol: r1(days.reduce((s,d)=>s+(d.km||0),0)), days, deload:isDeload });
   }
+  /* PROVERA STVARNO ISPORUCENOG OBIMA (nadjeno prijavom korisnika:
+     "izaberem 45 km, prva nedelja ide na 37 km, a ja vec trcim 45").
+     Ranije upozorenje je gadjalo VRHUNAC plana, sto je pogresna stvar —
+     korisnika zanima da li PRVA nedelja odgovara onome sto vec trci.
+     Ovo se racuna posle sklapanja, iz stvarnih dana, ne iz procene. */
+  (function(){
+    /* Gleda PRVU punu nedelju — to je ono sto korisnik prvo vidi i sto mora
+       da odgovara njegovom trenutnom obimu. Ranije je gledalo maksimum prve
+       tri, sto je maskiralo bas onu nedelju na koju se korisnik zali. */
+    const prve = plan.weeks.filter(w => !w.deload && w.w <= 3);
+    if(!prve.length || !inp.weeklyKm) return;
+    const stvarno = prve[0].days.reduce((s,d)=>s+(d.km||0),0);
+    const manjak = 1 - stvarno/inp.weeklyKm;
+    /* Prag 15%: manje od toga je normalno postepeno uvodjenje u plan
+       (prva nedelja obicno ima jedan kvalitetni trening manje). Preko toga
+       je strukturna nemogucnost — obim ne staje u izabrani broj dana. */
+    if(manjak > 0.15){
+      const easyCount = Math.max(runDays - 1 - effQ, 0);
+      const predlog = easyCount <= 1
+        ? ' Na ' + runDays + ' dana sa ' + effQ + ' kvalitetna treninga ostaje samo ' +
+          (easyCount===1?'jedan lagan dan':'nijedan lagan dan') +
+          ', pa se toliki obim ne moze bezbedno rasporediti — lagan dan bi morao da bude dug koliko i dugo trcanje. Dodaj jedan dan trcanja.'
+        : ' Dodaj jedan dan trcanja ili smanji broj kvalitetnih treninga.';
+      dayWarnings.push('Tražio si ' + inp.weeklyKm + ' km/ned, a plan prve nedelje daje oko ' +
+        stvarno.toFixed(0) + ' km.' + predlog);
+    }
+  })();
+
   /* Filtriraj dane PRE datuma generisanja iz nedelje 1 (v. komentar kod
      `start` gore) — samo nedelja 1 može imati dane pre inp.startDate, jer je
      start=mondayOfWeek (može biti u prošlosti), a sve ostale nedelje počinju
