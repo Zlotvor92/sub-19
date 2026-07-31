@@ -545,7 +545,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='79'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='81'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1147,7 +1147,9 @@ function streak(today){
 }
 function kneeStatus(today){
   const from=addD(today,-6);
-  const win=S.knee.filter(k=>k.date>=from&&k.date<=today);
+  /* (S.knee||[]) — ostecen ili rucno izmenjen backup moze da postavi ovo na
+     null; bez zastite cela funkcija puca i obara Danas ekran. */
+  const win=(S.knee||[]).filter(k=>k.date>=from&&k.date<=today);
   const mx=win.reduce((m,k)=>Math.max(m,k.pain),0);
   const ge3=win.filter(k=>k.pain>=3).length;
   if(ge3>=3)return{cls:'stop',t:'FIZIJATAR',s:'3+ dana sa bolom ≥3 u poslednjih 7 dana — zakaži pregled.'};
@@ -1155,6 +1157,168 @@ function kneeStatus(today){
   if(mx>=3)return{cls:'warn',t:'PAZI',s:'Bol 3–5 u poslednjih 7 dana. Prati i smanji ako raste.'};
   return{cls:'ok',t:'Bez povreda',s:'0 = bez bola · 3–5 = pazi · 6+ = stani · 3+ dana ≥3 u 7 dana = fizijatar'};
 }
+/* ============ PRILAGOĐAVANJE PLANA POVREDI ============
+   Koristi ISTE pragove kao kneeStatus() — namerno, da app ne govori dve
+   različite priče o istom bolu. Pragovi su vlasnikovi, ne izmišljeni ovde:
+     bol 3–5              -> PAZI    -> kvalitet postaje lako, obim smanjen
+     bol 6+               -> STANI   -> odmor od trčanja + stručna pomoć
+     3+ dana s bolom ≥3   -> FIZIJATAR -> isto, ali naglašeno
+
+   ZAŠTO PREDLOG, A NE TIHA IZMENA: kod jakog bola ispravan odgovor nije
+   "tiho smanji obim da nastavi da trči" — to poručuje "sređeno je, samo
+   napred". Predlog koji korisnik vidi i svesno prihvati čuva i njegovu
+   kontrolu i tačnu poruku o ozbiljnosti. */
+
+/* FAZA POVRATKA POSLE POVREDE.
+   Nagli povratak na pun obim posle pauze je klasičan način da se povreda vrati
+   — zato postepeno: 50% → 70% → 85% → pun obim, po nedelju dana svaki korak.
+
+   Ne čuva nikakvo NOVO stanje — sve se izvodi iz S.knee istorije. Time nema
+   migracije šeme, nema rizika da marker ostane zaglavljen, i samo se ispravi
+   ako korisnik obriše ili izmeni unos bola. */
+function returnToRunPhase(today){
+  today = today || TODAY;
+  const knee = (S.knee||[]).filter(k => k && typeof k.date === 'string' && typeof k.pain === 'number');
+  if(!knee.length) return null;
+
+  /* Faza povratka ima smisla SAMO ako je bilo ozbiljne epizode — ne posle
+     jednog dana blage nelagode. Isti pragovi kao kneeStatus. */
+  const lookback = addD(today, -42);
+  const inWindow = knee.filter(k => k.date >= lookback && k.date <= today);
+  const hadSerious = inWindow.some(k => k.pain >= 6) || inWindow.filter(k => k.pain >= 3).length >= 3;
+  if(!hadSerious) return null;
+
+  /* Ako bol JOŠ traje, ovo nije povratak nego aktivna povreda — tim se bavi
+     injuryProposal, ne ova funkcija. */
+  if(kneeStatus(today).cls !== 'ok') return null;
+
+  const painful = inWindow.filter(k => k.pain >= 3).sort((a,b) => a.date < b.date ? 1 : -1);
+  if(!painful.length) return null;
+  const daysSince = diffD(painful[0].date, today);
+
+  /* VAZNO: pojasevi se mere od KRAJA akutne faze, ne od poslednjeg bola.
+     kneeStatus gleda poslednjih 7 dana — dok taj prozor ne prodje, ovo se i
+     ne poziva (gore je provera cls!=='ok'). Da su pojasevi racunati od datuma
+     bola, prva nedelja (50%) bi trajala tacno JEDAN dan — 7. dan — pa bi
+     odmah skocila na 70%. Ovako svaka faza dobija punu nedelju. */
+  const sinceClear = daysSince - 7;
+  if(sinceClear < 0) return null;
+
+  if(sinceClear <= 6)  return { week:1, pct:0.50, daysSince, since:painful[0].date };
+  if(sinceClear <= 13) return { week:2, pct:0.70, daysSince, since:painful[0].date };
+  if(sinceClear <= 20) return { week:3, pct:0.85, daysSince, since:painful[0].date };
+  return null;   /* 3 nedelje posle prestanka bola — pun obim */
+}
+
+/* Koji dani se predlažu za izmenu i kako. Čista funkcija — ništa ne menja,
+   samo vraća predlog. Time je testabilna nezavisno od DOM-a i od save(). */
+function injuryProposal(today){
+  today = today || TODAY;
+  const st = kneeStatus(today);
+
+  /* Bol je prošao — ali ako je bila ozbiljna epizoda, predlaže se POSTEPEN
+     povratak umesto skoka na pun obim. */
+  if(st.cls === 'ok'){
+    const ph = returnToRunPhase(today);
+    if(!ph) return null;
+    const pctTxt = Math.round(ph.pct*100) + '%';
+    const changes = [];
+    for(let i=0; i<7; i++){
+      const date = addD(today, i);
+      const d = BY_DATE[date];
+      if(!d || d.rest) continue;
+      if(d.tag === 'trka' || d.tag === 'test' || d.tag === 'snaga') continue;
+      /* KLJUČNO: računa se od ORIGINALNE kilometraže (origKm), ne od trenutne.
+         Inače bi drugi put dalo 70% od već smanjenih 50% = 35%. */
+      const baseKm = (d.origKm != null ? d.origKm : d.km) || 0;
+      if(!baseKm) continue;
+      const newKm = Math.max(2, Math.round(baseKm * ph.pct * 10)/10);
+      if(newKm >= baseKm) continue;
+      /* Prve dve nedelje povratka: bez kvalitetnih treninga, samo lagano. */
+      const origTag = d.origTag || d.tag;
+      const toTag = (ph.week <= 2 && (origTag === 'int' || origTag === 'tempo')) ? 'lako' : origTag;
+      changes.push({ id:d.id, date, from:d.tag, to:toTag, km:newKm,
+        desc: (toTag === 'lako' ? 'Lagano ' : '') + newKm + ' km — povratak posle povrede, ' + pctTxt + ' obima' });
+    }
+    if(!changes.length) return null;
+    return {
+      level: 'return', week: ph.week, pct: ph.pct, maxPain: null, parts: [],
+      changes,
+      title: 'Povratak — nedelja ' + ph.week + ' od 3',
+      message: 'Bez bola ' + ph.daysSince + ' ' + (ph.daysSince === 1 ? 'dan' : 'dana') +
+        '. Predlog: ' + pctTxt + ' planiranog obima narednih ' + changes.length + ' treninga' +
+        (ph.week <= 2 ? ', bez kvalitetnih treninga' : '') +
+        '. Postepen povratak — nagli skok na pun obim je čest način da se povreda vrati. Ako bol vrati, prekini.'
+    };
+  }
+
+  const from = addD(today, -6);
+  const recent = (S.knee||[]).filter(k => k.date>=from && k.date<=today && k.pain>=3);
+  if(!recent.length) return null;
+
+  const maxPain = recent.reduce((m,k)=>Math.max(m,k.pain), 0);
+  /* koji delovi tela — za poruku, da korisnik vidi na osnovu čega je predlog */
+  const parts = [...new Set(recent.map(k=>partName(k.part)))];
+
+  const stop = (st.cls === 'stop');
+  const horizon = stop ? 7 : 5;          /* koliko dana unapred diramo */
+
+  const changes = [];
+  for(let i=0; i<horizon; i++){
+    const date = addD(today, i);
+    const d = BY_DATE[date];
+    if(!d || d.rest) continue;
+    /* Dan trke se NIKAD ne menja automatski — to je odluka koju čovek
+       donosi sam, ne algoritam nedelju dana ranije. */
+    if(d.tag === 'trka' || d.tag === 'test') continue;
+    /* Snaga ostaje — nije udarno opterećenje na isti način kao trčanje. */
+    if(d.tag === 'snaga') continue;
+
+    if(stop){
+      changes.push({ id:d.id, date, from:d.tag, to:'odmor', km:null,
+        desc:'Odmor — bol ' + maxPain + '/10 prijavljen (' + parts.join(', ') + ')' });
+    } else {
+      const isQuality = (d.tag==='int' || d.tag==='tempo' || d.tag==='lr');
+      const oldKm = d.km || 0;
+      /* kvalitet -> lako na ~60% km; lagano -> isti tip, ~75% km.
+         Brojevi su konzervativni i namerno grubi — ovo je smanjenje
+         opterećenja, ne precizno doziranje. */
+      const newKm = oldKm ? Math.max(2, Math.round(oldKm * (isQuality ? 0.6 : 0.75) * 10)/10) : null;
+      if(!isQuality && newKm === oldKm) continue;   /* nema stvarne promene */
+      changes.push({ id:d.id, date, from:d.tag, to:'lako', km:newKm,
+        desc:'Lagano ' + (newKm!=null?newKm+' km':'') + ' — smanjeno zbog bola ' + maxPain + '/10' });
+    }
+  }
+
+  if(!changes.length) return null;
+
+  return {
+    level: stop ? 'stop' : 'warn',
+    maxPain, parts, changes,
+    title: st.t,
+    /* Poruka je namerno različita po ozbiljnosti — kod jakog bola app NE
+       glumi da je problem rešen smanjenjem kilometraže. */
+    message: stop
+      ? 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Plan predlaže ODMOR od trčanja narednih ' + changes.length + ' treninga. Ovo nije nešto što aplikacija može da izleči — ako bol traje ili se pogoršava, javi se fizijatru ili lekaru.'
+      : 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Predlog: kvalitetni treninzi postaju lagani, obim smanjen narednih ' + changes.length + ' treninga. Ako bol poraste na 6+ ili potraje, prekini i javi se stručnjaku.'
+  };
+}
+
+/* Primeni predlog. Odvojeno od injuryProposal() namerno — predlog se može
+   prikazati i odbiti bez ikakve izmene stanja. */
+function applyInjuryProposal(prop){
+  if(!prop || !prop.changes || !prop.changes.length) return 0;
+  let n = 0;
+  prop.changes.forEach(ch => {
+    const d = BY_ID[ch.id];
+    if(!d) return;
+    const r = setAlt(ch.id, { tag: ch.to, km: ch.km, desc: ch.desc });
+    if(r && r.ok) n++;
+  });
+  if(n){ rebuildDateIndex(); save(); }
+  return n;
+}
+
 /* Zona direktno iz PRED reda oznake (r.l = 'NX · Tip') — POUZDANIJE od
    dan->sessKind puta: tvoj hardkodovan plan ima generičan d.tag (samo
    'tempo'/'int'), pa bi npr. "Ritam" (ciljna-tempo proba, mora ostati na
@@ -3983,6 +4147,19 @@ function renderKnee(){
   const view=(S.ui&&S.ui.bodyView)==='back'?'back':'front';
   const active=Object.keys(BODY_PARTS).map(p=>({p,lv:partLevel(p)})).filter(x=>x.lv!=null&&x.lv>=1).sort((a,b)=>b.lv-a.lv);
   let h=`<div class="kb ${ks.cls}"><div><div>${ks.t}</div><small>${ks.s}</small></div></div>`;
+  /* Predlog izmene plana — samo kad stvarno ima sta da promeni. Namerno
+     predlog, ne tiha izmena: kod jakog bola app ne sme da glumi da je problem
+     resen smanjenjem kilometraze. */
+  const prop=injuryProposal(TODAY);
+  if(prop){
+    h+=`<div class="card" style="border-color:${prop.level==='stop'?'rgba(255,69,58,.35)':'rgba(255,176,32,.3)'}">
+      <div class="card-t" style="color:${prop.level==='stop'?'var(--red)':'var(--amber)'}">Plan se može prilagoditi</div>
+      <div style="font-size:.85rem;line-height:1.55;color:var(--txt2)">${esc(prop.message)}</div>
+      <div class="note-src" style="margin-top:10px">Menja se ${prop.changes.length} ${prop.changes.length===1?'trening':'treninga'}: ${esc(prop.changes.slice(0,4).map(x=>fmtD(x.date)+' → '+tagName(x.to)).join(' · '))}${prop.changes.length>4?' …':''}</div>
+      <div class="btnrow" style="margin-top:12px"><button class="btn" id="inj-apply">Prilagodi plan</button></div>
+      <div class="note-src" style="margin-top:8px">Svaki dan možeš ručno da vratiš kroz Plan tab.</div>
+    </div>`;
+  }
   h+=`<div class="card"><div class="card-t">Mapa tela — dodirni deo koji te boli</div>
     <div class="bodytoggle"><button data-bv="front" class="${view==='front'?'on':''}">Prednja</button><button data-bv="back" class="${view==='back'?'on':''}">Zadnja</button></div>
     <div class="bodywrap">${bodyMapSVG(view)}</div>
@@ -4003,6 +4180,15 @@ function renderKnee(){
   el.querySelectorAll('[data-bv]').forEach(b=>b.onclick=()=>{S.ui.bodyView=b.dataset.bv;save();renderKnee();});
   el.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>openKneeSheet(null,b.dataset.bp));
   el.querySelectorAll('[data-bp2]').forEach(b=>b.onclick=()=>openKneeSheet(null,b.dataset.bp2));
+  const ia=$('#inj-apply');
+  if(ia) ia.onclick=()=>{
+    const pr=injuryProposal(TODAY);
+    if(!pr) return;
+    if(!confirm('Prilagoditi plan? Menja se '+pr.changes.length+' treninga. Možeš ih ručno vratiti kroz Plan tab.')) return;
+    const n=applyInjuryProposal(pr);
+    alert(n+' '+(n===1?'trening prilagođen':'treninga prilagođeno')+'.');
+    renderKnee(); renderDanas(); renderPlan();
+  };
   $('#k-add').onclick=()=>openKneeSheet(null);
   el.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>openKneeSheet(b.dataset.k));
 }
