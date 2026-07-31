@@ -545,7 +545,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='81'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='84'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1044,6 +1044,94 @@ function sessCore(d){
 }
 /* Strukturirani redovi sesije za Danas karticu: [[labela, vrednost, istaknuto?]].
    Vraća null ako se ne može pouzdano razložiti — pozivalac tada prikaže sirov opis. */
+/* ============ RUN/WALK (trčanje sa planiranim pauzama za hod) ============
+   Izvor: Galloway run-walk-run metoda (razvijana od sredine 1970-ih, podaci
+   sa preko 200.000 trkača kroz njegove programe) + novija istraživanja o
+   run-walk kod početnika.
+
+   Zašto radi: pauza za hod se ubacuje OD PRVOG MINUTA, pre nego što umor
+   nastupi — ne kad "više ne možeš". Time se kumulativno udarno opterećenje
+   na kolena, kukove i skočne zglobove prekida PRE nego što se nagomila.
+   Istraživanja kod starijih početnika dosledno pokazuju niže stope povreda
+   i veću istrajnost u programu nego kod neprekidnog trčanja.
+
+   VAŽNO NAČELO iz istraživanja, ugrađeno u prikaz: na sledeći odnos prelaziš
+   tek kad trenutni deluje LAKO — ne po fiksnom kalendaru. Zato je ovo
+   preporuka po nedelji, uz jasnu poruku da smeš da ostaneš na istom. */
+const RUNWALK_LADDER = [
+  { upToWeek:2,  runSec:60,  walkSec:60,  label:'1:1' },
+  { upToWeek:4,  runSec:120, walkSec:60,  label:'2:1' },
+  { upToWeek:6,  runSec:180, walkSec:60,  label:'3:1' },
+  { upToWeek:8,  runSec:240, walkSec:60,  label:'4:1' },
+  { upToWeek:99, runSec:null, walkSec:null, label:'neprekidno' }
+];
+/* Za potpuno netrenirane (<5 km/ned ili nikad trčano) kreće se blaže —
+   30 s trčanja / 30 s hoda, što je Gallowayev početni odnos za tu grupu. */
+const RUNWALK_START_DECONDITIONED = { runSec:30, walkSec:30, label:'30 s : 30 s' };
+
+/* Da li ovom korisniku uopšte treba run/walk. Dva nezavisna signala —
+   nizak obim ILI izostanak redovnog trčanja — jer sam km ne razlikuje
+   početnika od treniranog trkača koji je te nedelje malo trčao. */
+function needsRunWalk(weeklyKm, trainedRecently){
+  const km = +weeklyKm || 0;
+  return km < 10 || trainedRecently === false;
+}
+
+/* Preporučen odnos za datu nedelju plana (1-indeksirano). */
+function runWalkFor(weekIdx, weeklyKm, trainedRecently){
+  if(!needsRunWalk(weeklyKm, trainedRecently)) return null;
+  const veryLow = (+weeklyKm || 0) < 5 || trainedRecently === false;
+  if(veryLow && weekIdx <= 2) return Object.assign({}, RUNWALK_START_DECONDITIONED);
+  const step = RUNWALK_LADDER.find(s => weekIdx <= s.upToWeek) || RUNWALK_LADDER[RUNWALK_LADDER.length-1];
+  if(step.runSec == null) return null;      /* prešao na neprekidno */
+  return { runSec:step.runSec, walkSec:step.walkSec, label:step.label };
+}
+
+/* Tekst za prikaz: "1 min trčanje / 1 min hod" */
+function runWalkText(rw){
+  if(!rw) return '';
+  const f = s => s>=60 ? (s/60===Math.floor(s/60) ? (s/60)+' min' : (s/60).toFixed(1)+' min') : s+' s';
+  return f(rw.runSec) + ' trčanje / ' + f(rw.walkSec) + ' hod';
+}
+
+/* CILJNI NAPOR (RPE) PO TIPU TRENINGA.
+   Tempo je precizan cilj, ali na +30°C, uzbrdo ili umoran — 4:25/km može biti
+   nemoguć taj dan. RPE kaže šta zapravo treba da OSETIŠ, i tad je pouzdaniji
+   vodič od brojke na satu. Rasponi su standardna trenerska skala 1–10.
+   Aplikacija RPE već skuplja POSLE treninga; ovo je druga strana — cilj PRE. */
+const RPE_TARGET = {
+  lako:  { min:3, max:4,  txt:'Razgovorno — možeš da pričaš u punim rečenicama' },
+  lr:    { min:4, max:5,  txt:'Razgovorno do postojano' },
+  tempo: { min:7, max:8,  txt:'Prijatno teško — kratke rečenice' },
+  int:   { min:8, max:9,  txt:'Teško — ubrzano disanje, bez pričanja' },
+  test:  { min:9, max:10, txt:'Skoro maksimalno' },
+  trka:  { min:9, max:10, txt:'Maksimalno' }
+};
+/* Vraća {min,max,txt} ili null. Gleda ORIGINALNI tip kad je dan izmenjen —
+   inače bi izmenjen dan pokazivao napor za tip koji više nije aktuelan. */
+function rpeTarget(d){
+  if(!d || d.rest) return null;
+  const t = d.tag;
+  if(t === 'snaga') return null;   /* snaga nije trčanje, druga skala */
+  return RPE_TARGET[t] || null;
+}
+
+/* FAZA NEDELJE — orijentacija "gde sam u planu".
+   Izvodi se iz pozicije, ne čuva se nigde: nema migracije šeme i tačno je i
+   za generisane i za ručno pisane planove. Deload zadržava svoju oznaku jer
+   je konkretnija informacija od faze. */
+function weekPhase(w, totalWeeks){
+  if(!w) return '';
+  if(w.deload || w.focus === 'DELOAD') return 'DELOAD';
+  const n = w.w, T = totalWeeks || 1;
+  if(n >= T) return 'TRKA';
+  if(n >= T - 1) return 'TAPER';
+  const frac = n / T;
+  if(frac <= 0.30) return 'BAZA';
+  if(frac <= 0.65) return 'RAZVOJ';
+  return 'VRHUNAC';
+}
+
 function sessBreakdown(d){
   if(!d||d.rest)return null;
   const rows=[];
@@ -1058,6 +1146,9 @@ function sessBreakdown(d){
     if(work)rows.push(['Radni deo',work,true]);
     if(s.restSec)rows.push(['Odmor',s.restSec>=60?Math.round(s.restSec/60)+' min':s.restSec+' s']);
     if(s.cdKm)rows.push(['Smirivanje',fmtKm(s.cdKm)+' km']);
+    if(d.runWalk)rows.push(['Ritam',runWalkText(d.runWalk),true]);
+    const rp=rpeTarget(d);
+    if(rp)rows.push(['Napor','RPE '+rp.min+'–'+rp.max]);
     return rows.length>=2?rows:null;
   }
   const desc=d.desc||'';
@@ -1071,6 +1162,9 @@ function sessBreakdown(d){
   if(work)rows.push(['Radni deo',work,true]);
   if(mRest)rows.push(['Odmor',mRest[1].trim()]);
   if(mCD)rows.push(['Smirivanje',mCD[1].replace(',','.')+' km']);
+  if(d.runWalk)rows.push(['Ritam',runWalkText(d.runWalk),true]);
+  const rp2=rpeTarget(d);
+  if(rp2)rows.push(['Napor','RPE '+rp2.min+'–'+rp2.max]);
   return rows.length>=2?rows:null;
 }
 /* Dodatne napomene iz opisa koje NISU deo strukture (npr. "plafon HR 170",
@@ -1245,10 +1339,15 @@ function injuryProposal(today){
       level: 'return', week: ph.week, pct: ph.pct, maxPain: null, parts: [],
       changes,
       title: 'Povratak — nedelja ' + ph.week + ' od 3',
+      /* PREDUSLOVI: fizioterapeutski protokoli povratka trče se po ODGOVORU
+         TKIVA, ne po kalendaru — "nema fiksnog vremenskog okvira, zavisi od
+         toga kako tkivo odgovara na opterećenje". Aplikacija ne može da
+         izmeri simetriju snage ni test poskoka, pa ih NAVODI kao uslov koji
+         korisnik sam proveri, umesto da ćuti i deluje sigurnije nego što jeste. */
       message: 'Bez bola ' + ph.daysSince + ' ' + (ph.daysSince === 1 ? 'dan' : 'dana') +
         '. Predlog: ' + pctTxt + ' planiranog obima narednih ' + changes.length + ' treninga' +
         (ph.week <= 2 ? ', bez kvalitetnih treninga' : '') +
-        '. Postepen povratak — nagli skok na pun obim je čest način da se povreda vrati. Ako bol vrati, prekini.'
+        '. Pre nego što prihvatiš — proveri da možeš: 30 min brzog hoda bez bola, 20 poskoka na povređenoj nozi bez bola, i da nema bola u mirovanju. Ako bilo šta od toga ne prolazi, rano je za trčanje bez obzira na broj dana. Ostavi bar jedan dan odmora između trčanja.'
     };
   }
 
@@ -2079,7 +2178,7 @@ function renderPlan(){
     h+=`<div class="wk${openW.has(w.w)?' open':''}" data-w="${w.w}">
       <button class="wk-h">
         <div class="wk-n" style="${cur?'color:var(--pink)':''}">N${w.w}</div>
-        <div class="wk-i"><div class="wk-d">${fmtD(w.start)} – ${fmtD(addD(w.start,w.w===CUR_PLAN.length?3:6))}${cur?' · tekuća nedelja':''}</div><div class="wk-f">${esc(w.focus)}</div></div>
+        <div class="wk-i"><div class="wk-d">${fmtD(w.start)} – ${fmtD(addD(w.start,w.w===CUR_PLAN.length?3:6))}${cur?' · tekuća nedelja':''}</div><div class="wk-f">${esc(weekPhase(w,CUR_PLAN.length)==='DELOAD'?w.focus:(w.focus?weekPhase(w,CUR_PLAN.length)+' · '+w.focus:weekPhase(w,CUR_PLAN.length)))}</div></div>
         <div class="wk-km"><b>${fmtKm(rk)} / ${fmtKm(pk)} km</b>${dn}/${ct} tren.</div>
       </button>
       <div class="wk-bar"><i style="width:${ct?Math.round(dn/ct*100):0}%"></i></div>
@@ -2880,6 +2979,9 @@ function generatePlan(inp){
   const trainedRecently = inp.trainedRecently !== false; /* default true */
   const wantsBase = (inp.weeklyKm < BASE_THRESHOLD_KM) && !trainedRecently && (weeks >= prof.minWeeks + BASE_WEEKS);
   const baseWeeks = wantsBase ? BASE_WEEKS : 0;
+  /* Run/walk za pocetnike — evidencija (Galloway + istrazivanja kod starijih
+     pocetnika): nize stope povreda i veca istrajnost nego neprekidno trcanje. */
+  const useRunWalk = needsRunWalk(inp.weeklyKm, trainedRecently);
   const qualWeeks = weeks - baseWeeks;  /* nedelje u kojima se odvija kvalitetni ciklus */
 
   /* volumen: start→vrhunac uz +8% cap, deload svake 4., taper 2 nedelje (NEPROMENJENO — kalibrisano na etalon, distancno-agnostičko po dizajnu) */
@@ -2982,7 +3084,14 @@ function generatePlan(inp){
           continue;
         }
         if(role==='lr'){
-          days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km lako-dugo (Z2) @ ~${fmtP(pLR)}/km — bazna faza, bez kvaliteta`));
+          const rwLR = useRunWalk ? runWalkFor(w, inp.weeklyKm, trainedRecently) : null;
+          if(rwLR){
+            const dLR = D(dow,'lr',alloc.lr,`${alloc.lr} km — ${runWalkText(rwLR)}, najduži te nedelje`);
+            dLR.runWalk = { runSec:rwLR.runSec, walkSec:rwLR.walkSec, label:rwLR.label };
+            days.push(dLR);
+          } else {
+            days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km lako-dugo (Z2) @ ~${fmtP(pLR)}/km — bazna faza, bez kvaliteta`));
+          }
           continue;
         }
         /* strides na svakom drugom lakom danu tokom baze (Daniels: strides kroz sve faze) */
@@ -2994,8 +3103,17 @@ function generatePlan(inp){
           const prevLR=Math.max(...prevW.days.filter(d=>d.tag==='lr').map(d=>d.km||0),0);
           if(prevLR>0) km=Math.min(km, r1(prevLR*0.50));
         }
-        const strides = (ei%2===0) ? ' + 6×20 s strides (lagani ubrzani koraci, pun oporavak)' : '';
-        days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
+        const rw = useRunWalk ? runWalkFor(w, inp.weeklyKm, trainedRecently) : null;
+        if(rw){
+          /* Pocetnik: lagani dan je run/walk. Strides se NE dodaju — ubrzanja
+             pretpostavljaju osnovu koju ovaj korisnik jos gradi. */
+          const dd = D(dow,'lako',km,`${km} km — ${runWalkText(rw)}, lagano`);
+          dd.runWalk = { runSec:rw.runSec, walkSec:rw.walkSec, label:rw.label };
+          days.push(dd);
+        } else {
+          const strides = (ei%2===0) ? ' + 6×20 s strides (lagani ubrzani koraci, pun oporavak)' : '';
+          days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
+        }
         ei++;
       }
     } else {
@@ -3052,9 +3170,19 @@ function generatePlan(inp){
         /* Strides na prvom lakom danu SVAKE kval. nedelje (Daniels: kroz sve faze,
            redovno — ne povremeno). Izostaju samo u taper1 (izbeći dodatni neuro-
            stres neposredno pred trku). Deload: kraći set. */
-        const strides = isTaper1 ? ''
-          : (ei===0 ? (isDeload ? ' + 4×15 s strides (lagani ubrzani koraci)' : ' + 6×20 s strides (lagani ubrzani koraci, pun oporavak)') : '');
-        days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
+        const rwQ = useRunWalk ? runWalkFor(w, inp.weeklyKm, trainedRecently) : null;
+        if(rwQ){
+          /* Pocetnik i u kvalitetnoj fazi: LAGANI dani ostaju run/walk dok
+             lestvica ne dodje do neprekidnog. Kvalitetni dani (int/tempo) NISU
+             run/walk — oni imaju sopstvenu strukturu sa pauzama. */
+          const ddQ = D(dow,'lako',km,`${km} km — ${runWalkText(rwQ)}, lagano`);
+          ddQ.runWalk = { runSec:rwQ.runSec, walkSec:rwQ.walkSec, label:rwQ.label };
+          days.push(ddQ);
+        } else {
+          const strides = isTaper1 ? ''
+            : (ei===0 ? (isDeload ? ' + 4×15 s strides (lagani ubrzani koraci)' : ' + 6×20 s strides (lagani ubrzani koraci, pun oporavak)') : '');
+          days.push(D(dow,'lako',km,`${km} km lako (Z2) @ ~${fmtP(pE)}/km${strides}`));
+        }
         ei++;
       }
     }
