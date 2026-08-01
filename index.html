@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='88'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='90'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3187,7 +3187,12 @@ function generatePlan(inp){
     } else {
       /* kvalitetne sesije po slotovima (deload: nema kvaliteta; prva kval. nedelja: samo q1, kao uvodna) */
       const qualW = w - baseWeeks;         /* redni broj unutar kvalitetnog ciklusa (1-indeksiran) */
-      const isFirstQualWeek = qualW===1;
+      /* "Uvodna" prva kvalitetna nedelja (samo 1 kvalitet, tempo umesto
+         intervala) ima smisla za nekoga ko ULAZI u kvalitetni trening — posle
+         bazne faze, ili ako nije trenirao redovno. Za trkaca koji VEC radi 2
+         kvaliteta nedeljno bila je besmislena: trazi 2, prva nedelja da 1.
+         Sada se primenjuje samo tamo gde je stvarno uvod u kvalitet. */
+      const isFirstQualWeek = qualW===1 && (baseWeeks>0 || !trainedRecently);
       const sessions={};
       for(let dow=1; dow<=7; dow++){
         const role=slots[dow];
@@ -4072,17 +4077,21 @@ function renderWeekSwap(w){
    radi identično za hardkodovan i generisan plan (bez dodatne logike).
    Fokus na kvalitetne tipove gde tehnika/pristup stvarno menja efekat. */
 const SESS_GUIDE={
-  'Intervali':'Isti tempo na svakom ponavljanju — ne kreni brže na prvom. Opušten, kontrolisan oblik i kad je teško.',
-  'Repeticije':'Pun odmor između ponavljanja, ne delimičan — ovo je brzina i ekonomija trčanja, ne izdržljivost na pragu. Opušteno, ne na silu.',
-  'Tempo':'"Udobno teško" — kratku rečenicu možeš da izgovoriš, razgovor ne. Isti napor od početka do kraja, ne kreni prebrzo.',
-  'Tempo (broken)':'Isti tempo/napor kao neprekidan tempo — kratka pauza je predah, ne resetovanje. Cilj: ceo trening deluje kao jedan neprekidan napor.',
-  'Fartlek':'Napor, ne štoperica — ubrzanja su snažan gurnjaj, ne sprint. Potpuno se opusti u lakim delovima.',
-  'Progresivno':'Kreni namerno lagano — svaki sledeći deo brži od prethodnog. Najčešća greška je prebrz početak.',
-  'Piramida':'Isti NAPOR na svakoj deonici, ne isti tempo — kraće deonice prirodno idu brže. Ne kreni prejako na najkraćoj da ne "pukneš" na vrhu piramide.',
-  'Maratonski tempo':'Tačno tvoj ciljani tempo trke — ovo je proba, ne dodatni napor preko toga. Iskoristi za vežbanje ishrane/hidratacije ako je dovoljno dugo.',
-  '10K tempo (ciljni ritam)':'Tačno tvoj ciljani tempo trke — disciplina tempa, ne guranje preko toga.',
-  'HM tempo (ciljni ritam)':'Tačno tvoj ciljani tempo trke — disciplina tempa, ne guranje preko toga.',
-  'Dugo (LR)':'Ravnomeran, lak tempo — trebalo bi da razgovaraš bez zadihanosti. Ako poslednji km oseti teže od prvog, kreni sporije sledeći put.',
+  'Intervali':'Isti tempo na svakom ponavljanju — nemoj da kreneš brže na prvom. Ostani opušten i kontrolisan i kad postane teško.',
+  'Repeticije':'Odmaraj se do kraja između ponavljanja — ovo je trening brzine i ekonomije trčanja, ne izdržljivosti na pragu. Trči opušteno, ne na silu.',
+  'Tempo':'"Udobno teško" — kratku rečenicu možeš da izgovoriš, ali razgovor ne. Drži isti napor od početka do kraja i nemoj da kreneš prebrzo.',
+  'Tempo isprekidan':'Isti tempo i napor kao kod neprekidnog tempa — kratka pauza je samo predah, ne novi početak. Cilj je da ceo trening deluje kao jedan neprekidan napor.',
+  'Fartlek':'Vodi se po naporu, ne po štoperici — ubrzanja su snažan zalet, ne sprint. U lakim delovima se potpuno opusti.',
+  'Progresivno':'Kreni namerno lagano — svaki sledeći deo treba da bude brži od prethodnog. Najčešća greška je prebrz početak.',
+  'Piramida':'Drži isti NAPOR na svakoj deonici, ne isti tempo — kraće deonice prirodno idu brže. Nemoj da kreneš prejako na najkraćoj, da ne "pukneš" na vrhu piramide.',
+  'Maratonski tempo':'Tačno tvoj ciljani tempo trke — ovo je proba, a ne prilika da guraš jače. Ako je trčanje dovoljno dugo, iskoristi ga i za vežbanje ishrane i hidratacije.',
+  '10K tempo (ciljni ritam)':'Tačno tvoj ciljani tempo trke — ovde se vežba disciplina tempa, ne guranje preko njega.',
+  'HM tempo (ciljni ritam)':'Tačno tvoj ciljani tempo trke — ovde se vežba disciplina tempa, ne guranje preko njega.',
+  'Dugo (LR)':'Ravnomeran, lagan tempo — trebalo bi da možeš da razgovaraš bez zadihanosti. Ako ti poslednji kilometar bude teži od prvog, sledeći put kreni sporije.',
+  'Lako':'Zaista lako — ovo je dan za oporavak, ne za "malo brže jer se osećam dobro". Ako ne možeš da pričaš u punim rečenicama, usporavaj.',
+  'Trčanje/hod':'Pauzu za hod uzmi PRE nego što se umoriš, ne kad moraš — u tome je cela poenta. Deo za trčanje drži lagan, hod neka bude živ.',
+  'TRKA':'Prvi kilometar drži ciljani tempo i kad ti deluje prelako — najčešća greška je prebrz start. Poslednju trećinu odlučuje ono što si sačuvao na početku.',
+  'Test':'Trči kao pravu trku, ali bez pritiska — cilj je tačna procena forme, ne rekord. Isti uslovi (staza, doba dana) daju uporediv rezultat.',
 };
 function openDaySheet(id){
   const d=BY_ID[id],s=stFor(id);
