@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='90'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='91'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3296,8 +3296,16 @@ function generatePlan(inp){
           if(visak <= 0.05) break;
           const moze = d.km - 3;
           const skini = Math.min(moze, visak);
-          if(skini > 0){ d.km = r1(d.km - skini); visak -= skini;
-            d.desc = (d.desc||'').replace(/^[\d.,]+ km/, d.km + ' km'); }
+          if(skini > 0){
+            /* Pod od 3 km: r1() moze da spusti ispod. Napomena: allocEasyLR
+               na VRLO niskom obimu svesno dozvoljava 2.5 km po laganom danu
+               (linija sa rem-2.5*easyCount) — to je njegova odluka i ne dira
+               se ovde; ovo samo sprecava da IZRAVNAVANJE dodatno spusti. */
+            const novi = Math.max(3, r1(d.km - skini));
+            visak -= (d.km - novi);
+            d.km = novi;
+            d.desc = (d.desc||'').replace(/^[\d.,]+ km/, d.km + ' km');
+          }
         }
       }
     }
