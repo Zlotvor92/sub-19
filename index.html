@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='96'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='97'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2609,6 +2609,12 @@ function pickReps(workKm, wkIdx, weeks){
    Konačan LR = najmanji od (a) i (b), ali nikad ispod invarijante.
    Izuzetak invarijante: SAMO trkačka nedelja (trka je najkraća sesija). */
 function danielsLRCapKm(vol, pLRsecPerKm, isMarathon, isPeakStretch, isTaper){
+  /* Danielsov apsolutni vremenski plafon dugog trcanja. Bio je primenjen SAMO
+     na ne-maratonske planove, iako komentar ispod (i sam Daniels) kazu da vazi
+     "even if preparing for a marathon" — maratonska grana je izlazila pre
+     njega. Posledica izmerena auditom: maratonac od 4:45 dobijao je 29.7 km,
+     sto je za njega 3h51 trcanja, i to OSAM nedelja zaredom. */
+  const timeCapKm = pLRsecPerKm>0 ? (150*60)/pLRsecPerKm : Infinity;
   if(isMarathon && isTaper){
     /* Taper: obim je NAMERNO nizak (odmor pred trku), ne "nizak obim kod
        skromnog trkača" — formula za nizak-obim (16/vol+0.28) bi POGREŠNO
@@ -2616,35 +2622,34 @@ function danielsLRCapKm(vol, pLRsecPerKm, isMarathon, isPeakStretch, isTaper){
        ostavljajući LR jedva smanjen (npr. 32km vrhunac -> 24km taper, samo
        24% pada dok su intervali/tempo drastično skraćeni). Fiksnih ~35%
        (isti kao standardna, nepojačana formula) — LR se STVARNO smanjuje. */
-    return vol*0.35;
+    return Math.min(vol*0.35, timeCapKm);
   }
   if(isMarathon){
-    /* PRAVI BUG NAĐEN TESTOM (korisnikova slika: N11, 65% nedelje u JEDNOM
-       trčanju, 3.7/3.2km "lakih" dana pored 27.8km LR — "OGROMAN RIZIK OD
-       POVREDE"): "16/vol+0.28" formula je bila zamišljena SAMO za poslednje
-       vrhunačke nedelje, ali se primenjivala kao OSNOVA za baš svaku nedelju
-       — LR% je rastao kontinuirano kroz CEO plan (37% već u N1, do 65% na
-       deload nedeljama), ne samo na kraju. Deload nedelje su bile NAJGORE
-       (nizak vol te nedelje → formula ga tumači kao "guraj gore").
-       Ispravka: obična nedelja dobija SKROMAN, FIKSAN procenat — bez
-       "nizak-obim-podigni" logike uopšte. Vrhunačke nedelje (isPeakStretch)
-       i dalje ciljaju direktno normu specifičnosti (28.5km), ali sa ovim
-       skromnim procentom kao POD, ne sa eksplozivnom formulom kao osnovom. */
-    const basePct = 0.33; /* skroman skok preko standardnih 25-30% (kraće distance) — maratonu treba malo više LR naglaska, ne 65% */
-    let pct = basePct;
     if(isPeakStretch){
-      /* Poslednje 1-3 "prave" nedelje pred taper: cilja DIREKTNO 28.5km normu,
-         SAMO ovde — ostatak plana ostaje na skromnom basePct. Plafon 0.70
-         da izbegnemo apsurdan udeo na ekstremno niskom obimu. */
-      const neededPct = Math.min(0.70, 28.5/vol);
-      pct = Math.max(basePct, neededPct);
+      /* ============================================================
+         VRHUNSKO DUGO TRCANJE — 29-32 km, TACNO JEDNOM, u nedelji pred taper.
+         Maratonac mora bar jednom da oseti taj obim; ali rekreativac se od
+         30 km oporavlja nedelju do dve, pa to NE SME da bude nedeljna norma.
+         Ranije je basePct=0.33 uz plafon od 32 km davao 29.7 km svaku nedelju
+         na 90 km/ned — osam identicnih vrhunskih nedelja zaredom, bez ijedne
+         prilike za oporavak i bez ikakve progresije.
+
+         VREMENSKI PLAFON SE OVDE NAMERNO NE PRIMENJUJE — svestan izbor
+         vlasnika plana: specificnost na distancu ima prednost, pa i kad za
+         sporijeg trkaca to znaci 3h30+. To je odstupanje od Danielsovog
+         150-min pravila i stoji samo za OVU jednu sesiju u celom planu;
+         sve ostale nedelje pravilo postuju (grana ispod).
+         Plafon od 55% nedelje sprecava apsurd na niskom obimu (npr. 29 km
+         unutar nedelje od 40 km). ============================================ */
+      return Math.min(Math.max(29, vol*0.35), 32, vol*0.55);
     }
-    return Math.min(vol*pct, 32);
+    /* Obicne nedelje: dugo trcanje raste sa obimom, ali ostaje jasno ISPOD
+       vrhunskog — i postuje 150-min pravilo. Plafon od 26 km drzi razliku
+       vidljivom i kod brzih trkaca, kojima vreme ne bi bilo ogranicavajuce. */
+    return Math.min(vol*0.30, 26, timeCapKm);
   }
-  if(vol<64) return vol*0.30;
-  const pctCap = vol*0.25;
-  const timeCapKm = pLRsecPerKm>0 ? (150*60)/pLRsecPerKm : Infinity;
-  return Math.min(pctCap, timeCapKm);
+  if(vol<64) return Math.min(vol*0.30, timeCapKm);
+  return Math.min(vol*0.25, timeCapKm);
 }
 function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon, isPeakStretch, isTaper){
   const qSum=qKms.reduce((a,b)=>a+b,0);
@@ -3285,9 +3290,14 @@ function generatePlan(inp){
         const role=slots[d];
         return role==='easy' || ((role==='q1'||role==='q2') && !sessions[d]);
       }).length;
-      /* Poslednje 3 "prave" nedelje pred taper (ne deload, ne taper/trka sama) —
-         tu forsiramo dostizanje 28.5km norme ako standardna formula ne bi stigla. */
-      const isPeakStretch = prof.useM && !isDeload && !isTaper1 && !isRace && (weeks-w)<=3;
+      /* TACNO JEDNA nedelja — poslednja prava pre taper-a (taper1 = weeks-1,
+         trka = weeks). Tu ide jedino vrhunsko dugo trcanje od 29-32 km.
+         Ranije je uslov bio (weeks-w)<=3, sto je davalo DVE takve nedelje
+         zaredom; uz tadasnji basePct od 0.33 ionako je skoro svaka nedelja
+         dostizala isti maksimum, pa razlika prakticno nije ni postojala.
+         Ovaj izraz ne moze da promasi: nedelja weeks-2 nikad nije deload
+         (deload trazi w < weeks-2), niti taper, niti trkacka. */
+      const isPeakStretch = prof.useM && (weeks-w)===2;
       /* PRODUZENO ZAGREVANJE/SMIRIVANJE kad nedelja podbacuje ciljni obim.
          Sa 4 dana i 2 kvaliteta ostaje samo JEDAN lagan dan, pa nedeljni zbir
          padne ispod trazenog. Umesto da se sve svali na taj jedan dan,
@@ -3321,7 +3331,14 @@ function generatePlan(inp){
                                      easyDowsCount, runDays, pLR, prof.useM, isPeakStretch, isTaper1);
       let alloc=allocFor();
       (function(){
+        /* 'Maratonski tempo' je IZUZET: to nije kratak kvalitet sa zagrevanjem
+           nego duga aerobna sesija (do 110 min po Danielsu) — 4 km zagrevanja
+           pred 20 km maratonskog tempa nema smisla, a sesija time postaje duza
+           od dugog trcanja pa je invarijanta "LR mora biti najduzi" gurala LR
+           preko njegovog vremenskog plafona (mereno: maratonac od 4:30 dobijao
+           3h13 dugo trcanje umesto plafonskih 2h30). */
         const strana=Object.values(sessions).filter(d=>d.session && d.session.type!=='prog'
+                          && d.session.kind!=='Maratonski tempo'
                           && d.session.wuKm!=null && d.session.cdKm!=null);
         if(!strana.length) return;
         const ukupno=()=>Object.values(sessions).reduce((s,d)=>s+(d.km||0),0)
