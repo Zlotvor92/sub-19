@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='99'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='100'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2603,7 +2603,19 @@ function assess(pb, weeks, intensity, goalSec, raceDistM){
 /* ---------- raspodela obima po danima ---------- */
 /* LR je uvek najduže trčanje nedelje; lagan dan ne sme da mu se približi
    (inače to više nije lagan dan nego drugo dugo trčanje). */
+/* POD PO DANU TRCANJA.
+   Bio je tvrdih 3 km. Za trkaca na 40 km/ned to je tacno, ali za pocetnika koji
+   je uneo 10 km na 5 dana (2 km/dan) znaci da plan NE MOZE da isporuci manje od
+   5x3 = 15 km — pa je svaka nedelja ista, deload ne spusta nista jer je vec na
+   podu, a kad kvalitetne sesije pocnu da rastu obim curi navise. Izmereno na
+   prijavi korisnika: N2=15.2, N3=15.3, N4(deload)=15.2 — tri identicne nedelje.
+   Trcanje od 2 km je za pocetnika sasvim legitiman trening; pod zato prati
+   obim po danu, uz apsolutni minimum od 1.5 km (ispod toga nije trening). */
+function podPoDanu(vol, runDays){
+  return Math.max(1.5, Math.min(3, r1(vol/Math.max(runDays,1)*0.75)));
+}
 function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm){
+  const POD = podPoDanu(vol, runDays);
   const qSum=qKms.reduce((a,b)=>a+b,0);
   const maxQ=qKms.length?Math.max(...qKms):0;
   const rem=Math.max(vol-qSum, 3);
@@ -2618,18 +2630,18 @@ function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm){
      gura raspodelu u besmislice. */
   const floor = Math.max(maxQ*1.05, Math.min(4, vol*0.30));
   let lr = Math.max(rem*0.45, maxQ*1.12, (rem/(easyCount+1))*1.3);
-  lr = Math.min(lr, cap, rem-3*easyCount);
-  lr = Math.max(lr, Math.min(floor, rem-2.5*easyCount));
+  lr = Math.min(lr, cap, rem-POD*easyCount);
+  lr = Math.max(lr, Math.min(floor, rem-POD*0.85*easyCount));
   const wgt=[1.15,1,0.9,0.85,0.8,0.75].slice(0,easyCount);
   const wsum=wgt.reduce((a,b)=>a+b,0);
-  let easies=wgt.map(x=>Math.max(3, r1((rem-lr)*x/wsum)));
+  let easies=wgt.map(x=>Math.max(POD, r1((rem-lr)*x/wsum)));
   /* Lagan dan: do 70% LR-a dok je LR kratak (9 km posle 14 km LR je i dalje
      lagan dan), strogih 50% kad LR poraste, i nikad preko 14 km apsolutno. */
   const mx=Math.max(...easies);
   const easyCeil=Math.min(14, Math.max(lr*0.50, Math.min(12, lr*0.70)));
   if(mx>=easyCeil && mx>0){
     const sc=easyCeil/mx;
-    easies=easies.map(e=>Math.max(3,r1(e*sc)));
+    easies=easies.map(e=>Math.max(POD,r1(e*sc)));
   }
   /* Invarijanta do kraja: LR MORA ostati najduže trčanje nedelje. Lagani dani
      imaju pod od 3 km, a LR ga nema — na deload nedeljama niskog obima to je
@@ -2772,8 +2784,17 @@ function buildQuality5K(qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, i
      q1 kratka oštrina na ciljnom ritmu, q2 kratak tempo da prag ostane budan
      bez umora. Oba su namerno mala — taper skida obim, ne intenzitet. */
   if(isTaper1){
-    if(effQ===1 || slotRole==='q1') return sessInt(dow,1.5,5,400,Math.max(pI,racePace),90,1,'Intervali');
-    return mkTempo5K(dow,vol,pT,3);
+    /* Taper sesije su ranije bile TVRDO KODOVANE (5x400 uz 1.5 km zagrevanja,
+       i tempo fiksiran na 3 km). Na niskom obimu su zato ispadale VECE od
+       redovnih sesija, pa je taper nedelja imala vise kilometara od vrhunca
+       (prijava korisnika: vrhunac 15.5-15.8 km, taper 18.5 km). Sada i one
+       prate obim — taper skida kolicinu, zadrzava ostrinu. */
+    const [twu,tcd]=wuCd5K(vol);
+    if(effQ===1 || slotRole==='q1'){
+      const n=Math.max(4, Math.min(6, Math.round(vol*0.03)));
+      return sessInt(dow,Math.max(twu*0.75,1),n,400,Math.max(pI,racePace),90,Math.max(tcd*0.75,0.8),'Intervali');
+    }
+    return mkTempo5K(dow,vol,pT,r1(Math.min(3, Math.max(1.5, vol*0.08))));
   }
 
   if(effQ===1){
@@ -3010,7 +3031,17 @@ function generatePlan(inp){
   if(weeks < prof.minWeeks) return { error: `Manje od ${prof.minWeeks} nedelja do trke (minimum za ${prof.name}) — puna periodizacija nije moguća.` };
   if(weeks > maxWeeks) return { error: `Više od ${maxWeeks} nedelja (2 godine) — proveri datum trke, verovatno je pogrešno unet.` };
   const runDays = Math.max(2, Math.min(7, Math.round(inp.runDays||4)));
-  const qWant = Math.max(1, Math.min(2, Math.round(inp.quality||2)));
+  let qWant = Math.max(1, Math.min(2, Math.round(inp.quality||2)));
+  /* KOLIKO KVALITETA NEDELJNI OBIM UOPSTE PODNOSI.
+     Broj dana nije jedina granica — vazan je i obim. Dva kvalitetna treninga u
+     nedelji od 12 km su besmislena bez obzira koliko ih sitno iseckas: sa
+     zagrevanjem i smirivanjem oni sami postanu vecina nedelje, pa nedeljni zbir
+     ne moze da padne (prijava korisnika: pocetnik na 10 km/ned, 5 dana — tri
+     identicne nedelje i taper visi od vrhunca). Ispod ~18 km/ned ide jedan
+     kvalitet; korisnik to vidi kao upozorenje, ne kao tihu izmenu. */
+  const QUAL2_MIN_KM = 18;
+  const qCut = qWant>1 && inp.weeklyKm < QUAL2_MIN_KM;
+  if(qCut) qWant = 1;
   const slots = buildDaySlots(runDays, qWant, { lrDow: inp.lrDow, qDows: inp.qDows, runDows: inp.runDows });
   const dayWarnings = dayPrefWarnings(slots);
   const effQ = Object.values(slots).filter(r=>r==='q1'||r==='q2').length;
@@ -3048,10 +3079,15 @@ function generatePlan(inp){
      (ispod toga trening nema smisla), pa runDays*3 je minimum koji plan moze
      da isporuci. Trazenih 5 km na 6 dana = 0.8 km po treningu; plan tada daje
      18 km i deload ne moze da smanji ispod poda. */
-  const volFloor = runDays * 3;
+  if(qCut){
+    dayWarnings.push('Na ' + inp.weeklyKm + ' km/ned plan daje JEDAN kvalitetan trening nedeljno umesto dva. ' +
+      'Dva kvaliteta traže bar ~' + QUAL2_MIN_KM + ' km/ned — ispod toga bi oni sami bili većina nedelje, ' +
+      'a za lagano trčanje (koje gradi bazu) ne bi ostalo mesta. Kad obim poraste, dodaj drugi.');
+  }
+  const volFloor = r1(runDays * 1.5);   /* apsolutni pod: ispod 1.5 km po treningu nema smisla */
   if(inp.weeklyKm > 0 && inp.weeklyKm < volFloor){
     dayWarnings.push('Na ' + runDays + ' dana trčanja minimum je oko ' + volFloor +
-      ' km/ned (ispod ~3 km po treningu nema smisla). Tražio si ' + inp.weeklyKm +
+      ' km/ned (ispod ~1,5 km po treningu nema smisla). Tražio si ' + inp.weeklyKm +
       ' km — plan će biti veći od toga. Za tako nizak obim uzmi manje dana trčanja.');
   }
 
@@ -3149,14 +3185,24 @@ function generatePlan(inp){
       /* trkačka nedelja pozicionirana po STVARNOM danu trke, ne fiksno četvrtak */
       const rp=racePace;
       const distKm=(raceDistM/1000).toFixed(1).replace(/\.0$/,'').replace('.',',');
+      /* Dani trkacke nedelje su bili TVRDO KODOVANI (3 / 3.7 / 2 km). Za trkaca
+         na 50 km/ned to je tacno, ali za pocetnika ciji je vrhunac 14 km/ned
+         trkacka nedelja je time ispadala 13.7 km — prakticno normalna nedelja,
+         umesto najlaksa u planu. Sada prate obim, uz apsolutni minimum da
+         shakeout ostane shakeout. */
+      const shakeA=r1(Math.max(1.5, Math.min(3, vol*0.22)));
+      const shakeB=r1(Math.max(1, Math.min(2, vol*0.15)));
+      const aktWu=r1(Math.max(1, Math.min(1.5, vol*0.11)));
+      const aktCd=r1(Math.max(0.8, Math.min(1, vol*0.08)));
+      const aktN=6;
       const mk={
-        [raceDow-3]: dw=>D(dw,'lako',3,`3 km shakeout (skroz lagano) + lagani core`),
-        [raceDow-2]: dw=>D(dw,'int',3.7,`1.5 km zagrevanje + 6×200 m @ ${fmtP(Math.max(rp-4,pI-6))}/km (200 m hoda) + 1 km smirivanje — aktivacija`),
-        [raceDow-1]: dw=>D(dw,'lako',2,`2 km shakeout + lagana mobilnost`),
+        [raceDow-3]: dw=>D(dw,'lako',shakeA,`${shakeA} km shakeout (skroz lagano) + lagani core`),
+        [raceDow-2]: dw=>D(dw,'int',r1(aktWu+aktN*0.2+aktCd),`${aktWu} km zagrevanje + ${aktN}×200 m @ ${fmtP(Math.max(rp-4,pI-6))}/km (200 m hoda) + ${aktCd} km smirivanje — aktivacija`),
+        [raceDow-1]: dw=>D(dw,'lako',shakeB,`${shakeB} km shakeout + lagana mobilnost`),
         [raceDow]:   dw=>D(dw,'trka',raceDistM/1000,`🏁 TRKA ${distKm} km (${prof.name}) — cilj ${fmtP(inp.goalSec||a.predictedSec)} / ritam ${fmtP(rp)}/km`)
       };
       for(let dw=1; dw<=raceDow; dw++){ days.push(mk[dw]? mk[dw](dw) : REST(dw)); }
-      if(raceDow-2>=1){ plan.pred.push(predRow(w,'Intervali',1.2,Math.max(rp-4,pI-6),raceDistM)); plan.qs['n'+w+'d'+(raceDow-2)]=[200]; }
+      if(raceDow-2>=1){ plan.pred.push(predRow(w,'Intervali',r1(aktN*0.2),Math.max(rp-4,pI-6),raceDistM)); plan.qs['n'+w+'d'+(raceDow-2)]=[200]; }
     } else if(w <= baseWeeks){
       /* FAZA 1 (bazna) — samo lako trčanje + obavezne strides, bez kvaliteta.
          Gradi aerobnu bazu i obim pre nego što kvalitetni ciklus počne. */
@@ -3399,7 +3445,8 @@ function generatePlan(inp){
       const limit = prevVol * capRast;
       let sada = days.reduce((s,d)=>s+(d.km||0),0);
       if(prevVol > 0 && sada > limit){
-        const laki = days.filter(d=>(d.tag==='lako'||d.tag==='rw') && d.km > 3);
+        const POD = podPoDanu(vol, runDays);
+        const laki = days.filter(d=>(d.tag==='lako'||d.tag==='rw') && d.km > POD);
         let visak = sada - limit;
         /* skracuje od NAJDUZEG laganog dana nanize — ravnomernije nego redom */
         laki.sort((a,b)=>b.km-a.km);
@@ -3414,14 +3461,14 @@ function generatePlan(inp){
              normalnog rasta LR-a, ne zbog greske) pada na njega. Ostatak viska
              iznad 30% se NE dira — nedelja ostane malo iznad ciljanog rasta,
              sto je bezbednije od unistenog dana za oporavak. */
-          const moze = Math.min(d.km - 3, d.km * 0.30);
+          const moze = Math.min(d.km - POD, d.km * 0.30);
           const skini = Math.min(moze, visak);
           if(skini > 0){
             /* Pod od 3 km: r1() moze da spusti ispod. Napomena: allocEasyLR
                na VRLO niskom obimu svesno dozvoljava 2.5 km po laganom danu
                (linija sa rem-2.5*easyCount) — to je njegova odluka i ne dira
                se ovde; ovo samo sprecava da IZRAVNAVANJE dodatno spusti. */
-            const novi = Math.max(3, r1(d.km - skini));
+            const novi = Math.max(POD, r1(d.km - skini));
             visak -= (d.km - novi);
             d.km = novi;
             d.desc = (d.desc||'').replace(/^[\d.,]+ km/, d.km + ' km');
