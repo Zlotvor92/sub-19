@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='101'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='102'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2560,11 +2560,34 @@ const DIST_PROFILES = {
      trošiti oporavak na 2h+ trčanja.
    ============================================================ */
 
-/* Bezbedna nedeljna stopa rasta obima. Ovo je STOPA, ne ukupan procenat —
-   duži blok zato prirodno nosi veći ukupan rast, bez ijedne dodatne formule.
-   (Raniji model je ograničavao UKUPAN procenat pa duže vreme nije donosilo
-   ništa: 20-nedeljni plan je davao isti vrhunac kao 12-nedeljni.) */
-const RATE_5K = { kons:1.035, std:1.05, agr:1.065 };
+/* ============================================================
+   KORAK RASTA OBIMA — apsolutni na malom obimu, procentualni na velikom.
+
+   PROCENAT SAM JE POGRESNA MERA NA NISKOM OBIMU. +5% od 10 km/ned je +0.5 km
+   nedeljno — to nije napredak, to je sum. Prijava korisnika: pocetnik sa 10
+   km/ned je posle DESET nedelja imao vrhunac od 13.5 km. Isto vazi i za
+   "10% pravilo" i za nas GROW_MAX (+8%): oba su formulisana za trkace koji
+   vec trce ozbiljan obim, i na 10 km/ned ne znace nista.
+
+   Rizik povrede prati APSOLUTNO opterecenje tkiva, a ne procenat: na 10 km/ned
+   telo ima ogroman prostor, pa trener tu dodaje 1.5-2 km nedeljno (produzi
+   jedno trcanje, dodaj kratko) — sto je +18%, i potpuno bezbedno. Na 60 km/ned
+   isti taj apsolutni skok je +3%, pa procenat preuzima.
+
+   Zato korak = clamp(obim * procenat, MIN_KM, MAX_KM):
+     MIN_KM  drzi napredak smislenim na malom obimu,
+     procenat vlada u sredini,
+     MAX_KM  sprecava da veliki obim raste u apsolutnim skokovima.
+   ============================================================ */
+const KORAK_5K = {
+  kons: { pct:0.040, min:1.2, max:2.5 },
+  std:  { pct:0.055, min:1.8, max:3.5 },
+  agr:  { pct:0.070, min:2.4, max:4.5 }
+};
+function korakRasta5K(vol, intensity){
+  const K = KORAK_5K[intensity] || KORAK_5K.std;
+  return Math.max(K.min, Math.min(K.max, vol*K.pct));
+}
 /* Obim na kom dobra rekreativna 5K priprema dostiže vrhunac. Nije plafon
    za one koji već trče više — samo odredište za one koji trče manje. */
 const CILJ_OBIM_5K = 55;
@@ -2576,9 +2599,10 @@ const CILJ_OBIM_5K = 55;
    (3) 120 km kao zaštita od degenerisanog unosa, ne trenerska odluka.
    Vrhunac NIKAD nije ispod unetog obima. */
 function peakVol5K(cur, rampSteps, intensity){
-  const stopa = RATE_5K[intensity] || RATE_5K.std;
+  let v = cur;
+  for(let i=0;i<rampSteps;i++) v += korakRasta5K(v, intensity);
   const gornja = Math.max(cur*1.10, CILJ_OBIM_5K);
-  return Math.max(cur, Math.min(cur*Math.pow(stopa, rampSteps), gornja, 120));
+  return Math.max(cur, Math.min(v, gornja, 120));
 }
 
 /* DUGO TRČANJE ZA 5K.
@@ -3120,7 +3144,9 @@ function generatePlan(inp){
   const deloadCount = Math.floor((weeks-2)/DELOAD_EVERY);
   const rampSteps = Math.max(weeks - 2 - deloadCount, 1);
   const peakTarget = peakVol5K(cur, rampSteps, inp.intensity);
-  const growMax = Math.min(GROW_MAX, Math.max(1, Math.pow(peakTarget/cur, 1/rampSteps)));
+  /* Nedeljni korak je APSOLUTAN (v. korakRasta5K), ne mnozenje sa growMax —
+     multiplikativni plafon je na niskom obimu kocio jednako kao i sam rast. */
+  const sledeci = v => Math.min(v + korakRasta5K(v, inp.intensity), peakTarget);
   for(let w=1; w<=weeks; w++){
     if(w===weeks){ vols.push(r1(peak(vols)*RACEWK_F)); }
     else if(w===weeks-1){ vols.push(r1(peak(vols.length?vols:[cur])*TAPER_F)); }
@@ -3141,15 +3167,15 @@ function generatePlan(inp){
            radila ovako; bazna je ostala nepopravljena. */
         const prevB = vols.length ? vols[vols.length-1] : cur;
         const baseB = (w>1 && (w-1)%DELOAD_EVERY===0 && vols.length>=2) ? vols[vols.length-2] : prevB;
-        cur = vols.length ? Math.min(baseB*growMax, peakTarget) : cur;
+        cur = vols.length ? sledeci(baseB) : cur;
         vols.push(r1(cur));
       }
     }
     else if(w%DELOAD_EVERY===0 && w<weeks-2){ vols.push(r1(vols[vols.length-1]*DELOAD_F)); }
     else{
-      const prev = vols.length?vols[vols.length-1]:cur/growMax;
+      const prev = vols.length?vols[vols.length-1]:cur;
       const base = (w>1 && (w-1)%DELOAD_EVERY===0) ? vols[vols.length-2] : prev;
-      cur = Math.min(base*growMax, peakTarget);
+      cur = sledeci(base);
       vols.push(r1(cur));
     }
   }
@@ -3449,8 +3475,10 @@ function generatePlan(inp){
       const prevW = plan.weeks[plan.weeks.length-1];
       const baseW = (prevW.deload && plan.weeks.length>=2) ? plan.weeks[plan.weeks.length-2] : prevW;
       const prevVol = baseW.days.reduce((s,d)=>s+(d.km||0),0);
-      const capRast = GROW_MAX;   /* 5K: nikad preko +8% nedeljno */
-      const limit = prevVol * capRast;
+      /* Granica isporucenog rasta prati isti apsolutni korak (uz margin za
+         diskretnost sesija) — multiplikativnih +8% je na 10 km/ned bilo 0.8 km
+         i seklo je i sasvim normalan napredak. */
+      const limit = prevVol + korakRasta5K(prevVol, inp.intensity)*1.6;
       let sada = days.reduce((s,d)=>s+(d.km||0),0);
       if(prevVol > 0 && sada > limit){
         const POD = podPoDanu(vol, runDays);
