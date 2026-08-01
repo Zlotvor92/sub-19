@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='91'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='93'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2645,7 +2645,22 @@ function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, isMarathon, isP
      tehnički "ispod" 29.7km LR ali NIJE lak dan, to je drugi long run.
      Nova granica: lak dan ne sme preći 50% LR-a — čvrsto, ne "malo manje". */
   const mx=Math.max(...easies);
-  const easyCeil=lr*0.50;
+  /* Granica 50% postoji zbog stvarnog buga opisanog gore (26.6 km "lako"
+     odmah posle 28.5 km LR — to vise nije lak dan, to je drugi dugi).
+     ALI: opasnost je u APSOLUTNOM broju, ne u procentu. Lak dan od 9 km posle
+     14 km LR je 64% — a i dalje je lak dan, niko se od 9 km ne prebije.
+     Zato: do 12 km dozvoljeno do 70%, iznad toga ostaje strogih 50%.
+     Ovo resava slucaj 4 dana + 2 kvaliteta, gde jedini lak dan bude
+     nesrazmerno mali i ceo plan startuje ispod trazenog obima. */
+  /* Dva ogranicenja koja rade zajedno:
+     DONJE (procenat): do 12 km sme do 70% LR — lak dan od 9 km posle 14 km
+       LR je bezbedan, iako je 64%. Bez ovoga plan sa 4 dana i 2 kvaliteta
+       startuje daleko ispod trazenog obima.
+     GORNJE (apsolutno): nikad preko 14 km, bez obzira na procenat. Kod
+       maratona sa LR od 29.7 km, "50%" je 14.9 km — tehnicki u pravilu, ali
+       to vise nije lak dan nego drugi dugi trening (isto sto je originalni
+       bug i opisivao). Apsolutni plafon to zatvara. */
+  const easyCeil = Math.min(14, Math.max(lr*0.50, Math.min(12, lr*0.70)));
   if(mx>=easyCeil && mx>0){
     const sc=easyCeil/mx;
     easies=easies.map(e=>Math.max(3,r1(e*sc)));
@@ -3206,7 +3221,37 @@ function generatePlan(inp){
         }
         sessions[dow]=buildQuality(qualW,qualWeeks,role,effQ,vol,pI,pT,pE,isTaper1,dow,racePace,prof.qMix,pM,pR,prof.name);
       }
+      /* PRODUZENO ZAGREVANJE/SMIRIVANJE kad nedelja podbacuje ciljni obim.
+         Sa 4 dana i 2 kvaliteta ostaje samo JEDAN lagan dan, pa nedeljni zbir
+         padne ispod trazenog (izmereno: trazi 45, dobija 36-39). Umesto da se
+         sve svali na taj jedan dan, produzuje se WU i CD kvalitetnih sesija —
+         to su lagani kilometri koji ionako pripadaju tim treninzima, a ne
+         menjaju radni deo ni intenzitet. Najvise +1 km po strani. */
+      (function(){
+        const zbirQ = Object.values(sessions).reduce((s,d)=>s+(d.km||0),0);
+        if(!zbirQ) return;
+        const easyMin = 3 * Math.max(easyDowsCountPre(), 0);
+        const procena = zbirQ + easyMin + vol*0.30;   /* gruba: kvalitet + lagani na podu + LR */
+        const manjak = vol - procena;
+        if(manjak <= 1) return;
+        const koraci = Math.min(1, manjak / (Object.keys(sessions).length * 2));
+        Object.values(sessions).forEach(d=>{
+          const s = d.session;
+          if(!s || s.type==='prog') return;          /* progresivni nema WU/CD */
+          if(s.wuKm==null || s.cdKm==null) return;
+          s.wuKm = r1(s.wuKm + koraci);
+          s.cdKm = r1(s.cdKm + koraci);
+          d.km = sessKm(s);
+          d.desc = sessDesc(s);
+        });
+      })();
       const qKms=Object.values(sessions).map(d=>d.km||0);
+      function easyDowsCountPre(){
+        return [1,2,3,4,5,6,7].filter(d=>{
+          const role=slots[d];
+          return role==='easy' || ((role==='q1'||role==='q2') && !sessions[d]);
+        }).length;
+      }
       const easyDowsCount=[1,2,3,4,5,6,7].filter(d=>{
         const role=slots[d];
         return role==='easy' || ((role==='q1'||role==='q2') && !sessions[d]);
