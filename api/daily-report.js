@@ -74,14 +74,23 @@ async function fetchAiUsageDays(url, key) {
   return lastByUser;
 }
 
+/* Admin API vraca najvise per_page po strani. Ranije se citala SAMO prva strana
+   (per_page=200) — preko toga su korisnici tiho ispadali iz izvestaja, bez
+   ikakvog traga da lista nije potpuna. Sada se strane citaju dok ima podataka. */
 async function fetchUserList(url, key) {
-  const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=200', {
-    headers: { apikey: key, Authorization: 'Bearer ' + key }
-  });
-  if (!r.ok) throw new Error('lista korisnika nije uspela (' + r.status + ')');
-  const j = await r.json();
-  const users = Array.isArray(j) ? j : (Array.isArray(j.users) ? j.users : []);
-  return users.map(u => ({
+  const PER = 200, MAX_PAGES = 25;   /* gornja granica da greska na serveru ne napravi beskonacnu petlju */
+  const out = [];
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=' + PER + '&page=' + page, {
+      headers: { apikey: key, Authorization: 'Bearer ' + key }
+    });
+    if (!r.ok) throw new Error('lista korisnika nije uspela (' + r.status + ')');
+    const j = await r.json();
+    const users = Array.isArray(j) ? j : (Array.isArray(j.users) ? j.users : []);
+    out.push(...users);
+    if (users.length < PER) break;
+  }
+  return out.map(u => ({
     id: u.id,
     email: u.email || '(bez email-a)',
     created: u.created_at || null,
@@ -172,7 +181,7 @@ function mergeRows(users, rawStates, aiDays, todayStr) {
   });
 }
 
-function buildHtml(stats, rows, errors, todayStr) {
+function buildHtml(stats, rows, errors) {
   const row = (label, val) =>
     `<tr><td style="padding:6px 14px;color:#7A7A86;font-size:13px">${esc(label)}</td>` +
     `<td style="padding:6px 14px;font-weight:700;font-size:15px">${esc(val)}</td></tr>`;
@@ -254,7 +263,7 @@ export default async function handler(req, res) {
   catch (e) { errors.aiUsage = e.message; }
 
   const rows = mergeRows(users, rawStates, aiDays, todayStr);
-  const html = buildHtml(stats, rows, errors, todayStr);
+  const html = buildHtml(stats, rows, errors);
 
   try {
     const r = await fetch('https://api.resend.com/emails', {

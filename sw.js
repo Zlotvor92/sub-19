@@ -3,8 +3,8 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v94';
-const APP_VERSION = '94';
+const CACHE = 'sub19-cache-v95';
+const APP_VERSION = '95';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('message', e => {
@@ -33,22 +33,38 @@ self.addEventListener('fetch', e => {
      ne vidi promenu jer je stari keš i dalje tu). ASSETS je mali spisak (par KB ukupno),
      cena mrežne provere je zanemarljiva — zato ide na CEO spisak, ne fajl-po-fajl kad
      god se neki od njih sledeći put promeni. */
-  const key = ASSETS.find(a => u.pathname === a.replace(/^\.\//, '/') || u.pathname.endsWith(a.replace(/^\./, '')));
+  /* './' se normalizuje u '/', pa je stari `endsWith('/')` odgovarao BILO KOJOJ
+     putanji koja se zavrsava kosom crtom (npr. '/nesto/drugo/') i mapirao je na
+     kes index.html-a. Za tu jednu stavku vazi samo tacno poklapanje. */
+  const key = ASSETS.find(a => {
+    const p = a.replace(/^\./, '');            /* './index.html' -> '/index.html', './' -> '/' */
+    return u.pathname === p || (p !== '/' && u.pathname.endsWith(p));
+  });
   if (e.request.mode === 'navigate' || key) {
     const cacheKey = key || './index.html';
     e.respondWith(
       fetch(e.request)
-        .then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put(cacheKey, cp)); return r; })
+        .then(r => { putSafe(cacheKey, r); return r; })
         .catch(() => caches.match(cacheKey))
     );
     return;
   }
   e.respondWith(
     caches.match(e.request).then(hit => hit || fetch(e.request).then(r => {
-      if (r.ok && new URL(e.request.url).origin === location.origin) {
-        const cp = r.clone(); caches.open(CACHE).then(c => c.put(e.request, cp));
-      }
+      if (new URL(e.request.url).origin === location.origin) putSafe(e.request, r);
       return r;
     }))
   );
 });
+
+/* Kesira SAMO ispravan, pun odgovor.
+   - Bez provere `r.ok` neuspeo deploy (500/404 HTML stranica) zavrsi u kesu kao
+     index.html i servira se offline dok sledeci uspesan fetch ne prodje —
+     `.catch()` grana to ne hvata, jer HTTP greska NIJE mrezna greska.
+   - status 206 (Partial Content) i opaque odgovori bacaju u cache.put(),
+     sto je bilo neuhvaceno odbijanje obecanja. */
+function putSafe(key, r) {
+  if (!r || !r.ok || r.status === 206 || r.type === 'opaque') return;
+  const cp = r.clone();
+  caches.open(CACHE).then(c => c.put(key, cp)).catch(() => {});
+}
