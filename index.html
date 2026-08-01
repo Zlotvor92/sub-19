@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='97'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='98'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2641,7 +2641,7 @@ function danielsLRCapKm(vol, pLRsecPerKm, isMarathon, isPeakStretch, isTaper){
          sve ostale nedelje pravilo postuju (grana ispod).
          Plafon od 55% nedelje sprecava apsurd na niskom obimu (npr. 29 km
          unutar nedelje od 40 km). ============================================ */
-      return Math.min(Math.max(29, vol*0.35), 32, vol*0.55);
+      return Math.min(Math.max(29, vol*0.35), 32, vol*0.45);
     }
     /* Obicne nedelje: dugo trcanje raste sa obimom, ali ostaje jasno ISPOD
        vrhunskog — i postuje 150-min pravilo. Plafon od 26 km drzi razliku
@@ -3113,27 +3113,55 @@ function generatePlan(inp){
   }
   const qualWeeks = weeks - baseWeeks;  /* nedelje u kojima se odvija kvalitetni ciklus */
 
-  /* volumen: start→vrhunac uz +8% cap, deload svake 4., taper 2 nedelje (NEPROMENJENO — kalibrisano na etalon, distancno-agnostičko po dizajnu) */
-  const vols=[]; let cur=Math.max(15, Math.min(inp.weeklyKm, 90));
-  /* Maraton: blago pojačan nedeljni rast (10% umesto 8%) — i dalje unutar
-     uobičajenih bezbednih granica ("10% pravilo"), ali nizak polazni obim
-     (npr. 18km/ned) inače ne stigne do dovoljno visokog vrhunca za pravi
-     dugačak long run u razumnom broju nedelja. LOKALNA promenljiva — NE dira
-     globalnu GROW_MAX (koju koristi reentryPlan, nepromenjen). */
-  const growMax = prof.useM ? ({kons:1.08,std:1.10,agr:1.12}[inp.intensity]||1.10) : GROW_MAX;
-  /* NAPOMENA: kod NISKOG polaznog obima (~16-18km/ned) + Konzervativno (8%),
-     dugo trčanje može ostati ispod 28km cilja (npr. 20.7-27.4km u testu) —
-     matematička posledica sporijeg rasta, ne greška. Od ~25km/ned start naviše
-     čak i Konzervativno dostiže pun cilj. Korisnik svesno prihvata ovaj
-     kompromis biranjem Konzervativno. */
-  /* peakTarget = compound rast starta preko svih RAMPNIH nedelja (ukupne minus
-     taper minus deloadovi), tako da se vrhunac dostigne TAČNO pred taper — ne na
-     sredini plana. Fiksni cur*2.1 je dostizao vrhunac prerano na dugim planovima
-     → plateau i nazubljeno oscilirање oko cap-a posle svakog deloada (bug na 20+
-     ned. planovima). Gornje granice (cur+weeks*2.2, 90) zadržane. */
+  /* ============================================================
+     VRHUNAC OBIMA — v2, PROPORCIONALAN umesto apsolutnog.
+
+     STARO: peakTarget = min(cur*growMax^rampSteps, cur + weeks*2.2, 90).
+     Srednji clan je APSOLUTAN dodatak (+2.2 km po nedelji plana), pa je
+     relativni efekat bio obrnuto srazmeran polaznom obimu — tacno naopako od
+     onoga sto trener radi. Izmereno auditom na maratonu od 20 nedelja:
+        uneto 25 km -> vrhunac 69 km  (+176%)
+        uneto 40 km -> vrhunac 84 km  (+110%)
+        uneto 85 km -> vrhunac 90 km  (+6%)
+     Dakle pocetnik, cija su tkiva najmanje prilagodjena, dobijao je najveci
+     skok; iskusan trkac skoro nikakav. Na 5K/10K/HM je bilo i gore: trkac na
+     85 km/ned dobijao je plan koji vrhunac ima ISPOD onoga sto vec trci (-4%),
+     jer je tvrdi plafon od 90 sekao pre svega ostalog.
+
+     NOVO: vrhunac = trenutni obim * (1 + prostor), gde je "prostor" procenat
+     rasta koji trener realno daje u jednom bloku. Zavisi od tri stvari:
+
+     (a) CILJNA DISTANCA — maratonu treba najvise aerobne baze, 5K najmanje.
+         Za 5K obim nije glavni pokretac (kvalitet jeste), pa se ne gura.
+     (b) DUZINA BLOKA — duzi plan sme vise, ali sa zasicenjem: niko ne raste
+         linearno 30 nedelja. Eksponencijalno zasicenje (tau=8 rampnih nedelja)
+         daje ~+19% na kratkom bloku i saturira oko +32-45% na dugom.
+     (c) KOLIKO COVEK VEC TRCI — sto je obim veci, to je marginalni prostor
+         manji (85 km/ned se ne dize za 40%). Prigusenje pada linearno i staje
+         na 35%, pa i vrlo iskusan trkac uvek dobije NEKI rast.
+
+     Nema vise tvrdog plafona od 90; gornja granica od 150 je samo zastita od
+     degenerisanog unosa, ne trenerska odluka. Vrhunac takodje NIKAD ne moze
+     biti ispod unetog obima (Math.max(cur, ...)) — to je bio -4% bug.
+     ============================================================ */
+  const vols=[]; let cur=Math.max(15, Math.min(inp.weeklyKm, 150));
   const deloadCount = Math.floor((weeks-2)/DELOAD_EVERY);
   const rampSteps = Math.max(weeks - 2 - deloadCount, 1);
-  const peakTarget = Math.min(cur*Math.pow(growMax, rampSteps), cur + weeks*2.2, 90);
+  /* (a) koliko prostora distanca uopste trazi */
+  const ROOM_DIST = prof.useM ? 0.50 : raceDistM>=21097 ? 0.38 : raceDistM>=10000 ? 0.30 : 0.25;
+  /* (b) duzina bloka, sa zasicenjem */
+  const zasicenje = 1 - Math.exp(-rampSteps/8);
+  /* (c) prigusenje po trenutnom obimu — 30 km/ned dobija pun prostor, 85 km/ned oko pola */
+  const prigusenje = Math.max(0.35, Math.min(1, 1 - (cur-30)/110));
+  const intenzitet = ({kons:0.75, std:1.0, agr:1.30})[inp.intensity] || 1.0;
+  const prostor = ROOM_DIST * zasicenje * prigusenje * intenzitet;
+  const peakTarget = Math.max(cur, Math.min(cur*(1+prostor), 150));
+  /* Nedeljni korak se IZVODI iz vrhunca i broja rampnih nedelja, umesto fiksnih
+     +8%/+10%. Bez ovoga bi plan sa skromnim vrhuncem (npr. +14% za 5K) stigao
+     do njega za dve nedelje pa stajao u mestu ostatak bloka — isti plateau koji
+     je audit nasao kod maratona na plafonu od 90. GROW_MAX (+8%) ostaje kao
+     apsolutna bezbednosna granica koraka, nikad se ne prekoracuje. */
+  const growMax = Math.min(GROW_MAX, Math.max(1, Math.pow(peakTarget/cur, 1/rampSteps)));
   for(let w=1; w<=weeks; w++){
     if(w===weeks){ vols.push(r1(peak(vols)*RACEWK_F)); }
     else if(w===weeks-1){ vols.push(r1(peak(vols.length?vols:[cur])*TAPER_F)); }
@@ -3531,6 +3559,23 @@ function generatePlan(inp){
         'bezbednosne granice, pa se veći obim ne može rasporediti na tako malo dana.' +
         (trebaDana ? ' Za ' + inp.weeklyKm + ' km trebalo bi ti ' + trebaDana + ' dana trčanja.'
                    : ' Ni na 7 dana ne staje — za toliki obim verovatno trebaju dupli treninzi.'));
+    }
+
+    /* BAZA ZA CILJNU DISTANCU. Rast obima je sada proporcionalan (v. peakTarget),
+       sto je bezbedno — ali znaci i da ko krene sa vrlo niskom bazom nece stici
+       do obima koji ta distanca stvarno trazi. To NE blokiramo (vlasnikova
+       filozofija: sve je izmenjivo, plan kaze istinu i pusta coveka da odluci),
+       ali se mora reci naglas — inace covek vidi uredan maratonski plan koji
+       vrhunac ima na 38 km/ned i misli da je spreman.
+       Brojevi su donja granica zdravog razuma za pripremu te distance, ne
+       Danielsove konstante — zato "orijentaciono". */
+    const BAZA_MIN = { 5000:30, 10000:40, 21097.5:55, 42195:70 }[raceDistM];
+    if(BAZA_MIN && pik > 0 && pik < BAZA_MIN*0.85){
+      dayWarnings.push('Plan vrhunac ima na oko ' + pik.toFixed(0) + ' km/ned, a za ' + prof.name +
+        ' se orijentaciono računa sa ~' + BAZA_MIN + ' km/ned. Rast je namerno postupan (od tvojih ' +
+        inp.weeklyKm + ' km/ned) jer je nagli skok obima najčešći uzrok povrede — ' +
+        'ali to znači da je ovo plan da distancu ISTRČIŠ, ne da je trčiš na vreme. ' +
+        'Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.');
     }
   }
 
