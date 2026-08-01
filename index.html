@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='100'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='101'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1202,6 +1202,14 @@ function realKmDay(d){const l=S.log[d.id];if(!l||l.status!=='done')return 0;retu
 function weekRealKm(w){return w.days.reduce((s,d)=>s+realKmDay(d),0);}
 function weekDone(w){return w.days.filter(d=>!d.rest&&stFor(d.id)==='done').length;}
 function weekCountable(w){return w.days.filter(d=>!d.rest).length;}
+/* TRCANJA odvojeno od snage. Korisnik koji je izabrao "4 dana trcanja" je s
+   pravom prijavio da mu plan pise "5 tren." — peti je dan snage, koji je u
+   generisanom planu izricito OPCION ("po sopstvenom programu, bez trcanja").
+   Brojac je i dalje isti (snaga se sme oznaciti kao odradjena), ali se
+   prikazuje odvojeno da broj trcanja odgovara onome sto je covek uneo. */
+function weekRunCount(w){return w.days.filter(d=>!d.rest && d.tag!=='snaga').length;}
+function weekRunDone(w){return w.days.filter(d=>!d.rest && d.tag!=='snaga' && stFor(d.id)==='done').length;}
+function weekHasStrength(w){return w.days.some(d=>!d.rest && d.tag==='snaga');}
 function totalDone(){return CUR_PLAN.reduce((n,w)=>n+weekDone(w),0);}
 function streak(today){
   let cur=today,n=0;
@@ -1998,7 +2006,7 @@ function dayCard(d){
   } else {
     c+=`<div class="desc">${esc(d.desc)}</div>`;
   }
-  c+=`<div class="meta">${d.km!=null?`<div><b>${fmtKm(d.km)} km</b>plan</div>`:''}<div><b>${fmtKm(weekPlanKm(d.week))} km</b>nedelja N${d.week.w}</div><div><b>${weekDone(d.week)}/${weekCountable(d.week)}</b>treninga</div></div>`;
+  c+=`<div class="meta">${d.km!=null?`<div><b>${fmtKm(d.km)} km</b>plan</div>`:''}<div><b>${fmtKm(weekPlanKm(d.week))} km</b>nedelja N${d.week.w}</div><div><b>${weekRunDone(d.week)}/${weekRunCount(d.week)}</b>trčanja</div></div>`;
   if(s==='pending')c+=`<div class="btnrow"><button class="btn" data-a="done">Završi trening</button><button class="btn ghost" data-a="skip">Preskoči</button></div>`;
   else if(s==='skip')c+=`<div class="btnrow"><button class="btn ghost" data-a="done">Ipak sam odradio</button><button class="btn ghost sm" data-a="pending">Vrati</button></div>`;
   else c+=formHTML(d);
@@ -2200,7 +2208,7 @@ function renderPlan(){
       <button class="wk-h">
         <div class="wk-n" style="${cur?'color:var(--pink)':''}">N${w.w}</div>
         <div class="wk-i"><div class="wk-d">${fmtD(w.start)} – ${fmtD(addD(w.start,endOff))}${cur?' · tekuća nedelja':''}</div><div class="wk-f">${esc(weekPhase(w,CUR_PLAN.length)==='DELOAD'?w.focus:(w.focus?weekPhase(w,CUR_PLAN.length)+' · '+w.focus:weekPhase(w,CUR_PLAN.length)))}</div></div>
-        <div class="wk-km"><b>${fmtKm(rk)} / ${fmtKm(pk)} km</b>${dn}/${ct} tren.</div>
+        <div class="wk-km"><b>${fmtKm(rk)} / ${fmtKm(pk)} km</b>${weekRunDone(w)}/${weekRunCount(w)} trč.${weekHasStrength(w)?' + snaga':''}</div>
       </button>
       <div class="wk-bar"><i style="width:${ct?Math.round(dn/ct*100):0}%"></i></div>
       <div class="wk-body">
@@ -4410,7 +4418,9 @@ function gaugeSVG(frac){
 function renderProg(){
   const el=$('#pg-prog');
   const w=weekOf(TODAY)||(TODAY<CUR_START?CUR_PLAN[0]:CUR_PLAN[CUR_PLAN.length-1]);
-  const pk=weekPlanKm(w),rk=weekRealKm(w),dn=weekDone(w),ct=weekCountable(w);
+  /* Pips i brojac gledaju TRCANJA — snaga je opciona i broji se odvojeno
+     (v. weekRunCount). Ranije je "4 dana trcanja" prikazivalo 5 pipova. */
+  const pk=weekPlanKm(w),rk=weekRealKm(w),dn=weekRunDone(w),ct=weekRunCount(w);
   const f1=pk?Math.min(rk/pk,1):0;
   const done=totalDone(),pct=done/TOTAL_TR*100;
   let pipsHTML='';
@@ -4422,7 +4432,7 @@ function renderProg(){
       ${gaugeSVG(f1)}
       <div class="gauge-num">${fmtKm(rk)}<small> / ${fmtKm(pk)} km</small></div>
       <div class="gauge-lbl">${Math.round(f1*100)}% nedeljne kilometraže</div>
-      ${ct?`<div class="pips-row">${pipsHTML}</div><div class="pips-lbl"><b>${dn}</b> / ${ct} treninga odrađeno</div>`:''}
+      ${ct?`<div class="pips-row">${pipsHTML}</div><div class="pips-lbl"><b>${dn}</b> / ${ct} trčanja odrađeno${weekHasStrength(w)?' <span style="color:var(--txt3)">· + snaga</span>':''}</div>`:''}
     </div>
   </div>
   <div class="card">
