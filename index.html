@@ -3184,7 +3184,21 @@ function generatePlan(inp){
         if(dow===1 && slots[7]==='lr' && plan.weeks.length>0){
           const prevW=plan.weeks[plan.weeks.length-1];
           const prevLR=Math.max(...prevW.days.filter(d=>d.tag==='lr').map(d=>d.km||0),0);
-          if(prevLR>0) km=Math.min(km, r1(prevLR*0.50));
+          /* BUG (nadjen prijavom korisnika: 4 dana/2 kvaliteta ostavlja TACNO
+             jedan lak dan, uvek u ponedeljak — ovaj cap ga je pogadjao SVAKE
+             nedelje, ne kao redak bezbednosni izuzetak. Flat 50% prethodnog LR-a
+             je grublji i STROZI od allocEasyLR-ovog sopstvenog easyCeil-a (koji
+             vec dozvoljava do 70% OVONEDELJNOG LR-a do 12km) — ta dva pravila su
+             se sudarala, i grublje je uvek pobedjivalo, gaseci allocEasyLR-ovu
+             already-bezbednu procenu. Narocito posle deload nedelje (mali
+             prevLR) ovo je gusilo sledeci ponedeljak bez ikakvog stvarnog rizika
+             (deload LR je mali — nema "drugog LR-a" da se cuvamo). Ista tiered
+             formula kao easyCeil, primenjena na prevLR — cuva izvornu nameru
+             (spreci lak dan da bude skoro isti kao LR) bez nepotrebnog gusenja. */
+          if(prevLR>0){
+            const capKm=Math.min(14, Math.max(r1(prevLR*0.50), Math.min(12, r1(prevLR*0.70))));
+            km=Math.min(km, capKm);
+          }
         }
         const rw = useRunWalk ? runWalkFor(w, inp.weeklyKm, trainedRecently) : null;
         if(rw){
@@ -3292,7 +3306,21 @@ function generatePlan(inp){
         if(dow===1 && slots[7]==='lr' && plan.weeks.length>0){
           const prevW=plan.weeks[plan.weeks.length-1];
           const prevLR=Math.max(...prevW.days.filter(d=>d.tag==='lr').map(d=>d.km||0),0);
-          if(prevLR>0) km=Math.min(km, r1(prevLR*0.50));
+          /* BUG (nadjen prijavom korisnika: 4 dana/2 kvaliteta ostavlja TACNO
+             jedan lak dan, uvek u ponedeljak — ovaj cap ga je pogadjao SVAKE
+             nedelje, ne kao redak bezbednosni izuzetak. Flat 50% prethodnog LR-a
+             je grublji i STROZI od allocEasyLR-ovog sopstvenog easyCeil-a (koji
+             vec dozvoljava do 70% OVONEDELJNOG LR-a do 12km) — ta dva pravila su
+             se sudarala, i grublje je uvek pobedjivalo, gaseci allocEasyLR-ovu
+             already-bezbednu procenu. Narocito posle deload nedelje (mali
+             prevLR) ovo je gusilo sledeci ponedeljak bez ikakvog stvarnog rizika
+             (deload LR je mali — nema "drugog LR-a" da se cuvamo). Ista tiered
+             formula kao easyCeil, primenjena na prevLR — cuva izvornu nameru
+             (spreci lak dan da bude skoro isti kao LR) bez nepotrebnog gusenja. */
+          if(prevLR>0){
+            const capKm=Math.min(14, Math.max(r1(prevLR*0.50), Math.min(12, r1(prevLR*0.70))));
+            km=Math.min(km, capKm);
+          }
         }
         /* Strides na prvom lakom danu SVAKE kval. nedelje (Daniels: kroz sve faze,
            redovno — ne povremeno). Izostaju samo u taper1 (izbeći dodatni neuro-
@@ -3339,7 +3367,16 @@ function generatePlan(inp){
         laki.sort((a,b)=>b.km-a.km);
         for(const d of laki){
           if(visak <= 0.05) break;
-          const moze = d.km - 3;
+          /* Plafon od 30% SOPSTVENE vrednosti dana (nadjeno prijavom korisnika:
+             jedini lak dan u nedelji — 4 dana/2 kvaliteta — gubio je i do 70%
+             sopstvene vrednosti u jednom prolazu, npr. 11.9km -> 3.6km, kad bi
+             kvalitet ili LR te nedelje bili malo veci od proseka. Sa samo jednim
+             lakim danom NEMA drugog dana da podeli teret, pa ceo visak
+             (koji ionako postoji SAMO zbog diskretnosti kvalitetnih sesija i
+             normalnog rasta LR-a, ne zbog greske) pada na njega. Ostatak viska
+             iznad 30% se NE dira — nedelja ostane malo iznad ciljanog rasta,
+             sto je bezbednije od unistenog dana za oporavak. */
+          const moze = Math.min(d.km - 3, d.km * 0.30);
           const skini = Math.min(moze, visak);
           if(skini > 0){
             /* Pod od 3 km: r1() moze da spusti ispod. Napomena: allocEasyLR
