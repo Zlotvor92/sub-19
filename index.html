@@ -500,6 +500,30 @@ nav button:active{transform:scale(.92)}
 
 .empty{text-align:center;color:var(--txt3);font-size:.85rem;padding:26px 10px;font-weight:600}
 .note-src{font-size:.7rem;color:var(--txt3);font-weight:600;margin-top:10px}
+
+/* PODEŠAVANJA — sekcije.
+   Ranije je svaka sekcija bila naslov + gomila dugmadi + pasus sitnog teksta,
+   sve iste težine, sa pet crvenih dugmadi koja se međusobno takmiče. Ovde:
+   naslov nosi stanje veze kao oznaku, uputstva se sklapaju, a crveno je
+   rezervisano za JEDNU glavnu radnju po sekciji. */
+.set-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.set-h .card-t{margin:0;flex:1}
+.chip{font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+      padding:4px 9px;border-radius:999px;white-space:nowrap}
+.chip.on{background:rgba(48,209,88,.16);color:var(--green)}
+.chip.off{background:var(--card2);color:var(--txt3);border:1px solid var(--line)}
+.set-st{font-size:.74rem;color:var(--txt2);font-weight:600;line-height:1.5;margin:0 0 2px}
+.set-st b{color:var(--txt);font-weight:700}
+.set-sub{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--txt3);margin:16px 0 8px}
+details.help{margin-top:10px}
+details.help>summary{list-style:none;cursor:pointer;font-size:.72rem;font-weight:700;
+      color:var(--txt3);display:flex;align-items:center;gap:6px;padding:7px 0}
+details.help>summary::-webkit-details-marker{display:none}
+details.help>summary::after{content:'⌄';margin-left:auto;font-size:.9rem;line-height:1;transition:transform .15s}
+details.help[open]>summary::after{transform:rotate(180deg)}
+details.help p{font-size:.72rem;color:var(--txt3);font-weight:600;line-height:1.6;margin:2px 0 8px}
+details.help b{color:var(--txt2)}
 hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 
 @media(prefers-reduced-motion:reduce){
@@ -559,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='124'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='125'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6926,50 +6950,62 @@ function openSettings(){
     <div class="sh-t">Podešavanja i podaci</div>
     <div class="sh-s">${counts}</div>
     ${LS_OK?'':`<div class="kb warn"><div><div>Skladište nedostupno</div><small>Podaci žive samo dok je stranica otvorena (pregled). Na Vercelu/Safariju čuvanje radi normalno.</small></div></div>`}
-    <div class="btnrow" style="margin-top:2px"><button class="btn" id="s-exp">Izvezi backup (JSON)</button></div>
-    <div class="btnrow"><button class="btn ghost" id="s-imp">Uvezi backup</button></div>
-    <input type="file" id="s-file" accept=".json,application/json" style="display:none">
-    ${sbOn()?`<hr class="sep">
-    <div class="card-t">Nalog i sinhronizacija</div>
+
+    ${sbOn()?`
+    <div class="set-h"><div class="card-t">Nalog</div><span class="chip ${sbAuthed()?'on':'off'}">${sbAuthed()?'prijavljen':'nije prijavljen'}</span></div>
     ${sbAuthed()
-      ? `<div class="note-src" style="margin:0 0 10px">Prijavljen: ${esc(SB.email||'—')} · ${SB.seenAt?('sinhronizovano '+new Date(SB.seenAt).toLocaleString('sr-RS')):'još nije sinhronizovano'}</div>
-         <div class="btnrow"><button class="btn" id="sb-sync">Sinhronizuj sada</button><button class="btn ghost" id="sb-out">Odjavi se</button></div>
-         <div class="btnrow"><button class="btn ghost" id="s-bug">Prijavi problem</button></div>
-         <div class="note-src" style="margin-top:8px">Podaci i dalje žive na ovom uređaju — server je rezervna kopija. Radi i bez signala.</div>`
-      : `<div class="btnrow"><button class="btn" id="sb-in">Prijavi se Google nalogom</button></div>
-         <div class="note-src" style="margin-top:8px">Bez prijave sve radi kao i do sad, samo bez rezervne kopije na serveru.</div>`}`:''}
-    <hr class="sep">
-    <div class="card-t">Plan</div>
+      ? `<div class="set-st"><b>${esc(SB.email||'—')}</b><br>${SB.seenAt?('sinhronizovano '+new Date(SB.seenAt).toLocaleString('sr-RS')):'još nije sinhronizovano'}</div>
+         <div class="btnrow"><button class="btn ghost" id="sb-sync">Sinhronizuj</button><button class="btn ghost sm" id="sb-out">Odjavi se</button></div>
+         <details class="help"><summary>Čemu služi prijava</summary><p>Podaci i dalje žive na ovom uređaju — server je samo rezervna kopija, pa aplikacija radi i bez signala. Prijava služi da plan bude isti na svim tvojim uređajima.</p></details>`
+      : `<div class="btnrow" style="margin-top:0"><button class="btn" id="sb-in">Prijavi se Google nalogom</button></div>
+         <details class="help"><summary>Šta dobijam prijavom</summary><p>Bez prijave sve radi kao i do sad, samo bez rezervne kopije na serveru i bez istog plana na više uređaja.</p></details>`}
+    <hr class="sep">`:''}
+
+    <div class="set-h"><div class="card-t">Plan</div><span class="chip ${S.genPlan?'on':'off'}">${S.genPlan?'generisan':'lični'}</span></div>
     ${S.genPlan
-      ?`<div class="note-src" style="margin:0 0 10px">Aktivan: generisan plan (${CUR_PLAN.length} nedelja)</div>
-        <div class="btnrow" style="margin-top:0"><button class="btn ghost" id="pl-revert">Vrati na moj plan</button></div>`
-      :`<div class="btnrow" style="margin-top:0"><button class="btn" id="pl-gen">🧙 Generiši novi plan (za drugara)</button></div>
-        <div class="note-src">Napravi poseban plan za nekog drugog — tvoj plan ostaje netaknut.</div>`}
+      ?`<div class="set-st">Aktivan je <b>generisan plan</b> · ${CUR_PLAN.length} nedelja</div>
+        <div class="btnrow"><button class="btn ghost" id="pl-revert">Vrati na moj plan</button></div>`
+      :`<div class="set-st">Aktivan je <b>tvoj lični plan</b> · ${CUR_PLAN.length} nedelja</div>
+        <div class="btnrow"><button class="btn ghost" id="pl-gen">🧙 Generiši novi plan</button></div>
+        <details class="help"><summary>Za koga je novi plan</summary><p>Pravi poseban plan za nekog drugog — tvoj plan ostaje netaknut i uvek mu se vraćaš ovim istim dugmetom.</p></details>`}
+
     <hr class="sep">
-    <div class="card-t">Strava</div>
+    <div class="set-h"><div class="card-t">Strava</div><span class="chip ${S.strava?'on':'off'}">${S.strava?'povezano':'nije povezano'}</span></div>
     ${S.strava
-      ?`<div class="note-src" style="margin:0 0 10px">Povezan${S.strava.athlete?': '+esc(S.strava.athlete):''} · poslednji sync: ${S.strava.lastSync?new Date(S.strava.lastSync).toLocaleString('sr-RS'):'nikad'} · scope: ${esc(S.strava.scope||'?')}</div>
-        <div class="btnrow" style="margin-top:0"><button class="btn" id="st-sync">Sinhronizuj sada</button><button class="btn ghost sm" id="st-off">Otkači</button></div>
-        <div class="note-src">Pravila: Strava ima prednost nad ručnim unosom; ručna korekcija polja (km/vreme/puls) trajno štiti taj trening od prepisivanja; 2 trčanja istog dana → uzima se ono bliže planiranoj kilometraži; tempo intervala/tempa se čita iz lapova i upisuje u Predikciju.</div>`
+      ?`<div class="set-st">${S.strava.athlete?'<b>'+esc(S.strava.athlete)+'</b><br>':''}poslednji uvoz: ${S.strava.lastSync?new Date(S.strava.lastSync).toLocaleString('sr-RS'):'nikad'}</div>
+        <div class="btnrow"><button class="btn" id="st-sync">Uvezi trčanja</button><button class="btn ghost sm" id="st-off">Otkači</button></div>
+        <details class="help"><summary>Pravila uvoza</summary><p>Strava ima prednost nad ručnim unosom. Ručna korekcija polja (km / vreme / puls) <b>trajno</b> štiti taj trening od prepisivanja. Ako su dva trčanja istog dana, uzima se ono bliže planiranoj kilometraži. Tempo intervala i tempa se čita iz lapova i upisuje u Predikciju.</p></details>`
       :`<div class="btnrow" style="margin-top:0"><button class="btn" id="st-on" style="background:#FC4C02">Poveži Stravu</button></div>
-        <div class="note-src">Automatski uvoz trčanja (distanca, vreme, puls) i tempa kvalitetnih sesija iz lapova.</div>`}
+        <details class="help"><summary>Šta se uvozi</summary><p>Distanca, vreme i puls svakog trčanja, plus tempo kvalitetnih sesija iz lapova.</p></details>`}
+
     <hr class="sep">
-    <div class="card-t">Oporavak (intervals.icu)</div>
+    <div class="set-h"><div class="card-t">intervals.icu</div><span class="chip ${S.icu&&S.icu.athleteId?'on':'off'}">${S.icu&&S.icu.athleteId?'povezano':'nije povezano'}</span></div>
     ${S.icu&&S.icu.athleteId
-      ?`<div class="note-src" style="margin:0 0 10px">Povezan · ID ${esc(S.icu.athleteId)} · poslednje povlačenje: ${S.icu.lastSync?new Date(S.icu.lastSync).toLocaleString('sr-RS'):'nikad'} · zapisa: ${(S.wellness?Object.keys(S.wellness).length:0)}</div>
-        <div class="btnrow" style="margin-top:0"><button class="btn" id="icu-sync">Povuci sada</button><button class="btn ghost sm" id="icu-off">Otkači</button></div>
-        <div class="note-src">HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</div>
-        <div class="btnrow" style="margin-top:10px"><button class="btn ghost" id="icu-push">📤 Pošalji treninge na sat (14 dana)</button><button class="btn ghost sm" id="icu-vidi">👁 Vidi šta se šalje</button></div>
-        <div class="btnrow" style="margin-top:6px"><button class="btn ghost sm" id="icu-push2">♻️ Obriši i pošalji iz početka</button></div>
-        <div class="note-src">Ako na satu piše <b>„No Target"</b>: u intervals.icu → Settings → Sport Settings unesi <b>prag tempa (threshold pace)</b>${icuPragTekst()}. Bez njega intervals.icu izbacuje ciljeve tempa iz Garmin izvoza. Pošto se Garmin izvoz pravi pri NASTANKU događaja, posle unosa praga obično ne pomaže obično slanje — treba „Obriši i pošalji iz početka".</div>
+      ?`<div class="set-st">ID <b>${esc(S.icu.athleteId)}</b> · ${(S.wellness?Object.keys(S.wellness).length:0)} zapisa<br>poslednje povlačenje: ${S.icu.lastSync?new Date(S.icu.lastSync).toLocaleString('sr-RS'):'nikad'}</div>
+        <div class="btnrow"><button class="btn" id="icu-sync">Povuci oporavak</button><button class="btn ghost sm" id="icu-off">Otkači</button></div>
+        <details class="help"><summary>Šta se povlači</summary><p>HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</p></details>
+
+        <div class="set-sub">Slanje treninga na sat</div>
+        <div class="set-st">poslednje slanje: ${S.icu.lastPush?new Date(S.icu.lastPush).toLocaleString('sr-RS'):'nikad'}</div>
+        <div class="btnrow"><button class="btn ghost" id="icu-push">📤 Pošalji na sat (14 dana)</button></div>
+        <div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="icu-vidi">👁 Vidi šta se šalje</button><button class="btn ghost sm" id="icu-push2">♻️ Pošalji iz početka</button></div>
         <div id="icu-pregled"></div>
-        <div class="note-src">Šalje strukturu treninga u intervals.icu kalendar. Da bi stigli i <b>na sat</b>, u intervals.icu → Settings uključi <b>„Upload planned workouts"</b> i autorizuj Garmin Connect.${S.icu.lastPush?' · poslednje slanje: '+new Date(S.icu.lastPush).toLocaleString('sr-RS'):''}</div>`
+        <details class="help"><summary>Da treninzi stignu do sata</summary><p>U intervals.icu → Settings uključi <b>„Upload planned workouts"</b> i autorizuj Garmin Connect. Prosleđuje se otprilike nedelju dana unapred, pa dalji dani stižu sami kako se približavaju.</p></details>
+        <details class="help"><summary>Ako na satu piše „No Target"</summary><p>U intervals.icu → Settings → Sport Settings unesi <b>prag tempa (threshold pace)</b>${icuPragTekst()}. Bez njega intervals.icu izbacuje ciljeve tempa iz Garmin izvoza.</p><p>Garmin izvoz se pravi kad događaj <b>nastane</b>, pa posle unosa praga obično slanje ne pomaže — tada ide <b>„Pošalji iz početka"</b>, koje briše ranije poslato i pravi ga iznova.</p></details>`
       :`<div class="f-field full"><label>ID sportiste</label><input id="icu-id" inputmode="numeric" placeholder="npr. i123456"></div>
         <div class="f-field full"><label>API ključ</label><input id="icu-key" type="password" placeholder="iz intervals.icu → Settings → Developer"></div>
         <div class="btnrow" style="margin-top:8px"><button class="btn" id="icu-on">Poveži</button></div>
-        <div class="note-src">Otvori intervals.icu → Settings → dole "Developer Settings" — tu su ID sportiste i API ključ. Odatle čitamo HRV, puls u miru i san koje Garmin već šalje.</div>`}
+        <details class="help"><summary>Gde nalazim ID i ključ</summary><p>intervals.icu → Settings → na dnu <b>Developer Settings</b>. Odatle čitamo HRV, puls u miru i san koje Garmin već šalje, a tamo šaljemo planirane treninge za sat.</p></details>`}
+
     <hr class="sep">
-    <div class="note-src">Poslednji backup: ${S.ui.lastBackup?fmtDY(S.ui.lastBackup):'nikad'} · Verzija: ${APP_VERSION} · Šema podataka: v${S.v} · Plan: ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · Izvor: ${S.genPlan?'generisan planom':'Plan_SUB-19_5K_v5.xlsx'}${S.genPlan?'':' · Trka: 24.09.2026.'} · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
+    <div class="set-h"><div class="card-t">Podaci</div></div>
+    <div class="set-st">poslednji backup: <b>${S.ui.lastBackup?fmtDY(S.ui.lastBackup):'nikad'}</b></div>
+    <div class="btnrow"><button class="btn ghost" id="s-exp">Izvezi backup</button><button class="btn ghost" id="s-imp">Uvezi backup</button></div>
+    <input type="file" id="s-file" accept=".json,application/json" style="display:none">
+    ${sbOn()&&sbAuthed()?`<div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="s-bug">Prijavi problem</button></div>`:''}
+
+    <hr class="sep">
+    <div class="note-src">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_SUB-19_5K_v5.xlsx · trka 24.09.2026.'} · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
   `);
   $('#s-exp').onclick=exportBackup;
   if($('#s-bug')) $('#s-bug').onclick=openBugSheet;
