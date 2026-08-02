@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='118'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='119'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6576,10 +6576,12 @@ function oporavakZa(datum){
 function icuTempo(sec, sec2){
   if(!(sec>0)) return null;
   const f=x=>Math.floor(x/60)+':'+String(Math.round(x%60)).padStart(2,'0');
-  /* intervals.icu podrzava opseg ("3:54-3:58/km Pace"). Plan ponegde zadaje
-     opseg umesto jedne vrednosti — bolje ga preneti nego zaokruziti na jedan
-     broj i time promeniti nameru treninga. */
-  return (sec2>0 && sec2!==sec) ? f(Math.min(sec,sec2))+'-'+f(Math.max(sec,sec2))+'/km Pace'
+  /* intervals.icu podrzava opseg. Plan ponegde zadaje opseg umesto jedne
+     vrednosti — bolje ga preneti nego zaokruziti na jedan broj i time
+     promeniti nameru treninga.
+     REDOSLED: SPORIJI PA BRZI ("7:15-7:00/km Pace"), tako stoji u njihovom
+     vodicu; jedinica se pise samo jednom, na kraju. */
+  return (sec2>0 && sec2!==sec) ? f(Math.max(sec,sec2))+'-'+f(Math.min(sec,sec2))+'/km Pace'
                                 : f(sec)+'/km Pace';
 }
 function icuTrajanje(sec){
@@ -6594,16 +6596,22 @@ function icuRazdaljina(km){
 /* OPORAVAK IZMEDJU DEONICA — na sat NE SME da ide lagan (E) tempo.
    Pauza je ili hod ili lagano kaskanje, a ni jedno se ne trci na E tempu
    (npr. 5:20/km): sat bi kroz celu pauzu pikao "ubrzaj", a poenta pauze je
-   suprotna. Zato:
-     - hod      -> samo vreme, bez ijednog ciljnog tempa;
-     - kaskanje -> od 6:30/km navise, ne E tempo.
+   suprotna.
+
+   ZASTO PAUZA IPAK NOSI BROJ: u njihovoj sintaksi svaki korak mora imati
+   cilj — korak sa samim vremenom se ne prepozna i ume da obori strukturu
+   CELOG treninga. Zato hod ne dobija "nikakav" tempo nego POSTEN tempo hoda
+   (9:00–13:00/km): sat kroz pauzu cuti jer hod upada u taj opseg, a nigde ne
+   stoji broj kojim bi te terao da trcis.
+
    Ko dobija sta, odlucuje ISTI spisak (RECOVERY_JOG) koji pise i opis
    treninga, pa tekst plana i korak na satu ne mogu da se raziđu. */
-const ICU_KASKANJE_OD=390, ICU_KASKANJE_DO=450;   /* 6:30–7:30/km */
+const ICU_KASKANJE_OD=390, ICU_KASKANJE_DO=450;   /* 6:30–7:30/km — lagano kaskanje */
+const ICU_HOD_OD=540,      ICU_HOD_DO=780;        /* 9:00–13:00/km — hod */
 function icuOporavak(kind, restSec, kaskanje){
   const jog = kaskanje || RECOVERY_JOG.includes(kind);
   return jog ? '- Oporavak kaskanje '+icuTrajanje(restSec)+' '+icuTempo(ICU_KASKANJE_OD,ICU_KASKANJE_DO)
-             : '- Pauza hod '+icuTrajanje(restSec);
+             : '- Pauza hod '     +icuTrajanje(restSec)+' '+icuTempo(ICU_HOD_OD,ICU_HOD_DO);
 }
 /* Pretvara JEDAN dan plana u intervals.icu tekst. Vraca null za dane koje nema
    smisla slati (odmor, snaga, sam dan trke). */
@@ -6736,8 +6744,12 @@ function icuDaniZaSlanje(danaUnapred){
     const txt=icuTekstDana(d, pE);
     if(!txt) return;
     const izv=d.session||icuIzOpisa(d.desc,d.tag);
+    /* Naziv nosi i kilometrazu — u Garmin kalendaru i na satu se vidi samo
+       naziv, pa je golo "Lagano" bez ijednog broja beskorisno kad biras
+       trening na startu. */
+    const osnov=(izv&&izv.kind)||(d.mlr?'Srednje-dugo':d.tag==='lr'?'Dugo trčanje':'Lagano');
     out.push({ date:d.date, externalId:'sub19-'+d.id,
-               name:(izv&&izv.kind)||(d.mlr?'Srednje-dugo':d.tag==='lr'?'Dugo trčanje':'Lagano'),
+               name: d.km>0 ? osnov+' '+(Math.round(d.km*10)/10)+' km' : osnov,
                description:txt });
   }));
   return out;
