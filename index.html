@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='110'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='111'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1947,17 +1947,39 @@ function detectWorkSegments(streams){
    intervala, pa merimo puls/kadencu/tempo svakog kilometra kroz celo trčanje.
    Iz distance streama nalazimo gde svaki km počinje/završava, pa prosečimo HR i
    kadencu unutar tog opsega. Vraća niz {km, paceSec, hr, cadence}. */
+/* TEMPO PO KILOMETRU — iz VREMENA U POKRETU, ne iz proteklog.
+   Ranije je bilo `time[i] - time[startI]`, dakle PROTEKLO vreme: svako
+   zaustavljanje (semafor, cesma, prelaz) ulazilo je u tempo tog kilometra.
+   Izmereno na stvarnom trcanju (progresivni long, 15 km): cetiri kilometra su
+   imala stajanja od 121, 54, 42 i 37 sekundi, pa je AI dobio 6:53 umesto 4:52,
+   5:35 umesto 4:41, 5:24 umesto 4:42 — i iz toga zakljucio da su se "brzi i
+   spori kilometri neplanirano smenjivali" i da postoji "ogroman kardiovaskularni
+   drift", jer je poslednji kilometar izgledao kao da je trcan istim tempom kao
+   prvi. U stvarnosti je bio 42 s/km BRZI, i puls je bio tacno ono sto se
+   ocekuje. Analiza je bila pogresna u samoj osnovi, a ne u nijansi.
+   `stopSec` se prosledjuje dalje da AI zna DA je bilo stajanja i ne tumaci ga
+   kao usporavanje. */
 function perKmDetail(streams){
   if(!streams)return [];
   const dist=streams.distance&&streams.distance.data, hr=streams.heartrate&&streams.heartrate.data,
-        cad=streams.cadence&&streams.cadence.data, time=streams.time&&streams.time.data;
+        cad=streams.cadence&&streams.cadence.data, time=streams.time&&streams.time.data,
+        mov=streams.moving&&streams.moving.data;
   if(!Array.isArray(dist)||!dist.length)return [];
+  const imaMoving = Array.isArray(mov) && Array.isArray(time) && mov.length===time.length;
   const out=[]; let kmIdx=1, startI=0;
   for(let i=0;i<dist.length;i++){
     if(dist[i]>=kmIdx*1000){
       const seg=(arr)=>{ if(!arr)return null; let s=0,n=0; for(let k=startI;k<=i&&k<arr.length;k++){if(arr[k]!=null){s+=arr[k];n++;}} return n?s/n:null; };
-      const dt=(time&&time[i]!=null&&time[startI]!=null)?(time[i]-time[startI]):null;
-      out.push({km:kmIdx, paceSec: dt!=null?Math.round(dt):null, hr: seg(hr)!=null?Math.round(seg(hr)):null, cadence: seg(cad)!=null?Math.round(seg(cad)):null});
+      const proteklo=(time&&time[i]!=null&&time[startI]!=null)?(time[i]-time[startI]):null;
+      let dt=proteklo, stop=0;
+      if(imaMoving && proteklo!=null){
+        let s=0;
+        for(let k=startI;k<i;k++){ if(mov[k+1]) s += (time[k+1]-time[k]); }
+        dt=s; stop=Math.max(0, proteklo-s);
+      }
+      const r={km:kmIdx, paceSec: dt!=null?Math.round(dt):null, hr: seg(hr)!=null?Math.round(seg(hr)):null, cadence: seg(cad)!=null?Math.round(seg(cad)):null};
+      if(stop>=5) r.stopSec=Math.round(stop);
+      out.push(r);
       startI=i; kmIdx++;
     }
   }
@@ -6697,7 +6719,7 @@ async function stravaSync(manual){
             /* PRIMARNO: streamovi + prepoznavanje radnih segmenata po brzini.
                Nezavisno od Stravinih lapova (koji nepouzdano vraćaju čas
                strukturne čas auto-1km podelu). Jedan API poziv. */
-            const st=await stApi('/activities/'+a.id+'/streams?keys=distance,time,heartrate,cadence,watts&key_by_type=true');
+            const st=await stApi('/activities/'+a.id+'/streams?keys=distance,time,heartrate,cadence,watts,moving&key_by_type=true');
             const segs=detectWorkSegments(st);
             if(segs&&segs.length){
               const totT=segs.reduce((s,x)=>s+x.paceSec*x.distM/1000,0);
@@ -6727,7 +6749,7 @@ async function stravaSync(manual){
         /* Kontinuirana trčanja (lako/LR): povuci streamove i sačuvaj po-km presek
            (puls/kadenca/tempo svakog km) za analizu drifta i kadence. Samo jednom. */
         try{
-          const st=await stApi('/activities/'+a.id+'/streams?keys=distance,heartrate,cadence,time&key_by_type=true');
+          const st=await stApi('/activities/'+a.id+'/streams?keys=distance,heartrate,cadence,time,moving&key_by_type=true');
           const perKm=perKmDetail(st);
           if(perKm.length && S.log[d.id]) S.log[d.id].perKm=perKm;
         }catch(e){}

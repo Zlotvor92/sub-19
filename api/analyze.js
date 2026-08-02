@@ -235,11 +235,18 @@ Zajedničko pravilo:
       ).join('\n');
   }
   if (Array.isArray(entered.perKm) && entered.perKm.length) {
-    lapsBlock += '\n\nPODACI PO KILOMETRU (za drift i kadencu kroz celo trčanje):\n' +
+    /* Tempo je iz VREMENA U POKRETU. `stopSec` je vreme stajanja na tom
+       kilometru (semafor, cesma, prelaz) — mora biti izricito receno modelu,
+       inace ga tumaci kao usporavanje i gradi celu analizu na tome. */
+    const imaStop = entered.perKm.some(K => K.stopSec);
+    lapsBlock += '\n\nPODACI PO KILOMETRU (za drift i kadencu kroz celo trčanje).\n' +
+      'Tempo je računat iz vremena U POKRETU, pauze nisu uračunate' +
+      (imaStop ? '; gde piše "stajanje" trkač je stajao toliko sekundi (semafor, česma) — to NIJE usporavanje i ne tumači ga kao pad tempa.\n' : '.\n') +
       entered.perKm.slice(0, MAX_ITEMS).map(K =>
         `km ${K.km}: tempo ${K.paceSec!=null?fmtPace(K.paceSec):'—'}/km` +
         (K.hr!=null?`, puls ${K.hr}`:'') +
-        (K.cadence!=null?`, kadenca ${K.cadence}`:'')
+        (K.cadence!=null?`, kadenca ${K.cadence}`:'') +
+        (K.stopSec?`, stajanje ${K.stopSec} s`:'')
       ).join('\n');
   }
 
