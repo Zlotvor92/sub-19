@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='122'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='123'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6606,6 +6606,9 @@ function icuRazdaljina(km){
 
    Ko dobija sta, odlucuje ISTI spisak (RECOVERY_JOG) koji pise i opis
    treninga, pa tekst plana i korak na satu ne mogu da se raziđu. */
+/* Sirina lagane (Z2) zone: od E tempa pa 40 s/km sporije. Pri VDOT 48 to je
+   5:17–5:57/km, sto se poklapa sa rasponom u kom se lagano i trci u praksi. */
+const ICU_LAGAN_RASPON=40;
 const ICU_KASKANJE_OD=390, ICU_KASKANJE_DO=450;   /* 6:30–7:30/km — lagano kaskanje */
 const ICU_HOD_OD=540,      ICU_HOD_DO=780;        /* 9:00–13:00/km — hod */
 function icuOporavak(kind, restSec, kaskanje){
@@ -6674,7 +6677,13 @@ function icuTekstDana(d, pE){
      distancom ali BEZ tempa ("vidim 8k, ali nema pace") — i to tiho, jer i
      dalje izgleda kao ispravan trening. Bolje je dan preskociti i reci to,
      nego poslati trening koji na satu ne moze da odradi svoj posao. */
-  const lagan=icuTempo(pE);
+  /* LAGAN DEO JE RASPON, NE JEDAN BROJ. E tempo po Danielsu je gornja (brza)
+     ivica zone, a ne meta koju treba pogadjati u sekundu — lagano se trci od
+     njega pa navise, zavisno od dana i umora. Jedan broj je na satu znacio
+     stalno pikanje na zagrevanju i smirivanju, gde je to najmanje potrebno.
+     Racuna se iz forme, ne upisuje rukom, da vazi i kad se forma promeni i za
+     plan napravljen nekom drugom. */
+  const lagan=icuTempo(pE, pE>0 ? pE+ICU_LAGAN_RASPON : 0);
   if(!lagan) return null;
   const red=(lbl,mera,tempo)=>'- '+(lbl?lbl+' ':'')+mera+(tempo?' '+tempo:'');
   /* Sekcije se spajaju PRAZNIM REDOM — intervals.icu to trazi oko svakog bloka
