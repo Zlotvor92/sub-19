@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUB-20 · Uputstvo</title>
+<style>
+  :root{ --bg:#0A0A0F; --card:#16161D; --card2:#1D1D26; --txt:#F5F5F7; --txt2:#9C9CA8;
+         --txt3:#7A7A86; --line:rgba(255,255,255,.08); --pink:#FF2D55; --green:#30D158 }
+  *{box-sizing:border-box}
+  body{margin:0;padding:22px 16px 72px;background:var(--bg);color:var(--txt);
+       font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  main{max-width:720px;margin:0 auto}
+  h1{font-size:1.6rem;margin:0 0 4px;letter-spacing:-.02em}
+  .sub{color:var(--txt2);margin:0 0 26px}
+  h2{font-size:1.15rem;margin:34px 0 4px;padding-top:20px;border-top:1px solid var(--line)}
+  h3{font-size:.95rem;margin:20px 0 4px}
+  p,li{color:var(--txt2)}
+  li{margin:5px 0}
+  a{color:var(--pink)}
+  b{color:var(--txt)}
+  code{background:var(--card2);padding:1px 6px;border-radius:5px;font-size:.88em;color:var(--txt)}
+  .tag{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:8px;
+       padding:2px 8px;font-size:.8rem;font-weight:700;color:var(--txt);white-space:nowrap}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:16px 0}
+  .box.tip{border-left:3px solid var(--green)}
+  .box.warn{border-left:3px solid var(--pink)}
+  .box p:first-child{margin-top:0} .box p:last-child{margin-bottom:0}
+  nav.toc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:0 0 8px}
+  nav.toc ol{margin:0;padding-left:20px}
+  nav.toc a{color:var(--txt2);text-decoration:none;font-weight:600}
+  nav.toc a:hover{color:var(--pink)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--txt)} td{color:var(--txt2)}
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);
+         font-size:.8rem;color:var(--txt3)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>SUB-20 — uputstvo</h1>
+<p class="sub">Kako aplikacija radi i šta koja funkcija stvarno pravi.</p>
+
+<nav class="toc"><ol>
+  <li><a href="#pocetak">Prvi koraci</a></li>
+  <li><a href="#danas">Danas — dan po dan</a></li>
+  <li><a href="#plan">Plan — cela priprema</a></li>
+  <li><a href="#progres">Progres — da li napredujem</a></li>
+  <li><a href="#povrede">Povrede</a></li>
+  <li><a href="#trka">Trka — predikcija</a></li>
+  <li><a href="#ai">AI analiza</a></li>
+  <li><a href="#strava">Strava</a></li>
+  <li><a href="#icu">intervals.icu — oporavak i sat</a></li>
+  <li><a href="#podaci">Podaci i backup</a></li>
+  <li><a href="#problemi">Kad nešto ne radi</a></li>
+</ol></nav>
+
+<h2 id="pocetak">1. Prvi koraci</h2>
+
+<h3>Instaliraj je kao aplikaciju</h3>
+<p>Otvori <a href="https://sub-19.vercel.app/">sub-19.vercel.app</a> u pregledaču, pa
+<b>Dodaj na početni ekran</b> (iPhone: Share → Add to Home Screen; Android: meni → Install).
+Tada radi u punom ekranu i <b>bez interneta</b> — podaci žive na telefonu.</p>
+
+<h3>Prijavi se</h3>
+<p>Prijava Google nalogom služi za rezervnu kopiju na serveru i za isti plan na više
+uređaja. Bez nje sve radi, ali ako izgubiš telefon — nema povratka.</p>
+
+<h3>Napravi plan</h3>
+<p>Čarobnjak pita distancu (<span class="tag">5K</span> <span class="tag">10K</span>
+<span class="tag">21K</span> <span class="tag">42K</span>), datum trke, koliko km trčiš
+nedeljno sada i koliko dana u nedelji možeš. Iz toga se gradi cela priprema.</p>
+<div class="box tip">
+  <p><b>Budi iskren oko trenutne kilometraže.</b> To je jedini broj iz kog se računa koliko
+  plan sme da raste. Ako napišeš više nego što stvarno trčiš, plan će te preopteretiti od
+  prve nedelje.</p>
+</div>
+<p>Svaka distanca ima <b>svoju logiku</b> — 5K plan nije skraćen maratonski. Razlikuju se
+tempo sesija, dužina dugog trčanja, broj kvalitetnih dana i način na koji se ide u taper.</p>
+
+<h2 id="danas">2. Danas — dan po dan</h2>
+<p>Prvi tab pokazuje <b>samo današnji trening</b>, sa punim opisom: zagrevanje, radni deo,
+ciljni tempo, pauze, smirivanje.</p>
+<ul>
+  <li><b>Završi trening</b> — otvara unos: pređeni kilometri, vreme, prosečan puls.</li>
+  <li><b>Preskoči</b> — dan ostaje zabeležen kao preskočen; plan se ne pomera sam.</li>
+</ul>
+<div class="box tip">
+  <p><b>Kod kvalitetnih sesija upiši tempo radnog dela.</b> Iz njega se računa tvoja forma
+  (VDOT), a iz forme sve ostalo — budući tempi, predikcija trke i tempo koji odlazi na sat.
+  Lagana trčanja u tome ne učestvuju.</p>
+</div>
+
+<h2 id="plan">3. Plan — cela priprema</h2>
+<p>Sve nedelje odjednom, sa kilometražom po nedelji i oznakom faze. Dodirni bilo koji dan
+za detalje.</p>
+<ul>
+  <li><b>Izmeni trening</b> — promeni kilometre, tempo ili opis pojedinog dana.</li>
+  <li><b>Pomeri trening</b> — prebaci ga na drugi dan iste nedelje kad ti se poklopi
+      obaveza. Nedeljni obim ostaje isti.</li>
+</ul>
+<div class="box warn">
+  <p><b>Ne pomeraj kvalitetne sesije jednu uz drugu.</b> Dva teška dana zaredom su glavni
+  način da se pokupi povreda. Ako moraš da preskočiš — preskoči, nemoj da nagomilavaš.</p>
+</div>
+
+<h2 id="progres">4. Progres — da li napredujem</h2>
+<table>
+  <tr><th>Kartica</th><th>Šta ti kaže</th></tr>
+  <tr><td>Trenutna forma (VDOT)</td><td>jedan broj koji sažima formu; iz njega se izvode svi tempi</td></tr>
+  <tr><td>VDOT trend</td><td>da li forma raste — bitniji je nagib nego pojedinačna tačka</td></tr>
+  <tr><td>Nedeljna kilometraža</td><td>plan naspram stvarno odrađenog</td></tr>
+  <tr><td>Ispunjenost plana</td><td>koliki procenat treninga je odrađen</td></tr>
+  <tr><td>Prosečan tempo</td><td>kroz sva odrađena trčanja</td></tr>
+  <tr><td>Telesna masa</td><td>cilj naspram stvarnog, ako unosiš težinu</td></tr>
+  <tr><td>Oporavak</td><td>HRV, puls u miru i san — samo ako je intervals.icu povezan</td></tr>
+</table>
+<div class="box tip">
+  <p><b>Jedan loš trening ništa ne znači.</b> Gledaj nagib kroz tri-četiri nedelje. Vrućina,
+  neispavanost i stres pomeraju tempo za 10–20 s/km bez ikakvog gubitka forme.</p>
+</div>
+
+<h2 id="povrede">5. Povrede</h2>
+<p>Dodirni deo tela na mapi i upiši bol od <b>0 do 10</b>. Vremenom dobiješ krivu bola po
+delu tela, pa se vidi da li nešto raste — obično nedelju-dve pre nego što to sam primetiš.</p>
+<div class="box warn">
+  <p>Bol preko <b>4</b> koji traje više od nekoliko dana, ili koji menja način na koji trčiš,
+  nije nešto što se „istrči". Prekid od tri dana košta mnogo manje od šest nedelja pauze.</p>
+</div>
+
+<h2 id="trka">6. Trka — predikcija</h2>
+<p>Predviđeno vreme na ciljnoj distanci, računato iz forme, i kako se ta procena menjala
+kroz pripremu. Puni se iz radnog dela kvalitetnih sesija — što ih više upišeš, procena je
+mirnija i tačnija.</p>
+<p>Rana predikcija zna da skače. To je normalno: sa dve tačke se ne vidi trend.</p>
+
+<h2 id="ai">7. AI analiza</h2>
+<p>Dva mesta:</p>
+<ul>
+  <li><b>🤖 Analiziraj trening</b> — na svakom odrađenom treningu. Gleda tempo po kilometru,
+      puls, kadencu, visinsku razliku, temperaturu, raspad tempa i puls-tempo odnos
+      (dekapling), i poredi to sa onim što je trening <i>trebalo</i> da bude.</li>
+  <li><b>📈 Objasni trend</b> — u Progresu, preko cele istorije umesto jednog dana.</li>
+</ul>
+<p>Ako je Strava povezana, analiza koristi i podatke po kilometru i po deonici, pa je
+osetno konkretnija. Ograničenje je <b>30 analiza dnevno</b>.</p>
+<div class="box warn">
+  <p>AI je pomoćnik, ne trener. Ako ti kaže nešto što se kosi sa onim što telo govori —
+  telo je u pravu.</p>
+</div>
+
+<h2 id="strava">8. Strava</h2>
+<p>Podešavanja → Strava → <b>Poveži Stravu</b>. Posle toga <b>Uvezi trčanja</b> sam popunjava
+distancu, vreme i puls, a tempo intervala čita iz lapova.</p>
+<p>Pravila koja vredi znati:</p>
+<ul>
+  <li>Strava ima prednost nad ručnim unosom.</li>
+  <li>Ali ako <b>ti</b> ručno ispraviš km, vreme ili puls — taj trening je trajno zaštićen
+      od prepisivanja.</li>
+  <li>Dva trčanja istog dana → uzima se ono bliže planiranoj kilometraži.</li>
+</ul>
+
+<h2 id="icu">9. intervals.icu — oporavak i sat</h2>
+<p>Dve odvojene stvari kroz istu vezu.</p>
+
+<h3>Oporavak (čitanje)</h3>
+<p>Povlači <b>HRV, puls u miru, san i trenažno opterećenje</b> koje Garmin već šalje na
+intervals.icu. Prikazuje se u Progresu, sa sedmodnevnom osnovom, pa se vidi kada odstupaš
+od sopstvenog proseka — a ne od tuđe tabele.</p>
+<p>Povezivanje: intervals.icu → Settings → dole <b>Developer Settings</b> → tu su ID
+sportiste i API ključ. <b>Ključ nikad ne napušta tvoj telefon</b> — ne upisuje se u bazu.</p>
+
+<h3>Slanje treninga na sat (pisanje)</h3>
+<p>Šalje strukturu treninga u intervals.icu kalendar, odakle intervals.icu prosleđuje
+Garminu, a Garmin satu. Da lanac radi, treba oboje:</p>
+<ol>
+  <li>intervals.icu → Settings → uključi <b>„Upload planned workouts"</b> i autorizuj
+      Garmin Connect.</li>
+  <li>intervals.icu → Settings → Sport Settings → unesi <b>prag tempa (threshold pace)</b>.</li>
+</ol>
+<div class="box warn">
+  <p><b>Ako na satu svaki korak piše „No Target"</b> — nedostaje prag tempa. Bez njega
+  intervals.icu izbacuje ciljeve tempa iz Garmin izvoza, iako struktura stigne ispravno.
+  Aplikacija ti u Podešavanjima ispisuje tačan broj koji treba uneti.</p>
+  <p>Pošto se Garmin izvoz pravi kad događaj <b>nastane</b>, posle unosa praga obično slanje
+  ne pomaže — tada ide <b>„Pošalji iz početka"</b>, koje briše ranije poslato i pravi ga
+  iznova.</p>
+</div>
+<p>Još dve stvari koje zbune:</p>
+<ul>
+  <li>Garmin Connect aplikacija <b>namerno ne prikazuje korake</b> treninga trećih strana —
+      piše „View details and edit on Intervals.icu". To nije kvar; koraci su na satu.</li>
+  <li>intervals.icu prosleđuje Garminu otprilike <b>nedelju dana unapred</b>, iako mi šaljemo
+      14 dana. Dalji dani stižu sami kako se približavaju.</li>
+</ul>
+<p>Dugme <b>👁 Vidi šta se šalje</b> ispisuje doslovno ono što odlazi, po danima — koristi ga
+kad nisi siguran da li je problem kod nas ili dalje niz lanac.</p>
+
+<h2 id="podaci">10. Podaci i backup</h2>
+<p>Podaci žive <b>na tvom telefonu</b>; server je rezervna kopija. Zato aplikacija radi u
+avionu, u šumi i bez signala.</p>
+<ul>
+  <li><b>Izvezi backup</b> — jedan JSON fajl sa svime. Snimi ga pre veće promene.</li>
+  <li><b>Uvezi backup</b> — vraća stanje iz tog fajla.</li>
+</ul>
+<div class="box tip">
+  <p>Izvezi backup pre nego što promeniš plan ili očistiš podatke pregledača. Traje pet
+  sekundi i jedini je način da se vratiš unazad.</p>
+</div>
+
+<h2 id="problemi">11. Kad nešto ne radi</h2>
+<table>
+  <tr><th>Simptom</th><th>Prvo probaj</th></tr>
+  <tr><td>Aplikacija izgleda staro / promena se ne vidi</td><td>zatvori je potpuno i otvori ponovo; u Podešavanjima na dnu proveri broj verzije</td></tr>
+  <tr><td>Na satu piše „No Target"</td><td>unesi prag tempa, pa <b>Pošalji iz početka</b></td></tr>
+  <tr><td>Treninga nema na Garmin kalendaru</td><td>proveri „Upload planned workouts" u intervals.icu</td></tr>
+  <tr><td>Strava ne uvozi trčanje</td><td>Uvezi trčanja ručno; ako je polje ručno menjano, zaštićeno je namerno</td></tr>
+  <tr><td>Predikcija skače gore-dole</td><td>normalno dok ima malo unosa; smiruje se</td></tr>
+  <tr><td>Nešto drugo</td><td>Podešavanja → <b>Prijavi problem</b> — stiže sa verzijom i tabom na kom si bio</td></tr>
+</table>
+
+<footer>
+  SUB-20 · <a href="https://sub-19.vercel.app/">otvori aplikaciju</a> ·
+  <a href="./privacy.html">politika privatnosti</a>
+</footer>
+
+</main>
+</body>
+</html>
