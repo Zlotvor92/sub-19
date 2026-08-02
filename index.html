@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='116'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='117'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6571,10 +6571,14 @@ function oporavakZa(datum){
    ukljuci "Upload planned workouts" i autorizuje Garmin Connect. Bez toga
    trening ostaje u intervals.icu kalendaru.
    ============================================================ */
-function icuTempo(sec){
+function icuTempo(sec, sec2){
   if(!(sec>0)) return null;
-  const m=Math.floor(sec/60), s=Math.round(sec%60);
-  return m+':'+String(s).padStart(2,'0')+'/km Pace';
+  const f=x=>Math.floor(x/60)+':'+String(Math.round(x%60)).padStart(2,'0');
+  /* intervals.icu podrzava opseg ("3:54-3:58/km Pace"). Plan ponegde zadaje
+     opseg umesto jedne vrednosti — bolje ga preneti nego zaokruziti na jedan
+     broj i time promeniti nameru treninga. */
+  return (sec2>0 && sec2!==sec) ? f(Math.min(sec,sec2))+'-'+f(Math.max(sec,sec2))+'/km Pace'
+                                : f(sec)+'/km Pace';
 }
 function icuTrajanje(sec){
   if(!(sec>0)) return '1m';
@@ -6587,9 +6591,59 @@ function icuRazdaljina(km){
 }
 /* Pretvara JEDAN dan plana u intervals.icu tekst. Vraca null za dane koje nema
    smisla slati (odmor, snaga, sam dan trke). */
+/* STRUKTURA IZ OPISA — za planove koji nemaju `session` objekat.
+   Tvoj licni (hardkodovan) plan cuva trening kao TEKST, ne kao objekat, pa je
+   prva verzija sve takve dane slala kao obicno trcanje na Z2: intervali su
+   gubili strukturu, a lagani dani su dobijali tempo pokupljen sa tempo dana
+   iste nedelje (dugo trcanje od 12 km na 4:25/km — brze nego sto treba).
+   Ovde se opis rasclanjuje u istu strukturu koju generator inace daje, pa
+   dalje sve ide istim putem. */
+function icuIzOpisa(desc, tag){
+  const t=String(desc||'').split('\n')[0];
+  if(!t) return null;
+  const br=x=>+String(x).replace(',','.');
+  const sek=(m,s)=>+m*60 + +s;
+  const wu=t.match(/([\d.,]+)\s*km\s*WU/i);
+  const cd=t.match(/([\d.,]+)\s*km\s*CD/i);
+  const pauza=t.match(/\(\s*([\d.,]+)\s*(min|s)\b/i);
+  const restSec=pauza ? Math.round(br(pauza[1]) * (/min/i.test(pauza[2])?60:1)) : 90;
+  /* ODSECI ZAGREVANJE I SMIRIVANJE PRE TRAZENJA RADNOG DELA.
+     Bez toga je "2 km WU + 4 km @ 4:22/km + 2 km CD" davalo 2 km tempa umesto
+     4 — regex je hvatao prvi broj ispred @, a to je bilo zagrevanje. */
+  let rad=t.replace(/^.*?[\d.,]+\s*km\s*WU\s*\+?/i,'')
+           .replace(/\+\s*[\d.,]+\s*km\s*CD.*$/i,'')
+           .replace(/·.*$/,'');
+  const opseg=rad.match(/(\d+):(\d\d)\s*[–—-]\s*(\d+):(\d\d)\s*\/km/);
+  const jedan=rad.match(/@\s*~?(\d+):(\d\d)/);
+  if(!opseg && !jedan) return null;
+  const paceSec = opseg ? sek(opseg[1],opseg[2]) : sek(jedan[1],jedan[2]);
+  const paceSec2 = opseg ? sek(opseg[3],opseg[4]) : null;
+  const zaglavlje = (tag==='tempo') ? (/broken|isprekid/i.test(t)?'Tempo isprekidan':'Tempo') : 'Intervali';
+  /* ponavljanja: "6×800 m", "2×2.5 km" */
+  const rep=rad.match(/(\d+)\s*[×x]\s*([\d.,]+)\s*(km|m)\b/i);
+  if(rep){
+    const jedM = /^m$/i.test(rep[3]) ? br(rep[2]) : br(rep[2])*1000;
+    return { type:'int', kind:zaglavlje, wuKm:wu?br(wu[1]):0, cdKm:cd?br(cd[1]):0,
+             reps:+rep[1], repM:Math.round(jedM), paceSec, paceSec2, restSec };
+  }
+  /* vise razlicitih deonica na istom tempu: "4 km + 2 km @ ~4:25/km" */
+  const deonice=[...rad.matchAll(/([\d.,]+)\s*km/gi)].map(m=>br(m[1])).filter(x=>x>0);
+  if(deonice.length>1){
+    return { type:'pyramid', kind:zaglavlje, wuKm:wu?br(wu[1]):0, cdKm:cd?br(cd[1]):0,
+             reps:deonice.map(x=>Math.round(x*1000)), paceSec, paceSec2, restSec };
+  }
+  if(deonice.length===1){
+    return { type:'tempo', kind:zaglavlje, wuKm:wu?br(wu[1]):0, cdKm:cd?br(cd[1]):0,
+             qKm:deonice[0], paceSec, paceSec2 };
+  }
+  return null;   /* obicno trcanje — ide kao jedan korak na laganom tempu */
+}
 function icuTekstDana(d, pE){
   if(!d || d.rest || d.tag==='snaga' || d.tag==='trka') return null;
-  const ses=d.session;
+  /* TIME TRIAL i slicni dani sa opsegom tempa nemaju jedan ciljni tempo —
+     ne salju se kao struktura, da sat ne dobije pogresan broj. */
+  if(/TIME TRIAL|TT\b/i.test(d.desc||'')) return null;
+  const ses=d.session || icuIzOpisa(d.desc, d.tag);
   const lagan=icuTempo(pE)||'Z2 Pace';
   const red=(lbl,mera,tempo)=>'- '+(lbl?lbl+' ':'')+mera+(tempo?' '+tempo:'');
   /* Sekcije se spajaju PRAZNIM REDOM — intervals.icu to trazi oko svakog bloka
@@ -6602,7 +6656,7 @@ function icuTekstDana(d, pE){
     const naziv=d.mlr?'Srednje-dugo':(d.tag==='lr'?'Dugo trčanje':'Lagano');
     return naziv+'\n'+red('', mera, lagan);
   }
-  const tempo=icuTempo(ses.paceSec);
+  const tempo=icuTempo(ses.paceSec, ses.paceSec2);
   if(ses.wuKm>0) sek.push('Zagrevanje\n'+red('', icuRazdaljina(ses.wuKm), lagan));
   if(ses.type==='tempo'){
     const mera=icuRazdaljina(ses.qKm); if(!mera) return null;
@@ -6639,20 +6693,32 @@ function icuDaniZaSlanje(danaUnapred){
   const lakTempo={};
   CUR_PLAN.forEach(w=>{
     for(const d of w.days){
-      if(d.rest||d.tag==='snaga'||d.session) continue;
+      /* SAMO iz laganog/dugog dana. Ranije se citalo iz bilo kog dana bez
+         `session` objekta — a u licnom planu nijedan dan ga nema, pa je tempo
+         znao da dodje sa TEMPO treninga i zavrsi kao cilj laganog trcanja. */
+      if(d.rest||d.tag==='snaga') continue;
+      if(d.tag!=='lako'&&d.tag!=='lr') continue;
       const m=(d.desc||'').match(/~(\d+):(\d\d)\/km/);
       if(m){ lakTempo[w.w]=+m[1]*60+ +m[2]; break; }
     }
   });
+  /* Ako plan lagan tempo uopste ne zapisuje (licni plan ga ne zapisuje), racuna
+     se iz trenutne forme — E zona po Danielsu. Uvek daje apsolutan broj, pa
+     sat nikad ne dobije samo "Z2". */
+  let pEfallback=null;
+  try{ const v=currentVdot()||baselineVdot(); if(v) pEfallback=paceForZone(v,'E'); }catch(e){}
   CUR_PLAN.forEach(w=>w.days.forEach(d=>{
     if(!d.date || d.date<TODAY || d.date>doDatuma) return;
     if(d.test) return;
-    let pE=lakTempo[w.w]||null;
-    const m=(d.desc||'').match(/~(\d+):(\d\d)\/km/); if(m) pE=+m[1]*60+ +m[2];
+    let pE=lakTempo[w.w]||pEfallback||null;
+    if(d.tag==='lako'||d.tag==='lr'){
+      const m=(d.desc||'').match(/~(\d+):(\d\d)\/km/); if(m) pE=+m[1]*60+ +m[2];
+    }
     const txt=icuTekstDana(d, pE);
     if(!txt) return;
+    const izv=d.session||icuIzOpisa(d.desc,d.tag);
     out.push({ date:d.date, externalId:'sub19-'+d.id,
-               name:(d.session&&d.session.kind)||(d.mlr?'Srednje-dugo':d.tag==='lr'?'Dugo trčanje':'Lagano'),
+               name:(izv&&izv.kind)||(d.mlr?'Srednje-dugo':d.tag==='lr'?'Dugo trčanje':'Lagano'),
                description:txt });
   }));
   return out;
