@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='109'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='110'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1630,24 +1630,45 @@ function effectivePace(d,r){
   const a=S.alts&&S.alts[d.id];
   return (a&&a.pace!=null)?a.pace:(r?r.pt:null);
 }
+/* SPAJANJE DANA SA PREDIKCIJSKIM REDOM.
+   Red se pravi kao 'N<w> · <naziv sesije>', pa je NAJPOUZDANIJE spajanje po
+   tacnom nazivu. Ranije se pogadjalo po podnizovima ('intervali', 'tempo'...),
+   podeljeno po `tag`-u — i to je tiho lomilo svaku sesiju na TEMPU TRKE:
+   "Trkački ritam" (5K, 10K), "Tempo trke" (21K) i "Maratonski tempo" (42K)
+   grade se kao intervali (tag 'int'), a nijedan od tih naziva nije bio u
+   int-spisku. Posledica nije kozmeticka: bez reda `syncStrava` preskace CEO
+   dan — ne povlaci streamove, ne racuna tempo i ne upisuje VDOT. Rad na tempu
+   trke, dakle najspecificniji trening u planu, nije ulazio u pracenje forme.
+   Podniz-pogadjanje ostaje SAMO kao rezerva za rucno izmenjene dane, gde
+   d.session nosi staru strukturu ili ga uopste nema. */
+function predKindMatch(d, r){
+  const k = d.session && d.session.kind;
+  if(!k) return null;                       /* nema naziva — na rezervu */
+  return r.l === 'N'+d.week.w+' · '+k;
+}
+function predFallbackMatch(d, r){
+  const l=r.l.toLowerCase();
+  return d.tag==='int'
+    ? (l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')||l.includes('piramida')||l.includes('ritam')||l.includes('maratonski tempo')||l.includes('tempo trke'))
+    : (l.includes('tempo')||l.includes('ritam')||l.includes('progresivno')||l.includes('kontrolna'));
+}
+function predKandidati(d){
+  const uNedelji = CUR_PRED.filter(r=>r.w===d.week.w);
+  const tacni = uNedelji.filter(r=>predKindMatch(d,r)===true);
+  if(tacni.length) return tacni;
+  return uNedelji.filter(r=>predFallbackMatch(d,r));
+}
 function predRowFor(d){
   if(!d||!d.week)return null; /* nedelja 1 sad može imati samo 1-2 dana (start od dana generisanja) — pozivaoci legitimno ne nađu dan traženog tipa; padati na tome bi obelilo ceo ekran umesto da graciozno vrati prazno */
   if(d.tag!=='int'&&d.tag!=='tempo')return null;
-  /* case-INSENSITIVE — labele iz generatora imaju malo slovo usred fraze
-     ("Maratonski tempo", "10K tempo (ciljni ritam)"), ne samo na početku
-     ("N1 · Tempo"). Case-sensitive .includes('Tempo') bi promašio baš ove. */
-  const c=CUR_PRED.filter(r=>{
-    if(r.w!==d.week.w)return false;
-    const l=r.l.toLowerCase();
-    return d.tag==='int'?(l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')||l.includes('piramida')):(l.includes('tempo')||l.includes('ritam')||l.includes('progresivno')||l.includes('kontrolna'));
-  });
+  const c=predKandidati(d);
   return c.length?c[0].id:null;
 }
 /* sve predikcijske sesije za dan (dan tag određuje tip: int->Intervali, tempo->Tempo/Ritam) */
 function predRowsFor(d){
   if(!d||!d.week)return [];
   if(d.tag!=='int'&&d.tag!=='tempo')return [];
-  const rows=CUR_PRED.filter(r=>{ if(r.w!==d.week.w)return false; const l=r.l.toLowerCase(); return d.tag==='int'?(l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')||l.includes('piramida')):(l.includes('tempo')||l.includes('ritam')||l.includes('progresivno')||l.includes('kontrolna')); }).map(r=>r.id);
+  const rows=predKandidati(d).map(r=>r.id);
   if(!rows.length)return [];
   /* SUDAR: izmenom tipa u nedelji može nastati VIŠE dana istog kvaliteta, a
      predikcijski red je jedan. Bez ovoga bi dva dana pisala u isti VDOT unos.
@@ -2402,12 +2423,30 @@ const ZONE_FOR_KIND = {
   'Intervali':'I', 'Fartlek':'I', 'Piramida':'I',
   'Repeticije':'R',
   'Tempo':'T', 'Tempo (broken)':'T', 'Progresivno':'T',
+  /* CRUISE INTERVALI. Tabela je imala samo stari naziv 'Tempo (broken)' iz
+     hardkodovanog plana; generator ih od prepisa zove 'Tempo isprekidan' i taj
+     naziv OVDE NIJE POSTOJAO. Bez zone recordVdot pada na `vdotFromQuality`,
+     koji izmereni tempo tretira kao da je TRKA na toj distanci — a cruise
+     intervali se trce na PRAGU, dakle znatno sporije od trke. Rezultat je bio
+     sistematski PRECENJEN VDOT, i to bas na sesiji koja je glavni pragovski
+     alat na 10K, polumaratonu i maratonu. */
+  'Tempo isprekidan':'T',
+  /* Tempo trke na 5K i 10K. Za 5K je tempo trke prakticno I zona (tacno); za
+     10K je nesto sporiji, pa oznaka 'I' daje blago POTCENJEN VDOT — sto je
+     bezbedan smer greske (plan ne ubrzava sam sebe). */
+  'Trkački ritam':'I',
   /* Tempo trke / kontrolna trka na polumaratonu: tempo trke lezi IZMEDJU M i T
      zone i nema svoju Danielsovu zonu. Svrstava se u T jer je za trkace kojima
      se te sesije uopste i prave (ispod 1:50, v. ritamStrategija21K) razlika od
      praga svega nekoliko sekundi po kilometru — a greska u tom smeru POTCENJUJE
      VDOT, sto je bezbednije nego da ga precenjuje i ubrza ceo plan. */
-  'Tempo trke':'T', 'Kontrolna trka':'T',
+  'Tempo trke':'T',
+  /* KONTROLNA TRKA NAMERNO NEMA ZONU. Korisnik je moze istrcati kao pravu trku
+     (punom snagom) ili kontrolisano na tempu polumaratona — plan ne zna sta je
+     izabrao. Bez zone se koristi putanja "trka na toj distanci": ako JE trcao
+     trku, procena je tacna; ako je trcao kontrolisano, procena je nesto niza od
+     stvarne forme. Da je oznacena kao prag, prava trka bi je PRECENILA — a to
+     je gori smer greske. */
   /* Progresivno koje se zavrsava na tempu trke je M rad, ne T. */
   'Progresivno (tempo trke)':'M',
   'Maratonski tempo':'M'
@@ -5769,6 +5808,7 @@ const SESS_GUIDE={
   'Fartlek':'Vodi se po naporu, ne po štoperici — ubrzanja su snažan zalet, ne sprint. U lakim delovima se potpuno opusti.',
   'Progresivno (tempo trke)':'Kreni namerno lagano, a poslednju trećinu drži TAČNO na tempu trke — ne brže. Poenta je da naučiš taj tempo na umornim nogama, a ne da testiraš koliko možeš.',
   'Progresivno':'Kreni namerno lagano — svaki sledeći deo treba da bude brži od prethodnog. Najčešća greška je prebrz početak.',
+  'Trkački ritam':'Tačno tvoj ciljani tempo trke — ni sekundu brže. Ovde se vežba osećaj za ritam i disciplina, ne koliko možeš.',
   'Piramida':'Drži isti NAPOR na svakoj deonici, ne isti tempo — kraće deonice prirodno idu brže. Nemoj da kreneš prejako na najkraćoj, da ne "pukneš" na vrhu piramide.',
   'Maratonski tempo':'Tačno tvoj ciljani tempo trke — ovo je proba, a ne prilika da guraš jače. Ako je trčanje dovoljno dugo, iskoristi ga i za vežbanje ishrane i hidratacije.',
   '10K tempo (ciljni ritam)':'Tačno tvoj ciljani tempo trke — ovde se vežba disciplina tempa, ne guranje preko njega.',
