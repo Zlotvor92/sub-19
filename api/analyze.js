@@ -236,6 +236,12 @@ KAKO SE ČITA PULS — pročitaj ovo PRE nego što doneseš bilo kakav zaključa
 5. O PULSU GOVORI KROZ ZONE ako su date. Ako zone nisu date, NE proglašavaj puls "visokim" ili "niskim" u apsolutnom smislu — ne znaš maksimalni puls ovog trkača; govori samo o PROMENI kroz trening.
 6. DEKUPLOVANJE (Pa:HR) je mera aerobne izdržljivosti: ispod 5% je dobro, 5-8% osrednje, preko 8% znači da druga polovina košta znatno više otkucaja pri istom tempu. Ako je dato, to je pouzdaniji sud o izdržljivosti nego sirov porast pulsa — koristi ga. Ako piše da nije računato jer tempo nije bio ravnomeran, NE izvodi zaključak o izdržljivosti iz porasta pulsa.
 7. TOPLOTA diže puls 5-10 otkucaja pri istom tempu. Ako je data temperatura preko 22°C, uračunaj to pre nego što porast pripišeš lošoj formi.
+8. OPORAVAK TOG JUTRA (HRV, puls u miru, san) menja tumačenje SVEGA ostalog. Isti tempo uz isti puls nije isti trening posle 5 sati sna. Pravila:
+   - HRV se čita kao ODSTUPANJE od sopstvene sedmodnevne osnove, nikad kao gola brojka; pad preko 10% je značajan, pad preko 20% je jasan znak nedovoljnog oporavka.
+   - Puls u miru viši 5+ otkucaja od sopstvene osnove ukazuje na umor, početak bolesti ili loš san.
+   - San ispod 6 sati objašnjava viši puls i teži osećaj na istom tempu.
+   - Ako je oporavak bio loš a trening ipak odrađen po planu, to je uspeh — reci to, ne zamerku.
+   - Ako oporavak nije dat, NE nagađaj o njemu.
 
 ŠTA MORAŠ DA UZMEŠ U OBZIR PRE ZAKLJUČKA:
 - Šta je sesija TREBALO da bude (plan) i šta je trkač SAM napisao na Stravi da radi tog dana. Ako se to dvoje razlikuje, sudi po onome što je trkač NAMERAVAO, a razliku od plana pomeni jednom rečenicom.
@@ -288,6 +294,14 @@ Zajedničko pravilo:
     entered.elevGain!=null ? `Ukupan uspon: ${entered.elevGain} m` : null,
     entered.temp!=null ? `Temperatura: ${entered.temp}°C` : null,
     entered.relEffort!=null ? `Strava relative effort: ${entered.relEffort}` : null,
+    entered.oporavak ? (() => {
+      const o = entered.oporavak, d = [];
+      if (o.hrv != null) d.push(`HRV ${o.hrv}` + (o.hrvOdstupanje != null ? ` (${o.hrvOdstupanje>=0?'+':''}${o.hrvOdstupanje}% od sedmodnevne osnove ${o.hrvBaza7})` : ''));
+      if (o.pulsUMiru != null) d.push(`puls u miru ${o.pulsUMiru}` + (o.pulsOdstupanje != null ? ` (${o.pulsOdstupanje>=0?'+':''}${o.pulsOdstupanje} od osnove ${o.pulsBaza7})` : ''));
+      if (o.sanH != null) d.push(`san ${o.sanH} h` + (o.sanOcena != null ? ` (ocena ${o.sanOcena})` : ''));
+      if (o.svezina != null) d.push(`svežina ${o.svezina} (forma ${o.ctl}, umor ${o.atl})`);
+      return d.length ? `Oporavak tog jutra: ${d.join(', ')}` : null;
+    })() : null,
     entered.decoupling ? (entered.decoupling.n!=null
         ? `Dekuplovanje (Pa:HR, druga polovina naspram prve): ${entered.decoupling.n}%`
         : `Dekuplovanje nije računato — ${entered.decoupling.razlog}. Ne izvodi zaključak o izdržljivosti iz porasta pulsa.`) : null
@@ -332,6 +346,8 @@ KAKO SE ČITAJU PODACI:
 - NEDELJNI OBIM je dat posebno. Pre nego što kažeš "forma stagnira", proveri da li je obim pao — pad forme uz pad obima nije misterija, to je posledica. Isto tako: skok obima preko 25% u nedelju dana je rizik od povrede i vredi ga pomenuti.
 - O PULSU govori kroz zone ako su date; bez njih ne sudi o apsolutnim brojkama jer ne znaš maksimalan puls trkača.
 - RPE i Strava relative effort pokazuju koliko je trening KOŠTAO. Isti tempo uz niži RPE kroz nedelje je napredak i kad VDOT stoji.
+- OPORAVAK (HRV, puls u miru, san) je dat po danima kad postoji. HRV gledaj kao trend i kao odstupanje od sopstvene osnove, nikad kao golu brojku. Ako HRV pada nedeljama ili puls u miru raste dok obim raste, to je preopterećenje — reci to jasno, to je najvažnija stvar koju možeš da uočiš. Ako je san dosledno ispod 7 sati, to ograničava napredak više od bilo kog detalja u treningu.
+- SVEŽINA (forma minus umor, iz intervals.icu) pokazuje da li trkač ulazi u trku odmoran. Pred trku treba da raste.
 
 Analiziraj:
 - DA LI IZDRŽLJIVOST RASTE: kroz drift na uporedivom tempu i kroz dekuplovanje. Konkretno, sa brojevima i datumima.
@@ -359,6 +375,17 @@ NIKAD ne izmišljaj tačne buduće tempove ni VDOT projekcije sa lažnom precizn
     if (t.relEffort != null) s += `, effort ${t.relEffort}`;
     return s;
   }).join('\n');
+  if (Array.isArray(trend.oporavak) && trend.oporavak.length) {
+    msg += `\n\nOPORAVAK PO DANIMA (HRV, puls u miru, san, opterećenje):\n` +
+      trend.oporavak.slice(-90).map(o => {
+        const d = [];
+        if (o.hrv != null) d.push(`HRV ${o.hrv}`);
+        if (o.pulsUMiru != null) d.push(`puls u miru ${o.pulsUMiru}`);
+        if (o.sanH != null) d.push(`san ${o.sanH}h`);
+        if (o.svezina != null) d.push(`svežina ${o.svezina}`);
+        return d.length ? `${o.datum}: ${d.join(', ')}` : null;
+      }).filter(Boolean).join('\n');
+  }
   if (Array.isArray(trend.obim) && trend.obim.length) {
     msg += `\n\nNEDELJNI OBIM (početak nedelje → km):\n` +
       trend.obim.slice(-30).map(o => `${o.od}: ${o.km} km`).join('\n');

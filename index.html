@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='113'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='114'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2261,6 +2261,9 @@ function bindForm(root,d){
           hr:l.hr??null, rpe:l.rpe??null, note:l.note||'',
           maxHr:l.maxHr??null, elevGain:l.elevGain??null, relEffort:l.relEffort??null,
           temp:l.temp??null, decoupling:l.decoupling||null,
+          /* Oporavak na DAN treninga: isti tempo posle lose noci nije isti
+             trening, a bez ovoga model to ne moze da zna. */
+          oporavak: oporavakZa(l.runDate||l.ts||d.date),
           laps: Array.isArray(l.laps)&&l.laps.length?l.laps:null,
           perKm: Array.isArray(l.perKm)&&l.perKm.length?l.perKm:null
         }
@@ -6429,6 +6432,49 @@ function chartVdotTrend(){
   g+=`<text x="${X(vl.length-1).toFixed(1)}" y="${(Y(vl[vl.length-1].vdot)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--pink)">${vl[vl.length-1].vdot}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${g}</svg>`;
 }
+/* ============================================================
+   OPORAVAK — HRV, puls u miru, san (intervals.icu)
+
+   Garminov zvanicni Health API trazi partnerski program i poslovnu proveru,
+   pa se ne moze koristiti u licnoj aplikaciji. intervals.icu vec prima Garmin
+   sinhronizaciju i izlaze te podatke kroz otvoren API sa obicnim kljucem —
+   isti podaci, bez cekanja na odobrenje.
+
+   Ide preko naseg servera (/api/wellness) jer intervals.icu ne salje CORS
+   zaglavlja, pa bi poziv iz pregledaca bio blokiran.
+
+   Cuva se u S.wellness kao mapa datum -> zapis, da spajanje sa treningom bude
+   obicno trazenje po datumu. ============================================================ */
+async function icuSync(danaUnazad){
+  if(!S.icu||!S.icu.athleteId||!S.icu.apiKey) return {ok:false, error:'intervals.icu nije povezan.'};
+  const do_=new Date(), od=new Date(do_.getTime()-(danaUnazad||60)*864e5);
+  const ds=d=>d.toISOString().slice(0,10);
+  try{
+    const r=await fetch('/api/wellness',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
+      body:JSON.stringify({athleteId:S.icu.athleteId, apiKey:S.icu.apiKey, oldest:ds(od), newest:ds(do_)})});
+    let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
+    if(!r.ok) return {ok:false, error:j.error||('Greška '+r.status)};
+    S.wellness=S.wellness||{};
+    (j.dani||[]).forEach(z=>{ if(z&&z.datum) S.wellness[z.datum]=z; });
+    S.icu.lastSync=Date.now(); save();
+    return {ok:true, n:(j.dani||[]).length};
+  }catch(e){ return {ok:false, error:'Nema veze sa serverom.'}; }
+}
+/* Zapis oporavka za dati dan, sa 7-dnevnim prosekom HRV-a i pulsa u miru —
+   pojedinacna vrednost HRV-a ne znaci nista bez svoje osnove. */
+function oporavakZa(datum){
+  if(!S.wellness||!datum) return null;
+  const z=S.wellness[datum]; if(!z) return null;
+  const kljucevi=Object.keys(S.wellness).filter(k=>k<datum).sort().slice(-7);
+  const sr=(polje)=>{ const v=kljucevi.map(k=>S.wellness[k]&&S.wellness[k][polje]).filter(x=>x!=null);
+                      return v.length>=3 ? Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10 : null; };
+  const out={...z};
+  const hBaza=sr('hrv'), pBaza=sr('pulsUMiru');
+  if(hBaza!=null && z.hrv!=null){ out.hrvBaza7=hBaza; out.hrvOdstupanje=Math.round((z.hrv-hBaza)/hBaza*1000)/10; }
+  if(pBaza!=null && z.pulsUMiru!=null){ out.pulsBaza7=pBaza; out.pulsOdstupanje=Math.round((z.pulsUMiru-pBaza)*10)/10; }
+  return out;
+}
 /* Sažetak svih treninga za LLM trend analizu. NE šalje pun po-krug niz (previše),
    nego sažme svaki trening: datum, tip, tempo, drift (prvi->poslednji puls), kadenca. */
 function trendSummary(){
@@ -6491,8 +6537,12 @@ function trendSummary(){
   const obim=Object.keys(ned).sort().map(k=>({od:k, km:Math.round(ned[k]*10)/10}));
   // VDOT istorija
   const vl=(S.vdotLog||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1).map(e=>({date:e.ts,vdot:e.vdot}));
+  /* Oporavak kroz vreme — samo dani koji imaju bar nesto, i najvise 120
+     poslednjih, da poruka ostane u razumnoj velicini. */
+  const opor=Object.keys(S.wellness||{}).sort().slice(-120)
+    .map(k=>S.wellness[k]).filter(z=>z&&(z.hrv!=null||z.pulsUMiru!=null||z.sanH!=null||z.ctl!=null));
   return {treninzi:out, vdot:vl, baseline:baselineVdot(), cilj:goalVdotActive(),
-          obim, hrZones:(S.strava&&S.strava.hrZones)||null};
+          obim, hrZones:(S.strava&&S.strava.hrZones)||null, oporavak:opor};
 }
 function chartPred(pc){
   const W=340,H=152,L=36,R=8,B=128,T=10;
@@ -6581,6 +6631,16 @@ function openSettings(){
       :`<div class="btnrow" style="margin-top:0"><button class="btn" id="st-on" style="background:#FC4C02">Poveži Stravu</button></div>
         <div class="note-src">Automatski uvoz trčanja (distanca, vreme, puls) i tempa kvalitetnih sesija iz lapova.</div>`}
     <hr class="sep">
+    <div class="card-t">Oporavak (intervals.icu)</div>
+    ${S.icu&&S.icu.athleteId
+      ?`<div class="note-src" style="margin:0 0 10px">Povezan · ID ${esc(S.icu.athleteId)} · poslednje povlačenje: ${S.icu.lastSync?new Date(S.icu.lastSync).toLocaleString('sr-RS'):'nikad'} · zapisa: ${(S.wellness?Object.keys(S.wellness).length:0)}</div>
+        <div class="btnrow" style="margin-top:0"><button class="btn" id="icu-sync">Povuci sada</button><button class="btn ghost sm" id="icu-off">Otkači</button></div>
+        <div class="note-src">HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</div>`
+      :`<div class="f-field full"><label>ID sportiste</label><input id="icu-id" inputmode="numeric" placeholder="npr. i123456"></div>
+        <div class="f-field full"><label>API ključ</label><input id="icu-key" type="password" placeholder="iz intervals.icu → Settings → Developer"></div>
+        <div class="btnrow" style="margin-top:8px"><button class="btn" id="icu-on">Poveži</button></div>
+        <div class="note-src">Otvori intervals.icu → Settings → dole "Developer Settings" — tu su ID sportiste i API ključ. Odatle čitamo HRV, puls u miru i san koje Garmin već šalje.</div>`}
+    <hr class="sep">
     <div class="note-src">Poslednji backup: ${S.ui.lastBackup?fmtDY(S.ui.lastBackup):'nikad'} · Verzija: ${APP_VERSION} · Šema podataka: v${S.v} · Plan: ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · Izvor: ${S.genPlan?'generisan planom':'Plan_SUB-19_5K_v5.xlsx'}${S.genPlan?'':' · Trka: 24.09.2026.'}</div>
   `);
   $('#s-exp').onclick=exportBackup;
@@ -6595,6 +6655,24 @@ function openSettings(){
   };
   $('#s-imp').onclick=()=>$('#s-file').click();
   $('#s-file').onchange=e=>importBackup(e.target.files[0]);
+  if($('#icu-on')) $('#icu-on').onclick=async()=>{
+    const id=($('#icu-id').value||'').trim(), key=($('#icu-key').value||'').trim();
+    if(!/^i?\d+$/.test(id)){ alert('ID sportiste izgleda kao broj, npr. i123456.'); return; }
+    if(key.length<8){ alert('API ključ deluje prekratko.'); return; }
+    const b=$('#icu-on'); b.disabled=true; b.textContent='Proveravam…';
+    S.icu={athleteId:id, apiKey:key, lastSync:null};
+    const r=await icuSync(14);
+    if(r.ok){ save(); closeSheet(); alert('Povezano. Povučeno zapisa: '+r.n+'.'); }
+    else { S.icu=null; b.disabled=false; b.textContent='Poveži'; alert(r.error||'Nije uspelo.'); }
+  };
+  if($('#icu-off')) $('#icu-off').onclick=()=>{ if(confirm('Otkačiti intervals.icu? Već povučeni podaci ostaju.')){ S.icu=null; save(); closeSheet(); } };
+  if($('#icu-sync')) $('#icu-sync').onclick=async e=>{
+    const b=e.target; b.disabled=true; b.textContent='Povlačim…';
+    const r=await icuSync(120);
+    b.textContent=r.ok?('Povučeno '+r.n+' ✓'):'Nije uspelo';
+    if(!r.ok&&r.error) setTimeout(()=>alert(r.error),100);
+    setTimeout(()=>{ b.disabled=false; b.textContent='Povuci sada'; save(); },1500);
+  };
   const so=$('#st-on'),ss=$('#st-sync'),sf=$('#st-off');
   if(so)so.onclick=stravaConnect;
   if(ss)ss.onclick=()=>{ss.disabled=true;ss.textContent='Sinhronizujem…';stravaSync(true).finally(()=>closeSheet());};
@@ -6979,6 +7057,10 @@ function sbPayload(state){
     athlete: state.strava.athlete || null,
     scope: state.strava.scope || null
   } : null;
+  /* intervals.icu API kljuc je isto sto i Strava token — pristupni podatak,
+     nikad ne ide na server. Sami PODACI o oporavku (S.wellness) idu, jer su to
+     merenja kao i svako drugo, pa se vide i na drugom uredjaju. */
+  c.icu = state.icu ? { lastSync: state.icu.lastSync || null } : null;
   return c;
 }
 /* Odluka pri pokretanju: 'push' (server prazan) - 'ok' (isti) - 'ask' (server
@@ -7084,8 +7166,10 @@ async function sbPull(){
   const mig=migrate(j[0].data);
   if(!mig) return false;
   const keepStrava=S.strava;                 /* veza sa Stravom je po uredjaju */
+  const keepIcu=S.icu;                       /* isto i intervals.icu kljuc */
   S=mig;
   S.strava=keepStrava||null;
+  S.icu=keepIcu||null;
   SB.seenAt=j[0].updated_at; sbSave();
   setActivePlan(); rebuildDateIndex(); save();
   renderHeader(); setPage(ACTIVE);
