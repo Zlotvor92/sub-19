@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='115'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='116'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6558,6 +6558,119 @@ function oporavakZa(datum){
   if(pBaza!=null && z.pulsUMiru!=null){ out.pulsBaza7=pBaza; out.pulsOdstupanje=Math.round((z.pulsUMiru-pBaza)*10)/10; }
   return out;
 }
+/* ============================================================
+   SLANJE TRENINGA NA SAT (intervals.icu -> Garmin Connect -> sat)
+
+   intervals.icu ima sopstvenu tekstualnu sintaksu za strukturu treninga.
+   Vazne zamke koje su ovde vec ugradjene:
+     - `m` znaci MINUTE, ne metre. Metri se pisu kao `500mtr`.
+     - Apsolutan tempo se pise kao `4:11/km Pace`.
+     - Blok ponavljanja se uvodi zaglavljem `Glavni deo 5x`, uz prazan red
+       pre i posle bloka.
+   Da bi trening stigao DO SATA, korisnik u intervals.icu Settings mora da
+   ukljuci "Upload planned workouts" i autorizuje Garmin Connect. Bez toga
+   trening ostaje u intervals.icu kalendaru.
+   ============================================================ */
+function icuTempo(sec){
+  if(!(sec>0)) return null;
+  const m=Math.floor(sec/60), s=Math.round(sec%60);
+  return m+':'+String(s).padStart(2,'0')+'/km Pace';
+}
+function icuTrajanje(sec){
+  if(!(sec>0)) return '1m';
+  if(sec%60===0) return (sec/60)+'m';
+  return sec<90 ? sec+'s' : Math.round(sec/60)+'m';
+}
+function icuRazdaljina(km){
+  if(!(km>0)) return null;
+  return km<1 ? Math.round(km*1000)+'mtr' : (Math.round(km*100)/100)+'km';
+}
+/* Pretvara JEDAN dan plana u intervals.icu tekst. Vraca null za dane koje nema
+   smisla slati (odmor, snaga, sam dan trke). */
+function icuTekstDana(d, pE){
+  if(!d || d.rest || d.tag==='snaga' || d.tag==='trka') return null;
+  const ses=d.session;
+  const lagan=icuTempo(pE)||'Z2 Pace';
+  const red=(lbl,mera,tempo)=>'- '+(lbl?lbl+' ':'')+mera+(tempo?' '+tempo:'');
+  /* Sekcije se spajaju PRAZNIM REDOM — intervals.icu to trazi oko svakog bloka
+     ponavljanja. Radjeno je rucnim lepljenjem "\n", pa je tempo sesiji falio
+     prazan red pre smirivanja; kroz niz sekcija ta greska nije moguca. */
+  const sek=[];
+  if(!ses){
+    if(d.km==null) return null;
+    const mera=icuRazdaljina(d.km); if(!mera) return null;
+    const naziv=d.mlr?'Srednje-dugo':(d.tag==='lr'?'Dugo trčanje':'Lagano');
+    return naziv+'\n'+red('', mera, lagan);
+  }
+  const tempo=icuTempo(ses.paceSec);
+  if(ses.wuKm>0) sek.push('Zagrevanje\n'+red('', icuRazdaljina(ses.wuKm), lagan));
+  if(ses.type==='tempo'){
+    const mera=icuRazdaljina(ses.qKm); if(!mera) return null;
+    sek.push((ses.kind||'Tempo')+'\n'+red('', mera, tempo));
+  } else if(ses.type==='int'){
+    sek.push((ses.kind||'Glavni deo')+' '+ses.reps+'x\n'+
+             red('', icuRazdaljina(ses.repM/1000), tempo)+'\n'+
+             red('Oporavak', icuTrajanje(ses.restSec), lagan));
+  } else if(ses.type==='pyramid'){
+    sek.push('Piramida\n'+ses.reps.map(m=>
+      red('', icuRazdaljina(m/1000), tempo)+'\n'+red('Oporavak', icuTrajanje(ses.restSec), lagan)).join('\n'));
+  } else if(ses.type==='fartlek'){
+    sek.push('Fartlek '+ses.reps+'x\n'+
+             red('', icuTrajanje(ses.repSec), tempo)+'\n'+
+             red('Lagano', icuTrajanje(ses.restSec), icuTempo(ses.easyPaceSec)||lagan));
+  } else if(ses.type==='prog'){
+    const uk=ses.qKm, lak=Math.round(uk*2/3*100)/100, brz=Math.round((uk-lak)*100)/100;
+    sek.push('Progresivno\n'+
+             red('Lagani deo', icuRazdaljina(lak), icuTempo(ses.easyPaceSec)||lagan)+'\n'+
+             red('Završetak', icuRazdaljina(brz), tempo));
+  } else return null;
+  if(ses.cdKm>0) sek.push('Smirivanje\n'+red('', icuRazdaljina(ses.cdKm), lagan));
+  return sek.join('\n\n');
+}
+/* Skuplja dane iz aktivnog plana za naredni broj dana i salje ih. */
+function icuDaniZaSlanje(danaUnapred){
+  const doDatuma=addD(TODAY, danaUnapred||14);
+  const out=[];
+  /* LAGAN TEMPO PO NEDELJI. Kvalitetni dan u svom opisu nema lagan tempo (ima
+     radni), a zagrevanje/smirivanje/oporavak se trce lagano. Zato se za svaku
+     nedelju procita iz nekog LAGANOG dana te iste nedelje, gde generator uvek
+     upise "@ ~M:SS/km". Bez toga su ti koraci isli kao "Z2 Pace", sto na satu
+     radi samo ako korisnik ima podesene zone trcanja. */
+  const lakTempo={};
+  CUR_PLAN.forEach(w=>{
+    for(const d of w.days){
+      if(d.rest||d.tag==='snaga'||d.session) continue;
+      const m=(d.desc||'').match(/~(\d+):(\d\d)\/km/);
+      if(m){ lakTempo[w.w]=+m[1]*60+ +m[2]; break; }
+    }
+  });
+  CUR_PLAN.forEach(w=>w.days.forEach(d=>{
+    if(!d.date || d.date<TODAY || d.date>doDatuma) return;
+    if(d.test) return;
+    let pE=lakTempo[w.w]||null;
+    const m=(d.desc||'').match(/~(\d+):(\d\d)\/km/); if(m) pE=+m[1]*60+ +m[2];
+    const txt=icuTekstDana(d, pE);
+    if(!txt) return;
+    out.push({ date:d.date, externalId:'sub19-'+d.id,
+               name:(d.session&&d.session.kind)||(d.mlr?'Srednje-dugo':d.tag==='lr'?'Dugo trčanje':'Lagano'),
+               description:txt });
+  }));
+  return out;
+}
+async function icuPosalji(danaUnapred){
+  if(!S.icu||!S.icu.athleteId||!S.icu.apiKey) return {ok:false, error:'intervals.icu nije povezan.'};
+  const events=icuDaniZaSlanje(danaUnapred);
+  if(!events.length) return {ok:false, error:'Nema treninga u tom periodu.'};
+  try{
+    const r=await fetch('/api/workouts',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
+      body:JSON.stringify({athleteId:S.icu.athleteId, apiKey:S.icu.apiKey, events})});
+    let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
+    if(!r.ok) return {ok:false, error:(j.error||('Greška '+r.status))+(j.detail?' — '+j.detail:'')};
+    S.icu.lastPush=Date.now(); save();
+    return {ok:true, n:j.poslato||events.length};
+  }catch(e){ return {ok:false, error:'Nema veze sa serverom.'}; }
+}
 /* Sažetak svih treninga za LLM trend analizu. NE šalje pun po-krug niz (previše),
    nego sažme svaki trening: datum, tip, tempo, drift (prvi->poslednji puls), kadenca. */
 function trendSummary(){
@@ -6718,7 +6831,9 @@ function openSettings(){
     ${S.icu&&S.icu.athleteId
       ?`<div class="note-src" style="margin:0 0 10px">Povezan · ID ${esc(S.icu.athleteId)} · poslednje povlačenje: ${S.icu.lastSync?new Date(S.icu.lastSync).toLocaleString('sr-RS'):'nikad'} · zapisa: ${(S.wellness?Object.keys(S.wellness).length:0)}</div>
         <div class="btnrow" style="margin-top:0"><button class="btn" id="icu-sync">Povuci sada</button><button class="btn ghost sm" id="icu-off">Otkači</button></div>
-        <div class="note-src">HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</div>`
+        <div class="note-src">HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</div>
+        <div class="btnrow" style="margin-top:10px"><button class="btn ghost" id="icu-push">📤 Pošalji treninge na sat (14 dana)</button></div>
+        <div class="note-src">Šalje strukturu treninga u intervals.icu kalendar. Da bi stigli i <b>na sat</b>, u intervals.icu → Settings uključi <b>„Upload planned workouts"</b> i autorizuj Garmin Connect.${S.icu.lastPush?' · poslednje slanje: '+new Date(S.icu.lastPush).toLocaleString('sr-RS'):''}</div>`
       :`<div class="f-field full"><label>ID sportiste</label><input id="icu-id" inputmode="numeric" placeholder="npr. i123456"></div>
         <div class="f-field full"><label>API ključ</label><input id="icu-key" type="password" placeholder="iz intervals.icu → Settings → Developer"></div>
         <div class="btnrow" style="margin-top:8px"><button class="btn" id="icu-on">Poveži</button></div>
@@ -6747,6 +6862,16 @@ function openSettings(){
     const r=await icuSync(14);
     if(r.ok){ save(); closeSheet(); alert('Povezano. Povučeno zapisa: '+r.n+'.'); }
     else { S.icu=null; b.disabled=false; b.textContent='Poveži'; alert(r.error||'Nije uspelo.'); }
+  };
+  if($('#icu-push')) $('#icu-push').onclick=async e=>{
+    const n=icuDaniZaSlanje(14).length;
+    if(!n){ alert('Nema treninga u narednih 14 dana.'); return; }
+    if(!confirm('Poslati '+n+' treninga u intervals.icu kalendar?\n\nPostojeći koje je poslala ova aplikacija biće ažurirani, ostali se ne diraju.')) return;
+    const b=e.target; b.disabled=true; b.textContent='Šaljem…';
+    const r=await icuPosalji(14);
+    b.textContent=r.ok?('Poslato '+r.n+' ✓'):'Nije uspelo';
+    if(!r.ok&&r.error) setTimeout(()=>alert(r.error),100);
+    setTimeout(()=>{ b.disabled=false; b.textContent='📤 Pošalji treninge na sat (14 dana)'; },2200);
   };
   if($('#icu-off')) $('#icu-off').onclick=()=>{ if(confirm('Otkačiti intervals.icu? Već povučeni podaci ostaju.')){ S.icu=null; save(); closeSheet(); } };
   if($('#icu-sync')) $('#icu-sync').onclick=async e=>{
