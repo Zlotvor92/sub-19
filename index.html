@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='120'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='121'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6668,7 +6668,14 @@ function icuTekstDana(d, pE){
      ne salju se kao struktura, da sat ne dobije pogresan broj. */
   if(/TIME TRIAL|TT\b/i.test(d.desc||'')) return null;
   const ses=d.session || icuIzOpisa(d.desc, d.tag);
-  const lagan=icuTempo(pE)||'Z2 Pace';
+  /* BEZ APSOLUTNOG LAGANOG TEMPA SE DAN NE SALJE.
+     Ranije je ovde stajalo `|| 'Z2 Pace'`. Zonski cilj radi samo ako korisnik
+     u intervals.icu ima podesene zone trcanja; ko ih nema, dobije korak sa
+     distancom ali BEZ tempa ("vidim 8k, ali nema pace") — i to tiho, jer i
+     dalje izgleda kao ispravan trening. Bolje je dan preskociti i reci to,
+     nego poslati trening koji na satu ne moze da odradi svoj posao. */
+  const lagan=icuTempo(pE);
+  if(!lagan) return null;
   const red=(lbl,mera,tempo)=>'- '+(lbl?lbl+' ':'')+mera+(tempo?' '+tempo:'');
   /* Sekcije se spajaju PRAZNIM REDOM — intervals.icu to trazi oko svakog bloka
      ponavljanja. Radjeno je rucnim lepljenjem "\n", pa je tempo sesiji falio
@@ -6711,7 +6718,7 @@ function icuTekstDana(d, pE){
 /* Skuplja dane iz aktivnog plana za naredni broj dana i salje ih. */
 function icuDaniZaSlanje(danaUnapred){
   const doDatuma=addD(TODAY, danaUnapred||14);
-  const out=[];
+  const out=[]; let preskoceno=0;
   /* LAGAN TEMPO PO NEDELJI. Kvalitetni dan u svom opisu nema lagan tempo (ima
      radni), a zagrevanje/smirivanje/oporavak se trce lagano. Zato se za svaku
      nedelju procita iz nekog LAGANOG dana te iste nedelje, gde generator uvek
@@ -6742,7 +6749,9 @@ function icuDaniZaSlanje(danaUnapred){
       const m=(d.desc||'').match(/~(\d+):(\d\d)\/km/); if(m) pE=+m[1]*60+ +m[2];
     }
     const txt=icuTekstDana(d, pE);
-    if(!txt) return;
+    /* trcecih dana koji su ispali — pregled ih prijavljuje, da ispadanje ne
+       prodje tiho (odmor/snaga/trka i TT ispadaju namerno i ne broje se) */
+    if(!txt){ if(!d.rest && d.tag!=='snaga' && d.tag!=='trka' && !/TIME TRIAL|TT\b/i.test(d.desc||'')) preskoceno++; return; }
     const izv=d.session||icuIzOpisa(d.desc,d.tag);
     /* Naziv nosi i kilometrazu — u Garmin kalendaru i na satu se vidi samo
        naziv, pa je golo "Lagano" bez ijednog broja beskorisno kad biras
@@ -6752,6 +6761,7 @@ function icuDaniZaSlanje(danaUnapred){
                name: d.km>0 ? osnov+' '+(Math.round(d.km*10)/10)+' km' : osnov,
                description:txt });
   }));
+  out.preskoceno=preskoceno;
   return out;
 }
 async function icuPosalji(danaUnapred){
@@ -6976,7 +6986,9 @@ function openSettings(){
     box.innerHTML='<div class="note-src" style="margin:10px 0 6px">Šalje se '+ev.length+' treninga, '+
       (strukt.length?'sa strukturom: '+strukt.length+' ('+strukt.map(e=>fmtDY(e.date)).join(', ')+')'
                     :'nijedan sa strukturom — svi su lagani/dugi dani')+
-      '.<br>intervals.icu prosleđuje Garminu otprilike nedelju dana unapred, pa dalji dani stižu kasnije sami.</div>'+
+      '.<br>intervals.icu prosleđuje Garminu otprilike nedelju dana unapred, pa dalji dani stižu kasnije sami.'+
+      (ev.preskoceno?'<br><b>Preskočeno trčećih dana: '+ev.preskoceno+'</b> — za njih nije poznat lagan tempo u sekundama, pa bi na satu izašli bez ciljnog tempa.':'')+
+      '</div>'+
       ev.map(e=>'<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;margin:0 0 10px;padding:8px;'+
         'border-radius:8px;background:rgba(127,127,127,.12);overflow-x:auto">'+
         esc(fmtDY(e.date)+' · '+e.name)+'\n'+esc(e.description)+'</pre>').join('');
