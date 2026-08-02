@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='107'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='108'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2536,13 +2536,24 @@ function buildDaySlots(runDays, qualityCount, prefs, wantMLR){
    su trenerska konvencija koju treba izbeći; uključuje prelaz Ned→Pon. */
 function dayPrefWarnings(slots){
   const N=['Pon','Uto','Sre','Čet','Pet','Sub','Ned'];
-  /* Srednje-dugo trcanje se broji kao tezak dan za susedstvo — nije kvalitet,
-     ali 90 min na nogama pred kvalitetni dan jeste isto sto i tvrd dan pre. */
-  const hard=d=>slots[d]==='q1'||slots[d]==='q2'||slots[d]==='lr'||slots[d]==='mlr';
+  const hard=d=>slots[d]==='q1'||slots[d]==='q2'||slots[d]==='lr';
   const out=[];
   for(let d=1; d<=7; d++){
     const nxt = d===7 ? 1 : d+1;
     if(hard(d) && hard(nxt)) out.push(`Teški dani zaredom: ${N[d-1]} → ${N[nxt-1]} — hard/easy princip preporučuje lak dan ili odmor između.`);
+  }
+  /* SREDNJE-DUGO TRCANJE se NE broji kao tezak dan uz kvalitet.
+     Prva verzija ga je brojala — i time je aplikacija upozoravala na
+     "Uto intervali -> Sre srednje-dugo", sto je TACNO ono sto Pfitzingerov
+     obrazac trazi: srednje dugacko trcanje na nogama koje jos nisu odmorne je
+     sama poenta akumulirane izdrzljivosti. Upozorenje je zbog toga puklo na
+     98% polumaratonskih planova — a upozorenje koje se javi skoro uvek nije
+     upozorenje nego sum, i uci korisnika da ih ignorise.
+     Ono sto jeste greska su DVA DUGA TRCANJA zaredom — to se i dalje javlja. */
+  for(let d=1; d<=7; d++){
+    const nxt = d===7 ? 1 : d+1;
+    if((slots[d]==='mlr'&&slots[nxt]==='lr')||(slots[d]==='lr'&&slots[nxt]==='mlr'))
+      out.push(`Dva duga trčanja zaredom: ${N[d-1]} → ${N[nxt-1]} — dugo i srednje-dugo trčanje traže lak dan između.`);
   }
   return out;
 }
