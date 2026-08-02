@@ -159,5 +159,16 @@ export default async function handler(req, res) {
     await new Promise(r => setTimeout(r, 600));
   }
 
-  res.status(200).json({ poslato: uspelo.length, palo: palo.length, greske: palo.slice(0, 20) });
+  /* Greške se GRUPIŠU po poruci: kad padne svih osam, razlog je po pravilu
+     jedan te isti (npr. Resend bez potvrđenog domena šalje samo na adresu
+     vlasnika naloga), pa je jedna jasna rečenica korisnija od osam istih. */
+  const poRazlogu = {};
+  for (const p of palo) { const k = p.greska || 'nepoznato'; (poRazlogu[k] = poRazlogu[k] || []).push(p.to); }
+  const razlozi = Object.keys(poRazlogu).map(k => ({ razlog: k, koliko: poRazlogu[k].length, primeri: poRazlogu[k].slice(0, 3) }));
+  res.status(200).json({
+    poslato: uspelo.length, palo: palo.length,
+    razlozi,
+    /* najčešći razlog izdvojen, da pozivalac ima šta da prikaže bez kopanja */
+    glavniRazlog: razlozi.length ? razlozi.sort((a, b) => b.koliko - a.koliko)[0].razlog : null
+  });
 }
