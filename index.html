@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='114'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='115'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2161,6 +2161,17 @@ function formHTML(d){
     });
     workBlock+=`</div>`;
   }
+  /* Oporavak tog jutra, uz sam trening — da se brojevi vide TU gde se tumace,
+     a ne samo u AI analizi. */
+  const _op=oporavakZa(l.runDate||l.ts||d.date);
+  const oporavakRed=_op?(()=>{
+    const d2=[];
+    if(_op.hrv!=null) d2.push(`HRV <b style="color:${bojaOdstupanja(_op.hrvOdstupanje)}">${_op.hrv}</b>${_op.hrvOdstupanje!=null?` <small>(${_op.hrvOdstupanje>=0?'+':''}${_op.hrvOdstupanje}%)</small>`:''}`);
+    if(_op.pulsUMiru!=null) d2.push(`puls u miru <b>${_op.pulsUMiru}</b>${_op.pulsOdstupanje!=null?` <small>(${_op.pulsOdstupanje>=0?'+':''}${_op.pulsOdstupanje})</small>`:''}`);
+    if(_op.sanH!=null) d2.push(`san <b style="color:${_op.sanH<6?'var(--red)':_op.sanH<7?'var(--amber)':'var(--green)'}">${_op.sanH} h</b>`);
+    if(_op.svezina!=null) d2.push(`svežina <b>${_op.svezina}</b>`);
+    return d2.length?`<div class="note-src" style="margin:2px 0 8px">🛌 Tog jutra: ${d2.join(' · ')}</div>`:'';
+  })():'';
   const canAnalyze=(d.tag==='int'||d.tag==='tempo'||d.tag==='lako'||d.tag==='lr')&&l.km&&l.sec;
   const hasLaps=Array.isArray(l.laps)&&l.laps.length>0;
   const hasPerKm=Array.isArray(l.perKm)&&l.perKm.length>0;
@@ -2171,6 +2182,7 @@ function formHTML(d){
       ? `📊 AI dobija po KILOMETRU (${l.perKm.length} km) — nema podelu po intervalu.`
       : `📊 AI dobija SAMO PROSEK cele sesije — nema podatke po krugu ni po kilometru.`;
   const aiBlock=canAnalyze?`<div class="f-field full" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
+      ${oporavakRed}
       <div class="ai-datasrc" style="font-size:.72rem;color:var(--txt3);margin-bottom:8px">${dataNote}</div>
       <button type="button" id="ai-go-${d.id}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
       <div id="ai-out-${d.id}" class="ai-out"></div>
@@ -5970,7 +5982,8 @@ function renderProg(){
   </div>
   <div class="card"><div class="card-t">Nedeljna kilometraža — plan vs. realizovano</div>${chartWeeks()}</div>
   <div class="card"><div class="card-t">Telesna masa — cilj vs. stvarno</div>${chartWeight()}</div>
-  <div class="card"><div class="card-t">Prosečan tempo — odrađena trčanja</div>${chartTempo()}</div>`;
+  <div class="card"><div class="card-t">Prosečan tempo — odrađena trčanja</div>${chartTempo()}</div>
+  ${karticaOporavka()}`;
   el.querySelectorAll('[data-wk]').forEach(b=>b.onclick=()=>{
     const w=+b.dataset.wk;
     CHART_SEL.week=CHART_SEL.week===w?null:w; /* isti dodir opet = poništi izbor */
@@ -5981,6 +5994,76 @@ function renderProg(){
     CHART_SEL.wt=CHART_SEL.wt===i?null:i;
     renderProg();
   });
+}
+/* ============================================================
+   OPORAVAK — prikaz HRV-a, pulsa u miru i sna.
+
+   Podaci su se do sada povlacili i slali AI-ju, ali se NIGDE nisu videli —
+   propust: korisnik ne moze da proveri ni da li su tacni, ni da sam donese
+   zakljucak. HRV se prikazuje ISKLJUCIVO u odnosu na sopstvenu sedmodnevnu
+   osnovu, jer gola brojka ne znaci nista (moja 60 i tudja 60 su razlicite
+   stvari).
+   ============================================================ */
+function oporavakNiz(dana){
+  const w=S.wellness||{};
+  return Object.keys(w).sort().slice(-(dana||60)).map(k=>w[k]).filter(Boolean);
+}
+function bojaOdstupanja(p, obrnuto){
+  if(p==null) return 'var(--txt2)';
+  const v=obrnuto?-p:p;                    /* kod pulsa u miru je RAST losiji */
+  if(v<=-10) return 'var(--red)';
+  if(v<=-5)  return 'var(--amber)';
+  return 'var(--green)';
+}
+function karticaOporavka(){
+  const niz=oporavakNiz(90);
+  if(!niz.length){
+    return `<div class="card"><div class="card-t">Oporavak</div>
+      <div class="note-src" style="margin:0">${S.icu&&S.icu.athleteId
+        ? 'Povezano sa intervals.icu, ali još nema zapisa. Klikni „Povuci sada" u Podešavanjima.'
+        : 'Nije povezano. Podešavanja → Oporavak (intervals.icu) — HRV, puls u miru i san sa Garmina.'}</div></div>`;
+  }
+  const zadnji=niz[niz.length-1];
+  const o=oporavakZa(zadnji.datum)||zadnji;
+  const red=(lbl,val,sub,boja)=>val==null?'':`<div class="ob-vp" style="flex:1">
+      <i>${lbl}</i><b style="color:${boja||'var(--txt)'}">${val}</b>
+      ${sub?`<small style="display:block;font-size:.62rem;color:var(--txt3);margin-top:2px">${sub}</small>`:''}</div>`;
+  const hrvSub=o.hrvOdstupanje!=null?`${o.hrvOdstupanje>=0?'+':''}${o.hrvOdstupanje}% od osnove ${o.hrvBaza7}`:'nema osnove još';
+  const plsSub=o.pulsOdstupanje!=null?`${o.pulsOdstupanje>=0?'+':''}${o.pulsOdstupanje} od osnove ${o.pulsBaza7}`:'';
+  return `<div class="card">
+    <div class="card-t">Oporavak <span class="ob-opt" style="font-weight:500;color:var(--txt3)">— ${fmtD(o.datum)}</span></div>
+    <div class="ob-vpaces" style="display:flex;gap:8px">
+      ${red('HRV', o.hrv!=null?o.hrv:'—', hrvSub, bojaOdstupanja(o.hrvOdstupanje))}
+      ${red('Puls u miru', o.pulsUMiru!=null?o.pulsUMiru:'—', plsSub, bojaOdstupanja(o.pulsOdstupanje!=null?-o.pulsOdstupanje*2:null))}
+      ${red('San', o.sanH!=null?o.sanH+' h':'—', o.sanOcena!=null?('ocena '+o.sanOcena):'', o.sanH!=null?(o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'):null)}
+      ${o.svezina!=null?red('Svežina', o.svezina, 'forma '+o.ctl+' · umor '+o.atl, o.svezina<-10?'var(--red)':o.svezina<0?'var(--amber)':'var(--green)'):''}
+    </div>
+    ${chartHrv(niz)}
+    <div class="note-src">HRV se čita u odnosu na <b>tvoju</b> sedmodnevnu osnovu, ne kao gola brojka. Pad preko 10% znači da oporavak zaostaje; pad uz porast pulsa u miru i kratak san je jasan znak da treba lakši dan.</div>
+  </div>`;
+}
+/* HRV kroz vreme, sa trakom sopstvene sedmodnevne osnove. */
+function chartHrv(niz){
+  const v=niz.filter(x=>x&&x.hrv!=null);
+  if(v.length<4) return '<div class="note-src" style="margin-top:10px">Grafikon HRV-a se crta kad bude bar 4 dana zapisa.</div>';
+  const W=340,H=140,L=30,R=8,B=116,T=12;
+  const vals=v.map(x=>x.hrv);
+  const lo=Math.min(...vals)*0.94, hi=Math.max(...vals)*1.06;
+  const X=i=>L+(v.length===1?0:i/(v.length-1)*(W-L-R));
+  const Y=y=>B-((y-lo)/Math.max(hi-lo,1))*(B-T);
+  /* klizna sedmodnevna osnova */
+  const baza=v.map((_,i)=>{ const od=Math.max(0,i-6); const seg=v.slice(od,i+1).map(x=>x.hrv);
+                            return seg.reduce((a,b)=>a+b,0)/seg.length; });
+  let g='';
+  g+=`<polyline points="${baza.map((b,i)=>X(i).toFixed(1)+','+Y(b).toFixed(1)).join(' ')}" fill="none" stroke="var(--txt3)" stroke-width="1.4" stroke-dasharray="4 4" opacity=".65"/>`;
+  g+=`<polyline points="${v.map((x,i)=>X(i).toFixed(1)+','+Y(x.hrv).toFixed(1)).join(' ')}" fill="none" stroke="var(--cyan)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>`;
+  v.forEach((x,i)=>{ if(i!==v.length-1) return;
+    g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(x.hrv).toFixed(1)}" r="4.2" fill="var(--bg)" stroke="var(--cyan)" stroke-width="2"/>`; });
+  g+=`<text x="${L}" y="${B+16}" font-size="9" fill="var(--txt3)">${fmtD(v[0].datum)}</text>`;
+  g+=`<text x="${W-R}" y="${B+16}" text-anchor="end" font-size="9" fill="var(--txt3)">${fmtD(v[v.length-1].datum)}</text>`;
+  g+=`<text x="${W-R}" y="${(Y(v[v.length-1].hrv)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--cyan)">${v[v.length-1].hrv}</text>`;
+  g+=`<text x="${L}" y="${T+2}" font-size="9" fill="var(--txt3)">HRV · isprekidano = tvoja sedmodnevna osnova</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:10px">${g}</svg>`;
 }
 function chartWeeks(){
   const W=340,H=168,L=26,B=146,T=24; /* T/B pomereni za 16px da napravi mesta info-liniji na vrhu */
