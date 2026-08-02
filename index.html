@@ -362,6 +362,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   background:rgba(255,69,58,.1);border-radius:11px;padding:11px 13px;text-align:left}
 .gate-note{margin-top:18px;font-size:.75rem;color:var(--txt3)}
 .ob-err{color:var(--red);font-size:.78rem;font-weight:600;margin-top:10px;min-height:16px}
+/* Upozorenja generatora — u čarobnjaku i na ekranu plana. Ista klasa na oba
+   mesta, da poruka izgleda isto gde god je korisnik vidi. */
+.gw{border-left:3px solid var(--amber);background:rgba(255,176,32,.08);
+    border-radius:10px;padding:11px 13px;margin-top:9px}
+.gw:first-of-type{margin-top:0}
+.gw p{font-size:.76rem;line-height:1.55;color:var(--txt2);margin:0}
+.gw b{color:var(--amber);font-weight:700}
+.gw-h{font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+      color:var(--amber);margin-bottom:9px}
+.gw-ok{font-size:.76rem;line-height:1.5;color:var(--txt3)}
+.pl-warn{background:var(--card);border:1px solid var(--line);border-radius:16px;
+         padding:14px;margin-bottom:14px}
 .chart-info{font-size:9.5px;fill:var(--pink);font-weight:800}
 .chart-hint{font-size:8.5px;fill:var(--txt3);font-weight:600;font-style:italic}
 .gl{stroke:rgba(255,255,255,.06);stroke-width:1}
@@ -547,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='104'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='105'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2195,6 +2207,11 @@ function donePop(){
 function renderPlan(){
   const el=$('#pg-plan');
   let h='';
+  /* Upozorenja ostaju vidljiva i POSLE generisanja: plan koji ne isporucuje
+     trazenu kilometrazu ostaje takav, pa razlog mora da stoji uz njega, a ne
+     samo u carobnjaku koji je korisnik vec zatvorio. */
+  const gw=(S.genPlan&&S.genPlan.meta&&S.genPlan.meta.dayWarnings)||[];
+  if(gw.length) h+=`<div class="pl-warn">${planWarningsHTML(gw,'Na šta da paziš u ovom planu')}</div>`;
   CUR_PLAN.forEach(w=>{
     const pk=weekPlanKm(w),rk=weekRealKm(w),dn=weekDone(w),ct=weekCountable(w);
     const cur=weekOf(TODAY)===w;
@@ -4405,6 +4422,7 @@ function renderOnboard(){
         </div>
       </div>
       <div class="ob-card accent" id="ob-outlook"></div>
+      <div class="ob-card" id="ob-warn"></div>
       <div class="ob-card">
         <div class="ob-ct">Ciljno vreme <span class="ob-opt">— opciono</span></div>
         <div class="ob-row3">
@@ -4450,7 +4468,7 @@ function goObStep(n){
   updateWeeksHint();
   syncRunDowUI();
   syncGoalHoursUI();
-  renderOutlook();
+  renderOutlook(); renderWizWarnings();
   renderObProgress();
   $('#obNext').disabled=!obStepValid(n);
 }
@@ -4498,6 +4516,50 @@ function outlookData(){
     return { k, lbl, sec:a.predictedSec, vdot:a.vdotGoal };
   });
   return { rows, weeks, name:prof.name, goal:goalTotalSec() };
+}
+/* ============ UPOZORENJA GENERATORA ============
+   generatePlan() od pocetka racuna `meta.dayWarnings` (obim ne staje u izabrani
+   broj dana, dva kvaliteta na premali obim, teski dani zaredom, vrhunac ispod
+   onoga sto distanca trazi...), ali ih NIJEDAN ekran nije prikazivao — racunala
+   su se i tiho zavrsavala u meta objektu. Zato je korisnik dobijao plan koji
+   ne isporucuje trazenu kilometrazu, bez ijedne reci o tome zasto.
+
+   Prikazuju se na DVA mesta, namerno:
+   - u carobnjaku (korak 4), UZIVO — tu jos moze da doda dan trcanja ili smanji
+     broj kvaliteta i odmah vidi da je upozorenje nestalo;
+   - na ekranu plana, trajno — jer plan koji ne staje u izabrane dane ostaje
+     takav i posle generisanja, pa razlog mora da bude vidljiv i kasnije. */
+function planWarningsHTML(list, naslov){
+  if(!list || !list.length) return '';
+  return `<div class="gw-h">${esc(naslov)}</div>` +
+    list.map(t=>`<div class="gw"><p>${esc(t)}</p></div>`).join('');
+}
+/* Upozorenja za TRENUTNI unos u carobnjaku — pravi probni plan i cita meta.
+   `_noSuggest` se NE salje: predlog "trebalo bi ti N dana" je najkorisniji deo. */
+function wizardWarnings(){
+  const pbSec=pbTotalSec();
+  if(pbSec==null || !pbSanityOk() || !wiz.raceDate || !(+wiz.weeklyKm>0)) return null;
+  let p;
+  try{
+    p = generatePlan({
+      startDate: todayStr(), raceDate: wiz.raceDate, raceDistM: wiz.raceDist,
+      pb:{ distM:wiz.pbDist, sec:pbSec }, weeklyKm:+wiz.weeklyKm,
+      runDays:wiz.runDays, quality:wiz.quality, lrDow:wiz.lrDow,
+      qDows:(wiz.qDays||[]).slice(), runDows:(wiz.runDows||[]).slice(),
+      intensity:wiz.intensity, goalSec:goalTotalSec(), trainedRecently:wiz.trainedRecently
+    });
+  }catch(e){ return null; }
+  if(!p || p.error || !p.meta) return null;
+  return p.meta.dayWarnings || [];
+}
+function renderWizWarnings(){
+  const el=$('#ob-warn'); if(!el) return;
+  const list=wizardWarnings();
+  if(list===null){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='';
+  el.innerHTML = list.length
+    ? planWarningsHTML(list, 'Na šta da paziš')
+    : `<div class="gw-h">Na šta da paziš</div><div class="gw-ok">Nema zamerki — traženi obim staje u izabrane dane, a raspored poštuje hard/easy princip.</div>`;
 }
 function renderOutlook(){
   const el=$('#ob-outlook'); if(!el) return;
@@ -4617,28 +4679,30 @@ function bindOnboardEvents(){
     if(!confirm('Otkazati generisanje plana?'))return;
     closeWizard();
   });
-  $('#in-raceDate').addEventListener('input',e=>{ wiz.raceDate=e.target.value; goObStep(obStep); renderOutlook(); });
+  $('#in-raceDate').addEventListener('input',e=>{ wiz.raceDate=e.target.value; goObStep(obStep); renderOutlook(); renderWizWarnings(); });
   $$('#raceDistChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#raceDistChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
     wiz.raceDist=+c.dataset.v;
     updateWeeksHint();     /* minWeeks zavisi od distance */
     syncGoalHoursUI();     /* HM/maraton -> ciljno vreme dobija h polje */
-    renderOutlook();       /* predvidjanje se racuna za NOVU distancu */
+    renderOutlook(); renderWizWarnings();       /* predvidjanje se racuna za NOVU distancu */
   }));
   $$('#pbDistChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#pbDistChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
-    wiz.pbDist=+c.dataset.v; syncHoursUI(); goObStep(obStep); updateVdotPreview(); renderOutlook();
+    wiz.pbDist=+c.dataset.v; syncHoursUI(); goObStep(obStep); updateVdotPreview(); renderOutlook(); renderWizWarnings();
   }));
   $('#in-pbH').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,1); wiz.pbH=e.target.value; goObStep(obStep); updateVdotPreview(); });
   $('#in-pbMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.pbMin=e.target.value; goObStep(obStep); updateVdotPreview(); });
   $('#in-pbSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.pbSec=e.target.value; goObStep(obStep); updateVdotPreview(); });
-  $('#in-weeklyKm').addEventListener('input',e=>{ wiz.weeklyKm=e.target.value; goObStep(obStep); });
+  $('#in-weeklyKm').addEventListener('input',e=>{ wiz.weeklyKm=e.target.value; goObStep(obStep); renderWizWarnings(); });
   $$('#trainedChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#trainedChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
     wiz.trainedRecently = c.dataset.v==='yes';
+    renderWizWarnings();
   }));
   $$('#runDaysChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#runDaysChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.runDays=+c.dataset.v;
+    renderWizWarnings();
   }));
   /* Izbor konkretnih dana trcanja. Kad su izabrani, oni ODREDJUJU i broj dana,
      a izbor dana za dugo trcanje / kvalitet se ogranicava na njih — da korisnik
@@ -4649,18 +4713,19 @@ function bindOnboardEvents(){
     if(i>=0){ wiz.runDows.splice(i,1); c.classList.remove('on'); }
     else { wiz.runDows.push(v); c.classList.add('on'); }
     wiz.runDows.sort((a,b)=>a-b);
-    syncRunDowUI();
+    syncRunDowUI(); renderWizWarnings();
   }));
   $$('#lrDowChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#lrDowChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
     wiz.lrDow=+c.dataset.v; wiz.lrDowManual=true;   /* korisnik je sam izabrao — ne diramo vise */
     const i=wiz.qDays.indexOf(wiz.lrDow);
     if(i>=0){ wiz.qDays.splice(i,1); const b=document.querySelector(`#qDayChips .ob-chip[data-v="${wiz.lrDow}"]`); if(b)b.classList.remove('on'); }
-    syncRunDowUI();
+    syncRunDowUI(); renderWizWarnings();
   }));
   $$('#qualityChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#qualityChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.quality=+c.dataset.v;
     while(wiz.qDays.length>wiz.quality){ const rm=wiz.qDays.shift(); const b=document.querySelector(`#qDayChips .ob-chip[data-v="${rm}"]`); if(b)b.classList.remove('on'); }
+    renderWizWarnings();
   }));
   $$('#qDayChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     const v=+c.dataset.v; if(v===wiz.lrDow) return;
@@ -4668,14 +4733,15 @@ function bindOnboardEvents(){
     if(i>=0){ wiz.qDays.splice(i,1); c.classList.remove('on'); return; }
     wiz.qDays.push(v); c.classList.add('on');
     while(wiz.qDays.length>wiz.quality){ const rm=wiz.qDays.shift(); const b=document.querySelector(`#qDayChips .ob-chip[data-v="${rm}"]`); if(b)b.classList.remove('on'); }
+    renderWizWarnings();
   }));
   $$('.ob-icard').forEach(c=>c.addEventListener('click',()=>{
     $$('.ob-icard').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.intensity=c.dataset.v;
-    renderOutlook(); /* izabran intenzitet je istaknut u predvidjanju i pominje se u proceni cilja */
+    renderOutlook(); renderWizWarnings(); /* izabran intenzitet je istaknut u predvidjanju i pominje se u proceni cilja */
   }));
-  $('#in-goalH').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,1); wiz.goalH=e.target.value; renderOutlook(); });
-  $('#in-goalMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalMin=e.target.value; renderOutlook(); });
-  $('#in-goalSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalSec=e.target.value; renderOutlook(); });
+  $('#in-goalH').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,1); wiz.goalH=e.target.value; renderOutlook(); renderWizWarnings(); });
+  $('#in-goalMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalMin=e.target.value; renderOutlook(); renderWizWarnings(); });
+  $('#in-goalSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalSec=e.target.value; renderOutlook(); renderWizWarnings(); });
   $('#obBack').addEventListener('click',()=>goObStep(obStep-1));
   $('#obNext').addEventListener('click',()=>{
     if(!obStepValid(obStep))return;
