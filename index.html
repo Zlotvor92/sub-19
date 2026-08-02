@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='119'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='120'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6929,7 +6929,8 @@ function openSettings(){
       ?`<div class="note-src" style="margin:0 0 10px">Povezan · ID ${esc(S.icu.athleteId)} · poslednje povlačenje: ${S.icu.lastSync?new Date(S.icu.lastSync).toLocaleString('sr-RS'):'nikad'} · zapisa: ${(S.wellness?Object.keys(S.wellness).length:0)}</div>
         <div class="btnrow" style="margin-top:0"><button class="btn" id="icu-sync">Povuci sada</button><button class="btn ghost sm" id="icu-off">Otkači</button></div>
         <div class="note-src">HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</div>
-        <div class="btnrow" style="margin-top:10px"><button class="btn ghost" id="icu-push">📤 Pošalji treninge na sat (14 dana)</button></div>
+        <div class="btnrow" style="margin-top:10px"><button class="btn ghost" id="icu-push">📤 Pošalji treninge na sat (14 dana)</button><button class="btn ghost sm" id="icu-vidi">👁 Vidi šta se šalje</button></div>
+        <div id="icu-pregled"></div>
         <div class="note-src">Šalje strukturu treninga u intervals.icu kalendar. Da bi stigli i <b>na sat</b>, u intervals.icu → Settings uključi <b>„Upload planned workouts"</b> i autorizuj Garmin Connect.${S.icu.lastPush?' · poslednje slanje: '+new Date(S.icu.lastPush).toLocaleString('sr-RS'):''}</div>`
       :`<div class="f-field full"><label>ID sportiste</label><input id="icu-id" inputmode="numeric" placeholder="npr. i123456"></div>
         <div class="f-field full"><label>API ključ</label><input id="icu-key" type="password" placeholder="iz intervals.icu → Settings → Developer"></div>
@@ -6959,6 +6960,26 @@ function openSettings(){
     const r=await icuSync(14);
     if(r.ok){ save(); closeSheet(); alert('Povezano. Povučeno zapisa: '+r.n+'.'); }
     else { S.icu=null; b.disabled=false; b.textContent='Poveži'; alert(r.error||'Nije uspelo.'); }
+  };
+  /* PREGLED — Garmin Connect namerno ne prikazuje korake ni ciljeve treninga
+     koje je napravila treca aplikacija ("View details and edit on ..."), pa se
+     iz njega ne moze zakljuciti da li je struktura uopste poslata. Ovde stoji
+     doslovno ono sto odlazi, da ne treba cekati prvi kvalitetan dan da bi se
+     videlo. */
+  if($('#icu-vidi')) $('#icu-vidi').onclick=()=>{
+    const box=$('#icu-pregled'); if(!box) return;
+    if(box.innerHTML){ box.innerHTML=''; return; }
+    const ev=icuDaniZaSlanje(14);
+    if(!ev.length){ box.innerHTML='<div class="note-src">Nema treninga u narednih 14 dana.</div>'; return; }
+    /* koji od njih uopste nose strukturu — to je ono sto korisnik proverava */
+    const strukt=ev.filter(e=>/^- /m.test(e.description) && e.description.split('\n').filter(l=>/^- /.test(l)).length>1);
+    box.innerHTML='<div class="note-src" style="margin:10px 0 6px">Šalje se '+ev.length+' treninga, '+
+      (strukt.length?'sa strukturom: '+strukt.length+' ('+strukt.map(e=>fmtDY(e.date)).join(', ')+')'
+                    :'nijedan sa strukturom — svi su lagani/dugi dani')+
+      '.<br>intervals.icu prosleđuje Garminu otprilike nedelju dana unapred, pa dalji dani stižu kasnije sami.</div>'+
+      ev.map(e=>'<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;margin:0 0 10px;padding:8px;'+
+        'border-radius:8px;background:rgba(127,127,127,.12);overflow-x:auto">'+
+        esc(fmtDY(e.date)+' · '+e.name)+'\n'+esc(e.description)+'</pre>').join('');
   };
   if($('#icu-push')) $('#icu-push').onclick=async e=>{
     const n=icuDaniZaSlanje(14).length;
