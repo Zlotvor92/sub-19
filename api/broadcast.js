@@ -29,6 +29,28 @@ function proveriTajnu(req) {
   return diff === 0;
 }
 
+/* DRUGI PUT UNUTRA — prijavljen vlasnik aplikacije, da slanje može i sa
+   telefona, bez terminala i bez ikakvog tajnog ključa u pregledaču.
+   Propušta SAMO nalog čija se adresa poklapa sa ADMIN_EMAIL (ili REPORT_TO).
+   Adresa se čita sa Supabase servera iz tokena — ne iz onoga što pregledač
+   tvrdi da jeste. */
+async function proveriVlasnika(req) {
+  const admin = String(process.env.ADMIN_EMAIL || process.env.REPORT_TO || '').trim().toLowerCase();
+  const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
+  if (!admin || !url || !anon) return false;
+  const h = req.headers.authorization || req.headers.Authorization || '';
+  const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
+  if (!m) return false;
+  try {
+    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
+      headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
+    });
+    if (!r.ok) return false;
+    const u = await r.json();
+    return !!(u && u.email && String(u.email).trim().toLowerCase() === admin);
+  } catch (e) { return false; }
+}
+
 async function sviKorisnici(url, key) {
   const PER = 200, out = [];
   for (let page = 1; page <= 25; page++) {
@@ -88,7 +110,9 @@ const NASLOV = 'SUB-20 — uputstvo: kako se koriste sve funkcije';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Samo POST.' }); return; }
-  if (!proveriTajnu(req)) { res.status(401).json({ error: 'Neovlašćeno.' }); return; }
+  if (!proveriTajnu(req) && !(await proveriVlasnika(req))) {
+    res.status(401).json({ error: 'Neovlašćeno.' }); return;
+  }
 
   const url  = process.env.SUPABASE_URL;
   const srv  = process.env.SUPABASE_SERVICE_ROLE_KEY;

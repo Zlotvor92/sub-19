@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='126'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='127'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6758,6 +6758,27 @@ function icuPragTekst(){
     return ' — po tvojoj formi to je <b>'+Math.floor(s/60)+':'+String(Math.round(s%60)).padStart(2,'0')+'/km</b>';
   }catch(e){ return ''; }
 }
+/* ============================================================
+   SLANJE UPUTSTVA KORISNICIMA (samo vlasnik aplikacije)
+
+   Adresa nije tajna — stoji i u politici privatnosti — i sluzi SAMO da se
+   dugme ne prikazuje tudjim nalozima. Pravu proveru radi server, i to nad
+   adresom koju procita iz Supabase tokena, ne nad onim sto pregledac tvrdi.
+   Zato ovde nema nikakvog kljuca: /api/broadcast prima ili CRON_SECRET
+   (terminal) ili prijavu vlasnika (ovo dugme).
+   ============================================================ */
+const ADMIN_EMAIL='avuletic92@gmail.com';
+function jeVlasnik(){ return sbAuthed() && String(SB.email||'').trim().toLowerCase()===ADMIN_EMAIL; }
+async function posaljiUputstvo(opcije){
+  try{
+    const r=await fetch('/api/broadcast',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
+      body:JSON.stringify(opcije||{})});
+    let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
+    if(!r.ok) return {ok:false, error:j.error||('Greška '+r.status)};
+    return {ok:true, j};
+  }catch(e){ return {ok:false, error:'Nema veze sa serverom.'}; }
+}
 /* Skuplja dane iz aktivnog plana za naredni broj dana i salje ih. */
 function icuDaniZaSlanje(danaUnapred){
   const doDatuma=addD(TODAY, danaUnapred||14);
@@ -6997,6 +7018,14 @@ function openSettings(){
         <div class="btnrow" style="margin-top:8px"><button class="btn" id="icu-on">Poveži</button></div>
         <details class="help"><summary>Gde nalazim ID i ključ</summary><p>intervals.icu → Settings → na dnu <b>Developer Settings</b>. Odatle čitamo HRV, puls u miru i san koje Garmin već šalje, a tamo šaljemo planirane treninge za sat.</p></details>`}
 
+    ${jeVlasnik()?`
+    <hr class="sep">
+    <div class="set-h"><div class="card-t">Obaveštenje korisnicima</div><span class="chip off">samo ti</span></div>
+    <div class="set-st">Šalje mejl sa linkom na <b>uputstvo</b> svima koji imaju nalog.</div>
+    <div class="btnrow"><button class="btn ghost sm" id="bc-proba">Proba na moju adresu</button><button class="btn ghost sm" id="bc-svi">Pošalji svima…</button></div>
+    <details class="help"><summary>Šta se tačno šalje</summary><p>Kratak mejl sa dugmetom koje vodi na <b>/uputstvo.html</b>. Ceo tekst se namerno ne šalje mejlom — poslat mejl se ne može ispraviti, a stranica može.</p><p>Svaki mejl ide <b>posebno</b>, da niko ne vidi tuđe adrese. „Pošalji svima" prvo prebroji primaoce i pita za potvrdu.</p></details>
+    `:''}
+
     <hr class="sep">
     <div class="set-h"><div class="card-t">Podaci</div></div>
     <div class="set-st">poslednji backup: <b>${S.ui.lastBackup?fmtDY(S.ui.lastBackup):'nikad'}</b></div>
@@ -7050,6 +7079,28 @@ function openSettings(){
       ev.map(e=>'<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;margin:0 0 10px;padding:8px;'+
         'border-radius:8px;background:rgba(127,127,127,.12);overflow-x:auto">'+
         esc(fmtDY(e.date)+' · '+e.name)+'\n'+esc(e.description)+'</pre>').join('');
+  };
+  if($('#bc-proba')) $('#bc-proba').onclick=async e=>{
+    const b=e.target; b.disabled=true; b.textContent='Šaljem…';
+    const r=await posaljiUputstvo({posalji:true, samoNa:[ADMIN_EMAIL]});
+    b.textContent=r.ok?'Poslato ✓':'Nije uspelo';
+    alert(r.ok?('Poslato na '+ADMIN_EMAIL+'. Proveri sanduče — i spam.'):(r.error||'Nije uspelo.'));
+    setTimeout(()=>{ b.disabled=false; b.textContent='Proba na moju adresu'; },2200);
+  };
+  if($('#bc-svi')) $('#bc-svi').onclick=async e=>{
+    const b=e.target; b.disabled=true; b.textContent='Brojim…';
+    /* prvo SUVO — koliko ih je; slanje svima se ne poništava, pa se ne kreće naslepo */
+    const p=await posaljiUputstvo({});
+    b.disabled=false; b.textContent='Pošalji svima…';
+    if(!p.ok){ alert(p.error||'Nije uspelo.'); return; }
+    const n=p.j.primalaca||0;
+    if(!n){ alert('Nema nijednog primaoca.'); return; }
+    if(!confirm('Poslati uputstvo na '+n+' adresa?\n\nMejl se ne može povući. Traje oko '+Math.ceil(n*0.6)+' s — ne zatvaraj aplikaciju.')) return;
+    b.disabled=true; b.textContent='Šaljem 0/'+n+'…';
+    const r=await posaljiUputstvo({posalji:true});
+    b.textContent=r.ok?('Poslato '+r.j.poslato+' ✓'):'Nije uspelo';
+    alert(r.ok?('Poslato: '+r.j.poslato+(r.j.palo?' · nije stiglo: '+r.j.palo:'')):(r.error||'Nije uspelo.'));
+    setTimeout(()=>{ b.disabled=false; b.textContent='Pošalji svima…'; },2600);
   };
   if($('#icu-push2')) $('#icu-push2').onclick=async e=>{
     const n=icuDaniZaSlanje(14).length;
