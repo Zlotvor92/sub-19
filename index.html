@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='127'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='128'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -7022,7 +7022,9 @@ function openSettings(){
     <hr class="sep">
     <div class="set-h"><div class="card-t">Obaveštenje korisnicima</div><span class="chip off">samo ti</span></div>
     <div class="set-st">Šalje mejl sa linkom na <b>uputstvo</b> svima koji imaju nalog.</div>
-    <div class="btnrow"><button class="btn ghost sm" id="bc-proba">Proba na moju adresu</button><button class="btn ghost sm" id="bc-svi">Pošalji svima…</button></div>
+    <div class="btnrow"><button class="btn ghost sm" id="bc-lista">📋 Spisak adresa</button><button class="btn ghost sm" id="bc-proba">Proba na mene</button></div>
+    <div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="bc-svi">Pošalji svima…</button></div>
+    <div id="bc-out"></div>
     <details class="help"><summary>Šta se tačno šalje</summary><p>Kratak mejl sa dugmetom koje vodi na <b>/uputstvo.html</b>. Ceo tekst se namerno ne šalje mejlom — poslat mejl se ne može ispraviti, a stranica može.</p><p>Svaki mejl ide <b>posebno</b>, da niko ne vidi tuđe adrese. „Pošalji svima" prvo prebroji primaoce i pita za potvrdu.</p></details>
     `:''}
 
@@ -7080,12 +7082,36 @@ function openSettings(){
         'border-radius:8px;background:rgba(127,127,127,.12);overflow-x:auto">'+
         esc(fmtDY(e.date)+' · '+e.name)+'\n'+esc(e.description)+'</pre>').join('');
   };
+  /* SPISAK ADRESA — za slanje iz sopstvenog sanduceta preko BCC.
+     Postoji zato sto Resend bez potvrdjenog domena salje samo na adresu
+     vlasnika naloga, pa dugme "Posalji svima" za sada ne moze da odradi
+     posao. Suvi poziv (bez `posalji`) NE salje nista, samo vrati listu. */
+  if($('#bc-lista')) $('#bc-lista').onclick=async e=>{
+    const box=$('#bc-out'); if(!box) return;
+    if(box.innerHTML){ box.innerHTML=''; return; }
+    const b=e.target; b.disabled=true; b.textContent='Čitam…';
+    const r=await posaljiUputstvo({});
+    b.disabled=false; b.textContent='📋 Spisak adresa';
+    if(!r.ok){ alert(r.error||'Nije uspelo.'); return; }
+    const adrese=(r.j.primaoci||[]);
+    if(!adrese.length){ box.innerHTML='<div class="note-src">Nema nijednog naloga.</div>'; return; }
+    /* zarezom razdvojeno — tako se lepi pravo u BCC polje */
+    box.innerHTML='<div class="note-src" style="margin:10px 0 6px">'+adrese.length+' adresa · nalepi ih u <b>BCC</b>, ne u „Za", da niko ne vidi tuđe.</div>'+
+      '<textarea id="bc-txt" readonly rows="4" style="width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;color:var(--txt);font-size:.78rem;line-height:1.5;resize:vertical">'+esc(adrese.join(', '))+'</textarea>'+
+      '<div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="bc-kopiraj">Kopiraj adrese</button></div>';
+    if($('#bc-kopiraj')) $('#bc-kopiraj').onclick=async ev=>{
+      const t=$('#bc-txt'); const kb=ev.target;
+      try{ await navigator.clipboard.writeText(t.value); }
+      catch(x){ t.select(); try{ document.execCommand('copy'); }catch(y){} }
+      kb.textContent='Kopirano ✓'; setTimeout(()=>{ kb.textContent='Kopiraj adrese'; },1800);
+    };
+  };
   if($('#bc-proba')) $('#bc-proba').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Šaljem…';
     const r=await posaljiUputstvo({posalji:true, samoNa:[ADMIN_EMAIL]});
     b.textContent=r.ok?'Poslato ✓':'Nije uspelo';
     alert(r.ok?('Poslato na '+ADMIN_EMAIL+'. Proveri sanduče — i spam.'):(r.error||'Nije uspelo.'));
-    setTimeout(()=>{ b.disabled=false; b.textContent='Proba na moju adresu'; },2200);
+    setTimeout(()=>{ b.disabled=false; b.textContent='Proba na mene'; },2200);
   };
   if($('#bc-svi')) $('#bc-svi').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Brojim…';
