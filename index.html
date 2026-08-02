@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='108'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='109'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2408,6 +2408,8 @@ const ZONE_FOR_KIND = {
      praga svega nekoliko sekundi po kilometru — a greska u tom smeru POTCENJUJE
      VDOT, sto je bezbednije nego da ga precenjuje i ubrza ceo plan. */
   'Tempo trke':'T', 'Kontrolna trka':'T',
+  /* Progresivno koje se zavrsava na tempu trke je M rad, ne T. */
+  'Progresivno (tempo trke)':'M',
   'Maratonski tempo':'M'
 };
 /* Stope rasta VDOT/nedeljno:
@@ -3294,11 +3296,18 @@ function runWalkZaNedelju(weekIdx){
    mora da se navikne da prima ugljene hidrate u trku — to je adaptacija koja
    trazi 4-6 nedelja vezbanja i jedino dugo trcanje pruza priliku za nju.
    5K i 10K ovo nemaju (`gorivoOdMin` izostaje), pa im se opis ne menja. */
-function gorivoTekst(km, pLRsecPerKm, odMin){
+function gorivoTekst(km, pLRsecPerKm, odMin, jakoOdMin){
   if(!odMin || !(pLRsecPerKm>0)) return '';
   const min = km*pLRsecPerKm/60;
   if(min < odMin) return '';
-  return ` · ${Math.round(min)} min — uvežbaj gorivo: 30–60 g ugljenih hidrata na sat, prvi unos oko 40. minuta`;
+  /* Jaca preporuka (60-90 g/h) je MARATONSKA odluka i vezana je za profil, ne za
+     samo trajanje trcanja — inace bi tiho promenila vec potvrdjene polumaratonske
+     planove. Na maratonu je opravdana: zalihe glikogena traju ~90 min na tempu
+     trke, a crevo se na 90 g/h navikava nedeljama. */
+  const jako = jakoOdMin && min >= jakoOdMin;
+  return jako
+    ? ` · ${Math.round(min)} min — uvežbaj gorivo: 60–90 g ugljenih hidrata na sat, prvi unos oko 40. minuta pa na svakih 20–25 min. Crevo se na to navikava nedeljama; ne improvizuj na dan trke.`
+    : ` · ${Math.round(min)} min — uvežbaj gorivo: 30–60 g ugljenih hidrata na sat, prvi unos oko 40. minuta`;
 }
 /* Piramida — primitiv prikaza (isti sloj kao sessInt/sessTempo), ovde jer je
    ranije stajao među mk* graditeljima koje je 5K prepis zamenio. */
@@ -3369,8 +3378,12 @@ function sessFartlek(dow,wuKm,n,surgeSec,easySec,paceSec,cdKm,easyPaceSec){
   return {dow,tag:'int',km:sessKm(session),desc:sessDesc(session),session};
 }
 /* Progresivni run: prve 2/3 lako, poslednja trećina na T tempu. */
-function sessProg(dow,totalKm,endPaceSec,easyPaceSec){
-  const session={type:'prog',kind:'Progresivno',qKm:totalKm,paceSec:endPaceSec,easyPaceSec,wuKm:0,cdKm:0,overrides:{}};
+/* `kind` razdvaja progresivno trcanje koje se ZAVRSAVA NA PRAGU od onog koje se
+   zavrsava na TEMPU TRKE. Razlika nije kozmeticka: iz naziva se izvodi zona za
+   procenu VDOT-a, a kod brzih trkaca prag i tempo trke lezu toliko blizu da se
+   iz samog tempa ne moze pouzdano zakljuciti sta je bila namera. */
+function sessProg(dow,totalKm,endPaceSec,easyPaceSec,kind){
+  const session={type:'prog',kind:kind||'Progresivno',qKm:totalKm,paceSec:endPaceSec,easyPaceSec,wuKm:0,cdKm:0,overrides:{}};
   return {dow,tag:'tempo',km:sessKm(session),desc:sessDesc(session),session};
 }
 /* Primenjuje ručnu izmenu JEDNOG polja; mutira i vraća isti day objekat.
@@ -3621,9 +3634,9 @@ function mkRepeticije21K(dow,vol,pR){
    je za njih zavrsetak na TEMPU TRKE — i fizioloski tacnije (aerobni, ne
    pragovski stimulus) i resava dupli prag: kod te grupe su oba kvalitetna dana
    padala na prag, pa je nedeljni T rad isao na 17% umesto Danielsovih 10%. */
-function mkProgresivni21K(dow,vol,zavrsniPace,pE,deo){
+function mkProgresivni21K(dow,vol,zavrsniPace,pE,deo,naTempuTrke){
   const total=r1(Math.max(6, Math.min(vol*0.20*(deo||1), 16)));
-  return sessProg(dow,total,zavrsniPace,pE);
+  return sessProg(dow,total,zavrsniPace,pE, naTempuTrke?'Progresivno (tempo trke)':'Progresivno');
 }
 /* KONTROLNA TRKA — 3-4 nedelje pred polumaraton. Standard u PM pripremi:
    proba opreme, goriva, ritma i predstartne nervoze pod pravim uslovima, uz
@@ -3723,7 +3736,7 @@ function buildQuality21K(qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, 
     if(faza==='vrhunac'){ const m=qualW%3; return m===1 ? mkIntervali21K(dow,vol,pI,faza,qualW) : mkCruise21K(dow,vol,pT); }
     /* specifika */
     if(strat==='blokovi') return (qualW%2===1) ? mkRitam21K(dow,vol,racePace,pE,qualW) : mkTempo21K(dow,vol,pT);
-    return (qualW%2===1) ? mkCruise21K(dow,vol,pT) : mkProgresivni21K(dow,vol,strat==='dugo'?racePace:pT,pE);
+    return (qualW%2===1) ? mkCruise21K(dow,vol,pT) : mkProgresivni21K(dow,vol,strat==='dugo'?racePace:pT,pE,null,strat==='dugo');
   }
 
   if(slotRole==='q1'){
@@ -3736,7 +3749,7 @@ function buildQuality21K(qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, 
     if(fam==='I')  return (qualW%4===2) ? mkFartlek21K(dow,vol,pI,pE)
                                          : mkIntervali21K(dow,vol,pI,faza,qualW);
     if(fam==='RP') return (faza==='specifika' && strat==='dugo')
-                          ? mkProgresivni21K(dow,vol,racePace,pE)
+                          ? mkProgresivni21K(dow,vol,racePace,pE,null,true)
                           : mkRitam21K(dow,vol,racePace,pE,qualW);
     /* 'T' — pragovski q1. Deli budzet sa q2 (v. `deo`). */
     return (faza==='vrhunac') ? mkProgresivni21K(dow,vol,pT,pE,deo)
@@ -3758,6 +3771,243 @@ function lrDodatak21K(faza, qualW, lrKm, racePace, strategija){
   if(!cesto && qualW%2===0) return '';
   const zavrsni = r1(Math.max(3, Math.min(6, lrKm*0.25)));
   return ` · brz završetak: poslednjih ${zavrsni} km @ ${fmtP(racePace)}/km (tempo trke, na umornim nogama)`;
+}
+
+/* ============================================================
+   MARATON — TRENERSKI MODEL
+
+   Maraton nije "duzi polumaraton". Cetiri stvari ga razdvajaju:
+
+   1. DUGO TRCANJE IMA VREMENSKI PLAFON OD 3 SATA, NE KILOMETARSKI.
+      Fizioloska adaptacija se maksimizuje izmedju 2.5 i 3 sata; preko toga
+      NEMA dodatnog aerobnog dobitka, a osteceenje misica, praznjenje glikogena
+      i neuromisicni umor naglo rastu — i pojedu kvalitetne treninge koji vise
+      znace. Zato brz trkac stigne 32 km unutar 3 sata, a spor trkac na istom
+      plafonu stane na 26-28 km. Isti plafon, razlicita kilometraza — i to je
+      tacno, ne kompromis (Pfitzinger, Daniels, Lydiard se ovde slazu).
+   2. DUGO TRCANJE IMA SOPSTVENI TALAS. Vecina nedelja je 19-25 km; prava
+      duga trcanja (plafon) idu DVA puta, razmaknuta ~3 nedelje, a najduze
+      pada 3 nedelje pre trke. Trcanje od 3 sata svake nedelje nije plan.
+   3. TEMPO TRKE SE UVEZBAVA UNUTAR DUGOG TRCANJA. Maratonski tempo je
+      submaksimalan, pa ne trazi zaseban tvrd dan kao 10K ritam — trazi da se
+      drzi na UMORNIM nogama. Otud "32 km, poslednjih 10 na maratonskom tempu".
+   4. GORIVO JE DEO TRENINGA, NE DETALJ. Zalihe glikogena traju ~90 minuta na
+      maratonskom tempu; posle toga dolazi "zid". Crevo se mora TRENIRATI da
+      primi 60-90 g ugljenih hidrata na sat, a neuvezbano gorivo je najcesci
+      uzrok stomacnih problema na trci.
+
+   Uz to: VO2max je najmanje vazan od sve cetiri distance (5% nedelje),
+   repeticije prakticno nestaju, prag ostaje glavni alat za formu, a taper je
+   najduzi — tri nedelje, sa smanjenjem obima od ~60% ukupno.
+   ============================================================ */
+
+const KORAK_42K = {
+  kons: { pct:0.040, min:1.8, max:3.8 },
+  std:  { pct:0.055, min:2.4, max:5.0 },
+  agr:  { pct:0.070, min:3.0, max:6.0 }
+};
+function korakRasta42K(vol, intensity){
+  const K = KORAK_42K[intensity] || KORAK_42K.std;
+  return Math.max(K.min, Math.min(K.max, vol*K.pct));
+}
+/* Odrediste: 95 km/ned. Pfitzingerov ULAZNI maratonski plan ima vrhunac na
+   ~88 km i trazi bazu od 64 km; visi nivoi idu na 112 i 136. Za rekreativca je
+   95 posten gornji cilj — preko toga se ulazi u teritoriju gde obim trazi dva
+   treninga dnevno. */
+const CILJ_OBIM_42K = 95;
+function peakVol42K(cur, rampSteps, intensity){
+  let v = cur;
+  for(let i=0;i<rampSteps;i++) v += korakRasta42K(v, intensity);
+  const odrediste = Math.min(CILJ_OBIM_42K, Math.max(cur*1.75, cur+20));
+  const gornja = Math.max(cur*1.10, odrediste);
+  return Math.max(cur, Math.min(v, gornja, 180));
+}
+
+/* DUGO TRCANJE ZA MARATON — VREME je merilo.
+   Plafon 180 min (3 sata) je granica preko koje adaptacije prestaju da rastu a
+   cena oporavka eksplodira. Apsolutni plafon 32 km postoji samo da brzom
+   trkacu (koji bi u 3 sata presao 36+) ne damo vise nego sto maraton trazi.
+   Udeo 30% nedelje; na niskom obimu se dize do 45% (najvise 18 km) — inace
+   trkac koji trci 40 km/ned nikad ne bi dosao ni blizu maratonske distance. */
+function lrCap42K(vol, pLRsecPerKm){
+  const timeCap = pLRsecPerKm>0 ? (180*60)/pLRsecPerKm : Infinity;
+  const udeo = Math.max(vol*0.30, Math.min(16, vol*0.42));
+  return Math.min(udeo, timeCap, 32);
+}
+
+/* TALAS DUGOG TRCANJA. Vraca udeo plafona za datu nedelju.
+   Dva prava vrhunca, razmaknuta tri nedelje, poslednji u POSLEDNJOJ radnoj
+   nedelji (dakle tri nedelje pre trke). Izmedju njih i oko njih nedelje su
+   srednje dugacke, a nedelja odmah posle vrhunca je namerno kratka. */
+function lrCiklus42K(w, c){
+  const zadnjaRadna = c.weeks - 1 - c.taperW;
+  /* Taper nedelje se NE diraju ovde. Njih vec skracuje zajednicki mehanizam
+     (`prof.taperLrF`, mereno prema VRHUNSKOM dugom trcanju), pa bi dodatno
+     smanjenje bilo duplo: mereno je davalo taper nedelju na 48% vrhunca umesto
+     istrazivanjem preporucenih ~65%. */
+  if(w > zadnjaRadna) return 1;
+  const doKraja = zadnjaRadna - w;      /* 0 = poslednja radna nedelja */
+  let f;
+  if(doKraja===0)      f = 1.00;        /* vrhunac 2 — tri nedelje pre trke */
+  else if(doKraja===1) f = 0.85;
+  else if(doKraja===2) f = 0.75;        /* oporavak posle vrhunca 1 */
+  else if(doKraja===3) f = 1.00;        /* vrhunac 1 */
+  else if(doKraja===4) f = 0.85;
+  else if(doKraja===5) f = 0.92;
+  else                 f = 0.80;
+  /* Deload nedelja nikad ne nosi vrhunac dugog trcanja. */
+  return c.isDeload ? Math.min(f, 0.70) : f;
+}
+
+/* BUDZETI ZONA ZA MARATON:
+     M (tempo trke) <= 10% nedelje u jednoj sesiji, <= 20% nedeljno (Daniels)
+     T (prag)       <= 10% — glavni alat za formu, ali ne i za specificnost
+     I (VO2max)     <= 5% i <= 8 km — najmanje od sve cetiri distance
+     R (repeticije) <= 2% — prakticno samo odrzavanje ekonomije koraka */
+const M_PCT_42K = 0.10, M_MAX_42K = 16;
+const T_PCT_42K = 0.10;
+const I_PCT_42K = 0.05, I_MAX_42K = 8;
+const R_PCT_42K = 0.02, R_MAX_42K = 2.5;
+/* Neprekidan prag do 35 min. Daniels drzi 20; Pfitzinger za maraton izricito
+   ide duze (LT trcanja rastu do 11 km). Ovde se prati Pfitzinger, jer je model
+   maratonski. */
+const TEMPO_MAX_SEC_42K = 35*60;
+
+function reps42K(workKm, wkIdx){
+  const meni = [1200,1600,2000];
+  const zelja = meni[wkIdx % meni.length];
+  const budzetM = workKm*1000;
+  const lestvica = [2000,1600,1200,1000,800].filter(x => x<=zelja);
+  const rep = lestvica.find(x => 3*x <= budzetM*1.15) || 800;
+  const n = Math.max(3, Math.floor(budzetM/rep + 0.08));
+  return { rep, n };
+}
+function mkIntervali42K(dow,vol,pI,wkIdx){
+  const q=Math.min(Math.max(vol*I_PCT_42K, 2.4), I_MAX_42K);
+  const {rep,n}=reps42K(q,wkIdx);
+  const [wu,cd]=wuCdZaObim(vol);
+  return sessInt(dow,wu,n,rep,pI,Math.min(180,Math.max(90,Math.round((rep/1000)*pI*0.8))),cd,'Intervali');
+}
+function mkCruise42K(dow,vol,pT,deo){
+  const total=Math.max(Math.min(3, vol*0.10), vol*T_PCT_42K)*(deo||1);
+  const repKm = total>=10?3.0 : total>=6?2.5 : total>=3.5?1.6 : 1.0;
+  const n=Math.max(2, Math.floor(total/repKm + 0.08));
+  const [wu,cd]=wuCdZaObim(vol);
+  return sessInt(dow,wu,n,Math.round(repKm*1000),pT,repKm>=2.5?75:60,Math.max(cd,1),'Tempo isprekidan');
+}
+function mkTempo42K(dow,vol,pT,fixKm,deo){
+  const pod=Math.min(6, r1(vol*0.09))*(deo||1);
+  const q=fixKm!=null?fixKm:r1(Math.max(pod, Math.min(vol*T_PCT_42K*(deo||1), TEMPO_MAX_SEC_42K/pT)));
+  const [wu,cd]=wuCdZaObim(vol);
+  return sessTempo(dow,wu,q,pT,Math.max(cd,1),'Tempo');
+}
+/* MARATONSKI TEMPO kao zaseban trening — koristi se kad dugo trcanje te nedelje
+   nije vrhunac, pa ima mesta za specifican rad bez preklapanja umora. */
+function mkMaratonskiTempo42K(dow,vol,pM,qualW){
+  /* Apsolutni pod od 6 km vazi tek od ~60 km/ned; ispod toga prati obim (na
+     40 km/ned je 6 km na tempu trke 15% nedelje — iznad Danielsovog M budzeta). */
+  const q=Math.min(Math.max(vol*M_PCT_42K, Math.min(6, vol*0.10)), M_MAX_42K);
+  const [wu,cd]=wuCdZaObim(vol);
+  /* Naizmenicno neprekidno i izlomljeno: isti obim na tempu trke, druga glava. */
+  if((qualW||0)%2===0){
+    const repKm = q>=12 ? 5.0 : q>=8 ? 4.0 : 3.0;
+    const n=Math.max(2, Math.floor(q/repKm + 0.08));
+    return sessInt(dow,wu,n,Math.round(repKm*1000),pM,90,Math.max(cd,1),'Maratonski tempo');
+  }
+  return sessTempo(dow,wu,r1(q),pM,Math.max(cd,1),'Maratonski tempo');
+}
+function mkProgresivni42K(dow,vol,zavrsniPace,pE,deo,naTempuTrke){
+  const total=r1(Math.max(8, Math.min(vol*0.20*(deo||1), 18)));
+  return sessProg(dow,total,zavrsniPace,pE, naTempuTrke?'Progresivno (tempo trke)':'Progresivno');
+}
+function mkRepeticije42K(dow,vol,pR){
+  const total=Math.max(1.0, Math.min(vol*R_PCT_42K, R_MAX_42K));
+  const repM=200;
+  const n=Math.max(4, Math.floor(total*1000/repM + 0.08));
+  const [wu,cd]=wuCdZaObim(vol);
+  return sessInt(dow,wu,n,repM,pR,Math.round((repM/1000)*pR*2.5),cd,'Repeticije');
+}
+
+/* ============================================================
+   FAZE MARATONSKOG CIKLUSA (po Pfitzingerovoj podeli 18-nedeljnog bloka)
+
+     baza          — pocetnici / netrenirani, samo lagano + ubrzanja
+     izdrzljivost  — prvih 33%: obim, dugo i srednje-dugo trcanje nose sve.
+                     Kvaliteta je NAMERNO malo — gradi se temelj.
+     prag          — 33-73%: prag raste (Pfitzinger: LT trcanja od 6 do 11 km),
+                     obim i dalje raste. Ovo je najduza faza.
+     specifika     — poslednjih 27%: maratonski tempo ulazi u dugo trcanje i
+                     kao zaseban trening, uz mali dodatak VO2max rada.
+
+   Granice 33/73 su Pfitzingerove (nedelje 1-5, 6-11, 12-15 od 18).
+   ============================================================ */
+function faza42K(qualW, qualWeeks){
+  const f = qualW/Math.max(qualWeeks,1);
+  if(f < 0.33) return 'izdrzljivost';
+  if(f < 0.73) return 'prag';
+  return 'specifika';
+}
+/* q1 NIKAD nije prag. Kod Pfitzingera maratonska nedelja ima JEDAN pragovski
+   trening — plus dugo i srednje-dugo trcanje. Prva verzija je q1 u fazi praga
+   takodje slala na prag, pa je nedeljni T rad isao na 15-20% umesto Danielsovih
+   10% (audit: 3901 scenarija). Sada prag zivi iskljucivo na q2, a q1 nosi ono
+   sto maraton zaista trazi: ekonomiju rano, VO2max povremeno, a najvise
+   MARATONSKI TEMPO — jedini sistem koji je za ovu trku specifican. */
+function q1Familija42K(faza, qualW){
+  if(faza==='izdrzljivost') return (qualW%2===1) ? 'R' : 'M';
+  if(faza==='prag')         return (qualW%3===0) ? 'I' : 'M';
+  return (qualW%4===3) ? 'I' : 'M';
+}
+
+function buildQuality42K(qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, isTaper1, dow, racePace, ctx){
+  const faza = faza42K(qualW, qualWeeks);
+  const pM = racePace;
+  /* q1 vise nikad nije pragovski (v. q1Familija42K), pa nema deljenja budzeta —
+     nedeljni prag u celosti pripada q2 sesiji. */
+  const deo = 1;
+  if(isTaper1){
+    /* Poslednja nedelja: kratak dodir maratonskog tempa da noge zapamte ritam,
+       i nista vise. Taper skida kolicinu, cuva intenzitet. */
+    const [twu,tcd]=wuCdZaObim(vol);
+    if(effQ===1 || slotRole==='q1'){
+      const km=r1(Math.min(6, Math.max(3, vol*0.10)));
+      return sessTempo(dow,Math.max(twu*0.8,1),km,pM,Math.max(tcd*0.8,0.8),'Maratonski tempo');
+    }
+    return mkTempo42K(dow,vol,pT,r1(Math.min(5, Math.max(2.5, vol*0.07))));
+  }
+
+  if(effQ===1){
+    if(faza==='izdrzljivost') return (qualW%3===2) ? mkRepeticije42K(dow,vol,pR) : mkCruise42K(dow,vol,pT);
+    if(faza==='prag')         return (qualW%4===0) ? mkIntervali42K(dow,vol,pI,qualW) : mkCruise42K(dow,vol,pT);
+    return (qualW%2===1) ? mkMaratonskiTempo42K(dow,vol,pM,qualW) : mkTempo42K(dow,vol,pT);
+  }
+
+  if(slotRole==='q1'){
+    const fam = q1Familija42K(faza, qualW);
+    if(fam==='R') return mkRepeticije42K(dow,vol,pR);
+    if(fam==='I') return mkIntervali42K(dow,vol,pI,qualW);
+    /* U fazi izdrzljivosti maratonski tempo ide kao PROGRESIVNO trcanje —
+       blaze je i gradi naviku da se tempo drzi na kraju, a ne kao blok. */
+    if(fam==='M') return (faza==='izdrzljivost') ? mkProgresivni42K(dow,vol,pM,pE,null,true)
+                                                 : mkMaratonskiTempo42K(dow,vol,pM,qualW);
+    return mkCruise42K(dow,vol,pT,deo);
+  }
+
+  /* q2 — PRAG kroz ceo ciklus. */
+  if(faza==='izdrzljivost') return mkCruise42K(dow,vol,pT,deo);
+  return (qualW%2===1) ? mkTempo42K(dow,vol,pT,null,deo) : mkCruise42K(dow,vol,pT,deo);
+}
+
+/* DODATAK NA DUGO TRCANJE — maratonski tempo na UMORNIM nogama.
+   Ovo je najspecificniji trening koji maraton ima: poslednja trecina dugog
+   trcanja na tempu trke, tacno u stanju u kom ce trkac biti na 32. kilometru.
+   Duzina raste kroz specificnu fazu. Na VRHUNSKIM dugim trcanjima se NE radi —
+   tada je zadatak sam obim i uvezbavanje goriva, ne jos i tempo. */
+function lrDodatak42K(faza, qualW, lrKm, racePace, _strat, lrF){
+  if(faza!=='specifika' || !(lrKm>=16)) return '';
+  if(lrF!=null && lrF>=0.99) return '';
+  const zavrsni = r1(Math.max(5, Math.min(12, lrKm*0.35)));
+  return ` · poslednjih ${zavrsni} km @ ${fmtP(racePace)}/km (maratonski tempo, na umornim nogama)`;
 }
 
 /* ============================================================
@@ -3894,13 +4144,57 @@ const DIST_PROFILES = {
     /* PM: tempo trke je sporiji od I tempa (kao i 10K), pa se intervali ne
        vezuju za njega — rad na tempu trke ima svoje sesije. */
     pIzaNedelju:(pI) => pI
+  },
+  42195: {
+    name:'Maraton', minWeeks:12,
+    /* Pocetnik koji cilja maraton: 4 nedelje trcanja/hoda + 8 nedelja
+       konsolidacije. Trka traje 4h+ za tu populaciju. */
+    baseWeeksBeginner:12,
+    /* Maratonske sesije su najvece u aplikaciji (do 16 km na tempu trke), pa
+       dva kvaliteta traze i najveci obim. */
+    qual2MinKm:38,
+    korakRasta:korakRasta42K,
+    peakVol:peakVol42K,
+    lrCap:lrCap42K,
+    lrCiklus:lrCiklus42K,
+    faza:faza42K,
+    buildQuality:buildQuality42K,
+    tempoMaxSec:TEMPO_MAX_SEC_42K,
+    uvodnaPct:0.07,
+    /* Ispod ~55 km/ned vrhunca maraton je "istrci ga", ne "trci na vreme". */
+    bazaMin:55,
+    wuCdMaxAdd:1.5,
+    /* TAPER: tri nedelje ukupno sa trkackom. Istrazivanje (analiza 158.000+
+       rekreativnih maratonaca) daje ~80% vrhunca tri nedelje pre, ~65% dve
+       nedelje pre i ~40% u trkackoj nedelji — sto je ukupno smanjenje od
+       ~50%, unutar preporucenih 41-60%. Obim pada, intenzitet ostaje. */
+    taperWeeks:2, taperF2:0.80,
+    deloadF:0.78, taperF:0.65, raceWkF:0.40,
+    /* Dugo trcanje u poslednjoj nedelji pada na 70% vrhunca. Nize od toga se
+       ceo taper urusi: lagani dani i srednje-dugo trcanje se racunaju IZ dugog
+       trcanja, pa se smanjenje kaskadno mnozi i nedelja padne na ~48% vrhunca
+       umesto istrazivanjem preporucenih ~65%. Taper skida obim, ne bazu. */
+    taperLrF:0.70,
+    undulacija:[0.94, 0.99, 1.03],
+    /* Srednje-dugo trcanje je kod Pfitzingera za maraton jos vaznije nego za
+       polumaraton — visi planovi imaju 21-24 km sredinom nedelje. */
+    mlr:{ minDana:5, minKm:50, udeo:0.60 },
+    /* Gorivo se uvezbava od 75 min navise: zalihe glikogena traju ~90 minuta na
+       maratonskom tempu, a crevu treba nedeljama da nauci da prima 60-90 g/h. */
+    gorivoOdMin:75, gorivoJakoOdMin:120,
+    lrDodatak:lrDodatak42K,
+    bazaLrF:0.50,
+    /* Maraton na manje od 5 dana trcanja je vrlo tesko rasporediti. */
+    minDanaPrep:5,
+    sesijeIzIsporucivog:true,
+    pIzaNedelju:(pI) => pI
   }
 };
 
 function generatePlan(inp){
   const raceDistM = inp.raceDistM||5000;
   const prof = DIST_PROFILES[raceDistM];
-  if(!prof) return { error: 'Generator trenutno pravi 5K, 10K i polumaratonske planove. Maraton dobija sopstvenu logiku i biće vraćen zasebno.' };
+  if(!prof) return { error: 'Nepodržana distanca. Generator pravi planove za 5K, 10K, polumaraton i maraton.' };
   /* Odbrana od degenerisanog ulaza — wizard ovo već blokira (pbTotalSec vraća
      null za 0, obStepValid(2) pada), ali bez ove provere NaN bi tiho procurio
      kroz sve tempo formule u OPISE treninga ("@ ~NaN:NaN/km") umesto da se
@@ -4203,7 +4497,7 @@ function generatePlan(inp){
             dLR.runWalk = { runSec:rwLR.runSec, walkSec:rwLR.walkSec, label:rwLR.label };
             days.push(dLR);
           } else {
-            days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km lako-dugo (Z2) @ ~${fmtP(pLR)}/km — bazna faza, bez kvaliteta${gorivoTekst(alloc.lr,pLR,prof.gorivoOdMin)}`));
+            days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km lako-dugo (Z2) @ ~${fmtP(pLR)}/km — bazna faza, bez kvaliteta${gorivoTekst(alloc.lr,pLR,prof.gorivoOdMin,prof.gorivoJakoOdMin)}`));
           }
           continue;
         }
@@ -4252,6 +4546,27 @@ function generatePlan(inp){
     } else {
       /* kvalitetne sesije po slotovima (deload: nema kvaliteta; prva kval. nedelja: samo q1, kao uvodna) */
       const qualW = w - baseWeeks;         /* redni broj unutar kvalitetnog ciklusa (1-indeksiran) */
+      /* KOLIKI OBIM SME DA DIKTIRA VELICINU KVALITETNIH SESIJA
+         (odluka po distanci, `prof.sesijeIzIsporucivog`).
+         Ciljni obim nedelje ume da bude veci od onoga sto izabrani broj dana
+         moze da ponese — najizrazenije na maratonu, gde plan cilja 59 km a
+         cetiri dana isporuce 43. Sesije su se do sada racunale iz CILJA, pa je
+         jedan tempo od 6 km ispadao 14% isporucene nedelje umesto Danielsovih
+         10% (audit: 2269 scenarija).
+         Ovde se prvo napravi PROBNA raspodela u kojoj su svi dani lagani —
+         njen zbir je posten donji procenitelj onoga sto nedelja moze da nosi.
+         Kvalitetne sesije se racunaju iz TOGA; lagani dani i dalje ciljaju pun
+         obim, pa nedelja ne gubi kilometre bez potrebe. */
+      let volQ = vol;
+      if(prof.sesijeIzIsporucivog){
+        const probaCap = prof.lrCiklus
+          ? ((v,pl)=>prof.lrCap(v,pl)*prof.lrCiklus(w,{weeks,baseWeeks,taperW,isDeload}))
+          : prof.lrCap;
+        const proba = allocEasyLR(vol, [], Math.max(runDays-1,1), runDays, pLR, probaCap,
+                                  hoceMLR && prof.mlr ? prof.mlr.udeo : 0);
+        const moguce = proba.lr + (proba.mlr||0) + proba.easies.reduce((a,b)=>a+b,0);
+        if(moguce>0) volQ = Math.min(vol, r1(moguce*1.05));
+      }
       /* "Uvodna" prva kvalitetna nedelja (samo 1 kvalitet, tempo umesto
          intervala) ima smisla za nekoga ko ULAZI u kvalitetni trening — posle
          bazne faze, ili ako nije trenirao redovno. Za trkaca koji VEC radi 2
@@ -4271,14 +4586,14 @@ function generatePlan(inp){
              pocetnika na 11 km/ned bila sesija od 6 km — 55% nedelje, i obim
              je zbog nje skakao +54% cim kvalitet udje). */
           const [uwu,ucd]=wuCdZaObim(vol);
-          const qT=r1(Math.min(Math.max(vol*prof.uvodnaPct, 1.5), 5, prof.tempoMaxSec/pT));
+          const qT=r1(Math.min(Math.max(volQ*prof.uvodnaPct, 1.5), 5, prof.tempoMaxSec/pT));
           sessions[dow]=sessTempo(dow,uwu,qT,pT,Math.max(ucd,1),'Tempo');
           continue;
         }
         /* ctx nosi polozaj nedelje u planu — potreban je distancama koje imaju
            dogadjaje vezane za DATUM, a ne za fazu (polumaraton: kontrolna trka
            4 nedelje pred cilj). 5K i 10K ga ignorisu. */
-        sessions[dow]=prof.buildQuality(qualW,qualWeeks,role,effQ,vol,pI,pT,pE,pR,isTaper1,dow,racePace,{weeks,w,taperW});
+        sessions[dow]=prof.buildQuality(qualW,qualWeeks,role,effQ,volQ,pI,pT,pE,pR,isTaper1,dow,racePace,{weeks,w,taperW});
       }
       /* MLR se broji medju "lagane" dane jer se hrani iz istog ostatka —
          allocEasyLR mu prvo odvoji njegov deo, pa ostatak podeli. */
@@ -4316,8 +4631,18 @@ function generatePlan(inp){
          Bezbednosne granice za LR i lagane dane se NE DIRAJU — visak ide
          iskljucivo u lagane kilometre koji vec pripadaju kvalitetnom danu. */
       const mlrUdeoQ = hoceMLR && prof.mlr ? prof.mlr.udeo : 0;
+      /* CIKLUS DUGOG TRCANJA (odluka po distanci, `prof.lrCiklus`).
+         5K, 10K i polumaraton puste dugo trcanje da raste zajedno sa obimom i
+         to je tacno — njihovo najduze trcanje nikad nije toliko skupo da bi
+         traiilo sopstveni ritam. Maraton je drugi slucaj: trcanje od 3 sata se
+         ne moze ponavljati svake nedelje, pa dugo trcanje dobija SVOJ talas
+         (vecina nedelja srednje dugacko, dva prava vrhunca). Bez ove kuke
+         profil bi mogao samo da podigne plafon — a plafon svake nedelje nije
+         plan nego put u povredu. */
+      const lrF = prof.lrCiklus ? prof.lrCiklus(w, {weeks, baseWeeks, taperW, isDeload}) : 1;
+      const lrCapW = (lrF!==1) ? ((v,pl)=>prof.lrCap(v,pl)*lrF) : prof.lrCap;
       const allocFor=()=>allocEasyLR(vol, Object.values(sessions).map(d=>d.km||0),
-                                     easyDowsCount, runDays, pLR, prof.lrCap, mlrUdeoQ);
+                                     easyDowsCount, runDays, pLR, lrCapW, mlrUdeoQ);
       let alloc=allocFor();
       (function(){
         /* U TAPER NEDELJI SE OVO NE RADI. Mehanizam postoji da nedelja stigne
@@ -4413,9 +4738,10 @@ function generatePlan(inp){
                5K i 10K ne. Bez profila se opis ne menja. */
             const dodatakLR = (!isTaper1 && !isDeload && prof.lrDodatak)
               ? prof.lrDodatak(prof.faza(Math.max(w-baseWeeks,1), weeks-baseWeeks), Math.max(w-baseWeeks,1),
-                               alloc.lr, racePace, prof.ritamStrat ? prof.ritamStrat(racePace) : null)
+                               alloc.lr, racePace, prof.ritamStrat ? prof.ritamStrat(racePace) : null,
+                               prof.lrCiklus ? prof.lrCiklus(w, {weeks, baseWeeks, taperW, isDeload}) : null)
               : '';
-            days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km LR (Z2) @ ~${fmtP(pLR)}/km — najduže trčanje te nedelje${gorivoTekst(alloc.lr,pLR,prof.gorivoOdMin)}${dodatakLR}`));
+            days.push(D(dow,'lr',alloc.lr,`${alloc.lr} km LR (Z2) @ ~${fmtP(pLR)}/km — najduže trčanje te nedelje${gorivoTekst(alloc.lr,pLR,prof.gorivoOdMin,prof.gorivoJakoOdMin)}${dodatakLR}`));
           }
           continue;
         }
@@ -4853,8 +5179,9 @@ function renderOnboard(){
           <button type="button" class="ob-chip on" data-v="5000">5K</button>
           <button type="button" class="ob-chip" data-v="10000">10K</button>
           <button type="button" class="ob-chip" data-v="21097.5">Polumaraton</button>
+          <button type="button" class="ob-chip" data-v="42195">Maraton</button>
         </div>
-        <div class="ob-hint">Svaka distanca ima <b>svoju</b> logiku — 5K gradi VO2max i brzinu, 10K prag i specifičnu izdržljivost, polumaraton akumuliranu izdržljivost (dva duža trčanja nedeljno, taper od dve nedelje, uvežbavanje goriva). Ne prave se iz istog kalupa. Minimum: <b>6 nedelja</b> za 5K, <b>8</b> za 10K, <b>10</b> za polumaraton. Maraton dobija sopstvenu logiku i biće dodat zasebno.</div>
+        <div class="ob-hint">Svaka distanca ima <b>svoju</b> logiku — 5K gradi VO2max i brzinu, 10K prag i specifičnu izdržljivost, polumaraton akumuliranu izdržljivost (dva duža trčanja nedeljno, taper od dve nedelje, uvežbavanje goriva). Ne prave se iz istog kalupa. Maraton ide još dalje: dugo trčanje mu je ograničeno <b>vremenom</b> (3 sata), ima sopstveni talas i uvežbavanje goriva. Minimum: <b>6 nedelja</b> za 5K, <b>8</b> za 10K, <b>10</b> za polumaraton, <b>12</b> za maraton.</div>
       </div>
       <div class="ob-card">
         <div class="ob-ct">Datum trke</div>
@@ -5440,6 +5767,7 @@ const SESS_GUIDE={
   'Tempo':'"Udobno teško" — kratku rečenicu možeš da izgovoriš, ali razgovor ne. Drži isti napor od početka do kraja i nemoj da kreneš prebrzo.',
   'Tempo isprekidan':'Isti tempo i napor kao kod neprekidnog tempa — kratka pauza je samo predah, ne novi početak. Cilj je da ceo trening deluje kao jedan neprekidan napor.',
   'Fartlek':'Vodi se po naporu, ne po štoperici — ubrzanja su snažan zalet, ne sprint. U lakim delovima se potpuno opusti.',
+  'Progresivno (tempo trke)':'Kreni namerno lagano, a poslednju trećinu drži TAČNO na tempu trke — ne brže. Poenta je da naučiš taj tempo na umornim nogama, a ne da testiraš koliko možeš.',
   'Progresivno':'Kreni namerno lagano — svaki sledeći deo treba da bude brži od prethodnog. Najčešća greška je prebrz početak.',
   'Piramida':'Drži isti NAPOR na svakoj deonici, ne isti tempo — kraće deonice prirodno idu brže. Nemoj da kreneš prejako na najkraćoj, da ne "pukneš" na vrhu piramide.',
   'Maratonski tempo':'Tačno tvoj ciljani tempo trke — ovo je proba, a ne prilika da guraš jače. Ako je trčanje dovoljno dugo, iskoristi ga i za vežbanje ishrane i hidratacije.',
