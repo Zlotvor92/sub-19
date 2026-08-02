@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='117'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='118'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3455,13 +3455,15 @@ function sessKm(s){
   if(s.type==='prog')   return r1(s.qKm);
   return r1(s.wuKm + s.qKm + s.cdKm); /* tempo kontinuirani */
 }
+/* Kod pragovskih i race-pace formata pauza je LAGANO TRCANJE, ne hod —
+   poenta je da napor ostane neprekidan. Kod I/R formata je hod (pun oporavak).
+   Spisak je izricit, ne obrazac: sirok regex je zahvatao i "Trkacki ritam"
+   (10K), pa je tiho menjao vec potvrdjene 10K planove.
+   Van funkcije je zato sto istu podelu koristi i slanje na sat — da opis
+   treninga i korak na satu ne mogu da se raziđu. */
+const RECOVERY_JOG = ['Tempo isprekidan','Tempo trke','Kontrolna trka'];
 function sessDesc(s){
   if(s.type==='int'){
-    /* Kod pragovskih i race-pace formata pauza je LAGANO TRCANJE, ne hod —
-       poenta je da napor ostane neprekidan. Kod I/R formata je hod (pun oporavak).
-       Spisak je izricit, ne obrazac: sirok regex je zahvatao i "Trkacki ritam"
-       (10K), pa je tiho menjao vec potvrdjene 10K planove. */
-    const RECOVERY_JOG = ['Tempo isprekidan','Tempo trke','Kontrolna trka'];
     const restWord = RECOVERY_JOG.includes(s.kind) ? 'laganog trčanja' : 'hoda';
     return `${s.kind} — ${s.wuKm} km zagrevanje + ${s.reps}×${s.repM} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} ${restWord}) + ${s.cdKm} km smirivanje`;
   }
@@ -6589,6 +6591,20 @@ function icuRazdaljina(km){
   if(!(km>0)) return null;
   return km<1 ? Math.round(km*1000)+'mtr' : (Math.round(km*100)/100)+'km';
 }
+/* OPORAVAK IZMEDJU DEONICA — na sat NE SME da ide lagan (E) tempo.
+   Pauza je ili hod ili lagano kaskanje, a ni jedno se ne trci na E tempu
+   (npr. 5:20/km): sat bi kroz celu pauzu pikao "ubrzaj", a poenta pauze je
+   suprotna. Zato:
+     - hod      -> samo vreme, bez ijednog ciljnog tempa;
+     - kaskanje -> od 6:30/km navise, ne E tempo.
+   Ko dobija sta, odlucuje ISTI spisak (RECOVERY_JOG) koji pise i opis
+   treninga, pa tekst plana i korak na satu ne mogu da se raziđu. */
+const ICU_KASKANJE_OD=390, ICU_KASKANJE_DO=450;   /* 6:30–7:30/km */
+function icuOporavak(kind, restSec, kaskanje){
+  const jog = kaskanje || RECOVERY_JOG.includes(kind);
+  return jog ? '- Oporavak kaskanje '+icuTrajanje(restSec)+' '+icuTempo(ICU_KASKANJE_OD,ICU_KASKANJE_DO)
+             : '- Pauza hod '+icuTrajanje(restSec);
+}
 /* Pretvara JEDAN dan plana u intervals.icu tekst. Vraca null za dane koje nema
    smisla slati (odmor, snaga, sam dan trke). */
 /* STRUKTURA IZ OPISA — za planove koji nemaju `session` objekat.
@@ -6664,14 +6680,17 @@ function icuTekstDana(d, pE){
   } else if(ses.type==='int'){
     sek.push((ses.kind||'Glavni deo')+' '+ses.reps+'x\n'+
              red('', icuRazdaljina(ses.repM/1000), tempo)+'\n'+
-             red('Oporavak', icuTrajanje(ses.restSec), lagan));
+             icuOporavak(ses.kind, ses.restSec));
   } else if(ses.type==='pyramid'){
-    sek.push('Piramida\n'+ses.reps.map(m=>
-      red('', icuRazdaljina(m/1000), tempo)+'\n'+red('Oporavak', icuTrajanje(ses.restSec), lagan)).join('\n'));
+    /* posle POSLEDNJE deonice nema pauze — odmah ide smirivanje */
+    sek.push('Piramida\n'+ses.reps.map((m,i)=>
+      red('', icuRazdaljina(m/1000), tempo)+
+      (i<ses.reps.length-1 ? '\n'+icuOporavak(ses.kind, ses.restSec) : '')).join('\n'));
   } else if(ses.type==='fartlek'){
+    /* fartlek pauza je uvek kaskanje — brzo se smenjuje sa naporom */
     sek.push('Fartlek '+ses.reps+'x\n'+
              red('', icuTrajanje(ses.repSec), tempo)+'\n'+
-             red('Lagano', icuTrajanje(ses.restSec), icuTempo(ses.easyPaceSec)||lagan));
+             icuOporavak(ses.kind, ses.restSec, true));
   } else if(ses.type==='prog'){
     const uk=ses.qKm, lak=Math.round(uk*2/3*100)/100, brz=Math.round((uk-lak)*100)/100;
     sek.push('Progresivno\n'+
