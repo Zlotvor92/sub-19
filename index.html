@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='111'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='112'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1959,11 +1959,16 @@ function detectWorkSegments(streams){
    ocekuje. Analiza je bila pogresna u samoj osnovi, a ne u nijansi.
    `stopSec` se prosledjuje dalje da AI zna DA je bilo stajanja i ne tumaci ga
    kao usporavanje. */
+/* Verzija po-km podataka. Podize se kad se promeni NACIN racunanja, da se vec
+   sinhronizovani treninzi jednom osvezze — inace popravka nikad ne stigne do
+   trcanja koja su vec u bazi (prijava korisnika: ista pogresna analiza i posle
+   ispravke, jer je perKm bio kesiran iz starog sync-a). */
+const PERKM_VER = 2;
 function perKmDetail(streams){
   if(!streams)return [];
   const dist=streams.distance&&streams.distance.data, hr=streams.heartrate&&streams.heartrate.data,
         cad=streams.cadence&&streams.cadence.data, time=streams.time&&streams.time.data,
-        mov=streams.moving&&streams.moving.data;
+        mov=streams.moving&&streams.moving.data, alt=streams.altitude&&streams.altitude.data;
   if(!Array.isArray(dist)||!dist.length)return [];
   const imaMoving = Array.isArray(mov) && Array.isArray(time) && mov.length===time.length;
   const out=[]; let kmIdx=1, startI=0;
@@ -1977,8 +1982,10 @@ function perKmDetail(streams){
         for(let k=startI;k<i;k++){ if(mov[k+1]) s += (time[k+1]-time[k]); }
         dt=s; stop=Math.max(0, proteklo-s);
       }
-      const r={km:kmIdx, paceSec: dt!=null?Math.round(dt):null, hr: seg(hr)!=null?Math.round(seg(hr)):null, cadence: seg(cad)!=null?Math.round(seg(cad)):null};
+      const r={km:kmIdx, v:PERKM_VER, paceSec: dt!=null?Math.round(dt):null, hr: seg(hr)!=null?Math.round(seg(hr)):null, cadence: seg(cad)!=null?Math.round(seg(cad)):null};
       if(stop>=5) r.stopSec=Math.round(stop);
+      const alt0=(alt&&alt[startI]!=null)?alt[startI]:null, alt1=(alt&&alt[i]!=null)?alt[i]:null;
+      if(alt0!=null&&alt1!=null){ const dEl=Math.round(alt1-alt0); if(Math.abs(dEl)>=4) r.elevM=dEl; }
       out.push(r);
       startI=i; kmIdx++;
     }
@@ -2219,7 +2226,10 @@ function bindForm(root,d){
       const mainPid=predIds[0];
       const r=mainPid?CUR_PRED.find(x=>x.id===mainPid):null;
       const payload={
-        session:{ desc:d.desc||'', planPace: r?fmtTempo(effectivePace(d,r)):'—', q: r?r.q:null, tag:d.tag },
+        session:{ desc:d.desc||'', planPace: r?fmtTempo(effectivePace(d,r)):'—', q: r?r.q:null, tag:d.tag,
+                  kind: sessKind(d),
+                  /* ono sto je trkac SAM upisao na Stravi za taj dan */
+                  stravaName: l.stravaName||null, stravaDesc: l.stravaDesc||null },
         goalCtx: goalCtxText(),
         entered:{
           workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
@@ -6710,6 +6720,12 @@ async function stravaSync(manual){
         l.sec=a.moving_time;
         if(a.average_heartrate)l.hr=Math.round(a.average_heartrate);
         l.ts=date;l.src='strava';l.stravaId=a.id;
+        /* Ime i opis aktivnosti sa Strave: tu trkac sam kaze STA je hteo tog
+           dana ("4km @5:25 / 4km @5:00 ..."). Bez toga AI sudi progresivno
+           trcanje po pravilima za lagano, jer u planu dana pise samo "LR". */
+        const stIme=(a.name||'').trim(), stOp=(a.description||'').trim();
+        if(stIme) l.stravaName=stIme.slice(0,120);
+        if(stOp)  l.stravaDesc=stOp.slice(0,400);
         syncSide(d);imp++;
       }
       if(d.tag==='int'||d.tag==='tempo'){ /* bez QS uslova — dan izmenjen u kvalitet nema QS unos, a detectWorkSegments ga i ne traži */
@@ -6719,7 +6735,7 @@ async function stravaSync(manual){
             /* PRIMARNO: streamovi + prepoznavanje radnih segmenata po brzini.
                Nezavisno od Stravinih lapova (koji nepouzdano vraćaju čas
                strukturne čas auto-1km podelu). Jedan API poziv. */
-            const st=await stApi('/activities/'+a.id+'/streams?keys=distance,time,heartrate,cadence,watts,moving&key_by_type=true');
+            const st=await stApi('/activities/'+a.id+'/streams?keys=distance,time,heartrate,cadence,watts,moving,altitude&key_by_type=true');
             const segs=detectWorkSegments(st);
             if(segs&&segs.length){
               const totT=segs.reduce((s,x)=>s+x.paceSec*x.distM/1000,0);
@@ -6745,13 +6761,22 @@ async function stravaSync(manual){
             }
           }catch(e){}
         }
-      } else if((d.tag==='lako'||d.tag==='lr') && S.log[d.id] && !S.log[d.id].perKm && !l.lock){
+      } else if((d.tag==='lako'||d.tag==='lr') && S.log[d.id] && (!S.log[d.id].perKm || (S.log[d.id].perKm[0]||{}).v!==PERKM_VER) && !l.lock){
         /* Kontinuirana trčanja (lako/LR): povuci streamove i sačuvaj po-km presek
            (puls/kadenca/tempo svakog km) za analizu drifta i kadence. Samo jednom. */
         try{
-          const st=await stApi('/activities/'+a.id+'/streams?keys=distance,heartrate,cadence,time,moving&key_by_type=true');
+          const st=await stApi('/activities/'+a.id+'/streams?keys=distance,heartrate,cadence,time,moving,altitude&key_by_type=true');
           const perKm=perKmDetail(st);
-          if(perKm.length && S.log[d.id]) S.log[d.id].perKm=perKm;
+          if(perKm.length && S.log[d.id]){
+            const bioStari = Array.isArray(S.log[d.id].perKm) && S.log[d.id].perKm.length;
+            S.log[d.id].perKm=perKm;
+            /* Limit od 2 AI analize postoji zato sto "analiza se ne menja za iste
+               podatke". Kad se podaci OSVEZE novim nacinom racunanja, taj razlog
+               vise ne vazi — inace bi korisnik ostao zakljucan na analizi koja je
+               nastala iz pogresnih brojeva. Brojac se resetuje samo kad je zaista
+               postojao STAR zapis koji je zamenjen. */
+            if(bioStari) delete S.log[d.id].aiCount;
+          }
         }catch(e){}
       }
     }

@@ -208,7 +208,9 @@ export default async function handler(req, res) {
 
 Piši na srpskom jeziku, JEDNOSTAVNIM i tačnim rečenicama. Proveri gramatiku — piši kratke, jasne rečenice umesto dugačkih. Ne koristi reči za koje nisi siguran. 4-7 rečenica, direktno.
 
-${isEasy ? `OVO JE LAGANO/DUGO TRČANJE (E-zona po Danielsu). Cilj lakog trčanja je nizak, stabilan puls i oporavak — NE brzina. Analiziraj ovako:
+${isEasy ? `OVO JE PO PLANU LAGANO/DUGO TRČANJE (E-zona po Danielsu). Cilj lakog trčanja je nizak, stabilan puls i oporavak — NE brzina.
+PAŽNJA: proveri prvo plan sesije i opis sa Strave. Ako je trkač tog dana radio PROGRESIVNO trčanje, trčanje sa završetkom na tempu trke ili bilo kakav strukturiran napor, pravila za lagano trčanje NE VAŽE — tada rast tempa i pulsa kroz trening jeste namera, pa oceni pogađanje ciljnih tempova po blokovima. U tom slučaju preskoči pravila ispod.
+Ako je zaista bilo lagano, analiziraj ovako:
 - DA LI JE LAKO STVARNO BILO LAKO: na lakom trčanju puls treba da bude nizak i stabilan. Ako puls kroz kilometre RASTE značajno (kardiovaskularni drift na laganom tempu) ili je generalno visok, trkač je trčao PREBRZO — lako trčanje nije bilo lako. To je česta greška. Reci to jasno ako vidiš.
 - KADENCA: na laganom tempu kadenca često padne (šljapkanje). Ako je kadenca ispod 85, predloži da je podigne ka 85-90 čak i pri sporom trčanju — kraći, brži koraci štede zglobove. Ako je 85+, pohvali.
 - DRIFT PO KILOMETRIMA: reci konkretno kako se puls kretao (npr. "prvi km 140, poslednji 155, porast od 15" ). Mali drift (par otkucaja) je normalan. Veliki drift na laganom tempu = trčao prebrzo ili loš oporavak/hidratacija. AKO PODACI PO KILOMETRU NISU DATI (samo prosek cele sesije): ne izmišljaj brojeve za pojedinačne kilometre — komentariši samo prosečan puls naspram cilja niskog pulsa, i reci da bi drift-po-km bio koristan da postoji.` : `OVO JE KVALITETNO TRČANJE (intervali/tempo).
@@ -217,9 +219,23 @@ ${isEasy ? `OVO JE LAGANO/DUGO TRČANJE (E-zona po Danielsu). Cilj lakog trčanj
 - AKO UMESTO PO KRUGU DOBIJEŠ PODATKE PO KILOMETRU (sat je merio drugačije od strukture treninga): koristi ih isto — gledaj da li puls raste kroz kilometre radnog dela (drift) i kakva je kadenca. Napomeni da su podaci po kilometru, ne po intervalu, pa je granica između rada i odmora manje oštra.
 - AKO NEMAŠ NI PODATKE PO KRUGU NI PO KILOMETRU (dat je samo prosek cele sesije): NIKAD ne izmišljaj konkretne brojeve za pojedinačne intervale/krugove (npr. "u prvom intervalu puls je bio X, u drugom Y") — tih podataka nemaš, pa bi to bila izmišljena, netačna informacija. Komentariši SAMO ono što prosek stvarno pokazuje (ukupan tempo naspram plana, prosečan puls, RPE, beleška). Ako bi drift/napredak kroz intervale bio koristan podatak, reci da nedostaje umesto da ga pretpostaviš.`}
 
+KAKO SE ČITA PULS — pročitaj ovo PRE nego što doneseš bilo kakav zaključak o driftu:
+1. DRIFT SE MERI SAMO NA ISTOM TEMPU. Poređenje prvog i poslednjeg kilometra ima smisla JEDINO ako su trčani približno istim tempom (razlika manja od ~10 s/km). Ako je poslednji kilometar BRŽI, veći puls je očekivan i to NIJE drift — to je posledica bržeg trčanja. Nikad ne nazivaj to driftom.
+2. PRVI 1–2 KILOMETRA NISU MERILO. Puls kasni za naporom nekoliko minuta (kardijalna inercija) i na početku je uvek nizak, pa poređenje "prvi km naspram poslednjeg" preuveličava svaki porast. Ako imaš više kilometara na sličnom tempu, poredi njih međusobno.
+3. AKO JE TRČANJE PROGRESIVNO (tempo namerno pada kroz trening — vidi plan sesije i opis sa Strave): rast pulsa je CILJ treninga, a ne greška. Tada oceni da li je trkač POGODIO ciljne tempove po blokovima i da li je poslednji blok uspeo da odradi, a ne da li je puls porastao.
+4. USPON DIŽE PULS PRI ISTOM TEMPU. Gde je uz kilometar naveden uspon, uračunaj ga pre nego što porast pripišeš zamoru.
+5. NE PROGLAŠAVAJ PULS "VISOKIM" ILI "NISKIM" u apsolutnom smislu — ne znaš maksimalni puls ovog trkača. Govori o PROMENI kroz trening i o odnosu prema tempu, ne o samoj brojci.
+
+ŠTA MORAŠ DA UZMEŠ U OBZIR PRE ZAKLJUČKA:
+- Šta je sesija TREBALO da bude (plan) i šta je trkač SAM napisao na Stravi da radi tog dana. Ako se to dvoje razlikuje, sudi po onome što je trkač NAMERAVAO, a razliku od plana pomeni jednom rečenicom.
+- Zaustavljanja (semafor, česma): tempo je već računat iz vremena u pokretu, pa ih NE tumači kao usporavanje.
+- RPE i belešku trkača — ako kaže da je bio bolestan, umoran ili da je bila vrućina, to menja tumačenje svih brojeva.
+- Kadencu, i da li se držala kroz ceo trening ili je pala pri kraju (pad = gubitak forme koraka od zamora).
+
 Zajedničko pravilo:
 - NIKAD ne izmišljaj konkretne buduće tempove, VDOT brojeve ili preporuke za sledeći trening — to računa aplikacija. Tumačiš OVAJ trening.
 - Ako neki podatak izgleda beznačajan (par stotina metara viška od zaokruživanja), ne troši rečenice na njega.
+- AKO JE TRENING ODRAĐEN KAKO TREBA, RECI TO. Ne traži manu po svaku cenu — lažna zamerka je gora od kratke pohvale.
 - Bez generičkih motivacionih fraza. Svaka rečenica mora da prati iz brojeva.`;
 
   const fmtPace = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
@@ -246,13 +262,17 @@ Zajedničko pravilo:
         `km ${K.km}: tempo ${K.paceSec!=null?fmtPace(K.paceSec):'—'}/km` +
         (K.hr!=null?`, puls ${K.hr}`:'') +
         (K.cadence!=null?`, kadenca ${K.cadence}`:'') +
+        (K.elevM?`, ${K.elevM>0?'uspon':'spust'} ${Math.abs(K.elevM)} m`:'') +
         (K.stopSec?`, stajanje ${K.stopSec} s`:'')
       ).join('\n');
   }
 
+  const svojOpis = [session.stravaName, session.stravaDesc].filter(x => typeof x === 'string' && x.trim()).join(' — ');
   const userMsg = `PLAN SESIJE: ${cap(session.desc, 500)}
+Tip sesije po planu: ${cap(session.kind, 40) || '—'}
 Planiran tempo radnog dela: ${cap(session.planPace, 20)}
 Ciljna distanca radnog dela: ${session.q ?? '—'} km
+${svojOpis ? `ŠTA JE TRKAČ SAM UPISAO NA STRAVI ZA OVAJ TRENING (njegova stvarna namera tog dana): ${cap(svojOpis, 500)}` : 'Trkač nije upisao svoj opis na Stravi.'}
 
 OSTVARENO:
 Tempo radnog dela (prosek): ${cap(entered.workPace, 20) || 'nije unet'}
