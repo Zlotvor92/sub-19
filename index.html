@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='105'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='106'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -575,8 +575,15 @@ function goalCtxText(){
   if(!S.genPlan) return '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)';
   const m=(S.genPlan.meta)||{};
   const name=m.raceName||'trka';
-  const t=m.goalSec||m.predictedSec;
-  return t!=null ? `${name} — procenjeno vreme ~${fmtClock(t)} (na osnovu unetog PB-a)` : name;
+  /* Cilj i procena NISU ista stvar i ne smeju se opisati istom recenicom —
+     AI koji dobije "procenjeno vreme ~42:00" kad je 42:00 zapravo korisnikov
+     AMBICIOZAN cilj (a procena je 43:21) sudi treninge prema pogresnom merilu. */
+  if(m.goalSec!=null&&isFinite(m.goalSec)){
+    const dodatak = (m.realno===false&&m.predictedSec!=null)
+      ? ` (ambiciozan — procena iz forme je ~${fmtClock(m.predictedSec)})` : '';
+    return `${name} — ciljno vreme ${fmtClock(m.goalSec)}${dodatak}`;
+  }
+  return m.predictedSec!=null ? `${name} — procenjeno vreme ~${fmtClock(m.predictedSec)} (na osnovu unetog PB-a)` : name;
 }
 
 const PLAN=[
@@ -890,7 +897,15 @@ function adaptGeneratedPlan(gen){
     })
   }));
   const pred=gen.pred.map((r,i)=>({...r,id:'g'+r.w+'_'+i}));
-  return {weeks,pred,meta:gen.meta};
+  /* qs (Strava lap-detekcija po distanci) je do sada OVDE NESTAJAO: generator
+     ga uredno racuna, ali se nije prenosio, pa `S.genPlan.qs` nije ni postojao.
+     Uz to su mu kljucevi u 'n' prostoru ('n3d5'), a generisani dani imaju 'g'
+     ID-jeve ('g3d5') — pa bi i da je prenet, svaka pretraga promasila.
+     Numericki deo je isti u oba prostora (adapt cuva d.dow), pa je preslikavanje
+     cista zamena prefiksa. */
+  const qs={};
+  Object.entries(gen.qs||{}).forEach(([k,v])=>{ qs[k.replace(/^n/,'g')]=v; });
+  return {weeks,pred,qs,meta:gen.meta};
 }
 /* Datumi AKTIVNOG plana. START/RACE konstante su tvrdo kodovane za hardkodovan
    plan (22.06/24.09.2026) — za generisan plan su potpuno pogrešne (merenjem:
@@ -1586,6 +1601,15 @@ const QS={
  n9d5:[6000],n10d3:[1000],n10d5:[3000],n11d3:[1500],n11d5:[6000],n12d3:[2000],
  n12d5:[4000],n13d3:[400],n13d5:[3000],n14d2:[200]
 };
+/* Spec radnih lapova za dan — iz AKTIVNOG plana.
+   Globalni QS je tabela tvog hardkodovanog plana ('n' ID-jevi). Generisan plan
+   nosi svoj u S.genPlan.qs ('g' ID-jevi). Bez ovoga je poslednji fallback za
+   citanje tempa sa Strave (preko lapova) radio SAMO za tvoj plan, a za svaki
+   generisan tiho otpadao. */
+function qsFor(dayId){
+  if(S.genPlan && S.genPlan.qs && S.genPlan.qs[dayId]) return S.genPlan.qs[dayId];
+  return QS[dayId];
+}
 /* Pokušaj čitanja cilja tempa direktno iz teksta opisa — "@ 4:10/km",
    "~4:25/km", ili opseg "3:52–3:54/km" (uzima sredinu opsega). Vraća sekunde
    ili null ako ništa nije prepoznato. Best-effort — za sesije sa VIŠE tempova
@@ -3480,6 +3504,23 @@ function generatePlan(inp){
   const effQ = Object.values(slots).filter(r=>r==='q1'||r==='q2').length;
   const a = assess(inp.pb, weeks, inp.intensity, inp.goalSec||null, raceDistM);
   a.start = start;
+  /* NEREALAN CILJ SE MORA IZGOVORITI. assess() od pocetka racuna `realno`, ali
+     se posle generisanja nigde nije prikazivalo — a posledica nije kozmeticka:
+     racePace se racuna IZ CILJA, ne iz predvidjanja, pa svi tempi u planu budu
+     brzi nego sto forma nosi. Vlasnikova filozofija je da plan kaze istinu i
+     pusti coveka da odluci — ali onda to mora i da kaze. */
+  if(inp.goalSec && a.realno===false){
+    const REDOM=[['kons','Konzervativno'],['std','Standardno'],['agr','Agresivno']];
+    const stize=REDOM.find(([k])=>assess(inp.pb, weeks, k, inp.goalSec, raceDistM).realno);
+    const imeIzabranog=(REDOM.find(([k])=>k===inp.intensity)||[null,'izabranom'])[1];
+    dayWarnings.push('Ciljno vreme ' + fmtClock(inp.goalSec) + ' je iznad onoga što ovaj plan realno donosi — ' +
+      'na tempu napretka „' + imeIzabranog + '" predviđanje za dan trke je ' + fmtClock(a.predictedSec) + '. ' +
+      (stize
+        ? 'Tempo napretka „' + stize[1] + '" bi ga dostigao.'
+        : 'Nijedan tempo napretka ga ne dostiže za ' + weeks + ' nedelja — treba ti više vremena do trke ili blaži cilj.') +
+      ' Plan i dalje računa tempo trke IZ TVOG CILJA, ne iz predviđanja, pa će kvalitetni treninzi biti brži ' +
+      'nego što forma trenutno nosi. To je namerno — ali znaj da je tako.');
+  }
 
   /* ============================================================
      BAZNA FAZA — dve različite situacije, ne jedna. Koliko traje je odluka
@@ -3604,7 +3645,14 @@ function generatePlan(inp){
   const rampWeeks = Math.min(weeks-2, RAMP_CAP_WEEKS);
   const racePace = Math.round((inp.goalSec||a.predictedSec)/(raceDistM/1000));
   const raceDow = daysN - (weeks-1)*7 + 1; /* 1..7 unutar poslednje nedelje */
-  const plan={ weeks:[], pred:[], qs:{}, meta:{...a, weeks, intensity:inp.intensity, racePace, runDays, quality:effQ, dayWarnings, raceDistM, raceName:prof.name, baseWeeks, raceDate:inp.raceDate} };
+  /* goalSec MORA u meta. Ulazio je u generator (racePace se racuna iz njega) ali
+     se nije cuvao, a TRI mesta ga citaju: goalCtxText() (AI prompt + Progres),
+     goalSecActive() (ciljna linija na grafiku predikcije) i red "cilj X ≈ VDOT Y".
+     Sva tri su zbog toga padala na `predictedSec`, pa je plan sam sebi
+     protivrecio: dan trke je pisao "cilj 42:00 / ritam 4:12/km", a Progres
+     "cilj 43:21 ≈ VDOT 49.1" — gde VDOT 49.1 jeste 42:00, ne 43:21. AI je
+     dobijao predvidjanje umesto korisnikovog cilja. */
+  const plan={ weeks:[], pred:[], qs:{}, meta:{...a, weeks, intensity:inp.intensity, racePace, runDays, quality:effQ, dayWarnings, raceDistM, raceName:prof.name, baseWeeks, raceDate:inp.raceDate, goalSec:inp.goalSec||null} };
   const strengthDow = (runDays<=5) ? pickStrengthDay(slots) : null;
 
   function D(dow,tag,km,desc){ return {dow,tag,km,desc}; }
@@ -5779,9 +5827,10 @@ async function stravaSync(manual){
               }
               /* FALLBACK 2 za VDOT tempo: stari put preko lapova — traži QS spec,
                  koji izmenjeni dan nema, pa se preskače */
-              if(QS[d.id])try{
+              const spec=qsFor(d.id);
+              if(spec)try{
                 const laps=await stApi('/activities/'+a.id+'/laps');
-                const t=workLapsTempo(laps,QS[d.id]);
+                const t=workLapsTempo(laps,spec);
                 if(t){S.pred[rowId]=t;recordVdot(rowId,t,date,sessKind(d));props++;}
               }catch(e){}
             }
