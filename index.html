@@ -547,7 +547,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='103'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='104'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2602,14 +2602,24 @@ const CILJ_OBIM_5K = 55;
 
 /* Vrhunac nedeljnog obima. Tri ograničenja, redom:
    (1) koliko stopa rasta dozvoli u raspoloživim rampnim nedeljama,
-   (2) odredište koje 5K traži — ali nikad ispod +10% za onoga ko već trči
-       više od toga (iskusan trkač i dalje dobije napredak),
+   (2) ODREDIŠTE — koliko ova distanca traži, ali skalirano polaznom tačkom,
    (3) 120 km kao zaštita od degenerisanog unosa, ne trenerska odluka.
-   Vrhunac NIKAD nije ispod unetog obima. */
+   Vrhunac NIKAD nije ispod unetog obima.
+
+   ODREDIŠTE NIJE ISTO ZA SVE. Ranije je bilo tvrdih 55 km za svakoga, pa je
+   trkač koji unese 10 km/ned na dugom planu ciljao 55 — to je +450%, obim koji
+   telo ne stigne da podnese ma koliko nedelja plan imao. Sada odredište prati
+   polaznu tačku: najviše ~75% više nego što već trči, uz APSOLUTNI pod od
+   +20 km (procenat sam je na malom obimu besmislen — isti razlog zbog kog je
+   i korak rasta apsolutan). Granica od 55 km se primenjuje tek onima koji su
+   joj blizu. Za 10 km/ned to znači vrhunac do 30 km, za 40 km/ned punih 55.
+   Stopa rasta i dalje odlučuje hoće li se odredište uopšte dostići — ovo je
+   samo plafon, ne obaveza. */
 function peakVol5K(cur, rampSteps, intensity){
   let v = cur;
   for(let i=0;i<rampSteps;i++) v += korakRasta5K(v, intensity);
-  const gornja = Math.max(cur*1.10, CILJ_OBIM_5K);
+  const odrediste = Math.min(CILJ_OBIM_5K, Math.max(cur*1.75, cur+20));
+  const gornja = Math.max(cur*1.10, odrediste);
   return Math.max(cur, Math.min(v, gornja, 120));
 }
 
@@ -2725,7 +2735,12 @@ function reps5K(workKm, faza, wkIdx){
      broj ponavljanja ostaje >= 3. */
   const lestvica = [1200,1000,800,600,400].filter(x => x<=zelja);
   const rep = lestvica.find(x => 3*x <= budzetM*1.15) || 400;
-  const n = Math.max(3, Math.round(budzetM/rep));
+  /* Math.round PROBIJA BUDZET: budzet od 3.5 km sa ponavljanjem od 1000 m daje
+     3.5, sto se zaokruzi na 4 — 4 km rada umesto 3.5, tj. preko Danielsovih 8%
+     nedelje (audit: 41 scenario). Budzet zone je PLAFON, pa se zaokruzuje
+     NANIZE, uz malu toleranciju (8%) da se ne gubi celo ponavljanje zbog
+     decimale. Minimum od 3 ponavljanja ostaje trenerski. */
+  const n = Math.max(3, Math.floor(budzetM/rep + 0.08));
   return { rep, n };
 }
 
@@ -2754,7 +2769,7 @@ function mkIntervali5K(dow,vol,pI,faza,wkIdx){
 function mkTrkackiRitam5K(dow,vol,racePace){
   const q=Math.min(Math.max(vol*I_PCT_5K, 1.6), 6);
   const rep = q>=3 ? 1000 : 800;
-  const n=Math.max(3, Math.round(q*1000/rep));
+  const n=Math.max(3, Math.floor(q*1000/rep + 0.08));
   const [wu,cd]=wuCdZaObim(vol);
   return sessInt(dow,wu,n,rep,racePace,90,cd,'Trkački ritam');
 }
@@ -2778,16 +2793,18 @@ function mkFartlek5K(dow,vol,pI,pE){
 function mkRepeticije5K(dow,vol,pR,faza){
   const total=Math.max(1.2, Math.min(vol*R_PCT_5K, R_MAX_5K));
   const repM=faza==='ostrenje'?200:300;
-  const n=Math.max(4, Math.round(total*1000/repM));
+  const n=Math.max(4, Math.floor(total*1000/repM + 0.08));
   const restSec=Math.round((repM/1000)*pR*2.5);   /* rad:odmor ~1:2.5 */
   const [wu,cd]=wuCdZaObim(vol);
   return sessInt(dow,wu,n,repM,pR,restSec,cd,'Repeticije');
 }
 /* Kontinuiran tempo — Daniels: najviše ~20 min na T, bez obzira na obim. */
 function mkTempo5K(dow,vol,pT,fixKm){
-  /* Pod od 3 km vazi tek od ~20 km/ned navise; ispod toga tempo deo prati obim
-     (na 11 km/ned 3 km tempa uz zagrevanje daje sesiju od 60% nedelje). */
-  const pod=Math.min(3, r1(vol*0.15));
+  /* Pod od 3 km vazi tek od ~25 km/ned navise; ispod toga tempo deo prati obim.
+     Ranije je pod bio vol*0.15, sto na nedelji od 20 km znaci 3 km praga = 15%
+     nedelje, iznad Danielsovih 10% (audit: 75 scenarija). Pod postoji da tempo
+     ne bude prekratak, ne da probije budzet zone — zato 12%. */
+  const pod=Math.min(3, r1(vol*0.12));
   const q=fixKm!=null?fixKm:r1(Math.max(pod, Math.min(vol*T_PCT_5K, (20*60)/pT)));
   const [wu,cd]=wuCdZaObim(vol);
   return sessTempo(dow,wu,q,pT,Math.max(cd,1),'Tempo');
@@ -2795,9 +2812,9 @@ function mkTempo5K(dow,vol,pT,fixKm){
 /* Cruise intervali: isti ukupan T obim, ali izlomljen — dozvoljava više
    minuta na pragu nego kontinuiran tempo. Rana i srednja faza. */
 function mkCruise5K(dow,vol,pT){
-  const total=Math.max(Math.min(3, vol*0.15), vol*T_PCT_5K);
+  const total=Math.max(Math.min(3, vol*0.12), vol*T_PCT_5K);
   const repKm=total>=6?2.0:total>=3?1.6:1.0;
-  const n=Math.max(2, Math.round(total/repKm));
+  const n=Math.max(2, Math.floor(total/repKm + 0.08));
   const [wu,cd]=wuCdZaObim(vol);
   return sessInt(dow,wu,n,Math.round(repKm*1000),pT,90,Math.max(cd,1),'Tempo isprekidan');
 }
@@ -3027,7 +3044,7 @@ function mkFartlek10K(dow,vol,pI,pE){
 function mkRepeticije10K(dow,vol,pR){
   const total=Math.max(1.2, Math.min(vol*R_PCT_10K, R_MAX_10K));
   const repM=300;
-  const n=Math.max(4, Math.round(total*1000/repM));
+  const n=Math.max(4, Math.floor(total*1000/repM + 0.08));
   const restSec=Math.round((repM/1000)*pR*2.5);   /* rad:odmor ~1:2.5 */
   const [wu,cd]=wuCdZaObim(vol);
   return sessInt(dow,wu,n,repM,pR,restSec,cd,'Repeticije');
@@ -3347,12 +3364,22 @@ const DIST_PROFILES = {
     faza:faza5K,
     buildQuality:buildQuality5K,
     tempoMaxSec:20*60,
-    uvodnaPct:0.12,
+    /* UVODNA sesija posle bazne faze mora biti NAJBLAŽI kvalitet ciklusa.
+       Na 0.12 je ispadala VEĆA od redovnog tempa (redovni je 10% nedelje) —
+       dakle prvi kvalitetni trening posle baze bio je najteži tempo u ciklusu,
+       tačno obrnuto od namere. Sada 8%. */
+    uvodnaPct:0.08,
     /* Ispod ~30 km/ned vrhunca 5K priprema je "istrci", ne "trci na vreme". */
     bazaMin:30,
     wuCdMaxAdd:1,
     deloadF:DELOAD_F, taperF:TAPER_F, raceWkF:RACEWK_F,
-    undulacija:null,
+    taperLrF:0.60,
+    /* Talasanje unutar 4-nedeljnog bloka kad je odredište dostignuto:
+       lakše -> normalno -> malo teže -> deload. Bez ovoga je trkač koji već
+       trči blizu odredišta dobijao po 18 radnih nedelja sa istim obimom —
+       nije greška u obimu (ko je na odredištu ne treba da raste, napreduje
+       kroz kvalitet), ali se ne trenira tako i ne čita se kao plan. */
+    undulacija:[0.94, 0.99, 1.03],
     /* 5K: tempo trke je praktično I tempo. Pred kraj se intervali vezuju za
        ciljni ritam da se ne trče BRŽE od trke — to je 5K-specifično. */
     pIzaNedelju:(pI, racePace, weeksToRace) => weeksToRace<=6 ? Math.max(pI, racePace) : pI
@@ -3385,6 +3412,7 @@ const DIST_PROFILES = {
     /* Plići taper i blaži deload nego 5K — duža trka traži da aerobna baza
        ostane, a ne da se ispere pred start. */
     deloadF:0.75, taperF:0.72, raceWkF:0.34,
+    taperLrF:0.65,
     /* Talasanje unutar 4-nedeljnog bloka kad je odrediste dostignuto:
        lakse -> normalno -> malo teze -> deload. */
     undulacija:[0.94, 0.99, 1.03],
@@ -3736,6 +3764,15 @@ function generatePlan(inp){
                                      easyDowsCount, runDays, pLR, prof.lrCap);
       let alloc=allocFor();
       (function(){
+        /* U TAPER NEDELJI SE OVO NE RADI. Mehanizam postoji da nedelja stigne
+           do ciljnog obima — a taper je NAMERNO smanjen obim, pa ga popunjavanje
+           zagrevanja direktno poništava. Izmereno (10 km/ned, 2 dana, 6 nedelja):
+           taper sesija naduvana sa 3.9 na 5.9 km, a pošto dugo trčanje ima pod
+           vezan za najveću kvalitetnu sesiju (maxQ*1.05), povuklo se i ono na
+           6.2 — taper nedelja je ispala 12.1 km, TAČNO KOLIKO I VRHUNAC.
+           Taper skida količinu; ako nedelja zbog toga ne stigne do broja, to je
+           namera, ne manjak. */
+        if(isTaper1) return;
         const strana=Object.values(sessions).filter(d=>d.session && d.session.type!=='prog'
                           && d.session.wuKm!=null && d.session.cdKm!=null);
         if(!strana.length) return;
@@ -3767,6 +3804,30 @@ function generatePlan(inp){
           alloc=allocFor();
         }
       })();
+      /* TAPER SKRAĆUJE I DUGO TRČANJE, ne samo kvalitet.
+         Raspodela po danima deli ono što ostane posle kvalitetnih sesija — a u
+         taper nedelji su one namerno male, pa je ceo ostatak padao na dugo
+         trčanje. Izmereno (15 km/ned, 2 dana): vrhunac LR 11.0 km, taper LR
+         10.6 km — dakle taper prakticno nije ni bio taper, samo je zamenio
+         kvalitet dugim trčanjem (73% cele nedelje).
+         Pravilo je trenersko i ide po distanci: 5K skida dugo trčanje na ~60%
+         vrhunca, 10K na ~65% (duža trka traži da aerobni stimulus ostane malo
+         duže). Ono što se time "izgubi" iz nedelje se NE nadoknađuje drugde —
+         to i jeste smisao tapera. */
+      if(isTaper1 && plan.weeks.length && prof.taperLrF){
+        const pikLR = Math.max(...plan.weeks.map(pw =>
+          Math.max(...pw.days.filter(d=>d.tag==='lr'||d.tag==='rw').map(d=>d.km||0), 0)), 0);
+        if(pikLR>0) alloc.lr = r1(Math.min(alloc.lr, pikLR*prof.taperLrF));
+        /* Invarijanta se NE sme slomiti skraćivanjem: dugo trčanje ostaje
+           najduže trčanje nedelje. Na malo dana taper sesija ume da bude veća
+           od tako smanjenog LR-a. */
+        const maxQt = Math.max(...Object.values(sessions).map(d=>d.km||0), 0);
+        if(maxQt > 0) alloc.lr = r1(Math.max(alloc.lr, maxQt*1.05));
+        /* Lagani dani su izracunati PRE skracivanja LR-a i capovani su prema
+           njemu (do ~70% LR-a) — posle skracivanja bi neki od njih bio duzi od
+           dugog trcanja. Prate ga nanize; u taperu ionako treba da se skrate. */
+        alloc.easies = alloc.easies.map(e => Math.min(e, r1(alloc.lr*0.80)));
+      }
       let ei=0;
       for(let dow=1; dow<=7; dow++){
         const role=slots[dow];
