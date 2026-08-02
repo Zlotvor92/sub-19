@@ -184,7 +184,16 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { session, entered, trend, goalCtx } = body || {};
+  const { session, entered, trend, goalCtx, hrZones } = body || {};
+  /* Zone pulsa iz Strave. Bez njih model o pulsu moze samo da nagadja ("visok"),
+     jer ne zna maksimalni puls trkaca. Sa njima moze da kaze u kojoj je zoni
+     trening zaista bio — sto je jedina posteno merljiva tvrdnja o pulsu. */
+  const zoneTxt = (z) => {
+    if (!Array.isArray(z) || !z.length) return '';
+    const nazivi = ['Z1 oporavak','Z2 lako/aerobno','Z3 umereno','Z4 prag','Z5 VO2max'];
+    return z.slice(0,5).map((x,i)=>`${nazivi[i]||('Z'+(i+1))}: ${x.min}${x.max?('-'+x.max):'+'}`).join(', ');
+  };
+  const zoneBlok = zoneTxt(hrZones);
   /* goalCtx ranije bez ikakvog ogranicenja -> direktno u systemInstruction.
      Neograniceno = i prompt injection prostor i nacin da se nadmasi tokenski
      budzet. 200 znakova je vise nego dovoljno za "5K oko 19:30" stil opisa. */
@@ -192,7 +201,7 @@ export default async function handler(req, res) {
 
   // TREND ANALIZA — poseban tip zahteva (svi treninzi od početka plana)
   if (trend) {
-    return handleTrend(trend, res, goalDesc);
+    return handleTrend(trend, res, goalDesc, zoneTxt(trend.hrZones || hrZones));
   }
 
   if (!session || !entered) {
@@ -224,13 +233,17 @@ KAKO SE ČITA PULS — pročitaj ovo PRE nego što doneseš bilo kakav zaključa
 2. PRVI 1–2 KILOMETRA NISU MERILO. Puls kasni za naporom nekoliko minuta (kardijalna inercija) i na početku je uvek nizak, pa poređenje "prvi km naspram poslednjeg" preuveličava svaki porast. Ako imaš više kilometara na sličnom tempu, poredi njih međusobno.
 3. AKO JE TRČANJE PROGRESIVNO (tempo namerno pada kroz trening — vidi plan sesije i opis sa Strave): rast pulsa je CILJ treninga, a ne greška. Tada oceni da li je trkač POGODIO ciljne tempove po blokovima i da li je poslednji blok uspeo da odradi, a ne da li je puls porastao.
 4. USPON DIŽE PULS PRI ISTOM TEMPU. Gde je uz kilometar naveden uspon, uračunaj ga pre nego što porast pripišeš zamoru.
-5. NE PROGLAŠAVAJ PULS "VISOKIM" ILI "NISKIM" u apsolutnom smislu — ne znaš maksimalni puls ovog trkača. Govori o PROMENI kroz trening i o odnosu prema tempu, ne o samoj brojci.
+5. O PULSU GOVORI KROZ ZONE ako su date. Ako zone nisu date, NE proglašavaj puls "visokim" ili "niskim" u apsolutnom smislu — ne znaš maksimalni puls ovog trkača; govori samo o PROMENI kroz trening.
+6. DEKUPLOVANJE (Pa:HR) je mera aerobne izdržljivosti: ispod 5% je dobro, 5-8% osrednje, preko 8% znači da druga polovina košta znatno više otkucaja pri istom tempu. Ako je dato, to je pouzdaniji sud o izdržljivosti nego sirov porast pulsa — koristi ga. Ako piše da nije računato jer tempo nije bio ravnomeran, NE izvodi zaključak o izdržljivosti iz porasta pulsa.
+7. TOPLOTA diže puls 5-10 otkucaja pri istom tempu. Ako je data temperatura preko 22°C, uračunaj to pre nego što porast pripišeš lošoj formi.
 
 ŠTA MORAŠ DA UZMEŠ U OBZIR PRE ZAKLJUČKA:
 - Šta je sesija TREBALO da bude (plan) i šta je trkač SAM napisao na Stravi da radi tog dana. Ako se to dvoje razlikuje, sudi po onome što je trkač NAMERAVAO, a razliku od plana pomeni jednom rečenicom.
 - Zaustavljanja (semafor, česma): tempo je već računat iz vremena u pokretu, pa ih NE tumači kao usporavanje.
 - RPE i belešku trkača — ako kaže da je bio bolestan, umoran ili da je bila vrućina, to menja tumačenje svih brojeva.
 - Kadencu, i da li se držala kroz ceo trening ili je pala pri kraju (pad = gubitak forme koraka od zamora).
+- Ukupan uspon i maksimalan puls sesije ako su dati.
+- Snagu (watts) po kilometru ako je data: pad snage uz isti tempo znači zamor, rast uz isti tempo znači da je teren teži (uspon/vetar).
 
 Zajedničko pravilo:
 - NIKAD ne izmišljaj konkretne buduće tempove, VDOT brojeve ili preporuke za sledeći trening — to računa aplikacija. Tumačiš OVAJ trening.
@@ -262,13 +275,24 @@ Zajedničko pravilo:
         `km ${K.km}: tempo ${K.paceSec!=null?fmtPace(K.paceSec):'—'}/km` +
         (K.hr!=null?`, puls ${K.hr}`:'') +
         (K.cadence!=null?`, kadenca ${K.cadence}`:'') +
+        (K.watts!=null?`, snaga ${K.watts}W`:'') +
         (K.elevM?`, ${K.elevM>0?'uspon':'spust'} ${Math.abs(K.elevM)} m`:'') +
+        (K.temp!=null?`, ${K.temp}°C`:'') +
         (K.stopSec?`, stajanje ${K.stopSec} s`:'')
       ).join('\n');
   }
 
   const svojOpis = [session.stravaName, session.stravaDesc].filter(x => typeof x === 'string' && x.trim()).join(' — ');
-  const userMsg = `PLAN SESIJE: ${cap(session.desc, 500)}
+  const dodatno = [
+    entered.maxHr!=null ? `Maksimalan puls sesije: ${entered.maxHr}` : null,
+    entered.elevGain!=null ? `Ukupan uspon: ${entered.elevGain} m` : null,
+    entered.temp!=null ? `Temperatura: ${entered.temp}°C` : null,
+    entered.relEffort!=null ? `Strava relative effort: ${entered.relEffort}` : null,
+    entered.decoupling ? (entered.decoupling.n!=null
+        ? `Dekuplovanje (Pa:HR, druga polovina naspram prve): ${entered.decoupling.n}%`
+        : `Dekuplovanje nije računato — ${entered.decoupling.razlog}. Ne izvodi zaključak o izdržljivosti iz porasta pulsa.`) : null
+  ].filter(Boolean).join('\n');
+  const userMsg = `${zoneBlok ? `ZONE PULSA OVOG TRKAČA: ${zoneBlok}\n\n` : ''}PLAN SESIJE: ${cap(session.desc, 500)}
 Tip sesije po planu: ${cap(session.kind, 40) || '—'}
 Planiran tempo radnog dela: ${cap(session.planPace, 20)}
 Ciljna distanca radnog dela: ${session.q ?? '—'} km
@@ -279,7 +303,8 @@ Tempo radnog dela (prosek): ${cap(entered.workPace, 20) || 'nije unet'}
 Ukupna distanca: ${entered.km ?? '—'} km, vreme: ${cap(entered.time, 20) ?? '—'}
 Prosečan puls (cela sesija): ${entered.hr ?? 'nije unet'}
 RPE (1-10): ${entered.rpe ?? 'nije unet'}
-Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}${lapsBlock}`;
+Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}
+${dodatno}${lapsBlock}`;
 
   try {
     const out = await callGemini(sys, userMsg);
@@ -291,7 +316,7 @@ Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}${lapsBlock}`;
 }
 
 /* ===== TREND ANALIZA — svi treninzi kroz vreme ===== */
-async function handleTrend(trend, res, goalDesc) {
+async function handleTrend(trend, res, goalDesc, zoneBlok) {
   const fmtPace = s => Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
   const MAX_HIST = 150; /* velikodusno za punu istoriju više ciklusa plana */
   const treninzi = (Array.isArray(trend.treninzi) ? trend.treninzi : []).slice(0, MAX_HIST);
@@ -301,26 +326,43 @@ async function handleTrend(trend, res, goalDesc) {
 
 Piši na srpskom, jednostavnim tačnim rečenicama. 6-9 rečenica. Fokus je na TRENDU, ne na pojedinačnom treningu.
 
+KAKO SE ČITAJU PODACI:
+- DRIFT je ovde već računat POŠTENO: druga polovina trčanja naspram prve, i SAMO kad je tempo bio ravnomeran. Gde piše "progresivno", tempo je namerno menjan i drift NIJE računat — takav trening ne koristi za sud o izdržljivosti, nego gledaj da li je pogodio ciljne tempove.
+- DEKUPLOVANJE (Pa:HR) je najbolja mera aerobne izdržljivosti koju imaš: ispod 5% dobro, preko 8% slabo. Ako pada kroz nedelje pri istom tempu — izdržljivost raste. To je jači signal od samog VDOT-a.
+- NEDELJNI OBIM je dat posebno. Pre nego što kažeš "forma stagnira", proveri da li je obim pao — pad forme uz pad obima nije misterija, to je posledica. Isto tako: skok obima preko 25% u nedelju dana je rizik od povrede i vredi ga pomenuti.
+- O PULSU govori kroz zone ako su date; bez njih ne sudi o apsolutnim brojkama jer ne znaš maksimalan puls trkača.
+- RPE i Strava relative effort pokazuju koliko je trening KOŠTAO. Isti tempo uz niži RPE kroz nedelje je napredak i kad VDOT stoji.
+
 Analiziraj:
-- DA LI SE DRIFT PULSA SMANJUJE kroz vreme (za kvalitetne treninge sa driftom): ako je pre 3 nedelje drift bio +15 a sad +8 pri istom tempu, to je JAK znak da izdržljivost raste — kaži to konkretno sa brojevima. Ako drift raste ili stoji, to je znak da napredak stagnira.
-- DA LI VDOT RASTE ka cilju: uporedi prve i poslednje vrednosti, reci koliko je porastao i da li tempo napretka vodi ka cilju.
-- KADENCA kroz vreme: da li se popravlja ili pada.
-- DA LI SU LAKA TRČANJA ostajala lagana (nizak drift) ili je trkač konstantno preforsirao.
-- Konkretna, iskrena procena: ide li ka cilju (${goalDesc}) ili ne, i šta je najveći ograničavajući faktor sada.
+- DA LI IZDRŽLJIVOST RASTE: kroz drift na uporedivom tempu i kroz dekuplovanje. Konkretno, sa brojevima i datumima.
+- DA LI VDOT RASTE ka cilju: uporedi prve i poslednje vrednosti i reci vodi li tempo napretka ka cilju.
+- OBIM: raste li, stagnira, ima li rupa (bolest/pauza) i kako se to poklapa sa formom.
+- KADENCA kroz vreme: popravlja se ili pada.
+- DA LI SU LAKA TRČANJA ostajala lagana ili je trkač konstantno preforsirao.
+- Konkretna, iskrena procena: ide li ka cilju (${goalDesc}) ili ne, i šta je najveći ograničavajući faktor SADA (izdržljivost, obim, brzina, doslednost, oporavak).
 
-NIKAD ne izmišljaj tačne buduće tempove ni VDOT projekcije sa lažnom preciznošću. Ako trend nije jasan ili ima premalo podataka, reci to pošteno. Bez praznih motivacionih fraza — svaka rečenica prati iz brojeva.`;
+NIKAD ne izmišljaj tačne buduće tempove ni VDOT projekcije sa lažnom preciznošću. Ako trend nije jasan ili ima premalo podataka, reci to pošteno. Ako trkač napreduje, reci to jasno — ne traži manu po svaku cenu. Bez praznih motivacionih fraza; svaka rečenica prati iz brojeva.`;
 
-  let msg = `CILJ: VDOT ${trend.cilj} (${goalDesc}). POČETNI VDOT: ${trend.baseline}.\n\nISTORIJA VDOT-a (hronološki):\n`;
+  let msg = `${zoneBlok ? `ZONE PULSA OVOG TRKAČA: ${zoneBlok}\n\n` : ''}CILJ: VDOT ${trend.cilj} (${goalDesc}). POČETNI VDOT: ${trend.baseline}.\n\nISTORIJA VDOT-a (hronološki):\n`;
   msg += vdot.length ? vdot.map(v => `${v.date}: ${v.vdot}`).join('\n') : '(nema zabeleženih VDOT vrednosti)';
   msg += `\n\nSVI ODRAĐENI TRENINZI (hronološki):\n`;
   msg += treninzi.map(t => {
     let s = `${t.date} [${t.tag}]`;
+    if (t.km != null) s += `, ${t.km} km`;
     if (t.tempo != null) s += `, tempo ${fmtPace(t.tempo)}/km`;
-    if (t.drift != null) s += `, drift ${t.driftStart}→${t.driftEnd} (${t.drift>=0?'+':''}${t.drift})`;
+    if (t.drift != null) s += `, drift ${t.driftStart}→${t.driftEnd} (${t.drift>=0?'+':''}${t.drift}) na ravnomernom tempu`;
+    else if (t.progresivno) s += `, progresivno (tempo namerno menjan — drift se ne računa)`;
+    if (t.dekuplovanje != null) s += `, dekuplovanje ${t.dekuplovanje}%`;
     if (t.cadence != null) s += `, kadenca ${t.cadence}`;
     if (t.avgHr != null) s += `, pros. puls ${t.avgHr}`;
+    if (t.rpe != null) s += `, RPE ${t.rpe}`;
+    if (t.relEffort != null) s += `, effort ${t.relEffort}`;
     return s;
   }).join('\n');
+  if (Array.isArray(trend.obim) && trend.obim.length) {
+    msg += `\n\nNEDELJNI OBIM (početak nedelje → km):\n` +
+      trend.obim.slice(-30).map(o => `${o.od}: ${o.km} km`).join('\n');
+  }
 
   try {
     const out = await callGemini(sys, msg);

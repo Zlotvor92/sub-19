@@ -559,7 +559,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='112'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='113'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1968,7 +1968,8 @@ function perKmDetail(streams){
   if(!streams)return [];
   const dist=streams.distance&&streams.distance.data, hr=streams.heartrate&&streams.heartrate.data,
         cad=streams.cadence&&streams.cadence.data, time=streams.time&&streams.time.data,
-        mov=streams.moving&&streams.moving.data, alt=streams.altitude&&streams.altitude.data;
+        mov=streams.moving&&streams.moving.data, alt=streams.altitude&&streams.altitude.data,
+        tmp=streams.temp&&streams.temp.data, wat=streams.watts&&streams.watts.data;
   if(!Array.isArray(dist)||!dist.length)return [];
   const imaMoving = Array.isArray(mov) && Array.isArray(time) && mov.length===time.length;
   const out=[]; let kmIdx=1, startI=0;
@@ -1986,11 +1987,33 @@ function perKmDetail(streams){
       if(stop>=5) r.stopSec=Math.round(stop);
       const alt0=(alt&&alt[startI]!=null)?alt[startI]:null, alt1=(alt&&alt[i]!=null)?alt[i]:null;
       if(alt0!=null&&alt1!=null){ const dEl=Math.round(alt1-alt0); if(Math.abs(dEl)>=4) r.elevM=dEl; }
+      const wSeg=seg(wat); if(wSeg!=null) r.watts=Math.round(wSeg);
+      const tSeg=seg(tmp); if(tSeg!=null) r.temp=Math.round(tSeg);
       out.push(r);
       startI=i; kmIdx++;
     }
   }
   return out;
+}
+/* DEKUPLOVANJE (Pa:HR) — koliko se odnos tempa i pulsa pokvario u drugoj
+   polovini trcanja. To je standardna mera AEROBNE IZDRZLJIVOSTI: ispod 5% je
+   dobro, preko 8% znaci da tempo u drugoj polovini kosta znatno vise otkucaja.
+   Merodavno je SAMO ako je tempo bio priblizno ravnomeran — na progresivnom
+   trcanju je razlika po definiciji ogromna i nista ne govori o izdrzljivosti.
+   Zato se vraca `null` i razlog, umesto broja koji bi model pogresno protumacio. */
+function decouplingPerKm(perKm){
+  if(!Array.isArray(perKm)) return null;
+  const v=perKm.filter(k=>k&&k.paceSec>0&&k.hr>0);
+  if(v.length<6) return null;
+  const pola=Math.floor(v.length/2);
+  const A=v.slice(0,pola), B=v.slice(v.length-pola);
+  const sr=(arr,f)=>arr.reduce((s,x)=>s+f(x),0)/arr.length;
+  const pA=sr(A,x=>x.paceSec), pB=sr(B,x=>x.paceSec);
+  /* tempo mora biti uporediv: +-3% izmedju polovina */
+  if(!(pA>0)||Math.abs(pB-pA)/pA>0.03) return { n:null, razlog:'tempo nije bio ravnomeran' };
+  const rA=(1000/pA)/sr(A,x=>x.hr), rB=(1000/pB)/sr(B,x=>x.hr);
+  if(!(rA>0)) return null;
+  return { n:Math.round((rA-rB)/rA*1000)/10 };
 }
 /* Po-krug podaci radnih intervala za LLM analizu (tempo, puls, kadenca, watts po krugu).
    VAŽNO: Strava /laps NE vraća puls po krugu (average_heartrate), ali vraća
@@ -2231,10 +2254,13 @@ function bindForm(root,d){
                   /* ono sto je trkac SAM upisao na Stravi za taj dan */
                   stravaName: l.stravaName||null, stravaDesc: l.stravaDesc||null },
         goalCtx: goalCtxText(),
+        hrZones: (S.strava&&S.strava.hrZones)||null,
         entered:{
           workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
           km:l.km??null, time:l.sec?fmtClock(l.sec):null,
           hr:l.hr??null, rpe:l.rpe??null, note:l.note||'',
+          maxHr:l.maxHr??null, elevGain:l.elevGain??null, relEffort:l.relEffort??null,
+          temp:l.temp??null, decoupling:l.decoupling||null,
           laps: Array.isArray(l.laps)&&l.laps.length?l.laps:null,
           perKm: Array.isArray(l.perKm)&&l.perKm.length?l.perKm:null
         }
@@ -6426,19 +6452,47 @@ function trendSummary(){
       if(hrs.length>=2){row.driftStart=hrs[0];row.driftEnd=hrs[hrs.length-1];row.drift=hrs[hrs.length-1]-hrs[0];}
       if(cads.length)row.cadence=Math.round(cads.reduce((s,x)=>s+x,0)/cads.length);
     } else if(Array.isArray(l.perKm)&&l.perKm.length){
-      const hrs=l.perKm.map(x=>x.hr).filter(x=>x!=null);
       const cads=l.perKm.map(x=>x.cadence).filter(x=>x!=null);
-      if(hrs.length>=2){row.driftStart=hrs[0];row.driftEnd=hrs[hrs.length-1];row.drift=hrs[hrs.length-1]-hrs[0];}
       if(cads.length)row.cadence=Math.round(cads.reduce((s,x)=>s+x,0)/cads.length);
+      /* DRIFT SE MERI SAMO NA UPOREDIVOM TEMPU. Ranije je bio prosto
+         "puls poslednjeg minus puls prvog kilometra" — sto je na progresivnom
+         trcanju besmisleno (poslednji km je namerno brzi), a na svakom trcanju
+         preuvelicano (puls na prvom km jos kasni za naporom). Sada se poredi
+         DRUGA polovina sa PRVOM, i to samo ako su tempom uporedive. */
+      const v=l.perKm.filter(x=>x&&x.paceSec>0&&x.hr>0);
+      if(v.length>=6){
+        const pola=Math.floor(v.length/2), A=v.slice(0,pola), B=v.slice(v.length-pola);
+        const sr=(arr,f)=>arr.reduce((s,x)=>s+f(x),0)/arr.length;
+        const pA=sr(A,x=>x.paceSec), pB=sr(B,x=>x.paceSec);
+        if(pA>0 && Math.abs(pB-pA)/pA<=0.03){
+          row.driftStart=Math.round(sr(A,x=>x.hr));
+          row.driftEnd=Math.round(sr(B,x=>x.hr));
+          row.drift=row.driftEnd-row.driftStart;
+        } else {
+          row.progresivno=true;   /* tempo namerno menjan — drift se ne racuna */
+        }
+      }
     } else {
       if(row.tempo==null && l.km&&l.sec)row.tempo=Math.round(l.sec/l.km);
       if(l.hr)row.avgHr=l.hr;
     }
+    if(l.km!=null) row.km=l.km;
+    if(l.decoupling&&l.decoupling.n!=null) row.dekuplovanje=l.decoupling.n;
+    if(l.relEffort!=null) row.relEffort=l.relEffort;
+    if(l.rpe!=null) row.rpe=l.rpe;
     out.push(row);
   });
+  /* Nedeljni obim — bez njega model ne moze da razlikuje "forma stagnira" od
+     "obim je pao zbog bolesti/putovanja", a to je najcesce pravo objasnjenje. */
+  const ned={};
+  out.forEach(r=>{ if(r.km==null||!r.date)return; const d=new Date(r.date); const wd=(d.getUTCDay()+6)%7;
+    d.setUTCDate(d.getUTCDate()-wd); const k=d.toISOString().slice(0,10);
+    ned[k]=(ned[k]||0)+r.km; });
+  const obim=Object.keys(ned).sort().map(k=>({od:k, km:Math.round(ned[k]*10)/10}));
   // VDOT istorija
   const vl=(S.vdotLog||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1).map(e=>({date:e.ts,vdot:e.vdot}));
-  return {treninzi:out, vdot:vl, baseline:baselineVdot(), cilj:goalVdotActive()};
+  return {treninzi:out, vdot:vl, baseline:baselineVdot(), cilj:goalVdotActive(),
+          obim, hrZones:(S.strava&&S.strava.hrZones)||null};
 }
 function chartPred(pc){
   const W=340,H=152,L=36,R=8,B=128,T=10;
@@ -6697,6 +6751,17 @@ async function stravaSync(manual){
   if(!S.strava){if(manual)alert('Strava nije povezana.');return;}
   try{
     const after=Math.floor(s2d(CUR_START).getTime()/1000);
+    /* ZONE PULSA. Bez njih model nema pojma sta znaci "puls 171" — moze samo da
+       kaze "visok", sto je neosnovano jer ne zna maksimalni puls trkaca. Sa
+       zonama moze da kaze "zona 5". Povlaci se najvise jednom nedeljno. */
+    try{
+      const staro=(S.strava&&S.strava.zonesTs)||0;
+      if(Date.now()-staro > 7*864e5){
+        const z=await stApi('/athlete/zones');
+        const hz=z&&z.heart_rate&&Array.isArray(z.heart_rate.zones)?z.heart_rate.zones:null;
+        if(hz&&hz.length){ S.strava.hrZones=hz.map(x=>({min:x.min,max:x.max>0?x.max:null})); S.strava.zonesTs=Date.now(); }
+      }
+    }catch(e){}
     const acts=[];let page=1;
     while(page<=4){
       const b=await stApi('/athlete/activities?after='+after+'&per_page=100&page='+page);
@@ -6726,6 +6791,15 @@ async function stravaSync(manual){
         const stIme=(a.name||'').trim(), stOp=(a.description||'').trim();
         if(stIme) l.stravaName=stIme.slice(0,120);
         if(stOp)  l.stravaDesc=stOp.slice(0,400);
+        /* Sve sto Strava vec vraca uz aktivnost, a analizi menja zakljucak:
+           maksimalan puls (puls na kraju ima smisla samo u odnosu na njega),
+           ukupan uspon (dize puls pri istom tempu), Strava "relative effort"
+           i prosecna kadenca. */
+        if(a.max_heartrate) l.maxHr=Math.round(a.max_heartrate);
+        if(a.total_elevation_gain!=null) l.elevGain=Math.round(a.total_elevation_gain);
+        if(a.suffer_score!=null) l.relEffort=Math.round(a.suffer_score);
+        if(a.average_cadence!=null) l.cadence=Math.round(a.average_cadence*2)/2;
+        if(a.average_temp!=null) l.temp=Math.round(a.average_temp);
         syncSide(d);imp++;
       }
       if(d.tag==='int'||d.tag==='tempo'){ /* bez QS uslova — dan izmenjen u kvalitet nema QS unos, a detectWorkSegments ga i ne traži */
@@ -6735,7 +6809,7 @@ async function stravaSync(manual){
             /* PRIMARNO: streamovi + prepoznavanje radnih segmenata po brzini.
                Nezavisno od Stravinih lapova (koji nepouzdano vraćaju čas
                strukturne čas auto-1km podelu). Jedan API poziv. */
-            const st=await stApi('/activities/'+a.id+'/streams?keys=distance,time,heartrate,cadence,watts,moving,altitude&key_by_type=true');
+            const st=await stApi('/activities/'+a.id+'/streams?keys=distance,time,heartrate,cadence,watts,moving,altitude,temp&key_by_type=true');
             const segs=detectWorkSegments(st);
             if(segs&&segs.length){
               const totT=segs.reduce((s,x)=>s+x.paceSec*x.distM/1000,0);
@@ -6765,11 +6839,13 @@ async function stravaSync(manual){
         /* Kontinuirana trčanja (lako/LR): povuci streamove i sačuvaj po-km presek
            (puls/kadenca/tempo svakog km) za analizu drifta i kadence. Samo jednom. */
         try{
-          const st=await stApi('/activities/'+a.id+'/streams?keys=distance,heartrate,cadence,time,moving,altitude&key_by_type=true');
+          const st=await stApi('/activities/'+a.id+'/streams?keys=distance,heartrate,cadence,time,moving,altitude,temp,watts&key_by_type=true');
           const perKm=perKmDetail(st);
           if(perKm.length && S.log[d.id]){
             const bioStari = Array.isArray(S.log[d.id].perKm) && S.log[d.id].perKm.length;
             S.log[d.id].perKm=perKm;
+            const dek=decouplingPerKm(perKm);
+            if(dek) S.log[d.id].decoupling=dek; else delete S.log[d.id].decoupling;
             /* Limit od 2 AI analize postoji zato sto "analiza se ne menja za iste
                podatke". Kad se podaci OSVEZE novim nacinom racunanja, taj razlog
                vise ne vazi — inace bi korisnik ostao zakljucan na analizi koja je
