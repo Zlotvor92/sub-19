@@ -81,6 +81,39 @@ export default async function handler(req, res) {
   const url = 'https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
               '/events/bulk?upsert=true';
   const basic = Buffer.from('API_KEY:' + apiKey).toString('base64');
+  const zaglavlja = { Authorization: 'Basic ' + basic, Accept: 'application/json' };
+
+  /* REŽIM "ZAMENI" — prvo obriši naše postojeće događaje, pa napravi nove.
+     Zašto uopšte postoji: intervals.icu gradi Garmin izvoz kad se događaj
+     NAPRAVI. Ako se postojeći samo ažurira (upsert), stari izvoz ostaje, pa
+     ispravke koje zavise od podešavanja sportiste (npr. tek unet prag tempa)
+     nikad ne stignu na sat. Tada je jedini put brisanje i ponovno pravljenje.
+     Briše se ISKLJUČIVO ono što nosi naš external_id — tuđi događaji u istom
+     opsegu se ne diraju. */
+  if (String((body && body.rezim) || '') === 'zameni') {
+    const datumi = cist.map(e => e.start_date_local.slice(0, 10)).sort();
+    const gl = 'https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
+               '/events?oldest=' + datumi[0] + '&newest=' + datumi[datumi.length - 1] +
+               '&category=WORKOUT';
+    try {
+      const g = await fetch(gl, { headers: zaglavlja });
+      if (g.status === 401 || g.status === 403) {
+        res.status(401).json({ error: 'intervals.icu je odbio ključ ili nema dozvolu za kalendar.' }); return;
+      }
+      if (g.ok) {
+        const lista = await g.json();
+        const nasi = (Array.isArray(lista) ? lista : [])
+          .filter(e => e && typeof e.external_id === 'string' && /^sub19-/.test(e.external_id) && e.id != null)
+          .slice(0, MAX_DOGADJAJA);
+        for (const e of nasi) {
+          await fetch('https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
+                      '/events/' + encodeURIComponent(e.id), { method: 'DELETE', headers: zaglavlja });
+        }
+      }
+    } catch (e) {
+      /* brisanje nije uspelo — i dalje se šalje, gore je ne poslati ništa */
+    }
+  }
 
   try {
     const r = await fetch(url, {
