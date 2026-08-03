@@ -3,8 +3,8 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v140';
-const APP_VERSION = '140';
+const CACHE = 'sub19-cache-v141';
+const APP_VERSION = '141';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-128.png', './apple-touch-icon.png', './privacy.html', './uputstvo.html'];
 
 self.addEventListener('message', e => {

@@ -117,7 +117,12 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: process.env.REPORT_FROM,
         to: process.env.REPORT_TO,
-        subject: 'SUB-20 bug — ' + description.slice(0, 60),
+        /* NOVI RED SE UKLANJA IZ NASLOVA. Naslov gradi korisnicki tekst, a
+           CR/LF u zaglavlju mejla je klasican put za ubacivanje dodatnih
+           zaglavlja (Bcc, Reply-To). Resend prima JSON i sam bi to najverovatnije
+           odbio, ali oslanjati se na to je pogresan red — cisti se ovde.
+           Dokazano testom: "Bug\nBcc: napadac@..." je prolazio do naslova. */
+        subject: ('SUB-20 bug — ' + description.slice(0, 60)).replace(/[\r\n]+/g, ' '),
         html
       })
     });

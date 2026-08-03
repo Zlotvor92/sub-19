@@ -18,6 +18,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import vm from 'node:vm';
+import { webcrypto as nodeCrypto } from 'node:crypto';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = join(HERE, '..');
@@ -137,7 +138,10 @@ export function loadApp(opts = {}) {
     location: { origin: 'https://example.test', href: 'https://example.test/', pathname: '/', search: '', hash: '', protocol: 'https:', hostname: 'example.test' },
     history: { replaceState: () => {} },
     navigator: { onLine: false, userAgent: 'test', clipboard: { writeText: async () => {} } },
-    crypto: { getRandomValues: a => { for (let i = 0; i < a.length; i++) a[i] = (i * 37 + 11) % 256; return a; } },
+    /* Pravi nasumicne bajtove, ne deterministicki niz — inace bi dva
+       uzastopna `secureRandomToken()` dala ISTU vrednost, pa bi testovi koji
+       proveravaju nasumicnost OAuth state-a bili besmisleni. */
+    crypto: { getRandomValues: a => nodeCrypto.getRandomValues(a) },
     alert: m => { calls.alerts.push(String(m)); },
     confirm: m => { calls.confirms.push(String(m)); return opts.confirmReturns !== undefined ? opts.confirmReturns : false; },
     fetch: async (...a) => { calls.fetches.push(a); throw new Error('offline (test)'); },

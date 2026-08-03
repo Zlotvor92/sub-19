@@ -590,7 +590,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='140'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='141'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1251,6 +1251,28 @@ function sessKind(d){
 /* ============ STANJE + STORAGE ============ */
 let LS_OK=true;try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){LS_OK=false;}
 let MEM=null;
+/* ZAPISI O OPORAVKU SU BROJEVI — i to se ovde NAMECE, ne pretpostavlja.
+   Server (/api/wellness) ih vec pretvara u brojeve (`broj()` u izvuci()), pa
+   je ziv put bezbedan. Ali UVOZ BACKUPA i sbPull() upisuju u S.wellness sta
+   god stoji u JSON-u, a te vrednosti idu pravo u HTML (kartica Oporavak, HRV
+   grafikon, red „Tog jutra" na kartici treninga) — dokazano napadom: zapis sa
+   hrv = "\"><img src=x onerror=...>" izlazi iz atributa i izvrsava kod.
+   Posto su to merenja, pretvaranje u broj je i tacno i dovoljno: sve sto nije
+   broj postaje null i nestaje iz prikaza. */
+function cistWellness(w){
+  if(!w||typeof w!=='object'||Array.isArray(w)) return {};
+  const broj=v=>(v==null||v===''||isNaN(+v))?null:+v;
+  const out={};
+  for(const k of Object.keys(w)){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(k)) continue;      /* kljuc je datum, nista drugo */
+    const z=w[k]; if(!z||typeof z!=='object') continue;
+    const c={datum:k};
+    for(const polje of ['hrv','pulsUMiru','sanH','sanOcena','tezina','ctl','atl','svezina'])
+      c[polje]=broj(z[polje]);
+    out[k]=c;
+  }
+  return out;
+}
 function migrate(o){
   if(!o||typeof o!=='object')return null;
   if(!o.log||typeof o.log!=='object'||Array.isArray(o.log))return null;
@@ -1273,6 +1295,7 @@ function migrate(o){
      u kodu ali nikad nisu bili upisani u semu — svako citanje ih je moralo
      rucno cuvati. Prazna mapa / null = ponasanje IDENTICNO kao pre. */
   if(o.v<7){o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.v=7;}
+  o.wellness=cistWellness(o.wellness);
   o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
   o.v=SCHEMA;
   return o;
@@ -2354,10 +2377,10 @@ function formHTML(d){
       const r=CUR_PRED.find(x=>x.id===pid);
       const cur=S.pred[pid];
       const ep=effectivePace(d,r);
-      workBlock+=`<div class="wseg" data-wseg="${pid}" data-q="${r.q}">
+      workBlock+=`<div class="wseg" data-wseg="${esc(pid)}" data-q="${esc(r.q)}">
         <div class="wseg-l">${esc(r.l.split('·')[1]||r.l)} · plan ${fmtTempo(ep)} /km${S.alts&&S.alts[d.id]&&S.alts[d.id].pace!=null?' <small style="color:var(--pink)">(tvoj cilj)</small>':''} · Q ${fmtKm(r.q)} km</div>
-        <input id="wseg-${esc(pid)}" class="wseg-in" inputmode="numeric" placeholder="356 = 3:56" value="${cur?fmtTempo(cur):''}" data-wpin="${pid}" aria-label="Ostvaren tempo radnog dela">
-        <div class="wseg-out" data-wout="${pid}">${vdotDeltaHTML(pid,cur)}</div>
+        <input id="wseg-${esc(pid)}" class="wseg-in" inputmode="numeric" placeholder="356 = 3:56" value="${cur?fmtTempo(cur):''}" data-wpin="${esc(pid)}" aria-label="Ostvaren tempo radnog dela">
+        <div class="wseg-out" data-wout="${esc(pid)}">${vdotDeltaHTML(pid,cur)}</div>
       </div>`;
       /* Tiho preskakanje je isto zamka kao tiho upisivanje pogresnog broja. */
       if(cur==null && l && l.autoOdbijen)
@@ -2370,10 +2393,10 @@ function formHTML(d){
   const _op=oporavakZa(l.runDate||l.ts||d.date);
   const oporavakRed=_op?(()=>{
     const d2=[];
-    if(_op.hrv!=null) d2.push(`HRV <b style="color:${bojaOdstupanja(_op.hrvOdstupanje)}">${_op.hrv}</b>${_op.hrvOdstupanje!=null?` <small>(${_op.hrvOdstupanje>=0?'+':''}${_op.hrvOdstupanje}%)</small>`:''}`);
-    if(_op.pulsUMiru!=null) d2.push(`puls u miru <b>${_op.pulsUMiru}</b>${_op.pulsOdstupanje!=null?` <small>(${_op.pulsOdstupanje>=0?'+':''}${_op.pulsOdstupanje})</small>`:''}`);
-    if(_op.sanH!=null) d2.push(`san <b style="color:${_op.sanH<6?'var(--red)':_op.sanH<7?'var(--amber)':'var(--green)'}">${_op.sanH} h</b>`);
-    if(_op.svezina!=null) d2.push(`svežina <b>${_op.svezina}</b>`);
+    if(_op.hrv!=null) d2.push(`HRV <b style="color:${esc(bojaOdstupanja(_op.hrvOdstupanje))}">${esc(_op.hrv)}</b>${_op.hrvOdstupanje!=null?` <small>(${_op.hrvOdstupanje>=0?'+':''}${esc(_op.hrvOdstupanje)}%)</small>`:''}`);
+    if(_op.pulsUMiru!=null) d2.push(`puls u miru <b>${esc(_op.pulsUMiru)}</b>${_op.pulsOdstupanje!=null?` <small>(${_op.pulsOdstupanje>=0?'+':''}${esc(_op.pulsOdstupanje)})</small>`:''}`);
+    if(_op.sanH!=null) d2.push(`san <b style="color:${_op.sanH<6?'var(--red)':_op.sanH<7?'var(--amber)':'var(--green)'}">${esc(_op.sanH)} h</b>`);
+    if(_op.svezina!=null) d2.push(`svežina <b>${esc(_op.svezina)}</b>`);
     return d2.length?`<div class="note-src" style="margin:2px 0 8px">🛌 Tog jutra: ${d2.join(' · ')}</div>`:'';
   })():'';
   const canAnalyze=(d.tag==='int'||d.tag==='tempo'||d.tag==='lako'||d.tag==='lr')&&l.km&&l.sec;
@@ -2388,18 +2411,18 @@ function formHTML(d){
   const aiBlock=canAnalyze?`<div class="f-field full" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
       ${oporavakRed}
       <div class="ai-datasrc" style="font-size:.72rem;color:var(--txt3);margin-bottom:8px">${dataNote}</div>
-      <button type="button" id="ai-go-${d.id}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
-      <div id="ai-out-${d.id}" class="ai-out"></div>
+      <button type="button" id="ai-go-${esc(d.id)}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
+      <div id="ai-out-${esc(d.id)}" class="ai-out"></div>
     </div>`:'';
   /* PRISTUPACNOST: svaka labela dobija `for`, svako polje `id`. Ranije nijedna
      labela nije bila povezana sa svojim poljem — citac ekrana ih nije spajao,
      a dodir na labelu nije fokusirao polje. `id` nosi ID DANA jer ista forma
      postoji i na Danas kartici i u listu dana, pa bi fiksni id bio duplikat. */
-  const fid=f=>`f-${f}-${d.id}`;
+  const fid=f=>`f-${f}-${esc(d.id)}`;
   return `<div class="f-grid" data-day="${esc(d.id)}">
     <div class="f-field"><label for="${fid('km')}">Distanca (km) <span class="f-req">*</span></label><input id="${fid('km')}" type="text" inputmode="decimal" data-f="km" value="${l.km!=null?String(l.km).replace('.',','):''}" placeholder="npr. 8"></div>
     <div class="f-field"><label for="${fid('sec')}">Vreme <span class="f-req">*</span></label><input id="${fid('sec')}" type="text" inputmode="numeric" data-f="sec" value="${l.sec?fmtClock(l.sec):''}" placeholder="4233 = 42:33"></div>
-    <div class="f-field"><span class="f-lbl" id="lbl-tempo-${d.id}">Pros. tempo</span><div class="calc" data-tempo role="status" aria-labelledby="lbl-tempo-${d.id}">${tempo}</div></div>
+    <div class="f-field"><span class="f-lbl" id="lbl-tempo-${esc(d.id)}">Pros. tempo</span><div class="calc" data-tempo role="status" aria-labelledby="lbl-tempo-${esc(d.id)}">${tempo}</div></div>
     <div class="f-field"><label for="${fid('hr')}">Pros. puls</label><input id="${fid('hr')}" type="text" inputmode="numeric" data-f="hr" value="${l.hr!=null?esc(l.hr):''}" placeholder="bpm"></div>
     ${workBlock}
     <details class="f-field full more-details"><summary>Više detalja (RPE, koleno, masa, datum, beleška)</summary>
@@ -2415,7 +2438,11 @@ function formHTML(d){
   </div>`;
 }
 function bindForm(root,d){
-  const g=root.querySelector(`.f-grid[data-day="${d.id}"]`);
+  /* Selektor mora da koristi ISTU vrednost kao atribut (koji je escapovan).
+     Uz validaciju pri uvozu esc() je ovde no-op; ako bi ipak prosao los ID,
+     selektor jednostavno ne nadje element — forma se ne veze, ali se nista
+     ne ubacuje. Otkaz u bezbednom smeru. */
+  const g=root.querySelector(`.f-grid[data-day="${esc(d.id)}"]`);
   if(!g)return;
   g.querySelectorAll('[data-f]').forEach(inp=>{
     const f=inp.dataset.f;
@@ -2448,17 +2475,17 @@ function bindForm(root,d){
       } else if(v){ S.pred[pid]=v; S.predLock[pid]=true; const dl=S.log[d.id]; recordVdot(pid,v,(dl&&(dl.runDate||dl.ts))||d.date,sessKind(d),false,d); }
       else return;
       save();
-      const out=g.querySelector(`[data-wout="${pid}"]`);
+      const out=g.querySelector(`[data-wout="${esc(pid)}"]`);
       if(out)out.innerHTML=vdotDeltaHTML(pid,S.pred[pid]);
     };
     inp.addEventListener('input',wh);
     inp.addEventListener('change',wh);
   });
   /* AI analiza — šalje SAMO podatke koje app već ima (nema novog Strava poziva) */
-  const aiBtn=g.querySelector(`#ai-go-${d.id}`);
+  const aiBtn=g.querySelector(`#ai-go-${esc(d.id)}`);
   if(aiBtn){
     aiBtn.addEventListener('click',async()=>{
-      const out=g.querySelector(`#ai-out-${d.id}`);
+      const out=g.querySelector(`#ai-out-${esc(d.id)}`);
       const l=S.log[d.id]||(S.log[d.id]={});
       /* Limit 2 analize po treningu — da se ne troši kvota bez granice */
       if((l.aiCount||0)>=2){
@@ -6124,7 +6151,7 @@ function weekSwapHTML(w){
   days.forEach(d=>{
     const locked=doneId(d.id), sel=SWAP_SEL===d.id, tag=locked?'div':'button';
     const title=d.rest?(d.desc||'Odmor'):d.desc.split('\n')[0];
-    h+=`<${tag} class="day${sel?' swap-sel':''}${locked?' swap-lock':''}"${locked?'':` data-swd="${d.id}"`}>
+    h+=`<${tag} class="day${sel?' swap-sel':''}${locked?' swap-lock':''}"${locked?'':` data-swd="${esc(d.id)}"`}>
       <div class="day-d">${dowOf(d.date)}<small>${fmtD(d.date)}</small></div>
       <div class="day-t" style="${d.rest?'color:var(--txt3)':''}">${esc(title)}${S.moves&&S.moves[d.id]!=null?`<small>pomeren sa ${fmtD(d.origDate)}</small>`:''}</div>
       <div class="day-km">${d.km!=null?fmtKm(d.km):''}</div>
@@ -6316,18 +6343,20 @@ function karticaOporavka(){
   }
   const zadnji=niz[niz.length-1];
   const o=oporavakZa(zadnji.datum)||zadnji;
+  /* esc() na svaku vrednost: cistWellness() gore vec svodi zapise na brojeve,
+     ali kartica ne sme da zavisi od toga da li je neko setio da ih ocisti. */
   const red=(lbl,val,sub,boja)=>val==null?'':`<div class="ob-vp" style="flex:1">
-      <i>${lbl}</i><b style="color:${boja||'var(--txt)'}">${val}</b>
-      ${sub?`<small style="display:block;font-size:.62rem;color:var(--txt3);margin-top:2px">${sub}</small>`:''}</div>`;
-  const hrvSub=o.hrvOdstupanje!=null?`${o.hrvOdstupanje>=0?'+':''}${o.hrvOdstupanje}% od osnove ${o.hrvBaza7}`:'nema osnove još';
-  const plsSub=o.pulsOdstupanje!=null?`${o.pulsOdstupanje>=0?'+':''}${o.pulsOdstupanje} od osnove ${o.pulsBaza7}`:'';
+      <i>${esc(lbl)}</i><b style="color:${esc(boja||'var(--txt)')}">${esc(val)}</b>
+      ${sub?`<small style="display:block;font-size:.62rem;color:var(--txt3);margin-top:2px">${esc(sub)}</small>`:''}</div>`;
+  const hrvSub=o.hrvOdstupanje!=null?`${o.hrvOdstupanje>=0?'+':''}${esc(o.hrvOdstupanje)}% od osnove ${esc(o.hrvBaza7)}`:'nema osnove još';
+  const plsSub=o.pulsOdstupanje!=null?`${o.pulsOdstupanje>=0?'+':''}${esc(o.pulsOdstupanje)} od osnove ${esc(o.pulsBaza7)}`:'';
   return `<div class="card">
-    <div class="card-t">Oporavak <span class="ob-opt" style="font-weight:500;color:var(--txt3)">— ${fmtD(o.datum)}</span></div>
+    <div class="card-t">Oporavak <span class="ob-opt" style="font-weight:500;color:var(--txt3)">— ${esc(fmtD(o.datum))}</span></div>
     <div class="ob-vpaces" style="display:flex;gap:8px">
       ${red('HRV', o.hrv!=null?o.hrv:'—', hrvSub, bojaOdstupanja(o.hrvOdstupanje))}
       ${red('Puls u miru', o.pulsUMiru!=null?o.pulsUMiru:'—', plsSub, bojaOdstupanja(o.pulsOdstupanje!=null?-o.pulsOdstupanje*2:null))}
       ${red('San', o.sanH!=null?o.sanH+' h':'—', o.sanOcena!=null?('ocena '+o.sanOcena):'', o.sanH!=null?(o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'):null)}
-      ${o.svezina!=null?red('Svežina', o.svezina, 'forma '+o.ctl+' · umor '+o.atl, o.svezina<-10?'var(--red)':o.svezina<0?'var(--amber)':'var(--green)'):''}
+      ${o.svezina!=null?red('Svežina', o.svezina, 'forma '+esc(o.ctl)+' · umor '+esc(o.atl), o.svezina<-10?'var(--red)':o.svezina<0?'var(--amber)':'var(--green)'):''}
     </div>
     ${chartHrv(niz)}
     <div class="note-src">HRV se čita u odnosu na <b>tvoju</b> sedmodnevnu osnovu, ne kao gola brojka. Pad preko 10% znači da oporavak zaostaje; pad uz porast pulsa u miru i kratak san je jasan znak da treba lakši dan.</div>
@@ -6352,7 +6381,7 @@ function chartHrv(niz){
     g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(x.hrv).toFixed(1)}" r="4.2" fill="var(--bg)" stroke="var(--cyan)" stroke-width="2"/>`; });
   g+=`<text x="${L}" y="${B+16}" font-size="9" fill="var(--txt3)">${fmtD(v[0].datum)}</text>`;
   g+=`<text x="${W-R}" y="${B+16}" text-anchor="end" font-size="9" fill="var(--txt3)">${fmtD(v[v.length-1].datum)}</text>`;
-  g+=`<text x="${W-R}" y="${(Y(v[v.length-1].hrv)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--cyan)">${v[v.length-1].hrv}</text>`;
+  g+=`<text x="${W-R}" y="${(Y(v[v.length-1].hrv)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--cyan)">${esc(v[v.length-1].hrv)}</text>`;
   g+=`<text x="${L}" y="${T+2}" font-size="9" fill="var(--txt3)">HRV · isprekidano = tvoja sedmodnevna osnova</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:10px">${g}</svg>`;
 }
@@ -6639,7 +6668,7 @@ function renderKnee(){
   h+=`<div class="card"><div class="card-t">Bol (0–10) kroz vreme</div>${chartKnee()}</div>`;
   h+=`<div class="btnrow" style="margin:0 0 14px"><button class="btn ghost" id="k-add">+ Dodaj unos</button></div>`;
   h+=`<div class="card"><div class="card-t">Istorija</div>`+(list.length?list.map(k=>`
-    <button class="krow" data-k="${k.id}">
+    <button class="krow" data-k="${esc(k.id)}">
       <div class="kp ${k.pain>=6?'p2':k.pain>=1?'p1':'p0'}">${esc(k.pain)}</div>
       <div class="ki"><div class="kd">${esc(partName(k.part))} <span class="ka">· ${DOW[(s2d(k.date).getDay()+6)%7]} ${fmtD(k.date)} · ${esc(k.act)}${k.src?' · iz treninga':''}</span></div>${k.note?`<div class="kn">${esc(k.note)}</div>`:''}</div>
     </button>`).join(''):`<div class="empty">Nema unosa.</div>`)+`</div>`;
@@ -7671,6 +7700,32 @@ function backupPayload(){
   delete copy.icu;      /* OAuth token i API kljuc */
   return copy;
 }
+/* ============================================================
+   ID-JEVI IZ UVEZENOG FAJLA — GRANICA POVERENJA.
+
+   Svaki ID u stanju je MASINSKI generisan i uvek istog oblika:
+     dani            n1d1, n6t, g12d3
+     PRED redovi     p1, p2b, g3_1
+     koleno          k1, k1751376000000, kt-n1d1
+   Nista od toga ne sadrzi navodnik, razmak ni znak <.
+
+   Zasto je ovo BEZBEDNOSNA, a ne kozmeticka provera: ID dana zavrsava u HTML
+   ATRIBUTIMA (id="ai-go-...", data-swd="...", data-wseg="..."). Uvoz backupa
+   prihvata proizvoljan JSON, pa je ID iz fajla bio direktan put za ubacivanje
+   HTML-a. Dokazano napadom: dan sa
+       id = "\"><img src=x onerror=...>"
+   izlazi iz atributa i izvrsava proizvoljan kod, koji odatle cita
+   localStorage — dakle Supabase sesiju, Strava i intervals.icu tokene.
+   CSP tu ne pomaze jer skripta mora da dozvoli 'unsafe-inline' (aplikacija
+   JESTE jedna velika inline skripta).
+
+   Odbrana je na DVA nivoa, namerno:
+   (1) ovde — sumnjiv fajl se odbija u celosti, pre nego sto dodirne S;
+   (2) na svakom mestu iscrtavanja — esc() oko svake interpolacije.
+   Jedan nivo je dovoljan da napad ne prodje; dva su tu jer se sutra doda nova
+   kartica koja zaboravi esc(). ============================================ */
+const ID_OBLIK=/^[A-Za-z0-9_-]{1,64}$/;
+function validanId(x){ return typeof x==='string' && ID_OBLIK.test(x); }
 /* Da li je `genPlan` iz uvezenog fajla upotrebljiv. setActivePlan() radi
    `S.genPlan.weeks` a rebuildDateIndex() zatim `CUR_PLAN.forEach(w=>w.days…)`
    — pokvaren ili rucno izmenjen backup je tu obarao aplikaciju POSLE zamene
@@ -7680,14 +7735,50 @@ function validanGenPlan(g){
   if(g==null) return true;                       /* nema generisanog plana — licni je aktivan */
   if(typeof g!=='object'||Array.isArray(g)) return false;
   if(!Array.isArray(g.weeks)||!g.weeks.length) return false;
-  return g.weeks.every(w=>
+  const daniOk = g.weeks.every(w=>
     w && typeof w==='object' &&
     typeof w.start==='string' && /^\d{4}-\d{2}-\d{2}$/.test(w.start) &&
     Array.isArray(w.days) && w.days.length>0 &&
     w.days.every(d=> d && typeof d==='object' &&
       typeof d.dow==='number' && d.dow>=0 && d.dow<=7 &&
-      (d.km==null || (typeof d.km==='number' && isFinite(d.km))))
+      (d.km==null || (typeof d.km==='number' && isFinite(d.km))) &&
+      (d.id==null || validanId(d.id)))
   );
+  if(!daniOk) return false;
+  /* PRED redovi zavrsavaju u data-wseg/data-wpin/data-q atributima. */
+  if(g.pred!=null){
+    if(!Array.isArray(g.pred)) return false;
+    const predOk = g.pred.every(r=> r && typeof r==='object' &&
+      validanId(r.id) &&
+      (r.q==null || (typeof r.q==='number' && isFinite(r.q))) &&
+      (r.pt==null || (typeof r.pt==='number' && isFinite(r.pt))) &&
+      (r.l==null || typeof r.l==='string'));
+    if(!predOk) return false;
+  }
+  if(g.qs!=null && (typeof g.qs!=='object'||Array.isArray(g.qs))) return false;
+  if(g.qs && Object.keys(g.qs).some(k=>!validanId(k))) return false;
+  return true;
+}
+/* Svi ostali ID-jevi u stanju: kljucevi mapa vezanih za dane/PRED redove i
+   ID-jevi unosa o povredama. Vraca naziv prvog problematicnog mesta ili null. */
+function losIdUStanju(st){
+  if(!st || typeof st!=='object') return 'stanje';
+  const mape={log:st.log, pred:st.pred, predLock:st.predLock, alts:st.alts, moves:st.moves};
+  for(const [ime,m] of Object.entries(mape)){
+    if(m==null) continue;
+    if(typeof m!=='object'||Array.isArray(m)) return ime;
+    for(const k of Object.keys(m)) if(!validanId(k)) return ime+' → '+String(k).slice(0,40);
+  }
+  if(Array.isArray(st.vdotLog))
+    for(const e of st.vdotLog) if(e&&e.id!=null&&!validanId(e.id)) return 'vdotLog';
+  if(Array.isArray(st.knee))
+    for(const k of st.knee){
+      if(k&&k.id!=null&&!validanId(k.id)) return 'knee.id';
+      if(k&&k.src!=null&&!validanId(k.src)) return 'knee.src';
+    }
+  if(Array.isArray(st.kg))
+    for(const x of st.kg) if(x&&x.src!=null&&!validanId(x.src)) return 'kg.src';
+  return null;
 }
 function exportBackup(){
   const copy=backupPayload();
@@ -7711,6 +7802,14 @@ function importBackup(file){
       if(!st){alert('Fajl nije prepoznat kao backup ove aplikacije, ili je napravljen u novijoj verziji — ažuriraj aplikaciju pa pokušaj ponovo.');return;}
       if(!validanGenPlan(st.genPlan)){
         alert('Backup sadrži oštećen generisan plan, pa nije uvezen — ništa nije promenjeno.\n\nTvoji trenutni podaci su netaknuti.');
+        return;
+      }
+      /* ID-jevi iz fajla zavrsavaju u HTML atributima (v. ID_OBLIK gore) —
+         sumnjiv fajl se odbija PRE nego sto dodirne S. */
+      const los=losIdUStanju(st);
+      if(los){
+        alert('Backup sadrži neispravan identifikator ('+los+'), pa nije uvezen — ništa nije promenjeno.\n\n'+
+              'Ovo se dešava kod ručno izmenjenog fajla. Tvoji trenutni podaci su netaknuti.');
         return;
       }
       if(!confirm(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${Object.keys(st.log).length} trening-unosa, ${st.knee.length} koleno, ${st.kg.length} težina.\n\nNastaviti?`))return;
@@ -8008,9 +8107,14 @@ const SB_STATE_KEY='sub19_sb_state';
    `…/#access_token=NJEGOV_JWT&refresh_token=…`, zrtva ga otvori, sbInit()
    bezuslovno usvoji NJEGOVU sesiju. Odatle: sbPush() gura zrtvine podatke
    u napadacev red, ili sbPull() povuce napadacev JSON u zrtvinu app. */
+/* PROZOR ZA PRIJAVU. Bio je 10 minuta — a to je i duzina prozora u kom
+   podmetnut `#access_token=` moze da bude usvojen (v. sbInit). Odlazak na
+   Google i nazad traje sekunde; tri minuta su i dalje velikodusna rezerva za
+   spor telefon i unos lozinke, a prozor je preko tri puta uzi. */
+const SB_PROZOR_MS=3*60*1000;
 function sbMakeState(){
   const st=secureRandomToken();
-  try{ localStorage.setItem(SB_STATE_KEY, JSON.stringify({st,exp:Date.now()+600000})); }catch(e){}
+  try{ localStorage.setItem(SB_STATE_KEY, JSON.stringify({st,exp:Date.now()+SB_PROZOR_MS})); }catch(e){}
   return st;
 }
 function sbCheckState(){
@@ -8239,10 +8343,29 @@ async function sbInit(){
     history.replaceState(null,'',location.pathname);
   }
   if(h){
-    Object.assign(SB,h,sbClaims(h.access));
-    SB.seenAt=null;
-    sbSave();
-    history.replaceState(null,'',location.pathname);
+    /* NE SME DA ZAMENI VEC PRIJAVLJEN NALOG DRUGIM.
+       Marker iznad kaze samo „ovaj pretrazivac je nedavno krenuo u prijavu" —
+       ne i CIJI je token stigao nazad. Zato ostaje uzak prozor u kom bi
+       podmetnut `#access_token=` bio usvojen. Najstetniji ishod je zamena
+       POSTOJECE sesije tudjom: od tog trenutka sbPush() gura licne podatke u
+       napadacev red. Ovde se to zatvara — token za DRUGOG korisnika se odbija
+       dok se prethodni ne odjavi svesno. */
+    const noviClaims=sbClaims(h.access);
+    if(SB.userId && noviClaims.userId && noviClaims.userId!==SB.userId){
+      h=null;
+      history.replaceState(null,'',location.pathname);
+      alert('Prijava je odbijena: stigao je nalog koji nije onaj sa kog si prijavljen.\n\n'+
+            'Ako želiš da promeniš nalog, prvo se odjavi u Podešavanjima, pa se prijavi ponovo.');
+    } else {
+      Object.assign(SB,h,noviClaims);
+      SB.seenAt=null;
+      sbSave();
+      history.replaceState(null,'',location.pathname);
+      /* Token se PROVERAVA kod Supabase-a pre nego sto mu se poveruje. Ako je
+         neispravan/opozvan, sesija se odbacuje umesto da app radi sa njom. */
+      sbEnsure().then(ok=>{ if(!ok){ SB.access=null; SB.refresh=null; SB.userId=null; sbSave(); } })
+                .catch(()=>{});
+    }
   }
   /* greska sa Google strane (odbio, zatvorio prozor…) */
   const err=(location.hash||'').indexOf('error')>=0
