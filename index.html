@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='128'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='129'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -5289,6 +5289,8 @@ function openWizard(){
   renderOnboard();
 }
 function closeWizard(){
+  /* Poslednja brana: bez sopstvenog plana zatvaranje bi otkrilo vlasnikov. */
+  if(moraSvojPlan()) return;
   $('#wizard').style.display='none';
   document.querySelector('header').style.display='';
   document.querySelector('main').style.display='';
@@ -5302,7 +5304,7 @@ function renderOnboard(){
     <div class="ob-top">
       <div class="ob-toprow">
         <div class="ob-brand">SUB<span>-20</span></div>
-        <button type="button" class="ob-x" id="obCancel">✕</button>
+        ${moraSvojPlan()?'':'<button type="button" class="ob-x" id="obCancel">✕</button>'}
       </div>
       <div class="ob-progress" id="ob-progress"></div>
     </div>
@@ -5705,7 +5707,8 @@ function updateVdotPreview(){
   wrap.classList.add('show');
 }
 function bindOnboardEvents(){
-  $('#obCancel').addEventListener('click',()=>{
+  /* dugmeta nema kad korisnik jos nema svoj plan — nema iza cega da se zatvori */
+  if($('#obCancel')) $('#obCancel').addEventListener('click',()=>{
     if(!confirm('Otkazati generisanje plana?'))return;
     closeWizard();
   });
@@ -6769,6 +6772,12 @@ function icuPragTekst(){
    ============================================================ */
 const ADMIN_EMAIL='avuletic92@gmail.com';
 function jeVlasnik(){ return sbAuthed() && String(SB.email||'').trim().toLowerCase()===ADMIN_EMAIL; }
+/* HARDKODOVAN PLAN JE VLASNIKOV LICNI PLAN, ne podrazumevan plan aplikacije.
+   Do sada je svaki nov nalog padao na njega: tudji ljudi su gledali njegove
+   deonice, njegov datum trke (24.09.2026) i njegov cilj sub-20, sve dok sami
+   ne odu u Podesavanja i ne pokrenu carobnjaka — a nista ih tamo nije zvalo.
+   Zato: ko nije vlasnik i jos nema svoj plan, ide PRAVO u carobnjaka. */
+function moraSvojPlan(){ return !S.genPlan && !jeVlasnik(); }
 async function posaljiUputstvo(opcije){
   try{
     const r=await fetch('/api/broadcast',{method:'POST',
@@ -6984,8 +6993,10 @@ function openSettings(){
 
     <div class="set-h"><div class="card-t">Plan</div><span class="chip ${S.genPlan?'on':'off'}">${S.genPlan?'generisan':'lični'}</span></div>
     ${S.genPlan
-      ?`<div class="set-st">Aktivan je <b>generisan plan</b> · ${CUR_PLAN.length} nedelja</div>
-        <div class="btnrow"><button class="btn ghost" id="pl-revert">Vrati na moj plan</button></div>`
+      ?`<div class="set-st">Aktivan je <b>${jeVlasnik()?'generisan plan':'tvoj plan'}</b> · ${CUR_PLAN.length} nedelja</div>
+        <div class="btnrow">${jeVlasnik()
+          ?`<button class="btn ghost" id="pl-revert">Vrati na moj plan</button>`
+          :`<button class="btn ghost" id="pl-new">🧙 Napravi novi plan</button>`}</div>`
       :`<div class="set-st">Aktivan je <b>tvoj lični plan</b> · ${CUR_PLAN.length} nedelja</div>
         <div class="btnrow"><button class="btn ghost" id="pl-gen">🧙 Generiši novi plan</button></div>
         <details class="help"><summary>Za koga je novi plan</summary><p>Pravi poseban plan za nekog drugog — tvoj plan ostaje netaknut i uvek mu se vraćaš ovim istim dugmetom.</p></details>`}
@@ -7160,8 +7171,17 @@ function openSettings(){
   if(so)so.onclick=stravaConnect;
   if(ss)ss.onclick=()=>{ss.disabled=true;ss.textContent='Sinhronizujem…';stravaSync(true).finally(()=>closeSheet());};
   if(sf)sf.onclick=stravaDisconnect;
-  const pg=$('#pl-gen'),pr=$('#pl-revert');
+  const pg=$('#pl-gen'),pr=$('#pl-revert'),pn=$('#pl-new');
   if(pg)pg.onclick=openWizard;
+  /* Novi plan PREKO postojeceg. Stari unosi se moraju obrisati pre toga:
+     generisani dani nose ID-jeve po istom obrascu ('g3d5'), pa bi se unosi
+     starog plana zalepili za dane novog. Isti razlog kao kod "Vrati na moj
+     plan", samo bez plana na koji se vraca. */
+  if(pn)pn.onclick=()=>{
+    if(!confirm('Napraviti nov plan?\n\nPostojeći plan i svi unosi uz njega se TRAJNO brišu — nema arhive.\n\nAko ti trebaju, prvo izvezi backup.'))return;
+    purgeGenPlanData();
+    S.genPlan=null;setActivePlan();rebuildDateIndex();save();closeSheet();openWizard();
+  };
   if(pr)pr.onclick=()=>{
     if(!confirm('Vratiti se na tvoj originalni plan? Generisan plan se TRAJNO briše (napredak/unosi uz njega takođe) — nema arhive.\n\nTvoj plan i njegova istorija se vraćaju netaknuti.'))return;
     /* Ranije se brisao samo S.genPlan, a njegovi 'g' unosi su ostajali kao
@@ -7729,6 +7749,8 @@ async function sbInit(){
 
   if(!sbHasSession()){ sbShowGate(err||''); return; }
   sbHideGate();
+  /* tek sada se pouzdano zna CIJI je ovo nalog, pa i da li ima svoj plan */
+  if(moraSvojPlan()) openWizard();
   let remoteAt;
   try{ remoteAt=await sbRemoteAt(); }catch(e){ return; }
   if(remoteAt===undefined) return;                    /* nema signala — radi lokalno */
