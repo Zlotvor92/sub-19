@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='136'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='137'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1744,11 +1744,45 @@ function predKindMatch(d, r){
   if(!k) return null;                       /* nema naziva — na rezervu */
   return r.l === 'N'+d.week.w+' · '+k;
 }
-function predFallbackMatch(d, r){
+function predFallbackMatchTag(tag, r){
   const l=r.l.toLowerCase();
-  return d.tag==='int'
+  return tag==='int'
     ? (l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')||l.includes('piramida')||l.includes('ritam')||l.includes('maratonski tempo')||l.includes('tempo trke'))
     : (l.includes('tempo')||l.includes('ritam')||l.includes('progresivno')||l.includes('kontrolna'));
+}
+function predFallbackMatch(d, r){ return predFallbackMatchTag(d.tag, r); }
+/* RASPODELA PREDIKCIJSKIH REDOVA NA KVALITETNE DANE — za CELU nedelju odjednom.
+
+   Ranije se racunalo po danu, pa su dva mesta davala razlicit odgovor:
+   sinhronizacija sa Stravom je koristila predRowFor (bez provere sudara) i
+   UPISIVALA tempo, a kartica dana predRowsFor (sa proverom) i nije prikazivala
+   polje. Merenjem na stvarnom slucaju: dan N5 rucno prebacen iz Intervala u
+   Tempo. Nedelja tada ima DVA tempo dana, red "N5 · Tempo" pripadne onom koji
+   je i po planu tempo, a izmenjeni dan ostane bez ijednog reda — pa nema gde
+   da se upise ostvaren tempo, a Strava mu je vec upisala VDOT na tudji red.
+   Red "N5 · Intervali", koji je tom danu i pripadao, postane nedostupan jer
+   se rezervno poklapanje radi po NOVOM tipu.
+
+   Sada se radi raspodela, u tri kruga, tako da dva dana nikad ne dele red i da
+   izmenjen dan zadrzi red svog IZVORNOG tipa:
+     1) tacan naziv sesije;
+     2) rezervno poklapanje po tekucem tipu, s tim da prednost ima dan koji je
+        i po planu tog tipa;
+     3) izmenjenom danu pripada red njegovog izvornog tipa. */
+function predRaspored(week){
+  if(!week||!Array.isArray(week.days))return {};
+  const dani=week.days.filter(x=>x&&!x.test&&(x.tag==='int'||x.tag==='tempo'))
+                      .slice().sort((a,b)=>(a.date||'')<(b.date||'')?-1:1);
+  const redovi=CUR_PRED.filter(r=>r.w===week.w);
+  const mapa={}, uzeti=new Set();
+  const uzmi=(d,pronadji)=>{ if(mapa[d.id])return;
+    const t=redovi.find(r=>!uzeti.has(r.id)&&pronadji(r));
+    if(t){ mapa[d.id]=[t.id]; uzeti.add(t.id); } };
+  dani.forEach(d=>uzmi(d,r=>predKindMatch(d,r)===true));
+  dani.forEach(d=>{ if(d.origTag===d.tag) uzmi(d,r=>predFallbackMatchTag(d.tag,r)); });
+  dani.forEach(d=>uzmi(d,r=>predFallbackMatchTag(d.tag,r)));
+  dani.forEach(d=>{ if(d.origTag&&d.origTag!==d.tag) uzmi(d,r=>predFallbackMatchTag(d.origTag,r)); });
+  return mapa;
 }
 function predKandidati(d){
   const uNedelji = CUR_PRED.filter(r=>r.w===d.week.w);
@@ -1756,28 +1790,18 @@ function predKandidati(d){
   if(tacni.length) return tacni;
   return uNedelji.filter(r=>predFallbackMatch(d,r));
 }
-function predRowFor(d){
-  if(!d||!d.week)return null; /* nedelja 1 sad može imati samo 1-2 dana (start od dana generisanja) — pozivaoci legitimno ne nađu dan traženog tipa; padati na tome bi obelilo ceo ekran umesto da graciozno vrati prazno */
-  if(d.tag!=='int'&&d.tag!=='tempo')return null;
-  const c=predKandidati(d);
-  return c.length?c[0].id:null;
-}
 /* sve predikcijske sesije za dan (dan tag određuje tip: int->Intervali, tempo->Tempo/Ritam) */
 function predRowsFor(d){
   if(!d||!d.week)return [];
   if(d.tag!=='int'&&d.tag!=='tempo')return [];
-  const rows=predKandidati(d).map(r=>r.id);
-  if(!rows.length)return [];
-  /* SUDAR: izmenom tipa u nedelji može nastati VIŠE dana istog kvaliteta, a
-     predikcijski red je jedan. Bez ovoga bi dva dana pisala u isti VDOT unos.
-     Pravilo: pravo polaže dan koji je i PO PLANU tog tipa. Ako je taj izmenjen
-     (npr. interval pretvoren u lagano), pravo prelazi na hronološki prvi dan
-     tog tipa — tako zamena kvalitetnog dana radi prirodno. */
-  const same=d.week.days.filter(x=>!x.test&&x.tag===d.tag);
-  if(same.length<=1)return rows;
-  const orig=same.filter(x=>x.origTag===d.tag);
-  const pool=orig.length?orig:same.slice().sort((a,b)=>(a.date||'')<(b.date||'')?-1:1);
-  return pool[0]===d?rows:[];
+  return predRaspored(d.week)[d.id]||[];
+}
+function predRowFor(d){
+  /* ISTI izvor istine kao kartica dana — inace sinhronizacija upisuje tempo
+     na red koji korisnik nigde ne vidi ni moze da ispravi. */
+  if(!d||!d.week)return null;
+  const rows=predRowsFor(d);
+  return rows.length?rows[0]:null;
 }
 /* VDOT delta prikaz za jedan radni segment (gore/dole u odnosu na prethodni VDOT) */
 function vdotDeltaHTML(predId,paceSec){
