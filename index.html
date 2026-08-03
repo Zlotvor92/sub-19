@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='137'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='138'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1563,12 +1563,22 @@ function raceDistActive(){
    Vazi SAMO za automatiku; rucno unet tempo je korisnikova izricita tvrdnja
    i uvek se prihvata. */
 const AUTO_VDOT_TOL=4;
-function recordVdot(predId, paceSec, dateOverride, kind, auto){
+function recordVdot(predId, paceSec, dateOverride, kind, auto, dan){
   const r=CUR_PRED.find(x=>x.id===predId);
   if(!r||!paceSec)return null;
   /* Zona: PRVENSTVENO iz PRED reda oznake (pouzdanije, v. zoneForPredRow),
-     kind-parametar je fallback za pozivaoce koji (još) ne prosleđuju r. */
-  const zone=zoneForPredRow(r) ?? (kind!=null?ZONE_FOR_KIND[kind]:null);
+     kind-parametar je fallback za pozivaoce koji (još) ne prosleđuju r.
+     IZUZETAK — RUCNO PROMENJEN TIP DANA. Predikcijski red nosi naziv iz plana
+     ("N5 · Intervali"), a korisnik je taj dan prebacio u Tempo jer je sesija
+     to i bila. Zona mora da prati ono sto je sesija STVARNO bila, ne kako se
+     red zove. Mereno: OverUnder 3x2 km (500 m @4:00 + 500 m @4:20) odradjen
+     prosecno 4:09 — kao interval to je VDOT 45.2 (pad), kao tempo 51.4 (rast).
+     Tempo od 4:09 na pragu je brzo; isti tempo kao VO2max interval je sporo.
+     Ovde je korisnikova oznaka jedini pouzdan podatak o tome sta je radio. */
+  let zone=zoneForPredRow(r);
+  if(dan && dan.origTag && dan.origTag!==dan.tag && kind!=null && ZONE_FOR_KIND[kind])
+    zone=ZONE_FOR_KIND[kind];
+  if(zone==null && kind!=null) zone=ZONE_FOR_KIND[kind];
   const measured=zone!=null
     ? Math.round(vdotFromPace(paceSec,zone)*10)/10
     : Math.round(vdotFromQuality(paceSec,r.q)*10)/10;
@@ -1598,7 +1608,7 @@ function recordVdot(predId, paceSec, dateOverride, kind, auto){
    gore od praznog. Dan se obelezi, pa kartica treninga moze da kaze zasto je
    prazan i pozove na rucni unos. */
 function upisiAutoTempo(pid, paceSec, datum, d){
-  const r=recordVdot(pid, paceSec, datum, sessKind(d), true);
+  const r=recordVdot(pid, paceSec, datum, sessKind(d), true, d);
   if(!r){ if(S.log[d.id]) S.log[d.id].autoOdbijen=paceSec; return false; }
   S.pred[pid]=paceSec;
   if(S.log[d.id]) delete S.log[d.id].autoOdbijen;
@@ -2371,7 +2381,7 @@ function bindForm(root,d){
         const ix=(S.vdotLog||[]).findIndex(e=>e.id===pid); if(ix>=0)S.vdotLog.splice(ix,1);
         preracunajVdotLog();   /* uklonjena sesija ne sme da ostane u lancu */
         if(S.log[d.id]) delete S.log[d.id].autoOdbijen;
-      } else if(v){ S.pred[pid]=v; S.predLock[pid]=true; const dl=S.log[d.id]; recordVdot(pid,v,(dl&&(dl.runDate||dl.ts))||d.date,sessKind(d)); }
+      } else if(v){ S.pred[pid]=v; S.predLock[pid]=true; const dl=S.log[d.id]; recordVdot(pid,v,(dl&&(dl.runDate||dl.ts))||d.date,sessKind(d),false,d); }
       else return;
       save();
       const out=g.querySelector(`[data-wout="${pid}"]`);
