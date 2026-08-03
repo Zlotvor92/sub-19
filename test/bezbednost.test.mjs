@@ -633,3 +633,80 @@ describe('Prepoznavanje vlasnika', () => {
     assert.equal(app.call('jeVlasnik'), false, 'neprijavljen je prošao kao vlasnik');
   });
 });
+
+describe('Nonce kroz redirect_to (Supabase prijava)', () => {
+  const nonceIz = href => {
+    const m = /redirect_to=([^&]+)/.exec(href);
+    return m ? new URLSearchParams(new URL(decodeURIComponent(m[1])).search).get('sbn') : null;
+  };
+
+  test('sbLogin šalje nasumičan nonce u povratnoj adresi', () => {
+    const a = loadApp(); a.call('sbLogin');
+    const n1 = nonceIz(a.ctx.location.href);
+    assert.match(n1 || '', /^[0-9a-f]{40}$/, `nonce nije poslat: ${a.ctx.location.href}`);
+    const b = loadApp(); b.call('sbLogin');
+    assert.notEqual(n1, nonceIz(b.ctx.location.href), 'nonce nije nasumičan');
+  });
+
+  test('poslat nonce je ISTI onaj koji se čuva za proveru', () => {
+    const a = loadApp(); a.call('sbLogin');
+    const poslat = nonceIz(a.ctx.location.href);
+    assert.equal(a.call('sbCheckState', poslat), true, 'ispravan nonce nije prihvaćen');
+  });
+
+  test('pogrešan nonce se odbija', () => {
+    const a = loadApp(); a.call('sbLogin');
+    assert.equal(a.call('sbCheckState', 'a'.repeat(40)), false, 'tuđi nonce je prošao');
+  });
+
+  test('istekao nonce se odbija i kad je tačan', () => {
+    const a = loadApp({ now: '2026-07-01T10:00:00Z' });
+    a.call('sbLogin');
+    const poslat = nonceIz(a.ctx.location.href);
+    a.clock.set('2026-07-01T10:10:00Z');            /* prozor je 3 min */
+    assert.equal(a.call('sbCheckState', poslat), false, 'istekao nonce je prošao');
+  });
+
+  test('nonce je jednokratan', () => {
+    const a = loadApp(); a.call('sbLogin');
+    const poslat = nonceIz(a.ctx.location.href);
+    assert.equal(a.call('sbCheckState', poslat), true);
+    assert.equal(a.call('sbCheckState', poslat), false, 'isti nonce je prihvaćen dvaput');
+  });
+
+  test('prvo pokretanje: bez nonce-a prolazi (uvođenje ne zaključava naloge)', () => {
+    /* Ako Supabase na ovom projektu odbacuje upit u redirect_to, prijava mora
+       da radi kao ranije — inače bi izmena zaključala sve korisnike. */
+    const a = loadApp();
+    a.call('sbMakeState');
+    assert.equal(a.call('sbCheckState', null), true, 'prvo pokretanje je zaključano');
+  });
+
+  test('kad se jednom dokaže da nonce radi, izostavljanje se ODBIJA', () => {
+    /* Napadač ne sme da „spusti" zaštitu tako što izostavi parametar. */
+    const a = loadApp();
+    a.call('sbLogin');
+    const poslat = nonceIz(a.ctx.location.href);
+    assert.equal(a.call('sbCheckState', poslat), true);
+    assert.equal(a.evalIn('sbNonceRadi()'), true, 'saznanje nije zapamćeno');
+    a.call('sbMakeState');
+    assert.equal(a.call('sbCheckState', null), false, 'downgrade je prošao');
+  });
+
+  test('saznanje preživljava restart aplikacije (localStorage)', () => {
+    const a = loadApp();
+    a.call('sbLogin');
+    a.call('sbCheckState', nonceIz(a.ctx.location.href));
+    const zapamceno = a.ls.getItem('sub19_sb_nonce_ok');
+    assert.equal(zapamceno, '1');
+    const b = loadApp({ seedLocalStorage: { sub19_sb_nonce_ok: '1' } });
+    b.call('sbMakeState');
+    assert.equal(b.call('sbCheckState', null), false, 'saznanje se izgubilo pri restartu');
+  });
+
+  test('bez pokrenute prijave ništa ne prolazi', () => {
+    const a = loadApp();
+    assert.equal(a.call('sbCheckState', 'a'.repeat(40)), false);
+    assert.equal(a.call('sbCheckState', null), false);
+  });
+});

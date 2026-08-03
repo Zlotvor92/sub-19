@@ -590,7 +590,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='142'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='143'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -8130,12 +8130,43 @@ function sbMakeState(){
   try{ localStorage.setItem(SB_STATE_KEY, JSON.stringify({st,exp:Date.now()+SB_PROZOR_MS})); }catch(e){}
   return st;
 }
-function sbCheckState(){
+/* Zapamceno saznanje: da li nonce PREZIVLJAVA put kroz Supabase na ovom
+   deployu. Zavisi od toga da li je u Supabase → Authentication → Redirect URLs
+   dozvoljen obrazac sa upitom (`https://.../**`). Ne pretpostavlja se — meri se
+   pri prvoj uspesnoj prijavi i od tada se zahteva. */
+const SB_NONCE_RADI_KEY='sub19_sb_nonce_ok';
+function sbNonceRadi(){ try{ return localStorage.getItem(SB_NONCE_RADI_KEY)==='1'; }catch(e){ return false; } }
+/* PROVERA POVRATKA SA PRIJAVE.
+   Marker sam po sebi kaze samo „ovaj pretrazivac je nedavno krenuo u prijavu",
+   ne i CIJI je token stigao nazad — pa je ostajao uzak prozor u kom bi
+   podmetnut `#access_token=` bio usvojen. Zato se uz `redirect_to` salje i
+   nasumican `sbn`, koji se ovde poredi.
+
+   ZASTO NE `state=`: Supabase GoTrue koristi bas taj naziv INTERNO za svoju
+   CSRF zastitu prema Google-u; nasa vrednost bi se sudarila sa njegovom i
+   prijava bi zavrsila sa „bad_oauth_state" (v. komentar u sbLogin).
+
+   TRI ISHODA, i cetvrti koji je razlog zasto je ovo ovako napisano:
+     - `sbn` stigao i poklapa se        -> prihvati; zapamti da nonce radi
+     - `sbn` stigao a ne poklapa se     -> ODBIJ
+     - `sbn` nije stigao, a app zna da inace radi -> ODBIJ (neko ga je skinuo)
+     - `sbn` nije stigao, a app to jos nije videla -> prihvati po starom
+   Poslednji slucaj je jedini razlog za ovu slozenost: da uvodjenje ne moze da
+   zakljuca naloge ako Supabase na ovom projektu odbacuje upit u redirect_to.
+   Cim jedna prijava prodje sa nonce-om, downgrade (izostavljanje parametra)
+   vise nije moguc. */
+function sbCheckState(gotNonce){
   let saved=null;
   try{ saved=JSON.parse(localStorage.getItem(SB_STATE_KEY)||'null'); }catch(e){}
   try{ localStorage.removeItem(SB_STATE_KEY); }catch(e){}   /* jednokratno */
   if(!saved||!saved.st) return false;
-  return Date.now()<=saved.exp;
+  if(Date.now()>saved.exp) return false;
+  if(gotNonce){
+    if(gotNonce!==saved.st) return false;
+    try{ localStorage.setItem(SB_NONCE_RADI_KEY,'1'); }catch(e){}
+    return true;
+  }
+  return !sbNonceRadi();
 }
 
 let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:null};
@@ -8233,14 +8264,18 @@ async function sbEnsure(){
 
 function sbLogin(){
   if(!sbOn()){ alert('Supabase nije podesen (SB_URL / SB_ANON u kodu).'); return; }
-  sbMakeState();
+  const n=sbMakeState();
   /* NAMERNO se ne prosledjuje &state= Supabase-u. Supabase GoTrue koristi taj
      isti naziv parametra INTERNO za sopstvenu CSRF zastitu prema Google-u —
      nasa vrednost bi se sudarila sa njegovom (potvrdjeno: identican slucaj
      prijavljen na supabase/auth GitHub-u, zavrsava sa "bad_oauth_state").
-     Nasa zastita (sbCheckState) je cisto lokalna — upisan marker se proverava
-     posle povratka, bez oslanjanja na to da nam Supabase bilo sta vrati. */
-  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/');
+     Zato nas nonce putuje kao `sbn` U SAMOJ POVRATNOJ ADRESI — Supabase je
+     vraca doslovno, pa se po povratku moze uporediti (v. sbCheckState).
+     TRAZI da u Supabase → Authentication → Redirect URLs stoji obrazac koji
+     dozvoljava upit (`https://sub-19.vercel.app/**`). Ako ne stoji, Supabase
+     odbaci upit; app to prepozna i radi kao ranije, bez zakljucavanja naloga. */
+  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='
+    +encodeURIComponent(location.origin+'/?sbn='+n);
 }
 function sbLogout(){
   SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
@@ -8347,11 +8382,16 @@ async function sbInit(){
   if(!sbOn()) return;          /* nije podeseno — aplikacija radi bez naloga */
   sbLoad();
   let h=sbParseHash(location.hash);
+  /* `sbn` se cita PRE bilo kakvog replaceState — handleOAuthReturn iznad dira
+     istoriju samo kad u upitu postoji `code`, ali red ne sme da zavisi od toga. */
+  let sbn=null;
+  try{ sbn=new URLSearchParams(location.search||'').get('sbn'); }catch(e){}
   /* SRZ POPRAVKE: hash SA tokenima se prihvata SAMO ako je OVAJ pretrazivac
-     nedavno pokrenuo sbLogin() (marker postavljen i nedeljno pre isteka).
-     Bez ovoga, bilo ko ko otvori link sa tudjim #access_token= tiho preuzima
-     napadacevu sesiju — proveri sbCheckState() PRE Object.assign, ne posle. */
-  if(h&&!sbCheckState()){
+     nedavno pokrenuo sbLogin() (marker postavljen i nedeljno pre isteka) I ako
+     se vraceni `sbn` poklapa sa onim koji je tada poslat. Bez toga, bilo ko ko
+     otvori link sa tudjim #access_token= tiho preuzima napadacevu sesiju —
+     proveri sbCheckState() PRE Object.assign, ne posle. */
+  if(h&&!sbCheckState(sbn)){
     h=null;
     history.replaceState(null,'',location.pathname);
   }
