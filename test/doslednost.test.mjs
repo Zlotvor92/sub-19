@@ -163,3 +163,60 @@ describe('Aplikacija se učitava bez izuzetka', () => {
     assert.equal(new Set(Array.from(datumi)).size, datumi.length, 'dva dana dele isti datum');
   });
 });
+
+describe('Traka „Ovo nije tvoj plan"', () => {
+  /* Prijavljen vlasnik je NE sme videti. Ranije jeste — `sbLoad()` je stajao
+     ispod `setPage('danas')`, pa je prvo iscrtavanje išlo sa praznim SB
+     objektom: sbAuthed() false → jeVlasnik() false → traka. Nestajala je tek
+     pri promeni taba, dakle iskakala je pri svakom otvaranju aplikacije. */
+  const sesija = uid => ({
+    sub19_sb: JSON.stringify({
+      access: 'test-token', refresh: 'r', expiresAt: Date.now() + 3600e3,
+      email: 'x@t.rs', userId: uid, seenAt: null, deviceId: 'd1'
+    })
+  });
+
+  test('sesija se učitava PRE prvog iscrtavanja', () => {
+    /* Komentari se uklanjaju — objašnjenje iznad samog poziva pominje
+       `setPage('danas')`, pa bi ga sirov indexOf našao prvog. */
+    const izvor = readRepoFile('index.html').replace(/\/\*[\s\S]*?\*\//g, '');
+    const iLoad = izvor.indexOf("if(typeof sbLoad==='function')sbLoad()");
+    const iPage = izvor.indexOf("setPage('danas')");
+    assert.ok(iLoad > 0 && iPage > 0, 'nije pronađen redosled pokretanja');
+    assert.ok(iLoad < iPage, 'sbLoad() se i dalje poziva posle setPage()');
+  });
+
+  test('vlasnik ne vidi traku pri otvaranju aplikacije', () => {
+    const app = loadApp({ seedLocalStorage: sesija('0403f8fb-a643-4d4e-843d-f71199a0d6f9') });
+    assert.equal(app.call('jeVlasnik'), true, 'vlasnik nije prepoznat pri pokretanju');
+    assert.equal(app.call('tudjPlanSaUnosima'), false, 'traka se računa kao potrebna');
+    assert.ok(!(app.evalIn('$("#pg-danas").innerHTML') || '').includes('Ovo nije tvoj plan'),
+      'traka je iscrtana vlasniku');
+  });
+
+  test('tuđi nalog sa SOPSTVENIM unosima traku I DALJE vidi', () => {
+    /* Ko je već upisivao treninge na ugrađeni plan ne sme da bude nasilno
+       prebačen u čarobnjaka — njegovi unosi nose 'n' ID-jeve i ostali bi bez
+       mesta na kom se prikazuju. Njemu se plan PREDLAŽE trakom. */
+    const app = loadApp({ seedLocalStorage: sesija('11111111-2222-3333-4444-555555555555') });
+    app.evalIn(`S.log={n12d5:{status:'done',km:11,sec:3000}}`);
+    assert.equal(app.call('jeVlasnik'), false);
+    assert.equal(app.call('imaUnosaNaLicnom'), true);
+    assert.equal(app.call('tudjPlanSaUnosima'), true, 'traka se ne prikazuje tuđem nalogu');
+    assert.equal(app.call('moraSvojPlan'), false, 'čarobnjak se nameće čoveku sa unosima');
+  });
+
+  test('tuđi nalog BEZ unosa ide pravo u čarobnjaka, ne na tuđi plan', () => {
+    const app = loadApp({ seedLocalStorage: sesija('11111111-2222-3333-4444-555555555555') });
+    assert.equal(app.call('imaUnosaNaLicnom'), false, 'tuđi seed je i dalje tu');
+    assert.equal(app.call('moraSvojPlan'), true, 'čarobnjak se ne nameće novom korisniku');
+  });
+
+  test('vlasnik sa generisanim planom takođe ne vidi traku', () => {
+    const app = loadApp({ seedLocalStorage: sesija('0403f8fb-a643-4d4e-843d-f71199a0d6f9') });
+    app.evalIn(`S.genPlan={meta:{raceDistM:5000},pred:[],qs:{},
+      weeks:[{w:1,start:'2026-06-22',days:[{dow:0,tag:'lako',km:5,desc:'x',id:'g1d1'}]}]};
+      setActivePlan(); rebuildDateIndex()`);
+    assert.equal(app.call('tudjPlanSaUnosima'), false);
+  });
+});

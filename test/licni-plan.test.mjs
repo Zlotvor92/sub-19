@@ -11,7 +11,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp } from './harness.mjs';
+import { loadApp, readRepoFile } from './harness.mjs';
 
 const app = loadApp();
 
@@ -72,15 +72,31 @@ describe('Konstante ličnog plana', () => {
     assert.deepEqual(Array.from(qs.n14d2), [200]);
   });
 
-  test('početna istorija iz Excela je nepromenjena', () => {
+  test('lični podaci vlasnika NISU u isporučenom kodu', () => {
+    /* Beleške o kolenu i merenja telesne mase su ranije stajale u seedState()
+       u čitljivom obliku — dakle vidljive svakome ko otvori izvor stranice.
+       Uklonjene su; stvarni podaci žive u Supabase-u i u backup fajlovima. */
+    const izvor = readRepoFile('index.html');
+    for (const trag of ['Bol se javio', 'Osetio sam koleno', 'Prilikom budjenja',
+      'Preskocio sam trcanje', 'brzo je prolazilo', '81.6']) {
+      assert.ok(!izvor.includes(trag), `lični podatak je i dalje u kodu: "${trag}"`);
+    }
+    assert.ok(!izvor.includes('VLASNIK_ISTORIJA'), 'blok sa istorijom je i dalje tu');
+  });
+
+  test('potpis zatečenog seeda nosi SAMO identifikatore', () => {
+    const p = app.get('STARI_SEED_POTPIS');
+    const svi = JSON.stringify(p);
+    assert.ok(/n1d1/.test(svi) && /k10/.test(svi), 'potpis ne prepoznaje stari seed');
+    assert.ok(!/81\.6|Bol|koleno ok|note/.test(svi), 'potpis nosi lične podatke');
+  });
+
+  test('seedState je PRAZAN — tuđi podaci ne idu novom korisniku', () => {
     const s = app.call('seedState');
-    assert.equal(Object.keys(s.log).length, 7);
-    assert.equal(s.log.n1d1.km, 7);
-    assert.equal(s.log.n1d7.status, 'skip');
-    assert.equal(s.knee.length, 10);
-    assert.equal(s.kg.length, 2);
-    assert.equal(s.kg[0].kg, 81.6);
-    assert.deepEqual({ ...s.pred }, { p1: 265, p2: 236 });
+    assert.deepEqual({ ...s.log }, {}, 'novi korisnik dobija tuđe treninge');
+    assert.deepEqual(Array.from(s.knee), [], 'novi korisnik dobija tuđe beleške o kolenu');
+    assert.deepEqual(Array.from(s.kg), [], 'novi korisnik dobija tuđa merenja mase');
+    assert.deepEqual({ ...s.pred }, {}, 'novi korisnik dobija tuđe tempove');
   });
 });
 
@@ -121,5 +137,101 @@ describe('Lični plan je aktivan kad nema generisanog', () => {
     assert.equal(a.evalIn('S.vdotLog.length'), 1);
     assert.equal(a.evalIn('S.vdotLog[0].id'), 'p1');
     assert.equal(a.evalIn('S.knee.length'), 1, 'obrisan je unos vezan za lični plan');
+  });
+});
+
+describe('Vlasnikovi podaci ne izlaze van njegovog naloga', () => {
+  const VLASNIK = '0403f8fb-a643-4d4e-843d-f71199a0d6f9';
+  const sesija = uid => ({
+    sub19_sb: JSON.stringify({
+      access: 't', refresh: 'r', expiresAt: Date.now() + 3600e3,
+      email: 'x@t.rs', userId: uid, seenAt: null, deviceId: 'd1'
+    })
+  });
+  /* zatečeno stanje sa starih verzija: vlasnikov seed u tuđem localStorage-u */
+  const saStarimSeedom = uid => ({
+    ...sesija(uid),
+    'sub19-v1': JSON.stringify({
+      v: 7,
+      log: { n1d1: { status: 'done', km: 7, ts: '2026-06-22' }, n1d3: { status: 'done', km: 8, ts: '2026-06-24' } },
+      knee: [{ id: 'k1', date: '2026-06-22', act: 'Trčanje', pain: 1, note: 'Bol se javio izmedju 6-7km' }],
+      kg: [{ date: '2026-06-22', kg: 81.6 }],
+      pred: { p1: 265 }, predLock: {}, vdotLog: [], moves: {}, alts: {},
+      genPlan: null, strava: null, wellness: {}, icu: null,
+      ui: { firstRun: '2026-06-22', lastBackup: null, snooze: null, seenWeek: null }
+    })
+  });
+
+  test('nov korisnik ne dobija NIJEDAN tuđi podatak', () => {
+    const app = loadApp({ seedLocalStorage: sesija('11111111-2222-3333-4444-555555555555') });
+    assert.equal(app.evalIn('Object.keys(S.log).length'), 0);
+    assert.equal(app.evalIn('S.knee.length'), 0);
+    assert.equal(app.evalIn('S.kg.length'), 0);
+    assert.equal(app.evalIn('Object.keys(S.pred).length'), 0);
+    const svi = app.evalIn('JSON.stringify(S)');
+    assert.ok(!svi.includes('Bol se javio'), 'tuđe beleške o kolenu su u stanju');
+    assert.ok(!svi.includes('81.6'), 'tuđa merenja mase su u stanju');
+  });
+
+  test('zatečen tuđi seed se briše sa uređaja drugog korisnika', () => {
+    const app = loadApp({ seedLocalStorage: saStarimSeedom('11111111-2222-3333-4444-555555555555') });
+    assert.equal(app.evalIn('Object.keys(S.log).length'), 0, 'tuđi treninzi su ostali');
+    assert.equal(app.evalIn('S.knee.length'), 0, 'tuđe beleške o kolenu su ostale');
+    assert.equal(app.evalIn('S.kg.length'), 0, 'tuđa merenja mase su ostala');
+    assert.equal(app.call('moraSvojPlan'), true, 'čovek i dalje gleda tuđi plan');
+  });
+
+  test('ali NE briše se ako je čovek uneo bilo šta svoje', () => {
+    /* Brisanje tuđeg seeda ne sme da povuče i sopstveni rad. */
+    const sa = saStarimSeedom('11111111-2222-3333-4444-555555555555');
+    const st = JSON.parse(sa['sub19-v1']);
+    st.log.n12d5 = { status: 'done', km: 11, sec: 3000 };   /* njegov trening */
+    sa['sub19-v1'] = JSON.stringify(st);
+    const app = loadApp({ seedLocalStorage: sa });
+    assert.ok(app.evalIn('Object.keys(S.log).length') >= 3, 'obrisan je sopstveni unos');
+    assert.ok(app.evalIn('!!S.log.n12d5'), 'obrisan je baš njegov trening');
+  });
+
+  test('ne briše se ni kad je uneo samo merenje mase', () => {
+    const sa = saStarimSeedom('11111111-2222-3333-4444-555555555555');
+    const st = JSON.parse(sa['sub19-v1']);
+    st.kg.push({ date: '2026-08-01', kg: 74 });
+    sa['sub19-v1'] = JSON.stringify(st);
+    const app = loadApp({ seedLocalStorage: sa });
+    assert.equal(app.evalIn('S.kg.length'), 2, 'obrisano je sopstveno merenje');
+  });
+
+  test('vlasnik na praznom uređaju kreće prazan — podaci stižu sa servera', () => {
+    /* Istorija se više ne ubacuje iz koda; sbPull je donosi iz Supabase-a. */
+    const app = loadApp({ seedLocalStorage: sesija(VLASNIK) });
+    assert.equal(app.evalIn('Object.keys(S.log).length'), 0);
+    assert.equal(app.evalIn('S.knee.length'), 0);
+  });
+
+  test('vlasniku se postojeći podaci ne diraju', () => {
+    const sa = sesija(VLASNIK);
+    sa['sub19-v1'] = JSON.stringify({
+      v: 7, log: { n9d5: { status: 'done', km: 11, sec: 2900 } }, knee: [], kg: [],
+      pred: {}, predLock: {}, vdotLog: [], moves: {}, alts: {}, genPlan: null,
+      strava: null, wellness: {}, icu: null,
+      ui: { firstRun: '2026-06-22', lastBackup: null, snooze: null, seenWeek: null }
+    });
+    const app = loadApp({ seedLocalStorage: sa });
+    assert.deepEqual(Array.from(app.evalIn('Object.keys(S.log)')), ['n9d5'],
+      'vlasnikovi stvarni podaci su promenjeni');
+  });
+
+  test('vlasnik sa generisanim planom se ne dira', () => {
+    const sa = sesija(VLASNIK);
+    sa['sub19-v1'] = JSON.stringify({
+      v: 7, log: {}, knee: [], kg: [], pred: {}, predLock: {}, vdotLog: [], moves: {}, alts: {},
+      genPlan: { meta: { raceDistM: 5000 }, pred: [], qs: {},
+        weeks: [{ w: 1, start: '2026-06-22', days: [{ dow: 0, tag: 'lako', km: 5, desc: 'x', id: 'g1d1' }] }] },
+      strava: null, wellness: {}, icu: null,
+      ui: { firstRun: '2026-06-22', lastBackup: null, snooze: null, seenWeek: null }
+    });
+    const app = loadApp({ seedLocalStorage: sa });
+    assert.equal(app.evalIn('Object.keys(S.log).length'), 0);
+    assert.ok(app.evalIn('!!S.genPlan'), 'generisan plan je obrisan');
   });
 });

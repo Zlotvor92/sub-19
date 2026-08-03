@@ -590,7 +590,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='143'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='146'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -803,35 +803,28 @@ const WT_TARGET=[
  {w:13,date:'2026-09-14',kg:76},{w:14,date:'2026-09-21',kg:75.5}
 ];
 
-/* ============ POČETNO STANJE — istorija iz Excela ============ */
+/* ============ POČETNO STANJE ============
+   PRAZNO ZA SVAKOGA. Ranije je ova funkcija svakom novom korisniku upisivala
+   VLASNIKOVU istoriju: odradjene treninge, zapise o kolenu sa licnim beleskama
+   i merenja telesne mase. Tudji covek je to video u tabu Povrede i na
+   grafikonu tezine, a pozadinska sinhronizacija je sve to upisivala i u
+   NJEGOV Supabase red.
+
+   Drugi, tisi efekat istog uzroka: `imaUnosaNaLicnom()` je zbog tih unosa
+   UVEK vracao true, pa `moraSvojPlan()` nikad nije mogao da bude true —
+   carobnjak se nije nametao nikome, i svaki nov korisnik je sletao na
+   vlasnikov plan sa tudjim datumom trke i tudjim tempima.
+
+   Sada je pocetno stanje prazno, pa nov korisnik ide PRAVO u carobnjaka.
+   Vlasnikovi podaci se ne ubacuju iz koda uopste — stizu sa servera pri
+   prijavi ili iz backup fajla (v. STARI_SEED_POTPIS ispod, koji nosi samo
+   identifikatore da bi se zatecen seed prepoznao i obrisao). */
 function seedState(){return {
  v:SCHEMA,
- log:{
-  n1d1:{status:'done',km:7,ts:'2026-06-22'},
-  n1d3:{status:'done',km:8,ts:'2026-06-24'},
-  n1d4:{status:'done',ts:'2026-06-25'},
-  n1d5:{status:'done',km:7,ts:'2026-06-26'},
-  n1d7:{status:'skip',ts:'2026-06-28'},
-  n2d1:{status:'done',km:8,ts:'2026-06-29'},
-  n2d3:{status:'done',km:9,ts:'2026-07-01'}
- },
- knee:[
-  {id:'k1', date:'2026-06-22',act:'Trčanje',pain:1,note:'Bol se javio izmedju 6-7km'},
-  {id:'k2', date:'2026-06-23',act:'Odmor', pain:0,note:'Odmor sve ok dok se ne trci sto se tice samog kolena'},
-  {id:'k3', date:'2026-06-24',act:'Trčanje',pain:0,note:'Prilikom budjenja , koleno za sada okej nema bola, u toku trcanja koleno ok'},
-  {id:'k4', date:'2026-06-25',act:'Snaga',  pain:0,note:''},
-  {id:'k5', date:'2026-06-26',act:'Trčanje',pain:1,note:'Osetio sam koleno vec od drugog kilometra'},
-  {id:'k6', date:'2026-06-27',act:'Odmor', pain:0,note:''},
-  {id:'k7', date:'2026-06-28',act:'Odmor', pain:0,note:'Preskocio sam trcanje zbog petka , jer je islo na gore a ne na bolje'},
-  {id:'k8', date:'2026-06-29',act:'Trčanje',pain:1,note:'Samo na trenutke , brzo je prolazilo gotovo da nije bolelo'},
-  {id:'k9', date:'2026-06-30',act:'Snaga',  pain:1,note:'Ne prilikom snage , nego hodanja na poslu'},
-  {id:'k10',date:'2026-07-01',act:'Trčanje',pain:0,note:'Bez bola'}
- ],
- kg:[
-  {date:'2026-06-22',kg:81.6},
-  {date:'2026-06-29',kg:81}
- ],
- pred:{p1:265,p2:236},
+ log:{},
+ knee:[],
+ kg:[],
+ pred:{},
  predLock:{},
  vdotLog:[],
  moves:{},
@@ -846,6 +839,21 @@ function seedState(){return {
  icu:null,
  ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}
 };}
+
+/* POTPIS ZATECENOG SEEDA — SAMO IDENTIFIKATORI, bez ijednog licnog podatka.
+   Sluzi jednoj stvari: da se na tudjem uredjaju prepozna NEDIRNUT seed iz
+   starih verzija i obrise, pa taj covek ode u carobnjaka umesto da gleda
+   vlasnikov plan.
+   Sami podaci — beleske o kolenu i merenja telesne mase — UKLONJENI su iz
+   koda. Ranije su stajali ovde u citljivom obliku, pa ih je mogao procitati
+   svako ko otvori izvor stranice. Vlasnikovi stvarni podaci zive u Supabase-u
+   i u backup fajlovima; na nov uredjaj stizu prijavom, ne iz koda. */
+const STARI_SEED_POTPIS = {
+  log:  ['n1d1','n1d3','n1d4','n1d5','n1d7','n2d1','n2d3'],
+  knee: ['k1','k2','k3','k4','k5','k6','k7','k8','k9','k10'],
+  kg:   ['2026-06-22','2026-06-29'],
+  pred: ['p1','p2']
+};
 
 /* ============ POMOĆNE (čiste funkcije) ============ */
 const pad2=n=>String(n).padStart(2,'0');
@@ -7175,6 +7183,49 @@ function imaUnosaNaLicnom(){
   return false;
 }
 function moraSvojPlan(){ return !S.genPlan && !jeVlasnik() && !imaUnosaNaLicnom(); }
+/* ============================================================
+   CIJI SU PODACI NA OVOM UREDJAJU.
+
+   Vlasnikov licni plan i njegova istorija ne smeju da dodju ni do koga osim
+   do njega. Do sada su dolazili do svih: `seedState()` je upisivao njegove
+   treninge, beleske o kolenu i merenja mase svakom novom korisniku, a to se
+   pozadinskom sinhronizacijom prenosilo i u TUDJ Supabase red.
+
+   Poziva se posle `sbLoad()` (dakle kad se zna ciji je nalog) i jos jednom u
+   `sbInit()` posto se sesija potvrdi — jer pri prvom pokretanju na novom
+   uredjaju covek jos nije prijavljen.
+   ============================================================ */
+function stanjeNetaknuto(){
+  return !S.genPlan
+    && Object.keys(S.log||{}).length===0
+    && (S.knee||[]).length===0
+    && (S.kg||[]).length===0
+    && Object.keys(S.pred||{}).length===0;
+}
+/* Da li na uredjaju stoji ZATECEN, NEDIRNUT vlasnikov seed iz starih verzija.
+   Provera je namerno stroga (podskup potpisa, bez ijednog viska): ako je covek
+   bilo sta svoje uneo — makar jedan trening ili jedno merenje — nista se ne
+   dira, jer bi mu se time obrisao sopstveni rad. Tada ostaje traka „Ovo nije
+   tvoj plan" i on sam bira kada ce napraviti svoj. */
+function nosiTudjuIstoriju(){
+  if(S.genPlan) return false;
+  const podskup=(imamo,potpis)=>imamo.every(x=>potpis.includes(x));
+  const logK=Object.keys(S.log||{}), logP=STARI_SEED_POTPIS.log;
+  const kneeK=(S.knee||[]).map(k=>k&&k.id), kneeP=STARI_SEED_POTPIS.knee;
+  const kgK=(S.kg||[]).map(x=>x&&x.date), kgP=STARI_SEED_POTPIS.kg;
+  const predK=Object.keys(S.pred||{}), predP=STARI_SEED_POTPIS.pred;
+  if(!podskup(logK,logP)||!podskup(kneeK,kneeP)||!podskup(kgK,kgP)||!podskup(predK,predP)) return false;
+  return logK.length>0||kneeK.length>0||kgK.length>0;   /* ima sta da se cisti */
+}
+function uskladiVlasnickePodatke(){
+  /* Vlasniku se nista ne UBACUJE iz koda — njegovi podaci dolaze sa servera
+     (sbPull) ili iz backup fajla. Ovde se samo cisti tudji uredjaj. */
+  if(jeVlasnik()) return false;
+  if(!nosiTudjuIstoriju()) return false;
+  S.log={}; S.knee=[]; S.kg=[]; S.pred={}; S.predLock={}; S.vdotLog=[];
+  preracunajVdotLog(); rebuildDateIndex(); save();
+  return true;
+}
 /* blaza varijanta — tudji plan, ali sa vec upisanim treninzima */
 function tudjPlanSaUnosima(){ return !S.genPlan && !jeVlasnik() && imaUnosaNaLicnom(); }
 async function posaljiUputstvo(opcije){
@@ -8428,6 +8479,11 @@ async function sbInit(){
 
   if(!sbHasSession()){ sbShowGate(err||''); return; }
   sbHideGate();
+  /* Sveza prijava menja jeVlasnik(), a time i sta Danas ekran prikazuje
+     (traka „Ovo nije tvoj plan"). Ako je sesija upravo usvojena iz hash-a,
+     ekran je crtan pre nje — iscrtaj ponovo. */
+  uskladiVlasnickePodatke();   /* tek sada se pouzdano zna ciji je nalog */
+  if(h){ renderHeader(); PAGES[ACTIVE](); }
   /* tek sada se pouzdano zna CIJI je ovo nalog, pa i da li ima svoj plan */
   if(moraSvojPlan()) openWizard();
   let remoteAt;
@@ -8492,9 +8548,18 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 
+/* SESIJA SE UCITAVA PRE PRVOG ISCRTAVANJA.
+   Ranije je `sbLoad()` stajao ISPOD `setPage('danas')`, pa je Danas ekran prvi
+   put crtan dok je SB jos bio prazan objekat: sbAuthed() -> false, dakle i
+   jeVlasnik() -> false, pa se vlasniku prikazivala traka „Ovo nije tvoj plan".
+   Posle toga se Danas vise nije iscrtavao, pa je traka ostajala do prve
+   promene taba — svaki put pri otvaranju aplikacije.
+   Isti problem je postojao i dok se vlasnik prepoznavao po mejlu (SB.email je
+   bio jednako prazan), samo nije bio primecen. */
+if(typeof sbLoad==='function')sbLoad();
+uskladiVlasnickePodatke();   /* ciji su podaci — pre prvog iscrtavanja */
 renderHeader();
 setPage('danas');
-if(typeof sbLoad==='function')sbLoad(); /* SB mora biti učitan iz localStorage PRE handleOAuthReturn-a, koji mu treba za sbToken() */
 handleOAuthReturn();
 sbInit();
 if(S.strava&&navigator.onLine&&Date.now()-(S.strava.lastSync||0)>3600000)stravaSync(false);
