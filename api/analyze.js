@@ -357,6 +357,17 @@ Analiziraj:
 - DA LI SU LAKA TRČANJA ostajala lagana ili je trkač konstantno preforsirao.
 - Konkretna, iskrena procena: ide li ka cilju (${goalDesc}) ili ne, i šta je najveći ograničavajući faktor SADA (izdržljivost, obim, brzina, doslednost, oporavak).
 
+ŠTA DOLAZI (ako je dat plan narednih nedelja):
+Poslednje 2-3 rečenice posveti onome što SLEDI, povezano sa onim što si upravo pročitao iz brojeva. Ovo je najkorisniji deo — reci trkaču na šta da pazi u narednim nedeljama.
+- Poveži stanje sa planom: ako oporavak posustaje a sledi najteža nedelja, reci to. Ako obim skače više od 10% ka nedelji koja nosi i tešku sesiju, upozori.
+- Deload nedelja NIJE greška u planu i ne komentariši je kao pad forme — to je namerno rasterećenje.
+- Ako je kontrolna trka (TIME TRIAL) blizu, reci šta iz dosadašnjih brojeva govori o realnom očekivanju.
+
+GRANICA KOJU NE PRELAZIŠ:
+Plan je već napravljen po proverenoj metodologiji (Daniels/Pfitzinger) i računa periodizaciju, taper i rast obima. NE PREPISUJEŠ PLAN. Ne izmišljaj nove treninge, ne menjaj broj ponavljanja, deonice ni ciljne tempove, i ne predlaži zamenu jedne sesije drugom.
+Tvoj posao je IZVOĐENJE: kako pristupiti onome što već stoji u planu. Dozvoljeno ti je da kažeš: da lagane dane treba trčati stvarno lagano, da se sesija pomeri za dan kad je oporavak loš, da se prekine trening ako tempo padne, da se obrati pažnja na hidrataciju po vrućini, ili da se javi treneru/lekaru kod uporne boli.
+Ako iskreno misliš da je nešto u planu prezahtevno za trenutno stanje trkača, reci TO kao zapažanje ("sledeća nedelja je 12% skok, uz HRV koji pada — vredi razmisliti o ponavljanju ove nedelje"), a ne kao novi plan.
+
 NIKAD ne izmišljaj tačne buduće tempove ni VDOT projekcije sa lažnom preciznošću. Ako trend nije jasan ili ima premalo podataka, reci to pošteno. Ako trkač napreduje, reci to jasno — ne traži manu po svaku cenu. Bez praznih motivacionih fraza; svaka rečenica prati iz brojeva.`;
 
   let msg = `${zoneBlok ? `ZONE PULSA OVOG TRKAČA: ${zoneBlok}\n\n` : ''}CILJ: VDOT ${trend.cilj} (${goalDesc}). POČETNI VDOT: ${trend.baseline}.\n\nISTORIJA VDOT-a (hronološki):\n`;
@@ -389,6 +400,22 @@ NIKAD ne izmišljaj tačne buduće tempove ni VDOT projekcije sa lažnom precizn
   if (Array.isArray(trend.obim) && trend.obim.length) {
     msg += `\n\nNEDELJNI OBIM (početak nedelje → km):\n` +
       trend.obim.slice(-30).map(o => `${o.od}: ${o.km} km`).join('\n');
+  }
+
+  /* ŠTA DOLAZI. Bez ovoga je analiza sudila samo o prošlosti: mogla je da
+     kaže "obim raste prebrzo" ne znajući da sledeće nedelje ide deload, ili
+     da propusti da najteža nedelja pada baš kad oporavak posustaje. */
+  if (Array.isArray(trend.naredno) && trend.naredno.length) {
+    msg += `\n\nPLAN NAREDNIH NEDELJA (već napravljen — komentarišeš izvođenje, ne menjaš ga):\n` +
+      trend.naredno.slice(0, 6).map(n => {
+        const red = [`N${n.nedelja} (od ${n.od}): ${n.km} km${n.deload ? ' · DELOAD (namerno rasterećenje)' : ''}`];
+        if (n.dugo) red.push(`  dugo trčanje: ${n.dugo}`);
+        (Array.isArray(n.kvalitetni) ? n.kvalitetni : []).forEach(k => red.push('  ' + String(k).slice(0, 160)));
+        return red.join('\n');
+      }).join('\n');
+    if (trend.doTrke != null && isFinite(trend.doTrke)) {
+      msg += `\n\nDO TRKE: ${trend.doTrke} dana.`;
+    }
   }
 
   try {

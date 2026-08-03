@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='131'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='132'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6965,7 +6965,34 @@ function trendSummary(){
   const opor=Object.keys(S.wellness||{}).sort().slice(-120)
     .map(k=>S.wellness[k]).filter(z=>z&&(z.hrv!=null||z.pulsUMiru!=null||z.sanH!=null||z.ctl!=null));
   return {treninzi:out, vdot:vl, baseline:baselineVdot(), cilj:goalVdotActive(),
-          obim, hrZones:(S.strava&&S.strava.hrZones)||null, oporavak:opor};
+          obim, hrZones:(S.strava&&S.strava.hrZones)||null, oporavak:opor,
+          naredno:planUnapred(4), doTrke:diffD(TODAY,CUR_RACE)};
+}
+/* SAZETAK NAREDNIH NEDELJA — da trend analiza sudi o onome sto DOLAZI, a ne
+   samo o onome sto je proslo. Bez ovoga je mogla da kaze "obim raste prebrzo"
+   ne znajuci da sledece nedelje ide deload, ili da propusti da najteza nedelja
+   pada bas kad oporavak posustaje.
+
+   SAZETO NAMERNO: salju se kvalitetni dani i dugo trcanje, ne svaki lagan dan.
+   Lagani dani nose obim, koji je vec dat brojem — njihovi opisi bi samo
+   napunili poruku bez ijedne nove informacije. */
+function planUnapred(nedelja){
+  const out=[];
+  for(const w of CUR_PLAN){
+    const kraj=addD(w.start,6);
+    if(kraj<TODAY) continue;                 /* nedelja je prosla */
+    if(out.length>=(nedelja||4)) break;
+    const kvalitetni=[], dugo=[];
+    w.days.forEach(d=>{
+      if(d.rest||d.tag==='snaga') return;
+      const opis=String(d.desc||'').split('\n')[0].replace(/\s*·.*$/,'');
+      if(d.tag==='lr') dugo.push((d.km||0)+' km');
+      else if(d.tag!=='lako'&&d.tag!=='rw') kvalitetni.push(opis);
+    });
+    out.push({ nedelja:w.w, od:w.start, km:Math.round(weekPlanKm(w)*10)/10,
+               deload:/DELOAD/i.test(w.focus||''), kvalitetni, dugo:dugo.join(' + ')||null });
+  }
+  return out;
 }
 function chartPred(pc){
   const W=340,H=152,L=36,R=8,B=128,T=10;
