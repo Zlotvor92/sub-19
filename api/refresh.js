@@ -1,4 +1,4 @@
-/* SUB-19 · Strava OAuth — osvežavanje isteklog access tokena.
+/* SUB-20 · Strava OAuth — osvežavanje isteklog access tokena.
 
    IZMENE U ODNOSU NA PRETHODNU VERZIJU (bezbednost):
 

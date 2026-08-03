@@ -70,10 +70,15 @@ export default async function handler(req, res) {
       if (errBody.includes('DAILY_LIMIT_EXCEEDED')) {
         return res.status(429).json({ error: 'Dnevni limit prijava (' + DAILY_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
       }
-      // Tabela/funkcija možda još nije podešena (stara šema) — ne blokiramo
-      // korisnika zbog toga, samo nastavljamo bez brojanja za ovaj poziv.
+      /* Tabela/funkcija mozda jos nije podesena (stara sema) — ne blokiramo
+         korisnika, ali se to mora videti u logovima (v. isti komentar u
+         api/analyze.js): limit koji tiho otkaze izgleda kao limit koji radi. */
+      console.warn('[limit] brojac nije radio (bug_report_usage) — propusteno bez brojanja. HTTP %s: %s',
+        rl.status, errBody.slice(0, 200));
     }
-  } catch (e) { /* mrežni problem ovde ne sme da obori celu prijavu */ }
+  } catch (e) {
+    console.warn('[limit] brojac nedostupan (bug_report_usage) — propusteno bez brojanja: %s', e.message);
+  }
 
   let body;
   try {
@@ -112,7 +117,12 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from: process.env.REPORT_FROM,
         to: process.env.REPORT_TO,
-        subject: 'SUB-20 bug — ' + description.slice(0, 60),
+        /* NOVI RED SE UKLANJA IZ NASLOVA. Naslov gradi korisnicki tekst, a
+           CR/LF u zaglavlju mejla je klasican put za ubacivanje dodatnih
+           zaglavlja (Bcc, Reply-To). Resend prima JSON i sam bi to najverovatnije
+           odbio, ali oslanjati se na to je pogresan red — cisti se ovde.
+           Dokazano testom: "Bug\nBcc: napadac@..." je prolazio do naslova. */
+        subject: ('SUB-20 bug — ' + description.slice(0, 60)).replace(/[\r\n]+/g, ' '),
         html
       })
     });

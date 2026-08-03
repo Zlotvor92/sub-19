@@ -1,0 +1,3 @@
+# Testovi i CI ne idu u deploy — nisu deo aplikacije.
+test/
+.github/

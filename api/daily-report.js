@@ -53,12 +53,31 @@ async function fetchStats(url, key) {
   return (rows && rows[0]) || {};
 }
 
+/* PAGINIRANO. Ranije je ovo bio JEDAN upit bez limita, a `data` je CEO JSON
+   blob stanja svakog korisnika (plan, dnevnik, VDOT istorija, perKm nizovi po
+   treningu, wellness mapa — lako 200-500 KB po aktivnom korisniku). Dva
+   problema: sve to je odjednom ulazilo u memoriju funkcije, i — tise, pa gore —
+   PostgREST ima podrazumevani `max-rows`, pa bi preko te granice korisnici
+   TIHO ispadali iz izvestaja bez ikakvog traga da lista nije potpuna.
+   Ista klasa greske je vec ispravljena za Admin API listu (fetchUserList);
+   ovaj upit je tada promasen. */
 async function fetchRawUserState(url, key) {
-  const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/user_state?select=user_id,data,updated_at', {
-    headers: { apikey: key, Authorization: 'Bearer ' + key }
-  });
-  if (!r.ok) throw new Error('user_state upit nije uspeo (' + r.status + ')');
-  return await r.json();
+  const PER = 200, MAX_PAGES = 50, out = [];
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const od = page * PER, doIdx = od + PER - 1;
+    const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/user_state?select=user_id,data,updated_at&order=user_id.asc', {
+      headers: {
+        apikey: key, Authorization: 'Bearer ' + key,
+        Range: od + '-' + doIdx, 'Range-Unit': 'items'
+      }
+    });
+    if (!r.ok && r.status !== 206) throw new Error('user_state upit nije uspeo (' + r.status + ')');
+    const j = await r.json();
+    const red = Array.isArray(j) ? j : [];
+    out.push(...red);
+    if (red.length < PER) break;
+  }
+  return out;
 }
 
 async function fetchAiUsageDays(url, key) {

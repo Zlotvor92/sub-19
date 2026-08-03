@@ -123,9 +123,21 @@ export default async function handler(req, res) {
         const nasi = (Array.isArray(lista) ? lista : [])
           .filter(e => e && typeof e.external_id === 'string' && /^sub19-/.test(e.external_id) && e.id != null)
           .slice(0, MAX_DOGADJAJA);
-        for (const e of nasi) {
-          await fetch('https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
-                      '/events/' + encodeURIComponent(e.id), { method: 'DELETE', headers: zaglavlja });
+        /* BRISANJE IDE PARALELNO, U MALIM GRUPAMA.
+           Ranije je bila obicna sekvencijalna petlja: do 60 zahteva jedan za
+           drugim, bez roka i bez provere odgovora. Na 200-400 ms po pozivu to
+           je 12-25 s samo za brisanje, pre GET-a i zavrsnog POST-a — dovoljno
+           da funkciju prekine vremenski limit USRED petlje. Posledica je bila
+           gora od neuspeha: kalendar delimicno obrisan, novi treninzi nikad
+           poslati. Grupe po 5 drze ukupno vreme u sekundama, a `sub19-` filter
+           i dalje garantuje da se tudji dogadjaji ne diraju. */
+        const GRUPA = 5;
+        for (let i = 0; i < nasi.length; i += GRUPA) {
+          await Promise.all(nasi.slice(i, i + GRUPA).map(e =>
+            fetch('https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
+                  '/events/' + encodeURIComponent(e.id), { method: 'DELETE', headers: zaglavlja })
+              .catch(() => null)   /* pojedinacan neuspeh ne sme da obori ceo posao */
+          ));
         }
       }
     } catch (e) {

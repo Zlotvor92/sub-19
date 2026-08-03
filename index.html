@@ -2,7 +2,11 @@
 <html lang="sr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<!-- `user-scalable=no` je UKLONJEN: blokirao je pinch-zoom, sto je krsenje
+     WCAG 2.1 SC 1.4.4 (Resize Text). Za aplikaciju koja se gleda znojavim
+     rukama posle treninga to nije sitnica. Slucajan zoom pri dvostrukom dodiru
+     i dalje je sprečen preko `touch-action:manipulation` u CSS-u. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SUB-20 · Trkački plan</title>
 <meta name="theme-color" content="#0A0A0F">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -175,7 +179,10 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .f-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .f-field{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
 .f-field.full{grid-column:1/-1}
-.f-field label{display:block;font-size:.66rem;font-weight:700;color:var(--txt2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+/* .f-lbl = vizuelno ista labela, ali za sadrzaj koji NIJE polje za unos
+   (izracunata vrednost, grupa dugmadi). <label> bez `for` je pogresan
+   element i citac ekrana ga prijavljuje kao praznu labelu. */
+.f-field label,.f-field .f-lbl{display:block;font-size:.66rem;font-weight:700;color:var(--txt2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
 .wseg-wrap{background:linear-gradient(180deg,rgba(250,46,85,.06),var(--card2) 70%);border-color:rgba(250,46,85,.2)}
 .wseg-title{display:block;font-size:.7rem;font-weight:800;color:var(--txt);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
 .more-details{padding:0;background:transparent;border:1px solid var(--line);border-radius:12px}
@@ -582,8 +589,8 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 <script>
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
-const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='139'; /* mora se poklapati sa APP_VERSION u sw.js */
+const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
+const APP_VERSION='143'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -831,6 +838,12 @@ function seedState(){return {
  alts:{},
  genPlan:null,
  strava:null,
+ /* Oporavak (intervals.icu) i sama veza. Bili su dodati bez upisa u semu, pa
+    su postojali samo ako ih je icuSync/icuFinish usput napravio — a svako
+    citanje je moralo da ih rucno cuva (`S.wellness||{}`). To je isti obrazac
+    koji je vec jednom oborio unos tempa preko predLock-a; zato su sad ovde. */
+ wellness:{},
+ icu:null,
  ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}
 };}
 
@@ -889,11 +902,16 @@ function riegel(tempoSec,q){return tempoSec*q*Math.pow(5/q,1.06);}
    (plan gradi od trenutne forme ~20:40 ka cilju 19:30 ≈ VDOT 51.1; ne ka trenutnom
    PB ≈ VDOT 48), zato zonske tempove ne izvodimo iz VDOT-a. */
 function vo2(tMin){ return 0.8+0.1894393*Math.exp(-0.012778*tMin)+0.2989558*Math.exp(-0.1932605*tMin); }
-function vdotFromRace(distM,sec){
-  const tMin=sec/60, v=distM/tMin;
-  const vo2max=(-4.60+0.182258*v+0.000104*v*v);
-  return vo2max/vo2(tMin);
-}
+/* vdotFromRace JE OVDE NAMERNO IZOSTAVLJEN.
+   Postojale su DVE identicne definicije — jedna ovde, druga u engine bloku
+   (uz vo2AtV/pctVo2max). Kasnija je tiho gazila raniju; posledice nije bilo
+   samo zato sto su formule slucajno bile iste. To je ista zamka koja je u
+   ovom fajlu vec dvaput uhvacena i preimenovanjem resena: riegel -> riegelDist
+   i workLapsTempo -> genWorkLapsTempo, oba uz komentar da bi tiho gazenje
+   „DEGRADIRALO tacnost bez ijedne greske koja bi to signalizirala". Treci
+   slucaj je ostao; prva izmena jedne od dve kopije napravila bi bag koji se
+   nigde ne prijavljuje. Sada postoji tacno jedna definicija (v. engine blok),
+   a `vdotFrom5k` ispod je poziva. */
 function vdotFrom5k(sec){ return vdotFromRace(5000,sec); }
 /* VDOT iz kvalitetne sesije: ostvaren tempo + dužina Q-segmenta -> Riegel 5K -> VDOT */
 function vdotFromQuality(paceSec,qKm){ return vdotFrom5k(riegel(paceSec,qKm)); }
@@ -990,7 +1008,19 @@ function rebuildDateIndex(){
          i pokvario sortiranje/prikaz svuda nizvodno. */
       const mv=S.moves&&S.moves[d.id];
       d.date=(typeof mv==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(mv))?mv:d.origDate;
-      BY_DATE[d.date]=d; DATED.push(d);
+      /* SUDAR DATUMA. Format se validira gore, ali ne i JEDINSTVENOST — a
+         swapDays uvek pise ispravne parove dok importBackup prihvata proizvoljan
+         S.moves. Dva dana na istom datumu su ranije znacila da jedan tiho NESTANE
+         iz BY_DATE (poslednji upis pobedjuje): ne pojavi se na Danas, ne dobije
+         Strava sinhronizaciju i ne udje u trend analizu, bez ijedne poruke.
+         Sada pomereni dan ustupa mesto i vraca se na svoju izvornu poziciju —
+         gore je izgubiti pomeranje nego ceo dan. */
+      if(BY_DATE[d.date] && BY_DATE[d.date]!==d){
+        if(d.origDate && !BY_DATE[d.origDate]){ d.date=d.origDate; }
+        else { d.date=d.origDate||d.date; }
+      }
+      if(!BY_DATE[d.date]) DATED.push(d);
+      BY_DATE[d.date]=d;
     }
   });});
   DATED.sort((a,b)=>a.date<b.date?-1:1);
@@ -1221,10 +1251,37 @@ function sessKind(d){
 /* ============ STANJE + STORAGE ============ */
 let LS_OK=true;try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){LS_OK=false;}
 let MEM=null;
+/* ZAPISI O OPORAVKU SU BROJEVI — i to se ovde NAMECE, ne pretpostavlja.
+   Server (/api/wellness) ih vec pretvara u brojeve (`broj()` u izvuci()), pa
+   je ziv put bezbedan. Ali UVOZ BACKUPA i sbPull() upisuju u S.wellness sta
+   god stoji u JSON-u, a te vrednosti idu pravo u HTML (kartica Oporavak, HRV
+   grafikon, red „Tog jutra" na kartici treninga) — dokazano napadom: zapis sa
+   hrv = "\"><img src=x onerror=...>" izlazi iz atributa i izvrsava kod.
+   Posto su to merenja, pretvaranje u broj je i tacno i dovoljno: sve sto nije
+   broj postaje null i nestaje iz prikaza. */
+function cistWellness(w){
+  if(!w||typeof w!=='object'||Array.isArray(w)) return {};
+  const broj=v=>(v==null||v===''||isNaN(+v))?null:+v;
+  const out={};
+  for(const k of Object.keys(w)){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(k)) continue;      /* kljuc je datum, nista drugo */
+    const z=w[k]; if(!z||typeof z!=='object') continue;
+    const c={datum:k};
+    for(const polje of ['hrv','pulsUMiru','sanH','sanOcena','tezina','ctl','atl','svezina'])
+      c[polje]=broj(z[polje]);
+    out[k]=c;
+  }
+  return out;
+}
 function migrate(o){
   if(!o||typeof o!=='object')return null;
-  if(!o.log)return null;
+  if(!o.log||typeof o.log!=='object'||Array.isArray(o.log))return null;
   o.v=o.v||1;
+  /* Stanje iz NOVIJE seme se odbija. Ranije je `o.v=SCHEMA` na kraju bezuslovno
+     spustao verziju, pa bi backup napravljen u novijoj verziji aplikacije bio
+     protumacen po starim pravilima i tiho pogresno prikazan — a korisnik bi
+     video uredan uvoz. Bolje jasno odbiti i traziti azuriranje aplikacije. */
+  if(typeof o.v==='number' && o.v>SCHEMA) return null;
   if(o.v<2){o.strava=o.strava||null;o.predLock=o.predLock||{};o.v=2;} /* v1→v2: Strava sync polja — postojeći unosi se NIKAD ne brišu */
   if(o.v<3){o.vdotLog=o.vdotLog||[];o.v=3;} /* v2→v3: VDOT istorija forme — postojeći unosi netaknuti */
   if(o.v<4){o.moves=o.moves||{};o.v=4;} /* v3→v4: zamena dana (swap) — postojeći raspored netaknut (prazna mapa = sve na originalnim mestima) */
@@ -1234,7 +1291,12 @@ function migrate(o){
      pa je stanje sa v>=2 bez tog polja obaralo unos tempa i Strava sync
      (S.predLock[pid] na undefined -> TypeError). Svi ostali ključevi su ovde
      bezuslovno — i ovaj mora biti. */
-  o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
+  /* v6→v7: `wellness` (oporavak sa intervals.icu) i `icu` (veza) su postojali
+     u kodu ali nikad nisu bili upisani u semu — svako citanje ih je moralo
+     rucno cuvati. Prazna mapa / null = ponasanje IDENTICNO kao pre. */
+  if(o.v<7){o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.v=7;}
+  o.wellness=cistWellness(o.wellness);
+  o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
   o.v=SCHEMA;
   return o;
 }
@@ -2167,7 +2229,24 @@ function workLapsDetail(laps,specs,hrByLap){
 let S=loadState();save();
 setActivePlan(); /* CUR_PLAN/CUR_PRED — pre rebuildDateIndex, koji ih čita */
 rebuildDateIndex(); /* prvo punjenje BY_ID/BY_DATE/DATED — sad kad S.moves postoji */
-const TODAY=todayStr();
+/* DANASNJI DAN JE ZIV, NE ZAMRZNUT.
+   Ranije `const TODAY=todayStr()` — izracunato JEDNOM, pri ucitavanju, a cita
+   se na 37 mesta (Danas kartica, streak, kneeStatus, injuryProposal, mapa
+   tela, slanje na sat, trend, naziv backup fajla, podrazumevan datum u formi).
+   Instalirana PWA ne restartuje se danima: ko otvori app u 23:50 i pogleda je
+   u 00:30 video je JUCERASNJI trening kao „Danas", a „Zavrsi trening" bi
+   upisao jucerasnji datum. Da je scenario stvaran vec je bilo poznato — v.
+   icuAutoSync, koji jedini uzima svez datum uz komentar „app ume da stoji
+   otvorena preko ponoci".
+   Sada je `let`, a `osveziDan()` se poziva pri svakom povratku u aplikaciju i
+   pri svakoj promeni stranice; kad se datum promeni, ekran se ponovo iscrta. */
+let TODAY=todayStr();
+function osveziDan(){
+  const t=todayStr();
+  if(t===TODAY)return false;
+  TODAY=t;
+  return true;
+}
 const $=s=>document.querySelector(s);
 const PAGES={danas:renderDanas,plan:renderPlan,prog:renderProg,koleno:renderKnee,pred:renderPred};
 let ACTIVE='danas';
@@ -2190,6 +2269,7 @@ function renderHeader(){
 }
 
 function setPage(p){
+  osveziDan();   /* dan se mogao promeniti dok je app stajala otvorena */
   ACTIVE=p;
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===p));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -2289,16 +2369,18 @@ function formHTML(d){
   const predIds=(d.tag==='int'||d.tag==='tempo')?predRowsFor(d):[];
   let workBlock='';
   if(predIds.length){
-    workBlock=`<div class="f-field full wseg-wrap">
-      <label class="wseg-title">Radni deo — ostvaren tempo</label>`;
+    /* Naslov GRUPE, ne labela jednog polja — ispod moze stajati vise radnih
+       segmenata, svaki sa svojim unosom (koji ima sopstveni aria-label). */
+    workBlock=`<div class="f-field full wseg-wrap" role="group" aria-label="Radni deo — ostvaren tempo">
+      <span class="wseg-title">Radni deo — ostvaren tempo</span>`;
     predIds.forEach(pid=>{
       const r=CUR_PRED.find(x=>x.id===pid);
       const cur=S.pred[pid];
       const ep=effectivePace(d,r);
-      workBlock+=`<div class="wseg" data-wseg="${pid}" data-q="${r.q}">
+      workBlock+=`<div class="wseg" data-wseg="${esc(pid)}" data-q="${esc(r.q)}">
         <div class="wseg-l">${esc(r.l.split('·')[1]||r.l)} · plan ${fmtTempo(ep)} /km${S.alts&&S.alts[d.id]&&S.alts[d.id].pace!=null?' <small style="color:var(--pink)">(tvoj cilj)</small>':''} · Q ${fmtKm(r.q)} km</div>
-        <input class="wseg-in" inputmode="numeric" placeholder="356 = 3:56" value="${cur?fmtTempo(cur):''}" data-wpin="${pid}">
-        <div class="wseg-out" data-wout="${pid}">${vdotDeltaHTML(pid,cur)}</div>
+        <input id="wseg-${esc(pid)}" class="wseg-in" inputmode="numeric" placeholder="356 = 3:56" value="${cur?fmtTempo(cur):''}" data-wpin="${esc(pid)}" aria-label="Ostvaren tempo radnog dela">
+        <div class="wseg-out" data-wout="${esc(pid)}">${vdotDeltaHTML(pid,cur)}</div>
       </div>`;
       /* Tiho preskakanje je isto zamka kao tiho upisivanje pogresnog broja. */
       if(cur==null && l && l.autoOdbijen)
@@ -2311,10 +2393,10 @@ function formHTML(d){
   const _op=oporavakZa(l.runDate||l.ts||d.date);
   const oporavakRed=_op?(()=>{
     const d2=[];
-    if(_op.hrv!=null) d2.push(`HRV <b style="color:${bojaOdstupanja(_op.hrvOdstupanje)}">${_op.hrv}</b>${_op.hrvOdstupanje!=null?` <small>(${_op.hrvOdstupanje>=0?'+':''}${_op.hrvOdstupanje}%)</small>`:''}`);
-    if(_op.pulsUMiru!=null) d2.push(`puls u miru <b>${_op.pulsUMiru}</b>${_op.pulsOdstupanje!=null?` <small>(${_op.pulsOdstupanje>=0?'+':''}${_op.pulsOdstupanje})</small>`:''}`);
-    if(_op.sanH!=null) d2.push(`san <b style="color:${_op.sanH<6?'var(--red)':_op.sanH<7?'var(--amber)':'var(--green)'}">${_op.sanH} h</b>`);
-    if(_op.svezina!=null) d2.push(`svežina <b>${_op.svezina}</b>`);
+    if(_op.hrv!=null) d2.push(`HRV <b style="color:${esc(bojaOdstupanja(_op.hrvOdstupanje))}">${esc(_op.hrv)}</b>${_op.hrvOdstupanje!=null?` <small>(${_op.hrvOdstupanje>=0?'+':''}${esc(_op.hrvOdstupanje)}%)</small>`:''}`);
+    if(_op.pulsUMiru!=null) d2.push(`puls u miru <b>${esc(_op.pulsUMiru)}</b>${_op.pulsOdstupanje!=null?` <small>(${_op.pulsOdstupanje>=0?'+':''}${esc(_op.pulsOdstupanje)})</small>`:''}`);
+    if(_op.sanH!=null) d2.push(`san <b style="color:${_op.sanH<6?'var(--red)':_op.sanH<7?'var(--amber)':'var(--green)'}">${esc(_op.sanH)} h</b>`);
+    if(_op.svezina!=null) d2.push(`svežina <b>${esc(_op.svezina)}</b>`);
     return d2.length?`<div class="note-src" style="margin:2px 0 8px">🛌 Tog jutra: ${d2.join(' · ')}</div>`:'';
   })():'';
   const canAnalyze=(d.tag==='int'||d.tag==='tempo'||d.tag==='lako'||d.tag==='lr')&&l.km&&l.sec;
@@ -2329,29 +2411,38 @@ function formHTML(d){
   const aiBlock=canAnalyze?`<div class="f-field full" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
       ${oporavakRed}
       <div class="ai-datasrc" style="font-size:.72rem;color:var(--txt3);margin-bottom:8px">${dataNote}</div>
-      <button type="button" id="ai-go-${d.id}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
-      <div id="ai-out-${d.id}" class="ai-out"></div>
+      <button type="button" id="ai-go-${esc(d.id)}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
+      <div id="ai-out-${esc(d.id)}" class="ai-out"></div>
     </div>`:'';
+  /* PRISTUPACNOST: svaka labela dobija `for`, svako polje `id`. Ranije nijedna
+     labela nije bila povezana sa svojim poljem — citac ekrana ih nije spajao,
+     a dodir na labelu nije fokusirao polje. `id` nosi ID DANA jer ista forma
+     postoji i na Danas kartici i u listu dana, pa bi fiksni id bio duplikat. */
+  const fid=f=>`f-${f}-${esc(d.id)}`;
   return `<div class="f-grid" data-day="${esc(d.id)}">
-    <div class="f-field"><label>Distanca (km) <span class="f-req">*</span></label><input type="text" inputmode="decimal" data-f="km" value="${l.km!=null?String(l.km).replace('.',','):''}" placeholder="npr. 8"></div>
-    <div class="f-field"><label>Vreme <span class="f-req">*</span></label><input type="text" inputmode="numeric" data-f="sec" value="${l.sec?fmtClock(l.sec):''}" placeholder="4233 = 42:33"></div>
-    <div class="f-field"><label>Pros. tempo</label><div class="calc" data-tempo>${tempo}</div></div>
-    <div class="f-field"><label>Pros. puls</label><input type="text" inputmode="numeric" data-f="hr" value="${l.hr!=null?esc(l.hr):''}" placeholder="bpm"></div>
+    <div class="f-field"><label for="${fid('km')}">Distanca (km) <span class="f-req">*</span></label><input id="${fid('km')}" type="text" inputmode="decimal" data-f="km" value="${l.km!=null?String(l.km).replace('.',','):''}" placeholder="npr. 8"></div>
+    <div class="f-field"><label for="${fid('sec')}">Vreme <span class="f-req">*</span></label><input id="${fid('sec')}" type="text" inputmode="numeric" data-f="sec" value="${l.sec?fmtClock(l.sec):''}" placeholder="4233 = 42:33"></div>
+    <div class="f-field"><span class="f-lbl" id="lbl-tempo-${esc(d.id)}">Pros. tempo</span><div class="calc" data-tempo role="status" aria-labelledby="lbl-tempo-${esc(d.id)}">${tempo}</div></div>
+    <div class="f-field"><label for="${fid('hr')}">Pros. puls</label><input id="${fid('hr')}" type="text" inputmode="numeric" data-f="hr" value="${l.hr!=null?esc(l.hr):''}" placeholder="bpm"></div>
     ${workBlock}
     <details class="f-field full more-details"><summary>Više detalja (RPE, koleno, masa, datum, beleška)</summary>
     <div class="more-grid">
-    <div class="f-field"><label>RPE (1–10)</label><select data-f="rpe">${opt(l.rpe,1,10)}</select></div>
-    <div class="f-field"><label>Bol u kolenu (0–10)</label><select data-f="knee">${opt(l.knee,0,10)}</select></div>
-    <div class="f-field"><label>Telesna masa (kg)</label><input type="text" inputmode="decimal" data-f="kg" value="${l.kg!=null?esc(String(l.kg).replace('.',',')):''}" placeholder="npr. 80,5"></div>
-    <div class="f-field"><label>Datum</label><input type="date" data-f="ts" value="${esc(l.ts||d.date||TODAY)}"></div>
-    <div class="f-field full"><label>Beleška</label><textarea data-f="note" placeholder="Kako je bilo…">${esc(l.note||'')}</textarea></div>
+    <div class="f-field"><label for="${fid('rpe')}">RPE (1–10)</label><select id="${fid('rpe')}" data-f="rpe">${opt(l.rpe,1,10)}</select></div>
+    <div class="f-field"><label for="${fid('knee')}">Bol u kolenu (0–10)</label><select id="${fid('knee')}" data-f="knee">${opt(l.knee,0,10)}</select></div>
+    <div class="f-field"><label for="${fid('kg')}">Telesna masa (kg)</label><input id="${fid('kg')}" type="text" inputmode="decimal" data-f="kg" value="${l.kg!=null?esc(String(l.kg).replace('.',',')):''}" placeholder="npr. 80,5"></div>
+    <div class="f-field"><label for="${fid('ts')}">Datum</label><input id="${fid('ts')}" type="date" data-f="ts" value="${esc(l.ts||d.date||TODAY)}"></div>
+    <div class="f-field full"><label for="${fid('note')}">Beleška</label><textarea id="${fid('note')}" data-f="note" placeholder="Kako je bilo…">${esc(l.note||'')}</textarea></div>
     </div></details>
     ${aiBlock}
     ${l.src==='strava'?`<div class="note-src" style="grid-column:1/-1;margin-top:0">⛓ Podaci povučeni sa Strave${l.lock?' · ručno korigovano (sync više ne prepisuje)':''}</div>`:''}
   </div>`;
 }
 function bindForm(root,d){
-  const g=root.querySelector(`.f-grid[data-day="${d.id}"]`);
+  /* Selektor mora da koristi ISTU vrednost kao atribut (koji je escapovan).
+     Uz validaciju pri uvozu esc() je ovde no-op; ako bi ipak prosao los ID,
+     selektor jednostavno ne nadje element — forma se ne veze, ali se nista
+     ne ubacuje. Otkaz u bezbednom smeru. */
+  const g=root.querySelector(`.f-grid[data-day="${esc(d.id)}"]`);
   if(!g)return;
   g.querySelectorAll('[data-f]').forEach(inp=>{
     const f=inp.dataset.f;
@@ -2384,17 +2475,17 @@ function bindForm(root,d){
       } else if(v){ S.pred[pid]=v; S.predLock[pid]=true; const dl=S.log[d.id]; recordVdot(pid,v,(dl&&(dl.runDate||dl.ts))||d.date,sessKind(d),false,d); }
       else return;
       save();
-      const out=g.querySelector(`[data-wout="${pid}"]`);
+      const out=g.querySelector(`[data-wout="${esc(pid)}"]`);
       if(out)out.innerHTML=vdotDeltaHTML(pid,S.pred[pid]);
     };
     inp.addEventListener('input',wh);
     inp.addEventListener('change',wh);
   });
   /* AI analiza — šalje SAMO podatke koje app već ima (nema novog Strava poziva) */
-  const aiBtn=g.querySelector(`#ai-go-${d.id}`);
+  const aiBtn=g.querySelector(`#ai-go-${esc(d.id)}`);
   if(aiBtn){
     aiBtn.addEventListener('click',async()=>{
-      const out=g.querySelector(`#ai-out-${d.id}`);
+      const out=g.querySelector(`#ai-out-${esc(d.id)}`);
       const l=S.log[d.id]||(S.log[d.id]={});
       /* Limit 2 analize po treningu — da se ne troši kvota bez granice */
       if((l.aiCount||0)>=2){
@@ -2546,15 +2637,15 @@ function altSheetHTML(d){
   let h=`<div class="sh-t">Izmeni trening</div>
     <div class="sh-s">N${d.week.w} · ${dowOf(d.date)} ${fmtDY(d.date)}${edited?' · izmenjen':''}</div>`;
   if(ALT_ERR)h+=`<div style="font-size:.75rem;color:var(--red);margin-bottom:10px">${esc(ALT_ERR)}</div>`;
-  h+=`<div class="f-field full"><label>Tip treninga</label>${segBtns(ALT_TYPES.slice(0,3))}${segBtns(ALT_TYPES.slice(3))}</div>`;
+  h+=`<div class="f-field full" role="group" aria-label="Tip treninga"><span class="f-lbl">Tip treninga</span>${segBtns(ALT_TYPES.slice(0,3))}${segBtns(ALT_TYPES.slice(3))}</div>`;
   if(cur.tag!=='odmor'){
-    h+=`<div class="f-field full" style="margin-top:10px"><label>Kilometraža</label>
+    h+=`<div class="f-field full" style="margin-top:10px"><label for="alt-km">Kilometraža</label>
       <input type="number" inputmode="decimal" step="0.1" min="0" id="alt-km" value="${cur.km!=null?esc(cur.km):''}" placeholder="prazno = bez km (npr. snaga)"></div>`;
-    h+=`<div class="f-field full" style="margin-top:10px"><label>Opis</label>
+    h+=`<div class="f-field full" style="margin-top:10px"><label for="alt-desc">Opis</label>
       <textarea id="alt-desc" placeholder="Šta se radi...">${esc(cur.desc)}</textarea></div>`;
   }
   if(cur.tag==='int'||cur.tag==='tempo'){
-    h+=`<div class="f-field full" style="margin-top:10px"><label>Ciljni tempo radnog dela (m:ss/km)</label>
+    h+=`<div class="f-field full" style="margin-top:10px"><label for="alt-pace">Ciljni tempo radnog dela (m:ss/km)</label>
       <div style="font-size:.72rem;color:var(--txt3);margin-bottom:6px">Ovo vidi AI analiza i kartica treninga kao "plan" — nezavisno od podrazumevanog cilja te nedelje.</div>
       <div style="display:flex;gap:8px">
         <input type="text" inputmode="numeric" id="alt-pace" placeholder="410 = 4:10" value="${cur.pace!=null?fmtTempo(cur.pace):''}" style="flex:1">
@@ -2617,7 +2708,7 @@ function renderAltSheet(d){
    module.exports linije su no-op u browseru (nema 'module' globala) — bezbedno. */
 'use strict';
 /* ============================================================
-   SUB-19 GENERATOR v3 — deterministički engine plana (5K i 10K)
+   SUB-20 GENERATOR v3 — deterministički engine plana (5K, 10K, HM, maraton)
    Tempi: Daniels–Gilbert jednačine (objavljene):
      VO2(v)      = -4.60 + 0.182258·v + 0.000104·v²        [v u m/min]
      %VO2max(t)  = 0.8 + 0.1894393·e^(-0.012778·t) + 0.2989558·e^(-0.1932605·t)   [t u min]
@@ -2863,7 +2954,16 @@ function vdotFromPace(paceSecKm, zone){
     const mid=(lo+hi)/2;
     if(paceForZone(mid,zone) > paceSecKm) lo=mid; else hi=mid;
   }
-  return (lo+hi)/2;
+  /* Vraca `hi`, ne sredinu. paceForZone zaokruzuje na celu sekundu, pa je
+     stepenasta: pretraga zavrsi tacno NA skoku, gde paceForZone(lo) daje
+     jednu sekundu vise nego paceForZone(hi). Sredina (lo+hi)/2 lezi na samoj
+     ivici, pa je zaokruzivanje padalo cas na jednu cas na drugu stranu —
+     mereno: tempo -> VDOT -> tempo je vracao POGRESAN tempo u 595 od 1206
+     kombinacija zona i forme (49%). `hi` je po konstrukciji najmanji VDOT
+     ciji tempo vec JESTE trazeni, pa round-trip pogadja uvek (0/1206).
+     Numericka razlika izmedju dve varijante je 3e-11 VDOT — bez ikakvog
+     uticaja na zabelezene vrednosti (zaokruzuju se na jednu decimalu). */
+  return hi;
 }
 const r1=x=>Math.round(x*10)/10;
 function fmtP(sec){return fmtClock(sec);} /* delegira: identicno za <1h (tempi), ali HM/maraton cilj daje 3:30:00 umesto 210:00 */
@@ -2871,7 +2971,7 @@ function riegelDist(sec, fromM, toM){ return sec*Math.pow(toM/fromM,1.06); } /* 
 
 /* ---------- realnost cilja ---------- */
 /* ============================================================
-   GENERATOR RADI ISKLJUČIVO 5K.
+   GENERATOR: SVAKA DISTANCA IMA SVOJU LOGIKU.
 
    Do v98 je jedna generička mašina pokušavala da opsluži 5K, 10K, HM i
    maraton kroz `qMix`/`useM` grananja i zajedničke formule za obim i dugo
@@ -2884,7 +2984,11 @@ function riegelDist(sec, fromM, toM){ return sec*Math.pow(toM/fromM,1.06); } /* 
    sesija, pa je svaki kompromis lomio bar jednu stranu.
 
    Odluka vlasnika: svaka distanca dobija SVOJU logiku, ništa se ne preplice.
-   Polumaraton i maraton su uklonjeni dok se ne napišu zasebno.
+   Polumaraton i maraton su tada UKLONJENI iz generatora i kasnije napisani
+   zasebno — danas postoje sva četiri profila (5K, 10K, polumaraton, maraton),
+   svaki sa sopstvenim rastom obima, fazama, sesijama i taperom. Ovaj pasus je
+   dugo tvrdio suprotno (da su HM i maraton uklonjeni), pa je obmanjivao svakog
+   ko posle čita kod — v. DIST_PROFILES ispod za stvarno stanje.
 
    KAKO JE SADA ORGANIZOVANO
    `generatePlan` je MAŠINA: kalendar, deload/taper raspored, raspodela po
@@ -5069,8 +5173,26 @@ function generatePlan(inp){
        Izmereno pre popravke: medijana 6.4% ali 35% nedelja preko 8%, najgore
        18.6%. Ovde se visak SECE, i to iskljucivo sa LAGANIH dana — kvalitet i
        dugo trcanje se ne diraju (imaju svoju strukturu i namenu), a pod od
-       3 km po danu se postuje. Deload/taper/trka se preskacu. */
-    if(!isDeload && !isTaper1 && !isTaper2 && !isRace && plan.weeks.length){
+       3 km po danu se postuje. Taper i trka se preskacu.
+
+       DELOAD IMA SVOJU PUTANJU (nadjeno testom: polumaraton, 3 dana, pocetnik
+       — N8 nosi oznaku DELOAD a isporucuje 30.1 km naspram 28.6 km u N7,
+       dakle deload je bio VECI od nedelje pre sebe).
+       Uzrok: CILJNI niz obima (vols) uredno primenjuje deloadF — N7 cilj 41,
+       N8 cilj 31.2 — ali ISPORUKA ne prati cilj kad je cilj iznad onoga sto
+       izabrani broj dana moze da ponese (cesto na 2-3 dana): radne nedelje
+       ovaj limiter POTKRESUJE, a deload nedelje su iz njega bile izuzete, pa
+       prodju nepotkresane i zavrse iznad potkresane prethodne nedelje.
+       Zato se deload meri prema STVARNO ISPORUCENOJ prethodnoj nedelji.
+
+       ZASTO PROPORCIONALNO, A NE ISTO SECENJE KAO NA RADNOJ NEDELJI: pohlepno
+       secenje odozgo je invarijantu vratilo, ali je davalo nakaradnu nedelju —
+       jedan lagan dan smrskan na pod od 3 km pored netaknutog dugog trcanja od
+       13.3 km. To je tacno silueta na koju upozorava komentar ispod. Deload je
+       SMANJENA KOPIJA nedelje, ne nedelja kojoj je jedan dan pojeden: svi dani
+       trcanja se skaliraju istim faktorom, pa odnos lakih dana i dugog trcanja
+       ostaje isti. */
+    if(!isTaper1 && !isTaper2 && !isRace && plan.weeks.length){
       /* BUG koji sam sam napravio: posle DELOAD nedelje obim NAMERNO skace
          nazad — to je smisao deloada. Poredjenje sa deload nedeljom je videlo
          +41% i seklo lagane dane do poda od 3 km (izmereno: 3 km lako pored
@@ -5079,39 +5201,56 @@ function generatePlan(inp){
       const prevW = plan.weeks[plan.weeks.length-1];
       const baseW = (prevW.deload && plan.weeks.length>=2) ? plan.weeks[plan.weeks.length-2] : prevW;
       const prevVol = baseW.days.reduce((s,d)=>s+(d.km||0),0);
-      /* Granica isporucenog rasta prati isti apsolutni korak (uz margin za
-         diskretnost sesija) — multiplikativnih +8% je na 10 km/ned bilo 0.8 km
-         i seklo je i sasvim normalan napredak. */
-      const limit = prevVol + prof.korakRasta(prevVol, inp.intensity)*1.6;
-      let sada = days.reduce((s,d)=>s+(d.km||0),0);
-      if(prevVol > 0 && sada > limit){
-        const POD = podPoDanu(vol, runDays);
-        const laki = days.filter(d=>(d.tag==='lako'||d.tag==='rw') && d.km > POD);
-        let visak = sada - limit;
-        /* skracuje od NAJDUZEG laganog dana nanize — ravnomernije nego redom */
-        laki.sort((a,b)=>b.km-a.km);
-        for(const d of laki){
-          if(visak <= 0.05) break;
-          /* Plafon od 30% SOPSTVENE vrednosti dana (nadjeno prijavom korisnika:
-             jedini lak dan u nedelji — 4 dana/2 kvaliteta — gubio je i do 70%
-             sopstvene vrednosti u jednom prolazu, npr. 11.9km -> 3.6km, kad bi
-             kvalitet ili LR te nedelje bili malo veci od proseka. Sa samo jednim
-             lakim danom NEMA drugog dana da podeli teret, pa ceo visak
-             (koji ionako postoji SAMO zbog diskretnosti kvalitetnih sesija i
-             normalnog rasta LR-a, ne zbog greske) pada na njega. Ostatak viska
-             iznad 30% se NE dira — nedelja ostane malo iznad ciljanog rasta,
-             sto je bezbednije od unistenog dana za oporavak. */
-          const moze = Math.min(d.km - POD, d.km * 0.30);
-          const skini = Math.min(moze, visak);
-          if(skini > 0){
-            /* Pod od 3 km: r1() moze da spusti ispod. Napomena: allocEasyLR
-               na VRLO niskom obimu svesno dozvoljava 2.5 km po laganom danu
-               (linija sa rem-2.5*easyCount) — to je njegova odluka i ne dira
-               se ovde; ovo samo sprecava da IZRAVNAVANJE dodatno spusti. */
-            const novi = Math.max(POD, r1(d.km - skini));
-            visak -= (d.km - novi);
-            d.km = novi;
-            d.desc = (d.desc||'').replace(/^[\d.,]+ km/, d.km + ' km');
+      const sada = days.reduce((s,d)=>s+(d.km||0),0);
+      const POD = podPoDanu(vol, runDays);
+      const preimenuj = d => { d.desc=(d.desc||'').replace(/^[\d.,]+ km/, d.km+' km'); };
+
+      if(prevVol > 0 && isDeload){
+        /* DELOAD: proporcionalno skaliranje svih dana trcanja na deloadF
+           prethodne ISPORUCENE nedelje. Kvaliteta na deload nedelji nema
+           (sessions petlja ga preskace), pa se skalira ono sto postoji. */
+        const limit = prevVol * (prof.deloadF || DELOAD_F);
+        if(sada > limit){
+          const f = limit / sada;
+          days.forEach(d=>{
+            if(d.rest || d.km==null) return;
+            d.km = Math.max(POD, r1(d.km * f));
+            preimenuj(d);
+          });
+        }
+      } else if(prevVol > 0){
+        /* Granica isporucenog rasta prati isti apsolutni korak (uz margin za
+           diskretnost sesija) — multiplikativnih +8% je na 10 km/ned bilo 0.8 km
+           i seklo je i sasvim normalan napredak. */
+        const limit = prevVol + prof.korakRasta(prevVol, inp.intensity)*1.6;
+        if(sada > limit){
+          const laki = days.filter(d=>(d.tag==='lako'||d.tag==='rw') && d.km > POD);
+          let visak = sada - limit;
+          /* skracuje od NAJDUZEG laganog dana nanize — ravnomernije nego redom */
+          laki.sort((a,b)=>b.km-a.km);
+          for(const d of laki){
+            if(visak <= 0.05) break;
+            /* Plafon od 30% SOPSTVENE vrednosti dana (nadjeno prijavom korisnika:
+               jedini lak dan u nedelji — 4 dana/2 kvaliteta — gubio je i do 70%
+               sopstvene vrednosti u jednom prolazu, npr. 11.9km -> 3.6km, kad bi
+               kvalitet ili LR te nedelje bili malo veci od proseka. Sa samo jednim
+               lakim danom NEMA drugog dana da podeli teret, pa ceo visak
+               (koji ionako postoji SAMO zbog diskretnosti kvalitetnih sesija i
+               normalnog rasta LR-a, ne zbog greske) pada na njega. Ostatak viska
+               iznad 30% se NE dira — nedelja ostane malo iznad ciljanog rasta,
+               sto je bezbednije od unistenog dana za oporavak. */
+            const moze = Math.min(d.km - POD, d.km * 0.30);
+            const skini = Math.min(moze, visak);
+            if(skini > 0){
+              /* Pod od 3 km: r1() moze da spusti ispod. Napomena: allocEasyLR
+                 na VRLO niskom obimu svesno dozvoljava 2.5 km po laganom danu
+                 (linija sa rem-2.5*easyCount) — to je njegova odluka i ne dira
+                 se ovde; ovo samo sprecava da IZRAVNAVANJE dodatno spusti. */
+              const novi = Math.max(POD, r1(d.km - skini));
+              visak -= (d.km - novi);
+              d.km = novi;
+              preimenuj(d);
+            }
           }
         }
       }
@@ -5623,7 +5762,7 @@ function goObStep(n){
   updateWeeksHint();
   syncRunDowUI();
   syncGoalHoursUI();
-  renderOutlook(); renderWizWarnings();
+  renderOutlook(); renderWizWarningsSoon();
   renderObProgress();
   $('#obNext').disabled=!obStepValid(n);
 }
@@ -5707,7 +5846,21 @@ function wizardWarnings(){
   if(!p || p.error || !p.meta) return null;
   return p.meta.dayWarnings || [];
 }
+/* ODLOZENO RACUNANJE UPOZORENJA.
+   `wizardWarnings()` pravi PUN probni plan, a `generatePlan` uz to rekurzivno
+   zove sam sebe do 6 puta da bi predlozio potreban broj dana trcanja. Pozivalo
+   se direktno iz `input` dogadjaja, a `goObStep()` ga je zvao jos jednom —
+   dakle do 14 punih generisanja plana po PRITISKU TASTERA, sinhrono, na
+   glavnoj niti. Na maratonskom planu od 40+ nedelja to je vidljivo zaglavljivanje
+   unosa na telefonu. Racunanje sada ceka 250 ms tisine; poslednji poziv
+   pobedjuje, pa je rezultat isti a posla je red velicine manje. */
+let WIZ_WARN_T=null;
+function renderWizWarningsSoon(){
+  clearTimeout(WIZ_WARN_T);
+  WIZ_WARN_T=setTimeout(renderWizWarnings, 250);
+}
 function renderWizWarnings(){
+  clearTimeout(WIZ_WARN_T);
   const el=$('#ob-warn'); if(!el) return;
   const list=wizardWarnings();
   if(list===null){ el.style.display='none'; el.innerHTML=''; return; }
@@ -5803,13 +5956,25 @@ function syncRunDowUI(){
 function updateWeeksHint(){
   const el=$('#ob-weeks-hint'); if(!el)return;
   if(!wiz.raceDate){ el.textContent=''; return; }
-  const wks=Math.floor(diffD(todayStr(), wiz.raceDate)/7);
+  /* ISTA formula kao wizWeeks()/generatePlan(), ne sopstvena.
+     Ranije je ovde stajalo `floor(diffD(danas, trka)/7)`, dok plan racuna
+     `floor((trka - ponedeljakTekuceNedelje)/7)+1` — razlika do DVE nedelje.
+     Posledica nije kozmeticka: u sredu, sa trkom za 40 dana, napomena je
+     govorila „5 nedelja, 5K trazi najmanje 6, plan ce biti skracen", a
+     generator je pravio pun ciklus od 7 nedelja. U drugom smeru je napomena
+     govorila „dovoljno", pa bi generisanje palo greskom. */
+  const wks=wizWeeks();
+  if(wks==null){ el.textContent=''; return; }
   const prof=DIST_PROFILES[wiz.raceDist]||DIST_PROFILES[5000];
   if(wks<1){ el.innerHTML='Trka je <b>ove nedelje</b> — previše blizu za plan.'; return; }
   const plNed=n=>{const m=n%10,h=n%100;return(m===1&&h!==11)?'nedelja':(m>=2&&m<=4&&(h<12||h>14))?'nedelje':'nedelja';};
-  let t=`Od danas do trke: <b>${wks} ${plNed(wks)}</b> — `;
+  let t=`Do trke: <b>${wks} ${plNed(wks)}</b> — `;
+  /* Ranije je pisalo „plan ce biti skracen" — a generator u tom slucaju plan
+     UOPSTE NE PRAVI, nego vraca gresku. Napomena mora da kaze isto sto ce se
+     stvarno desiti, inace covek prodje sva cetiri koraka pa tek na kraju
+     sazna da nije moglo. */
   t += wks<prof.minWeeks
-    ? `${prof.name} traži najmanje <b>${prof.minWeeks}</b>. Plan će biti skraćen, sa manje prostora za rast forme.`
+    ? `${prof.name} traži najmanje <b>${prof.minWeeks}</b>, pa plan za ovaj datum ne može da se napravi. Pomeri trku ili izaberi kraću distancu.`
     : `dovoljno za pun ${prof.name} ciklus sa deload nedeljom i taperom.`;
   el.innerHTML=t;
 }
@@ -5835,7 +6000,7 @@ function bindOnboardEvents(){
     if(!confirm('Otkazati generisanje plana?'))return;
     closeWizard();
   });
-  $('#in-raceDate').addEventListener('input',e=>{ wiz.raceDate=e.target.value; goObStep(obStep); renderOutlook(); renderWizWarnings(); });
+  $('#in-raceDate').addEventListener('input',e=>{ wiz.raceDate=e.target.value; goObStep(obStep); renderOutlook(); renderWizWarningsSoon(); });
   $$('#raceDistChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#raceDistChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
     wiz.raceDist=+c.dataset.v;
@@ -5850,7 +6015,7 @@ function bindOnboardEvents(){
   $('#in-pbH').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,1); wiz.pbH=e.target.value; goObStep(obStep); updateVdotPreview(); });
   $('#in-pbMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.pbMin=e.target.value; goObStep(obStep); updateVdotPreview(); });
   $('#in-pbSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.pbSec=e.target.value; goObStep(obStep); updateVdotPreview(); });
-  $('#in-weeklyKm').addEventListener('input',e=>{ wiz.weeklyKm=e.target.value; goObStep(obStep); renderWizWarnings(); });
+  $('#in-weeklyKm').addEventListener('input',e=>{ wiz.weeklyKm=e.target.value; goObStep(obStep); renderWizWarningsSoon(); });
   $$('#trainedChips .ob-chip').forEach(c=>c.addEventListener('click',()=>{
     $$('#trainedChips .ob-chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
     wiz.trainedRecently = c.dataset.v==='yes';
@@ -5895,9 +6060,9 @@ function bindOnboardEvents(){
     $$('.ob-icard').forEach(x=>x.classList.remove('on')); c.classList.add('on'); wiz.intensity=c.dataset.v;
     renderOutlook(); renderWizWarnings(); /* izabran intenzitet je istaknut u predvidjanju i pominje se u proceni cilja */
   }));
-  $('#in-goalH').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,1); wiz.goalH=e.target.value; renderOutlook(); renderWizWarnings(); });
-  $('#in-goalMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalMin=e.target.value; renderOutlook(); renderWizWarnings(); });
-  $('#in-goalSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalSec=e.target.value; renderOutlook(); renderWizWarnings(); });
+  $('#in-goalH').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,1); wiz.goalH=e.target.value; renderOutlook(); renderWizWarningsSoon(); });
+  $('#in-goalMin').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalMin=e.target.value; renderOutlook(); renderWizWarningsSoon(); });
+  $('#in-goalSec').addEventListener('input',e=>{ e.target.value=clampDigits(e.target.value,2); wiz.goalSec=e.target.value; renderOutlook(); renderWizWarningsSoon(); });
   $('#obBack').addEventListener('click',()=>goObStep(obStep-1));
   $('#obNext').addEventListener('click',()=>{
     if(!obStepValid(obStep))return;
@@ -5986,7 +6151,7 @@ function weekSwapHTML(w){
   days.forEach(d=>{
     const locked=doneId(d.id), sel=SWAP_SEL===d.id, tag=locked?'div':'button';
     const title=d.rest?(d.desc||'Odmor'):d.desc.split('\n')[0];
-    h+=`<${tag} class="day${sel?' swap-sel':''}${locked?' swap-lock':''}"${locked?'':` data-swd="${d.id}"`}>
+    h+=`<${tag} class="day${sel?' swap-sel':''}${locked?' swap-lock':''}"${locked?'':` data-swd="${esc(d.id)}"`}>
       <div class="day-d">${dowOf(d.date)}<small>${fmtD(d.date)}</small></div>
       <div class="day-t" style="${d.rest?'color:var(--txt3)':''}">${esc(title)}${S.moves&&S.moves[d.id]!=null?`<small>pomeren sa ${fmtD(d.origDate)}</small>`:''}</div>
       <div class="day-km">${d.km!=null?fmtKm(d.km):''}</div>
@@ -6178,18 +6343,20 @@ function karticaOporavka(){
   }
   const zadnji=niz[niz.length-1];
   const o=oporavakZa(zadnji.datum)||zadnji;
+  /* esc() na svaku vrednost: cistWellness() gore vec svodi zapise na brojeve,
+     ali kartica ne sme da zavisi od toga da li je neko setio da ih ocisti. */
   const red=(lbl,val,sub,boja)=>val==null?'':`<div class="ob-vp" style="flex:1">
-      <i>${lbl}</i><b style="color:${boja||'var(--txt)'}">${val}</b>
-      ${sub?`<small style="display:block;font-size:.62rem;color:var(--txt3);margin-top:2px">${sub}</small>`:''}</div>`;
-  const hrvSub=o.hrvOdstupanje!=null?`${o.hrvOdstupanje>=0?'+':''}${o.hrvOdstupanje}% od osnove ${o.hrvBaza7}`:'nema osnove još';
-  const plsSub=o.pulsOdstupanje!=null?`${o.pulsOdstupanje>=0?'+':''}${o.pulsOdstupanje} od osnove ${o.pulsBaza7}`:'';
+      <i>${esc(lbl)}</i><b style="color:${esc(boja||'var(--txt)')}">${esc(val)}</b>
+      ${sub?`<small style="display:block;font-size:.62rem;color:var(--txt3);margin-top:2px">${esc(sub)}</small>`:''}</div>`;
+  const hrvSub=o.hrvOdstupanje!=null?`${o.hrvOdstupanje>=0?'+':''}${esc(o.hrvOdstupanje)}% od osnove ${esc(o.hrvBaza7)}`:'nema osnove još';
+  const plsSub=o.pulsOdstupanje!=null?`${o.pulsOdstupanje>=0?'+':''}${esc(o.pulsOdstupanje)} od osnove ${esc(o.pulsBaza7)}`:'';
   return `<div class="card">
-    <div class="card-t">Oporavak <span class="ob-opt" style="font-weight:500;color:var(--txt3)">— ${fmtD(o.datum)}</span></div>
+    <div class="card-t">Oporavak <span class="ob-opt" style="font-weight:500;color:var(--txt3)">— ${esc(fmtD(o.datum))}</span></div>
     <div class="ob-vpaces" style="display:flex;gap:8px">
       ${red('HRV', o.hrv!=null?o.hrv:'—', hrvSub, bojaOdstupanja(o.hrvOdstupanje))}
       ${red('Puls u miru', o.pulsUMiru!=null?o.pulsUMiru:'—', plsSub, bojaOdstupanja(o.pulsOdstupanje!=null?-o.pulsOdstupanje*2:null))}
       ${red('San', o.sanH!=null?o.sanH+' h':'—', o.sanOcena!=null?('ocena '+o.sanOcena):'', o.sanH!=null?(o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'):null)}
-      ${o.svezina!=null?red('Svežina', o.svezina, 'forma '+o.ctl+' · umor '+o.atl, o.svezina<-10?'var(--red)':o.svezina<0?'var(--amber)':'var(--green)'):''}
+      ${o.svezina!=null?red('Svežina', o.svezina, 'forma '+esc(o.ctl)+' · umor '+esc(o.atl), o.svezina<-10?'var(--red)':o.svezina<0?'var(--amber)':'var(--green)'):''}
     </div>
     ${chartHrv(niz)}
     <div class="note-src">HRV se čita u odnosu na <b>tvoju</b> sedmodnevnu osnovu, ne kao gola brojka. Pad preko 10% znači da oporavak zaostaje; pad uz porast pulsa u miru i kratak san je jasan znak da treba lakši dan.</div>
@@ -6214,7 +6381,7 @@ function chartHrv(niz){
     g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(x.hrv).toFixed(1)}" r="4.2" fill="var(--bg)" stroke="var(--cyan)" stroke-width="2"/>`; });
   g+=`<text x="${L}" y="${B+16}" font-size="9" fill="var(--txt3)">${fmtD(v[0].datum)}</text>`;
   g+=`<text x="${W-R}" y="${B+16}" text-anchor="end" font-size="9" fill="var(--txt3)">${fmtD(v[v.length-1].datum)}</text>`;
-  g+=`<text x="${W-R}" y="${(Y(v[v.length-1].hrv)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--cyan)">${v[v.length-1].hrv}</text>`;
+  g+=`<text x="${W-R}" y="${(Y(v[v.length-1].hrv)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--cyan)">${esc(v[v.length-1].hrv)}</text>`;
   g+=`<text x="${L}" y="${T+2}" font-size="9" fill="var(--txt3)">HRV · isprekidano = tvoja sedmodnevna osnova</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:10px">${g}</svg>`;
 }
@@ -6274,7 +6441,12 @@ function chartWeight(){
     min=Math.floor(min-pad); max=Math.ceil(max+pad);
   } else { min=74; max=83; }
   if(max-min<2)max=min+2;
-  const X=i=>L+(nW<=1?0:(i-1)/(nW-1))*(W-L-R);
+  /* i se OGRANICAVA na opseg plana. Y je odavno klemovan (Math.max/min u Y
+     ispod), ali X nije — pa je unos tezine sa datumom pre pocetka ili posle
+     kraja plana (lako se desi: merenje uneto rucno, ili backup iz starijeg
+     ciklusa) crtao tacku IZVAN okvira grafikona. Ista klasa greske koja je vec
+     ispravljena u chartWeeks() i chartPred(), samo je ovaj grafikon promasen. */
+  const X=i=>{ const k=Math.max(1,Math.min(nW,i)); return L+(nW<=1?0:(k-1)/(nW-1))*(W-L-R); };
   const Y=v=>B-(Math.max(min,Math.min(max,v))-min)/(max-min)*(B-T);
   let g='';
   if(CHART_SEL.wt!=null && act[CHART_SEL.wt]){
@@ -6496,7 +6668,7 @@ function renderKnee(){
   h+=`<div class="card"><div class="card-t">Bol (0–10) kroz vreme</div>${chartKnee()}</div>`;
   h+=`<div class="btnrow" style="margin:0 0 14px"><button class="btn ghost" id="k-add">+ Dodaj unos</button></div>`;
   h+=`<div class="card"><div class="card-t">Istorija</div>`+(list.length?list.map(k=>`
-    <button class="krow" data-k="${k.id}">
+    <button class="krow" data-k="${esc(k.id)}">
       <div class="kp ${k.pain>=6?'p2':k.pain>=1?'p1':'p0'}">${esc(k.pain)}</div>
       <div class="ki"><div class="kd">${esc(partName(k.part))} <span class="ka">· ${DOW[(s2d(k.date).getDay()+6)%7]} ${fmtD(k.date)} · ${esc(k.act)}${k.src?' · iz treninga':''}</span></div>${k.note?`<div class="kn">${esc(k.note)}</div>`:''}</div>
     </button>`).join(''):`<div class="empty">Nema unosa.</div>`)+`</div>`;
@@ -6543,11 +6715,11 @@ function openKneeSheet(id,presetPart){
     <div class="sh-t">${id?'Unos — '+esc(partName(k.part)):'Novi unos'+(k.part?' — '+esc(partName(k.part)):'')}</div>
     <div class="sh-s">${k.src?'Vezan za trening — izmena treninga ažurira ovaj unos':'Ručni unos'}</div>
     <div class="f-grid">
-      <div class="f-field full"><label>Deo tela</label><select id="kf-part">${partOpts}</select></div>
-      <div class="f-field"><label>Datum</label><input type="date" id="kf-date" value="${esc(k.date)}"></div>
-      <div class="f-field"><label>Aktivnost</label><select id="kf-act">${acts.map(a=>`<option${a===k.act?' selected':''}>${a}</option>`).join('')}</select></div>
-      <div class="f-field full"><label>Bol (0–10) <span class="range-v" id="kf-pv">${esc(k.pain)}</span></label><input type="range" id="kf-pain" min="0" max="10" step="1" value="${esc(k.pain)}"></div>
-      <div class="f-field full"><label>Beleška</label><textarea id="kf-note" placeholder="Gde, kada, kako…">${esc(k.note)}</textarea></div>
+      <div class="f-field full"><label for="kf-part">Deo tela</label><select id="kf-part">${partOpts}</select></div>
+      <div class="f-field"><label for="kf-date">Datum</label><input type="date" id="kf-date" value="${esc(k.date)}"></div>
+      <div class="f-field"><label for="kf-act">Aktivnost</label><select id="kf-act">${acts.map(a=>`<option${a===k.act?' selected':''}>${a}</option>`).join('')}</select></div>
+      <div class="f-field full"><label for="kf-pain">Bol (0–10) <span class="range-v" id="kf-pv">${esc(k.pain)}</span></label><input type="range" id="kf-pain" min="0" max="10" step="1" value="${esc(k.pain)}"></div>
+      <div class="f-field full"><label for="kf-note">Beleška</label><textarea id="kf-note" placeholder="Gde, kada, kako…">${esc(k.note)}</textarea></div>
     </div>
     <div class="btnrow">${id?`<button class="btn danger" id="kf-del">Obriši unos</button>`:`<button class="btn" id="kf-save">Dodaj</button>`}</div>
     ${id?`<div class="note-src">Izmene se čuvaju automatski.</div>`:''}
@@ -6976,8 +7148,16 @@ function icuPragTekst(){
    Zato ovde nema nikakvog kljuca: /api/broadcast prima ili CRON_SECRET
    (terminal) ili prijavu vlasnika (ovo dugme).
    ============================================================ */
-const ADMIN_EMAIL='avuletic92@gmail.com';
-function jeVlasnik(){ return sbAuthed() && String(SB.email||'').trim().toLowerCase()===ADMIN_EMAIL; }
+/* Vlasnik se prepoznaje po Supabase ID-u naloga, ne po mejl adresi.
+   Ranije je ovde stajala adresa u cistom tekstu — bezbednosno bezopasno (pravu
+   proveru radi server, nad adresom koju procita IZ TOKENA, ne iz onoga sto
+   pregledac tvrdi), ali je adresa time bila izlozena skreperima za spam u
+   javnom izvornom kodu.
+   UUID nije tajna i ne daje nikakav pristup: RLS u Supabase-u koristi
+   `auth.uid()` iz POTPISANOG tokena, ne vrednost koju klijent posalje.
+   Ova provera i dalje odlucuje SAMO da li se dugme prikazuje. */
+const ADMIN_UID='0403f8fb-a643-4d4e-843d-f71199a0d6f9';
+function jeVlasnik(){ return sbAuthed() && SB.userId===ADMIN_UID; }
 /* HARDKODOVAN PLAN JE VLASNIKOV LICNI PLAN, ne podrazumevan plan aplikacije.
    Do sada je svaki nov nalog padao na njega: tudji ljudi su gledali njegove
    deonice, njegov datum trke (24.09.2026) i njegov cilj sub-20, sve dok sami
@@ -7298,8 +7478,8 @@ function openSettings(){
       :`<div class="btnrow" style="margin-top:0"><button class="btn" id="icu-oauth">Poveži intervals.icu</button></div>
         <details class="help"><summary>Šta se povezivanjem dobija</summary><p>HRV, puls u miru i san koje Garmin već šalje na intervals.icu, i slanje planiranih treninga na sat. Odobravaš na njihovoj strani — nikakav ključ ne prepisuješ.</p></details>
         <details class="help"><summary>Ručno povezivanje (ako gornje ne radi)</summary>
-          <div class="f-field full" style="margin-top:6px"><label>ID sportiste</label><input id="icu-id" inputmode="numeric" placeholder="npr. i123456"></div>
-          <div class="f-field full"><label>API ključ</label><input id="icu-key" type="password" placeholder="iz intervals.icu → Settings → Developer"></div>
+          <div class="f-field full" style="margin-top:6px"><label for="icu-id">ID sportiste</label><input id="icu-id" inputmode="numeric" placeholder="npr. i123456"></div>
+          <div class="f-field full"><label for="icu-key">API ključ</label><input id="icu-key" type="password" placeholder="iz intervals.icu → Settings → Developer"></div>
           <div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="icu-on">Poveži ključem</button></div>
           <p>intervals.icu → Settings → na dnu <b>Developer Settings</b>.</p>
         </details>`}
@@ -7395,9 +7575,14 @@ function openSettings(){
   };
   if($('#bc-proba')) $('#bc-proba').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Šaljem…';
-    const r=await posaljiUputstvo({posalji:true, samoNa:[ADMIN_EMAIL]});
+    /* Adresa se uzima iz PRIJAVLJENE sesije, ne iz konstante u kodu. Server
+       `samoNa` ionako filtrira kroz stvarnu listu korisnika, pa se ni ovako ne
+       moze poslati na proizvoljnu adresu. */
+    const moja=String(SB.email||'').trim().toLowerCase();
+    if(!moja){ b.disabled=false; b.textContent='Proba na mene'; alert('Nisi prijavljen.'); return; }
+    const r=await posaljiUputstvo({posalji:true, samoNa:[moja]});
     b.textContent=r.ok?'Poslato ✓':'Nije uspelo';
-    alert(r.ok?('Poslato na '+ADMIN_EMAIL+'. Proveri sanduče — i spam.'):(r.error||'Nije uspelo.'));
+    alert(r.ok?('Poslato na '+moja+'. Proveri sanduče — i spam.'):(r.error||'Nije uspelo.'));
     setTimeout(()=>{ b.disabled=false; b.textContent='Proba na mene'; },2200);
   };
   if($('#bc-svi')) $('#bc-svi').onclick=async e=>{
@@ -7409,10 +7594,24 @@ function openSettings(){
     const n=p.j.primalaca||0;
     if(!n){ alert('Nema nijednog primaoca.'); return; }
     if(!confirm('Poslati uputstvo na '+n+' adresa?\n\nMejl se ne može povući. Traje oko '+Math.ceil(n*0.6)+' s — ne zatvaraj aplikaciju.')) return;
-    b.disabled=true; b.textContent='Šaljem 0/'+n+'…';
-    const r=await posaljiUputstvo({posalji:true});
-    b.textContent=r.ok?('Poslato '+r.j.poslato+' ✓'):'Nije uspelo';
-    alert(r.ok?('Poslato: '+r.j.poslato+(r.j.palo?' · nije stiglo: '+r.j.palo:'')):(r.error||'Nije uspelo.'));
+    /* SLANJE IDE U VISE POZIVA. Jedan poziv stane u vremenski limit Vercel
+       funkcije (~90 mejlova); server vrati `sledeciOd` i ovde se nastavlja
+       odatle. Bez ovoga je slanje na vise od ~90 adresa zavrsavalo prekidom
+       na pola, uz poruku „Nije uspelo" iako je deo mejlova vec otisao. */
+    b.disabled=true;
+    let od=0, poslato=0, palo=0, krugova=0, greska=null;
+    while(od!=null && krugova<60){
+      krugova++;
+      b.textContent='Šaljem '+poslato+'/'+n+'…';
+      const r=await posaljiUputstvo({posalji:true, od});
+      if(!r.ok){ greska=r.error||'Nije uspelo.'; break; }
+      poslato+=r.j.poslato||0; palo+=r.j.palo||0;
+      od=(r.j.sledeciOd==null)?null:r.j.sledeciOd;
+    }
+    b.textContent=greska?'Nije uspelo':('Poslato '+poslato+' ✓');
+    alert(greska
+      ? (greska+(poslato?'\n\nDo prekida je poslato: '+poslato+'. Ponovni poziv nastavlja odatle, bez duplikata.':''))
+      : ('Poslato: '+poslato+(palo?' · nije stiglo: '+palo:'')));
     setTimeout(()=>{ b.disabled=false; b.textContent='Pošalji svima…'; },2600);
   };
   if($('#icu-push2')) $('#icu-push2').onclick=async e=>{
@@ -7497,9 +7696,105 @@ function openBugSheet(){
     }
   };
 }
-function exportBackup(){
+/* STA SME U BACKUP FAJL — jedno mesto, jedna politika.
+   Ranije je stajalo samo `delete copy.strava` uz komentar „tokeni ne idu u
+   backup fajl". Strava jeste bila skinuta, ali `S.icu` NIJE — a on nosi
+   intervals.icu OAuth token (po njihovoj dokumentaciji NE ISTICE) odnosno
+   rucno unet API kljuc. Backup fajl zavrsi u Downloads folderu i u mejlu, pa
+   je to bio trajan pristup tudjim zdravstvenim podacima (HRV, puls u miru,
+   san) i pravo pisanja u kalendar. Ista politika je vec bila ispravno
+   primenjena na sinhronizaciju (sbPayload) — samo se izvoz razisao sa njom.
+   Sada obe putanje skidaju pristupne podatke, a testovi to proveravaju.
+
+   SAMI PODACI o oporavku (S.wellness) OSTAJU — to su merenja, ne kljucevi. */
+function backupPayload(){
   const copy=JSON.parse(JSON.stringify(S));
-  delete copy.strava; /* tokeni ne idu u backup fajl */
+  delete copy.strava;   /* access/refresh token */
+  delete copy.icu;      /* OAuth token i API kljuc */
+  return copy;
+}
+/* ============================================================
+   ID-JEVI IZ UVEZENOG FAJLA — GRANICA POVERENJA.
+
+   Svaki ID u stanju je MASINSKI generisan i uvek istog oblika:
+     dani            n1d1, n6t, g12d3
+     PRED redovi     p1, p2b, g3_1
+     koleno          k1, k1751376000000, kt-n1d1
+   Nista od toga ne sadrzi navodnik, razmak ni znak <.
+
+   Zasto je ovo BEZBEDNOSNA, a ne kozmeticka provera: ID dana zavrsava u HTML
+   ATRIBUTIMA (id="ai-go-...", data-swd="...", data-wseg="..."). Uvoz backupa
+   prihvata proizvoljan JSON, pa je ID iz fajla bio direktan put za ubacivanje
+   HTML-a. Dokazano napadom: dan sa
+       id = "\"><img src=x onerror=...>"
+   izlazi iz atributa i izvrsava proizvoljan kod, koji odatle cita
+   localStorage — dakle Supabase sesiju, Strava i intervals.icu tokene.
+   CSP tu ne pomaze jer skripta mora da dozvoli 'unsafe-inline' (aplikacija
+   JESTE jedna velika inline skripta).
+
+   Odbrana je na DVA nivoa, namerno:
+   (1) ovde — sumnjiv fajl se odbija u celosti, pre nego sto dodirne S;
+   (2) na svakom mestu iscrtavanja — esc() oko svake interpolacije.
+   Jedan nivo je dovoljan da napad ne prodje; dva su tu jer se sutra doda nova
+   kartica koja zaboravi esc(). ============================================ */
+const ID_OBLIK=/^[A-Za-z0-9_-]{1,64}$/;
+function validanId(x){ return typeof x==='string' && ID_OBLIK.test(x); }
+/* Da li je `genPlan` iz uvezenog fajla upotrebljiv. setActivePlan() radi
+   `S.genPlan.weeks` a rebuildDateIndex() zatim `CUR_PLAN.forEach(w=>w.days…)`
+   — pokvaren ili rucno izmenjen backup je tu obarao aplikaciju POSLE zamene
+   S, pa je stanje ostajalo razbijeno u memoriji i prvi sledeci save() bi ga
+   trajno upisao. Zato se oblik proverava PRE zamene. */
+function validanGenPlan(g){
+  if(g==null) return true;                       /* nema generisanog plana — licni je aktivan */
+  if(typeof g!=='object'||Array.isArray(g)) return false;
+  if(!Array.isArray(g.weeks)||!g.weeks.length) return false;
+  const daniOk = g.weeks.every(w=>
+    w && typeof w==='object' &&
+    typeof w.start==='string' && /^\d{4}-\d{2}-\d{2}$/.test(w.start) &&
+    Array.isArray(w.days) && w.days.length>0 &&
+    w.days.every(d=> d && typeof d==='object' &&
+      typeof d.dow==='number' && d.dow>=0 && d.dow<=7 &&
+      (d.km==null || (typeof d.km==='number' && isFinite(d.km))) &&
+      (d.id==null || validanId(d.id)))
+  );
+  if(!daniOk) return false;
+  /* PRED redovi zavrsavaju u data-wseg/data-wpin/data-q atributima. */
+  if(g.pred!=null){
+    if(!Array.isArray(g.pred)) return false;
+    const predOk = g.pred.every(r=> r && typeof r==='object' &&
+      validanId(r.id) &&
+      (r.q==null || (typeof r.q==='number' && isFinite(r.q))) &&
+      (r.pt==null || (typeof r.pt==='number' && isFinite(r.pt))) &&
+      (r.l==null || typeof r.l==='string'));
+    if(!predOk) return false;
+  }
+  if(g.qs!=null && (typeof g.qs!=='object'||Array.isArray(g.qs))) return false;
+  if(g.qs && Object.keys(g.qs).some(k=>!validanId(k))) return false;
+  return true;
+}
+/* Svi ostali ID-jevi u stanju: kljucevi mapa vezanih za dane/PRED redove i
+   ID-jevi unosa o povredama. Vraca naziv prvog problematicnog mesta ili null. */
+function losIdUStanju(st){
+  if(!st || typeof st!=='object') return 'stanje';
+  const mape={log:st.log, pred:st.pred, predLock:st.predLock, alts:st.alts, moves:st.moves};
+  for(const [ime,m] of Object.entries(mape)){
+    if(m==null) continue;
+    if(typeof m!=='object'||Array.isArray(m)) return ime;
+    for(const k of Object.keys(m)) if(!validanId(k)) return ime+' → '+String(k).slice(0,40);
+  }
+  if(Array.isArray(st.vdotLog))
+    for(const e of st.vdotLog) if(e&&e.id!=null&&!validanId(e.id)) return 'vdotLog';
+  if(Array.isArray(st.knee))
+    for(const k of st.knee){
+      if(k&&k.id!=null&&!validanId(k.id)) return 'knee.id';
+      if(k&&k.src!=null&&!validanId(k.src)) return 'knee.src';
+    }
+  if(Array.isArray(st.kg))
+    for(const x of st.kg) if(x&&x.src!=null&&!validanId(x.src)) return 'kg.src';
+  return null;
+}
+function exportBackup(){
+  const copy=backupPayload();
   const data={app:'SUB-19',exportedAt:new Date().toISOString(),state:copy};
   const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
   const a=document.createElement('a');
@@ -7517,10 +7812,33 @@ function importBackup(file){
     try{
       const raw=JSON.parse(fr.result);
       const st=migrate(raw.state||raw);
-      if(!st){alert('Fajl nije prepoznat kao SUB-19 backup.');return;}
+      if(!st){alert('Fajl nije prepoznat kao backup ove aplikacije, ili je napravljen u novijoj verziji — ažuriraj aplikaciju pa pokušaj ponovo.');return;}
+      if(!validanGenPlan(st.genPlan)){
+        alert('Backup sadrži oštećen generisan plan, pa nije uvezen — ništa nije promenjeno.\n\nTvoji trenutni podaci su netaknuti.');
+        return;
+      }
+      /* ID-jevi iz fajla zavrsavaju u HTML atributima (v. ID_OBLIK gore) —
+         sumnjiv fajl se odbija PRE nego sto dodirne S. */
+      const los=losIdUStanju(st);
+      if(los){
+        alert('Backup sadrži neispravan identifikator ('+los+'), pa nije uvezen — ništa nije promenjeno.\n\n'+
+              'Ovo se dešava kod ručno izmenjenog fajla. Tvoji trenutni podaci su netaknuti.');
+        return;
+      }
       if(!confirm(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${Object.keys(st.log).length} trening-unosa, ${st.knee.length} koleno, ${st.kg.length} težina.\n\nNastaviti?`))return;
-      st.strava=st.strava||S.strava; /* konekcija se ne gubi uvozom */
-      S=st;setActivePlan();rebuildDateIndex();save();closeSheet();
+      /* Veze su po UREDJAJU i ne putuju kroz fajl (v. backupPayload) — zato se
+         zadrzavaju postojece, isto za Stravu i za intervals.icu. */
+      st.strava=st.strava||S.strava;
+      st.icu=st.icu||S.icu;
+      /* Aktivacija se radi tek posle provere; ako i pored svega pukne, vraca se
+         prethodno stanje da aplikacija ne ostane razbijena do restarta. */
+      const prethodno=S;
+      try{
+        S=st;setActivePlan();rebuildDateIndex();save();closeSheet();
+      }catch(e2){
+        S=prethodno;setActivePlan();rebuildDateIndex();
+        alert('Uvoz nije uspeo: '+e2.message+'\n\nVraćeno je prethodno stanje.');
+      }
     }catch(e){alert('Greška pri čitanju fajla: '+e.message);}
   };
   fr.readAsText(file);
@@ -7802,17 +8120,53 @@ const SB_STATE_KEY='sub19_sb_state';
    `…/#access_token=NJEGOV_JWT&refresh_token=…`, zrtva ga otvori, sbInit()
    bezuslovno usvoji NJEGOVU sesiju. Odatle: sbPush() gura zrtvine podatke
    u napadacev red, ili sbPull() povuce napadacev JSON u zrtvinu app. */
+/* PROZOR ZA PRIJAVU. Bio je 10 minuta — a to je i duzina prozora u kom
+   podmetnut `#access_token=` moze da bude usvojen (v. sbInit). Odlazak na
+   Google i nazad traje sekunde; tri minuta su i dalje velikodusna rezerva za
+   spor telefon i unos lozinke, a prozor je preko tri puta uzi. */
+const SB_PROZOR_MS=3*60*1000;
 function sbMakeState(){
   const st=secureRandomToken();
-  try{ localStorage.setItem(SB_STATE_KEY, JSON.stringify({st,exp:Date.now()+600000})); }catch(e){}
+  try{ localStorage.setItem(SB_STATE_KEY, JSON.stringify({st,exp:Date.now()+SB_PROZOR_MS})); }catch(e){}
   return st;
 }
-function sbCheckState(){
+/* Zapamceno saznanje: da li nonce PREZIVLJAVA put kroz Supabase na ovom
+   deployu. Zavisi od toga da li je u Supabase → Authentication → Redirect URLs
+   dozvoljen obrazac sa upitom (`https://.../**`). Ne pretpostavlja se — meri se
+   pri prvoj uspesnoj prijavi i od tada se zahteva. */
+const SB_NONCE_RADI_KEY='sub19_sb_nonce_ok';
+function sbNonceRadi(){ try{ return localStorage.getItem(SB_NONCE_RADI_KEY)==='1'; }catch(e){ return false; } }
+/* PROVERA POVRATKA SA PRIJAVE.
+   Marker sam po sebi kaze samo „ovaj pretrazivac je nedavno krenuo u prijavu",
+   ne i CIJI je token stigao nazad — pa je ostajao uzak prozor u kom bi
+   podmetnut `#access_token=` bio usvojen. Zato se uz `redirect_to` salje i
+   nasumican `sbn`, koji se ovde poredi.
+
+   ZASTO NE `state=`: Supabase GoTrue koristi bas taj naziv INTERNO za svoju
+   CSRF zastitu prema Google-u; nasa vrednost bi se sudarila sa njegovom i
+   prijava bi zavrsila sa „bad_oauth_state" (v. komentar u sbLogin).
+
+   TRI ISHODA, i cetvrti koji je razlog zasto je ovo ovako napisano:
+     - `sbn` stigao i poklapa se        -> prihvati; zapamti da nonce radi
+     - `sbn` stigao a ne poklapa se     -> ODBIJ
+     - `sbn` nije stigao, a app zna da inace radi -> ODBIJ (neko ga je skinuo)
+     - `sbn` nije stigao, a app to jos nije videla -> prihvati po starom
+   Poslednji slucaj je jedini razlog za ovu slozenost: da uvodjenje ne moze da
+   zakljuca naloge ako Supabase na ovom projektu odbacuje upit u redirect_to.
+   Cim jedna prijava prodje sa nonce-om, downgrade (izostavljanje parametra)
+   vise nije moguc. */
+function sbCheckState(gotNonce){
   let saved=null;
   try{ saved=JSON.parse(localStorage.getItem(SB_STATE_KEY)||'null'); }catch(e){}
   try{ localStorage.removeItem(SB_STATE_KEY); }catch(e){}   /* jednokratno */
   if(!saved||!saved.st) return false;
-  return Date.now()<=saved.exp;
+  if(Date.now()>saved.exp) return false;
+  if(gotNonce){
+    if(gotNonce!==saved.st) return false;
+    try{ localStorage.setItem(SB_NONCE_RADI_KEY,'1'); }catch(e){}
+    return true;
+  }
+  return !sbNonceRadi();
 }
 
 let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:null};
@@ -7910,14 +8264,18 @@ async function sbEnsure(){
 
 function sbLogin(){
   if(!sbOn()){ alert('Supabase nije podesen (SB_URL / SB_ANON u kodu).'); return; }
-  sbMakeState();
+  const n=sbMakeState();
   /* NAMERNO se ne prosledjuje &state= Supabase-u. Supabase GoTrue koristi taj
      isti naziv parametra INTERNO za sopstvenu CSRF zastitu prema Google-u —
      nasa vrednost bi se sudarila sa njegovom (potvrdjeno: identican slucaj
      prijavljen na supabase/auth GitHub-u, zavrsava sa "bad_oauth_state").
-     Nasa zastita (sbCheckState) je cisto lokalna — upisan marker se proverava
-     posle povratka, bez oslanjanja na to da nam Supabase bilo sta vrati. */
-  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+'/');
+     Zato nas nonce putuje kao `sbn` U SAMOJ POVRATNOJ ADRESI — Supabase je
+     vraca doslovno, pa se po povratku moze uporediti (v. sbCheckState).
+     TRAZI da u Supabase → Authentication → Redirect URLs stoji obrazac koji
+     dozvoljava upit (`https://sub-19.vercel.app/**`). Ako ne stoji, Supabase
+     odbaci upit; app to prepozna i radi kao ranije, bez zakljucavanja naloga. */
+  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='
+    +encodeURIComponent(location.origin+'/?sbn='+n);
 }
 function sbLogout(){
   SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
@@ -8024,19 +8382,43 @@ async function sbInit(){
   if(!sbOn()) return;          /* nije podeseno — aplikacija radi bez naloga */
   sbLoad();
   let h=sbParseHash(location.hash);
+  /* `sbn` se cita PRE bilo kakvog replaceState — handleOAuthReturn iznad dira
+     istoriju samo kad u upitu postoji `code`, ali red ne sme da zavisi od toga. */
+  let sbn=null;
+  try{ sbn=new URLSearchParams(location.search||'').get('sbn'); }catch(e){}
   /* SRZ POPRAVKE: hash SA tokenima se prihvata SAMO ako je OVAJ pretrazivac
-     nedavno pokrenuo sbLogin() (marker postavljen i nedeljno pre isteka).
-     Bez ovoga, bilo ko ko otvori link sa tudjim #access_token= tiho preuzima
-     napadacevu sesiju — proveri sbCheckState() PRE Object.assign, ne posle. */
-  if(h&&!sbCheckState()){
+     nedavno pokrenuo sbLogin() (marker postavljen i nedeljno pre isteka) I ako
+     se vraceni `sbn` poklapa sa onim koji je tada poslat. Bez toga, bilo ko ko
+     otvori link sa tudjim #access_token= tiho preuzima napadacevu sesiju —
+     proveri sbCheckState() PRE Object.assign, ne posle. */
+  if(h&&!sbCheckState(sbn)){
     h=null;
     history.replaceState(null,'',location.pathname);
   }
   if(h){
-    Object.assign(SB,h,sbClaims(h.access));
-    SB.seenAt=null;
-    sbSave();
-    history.replaceState(null,'',location.pathname);
+    /* NE SME DA ZAMENI VEC PRIJAVLJEN NALOG DRUGIM.
+       Marker iznad kaze samo „ovaj pretrazivac je nedavno krenuo u prijavu" —
+       ne i CIJI je token stigao nazad. Zato ostaje uzak prozor u kom bi
+       podmetnut `#access_token=` bio usvojen. Najstetniji ishod je zamena
+       POSTOJECE sesije tudjom: od tog trenutka sbPush() gura licne podatke u
+       napadacev red. Ovde se to zatvara — token za DRUGOG korisnika se odbija
+       dok se prethodni ne odjavi svesno. */
+    const noviClaims=sbClaims(h.access);
+    if(SB.userId && noviClaims.userId && noviClaims.userId!==SB.userId){
+      h=null;
+      history.replaceState(null,'',location.pathname);
+      alert('Prijava je odbijena: stigao je nalog koji nije onaj sa kog si prijavljen.\n\n'+
+            'Ako želiš da promeniš nalog, prvo se odjavi u Podešavanjima, pa se prijavi ponovo.');
+    } else {
+      Object.assign(SB,h,noviClaims);
+      SB.seenAt=null;
+      sbSave();
+      history.replaceState(null,'',location.pathname);
+      /* Token se PROVERAVA kod Supabase-a pre nego sto mu se poveruje. Ako je
+         neispravan/opozvan, sesija se odbacuje umesto da app radi sa njom. */
+      sbEnsure().then(ok=>{ if(!ok){ SB.access=null; SB.refresh=null; SB.userId=null; sbSave(); } })
+                .catch(()=>{});
+    }
   }
   /* greska sa Google strane (odbio, zatvorio prozor…) */
   const err=(location.hash||'').indexOf('error')>=0
@@ -8060,10 +8442,40 @@ async function sbInit(){
      isto — guraju TRENUTNO lokalno stanje. Jedini slucaj kad NE guramo je
      'ask', jer bi to moglo tiho da prepise NOVIJE podatke sa drugog uredjaja. */
   if(d==='push'||d==='ok'){ sbPush(); return; }
+  /* SUKOB VERZIJA — pitanje ide U APLIKACIJI, ne kroz confirm().
+     Ranije je ovde stajao blokirajuci sistemski `confirm` PRI POKRETANJU, pre
+     nego sto korisnik bilo sta vidi, sa izborom koji trajno gubi podatke. Dva
+     problema: (1) instalirane PWA i deo pregledaca prigusuju confirm — tada
+     vraca `false`, sto je ovde znacilo „zadrzi lokalne i posalji", pa bi
+     TIHO pregazio novije podatke sa drugog uredjaja; (2) i kad radi, to je
+     sistemski dijalog nasred pokretanja.
+     Sada: dok korisnik ne izabere, NISTA se ne salje i nista ne povlaci —
+     jedini ishod bez gubitka. */
+  prikaziSukobSync(remoteAt);
+}
+/* Traka izbora pri sukobu lokalnih i serverskih podataka. Namerno bez
+   podrazumevane akcije: svaka od dve strane je necije stvarno trcanje. */
+function prikaziSukobSync(remoteAt){
+  if(document.getElementById('sync-sukob')) return;
   const kada=new Date(remoteAt).toLocaleString('sr-RS');
-  if(confirm('Na drugom uredjaju postoje noviji podaci ('+kada+').\n\nOK = povuci ih (lokalne izmene na ovom uredjaju se gube)\nOtkazi = zadrzi lokalne i posalji ih na server'))
-    await sbPull();
-  else await sbPush();
+  const b=document.createElement('div');
+  b.id='sync-sukob';
+  b.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 84px);'+
+    'z-index:210;background:var(--card2,#1D1D26);border:1px solid var(--amber,#FFB020);border-radius:14px;'+
+    'padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.45)';
+  b.innerHTML=`<div style="font-weight:800;font-size:.9rem;margin-bottom:4px">Podaci se razlikuju</div>
+    <div style="font-size:.8rem;color:var(--txt2,#9C9CA8);line-height:1.5">
+      Na drugom uređaju postoje noviji podaci (${esc(kada)}). Dok ne izabereš, ništa se ne menja.</div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button id="sy-pull" class="btn" style="flex:1;min-width:130px">Uzmi sa servera</button>
+      <button id="sy-push" class="btn ghost" style="flex:1;min-width:130px">Zadrži sa telefona</button>
+    </div>
+    <div style="font-size:.72rem;color:var(--txt3,#7A7A86);margin-top:8px">
+      „Uzmi sa servera" prepisuje izmene na ovom uređaju. „Zadrži sa telefona" prepisuje one na serveru.</div>`;
+  document.body.appendChild(b);
+  const zatvori=()=>b.remove();
+  b.querySelector('#sy-pull').onclick=async()=>{ zatvori(); await sbPull(); };
+  b.querySelector('#sy-push').onclick=async()=>{ zatvori(); await sbPush(); };
 }
 
 /* Poslednja prilika da se posalje pre nego sto se stranica zatvori. */
@@ -8072,7 +8484,12 @@ document.addEventListener('visibilitychange',()=>{
   /* Povratak u aplikaciju je isto sto i otvaranje: instalirana PWA ume da
      stoji u pozadini danima, pa se bez ovoga prvo povlacenje desi tek posle
      rucnog restarta. */
-  if(document.visibilityState==='visible') icuAutoSync();
+  if(document.visibilityState==='visible'){
+    /* Ako je u medjuvremenu presla ponoc, ceo ekran gleda pogresan dan —
+       iscrtaj ponovo pre nego sto korisnik bilo sta klikne. */
+    if(osveziDan()){ renderHeader(); PAGES[ACTIVE](); }
+    icuAutoSync();
+  }
 });
 
 renderHeader();
