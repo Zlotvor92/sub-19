@@ -166,10 +166,18 @@ export default async function handler(req, res) {
         res.status(429).json({ error: 'Dnevni limit AI analiza (' + DAILY_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
         return;
       }
-      // Funkcija/tabela možda još nije podešena u Supabase-u — ne blokiramo
-      // korisnika zbog toga, samo nastavljamo bez brojanja za ovaj poziv.
+      /* Funkcija/tabela mozda jos nije podesena u Supabase-u — ne blokiramo
+         korisnika zbog toga, samo nastavljamo bez brojanja za ovaj poziv.
+         ALI SE TO MORA VIDETI: limit koji tiho prestane da radi izgleda isto
+         kao limit koji radi, pa bi kvota mogla da se prazni mesecima a da se
+         ne primeti. Ovo zavrsi u Vercel logovima. */
+      console.warn('[limit] brojac nije radio (%s) — propusteno bez brojanja. HTTP %s: %s',
+        'api_usage', rl.status, errBody.slice(0, 200));
     }
-  } catch (e) { /* isto — mrezni problem ovde ne sme da obori celu analizu */ }
+  } catch (e) {
+    /* mrezni problem ovde ne sme da obori celu analizu — ali ostavlja trag */
+    console.warn('[limit] brojac nedostupan (%s) — propusteno bez brojanja: %s', 'api_usage', e.message);
+  }
 
   if (!process.env.GEMINI_API_KEY) {
     res.status(500).json({ error: 'GEMINI_API_KEY nije podešen na serveru.' });

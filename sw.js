@@ -1,10 +1,10 @@
-/* SUB-19 service worker — offline keširanje.
+/* SUB-20 service worker — offline keširanje.
    Pri svakoj izmeni aplikacije podigni CACHE broj i APP_VERSION:
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v139';
-const APP_VERSION = '139';
+const CACHE = 'sub19-cache-v140';
+const APP_VERSION = '140';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-128.png', './apple-touch-icon.png', './privacy.html', './uputstvo.html'];
 
 self.addEventListener('message', e => {
@@ -36,10 +36,12 @@ self.addEventListener('fetch', e => {
   /* './' se normalizuje u '/', pa je stari `endsWith('/')` odgovarao BILO KOJOJ
      putanji koja se zavrsava kosom crtom (npr. '/nesto/drugo/') i mapirao je na
      kes index.html-a. Za tu jednu stavku vazi samo tacno poklapanje. */
-  const key = ASSETS.find(a => {
-    const p = a.replace(/^\./, '');            /* './index.html' -> '/index.html', './' -> '/' */
-    return u.pathname === p || (p !== '/' && u.pathname.endsWith(p));
-  });
+  /* TACNO poklapanje putanje, ne `endsWith`. Ranije bi '/bilo/sta/index.html'
+     odgovaralo stavci './index.html' i dobilo keširanu kopiju korenske
+     stranice. Trenutno takve putanje ne postoje, ali pravilo je bilo šire
+     nego što opisuje — a ista klasa greške ('./' je preko endsWith('/')
+     hvatao SVAKU putanju sa kosom crtom) već je jednom popravljena ovde. */
+  const key = ASSETS.find(a => u.pathname === a.replace(/^\./, ''));
   if (e.request.mode === 'navigate' || key) {
     const cacheKey = key || './index.html';
     e.respondWith(

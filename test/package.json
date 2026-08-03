@@ -1,0 +1,9 @@
+{
+  "name": "sub-20-testovi",
+  "private": true,
+  "type": "module",
+  "description": "Testovi za SUB-20. Namerno ODVOJEN od roota: package.json u rootu bi naterao Vercel da projekat tretira kao Node aplikaciju i pokrene build, a aplikacija se deployuje bez build koraka (v. komentare u api/*.js).",
+  "scripts": {
+    "test": "cd .. && node --test \"test/**/*.test.mjs\""
+  }
+}

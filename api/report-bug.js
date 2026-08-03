@@ -70,10 +70,15 @@ export default async function handler(req, res) {
       if (errBody.includes('DAILY_LIMIT_EXCEEDED')) {
         return res.status(429).json({ error: 'Dnevni limit prijava (' + DAILY_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
       }
-      // Tabela/funkcija možda još nije podešena (stara šema) — ne blokiramo
-      // korisnika zbog toga, samo nastavljamo bez brojanja za ovaj poziv.
+      /* Tabela/funkcija mozda jos nije podesena (stara sema) — ne blokiramo
+         korisnika, ali se to mora videti u logovima (v. isti komentar u
+         api/analyze.js): limit koji tiho otkaze izgleda kao limit koji radi. */
+      console.warn('[limit] brojac nije radio (bug_report_usage) — propusteno bez brojanja. HTTP %s: %s',
+        rl.status, errBody.slice(0, 200));
     }
-  } catch (e) { /* mrežni problem ovde ne sme da obori celu prijavu */ }
+  } catch (e) {
+    console.warn('[limit] brojac nedostupan (bug_report_usage) — propusteno bez brojanja: %s', e.message);
+  }
 
   let body;
   try {

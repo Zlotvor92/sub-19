@@ -1,4 +1,4 @@
-/* SUB-19 · Strava OAuth — razmena koda za tokene.
+/* SUB-20 · Strava OAuth — razmena koda za tokene.
    Čita STRAVA_CLIENT_ID i STRAVA_CLIENT_SECRET iz Vercel Environment Variables.
 
    IZMENE (bezbednost):

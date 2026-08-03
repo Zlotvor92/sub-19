@@ -1,0 +1,22 @@
+name: Testovi
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Nema `npm install` — testovi nemaju zavisnosti, sve je iz standardne
+      # biblioteke. Nema ni build koraka, jer se aplikacija deployuje bez njega.
+      - name: Provera sintakse
+        run: |
+          for f in api/*.js sw.js; do node --check "$f"; done
+      - name: Testovi
+        run: node --test "test/**/*.test.mjs"

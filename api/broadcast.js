@@ -65,9 +65,13 @@ async function sviKorisnici(url, key) {
   }
   /* bez adrese nema kome da se pošalje; duplikati se izbacuju */
   const vidjeni = new Set();
-  return out
+  const lista = out
     .map(u => String(u.email || '').trim().toLowerCase())
     .filter(e => e && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e) && !vidjeni.has(e) && vidjeni.add(e));
+  /* STABILAN REDOSLED je uslov za nastavak u vise poziva (v. `od` ispod):
+     bez njega bi drugi poziv mogao da preskoci ili ponovi nekoga, jer Admin
+     API ne garantuje isti raspored izmedju poziva. */
+  return lista.sort();
 }
 
 const BAZA = 'https://sub-19.vercel.app';
@@ -127,23 +131,48 @@ export default async function handler(req, res) {
   /* probno slanje samo na navedene adrese — da vidiš kako mejl izgleda u sandučetu */
   const samoNa = Array.isArray(body.samoNa) ? body.samoNa.map(x => String(x).toLowerCase()) : null;
 
-  let primaoci;
-  try { primaoci = await sviKorisnici(url, srv); }
+  let svi;
+  try { svi = await sviKorisnici(url, srv); }
   catch (e) { res.status(502).json({ error: e.message }); return; }
-  if (samoNa) primaoci = primaoci.filter(e => samoNa.includes(e));
+  if (samoNa) svi = svi.filter(e => samoNa.includes(e));
 
   if (!posalji) {
     res.status(200).json({
-      probno: true, primalaca: primaoci.length, primaoci,
+      probno: true, primalaca: svi.length, primaoci: svi,
       naslov: NASLOV,
       napomena: 'Ništa nije poslato. Ponovi poziv sa {"posalji":true} da stvarno pošalješ.'
     });
     return;
   }
 
+  /* SLANJE U VISE POZIVA — funkcija se ne sme osloniti na to da stigne do kraja.
+     Resend prima ~2 zahteva u sekundi, pa jedan mejl kosta ~600 ms. Vercel
+     funkcija ima vremenski limit (ovde 60 s, v. vercel.json), sto je oko 90
+     mejlova po pozivu; ranije je petlja isla kroz CELU listu (do 5000 adresa =
+     50 minuta) i bila prekidana na pola. Klijent je tada video „Nije uspelo",
+     a deo ljudi je mejl VEC primio — pa je ponovni pokusaj slao duplikate.
+     Sada se radi do roka, pa se vrati `sledeciOd`; pozivalac nastavlja odatle.
+     Redosled je stabilan (sortirana lista), tako da se niko ne preskoci ni ne
+     dobije dva puta. */
+  /* Tempo i rok su podesivi kroz Environment Variables. Podrazumevane
+     vrednosti su produkcijske; postoje kao promenljive iz dva razloga:
+     (1) ako Resend promeni ogranicenje, ne treba menjati kod;
+     (2) testovi ih spuste, pa ne moraju stvarno da cekaju minute. */
+  /* `|| podrazumevano` OVDE NE VALJA: Number('0') je 0, sto je falsy, pa bi
+     eksplicitno podesena nula tiho postala 600. Zato provera vrednosti. */
+  const broj = (v, pod) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : pod; };
+  const PAUZA_MS = broj(process.env.BROADCAST_PAUZA_MS, 600);    /* Resend ~2 zahteva/s */
+  const ROK_MS   = broj(process.env.BROADCAST_ROK_MS, 45000);    /* rezerva do limita funkcije */
+  const pocetak = Date.now();
+  const od = Math.max(0, Math.min(Number(body.od) || 0, svi.length));
+  const primaoci = svi.slice(od);
+
   const html = telo();
   const uspelo = [], palo = [];
-  for (const to of primaoci) {
+  let i = 0;
+  for (; i < primaoci.length; i++) {
+    if (Date.now() - pocetak > ROK_MS) break;   /* stani pre nego sto te platforma prekine */
+    const to = primaoci[i];
     try {
       const r = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -156,8 +185,10 @@ export default async function handler(req, res) {
       palo.push({ to, greska: e.message });
     }
     /* Resend ograničava na ~2 zahteva u sekundi; bez pauze deo mejlova otpadne */
-    await new Promise(r => setTimeout(r, 600));
+    if (PAUZA_MS > 0) await new Promise(r => setTimeout(r, PAUZA_MS));
   }
+  const obradjeno = od + i;
+  const sledeciOd = obradjeno < svi.length ? obradjeno : null;
 
   /* Greške se GRUPIŠU po poruci: kad padne svih osam, razlog je po pravilu
      jedan te isti (npr. Resend bez potvrđenog domena šalje samo na adresu
@@ -169,6 +200,9 @@ export default async function handler(req, res) {
     poslato: uspelo.length, palo: palo.length,
     razlozi,
     /* najčešći razlog izdvojen, da pozivalac ima šta da prikaže bez kopanja */
-    glavniRazlog: razlozi.length ? razlozi.sort((a, b) => b.koliko - a.koliko)[0].razlog : null
+    glavniRazlog: razlozi.length ? razlozi.sort((a, b) => b.koliko - a.koliko)[0].razlog : null,
+    /* nastavak: null = gotovo je; broj = pozovi ponovo sa {"posalji":true,"od":N} */
+    ukupno: svi.length,
+    sledeciOd
   });
 }
