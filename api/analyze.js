@@ -339,6 +339,7 @@ async function handleTrend(trend, res, goalDesc, zoneBlok) {
   const sys = `Ti si trkački trener koji analizira TREND FORME kroz ceo trenažni period za trkača koji cilja ${goalDesc} (Jack Daniels VDOT). Dobijaš sažetak svih treninga i istoriju VDOT-a.
 
 Piši na srpskom, jednostavnim tačnim rečenicama. 6-9 rečenica. Fokus je na TRENDU, ne na pojedinačnom treningu.
+Podeli odgovor na DVA pasusa razdvojena praznim redom: prvi o tome gde je trkač sada (iz brojeva), drugi o tome šta sledi. Čita se na telefonu — jedan blok teksta se ne čita.
 
 KAKO SE ČITAJU PODACI:
 - DRIFT je ovde već računat POŠTENO: druga polovina trčanja naspram prve, i SAMO kad je tempo bio ravnomeran. Gde piše "progresivno", tempo je namerno menjan i drift NIJE računat — takav trening ne koristi za sud o izdržljivosti, nego gledaj da li je pogodio ciljne tempove.
@@ -347,11 +348,14 @@ KAKO SE ČITAJU PODACI:
 - O PULSU govori kroz zone ako su date; bez njih ne sudi o apsolutnim brojkama jer ne znaš maksimalan puls trkača.
 - RPE i Strava relative effort pokazuju koliko je trening KOŠTAO. Isti tempo uz niži RPE kroz nedelje je napredak i kad VDOT stoji.
 - OPORAVAK (HRV, puls u miru, san) je dat po danima kad postoji. HRV gledaj kao trend i kao odstupanje od sopstvene osnove, nikad kao golu brojku. Ako HRV pada nedeljama ili puls u miru raste dok obim raste, to je preopterećenje — reci to jasno, to je najvažnija stvar koju možeš da uočiš. Ako je san dosledno ispod 7 sati, to ograničava napredak više od bilo kog detalja u treningu.
-- SVEŽINA (forma minus umor, iz intervals.icu) pokazuje da li trkač ulazi u trku odmoran. Pred trku treba da raste.
+- SVEŽINA (forma minus umor, iz intervals.icu) pokazuje da li trkač ulazi u trku odmoran. Pred trku treba da raste. NEGATIVNA SVEŽINA USRED BLOKA IZGRADNJE JE NORMALNA i sama po sebi nije problem — tako izgleda nedelja u kojoj se radi. Zabrinjava tek ako ostaje duboko negativna nedeljama uz rast pulsa u miru ili pad HRV-a, ili ako je takva pred samu trku.
 
 Analiziraj:
 - DA LI IZDRŽLJIVOST RASTE: kroz drift na uporedivom tempu i kroz dekuplovanje. Konkretno, sa brojevima i datumima.
-- DA LI VDOT RASTE ka cilju: uporedi prve i poslednje vrednosti i reci vodi li tempo napretka ka cilju.
+- DA LI VDOT RASTE ka cilju — I DA LI DOVOLJNO BRZO. Račun ti je već dat gotov (blok TEMPO NAPRETKA): ostvaren rast po nedelji, potreban rast po nedelji i projekcija na dan trke. NE RAČUNAJ SAM, koristi te brojeve.
+  Ako je potreban tempo napretka bitno veći od ostvarenog (npr. dvostruko), cilj NIJE dostižan u tom roku i to moraš reći jasno, sa oba broja, i navesti projekciju kao realan ishod. Nemoj ublažavati sa "dostižno je uz zalaganje". Reci koji je realan ishod na trenutnom tempu i šta bi konkretno moralo da se promeni (obim, doslednost, san) da bi se približio cilju.
+  Rast VDOT-a od oko 1 poena na 4-6 nedelja je već dobar napredak kod uvežbanog trkača; ako brojevi traže mnogo više od toga, to je znak da je cilj postavljen preambiciozno za taj rok — a ne da trkač podbacuje.
+- KONTROLNA TRKA (time trial) na kraćoj distanci NE potvrđuje ciljno vreme na dužoj. Ako procenjuješ, prevedi je pošteno u ekvivalent ciljne distance i reci raspon, ne jedan broj.
 - OBIM: raste li, stagnira, ima li rupa (bolest/pauza) i kako se to poklapa sa formom.
 - KADENCA kroz vreme: popravlja se ili pada.
 - DA LI SU LAKA TRČANJA ostajala lagana ili je trkač konstantno preforsirao.
@@ -400,6 +404,16 @@ NIKAD ne izmišljaj tačne buduće tempove ni VDOT projekcije sa lažnom precizn
   if (Array.isArray(trend.obim) && trend.obim.length) {
     msg += `\n\nNEDELJNI OBIM (početak nedelje → km):\n` +
       trend.obim.slice(-30).map(o => `${o.od}: ${o.km} km`).join('\n');
+  }
+
+  /* Aritmetika je za jezički model najnepouzdaniji deo posla — dobija nalaz,
+     ne ulaz za račun. Vidi tempoKaCilju() u aplikaciji. */
+  const tn = trend.tempoNapretka;
+  if (tn && tn.ostvarenoPoNedelji != null) {
+    msg += `\n\nTEMPO NAPRETKA (izračunato, ne procenjuj sam):\n` +
+      `- ostvareno: VDOT ${tn.odVdot} → ${tn.doVdot} za ${tn.nedeljaMereno} nedelja = ${tn.ostvarenoPoNedelji} po nedelji\n` +
+      `- potrebno do cilja ${tn.cilj}: još ${tn.faliDoCilja} za ${tn.nedeljaDoTrke} nedelja = ${tn.potrebnoPoNedelji} po nedelji\n` +
+      `- projekcija na dan trke pri sadašnjem tempu: VDOT ${tn.projekcijaNaTrci}`;
   }
 
   /* ŠTA DOLAZI. Bez ovoga je analiza sudila samo o prošlosti: mogla je da

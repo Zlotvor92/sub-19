@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='132'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='133'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6966,7 +6966,32 @@ function trendSummary(){
     .map(k=>S.wellness[k]).filter(z=>z&&(z.hrv!=null||z.pulsUMiru!=null||z.sanH!=null||z.ctl!=null));
   return {treninzi:out, vdot:vl, baseline:baselineVdot(), cilj:goalVdotActive(),
           obim, hrZones:(S.strava&&S.strava.hrZones)||null, oporavak:opor,
-          naredno:planUnapred(4), doTrke:diffD(TODAY,CUR_RACE)};
+          naredno:planUnapred(4), doTrke:diffD(TODAY,CUR_RACE),
+          tempoNapretka:tempoKaCilju(vl)};
+}
+/* TEMPO NAPRETKA — racuna se OVDE, ne prepusta se modelu.
+   Merenjem na stvarnoj analizi: model je uredno ispisao i rast (48.1 -> 48.5)
+   i cilj (51.3) i rok (52 dana), a onda ta tri broja nije uporedio i zakljucio
+   da je cilj "dostizan" — iako trazeni tempo napretka bio oko sedam puta veci
+   od ostvarenog. Aritmetika je za jezicki model najnepouzdaniji deo posla, pa
+   mu se salje gotov nalaz umesto ulaza za racun. */
+function tempoKaCilju(vl){
+  const cilj=goalVdotActive();
+  if(!Array.isArray(vl)||vl.length<2||cilj==null) return null;
+  const prvi=vl[0], zadnji=vl[vl.length-1];
+  if(!prvi||!zadnji||prvi.vdot==null||zadnji.vdot==null) return null;
+  const dana=diffD(prvi.ts||prvi.date, zadnji.ts||zadnji.date);
+  if(!(dana>=14)) return null;                    /* prekratko za tvrdnju o tempu */
+  const nedelja=dana/7, doTrkeNed=Math.max(diffD(TODAY,CUR_RACE)/7, 0.1);
+  const ostvareno=(zadnji.vdot-prvi.vdot)/nedelja;
+  const fali=cilj-zadnji.vdot;
+  const potrebno=fali/doTrkeNed;
+  const r2=x=>Math.round(x*100)/100;
+  return { odVdot:prvi.vdot, doVdot:zadnji.vdot, nedeljaMereno:r2(nedelja),
+           ostvarenoPoNedelji:r2(ostvareno), cilj, faliDoCilja:r2(fali),
+           nedeljaDoTrke:r2(doTrkeNed), potrebnoPoNedelji:r2(potrebno),
+           /* projekcija na TRENUTNOM tempu — jedini pošten odgovor na "hoću li stići" */
+           projekcijaNaTrci:r2(zadnji.vdot+ostvareno*doTrkeNed) };
 }
 /* SAZETAK NAREDNIH NEDELJA — da trend analiza sudi o onome sto DOLAZI, a ne
    samo o onome sto je proslo. Bez ovoga je mogla da kaze "obim raste prebrzo"
