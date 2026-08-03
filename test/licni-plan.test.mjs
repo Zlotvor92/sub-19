@@ -192,13 +192,34 @@ describe('Vlasnikovi podaci ne izlaze van njegovog naloga', () => {
     assert.ok(app.evalIn('!!S.log.n12d5'), 'obrisan je baš njegov trening');
   });
 
-  test('ne briše se ni kad je uneo samo merenje mase', () => {
+  test('tuđe merenje mase odlazi i kad korisnik ima svoje', () => {
+    /* Uklanjanje je hirurško: briše se TAČNO tuđi zapis, a sopstveni ostaje.
+       Ranije se odustajalo čim postoji bilo šta svoje — pa su tuđa merenja
+       ostajala na grafikonu težine zauvek. */
     const sa = saStarimSeedom('11111111-2222-3333-4444-555555555555');
     const st = JSON.parse(sa['sub19-v1']);
     st.kg.push({ date: '2026-08-01', kg: 74 });
     sa['sub19-v1'] = JSON.stringify(st);
     const app = loadApp({ seedLocalStorage: sa });
-    assert.equal(app.evalIn('S.kg.length'), 2, 'obrisano je sopstveno merenje');
+    assert.equal(app.evalIn('S.kg.length'), 1, 'tuđe merenje je ostalo');
+    assert.equal(app.evalIn('S.kg[0].kg'), 74, 'obrisano je sopstveno umesto tuđeg');
+  });
+
+  test('tuđe beleške o kolenu odlaze I KAD postoji generisan plan', () => {
+    /* Ovo je slučaj viđen na uređaju: čovek napravi svoj plan čarobnjakom, a
+       tuđe beleške mu ostanu u tabu Povrede — jer je čišćenje odustajalo čim
+       postoji generisan plan. */
+    const sa = saStarimSeedom('11111111-2222-3333-4444-555555555555');
+    const st = JSON.parse(sa['sub19-v1']);
+    st.genPlan = { meta: { raceDistM: 5000 }, pred: [], qs: {},
+      weeks: [{ w: 1, start: '2026-06-22', days: [{ dow: 0, tag: 'lako', km: 5, desc: 'x', id: 'g1d1' }] }] };
+    st.log = { g1d1: { status: 'done', km: 5 } };
+    sa['sub19-v1'] = JSON.stringify(st);
+    const app = loadApp({ seedLocalStorage: sa });
+    assert.equal(app.evalIn('S.knee.length'), 0, 'tuđe beleške o kolenu su ostale uz generisan plan');
+    assert.equal(app.evalIn('S.kg.length'), 0, 'tuđa merenja mase su ostala uz generisan plan');
+    assert.ok(app.evalIn('!!S.genPlan'), 'obrisan je sopstveni plan');
+    assert.ok(app.evalIn('!!S.log.g1d1'), 'obrisan je sopstveni trening');
   });
 
   test('vlasnik na praznom uređaju kreće prazan — podaci stižu sa servera', () => {

@@ -590,7 +590,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='148'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='149'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -7212,34 +7212,53 @@ function moraSvojPlan(){ return !S.genPlan && !jeVlasnik() && !imaUnosaNaLicnom(
    `sbInit()` posto se sesija potvrdi — jer pri prvom pokretanju na novom
    uredjaju covek jos nije prijavljen.
    ============================================================ */
-function stanjeNetaknuto(){
-  return !S.genPlan
-    && Object.keys(S.log||{}).length===0
-    && (S.knee||[]).length===0
-    && (S.kg||[]).length===0
-    && Object.keys(S.pred||{}).length===0;
-}
-/* Da li na uredjaju stoji ZATECEN, NEDIRNUT vlasnikov seed iz starih verzija.
-   Provera je namerno stroga (podskup potpisa, bez ijednog viska): ako je covek
-   bilo sta svoje uneo — makar jedan trening ili jedno merenje — nista se ne
-   dira, jer bi mu se time obrisao sopstveni rad. Tada ostaje traka „Ovo nije
-   tvoj plan" i on sam bira kada ce napraviti svoj. */
-function nosiTudjuIstoriju(){
-  if(S.genPlan) return false;
-  const podskup=(imamo,potpis)=>imamo.every(x=>potpis.includes(x));
-  const logK=Object.keys(S.log||{}), logP=STARI_SEED_POTPIS.log;
-  const kneeK=(S.knee||[]).map(k=>k&&k.id), kneeP=STARI_SEED_POTPIS.knee;
-  const kgK=(S.kg||[]).map(x=>x&&x.date), kgP=STARI_SEED_POTPIS.kg;
-  const predK=Object.keys(S.pred||{}), predP=STARI_SEED_POTPIS.pred;
-  if(!podskup(logK,logP)||!podskup(kneeK,kneeP)||!podskup(kgK,kgP)||!podskup(predK,predP)) return false;
-  return logK.length>0||kneeK.length>0||kgK.length>0;   /* ima sta da se cisti */
+/* UKLANJANJE ZATECENOG SEEDA — hirurski, ne "sve ili nista".
+   Prva verzija je odustajala cim postoji generisan plan (`if(S.genPlan) return
+   false`) i cim ijedan unos izlazi iz potpisa. Posledica, videna na stvarnom
+   uredjaju: covek napravi svoj plan carobnjakom, a tudje beleske o kolenu mu
+   ostanu u tabu Povrede zauvek — jer od tog trenutka ciscenje vise ne radi.
+   Ni `purgeGenPlanData()` ih ne hvata: brise samo unose sa 'g' izvorom, a
+   seed zapisi o kolenu nemaju `src`.
+
+   Sada se uklanja TACNO ono sto je prepoznato kao seed, bez obzira na ostalo:
+   - koleno: ID-jevi k1..k10 su nedvosmisleni — rucni unos dobija 'k'+Date.now()
+     (trinaest cifara), a unos iz treninga 'kt-<idDana>'. Nijedan ne moze da
+     bude 'k1'.
+   - masa: dva datuma iz potpisa I bez `src` — sopstveni unosi uvek nose src.
+   - dnevnik i tempi: samo ako CEO 'n' prostor staje u potpis, dakle ako covek
+     nije nista svoje upisao na ugradjeni plan. Inace se ne diraju, jer bi mu
+     se brisao sopstveni rad. */
+function ukloniTudjiSeed(){
+  const P=STARI_SEED_POTPIS;
+  let promena=false;
+
+  const kneePre=(S.knee||[]).length;
+  S.knee=(S.knee||[]).filter(k=>!(k&&P.knee.includes(k.id)));
+  if((S.knee||[]).length!==kneePre) promena=true;
+
+  const kgPre=(S.kg||[]).length;
+  S.kg=(S.kg||[]).filter(x=>!(x&&x.src==null&&P.kg.includes(x.date)));
+  if((S.kg||[]).length!==kgPre) promena=true;
+
+  /* Dnevnik/tempi: konzervativno. 'g' unosi (sopstveni plan) se ne racunaju —
+     gleda se samo da li je covek nesto svoje upisao na UGRADJENI plan. */
+  const nLog=Object.keys(S.log||{}).filter(k=>k.charAt(0)==='n');
+  if(nLog.length && nLog.every(k=>P.log.includes(k))){
+    nLog.forEach(k=>{ delete S.log[k]; }); promena=true;
+  }
+  const nPred=Object.keys(S.pred||{}).filter(k=>k.charAt(0)==='p');
+  if(nPred.length && nPred.every(k=>P.pred.includes(k))){
+    nPred.forEach(k=>{ delete S.pred[k]; if(S.predLock) delete S.predLock[k]; });
+    S.vdotLog=(S.vdotLog||[]).filter(e=>!(e&&P.pred.includes(e.id)));
+    promena=true;
+  }
+  return promena;
 }
 function uskladiVlasnickePodatke(){
   /* Vlasniku se nista ne UBACUJE iz koda — njegovi podaci dolaze sa servera
      (sbPull) ili iz backup fajla. Ovde se samo cisti tudji uredjaj. */
   if(jeVlasnik()) return false;
-  if(!nosiTudjuIstoriju()) return false;
-  S.log={}; S.knee=[]; S.kg=[]; S.pred={}; S.predLock={}; S.vdotLog=[];
+  if(!ukloniTudjiSeed()) return false;
   preracunajVdotLog(); rebuildDateIndex(); save();
   return true;
 }
