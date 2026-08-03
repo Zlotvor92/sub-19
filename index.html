@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='134'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='135'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1482,7 +1482,19 @@ function predCalc(){
     let pred=null;
     if(a){
       const zone=zoneForPredRow(r);
-      pred = zone!=null ? raceTimeForVdot(vdotFromPace(a,zone),raceDistM) : Math.round(riegelDist(a*r.q,r.q*1000,raceDistM));
+      /* PREDIKCIJA IDE IZ IZGLACANOG VDOT-a, ne iz jedne sesije.
+         Kartica "Trenutna forma" prikazuje izglacan lanac, a predikcija je
+         racunala VDOT iz SAMO te sesije — pa su dva broja na istom ekranu
+         govorila razlicito. Mereno: posle jednog tempa na vrucini (4:45
+         umesto 4:22) kartica se pomeri 48.4 -> 46.4, a predikcija skoci
+         20:32 -> 22:26. Jedan vruc dan ne oduzima dva minuta na 5K.
+         Sirov racun ostaje kao rezerva za redove koji nemaju zapis u lancu
+         (rucno upisan tempo bez zabelezene sesije). */
+      const e=(S.vdotLog||[]).find(x=>x&&x.id===r.id);
+      const v=(e&&e.vdot!=null&&isFinite(e.vdot)) ? e.vdot
+            : (zone!=null ? vdotFromPace(a,zone) : null);
+      pred = v!=null ? raceTimeForVdot(v,raceDistM)
+                     : Math.round(riegelDist(a*r.q,r.q*1000,raceDistM));
     }
     return {r,a,pred};
   });
