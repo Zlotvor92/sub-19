@@ -590,7 +590,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='145'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='146'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -805,18 +805,20 @@ const WT_TARGET=[
 
 /* ============ POČETNO STANJE ============
    PRAZNO ZA SVAKOGA. Ranije je ova funkcija svakom novom korisniku upisivala
-   VLASNIKOVU istoriju iz Excela: sedam odradjenih treninga, deset zapisa o
-   kolenu SA LICNIM BELESKAMA ("Bol se javio izmedju 6-7km", "Osetio sam
-   koleno vec od drugog kilometra") i dva merenja telesne mase. Tudji covek je
-   to video u tabu Povrede i na grafikonu tezine, a pozadinska sinhronizacija
-   je sve to upisivala i u NJEGOV Supabase red.
+   VLASNIKOVU istoriju: odradjene treninge, zapise o kolenu sa licnim beleskama
+   i merenja telesne mase. Tudji covek je to video u tabu Povrede i na
+   grafikonu tezine, a pozadinska sinhronizacija je sve to upisivala i u
+   NJEGOV Supabase red.
 
-   Drugi, tisi efekat: `imaUnosaNaLicnom()` je zbog tih unosa UVEK vracao true,
-   pa `moraSvojPlan()` nikad nije mogao da bude true — carobnjak se nije
-   nametao nikome, i svaki nov korisnik je sletao na vlasnikov plan sa tudjim
-   datumom trke i tudjim tempima.
+   Drugi, tisi efekat istog uzroka: `imaUnosaNaLicnom()` je zbog tih unosa
+   UVEK vracao true, pa `moraSvojPlan()` nikad nije mogao da bude true —
+   carobnjak se nije nametao nikome, i svaki nov korisnik je sletao na
+   vlasnikov plan sa tudjim datumom trke i tudjim tempima.
+
    Sada je pocetno stanje prazno, pa nov korisnik ide PRAVO u carobnjaka.
-   Vlasnikova istorija se primenjuje samo njegovom nalogu (v. VLASNIK_ISTORIJA). */
+   Vlasnikovi podaci se ne ubacuju iz koda uopste — stizu sa servera pri
+   prijavi ili iz backup fajla (v. STARI_SEED_POTPIS ispod, koji nosi samo
+   identifikatore da bi se zatecen seed prepoznao i obrisao). */
 function seedState(){return {
  v:SCHEMA,
  log:{},
@@ -838,37 +840,19 @@ function seedState(){return {
  ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}
 };}
 
-/* VLASNIKOVA POCETNA ISTORIJA (iz Plan_SUB-19_5K_v5.xlsx).
-   Primenjuje se ISKLJUCIVO na vlasnikov nalog i samo dok je stanje jos
-   netaknuto — v. uskladiVlasnickePodatke(). Sluzi i kao potpis po kom se
-   prepoznaje zatecen, nedirnut seed na uredjajima drugih korisnika. */
-const VLASNIK_ISTORIJA = {
- log:{
-  n1d1:{status:'done',km:7,ts:'2026-06-22'},
-  n1d3:{status:'done',km:8,ts:'2026-06-24'},
-  n1d4:{status:'done',ts:'2026-06-25'},
-  n1d5:{status:'done',km:7,ts:'2026-06-26'},
-  n1d7:{status:'skip',ts:'2026-06-28'},
-  n2d1:{status:'done',km:8,ts:'2026-06-29'},
-  n2d3:{status:'done',km:9,ts:'2026-07-01'}
- },
- knee:[
-  {id:'k1', date:'2026-06-22',act:'Trčanje',pain:1,note:'Bol se javio izmedju 6-7km'},
-  {id:'k2', date:'2026-06-23',act:'Odmor', pain:0,note:'Odmor sve ok dok se ne trci sto se tice samog kolena'},
-  {id:'k3', date:'2026-06-24',act:'Trčanje',pain:0,note:'Prilikom budjenja , koleno za sada okej nema bola, u toku trcanja koleno ok'},
-  {id:'k4', date:'2026-06-25',act:'Snaga',  pain:0,note:''},
-  {id:'k5', date:'2026-06-26',act:'Trčanje',pain:1,note:'Osetio sam koleno vec od drugog kilometra'},
-  {id:'k6', date:'2026-06-27',act:'Odmor', pain:0,note:''},
-  {id:'k7', date:'2026-06-28',act:'Odmor', pain:0,note:'Preskocio sam trcanje zbog petka , jer je islo na gore a ne na bolje'},
-  {id:'k8', date:'2026-06-29',act:'Trčanje',pain:1,note:'Samo na trenutke , brzo je prolazilo gotovo da nije bolelo'},
-  {id:'k9', date:'2026-06-30',act:'Snaga',  pain:1,note:'Ne prilikom snage , nego hodanja na poslu'},
-  {id:'k10',date:'2026-07-01',act:'Trčanje',pain:0,note:'Bez bola'}
- ],
- kg:[
-  {date:'2026-06-22',kg:81.6},
-  {date:'2026-06-29',kg:81}
- ],
- pred:{p1:265,p2:236}
+/* POTPIS ZATECENOG SEEDA — SAMO IDENTIFIKATORI, bez ijednog licnog podatka.
+   Sluzi jednoj stvari: da se na tudjem uredjaju prepozna NEDIRNUT seed iz
+   starih verzija i obrise, pa taj covek ode u carobnjaka umesto da gleda
+   vlasnikov plan.
+   Sami podaci — beleske o kolenu i merenja telesne mase — UKLONJENI su iz
+   koda. Ranije su stajali ovde u citljivom obliku, pa ih je mogao procitati
+   svako ko otvori izvor stranice. Vlasnikovi stvarni podaci zive u Supabase-u
+   i u backup fajlovima; na nov uredjaj stizu prijavom, ne iz koda. */
+const STARI_SEED_POTPIS = {
+  log:  ['n1d1','n1d3','n1d4','n1d5','n1d7','n2d1','n2d3'],
+  knee: ['k1','k2','k3','k4','k5','k6','k7','k8','k9','k10'],
+  kg:   ['2026-06-22','2026-06-29'],
+  pred: ['p1','p2']
 };
 
 /* ============ POMOĆNE (čiste funkcije) ============ */
@@ -7226,32 +7210,21 @@ function stanjeNetaknuto(){
 function nosiTudjuIstoriju(){
   if(S.genPlan) return false;
   const podskup=(imamo,potpis)=>imamo.every(x=>potpis.includes(x));
-  const logK=Object.keys(S.log||{}), logP=Object.keys(VLASNIK_ISTORIJA.log);
-  const kneeK=(S.knee||[]).map(k=>k&&k.id), kneeP=VLASNIK_ISTORIJA.knee.map(k=>k.id);
-  const kgK=(S.kg||[]).map(x=>x&&x.date), kgP=VLASNIK_ISTORIJA.kg.map(x=>x.date);
-  const predK=Object.keys(S.pred||{}), predP=Object.keys(VLASNIK_ISTORIJA.pred);
+  const logK=Object.keys(S.log||{}), logP=STARI_SEED_POTPIS.log;
+  const kneeK=(S.knee||[]).map(k=>k&&k.id), kneeP=STARI_SEED_POTPIS.knee;
+  const kgK=(S.kg||[]).map(x=>x&&x.date), kgP=STARI_SEED_POTPIS.kg;
+  const predK=Object.keys(S.pred||{}), predP=STARI_SEED_POTPIS.pred;
   if(!podskup(logK,logP)||!podskup(kneeK,kneeP)||!podskup(kgK,kgP)||!podskup(predK,predP)) return false;
   return logK.length>0||kneeK.length>0||kgK.length>0;   /* ima sta da se cisti */
 }
 function uskladiVlasnickePodatke(){
-  let promena=false;
-  if(jeVlasnik()){
-    /* Vlasnik na praznom uredjaju: vrati mu polaznu istoriju. Ako vec ima
-       podatke (lokalno ili na serveru), ovo se ne aktivira. */
-    if(stanjeNetaknuto()){
-      const k=JSON.parse(JSON.stringify(VLASNIK_ISTORIJA));
-      S.log=k.log; S.knee=k.knee; S.kg=k.kg; S.pred=k.pred;
-      promena=true;
-    }
-  } else if(nosiTudjuIstoriju()){
-    /* Tudji uredjaj sa zatecenim vlasnikovim seedom — brise se. Posle toga
-       `moraSvojPlan()` postaje tacan, pa covek ide pravo u carobnjaka umesto
-       da gleda tudji plan. */
-    S.log={}; S.knee=[]; S.kg=[]; S.pred={}; S.predLock={}; S.vdotLog=[];
-    promena=true;
-  }
-  if(promena){ preracunajVdotLog(); rebuildDateIndex(); save(); }
-  return promena;
+  /* Vlasniku se nista ne UBACUJE iz koda — njegovi podaci dolaze sa servera
+     (sbPull) ili iz backup fajla. Ovde se samo cisti tudji uredjaj. */
+  if(jeVlasnik()) return false;
+  if(!nosiTudjuIstoriju()) return false;
+  S.log={}; S.knee=[]; S.kg=[]; S.pred={}; S.predLock={}; S.vdotLog=[];
+  preracunajVdotLog(); rebuildDateIndex(); save();
+  return true;
 }
 /* blaza varijanta — tudji plan, ali sa vec upisanim treninzima */
 function tudjPlanSaUnosima(){ return !S.genPlan && !jeVlasnik() && imaUnosaNaLicnom(); }

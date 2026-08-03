@@ -11,7 +11,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp } from './harness.mjs';
+import { loadApp, readRepoFile } from './harness.mjs';
 
 const app = loadApp();
 
@@ -72,18 +72,23 @@ describe('Konstante ličnog plana', () => {
     assert.deepEqual(Array.from(qs.n14d2), [200]);
   });
 
-  test('početna istorija iz Excela je nepromenjena (VLASNIK_ISTORIJA)', () => {
-    /* Istorija je izmeštena iz seedState() u zaseban objekat koji se primenjuje
-       SAMO vlasnikovom nalogu — v. uskladiVlasnickePodatke(). Sadržaj mora
-       ostati isti. */
-    const h = app.get('VLASNIK_ISTORIJA');
-    assert.equal(Object.keys(h.log).length, 7);
-    assert.equal(h.log.n1d1.km, 7);
-    assert.equal(h.log.n1d7.status, 'skip');
-    assert.equal(h.knee.length, 10);
-    assert.equal(h.kg.length, 2);
-    assert.equal(h.kg[0].kg, 81.6);
-    assert.deepEqual({ ...h.pred }, { p1: 265, p2: 236 });
+  test('lični podaci vlasnika NISU u isporučenom kodu', () => {
+    /* Beleške o kolenu i merenja telesne mase su ranije stajale u seedState()
+       u čitljivom obliku — dakle vidljive svakome ko otvori izvor stranice.
+       Uklonjene su; stvarni podaci žive u Supabase-u i u backup fajlovima. */
+    const izvor = readRepoFile('index.html');
+    for (const trag of ['Bol se javio', 'Osetio sam koleno', 'Prilikom budjenja',
+      'Preskocio sam trcanje', 'brzo je prolazilo', '81.6']) {
+      assert.ok(!izvor.includes(trag), `lični podatak je i dalje u kodu: "${trag}"`);
+    }
+    assert.ok(!izvor.includes('VLASNIK_ISTORIJA'), 'blok sa istorijom je i dalje tu');
+  });
+
+  test('potpis zatečenog seeda nosi SAMO identifikatore', () => {
+    const p = app.get('STARI_SEED_POTPIS');
+    const svi = JSON.stringify(p);
+    assert.ok(/n1d1/.test(svi) && /k10/.test(svi), 'potpis ne prepoznaje stari seed');
+    assert.ok(!/81\.6|Bol|koleno ok|note/.test(svi), 'potpis nosi lične podatke');
   });
 
   test('seedState je PRAZAN — tuđi podaci ne idu novom korisniku', () => {
@@ -196,15 +201,14 @@ describe('Vlasnikovi podaci ne izlaze van njegovog naloga', () => {
     assert.equal(app.evalIn('S.kg.length'), 2, 'obrisano je sopstveno merenje');
   });
 
-  test('vlasnik na praznom uređaju dobija svoju istoriju nazad', () => {
+  test('vlasnik na praznom uređaju kreće prazan — podaci stižu sa servera', () => {
+    /* Istorija se više ne ubacuje iz koda; sbPull je donosi iz Supabase-a. */
     const app = loadApp({ seedLocalStorage: sesija(VLASNIK) });
-    assert.equal(app.evalIn('Object.keys(S.log).length'), 7);
-    assert.equal(app.evalIn('S.knee.length'), 10);
-    assert.equal(app.evalIn('S.kg.length'), 2);
-    assert.equal(app.evalIn('S.kg[0].kg'), 81.6);
+    assert.equal(app.evalIn('Object.keys(S.log).length'), 0);
+    assert.equal(app.evalIn('S.knee.length'), 0);
   });
 
-  test('vlasniku se istorija NE prepisuje preko postojećih podataka', () => {
+  test('vlasniku se postojeći podaci ne diraju', () => {
     const sa = sesija(VLASNIK);
     sa['sub19-v1'] = JSON.stringify({
       v: 7, log: { n9d5: { status: 'done', km: 11, sec: 2900 } }, knee: [], kg: [],
@@ -214,10 +218,10 @@ describe('Vlasnikovi podaci ne izlaze van njegovog naloga', () => {
     });
     const app = loadApp({ seedLocalStorage: sa });
     assert.deepEqual(Array.from(app.evalIn('Object.keys(S.log)')), ['n9d5'],
-      'seed je pregazio vlasnikove stvarne podatke');
+      'vlasnikovi stvarni podaci su promenjeni');
   });
 
-  test('vlasnik sa generisanim planom ne dobija seed', () => {
+  test('vlasnik sa generisanim planom se ne dira', () => {
     const sa = sesija(VLASNIK);
     sa['sub19-v1'] = JSON.stringify({
       v: 7, log: {}, knee: [], kg: [], pred: {}, predLock: {}, vdotLog: [], moves: {}, alts: {},
@@ -227,6 +231,7 @@ describe('Vlasnikovi podaci ne izlaze van njegovog naloga', () => {
       ui: { firstRun: '2026-06-22', lastBackup: null, snooze: null, seenWeek: null }
     });
     const app = loadApp({ seedLocalStorage: sa });
-    assert.equal(app.evalIn('Object.keys(S.log).length'), 0, 'seed je ubačen preko generisanog plana');
+    assert.equal(app.evalIn('Object.keys(S.log).length'), 0);
+    assert.ok(app.evalIn('!!S.genPlan'), 'generisan plan je obrisan');
   });
 });
