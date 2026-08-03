@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='135'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='136'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1557,7 +1557,13 @@ function raceDistActive(){
 }
 /* Zabeleži VDOT iz kvalitetne sesije. Vraća {vdot, prev, delta, dir} ili null.
    Prigušenje: jedna sesija je šum — pomeramo VDOT samo delimično ka izmerenom. */
-function recordVdot(predId, paceSec, dateOverride, kind){
+/* Koliko sme da odstupi AUTOMATSKI izmeren tempo od trenutne forme, u VDOT
+   poenima, da bi mu se verovalo. Jedna sesija ne moze posteno da pokaze pad
+   od 4+ poena — to je greska u prepoznavanju radnih deonica, ne pad forme.
+   Vazi SAMO za automatiku; rucno unet tempo je korisnikova izricita tvrdnja
+   i uvek se prihvata. */
+const AUTO_VDOT_TOL=4;
+function recordVdot(predId, paceSec, dateOverride, kind, auto){
   const r=CUR_PRED.find(x=>x.id===predId);
   if(!r||!paceSec)return null;
   /* Zona: PRVENSTVENO iz PRED reda oznake (pouzdanije, v. zoneForPredRow),
@@ -1566,6 +1572,17 @@ function recordVdot(predId, paceSec, dateOverride, kind){
   const measured=zone!=null
     ? Math.round(vdotFromPace(paceSec,zone)*10)/10
     : Math.round(vdotFromQuality(paceSec,r.q)*10)/10;
+  /* AUTOMATSKI IZMEREN TEMPO KOJI NE DRZI VODU SE ODBACUJE.
+     Izmereno na stvarnom slucaju: dan rucno prebacen u Tempo, trening
+     OverUnder 3x2km (500m @4:00 + 500m @4:20) sa 2 min kaskanja izmedju.
+     Prepoznavanje radnih deonica je u prosek uvuklo i kaskanja i dalo oko
+     4:48/km, sto u T zoni znaci VDOT ~42.9 — pa je VDOT pao sa 48.6 na 46.3
+     zbog treninga koji je zapravo bio dobar. Korisnik pritom nije uneo
+     nikakav tempo i nije imao kako da vidi odakle pad. */
+  if(auto){
+    const forma=currentVdot()!=null?currentVdot():baselineVdot();
+    if(forma!=null && Math.abs(measured-forma)>AUTO_VDOT_TOL) return null;
+  }
   /* Cuva se SAMO izmereno; lanac se posle racuna iz njega (v. preracunajVdotLog). */
   S.vdotLog=S.vdotLog||[];
   const ix=S.vdotLog.findIndex(e=>e.id===predId);
@@ -1575,6 +1592,17 @@ function recordVdot(predId, paceSec, dateOverride, kind){
   const e=S.vdotLog.find(x=>x.id===predId) || entry;
   return {vdot:e.vdot, prev:e.prev, delta:e.delta,
           dir: e.delta>0.05?'up':e.delta<-0.05?'down':'flat', measured};
+}
+/* Upis AUTOMATSKI izmerenog tempa. Ako ga recordVdot odbije kao nepouzdan,
+   ne upisuje se ni u Predikciju — polovicno stanje (tempo bez VDOT-a) bi bilo
+   gore od praznog. Dan se obelezi, pa kartica treninga moze da kaze zasto je
+   prazan i pozove na rucni unos. */
+function upisiAutoTempo(pid, paceSec, datum, d){
+  const r=recordVdot(pid, paceSec, datum, sessKind(d), true);
+  if(!r){ if(S.log[d.id]) S.log[d.id].autoOdbijen=paceSec; return false; }
+  S.pred[pid]=paceSec;
+  if(S.log[d.id]) delete S.log[d.id].autoOdbijen;
+  return true;
 }
 /* PRERACUN CELOG LANCA VDOT-a IZ IZMERENIH VREDNOSTI.
 
@@ -2238,6 +2266,9 @@ function formHTML(d){
         <input class="wseg-in" inputmode="numeric" placeholder="356 = 3:56" value="${cur?fmtTempo(cur):''}" data-wpin="${pid}">
         <div class="wseg-out" data-wout="${pid}">${vdotDeltaHTML(pid,cur)}</div>
       </div>`;
+      /* Tiho preskakanje je isto zamka kao tiho upisivanje pogresnog broja. */
+      if(cur==null && l && l.autoOdbijen)
+        workBlock+=`<div class="note-src" style="color:var(--amber);margin-top:6px">Automatski izmeren tempo (${fmtTempo(l.autoOdbijen)} /km) ne odgovara tvojoj formi — verovatno su u prosek ušla i kaskanja između deonica. Nije upisan; unesi tempo radnog dela ručno.</div>`;
     });
     workBlock+=`</div>`;
   }
@@ -2314,6 +2345,8 @@ function bindForm(root,d){
       const v=parseTimeStr(inp.value);
       if(inp.value.trim()===''){ delete S.pred[pid]; delete S.predLock[pid];
         const ix=(S.vdotLog||[]).findIndex(e=>e.id===pid); if(ix>=0)S.vdotLog.splice(ix,1);
+        preracunajVdotLog();   /* uklonjena sesija ne sme da ostane u lancu */
+        if(S.log[d.id]) delete S.log[d.id].autoOdbijen;
       } else if(v){ S.pred[pid]=v; S.predLock[pid]=true; const dl=S.log[d.id]; recordVdot(pid,v,(dl&&(dl.runDate||dl.ts))||d.date,sessKind(d)); }
       else return;
       save();
@@ -7541,7 +7574,7 @@ async function stravaSync(manual){
               const totT=segs.reduce((s,x)=>s+x.paceSec*x.distM/1000,0);
               const totD=segs.reduce((s,x)=>s+x.distM,0);
               const t=Math.round(totT/(totD/1000));
-              if(t){S.pred[rowId]=t;recordVdot(rowId,t,date,sessKind(d));props++;}
+              if(t){ if(upisiAutoTempo(rowId,t,date,d))props++; }
               if(S.log[d.id]) S.log[d.id].laps=segs;
             } else {
               /* FALLBACK 1: po-km presek iz istih streamova (kontinuiran kvalitetni
@@ -7556,7 +7589,7 @@ async function stravaSync(manual){
               if(spec)try{
                 const laps=await stApi('/activities/'+a.id+'/laps');
                 const t=workLapsTempo(laps,spec);
-                if(t){S.pred[rowId]=t;recordVdot(rowId,t,date,sessKind(d));props++;}
+                if(t){ if(upisiAutoTempo(rowId,t,date,d))props++; }
               }catch(e){}
             }
           }catch(e){}
