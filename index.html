@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='133'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='134'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1554,17 +1554,50 @@ function recordVdot(predId, paceSec, dateOverride, kind){
   const measured=zone!=null
     ? Math.round(vdotFromPace(paceSec,zone)*10)/10
     : Math.round(vdotFromQuality(paceSec,r.q)*10)/10;
-  const prev=currentVdot()!=null?currentVdot():baselineVdot();
-  /* prigušenje 40%: pomeri 40% puta ka izmerenom (jedna sesija ne pomera VDOT skroz) */
-  const smoothed=Math.round((prev+(measured-prev)*0.4)*10)/10;
-  const delta=Math.round((smoothed-prev)*10)/10;
-  const entry={id:predId, ts:dateOverride||TODAY, measured, vdot:smoothed, prev, delta};
+  /* Cuva se SAMO izmereno; lanac se posle racuna iz njega (v. preracunajVdotLog). */
   S.vdotLog=S.vdotLog||[];
-  /* ako već postoji unos za ovu sesiju, zameni ga (ne dupliraj) */
   const ix=S.vdotLog.findIndex(e=>e.id===predId);
-  if(ix>=0)S.vdotLog.splice(ix,1);
-  S.vdotLog.push(entry);
-  return {vdot:smoothed, prev, delta, dir: delta>0.05?'up':delta<-0.05?'down':'flat', measured};
+  const entry={id:predId, ts:dateOverride||TODAY, measured};
+  if(ix>=0) S.vdotLog[ix]=entry; else S.vdotLog.push(entry);
+  preracunajVdotLog();
+  const e=S.vdotLog.find(x=>x.id===predId) || entry;
+  return {vdot:e.vdot, prev:e.prev, delta:e.delta,
+          dir: e.delta>0.05?'up':e.delta<-0.05?'down':'flat', measured};
+}
+/* PRERACUN CELOG LANCA VDOT-a IZ IZMERENIH VREDNOSTI.
+
+   Ranije se prigusenje racunalo u trenutku unosa, nad `currentVdot()` — a to je
+   POSLEDNJI element niza, ne prethodna sesija po datumu. Dve posledice, obe je
+   korisnik osetio:
+
+   1) PONOVNI UNOS ISTIH PODATAKA JE DIZAO VDOT. Ponovni upis je racunao
+      prigusenje od rezultata SOPSTVENOG prethodnog upisa, pa je svaki put
+      preslo jos 40% preostalog puta ka izmerenom: 48.1 -> 50.1 -> 51.3 -> 52.0.
+      Isti podaci, a VDOT skoci skoro 2 poena.
+   2) REDOSLED SE KVARIO. Ispravka starije sesije bi je gurnula na kraj niza i
+      time je proglasila najnovijom.
+
+   Sada je VDOT ciste funkcija izmerenih vrednosti i njihovih datuma: sortira se
+   po datumu i lanac se racuna od pocetnog VDOT-a. Ponovni unos istih podataka
+   daje IDENTICAN rezultat, a ispravka starije sesije prepravlja i sve posle nje.
+   Zapisi bez `measured` (stari backup) se ne diraju — nose svoj vdot dalje. */
+function preracunajVdotLog(){
+  const niz=(S.vdotLog||[]).slice().sort((a,b)=>{
+    const A=String(a&&a.ts||''), B=String(b&&b.ts||'');
+    if(A!==B) return A<B?-1:1;
+    return String(a&&a.id||'')<String(b&&b.id||'')?-1:1;   /* stabilno pri istom datumu */
+  });
+  let tekuci=baselineVdot();
+  niz.forEach(e=>{
+    if(!e) return;
+    if(e.measured==null||!isFinite(e.measured)){ if(e.vdot!=null&&isFinite(e.vdot))tekuci=e.vdot; return; }
+    const prev=tekuci;
+    const sm=Math.round((prev+(e.measured-prev)*0.4)*10)/10;
+    e.prev=prev; e.vdot=sm; e.delta=Math.round((sm-prev)*10)/10;
+    tekuci=sm;
+  });
+  S.vdotLog=niz;
+  return niz;
 }
 /* Uskladi datume VDOT istorije sa PRAVIM datumima trčanja (runDate iz Strave).
    VDOT unosi nastali pre v20 nose datum sinhronizacije umesto datuma trčanja,
@@ -1581,7 +1614,8 @@ function fixVdotDates(){
     const real=l.runDate||null;
     if(real&&e.ts!==real){ e.ts=real; changed=true; }
   });
-  if(changed) S.vdotLog.sort((a,b)=>a.ts<b.ts?-1:a.ts>b.ts?1:0);
+  /* datumi su se pomerili -> promenio se i redosled, pa i ceo lanac */
+  if(changed) preracunajVdotLog();
   return changed;
 }
 /* Prekalkuliše POSTOJEĆU VDOT istoriju sa ispravnom, zona-svesnom formulom
@@ -5818,6 +5852,7 @@ function purgeGenPlanData(){
   const dropKeys=o=>{ Object.keys(o||{}).forEach(k=>{ if(isGenId(k))delete o[k]; }); };
   dropKeys(S.log); dropKeys(S.pred); dropKeys(S.predLock); dropKeys(S.alts); dropKeys(S.moves);
   S.vdotLog=(S.vdotLog||[]).filter(e=>!(e&&isGenId(e.id)));
+  preracunajVdotLog();   /* uklonjene sesije vise ne smeju da ucestvuju u lancu */
   /* koleno/težina: odlaze samo redovi IZVEDENI iz treninga generisanog plana
      (src = id dana, v. syncSide). Ručni unosi (src null) su korisnikovi
      sopstveni zapisi o telu, ne o planu — oni ostaju. */
@@ -7580,6 +7615,16 @@ $('#btn-gear').onclick=openSettings;
 $('#backdrop').onclick=closeSheet;
 if(fixVdotDates())save(); /* jednokratna popravka VDOT datuma iz postojećih runDate */
 if(recomputeVdotZones())save(); /* jednokratna popravka VDOT formule (zona umesto Riegel) na postojećoj istoriji */
+/* POPRAVKA VEC NADUVANE ISTORIJE. Dok se prigusenje racunalo pri unosu, svaki
+   ponovni upis iste sesije je pomerao VDOT jos 40% ka izmerenom, pa je istorija
+   postojecih korisnika naduvana. Izmerene vrednosti su sacuvane po sesiji, tako
+   da se tacan lanac moze rekonstruisati — jednom, na startu. */
+(function popraviVdotLanac(){
+  if(!Array.isArray(S.vdotLog)||!S.vdotLog.length)return;
+  const pre=S.vdotLog.map(e=>e&&e.vdot);
+  preracunajVdotLog();
+  if(S.vdotLog.some((e,i)=>e&&e.vdot!==pre[i])) save();
+})();
 /* ==========================================================================
    SUPABASE — rezerva i sinhronizacija (PUT A: localStorage je izvor istine)
 
