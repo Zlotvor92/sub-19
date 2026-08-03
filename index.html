@@ -590,7 +590,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='146'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='147'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -8380,7 +8380,16 @@ async function sbPull(){
   S.strava=keepStrava||null;
   S.icu=keepIcu||null;
   SB.seenAt=j[0].updated_at; sbSave();
-  setActivePlan(); rebuildDateIndex(); save();
+  setActivePlan();
+  /* POVUCENO STANJE MOZE DA NOSI TUDJI SEED.
+     Ciscenje pri pokretanju dira samo localStorage — a stara verzija je
+     vlasnikov seed vec gurnula i u TUDJ Supabase red. Bez ovog poziva
+     povlacenje ga vrati nazad, `moraSvojPlan()` opet postane netacan i covek
+     ponovo sleti na tudji plan. Zato se isto pravilo primenjuje i ovde, na
+     sve sto stigne sa servera. `save()` unutra okida i push, pa ocisceno
+     stanje zameni ono sto je na serveru. */
+  uskladiVlasnickePodatke();
+  rebuildDateIndex(); save();
   renderHeader(); setPage(ACTIVE);
   return true;
 }

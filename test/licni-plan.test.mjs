@@ -235,3 +235,39 @@ describe('Vlasnikovi podaci ne izlaze van njegovog naloga', () => {
     assert.ok(app.evalIn('!!S.genPlan'), 'generisan plan je obrisan');
   });
 });
+
+describe('Sinhronizacija sa servera ne vraća tuđi seed', () => {
+  test('uskladiVlasnickePodatke se poziva i posle sbPull', () => {
+    /* Čišćenje pri pokretanju dira samo localStorage. Vlasnikov seed je stara
+       verzija gurnula i u tuđ Supabase red, pa ga povlačenje vraća nazad —
+       „opet sve vuče na tuđi plan". */
+    const izvor = readRepoFile('index.html');
+    const blok = /async function sbPull\(\)\{[\s\S]*?\n\}/.exec(izvor);
+    assert.ok(blok, 'sbPull nije pronađen');
+    assert.ok(/uskladiVlasnickePodatke\(\)/.test(blok[0]),
+      'sbPull ne čisti povučeno stanje');
+    assert.ok(blok[0].indexOf('setActivePlan()') < blok[0].indexOf('uskladiVlasnickePodatke()'),
+      'čišćenje se poziva pre setActivePlan() — rebuildDateIndex bi radio nad starim planom');
+  });
+
+  test('povučeno stanje sa tuđim seedom se očisti', () => {
+    const app = loadApp({
+      seedLocalStorage: {
+        sub19_sb: JSON.stringify({ access: 't', refresh: 'r', expiresAt: Date.now() + 3600e3,
+          email: 'x@t.rs', userId: '11111111-2222-3333-4444-555555555555', seenAt: null, deviceId: 'd1' })
+      }
+    });
+    /* simulira ono što sbPull upiše iz servera */
+    app.evalIn(`S=migrate({v:7,
+      log:{n1d1:{status:'done',km:7,ts:'2026-06-22'},n1d3:{status:'done',km:8,ts:'2026-06-24'}},
+      knee:[{id:'k1',date:'2026-06-22',act:'Trčanje',pain:1,note:'x'}],
+      kg:[{date:'2026-06-22',kg:81.6}], pred:{p1:265},
+      predLock:{},vdotLog:[],moves:{},alts:{},genPlan:null,strava:null,wellness:{},icu:null,
+      ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}});
+      setActivePlan(); uskladiVlasnickePodatke(); rebuildDateIndex()`);
+    assert.equal(app.evalIn('Object.keys(S.log).length'), 0, 'tuđi treninzi su ostali posle povlačenja');
+    assert.equal(app.evalIn('S.knee.length'), 0);
+    assert.equal(app.evalIn('S.kg.length'), 0);
+    assert.equal(app.call('moraSvojPlan'), true, 'čovek i dalje gleda tuđi plan');
+  });
+});
