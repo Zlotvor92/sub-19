@@ -588,3 +588,48 @@ describe('Fuzz — svako polje stanja otrovano, svaki ekran iscrtan', () => {
     });
   }
 });
+
+describe('Prepoznavanje vlasnika', () => {
+  const klijent = readRepoFile('index.html');
+
+  test('poredi se Supabase ID naloga, ne mejl adresa', () => {
+    assert.match(klijent, /const ADMIN_UID='[0-9a-f-]{36}'/,
+      'nema ADMIN_UID u očekivanom obliku');
+    assert.match(klijent, /function jeVlasnik\(\)\{ return sbAuthed\(\) && SB\.userId===ADMIN_UID; \}/,
+      'jeVlasnik ne poredi po ID-u naloga');
+  });
+
+  test('mejl adresa vlasnika nije u klijentskom kodu (skreperi za spam)', () => {
+    const mejlovi = klijent.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [];
+    /* Dozvoljeno je samo ono što nije stvarna adresa: primeri u placeholderima
+       i sl. Prava adresa vlasnika ne sme tu da stoji. */
+    const stvarne = mejlovi.filter(m => !/example|@t\.rs|@b\.c|noreply/i.test(m));
+    assert.deepEqual(stvarne, [], `mejl adrese u index.html: ${stvarne.join(', ')}`);
+  });
+
+  test('politika privatnosti ZADRŽAVA kontakt adresu (to je obaveza, ne propust)', () => {
+    /* Kontakt za brisanje podataka mora da postoji — bez njega politika
+       privatnosti ne valja. Test je tu da se ne „očisti" greškom. */
+    const privacy = readRepoFile('privacy.html');
+    assert.match(privacy, /mailto:[A-Za-z0-9._%+-]+@/,
+      'privacy.html nema kontakt adresu za zahteve o podacima');
+  });
+
+  test('pravu proveru i dalje radi server, nad adresom iz tokena', () => {
+    /* Klijentska provera samo skriva dugme. Ako bi i ona bila jedina, svako bi
+       preko dev tools-a mogao da pozove /api/broadcast. */
+    const srv = readRepoFile('api/broadcast.js');
+    assert.ok(/process\.env\.ADMIN_EMAIL/.test(srv), 'server ne čita ADMIN_EMAIL');
+    assert.ok(/\/auth\/v1\/user/.test(srv), 'server ne proverava adresu kod Supabase-a');
+  });
+
+  test('tuđi nalog ne prolazi kao vlasnik', () => {
+    const app = loadApp();
+    app.evalIn(`SB.access='x'; SB.userId='11111111-2222-3333-4444-555555555555'; SB.email='napadac@zlo.rs'`);
+    assert.equal(app.call('jeVlasnik'), false, 'tuđi ID je prošao kao vlasnik');
+    app.evalIn(`SB.userId=ADMIN_UID`);
+    assert.equal(app.call('jeVlasnik'), true, 'vlasnik nije prepoznat');
+    app.evalIn(`SB.access=null`);
+    assert.equal(app.call('jeVlasnik'), false, 'neprijavljen je prošao kao vlasnik');
+  });
+});

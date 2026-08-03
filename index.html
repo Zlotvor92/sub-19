@@ -590,7 +590,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='141'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='142'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -7148,8 +7148,16 @@ function icuPragTekst(){
    Zato ovde nema nikakvog kljuca: /api/broadcast prima ili CRON_SECRET
    (terminal) ili prijavu vlasnika (ovo dugme).
    ============================================================ */
-const ADMIN_EMAIL='avuletic92@gmail.com';
-function jeVlasnik(){ return sbAuthed() && String(SB.email||'').trim().toLowerCase()===ADMIN_EMAIL; }
+/* Vlasnik se prepoznaje po Supabase ID-u naloga, ne po mejl adresi.
+   Ranije je ovde stajala adresa u cistom tekstu — bezbednosno bezopasno (pravu
+   proveru radi server, nad adresom koju procita IZ TOKENA, ne iz onoga sto
+   pregledac tvrdi), ali je adresa time bila izlozena skreperima za spam u
+   javnom izvornom kodu.
+   UUID nije tajna i ne daje nikakav pristup: RLS u Supabase-u koristi
+   `auth.uid()` iz POTPISANOG tokena, ne vrednost koju klijent posalje.
+   Ova provera i dalje odlucuje SAMO da li se dugme prikazuje. */
+const ADMIN_UID='0403f8fb-a643-4d4e-843d-f71199a0d6f9';
+function jeVlasnik(){ return sbAuthed() && SB.userId===ADMIN_UID; }
 /* HARDKODOVAN PLAN JE VLASNIKOV LICNI PLAN, ne podrazumevan plan aplikacije.
    Do sada je svaki nov nalog padao na njega: tudji ljudi su gledali njegove
    deonice, njegov datum trke (24.09.2026) i njegov cilj sub-20, sve dok sami
@@ -7567,9 +7575,14 @@ function openSettings(){
   };
   if($('#bc-proba')) $('#bc-proba').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Šaljem…';
-    const r=await posaljiUputstvo({posalji:true, samoNa:[ADMIN_EMAIL]});
+    /* Adresa se uzima iz PRIJAVLJENE sesije, ne iz konstante u kodu. Server
+       `samoNa` ionako filtrira kroz stvarnu listu korisnika, pa se ni ovako ne
+       moze poslati na proizvoljnu adresu. */
+    const moja=String(SB.email||'').trim().toLowerCase();
+    if(!moja){ b.disabled=false; b.textContent='Proba na mene'; alert('Nisi prijavljen.'); return; }
+    const r=await posaljiUputstvo({posalji:true, samoNa:[moja]});
     b.textContent=r.ok?'Poslato ✓':'Nije uspelo';
-    alert(r.ok?('Poslato na '+ADMIN_EMAIL+'. Proveri sanduče — i spam.'):(r.error||'Nije uspelo.'));
+    alert(r.ok?('Poslato na '+moja+'. Proveri sanduče — i spam.'):(r.error||'Nije uspelo.'));
     setTimeout(()=>{ b.disabled=false; b.textContent='Proba na mene'; },2200);
   };
   if($('#bc-svi')) $('#bc-svi').onclick=async e=>{
