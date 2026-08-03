@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='129'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='130'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2095,6 +2095,8 @@ function renderDanas(){
   const el=$('#pg-danas');
   const dd=diffD(TODAY,CUR_RACE),st=streak(TODAY);
   let h='';
+  /* Predlog, ne prinuda: plan koji gleda nije njegov, ali ima unose na njemu. */
+  if(tudjPlanSaUnosima())h+=`<div class="kb warn"><div style="flex:1"><div>Ovo nije tvoj plan</div><small>Gledaš ugrađeni plan sa tuđim datumom trke i tuđim tempima. Napravi svoj — postojeći unosi ostaju sačuvani u backup-u.</small></div><button id="tp-gen" style="color:var(--amber);font-weight:800;font-size:.8rem;padding:6px 10px;white-space:nowrap">Napravi svoj</button></div>`;
   if(backupDue(TODAY))h+=`<div class="bban"><span style="flex:1">Uradi backup podataka.</span><button id="bb-do">Izvezi</button><button id="bb-later" style="color:var(--txt3)">Kasnije</button></div>`;
   h+=`<div class="hero">
     <div class="card accent"><div class="big" style="color:var(--pink)">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
@@ -2112,6 +2114,14 @@ function renderDanas(){
   }
   el.innerHTML=h;
   if(d&&!d.rest)bindDayCard(el,d);
+  const tp=$('#tp-gen');
+  /* Backup se NUDI pre nego sto se ode u carobnjaka: unosi na hardkodovanom
+     planu posle toga vise nemaju gde da se prikazu, pa neka ih bar ima u
+     fajlu. Odbijanje ne blokira — plan je njegov izbor. */
+  if(tp)tp.onclick=()=>{
+    if(confirm('Prvo izvezi backup postojećih unosa?\n\nOK = izvezi pa nastavi\nOtkaži = idi odmah na pravljenje plana')) exportBackup();
+    openWizard();
+  };
   const b1=$('#bb-do'),b2=$('#bb-later');
   if(b1)b1.onclick=exportBackup;
   if(b2)b2.onclick=()=>{S.ui.snooze=addD(TODAY,7);save();renderDanas();};
@@ -6777,7 +6787,20 @@ function jeVlasnik(){ return sbAuthed() && String(SB.email||'').trim().toLowerCa
    deonice, njegov datum trke (24.09.2026) i njegov cilj sub-20, sve dok sami
    ne odu u Podesavanja i ne pokrenu carobnjaka — a nista ih tamo nije zvalo.
    Zato: ko nije vlasnik i jos nema svoj plan, ide PRAVO u carobnjaka. */
-function moraSvojPlan(){ return !S.genPlan && !jeVlasnik(); }
+/* IZUZETAK: ko je vec upisivao treninge na ovaj (tudji) plan, ne sme da bude
+   nasilno prebacen — carobnjak bi mu sklonio plan ispod ruku, a njegovi
+   dosadasnji unosi nose ID-jeve hardkodovanog plana ('n12d5') i ostali bi bez
+   mesta na kom se prikazuju. Njemu se umesto toga PREDLAZE svoj plan
+   (traka na Danas), pa sam bira kada. */
+function imaUnosaNaLicnom(){
+  const l=S.log||{};
+  for(const id in l){ const v=l[id];
+    if(id.charAt(0)==='n' && v && (v.status==='done'||v.status==='skip')) return true; }
+  return false;
+}
+function moraSvojPlan(){ return !S.genPlan && !jeVlasnik() && !imaUnosaNaLicnom(); }
+/* blaza varijanta — tudji plan, ali sa vec upisanim treninzima */
+function tudjPlanSaUnosima(){ return !S.genPlan && !jeVlasnik() && imaUnosaNaLicnom(); }
 async function posaljiUputstvo(opcije){
   try{
     const r=await fetch('/api/broadcast',{method:'POST',
