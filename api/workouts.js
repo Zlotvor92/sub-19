@@ -36,6 +36,25 @@ async function requireUser(req) {
   }
 }
 
+/* AUTORIZACIJA KA intervals.icu — dva puta, jer postoje dve vrste veze:
+   - OAuth token  -> "Authorization: Bearer <token>"  (novo, bez unosa ičega)
+   - API kljuc    -> Basic, sa fiksnim korisnickim imenom API_KEY (staro)
+   Stari nacin se ZADRZAVA: korisnici koji su vec uneli kljuc ne smeju da
+   ostanu bez veze zbog nove mogucnosti. */
+function icuAuth(body) {
+  const token  = String((body && body.token) || '').trim();
+  const apiKey = String((body && body.apiKey) || '').trim();
+  if (token) {
+    if (token.length < 8 || token.length > 400) return { ok: false, error: 'Neispravan token.' };
+    return { ok: true, header: 'Bearer ' + token };
+  }
+  if (apiKey) {
+    if (apiKey.length < 8 || apiKey.length > 200) return { ok: false, error: 'Neispravan API ključ.' };
+    return { ok: true, header: 'Basic ' + Buffer.from('API_KEY:' + apiKey).toString('base64') };
+  }
+  return { ok: false, error: 'Nedostaje veza sa intervals.icu.' };
+}
+
 const DAN = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_DOGADJAJA = 60;   /* ~2 meseca plana; iznad toga je greška u pozivaocu */
 
@@ -50,11 +69,11 @@ export default async function handler(req, res) {
   catch { res.status(400).json({ error: 'Neispravan JSON.' }); return; }
 
   const athleteId = String((body && body.athleteId) || '').trim();
-  const apiKey    = String((body && body.apiKey) || '').trim();
   const dogadjaji = Array.isArray(body && body.events) ? body.events : null;
 
   if (!/^i?\d+$/.test(athleteId)) { res.status(400).json({ error: 'Neispravan intervals.icu ID sportiste.' }); return; }
-  if (apiKey.length < 8 || apiKey.length > 200) { res.status(400).json({ error: 'Neispravan API ključ.' }); return; }
+  const aut = icuAuth(body);
+  if (!aut.ok) { res.status(400).json({ error: aut.error }); return; }
   if (!dogadjaji || !dogadjaji.length) { res.status(400).json({ error: 'Nema treninga za slanje.' }); return; }
   if (dogadjaji.length > MAX_DOGADJAJA) { res.status(400).json({ error: 'Previše treninga odjednom (najviše ' + MAX_DOGADJAJA + ').' }); return; }
 
@@ -80,8 +99,7 @@ export default async function handler(req, res) {
 
   const url = 'https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
               '/events/bulk?upsert=true';
-  const basic = Buffer.from('API_KEY:' + apiKey).toString('base64');
-  const zaglavlja = { Authorization: 'Basic ' + basic, Accept: 'application/json' };
+  const zaglavlja = { Authorization: aut.header, Accept: 'application/json' };
 
   /* REŽIM "ZAMENI" — prvo obriši naše postojeće događaje, pa napravi nove.
      Zašto uopšte postoji: intervals.icu gradi Garmin izvoz kad se događaj
@@ -118,7 +136,7 @@ export default async function handler(req, res) {
   try {
     const r = await fetch(url, {
       method: 'POST',
-      headers: { Authorization: 'Basic ' + basic, 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { Authorization: aut.header, 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(cist)
     });
     if (r.status === 401 || r.status === 403) {

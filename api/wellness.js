@@ -46,6 +46,25 @@ async function requireUser(req) {
   }
 }
 
+/* AUTORIZACIJA KA intervals.icu — dva puta, jer postoje dve vrste veze:
+   - OAuth token  -> "Authorization: Bearer <token>"  (novo, bez unosa ičega)
+   - API kljuc    -> Basic, sa fiksnim korisnickim imenom API_KEY (staro)
+   Stari nacin se ZADRZAVA: korisnici koji su vec uneli kljuc ne smeju da
+   ostanu bez veze zbog nove mogucnosti. */
+function icuAuth(body) {
+  const token  = String((body && body.token) || '').trim();
+  const apiKey = String((body && body.apiKey) || '').trim();
+  if (token) {
+    if (token.length < 8 || token.length > 400) return { ok: false, error: 'Neispravan token.' };
+    return { ok: true, header: 'Bearer ' + token };
+  }
+  if (apiKey) {
+    if (apiKey.length < 8 || apiKey.length > 200) return { ok: false, error: 'Neispravan API ključ.' };
+    return { ok: true, header: 'Basic ' + Buffer.from('API_KEY:' + apiKey).toString('base64') };
+  }
+  return { ok: false, error: 'Nedostaje veza sa intervals.icu.' };
+}
+
 const DAN = /^\d{4}-\d{2}-\d{2}$/;
 
 /* Iz punog zapisa uzima SAMO ono što analiza koristi. Nazivi polja se razlikuju
@@ -85,24 +104,22 @@ export default async function handler(req, res) {
   catch { res.status(400).json({ error: 'Neispravan JSON.' }); return; }
 
   const athleteId = String((body && body.athleteId) || '').trim();
-  const apiKey    = String((body && body.apiKey) || '').trim();
   const oldest    = String((body && body.oldest) || '').trim();
   const newest    = String((body && body.newest) || '').trim();
 
   if (!/^i?\d+$/.test(athleteId)) { res.status(400).json({ error: 'Neispravan intervals.icu ID sportiste.' }); return; }
-  if (apiKey.length < 8 || apiKey.length > 200) { res.status(400).json({ error: 'Neispravan API ključ.' }); return; }
+  const aut = icuAuth(body);
+  if (!aut.ok) { res.status(400).json({ error: aut.error }); return; }
   if (!DAN.test(oldest) || !DAN.test(newest)) { res.status(400).json({ error: 'Neispravan opseg datuma.' }); return; }
   if (newest < oldest) { res.status(400).json({ error: 'Kraj opsega je pre početka.' }); return; }
 
   const url = 'https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
               '/wellness?oldest=' + oldest + '&newest=' + newest;
-  /* intervals.icu koristi basic auth sa fiksnim korisničkim imenom API_KEY. */
-  const basic = Buffer.from('API_KEY:' + apiKey).toString('base64');
 
   try {
-    const r = await fetch(url, { headers: { Authorization: 'Basic ' + basic, Accept: 'application/json' } });
+    const r = await fetch(url, { headers: { Authorization: aut.header, Accept: 'application/json' } });
     if (r.status === 401 || r.status === 403) {
-      res.status(401).json({ error: 'intervals.icu je odbio ključ. Proveri ID sportiste i API ključ u Settings → Developer.' });
+      res.status(401).json({ error: 'intervals.icu je odbio pristup. Otkači pa ponovo poveži intervals.icu u Podešavanjima.' });
       return;
     }
     if (r.status === 429) { res.status(429).json({ error: 'intervals.icu privremeno ograničava zahteve. Pokušaj kasnije.' }); return; }

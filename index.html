@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='138'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='139'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6681,14 +6681,18 @@ function chartVdotTrend(){
 
    Cuva se u S.wellness kao mapa datum -> zapis, da spajanje sa treningom bude
    obicno trazenje po datumu. ============================================================ */
+/* Sta se salje serveru kao dokaz veze — OAuth token ako postoji, inace stari
+   rucno unet API kljuc. Nikad oba. */
+function icuVeza(){ return S.icu&&S.icu.token ? {token:S.icu.token} : {apiKey:(S.icu&&S.icu.apiKey)||''}; }
+function icuPovezan(){ return !!(S.icu&&S.icu.athleteId&&(S.icu.token||S.icu.apiKey)); }
 async function icuSync(danaUnazad){
-  if(!S.icu||!S.icu.athleteId||!S.icu.apiKey) return {ok:false, error:'intervals.icu nije povezan.'};
+  if(!icuPovezan()) return {ok:false, error:'intervals.icu nije povezan.'};
   const do_=new Date(), od=new Date(do_.getTime()-(danaUnazad||60)*864e5);
   const ds=d=>d.toISOString().slice(0,10);
   try{
     const r=await fetch('/api/wellness',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
-      body:JSON.stringify({athleteId:S.icu.athleteId, apiKey:S.icu.apiKey, oldest:ds(od), newest:ds(do_)})});
+      body:JSON.stringify({athleteId:S.icu.athleteId, ...icuVeza(), oldest:ds(od), newest:ds(do_)})});
     let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
     if(!r.ok) return {ok:false, error:j.error||('Greška '+r.status)};
     S.wellness=S.wellness||{};
@@ -6696,6 +6700,61 @@ async function icuSync(danaUnazad){
     S.icu.lastSync=Date.now(); save();
     return {ok:true, n:(j.dani||[]).length};
   }catch(e){ return {ok:false, error:'Nema veze sa serverom.'}; }
+}
+/* ============================================================
+   POVEZIVANJE SA intervals.icu PREKO OAuth-a
+
+   Stari nacin (ID sportiste + API kljuc, rucno prepisan iz njihovih
+   podesavanja) OSTAJE i radi — ko ga vec koristi ne mora nista da menja.
+   OAuth je dodatak: jedan klik, bez prepisivanja ikakvih kljuceva.
+
+   `client_secret` nikad ne ulazi u pregledac; razmenu koda radi server
+   (/api/icu-oauth). I sama adresa za autorizaciju se gradi na serveru, pa
+   `client_id` i spisak opsega stoje samo u Vercel promenljivama.
+
+   Token se cuva ISKLJUCIVO na uredjaju, isto kao Strava tokeni i stari API
+   kljuc — v. sbPayload(). ============================================ */
+const ICU_STATE_KEY='sub19-icu-state';
+function icuMakeState(){
+  const st=secureRandomToken();
+  try{ localStorage.setItem(ICU_STATE_KEY, JSON.stringify({st,exp:Date.now()+600000})); }catch(e){}
+  return st;
+}
+function icuCheckState(got){
+  let saved=null;
+  try{ saved=JSON.parse(localStorage.getItem(ICU_STATE_KEY)||'null'); }catch(e){}
+  try{ localStorage.removeItem(ICU_STATE_KEY); }catch(e){}
+  if(!saved||!saved.st) return false;
+  if(Date.now()>saved.exp) return false;
+  return got===saved.st;
+}
+async function icuConnect(){
+  const tok=await sbToken();
+  if(!tok){ alert('Moraš biti prijavljen da bi povezao intervals.icu.'); return; }
+  try{
+    const r=await fetch('/api/icu-oauth?akcija=url&state='+encodeURIComponent(icuMakeState()),
+                        {headers:{'Authorization':'Bearer '+tok}});
+    const j=await r.json();
+    if(!r.ok||!j.url){ alert(j.error||'Povezivanje trenutno nije moguće.'); return; }
+    location.href=j.url;
+  }catch(e){ alert('Nema veze sa serverom.'); }
+}
+/* Povratak sa intervals.icu — poziva se iz handleOAuthReturn. */
+async function icuFinish(code){
+  const tok=await sbToken();
+  if(!tok){ alert('Moraš biti prijavljen da bi povezao intervals.icu.'); return; }
+  try{
+    const r=await fetch('/api/icu-oauth',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+      body:JSON.stringify({code})});
+    const j=await r.json();
+    if(!r.ok){ alert(j.error||'Povezivanje nije uspelo.'); return; }
+    S.icu={athleteId:j.athleteId, token:j.token, scope:j.scope||'', lastSync:null};
+    save();
+    const s2=await icuSync(120);   /* odmah povuci istoriju, da kartice ne budu prazne */
+    alert(s2.ok?('intervals.icu povezan. Povučeno zapisa: '+s2.n+'.'):'intervals.icu povezan.');
+    renderHeader(); if(ACTIVE==='prog') PAGES.prog();
+  }catch(e){ alert('Nema veze sa serverom.'); }
 }
 /* AUTOMATSKO POVLACENJE — jednom dnevno, pri prvom otvaranju.
    Garmin salje jutarnja merenja na intervals.icu tokom noci, pa su podaci za
@@ -6708,7 +6767,7 @@ async function icuSync(danaUnazad){
 let icuAutoUToku=false;
 async function icuAutoSync(){
   if(icuAutoUToku) return;                                   /* vec radi */
-  if(!S.icu||!S.icu.athleteId||!S.icu.apiKey) return;        /* nije povezan */
+  if(!icuPovezan()) return;                                  /* nije povezan */
   if(!sbAuthed()||!navigator.onLine) return;
   const dan=todayStr();                                      /* svez datum — app ume da stoji otvorena preko ponoci */
   if(S.icu.autoDan===dan) return;                            /* danas je vec povuceno */
@@ -6998,13 +7057,13 @@ function icuDaniZaSlanje(danaUnapred){
   return out;
 }
 async function icuPosalji(danaUnapred, zameni){
-  if(!S.icu||!S.icu.athleteId||!S.icu.apiKey) return {ok:false, error:'intervals.icu nije povezan.'};
+  if(!icuPovezan()) return {ok:false, error:'intervals.icu nije povezan.'};
   const events=icuDaniZaSlanje(danaUnapred);
   if(!events.length) return {ok:false, error:'Nema treninga u tom periodu.'};
   try{
     const r=await fetch('/api/workouts',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
-      body:JSON.stringify({athleteId:S.icu.athleteId, apiKey:S.icu.apiKey, events,
+      body:JSON.stringify({athleteId:S.icu.athleteId, ...icuVeza(), events,
                            rezim: zameni?'zameni':'azuriraj'})});
     let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
     if(!r.ok) return {ok:false, error:(j.error||('Greška '+r.status))+(j.detail?' — '+j.detail:'')};
@@ -7225,7 +7284,7 @@ function openSettings(){
     <hr class="sep">
     <div class="set-h"><div class="card-t">intervals.icu</div><span class="chip ${S.icu&&S.icu.athleteId?'on':'off'}">${S.icu&&S.icu.athleteId?'povezano':'nije povezano'}</span></div>
     ${S.icu&&S.icu.athleteId
-      ?`<div class="set-st">ID <b>${esc(S.icu.athleteId)}</b> · ${(S.wellness?Object.keys(S.wellness).length:0)} zapisa<br>poslednje povlačenje: ${S.icu.lastSync?new Date(S.icu.lastSync).toLocaleString('sr-RS'):'nikad'}</div>
+      ?`<div class="set-st">ID <b>${esc(S.icu.athleteId)}</b>${S.icu.token?' · odobreno na intervals.icu':' · ručni ključ'} · ${(S.wellness?Object.keys(S.wellness).length:0)} zapisa<br>poslednje povlačenje: ${S.icu.lastSync?new Date(S.icu.lastSync).toLocaleString('sr-RS'):'nikad'}</div>
         <div class="btnrow"><button class="btn" id="icu-sync">Povuci oporavak</button><button class="btn ghost sm" id="icu-off">Otkači</button></div>
         <details class="help"><summary>Šta se povlači</summary><p>HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</p></details>
 
@@ -7236,10 +7295,14 @@ function openSettings(){
         <div id="icu-pregled"></div>
         <details class="help"><summary>Da treninzi stignu do sata</summary><p>U intervals.icu → Settings uključi <b>„Upload planned workouts"</b> i autorizuj Garmin Connect. Prosleđuje se otprilike nedelju dana unapred, pa dalji dani stižu sami kako se približavaju.</p></details>
         <details class="help"><summary>Ako na satu piše „No Target"</summary><p>U intervals.icu → Settings → Sport Settings unesi <b>prag tempa (threshold pace)</b>${icuPragTekst()}. Bez njega intervals.icu izbacuje ciljeve tempa iz Garmin izvoza.</p><p>Garmin izvoz se pravi kad događaj <b>nastane</b>, pa posle unosa praga obično slanje ne pomaže — tada ide <b>„Pošalji iz početka"</b>, koje briše ranije poslato i pravi ga iznova.</p></details>`
-      :`<div class="f-field full"><label>ID sportiste</label><input id="icu-id" inputmode="numeric" placeholder="npr. i123456"></div>
-        <div class="f-field full"><label>API ključ</label><input id="icu-key" type="password" placeholder="iz intervals.icu → Settings → Developer"></div>
-        <div class="btnrow" style="margin-top:8px"><button class="btn" id="icu-on">Poveži</button></div>
-        <details class="help"><summary>Gde nalazim ID i ključ</summary><p>intervals.icu → Settings → na dnu <b>Developer Settings</b>. Odatle čitamo HRV, puls u miru i san koje Garmin već šalje, a tamo šaljemo planirane treninge za sat.</p></details>`}
+      :`<div class="btnrow" style="margin-top:0"><button class="btn" id="icu-oauth">Poveži intervals.icu</button></div>
+        <details class="help"><summary>Šta se povezivanjem dobija</summary><p>HRV, puls u miru i san koje Garmin već šalje na intervals.icu, i slanje planiranih treninga na sat. Odobravaš na njihovoj strani — nikakav ključ ne prepisuješ.</p></details>
+        <details class="help"><summary>Ručno povezivanje (ako gornje ne radi)</summary>
+          <div class="f-field full" style="margin-top:6px"><label>ID sportiste</label><input id="icu-id" inputmode="numeric" placeholder="npr. i123456"></div>
+          <div class="f-field full"><label>API ključ</label><input id="icu-key" type="password" placeholder="iz intervals.icu → Settings → Developer"></div>
+          <div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="icu-on">Poveži ključem</button></div>
+          <p>intervals.icu → Settings → na dnu <b>Developer Settings</b>.</p>
+        </details>`}
 
     ${jeVlasnik()?`
     <hr class="sep">
@@ -7273,6 +7336,7 @@ function openSettings(){
   };
   $('#s-imp').onclick=()=>$('#s-file').click();
   $('#s-file').onchange=e=>importBackup(e.target.files[0]);
+  if($('#icu-oauth')) $('#icu-oauth').onclick=icuConnect;
   if($('#icu-on')) $('#icu-on').onclick=async()=>{
     const id=($('#icu-id').value||'').trim(), key=($('#icu-key').value||'').trim();
     if(!/^i?\d+$/.test(id)){ alert('ID sportiste izgleda kao broj, npr. i123456.'); return; }
@@ -7664,6 +7728,16 @@ async function handleOAuthReturn(){
   const scope=q.get('scope')||'';
   const gotState=q.get('state')||'';
   history.replaceState(null,'',location.pathname);
+  /* Strava i intervals.icu se vracaju na ISTU adresu sa `?code=`. Razlikuju se
+     po tome ciji `state` je sacuvan pri pokretanju — svaki cuva svoj kljuc i
+     brise ga pri proveri, pa jedan povratak ne moze da potrosi tudji state. */
+  let icuState=null;
+  try{ icuState=JSON.parse(localStorage.getItem(ICU_STATE_KEY)||'null'); }catch(e){}
+  if(icuState&&icuState.st&&gotState===icuState.st){
+    if(!icuCheckState(gotState)){ alert('Povezivanje odbijeno — bezbednosna provera nije prošla.'); return; }
+    await icuFinish(code);
+    return;
+  }
   if(!stravaCheckState(gotState)){
     alert('Povezivanje odbijeno — bezbednosna provera nije prošla.\n\nOvo se dešava ako si otvorio link za povezivanje sa strane, ili je prošlo previše vremena. Pokreni povezivanje ponovo iz Podešavanja.');
     return;
@@ -7785,6 +7859,7 @@ function sbPayload(state){
   /* intervals.icu API kljuc je isto sto i Strava token — pristupni podatak,
      nikad ne ide na server. Sami PODACI o oporavku (S.wellness) idu, jer su to
      merenja kao i svako drugo, pa se vide i na drugom uredjaju. */
+  /* i OAuth token je pristupni podatak, isto kao API kljuc — ostaje na uredjaju */
   c.icu = state.icu ? { lastSync: state.icu.lastSync || null } : null;
   return c;
 }
