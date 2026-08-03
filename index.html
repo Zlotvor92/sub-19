@@ -583,7 +583,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=6, LS_KEY='sub19-v1';
-const APP_VERSION='130'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='131'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6583,6 +6583,29 @@ async function icuSync(danaUnazad){
     return {ok:true, n:(j.dani||[]).length};
   }catch(e){ return {ok:false, error:'Nema veze sa serverom.'}; }
 }
+/* AUTOMATSKO POVLACENJE — jednom dnevno, pri prvom otvaranju.
+   Garmin salje jutarnja merenja na intervals.icu tokom noci, pa su podaci za
+   danas spremni pre nego sto se aplikacija uopste otvori; nema razloga da
+   korisnik pritiska "Povuci sada" da bi video sopstveni HRV.
+   Ide 14 dana unazad, ne samo danas: sat zna da dopuni ili ispravi merenje
+   unazad (san se zatvori tek posle sinhronizacije sata), a telefon je mogao
+   biti bez signala nekoliko dana. Preklapanje ne smeta — zapisi se upisuju
+   po datumu, pa se isti dan samo prepise istom vrednoscu. */
+let icuAutoUToku=false;
+async function icuAutoSync(){
+  if(icuAutoUToku) return;                                   /* vec radi */
+  if(!S.icu||!S.icu.athleteId||!S.icu.apiKey) return;        /* nije povezan */
+  if(!sbAuthed()||!navigator.onLine) return;
+  const dan=todayStr();                                      /* svez datum — app ume da stoji otvorena preko ponoci */
+  if(S.icu.autoDan===dan) return;                            /* danas je vec povuceno */
+  icuAutoUToku=true;
+  let r=null;
+  try{ r=await icuSync(14); }catch(e){}
+  icuAutoUToku=false;
+  /* Dan se pamti SAMO na uspeh. Da se upise unapred, jedan neuspeo poziv
+     (avionski rezim ujutru) bi ostavio korisnika bez podataka ceo dan. */
+  if(r&&r.ok){ S.icu.autoDan=dan; save(); if(ACTIVE==='prog') PAGES.prog(); }
+}
 /* Zapis oporavka za dati dan, sa 7-dnevnim prosekom HRV-a i pulsa u miru —
    pojedinacna vrednost HRV-a ne znaci nista bez svoje osnove. */
 function oporavakZa(datum){
@@ -7795,6 +7818,10 @@ async function sbInit(){
 /* Poslednja prilika da se posalje pre nego sto se stranica zatvori. */
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&sbAuthed()){ clearTimeout(SB_TIMER); sbPush(); }
+  /* Povratak u aplikaciju je isto sto i otvaranje: instalirana PWA ume da
+     stoji u pozadini danima, pa se bez ovoga prvo povlacenje desi tek posle
+     rucnog restarta. */
+  if(document.visibilityState==='visible') icuAutoSync();
 });
 
 renderHeader();
@@ -7803,6 +7830,7 @@ if(typeof sbLoad==='function')sbLoad(); /* SB mora biti učitan iz localStorage 
 handleOAuthReturn();
 sbInit();
 if(S.strava&&navigator.onLine&&Date.now()-(S.strava.lastSync||0)>3600000)stravaSync(false);
+icuAutoSync();
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
   let refreshing=false;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{
