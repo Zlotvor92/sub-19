@@ -590,7 +590,7 @@ hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='144'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='145'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -803,9 +803,46 @@ const WT_TARGET=[
  {w:13,date:'2026-09-14',kg:76},{w:14,date:'2026-09-21',kg:75.5}
 ];
 
-/* ============ POČETNO STANJE — istorija iz Excela ============ */
+/* ============ POČETNO STANJE ============
+   PRAZNO ZA SVAKOGA. Ranije je ova funkcija svakom novom korisniku upisivala
+   VLASNIKOVU istoriju iz Excela: sedam odradjenih treninga, deset zapisa o
+   kolenu SA LICNIM BELESKAMA ("Bol se javio izmedju 6-7km", "Osetio sam
+   koleno vec od drugog kilometra") i dva merenja telesne mase. Tudji covek je
+   to video u tabu Povrede i na grafikonu tezine, a pozadinska sinhronizacija
+   je sve to upisivala i u NJEGOV Supabase red.
+
+   Drugi, tisi efekat: `imaUnosaNaLicnom()` je zbog tih unosa UVEK vracao true,
+   pa `moraSvojPlan()` nikad nije mogao da bude true — carobnjak se nije
+   nametao nikome, i svaki nov korisnik je sletao na vlasnikov plan sa tudjim
+   datumom trke i tudjim tempima.
+   Sada je pocetno stanje prazno, pa nov korisnik ide PRAVO u carobnjaka.
+   Vlasnikova istorija se primenjuje samo njegovom nalogu (v. VLASNIK_ISTORIJA). */
 function seedState(){return {
  v:SCHEMA,
+ log:{},
+ knee:[],
+ kg:[],
+ pred:{},
+ predLock:{},
+ vdotLog:[],
+ moves:{},
+ alts:{},
+ genPlan:null,
+ strava:null,
+ /* Oporavak (intervals.icu) i sama veza. Bili su dodati bez upisa u semu, pa
+    su postojali samo ako ih je icuSync/icuFinish usput napravio — a svako
+    citanje je moralo da ih rucno cuva (`S.wellness||{}`). To je isti obrazac
+    koji je vec jednom oborio unos tempa preko predLock-a; zato su sad ovde. */
+ wellness:{},
+ icu:null,
+ ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}
+};}
+
+/* VLASNIKOVA POCETNA ISTORIJA (iz Plan_SUB-19_5K_v5.xlsx).
+   Primenjuje se ISKLJUCIVO na vlasnikov nalog i samo dok je stanje jos
+   netaknuto — v. uskladiVlasnickePodatke(). Sluzi i kao potpis po kom se
+   prepoznaje zatecen, nedirnut seed na uredjajima drugih korisnika. */
+const VLASNIK_ISTORIJA = {
  log:{
   n1d1:{status:'done',km:7,ts:'2026-06-22'},
   n1d3:{status:'done',km:8,ts:'2026-06-24'},
@@ -831,21 +868,8 @@ function seedState(){return {
   {date:'2026-06-22',kg:81.6},
   {date:'2026-06-29',kg:81}
  ],
- pred:{p1:265,p2:236},
- predLock:{},
- vdotLog:[],
- moves:{},
- alts:{},
- genPlan:null,
- strava:null,
- /* Oporavak (intervals.icu) i sama veza. Bili su dodati bez upisa u semu, pa
-    su postojali samo ako ih je icuSync/icuFinish usput napravio — a svako
-    citanje je moralo da ih rucno cuva (`S.wellness||{}`). To je isti obrazac
-    koji je vec jednom oborio unos tempa preko predLock-a; zato su sad ovde. */
- wellness:{},
- icu:null,
- ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}
-};}
+ pred:{p1:265,p2:236}
+};
 
 /* ============ POMOĆNE (čiste funkcije) ============ */
 const pad2=n=>String(n).padStart(2,'0');
@@ -7175,6 +7199,60 @@ function imaUnosaNaLicnom(){
   return false;
 }
 function moraSvojPlan(){ return !S.genPlan && !jeVlasnik() && !imaUnosaNaLicnom(); }
+/* ============================================================
+   CIJI SU PODACI NA OVOM UREDJAJU.
+
+   Vlasnikov licni plan i njegova istorija ne smeju da dodju ni do koga osim
+   do njega. Do sada su dolazili do svih: `seedState()` je upisivao njegove
+   treninge, beleske o kolenu i merenja mase svakom novom korisniku, a to se
+   pozadinskom sinhronizacijom prenosilo i u TUDJ Supabase red.
+
+   Poziva se posle `sbLoad()` (dakle kad se zna ciji je nalog) i jos jednom u
+   `sbInit()` posto se sesija potvrdi — jer pri prvom pokretanju na novom
+   uredjaju covek jos nije prijavljen.
+   ============================================================ */
+function stanjeNetaknuto(){
+  return !S.genPlan
+    && Object.keys(S.log||{}).length===0
+    && (S.knee||[]).length===0
+    && (S.kg||[]).length===0
+    && Object.keys(S.pred||{}).length===0;
+}
+/* Da li na uredjaju stoji ZATECEN, NEDIRNUT vlasnikov seed iz starih verzija.
+   Provera je namerno stroga (podskup potpisa, bez ijednog viska): ako je covek
+   bilo sta svoje uneo — makar jedan trening ili jedno merenje — nista se ne
+   dira, jer bi mu se time obrisao sopstveni rad. Tada ostaje traka „Ovo nije
+   tvoj plan" i on sam bira kada ce napraviti svoj. */
+function nosiTudjuIstoriju(){
+  if(S.genPlan) return false;
+  const podskup=(imamo,potpis)=>imamo.every(x=>potpis.includes(x));
+  const logK=Object.keys(S.log||{}), logP=Object.keys(VLASNIK_ISTORIJA.log);
+  const kneeK=(S.knee||[]).map(k=>k&&k.id), kneeP=VLASNIK_ISTORIJA.knee.map(k=>k.id);
+  const kgK=(S.kg||[]).map(x=>x&&x.date), kgP=VLASNIK_ISTORIJA.kg.map(x=>x.date);
+  const predK=Object.keys(S.pred||{}), predP=Object.keys(VLASNIK_ISTORIJA.pred);
+  if(!podskup(logK,logP)||!podskup(kneeK,kneeP)||!podskup(kgK,kgP)||!podskup(predK,predP)) return false;
+  return logK.length>0||kneeK.length>0||kgK.length>0;   /* ima sta da se cisti */
+}
+function uskladiVlasnickePodatke(){
+  let promena=false;
+  if(jeVlasnik()){
+    /* Vlasnik na praznom uredjaju: vrati mu polaznu istoriju. Ako vec ima
+       podatke (lokalno ili na serveru), ovo se ne aktivira. */
+    if(stanjeNetaknuto()){
+      const k=JSON.parse(JSON.stringify(VLASNIK_ISTORIJA));
+      S.log=k.log; S.knee=k.knee; S.kg=k.kg; S.pred=k.pred;
+      promena=true;
+    }
+  } else if(nosiTudjuIstoriju()){
+    /* Tudji uredjaj sa zatecenim vlasnikovim seedom — brise se. Posle toga
+       `moraSvojPlan()` postaje tacan, pa covek ide pravo u carobnjaka umesto
+       da gleda tudji plan. */
+    S.log={}; S.knee=[]; S.kg=[]; S.pred={}; S.predLock={}; S.vdotLog=[];
+    promena=true;
+  }
+  if(promena){ preracunajVdotLog(); rebuildDateIndex(); save(); }
+  return promena;
+}
 /* blaza varijanta — tudji plan, ali sa vec upisanim treninzima */
 function tudjPlanSaUnosima(){ return !S.genPlan && !jeVlasnik() && imaUnosaNaLicnom(); }
 async function posaljiUputstvo(opcije){
@@ -8431,6 +8509,7 @@ async function sbInit(){
   /* Sveza prijava menja jeVlasnik(), a time i sta Danas ekran prikazuje
      (traka „Ovo nije tvoj plan"). Ako je sesija upravo usvojena iz hash-a,
      ekran je crtan pre nje — iscrtaj ponovo. */
+  uskladiVlasnickePodatke();   /* tek sada se pouzdano zna ciji je nalog */
   if(h){ renderHeader(); PAGES[ACTIVE](); }
   /* tek sada se pouzdano zna CIJI je ovo nalog, pa i da li ima svoj plan */
   if(moraSvojPlan()) openWizard();
@@ -8505,6 +8584,7 @@ document.addEventListener('visibilitychange',()=>{
    Isti problem je postojao i dok se vlasnik prepoznavao po mejlu (SB.email je
    bio jednako prazan), samo nije bio primecen. */
 if(typeof sbLoad==='function')sbLoad();
+uskladiVlasnickePodatke();   /* ciji su podaci — pre prvog iscrtavanja */
 renderHeader();
 setPage('danas');
 handleOAuthReturn();

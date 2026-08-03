@@ -194,11 +194,22 @@ describe('Traka „Ovo nije tvoj plan"', () => {
       'traka je iscrtana vlasniku');
   });
 
-  test('tuđi nalog na ugrađenom planu traku I DALJE vidi', () => {
-    /* Da popravka ne ugasi poruku koja tu treba da stoji. */
+  test('tuđi nalog sa SOPSTVENIM unosima traku I DALJE vidi', () => {
+    /* Ko je već upisivao treninge na ugrađeni plan ne sme da bude nasilno
+       prebačen u čarobnjaka — njegovi unosi nose 'n' ID-jeve i ostali bi bez
+       mesta na kom se prikazuju. Njemu se plan PREDLAŽE trakom. */
     const app = loadApp({ seedLocalStorage: sesija('11111111-2222-3333-4444-555555555555') });
+    app.evalIn(`S.log={n12d5:{status:'done',km:11,sec:3000}}`);
     assert.equal(app.call('jeVlasnik'), false);
+    assert.equal(app.call('imaUnosaNaLicnom'), true);
     assert.equal(app.call('tudjPlanSaUnosima'), true, 'traka se ne prikazuje tuđem nalogu');
+    assert.equal(app.call('moraSvojPlan'), false, 'čarobnjak se nameće čoveku sa unosima');
+  });
+
+  test('tuđi nalog BEZ unosa ide pravo u čarobnjaka, ne na tuđi plan', () => {
+    const app = loadApp({ seedLocalStorage: sesija('11111111-2222-3333-4444-555555555555') });
+    assert.equal(app.call('imaUnosaNaLicnom'), false, 'tuđi seed je i dalje tu');
+    assert.equal(app.call('moraSvojPlan'), true, 'čarobnjak se ne nameće novom korisniku');
   });
 
   test('vlasnik sa generisanim planom takođe ne vidi traku', () => {
