@@ -710,3 +710,74 @@ describe('Nonce kroz redirect_to (Supabase prijava)', () => {
     assert.equal(a.call('sbCheckState', null), false);
   });
 });
+
+describe('Harness stvarno čita ono što render upiše', () => {
+  /* Ovaj opis postoji zato što je harness jedno vreme vraćao NOV element pri
+     svakom querySelector-u: render je pisao u jedan objekat, test čitao iz
+     drugog, dobijao prazan string i prolazio IAKO NIŠTA NIJE PROVERAVAO.
+     Nekoliko bezbednosnih testova je tako bilo prazan hod. Ako se to ponovi,
+     pada ovde — pre nego što lažno zeleni fuzz uspava. */
+  test('querySelector vraća isti element pri svakom pozivu', () => {
+    const app = loadApp();
+    assert.equal(app.evalIn('$("#pg-danas") === $("#pg-danas")'), true,
+      'querySelector vraća nov element — testovi kroz render ništa ne proveravaju');
+    assert.equal(app.evalIn('document.getElementById("sb-gate") === document.querySelector("#sb-gate")'), true,
+      'getElementById i querySelector ne dele isti element');
+  });
+
+  test('render zaista puni ekran koji test čita', () => {
+    const app = loadApp();
+    app.call('renderDanas');
+    assert.ok((app.evalIn('$("#pg-danas").innerHTML') || '').length > 200,
+      'renderDanas nije ništa upisao — čitanje ide u prazno');
+    app.call('renderPred');
+    assert.ok((app.evalIn('$("#pg-pred").innerHTML') || '').length > 200,
+      'renderPred nije ništa upisao');
+  });
+});
+
+describe('VDOT zapisi (backup / sbPull)', () => {
+  test('cistVdotLog svodi vrednosti na brojeve', () => {
+    const app = loadApp();
+    app.ctx.__v = [
+      { id: 'p1', ts: '2026-07-01', vdot: '48.1', prev: 47, delta: 1.1, measured: 50 },
+      { id: 'p2', ts: '2026-07-02', vdot: PAYLOADI[0], prev: {}, delta: [], measured: 'abc' },
+      { id: 'p3' },                       /* bez ts — otpada */
+      'nije objekat',
+      { ts: '2026-07-03' }                /* bez id — otpada */
+    ];
+    const c = app.evalIn('cistVdotLog(__v)');
+    assert.equal(c.length, 2, 'nevalidni zapisi nisu odbačeni');
+    assert.equal(c[0].vdot, 48.1, 'broj kao tekst nije pretvoren');
+    assert.equal(c[1].vdot, null, 'payload nije očišćen');
+    assert.equal(c[1].measured, null);
+    assert.equal(app.evalIn('cistVdotLog(null).length'), 0);
+  });
+
+  test('migrate čisti vdotLog (pokriva i uvoz i sbPull)', () => {
+    const app = loadApp();
+    app.ctx.__z = { v: 7, log: {}, vdotLog: [{ id: 'p1', ts: '2026-07-01', vdot: PAYLOADI[0] }] };
+    const st = app.evalIn('migrate(__z)');
+    assert.equal(st.vdotLog[0].vdot, null, 'migrate nije očistio vdotLog');
+  });
+
+  test('ekran Trka ne ubacuje HTML iz VDOT zapisa', () => {
+    for (const P of PAYLOADI) {
+      const app = loadApp();
+      app.ctx.__p = P;
+      app.evalIn(`S.vdotLog=[{id:'p1',ts:'2026-07-01',vdot:__p,prev:__p,delta:__p,measured:__p},
+                              {id:'p2',ts:'2026-07-02',vdot:__p,prev:__p,delta:__p,measured:__p}];
+                  S.pred={p1:__p,p2:__p}`);
+      app.call('renderPred');
+      const t = ubaceniTagovi(app.evalIn('$("#pg-pred").innerHTML') || '');
+      assert.deepEqual(t, [], `renderPred propustio ${JSON.stringify(P)} → ${t.slice(0, 2).join(' ')}`);
+    }
+  });
+
+  test('oznaka pored unosa tempa (vdotDeltaHTML) ne ubacuje HTML', () => {
+    const app = loadApp();
+    app.ctx.__p = PAYLOADI[0];
+    app.evalIn(`S.vdotLog=[{id:'p1',ts:'2026-07-01',vdot:__p,delta:__p}]`);
+    assert.deepEqual(ubaceniTagovi(app.call('vdotDeltaHTML', 'p1', 260)), []);
+  });
+});

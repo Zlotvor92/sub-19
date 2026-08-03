@@ -31,6 +31,12 @@ export function readRepoFile(name) {
    Namerno permisivan: cilj nije verno simulirati pregledač, nego pustiti
    skriptu da se izvrši do kraja da bi čiste funkcije bile dostupne. */
 function makeEl(tag = 'div') {
+  /* Elementi se PAMTE po selektoru. Bez toga svaki querySelector vraca nov
+     objekat, pa `render*()` upise HTML u jedan a test cita iz drugog — dobije
+     prazan string i tvrdnja prodje IAKO NISTA NIJE PROVERENO. Tako je nekoliko
+     bezbednosnih testova bilo prazan hod. */
+  const kes = new Map();
+  const nadji = sel => { const k=String(sel); if(!kes.has(k)) kes.set(k, makeEl()); return kes.get(k); };
   const el = {
     tagName: String(tag).toUpperCase(),
     style: {},
@@ -54,7 +60,7 @@ function makeEl(tag = 'div') {
     appendChild(c) { this.children.push(c); return c; },
     removeChild(c) { return c; },
     remove() {},
-    querySelector() { return makeEl(); },
+    querySelector(sel) { return nadji(sel); },
     querySelectorAll() { return []; },
     addEventListener() {},
     removeEventListener() {},
@@ -111,14 +117,21 @@ export function loadApp(opts = {}) {
     static now() { return clock.t != null ? clock.t : RealDate.now(); }
   }
 
+  /* Isto pamcenje i na nivou dokumenta — `$('#pg-danas')` mora da vrati ISTI
+     element pri svakom pozivu, inace se ne moze procitati ono sto je render
+     upisao. `getElementById` deli isti kes, jer aplikacija koristi oba puta
+     za iste elemente (npr. #sb-gate, #update-banner). */
+  const kesDoc = new Map();
+  const nadjiDoc = sel => { const k=String(sel); if(!kesDoc.has(k)) kesDoc.set(k, makeEl()); return kesDoc.get(k); };
   const doc = {
     documentElement: makeEl('html'),
     body: makeEl('body'),
     head: makeEl('head'),
     visibilityState: 'visible',
-    querySelector: () => makeEl(),
+    querySelector: sel => nadjiDoc(sel),
     querySelectorAll: () => [],
-    getElementById: () => null,
+    /* getElementById dobija '#' prefiks da deli kes sa querySelector-om */
+    getElementById: id => nadjiDoc('#' + id),
     createElement: t => makeEl(t),
     addEventListener: () => {},
     removeEventListener: () => {},
