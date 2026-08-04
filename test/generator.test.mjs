@@ -164,13 +164,21 @@ describe('generatePlan — trenerske invarijante', () => {
 
   test('nedeljni obim nikad ne skoči preko bezbedne granice', () => {
     /* Komentar u izravnavanju rasta: cilj je da isporučeni rast ostane u
-       okviru koraka rasta profila (uz margin za diskretnost sesija). */
+       okviru koraka rasta profila (uz margin za diskretnost sesija).
+
+       Poređenje kreće od i=2, ne od i=1: PRVA nedelja je isečena datumom
+       početka (ako se plan pravi u utorak, ima 6 dana i samo deo trčanja),
+       pa je njen obim manji iz kalendarskih razloga, ne trenerskih. Prelaz
+       „isečena N1 → puna N2" izgleda kao skok, a nije — i test je zbog toga
+       padao ili prolazio u zavisnosti od dana u nedelji kad se pokrene.
+       Preskače se po BROJU DANA, ne po rednom broju nedelje: kad se plan
+       napravi u ponedeljak, prva nedelja je puna i poređenje ostaje. */
     for (const s of SCENARIJI) {
       const p = gen(s.inp);
-      const prof = app.evalIn(`DIST_PROFILES[${s.inp.raceDistM}]`);
       for (let i = 1; i < p.weeks.length - 2; i++) {
         const prev = p.weeks[i - 1], cur = p.weeks[i];
         if (prev.deload || cur.deload) continue;
+        if (prev.days.length < 7) continue;
         const pv = weekKm(prev), cv = weekKm(cur);
         if (pv <= 0) continue;
         const korak = app.call('korakRasta' + ({ 5000: '5K', 10000: '10K', 21097.5: '21K', 42195: '42K' }[s.inp.raceDistM]), pv, s.inp.intensity);

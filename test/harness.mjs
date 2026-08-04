@@ -1,11 +1,13 @@
-/* Test harness — učitava inline <script> iz index.html i izvršava ga u
-   izolovanom vm kontekstu sa minimalnim lažnim DOM-om.
+/* Test harness — učitava app.js i izvršava ga u izolovanom vm kontekstu sa
+   minimalnim lažnim DOM-om.
 
-   ZAŠTO OVAKO, A NE MODULI: aplikacija je namerno JEDAN fajl bez build
-   koraka (v. komentare u api/*.js — deploy ide preko GitHub web editora,
-   bilo kakav bundler bi to pokvario). Umesto da se kod prekraja zbog
-   testova, testovi se prilagođavaju kodu: skripta se izvuče i pokrene nad
-   stubovima, pa su sve funkcije dostupne tačno onakve kakve su u produkciji.
+   ZAŠTO OVAKO, A NE MODULI: aplikacija je namerno bez build koraka
+   (v. komentare u api/*.js — deploy ide preko GitHub web editora, bilo kakav
+   bundler bi to pokvario). app.js je OBIČNA skripta, ne ES modul: sve što je
+   u njoj deklarisano je globalno, tačno kao dok je stajala inline u
+   index.html. Umesto da se kod prekraja zbog testova, testovi se prilagođavaju
+   kodu: skripta se pokrene nad stubovima, pa su sve funkcije dostupne tačno
+   onakve kakve su u produkciji.
 
    ŠTA JE STUBOVANO: document/localStorage/fetch/crypto/location/navigator/
    alert/confirm. Ništa od toga ne dodiruje mrežu ni disk.
@@ -85,20 +87,25 @@ function makeLocalStorage() {
   };
 }
 
-/* Izvlači sadržaj poslednjeg <script> bloka (aplikacija ima tačno jedan). */
-export function extractAppScript(html) {
-  const start = html.indexOf('<script>');
-  const end = html.lastIndexOf('</script>');
-  if (start < 0 || end < 0) throw new Error('Nije pronađen <script> blok u index.html');
-  return html.slice(start + '<script>'.length, end);
+/* Od v150 kod aplikacije više NIJE u index.html — izdvojen je u app.js da bi
+   CSP mogao da ispusti `script-src 'unsafe-inline'`. index.html je od tada
+   samo markup + <script src="./app.js">. */
+export function readAppSource() {
+  return readRepoFile('app.js');
+}
+
+/* Sve što se isporučuje pregledaču, kao jedan tekst. Provere nad izvorom
+   (nema tajni u klijentu, nema mejl adrese, redosled poziva pri pokretanju…)
+   ne smeju da zavise od toga u kom se od ta dva fajla nešto zateklo. */
+export function readClientSource() {
+  return readRepoFile('index.html') + '\n' + readAppSource();
 }
 
 /* Pokreće aplikaciju i vraća { ctx, get(name), call(name, ...args), ls, calls }.
    `get` je potreban jer top-level const/let u vm Script-u NE postaju svojstva
    globalnog objekta (leksičko okruženje), dok function deklaracije postaju. */
 export function loadApp(opts = {}) {
-  const html = readRepoFile('index.html');
-  const code = extractAppScript(html);
+  const code = readAppSource();
 
   const ls = makeLocalStorage();
   if (opts.seedLocalStorage) {
@@ -170,7 +177,7 @@ export function loadApp(opts = {}) {
   sandbox.self = sandbox;
 
   const ctx = vm.createContext(sandbox);
-  vm.runInContext(code, ctx, { filename: 'index.html:script' });
+  vm.runInContext(code, ctx, { filename: 'app.js' });
 
   return {
     ctx,

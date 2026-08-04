@@ -11,7 +11,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp, readRepoFile } from './harness.mjs';
+import { loadApp, readRepoFile, readClientSource } from './harness.mjs';
 
 const app = loadApp();
 
@@ -76,7 +76,7 @@ describe('Konstante ličnog plana', () => {
     /* Beleške o kolenu i merenja telesne mase su ranije stajale u seedState()
        u čitljivom obliku — dakle vidljive svakome ko otvori izvor stranice.
        Uklonjene su; stvarni podaci žive u Supabase-u i u backup fajlovima. */
-    const izvor = readRepoFile('index.html');
+    const izvor = readClientSource();
     for (const trag of ['Bol se javio', 'Osetio sam koleno', 'Prilikom budjenja',
       'Preskocio sam trcanje', 'brzo je prolazilo', '81.6']) {
       assert.ok(!izvor.includes(trag), `lični podatak je i dalje u kodu: "${trag}"`);
@@ -262,7 +262,7 @@ describe('Sinhronizacija sa servera ne vraća tuđi seed', () => {
     /* Čišćenje pri pokretanju dira samo localStorage. Vlasnikov seed je stara
        verzija gurnula i u tuđ Supabase red, pa ga povlačenje vraća nazad —
        „opet sve vuče na tuđi plan". */
-    const izvor = readRepoFile('index.html');
+    const izvor = readClientSource();
     const blok = /async function sbPull\(\)\{[\s\S]*?\n\}/.exec(izvor);
     assert.ok(blok, 'sbPull nije pronađen');
     assert.ok(/uskladiVlasnickePodatke\(\)/.test(blok[0]),

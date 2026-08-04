@@ -7,23 +7,23 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { readRepoFile, loadApp } from './harness.mjs';
+import { readRepoFile, readClientSource, loadApp } from './harness.mjs';
 
-const index = readRepoFile('index.html');
+const index = readClientSource();
 const sw = readRepoFile('sw.js');
 const manifest = JSON.parse(readRepoFile('manifest.json'));
 const vercel = JSON.parse(readRepoFile('vercel.json'));
 const workouts = readRepoFile('api/workouts.js');
 
 describe('Verzija', () => {
-  test('APP_VERSION je isti u index.html i sw.js', () => {
+  test('APP_VERSION je isti u app.js i sw.js', () => {
     /* Komentar u kodu kaže „mora se poklapati" — sada to proverava mašina.
        Kad se raziđu, SW servira stari keš a app prijavljuje novu verziju. */
-    const uIndex = /const APP_VERSION='(\d+)'/.exec(index);
+    const uApp = /const APP_VERSION='(\d+)'/.exec(index);
     const uSw = /const APP_VERSION = '(\d+)'/.exec(sw);
-    assert.ok(uIndex, 'APP_VERSION nije nađen u index.html');
+    assert.ok(uApp, 'APP_VERSION nije nađen u app.js');
     assert.ok(uSw, 'APP_VERSION nije nađen u sw.js');
-    assert.equal(uIndex[1], uSw[1], `index.html=${uIndex[1]} vs sw.js=${uSw[1]}`);
+    assert.equal(uApp[1], uSw[1], `app.js=${uApp[1]} vs sw.js=${uSw[1]}`);
   });
 
   test('ime keša prati verziju (inače se stari keš ne briše)', () => {
@@ -86,6 +86,58 @@ describe('vercel.json', () => {
       assert.ok(csp.includes(treba), `CSP nema "${treba}"`);
     }
     assert.ok(!csp.includes('unsafe-eval'), 'CSP dozvoljava unsafe-eval');
+  });
+
+  test("script-src NEMA 'unsafe-inline'", () => {
+    /* Ovo je jedina odbrana koja radi POSLE probijene provere unosa: ako
+       ubačeni `<img onerror=...>` ipak dospe u HTML, pregledač odbija da ga
+       izvrši. Sa 'unsafe-inline' pregledač ne može da razlikuje naš kod od
+       ubačenog, pa ta odbrana ne postoji.
+       `style-src 'unsafe-inline'` OSTAJE — <style> blok i style="…" atributi
+       su i dalje inline, a ubačen stil ne izvršava kod. */
+    const csp = vercel.headers[0].headers.find(h => h.key === 'Content-Security-Policy').value;
+    const script = /script-src ([^;]+)/.exec(csp);
+    assert.ok(script, 'CSP nema script-src');
+    assert.ok(!script[1].includes('unsafe-inline'),
+      `script-src je "${script[1].trim()}"`);
+    assert.ok(script[1].includes("'self'"), 'script-src ne dozvoljava sopstvene skripte');
+  });
+});
+
+describe("Ništa izvršno ne stoji inline u HTML-u (uslov za script-src 'self')", () => {
+  /* Čim jedan `onclick=` ili jedan inline <script> blok uđe nazad u markup,
+     stranica se tiho lomi u produkciji (CSP ga blokira), a testovi koji rade
+     nad app.js to ne bi videli. Zato se proverava markup, ne ponašanje. */
+  const straniceSaSkriptom = ['index.html', 'privacy.html', 'uputstvo.html'];
+
+  for (const ime of straniceSaSkriptom) {
+    const html = readRepoFile(ime).replace(/<!--[\s\S]*?-->/g, '');
+
+    test(`${ime}: nema <script> bloka sa telom`, () => {
+      const blokovi = html.match(/<script(?![^>]*\bsrc=)[^>]*>/g) || [];
+      assert.deepEqual(blokovi, [], `inline <script> u ${ime}: ${blokovi.join(' ')}`);
+    });
+
+    test(`${ime}: nema on*= atributa ni javascript: URL-a`, () => {
+      const handleri = html.match(/<[^>]*\son[a-z]+\s*=/gi) || [];
+      assert.deepEqual(handleri.map(h => h.slice(-20)), [],
+        `inline handler u ${ime}`);
+      assert.ok(!/javascript:/i.test(html), `javascript: URL u ${ime}`);
+    });
+  }
+
+  test('index.html učitava app.js kao spoljnu skriptu sa iste adrese', () => {
+    const html = readRepoFile('index.html');
+    assert.match(html, /<script src="\.\/app\.js"><\/script>/,
+      'index.html ne učitava ./app.js');
+  });
+
+  test('app.js je na spisku koji SW osvežava sa mreže', () => {
+    /* Bez ovoga bi se logika aplikacije servirala iz starog keša dok bi
+       omotač (index.html) bio svež — „promenio sam kod, ništa se ne vidi". */
+    const assets = /const ASSETS = \[([^\]]+)\]/.exec(sw);
+    assert.ok(assets, 'ASSETS nije pronađen u sw.js');
+    assert.ok(assets[1].includes("'./app.js'"), "ASSETS ne sadrži './app.js'");
   });
 
   test('svaka putanja pod api/ koja postoji na disku ima svoj fajl', async () => {
@@ -179,7 +231,7 @@ describe('Traka „Ovo nije tvoj plan"', () => {
   test('sesija se učitava PRE prvog iscrtavanja', () => {
     /* Komentari se uklanjaju — objašnjenje iznad samog poziva pominje
        `setPage('danas')`, pa bi ga sirov indexOf našao prvog. */
-    const izvor = readRepoFile('index.html').replace(/\/\*[\s\S]*?\*\//g, '');
+    const izvor = readClientSource().replace(/\/\*[\s\S]*?\*\//g, '');
     const iLoad = izvor.indexOf("if(typeof sbLoad==='function')sbLoad()");
     const iPage = izvor.indexOf("setPage('danas')");
     assert.ok(iLoad > 0 && iPage > 0, 'nije pronađen redosled pokretanja');

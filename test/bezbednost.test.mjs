@@ -20,7 +20,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp, readRepoFile } from './harness.mjs';
+import { loadApp, readRepoFile, readClientSource } from './harness.mjs';
 
 /* Nekoliko oblika probijanja iz atributa i iz teksta. */
 const PAYLOADI = [
@@ -319,7 +319,7 @@ describe('OAuth — CSRF zaštita', () => {
   });
 
   test('state je kriptografski nasumičan, ne Math.random', () => {
-    const izvor = readRepoFile('index.html');
+    const izvor = readClientSource();
     assert.ok(izvor.includes('crypto.getRandomValues'), 'nema crypto.getRandomValues');
     const f = /function secureRandomToken\(\)\{[\s\S]*?\n\}/.exec(izvor)[0];
     assert.ok(!/Math\.random/.test(f), 'secureRandomToken koristi Math.random');
@@ -335,7 +335,7 @@ describe('OAuth — CSRF zaštita', () => {
   });
 
   test('podmetnut #access_token ne može da zameni već prijavljen nalog', () => {
-    const izvor = readRepoFile('index.html');
+    const izvor = readClientSource();
     const blok = /if\(h\)\{[\s\S]*?\n  \}/.exec(izvor)[0];
     assert.ok(/noviClaims\.userId!==SB\.userId/.test(blok),
       'sbInit ne poredi ID naloga pre usvajanja tokena');
@@ -465,7 +465,7 @@ describe('Serverske funkcije', () => {
     /* Traži se STVARNA vrednost ključa, ne pomen imena — index.html sadrži
        komentar koji upozorava da `sb_secret_...` nikad ne sme u klijent, i to
        je ispravno da tu piše. */
-    const klijent = readRepoFile('index.html');
+    const klijent = readClientSource();
     const pravKljuc = /sb_secret_[A-Za-z0-9_-]{12,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\./;
     assert.ok(!pravKljuc.test(klijent), 'prava vrednost tajnog ključa je u klijentskom kodu');
     assert.ok(!/process\.env/.test(klijent), 'klijent pokušava da čita serverske promenljive');
@@ -590,7 +590,7 @@ describe('Fuzz — svako polje stanja otrovano, svaki ekran iscrtan', () => {
 });
 
 describe('Prepoznavanje vlasnika', () => {
-  const klijent = readRepoFile('index.html');
+  const klijent = readClientSource();
 
   test('poredi se Supabase ID naloga, ne mejl adresa', () => {
     assert.match(klijent, /const ADMIN_UID='[0-9a-f-]{36}'/,
