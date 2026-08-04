@@ -1,7 +1,7 @@
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='154'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='155'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -504,7 +504,7 @@ function setAlt(id,alt){
   if(alt.tag===planTag && km===(d.origKm!=null?d.origKm:null) && desc===(d.origDesc||(d.origRest?'Odmor':'')) && pace==null && rw==null){
     delete S.alts[id];
   } else {
-    S.alts[id]={tag:alt.tag,km:km,desc:desc,pace:pace,rw:rw};
+    S.alts[id]={tag:alt.tag,km:km,desc:desc,pace:pace,rw:rw,paceAuto:pace!=null&&!!alt.paceAuto};
   }
   rebuildDateIndex();save();
   return {ok:true};
@@ -1492,6 +1492,197 @@ function extractPaceFromDesc(desc){
   if(m[3]!=null){ const s2=(+m[3])*60+(+m[4]); return Math.round((s1+s2)/2); }
   return s1;
 }
+/* ============================================================
+   PRILAGOĐAVANJE PLANA FORMI (VDOT)
+
+   Problem: plan nosi tempe izvedene iz PRETPOSTAVLJENE putanje forme (početni
+   VDOT + rampa do cilja). Stvarna forma retko prati tu putanju tačno. Do sada
+   je aplikacija merila VDOT iz svake kvalitetne sesije, crtala ga i slala AI-u
+   — ali PLAN se od toga nije pomerao. Čovek koji je napredovao brže od
+   predviđenog trčao je i dalje sporije tempe nego što može, i obrnuto.
+
+   ZAŠTO KROZ S.alts[id].pace, A NE KROZ PONOVNO GENERISANJE
+   To je već postojeći, testiran put za ciljni tempo po danu — `effectivePace()`
+   ga čita, kartica treninga ga prikazuje kao „plan X /km (tvoj cilj)", AI ga
+   dobija, a merenje VDOT-a se poredi s njim. Radi ISTO za oba tipa plana:
+   lični plan je tvrdo kodovan i ne sme se dirati, generisan bi se mogao
+   regenerisati, ali bi to bila druga mašinerija za isti posao.
+
+   Za generisan plan se dodatno osvežava i `session.paceSec`, da opis treninga
+   („7×300 m @ 3:47/km") ne protivreči novom cilju. Dani koje je čovek RUČNO
+   zaključao (session.overrides.paceSec) se preskaču — automatika ne gazi
+   svesnu odluku.
+
+   ŠTA SE NE MENJA: obim. VDOT određuje TEMPO, ne koliko se trči — obim nosi
+   plan opterećenja i menja ga povreda, ne forma.
+   ============================================================ */
+/* 1.5 poena je ~7-8 s/km na pragu — razlika koja se OSETI na stazi. Niže od
+   toga (0.8 poena ≈ 4 s/km) upada u šum jedne sesije: prigušenje pomera VDOT
+   za 40% razlike po merenju, pa bi predlog iskakao skoro posle svakog treninga
+   i čovek bi ga prestao čitati. */
+const VDOT_PRAG = 1.5;
+const VDOT_MIN_MERENJA = 3;     /* jedna sesija je šum — v. prigušenje u preracunajVdotLog */
+const VDOT_PRAG_SEK = 3;        /* i ispod 3 s/km razlike nema smisla dirati dan */
+
+/* Zona za dan preko njegovog PRED reda; bez zone se tempo ne sme prevoditi u
+   VDOT ni obrnuto (ista zamka koju zoneForPredRow već rešava za merenje). */
+function zonaZaDan(d){
+  /* predRowFor() vraća ID reda, ne sam red (v. predRaspored: mapa[d.id]=[t.id]) —
+     red se traži u CUR_PRED, isto kao na kartici treninga i u stravaSync. */
+  const pid = predRowFor(d);
+  const r = pid ? CUR_PRED.find(x=>x.id===pid) : null;
+  if(!r) return null;
+  const z = zoneForPredRow(r);
+  return z ? { r, zone:z } : null;
+}
+
+/* Koliko je stvarna forma iznad/ispod onoga što plan traži od NAREDNIH dana.
+   Planski VDOT se ne modelira posebno — čita se IZ SAMOG PLANA, obrtanjem
+   tempa koji plan traži: vdotFromPace(r.pt, zona). Tako radi jednako za
+   tvrdo kodovan i za generisan plan, bez pretpostavki o rampi. */
+function formaVsPlan(today){
+  today = today || TODAY;
+  const forma = currentVdot();
+  const merenja = (S.vdotLog||[]).filter(e=>e&&e.measured!=null).length;
+  if(forma==null || !isFinite(forma)) return null;
+  const uzorci = [];
+  for(const w of CUR_PLAN) for(const d of w.days){
+    if(!d.date || d.date < today || d.rest) continue;
+    if(stFor(d.id)==='done') continue;
+    const z = zonaZaDan(d);
+    /* VAŽNO: poredi se sa tempom koji plan TRENUTNO traži (effectivePace), ne
+       sa sirovim PRED redom. Bez toga bi već primenjeno prilagođavanje ostalo
+       nevidljivo, pa bi isti predlog iskakao u nedogled. */
+    const trazi = effectivePace(d, z && z.r);
+    if(!z || !(trazi>0)) continue;
+    uzorci.push(vdotFromPace(trazi, z.zone));
+  }
+  if(!uzorci.length) return null;
+  const planVdot = Math.round(uzorci.reduce((a,b)=>a+b,0)/uzorci.length*10)/10;
+  return { forma, planVdot, delta: Math.round((forma-planVdot)*10)/10, merenja, danaSaTempom: uzorci.length };
+}
+
+/* Predlog: novi ciljni tempo za svaki preostali kvalitetni dan. */
+function vdotPredlog(today){
+  today = today || TODAY;
+  const f = formaVsPlan(today);
+  if(!f) return null;
+  if(f.merenja < VDOT_MIN_MERENJA) return null;      /* premalo merenja da se veruje */
+  if(Math.abs(f.delta) < VDOT_PRAG) return null;     /* plan i forma se slažu */
+
+  const changes = [];
+  for(const w of CUR_PLAN) for(const d of w.days){
+    if(!d.date || d.date < today || d.rest) continue;
+    if(stFor(d.id)==='done') continue;
+    if(d.tag==='trka' || d.tag==='test') continue;   /* dan trke ostaje kakav jeste */
+    const z = zonaZaDan(d);
+    if(!z || !(z.r.pt>0)) continue;
+    /* Ručno zaključan tempo se ne dira — ni u alts, ni u sesiji. */
+    if(S.alts && S.alts[d.id] && S.alts[d.id].pace!=null && !S.alts[d.id].paceAuto) continue;
+    if(d.session && d.session.overrides && d.session.overrides.paceSec) continue;
+    const novo = paceForZone(f.forma, z.zone);
+    const staro = effectivePace(d, z.r);   /* trenutno važeći cilj, ne sirov PRED red */
+    if(!(staro>0)) continue;
+    if(!(novo>0) || Math.abs(novo-staro) < VDOT_PRAG_SEK) continue;
+    changes.push({ id:d.id, date:d.date, kind:sessKind(d), zone:z.zone, staro, novo, w:w.w });
+  }
+  if(!changes.length) return null;
+
+  const brzi = f.delta > 0;
+  const sek = Math.round(changes.reduce((s,c)=>s+Math.abs(c.novo-c.staro),0)/changes.length);
+  return {
+    ...f, changes, brzi,
+    title: brzi ? 'Forma je ispred plana' : 'Forma je iza plana',
+    message: 'Tvoj VDOT je ' + f.forma.toFixed(1) + ', a tempi u preostalom delu plana odgovaraju VDOT-u ' +
+      f.planVdot.toFixed(1) + ' — razlika ' + (f.delta>0?'+':'') + f.delta.toFixed(1) +
+      ' poena, iz ' + f.merenja + ' izmerenih sesija. Predlog: ' + changes.length +
+      ' preostalih kvalitetnih treninga dobija ciljni tempo ' + (brzi?'brži':'sporiji') + ' za oko ' + sek + ' s/km. ' +
+      'Obim se NE menja — VDOT određuje tempo, ne koliko se trči. ' +
+      (brzi
+        ? 'Ako ti novi tempi deluju preteško na terenu, vrati ih — jedna dobra sesija ume da preceni formu.'
+        : 'Sporiji tempo nije nazadovanje: bolje je pogoditi zonu nego juriti broj koji telo trenutno ne nosi.')
+  };
+}
+
+function primeniVdotPredlog(prop){
+  if(!prop || !prop.changes || !prop.changes.length) return 0;
+  let n = 0;
+  prop.changes.forEach(ch => {
+    const d = BY_ID[ch.id];
+    if(!d) return;
+    const post = (S.alts && S.alts[ch.id]) || null;
+    /* Zadržava se sve što je na danu već izmenjeno (tip, km, opis) — menja se
+       SAMO ciljni tempo. `paceAuto` označava da je vrednost automatska, pa se
+       kasnije sme i pregaziti i poništiti bez diranja ručnih izmena. */
+    const r = setAlt(ch.id, {
+      tag: post ? post.tag : (d.rest?'odmor':d.tag),
+      km:  post ? post.km  : (d.km!=null?d.km:null),
+      desc:post ? post.desc: (d.desc||''),
+      rw:  post ? post.rw  : null,
+      pace: ch.novo, paceAuto: true
+    });
+    if(!(r && r.ok)) return;
+    n++;
+    /* Generisan plan: osveži i tempo u samoj sesiji, da opis ne protivreči
+       novom cilju. Lični plan nema `session` — njemu je alts.pace dovoljan. */
+    if(S.genPlan) osveziTempoUGenPlanu(ch.id, ch.novo);
+  });
+  if(n){ setActivePlan(); rebuildDateIndex(); save(); }
+  return n;
+}
+
+/* Prepiše paceSec u S.genPlan (izvoru istine za generisan plan) i preračuna
+   opis/km iz sesije — isti posao koji radi applyEdit, ali BEZ postavljanja
+   overrides: ovo je prilagođavanje formi, ne ručno zaključavanje polja. */
+function osveziTempoUGenPlanu(id, paceSec){
+  if(!S.genPlan || !Array.isArray(S.genPlan.weeks)) return false;
+  for(const w of S.genPlan.weeks) for(const d of w.days){
+    if(d.id!==id || !d.session) continue;
+    if(d.session.overrides && d.session.overrides.paceSec) return false;
+    /* Izvorni tempo se pamti JEDNOM, pri prvoj izmeni — da poništavanje ima
+       čemu da se vrati. Bez toga bi opis ostao na prilagođenom tempu i posle
+       vraćanja cilja, pa bi kartica i opis govorili dve različite stvari. */
+    if(d.session.paceSec0 == null) d.session.paceSec0 = d.session.paceSec;
+    d.session.paceSec = paceSec;
+    d.km = sessKm(d.session);
+    d.desc = sessDesc(d.session);
+    return true;
+  }
+  return false;
+}
+
+/* Vrati sesiju generisanog plana na tempo iz generatora. */
+function vratiTempoUGenPlanu(id){
+  if(!S.genPlan || !Array.isArray(S.genPlan.weeks)) return false;
+  for(const w of S.genPlan.weeks) for(const d of w.days){
+    if(d.id!==id || !d.session || d.session.paceSec0==null) continue;
+    d.session.paceSec = d.session.paceSec0;
+    delete d.session.paceSec0;
+    d.km = sessKm(d.session);
+    d.desc = sessDesc(d.session);
+    return true;
+  }
+  return false;
+}
+
+/* Poništi SAMO automatska prilagođavanja tempa; ručne izmene ostaju. */
+function ponistiVdotPrilagodjavanje(){
+  let n = 0;
+  Object.keys(S.alts||{}).forEach(id => {
+    const a = S.alts[id];
+    if(!a || !a.paceAuto) return;
+    a.pace = null; a.paceAuto = false;
+    if(S.genPlan) vratiTempoUGenPlanu(id);
+    /* Ako je tempo bio JEDINA izmena tog dana, ceo unos nestaje. */
+    const d = BY_ID[id];
+    if(d && a.tag===(d.origRest?'odmor':d.origTag) && a.km===(d.origKm!=null?d.origKm:null)
+        && a.desc===(d.origDesc||(d.origRest?'Odmor':'')) && !a.rw) delete S.alts[id];
+    n++;
+  });
+  if(n){ setActivePlan(); rebuildDateIndex(); save(); }
+  return n;
+}
+
 /* Efektivni ciljni tempo za dan/PRED-red: ručna izmena (S.alts[d.id].pace) ima
    prednost nad kodno-fiksiranom PRED tabelom. "Izmeni trening" ne dodiruje PRED
    (deljen je između više dana/nedelja), pa je ovo jedina tačka gde se cilj koji
@@ -6454,6 +6645,25 @@ function renderPred(){
     </div>
     <div style="font-size:.75rem;color:var(--txt3);margin-top:4px">Početni VDOT${S.genPlan?'':' (PB 20:37)'}: ${esc(bv)} · cilj ${S.genPlan?(goalSecA!=null?fmtClock(goalSecA):'—'):CILJ} ≈ VDOT ${esc(goalV)}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
   </div>`;
+  /* PRILAGOĐAVANJE PLANA FORMI — stoji odmah ispod trenutne forme, jer je to
+     mesto gde čovek i vidi da se broj razišao sa planom. Predlog, ne tiha
+     izmena: kartica pokazuje tačno koliko se menja i šta ostaje isto. */
+  const vp=vdotPredlog(TODAY);
+  if(vp){
+    const fm=x=>fmtTempo(x)+'/km';
+    h+=`<div class="card" style="border-color:${vp.brzi?'rgba(48,209,88,.35)':'rgba(255,176,32,.3)'}">
+      <div class="card-t" style="color:${vp.brzi?'var(--green)':'var(--amber)'}">${esc(vp.title)}</div>
+      <div style="font-size:.85rem;line-height:1.55;color:var(--txt2)">${esc(vp.message)}</div>
+      <div class="note-src" style="margin-top:10px">${vp.changes.slice(0,3).map(c=>esc(fmtD(c.date)+' '+c.kind+': '+fm(c.staro)+' → '+fm(c.novo))).join(' · ')}${vp.changes.length>3?' …':''}</div>
+      <div class="btnrow" style="margin-top:12px"><button class="btn" id="vd-apply">Prilagodi tempe</button></div>
+      <div class="note-src" style="margin-top:8px">Ručno izmenjeni i odrađeni treninzi se ne diraju. Sve se vraća jednim dugmetom u Podešavanjima.</div>
+    </div>`;
+  } else if(Object.values(S.alts||{}).some(a=>a&&a.paceAuto)){
+    h+=`<div class="card"><div class="card-t">Tempi su prilagođeni tvojoj formi</div>
+      <div style="font-size:.85rem;color:var(--txt2);line-height:1.5">Ciljni tempi preostalih kvalitetnih treninga prate izmereni VDOT, ne polaznu pretpostavku plana.</div>
+      <div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="vd-undo">Vrati planske tempe</button></div>
+    </div>`;
+  }
   h+=`<div class="card"><div class="card-t">VDOT trend kroz vreme</div><div id="vdottrend">${chartVdotTrend()}</div>
     <div class="legend"><span><i style="background:var(--cyan)"></i>cilj ${esc(goalV)}</span><span><i style="background:var(--pink)"></i>tvoja forma</span></div>
     <button type="button" id="trend-go" class="btn-ai" style="margin-top:10px">📈 Objasni trend (AI)</button>
@@ -6463,6 +6673,21 @@ function renderPred(){
     <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span></div></div>`;
   h+=`<div class="card info" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?esc(goalCtxText()):CILJ+' — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
   el.innerHTML=h;
+  const vdA=el.querySelector('#vd-apply');
+  if(vdA) vdA.onclick=()=>{
+    const pr=vdotPredlog(TODAY);
+    if(!pr) return;
+    if(!confirm('Prilagoditi ciljne tempe tvojoj formi? Menja se '+pr.changes.length+' treninga. Obim ostaje isti, a sve se vraća dugmetom „Vrati planske tempe".')) return;
+    const n=primeniVdotPredlog(pr);
+    alert(n+' '+(n===1?'trening prilagođen':'treninga prilagođeno')+'.');
+    renderPred(); if(ACTIVE==='danas')renderDanas();
+  };
+  const vdU=el.querySelector('#vd-undo');
+  if(vdU) vdU.onclick=()=>{
+    const n=ponistiVdotPrilagodjavanje();
+    alert(n?('Vraćeno na planske tempe ('+n+').'):'Nema šta da se vrati.');
+    renderPred(); if(ACTIVE==='danas')renderDanas();
+  };
   const tBtn=el.querySelector('#trend-go');
   if(tBtn){
     tBtn.addEventListener('click',async()=>{
