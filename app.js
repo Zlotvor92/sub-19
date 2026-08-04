@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='167'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='168'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2196,22 +2196,26 @@ function zoneHTML(){
 
 /* Jedan red sa onim što je sat izmerio. Vraća '' kad nema nijednog podatka —
    prazan red bi bio samo šum na kartici. */
+/* Vraća REDOVE [naziv, vrednostHTML], ne rečenicu.
+   Ranije je bilo „⌚ Sa sata: kadenca 86 spm · maks. puls 154 · uspon 71 m · …"
+   — šest merenja nanizanih u tekst, ništa poravnato. To se ne vidi u prolazu,
+   to se čita. Kao redovi, nazivi stoje levo a cifre desno jedna ispod druge. */
 function metrikaSata(l){
-  if(!l) return '';
+  if(!l) return [];
   /* BROJ, ne „nije null". Vrednosti dolaze i iz uvezenog backupa, gde `l.cadence`
      ume da bude string ili null — Math.round('x') je NaN, pa bi na kartici
      pisalo „kadenca NaN spm". Ista granica poverenja kao cistWellness. */
   const br=v=>(v==null||v===''||typeof v==='boolean'||!Number.isFinite(+v))?null:+v;
   const d=[];
-  const kad=br(l.cadence);   if(kad!=null&&kad>0) d.push(`kadenca <b>${esc(Math.round(kad))}</b> spm`);
+  const kad=br(l.cadence);   if(kad!=null&&kad>0) d.push(['kadenca',`<b>${esc(Math.round(kad))}</b> spm`]);
   const mhr=br(l.maxHr);
   if(mhr!=null&&mhr>0){
     const z=zonaZaPuls(mhr);
-    d.push(`maks. puls <b>${esc(Math.round(mhr))}</b>${z?` <small>(Z${z.n})</small>`:''}`);
+    d.push(['maks. puls',`<b>${esc(Math.round(mhr))}</b>${z?` <small>Z${z.n}</small>`:''}`]);
   }
-  const usp=br(l.elevGain); if(usp!=null&&usp>0) d.push(`uspon <b>${esc(Math.round(usp))}</b> m`);
-  const tmp=br(l.temp);     if(tmp!=null) d.push(`<b>${esc(Math.round(tmp))}</b> °C`);
-  const nap=br(l.relEffort);if(nap!=null&&nap>0) d.push(`Strava napor <b>${esc(Math.round(nap))}</b>`);
+  const usp=br(l.elevGain); if(usp!=null&&usp>0) d.push(['uspon',`<b>${esc(Math.round(usp))}</b> m`]);
+  const tmp=br(l.temp);     if(tmp!=null) d.push(['temperatura',`<b>${esc(Math.round(tmp))}</b> °C`]);
+  const nap=br(l.relEffort);if(nap!=null&&nap>0) d.push(['Strava napor',`<b>${esc(Math.round(nap))}</b>`]);
   /* DRIFT PULSA (aerobno raspregnuće): koliko je odnos tempo/puls pao u drugoj
      polovini u odnosu na prvu. Ispod 5% je znak dobre aerobne baze; preko toga
      znači da je tempo bio prebrz za trenutnu izdržljivost ili da je baza tanka.
@@ -2221,13 +2225,107 @@ function metrikaSata(l){
     const n=br(l.decoupling.n);
     if(n!=null){
       const boja=n<5?'var(--green)':n<8?'var(--amber)':'var(--red)';
-      d.push(`drift pulsa <b style="color:${boja}">${n>0?'+':''}${esc(fmtNum(n,1))}%</b>`);
+      d.push(['drift pulsa',`<b style="color:${boja}">${n>0?'+':''}${esc(fmtNum(n,1))} %</b>`]);
     } else if(typeof l.decoupling.razlog==='string' && l.decoupling.razlog){
-      d.push(`drift pulsa <small>— ${esc(l.decoupling.razlog)}</small>`);
+      d.push(['drift pulsa',`<small>${esc(l.decoupling.razlog)}</small>`]);
     }
   }
-  if(!d.length) return '';
-  return `<div class="note-src" style="margin:2px 0 8px">⌚ Sa sata: ${d.join(' · ')}</div>`;
+  return d;
+}
+
+/* Isto za jutarnja merenja — HRV, puls u miru, san, svežina. */
+function oporavakRedovi(datum){
+  const o=oporavakZa(datum);
+  if(!o) return [];
+  const r=[];
+  if(o.hrv!=null) r.push(['HRV',
+    `<b style="color:${esc(bojaOdstupanja(o.hrvOdstupanje))}">${esc(o.hrv)}</b>`+
+    (o.hrvOdstupanje!=null?` <small>${o.hrvOdstupanje>=0?'+':''}${esc(o.hrvOdstupanje)} %</small>`:'')]);
+  if(o.pulsUMiru!=null) r.push(['puls u miru',
+    `<b>${esc(o.pulsUMiru)}</b>`+(o.pulsOdstupanje!=null?` <small>${o.pulsOdstupanje>=0?'+':''}${esc(o.pulsOdstupanje)}</small>`:'')]);
+  if(o.sanH!=null) r.push(['san',
+    `<b style="color:${o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'}">${esc(o.sanH)} h</b>`]);
+  if(o.svezina!=null) r.push(['svežina',`<b>${esc(o.svezina)}</b>`]);
+  return r;
+}
+
+/* ---------- KARTOTEKA: gradivni delovi kartice dana ----------
+   Ekran Danas je do sada bio JEDNA kartica u koju je stalo sve: opis sesije,
+   planski brojevi, polja za unos, harmonika, podaci sa sata, jutarnja merenja,
+   AI napomena i dugme. Ništa nije govorilo šta je glavno, a merenja su se
+   čitala kao rečenica. Sada je svaki izvor podataka svoja kartica sa imenom. */
+function dRedovi(rows){
+  if(!rows||!rows.length) return '';
+  return `<div class="drows">`+rows.map(r=>
+    `<div class="drow"><span class="l">${esc(r[0])}</span><span class="v">${r[1]}</span></div>`).join('')+`</div>`;
+}
+function dGlava(naslov,dodatak){
+  return `<div class="dhead"><span class="card-t">${esc(naslov)}</span>`+
+         (dodatak?`<span class="dhead-x">${dodatak}</span>`:'')+`</div>`;
+}
+function dKarta(naslov,dodatak,telo,klasa){
+  if(!telo) return '';
+  return `<div class="card${klasa?' '+klasa:''}">${dGlava(naslov,dodatak)}${telo}</div>`;
+}
+
+/* ---------- AI ANALIZA ----------
+   ŠTA JE BILO: zaseban red „📊 AI dobija po KILOMETRU (8 km) — nema podelu po
+   intervalu.", ispod njega dugme, ispod njega prazan prostor za izlaz. Tri
+   bloka za nešto što se koristi jednom po treningu, i napomena koja je šum sve
+   dok te ne zanima.
+
+   ŠTA JE SADA: jedan element u dva stanja. Dok nema analize, kartica je JEDAN
+   RED — sama radnja. Napomena o izvoru podataka postala je njen podnaslov, pa
+   pitanje „vredi li uopšte" stoji tačno tamo gde se odlučuje, a ne kao red
+   iznad. Kad analiza postoji, isti element je puna kartica sa naslovom, kao
+   Plan / Uneto / Sa sata / Jutros. Kontejner je isti, pa se posle uspeha samo
+   zameni sadržaj — bez ponovnog iscrtavanja i bez skoka na vrh.
+
+   TEKST SE OD SADA ČUVA. Ranije se nije: potrošio bi kvotu, dobio analizu, i
+   izgubio je čim se ekran ponovo iscrta — dok ti poruka o limitu govori da
+   „nema potrebe za ponavljanjem". Sada preživi zatvaranje aplikacije.
+   Bezbedno je jer `mdToHtml` PRVO escapuje, pa ni tekst iz uvezenog backupa
+   ne može da unese oznake. */
+const AI_LIMIT=2;
+function plKrug(n){ const h=n%100; if(h>=11&&h<=14)return 'krugova'; const m=n%10;
+  return m===1?'krug':(m>=2&&m<=4?'kruga':'krugova'); }
+function aiIzvor(l){
+  const k=Array.isArray(l.laps)?l.laps.length:0;
+  const km=Array.isArray(l.perKm)?l.perKm.length:0;
+  if(k) return `po krugu · ${k} ${plKrug(k)}`;
+  if(km) return `po kilometru · ${km} km`;
+  return 'samo prosek cele sesije';
+}
+function aiMoze(d,l){
+  return (d.tag==='int'||d.tag==='tempo'||d.tag==='lako'||d.tag==='lr')&&!!l.km&&!!l.sec;
+}
+function aiTelo(d,l){
+  const izvor=aiIzvor(l);
+  const preostalo=Math.max(0,AI_LIMIT-(l.aiCount||0));
+  const ostatak=n=>`${n} ${pl3(n,'preostala','preostale','preostalih')}`;
+  /* Trazi se STRING, ne samo „ima nesto": iz uvezenog backupa `aiText` moze
+     doci kao objekat ili broj, a onda bi u kartici pisalo „[object Object]". */
+  const tekst=typeof l.aiText==='string'&&l.aiText.trim()?l.aiText:null;
+  if(tekst){
+    return dGlava('Analiza',esc(izvor))+
+      `<div class="ai-out">${mdToHtml(tekst)}</div>`+
+      (preostalo
+        ? `<button type="button" class="ai-again" data-ai="${esc(d.id)}">Analiziraj ponovo · ${ostatak(preostalo)}</button>`
+        : '');
+  }
+  if(!preostalo){
+    return `<div class="ai-row off"><span class="ai-ic">✨</span>
+      <span class="ai-tt"><b>Analiza</b><span>iskorišćene obe za ovaj trening</span></span></div>`;
+  }
+  return `<button type="button" class="ai-row" data-ai="${esc(d.id)}">
+      <span class="ai-ic">✨</span>
+      <span class="ai-tt"><b>Analiziraj trening</b><span>${esc(izvor)} · ${ostatak(preostalo)}</span></span>
+      <span class="ai-ch">›</span></button>`;
+}
+function aiKarta(d,l){
+  if(!aiMoze(d,l)) return '';
+  const ima=typeof l.aiText==='string'&&l.aiText.trim();
+  return `<div class="card ai-card${ima?'':' prazna'}" id="ai-card-${esc(d.id)}">${aiTelo(d,l)}</div>`;
 }
 
 function decouplingPerKm(perKm){
@@ -2375,28 +2473,39 @@ function nextLine(from){
 }
 function dayCard(d){
   const s=stFor(d.id);
+  const l=S.log[d.id]||{};
   const isQuality=d.tag==='int'||d.tag==='tempo';
-  let c=`<div class="card${isQuality?' accent':''}" id="tcard">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+
+  /* ── PLAN: šta je za danas ── */
+  let plan=dGlava('Plan',`N${d.week.w}${d.date?' · '+dowOf(d.date)+' '+fmtD(d.date):' · opciono, kraj nedelje'}`)+
+    `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">
       <span class="tag ${safeTag(d.tag)}">${esc(sessKind(d))}</span>
-      <span class="st ${s}">${s==='done'?'Odrađen':s==='skip'?'Preskočen':'Predstoji'}</span>
-    </div>
-    <div style="font-size:.72rem;color:var(--txt2);font-weight:700;margin-bottom:8px">N${d.week.w}${d.date?' · '+dowOf(d.date)+' '+fmtD(d.date):' · opciono, kraj nedelje'}</div>`;
+      <span class="st ${s}">${s==='done'?'Odrađen':s==='skip'?'Preskočen':'Predstoji'}</span></div>`;
   const rows=sessBreakdown(d);
   if(rows){
-    c+=`<div class="sess-struct">`;
-    rows.forEach(r=>{ c+=`<div class="sess-row"><span class="k">${esc(r[0])}</span><span class="v${r[2]?' hl':''}">${esc(r[1])}</span></div>`; });
-    c+=`</div>`;
+    plan+=`<div class="sess-struct">`;
+    rows.forEach(r=>{ plan+=`<div class="sess-row"><span class="k">${esc(r[0])}</span><span class="v${r[2]?' hl':''}">${esc(r[1])}</span></div>`; });
+    plan+=`</div>`;
     const note=sessNote(d);
-    if(note)c+=`<div class="sess-note">${esc(note)}</div>`;
+    if(note)plan+=`<div class="sess-note">${esc(note)}</div>`;
   } else {
-    c+=`<div class="desc">${esc(d.desc)}</div>`;
+    plan+=`<div class="desc">${esc(d.desc)}</div>`;
   }
-  c+=`<div class="meta">${d.km!=null?`<div><b>${fmtKm(d.km)} km</b>plan</div>`:''}<div><b>${fmtKm(weekPlanKm(d.week))} km</b>nedelja N${d.week.w}</div><div><b>${weekRunDone(d.week)}/${weekRunCount(d.week)}</b>trčanja</div></div>`;
-  if(s==='pending')c+=`<div class="btnrow"><button class="btn" data-a="done">Završi trening</button><button class="btn ghost" data-a="skip">Preskoči</button></div>`;
-  else if(s==='skip')c+=`<div class="btnrow"><button class="btn ghost" data-a="done">Ipak sam odradio</button><button class="btn ghost sm" data-a="pending">Vrati</button></div>`;
-  else c+=formHTML(d);
-  c+=`</div>`;
+  plan+=`<div class="meta">${d.km!=null?`<div><b>${fmtKm(d.km)} km</b>plan</div>`:''}<div><b>${fmtKm(weekPlanKm(d.week))} km</b>nedelja N${d.week.w}</div><div><b>${weekRunDone(d.week)}/${weekRunCount(d.week)}</b>trčanja</div></div>`;
+  if(s==='pending')plan+=`<div class="btnrow"><button class="btn" data-a="done">Završi trening</button><button class="btn ghost" data-a="skip">Preskoči</button></div>`;
+  else if(s==='skip')plan+=`<div class="btnrow"><button class="btn ghost" data-a="done">Ipak sam odradio</button><button class="btn ghost sm" data-a="pending">Vrati</button></div>`;
+
+  let c=`<div class="card${isQuality?' accent':''}" id="tcard">${plan}</div>`;
+  if(s==='pending'||s==='skip') return c;   /* dok nije odrađen nema šta da se prikaže */
+
+  /* ── UNETO: ono što si ti upisao ── */
+  c+=dKarta('Uneto',
+    l.src==='strava'?`sa Strave${l.lock?' · ručno korigovano':''}`:'',
+    formHTML(d));
+  /* ── SA SATA i JUTROS: ono što je stiglo samo ── */
+  c+=dKarta('Sa sata','',dRedovi(metrikaSata(l)));
+  c+=dKarta('Jutros','',dRedovi(oporavakRedovi(l.runDate||l.ts||d.date)));
+  c+=aiKarta(d,l);
   return c;
 }
 function bindDayCard(root,d){
@@ -2443,32 +2552,9 @@ function formHTML(d){
     });
     workBlock+=`</div>`;
   }
-  /* Oporavak tog jutra, uz sam trening — da se brojevi vide TU gde se tumace,
-     a ne samo u AI analizi. */
-  const _op=oporavakZa(l.runDate||l.ts||d.date);
-  const oporavakRed=_op?(()=>{
-    const d2=[];
-    if(_op.hrv!=null) d2.push(`HRV <b style="color:${esc(bojaOdstupanja(_op.hrvOdstupanje))}">${esc(_op.hrv)}</b>${_op.hrvOdstupanje!=null?` <small>(${_op.hrvOdstupanje>=0?'+':''}${esc(_op.hrvOdstupanje)}%)</small>`:''}`);
-    if(_op.pulsUMiru!=null) d2.push(`puls u miru <b>${esc(_op.pulsUMiru)}</b>${_op.pulsOdstupanje!=null?` <small>(${_op.pulsOdstupanje>=0?'+':''}${esc(_op.pulsOdstupanje)})</small>`:''}`);
-    if(_op.sanH!=null) d2.push(`san <b style="color:${_op.sanH<6?'var(--red)':_op.sanH<7?'var(--amber)':'var(--green)'}">${esc(_op.sanH)} h</b>`);
-    if(_op.svezina!=null) d2.push(`svežina <b>${esc(_op.svezina)}</b>`);
-    return d2.length?`<div class="note-src" style="margin:2px 0 8px">🛌 Tog jutra: ${d2.join(' · ')}</div>`:'';
-  })():'';
-  const canAnalyze=(d.tag==='int'||d.tag==='tempo'||d.tag==='lako'||d.tag==='lr')&&l.km&&l.sec;
-  const hasLaps=Array.isArray(l.laps)&&l.laps.length>0;
-  const hasPerKm=Array.isArray(l.perKm)&&l.perKm.length>0;
-  const plKrug=n=>{ const n2=n%100; if(n2>=11&&n2<=14)return 'krugova'; const n1=n%10; return n1===1?'krug':(n1>=2&&n1<=4?'kruga':'krugova'); };
-  const dataNote=hasLaps
-    ? `📊 AI dobija PO KRUGU (${l.laps.length} ${plKrug(l.laps.length)}) — puls/kadenca/tempo za svaki posebno.`
-    : hasPerKm
-      ? `📊 AI dobija po KILOMETRU (${l.perKm.length} km) — nema podelu po intervalu.`
-      : `📊 AI dobija SAMO PROSEK cele sesije — nema podatke po krugu ni po kilometru.`;
-  const aiBlock=canAnalyze?`<div class="f-field full" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px">
-      ${oporavakRed}
-      <div class="ai-datasrc" style="font-size:.72rem;color:var(--txt3);margin-bottom:8px">${dataNote}</div>
-      <button type="button" id="ai-go-${esc(d.id)}" class="btn-ai">🤖 Analiziraj trening (AI)</button>
-      <div id="ai-out-${esc(d.id)}" class="ai-out"></div>
-    </div>`:'';
+  /* Podaci sa sata, jutarnja merenja i AI analiza VISE NISU ovde — svaki je
+     dobio svoju karticu (v. dayCard). Ovde ostaje samo unos, tacno ono sto
+     ime funkcije kaze. */
   /* PRISTUPACNOST: svaka labela dobija `for`, svako polje `id`. Ranije nijedna
      labela nije bila povezana sa svojim poljem — citac ekrana ih nije spajao,
      a dodir na labelu nije fokusirao polje. `id` nosi ID DANA jer ista forma
@@ -2488,9 +2574,6 @@ function formHTML(d){
     <div class="f-field"><label for="${fid('ts')}">Datum</label><input id="${fid('ts')}" type="date" data-f="ts" value="${esc(l.ts||d.date||TODAY)}"></div>
     <div class="f-field full"><label for="${fid('note')}">Beleška</label><textarea id="${fid('note')}" data-f="note" placeholder="Kako je bilo…">${esc(l.note||'')}</textarea></div>
     </div></details>
-    ${(()=>{ const m=metrikaSata(l); return m?`<div class="f-field full" style="margin-top:2px">${m}</div>`:''; })()}
-    ${aiBlock}
-    ${l.src==='strava'?`<div class="note-src" style="grid-column:1/-1;margin-top:0">⛓ Podaci povučeni sa Strave${l.lock?' · ručno korigovano (sync više ne prepisuje)':''}</div>`:''}
   </div>`;
 }
 function bindForm(root,d){
@@ -2538,19 +2621,24 @@ function bindForm(root,d){
     inp.addEventListener('change',wh);
   });
   /* AI analiza — šalje SAMO podatke koje app već ima (nema novog Strava poziva) */
-  const aiBtn=g.querySelector(`#ai-go-${esc(d.id)}`);
-  if(aiBtn){
-    aiBtn.addEventListener('click',async()=>{
-      const out=g.querySelector(`#ai-out-${esc(d.id)}`);
+  vezAnalize(root,d);
+}
+
+/* Dugme za analizu ne zivi vise u formi nego u svojoj kartici, pa se i vezuje
+   odvojeno — i iz Danas ekrana i iz lista dana u Planu. */
+function vezAnalize(root,d){
+  const karta=root.querySelector(`#ai-card-${esc(d.id)}`);
+  if(!karta) return;
+  const dug=karta.querySelector('[data-ai]');
+  if(!dug) return;
+  dug.addEventListener('click',async()=>{
       const l=S.log[d.id]||(S.log[d.id]={});
-      /* Limit 2 analize po treningu — da se ne troši kvota bez granice */
-      if((l.aiCount||0)>=2){
-        out.className='ai-out err';
-        out.textContent='Iskorišćene su 2 analize za ovaj trening (limit). Analiza se ne menja za iste podatke, pa nema potrebe za ponavljanjem.';
-        return;
-      }
-      aiBtn.disabled=true; aiBtn.textContent='Analiziram…';
-      out.className='ai-out'; out.textContent='';
+      if((l.aiCount||0)>=AI_LIMIT) return;   /* dugme u tom stanju i ne postoji */
+      /* Kartica se pretvara u „radi se" — isti element, bez skoka na vrh. */
+      karta.classList.remove('prazna');
+      karta.innerHTML=dGlava('Analiza',esc(aiIzvor(l)))+`<div class="ai-out" id="ai-out-${esc(d.id)}">Analiziram…</div>`;
+      const out=karta.querySelector(`#ai-out-${esc(d.id)}`);
+      const gotovo=()=>{ karta.classList.toggle('prazna',!(typeof l.aiText==='string'&&l.aiText.trim())); };
       const predIds=predRowsFor(d);
       const mainPid=predIds[0];
       const r=mainPid?CUR_PRED.find(x=>x.id===mainPid):null;
@@ -2588,14 +2676,23 @@ function bindForm(root,d){
           return;
         }
         if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata')+(data.detail?' — '+data.detail:''); }
-        else { out.innerHTML=mdToHtml(data.text); l.aiCount=(l.aiCount||0)+1; save(); }
+        else {
+          /* TEKST SE ČUVA. Ranije se nije — potrošio bi kvotu i izgubio analizu
+             čim se ekran ponovo iscrta, dok ti poruka o limitu govori da nema
+             potrebe za ponavljanjem. Skraćuje se da jedan trening ne naduva
+             ni localStorage ni ono što ide na server. */
+          l.aiText=String(data.text||'').slice(0,4000);
+          l.aiAt=Date.now();
+          l.aiCount=(l.aiCount||0)+1;
+          save();
+          karta.innerHTML=aiTelo(d,l);
+          vezAnalize(root,d);   /* nov čvor traži novo vezivanje */
+          return;
+        }
       }catch(e){
         out.className='ai-out err'; out.textContent='Pravi mrežni prekid (offline / nema signala).';
-      }finally{
-        aiBtn.disabled=false; aiBtn.textContent='🤖 Analiziraj trening (AI)';
-      }
-    });
-  }
+      }finally{ gotovo(); }
+  });
 }
 function syncSide(d){
   const l=S.log[d.id];if(!l)return;
@@ -6337,6 +6434,10 @@ function openDaySheet(id){
       <button data-s="skip" class="c-skip ${s==='skip'?'on':''}">Preskočen</button>
     </div>`}
     ${isRest?'':formHTML(d)}
+    ${isRest?'':(()=>{ const l=S.log[id]||{};
+        return dKarta('Sa sata','',dRedovi(metrikaSata(l)))
+             + dKarta('Jutros','',dRedovi(oporavakRedovi(l.runDate||l.ts||d.date)))
+             + aiKarta(d,l); })()}
     ${d.test?'':`<div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="alt-open">✏️ Izmeni trening</button></div>`}
     ${!isRest&&S.log[id]?`<div class="btnrow"><button class="btn danger" id="del-log">Obriši unos</button></div>`:''}
     <div class="note-src">Sve izmene se čuvaju automatski.</div>

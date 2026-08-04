@@ -20,10 +20,15 @@ function sa(polja, zone) {
   a.ctx.__d = a.evalIn('BY_ID[__id]');
   return a;
 }
-const red = a => {
-  const m = /⌚ Sa sata:[\s\S]*?<\/div>/.exec(a.evalIn('formHTML(__d)') || '');
-  return m ? m[0].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim() : '';
+/* Podaci sa sata su od kartoteke SVOJA kartica, ne red u formi. Meri se ono
+   što stvarno stigne na ekran — cela kartica „Sa sata" iz dayCard, ne string
+   iz formHTML (koji je sada samo unos). */
+const kartica = a => {
+  const h = a.evalIn('dayCard(__d)') || '';
+  const m = /<div class="card"><div class="dhead"><span class="card-t">Sa sata<\/span>[\s\S]*?<\/div><\/div>/.exec(h);
+  return m ? m[0] : '';
 };
+const red = a => kartica(a).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
 describe('Metrike sa sata se vide na kartici treninga', () => {
   test('svih šest podataka stigne do ekrana', () => {
@@ -35,14 +40,16 @@ describe('Metrike sa sata se vide na kartici treninga', () => {
   });
 
   test('maksimalan puls dobija oznaku zone', () => {
-    assert.match(red(sa({ maxHr: 178 })), /\(Z5\)/);
-    assert.match(red(sa({ maxHr: 145 })), /\(Z3\)/);
+    /* U redu „maks. puls  178 Z5" zagrade više ne trebaju — sitniji font ih
+       zamenjuje. Traži se sama oznaka. */
+    assert.match(red(sa({ maxHr: 178 })), /\bZ5\b/);
+    assert.match(red(sa({ maxHr: 145 })), /\bZ3\b/);
   });
 
   test('bez zona u nalogu nema oznake, ali broj ostaje', () => {
     const r = red(sa({ maxHr: 178 }, null));
     assert.match(r, /178/);
-    assert.ok(!/\(Z\d\)/.test(r), `oznaka zone se pojavila bez zona: ${r}`);
+    assert.ok(!/\bZ\d\b/.test(r), `oznaka zone se pojavila bez zona: ${r}`);
   });
 
   test('kad nema nijednog podatka, nema ni reda', () => {

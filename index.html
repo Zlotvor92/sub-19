@@ -149,6 +149,45 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
    greška u iscrtavanju. */
 .card.accent{background:var(--glass-hi);border-color:rgba(255,255,255,.3)}
 .card-t{font-size:.68rem;font-weight:700;color:var(--txt3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:12px}
+
+/* ---------- KARTOTEKA (ekran Danas) ----------
+   Zaglavlje kartice: ime izvora levo, kontekst desno. Ime govori ODAKLE je
+   podatak — „Uneto" je ono što si upisao ti, „Sa sata" i „Jutros" ono što je
+   stiglo samo. Ranije je sve stajalo u jednoj kartici, pa se nije razlikovalo. */
+.dhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:11px}
+.dhead .card-t{margin:0}
+.dhead-x{font-size:.66rem;font-weight:700;color:var(--txt3);white-space:nowrap;
+         overflow:hidden;text-overflow:ellipsis;min-width:0}
+
+/* Red podatka. Naziv levo, vrednost desno, cifre poravnate — merenja se više
+   ne nižu u rečenicu („kadenca 86 spm · maks. puls 154 · uspon 71 m · …"),
+   nego stoje jedno ispod drugog i porede se pogledom. */
+.drows{display:flex;flex-direction:column}
+.drow{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+      padding:7px 0;border-top:1px solid var(--line-soft);font-size:.8rem}
+.drow:first-child{border-top:0;padding-top:0}
+.drow:last-child{padding-bottom:0}
+.drow .l{color:var(--txt3);font-weight:600}
+.drow .v{font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em;text-align:right}
+.drow .v small{font-weight:600;color:var(--txt3);font-size:.72em;margin-left:3px}
+
+/* ---------- AI ANALIZA ----------
+   Isti element u dva stanja. Dok nema analize, kartica JE jedan red — sama
+   radnja, bez ivica i bez naslova iznad. Kad analiza postoji, isti element je
+   puna kartica kao i ostale. Zato `prazna` samo skida unutrašnji razmak. */
+.ai-card.prazna{padding:0;background:var(--glass-in);border-color:var(--line-soft)}
+.ai-row{display:flex;align-items:center;gap:12px;width:100%;padding:13px 15px;text-align:left;min-height:56px}
+.ai-row .ai-ic{font-size:1rem;flex:none;opacity:.9}
+.ai-row .ai-tt{flex:1;min-width:0}
+.ai-row .ai-tt b{display:block;font-size:.87rem;font-weight:800;letter-spacing:-.01em}
+.ai-row .ai-tt span{display:block;font-size:.7rem;color:var(--txt3);font-weight:600;margin-top:2px;
+                    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-row .ai-ch{color:var(--txt3);font-size:1.1rem;flex:none}
+.ai-row:active{background:rgba(255,255,255,.06)}
+.ai-row.off{opacity:.55}
+.ai-again{margin-top:12px;font-size:.75rem;font-weight:700;color:var(--txt3);
+          padding:9px 0 0;border-top:1px solid var(--line-soft);width:100%;text-align:left}
+.ai-again:active{color:var(--txt)}
 .big{font-size:3.4rem;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
 .big-sub{font-size:.82rem;color:var(--txt2);font-weight:400;line-height:1.55;margin-top:10px}
 
