@@ -168,7 +168,11 @@ describe('Kod ostaje očišćen', () => {
     applyEdit:        'izmena pojedinačnog polja sesije (tempo/dužina/pauza/broj ponavljanja); ekran „Zameni" menja samo tag/km/opis',
     recalibratedPlan: 'ponovno računanje preostalih nedelja iz trenutne forme',
     reentryPlan:      'povratak u plan posle pauze, od stvarno ostvarenog obima',
-    predictRange:     'predikcija kao raspon (hi/lo) iz po-krug podataka, umesto jednog broja'
+    /* predictRange NEĆE se povezivati: donja granica (blockTempo) uračunava i
+       oporavke između intervala, pa na sesiji sa 400 m kaskanja daje 4:48/km i
+       raspon od pet minuta (19:02–23:44). To nije predikcija trke nego prosek
+       celog bloka — raspon te širine ne govori ništa. */
+    predictRange:     'predikcija kao raspon (hi/lo) — donja granica uračunava oporavke, pa je raspon prevelik da bi značio išta'
   };
 
   test('svaka deklarisana funkcija se poziva — ili je na spisku nepovezanih', () => {

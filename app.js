@@ -1,7 +1,7 @@
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='157'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='158'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -8723,16 +8723,37 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
     if(refreshing)return; refreshing=true; location.reload();
   });
   navigator.serviceWorker.register('./sw.js').then(reg=>{
+    pratiAzuriranje(reg);
     reg.update();
-    setInterval(()=>reg.update(), 60*60*1000);
-    reg.addEventListener('updatefound',()=>{
-      const nw=reg.installing;
-      if(!nw)return;
-      nw.addEventListener('statechange',()=>{
-        if(nw.state==='installed' && navigator.serviceWorker.controller) showUpdateBanner(nw);
-      });
-    });
+    setInterval(()=>{ reg.update(); pratiAzuriranje(reg); }, 60*60*1000);
   }).catch(()=>{});
+}
+
+/* PRAĆENJE NOVOG SERVICE WORKER-a.
+   Ranije je stajao samo `reg.addEventListener('updatefound', …)`, a taj događaj
+   se javlja SAMO za nov SW pronađen POSLE vezivanja slušaoca. Pregledač sam
+   proverava sw.js pri svakom otvaranju stranice — kad ga tada nađe i instalira
+   pre nego što registracija odgovori, događaj je propušten i nov SW zauvek
+   ostane u `reg.waiting`: traka „Osveži" se ne pojavi, stari keš se ne obriše,
+   a offline i dalje radi stara verzija. (Online se to ne primeti, jer app.js
+   ide network-first — pa broj verzije skoči, a traka izostane. Tačno taj
+   spoj je i prijavljen.)
+   Zato se sada gledaju SVA TRI stanja: već čeka, upravo se instalira, ili tek
+   bude pronađen. */
+function pratiAzuriranje(reg){
+  if(!reg) return;
+  const nudi=w=>{ if(w && navigator.serviceWorker.controller) showUpdateBanner(w); };
+  const prati=w=>{
+    if(!w) return;
+    if(w.state==='installed'){ nudi(w); return; }
+    w.addEventListener('statechange',()=>{ if(w.state==='installed') nudi(w); });
+  };
+  prati(reg.waiting);      /* nov SW je već instaliran i čeka — najčešći propušten slučaj */
+  prati(reg.installing);   /* instalacija je u toku dok smo se registrovali */
+  if(!reg.__pratimo){      /* slušalac se veže jednom, ne pri svakom update() */
+    reg.__pratimo=1;
+    reg.addEventListener('updatefound',()=>prati(reg.installing));
+  }
 }
 function showUpdateBanner(worker){
   if($('#update-banner'))return;
