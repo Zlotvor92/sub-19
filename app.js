@@ -1,7 +1,7 @@
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='156'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='157'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1404,9 +1404,9 @@ function preracunajVdotLog(){
     if(!e) return;
     if(e.measured==null||!isFinite(e.measured)){ if(e.vdot!=null&&isFinite(e.vdot))tekuci=e.vdot; return; }
     const prev=tekuci;
-    const sm=Math.round((prev+(e.measured-prev)*0.4)*10)/10;
-    e.prev=prev; e.vdot=sm; e.delta=Math.round((sm-prev)*10)/10;
-    tekuci=sm;
+    const p=prigusiVdot(prev, e.measured, tipSesijeZaVdot(e.id));
+    e.prev=prev; e.vdot=p.vdot; e.alpha=p.alpha; e.delta=Math.round((p.vdot-prev)*10)/10;
+    tekuci=p.vdot;
   });
   S.vdotLog=niz;
   return niz;
@@ -2079,6 +2079,91 @@ function perKmDetail(streams){
    Merodavno je SAMO ako je tempo bio priblizno ravnomeran — na progresivnom
    trcanju je razlika po definiciji ogromna i nista ne govori o izdrzljivosti.
    Zato se vraca `null` i razlog, umesto broja koji bi model pogresno protumacio. */
+/* ============================================================
+   PODACI SA SATA KOJI SU DO SADA IŠLI SAMO AI-U
+
+   Sync povlači kadencu, maksimalan puls, uspon, temperaturu, Strava „relative
+   effort" i računa drift pulsa — sve to ide u AI analizu, a korisniku se nije
+   prikazivalo nigde. Model je mogao da kaže „puls ti je driftovao 8%", a čovek
+   nije imao gde da vidi sam broj ni da ga proveri.
+
+   Zone pulsa se isto povlače (S.strava.hrZones) i isto su išle samo AI-u.
+   ============================================================ */
+
+/* U kojoj je zoni dati puls, prema zonama iz korisnikovog Strava naloga.
+   Poslednja zona nema gornju granicu (Strava je šalje kao -1 → null). */
+function zonaZaPuls(hr){
+  const z=(S.strava&&S.strava.hrZones)||null;
+  if(!Array.isArray(z)||!z.length||!(hr>0)) return null;
+  for(let i=0;i<z.length;i++){
+    /* Number.isFinite, NE `lo>=0`: u JS-u je `null >= 0` tačno, pa bi zapis
+       bez granice iz pokvarenog backupa prošao kao zona koja počinje od nule. */
+    const lo=z[i]&&z[i].min, hi=z[i]&&z[i].max;
+    if(!Number.isFinite(lo)||lo<0) continue;
+    if(hr>=lo && (!Number.isFinite(hi)||hi<=0||hr<=hi)) return {n:i+1, od:lo, do:Number.isFinite(hi)&&hi>0?hi:null};
+  }
+  return null;
+}
+
+/* Zone pulsa iz Strava naloga, kao spisak. Povlačile su se od ranije i slale
+   AI-u, ali ih korisnik nigde nije video — pa ni oznaka „Z4" uz maks. puls ne
+   bi imala u šta da se uporedi. */
+function zoneHTML(){
+  const z=(S.strava&&S.strava.hrZones)||null;
+  if(!Array.isArray(z)||!z.length) return '';
+  const boje=['var(--txt3)','var(--green)','var(--cyan)','var(--amber)','var(--red)'];
+  let n=0;
+  const redovi=z.map(x=>{
+    const lo=x&&x.min, hi=x&&x.max;
+    if(!Number.isFinite(lo)||lo<0) return '';
+    const raspon = (Number.isFinite(hi)&&hi>0) ? `${esc(lo)}–${esc(hi)}` : `${esc(lo)}+`;
+    n++;
+    return `<div style="display:flex;align-items:center;gap:8px;font-size:.78rem;padding:2px 0">
+      <span style="width:18px;height:8px;border-radius:4px;background:${boje[Math.min(n-1,boje.length-1)]};flex:none"></span>
+      <b style="width:22px">Z${n}</b><span style="color:var(--txt2)">${raspon} bpm</span></div>`;
+  }).join('');
+  if(!n) return '';
+  return `<details class="help" style="margin-top:8px"><summary>Tvoje zone pulsa</summary>
+    <div style="margin-top:6px">${redovi}</div>
+    <p style="margin-top:8px">Iz tvojih Strava podešavanja. Koriste se za oznaku zone uz maksimalan puls na kartici treninga i u AI analizi.</p></details>`;
+}
+
+/* Jedan red sa onim što je sat izmerio. Vraća '' kad nema nijednog podatka —
+   prazan red bi bio samo šum na kartici. */
+function metrikaSata(l){
+  if(!l) return '';
+  /* BROJ, ne „nije null". Vrednosti dolaze i iz uvezenog backupa, gde `l.cadence`
+     ume da bude string ili null — Math.round('x') je NaN, pa bi na kartici
+     pisalo „kadenca NaN spm". Ista granica poverenja kao cistWellness. */
+  const br=v=>(v==null||v===''||typeof v==='boolean'||!Number.isFinite(+v))?null:+v;
+  const d=[];
+  const kad=br(l.cadence);   if(kad!=null&&kad>0) d.push(`kadenca <b>${esc(Math.round(kad))}</b> spm`);
+  const mhr=br(l.maxHr);
+  if(mhr!=null&&mhr>0){
+    const z=zonaZaPuls(mhr);
+    d.push(`maks. puls <b>${esc(Math.round(mhr))}</b>${z?` <small>(Z${z.n})</small>`:''}`);
+  }
+  const usp=br(l.elevGain); if(usp!=null&&usp>0) d.push(`uspon <b>${esc(Math.round(usp))}</b> m`);
+  const tmp=br(l.temp);     if(tmp!=null) d.push(`<b>${esc(Math.round(tmp))}</b> °C`);
+  const nap=br(l.relEffort);if(nap!=null&&nap>0) d.push(`Strava napor <b>${esc(Math.round(nap))}</b>`);
+  /* DRIFT PULSA (aerobno raspregnuće): koliko je odnos tempo/puls pao u drugoj
+     polovini u odnosu na prvu. Ispod 5% je znak dobre aerobne baze; preko toga
+     znači da je tempo bio prebrz za trenutnu izdržljivost ili da je baza tanka.
+     Računa se samo kad je tempo bio ravnomeran (±3%) — inače poređenje ne važi,
+     i tada se prikazuje razlog umesto broja. */
+  if(l.decoupling && typeof l.decoupling==='object'){
+    const n=br(l.decoupling.n);
+    if(n!=null){
+      const boja=n<5?'var(--green)':n<8?'var(--amber)':'var(--red)';
+      d.push(`drift pulsa <b style="color:${boja}">${n>0?'+':''}${esc(fmtNum(n,1))}%</b>`);
+    } else if(typeof l.decoupling.razlog==='string' && l.decoupling.razlog){
+      d.push(`drift pulsa <small>— ${esc(l.decoupling.razlog)}</small>`);
+    }
+  }
+  if(!d.length) return '';
+  return `<div class="note-src" style="margin:2px 0 8px">⌚ Sa sata: ${d.join(' · ')}</div>`;
+}
+
 function decouplingPerKm(perKm){
   if(!Array.isArray(perKm)) return null;
   const v=perKm.filter(k=>k&&k.paceSec>0&&k.hr>0);
@@ -2303,6 +2388,7 @@ function formHTML(d){
     <div class="f-field"><label for="${fid('ts')}">Datum</label><input id="${fid('ts')}" type="date" data-f="ts" value="${esc(l.ts||d.date||TODAY)}"></div>
     <div class="f-field full"><label for="${fid('note')}">Beleška</label><textarea id="${fid('note')}" data-f="note" placeholder="Kako je bilo…">${esc(l.note||'')}</textarea></div>
     </div></details>
+    ${(()=>{ const m=metrikaSata(l); return m?`<div class="f-field full" style="margin-top:2px">${m}</div>`:''; })()}
     ${aiBlock}
     ${l.src==='strava'?`<div class="note-src" style="grid-column:1/-1;margin-top:0">⛓ Podaci povučeni sa Strave${l.lock?' · ručno korigovano (sync više ne prepisuje)':''}</div>`:''}
   </div>`;
@@ -5261,12 +5347,23 @@ function generatePlan(inp){
    ============================================================ */
 const ALPHA = { int: 0.12, tempo: 0.28, rain_default: 0.15 };
 
-/* Nova ocena VDOT-a iz JEDNE sesije, sa prigušenjem prema prethodnoj
-   (zaglađenoj) vrednosti. sessionType: 'int' | 'tempo'. zone: 'I' | 'T'. */
-function recalibrate(vdotSmoothed, sessionPaceSecKm, zone, sessionType){
-  const vObs = vdotFromPace(sessionPaceSecKm, zone);
-  const a = ALPHA[sessionType] || ALPHA.rain_default;
-  return { vdotObs: r1(vObs), vdotNew: r1(vdotSmoothed + a*(vObs - vdotSmoothed)), alpha:a };
+/* Prigušenje: koliko se veruje JEDNOM merenju. Do sada je ceo lanac VDOT-a
+   koristio ravnih 0.4 za sve sesije, iako je ovaj model — sa različitom težinom
+   po tipu — bio napisan i stajao neupotrebljen. Sada ga koristi `preracunajVdotLog`,
+   dakle stvarna forma koju vidiš. */
+function prigusiVdot(prev, izmereno, tipSesije){
+  const a = ALPHA[tipSesije] || ALPHA.rain_default;
+  return { vdot: r1(prev + a*(izmereno - prev)), alpha:a };
+}
+/* Tip sesije za prigušenje, iz zone PRED reda. Intervali i repeticije nose
+   grešku od pauza (prepoznavanje radnih deonica ume da uvuče i kaskanje), pa
+   im se veruje manje nego kontinuiranom tempu. */
+function tipSesijeZaVdot(predId){
+  const r = CUR_PRED.find(x=>x.id===predId);
+  const z = r ? zoneForPredRow(r) : null;
+  if(z==='I'||z==='R') return 'int';
+  if(z==='T'||z==='M') return 'tempo';
+  return 'rain_default';
 }
 
 /* Ponovo generiše SAMO preostale nedelje (>=currentWeekIdx) sa ispravljenom
@@ -7482,6 +7579,7 @@ function openSettings(){
     <div class="set-h"><div class="card-t">Strava</div><span class="chip ${S.strava?'on':'off'}">${S.strava?'povezano':'nije povezano'}</span></div>
     ${S.strava
       ?`<div class="set-st">${S.strava.athlete?'<b>'+esc(S.strava.athlete)+'</b><br>':''}poslednji uvoz: ${S.strava.lastSync?new Date(S.strava.lastSync).toLocaleString('sr-RS'):'nikad'}</div>
+        ${zoneHTML()}
         <div class="btnrow"><button class="btn" id="st-sync">Uvezi trčanja</button><button class="btn ghost sm" id="st-off">Otkači</button></div>
         <details class="help"><summary>Pravila uvoza</summary><p>Strava ima prednost nad ručnim unosom. Ručna korekcija polja (km / vreme / puls) <b>trajno</b> štiti taj trening od prepisivanja. Ako su dva trčanja istog dana, uzima se ono bliže planiranoj kilometraži. Tempo intervala i tempa se čita iz lapova i upisuje u Predikciju.</p></details>`
       :`<div class="btnrow" style="margin-top:0"><button class="btn" id="st-on" style="background:#FC4C02">Poveži Stravu</button></div>

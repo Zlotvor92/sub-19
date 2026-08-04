@@ -166,7 +166,6 @@ describe('Kod ostaje očišćen', () => {
      Spisak sme samo da se SKRAĆUJE — kad se nešto poveže ili obriše. */
   const NEPOVEZANO = {
     applyEdit:        'izmena pojedinačnog polja sesije (tempo/dužina/pauza/broj ponavljanja); ekran „Zameni" menja samo tag/km/opis',
-    recalibrate:      'pomeranje VDOT-a ka izmerenom posle serije sesija',
     recalibratedPlan: 'ponovno računanje preostalih nedelja iz trenutne forme',
     reentryPlan:      'povratak u plan posle pauze, od stvarno ostvarenog obima',
     predictRange:     'predikcija kao raspon (hi/lo) iz po-krug podataka, umesto jednog broja'

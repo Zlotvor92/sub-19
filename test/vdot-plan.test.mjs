@@ -25,8 +25,15 @@ function sa(merenja, opt = {}) {
     a.evalIn(`(function(){ const g=generatePlan(__m);
       S.genPlan=adaptGeneratedPlan(g); setActivePlan(); rebuildDateIndex(); })()`);
   }
-  const log = merenja.map((v, i) => ({ id: 'q' + (i + 1), ts: '2026-07-' + String(10 + i * 3).padStart(2, '0'), measured: v }));
-  a.evalIn(`S.vdotLog=${JSON.stringify(log)}; preracunajVdotLog(); rebuildDateIndex();`);
+  /* ID-jevi moraju biti STVARNI PRED redovi — prigušenje se bira po tipu
+     sesije preko njih; izmišljen ID pada na srednji koeficijent i test bi
+     merio nešto drugo nego što se u aplikaciji dešava. */
+  a.evalIn(`(function(){
+    const m=${JSON.stringify(merenja)};
+    S.vdotLog=CUR_PRED.slice(0,m.length).map((r,i)=>({
+      id:r.id, ts:'2026-07-'+String(10+i).padStart(2,'0'), measured:m[i] }));
+    preracunajVdotLog(); rebuildDateIndex();
+  })()`);
   return a;
 }
 /* trenutno važeći ciljni tempo dana — isti put koji vidi kartica treninga */
@@ -34,8 +41,8 @@ const tempo = (a, id) => a.evalIn(
   `(function(){const d=BY_ID[${JSON.stringify(id)}];const pid=predRowFor(d);
      const r=pid?CUR_PRED.find(x=>x.id===pid):null;return effectivePace(d,r);})()`);
 
-const BRZA = [52.5, 53.0, 53.4, 53.8];
-const SPORA = [46.0, 45.5, 45.2, 45.0];
+const BRZA = [53.5, 54.0, 54.2, 54.5, 54.8, 55.0, 55.2, 55.4];
+const SPORA = [44.5, 44.0, 43.8, 43.5, 43.2, 43.0, 42.8, 42.6];
 
 describe('Kada se predlog uopšte javlja', () => {
   test('jedna ili dve sesije nisu dovoljne', () => {

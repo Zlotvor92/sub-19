@@ -83,13 +83,35 @@ describe('VDOT lanac (preracunajVdotLog)', () => {
     assert.equal(prevB, vdotA, 'druga sesija ne kreće od rezultata prve');
   });
 
-  test('prigušenje je 40% puta ka izmerenom', () => {
+  test('prigušenje zavisi od TIPA sesije, ne jedan broj za sve', () => {
+    /* Ranije ravnih 40% za sve. Intervalne sesije nose grešku od pauza
+       (prepoznavanje radnih deonica ume da uvuče i kaskanje), pa im se veruje
+       manje — 12% — dok kontinuiran tempo dobija 28%. */
     const app = loadApp();
     const baseline = app.call('baselineVdot');
-    app.evalIn(`S.vdotLog=[{id:'x',ts:'2026-07-01',measured:${baseline + 10}}]`);
+    const zaZonu = zona => {
+      const id = app.evalIn(`(CUR_PRED.find(r=>zoneForPredRow(r)==='${zona}')||{}).id`);
+      assert.ok(id, `nema PRED reda u zoni ${zona}`);
+      app.evalIn(`S.vdotLog=[{id:${JSON.stringify(id)},ts:'2026-07-01',measured:${baseline + 10}}]`);
+      app.evalIn('preracunajVdotLog()');
+      return app.evalIn('S.vdotLog[0]');
+    };
+    const int = zaZonu('I'), tempo = zaZonu('T');
+    assert.equal(int.alpha, 0.12, 'intervali ne koriste svoj koeficijent');
+    assert.equal(tempo.alpha, 0.28, 'tempo ne koristi svoj koeficijent');
+    assert.ok(Math.abs(int.vdot - (baseline + 1.2)) < 0.11, `intervali: ${int.vdot}`);
+    assert.ok(Math.abs(tempo.vdot - (baseline + 2.8)) < 0.11, `tempo: ${tempo.vdot}`);
+    assert.ok(int.vdot < tempo.vdot, 'intervalima se veruje isto ili više nego tempu');
+  });
+
+  test('zapis bez poznatog PRED reda pada na srednji koeficijent', () => {
+    /* Dešava se stvarno: generisan plan zamenjen, pa VDOT zapisi ostanu bez
+       svog reda. Ne sme da pukne ni da tiho preskoči merenje. */
+    const app = loadApp();
+    const baseline = app.call('baselineVdot');
+    app.evalIn(`S.vdotLog=[{id:'nepostojeci',ts:'2026-07-01',measured:${baseline + 10}}]`);
     app.evalIn('preracunajVdotLog()');
-    const v = app.evalIn('S.vdotLog[0].vdot');
-    assert.ok(Math.abs(v - (baseline + 4)) < 0.11, `očekivano ~${baseline + 4}, dobijeno ${v}`);
+    assert.equal(app.evalIn('S.vdotLog[0].alpha'), 0.15);
   });
 
   test('zapis bez `measured` (stari backup) se ne dira', () => {
