@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='162'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='163'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2284,12 +2284,37 @@ function renderHeader(){
   $('#h-sub').textContent=t;
 }
 
+/* AMBIJENTALNO SVETLO PO TABU.
+   Menja se samo `opacity` sloja koji već postoji u HTML-u — gradijenti se ne
+   mogu animirati, pa bi svako drugo rešenje dalo trzaj umesto pretapanja. */
+function ambijent(tab){
+  const sl=document.querySelectorAll('#ambijent i');
+  if(!sl||!sl.length) return;
+  sl.forEach(x=>x.classList.toggle('on', x.dataset.t===tab));
+}
+/* Poslednji tab pre nego što su se otvorila podešavanja — da se svetlo vrati
+   na svoje kad se list zatvori. */
+let AMB_PRE=null;
+
+let USKOK_TMR=null;
 function setPage(p){
   osveziDan();   /* dan se mogao promeniti dok je app stajala otvorena */
+  const drugi = ACTIVE!==p;
   ACTIVE=p;
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===p));
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  $('#pg-'+p).classList.add('active');
+  document.querySelectorAll('.page').forEach(x=>{x.classList.remove('active');x.classList.remove('uskoci');});
+  const el=$('#pg-'+p);
+  el.classList.add('active');
+  ambijent(p);
+  /* Kartice se slažu jedna za drugom SAMO kad se stvarno menja tab. Ekran se
+     iznova iscrtava i pri svakoj sitnici (obeležen trening, unet kilometar) —
+     da animacija visi na .active, ceo ekran bi se ponovo slagao posle svakog
+     dodira. Klasa se skida čim animacija istekne. */
+  if(drugi){
+    el.classList.add('uskoci');
+    clearTimeout(USKOK_TMR);
+    USKOK_TMR=setTimeout(()=>el.classList.remove('uskoci'),620);
+  }
   PAGES[p]();
   window.scrollTo(0,0);
 }
@@ -2303,7 +2328,7 @@ function renderDanas(){
   if(tudjPlanSaUnosima())h+=`<div class="kb warn"><div style="flex:1"><div>Ovo nije tvoj plan</div><small>Gledaš ugrađeni plan sa tuđim datumom trke i tuđim tempom. Napravi svoj — postojeći unosi ostaju sačuvani u backup-u.</small></div><button id="tp-gen" style="color:var(--amber);font-weight:800;font-size:.8rem;padding:6px 10px;white-space:nowrap">Napravi svoj</button></div>`;
   if(backupDue(TODAY))h+=`<div class="bban"><span style="flex:1">Uradi backup podataka.</span><button id="bb-do">Izvezi</button><button id="bb-later" style="color:var(--txt3)">Kasnije</button></div>`;
   h+=`<div class="hero">
-    <div class="card accent"><div class="big" style="color:var(--pink)">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
+    <div class="card accent"><div class="big">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
     <div class="card"><div class="big" style="color:var(--green)">${st}</div><div class="big-sub">${plDan(st)} po planu</div><div class="big-sub" style="color:var(--txt3)">🔥 streak</div></div>
   </div>`;
   h+=`<div style="font-size:.8rem;color:var(--txt2);font-weight:700;margin:2px 2px 10px">${fmtDL(TODAY)}</div>`;
@@ -2596,13 +2621,13 @@ function renderPlan(){
     const endOff=(w.w===CUR_PLAN.length&&dows.length)?Math.max(...dows):6;
     h+=`<div class="wk${openW.has(w.w)?' open':''}" data-w="${w.w}">
       <button class="wk-h">
-        <div class="wk-n" style="${cur?'color:var(--pink)':''}">N${w.w}</div>
+        <div class="wk-n">N${w.w}</div>
         <div class="wk-i"><div class="wk-d">${fmtD(w.start)} – ${fmtD(addD(w.start,endOff))}${cur?' · tekuća nedelja':''}</div><div class="wk-f">${esc(weekPhase(w,CUR_PLAN.length)==='DELOAD'?w.focus:(w.focus?weekPhase(w,CUR_PLAN.length)+' · '+w.focus:weekPhase(w,CUR_PLAN.length)))}</div></div>
         <div class="wk-km"><b>${fmtKm(rk)} / ${fmtKm(pk)} km</b>${weekRunDone(w)}/${weekRunCount(w)} trč.${weekHasStrength(w)?' + snaga':''}</div>
       </button>
       <div class="wk-bar"><i style="width:${ct?Math.round(dn/ct*100):0}%"></i></div>
       <div class="wk-body">
-      <button class="day" data-sw="${w.w}" style="justify-content:center;color:var(--pink);font-weight:800;font-size:.82rem;min-height:44px">⇄ Pomeri treninge</button>`;
+      <button class="day" data-sw="${w.w}" style="justify-content:center;color:var(--txt);font-weight:800;font-size:.82rem;min-height:44px">⇄ Pomeri treninge</button>`;
     w.days.slice().sort((a,b)=>{
       const da=a.date||'9999-99-99', db=b.date||'9999-99-99';
       return da<db?-1:da>db?1:0;
@@ -2641,6 +2666,7 @@ function openSheet(html){
 function closeSheet(){
   $('#sheet').classList.remove('on');$('#backdrop').classList.remove('on');
   document.body.style.overflow='';
+  if(AMB_PRE){ ambijent(AMB_PRE); AMB_PRE=null; }   /* svetlo nazad na tab ispod lista */
   PAGES[ACTIVE]();renderHeader();
 }
 /* ---------- IZMENA TRENINGA (tip / km / opis) ---------- */
@@ -7614,34 +7640,85 @@ function chartPred(pc){
 }
 
 /* ---------- PODEŠAVANJA / BACKUP ---------- */
+
+/* ŠTA ČEKA.
+   Podešavanja su do sada bila spisak od sedam sekcija istog ranga — da bi se
+   videlo da nešto nije povezano, morala se svaka otvoriti. Ovde se to pitanje
+   rešava na vrhu ekrana: ide se redom po prioritetu i vraća PRVA stvar koja
+   traži radnju, sa dugmetom koje je odmah obavlja.
+   Redosled nije proizvoljan — svaka sledeća stavka ima smisla tek kad prethodna
+   radi (bez naloga nema servera, bez intervals.icu nema slanja na sat). */
+function podesavanjaStanje(){
+  const stIcu=!!(S.icu&&S.icu.athleteId);
+  const stavke=[
+    { k:'nalog', naziv:'Nalog', vazi:sbOn(), ok:sbAuthed(),
+      radnja:'Prijavi se', dugme:'hero-nalog',
+      tekst:'Nalog čuva plan i istoriju na serveru, pa ih ne gubiš sa telefonom.' },
+    { k:'strava', naziv:'Strava', vazi:true, ok:!!S.strava,
+      radnja:'Poveži Stravu', dugme:'hero-strava',
+      tekst:'Bez Strave se svako trčanje unosi ručno — distanca, vreme i puls stižu sami.' },
+    { k:'icu', naziv:'Oporavak', vazi:true, ok:stIcu,
+      radnja:'Poveži intervals.icu', dugme:'hero-icu',
+      tekst:'HRV, puls u miru i san koje Garmin već šalje na intervals.icu stoje nepovučeni.' },
+    { k:'sat', naziv:'Slanje na sat', vazi:stIcu, ok:!!(S.icu&&S.icu.lastPush),
+      radnja:'Pošalji na sat', dugme:'hero-sat',
+      tekst:'Treninzi još nisu poslati na sat — plan za narednih 14 dana čeka.' },
+    { k:'backup', naziv:'Podaci', vazi:true, ok:!!S.ui.lastBackup&&!backupDue(TODAY),
+      radnja:'Izvezi backup', dugme:'hero-backup',
+      tekst:S.ui.lastBackup?'Od poslednjeg backupa je prošlo dosta — napravi novi.':'Backup još nije napravljen.' }
+  ].filter(x=>x.vazi);
+  const cekaju=stavke.filter(x=>!x.ok);
+  return { stavke, cekaju, prvo:cekaju[0]||null };
+}
+
 function openSettings(){
+  AMB_PRE=ACTIVE; ambijent('set');   /* podešavanja imaju svoje, mirnije svetlo */
   const counts=`${Object.keys(S.log).length} trening-unosa · ${S.knee.length} koleno · ${S.kg.length} težina · ${Object.keys(S.pred).length} predikcija`;
   const vremeSb=SB.seenAt?new Date(SB.seenAt).toLocaleString('sr-RS'):null;
   const stStrava=!!S.strava, stIcu=!!(S.icu&&S.icu.athleteId), stNalog=sbAuthed();
 
-  /* Zaglavlje kartice: ikona, naziv, JEDNA linija stanja, tačka i strelica.
-     Sve što se čita „u prolazu" stoji tu — sadržaj se otvara dodirom. */
-  const glava=(ikona,naslov,stanje,ok)=>
-    `<summary><span class="set-ico">${ikona}</span>
-      <span class="set-tt"><b>${esc(naslov)}</b><span>${stanje}</span></span>
-      <span class="dot${ok===true?' on':ok==='warn'?' warn':''}"></span></summary>`;
+  /* Red sekcije: tačka stanja, naziv i stanje u ISTOM redu, strelica desno.
+     Ikone su namerno uklonjene — sedam emodžija jedan ispod drugog je šara, a
+     ne orijentacija; tačka nosi istu informaciju u trećini prostora. Sve što
+     treba pročitati „u prolazu" stoji u redu, sadržaj se otvara dodirom. */
+  const glava=(naslov,stanje,ok)=>
+    `<summary><span class="dot${ok===true?' on':ok==='warn'?' warn':''}"></span>
+      <span class="set-tt"><b>${esc(naslov)}</b><span>${stanje}</span></span></summary>`;
   /* Sekcija koja traži radnju otvara se sama; ono što radi stoji sklopljeno. */
   const kartica=(otvorena,glavaHTML,telo)=>
     `<details class="set-card"${otvorena?' open':''}>${glavaHTML}<div class="set-body">${telo}</div></details>`;
+
+  /* VRH EKRANA ODGOVARA NA JEDNO PITANJE: je li sve u redu?
+     Ako jeste — piše da jeste i tu je kraj. Ako nije — imenuje PRVU stvar koja
+     čeka i daje dugme koje je odmah obavlja, umesto da se sedam sekcija otvara
+     jedna po jedna da bi se to otkrilo. Trakice ispod su po jedna za svaku
+     sekciju, pa se ceo raspored vidi i bez čitanja. */
+  const st=podesavanjaStanje();
+  const BROJ=['nijedna','Jedna','Dve','Tri','Četiri','Pet','Šest'];
+  const trake=`<div class="set-bars">${st.stavke.map(x=>`<i class="${x.ok?'':'a'}"></i>`).join('')}</div>`;
+  const heroHTML = st.prvo
+    ? `<div class="set-hero">
+         <div class="set-hs"><span class="dot warn"></span><b>${BROJ[st.cekaju.length]||st.cekaju.length} ${st.cekaju.length===1?'stvar čeka':(st.cekaju.length<5?'stvari čekaju':'stvari čeka')}</b></div>
+         <p>${esc(st.prvo.tekst)}</p>
+         ${trake}
+         <div class="btnrow" style="margin-top:13px"><button class="btn" id="${st.prvo.dugme}">${esc(st.prvo.radnja)}</button></div>
+       </div>`
+    : `<div class="set-hero">
+         <div class="set-hs"><span class="dot on"></span><b>Sve je povezano</b></div>
+         <p>${esc(st.stavke.map(x=>x.naziv).join(', '))} — ništa ne čeka.</p>
+         ${trake}
+       </div>`;
 
   openSheet(`
     <div class="sh-t">Podešavanja i podaci</div>
     <div class="sh-s">${counts}</div>
     ${LS_OK?'':`<div class="kb warn"><div><div>Skladište nedostupno</div><small>Podaci žive samo dok je stranica otvorena (pregled). Na Vercelu/Safariju čuvanje radi normalno.</small></div></div>`}
 
-    <div class="conn">
-      ${sbOn()?`<div class="${stNalog?'ok':'no'}"><b>Nalog</b><i>${stNalog?'✓':'—'}</i></div>`:''}
-      <div class="${stStrava?'ok':'no'}"><b>Strava</b><i>${stStrava?'✓':'—'}</i></div>
-      <div class="${stIcu?'ok':'no'}"><b>intervals</b><i>${stIcu?'✓':'—'}</i></div>
-    </div>
+    ${heroHTML}
+    <div class="set-sub">Sve sekcije</div>
 
     ${sbOn()?kartica(!stNalog,
-      glava('👤','Nalog', stNalog?esc(SB.email||'—'):'nije prijavljen', stNalog),
+      glava('Nalog', stNalog?esc(SB.email||'—'):'nije prijavljen', stNalog),
       stNalog
         ? `<div class="set-st">${vremeSb?('sinhronizovano '+esc(vremeSb)):'još nije sinhronizovano'}</div>
            <div class="btnrow"><button class="btn ghost" id="sb-sync">Sinhronizuj</button><button class="btn ghost sm" id="sb-out">Odjavi se</button></div>
@@ -7650,7 +7727,7 @@ function openSettings(){
            <details class="help"><summary>Šta dobijam prijavom</summary><p>Bez prijave sve radi kao i do sad, samo bez rezervne kopije na serveru i bez istog plana na više uređaja.</p></details>`):''}
 
     ${kartica(false,
-      glava('🗓','Plan', (S.genPlan?(jeVlasnik()?'generisan plan':'tvoj plan'):'tvoj lični plan')+' · '+CUR_PLAN.length+' nedelja', true),
+      glava('Plan', (S.genPlan?(jeVlasnik()?'generisan plan':'tvoj plan'):'tvoj lični plan')+' · '+CUR_PLAN.length+' nedelja', true),
       S.genPlan
         ? `<div class="btnrow">${jeVlasnik()
              ?`<button class="btn ghost" id="pl-revert">Vrati na moj plan</button>`
@@ -7659,7 +7736,7 @@ function openSettings(){
            <details class="help"><summary>Za koga je novi plan</summary><p>Pravi poseban plan za nekog drugog — tvoj plan ostaje netaknut i uvek mu se vraćaš ovim istim dugmetom.</p></details>`)}
 
     ${kartica(!stStrava,
-      glava('🏃','Strava',
+      glava('Strava',
         stStrava?(S.strava.athlete?esc(S.strava.athlete)+' · ':'')+'uvoz '+(S.strava.lastSync?esc(new Date(S.strava.lastSync).toLocaleDateString('sr-RS')):'nikad'):'nije povezano',
         stStrava),
       stStrava
@@ -7671,7 +7748,7 @@ function openSettings(){
            <details class="help"><summary>Šta se uvozi</summary><p>Distanca, vreme i puls svakog trčanja, plus tempo kvalitetnih sesija iz lapova.</p></details>`)}
 
     ${kartica(!stIcu,
-      glava('❤️','Oporavak',
+      glava('Oporavak',
         stIcu?((S.wellness?Object.keys(S.wellness).length:0)+' zapisa · '+(S.icu.lastSync?esc(new Date(S.icu.lastSync).toLocaleDateString('sr-RS')):'nikad')):'intervals.icu nije povezan',
         stIcu),
       stIcu
@@ -7688,7 +7765,7 @@ function openSettings(){
            </details>`)}
 
     ${stIcu?kartica(false,
-      glava('⌚','Slanje na sat', S.icu.lastPush?('poslednje '+esc(new Date(S.icu.lastPush).toLocaleDateString('sr-RS'))):'još nije slato', S.icu.lastPush?true:'warn'),
+      glava('Slanje na sat', S.icu.lastPush?('poslednje '+esc(new Date(S.icu.lastPush).toLocaleDateString('sr-RS'))):'još nije slato', S.icu.lastPush?true:'warn'),
       `<div class="btnrow"><button class="btn ghost" id="icu-push">📤 Pošalji na sat (14 dana)</button></div>
        <div class="btnrow"><button class="btn ghost sm" id="icu-vidi">👁 Vidi šta se šalje</button><button class="btn ghost sm" id="icu-push2">♻️ Iz početka</button></div>
        <div id="icu-pregled"></div>
@@ -7696,13 +7773,13 @@ function openSettings(){
        <details class="help"><summary>Ako na satu piše „No Target"</summary><p>U intervals.icu → Settings → Sport Settings unesi <b>prag tempa (threshold pace)</b>${icuPragTekst()}. Bez njega intervals.icu izbacuje ciljeve tempa iz Garmin izvoza.</p><p>Garmin izvoz se pravi kad događaj <b>nastane</b>, pa posle unosa praga obično slanje ne pomaže — tada ide <b>„Iz početka"</b>, koje briše ranije poslato i pravi ga iznova.</p></details>`):''}
 
     ${kartica(false,
-      glava('💾','Podaci', 'poslednji backup: '+(S.ui.lastBackup?esc(fmtDY(S.ui.lastBackup)):'nikad'), S.ui.lastBackup?true:'warn'),
+      glava('Podaci', 'poslednji backup: '+(S.ui.lastBackup?esc(fmtDY(S.ui.lastBackup)):'nikad'), S.ui.lastBackup?true:'warn'),
       `<div class="btnrow"><button class="btn ghost" id="s-exp">Izvezi backup</button><button class="btn ghost" id="s-imp">Uvezi backup</button></div>
        <input type="file" id="s-file" accept=".json,application/json" style="display:none">
        ${sbOn()&&sbAuthed()?`<div class="btnrow"><button class="btn ghost sm" id="s-bug">Prijavi problem</button></div>`:''}`)}
 
     ${jeVlasnik()?kartica(false,
-      glava('📣','Obaveštenje korisnicima','mejl svima koji imaju nalog · samo ti',true),
+      glava('Obaveštenje korisnicima','mejl svima koji imaju nalog · samo ti',true),
       `<div class="set-st">Šalje mejl sa linkom na <b>uputstvo</b> svima koji imaju nalog.</div>
        <div class="btnrow"><button class="btn ghost sm" id="bc-lista">📋 Spisak adresa</button><button class="btn ghost sm" id="bc-proba">Proba na mene</button></div>
        <div class="btnrow"><button class="btn ghost sm" id="bc-svi">Pošalji svima…</button></div>
@@ -7873,6 +7950,30 @@ function openSettings(){
     purgeGenPlanData();
     S.genPlan=null;setActivePlan();rebuildDateIndex();save();closeSheet();
   };
+
+  /* DUGME NA VRHU RADI ISTO ŠTO I DUGME U SEKCIJI — bukvalno ga pritisne.
+     Namerno se ne duplira logika: da hero ima svoju kopiju poziva, dve bi
+     radnje vremenom otišle svaka na svoju stranu (jedna traži potvrdu, druga
+     ne; jedna menja natpis dok radi, druga ne). Ovako postoji jedno mesto po
+     radnji, a vrh je samo prečica do njega.
+     Veže se POSLE svih ostalih slušalaca — u trenutku kad ciljno dugme već
+     ima svoj `onclick`. */
+  const precica=(hero,cilj)=>{
+    const b=$('#'+hero); if(!b) return;
+    b.onclick=()=>{
+      const c=$('#'+cilj); if(!c) return;
+      /* Sekcija se prvo OTVORI. Bez toga se radnja izvrši u sklopljenoj kartici,
+         pa dugme koje menja natpis („Šaljem…", „Poslato ✓") radi nevidljivo i
+         vrh ekrana deluje kao da se ništa nije desilo. */
+      const d=c.closest&&c.closest('details'); if(d) d.open=true;
+      c.click();
+    };
+  };
+  precica('hero-nalog','sb-in');
+  precica('hero-strava','st-on');
+  precica('hero-icu','icu-oauth');
+  precica('hero-sat','icu-push');
+  precica('hero-backup','s-exp');
 }
 function openBugSheet(){
   openSheet(`
@@ -8842,8 +8943,8 @@ function showUpdateBanner(worker){
   if($('#update-banner'))return;
   const b=document.createElement('div');
   b.id='update-banner';
-  b.style.cssText='position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:200;background:var(--pink,#fa2e55);color:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;font-weight:700;font-size:.9rem;box-shadow:0 8px 24px rgba(0,0,0,.4)';
-  b.innerHTML=`<span style="flex:1">Dostupna je nova verzija</span><button id="update-go" style="background:#fff;color:var(--pink,#fa2e55);border:0;border-radius:10px;padding:8px 16px;font-weight:800;font-size:.85rem">Osveži</button>`;
+  b.style.cssText='position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 84px);z-index:200;background:rgba(255,255,255,.15);-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);border:1px solid rgba(255,255,255,.3);color:var(--txt,#EEF0FF);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:12px;font-weight:700;font-size:.9rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 12px 30px rgba(0,0,0,.45)';
+  b.innerHTML=`<span style="flex:1">Dostupna je nova verzija</span><button id="update-go" style="background:rgba(255,255,255,.94);color:var(--ink,#0B0A1F);border:0;border-radius:99px;padding:9px 18px;font-weight:800;font-size:.85rem">Osveži</button>`;
   document.body.appendChild(b);
   $('#update-go').onclick=()=>{
     b.querySelector('span').textContent='Osvežavam…';

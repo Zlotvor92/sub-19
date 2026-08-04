@@ -20,6 +20,9 @@ function sa(opt = {}) {
   });
   if (opt.strava) a.evalIn(`S.strava={athlete:'A V',lastSync:Date.now()};`);
   if (opt.icu) a.evalIn(`S.icu={athleteId:'i584208',token:'t',lastSync:Date.now(),lastPush:${opt.push ? 'Date.now()' : 'null'}}; S.wellness={};`);
+  /* Backup se u stanju vodi kao datum poslednjeg izvoza. Svež datum znači
+     „rešeno" — stariji od praga i dalje traži radnju, pa se uzima današnji. */
+  if (opt.backup) a.evalIn(`S.ui.lastBackup=todayStr();`);
   a.call('openSettings');
   return { a, html: a.evalIn('$("#sheet").innerHTML') || '' };
 }
@@ -74,10 +77,62 @@ describe('Šta je otvoreno, a šta sklopljeno', () => {
         `„${k.naslov}" nema liniju stanja u zaglavlju`);
   });
 
-  test('pregled veza na vrhu pokazuje sve tri', () => {
-    const { html } = sa({ prijavljen: true, strava: true });
-    const c = [...html.matchAll(/<div class="(ok|no)"><b>([^<]*)<\/b>/g)].map(m => [m[2], m[1]]);
-    assert.deepEqual(c, [['Nalog', 'ok'], ['Strava', 'ok'], ['intervals', 'no']]);
+});
+
+/* KONTROLNA TABLA NA VRHU (raspored D).
+   Zamenila je stari red od tri ćelije („Nalog ✓ · Strava ✓ · intervals —").
+   Taj red je samo PRIJAVLJIVAO stanje; ovaj imenuje prvu stvar koja čeka i
+   daje dugme koje je obavlja. Zato se ovde meri to, a ne izgled. */
+describe('Vrh podešavanja — šta čeka', () => {
+
+  const hero = html => {
+    const m = /<div class="set-hero">([\s\S]*?)<\/div>\s*<div class="set-sub">/.exec(html);
+    return m ? m[1] : '';
+  };
+  const naslov = html => (/<b>([^<]*)<\/b>/.exec(hero(html)) || [, ''])[1];
+  const dugme  = html => (/<button class="btn" id="(hero-[a-z]+)">([^<]*)</.exec(hero(html)) || [, null, null]).slice(1);
+
+  test('kad ništa nije povezano, imenuje PRVU stvar po prioritetu', () => {
+    /* Redosled nije proizvoljan: bez naloga nema servera, pa nalog ide prvi. */
+    const { html } = sa({});
+    const [id, tekst] = dugme(html);
+    assert.equal(id, 'hero-nalog', 'vrh nudi nešto drugo umesto prijave');
+    assert.equal(tekst, 'Prijavi se');
+  });
+
+  test('kad je nalog rešen, prelazi na sledeću', () => {
+    const { html } = sa({ prijavljen: true });
+    assert.equal(dugme(html)[0], 'hero-strava');
+  });
+
+  test('slanje na sat se nudi tek kad intervals.icu postoji', () => {
+    /* Bez veze sa intervals.icu slanje na sat NIJE stvar koja čeka — nema čime
+       da se pošalje. Da se broji, vrh bi tražio radnju koja se ne može obaviti. */
+    const bez = sa({ prijavljen: true, strava: true });
+    assert.notEqual(dugme(bez.html)[0], 'hero-sat');
+    const sa_ = sa({ prijavljen: true, strava: true, icu: true });
+    assert.equal(dugme(sa_.html)[0], 'hero-sat');
+  });
+
+  test('kad je sve rešeno, nema dugmeta nego potvrda', () => {
+    const { html } = sa({ prijavljen: true, strava: true, icu: true, push: true, backup: true });
+    assert.equal(naslov(html), 'Sve je povezano');
+    assert.equal(dugme(html)[0], null, 'vrh i dalje nudi radnju iako ništa ne čeka');
+  });
+
+  test('broj stvari koje čekaju je u pravom obliku', () => {
+    /* „Jedna stvar čeka" / „Dve stvari čekaju" — ne „2 stvari čeka". */
+    const jedna = sa({ prijavljen: true, strava: true, icu: true, backup: true });
+    assert.match(naslov(jedna.html), /^Jedna stvar čeka$/);
+    const dve = sa({ prijavljen: true, backup: true });   /* čekaju Strava i intervals.icu */
+    assert.match(naslov(dve.html), /^Dve stvari čekaju$/);
+  });
+
+  test('ima po jednu trakicu za svaku sekciju', () => {
+    const { html } = sa({ prijavljen: true, strava: true, icu: true });
+    const trake = [...hero(html).matchAll(/<i class="(a?)">/g)].map(m => m[1]);
+    assert.equal(trake.length, 5, 'broj trakica ne odgovara broju sekcija');
+    assert.ok(trake.includes('a'), 'nijedna trakica nije označena kao ono što čeka');
   });
 });
 
