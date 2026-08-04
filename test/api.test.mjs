@@ -431,3 +431,43 @@ describe('supabase/rate-limit.sql — ono što se ne sme izgubiti pri izmeni', (
       'skripta poziva check_and_bump_endpoint van komentara: ' + izvrsni.join(' | '));
   });
 });
+
+describe('requireUser je prepisan u 7 fajlova — provera ne sme da se razidje', () => {
+  /* Zašto duplikat uopšte postoji: Vercel funkcije bez build koraka ne
+     razrešavaju lokalne import-e (v. komentar u api/analyze.js), a deploy ide
+     preko GitHub web editora. Zajednički modul bi to pokvario.
+
+     Cena duplikata je tiho razilaženje: bezbednosna ispravka na jednom mestu
+     ostavlja šest rupa, i to bez ijedne greške koja bi to prijavila. Zato se
+     ovde poredi ono što je bezbednosno nosivo — SAMA PROVERA — dok se
+     povratna vrednost sme razlikovati (svaki endpoint uzima što mu treba:
+     userId / +email / +token). */
+  const PUTANJE = ['analyze', 'wellness', 'workouts', 'auth', 'refresh', 'icu-oauth', 'report-bug'];
+
+  const telo = p => {
+    const s = readFileSync(join(ROOT, 'api', p + '.js'), 'utf8');
+    const m = /async function requireUser\(req\) \{[\s\S]*?\n\}/.exec(s);
+    assert.ok(m, `api/${p}.js nema requireUser`);
+    return m[0]
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/return \{ ok: true[^}]*\};/, 'return { ok: true, … };')  /* povratna vrednost sme */
+      .replace(/\s+/g, ' ').trim();
+  };
+
+  test('provera prijave je bajt u bajt ista u svih 7', () => {
+    const etalon = telo('analyze');
+    for (const p of PUTANJE.slice(1)) {
+      assert.equal(telo(p), etalon,
+        `api/${p}.js ima DRUGAČIJU proveru prijave od api/analyze.js`);
+    }
+  });
+
+  test('nijedna kopija ne propušta zahtev bez Authorization zaglavlja', () => {
+    for (const p of PUTANJE) {
+      const t = telo(p);
+      assert.match(t, /\/\^Bearer\\s\+\(\.\+\)\$\/i/, `api/${p}.js ne traži Bearer token`);
+      assert.match(t, /status: 401, error: 'Nedostaje prijava\.'/, `api/${p}.js ne odbija bez zaglavlja`);
+      assert.match(t, /\/auth\/v1\/user/, `api/${p}.js ne proverava token kod Supabase-a`);
+    }
+  });
+});

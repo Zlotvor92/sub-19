@@ -1,7 +1,7 @@
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='151'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='152'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -281,7 +281,16 @@ function fmtD(s){const d=s2d(s);return pad2(d.getDate())+'.'+pad2(d.getMonth()+1
 function fmtDL(s){const d=s2d(s);const wd=(d.getDay()+6)%7;return DOWL[wd].charAt(0).toUpperCase()+DOWL[wd].slice(1)+', '+d.getDate()+'. '+MES[d.getMonth()];}
 function fmtNum(n,dec=1){const v=(Math.round(n*10**dec)/10**dec).toFixed(dec).replace(/\.?0+$/,'');return v.replace('.',',');}
 function fmtKm(n){return fmtNum(n,1);}
-function fmtClock(sec){sec=Math.round(sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return h?h+':'+pad2(m)+':'+pad2(s):m+':'+pad2(s);}
+/* Negativna i nebrojevna vrednost daju „—", ne „-1:-1:-5" i „NaN:NaN".
+   fmtTempo je to vec hvatao, ali fmtClock se poziva i direktno na ~18 mesta
+   (ciljna vremena, ose grafikona, polje za unos vremena), pa je zastita
+   morala ovde — u jednoj tacki, umesto 18 provera na pozivaocima. */
+function fmtClock(sec){
+  if(sec==null||!isFinite(sec)||sec<0)return'—';
+  sec=Math.round(sec);
+  const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+  return h?h+':'+pad2(m)+':'+pad2(s):m+':'+pad2(s);
+}
 function fmtTempo(sec){if(sec==null||!isFinite(sec))return'—';return fmtClock(sec);}
 function parseTimeStr(str){
   if(!str)return null;
@@ -708,6 +717,27 @@ function cistVdotLog(v){
     return c;
   }).filter(e=>e.id!=null&&e.ts);
 }
+/* DATUMI SU DATUMI — nametnuto, kao i brojevi u cistWellness/cistVdotLog.
+   Ista rupa, treci ugao: uvoz backupa je proveravao ID-jeve (validanId,
+   losIdUStanju) i vrednosti oporavka, ali NE i polje `date` u knee/kg. Zapis
+   sa `date:"abc"` prolazi kroz migrate netaknut, pa `s2d()` vraca Invalid
+   Date, a grafikoni ispisu `points="NaN,98.0"` — kriva bola i kriva mase se
+   tiho slome. Nije bezbednosni propust (vrednosti se escapuju), ali jeste
+   podatak koji aplikacija tvrdi da razume a ne razume.
+   Zapis bez upotrebljivog datuma se ODBACUJE, ne popravlja: pogodjen datum
+   bio bi izmisljen podatak o necijem bolu ili masi. */
+const DATUM_OBLIK=/^\d{4}-\d{2}-\d{2}$/;
+function validanDatum(s){
+  if(typeof s!=='string'||!DATUM_OBLIK.test(s)) return false;
+  const [g,m,d]=s.split('-').map(Number);
+  if(m<1||m>12||d<1||d>31) return false;
+  const t=new Date(g,m-1,d);            /* 2026-02-31 se prelije u mart — odbij */
+  return t.getFullYear()===g&&t.getMonth()===m-1&&t.getDate()===d;
+}
+function cistDatirane(niz){
+  if(!Array.isArray(niz)) return [];
+  return niz.filter(x=>x&&typeof x==='object'&&validanDatum(x.date));
+}
 function migrate(o){
   if(!o||typeof o!=='object')return null;
   if(!o.log||typeof o.log!=='object'||Array.isArray(o.log))return null;
@@ -732,18 +762,63 @@ function migrate(o){
   if(o.v<7){o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.v=7;}
   o.wellness=cistWellness(o.wellness);
   o.vdotLog=cistVdotLog(o.vdotLog);
+  o.knee=cistDatirane(o.knee);
+  o.kg=cistDatirane(o.kg);
   o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
   o.v=SCHEMA;
   return o;
 }
+/* OSTECENO STANJE SE NE BRISE — ni lokalno, ni na serveru.
+   Ranije: `catch(e){}` pa `return seedState()`. Posledica je bila potpun,
+   TIH gubitak svega. Lanac:
+     1. jedan neispravan bajt u localStorage-u (prekinut upis, puna kvota,
+        greska u buducoj migraciji seme) -> JSON.parse baca
+     2. greska se guta, vrati se prazan seed
+     3. `let S=loadState(); save();` odmah upise taj prazan seed PREKO
+        ostecenog originala — sirovi bajtovi vise ne postoje
+     4. sbInit() zatim posalje prazno stanje na server (sbDecide vrati 'ok'
+        jer server nije noviji od SB.seenAt) — nestaje i serverska kopija
+   Covek pritom nije video nijedno upozorenje: aplikacija se otvori kao da je
+   prvi put pokrenuta.
+   Sada: sirovi tekst se sklanja u zaseban kljuc (nista se ne prepisuje),
+   dize se zastavica koja ZABRANJUJE slanje na server dok covek ne odluci, i
+   prikazuje se traka sa ponudjenim preuzimanjem spasenog fajla. */
+const LS_SPAS_KEY=LS_KEY+'-osteceno';
+let UCITAVANJE_PALO=null;   /* {razlog, bajtova} kad je stanje bilo neispravno */
+
 function loadState(){
   let raw=null;
   if(LS_OK)raw=localStorage.getItem(LS_KEY);else raw=MEM;
-  if(raw){try{const o=migrate(JSON.parse(raw));if(o)return o;}catch(e){}}
+  if(raw){
+    try{ const o=migrate(JSON.parse(raw)); if(o) return o;
+         throw new Error('migrate() nije vratio stanje'); }
+    catch(e){
+      UCITAVANJE_PALO={razlog:String(e&&e.message||e), bajtova:raw.length};
+      /* Sirovi tekst pre svega ostalog — sledeci save() ide preko LS_KEY. */
+      try{ if(LS_OK) localStorage.setItem(LS_SPAS_KEY, raw); }catch(e2){}
+    }
+  }
   const s=seedState();s.ui.firstRun=todayStr();
   return s;
 }
-function save(){const j=JSON.stringify(S);if(LS_OK)localStorage.setItem(LS_KEY,j);else MEM=j;if(typeof sbSchedulePush==='function')sbSchedulePush();} /* lokalno ostaje izvor istine; sinhronizacija je odlozen dodatak */
+
+/* Upis u localStorage UME da baci: kvota je puna, ili je pregledac u rezimu
+   koji dozvoljava probni 1-bajtni upis (LS_OK gore) a odbija pravi teret.
+   Bez hvatanja, save() prekida pozivaoca na pola posla — a poziva se iz
+   svakog upisa u aplikaciji (zavrsen trening, bol u kolenu, merenje mase).
+   Korisnik bi kliknuo, nista se ne bi desilo, i nigde ne bi pisalo zasto. */
+let UPIS_PAO=false;
+function save(){
+  const j=JSON.stringify(S);
+  if(LS_OK){
+    try{ localStorage.setItem(LS_KEY,j); UPIS_PAO=false; }
+    catch(e){
+      if(!UPIS_PAO){ UPIS_PAO=true; prikaziUpisPao(String(e&&e.name||e)); }
+      MEM=j;   /* bar u memoriji, da rad u toku sesije ne propadne */
+    }
+  } else MEM=j;
+  if(typeof sbSchedulePush==='function')sbSchedulePush();
+} /* lokalno ostaje izvor istine; sinhronizacija je odlozen dodatak */
 
 /* ============ STATISTIKE ============ */
 function stFor(id){const l=S.log[id];return l&&l.status?l.status:'pending';}
@@ -974,7 +1049,7 @@ function predCalc(){
      naizmenično Tempo/Intervali na IDENTIČNOJ formi je pravilo cik-cak
      22:20/20:10/22:20... (potvrđeno testom), ne stvarnu nedeljnu oscilaciju.
      Ispravka: prvo ispravan VDOT (zona-svesno), TEK ONDA vreme iz tog VDOT-a. */
-  const raceDistM=(S.genPlan&&S.genPlan.meta&&S.genPlan.meta.raceDistM)||5000;
+  const raceDistM=raceDistActive();   /* ista vrednost je ranije bila prepisana rukom i ovde i u raceDistActive() */
   const rows=CUR_PRED.map(r=>{
     const a=S.pred[r.id];
     let pred=null;
@@ -1258,7 +1333,6 @@ function predFallbackMatchTag(tag, r){
     ? (l.includes('intervali')||l.includes('repeticije')||l.includes('fartlek')||l.includes('piramida')||l.includes('ritam')||l.includes('maratonski tempo')||l.includes('tempo trke'))
     : (l.includes('tempo')||l.includes('ritam')||l.includes('progresivno')||l.includes('kontrolna'));
 }
-function predFallbackMatch(d, r){ return predFallbackMatchTag(d.tag, r); }
 /* RASPODELA PREDIKCIJSKIH REDOVA NA KVALITETNE DANE — za CELU nedelju odjednom.
 
    Ranije se racunalo po danu, pa su dva mesta davala razlicit odgovor:
@@ -1291,12 +1365,6 @@ function predRaspored(week){
   dani.forEach(d=>uzmi(d,r=>predFallbackMatchTag(d.tag,r)));
   dani.forEach(d=>{ if(d.origTag&&d.origTag!==d.tag) uzmi(d,r=>predFallbackMatchTag(d.origTag,r)); });
   return mapa;
-}
-function predKandidati(d){
-  const uNedelji = CUR_PRED.filter(r=>r.w===d.week.w);
-  const tacni = uNedelji.filter(r=>predKindMatch(d,r)===true);
-  if(tacni.length) return tacni;
-  return uNedelji.filter(r=>predFallbackMatch(d,r));
 }
 /* sve predikcijske sesije za dan (dan tag određuje tip: int->Intervali, tempo->Tempo/Ritam) */
 function predRowsFor(d){
@@ -1644,20 +1712,6 @@ function decouplingPerKm(perKm){
   const rA=(1000/pA)/sr(A,x=>x.hr), rB=(1000/pB)/sr(B,x=>x.hr);
   if(!(rA>0)) return null;
   return { n:Math.round((rA-rB)/rA*1000)/10 };
-}
-/* Po-krug podaci radnih intervala za LLM analizu (tempo, puls, kadenca, watts po krugu).
-   VAŽNO: Strava /laps NE vraća puls po krugu (average_heartrate), ali vraća
-   average_cadence i average_watts (imena polja su average_*, ne avg_*). Puls po
-   krugu se povlači iz HR streama i mapira preko start_index/end_index u stravaSync. */
-function workLapsDetail(laps,specs,hrByLap){
-  const work=workLapsSelect(laps,specs);
-  return work.map((L,i)=>({
-    i:i+1,
-    paceSec:Math.round((L.moving_time||L.elapsed_time)/(L.distance/1000)),
-    avgHr:(hrByLap&&hrByLap[i]!=null)?Math.round(hrByLap[i]):null,
-    cadence:L.average_cadence!=null?Math.round(L.average_cadence):null,
-    watts:L.average_watts!=null?Math.round(L.average_watts):null
-  }));
 }
 /*==DOM==*/
 
@@ -2141,7 +2195,10 @@ function renderAltSheet(d){
   };
 }
 /* ============ ENGINE.JS (V3 generator, portovan doslovno) ============
-   module.exports linije su no-op u browseru (nema 'module' globala) — bezbedno. */
+   Ranije su ovde stajale 4 `module.exports` linije iz vremena kad se generator
+   testirao kao zaseban Node modul. U pregledacu nema globalnog `module`, pa su
+   bile mrtve; testovi danas ucitavaju ceo app.js u vm kontekst (test/harness.mjs)
+   i vide sve funkcije direktno, bez ijednog export-a. */
 'use strict';
 /* ============================================================
    SUB-20 GENERATOR v3 — deterministički engine plana (5K, 10K, HM, maraton)
@@ -2209,7 +2266,6 @@ const DELOAD_EVERY = 4;         /* svaka 4. nedelja */
 const DELOAD_F = 0.73;          /* deload = 73% prethodne (etalon: 32/44) */
 const TAPER_F = 0.65;           /* pretposlednja = 65% vrhunca (etalon: 30/46) */
 const RACEWK_F = 0.30;          /* trkačka nedelja ≈ 30% vrhunca */
-const LR_SHARE = 0.24;          /* LR ≈ 24% nedelje (etalon: 23–25%) */
 const RAMP_CAP_WEEKS = 20;      /* inženjerski izbor (NE izmerena fiziološka granica): linearna
   ekstrapolacija forme preko ovog broja nedelja bi projektovala apsurdan skok (npr. +20 VDOT
   poena na 50 nedelja). Rast se ograničava na max 20 ned. neprekidnog linearnog napredovanja,
@@ -4788,7 +4844,6 @@ function generatePlan(inp){
   return plan;
 }
 
-if(typeof module!=='undefined')module.exports={vdotFromRace,paceForZone,raceTimeForVdot,generatePlan,assess,fmtP,Z,RAMP,buildDaySlots,pickStrengthDay,dayPrefWarnings};
 
 /* ============================================================
    ADAPTIVNO REKALIBRISANJE — v3.1
@@ -4884,7 +4939,6 @@ function reentryPlan(originalInput, resumeWeekIdx, lastRealizedVolKm, vdotAtPaus
   return { weeks:[first, ...replanned.weeks.slice(resumeWeekIdx)], pred:replanned.pred.filter(p=>p.w>=resumeWeekIdx), meta:replanned.meta };
 }
 
-if(typeof module!=='undefined')module.exports=Object.assign(module.exports,{vdotFromPace,recalibrate,recalibratedPlan,reentryPlan,ALPHA,GROW_MAX});
 
 /* ============================================================
    RACE PREDICTOR — OPSEG (nadogradnja POSTOJEĆEG Riegel mehanizma
@@ -4920,8 +4974,6 @@ function predictRange(laps, specs, qKm){
   return { hi:Math.round(riegelV2(hiPace,qKm)), lo:Math.round(riegelV2(loPace,qKm)), hiPace, loPace };
 }
 
-if(typeof module!=='undefined')module.exports=Object.assign(module.exports,{sessInt,sessTempo,sessKm,sessDesc,applyEdit,deriveQS,derivePred,mergeOverrides,predRow,fmtRest});
-if(typeof module!=='undefined')module.exports=Object.assign(module.exports,{workLapsTempo,blockTempo,predictRange,riegelV2,lrCap5K,peakVol5K,lrCap10K,peakVol10K,DIST_PROFILES});
 
 /* ---------- GENERATOR PLANA (wizard, portovano iz V3 sub19-gen) ----------
    UI/validacija prenete skoro doslovno iz V3. finishOnboarding je PREPISAN
@@ -5069,6 +5121,7 @@ function renderOnboard(){
         </div>
         <div class="ob-vpaces" id="vdotPaces"></div>
       </div>
+      <div class="kb warn" id="pbUpozorenje" style="display:none"><div><div>Proveri uneto vreme</div><small id="pbUpozorenjeTxt"></small></div></div>
     </div>
     <div class="ob-step" data-step="3">
       <div class="ob-eyebrow">Korak 3 od 4</div>
@@ -5417,6 +5470,13 @@ function updateWeeksHint(){
 function updateVdotPreview(){
   const wrap=$('#vdotWrap');
   const sec=pbTotalSec();
+  /* RECI ZASTO. pbSanityOk() zakljucava „Dalje" na koraku 2 i sklanja prikaz
+     forme, a razlog se nigde nije video — covek koji u polje za 5 km upise
+     svoje maratonsko vreme dobije mrtvo dugme bez ijedne reci. Tekst je sve
+     vreme postojao u pbSanityMsg(), samo nije bio nigde prikazan. */
+  const up=$('#pbUpozorenje'), upT=$('#pbUpozorenjeTxt');
+  const poruka=sec==null?'':pbSanityMsg();
+  if(up){ up.style.display=poruka?'':'none'; if(upT) upT.textContent=poruka; }
   if(sec==null||!pbSanityOk()){ wrap.classList.remove('show'); return; }
   const vd=vdotFromRace(wiz.pbDist, sec);
   $('#vdotNum').textContent=vd.toFixed(1);
@@ -6203,7 +6263,7 @@ function renderPred(){
       <div class="big" style="font-size:2.6rem;letter-spacing:-.01em">${esc(cv!=null?cv:bv)}</div>
       <div style="color:${vCol};font-weight:800;font-size:1rem">${vArrow}${vdotDelta!=null?(vdotDelta>0?' +':' ')+esc(vdotDelta):''}</div>
     </div>
-    <div style="font-size:.75rem;color:var(--txt3);margin-top:4px">Početni VDOT${S.genPlan?'':' (PB 20:37)'}: ${esc(bv)} · cilj ${S.genPlan?(goalSecA!=null?fmtClock(goalSecA):'—'):'19:20–19:30'} ≈ VDOT ${esc(goalV)}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
+    <div style="font-size:.75rem;color:var(--txt3);margin-top:4px">Početni VDOT${S.genPlan?'':' (PB 20:37)'}: ${esc(bv)} · cilj ${S.genPlan?(goalSecA!=null?fmtClock(goalSecA):'—'):CILJ} ≈ VDOT ${esc(goalV)}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
   </div>`;
   h+=`<div class="card"><div class="card-t">VDOT trend kroz vreme</div><div id="vdottrend">${chartVdotTrend()}</div>
     <div class="legend"><span><i style="background:var(--cyan)"></i>cilj ${esc(goalV)}</span><span><i style="background:var(--pink)"></i>tvoja forma</span></div>
@@ -6212,7 +6272,7 @@ function renderPred(){
   const predRaceName=esc(S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K');
   h+=`<div class="card"><div class="card-t">Predikcija ${predRaceName} kroz plan</div><div id="pchart">${chartPred(pc)}</div>
     <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span></div></div>`;
-  h+=`<div class="card info" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?esc(goalCtxText()):'19:20–19:30 — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
+  h+=`<div class="card info" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?esc(goalCtxText()):CILJ+' — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
   el.innerHTML=h;
   const tBtn=el.querySelector('#trend-go');
   if(tBtn){
@@ -7291,15 +7351,20 @@ function losIdUStanju(st){
     for(const x of st.kg) if(x&&x.src!=null&&!validanId(x.src)) return 'kg.src';
   return null;
 }
+/* Preuzimanje teksta kao fajla. Izdvojeno iz exportBackup() da bi i traka za
+   osteceno stanje mogla da ponudi spaseni sadrzaj — inace bi ista petlja sa
+   createObjectURL/revokeObjectURL stajala na dva mesta. */
+function preuzmiTekst(ime, tekst){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([tekst],{type:'application/json'}));
+  a.download=ime;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
 function exportBackup(){
   const copy=backupPayload();
   const data={app:'SUB-19',exportedAt:new Date().toISOString(),state:copy};
-  const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='sub19-backup-'+TODAY+'.json';
-  document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  preuzmiTekst('sub19-backup-'+TODAY+'.json', JSON.stringify(data,null,1));
   S.ui.lastBackup=TODAY;S.ui.snooze=null;save();
   if(ACTIVE==='danas')renderDanas();
 }
@@ -7792,6 +7857,12 @@ async function sbRemoteAt(){
 
 async function sbPush(){
   if(!sbAuthed()||SB_BUSY) return false;
+  /* NE GURAJ PRAZNO STANJE PREKO SERVERSKE KOPIJE. Kad se lokalni zapis nije
+     mogao procitati, S je prazan seed — a serverska kopija je tada jedino
+     mesto gde podaci jos postoje. Bez ove provere bi sbInit() (sbDecide vrati
+     'ok', jer server nije noviji od SB.seenAt) prepisao i nju.
+     Zastavica se skida tek kad covek u traci svesno izabere ishod. */
+  if(UCITAVANJE_PALO) return false;
   if(!await sbEnsure()) return false;
   SB_BUSY=true;
   try{
@@ -7990,6 +8061,65 @@ function prikaziSukobSync(remoteAt){
   b.querySelector('#sy-push').onclick=async()=>{ zatvori(); await sbPush(); };
 }
 
+/* Zajednicki okvir za trake upozorenja — isti izgled kao traka sukoba sync-a. */
+function trakaUpozorenja(id, boja, html){
+  try{
+    if(document.getElementById(id)) return null;
+    const b=document.createElement('div');
+    b.id=id;
+    b.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 84px);'+
+      'z-index:211;background:var(--card2,#1D1D26);border:1px solid '+boja+';border-radius:14px;'+
+      'padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.45)';
+    b.innerHTML=html;
+    document.body.appendChild(b);
+    return b;
+  }catch(e){ return null; }
+}
+
+/* OSTECENO STANJE — traka se prikazuje pri pokretanju i NE nudi „u redu, dalje".
+   Jedini bezopasan izlaz je da covek prvo skine spaseni fajl; tek posle toga
+   sme da se nastavi, jer nastavak znaci da ce prazno stanje otici na server. */
+function prikaziUcitavanjePalo(){
+  if(!UCITAVANJE_PALO) return;
+  const kb=Math.max(1,Math.round(UCITAVANJE_PALO.bajtova/1024));
+  const b=trakaUpozorenja('stanje-osteceno','var(--red,#FF4D4D)',
+    `<div style="font-weight:800;font-size:.9rem;margin-bottom:4px">Sačuvani podaci se ne mogu pročitati</div>
+     <div style="font-size:.8rem;color:var(--txt2,#9C9CA8);line-height:1.5">
+       Zapis na ovom uređaju je oštećen (${kb} KB). <b>Ništa nije obrisano</b> — sirov sadržaj je sačuvan
+       i možeš ga skinuti. Slanje na server je zaustavljeno dok ne odlučiš, da prazno stanje ne bi
+       prepisalo ono što je gore.</div>
+     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+       <button id="os-skini" class="btn" style="flex:1;min-width:130px">Skini spašeno</button>
+       <button id="os-server" class="btn ghost" style="flex:1;min-width:130px">Uzmi sa servera</button>
+     </div>
+     <div style="font-size:.72rem;color:var(--txt3,#7A7A86);margin-top:8px">
+       Ako koristiš nalog, „Uzmi sa servera" je najbrži put nazad. Spašeni fajl zadrži za svaki slučaj.</div>`);
+  if(!b) return;
+  b.querySelector('#os-skini').onclick=()=>{
+    let sirovo=''; try{ sirovo=localStorage.getItem(LS_SPAS_KEY)||''; }catch(e){}
+    preuzmiTekst('sub20-osteceno-'+TODAY+'.json', sirovo);
+  };
+  b.querySelector('#os-server').onclick=async()=>{
+    UCITAVANJE_PALO=null;      /* covek je svesno izabrao da server pobedi */
+    b.remove();
+    await sbPull();
+  };
+}
+
+/* Neuspeo upis u localStorage — jednom po sesiji, ne po svakom cuvanju. */
+function prikaziUpisPao(ime){
+  const b=trakaUpozorenja('upis-pao','var(--amber,#FFB020)',
+    `<div style="font-weight:800;font-size:.9rem;margin-bottom:4px">Čuvanje na uređaju ne radi</div>
+     <div style="font-size:.8rem;color:var(--txt2,#9C9CA8);line-height:1.5">
+       Pregledač je odbio upis (${esc(ime)}) — najčešće je skladište puno. Rad u ovoj sesiji se
+       nastavlja i šalje se na server ako si prijavljen, ali <b>zatvaranje aplikacije briše
+       nesačuvano</b>. Napravi backup i oslobodi prostor.</div>
+     <div style="display:flex;gap:8px;margin-top:12px">
+       <button id="up-ok" class="btn ghost" style="flex:1">U redu</button>
+     </div>`);
+  if(b) b.querySelector('#up-ok').onclick=()=>b.remove();
+}
+
 /* Poslednja prilika da se posalje pre nego sto se stranica zatvori. */
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&sbAuthed()){ clearTimeout(SB_TIMER); sbPush(); }
@@ -8016,6 +8146,7 @@ if(typeof sbLoad==='function')sbLoad();
 uskladiVlasnickePodatke();   /* ciji su podaci — pre prvog iscrtavanja */
 renderHeader();
 setPage('danas');
+prikaziUcitavanjePalo();     /* ako zapis nije procitan — pre nego sto covek pomisli da je sve nestalo */
 handleOAuthReturn();
 sbInit();
 if(S.strava&&navigator.onLine&&Date.now()-(S.strava.lastSync||0)>3600000)stravaSync(false);
