@@ -3,13 +3,13 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v160';
-const APP_VERSION = '160';
+const CACHE = 'sub19-cache-v161';
+const APP_VERSION = '161';
 /* './app.js' MORA biti na spisku: od v150 index.html je samo markup, a ceo kod
    aplikacije je u app.js. Da nije tu, dobio bi network-first samo omotač, dok
    bi se logika servirala iz starog keša — tj. „promenio sam kod, ništa se ne
    vidi", tačno ona greška zbog koje je ceo spisak i prebačen na network-first. */
-const ASSETS = ['./', './index.html', './app.js', './manifest.json', './icon-192.png', './icon-512.png', './icon-128.png', './apple-touch-icon.png', './privacy.html', './uputstvo.html'];
+const ASSETS = ['./', './index.html', './app.js', './manifest.json', './icon-32.png', './icon-192.png', './icon-512.png', './icon-128.png', './icon-maskable-512.png', './apple-touch-icon.png', './privacy.html', './uputstvo.html'];
 
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();

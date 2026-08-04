@@ -61,7 +61,12 @@ function makeEl(tag = 'div') {
     set innerHTML(v) { this._html = String(v); },
     appendChild(c) { this.children.push(c); return c; },
     removeChild(c) { return c; },
-    remove() {},
+    /* Uklanjanje se PAMTI. Dok je bilo prazno telo, test nije imao nikakav
+       način da razlikuje „element je sklonjen sa ekrana" od „ništa se nije
+       desilo" — a tačno to je jedina vidljiva posledica npr. uvodnog ekrana
+       na toplom startu. */
+    remove() { this._removed = true; },
+    _removed: false,
     querySelector(sel) { return nadji(sel); },
     querySelectorAll() { return []; },
     addEventListener() {},
@@ -112,6 +117,15 @@ export function loadApp(opts = {}) {
     for (const [k, v] of Object.entries(opts.seedLocalStorage)) ls.setItem(k, v);
   }
 
+  /* sessionStorage je ODVOJENO skladište, ne alias localStorage-a: aplikacija
+     preko njega razlikuje hladan start (prazno) od osvežavanja strane (već
+     upisano). Da nije stubovan, poziv bi bacio ReferenceError — koji jeste
+     uhvaćen u kodu, ali bi test onda merio grešku umesto ponašanja. */
+  const ss = makeLocalStorage();
+  if (opts.seedSessionStorage) {
+    for (const [k, v] of Object.entries(opts.seedSessionStorage)) ss.setItem(k, v);
+  }
+
   const calls = { alerts: [], confirms: [], fetches: [] };
 
   /* Lažni sat: `opts.now` postavlja početno vreme, `clock.set(iso)` ga pomera.
@@ -155,6 +169,7 @@ export function loadApp(opts = {}) {
 
     document: doc,
     localStorage: ls,
+    sessionStorage: ss,
     location: { origin: 'https://example.test', href: 'https://example.test/', pathname: '/', search: '', hash: '', protocol: 'https:', hostname: 'example.test' },
     history: { replaceState: () => {} },
     navigator: { onLine: false, userAgent: 'test', clipboard: { writeText: async () => {} } },
@@ -169,7 +184,13 @@ export function loadApp(opts = {}) {
     FileReader: class { readAsText() {} },
     requestAnimationFrame: cb => setTimeout(cb, 0),
     scrollTo: () => {},
-    matchMedia: () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }),
+    /* `opts.reducedMotion` uključuje sistemsko „smanji kretanje". Odgovor se
+       vezuje za sam upit, a ne vraća se pravo `true` na sve — inače bi svaki
+       budući `matchMedia` u kodu dobio potvrdan odgovor. */
+    matchMedia: q => ({
+      matches: !!opts.reducedMotion && /reduced-motion/.test(String(q)),
+      addEventListener: () => {}, removeEventListener: () => {}
+    }),
     module: undefined
   };
   sandbox.window = sandbox;
@@ -182,6 +203,7 @@ export function loadApp(opts = {}) {
   return {
     ctx,
     ls,
+    ss,
     calls,
     clock,
     /* čita ime iz konteksta — radi i za const/let i za function */

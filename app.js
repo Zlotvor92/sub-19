@@ -1,7 +1,45 @@
 'use strict';
+
+/* ============ UVODNI EKRAN ============
+   Sama animacija je u index.html (CSS), i to namerno — kreće čim se HTML
+   isparsira, dakle pre nego što se ovaj fajl preuzme i izvrši. Ovde je samo
+   odluka i uklanjanje.
+
+   PRIKAZUJE SE SAMO PRI HLADNOM STARTU. `sessionStorage` traje koliko i kartica
+   (odnosno koliko instalirana aplikacija stoji otvorena), pa osvežavanje strane,
+   povratak iz pozadine i prelazak preko `location.reload()` posle „Osveži"
+   NE pale uvod ponovo. Pri stvarnom pokretanju je prazan i uvod se vidi.
+
+   Stoji na VRHU fajla da bi se odluka donela u prvom trenutku izvršavanja —
+   na toplom startu se ekran skloni pre nego što iko stigne da ga primeti. */
+(function uvodniEkran(){
+  const el=typeof document!=='undefined'&&document.getElementById&&document.getElementById('uvod');
+  if(!el) return;
+  const skloni=()=>{ el.remove(); if(document.body) document.body.classList.remove('uvod-radi'); };
+
+  let vecVidjen=false;
+  try{
+    vecVidjen=sessionStorage.getItem('sub20-uvod')==='1';
+    sessionStorage.setItem('sub20-uvod','1');
+  }catch(e){ /* privatni režim ume da zabrani sessionStorage — tad se uvod vidi svaki put, što je bezopasno */ }
+
+  const mirno=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(vecVidjen||mirno){ skloni(); return; }
+
+  if(document.body) document.body.classList.add('uvod-radi');
+  /* Uklanjanje ide POSLE kraja CSS animacije (1,15 s odlaganje + 0,3 s gašenje),
+     ne pre — inače bi se ekran isekao usred prelaza. */
+  const tajmer=setTimeout(skloni,1550);
+  el.addEventListener('pointerdown',()=>{
+    clearTimeout(tajmer);
+    el.classList.add('gasi');
+    setTimeout(skloni,240);
+  },{once:true});
+})();
+
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='160'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='161'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,

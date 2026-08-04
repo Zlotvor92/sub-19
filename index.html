@@ -8,13 +8,14 @@
      i dalje je sprečen preko `touch-action:manipulation` u CSS-u. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SUB-20 · Trkački plan</title>
-<meta name="theme-color" content="#0A0A0F">
+<meta name="theme-color" content="#0B0A1F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SUB-20">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <style>
 :root{
@@ -47,6 +48,8 @@ header{
   -webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
   border-bottom:1px solid var(--line);
 }
+.h-brand{display:flex;align-items:center;gap:11px}
+.h-mark{flex:none;display:block}
 .h-title{font-weight:800;font-size:1.05rem;letter-spacing:.06em}
 .h-title span{color:var(--pink)}
 .h-sub{font-size:.72rem;color:var(--txt2);margin-top:3px;font-weight:600;letter-spacing:.02em}
@@ -570,19 +573,106 @@ details.help p{font-size:.72rem;color:var(--txt3);font-weight:600;line-height:1.
 details.help b{color:var(--txt2)}
 hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 
+/* ---------- UVODNA ANIMACIJA ----------
+   Znak se iscrta pri hladnom startu i skloni se posle ~1,2 s.
+   Animacija je CSS-om, ne JavaScriptom, i to namerno: `#uvod` je prvi element
+   u <body>, pa animacija krene čim pregledač isparsira ovaj blok — dakle PRE
+   nego što se app.js (pola megabajta) uopšte preuzme i izvrši. Da je vođena
+   skriptom, čovek bi prvo gledao praznu tamnu stranicu pa tek onda znak.
+   U app.js je ostala samo odluka: da li se uopšte prikazuje (hladan start?
+   smanjeno kretanje?) i uklanjanje sa ekrana kad odradi svoje.
+   Podloga je ISTA boja kao `background_color` u manifest.json, pa se sistemski
+   splash instalirane aplikacije i ovaj ekran spajaju u jedan potez. */
+#uvod{
+  /* Najviši sloj u aplikaciji, i to sa razmakom. `#sb-gate` (prijava) stoji na
+     400 i takođe je fixed — pri istom z-index-u pobeđuje onaj koji je kasnije
+     u DOM-u, a gate app.js dodaje na kraj <body>. Uvod bi tako bio prekriven
+     tačno kod neprijavljenog korisnika, dakle na prvom pokretanju. */
+  position:fixed;inset:0;z-index:500;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  background:
+    radial-gradient(ellipse 70% 50% at 22% 18%, rgba(120,90,255,.34), transparent 62%),
+    radial-gradient(ellipse 66% 48% at 84% 84%, rgba(0,190,220,.22), transparent 64%),
+    #0B0A1F;
+  animation:uvod-kraj .3s 1.15s ease-out both;
+}
+body.uvod-radi{overflow:hidden}
+#uvod .zn{width:116px;height:116px}
+#uvod .traka{animation:uvod-utopi .45s .1s ease-out both}
+#uvod .luk{stroke-dasharray:276.46;animation:uvod-luk .8s cubic-bezier(.35,.82,.3,1) both}
+#uvod .ime{font-weight:800;font-size:1rem;letter-spacing:.16em;color:#EEF0FF;
+           animation:uvod-ime .42s .52s cubic-bezier(.2,1,.3,1) both}
+#uvod .ime span{color:#5AFFBE}
+@keyframes uvod-luk{from{stroke-dashoffset:276.46}to{stroke-dashoffset:47.63}}
+@keyframes uvod-utopi{from{opacity:0}to{opacity:1}}
+@keyframes uvod-ime{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+/* `visibility` se prebacuje tek na samom kraju, ne u `to` bloku: to je diskretno
+   svojstvo i pregledač bi ga preklopio na POLOVINI trajanja — ekran bi nestao
+   naglo, pri pola providnosti. Ovako fade ide do kraja pa element izađe iz
+   toka. Bitno je i zbog otkaza: ako app.js ne uspe da se učita i nikad ga ne
+   ukloni, `visibility:hidden` znači da ne hvata dodire preko cele aplikacije —
+   dok `opacity:0` sam po sebi i dalje guta svaki klik. */
+@keyframes uvod-kraj{
+  0%{opacity:1;transform:none;visibility:visible}
+  99%{opacity:0;transform:scale(1.04);visibility:visible}
+  100%{opacity:0;transform:scale(1.04);visibility:hidden}
+}
+/* Dodir preskače. Namerno DRUGO ime keyframe-a, ne `uvod-kraj` sa kraćim
+   trajanjem: promena samo trajanja/odlaganja na animaciji koja već teče ne
+   pokreće je iz početka — pregledač zadrži proteklo vreme, pa bi ekran na
+   dodir posle 0,22 s odmah skočio u završno stanje umesto da se ugasi.
+   Drugo ime = nova animacija = kreće od nule. */
+#uvod.gasi{animation:uvod-preskok .22s ease-out both}
+@keyframes uvod-preskok{
+  0%{opacity:1;visibility:visible}
+  99%{opacity:0;visibility:visible}
+  100%{opacity:0;visibility:hidden}
+}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  /* Uvod nema statičnu svrhu — ako je kretanje isključeno, ne prikazuje se
+     uopšte. Skriptu ne čeka: sakriven je već ovde, da ne trepne. */
+  #uvod{display:none}
 }
 </style>
 </head>
 <body>
 
+<!-- Uvodni ekran. Mora biti PRVI u <body> da bi se iscrtao pre svega ostalog.
+     Uklanja ga app.js; ako se skripta ne izvrši (npr. greška u učitavanju),
+     sam se ugasi CSS animacijom i ne zaključa aplikaciju — zato `uvod-kraj`
+     ostaje na `opacity:0` i element prestaje da hvata dodire. -->
+<div id="uvod" aria-hidden="true">
+  <div class="zn">
+    <svg viewBox="0 0 120 120" width="100%" height="100%">
+      <defs><linearGradient id="uvodG" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#5AFFBE"/><stop offset="55%" stop-color="#00BEDC"/><stop offset="100%" stop-color="#785AFF"/>
+      </linearGradient></defs>
+      <circle class="traka" cx="60" cy="60" r="44" fill="none" stroke="rgba(238,240,255,.14)" stroke-width="11"/>
+      <circle class="luk" cx="60" cy="60" r="44" fill="none" stroke="url(#uvodG)" stroke-width="11"
+              stroke-linecap="round" stroke-dashoffset="47.63" transform="rotate(-59 60 60)"/>
+    </svg>
+  </div>
+  <div class="ime">SUB<span>·</span>20</div>
+</div>
+
 <div id="wizard" style="display:none"></div>
 
 <header>
-  <div>
-    <div class="h-title">SUB<span>-20</span></div>
-    <div class="h-sub" id="h-sub"></div>
+  <div class="h-brand">
+    <svg class="h-mark" viewBox="0 0 120 120" width="24" height="24" aria-hidden="true">
+      <defs><linearGradient id="zagG" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#5AFFBE"/><stop offset="55%" stop-color="#00BEDC"/><stop offset="100%" stop-color="#785AFF"/>
+      </linearGradient></defs>
+      <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(238,240,255,.16)" stroke-width="13"/>
+      <circle cx="60" cy="60" r="44" fill="none" stroke="url(#zagG)" stroke-width="13" stroke-linecap="round"
+              stroke-dasharray="276.46" stroke-dashoffset="47.63" transform="rotate(-59 60 60)"/>
+    </svg>
+    <div>
+      <div class="h-title">SUB<span>-20</span></div>
+      <div class="h-sub" id="h-sub"></div>
+    </div>
   </div>
   <button class="h-gear" id="btn-gear" aria-label="Podešavanja">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10.05 3V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01c.26.63.87 1.03 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.98z"/></svg>
