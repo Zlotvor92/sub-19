@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='169'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='170'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6658,6 +6658,10 @@ function karticaOporavka(){
   const red=(lbl,val,sub,boja)=>val==null?'':`<div class="ob-vp" style="flex:1">
       <i>${esc(lbl)}</i><b style="color:${esc(boja||'var(--txt)')}">${esc(val)}</b>
       ${sub?`<small style="display:block;font-size:.62rem;color:var(--txt3);margin-top:2px">${esc(sub)}</small>`:''}</div>`;
+  /* intervals.icu vraća formu i umor sa punom preciznošću (27.728786), pa je
+     na ekranu pisalo „forma 27.728786 · umor 41.52341". Jedna decimala je i
+     više nego što ta mera nosi. */
+  const brZa=v=>(v==null||!isFinite(+v))?'—':esc(fmtNum(+v,1));
   const hrvSub=o.hrvOdstupanje!=null?`${o.hrvOdstupanje>=0?'+':''}${esc(o.hrvOdstupanje)}% od osnove ${esc(o.hrvBaza7)}`:'nema osnove još';
   const plsSub=o.pulsOdstupanje!=null?`${o.pulsOdstupanje>=0?'+':''}${esc(o.pulsOdstupanje)} od osnove ${esc(o.pulsBaza7)}`:'';
   return `<div class="card">
@@ -6666,7 +6670,7 @@ function karticaOporavka(){
       ${red('HRV', o.hrv!=null?o.hrv:'—', hrvSub, bojaOdstupanja(o.hrvOdstupanje))}
       ${red('Puls u miru', o.pulsUMiru!=null?o.pulsUMiru:'—', plsSub, bojaOdstupanja(o.pulsOdstupanje!=null?-o.pulsOdstupanje*2:null))}
       ${red('San', o.sanH!=null?o.sanH+' h':'—', o.sanOcena!=null?('ocena '+o.sanOcena):'', o.sanH!=null?(o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'):null)}
-      ${o.svezina!=null?red('Svežina', o.svezina, 'forma '+esc(o.ctl)+' · umor '+esc(o.atl), o.svezina<-10?'var(--red)':o.svezina<0?'var(--amber)':'var(--green)'):''}
+      ${o.svezina!=null?red('Svežina', brZa(o.svezina), 'forma '+brZa(o.ctl)+' · umor '+brZa(o.atl), o.svezina<-10?'var(--red)':o.svezina<0?'var(--amber)':'var(--green)'):''}
     </div>
     ${chartHrv(niz)}
     <div class="note-src">HRV se čita u odnosu na <b>tvoju</b> sedmodnevnu osnovu, ne kao gola brojka. Pad preko 10% znači da oporavak zaostaje; pad uz porast pulsa u miru i kratak san je jasan znak da treba lakši dan.</div>

@@ -102,3 +102,29 @@ describe('Zone pulsa su vidljive', () => {
     assert.equal(a.call('zonaZaPuls', -1), null);
   });
 });
+
+/* intervals.icu vraća formu i umor sa punom preciznošću, pa je na ekranu
+   pisalo „forma 27.728786 · umor 41.52341". Jedna decimala je i više nego što
+   ta mera nosi. */
+describe('Oporavak — brojevi se zaokružuju', () => {
+  const kartica = (w) => {
+    const a = loadApp({ now: '2026-08-04T09:00:00Z' });
+    a.evalIn(`S.wellness={'2026-08-04':${JSON.stringify(w)}};`);
+    return String(a.call('karticaOporavka') || '').replace(/<[^>]*>/g, ' ');
+  };
+
+  test('forma, umor i svežina imaju najviše jednu decimalu', () => {
+    const h = kartica({ hrv: 111, pulsUMiru: 47, sanH: 6.7, svezina: -13.813,
+                        ctl: 27.728786, atl: 41.52341 });
+    assert.doesNotMatch(h, /\d+[.,]\d{2,}/, `nezaokružen broj: ${/\S*\d+[.,]\d{2,}\S*/.exec(h)}`);
+    assert.match(h, /27,7/);
+    assert.match(h, /41,5/);
+    assert.match(h, /-13,8/);
+  });
+
+  test('pokvarena vrednost daje „—", ne NaN', () => {
+    const h = kartica({ hrv: 111, svezina: -5, ctl: 'x', atl: null });
+    assert.doesNotMatch(h, /NaN/);
+    assert.match(h, /—/);
+  });
+});
