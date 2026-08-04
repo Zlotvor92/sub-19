@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='163'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='164'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -306,17 +306,31 @@ const STARI_SEED_POTPIS = {
 
 /* ============ POMOĆNE (čiste funkcije) ============ */
 const pad2=n=>String(n).padStart(2,'0');
-function s2d(s){const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c);}
+/* s2d očekuje 'YYYY-MM-DD'. Sve drugo je do sada bacalo TypeError na
+   `s.split` — a to nije bila sitnica: poziv je duboko u iscrtavanju grafikona,
+   pa je JEDNO loše polje gasilo CEO tab. Nađeno dodirom na tačku grafikona
+   tempa kad `S.log[id].ts` nije string nego broj; aplikacija ga uvek upisuje
+   kao string, ali uvezen ili ručno menjan backup ga može doneti drugačijeg
+   (zato `cistVdotLog` već ima istu proveru za svoj `ts`).
+   Sada se vraća nevažeći Datum, a formati ispod ga prikazuju kao „—" —
+   isti dogovor koji `fmtClock` već primenjuje na nevažeće vreme. */
+function s2d(s){
+  if(typeof s!=='string')return new Date(NaN);
+  const[a,b,c]=s.split('-').map(Number);
+  if(!isFinite(a)||!isFinite(b)||!isFinite(c))return new Date(NaN);
+  return new Date(a,b-1,c);
+}
+function validDatum(d){return d instanceof Date&&!isNaN(d.getTime());}
 function d2s(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
 function addD(s,n){const d=s2d(s);d.setDate(d.getDate()+n);return d2s(d);}
 function diffD(a,b){return Math.round((s2d(b)-s2d(a))/86400000);}
 function todayStr(){return d2s(new Date());}
 const DOW=['Pon','Uto','Sre','Čet','Pet','Sub','Ned'];
-function dowOf(s){return DOW[(s2d(s).getDay()+6)%7];} /* naziv dana IZ DATUMA — ispravno i posle zamene dana (d.dow ostaje izvorna pozicija, ne prati swap) */
+function dowOf(s){const d=s2d(s);if(!validDatum(d))return'—';return DOW[(d.getDay()+6)%7];} /* naziv dana IZ DATUMA — ispravno i posle zamene dana (d.dow ostaje izvorna pozicija, ne prati swap) */
 const DOWL=['ponedeljak','utorak','sreda','četvrtak','petak','subota','nedelja'];
 const MES=['januara','februara','marta','aprila','maja','juna','jula','avgusta','septembra','oktobra','novembra','decembra'];
-function fmtD(s){const d=s2d(s);return pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.';}
-function fmtDL(s){const d=s2d(s);const wd=(d.getDay()+6)%7;return DOWL[wd].charAt(0).toUpperCase()+DOWL[wd].slice(1)+', '+d.getDate()+'. '+MES[d.getMonth()];}
+function fmtD(s){const d=s2d(s);if(!validDatum(d))return'—';return pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.';}
+function fmtDL(s){const d=s2d(s);if(!validDatum(d))return'—';const wd=(d.getDay()+6)%7;return DOWL[wd].charAt(0).toUpperCase()+DOWL[wd].slice(1)+', '+d.getDate()+'. '+MES[d.getMonth()];}
 function fmtNum(n,dec=1){const v=(Math.round(n*10**dec)/10**dec).toFixed(dec).replace(/\.?0+$/,'');return v.replace('.',',');}
 function fmtKm(n){return fmtNum(n,1);}
 /* Negativna i nebrojevna vrednost daju „—", ne „-1:-1:-5" i „NaN:NaN".
@@ -2270,7 +2284,7 @@ function pl3(n,jedan,dva,pet){const m=n%10,h=n%100;
   if(m===1&&h!==11)return jedan;
   if(m>=2&&m<=4&&(h<12||h>14))return dva;
   return pet;}
-function fmtDY(s){const d=s2d(s);return pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.'+d.getFullYear()+'.';}
+function fmtDY(s){const d=s2d(s);if(!validDatum(d))return'—';return pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.'+d.getFullYear()+'.';}
 
 function renderHeader(){
   let t;

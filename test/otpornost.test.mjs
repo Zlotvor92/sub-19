@@ -190,3 +190,55 @@ describe('Kod ostaje očišćen', () => {
     assert.deepEqual(jos, [], `povezano je, skini sa spiska NEPOVEZANO: ${jos.join(', ')}`);
   });
 });
+
+/* NEVAŽEĆI DATUM NE SME DA UGASI EKRAN.
+
+   Nađeno pri pregledu: dodir na tačku grafikona tempa je bacao
+   „s.split is not a function" kad `S.log[id].ts` nije string nego broj. Poziv
+   je duboko u iscrtavanju, pa se nije video kao poruka o grešci nego kao PRAZAN
+   tab Progres — najgori mogući oblik: izgleda kao da podataka nema.
+
+   Aplikacija `ts` uvek upisuje kao string; broj dolazi iz uvezenog ili ručno
+   menjanog backupa. Zato `cistVdotLog` već ima istu proveru za svoj `ts` —
+   ovo je ista klasa, samo na drugom polju. */
+describe('Datumi iz oštećenog zapisa', () => {
+
+  test('s2d ne baca ni na jednom obliku smeća', () => {
+    const app = loadApp();
+    for (const lose of [null, undefined, 123456789, {}, [], '', 'juče', '2026-13', NaN, true]) {
+      assert.doesNotThrow(() => app.call('s2d', lose), `s2d(${JSON.stringify(lose)}) je bacio`);
+      const d = app.call('s2d', lose);
+      assert.ok(Number.isNaN(d.getTime()), `s2d(${JSON.stringify(lose)}) je vratio važeći datum`);
+    }
+  });
+
+  test('ispravan datum i dalje radi tačno', () => {
+    const app = loadApp();
+    assert.equal(app.call('fmtDY', '2026-09-24'), '24.09.2026.');
+    assert.equal(app.call('fmtD', '2026-09-24'), '24.09.');
+    assert.equal(app.call('dowOf', '2026-09-24'), 'Čet');
+  });
+
+  test('nevažeći datum daje „—", ne „NaN.NaN."', () => {
+    const app = loadApp();
+    for (const f of ['fmtD', 'fmtDY', 'fmtDL', 'dowOf']) {
+      const izlaz = String(app.call(f, 1754300000000));
+      assert.equal(izlaz, '—', `${f}(broj) je vratio „${izlaz}"`);
+      assert.doesNotMatch(izlaz, /NaN/);
+    }
+  });
+
+  test('grafikon tempa se iscrta i kad je datum trčanja broj', () => {
+    /* Prava posledica: pre ovoga je ceo tab Progres ostajao prazan. */
+    const app = loadApp({ now: '2026-08-04T09:00:00Z' });
+    app.evalIn(`
+      const d = DATED.find(x => x.tag === 'tempo');
+      S.log[d.id] = { status:'done', km:8, sec:2120, ts: Date.now() };
+      CHART_SEL.tempo = 0;
+    `);
+    let html = null;
+    assert.doesNotThrow(() => { html = app.call('chartTempo'); }, 'chartTempo je bacio na numeričkom ts');
+    assert.ok(html && html.includes('<svg'), 'grafikon nije iscrtan');
+    assert.doesNotMatch(String(html), /NaN/, 'u grafikonu se pojavio NaN');
+  });
+});

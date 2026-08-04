@@ -142,3 +142,18 @@ describe('Brojevi i oblici reči', () => {
     assert.doesNotMatch(kod, /adrese\.length\+' adresa /);
   });
 });
+
+describe('Hlađenje na ekranu, ne samo u funkciji', () => {
+
+  test('kartica treninga za tempo sesiju ispisuje red „Hlađenje"', () => {
+    /* `sessBreakdown` je proveren zasebno, ali između njega i ekrana stoji
+       `dayCard` — ovo meri ono što čovek stvarno vidi. */
+    const app = loadApp({ now: '2026-08-04T09:00:00Z' });
+    const html = app.evalIn(`dayCard(DATED.find(d => d.tag === 'tempo'))`);
+    assert.match(html, /class="sess-struct"/, 'nema strukture sesije');
+    assert.match(html, /Zagrevanje/);
+    assert.match(html, /Radni deo/);
+    assert.match(html, /Hlađenje/, 'red se i dalje zove „Smirivanje"');
+    assert.doesNotMatch(html, /Smirivanje/);
+  });
+});
