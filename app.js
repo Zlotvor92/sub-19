@@ -1,7 +1,7 @@
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='155'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='156'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2498,7 +2498,33 @@ function closeSheet(){
 }
 /* ---------- IZMENA TRENINGA (tip / km / opis) ---------- */
 let ALT_DRAFT=null, ALT_ERR='';
-let CHART_SEL={week:null, wt:null}; /* izabrana nedelja (bar) / tačka (težina) na Progres grafikonima */
+let CHART_SEL={week:null, wt:null, tempo:null, hrv:null, knee:null, vdot:null, pred:null};
+/* izabrana nedelja (bar) i izabrana tačka po grafikonu.
+   Sve linije su dodirljive po istom obrascu koji je Telesna masa već imala:
+   natpis sa detaljima na vrhu, uvećana izabrana tačka, i NEVIDLJIV širi krug
+   preko nje kao dodirni cilj — 3 px prečnika se na telefonu ne pogađa. */
+
+/* Natpis iznad grafikona: detalji izabrane tačke, ili poziv da se dodirne.
+   Namerno red na vrhu, ne tooltip: tooltip na dodir ostaje „zalepljen" dok se
+   ne dodirne nešto drugo, a na malom ekranu prekriva baš ono što objašnjava. */
+function chartTop(x, tekst){
+  return tekst
+    ? `<text class="chart-info" x="${x}" y="14" text-anchor="start">${esc(tekst)}</text>`
+    : `<text class="chart-hint" x="${x}" y="14" text-anchor="start">Dodirni tačku za detalje</text>`;
+}
+/* Dodirni cilj preko tačke. r=11 je ~44 px na ekranu telefona — preporučeni
+   minimum za dodir. */
+function chartHit(x, y, kljuc, i){
+  return `<circle cx="${(+x).toFixed(1)}" cy="${(+y).toFixed(1)}" r="11" fill="transparent" data-cpt="${kljuc}" data-cidx="${i}"/>`;
+}
+/* Vezivanje dodira — isti posao za sve grafikone, umesto kopije po ekranu. */
+function vezisTacke(el, ponovo){
+  el.querySelectorAll('[data-cpt]').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.cpt, i=+b.dataset.cidx;
+    CHART_SEL[k]=CHART_SEL[k]===i?null:i;   /* isti dodir opet = poništi izbor */
+    ponovo();
+  });
+}
 const ALT_TYPES=[['lako','Lako'],['int','Intervali'],['tempo','Tempo'],['lr','Dugo'],['snaga','Snaga'],['odmor','Odmor']];
 function altSheetHTML(d){
   const cur=ALT_DRAFT||{tag:d.rest?'odmor':d.tag,km:d.km,desc:d.desc||''};
@@ -6183,11 +6209,7 @@ function renderProg(){
     CHART_SEL.week=CHART_SEL.week===w?null:w; /* isti dodir opet = poništi izbor */
     renderProg();
   });
-  el.querySelectorAll('[data-wtpt]').forEach(b=>b.onclick=()=>{
-    const i=+b.dataset.wtpt;
-    CHART_SEL.wt=CHART_SEL.wt===i?null:i;
-    renderProg();
-  });
+  vezisTacke(el, renderProg);
 }
 /* ============================================================
    OPORAVAK — prikaz HRV-a, pulsa u miru i sna.
@@ -6242,7 +6264,7 @@ function karticaOporavka(){
 function chartHrv(niz){
   const v=niz.filter(x=>x&&x.hrv!=null);
   if(v.length<4) return '<div class="note-src" style="margin-top:10px">Grafikon HRV-a se crta kad bude bar 4 dana zapisa.</div>';
-  const W=340,H=140,L=30,R=8,B=116,T=12;
+  const W=340,H=156,L=30,R=8,B=132,T=28;   /* +16 px za natpis izabrane tačke */
   const vals=v.map(x=>x.hrv);
   const lo=Math.min(...vals)*0.94, hi=Math.max(...vals)*1.06;
   const X=i=>L+(v.length===1?0:i/(v.length-1)*(W-L-R));
@@ -6251,10 +6273,19 @@ function chartHrv(niz){
   const baza=v.map((_,i)=>{ const od=Math.max(0,i-6); const seg=v.slice(od,i+1).map(x=>x.hrv);
                             return seg.reduce((a,b)=>a+b,0)/seg.length; });
   let g='';
+  const selH=CHART_SEL.hrv!=null?v[CHART_SEL.hrv]:null;
+  g+=chartTop(L, selH ? `${fmtD(selH.datum)} · HRV ${fmtNum(selH.hrv,1)} · osnova ${fmtNum(baza[CHART_SEL.hrv],1)}${selH.pulsUMiru!=null?' · puls u miru '+fmtNum(selH.pulsUMiru,0):''}${selH.sanH!=null?' · san '+fmtNum(selH.sanH,1)+' h':''}` : null);
   g+=`<polyline points="${baza.map((b,i)=>X(i).toFixed(1)+','+Y(b).toFixed(1)).join(' ')}" fill="none" stroke="var(--txt3)" stroke-width="1.4" stroke-dasharray="4 4" opacity=".65"/>`;
   g+=`<polyline points="${v.map((x,i)=>X(i).toFixed(1)+','+Y(x.hrv).toFixed(1)).join(' ')}" fill="none" stroke="var(--cyan)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>`;
-  v.forEach((x,i)=>{ if(i!==v.length-1) return;
-    g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(x.hrv).toFixed(1)}" r="4.2" fill="var(--bg)" stroke="var(--cyan)" stroke-width="2"/>`; });
+  v.forEach((x,i)=>{
+    const last=i===v.length-1, sel=CHART_SEL.hrv===i;
+    /* Ranije se crtala SAMO poslednja tačka; ostale su bile nevidljive, pa se
+       ni nije imalo šta dodirnuti. Sada sve postoje, a nedodirnute su sitne
+       da linija ostane čitljiva. */
+    if(last||sel) g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(x.hrv).toFixed(1)}" r="${sel?5:4.2}" fill="${sel?'var(--cyan)':'var(--bg)'}" stroke="${sel?'#fff':'var(--cyan)'}" stroke-width="${sel?1:2}"/>`;
+    else g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(x.hrv).toFixed(1)}" r="2.6" fill="var(--cyan)" opacity=".75"/>`;
+    g+=chartHit(X(i),Y(x.hrv),'hrv',i);
+  });
   g+=`<text x="${L}" y="${B+16}" font-size="9" fill="var(--txt3)">${fmtD(v[0].datum)}</text>`;
   g+=`<text x="${W-R}" y="${B+16}" text-anchor="end" font-size="9" fill="var(--txt3)">${fmtD(v[v.length-1].datum)}</text>`;
   g+=`<text x="${W-R}" y="${(Y(v[v.length-1].hrv)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--cyan)">${esc(v[v.length-1].hrv)}</text>`;
@@ -6325,13 +6356,13 @@ function chartWeight(){
   const X=i=>{ const k=Math.max(1,Math.min(nW,i)); return L+(nW<=1?0:(k-1)/(nW-1))*(W-L-R); };
   const Y=v=>B-(Math.max(min,Math.min(max,v))-min)/(max-min)*(B-T);
   let g='';
+  let natpis=null;
   if(CHART_SEL.wt!=null && act[CHART_SEL.wt]){
     const a=act[CHART_SEL.wt], wIdx=Math.round(1+diffD(CUR_START,a.date)/7);
     const t=tgt.find(x=>x.w===wIdx);
-    g+=`<text class="chart-info" x="${L}" y="14" text-anchor="start">N${wIdx}${t?' · plan '+fmtNum(t.kg,1)+' kg':''} · uneto ${fmtNum(a.kg,1)} kg</text>`;
-  } else {
-    g+=`<text class="chart-hint" x="${L}" y="14" text-anchor="start">Dodirni tačku za detalje</text>`;
+    natpis=`${fmtD(a.date)} · N${wIdx}${t?' · plan '+fmtNum(t.kg,1)+' kg':''} · uneto ${fmtNum(a.kg,1)} kg`;
   }
+  g+=chartTop(L,natpis);
   /* 5 ravnomerno raspoređenih linija/oznaka umesto fiksnih [75..83] i [N1..N14] */
   for(let k=0;k<5;k++){
     const v=min+(max-min)*k/4;
@@ -6355,8 +6386,7 @@ function chartWeight(){
     pts.forEach((p,i)=>{
       const sel=CHART_SEL.wt===i;
       g+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${sel?4.8:3.4}" fill="var(--pink)"${sel?' stroke="#fff" stroke-width="1"':''}/>`;
-      /* nevidljiv širi krug PREKO vidljive tačke — udobniji dodir cilj od 3.4px prečnika */
-      g+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="11" fill="transparent" data-wtpt="${i}"/>`;
+      g+=chartHit(p.x,p.y,'wt',i);
     });
   }
   if(tgt.length)g+=`<text class="ax" x="${W-R}" y="${T-4}" text-anchor="end">isprekidano = cilj ${fmtNum(tgt[0].kg,1)}→${fmtNum(tgt[tgt.length-1].kg,1)}</text>`;
@@ -6366,16 +6396,20 @@ function chartTempo(){
   const runs=[];
   CUR_PLAN.forEach(w=>w.days.forEach(d=>{
     const l=S.log[d.id];
-    if(l&&l.status==='done'&&l.km>0&&l.sec>0)runs.push({date:l.ts||d.date||'',t:l.sec/l.km});
+    if(l&&l.status==='done'&&l.km>0&&l.sec>0)runs.push({date:l.ts||d.date||'',t:l.sec/l.km,km:l.km,sec:l.sec,kind:sessKind(d)});
   }));
   runs.sort((a,b)=>a.date<b.date?-1:1);
   if(!runs.length)return `<div class="empty">Unesi distancu i vreme na treninzima — trend se crta automatski.</div>`;
-  const W=340,H=152,L=38,R=10,B=128,T=12;
+  /* H/B/T pomereni za 16 px u odnosu na raniju verziju — mesto za natpis sa
+     detaljima izabrane tačke, isto kao na Telesnoj masi. */
+  const W=340,H=168,L=38,R=10,B=144,T=28;
   let lo=Math.min(...runs.map(r=>r.t))-15,hi=Math.max(...runs.map(r=>r.t))+15;
   if(hi-lo<50){const m=(hi+lo)/2;lo=m-25;hi=m+25;}
   const X=i=>runs.length>1?L+i/(runs.length-1)*(W-L-R):L+(W-L-R)/2;
   const Y=v=>T+(v-lo)/(hi-lo)*(B-T);
   let g='';
+  const selT=CHART_SEL.tempo!=null?runs[CHART_SEL.tempo]:null;
+  g+=chartTop(L, selT ? `${selT.date?fmtD(selT.date):''} · ${selT.kind?selT.kind+' · ':''}${fmtTempo(selT.t)}/km · ${fmtKm(selT.km)} km · ${fmtClock(selT.sec)}` : null);
   [lo+(hi-lo)*.12,(lo+hi)/2,hi-(hi-lo)*.12].forEach(v=>{g+=`<line class="gl" x1="${L}" y1="${Y(v).toFixed(1)}" x2="${W-R}" y2="${Y(v).toFixed(1)}"/><text class="ax" x="${L-4}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end">${fmtTempo(v)}</text>`;});
   if(runs.length>1){
     g+=`<defs><linearGradient id="tempoGrad" x1="0" y1="0" x2="0" y2="1">
@@ -6388,8 +6422,9 @@ function chartTempo(){
     g+=`<polyline fill="none" stroke="var(--cyan)" stroke-width="2.25" stroke-linejoin="round" points="${line}"/>`;
   }
   runs.forEach((r,i)=>{
-    const last=i===runs.length-1;
-    g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(r.t).toFixed(1)}" r="${last?4.2:3.2}" fill="${last?'var(--bg)':'var(--cyan)'}" stroke="${last?'var(--cyan)':'none'}" stroke-width="2"/>`;
+    const last=i===runs.length-1, sel=CHART_SEL.tempo===i;
+    g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(r.t).toFixed(1)}" r="${sel?5:(last?4.2:3.2)}" fill="${last&&!sel?'var(--bg)':'var(--cyan)'}" stroke="${sel?'#fff':(last?'var(--cyan)':'none')}" stroke-width="${sel?1:2}"/>`;
+    g+=chartHit(X(i),Y(r.t),'tempo',i);
   });
   g+=`<text class="ax" x="${W-R}" y="${B+12}" text-anchor="end">gore = brže</text>`;
   return svgW(W,H,g);
@@ -6552,6 +6587,7 @@ function renderKnee(){
   el.querySelectorAll('[data-bv]').forEach(b=>b.onclick=()=>{S.ui.bodyView=b.dataset.bv;save();renderKnee();});
   el.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>openKneeSheet(null,b.dataset.bp));
   el.querySelectorAll('[data-bp2]').forEach(b=>b.onclick=()=>openKneeSheet(null,b.dataset.bp2));
+  vezisTacke(el, renderKnee);
   const ia=$('#inj-apply');
   if(ia) ia.onclick=()=>{
     const pr=injuryProposal(TODAY);
@@ -6567,17 +6603,23 @@ function renderKnee(){
 function chartKnee(){
   const es=S.knee.slice().sort((a,b)=>a.date<b.date?-1:1);
   if(!es.length)return `<div class="empty">Nema unosa.</div>`;
-  const W=340,H=144,L=22,R=8,B=120,T=10;
+  const W=340,H=160,L=22,R=8,B=136,T=26;   /* +16 px za natpis izabrane tačke */
   const d0=es[0].date,d1=es[es.length-1].date>TODAY?es[es.length-1].date:TODAY;
   const span=Math.max(diffD(d0,d1),1);
   const X=d=>L+diffD(d0,d)/span*(W-L-R);
   const Y=v=>B-(v/10)*(B-T);
   let g='';
+  const selK=CHART_SEL.knee!=null?es[CHART_SEL.knee]:null;
+  g+=chartTop(L, selK ? `${fmtD(selK.date)} · bol ${selK.pain}/10 · ${partName(selK.part)}${selK.act?' · '+selK.act:''}${selK.note?' — '+String(selK.note).slice(0,32):''}` : null);
   [0,5,10].forEach(v=>{g+=`<line class="gl" x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}"/><text class="ax" x="${L-4}" y="${Y(v)+3}" text-anchor="end">${v}</text>`;});
   g+=`<line x1="${L}" y1="${Y(3)}" x2="${W-R}" y2="${Y(3)}" stroke="rgba(255,176,32,.4)" stroke-dasharray="3 4"/>`;
   g+=`<line x1="${L}" y1="${Y(6)}" x2="${W-R}" y2="${Y(6)}" stroke="rgba(255,69,58,.4)" stroke-dasharray="3 4"/>`;
   if(es.length>1)g+=`<polyline fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" points="${es.map(e=>X(e.date).toFixed(1)+','+Y(e.pain).toFixed(1)).join(' ')}"/>`;
-  es.forEach(e=>g+=`<circle cx="${X(e.date).toFixed(1)}" cy="${Y(e.pain).toFixed(1)}" r="3.6" fill="${e.pain>=6?'var(--red)':e.pain>=1?'var(--amber)':'var(--green)'}"/>`);
+  es.forEach((e,i)=>{
+    const sel=CHART_SEL.knee===i;
+    g+=`<circle cx="${X(e.date).toFixed(1)}" cy="${Y(e.pain).toFixed(1)}" r="${sel?5.2:3.6}" fill="${e.pain>=6?'var(--red)':e.pain>=1?'var(--amber)':'var(--green)'}"${sel?' stroke="#fff" stroke-width="1"':''}/>`;
+    g+=chartHit(X(e.date),Y(e.pain),'knee',i);
+  });
   g+=`<text class="ax" x="${L}" y="${B+12}">${fmtD(d0)}</text><text class="ax" x="${W-R}" y="${B+12}" text-anchor="end">${fmtD(d1)}</text>`;
   return svgW(W,H,g);
 }
@@ -6673,6 +6715,7 @@ function renderPred(){
     <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span></div></div>`;
   h+=`<div class="card info" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?esc(goalCtxText()):CILJ+' — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
   el.innerHTML=h;
+  vezisTacke(el, renderPred);
   const vdA=el.querySelector('#vd-apply');
   if(vdA) vdA.onclick=()=>{
     const pr=vdotPredlog(TODAY);
@@ -6719,13 +6762,15 @@ function renderPred(){
 function chartVdotTrend(){
   const vl=(S.vdotLog||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1);
   if(vl.length<2) return '<div style="color:var(--txt3);font-size:.8rem;padding:12px 0">Trend se prikazuje kad bude bar 2 zabeležene VDOT vrednosti. Nakupljaj kroz treninge.</div>';
-  const W=340,H=150,L=32,R=8,B=126,T=10;
+  const W=340,H=166,L=32,R=8,B=142,T=26;   /* +16 px za natpis izabrane tačke */
   const vals=vl.map(e=>e.vdot);
   const bv=baselineVdot(), goal=goalVdotActive();
   const lo=Math.min(bv,goal,...vals)-1, hi=Math.max(bv,goal,...vals)+1;
   const X=i=>L+(vl.length===1?0:i/(vl.length-1)*(W-L-R));
   const Y=v=>B-((v-lo)/(hi-lo))*(B-T);
   let g='';
+  const selV=CHART_SEL.vdot!=null?vl[CHART_SEL.vdot]:null;
+  g+=chartTop(L, selV ? `${selV.ts?fmtD(String(selV.ts).slice(0,10)):''} · VDOT ${fmtNum(selV.vdot,1)}${selV.delta!=null?' ('+(selV.delta>0?'+':'')+fmtNum(selV.delta,1)+')':''}${selV.measured!=null?' · izmereno '+fmtNum(selV.measured,1):''}` : null);
   // horizontalne linije: baseline i cilj
   g+=`<line x1="${L}" y1="${Y(goal).toFixed(1)}" x2="${W-R}" y2="${Y(goal).toFixed(1)}" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
   g+=`<text x="${W-R}" y="${(Y(goal)-4).toFixed(1)}" text-anchor="end" font-size="9" font-weight="700" fill="var(--cyan)">cilj ${esc(goal)}</text>`;
@@ -6742,8 +6787,9 @@ function chartVdotTrend(){
   g+=`<polygon points="${area}" fill="url(#vdotGrad)"/>`;
   g+=`<polyline points="${lineStr}" fill="none" stroke="var(--pink)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>`;
   pts.forEach((p,i)=>{
-    const last=i===pts.length-1;
-    g+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${last?4.4:3.2}" fill="${last?'var(--bg)':'var(--pink)'}" stroke="${last?'var(--pink)':'none'}" stroke-width="2"/>`;
+    const last=i===pts.length-1, sel=CHART_SEL.vdot===i;
+    g+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${sel?5:(last?4.4:3.2)}" fill="${last&&!sel?'var(--bg)':'var(--pink)'}" stroke="${sel?'#fff':(last?'var(--pink)':'none')}" stroke-width="${sel?1:2}"/>`;
+    g+=chartHit(p[0],p[1],'vdot',i);
   });
   // labele prve i zadnje vrednosti
   g+=`<text x="${X(0).toFixed(1)}" y="${(Y(vl[0].vdot)-9).toFixed(1)}" font-size="10" font-weight="700" fill="var(--txt2)">${esc(vl[0].vdot)}</text>`;
@@ -7345,7 +7391,7 @@ function planUnapred(nedelja){
   return out;
 }
 function chartPred(pc){
-  const W=340,H=152,L=36,R=8,B=128,T=10;
+  const W=340,H=168,L=36,R=8,B=144,T=26;   /* +16 px za natpis izabrane tačke */
   /* Osa je DINAMIČKA. Ranije tvrdo kodovana na 17.8-22.8 MINUTA i mrežu
      18:00-22:00 (mere tvog 5K plana): na generisanom HM/maratonskom planu sve
      vrednosti (izmereno 220-231 min) padaju iznad gornje granice, pa ih je
@@ -7365,6 +7411,11 @@ function chartPred(pc){
   const X=i=>L+(nP<=1?0:i/(nP-1))*(W-L-R); /* nP===1 je ranije davalo deljenje nulom (NaN u SVG putanji) */
   const Y=m=>B-(Math.max(lo,Math.min(hi,m))-lo)/(hi-lo)*(B-T);
   let g='';
+  const selP=CHART_SEL.pred!=null?pc.rows[CHART_SEL.pred]:null;
+  const selR=selP?CUR_PRED[CHART_SEL.pred]:null;
+  g+=chartTop(L, selP&&selP.pred!=null
+    ? `${selR?esc(selR.l):''} · predikcija ${fmtClock(selP.pred)}${selR&&selR.p5k!=null?' · plan '+fmtClock(selR.p5k):''}`
+    : null);
   [0,0.25,0.5,0.75,1].forEach(f=>{const v=lo+(hi-lo)*f;g+=`<line class="gl" x1="${L}" y1="${Y(v).toFixed(1)}" x2="${W-R}" y2="${Y(v).toFixed(1)}"/><text class="ax" x="${L-4}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end">${fmtClock(v*60)}</text>`;});
   if(goalMin!=null)g+=`<line x1="${L}" y1="${Y(goalMin).toFixed(1)}" x2="${W-R}" y2="${Y(goalMin).toFixed(1)}" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
   g+=`<polyline fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1.5" points="${CUR_PRED.map((r,i)=>X(i).toFixed(1)+','+Y(r.p5k/60).toFixed(1)).join(' ')}"/>`;
@@ -7389,8 +7440,11 @@ function chartPred(pc){
     g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round" points="${line}"/>`;
   }
   ent.forEach((x,idx)=>{
-    const last=idx===ent.length-1;
-    g+=`<circle cx="${X(x.i).toFixed(1)}" cy="${Y(x.p/60).toFixed(1)}" r="${last?4.4:3.2}" fill="${last?'var(--bg)':'var(--pink)'}" stroke="${last?'var(--pink)':'none'}" stroke-width="2"/>`;
+    const last=idx===ent.length-1, sel=CHART_SEL.pred===x.i;
+    g+=`<circle cx="${X(x.i).toFixed(1)}" cy="${Y(x.p/60).toFixed(1)}" r="${sel?5:(last?4.4:3.2)}" fill="${last&&!sel?'var(--bg)':'var(--pink)'}" stroke="${sel?'#fff':(last?'var(--pink)':'none')}" stroke-width="${sel?1:2}"/>`;
+    /* indeks je POZICIJA U PLANU (x.i), ne redni broj unetog — natpis mora da
+       pogodi isti PRED red koji je i nacrtan */
+    g+=chartHit(X(x.i),Y(x.p/60),'pred',x.i);
   });
   if(goalMin!=null)g+=`<text class="ax" x="${W-R}" y="${(Y(goalMin)-5).toFixed(1)}" text-anchor="end" fill="var(--cyan)">cilj ${fmtClock(goalMin*60)}</text>`;
   return svgW(W,H,g);
