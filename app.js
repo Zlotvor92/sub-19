@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='164'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='165'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -7771,11 +7771,23 @@ function openSettings(){
            <details class="help"><summary>Šta se povlači</summary><p>HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</p></details>`
         : `<div class="btnrow"><button class="btn" id="icu-oauth">Poveži intervals.icu</button></div>
            <details class="help"><summary>Šta se povezivanjem dobija</summary><p>HRV, puls u miru i san koje Garmin već šalje na intervals.icu, i slanje planiranih treninga na sat. Odobravaš na njihovoj strani — nikakav ključ ne prepisuješ.</p></details>
+           <details class="help"><summary>Ako piše „Invalid redirect_uri"</summary>
+             <p>Znači da adresa koju šaljemo <b>nije doslovno ista</b> kao ona prijavljena kod njih. Otvori
+             intervals.icu → Settings → <b>Developer Settings</b> i u polje <b>Redirect URI</b> upiši tačno ovo,
+             sa kosom crtom na kraju:</p>
+             <div class="f-field full" style="margin-top:6px"><span class="f-lbl">Adresa za prijavu</span>
+               <input id="icu-uri" readonly value="${esc(location.origin+'/')}"></div>
+             <div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="icu-uri-copy">Kopiraj adresu</button></div>
+             <p>Najčešća dva uzroka: <b>fali kosa crta</b> na kraju prijavljene adrese, ili si aplikaciju otvorio
+             preko privremene Vercel adrese (one sa nasumičnim delom u imenu) umesto preko stalne — tada se
+             domen ne poklapa ni sa čim što je prijavljeno.</p>
+           </details>
            <details class="help"><summary>Ručno povezivanje (ako gornje ne radi)</summary>
              <div class="f-field full" style="margin-top:6px"><label for="icu-id">ID sportiste</label><input id="icu-id" inputmode="numeric" placeholder="npr. i123456"></div>
              <div class="f-field full"><label for="icu-key">API ključ</label><input id="icu-key" type="password" placeholder="iz intervals.icu → Settings → Developer"></div>
              <div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="icu-on">Poveži ključem</button></div>
-             <p>intervals.icu → Settings → na dnu <b>Developer Settings</b>.</p>
+             <p>intervals.icu → Settings → na dnu <b>Developer Settings</b>. Ovo zaobilazi OAuth u celosti, pa
+             radi i dok je gornja greška nerešena — samo bez slanja treninga na sat.</p>
            </details>`)}
 
     ${stIcu?kartica(false,
@@ -7815,6 +7827,13 @@ function openSettings(){
   $('#s-imp').onclick=()=>$('#s-file').click();
   $('#s-file').onchange=e=>importBackup(e.target.files[0]);
   if($('#icu-oauth')) $('#icu-oauth').onclick=icuConnect;
+  if($('#icu-uri-copy')) $('#icu-uri-copy').onclick=async e=>{
+    const b=e.target, adresa=location.origin+'/';
+    try{ await navigator.clipboard.writeText(adresa); }
+    catch(err){ const p=$('#icu-uri'); if(p){ p.select&&p.select(); } }   /* bez dozvole za ostavu — bar označi tekst */
+    b.textContent='Kopirano ✓';
+    setTimeout(()=>{ b.textContent='Kopiraj adresu'; },1600);
+  };
   if($('#icu-on')) $('#icu-on').onclick=async()=>{
     const id=($('#icu-id').value||'').trim(), key=($('#icu-key').value||'').trim();
     if(!/^i?\d+$/.test(id)){ alert('ID sportiste izgleda kao broj, npr. i123456.'); return; }

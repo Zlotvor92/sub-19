@@ -171,7 +171,11 @@ describe('Ništa nije izgubljeno pri preuređenju', () => {
     for (const opt of [{}, { prijavljen: true }, { prijavljen: true, strava: true, icu: true },
                        { prijavljen: true, vlasnik: true, strava: true, icu: true, push: true }]) {
       const { html } = sa(opt);
-      assert.ok(!/NaN|undefined|Invalid/.test(html), `${JSON.stringify(opt)}: ${(/.{0,50}(NaN|undefined|Invalid).{0,20}/.exec(html) || [])[0]}`);
+      /* Traži se POKVAREN ISPIS, ne reč. „Invalid" je ranije bilo dovoljno da
+         uhvati „Invalid Date", ali sada legitimno stoji u tekstu pomoći
+         („Ako piše Invalid redirect_uri") — pa se traži ceo izraz. */
+      const lose = /NaN|undefined|Invalid Date/.exec(html);
+      assert.ok(!lose, `${JSON.stringify(opt)}: ${(/.{0,50}(NaN|undefined|Invalid Date).{0,20}/.exec(html) || [])[0]}`);
     }
   });
 
