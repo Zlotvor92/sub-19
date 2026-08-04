@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='161'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='162'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -599,7 +599,13 @@ function sessCore(d){
   const desc=d.desc||'';
   const afterWU=desc.split(/km\s*(?:WU|zagrevanje)\s*\+\s*/i)[1];
   if(afterWU){
-    const core=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*(?:CD|smirivanje)/i)[0].trim();
+    /* „smirivanje" je zadržano uz „hlađenje" NAMERNO. Reč je preimenovana, ali
+       opisi koji su već sačuvani — generisani planovi u localStorage-u i na
+       serveru — i dalje nose staru. Da je ovde samo novi oblik, radni deo tih
+       planova ne bi bio prepoznat, pa bi kartica treninga ostala bez strukture
+       i bez ciljnog tempa. Lični plan koristi „CD" i njega ovo ne dira.
+       Ispisuje se isključivo „hlađenje"; ovde se samo ČITA. */
+    const core=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*(?:CD|hlađenje|smirivanje)/i)[0].trim();
     if(core)return core;
   }
   /* nije kvalitetna sesija (lako/LR/snaga) — očisti zagrade, ostavi suštinu */
@@ -680,7 +686,7 @@ function sessBreakdown(d){
     else if(s.type==='fartlek'&&s.reps)work=`${s.reps} × ${s.repSec} s @ ${fmtTempo(s.paceSec)}/km`;
     if(work)rows.push(['Radni deo',work,true]);
     if(s.restSec)rows.push(['Odmor',s.restSec>=60?Math.round(s.restSec/60)+' min':s.restSec+' s']);
-    if(s.cdKm)rows.push(['Smirivanje',fmtKm(s.cdKm)+' km']);
+    if(s.cdKm)rows.push(['Hlađenje',fmtKm(s.cdKm)+' km']);
     if(d.runWalk)rows.push(['Ritam',runWalkText(d.runWalk),true]);
     const rp=rpeTarget(d);
     if(rp)rows.push(['Napor','RPE '+rp.min+'–'+rp.max]);
@@ -688,15 +694,15 @@ function sessBreakdown(d){
   }
   const desc=d.desc||'';
   const mWU=desc.match(/([\d.,]+)\s*km\s*(?:WU|zagrevanje)/i);
-  const mCD=desc.match(/([\d.,]+)\s*km\s*(?:CD|smirivanje)/i);
+  const mCD=desc.match(/([\d.,]+)\s*km\s*(?:CD|hlađenje|smirivanje)/i);
   const afterWU=desc.split(/km\s*(?:WU|zagrevanje)\s*\+\s*/i)[1];
   let work=null;
-  if(afterWU)work=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*(?:CD|smirivanje)/i)[0].trim();
+  if(afterWU)work=afterWU.split(/\s*\(|\s*\+\s*[\d.,]+\s*km\s*(?:CD|hlađenje|smirivanje)/i)[0].trim();
   const mRest=desc.match(/\((\s*\d+\s*(?:min|s)\b[^)]*)\)/i);
   if(mWU)rows.push(['Zagrevanje',mWU[1].replace(',','.')+' km']);
   if(work)rows.push(['Radni deo',work,true]);
   if(mRest)rows.push(['Odmor',mRest[1].trim()]);
-  if(mCD)rows.push(['Smirivanje',mCD[1].replace(',','.')+' km']);
+  if(mCD)rows.push(['Hlađenje',mCD[1].replace(',','.')+' km']);
   if(d.runWalk)rows.push(['Ritam',runWalkText(d.runWalk),true]);
   const rp2=rpeTarget(d);
   if(rp2)rows.push(['Napor','RPE '+rp2.min+'–'+rp2.max]);
@@ -716,7 +722,7 @@ function sessNote(d){
   const parts=[];
   const paren=body.match(/\(([^)]+)\)/);
   if(paren&&!/^\s*\d+(?:[.,]\d+)?\s*(?:min|s)\b/i.test(paren[1]))parts.push(paren[1].trim());
-  const tail=body.match(/km\s*(?:CD|smirivanje)\s*[·•]\s*(.+)$/i);
+  const tail=body.match(/km\s*(?:CD|hlađenje|smirivanje)\s*[·•]\s*(.+)$/i);
   if(tail)parts.push(tail[1].trim());
   return parts.join(' · ');
 }
@@ -1639,13 +1645,13 @@ function vdotPredlog(today){
   return {
     ...f, changes, brzi,
     title: brzi ? 'Forma je ispred plana' : 'Forma je iza plana',
-    message: 'Tvoj VDOT je ' + f.forma.toFixed(1) + ', a tempi u preostalom delu plana odgovaraju VDOT-u ' +
+    message: 'Tvoj VDOT je ' + f.forma.toFixed(1) + ', a preostali deo plana računa tempo po VDOT-u ' +
       f.planVdot.toFixed(1) + ' — razlika ' + (f.delta>0?'+':'') + f.delta.toFixed(1) +
       ' poena, iz ' + f.merenja + ' izmerenih sesija. Predlog: ' + changes.length +
       ' preostalih kvalitetnih treninga dobija ciljni tempo ' + (brzi?'brži':'sporiji') + ' za oko ' + sek + ' s/km. ' +
       'Obim se NE menja — VDOT određuje tempo, ne koliko se trči. ' +
       (brzi
-        ? 'Ako ti novi tempi deluju preteško na terenu, vrati ih — jedna dobra sesija ume da preceni formu.'
+        ? 'Ako ti nov tempo deluje preteško na terenu, vrati ga — jedna dobra sesija ume da preceni formu.'
         : 'Sporiji tempo nije nazadovanje: bolje je pogoditi zonu nego juriti broj koji telo trenutno ne nosi.')
   };
 }
@@ -2255,6 +2261,15 @@ const openW=new Set();
 {const w=weekOf(TODAY);openW.add(w?w.w:1);}
 
 function plDan(n){const m=n%10,h=n%100;return(m===1&&h!==11)?'dan':'dana';}
+/* SRPSKI BROJI U TRI OBLIKA, po POSLEDNJOJ cifri — osim 11–14, koji uvek idu
+   u treći („11 adresa", ne „11 adresa"→„adresa" preko jedinice).
+   `plDan` pokriva samo reči kod kojih su drugi i treći oblik isti
+   (dan/dana/dana, trening/treninga/treninga), pa je za njih dovoljan.
+   Kod „adresa" se sva tri razlikuju: 1 adresu · 2 adrese · 5 adresa. */
+function pl3(n,jedan,dva,pet){const m=n%10,h=n%100;
+  if(m===1&&h!==11)return jedan;
+  if(m>=2&&m<=4&&(h<12||h>14))return dva;
+  return pet;}
 function fmtDY(s){const d=s2d(s);return pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.'+d.getFullYear()+'.';}
 
 function renderHeader(){
@@ -2285,7 +2300,7 @@ function renderDanas(){
   const dd=diffD(TODAY,CUR_RACE),st=streak(TODAY);
   let h='';
   /* Predlog, ne prinuda: plan koji gleda nije njegov, ali ima unose na njemu. */
-  if(tudjPlanSaUnosima())h+=`<div class="kb warn"><div style="flex:1"><div>Ovo nije tvoj plan</div><small>Gledaš ugrađeni plan sa tuđim datumom trke i tuđim tempima. Napravi svoj — postojeći unosi ostaju sačuvani u backup-u.</small></div><button id="tp-gen" style="color:var(--amber);font-weight:800;font-size:.8rem;padding:6px 10px;white-space:nowrap">Napravi svoj</button></div>`;
+  if(tudjPlanSaUnosima())h+=`<div class="kb warn"><div style="flex:1"><div>Ovo nije tvoj plan</div><small>Gledaš ugrađeni plan sa tuđim datumom trke i tuđim tempom. Napravi svoj — postojeći unosi ostaju sačuvani u backup-u.</small></div><button id="tp-gen" style="color:var(--amber);font-weight:800;font-size:.8rem;padding:6px 10px;white-space:nowrap">Napravi svoj</button></div>`;
   if(backupDue(TODAY))h+=`<div class="bban"><span style="flex:1">Uradi backup podataka.</span><button id="bb-do">Izvezi</button><button id="bb-later" style="color:var(--txt3)">Kasnije</button></div>`;
   h+=`<div class="hero">
     <div class="card accent"><div class="big" style="color:var(--pink)">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
@@ -2675,7 +2690,7 @@ function altSheetHTML(d){
     h+=`<div class="f-field full" style="margin-top:10px"><label for="alt-km">Kilometraža</label>
       <input type="number" inputmode="decimal" step="0.1" min="0" id="alt-km" value="${cur.km!=null?esc(cur.km):''}" placeholder="prazno = bez km (npr. snaga)"></div>`;
     h+=`<div class="f-field full" style="margin-top:10px"><label for="alt-desc">Opis</label>
-      <textarea id="alt-desc" placeholder="Šta se radi...">${esc(cur.desc)}</textarea></div>`;
+      <textarea id="alt-desc" placeholder="Šta se radi…">${esc(cur.desc)}</textarea></div>`;
   }
   if(cur.tag==='int'||cur.tag==='tempo'){
     h+=`<div class="f-field full" style="margin-top:10px"><label for="alt-pace">Ciljni tempo radnog dela (m:ss/km)</label>
@@ -2728,7 +2743,7 @@ function renderAltSheet(d){
     readAltFields(sh); /* uzmi trenutno otkucan opis, ne stari */
     const found=extractPaceFromDesc(ALT_DRAFT.desc);
     if(found!=null){ ALT_DRAFT.pace=found; }
-    else { ALT_ERR='Nije prepoznat tempo u opisu (format "@ m:ss/km") — unesi ručno.'; }
+    else { ALT_ERR='Nije prepoznat tempo u opisu (format „@ m:ss/km") — unesi ručno.'; }
     renderAltSheet(d);
   };
   const rs=sh.querySelector('#alt-reset');
@@ -3751,15 +3766,15 @@ const RECOVERY_JOG = ['Tempo isprekidan','Tempo trke','Kontrolna trka'];
 function sessDesc(s){
   if(s.type==='int'){
     const restWord = RECOVERY_JOG.includes(s.kind) ? 'laganog trčanja' : 'hoda';
-    return `${s.kind} — ${s.wuKm} km zagrevanje + ${s.reps}×${s.repM} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} ${restWord}) + ${s.cdKm} km smirivanje`;
+    return `${s.kind} — ${s.wuKm} km zagrevanje + ${s.reps}×${s.repM} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} ${restWord}) + ${s.cdKm} km hlađenje`;
   }
   if(s.type==='pyramid')
-    return `${s.kind} — ${s.wuKm} km zagrevanje + ${s.reps.join('-')} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} hoda između ponavljanja) + ${s.cdKm} km smirivanje`;
+    return `${s.kind} — ${s.wuKm} km zagrevanje + ${s.reps.join('-')} m @ ${fmtP(s.paceSec)}/km (${fmtRest(s.restSec)} hoda između ponavljanja) + ${s.cdKm} km hlađenje`;
   if(s.type==='fartlek')
-    return `Fartlek — ${s.wuKm} km zagrevanje + ${s.reps}×${s.repSec} s brzo @ ~${fmtP(s.paceSec)}/km (${s.restSec} s laganog trčanja) + ${s.cdKm} km smirivanje`;
+    return `Fartlek — ${s.wuKm} km zagrevanje + ${s.reps}×${s.repSec} s brzo @ ~${fmtP(s.paceSec)}/km (${s.restSec} s laganog trčanja) + ${s.cdKm} km hlađenje`;
   if(s.type==='prog')
     return `Progresivno — ${s.qKm} km: prve dve trećine @ ~${fmtP(s.easyPaceSec)}/km → poslednja trećina @ ${fmtP(s.paceSec)}/km`;
-  return `${s.kind||'Tempo'} — ${s.wuKm} km zagrevanje + ${s.qKm} km @ ${fmtP(s.paceSec)}/km + ${s.cdKm} km smirivanje`;
+  return `${s.kind||'Tempo'} — ${s.wuKm} km zagrevanje + ${s.qKm} km @ ${fmtP(s.paceSec)}/km + ${s.cdKm} km hlađenje`;
 }
 function sessInt(dow,wuKm,reps,repM,paceSec,restSec,cdKm,kind){
   const session={type:'int',kind:kind||'Intervali',wuKm,reps,repM,paceSec,restSec,cdKm,overrides:{}};
@@ -3790,7 +3805,7 @@ function sessProg(dow,totalKm,endPaceSec,easyPaceSec,kind){
    field za 'int': paceSec | repM | reps | restSec | wuKm | cdKm
    field za 'tempo': paceSec | qKm | wuKm | cdKm */
 function applyEdit(day, field, value){
-  if(!day.session) throw new Error('Ovaj dan nema izmenjivu sesiju (deload/trkačka nedelja/lako/LR/snaga/odmor).');
+  if(!day.session) throw new Error('Ovaj dan nema sesiju koja se može menjati (deload, trkačka nedelja, lako, LR, snaga, odmor).');
   day.session[field]=value;
   day.session.overrides[field]=true;
   day.km=sessKm(day.session);
@@ -4052,7 +4067,7 @@ function mkKontrolnaTrka21K(dow,vol,racePace,pE){
   const km=r1(wu+trkaKm+cd);
   const opis = trkaKm>=8 ? '10K trka' : 'kraća trka (5K ili 10K)';
   return { dow, tag:'tempo', km,
-    desc:`Kontrolna trka — ${wu} km zagrevanje + ${trkaKm} km + ${cd} km smirivanje. `+
+    desc:`Kontrolna trka — ${wu} km zagrevanje + ${trkaKm} km + ${cd} km hlađenje. `+
          `Ako nađeš pravu trku (${opis}) — trči je PUNOM SNAGOM, brže od tempa polumaratona; to je najpošteniji presek forme. `+
          `Ako je nema, istrči ${trkaKm} km sam, kontrolisano na ${fmtP(racePace)}/km (tempo polumaratona). `+
          `Isprobaj opremu, doručak i gorivo tačno kako planiraš na dan trke. `+
@@ -4721,7 +4736,7 @@ function generatePlan(inp){
   if(prof.minDanaPrep && runDays < prof.minDanaPrep){
     dayWarnings.push('Za ' + prof.name + ' se preporučuje bar ' + prof.minDanaPrep +
       ' dana trčanja nedeljno; izabrao si ' + runDays + '. Na tako malo dana dugo trčanje postaje ' +
-      'polovina cele nedelje, pa se obim ne može rasporediti bez da svaki trening bude dugačak. ' +
+      'polovina cele nedelje, pa se obim ne može rasporediti a da svaki trening ne bude dugačak. ' +
       'Plan je napravljen, ali računaj na duže oporavke i manje prostora za kvalitet.');
   }
   if(isBeginner && rwWeeks < RW_WEEKS){
@@ -4862,7 +4877,7 @@ function generatePlan(inp){
       const aktN=6;
       const mk={
         [raceDow-3]: dw=>D(dw,'lako',shakeA,`${shakeA} km shakeout (skroz lagano) + lagani core`),
-        [raceDow-2]: dw=>D(dw,'int',r1(aktWu+aktN*0.2+aktCd),`${aktWu} km zagrevanje + ${aktN}×200 m @ ${fmtP(Math.max(rp-4,pI-6))}/km (200 m hoda) + ${aktCd} km smirivanje — aktivacija`),
+        [raceDow-2]: dw=>D(dw,'int',r1(aktWu+aktN*0.2+aktCd),`${aktWu} km zagrevanje + ${aktN}×200 m @ ${fmtP(Math.max(rp-4,pI-6))}/km (200 m hoda) + ${aktCd} km hlađenje — aktivacija`),
         [raceDow-1]: dw=>D(dw,'lako',shakeB,`${shakeB} km shakeout + lagana mobilnost`),
         [raceDow]:   dw=>D(dw,'trka',raceDistM/1000,`🏁 TRKA ${distKm} km (${prof.name}) — cilj ${fmtP(inp.goalSec||a.predictedSec)} / ritam ${fmtP(rp)}/km`)
       };
@@ -5313,8 +5328,8 @@ function generatePlan(inp){
       const predlog = easyCount <= 1
         ? ' Na ' + runDays + ' dana sa ' + effQ + ' kvalitetna treninga ostaje samo ' +
           (easyCount===1?'jedan lagan dan':'nijedan lagan dan') +
-          ', pa se toliki obim ne moze bezbedno rasporediti — lagan dan bi morao da bude dug koliko i dugo trcanje. Dodaj jedan dan trcanja.'
-        : ' Dodaj jedan dan trcanja ili smanji broj kvalitetnih treninga.';
+          ', pa se toliki obim ne može bezbedno rasporediti — lagan dan bi morao da bude dug koliko i dugo trčanje. Dodaj jedan dan trčanja.'
+        : ' Dodaj jedan dan trčanja ili smanji broj kvalitetnih treninga.';
       dayWarnings.push('Tražio si ' + inp.weeklyKm + ' km/ned, a plan prve nedelje daje oko ' +
         stvarno.toFixed(0) + ' km.' + predlog);
     }
@@ -5640,7 +5655,7 @@ function renderOnboard(){
     <div class="ob-step" data-step="2">
       <div class="ob-eyebrow">Korak 2 od 4</div>
       <div class="ob-h1">Šta si poslednje istrčao?</div>
-      <div class="ob-sub">Bilo koja skorija trka na poznatoj distanci. Iz ovog jednog rezultata izlaze svi tempi u planu.</div>
+      <div class="ob-sub">Bilo koja skorija trka na poznatoj distanci. Iz ovog jednog rezultata računa se svaki ciljni tempo u planu.</div>
       <div class="ob-card">
         <div class="ob-ct">Distanca</div>
         <div class="ob-chiprow" id="pbDistChips">
@@ -5702,7 +5717,7 @@ function renderOnboard(){
           <button type="button" class="ob-chip" data-v="5">Pet</button><button type="button" class="ob-chip" data-v="6">Sub</button>
           <button type="button" class="ob-chip" data-v="7">Ned</button>
         </div>
-        <div class="ob-hint" id="runDowHint">Ostavi prazno i plan sam raspoređuje dane. Izaberi konkretne ako imaš fiksne obaveze — tada se koriste <b>tačno ti dani</b>.</div>
+        <div class="ob-hint" id="runDowHint">Ostavi prazno pa plan sam raspoređuje dane. Izaberi konkretne ako imaš fiksne obaveze — tada se koriste <b>tačno ti dani</b>.</div>
       </div>
       <div class="ob-card" id="runDaysCard">
         <div class="ob-ct">Dana trčanja nedeljno</div>
@@ -5725,7 +5740,7 @@ function renderOnboard(){
     <div class="ob-step" data-step="4">
       <div class="ob-eyebrow">Korak 4 od 4</div>
       <div class="ob-h1">Koliko brzo da raste forma?</div>
-      <div class="ob-sub">Ovo određuje koliko se tempi pooštravaju kroz nedelje — ne koliko ćeš trčati.</div>
+      <div class="ob-sub">Ovo određuje koliko se tempo pooštrava kroz nedelje — ne koliko ćeš trčati.</div>
       <div class="ob-card">
         <div class="ob-ct">Kvalitetnih treninga nedeljno</div>
         <div class="ob-chiprow" id="qualityChips">
@@ -5938,7 +5953,7 @@ function renderOutlook(){
       const diff=agr.sec-d.goal;
       v=`<b>Cilj ${fmtClock(d.goal)} nije realan za ovaj plan.</b> Brži je ${fmtClock(diff)} i od najagresivnijeg scenarija (${fmtClock(agr.sec)}). Realno bi tražio više nedelja ili veći nedeljni obim.`;
     } else if(reach.k===d.rows[0].k){
-      v=`<b>Cilj ${fmtClock(d.goal)} je dostižan i najoprežnijim pristupom</b> (${fmtClock(reach.sec)}). Slobodno ciljaj brže.`;
+      v=`<b>Cilj ${fmtClock(d.goal)} je dostižan i najopreznijim pristupom</b> (${fmtClock(reach.sec)}). Slobodno ciljaj brže.`;
     } else if(reach.k==='agr'){
       v=`<b>Cilj ${fmtClock(d.goal)} je na granici</b> — dostiže ga samo Agresivno (${fmtClock(reach.sec)}), a to je realno uglavnom uz nizak trenažni staž ili paralelan gubitak telesne mase.`;
     } else {
@@ -5950,7 +5965,7 @@ function renderOutlook(){
     }
     h+=`<div class="ob-verdict${!reach?' bad':(reach.k==='agr'?' warn':' good')}">${v}</div>`;
   } else {
-    h+=`<div class="ob-hint">Upiši ciljno vreme ispod pa ću reći koliko je realno.</div>`;
+    h+=`<div class="ob-hint">Upiši ciljno vreme ispod pa ću ti reći koliko je realno.</div>`;
   }
   el.innerHTML=h;
 }
@@ -5970,7 +5985,7 @@ function syncRunDowUI(){
     if(hint) hint.innerHTML='Izabrano <b>'+sel.length+'</b> '+(sel.length===1?'dan':(sel.length<5?'dana':'dana'))+' — plan koristi <b>tačno</b> te dane.';
   }else{
     if(card) card.style.display='';
-    if(hint) hint.innerHTML='Ostavi prazno i plan sam raspoređuje dane. Izaberi konkretne ako imaš fiksne obaveze — tada se koriste <b>tačno ti dani</b>.';
+    if(hint) hint.innerHTML='Ostavi prazno pa plan sam raspoređuje dane. Izaberi konkretne ako imaš fiksne obaveze — tada se koriste <b>tačno ti dani</b>.';
   }
 
   /* LR i kvalitet: samo izabrani dani su dostupni */
@@ -6195,7 +6210,7 @@ function weekSwapHTML(w){
   const moved=w.days.some(x=>!x.test&&S.moves&&S.moves[x.id]!=null);
   const selD=SWAP_SEL?BY_ID[SWAP_SEL]:null;
   let h=`<div class="sh-t">Pomeranje treninga · N${w.w}</div>
-    <div class="sh-s">${selD?`Izabrano: ${dowOf(selD.date)} ${fmtD(selD.date)} — dodirni dan sa kojim menja mesto`:'Dodirni dan koji hoćeš da pomeriš'}</div>`;
+    <div class="sh-s">${selD?`Izabrano: ${dowOf(selD.date)} ${fmtD(selD.date)} — dodirni dan sa kojim će zameniti mesto`:'Dodirni dan koji hoćeš da pomeriš'}</div>`;
   if(SWAP_ERR)h+=`<div style="font-size:.75rem;color:var(--red);margin-bottom:10px">${esc(SWAP_ERR)}</div>`;
   h+=`<div class="swap-list">`;
   days.forEach(d=>{
@@ -6244,20 +6259,20 @@ function renderWeekSwap(w){
 const SESS_GUIDE={
   'Intervali':'Isti tempo na svakom ponavljanju — nemoj da kreneš brže na prvom. Ostani opušten i kontrolisan i kad postane teško.',
   'Repeticije':'Odmaraj se do kraja između ponavljanja — ovo je trening brzine i ekonomije trčanja, ne izdržljivosti na pragu. Trči opušteno, ne na silu.',
-  'Tempo':'"Udobno teško" — kratku rečenicu možeš da izgovoriš, ali razgovor ne. Drži isti napor od početka do kraja i nemoj da kreneš prebrzo.',
+  'Tempo':'„Udobno teško" — kratku rečenicu možeš da izgovoriš, ali razgovor ne. Drži isti napor od početka do kraja i nemoj da kreneš prebrzo.',
   'Tempo isprekidan':'Isti tempo i napor kao kod neprekidnog tempa — kratka pauza je samo predah, ne novi početak. Cilj je da ceo trening deluje kao jedan neprekidan napor.',
   'Fartlek':'Vodi se po naporu, ne po štoperici — ubrzanja su snažan zalet, ne sprint. U lakim delovima se potpuno opusti.',
   'Progresivno (tempo trke)':'Kreni namerno lagano, a poslednju trećinu drži TAČNO na tempu trke — ne brže. Poenta je da naučiš taj tempo na umornim nogama, a ne da testiraš koliko možeš.',
   'Progresivno':'Kreni namerno lagano — svaki sledeći deo treba da bude brži od prethodnog. Najčešća greška je prebrz početak.',
   'Trkački ritam':'Tačno tvoj ciljani tempo trke — ni sekundu brže. Ovde se vežba osećaj za ritam i disciplina, ne koliko možeš.',
-  'Piramida':'Drži isti NAPOR na svakoj deonici, ne isti tempo — kraće deonice prirodno idu brže. Nemoj da kreneš prejako na najkraćoj, da ne "pukneš" na vrhu piramide.',
+  'Piramida':'Drži isti NAPOR na svakoj deonici, ne isti tempo — kraće deonice prirodno idu brže. Nemoj da kreneš prejako na najkraćoj, da ne „pukneš" na vrhu piramide.',
   'Maratonski tempo':'Tačno tvoj ciljani tempo trke — ovo je proba, a ne prilika da guraš jače. Ako je trčanje dovoljno dugo, iskoristi ga i za vežbanje ishrane i hidratacije.',
   '10K tempo (ciljni ritam)':'Tačno tvoj ciljani tempo trke — ovde se vežba disciplina tempa, ne guranje preko njega.',
   'HM tempo (ciljni ritam)':'Tačno tvoj ciljani tempo trke — ovde se vežba disciplina tempa, ne guranje preko njega.',
   'Tempo trke':'Tačno tvoj ciljani tempo polumaratona — ni sekundu brže. Ovde se vežba disciplina tempa i osećaj za njega; pauza je lagano trčanje, ne stajanje.',
   'Kontrolna trka':'Generalna proba: isprobaj opremu, doručak i gorivo tačno kako planiraš na dan trke. Ako trčiš pravu 10K trku, trči je punom snagom; ako je istrčavaš sam, drži tempo polumaratona.',
   'Dugo (LR)':'Ravnomeran, lagan tempo — trebalo bi da možeš da razgovaraš bez zadihanosti. Ako ti poslednji kilometar bude teži od prvog, sledeći put kreni sporije.',
-  'Lako':'Zaista lako — ovo je dan za oporavak, ne za "malo brže jer se osećam dobro". Ako ne možeš da pričaš u punim rečenicama, usporavaj.',
+  'Lako':'Zaista lako — ovo je dan za oporavak, ne za „malo brže jer se osećam dobro". Ako ne možeš da pričaš u punim rečenicama, usporavaj.',
   'Trčanje/hod':'Pauzu za hod uzmi PRE nego što se umoriš, ne kad moraš — u tome je cela poenta. Deo za trčanje drži lagan, hod neka bude živ.',
   'TRKA':'Prvi kilometar drži ciljani tempo i kad ti deluje prelako — najčešća greška je prebrz start. Poslednju trećinu odlučuje ono što si sačuvao na početku.',
   'Test':'Trči kao pravu trku, ali bez pritiska — cilj je tačna procena forme, ne rekord. Isti uslovi (staza, doba dana) daju uporediv rezultat.',
@@ -6384,7 +6399,7 @@ function karticaOporavka(){
   if(!niz.length){
     return `<div class="card"><div class="card-t">Oporavak</div>
       <div class="note-src" style="margin:0">${S.icu&&S.icu.athleteId
-        ? 'Povezano sa intervals.icu, ali još nema zapisa. Klikni „Povuci sada" u Podešavanjima.'
+        ? 'Povezano sa intervals.icu, ali još nema zapisa. Dodirni „Povuci sada" u Podešavanjima.'
         : 'Nije povezano. Podešavanja → Oporavak (intervals.icu) — HRV, puls u miru i san sa Garmina.'}</div></div>`;
   }
   const zadnji=niz[niz.length-1];
@@ -6712,7 +6727,7 @@ function renderKnee(){
       <div style="font-size:.85rem;line-height:1.55;color:var(--txt2)">${esc(prop.message)}</div>
       <div class="note-src" style="margin-top:10px">Menja se ${prop.changes.length} ${prop.changes.length===1?'trening':'treninga'}: ${esc(prop.changes.slice(0,4).map(x=>fmtD(x.date)+' → '+(x.rw?'Run/walk':tagName(x.to))).join(' · '))}${prop.changes.length>4?' …':''}</div>
       <div class="btnrow" style="margin-top:12px"><button class="btn" id="inj-apply">Prilagodi plan</button></div>
-      <div class="note-src" style="margin-top:8px">Svaki dan možeš ručno da vratiš kroz Plan tab.</div>
+      <div class="note-src" style="margin-top:8px">Svaki dan možeš ručno da vratiš u tabu Plan.</div>
     </div>`;
   }
   h+=`<div class="card"><div class="card-t">Mapa tela — dodirni deo koji te boli</div>
@@ -6740,7 +6755,7 @@ function renderKnee(){
   if(ia) ia.onclick=()=>{
     const pr=injuryProposal(TODAY);
     if(!pr) return;
-    if(!confirm('Prilagoditi plan? Menja se '+pr.changes.length+' treninga. Možeš ih ručno vratiti kroz Plan tab.')) return;
+    if(!confirm('Prilagoditi plan? Menja se '+pr.changes.length+' treninga. Možeš ih ručno vratiti u tabu Plan.')) return;
     const n=applyInjuryProposal(pr);
     alert(n+' '+(n===1?'trening prilagođen':'treninga prilagođeno')+'.');
     renderKnee(); renderDanas(); renderPlan();
@@ -6845,13 +6860,13 @@ function renderPred(){
       <div class="card-t" style="color:${vp.brzi?'var(--green)':'var(--amber)'}">${esc(vp.title)}</div>
       <div style="font-size:.85rem;line-height:1.55;color:var(--txt2)">${esc(vp.message)}</div>
       <div class="note-src" style="margin-top:10px">${vp.changes.slice(0,3).map(c=>esc(fmtD(c.date)+' '+c.kind+': '+fm(c.staro)+' → '+fm(c.novo))).join(' · ')}${vp.changes.length>3?' …':''}</div>
-      <div class="btnrow" style="margin-top:12px"><button class="btn" id="vd-apply">Prilagodi tempe</button></div>
+      <div class="btnrow" style="margin-top:12px"><button class="btn" id="vd-apply">Prilagodi tempo</button></div>
       <div class="note-src" style="margin-top:8px">Ručno izmenjeni i odrađeni treninzi se ne diraju. Sve se vraća jednim dugmetom u Podešavanjima.</div>
     </div>`;
   } else if(Object.values(S.alts||{}).some(a=>a&&a.paceAuto)){
     h+=`<div class="card"><div class="card-t">Tempi su prilagođeni tvojoj formi</div>
-      <div style="font-size:.85rem;color:var(--txt2);line-height:1.5">Ciljni tempi preostalih kvalitetnih treninga prate izmereni VDOT, ne polaznu pretpostavku plana.</div>
-      <div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="vd-undo">Vrati planske tempe</button></div>
+      <div style="font-size:.85rem;color:var(--txt2);line-height:1.5">Ciljni tempo preostalih kvalitetnih treninga prati izmereni VDOT, a ne polaznu pretpostavku plana.</div>
+      <div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="vd-undo">Vrati planski tempo</button></div>
     </div>`;
   }
   h+=`<div class="card"><div class="card-t">VDOT trend kroz vreme</div><div id="vdottrend">${chartVdotTrend()}</div>
@@ -6868,7 +6883,7 @@ function renderPred(){
   if(vdA) vdA.onclick=()=>{
     const pr=vdotPredlog(TODAY);
     if(!pr) return;
-    if(!confirm('Prilagoditi ciljne tempe tvojoj formi? Menja se '+pr.changes.length+' treninga. Obim ostaje isti, a sve se vraća dugmetom „Vrati planske tempe".')) return;
+    if(!confirm('Prilagoditi ciljni tempo tvojoj formi? Menja se '+pr.changes.length+' treninga. Obim ostaje isti, a sve se vraća dugmetom „Vrati planski tempo".')) return;
     const n=primeniVdotPredlog(pr);
     alert(n+' '+(n===1?'trening prilagođen':'treninga prilagođeno')+'.');
     renderPred(); if(ACTIVE==='danas')renderDanas();
@@ -6876,7 +6891,7 @@ function renderPred(){
   const vdU=el.querySelector('#vd-undo');
   if(vdU) vdU.onclick=()=>{
     const n=ponistiVdotPrilagodjavanje();
-    alert(n?('Vraćeno na planske tempe ('+n+').'):'Nema šta da se vrati.');
+    alert(n?('Vraćeno na planski tempo ('+n+').'):'Nema šta da se vrati.');
     renderPred(); if(ACTIVE==='danas')renderDanas();
   };
   const tBtn=el.querySelector('#trend-go');
@@ -7211,7 +7226,7 @@ function icuTekstDana(d, pE){
     const mera=icuRazdaljina(ses.qKm); if(!mera) return null;
     sek.push((ses.kind||'Tempo')+'\n'+red('', mera, tempo));
   } else if(ses.type==='int'){
-    sek.push((ses.kind||'Glavni deo')+' '+ses.reps+'x\n'+
+    sek.push((ses.kind||'Radni deo')+' '+ses.reps+'x\n'+
              red('', icuRazdaljina(ses.repM/1000), tempo)+'\n'+
              icuOporavak(ses.kind, ses.restSec));
   } else if(ses.type==='pyramid'){
@@ -7230,7 +7245,7 @@ function icuTekstDana(d, pE){
              red('Lagani deo', icuRazdaljina(lak), icuTempo(ses.easyPaceSec)||lagan)+'\n'+
              red('Završetak', icuRazdaljina(brz), tempo));
   } else return null;
-  if(ses.cdKm>0) sek.push('Smirivanje\n'+red('', icuRazdaljina(ses.cdKm), lagan));
+  if(ses.cdKm>0) sek.push('Hlađenje\n'+red('', icuRazdaljina(ses.cdKm), lagan));
   return sek.join('\n\n');
 }
 /* Prag tempa (T po Danielsu) koji korisnik treba da unese u intervals.icu.
@@ -7712,7 +7727,7 @@ function openSettings(){
   if($('#icu-on')) $('#icu-on').onclick=async()=>{
     const id=($('#icu-id').value||'').trim(), key=($('#icu-key').value||'').trim();
     if(!/^i?\d+$/.test(id)){ alert('ID sportiste izgleda kao broj, npr. i123456.'); return; }
-    if(key.length<8){ alert('API ključ deluje prekratko.'); return; }
+    if(key.length<8){ alert('API ključ deluje prekratak.'); return; }
     const b=$('#icu-on'); b.disabled=true; b.textContent='Proveravam…';
     S.icu={athleteId:id, apiKey:key, lastSync:null};
     const r=await icuSync(14);
@@ -7735,7 +7750,7 @@ function openSettings(){
       (strukt.length?'sa strukturom: '+strukt.length+' ('+strukt.map(e=>fmtDY(e.date)).join(', ')+')'
                     :'nijedan sa strukturom — svi su lagani/dugi dani')+
       '.<br>intervals.icu prosleđuje Garminu otprilike nedelju dana unapred, pa dalji dani stižu kasnije sami.'+
-      (ev.preskoceno?'<br><b>Preskočeno trčećih dana: '+ev.preskoceno+'</b> — za njih nije poznat lagan tempo u sekundama, pa bi na satu izašli bez ciljnog tempa.':'')+
+      (ev.preskoceno?'<br><b>Preskočeno dana trčanja: '+ev.preskoceno+'</b> — za njih nije poznat lagan tempo u sekundama, pa bi na satu izašli bez ciljnog tempa.':'')+
       '</div>'+
       ev.map(e=>'<pre style="white-space:pre-wrap;font-size:12px;line-height:1.45;margin:0 0 10px;padding:8px;'+
         'border-radius:8px;background:rgba(127,127,127,.12);overflow-x:auto">'+
@@ -7755,7 +7770,7 @@ function openSettings(){
     const adrese=(r.j.primaoci||[]);
     if(!adrese.length){ box.innerHTML='<div class="note-src">Nema nijednog naloga.</div>'; return; }
     /* zarezom razdvojeno — tako se lepi pravo u BCC polje */
-    box.innerHTML='<div class="note-src" style="margin:10px 0 6px">'+adrese.length+' adresa · nalepi ih u <b>BCC</b>, ne u „Za", da niko ne vidi tuđe.</div>'+
+    box.innerHTML='<div class="note-src" style="margin:10px 0 6px">'+adrese.length+' '+pl3(adrese.length,'adresa','adrese','adresa')+' · nalepi ih u <b>BCC</b>, ne u „Za", da niko ne vidi tuđe.</div>'+
       '<textarea id="bc-txt" readonly rows="4" style="width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;color:var(--txt);font-size:.78rem;line-height:1.5;resize:vertical">'+esc(adrese.join(', '))+'</textarea>'+
       '<div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="bc-kopiraj">Kopiraj adrese</button></div>';
     if($('#bc-kopiraj')) $('#bc-kopiraj').onclick=async ev=>{
@@ -7785,7 +7800,7 @@ function openSettings(){
     if(!p.ok){ alert(p.error||'Nije uspelo.'); return; }
     const n=p.j.primalaca||0;
     if(!n){ alert('Nema nijednog primaoca.'); return; }
-    if(!confirm('Poslati uputstvo na '+n+' adresa?\n\nMejl se ne može povući. Traje oko '+Math.ceil(n*0.6)+' s — ne zatvaraj aplikaciju.')) return;
+    if(!confirm('Poslati uputstvo na '+n+' '+pl3(n,'adresu','adrese','adresa')+'?\n\nMejl se ne može povući. Traje oko '+Math.ceil(n*0.6)+' s — ne zatvaraj aplikaciju.')) return;
     /* SLANJE IDE U VISE POZIVA. Jedan poziv stane u vremenski limit Vercel
        funkcije (~90 mejlova); server vrati `sledeciOd` i ovde se nastavlja
        odatle. Bez ovoga je slanje na vise od ~90 adresa zavrsavalo prekidom
@@ -7809,7 +7824,7 @@ function openSettings(){
   if($('#icu-push2')) $('#icu-push2').onclick=async e=>{
     const n=icuDaniZaSlanje(14).length;
     if(!n){ alert('Nema treninga u narednih 14 dana.'); return; }
-    if(!confirm('Obrisati '+n+' ranije poslatih treninga i napraviti ih iz početka?\n\nBriše se samo ono što je poslala ova aplikacija — ostalo u kalendaru se ne dira.\n\nOvo je potrebno posle unosa praga tempa: Garmin izvoz se pravi kad događaj nastane, pa obično ažuriranje ne pomaže.')) return;
+    if(!confirm('Obrisati '+n+' '+pl3(n,'ranije poslat trening','ranije poslata treninga','ranije poslatih treninga')+' i napraviti ih iz početka?\n\nBriše se samo ono što je poslala ova aplikacija — ostalo u kalendaru se ne dira.\n\nOvo je potrebno posle unosa praga tempa: Garmin izvoz se pravi kad događaj nastane, pa obično ažuriranje ne pomaže.')) return;
     const b=e.target; b.disabled=true; b.textContent='Šaljem…';
     const r=await icuPosalji(14, true);
     b.textContent=r.ok?('Poslato '+r.n+' ✓'):'Nije uspelo';
@@ -7863,7 +7878,7 @@ function openBugSheet(){
   openSheet(`
     <div class="sh-t">Prijavi problem</div>
     <div class="sh-s">Opiši šta se desilo — stiže direktno na mejl.</div>
-    <textarea id="bug-desc" rows="5" placeholder="Npr. kad kliknem Završi trening na Danas tabu, ništa se ne desi..." style="width:100%;margin-top:10px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--txt);font-size:.9rem;resize:vertical"></textarea>
+    <textarea id="bug-desc" rows="5" placeholder="Npr. kad dodirnem „Završi trening" na tabu Danas, ništa se ne desi…" style="width:100%;margin-top:10px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--txt);font-size:.9rem;resize:vertical"></textarea>
     <div class="note-src" id="bug-err" style="color:var(--red)"></div>
     <div class="btnrow" style="margin-top:10px"><button class="btn" id="bug-send">Pošalji</button></div>
   `);
@@ -8009,7 +8024,7 @@ function importBackup(file){
     try{
       const raw=JSON.parse(fr.result);
       const st=migrate(raw.state||raw);
-      if(!st){alert('Fajl nije prepoznat kao backup ove aplikacije, ili je napravljen u novijoj verziji — ažuriraj aplikaciju pa pokušaj ponovo.');return;}
+      if(!st){alert('Fajl nije prepoznat kao backup ove aplikacije ili je napravljen u novijoj verziji — ažuriraj aplikaciju pa pokušaj ponovo.');return;}
       if(!validanGenPlan(st.genPlan)){
         alert('Backup sadrži oštećen generisan plan, pa nije uvezen — ništa nije promenjeno.\n\nTvoji trenutni podaci su netaknuti.');
         return;
@@ -8231,7 +8246,7 @@ async function stravaSync(manual){
     fixVdotDates(); /* uskladi VDOT datume sa pravim datumima trčanja */
     S.strava.lastSync=Date.now();save();
     renderHeader();PAGES[ACTIVE]();
-    if(manual)alert('Sinhronizacija gotova.\nAžurirano trčanja: '+imp+'\nUpisano tempa u Predikciju: '+props+(moved?'\nAutomatski pomereno (drugi dan od plana): '+moved:''));
+    if(manual)alert('Sinhronizacija gotova.\nAžurirano trčanja: '+imp+'\nUpisano tempa u Predikciju: '+props+(moved?'\nAutomatski pomereno (odrađeno drugog dana nego što plan kaže): '+moved:''));
   }catch(e){
     if(manual)alert('Sync nije uspeo: '+e.message);
   }
@@ -8460,7 +8475,7 @@ async function sbEnsure(){
 }
 
 function sbLogin(){
-  if(!sbOn()){ alert('Supabase nije podesen (SB_URL / SB_ANON u kodu).'); return; }
+  if(!sbOn()){ alert('Supabase nije podešen (SB_URL / SB_ANON u kodu).'); return; }
   const n=sbMakeState();
   /* NAMERNO se ne prosledjuje &state= Supabase-u. Supabase GoTrue koristi taj
      isti naziv parametra INTERNO za sopstvenu CSRF zastitu prema Google-u —
@@ -8619,7 +8634,7 @@ async function sbInit(){
     if(SB.userId && noviClaims.userId && noviClaims.userId!==SB.userId){
       h=null;
       history.replaceState(null,'',location.pathname);
-      alert('Prijava je odbijena: stigao je nalog koji nije onaj sa kog si prijavljen.\n\n'+
+      alert('Prijava je odbijena: prijavio si se nalogom koji nije onaj sa kojim je aplikacija već povezana.\n\n'+
             'Ako želiš da promeniš nalog, prvo se odjavi u Podešavanjima, pa se prijavi ponovo.');
     } else {
       Object.assign(SB,h,noviClaims);
