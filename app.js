@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='166'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='167'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6922,7 +6922,11 @@ function renderPred(){
   const predRaceName=esc(S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K');
   h+=`<div class="card"><div class="card-t">Predikcija ${predRaceName} kroz plan</div><div id="pchart">${chartPred(pc)}</div>
     <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span></div></div>`;
-  h+=`<div class="card info" style="font-size:.85rem;color:var(--txt2);line-height:1.5">🎯 Cilj: ${S.genPlan?esc(goalCtxText()):CILJ+' — margina koja i na lošiji dan iznosi sub-20'}.<br><span style="color:var(--txt3);font-size:.75rem">Predikcija i VDOT se pune iz radnog dela svake kvalitetne sesije — unos je u kartici treninga (Danas / Plan), ne ovde.</span></div>`;
+  /* Kartica „🎯 Cilj … Predikcija i VDOT se pune iz radnog dela…" je UKLONJENA.
+     Ponavljala je cilj koji već stoji kao isprekidana linija na oba grafikona
+     iznad nje, a druga rečenica je bila uputstvo — na ekranu koji se otvara
+     svaki dan, a uputstvo se pročita jednom. Zauzimala je poslednji ekran
+     prostora ne govoreći ništa novo. */
   el.innerHTML=h;
   vezisTacke(el, renderPred);
   const vdA=el.querySelector('#vd-apply');
