@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='165'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='166'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2671,13 +2671,19 @@ function renderPlan(){
 }
 
 /* ---------- SHEET ---------- */
+/* Da li je u listu trenutno BAŠ ekran podešavanja. Stoji uz openSheet, a ne
+   uz osveziPodesavanja — `let` deklarisan niže bio bi u mrtvoj zoni za svaki
+   poziv koji se desi pre nego što se skripta izvrši do kraja. */
+let SET_LIST=false;
 function openSheet(html){
+  SET_LIST=false;   /* svaki drugi list gasi zastavicu; openSettings je posle pali */
   $('#sheet').innerHTML=`<div class="grab"></div>`+html;
   $('#sheet').classList.add('on');$('#backdrop').classList.add('on');
   document.body.style.overflow='hidden';
   $('#sheet').scrollTop=0;
 }
 function closeSheet(){
+  SET_LIST=false;
   $('#sheet').classList.remove('on');$('#backdrop').classList.remove('on');
   document.body.style.overflow='';
   if(AMB_PRE){ ambijent(AMB_PRE); AMB_PRE=null; }   /* svetlo nazad na tab ispod lista */
@@ -7655,6 +7661,31 @@ function chartPred(pc){
 
 /* ---------- PODEŠAVANJA / BACKUP ---------- */
 
+/* PONOVO ISCRTAJ PODEŠAVANJA POSLE RADNJE KOJA MENJA STANJE.
+   Bez ovoga je „Pošalji na sat" radilo, upisivalo `lastPush` i čuvalo — a ekran
+   je i dalje pisao „još nije slato" i vrh je i dalje tvrdio da jedna stvar
+   čeka. Sa kontrolnom tablom je to postalo očigledno: radnja se okine sa vrha,
+   povratna informacija stigne na dugme dole u sklopljenoj sekciji koju čovek
+   i ne gleda, a vrh se ne pomeri. Izgleda kao da slanje nije prošlo.
+   Čuva se koje su sekcije bile otvorene i dokle je skrolovano — inače bi svako
+   osvežavanje vratilo ekran na vrh i sklopilo sve. */
+function osveziPodesavanja(){
+  /* Zastavica, a ne pretraga DOM-a. Rukovalac se može okinuti i kad je u
+     međuvremenu otvoren drugi list (npr. kartica treninga) — tada bi ga
+     osvežavanje zamenilo podešavanjima. Prepoznavanje „po izgledu" je krhko:
+     dovoljno je da neki drugi list sutra dobije isti element i provera laže. */
+  if(!SET_LIST) return;
+  const list=$('#sheet');
+  if(!list||!list.classList.contains('on')) return;
+  const bile=new Set([...list.querySelectorAll('details.set-card[open]')].map(d=>d.dataset.k));
+  const skrol=list.scrollTop;
+  openSettings();
+  const nov=$('#sheet');
+  nov.querySelectorAll('details.set-card').forEach(d=>{ d.open=bile.has(d.dataset.k); });
+  nov.scrollTop=skrol;
+}
+
+
 /* ŠTA ČEKA.
    Podešavanja su do sada bila spisak od sedam sekcija istog ranga — da bi se
    videlo da nešto nije povezano, morala se svaka otvoriti. Ovde se to pitanje
@@ -7699,8 +7730,14 @@ function openSettings(){
     `<summary><span class="dot${ok===true?' on':ok==='warn'?' warn':''}"></span>
       <span class="set-tt"><b>${esc(naslov)}</b><span>${stanje}</span></span></summary>`;
   /* Sekcija koja traži radnju otvara se sama; ono što radi stoji sklopljeno. */
-  const kartica=(otvorena,glavaHTML,telo)=>
-    `<details class="set-card"${otvorena?' open':''}>${glavaHTML}<div class="set-body">${telo}</div></details>`;
+  /* `data-k` je naziv sekcije, izvučen iz zaglavlja — po njemu se posle
+     ponovnog iscrtavanja vraća koje su sekcije bile otvorene. Po REDOSLEDU se
+     ne bi smelo: broj kartica se menja (npr. „Slanje na sat" postoji samo dok
+     je intervals.icu povezan), pa bi se otvorenost preselila na pogrešnu. */
+  const kartica=(otvorena,glavaHTML,telo)=>{
+    const kljuc=(/<b>([^<]*)<\/b>/.exec(glavaHTML)||['',''])[1];
+    return `<details class="set-card" data-k="${esc(kljuc)}"${otvorena?' open':''}>${glavaHTML}<div class="set-body">${telo}</div></details>`;
+  };
 
   /* VRH EKRANA ODGOVARA NA JEDNO PITANJE: je li sve u redu?
      Ako jeste — piše da jeste i tu je kraj. Ako nije — imenuje PRVU stvar koja
@@ -7814,7 +7851,8 @@ function openSettings(){
 
     <div class="note-src" style="margin-top:16px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_SUB-19_5K_v5.xlsx · trka 24.09.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
   `);
-  $('#s-exp').onclick=exportBackup;
+  SET_LIST=true;
+  $('#s-exp').onclick=()=>{ exportBackup(); setTimeout(osveziPodesavanja,300); };
   if($('#s-bug')) $('#s-bug').onclick=openBugSheet;
   if($('#sb-in'))   $('#sb-in').onclick=sbLogin;
   if($('#sb-out'))  $('#sb-out').onclick=()=>{ if(confirm('Odjaviti se? Podaci na ovom uređaju ostaju.')){ sbLogout(); closeSheet(); } };
@@ -7822,7 +7860,8 @@ function openSettings(){
     const b=e.target; b.disabled=true; b.textContent='Sinhronizujem…';
     const ok=await sbPush();
     b.textContent=ok?'Sinhronizovano ✓':'Nije uspelo';
-    setTimeout(()=>{ b.disabled=false; b.textContent='Sinhronizuj sada'; },1800);
+    if(ok) setTimeout(osveziPodesavanja,900);
+    else setTimeout(()=>{ b.disabled=false; b.textContent='Sinhronizuj sada'; },1800);
   };
   $('#s-imp').onclick=()=>$('#s-file').click();
   $('#s-file').onchange=e=>importBackup(e.target.files[0]);
@@ -7939,7 +7978,8 @@ function openSettings(){
     const r=await icuPosalji(14, true);
     b.textContent=r.ok?('Poslato '+r.n+' ✓'):'Nije uspelo';
     if(!r.ok) alert(r.error||'Nije uspelo.');
-    setTimeout(()=>{ b.disabled=false; b.textContent='♻️ Obriši i pošalji iz početka'; },2200);
+    if(r.ok) setTimeout(osveziPodesavanja,900);
+    else setTimeout(()=>{ b.disabled=false; b.textContent='♻️ Obriši i pošalji iz početka'; },2200);
   };
   if($('#icu-push')) $('#icu-push').onclick=async e=>{
     const n=icuDaniZaSlanje(14).length;
@@ -7949,7 +7989,10 @@ function openSettings(){
     const r=await icuPosalji(14);
     b.textContent=r.ok?('Poslato '+r.n+' ✓'):'Nije uspelo';
     if(!r.ok&&r.error) setTimeout(()=>alert(r.error),100);
-    setTimeout(()=>{ b.disabled=false; b.textContent='📤 Pošalji treninge na sat (14 dana)'; },2200);
+    /* Kratko odlaganje da se „Poslato ✓" vidi, pa tek onda ponovo iscrtaj —
+       posle toga i vrh ekrana i red sekcije govore isto. */
+    if(r.ok) setTimeout(osveziPodesavanja,900);
+    else setTimeout(()=>{ b.disabled=false; b.textContent='📤 Pošalji treninge na sat (14 dana)'; },2200);
   };
   if($('#icu-off')) $('#icu-off').onclick=()=>{ if(confirm('Otkačiti intervals.icu? Već povučeni podaci ostaju.')){ S.icu=null; save(); closeSheet(); } };
   if($('#icu-sync')) $('#icu-sync').onclick=async e=>{
@@ -7957,7 +8000,9 @@ function openSettings(){
     const r=await icuSync(120);
     b.textContent=r.ok?('Povučeno '+r.n+' ✓'):'Nije uspelo';
     if(!r.ok&&r.error) setTimeout(()=>alert(r.error),100);
-    setTimeout(()=>{ b.disabled=false; b.textContent='Povuci sada'; save(); },1500);
+    save();
+    if(r.ok) setTimeout(osveziPodesavanja,900);
+    else setTimeout(()=>{ b.disabled=false; b.textContent='Povuci sada'; },1500);
   };
   const so=$('#st-on'),ss=$('#st-sync'),sf=$('#st-off');
   if(so)so.onclick=stravaConnect;

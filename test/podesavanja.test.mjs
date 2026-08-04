@@ -26,8 +26,10 @@ function sa(opt = {}) {
   a.call('openSettings');
   return { a, html: a.evalIn('$("#sheet").innerHTML') || '' };
 }
-const kartice = h => [...h.matchAll(/<details class="set-card"( open)?>[\s\S]*?<b>([^<]*)<\/b><span>([^<]*)<\/span>/g)]
-  .map(m => ({ otvorena: !!m[1], naslov: m[2], stanje: m[3] }));
+/* `data-k` nosi naziv sekcije — po njemu se posle ponovnog iscrtavanja vraća
+   koje su bile otvorene, pa stoji između klase i `open`. */
+const kartice = h => [...h.matchAll(/<details class="set-card"[^>]*?data-k="([^"]*)"( open)?>[\s\S]*?<span>([^<]*)<\/span>/g)]
+  .map(m => ({ otvorena: !!m[2], naslov: m[1], stanje: m[3] }));
 
 describe('Struktura', () => {
   test('svaka sekcija je zasebna kartica', () => {
@@ -184,5 +186,59 @@ describe('Ništa nije izgubljeno pri preuređenju', () => {
     assert.ok(html.includes('Verzija ' + a.get('APP_VERSION')));
     assert.match(html, /uputstvo\.html/);
     assert.match(html, /privacy\.html/);
+  });
+});
+
+/* OSVEŽAVANJE POSLE RADNJE.
+
+   Prijava iz upotrebe: „pošaljem treninge na sat, ne registruje da su poslati".
+   Slanje je radilo — `lastPush` se upisivao i čuvao — ali ekran se nije iznova
+   iscrtavao, pa je red i dalje pisao „još nije slato", a kontrolna tabla je i
+   dalje tvrdila da jedna stvar čeka. Sa rasporedom D je to postalo očigledno:
+   radnja se okine sa vrha, povratna informacija stigne na dugme u sklopljenoj
+   sekciji koju čovek i ne gleda, a vrh se ne pomeri. */
+describe('Ekran prati stanje posle radnje', () => {
+
+  test('kad je poslato na sat, vrh više ne traži tu radnju', () => {
+    /* Mora se meriti SAMO vrh. „Pošalji na sat" stoji i kao dugme unutar
+       sekcije — provera nad celim HTML-om bi ga tamo našla i uvek padala. */
+    const vrh = h => (/<div class="set-hero">([\s\S]*?)<div class="set-sub">/.exec(h) || [, ''])[1];
+
+    const bez = sa({ prijavljen: true, strava: true, icu: true, backup: true });
+    assert.match(vrh(bez.html), /Pošalji na sat/, 'pre slanja vrh ne nudi tu radnju');
+
+    const posle = sa({ prijavljen: true, strava: true, icu: true, push: true, backup: true });
+    assert.doesNotMatch(vrh(posle.html), /Pošalji na sat/, 'posle slanja vrh i dalje traži slanje');
+    assert.match(vrh(posle.html), /Sve je povezano/);
+  });
+
+  test('red sekcije pokazuje datum poslednjeg slanja, ne „još nije slato"', () => {
+    const { html } = sa({ prijavljen: true, icu: true, push: true });
+    const red = kartice(html).find(k => k.naslov === 'Slanje na sat');
+    assert.ok(red, 'nema sekcije za slanje na sat');
+    assert.doesNotMatch(red.stanje, /još nije slato/);
+    assert.match(red.stanje, /poslednje/);
+  });
+
+  test('svaka kartica nosi svoj ključ, i ključevi su jedinstveni', () => {
+    /* Po njemu se vraća otvorenost. Da se vraćala po REDOSLEDU, promena broja
+       kartica (npr. „Slanje na sat" nestane kad se otkači intervals.icu) bi je
+       preselila na pogrešnu sekciju. */
+    const { html } = sa({ prijavljen: true, vlasnik: true, strava: true, icu: true });
+    const kljucevi = [...html.matchAll(/data-k="([^"]*)"/g)].map(m => m[1]);
+    assert.ok(kljucevi.length >= 6, `premalo ključeva: ${kljucevi.length}`);
+    assert.equal(new Set(kljucevi).size, kljucevi.length, `duplirani ključ: ${kljucevi.join(', ')}`);
+    assert.ok(!kljucevi.some(k => !k), 'postoji kartica bez ključa');
+  });
+
+  test('osveziPodesavanja ne dira tuđi list', () => {
+    /* Poziva se iz rukovalaca koji mogu da se okinu i kad je u međuvremenu
+       otvoren neki drugi list — tada ne sme da ga zameni podešavanjima. */
+    const a = loadApp();
+    a.call('openSheet', '<div class="sh-t">Nešto drugo</div>');
+    a.evalIn(`$('#sheet').classList.add('on')`);
+    a.call('osveziPodesavanja');
+    assert.match(a.evalIn(`$('#sheet').innerHTML`), /Nešto drugo/,
+      'osveziPodesavanja je pregazio drugi list');
   });
 });
