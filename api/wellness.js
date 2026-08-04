@@ -40,9 +40,46 @@ async function requireUser(req) {
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
-    return { ok: true, userId: u.id };
+    /* token se vraca da bi se limit poziva brojao U IME KORISNIKA — RPC
+       koristi auth.uid(), pa bez korisnikovog tokena ne zna ko zove. */
+    return { ok: true, userId: u.id, token: m[1] };
   } catch (e) {
     return { ok: false, status: 503, error: 'Provera prijave trenutno nije moguća.' };
+  }
+}
+
+/* Dnevni limit poziva po korisniku — ista atomska Postgres funkcija za sve
+   endpointe (v. supabase/rate-limit.sql), razlikuje ih `p_endpoint`.
+
+   ZASTO JE OVO POTREBNO: oba intervals.icu endpointa idu kroz nas server, a
+   prijava je otvorena svakome sa Google nalogom. Bez limita jedan prijavljen
+   korisnik moze u petlji da gadja intervals.icu SA NASE IP ADRESE, a
+   posledice (blokada, zalba) snosi vlasnik aplikacije.
+
+   PROPUSTA KAD BAZA NE ODGOVARA — i to namerno: SQL mozda jos nije pusten, a
+   ni mrezni prekid ka Supabase-u ne sme da obori sinhronizaciju sa satom.
+   ALI SE VIDI U LOGOVIMA: limit koji tiho otkaze izgleda isto kao limit koji
+   radi, pa bi mesecima mogao da ne postoji a da se ne primeti. */
+async function limitPrekoracen(token, endpoint, limit) {
+  try {
+    const r = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
+      method: 'POST',
+      headers: {
+        apikey: process.env.SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_endpoint: endpoint, p_limit: limit })
+    });
+    if (r.ok) return false;
+    const telo = await r.text();
+    if (telo.includes('DAILY_LIMIT_EXCEEDED')) return true;
+    console.warn('[limit] brojac nije radio (%s) — propusteno bez brojanja. HTTP %s: %s',
+      endpoint, r.status, telo.slice(0, 200));
+    return false;
+  } catch (e) {
+    console.warn('[limit] brojac nedostupan (%s) — propusteno bez brojanja: %s', endpoint, e.message);
+    return false;
   }
 }
 
@@ -98,6 +135,15 @@ export default async function handler(req, res) {
 
   const auth = await requireUser(req);
   if (!auth.ok) { res.status(auth.status).json({ error: auth.error }); return; }
+
+  /* 100/dan je namerno velikodusno: normalna upotreba je 1 automatsko
+     povlacenje dnevno (`S.icu.autoDan` ga cuva) plus po koji rucni klik na
+     "Povuci sada". Sto puta se ne dodje slucajno — samo skriptom. */
+  const DNEVNI_LIMIT = 100;
+  if (await limitPrekoracen(auth.token, 'wellness', DNEVNI_LIMIT)) {
+    res.status(429).json({ error: 'Dnevni limit povlačenja sa intervals.icu (' + DNEVNI_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
+    return;
+  }
 
   let body;
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }

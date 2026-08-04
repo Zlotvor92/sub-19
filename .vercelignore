@@ -1,3 +1,6 @@
 # Testovi i CI ne idu u deploy — nisu deo aplikacije.
 test/
 .github/
+# SQL se pušta rukom u Supabase SQL Editoru. Nema tajni u njemu, ali nema ni
+# razloga da stoji na javnoj adresi (/supabase/rate-limit.sql).
+supabase/

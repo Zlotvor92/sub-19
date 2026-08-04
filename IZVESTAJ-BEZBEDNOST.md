@@ -5,12 +5,14 @@
 **Metod:** ofanzivni — svaki nalaz je **izveden napad**, ne teorijska primedba
 **Testovi:** 110 → **149** (39 novih, svi bezbednosni)
 
-> **Dopuna, verzija 150 · 195 testova.** Izveštaj je pisan na v141 i tekst ispod opisuje stanje u tom trenutku. Od tada su zatvorene još tri stvari, pa su odgovarajući odeljci ispod označeni: **ZATVORENO**.
+> **Dopuna, verzija 151 · 212 testova.** Izveštaj je pisan na v141 i tekst ispod opisuje stanje u tom trenutku. Od tada su zatvorene još četiri stvari, pa su odgovarajući odeljci ispod označeni: **ZATVORENO**.
 > 1. **`unsafe-inline` u CSP** — kod je izdvojen u `app.js`, `script-src` je sada `'self'`. Ubačena skripta se više ne izvršava ni ako provera unosa propusti. (v. „Ostaje otvoreno / 3")
 > 2. **`ADMIN_EMAIL` u javnom kodu** — zamenjen poređenjem po Supabase ID-u naloga. (v. „Ostaje otvoreno / 2")
 > 3. **Lični plan i istorija vlasnika** — više se ne isporučuju u kodu i ne stižu ni do jednog drugog naloga; `uskladiVlasnickePodatke()` ih uklanja i pri pokretanju i posle povlačenja sa servera.
 >
-> I dalje otvoreno: rate-limit na `/api/wellness` i `/api/workouts` (traži novu Supabase tabelu — tvoja strana).
+> 4. **Rate-limit na `/api/wellness` i `/api/workouts`** — zatvoreno u v151. SQL za Supabase je u `supabase/rate-limit.sql`; treba ga jednom pustiti u SQL Editoru. (v. „Ostaje otvoreno / 4")
+>
+> Ništa više nije otvoreno.
 
 ---
 
@@ -225,9 +227,37 @@ Ovo je **druga, nezavisna linija odbrane**. Prva (provera i escapovanje unosa) i
 
 Uslov se čuva testovima: `script-src` ne sme sadržati `'unsafe-inline'`; nijedna od tri HTML stranice ne sme imati `<script>` sa telom, `on*=` atribut ni `javascript:` URL; `index.html` mora učitavati `./app.js`; `app.js` mora biti u `ASSETS` u `sw.js` (inače bi se logika servirala iz starog keša).
 
-### 4. Nema rate-limita na `/api/wellness` i `/api/workouts`
+### 4. ~~Nema rate-limita na `/api/wellness` i `/api/workouts`~~ — ZATVORENO u v151
 
-Prijavljen korisnik može kroz tvoj server neograničeno gađati intervals.icu (tvoja IP adresa nosi posledice). Traži novu Supabase RPC funkciju i tabelu — dakle izmenu na tvojoj strani, pa nisam dirao.
+Oba endpointa idu kroz naš server ka intervals.icu, a prijava je otvorena svakome sa Google nalogom. Bez limita je jedan prijavljen korisnik mogao u petlji da gađa intervals.icu **sa naše IP adrese** — posledice (blokada, žalba) snosi vlasnik aplikacije, ne on.
+
+Traži novu tabelu u Supabase-u, pa je SQL u repozitorijumu: **`supabase/rate-limit.sql`**. Supabase → SQL Editor → nalepi ceo fajl → Run.
+
+Limiti: `wellness` **100/dan**, `workouts` **40/dan** — po korisniku. Normalna upotreba je 1–5 poziva dnevno.
+
+**Jedna tabela za sve endpointe**, naziv endpointa je obična kolona. Prve dve (`api_usage`, `bug_report_usage`) su rađene svaka za sebe, pa je svaki novi endpoint tražio novu tabelu, funkciju i dozvolu. Sledeći endpoint sada ne traži nikakvu izmenu u bazi.
+
+**Provereno na pravom Postgresu** (16.13, lokalno; stubovani su samo `auth.users` i `auth.uid()`, koje inače daje Supabase):
+
+| Provera | Ishod |
+|---|---|
+| 40 **istovremenih** poziva, limit 10 | prošlo tačno 10, dodeljeni brojevi 1–10 bez ijednog duplikata |
+| Brojač posle prekoračenja | stao na 10 — izuzetak poništava uvećanje, ne raste u nedogled |
+| Prijavljen korisnik čita svoj brojač | `permission denied` |
+| Prijavljen korisnik ga vraća na nulu | `permission denied` |
+| Prijavljen korisnik ga briše | `permission denied` |
+| `anon` zove funkciju | `permission denied for function` |
+| Poziv bez tokena (`auth.uid()` je null) | `NOT_AUTHENTICATED` — ne prolazi kao „0 poziva" |
+| Nasumičan naziv endpointa (zaobilazak kroz nov red) | `BAD_ENDPOINT` |
+| Drugi korisnik / drugi endpoint | svoj brojač, nije potrošen |
+| Redovi stariji od 30 dana | sami se brišu, bez `pg_cron`-a |
+| Puštanje skripte dvaput | prolazi (`if not exists` / `create or replace`) |
+
+Zašto to drži pod paralelnim zahtevima: uvećanje i provera su **jedna** naredba (`insert … on conflict do update … returning`), pa drugi zahtev čeka na zaključan red i dobija već uvećan broj. „Pročitaj pa upiši" iz koda bi pustilo oba.
+
+Zašto korisnik ne može do brojača: RLS je uključen, a politika **namerno nema nijedne** — ko sme da menja svoj brojač, sme i da ga vrati na nulu. Piše isključivo funkcija, kao `SECURITY DEFINER` sa zaključanim `search_path`.
+
+**Dok SQL ne pustiš, ništa se ne kvari:** brojač koji ne odgovara propušta zahtev i upisuje upozorenje u Vercel logove (`[limit] brojac nije radio …`). Isto važi i za mrežni prekid ka Supabase-u — sinhronizacija sa satom ne sme da padne zbog brojača. Ali se **vidi**, jer limit koji tiho otkaže izgleda isto kao limit koji radi.
 
 ### 5. `ICU_REDIRECT_URI` — postavljeno, uz sitnu napomenu
 
@@ -263,5 +293,5 @@ git show 0dfed1b~1:index.html | sed -n '590,8640p' | diff - app.js
 ## Provera
 
 ```bash
-node --test "test/**/*.test.mjs"     # 195 testova
+node --test "test/**/*.test.mjs"     # 212 testova
 ```

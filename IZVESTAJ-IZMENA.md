@@ -380,7 +380,7 @@ Dve greške koje sam sâm napravio i uhvatio testovima:
 | ~~**`ADMIN_EMAIL` u javnom kodu**~~ | **Urađeno.** Poslao si `userId`; prepoznavanje vlasnika ide preko `ADMIN_UID`, adrese više nema u klijentskom kodu. |
 | ~~**Deljenje `index.html` (469 KB) na module**~~ | **Urađeno u v150, ali kao razdvajanje u DVA fajla, ne kao moduli.** Kod je izdvojen u `app.js` (obična skripta, ne ES modul), pa build koraka i dalje nema — deploy preko GitHub web editora radi isto. Razlog nije bila veličina nego CSP: tek kad ništa izvršno nije inline, `script-src` sme da bude `'self'`. |
 | **`sw.js` network-first za 460 KB `app.js`** | I dalje stoji, samo se sada tiče `app.js` umesto `index.html`. Podela na dva fajla je ovde donela pola koraka: `index.html` je pao sa 469 KB na 37 KB, pa je omotač sada jeftin, ali logika (460 KB) se i dalje povlači sa mreže pri svakom pokretanju kad ima veze. Pravo rešenje je heširano ime fajla + dugotrajan keš, što traži build korak. |
-| **Rate-limit na `/api/wellness` i `/api/workouts`** | Traži novu Supabase RPC funkciju i tabelu — dakle izmenu na tvojoj strani, a rekao si da to ne diram. Rizik je nizak (potrebna je prijava). |
+| ~~**Rate-limit na `/api/wellness` i `/api/workouts`**~~ | **Urađeno u v151.** SQL je u `supabase/rate-limit.sql` — pustiš ga jednom u Supabase SQL Editoru. Dok ga ne pustiš, ništa se ne kvari: brojač koji ne odgovara propušta zahtev i upisuje upozorenje u Vercel logove. |
 | ~~**`ICU_REDIRECT_URI`**~~ | **Postavio si ga.** Ostaje samo kozmetička primedba: dodat je i za Preview, gde adresa nije produkcijska. Bez posledica ako ne testiraš OAuth na preview deploy-ovima. |
 
 ---
@@ -388,7 +388,7 @@ Dve greške koje sam sâm napravio i uhvatio testovima:
 ## Kako proveriti
 
 ```bash
-node --test "test/**/*.test.mjs"     # 195 testova
+node --test "test/**/*.test.mjs"     # 212 testova
 npm test --prefix test               # isto
 ```
 
@@ -417,9 +417,10 @@ Izveštaj iznad opisuje stanje na v140. Ukratko, po redu:
 | 146–147 | Lični plan i istorija izbačeni iz isporučenog koda; `uskladiVlasnickePodatke()` ih uklanja iz tuđeg `localStorage`-a |
 | 148 | Popravljen harness koji je **lažno prolazio** testove (`querySelector` je vraćao nov element pri svakom pozivu, pa su bezbednosne provere čitale prazan string). Odmah je otkrio stvarni XSS kroz VDOT zapise. |
 | 149 | `sbPull()` je vraćao tuđi seed sa servera; tuđe beleške o kolenu su ostajale čim postoji generisan plan |
-| **150** | **Kod izdvojen u `app.js`, CSP `script-src` sada `'self'` — bez `'unsafe-inline'`** |
+| 150 | Kod izdvojen u `app.js`, CSP `script-src` sada `'self'` — bez `'unsafe-inline'` |
+| **151** | **Dnevni limit na `/api/wellness` (100) i `/api/workouts` (40)** — `supabase/rate-limit.sql` |
 
-**Testovi: 110 → 195.**
+**Testovi: 110 → 212.**
 
 **Lični plan posle svega: nepromenjen** — 14 nedelja, 533,7 km, 72 treninga, VDOT 48,1 → 51,3, PRED 25, QS 24, cilj 19:20–19:30. Za v150 je to provereno i bajt po bajt:
 
@@ -428,4 +429,8 @@ git show 0dfed1b~1:index.html | sed -n '590,8640p' | diff - app.js
 # jedina razlika: APP_VERSION 149 -> 150
 ```
 
-**Vercel / Supabase / Resend: i dalje ništa ne treba menjati.** `app.js` je običan statički fajl pored `index.html`; nema build koraka, nema nove env varijable, nema izmene u Supabase podešavanjima.
+**Vercel: ništa ne treba menjati.** `app.js` je običan statički fajl pored `index.html`; nema build koraka, nema nove env varijable.
+
+**Supabase: jedna stvar, jednom.** `supabase/rate-limit.sql` → SQL Editor → Run. To je jedini korak koji traži tebe. Ne dira postojeće tabele (`user_state`, `api_usage`, `bug_report_usage`), ne dira nijednu env varijablu, i puštanje dvaput je bezbedno.
+
+**Resend: ništa ne treba menjati.**

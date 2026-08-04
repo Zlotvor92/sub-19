@@ -6,6 +6,9 @@
 
 import { test, describe, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { ROOT } from './harness.mjs';
 
 const ENV = {
   SUPABASE_URL: 'https://x.supabase.co',
@@ -145,6 +148,7 @@ describe('/api/workouts — brisanje pre ponovnog slanja', () => {
     globalThis.fetch = async (url, opt) => {
       const u = String(url);
       if (u.includes('/auth/v1/user')) return jsonRes({ id: 'u1' });
+      if (u.includes('/rpc/check_and_bump_endpoint')) return jsonRes(1);
       if (u.includes('/events?')) {
         return jsonRes(Array.from({ length: 40 }, (_, i) => ({ id: i + 1, external_id: 'sub19-g1d' + i })));
       }
@@ -178,6 +182,7 @@ describe('/api/workouts — brisanje pre ponovnog slanja', () => {
     globalThis.fetch = async (url, opt) => {
       const u = String(url);
       if (u.includes('/auth/v1/user')) return jsonRes({ id: 'u1' });
+      if (u.includes('/rpc/check_and_bump_endpoint')) return jsonRes(1);
       if (u.includes('/events?')) return jsonRes([
         { id: 1, external_id: 'sub19-g1d1' },
         { id: 2, external_id: 'tudje-nesto' },
@@ -271,4 +276,145 @@ describe('Sve api/ putanje traže prijavu ili tajnu', () => {
         `/api/${p} je vratio ${res.code} umesto 401 (dobijeno: ${JSON.stringify(res.body)})`);
     });
   }
+});
+
+/* ==================================================================
+   Dnevni limit na intervals.icu endpointima
+
+   Oba idu kroz naš server ka trećoj strani, a prijava je otvorena svakome
+   sa Google nalogom — bez limita jedan korisnik može u petlji da gađa
+   intervals.icu sa NAŠE IP adrese. Sama logika brojanja je u Postgresu
+   (supabase/rate-limit.sql); ovde se proverava ono što je na serveru:
+   da se limit uopšte pita, da se pita PRE poziva ka intervals.icu, i da
+   otkaz brojača ne obori funkciju.
+   ================================================================== */
+describe('Dnevni limit — /api/wellness i /api/workouts', () => {
+  const zahtev = {
+    wellness: { athleteId: 'i123', token: 'tttttttttttt', oldest: '2026-07-01', newest: '2026-07-10' },
+    workouts: { athleteId: 'i123', token: 'tttttttttttt', rezim: 'azuriraj',
+                events: [{ date: '2026-07-01', externalId: 'sub19-g1d1', name: 'Lako', description: '- 5km' }] }
+  };
+
+  /* Lažni server: beleži redosled poziva i pušta RPC da odgovori kako test traži. */
+  function stub(rpcOdgovor) {
+    const redosled = [];
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) { redosled.push('auth'); return jsonRes({ id: 'u1' }); }
+      if (u.includes('/rpc/check_and_bump_endpoint')) {
+        redosled.push('limit');
+        return rpcOdgovor(opt ? JSON.parse(opt.body) : {});
+      }
+      if (u.includes('intervals.icu')) {
+        redosled.push('icu');
+        return u.includes('/events') && opt && opt.method !== 'GET' ? jsonRes([{ id: 1 }]) : jsonRes([]);
+      }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    return redosled;
+  }
+
+  for (const put of ['wellness', 'workouts']) {
+    test(`/api/${put} vraća 429 kad je limit potrošen`, async () => {
+      const { default: handler } = await import(`../api/${put}.js?t=` + Date.now());
+      const redosled = stub(() => jsonRes({ message: 'DAILY_LIMIT_EXCEEDED' }, false, 400));
+      const res = makeRes();
+      await handler({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: zahtev[put] }, res);
+      assert.equal(res.code, 429, JSON.stringify(res.body));
+      assert.match(String(res.body.error), /limit/i);
+      assert.ok(!redosled.includes('icu'),
+        'poziv ka intervals.icu je otišao IPAK — limit tada ne štiti ništa');
+    });
+
+    test(`/api/${put} pita limit PRE nego što pozove intervals.icu`, async () => {
+      const { default: handler } = await import(`../api/${put}.js?t=` + Date.now());
+      const redosled = stub(() => jsonRes(1));
+      const res = makeRes();
+      await handler({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: zahtev[put] }, res);
+      assert.equal(res.code, 200, JSON.stringify(res.body));
+      assert.ok(redosled.indexOf('limit') > -1, 'limit se uopšte ne pita');
+      assert.ok(redosled.indexOf('limit') < redosled.indexOf('icu'),
+        `redosled je ${redosled.join(' -> ')} — brojanje posle poziva ne sprečava ništa`);
+    });
+
+    test(`/api/${put} šalje svoje ime i svoj limit`, async () => {
+      const { default: handler } = await import(`../api/${put}.js?t=` + Date.now());
+      let telo = null;
+      stub(b => { telo = b; return jsonRes(1); });
+      await handler({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: zahtev[put] }, makeRes());
+      assert.equal(telo.p_endpoint, put, 'endpoint se ne razlikuje — brojači bi se mešali');
+      assert.ok(Number.isInteger(telo.p_limit) && telo.p_limit > 0, `p_limit = ${telo.p_limit}`);
+    });
+
+    test(`/api/${put} radi i kad brojač otkaže (SQL možda još nije pušten)`, async () => {
+      const { default: handler } = await import(`../api/${put}.js?t=` + Date.now());
+      const redosled = stub(() => jsonRes({ message: 'relation does not exist' }, false, 404));
+      const res = makeRes();
+      await handler({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: zahtev[put] }, res);
+      assert.equal(res.code, 200, `otkaz brojača je oborio /api/${put}: ${JSON.stringify(res.body)}`);
+      assert.ok(redosled.includes('icu'), 'zahtev nije prošao dalje');
+    });
+  }
+});
+
+describe('supabase/rate-limit.sql — ono što se ne sme izgubiti pri izmeni', () => {
+  const sql = readFileSync(join(ROOT, 'supabase', 'rate-limit.sql'), 'utf8');
+  const bezKomentara = sql.replace(/^\s*--.*$/gm, '');
+
+  test('tabela ima RLS i NIJEDNU politiku', () => {
+    /* Politika bi značila da korisnik sme sam do svog brojača — a ko sme da
+       ga menja, sme i da ga vrati na nulu. */
+    assert.match(bezKomentara, /enable row level security/i, 'RLS nije uključen');
+    assert.ok(!/create\s+policy/i.test(bezKomentara), 'dodata je politika — brojač postaje dostupan korisniku');
+  });
+
+  test('funkcija je SECURITY DEFINER sa zaključanim search_path', () => {
+    assert.match(bezKomentara, /security\s+definer/i);
+    assert.match(bezKomentara, /set\s+search_path\s*=/i,
+      'bez fiksnog search_path SECURITY DEFINER funkcija je vektor za podmetanje tabele');
+  });
+
+  test('uvećanje i provera su JEDNA naredba (inače se limit zaobilazi paralelnim pozivima)', () => {
+    assert.match(bezKomentara, /on conflict[\s\S]{0,200}do update[\s\S]{0,200}returning/i);
+  });
+
+  test('EXECUTE se prvo skida svima, pa daje samo prijavljenima', () => {
+    const revoke = bezKomentara.search(/revoke all on function/i);
+    const grant = bezKomentara.search(/grant execute on function[\s\S]*?to authenticated/i);
+    assert.ok(revoke > -1, 'nema revoke — Postgres podrazumevano daje EXECUTE svima');
+    assert.ok(grant > -1, 'nema grant za authenticated');
+    assert.ok(revoke < grant, 'revoke ide PRE grant-a, inače skida i ono što je upravo dato');
+    assert.ok(!/to\s+anon/i.test(bezKomentara.slice(grant, grant + 120)), 'anon sme da zove funkciju');
+  });
+
+  test('prazna prijava se ne broji kao nula poziva', () => {
+    assert.match(bezKomentara, /v_user is null[\s\S]{0,120}raise exception/i);
+  });
+
+  test('naziv endpointa je ograničen (inače nasumičan naziv = uvek nov brojač)', () => {
+    assert.match(bezKomentara, /p_endpoint[\s\S]{0,80}~[\s\S]{0,40}\^\[a-z0-9_-\]/);
+  });
+
+  test('imena endpointa iz koda odgovaraju dozvoljenom obliku', () => {
+    const oblik = /^[a-z0-9_-]{1,40}$/;
+    for (const p of ['wellness', 'workouts']) {
+      const izvor = readFileSync(join(ROOT, 'api', p + '.js'), 'utf8');
+      const m = /limitPrekoracen\(auth\.token,\s*'([^']+)'/.exec(izvor);
+      assert.ok(m, `api/${p}.js ne poziva limitPrekoracen`);
+      assert.match(m[1], oblik, `naziv "${m[1]}" bi funkcija odbila`);
+    }
+  });
+
+  test('postojeći brojači se ne diraju', () => {
+    /* api_usage i bug_report_usage su odvojeni namerno: trošenje AI analiza
+       ne sme da blokira povlačenje podataka sa sata. */
+    assert.ok(!/\bapi_usage\b/.test(bezKomentara), 'skripta dira api_usage');
+    assert.ok(!/\bbug_report_usage\b/.test(bezKomentara), 'skripta dira bug_report_usage');
+    assert.ok(!/drop\s+(table|function)/i.test(bezKomentara), 'skripta nešto briše');
+  });
+
+  test('ponovno puštanje ne puca', () => {
+    assert.match(bezKomentara, /create table if not exists/i);
+    assert.match(bezKomentara, /create or replace function/i);
+  });
 });
