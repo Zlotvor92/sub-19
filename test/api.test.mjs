@@ -417,4 +417,17 @@ describe('supabase/rate-limit.sql — ono što se ne sme izgubiti pri izmeni', (
     assert.match(bezKomentara, /create table if not exists/i);
     assert.match(bezKomentara, /create or replace function/i);
   });
+
+  test('skripta NE sadrži poziv funkcije — poništio bi ceo batch', () => {
+    /* SQL Editor pušta sve nalepljeno kao JEDNU transakciju. Funkcija baca
+       NOT_AUTHENTICATED kad nema prijavljenog korisnika, a u SQL Editoru je
+       auth.uid() uvek null — greška bi poništila i `create table` i
+       `create function` iznad. Poruka pritom izgleda kao uspešna provera, pa
+       se ne primeti da u bazi nema ničega. Ovo se već desilo jednom. */
+    const izvrsni = bezKomentara
+      .split(/\n/)
+      .filter(r => /select\s+public\.check_and_bump_endpoint/i.test(r));
+    assert.deepEqual(izvrsni, [],
+      'skripta poziva check_and_bump_endpoint van komentara: ' + izvrsni.join(' | '));
+  });
 });

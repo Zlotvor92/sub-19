@@ -125,15 +125,31 @@ grant execute on function public.check_and_bump_endpoint(text, integer) to authe
 revoke all on table public.endpoint_usage from anon, authenticated;
 
 -- =====================================================================
--- PROVERA DA RADI (opciono, u istom SQL Editoru)
+-- PROVERA DA JE PUŠTENO
 --
---   select public.check_and_bump_endpoint('test', 2);   -- 1
---   select public.check_and_bump_endpoint('test', 2);   -- 2
---   select public.check_and_bump_endpoint('test', 2);   -- greška DAILY_LIMIT_EXCEEDED
+-- Pusti OVO, u ZASEBNOM pokretanju (obriši sve iz editora pa nalepi samo
+-- ove dve linije):
 --
--- U SQL Editoru je `auth.uid()` obično null, pa ćeš dobiti NOT_AUTHENTICATED —
--- to znači da funkcija radi ispravno. Pravu proveru radi aplikacija.
--- Za brisanje probnih redova:
+--   select to_regclass('public.endpoint_usage')                        as tabela,
+--          to_regprocedure('public.check_and_bump_endpoint(text,integer)') as funkcija;
 --
---   delete from public.endpoint_usage where endpoint = 'test';
+-- Obe kolone popunjene = sve je na mestu. Prazne = nije pušteno.
+--
+-- ---------------------------------------------------------------------
+-- ⚠ NE DODAJ `select public.check_and_bump_endpoint(...)` NA KRAJ OVE
+--   SKRIPTE.
+--
+-- SQL Editor pušta sve nalepljeno kao JEDAN batch, a to je jedna
+-- transakcija. Ta funkcija namerno baca NOT_AUTHENTICATED kad nema
+-- prijavljenog korisnika — a `auth.uid()` je u SQL Editoru uvek null, jer
+-- tamo nema korisnikovog tokena. Greška tada poništava CELU transakciju,
+-- dakle i `create table` i `create function` iznad. Poruka izgleda kao
+-- uspešna provera („funkcija postoji i odbija poziv bez prijave"), a u bazi
+-- posle toga NEMA NIČEGA.
+--
+-- Provereno na PostgreSQL 16: isti fajl sa dodatim `select` na kraju ostavlja
+-- to_regclass = null; bez njega ostavlja tabelu i funkciju na mestu.
+--
+-- Pravu proveru radi sama aplikacija, jer ona jedina šalje korisnikov token.
+-- ---------------------------------------------------------------------
 -- =====================================================================

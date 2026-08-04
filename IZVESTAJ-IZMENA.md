@@ -388,7 +388,7 @@ Dve greške koje sam sâm napravio i uhvatio testovima:
 ## Kako proveriti
 
 ```bash
-node --test "test/**/*.test.mjs"     # 212 testova
+node --test "test/**/*.test.mjs"     # 213 testova
 npm test --prefix test               # isto
 ```
 
@@ -420,7 +420,7 @@ Izveštaj iznad opisuje stanje na v140. Ukratko, po redu:
 | 150 | Kod izdvojen u `app.js`, CSP `script-src` sada `'self'` — bez `'unsafe-inline'` |
 | **151** | **Dnevni limit na `/api/wellness` (100) i `/api/workouts` (40)** — `supabase/rate-limit.sql` |
 
-**Testovi: 110 → 212.**
+**Testovi: 110 → 213.**
 
 **Lični plan posle svega: nepromenjen** — 14 nedelja, 533,7 km, 72 treninga, VDOT 48,1 → 51,3, PRED 25, QS 24, cilj 19:20–19:30. Za v150 je to provereno i bajt po bajt:
 
@@ -431,6 +431,6 @@ git show 0dfed1b~1:index.html | sed -n '590,8640p' | diff - app.js
 
 **Vercel: ništa ne treba menjati.** `app.js` je običan statički fajl pored `index.html`; nema build koraka, nema nove env varijable.
 
-**Supabase: jedna stvar, jednom.** `supabase/rate-limit.sql` → SQL Editor → Run. To je jedini korak koji traži tebe. Ne dira postojeće tabele (`user_state`, `api_usage`, `bug_report_usage`), ne dira nijednu env varijablu, i puštanje dvaput je bezbedno.
+**Supabase: jedna stvar, jednom.** `supabase/rate-limit.sql` → SQL Editor → Run. **Ne dodaji ništa na kraj skripte** — sve ide kao jedna transakcija, pa naredba koja pukne poništi i `create table` iznad. To je jedini korak koji traži tebe. Ne dira postojeće tabele (`user_state`, `api_usage`, `bug_report_usage`), ne dira nijednu env varijablu, i puštanje dvaput je bezbedno.
 
 **Resend: ništa ne treba menjati.**

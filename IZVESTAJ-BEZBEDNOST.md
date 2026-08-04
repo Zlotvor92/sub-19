@@ -5,7 +5,7 @@
 **Metod:** ofanzivni — svaki nalaz je **izveden napad**, ne teorijska primedba
 **Testovi:** 110 → **149** (39 novih, svi bezbednosni)
 
-> **Dopuna, verzija 151 · 212 testova.** Izveštaj je pisan na v141 i tekst ispod opisuje stanje u tom trenutku. Od tada su zatvorene još četiri stvari, pa su odgovarajući odeljci ispod označeni: **ZATVORENO**.
+> **Dopuna, verzija 151 · 213 testova.** Izveštaj je pisan na v141 i tekst ispod opisuje stanje u tom trenutku. Od tada su zatvorene još četiri stvari, pa su odgovarajući odeljci ispod označeni: **ZATVORENO**.
 > 1. **`unsafe-inline` u CSP** — kod je izdvojen u `app.js`, `script-src` je sada `'self'`. Ubačena skripta se više ne izvršava ni ako provera unosa propusti. (v. „Ostaje otvoreno / 3")
 > 2. **`ADMIN_EMAIL` u javnom kodu** — zamenjen poređenjem po Supabase ID-u naloga. (v. „Ostaje otvoreno / 2")
 > 3. **Lični plan i istorija vlasnika** — više se ne isporučuju u kodu i ne stižu ni do jednog drugog naloga; `uskladiVlasnickePodatke()` ih uklanja i pri pokretanju i posle povlačenja sa servera.
@@ -257,6 +257,15 @@ Zašto to drži pod paralelnim zahtevima: uvećanje i provera su **jedna** nared
 
 Zašto korisnik ne može do brojača: RLS je uključen, a politika **namerno nema nijedne** — ko sme da menja svoj brojač, sme i da ga vrati na nulu. Piše isključivo funkcija, kao `SECURITY DEFINER` sa zaključanim `search_path`.
 
+**Zamka pri puštanju (nagazio sam je i sam):** SQL Editor pušta sve nalepljeno kao **jednu transakciju**. Ako se na kraj skripte doda `select public.check_and_bump_endpoint('test', 2)`, ta funkcija baca `NOT_AUTHENTICATED` (u SQL Editoru nema korisnikovog tokena, pa je `auth.uid()` null) — i ta greška **poništi ceo batch**, dakle i `create table` i `create function`. Poruka pritom izgleda kao uspešna provera, a u bazi ne ostane ništa. Fajl sada nosi upozorenje, a test odbija skriptu koja sadrži poziv funkcije.
+
+Provera koja je bezbedna, u zasebnom pokretanju:
+
+```sql
+select to_regclass('public.endpoint_usage')                            as tabela,
+       to_regprocedure('public.check_and_bump_endpoint(text,integer)') as funkcija;
+```
+
 **Dok SQL ne pustiš, ništa se ne kvari:** brojač koji ne odgovara propušta zahtev i upisuje upozorenje u Vercel logove (`[limit] brojac nije radio …`). Isto važi i za mrežni prekid ka Supabase-u — sinhronizacija sa satom ne sme da padne zbog brojača. Ali se **vidi**, jer limit koji tiho otkaže izgleda isto kao limit koji radi.
 
 ### 5. `ICU_REDIRECT_URI` — postavljeno, uz sitnu napomenu
@@ -293,5 +302,5 @@ git show 0dfed1b~1:index.html | sed -n '590,8640p' | diff - app.js
 ## Provera
 
 ```bash
-node --test "test/**/*.test.mjs"     # 212 testova
+node --test "test/**/*.test.mjs"     # 213 testova
 ```
