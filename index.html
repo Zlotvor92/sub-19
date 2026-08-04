@@ -523,6 +523,43 @@ nav button:active{transform:scale(.92)}
 .set-st b{color:var(--txt);font-weight:700}
 .set-sub{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
       color:var(--txt3);margin:16px 0 8px}
+/* KARTICE SEKCIJA.
+   Ranije: sest sekcija u ravnom nizu, razdvojenih samo linijom, sve iste
+   tezine — sest ekrana skrolovanja da se dodje do backupa. Uz to je
+   intervals.icu nosio i povlacenje oporavka I slanje na sat, pa je bio
+   dvostruko duzi od ostalih.
+   Sada je svaka sekcija kartica koja se SKLAPA. Zaglavlje uvek pokazuje ikonu,
+   naziv, jednu liniju stanja i oznaku — dakle sve sto se cita „u prolazu" —
+   a sadrzaj se otvara dodirom. Sekcije koje traze radnju (nesto nije povezano)
+   otvorene su same. */
+.set-card{background:var(--card2);border:1px solid var(--line);border-radius:16px;margin-bottom:10px;overflow:hidden}
+.set-card>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:12px 14px;min-height:56px}
+.set-card>summary::-webkit-details-marker{display:none}
+.set-card>summary:active{background:rgba(255,255,255,.03)}
+.set-ico{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+         background:var(--card);font-size:1rem;flex:none;border:1px solid var(--line-soft)}
+.set-tt{flex:1;min-width:0}
+.set-tt b{display:block;font-size:.87rem;font-weight:800;letter-spacing:-.01em;line-height:1.25}
+.set-tt span{display:block;font-size:.7rem;color:var(--txt3);font-weight:600;margin-top:2px;
+             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.set-card>summary::after{content:'⌄';color:var(--txt3);font-size:1rem;line-height:1;transition:transform .2s;flex:none}
+.set-card[open]>summary::after{transform:rotate(180deg)}
+.set-card[open]>summary{border-bottom:1px solid var(--line)}
+.set-body{padding:13px 14px 15px}
+.set-body>.btnrow:first-child,.set-body>.set-st:first-child{margin-top:0}
+/* tacka stanja u zaglavlju — citljivija od reci na malom ekranu */
+.dot{width:7px;height:7px;border-radius:50%;flex:none;background:var(--txt3)}
+.dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(155,232,33,.15)}
+.dot.warn{background:var(--amber);box-shadow:0 0 0 3px rgba(255,176,32,.15)}
+
+/* PREGLED VEZA — jedan red na vrhu, da se stanje vidi bez otvaranja icega. */
+.conn{display:flex;gap:8px;margin:2px 0 14px}
+.conn>div{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:10px 6px;text-align:center;min-width:0}
+.conn b{display:block;font-size:.58rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);
+        overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conn i{font-style:normal;display:block;font-size:.74rem;font-weight:800;margin-top:4px;color:var(--txt3)}
+.conn .ok i{color:var(--green)}
+
 details.help{margin-top:10px}
 details.help>summary{list-style:none;cursor:pointer;font-size:.72rem;font-weight:700;
       color:var(--txt3);display:flex;align-items:center;gap:6px;padding:7px 0}
