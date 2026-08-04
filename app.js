@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='168'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='169'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -911,7 +911,6 @@ function stFor(id){const l=S.log[id];return l&&l.status?l.status:'pending';}
 function realKmDay(d){const l=S.log[d.id];if(!l||l.status!=='done')return 0;return l.km!=null?l.km:(d.km||0);}
 function weekRealKm(w){return w.days.reduce((s,d)=>s+realKmDay(d),0);}
 function weekDone(w){return w.days.filter(d=>!d.rest&&stFor(d.id)==='done').length;}
-function weekCountable(w){return w.days.filter(d=>!d.rest).length;}
 /* TRCANJA odvojeno od snage. Korisnik koji je izabrao "4 dana trcanja" je s
    pravom prijavio da mu plan pise "5 tren." — peti je dan snage, koji je u
    generisanom planu izricito OPCION ("po sopstvenom programu, bez trcanja").
@@ -2713,58 +2712,161 @@ function donePop(){
 }
 
 /* ---------- PLAN ---------- */
+/* ---------- PLAN: PRSTENOVI ----------
+   Ekran je bio spisak od 14 kartica, po ~150 px svaka — sedam nedelja na ekran,
+   i to samo kad nijedna nema dug opis (N7 sa „DELOAD (intenzitetski) — bez
+   kvaliteta…" bio je duplo viši, pa je lista gubila ritam). Ceo plan se nije
+   mogao obuhvatiti pogledom, a to je jedina stvar zbog koje se ovaj tab otvara.
+
+   Sada: gore dva velika prstena koja odgovaraju na dva različita pitanja, ispod
+   nedelje kao mali prstenovi po fazama. Dodir na prsten otvara dane te nedelje
+   ispod njegovog reda. */
+
+/* Koliko je plan TRAŽIO zaključno sa danas — završene nedelje u celosti, tekuća
+   samo do današnjeg dana. Bez toga se ne može reći „držiš plan", nego samo
+   „prešao si toliko od celog puta", što je drugo pitanje. */
+function planDoSada(){
+  let km=0;
+  CUR_PLAN.forEach(w=>{
+    const kraj=addD(w.start,6);
+    if(kraj<TODAY) km+=weekPlanKm(w);
+    else if(w.start<=TODAY) km+=w.days.reduce((sum,d)=>sum+((d.date&&d.date<=TODAY)?(d.km||0):0),0);
+  });
+  return km;
+}
+function planSazetak(){
+  const ukupno=CUR_PLAN.reduce((s2,w)=>s2+weekPlanKm(w),0);
+  const istrcano=CUR_PLAN.reduce((s2,w)=>s2+weekRealKm(w),0);
+  const doSada=planDoSada();
+  /* Prosek ide preko ZAVRSENIH nedelja, i to svih — preskocena nedelja je nula,
+     ne izuzetak. Ranije su se brojale samo one sa kilometrima, pa je prosek bio
+     lazno visok kod nekoga ko je nedelju preskocio. */
+  const zavrsene=CUR_PLAN.filter(w=>addD(w.start,6)<TODAY);
+  const zavrseneKm=zavrsene.reduce((a,w)=>a+weekRealKm(w),0);
+  const najjaca=CUR_PLAN.reduce((a,w)=>weekRealKm(w)>weekRealKm(a)?w:a, CUR_PLAN[0]);
+  const preostaloNed=CUR_PLAN.filter(w=>addD(w.start,6)>=TODAY).length;
+  return {
+    ukupno, istrcano, doSada,
+    drziPlan: doSada>0?Math.round(istrcano/doSada*100):0,
+    ceoPlan: ukupno>0?Math.round(istrcano/ukupno*100):0,
+    prosek: zavrsene.length?zavrseneKm/zavrsene.length:null,
+    najjaca, najjacaKm: weekRealKm(najjaca),
+    preostalo: Math.max(0,ukupno-istrcano), preostaloNed,
+    trcanjaGotovo: CUR_PLAN.reduce((s2,w)=>s2+weekRunDone(w),0),
+    trcanjaUkupno: CUR_PLAN.reduce((s2,w)=>s2+weekRunCount(w),0)
+  };
+}
+/* Prsten. `udeo` preko 1 se ne seče — prekoračenje plana je informacija, pa
+   se pun krug prikazuje i piše koliko je preko. */
+function prstenSVG(udeo, tekst, velicina, boja){
+  const r=42, C=2*Math.PI*r;
+  const p=Math.max(0,Math.min(1,udeo));
+  const off=(C*(1-p)).toFixed(1);
+  return `<svg viewBox="0 0 100 100" width="${velicina}" height="${velicina}" aria-hidden="true">
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(238,240,255,.14)" stroke-width="8"/>
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="${boja}" stroke-width="8" stroke-linecap="round"
+            stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off}" transform="rotate(-90 50 50)"/>
+    ${tekst?`<text x="50" y="${velicina>70?56:55}" text-anchor="middle" font-size="${velicina>70?24:22}" font-weight="800"
+            fill="#EEF0FF" font-family="-apple-system,sans-serif" letter-spacing="-1">${esc(tekst)}</text>`:''}
+  </svg>`;
+}
+/* Faze: DELOAD ne pravi svoju grupu nego ostaje u onoj kojoj pripada po
+   redosledu — inače bi se RAZVOJ raspao na tri odvojena naslova. */
+function planFaze(){
+  const grupe=[]; let tek=null;
+  CUR_PLAN.forEach(w=>{
+    let f=weekPhase(w,CUR_PLAN.length);
+    if(f==='DELOAD') f=tek?tek.ime:'BAZA';
+    if(f==='TAPER'||f==='TRKA') f='TAPER I TRKA';
+    if(!tek||tek.ime!==f){ tek={ime:f,nedelje:[]}; grupe.push(tek); }
+    tek.nedelje.push(w);
+  });
+  return grupe;
+}
 function renderPlan(){
   const el=$('#pg-plan');
   let h='';
-  /* Upozorenja ostaju vidljiva i POSLE generisanja: plan koji ne isporucuje
-     trazenu kilometrazu ostaje takav, pa razlog mora da stoji uz njega, a ne
-     samo u carobnjaku koji je korisnik vec zatvorio. */
   const gw=(S.genPlan&&S.genPlan.meta&&S.genPlan.meta.dayWarnings)||[];
   if(gw.length) h+=`<div class="pl-warn">${planWarningsHTML(gw,'Na šta da paziš u ovom planu')}</div>`;
-  CUR_PLAN.forEach(w=>{
-    const pk=weekPlanKm(w),rk=weekRealKm(w),dn=weekDone(w),ct=weekCountable(w);
-    const cur=weekOf(TODAY)===w;
-    /* Kraj nedelje: poslednja nedelja staje na DAN TRKE, koji nije uvek
-       četvrtak. Fiksnih "3" je bila mera tvog plana (trka 24.09. = čet);
-       generisan plan sme da ima trku bilo kog dana, pa se poslednji dan čita
-       iz samih dana nedelje (test dani nemaju dow — izostavljaju se). */
-    const dows=w.days.filter(d=>!d.test).map(d=>d.dow||0);
-    const endOff=(w.w===CUR_PLAN.length&&dows.length)?Math.max(...dows):6;
-    h+=`<div class="wk${openW.has(w.w)?' open':''}" data-w="${w.w}">
-      <button class="wk-h">
-        <div class="wk-n">N${w.w}</div>
-        <div class="wk-i"><div class="wk-d">${fmtD(w.start)} – ${fmtD(addD(w.start,endOff))}${cur?' · tekuća nedelja':''}</div><div class="wk-f">${esc(weekPhase(w,CUR_PLAN.length)==='DELOAD'?w.focus:(w.focus?weekPhase(w,CUR_PLAN.length)+' · '+w.focus:weekPhase(w,CUR_PLAN.length)))}</div></div>
-        <div class="wk-km"><b>${fmtKm(rk)} / ${fmtKm(pk)} km</b>${weekRunDone(w)}/${weekRunCount(w)} trč.${weekHasStrength(w)?' + snaga':''}</div>
-      </button>
-      <div class="wk-bar"><i style="width:${ct?Math.round(dn/ct*100):0}%"></i></div>
-      <div class="wk-body">
-      <button class="day" data-sw="${w.w}" style="justify-content:center;color:var(--txt);font-weight:800;font-size:.82rem;min-height:44px">⇄ Pomeri treninge</button>`;
-    w.days.slice().sort((a,b)=>{
-      const da=a.date||'9999-99-99', db=b.date||'9999-99-99';
-      return da<db?-1:da>db?1:0;
-    }).forEach(d=>{
-      const s=d.rest?'rest':stFor(d.id);
-      const t='button'; /* i dani odmora su otvorljivi — da se mogu izmeniti u trening */
-      h+=`<${t} class="day t-${d.rest?'rest':safeTag(d.tag)}" data-d="${esc(d.id)}">
-        <div class="day-d"><span class="dw">${d.test?'TT':dowOf(d.date)}</span>${d.date?`<span class="dn">${pad2(s2d(d.date).getDate())}</span>`:''}</div>
-        <div class="day-mid">
-          <div class="day-type">${d.rest?'Odmor':esc(sessKind(d))}</div>
-          <div class="day-desc">${esc(d.rest?(d.desc||'—'):sessCore(d))}</div>
-        </div>
-        <div class="day-km">${d.km!=null?fmtKm(d.km)+' km':''}</div>
-        <span class="day-st ${s}">${s==='done'?'✓':s==='skip'?'⏭':''}</span>
-      </${t}>`;
-    });
-    h+=`</div></div>`;
+
+  const z=planSazetak();
+  h+=`<div class="card pl-sum">
+    <div class="pl-rings">
+      <div class="pl-ring">${prstenSVG(z.doSada?z.istrcano/z.doSada:0, z.drziPlan+'%', 104, z.drziPlan>=95?'var(--green)':z.drziPlan>=80?'var(--amber)':'var(--red)')}
+        <b>${fmtKm(z.istrcano)} <span>/ ${fmtKm(z.doSada)} km</span></b>
+        <span class="pl-lbl">od plana do sada</span></div>
+      <div class="pl-ring">${prstenSVG(z.ukupno?z.istrcano/z.ukupno:0, z.ceoPlan+'%', 104, 'var(--cyan)')}
+        <b>${fmtKm(z.istrcano)} <span>/ ${fmtKm(z.ukupno)} km</span></b>
+        <span class="pl-lbl">ceo plan</span></div>
+    </div>
+    <div class="pl-facts">
+      <div><b>${z.prosek!=null?fmtKm(z.prosek):'—'}</b><span>km nedeljno</span></div>
+      <div><b>${z.najjacaKm>0?fmtKm(z.najjacaKm):'—'}</b><span>${z.najjacaKm>0?'najjača · N'+z.najjaca.w:'najjača nedelja'}</span></div>
+      <div><b>${fmtKm(z.preostalo)}</b><span>ostalo · ${z.preostaloNed} ${pl3(z.preostaloNed,'nedelja','nedelje','nedelja')}</span></div>
+      <div><b>${z.trcanjaGotovo}<span>/${z.trcanjaUkupno}</span></b><span>trčanja</span></div>
+    </div>
+  </div>`;
+
+  planFaze().forEach(g=>{
+    const km=g.nedelje.reduce((s2,w)=>s2+weekRealKm(w),0);
+    const pk=g.nedelje.reduce((s2,w)=>s2+weekPlanKm(w),0);
+    h+=`<div class="pl-faza"><b>${esc(g.ime)}</b><i></i><span class="pl-fkm">N${g.nedelje[0].w}–N${g.nedelje[g.nedelje.length-1].w} · ${fmtKm(km)}/${fmtKm(pk)} km</span></div>`;
+    for(let i=0;i<g.nedelje.length;i+=4){
+      const red=g.nedelje.slice(i,i+4);
+      h+=`<div class="pl-grid">`;
+      red.forEach(w=>{
+        const pkw=weekPlanKm(w), rkw=weekRealKm(w);
+        const cur=weekOf(TODAY)===w, proslo=addD(w.start,6)<TODAY;
+        const udeo=pkw?rkw/pkw:0;
+        const boja=cur?'#EEF0FF':(rkw===0?'rgba(238,240,255,.22)':udeo>=.95?'var(--green)':udeo>=.7?'var(--amber)':'var(--red)');
+        h+=`<button class="pl-w${cur?' now':''}${proslo&&rkw===0?' prazna':''}${openW.has(w.w)?' on':''}" data-w="${w.w}">
+          ${prstenSVG(udeo, String(w.w), 58, boja)}
+          <b>${rkw>0?fmtKm(rkw):'—'}<span>/${fmtKm(pkw)}</span></b>
+          <span class="pl-t">${weekRunDone(w)}/${weekRunCount(w)} trč.</span>
+        </button>`;
+      });
+      h+=`</div>`;
+      /* Dani otvorene nedelje idu ODMAH ispod njenog reda, ne na dno ekrana —
+         inače se izgubi veza između prstena koji si dodirnuo i onoga što se
+         otvorilo. */
+      red.filter(w=>openW.has(w.w)).forEach(w=>{ h+=nedeljaTelo(w); });
+    }
   });
+
   el.innerHTML=h;
-  el.querySelectorAll('.wk-h').forEach(b=>b.onclick=()=>{
-    const w=+b.closest('.wk').dataset.w;
+  el.querySelectorAll('.pl-w').forEach(b=>b.onclick=()=>{
+    const w=+b.dataset.w;
     openW.has(w)?openW.delete(w):openW.add(w);
-    b.closest('.wk').classList.toggle('open');
+    renderPlan();
   });
   el.querySelectorAll('.day[data-d]').forEach(b=>b.onclick=()=>openDaySheet(b.dataset.d));
   el.querySelectorAll('.day[data-sw]').forEach(b=>b.onclick=()=>openWeekSwap(+b.dataset.sw));
+}
+/* Dani jedne nedelje — isti redovi kao ranije, samo izdvojeni da mogu da stoje
+   ispod reda prstenova. */
+function nedeljaTelo(w){
+  const dows=w.days.filter(d=>!d.test).map(d=>d.dow||0);
+  const endOff=(w.w===CUR_PLAN.length&&dows.length)?Math.max(...dows):6;
+  let h=`<div class="pl-body">
+    <div class="pl-bh">N${w.w} · ${fmtD(w.start)} – ${fmtD(addD(w.start,endOff))}${weekOf(TODAY)===w?' · tekuća nedelja':''}
+      <span>${esc(weekPhase(w,CUR_PLAN.length)==='DELOAD'?w.focus:(w.focus?weekPhase(w,CUR_PLAN.length)+' · '+w.focus:weekPhase(w,CUR_PLAN.length)))}</span></div>
+    <button class="day" data-sw="${w.w}" style="justify-content:center;color:var(--txt);font-weight:800;font-size:.82rem;min-height:44px">⇄ Pomeri treninge</button>`;
+  w.days.slice().sort((a,b)=>{
+    const da=a.date||'9999-99-99', db=b.date||'9999-99-99';
+    return da<db?-1:da>db?1:0;
+  }).forEach(d=>{
+    const s=d.rest?'rest':stFor(d.id);
+    h+=`<button class="day t-${d.rest?'rest':safeTag(d.tag)}" data-d="${esc(d.id)}">
+      <div class="day-d"><span class="dw">${d.test?'TT':dowOf(d.date)}</span>${d.date?`<span class="dn">${pad2(s2d(d.date).getDate())}</span>`:''}</div>
+      <div class="day-mid">
+        <div class="day-type">${d.rest?'Odmor':esc(sessKind(d))}</div>
+        <div class="day-desc">${esc(d.rest?(d.desc||'—'):sessCore(d))}</div>
+      </div>
+      <div class="day-km">${d.km!=null?fmtKm(d.km)+' km':''}</div>
+      <span class="day-st ${s}">${s==='done'?'✓':s==='skip'?'⏭':''}</span>
+    </button>`;
+  });
+  return h+`</div>`;
 }
 
 /* ---------- SHEET ---------- */
