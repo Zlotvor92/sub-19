@@ -1,7 +1,7 @@
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='158'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='159'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -496,8 +496,16 @@ function setAlt(id,alt){
   const pace=(alt.tag==='int'||alt.tag==='tempo')&&alt.pace!=null&&!isNaN(alt.pace)&&alt.pace>0?Math.round(alt.pace):null;
   /* run/walk struktura (predlog posle povrede). Nosi se KAO PODATAK, ne samo
      kao tekst u opisu — inace bi se ritam video samo u recenici, a red „Ritam"
-     na kartici treninga i korak koji ide na sat ostali bi prazni. */
-  const rw=cistRunWalk(alt.rw);
+     na kartici treninga i korak koji ide na sat ostali bi prazni.
+
+     NENAVEDENO POLJE SE CUVA, NE BRISE. Ekran „Zameni" salje samo tag/km/opis/
+     tempo i ne zna za run/walk — bez ovoga bi rucna izmena kilometraze tiho
+     obrisala ritam, a opis bi i dalje pisao „Run/walk 3 min trcanje / 1 min
+     hod". Kartica bi tvrdila jedno, podatak drugo. (Izmereno.)
+     Na dan odmora ritam nema smisla i brise se. */
+  const stariAlt=(S.alts&&S.alts[id])||null;
+  const rw = alt.tag==='odmor' ? null
+           : (alt.rw===undefined ? ((stariAlt&&stariAlt.rw)||null) : cistRunWalk(alt.rw));
   /* identično planu I bez ručnog cilja tempa → briši unos umesto da ga čuvaš.
      Ako je pace eksplicitno postavljen, unos ostaje čak i kad se tag/km/desc
      slažu sa planom — to je i dalje namerna izmena (samo cilja tempo, ne strukturu). */
@@ -2613,7 +2621,12 @@ function vezisTacke(el, ponovo){
 }
 const ALT_TYPES=[['lako','Lako'],['int','Intervali'],['tempo','Tempo'],['lr','Dugo'],['snaga','Snaga'],['odmor','Odmor']];
 function altSheetHTML(d){
-  const cur=ALT_DRAFT||{tag:d.rest?'odmor':d.tag,km:d.km,desc:d.desc||''};
+  /* `cur` se gradi iz DANA, a rucni cilj tempa i run/walk zive u S.alts —
+     bez njih bi se polje „Ciljni tempo" otvaralo prazno i cuvanje bi obrisalo
+     vec postavljen cilj (svoj ili onaj iz prilagodjavanja formi). */
+  const _a=(S.alts&&S.alts[d.id])||null;
+  const cur=ALT_DRAFT||{tag:d.rest?'odmor':d.tag, km:d.km, desc:d.desc||'',
+                        pace:_a?_a.pace:null, rw:_a?_a.rw:null};
   const edited=!!(S.alts&&S.alts[d.id]);
   const segBtns=arr=>`<div class="seg" style="margin-top:6px">${arr.map(([t,n])=>`<button type="button" data-t="${t}" class="${cur.tag===t?'on':''}">${n}</button>`).join('')}</div>`;
   let h=`<div class="sh-t">Izmeni trening</div>
