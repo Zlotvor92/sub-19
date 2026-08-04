@@ -377,18 +377,18 @@ Dve greške koje sam sâm napravio i uhvatio testovima:
 
 | Stavka | Zašto nije urađena |
 |---|---|
-| **`ADMIN_EMAIL` u javnom kodu** | Ispravka bi bila poređenje po Supabase `userId` umesto po mejlu, ali taj UUID nemam. Bezbednosno je bezopasno (server proverava adresu iz tokena), problem je samo izloženost adrese skreperima. Ako mi pošalješ svoj `userId`, menjam za minut. |
-| **Deljenje `index.html` (469 KB) na module** | Veliki refaktor koji menja način deploya — a `api/*.js` komentari izričito čuvaju „bez build koraka". Nije stvar koju treba raditi usput; zaslužuje sopstvenu odluku. |
-| **`sw.js` network-first za 469 KB `index.html`** | Rešava se tek deljenjem fajla (gore). Zasad ostaje. |
+| ~~**`ADMIN_EMAIL` u javnom kodu**~~ | **Urađeno.** Poslao si `userId`; prepoznavanje vlasnika ide preko `ADMIN_UID`, adrese više nema u klijentskom kodu. |
+| ~~**Deljenje `index.html` (469 KB) na module**~~ | **Urađeno u v150, ali kao razdvajanje u DVA fajla, ne kao moduli.** Kod je izdvojen u `app.js` (obična skripta, ne ES modul), pa build koraka i dalje nema — deploy preko GitHub web editora radi isto. Razlog nije bila veličina nego CSP: tek kad ništa izvršno nije inline, `script-src` sme da bude `'self'`. |
+| **`sw.js` network-first za 460 KB `app.js`** | I dalje stoji, samo se sada tiče `app.js` umesto `index.html`. Podela na dva fajla je ovde donela pola koraka: `index.html` je pao sa 469 KB na 37 KB, pa je omotač sada jeftin, ali logika (460 KB) se i dalje povlači sa mreže pri svakom pokretanju kad ima veze. Pravo rešenje je heširano ime fajla + dugotrajan keš, što traži build korak. |
 | **Rate-limit na `/api/wellness` i `/api/workouts`** | Traži novu Supabase RPC funkciju i tabelu — dakle izmenu na tvojoj strani, a rekao si da to ne diram. Rizik je nizak (potrebna je prijava). |
-| **`ICU_REDIRECT_URI`** | Treba ga samo **postaviti** u Vercel env varijablama (sada je opcion, pa se pada na `x-forwarded-host`). Nisam menjao env. |
+| ~~**`ICU_REDIRECT_URI`**~~ | **Postavio si ga.** Ostaje samo kozmetička primedba: dodat je i za Preview, gde adresa nije produkcijska. Bez posledica ako ne testiraš OAuth na preview deploy-ovima. |
 
 ---
 
 ## Kako proveriti
 
 ```bash
-node --test "test/**/*.test.mjs"     # 110 testova
+node --test "test/**/*.test.mjs"     # 195 testova
 npm test --prefix test               # isto
 ```
 
@@ -403,3 +403,29 @@ Sve prolazi na Node 20+. Nema zavisnosti, nema build koraka, nema mreže.
 - **110 testova** napisano — od nule
 - **Tvoj lični plan i svi nosivi identifikatori: nedirnuti**, i sada mašinski zaključani
 - **Vercel / Supabase / Resend: ništa ne treba menjati**
+
+---
+
+## Dodatak — šta se desilo posle ovog izveštaja (v141 → v150)
+
+Izveštaj iznad opisuje stanje na v140. Ukratko, po redu:
+
+| Verzija | Šta |
+|---|---|
+| 141 | Bezbednosna analiza — 15 izvedenih napada, 8 prošlih, svi zatvoreni (v. `IZVESTAJ-BEZBEDNOST.md`) |
+| 142–145 | Prepoznavanje vlasnika po Supabase ID-u; `ICU_REDIRECT_URI`; ujednačeno imenovanje na SUB-20 tamo gde ne dira nijedan spoljni servis |
+| 146–147 | Lični plan i istorija izbačeni iz isporučenog koda; `uskladiVlasnickePodatke()` ih uklanja iz tuđeg `localStorage`-a |
+| 148 | Popravljen harness koji je **lažno prolazio** testove (`querySelector` je vraćao nov element pri svakom pozivu, pa su bezbednosne provere čitale prazan string). Odmah je otkrio stvarni XSS kroz VDOT zapise. |
+| 149 | `sbPull()` je vraćao tuđi seed sa servera; tuđe beleške o kolenu su ostajale čim postoji generisan plan |
+| **150** | **Kod izdvojen u `app.js`, CSP `script-src` sada `'self'` — bez `'unsafe-inline'`** |
+
+**Testovi: 110 → 195.**
+
+**Lični plan posle svega: nepromenjen** — 14 nedelja, 533,7 km, 72 treninga, VDOT 48,1 → 51,3, PRED 25, QS 24, cilj 19:20–19:30. Za v150 je to provereno i bajt po bajt:
+
+```bash
+git show 0dfed1b~1:index.html | sed -n '590,8640p' | diff - app.js
+# jedina razlika: APP_VERSION 149 -> 150
+```
+
+**Vercel / Supabase / Resend: i dalje ništa ne treba menjati.** `app.js` je običan statički fajl pored `index.html`; nema build koraka, nema nove env varijable, nema izmene u Supabase podešavanjima.
