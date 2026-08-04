@@ -36,11 +36,12 @@ describe('Bol koji ne nosi trčanje ne zaustavlja plan', () => {
   const OSTALI = ['saka-L', 'glava', 'rame-D', 'vrat', 'grudi', 'podlaktica-D'];
 
   for (const deo of NOSIVI) {
-    test(`bol 10 u „${deo}" zaustavlja trčanje`, () => {
+    test(`bol 10 u „${deo}" menja plan trčanja`, () => {
       const a = sa(10, deo);
       assert.equal(a.call('kneeStatus', DANAS).cls, 'stop');
       const p = a.call('injuryProposal', DANAS);
-      assert.ok(p && p.level === 'stop', 'nema predloga odmora za nosivi deo');
+      assert.ok(p, 'nema predloga za nosivi deo tela');
+      assert.equal(p.hitno, true, 'jak bol se ne označava kao hitan');
     });
   }
 
@@ -73,20 +74,42 @@ describe('Bol koji ne nosi trčanje ne zaustavlja plan', () => {
 });
 
 describe('Run/walk dok bol ne padne ispod 4', () => {
-  test('bol 6+ — bez trčanja, run/walk nije odgovor', () => {
-    const p = sa(6, 'ahilova-D').call('injuryProposal', DANAS);
-    assert.equal(p.level, 'stop');
-    assert.equal(p.rw, null);
-    assert.ok(p.changes.every(c => c.to === 'odmor'));
+  test('plan se NIKAD ne prazni — ni na bolu 10', () => {
+    /* Ranije je bol 6+ brisao svako trčanje iz plana; čovek bi ostao bez
+       ikakve strukture. Sada se nudi run/walk, a jačina bola menja odnos
+       trčanja i hoda i obim — ne postojanje treninga. */
+    for (const bol of [6, 7, 8, 9, 10]) {
+      const p = sa(bol, 'ahilova-D').call('injuryProposal', DANAS);
+      assert.ok(p && p.changes.length, `bol ${bol}: nema predloga`);
+      assert.ok(p.changes.every(c => c.to !== 'odmor'), `bol ${bol}: plan je obrisan u odmor`);
+      assert.ok(p.changes.every(c => c.km > 0), `bol ${bol}: trening bez kilometraže`);
+      assert.ok(p.rw, `bol ${bol}: nema run/walk strukture`);
+    }
   });
 
-  for (const [bol, runSec] of [[5, 60], [4, 120]]) {
-    test(`bol ${bol} — run/walk ${runSec / 60} min trčanja / 1 min hoda`, () => {
+  test('jak bol i dalje nosi upozorenje, ne samo kraće trčanje', () => {
+    const p = sa(9, 'ahilova-D').call('injuryProposal', DANAS);
+    assert.equal(p.hitno, true);
+    assert.match(p.message, /prilagođavanje TRENINGA, ne lečenje/);
+    assert.match(p.message, /fizijatru ili lekaru/);
+  });
+
+  test('što je bol jači, kraće se trči i duže hoda', () => {
+    const odnos = bol => {
+      const p = sa(bol, 'ahilova-D').call('injuryProposal', DANAS);
+      return p.rw.runSec / p.rw.walkSec;
+    };
+    const niz = [10, 8, 6, 5, 4].map(odnos);
+    for (let i = 1; i < niz.length; i++)
+      assert.ok(niz[i] > niz[i - 1], `odnos trčanje/hod ne raste kako bol pada: ${niz}`);
+  });
+
+  for (const [bol, runSec] of [[10, 60], [8, 60], [6, 120], [5, 180], [4, 300]]) {
+    test(`bol ${bol} — run/walk sa ${runSec / 60} min trčanja`, () => {
       const p = sa(bol, 'ahilova-D').call('injuryProposal', DANAS);
       assert.equal(p.level, 'runwalk', `nivo je ${p.level}`);
       assert.ok(p.rw, 'nema run/walk strukture');
       assert.equal(p.rw.runSec, runSec);
-      assert.equal(p.rw.walkSec, 60);
       assert.ok(p.changes.every(c => c.rw), 'nisu svi treninzi dobili run/walk');
       assert.match(p.message, /Neprekidno trčanje se vraća kad bol padne ispod 4/);
     });
@@ -118,7 +141,7 @@ describe('Run/walk dok bol ne padne ispod 4', () => {
     a.ctx.__d = a.evalIn(`BY_ID[${JSON.stringify(p.changes[0].id)}]`);
     const html = a.evalIn('dayCard(__d)') || '';
     assert.match(html, /Ritam/, 'red „Ritam" se ne crta');
-    assert.match(html, /1 min trčanje \/ 1 min hod/);
+    assert.match(html, /min trčanje \/ .*min hod/);
   });
 
   test('run/walk iz pokvarenog backupa se odbacuje', () => {
@@ -164,8 +187,10 @@ describe('Obim se dozira po stvarno odrađenom, ne po planiranom', () => {
       const p = sa(bol, 'ahilova-D').call('injuryProposal', DANAS);
       return p.changes.reduce((s, c) => s + (c.km || 0), 0);
     };
-    assert.ok(uk(5) < uk(3), `bol 5 daje ${uk(5)} km, bol 3 daje ${uk(3)} km`);
-    assert.equal(uk(6), 0, 'bol 6+ mora dati potpun odmor');
+    const niz = [10, 8, 6, 5, 4, 3].map(uk);
+    for (let i = 1; i < niz.length; i++)
+      assert.ok(niz[i] >= niz[i - 1], `obim ne raste kako bol pada: ${niz}`);
+    assert.ok(uk(10) < uk(3), `bol 10 daje ${uk(10)} km, bol 3 daje ${uk(3)} km`);
   });
 
   test('ponovljen predlog ne smanjuje već smanjeno', () => {

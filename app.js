@@ -1,7 +1,7 @@
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='153'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='154'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1001,18 +1001,32 @@ function hronicniObim(today){
   return Math.round(km.reduce((a,b)=>a+b,0) / km.length * 10) / 10;
 }
 
-/* RUN/WALK DOK BOL NE PADNE ISPOD 4.
-   Pojas 4–5 je onaj u kom trčanje nije zabranjeno ali neprekidno trčanje jeste
-   prerano: udarno opterećenje se prekida hodom, pa tkivo dobija ciklus
-   opterećenje–rasterećenje umesto neprekidnog. Ispod 4 se vraća neprekidno
-   trčanje (uz i dalje smanjen obim), na 6+ se ne trči uopšte.
-   Korak lestvice zavisi od jačine bola — ista lestvica koju generator koristi
-   za početnike, jer je problem isti: tkivo koje još ne podnosi neprekidan rad. */
-const RW_BOL_MIN = 4;        /* od ovog bola naviše ide run/walk umesto neprekidnog */
-function runWalkZaBol(bol){
-  if(bol >= 6 || bol < RW_BOL_MIN) return null;
-  /* bol 5 -> 1 min/1 min · bol 4 -> 2 min/1 min */
-  return runWalkZaNedelju(bol >= 5 ? 1 : 2);
+/* RUN/WALK DOK BOL NE PADNE ISPOD 4 — na CELOM pojasu od 4 naviše.
+   Ranije je 6+ značilo brisanje svakog trčanja iz plana. To je i bio problem:
+   plan bi se ispraznio, a čovek ostao bez ikakve strukture. Sada se umesto
+   brisanja nudi run/walk — hod prekida udarno opterećenje, pa tkivo dobija
+   ciklus opterećenje–rasterećenje umesto neprekidnog rada.
+
+   Što je bol jači, kraći je deo trčanja i duži hod, i manji je obim. Na 9–10
+   je odnos obrnut (1 min trčanja na 2 min hoda) — to je već pretežno hodanje.
+
+   VAŽNO, i zato ostaje u poruci: ovo je prilagođavanje TRENINGA, ne lečenje.
+   Bol 6+ i dalje nosi status „STANI" i poziv da se javiš stručnjaku; predlog
+   se sme i odbiti. Aplikacija ne može da proceni da li uopšte smeš da staneš
+   na nogu, i ne pretvara se da može. */
+const RW_BOL_MIN = 4;        /* ispod ovoga se vraća neprekidno trčanje */
+const RW_PO_BOLU = [
+  { od:9, runSec:60,  walkSec:120, obim:0.25 },
+  { od:7, runSec:60,  walkSec:60,  obim:0.35 },
+  { od:6, runSec:120, walkSec:60,  obim:0.45 },
+  { od:5, runSec:180, walkSec:60,  obim:0.55 },
+  { od:4, runSec:300, walkSec:60,  obim:0.65 }
+];
+function rwZaBol(bol){
+  if(!(bol >= RW_BOL_MIN)) return null;
+  const s = RW_PO_BOLU.find(x => bol >= x.od);
+  if(!s) return null;
+  return { rw:{ runSec:s.runSec, walkSec:s.walkSec, label:runWalkText(s) }, obim:s.obim };
 }
 
 function injuryProposal(today){
@@ -1090,14 +1104,22 @@ function injuryProposal(today){
   /* koji delovi tela — za poruku, da korisnik vidi na osnovu čega je predlog */
   const parts = [...new Set(recent.map(k=>partName(k.part)))];
 
-  const stop = (st.cls === 'stop');
-  const rw = stop ? null : runWalkZaBol(maxPain);   /* bol 4–5 -> run/walk */
-  const horizon = stop ? 7 : 5;          /* koliko dana unapred diramo */
+  /* Bol 4+ ide na run/walk, bez obzira koliko je jak — plan se ne prazni.
+     `hitno` (bol 6+ / status STANI) menja SAMO ton poruke i boju kartice,
+     ne i to da li se trči: to je odluka koju čovek donosi sam, uz lekara. */
+  const hitno = (st.cls === 'stop');
+  const rwS = rwZaBol(maxPain);
+  const rw = rwS ? rwS.rw : null;
+  /* Horizont je UVEK 7 dana. Ranije 7 za jak bol i 5 za slabiji — a pošto se
+     obim računa po danu, jači bol je pokrivao više dana i davao VEĆI ukupan
+     obim: bol 6 je davao 19,4 km, bol 5 samo 11 km. Uz to je 7 dana ista mera
+     kao nedeljni ACWR budžet, pa se više ne poredi deo nedelje sa celom. */
+  const horizon = 7;
 
   /* NEDELJNI BUDŽET umesto procenta po danu. Sve što se dira deli jedan
      budžet: 0.8 × hronično opterećenje. Bez istorije se pada na ranije
      procente (60% kvalitet / 75% lagano). */
-  const hron = stop ? null : hronicniObim(today);
+  const hron = hronicniObim(today);
   const budzet = hron != null ? Math.round(hron * ACWR_POVRATAK * 10)/10 : null;
 
   /* Prvo skupi dane koje diramo, pa tek onda podeli budžet — inače se ne zna
@@ -1137,16 +1159,11 @@ function injuryProposal(today){
   const changes = [];
   for(const x of dani){
     const d = x.d, oldKm = baza(x);
-    if(stop){
-      changes.push({ id:d.id, date:x.date, from:d.tag, to:'odmor', km:null,
-        desc:'Odmor — bol ' + maxPain + '/10 prijavljen (' + parts.join(', ') + ')' });
-      continue;
-    }
     const isQuality = (d.tag==='int' || d.tag==='tempo' || d.tag==='lr');
-    /* Pojas run/walk kreće od polovine planiranog: protokoli povratka na
-       trčanje polaze od ~50% uobičajenog obima, a i sama metoda znači da je
-       deo tog vremena hod. */
-    const bolFaktor = rw ? 0.5 : (isQuality ? 0.6 : 0.75);
+    /* Udeo planiranog obima raste kako bol pada: 25% na 9–10, 65% na 4.
+       Protokoli povratka na trčanje polaze od ~50% uobičajenog obima; ovde je
+       niže na jakom bolu, jer je i sam trening pretežno hod. */
+    const bolFaktor = rwS ? rwS.obim : (isQuality ? 0.6 : 0.75);
     const faktor = Math.min(bolFaktor, acwrFaktor);
     let newKm = oldKm ? Math.max(2, Math.round(oldKm*faktor*10)/10) : null;
     if(newKm != null && newKm > oldKm) newKm = oldKm;    /* nikad naviše */
@@ -1163,8 +1180,7 @@ function injuryProposal(today){
   if(!changes.length) return null;
 
   const ukupno = changes.reduce((s,c)=>s+(c.km||0), 0);
-  const obimTxt = stop ? ''
-    : ' Obim narednih ' + changes.length + ' treninga: ' + fmtKm(ukupno) + ' km umesto ' + fmtKm(planirano) + ' km'
+  const obimTxt = ' Obim narednih ' + changes.length + ' treninga: ' + fmtKm(ukupno) + ' km umesto ' + fmtKm(planirano) + ' km'
       + (hron != null ? ' (prosek stvarno odrađenog u poslednje 4 nedelje: ' + fmtKm(hron) + ' km/ned).' : '.');
   /* Bol koji ne nosi trčanje se NE prećutkuje — samo ne prepisuje plan. */
   const ostalo = nenosiviBol(from, today);
@@ -1173,16 +1189,15 @@ function injuryProposal(today){
     : '';
 
   return {
-    level: stop ? 'stop' : (rw ? 'runwalk' : 'warn'),
+    level: rw ? 'runwalk' : 'warn', hitno,
     maxPain, parts, changes, rw, hron, budzet,
     title: st.t,
-    /* Poruka je namerno različita po ozbiljnosti — kod jakog bola app NE
-       glumi da je problem rešen smanjenjem kilometraže. */
-    message: (stop
-      ? 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Plan predlaže ODMOR od trčanja narednih ' + changes.length + ' treninga. Ovo nije nešto što aplikacija može da izleči — ako bol traje ili se pogoršava, javi se fizijatru ili lekaru.'
-      : rw
-        ? 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Neprekidno trčanje je prerano, ali potpuni odmor nije potreban: narednih ' + changes.length + ' treninga ide po run/walk metodi — ' + runWalkText(rw) + '. Hod prekida udarno opterećenje, pa tkivo dobija ciklus opterećenje–rasterećenje.' + obimTxt + ' Neprekidno trčanje se vraća kad bol padne ispod ' + RW_BOL_MIN + '. Ako poraste na 6+, prekini i javi se stručnjaku.'
-        : 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Predlog: kvalitetni treninzi postaju lagani, obim smanjen narednih ' + changes.length + ' treninga.' + obimTxt + ' Ako bol poraste na 6+ ili potraje, prekini i javi se stručnjaku.'
+    /* Poruka je namerno različita po ozbiljnosti — plan se prilagođava, ali
+       app NE glumi da je jak bol rešen kraćim trčanjem. */
+    message: (rw
+      ? 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Neprekidno trčanje je prerano: narednih ' + changes.length + ' treninga ide po run/walk metodi — ' + runWalkText(rw) + '. Hod prekida udarno opterećenje, pa tkivo dobija ciklus opterećenje–rasterećenje umesto neprekidnog rada.' + obimTxt + ' Neprekidno trčanje se vraća kad bol padne ispod ' + RW_BOL_MIN + '.'
+        + (hitno ? ' Bol ' + maxPain + '/10 je ozbiljan — ovo je prilagođavanje TRENINGA, ne lečenje. Ako te boli u mirovanju, ako šepaš ili ako bol ne popušta, ne trči ni ovoliko i javi se fizijatru ili lekaru.' : ' Ako bol poraste, prekini i javi se stručnjaku.')
+      : 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Predlog: kvalitetni treninzi postaju lagani, obim smanjen narednih ' + changes.length + ' treninga.' + obimTxt + ' Ako bol poraste na ' + RW_BOL_MIN + '+, prelazi se na run/walk.'
     ) + ostaloTxt
   };
 }
@@ -6318,8 +6333,8 @@ function renderKnee(){
      resen smanjenjem kilometraze. */
   const prop=injuryProposal(TODAY);
   if(prop){
-    h+=`<div class="card" style="border-color:${prop.level==='stop'?'rgba(255,69,58,.35)':'rgba(255,176,32,.3)'}">
-      <div class="card-t" style="color:${prop.level==='stop'?'var(--red)':'var(--amber)'}">Plan se može prilagoditi</div>
+    h+=`<div class="card" style="border-color:${prop.hitno?'rgba(255,69,58,.35)':'rgba(255,176,32,.3)'}">
+      <div class="card-t" style="color:${prop.hitno?'var(--red)':'var(--amber)'}">Plan se može prilagoditi</div>
       <div style="font-size:.85rem;line-height:1.55;color:var(--txt2)">${esc(prop.message)}</div>
       <div class="note-src" style="margin-top:10px">Menja se ${prop.changes.length} ${prop.changes.length===1?'trening':'treninga'}: ${esc(prop.changes.slice(0,4).map(x=>fmtD(x.date)+' → '+(x.rw?'Run/walk':tagName(x.to))).join(' · '))}${prop.changes.length>4?' …':''}</div>
       <div class="btnrow" style="margin-top:12px"><button class="btn" id="inj-apply">Prilagodi plan</button></div>
