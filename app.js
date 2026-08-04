@@ -1,7 +1,7 @@
 'use strict';
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='152'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='153'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -416,7 +416,7 @@ function rebuildDateIndex(){
     BY_ID[d.id]=d;
     /* originali iz plana — snimaju se JEDNOM i nikad se ne menjaju.
        Sentinel _orig, jer d.tag za dan odmora legitimno JESTE undefined. */
-    if(!d._orig){d._orig=1;d.origTag=d.tag;d.origKm=d.km;d.origDesc=d.desc;d.origRest=!!d.rest;}
+    if(!d._orig){d._orig=1;d.origTag=d.tag;d.origKm=d.km;d.origDesc=d.desc;d.origRest=!!d.rest;d.origRunWalk=d.runWalk;}
     /* izmena tipa treninga (S.alts). 'odmor' je poseban: plan ga nosi kao
        rest:true bez oznake, pa ga tako i vraćamo. */
     const ov=S.alts&&S.alts[d.id];
@@ -425,8 +425,10 @@ function rebuildDateIndex(){
       d.tag=d.rest?undefined:ov.tag;
       d.km=d.rest?null:(ov.km!=null?ov.km:null);
       d.desc=ov.desc;
+      /* run/walk iz izmene gazi onaj iz plana; bez izmene se plan poštuje */
+      if(ov.rw) d.runWalk=ov.rw; else if(d.origRunWalk!==undefined) d.runWalk=d.origRunWalk;
     } else {
-      d.tag=d.origTag;d.rest=d.origRest;d.km=d.origKm;d.desc=d.origDesc;
+      d.tag=d.origTag;d.rest=d.origRest;d.km=d.origKm;d.desc=d.origDesc;d.runWalk=d.origRunWalk;
     }
     if(!d.test){
       if(!d.origDate) d.origDate=addD(w.start,d.dow);
@@ -492,13 +494,17 @@ function setAlt(id,alt){
   const km=alt.tag==='odmor'?null:(alt.km!=null&&alt.km!==''&&!isNaN(alt.km)?+alt.km:null);
   const desc=alt.tag==='odmor'?'Odmor':(alt.desc||'');
   const pace=(alt.tag==='int'||alt.tag==='tempo')&&alt.pace!=null&&!isNaN(alt.pace)&&alt.pace>0?Math.round(alt.pace):null;
+  /* run/walk struktura (predlog posle povrede). Nosi se KAO PODATAK, ne samo
+     kao tekst u opisu — inace bi se ritam video samo u recenici, a red „Ritam"
+     na kartici treninga i korak koji ide na sat ostali bi prazni. */
+  const rw=cistRunWalk(alt.rw);
   /* identično planu I bez ručnog cilja tempa → briši unos umesto da ga čuvaš.
      Ako je pace eksplicitno postavljen, unos ostaje čak i kad se tag/km/desc
      slažu sa planom — to je i dalje namerna izmena (samo cilja tempo, ne strukturu). */
-  if(alt.tag===planTag && km===(d.origKm!=null?d.origKm:null) && desc===(d.origDesc||(d.origRest?'Odmor':'')) && pace==null){
+  if(alt.tag===planTag && km===(d.origKm!=null?d.origKm:null) && desc===(d.origDesc||(d.origRest?'Odmor':'')) && pace==null && rw==null){
     delete S.alts[id];
   } else {
-    S.alts[id]={tag:alt.tag,km:km,desc:desc,pace:pace};
+    S.alts[id]={tag:alt.tag,km:km,desc:desc,pace:pace,rw:rw};
   }
   rebuildDateIndex();save();
   return {ok:true};
@@ -648,7 +654,11 @@ function sessBreakdown(d){
   if(d.runWalk)rows.push(['Ritam',runWalkText(d.runWalk),true]);
   const rp2=rpeTarget(d);
   if(rp2)rows.push(['Napor','RPE '+rp2.min+'–'+rp2.max]);
-  return rows.length>=2?rows:null;
+  /* Prag od 2 reda postoji da se za obican lagan dan ne crta tabela sa jednim
+     poljem. Ali run/walk dan je CELA poenta izmene posle povrede — njegov
+     ritam mora da se vidi i kad je jedini red, inace covek dobije samo
+     recenicu u opisu i nigde strukturu po kojoj trci. */
+  return (rows.length>=2 || d.runWalk) ? rows : null;
 }
 /* Dodatne napomene iz opisa koje NISU deo strukture (npr. "plafon HR 170",
    "kontrolisan maks. napor") — da se ne izgube kad prikazujemo strukturirano. */
@@ -737,6 +747,16 @@ function validanDatum(s){
 function cistDatirane(niz){
   if(!Array.isArray(niz)) return [];
   return niz.filter(x=>x&&typeof x==='object'&&validanDatum(x.date));
+}
+/* run/walk struktura iz S.alts — ista granica poverenja kao cistWellness:
+   vrednosti nastaju računanjem, ali uvoz backupa i sbPull upisuju šta god
+   stoji u JSON-u, a odatle idu u opis treninga i u korak koji ide na sat. */
+function cistRunWalk(rw){
+  if(!rw||typeof rw!=='object') return null;
+  const b=v=>(v==null||v===''||isNaN(+v))?null:Math.round(+v);
+  const r=b(rw.runSec), w=b(rw.walkSec);
+  if(!(r>0&&r<=3600)||!(w>0&&w<=3600)) return null;
+  return { runSec:r, walkSec:w, label:runWalkText({runSec:r,walkSec:w}) };
 }
 function migrate(o){
   if(!o||typeof o!=='object')return null;
@@ -849,11 +869,41 @@ function streak(today){
   }
   return n;
 }
+/* DELOVI TELA KOJI NOSE TRČANJE.
+   Bol se beleži za celo telo (spisak ima 35 stavki, od glave do pete) i to je
+   ispravno — ali plan TRČANJA ne sme da se menja zbog svega. Do sada nije
+   pravio razliku: bol 10 u ŠACI ili GLAVI pretvarao je naredne treninge u
+   odmor isto kao bol 10 u Ahilovoj. Provereno na svih 8 proba — svaka je
+   davala „STANI".
+   Ovde su delovi koji stvarno primaju udarno opterećenje pri trčanju ili nose
+   njegovu mehaniku. Ostali se i dalje beleže i vide u kartici Koleno, ali ne
+   prepisuju plan. */
+const NOSIVI_DELOVI = new Set([
+  'donja-ledja','prepone',
+  'kuk-L','kuk-D','gluteus-L','gluteus-D',
+  'kvadriceps-L','kvadriceps-D','zadnja-loza-L','zadnja-loza-D',
+  'koleno-L','koleno-D','potkolenica-L','potkolenica-D',
+  'list-L','list-D','ahilova-L','ahilova-D',
+  'stopalo-L','stopalo-D','peta-L','peta-D'
+]);
+/* Zapisi bez `part` su iz vremena pre spiska delova tela (dnevnik je počeo kao
+   dnevnik KOLENA) — oni se broje kao nosivi, jer to i jesu bili. */
+function nosivDeo(p){ return !p || NOSIVI_DELOVI.has(p); }
+function bolniZapisi(od,doDatuma){
+  return (S.knee||[]).filter(k=>k&&k.date>=od&&k.date<=doDatuma&&nosivDeo(k.part));
+}
+/* Bol koji NE nosi trčanje — za poruku, da se ne pravimo da ga nema. */
+function nenosiviBol(od,doDatuma){
+  const w=(S.knee||[]).filter(k=>k&&k.date>=od&&k.date<=doDatuma&&!nosivDeo(k.part)&&k.pain>=3);
+  if(!w.length) return null;
+  return { max:w.reduce((m,k)=>Math.max(m,k.pain),0), delovi:[...new Set(w.map(k=>partName(k.part)))] };
+}
+
 function kneeStatus(today){
   const from=addD(today,-6);
   /* (S.knee||[]) — ostecen ili rucno izmenjen backup moze da postavi ovo na
      null; bez zastite cela funkcija puca i obara Danas ekran. */
-  const win=(S.knee||[]).filter(k=>k.date>=from&&k.date<=today);
+  const win=bolniZapisi(from,today);
   const mx=win.reduce((m,k)=>Math.max(m,k.pain),0);
   const ge3=win.filter(k=>k.pain>=3).length;
   if(ge3>=3)return{cls:'stop',t:'FIZIJATAR',s:'3+ dana sa bolom ≥3 u poslednjih 7 dana — zakaži pregled.'};
@@ -916,6 +966,55 @@ function returnToRunPhase(today){
 
 /* Koji dani se predlažu za izmenu i kako. Čista funkcija — ništa ne menja,
    samo vraća predlog. Time je testabilna nezavisno od DOM-a i od save(). */
+/* ============================================================
+   DOZIRANJE POSLE POVREDE — po odnosu akutnog i hroničnog opterećenja
+
+   Ranije: fiksnih 60% za kvalitet i 75% za lagano. Broj je bio „konzervativan
+   i namerno grub", ali je isti za svakoga — čovek koji trči 20 km nedeljno i
+   čovek koji trči 60 dobijali su isti procenat, i to od PLANIRANOG obima, ne
+   od onoga što stvarno rade.
+
+   Sada: polazi se od hroničnog opterećenja — proseka STVARNO odrađenog obima
+   kroz poslednje 4 nedelje. To je mera koju literatura o odnosu akutnog i
+   hroničnog opterećenja (ACWR) koristi kao imenilac; rizik od povrede naglo
+   raste kad nedeljni obim pređe ~1.5× taj prosek, a „bezbedan pojas" je
+   0.8–1.3. Posle bola se ide na donju ivicu, ISPOD proseka.
+
+   Zašto od ostvarenog, a ne od planiranog: posle povrede se plan i realnost
+   razilaze. Ako je čovek tri nedelje trčao 0 km, njegovo hronično opterećenje
+   JESTE nisko — i baš zato povratak mora da bude nizak. Planirani obim o tome
+   ne zna ništa.
+
+   Kad istorije nema (nov korisnik), pada se na ranije procente — bolje grubo
+   nego ništa. */
+const ACWR_POVRATAK = 0.8;   /* nedeljni obim posle bola: ispod hroničnog proseka */
+const ACWR_MAX      = 1.3;   /* gornja ivica bezbednog pojasa; preko 1.5 rizik naglo raste */
+
+function hronicniObim(today){
+  const prosle = CUR_PLAN.filter(w => w.start < today);
+  const zadnje = prosle.slice(-4);
+  if(!zadnje.length) return null;
+  const km = zadnje.map(weekRealKm);
+  /* Nule se BROJE (tri nedelje pauze zaista spuštaju hronično opterećenje),
+     ali ako je sve nula nemamo od čega da računamo. */
+  if(!km.some(v => v > 0)) return null;
+  return Math.round(km.reduce((a,b)=>a+b,0) / km.length * 10) / 10;
+}
+
+/* RUN/WALK DOK BOL NE PADNE ISPOD 4.
+   Pojas 4–5 je onaj u kom trčanje nije zabranjeno ali neprekidno trčanje jeste
+   prerano: udarno opterećenje se prekida hodom, pa tkivo dobija ciklus
+   opterećenje–rasterećenje umesto neprekidnog. Ispod 4 se vraća neprekidno
+   trčanje (uz i dalje smanjen obim), na 6+ se ne trči uopšte.
+   Korak lestvice zavisi od jačine bola — ista lestvica koju generator koristi
+   za početnike, jer je problem isti: tkivo koje još ne podnosi neprekidan rad. */
+const RW_BOL_MIN = 4;        /* od ovog bola naviše ide run/walk umesto neprekidnog */
+function runWalkZaBol(bol){
+  if(bol >= 6 || bol < RW_BOL_MIN) return null;
+  /* bol 5 -> 1 min/1 min · bol 4 -> 2 min/1 min */
+  return runWalkZaNedelju(bol >= 5 ? 1 : 2);
+}
+
 function injuryProposal(today){
   today = today || TODAY;
   const st = kneeStatus(today);
@@ -926,23 +1025,39 @@ function injuryProposal(today){
     const ph = returnToRunPhase(today);
     if(!ph) return null;
     const pctTxt = Math.round(ph.pct*100) + '%';
-    const changes = [];
+    /* ISTA ACWR GRANICA KAO U AKTIVNOJ FAZI. Lestvica 50/70/85% računa se od
+       PLANIRANOG obima, a plan ne zna da je čovek tri nedelje stajao. Ko je
+       pauzirao ima nisko hronično opterećenje i 50% plana može biti daleko
+       preko onoga što telo trenutno podnosi. Uzima se strože od dva. */
+    const hronP = hronicniObim(today);
+    const daniP = [];
     for(let i=0; i<7; i++){
       const date = addD(today, i);
       const d = BY_DATE[date];
       if(!d || d.rest) continue;
       if(d.tag === 'trka' || d.tag === 'test' || d.tag === 'snaga') continue;
-      /* KLJUČNO: računa se od ORIGINALNE kilometraže (origKm), ne od trenutne.
-         Inače bi drugi put dalo 70% od već smanjenih 50% = 35%. */
       const baseKm = (d.origKm != null ? d.origKm : d.km) || 0;
       if(!baseKm) continue;
-      const newKm = Math.max(2, Math.round(baseKm * ph.pct * 10)/10);
+      daniP.push({ d, date, baseKm });
+    }
+    const planiranoP = daniP.reduce((s,x)=>s+x.baseKm, 0);
+    /* Povratak sme na gornju ivicu bezbednog pojasa — cilj je rast ka planu,
+       ne trajno smanjenje kao dok bol traje. */
+    const acwrP = (hronP != null && planiranoP > 0)
+      ? Math.min(1, hronP*ACWR_MAX/planiranoP) : 1;
+    const changes = [];
+    for(const x of daniP){
+      const d = x.d, date = x.date;
+      /* KLJUČNO: računa se od ORIGINALNE kilometraže (origKm), ne od trenutne.
+         Inače bi drugi put dalo 70% od već smanjenih 50% = 35%. */
+      const baseKm = x.baseKm;
+      const newKm = Math.max(2, Math.round(baseKm * Math.min(ph.pct, acwrP) * 10)/10);
       if(newKm >= baseKm) continue;
       /* Prve dve nedelje povratka: bez kvalitetnih treninga, samo lagano. */
       const origTag = d.origTag || d.tag;
       const toTag = (ph.week <= 2 && (origTag === 'int' || origTag === 'tempo')) ? 'lako' : origTag;
       changes.push({ id:d.id, date, from:d.tag, to:toTag, km:newKm,
-        desc: (toTag === 'lako' ? 'Lagano ' : '') + newKm + ' km — povratak posle povrede, ' + pctTxt + ' obima' });
+        desc: (toTag === 'lako' ? 'Lagano ' : '') + fmtKm(newKm) + ' km — povratak posle povrede' });
     }
     if(!changes.length) return null;
     return {
@@ -954,15 +1069,21 @@ function injuryProposal(today){
          toga kako tkivo odgovara na opterećenje". Aplikacija ne može da
          izmeri simetriju snage ni test poskoka, pa ih NAVODI kao uslov koji
          korisnik sam proveri, umesto da ćuti i deluje sigurnije nego što jeste. */
-      message: 'Bez bola ' + ph.daysSince + ' ' + (ph.daysSince === 1 ? 'dan' : 'dana') +
-        '. Predlog: ' + pctTxt + ' planiranog obima narednih ' + changes.length + ' treninga' +
+      /* „Bez bola" je bilo netačno: prag povratne faze je bol ISPOD 3, pa je
+         aplikacija pisala „bez bola 21 dan" i onome ko je danas uneo bol 2. */
+      message: 'Bez bola 3+ već ' + ph.daysSince + ' ' + (ph.daysSince === 1 ? 'dan' : 'dana') +
+        '. Predlog: ' + (acwrP < ph.pct
+            ? Math.round(acwrP*100) + '% planiranog obima (lestvica povratka kaže ' + pctTxt +
+              ', ali prosek stvarno odrađenog u poslednje 4 nedelje — ' + fmtKm(hronP) + ' km/ned — dozvoljava manje)'
+            : pctTxt + ' planiranog obima') +
+        ' narednih ' + changes.length + ' treninga' +
         (ph.week <= 2 ? ', bez kvalitetnih treninga' : '') +
         '. Pre nego što prihvatiš — proveri da možeš: 30 min brzog hoda bez bola, 20 poskoka na povređenoj nozi bez bola, i da nema bola u mirovanju. Ako bilo šta od toga ne prolazi, rano je za trčanje bez obzira na broj dana. Ostavi bar jedan dan odmora između trčanja.'
     };
   }
 
   const from = addD(today, -6);
-  const recent = (S.knee||[]).filter(k => k.date>=from && k.date<=today && k.pain>=3);
+  const recent = bolniZapisi(from, today).filter(k => k.pain>=3);
   if(!recent.length) return null;
 
   const maxPain = recent.reduce((m,k)=>Math.max(m,k.pain), 0);
@@ -970,9 +1091,18 @@ function injuryProposal(today){
   const parts = [...new Set(recent.map(k=>partName(k.part)))];
 
   const stop = (st.cls === 'stop');
+  const rw = stop ? null : runWalkZaBol(maxPain);   /* bol 4–5 -> run/walk */
   const horizon = stop ? 7 : 5;          /* koliko dana unapred diramo */
 
-  const changes = [];
+  /* NEDELJNI BUDŽET umesto procenta po danu. Sve što se dira deli jedan
+     budžet: 0.8 × hronično opterećenje. Bez istorije se pada na ranije
+     procente (60% kvalitet / 75% lagano). */
+  const hron = stop ? null : hronicniObim(today);
+  const budzet = hron != null ? Math.round(hron * ACWR_POVRATAK * 10)/10 : null;
+
+  /* Prvo skupi dane koje diramo, pa tek onda podeli budžet — inače se ne zna
+     na koliko treninga se deli. */
+  const dani = [];
   for(let i=0; i<horizon; i++){
     const date = addD(today, i);
     const d = BY_DATE[date];
@@ -982,34 +1112,78 @@ function injuryProposal(today){
     if(d.tag === 'trka' || d.tag === 'test') continue;
     /* Snaga ostaje — nije udarno opterećenje na isti način kao trčanje. */
     if(d.tag === 'snaga') continue;
+    dani.push({ d, date });
+  }
 
+  /* Udeo se računa od ORIGINALNE kilometraže — inače bi drugi poziv smanjivao
+     već smanjeno (ista zamka koju povratna faza već izbegava kroz origKm). */
+  const baza = x => (x.d.origKm != null ? x.d.origKm : x.d.km) || 0;
+  const planirano = dani.reduce((s,x)=>s+baza(x), 0);
+
+  /* DVA OGRANIČENJA, UZIMA SE STROŽE.
+     1. Smanjenje po jačini bola — koliko se skida od planiranog. To je
+        klinički deo: bol određuje koliko se opterećenje spušta.
+     2. ACWR granica — koliko se SME ukupno, bez obzira na plan. Sprečava da
+        ambiciozan plan prođe samo zato što je procenat od njega „mali".
+     Ranije je postojalo samo (1), i to sa istim brojem za svakoga. Sam ACWR
+     kao jedini kriterijum takođe ne valja: kad je plan već ispod hroničnog
+     proseka, faktor ispadne 1 i bol ne bi promenio ništa.
+
+     Budžet se svodi na dužinu horizonta (5 ili 7 dana), da se nedeljna mera
+     ne poredi sa delom nedelje. */
+  const budzetHor = budzet != null ? budzet * horizon/7 : null;
+  const acwrFaktor = (budzetHor != null && planirano > 0) ? Math.min(1, budzetHor/planirano) : 1;
+
+  const changes = [];
+  for(const x of dani){
+    const d = x.d, oldKm = baza(x);
     if(stop){
-      changes.push({ id:d.id, date, from:d.tag, to:'odmor', km:null,
+      changes.push({ id:d.id, date:x.date, from:d.tag, to:'odmor', km:null,
         desc:'Odmor — bol ' + maxPain + '/10 prijavljen (' + parts.join(', ') + ')' });
-    } else {
-      const isQuality = (d.tag==='int' || d.tag==='tempo' || d.tag==='lr');
-      const oldKm = d.km || 0;
-      /* kvalitet -> lako na ~60% km; lagano -> isti tip, ~75% km.
-         Brojevi su konzervativni i namerno grubi — ovo je smanjenje
-         opterećenja, ne precizno doziranje. */
-      const newKm = oldKm ? Math.max(2, Math.round(oldKm * (isQuality ? 0.6 : 0.75) * 10)/10) : null;
-      if(!isQuality && newKm === oldKm) continue;   /* nema stvarne promene */
-      changes.push({ id:d.id, date, from:d.tag, to:'lako', km:newKm,
-        desc:'Lagano ' + (newKm!=null?newKm+' km':'') + ' — smanjeno zbog bola ' + maxPain + '/10' });
+      continue;
     }
+    const isQuality = (d.tag==='int' || d.tag==='tempo' || d.tag==='lr');
+    /* Pojas run/walk kreće od polovine planiranog: protokoli povratka na
+       trčanje polaze od ~50% uobičajenog obima, a i sama metoda znači da je
+       deo tog vremena hod. */
+    const bolFaktor = rw ? 0.5 : (isQuality ? 0.6 : 0.75);
+    const faktor = Math.min(bolFaktor, acwrFaktor);
+    let newKm = oldKm ? Math.max(2, Math.round(oldKm*faktor*10)/10) : null;
+    if(newKm != null && newKm > oldKm) newKm = oldKm;    /* nikad naviše */
+    /* Bez run/walk-a, lagan dan koji se ne menja nema šta da prijavi. Sa
+       run/walk-om ima — menja se NAČIN trčanja, ne samo obim. */
+    if(!rw && !isQuality && newKm === oldKm) continue;
+    const kmTxt = newKm != null ? fmtKm(newKm)+' km' : '';
+    changes.push({ id:d.id, date:x.date, from:d.tag, to:'lako', km:newKm, rw:rw||null,
+      desc: rw
+        ? 'Run/walk ' + kmTxt + ' — ' + runWalkText(rw) + ', zbog bola ' + maxPain + '/10'
+        : 'Lagano ' + kmTxt + ' — smanjeno zbog bola ' + maxPain + '/10' });
   }
 
   if(!changes.length) return null;
 
+  const ukupno = changes.reduce((s,c)=>s+(c.km||0), 0);
+  const obimTxt = stop ? ''
+    : ' Obim narednih ' + changes.length + ' treninga: ' + fmtKm(ukupno) + ' km umesto ' + fmtKm(planirano) + ' km'
+      + (hron != null ? ' (prosek stvarno odrađenog u poslednje 4 nedelje: ' + fmtKm(hron) + ' km/ned).' : '.');
+  /* Bol koji ne nosi trčanje se NE prećutkuje — samo ne prepisuje plan. */
+  const ostalo = nenosiviBol(from, today);
+  const ostaloTxt = ostalo
+    ? ' Prijavljen je i bol ' + ostalo.max + '/10 (' + ostalo.delovi.join(', ') + ') — to ne menja plan trčanja, ali ga ne zanemaruj.'
+    : '';
+
   return {
-    level: stop ? 'stop' : 'warn',
-    maxPain, parts, changes,
+    level: stop ? 'stop' : (rw ? 'runwalk' : 'warn'),
+    maxPain, parts, changes, rw, hron, budzet,
     title: st.t,
     /* Poruka je namerno različita po ozbiljnosti — kod jakog bola app NE
        glumi da je problem rešen smanjenjem kilometraže. */
-    message: stop
+    message: (stop
       ? 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Plan predlaže ODMOR od trčanja narednih ' + changes.length + ' treninga. Ovo nije nešto što aplikacija može da izleči — ako bol traje ili se pogoršava, javi se fizijatru ili lekaru.'
-      : 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Predlog: kvalitetni treninzi postaju lagani, obim smanjen narednih ' + changes.length + ' treninga. Ako bol poraste na 6+ ili potraje, prekini i javi se stručnjaku.'
+      : rw
+        ? 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Neprekidno trčanje je prerano, ali potpuni odmor nije potreban: narednih ' + changes.length + ' treninga ide po run/walk metodi — ' + runWalkText(rw) + '. Hod prekida udarno opterećenje, pa tkivo dobija ciklus opterećenje–rasterećenje.' + obimTxt + ' Neprekidno trčanje se vraća kad bol padne ispod ' + RW_BOL_MIN + '. Ako poraste na 6+, prekini i javi se stručnjaku.'
+        : 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Predlog: kvalitetni treninzi postaju lagani, obim smanjen narednih ' + changes.length + ' treninga.' + obimTxt + ' Ako bol poraste na 6+ ili potraje, prekini i javi se stručnjaku.'
+    ) + ostaloTxt
   };
 }
 
@@ -1021,7 +1195,7 @@ function applyInjuryProposal(prop){
   prop.changes.forEach(ch => {
     const d = BY_ID[ch.id];
     if(!d) return;
-    const r = setAlt(ch.id, { tag: ch.to, km: ch.km, desc: ch.desc });
+    const r = setAlt(ch.id, { tag: ch.to, km: ch.km, desc: ch.desc, rw: ch.rw||null });
     if(r && r.ok) n++;
   });
   if(n){ rebuildDateIndex(); save(); }
@@ -6147,7 +6321,7 @@ function renderKnee(){
     h+=`<div class="card" style="border-color:${prop.level==='stop'?'rgba(255,69,58,.35)':'rgba(255,176,32,.3)'}">
       <div class="card-t" style="color:${prop.level==='stop'?'var(--red)':'var(--amber)'}">Plan se može prilagoditi</div>
       <div style="font-size:.85rem;line-height:1.55;color:var(--txt2)">${esc(prop.message)}</div>
-      <div class="note-src" style="margin-top:10px">Menja se ${prop.changes.length} ${prop.changes.length===1?'trening':'treninga'}: ${esc(prop.changes.slice(0,4).map(x=>fmtD(x.date)+' → '+tagName(x.to)).join(' · '))}${prop.changes.length>4?' …':''}</div>
+      <div class="note-src" style="margin-top:10px">Menja se ${prop.changes.length} ${prop.changes.length===1?'trening':'treninga'}: ${esc(prop.changes.slice(0,4).map(x=>fmtD(x.date)+' → '+(x.rw?'Run/walk':tagName(x.to))).join(' · '))}${prop.changes.length>4?' …':''}</div>
       <div class="btnrow" style="margin-top:12px"><button class="btn" id="inj-apply">Prilagodi plan</button></div>
       <div class="note-src" style="margin-top:8px">Svaki dan možeš ručno da vratiš kroz Plan tab.</div>
     </div>`;
