@@ -351,7 +351,7 @@ describe('Vreme na dan treninga', () => {
     const lako = a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='lako');
       return d?karticaVremena(d):''; })()`);
     assert.doesNotMatch(String(lako), /tempo uz vrućinu/);
-    assert.match(String(lako), /temperatura/, 'lagan dan ipak vidi vreme');
+    assert.match(String(lako), /°C/, 'lagan dan ipak vidi vreme');
   });
 
   test('hladniji termin se nudi samo kad je razlika stvarna', () => {
@@ -361,6 +361,36 @@ describe('Vreme na dan treninga', () => {
     assert.ok(a.call('najboljiSat', danas, 17));
     /* U 7h je već najhladnije — nema šta da se pomera. */
     assert.equal(a.call('najboljiSat', danas, 7), null);
+  });
+
+  test('za danas se ne nudi sat koji je već prošao', () => {
+    /* „Idi u 5:00" u dva po podne nije savet. Baš je ta rečenica pročitana kao
+       trenutna temperatura („piše 25 °C, a napolju je 36"). */
+    const a = sa();
+    a.clock.set('2026-08-05T14:30:00Z');
+    const danas = a.get('TODAY');
+    const b = a.call('najboljiSat', danas, 17);
+    if (b) assert.ok(b.sat > 14, `nudi ${b.sat}:00, a sada je 14:30`);
+    /* Sutra nema tog ograničenja — ceo dan je još pred nama. */
+    const sutra = a.call('addD', danas, 1);
+    const bs = a.call('najboljiSat', sutra, 17);
+    if (bs) assert.ok(bs.sat >= 5);
+  });
+
+  test('kartica pokazuje i „sada", ne samo sat treninga', () => {
+    /* Otvorena u 14 h, kartica je pokazivala isključivo brojeve za 17 h, pa je
+       jedini stepen koji je ličio na trenutni bio onaj iz saveta o hladnijem
+       satu — i tako je i pročitan. */
+    const a = sa();
+    a.clock.set('2026-08-05T14:30:00Z');
+    const h = String(a.evalIn(`(()=>{ const d=BY_DATE[TODAY]; return d&&!d.rest?karticaVremena(d):''; })()`));
+    if (h) {
+      assert.match(h, /sada · 14:00/, 'nema reda „sada"');
+      assert.match(h, /u 17:00/, 'nema reda za sat treninga');
+    }
+    /* Za budući dan „sada" nema smisla i ne sme se pojaviti. */
+    const sutra = String(a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>TODAY&&!x.rest); return d?karticaVremena(d):''; })()`));
+    assert.doesNotMatch(sutra, /sada ·/, 'prognoza za drugi dan ne zna šta je „sada"');
   });
 
   test('bez lokacije se ništa ne crta i ništa ne šalje', () => {

@@ -126,6 +126,22 @@ describe('Prikaz vremena ne pušta smeće u ekran', () => {
     assert.equal(app.call('fmtClock', 3600), '1:00:00');
     assert.equal(app.call('fmtClock', 90061), '25:01:01');
   });
+
+  /* fmtNum je skidao zavrsne nule sa CELOG broja, ne samo iza zareza. Sa dec=0
+     to je jelo znacajne cifre: 10 → „1", 100 → „1", 0 → prazno. Videlo se na
+     kartici vremena („vetar 1 km/h", „padavine  %") i na pulsu u miru (50→„5"). */
+  test('fmtNum sa 0 decimala ne jede nule iz samog broja', () => {
+    for (const [ulaz, izlaz] of [[0, '0'], [5, '5'], [10, '10'], [20, '20'], [50, '50'], [100, '100'], [1000, '1000'], [10.4, '10'], [9.6, '10']])
+      assert.equal(app.call('fmtNum', ulaz, 0), izlaz, `fmtNum(${ulaz},0)`);
+  });
+  test('fmtNum i dalje skida suvisne nule IZA zareza', () => {
+    assert.equal(app.call('fmtNum', 20, 1), '20');
+    assert.equal(app.call('fmtNum', 0, 1), '0');
+    assert.equal(app.call('fmtNum', 10.5, 1), '10,5');
+    assert.equal(app.call('fmtNum', 1.25, 2), '1,25');
+    assert.equal(app.call('fmtNum', 1.5, 2), '1,5');
+    assert.equal(app.call('fmtNum', 100, 2), '100');
+  });
 });
 
 describe('Čarobnjak kaže ZAŠTO je zaključan', () => {

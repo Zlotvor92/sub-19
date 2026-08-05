@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='180'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='181'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -338,7 +338,12 @@ const DOWL=['ponedeljak','utorak','sreda','četvrtak','petak','subota','nedelja'
 const MES=['januara','februara','marta','aprila','maja','juna','jula','avgusta','septembra','oktobra','novembra','decembra'];
 function fmtD(s){const d=s2d(s);if(!validDatum(d))return'—';return pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.';}
 function fmtDL(s){const d=s2d(s);if(!validDatum(d))return'—';const wd=(d.getDay()+6)%7;return DOWL[wd].charAt(0).toUpperCase()+DOWL[wd].slice(1)+', '+d.getDate()+'. '+MES[d.getMonth()];}
-function fmtNum(n,dec=1){const v=(Math.round(n*10**dec)/10**dec).toFixed(dec).replace(/\.?0+$/,'');return v.replace('.',',');}
+/* Skidanje zavrsnih nula sme SAMO iza decimalne tacke.
+   Ranije se `/\.?0+$/` primenjivalo na ceo string, pa je sa dec=0 jelo ZNACAJNE
+   cifre: fmtNum(0,0)→"", fmtNum(10,0)→"1", fmtNum(100,0)→"1". Vidljivo je
+   postalo na kartici vremena („vetar 1 km/h" umesto 10, „padavine  %" umesto
+   0 %), ali je isto vazilo i za puls u miru na HRV grafikonu (50→"5"). */
+function fmtNum(n,dec=1){const v=(Math.round(n*10**dec)/10**dec).toFixed(dec);return (v.includes('.')?v.replace(/\.?0+$/,''):v).replace('.',',');}
 function fmtKm(n){return fmtNum(n,1);}
 /* Negativna i nebrojevna vrednost daju „—", ne „-1:-1:-5" i „NaN:NaN".
    fmtTempo je to vec hvatao, ali fmtClock se poziva i direktno na ~18 mesta
@@ -2698,13 +2703,26 @@ function vremeZaSat(datum, sat){
   const v=S.vreme; if(!v||!v.sati||!datum) return null;
   return v.sati[datum+'T'+String(sat).padStart(2,'0')]||null;
 }
+/* Trenutni sat — samo za DANAS, i samo ako prognoza pokriva taj sat.
+   Kartica je do sada pokazivala isključivo sat treninga; ko je otvori u 14 h
+   video je brojeve za 20 h bez ijednog podatka o tome kako je NAPOLJU sada, pa
+   je rečenicu o hladnijem satu čitao kao trenutnu temperaturu. */
+function vremeSada(datum){
+  if(datum!==TODAY) return null;
+  const h=new Date().getHours();
+  const z=vremeZaSat(datum,h);
+  return z?{sat:h, z}:null;
+}
 /* Najhladniji sat u razumnom prozoru za trčanje. Nudi se samo kad je razlika
    dovoljna da promeni odluku — pomeranje treninga zbog pola stepena nije savet
    nego smetnja. */
 function najboljiSat(datum, odabrani){
   const v=S.vreme; if(!v||!v.sati) return null;
+  /* Za DANAS se gledaju samo sati koji tek dolaze: „idi u 5:00" u dva po podne
+     nije savet nego zbunjivanje — a upravo tako je i pročitano. */
+  const prvi=(datum===TODAY)?Math.max(5,new Date().getHours()+1):5;
   let naj=null;
-  for(let h=5;h<=21;h++){
+  for(let h=prvi;h<=21;h++){
     const z=vremeZaSat(datum,h);
     if(!z||z.osecaj==null) continue;
     if(!naj||z.osecaj<naj.osecaj-0.01) naj={sat:h, osecaj:z.osecaj};
@@ -2729,8 +2747,11 @@ function karticaVremena(d){
   const vr=vrucinaZa(z.osecaj);
   const kvalitet=(d.tag==='int'||d.tag==='tempo');
   const redovi=[];
-  redovi.push(['temperatura', `<b>${esc(fmtNum(z.temp,0))} °C</b>`+
-    (z.osecaj!=null&&Math.abs(z.osecaj-z.temp)>=1?` <small>oseća se ${esc(fmtNum(z.osecaj,0))} °C</small>`:'')]);
+  const stepeni=x=>`<b>${esc(fmtNum(x.temp,0))} °C</b>`+
+    (x.osecaj!=null&&x.temp!=null&&Math.abs(x.osecaj-x.temp)>=1?` <small>oseća se ${esc(fmtNum(x.osecaj,0))} °C</small>`:'');
+  const sada=vremeSada(d.date);
+  if(sada&&sada.sat!==sat) redovi.push([`sada · ${sada.sat}:00`, stepeni(sada.z)]);
+  redovi.push([sada&&sada.sat!==sat?`u ${sat}:00`:'temperatura', stepeni(z)]);
   if(z.vlaga!=null) redovi.push(['vlažnost', `<b>${esc(fmtNum(z.vlaga,0))} %</b>`]);
   if(z.vetar!=null) redovi.push(['vetar', `<b>${esc(fmtNum(z.vetar,0))} km/h</b>`]);
   if(z.kisa!=null) redovi.push(['padavine', `<b>${esc(fmtNum(z.kisa,0))} %</b>`]);
@@ -2746,7 +2767,9 @@ function karticaVremena(d){
   const bolji=najboljiSat(d.date,sat);
   const nap=[];
   if(vr&&vr.rec) nap.push(vr.rec);
-  if(bolji) nap.push(`U ${bolji.sat}:00 je osećaj ${fmtNum(bolji.osecaj,0)} °C — ${Math.round((z.osecaj-bolji.osecaj))} °C manje nego u ${sat}:00.`);
+  /* „U 5:00 je osećaj 25 °C" je čitano kao TRENUTNA temperatura. Rečenica sada
+     počinje glagolom i imenuje dan, pa ne može da se pomeša sa „sada". */
+  if(bolji) nap.push(`Hladnije je u ${bolji.sat}:00 (${d.date===TODAY?'danas':dowOf(d.date)+' '+fmtD(d.date)}): osećaj ${fmtNum(bolji.osecaj,0)} °C, ${Math.round((z.osecaj-bolji.osecaj))} °C manje nego u ${sat}:00.`);
   nap.push('Procena usporavanja je približna, ne formula — služi da tempo na vrućini ne pročitaš kao pad forme.');
   return dKarta('Vreme', esc(fmtD(d.date)+' u '+sat+':00'),
     `<div class="drows">${dRedovi(redovi).replace(/^<div class="drows">|<\/div>$/g,'')}${dodatak}</div>`+
@@ -10274,6 +10297,10 @@ document.addEventListener('visibilitychange',()=>{
        iscrtaj ponovo pre nego sto korisnik bilo sta klikne. */
     if(osveziDan()){ renderHeader(); PAGES[ACTIVE](); }
     icuAutoSync();
+    /* Kartica vremena od v181 pokazuje i „sada". Instalirana PWA stoji otvorena
+       satima, pa bez ovoga red „sada" nosi prognozu od jutros. vremePovuci sam
+       preskace poziv ako je mladji od tri sata. */
+    if(navigator.onLine&&S.ui&&S.ui.geo) vremePovuci(false).then(r=>{ if(r.ok&&!r.kes&&ACTIVE==='danas') renderDanas(); });
   }
 });
 
