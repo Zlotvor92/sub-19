@@ -423,10 +423,17 @@ describe('Ista sesija ranije', () => {
     for (const p of potpisi) assert.match(p, /\|/, `potpis bez strukture: ${p}`);
   });
 
-  test('lagano i dugo trčanje nemaju potpis — ne porede se', () => {
+  test('lagano trčanje se poredi po POJASU distance, ne po strukturi', () => {
+    /* 8 km lako i 9 km lako su isti stimulus; 8 km i 20 km nisu. */
     const a = loadApp({ now: '2026-08-05T09:00:00Z' });
-    const bez = a.evalIn(`DATED.filter(d=>(d.tag==='lako'||d.tag==='lr')&&sesijaPotpis(d)).length`);
-    assert.equal(bez, 0);
+    const laki = a.evalIn(`DATED.filter(d=>(d.tag==='lako'||d.tag==='lr')&&sesijaPotpis(d)).length`);
+    assert.ok(laki > 0, 'lagana trčanja nemaju potpis — nemaju se sa čim porediti');
+    const p = JSON.parse(a.evalIn(`(()=>{
+      const nadji=km=>{ const d=DATED.find(x=>x.tag==='lako'&&x.km===km); return d?sesijaPotpis(d):null; };
+      return JSON.stringify({ k7:nadji(7), k8:nadji(8), k11:nadji(11) }); })()`));
+    assert.ok(p.k7 && p.k8, 'nema laganih trčanja od 7 i 8 km u planu');
+    assert.equal(p.k7, p.k8, '7 km i 8 km lako moraju biti u istom pojasu');
+    assert.notEqual(p.k8, p.k11, '8 km i 11 km lako ne smeju u isti pojas');
   });
 
   test('porede se samo RANIJE i samo odrađene sesije', () => {
@@ -435,7 +442,7 @@ describe('Ista sesija ranije', () => {
       const m={}; DATED.forEach(d=>{ const s=sesijaPotpis(d); if(s)(m[s]=m[s]||[]).push(d); });
       const par=Object.values(m).find(v=>v.length>=3);
       /* prvi odrađen, drugi NEodrađen, treći je „danas" */
-      S.log[par[0].id]={status:'done',km:par[0].km,sec:2400,ts:par[0].date,
+      S.log[par[0].id]={status:'done',km:par[0].km,sec:2400,hr:150,ts:par[0].date,
         laps:[{distM:800,paceSec:240,avgHr:170}]};
       const pid=predRowFor(par[0]); if(pid) S.pred[pid]=240;
       rebuildDateIndex();
@@ -444,5 +451,93 @@ describe('Ista sesija ranije', () => {
     })()`));
     assert.equal(r.ranijih, 1, 'neodrađena sesija je ušla u poređenje');
     assert.equal(r.odPrvog, 0, 'prva sesija u planu nema šta da poredi unazad');
+  });
+});
+
+describe('Lagano trčanje se poredi po pulsu i driftu', () => {
+
+  /* Dva ranija lagana trčanja istog pojasa + današnje, sve sa pulsom i driftom. */
+  const sa = (danasnji) => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    a.ctx.__d = danasnji || { km: 8, sec: 8 * 300, hr: 145, dek: 3.1 };
+    a.evalIn(`(()=>{
+      const laki=DATED.filter(x=>x.tag==='lako'&&sesijaPotpis(x)===sesijaPotpis(DATED.find(y=>y.tag==='lako'&&y.km===8)));
+      DAN_A=laki[0]; DAN_B=laki[1]; DANAS=laki[2];
+      S.log[DAN_A.id]={status:'done', km:8, sec:8*310, hr:155, ts:DAN_A.date, temp:22, decoupling:{n:6.4}};
+      S.log[DAN_B.id]={status:'done', km:8, sec:8*305, hr:150, ts:DAN_B.date, temp:24, decoupling:{n:5.0}};
+      S.log[DANAS.id]={status:'done', km:__d.km, sec:__d.sec, hr:__d.hr, ts:DANAS.date,
+                       decoupling:__d.dek!=null?{n:__d.dek}:null};
+      rebuildDateIndex(); })()`);
+    return a;
+  };
+
+  test('lagano trčanje sada UOPŠTE ima šta da poredi', () => {
+    const a = sa();
+    assert.equal(a.evalIn('isteSesije(DANAS,5).length'), 2);
+  });
+
+  test('vodeći broj je PULS, ne tempo', () => {
+    /* Na laganom se ide po osećaju — razlika u tempu je šum. Ono što se sa
+       bazom menja je puls na tom tempu. */
+    const a = sa();
+    const h = String(a.evalIn('karticaIstaSesija(DANAS)'));
+    assert.match(h, /Slično lagano ranije/);
+    assert.match(h, /<b>155<\/b> <small>bpm<\/small>/, 'puls nije podebljan broj u redu');
+    assert.match(h, /drift/, 'drift se ne prikazuje');
+    assert.match(h, /6,4 %/, 'drift nije prikazan sa srpskim zarezom');
+    /* Tempo SME kao kontekst („5:10/km"); RAZLIKA u tempu ne sme — to je
+       merilo kvalitetne sesije, a na laganom bi tvrdilo napredak tamo gde ga
+       nema. */
+    assert.match(h, /5:10\/km/, 'tempo se ne vidi ni kao kontekst');
+    assert.doesNotMatch(h, /[−+]\d+ s\/km/, 'lagano se poredi razlikom u tempu');
+  });
+
+  test('niži puls pri sličnom tempu je zelen, viši je ružičast', () => {
+    const a = sa({ km: 8, sec: 8 * 306, hr: 145, dek: 3.1 });   /* 5:06 vs 5:10 i 5:05 */
+    const h = String(a.evalIn('karticaIstaSesija(DANAS)'));
+    /* 145 naspram 155 = −10, i tempo je u granici → zeleno */
+    assert.match(h, /color:var\(--green\)">−10/, 'napredak u pulsu nije obeležen');
+  });
+
+  test('puls na BITNO drugačijem tempu se ne boji kao napredak', () => {
+    /* 145 bpm na 6:00/km naspram 155 bpm na 5:10/km nije jača baza nego
+       sporije trčanje. Broj se i dalje vidi, ali bez tvrdnje o napretku. */
+    const a = sa({ km: 8, sec: 8 * 360, hr: 145, dek: 3.1 });
+    const h = String(a.evalIn('karticaIstaSesija(DANAS)'));
+    assert.match(h, /color:var\(--txt3\)">−10/, 'razlika u pulsu se boji iako tempo nije uporediv');
+    assert.doesNotMatch(h, /color:var\(--green\)">−10/);
+  });
+
+  test('drift se poredi uvek — on sam po sebi već drži tempo u računu', () => {
+    /* Drift JESTE odnos tempo/puls, pa ne zavisi od toga koliko se brzo trčalo. */
+    const a = sa({ km: 8, sec: 8 * 360, hr: 145, dek: 3.1 });
+    const h = String(a.evalIn('karticaIstaSesija(DANAS)'));
+    assert.match(h, /color:var\(--green\)">−3,3/, 'pad drifta 6,4 → 3,1 nije prikazan kao napredak');
+  });
+
+  test('bez ijednog pulsa i drifta kartice nema — tempo laganog ne znači ništa', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    a.evalIn(`(()=>{
+      const laki=DATED.filter(x=>x.tag==='lako'&&sesijaPotpis(x)===sesijaPotpis(DATED.find(y=>y.tag==='lako'&&y.km===8)));
+      laki.slice(0,2).forEach(x=>{ S.log[x.id]={status:'done',km:8,sec:2480,ts:x.date}; });
+      DANAS=laki[2]; S.log[DANAS.id]={status:'done',km:8,sec:2460,ts:DANAS.date};
+      rebuildDateIndex(); })()`);
+    assert.equal(a.evalIn('karticaIstaSesija(DANAS)'), '');
+  });
+
+  test('kvalitetna sesija je i dalje poređenje po TEMPU', () => {
+    /* Nova grana ne sme da pregazi staru — intervali se porede po tempu
+       radnog dela, ne po pulsu. */
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const h = String(a.evalIn(`(()=>{
+      const m={}; DATED.forEach(d=>{ const s=sesijaPotpis(d); if(s&&(d.tag==='int'||d.tag==='tempo'))(m[s]=m[s]||[]).push(d); });
+      const par=Object.values(m).find(v=>v.length>=2);
+      S.log[par[0].id]={status:'done',ts:par[0].date,laps:[{distM:800,sec:192,paceSec:240,avgHr:170}]};
+      const pid=predRowFor(par[0]); if(pid) S.pred[pid]=240;
+      rebuildDateIndex();
+      return karticaIstaSesija(par[1]); })()`));
+    assert.match(h, /Ista sesija ranije/);
+    assert.doesNotMatch(h, /Slično lagano/);
+    assert.match(h, /4:00/, 'tempo radnog dela se više ne prikazuje');
   });
 });

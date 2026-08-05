@@ -169,6 +169,10 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .drow .l{color:var(--txt3);font-weight:600}
 .drow .v{font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em;text-align:right}
 .drow .v small{font-weight:600;color:var(--txt3);font-size:.72em;margin-left:3px}
+/* Drugi po važnosti broj u redu — drift uz puls na poređenju laganih trčanja.
+   Bez ovoga je stajao na istoj veličini kao puls, pa je „+6,4 %" vizuelno bilo
+   krupnije od samog pulsa i red više nije imao vodeći broj. */
+.drow .v .sec{font-weight:600;font-size:.84em;color:var(--txt2);margin-left:4px}
 
 /* ---------- AI ANALIZA ----------
    Isti element u dva stanja. Dok nema analize, kartica JE jedan red — sama

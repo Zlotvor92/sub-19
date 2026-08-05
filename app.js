@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='181'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='182'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2335,6 +2335,12 @@ function zoneHTML(){
     <p style="margin-top:8px">Iz tvojih Strava podešavanja. Koriste se za oznaku zone uz maksimalan puls na kartici treninga i u AI analizi.</p></details>`;
 }
 
+/* DRIFT (aerobno raspregnuće) ima ISTU skalu boja gde god se pojavi: ispod 5 %
+   je zdrava aerobna baza, 5–8 % je granično, preko 8 % znači da tempo košta
+   znatno više otkucaja u drugoj polovini. Jedna funkcija zato što se broj sada
+   vidi na dva mesta — „Sa sata" i poređenje laganih trčanja — pa bi dve kopije
+   praga pre ili kasnije obojile isti broj različito. */
+function bojaDrifta(n){ return n<5?'var(--green)':n<8?'var(--amber)':'var(--red)'; }
 /* Jedan red sa onim što je sat izmerio. Vraća '' kad nema nijednog podatka —
    prazan red bi bio samo šum na kartici. */
 /* Vraća REDOVE [naziv, vrednostHTML], ne rečenicu.
@@ -2365,7 +2371,7 @@ function metrikaSata(l){
   if(l.decoupling && typeof l.decoupling==='object'){
     const n=br(l.decoupling.n);
     if(n!=null){
-      const boja=n<5?'var(--green)':n<8?'var(--amber)':'var(--red)';
+      const boja=bojaDrifta(n);
       d.push(['drift pulsa',`<b style="color:${boja}">${n>0?'+':''}${esc(fmtNum(n,1))} %</b>`]);
     } else if(typeof l.decoupling.razlog==='string' && l.decoupling.razlog){
       d.push(['drift pulsa',`<small>${esc(l.decoupling.razlog)}</small>`]);
@@ -2796,9 +2802,28 @@ function cilJTempoDana(d){
    dela. 6×800 i 5×1000 su oba „Intervali", ali nisu isti trening i njihovo
    poređenje po tempu ne znači ništa. Struktura se čita iz `session` objekta kad
    postoji (generisan plan), inače iz QS tabele (hardkodovan plan) — ista dva
-   izvora koje već koristi Strava lap-detekcija. */
+   izvora koje već koristi Strava lap-detekcija.
+
+   LAGANA TRČANJA SE NE POREDE PO TEMPU.
+   Na laganom se ide po osećaju, pa je razlika u tempu između dva takva trčanja
+   šum — a ne dokaz ni napretka ni pada. Ono što se sa aerobnom bazom stvarno
+   menja jeste PULS na tom tempu i DRIFT (koliko odnos tempo/puls padne u
+   drugoj polovini trčanja). Oba broja aplikacija već ima — puls iz unosa ili sa
+   sata, drift iz `l.decoupling` — ali su se do sada videli samo za taj jedan
+   dan, bez ičega sa čim bi se uporedili.
+
+   Potpis laganog trčanja je POJAS DISTANCE, ne struktura: „8 km lako" i
+   „9 km lako" su isti stimulus i porede se, 8 km i 20 km nisu. */
+const LAKO_POJAS=2;            /* km — širina pojasa u kom se lagana trčanja porede */
+const TEMPO_UPOREDIV=10;       /* s/km — preko ove razlike puls više ne meri istu stvar */
+function jeLagano(d){ return !!d && (d.tag==='lako'||d.tag==='lr'); }
 function sesijaPotpis(d){
   if(!d||d.rest) return null;
+  if(jeLagano(d)){
+    const km=+d.km;
+    if(!(km>0)) return null;
+    return sessKind(d)+'|~'+(Math.round(km/LAKO_POJAS)*LAKO_POJAS);
+  }
   if(d.tag!=='int'&&d.tag!=='tempo') return null;
   const ses=d.session;
   let struktura=null;
@@ -2815,12 +2840,42 @@ function sesijaPotpis(d){
   if(!struktura) return null;
   return sessKind(d)+'|'+struktura;
 }
-/* Ranije odrađene sesije istog potpisa, najnovija prva. Uzima se ostvaren tempo
-   RADNOG dela (isti broj koji ide u VDOT), ne prosek celog trčanja — inače bi
-   duže zagrevanje izgledalo kao sporiji trening. */
+/* Merenja jednog odrađenog dana, u obliku u kom se porede — jedno mesto za
+   OBE vrste dana, da današnji broj i onaj od pre tri nedelje nikad ne dođu iz
+   dva različita računa.
+   Kvalitetna sesija: tempo RADNOG dela (isti broj koji ide u VDOT), ne prosek
+   celog trčanja — inače bi duže zagrevanje izgledalo kao sporiji trening.
+   Lagano trčanje: prosečan tempo CELOG trčanja (radnog dela nema), puls i drift. */
+function merenjaDana(x, l){
+  if(!x||!l) return null;
+  const lako=jeLagano(x);
+  const br=v=>(v==null||v===''||typeof v==='boolean'||!Number.isFinite(+v))?null:+v;
+  let tempo=null;
+  if(lako){
+    const km=br(l.km), sec=br(l.sec);
+    if(km>0&&sec>0) tempo=Math.round(sec/km);
+  } else {
+    const pid=predRowFor(x);
+    tempo=(pid&&S.pred[pid]!=null) ? S.pred[pid]
+        : (Array.isArray(l.laps)&&l.laps.length ? icuRadniTempo(l.laps) : null);
+  }
+  const laps=Array.isArray(l.laps)?l.laps:[];
+  const gaps=laps.filter(y=>y&&y.gapSec>0&&y.distM>0);
+  const gap=(!lako&&gaps.length&&gaps.length===laps.length)
+    ? Math.round(gaps.reduce((a,y)=>a+y.gapSec*y.distM/1000,0)/(gaps.reduce((a,y)=>a+y.distM,0)/1000))
+    : null;
+  /* Na laganom trčanju krugova nema (ili su proizvoljni auto-lap kilometri),
+     pa je merodavan prosek celog trčanja — isti broj koji stoji u „Uneto". */
+  const hrs=laps.map(y=>y&&y.avgHr).filter(y=>br(y)!=null).map(Number);
+  const hr=(!lako&&hrs.length) ? Math.round(hrs.reduce((a,b)=>a+b,0)/hrs.length) : (br(l.hr)>0?Math.round(br(l.hr)):null);
+  const dr=(l.decoupling&&typeof l.decoupling==='object')?br(l.decoupling.n):null;
+  return { tempo, gap, hr, drift:dr!=null?Math.round(dr*10)/10:null, temp:br(l.temp) };
+}
+/* Ranije odrađene sesije istog potpisa, najnovija prva. */
 function isteSesije(d, maxN){
   const potpis=sesijaPotpis(d);
   if(!potpis) return [];
+  const lako=jeLagano(d);
   const out=[];
   DATED.forEach(x=>{
     if(x.id===d.id) return;
@@ -2828,29 +2883,65 @@ function isteSesije(d, maxN){
     if(sesijaPotpis(x)!==potpis) return;
     const l=S.log[x.id];
     if(!l||l.status!=='done') return;
-    const pid=predRowFor(x);
-    const tempo=(pid&&S.pred[pid]!=null) ? S.pred[pid]
-              : (Array.isArray(l.laps)&&l.laps.length ? icuRadniTempo(l.laps) : null);
-    if(!tempo) return;
-    const gaps=Array.isArray(l.laps)?l.laps.filter(y=>y.gapSec>0&&y.distM>0):[];
-    const gap=(gaps.length&&gaps.length===l.laps.length)
-      ? Math.round(gaps.reduce((a,y)=>a+y.gapSec*y.distM/1000,0)/(gaps.reduce((a,y)=>a+y.distM,0)/1000))
-      : null;
-    const hrs=Array.isArray(l.laps)?l.laps.map(y=>y.avgHr).filter(y=>y!=null):[];
-    out.push({ dan:x, datum:l.runDate||l.ts||x.date, tempo, gap,
-               hr: hrs.length?Math.round(hrs.reduce((a,b)=>a+b,0)/hrs.length):(l.hr||null),
-               temp: l.temp!=null?l.temp:null });
+    const m=merenjaDana(x,l);
+    if(!m) return;
+    /* Kvalitetnoj sesiji je tempo ceo smisao poređenja; laganom trčanju NIJE —
+       ono se poredi po pulsu i driftu, pa red bez tempa i dalje nosi podatak. */
+    if(lako ? (m.hr==null&&m.drift==null) : !m.tempo) return;
+    out.push(Object.assign({ dan:x, datum:l.runDate||l.ts||x.date }, m));
   });
   out.sort((a,b)=>a.datum<b.datum?1:-1);
   return out.slice(0, maxN||3);
+}
+/* Razlika sa znakom i bojom. `manjeJeBolje` jer niži puls i manji drift znače
+   napredak, dok kod tempa isto važi (brže = manji broj) — ali se koristi i
+   neutralna boja kad poređenje ne važi (v. `uporedivo` na laganom). */
+function razlikaHTML(sad, pre, jed, dec, uporedivo){
+  if(sad==null||pre==null) return '';
+  const raz=Math.round((sad-pre)*10**(dec||0))/10**(dec||0);
+  const boja=(uporedivo===false)?'var(--txt3)':raz<0?'var(--green)':raz>0?'var(--pink)':'var(--txt3)';
+  const znak=raz<0?'−':raz>0?'+':'±';
+  return ` <small style="color:${boja}">${znak}${esc(fmtNum(Math.abs(raz),dec||0))}${jed?' '+jed:''}</small>`;
+}
+/* Lagana trčanja: puls i drift su brojevi, tempo i temperatura su kontekst.
+   Razlika u pulsu se BOJI samo kad je tempo uporediv — niži puls na 30 s/km
+   sporijem trčanju nije napredak nego sporije trčanje. Vrućina isto diže puls,
+   pa temperatura stoji uz tempo, a ne kao fusnota. */
+function karticaLaganaRanije(d, ranije, sada){
+  /* Bez ijednog pulsa i bez ijednog drifta ostaje samo poređenje tempa laganih
+     trčanja — a to je tačno ono što ništa ne znači. Tada se kartica ne crta. */
+  if(![sada].concat(ranije).some(x=>x&&(x.hr!=null||x.drift!=null))) return '';
+  const red=x=>{
+    const uporedivo=(sada.tempo!=null&&x.tempo!=null)?Math.abs(sada.tempo-x.tempo)<=TEMPO_UPOREDIV:false;
+    const levo=[x.tempo!=null?fmtTempo(x.tempo)+'/km':null, x.temp!=null?fmtNum(x.temp,0)+' °C':null].filter(Boolean).join(' · ');
+    const puls=x.hr!=null
+      ? `<b>${esc(x.hr)}</b> <small>bpm</small>${razlikaHTML(sada.hr, x.hr, '', 0, uporedivo)}`
+      : `<small>bez pulsa</small>`;
+    /* Drift je DRUGI po važnosti broj u redu, ne ravnopravan pulsu — otud
+       `.sec`. Boja je ista skala kao na kartici „Sa sata" (v. bojaDrifta).
+       Razlika u driftu se boji UVEK: drift je već odnos tempo/puls, pa ne
+       zavisi od toga koliko se brzo trčalo — za razliku od samog pulsa. */
+    const drift=x.drift!=null
+      ? ` <span class="sec">· drift <b style="color:${bojaDrifta(x.drift)}">${x.drift>0?'+':''}${esc(fmtNum(x.drift,1))} %</b></span>${razlikaHTML(sada.drift, x.drift, '', 1, true)}`
+      : '';
+    return `<div class="drow"><span class="l">${esc(fmtD(x.datum))}${levo?` <small>${esc(levo)}</small>`:''}</span>`+
+      `<span class="v">${puls}${drift}</span></div>`;
+  };
+  const pojas=Math.round((+d.km||0)/LAKO_POJAS)*LAKO_POJAS;
+  const nap=['Na laganom se ne poredi tempo — po njemu se ide po osećaju. Poredi se PULS na tom tempu i drift (koliko odnos tempo/puls padne u drugoj polovini). Niži puls i manji drift pri sličnom tempu znače jaču aerobnu bazu.'];
+  nap.push(`Razlika u pulsu se boji samo kad je tempo u granici od ${TEMPO_UPOREDIV} s/km — inače meri brzinu, ne formu. Vrućina diže puls, zato temperatura stoji uz tempo.`);
+  if(sada.hr==null&&sada.drift==null) nap.push('Kad uneseš prosečan puls za danas, prikazaće se i razlika.');
+  return dKarta('Slično lagano ranije', esc(`${sessKind(d)} · ~${pojas} km`),
+    `<div class="drows">${ranije.map(red).join('')}</div>`+
+    `<div class="note-src">${esc(nap.join(' '))}</div>`);
 }
 function karticaIstaSesija(d){
   const ranije=isteSesije(d,3);
   if(!ranije.length) return '';
   const l=S.log[d.id]||{};
-  const pid=predRowFor(d);
-  const sada=(pid&&S.pred[pid]!=null) ? S.pred[pid]
-           : (Array.isArray(l.laps)&&l.laps.length ? icuRadniTempo(l.laps) : null);
+  const sadaM=merenjaDana(d,l)||{tempo:null,hr:null,drift:null,gap:null,temp:null};
+  if(jeLagano(d)) return karticaLaganaRanije(d, ranije, sadaM);
+  const sada=sadaM.tempo;
   const red=x=>{
     /* Razlika se prikazuje SAMO kad postoje oba broja — „−4 s/km" naspram
        ničega je izmišljen napredak. */
