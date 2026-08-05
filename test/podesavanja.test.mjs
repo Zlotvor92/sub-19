@@ -35,14 +35,26 @@ describe('Struktura', () => {
   test('svaka sekcija je zasebna kartica', () => {
     const { html } = sa({ prijavljen: true, strava: true, icu: true });
     const k = kartice(html).map(x => x.naslov);
-    assert.deepEqual(k, ['Nalog', 'Plan', 'Strava', 'Oporavak', 'Slanje na sat', 'Podaci']);
+    assert.deepEqual(k, ['Nalog', 'Plan', 'Strava', 'intervals.icu', 'Slanje na sat', 'Podaci']);
   });
 
-  test('intervals.icu je razdvojen — oporavak i sat su odvojene kartice', () => {
+  test('čitanje i slanje su odvojene kartice', () => {
+    /* Sekcija se zove „intervals.icu" jer je to i izvor i za jutarnja merenja i
+       za trčanja — „Oporavak" je od spajanja tabova ime CELOG ekrana, pa bi
+       sekcija sa istim imenom obećavala nešto drugo. Slanje na sat ostaje
+       odvojeno: to je pisanje, ne čitanje. */
     const { html } = sa({ prijavljen: true, icu: true });
     const k = kartice(html).map(x => x.naslov);
-    assert.ok(k.includes('Oporavak') && k.includes('Slanje na sat'),
+    assert.ok(k.includes('intervals.icu') && k.includes('Slanje na sat'),
       'povlačenje i slanje su i dalje u istoj sekciji');
+  });
+
+  test('povlačenje je JEDNO dugme, ne dva', () => {
+    /* Jutarnja merenja i trčanja dolaze sa iste veze — dva dugmeta su bila
+       podela po tome kako je kod pisan, ne po tome šta čovek radi. */
+    const { html } = sa({ prijavljen: true, icu: true });
+    assert.match(html, /id="icu-sync"/, 'nema dugmeta za povlačenje');
+    assert.doesNotMatch(html, /id="icu-tren"/, 'vratilo se odvojeno dugme za treninge');
   });
 
   test('kartica za slanje na sat ne postoji dok intervals.icu nije povezan', () => {
@@ -63,7 +75,7 @@ describe('Šta je otvoreno, a šta sklopljeno', () => {
   test('sekcija koja traži radnju otvara se sama', () => {
     const { html } = sa({});
     const otv = kartice(html).filter(x => x.otvorena).map(x => x.naslov);
-    assert.deepEqual(otv, ['Nalog', 'Strava', 'Oporavak'],
+    assert.deepEqual(otv, ['Nalog', 'Strava', 'intervals.icu'],
       'nepovezane sekcije nisu otvorene');
   });
 

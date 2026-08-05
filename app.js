@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=8, LS_KEY='sub19-v1';
-const APP_VERSION='176'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='177'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -6973,8 +6973,8 @@ function karticaOporavka(){
        kartica sa istim imenom izgledala kao da je ekran u sebi. */
     return `<div class="card"><div class="card-t">Jutros</div>
       <div class="note-src" style="margin:0">${S.icu&&S.icu.athleteId
-        ? 'Povezano sa intervals.icu, ali još nema zapisa. Dodirni „Povuci sada" u Podešavanjima.'
-        : 'Nije povezano. Podešavanja → Oporavak (intervals.icu) — HRV, puls u miru i san sa Garmina.'}</div></div>`;
+        ? 'Povezano sa intervals.icu, ali još nema zapisa. Dodirni „Povuci sve" u Podešavanjima.'
+        : 'Nije povezano. Podešavanja → intervals.icu — HRV, puls u miru i san sa Garmina, i krugovi intervala sa trčanja.'}</div></div>`;
   }
   const zadnji=niz[niz.length-1];
   const o=oporavakZa(zadnji.datum)||zadnji;
@@ -7821,6 +7821,28 @@ function icuRadniTempo(laps){
   const t=laps.reduce((s,x)=>s+(x.paceSec*(x.distM||0)/1000),0);
   return (d>0&&t>0)?Math.round(t/(d/1000)):null;
 }
+/* JEDNO POVLAČENJE ZA SVE ŠTO intervals.icu NOSI.
+   Dva odvojena dugmeta („Povuci oporavak" i „Povuci treninge") bila su podela
+   po tome kako je kod pisan, ne po tome šta čovek hoće — a hoće da pritisne
+   jednom i da mu sve stigne. Jutarnja merenja i trčanja dolaze sa iste veze,
+   pa i idu zajedno.
+
+   Trčanja se preskaču bez greške kad veza nema dozvolu za njih (stariji OAuth
+   token): jutarnja merenja i dalje moraju da prođu, a razlog se vraća pozivaocu
+   da bi mogao da ga prikaže uz uspeh, a ne umesto njega. */
+async function icuSyncSve(danaUnazad, manual){
+  const w=await icuSync(danaUnazad||120);
+  if(!w.ok) return {ok:false, error:w.error};
+  const out={ok:true, zapisa:w.n, trcanja:null, krugova:null, trBez:null};
+  if(!icuImaTreninge()){
+    out.trBez='Veza nema dozvolu za treninge — otkači pa ponovo poveži.';
+    return out;
+  }
+  const t=await icuSyncTreninzi(Math.min(danaUnazad||60,90), manual);
+  if(t.ok){ out.trcanja=t.n; out.krugova=t.detalja; }
+  else out.trBez=t.error;
+  return out;
+}
 async function icuSyncTreninzi(danaUnazad, manual){
   if(!icuPovezan()) return {ok:false, error:'intervals.icu nije povezan.'};
   if(!icuImaTreninge()) return {ok:false, error:'Veza sa intervals.icu nema dozvolu za treninge. Otkači pa ponovo poveži — dobićeš i treninge, ne samo jutarnja merenja.'};
@@ -7967,7 +7989,7 @@ async function icuFinish(code){
 /* AUTOMATSKO POVLACENJE — jednom dnevno, pri prvom otvaranju.
    Garmin salje jutarnja merenja na intervals.icu tokom noci, pa su podaci za
    danas spremni pre nego sto se aplikacija uopste otvori; nema razloga da
-   korisnik pritiska "Povuci sada" da bi video sopstveni HRV.
+   korisnik pritiska "Povuci sve" da bi video sopstveni HRV.
    Ide 14 dana unazad, ne samo danas: sat zna da dopuni ili ispravi merenje
    unazad (san se zatvori tek posle sinhronizacije sata), a telefon je mogao
    biti bez signala nekoliko dana. Preklapanje ne smeta — zapisi se upisuju
@@ -8584,7 +8606,7 @@ function podesavanjaStanje(){
     { k:'strava', naziv:'Strava', vazi:true, ok:!!S.strava,
       radnja:'Poveži Stravu', dugme:'hero-strava',
       tekst:'Bez Strave se svako trčanje unosi ručno — distanca, vreme i puls stižu sami.' },
-    { k:'icu', naziv:'Oporavak', vazi:true, ok:stIcu,
+    { k:'icu', naziv:'intervals.icu', vazi:true, ok:stIcu,
       radnja:'Poveži intervals.icu', dugme:'hero-icu',
       tekst:'HRV, puls u miru i san koje Garmin već šalje na intervals.icu stoje nepovučeni.' },
     { k:'sat', naziv:'Slanje na sat', vazi:stIcu, ok:!!(S.icu&&S.icu.lastPush),
@@ -8681,16 +8703,15 @@ function openSettings(){
            <details class="help"><summary>Šta se uvozi</summary><p>Distanca, vreme i puls svakog trčanja, plus tempo kvalitetnih sesija iz lapova.</p></details>`)}
 
     ${kartica(!stIcu,
-      glava('Oporavak',
-        stIcu?((S.wellness?Object.keys(S.wellness).length:0)+' zapisa · '+(S.icu.lastSync?esc(new Date(S.icu.lastSync).toLocaleDateString('sr-RS')):'nikad')):'intervals.icu nije povezan',
+      glava('intervals.icu',
+        stIcu?((S.wellness?Object.keys(S.wellness).length:0)+' zapisa · '+(S.icu.lastSync?esc(new Date(S.icu.lastSync).toLocaleDateString('sr-RS')):'nikad')):'nije povezan',
         stIcu),
       stIcu
         ? `<div class="set-st">ID <b>${esc(S.icu.athleteId)}</b>${S.icu.token?' · odobreno na intervals.icu':' · ručni ključ'}<br>poslednje povlačenje: ${S.icu.lastSync?esc(new Date(S.icu.lastSync).toLocaleString('sr-RS')):'nikad'}</div>
-           <div class="btnrow"><button class="btn" id="icu-sync">Povuci oporavak</button><button class="btn ghost sm" id="icu-tren">Povuci treninge</button></div>
-           <div class="btnrow"><button class="btn ghost sm" id="icu-off">Otkači</button></div>
+           <div class="btnrow"><button class="btn" id="icu-sync">Povuci sve</button><button class="btn ghost sm" id="icu-off">Otkači</button></div>
            ${icuImaTreninge()
-             ? `<div class="set-st">Treninzi se povlače <b>sa intervals.icu</b>${S.strava?' (Strava ostaje kao rezerva)':''}.${S.icu.trSync?' Poslednji put: '+esc(new Date(S.icu.trSync).toLocaleString('sr-RS')):''}</div>`
-             : `<div class="set-st" style="color:var(--amber)">Ova veza je napravljena pre nego što je aplikacija umela da čita treninge, pa ima dozvolu samo za jutarnja merenja. <b>Otkači pa ponovo poveži</b> — dobićeš i krugove intervala, koje Strava ne daje ovako tačno.</div>`}
+             ? `<div class="set-st">Jednim dodirom stižu i <b>jutarnja merenja</b> i <b>trčanja</b>${S.strava?' (Strava ostaje kao rezerva)':''}.${S.icu.trSync?'<br>trčanja poslednji put: '+esc(new Date(S.icu.trSync).toLocaleString('sr-RS')):''}</div>`
+             : `<div class="set-st" style="color:var(--amber)">Ova veza je napravljena pre nego što je aplikacija umela da čita treninge, pa povlači samo jutarnja merenja. <b>Otkači pa ponovo poveži</b> — dobićeš i krugove intervala, koje Strava ne daje ovako tačno.</div>`}
            <details class="help"><summary>Šta se povlači</summary><p>HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</p><p><b>I sami treninzi.</b> intervals.icu je radne deonice već prepoznao nad izvornim fajlom sa sata, pa analiza dobija svaki interval posebno — tempo, GAP (tempo korigovan za nagib), puls i oporavak između repova — umesto proseka cele sesije. Ako intervals.icu nije povezan, sve to i dalje radi preko Strave, samo grublje.</p></details>`
         : `<div class="btnrow"><button class="btn" id="icu-oauth">Poveži intervals.icu</button></div>
            <details class="help"><summary>Šta se povezivanjem dobija</summary><p>HRV, puls u miru i san koje Garmin već šalje na intervals.icu, i slanje planiranih treninga na sat. Odobravaš na njihovoj strani — nikakav ključ ne prepisuješ.</p></details>
@@ -8885,12 +8906,21 @@ function openSettings(){
   if($('#icu-off')) $('#icu-off').onclick=()=>{ if(confirm('Otkačiti intervals.icu? Već povučeni podaci ostaju.')){ S.icu=null; save(); closeSheet(); } };
   if($('#icu-sync')) $('#icu-sync').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Povlačim…';
-    const r=await icuSync(120);
-    b.textContent=r.ok?('Povučeno '+r.n+' ✓'):'Nije uspelo';
-    if(!r.ok&&r.error) setTimeout(()=>alert(r.error),100);
-    save();
-    if(r.ok) setTimeout(osveziPodesavanja,900);
-    else setTimeout(()=>{ b.disabled=false; b.textContent='Povuci sada'; },1500);
+    const r=await icuSyncSve(120, true);
+    if(r.ok){
+      /* Sažetak imenuje SVE tri stvari koje su stigle — inače se ne vidi da je
+         jedno dugme stvarno odradilo i merenja i trčanja. */
+      const d=['merenja '+r.zapisa];
+      if(r.trcanja!=null) d.push('trčanja '+r.trcanja, 'krugovi '+r.krugova);
+      b.textContent=d.join(' · ')+' ✓';
+      if(r.trBez) setTimeout(()=>alert('Jutarnja merenja su povučena.\n\nTreninzi nisu: '+r.trBez),150);
+      renderHeader(); PAGES[ACTIVE]();
+      setTimeout(osveziPodesavanja,900);
+    } else {
+      b.textContent='Nije uspelo';
+      if(r.error) setTimeout(()=>alert(r.error),100);
+      setTimeout(()=>{ b.disabled=false; b.textContent='Povuci sve'; },1500);
+    }
   };
   /* Stanje offline kopije se čita ASINHRONO — ne sme da drži otvaranje
      Podešavanja. Do odgovora stoji „Proveravam…". */
@@ -8913,14 +8943,6 @@ function openSettings(){
       ? 'Offline kopija: '+st.kesevi.join(', ')+'. Verziju javlja tek sledeći service worker.'
       : 'Offline kopija se još pravi — otvori aplikaciju ponovo za koji trenutak.';
   });
-  if($('#icu-tren')) $('#icu-tren').onclick=async e=>{
-    const b=e.target; b.disabled=true; b.textContent='Povlačim…';
-    const r=await icuSyncTreninzi(60, true);
-    b.textContent=r.ok?('Trčanja '+r.n+' · krugovi '+r.detalja+' ✓'):'Nije uspelo';
-    if(!r.ok&&r.error) setTimeout(()=>alert(r.error),100);
-    if(r.ok){ renderHeader(); PAGES[ACTIVE](); setTimeout(osveziPodesavanja,900); }
-    else setTimeout(()=>{ b.disabled=false; b.textContent='Povuci treninge'; },1500);
-  };
   const so=$('#st-on'),ss=$('#st-sync'),sf=$('#st-off');
   if(so)so.onclick=stravaConnect;
   if(ss)ss.onclick=()=>{ss.disabled=true;ss.textContent='Sinhronizujem…';sinhronizujTreninge(true).finally(()=>closeSheet());};
