@@ -91,6 +91,11 @@ ciljni tempo, pauze, smirivanje.</p>
   (VDOT), a iz forme sve ostalo — budući tempi, predikcija trke i tempo koji odlazi na sat.
   Lagana trčanja u tome ne učestvuju.</p>
 </div>
+<div class="box tip">
+  <p><b>Kod laganih trčanja upiši prosečan puls.</b> Njihov tempo ne meri ništa, ali puls meri:
+  po njemu i po driftu se vidi da li baza raste (v. <a href="#poredjenje">poređenje sa ranijim
+  treninzima</a>). Ako je sat povezan, puls stiže sam.</p>
+</div>
 
 <h2 id="plan">3. Plan — cela priprema</h2>
 <p>Sve nedelje odjednom, sa kilometražom po nedelji i oznakom faze. Dodirni bilo koji dan
@@ -109,20 +114,49 @@ za detalje.</p>
 <p>Podešavanja → <b>Vreme</b> → Uključi lokaciju. Na kartici dana koji tek predstoji pojavi se
 temperatura, <b>osećaj</b>, vlažnost, vetar i verovatnoća kiše u sat kad obično trčiš — i, za
 kvalitetne sesije, koliko je realno sporiji ciljni tempo na toj vrućini.</p>
+<p>Za <b>današnji</b> dan prvi red pokazuje <b>„sada"</b> sa trenutnim satom, a red ispod sat
+treninga. Tako se odmah vidi i koliko je napolju u ovom trenutku i koliko će biti kad izađeš.</p>
+<p>Ako je neki sat tog dana <b>bar 3 °C hladniji</b>, kartica ga predloži — ali samo sat koji tek
+dolazi, ne onaj koji je već prošao, i uz ime dana da se ne pomeša sa trenutnim stanjem.</p>
 <p>Usporavanje se računa iz <b>osećaja</b>, ne iz temperature vazduha: vlažnost je ta koja ubija
-hlađenje znojenjem, pa 30 °C na 80% vlage nije isto što i 30 °C na 25%. Procena je približna i
-tako je i označena — služi da tempo na vrućini ne pročitaš kao pad forme.</p>
+hlađenje znojenjem, pa 30 °C na 80% vlage nije isto što i 30 °C na 25%. Na suvoj vrućini osećaj
+ume da bude i <i>niži</i> od temperature vazduha — znojenje tada radi svoj posao. Procena je
+približna i tako je i označena: služi da tempo na vrućini ne pročitaš kao pad forme.</p>
 <div class="box tip">
   <p><b>Koordinate ne prolaze kroz naš server.</b> Zaokružene na ~1 km idu direktno servisu
   Open-Meteo, koji ne traži ni nalog ni ključ. Isključivanjem se brišu sa uređaja.</p>
 </div>
 
-<h3>Ista sesija ranije</h3>
-<p>Na odrađenoj kvalitetnoj sesiji stoji kartica sa <b>istim treningom iz ranijih nedelja</b> —
-6×800 se poredi sa 6×800, ne sa bilo kojim intervalima. Prikazuje ostvaren tempo radnog dela,
-puls, temperaturu i razliku u odnosu na današnji.</p>
-<p>To je direktniji dokaz napretka od VDOT krive: između dva ista treninga nema nijedne
-pretpostavke, samo dva broja.</p>
+<h3 id="poredjenje">Poređenje sa ranijim treninzima</h3>
+<p>Ispod merenja stoji kartica sa <b>istim treningom iz ranijih nedelja</b>. To je direktniji
+dokaz napretka od VDOT krive: između dva ista treninga nema nijedne pretpostavke, samo dva broja.
+Šta se poredi zavisi od toga kakav je trening bio.</p>
+
+<p><b>Kvalitetne sesije — po tempu.</b> 6×800 se poredi sa 6×800, ne sa bilo kojim intervalima.
+Prikazuje ostvaren tempo <b>radnog dela</b> (ne prosek celog trčanja), GAP, puls, temperaturu i
+razliku u sekundama po kilometru u odnosu na današnji.</p>
+
+<p><b>Lagana i duga trčanja — po pulsu i driftu.</b> Tempo tu ne meri ništa: po laganom se ide po
+osećaju, pa je razlika između dva takva trčanja šum. Ono što se sa aerobnom bazom stvarno menja
+jeste <b>puls na tom tempu</b> i <b>drift</b>. Zato je puls vodeći broj, drift stoji uz njega, a
+tempo i temperatura su kontekst sa strane.</p>
+<table>
+  <tr><th>Broj</th><th>Šta znači</th></tr>
+  <tr><td><b>puls</b></td><td>niži puls pri sličnom tempu = jača baza. Razlika se boji <b>samo</b> kad je tempo u granici od 10 s/km — niži puls na bitno sporijem trčanju nije napredak nego sporije trčanje</td></tr>
+  <tr><td><b>drift</b></td><td>koliko je odnos tempo/puls pao u drugoj polovini trčanja. Ispod <b>5 %</b> je zdrava baza, 5–8 % granično, preko <b>8 %</b> znači da je tempo bio prebrz za trenutnu izdržljivost. Razlika se boji uvek — drift je već odnos tempo/puls, pa ne zavisi od toga koliko si brzo trčao</td></tr>
+</table>
+<p>Porede se trčanja iz istog <b>pojasa distance</b> (2 km): 8 km i 9 km lako su isti stimulus,
+8 km i 20 km nisu. Ako ni danas ni ranije nema nijednog pulsa i nijednog drifta, kartice nema —
+ostalo bi golo poređenje tempa, tačno ono što ništa ne znači.</p>
+<div class="box tip">
+  <p><b>Vrućina diže puls</b> na istom tempu, zato temperatura stoji odmah uz tempo. Isti trening
+  na 30 °C i na 15 °C nije isti trening, ma šta puls pokazivao.</p>
+</div>
+<p>Drift stiže sam: sa <b>intervals.icu</b> kao merenje nad celim fajlom sa sata, a sa Strave se
+računa iz preseka po kilometru. Za taj račun treba bar <b>6 km</b> i približno ravnomeran tempo
+(±3 %) — na progresivnom trčanju je razlika po definiciji ogromna i ne govori ništa o
+izdržljivosti, pa tada piše razlog umesto broja. Isti drift se vidi i na kartici <b>Sa sata</b>,
+za taj jedan dan.</p>
 
 <h2 id="oporavak">4. Oporavak — da li telo prati</h2>
 <p>Jedan ekran za sve što nije trening: kako si se probudio, koliko te opterećenje gura i
@@ -240,8 +274,15 @@ obe stižu sa iste veze:</p>
       GAP-om, pulsom i trajanjem oporavka između repova. To je ono što AI analizu pretvara iz
       „prosek cele sesije" u „treći rep si počeo da gubiš".</li>
 </ul>
-<p>Povezivanje: intervals.icu → Settings → dole <b>Developer Settings</b> → tu su ID
-sportiste i API ključ. <b>Ključ nikad ne napušta tvoj telefon</b> — ne upisuje se u bazu.</p>
+<p><b>Povezivanje ide jednim dugmetom:</b> Podešavanja → intervals.icu → <b>Poveži
+intervals.icu</b>. Odobravaš na njihovoj strani, nikakav ključ ne prepisuješ. Ako to ne prođe,
+pod <b>Ručno povezivanje</b> stoji stari put: intervals.icu → Settings → dole <b>Developer
+Settings</b> → ID sportiste i API ključ. <b>Ključ nikad ne napušta tvoj telefon</b> — ne
+upisuje se u bazu.</p>
+<div class="box tip">
+  <p><b>Jedno dugme za sve.</b> „Povuci sve" donosi i jutarnja merenja i trčanja odjednom —
+  stižu istom vezom, pa nema razloga da budu dva dugmeta.</p>
+</div>
 
 <h3>Slanje treninga na sat (pisanje)</h3>
 <p>Šalje strukturu treninga u intervals.icu kalendar, odakle intervals.icu prosleđuje
@@ -284,7 +325,7 @@ avionu, u šumi i bez signala.</p>
 <h2 id="problemi">10. Kad nešto ne radi</h2>
 <table>
   <tr><th>Simptom</th><th>Prvo probaj</th></tr>
-  <tr><td>Aplikacija izgleda staro / promena se ne vidi</td><td>zatvori je potpuno i otvori ponovo; u Podešavanjima na dnu proveri broj verzije</td></tr>
+  <tr><td>Aplikacija izgleda staro / promena se ne vidi</td><td>Podešavanja → dole piše i verzija koju vidiš i verzija <b>offline kopije</b>; dugme <b>Osveži aplikaciju</b> ih izjednačava odmah, bez gubitka podataka</td></tr>
   <tr><td>Na satu piše „No Target"</td><td>unesi prag tempa, pa <b>Pošalji iz početka</b></td></tr>
   <tr><td>Treninga nema na Garmin kalendaru</td><td>proveri „Upload planned workouts" u intervals.icu</td></tr>
   <tr><td>Strava ne uvozi trčanje</td><td>Uvezi trčanja ručno; ako je polje ručno menjano, zaštićeno je namerno</td></tr>

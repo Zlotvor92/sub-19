@@ -272,3 +272,43 @@ describe('Traka „Ovo nije tvoj plan"', () => {
     assert.equal(app.call('tudjPlanSaUnosima'), false);
   });
 });
+
+describe('Uputstvo ne sme da laže o brojevima iz koda', () => {
+  /* Uputstvo je jedini fajl koji niko ne pokreće, pa tiho zastari: prag se
+     promeni u app.js, a tekst i dalje tvrdi staru vrednost. Ove provere vezuju
+     KONSTANTU za rečenicu koja je opisuje — kad se konstanta promeni, pada test,
+     ne korisnikovo poverenje. */
+  const uputstvo = readRepoFile('uputstvo.html');
+
+  const vezano = [
+    ['pojas u kom se lagana trčanja porede',
+      /const LAKO_POJAS=(\d+);/, n => new RegExp(`pojasa distance</b> \\(${n} km\\)`)],
+    ['granica do koje je puls uporediv',
+      /const TEMPO_UPOREDIV=(\d+);/, n => new RegExp(`${n} s/km`)],
+    ['koliko stepeni mora biti hladnije da se sat uopšte predloži',
+      /osecaj-naj\.osecaj>=(\d+)/, n => new RegExp(`bar ${n} °C hladniji`)],
+    ['najmanji broj kilometara iz kog se drift uopšte računa',
+      /if\(v\.length<(\d+)\) return null;/, n => new RegExp(`bar <b>${n} km</b>`)]
+  ];
+
+  for (const [sta, izKoda, uTekst] of vezano) {
+    test(sta, () => {
+      const m = izKoda.exec(index);
+      assert.ok(m, `konstanta više ne postoji u app.js (${sta}) — uputstvo je ostalo bez izvora`);
+      assert.match(uputstvo, uTekst(m[1]), `uputstvo ne govori ${m[1]} za: ${sta}`);
+    });
+  }
+
+  test('pragovi boje drifta su isti u kodu i u uputstvu', () => {
+    const m = /function bojaDrifta\(n\)\{ return n<(\d+)\?'var\(--green\)':n<(\d+)\?/.exec(index);
+    assert.ok(m, 'bojaDrifta više ne postoji ili je promenila oblik');
+    assert.match(uputstvo, new RegExp(`Ispod <b>${m[1]} %</b> je zdrava baza, ${m[1]}–${m[2]} % granično, preko <b>${m[2]} %</b>`),
+      `uputstvo ne opisuje pragove ${m[1]} i ${m[2]}`);
+  });
+
+  test('svako sidro u uputstvu ima svoj cilj', () => {
+    const ids = new Set([...uputstvo.matchAll(/id="([^"]+)"/g)].map(x => x[1]));
+    const mrtva = [...uputstvo.matchAll(/href="#([^"]+)"/g)].map(x => x[1]).filter(h => !ids.has(h));
+    assert.deepEqual(mrtva, [], `sidra bez cilja: ${mrtva.join(', ')}`);
+  });
+});
