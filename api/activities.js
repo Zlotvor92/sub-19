@@ -16,9 +16,12 @@
    ZAŠTO PREKO SERVERA: isto što i /api/wellness — intervals.icu ne šalje CORS
    zaglavlja, a ključ ne sme da putuje iz pregledača ka trećoj strani.
 
-   DVA REŽIMA, da odgovor uvek ostane ograničen:
+   TRI REŽIMA, da odgovor uvek ostane ograničen:
      { oldest, newest }        -> spisak treninga u opsegu (sažeci)
      { detalji: [id, id, …] }  -> krugovi za do 12 traženih treninga
+     { tokovi:  [id, id, …] }  -> sirovi tokovi za do 3 treninga, iz kojih se
+                                  na uređaju računa po-km presek za lagana i
+                                  duga trčanja (icu tu nema strukturu)
 
    U Vercel Project Settings -> Environment Variables treba da postoje:
    - SUPABASE_URL, SUPABASE_ANON_KEY  (isti kao za /api/analyze) */
@@ -224,6 +227,51 @@ export default async function handler(req, res) {
   };
 
   try {
+    /* ---- REŽIM 3: SIROVI TOKOVI (po-km presek za kontinuirana trčanja) ----
+
+       ZAŠTO POSTOJI: režim 2 vraća `icu_intervals` — deonice koje je icu
+       PREPOZNAO. Na laganom i dugom trčanju struktura ne postoji, pa je odgovor
+       prazan i to je tačno. Ali tada nema NIŠTA po kilometru: ni tempa, ni
+       pulsa, ni drifta. Dok je Strava bila primaran izvor, taj presek se
+       računao iz njenih streamova; kad je icu postao primaran, lagana trčanja
+       su tiho ostala samo na proseku cele sesije — i AI analiza je to i pisala.
+
+       Vraćaju se SIROVI tokovi, u istom obliku u kom ih daje Strava
+       (`key_by_type=true`), da bi ih klijent obradio ISTOM funkcijom
+       (`perKmDetail`). Dve kopije tog računa bi se pre ili kasnije razišle. */
+    if (Array.isArray(body.tokovi)) {
+      const ids = body.tokovi.map(x => String(x || '').trim()).filter(x => ID_OBLIK.test(x)).slice(0, 3);
+      if (!ids.length) { res.status(400).json({ error: 'Nijedan ispravan ID treninga.' }); return; }
+      /* Samo ono što perKmDetail zaista čita — svaki dodatni tok je čist teret
+         na mreži (jedan sat trčanja je ~3600 tačaka po nizu). */
+      const ZELJENI = ['time', 'distance', 'heartrate', 'cadence', 'altitude', 'temp', 'watts', 'moving'];
+      const out = {};
+      for (const id of ids) {
+        try {
+          const j = await zovi('https://intervals.icu/api/v1/activity/' + encodeURIComponent(id) +
+                               '/streams?types=' + ZELJENI.join(','));
+          /* icu vraća niz {type, data}; Strava vraća objekat {type:{data}}.
+             Normalizuje se na Stravin oblik, jer njega klijent već ume. */
+          const niz = Array.isArray(j) ? j : (j && Array.isArray(j.streams) ? j.streams : []);
+          const tok = {};
+          for (const s of niz) {
+            if (!s || typeof s.type !== 'string' || !Array.isArray(s.data)) continue;
+            if (!ZELJENI.includes(s.type)) continue;
+            /* Vrednosti se svode na broj ili null — u tokovima ume da bude i
+               `false` i string, a perKmDetail sabira. */
+            tok[s.type] = { data: s.data.map(v => (v == null || v === false) ? null
+                                                : (v === true ? 1 : (Number.isFinite(+v) ? +v : null))) };
+          }
+          out[id] = (tok.distance && tok.distance.data.length) ? tok : { greska: true };
+        } catch (e) {
+          if (e.status === 401 || e.status === 429) throw e;
+          out[id] = { greska: true };
+        }
+      }
+      res.status(200).json({ tokovi: out });
+      return;
+    }
+
     /* ---- REŽIM 2: krugovi za tražene treninge ---- */
     if (Array.isArray(body.detalji)) {
       const ids = body.detalji.map(x => String(x || '').trim()).filter(x => ID_OBLIK.test(x)).slice(0, 12);

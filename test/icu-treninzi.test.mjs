@@ -223,9 +223,81 @@ describe('Redosled izvora i čuvari sinhronizacije', () => {
   });
 });
 
+describe('Lagana trčanja dobijaju presek po kilometru i sa icu-a', () => {
+
+  /* REGRESIJA SA PRIJAVE: „AI analiza opet brljavi, nije dobio po km-u trčanje".
+     `icu_intervals` je za kontinuirano trčanje prazan — to je tačan odgovor, jer
+     strukture nema. Ali dok je Strava bila primarni izvor, po-km presek se
+     računao iz njenih streamova; kad je icu postao primaran, lagana trčanja su
+     tiho ostala samo na proseku cele sesije, pa je i AI to pisao. */
+
+  test('sinhronizacija traži tokove i za lako i za dugo trčanje', () => {
+    const izvor = readRepoFile('app.js');
+    const m = /async function icuSyncTreninzi\(danaUnazad, manual\)\{([\s\S]*?)\n\}/.exec(izvor);
+    assert.ok(m, 'nema icuSyncTreninzi');
+    assert.match(m[1], /d\.tag==='lako'\|\|d\.tag==='lr'/, 'kontinuirana trčanja se ne skupljaju');
+    assert.match(m[1], /icuApi\(\{tokovi:/, 'tokovi se ne traže');
+    assert.match(m[1], /perKmDetail\(t\)/, 'presek se ne računa istom funkcijom kao za Stravu');
+  });
+
+  test('presek se NE traži ponovo kad već postoji u tekućoj verziji', () => {
+    /* Tokovi su veliki; bez ovog čuvara bi svaka sinhronizacija povlačila
+       nekoliko stotina kilobajta za trening koji je već obrađen. */
+    const izvor = readRepoFile('app.js');
+    assert.match(izvor, /\(l\.perKm\[0\]\|\|\{\}\)\.v===PERKM_VER\)\)\n?\s*tokovi\.push/,
+      'nema čuvara protiv ponovnog povlačenja tokova');
+  });
+
+  test('icu-ovo razdvajanje ima prednost nad našim računom', () => {
+    /* Njihovo je merenje nad celim fajlom; naše je procena iz po-km preseka.
+       Kad postoji njihovo, naše se ne sme upisati preko. */
+    const izvor = readRepoFile('app.js');
+    assert.match(izvor, /if\(!\(l\.icu&&l\.icu\.razdvajanje!=null\)\)\{\s*\n\s*const dek=decouplingPerKm\(perKm\);/,
+      'naš drift gazi icu-ov');
+  });
+
+  test('po-km presek oslobađa brojač AI analiza', () => {
+    /* Limit postoji zato što „ista analiza za iste podatke ne donosi ništa
+       novo". Kad podaci prestanu da budu isti, taj razlog otpada. */
+    const izvor = readRepoFile('app.js');
+    const m = /const perKm=perKmDetail\(t\);([\s\S]*?)\n\s*\}\);/.exec(izvor);
+    assert.ok(m, 'grana za tokove nije nađena');
+    assert.match(m[1], /delete l\.aiCount/, 'analiza ostaje zaključana na starim podacima');
+  });
+
+  test('perKmDetail čita icu tokove isto kao Stravine', () => {
+    /* Server normalizuje icu oblik ({type,data}[]) na Stravin ({type:{data}}),
+       pa ista funkcija radi za oba izvora. Ovde se to i proverava nad
+       realističnim tokom od 3 km. */
+    const a = app();
+    const N = 1800;                                   /* 3 km po 600 s/km */
+    const t = { time: { data: [] }, distance: { data: [] }, heartrate: { data: [] }, cadence: { data: [] } };
+    for (let i = 0; i < N; i++) {
+      t.time.data.push(i);
+      t.distance.data.push((i + 1) * (3000 / N));   /* poslednji uzorak mora DA STIGNE na 3000 */
+      t.heartrate.data.push(140 + Math.floor(i / 600) * 5);   /* puls raste po km */
+      t.cadence.data.push(86);
+    }
+    a.ctx.__t = t;
+    const perKm = JSON.parse(a.evalIn('JSON.stringify(perKmDetail(__t))'));
+    assert.equal(perKm.length, 3, `dobijeno ${perKm.length} kilometara`);
+    assert.ok(perKm[0].paceSec > 0 && perKm[0].hr > 0, 'nema ni tempa ni pulsa po kilometru');
+    assert.ok(perKm[2].hr > perKm[0].hr, 'porast pulsa kroz trčanje se izgubio');
+  });
+});
+
 describe('Server: /api/activities', () => {
 
   const src = readRepoFile('api/activities.js');
+
+  test('režim tokova postoji, ograničen je i vraća Stravin oblik', () => {
+    assert.match(src, /Array\.isArray\(body\.tokovi\)/, 'nema režima za sirove tokove');
+    assert.match(src, /\.slice\(0, 3\)/, 'broj treninga po pozivu nije ograničen');
+    assert.match(src, /'\/streams\?types='/, 'ne poziva se streams endpoint');
+    assert.match(src, /tok\[s\.type\] = \{ data:/, 'odgovor nije sveden na Stravin oblik {type:{data}}');
+    /* Bez ovog filtera bi se povlacili i tokovi koje perKmDetail ni ne cita. */
+    assert.match(src, /if \(!ZELJENI\.includes\(s\.type\)\) continue;/, 'povlače se i tokovi koji se ne koriste');
+  });
 
   test('traži prijavu i broji dnevni limit, kao i wellness', () => {
     assert.match(src, /requireUser\(req\)/);

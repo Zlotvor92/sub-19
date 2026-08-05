@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='185'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='186'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -8243,7 +8243,7 @@ async function icuSyncTreninzi(danaUnazad, manual){
   treninzi.forEach(a=>{ if(a&&a.datum&&a.km>0)(byDate[a.datum]=byDate[a.datum]||[]).push({...a, distance:a.km*1000}); });
   autoRealign(byDate);
 
-  let n=0; const trazi=[];
+  let n=0; const trazi=[], tokovi=[];
   for(const date of Object.keys(byDate)){
     const d=BY_DATE[date];
     if(!d||d.rest||d.km==null) continue;
@@ -8282,6 +8282,17 @@ async function icuSyncTreninzi(danaUnazad, manual){
        svako kontinuirano trčanje trošilo poziv pri svakoj sinhronizaciji. */
     if((d.tag==='int'||d.tag==='tempo') && a.id && !String(l.lapsIzvor||'').startsWith('icu'))
       trazi.push({id:a.id, dayId:d.id, d});
+    /* KONTINUIRANA TRCANJA (lako/dugo): icu tu NEMA strukturu — `icu_intervals`
+       je prazan i to je tacan odgovor. Ali bez po-km preseka nema ni tempa po
+       kilometru, ni pulsa po kilometru, ni drifta; AI analiza tada posteno pise
+       „samo prosek cele sesije". Dok je Strava bila primarna, taj presek se
+       racunao iz njenih streamova (v. grana `d.tag==='lako'||d.tag==='lr'` u
+       stravaSync). Kad je icu postao primaran, lagana trcanja su to tiho
+       izgubila. Zato se i za njih traze SIROVI tokovi, pa se obradjuju istom
+       funkcijom (`perKmDetail`) kao i Stravini. */
+    if((d.tag==='lako'||d.tag==='lr') && a.id && !l.lock
+       && !(Array.isArray(l.perKm) && l.perKm.length && (l.perKm[0]||{}).v===PERKM_VER))
+      tokovi.push({id:a.id, dayId:d.id, d});
   }
 
   let detalja=0;
@@ -8307,9 +8318,39 @@ async function icuSyncTreninzi(danaUnazad, manual){
       }
     });
   }
+
+  /* PO-KM PRESEK ZA KONTINUIRANA TRCANJA.
+     Tokovi su veliki (jedan sat trcanja je ~3600 tacaka po nizu), pa se trazi
+     najvise tri po sinhronizaciji — a i ne trazi se ponovo, jer `perKm` sa
+     tekucom verzijom ovu granu iskljucuje. */
+  let presek=0;
+  for(let i=0;i<tokovi.length && i<3;i+=3){
+    const grupa=tokovi.slice(i,i+3);
+    const r=await icuApi({tokovi:grupa.map(x=>x.id)});
+    if(!r.ok){ if(manual) return r; break; }
+    grupa.forEach(x=>{
+      const t=(r.tokovi||{})[x.id];
+      if(!t||t.greska) return;
+      const l=S.log[x.dayId]; if(!l) return;
+      const perKm=perKmDetail(t);
+      if(!perKm.length) return;
+      l.perKm=perKm; presek++;
+      /* icu-ovo `razdvajanje` iz spiska ima prednost — ono je merenje nad celim
+         fajlom. Kad ga nema (a za lagana trcanja ga cesto nema), racuna se iz
+         po-km preseka, isto kao na Stravinoj putanji. */
+      if(!(l.icu&&l.icu.razdvajanje!=null)){
+        const dek=decouplingPerKm(perKm);
+        if(dek) l.decoupling=dek; else delete l.decoupling;
+      }
+      /* Analiza nastala nad golim prosekom vise ne vazi kad stignu podaci po
+         kilometru — brojac se oslobadja, kao i na Stravinoj putanji. */
+      delete l.aiCount;
+    });
+  }
+
   S.icu.trSync=Date.now(); save();
   fixVdotDates();
-  return {ok:true, n, detalja};
+  return {ok:true, n, detalja, presek};
 }
 
 /* ============================================================
@@ -9882,7 +9923,8 @@ async function sinhronizujTreninge(manual){
     if(r.ok){
       renderHeader(); PAGES[ACTIVE]();
       if(manual) alert('Sinhronizacija sa intervals.icu gotova.\nAžurirano trčanja: '+r.n+
-        '\nTreninga sa krugovima: '+r.detalja);
+        '\nTreninga sa krugovima: '+r.detalja+
+        '\nSa presekom po kilometru: '+(r.presek||0));
       return r;
     }
     if(!S.strava){ if(manual) alert('intervals.icu: '+r.error); return r; }
