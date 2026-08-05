@@ -86,6 +86,22 @@ describe('generatePlan — osnovna ispravnost', () => {
     }
   });
 
+  test('nijedan opis ne pokazuje neurednu decimalu', () => {
+    /* PUCALO: taper sesije skaliraju zagrevanje i smirivanje (×0,75 / ×0,8), a
+       rezultat nije išao kroz r1() — pa je 1,5 × 0,8 curilo u opis kao
+       „1.2000000000000002 km hlađenje". Binarni zapis decimala; pogađalo je sve
+       četiri distance u poslednjoj nedelji pred trku, dakle baš u planu koji
+       čovek najpažljivije čita. Sve kilometraže se prikazuju na jednu decimalu,
+       pa je više od jedne u opisu uvek greška, ne stil. */
+    for (const s of SCENARIJI) {
+      const p = gen(s.inp);
+      p.weeks.forEach(w => w.days.forEach(d => {
+        const loše = (d.desc || '').match(/\d+\.\d\d+/);
+        assert.ok(!loše, `${s.ime} N${w.w} d${d.dow}: „${loše && loše[0]}" u opisu — ${d.desc}`);
+      }));
+    }
+  });
+
   test('odbija degenerisan ulaz čistom greškom (ne NaN-om)', () => {
     assert.ok(gen(baseInput({ pb: { distM: 5000, sec: 0 } })).error);
     assert.ok(gen(baseInput({ pb: { distM: 0, sec: 1200 } })).error);
