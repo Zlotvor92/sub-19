@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='188'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='189'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2482,6 +2482,13 @@ function aiTelo(d,l){
   const ostatak=n=>n===Infinity?'bez ograničenja':`${n} ${pl3(n,'preostala','preostale','preostalih')}`;
   /* Trazi se STRING, ne samo „ima nesto": iz uvezenog backupa `aiText` moze
      doci kao objekat ili broj, a onda bi u kartici pisalo „[object Object]". */
+  /* POSAO KOJI JOŠ TRAJE ima svoje stanje — inače bi kartica posle povratka u
+     aplikaciju izgledala kao da se ništa nije desilo, pa bi čovek kliknuo
+     ponovo i potrošio još jednu analizu. */
+  if(l.aiPosao&&l.aiPosao.id&&!(typeof l.aiText==='string'&&l.aiText.trim())){
+    return dGlava('Analiza',esc(izvor))+
+      `<div class="ai-out">Analiza je u toku. Rezultat se upisuje sam — možeš da zatvoriš aplikaciju.</div>`;
+  }
   const tekst=typeof l.aiText==='string'&&l.aiText.trim()?l.aiText:null;
   if(tekst){
     return dGlava('Analiza',esc(izvor))+
@@ -3188,41 +3195,106 @@ function vezAnalize(root,d){
         }
       };
       try{
-        const resp=await fetch('/api/analyze',{
-          method:'POST',
-          headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
-          body:JSON.stringify(payload)
-        });
-        let data;
-        try{ data=await resp.json(); }
-        catch{
-          out.className='ai-out err';
-          /* 504 je VREMENSKO ograničenje, ne nedostajući fajl. Ranije je jedna
-             ista poruka pokrivala oba slučaja, pa je čovek na istek vremena
-             dobijao savet da proveri deploy — i tražio grešku tamo gde je nema. */
-          out.textContent = resp.status===504
-            ? 'Analiza je predugo trajala i server je prekinuo vezu (504). Pokušaj ponovo.'
-            : 'Server nije vratio ispravan odgovor (HTTP '+resp.status+'). Ako se ponavlja, prijavi problem iz Podešavanja.';
-          return;
-        }
-        if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata')+(data.detail?' — '+data.detail:''); }
-        else {
-          /* TEKST SE ČUVA. Ranije se nije — potrošio bi kvotu i izgubio analizu
-             čim se ekran ponovo iscrta, dok ti poruka o limitu govori da nema
-             potrebe za ponavljanjem. Skraćuje se da jedan trening ne naduva
-             ni localStorage ni ono što ide na server. */
-          l.aiText=String(data.text||'').slice(0,4000);
-          l.aiAt=Date.now();
-          l.aiCount=(l.aiCount||0)+1;
-          save();
-          karta.innerHTML=aiTelo(d,l);
-          vezAnalize(root,d);   /* nov čvor traži novo vezivanje */
-          return;
-        }
+        /* 1. POKRENI. Odgovor je trenutan — server samo otvori red u bazi. */
+        const zapoc=await aiPozovi({posao:'start'});
+        if(!zapoc.ok){ out.className='ai-out err'; out.textContent=zapoc.error; gotovo(); return; }
+        l.aiPosao={id:zapoc.data.posaoId, at:Date.now()};
+        save();
+        out.textContent='Analiziram… ovo traje do minut. Možeš da zatvoriš aplikaciju, rezultat te čeka.';
+
+        /* 2. POKRENI RAČUN, ali NE ČEKAJ ga. Ovaj zahtev sme da traje koliko
+           mu treba; rezultat ide u bazu, ne u njegov odgovor. */
+        aiPozovi(Object.assign({posao:'radi', posaoId:l.aiPosao.id}, payload)).catch(()=>{});
+
+        /* 3. PITAJ ZA REZULTAT. Ako se ne dočeka (mreža, uspavan telefon),
+           pokupiće ga `aiPokupiSve` pri sledećem otvaranju aplikacije. */
+        const konac=await aiSacekaj(d, l);
+        if(konac==='gotovo'){ karta.innerHTML=aiTelo(d,l); vezAnalize(root,d); return; }
+        if(konac==='greska'){ out.className='ai-out err'; out.textContent=l.aiGreska||'Analiza nije uspela.'; }
+        else out.textContent='Analiza još traje. Rezultat će se pojaviti sam — možeš da zatvoriš aplikaciju.';
       }catch(e){
         out.className='ai-out err'; out.textContent='Pravi mrežni prekid (offline / nema signala).';
       }finally{ gotovo(); }
   });
+}
+
+/* ============================================================
+   ANALIZA ODVOJENA OD ČEKANJA
+
+   Ranije je jedan zahtev radio sve: klik → čekaj → tekst. Taj zahtev živi
+   najduže koliko i serverska funkcija (60 s), pa je svaki sporiji odgovor
+   modela završavao kao HTTP 504 — analiza je možda i bila napravljena, ali je
+   nestajala jer nije imala gde da se upiše. Isto se dešavalo kad telefon
+   uspava stranicu: veza pukne, rezultat propadne, a kvota je potrošena.
+
+   Sada posao ima svoj red u bazi (v. supabase/ai-posao.sql). Klijent ga
+   pokrene, ne čeka ga, i pokupi rezultat kad god se vrati — pri sledećem
+   pitanju ili pri sledećem otvaranju aplikacije. ============================ */
+async function aiPozovi(telo){
+  try{
+    const r=await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
+      body:JSON.stringify(telo)
+    });
+    let j; try{ j=await r.json(); }
+    catch{ return {ok:false, error:'Server nije vratio ispravan odgovor (HTTP '+r.status+').'}; }
+    if(!r.ok) return {ok:false, status:r.status, error:(j.error||'Greška '+r.status)+(j.detail?' — '+j.detail:'')};
+    return {ok:true, data:j};
+  }catch(e){ return {ok:false, error:'Nema veze sa serverom.'}; }
+}
+/* Jedan pogled u bazu. Vraća 'gotovo' | 'greska' | 'radi' | null (nema posla). */
+async function aiProveri(d, l){
+  const p=l&&l.aiPosao;
+  if(!p||!p.id) return null;
+  const r=await aiPozovi({posao:'citaj', posaoId:p.id});
+  if(!r.ok){
+    /* 404 znaci da je red istekao ili obrisan — nema sta da se ceka. */
+    if(r.status===404){ delete l.aiPosao; save(); return 'greska'; }
+    return 'radi';
+  }
+  const st=r.data&&r.data.stanje;
+  if(st==='gotovo'){
+    l.aiText=String(r.data.tekst||'').slice(0,4000);
+    l.aiAt=Date.now();
+    l.aiCount=(l.aiCount||0)+1;
+    delete l.aiPosao; delete l.aiGreska;
+    save();
+    return 'gotovo';
+  }
+  if(st==='greska'){
+    l.aiGreska=String(r.data.greska||'Analiza nije uspela.');
+    delete l.aiPosao; save();
+    return 'greska';
+  }
+  return 'radi';
+}
+/* Pita na svake tri sekunde, najviše minut i po. Ako ne dočeka, posao ostaje
+   zapisan — nista nije izgubljeno. */
+async function aiSacekaj(d, l){
+  for(let i=0;i<30;i++){
+    await new Promise(r=>setTimeout(r, 3000));
+    const st=await aiProveri(d, l);
+    if(st==='gotovo'||st==='greska') return st;
+    if(st===null) return 'gotovo';       /* neko drugi ga je vec pokupio */
+  }
+  return 'radi';
+}
+/* Pri otvaranju aplikacije i pri povratku u nju: pokupi sve sto je u medjuvremenu
+   zavrseno. Zato analiza prezivi i zatvaranje aplikacije usred racunanja. */
+let AI_KUPIM=false;
+async function aiPokupiSve(){
+  if(AI_KUPIM||!navigator.onLine||!sbAuthed()) return;
+  const dani=Object.keys(S.log||{}).filter(id=>S.log[id]&&S.log[id].aiPosao&&S.log[id].aiPosao.id);
+  if(!dani.length) return;
+  AI_KUPIM=true;
+  let promena=false;
+  for(const id of dani.slice(0,5)){
+    const st=await aiProveri({id}, S.log[id]);
+    if(st==='gotovo'||st==='greska') promena=true;
+  }
+  AI_KUPIM=false;
+  if(promena&&PAGES[ACTIVE]) PAGES[ACTIVE]();
 }
 function syncSide(d){
   const l=S.log[d.id];if(!l)return;
@@ -10485,6 +10557,7 @@ document.addEventListener('visibilitychange',()=>{
     icuAutoSync();
     /* Treninzi, ne samo jutarnja merenja — v. trPovuciAko. */
     trPovuciAko(15*60000);
+    aiPokupiSve();          /* analiza koja je zavrsena dok je app bila zatvorena */
     /* Kartica vremena od v181 pokazuje i „sada". Instalirana PWA stoji otvorena
        satima, pa bez ovoga red „sada" nosi prognozu od jutros. vremePovuci sam
        preskace poziv ako je mladji od tri sata. */
@@ -10512,6 +10585,7 @@ sbInit();
    a nema Stravu nikad ne bi dobio automatsku sinhronizaciju. */
 if(navigator.onLine) trPovuciAko(3600000);
 icuAutoSync();
+aiPokupiSve();               /* v. „ANALIZA ODVOJENA OD CEKANJA" */
 /* Prognoza se osvežava na startu, ali samo ako je starija od tri sata (v.
    vremePovuci) — poziv je besplatan, ali nema razloga da se ponavlja pri
    svakom otvaranju. */

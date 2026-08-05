@@ -412,7 +412,7 @@ describe('Vlasnik nema limit AI analiza', () => {
     const src = readRepoFile('api/analyze.js');
     assert.match(src, /async function jeVlasnik\(req\)/);
     assert.match(src, /email_confirmed_at \|\| u\.confirmed_at/);
-    assert.match(src, /if \(!vlasnik\) try \{/, 'limit se i dalje broji vlasniku');
+    assert.match(src, /if \(!vlasnik && posao !== 'radi'\) try \{/, 'limit se i dalje broji vlasniku');
   });
 });
 

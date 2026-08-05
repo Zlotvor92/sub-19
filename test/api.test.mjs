@@ -521,11 +521,78 @@ describe('Analiza se sama zaustavi pre Vercelovog noza', () => {
     assert.ok(+m[1] >= 1500, `budzet od ${m[1]} tokena ne ostavlja mesta ni za razmisljanje`);
   });
 
-  test('klijent 504 ne predstavlja kao nedostajuci fajl', () => {
-    /* Ranije je ista poruka pokrivala i istek i „nije deployovano", pa je covek
-       na istek trazio gresku tamo gde je nema. */
+  test('klijent vise ne gubi rezultat na istek', () => {
+    /* Ranije je klijent CEKAO odgovor, pa je istek znacio izgubljenu analizu i
+       potrosenu kvotu. Sada posao ima svoj red u bazi i pokupi se kasnije, pa
+       poruka o 504 vise nije ni potrebna. */
     const app = readRepoFile('app.js');
-    assert.match(app, /resp\.status===504/, 'istek se ne razlikuje od ostalih gresaka');
-    assert.doesNotMatch(app, /jos nije deployovan na Vercel-u/, 'stara poruka je i dalje tu');
+    assert.doesNotMatch(app, /jos nije deployovan na Vercel-u/, 'stara, netacna poruka je i dalje tu');
+    assert.match(app, /posao:'start'/, 'analiza se i dalje pokrece sinhrono');
+    assert.match(app, /aiPozovi\(Object\.assign\(\{posao:'radi'/, 'racun se ceka umesto da se pusti');
+    assert.match(app, /async function aiPokupiSve\(\)/, 'nema pokupljanja zavrsenih analiza');
+  });
+});
+
+describe('Analiza odvojena od cekanja', () => {
+  /* Jedan zahtev je i dalje ogranicen na maxDuration — to se ne moze zaobici.
+     Ali rezultat vise ne zivi u tom zahtevu nego u tabeli, pa se ne gubi ni kad
+     veza pukne, ni kad telefon uspava stranicu, ni kad se app zatvori. */
+  const src = readRepoFile('api/analyze.js');
+  const app = readRepoFile('app.js');
+  const sql = readRepoFile('supabase/ai-posao.sql');
+
+  test('tri faze postoje i samo POKRETANJE trosi dnevni limit', () => {
+    for (const f of ['start', 'radi', 'citaj'])
+      assert.match(src, new RegExp(`posao === '${f}'`), `nema faze '${f}'`);
+    /* Kad bi se brojala i faza 'radi', jedna analiza bi trosila dve. */
+    assert.match(src, /if \(!vlasnik && posao !== 'radi'\)/, 'faza racuna se broji u limit');
+    /* Citanje rezultata ide PRE brojaca — inace bi svako osvezavanje trosilo. */
+    assert.ok(src.indexOf("posao === 'citaj'") < src.indexOf('check_and_bump_api_usage'),
+      'citanje rezultata prolazi kroz dnevni brojac');
+  });
+
+  test('posao se ne moze pokrenuti dvaput', () => {
+    /* Dva paralelna pokusaja bi inace pozvala model dvaput za isti red. */
+    assert.match(src, /'\?id=eq\.' \+ id \+ '&stanje=eq\.radi'/, 'preuzimanje nije uslovljeno stanjem');
+    assert.match(src, /stanje: 'u_toku'/, 'red se ne oznacava kao preuzet');
+  });
+
+  test('tabela ide kroz RLS i korisnikov token, ne kroz service_role', () => {
+    assert.match(sql, /alter table public\.ai_posao enable row level security/);
+    assert.match(sql, /using \(auth\.uid\(\) = user_id\)/, 'nema ogranicenja na sopstvene redove');
+    /* Trazi se UPOTREBA kljuca, ne pomen reci — komentar koji objasnjava zasto
+       se service_role NE koristi je upravo ono sto zelimo da ostane. */
+    assert.doesNotMatch(src, /process\.env\.[A-Z_]*SERVICE_ROLE/, 'server zaobilazi RLS');
+    assert.match(src, /Authorization: 'Bearer ' \+ auth\.token/, 'tabela se ne cita korisnikovim tokenom');
+  });
+
+  test('ID posla se proverava pre svake upotrebe', () => {
+    assert.match(src, /const UUID = \//, 'nema oblika za ID');
+    assert.match(src, /if \(!UUID\.test\(posaoId\)\)/, 'ID ide u upit bez provere');
+  });
+
+  test('klijent pamti posao, pa ga preziveli restart pokupi', () => {
+    assert.match(app, /l\.aiPosao=\{id:/, 'posao se ne pamti — restart bi ga izgubio');
+    assert.match(app, /aiPokupiSve\(\);/, 'zavrsene analize se ne pokupljaju');
+    /* Kartica mora da pokaze da posao traje, inace covek klikne ponovo. */
+    assert.match(app, /Analiza je u toku/, 'nema stanja „u toku" na kartici');
+  });
+
+  test('brojac analiza raste tek kad tekst STVARNO stigne', () => {
+    /* Neuspeo posao ne sme da potrosi jednu od dve po treningu. */
+    const m = /if\(st==='gotovo'\)\{([\s\S]*?)\n  \}/.exec(app);
+    assert.ok(m, 'nema grane za uspesno pokupljen rezultat');
+    assert.match(m[1], /l\.aiCount=\(l\.aiCount\|\|0\)\+1/, 'brojac se ne povecava na uspeh');
+  });
+
+  test('uputstvo modelu zatvara greske koje su se stvarno desile', () => {
+    assert.match(src, /6a\. OCENU DEKUPLOVANJA UZIMAS|6a\. OCENU DEKUPLOVANJA UZIMAŠ/,
+      'nema pravila da ocena ide po skali');
+    assert.match(src, /NE SMES u istom tekstu|NE SMEŠ u istom tekstu/,
+      'nema zabrane protivrecnih tvrdnji');
+    assert.match(src, /prvi broj mora biti MANJI od drugog/, 'nema provere smera porasta');
+    assert.match(src, /"radni deo" postoji SAMO na kvalitetnim sesijama/,
+      'nema zabrane „radnog dela" na laganom');
+    assert.match(src, /thinkingLevel: 'medium'/, 'razmisljanje je i dalje spusteno na low');
   });
 });

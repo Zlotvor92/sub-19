@@ -50,6 +50,88 @@ async function requireUser(req) {
   }
 }
 
+/* ANALIZA ODVOJENA OD ČEKANJA.
+
+   Jedan zahtev je i dalje ograničen na `maxDuration` (60 s) — to se ne može
+   zaobići. Ali rezultat više ne živi u tom zahtevu nego u tabeli `ai_posao`
+   (v. supabase/ai-posao.sql), pa se ne gubi ako veza pukne, ako telefon uspava
+   stranicu, ili ako čovek zatvori aplikaciju usred računanja. Klijent pokrene
+   posao, ODMAH dobije odgovor, i rezultat pokupi kad god se vrati.
+
+   Tri faze, sve na istoj adresi:
+     posao:'start' -> upiše red, vrati posaoId (broji se u dnevni limit)
+     posao:'radi'  -> preuzme red, pozove model, upiše tekst (NE broji se)
+     posao:'citaj' -> vrati stanje i tekst (ne broji se, ne dira model) */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const TABELA = '/rest/v1/ai_posao';
+
+/* Svi pozivi ka tabeli idu KORISNIKOVIM tokenom, ne service_role ključem —
+   pa RLS, a ne naš kod, jemči da se tuđi rezultat ne može pročitati. */
+function sbGlava(auth, extra) {
+  return Object.assign({
+    apikey: process.env.SUPABASE_ANON_KEY,
+    Authorization: 'Bearer ' + auth.token,
+    'Content-Type': 'application/json'
+  }, extra || {});
+}
+function sbURL(put) { return process.env.SUPABASE_URL.replace(/\/+$/, '') + put; }
+
+async function posaoNapravi(auth) {
+  try {
+    /* Stari poslovi se brišu usput — red je potreban samo dok se rezultat ne
+       pokupi, a tekst ionako živi na uređaju i u backupu. */
+    const pre = new Date(Date.now() - 24 * 3600e3).toISOString();
+    fetch(sbURL(TABELA + '?user_id=eq.' + auth.userId + '&napravljen=lt.' + encodeURIComponent(pre)),
+      { method: 'DELETE', headers: sbGlava(auth) }).catch(() => {});
+
+    const r = await fetch(sbURL(TABELA), {
+      method: 'POST',
+      headers: sbGlava(auth, { Prefer: 'return=representation' }),
+      body: JSON.stringify({ user_id: auth.userId, stanje: 'radi' })
+    });
+    if (!r.ok) return { ok: false, status: 502, error: 'Nije moguće otvoriti posao analize. ' + (await r.text()).slice(0, 160) };
+    const red = (await r.json())[0];
+    if (!red || !red.id) return { ok: false, status: 502, error: 'Posao analize nije upisan.' };
+    return { ok: true, id: red.id };
+  } catch (e) {
+    return { ok: false, status: 503, error: 'Baza nije dostupna.' };
+  }
+}
+
+/* Preuzimanje posla: 'radi' -> 'u_toku', ali SAMO ako je još u stanju 'radi'.
+   Time dva paralelna pokušaja ne mogu da pozovu model dvaput za isti posao. */
+async function posaoPreuzmi(auth, id) {
+  try {
+    const r = await fetch(sbURL(TABELA + '?id=eq.' + id + '&stanje=eq.radi'), {
+      method: 'PATCH',
+      headers: sbGlava(auth, { Prefer: 'return=representation' }),
+      body: JSON.stringify({ stanje: 'u_toku' })
+    });
+    if (!r.ok) return { ok: false, status: 502, error: 'Posao nije preuzet.' };
+    const niz = await r.json();
+    return { ok: Array.isArray(niz) && niz.length > 0 };
+  } catch (e) { return { ok: false, status: 503, error: 'Baza nije dostupna.' }; }
+}
+
+async function posaoZavrsi(auth, id, polja) {
+  try {
+    await fetch(sbURL(TABELA + '?id=eq.' + id), {
+      method: 'PATCH', headers: sbGlava(auth), body: JSON.stringify(polja)
+    });
+  } catch (e) { /* rezultat je izgubljen, ali odgovor klijentu ionako ne čeka */ }
+}
+
+async function posaoCitaj(auth, id) {
+  try {
+    const r = await fetch(sbURL(TABELA + '?id=eq.' + id + '&select=stanje,tekst,greska'),
+      { headers: sbGlava(auth) });
+    if (!r.ok) return { ok: false, status: 502, error: 'Rezultat nije pročitan.' };
+    const niz = await r.json();
+    if (!Array.isArray(niz) || !niz.length) return { ok: false, status: 404, error: 'Posao ne postoji (možda je istekao).' };
+    return { ok: true, red: niz[0] };
+  } catch (e) { return { ok: false, status: 503, error: 'Baza nije dostupna.' }; }
+}
+
 const MODEL = 'gemini-3.5-flash'; /* stabilan (ne "preview"), besplatan nivo dostupan avgust 2026 */
 const FALLBACK_MODEL = 'gemini-3.5-flash-lite'; /* ISTA (3.x) generacija kao primarni — gemini-2.5-flash je testom potvrđen NEDOSTUPAN novim nalozima (404 "no longer available to new users", nije bilo vidljivo iz cenovnika), pa rezerva mora biti iz generacije koja je stvarno otvorena za nov nalog. Odvojen (lakši) model = odvojen kapacitet od punog 3.5 Flash. */
 const urlFor = m => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`;
@@ -110,11 +192,13 @@ async function tryModel(model, systemText, userText, doKada) {
              svaki dozvoljen token je i vreme. Ostaje dovoljno mesta i za
              razmišljanje i za tekst, ali ne i za esej. */
           maxOutputTokens: 3000,
-          /* 'low' umesto 'medium': razmišljanje se naplaćuje i vremenom i
-             tokenima, a ovaj zadatak je čitanje tabele brojeva uz jasna
-             pravila — ne traži duboko izvođenje. Upravo je 'medium' na dužem
-             unosu (podaci po kilometru) probio vremenski limit. */
-          thinkingConfig: { thinkingLevel: 'low' }
+          /* NAZAD NA 'medium'. Sa 'low' su stigle analize koje su imale pravilo
+             pred sobom pa ga nisu primenile: dekuplovanje od 5,6 % nazvano
+             „odlično" (uputstvo izričito kaže 5–8 % = osrednje), i u istom
+             pasusu „drifta praktično nije ni bilo" — dve tvrdnje koje se
+             poništavaju. Vreme se sad štedi na pravom mestu (izlazni budžet i
+             posao odvojen od čekanja), ne na razmišljanju. */
+          thinkingConfig: { thinkingLevel: 'medium' }
         }
       })
     });
@@ -224,6 +308,28 @@ export default async function handler(req, res) {
     return;
   }
 
+  /* TELO SE ČITA PRE BROJAČA: od njega zavisi da li se poziv uopšte broji.
+     Jedna analiza je sada TRI zahteva (pokreni / radi / pročitaj) — kad bi se
+     brojao svaki, dnevni limit bi se trošio tri puta brže za isti posao. */
+  let body;
+  try {
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  } catch {
+    res.status(400).json({ error: 'Neispravan JSON.' });
+    return;
+  }
+  const posao = (body && typeof body.posao === 'string') ? body.posao : null;
+  const posaoId = (body && typeof body.posaoId === 'string') ? body.posaoId.trim() : '';
+
+  /* ČITANJE REZULTATA ne troši ni kvotu ni Gemini ključ — samo pogled u bazu. */
+  if (posao === 'citaj') {
+    if (!UUID.test(posaoId)) { res.status(400).json({ error: 'Neispravan ID posla.' }); return; }
+    const r = await posaoCitaj(auth, posaoId);
+    if (!r.ok) { res.status(r.status || 502).json({ error: r.error }); return; }
+    res.status(200).json(r.red);
+    return;
+  }
+
   /* Dnevni limit poziva po korisniku — Google prijava je otvorena svima,
      bez ovoga bi skripta mogla da isprazni Gemini kvotu. Atomsko (Postgres
      funkcija, ne "procitaj pa upisi") da paralelni zahtevi ne zaobidju limit.
@@ -239,7 +345,9 @@ export default async function handler(req, res) {
      podešavanju bez obavezne potvrde mejla, svako mogao registrovati
      vlasnikovom adresom i time skinuti limit sebi. */
   const vlasnik = await jeVlasnik(req);
-  if (!vlasnik) try {
+  /* Broji se SAMO pokretanje (i stari, sinhroni put). Faza 'radi' je nastavak
+     već izbrojanog posla. */
+  if (!vlasnik && posao !== 'radi') try {
     const rl = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_api_usage', {
       method: 'POST',
       headers: {
@@ -273,11 +381,16 @@ export default async function handler(req, res) {
     return;
   }
 
-  let body;
-  try {
-    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-  } catch {
-    res.status(400).json({ error: 'Neispravan JSON.' });
+  /* POKRETANJE: samo otvori red i vrati ID. Ništa se ne računa ovde — zato je
+     odgovor trenutan i klijent nema šta da čeka. */
+  if (posao === 'start') {
+    const p = await posaoNapravi(auth);
+    if (!p.ok) { res.status(p.status).json({ error: p.error }); return; }
+    res.status(200).json({ posaoId: p.id });
+    return;
+  }
+  if (posao === 'radi' && !UUID.test(posaoId)) {
+    res.status(400).json({ error: 'Neispravan ID posla.' });
     return;
   }
 
@@ -325,6 +438,13 @@ Ako je zaista bilo lagano, analiziraj ovako:
 - AKO UMESTO PO KRUGU DOBIJEŠ PODATKE PO KILOMETRU (sat je merio drugačije od strukture treninga): koristi ih isto — gledaj da li puls raste kroz kilometre radnog dela (drift) i kakva je kadenca. Napomeni da su podaci po kilometru, ne po intervalu, pa je granica između rada i odmora manje oštra.
 - AKO NEMAŠ NI PODATKE PO KRUGU NI PO KILOMETRU (dat je samo prosek cele sesije): NIKAD ne izmišljaj konkretne brojeve za pojedinačne intervale/krugove (npr. "u prvom intervalu puls je bio X, u drugom Y") — tih podataka nemaš, pa bi to bila izmišljena, netačna informacija. Komentariši SAMO ono što prosek stvarno pokazuje (ukupan tempo naspram plana, prosečan puls, RPE, beleška). Ako bi drift/napredak kroz intervale bio koristan podatak, reci da nedostaje umesto da ga pretpostaviš.`}
 
+PRE SLANJA PROVERI SVOJ TEKST — ovo su greške koje su se stvarno desile:
+- Nijedna ocena ("odlično", "osrednje", "slabo") ne sme da protivreči skali koja ti je data ispod. Skala je jača od utiska.
+- Ne piši dve tvrdnje koje se međusobno poništavaju.
+- Kad opisuješ PORAST, prvi broj mora biti MANJI od drugog. "Porastao sa 142 na 141" nije porast nego pad. Ako nisi siguran u smer, ne navodi brojeve.
+- Izraz "radni deo" postoji SAMO na kvalitetnim sesijama. Na laganom i dugom trčanju nema radnog dela — ne koristi taj izraz.
+- Kad se pozivaš na jutarnji oporavak, uzmi SVE što ti je dato (HRV, puls u miru, san, svežina), ne samo ono što se uklapa u zaključak. Ako je san kratak ili svežina negativna, to se pominje čak i kad je trening dobro prošao.
+
 KAKO SE ČITA PULS — pročitaj ovo PRE nego što doneseš bilo kakav zaključak o driftu:
 1. DRIFT SE MERI SAMO NA ISTOM TEMPU. Poređenje prvog i poslednjeg kilometra ima smisla JEDINO ako su trčani približno istim tempom (razlika manja od ~10 s/km). Ako je poslednji kilometar BRŽI, veći puls je očekivan i to NIJE drift — to je posledica bržeg trčanja. Nikad ne nazivaj to driftom.
 2. PRVI 1–2 KILOMETRA NISU MERILO. Puls kasni za naporom nekoliko minuta (kardijalna inercija) i na početku je uvek nizak, pa poređenje "prvi km naspram poslednjeg" preuveličava svaki porast. Ako imaš više kilometara na sličnom tempu, poredi njih međusobno.
@@ -332,6 +452,8 @@ KAKO SE ČITA PULS — pročitaj ovo PRE nego što doneseš bilo kakav zaključa
 4. USPON DIŽE PULS PRI ISTOM TEMPU. Gde je uz kilometar naveden uspon, uračunaj ga pre nego što porast pripišeš zamoru.
 5. O PULSU GOVORI KROZ ZONE ako su date. Ako zone nisu date, NE proglašavaj puls "visokim" ili "niskim" u apsolutnom smislu — ne znaš maksimalni puls ovog trkača; govori samo o PROMENI kroz trening.
 6. DEKUPLOVANJE (Pa:HR) je mera aerobne izdržljivosti: ispod 5% je dobro, 5-8% osrednje, preko 8% znači da druga polovina košta znatno više otkucaja pri istom tempu. Ako je dato, to je pouzdaniji sud o izdržljivosti nego sirov porast pulsa — koristi ga. Ako piše da nije računato jer tempo nije bio ravnomeran, NE izvodi zaključak o izdržljivosti iz porasta pulsa.
+   6a. OCENU DEKUPLOVANJA UZIMAŠ IZ OVE SKALE, ne iz sopstvenog utiska. Broj od 5,6% je OSREDNJE — ne "odlično", ne "izvrsno". Ako ti se čini da je trening bio dobar, to nije razlog da broj prekrstiš; reci da je trening bio dobar i da je dekuplovanje osrednje.
+   6b. AKO SI NAVEO DEKUPLOVANJE, NE SMEŠ u istom tekstu napisati da "drifta nije bilo" — dekuplovanje JESTE mera tog drifta. Dve tvrdnje koje se poništavaju su gora greška od nijedne.
 7. TOPLOTA diže puls 5-10 otkucaja pri istom tempu. Ako je data temperatura preko 22°C, uračunaj to pre nego što porast pripišeš lošoj formi.
 8. OPORAVAK TOG JUTRA (HRV, puls u miru, san) menja tumačenje SVEGA ostalog. Isti tempo uz isti puls nije isti trening posle 5 sati sna. Pravila:
    - HRV se čita kao ODSTUPANJE od sopstvene sedmodnevne osnove, nikad kao gola brojka; pad preko 10% je značajan, pad preko 20% je jasan znak nedovoljnog oporavka.
@@ -452,6 +574,26 @@ Prosečan puls (cela sesija): ${entered.hr ?? 'nije unet'}
 RPE (1-10): ${entered.rpe ?? 'nije unet'}
 Beleška trkača: ${cap(entered.note, 400) || '(bez beleške)'}
 ${dodatno}${lapsBlock}`;
+
+  /* IZVRŠAVANJE. U fazi 'radi' rezultat ide u BAZU — odgovor ovog zahteva
+     niko ne čeka, pa je svejedno da li klijent dočeka njegov kraj. Bez faze
+     (stari, sinhroni put) tekst se vraća kao i do sada. */
+  if (posao === 'radi') {
+    const uzeo = await posaoPreuzmi(auth, posaoId);
+    if (!uzeo.ok && uzeo.status) { res.status(uzeo.status).json({ error: uzeo.error }); return; }
+    if (!uzeo.ok) { res.status(200).json({ vec: true }); return; }   /* neko drugi ga je već preuzeo */
+    try {
+      const out = await callGemini(sys, userMsg);
+      await posaoZavrsi(auth, posaoId, out.ok
+        ? { stanje: 'gotovo', tekst: String(out.text || '').slice(0, 6000) }
+        : { stanje: 'greska', greska: String(out.error || 'Nepoznata greška.').slice(0, 300) });
+      res.status(200).json({ gotovo: out.ok });
+    } catch (e) {
+      await posaoZavrsi(auth, posaoId, { stanje: 'greska', greska: 'Greška na serveru.' });
+      res.status(200).json({ gotovo: false });
+    }
+    return;
+  }
 
   try {
     const out = await callGemini(sys, userMsg);
