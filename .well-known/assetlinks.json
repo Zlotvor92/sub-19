@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "rs.sub20.app",
+      "sha256_cert_fingerprints": [
+        "ZAMENI_OVO_OTISKOM_SVOG_KLJUCA"
+      ]
+    }
+  }
+]
