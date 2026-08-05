@@ -172,11 +172,54 @@ describe('Redosled izvora i čuvari sinhronizacije', () => {
       'upis tempa više nema svoj uslov — sad bi pregazio ručni unos');
   });
 
+  /* Povlacenje treninga: ko sme, kada, i odakle se uopste poziva.
+     `preMs` se racuna UNUTAR peskovnika: Date.now() u testu je pravi sat, a u
+     aplikaciji lazni — mesanje ta dva daje besmislenu razliku. */
+  const spreman = (stanje, preMs) => {
+    const a = app();
+    a.ctx.__s = stanje; a.ctx.__pre = preMs;
+    a.evalIn(`Object.assign(S, __s);
+      if(__pre!=null && S.icu) S.icu.trSync = Date.now() - __pre;
+      if(__pre!=null && S.strava) S.strava.lastSync = Date.now() - __pre;
+      save(); navigator.onLine=true;`);
+    return a;
+  };
+
   test('automatsko povlačenje ne zavisi od toga da li Strava postoji', () => {
     /* Ko ima samo intervals.icu ranije ne bi dobio nijednu automatsku
        sinhronizaciju — uslov je gledao isključivo `S.strava`. */
+    const a = spreman({ icu: { athleteId: 'i1', token: 't', scope: 'ACTIVITY:READ' }, strava: null }, 4 * 3600000);
+    assert.equal(a.call('trPovuciAko', 3600000), true, 'samo icu ne dobija povlačenje');
+  });
+
+  test('bez ijednog izvora se ne poziva ništa', () => {
+    const a = spreman({ icu: null, strava: null });
+    assert.equal(a.call('trPovuciAko', 3600000), false);
+  });
+
+  test('sveža sinhronizacija se ne ponavlja', () => {
+    const a = spreman({ icu: { athleteId: 'i1', token: 't', scope: 'ACTIVITY:READ' }, strava: null }, 60000);
+    assert.equal(a.call('trPovuciAko', 15 * 60000), false, 'povlači ponovo minut posle prethodnog');
+    assert.equal(a.call('trPovuciAko', 30000), true, 'ne povlači ni kad je prag prošao');
+  });
+
+  test('offline se ne pokušava', () => {
+    const a = spreman({ icu: { athleteId: 'i1', token: 't', scope: 'ACTIVITY:READ' }, strava: null }, 4 * 3600000);
+    a.evalIn('navigator.onLine=false');
+    assert.equal(a.call('trPovuciAko', 3600000), false);
+  });
+
+  test('POVRATAK U APLIKACIJU povlači treninge, ne samo jutarnja merenja', () => {
+    /* PRIJAVA: „završio trčanje, nije uradio automatski update".
+       `sinhronizujTreninge` se zvalo samo iz dugmeta i JEDNOM pri učitavanju
+       stranice — a instalirana PWA se ne učitava iznova, budi se iz pozadine.
+       Na povratku je radio samo `icuAutoSync`, koji povlači isključivo
+       jutarnja merenja i to jednom dnevno. */
     const izvor = readRepoFile('app.js');
-    assert.match(izvor, /if\(\(icuImaTreninge\(\)\|\|S\.strava\) && Date\.now\(\)-zadnja>3600000\) sinhronizujTreninge\(false\)/);
+    const rukovalac = /visibilitychange',\(\)=>\{([\s\S]*?)\n\}\);/.exec(izvor);
+    assert.ok(rukovalac, 'nema visibilitychange rukovaoca');
+    assert.match(rukovalac[1], /trPovuciAko\(/, 'povratak u aplikaciju ne povlači treninge');
+    assert.match(rukovalac[1], /icuAutoSync\(\)/, 'izgubljeno povlačenje jutarnjih merenja');
   });
 });
 
@@ -391,6 +434,26 @@ describe('Vreme na dan treninga', () => {
     /* Za budući dan „sada" nema smisla i ne sme se pojaviti. */
     const sutra = String(a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>TODAY&&!x.rest); return d?karticaVremena(d):''; })()`));
     assert.doesNotMatch(sutra, /sada ·/, 'prognoza za drugi dan ne zna šta je „sada"');
+  });
+
+  test('keš koji NE pokriva trenutni sat se ne priznaje kao svež', () => {
+    /* Zapis stiže i iz backupa i sa drugog uređaja preko servera, pa `at` može
+       biti mlad a da u njemu nema sata koji nam upravo treba. Tada je red
+       „sada" tiho izostajao — kartica bi izgledala kao pre v181. */
+    const a = sa();
+    const bez = a.evalIn(`(()=>{
+      const h=String(new Date().getHours()).padStart(2,'0');
+      delete S.vreme.sati[TODAY+'T'+h];
+      S.vreme.at=Date.now();          /* mlad keš, ali bez trenutnog sata */
+      return JSON.stringify({ sada: vremeSada(TODAY) });
+    })()`);
+    assert.equal(JSON.parse(bez).sada, null, 'sat postoji iako je obrisan');
+    /* vremePovuci mora da odbije takav keš i ode na mrežu. */
+    const izvor = readRepoFile('app.js');
+    assert.match(izvor, /const pokriva=!!\(v&&v\.sati&&v\.sati\[kljucSada\]\)/,
+      'keš se i dalje meri samo starošću');
+    assert.match(izvor, /Date\.now\(\)-v\.at<3\*3600000&&v\.lat===g\.lat&&v\.lon===g\.lon&&pokriva/,
+      'pokrivenost trenutnog sata nije uslov za korišćenje keša');
   });
 
   test('bez lokacije se ništa ne crta i ništa ne šalje', () => {

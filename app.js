@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='184'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='185'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2704,8 +2704,15 @@ async function vremePovuci(sila){
   if(!g||g.lat==null||g.lon==null) return {ok:false, error:'Lokacija nije podešena.'};
   const v=S.vreme;
   /* Prognoza se ne menja iz minuta u minut — jedan poziv na tri sata je dovoljan,
-     a i lepo prema besplatnom servisu. */
-  if(!sila&&v&&v.at&&Date.now()-v.at<3*3600000&&v.lat===g.lat&&v.lon===g.lon) return {ok:true, kes:true};
+     a i lepo prema besplatnom servisu.
+     ALI: „mlad" keš i „upotrebljiv" keš nisu isto. Zapis dolazi i iz backupa i
+     sa drugog uređaja preko servera, pa `at` može biti svež a da u njemu nema
+     sata koji nam upravo treba. Tada je red „sada" tiho izostajao — kartica bi
+     se iscrtala bez njega i izgledala kao pre v181. Zato se traži i POKRIVENOST
+     trenutnog sata, ne samo starost. */
+  const kljucSada=todayStr()+'T'+String(new Date().getHours()).padStart(2,'0');
+  const pokriva=!!(v&&v.sati&&v.sati[kljucSada]);
+  if(!sila&&v&&v.at&&Date.now()-v.at<3*3600000&&v.lat===g.lat&&v.lon===g.lon&&pokriva) return {ok:true, kes:true};
   try{
     const u=VREME_URL+'?latitude='+encodeURIComponent(g.lat)+'&longitude='+encodeURIComponent(g.lon)+
       '&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,precipitation_probability'+
@@ -9840,6 +9847,35 @@ async function stravaSync(manual){
    Kad icu otkaže (istekla dozvola, njihov server, mreža), pada se na Stravu
    ako postoji: bolje sinhronizovan trening iz slabijeg izvora nego nijedan.
    Poruka o grešci se u tom slučaju ne guta — vraća se pozivaocu. */
+/* POVLACENJE TRENINGA PRI POVRATKU U APLIKACIJU.
+
+   PRIJAVA: „zavrsio trcanje, nije uradio automatski update". Tacno tako je i
+   bilo — `sinhronizujTreninge` se pozivalo sa TACNO dva mesta: iz dugmeta u
+   Podesavanjima i JEDNOM, pri ucitavanju stranice. Instalirana PWA se ne
+   ucitava iznova: ona se budi iz pozadine. Ko zavrsi trcanje pa otvori
+   aplikaciju, dobije istu onu stranicu koja stoji otvorena od jutros — i dan
+   koji i dalje pise „Predstoji".
+
+   `icuAutoSync` na povratku postoji od ranije, ali on povlaci SAMO jutarnja
+   merenja, i to jednom dnevno. Treninge nije dirao.
+
+   Prag je ovde kraci nego pri ucitavanju (15 min naspram 60): povratak u
+   aplikaciju posle trcanja je bas onaj trenutak kad podatak treba, a cetiri
+   poziva na sat su i dalje pristojni prema oba servisa. Zastavica sprecava da
+   se dva povlacenja preklope kad se app brzo otvori-zatvori-otvori. */
+let TR_POVLACIM=false;
+function trPoslednjiSync(){
+  return icuImaTreninge() ? ((S.icu&&S.icu.trSync)||0) : ((S.strava&&S.strava.lastSync)||0);
+}
+function trPovuciAko(prag){
+  if(TR_POVLACIM) return false;
+  if(!navigator.onLine) return false;
+  if(!icuImaTreninge() && !S.strava) return false;
+  if(Date.now()-trPoslednjiSync() < prag) return false;
+  TR_POVLACIM=true;
+  sinhronizujTreninge(false).catch(()=>{}).finally(()=>{ TR_POVLACIM=false; });
+  return true;
+}
 async function sinhronizujTreninge(manual){
   if(icuImaTreninge()){
     const r=await icuSyncTreninzi(45, manual);
@@ -10400,6 +10436,8 @@ document.addEventListener('visibilitychange',()=>{
        iscrtaj ponovo pre nego sto korisnik bilo sta klikne. */
     if(osveziDan()){ renderHeader(); PAGES[ACTIVE](); }
     icuAutoSync();
+    /* Treninzi, ne samo jutarnja merenja — v. trPovuciAko. */
+    trPovuciAko(15*60000);
     /* Kartica vremena od v181 pokazuje i „sada". Instalirana PWA stoji otvorena
        satima, pa bez ovoga red „sada" nosi prognozu od jutros. vremePovuci sam
        preskace poziv ako je mladji od tri sata. */
@@ -10422,13 +10460,10 @@ setPage('danas');
 prikaziUcitavanjePalo();     /* ako zapis nije procitan — pre nego sto covek pomisli da je sve nestalo */
 handleOAuthReturn();
 sbInit();
-/* Automatsko povlačenje treninga na sat vremena. Uslov gleda izvor koji će
-   STVARNO biti korišćen — ranije je stajalo samo `S.strava`, pa onaj ko ima
-   intervals.icu a nema Stravu nikad ne bi dobio automatsku sinhronizaciju. */
-if(navigator.onLine){
-  const zadnja = icuImaTreninge() ? ((S.icu&&S.icu.trSync)||0) : ((S.strava&&S.strava.lastSync)||0);
-  if((icuImaTreninge()||S.strava) && Date.now()-zadnja>3600000) sinhronizujTreninge(false);
-}
+/* Automatsko povlačenje treninga. Uslov gleda izvor koji će STVARNO biti
+   korišćen — ranije je stajalo samo `S.strava`, pa onaj ko ima intervals.icu
+   a nema Stravu nikad ne bi dobio automatsku sinhronizaciju. */
+if(navigator.onLine) trPovuciAko(3600000);
 icuAutoSync();
 /* Prognoza se osvežava na startu, ali samo ako je starija od tri sata (v.
    vremePovuci) — poziv je besplatan, ali nema razloga da se ponavlja pri
