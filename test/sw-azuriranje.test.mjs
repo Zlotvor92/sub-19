@@ -12,7 +12,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp } from './harness.mjs';
+import { loadApp, readRepoFile } from './harness.mjs';
 
 /* Traka se meri po STVARNOM dodavanju u DOM. Harness pamti elemente po
    selektoru, pa je $('#update-banner') uvek istinit i showUpdateBanner bi
@@ -33,6 +33,43 @@ function sa(stanje = {}) {
   return a;
 }
 const traka = a => a.evalIn('__dodato');
+
+describe('Broj verzije — jedini okidač koji pregledač uopšte vidi', () => {
+  /* PRIJAVLJENO PONOVO: „nije mi izašao osveži tab". Kod je bio ispravan i
+     izmena je bila na sajtu — ali `sw.js` nije diran u tom commitu. Pregledač
+     novi service worker prepoznaje ISKLJUČIVO po tome što su se BAJTOVI sw.js
+     promenili; ako je fajl isti, nema instalacije, nema `waiting`, nema trake.
+     A pošto app.js ide network-first, nov kod se svejedno servira — pa se
+     ispod ruke dobije najgori spoj: nova aplikacija, star keš, i nikakav znak
+     korisniku. Testovi ispod čuvaju MEHANIZAM; ovaj čuva da se mehanizam
+     uopšte pokrene. */
+  const izvor = f => readRepoFile(f);
+
+  test('APP_VERSION u app.js i sw.js su isti', () => {
+    const uApp = /APP_VERSION\s*=\s*'(\d+)'/.exec(izvor('app.js'));
+    const uSw = /APP_VERSION\s*=\s*'(\d+)'/.exec(izvor('sw.js'));
+    assert.ok(uApp && uSw, 'APP_VERSION se ne nalazi u oba fajla');
+    assert.equal(uApp[1], uSw[1],
+      `app.js je na ${uApp[1]}, sw.js na ${uSw[1]} — podnožje bi pisalo jedan broj, keš nosio drugi`);
+  });
+
+  test('ime keša prati APP_VERSION', () => {
+    /* Da se ne desi da se APP_VERSION podigne a CACHE ostane — tada se stari
+       keš NE briše u `activate`, jer se briše sve što nije jednako CACHE. */
+    const sw = izvor('sw.js');
+    const v = /APP_VERSION\s*=\s*'(\d+)'/.exec(sw)[1];
+    const cache = /CACHE\s*=\s*'([^']+)'/.exec(sw);
+    assert.ok(cache, 'CACHE se ne nalazi u sw.js');
+    assert.ok(cache[1].endsWith('v' + v),
+      `keš je „${cache[1]}", a verzija ${v} — stari keš se onda ne briše`);
+  });
+
+  test('app.js je na spisku za keširanje', () => {
+    /* Od v150 je sav kod u app.js; da ispadne sa spiska, offline bi se
+       servirao samo omotač. Ovo je već jednom bila greška (v. komentar u sw.js). */
+    assert.match(izvor('sw.js'), /ASSETS\s*=\s*\[[^\]]*'\.\/app\.js'/);
+  });
+});
 
 describe('Nov service worker se primeti u sva tri stanja', () => {
   test('već čeka pri pokretanju (reg.waiting) — ovo je bio propust', () => {
