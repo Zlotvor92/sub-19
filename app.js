@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=8, LS_KEY='sub19-v1';
-const APP_VERSION='175'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='176'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -8735,7 +8735,9 @@ function openSettings(){
        <div id="bc-out"></div>
        <details class="help"><summary>Šta se tačno šalje</summary><p>Kratak mejl sa dugmetom koje vodi na <b>/uputstvo.html</b>. Ceo tekst se namerno ne šalje mejlom — poslat mejl se ne može ispraviti, a stranica može.</p><p>Svaki mejl ide <b>posebno</b>, da niko ne vidi tuđe adrese. „Pošalji svima" prvo prebroji primaoce i pita za potvrdu.</p></details>`):''}
 
-    <div class="note-src" style="margin-top:16px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_SUB-19_5K_v5.xlsx · trka 24.09.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
+    <div class="btnrow" style="margin-top:16px"><button class="btn ghost sm" id="sw-osvezi">Osveži aplikaciju</button></div>
+    <div class="note-src" id="sw-stanje" style="margin:6px 0 0">Proveravam verziju offline kopije…</div>
+    <div class="note-src" style="margin-top:6px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_SUB-19_5K_v5.xlsx · trka 24.09.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
   `);
   SET_LIST=true;
   $('#s-exp').onclick=()=>{ exportBackup(); setTimeout(osveziPodesavanja,300); };
@@ -8890,6 +8892,27 @@ function openSettings(){
     if(r.ok) setTimeout(osveziPodesavanja,900);
     else setTimeout(()=>{ b.disabled=false; b.textContent='Povuci sada'; },1500);
   };
+  /* Stanje offline kopije se čita ASINHRONO — ne sme da drži otvaranje
+     Podešavanja. Do odgovora stoji „Proveravam…". */
+  if($('#sw-osvezi')) $('#sw-osvezi').onclick=e=>osveziAplikaciju(e.target);
+  if($('#sw-stanje')) swStanje().then(st=>{
+    const el=$('#sw-stanje'); if(!el) return;
+    if(!st.podrzan){ el.textContent='Ovaj pregledač ne čuva offline kopiju.'; return; }
+    if(st.ceka){
+      el.innerHTML='<b style="color:var(--amber)">Nova verzija je preuzeta i čeka.</b> Dodirni „Osveži aplikaciju" — ništa se ne gubi, podaci ostaju.';
+      return;
+    }
+    if(st.aktivna && st.aktivna!==APP_VERSION){
+      el.innerHTML='Offline kopija je na verziji <b>'+esc(st.aktivna)+'</b>, a učitan kod na <b>'+esc(APP_VERSION)+'</b>. Dok si na mreži radiš na novom kodu; „Osveži aplikaciju" izjednačava i offline kopiju.';
+      return;
+    }
+    if(st.aktivna){ el.textContent='Offline kopija je na verziji '+st.aktivna+' — usklađena.'; return; }
+    /* Bez odgovora: ili SW još nije preuzeo kontrolu (prvo otvaranje), ili je
+       stariji od ove izmene pa ne zna za poruku VERSION. */
+    el.textContent=st.kesevi.length
+      ? 'Offline kopija: '+st.kesevi.join(', ')+'. Verziju javlja tek sledeći service worker.'
+      : 'Offline kopija se još pravi — otvori aplikaciju ponovo za koji trenutak.';
+  });
   if($('#icu-tren')) $('#icu-tren').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Povlačim…';
     const r=await icuSyncTreninzi(60, true);
@@ -9955,6 +9978,73 @@ function pratiAzuriranje(reg){
     reg.__pratimo=1;
     reg.addEventListener('updatefound',()=>prati(reg.installing));
   }
+}
+/* ============================================================
+   STANJE SERVICE WORKER-a — VIDLJIVO I RUČNO OSVEŽIVO
+
+   Prijava: „app je na 175, a traka Osveži nije izašla."
+
+   Broj u podnožju dolazi iz app.js, koji ide network-first — dakle skoči čim
+   deploy prođe, i kad SW i keš još stoje na staroj verziji. Ta dva stanja su
+   izgledala potpuno isto, pa se nije moglo znati da li je traka izostala ili
+   nije ni bila potrebna. Sad se pita SAM SW koju verziju nosi, i nudi se dugme
+   koje ne zavisi od toga da li se traka pojavila.
+
+   Zašto uopšte može da izostane: traka se nudi samo kad nov SW ČEKA (`waiting`)
+   — a on čeka samo ako ga stari drži zauzetim. Kad nov SW nema koga da prekine,
+   aktivira se odmah i traka nema šta da ponudi; tada je sve već ažurno. Uz to
+   Safari u instaliranoj PWA ne proverava sw.js pri svakom otvaranju kao
+   Chrome, pa provera ume da kasni po nekoliko sati. */
+async function swStanje(){
+  const out={podrzan:false, aktivna:null, kes:null, ceka:false, kesevi:[]};
+  if(!('serviceWorker' in navigator)) return out;
+  out.podrzan=true;
+  try{ out.kesevi=(await caches.keys()).filter(k=>/^sub19-cache-/.test(k)); }catch(e){}
+  let reg=null;
+  try{ reg=await navigator.serviceWorker.getRegistration(); }catch(e){}
+  if(!reg) return out;
+  out.ceka=!!reg.waiting;
+  const sw=navigator.serviceWorker.controller;
+  if(!sw) return out;
+  /* Odgovor se čeka najviše 1,2 s — stariji SW ne zna za poruku VERSION i
+     nikad neće odgovoriti, a Podešavanja ne smeju da vise zbog toga. */
+  out.aktivna=await new Promise(res=>{
+    let gotovo=false;
+    const slusaj=ev=>{
+      if(gotovo||!ev.data||ev.data.type!=='VERSION') return;
+      gotovo=true; navigator.serviceWorker.removeEventListener('message',slusaj);
+      out.kes=ev.data.cache||null; res(String(ev.data.version||''));
+    };
+    navigator.serviceWorker.addEventListener('message',slusaj);
+    try{ sw.postMessage({type:'VERSION'}); }catch(e){}
+    setTimeout(()=>{ if(!gotovo){ gotovo=true; navigator.serviceWorker.removeEventListener('message',slusaj); res(null); } },1200);
+  });
+  return out;
+}
+/* Ručno osvežavanje: radi i kad trake nema. Ako nov SW čeka — pusti ga; ako ne
+   čeka — natera proveru pa proba ponovo; ako ni tad nema ništa, znači da si
+   već na najnovijoj i to se kaže, umesto da dugme tiho ne uradi ništa. */
+async function osveziAplikaciju(dugme){
+  if(!('serviceWorker' in navigator)){ alert('Ovaj pregledač ne podržava offline režim.'); return; }
+  const post=w=>{ try{ w.postMessage({type:'SKIP_WAITING'}); }catch(e){} };
+  let reg=null;
+  try{ reg=await navigator.serviceWorker.getRegistration(); }catch(e){}
+  if(!reg){ location.reload(); return; }
+  if(reg.waiting){ if(dugme) dugme.textContent='Osvežavam…'; post(reg.waiting); return; }
+  if(dugme){ dugme.disabled=true; dugme.textContent='Proveravam…'; }
+  try{ await reg.update(); }catch(e){}
+  await new Promise(r=>setTimeout(r,1500));
+  if(reg.waiting){ if(dugme) dugme.textContent='Osvežavam…'; post(reg.waiting); return; }
+  if(reg.installing){
+    if(dugme) dugme.textContent='Preuzimam…';
+    reg.installing.addEventListener('statechange',function(){ if(this.state==='installed') post(this); });
+    return;
+  }
+  const st=await swStanje();
+  if(dugme){ dugme.disabled=false; dugme.textContent='Osveži aplikaciju'; }
+  alert(st.aktivna && st.aktivna!==APP_VERSION
+    ? 'Nova verzija još nije stigla do ovog uređaja. Pokušaj ponovo za koji minut.'
+    : 'Već si na najnovijoj verziji ('+APP_VERSION+').');
 }
 function showUpdateBanner(worker){
   if($('#update-banner'))return;

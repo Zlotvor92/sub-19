@@ -129,3 +129,48 @@ describe('Klik na „Osveži" pušta novi SW da preuzme', () => {
       'klik ne šalje poruku novom SW-u — stari keš ostaje');
   });
 });
+
+/* STANJE OFFLINE KOPIJE MORA BITI VIDLJIVO I RUČNO OSVEŽIVO.
+
+   Prijava: „app je na 175, a traka Osveži nije izašla." Broj u podnožju dolazi
+   iz app.js, koji ide network-first — skoči čim deploy prođe, i kad keš stoji
+   na staroj verziji. Dva različita stanja izgledala su isto, pa se nije moglo
+   znati da li je traka izostala ili nije ni bila potrebna. */
+describe('Verzija offline kopije se može pročitati i naterati', () => {
+
+  test('service worker odgovara na pitanje koju verziju nosi', () => {
+    /* Bez ovoga se verzija SW-a ne može saznati iz stranice NIKAKO — jedini
+       broj koji stranica vidi je onaj iz app.js, a on ne govori o kešu. */
+    const sw = readRepoFile('sw.js');
+    assert.match(sw, /type === 'VERSION'/, 'sw.js ne odgovara na upit o verziji');
+    assert.match(sw, /postMessage\(\{ type: 'VERSION', version: APP_VERSION, cache: CACHE \}\)/,
+      'odgovor ne nosi i verziju i ime keša');
+  });
+
+  test('upit ne može da zablokira Podešavanja', () => {
+    /* Stariji SW ne zna za poruku VERSION i nikad neće odgovoriti. */
+    const app = readRepoFile('app.js');
+    const m = /async function swStanje\(\)\{([\s\S]*?)\n\}/.exec(app);
+    assert.ok(m, 'nema swStanje()');
+    assert.match(m[1], /setTimeout\(\(\)=>\{ if\(!gotovo\)/, 'nema vremenskog ograničenja na odgovor');
+  });
+
+  test('ručno osvežavanje ne zavisi od toga da li se traka pojavila', () => {
+    const app = readRepoFile('app.js');
+    const m = /async function osveziAplikaciju\(dugme\)\{([\s\S]*?)\n\}/.exec(app);
+    assert.ok(m, 'nema osveziAplikaciju()');
+    const telo = m[1];
+    assert.match(telo, /reg\.waiting/, 'ne pušta SW koji već čeka');
+    assert.match(telo, /reg\.update\(\)/, 'ne tera proveru kad ništa ne čeka');
+    assert.match(telo, /reg\.installing/, 'ne hvata instalaciju koja je u toku');
+    /* Dugme koje tiho ne uradi ništa je gore od dugmeta kojeg nema. */
+    assert.match(telo, /Već si na najnovijoj verziji/, 'ćuti kad nema šta da osveži');
+  });
+
+  test('Podešavanja imaju i red o stanju i dugme', () => {
+    const app = readRepoFile('app.js');
+    assert.match(app, /id="sw-osvezi"/);
+    assert.match(app, /id="sw-stanje"/);
+    assert.match(app, /\$\('#sw-osvezi'\)\.onclick=e=>osveziAplikaciju\(e\.target\)/);
+  });
+});

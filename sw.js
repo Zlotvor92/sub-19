@@ -3,8 +3,8 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v175';
-const APP_VERSION = '175';
+const CACHE = 'sub19-cache-v176';
+const APP_VERSION = '176';
 /* './app.js' MORA biti na spisku: od v150 index.html je samo markup, a ceo kod
    aplikacije je u app.js. Da nije tu, dobio bi network-first samo omotač, dok
    bi se logika servirala iz starog keša — tj. „promenio sam kod, ništa se ne
@@ -13,6 +13,14 @@ const ASSETS = ['./', './index.html', './app.js', './manifest.json', './icon-32.
 
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+  /* KOJU VERZIJU OVAJ SW ZAISTA NOSI.
+     Podnožje Podešavanja je do sada pisalo APP_VERSION iz app.js — a app.js ide
+     network-first, pa taj broj skoči čim deploy prođe, bez obzira na to što keš
+     i dalje drži staru verziju. Dva različita stanja izgledala su isto, pa se
+     nije moglo razlikovati „ažuriran sam" od „traka nije izašla". */
+  if (e.data && e.data.type === 'VERSION' && e.source) {
+    e.source.postMessage({ type: 'VERSION', version: APP_VERSION, cache: CACHE });
+  }
 });
 
 self.addEventListener('install', e => {
