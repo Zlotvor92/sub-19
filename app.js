@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=8, LS_KEY='sub19-v1';
-const APP_VERSION='178'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='179'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2419,6 +2419,16 @@ function dKarta(naslov,dodatak,telo,klasa){
    Bezbedno je jer `mdToHtml` PRVO escapuje, pa ni tekst iz uvezenog backupa
    ne može da unese oznake. */
 const AI_LIMIT=2;
+/* Koliko analiza SME jos da se pokrene za ovaj trening.
+   VLASNIK NEMA LIMIT. Limit od dve postoji zato sto se „analiza ne menja za
+   iste podatke", pa treca kosta kvotu bez ikakve nove informacije — a kvotu
+   placa vlasnik. Njemu samom to ograniciti nema smisla; on je jedini kome
+   ponovno pokretanje sluzi za razvoj (proba drugog prompta, poredjenje
+   odgovora). Server odbija limit istom logikom (v. api/analyze.js). */
+function aiPreostalo(l){
+  if(jeVlasnik()) return Infinity;
+  return Math.max(0, AI_LIMIT-((l&&l.aiCount)||0));
+}
 function plKrug(n){ const h=n%100; if(h>=11&&h<=14)return 'krugova'; const m=n%10;
   return m===1?'krug':(m>=2&&m<=4?'kruga':'krugova'); }
 function aiIzvor(l){
@@ -2437,8 +2447,8 @@ function aiMoze(d,l){
 }
 function aiTelo(d,l){
   const izvor=aiIzvor(l);
-  const preostalo=Math.max(0,AI_LIMIT-(l.aiCount||0));
-  const ostatak=n=>`${n} ${pl3(n,'preostala','preostale','preostalih')}`;
+  const preostalo=aiPreostalo(l);
+  const ostatak=n=>n===Infinity?'bez ograničenja':`${n} ${pl3(n,'preostala','preostale','preostalih')}`;
   /* Trazi se STRING, ne samo „ima nesto": iz uvezenog backupa `aiText` moze
      doci kao objekat ili broj, a onda bi u kartici pisalo „[object Object]". */
   const tekst=typeof l.aiText==='string'&&l.aiText.trim()?l.aiText:null;
@@ -2770,7 +2780,7 @@ function vezAnalize(root,d){
   if(!dug) return;
   dug.addEventListener('click',async()=>{
       const l=S.log[d.id]||(S.log[d.id]={});
-      if((l.aiCount||0)>=AI_LIMIT) return;   /* dugme u tom stanju i ne postoji */
+      if(!aiPreostalo(l)) return;   /* dugme u tom stanju i ne postoji */
       /* Kartica se pretvara u „radi se" — isti element, bez skoka na vrh. */
       karta.classList.remove('prazna');
       karta.innerHTML=dGlava('Analiza',esc(aiIzvor(l)))+`<div class="ai-out" id="ai-out-${esc(d.id)}">Analiziram…</div>`;
@@ -8390,9 +8400,25 @@ function trendSummary(){
     if(Array.isArray(l.laps)&&l.laps.length){
       const hrs=l.laps.map(x=>x.avgHr).filter(x=>x!=null);
       const cads=l.laps.map(x=>x.cadence).filter(x=>x!=null);
-      if(row.tempo==null)row.tempo=l.laps.length?Math.round(l.laps.reduce((s,x)=>s+x.paceSec,0)/l.laps.length):null;
+      /* PROSEK PONDERISAN DISTANCOM, ne prosek prosekâ. Na nejednakim repovima
+         (1600 m + 400 m) prosek prosekâ ume da promaši za 18 s/km — v. isti
+         račun u `icuRadniTempo`, koji se ovde i koristi da bi postojao samo
+         jedan. Stari račun je bio tačan samo kad su svi repovi iste dužine. */
+      if(row.tempo==null){ const t=icuRadniTempo(l.laps); if(t) row.tempo=t; }
       if(hrs.length>=2){row.driftStart=hrs[0];row.driftEnd=hrs[hrs.length-1];row.drift=hrs[hrs.length-1]-hrs[0];}
       if(cads.length)row.cadence=Math.round(cads.reduce((s,x)=>s+x,0)/cads.length);
+      /* ŠTO SAMO intervals.icu DAJE — v. icuSyncTreninzi. Trend bez ovoga vidi
+         isti tempo na ravnom i uzbrdo, i ne vidi da su se oporavci razvlačili,
+         što je najraniji znak da serija puca. */
+      const gaps=l.laps.filter(x=>x.gapSec>0&&x.distM>0);
+      if(gaps.length===l.laps.length){
+        const d=gaps.reduce((a,x)=>a+x.distM,0);
+        const v=gaps.reduce((a,x)=>a+x.gapSec*x.distM/1000,0);
+        if(d>0) row.gap=Math.round(v/(d/1000));
+      }
+      const pauze=l.laps.map(x=>x.restSec).filter(x=>x>0);
+      if(pauze.length>=2){ row.pauzaPrva=pauze[0]; row.pauzaZadnja=pauze[pauze.length-1]; }
+      if(l.laps.length>1) row.repova=l.laps.length;
     } else if(Array.isArray(l.perKm)&&l.perKm.length){
       const cads=l.perKm.map(x=>x.cadence).filter(x=>x!=null);
       if(cads.length)row.cadence=Math.round(cads.reduce((s,x)=>s+x,0)/cads.length);
@@ -8420,6 +8446,14 @@ function trendSummary(){
     }
     if(l.km!=null) row.km=l.km;
     if(l.decoupling&&l.decoupling.n!=null) row.dekuplovanje=l.decoupling.n;
+    /* Mere koje intervals.icu sam izračuna nad celim fajlom. Efikasnost kroz
+       vreme je najčistiji pokazatelj aerobnog napretka koji postoji — isti
+       tempo uz niži puls — a trend ga do sada nije ni video. */
+    if(l.icu){
+      if(l.icu.efikasnost!=null) row.efikasnost=l.icu.efikasnost;
+      if(l.icu.opterecenje!=null) row.opterecenje=l.icu.opterecenje;
+      if(l.icu.osecaSe!=null) row.osecaSe=l.icu.osecaSe;
+    }
     if(l.relEffort!=null) row.relEffort=l.relEffort;
     if(l.rpe!=null) row.rpe=l.rpe;
     out.push(row);

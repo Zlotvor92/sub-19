@@ -216,3 +216,87 @@ describe('Server: /api/activities', () => {
     assert.match(src, /run\|trčanje\|trcanje/i);
   });
 });
+
+describe('Trend analiza koristi ono što icu daje', () => {
+
+  /* Dan iz plana sa krugovima kakve vraća intervals.icu. */
+  function saKrugovima(a, dan) {
+    a.ctx.__d = dan;
+    return a.evalIn(`
+      const d = BY_DATE[__d];
+      S.log[d.id] = { status:'done', km:8.3, sec:2800, ts:__d, runDate:__d, src:'icu',
+        lapsIzvor:'icu',
+        laps:[{distM:1600,paceSec:240,avgHr:168,cadence:88,gapSec:238,restSec:120},
+              {distM:400, paceSec:180,avgHr:178,cadence:90,gapSec:179,restSec:150}],
+        icu:{ efikasnost:1.82, opterecenje:68, osecaSe:36 } };
+      rebuildDateIndex();
+      JSON.stringify(trendSummary().treninzi.find(x=>x.date===__d));`);
+  }
+
+  test('tempo je ponderisan distancom, ne prosek prosekâ', () => {
+    /* 1600 m @4:00 + 400 m @3:00 = 2000 m za 456 s = 228 s/km. Prosek prosekâ
+       bi dao 210 — 18 s/km brže nego što je istrčano, i to bi u trendu
+       izgledalo kao napredak koga nema. */
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const r = JSON.parse(saKrugovima(a, '2026-07-01'));
+    assert.equal(r.tempo, 228);
+    assert.notEqual(r.tempo, 210);
+  });
+
+  test('GAP, broj repova i oporavci ulaze u trend', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const r = JSON.parse(saKrugovima(a, '2026-07-01'));
+    assert.equal(r.repova, 2);
+    assert.equal(r.pauzaPrva, 120);
+    assert.equal(r.pauzaZadnja, 150, 'produžavanje oporavka je najraniji znak da serija puca');
+    assert.ok(r.gap > 0 && Math.abs(r.gap - 226) <= 2, `GAP ${r.gap}`);
+  });
+
+  test('mere koje icu sam izračuna stižu do trenda', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const r = JSON.parse(saKrugovima(a, '2026-07-01'));
+    assert.equal(r.efikasnost, 1.82);
+    assert.equal(r.opterecenje, 68);
+    assert.equal(r.osecaSe, 36);
+  });
+
+  test('bez icu-a trend radi kao i pre — nema izmišljenih polja', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    a.evalIn(`
+      const d = BY_DATE['2026-07-01'];
+      S.log[d.id] = { status:'done', km:8.3, sec:2800, ts:'2026-07-01', lapsIzvor:'strava',
+        laps:[{distM:800,paceSec:233,avgHr:168,cadence:88},{distM:800,paceSec:239,avgHr:175,cadence:88}] };
+      rebuildDateIndex();`);
+    const r = JSON.parse(a.evalIn(`JSON.stringify(trendSummary().treninzi.find(x=>x.date==='2026-07-01'))`));
+    assert.equal(r.tempo, 236, 'tempo se i dalje računa iz Stravinih krugova');
+    for (const k of ['gap', 'pauzaPrva', 'efikasnost', 'opterecenje'])
+      assert.equal(r[k], undefined, `polje ${k} je izmišljeno bez icu podataka`);
+  });
+});
+
+describe('Vlasnik nema limit AI analiza', () => {
+
+  test('drugima ostaju dve po treningu', () => {
+    const a = loadApp();
+    assert.equal(a.call('aiPreostalo', {}), 2);
+    assert.equal(a.call('aiPreostalo', { aiCount: 1 }), 1);
+    assert.equal(a.call('aiPreostalo', { aiCount: 2 }), 0);
+    assert.equal(a.call('aiPreostalo', { aiCount: 9 }), 0);
+  });
+
+  test('vlasniku limit ne važi ni posle deset analiza', () => {
+    const a = loadApp();
+    a.evalIn(`SB.userId=ADMIN_UID; SB.access='t'; SB.expiresAt=Date.now()+9e6;`);
+    assert.equal(a.call('jeVlasnik'), true);
+    assert.equal(a.call('aiPreostalo', { aiCount: 10 }), Infinity);
+  });
+
+  test('server proverava POTVRĐENU adresu, ne samo poklapanje', () => {
+    /* Bez provere potvrde bi se, na Supabase podešavanju bez obavezne potvrde
+       mejla, svako mogao registrovati vlasnikovom adresom i skinuti limit. */
+    const src = readRepoFile('api/analyze.js');
+    assert.match(src, /async function jeVlasnik\(req\)/);
+    assert.match(src, /email_confirmed_at \|\| u\.confirmed_at/);
+    assert.match(src, /if \(!vlasnik\) try \{/, 'limit se i dalje broji vlasniku');
+  });
+});

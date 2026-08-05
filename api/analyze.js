@@ -129,6 +129,26 @@ async function callGemini(systemText, userText) {
   return out; // ni 503 ni 429 — fallback ne bi pomogao (npr. prazan odgovor)
 }
 
+/* Vlasnik naloga — ista provera kao /api/broadcast.js (ugrađena, ne uvezena:
+   Vercel funkcije bez build koraka ne razrešavaju lokalne import-e). */
+async function jeVlasnik(req) {
+  const admin = String(process.env.ADMIN_EMAIL || process.env.REPORT_TO || '').trim().toLowerCase();
+  const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
+  if (!admin || !url || !anon) return false;
+  const h = req.headers.authorization || req.headers.Authorization || '';
+  const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
+  if (!m) return false;
+  try {
+    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
+      headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
+    });
+    if (!r.ok) return false;
+    const u = await r.json();
+    const potvrdjen = !!(u && (u.email_confirmed_at || u.confirmed_at));
+    return !!(u && u.email && potvrdjen && String(u.email).trim().toLowerCase() === admin);
+  } catch (e) { return false; }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Samo POST.' });
@@ -150,7 +170,16 @@ export default async function handler(req, res) {
      30/dan je dovoljno velikodusno za stvarnu upotrebu, premalo za automatsko
      iscrpljivanje. */
   const DAILY_LIMIT = 30;
-  try {
+  /* VLASNIK NEMA DNEVNI LIMIT. Limit postoji zato što je Google prijava
+     otvorena svima, pa bi tuđa skripta mogla da isprazni Gemini kvotu — a to je
+     kvota koju vlasnik plaća. Njemu samom ograničavati sopstvenu potrošnju nema
+     smisla.
+     Provera je ISTA kao u /api/broadcast.js: adresa mora da se poklopi sa
+     ADMIN_EMAIL I da bude POTVRĐENA. Bez provere potvrde bi se, na Supabase
+     podešavanju bez obavezne potvrde mejla, svako mogao registrovati
+     vlasnikovom adresom i time skinuti limit sebi. */
+  const vlasnik = await jeVlasnik(req);
+  if (!vlasnik) try {
     const rl = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_api_usage', {
       method: 'POST',
       headers: {
@@ -391,6 +420,9 @@ KAKO SE ČITAJU PODACI:
 - NEDELJNI OBIM je dat posebno. Pre nego što kažeš "forma stagnira", proveri da li je obim pao — pad forme uz pad obima nije misterija, to je posledica. Isto tako: skok obima preko 25% u nedelju dana je rizik od povrede i vredi ga pomenuti.
 - O PULSU govori kroz zone ako su date; bez njih ne sudi o apsolutnim brojkama jer ne znaš maksimalan puls trkača.
 - RPE i Strava relative effort pokazuju koliko je trening KOŠTAO. Isti tempo uz niži RPE kroz nedelje je napredak i kad VDOT stoji.
+- GAP je tempo korigovan za nagib. Kad se GAP i tempo poklapaju, teren nije bio faktor i tempi su uporedivi. Kad se razilaze, poredi GAP, ne tempo — inače brdovit trening izgleda kao pad forme.
+- OPORAVAK između repova („oporavak 120s→150s") pokazuje da li je serija držala. Produžavanje oporavka kroz seriju je raniji znak da je trening bio pretežak od samog pada tempa.
+- EFIKASNOST (efficiency factor) kroz vreme je najčistiji pokazatelj aerobnog napretka: isti tempo uz niži puls. Gledaj je kao trend kroz nedelje, nikad kao pojedinačan broj.
 - OPORAVAK (HRV, puls u miru, san) je dat po danima kad postoji. HRV gledaj kao trend i kao odstupanje od sopstvene osnove, nikad kao golu brojku. Ako HRV pada nedeljama ili puls u miru raste dok obim raste, to je preopterećenje — reci to jasno, to je najvažnija stvar koju možeš da uočiš. Ako je san dosledno ispod 7 sati, to ograničava napredak više od bilo kog detalja u treningu.
 - SVEŽINA (forma minus umor, iz intervals.icu) pokazuje da li trkač ulazi u trku odmoran. Pred trku treba da raste. NEGATIVNA SVEŽINA USRED BLOKA IZGRADNJE JE NORMALNA i sama po sebi nije problem — tako izgleda nedelja u kojoj se radi. Zabrinjava tek ako ostaje duboko negativna nedeljama uz rast pulsa u miru ili pad HRV-a, ili ako je takva pred samu trku.
 
@@ -425,6 +457,16 @@ NIKAD ne izmišljaj tačne buduće tempove ni VDOT projekcije sa lažnom precizn
     let s = `${t.date} [${t.tag}]`;
     if (t.km != null) s += `, ${t.km} km`;
     if (t.tempo != null) s += `, tempo ${fmtPace(t.tempo)}/km`;
+    /* GAP i oporavci dolaze samo sa intervals.icu (v. icuSyncTreninzi). Kad
+       GAP i tempo idu zajedno, teren nije faktor; kad se razilaze, poređenje
+       dva treninga po golom tempu je besmisleno. */
+    if (t.gap != null) s += `, GAP ${fmtPace(t.gap)}/km`;
+    if (t.repova != null) s += `, ${t.repova} repova`;
+    if (t.pauzaPrva != null && t.pauzaZadnja != null)
+      s += `, oporavak ${t.pauzaPrva}s→${t.pauzaZadnja}s`;
+    if (t.efikasnost != null) s += `, efikasnost ${t.efikasnost}`;
+    if (t.opterecenje != null) s += `, opterećenje ${t.opterecenje}`;
+    if (t.osecaSe != null) s += `, oseća se ${t.osecaSe}°C`;
     if (t.drift != null) s += `, drift ${t.driftStart}→${t.driftEnd} (${t.drift>=0?'+':''}${t.drift}) na ravnomernom tempu`;
     else if (t.progresivno) s += `, progresivno (tempo namerno menjan — drift se ne računa)`;
     if (t.dekuplovanje != null) s += `, dekuplovanje ${t.dekuplovanje}%`;
