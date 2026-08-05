@@ -38,8 +38,8 @@
 })();
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
-const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='171'; /* mora se poklapati sa APP_VERSION u sw.js */
+const START='2026-06-22', RACE='2026-09-24', SCHEMA=8, LS_KEY='sub19-v1';
+const APP_VERSION='172'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -130,7 +130,7 @@ const PLAN=[
  {id:'n6d5',dow:4,tag:'tempo',km:10,desc:`Tempo (broken, duži blok) — 2 km WU + 4 km + 2 km @ ~4:25/km (75 s float) + 2 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
  {id:'n6d6',dow:5,rest:true},
  {id:'n6d7',dow:6,tag:'lr',km:12,desc:`12 km LR  ·  25% nedelje`},
- {id:'n6t',test:true,tag:'test',km:null,desc:`Kontrolisani 3–5 km ili parkrun — rekalibriši tempo Faze 3 prema rezultatu (kraj N6, opciono)`}
+ {id:'n6t',test:true,tag:'test',km:null,desc:`Test na 3 km, istrčan kao trka — rekalibriše tempo Faze 3 (kraj N6, opciono)`}
 ]},
 {w:7,start:'2026-08-03',focus:'DELOAD (intenzitetski) — bez kvaliteta i pliometrije, cilj je oporavak',days:[
  {id:'n7d1',dow:0,tag:'lako',km:8,desc:`8 km lako  +  lagana snaga (2 serije, bez pliometrije)`},
@@ -186,7 +186,7 @@ const PLAN=[
  {id:'n11d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 2 km WU + 6 km @ 4:18/km + 2 km CD`},
  {id:'n11d6',dow:5,rest:true},
  {id:'n11d7',dow:6,tag:'lr',km:14,desc:`14 km LR  ·  24% nedelje`},
- {id:'n11t',test:true,tag:'test',km:null,desc:`Kontrolisani napor — poslednja provera tempa pred taper (kraj N11, opciono)`}
+ {id:'n11t',test:true,tag:'test',km:null,desc:`Test na 3 km — poslednja provera forme pred taper (kraj N11, opciono)`}
 ]},
 {w:12,start:'2026-09-07',focus:'Specifični ritam',days:[
  {id:'n12d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA — Plavi blok (poslednji težak trening snage)`},
@@ -276,6 +276,9 @@ function seedState(){return {
  pred:{},
  predLock:{},
  vdotLog:[],
+ /* Testovi na 3 km — v. blok „TEST NA 3 KM". Zive odvojeno od S.pred jer nisu
+    vezani ni za jedan dan plana: test se moze istrcati kad god. */
+ t3k:[],
  moves:{},
  alts:{},
  genPlan:null,
@@ -846,11 +849,20 @@ function migrate(o){
      u kodu ali nikad nisu bili upisani u semu — svako citanje ih je moralo
      rucno cuvati. Prazna mapa / null = ponasanje IDENTICNO kao pre. */
   if(o.v<7){o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.v=7;}
+  /* v7→v8: testovi na 3 km. Prazan niz = ponasanje IDENTICNO kao pre — ko ga
+     nema, jednostavno nema nijedan test u lancu forme. */
+  if(o.v<8){o.t3k=o.t3k||[];o.v=8;}
+  /* ID MORA da nosi prefiks: po njemu `tipSesijeZaVdot` prepoznaje test i daje
+     mu najveću težinu u lancu forme. Uvezen zapis bez prefiksa bi tiho pao na
+     podrazumevanu težinu — dakle ne bi bio test, samo bi tako izgledao. */
+  o.t3k=cistDatirane(o.t3k)
+    .map(t=>({id:String(t.id||''), date:t.date, sec:Math.round(+t.sec)}))
+    .filter(t=>jeT3k(t.id)&&validanId(t.id)&&t.sec>0&&t.sec<7200);
   o.wellness=cistWellness(o.wellness);
   o.vdotLog=cistVdotLog(o.vdotLog);
   o.knee=cistDatirane(o.knee);
   o.kg=cistDatirane(o.kg);
-  o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
+  o.t3k=o.t3k||[];o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
   o.v=SCHEMA;
   return o;
 }
@@ -1323,6 +1335,82 @@ function zoneForPredRow(r){
   const tip=r.l.split(' · ')[1];
   return tip!=null?ZONE_FOR_KIND[tip]:null;
 }
+
+/* ============================================================
+   TEST NA 3 KM — najpouzdaniji ulaz u lanac forme
+
+   ŠTA KAŽE NAUKA. Daniels–Gilbertova VDOT formula je izvedena za MAKSIMALNE
+   trkačke napore i najtačnija je na trkama koje traju otprilike 10–30 minuta.
+   Kraće od toga presudno zavisi od anaerobnog doprinosa, koji VDOT ne meri;
+   duže od toga sve više zavisi od UDELA VO2max-a koji se može održati i od
+   ekonomije trčanja, a sve manje od samog VO2max-a. Trka na 3 km za trkača
+   ovog nivoa traje ~11–13 min — dakle tačno u sredini tog prozora. Zato je
+   test na 3 km najbolji jednokratni pokazatelj forme koji čovek može sam da
+   izvede, i zato mu se ovde veruje više nego bilo kojoj trenažnoj sesiji.
+
+   ZAŠTO DIREKTNO IZ 3000 m. VDOT se računa `vdotFromRace(3000, vreme)`, bez
+   međukoraka preko Riegelovog 5K ekvivalenta: svaki prevod dodaje grešku, a
+   ovde ga nema potrebe praviti — formula prima distancu i vreme kakvi jesu.
+   Predikcija ciljne distance se posle izvodi iz tog VDOT-a (`raceTimeForVdot`),
+   isto kao za svaku drugu sesiju, pa se dva broja na istom ekranu ne mogu
+   razići.
+
+   ZAŠTO ODVOJENO OD S.pred. Kvalitetne sesije su vezane za dan plana; test se
+   može istrčati kad god, više puta, i na generisanom planu koji nema test-dan.
+   Zato test živi u S.t3k i u lanac ulazi preko sopstvenog ID-ja.
+   ============================================================ */
+const T3K_DIST_M=3000;
+const T3K_PREFIX='t3k-';
+function jeT3k(id){ return String(id||'').startsWith(T3K_PREFIX); }
+function t3kNiz(){
+  return (S.t3k||[]).filter(t=>t&&t.sec>0&&validanDatum(t.date))
+                    .slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+}
+function t3kVdot(sec){ return (sec>0)?r1(vdotFromRace(T3K_DIST_M,sec)):null; }
+/* Upis testa u lanac forme. NE ide kroz recordVdot: ta funkcija računa VDOT iz
+   TEMPA i zone kvalitetne sesije, a ovde je reč o trci na 3000 m — VDOT se iz
+   nje dobija direktno, bez prevoda na tempo i nazad. Rep je isti: čuva se samo
+   izmereno, a lanac se prera­čunava iz njega. */
+function zabeleziT3k(id, sec, datum){
+  const measured=t3kVdot(sec);
+  if(measured==null) return null;
+  S.vdotLog=S.vdotLog||[];
+  const ix=S.vdotLog.findIndex(e=>e&&e.id===id);
+  const entry={id, ts:datum, measured, vdotMigrated:true};
+  if(ix>=0) S.vdotLog[ix]=entry; else S.vdotLog.push(entry);
+  preracunajVdotLog();
+  return (S.vdotLog.find(e=>e&&e.id===id)||entry);
+}
+function dodajT3k(datum, sec){
+  S.t3k=S.t3k||[];
+  const id=T3K_PREFIX+datum+'-'+Math.random().toString(36).slice(2,7);
+  S.t3k.push({id, date:datum, sec:Math.round(sec)});
+  zabeleziT3k(id, Math.round(sec), datum);
+  save();
+  return id;
+}
+function obrisiT3k(id){
+  S.t3k=(S.t3k||[]).filter(t=>t&&t.id!==id);
+  S.vdotLog=(S.vdotLog||[]).filter(e=>e&&e.id!==id);
+  preracunajVdotLog();   /* uklonjen test ne sme da ostane u lancu */
+  save();
+}
+/* Test kao red predikcije. Nedelja se traži po datumu da bi tačka pala na
+   pravo mesto na grafikonu „predikcija kroz plan"; test van plana pada na
+   najbližu ivicu, jer bi bez nedelje ispao iz grafikona sasvim. */
+function t3kNedelja(datum){
+  const w=weekOf(datum);
+  if(w) return w.w;
+  return datum<CUR_START ? 1 : CUR_PLAN.length;
+}
+function t3kRedovi(){
+  return t3kNiz().map(t=>({
+    id:t.id, w:t3kNedelja(t.date), l:'Test 3 km · '+fmtD(t.date),
+    q:T3K_DIST_M/1000, pt:Math.round(t.sec/(T3K_DIST_M/1000)),
+    test3k:true, sec:t.sec, date:t.date
+  }));
+}
+
 function predCalc(){
   /* ISTI princip kao recordVdot popravka: direktan riegel(tempo,q) tretira
      UNET tempo kao da JE trka (max napor). Za Tempo sesije (namerno
@@ -1353,17 +1441,31 @@ function predCalc(){
     }
     return {r,a,pred};
   });
-  const entered=rows.filter(x=>x.pred!=null);
+  /* TESTOVI NA 3 km ULAZE U ISTU PREDIKCIJU. Bez ovoga bi najtačnije merenje
+     forme koje čovek ima bilo jedino koje se ne vidi ni u „zadnjoj" ni u
+     „najbržoj" predikciji. Stoje u ZASEBNOM nizu, ne u `rows`, zato što
+     chartPred crta `rows` po INDEKSU naspram CUR_PRED — ubacivanje bi pomerilo
+     svaku tačku grafikona za jedno mesto. */
+  const testovi=t3kRedovi().map(r=>{
+    const e=(S.vdotLog||[]).find(x=>x&&x.id===r.id);
+    const v=(e&&e.vdot!=null&&isFinite(e.vdot)) ? e.vdot : t3kVdot(r.sec);
+    return {r, a:r.pt, pred: v!=null?Math.round(raceTimeForVdot(v,raceDistM)):null};
+  });
+  const uneti=rows.filter(x=>x.pred!=null);
+  const entered=uneti.concat(testovi.filter(x=>x.pred!=null));
   /* "ZADNJA predikcija" mora biti HRONOLOŠKI najnovija (po stvarnom datumu
      unosa), ne poslednja PO REDOSLEDU NEDELJA plana — entered[entered.length-1]
      je bio čisto pozicijski (bio bi pogrešan da bilo koji kasnije-nedeljni red
      ima unos van redosleda, npr. test/TT dan unet pre redovnog rasporeda). */
   const tsFor=id=>{ const e=(S.vdotLog||[]).find(x=>x.id===id); return e?e.ts:null; };
-  const last=entered.length
-    ? entered.reduce((m,x)=>{ const tm=tsFor(m.r.id), tx=tsFor(x.r.id); return (tx&&(!tm||tx>tm))?x:m; }, entered[0])
+  const najnoviji=niz=>niz.length
+    ? niz.reduce((m,x)=>{ const tm=tsFor(m.r.id), tx=tsFor(x.r.id); return (tx&&(!tm||tx>tm))?x:m; }, niz[0])
     : null;
+  const last=najnoviji(entered);
   const best=entered.length?entered.reduce((m,x)=>x.pred<m.pred?x:m):null;
-  return{rows,entered,last,best};
+  /* `lastRed` je isto to, ali SAMO među redovima plana: crvena linija na
+     grafikonu staje na njemu, a test nema svoje mesto na toj osi. */
+  return{rows,testovi,entered,last,best,lastRed:najnoviji(uneti)};
 }
 /* ===== VDOT rekalibracija forme ===== */
 function currentVdot(){
@@ -5165,14 +5267,26 @@ function generatePlan(inp){
       const aktWu=r1(Math.max(1, Math.min(1.5, vol*0.11)));
       const aktCd=r1(Math.max(0.8, Math.min(1, vol*0.08)));
       const aktN=6;
+      /* AKTIVACIJA JE PRAVA SESIJA, ne samo opis dana. Ranije se pravila običnim
+         D()-om, bez `session` objekta, a PRED red i qs ključ su joj se dopisivali
+         ručno — pa je plan tvrdio da u trkačkoj nedelji postoji sesija „Intervali"
+         koju nijedan dan ne nosi (uhvaćeno testom „PRED redovi pokazuju na dan koji
+         stvarno postoji"). Sada ide kroz isti put kao svaka druga kvalitetna sesija.
+         Vodi se kao REPETICIJE, jer to i jeste: 200 m sa punim odmorom. Time
+         automatski dobija i najmanju težinu u lancu forme (ALPHA.rep) — sasvim
+         ispravno, jer se iz šest dvestotinjaka tri dana pred trku ne može izvesti
+         nikakva ozbiljna predikcija. */
+      const aktPace=Math.max(rp-4,pI-6);
+      const akt=sessInt(raceDow-2, aktWu, aktN, 200, aktPace, 120, aktCd, 'Repeticije');
+      akt.desc+=' — aktivacija';
       const mk={
         [raceDow-3]: dw=>D(dw,'lako',shakeA,`${shakeA} km shakeout (skroz lagano) + lagani core`),
-        [raceDow-2]: dw=>D(dw,'int',r1(aktWu+aktN*0.2+aktCd),`${aktWu} km zagrevanje + ${aktN}×200 m @ ${fmtP(Math.max(rp-4,pI-6))}/km (200 m hoda) + ${aktCd} km hlađenje — aktivacija`),
+        [raceDow-2]: () => akt,
         [raceDow-1]: dw=>D(dw,'lako',shakeB,`${shakeB} km shakeout + lagana mobilnost`),
         [raceDow]:   dw=>D(dw,'trka',raceDistM/1000,`🏁 TRKA ${distKm} km (${prof.name}) — cilj ${fmtP(inp.goalSec||a.predictedSec)} / ritam ${fmtP(rp)}/km`)
       };
       for(let dw=1; dw<=raceDow; dw++){ days.push(mk[dw]? mk[dw](dw) : REST(dw)); }
-      if(raceDow-2>=1){ plan.pred.push(predRow(w,'Intervali',r1(aktN*0.2),Math.max(rp-4,pI-6),raceDistM)); plan.qs['n'+w+'d'+(raceDow-2)]=[200]; }
+      if(raceDow-2>=1) pushPredQs(akt, w);
     } else if(w <= baseWeeks){
       /* FAZA 1 (bazna) — samo lako trčanje + obavezne strides, bez kvaliteta.
          Gradi aerobnu bazu i obim pre nego što kvalitetni ciklus počne. */
@@ -5694,14 +5808,27 @@ function generatePlan(inp){
 
 
 /* ============================================================
-   ADAPTIVNO REKALIBRISANJE — v3.1
-   Damping težine po tipu sesije: inženjerski izbor (NE izmerena
-   konstanta), obrazloženje: intervalne sesije nose grešku od pauza
-   (već utvrđeno kod Race Predictora — ZADNJA/NAJBRŽA prvenstveno
-   iz kontinuiranih sesija). Manji korak za intervale, veći za
-   tempo/ritam. Podložno promeni.
+   ADAPTIVNO REKALIBRISANJE — v3.2
+   Koliko se veruje JEDNOM merenju. Inženjerski izbor (NE izmerena
+   konstanta), ali redosled nije proizvoljan — prati koliko svaki
+   oblik napora zaista govori o VO2max-u:
+
+   test  0,60  Maksimalna trka na 3 km, ~11–13 min. Tačno u prozoru
+               (10–30 min) u kom je Daniels–Gilbertova formula i
+               izvedena i najtačnija. Najjači pojedinačan signal
+               forme koji čovek može sam da napravi.
+   tempo 0,28  Kontinuiran rad na pragu — bez pauza koje kvare
+               prosek, ali submaksimalan, pa nosi pretpostavku o
+               odnosu praga i VO2max-a.
+   int   0,12  Blizu VO2max-a, ali prepoznavanje radnih deonica ume
+               da uvuče i kaskanje između ponavljanja.
+   rep   0,04  200–400 m sa punim odmorom. Jeste kvalitetna sesija i
+               tako se i vodi, ali energetski je pretežno anaerobna,
+               a ekstrapolacija ide preko 12–25× duže distance —
+               precizna predikcija se iz nje ne može izvesti. Zato
+               formu pomera jedva primetno, umesto nikako.
    ============================================================ */
-const ALPHA = { int: 0.12, tempo: 0.28, rain_default: 0.15 };
+const ALPHA = { test: 0.6, tempo: 0.28, int: 0.12, rep: 0.04, rain_default: 0.15 };
 
 /* Prigušenje: koliko se veruje JEDNOM merenju. Do sada je ceo lanac VDOT-a
    koristio ravnih 0.4 za sve sesije, iako je ovaj model — sa različitom težinom
@@ -5711,13 +5838,16 @@ function prigusiVdot(prev, izmereno, tipSesije){
   const a = ALPHA[tipSesije] || ALPHA.rain_default;
   return { vdot: r1(prev + a*(izmereno - prev)), alpha:a };
 }
-/* Tip sesije za prigušenje, iz zone PRED reda. Intervali i repeticije nose
-   grešku od pauza (prepoznavanje radnih deonica ume da uvuče i kaskanje), pa
-   im se veruje manje nego kontinuiranom tempu. */
+/* Tip sesije za prigušenje. Test na 3 km se prepoznaje po ID-ju (nema PRED red
+   u planu), sve ostalo po zoni PRED reda. Repeticije su ODVOJENE od intervala:
+   dele istu zonsku porodicu, ali 200 m sa punim odmorom i 1000 m sa 90 s
+   kaskanja nisu ni izbliza jednako pouzdan pokazatelj forme. */
 function tipSesijeZaVdot(predId){
+  if(jeT3k(predId)) return 'test';
   const r = CUR_PRED.find(x=>x.id===predId);
   const z = r ? zoneForPredRow(r) : null;
-  if(z==='I'||z==='R') return 'int';
+  if(z==='R') return 'rep';
+  if(z==='I') return 'int';
   if(z==='T'||z==='M') return 'tempo';
   return 'rain_default';
 }
@@ -6585,7 +6715,9 @@ function openDaySheet(id){
         return dKarta('Sa sata','',dRedovi(metrikaSata(l)))
              + dKarta('Jutros','',dRedovi(oporavakRedovi(l.runDate||l.ts||d.date)))
              + aiKarta(d,l); })()}
-    ${d.test?'':`<div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="alt-open">✏️ Izmeni trening</button></div>`}
+    ${d.test
+      ? `<div class="note-src">Rezultat unesi u tabu <b>Trka → Test 3 km</b>. Test se ne mora istrčati baš na ovaj dan — tamo mu upisuješ i datum.</div>`
+      : `<div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="alt-open">✏️ Izmeni trening</button></div>`}
     ${!isRest&&S.log[id]?`<div class="btnrow"><button class="btn danger" id="del-log">Obriši unos</button></div>`:''}
     <div class="note-src">Sve izmene se čuvaju automatski.</div>
   `);
@@ -7157,6 +7289,95 @@ function trkaPrsten(x, ime){
   return `<div class="tr-ring">${prstenSVG(u||0, sec!=null?fmtClock(sec):'—', 84, boja, 19)}
     <b>${esc(ime)}</b><span>${esc(pod)}</span></div>`;
 }
+/* KARTICA TESTA NA 3 KM. Stoji odmah ispod prstenova, iznad VDOT-a: to je
+   ULAZ iz kog VDOT najviše i skače, pa je red čitanja „šta sam istrčao →
+   koliko sam u formi → šta to znači za trku". */
+function t3kKarta(){
+  const niz=t3kNiz().slice().reverse();   /* najnoviji gore */
+  const zadnji=niz[0]||null;
+  const dist=raceDistActive();
+  const imeTrke=S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K';
+  let telo='';
+  if(zadnji){
+    const v=t3kVdot(zadnji.sec);
+    const tempo=Math.round(zadnji.sec/(T3K_DIST_M/1000));
+    telo+=`<button class="t3-now" data-t3k="${esc(zadnji.id)}"><b>${esc(fmtClock(zadnji.sec))}</b><i>${esc(fmtDL(zadnji.date))} · izmeni</i></button>`;
+    /* Sve tri vrednosti dolaze IZ OVOG testa, ne iz izglačanog lanca — kartica
+       odgovara na „šta ovaj test sam po sebi kaže". Izglačanu formu pokazuju
+       prstenovi iznad i VDOT grafikon ispod. */
+    telo+=dRedovi([
+      ['tempo', esc(fmtTempo(tempo))+' /km'],
+      ['VDOT iz testa', esc(fmtNum(v,1))],
+      ['predikcija '+esc(imeTrke), esc(fmtClock(Math.round(raceTimeForVdot(v,dist))))]
+    ]);
+    if(niz.length>1){
+      telo+=`<div class="op-sub">Raniji testovi</div>`;
+      telo+=niz.slice(1).map(t=>{
+        const tv=t3kVdot(t.sec);
+        return `<button class="krow" data-t3k="${esc(t.id)}">
+          <div class="kp p0">${esc(fmtNum(tv,1))}</div>
+          <div class="ki"><div class="kd">${esc(fmtClock(t.sec))} <span class="ka">· ${esc(fmtDL(t.date))} · ${esc(fmtTempo(Math.round(t.sec/(T3K_DIST_M/1000))))}/km</span></div></div>
+        </button>`;
+      }).join('');
+    }
+    telo+=`<div class="note-src">Najjači pojedinačan pokazatelj forme koji možeš sam da napraviš: napor od 10–30 minuta je prozor u kom je VDOT formula i izvedena i najtačnija. Zato test pomera formu znatno više nego bilo koji trening.</div>`;
+  } else {
+    telo+=`<div class="note-src" style="margin:0">Istrči 3 km kao pravu trku — ravna staza, isti uslovi svaki put. Napor od 10–30 minuta je prozor u kom je VDOT formula najtačnija, pa test forme pomera znatno više nego bilo koji trening. Iz njega se računaju i forma i predikcija ${esc(imeTrke)}.</div>`;
+  }
+  telo+=`<div class="btnrow" style="margin-top:12px"><button class="btn ${zadnji?'ghost':''}" id="t3k-add">${zadnji?'+ Novi test':'Unesi test na 3 km'}</button></div>`;
+  return `<div class="card">${dGlava('Test 3 km','najjači signal forme')}${telo}</div>`;
+}
+function openT3kSheet(id){
+  const t=id?(S.t3k||[]).find(x=>x&&x.id===id):null;
+  if(id&&!t) return;
+  openSheet(`
+    <div class="sh-t">${id?'Test 3 km — '+esc(fmtDL(t.date)):'Novi test na 3 km'}</div>
+    <div class="sh-s">Vreme na 3000 m, istrčano kao trka</div>
+    <div class="f-grid">
+      <div class="f-field"><label for="t3-date">Datum</label><input type="date" id="t3-date" value="${esc(id?t.date:TODAY)}"></div>
+      <div class="f-field"><label for="t3-time">Vreme</label><input type="text" inputmode="numeric" id="t3-time" placeholder="11:42" value="${id?esc(fmtClock(t.sec)):''}"></div>
+    </div>
+    <div class="note-src" id="t3-out">Unesi vreme pa se ispod prikaže šta znači.</div>
+    <div class="btnrow">${id
+      ? `<button class="btn" id="t3-save">Sačuvaj izmenu</button><button class="btn danger" id="t3-del">Obriši test</button>`
+      : `<button class="btn" id="t3-save">Sačuvaj</button>`}</div>
+    <div class="note-src">Trči kao pravu trku, ali bez pritiska — cilj je tačna procena forme, ne rekord. Isti uslovi (staza, doba dana) daju uporediv rezultat.</div>
+  `);
+  const sh=$('#sheet');
+  const polje=sh.querySelector('#t3-time'), izlaz=sh.querySelector('#t3-out');
+  /* Živa provera: čovek mora da vidi šta je uneo PRE nego što sačuva, jer se
+     iz ovog jednog broja forma pomera više nego iz bilo čega drugog. */
+  const osvezi=()=>{
+    const sec=parseTimeStr(polje.value);
+    if(sec==null||sec<300||sec>3600){
+      izlaz.textContent=polje.value.trim()
+        ? 'Vreme mora biti između 5:00 i 60:00 za 3 km.'
+        : 'Unesi vreme pa se ispod prikaže šta znači.';
+      return;
+    }
+    const v=t3kVdot(sec);
+    izlaz.textContent=`Tempo ${fmtTempo(Math.round(sec/3))}/km · VDOT ${fmtNum(v,1)} · predikcija `
+      +fmtClock(Math.round(raceTimeForVdot(v,raceDistActive())));
+  };
+  polje.oninput=osvezi;
+  osvezi();
+  sh.querySelector('#t3-save').onclick=()=>{
+    const sec=parseTimeStr(polje.value);
+    const datum=sh.querySelector('#t3-date').value||TODAY;
+    if(sec==null||sec<300||sec>3600){ alert('Vreme mora biti između 5:00 i 60:00 za 3 km.'); return; }
+    if(id){
+      t.date=datum; t.sec=Math.round(sec);
+      zabeleziT3k(id, t.sec, datum);
+      save();
+    } else dodajT3k(datum, sec);
+    closeSheet(); renderPred();
+  };
+  const del=sh.querySelector('#t3-del');
+  if(del) del.onclick=()=>{
+    if(!confirm('Obrisati ovaj test? Forma se preračunava bez njega.')) return;
+    obrisiT3k(id); closeSheet(); renderPred();
+  };
+}
 function renderPred(){
   const el=$('#pg-pred');
   const pc=predCalc();
@@ -7173,6 +7394,7 @@ function renderPred(){
     <div class="tr-rings">${trkaPrsten(pc.last,'zadnja')}${trkaPrsten(pc.best,'najbrža')}</div>
     <div class="tr-cilj"><span>cilj</span><b>${esc(ciljTekst)} · VDOT ${esc(fmtNum(goalV,1))}</b></div>
   </div>`;
+  h+=t3kKarta();
   h+=`<div class="card">${dGlava('VDOT kroz vreme', esc(fmtNum(bv,1))+' → '+esc(fmtNum(goalV,1)))}
     <div class="vd-now"><b>${esc(fmtNum(cv!=null?cv:bv,1))}</b><i style="color:${vCol}">${vArrow}${vdotDelta!=null?(vdotDelta>0?' +':' ')+esc(fmtNum(vdotDelta,1)):''}</i></div>
     <div id="vdottrend">${chartVdotTrend()}</div>
@@ -7201,7 +7423,8 @@ function renderPred(){
   }
   const predRaceName=esc(S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K');
   h+=`<div class="card">${dGlava('Predikcija '+predRaceName+' kroz plan','cilj '+esc(ciljTekst))}<div id="pchart">${chartPred(pc)}</div>
-    <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span></div></div>`;
+    <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span>${
+      pc.testovi&&pc.testovi.length?`<span><i class="romb" style="background:var(--cyan)"></i>test 3 km</span>`:''}</div></div>`;
   /* PROSEČAN TEMPO — došao iz Progresa, i namerno na DNO. Isti lanac se ovde
      čita od sažetog ka sirovom: prstenovi → VDOT → predikcija kroz plan →
      tempo svakog pojedinačnog trčanja. U Progresu je stajao odvojen od svega
@@ -7214,6 +7437,9 @@ function renderPred(){
      prostora ne govoreći ništa novo. */
   el.innerHTML=h;
   vezisTacke(el, renderPred);
+  const t3a=el.querySelector('#t3k-add');
+  if(t3a) t3a.onclick=()=>openT3kSheet(null);
+  el.querySelectorAll('[data-t3k]').forEach(b=>b.onclick=()=>openT3kSheet(b.dataset.t3k));
   const vdA=el.querySelector('#vd-apply');
   if(vdA) vdA.onclick=()=>{
     const pr=vdotPredlog(TODAY);
@@ -7924,7 +8150,7 @@ function chartPred(pc){
      grafikon ga onda ispravno ne vidi, ali stari kod ovde JESTE crtao),
      crvena linija je "skakala" napred na taj red umesto da stane gde je
      korisnikov stvaran napredak, praveći vizuelno neslaganje sa brojem gore. */
-  const lastIdx=pc.last?pc.rows.indexOf(pc.last):-1;
+  const lastIdx=pc.lastRed?pc.rows.indexOf(pc.lastRed):-1;
   const ent=pc.rows.map((x,i)=>({p:x.pred,i})).filter(x=>x.p!=null && (lastIdx<0 || x.i<=lastIdx));
   if(ent.length>1){
     g+=`<defs><linearGradient id="predGrad" x1="0" y1="0" x2="0" y2="1">
@@ -7943,6 +8169,17 @@ function chartPred(pc){
     /* indeks je POZICIJA U PLANU (x.i), ne redni broj unetog — natpis mora da
        pogodi isti PRED red koji je i nacrtan */
     g+=chartHit(X(x.i),Y(x.p/60),'pred',x.i);
+  });
+  /* TESTOVI NA 3 km — zaseban znak, ne tačka na crvenoj liniji. Drugi su
+     dokaz (maksimalan napor, ne trenažna sesija) i ne pripadaju istoj krivoj;
+     romb ih razlikuje i kad padnu tačno na nju. Poredjaju se po nedelji u
+     kojoj su istrčani, pa stoje uz sesije iz istog perioda. */
+  (pc.testovi||[]).forEach(t=>{
+    if(t.pred==null) return;
+    let i=CUR_PRED.findIndex(r=>r.w>=t.r.w);
+    if(i<0) i=nP-1;
+    const x=X(i), y=Y(t.pred/60), r=4.6;
+    g+=`<path d="M${x.toFixed(1)},${(y-r).toFixed(1)} L${(x+r).toFixed(1)},${y.toFixed(1)} L${x.toFixed(1)},${(y+r).toFixed(1)} L${(x-r).toFixed(1)},${y.toFixed(1)} Z" fill="var(--cyan)" stroke="var(--bg)" stroke-width="1"/>`;
   });
   if(goalMin!=null)g+=`<text class="ax" x="${W-R}" y="${(Y(goalMin)-5).toFixed(1)}" text-anchor="end" fill="var(--cyan)">cilj ${fmtClock(goalMin*60)}</text>`;
   return svgW(W,H,g);
@@ -8459,6 +8696,8 @@ function losIdUStanju(st){
   }
   if(Array.isArray(st.vdotLog))
     for(const e of st.vdotLog) if(e&&e.id!=null&&!validanId(e.id)) return 'vdotLog';
+  if(Array.isArray(st.t3k))
+    for(const t of st.t3k) if(t&&t.id!=null&&!validanId(t.id)) return 't3k.id';
   if(Array.isArray(st.knee))
     for(const k of st.knee){
       if(k&&k.id!=null&&!validanId(k.id)) return 'knee.id';
