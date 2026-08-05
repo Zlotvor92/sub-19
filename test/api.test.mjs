@@ -488,22 +488,37 @@ describe('Analiza se sama zaustavi pre Vercelovog noza', () => {
       `rok ${+rok[1] / 1000} s nije bar 5 s ispod maxDuration ${maxD} s`);
   });
 
-  test('svaki poziv ka modelu ima svoj prekid', () => {
-    assert.match(src, /signal: AbortSignal\.timeout\(/, 'poziv moze da visi bez ogranicenja');
-    const p = /const POKUSAJ_MS\s*=\s*(\d+)/.exec(src);
-    const r = /const ROK_MS\s*=\s*(\d+)/.exec(src);
-    assert.ok(p && r && +p[1] < +r[1], 'jedan pokusaj sme da pojede ceo rok');
+  test('poziv se prekida rokom, i ne krece kad roka vise nema', () => {
+    /* Prekid mora da postoji, ali NE kao fiksni plafon: prva verzija je sekla
+       na 24 s, a model realno trazi i preko trideset — pa se umesto Vercelovog
+       504 dobijao nas, dakle ista nedostupna analiza samo brze. */
+    assert.match(src, /signal: AbortSignal\.timeout\(ostalo\)/,
+      'pokusaj ne dobija ceo preostali rok');
+    assert.doesNotMatch(src, /const POKUSAJ_MS/, 'vracen je fiksni plafon po pokusaju');
+    assert.match(src, /if \(ostalo <= 1500\)/, 'poziv krece i kad roka prakticno nema');
   });
 
-  test('istek NE pokrece ponovni pokusaj na istom modelu', () => {
-    /* Ponavljanje posle isteka samo pojede ostatak roka. */
-    const m = /const isteklo = [\s\S]*?sameRetry: false, tryFallback: !isteklo/.exec(src);
-    assert.ok(m, 'istek se ne razlikuje od mrezne greske');
+  test('istek ne ponavlja ISTI model, ali sme na lakši', () => {
+    /* Ponavljanje istog posle isteka samo pojede ostatak roka; lakši model je
+       brži, pa u ostatku ume da stigne tamo gde puni nije. */
+    assert.match(src, /const isteklo = [\s\S]*?sameRetry: false, tryFallback: true/,
+      'istek se ne razlikuje od mrezne greske');
   });
 
-  test('rezerva se ne pokrece kad nema vremena da se zavrsi', () => {
-    assert.match(src, /out\.tryFallback && Date\.now\(\) < doKada - 3000/,
+  test('nijedan pokušaj ne kreće bez vremena da se i završi', () => {
+    assert.match(src, /out\.sameRetry && kraj - Date\.now\(\) >= NAJMANJI_MS/,
+      'ponavljanje krece i kad rok samo sto nije istekao');
+    assert.match(src, /out\.tryFallback && kraj - Date\.now\(\) >= 8000/,
       'rezervni model se poziva i kad rok samo sto nije istekao');
+  });
+
+  test('izlazni budžet je srazmeran zadatku', () => {
+    /* 8000 tokena je bilo daleko iznad potrebe (analiza je desetak recenica),
+       a svaki dozvoljen token je i vreme. */
+    const m = /maxOutputTokens: (\d+)/.exec(src);
+    assert.ok(m, 'nema budzeta za izlaz');
+    assert.ok(+m[1] <= 4000, `budzet je ${m[1]} tokena — to je opet esej, ne analiza`);
+    assert.ok(+m[1] >= 1500, `budzet od ${m[1]} tokena ne ostavlja mesta ni za razmisljanje`);
   });
 
   test('klijent 504 ne predstavlja kao nedostajuci fajl', () => {

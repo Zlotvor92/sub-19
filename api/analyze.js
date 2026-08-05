@@ -75,12 +75,19 @@ const sleep = ms => new Promise(res => setTimeout(res, ms));
 
    Zato se ovde ne čeka do Vercelovog noža nego do NAŠEG: jedan pokušaj ima
    svoj prekid, a ceo lanac pokušaja svoj rok. Šta god da se desi, vraća se
-   naš JSON sa razumljivim razlogom. */
-const POKUSAJ_MS = 24000;   /* jedan poziv ka modelu */
-const ROK_MS     = 48000;   /* ceo lanac — 12 s ispod maxDuration, za odgovor */
+   naš JSON sa razumljivim razlogom.
+
+   PRVA VERZIJA OVOG REZA BILA JE PREOŠTRA: 24 s po pokušaju, a model realno
+   traži i preko trideset. Umesto 504 od Vercela dobijao se naš 504 — dakle
+   ista nedostupna analiza, samo brže. Zato pokušaj više NEMA fiksni plafon:
+   dobija sve što je ostalo do roka, a rezerva se odvaja samo ako od nje ostane
+   prozor u kom lakši model zaista može da završi. */
+const ROK_MS     = 52000;   /* ceo lanac — 8 s ispod maxDuration, za naš odgovor */
+const REZERVA_MS = 16000;   /* koliko se čuva za lakši model, ako ga uopšte ima smisla zvati */
+const NAJMANJI_MS = 20000;  /* ispod ovoga poziv nema šanse — ne troši se rok na njega */
 
 async function tryModel(model, systemText, userText, doKada) {
-  const ostalo = doKada ? doKada - Date.now() : POKUSAJ_MS;
+  const ostalo = doKada - Date.now();
   if (ostalo <= 1500) {
     return { ok: false, status: 504, error: 'Analiza je predugo trajala. Pokušaj ponovo.',
              sameRetry: false, tryFallback: false };
@@ -89,7 +96,8 @@ async function tryModel(model, systemText, userText, doKada) {
   try {
     r = await fetch(urlFor(model), {
       method: 'POST',
-      signal: AbortSignal.timeout(Math.min(POKUSAJ_MS, ostalo)),
+      /* Ceo preostali rok — kraćenje ovde ne donosi ništa osim ranijeg otkaza. */
+      signal: AbortSignal.timeout(ostalo),
       headers: {
         'Content-Type': 'application/json',
         'x-goog-api-key': process.env.GEMINI_API_KEY
@@ -98,7 +106,10 @@ async function tryModel(model, systemText, userText, doKada) {
         systemInstruction: { parts: [{ text: systemText }] },
         contents: [{ parts: [{ text: userText }] }],
         generationConfig: {
-          maxOutputTokens: 8000,
+          /* 8000 je bilo daleko iznad potrebe (analiza je desetak rečenica), a
+             svaki dozvoljen token je i vreme. Ostaje dovoljno mesta i za
+             razmišljanje i za tekst, ali ne i za esej. */
+          maxOutputTokens: 3000,
           /* 'low' umesto 'medium': razmišljanje se naplaćuje i vremenom i
              tokenima, a ovaj zadatak je čitanje tabele brojeva uz jasna
              pravila — ne traži duboko izvođenje. Upravo je 'medium' na dužem
@@ -114,8 +125,10 @@ async function tryModel(model, systemText, userText, doKada) {
       ok: false, status: isteklo ? 504 : 503,
       error: isteklo ? 'Model nije odgovorio na vreme. Pokušaj ponovo.'
                      : 'Nema veze sa servisom za analizu.',
-      /* Na istek NE ide ponovni pokušaj na istom modelu — samo bi pojeo rok. */
-      sameRetry: false, tryFallback: !isteklo
+      /* Na istek NE ide ponovni pokušaj na ISTOM modelu — samo bi pojeo rok.
+         Ali lakši model ima smisla: on je i brži, pa u ostatku roka ume da
+         stigne tamo gde puni nije. */
+      sameRetry: false, tryFallback: true
     };
   }
 
@@ -148,24 +161,32 @@ async function tryModel(model, systemText, userText, doKada) {
    Ukupno najviše 3 pokušaja, kratak zastoj — ostaje bezbedno unutar
    Vercel serverless vremenskog limita. */
 async function callGemini(systemText, userText) {
-  const doKada = Date.now() + ROK_MS;
-  let out = await tryModel(MODEL, systemText, userText, doKada);
+  const kraj = Date.now() + ROK_MS;
+  /* Prvom pokušaju ide sve OSIM rezerve — ali samo ako i posle odvajanja
+     ostane prozor u kom puni model može da završi. Ako ne ostane, uzima ceo
+     rok i rezerve nema: bolje jedan pokušaj koji stigne nego dva koja ne. */
+  const prvi = (ROK_MS - REZERVA_MS >= NAJMANJI_MS) ? kraj - REZERVA_MS : kraj;
+
+  let out = await tryModel(MODEL, systemText, userText, prvi);
   if (out.ok) return out;
 
-  if (out.sameRetry && Date.now() < doKada - 3000) {
+  if (out.sameRetry && kraj - Date.now() >= NAJMANJI_MS) {
     await sleep(900);
-    out = await tryModel(MODEL, systemText, userText, doKada);
+    out = await tryModel(MODEL, systemText, userText, kraj);
     if (out.ok) return out;
   }
 
-  /* Rezerva se proba samo ako je ostalo vremena da SE I ZAVRSI — pola
-     zapoceta pa presecena analiza je isto sto i nikakva, samo sporija. */
-  if (out.tryFallback && Date.now() < doKada - 3000) {
-    const fb = await tryModel(FALLBACK_MODEL, systemText, userText, doKada);
-    return fb; // ok ili ne — fallback-ov rezultat je poslednja reč (najnoviji podatak)
+  /* Rezerva se proba samo ako je ostalo vremena da SE I ZAVRŠI — polovična pa
+     presečena analiza je isto što i nikakva, samo sporija. */
+  if (out.tryFallback && kraj - Date.now() >= 8000) {
+    const fb = await tryModel(FALLBACK_MODEL, systemText, userText, kraj);
+    if (fb.ok) return fb;
+    /* Ako ni rezerva ne stigne, čoveku se vraća PRVI razlog — on opisuje šta
+       se stvarno desilo sa modelom koji je trebalo da odgovori. */
+    return out.status === 504 ? out : fb;
   }
 
-  return out; // ni 503 ni 429 — fallback ne bi pomogao (npr. prazan odgovor)
+  return out;
 }
 
 /* Vlasnik naloga — ista provera kao /api/broadcast.js (ugrađena, ne uvezena:
