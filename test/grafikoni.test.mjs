@@ -39,10 +39,10 @@ function sa() {
 
 /* koji grafikon živi na kom ekranu */
 const GRAFIKONI = [
-  { kljuc: 'wt',    render: 'renderProg', sel: '#pg-prog',   ime: 'telesna masa' },
-  { kljuc: 'tempo', render: 'renderProg', sel: '#pg-prog',   ime: 'prosečan tempo' },
-  { kljuc: 'hrv',   render: 'renderProg', sel: '#pg-prog',   ime: 'HRV' },
-  { kljuc: 'knee',  render: 'renderKnee', sel: '#pg-koleno', ime: 'bol kroz vreme' },
+  { kljuc: 'wt',    render: 'renderOporavak', sel: '#pg-opor',   ime: 'telesna masa' },
+  { kljuc: 'tempo', render: 'renderPred',      sel: '#pg-pred',   ime: 'prosečan tempo' },
+  { kljuc: 'hrv',   render: 'renderOporavak', sel: '#pg-opor',   ime: 'HRV' },
+  { kljuc: 'knee',  render: 'renderOporavak', sel: '#pg-opor', ime: 'bol kroz vreme' },
   { kljuc: 'vdot',  render: 'renderPred', sel: '#pg-pred',   ime: 'VDOT trend' },
   { kljuc: 'pred',  render: 'renderPred', sel: '#pg-pred',   ime: 'predikcija' }
 ];
@@ -97,8 +97,8 @@ describe('Ponašanje izbora', () => {
 
   test('dodirni cilj je dovoljno veliki za prst (r=11)', () => {
     const a = sa();
-    a.call('renderProg');
-    const html = a.evalIn('$("#pg-prog").innerHTML') || '';
+    a.call('renderOporavak');
+    const html = a.evalIn('$("#pg-opor").innerHTML') || '';
     const hits = html.match(/<circle[^>]*data-cpt="[^"]*"[^>]*>/g) || [];
     assert.ok(hits.length > 0);
     for (const h of hits) assert.match(h, /r="11"/, `dodirni cilj je manji: ${h.slice(0, 80)}`);

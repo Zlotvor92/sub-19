@@ -182,9 +182,9 @@ describe('Drugi sloj — iscrtavanje escapuje i kad validacija otkaže', () => {
       const app = loadApp();
       app.ctx.__p = p;
       app.evalIn(`S.knee=[{id:__p,date:'2026-06-22',act:__p,pain:5,note:__p,part:__p}]`);
-      app.call('renderKnee');
-      const t = ubaceniTagovi(app.evalIn('$("#pg-koleno").innerHTML') || '');
-      assert.deepEqual(t, [], `renderKnee propustio ${JSON.stringify(p)}`);
+      app.call('renderOporavak');
+      const t = ubaceniTagovi(app.evalIn('$("#pg-opor").innerHTML') || '');
+      assert.deepEqual(t, [], `renderOporavak propustio ${JSON.stringify(p)}`);
     }
   });
 
@@ -200,7 +200,7 @@ describe('Drugi sloj — iscrtavanje escapuje i kad validacija otkaže', () => {
       s.icu = { athleteId: p, token: 't', lastSync: 1 };
       app.ctx.__z = s;
       app.evalIn('S=migrate(__z)||S; S.genPlan=__z.genPlan; S.strava=__z.strava; S.icu=__z.icu; setActivePlan(); rebuildDateIndex()');
-      for (const [fn, sel] of [['renderPlan', '#pg-plan'], ['renderDanas', '#pg-danas'], ['renderKnee', '#pg-koleno']]) {
+      for (const [fn, sel] of [['renderPlan', '#pg-plan'], ['renderDanas', '#pg-danas'], ['renderOporavak', '#pg-opor']]) {
         app.call(fn);
         const t = ubaceniTagovi(app.evalIn(`$("${sel}").innerHTML`) || '');
         assert.deepEqual(t, [], `${fn} propustio ${JSON.stringify(p)} → ${t.join(' ')}`);
@@ -567,7 +567,7 @@ describe('Fuzz — svako polje stanja otrovano, svaki ekran iscrtan', () => {
         S.ui.bodyView=__p;
       `);
       const ekrani = [['renderDanas', '#pg-danas'], ['renderPlan', '#pg-plan'],
-        ['renderProg', '#pg-prog'], ['renderKnee', '#pg-koleno'], ['renderPred', '#pg-pred']];
+        ['renderOporavak', '#pg-opor'], ['renderOporavak', '#pg-opor'], ['renderPred', '#pg-pred']];
       for (const [fn, sel] of ekrani) {
         app.call(fn);
         const t = ubaceniTagovi(app.evalIn(`$("${sel}").innerHTML`) || '');

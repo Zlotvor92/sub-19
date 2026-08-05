@@ -63,7 +63,7 @@ body{
    Svaki tab ima svoje. Nije ukras nego orijentacija: kad se promeni tab, boja
    ekrana se pretopi i pre nego što se pročita bilo koji naslov.
 
-   ZAŠTO ŠEST ODVOJENIH SLOJEVA, A NE JEDAN KOJI MENJA `background`:
+   ZAŠTO PET ODVOJENIH SLOJEVA, A NE JEDAN KOJI MENJA `background`:
    gradijenti se ne mogu animirati — prelaz bi bio trzaj. Ovako svaki tab ima
    svoj sloj, a menja se samo `opacity`, što pregledač radi na grafičkoj i ne
    dira raspored. Slojevi su `fixed` i iza svega, pa skrolovanje ne pomera
@@ -79,13 +79,12 @@ body{
   radial-gradient(ellipse 97vw 50vh at 84% 1%,rgba(0,190,220,.54),transparent 68%),
   radial-gradient(ellipse 81vw 55vh at 4% 44%,rgba(90,110,255,.50),transparent 68%),
   radial-gradient(ellipse 89vw 45vh at 60% 101%,rgba(120,90,255,.26),transparent 70%)}
-#ambijent i[data-t="prog"]{background:
-  radial-gradient(ellipse 86vw 52vh at 8% 4%,rgba(60,220,180,.48),transparent 68%),
-  radial-gradient(ellipse 91vw 50vh at 99% 28%,rgba(90,120,255,.52),transparent 68%),
-  radial-gradient(ellipse 83vw 45vh at 44% 101%,rgba(0,190,220,.28),transparent 70%)}
-#ambijent i[data-t="koleno"]{background:
-  radial-gradient(ellipse 86vw 52vh at 90% 4%,rgba(120,90,255,.40),transparent 68%),
-  radial-gradient(ellipse 83vw 55vh at 2% 38%,rgba(60,210,170,.42),transparent 68%),
+/* Oporavak je nastao spajanjem Progresa i Povreda, pa mu i svetlo spaja oba:
+   zelena osnova starog Progresa i topla narandžasta iskra koju su Povrede
+   nosile na dnu ekrana. */
+#ambijent i[data-t="opor"]{background:
+  radial-gradient(ellipse 86vw 52vh at 8% 4%,rgba(60,220,180,.46),transparent 68%),
+  radial-gradient(ellipse 91vw 50vh at 99% 30%,rgba(90,120,255,.48),transparent 68%),
   radial-gradient(ellipse 89vw 45vh at 52% 101%,rgba(255,160,60,.24),transparent 70%)}
 #ambijent i[data-t="pred"]{background:
   radial-gradient(ellipse 83vw 57vh at 10% 4%,rgba(255,70,140,.56),transparent 68%),
@@ -271,8 +270,11 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .pl-facts>div{background:var(--glass-in);padding:9px 11px;min-width:0}
 .pl-facts b{display:block;font-size:1.02rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .pl-facts b span{font-weight:600;color:var(--txt3);font-size:.78em}
+/* --txt2, ne --txt3: izmereno u pregledaču, na ovoj podlozi --txt3 daje
+   4,00:1, ispod praga od 4,5:1 — a natpis je 9 px verzal, tj. najsitniji
+   tekst na ekranu. */
 .pl-facts>div>span{display:block;font-size:.58rem;font-weight:700;letter-spacing:.06em;
-                   text-transform:uppercase;color:var(--txt3);margin-top:2px;
+                   text-transform:uppercase;color:var(--txt2);margin-top:2px;
                    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* naslov faze — ono što se skraćivanjem redova gubi, vraća se ovde */
@@ -300,20 +302,51 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .pl-bh{font-size:.66rem;font-weight:800;color:var(--txt2);padding:2px 4px 4px}
 .pl-bh span{display:block;font-size:.62rem;font-weight:700;color:var(--txt3);margin-top:2px}
 
+/* ---------- TRKA: dva mala prstena ----------
+   Kockice su davale dva vremena bez merila. Prsten svakom daje ISTO merilo —
+   put od polazne forme do cilja — pa se vidi i koliko je od tog puta pređeno.
+   Prazan prsten je informacija, ne greška: znači da se ništa nije pomerilo. */
+.tr-hero{padding:16px 14px 14px}
+.tr-rings{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tr-ring{text-align:center;min-width:0}
+.tr-ring svg{display:block;margin:0 auto}
+.tr-ring b{display:block;margin-top:7px;font-size:.62rem;font-weight:800;
+           letter-spacing:.09em;text-transform:uppercase;color:var(--txt2)}
+.tr-ring span{display:block;margin-top:3px;font-size:.66rem;font-weight:700;color:var(--txt3);
+              overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr-cilj{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+         margin-top:13px;padding-top:10px;border-top:1px solid var(--line)}
+.tr-cilj span{font-size:.62rem;font-weight:800;letter-spacing:.09em;
+              text-transform:uppercase;color:var(--txt3)}
+.tr-cilj b{font-size:.86rem;font-weight:800;font-variant-numeric:tabular-nums}
+/* trenutni VDOT — stoji u glavi grafikona koji ga crta, ne u sopstvenoj kartici */
+.vd-now{display:flex;align-items:baseline;gap:10px;margin-top:2px}
+.vd-now b{font-size:2.4rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.vd-now i{font-style:normal;font-weight:800;font-size:1rem}
+
+/* ---------- OPORAVAK: traka opterećenja (ACWR) ----------
+   Skala ide do 2,0 da bi granica 1,5 — na kojoj rizik naglo raste — bila
+   UNUTAR slike; inače crvena zona nema gde da se vidi. Pojasevi su obojeni
+   pozadinom, pa je položaj kazaljke jedina stvar koja se menja. */
+.ac-v{display:flex;align-items:baseline;gap:9px;font-size:2.1rem;font-weight:800;
+      letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ac-v span{font-size:.66rem;font-weight:700;color:var(--txt3);letter-spacing:0}
+.acwr{position:relative;height:9px;border-radius:5px;margin-top:14px;background:linear-gradient(90deg,
+      rgba(255,176,32,.26) 0 40%, rgba(48,209,88,.44) 40% 65%,
+      rgba(255,176,32,.34) 65% 75%, rgba(255,69,58,.40) 75% 100%)}
+.acwr i{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;border-radius:2px;
+        background:var(--txt);box-shadow:0 0 0 2px rgba(11,10,31,.6)}
+.acwr-l{position:relative;height:15px;margin-top:7px;font-size:.58rem;font-weight:700;
+        color:var(--txt3);font-variant-numeric:tabular-nums}
+.acwr-l span{position:absolute;transform:translateX(-50%)}
+.acwr-l span:first-child{transform:none}
+.acwr-l span:last-child{transform:translateX(-100%)}
+/* podnaslov unutar kartice — mapa, aktivni delovi i grafikon bola su sada
+   jedna kartica, pa im treba tiha pregrada umesto tri odvojena naslova */
+.op-sub{font-size:.58rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+        color:var(--txt3);margin:15px 0 5px}
+
 /* plan accordion */
-.wk{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:var(--hl)}
-.wk-h{width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;text-align:left}
-.wk-h:active{background:var(--glass-hi)}
-.wk-n{font-size:1.25rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:44px}
-.wk-i{flex:1}
-.wk-d{font-size:.72rem;color:var(--txt2);font-weight:600}
-.wk-f{font-size:.78rem;font-weight:700;margin-top:2px}
-.wk-km{text-align:right;font-size:.72rem;color:var(--txt2);font-weight:600}
-.wk-km b{display:block;font-size:.95rem;color:var(--txt);font-variant-numeric:tabular-nums}
-.wk-bar{height:3px;background:rgba(255,255,255,.12)}
-.wk-bar i{display:block;height:100%;background:var(--green);transition:width .5s ease}
-.wk-body{display:none;border-top:1px solid var(--line-soft);background:rgba(11,10,31,.28);padding:10px}
-.wk.open .wk-body{display:flex;flex-direction:column;gap:8px}
 /* dan = KARTICA (usklađeno sa mockup-om: odvojene kartice sa razmakom, ne ravni redovi) */
 .day{width:100%;display:flex;align-items:center;gap:12px;text-align:left;
   background:var(--glass-in);border:1px solid var(--line-soft);border-left:3px solid transparent;
@@ -382,15 +415,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .range-v{float:right;font-weight:800;font-variant-numeric:tabular-nums;color:var(--txt)}
 
 /* gauge (luk) + pilule za treninge — zamena za dupli prsten */
-.gauge-wrap{margin-top:4px}
-.gauge-num{font-size:2.5rem;font-weight:800;letter-spacing:-.02em;text-align:center;margin-top:-42px;font-variant-numeric:tabular-nums}
-.gauge-num small{font-size:1.05rem;font-weight:700;color:var(--txt3)}
-.gauge-lbl{text-align:center;font-size:.75rem;color:var(--txt3);margin-top:2px}
-.pips-row{display:flex;gap:6px;justify-content:center;margin-top:16px}
-.pip{width:32px;height:8px;border-radius:4px;background:rgba(255,255,255,.14)}
-.pip.done{background:var(--green)}
-.pips-lbl{text-align:center;font-size:.72rem;color:var(--txt3);margin-top:8px}
-.pips-lbl b{color:var(--green);font-weight:700;font-variant-numeric:tabular-nums}
 .rl:last-child{margin-bottom:0}
 .rl b{display:block;font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .rl span{font-size:.72rem;font-weight:700;letter-spacing:.04em}
@@ -602,9 +626,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .bodylegend i.l3{background:var(--red)}
 
 /* predikcija */
-.pstat{display:flex;gap:12px;margin-bottom:14px}
-.pstat .card{flex:1;margin:0;text-align:center;padding:16px 8px}
-.pstat .big{font-size:1.9rem}
 .prow{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
 .prow:last-child{border-bottom:0}
 .prow .pi{flex:1;min-width:0}
@@ -820,6 +841,12 @@ body.uvod-radi{overflow:hidden}
 
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  /* Skraćenje trajanja NIJE dovoljno za slaganje po redu: `animation-delay`
+     ostaje nedirnut, a `both` drži `from{opacity:0}` kroz celo kašnjenje — pa
+     je sadržaj i dalje neko vreme nevidljiv. Izmereno u pregledaču: kartica na
+     Planu je povremeno providna i 80 ms posle promene taba. Ko je isključio
+     kretanje, ne treba da dobije brzo slaganje nego NIKAKVO. */
+  .page.uskoci>*{animation:none!important}
   /* Uvod nema statičnu svrhu — ako je kretanje isključeno, ne prikazuje se
      uopšte. Skriptu ne čeka: sakriven je već ovde, da ne trepne. */
   #uvod{display:none}
@@ -850,8 +877,8 @@ body.uvod-radi{overflow:hidden}
      pomera pri skrolovanju — utisak je da svetlo dolazi spolja, a ne sa
      stranice. Prebacuje ga setPage() u app.js. -->
 <div id="ambijent" aria-hidden="true">
-  <i data-t="danas" class="on"></i><i data-t="plan"></i><i data-t="prog"></i>
-  <i data-t="koleno"></i><i data-t="pred"></i><i data-t="set"></i>
+  <i data-t="danas" class="on"></i><i data-t="plan"></i><i data-t="opor"></i>
+  <i data-t="pred"></i><i data-t="set"></i>
 </div>
 
 <div id="wizard" style="display:none"></div>
@@ -879,8 +906,7 @@ body.uvod-radi{overflow:hidden}
 <main>
   <section class="page" id="pg-danas"></section>
   <section class="page" id="pg-plan"></section>
-  <section class="page" id="pg-prog"></section>
-  <section class="page" id="pg-koleno"></section>
+  <section class="page" id="pg-opor"></section>
   <section class="page" id="pg-pred"></section>
 </main>
 
@@ -896,13 +922,9 @@ body.uvod-radi{overflow:hidden}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M8.5 6h11M8.5 12h11M8.5 18h11"/><circle cx="4.4" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="4.4" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="4.4" cy="18" r="1.4" fill="currentColor" stroke="none"/></svg>
     <span>Plan</span>
   </button>
-  <button data-pg="prog">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M12 3a9 9 0 1 1-9 9" stroke-linecap="round"/><path d="M12 7.5a4.5 4.5 0 1 1-4.5 4.5" stroke-linecap="round" opacity=".55"/></svg>
-    <span>Progres</span>
-  </button>
-  <button data-pg="koleno">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.3" r="2.3"/><path d="M12 6.8v7.4M12 8.6 7.4 11M12 8.6l4.6 2.4M12 14.2 9.2 21M12 14.2 14.8 21"/></svg>
-    <span>Povrede</span>
+  <button data-pg="opor">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 7.1a4.55 4.55 0 0 0-6.45 0L12 9.05 10.05 7.1a4.55 4.55 0 1 0-6.45 6.45L12 21.9l8.4-8.35a4.55 4.55 0 0 0 0-6.45Z"/><path d="M3.4 13.1h3.9l1.5-2.5 2.2 4.3 1.7-2.9 1.1 1.1h4.8"/></svg>
+    <span>Oporavak</span>
   </button>
   <button data-pg="pred">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h13l-2.5 4L18 12H5"/></svg>

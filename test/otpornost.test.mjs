@@ -89,8 +89,8 @@ describe('Datumi iz uvezenog backupa se proveravaju', () => {
     const a = loadApp();
     a.evalIn(`S.knee=[{id:'k1',date:'abc',pain:3},{id:'k2',date:'2026-13-45',pain:2}];
               S.knee=cistDatirane(S.knee); rebuildDateIndex();`);
-    a.call('renderKnee');
-    const html = a.evalIn('$("#pg-koleno").innerHTML') || '';
+    a.call('renderOporavak');
+    const html = a.evalIn('$("#pg-opor").innerHTML') || '';
     assert.ok(!/NaN/.test(html), 'SVG i dalje sadrži NaN koordinate');
     assert.ok(!/undefined/.test(html), 'u HTML-u je "undefined"');
   });

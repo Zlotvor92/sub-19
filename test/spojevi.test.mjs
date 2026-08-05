@@ -121,8 +121,8 @@ describe('Povreda i prilagođavanje forme dele iste dane', () => {
     a.call('primeniVdotPredlog', a.call('vdotPredlog', D));
     a.evalIn(`S.knee=[{id:'k1',date:'${D}',pain:5,part:'ahilova-D'}]; rebuildDateIndex();`);
     a.call('applyInjuryProposal', a.call('injuryProposal', D));
-    for (const [f, sel] of [['renderDanas', '#pg-danas'], ['renderProg', '#pg-prog'],
-                            ['renderPred', '#pg-pred'], ['renderKnee', '#pg-koleno'], ['renderPlan', '#pg-plan']]) {
+    for (const [f, sel] of [['renderDanas', '#pg-danas'], ['renderOporavak', '#pg-opor'],
+                            ['renderPred', '#pg-pred'], ['renderOporavak', '#pg-opor'], ['renderPlan', '#pg-plan']]) {
       assert.doesNotThrow(() => a.call(f), `${f} puca`);
       const h = a.evalIn(`$(${JSON.stringify(sel)}).innerHTML`) || '';
       assert.ok(!/NaN|undefined|Invalid Date/.test(h), `${f} ispisuje smeće`);
@@ -146,7 +146,7 @@ describe('Stara selekcija grafikona na promenjenim podacima', () => {
     const a = sa();
     a.evalIn('CHART_SEL.tempo=20; CHART_SEL.vdot=7; CHART_SEL.knee=5; CHART_SEL.pred=9; CHART_SEL.hrv=3; CHART_SEL.wt=1;');
     a.evalIn('S.vdotLog=[]; S.kg=[]; S.knee=[]; S.log={}; S.wellness={}; S.pred={}; rebuildDateIndex();');
-    for (const [f, sel] of [['renderProg', '#pg-prog'], ['renderPred', '#pg-pred'], ['renderKnee', '#pg-koleno']]) {
+    for (const [f, sel] of [['renderOporavak', '#pg-opor'], ['renderPred', '#pg-pred'], ['renderOporavak', '#pg-opor']]) {
       assert.doesNotThrow(() => a.call(f), `${f} puca`);
       const h = a.evalIn(`$(${JSON.stringify(sel)}).innerHTML`) || '';
       assert.ok(!/NaN|undefined|Invalid/.test(h), `${f}: ${(/.{0,60}(NaN|undefined|Invalid).{0,20}/.exec(h) || [])[0]}`);

@@ -47,9 +47,8 @@
   <li><a href="#pocetak">Prvi koraci</a></li>
   <li><a href="#danas">Danas — dan po dan</a></li>
   <li><a href="#plan">Plan — cela priprema</a></li>
-  <li><a href="#progres">Progres — da li napredujem</a></li>
-  <li><a href="#povrede">Povrede</a></li>
-  <li><a href="#trka">Trka — predikcija</a></li>
+  <li><a href="#oporavak">Oporavak — da li telo prati</a></li>
+  <li><a href="#trka">Trka — predikcija i forma</a></li>
   <li><a href="#ai">AI analiza</a></li>
   <li><a href="#strava">Strava</a></li>
   <li><a href="#icu">intervals.icu — oporavak i sat</a></li>
@@ -106,43 +105,53 @@ za detalje.</p>
   način da se pokupi povreda. Ako moraš da preskočiš — preskoči, nemoj da nagomilavaš.</p>
 </div>
 
-<h2 id="progres">4. Progres — da li napredujem</h2>
+<h2 id="oporavak">4. Oporavak — da li telo prati</h2>
+<p>Jedan ekran za sve što nije trening: kako si se probudio, koliko te opterećenje gura i
+šta te boli. Kartice idu po hitnosti — prvo stanje danas, pa upozorenje, pa telo.</p>
 <table>
   <tr><th>Kartica</th><th>Šta ti kaže</th></tr>
-  <tr><td>Trenutna forma (VDOT)</td><td>jedan broj koji sažima formu; iz njega se izvode svi tempi</td></tr>
-  <tr><td>VDOT trend</td><td>da li forma raste — bitniji je nagib nego pojedinačna tačka</td></tr>
-  <tr><td>Nedeljna kilometraža</td><td>plan naspram stvarno odrađenog</td></tr>
-  <tr><td>Ispunjenost plana</td><td>koliki procenat treninga je odrađen</td></tr>
-  <tr><td>Prosečan tempo</td><td>kroz sva odrađena trčanja</td></tr>
+  <tr><td>Jutros</td><td>HRV, puls u miru, san i svežina — samo ako je intervals.icu povezan</td></tr>
+  <tr><td>Opterećenje</td><td>odnos poslednjih 7 dana i proseka poslednje 4 nedelje</td></tr>
+  <tr><td>Bol</td><td>mapa tela, šta je aktivno i kriva bola kroz vreme</td></tr>
   <tr><td>Telesna masa</td><td>cilj naspram stvarnog, ako unosiš težinu</td></tr>
-  <tr><td>Oporavak</td><td>HRV, puls u miru i san — samo ako je intervals.icu povezan</td></tr>
+  <tr><td>Istorija bola</td><td>svi unosi, i ručni i oni vezani za trening</td></tr>
 </table>
-<div class="box tip">
-  <p><b>Jedan loš trening ništa ne znači.</b> Gledaj nagib kroz tri-četiri nedelje. Vrućina,
-  neispavanost i stres pomeraju tempo za 10–20 s/km bez ikakvog gubitka forme.</p>
-</div>
-
-<h2 id="povrede">5. Povrede</h2>
 <p>Dodirni deo tela na mapi i upiši bol od <b>0 do 10</b>. Vremenom dobiješ krivu bola po
 delu tela, pa se vidi da li nešto raste — obično nedelju-dve pre nego što to sam primetiš.</p>
+<div class="box tip">
+  <p><b>Opterećenje je jedini broj koji upozorava pre nego što nešto zaboli.</b> Bezbedan
+  pojas je <b>0,80–1,30</b>. Ispod znači da si smanjio obim (na deload nedelji je to i
+  poenta), preko <b>1,50</b> rizik od povrede naglo raste — tu skrati sledeću nedelju.</p>
+</div>
 <div class="box warn">
   <p>Bol preko <b>4</b> koji traje više od nekoliko dana, ili koji menja način na koji trčiš,
   nije nešto što se „istrči". Prekid od tri dana košta mnogo manje od šest nedelja pauze.</p>
 </div>
 
-<h2 id="trka">6. Trka — predikcija</h2>
-<p>Predviđeno vreme na ciljnoj distanci, računato iz forme, i kako se ta procena menjala
-kroz pripremu. Puni se iz radnog dela kvalitetnih sesija — što ih više upišeš, procena je
-mirnija i tačnija.</p>
-<p>Rana predikcija zna da skače. To je normalno: sa dve tačke se ne vidi trend.</p>
+<h2 id="trka">5. Trka — predikcija i forma</h2>
+<p>Gore stoje dva prstena: <b>zadnja</b> i <b>najbrža</b> predikcija. Prsten meri koliki je
+deo puta od tvoje polazne forme do cilja pređen — prazan prsten znači da se ništa nije
+pomerilo, i to je informacija, ne greška.</p>
+<table>
+  <tr><th>Kartica</th><th>Šta ti kaže</th></tr>
+  <tr><td>VDOT kroz vreme</td><td>jedan broj koji sažima formu; iz njega se izvode svi tempi</td></tr>
+  <tr><td>Predikcija kroz plan</td><td>kako se procena menjala kroz pripremu</td></tr>
+  <tr><td>Prosečan tempo</td><td>kroz sva odrađena trčanja — najsiroviji podatak, zato je na dnu</td></tr>
+</table>
+<p>Sve se puni iz radnog dela kvalitetnih sesija — što ih više upišeš, procena je mirnija i
+tačnija. Rana predikcija zna da skače: sa dve tačke se ne vidi trend.</p>
+<div class="box tip">
+  <p><b>Jedan loš trening ništa ne znači.</b> Gledaj nagib kroz tri-četiri nedelje. Vrućina,
+  neispavanost i stres pomeraju tempo za 10–20 s/km bez ikakvog gubitka forme.</p>
+</div>
 
-<h2 id="ai">7. AI analiza</h2>
+<h2 id="ai">6. AI analiza</h2>
 <p>Dva mesta:</p>
 <ul>
   <li><b>🤖 Analiziraj trening</b> — na svakom odrađenom treningu. Gleda tempo po kilometru,
       puls, kadencu, visinsku razliku, temperaturu, raspad tempa i puls-tempo odnos
       (dekapling), i poredi to sa onim što je trening <i>trebalo</i> da bude.</li>
-  <li><b>📈 Objasni trend</b> — u Progresu, preko cele istorije umesto jednog dana.</li>
+  <li><b>📈 Objasni trend</b> — u tabu Trka, preko cele istorije umesto jednog dana.</li>
 </ul>
 <p>Ako je Strava povezana, analiza koristi i podatke po kilometru i po deonici, pa je
 osetno konkretnija. Ograničenje je <b>30 analiza dnevno</b>.</p>
@@ -151,7 +160,7 @@ osetno konkretnija. Ograničenje je <b>30 analiza dnevno</b>.</p>
   telo je u pravu.</p>
 </div>
 
-<h2 id="strava">8. Strava</h2>
+<h2 id="strava">7. Strava</h2>
 <p>Podešavanja → Strava → <b>Poveži Stravu</b>. Posle toga <b>Uvezi trčanja</b> sam popunjava
 distancu, vreme i puls, a tempo intervala čita iz lapova.</p>
 <p>Pravila koja vredi znati:</p>
@@ -162,12 +171,12 @@ distancu, vreme i puls, a tempo intervala čita iz lapova.</p>
   <li>Dva trčanja istog dana → uzima se ono bliže planiranoj kilometraži.</li>
 </ul>
 
-<h2 id="icu">9. intervals.icu — oporavak i sat</h2>
+<h2 id="icu">8. intervals.icu — oporavak i sat</h2>
 <p>Dve odvojene stvari kroz istu vezu.</p>
 
 <h3>Oporavak (čitanje)</h3>
 <p>Povlači <b>HRV, puls u miru, san i trenažno opterećenje</b> koje Garmin već šalje na
-intervals.icu. Prikazuje se u Progresu, sa sedmodnevnom osnovom, pa se vidi kada odstupaš
+intervals.icu. Prikazuje se u tabu Oporavak, sa sedmodnevnom osnovom, pa se vidi kada odstupaš
 od sopstvenog proseka — a ne od tuđe tabele.</p>
 <p>Povezivanje: intervals.icu → Settings → dole <b>Developer Settings</b> → tu su ID
 sportiste i API ključ. <b>Ključ nikad ne napušta tvoj telefon</b> — ne upisuje se u bazu.</p>
@@ -198,7 +207,7 @@ Garminu, a Garmin satu. Da lanac radi, treba oboje:</p>
 <p>Dugme <b>👁 Vidi šta se šalje</b> ispisuje doslovno ono što odlazi, po danima — koristi ga
 kad nisi siguran da li je problem kod nas ili dalje niz lanac.</p>
 
-<h2 id="podaci">10. Podaci i backup</h2>
+<h2 id="podaci">9. Podaci i backup</h2>
 <p>Podaci žive <b>na tvom telefonu</b>; server je rezervna kopija. Zato aplikacija radi u
 avionu, u šumi i bez signala.</p>
 <ul>
@@ -210,7 +219,7 @@ avionu, u šumi i bez signala.</p>
   sekundi i jedini je način da se vratiš unazad.</p>
 </div>
 
-<h2 id="problemi">11. Kad nešto ne radi</h2>
+<h2 id="problemi">10. Kad nešto ne radi</h2>
 <table>
   <tr><th>Simptom</th><th>Prvo probaj</th></tr>
   <tr><td>Aplikacija izgleda staro / promena se ne vidi</td><td>zatvori je potpuno i otvori ponovo; u Podešavanjima na dnu proveri broj verzije</td></tr>

@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=7, LS_KEY='sub19-v1';
-const APP_VERSION='170'; /* mora se poklapati sa APP_VERSION u sw.js */
+const APP_VERSION='171'; /* mora se poklapati sa APP_VERSION u sw.js */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -255,8 +255,8 @@ const WT_TARGET=[
 /* ============ POČETNO STANJE ============
    PRAZNO ZA SVAKOGA. Ranije je ova funkcija svakom novom korisniku upisivala
    VLASNIKOVU istoriju: odradjene treninge, zapise o kolenu sa licnim beleskama
-   i merenja telesne mase. Tudji covek je to video u tabu Povrede i na
-   grafikonu tezine, a pozadinska sinhronizacija je sve to upisivala i u
+   i merenja telesne mase. Tudji covek je to video na mapi tela i na
+   grafikonu tezine (tada tab Povrede, danas Oporavak), a pozadinska sinhronizacija je sve to upisivala i u
    NJEGOV Supabase red.
 
    Drugi, tisi efekat istog uzroka: `imaUnosaNaLicnom()` je zbog tih unosa
@@ -910,7 +910,6 @@ function save(){
 function stFor(id){const l=S.log[id];return l&&l.status?l.status:'pending';}
 function realKmDay(d){const l=S.log[d.id];if(!l||l.status!=='done')return 0;return l.km!=null?l.km:(d.km||0);}
 function weekRealKm(w){return w.days.reduce((s,d)=>s+realKmDay(d),0);}
-function weekDone(w){return w.days.filter(d=>!d.rest&&stFor(d.id)==='done').length;}
 /* TRCANJA odvojeno od snage. Korisnik koji je izabrao "4 dana trcanja" je s
    pravom prijavio da mu plan pise "5 tren." — peti je dan snage, koji je u
    generisanom planu izricito OPCION ("po sopstvenom programu, bez trcanja").
@@ -918,8 +917,6 @@ function weekDone(w){return w.days.filter(d=>!d.rest&&stFor(d.id)==='done').leng
    prikazuje odvojeno da broj trcanja odgovara onome sto je covek uneo. */
 function weekRunCount(w){return w.days.filter(d=>!d.rest && d.tag!=='snaga').length;}
 function weekRunDone(w){return w.days.filter(d=>!d.rest && d.tag!=='snaga' && stFor(d.id)==='done').length;}
-function weekHasStrength(w){return w.days.some(d=>!d.rest && d.tag==='snaga');}
-function totalDone(){return CUR_PLAN.reduce((n,w)=>n+weekDone(w),0);}
 function streak(today){
   let cur=today,n=0;
   const t=BY_DATE[today];
@@ -1064,6 +1061,37 @@ function hronicniObim(today){
      ali ako je sve nula nemamo od čega da računamo. */
   if(!km.some(v => v > 0)) return null;
   return Math.round(km.reduce((a,b)=>a+b,0) / km.length * 10) / 10;
+}
+
+/* Kog je DANA trening stvarno odrađen: pravi datum iz Strave, pa ručno uneti,
+   pa planski — isti redosled koji već koriste kartica treninga i AI kontekst.
+   Prihvata se samo niska oblika GGGG-MM-DD, jer se datumi porede kao niske; u
+   starijim zapisima `ts` ume da bude broj (epoch), a `'1785834000' >= '2026-…'`
+   je poređenje koje uvek laže. */
+function danTreninga(l, d){
+  const k = [l && l.runDate, l && l.ts, d && d.date]
+    .find(x => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}/.test(x));
+  return k ? k.slice(0,10) : null;
+}
+/* AKUTNO OPTEREĆENJE — kilometraža poslednjih sedam dana, kotrljajuće (danas i
+   šest dana unazad). Namerno NE „tekuća nedelja": u utorak bi ona sadržala
+   jedan trening, pa bi odnos ispao bezopasan baš onda kad je najkorisniji. */
+function akutniObim(today){
+  const od = addD(today, -6);
+  let km = 0;
+  CUR_PLAN.forEach(w => w.days.forEach(d => {
+    const l = S.log[d.id];
+    if(!l || l.status !== 'done') return;
+    const dat = danTreninga(l, d);
+    if(dat && dat >= od && dat <= today) km += (l.km != null ? l.km : (d.km || 0));
+  }));
+  return Math.round(km * 10) / 10;
+}
+/* Odnos akutnog i hroničnog opterećenja. Vraća `odnos:null` kad hronične osnove
+   nema — bolje ne prikazati broj nego izmisliti imenilac. */
+function acwrSada(today){
+  const ak = akutniObim(today), hron = hronicniObim(today);
+  return { ak, hron, odnos: (hron != null && hron > 0) ? Math.round(ak/hron * 100)/100 : null };
 }
 
 /* RUN/WALK DOK BOL NE PADNE ISPOD 4 — na CELOM pojasu od 4 naviše.
@@ -1832,7 +1860,7 @@ function vdotDeltaHTML(predId,paceSec){
   const arrow=e.delta>0.05?'↑':e.delta<-0.05?'↓':'→';
   const col=e.delta>0.05?'var(--green)':e.delta<-0.05?'var(--pink)':'var(--txt2)';
   const sign=e.delta>0?'+':'';
-  return `<span style="color:${col};font-weight:800;font-size:.82rem">VDOT ${esc(e.vdot)} ${arrow} <span style="font-size:.72rem">(${sign}${esc(e.delta)})</span></span>`;
+  return `<span style="color:${col};font-weight:800;font-size:.82rem">VDOT ${esc(fmtNum(e.vdot,1))} ${arrow} <span style="font-size:.72rem">(${sign}${esc(fmtNum(e.delta,1))})</span></span>`;
 }
 function pickClosest(list,planKm){
   return list.reduce((b,x)=>Math.abs(x.distance/1000-planKm)<Math.abs(b.distance/1000-planKm)?x:b);
@@ -2237,14 +2265,17 @@ function oporavakRedovi(datum){
   const o=oporavakZa(datum);
   if(!o) return [];
   const r=[];
+  /* Sve kroz fmtNum: intervals.icu vraća svežinu i odstupanja u punoj
+     preciznosti, a i jedna decimala mora imati srpski zarez, ne tačku. */
+  const br=v=>(v==null||!isFinite(+v))?'—':esc(fmtNum(+v,1));
   if(o.hrv!=null) r.push(['HRV',
-    `<b style="color:${esc(bojaOdstupanja(o.hrvOdstupanje))}">${esc(o.hrv)}</b>`+
-    (o.hrvOdstupanje!=null?` <small>${o.hrvOdstupanje>=0?'+':''}${esc(o.hrvOdstupanje)} %</small>`:'')]);
+    `<b style="color:${esc(bojaOdstupanja(o.hrvOdstupanje))}">${br(o.hrv)}</b>`+
+    (o.hrvOdstupanje!=null?` <small>${o.hrvOdstupanje>=0?'+':''}${br(o.hrvOdstupanje)} %</small>`:'')]);
   if(o.pulsUMiru!=null) r.push(['puls u miru',
-    `<b>${esc(o.pulsUMiru)}</b>`+(o.pulsOdstupanje!=null?` <small>${o.pulsOdstupanje>=0?'+':''}${esc(o.pulsOdstupanje)}</small>`:'')]);
+    `<b>${br(o.pulsUMiru)}</b>`+(o.pulsOdstupanje!=null?` <small>${o.pulsOdstupanje>=0?'+':''}${br(o.pulsOdstupanje)}</small>`:'')]);
   if(o.sanH!=null) r.push(['san',
-    `<b style="color:${o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'}">${esc(o.sanH)} h</b>`]);
-  if(o.svezina!=null) r.push(['svežina',`<b>${esc(o.svezina)}</b>`]);
+    `<b style="color:${o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'}">${br(o.sanH)} h</b>`]);
+  if(o.svezina!=null) r.push(['svežina',`<b>${br(o.svezina)}</b>`]);
   return r;
 }
 
@@ -2366,7 +2397,8 @@ function osveziDan(){
   return true;
 }
 const $=s=>document.querySelector(s);
-const PAGES={danas:renderDanas,plan:renderPlan,prog:renderProg,koleno:renderKnee,pred:renderPred};
+/* Četiri taba. Progres i Povrede su spojeni u Oporavak — v. renderOporavak. */
+const PAGES={danas:renderDanas,plan:renderPlan,opor:renderOporavak,pred:renderPred};
 let ACTIVE='danas';
 const openW=new Set();
 {const w=weekOf(TODAY);openW.add(w?w.w:1);}
@@ -2757,16 +2789,19 @@ function planSazetak(){
   };
 }
 /* Prsten. `udeo` preko 1 se ne seče — prekoračenje plana je informacija, pa
-   se pun krug prikazuje i piše koliko je preko. */
-function prstenSVG(udeo, tekst, velicina, boja){
+   se pun krug prikazuje i piše koliko je preko.
+   `fs` je izuzetak od podrazumevane veličine slova: „20:41" je pet znakova i
+   na podrazumevanih 24 izlazi iz unutrašnjeg kruga, dok „93%" staje. */
+function prstenSVG(udeo, tekst, velicina, boja, fs){
   const r=42, C=2*Math.PI*r;
   const p=Math.max(0,Math.min(1,udeo));
   const off=(C*(1-p)).toFixed(1);
+  const slova=fs||(velicina>70?24:22);
   return `<svg viewBox="0 0 100 100" width="${velicina}" height="${velicina}" aria-hidden="true">
     <circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(238,240,255,.14)" stroke-width="8"/>
     <circle cx="50" cy="50" r="${r}" fill="none" stroke="${boja}" stroke-width="8" stroke-linecap="round"
             stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off}" transform="rotate(-90 50 50)"/>
-    ${tekst?`<text x="50" y="${velicina>70?56:55}" text-anchor="middle" font-size="${velicina>70?24:22}" font-weight="800"
+    ${tekst?`<text x="50" y="${velicina>70?56:55}" text-anchor="middle" font-size="${slova}" font-weight="800"
             fill="#EEF0FF" font-family="-apple-system,sans-serif" letter-spacing="-1">${esc(tekst)}</text>`:''}
   </svg>`;
 }
@@ -2807,6 +2842,11 @@ function renderPlan(){
     </div>
   </div>`;
 
+  /* Nedeljna kilometraža je došla iz Progresa. Tamo je bila jedini grafikon o
+     planu, na ekranu koji o planu ne govori ništa drugo; ovde stoji odmah ispod
+     istog broja koji prstenovi sabiraju, pa se vidi i ODAKLE je taj zbir. */
+  h+=`<div class="card">${dGlava('Nedeljna kilometraža','plan vs. realizovano')}${chartWeeks()}</div>`;
+
   planFaze().forEach(g=>{
     const km=g.nedelje.reduce((s2,w)=>s2+weekRealKm(w),0);
     const pk=g.nedelje.reduce((s2,w)=>s2+weekPlanKm(w),0);
@@ -2841,6 +2881,11 @@ function renderPlan(){
   });
   el.querySelectorAll('.day[data-d]').forEach(b=>b.onclick=()=>openDaySheet(b.dataset.d));
   el.querySelectorAll('.day[data-sw]').forEach(b=>b.onclick=()=>openWeekSwap(+b.dataset.sw));
+  el.querySelectorAll('[data-wk]').forEach(b=>b.onclick=()=>{
+    const nw=+b.dataset.wk;
+    CHART_SEL.week=CHART_SEL.week===nw?null:nw;   /* isti dodir opet = poništi izbor */
+    renderPlan();
+  });
 }
 /* Dani jedne nedelje — isti redovi kao ranije, samo izdvojeni da mogu da stoje
    ispod reda prstenova. */
@@ -6567,62 +6612,9 @@ function openDaySheet(id){
   };
 }
 
-/* ---------- PROGRES ---------- */
+/* ---------- GRAFIKONI ---------- */
 function svgW(w,h,inner){return `<svg class="chart" viewBox="0 0 ${w} ${h}">${inner}</svg>`;}
-function gaugeSVG(frac){
-  const cx=150,cy=110,r=88,sw=16;
-  const startA=225,endA=495; // 270° raspon, praznina centrirana na dnu (verifikovano)
-  const toXY=(deg)=>{ const rad=(deg-90)*Math.PI/180; return [cx+r*Math.cos(rad), cy+r*Math.sin(rad)]; };
-  const arcPath=(a1,a2)=>{
-    const [x1,y1]=toXY(a1),[x2,y2]=toXY(a2);
-    const large=(a2-a1)%360>180?1:0;
-    return `M${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${large} 1 ${x2.toFixed(2)},${y2.toFixed(2)}`;
-  };
-  const valA=startA+(endA-startA)*Math.max(0,Math.min(1,frac));
-  let g=`<defs><linearGradient id="progGauge" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="var(--pink)"/><stop offset="100%" stop-color="#ff8aa0"/>
-    </linearGradient></defs>`;
-  g+=`<path d="${arcPath(startA,endA)}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="${sw}" stroke-linecap="round"/>`;
-  if(frac>0)g+=`<path d="${arcPath(startA,valA)}" fill="none" stroke="url(#progGauge)" stroke-width="${sw}" stroke-linecap="round"/>`;
-  return `<svg width="100%" height="150" viewBox="0 0 300 150">${g}</svg>`;
-}
-function renderProg(){
-  const el=$('#pg-prog');
-  const w=weekOf(TODAY)||(TODAY<CUR_START?CUR_PLAN[0]:CUR_PLAN[CUR_PLAN.length-1]);
-  /* Pips i brojac gledaju TRCANJA — snaga je opciona i broji se odvojeno
-     (v. weekRunCount). Ranije je "4 dana trcanja" prikazivalo 5 pipova. */
-  const pk=weekPlanKm(w),rk=weekRealKm(w),dn=weekRunDone(w),ct=weekRunCount(w);
-  const f1=pk?Math.min(rk/pk,1):0;
-  const done=totalDone(),pct=done/TOTAL_TR*100;
-  let pipsHTML='';
-  for(let i=0;i<ct;i++)pipsHTML+=`<div class="pip${i<dn?' done':''}"></div>`;
-  el.innerHTML=`
-  <div class="card accent">
-    <div class="card-t">Tekuća nedelja — N${w.w}</div>
-    <div class="gauge-wrap">
-      ${gaugeSVG(f1)}
-      <div class="gauge-num">${fmtKm(rk)}<small> / ${fmtKm(pk)} km</small></div>
-      <div class="gauge-lbl">${Math.round(f1*100)}% nedeljne kilometraže</div>
-      ${ct?`<div class="pips-row">${pipsHTML}</div><div class="pips-lbl"><b>${dn}</b> / ${ct} trčanja odrađeno${weekHasStrength(w)?' <span style="color:var(--txt3)">· + snaga</span>':''}</div>`:''}
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-t">Ispunjenost plana</div>
-    <div class="big" style="font-size:2.4rem">${fmtNum(pct,1)}%</div>
-    <div class="big-sub">${done} / ${TOTAL_TR} treninga</div>
-    <div class="wk-bar" style="border-radius:3px;margin-top:12px;height:5px"><i style="width:${pct}%"></i></div>
-  </div>
-  <div class="card"><div class="card-t">Nedeljna kilometraža — plan vs. realizovano</div>${chartWeeks()}</div>
-  <div class="card"><div class="card-t">Telesna masa — cilj vs. stvarno</div>${chartWeight()}</div>
-  <div class="card"><div class="card-t">Prosečan tempo — odrađena trčanja</div>${chartTempo()}</div>
-  ${karticaOporavka()}`;
-  el.querySelectorAll('[data-wk]').forEach(b=>b.onclick=()=>{
-    const w=+b.dataset.wk;
-    CHART_SEL.week=CHART_SEL.week===w?null:w; /* isti dodir opet = poništi izbor */
-    renderProg();
-  });
-  vezisTacke(el, renderProg);
-}
+
 /* ============================================================
    OPORAVAK — prikaz HRV-a, pulsa u miru i sna.
 
@@ -6646,7 +6638,10 @@ function bojaOdstupanja(p, obrnuto){
 function karticaOporavka(){
   const niz=oporavakNiz(90);
   if(!niz.length){
-    return `<div class="card"><div class="card-t">Oporavak</div>
+    /* Naslov je „Jutros", ne „Oporavak" — tako se ista kartica zove i na
+       ekranu Danas, a od spajanja tabova „Oporavak" je ime CELOG ekrana, pa bi
+       kartica sa istim imenom izgledala kao da je ekran u sebi. */
+    return `<div class="card"><div class="card-t">Jutros</div>
       <div class="note-src" style="margin:0">${S.icu&&S.icu.athleteId
         ? 'Povezano sa intervals.icu, ali još nema zapisa. Dodirni „Povuci sada" u Podešavanjima.'
         : 'Nije povezano. Podešavanja → Oporavak (intervals.icu) — HRV, puls u miru i san sa Garmina.'}</div></div>`;
@@ -6661,15 +6656,17 @@ function karticaOporavka(){
   /* intervals.icu vraća formu i umor sa punom preciznošću (27.728786), pa je
      na ekranu pisalo „forma 27.728786 · umor 41.52341". Jedna decimala je i
      više nego što ta mera nosi. */
+  /* Isto važi i za odstupanje i za sedmodnevnu osnovu: pisalo je „-1.1% od
+     osnove 61.7" — decimalna TAČKA usred srpskog teksta. */
   const brZa=v=>(v==null||!isFinite(+v))?'—':esc(fmtNum(+v,1));
-  const hrvSub=o.hrvOdstupanje!=null?`${o.hrvOdstupanje>=0?'+':''}${esc(o.hrvOdstupanje)}% od osnove ${esc(o.hrvBaza7)}`:'nema osnove još';
-  const plsSub=o.pulsOdstupanje!=null?`${o.pulsOdstupanje>=0?'+':''}${esc(o.pulsOdstupanje)} od osnove ${esc(o.pulsBaza7)}`:'';
+  const hrvSub=o.hrvOdstupanje!=null?`${o.hrvOdstupanje>=0?'+':''}${brZa(o.hrvOdstupanje)}% od osnove ${brZa(o.hrvBaza7)}`:'nema osnove još';
+  const plsSub=o.pulsOdstupanje!=null?`${o.pulsOdstupanje>=0?'+':''}${brZa(o.pulsOdstupanje)} od osnove ${brZa(o.pulsBaza7)}`:'';
   return `<div class="card">
-    <div class="card-t">Oporavak <span class="ob-opt" style="font-weight:500;color:var(--txt3)">— ${esc(fmtD(o.datum))}</span></div>
+    ${dGlava('Jutros', esc(fmtD(o.datum)))}
     <div class="ob-vpaces" style="display:flex;gap:8px">
-      ${red('HRV', o.hrv!=null?o.hrv:'—', hrvSub, bojaOdstupanja(o.hrvOdstupanje))}
-      ${red('Puls u miru', o.pulsUMiru!=null?o.pulsUMiru:'—', plsSub, bojaOdstupanja(o.pulsOdstupanje!=null?-o.pulsOdstupanje*2:null))}
-      ${red('San', o.sanH!=null?o.sanH+' h':'—', o.sanOcena!=null?('ocena '+o.sanOcena):'', o.sanH!=null?(o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'):null)}
+      ${red('HRV', o.hrv!=null?brZa(o.hrv):'—', hrvSub, bojaOdstupanja(o.hrvOdstupanje))}
+      ${red('Puls u miru', o.pulsUMiru!=null?brZa(o.pulsUMiru):'—', plsSub, bojaOdstupanja(o.pulsOdstupanje!=null?-o.pulsOdstupanje*2:null))}
+      ${red('San', o.sanH!=null?brZa(o.sanH)+' h':'—', o.sanOcena!=null?('ocena '+brZa(o.sanOcena)):'', o.sanH!=null?(o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'):null)}
       ${o.svezina!=null?red('Svežina', brZa(o.svezina), 'forma '+brZa(o.ctl)+' · umor '+brZa(o.atl), o.svezina<-10?'var(--red)':o.svezina<0?'var(--amber)':'var(--green)'):''}
     </div>
     ${chartHrv(niz)}
@@ -6704,7 +6701,7 @@ function chartHrv(niz){
   });
   g+=`<text x="${L}" y="${B+16}" font-size="9" fill="var(--txt3)">${fmtD(v[0].datum)}</text>`;
   g+=`<text x="${W-R}" y="${B+16}" text-anchor="end" font-size="9" fill="var(--txt3)">${fmtD(v[v.length-1].datum)}</text>`;
-  g+=`<text x="${W-R}" y="${(Y(v[v.length-1].hrv)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--cyan)">${esc(v[v.length-1].hrv)}</text>`;
+  g+=`<text x="${W-R}" y="${(Y(v[v.length-1].hrv)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--cyan)">${esc(fmtNum(v[v.length-1].hrv,1))}</text>`;
   g+=`<text x="${L}" y="${T+2}" font-size="9" fill="var(--txt3)">HRV · isprekidano = tvoja sedmodnevna osnova</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:10px">${g}</svg>`;
 }
@@ -6963,8 +6960,52 @@ function bodyMapSVG(view){
   }
   return `<svg viewBox="0 0 200 470" class="bodymap">${g}</svg>`;
 }
-function renderKnee(){
-  const el=$('#pg-koleno');
+/* ============================================================
+   TAB OPORAVAK — spojeni Progres i Povrede.
+
+   Zašto spajanje: kad je Plan dobio prstenove sa zbirom celog plana, u
+   Progresu su ostale dve kartice koje govore isto što i oni („Tekuća nedelja",
+   „Ispunjenost plana") i tri grafikona od kojih dva pripadaju drugim ekranima
+   — nedeljna kilometraža uz plan, prosečan tempo uz predikciju. Ono što je
+   ostalo (HRV, puls u miru, san, telesna masa) meri istu stvar koju su merile
+   i Povrede: da li telo stiže da isprati plan.
+
+   Redosled je po hitnosti, ne po temi: stanje danas, pa signal koji upozorava
+   PRE nego što nešto zaboli (opterećenje), pa telo, pa istorija.
+   ============================================================ */
+/* Skala trake opterećenja ide do 2,0 — granica 1,5, na kojoj rizik naglo
+   raste, mora da bude UNUTAR slike, inače se crvena zona nema gde videti. */
+const ACWR_SKALA=2;
+function acwrPolozaj(v){ return Math.max(0, Math.min(100, v/ACWR_SKALA*100)); }
+/* Odnos se piše na TAČNO dve decimale, i kad su nule: „0,80" i „1,30" su
+   granice pojasa, pa bi „0,8" pored „1,25" izgledalo kao dve različite mere.
+   fmtNum krati repne nule, zato ovde ne može. */
+function acwrBroj(v){ return (v==null||!isFinite(v))?'—':v.toFixed(2).replace('.',','); }
+function karticaOpterecenja(){
+  const a=acwrSada(TODAY);
+  if(a.odnos==null){
+    return dKarta('Opterećenje','poslednjih 7 dana',
+      dRedovi([['akutno · 7 dana', fmtKm(a.ak)+' km']])+
+      `<div class="note-src">Odnos se prikazuje kad prođe bar jedna nedelja plana sa unetim trčanjem — hronična osnova je prosek poslednje četiri završene nedelje.</div>`);
+  }
+  const boja = a.odnos<ACWR_POVRATAK ? 'var(--amber)'
+             : a.odnos<=ACWR_MAX     ? 'var(--green)'
+             : a.odnos<=1.5          ? 'var(--amber)' : 'var(--red)';
+  const rec = a.odnos<ACWR_POVRATAK
+    ? `Ispod bezbednog pojasa (${acwrBroj(ACWR_POVRATAK)}–${acwrBroj(ACWR_MAX)}). Ako ovo nije deload nedelja, obim je pao ispod onoga na šta si navikao.`
+    : a.odnos<=ACWR_MAX
+    ? `U bezbednom pojasu (${acwrBroj(ACWR_POVRATAK)}–${acwrBroj(ACWR_MAX)}) — obim raste onoliko koliko telo stiže da podnese.`
+    : a.odnos<=1.5
+    ? `Iznad gornje ivice pojasa (${acwrBroj(ACWR_MAX)}). Još nije opasno, ali sledeća nedelja ne bi smela da bude veća od ove.`
+    : 'Preko 1,5 — u tom pojasu rizik od povrede naglo raste. Skrati sledeću nedelju.';
+  return dKarta('Opterećenje','poslednjih 7 dana',
+    `<div class="ac-v" style="color:${boja}">${acwrBroj(a.odnos)}<span>akutno ${fmtKm(a.ak)} km / hronično ${fmtKm(a.hron)} km</span></div>
+     <div class="acwr"><i style="left:${acwrPolozaj(a.odnos).toFixed(1)}%"></i></div>
+     <div class="acwr-l"><span style="left:0%">0</span><span style="left:${acwrPolozaj(ACWR_POVRATAK)}%">${esc(fmtNum(ACWR_POVRATAK,1))}</span><span style="left:${acwrPolozaj(ACWR_MAX)}%">${esc(fmtNum(ACWR_MAX,1))}</span><span style="left:${acwrPolozaj(1.5)}%">1,5</span><span style="left:100%">${esc(fmtNum(ACWR_SKALA,1))}</span></div>
+     <div class="note-src">${esc(rec)} Odnos poredi kilometražu poslednjih sedam dana sa prosekom poslednje četiri završene nedelje.</div>`);
+}
+function renderOporavak(){
+  const el=$('#pg-opor');
   const ks=kneeStatus(TODAY);
   const list=S.knee.slice().sort((a,b)=>a.date<b.date?1:-1);
   const view=(S.ui&&S.ui.bodyView)==='back'?'back':'front';
@@ -6983,27 +7024,32 @@ function renderKnee(){
       <div class="note-src" style="margin-top:8px">Svaki dan možeš ručno da vratiš u tabu Plan.</div>
     </div>`;
   }
-  h+=`<div class="card"><div class="card-t">Mapa tela — dodirni deo koji te boli</div>
+  h+=karticaOporavka();
+  h+=karticaOpterecenja();
+  /* Mapa, aktivni delovi i grafikon bola su ranije bile TRI kartice o istoj
+     stvari. Sada su jedna: dodirneš deo tela, ispod nje piše šta je aktivno, a
+     na dnu se vidi kako ide kroz vreme. */
+  h+=`<div class="card">${dGlava('Bol','dodirni deo koji te boli')}
     <div class="bodytoggle"><button data-bv="front" class="${view==='front'?'on':''}">Prednja</button><button data-bv="back" class="${view==='back'?'on':''}">Zadnja</button></div>
     <div class="bodywrap">${bodyMapSVG(view)}</div>
     <div class="bodylegend"><span><i class="l0"></i>0</span><span><i class="l1"></i>1–2</span><span><i class="l2"></i>3–5</span><span><i class="l3"></i>6+</span><span style="color:var(--txt3)">· poslednjih 14 dana</span></div>
+    ${active.length?`<div class="op-sub">Aktivno · poslednjih 14 dana</div>`+
+      active.map(x=>`<button class="krow" data-bp2="${x.p}"><div class="kp ${x.lv>=6?'p2':'p1'}">${x.lv}</div><div class="ki"><div class="kd">${esc(partName(x.p))}</div></div></button>`).join(''):''}
+    <div class="op-sub">Kroz vreme · 0–10</div>${chartKnee()}
   </div>`;
-  if(active.length){
-    h+=`<div class="card"><div class="card-t">Aktivno — poslednjih 14 dana</div>`+
-      active.map(x=>`<button class="krow" data-bp2="${x.p}"><div class="kp ${x.lv>=6?'p2':'p1'}">${x.lv}</div><div class="ki"><div class="kd">${esc(partName(x.p))}</div></div></button>`).join('')+`</div>`;
-  }
-  h+=`<div class="card"><div class="card-t">Bol (0–10) kroz vreme</div>${chartKnee()}</div>`;
-  h+=`<div class="btnrow" style="margin:0 0 14px"><button class="btn ghost" id="k-add">+ Dodaj unos</button></div>`;
-  h+=`<div class="card"><div class="card-t">Istorija</div>`+(list.length?list.map(k=>`
+  h+=`<div class="btnrow" style="margin:0 0 14px"><button class="btn ghost" id="k-add">+ Dodaj unos bola</button></div>`;
+  h+=`<div class="card">${dGlava('Telesna masa','cilj vs. stvarno')}${chartWeight()}</div>`;
+  h+=`<div class="card">${dGlava('Istorija bola', list.length?list.length+' '+pl3(list.length,'unos','unosa','unosa'):'')}`+
+    (list.length?list.map(k=>`
     <button class="krow" data-k="${esc(k.id)}">
       <div class="kp ${k.pain>=6?'p2':k.pain>=1?'p1':'p0'}">${esc(k.pain)}</div>
       <div class="ki"><div class="kd">${esc(partName(k.part))} <span class="ka">· ${DOW[(s2d(k.date).getDay()+6)%7]} ${fmtD(k.date)} · ${esc(k.act)}${k.src?' · iz treninga':''}</span></div>${k.note?`<div class="kn">${esc(k.note)}</div>`:''}</div>
     </button>`).join(''):`<div class="empty">Nema unosa.</div>`)+`</div>`;
   el.innerHTML=h;
-  el.querySelectorAll('[data-bv]').forEach(b=>b.onclick=()=>{S.ui.bodyView=b.dataset.bv;save();renderKnee();});
+  el.querySelectorAll('[data-bv]').forEach(b=>b.onclick=()=>{S.ui.bodyView=b.dataset.bv;save();renderOporavak();});
   el.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>openKneeSheet(null,b.dataset.bp));
   el.querySelectorAll('[data-bp2]').forEach(b=>b.onclick=()=>openKneeSheet(null,b.dataset.bp2));
-  vezisTacke(el, renderKnee);
+  vezisTacke(el, renderOporavak);
   const ia=$('#inj-apply');
   if(ia) ia.onclick=()=>{
     const pr=injuryProposal(TODAY);
@@ -7011,7 +7057,7 @@ function renderKnee(){
     if(!confirm('Prilagoditi plan? Menja se '+pr.changes.length+' treninga. Možeš ih ručno vratiti u tabu Plan.')) return;
     const n=applyInjuryProposal(pr);
     alert(n+' '+(n===1?'trening prilagođen':'treninga prilagođeno')+'.');
-    renderKnee(); renderDanas(); renderPlan();
+    renderOporavak(); renderDanas(); renderPlan();
   };
   $('#k-add').onclick=()=>openKneeSheet(null);
   el.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>openKneeSheet(b.dataset.k));
@@ -7064,7 +7110,7 @@ function openKneeSheet(id,presetPart){
     if(id){k.pain=+e.target.value;save();}else{k.pain=+e.target.value;}
   };
   if(id){
-    sh.querySelector('#kf-part').onchange=e=>{k.part=e.target.value||null;save();renderKnee();};
+    sh.querySelector('#kf-part').onchange=e=>{k.part=e.target.value||null;save();renderOporavak();};
     sh.querySelector('#kf-date').onchange=e=>{if(e.target.value){k.date=e.target.value;S.knee.sort((a,b)=>a.date<b.date?-1:1);save();}};
     sh.querySelector('#kf-act').onchange=e=>{k.act=e.target.value;save();};
     sh.querySelector('#kf-note').oninput=e=>{k.note=e.target.value;save();};
@@ -7076,36 +7122,67 @@ function openKneeSheet(id,presetPart){
     sh.querySelector('#kf-save').onclick=()=>{
       S.knee.push({id:'k'+Date.now(),src:null,date:sh.querySelector('#kf-date').value||TODAY,act:sh.querySelector('#kf-act').value,pain:k.pain,note:sh.querySelector('#kf-note').value.trim(),part:sh.querySelector('#kf-part').value||null});
       S.knee.sort((a,b)=>a.date<b.date?-1:1);
-      save();closeSheet();renderKnee();
+      save();closeSheet();renderOporavak();
     };
   }
 }
 
-/* ---------- PREDIKCIJA ---------- */
+/* ---------- TRKA ---------- */
+/* Koliko je od puta „polazna forma → cilj" pređeno. Polazna tačka je vreme
+   koje odgovara POČETNOM VDOT-u, ista referenca koju crta i VDOT grafikon —
+   inače bi se dva prikaza na istom ekranu merila od različitih nula.
+   Vraća i vrednosti van [0,1]: ispod nule znači da je predikcija sporija od
+   polazne, i to se na ekranu i kaže umesto da se ćutke svede na nulu. */
+function trkaUdeo(sec){
+  const goal=goalSecActive();
+  if(sec==null||goal==null) return null;
+  const base=raceTimeForVdot(baselineVdot(), raceDistActive());
+  if(!isFinite(base)||base<=goal) return null;
+  return (base-sec)/(base-goal);
+}
+/* Jedan prsten heroja. Prazan prsten je ovde INFORMACIJA, ne greška: ako je
+   zadnja predikcija sporija od polazne, ništa se nije pomerilo i prsten to
+   pokazuje bez ijedne reči. */
+function trkaPrsten(x, ime){
+  const sec=x&&x.pred!=null?x.pred:null;
+  const u=trkaUdeo(sec), goal=goalSecActive();
+  const stigao=sec!=null&&goal!=null&&sec<=goal;
+  const boja = sec==null ? 'rgba(238,240,255,.22)'
+             : (stigao||(u!=null&&u>0)) ? 'var(--green)' : 'var(--pink)';
+  const pod = sec==null ? 'još nema unosa'
+            : stigao    ? 'cilj dostignut'
+            : u==null   ? ''
+            : u<=0      ? 'iza polazne'
+            : Math.round(u*100)+'% do cilja';
+  return `<div class="tr-ring">${prstenSVG(u||0, sec!=null?fmtClock(sec):'—', 84, boja, 19)}
+    <b>${esc(ime)}</b><span>${esc(pod)}</span></div>`;
+}
 function renderPred(){
   const el=$('#pg-pred');
   const pc=predCalc();
-  const stat=x=>x?fmtClock(x.pred):'—';
   const goalSecA=goalSecActive(), goalV=goalVdotActive();
-  const col=x=>(x&&goalSecA!=null&&x.pred<goalSecA)?'var(--green)':'var(--txt)';
   const cv=currentVdot(), bv=baselineVdot();
   const vdotDelta=cv!=null?Math.round((cv-bv)*10)/10:null;
   const vArrow=vdotDelta>0.05?'↑':vdotDelta<-0.05?'↓':'→';
   const vCol=vdotDelta>0.05?'var(--green)':vdotDelta<-0.05?'var(--pink)':'var(--txt)';
-  let h=`<div class="pstat">
-    <div class="card"><div class="big" id="ps-last" style="font-size:1.9rem;color:${col(pc.last)}">${stat(pc.last)}</div><div class="big-sub">ZADNJA predikcija</div></div>
-    <div class="card"><div class="big" id="ps-best" style="font-size:1.9rem;color:${col(pc.best)}">${stat(pc.best)}</div><div class="big-sub">NAJBRŽA predikcija</div></div>
+  const ciljTekst=S.genPlan?(goalSecA!=null?fmtClock(goalSecA):'—'):CILJ;
+  /* HEROJ — dva prstena umesto dve kockice. Kockice su davale dva vremena bez
+     merila; prsten svakom od njih daje isto merilo (put od polazne forme do
+     cilja), pa se odmah vidi i KOLIKO je od tog puta pređeno. */
+  let h=`<div class="card accent tr-hero">
+    <div class="tr-rings">${trkaPrsten(pc.last,'zadnja')}${trkaPrsten(pc.best,'najbrža')}</div>
+    <div class="tr-cilj"><span>cilj</span><b>${esc(ciljTekst)} · VDOT ${esc(fmtNum(goalV,1))}</b></div>
   </div>`;
-  h+=`<div class="card accent"><div class="card-t">Trenutna forma (VDOT)</div>
-    <div style="display:flex;align-items:baseline;gap:10px">
-      <div class="big" style="font-size:2.6rem;letter-spacing:-.01em">${esc(cv!=null?cv:bv)}</div>
-      <div style="color:${vCol};font-weight:800;font-size:1rem">${vArrow}${vdotDelta!=null?(vdotDelta>0?' +':' ')+esc(vdotDelta):''}</div>
-    </div>
-    <div style="font-size:.75rem;color:var(--txt3);margin-top:4px">Početni VDOT${S.genPlan?'':' (PB 20:37)'}: ${esc(bv)} · cilj ${S.genPlan?(goalSecA!=null?fmtClock(goalSecA):'—'):CILJ} ≈ VDOT ${esc(goalV)}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
-  </div>`;
-  /* PRILAGOĐAVANJE PLANA FORMI — stoji odmah ispod trenutne forme, jer je to
-     mesto gde čovek i vidi da se broj razišao sa planom. Predlog, ne tiha
-     izmena: kartica pokazuje tačno koliko se menja i šta ostaje isto. */
+  h+=`<div class="card">${dGlava('VDOT kroz vreme', esc(fmtNum(bv,1))+' → '+esc(fmtNum(goalV,1)))}
+    <div class="vd-now"><b>${esc(fmtNum(cv!=null?cv:bv,1))}</b><i style="color:${vCol}">${vArrow}${vdotDelta!=null?(vdotDelta>0?' +':' ')+esc(fmtNum(vdotDelta,1)):''}</i></div>
+    <div id="vdottrend">${chartVdotTrend()}</div>
+    <div class="legend"><span><i style="background:var(--cyan)"></i>cilj ${esc(fmtNum(goalV,1))}</span><span><i style="background:var(--pink)"></i>tvoja forma</span></div>
+    <div class="note-src">Početni VDOT${S.genPlan?'':' (PB 20:37)'}: ${esc(fmtNum(bv,1))} · cilj ${esc(ciljTekst)} ≈ VDOT ${esc(fmtNum(goalV,1))}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
+    <button type="button" id="trend-go" class="btn-ai" style="margin-top:10px">📈 Objasni trend (AI)</button>
+    <div id="trend-out" class="ai-out"></div></div>`;
+  /* PRILAGOĐAVANJE PLANA FORMI — stoji odmah ispod VDOT-a, jer je to mesto gde
+     čovek i vidi da se broj razišao sa planom. Predlog, ne tiha izmena:
+     kartica pokazuje tačno koliko se menja i šta ostaje isto. */
   const vp=vdotPredlog(TODAY);
   if(vp){
     const fm=x=>fmtTempo(x)+'/km';
@@ -7122,13 +7199,14 @@ function renderPred(){
       <div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="vd-undo">Vrati planski tempo</button></div>
     </div>`;
   }
-  h+=`<div class="card"><div class="card-t">VDOT trend kroz vreme</div><div id="vdottrend">${chartVdotTrend()}</div>
-    <div class="legend"><span><i style="background:var(--cyan)"></i>cilj ${esc(goalV)}</span><span><i style="background:var(--pink)"></i>tvoja forma</span></div>
-    <button type="button" id="trend-go" class="btn-ai" style="margin-top:10px">📈 Objasni trend (AI)</button>
-    <div id="trend-out" class="ai-out"></div></div>`;
   const predRaceName=esc(S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K');
-  h+=`<div class="card"><div class="card-t">Predikcija ${predRaceName} kroz plan</div><div id="pchart">${chartPred(pc)}</div>
+  h+=`<div class="card">${dGlava('Predikcija '+predRaceName+' kroz plan','cilj '+esc(ciljTekst))}<div id="pchart">${chartPred(pc)}</div>
     <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span></div></div>`;
+  /* PROSEČAN TEMPO — došao iz Progresa, i namerno na DNO. Isti lanac se ovde
+     čita od sažetog ka sirovom: prstenovi → VDOT → predikcija kroz plan →
+     tempo svakog pojedinačnog trčanja. U Progresu je stajao odvojen od svega
+     što ga objašnjava, pa se nije imao sa čim uporediti. */
+  h+=`<div class="card">${dGlava('Prosečan tempo','odrađena trčanja')}${chartTempo()}</div>`;
   /* Kartica „🎯 Cilj … Predikcija i VDOT se pune iz radnog dela…" je UKLONJENA.
      Ponavljala je cilj koji već stoji kao isprekidana linija na oba grafikona
      iznad nje, a druga rečenica je bila uputstvo — na ekranu koji se otvara
@@ -7193,7 +7271,7 @@ function chartVdotTrend(){
   g+=chartTop(L, selV ? `${selV.ts?fmtD(String(selV.ts).slice(0,10)):''} · VDOT ${fmtNum(selV.vdot,1)}${selV.delta!=null?' ('+(selV.delta>0?'+':'')+fmtNum(selV.delta,1)+')':''}${selV.measured!=null?' · izmereno '+fmtNum(selV.measured,1):''}` : null);
   // horizontalne linije: baseline i cilj
   g+=`<line x1="${L}" y1="${Y(goal).toFixed(1)}" x2="${W-R}" y2="${Y(goal).toFixed(1)}" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
-  g+=`<text x="${W-R}" y="${(Y(goal)-4).toFixed(1)}" text-anchor="end" font-size="9" font-weight="700" fill="var(--cyan)">cilj ${esc(goal)}</text>`;
+  g+=`<text x="${W-R}" y="${(Y(goal)-4).toFixed(1)}" text-anchor="end" font-size="9" font-weight="700" fill="var(--cyan)">cilj ${esc(fmtNum(goal,1))}</text>`;
   g+=`<line x1="${L}" y1="${Y(bv).toFixed(1)}" x2="${W-R}" y2="${Y(bv).toFixed(1)}" stroke="var(--txt3)" stroke-width="1" stroke-dasharray="2 3" opacity="0.5"/>`;
   // linija VDOT sa gradijent-ispunom (dosledno sa Predikcija grafikonom)
   const pts=vl.map((e,i)=>[X(i),Y(e.vdot)]);
@@ -7212,8 +7290,8 @@ function chartVdotTrend(){
     g+=chartHit(p[0],p[1],'vdot',i);
   });
   // labele prve i zadnje vrednosti
-  g+=`<text x="${X(0).toFixed(1)}" y="${(Y(vl[0].vdot)-9).toFixed(1)}" font-size="10" font-weight="700" fill="var(--txt2)">${esc(vl[0].vdot)}</text>`;
-  g+=`<text x="${X(vl.length-1).toFixed(1)}" y="${(Y(vl[vl.length-1].vdot)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--pink)">${esc(vl[vl.length-1].vdot)}</text>`;
+  g+=`<text x="${X(0).toFixed(1)}" y="${(Y(vl[0].vdot)-9).toFixed(1)}" font-size="10" font-weight="700" fill="var(--txt2)">${esc(fmtNum(vl[0].vdot,1))}</text>`;
+  g+=`<text x="${X(vl.length-1).toFixed(1)}" y="${(Y(vl[vl.length-1].vdot)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--pink)">${esc(fmtNum(vl[vl.length-1].vdot,1))}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${g}</svg>`;
 }
 /* ============================================================
@@ -7301,7 +7379,7 @@ async function icuFinish(code){
     save();
     const s2=await icuSync(120);   /* odmah povuci istoriju, da kartice ne budu prazne */
     alert(s2.ok?('intervals.icu povezan. Povučeno zapisa: '+s2.n+'.'):'intervals.icu povezan.');
-    renderHeader(); if(ACTIVE==='prog') PAGES.prog();
+    renderHeader(); if(ACTIVE==='opor') PAGES.opor();
   }catch(e){ alert('Nema veze sa serverom.'); }
 }
 /* AUTOMATSKO POVLACENJE — jednom dnevno, pri prvom otvaranju.
@@ -7325,7 +7403,7 @@ async function icuAutoSync(){
   icuAutoUToku=false;
   /* Dan se pamti SAMO na uspeh. Da se upise unapred, jedan neuspeo poziv
      (avionski rezim ujutru) bi ostavio korisnika bez podataka ceo dan. */
-  if(r&&r.ok){ S.icu.autoDan=dan; save(); if(ACTIVE==='prog') PAGES.prog(); }
+  if(r&&r.ok){ S.icu.autoDan=dan; save(); if(ACTIVE==='opor') PAGES.opor(); }
 }
 /* Zapis oporavka za dati dan, sa 7-dnevnim prosekom HRV-a i pulsa u miru —
    pojedinacna vrednost HRV-a ne znaci nista bez svoje osnove. */
@@ -7567,7 +7645,7 @@ function moraSvojPlan(){ return !S.genPlan && !jeVlasnik() && !imaUnosaNaLicnom(
    Prva verzija je odustajala cim postoji generisan plan (`if(S.genPlan) return
    false`) i cim ijedan unos izlazi iz potpisa. Posledica, videna na stvarnom
    uredjaju: covek napravi svoj plan carobnjakom, a tudje beleske o kolenu mu
-   ostanu u tabu Povrede zauvek — jer od tog trenutka ciscenje vise ne radi.
+   ostanu u istoriji bola zauvek — jer od tog trenutka ciscenje vise ne radi.
    Ni `purgeGenPlanData()` ih ne hvata: brise samo unose sa 'g' izvorom, a
    seed zapisi o kolenu nemaju `src`.
 

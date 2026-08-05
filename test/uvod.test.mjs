@@ -71,6 +71,16 @@ describe('Uvodni ekran — markup i CSS', () => {
       'uvod se ne sakriva pri smanjenom kretanju — trepnuo bi dok skripta ne stigne da ga skloni');
   });
 
+  test('smanjeno kretanje gasi i slaganje kartica, ne samo skraćuje', () => {
+    /* Blok skraćuje `animation-duration`, ali NE i `animation-delay`; uz
+       `both` to znači da `from{opacity:0}` traje kroz celo kašnjenje. Izmereno
+       u pregledaču: kartica na Planu je povremeno providna i 80 ms posle
+       promene taba — tačno ono što smanjeno kretanje treba da spreči. */
+    const blok = /@media\(prefers-reduced-motion:reduce\)\{([\s\S]*?)\n\}/.exec(html);
+    assert.match(blok[1], /\.page\.uskoci>\*\s*\{\s*animation:\s*none\s*!important/,
+      'slaganje kartica se pri smanjenom kretanju samo ubrzava umesto da se ugasi');
+  });
+
   test('uvod je iznad svega ostalog, uključujući prijavni ekran', () => {
     /* `#sb-gate` je takođe `position:fixed` i dugo je stajao na ISTOM z-index-u
        (400). Pri jednakom sloju pobeđuje ono što je kasnije u DOM-u, a gate
