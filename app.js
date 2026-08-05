@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='189'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='190'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2482,16 +2482,23 @@ function aiTelo(d,l){
   const ostatak=n=>n===Infinity?'bez ograničenja':`${n} ${pl3(n,'preostala','preostale','preostalih')}`;
   /* Trazi se STRING, ne samo „ima nesto": iz uvezenog backupa `aiText` moze
      doci kao objekat ili broj, a onda bi u kartici pisalo „[object Object]". */
+  const tekst=typeof l.aiText==='string'&&l.aiText.trim()?l.aiText:null;
   /* POSAO KOJI JOŠ TRAJE ima svoje stanje — inače bi kartica posle povratka u
      aplikaciju izgledala kao da se ništa nije desilo, pa bi čovek kliknuo
-     ponovo i potrošio još jednu analizu. */
-  if(l.aiPosao&&l.aiPosao.id&&!(typeof l.aiText==='string'&&l.aiText.trim())){
+     ponovo i potrošio još jednu analizu.
+     PRIJAVA: „ako zatvorim aplikaciju vrati na staru analizu". Prva verzija je
+     ovo stanje pokazivala SAMO kad starog teksta nema — a „Analiziraj ponovo"
+     je po definiciji slučaj u kom ga ima. Zato je posle povratka izgledalo kao
+     da se ništa nije ni pokrenulo. Sada stanje ima prednost UVEK; stari tekst
+     ostaje ispod, jasno označen, jer je i dalje valjan podatak. */
+  if(l.aiPosao&&l.aiPosao.id){
     return dGlava('Analiza',esc(izvor))+
-      `<div class="ai-out">Analiza je u toku. Rezultat se upisuje sam — možeš da zatvoriš aplikaciju.</div>`;
+      `<div class="ai-radi">Nova analiza je u toku. Rezultat se upisuje sam — možeš da zatvoriš aplikaciju.</div>`+
+      (tekst ? `<div class="ai-staro">prethodna analiza</div><div class="ai-out">${mdToHtml(tekst)}</div>` : '');
   }
-  const tekst=typeof l.aiText==='string'&&l.aiText.trim()?l.aiText:null;
   if(tekst){
     return dGlava('Analiza',esc(izvor))+
+      (l.aiGreska?`<div class="ai-radi err">${esc(l.aiGreska)}</div>`:'')+
       `<div class="ai-out">${mdToHtml(tekst)}</div>`+
       (preostalo
         ? `<button type="button" class="ai-again" data-ai="${esc(d.id)}">Analiziraj ponovo · ${ostatak(preostalo)}</button>`
@@ -3199,6 +3206,7 @@ function vezAnalize(root,d){
         const zapoc=await aiPozovi({posao:'start'});
         if(!zapoc.ok){ out.className='ai-out err'; out.textContent=zapoc.error; gotovo(); return; }
         l.aiPosao={id:zapoc.data.posaoId, at:Date.now()};
+        delete l.aiGreska;          /* razlog prethodnog neuspeha vise ne vazi */
         save();
         out.textContent='Analiziram… ovo traje do minut. Možeš da zatvoriš aplikaciju, rezultat te čeka.';
 

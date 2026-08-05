@@ -575,7 +575,21 @@ describe('Analiza odvojena od cekanja', () => {
     assert.match(app, /l\.aiPosao=\{id:/, 'posao se ne pamti — restart bi ga izgubio');
     assert.match(app, /aiPokupiSve\(\);/, 'zavrsene analize se ne pokupljaju');
     /* Kartica mora da pokaze da posao traje, inace covek klikne ponovo. */
-    assert.match(app, /Analiza je u toku/, 'nema stanja „u toku" na kartici');
+    assert.match(app, /Nova analiza je u toku/, 'nema stanja „u toku" na kartici');
+  });
+
+  test('stanje „u toku" ima prednost i kad STARA analiza postoji', () => {
+    /* PRIJAVA: „ako zatvorim aplikaciju vrati na staru analizu". Prva verzija je
+       stanje pokazivala samo kad starog teksta NEMA — a „Analiziraj ponovo" je
+       po definiciji slucaj u kom ga ima, pa je posle povratka izgledalo kao da
+       se nista nije ni pokrenulo. */
+    const m = /if\(l\.aiPosao&&l\.aiPosao\.id\)\{([\s\S]*?)\n  \}/.exec(app);
+    assert.ok(m, 'nema grane za posao u toku');
+    assert.doesNotMatch(m[0].split('{')[0], /aiText/,
+      'stanje „u toku" je i dalje uslovljeno nepostojanjem starog teksta');
+    assert.match(m[1], /prethodna analiza/, 'stari tekst se gubi umesto da se oznaci');
+    /* Dok posao traje NEMA dugmeta — inace bi se poslovi gomilali. */
+    assert.doesNotMatch(m[1], /ai-again/, 'moze se pokrenuti jos jedna analiza preko one koja traje');
   });
 
   test('brojac analiza raste tek kad tekst STVARNO stigne', () => {
