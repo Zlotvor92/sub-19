@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='183'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='184'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -814,6 +814,19 @@ function cistVdotLog(v){
    podatak koji aplikacija tvrdi da razume a ne razume.
    Zapis bez upotrebljivog datuma se ODBACUJE, ne popravlja: pogodjen datum
    bio bi izmisljen podatak o necijem bolu ili masi. */
+/* ID_OBLIK/validanId MORAJU stajati IZNAD migrate(), a ne kraj provera uvoza
+   gde su i nastali. `const` u modulu je u vremenskoj mrtvoj zoni sve dok se do
+   njega ne dodje, a migrate() se poziva iz loadState() — dakle na PRVOM redu
+   izvrsavanja, hiljadama redova ranije.
+   Posledica je bila potpuna i tiha: ko je imao makar jedan zapisan test na
+   3 km, njegov migrate() bi na sledecem otvaranju pukao sa „Cannot access
+   'ID_OBLIK' before initialization", loadState() bi otisao u catch, a
+   aplikacija bi se otvorila PRAZNA. (Podaci se ne gube — sirov tekst ide u
+   `sub19-v1-osteceno`, a server ima kopiju — ali covek vidi prazan plan.)
+   Testovi to nisu videli jer nijedan seed nije imao t3k zapis: bez njega
+   `.filter` nikad ne pozove validanId, pa greska ne nastane. */
+const ID_OBLIK=/^[A-Za-z0-9_-]{1,64}$/;
+function validanId(x){ return typeof x==='string' && ID_OBLIK.test(x); }
 const DATUM_OBLIK=/^\d{4}-\d{2}-\d{2}$/;
 function validanDatum(s){
   if(typeof s!=='string'||!DATUM_OBLIK.test(s)) return false;
@@ -9496,8 +9509,7 @@ function backupPayload(){
    (2) na svakom mestu iscrtavanja — esc() oko svake interpolacije.
    Jedan nivo je dovoljan da napad ne prodje; dva su tu jer se sutra doda nova
    kartica koja zaboravi esc(). ============================================ */
-const ID_OBLIK=/^[A-Za-z0-9_-]{1,64}$/;
-function validanId(x){ return typeof x==='string' && ID_OBLIK.test(x); }
+/* ID_OBLIK i validanId ZIVE GORE, iznad migrate() — v. komentar tamo. */
 /* Da li je `genPlan` iz uvezenog fajla upotrebljiv. setActivePlan() radi
    `S.genPlan.weeks` a rebuildDateIndex() zatim `CUR_PLAN.forEach(w=>w.days…)`
    — pokvaren ili rucno izmenjen backup je tu obarao aplikaciju POSLE zamene

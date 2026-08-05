@@ -4,7 +4,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp } from './harness.mjs';
+import { loadApp, readRepoFile } from './harness.mjs';
 
 describe('migrate — šema stanja', () => {
   const app = loadApp();
@@ -186,5 +186,80 @@ describe('Backup — uvoz odbija pokvaren plan umesto da razbije aplikaciju', ()
     assert.equal(ok({ weeks: [{ w: 1, start: '2026-06-22', days: [{ dow: 99 }] }] }), false, 'dow van opsega');
     assert.equal(ok({ weeks: [{ w: 1, start: 'nije-datum', days: [{ dow: 0 }] }] }), false);
     assert.equal(ok({ weeks: [{ w: 1, start: '2026-06-22', days: [{ dow: 0, km: 'x' }] }] }), false, 'km nije broj');
+  });
+});
+
+describe('Ucitavanje POPUNJENOG stanja — mrtva zona `const`-a', () => {
+  /* PRAVI KVAR, ne hipoteza: `validanId` je zivelo uz provere uvoza, na dnu
+     fajla, a `migrate()` ga zove sa prvog reda izvrsavanja (loadState()). Sve
+     dok nijedan seed nije imao t3k zapis, `.filter` nikad ne pozove validanId
+     i greska ne nastane. Ko je imao zapisan test na 3 km, dobio bi
+     „Cannot access 'ID_OBLIK' before initialization", loadState() bi pao u
+     catch i aplikacija bi se otvorila PRAZNA.
+
+     Zato se ovde ne testira validanId nego UCITAVANJE stanja u kom je svako
+     polje popunjeno — jedini oblik koji bi tu klasu greske uhvatio. */
+  const PUNO = {
+    v: 9,
+    log: { n1d1: { status: 'done', km: 8, sec: 2400, hr: 150, ts: '2026-06-22', decoupling: { n: 4.2 } } },
+    pred: { 'n1-t': 240 }, predLock: {},
+    vdotLog: [{ id: 't3k-2026-07-01-ab12x', ts: '2026-07-01', measured: 48.1, vdotMigrated: true }],
+    t3k: [{ id: 't3k-2026-07-01-ab12x', date: '2026-07-01', sec: 718 }],
+    knee: [{ id: 'k1', src: 'n1d1', date: '2026-06-22', act: 'Trčanje', pain: 3, note: '', part: 'koleno-D' }],
+    kg: [{ date: '2026-06-22', kg: 80.4, src: 'n1d1' }],
+    wellness: { '2026-06-22': { datum: '2026-06-22', hrv: 62, pulsUMiru: 47, sanH: 7.1 } },
+    moves: {}, alts: {}, genPlan: null,
+    icu: { athleteId: 'i1', token: 't', scope: 'ACTIVITY:READ' },
+    vreme: { at: 1, lat: 44.81, lon: 20.46, sati: { '2026-08-05T18': { temp: 30 } } },
+    ui: { firstRun: '2026-06-22', geo: { lat: 44.81, lon: 20.46 }, satTreninga: 18 }
+  };
+
+  /* Vlasnicka sesija: bez nje `uskladiVlasnickePodatke()` skine seed sa licnog
+     plana i `S.log` ostane prazan iz sasvim drugog, ispravnog razloga. */
+  const vlasnik = {
+    'sub19-v1': JSON.stringify(PUNO),
+    sub19_sb: JSON.stringify({ access: 't', refresh: 'r', expiresAt: Date.now() + 3600e3,
+      email: 'x@t.rs', userId: '0403f8fb-a643-4d4e-843d-f71199a0d6f9', seenAt: null, deviceId: 'd1' })
+  };
+
+  test('stanje sa zapisanim testom na 3 km se ucitava, ne resetuje', () => {
+    const app = loadApp({ seedLocalStorage: vlasnik });
+    assert.equal(app.get('UCITAVANJE_PALO'), null,
+      `loadState je pao: ${JSON.stringify(app.get('UCITAVANJE_PALO'))}`);
+    assert.equal(app.evalIn('Object.keys(S.log).length'), 1, 'unosi su nestali');
+    assert.equal(app.evalIn('S.t3k.length'), 1, 'test na 3 km je odbacen');
+    assert.equal(app.evalIn('S.t3k[0].sec'), 718);
+  });
+
+  test('svako popunjeno polje prezivi migrate', () => {
+    const app = loadApp({ seedLocalStorage: vlasnik });
+    const st = JSON.parse(app.evalIn('JSON.stringify({knee:S.knee.length, kg:S.kg.length,'
+      + ' wellness:Object.keys(S.wellness).length, vdotLog:S.vdotLog.length,'
+      + ' geo:!!(S.ui&&S.ui.geo), icu:!!S.icu, vreme:!!S.vreme})'));
+    assert.deepEqual(st, { knee: 1, kg: 1, wellness: 1, vdotLog: 1, geo: true, icu: true, vreme: true });
+  });
+
+  test('nijedna provera koju migrate zove ne sme da bude ispod njega u fajlu', () => {
+    /* Opsti oblik greske, ne samo ovaj jedan simbol. */
+    const src = readRepoFile('app.js');
+    const telo = /function migrate\(o\)\{([\s\S]*?)\n\}/.exec(src);
+    assert.ok(telo, 'migrate() nije nadjen');
+    const migratePoz = src.indexOf('function migrate(o){');
+    const pozvane = [...telo[1].matchAll(/\b(validan[A-Za-z]*|cist[A-Za-z]*|je[A-Z][A-Za-z]*)\(/g)]
+      .map(m => m[1]);
+    for (const ime of new Set(pozvane)) {
+      /* `const X = ...` je u mrtvoj zoni do svoje linije; `function X(){}` nije. */
+      const konst = new RegExp(`^const ${ime}\\b`, 'm').exec(src);
+      if (konst && src.indexOf(konst[0]) > migratePoz)
+        assert.fail(`${ime} je const ISPOD migrate() — pucace pri ucitavanju`);
+      /* i konstante koje ta funkcija cita */
+      const def = new RegExp(`function ${ime}\\(([^)]*)\\)\\{([^}]*)\\}`).exec(src);
+      if (!def) continue;
+      for (const konstIme of new Set([...def[2].matchAll(/\b([A-Z][A-Z0-9_]{2,})\b/g)].map(m => m[1]))) {
+        const dekl = new RegExp(`^const ${konstIme}\\s*=`, 'm').exec(src);
+        if (dekl && src.indexOf(dekl[0]) > migratePoz)
+          assert.fail(`${ime}() cita ${konstIme}, a ${konstIme} je const ISPOD migrate() — mrtva zona`);
+      }
+    }
   });
 });
