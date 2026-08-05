@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='186'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='187'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3197,7 +3197,12 @@ function vezAnalize(root,d){
         try{ data=await resp.json(); }
         catch{
           out.className='ai-out err';
-          out.textContent='Server nije vratio ispravan odgovor (HTTP '+resp.status+'). Najverovatnije api/analyze.js još nije deployovan na Vercel-u — proveri da li je fajl commit-ovan i da je deploy završen.';
+          /* 504 je VREMENSKO ograničenje, ne nedostajući fajl. Ranije je jedna
+             ista poruka pokrivala oba slučaja, pa je čovek na istek vremena
+             dobijao savet da proveri deploy — i tražio grešku tamo gde je nema. */
+          out.textContent = resp.status===504
+            ? 'Analiza je predugo trajala i server je prekinuo vezu (504). Pokušaj ponovo.'
+            : 'Server nije vratio ispravan odgovor (HTTP '+resp.status+'). Ako se ponavlja, prijavi problem iz Podešavanja.';
           return;
         }
         if(!resp.ok){ out.className='ai-out err'; out.textContent='Greška ('+resp.status+'): '+(data.error||'nepoznata')+(data.detail?' — '+data.detail:''); }

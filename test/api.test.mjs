@@ -8,7 +8,7 @@ import { test, describe, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT } from './harness.mjs';
+import { ROOT, readRepoFile } from './harness.mjs';
 
 const ENV = {
   SUPABASE_URL: 'https://x.supabase.co',
@@ -469,5 +469,48 @@ describe('requireUser je prepisan u 7 fajlova — provera ne sme da se razidje',
       assert.match(t, /status: 401, error: 'Nedostaje prijava\.'/, `api/${p}.js ne odbija bez zaglavlja`);
       assert.match(t, /\/auth\/v1\/user/, `api/${p}.js ne proverava token kod Supabase-a`);
     }
+  });
+});
+
+describe('Analiza se sama zaustavi pre Vercelovog noza', () => {
+  /* PRIJAVA: „Server nije vratio ispravan odgovor (HTTP 504)" — i to tek kad su
+     u zahtev usli i podaci po kilometru, koji produze i unos i razmisljanje.
+     Kad Vercel presece funkciju na maxDuration, klijent dobije HTML stranicu
+     umesto naseg JSON-a, pa poruka koju covek vidi vise nije nasa. */
+  const src = readRepoFile('api/analyze.js');
+  const cfg = JSON.parse(readRepoFile('vercel.json'));
+
+  test('rok lanca je ISPOD Vercelovog maxDuration', () => {
+    const rok = /const ROK_MS\s*=\s*(\d+)/.exec(src);
+    assert.ok(rok, 'nema roka za ceo lanac');
+    const maxD = cfg.functions['api/analyze.js'].maxDuration;
+    assert.ok(+rok[1] / 1000 < maxD - 5,
+      `rok ${+rok[1] / 1000} s nije bar 5 s ispod maxDuration ${maxD} s`);
+  });
+
+  test('svaki poziv ka modelu ima svoj prekid', () => {
+    assert.match(src, /signal: AbortSignal\.timeout\(/, 'poziv moze da visi bez ogranicenja');
+    const p = /const POKUSAJ_MS\s*=\s*(\d+)/.exec(src);
+    const r = /const ROK_MS\s*=\s*(\d+)/.exec(src);
+    assert.ok(p && r && +p[1] < +r[1], 'jedan pokusaj sme da pojede ceo rok');
+  });
+
+  test('istek NE pokrece ponovni pokusaj na istom modelu', () => {
+    /* Ponavljanje posle isteka samo pojede ostatak roka. */
+    const m = /const isteklo = [\s\S]*?sameRetry: false, tryFallback: !isteklo/.exec(src);
+    assert.ok(m, 'istek se ne razlikuje od mrezne greske');
+  });
+
+  test('rezerva se ne pokrece kad nema vremena da se zavrsi', () => {
+    assert.match(src, /out\.tryFallback && Date\.now\(\) < doKada - 3000/,
+      'rezervni model se poziva i kad rok samo sto nije istekao');
+  });
+
+  test('klijent 504 ne predstavlja kao nedostajuci fajl', () => {
+    /* Ranije je ista poruka pokrivala i istek i „nije deployovano", pa je covek
+       na istek trazio gresku tamo gde je nema. */
+    const app = readRepoFile('app.js');
+    assert.match(app, /resp\.status===504/, 'istek se ne razlikuje od ostalih gresaka');
+    assert.doesNotMatch(app, /jos nije deployovan na Vercel-u/, 'stara poruka je i dalje tu');
   });
 });
