@@ -269,13 +269,33 @@ Zajedničko pravilo:
   let lapsBlock = '';
   const MAX_ITEMS = 50; /* i najduzi maraton ima ~42 km-splita; 50 je siguran plafon */
   if (Array.isArray(entered.laps) && entered.laps.length) {
-    lapsBlock = '\n\nPODACI PO RADNOM KRUGU (najvažnije za analizu):\n' +
-      entered.laps.slice(0, MAX_ITEMS).map(L =>
-        `Interval ${L.i}${L.distM?` (${L.distM}m)`:''}: tempo ${fmtPace(L.paceSec)}/km` +
+    /* Redni broj je bio `L.i` — polje koje nijedan izvor ne postavlja, pa je u
+       promptu stajalo „Interval undefined (800m)". Broji se iz niza. */
+    const izIcu = entered.lapsIzvor === 'icu';
+    lapsBlock = '\n\nPODACI PO RADNOM KRUGU (najvažnije za analizu)' +
+      (izIcu ? ' — deonice je prepoznao intervals.icu nad izvornim fajlom sa sata, ne procena.' : '.') + '\n' +
+      entered.laps.slice(0, MAX_ITEMS).map((L, i) =>
+        `Rep ${i+1}${L.distM?` (${L.distM} m)`:''}: tempo ${fmtPace(L.paceSec)}/km` +
+        (L.gapSec!=null?`, GAP ${fmtPace(L.gapSec)}/km`:'') +
         (L.avgHr!=null?`, puls ${L.avgHr}`:'') +
+        (L.maxHr!=null?`, maks ${L.maxHr}`:'') +
         (L.cadence!=null?`, kadenca ${L.cadence}`:'') +
-        (L.watts!=null?`, snaga ${L.watts}W`:'')
-      ).join('\n');
+        (L.watts!=null?`, snaga ${L.watts}W`:'') +
+        (L.restSec!=null?`, oporavak posle ${Math.floor(L.restSec/60)}:${String(L.restSec%60).padStart(2,'0')}`:'')
+      ).join('\n') +
+      (izIcu ? '\nGAP je tempo korigovan za nagib. Kad se GAP i tempo poklapaju, teren nije bio faktor.' : '');
+    /* Serija kao celina — model iz nje vidi trend kroz ponavljanja bez da ga
+       sam sabira, a iz pojedinačnih repova i dalje vidi gde je pukao. */
+    if (Array.isArray(entered.grupe) && entered.grupe.length) {
+      lapsBlock += '\n\nSERIJE (grupisana ponavljanja):\n' +
+        entered.grupe.slice(0, 10).map(G =>
+          `${G.oznaka || 'serija'}${G.n?` — ${G.n}×`:''}${G.distM?` ${G.distM} m`:''}` +
+          (G.paceSec!=null?`: prosek ${fmtPace(G.paceSec)}/km`:'') +
+          (G.gapSec!=null?`, GAP ${fmtPace(G.gapSec)}/km`:'') +
+          (G.hr!=null?`, puls ${G.hr}`:'') +
+          (G.razdvajanje!=null?`, razdvajanje ${G.razdvajanje}%`:'')
+        ).join('\n');
+    }
   }
   if (Array.isArray(entered.perKm) && entered.perKm.length) {
     /* Tempo je iz VREMENA U POKRETU. `stopSec` je vreme stajanja na tom
@@ -311,8 +331,24 @@ Zajedničko pravilo:
       return d.length ? `Oporavak tog jutra: ${d.join(', ')}` : null;
     })() : null,
     entered.decoupling ? (entered.decoupling.n!=null
-        ? `Dekuplovanje (Pa:HR, druga polovina naspram prve): ${entered.decoupling.n}%`
-        : `Dekuplovanje nije računato — ${entered.decoupling.razlog}. Ne izvodi zaključak o izdržljivosti iz porasta pulsa.`) : null
+        ? `Dekuplovanje (Pa:HR, druga polovina naspram prve): ${entered.decoupling.n}%` +
+          (entered.decoupling.izvor === 'icu' ? ' (izmerio intervals.icu nad celim fajlom)' : '')
+        : `Dekuplovanje nije računato — ${entered.decoupling.razlog}. Ne izvodi zaključak o izdržljivosti iz porasta pulsa.`) : null,
+    /* Ono što intervals.icu izračuna sam. Ne dupliraju se polja koja već stoje
+       gore (temperatura, maks. puls) — samo ono što Strava putanja nema. */
+    (() => {
+      const I = entered.icu; if (!I || typeof I !== 'object') return null;
+      const d = [];
+      if (I.gapSec != null) d.push(`GAP cele sesije ${fmtPace(I.gapSec)}/km`);
+      if (I.osecaSe != null) d.push(`oseća se kao ${I.osecaSe}°C`);
+      if (I.efikasnost != null) d.push(`faktor efikasnosti ${I.efikasnost}`);
+      if (I.opterecenje != null) d.push(`trenažno opterećenje ${I.opterecenje}`);
+      if (I.intenzitet != null) d.push(`intenzitet ${I.intenzitet}`);
+      if (I.korak != null) d.push(`dužina koraka ${I.korak} cm`);
+      if (Array.isArray(I.zonePuls) && I.zonePuls.some(x => x > 0))
+        d.push('vreme po zonama pulsa (Z1→) u sekundama: ' + I.zonePuls.join('/'));
+      return d.length ? 'Sa intervals.icu: ' + d.join(' · ') : null;
+    })()
   ].filter(Boolean).join('\n');
   const userMsg = `${zoneBlok ? `ZONE PULSA OVOG TRKAČA: ${zoneBlok}\n\n` : ''}PLAN SESIJE: ${cap(session.desc, 500)}
 Tip sesije po planu: ${cap(session.kind, 40) || '—'}

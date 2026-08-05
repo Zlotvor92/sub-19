@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=8, LS_KEY='sub19-v1';
-const APP_VERSION='174'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='175'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2424,7 +2424,11 @@ function plKrug(n){ const h=n%100; if(h>=11&&h<=14)return 'krugova'; const m=n%1
 function aiIzvor(l){
   const k=Array.isArray(l.laps)?l.laps.length:0;
   const km=Array.isArray(l.perKm)?l.perKm.length:0;
-  if(k) return `po krugu · ${k} ${plKrug(k)}`;
+  /* Izvor krugova se IMENUJE: sa intervals.icu su prepoznati nad izvornim
+     fajlom sa sata i nose GAP i puls po repu, sa Strave ih je prepoznala sama
+     aplikacija iz streamova. To nije isti kvalitet podatka i čovek to treba da
+     vidi na kartici, ne da nagađa zašto je analiza negde oštrija. */
+  if(k) return `po krugu · ${k} ${plKrug(k)}` + (l.lapsIzvor==='icu'?' · intervals.icu':'');
   if(km) return `po kilometru · ${km} km`;
   return 'samo prosek cele sesije';
 }
@@ -2792,6 +2796,14 @@ function vezAnalize(root,d){
              trening, a bez ovoga model to ne moze da zna. */
           oporavak: oporavakZa(l.runDate||l.ts||d.date),
           laps: Array.isArray(l.laps)&&l.laps.length?l.laps:null,
+          lapsIzvor: l.lapsIzvor||null,
+          /* „6×800" kao jedna stavka — model iz toga vidi seriju kao celinu,
+             pored pojedinačnih repova. Samo sa intervals.icu. */
+          grupe: Array.isArray(l.icuGrupe)&&l.icuGrupe.length?l.icuGrupe:null,
+          /* Već izračunato na intervals.icu: GAP, razdvajanje, efikasnost,
+             opterećenje, vreme po zonama, „oseća se kao". Model to ne mora da
+             procenjuje iz sirovih brojeva. */
+          icu: l.icu||null,
           perKm: Array.isArray(l.perKm)&&l.perKm.length?l.perKm:null
         }
       };
@@ -7739,6 +7751,164 @@ async function icuSync(danaUnazad){
     return {ok:true, n:(j.dani||[]).length};
   }catch(e){ return {ok:false, error:'Nema veze sa serverom.'}; }
 }
+
+/* ============================================================
+   TRENINZI SA intervals.icu — PRIMARAN IZVOR KAD JE POVEZAN
+
+   Strava daje sirove streamove, pa aplikacija sama traži radne deonice
+   (`detectWorkSegments`). To radi, ali je sopstvena heuristika. intervals.icu
+   je te deonice VEĆ prepoznao, i to nad izvornim fajlom sa sata — po repu daje
+   distancu, vreme, puls (prosečan/maks/min), kadencu, GAP i razdvajanje, a
+   posebno i oporavke između repova. To je tačno ono što je analizi nedostajalo
+   kad je pisala „samo prosek cele sesije".
+
+   REDOSLED IZVORA: intervals.icu ako je povezan, inače Strava. Strava NIJE
+   ukinuta ni pogoršana — puno je razumnih ljudi koji intervals.icu nemaju i
+   neće da ga prave, i njima sve radi kao pre.
+   ============================================================ */
+/* Da li ova veza SME da čita treninge. Stari OAuth token je izdat kad je
+   aplikacija tražila samo wellness, pa nema opseg za treninge; API ključ ima
+   pun pristup, a kod njega `scope` uopšte i ne postoji — zato se odsutan
+   `scope` tumači kao „sme", a prisutan bez ACTIVITY kao „ne sme". */
+function icuImaTreninge(){
+  if(!icuPovezan()) return false;
+  const s=S.icu.scope;
+  if(typeof s!=='string'||!s) return true;
+  return /ACTIVITY/i.test(s);
+}
+async function icuApi(telo){
+  try{
+    const r=await fetch('/api/activities',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
+      body:JSON.stringify({athleteId:S.icu.athleteId, ...icuVeza(), ...telo})});
+    let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
+    if(!r.ok) return {ok:false, error:j.error||('Greška '+r.status), status:r.status};
+    return {ok:true, ...j};
+  }catch(e){ return {ok:false, error:'Nema veze sa serverom.'}; }
+}
+/* Krugovi sa icu-a u oblik koji aplikacija već koristi (`l.laps` iz
+   detectWorkSegments): {distM, paceSec, avgHr, cadence, watts}. Dodaje se ono
+   što Strava putanja NEMA — GAP, maks/min puls, razdvajanje po repu i trajanje
+   oporavka KOJI SLEDI. Oporavci se ne vode kao krugovi (inače bi „6×800"
+   ispalo 11 krugova i prosečan tempo bi bio besmislen), nego se lepe na rep
+   ispred sebe, gde i pripadaju po značenju. */
+function icuKrugoviULaps(krugovi){
+  if(!Array.isArray(krugovi)) return [];
+  const out=[];
+  krugovi.forEach(k=>{
+    if(!k) return;
+    if(k.tip==='oporavak'){
+      const zadnji=out[out.length-1];
+      if(zadnji && k.sec>0){ zadnji.restSec=k.sec; if(k.paceSec) zadnji.restPaceSec=k.paceSec; }
+      return;
+    }
+    if(!(k.distM>0)||!(k.paceSec>0)) return;
+    const o={distM:k.distM, paceSec:k.paceSec, avgHr:k.hr??null, cadence:k.kadenca??null, watts:k.watts??null};
+    if(k.gapSec!=null) o.gapSec=k.gapSec;
+    if(k.maxHr!=null) o.maxHr=k.maxHr;
+    if(k.minHr!=null) o.minHr=k.minHr;
+    if(k.razdvajanje!=null) o.razdvajanje=k.razdvajanje;
+    if(k.oznaka) o.oznaka=String(k.oznaka).slice(0,40);
+    out.push(o);
+  });
+  return out;
+}
+/* Prosečan tempo RADNOG dela iz krugova — isti račun kao kod Strave
+   (ukupno vreme / ukupna distanca, ne prosek prosekâ). */
+function icuRadniTempo(laps){
+  if(!Array.isArray(laps)||!laps.length) return null;
+  const d=laps.reduce((s,x)=>s+(x.distM||0),0);
+  const t=laps.reduce((s,x)=>s+(x.paceSec*(x.distM||0)/1000),0);
+  return (d>0&&t>0)?Math.round(t/(d/1000)):null;
+}
+async function icuSyncTreninzi(danaUnazad, manual){
+  if(!icuPovezan()) return {ok:false, error:'intervals.icu nije povezan.'};
+  if(!icuImaTreninge()) return {ok:false, error:'Veza sa intervals.icu nema dozvolu za treninge. Otkači pa ponovo poveži — dobićeš i treninge, ne samo jutarnja merenja.'};
+  const do_=new Date(), od=new Date(do_.getTime()-(danaUnazad||45)*864e5);
+  const ds=d=>d.toISOString().slice(0,10);
+  /* Nikad pre početka plana — pre toga ni nema dana na koje bi se zakačilo. */
+  const oldest=ds(od)<CUR_START?CUR_START:ds(od);
+
+  const lista=await icuApi({oldest, newest:ds(do_)});
+  if(!lista.ok) return lista;
+  const treninzi=Array.isArray(lista.treninzi)?lista.treninzi:[];
+  if(!treninzi.length){ S.icu.trSync=Date.now(); save(); return {ok:true, n:0, detalja:0}; }
+
+  /* Isti oblik kao Strava (`distance` u metrima), da autoRealign i pickClosest
+     rade nepromenjeni — jedan pomeraj plana, jedno pravilo, oba izvora. */
+  const byDate={};
+  treninzi.forEach(a=>{ if(a&&a.datum&&a.km>0)(byDate[a.datum]=byDate[a.datum]||[]).push({...a, distance:a.km*1000}); });
+  autoRealign(byDate);
+
+  let n=0; const trazi=[];
+  for(const date of Object.keys(byDate)){
+    const d=BY_DATE[date];
+    if(!d||d.rest||d.km==null) continue;
+    const a=pickClosest(byDate[date], d.km);
+    const l=S.log[d.id]||(S.log[d.id]={});
+    l.runDate=date;
+    if(!l.lock){                                   /* ručna korekcija ima trajnu prednost */
+      l.status='done';
+      l.km=a.km; if(a.sec) l.sec=a.sec;
+      if(a.hr!=null) l.hr=a.hr;
+      l.ts=date; l.src='icu'; l.icuId=a.id;
+      if(a.naziv) l.stravaName=String(a.naziv).slice(0,120);
+      if(a.opis)  l.stravaDesc=String(a.opis).slice(0,400);
+      if(a.maxHr!=null) l.maxHr=a.maxHr;
+      if(a.uspon!=null) l.elevGain=a.uspon;
+      if(a.kadenca!=null) l.cadence=a.kadenca;
+      if(a.temp!=null) l.temp=a.temp;
+      /* Ono što Strava putanja uopšte nema, a icu izračuna sam. */
+      const ic={};
+      ['gapSec','razdvajanje','efikasnost','opterecenje','intenzitet','trimp','korak','osecaSe','zonePuls','zoneTempo']
+        .forEach(k=>{ if(a[k]!=null) ic[k]=a[k]; });
+      if(Object.keys(ic).length) l.icu=ic; else delete l.icu;
+      /* icu-ovo razdvajanje je merenje nad celim fajlom — bolje od naše
+         procene po kilometru, pa je preuzima. */
+      /* Isti oblik koji već čitaju `metrikaSata` i `trendSummary`: {n} je
+         procenat pada efikasnosti. icu koristi istu konvenciju (pozitivno =
+         puls je odleteo pri istom tempu), pa se broj preuzima kakav jeste. */
+      if(a.razdvajanje!=null) l.decoupling={n:a.razdvajanje, izvor:'icu'};
+      syncSide(d);
+      n++;
+    }
+    /* Detalji se traže za KVALITETNE dane — tamo je razlika između „6×800:
+       3:52/3:54/…" i „prosek 3:55" i cela poenta. Traži se i kad tempo već
+       postoji: prikupljanje detalja nema veze sa izvođenjem tempa. */
+    /* Ne traži se ponovo ni kad je icu već rekao da strukture NEMA — inače bi
+       svako kontinuirano trčanje trošilo poziv pri svakoj sinhronizaciji. */
+    if((d.tag==='int'||d.tag==='tempo') && a.id && !String(l.lapsIzvor||'').startsWith('icu'))
+      trazi.push({id:a.id, dayId:d.id, d});
+  }
+
+  let detalja=0;
+  for(let i=0;i<trazi.length && i<24;i+=12){
+    const grupa=trazi.slice(i,i+12);
+    const r=await icuApi({detalji:grupa.map(x=>x.id)});
+    if(!r.ok){ if(manual) return r; break; }
+    grupa.forEach(x=>{
+      const det=(r.detalji||{})[x.id];
+      if(!det||det.greska) return;
+      const laps=icuKrugoviULaps(det.krugovi);
+      const l=S.log[x.dayId]; if(!l) return;
+      if(laps.length){
+        l.laps=laps; l.lapsIzvor='icu'; detalja++;
+        if(Array.isArray(det.grupe)&&det.grupe.length) l.icuGrupe=det.grupe; else delete l.icuGrupe;
+        const rowId=predRowFor(x.d);
+        const t=icuRadniTempo(laps);
+        if(rowId&&!S.predLock[rowId]&&S.pred[rowId]==null&&t) upisiAutoTempo(rowId,t,l.runDate||x.d.date,x.d);
+      } else {
+        /* icu nije našao strukturu — kontinuirano trčanje. To je odgovor, ne
+           greška; upisuje se da se ne bi tražilo iznova pri svakoj sinhronizaciji. */
+        l.lapsIzvor='icu-bez-strukture';
+      }
+    });
+  }
+  S.icu.trSync=Date.now(); save();
+  fixVdotDates();
+  return {ok:true, n, detalja};
+}
+
 /* ============================================================
    POVEZIVANJE SA intervals.icu PREKO OAuth-a
 
@@ -8516,8 +8686,12 @@ function openSettings(){
         stIcu),
       stIcu
         ? `<div class="set-st">ID <b>${esc(S.icu.athleteId)}</b>${S.icu.token?' · odobreno na intervals.icu':' · ručni ključ'}<br>poslednje povlačenje: ${S.icu.lastSync?esc(new Date(S.icu.lastSync).toLocaleString('sr-RS')):'nikad'}</div>
-           <div class="btnrow"><button class="btn" id="icu-sync">Povuci oporavak</button><button class="btn ghost sm" id="icu-off">Otkači</button></div>
-           <details class="help"><summary>Šta se povlači</summary><p>HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</p></details>`
+           <div class="btnrow"><button class="btn" id="icu-sync">Povuci oporavak</button><button class="btn ghost sm" id="icu-tren">Povuci treninge</button></div>
+           <div class="btnrow"><button class="btn ghost sm" id="icu-off">Otkači</button></div>
+           ${icuImaTreninge()
+             ? `<div class="set-st">Treninzi se povlače <b>sa intervals.icu</b>${S.strava?' (Strava ostaje kao rezerva)':''}.${S.icu.trSync?' Poslednji put: '+esc(new Date(S.icu.trSync).toLocaleString('sr-RS')):''}</div>`
+             : `<div class="set-st" style="color:var(--amber)">Ova veza je napravljena pre nego što je aplikacija umela da čita treninge, pa ima dozvolu samo za jutarnja merenja. <b>Otkači pa ponovo poveži</b> — dobićeš i krugove intervala, koje Strava ne daje ovako tačno.</div>`}
+           <details class="help"><summary>Šta se povlači</summary><p>HRV, puls u miru, san i trenažno opterećenje. Garmin ih šalje na intervals.icu, odakle ih čitamo — Garminov sopstveni API traži partnerski program.</p><p><b>I sami treninzi.</b> intervals.icu je radne deonice već prepoznao nad izvornim fajlom sa sata, pa analiza dobija svaki interval posebno — tempo, GAP (tempo korigovan za nagib), puls i oporavak između repova — umesto proseka cele sesije. Ako intervals.icu nije povezan, sve to i dalje radi preko Strave, samo grublje.</p></details>`
         : `<div class="btnrow"><button class="btn" id="icu-oauth">Poveži intervals.icu</button></div>
            <details class="help"><summary>Šta se povezivanjem dobija</summary><p>HRV, puls u miru i san koje Garmin već šalje na intervals.icu, i slanje planiranih treninga na sat. Odobravaš na njihovoj strani — nikakav ključ ne prepisuješ.</p></details>
            <details class="help"><summary>Ako piše „Invalid redirect_uri"</summary>
@@ -8716,9 +8890,17 @@ function openSettings(){
     if(r.ok) setTimeout(osveziPodesavanja,900);
     else setTimeout(()=>{ b.disabled=false; b.textContent='Povuci sada'; },1500);
   };
+  if($('#icu-tren')) $('#icu-tren').onclick=async e=>{
+    const b=e.target; b.disabled=true; b.textContent='Povlačim…';
+    const r=await icuSyncTreninzi(60, true);
+    b.textContent=r.ok?('Trčanja '+r.n+' · krugovi '+r.detalja+' ✓'):'Nije uspelo';
+    if(!r.ok&&r.error) setTimeout(()=>alert(r.error),100);
+    if(r.ok){ renderHeader(); PAGES[ACTIVE](); setTimeout(osveziPodesavanja,900); }
+    else setTimeout(()=>{ b.disabled=false; b.textContent='Povuci treninge'; },1500);
+  };
   const so=$('#st-on'),ss=$('#st-sync'),sf=$('#st-off');
   if(so)so.onclick=stravaConnect;
-  if(ss)ss.onclick=()=>{ss.disabled=true;ss.textContent='Sinhronizujem…';stravaSync(true).finally(()=>closeSheet());};
+  if(ss)ss.onclick=()=>{ss.disabled=true;ss.textContent='Sinhronizujem…';sinhronizujTreninge(true).finally(()=>closeSheet());};
   if(sf)sf.onclick=stravaDisconnect;
   const pg=$('#pl-gen'),pr=$('#pl-revert'),pn=$('#pl-new');
   if(pg)pg.onclick=openWizard;
@@ -9084,7 +9266,20 @@ async function stravaSync(manual){
       }
       if(d.tag==='int'||d.tag==='tempo'){ /* bez QS uslova — dan izmenjen u kvalitet nema QS unos, a detectWorkSegments ga i ne traži */
         const rowId=predRowFor(d);
-        if(rowId&&!S.predLock[rowId]&&S.pred[rowId]==null){ /* povuci samo jednom — štednja API kvote */
+        /* ŠTEDNJA KVOTE JE BILA VEZANA ZA POGREŠNU STVAR.
+           Uslov je ranije glasio `S.pred[rowId]==null`, pa se cela grana —
+           uključujući PRIKUPLJANJE DETALJA (krugovi / po-km presek) — preskakala
+           čim tempo postoji. Ko je tempo uneo RUČNO pre sinhronizacije nikad
+           nije dobio krugove, i AI analiza mu je zauvek pisala „samo prosek cele
+           sesije" (prijavljeno sa snimkom: 6×800 na 3:55, bez ijednog kruga).
+           Izvođenje tempa i prikupljanje detalja su dve različite stvari:
+           tempo se piše samo ako ga još nema (dole), a detalji se povlače dok
+           god ih nema. I dalje JEDNOM po treningu — `l.laps`/`l.perKm` čuvaju
+           rezultat, pa ponovna sinhronizacija ne troši ništa. */
+        const imaDetalje = !!(S.log[d.id] && ((Array.isArray(S.log[d.id].laps)&&S.log[d.id].laps.length)
+                                            || (Array.isArray(S.log[d.id].perKm)&&S.log[d.id].perKm.length)));
+        const smeTempo = rowId && !S.predLock[rowId] && S.pred[rowId]==null;
+        if(rowId && !imaDetalje){
           try{
             /* PRIMARNO: streamovi + prepoznavanje radnih segmenata po brzini.
                Nezavisno od Stravinih lapova (koji nepouzdano vraćaju čas
@@ -9095,8 +9290,8 @@ async function stravaSync(manual){
               const totT=segs.reduce((s,x)=>s+x.paceSec*x.distM/1000,0);
               const totD=segs.reduce((s,x)=>s+x.distM,0);
               const t=Math.round(totT/(totD/1000));
-              if(t){ if(upisiAutoTempo(rowId,t,date,d))props++; }
-              if(S.log[d.id]) S.log[d.id].laps=segs;
+              if(t && smeTempo){ if(upisiAutoTempo(rowId,t,date,d))props++; }
+              if(S.log[d.id]){ S.log[d.id].laps=segs; S.log[d.id].lapsIzvor='strava'; }
             } else {
               /* FALLBACK 1: po-km presek iz istih streamova (kontinuiran kvalitetni
                  napor koji segmentacija ne razdvaja) */
@@ -9107,7 +9302,7 @@ async function stravaSync(manual){
               /* FALLBACK 2 za VDOT tempo: stari put preko lapova — traži QS spec,
                  koji izmenjeni dan nema, pa se preskače */
               const spec=qsFor(d.id);
-              if(spec)try{
+              if(spec && smeTempo)try{
                 const laps=await stApi('/activities/'+a.id+'/laps');
                 const t=workLapsTempo(laps,spec);
                 if(t){ if(upisiAutoTempo(rowId,t,date,d))props++; }
@@ -9143,6 +9338,30 @@ async function stravaSync(manual){
   }catch(e){
     if(manual)alert('Sync nije uspeo: '+e.message);
   }
+}
+/* ============================================================
+   REDOSLED IZVORA TRENINGA
+
+   intervals.icu ako je povezan i sme da čita treninge; inače Strava. Ne oba —
+   isti trening iz dva izvora bi se prepisivao naizmenično, a `l.src` bi zavisio
+   od toga ko je poslednji stigao.
+
+   Kad icu otkaže (istekla dozvola, njihov server, mreža), pada se na Stravu
+   ako postoji: bolje sinhronizovan trening iz slabijeg izvora nego nijedan.
+   Poruka o grešci se u tom slučaju ne guta — vraća se pozivaocu. */
+async function sinhronizujTreninge(manual){
+  if(icuImaTreninge()){
+    const r=await icuSyncTreninzi(45, manual);
+    if(r.ok){
+      renderHeader(); PAGES[ACTIVE]();
+      if(manual) alert('Sinhronizacija sa intervals.icu gotova.\nAžurirano trčanja: '+r.n+
+        '\nTreninga sa krugovima: '+r.detalja);
+      return r;
+    }
+    if(!S.strava){ if(manual) alert('intervals.icu: '+r.error); return r; }
+    if(manual) alert('intervals.icu nije odgovorio ('+r.error+').\nPokušavam preko Strave…');
+  }
+  return stravaSync(manual);
 }
 async function handleOAuthReturn(){
   const q=new URLSearchParams(location.search);
@@ -9691,7 +9910,13 @@ setPage('danas');
 prikaziUcitavanjePalo();     /* ako zapis nije procitan — pre nego sto covek pomisli da je sve nestalo */
 handleOAuthReturn();
 sbInit();
-if(S.strava&&navigator.onLine&&Date.now()-(S.strava.lastSync||0)>3600000)stravaSync(false);
+/* Automatsko povlačenje treninga na sat vremena. Uslov gleda izvor koji će
+   STVARNO biti korišćen — ranije je stajalo samo `S.strava`, pa onaj ko ima
+   intervals.icu a nema Stravu nikad ne bi dobio automatsku sinhronizaciju. */
+if(navigator.onLine){
+  const zadnja = icuImaTreninge() ? ((S.icu&&S.icu.trSync)||0) : ((S.strava&&S.strava.lastSync)||0);
+  if((icuImaTreninge()||S.strava) && Date.now()-zadnja>3600000) sinhronizujTreninge(false);
+}
 icuAutoSync();
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
   let refreshing=false;

@@ -21,7 +21,12 @@
    - ICU_CLIENT_ID, ICU_CLIENT_SECRET   (iz intervals.icu -> Settings)
    - SUPABASE_URL, SUPABASE_ANON_KEY    (isti kao za /api/analyze) */
 
-const SCOPE = 'WELLNESS:READ,CALENDAR:WRITE,SETTINGS:WRITE';
+/* ACTIVITY:READ je dodat da bi intervals.icu mogao da bude PRIMARAN izvor
+   treninga (v. /api/activities.js). Ko je vec povezan, ima token BEZ tog
+   opsega — njegovi pozivi ka treninzima vratice 403, sto /api/activities
+   prevodi u poruku „otkaci pa ponovo povezi". Wellness mu i dalje radi, pa
+   ponovno povezivanje nije hitno nego dobitak. */
+const SCOPE = 'ACTIVITY:READ,WELLNESS:READ,CALENDAR:WRITE,SETTINGS:WRITE';
 
 async function requireUser(req) {
   const url  = process.env.SUPABASE_URL;

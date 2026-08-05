@@ -176,8 +176,15 @@ kako se forma menjala kroz njih.</p>
       (dekapling), i poredi to sa onim što je trening <i>trebalo</i> da bude.</li>
   <li><b>📈 Objasni trend</b> — u tabu Trka, preko cele istorije umesto jednog dana.</li>
 </ul>
-<p>Ako je Strava povezana, analiza koristi i podatke po kilometru i po deonici, pa je
-osetno konkretnija. Ograničenje je <b>30 analiza dnevno</b>.</p>
+<p>Koliko će analiza biti konkretna zavisi od toga <b>odakle stižu podaci o trčanju</b>.
+Na samoj kartici piše šta je analiza imala — „po krugu", „po kilometru" ili „samo prosek
+cele sesije". Ograničenje je <b>30 analiza dnevno</b>.</p>
+<table>
+  <tr><th>Izvor</th><th>Šta analiza dobija</th></tr>
+  <tr><td><b>intervals.icu</b></td><td>svaki interval posebno — tempo, GAP, puls (prosečan i najviši), kadenca i <b>trajanje oporavka između repova</b>; uz to serija kao celina i već izračunato razdvajanje, efikasnost i vreme po zonama</td></tr>
+  <tr><td>Strava</td><td>deonice koje aplikacija sama prepozna iz streamova, ili presek po kilometru</td></tr>
+  <tr><td>ništa povezano</td><td>samo prosek cele sesije — iz njega se ne može reći ni da li si krenuo prebrzo</td></tr>
+</table>
 <div class="box warn">
   <p>AI je pomoćnik, ne trener. Ako ti kaže nešto što se kosi sa onim što telo govori —
   telo je u pravu.</p>
@@ -186,6 +193,11 @@ osetno konkretnija. Ograničenje je <b>30 analiza dnevno</b>.</p>
 <h2 id="strava">7. Strava</h2>
 <p>Podešavanja → Strava → <b>Poveži Stravu</b>. Posle toga <b>Uvezi trčanja</b> sam popunjava
 distancu, vreme i puls, a tempo intervala čita iz lapova.</p>
+<div class="box tip">
+  <p><b>Redosled izvora:</b> ako je intervals.icu povezan, trčanja se povlače odatle jer su
+  tamo intervali već prepoznati nad izvornim fajlom sa sata. Ako nije — sve ide preko Strave,
+  kao i do sada. Ne moraš da praviš nalog na intervals.icu da bi aplikacija radila.</p>
+</div>
 <p>Pravila koja vredi znati:</p>
 <ul>
   <li>Strava ima prednost nad ručnim unosom.</li>
