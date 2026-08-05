@@ -690,6 +690,26 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .seg button.on.c-skip{background:var(--amber);color:var(--ink)}
 
 /* check animacija */
+/* ---------- PLUTAJUĆE TRAKE (sukob sinhronizacije, oštećen zapis) ----------
+   MORAJU imati SVOJU neprozirnu podlogu. Pisane su dok je `--card2` bio pun
+   `#1D1D26`; staklenim redizajnom je postao `rgba(255,255,255,.07)` — dakle
+   PROVIDNA bela — a rezervna vrednost u `var(--card2,#1D1D26)` se ne koristi
+   jer promenljiva postoji. Traka je time postala prozor kroz koji se vidi
+   kartica ispod: tekst trake i dugmad kartice jedno preko drugog, ništa
+   čitljivo (prijavljeno snimkom). Staklo radi samo kad zamuti ono ispod sebe —
+   ovde je i zamućenje i dovoljno tamna podloga, jer traka traži odluku i mora
+   da se pročita iz prvog pokušaja. */
+.traka{position:fixed;left:12px;right:12px;bottom:calc(var(--sab) + 84px);z-index:210;
+  background:rgba(22,20,48,.96);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border:1px solid var(--line);border-radius:18px;padding:15px 16px;
+  box-shadow:var(--hl),0 16px 38px rgba(0,0,0,.55)}
+.traka.upozorenje{border-color:var(--amber)}
+.traka.greska{border-color:var(--red)}
+.traka b{display:block;font-size:.92rem;font-weight:800;margin-bottom:5px}
+.traka p{margin:0;font-size:.82rem;color:var(--txt2);line-height:1.5}
+.traka .traka-n{font-size:.72rem;color:var(--txt3);margin-top:9px;line-height:1.45}
+.traka .btnrow{margin:12px 0 0}
 .done-pop{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .done-pop svg{width:120px;height:120px;animation:pop .55s cubic-bezier(.2,1.6,.4,1) both}
 .done-pop circle{fill:var(--green)}

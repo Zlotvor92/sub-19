@@ -7,7 +7,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp, readClientSource } from './harness.mjs';
+import { loadApp, readClientSource, readRepoFile } from './harness.mjs';
 
 /* Stanje sa stvarnim unosima. ID-jevi NAMERNO nisu iz ugrađenog seeda
    (n1d1, k1…) — inače ih uskladiVlasnickePodatke() ukloni kao tuđe, pa bi
@@ -240,5 +240,64 @@ describe('Datumi iz oštećenog zapisa', () => {
     assert.doesNotThrow(() => { html = app.call('chartTempo'); }, 'chartTempo je bacio na numeričkom ts');
     assert.ok(html && html.includes('<svg'), 'grafikon nije iscrtan');
     assert.doesNotMatch(String(html), /NaN/, 'u grafikonu se pojavio NaN');
+  });
+});
+
+/* TRAKA SUKOBA SINHRONIZACIJE — IZGLED I OKIDAČ.
+
+   Prijavljeno snimkom: traka „Podaci se razlikuju" i dugmad kartice dana jedno
+   preko drugog, ništa čitljivo — i to na JEDNOM uređaju, gde sukoba nema. */
+describe('Traka sukoba se vidi i ne iskače bez razloga', () => {
+
+  test('noviji zapis sa ISTOG uređaja nije sukob', () => {
+    /* `sbPush()` se poziva i kad app odlazi u pozadinu. Zahtev ume da stigne do
+       servera dok odgovor više nema kome da se vrati (sistem je aplikaciju
+       zamrznuo), pa `SB.seenAt` ostane star. Pri sledećem otvaranju je server
+       noviji od viđenog — a to je NAŠ push, ne tuđi. */
+    const a = loadApp();
+    assert.equal(a.call('sbDecide', '2026-08-05T10:00:00Z', '2026-08-05T12:00:00Z', 'd1', 'd1'), 'ok');
+  });
+
+  test('tuđi noviji zapis i dalje pita — zaštita se ne sme izgubiti', () => {
+    const a = loadApp();
+    assert.equal(a.call('sbDecide', '2026-08-05T10:00:00Z', '2026-08-05T12:00:00Z', 'd2', 'd1'), 'ask');
+    /* Bez podatka o uređaju se ide na bezbednu stranu. */
+    assert.equal(a.call('sbDecide', '2026-08-05T10:00:00Z', '2026-08-05T12:00:00Z', null, 'd1'), 'ask');
+    assert.equal(a.call('sbDecide', '2026-08-05T10:00:00Z', '2026-08-05T12:00:00Z', 'd2', null), 'ask');
+  });
+
+  test('ostale grane odluke su nepromenjene', () => {
+    const a = loadApp();
+    assert.equal(a.call('sbDecide', null, '2026-08-05T10:00:00Z', 'd1', 'd1'), 'ask');
+    assert.equal(a.call('sbDecide', '2026-08-05T10:00:00Z', null, 'd1', 'd1'), 'push');
+    assert.equal(a.call('sbDecide', '2026-08-05T10:00:00Z', '2026-08-05T10:00:00Z', 'd1', 'd1'), 'ok');
+    assert.equal(a.call('sbDecide', '2026-08-05T12:00:00Z', '2026-08-05T10:00:00Z', 'd2', 'd1'), 'push');
+  });
+
+  test('upit o stanju servera nosi i uređaj — inače se odluka ne može doneti', () => {
+    const izvor = readRepoFile('app.js');
+    assert.match(izvor, /select=updated_at,device_id/, 'sbRemoteAt ne traži device_id');
+  });
+
+  test('traka ima SVOJU podlogu, ne prozirni token', () => {
+    /* Pisana je dok je `--card2` bio pun `#1D1D26`; staklenim redizajnom je
+       postao `rgba(255,255,255,.07)`, a rezervna vrednost u `var(--card2,…)`
+       se ne koristi jer promenljiva postoji — traka je postala prozor. */
+    const app = readRepoFile('app.js');
+    const html = readRepoFile('index.html');
+    /* Provera je uska na SAME TRAKE: `--card2` je sasvim u redu kao podloga
+       polja unutar lista, koji već ima svoju. Problem je bio isključivo to što
+       je plutajuća traka nad sadržajem uzimala providnu podlogu. */
+    for (const fn of ['prikaziSukobSync', 'trakaUpozorenja']) {
+      const m = new RegExp('function ' + fn + '\\([^)]*\\)\\{([\\s\\S]*?)\\n\\}').exec(app);
+      assert.ok(m, 'nema ' + fn);
+      assert.doesNotMatch(m[1], /background\s*:/,
+        fn + ' opet postavlja podlogu inline — izgled trake pripada CSS-u');
+    }
+    const m = /\.traka\{([\s\S]*?)\}/.exec(html);
+    assert.ok(m, 'nema klase .traka');
+    const alfa = parseFloat((/background:rgba\([^)]*?,\s*([\d.]+)\)/.exec(m[1]) || [])[1] || '0');
+    assert.ok(alfa >= 0.9, `podloga trake je providna (alfa ${alfa}) — sadržaj ispod se probija`);
+    assert.match(m[1], /backdrop-filter:var\(--blur\)/, 'nema zamućenja ispod trake');
   });
 });

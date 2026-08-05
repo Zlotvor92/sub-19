@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=8, LS_KEY='sub19-v1';
-const APP_VERSION='177'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='178'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9588,11 +9588,28 @@ function sbPayload(state){
 }
 /* Odluka pri pokretanju: 'push' (server prazan) - 'ok' (isti) - 'ask' (server
    ima izmene koje nismo videli — PITAJ, ne gazi tiho). */
-function sbDecide(seenAt, remoteAt){
+/* NOVIJI ZAPIS SA ISTOG UREĐAJA NIJE SUKOB — to je naš sopstveni push koji
+   nismo stigli da zabeležimo.
+
+   `sbPush()` se poziva i na `visibilitychange` kad app odlazi u pozadinu. Na
+   telefonu se dešava da zahtev stigne DO SERVERA, a odgovor nikad ne dođe do
+   nas (sistem je aplikaciju već zamrznuo ili ubio) — pa `SB.seenAt` ostane na
+   starom. Pri sledećem otvaranju server JESTE noviji od onoga što smo poslednji
+   put videli, i traka je pitala „na drugom uređaju postoje noviji podaci" iako
+   drugog uređaja nema. Prijavljeno sa snimka, na jedinom uređaju.
+
+   Red na serveru nosi `device_id` onoga ko ga je poslednji upisao, pa se ta dva
+   slučaja razlikuju pouzdano. Zaštita od TUĐEG novijeg zapisa ostaje netaknuta:
+   pita se i dalje, samo ne za sopstveni. */
+function sbDecide(seenAt, remoteAt, remoteUredjaj, mojUredjaj){
   if(!remoteAt) return 'push';
   if(!seenAt) return 'ask';
   if(remoteAt===seenAt) return 'ok';
-  return remoteAt>seenAt ? 'ask' : 'push';
+  if(remoteAt>seenAt){
+    if(remoteUredjaj && mojUredjaj && remoteUredjaj===mojUredjaj) return 'ok';
+    return 'ask';
+  }
+  return 'push';
 }
 /* Google vraca tokene u hash-u URL-a (#access_token=...). Strava koristi
    ?code= — razliciti mehanizmi, ne sudaraju se. */
@@ -9652,13 +9669,16 @@ function sbLogout(){
   sbShowGate('');   /* nalog je obavezan — nazad na kapiju */
 }
 
-/* Vreme poslednje izmene na serveru — jeftin upit, samo jedna kolona. */
+/* Vreme poslednje izmene na serveru I UREĐAJ koji ju je napravio — jeftin upit,
+   dve kolone. Uređaj je potreban da bi se sopstveni push razlikovao od tuđeg
+   (v. sbDecide). */
 async function sbRemoteAt(){
   if(!await sbEnsure()) return undefined;
-  const r=await fetch(SB_URL+'/rest/v1/user_state?select=updated_at&user_id=eq.'+SB.userId,{headers:sbHead()});
+  const r=await fetch(SB_URL+'/rest/v1/user_state?select=updated_at,device_id&user_id=eq.'+SB.userId,{headers:sbHead()});
   if(!r.ok) return undefined;
   const j=await r.json();
-  return (j&&j[0]) ? j[0].updated_at : null;   /* null = red ne postoji */
+  if(!j||!j[0]) return null;                   /* null = red ne postoji */
+  return { at:j[0].updated_at, uredjaj:j[0].device_id||null };
 }
 
 async function sbPush(){
@@ -9819,10 +9839,11 @@ async function sbInit(){
   if(h){ renderHeader(); PAGES[ACTIVE](); }
   /* tek sada se pouzdano zna CIJI je ovo nalog, pa i da li ima svoj plan */
   if(moraSvojPlan()) openWizard();
-  let remoteAt;
-  try{ remoteAt=await sbRemoteAt(); }catch(e){ return; }
-  if(remoteAt===undefined) return;                    /* nema signala — radi lokalno */
-  const d=sbDecide(SB.seenAt, remoteAt);
+  let daljinski;
+  try{ daljinski=await sbRemoteAt(); }catch(e){ return; }
+  if(daljinski===undefined) return;                   /* nema signala — radi lokalno */
+  const remoteAt=daljinski?daljinski.at:null;
+  const d=sbDecide(SB.seenAt, remoteAt, daljinski?daljinski.uredjaj:null, SB.deviceId);
   /* 'ok' NE znaci "nema sta da se radi" — znaci samo da server nije NOVIJI
      od onoga sto smo poslednji put videli. Ali lokalno je moglo doci do
      izmene POSLE poslednjeg uspesnog push-a koja nikad nije stigla na server
@@ -9849,18 +9870,14 @@ function prikaziSukobSync(remoteAt){
   const kada=new Date(remoteAt).toLocaleString('sr-RS');
   const b=document.createElement('div');
   b.id='sync-sukob';
-  b.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 84px);'+
-    'z-index:210;background:var(--card2,#1D1D26);border:1px solid var(--amber,#FFB020);border-radius:14px;'+
-    'padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.45)';
-  b.innerHTML=`<div style="font-weight:800;font-size:.9rem;margin-bottom:4px">Podaci se razlikuju</div>
-    <div style="font-size:.8rem;color:var(--txt2,#9C9CA8);line-height:1.5">
-      Na drugom uređaju postoje noviji podaci (${esc(kada)}). Dok ne izabereš, ništa se ne menja.</div>
-    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-      <button id="sy-pull" class="btn" style="flex:1;min-width:130px">Uzmi sa servera</button>
-      <button id="sy-push" class="btn ghost" style="flex:1;min-width:130px">Zadrži sa telefona</button>
+  b.className='traka upozorenje';
+  b.innerHTML=`<b>Podaci se razlikuju</b>
+    <p>Na drugom uređaju postoje noviji podaci (${esc(kada)}). Dok ne izabereš, ništa se ne menja.</p>
+    <div class="btnrow">
+      <button id="sy-pull" class="btn">Uzmi sa servera</button>
+      <button id="sy-push" class="btn ghost">Zadrži sa telefona</button>
     </div>
-    <div style="font-size:.72rem;color:var(--txt3,#7A7A86);margin-top:8px">
-      „Uzmi sa servera" prepisuje izmene na ovom uređaju. „Zadrži sa telefona" prepisuje one na serveru.</div>`;
+    <div class="traka-n">„Uzmi sa servera" prepisuje izmene na ovom uređaju. „Zadrži sa telefona" prepisuje one na serveru.</div>`;
   document.body.appendChild(b);
   const zatvori=()=>b.remove();
   b.querySelector('#sy-pull').onclick=async()=>{ zatvori(); await sbPull(); };
@@ -9868,14 +9885,17 @@ function prikaziSukobSync(remoteAt){
 }
 
 /* Zajednicki okvir za trake upozorenja — isti izgled kao traka sukoba sync-a. */
-function trakaUpozorenja(id, boja, html){
+function trakaUpozorenja(id, vrsta, html){
   try{
     if(document.getElementById(id)) return null;
     const b=document.createElement('div');
     b.id=id;
-    b.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 84px);'+
-      'z-index:211;background:var(--card2,#1D1D26);border:1px solid '+boja+';border-radius:14px;'+
-      'padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.45)';
+    /* Izgled je u CSS-u (klasa `.traka`), ne u inline stilu — v. komentar uz
+       nju u index.html: dok je podloga stajala ovde kao `var(--card2)`, jedna
+       izmena tokena ju je učinila providnom i niko to nije video dok se traka
+       nije pojavila korisniku. */
+    b.className='traka '+(vrsta||'upozorenje');
+    b.style.zIndex='211';
     b.innerHTML=html;
     document.body.appendChild(b);
     return b;
@@ -9888,18 +9908,16 @@ function trakaUpozorenja(id, boja, html){
 function prikaziUcitavanjePalo(){
   if(!UCITAVANJE_PALO) return;
   const kb=Math.max(1,Math.round(UCITAVANJE_PALO.bajtova/1024));
-  const b=trakaUpozorenja('stanje-osteceno','var(--red,#FF4D4D)',
-    `<div style="font-weight:800;font-size:.9rem;margin-bottom:4px">Sačuvani podaci se ne mogu pročitati</div>
-     <div style="font-size:.8rem;color:var(--txt2,#9C9CA8);line-height:1.5">
-       Zapis na ovom uređaju je oštećen (${kb} KB). <b>Ništa nije obrisano</b> — sirov sadržaj je sačuvan
+  const b=trakaUpozorenja('stanje-osteceno','greska',
+    `<b>Sačuvani podaci se ne mogu pročitati</b>
+     <p>Zapis na ovom uređaju je oštećen (${kb} KB). <b style="display:inline;font-size:inherit;margin:0">Ništa nije obrisano</b> — sirov sadržaj je sačuvan
        i možeš ga skinuti. Slanje na server je zaustavljeno dok ne odlučiš, da prazno stanje ne bi
-       prepisalo ono što je gore.</div>
-     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-       <button id="os-skini" class="btn" style="flex:1;min-width:130px">Skini spašeno</button>
-       <button id="os-server" class="btn ghost" style="flex:1;min-width:130px">Uzmi sa servera</button>
+       prepisalo ono što je gore.</p>
+     <div class="btnrow">
+       <button id="os-skini" class="btn">Skini spašeno</button>
+       <button id="os-server" class="btn ghost">Uzmi sa servera</button>
      </div>
-     <div style="font-size:.72rem;color:var(--txt3,#7A7A86);margin-top:8px">
-       Ako koristiš nalog, „Uzmi sa servera" je najbrži put nazad. Spašeni fajl zadrži za svaki slučaj.</div>`);
+     <div class="traka-n">Ako koristiš nalog, „Uzmi sa servera" je najbrži put nazad. Spašeni fajl zadrži za svaki slučaj.</div>`);
   if(!b) return;
   b.querySelector('#os-skini').onclick=()=>{
     let sirovo=''; try{ sirovo=localStorage.getItem(LS_SPAS_KEY)||''; }catch(e){}
@@ -9914,14 +9932,13 @@ function prikaziUcitavanjePalo(){
 
 /* Neuspeo upis u localStorage — jednom po sesiji, ne po svakom cuvanju. */
 function prikaziUpisPao(ime){
-  const b=trakaUpozorenja('upis-pao','var(--amber,#FFB020)',
-    `<div style="font-weight:800;font-size:.9rem;margin-bottom:4px">Čuvanje na uređaju ne radi</div>
-     <div style="font-size:.8rem;color:var(--txt2,#9C9CA8);line-height:1.5">
-       Pregledač je odbio upis (${esc(ime)}) — najčešće je skladište puno. Rad u ovoj sesiji se
-       nastavlja i šalje se na server ako si prijavljen, ali <b>zatvaranje aplikacije briše
-       nesačuvano</b>. Napravi backup i oslobodi prostor.</div>
-     <div style="display:flex;gap:8px;margin-top:12px">
-       <button id="up-ok" class="btn ghost" style="flex:1">U redu</button>
+  const b=trakaUpozorenja('upis-pao','upozorenje',
+    `<b>Čuvanje na uređaju ne radi</b>
+     <p>Pregledač je odbio upis (${esc(ime)}) — najčešće je skladište puno. Rad u ovoj sesiji se
+       nastavlja i šalje se na server ako si prijavljen, ali <b style="display:inline;font-size:inherit;margin:0">zatvaranje aplikacije briše
+       nesačuvano</b>. Napravi backup i oslobodi prostor.</p>
+     <div class="btnrow">
+       <button id="up-ok" class="btn ghost">U redu</button>
      </div>`);
   if(b) b.querySelector('#up-ok').onclick=()=>b.remove();
 }
