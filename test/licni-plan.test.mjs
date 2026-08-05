@@ -100,6 +100,51 @@ describe('Konstante ličnog plana', () => {
   });
 });
 
+describe('Lični plan ne sme da odluta u tuđu zonu', () => {
+  /* ZAŠTO OVAJ TEST POSTOJI. Tempi zona (`paceForZone`) su ZAJEDNIČKI sloj —
+     koristi ih i generator i rekalibracija forme nad ličnim planom
+     (`vdotPredlog` → `zonaZaDan(d)` → `paceForZone(f.forma, z.zone)`). Kad je M
+     zona ispravljena da bude pravi maratonski tempo trke umesto procenta
+     VO2max, promenio se tempo koji ta grana vraća. Lični plan to nije osetio
+     jer njegove sesije nikad ne padnu u M — ali to je bila SREĆNA okolnost
+     koju ništa nije čuvalo.
+
+     Dovoljno je da neko kasnije doda naziv sesije u ZONE_FOR_KIND ili preimenuje
+     postojeći, pa da dan ličnog plana tiho pređe u drugu zonu i dobije drugi
+     predloženi tempo — bez ijednog testa koji bi pao. Zato se ovde tvrdi TAČAN
+     skup zona, u duhu ostatka fajla. */
+  const zoneLicnogPlana = () => {
+    const a = loadApp();
+    return JSON.parse(a.evalIn(`JSON.stringify(CUR_PLAN.flatMap(w => w.days.map(d => {
+      const z = zonaZaDan(d);
+      return { id: d.id, zona: z ? z.zone : null };
+    })))`));
+  };
+
+  test('nijedan dan ne završi u M zoni (maratonski tempo)', () => {
+    const m = zoneLicnogPlana().filter(d => d.zona === 'M');
+    assert.equal(m.length, 0,
+      `dani ličnog plana u M zoni: ${m.map(d => d.id).join(', ')} — M je maratonski tempo, 5K plan tu nema šta da traži`);
+  });
+
+  test('koriste se TAČNO zone I i T, i nijedna druga', () => {
+    /* Intervali → I, Tempo → T. Lako/LR/Odmor/Snaga/Test/TRKA nemaju zonu
+       (null) i ne ulaze u rekalibraciju tempa. */
+    const zone = [...new Set(zoneLicnogPlana().map(d => d.zona))].sort(
+      (a, b) => String(a).localeCompare(String(b)));
+    assert.deepEqual(zone.filter(z => z !== null).map(String), ['I', 'T'],
+      `lični plan koristi zone: ${zone.map(z => z === null ? '(bez zone)' : z).join(', ')}`);
+  });
+
+  test('tipovi sesija su nepromenjeni — odatle i zone dolaze', () => {
+    const a = loadApp();
+    const kinds = JSON.parse(a.evalIn(
+      `JSON.stringify([...new Set(CUR_PLAN.flatMap(w => w.days.map(d => sessKind(d))))].sort())`));
+    assert.deepEqual(kinds.map(String),
+      ['Dugo (LR)', 'Intervali', 'Lako', 'Odmor', 'Snaga', 'TRKA', 'Tempo', 'Test']);
+  });
+});
+
 describe('Lični plan je aktivan kad nema generisanog', () => {
   test('CUR_PLAN pokazuje na PLAN, a datumi na START/RACE', () => {
     const a = loadApp();
