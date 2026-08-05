@@ -33,7 +33,17 @@ function proveriTajnu(req) {
    telefona, bez terminala i bez ikakvog tajnog ključa u pregledaču.
    Propušta SAMO nalog čija se adresa poklapa sa ADMIN_EMAIL (ili REPORT_TO).
    Adresa se čita sa Supabase servera iz tokena — ne iz onoga što pregledač
-   tvrdi da jeste. */
+   tvrdi da jeste.
+
+   ADRESA MORA BITI POTVRĐENA. Sama jednakost `email === admin` nije dovoljna:
+   Supabase izda JWT sa proizvoljnim, NEPOTVRĐENIM mejlom ako je Email provider
+   ukljucen a potvrda iskljucena — pa bi napadac koji se registruje vlasnikovom
+   adresom (bez pristupa njoj) dobio token sa `email: vlasnik`, `email_confirmed_at: null`
+   i prosao ovu kapiju: izlistao sve adrese korisnika i poslao mejl svima.
+   Google OAuth uvek daje potvrdjenu adresu, pa tim putem napad ionako ne radi;
+   ova provera cini da odbrana NE ZAVISI od Supabase podesavanja. Prihvata se
+   `email_confirmed_at` ILI `confirmed_at` — GoTrue je kroz verzije koristio
+   oba naziva za istu potvrdu. */
 async function proveriVlasnika(req) {
   const admin = String(process.env.ADMIN_EMAIL || process.env.REPORT_TO || '').trim().toLowerCase();
   const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
@@ -47,7 +57,8 @@ async function proveriVlasnika(req) {
     });
     if (!r.ok) return false;
     const u = await r.json();
-    return !!(u && u.email && String(u.email).trim().toLowerCase() === admin);
+    const potvrdjen = !!(u && (u.email_confirmed_at || u.confirmed_at));
+    return !!(u && u.email && potvrdjen && String(u.email).trim().toLowerCase() === admin);
   } catch (e) { return false; }
 }
 

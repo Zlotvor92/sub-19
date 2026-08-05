@@ -144,8 +144,15 @@ function deriveActivity(data, todayStr) {
     }
   }
 
-  const lastStravaSync = (data && data.strava && data.strava.lastSync)
-    ? new Date(data.strava.lastSync).toISOString() : null;
+  /* `data` je U POTPUNOSTI pod kontrolom korisnika (sbPush gura proizvoljan
+     JSON, RLS proverava samo vlasnistvo reda, ne sadrzaj). `new Date(smece)`
+     je Invalid Date, a `.toISOString()` NAD NJIM baca RangeError — koji je,
+     posto se deriveActivity zove iz mergeRows IZVAN try/catch-a, obarao ceo
+     izvestaj: jedan korisnik sa `strava.lastSync:"nije-datum"` gasio je mejl
+     ZA SVE. Zato se datum parsira bezbedno, isto kao u fmtDate ispod. */
+  const sinhro = (data && data.strava && data.strava.lastSync)
+    ? new Date(data.strava.lastSync) : null;
+  const lastStravaSync = (sinhro && !isNaN(sinhro.getTime())) ? sinhro.toISOString() : null;
   /* "Povezan" = objekat postoji uopšte (OAuth uspešno završen bar jednom),
      ne da li je TRENUTNI token još važeći — to bi tražilo živ poziv ka
      Stravi, nepotrebno za ovaj izveštaj. */
@@ -183,9 +190,18 @@ function mergeRows(users, rawStates, aiDays, todayStr) {
   const stateById = {};
   for (const row of (rawStates || [])) stateById[row.user_id] = row;
 
+  /* PRAZNA aktivnost — i podrazumevana (nema reda) i sigurnosna mreza kad
+     izvlacenje jednog reda pukne. */
+  const PRAZNO = { lastWorkoutDate: null, weekKm: 0, lastStravaSync: null, stravaConnected: false, stravaAthlete: null };
   return (users || []).map(u => {
     const st = stateById[u.id];
-    const act = st ? deriveActivity(st.data, todayStr) : { lastWorkoutDate: null, weekKm: 0, lastStravaSync: null, stravaConnected: false, stravaAthlete: null };
+    /* try/catch PO REDU: deriveActivity radi nad korisnickim JSON-om, pa jedan
+       pokvaren (ili zlonamerno oblikovan) zapis ne sme da obori ceo izvestaj.
+       Uz bezbedan parse datuma iznad ovo je dubinska odbrana — da nova greska
+       u izvlacenju sutra ne vrati istu klasu ispada (jedan korisnik gasi mejl
+       za sve). Red se tada prikaze sa praznim kolonama, ostali su netaknuti. */
+    let act = PRAZNO;
+    if (st) { try { act = deriveActivity(st.data, todayStr); } catch (e) { act = PRAZNO; } }
     return {
       email: u.email,
       created: u.created,

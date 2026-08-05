@@ -432,6 +432,70 @@ describe('Serverske funkcije', () => {
     globalThis.fetch = origFetch;
   });
 
+  test('admin sa NEPOTVRĐENOM adresom ne prolazi kao vlasnik', async () => {
+    /* NAPAD: Supabase izda JWT sa proizvoljnim, nepotvrđenim mejlom ako je Email
+       provider uključen a potvrda isključena. Napadač se registruje vlasnikovom
+       adresom (bez pristupa njoj) i dobija token `email: vlasnik, email_confirmed_at: null`.
+       Ranije je proveriVlasnika gledala samo jednakost adrese — pa je izlistavao
+       sve adrese korisnika i slao mejl svima. Sada mora biti POTVRĐENA. */
+    Object.assign(process.env, ENV);
+    const { default: h } = await import('../api/broadcast.js?t=' + Date.now());
+    const pozovi = async user => {
+      globalThis.fetch = async u => {
+        const s = String(u);
+        if (s.includes('/auth/v1/user')) return J(user);
+        if (s.includes('admin/users')) return J([{ email: 'zrtva@t.rs' }]);
+        return J({});
+      };
+      const r = res();
+      await h({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: {} }, r);
+      return r;
+    };
+    /* napadač: vlasnikova adresa, ali nepotvrđena → 401 */
+    assert.equal((await pozovi({ id: 'a', email: ENV.ADMIN_EMAIL, email_confirmed_at: null })).code, 401,
+      'nepotvrđena vlasnikova adresa je prošla');
+    /* pravi vlasnik: potvrđen → mora i dalje da prođe (popravka nije preoštra) */
+    assert.equal((await pozovi({ id: 'v', email: ENV.ADMIN_EMAIL, email_confirmed_at: '2026-01-01T00:00:00Z' })).code, 200,
+      'potvrđen vlasnik je odbijen — popravka je preoštra');
+    /* stariji GoTrue: `confirmed_at` umesto `email_confirmed_at` → prolazi */
+    assert.equal((await pozovi({ id: 'v', email: ENV.ADMIN_EMAIL, confirmed_at: '2026-01-01T00:00:00Z' })).code, 200,
+      'confirmed_at (stariji GoTrue) nije prihvaćen kao potvrda');
+    globalThis.fetch = origFetch;
+  });
+
+  test('jedan pokvaren zapis ne obara ceo dnevni izveštaj (DoS)', async () => {
+    /* NAPAD: bilo koji korisnik upiše u svoj user_state.data
+       `strava.lastSync = "nije-datum"`. deriveActivity je radio
+       `new Date(...).toISOString()` bez zaštite, van try/catch-a — RangeError je
+       obarao ceo izveštaj, pa mejl nije stizao NIKOME. */
+    Object.assign(process.env, ENV);
+    const { default: h } = await import('../api/daily-report.js?t=' + Date.now());
+    let mejlPoslat = false;
+    globalThis.fetch = async (u, o) => {
+      const s = String(u);
+      if (s.includes('app_stats')) return J([{ korisnika: 2 }]);
+      if (s.includes('user_state')) return J([
+        { user_id: 'zli', updated_at: '2026-08-01T00:00:00Z', data: { strava: { athlete: 'X', lastSync: 'nije-datum' } } },
+        { user_id: 'ok', updated_at: '2026-08-01T00:00:00Z', data: { strava: { athlete: 'Y', lastSync: '2026-08-01T10:00:00Z' } } }
+      ]);
+      if (s.includes('api_usage')) return J([]);
+      if (s.includes('admin/users')) return J({ users: [
+        { id: 'zli', email: 'zli@t.rs', created_at: '2026-01-01', last_sign_in_at: '2026-08-01' },
+        { id: 'ok', email: 'ok@t.rs', created_at: '2026-01-01', last_sign_in_at: '2026-08-01' }
+      ] });
+      if (s.includes('resend')) { mejlPoslat = true; return J({ id: 'm' }); }
+      return J({});
+    };
+    const r = res();
+    let bacio = null;
+    try { await h({ method: 'GET', headers: { authorization: 'Bearer ' + ENV.CRON_SECRET } }, r); }
+    catch (e) { bacio = e.message; }
+    assert.equal(bacio, null, `izveštaj je bacio izuzetak: ${bacio}`);
+    assert.equal(r.code, 200, `dobijen HTTP ${r.code}: ${JSON.stringify(r.body)}`);
+    assert.ok(mejlPoslat, 'mejl nije poslat — jedan pokvaren zapis je oborio izveštaj');
+    globalThis.fetch = origFetch;
+  });
+
   test('prekoračen dnevni limit ne propušta poziv ka LLM-u', async () => {
     Object.assign(process.env, ENV);
     const { default: h } = await import('../api/analyze.js?t=' + Date.now());
