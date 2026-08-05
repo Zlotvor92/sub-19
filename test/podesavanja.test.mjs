@@ -23,6 +23,7 @@ function sa(opt = {}) {
   /* Backup se u stanju vodi kao datum poslednjeg izvoza. Svež datum znači
      „rešeno" — stariji od praga i dalje traži radnju, pa se uzima današnji. */
   if (opt.backup) a.evalIn(`S.ui.lastBackup=todayStr();`);
+  if (opt.geo) a.evalIn(`S.ui.geo={lat:44.81,lon:20.46};`);
   a.call('openSettings');
   return { a, html: a.evalIn('$("#sheet").innerHTML') || '' };
 }
@@ -35,7 +36,7 @@ describe('Struktura', () => {
   test('svaka sekcija je zasebna kartica', () => {
     const { html } = sa({ prijavljen: true, strava: true, icu: true });
     const k = kartice(html).map(x => x.naslov);
-    assert.deepEqual(k, ['Nalog', 'Plan', 'Strava', 'intervals.icu', 'Slanje na sat', 'Podaci']);
+    assert.deepEqual(k, ['Nalog', 'Plan', 'Strava', 'intervals.icu', 'Slanje na sat', 'Vreme', 'Podaci']);
   });
 
   test('čitanje i slanje su odvojene kartice', () => {
@@ -75,12 +76,14 @@ describe('Šta je otvoreno, a šta sklopljeno', () => {
   test('sekcija koja traži radnju otvara se sama', () => {
     const { html } = sa({});
     const otv = kartice(html).filter(x => x.otvorena).map(x => x.naslov);
-    assert.deepEqual(otv, ['Nalog', 'Strava', 'intervals.icu'],
+    /* „Vreme" je otvoreno dok lokacija nije uključena — isto pravilo kao za
+       ostale sekcije koje traže jedan dodir da bi počele da rade. */
+    assert.deepEqual(otv, ['Nalog', 'Strava', 'intervals.icu', 'Vreme'],
       'nepovezane sekcije nisu otvorene');
   });
 
   test('kad je sve povezano, ništa nije otvoreno — sve staje na jedan ekran', () => {
-    const { html } = sa({ prijavljen: true, strava: true, icu: true, push: true });
+    const { html } = sa({ prijavljen: true, strava: true, icu: true, push: true, geo: true });
     assert.deepEqual(kartice(html).filter(x => x.otvorena), []);
   });
 

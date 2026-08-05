@@ -38,8 +38,8 @@
 })();
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
-const START='2026-06-22', RACE='2026-09-24', SCHEMA=8, LS_KEY='sub19-v1';
-const APP_VERSION='179'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
+const APP_VERSION='180'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -279,6 +279,10 @@ function seedState(){return {
  /* Testovi na 3 km — v. blok „TEST NA 3 KM". Zive odvojeno od S.pred jer nisu
     vezani ni za jedan dan plana: test se moze istrcati kad god. */
  t3k:[],
+ /* Kesirana prognoza (v. karticaVremena). Nije korisnikov podatak nego kopija
+    tudjeg servisa — ali stoji u stanju da bi radila i offline, i da bi jedan
+    poziv posluzio svim danima nedelje. */
+ vreme:null,
  moves:{},
  alts:{},
  genPlan:null,
@@ -289,7 +293,7 @@ function seedState(){return {
     koji je vec jednom oborio unos tempa preko predLock-a; zato su sad ovde. */
  wellness:{},
  icu:null,
- ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null}
+ ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null}
 };}
 
 /* POTPIS ZATECENOG SEEDA — SAMO IDENTIFIKATORI, bez ijednog licnog podatka.
@@ -852,6 +856,8 @@ function migrate(o){
   /* v7→v8: testovi na 3 km. Prazan niz = ponasanje IDENTICNO kao pre — ko ga
      nema, jednostavno nema nijedan test u lancu forme. */
   if(o.v<8){o.t3k=o.t3k||[];o.v=8;}
+  /* v8→v9: kesirana prognoza. null = ponasanje IDENTICNO kao pre. */
+  if(o.v<9){o.vreme=o.vreme||null;o.v=9;}
   /* ID MORA da nosi prefiks: po njemu `tipSesijeZaVdot` prepoznaje test i daje
      mu najveću težinu u lancu forme. Uvezen zapis bez prefiksa bi tiho pao na
      podrazumevanu težinu — dakle ne bi bio test, samo bi tako izgledao. */
@@ -862,7 +868,8 @@ function migrate(o){
   o.vdotLog=cistVdotLog(o.vdotLog);
   o.knee=cistDatirane(o.knee);
   o.kg=cistDatirane(o.kg);
-  o.t3k=o.t3k||[];o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null},o.ui||{});
+  o.vreme=(o.vreme&&typeof o.vreme==='object'&&o.vreme.sati&&typeof o.vreme.sati==='object')?o.vreme:null;
+  o.t3k=o.t3k||[];o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null},o.ui||{});
   o.v=SCHEMA;
   return o;
 }
@@ -2618,6 +2625,229 @@ function nextLine(from){
   const nx=DATED.find(x=>x.date>from&&!x.rest);
   return nx?`<div class="note-src">Sledeći trening: ${dowOf(nx.date)} ${fmtD(nx.date)} — ${esc(sessKind(nx))}${nx.km?' · '+fmtKm(nx.km)+' km':''}</div>`:'';
 }
+/* ============================================================
+   VREME NA DAN TRENINGA
+
+   Sve ostalo u aplikaciji opisuje PROŠLOST. Ovo je jedini podatak koji menja
+   ODLUKU pre nego što izađeš: na 34 °C intervali na planskom tempu nisu isti
+   trening nego drugi, teži, i sa manjim prinosom.
+
+   ZAŠTO DIREKTNO SA api.open-meteo.com, A NE PREKO NAŠEG SERVERA:
+   svi ostali spoljni pozivi idu preko servera zato što nose ključ ili zato što
+   servis ne šalje CORS zaglavlja. Ovde ne važi ni jedno ni drugo — Open-Meteo
+   je bez ključa i sa CORS-om. A da ide preko nas, KOORDINATE korisnika bi
+   morale da prođu kroz naš server; ovako ih vidi samo servis koji ih i mora
+   videti. Zato je i u CSP dodat samo taj jedan domen.
+
+   Koordinate se zaokružuju na dve decimale (~1 km): dovoljno za vremensku
+   prognozu, a manje precizno od kućne adrese. Čuvaju se lokalno i idu u backup
+   kao i svaki drugi podatak. */
+const VREME_URL='https://api.open-meteo.com/v1/forecast';
+/* KOLIKO VRUĆINA USPORAVA — približno, i tako je i označeno na ekranu.
+   Literatura se slaže oko smera i reda veličine, ne oko tačne krive; brojevi
+   ispod prate uobičajenu trenersku smernicu (~1-2% po 3 °C iznad ~15 °C) i
+   namerno su konzervativni. Gleda se OSEĆAJ (apparent temperature), ne
+   temperatura vazduha: vlažnost je ta koja ubija hlađenje znojenjem. */
+const VRUCINA=[
+  { od:35, pct:8, rec:'Preko 35 °C osećaja — kvalitetnu sesiju pomeri ili zameni laganim trčanjem. Tempo tu više ne meri formu.' },
+  { od:30, pct:6, rec:'Na ovoj vrućini radni deo drži po osećaju, ne po satu. Skrati ako puls ode iznad uobičajenog za taj tempo.' },
+  { od:25, pct:4, rec:'Toplo — ciljni tempo je realno ovoliko sporiji. To nije pad forme.' },
+  { od:20, pct:2, rec:'Blago toplo; računaj na malo sporiji tempo pri istom naporu.' },
+  { od:15, pct:1, rec:'' },
+  { od:-99, pct:0, rec:'' }
+];
+function vrucinaZa(osecaj){
+  if(osecaj==null||!isFinite(osecaj)) return null;
+  return VRUCINA.find(x=>osecaj>=x.od)||null;
+}
+function vremeCist(j){
+  const h=j&&j.hourly;
+  if(!h||!Array.isArray(h.time)||!h.time.length) return null;
+  const uzmi=(niz,i)=>(Array.isArray(niz)&&niz[i]!=null&&isFinite(niz[i]))?Math.round(niz[i]*10)/10:null;
+  const sati={};
+  h.time.forEach((t,i)=>{
+    if(typeof t!=='string') return;
+    sati[t.slice(0,13)]={
+      temp:uzmi(h.temperature_2m,i), osecaj:uzmi(h.apparent_temperature,i),
+      vlaga:uzmi(h.relative_humidity_2m,i), vetar:uzmi(h.wind_speed_10m,i),
+      kisa:uzmi(h.precipitation_probability,i)
+    };
+  });
+  return Object.keys(sati).length?sati:null;
+}
+async function vremePovuci(sila){
+  const g=S.ui&&S.ui.geo;
+  if(!g||g.lat==null||g.lon==null) return {ok:false, error:'Lokacija nije podešena.'};
+  const v=S.vreme;
+  /* Prognoza se ne menja iz minuta u minut — jedan poziv na tri sata je dovoljan,
+     a i lepo prema besplatnom servisu. */
+  if(!sila&&v&&v.at&&Date.now()-v.at<3*3600000&&v.lat===g.lat&&v.lon===g.lon) return {ok:true, kes:true};
+  try{
+    const u=VREME_URL+'?latitude='+encodeURIComponent(g.lat)+'&longitude='+encodeURIComponent(g.lon)+
+      '&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,precipitation_probability'+
+      '&forecast_days=3&timezone=auto';
+    const r=await fetch(u);
+    if(!r.ok) return {ok:false, error:'Vremenska prognoza trenutno nije dostupna.'};
+    const sati=vremeCist(await r.json());
+    if(!sati) return {ok:false, error:'Prognoza je stigla u neočekivanom obliku.'};
+    S.vreme={at:Date.now(), lat:g.lat, lon:g.lon, sati}; save();
+    return {ok:true, n:Object.keys(sati).length};
+  }catch(e){ return {ok:false, error:'Nema veze sa vremenskom službom.'}; }
+}
+function vremeZaSat(datum, sat){
+  const v=S.vreme; if(!v||!v.sati||!datum) return null;
+  return v.sati[datum+'T'+String(sat).padStart(2,'0')]||null;
+}
+/* Najhladniji sat u razumnom prozoru za trčanje. Nudi se samo kad je razlika
+   dovoljna da promeni odluku — pomeranje treninga zbog pola stepena nije savet
+   nego smetnja. */
+function najboljiSat(datum, odabrani){
+  const v=S.vreme; if(!v||!v.sati) return null;
+  let naj=null;
+  for(let h=5;h<=21;h++){
+    const z=vremeZaSat(datum,h);
+    if(!z||z.osecaj==null) continue;
+    if(!naj||z.osecaj<naj.osecaj-0.01) naj={sat:h, osecaj:z.osecaj};
+  }
+  if(!naj) return null;
+  const sad=vremeZaSat(datum,odabrani);
+  if(!sad||sad.osecaj==null) return naj;
+  return (sad.osecaj-naj.osecaj>=3 && naj.sat!==odabrani) ? naj : null;
+}
+function satTreninga(){
+  const h=S.ui&&S.ui.satTreninga;
+  return (h!=null&&isFinite(h)&&h>=0&&h<=23)?+h:18;
+}
+function karticaVremena(d){
+  if(!d||d.rest||!d.date) return '';
+  if(d.date<TODAY) return '';                    /* prognoza za prošlost nema smisla */
+  const g=S.ui&&S.ui.geo;
+  if(!g) return '';
+  const sat=satTreninga();
+  const z=vremeZaSat(d.date,sat);
+  if(!z) return '';
+  const vr=vrucinaZa(z.osecaj);
+  const kvalitet=(d.tag==='int'||d.tag==='tempo');
+  const redovi=[];
+  redovi.push(['temperatura', `<b>${esc(fmtNum(z.temp,0))} °C</b>`+
+    (z.osecaj!=null&&Math.abs(z.osecaj-z.temp)>=1?` <small>oseća se ${esc(fmtNum(z.osecaj,0))} °C</small>`:'')]);
+  if(z.vlaga!=null) redovi.push(['vlažnost', `<b>${esc(fmtNum(z.vlaga,0))} %</b>`]);
+  if(z.vetar!=null) redovi.push(['vetar', `<b>${esc(fmtNum(z.vetar,0))} km/h</b>`]);
+  if(z.kisa!=null) redovi.push(['padavine', `<b>${esc(fmtNum(z.kisa,0))} %</b>`]);
+  /* Prilagođen tempo se nudi SAMO za kvalitetne sesije: na laganom trčanju se
+     ide po osećaju ionako, pa bi broj tu bio lažna preciznost. */
+  let dodatak='';
+  if(kvalitet&&vr&&vr.pct>0){
+    const pid=predRowFor(d);
+    const cilj=cilJTempoDana(d);
+    if(cilj) dodatak+=`<div class="drow"><span class="l">tempo uz vrućinu</span><span class="v">`+
+      `<b>${esc(fmtTempo(Math.round(cilj*(1+vr.pct/100))))}</b> <small>umesto ${esc(fmtTempo(cilj))} · +${esc(vr.pct)} %</small></span></div>`;
+  }
+  const bolji=najboljiSat(d.date,sat);
+  const nap=[];
+  if(vr&&vr.rec) nap.push(vr.rec);
+  if(bolji) nap.push(`U ${bolji.sat}:00 je osećaj ${fmtNum(bolji.osecaj,0)} °C — ${Math.round((z.osecaj-bolji.osecaj))} °C manje nego u ${sat}:00.`);
+  nap.push('Procena usporavanja je približna, ne formula — služi da tempo na vrućini ne pročitaš kao pad forme.');
+  return dKarta('Vreme', esc(fmtD(d.date)+' u '+sat+':00'),
+    `<div class="drows">${dRedovi(redovi).replace(/^<div class="drows">|<\/div>$/g,'')}${dodatak}</div>`+
+    `<div class="note-src">${esc(nap.join(' '))}</div>`);
+}
+/* Ciljni tempo radnog dela za dan — iz sesije kad postoji, inače iz PRED reda
+   plana. Bez njega se prilagođen tempo ne prikazuje (ne izmišlja se osnova). */
+function cilJTempoDana(d){
+  if(d&&d.session&&d.session.paceSec>0) return d.session.paceSec;
+  const r=predRowFor(d);
+  const red=r?CUR_PRED.find(x=>x.id===r):null;
+  return (red&&red.pt>0)?red.pt:null;
+}
+
+/* ============================================================
+   ISTA SESIJA RANIJE
+
+   VDOT kriva i predikcija sažimaju SVE u jedan broj, pa se iz njih ne vidi ono
+   što trkača zapravo zanima: „isti trening kao pre tri nedelje — je li lakši?"
+   Poređenje jabuka sa jabukama je direktniji dokaz napretka od bilo kakve
+   izvedene mere, jer između dva ista treninga nema nijedne pretpostavke.
+
+   ŠTA JE „ISTA SESIJA": isti tip (Intervali/Tempo/…) I ista struktura radnog
+   dela. 6×800 i 5×1000 su oba „Intervali", ali nisu isti trening i njihovo
+   poređenje po tempu ne znači ništa. Struktura se čita iz `session` objekta kad
+   postoji (generisan plan), inače iz QS tabele (hardkodovan plan) — ista dva
+   izvora koje već koristi Strava lap-detekcija. */
+function sesijaPotpis(d){
+  if(!d||d.rest) return null;
+  if(d.tag!=='int'&&d.tag!=='tempo') return null;
+  const ses=d.session;
+  let struktura=null;
+  if(ses){
+    if(ses.type==='int'&&ses.reps&&ses.repM) struktura=ses.reps+'x'+ses.repM;
+    else if(ses.type==='pyramid'&&Array.isArray(ses.reps)) struktura=ses.reps.join('-');
+    else if(ses.type==='tempo'&&ses.qKm) struktura='t'+r1(ses.qKm);
+    else if(ses.type==='fartlek'&&ses.reps) struktura='f'+ses.reps+'x'+ses.repSec;
+  }
+  if(!struktura){
+    const spec=qsFor(d.id);
+    if(Array.isArray(spec)&&spec.length) struktura=spec.join('-');
+  }
+  if(!struktura) return null;
+  return sessKind(d)+'|'+struktura;
+}
+/* Ranije odrađene sesije istog potpisa, najnovija prva. Uzima se ostvaren tempo
+   RADNOG dela (isti broj koji ide u VDOT), ne prosek celog trčanja — inače bi
+   duže zagrevanje izgledalo kao sporiji trening. */
+function isteSesije(d, maxN){
+  const potpis=sesijaPotpis(d);
+  if(!potpis) return [];
+  const out=[];
+  DATED.forEach(x=>{
+    if(x.id===d.id) return;
+    if(d.date&&x.date&&x.date>=d.date) return;      /* samo RANIJE */
+    if(sesijaPotpis(x)!==potpis) return;
+    const l=S.log[x.id];
+    if(!l||l.status!=='done') return;
+    const pid=predRowFor(x);
+    const tempo=(pid&&S.pred[pid]!=null) ? S.pred[pid]
+              : (Array.isArray(l.laps)&&l.laps.length ? icuRadniTempo(l.laps) : null);
+    if(!tempo) return;
+    const gaps=Array.isArray(l.laps)?l.laps.filter(y=>y.gapSec>0&&y.distM>0):[];
+    const gap=(gaps.length&&gaps.length===l.laps.length)
+      ? Math.round(gaps.reduce((a,y)=>a+y.gapSec*y.distM/1000,0)/(gaps.reduce((a,y)=>a+y.distM,0)/1000))
+      : null;
+    const hrs=Array.isArray(l.laps)?l.laps.map(y=>y.avgHr).filter(y=>y!=null):[];
+    out.push({ dan:x, datum:l.runDate||l.ts||x.date, tempo, gap,
+               hr: hrs.length?Math.round(hrs.reduce((a,b)=>a+b,0)/hrs.length):(l.hr||null),
+               temp: l.temp!=null?l.temp:null });
+  });
+  out.sort((a,b)=>a.datum<b.datum?1:-1);
+  return out.slice(0, maxN||3);
+}
+function karticaIstaSesija(d){
+  const ranije=isteSesije(d,3);
+  if(!ranije.length) return '';
+  const l=S.log[d.id]||{};
+  const pid=predRowFor(d);
+  const sada=(pid&&S.pred[pid]!=null) ? S.pred[pid]
+           : (Array.isArray(l.laps)&&l.laps.length ? icuRadniTempo(l.laps) : null);
+  const red=x=>{
+    /* Razlika se prikazuje SAMO kad postoje oba broja — „−4 s/km" naspram
+       ničega je izmišljen napredak. */
+    const raz=(sada&&x.tempo)?sada-x.tempo:null;
+    const boja=raz==null?'var(--txt3)':raz<-1?'var(--green)':raz>1?'var(--pink)':'var(--txt3)';
+    const znak=raz==null?'':(raz<0?'−':raz>0?'+':'±')+Math.abs(raz)+' s/km';
+    return `<div class="drow"><span class="l">${esc(fmtD(x.datum))}</span><span class="v">`+
+      `<b>${esc(fmtTempo(x.tempo))}</b>`+
+      (x.gap!=null&&Math.abs(x.gap-x.tempo)>2?` <small>GAP ${esc(fmtTempo(x.gap))}</small>`:'')+
+      (x.hr!=null?` <small>${esc(x.hr)} bpm</small>`:'')+
+      (x.temp!=null?` <small>${esc(x.temp)}°C</small>`:'')+
+      (znak?` <small style="color:${boja}">${esc(znak)}</small>`:'')+
+      `</span></div>`;
+  };
+  const struktura=sessCore(d);
+  return dKarta('Ista sesija ranije', esc(struktura),
+    `<div class="drows">${ranije.map(red).join('')}</div>`+
+    `<div class="note-src">Poredi se ostvaren tempo RADNOG dela, ne prosek celog trčanja. ${
+      sada?'Razlika je u odnosu na današnji.':'Kad uneseš današnji tempo, prikazaće se i razlika.'}</div>`);
+}
 function dayCard(d){
   const s=stFor(d.id);
   const l=S.log[d.id]||{};
@@ -2643,6 +2873,9 @@ function dayCard(d){
   else if(s==='skip')plan+=`<div class="btnrow"><button class="btn ghost" data-a="done">Ipak sam odradio</button><button class="btn ghost sm" data-a="pending">Vrati</button></div>`;
 
   let c=`<div class="card${isQuality?' accent':''}" id="tcard">${plan}</div>`;
+  /* Vreme ide ODMAH ispod plana i vidi se DOK trening još predstoji — posle je
+     kasno, to je jedini podatak u aplikaciji koji menja odluku unapred. */
+  c+=karticaVremena(d);
   if(s==='pending'||s==='skip') return c;   /* dok nije odrađen nema šta da se prikaže */
 
   /* ── UNETO: ono što si ti upisao ── */
@@ -2652,6 +2885,9 @@ function dayCard(d){
   /* ── SA SATA i JUTROS: ono što je stiglo samo ── */
   c+=dKarta('Sa sata','',dRedovi(metrikaSata(l)));
   c+=dKarta('Jutros','',dRedovi(oporavakRedovi(l.runDate||l.ts||d.date)));
+  /* Poređenje stoji ISPOD merenja, iznad AI analize: prvo šta je bilo danas,
+     pa šta je bilo prošli put, pa tek onda tumačenje. */
+  c+=karticaIstaSesija(d);
   c+=aiKarta(d,l);
   return c;
 }
@@ -6922,6 +7158,7 @@ function openDaySheet(id){
     ${isRest?'':(()=>{ const l=S.log[id]||{};
         return dKarta('Sa sata','',dRedovi(metrikaSata(l)))
              + dKarta('Jutros','',dRedovi(oporavakRedovi(l.runDate||l.ts||d.date)))
+             + karticaIstaSesija(d)
              + aiKarta(d,l); })()}
     ${d.test
       ? `<div class="note-src">Rezultat unesi u tabu <b>Trka → Test 3 km</b>. Test se ne mora istrčati baš na ovaj dan — tamo mu upisuješ i datum.</div>`
@@ -8776,6 +9013,19 @@ function openSettings(){
        <details class="help"><summary>Da treninzi stignu do sata</summary><p>U intervals.icu → Settings uključi <b>„Upload planned workouts"</b> i autorizuj Garmin Connect. Prosleđuje se otprilike nedelju dana unapred, pa dalji dani stižu sami kako se približavaju.</p></details>
        <details class="help"><summary>Ako na satu piše „No Target"</summary><p>U intervals.icu → Settings → Sport Settings unesi <b>prag tempa (threshold pace)</b>${icuPragTekst()}. Bez njega intervals.icu izbacuje ciljeve tempa iz Garmin izvoza.</p><p>Garmin izvoz se pravi kad događaj <b>nastane</b>, pa posle unosa praga obično slanje ne pomaže — tada ide <b>„Iz početka"</b>, koje briše ranije poslato i pravi ga iznova.</p></details>`):''}
 
+    ${(()=>{ const g=S.ui&&S.ui.geo; const sat=satTreninga();
+      return kartica(!g,
+        glava('Vreme', g?('trening u '+sat+':00'+(S.vreme&&S.vreme.at?' · prognoza od '+esc(new Date(S.vreme.at).toLocaleTimeString('sr-RS',{hour:'2-digit',minute:'2-digit'})):'')):'lokacija nije uključena', !!g),
+        g
+          ? `<div class="set-st">Prognoza za tvoju okolinu, na kartici dana koji predstoji. Koordinate se zaokružuju na ~1 km i idu samo vremenskoj službi — nikad na naš server.</div>
+             <div class="f-grid"><div class="f-field full"><label for="vr-sat">U koliko sati obično trčiš</label>
+               <select id="vr-sat">${Array.from({length:24},(_,h)=>`<option value="${h}"${h===sat?' selected':''}>${String(h).padStart(2,'0')}:00</option>`).join('')}</select></div></div>
+             <div class="btnrow"><button class="btn ghost sm" id="vr-osvezi">Osveži prognozu</button><button class="btn ghost sm" id="vr-off">Isključi</button></div>`
+          : `<div class="set-st">Na kartici dana koji predstoji piše temperatura, osećaj, vlažnost i verovatnoća kiše — i koliko je realno sporiji ciljni tempo na toj vrućini. To je jedini podatak u aplikaciji koji menja odluku <b>pre</b> nego što izađeš.</div>
+             <div class="btnrow"><button class="btn" id="vr-on">Uključi lokaciju</button></div>
+             <details class="help"><summary>Šta se tačno šalje</summary><p>Koordinate zaokružene na dve decimale (~1 km) idu <b>direktno</b> servisu Open-Meteo, koji ne traži nalog ni ključ. Naš server ih nikad ne vidi — zato i ne ide preko njega.</p><p>Ništa se ne šalje dok sam ne uključiš, a isključivanjem se koordinate brišu sa uređaja.</p></details>`);
+    })()}
+
     ${kartica(false,
       glava('Podaci', 'poslednji backup: '+(S.ui.lastBackup?esc(fmtDY(S.ui.lastBackup)):'nikad'), S.ui.lastBackup?true:'warn'),
       `<div class="btnrow"><button class="btn ghost" id="s-exp">Izvezi backup</button><button class="btn ghost" id="s-imp">Uvezi backup</button></div>
@@ -8977,6 +9227,42 @@ function openSettings(){
       ? 'Offline kopija: '+st.kesevi.join(', ')+'. Verziju javlja tek sledeći service worker.'
       : 'Offline kopija se još pravi — otvori aplikaciju ponovo za koji trenutak.';
   });
+  if($('#vr-on')) $('#vr-on').onclick=e=>{
+    const b=e.target;
+    if(!navigator.geolocation){ alert('Ovaj pregledač ne ume da odredi lokaciju.'); return; }
+    b.disabled=true; b.textContent='Tražim lokaciju…';
+    navigator.geolocation.getCurrentPosition(async poz=>{
+      /* Dve decimale su ~1 km — dovoljno za prognozu, a ne pokazuje gde stanuješ. */
+      S.ui.geo={ lat:Math.round(poz.coords.latitude*100)/100, lon:Math.round(poz.coords.longitude*100)/100 };
+      save();
+      const r=await vremePovuci(true);
+      if(!r.ok) alert(r.error);
+      osveziPodesavanja();
+      if(ACTIVE==='danas') renderDanas();
+    }, err=>{
+      b.disabled=false; b.textContent='Uključi lokaciju';
+      alert(err&&err.code===1
+        ? 'Pristup lokaciji je odbijen. Uključi ga u podešavanjima pregledača za ovu stranicu, pa pokušaj ponovo.'
+        : 'Lokacija trenutno nije dostupna.');
+    }, { enableHighAccuracy:false, timeout:12000, maximumAge:600000 });
+  };
+  if($('#vr-off')) $('#vr-off').onclick=()=>{
+    S.ui.geo=null; S.vreme=null; save(); osveziPodesavanja();
+    if(ACTIVE==='danas') renderDanas();
+  };
+  if($('#vr-sat')) $('#vr-sat').onchange=e=>{
+    S.ui.satTreninga=+e.target.value; save();
+    if(ACTIVE==='danas') renderDanas();
+    setTimeout(osveziPodesavanja,200);
+  };
+  if($('#vr-osvezi')) $('#vr-osvezi').onclick=async e=>{
+    const b=e.target; b.disabled=true; b.textContent='Povlačim…';
+    const r=await vremePovuci(true);
+    b.textContent=r.ok?'Osveženo ✓':'Nije uspelo';
+    if(!r.ok&&r.error) setTimeout(()=>alert(r.error),100);
+    if(ACTIVE==='danas') renderDanas();
+    setTimeout(osveziPodesavanja,900);
+  };
   const so=$('#st-on'),ss=$('#st-sync'),sf=$('#st-off');
   if(so)so.onclick=stravaConnect;
   if(ss)ss.onclick=()=>{ss.disabled=true;ss.textContent='Sinhronizujem…';sinhronizujTreninge(true).finally(()=>closeSheet());};
@@ -10014,6 +10300,10 @@ if(navigator.onLine){
   if((icuImaTreninge()||S.strava) && Date.now()-zadnja>3600000) sinhronizujTreninge(false);
 }
 icuAutoSync();
+/* Prognoza se osvežava na startu, ali samo ako je starija od tri sata (v.
+   vremePovuci) — poziv je besplatan, ali nema razloga da se ponavlja pri
+   svakom otvaranju. */
+if(navigator.onLine&&S.ui&&S.ui.geo) vremePovuci(false).then(r=>{ if(r.ok&&!r.kes&&ACTIVE==='danas') renderDanas(); });
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
   let refreshing=false;
   navigator.serviceWorker.addEventListener('controllerchange',()=>{

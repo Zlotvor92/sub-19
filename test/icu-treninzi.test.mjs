@@ -300,3 +300,119 @@ describe('Vlasnik nema limit AI analiza', () => {
     assert.match(src, /if \(!vlasnik\) try \{/, 'limit se i dalje broji vlasniku');
   });
 });
+
+describe('Vreme na dan treninga', () => {
+
+  /* Prognoza se seje za DANAS i za prvi predstojeći kvalitetan dan — stvarna
+     prognoza pokriva tri dana, pa fiksni datumi ne bi uvek pogodili sesiju. */
+  const sa = () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    a.evalIn(`
+      S.ui.geo={lat:44.81,lon:20.46}; S.ui.satTreninga=17;
+      const kv=DATED.find(x=>x.date>=TODAY&&(x.tag==='int'||x.tag==='tempo'));
+      const lk=DATED.find(x=>x.date>=TODAY&&x.tag==='lako');
+      const sati={};
+      [TODAY, kv&&kv.date, lk&&lk.date].filter(Boolean).forEach(d=>{ for(let h=0;h<24;h++){
+        const vru = h>=13&&h<=19;
+        sati[d+'T'+String(h).padStart(2,'0')]={temp:vru?33:19, osecaj:vru?37:18,
+          vlaga:vru?38:70, vetar:9, kisa:vru?5:20};
+      }});
+      S.vreme={at:Date.now(), lat:44.81, lon:20.46, sati}; save();`);
+    return a;
+  };
+
+  test('usporavanje se meri OSEĆAJEM, ne temperaturom vazduha', () => {
+    /* Vlažnost ubija hlađenje znojenjem — 30 °C na 80% vlage nije isto što i
+       30 °C na 25%. Zato ulaz mora biti apparent temperature. */
+    const a = sa();
+    assert.equal(a.call('vrucinaZa', 10).pct, 0);
+    assert.equal(a.call('vrucinaZa', 18).pct, 1);
+    assert.equal(a.call('vrucinaZa', 27).pct, 4);
+    assert.equal(a.call('vrucinaZa', 37).pct, 8);
+    assert.equal(a.call('vrucinaZa', null), null);
+  });
+
+  test('usporavanje raste sa vrućinom, nikad ne pada', () => {
+    const a = sa();
+    let prosli = -1;
+    for (const t of [0, 15, 20, 25, 30, 35, 40]) {
+      const p = a.call('vrucinaZa', t).pct;
+      assert.ok(p >= prosli, `na ${t} °C usporavanje je palo`);
+      prosli = p;
+    }
+  });
+
+  test('kvalitetna sesija dobija prilagođen tempo, lagana ne', () => {
+    /* Na laganom se ide po osećaju ionako — broj bi tu bio lažna preciznost. */
+    const a = sa();
+    const kv = a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&(x.tag==='int'||x.tag==='tempo'));
+      return d?karticaVremena(d):''; })()`);
+    assert.match(String(kv), /tempo uz vrućinu/);
+    const lako = a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='lako');
+      return d?karticaVremena(d):''; })()`);
+    assert.doesNotMatch(String(lako), /tempo uz vrućinu/);
+    assert.match(String(lako), /temperatura/, 'lagan dan ipak vidi vreme');
+  });
+
+  test('hladniji termin se nudi samo kad je razlika stvarna', () => {
+    const a = sa();
+    /* 17h ima osećaj 37, 7h ima 18 — razlika od 19 °C se nudi. */
+    const danas = a.get('TODAY');
+    assert.ok(a.call('najboljiSat', danas, 17));
+    /* U 7h je već najhladnije — nema šta da se pomera. */
+    assert.equal(a.call('najboljiSat', danas, 7), null);
+  });
+
+  test('bez lokacije se ništa ne crta i ništa ne šalje', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const d = a.evalIn(`JSON.stringify(karticaVremena(BY_DATE[TODAY]||DATED[0]))`);
+    assert.equal(JSON.parse(d), '');
+  });
+
+  test('koordinate se ne šalju na naš server', () => {
+    /* Ceo razlog zašto ovaj poziv NE ide preko /api — v. komentar u kodu. */
+    const src = readRepoFile('app.js');
+    const m = /const VREME_URL='([^']+)'/.exec(src);
+    assert.ok(m, 'nema adrese vremenske službe');
+    assert.match(m[1], /^https:\/\/api\.open-meteo\.com/);
+    assert.doesNotMatch(src, /\/api\/(weather|vreme)/, 'prognoza ide preko našeg servera — koordinate mu tada prolaze kroz ruke');
+    const csp = readRepoFile('vercel.json');
+    assert.match(csp, /connect-src[^;]*https:\/\/api\.open-meteo\.com/, 'CSP ne dozvoljava poziv');
+  });
+});
+
+describe('Ista sesija ranije', () => {
+
+  test('potpis razlikuje 6×800 od 5×1000', () => {
+    /* Oba su „Intervali"; poređenje po tempu između njih ne znači ništa. */
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const potpisi = JSON.parse(a.evalIn(`JSON.stringify(
+      DATED.filter(d=>sesijaPotpis(d)).map(d=>sesijaPotpis(d)))`));
+    assert.ok(potpisi.length > 3, 'nijedan dan nema potpis');
+    assert.ok(new Set(potpisi).size > 1, 'svi dani imaju isti potpis — struktura se ne razlikuje');
+    for (const p of potpisi) assert.match(p, /\|/, `potpis bez strukture: ${p}`);
+  });
+
+  test('lagano i dugo trčanje nemaju potpis — ne porede se', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const bez = a.evalIn(`DATED.filter(d=>(d.tag==='lako'||d.tag==='lr')&&sesijaPotpis(d)).length`);
+    assert.equal(bez, 0);
+  });
+
+  test('porede se samo RANIJE i samo odrađene sesije', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const r = JSON.parse(a.evalIn(`(()=>{
+      const m={}; DATED.forEach(d=>{ const s=sesijaPotpis(d); if(s)(m[s]=m[s]||[]).push(d); });
+      const par=Object.values(m).find(v=>v.length>=3);
+      /* prvi odrađen, drugi NEodrađen, treći je „danas" */
+      S.log[par[0].id]={status:'done',km:par[0].km,sec:2400,ts:par[0].date,
+        laps:[{distM:800,paceSec:240,avgHr:170}]};
+      const pid=predRowFor(par[0]); if(pid) S.pred[pid]=240;
+      rebuildDateIndex();
+      return JSON.stringify({ ranijih: isteSesije(par[2],5).length,
+                              odPrvog: isteSesije(par[0],5).length });
+    })()`));
+    assert.equal(r.ranijih, 1, 'neodrađena sesija je ušla u poređenje');
+    assert.equal(r.odPrvog, 0, 'prva sesija u planu nema šta da poredi unazad');
+  });
+});
