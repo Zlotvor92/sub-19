@@ -287,6 +287,48 @@ describe('Tokeni ne napuštaju uređaj', () => {
   });
 });
 
+describe('Čitanje JWT-a — identitet naloga mora izaći tačan', () => {
+  /* Iz ovog polja izlaze `SB.userId` i `SB.email`, a `userId` je ono po čemu
+     sbInit odlučuje da li podmetnut `#access_token=` sme da zameni postojeću
+     sesiju. Dekodiranje mora biti tačno, i ne sme da zavisi od `escape()` —
+     funkcije uklonjene iz standarda (Annex B), koja uz to radi nad UTF-16
+     jedinicama pa mejl sa ćirilicom ili umlautom izlazi izobličen. */
+  const jwtSa = tvrdnje => {
+    const b64u = o => Buffer.from(JSON.stringify(o), 'utf8').toString('base64')
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return 'zaglavlje.' + b64u(tvrdnje) + '.potpis';
+  };
+
+  test('obična adresa se čita tačno', () => {
+    const app = loadApp();
+    const c = app.call('sbClaims', jwtSa({ sub: 'u-123', email: 'trkac@primer.rs' }));
+    assert.equal(c.userId, 'u-123');
+    assert.equal(c.email, 'trkac@primer.rs');
+  });
+
+  test('adresa sa ne-ASCII znakovima ne izlazi izobličena', () => {
+    const app = loadApp();
+    for (const mejl of ['đorđe@primer.rs', 'müller@primer.de', 'пера@пример.рс']) {
+      const c = app.call('sbClaims', jwtSa({ sub: 'u1', email: mejl }));
+      assert.equal(c.email, mejl, 'izobličeno dekodiranje: ' + mejl);
+    }
+  });
+
+  test('pokvaren token ne baca nego vraća prazno', () => {
+    const app = loadApp();
+    for (const zao of ['', 'a.b.c', 'nije-jwt', 'a.!!!.c', 'a.' + 'x'.repeat(50) + '.c']) {
+      const c = app.call('sbClaims', zao);
+      assert.equal(c.userId, null, 'prošlo je: ' + zao);
+      assert.equal(c.email, null);
+    }
+  });
+
+  test('escape() se više ne koristi', () => {
+    assert.doesNotMatch(readClientSource(), /decodeURIComponent\(escape\(/,
+      'čitanje JWT-a i dalje stoji na funkciji uklonjenoj iz standarda');
+  });
+});
+
 describe('OAuth — CSRF zaštita', () => {
   test('Strava: pogrešan, istekao, odsutan i već potrošen state se odbijaju', () => {
     const app = loadApp();

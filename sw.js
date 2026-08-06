@@ -81,11 +81,16 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
+  /* `.catch()` NIJE ukras. Grana iznad ga ima (pada na keš), a ova nije imala:
+     kad se traži nešto što nije u kešu a mreže nema, `fetch` odbija, pa odbija
+     i obećanje dato `respondWith`-u — a tada pregledač prikaže SVOJU stranicu
+     mrežne greške umesto da zahtev prosto propadne. Na slici koja se ne učita
+     to je razlika između praznog mesta i razbijene stranice. */
   e.respondWith(
     caches.match(e.request).then(hit => hit || fetch(e.request).then(r => {
       if (new URL(e.request.url).origin === location.origin) putSafe(e.request, r);
       return r;
-    }))
+    })).catch(() => new Response('', { status: 504, statusText: 'Offline' }))
   );
 });
 

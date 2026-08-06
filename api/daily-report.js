@@ -60,9 +60,28 @@ async function fetchStats(url, key) {
    PostgREST ima podrazumevani `max-rows`, pa bi preko te granice korisnici
    TIHO ispadali iz izvestaja bez ikakvog traga da lista nije potpuna.
    Ista klasa greske je vec ispravljena za Admin API listu (fetchUserList);
-   ovaj upit je tada promasen. */
-async function fetchRawUserState(url, key) {
-  const PER = 200, MAX_PAGES = 50, out = [];
+   ovaj upit je tada promasen.
+
+   PAGINACIJA JE RESILA `max-rows`, ALI NE I MEMORIJU. Redovi su i dalje svi
+   zavrsavali u jednom nizu — 50 strana × 200 redova × do 500 KB je red
+   velicine sto megabajta u funkciji koja ima 60 s i megabajt-dva rezerve po
+   redu. Prvi korisnik preko te granice obara CEO izvestaj, i to greskom koja
+   ne kaze zasto (OOM, ne HTTP status).
+   Zato se svaka strana SAZIMA cim stigne, pa se sirovi blob baca. Iz njega
+   izvestaju ionako treba pet izvedenih brojeva — oko dvesta bajta po
+   korisniku umesto pola megabajta. Merenje na realnom stanju (70 treninga sa
+   perKm i laps nizovima, 180 dana oporavka): 453 KB -> ~200 B.
+
+   Izvlacenje po redu je u SOPSTVENOM try/catch (isti razlog kao u mergeRows):
+   `data` je u potpunosti pod kontrolom korisnika, pa jedan pokvaren zapis ne
+   sme da obori citanje cele strane. */
+const PRAZNA_AKTIVNOST = {
+  lastWorkoutDate: null, weekKm: 0, lastStravaSync: null,
+  stravaConnected: false, stravaAthlete: null
+};
+
+async function fetchRawUserState(url, key, todayStr) {
+  const PER = 200, MAX_PAGES = 50, sazeto = {};
   for (let page = 0; page < MAX_PAGES; page++) {
     const od = page * PER, doIdx = od + PER - 1;
     const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/user_state?select=user_id,data,updated_at&order=user_id.asc', {
@@ -74,21 +93,41 @@ async function fetchRawUserState(url, key) {
     if (!r.ok && r.status !== 206) throw new Error('user_state upit nije uspeo (' + r.status + ')');
     const j = await r.json();
     const red = Array.isArray(j) ? j : [];
-    out.push(...red);
-    if (red.length < PER) break;
+    for (const row of red) {
+      try { sazeto[row.user_id] = deriveActivity(row.data, todayStr); }
+      catch (e) { sazeto[row.user_id] = PRAZNA_AKTIVNOST; }
+    }
+    if (red.length < PER) break;   /* `red` izlazi iz opsega ovde — blob se oslobađa */
   }
-  return out;
+  return sazeto;
 }
 
+/* PAGINIRANO, iz istog razloga kao fetchUserList i fetchRawUserState.
+   Ovaj upit je pri toj ispravci promašen — a raste BRŽE od oba: jedan red po
+   korisniku PO DANU. Bez `Range` zaglavlja PostgREST vraća do `max-rows`
+   (podrazumevano 1000) i tu staje, bez greške; korisnici sa starijim danima
+   na vrhu tako tiho gube kolonu „AI analiza".
+   `order=day.desc` je uslov za tačnost: prvi viđen red po korisniku je i
+   najnoviji, pa se ostali smeju preskočiti. Redosled mora biti određen i
+   preko granica strana — zato i drugi kriterijum (`user_id`). */
 async function fetchAiUsageDays(url, key) {
-  const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/api_usage?select=user_id,day,calls&calls=gt.0&order=day.desc', {
-    headers: { apikey: key, Authorization: 'Bearer ' + key }
-  });
-  if (!r.ok) throw new Error('api_usage upit nije uspeo (' + r.status + ')');
-  const rows = await r.json();
-  const lastByUser = {};
-  for (const row of rows) {
-    if (!(row.user_id in lastByUser)) lastByUser[row.user_id] = row.day;
+  const PER = 1000, MAX_PAGES = 50, lastByUser = {};
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const od = page * PER, doIdx = od + PER - 1;
+    const r = await fetch(url.replace(/\/+$/, '') +
+      '/rest/v1/api_usage?select=user_id,day,calls&calls=gt.0&order=day.desc,user_id.asc', {
+      headers: {
+        apikey: key, Authorization: 'Bearer ' + key,
+        Range: od + '-' + doIdx, 'Range-Unit': 'items'
+      }
+    });
+    if (!r.ok && r.status !== 206) throw new Error('api_usage upit nije uspeo (' + r.status + ')');
+    const j = await r.json();
+    const rows = Array.isArray(j) ? j : [];
+    for (const row of rows) {
+      if (!(row.user_id in lastByUser)) lastByUser[row.user_id] = row.day;
+    }
+    if (rows.length < PER) break;
   }
   return lastByUser;
 }
@@ -146,10 +185,11 @@ function deriveActivity(data, todayStr) {
 
   /* `data` je U POTPUNOSTI pod kontrolom korisnika (sbPush gura proizvoljan
      JSON, RLS proverava samo vlasnistvo reda, ne sadrzaj). `new Date(smece)`
-     je Invalid Date, a `.toISOString()` NAD NJIM baca RangeError — koji je,
-     posto se deriveActivity zove iz mergeRows IZVAN try/catch-a, obarao ceo
-     izvestaj: jedan korisnik sa `strava.lastSync:"nije-datum"` gasio je mejl
-     ZA SVE. Zato se datum parsira bezbedno, isto kao u fmtDate ispod. */
+     je Invalid Date, a `.toISOString()` NAD NJIM baca RangeError — koji je, dok
+     se deriveActivity zvao IZVAN try/catch-a, obarao ceo izvestaj: jedan
+     korisnik sa `strava.lastSync:"nije-datum"` gasio je mejl ZA SVE. Poziv je
+     danas u try/catch-u (v. fetchRawUserState), ali bezbedan parse ostaje —
+     dve odbrane, jer je cena jedna linija a ispad je bio potpun. */
   const sinhro = (data && data.strava && data.strava.lastSync)
     ? new Date(data.strava.lastSync) : null;
   const lastStravaSync = (sinhro && !isNaN(sinhro.getTime())) ? sinhro.toISOString() : null;
@@ -186,22 +226,15 @@ function esc(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function mergeRows(users, rawStates, aiDays, todayStr) {
-  const stateById = {};
-  for (const row of (rawStates || [])) stateById[row.user_id] = row;
-
-  /* PRAZNA aktivnost — i podrazumevana (nema reda) i sigurnosna mreza kad
-     izvlacenje jednog reda pukne. */
-  const PRAZNO = { lastWorkoutDate: null, weekKm: 0, lastStravaSync: null, stravaConnected: false, stravaAthlete: null };
+/* `sazetaStanja` je mapa user_id -> vec izvedena aktivnost (v. fetchRawUserState).
+   Ranije je ovde stajao sirov `data` blob i `deriveActivity` se zvao tek sad;
+   izvlacenje je pomereno u citanje da bi se blob bacio odmah po strani. Odbrana
+   po redu (try/catch oko korisnickog JSON-a) nije nestala nego je otisla sa
+   njim — ovde ostaje samo podrazumevana vrednost za korisnika bez reda. */
+function mergeRows(users, sazetaStanja, aiDays, todayStr) {
+  const stanja = sazetaStanja || {};
   return (users || []).map(u => {
-    const st = stateById[u.id];
-    /* try/catch PO REDU: deriveActivity radi nad korisnickim JSON-om, pa jedan
-       pokvaren (ili zlonamerno oblikovan) zapis ne sme da obori ceo izvestaj.
-       Uz bezbedan parse datuma iznad ovo je dubinska odbrana — da nova greska
-       u izvlacenju sutra ne vrati istu klasu ispada (jedan korisnik gasi mejl
-       za sve). Red se tada prikaze sa praznim kolonama, ostali su netaknuti. */
-    let act = PRAZNO;
-    if (st) { try { act = deriveActivity(st.data, todayStr); } catch (e) { act = PRAZNO; } }
+    const act = stanja[u.id] || PRAZNA_AKTIVNOST;
     return {
       email: u.email,
       created: u.created,
@@ -289,8 +322,8 @@ export default async function handler(req, res) {
   try { users = await fetchUserList(url, svcKey); }
   catch (e) { errors.users = e.message; }
 
-  let rawStates = [];
-  try { rawStates = await fetchRawUserState(url, svcKey); }
+  let rawStates = {};
+  try { rawStates = await fetchRawUserState(url, svcKey, todayStr); }
   catch (e) { errors.rawState = e.message; }
 
   let aiDays = {};

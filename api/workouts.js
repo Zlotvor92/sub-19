@@ -13,6 +13,22 @@
    sub19-g5d3). Ponovno slanje tada AŽURIRA isti događaj umesto da napravi
    duplikat, a događaje koje nismo mi napravili ne diramo nikad. */
 
+/* KRATKOTRAJAN KEŠ POTVRĐENIH TOKENA — ista provera, jedan mrežni skok manje.
+   Do sada je SVAKI poziv ka bilo kojoj putanji plaćao dodatan krug ka
+   Supabase-u. Jedna sinhronizacija sa intervals.icu su četiri poziva, dakle
+   četiri takva kruga; anketa o AI analizi pita na svake tri sekunde do minut i
+   po. To je pola sekunde čiste latencije koja ne radi ništa.
+
+   Prozor je namerno kratak — 30 s. Poređenja radi: preporučeni način (lokalna
+   provera potpisa JWT-a, bez ijednog poziva) veruje tokenu do njegovog isteka,
+   dakle ceo sat. Ovo je STROŽE od toga, uz istu uštedu. Ključ mape je sam
+   token, pa se tuđa sesija ne može ni pogoditi ni podmetnuti.
+   Mapa živi u modulu, dakle koliko i topla instanca funkcije; gornja granica
+   postoji da dugotrajna instanca ne raste bez kraja. */
+const AUTH_KES = new Map();
+const AUTH_KES_MS = 30000;
+const AUTH_KES_MAX = 500;
+
 async function requireUser(req) {
   const url  = process.env.SUPABASE_URL;
   const anon = process.env.SUPABASE_ANON_KEY;
@@ -23,6 +39,8 @@ async function requireUser(req) {
   const h = req.headers.authorization || req.headers.Authorization || '';
   const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
   if (!m) return { ok: false, status: 401, error: 'Nedostaje prijava.' };
+  const kes = AUTH_KES.get(m[1]);
+  if (kes && kes.doKada > Date.now()) return { ok: true, userId: kes.id, email: kes.email, token: m[1] };
   try {
     const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
@@ -30,26 +48,35 @@ async function requireUser(req) {
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
-    /* token se vraca da bi se limit poziva brojao U IME KORISNIKA — RPC
-       koristi auth.uid(), pa bez korisnikovog tokena ne zna ko zove. */
-    return { ok: true, userId: u.id, token: m[1] };
+    if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    AUTH_KES.set(m[1], { id: u.id, email: u.email || null, doKada: Date.now() + AUTH_KES_MS });
+    return { ok: true, userId: u.id, email: u.email || null, token: m[1] };
   } catch (e) {
     return { ok: false, status: 503, error: 'Provera prijave trenutno nije moguća.' };
   }
 }
 
-/* Dnevni limit poziva po korisniku — ista atomska Postgres funkcija za sve
-   endpointe (v. supabase/rate-limit.sql), razlikuje ih `p_endpoint`.
+/* PREPOZNAVANJE „PREKORAČEN LIMIT" IDE PO ŠIFRI GREŠKE, NE PO TEKSTU.
+   Ranije se svuda gledalo `telo.includes('DAILY_LIMIT_EXCEEDED')`. Dok god
+   PostgREST prosleđuje poruku izuzetka to radi — ali čim je skrati, promeni
+   omot ili je prevede, provera tiho postaje „propusti", i to na svih pet
+   putanja odjednom. `errcode` je deo ugovora funkcije (v. rate-limit.sql),
+   tekst nije. Tekst ostaje kao rezerva za starije verzije PostgREST-a. */
+function jeLimit(telo) {
+  let j = null;
+  try { j = JSON.parse(telo); } catch (e) {}
+  if (j && (j.code === 'P0001' || String(j.message || '').includes('DAILY_LIMIT_EXCEEDED'))) return true;
+  return String(telo || '').includes('DAILY_LIMIT_EXCEEDED');
+}
 
-   ZASTO JE OVO POTREBNO: oba intervals.icu endpointa idu kroz nas server, a
-   prijava je otvorena svakome sa Google nalogom. Bez limita jedan prijavljen
-   korisnik moze u petlji da gadja intervals.icu SA NASE IP ADRESE, a
-   posledice (blokada, zalba) snosi vlasnik aplikacije.
+/* Dnevni limit po korisniku i endpointu — ista atomska funkcija kao za
+   /api/wellness i /api/workouts (v. supabase/rate-limit.sql).
 
-   PROPUSTA KAD BAZA NE ODGOVARA — i to namerno: SQL mozda jos nije pusten, a
-   ni mrezni prekid ka Supabase-u ne sme da obori sinhronizaciju sa satom.
-   ALI SE VIDI U LOGOVIMA: limit koji tiho otkaze izgleda isto kao limit koji
-   radi, pa bi mesecima mogao da ne postoji a da se ne primeti. */
+   PROPUŠTA kad baza ne odgovara — namerno, jer SQL možda još nije pušten a ni
+   mrežni prekid ne sme da obori analizu. ALI SE VIDI: `console.error`, ne
+   `console.warn`. Vercel `warn` meša sa običnim logovima, a `error` ide u
+   kanal na koji se može zakačiti obaveštenje. Limit koji tiho otkaže izgleda
+   isto kao limit koji radi — mesecima. */
 async function limitPrekoracen(token, endpoint, limit) {
   try {
     const r = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
@@ -63,12 +90,12 @@ async function limitPrekoracen(token, endpoint, limit) {
     });
     if (r.ok) return false;
     const telo = await r.text();
-    if (telo.includes('DAILY_LIMIT_EXCEEDED')) return true;
-    console.warn('[limit] brojac nije radio (%s) — propusteno bez brojanja. HTTP %s: %s',
+    if (jeLimit(telo)) return true;
+    console.error('[limit][ALARM] brojac nije radio (%s) — propusteno bez brojanja. HTTP %s: %s',
       endpoint, r.status, telo.slice(0, 200));
     return false;
   } catch (e) {
-    console.warn('[limit] brojac nedostupan (%s) — propusteno bez brojanja: %s', endpoint, e.message);
+    console.error('[limit][ALARM] brojac nedostupan (%s) — propusteno bez brojanja: %s', endpoint, e.message);
     return false;
   }
 }

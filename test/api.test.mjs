@@ -19,6 +19,10 @@ const ENV = {
   REPORT_TO: 'vlasnik@b.c',
   ADMIN_EMAIL: 'vlasnik@b.c',
   CRON_SECRET: 'tajna',
+  GEMINI_API_KEY: 'gk',
+  /* Bez ovoga bi /api/analyze javljao „nepoznato poreklo" i ćutke preskakao
+     obaveštenje „analiza je gotova" — v. sopstvenoPoreklo(). */
+  VERCEL_URL: 'sub-19.vercel.app',
   /* tempo i rok se u testu spustaju — inace bi 250 mejlova x 600 ms trajalo
      minutima; produkcijske vrednosti su podrazumevane u samom kodu */
   BROADCAST_PAUZA_MS: '0',
@@ -103,20 +107,67 @@ describe('/api/broadcast — slanje u više poziva', () => {
     assert.equal(res.body.sledeciOd, res.body.poslato, 'nastavak ne pokazuje na sledećeg neposlatog');
   });
 
-  test('nastavak od `od` ne šalje duplikate i pokrije sve', async () => {
+  test('nastavak od `posle` ne šalje duplikate i pokrije sve', async () => {
     const { default: handler } = await import('../api/broadcast.js?t=' + Date.now());
     const poslato = [];
     stubFetch(poslato);
-    let od = 0, krugova = 0;
-    while (od != null && krugova < 20) {
+    let posle = '', krugova = 0, kraj = false;
+    while (!kraj && krugova < 20) {
       krugova++;
       const res = makeRes();
-      await handler({ method: 'POST', headers: { authorization: 'Bearer tajna' }, body: { posalji: true, od } }, res);
-      od = res.body.sledeciOd;
+      await handler({ method: 'POST', headers: { authorization: 'Bearer tajna' }, body: { posalji: true, posle } }, res);
+      if (res.body.sledeciPosle == null) kraj = true; else posle = res.body.sledeciPosle;
     }
-    assert.equal(od, null, 'slanje se nije završilo');
+    assert.ok(kraj, 'slanje se nije završilo');
     assert.equal(poslato.length, 250, `poslato ${poslato.length} umesto 250`);
     assert.equal(new Set(poslato).size, 250, 'neko je dobio mejl dva puta');
+  });
+
+  test('nov korisnik usred slanja ne pomera kursor — niko se ne preskoči', async () => {
+    /* ZAŠTO OVO POSTOJI: kursor je ranije bio POZICIJA u sortiranoj listi
+       („nastavi od 90."). Ali lista se između dva poziva čita iznova, a slanje
+       na hiljade adresa traje desetinama minuta. Registruje se jedan korisnik
+       čija adresa pada PRE tekućeg mesta — svi indeksi se pomere za jedan i
+       tačno jedna osoba bude tiho preskočena. Brojevi na kraju izgledaju
+       uredno; samo jedan čovek ne dobije mejl.
+       Kursor po ADRESI to nema. */
+    const { default: handler } = await import('../api/broadcast.js?t=' + Date.now());
+    const poslato = [];
+    let dodat = false;
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/admin/users')) {
+        const page = +(u.match(/[?&]page=(\d+)/) || [])[1];
+        let users = page === 1
+          ? Array.from({ length: 200 }, (_, i) => ({ email: `k${String(i).padStart(3, '0')}@t.rs` }))
+          : Array.from({ length: 50 }, (_, i) => ({ email: `k${String(200 + i).padStart(3, '0')}@t.rs` }));
+        /* posle prvog kruga upada nova adresa koja se sortira PRE svih */
+        if (dodat && page === 1) users = [{ email: 'aaa-novi@t.rs' }, ...users];
+        return jsonRes(users);
+      }
+      if (u.includes('/auth/v1/user')) return jsonRes({ id: 'u1', email: ENV.ADMIN_EMAIL });
+      if (u.includes('api.resend.com')) {
+        await new Promise(r => setTimeout(r, 1));
+        poslato.push(JSON.parse(opt.body).to);
+        return jsonRes({ id: 'm' });
+      }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    let posle = '', krugova = 0, kraj = false;
+    while (!kraj && krugova < 25) {
+      krugova++;
+      const res = makeRes();
+      await handler({ method: 'POST', headers: { authorization: 'Bearer tajna' }, body: { posalji: true, posle } }, res);
+      dodat = true;
+      if (res.body.sledeciPosle == null) kraj = true; else posle = res.body.sledeciPosle;
+    }
+    assert.ok(kraj, 'slanje se nije završilo');
+    assert.equal(new Set(poslato).size, poslato.length, 'neko je dobio mejl dva puta');
+    /* Svih 250 prvobitnih mora da dobije mejl uprkos upadu nove adrese. */
+    for (let i = 0; i < 250; i++) {
+      const a = `k${String(i).padStart(3, '0')}@t.rs`;
+      assert.ok(poslato.includes(a), `preskočen je ${a} — kursor se pomerio sa listom`);
+    }
   });
 
   test('bez CRON_SECRET-a i bez vlasnika vraća 401', async () => {
@@ -254,6 +305,76 @@ describe('/api/daily-report — paginacija', () => {
     assert.ok(poslatMejl, 'mejl nije poslat');
     /* svih 250 korisnika mora biti u tabeli izveštaja */
     assert.ok(poslatMejl.html.includes('k249@t.rs'), 'poslednji korisnik nije u izveštaju');
+  });
+
+  test('api_usage se čita paginirano — inače korisnici tiho gube kolonu', async () => {
+    /* Ista klasa greške koja je već ispravljena za `fetchUserList` i
+       `fetchRawUserState`, a ovaj upit je tada promašen — i raste BRŽE od oba
+       (jedan red po korisniku PO DANU). Bez `Range` zaglavlja PostgREST vrati
+       do `max-rows` i tu stane, bez greške. */
+    const { default: handler } = await import('../api/daily-report.js?t=' + Date.now());
+    const opsezi = [];
+    let poslatHtml = '';
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), h = (opt && opt.headers) || {};
+      if (u.includes('app_stats')) return jsonRes([{ korisnika: 2 }]);
+      if (u.includes('/auth/v1/admin/users')) {
+        const page = +(u.match(/[?&]page=(\d+)/) || [])[1];
+        return jsonRes(page === 1 ? [{ id: 'stari', email: 'stari@t.rs' }] : []);
+      }
+      if (u.includes('user_state')) return jsonRes([]);
+      if (u.includes('api_usage')) {
+        opsezi.push(h.Range);
+        const od = +String(h.Range || '0-').split('-')[0];
+        /* prva strana je PUNA (1000) → mora se tražiti i druga */
+        if (od === 0) return jsonRes(Array.from({ length: 1000 }, (_, i) => ({ user_id: 'x' + i, day: '2026-08-01', calls: 1 })));
+        if (od === 1000) return jsonRes([{ user_id: 'stari', day: '2026-07-30', calls: 3 }]);
+        return jsonRes([]);
+      }
+      if (u.includes('api.resend.com')) { poslatHtml = JSON.parse(opt.body).html; return jsonRes({ id: 'm' }); }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    const res = makeRes();
+    await handler({ method: 'GET', headers: { authorization: 'Bearer tajna' } }, res);
+    assert.equal(res.code, 200, JSON.stringify(res.body));
+    assert.ok(opsezi.length >= 2, 'api_usage je čitan bez paginacije: ' + JSON.stringify(opsezi));
+    assert.match(poslatHtml, /30\.07\.2026/, 'korisnik sa druge strane je ispao iz izveštaja');
+  });
+
+  test('user_state se sažima po strani, sirov blob se ne gomila', async () => {
+    /* Paginacija je rešila `max-rows`, ali su svi redovi i dalje završavali u
+       jednom nizu: 50 strana × 200 redova × do pola megabajta je red veličine
+       sto megabajta u funkciji koja ima 60 s. Prvi korisnik preko te granice
+       obara CEO izveštaj, i to greškom koja ne kaže zašto (OOM, ne HTTP).
+       Ovde se meri posledica koja se može proveriti: ono što funkcija zadrži
+       posle čitanja je IZVEDENA vrednost, ne `data` blob. */
+    const { default: handler } = await import('../api/daily-report.js?t=' + Date.now());
+    const ogroman = 'x'.repeat(200000);
+    let poslatHtml = '';
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), h = (opt && opt.headers) || {};
+      if (u.includes('app_stats')) return jsonRes([{ korisnika: 1 }]);
+      if (u.includes('/auth/v1/admin/users')) {
+        const page = +(u.match(/[?&]page=(\d+)/) || [])[1];
+        return jsonRes(page === 1 ? [{ id: 'u1', email: 'a@t.rs' }] : []);
+      }
+      if (u.includes('user_state')) {
+        const od = +String(h.Range || '0-').split('-')[0];
+        if (od > 0) return jsonRes([]);
+        return jsonRes([{
+          user_id: 'u1', updated_at: '2026-08-01T00:00:00Z',
+          data: { log: { a: { status: 'done', ts: '2026-08-01', km: 12 } }, smece: ogroman }
+        }]);
+      }
+      if (u.includes('api_usage')) return jsonRes([]);
+      if (u.includes('api.resend.com')) { poslatHtml = JSON.parse(opt.body).html; return jsonRes({ id: 'm' }); }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    const res = makeRes();
+    await handler({ method: 'GET', headers: { authorization: 'Bearer tajna' } }, res);
+    assert.equal(res.code, 200, JSON.stringify(res.body));
+    assert.match(poslatHtml, /01\.08\.2026/, 'izvedena aktivnost nije stigla do izveštaja');
+    assert.ok(!poslatHtml.includes(ogroman), 'sirov blob je procurio u izveštaj');
   });
 
   test('bez ispravnog CRON_SECRET-a vraća 401', async () => {
@@ -432,7 +553,105 @@ describe('supabase/rate-limit.sql — ono što se ne sme izgubiti pri izmeni', (
   });
 });
 
-describe('requireUser je prepisan u 7 fajlova — provera ne sme da se razidje', () => {
+describe('OAuth povratna adresa se ne čita iz zaglavlja zahteva', () => {
+  /* NAPAD: `redirect_uri` je išao u adresu za autorizaciju, a gradio se iz
+     `x-forwarded-host` — dakle iz vrednosti koju šalje pozivalac. Podmetnuto
+     zaglavlje bi vratilo korisnika (sa `code`-om u upitu) na tuđi server.
+     intervals.icu to najverovatnije odbija jer proverava registrovanu adresu —
+     ali odbrana ne sme da zavisi od tuđe validacije koju ne vidimo. */
+  const POREKLA = ['ICU_REDIRECT_URI', 'VERCEL_PROJECT_PRODUCTION_URL', 'VERCEL_URL'];
+  const pozovi = async (env, headers) => {
+    const staro = {};
+    for (const k of POREKLA) { staro[k] = process.env[k]; delete process.env[k]; }
+    Object.assign(process.env, env);
+    process.env.ICU_CLIENT_ID = 'cid';
+    process.env.ICU_CLIENT_SECRET = 'cs';
+    globalThis.fetch = async u => String(u).includes('/auth/v1/user')
+      ? jsonRes({ id: 'u1', email: 'k@t.rs' }) : jsonRes({});
+    const { default: h } = await import('../api/icu-oauth.js?t=' + Date.now());
+    const res = makeRes();
+    await h({
+      method: 'GET',
+      query: { akcija: 'url', state: 'abcdefgh12345678' },
+      headers: Object.assign({ authorization: 'Bearer jwt' }, headers || {})
+    }, res);
+    for (const k of Object.keys(staro)) { if (staro[k] === undefined) delete process.env[k]; else process.env[k] = staro[k]; }
+    return res;
+  };
+
+  test('podmetnut X-Forwarded-Host ne dolazi do redirect_uri-ja', async () => {
+    const res = await pozovi({ VERCEL_URL: 'sub-19.vercel.app' }, {
+      host: 'napadac.example', 'x-forwarded-host': 'napadac.example', 'x-forwarded-proto': 'http'
+    });
+    assert.equal(res.code, 200);
+    assert.ok(!/napadac/.test(res.body.url), 'redirect_uri dolazi iz zaglavlja: ' + res.body.url);
+    assert.match(res.body.url, /redirect_uri=https%3A%2F%2Fsub-19\.vercel\.app%2F/);
+  });
+
+  test('podešena vrednost ima prednost nad svim ostalim', async () => {
+    const res = await pozovi({ ICU_REDIRECT_URI: 'https://moj.domen/', VERCEL_URL: 'x.vercel.app' },
+      { 'x-forwarded-host': 'napadac.example' });
+    assert.match(res.body.url, /redirect_uri=https%3A%2F%2Fmoj\.domen%2F/);
+  });
+
+  test('stabilan produkcijski domen ima prednost nad adresom deploya', async () => {
+    /* OAuth traži DOSLOVNO poklapanje sa registrovanom adresom. `VERCEL_URL` je
+       adresa pojedinačnog deploya i menja se pri svakom — da ide prva,
+       povezivanje bi na produkciji pucalo posle svakog objavljivanja. */
+    const res = await pozovi({
+      VERCEL_PROJECT_PRODUCTION_URL: 'sub-19.vercel.app',
+      VERCEL_URL: 'sub-19-git-nesto-xyz.vercel.app'
+    });
+    assert.match(res.body.url, /redirect_uri=https%3A%2F%2Fsub-19\.vercel\.app%2F/,
+      'uzeta je adresa deploya umesto produkcijskog domena: ' + res.body.url);
+  });
+
+  test('bez poznate adrese vraća jasnu grešku, ne pogađa', async () => {
+    const res = await pozovi({}, { host: 'napadac.example' });
+    assert.equal(res.code, 501, 'izdata je adresa za autorizaciju bez poznatog porekla');
+  });
+});
+
+describe('supabase/ai-posao.sql — stanje posla je serverov automat', () => {
+  /* SQL se ovde ne izvršava (nema baze u testu) — proverava se da PRAVILA nisu
+     nestala pri izmeni, isto kao za rate-limit.sql. Ono što ova pravila
+     zatvaraju: korisnik ima anon ključ (javan po dizajnu) i svoj JWT, pa je
+     `PATCH /rest/v1/ai_posao {"stanje":"radi"}` bio dovoljan da već završen
+     posao vrati u red za obradu — a faza 'radi' ne troši dnevni limit. Petlja.
+     Druga polovina: red se mogao napraviti direktno, mimo /api/analyze i
+     njegovog brojača. */
+  const sql = readRepoFile('supabase/ai-posao.sql');
+
+  test('nazad na „radi" ne vodi nijedan prelaz', () => {
+    assert.match(sql, /before update on public\.ai_posao/, 'nema okidača na izmenu');
+    assert.match(sql, /new\.stanje = 'radi'[\s\S]{0,200}raise exception 'AI_POSAO_PONOVO'/,
+      'povratak u stanje „radi" nije odbijen — dnevni limit se time zaobilazi');
+  });
+
+  test('dozvoljena su tačno dva prelaza koja server stvarno radi', () => {
+    assert.match(sql, /old\.stanje = 'radi'\s+and new\.stanje = 'u_toku'/);
+    assert.match(sql, /old\.stanje = 'u_toku' and new\.stanje in \('gotovo', 'greska'\)/);
+    assert.match(sql, /raise exception 'AI_POSAO_PRELAZ'/, 'ostali prelazi nisu odbijeni');
+  });
+
+  test('vlasnik reda se ne može promeniti', () => {
+    assert.match(sql, /new\.user_id <> old\.user_id[\s\S]{0,120}raise exception 'AI_POSAO_TUDJI'/);
+  });
+
+  test('nov red se rađa u stanju „radi" i nosi gornju granicu po danu', () => {
+    assert.match(sql, /before insert on public\.ai_posao/, 'nema okidača na upis');
+    assert.match(sql, /new\.stanje := 'radi'/, 'klijent sme da diktira početno stanje');
+    assert.match(sql, /new\.user_id := auth\.uid\(\)/, 'red se može upisati u tuđe ime');
+    assert.match(sql, /check_and_bump_endpoint\('ai_posao'/,
+      'red se može napraviti mimo ijednog brojača');
+    /* Mreža ispod limita iz koda ne sme da obori analizu ako rate-limit.sql
+       još nije pušten — limit u kodu je i dalje na mestu. */
+    assert.match(sql, /when undefined_function then null/,
+      'nedostajuća funkcija obara pravljenje posla');
+  });
+});
+
+describe('requireUser je prepisan u 9 fajlova — provera ne sme da se razidje', () => {
   /* Zašto duplikat uopšte postoji: Vercel funkcije bez build koraka ne
      razrešavaju lokalne import-e (v. komentar u api/analyze.js), a deploy ide
      preko GitHub web editora. Zajednički modul bi to pokvario.
@@ -442,7 +661,11 @@ describe('requireUser je prepisan u 7 fajlova — provera ne sme da se razidje',
      ovde poredi ono što je bezbednosno nosivo — SAMA PROVERA — dok se
      povratna vrednost sme razlikovati (svaki endpoint uzima što mu treba:
      userId / +email / +token). */
-  const PUTANJE = ['analyze', 'wellness', 'workouts', 'auth', 'refresh', 'icu-oauth', 'report-bug'];
+  /* Spisak je bio sedam, a fajlova sa `requireUser` je devet — `activities` i
+     `push` su ispadali iz poređenja, dakle iz jedine stvari koja duplikat drži
+     na okupu. Sada su svi. */
+  const PUTANJE = ['analyze', 'wellness', 'workouts', 'auth', 'refresh', 'icu-oauth',
+                   'report-bug', 'activities', 'push'];
 
   const telo = p => {
     const s = readFileSync(join(ROOT, 'api', p + '.js'), 'utf8');
@@ -454,7 +677,45 @@ describe('requireUser je prepisan u 7 fajlova — provera ne sme da se razidje',
       .replace(/\s+/g, ' ').trim();
   };
 
-  test('provera prijave je bajt u bajt ista u svih 7', () => {
+  test('kratkotrajan keš postoji u svakoj kopiji i ne traje duže od 30 s', () => {
+    /* Keš uklanja dodatan krug ka Supabase-u po svakom pozivu (sinhronizacija
+       sa intervals.icu ih je plaćala četiri, anketa o analizi po jedan na tri
+       sekunde). Prozor mora ostati kratak: token opozvan odjavom sme da važi
+       najviše toliko. Za poređenje, preporučena lokalna provera potpisa JWT-a
+       veruje tokenu ceo sat — ovo je strože. */
+    for (const p of PUTANJE) {
+      const s = readFileSync(join(ROOT, 'api', p + '.js'), 'utf8');
+      const m = /const AUTH_KES_MS = (\d+);/.exec(s);
+      assert.ok(m, `api/${p}.js nema keš potvrđenih tokena`);
+      assert.ok(+m[1] <= 30000, `api/${p}.js drži token u kešu ${+m[1]} ms — predugo`);
+      assert.match(s, /AUTH_KES\.get\(m\[1\]\)/, `api/${p}.js keš ne gleda SAM token kao ključ`);
+    }
+  });
+
+  test('keš štedi mrežni krug, a ne menja odgovor', async () => {
+    let poziva = 0;
+    globalThis.fetch = async (u) => {
+      if (String(u).includes('/auth/v1/user')) { poziva++; return jsonRes({ id: 'u9', email: 'k@t.rs' }); }
+      return jsonRes({});
+    };
+    const { default: h } = await import('../api/wellness.js?t=' + Date.now());
+    const zovi = async (token) => {
+      const res = makeRes();
+      await h({ method: 'POST', headers: { authorization: 'Bearer ' + token }, body: {} }, res);
+      return res;
+    };
+    /* Oba puta se stiže do iste greške (telo je prazno) — dakle prijava je
+       prošla isto, samo je drugi put bez mrežnog kruga. */
+    const a = await zovi('t1');
+    const b = await zovi('t1');
+    assert.equal(poziva, 1, 'drugi poziv sa istim tokenom je opet išao na mrežu');
+    assert.deepEqual(b.body, a.body, 'keširana prijava daje drugačiji odgovor');
+    /* Drugi token NE sme da pokupi tuđ keširan odgovor. */
+    await zovi('t2');
+    assert.equal(poziva, 2, 'drugi token je prošao na tuđem keširanom unosu');
+  });
+
+  test('provera prijave je bajt u bajt ista u svih 9', () => {
     const etalon = telo('analyze');
     for (const p of PUTANJE.slice(1)) {
       assert.equal(telo(p), etalon,
@@ -541,14 +802,111 @@ describe('Analiza odvojena od cekanja', () => {
   const app = readRepoFile('app.js');
   const sql = readRepoFile('supabase/ai-posao.sql');
 
-  test('tri faze postoje i samo POKRETANJE trosi dnevni limit', () => {
+  test('tri faze postoje', () => {
     for (const f of ['start', 'radi', 'citaj'])
       assert.match(src, new RegExp(`posao === '${f}'`), `nema faze '${f}'`);
-    /* Kad bi se brojala i faza 'radi', jedna analiza bi trosila dve. */
-    assert.match(src, /if \(!vlasnik && posao !== 'radi'\)/, 'faza racuna se broji u limit');
-    /* Citanje rezultata ide PRE brojaca — inace bi svako osvezavanje trosilo. */
-    assert.ok(src.indexOf("posao === 'citaj'") < src.indexOf('check_and_bump_api_usage'),
-      'citanje rezultata prolazi kroz dnevni brojac');
+  });
+
+  /* ================================================================
+     DNEVNI LIMIT — TESTIRA SE PONAŠANJE, NE OBLIK KODA.
+
+     Ovde je ranije stajalo `assert.match(src, /if \(!vlasnik && posao !==
+     'radi'\)/)` — dakle provera da u fajlu postoji određen niz znakova. Taj
+     test je prolazio i dok je `{posao:'radi', trend:{…}}` pozivao model bez
+     ijednog uvećanja brojača: uslov je bio tačno tamo gde ga je regularni
+     izraz tražio, a pet redova niže je `handleTrend` izlazio pre svake brane.
+     Rupa je nađena izvršnim pozivom, ne čitanjem — pa se tako i čuva.
+
+     Lažni `fetch` broji dve stvari koje jedine znače nešto: koliko je puta
+     pomeren dnevni brojač i koliko je puta pozvan model. ============= */
+  function stubAnalyze(stanje) {
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) {
+        return jsonRes({ id: 'u1', email: 'korisnik@t.rs', email_confirmed_at: '2026-01-01' });
+      }
+      if (u.includes('check_and_bump_api_usage')) {
+        stanje.brojano++;
+        if (stanje.preko) return { ok: false, status: 400, text: async () => JSON.stringify({ code: 'P0001', message: 'DAILY_LIMIT_EXCEEDED' }) };
+        return jsonRes({});
+      }
+      if (u.includes('check_and_bump_endpoint')) { stanje.citanja++; return jsonRes({}); }
+      if (u.includes('generativelanguage')) {
+        stanje.model++;
+        return jsonRes({ candidates: [{ content: { parts: [{ text: 'analiza' }] } }] });
+      }
+      /* ai_posao: PATCH nad nepostojećim redom vraća prazan niz — isto što i
+         PostgREST. Tako se vidi da preuzimanje posla zaista štiti. */
+      if (u.includes('/rest/v1/ai_posao')) {
+        if (opt && opt.method === 'POST') return jsonRes([{ id: '11111111-1111-4111-8111-111111111111' }]);
+        return jsonRes(stanje.redPostoji ? [{ id: 'x', stanje: 'radi' }] : []);
+      }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+  }
+  const novoStanje = () => ({ brojano: 0, model: 0, citanja: 0, preko: false, redPostoji: false });
+  const zovi = async (telo) => {
+    const { default: h } = await import('../api/analyze.js?t=' + Date.now());
+    const res = makeRes();
+    await h({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: telo }, res);
+    return res;
+  };
+  const TREND = { cilj: 60, baseline: 50, treninzi: [], vdot: [] };
+  const UUID_OK = '00000000-0000-4000-8000-000000000000';
+
+  test('trend uz fazu posla se ODBIJA — inače je limit potpuno zaobiđen', async () => {
+    const st = novoStanje(); stubAnalyze(st);
+    const res = await zovi({ posao: 'radi', posaoId: UUID_OK, trend: TREND });
+    assert.equal(res.code, 400, 'trend sa fazom posla je prošao');
+    assert.equal(st.model, 0, 'MODEL JE POZVAN — dnevni limit je zaobiđen');
+    assert.equal(st.brojano, 0);
+  });
+
+  test('obična trend analiza se broji u dnevni limit', async () => {
+    const st = novoStanje(); stubAnalyze(st);
+    const res = await zovi({ trend: TREND });
+    assert.equal(res.code, 200);
+    assert.equal(st.model, 1, 'model nije pozvan');
+    assert.equal(st.brojano, 1, 'trend analiza se ne broji');
+  });
+
+  test('faza „radi" bez ispravnog ID-a posla se broji kao nov poziv', async () => {
+    /* Preskakanje brojača sme da važi SAMO za nastavak posla koji je pri
+       pokretanju već izbrojan. Bez toga je dovoljno reći „ja sam nastavak". */
+    const st = novoStanje(); stubAnalyze(st);
+    await zovi({ posao: 'radi', posaoId: 'nije-uuid', session: { desc: 'x' }, entered: { km: 1 } });
+    assert.equal(st.brojano, 1, 'izmišljen ID posla je preskočio brojač');
+  });
+
+  test('faza „radi" sa ID-em koji ne postoji ne poziva model', async () => {
+    const st = novoStanje(); stubAnalyze(st);   /* redPostoji=false → PATCH vrati [] */
+    const res = await zovi({ posao: 'radi', posaoId: UUID_OK, session: { desc: 'x' }, entered: { km: 1 } });
+    assert.equal(res.code, 200);
+    assert.equal(res.body.vec, true, 'posao nije prepoznat kao već preuzet');
+    assert.equal(st.model, 0, 'model je pozvan za posao koji ne postoji');
+  });
+
+  test('pravi nastavak posla NE troši drugi put dnevni limit', async () => {
+    const st = novoStanje(); st.redPostoji = true; stubAnalyze(st);
+    await zovi({ posao: 'radi', posaoId: UUID_OK, session: { desc: 'x' }, entered: { km: 1 } });
+    assert.equal(st.model, 1, 'model nije pozvan za stvaran posao');
+    assert.equal(st.brojano, 0, 'nastavak već izbrojanog posla se broji drugi put');
+  });
+
+  test('prekoračen limit ne pušta ni model ni posao', async () => {
+    const st = novoStanje(); st.preko = true; stubAnalyze(st);
+    const res = await zovi({ posao: 'start' });
+    assert.equal(res.code, 429);
+    assert.equal(st.model, 0);
+  });
+
+  test('čitanje rezultata ne troši kvotu analiza, ali ima svoj brojač', async () => {
+    const st = novoStanje(); st.redPostoji = true; stubAnalyze(st);
+    const res = await zovi({ posao: 'citaj', posaoId: UUID_OK });
+    assert.equal(res.code, 200);
+    assert.equal(st.brojano, 0, 'čitanje troši dnevni limit analiza');
+    assert.equal(st.model, 0, 'čitanje je pozvalo model');
+    assert.equal(st.citanja, 1, 'čitanje nema nikakav brojač');
   });
 
   test('posao se ne moze pokrenuti dvaput', () => {

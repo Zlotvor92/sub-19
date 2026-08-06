@@ -209,6 +209,12 @@ export function loadApp(opts = {}) {
     ss,
     calls,
     clock,
+    /* Zamena mrežnog sloja. Podrazumevani stub svaki poziv odbija sa
+       „offline (test)", što je tačno za većinu testova — ali sinhronizacija sa
+       Supabase-om se bez odgovora ne može testirati uopšte, pa je ta putanja
+       do sada bila neproverena. Vraćena vrednost mora ličiti na `Response`
+       onoliko koliko je pozivaocu potrebno ({ok, status, json, text}). */
+    setFetch: fn => { ctx.fetch = async (...a) => { calls.fetches.push(a); return fn(...a); }; },
     /* čita ime iz konteksta — radi i za const/let i za function */
     get: name => vm.runInContext(name, ctx),
     /* izvršava proizvoljan izraz u kontekstu aplikacije */

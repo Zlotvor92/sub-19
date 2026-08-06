@@ -8,6 +8,22 @@
    - SUPABASE_URL, SUPABASE_ANON_KEY   (JWT provera + rate limit RPC)
    - RESEND_API_KEY, REPORT_TO, REPORT_FROM   (slanje mejla) */
 
+/* KRATKOTRAJAN KEŠ POTVRĐENIH TOKENA — ista provera, jedan mrežni skok manje.
+   Do sada je SVAKI poziv ka bilo kojoj putanji plaćao dodatan krug ka
+   Supabase-u. Jedna sinhronizacija sa intervals.icu su četiri poziva, dakle
+   četiri takva kruga; anketa o AI analizi pita na svake tri sekunde do minut i
+   po. To je pola sekunde čiste latencije koja ne radi ništa.
+
+   Prozor je namerno kratak — 30 s. Poređenja radi: preporučeni način (lokalna
+   provera potpisa JWT-a, bez ijednog poziva) veruje tokenu do njegovog isteka,
+   dakle ceo sat. Ovo je STROŽE od toga, uz istu uštedu. Ključ mape je sam
+   token, pa se tuđa sesija ne može ni pogoditi ni podmetnuti.
+   Mapa živi u modulu, dakle koliko i topla instanca funkcije; gornja granica
+   postoji da dugotrajna instanca ne raste bez kraja. */
+const AUTH_KES = new Map();
+const AUTH_KES_MS = 30000;
+const AUTH_KES_MAX = 500;
+
 async function requireUser(req) {
   const url  = process.env.SUPABASE_URL;
   const anon = process.env.SUPABASE_ANON_KEY;
@@ -18,6 +34,8 @@ async function requireUser(req) {
   const h = req.headers.authorization || req.headers.Authorization || '';
   const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
   if (!m) return { ok: false, status: 401, error: 'Nedostaje prijava.' };
+  const kes = AUTH_KES.get(m[1]);
+  if (kes && kes.doKada > Date.now()) return { ok: true, userId: kes.id, email: kes.email, token: m[1] };
   try {
     const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
@@ -25,10 +43,25 @@ async function requireUser(req) {
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
+    if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    AUTH_KES.set(m[1], { id: u.id, email: u.email || null, doKada: Date.now() + AUTH_KES_MS });
     return { ok: true, userId: u.id, email: u.email || null, token: m[1] };
   } catch (e) {
     return { ok: false, status: 503, error: 'Provera prijave trenutno nije moguća.' };
   }
+}
+
+/* PREPOZNAVANJE „PREKORAČEN LIMIT" IDE PO ŠIFRI GREŠKE, NE PO TEKSTU.
+   Ranije se svuda gledalo `telo.includes('DAILY_LIMIT_EXCEEDED')`. Dok god
+   PostgREST prosleđuje poruku izuzetka to radi — ali čim je skrati, promeni
+   omot ili je prevede, provera tiho postaje „propusti", i to na svih pet
+   putanja odjednom. `errcode` je deo ugovora funkcije (v. rate-limit.sql),
+   tekst nije. Tekst ostaje kao rezerva za starije verzije PostgREST-a. */
+function jeLimit(telo) {
+  let j = null;
+  try { j = JSON.parse(telo); } catch (e) {}
+  if (j && (j.code === 'P0001' || String(j.message || '').includes('DAILY_LIMIT_EXCEEDED'))) return true;
+  return String(telo || '').includes('DAILY_LIMIT_EXCEEDED');
 }
 
 function esc(s) {
@@ -67,17 +100,17 @@ export default async function handler(req, res) {
     });
     if (!rl.ok) {
       const errBody = await rl.text();
-      if (errBody.includes('DAILY_LIMIT_EXCEEDED')) {
+      if (jeLimit(errBody)) {
         return res.status(429).json({ error: 'Dnevni limit prijava (' + DAILY_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
       }
       /* Tabela/funkcija mozda jos nije podesena (stara sema) — ne blokiramo
          korisnika, ali se to mora videti u logovima (v. isti komentar u
          api/analyze.js): limit koji tiho otkaze izgleda kao limit koji radi. */
-      console.warn('[limit] brojac nije radio (bug_report_usage) — propusteno bez brojanja. HTTP %s: %s',
+      console.error('[limit][ALARM] brojac nije radio (bug_report_usage) — propusteno bez brojanja. HTTP %s: %s',
         rl.status, errBody.slice(0, 200));
     }
   } catch (e) {
-    console.warn('[limit] brojac nedostupan (bug_report_usage) — propusteno bez brojanja: %s', e.message);
+    console.error('[limit][ALARM] brojac nedostupan (bug_report_usage) — propusteno bez brojanja: %s', e.message);
   }
 
   let body;
