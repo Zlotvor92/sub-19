@@ -3,15 +3,24 @@
   "short_name": "SUB-20",
   "description": "Plan treninga za 5K, 10K, polumaraton i maraton — po Danielsovoj VDOT metodologiji.",
   "lang": "sr",
+  "dir": "ltr",
+  "id": "/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0B0A1F",
   "theme_color": "#0B0A1F",
+  "categories": ["health", "fitness", "sports"],
   "icons": [
     { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "./icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "./screenshot-danas.webp", "sizes": "720x1558", "type": "image/webp", "form_factor": "narrow", "label": "Današnji trening, vreme i prilagođen cilj" },
+    { "src": "./screenshot-plan.webp", "sizes": "720x1558", "type": "image/webp", "form_factor": "narrow", "label": "Cela priprema, nedelju po nedelju" },
+    { "src": "./screenshot-trka.webp", "sizes": "720x1558", "type": "image/webp", "form_factor": "narrow", "label": "Predikcija vremena i test na 3 km" },
+    { "src": "./screenshot-oporavak.webp", "sizes": "720x1558", "type": "image/webp", "form_factor": "narrow", "label": "HRV, puls u miru i trenažno opterećenje" }
   ]
 }

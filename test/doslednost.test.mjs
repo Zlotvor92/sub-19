@@ -7,7 +7,9 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { readRepoFile, readClientSource, loadApp } from './harness.mjs';
+import { readRepoFile, readClientSource, loadApp, ROOT } from './harness.mjs';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const index = readClientSource();
 const sw = readRepoFile('sw.js');
@@ -312,3 +314,73 @@ describe('Uputstvo ne sme da laže o brojevima iz koda', () => {
     assert.deepEqual(mrtva, [], `sidra bez cilja: ${mrtva.join(', ')}`);
   });
 });
+
+describe('Manifest je spreman za pakovanje u Android aplikaciju', () => {
+  /* PWABuilder ocenjuje manifest brojem popunjenih polja (18/45), sto sam po
+     sebi nista ne znaci — vecina od tih 45 su polja za slucajeve koje ova
+     aplikacija nema (note_taking, edge_side_panel, protocol_handlers…). Dva
+     polja sa te liste, medjutim, jesu vazna, i ovi testovi ih drze. */
+
+  test('`id` je stabilan i NE menja identitet vec instaliranih kopija', () => {
+    /* Bez `id`, identitet aplikacije je `start_url`. Cim se start_url promeni,
+       pregledac to vidi kao DRUGU aplikaciju: nova instalacija, a stara ostaje
+       kao siroce. Zato se `id` postavlja eksplicitno.
+       ALI: mora da se razresi na ISTU adresu koju su postojece instalacije vec
+       zapamtile (koren), inace bi bas ovaj popravak napravio taj rascep. */
+    assert.equal(manifest.id, '/', 'id mora biti koren — svaka druga vrednost razdvaja postojece instalacije');
+  });
+
+  test('snimci ekrana postoje, sa tacnim dimenzijama i oznakom oblika', () => {
+    /* Bez njih Android prikazuje siromasan dijalog za instalaciju. */
+    assert.ok(Array.isArray(manifest.screenshots) && manifest.screenshots.length >= 3,
+      'manje od tri snimka — dijalog za instalaciju ostaje siromasan');
+    for (const s of manifest.screenshots) {
+      assert.equal(s.form_factor, 'narrow', `snimak ${s.src} nema form_factor:"narrow"`);
+      assert.match(s.sizes, /^\d+x\d+$/, `snimak ${s.src} nema dimenzije`);
+      assert.ok(s.label && s.label.length > 5, `snimak ${s.src} nema opis`);
+      const put = s.src.replace(/^\.\//, '');
+      const b = readFileBytes(put);
+      assert.ok(b, `snimak ${put} ne postoji na disku`);
+      /* Dimenzije u manifestu moraju odgovarati fajlu — Chrome odbacuje snimak
+         cije se dimenzije ne poklapaju, i to bez ijedne poruke. */
+      const [w, h] = s.sizes.split('x').map(Number);
+      const st = webpDim(b);
+      assert.ok(st, `${put} nije citljiv WebP`);
+      assert.deepEqual([st.w, st.h], [w, h], `${put} je ${st.w}x${st.h}, a manifest tvrdi ${s.sizes}`);
+    }
+  });
+
+  test('svi snimci imaju isti odnos strana', () => {
+    /* Chrome ocekuje ujednacen oblik po form-faktoru; razliciti odnosi daju
+       iskrivljen prikaz u dijalogu. */
+    const odnosi = new Set(manifest.screenshots.map(s => s.sizes));
+    assert.equal(odnosi.size, 1, `razlicite dimenzije: ${[...odnosi].join(', ')}`);
+  });
+
+  test('veza sa Android aplikacijom je pripremljena', () => {
+    const al = readRepoFile('.well-known/assetlinks.json');
+    const j = JSON.parse(al);
+    assert.ok(Array.isArray(j) && j.length, 'assetlinks.json nije niz');
+    assert.equal(j[0].relation[0], 'delegate_permission/common.handle_all_urls');
+    assert.equal(j[0].target.namespace, 'android_app');
+    assert.ok(j[0].target.package_name, 'nema naziva paketa');
+  });
+});
+
+/* Sirovi bajtovi fajla iz repozitorijuma (readRepoFile vraca tekst). */
+function readFileBytes(put) {
+  try { return readFileSync(join(ROOT, put)); } catch { return null; }
+}
+/* Dimenzije iz WebP zaglavlja — bez ijedne zavisnosti.
+   VP8L (lossless) i VP8 (lossy) pisu ih razlicito, pa se oba oblika citaju. */
+function webpDim(b) {
+  if (b.length < 30 || b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') return null;
+  const tip = b.toString('ascii', 12, 16);
+  if (tip === 'VP8X') return { w: (b.readUIntLE(24, 3) & 0xffffff) + 1, h: (b.readUIntLE(27, 3) & 0xffffff) + 1 };
+  if (tip === 'VP8L') {
+    const bits = b.readUInt32LE(21);
+    return { w: (bits & 0x3fff) + 1, h: ((bits >> 14) & 0x3fff) + 1 };
+  }
+  if (tip === 'VP8 ') return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
+  return null;
+}
