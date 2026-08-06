@@ -658,6 +658,72 @@ describe('supabase/ai-posao.sql — stanje posla je serverov automat', () => {
   });
 });
 
+describe('supabase/provera.sql — alat koji hvata razilaženje baze i repozitorijuma', () => {
+  /* Šema živi na dva mesta koja se puštaju odvojeno: SQL rukom kroz Supabase
+     editor, kod deployem. `provera.sql` je jedini način da se vidi da li su se
+     razišli — ali on i sam može da ostane star, i to je gore od nemanja alata:
+     daje lažnu potvrdu.
+
+     Konkretno se već desilo: prva verzija tog upita očekivala je da SVIH šest
+     funkcija bude `security definer`, pa je za `ai_posao_dodirni` i
+     `ai_posao_prelaz` prijavila „PROVERI" — a one namerno nisu i ne treba da
+     budu. Alarm je bio u alatu, ne u bazi.
+
+     Zato se ovde očekivanja iz `provera.sql` porede sa onim što SQL fajlovi
+     STVARNO deklarišu. */
+  const izvuciFunkcije = (fajl) => {
+    const s = readRepoFile('supabase/' + fajl);
+    const out = {};
+    for (const m of s.matchAll(/create or replace function public\.(\w+)\(([\s\S]*?)\bas \$\$/g)) {
+      out[m[1]] = /security definer/.test(m[2]);
+    }
+    return out;
+  };
+  const stvarno = Object.assign({},
+    izvuciFunkcije('ai-posao.sql'),
+    izvuciFunkcije('api-usage.sql'),
+    izvuciFunkcije('rate-limit.sql'));
+
+  const provera = readRepoFile('supabase/provera.sql');
+  const spisak = (naziv) => {
+    const m = new RegExp(`${naziv} as \\(([\\s\\S]*?)\\)\\s*,?\\s*\\n`, 'm').exec(provera);
+    assert.ok(m, `provera.sql nema spisak ${naziv}`);
+    return (m[1].match(/'([a-z_]+)'/g) || []).map(x => x.replace(/'/g, ''));
+  };
+
+  test('spisak „mora biti security definer" odgovara SQL fajlovima', () => {
+    for (const ime of spisak('ocekivano_def')) {
+      assert.equal(stvarno[ime], true,
+        `provera.sql traži security definer za ${ime}, a SQL ga tako ne definiše`);
+    }
+  });
+
+  test('spisak „ne treba da bude security definer" odgovara SQL fajlovima', () => {
+    for (const ime of spisak('ocekivano_obicno')) {
+      assert.equal(stvarno[ime], false,
+        `provera.sql očekuje običnu funkciju ${ime}, a SQL je definiše kao security definer`);
+    }
+  });
+
+  test('nijedna funkcija iz SQL fajlova ne izostaje iz provere', () => {
+    const pokriveno = new Set([...spisak('ocekivano_def'), ...spisak('ocekivano_obicno')]);
+    const izostale = Object.keys(stvarno).filter(k => !pokriveno.has(k));
+    assert.deepEqual(izostale, [],
+      `provera.sql ne gleda: ${izostale.join(', ')} — te funkcije mogu tiho nestati iz baze`);
+  });
+
+  test('provera čita samo katalog, nijedan korisnički podatak', () => {
+    /* Ispis se deli sa strancem (mnom) kad nešto ne radi. Ako bi upit ikad
+       dodirnuo `user_state` ili `push_pretplata` kao IZVOR REDOVA, iz baze bi
+       izašli tuđi zdravstveni podaci. Imena tabela smeju da se pominju kao
+       tekst koji se proverava — `from`/`join` nad njima ne sme. */
+    for (const t of ['user_state', 'push_pretplata', 'ai_posao', 'api_usage']) {
+      assert.doesNotMatch(provera, new RegExp(`(from|join)\\s+(public\\.)?${t}\\b`, 'i'),
+        `provera.sql čita redove iz ${t} — ispis bi nosio korisničke podatke`);
+    }
+  });
+});
+
 describe('requireUser je prepisan u 9 fajlova — provera ne sme da se razidje', () => {
   /* Zašto duplikat uopšte postoji: Vercel funkcije bez build koraka ne
      razrešavaju lokalne import-e (v. komentar u api/analyze.js), a deploy ide
