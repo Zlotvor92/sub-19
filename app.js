@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='192'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='193'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -10584,6 +10584,36 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 
+/* SERVICE WORKER SE REGISTRUJE PRVI, PRE SVEGA OSTALOG.
+
+   Ranije je ovaj blok stajao na DNU pokretanja — posle sbLoad, renderHeader,
+   setPage, handleOAuthReturn, sbInit, tri sinhronizacije i prognoze. Dva
+   problema, oba stvarna:
+
+   1. KRHKOST. Da bilo koji od tih poziva jednom baci grešku, registracija se
+      nikad ne bi izvršila — aplikacija bi tiho ostala bez offline režima i bez
+      trake „Osveži", a greška bi izgledala kao nešto sasvim deseto. Ovde
+      registracija ne zavisi ni od čega osim od samog pregledača.
+
+   2. KASNI. Svaki od tih poziva pomera registraciju za koji milisekund.
+      Alati koji sa strane proveravaju da li sajt ima service worker (PWABuilder,
+      Lighthouse) gledaju kroz kratak prozor; kad registracija stigne posle
+      njega, izveštaj kaže da service workera NEMA iako ga ima.
+
+   `pratiAzuriranje` i `showUpdateBanner` su `function` deklaracije (dizane), a
+   pozivaju se tek kad registracija odgovori — do tada je DOM odavno tu. */
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+  let refreshing=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(refreshing)return; refreshing=true; location.reload();
+  });
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    pratiAzuriranje(reg);
+    reg.update();
+    setInterval(()=>{ reg.update(); pratiAzuriranje(reg); }, 60*60*1000);
+  }).catch(()=>{});
+}
+
 /* SESIJA SE UCITAVA PRE PRVOG ISCRTAVANJA.
    Ranije je `sbLoad()` stajao ISPOD `setPage('danas')`, pa je Danas ekran prvi
    put crtan dok je SB jos bio prazan objekat: sbAuthed() -> false, dakle i
@@ -10609,17 +10639,6 @@ aiPokupiSve();               /* v. „ANALIZA ODVOJENA OD CEKANJA" */
    vremePovuci) — poziv je besplatan, ali nema razloga da se ponavlja pri
    svakom otvaranju. */
 if(navigator.onLine&&S.ui&&S.ui.geo) vremePovuci(false).then(r=>{ if(r.ok&&!r.kes&&ACTIVE==='danas') renderDanas(); });
-if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
-  let refreshing=false;
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(refreshing)return; refreshing=true; location.reload();
-  });
-  navigator.serviceWorker.register('./sw.js').then(reg=>{
-    pratiAzuriranje(reg);
-    reg.update();
-    setInterval(()=>{ reg.update(); pratiAzuriranje(reg); }, 60*60*1000);
-  }).catch(()=>{});
-}
 
 /* PRAĆENJE NOVOG SERVICE WORKER-a.
    Ranije je stajao samo `reg.addEventListener('updatefound', …)`, a taj događaj

@@ -174,3 +174,44 @@ describe('Verzija offline kopije se može pročitati i naterati', () => {
     assert.match(app, /\$\('#sw-osvezi'\)\.onclick=e=>osveziAplikaciju\(e\.target\)/);
   });
 });
+
+describe('Instalacija service workera preživi jedan fajl koji fali', () => {
+  /* `addAll` je ATOMIČAN: ako ijedan odgovor nije uspešan, ceo poziv odbija,
+     instalacija pada, nov SW nikad ne stigne do `installed` — pa nema ni
+     offline keša ni trake „Osveži". I sve to tiho.
+
+     Uhvaćeno uživo: u ASSETS je dodat nov fajl, jedan server ga još nije imao,
+     i traka je prestala da izlazi. Uzrok je bio pet redova dalje od simptoma. */
+  const sw = readRepoFile('sw.js');
+  /* Komentari se sklanjaju: objasnjenje IZNAD popravke pominje `addAll(ASSETS)`
+     kao ono sto je bilo — a sirova provera bi bas taj komentar nasla kao dokaz
+     da popravke nema. */
+  const kod = sw.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  test('instalacija ne koristi addAll', () => {
+    assert.doesNotMatch(kod, /c\.addAll\(ASSETS\)/,
+      'jedan fajl koji fali ponovo obara celu instalaciju');
+  });
+
+  test('svaki fajl se kešira za sebe, a neuspeh se vidi u logu', () => {
+    assert.match(kod, /Promise\.allSettled\(ASSETS\.map\(a => c\.add\(a\)\)\)/,
+      'fajlovi se ne keširaju pojedinačno');
+    assert.match(sw, /console\.warn\('\[sw\] nije keširano pri instalaciji:'/,
+      'neuspeh je nem — isti problem bi se opet tražio na pogrešnom mestu');
+  });
+
+  test('svaki fajl iz ASSETS zaista postoji u repozitorijumu', () => {
+    /* Prava odbrana je da spisak ne laže. Ovo hvata i običnu grešku u kucanju. */
+    const m = /const ASSETS = \[([^\]]+)\]/.exec(kod);
+    assert.ok(m, 'nema ASSETS spiska');
+    const putanje = m[1].split(',').map(s => s.trim().replace(/^'|'$/g, '')).filter(Boolean);
+    for (const put of putanje) {
+      if (put === './') continue;                       /* koren = index.html */
+      /* readRepoFile baca za fajl koji ne postoji, pa se hvata — inace bi
+         poruka o kvaru bila ENOENT umesto objasnjenja sta je zapravo lose. */
+      let ima = true;
+      try { readRepoFile(put.replace(/^\.\//, '')); } catch { ima = false; }
+      assert.ok(ima, `ASSETS pominje ${put}, a tog fajla nema — instalacija bi ga preskočila`);
+    }
+  });
+});

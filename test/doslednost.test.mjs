@@ -424,3 +424,40 @@ describe('Prečice sa ikonice zaista otvaraju svoj tab', () => {
     }
   });
 });
+
+describe('Service worker se registruje bez čekanja na app.js', () => {
+  /* MERENO, od početka učitavanja do registracije:
+       app.js (611 KB) nosi registraciju →  51 ms brza veza · 1373 ms 4G · 3377 ms 3G
+       zaseban sw-reg.js iz <head>       →   5 ms brza veza ·  185 ms 4G ·  431 ms 3G
+     Sve to vreme nema ni offline režima ni provere nove verzije — a alati koji
+     sa strane proveravaju sajt gledaju kroz kraći prozor, pa prijave da service
+     workera nema iako ga ima. */
+  const html = readRepoFile('index.html');
+  const reg = readRepoFile('sw-reg.js');
+
+  test('index.html registruje service worker pre app.js', () => {
+    const iReg = html.indexOf('sw-reg.js');
+    const iApp = html.indexOf('./app.js"');
+    assert.ok(iReg > 0, 'sw-reg.js se ne učitava iz index.html');
+    assert.ok(iApp > 0 && iReg < iApp, 'sw-reg.js se učitava POSLE app.js — čeka 611 KB');
+    /* Trazi se ZATVARANJE glave, ne niska '<body' — nju nalazi i komentar koji
+       pominje <body> stotinak redova ranije. */
+    assert.ok(iReg < html.indexOf('</head>'), 'sw-reg.js nije u <head>');
+  });
+
+  test('sw-reg.js je sićušan — inače nema svrhe', () => {
+    assert.ok(reg.length < 3000, `sw-reg.js je ${reg.length} B — prevelik za ono što radi`);
+    assert.match(reg, /navigator\.serviceWorker\.register\('\.\/sw\.js'\)/);
+    assert.match(reg, /location\.protocol !== 'https:'/);
+  });
+
+  test('sw-reg.js je i sam u kešu, kao i ostali fajlovi aplikacije', () => {
+    assert.match(readRepoFile('sw.js'), /'\.\/sw-reg\.js'/, 'sw-reg.js nije u ASSETS');
+  });
+
+  test('app.js i dalje registruje — register je idempotentan, a njemu treba `reg`', () => {
+    const izvor = readClientSource();
+    assert.match(izvor, /navigator\.serviceWorker\.register\('\.\/sw\.js'\)\.then\(reg=>\{/);
+    assert.match(izvor, /pratiAzuriranje\(reg\)/);
+  });
+});

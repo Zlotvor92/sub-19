@@ -3,13 +3,13 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v192';
-const APP_VERSION = '192';
+const CACHE = 'sub19-cache-v193';
+const APP_VERSION = '193';
 /* './app.js' MORA biti na spisku: od v150 index.html je samo markup, a ceo kod
    aplikacije je u app.js. Da nije tu, dobio bi network-first samo omotač, dok
    bi se logika servirala iz starog keša — tj. „promenio sam kod, ništa se ne
    vidi", tačno ona greška zbog koje je ceo spisak i prebačen na network-first. */
-const ASSETS = ['./', './index.html', './app.js', './manifest.json', './icon-32.png', './icon-192.png', './icon-512.png', './icon-128.png', './icon-maskable-512.png', './apple-touch-icon.png', './privacy.html', './uputstvo.html'];
+const ASSETS = ['./', './index.html', './app.js', './sw-reg.js', './manifest.json', './icon-32.png', './icon-192.png', './icon-512.png', './icon-128.png', './icon-maskable-512.png', './apple-touch-icon.png', './privacy.html', './uputstvo.html'];
 
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
@@ -25,7 +25,25 @@ self.addEventListener('message', e => {
 
 self.addEventListener('install', e => {
   /* NE skipWaiting ovde — čeka SKIP_WAITING poruku (klik na "Osveži"). */
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+  /* JEDAN FAJL KOJI FALI NE SME DA OBORI CELU INSTALACIJU.
+     Ranije je stajalo `c.addAll(ASSETS)`. `addAll` je atomičan: ako ijedan
+     odgovor nije uspešan, ceo poziv odbija — instalacija pada, nov SW nikad ne
+     stigne do stanja `installed`, pa NEMA ni offline keša ni trake „Osveži".
+     I sve to tiho: u aplikaciji izgleda kao da ažuriranja jednostavno nema.
+
+     Uhvaćeno kad je u ASSETS dodat nov fajl (sw-reg.js) a jedan server ga još
+     nije imao — traka je prestala da izlazi, a uzrok je bio pet redova dalje.
+     Dovoljno je da se jednom pogreši putanja ili da deploy ne prenese fajl.
+
+     Sada se svaki fajl kešira za sebe. Ono što ne uspe biće pokupljeno pri
+     prvom traženju (v. fetch rukovalac — sve iz ASSETS ide network-first i
+     usput se upisuje u keš), pa je gubitak privremen umesto potpun. */
+  e.waitUntil(caches.open(CACHE).then(c =>
+    Promise.allSettled(ASSETS.map(a => c.add(a))).then(ishodi => {
+      const pali = ishodi.map((r, i) => r.status === 'rejected' ? ASSETS[i] : null).filter(Boolean);
+      if (pali.length) console.warn('[sw] nije keširano pri instalaciji:', pali.join(', '));
+    })
+  ));
 });
 
 self.addEventListener('activate', e => {

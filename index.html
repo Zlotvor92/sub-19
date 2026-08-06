@@ -898,6 +898,12 @@ body.uvod-radi{overflow:hidden}
   #uvod{display:none}
 }
 </style>
+<!-- REGISTRACIJA SERVICE WORKER-a IDE PRVA, PRE app.js.
+     app.js je 611 KB, pa je registracija ranije čekala da se on skine i izvrši:
+     51 ms na brzoj vezi, ali 1373 ms na 4G i 3377 ms na 3G. Sve to vreme nema
+     ni offline režima ni provere nove verzije. Ovaj fajl je par stotina bajta.
+     Objašnjenje u sw-reg.js. -->
+<script src="./sw-reg.js"></script>
 </head>
 <body>
 
