@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='193'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='194'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9297,6 +9297,27 @@ function openSettings(){
              <details class="help"><summary>Šta se tačno šalje</summary><p>Koordinate zaokružene na dve decimale (~1 km) idu <b>direktno</b> servisu Open-Meteo, koji ne traži nalog ni ključ. Naš server ih nikad ne vidi — zato i ne ide preko njega.</p><p>Ništa se ne šalje dok sam ne uključiš, a isključivanjem se koordinate brišu sa uređaja.</p></details>`);
     })()}
 
+    ${(()=>{
+      /* iOS daje PushManager SAMO instaliranoj aplikaciji. U Safariju sa
+         sajta ga nema — i to nije kvar nego Appleovo pravilo, pa poruka mora
+         da kaže šta da se uradi, a ne „nije podržano". */
+      if(!pushPodrzan()){
+        const ios=/iPad|iPhone|iPod/.test(navigator.userAgent||'');
+        return kartica(false, glava('Obaveštenja','nisu dostupna ovde','warn'),
+          ios
+            ? `<div class="set-st">Na iPhoneu obaveštenja radi samo <b>instalirana</b> aplikacija. U Safariju dodirni <b>Podeli → Dodaj na početni ekran</b>, otvori SUB-20 sa ikonice i vrati se ovde.</div>`
+            : `<div class="set-st">Ovaj pregledač ne podržava obaveštenja. Aplikacija radi normalno i bez njih.</div>`);
+      }
+      const doz=pushDozvola();
+      const ukljucena=!!(S.ui&&S.ui.push)&&doz==='granted';
+      return kartica(!ukljucena,
+        glava('Obaveštenja', ukljucena?'uključena na ovom uređaju':'isključena', ukljucena?true:'warn'),
+        `<div class="set-st">Ujutru stigne kratak podsetnik šta je danas na planu — i poruka kad AI analiza završi dok je aplikacija zatvorena. Dani odmora se preskaču.</div>
+         <div class="btnrow" id="ob-red"></div>
+         <div class="note-src" id="ob-stanje" style="margin:6px 0 0">Proveravam…</div>
+         <details class="help"><summary>Šta se šalje i odakle</summary><p>Server zna samo <b>datum i jedan red teksta</b> („8×400 m · 12 km") koji mu aplikacija sama upiše za narednih nedelju dana. Plan, tempo, puls i istorija ostaju na uređaju.</p><p>Sadržaj obaveštenja se šifruje ključem koji postoji samo na tvom telefonu — ni Google ni Apple ne vide šta piše, iako poruka prolazi kroz njih.</p><p>Isključivanje briše pretplatu i sa uređaja i sa servera.</p></details>`);
+    })()}
+
     ${kartica(false,
       glava('Podaci', 'poslednji backup: '+(S.ui.lastBackup?esc(fmtDY(S.ui.lastBackup)):'nikad'), S.ui.lastBackup?true:'warn'),
       `<div class="btnrow"><button class="btn ghost" id="s-exp">Izvezi backup</button><button class="btn ghost" id="s-imp">Uvezi backup</button></div>
@@ -9477,6 +9498,7 @@ function openSettings(){
       setTimeout(()=>{ b.disabled=false; b.textContent='Povuci sve'; },1500);
     }
   };
+  if($('#ob-red')) osveziObavestenja();
   /* Stanje offline kopije se čita ASINHRONO — ne sme da drži otvaranje
      Podešavanja. Do odgovora stoji „Proveravam…". */
   if($('#sw-osvezi')) $('#sw-osvezi').onclick=e=>osveziAplikaciju(e.target);
@@ -10182,7 +10204,14 @@ function sbLoad(){
   try{ const r=localStorage.getItem(SB_KEY); if(r) SB=Object.assign(SB,JSON.parse(r)); }catch(e){}
   if(!SB.deviceId){ SB.deviceId='d'+Math.random().toString(36).slice(2,10); sbSave(); }
 }
-function sbSave(){ try{ localStorage.setItem(SB_KEY,JSON.stringify(SB)); }catch(e){} }
+function sbSave(){
+  try{ localStorage.setItem(SB_KEY,JSON.stringify(SB)); }catch(e){}
+  /* Kopija za service worker. Piše se BAŠ ovde jer se sbSave() zove pri
+     prijavi i pri svakom osvežavanju tokena — tačno u trenucima kad se ono
+     što pozadina zna promeni. Bez await: ako IndexedDB padne, sinhronizacija
+     u prvom planu ne sme da stane zbog toga. */
+  try{ if(typeof pozadinskiNalog==='function') pozadinskiNalog(); }catch(e){}
+}
 
 /* --- ciste funkcije (testabilne bez mreze) --- */
 
@@ -10284,6 +10313,12 @@ function sbLogin(){
     +encodeURIComponent(location.origin+'/?sbn='+n);
 }
 function sbLogout(){
+  /* Odjava mora da očisti i POZADINU. Bez ovoga bi service worker zadržao
+     kopiju tokena i neposlato stanje pa ih gurnuo posle odjave — na tuđem
+     telefonu bi to bio tuđ nalog. Obaveštenja se gase iz istog razloga. */
+  const token=SB&&SB.access;
+  try{ pushIskljuci(token).then(pozadinskiZaboravi).catch(()=>pozadinskiZaboravi()); }
+  catch(e){ try{ pozadinskiZaboravi(); }catch(x){} }
   SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
   sbSave();
   sbShowGate('');   /* nalog je obavezan — nazad na kapiju */
@@ -10317,11 +10352,19 @@ async function sbPush(){
       headers:Object.assign(sbHead(),{'Prefer':'resolution=merge-duplicates,return=representation'}),
       body:JSON.stringify({user_id:SB.userId,data:sbPayload(S),
         device_id:SB.deviceId,app_version:APP_VERSION})});
-    if(!r.ok) return false;
+    /* 5xx je privremen (Supabase se restartuje, mreža puca na pola) — takav
+       upis ide u pozadinski red. 4xx se ponavljanjem ne popravlja. */
+    if(!r.ok){ if(r.status>=500) pozadinskiZakazi(); return false; }
     const j=await r.json();
     if(j&&j[0]&&j[0].updated_at){ SB.seenAt=j[0].updated_at; sbSave(); }
+    pozadinskiOtkazi();          /* uspelo je — red više nije potreban */
     return true;
-  }catch(e){ return false; }
+  }catch(e){
+    /* Nema signala. Pregledač će sam pokrenuti upis kad se veza vrati, i ako
+       je aplikacija do tada zatvorena (v. `sync` u sw.js). */
+    pozadinskiZakazi();
+    return false;
+  }
   finally{ SB_BUSY=false; }
 }
 
@@ -10577,12 +10620,358 @@ document.addEventListener('visibilitychange',()=>{
     /* Treninzi, ne samo jutarnja merenja — v. trPovuciAko. */
     trPovuciAko(15*60000);
     aiPokupiSve();          /* analiza koja je zavrsena dok je app bila zatvorena */
+    /* Instalirana PWA ume da stoji u pozadini danima. Bez ovoga bi najave za
+       jutarnji podsetnik ostale od pre nedelju dana, pa bi obaveštenje pisalo
+       tuđi trening. `pushOsvezi` sam preskače poziv ako su već današnje. */
+    pushOsvezi();
     /* Kartica vremena od v181 pokazuje i „sada". Instalirana PWA stoji otvorena
        satima, pa bez ovoga red „sada" nosi prognozu od jutros. vremePovuci sam
        preskace poziv ako je mladji od tri sata. */
     if(navigator.onLine&&S.ui&&S.ui.geo) vremePovuci(false).then(r=>{ if(r.ok&&!r.kes&&ACTIVE==='danas') renderDanas(); });
   }
 });
+
+/* ============================================================================
+   OBAVEŠTENJA, POZADINSKA I POVREMENA SINHRONIZACIJA
+
+   Tri odvojene stvari koje dele isti most ka service workeru (IndexedDB) i
+   zato stoje zajedno:
+
+   1. OBAVEŠTENJA (Web Push) — jutarnji podsetnik šta je danas na planu, i
+      poruka kad AI analiza završi dok je aplikacija zatvorena. Radi i kad je
+      aplikacija ugašena, jer poruku isporučuje pregledač, ne mi.
+
+   2. POZADINSKI UPIS (Background Sync) — unos napravljen bez signala stigne
+      na server čim se veza vrati, i ako je aplikacija u međuvremenu zatvorena.
+
+   3. POVREMENO OSVEŽAVANJE (Periodic Sync) — Chrome/Android, samo za
+      instaliranu aplikaciju: offline kopija i provera nove verzije se
+      osvežavaju bez otvaranja aplikacije.
+
+   ŠTA SE NE MENJA: sve troje je DODATAK. Ako pregledač nešto od ovoga ne
+   podržava (iOS nema periodic sync i nema background sync; push traži da
+   aplikacija bude dodata na početni ekran), aplikacija radi potpuno isto kao
+   do sada — samo bez tog dodatka. Nijedna postojeća putanja ne zavisi od
+   ovoga.
+   ========================================================================= */
+
+/* --- MOST KA SERVICE WORKERU ---
+   Service worker NEMA pristup localStorage-u. Sve što mu treba dok je
+   aplikacija zatvorena (koji nalog, koji token, šta je ostalo neposlato)
+   mora da prođe kroz IndexedDB. Ovde se upisuje, u sw.js se čita. */
+const IDB_BAZA='sub19', IDB_SKLAD='red';
+function idbOtvori(){
+  return new Promise((res,rej)=>{
+    if(!('indexedDB' in window)){ rej(new Error('nema IndexedDB')); return; }
+    const z=indexedDB.open(IDB_BAZA,1);
+    z.onupgradeneeded=()=>{ const db=z.result; if(!db.objectStoreNames.contains(IDB_SKLAD)) db.createObjectStore(IDB_SKLAD); };
+    z.onsuccess=()=>res(z.result);
+    z.onerror=()=>rej(z.error);
+  });
+}
+function idbRadi(nacin,posao){
+  return idbOtvori().then(db=>new Promise((res,rej)=>{
+    const t=db.transaction(IDB_SKLAD,nacin), s=t.objectStore(IDB_SKLAD);
+    const z=posao(s);
+    z.onsuccess=()=>res(z.result);
+    z.onerror=()=>rej(z.error);
+  }));
+}
+function idbCitaj(k){ return idbRadi('readonly',s=>s.get(k)).catch(()=>null); }
+function idbUpisi(k,v){ return idbRadi('readwrite',s=>s.put(v,k)).catch(()=>null); }
+function idbObrisi(k){ return idbRadi('readwrite',s=>s.delete(k)).catch(()=>null); }
+
+/* `navigator.serviceWorker.ready` NIKAD ne odbija — ako registracije nema,
+   samo visi zauvek. Bez roka bi svako mesto koje ga čeka (Podešavanja,
+   uključivanje obaveštenja) tiho stalo. */
+function swSpremna(rok){
+  if(!('serviceWorker' in navigator)) return Promise.resolve(null);
+  return Promise.race([
+    navigator.serviceWorker.ready.catch(()=>null),
+    new Promise(r=>setTimeout(()=>r(null), rok||4000))
+  ]);
+}
+
+/* --- ZAPIS O NALOGU ZA POZADINU ---
+   Piše se pri prijavi i pri svakom osvežavanju tokena. Sadrži i pristupni i
+   `istice`, da service worker može SAM da proceni da li token još važi — a
+   ne da ga potroši i sazna to iz odgovora servera. */
+function pozadinskiNalog(vapid){
+  try{
+    if(!SB||!SB.userId||!SB.refresh) return Promise.resolve(null);
+    return idbCitaj('nalog').then(staro=>idbUpisi('nalog',{
+      url:SB_URL, anon:SB_ANON, userId:SB.userId, uredjaj:SB.deviceId||null,
+      /* PRISTUPNI token ide, REFRESH ne. Refresh se pri upotrebi rotira; da ga
+         pozadina potroši, kopija u localStorage bi postala neupotrebljiva i
+         korisnik bi bio odjavljen bez razloga (v. `guraniStanje` u sw.js). */
+      access:SB.access||null,
+      /* MILISEKUNDE, i to piše u imenu. `SB.expiresAt` je apsolutan trenutak u
+         ms (Date.now()+expires_in*1000), a `S.strava.expiresAt` u istoj
+         aplikaciji je u SEKUNDAMA — dva polja istog imena, dve jedinice.
+         Prva verzija ovog zapisa je to promašila i množila sa 1000, pa je
+         pozadini svaki token izgledao večno važeći. */
+      isticeMs:SB.expiresAt||0,
+      vapid:vapid||(staro&&staro.vapid)||null
+    })).catch(()=>null);
+  }catch(e){ return Promise.resolve(null); }
+}
+function pozadinskiZaboravi(){
+  return Promise.all([idbObrisi('nalog'),idbObrisi('stanje'),idbObrisi('pretplata-neposlata')]).catch(()=>null);
+}
+
+/* --- ODLOŽEN UPIS STANJA ---
+   Zove se kad sbPush() ne uspe zbog mreže. Red je KOPIJA onoga što je ionako
+   u localStorage — ako se u pozadini bilo šta ne poklopi, sme da se baci bez
+   gubitka (v. `guraniStanje` u sw.js). */
+async function pozadinskiZakazi(){
+  try{
+    if(!sbAuthed()||UCITAVANJE_PALO) return false;
+    const reg=await swSpremna(2000);
+    if(!reg||!('sync' in reg)) return false;    /* iOS nema Background Sync */
+    await pozadinskiNalog();
+    await idbUpisi('stanje',{seenAt:SB.seenAt||null, podaci:sbPayload(S), at:Date.now()});
+    await reg.sync.register('sub19-stanje');
+    return true;
+  }catch(e){ return false; }
+}
+function pozadinskiOtkazi(){ try{ return idbObrisi('stanje'); }catch(e){ return Promise.resolve(null); } }
+
+/* --- POVREMENO OSVEŽAVANJE ---
+   Traži se samo kad su obaveštenja već uključena: dozvola `periodic-background-sync`
+   se u Chrome-u ne dobija dijalogom nego procenom koliko se aplikacija koristi,
+   pa nema šta da se pita — ili je ima, ili je nema. */
+async function periodicnaPrijava(){
+  try{
+    const reg=await swSpremna(2000);
+    if(!reg||!reg.periodicSync) return false;
+    if(navigator.permissions&&navigator.permissions.query){
+      const st=await navigator.permissions.query({name:'periodic-background-sync'}).catch(()=>null);
+      if(st&&st.state!=='granted') return false;
+    }
+    await reg.periodicSync.register('sub19-osvezi',{minInterval:12*3600*1000});
+    return true;
+  }catch(e){ return false; }
+}
+async function periodicnaOdjava(){
+  try{
+    const reg=await swSpremna(2000);
+    if(reg&&reg.periodicSync) await reg.periodicSync.unregister('sub19-osvezi');
+  }catch(e){}
+}
+
+/* --- OBAVEŠTENJA --- */
+let PUSH_VAPID=null;   /* javni ključ; čita se sa servera, ne stoji u kodu */
+
+/* Ključ NE stoji u app.js namerno. Da stoji, promena ključeva na serveru bi
+   ćutke razvalila sve pretplate: pregledač bi i dalje slao stari ključ, push
+   servis bi vraćao 403, a u Podešavanjima bi i dalje pisalo „uključeno". */
+async function pushVapid(){
+  if(PUSH_VAPID) return PUSH_VAPID;
+  try{
+    const r=await fetch('/api/push');
+    if(!r.ok) return null;
+    const j=await r.json();
+    if(!j||!j.podeseno||!j.kljuc) return null;
+    PUSH_VAPID=j.kljuc;
+    return PUSH_VAPID;
+  }catch(e){ return null; }
+}
+function pushPodrzan(){
+  return !!(('serviceWorker' in navigator)&&('PushManager' in window)&&('Notification' in window));
+}
+function pushDozvola(){
+  try{ return ('Notification' in window)?Notification.permission:'unsupported'; }catch(e){ return 'unsupported'; }
+}
+function pushBajtovi(b64){
+  const t=String(b64).replace(/-/g,'+').replace(/_/g,'/');
+  const b=atob(t+'='.repeat((4-t.length%4)%4));
+  const u=new Uint8Array(b.length);
+  for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+  return u;
+}
+/* Da li postojeća pretplata pripada ključu koji server SADA koristi. Ako ne,
+   mora da se poništi pa napravi nova — inače push servis odbija svaku poruku,
+   a ništa u aplikaciji to ne pokazuje. */
+function pushIstiKljuc(sub,kljuc){
+  try{
+    const a=sub&&sub.options&&sub.options.applicationServerKey;
+    if(!a) return true;                         /* Safari ne izlaže options — veruj */
+    const x=new Uint8Array(a), y=pushBajtovi(kljuc);
+    if(x.length!==y.length) return false;
+    for(let i=0;i<x.length;i++) if(x[i]!==y[i]) return false;
+    return true;
+  }catch(e){ return true; }
+}
+/* `token` se prosleđuje SAMO pri odjavi: tada se SB briše u istom potezu, pa
+   `sbToken()` više ne bi imao odakle da ga uzme. */
+async function pushPosalji(akcija,dodatno,token){
+  const t=token||await sbToken();
+  if(!t) return {ok:false,error:'Prijava je istekla — prijavi se ponovo.'};
+  try{
+    const r=await fetch('/api/push',{method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},
+      body:JSON.stringify(Object.assign({akcija},dodatno||{}))});
+    let j={}; try{ j=await r.json(); }catch(e){}
+    if(!r.ok) return {ok:false,error:j.error||('Greška '+r.status)};
+    return Object.assign({ok:true},j);
+  }catch(e){ return {ok:false,error:'Nema veze sa serverom.'}; }
+}
+
+/* Šta će pisati u jutarnjem obaveštenju za narednih nedelju dana. Računa se
+   OVDE, ne na serveru: plan, tempo i tipovi sesija žive u ovom fajlu i tu i
+   ostaju — serverska kopija te logike bi se razišla prvom izmenom plana.
+   Prazan tekst = dan odmora; server ga vidi i tada ne šalje ništa. */
+function najaveZaNedelju(){
+  const out={};
+  for(let i=0;i<8;i++){
+    const dan=addD(TODAY,i);
+    const d=BY_DATE[dan];
+    if(!d||d.rest){ out[dan]=''; continue; }
+    const kind=String(sessKind(d)||'Trening');
+    out[dan]=(d.km?kind+' · '+fmtKm(d.km)+' km':kind).slice(0,120);
+  }
+  return out;
+}
+
+async function pushPretplataSada(){
+  const reg=await swSpremna(2000);
+  if(!reg||!reg.pushManager) return null;
+  try{ return await reg.pushManager.getSubscription(); }catch(e){ return null; }
+}
+
+async function pushUkljuci(){
+  if(!pushPodrzan()) return {ok:false,error:'Ovaj pregledač ne podržava obaveštenja.'};
+  if(!sbAuthed()) return {ok:false,error:'Za obaveštenja je potrebna prijava — podsetnik šalje server, ne telefon.'};
+  const kljuc=await pushVapid();
+  if(!kljuc) return {ok:false,error:'Obaveštenja još nisu podešena na serveru.'};
+  let dozvola=pushDozvola();
+  /* MORA iz klika. Chrome i Safari odbijaju `requestPermission()` koji nije
+     pokrenut korisnikovim dodirom — zato se ova funkcija zove SAMO iz
+     onclick, nikad iz pokretanja aplikacije. */
+  if(dozvola==='default'){ try{ dozvola=await Notification.requestPermission(); }catch(e){ dozvola='denied'; } }
+  if(dozvola!=='granted') return {ok:false,error:'Obaveštenja su odbijena. Uključi ih u podešavanjima pregledača za ovu stranicu, pa probaj ponovo.'};
+  const reg=await swSpremna(4000);
+  if(!reg||!reg.pushManager) return {ok:false,error:'Offline kopija se još pravi — probaj za koji trenutak.'};
+  let sub=null;
+  try{ sub=await reg.pushManager.getSubscription(); }catch(e){}
+  if(sub&&!pushIstiKljuc(sub,kljuc)){ try{ await sub.unsubscribe(); }catch(e){} sub=null; }
+  if(!sub){
+    try{ sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:pushBajtovi(kljuc)}); }
+    catch(e){ return {ok:false,error:'Pretplata nije uspela: '+((e&&e.message)||'nepoznata greška')}; }
+  }
+  const r=await pushPosalji('prijava',{pretplata:sub.toJSON(),uredjaj:SB.deviceId,najave:najaveZaNedelju()});
+  if(!r.ok){
+    /* Server nije primio pretplatu — ne ostavljaj je ni u pregledaču, inače
+       Podešavanja pokazuju „uključeno" za nešto što ne može da stigne. */
+    try{ await sub.unsubscribe(); }catch(e){}
+    return r;
+  }
+  await idbObrisi('pretplata-neposlata');
+  await pozadinskiNalog(kljuc);
+  const povremeno=await periodicnaPrijava();
+  S.ui.push=true; S.ui.najaveDan=TODAY; save();
+  return {ok:true,povremeno};
+}
+
+/* Redosled je bitan: PRVO se pretplata poništi u pregledaču, pa se tek onda
+   javlja serveru. Poništena pretplata push servis odbija sa 410, a server
+   tada sam briše red — pa čak i ako javljanje ne prođe (odjava bez signala),
+   obaveštenja prestaju da stižu. Obrnutim redosledom bi neuspelo poništavanje
+   ostavilo uređaj koji i dalje prima poruke. */
+async function pushIskljuci(token){
+  const sub=await pushPretplataSada();
+  let endpoint=null;
+  if(sub){ endpoint=sub.endpoint; try{ await sub.unsubscribe(); }catch(e){} }
+  if(endpoint) await pushPosalji('odjava',{endpoint},token);
+  await idbObrisi('pretplata-neposlata');
+  await periodicnaOdjava();
+  /* Bez `save()` ako je odjava sa naloga u toku — tada je S već na putu da se
+     zameni, a upis bi ga vratio. Zastavicu tada nosi sam odlazak sa naloga. */
+  if(!token&&S&&S.ui){ S.ui.push=false; save(); }
+  return {ok:true};
+}
+
+/* Stanje kartice „Obaveštenja". Čita se ASINHRONO (dozvola je sinhronna, ali
+   pretplata i javni ključ nisu), pa dugmad postoje tek kad se zna šta smeju
+   da urade — bolje nego dugme koje na dodir kaže „ne mogu". */
+async function osveziObavestenja(){
+  const red=$('#ob-red'), st=$('#ob-stanje');
+  if(!red||!st) return;
+  const doz=pushDozvola();
+  if(doz==='denied'){
+    red.innerHTML='';
+    st.innerHTML='Obaveštenja su <b>odbijena</b> za ovu stranicu. Uključi ih u podešavanjima pregledača (ikonica pored adrese → Obaveštenja), pa se vrati ovde.';
+    if(S.ui&&S.ui.push){ S.ui.push=false; save(); }
+    return;
+  }
+  const kljuc=await pushVapid();
+  if(!kljuc){
+    red.innerHTML='';
+    st.textContent='Obaveštenja još nisu podešena na serveru.';
+    return;
+  }
+  const sub=await pushPretplataSada();
+  const ukljucena=!!sub&&doz==='granted';
+  /* Zapamćeno stanje se USKLAĐUJE sa stvarnim. Pretplata ume da nestane bez
+     našeg znanja (brisanje podataka pregledača, reinstalacija) — bez ovoga bi
+     u zaglavlju kartice zauvek pisalo „uključena". */
+  if(!!(S.ui&&S.ui.push)!==ukljucena&&S.ui){ S.ui.push=ukljucena; save(); }
+
+  red.innerHTML=ukljucena
+    ? '<button class="btn ghost sm" id="ob-proba">Probno obaveštenje</button><button class="btn ghost sm" id="ob-off">Isključi</button>'
+    : '<button class="btn" id="ob-on">Uključi obaveštenja</button>';
+  st.textContent=ukljucena
+    ? 'Uključena na ovom uređaju. Podsetnik stiže ujutru, osim na dane odmora.'
+    : 'Isključena. Uključivanje traži dozvolu pregledača — jedan dodir.';
+
+  const on=$('#ob-on');
+  if(on) on.onclick=async e=>{
+    const b=e.target; b.disabled=true; b.textContent='Uključujem…';
+    const r=await pushUkljuci();
+    if(r.ok){ osveziPodesavanja(); }
+    else { b.disabled=false; b.textContent='Uključi obaveštenja'; alert(r.error||'Nije uspelo.'); }
+  };
+  const off=$('#ob-off');
+  if(off) off.onclick=async e=>{
+    const b=e.target; b.disabled=true; b.textContent='Isključujem…';
+    await pushIskljuci();
+    osveziPodesavanja();
+  };
+  const proba=$('#ob-proba');
+  if(proba) proba.onclick=async e=>{
+    const b=e.target; b.disabled=true; b.textContent='Šaljem…';
+    const r=await pushPosalji('proba');
+    b.textContent=r.ok?'Poslato ✓':'Nije uspelo';
+    if(!r.ok) setTimeout(()=>alert(r.error||'Nije uspelo.'),100);
+    setTimeout(()=>{ b.disabled=false; b.textContent='Probno obaveštenje'; },2000);
+  };
+}
+
+/* Pri otvaranju aplikacije: pošalji ono što je service worker ostavio
+   neposlato (v. `pushsubscriptionchange` u sw.js) i osveži najave za
+   narednu nedelju. Oboje tiho — nijedno nije razlog za poruku na ekranu. */
+async function pushOsvezi(){
+  if(!pushPodrzan()||!sbAuthed()||!navigator.onLine) return;
+  try{
+    const cek=await idbCitaj('pretplata-neposlata');
+    if(cek&&cek.pretplata){
+      const r=await pushPosalji('prijava',{pretplata:cek.pretplata,uredjaj:cek.uredjaj||(SB&&SB.deviceId),najave:najaveZaNedelju()});
+      if(r.ok){ await idbObrisi('pretplata-neposlata'); await pozadinskiNalog(); }
+      return;
+    }
+  }catch(e){}
+  if(pushDozvola()!=='granted') return;
+  const sub=await pushPretplataSada();
+  if(!sub) return;
+  await pozadinskiNalog();
+  /* Najave se šalju najviše jednom dnevno — sadrže istih osam dana bez obzira
+     na to koliko puta se aplikacija otvori. */
+  try{
+    if(S.ui&&S.ui.najaveDan===TODAY) return;
+    const r=await pushPosalji('najave',{najave:najaveZaNedelju()});
+    if(r.ok){ S.ui.najaveDan=TODAY; save(); }
+  }catch(e){}
+}
 
 /* SERVICE WORKER SE REGISTRUJE PRVI, PRE SVEGA OSTALOG.
 
@@ -10612,6 +11001,14 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
     reg.update();
     setInterval(()=>{ reg.update(); pratiAzuriranje(reg); }, 60*60*1000);
   }).catch(()=>{});
+  /* Push koji je stigao dok je aplikacija OTVORENA ne izlazi kao obaveštenje
+     nego kao poruka (v. `tiho` u sw.js). Za sada je to samo „analiza je
+     gotova" — pokupi je odmah, bez čekanja da čovek promeni tab. */
+  navigator.serviceWorker.addEventListener('message',ev=>{
+    if(!ev.data||ev.data.type!=='PUSH') return;
+    const p=ev.data.poruka||{};
+    if(p.oznaka==='ai'&&typeof aiPokupiSve==='function') aiPokupiSve();
+  });
 }
 
 /* SESIJA SE UCITAVA PRE PRVOG ISCRTAVANJA.
@@ -10635,6 +11032,7 @@ sbInit();
 if(navigator.onLine) trPovuciAko(3600000);
 icuAutoSync();
 aiPokupiSve();               /* v. „ANALIZA ODVOJENA OD CEKANJA" */
+pushOsvezi();                /* najave za narednu nedelju + pretplata koju SW nije stigao da javi */
 /* Prognoza se osvežava na startu, ali samo ako je starija od tri sata (v.
    vremePovuci) — poziv je besplatan, ali nema razloga da se ponavlja pri
    svakom otvaranju. */

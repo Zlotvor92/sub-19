@@ -52,6 +52,7 @@
   <li><a href="#ai">AI analiza</a></li>
   <li><a href="#strava">Strava</a></li>
   <li><a href="#icu">intervals.icu — oporavak i sat</a></li>
+  <li><a href="#obavestenja">Obaveštenja</a></li>
   <li><a href="#podaci">Podaci i backup</a></li>
   <li><a href="#problemi">Kad nešto ne radi</a></li>
 </ol></nav>
@@ -310,7 +311,35 @@ Garminu, a Garmin satu. Da lanac radi, treba oboje:</p>
 <p>Dugme <b>👁 Vidi šta se šalje</b> ispisuje doslovno ono što odlazi, po danima — koristi ga
 kad nisi siguran da li je problem kod nas ili dalje niz lanac.</p>
 
-<h2 id="podaci">9. Podaci i backup</h2>
+<h2 id="obavestenja">9. Obaveštenja</h2>
+<p><b>Podešavanja → Obaveštenja → Uključi.</b> Pregledač pita za dozvolu jednom; posle toga
+stižu dve stvari:</p>
+<ul>
+  <li><b>Ujutru</b> — jedan red o tome šta je danas na planu („8×400 m · 12 km"). Dani odmora
+      se preskaču, telefon tada ćuti.</li>
+  <li><b>Kad AI analiza završi</b> — analiza se računa na serveru, pa smeš da zatvoriš
+      aplikaciju čim je pokreneš. Obaveštenje stiže kad je tekst gotov. Ako si u tom trenutku
+      u aplikaciji, tekst se pojavi sam i obaveštenje ne iskače.</li>
+</ul>
+<div class="box tip">
+  <p><b>Na iPhoneu obaveštenja radi samo instalirana aplikacija.</b> U Safariju dodirni
+  <b>Podeli → Dodaj na početni ekran</b>, otvori SUB-20 sa ikonice, pa uključi obaveštenja.
+  U samom Safariju ta opcija ne postoji — to je Appleovo pravilo, ne kvar.</p>
+</div>
+<p><b>Šta server o tebi zna zbog ovoga:</b> datum i jedan red teksta za narednih nedelju dana,
+koji sama aplikacija upiše pri otvaranju. Plan, tempo, puls i istorija ostaju na uređaju.
+Sam sadržaj obaveštenja je šifrovan ključem koji postoji samo na tvom telefonu — ni Google ni
+Apple ne vide šta u njemu piše, iako poruka prolazi kroz njih. <b>Isključi</b> briše pretplatu
+i sa uređaja i sa servera.</p>
+<p>Uz obaveštenja se uključuju i dve tihe stvari koje se ne vide, a osete:</p>
+<ul>
+  <li><b>Upis bez signala.</b> Ako uneseš trening bez interneta i zatvoriš aplikaciju, telefon
+      sam pošalje unos na server čim se veza vrati — ne moraš da otvaraš aplikaciju ponovo.</li>
+  <li><b>Osvežavanje u pozadini.</b> Na Androidu se offline kopija i provera nove verzije
+      osvežavaju i dok aplikacija stoji zatvorena, pa te traka <b>„Osveži"</b> čeka odmah.</li>
+</ul>
+
+<h2 id="podaci">10. Podaci i backup</h2>
 <p>Podaci žive <b>na tvom telefonu</b>; server je rezervna kopija. Zato aplikacija radi u
 avionu, u šumi i bez signala.</p>
 <ul>
@@ -322,7 +351,7 @@ avionu, u šumi i bez signala.</p>
   sekundi i jedini je način da se vratiš unazad.</p>
 </div>
 
-<h2 id="problemi">10. Kad nešto ne radi</h2>
+<h2 id="problemi">11. Kad nešto ne radi</h2>
 <table>
   <tr><th>Simptom</th><th>Prvo probaj</th></tr>
   <tr><td>Aplikacija izgleda staro / promena se ne vidi</td><td>Podešavanja → dole piše i verzija koju vidiš i verzija <b>offline kopije</b>; dugme <b>Osveži aplikaciju</b> ih izjednačava odmah, bez gubitka podataka</td></tr>
@@ -330,6 +359,8 @@ avionu, u šumi i bez signala.</p>
   <tr><td>Treninga nema na Garmin kalendaru</td><td>proveri „Upload planned workouts" u intervals.icu</td></tr>
   <tr><td>Strava ne uvozi trčanje</td><td>Uvezi trčanja ručno; ako je polje ručno menjano, zaštićeno je namerno</td></tr>
   <tr><td>Predikcija skače gore-dole</td><td>normalno dok ima malo unosa; smiruje se</td></tr>
+  <tr><td>Obaveštenja ne stižu</td><td>Podešavanja → Obaveštenja → <b>Probno obaveštenje</b>; ako ni ono ne dođe, dozvola je odbijena u pregledaču (ikonica pored adrese → Obaveštenja)</td></tr>
+  <tr><td>Na iPhoneu nema dugmeta za obaveštenja</td><td>otvori aplikaciju sa <b>ikonice na početnom ekranu</b>, ne iz Safarija</td></tr>
   <tr><td>Nešto drugo</td><td>Podešavanja → <b>Prijavi problem</b> — stiže sa verzijom i tabom na kom si bio</td></tr>
 </table>
 

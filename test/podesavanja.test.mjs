@@ -36,7 +36,7 @@ describe('Struktura', () => {
   test('svaka sekcija je zasebna kartica', () => {
     const { html } = sa({ prijavljen: true, strava: true, icu: true });
     const k = kartice(html).map(x => x.naslov);
-    assert.deepEqual(k, ['Nalog', 'Plan', 'Strava', 'intervals.icu', 'Slanje na sat', 'Vreme', 'Podaci']);
+    assert.deepEqual(k, ['Nalog', 'Plan', 'Strava', 'intervals.icu', 'Slanje na sat', 'Vreme', 'Obaveštenja', 'Podaci']);
   });
 
   test('čitanje i slanje su odvojene kartice', () => {

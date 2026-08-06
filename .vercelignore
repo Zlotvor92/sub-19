@@ -4,3 +4,5 @@ test/
 # SQL se pušta rukom u Supabase SQL Editoru. Nema tajni u njemu, ali nema ni
 # razloga da stoji na javnoj adresi (/supabase/rate-limit.sql).
 supabase/
+# Alat koji se pokreće jednom, rukom (pravljenje VAPID ključeva).
+scripts/

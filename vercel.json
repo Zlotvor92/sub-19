@@ -1,13 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
-    { "path": "/api/daily-report", "schedule": "0 5 * * *" }
+    { "path": "/api/daily-report", "schedule": "0 5 * * *" },
+    { "path": "/api/push", "schedule": "0 4 * * *" }
   ],
   "functions": {
     "api/broadcast.js": { "maxDuration": 60 },
     "api/daily-report.js": { "maxDuration": 60 },
     "api/workouts.js": { "maxDuration": 60 },
-    "api/analyze.js": { "maxDuration": 60 }
+    "api/analyze.js": { "maxDuration": 60 },
+    "api/push.js": { "maxDuration": 60 }
   },
   "headers": [
     {

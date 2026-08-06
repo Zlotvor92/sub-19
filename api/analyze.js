@@ -121,6 +121,41 @@ async function posaoZavrsi(auth, id, polja) {
   } catch (e) { /* rezultat je izgubljen, ali odgovor klijentu ionako ne čeka */ }
 }
 
+/* OBAVEŠTENJE „ANALIZA JE GOTOVA".
+
+   Otkad analiza više ne živi u zahtevu nego u tabeli, korisnik sme da zatvori
+   aplikaciju čim je pokrene — i tada nema načina da sazna da je tekst stigao
+   dok je sam ne otvori. Ovo je taj način.
+
+   Ide kroz /api/push, jedini fajl koji ume da potpiše i šifruje push poruku
+   (v. komentar na vrhu tog fajla — kriptografija ne sme da postoji u dve
+   kopije). Poziv je unutrašnji, prema samom sebi, i overava se CRON_SECRET-om.
+   Ako ključa nema ili poziv padne — ćuti: rezultat je već upisan u bazu i
+   klijent će ga pokupiti pri sledećem otvaranju, kao i do sada. */
+async function javiDaJeGotovo(req, userId, uspeh) {
+  if (!process.env.CRON_SECRET || !userId) return;
+  try {
+    const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+    const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+    if (!host) return;
+    await fetch(proto + '://' + host + '/api/push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + process.env.CRON_SECRET },
+      body: JSON.stringify({
+        akcija: 'posalji',
+        userId,
+        naslov: uspeh ? 'Analiza je gotova' : 'Analiza nije uspela',
+        telo: uspeh ? 'Otvori SUB-20 da je pročitaš.' : 'Otvori karticu treninga i probaj ponovo.',
+        oznaka: 'ai',
+        url: './?tab=danas',
+        /* Ako je aplikacija otvorena i vidljiva, tekst se pojavi sam — nema
+           razloga da preko njega iskoči i obaveštenje (v. `tiho` u sw.js). */
+        tiho: true
+      })
+    });
+  } catch (e) { /* obaveštenje je dodatak, ne uslov */ }
+}
+
 async function posaoCitaj(auth, id) {
   try {
     const r = await fetch(sbURL(TABELA + '?id=eq.' + id + '&select=stanje,tekst,greska'),
@@ -587,9 +622,14 @@ ${dodatno}${lapsBlock}`;
       await posaoZavrsi(auth, posaoId, out.ok
         ? { stanje: 'gotovo', tekst: String(out.text || '').slice(0, 6000) }
         : { stanje: 'greska', greska: String(out.error || 'Nepoznata greška.').slice(0, 300) });
+      /* TEK POSLE upisa. Obrnutim redom bi obaveštenje umelo da stigne pre
+         nego što rezultat postoji u bazi — čovek otvori aplikaciju i vidi da
+         se i dalje računa, što je gore nego da obaveštenja nema. */
+      await javiDaJeGotovo(req, auth.userId, out.ok);
       res.status(200).json({ gotovo: out.ok });
     } catch (e) {
       await posaoZavrsi(auth, posaoId, { stanje: 'greska', greska: 'Greška na serveru.' });
+      await javiDaJeGotovo(req, auth.userId, false);
       res.status(200).json({ gotovo: false });
     }
     return;

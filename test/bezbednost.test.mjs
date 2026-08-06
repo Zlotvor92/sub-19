@@ -517,8 +517,11 @@ describe('Serverske funkcije', () => {
 
   test('service_role ključ postoji samo tamo gde mora', async () => {
     /* Ovaj ključ zaobilazi RLS. Sme samo u daily-report i broadcast (oboje
-       gateovano CRON_SECRET-om / vlasnikom), i NIKAD u klijentu. */
-    const dozvoljeni = new Set(['daily-report.js', 'broadcast.js']);
+       gateovano CRON_SECRET-om / vlasnikom), i NIKAD u klijentu.
+       push.js je treći iz istog razloga: jutarnji podsetnik i „analiza je
+       gotova" šalju se dok korisnik NIJE prisutan, pa njegovog tokena nema —
+       a i te putanje su gateovane CRON_SECRET-om (v. proveriTajnu). */
+    const dozvoljeni = new Set(['daily-report.js', 'broadcast.js', 'push.js']);
     const { readdirSync } = await import('node:fs');
     for (const f of readdirSync(new URL('../api/', import.meta.url))) {
       const izvor = readRepoFile('api/' + f);
