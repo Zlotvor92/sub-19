@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='196'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='197'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -10307,6 +10307,25 @@ function sbCheckState(gotNonce){
 
 let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:null};
 let SB_TIMER=null, SB_BUSY=false;
+/* DOK TRAJE PITANJE O SUKOBU, NIŠTA SE NE ŠALJE.
+
+   PRIJAVA: „backend ne čuva kilažu i povrede — sad ne vidim ništa od toga."
+
+   Traka sukoba je pisala „Dok ne izabereš, ništa se ne menja", a to nije bilo
+   sprovedeno. Traka nije modalna (namerno — ne sme da zaključa aplikaciju), pa
+   je sve ostalo radilo: svaki `save()` je kroz `sbSchedulePush()` zakazivao
+   upis četiri sekunde kasnije, koji je prepisivao SERVERSKU kopiju lokalnom.
+
+   Na sveže instaliranom uređaju je lokalna kopija prazna. Dovoljno je bilo da
+   se aplikacija dodirne dok traka stoji — ili da automatsko povlačenje sa
+   Strave/intervals.icu upiše prvi trening — pa da prazno stanje pregazi sve
+   na serveru.
+
+   Zašto se gubitak ne primeti odmah: treninzi se sami vrate sa Strave i
+   intervals.icu, pa dnevnik izgleda netaknuto. Kilaža i povrede se unose
+   RUČNO i ne postoje nigde drugde — one nestanu tiho. Tačno to je i
+   prijavljeno. */
+let SB_SUKOB=false;
 
 /* Deklaracije funkcija (ne const strelice) — podizu se, pa save() sme da ih
    zove i pre nego sto izvrsavanje stigne do ovog bloka. Sa `const` je to bio
@@ -10469,6 +10488,10 @@ async function sbPush(){
      'ok', jer server nije noviji od SB.seenAt) prepisao i nju.
      Zastavica se skida tek kad covek u traci svesno izabere ishod. */
   if(UCITAVANJE_PALO) return false;
+  /* Isto pravilo, drugi uzrok: dok se sukob ne razreši, lokalno stanje NIJE
+     merodavno. Provera stoji i ovde, a ne samo u sbSchedulePush — push se
+     pokreće i sa `visibilitychange`, i to bez odlaganja. */
+  if(SB_SUKOB) return false;
   if(!await sbEnsure()) return false;
   SB_BUSY=true;
   try{
@@ -10534,6 +10557,7 @@ function sbSchedulePush(){
      za NEdeklarisane promenljive, ne za let/const koje jos nisu dosle na red).
      Zato try/catch, ne provera. */
   try{ if(!sbAuthed()) return; }catch(e){ return; }
+  try{ if(SB_SUKOB) return; }catch(e){}
   clearTimeout(SB_TIMER);
   SB_TIMER=setTimeout(()=>{ sbPush(); }, 4000);
 }
@@ -10653,8 +10677,19 @@ async function sbInit(){
 }
 /* Traka izbora pri sukobu lokalnih i serverskih podataka. Namerno bez
    podrazumevane akcije: svaka od dve strane je necije stvarno trcanje. */
+/* Ima li na ovom uređaju IŠTA što bi vredelo poslati. Gleda samo ono što se
+   unosi rukom ili povlači — ne i podešavanja, koja postoje i u praznom seedu. */
+function sbPraznoStanje(s){
+  if(!s) return true;
+  const n=x=>Array.isArray(x)?x.length:0;
+  return Object.keys(s.log||{}).length===0 && n(s.knee)===0 && n(s.kg)===0 &&
+         n(s.t3k)===0 && Object.keys(s.wellness||{}).length===0 &&
+         Object.keys(s.pred||{}).length===0;
+}
 function prikaziSukobSync(remoteAt){
   if(document.getElementById('sync-sukob')) return;
+  /* Od ovog trenutka do izbora ne ide nijedan upis na server (v. SB_SUKOB). */
+  SB_SUKOB=true;
   const kada=new Date(remoteAt).toLocaleString('sr-RS');
   const b=document.createElement('div');
   b.id='sync-sukob';
@@ -10667,9 +10702,17 @@ function prikaziSukobSync(remoteAt){
     </div>
     <div class="traka-n">„Uzmi sa servera" prepisuje izmene na ovom uređaju. „Zadrži sa telefona" prepisuje one na serveru.</div>`;
   document.body.appendChild(b);
-  const zatvori=()=>b.remove();
+  const zatvori=()=>{ SB_SUKOB=false; b.remove(); };
   b.querySelector('#sy-pull').onclick=async()=>{ zatvori(); await sbPull(); };
-  b.querySelector('#sy-push').onclick=async()=>{ zatvori(); await sbPush(); };
+  b.querySelector('#sy-push').onclick=async()=>{
+    /* PRAZNO PREKO PUNOG je najskuplja greška koju ovaj ekran može da napravi:
+       treninzi se vrate sa Strave i intervals.icu, ali kilaža i povrede se
+       unose rukom i ne postoje nigde drugde. Baš taj slučaj — svež uređaj,
+       ništa lokalno — pita se još jednom, imenom stvari koje odlaze. */
+    if(sbPraznoStanje(S) &&
+       !confirm('Na ovom uređaju još nema nijednog unosa, a na serveru ih ima.\n\n„Zadrži sa telefona" će OBRISATI sve sa servera — uključujući kilažu i povrede, koje se ne mogu vratiti ni sa Strave ni sa intervals.icu.\n\nSigurno?')) return;
+    zatvori(); await sbPush();
+  };
 }
 
 /* Zajednicki okvir za trake upozorenja — isti izgled kao traka sukoba sync-a. */

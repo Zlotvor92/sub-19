@@ -4,7 +4,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp, readRepoFile } from './harness.mjs';
+import { loadApp, readRepoFile, readAppSource } from './harness.mjs';
 
 describe('migrate — šema stanja', () => {
   const app = loadApp();
@@ -260,6 +260,131 @@ describe('Ucitavanje POPUNJENOG stanja — mrtva zona `const`-a', () => {
         if (dekl && src.indexOf(dekl[0]) > migratePoz)
           assert.fail(`${ime}() cita ${konstIme}, a ${konstIme} je const ISPOD migrate() — mrtva zona`);
       }
+    }
+  });
+});
+
+describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važi', () => {
+  /* PRIJAVA: „backend ne čuva kilažu i povrede, sad ne vidim ništa od toga."
+
+     Traka sukoba nije modalna (namerno). Ali dok je stajala, svaki `save()` je
+     kroz sbSchedulePush zakazivao upis na server — a na sveže instaliranom
+     uređaju je lokalno stanje prazno. Jedan dodir po aplikaciji, ili prvi
+     trening koji stigne sa Strave, i prazno je pregazilo sve na serveru.
+
+     Gubitak se ne primeti odmah: treninzi se sami vrate sa Strave, pa dnevnik
+     izgleda netaknuto. Kilaža i povrede se unose ručno i ne postoje nigde
+     drugde — tiho nestanu. */
+
+  /* Harness pamti elemente po selektoru, pa je `getElementById('sync-sukob')`
+     istinit i pre nego sto traka postoji — `prikaziSukobSync` bi odmah izasao
+     i test bi merio nista. Zato se traka HVATA pri dodavanju u telo. */
+  function saSukobom() {
+    const a = loadApp({ now: '2026-08-06T09:00:00Z',
+      seedLocalStorage: { sub19_sb: JSON.stringify({
+        access: 't', refresh: 'r', expiresAt: Date.now() + 9e6,
+        email: 'a@b.c', userId: '1111', seenAt: null, deviceId: 'd1' }) } });
+    a.evalIn(`
+      __poslato=0; __traka=null; __pitano=null;
+      __sbPushPravi=sbPush;
+      sbPush=async()=>{ __poslato++; return true; };
+      sbPull=async()=>true;
+      const __g=document.getElementById.bind(document);
+      document.getElementById=(id)=>(id==='sync-sukob')?__traka:__g(id);
+      document.body.appendChild=(c)=>{ if(c&&c.id==='sync-sukob') __traka=c; return c; };
+    `);
+    a.call('prikaziSukobSync', '2026-08-06T10:00:00Z');
+    return a;
+  }
+  const klik = (a, dugme) => a.evalIn(`__traka.querySelector('${dugme}').onclick()`);
+
+  /* PRAVI sbPush, ne stub — meri se šta ode na mrežu. I odloženi tajmer se
+     zaista izvrši, inače bi test prolazio i bez popravke (4 s nikad ne stigne
+     unutar testa, pa bi „nije poslato" bilo tačno iz pogrešnog razloga). */
+  function saMrezom() {
+    const a = saSukobom();
+    a.evalIn(`
+      __req=[]; __odlozeno=[];
+      sbPush=__sbPushPravi;                       /* vrati pravu funkciju */
+      setTimeout=(f)=>{ __odlozeno.push(f); return __odlozeno.length; };
+      clearTimeout=()=>{};
+      fetch=async(u,o)=>{ __req.push({u:String(u), m:(o&&o.method)||'GET'});
+        return {ok:true, status:200, json:async()=>[{updated_at:'2026-08-06T11:00:00Z'}]}; };
+    `);
+    return a;
+  }
+  const upisi = a => a.evalIn(`__req.filter(r=>r.m==='POST'&&/user_state/.test(r.u)).length`);
+
+  test('dok traka stoji, izmena se NE šalje na server', async () => {
+    const a = saMrezom();
+    a.evalIn(`S.kg.push({date:'2026-08-06',kg:77,src:null}); save();`);
+    await a.evalIn(`Promise.all(__odlozeno.map(f=>f()))`);
+    assert.equal(upisi(a), 0, 'prazno stanje je poslato uprkos nerešenom sukobu');
+    assert.equal(a.evalIn('SB_SUKOB'), true);
+  });
+
+  test('ni direktan sbPush (odlazak u pozadinu) ne prolazi', async () => {
+    const a = saMrezom();
+    await a.evalIn(`sbPush()`);
+    assert.equal(upisi(a), 0, 'push mimo tajmera je prošao');
+  });
+
+  test('posle izbora upis opet radi — zabrana je privremena, ne trajna', async () => {
+    const a = saMrezom();
+    a.evalIn(`confirm=()=>true; S.kg.push({date:'2026-08-06',kg:77,src:null});`);
+    klik(a, '#sy-push');
+    await a.evalIn(`Promise.resolve()`);
+    await a.evalIn(`sbPush()`);
+    assert.ok(upisi(a) > 0, 'posle izbora upis i dalje ne prolazi');
+  });
+
+  test('ni `visibilitychange` ne probija zabranu — push ide i bez odlaganja', () => {
+    /* sbSchedulePush odlaže 4 s, ali sbPush se poziva i direktno kad app ode u
+       pozadinu. Zato provera mora da stoji u OBA. */
+    const src = readAppSource();
+    const telo = /async function sbPush\(\)\{[\s\S]*?\n\}/.exec(src)[0];
+    assert.match(telo, /if\(SB_SUKOB\) return false;/, 'sbPush ne proverava sukob');
+    assert.match(src, /try\{ if\(SB_SUKOB\) return; \}catch/, 'sbSchedulePush ne proverava sukob');
+  });
+
+  test('izbor podiže zabranu, u oba smera', () => {
+    for (const dugme of ['#sy-pull', '#sy-push']) {
+      const a = saSukobom();
+      a.evalIn(`confirm=()=>true;`);
+      klik(a, dugme);
+      assert.equal(a.evalIn('SB_SUKOB'), false, `${dugme} nije podigao zabranu`);
+    }
+  });
+
+  test('prazno preko punog se pita još jednom, i imenuje šta odlazi', () => {
+    /* Treninzi se vrate sa Strave; kilaža i povrede ne postoje nigde drugde. */
+    const a = saSukobom();
+    a.evalIn(`confirm=(p)=>{ __pitano=p; return false; };`);
+    klik(a, '#sy-push');
+    const pitano = a.evalIn('__pitano');
+    assert.ok(pitano, 'prazan uređaj briše server bez ijednog pitanja');
+    assert.match(pitano, /kilaž|povred/i, 'pitanje ne kaže šta konkretno odlazi');
+    assert.equal(a.evalIn('__poslato'), 0, 'odbijena potvrda nije zaustavila upis');
+    assert.equal(a.evalIn('SB_SUKOB'), true, 'zabrana je podignuta iako izbor nije napravljen');
+  });
+
+  test('kad uređaj IMA unose, pitanja nema — to je normalan izbor', () => {
+    const a = saSukobom();
+    a.evalIn(`S.kg.push({date:'2026-08-06',kg:77,src:null});
+              confirm=(p)=>{ __pitano=p; return true; };`);
+    klik(a, '#sy-push');
+    assert.equal(a.evalIn('__pitano'), null, 'pita i kad ima šta da se sačuva');
+  });
+
+  test('sbPraznoStanje gleda ono što se ne može vratiti spolja', () => {
+    const a = loadApp();
+    assert.equal(a.evalIn(`sbPraznoStanje(seedState())`), true);
+    for (const polje of [`{kg:[{date:'2026-08-06',kg:77}]}`,
+                         `{knee:[{date:'2026-08-06',pain:2}]}`,
+                         `{log:{n1d1:{status:'done'}}}`,
+                         `{wellness:{'2026-08-06':{hrv:60}}}`]) {
+      assert.equal(a.evalIn(`sbPraznoStanje(Object.assign(seedState(),${polje}))`), false,
+        `${polje} je protumačeno kao prazno stanje`);
     }
   });
 });
