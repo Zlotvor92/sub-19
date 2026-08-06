@@ -162,7 +162,16 @@ begin
     begin
       perform public.check_and_bump_endpoint('ai_posao', 60);
     exception
-      when undefined_function then null;   -- rate-limit.sql još nije pušten
+      -- MREŽA KOJA NEDOSTAJE NE SME DA OBORI ANALIZU.
+      -- Namera je: ako brojač iz rate-limit.sql nije dostupan, preskoči ga —
+      -- pravi limit je u kodu (/api/analyze) i i dalje radi. Prva verzija je
+      -- hvatala SAMO `undefined_function`, što je uže od te namere: da tabela
+      -- `endpoint_usage` ikad nedostaje dok funkcija postoji, greška bi bila
+      -- `undefined_table`, propala bi kroz handler i oborila UPIS POSLA —
+      -- dakle celu AI analizu, i to tiho, tek kad neko klikne.
+      -- DAILY_LIMIT_EXCEEDED (P0001) se NAMERNO ne hvata: to je backstop koji
+      -- treba da radi. `when others` bi ga progutao i mreža ne bi postojala.
+      when undefined_function or undefined_table or insufficient_privilege then null;
     end;
   end if;
   new.stanje := 'radi';
