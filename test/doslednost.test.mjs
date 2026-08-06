@@ -235,7 +235,9 @@ describe('Traka „Ovo nije tvoj plan"', () => {
        `setPage('danas')`, pa bi ga sirov indexOf našao prvog. */
     const izvor = readClientSource().replace(/\/\*[\s\S]*?\*\//g, '');
     const iLoad = izvor.indexOf("if(typeof sbLoad==='function')sbLoad()");
-    const iPage = izvor.indexOf("setPage('danas')");
+    /* Od v192 pocetna strana zavisi od ?tab= (precice sa ikonice), pa se
+       redosled meri po samom pozivu setPage, ne po njegovom argumentu. */
+    const iPage = izvor.indexOf("setPage(pocetnaStrana())");
     assert.ok(iLoad > 0 && iPage > 0, 'nije pronađen redosled pokretanja');
     assert.ok(iLoad < iPage, 'sbLoad() se i dalje poziva posle setPage()');
   });
@@ -384,3 +386,41 @@ function webpDim(b) {
   if (tip === 'VP8 ') return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
   return null;
 }
+
+describe('Prečice sa ikonice zaista otvaraju svoj tab', () => {
+  /* Manifest ih nudi kao `./?tab=plan`. Ako aplikacija taj parametar ne cita,
+     svaka precica otvara Danas — a precica koja ne vodi nikuda je gora od
+     nijedne, jer obecava nesto sto ne radi. */
+  test('svaka prečica pokazuje na postojeći tab', () => {
+    assert.ok(Array.isArray(manifest.shortcuts) && manifest.shortcuts.length, 'nema prečica');
+    const app = loadApp();
+    const strane = Object.keys(app.get('PAGES'));
+    for (const s of manifest.shortcuts) {
+      const m = /\?tab=([a-z]+)$/.exec(s.url);
+      assert.ok(m, `prečica "${s.name}" nema ?tab= u adresi (${s.url})`);
+      assert.ok(strane.includes(m[1]), `prečica "${s.name}" vodi na nepostojeći tab "${m[1]}"`);
+      assert.ok(s.icons && s.icons.length, `prečica "${s.name}" nema ikonicu`);
+    }
+  });
+
+  test('aplikacija čita ?tab= pri otvaranju', () => {
+    const izvor = readClientSource();
+    assert.match(izvor, /function pocetnaStrana\(\)/, 'nema čitanja parametra');
+    assert.match(izvor, /setPage\(pocetnaStrana\(\)\)/, 'otvaranje i dalje ide fiksno na Danas');
+  });
+
+  test('nepoznat ili zlonameran ?tab= pada na Danas, ne obara otvaranje', () => {
+    /* Ulaz sa strane — mora da otkaže u bezbednom smeru. */
+    for (const zla of ['constructor', '__proto__', 'toString', 'nepostoji', '']) {
+      const app = loadApp({ search: '?tab=' + encodeURIComponent(zla) });
+      assert.equal(app.call('pocetnaStrana'), 'danas', `„${zla}" nije pao na danas`);
+    }
+  });
+
+  test('ispravan ?tab= zaista otvara taj tab', () => {
+    for (const t of ['plan', 'opor', 'pred']) {
+      const app = loadApp({ search: '?tab=' + t });
+      assert.equal(app.call('pocetnaStrana'), t);
+    }
+  });
+});

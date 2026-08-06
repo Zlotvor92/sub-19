@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='191'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='192'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2560,6 +2560,17 @@ function osveziDan(){
 const $=s=>document.querySelector(s);
 /* Četiri taba. Progres i Povrede su spojeni u Oporavak — v. renderOporavak. */
 const PAGES={danas:renderDanas,plan:renderPlan,opor:renderOporavak,pred:renderPred};
+/* PREČICE NA IKONICI (dug pritisak na instaliranoj aplikaciji).
+   Manifest ih nudi kao adrese `./?tab=plan`, pa aplikacija mora da ume da ih
+   pročita — inače bi svaka prečica otvarala Danas i bila laž. Nepoznata ili
+   nepostojeća vrednost tiho pada na Danas; ovo je ulaz sa strane i ne sme da
+   obori otvaranje. */
+function pocetnaStrana(){
+  try{
+    const t=new URLSearchParams(location.search).get('tab');
+    return (t&&Object.prototype.hasOwnProperty.call(PAGES,t))?t:'danas';
+  }catch(e){ return 'danas'; }
+}
 let ACTIVE='danas';
 const openW=new Set();
 {const w=weekOf(TODAY);openW.add(w?w.w:1);}
@@ -10584,7 +10595,7 @@ document.addEventListener('visibilitychange',()=>{
 if(typeof sbLoad==='function')sbLoad();
 uskladiVlasnickePodatke();   /* ciji su podaci — pre prvog iscrtavanja */
 renderHeader();
-setPage('danas');
+setPage(pocetnaStrana());
 prikaziUcitavanjePalo();     /* ako zapis nije procitan — pre nego sto covek pomisli da je sve nestalo */
 handleOAuthReturn();
 sbInit();

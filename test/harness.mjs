@@ -170,7 +170,10 @@ export function loadApp(opts = {}) {
     document: doc,
     localStorage: ls,
     sessionStorage: ss,
-    location: { origin: 'https://example.test', href: 'https://example.test/', pathname: '/', search: '', hash: '', protocol: 'https:', hostname: 'example.test' },
+    /* `opts.search` postavlja upitni deo adrese (npr. '?tab=plan'), da bi se
+       ulaz sa strane — precice sa ikonice, OAuth povratak — mogao testirati. */
+    location: { origin: 'https://example.test', href: 'https://example.test/' + (opts.search || ''),
+                pathname: '/', search: opts.search || '', hash: '', protocol: 'https:', hostname: 'example.test' },
     history: { replaceState: () => {} },
     navigator: { onLine: false, userAgent: 'test', clipboard: { writeText: async () => {} } },
     /* Pravi nasumicne bajtove, ne deterministicki niz — inace bi dva
