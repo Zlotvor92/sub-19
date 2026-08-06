@@ -22,7 +22,10 @@ import { readRepoFile } from './harness.mjs';
 const b64u = b => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const odB64u = s => Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64');
 
-/* Par ključeva iz scripts/vapid.mjs — pravi, samo za test. */
+/* Par ključeva P-256, napravljen SAMO ZA OVAJ TEST i namerno ovde vidljiv:
+   provera potpisa nema smisla bez pravog para. NIKAD ne koristiti u radu —
+   privatni ključ stoji u javnom repozitorijumu. Produkcijski par pravi
+   `node scripts/vapid.mjs` i živi isključivo u Vercel okruženju. */
 const VAPID_PUB = 'BKehPjxi6lJF9-yuESqsl5DQ8rqsfWJcvHnCKYrGqkn83dNsWyvT_ve7_R_HufZ8kqWf9rdUfPw9d9aKfW6Rda8';
 const VAPID_PRIV = 'MJ0ol-TwaRrXjQyblH4pmmsZSncM0Ig-pPQQziVb4WM';
 
