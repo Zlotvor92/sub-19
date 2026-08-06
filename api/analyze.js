@@ -132,8 +132,15 @@ async function posaoZavrsi(auth, id, polja) {
    kopije). Poziv je unutrašnji, prema samom sebi, i overava se CRON_SECRET-om.
    Ako ključa nema ili poziv padne — ćuti: rezultat je već upisan u bazu i
    klijent će ga pokupiti pri sledećem otvaranju, kao i do sada. */
-async function javiDaJeGotovo(req, userId, uspeh) {
+async function javiDaJeGotovo(req, userId, uspeh, danId) {
   if (!process.env.CRON_SECRET || !userId) return;
+  /* Klik na obaveštenje mora da odvede DO ANALIZE, ne na početni ekran.
+     Prijavljeno: „stigne notifikacija, ali kad kliknem ne vodi me do same
+     analize" — vodila je na ./?tab=danas, a analiza živi u listu SVOG dana,
+     koji često nije današnji (analizira se juče istrčan trening).
+     `danId` je isti identifikator dana koji aplikacija koristi u S.log; oblik
+     se proverava ovde jer ulazi u adresu. */
+  const dan = /^[A-Za-z0-9_-]{1,64}$/.test(String(danId || '')) ? String(danId) : null;
   try {
     const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
     const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
@@ -145,9 +152,9 @@ async function javiDaJeGotovo(req, userId, uspeh) {
         akcija: 'posalji',
         userId,
         naslov: uspeh ? 'Analiza je gotova' : 'Analiza nije uspela',
-        telo: uspeh ? 'Otvori SUB-20 da je pročitaš.' : 'Otvori karticu treninga i probaj ponovo.',
+        telo: uspeh ? 'Dodirni da je pročitaš.' : 'Otvori karticu treninga i probaj ponovo.',
         oznaka: 'ai',
-        url: './?tab=danas',
+        url: dan ? './?dan=' + encodeURIComponent(dan) : './?tab=danas',
         /* Ako je aplikacija otvorena i vidljiva, tekst se pojavi sam — nema
            razloga da preko njega iskoči i obaveštenje (v. `tiho` u sw.js). */
         tiho: true
@@ -625,11 +632,11 @@ ${dodatno}${lapsBlock}`;
       /* TEK POSLE upisa. Obrnutim redom bi obaveštenje umelo da stigne pre
          nego što rezultat postoji u bazi — čovek otvori aplikaciju i vidi da
          se i dalje računa, što je gore nego da obaveštenja nema. */
-      await javiDaJeGotovo(req, auth.userId, out.ok);
+      await javiDaJeGotovo(req, auth.userId, out.ok, body && body.danId);
       res.status(200).json({ gotovo: out.ok });
     } catch (e) {
       await posaoZavrsi(auth, posaoId, { stanje: 'greska', greska: 'Greška na serveru.' });
-      await javiDaJeGotovo(req, auth.userId, false);
+      await javiDaJeGotovo(req, auth.userId, false, body && body.danId);
       res.status(200).json({ gotovo: false });
     }
     return;

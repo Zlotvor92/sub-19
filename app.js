@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='194'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='195'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3223,7 +3223,10 @@ function vezAnalize(root,d){
 
         /* 2. POKRENI RAČUN, ali NE ČEKAJ ga. Ovaj zahtev sme da traje koliko
            mu treba; rezultat ide u bazu, ne u njegov odgovor. */
-        aiPozovi(Object.assign({posao:'radi', posaoId:l.aiPosao.id}, payload)).catch(()=>{});
+        /* `danId` ide SAMO da bi obaveštenje „analiza je gotova" znalo na koji
+           trening da odvede. Server ga ne koristi ni za šta drugo i ne upisuje
+           ga — v. javiDaJeGotovo u api/analyze.js. */
+        aiPozovi(Object.assign({posao:'radi', posaoId:l.aiPosao.id, danId:d.id}, payload)).catch(()=>{});
 
         /* 3. PITAJ ZA REZULTAT. Ako se ne dočeka (mreža, uspavan telefon),
            pokupiće ga `aiPokupiSve` pri sledećem otvaranju aplikacije. */
@@ -3313,7 +3316,64 @@ async function aiPokupiSve(){
     if(st==='gotovo'||st==='greska') promena=true;
   }
   AI_KUPIM=false;
-  if(promena&&PAGES[ACTIVE]) PAGES[ACTIVE]();
+  if(!promena) return;
+  if(PAGES[ACTIVE]) PAGES[ACTIVE]();
+  /* OTVOREN LIST DANA SE NE PRECRTAVA sam. `PAGES[ACTIVE]()` osvežava ekran
+     ISPOD lista, pa je posle povratka u aplikaciju u listu i dalje pisalo
+     „nova analiza je u toku" iako je tekst već stigao. Isto važi i kad push
+     „analiza je gotova" stigne dok je aplikacija otvorena. */
+  for(const id of dani) osveziAnalizuULisu(id);
+}
+
+/* Precrta SAMO karticu analize u otvorenom listu dana. Ceo list se namerno ne
+   crta iznova: u njemu je forma za unos, pa bi ponovno iscrtavanje pojelo ono
+   što je čovek u tom trenutku kucao. */
+function osveziAnalizuULisu(id){
+  const list=$('#sheet');
+  if(!list||!list.classList||!list.classList.contains('on')) return;
+  const karta=document.getElementById('ai-card-'+id);
+  if(!karta) return;
+  const d=BY_ID[id]; if(!d) return;
+  const l=S.log[id]||{};
+  karta.className='card ai-card'+((typeof l.aiText==='string'&&l.aiText.trim())?'':' prazna');
+  karta.innerHTML=aiTelo(d,l);
+  vezAnalize(list,d);
+}
+
+/* ULAZ IZ OBAVEŠTENJA: ./?dan=<id>
+
+   PRIJAVA: „stigne notifikacija, ali kad kliknem ne vodi me do same analize."
+   Vodila je na ./?tab=danas — a analiza ne živi na početnom ekranu nego u
+   listu SVOG dana, koji najčešće nije današnji, jer se analizira trening
+   istrčan juče. Sada obaveštenje nosi id tog dana (v. javiDaJeGotovo u
+   api/analyze.js) i ovde se taj list otvara. */
+async function otvoriIzAdrese(){
+  let id=null;
+  try{ id=new URLSearchParams(location.search||'').get('dan'); }catch(e){}
+  if(!validanId(id)) return false;
+  /* Adresa se čisti ODMAH, pre svega ostalog: bez toga bi svako osvežavanje
+     stranice ponovo otvaralo list, a i „nazad" bi vraćalo u njega. */
+  try{ history.replaceState(null,'',location.pathname); }catch(e){}
+  const d=BY_ID[id];
+  /* Plan je u međuvremenu mogao biti izmenjen ili napravljen iznova — tada
+     tog dana više nema. Bolje ostati na početnom ekranu nego pući. */
+  if(!d) return false;
+  if(d.week&&d.week.w) openW.add(d.week.w);   /* da se pod listom vidi ta nedelja */
+  setPage(d.date===TODAY?'danas':'plan');
+  openDaySheet(id);
+  const l=S.log[id];
+  /* Obaveštenje stiže čim server upiše rezultat, a uređaj ga tek treba
+     pokupiti. Bez ovoga bi u listu pisalo „analiza je u toku" — tačno ono
+     zbog čega je čovek i dodirnuo obaveštenje. */
+  if(l&&l.aiPosao&&l.aiPosao.id&&navigator.onLine){
+    try{ await aiProveri(d,l); }catch(e){}
+    osveziAnalizuULisu(id);
+  }
+  /* Analiza je na dnu lista; bez ovoga se vidi vrh i izgleda kao da
+     obaveštenje vodi u prazno. */
+  const karta=document.getElementById('ai-card-'+id);
+  if(karta&&karta.scrollIntoView) try{ karta.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
+  return true;
 }
 function syncSide(d){
   const l=S.log[d.id];if(!l)return;
@@ -11032,6 +11092,9 @@ sbInit();
 if(navigator.onLine) trPovuciAko(3600000);
 icuAutoSync();
 aiPokupiSve();               /* v. „ANALIZA ODVOJENA OD CEKANJA" */
+/* POSLE setPage: obaveštenje „analiza je gotova" nosi ./?dan=<id> i otvara
+   list baš tog treninga. Bez ovoga klik vodi samo na početni ekran. */
+otvoriIzAdrese();
 pushOsvezi();                /* najave za narednu nedelju + pretplata koju SW nije stigao da javi */
 /* Prognoza se osvežava na startu, ali samo ako je starija od tri sata (v.
    vremePovuci) — poziv je besplatan, ali nema razloga da se ponavlja pri

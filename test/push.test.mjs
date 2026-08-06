@@ -344,6 +344,86 @@ describe('Rukovalac — ko sme šta', () => {
   });
 });
 
+describe('„Analiza je gotova" vodi DO analize', () => {
+  /* PRIJAVA: „stigne notifikacija, ali kad kliknem ne vodi me do same
+     analize." Vodila je na ./?tab=danas — a analiza živi u listu SVOG dana,
+     koji najčešće nije današnji. Ovde se vozi cela faza 'radi' i gleda se
+     ADRESA koja stigne do /api/push. */
+  async function pustiRadi(danId) {
+    process.env.GEMINI_API_KEY = 'k';
+    const push = [];
+    globalThis.fetch = async (u, o) => {
+      const s = String(u);
+      const J = (b, ok = true, st = 200) => ({ ok, status: st, json: async () => b, text: async () => JSON.stringify(b) });
+      if (s.includes('/auth/v1/user')) return J({ id: 'u1', email: 'z@t.rs' });
+      if (s.includes('/api/push')) { push.push(JSON.parse(o.body)); return J({ ok: true }); }
+      if (s.includes('ai_posao')) return J([{ id: 'p1', stanje: 'u_toku' }]);
+      if (s.includes('generativelanguage')) return J({ candidates: [{ content: { parts: [{ text: 'Tekst analize.' }] } }] });
+      return J({});
+    };
+    const { default: h } = await import('../api/analyze.js?t=' + Math.random());
+    const r = res();
+    await h({
+      method: 'POST',
+      headers: { authorization: 'Bearer jwt', host: 'sub-19.vercel.app', 'x-forwarded-proto': 'https' },
+      body: Object.assign({
+        posao: 'radi', posaoId: '11111111-2222-3333-4444-555555555555',
+        session: { desc: 'x' }, entered: { km: 10 }
+      }, danId === undefined ? {} : { danId })
+    }, r);
+    return { push, r };
+  }
+
+  test('obaveštenje nosi adresu BAŠ tog treninga', async () => {
+    const { push } = await pustiRadi('n7d3');
+    assert.equal(push.length, 1, 'obaveštenje nije ni poslato');
+    assert.equal(push[0].url, './?dan=n7d3');
+    assert.equal(push[0].oznaka, 'ai');
+    assert.equal(push[0].tiho, true, 'iskakalo bi preko otvorene aplikacije');
+  });
+
+  test('bez id-a dana pada nazad na početni ekran, ne na pokvarenu adresu', async () => {
+    const { push } = await pustiRadi(undefined);
+    assert.equal(push[0].url, './?tab=danas');
+  });
+
+  test('podmetnut id ne može da izađe iz aplikacije', async () => {
+    /* Adresa iz obaveštenja se otvara bez pitanja, pa oblik mora da se
+       proveri i na serveru — ne samo u klijentu. */
+    for (const zao of ['https://tudje.rs', '../../tajna', 'a b', 'x'.repeat(200)]) {
+      const { push } = await pustiRadi(zao);
+      assert.equal(push[0].url, './?tab=danas', 'prošlo je: ' + zao);
+    }
+  });
+
+  test('aplikacija šalje id dana uz račun, inače server nema šta da upiše', () => {
+    const app = readRepoFile('app.js');
+    assert.match(app, /posao:'radi', posaoId:l\.aiPosao\.id, danId:d\.id/,
+      'app.js ne šalje danId — obaveštenje bi opet vodilo na početni ekran');
+  });
+
+  test('klijent otvara list tog dana i to POSLE prvog iscrtavanja', () => {
+    const app = readRepoFile('app.js');
+    assert.match(app, /async function otvoriIzAdrese\(\)/);
+    assert.match(app, /get\('dan'\)/, 'ne čita se ?dan= iz adrese');
+    assert.match(app, /openDaySheet\(id\)/, 'ne otvara se list dana');
+    /* Adresa se mora očistiti, inače svako osvežavanje ponovo otvara list. */
+    assert.match(app, /history\.replaceState\(null,'',location\.pathname\)/);
+    assert.ok(app.indexOf('setPage(pocetnaStrana())') < app.indexOf('\notvoriIzAdrese();'),
+      'otvoriIzAdrese ide PRE prvog iscrtavanja, pa bi ga setPage pregazio');
+  });
+
+  test('otvoren list se osvežava kad rezultat stigne', () => {
+    /* `PAGES[ACTIVE]()` crta ekran ISPOD lista. Bez ovoga bi u listu i dalje
+       pisalo „analiza je u toku" iako je tekst stigao — baš ono zbog čega je
+       čovek i dodirnuo obaveštenje. */
+    const app = readRepoFile('app.js');
+    assert.match(app, /function osveziAnalizuULisu\(id\)/);
+    const telo = /async function aiPokupiSve\(\)\{[\s\S]*?\n\}/.exec(app)[0];
+    assert.match(telo, /osveziAnalizuULisu/, 'aiPokupiSve ne osvežava otvoren list');
+  });
+});
+
 /* ==========================================================================
    SERVICE WORKER U SANDBOX-u
    ========================================================================== */
