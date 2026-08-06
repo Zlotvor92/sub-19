@@ -68,7 +68,14 @@ set search_path = public, pg_temp
 as $$
 declare
   v_user uuid := auth.uid();
-  v_dan  date := (now() at time zone 'utc')::date;
+  -- DAN JE KORISNIKOV DAN, NE UTC DAN.
+  -- Sa `utc` se brojač resetovao u 02:00 po lokalnom vremenu (01:00 zimi) —
+  -- dakle usred noći koja pripada prethodnom danu. Ko je uveče potrošio limit
+  -- dobijao je „pokušaj ponovo sutra", a „sutra" je stizalo tek posle dva
+  -- ujutru; ko je trčao rano, delio je limit sa prethodnim danom. Aplikacija
+  -- je jedina u jednoj vremenskoj zoni (v. danasBeograd u api/push.js) — pa
+  -- neka i brojač bude u njoj.
+  v_dan  date := (now() at time zone 'Europe/Belgrade')::date;
   v_broj integer;
 begin
   -- Bez prijave nema brojanja. `auth.uid()` je null kad se pozove sa anon

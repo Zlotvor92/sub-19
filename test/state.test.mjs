@@ -264,6 +264,117 @@ describe('Ucitavanje POPUNJENOG stanja — mrtva zona `const`-a', () => {
   });
 });
 
+describe('Odložen upis — kucanje ne sme da radi pun save() po slovu', () => {
+  /* `save()` serijalizuje CELO stanje pa ga SINHRONO upiše u localStorage. Kod
+     aktivnog korisnika to nije malo: mereno na 70 treninga sa `perKm` i `laps`
+     nizovima i 180 dana oporavka — 453 KB. To se do sada dešavalo na svako
+     slovo u belešci: desetak milisekundi sinhronog posla po pritisku tastera,
+     na glavnoj niti, uz `syncSide()` koji pregrađuje dva niza.
+     Odlaganje sme da postoji SAMO ako ništa ne može da se izgubi — zato se
+     ovde meri i to. */
+  const brojacUpisa = app => {
+    const st = { n: 0 };
+    const pravi = app.ls.setItem.bind(app.ls);
+    app.ls.setItem = (k, v) => { if (k === 'sub19-v1') st.n++; return pravi(k, v); };
+    return st;
+  };
+  const cekaj = ms => new Promise(r => setTimeout(r, ms));
+
+  test('saveOdlozeno ne upisuje odmah, ali upiše', async () => {
+    const app = loadApp();
+    const st = brojacUpisa(app);
+    app.evalIn('S.log.probni={note:"a"}');
+    app.call('saveOdlozeno');
+    app.call('saveOdlozeno');
+    app.call('saveOdlozeno');
+    assert.equal(st.n, 0, 'odloženi upis se ipak desio odmah');
+    await cekaj(600);
+    assert.equal(st.n, 1, 'tri poziva nisu dala tačno jedan upis');
+    assert.match(String(app.ls.getItem('sub19-v1')), /probni/, 'izmena nije upisana');
+  });
+
+  test('saveOdmah ne čeka rok — list se zatvara, polje nestaje', () => {
+    const app = loadApp();
+    const st = brojacUpisa(app);
+    app.evalIn('S.log.probni={note:"b"}');
+    app.call('saveOdlozeno');
+    app.call('saveOdmah');
+    assert.equal(st.n, 1, 'zakazan upis nije forsiran');
+    assert.match(String(app.ls.getItem('sub19-v1')), /probni/);
+  });
+
+  test('saveOdmah bez zakazanog upisa ne radi ništa', () => {
+    const app = loadApp();
+    const st = brojacUpisa(app);
+    app.call('saveOdmah');
+    assert.equal(st.n, 0, 'nepotreban upis');
+  });
+
+  test('pun save() poništava zakazani — ne upisuje se dvaput', async () => {
+    const app = loadApp();
+    const st = brojacUpisa(app);
+    app.call('saveOdlozeno');
+    app.call('save');
+    await cekaj(600);
+    assert.equal(st.n, 1, 'zakazan upis se desio i posle punog');
+  });
+
+  test('samo beleška ide odloženo — brojevi i statusi idu odmah', () => {
+    /* Da se odlaganje ne raširi na polja gde nema šta da uštedi, a ima šta da
+       izgubi (jedan dodir, ne niz dodira). */
+    const src = readAppSource();
+    assert.match(src, /if\(f==='note'\) saveOdlozeno\(\); else save\(\);/,
+      'odlaganje više ne važi tačno za beleške');
+  });
+
+  test('odlazak u pozadinu i zatvaranje lista forsiraju upis', () => {
+    const src = readAppSource();
+    assert.match(src, /visibilityState==='hidden'\) saveOdmah\(\)/,
+      'zakazan upis ostaje nezapisan kad app ode u pozadinu');
+    assert.match(src, /function closeSheet\(\)\{[\s\S]{0,300}saveOdmah\(\)/,
+      'zatvaranje lista ne forsira upis — polje nestaje pre `blur`-a');
+  });
+});
+
+describe('Sinhronizacija: zauzet nije isto što i odrađen', () => {
+  test('push koji je naišao na zauzeto stanje se PONAVLJA, ne odbacuje', async () => {
+    /* Prozor je uzak ali stvaran: odloženi upis (4 s) je u letu, čovek prebaci
+       aplikaciju u pozadinu, `visibilitychange` pozove sbPush() — i dobije
+       `false`. Aplikacija je već zamrznuta, pa najsvežiju izmenu nema ko da
+       pošalje; na serveru čeka do sledećeg otvaranja, a ako se telefon dotle
+       izgubi — zauvek. */
+    const app = loadApp();
+    let upisa = 0, pusti;
+    const cekanje = new Promise(r => { pusti = r; });
+    app.setFetch(async (u, o) => {
+      const s = String(u);
+      if (s.includes('/auth/v1/token')) return { ok: true, json: async () => ({ access_token: 't', expires_in: 3600 }) };
+      if (s.includes('/rest/v1/user_state') && o && o.method === 'POST') {
+        upisa++;
+        if (upisa === 1) await cekanje;          /* prvi upis visi */
+        return { ok: true, json: async () => [{ updated_at: '2026-08-01T00:00:00Z' }] };
+      }
+      return { ok: true, json: async () => [] };
+    });
+    app.evalIn(`SB.userId='u1'; SB.access='a'; SB.refresh='r'; SB.expiresAt=Date.now()+9e6; SB.deviceId='d1';`);
+
+    const prvi = app.evalIn('sbPush()');
+    /* `sbPush` postavi SB_BUSY tek posle prvog `await` (sbEnsure) — bez ovoga
+       bi drugi poziv krenuo pre nego što prvi uopšte označi da je zauzet, pa
+       test ne bi merio ono što tvrdi. */
+    await new Promise(r => setTimeout(r, 10));
+    const drugi = await app.evalIn('sbPush()');   /* naišao na zauzeto */
+    assert.equal(drugi, false, 'drugi push nije prepoznao zauzeto stanje');
+    assert.equal(app.evalIn('SB_PONOVO'), true, 'nije zapamćeno da ima novijeg');
+
+    pusti();
+    await prvi;
+    await new Promise(r => setTimeout(r, 30));
+    assert.equal(upisa, 2, 'odbačen push nije ponovljen — izmena je izgubljena');
+    assert.equal(app.evalIn('SB_PONOVO'), false, 'zastavica je ostala podignuta');
+  });
+});
+
 describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važi', () => {
   /* PRIJAVA: „backend ne čuva kilažu i povrede, sad ne vidim ništa od toga."
 

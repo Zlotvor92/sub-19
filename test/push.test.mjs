@@ -349,14 +349,19 @@ describe('„Analiza je gotova" vodi DO analize', () => {
      analize." Vodila je na ./?tab=danas — a analiza živi u listu SVOG dana,
      koji najčešće nije današnji. Ovde se vozi cela faza 'radi' i gleda se
      ADRESA koja stigne do /api/push. */
-  async function pustiRadi(danId) {
+  async function pustiRadi(danId, zaglavlja, opcije) {
     process.env.GEMINI_API_KEY = 'k';
+    /* Poreklo za unutrašnji poziv dolazi iz OKRUŽENJA, ne iz zaglavlja
+       zahteva — v. sopstvenoPoreklo() u api/analyze.js. */
+    delete process.env.SAMA_ADRESA;
+    if (opcije && opcije.bezPorekla) delete process.env.VERCEL_URL;
+    else process.env.VERCEL_URL = 'sub-19.vercel.app';
     const push = [];
     globalThis.fetch = async (u, o) => {
       const s = String(u);
       const J = (b, ok = true, st = 200) => ({ ok, status: st, json: async () => b, text: async () => JSON.stringify(b) });
       if (s.includes('/auth/v1/user')) return J({ id: 'u1', email: 'z@t.rs' });
-      if (s.includes('/api/push')) { push.push(JSON.parse(o.body)); return J({ ok: true }); }
+      if (s.includes('/api/push')) { push.push({ url: s, telo: JSON.parse(o.body), glava: o.headers }); return J({ ok: true }); }
       if (s.includes('ai_posao')) return J([{ id: 'p1', stanje: 'u_toku' }]);
       if (s.includes('generativelanguage')) return J({ candidates: [{ content: { parts: [{ text: 'Tekst analize.' }] } }] });
       return J({});
@@ -365,7 +370,7 @@ describe('„Analiza je gotova" vodi DO analize', () => {
     const r = res();
     await h({
       method: 'POST',
-      headers: { authorization: 'Bearer jwt', host: 'sub-19.vercel.app', 'x-forwarded-proto': 'https' },
+      headers: Object.assign({ authorization: 'Bearer jwt' }, zaglavlja || {}),
       body: Object.assign({
         posao: 'radi', posaoId: '11111111-2222-3333-4444-555555555555',
         session: { desc: 'x' }, entered: { km: 10 }
@@ -377,14 +382,14 @@ describe('„Analiza je gotova" vodi DO analize', () => {
   test('obaveštenje nosi adresu BAŠ tog treninga', async () => {
     const { push } = await pustiRadi('n7d3');
     assert.equal(push.length, 1, 'obaveštenje nije ni poslato');
-    assert.equal(push[0].url, './?dan=n7d3');
-    assert.equal(push[0].oznaka, 'ai');
-    assert.equal(push[0].tiho, true, 'iskakalo bi preko otvorene aplikacije');
+    assert.equal(push[0].telo.url, './?dan=n7d3');
+    assert.equal(push[0].telo.oznaka, 'ai');
+    assert.equal(push[0].telo.tiho, true, 'iskakalo bi preko otvorene aplikacije');
   });
 
   test('bez id-a dana pada nazad na početni ekran, ne na pokvarenu adresu', async () => {
     const { push } = await pustiRadi(undefined);
-    assert.equal(push[0].url, './?tab=danas');
+    assert.equal(push[0].telo.url, './?tab=danas');
   });
 
   test('podmetnut id ne može da izađe iz aplikacije', async () => {
@@ -392,8 +397,35 @@ describe('„Analiza je gotova" vodi DO analize', () => {
        proveri i na serveru — ne samo u klijentu. */
     for (const zao of ['https://tudje.rs', '../../tajna', 'a b', 'x'.repeat(200)]) {
       const { push } = await pustiRadi(zao);
-      assert.equal(push[0].url, './?tab=danas', 'prošlo je: ' + zao);
+      assert.equal(push[0].telo.url, './?tab=danas', 'prošlo je: ' + zao);
     }
+  });
+
+  test('CRON_SECRET ne ide na host iz zaglavlja zahteva', async () => {
+    /* NAPAD: uz unutrašnji poziv ka /api/push ide `Authorization: Bearer
+       CRON_SECRET`. Dok se odredište gradilo iz `x-forwarded-host` (pa `host`),
+       jedan zahtev sa podmetnutim zaglavljem odnosio je TU TAJNU na tuđi
+       server — a ona otključava spisak mejlova svih korisnika i masovni mejl
+       (/api/broadcast) i push bilo kom korisniku. */
+    const { push } = await pustiRadi('n7d3', {
+      host: 'napadac.example',
+      'x-forwarded-host': 'napadac.example',
+      'x-forwarded-proto': 'http'
+    });
+    assert.equal(push.length, 1, 'obaveštenje nije poslato');
+    assert.match(push[0].url, /^https:\/\/sub-19\.vercel\.app\/api\/push$/,
+      'odredište dolazi iz zaglavlja zahteva: ' + push[0].url);
+    assert.ok(!/napadac/.test(push[0].url), 'TAJNA JE OTIŠLA NA PODMETNUT HOST');
+    assert.match(String(push[0].glava.Authorization), /^Bearer /);
+  });
+
+  test('bez poznatog porekla se ćuti umesto da se pogađa', async () => {
+    /* Obaveštenje je dodatak, ne uslov: rezultat je već u bazi i klijent ga
+       pokupi pri sledećem otvaranju. Bolje ga ne poslati nego ga poslati na
+       adresu u koju se nema poverenja. */
+    const { push, r } = await pustiRadi('n7d3', { host: 'napadac.example' }, { bezPorekla: true });
+    assert.equal(push.length, 0, 'poziv je ipak otišao negde');
+    assert.equal(r.code, 200, 'izostanak obaveštenja je oborio analizu');
   });
 
   test('aplikacija šalje id dana uz račun, inače server nema šta da upiše', () => {

@@ -162,9 +162,21 @@ export default async function handler(req, res) {
      mejlova po pozivu; ranije je petlja isla kroz CELU listu (do 5000 adresa =
      50 minuta) i bila prekidana na pola. Klijent je tada video „Nije uspelo",
      a deo ljudi je mejl VEC primio — pa je ponovni pokusaj slao duplikate.
-     Sada se radi do roka, pa se vrati `sledeciOd`; pozivalac nastavlja odatle.
+     Sada se radi do roka, pa se vrati `posle`; pozivalac nastavlja odatle.
      Redosled je stabilan (sortirana lista), tako da se niko ne preskoci ni ne
-     dobije dva puta. */
+     dobije dva puta.
+
+     NASTAVAK IDE PO ADRESI, NE PO POZICIJI.
+     Ranije se vracao `sledeciOd` — indeks u sortiranoj listi — pa je pozivalac
+     govorio „nastavi od 90.". Ali lista se izmedju dva poziva CITA IZNOVA, a
+     slanje na 5000 adresa traje pedesetak minuta. Dovoljno je da se u tom
+     prozoru registruje jedan korisnik ciji mejl pada pre tekuceg mesta (npr.
+     `ana@…`) pa da se svi indeksi pomere za jedan — i tacno jedna osoba bude
+     TIHO preskocena. Nikad se ne bi primetilo: brojevi na kraju izgledaju
+     uredno, samo jedan covek ne dobije mejl.
+     Kursor po vrednosti to nema: „posalji svima cija je adresa POSLE ove"
+     ostaje tacno i kad lista naraste ili se skrati.
+     `od` se i dalje prihvata da stariji pozivalac ne pukne na pola posla. */
   /* Tempo i rok su podesivi kroz Environment Variables. Podrazumevane
      vrednosti su produkcijske; postoje kao promenljive iz dva razloga:
      (1) ako Resend promeni ogranicenje, ne treba menjati kod;
@@ -175,8 +187,11 @@ export default async function handler(req, res) {
   const PAUZA_MS = broj(process.env.BROADCAST_PAUZA_MS, 600);    /* Resend ~2 zahteva/s */
   const ROK_MS   = broj(process.env.BROADCAST_ROK_MS, 45000);    /* rezerva do limita funkcije */
   const pocetak = Date.now();
-  const od = Math.max(0, Math.min(Number(body.od) || 0, svi.length));
-  const primaoci = svi.slice(od);
+  const posle = typeof body.posle === 'string' ? body.posle.trim().toLowerCase() : '';
+  const primaoci = posle
+    ? svi.filter(e => e > posle)
+    /* stari oblik: pozicija u listi. Zadržan samo da poziv u toku ne pukne. */
+    : svi.slice(Math.max(0, Math.min(Number(body.od) || 0, svi.length)));
 
   const html = telo();
   const uspelo = [], palo = [];
@@ -198,8 +213,14 @@ export default async function handler(req, res) {
     /* Resend ograničava na ~2 zahteva u sekundi; bez pauze deo mejlova otpadne */
     if (PAUZA_MS > 0) await new Promise(r => setTimeout(r, PAUZA_MS));
   }
-  const obradjeno = od + i;
-  const sledeciOd = obradjeno < svi.length ? obradjeno : null;
+  /* Kursor je POSLEDNJA OBRAĐENA adresa — i to obrađena, ne uspešno poslata:
+     adresa koju je Resend odbio se neće popraviti ponavljanjem, a da ostane u
+     kursoru, sledeći poziv bi zauvek počinjao od nje. */
+  const zadnja = i > 0 ? primaoci[i - 1] : (posle || null);
+  const ostalo = i < primaoci.length;
+  const sledeciPosle = ostalo ? zadnja : null;
+  /* Stari oblik odgovora — dok se pozivalac ne prebaci na `posle`. */
+  const sledeciOd = ostalo ? (svi.length - (primaoci.length - i)) : null;
 
   /* Greške se GRUPIŠU po poruci: kad padne svih osam, razlog je po pravilu
      jedan te isti (npr. Resend bez potvrđenog domena šalje samo na adresu
@@ -212,8 +233,10 @@ export default async function handler(req, res) {
     razlozi,
     /* najčešći razlog izdvojen, da pozivalac ima šta da prikaže bez kopanja */
     glavniRazlog: razlozi.length ? razlozi.sort((a, b) => b.koliko - a.koliko)[0].razlog : null,
-    /* nastavak: null = gotovo je; broj = pozovi ponovo sa {"posalji":true,"od":N} */
+    /* nastavak: null = gotovo je; adresa = pozovi ponovo sa
+       {"posalji":true,"posle":"<ta adresa>"} */
     ukupno: svi.length,
+    sledeciPosle,
     sledeciOd
   });
 }

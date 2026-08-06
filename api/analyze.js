@@ -27,6 +27,23 @@
    odnosno "The string did not match the expected pattern" (Safari).
    Zato je provera ugrađena u svaki fajl: par linija duplikata je jeftinije
    od cele klase problema sa razrešavanjem modula. */
+
+/* KRATKOTRAJAN KEŠ POTVRĐENIH TOKENA — ista provera, jedan mrežni skok manje.
+   Do sada je SVAKI poziv ka bilo kojoj putanji plaćao dodatan krug ka
+   Supabase-u. Jedna sinhronizacija sa intervals.icu su četiri poziva, dakle
+   četiri takva kruga; anketa o AI analizi pita na svake tri sekunde do minut i
+   po. To je pola sekunde čiste latencije koja ne radi ništa.
+
+   Prozor je namerno kratak — 30 s. Poređenja radi: preporučeni način (lokalna
+   provera potpisa JWT-a, bez ijednog poziva) veruje tokenu do njegovog isteka,
+   dakle ceo sat. Ovo je STROŽE od toga, uz istu uštedu. Ključ mape je sam
+   token, pa se tuđa sesija ne može ni pogoditi ni podmetnuti.
+   Mapa živi u modulu, dakle koliko i topla instanca funkcije; gornja granica
+   postoji da dugotrajna instanca ne raste bez kraja. */
+const AUTH_KES = new Map();
+const AUTH_KES_MS = 30000;
+const AUTH_KES_MAX = 500;
+
 async function requireUser(req) {
   const url  = process.env.SUPABASE_URL;
   const anon = process.env.SUPABASE_ANON_KEY;
@@ -37,6 +54,8 @@ async function requireUser(req) {
   const h = req.headers.authorization || req.headers.Authorization || '';
   const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
   if (!m) return { ok: false, status: 401, error: 'Nedostaje prijava.' };
+  const kes = AUTH_KES.get(m[1]);
+  if (kes && kes.doKada > Date.now()) return { ok: true, userId: kes.id, email: kes.email, token: m[1] };
   try {
     const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
@@ -44,6 +63,8 @@ async function requireUser(req) {
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
+    if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    AUTH_KES.set(m[1], { id: u.id, email: u.email || null, doKada: Date.now() + AUTH_KES_MS });
     return { ok: true, userId: u.id, email: u.email || null, token: m[1] };
   } catch (e) {
     return { ok: false, status: 503, error: 'Provera prijave trenutno nije moguća.' };
@@ -89,7 +110,14 @@ async function posaoNapravi(auth) {
       headers: sbGlava(auth, { Prefer: 'return=representation' }),
       body: JSON.stringify({ user_id: auth.userId, stanje: 'radi' })
     });
-    if (!r.ok) return { ok: false, status: 502, error: 'Nije moguće otvoriti posao analize. ' + (await r.text()).slice(0, 160) };
+    if (!r.ok) {
+      const t = await r.text();
+      /* Mreža ispod dnevnog limita (okidač `ai_posao_nov`, v. ai-posao.sql).
+         Ne bi smela da se javi pre limita iz koda — ali ako se javi, čovek
+         mora da dobije razumljivu rečenicu, ne sirovu grešku baze. */
+      if (jeLimit(t)) return { ok: false, status: 429, error: 'Previše analiza danas. Pokušaj ponovo sutra.' };
+      return { ok: false, status: 502, error: 'Nije moguće otvoriti posao analize. ' + t.slice(0, 160) };
+    }
     const red = (await r.json())[0];
     if (!red || !red.id) return { ok: false, status: 502, error: 'Posao analize nije upisan.' };
     return { ok: true, id: red.id };
@@ -131,7 +159,34 @@ async function posaoZavrsi(auth, id, polja) {
    (v. komentar na vrhu tog fajla — kriptografija ne sme da postoji u dve
    kopije). Poziv je unutrašnji, prema samom sebi, i overava se CRON_SECRET-om.
    Ako ključa nema ili poziv padne — ćuti: rezultat je već upisan u bazu i
-   klijent će ga pokupiti pri sledećem otvaranju, kao i do sada. */
+   klijent će ga pokupiti pri sledećem otvaranju, kao i do sada.
+
+   ADRESA SE NE ČITA IZ ZAGLAVLJA ZAHTEVA.
+   Ranije je odredište građeno iz `x-forwarded-host` (pa `host`) — dakle iz
+   vrednosti koju šalje onaj ko zove. Uz to zaglavlje ide `Authorization:
+   Bearer CRON_SECRET`, pa bi jedan zahtev sa podmetnutim `X-Forwarded-Host`
+   odneo TU TAJNU na tuđi server. A ta tajna otključava: spisak mejl adresa
+   SVIH korisnika i masovni mejl (/api/broadcast), push bilo kom korisniku
+   (/api/push, akcija „posalji") i dnevni izveštaj.
+   Poreklo je konfiguracija, ne ulaz — isto kao `BAZA` u /api/broadcast.js.
+   Sve tri vrednosti postavlja platforma ili vlasnik; nijednu klijent ne može
+   dodirnuti. `SAMA_ADRESA` postoji da se, kad se jednom veže sopstveni domen,
+   ne mora dirati kod.
+   `VERCEL_PROJECT_PRODUCTION_URL` (stabilan produkcijski domen) ide pre
+   `VERCEL_URL` (adresa pojedinačnog deploya): deploy adrese ume da štiti
+   Vercel Deployment Protection, pa bi unutrašnji poziv na nju dobio stranicu
+   za prijavu umesto naše funkcije.
+   Ako nijedno nije poznato — ćuti, kao i za svaki drugi otkaz obaveštenja. */
+function sopstvenoPoreklo() {
+  const rucno = String(process.env.SAMA_ADRESA || '').trim().replace(/\/+$/, '');
+  if (/^https:\/\/[^\/\s]+$/.test(rucno)) return rucno;
+  for (const v of [process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_URL]) {
+    const d = String(v || '').trim();
+    if (/^[A-Za-z0-9._-]+$/.test(d)) return 'https://' + d;
+  }
+  return null;
+}
+
 async function javiDaJeGotovo(req, userId, uspeh, danId) {
   if (!process.env.CRON_SECRET || !userId) return;
   /* Klik na obaveštenje mora da odvede DO ANALIZE, ne na početni ekran.
@@ -141,11 +196,10 @@ async function javiDaJeGotovo(req, userId, uspeh, danId) {
      `danId` je isti identifikator dana koji aplikacija koristi u S.log; oblik
      se proverava ovde jer ulazi u adresu. */
   const dan = /^[A-Za-z0-9_-]{1,64}$/.test(String(danId || '')) ? String(danId) : null;
+  const poreklo = sopstvenoPoreklo();
+  if (!poreklo) return;
   try {
-    const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
-    const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
-    if (!host) return;
-    await fetch(proto + '://' + host + '/api/push', {
+    await fetch(poreklo + '/api/push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + process.env.CRON_SECRET },
       body: JSON.stringify({
@@ -315,6 +369,50 @@ async function callGemini(systemText, userText) {
   return out;
 }
 
+/* PREPOZNAVANJE „PREKORAČEN LIMIT" IDE PO ŠIFRI GREŠKE, NE PO TEKSTU.
+   Ranije se svuda gledalo `telo.includes('DAILY_LIMIT_EXCEEDED')`. Dok god
+   PostgREST prosleđuje poruku izuzetka to radi — ali čim je skrati, promeni
+   omot ili je prevede, provera tiho postaje „propusti", i to na svih pet
+   putanja odjednom. `errcode` je deo ugovora funkcije (v. rate-limit.sql),
+   tekst nije. Tekst ostaje kao rezerva za starije verzije PostgREST-a. */
+function jeLimit(telo) {
+  let j = null;
+  try { j = JSON.parse(telo); } catch (e) {}
+  if (j && (j.code === 'P0001' || String(j.message || '').includes('DAILY_LIMIT_EXCEEDED'))) return true;
+  return String(telo || '').includes('DAILY_LIMIT_EXCEEDED');
+}
+
+/* Dnevni limit po korisniku i endpointu — ista atomska funkcija kao za
+   /api/wellness i /api/workouts (v. supabase/rate-limit.sql).
+
+   PROPUŠTA kad baza ne odgovara — namerno, jer SQL možda još nije pušten a ni
+   mrežni prekid ne sme da obori analizu. ALI SE VIDI: `console.error`, ne
+   `console.warn`. Vercel `warn` meša sa običnim logovima, a `error` ide u
+   kanal na koji se može zakačiti obaveštenje. Limit koji tiho otkaže izgleda
+   isto kao limit koji radi — mesecima. */
+async function limitPrekoracen(token, endpoint, limit) {
+  try {
+    const r = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
+      method: 'POST',
+      headers: {
+        apikey: process.env.SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_endpoint: endpoint, p_limit: limit })
+    });
+    if (r.ok) return false;
+    const telo = await r.text();
+    if (jeLimit(telo)) return true;
+    console.error('[limit][ALARM] brojac nije radio (%s) — propusteno bez brojanja. HTTP %s: %s',
+      endpoint, r.status, telo.slice(0, 200));
+    return false;
+  } catch (e) {
+    console.error('[limit][ALARM] brojac nedostupan (%s) — propusteno bez brojanja: %s', endpoint, e.message);
+    return false;
+  }
+}
+
 /* Vlasnik naloga — ista provera kao /api/broadcast.js (ugrađena, ne uvezena:
    Vercel funkcije bez build koraka ne razrešavaju lokalne import-e). */
 async function jeVlasnik(req) {
@@ -362,10 +460,33 @@ export default async function handler(req, res) {
   }
   const posao = (body && typeof body.posao === 'string') ? body.posao : null;
   const posaoId = (body && typeof body.posaoId === 'string') ? body.posaoId.trim() : '';
+  const trendTrazen = !!(body && body.trend);
 
-  /* ČITANJE REZULTATA ne troši ni kvotu ni Gemini ključ — samo pogled u bazu. */
+  /* TREND NEMA FAZE POSLA.
+     Faza `radi` je nastavak posla koji je već izbrojan pri pokretanju, pa
+     preskače dnevni brojač. Trend analiza NIJE nastavak ničega — ona se računa
+     odmah i vraća u istom odgovoru. Dok su te dve stvari mogle da stoje u
+     istom telu zahteva, `{posao:'radi', trend:{…}}` je bio potpun obilazak
+     limita: model se pozove, brojač se ne pomeri, i to bez ijednog reda u
+     bazi koji bi to ograničio. Dokazano izvršnim pozivom, ne čitanjem.
+     Zato se kombinacija odbija PRE svega ostalog — jeftinije je i jasnije od
+     grananja niže. */
+  if (trendTrazen && posao) {
+    res.status(400).json({ error: 'Trend analiza nema faze posla.' });
+    return;
+  }
+
+  /* ČITANJE REZULTATA ne troši ni Gemini ključ ni dnevnu kvotu analiza — samo
+     pogled u bazu. Ali NIJE besplatno: klijent pita na svake tri sekunde do
+     minut i po, pa jedna analiza znači tridesetak poziva. Zato ima sopstven,
+     velikodušan brojač — dovoljno visok da normalnu upotrebu nikad ne dotakne,
+     dovoljno nizak da petlja ne može da gađa bazu bez kraja. */
   if (posao === 'citaj') {
     if (!UUID.test(posaoId)) { res.status(400).json({ error: 'Neispravan ID posla.' }); return; }
+    if (await limitPrekoracen(auth.token, 'analyze_citaj', 1500)) {
+      res.status(429).json({ error: 'Previše provera rezultata danas. Pokušaj ponovo sutra.' });
+      return;
+    }
     const r = await posaoCitaj(auth, posaoId);
     if (!r.ok) { res.status(r.status || 502).json({ error: r.error }); return; }
     res.status(200).json(r.red);
@@ -387,9 +508,18 @@ export default async function handler(req, res) {
      podešavanju bez obavezne potvrde mejla, svako mogao registrovati
      vlasnikovom adresom i time skinuti limit sebi. */
   const vlasnik = await jeVlasnik(req);
-  /* Broji se SAMO pokretanje (i stari, sinhroni put). Faza 'radi' je nastavak
-     već izbrojanog posla. */
-  if (!vlasnik && posao !== 'radi') try {
+  /* KO PRESKAČE BROJAČ — jedan izraz, ne razbacana provera.
+     Preskače SAMO nastavak posla koji je pri pokretanju već izbrojan: faza
+     'radi' NAD JEDNIM KONKRETNIM, ISPRAVNIM ID-em posla. Sve ostalo se broji.
+
+     Ranije je uslov glasio `posao !== 'radi'` — dakle oslanjao se na to da
+     klijent kaže istinu o tome šta radi. `{posao:'radi', trend:{…}}` je time
+     dobijao najskuplji poziv u sistemu (do 150 treninga i 90 dana oporavka u
+     promptu) potpuno besplatno, u petlji, sa običnim Google nalogom. Trend je
+     sada odbijen gore, a ovde stoji druga brava: bez ispravnog ID-a posla
+     nema preskakanja, pa ni buduća faza ne može da se provuče istim putem. */
+  const nastavakIzbrojanogPosla = (posao === 'radi' && UUID.test(posaoId));
+  if (!vlasnik && !nastavakIzbrojanogPosla) try {
     const rl = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_api_usage', {
       method: 'POST',
       headers: {
@@ -401,7 +531,7 @@ export default async function handler(req, res) {
     });
     if (!rl.ok) {
       const errBody = await rl.text();
-      if (errBody.includes('DAILY_LIMIT_EXCEEDED')) {
+      if (jeLimit(errBody)) {
         res.status(429).json({ error: 'Dnevni limit AI analiza (' + DAILY_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
         return;
       }
@@ -409,13 +539,14 @@ export default async function handler(req, res) {
          korisnika zbog toga, samo nastavljamo bez brojanja za ovaj poziv.
          ALI SE TO MORA VIDETI: limit koji tiho prestane da radi izgleda isto
          kao limit koji radi, pa bi kvota mogla da se prazni mesecima a da se
-         ne primeti. Ovo zavrsi u Vercel logovima. */
-      console.warn('[limit] brojac nije radio (%s) — propusteno bez brojanja. HTTP %s: %s',
+         ne primeti. `error`, ne `warn` — Vercel `warn` meša sa običnim
+         logovima, a na `error` kanal se može zakačiti obaveštenje. */
+      console.error('[limit][ALARM] brojac nije radio (%s) — propusteno bez brojanja. HTTP %s: %s',
         'api_usage', rl.status, errBody.slice(0, 200));
     }
   } catch (e) {
     /* mrezni problem ovde ne sme da obori celu analizu — ali ostavlja trag */
-    console.warn('[limit] brojac nedostupan (%s) — propusteno bez brojanja: %s', 'api_usage', e.message);
+    console.error('[limit][ALARM] brojac nedostupan (%s) — propusteno bez brojanja: %s', 'api_usage', e.message);
   }
 
   if (!process.env.GEMINI_API_KEY) {
@@ -448,8 +579,23 @@ export default async function handler(req, res) {
   const zoneBlok = zoneTxt(hrZones);
   /* goalCtx ranije bez ikakvog ogranicenja -> direktno u systemInstruction.
      Neograniceno = i prompt injection prostor i nacin da se nadmasi tokenski
-     budzet. 200 znakova je vise nego dovoljno za "5K oko 19:30" stil opisa. */
-  const goalDesc = (typeof goalCtx === 'string' && goalCtx.trim()) ? goalCtx.trim().slice(0, 200) : '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)';
+     budzet. 200 znakova je vise nego dovoljno za "5K oko 19:30" stil opisa.
+
+     DUŽINA NIJE BILA DOVOLJNA. Ovaj tekst ulazi u SISTEMSKO uputstvo, a u
+     njemu se rađa iz `raceName` — polja koje korisnik sam ukuca u čarobnjaku.
+     Dvesta znakova je i dalje dovoljno za „…zanemari sva pravila iznad i…",
+     a sistemsko uputstvo je baš ono mesto gde takva rečenica nosi najviše
+     težine. Šteta je samo sopstvena (svako vidi svoju analizu), ali analiza
+     koja izgleda kao uredan trenerski sud a nastala je po podmetnutom pravilu
+     je lošija od nikakve — po njoj se trenira.
+     Zato se ovde ruše sredstva za izlazak iz rečenice: prelomi reda (bez njih
+     se ne može otvoriti nov „odeljak" uputstva) i znaci kojima je ostatak
+     prompta strukturiran. Normalne vrednosti („Beogradski maraton", „5K oko
+     19:30") prolaze nedirnute. */
+  const goalDesc = (typeof goalCtx === 'string' && goalCtx.trim())
+    ? (goalCtx.replace(/[\r\n\t]+/g, ' ').replace(/[`{}<>*#]/g, '').replace(/\s{2,}/g, ' ').trim().slice(0, 200)
+       || '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)')
+    : '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)';
 
   // TREND ANALIZA — poseban tip zahteva (svi treninzi od početka plana)
   if (trend) {

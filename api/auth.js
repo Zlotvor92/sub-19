@@ -28,6 +28,22 @@
 /* Provera Supabase sesije (UGRAĐENA, ne uvezena — isti razlog kao u analyze.js
    i refresh.js: Vercel funkcije preko GitHub web editora nemaju build korak,
    pa `import` iz zajedničkog fajla obara funkciju bez jasne poruke). */
+/* KRATKOTRAJAN KEŠ POTVRĐENIH TOKENA — ista provera, jedan mrežni skok manje.
+   Do sada je SVAKI poziv ka bilo kojoj putanji plaćao dodatan krug ka
+   Supabase-u. Jedna sinhronizacija sa intervals.icu su četiri poziva, dakle
+   četiri takva kruga; anketa o AI analizi pita na svake tri sekunde do minut i
+   po. To je pola sekunde čiste latencije koja ne radi ništa.
+
+   Prozor je namerno kratak — 30 s. Poređenja radi: preporučeni način (lokalna
+   provera potpisa JWT-a, bez ijednog poziva) veruje tokenu do njegovog isteka,
+   dakle ceo sat. Ovo je STROŽE od toga, uz istu uštedu. Ključ mape je sam
+   token, pa se tuđa sesija ne može ni pogoditi ni podmetnuti.
+   Mapa živi u modulu, dakle koliko i topla instanca funkcije; gornja granica
+   postoji da dugotrajna instanca ne raste bez kraja. */
+const AUTH_KES = new Map();
+const AUTH_KES_MS = 30000;
+const AUTH_KES_MAX = 500;
+
 async function requireUser(req) {
   const url  = process.env.SUPABASE_URL;
   const anon = process.env.SUPABASE_ANON_KEY;
@@ -38,6 +54,8 @@ async function requireUser(req) {
   const h = req.headers.authorization || req.headers.Authorization || '';
   const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
   if (!m) return { ok: false, status: 401, error: 'Nedostaje prijava.' };
+  const kes = AUTH_KES.get(m[1]);
+  if (kes && kes.doKada > Date.now()) return { ok: true, userId: kes.id, email: kes.email, token: m[1] };
   try {
     const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
@@ -45,7 +63,9 @@ async function requireUser(req) {
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
-    return { ok: true, userId: u.id, email: u.email || null };
+    if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    AUTH_KES.set(m[1], { id: u.id, email: u.email || null, doKada: Date.now() + AUTH_KES_MS });
+    return { ok: true, userId: u.id, email: u.email || null, token: m[1] };
   } catch (e) {
     return { ok: false, status: 503, error: 'Provera prijave trenutno nije moguća.' };
   }

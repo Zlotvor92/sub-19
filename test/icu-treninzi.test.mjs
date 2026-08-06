@@ -389,6 +389,53 @@ describe('Trend analiza koristi ono što icu daje', () => {
   });
 });
 
+describe('Pokupljanje završenih analiza se ne sme zaglaviti', () => {
+  /* `AI_KUPIM` sprečava dva pokupljanja u isto vreme. Dok se skidao golom
+     dodelom na kraju funkcije, jedan izuzetak usred petlje (npr. `save()` na
+     punoj kvoti) ostavljao bi zastavicu podignutu — i pokupljanje bi TIHO
+     prestalo do sledećeg učitavanja stranice, dok bi analiza zauvek stajala
+     na „u toku". Tačno ono stanje koje je cela ova funkcija i uvedena da
+     spreči. */
+  const saPoslom = () => {
+    const a = app();
+    /* Harness podrazumeva `onLine:false`, a aiPokupiSve tada odmah izlazi — bez
+       ovoga bi testovi prolazili ne ušavši u funkciju uopšte. */
+    a.evalIn(`navigator.onLine = true;
+              S.log={n1d1:{status:'done', aiPosao:{id:'11111111-1111-4111-8111-111111111111', at:Date.now()}}};
+              SB.userId='u1'; SB.access='t'; SB.refresh='r'; SB.expiresAt=Date.now()+9e6;`);
+    return a;
+  };
+
+  test('izuzetak usred pokupljanja spušta zastavicu', async () => {
+    const a = saPoslom();
+    let zvano = 0;
+    a.setFetch(async () => {
+      zvano++;
+      return { ok: true, status: 200, json: async () => ({ stanje: 'gotovo', tekst: 'x' }) };
+    });
+    /* aiPozovi hvata mrežnu grešku, pa se puca namerno dublje — na save(),
+       tačno kao kad je localStorage pun. */
+    a.evalIn('save = () => { throw new Error("kvota"); }');
+    await a.evalIn('aiPokupiSve().catch(()=>{})');
+    assert.ok(zvano > 0, 'funkcija nije ni ušla u petlju — test ne meri ništa');
+    assert.equal(a.evalIn('AI_KUPIM'), false,
+      'zastavica je ostala podignuta — pokupljanje je TIHO prestalo do restarta');
+  });
+
+  test('uredno pokupljanje takođe spušta zastavicu', async () => {
+    const a = saPoslom();
+    a.setFetch(async () => ({
+      ok: true, status: 200,
+      json: async () => ({ stanje: 'gotovo', tekst: 'Analiza.' })
+    }));
+    await a.evalIn('aiPokupiSve()');
+    await new Promise(r => setTimeout(r, 10));
+    assert.equal(a.evalIn('AI_KUPIM'), false);
+    assert.equal(a.evalIn('S.log.n1d1.aiText'), 'Analiza.', 'rezultat nije pokupljen');
+    assert.equal(a.evalIn('S.log.n1d1.aiPosao'), undefined, 'posao je ostao u redu');
+  });
+});
+
 describe('Vlasnik nema limit AI analiza', () => {
 
   test('drugima ostaju dve po treningu', () => {
@@ -406,13 +453,57 @@ describe('Vlasnik nema limit AI analiza', () => {
     assert.equal(a.call('aiPreostalo', { aiCount: 10 }), Infinity);
   });
 
-  test('server proverava POTVRĐENU adresu, ne samo poklapanje', () => {
-    /* Bez provere potvrde bi se, na Supabase podešavanju bez obavezne potvrde
-       mejla, svako mogao registrovati vlasnikovom adresom i skinuti limit. */
-    const src = readRepoFile('api/analyze.js');
-    assert.match(src, /async function jeVlasnik\(req\)/);
-    assert.match(src, /email_confirmed_at \|\| u\.confirmed_at/);
-    assert.match(src, /if \(!vlasnik && posao !== 'radi'\) try \{/, 'limit se i dalje broji vlasniku');
+  /* Ovde je do sada stajala provera regularnim izrazom nad izvornim kodom
+     (`assert.match(src, /if \(!vlasnik && posao !== 'radi'\)/)`). Takav test
+     kaže samo da kod IZGLEDA očekivano — a baš ta klasa je propustila potpun
+     obilazak dnevnog limita (v. „Analiza odvojena od cekanja" u api.test.mjs).
+     Zato se sada vozi pravi poziv i broji ono što jedino znači nešto: da li je
+     brojač pomeren. */
+  async function pozoviAnalizu(korisnik) {
+    const stariFetch = globalThis.fetch;
+    const env = {
+      SUPABASE_URL: 'https://x.supabase.co', SUPABASE_ANON_KEY: 'anon',
+      GEMINI_API_KEY: 'k', ADMIN_EMAIL: 'vlasnik@t.rs', VERCEL_URL: 'x.vercel.app'
+    };
+    const staro = {};
+    for (const k of Object.keys(env)) { staro[k] = process.env[k]; process.env[k] = env[k]; }
+    let brojano = 0;
+    globalThis.fetch = async (u, o) => {
+      const s = String(u);
+      const J = (b) => ({ ok: true, status: 200, json: async () => b, text: async () => JSON.stringify(b) });
+      if (s.includes('/auth/v1/user')) return J(korisnik);
+      if (s.includes('check_and_bump_api_usage')) { brojano++; return J({}); }
+      if (s.includes('ai_posao') && o && o.method === 'POST') return J([{ id: 'p1' }]);
+      return J({});
+    };
+    try {
+      const { default: h } = await import('../api/analyze.js?t=' + Math.random());
+      const r = { code: null, body: null, status(c) { this.code = c; return this; }, json(b) { this.body = b; return this; }, setHeader() {} };
+      await h({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: { posao: 'start' } }, r);
+      return { brojano, code: r.code };
+    } finally {
+      globalThis.fetch = stariFetch;
+      for (const k of Object.keys(env)) { if (staro[k] === undefined) delete process.env[k]; else process.env[k] = staro[k]; }
+    }
+  }
+
+  test('vlasniku se dnevni limit ne broji', async () => {
+    const o = await pozoviAnalizu({ id: 'v', email: 'vlasnik@t.rs', email_confirmed_at: '2026-01-01' });
+    assert.equal(o.code, 200);
+    assert.equal(o.brojano, 0, 'vlasniku se troši sopstvena kvota');
+  });
+
+  test('drugom korisniku se broji', async () => {
+    const o = await pozoviAnalizu({ id: 'k', email: 'neko@t.rs', email_confirmed_at: '2026-01-01' });
+    assert.equal(o.brojano, 1, 'običan korisnik je preskočio brojač');
+  });
+
+  test('NEPOTVRĐENA vlasnikova adresa ne skida limit', async () => {
+    /* NAPAD: na Supabase podešavanju bez obavezne potvrde mejla svako se može
+       registrovati vlasnikovom adresom i dobiti token sa `email: vlasnik,
+       email_confirmed_at: null`. Bez provere potvrde time skida limit sebi. */
+    const o = await pozoviAnalizu({ id: 'a', email: 'vlasnik@t.rs', email_confirmed_at: null });
+    assert.equal(o.brojano, 1, 'nepotvrđena vlasnikova adresa je skinula limit');
   });
 });
 

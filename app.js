@@ -931,7 +931,15 @@ function loadState(){
    svakog upisa u aplikaciji (zavrsen trening, bol u kolenu, merenje mase).
    Korisnik bi kliknuo, nista se ne bi desilo, i nigde ne bi pisalo zasto. */
 let UPIS_PAO=false;
+/* SAVE_TMR MORA STAJATI IZNAD save(), ne uz saveOdlozeno() gde je i nastao.
+   `let` u mrtvoj zoni baca na SVAKI dodir dok se do deklaracije ne dođe — a
+   `save()` se poziva na prvom redu izvršavanja (`let S=loadState();save();`).
+   Danas je taj red hiljadama linija NIŽE, pa bi radilo; ali isti raspored je
+   ovaj projekat već oborio (v. ID_OBLIK iznad migrate()), i to tiho: aplikacija
+   se otvarala prazna. Deklaracija je jeftina, klasa greške nije. */
+let SAVE_TMR=null;
 function save(){
+  clearTimeout(SAVE_TMR); SAVE_TMR=null;   /* pun upis poništava zakazan */
   const j=JSON.stringify(S);
   if(LS_OK){
     try{ localStorage.setItem(LS_KEY,j); UPIS_PAO=false; }
@@ -942,6 +950,31 @@ function save(){
   } else MEM=j;
   if(typeof sbSchedulePush==='function')sbSchedulePush();
 } /* lokalno ostaje izvor istine; sinhronizacija je odlozen dodatak */
+
+/* ODLOŽEN UPIS — SAMO ZA POLJA U KOJA SE KUCA.
+   `save()` serijalizuje CELO stanje pa ga sinhrono upiše u localStorage. Kod
+   aktivnog korisnika to stanje nije malo: izmereno na 70 treninga sa `perKm` i
+   `laps` nizovima i 180 dana oporavka — 453 KB. `JSON.stringify` nad tim je
+   ~2 ms na stonom računaru, dakle 7-13 ms na telefonu, a sinhroni upis na disk
+   je i skuplji od toga. Do sada se sve to dešavalo NA SVAKO SLOVO u belešci o
+   treningu i u belešci o bolu: kucanje je radilo desetak milisekundi
+   sinhronog posla po pritisku, na glavnoj niti, uz `syncSide()` koji uz to
+   pregrađuje dva niza.
+
+   Brojevi, statusi i izbori i dalje idu kroz pun `save()` — oni su jedan
+   dodir, ne niz dodira, i ništa se ne dobija odlaganjem.
+
+   NIŠTA SE NE GUBI: `blur` i odlazak aplikacije u pozadinu
+   (`visibilitychange`) forsiraju upis, a i sam sledeći `save()` poništava
+   zakazani i upisuje sve odjednom. (`SAVE_TMR` stoji gore, iznad save() —
+   v. objašnjenje tamo.) */
+const SAVE_ODLAGANJE=400;
+function saveOdlozeno(){
+  if(SAVE_TMR) return;                    /* već zakazano — ne pomeraj rok unedogled */
+  SAVE_TMR=setTimeout(()=>{ SAVE_TMR=null; save(); }, SAVE_ODLAGANJE);
+}
+/* Poziva se pre svega što ne sme da zatekne nezapisano stanje. */
+function saveOdmah(){ if(SAVE_TMR) save(); }
 
 /* ============ STATISTIKE ============ */
 function stFor(id){const l=S.log[id];return l&&l.status?l.status:'pending';}
@@ -3196,10 +3229,14 @@ function bindForm(root,d){
       if(l.src==='strava'&&(f==='km'||f==='sec'||f==='hr'))l.lock=true; /* ručna korekcija ima trajnu prednost */
       const t=g.querySelector('[data-tempo]');
       if(t)t.textContent=(l.km&&l.sec)?fmtTempo(l.sec/l.km)+' /km':'—';
-      syncSide(d);save();
+      syncSide(d);
+      /* Beleška je jedino polje u koje se KUCA — v. saveOdlozeno(). Ostala su
+         brojevi i izbori, dakle jedan dodir, pa idu odmah. */
+      if(f==='note') saveOdlozeno(); else save();
     };
     inp.addEventListener('input',h);
     inp.addEventListener('change',h);
+    inp.addEventListener('blur',saveOdmah);
   });
   /* radni deo — ostvaren tempo kvalitetnog segmenta (puni predikciju + VDOT) */
   g.querySelectorAll('[data-wpin]').forEach(inp=>{
@@ -3368,11 +3405,16 @@ async function aiPokupiSve(){
   if(!dani.length) return;
   AI_KUPIM=true;
   let promena=false;
-  for(const id of dani.slice(0,5)){
-    const st=await aiProveri({id}, S.log[id]);
-    if(st==='gotovo'||st==='greska') promena=true;
-  }
-  AI_KUPIM=false;
+  /* try/finally, ne gola dodela na kraju: da je `aiProveri` ikad bacio (npr.
+     `save()` na punoj kvoti), zastavica bi ostala podignuta i pokupljanje
+     rezultata bi TIHO prestalo do sledećeg učitavanja stranice — a analiza
+     bi zauvek stajala na „u toku". */
+  try{
+    for(const id of dani.slice(0,5)){
+      const st=await aiProveri({id}, S.log[id]);
+      if(st==='gotovo'||st==='greska') promena=true;
+    }
+  } finally { AI_KUPIM=false; }
   if(!promena) return;
   if(PAGES[ACTIVE]) PAGES[ACTIVE]();
   /* OTVOREN LIST DANA SE NE PRECRTAVA sam. `PAGES[ACTIVE]()` osvežava ekran
@@ -3634,6 +3676,10 @@ function openSheet(html){
   $('#sheet').scrollTop=0;
 }
 function closeSheet(){
+  /* List nosi polja u koja se kuca (beleška treninga, beleška o bolu), a
+     zatvaranje ih uklanja iz DOM-a pre nego što `blur` stigne — pa zakazan
+     upis mora ovde. */
+  saveOdmah();
   SET_LIST=false;
   $('#sheet').classList.remove('on');$('#backdrop').classList.remove('on');
   document.body.style.overflow='';
@@ -8037,7 +8083,9 @@ function openKneeSheet(id,presetPart){
     sh.querySelector('#kf-part').onchange=e=>{k.part=e.target.value||null;save();renderOporavak();};
     sh.querySelector('#kf-date').onchange=e=>{if(e.target.value){k.date=e.target.value;S.knee.sort((a,b)=>a.date<b.date?-1:1);save();}};
     sh.querySelector('#kf-act').onchange=e=>{k.act=e.target.value;save();};
-    sh.querySelector('#kf-note').oninput=e=>{k.note=e.target.value;save();};
+    /* isto kao beleška o treningu: kuca se, pa se upis odlaže (v. saveOdlozeno) */
+    sh.querySelector('#kf-note').oninput=e=>{k.note=e.target.value;saveOdlozeno();};
+    sh.querySelector('#kf-note').onblur=saveOdmah;
     sh.querySelector('#kf-del').onclick=()=>{
       if(!confirm('Obriši ovaj unos?'))return;
       S.knee=S.knee.filter(x=>x.id!==id);save();closeSheet();
@@ -10313,6 +10361,8 @@ function sbCheckState(gotNonce){
 
 let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:null};
 let SB_TIMER=null, SB_BUSY=false;
+/* „Stiglo je novije dok je push trajao" — v. sbPush(). */
+let SB_PONOVO=false;
 /* DOK TRAJE PITANJE O SUKOBU, NIŠTA SE NE ŠALJE.
 
    PRIJAVA: „backend ne čuva kilažu i povrede — sad ne vidim ništa od toga."
@@ -10419,11 +10469,17 @@ function sbParseHash(hash){
   return { access:a, refresh:q.get('refresh_token')||null,
            expiresAt: Date.now()+ (parseInt(q.get('expires_in')||'3600',10)*1000) };
 }
-/* Email i id iz JWT-a — bez dodatnog kruga ka serveru. */
+/* Email i id iz JWT-a — bez dodatnog kruga ka serveru.
+   `escape()` je bio uklonjen iz standarda (Annex B) i postoji samo dok ga
+   pregledači trpe; uz to je i pogrešan alat — radi nad UTF-16 jedinicama, pa
+   je mejl sa ćirilicom ili umlautom umeo da izađe izobličen. `TextDecoder`
+   radi tačno ono što treba: bajtovi -> UTF-8 tekst. */
 function sbClaims(jwt){
   try{
     const p=jwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-    const j=JSON.parse(decodeURIComponent(escape(atob(p+'==='.slice((p.length+3)%4)))));
+    const sirovo=atob(p+'==='.slice((p.length+3)%4));
+    const bajtovi=Uint8Array.from(sirovo, c=>c.charCodeAt(0));
+    const j=JSON.parse(new TextDecoder('utf-8').decode(bajtovi));
     return { email:j.email||null, userId:j.sub||null };
   }catch(e){ return {email:null,userId:null}; }
 }
@@ -10487,7 +10543,16 @@ async function sbRemoteAt(){
 }
 
 async function sbPush(){
-  if(!sbAuthed()||SB_BUSY) return false;
+  if(!sbAuthed()) return false;
+  /* ZAUZET NIJE ISTO ŠTO I ODRAĐEN.
+     Ranije je ovde stajalo `|| SB_BUSY` i push se prosto odbacivao. Prozor u
+     kom to boli je uzak ali stvaran: odloženi upis (4 s) je u letu, čovek u
+     tom trenutku prebaci aplikaciju u pozadinu, `visibilitychange` pozove
+     sbPush() — i dobije `false`. Aplikacija je već zamrznuta, pa NAJSVEŽIJU
+     izmenu nema ko da pošalje; ona na serveru čeka do sledećeg otvaranja, a
+     ako se telefon dotle izgubi, čeka zauvek.
+     Sada se pamti da ima novijeg i push se ponavlja čim tekući završi. */
+  if(SB_BUSY){ SB_PONOVO=true; return false; }
   /* NE GURAJ PRAZNO STANJE PREKO SERVERSKE KOPIJE. Kad se lokalni zapis nije
      mogao procitati, S je prazan seed — a serverska kopija je tada jedino
      mesto gde podaci jos postoje. Bez ove provere bi sbInit() (sbDecide vrati
@@ -10519,7 +10584,12 @@ async function sbPush(){
     pozadinskiZakazi();
     return false;
   }
-  finally{ SB_BUSY=false; }
+  finally{
+    SB_BUSY=false;
+    /* Nešto je stiglo dok je ovaj upis trajao — pošalji i to. `S` je već
+       izmenjen u memoriji, pa se šalje najnovije stanje, ne ono zatečeno. */
+    if(SB_PONOVO){ SB_PONOVO=false; setTimeout(()=>{ sbPush(); },0); }
+  }
 }
 
 async function sbPull(){
@@ -10782,6 +10852,9 @@ function prikaziUpisPao(ime){
 
 /* Poslednja prilika da se posalje pre nego sto se stranica zatvori. */
 document.addEventListener('visibilitychange',()=>{
+  /* Zakazan upis (beleška u koju se upravo kucalo) mora u localStorage PRE
+     nego što aplikacija ode u pozadinu — odatle se možda više neće vratiti. */
+  if(document.visibilityState==='hidden') saveOdmah();
   if(document.visibilityState==='hidden'&&sbAuthed()){ clearTimeout(SB_TIMER); sbPush(); }
   /* Povratak u aplikaciju je isto sto i otvaranje: instalirana PWA ume da
      stoji u pozadini danima, pa se bez ovoga prvo povlacenje desi tek posle
@@ -11173,7 +11246,21 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
   navigator.serviceWorker.register('./sw.js').then(reg=>{
     pratiAzuriranje(reg);
     reg.update();
-    setInterval(()=>{ reg.update(); pratiAzuriranje(reg); }, 60*60*1000);
+    /* Provera nove verzije na sat vremena.
+       NE VRTI SE DOK JE APLIKACIJA U POZADINI. Instalirana PWA ume da stoji
+       danima; budjenje na sat vremena tada samo troši bateriju, a `update()`
+       nad uspavanom karticom ionako ne stiže dalje od reda čekanja. Umesto
+       toga: kad se aplikacija vrati u prvi plan, proveri odmah — što je i
+       trenutak u kom traka „Osveži" ima kome da se pokaže.
+       Interval je jedan i pamti se, pa se ponovnim ulaskom ne umnožava. */
+    let tajmer=null;
+    const stani=()=>{ if(tajmer){ clearInterval(tajmer); tajmer=null; } };
+    const kreni=()=>{ stani(); tajmer=setInterval(()=>{ reg.update(); pratiAzuriranje(reg); }, 60*60*1000); };
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='visible'){ reg.update(); pratiAzuriranje(reg); kreni(); }
+      else stani();
+    });
+    if(document.visibilityState!=='hidden') kreni();
   }).catch(()=>{});
   /* Push koji je stigao dok je aplikacija OTVORENA ne izlazi kao obaveštenje
      nego kao poruka (v. `tiho` u sw.js). Za sada je to samo „analiza je

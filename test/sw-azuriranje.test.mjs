@@ -200,6 +200,23 @@ describe('Instalacija service workera preživi jedan fajl koji fali', () => {
       'neuspeh je nem — isti problem bi se opet tražio na pogrešnom mestu');
   });
 
+  test('nijedna grana odgovora ne sme da ostane bez `.catch()`', () => {
+    /* `respondWith` prima OBEĆANJE. Ako ono odbije, pregledač prikaže SVOJU
+       stranicu mrežne greške umesto da zahtev prosto propadne — na slici koja
+       se ne učita to je razlika između praznog mesta i razbijene stranice.
+       Grana za ASSETS/navigaciju je `.catch()` imala (pada na keš), a opšta
+       grana nije: van mreže, za nešto što nije u kešu, `fetch` odbija i
+       obećanje sa njim.
+       Provera je nad kodom bez komentara — inače bi objašnjenje iznad popravke
+       samo sebe prijavilo kao dokaz. */
+    const grane = kod.split('e.respondWith(').slice(1);
+    assert.equal(grane.length, 2, 'broj grana se promenio — proveri obe ručno');
+    for (const [i, g] of grane.entries()) {
+      assert.match(g.slice(0, 400), /\.catch\(/,
+        `grana ${i + 1} u fetch rukovaocu nema .catch() — odbijeno obećanje ruši prikaz`);
+    }
+  });
+
   test('svaki fajl iz ASSETS zaista postoji u repozitorijumu', () => {
     /* Prava odbrana je da spisak ne laže. Ovo hvata i običnu grešku u kucanju. */
     const m = /const ASSETS = \[([^\]]+)\]/.exec(kod);

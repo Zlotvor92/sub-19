@@ -28,6 +28,22 @@
    ponovno povezivanje nije hitno nego dobitak. */
 const SCOPE = 'ACTIVITY:READ,WELLNESS:READ,CALENDAR:WRITE,SETTINGS:WRITE';
 
+/* KRATKOTRAJAN KEŠ POTVRĐENIH TOKENA — ista provera, jedan mrežni skok manje.
+   Do sada je SVAKI poziv ka bilo kojoj putanji plaćao dodatan krug ka
+   Supabase-u. Jedna sinhronizacija sa intervals.icu su četiri poziva, dakle
+   četiri takva kruga; anketa o AI analizi pita na svake tri sekunde do minut i
+   po. To je pola sekunde čiste latencije koja ne radi ništa.
+
+   Prozor je namerno kratak — 30 s. Poređenja radi: preporučeni način (lokalna
+   provera potpisa JWT-a, bez ijednog poziva) veruje tokenu do njegovog isteka,
+   dakle ceo sat. Ovo je STROŽE od toga, uz istu uštedu. Ključ mape je sam
+   token, pa se tuđa sesija ne može ni pogoditi ni podmetnuti.
+   Mapa živi u modulu, dakle koliko i topla instanca funkcije; gornja granica
+   postoji da dugotrajna instanca ne raste bez kraja. */
+const AUTH_KES = new Map();
+const AUTH_KES_MS = 30000;
+const AUTH_KES_MAX = 500;
+
 async function requireUser(req) {
   const url  = process.env.SUPABASE_URL;
   const anon = process.env.SUPABASE_ANON_KEY;
@@ -38,6 +54,8 @@ async function requireUser(req) {
   const h = req.headers.authorization || req.headers.Authorization || '';
   const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
   if (!m) return { ok: false, status: 401, error: 'Nedostaje prijava.' };
+  const kes = AUTH_KES.get(m[1]);
+  if (kes && kes.doKada > Date.now()) return { ok: true, userId: kes.id, email: kes.email, token: m[1] };
   try {
     const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
@@ -45,19 +63,44 @@ async function requireUser(req) {
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
-    return { ok: true, userId: u.id };
+    if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    AUTH_KES.set(m[1], { id: u.id, email: u.email || null, doKada: Date.now() + AUTH_KES_MS });
+    return { ok: true, userId: u.id, email: u.email || null, token: m[1] };
   } catch (e) {
     return { ok: false, status: 503, error: 'Provera prijave trenutno nije moguća.' };
   }
 }
 
 /* Adresa na koju intervals.icu vraća korisnika. Mora se DOSLOVNO poklapati sa
-   onim što je prijavljeno pri traženju client_id-a, uključujući kosu crtu. */
-function povratnaAdresa(req) {
-  if (process.env.ICU_REDIRECT_URI) return process.env.ICU_REDIRECT_URI;
-  const host  = req.headers['x-forwarded-host'] || req.headers.host || '';
-  const proto = req.headers['x-forwarded-proto'] || 'https';
-  return proto + '://' + host + '/';
+   onim što je prijavljeno pri traženju client_id-a, uključujući kosu crtu.
+
+   NE ČITA SE IZ ZAGLAVLJA ZAHTEVA.
+   Ranije je, kad `ICU_REDIRECT_URI` nije podešen, adresa građena iz
+   `x-forwarded-host` — dakle iz vrednosti koju šalje pozivalac. Ta vrednost
+   ide kao `redirect_uri` u adresu za autorizaciju, pa bi podmetnuto zaglavlje
+   vratilo korisnika (sa `code`-om u upitu) na tuđi server. intervals.icu to
+   najverovatnije odbija jer proverava registrovanu adresu — ali odbrana ne
+   sme da zavisi od tuđe validacije, pogotovo ne od one koju ne vidimo.
+
+   REDOSLED REZERVI NIJE PROIZVOLJAN.
+   `ICU_REDIRECT_URI` je jedino što je sigurno tačno — ta adresa je i
+   prijavljena kod intervals.icu, pa se DOSLOVNO poklapa. Zato ide prva i zato
+   je treba podesiti.
+   `VERCEL_PROJECT_PRODUCTION_URL` je STABILAN produkcijski domen; sledeći je
+   jer OAuth traži tačno poklapanje, a registrovana adresa je upravo taj domen.
+   `VERCEL_URL` je adresa POJEDINAČNOG deploya (menja se pri svakom) — za
+   OAuth se po pravilu NEĆE poklopiti sa registrovanom, pa stoji poslednja,
+   samo da pregled na privremenom deployu ne ostane bez ičega.
+   Ako nijedno nije poznato, vraća se `null` i putanja odgovara jasnim 501 —
+   bolje nego izdati adresu za autorizaciju u koju se ne može imati poverenja. */
+function povratnaAdresa() {
+  const rucno = String(process.env.ICU_REDIRECT_URI || '').trim();
+  if (/^https:\/\/[^\/\s]+\//.test(rucno)) return rucno;
+  for (const v of [process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_URL]) {
+    const d = String(v || '').trim();
+    if (/^[A-Za-z0-9._-]+$/.test(d)) return 'https://' + d + '/';
+  }
+  return null;
 }
 
 export default async function handler(req, res) {
@@ -72,9 +115,14 @@ export default async function handler(req, res) {
     if (!clientId) { res.status(501).json({ error: 'OAuth nije podešen (nedostaje ICU_CLIENT_ID).' }); return; }
     const state = String((req.query && req.query.state) || '').slice(0, 128);
     if (!/^[A-Za-z0-9_-]{8,128}$/.test(state)) { res.status(400).json({ error: 'Neispravan state.' }); return; }
+    const povratak = povratnaAdresa();
+    if (!povratak) {
+      res.status(501).json({ error: 'OAuth nije podešen (nedostaje ICU_REDIRECT_URI).' });
+      return;
+    }
     const url = 'https://intervals.icu/oauth/authorize'
       + '?client_id=' + encodeURIComponent(clientId)
-      + '&redirect_uri=' + encodeURIComponent(povratnaAdresa(req))
+      + '&redirect_uri=' + encodeURIComponent(povratak)
       + '&scope=' + encodeURIComponent(SCOPE)
       + '&state=' + encodeURIComponent(state);
     res.status(200).json({ url });
