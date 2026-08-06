@@ -645,9 +645,16 @@ describe('supabase/ai-posao.sql — stanje posla je serverov automat', () => {
     assert.match(sql, /check_and_bump_endpoint\('ai_posao'/,
       'red se može napraviti mimo ijednog brojača');
     /* Mreža ispod limita iz koda ne sme da obori analizu ako rate-limit.sql
-       još nije pušten — limit u kodu je i dalje na mestu. */
-    assert.match(sql, /when undefined_function then null/,
-      'nedostajuća funkcija obara pravljenje posla');
+       još nije pušten — limit u kodu je i dalje na mestu. Handler mora da
+       pokrije SVE načine na koje brojač može da nedostaje, ne samo jedan:
+       funkcija, tabela, dozvola. */
+    for (const kod of ['undefined_function', 'undefined_table', 'insufficient_privilege']) {
+      assert.match(sql, new RegExp(`when [^\\n]*${kod}`),
+        `nedostupan brojač (${kod}) obara pravljenje posla — dakle celu AI analizu`);
+    }
+    /* Ali DAILY_LIMIT_EXCEEDED mora da PROĐE — inače backstop ne postoji. */
+    assert.doesNotMatch(sql, /when others then null/,
+      '`when others` guta i prekoračenje limita, pa mreža ispod koda ne radi');
   });
 });
 
