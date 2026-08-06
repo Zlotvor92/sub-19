@@ -367,6 +367,26 @@ describe('Manifest je spreman za pakovanje u Android aplikaciju', () => {
     assert.equal(j[0].target.namespace, 'android_app');
     assert.ok(j[0].target.package_name, 'nema naziva paketa');
   });
+
+  test('otisak kljuca je STVARAN otisak, ne rezervisano mesto', () => {
+    /* Ovo je jedini fajl zbog kog Android aplikacija radi preko celog ekrana,
+       bez Chrome trake sa adresom. Greska u njemu se NE vidi kao greska —
+       aplikacija se normalno instalira i radi, samo sa trakom na vrhu, pa
+       lako prodje neprimeceno. A ispravka posle instalacije ne pomaze:
+       Android proveru zapamti, mora deinstalacija pa ponovna instalacija.
+       Zato oblik cuva test, ne pazljivost. */
+    const j = JSON.parse(readRepoFile('.well-known/assetlinks.json'));
+    const otisci = j[0].target.sha256_cert_fingerprints;
+    assert.ok(Array.isArray(otisci) && otisci.length, 'nema nijednog otiska');
+    for (const o of otisci) {
+      assert.match(o, /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/,
+        `otisak nije 32 para velikih heks cifara sa dvotackama: ${o}`);
+    }
+    /* Naziv paketa mora biti isti kao u alatu za pakovanje, karakter za
+       karakter — Google poredi bas njega uz otisak. */
+    assert.match(j[0].target.package_name, /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/,
+      'naziv paketa nije ispravan Android package id');
+  });
 });
 
 /* Sirovi bajtovi fajla iz repozitorijuma (readRepoFile vraca tekst). */
