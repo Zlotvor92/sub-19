@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='195'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='196'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2674,6 +2674,57 @@ function nextLine(from){
   const nx=DATED.find(x=>x.date>from&&!x.rest);
   return nx?`<div class="note-src">Sledeći trening: ${dowOf(nx.date)} ${fmtD(nx.date)} — ${esc(sessKind(nx))}${nx.km?' · '+fmtKm(nx.km)+' km':''}</div>`:'';
 }
+/* ============================================================
+   LOKACIJA — ZAŠTO NIJE STIGLA
+
+   PRIJAVA: „Lokacija nije dostupna, a upalio sam je kad sam pravio aplikaciju."
+
+   Bila je jedna rečenica za tri različite stvari: ugašena lokacija na telefonu,
+   odbijena dozvola, i istekla potraga. Sve troje je izgledalo isto, pa se iz
+   poruke nije moglo saznati šta da se uradi.
+
+   Uz to je uputstvo pominjalo „podešavanja pregledača" — što je tačno na vebu,
+   a pogrešno u instaliranoj Android aplikaciji (TWA): tamo dozvola pripada
+   SAMOJ APLIKACIJI, u sistemskim podešavanjima telefona. Uključivanje
+   „location delegation" pri pakovanju samo znači da aplikacija SME da traži
+   lokaciju — Android i dalje mora da je odobri, jednom, na sopstveni upit.
+   ============================================================ */
+function uAplikaciji(){
+  try{
+    return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)
+        || navigator.standalone===true;
+  }catch(e){ return false; }
+}
+function geoTrazi(opcije){
+  return new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,opcije));
+}
+/* Unapred poznato odbijanje. `permissions` ne postoji svuda (stariji Safari),
+   pa se tiho preskače — tada se prosto pita i čeka odgovor. */
+async function geoOdbijena(){
+  try{
+    if(!navigator.permissions||!navigator.permissions.query) return false;
+    const st=await navigator.permissions.query({name:'geolocation'});
+    return !!st&&st.state==='denied';
+  }catch(e){ return false; }
+}
+function geoPoruka(err){
+  const kod=err&&err.code;
+  const uApp=uAplikaciji();
+  if(kod===1){
+    return uApp
+      ? 'Pristup lokaciji je odbijen.\n\nPodešavanja telefona → Aplikacije → SUB-20 → Dozvole → Lokacija → „Dozvoli dok se aplikacija koristi". Pa se vrati ovde i probaj ponovo.'
+      : 'Pristup lokaciji je odbijen.\n\nUključi ga u podešavanjima pregledača za ovu stranicu (ikonica pored adrese → Lokacija), pa probaj ponovo.';
+  }
+  if(kod===3){
+    return 'Traženje lokacije je isteklo.\n\nProbaj ponovo — pomaže da izađeš napolje ili blizu prozora. Uključen Wi-Fi ubrzava grubo određivanje i kad nisi povezan ni na jednu mrežu.';
+  }
+  /* kod 2 (POSITION_UNAVAILABLE) i sve ostalo. U aplikaciji je ovo najčešće
+     ugašena sistemska lokacija ili dozvola koja nikad nije data. */
+  return uApp
+    ? 'Lokacija trenutno nije dostupna.\n\nProveri dve stvari:\n1. Lokacija je uključena u brzim podešavanjima telefona (ikonica sa iglom).\n2. Podešavanja telefona → Aplikacije → SUB-20 → Dozvole → Lokacija je dozvoljena.'
+    : 'Lokacija trenutno nije dostupna.\n\nProveri da li je Lokacija uključena na samom telefonu, pa probaj ponovo.';
+}
+
 /* ============================================================
    VREME NA DAN TRENINGA
 
@@ -9580,24 +9631,38 @@ function openSettings(){
       ? 'Offline kopija: '+st.kesevi.join(', ')+'. Verziju javlja tek sledeći service worker.'
       : 'Offline kopija se još pravi — otvori aplikaciju ponovo za koji trenutak.';
   });
-  if($('#vr-on')) $('#vr-on').onclick=e=>{
+  if($('#vr-on')) $('#vr-on').onclick=async e=>{
     const b=e.target;
     if(!navigator.geolocation){ alert('Ovaj pregledač ne ume da odredi lokaciju.'); return; }
     b.disabled=true; b.textContent='Tražim lokaciju…';
-    navigator.geolocation.getCurrentPosition(async poz=>{
-      /* Dve decimale su ~1 km — dovoljno za prognozu, a ne pokazuje gde stanuješ. */
-      S.ui.geo={ lat:Math.round(poz.coords.latitude*100)/100, lon:Math.round(poz.coords.longitude*100)/100 };
-      save();
-      const r=await vremePovuci(true);
-      if(!r.ok) alert(r.error);
-      osveziPodesavanja();
-      if(ACTIVE==='danas') renderDanas();
-    }, err=>{
-      b.disabled=false; b.textContent='Uključi lokaciju';
-      alert(err&&err.code===1
-        ? 'Pristup lokaciji je odbijen. Uključi ga u podešavanjima pregledača za ovu stranicu, pa pokušaj ponovo.'
-        : 'Lokacija trenutno nije dostupna.');
-    }, { enableHighAccuracy:false, timeout:12000, maximumAge:600000 });
+    const vrati=()=>{ b.disabled=false; b.textContent='Uključi lokaciju'; };
+
+    /* Ako je dozvola već odbijena, nema šta da se čeka — pitanje se neće ni
+       pojaviti, samo bi 12 s stajalo „Tražim lokaciju…" pa javilo grešku. */
+    if(await geoOdbijena()){ vrati(); alert(geoPoruka({code:1})); return; }
+
+    let poz=null, greska=null;
+    try{ poz=await geoTrazi({ enableHighAccuracy:false, timeout:12000, maximumAge:600000 }); }
+    catch(err){
+      /* ISTEK NIJE ODGOVOR. U zatvorenom prostoru je 12 s bez GPS-a često
+         premalo za prvi fiks, a jedini trag koji je čovek do sada dobijao bio
+         je „nije dostupna" — isto što piše i kad je lokacija ugašena. Zato
+         jedan duži pokušaj, sada i preko GPS-a, pre nego što se odustane. */
+      if(err&&err.code===3){
+        b.textContent='Još tražim…';
+        try{ poz=await geoTrazi({ enableHighAccuracy:true, timeout:30000, maximumAge:600000 }); }
+        catch(err2){ greska=err2; }
+      } else greska=err;
+    }
+    if(!poz){ vrati(); alert(geoPoruka(greska)); return; }
+
+    /* Dve decimale su ~1 km — dovoljno za prognozu, a ne pokazuje gde stanuješ. */
+    S.ui.geo={ lat:Math.round(poz.coords.latitude*100)/100, lon:Math.round(poz.coords.longitude*100)/100 };
+    save();
+    const r=await vremePovuci(true);
+    if(!r.ok) alert(r.error);
+    osveziPodesavanja();
+    if(ACTIVE==='danas') renderDanas();
   };
   if($('#vr-off')) $('#vr-off').onclick=()=>{
     S.ui.geo=null; S.vreme=null; save(); osveziPodesavanja();

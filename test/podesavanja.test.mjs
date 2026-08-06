@@ -6,7 +6,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp } from './harness.mjs';
+import { loadApp, readAppSource } from './harness.mjs';
 
 const UID = '0403f8fb-a643-4d4e-843d-f71199a0d6f9';
 
@@ -255,5 +255,67 @@ describe('Ekran prati stanje posle radnje', () => {
     a.call('osveziPodesavanja');
     assert.match(a.evalIn(`$('#sheet').innerHTML`), /Nešto drugo/,
       'osveziPodesavanja je pregazio drugi list');
+  });
+});
+
+describe('Lokacija — poruka mora da kaže ŠTA da uradiš', () => {
+  /* PRIJAVA: „Lokacija nije dostupna, a upalio sam je kad sam pravio
+     aplikaciju." Jedna rečenica je pokrivala tri različita uzroka — ugašenu
+     lokaciju, odbijenu dozvolu i istekli pokušaj — pa se iz nje nije moglo
+     saznati ništa. U instaliranoj Android aplikaciji je uz to i uputstvo bilo
+     pogrešno: dozvola tamo ne pripada pregledaču nego samoj aplikaciji. */
+
+  const poruka = (a, kod, uApp) => {
+    a.evalIn(`__uApp=${uApp ? 'true' : 'false'};
+              uAplikaciji=()=>__uApp;`);
+    return a.evalIn(`geoPoruka(${kod === null ? 'null' : `{code:${kod}}`})`);
+  };
+
+  test('tri uzroka daju tri različite poruke', () => {
+    const a = loadApp();
+    const m = [1, 2, 3].map(k => poruka(a, k, false));
+    assert.equal(new Set(m).size, 3, 'dva uzroka i dalje dele istu poruku');
+    for (const t of m) assert.ok(t.length > 40, `poruka je pretanka: ${t}`);
+  });
+
+  test('u aplikaciji upućuje na podešavanja TELEFONA, ne pregledača', () => {
+    /* Uključena „location delegation" pri pakovanju znači samo da aplikacija
+       SME da traži lokaciju; Android je i dalje mora odobriti posebno. */
+    const a = loadApp();
+    for (const kod of [1, 2]) {
+      const t = poruka(a, kod, true);
+      assert.match(t, /Podešavanja telefona/, `kod ${kod} ne pominje podešavanja telefona`);
+      assert.match(t, /SUB-20/, `kod ${kod} ne kaže koju aplikaciju da otvori`);
+      assert.doesNotMatch(t, /pregledač/i, `kod ${kod} u aplikaciji i dalje šalje u pregledač`);
+    }
+  });
+
+  test('na vebu upućuje na pregledač, ne na podešavanja telefona', () => {
+    const a = loadApp();
+    const t = poruka(a, 1, false);
+    assert.match(t, /pregledač/i);
+    assert.doesNotMatch(t, /Podešavanja telefona/);
+  });
+
+  test('istek se ne prijavljuje kao „nedostupna" — to je druga stvar', () => {
+    const a = loadApp();
+    const t = poruka(a, 3, true);
+    assert.match(t, /isteklo/i);
+    assert.doesNotMatch(t, /Dozvole/, 'istek šalje da menja dozvole, a nisu one problem');
+  });
+
+  test('nepoznata greška ne ostaje bez poruke', () => {
+    const a = loadApp();
+    assert.ok(poruka(a, null, false).length > 40);
+  });
+
+  test('istek pokreće DRUGI, duži pokušaj pre nego što odustane', () => {
+    /* U zatvorenom prostoru je 12 s bez GPS-a često premalo za prvi fiks. */
+    const src = readAppSource();
+    const blok = /if\(\$\('#vr-on'\)\)[\s\S]*?\n  \};/.exec(src)[0];
+    assert.match(blok, /err&&err\.code===3/, 'istek se ne razlikuje od ostalih grešaka');
+    assert.match(blok, /enableHighAccuracy:true, timeout:30000/, 'nema drugog, dužeg pokušaja');
+    /* Već odbijena dozvola ne sme da se čeka 12 s da bi se to saznalo. */
+    assert.match(blok, /await geoOdbijena\(\)/, 'ne proverava se unapred poznato odbijanje');
   });
 });
