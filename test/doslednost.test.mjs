@@ -481,3 +481,70 @@ describe('Service worker se registruje bez čekanja na app.js', () => {
     assert.match(izvor, /pratiAzuriranje\(reg\)/);
   });
 });
+
+describe('Animacije napretka — prstenovi i linije', () => {
+  /* Prstenovi i linije su jedina mesta koja pokazuju KRETANJE ka broju. Obe
+     animacije vise na klasi `uskoci`, koja se skida tajmerom iz app.js. Ako se
+     trajanje u CSS-u produži a tajmer ne, klasa nestane USRED animacije i
+     linija vidno „pukne" u pun potez — greška koja se ne vidi ni u jednom
+     testu koji gleda samo da li pravilo postoji. Zato se ovde iz CSS-a čita
+     stvarno trajanje i poredi sa tajmerom. */
+  /* KOMENTARI SE SKIDAJU PRE PROVERE. Objašnjenje uz pravilo pominje i imena
+     klasa i imena animacija, pa bi se tvrdnja poklopila sa sopstvenim
+     komentarom umesto sa kodom — lažno prolazan, odnosno lažno pao test. */
+  const css = readRepoFile('index.html').replace(/\/\*[\s\S]*?\*\//g, '');
+  const app = readRepoFile('app.js');
+
+  /* „.75s .08s" -> 830 ms; „.7s" -> 700 ms. Između selektora i `animation:`
+     sme da stoji i druga osobina (`.ln` nosi i stroke-dasharray). */
+  function trajanje(pravilo) {
+    const m = new RegExp(pravilo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\{[^}]*animation:[a-z-]+ ([\\d.]+)s(?: ([\\d.]+)s)?').exec(css);
+    if (!m) return null;
+    return Math.round((parseFloat(m[1]) + (m[2] ? parseFloat(m[2]) : 0)) * 1000);
+  }
+
+  test('tajmer klase `uskoci` traje duže od najduže animacije na njoj', () => {
+    const rok = +(/USKOK_TMR=setTimeout\(\(\)=>el\.classList\.remove\('uskoci'\),(\d+)\)/.exec(app) || [])[1];
+    assert.ok(rok > 0, 'tajmer za `uskoci` nije nađen u app.js');
+    const najduza = ['.page.uskoci .pr-val', '.page.uskoci .ln']
+      .map(s => ({ s, ms: trajanje(s) }));
+    for (const a of najduza) assert.ok(a.ms, `nema animacije za ${a.s}`);
+    const max = Math.max(...najduza.map(a => a.ms));
+    assert.ok(rok > max,
+      `rok je ${rok} ms, a najduža animacija traje ${max} ms — klasa pada usred crtanja`);
+  });
+
+  test('prsten kreće od PRAZNOG, i to od tačnog obima', () => {
+    /* 2πr, r=42 — isti poluprečnik koji koristi prstenSVG. Da se ne poklapa,
+       prsten bi krenuo od pogrešnog mesta i „preskočio" na početku. */
+    const r = +(/const r=(\d+), C=2\*Math\.PI\*r/.exec(app) || [])[1];
+    assert.equal(r, 42, 'poluprečnik prstena je promenjen');
+    const odCSS = +(/@keyframes prsten-puni\{from\{stroke-dashoffset:([\d.]+)\}/.exec(css) || [])[1];
+    assert.ok(Math.abs(odCSS - 2 * Math.PI * r) < 0.1,
+      `CSS kreće od ${odCSS}, a obim je ${(2 * Math.PI * r).toFixed(1)}`);
+  });
+
+  test('svaki prsten nosi klasu koju CSS traži', () => {
+    assert.match(app, /<circle class="pr-val"/, 'prstenSVG ne obeležava krug vrednosti');
+    /* Uvodni VDOT prsten je DRUGI element sa svojom tranzicijom — ne sme da
+       upadne u isto pravilo. */
+    assert.ok(!/\.ob-vval[^{]*\{[^}]*animation:prsten-puni/.test(css),
+      'uvodni prsten je uvučen u animaciju plana');
+  });
+
+  test('linije se crtaju samo na PODACIMA, ne na pomoćnim linijama', () => {
+    /* Isprekidane linije su cilj/osnova — one su kontekst, ne merenje. Da se i
+       one crtaju, oko bi pratilo pogrešnu liniju. */
+    const sve = [...app.matchAll(/<polyline[^`]*?\/>/g)].map(m => m[0]);
+    const sKlasom = sve.filter(x => /class="ln"/.test(x));
+    assert.ok(sKlasom.length >= 5, `obeleženo je samo ${sKlasom.length} linija`);
+    for (const l of sKlasom)
+      assert.ok(!/stroke-dasharray="/.test(l), 'obeležena je pomoćna (isprekidana) linija');
+  });
+
+  test('isključeno kretanje gasi obe animacije', () => {
+    const blok = /@media\(prefers-reduced-motion:reduce\)\{[\s\S]*?\n\}/.exec(css)[0];
+    assert.match(blok, /\.page\.uskoci \.pr-val,\.page\.uskoci \.ln\{animation:none!important\}/,
+      'nove animacije rade i kad je kretanje isključeno');
+  });
+});

@@ -140,6 +140,35 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 @keyframes ulaz{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
+/* ── ONO ŠTO MERI NAPREDAK NE ISKAČE GOTOVO ──────────────────────────────
+   Prstenovi i linije su jedina mesta u aplikaciji koja pokazuju KRETANJE ka
+   broju. Dok se pojavljuju dovršeni, čitaju se kao slika; kad se popune i
+   iscrtaju, oko odmah uhvati smer — koliko je pređeno i kuda ide forma.
+
+   OBE animacije vise na `uskoci`, ne na `.active`. Razlog je isti kao za
+   slaganje kartica iznad: ekran se iznova crta na svaku sitnicu (dodirneš
+   tačku na grafikonu, obeležiš trening), a linija koja se ponovo crta pri
+   svakom dodiru je posle drugog puta samo smetnja. Ovako se dešava tačno
+   jednom — kad uđeš u tab.
+
+   Ni jedan ni drugi keyframe NEMA `to`. Podrazumevani kraj je vrednost koju
+   element ionako nosi (`stroke-dashoffset` iz atributa, odnosno pun potez),
+   pa animacija ne mora da zna ni koliki je koji prsten ni kolika je koja
+   linija — a posle nje ostaje tačno ono što bi i bez nje stajalo. */
+
+/* Prsten: 263.9 = obim kruga r=42, dakle „prazan". Svi prstenovi u aplikaciji
+   dolaze iz iste funkcije (prstenSVG) i imaju isti poluprečnik, pa je broj
+   konstanta a ne pretpostavka. `.ob-vval` je DRUGI prsten (uvodni, VDOT) i
+   namerno se ne dira — on ima svoju tranziciju. */
+.page.uskoci .pr-val{animation:prsten-puni .7s cubic-bezier(.4,0,.2,1)}
+@keyframes prsten-puni{from{stroke-dashoffset:263.9}}
+
+/* Linija: crta se S LEVA NA DESNO, u smeru u kom na svim ovim grafikonima
+   ide vreme. `stroke-dasharray` mora biti duži od najduže putanje — najširi
+   grafikon je 340 px, pa je 2000 sa velikom rezervom. */
+.page.uskoci .ln{stroke-dasharray:2000;animation:crtaj .75s .08s cubic-bezier(.35,.82,.3,1) backwards}
+@keyframes crtaj{from{stroke-dashoffset:2000}}
+
 /* ---------- cards ---------- */
 .card{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;
   box-shadow:var(--hl)}
@@ -893,6 +922,10 @@ body.uvod-radi{overflow:hidden}
      Planu je povremeno providna i 80 ms posle promene taba. Ko je isključio
      kretanje, ne treba da dobije brzo slaganje nego NIKAKVO. */
   .page.uskoci>*{animation:none!important}
+  /* Prstenovi i linije: isto pravilo, drugi razlog. Skraćenje na .01 ms bi ih
+     doduše odmah dovelo do kraja, ali `.ln` bi u tom trenu bio nacrtan pa
+     ODMAH prekriven punim potezom — treptaj. Bolje da animacije nema. */
+  .page.uskoci .pr-val,.page.uskoci .ln{animation:none!important}
   /* Uvod nema statičnu svrhu — ako je kretanje isključeno, ne prikazuje se
      uopšte. Skriptu ne čeka: sakriven je već ovde, da ne trepne. */
   #uvod{display:none}

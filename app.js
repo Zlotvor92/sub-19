@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='197'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='198'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2624,11 +2624,17 @@ function setPage(p){
   /* Kartice se slažu jedna za drugom SAMO kad se stvarno menja tab. Ekran se
      iznova iscrtava i pri svakoj sitnici (obeležen trening, unet kilometar) —
      da animacija visi na .active, ceo ekran bi se ponovo slagao posle svakog
-     dodira. Klasa se skida čim animacija istekne. */
+     dodira. Klasa se skida čim animacija istekne.
+
+     ROK MORA DA PREŽIVI NAJDUŽU ANIMACIJU KOJA NA NJEMU VISI. Na `uskoci` sada
+     visi i punjenje prstenova (.7 s) i crtanje linija na grafikonima (.08 +
+     .75 s), a ne samo slaganje kartica (.22 + .34 s). Da je rok ostao na 620
+     ms, klasa bi nestala usred crtanja i linija bi vidno „pukla" u pun potez.
+     Zato 900 — taman iznad najduže (830 ms), bez suvišnog visenja. */
   if(drugi){
     el.classList.add('uskoci');
     clearTimeout(USKOK_TMR);
-    USKOK_TMR=setTimeout(()=>el.classList.remove('uskoci'),620);
+    USKOK_TMR=setTimeout(()=>el.classList.remove('uskoci'),900);
   }
   PAGES[p]();
   window.scrollTo(0,0);
@@ -3500,7 +3506,7 @@ function prstenSVG(udeo, tekst, velicina, boja, fs){
   const slova=fs||(velicina>70?24:22);
   return `<svg viewBox="0 0 100 100" width="${velicina}" height="${velicina}" aria-hidden="true">
     <circle cx="50" cy="50" r="${r}" fill="none" stroke="rgba(238,240,255,.14)" stroke-width="8"/>
-    <circle cx="50" cy="50" r="${r}" fill="none" stroke="${boja}" stroke-width="8" stroke-linecap="round"
+    <circle class="pr-val" cx="50" cy="50" r="${r}" fill="none" stroke="${boja}" stroke-width="8" stroke-linecap="round"
             stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off}" transform="rotate(-90 50 50)"/>
     ${tekst?`<text x="50" y="${velicina>70?56:55}" text-anchor="middle" font-size="${slova}" font-weight="800"
             fill="#EEF0FF" font-family="-apple-system,sans-serif" letter-spacing="-1">${esc(tekst)}</text>`:''}
@@ -7607,7 +7613,7 @@ function chartHrv(niz){
   const selH=CHART_SEL.hrv!=null?v[CHART_SEL.hrv]:null;
   g+=chartTop(L, selH ? `${fmtD(selH.datum)} · HRV ${fmtNum(selH.hrv,1)} · osnova ${fmtNum(baza[CHART_SEL.hrv],1)}${selH.pulsUMiru!=null?' · puls u miru '+fmtNum(selH.pulsUMiru,0):''}${selH.sanH!=null?' · san '+fmtNum(selH.sanH,1)+' h':''}` : null);
   g+=`<polyline points="${baza.map((b,i)=>X(i).toFixed(1)+','+Y(b).toFixed(1)).join(' ')}" fill="none" stroke="var(--txt3)" stroke-width="1.4" stroke-dasharray="4 4" opacity=".65"/>`;
-  g+=`<polyline points="${v.map((x,i)=>X(i).toFixed(1)+','+Y(x.hrv).toFixed(1)).join(' ')}" fill="none" stroke="var(--cyan)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>`;
+  g+=`<polyline class="ln" points="${v.map((x,i)=>X(i).toFixed(1)+','+Y(x.hrv).toFixed(1)).join(' ')}" fill="none" stroke="var(--cyan)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>`;
   v.forEach((x,i)=>{
     const last=i===v.length-1, sel=CHART_SEL.hrv===i;
     /* Ranije se crtala SAMO poslednja tačka; ostale su bile nevidljive, pa se
@@ -7712,7 +7718,7 @@ function chartWeight(){
       const line=pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
       const area=`${pts[0].x.toFixed(1)},${B} ${line} ${pts[pts.length-1].x.toFixed(1)},${B}`;
       g+=`<polygon points="${area}" fill="url(#wtGrad)"/>`;
-      g+=`<polyline fill="none" stroke="var(--pink)" stroke-width="2.25" stroke-linejoin="round" points="${line}"/>`;
+      g+=`<polyline class="ln" fill="none" stroke="var(--pink)" stroke-width="2.25" stroke-linejoin="round" points="${line}"/>`;
     }
     pts.forEach((p,i)=>{
       const sel=CHART_SEL.wt===i;
@@ -7750,7 +7756,7 @@ function chartTempo(){
     const line=runs.map((r,i)=>X(i).toFixed(1)+','+Y(r.t).toFixed(1)).join(' ');
     const area=`${X(0).toFixed(1)},${B} ${line} ${X(runs.length-1).toFixed(1)},${B}`;
     g+=`<polygon points="${area}" fill="url(#tempoGrad)"/>`;
-    g+=`<polyline fill="none" stroke="var(--cyan)" stroke-width="2.25" stroke-linejoin="round" points="${line}"/>`;
+    g+=`<polyline class="ln" fill="none" stroke="var(--cyan)" stroke-width="2.25" stroke-linejoin="round" points="${line}"/>`;
   }
   runs.forEach((r,i)=>{
     const last=i===runs.length-1, sel=CHART_SEL.tempo===i;
@@ -7994,7 +8000,7 @@ function chartKnee(){
   [0,5,10].forEach(v=>{g+=`<line class="gl" x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}"/><text class="ax" x="${L-4}" y="${Y(v)+3}" text-anchor="end">${v}</text>`;});
   g+=`<line x1="${L}" y1="${Y(3)}" x2="${W-R}" y2="${Y(3)}" stroke="rgba(255,176,32,.4)" stroke-dasharray="3 4"/>`;
   g+=`<line x1="${L}" y1="${Y(6)}" x2="${W-R}" y2="${Y(6)}" stroke="rgba(255,69,58,.4)" stroke-dasharray="3 4"/>`;
-  if(es.length>1)g+=`<polyline fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" points="${es.map(e=>X(e.date).toFixed(1)+','+Y(e.pain).toFixed(1)).join(' ')}"/>`;
+  if(es.length>1)g+=`<polyline class="ln" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" points="${es.map(e=>X(e.date).toFixed(1)+','+Y(e.pain).toFixed(1)).join(' ')}"/>`;
   es.forEach((e,i)=>{
     const sel=CHART_SEL.knee===i;
     g+=`<circle cx="${X(e.date).toFixed(1)}" cy="${Y(e.pain).toFixed(1)}" r="${sel?5.2:3.6}" fill="${e.pain>=6?'var(--red)':e.pain>=1?'var(--amber)':'var(--green)'}"${sel?' stroke="#fff" stroke-width="1"':''}/>`;
@@ -8295,7 +8301,7 @@ function chartVdotTrend(){
       </linearGradient></defs>`;
   const area=`${pts[0][0].toFixed(1)},${B} ${lineStr} ${pts[pts.length-1][0].toFixed(1)},${B}`;
   g+=`<polygon points="${area}" fill="url(#vdotGrad)"/>`;
-  g+=`<polyline points="${lineStr}" fill="none" stroke="var(--pink)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>`;
+  g+=`<polyline class="ln" points="${lineStr}" fill="none" stroke="var(--pink)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>`;
   pts.forEach((p,i)=>{
     const last=i===pts.length-1, sel=CHART_SEL.vdot===i;
     g+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${sel?5:(last?4.4:3.2)}" fill="${last&&!sel?'var(--bg)':'var(--pink)'}" stroke="${sel?'#fff':(last?'var(--pink)':'none')}" stroke-width="${sel?1:2}"/>`;
