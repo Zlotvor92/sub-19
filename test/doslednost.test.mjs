@@ -90,6 +90,20 @@ describe('vercel.json', () => {
     assert.ok(!csp.includes('unsafe-eval'), 'CSP dozvoljava unsafe-eval');
   });
 
+  test('img-src pušta samo Google avatare, i to poimenično', () => {
+    /* Zajednica prikazuje profilne slike sa Google naloga, pa je `img-src`
+       morao da se otvori. Otvara se TAČNO za taj jedan host. Šire pravilo
+       (`https:`, `*`) izgleda isto dok sve radi, a znači da svaka slika sa
+       interneta sme u aplikaciju — što je i put kojim se piksel za praćenje
+       ubacuje kroz nadimak ili bilo koje polje koje završi u `src`. */
+    const csp = vercel.headers[0].headers.find(h => h.key === 'Content-Security-Policy').value;
+    const img = /img-src ([^;]+)/.exec(csp);
+    assert.ok(img, 'CSP nema img-src');
+    const izvori = img[1].trim().split(/\s+/);
+    assert.deepEqual(izvori, ["'self'", 'data:', 'https://lh3.googleusercontent.com'],
+      `img-src je "${img[1].trim()}"`);
+  });
+
   test("script-src NEMA 'unsafe-inline'", () => {
     /* Ovo je jedina odbrana koja radi POSLE probijene provere unosa: ako
        ubačeni `<img onerror=...>` ipak dospe u HTML, pregledač odbija da ga

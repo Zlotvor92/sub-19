@@ -72,7 +72,8 @@ const TABELE = [
   'ai_posao',
   'api_usage',
   'bug_report_usage',
-  'endpoint_usage'
+  'endpoint_usage',
+  'zajednica_profil'
 ];
 
 export default async function handler(req, res) {

@@ -26,7 +26,10 @@ with ocekivano_def as (
   -- Funkcije koje MORAJU biti `security definer`, jer pišu u tabele nad kojima
   -- pozivalac nema prava (brojači) ili moraju da rade u ime vlasnika.
   select unnest(array['ai_posao_nov','check_and_bump_api_usage',
-                      'check_and_bump_bug_usage','check_and_bump_endpoint']) as ime
+                      'check_and_bump_bug_usage','check_and_bump_endpoint',
+                      -- Bez `security definer` ova puca sa „infinite recursion
+                      -- detected in policy" i Zajednica postane nečitljiva.
+                      'zajednica_vidljiv_ja']) as ime
 ),
 ocekivano_obicno as (
   -- Funkcije koje NE TREBA da budu `security definer`. Okidači `dodirni` i
@@ -36,7 +39,8 @@ ocekivano_obicno as (
   -- izvršava, a NE da li se okidač uopšte pali. Okidač se pali za svaku izmenu
   -- bez obzira ko je radi, i korisnik ga ne može isključiti (`ALTER TABLE …
   -- DISABLE TRIGGER` traži vlasništvo nad tabelom).
-  select unnest(array['ai_posao_dodirni','ai_posao_prelaz']) as ime
+  select unnest(array['ai_posao_dodirni','ai_posao_prelaz',
+                      'push_pretplata_dodirni','zajednica_profil_dodirni']) as ime
 )
 
 -- 1. OKIDAČI nad ai_posao — bez njih se dnevni limit zaobilazi
@@ -58,7 +62,8 @@ select 'tabela · ' || o.ime,
             when not c.relrowsecurity then 'STARO — RLS nije uključen'
             else 'OK' end
   from (select unnest(array['ai_posao','api_usage','bug_report_usage',
-                            'endpoint_usage','push_pretplata','user_state']) as ime) o
+                            'endpoint_usage','push_pretplata','user_state',
+                            'zajednica_profil','zajednica_izazov']) as ime) o
   left join pg_class c on c.oid = to_regclass('public.' || o.ime)
 
 union all
@@ -106,8 +111,49 @@ union all
 
 -- 5. POLITIKE nad ai_posao — RLS bez politike ne pušta nikoga,
 --    a pogrešna politika pušta svakoga.
-select 'politika · ai_posao.' || polname, cmd, 'OK'
+select 'politika · ai_posao.' || policyname, cmd, 'OK'
   from pg_policies where schemaname = 'public' and tablename = 'ai_posao'
+
+union all
+
+select 'politika · zajednica_profil.' || policyname, cmd, 'OK'
+  from pg_policies where schemaname = 'public' and tablename = 'zajednica_profil'
+
+union all
+
+-- 6. IZAZOV SME DA SE SAMO ČITA
+--    Jedan jedini red koji vide svi. Politika za upis nad njim — bilo koja —
+--    znači da bilo koji prijavljen korisnik prepisuje izazov svima. Menja ga
+--    isključivo vlasnik kroz /api/broadcast, service_role ključem.
+select 'izazov · nijedna politika za upis',
+       coalesce((select string_agg(distinct cmd, ', ') from pg_policies
+                  where schemaname = 'public' and tablename = 'zajednica_izazov'
+                    and cmd <> 'SELECT'), 'nema'),
+       case when to_regclass('public.zajednica_izazov') is null then 'NEDOSTAJE'
+            when exists (select 1 from pg_policies
+                          where schemaname = 'public' and tablename = 'zajednica_izazov'
+                            and cmd <> 'SELECT')
+              /* Puštanje zajednica.sql ponovo ovo NE popravlja — fajl briše
+                 samo politiku koju sam pravi, po imenu. Tuđu treba obrisati
+                 rukom: `drop policy <ime> on public.zajednica_izazov`. */
+              then 'STARO — neko sme da menja izazov kroz RLS; obriši tu politiku rukom'
+            else 'OK' end
+
+union all
+
+-- 7. ANON NE SME DO ZAJEDNICE
+--    anon ključ stoji u izvornom kodu stranice, dakle kod svakoga. Da `revoke`
+--    izostane, ceo spisak trkača bi se čitao bez prijave.
+select 'zajednica · anon nema pristup',
+       case when to_regclass('public.zajednica_profil') is null then '—'
+            when not exists (select 1 from pg_roles where rolname = 'anon') then 'nema uloge anon'
+            when has_table_privilege('anon', 'public.zajednica_profil', 'select') then 'ČITA'
+            else 'nema' end,
+       case when to_regclass('public.zajednica_profil') is null then 'NEDOSTAJE'
+            when not exists (select 1 from pg_roles where rolname = 'anon') then 'OK'
+            when has_table_privilege('anon', 'public.zajednica_profil', 'select')
+              then 'STARO — pusti zajednica.sql ponovo (revoke iz tačke 3)'
+            else 'OK' end
 
 order by 1;
 
@@ -118,6 +164,7 @@ order by 1;
 --   NEDOSTAJE kod ai_posao_*      -> pusti supabase/ai-posao.sql
 --   NEDOSTAJE kod api_usage       -> pusti supabase/api-usage.sql
 --   NEDOSTAJE kod endpoint_usage  -> pusti supabase/rate-limit.sql
+--   NEDOSTAJE kod zajednica_*     -> pusti supabase/zajednica.sql
 --   STARO                         -> pusti taj isti fajl ponovo, ceo
 --
 -- Puštanje bilo kog od tih fajlova dvaput je bezbedno.

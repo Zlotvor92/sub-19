@@ -31,7 +31,7 @@
 
 <p class="lang">Srpski</p>
 <h1>SUB-20 — Politika privatnosti</h1>
-<p class="upd">Poslednja izmena: 6. avgust 2026.</p>
+<p class="upd">Poslednja izmena: 7. avgust 2026.</p>
 
 <p class="lead">SUB-20 je lična aplikacija za planiranje trkačkih priprema. Ovaj dokument
 opisuje koje podatke aplikacija obrađuje, gde ih čuva i kome ih prosleđuje.</p>
@@ -54,8 +54,9 @@ brisanje podataka: <a href="mailto:avuletic92@gmail.com">avuletic92@gmail.com</a
 
 <h2>Gde se podaci čuvaju</h2>
 <p>Podaci se čuvaju u bazi kod <strong>Supabase</strong> i vezani su za tvoj nalog, tako da
-im pristupaš samo ti. Aplikacija je hostovana na <strong>Vercel</strong>. Kopija podataka
-postoji i lokalno u pregledaču, da bi radila bez veze sa internetom.</p>
+im pristupaš samo ti. Jedini izuzetak je <a href="#zajednica">Zajednica</a>, koja je
+isključena dok je sam ne uključiš. Aplikacija je hostovana na <strong>Vercel</strong>.
+Kopija podataka postoji i lokalno u pregledaču, da bi radila bez veze sa internetom.</p>
 
 <h3>Šta se NIKAD ne šalje na server</h3>
 <div class="box">
@@ -79,8 +80,32 @@ sa uređaja i iz baze; isto radi i odjava sa naloga.</p>
   <tr><td>intervals.icu</td><td>zahtev za jutarnja merenja; planirani treninzi koje šalješ na sat</td><td>kada povučeš oporavak ili pošalješ treninge</td></tr>
   <tr><td>Resend</td><td>tvoja e-adresa i tekst poruke</td><td>dnevni izveštaj i prijava greške</td></tr>
   <tr><td>Push servis pregledača (Google, Apple ili Mozilla)</td><td>adresu tvog uređaja i <b>šifrovan</b> sadržaj koji ne može da pročita</td><td>kada ti se šalje obaveštenje</td></tr>
+  <tr><td>Drugi korisnici aplikacije</td><td>samo ono što je nabrojano u odeljku <a href="#zajednica">Zajednica</a> — bez e-adrese</td><td>samo dok je Zajednica uključena; podrazumevano je isključena</td></tr>
 </table>
 <p>Podaci se ne prodaju, ne ustupaju oglašivačima i ne koriste za obuku modela.</p>
+
+<h2 id="zajednica">Zajednica</h2>
+<p><strong>Podrazumevano je isključena.</strong> Dok je ne uključiš u Podešavanjima, ne
+postojiš na spisku i ne vidiš tuđe profile. Vidljivost je uzajamna: tuđe profile vidi
+samo onaj ko je i sam vidljiv.</p>
+
+<p>Kad je uključiš, ostali prijavljeni korisnici koji su je takođe uključili vide:</p>
+<ul>
+  <li>nadimak (ako ga ne uneseš — ime sa Google naloga) i profilnu sliku sa Google naloga;</li>
+  <li>ciljnu distancu i datum trke;</li>
+  <li>VDOT, rezultat testa na 3 km, kilometražu tekuće nedelje, doslednost planu i niz dana;</li>
+  <li>značke koje si osvojio.</li>
+</ul>
+
+<h3>Šta se u Zajednici NIKAD ne deli</h3>
+<div class="box">
+  <p style="margin:0">HRV, puls u miru, san, težina, mapa bolova, beleške sa treninga,
+  AI analiza i <strong>e-adresa</strong>. Ta polja ne postoje u tabeli Zajednice — dakle
+  ne mogu da izađu ni greškom u aplikaciji.</p>
+</div>
+
+<p>Isključivanje <strong>briše</strong> tvoj red iz te tabele odmah, ne samo što te sklanja
+sa spiska. Brisanje naloga ga briše takođe.</p>
 
 <h2>Pristup ka intervals.icu</h2>
 <p>Ako povežeš intervals.icu, aplikacija traži sledeće dozvole i koristi ih samo za
@@ -136,7 +161,7 @@ samoj aplikaciji.</p>
 
 <p class="lang" style="margin-top:56px">English</p>
 <h1>SUB-20 — Privacy Policy</h1>
-<p class="upd">Last updated: 6 August 2026</p>
+<p class="upd">Last updated: 7 August 2026</p>
 
 <p class="lead">SUB-20 is a personal running-training planner. This document describes what
 data the app processes, where it is stored and who it is shared with.</p>
@@ -159,8 +184,9 @@ data deletion: <a href="mailto:avuletic92@gmail.com">avuletic92@gmail.com</a>.</
 
 <h2>Where data is stored</h2>
 <p>Data is stored in a <strong>Supabase</strong> database, scoped to your account so that only
-you can read it. The app is hosted on <strong>Vercel</strong>. A copy is also kept locally in your
-browser so the app works offline.</p>
+you can read it. The one exception is <a href="#community">Community</a>, which is off until
+you turn it on yourself. The app is hosted on <strong>Vercel</strong>. A copy is also kept
+locally in your browser so the app works offline.</p>
 
 <h3>What is NEVER sent to the server</h3>
 <div class="box">
@@ -184,8 +210,32 @@ that record from both the device and the database; signing out does the same.</p
   <tr><td>intervals.icu</td><td>a request for morning metrics; planned workouts you push to your watch</td><td>when you pull recovery data or send workouts</td></tr>
   <tr><td>Resend</td><td>your email address and the message body</td><td>daily report and bug reports</td></tr>
   <tr><td>Your browser's push service (Google, Apple or Mozilla)</td><td>your device endpoint and <b>encrypted</b> content it cannot read</td><td>when a notification is sent to you</td></tr>
+  <tr><td>Other users of the app</td><td>only what is listed under <a href="#community">Community</a> — never your email</td><td>only while Community is on; it is off by default</td></tr>
 </table>
 <p>Data is never sold, never shared with advertisers and never used to train models.</p>
+
+<h2 id="community">Community</h2>
+<p><strong>Off by default.</strong> Until you turn it on in Settings you do not appear on the
+list and you cannot see anyone else's profile. Visibility is mutual: only those who are
+visible themselves can see other people's profiles.</p>
+
+<p>When you turn it on, other signed-in users who have also turned it on can see:</p>
+<ul>
+  <li>your nickname (or, if you set none, the first name from your Google account) and your Google profile picture;</li>
+  <li>your target distance and race date;</li>
+  <li>your VDOT, 3 km test result, current week's mileage, plan adherence and day streak;</li>
+  <li>the badges you have earned.</li>
+</ul>
+
+<h3>What is NEVER shared in Community</h3>
+<div class="box">
+  <p style="margin:0">HRV, resting heart rate, sleep, weight, pain map, workout notes,
+  AI analysis and your <strong>email address</strong>. Those fields do not exist in the
+  Community table, so they cannot leak even through a bug in the app.</p>
+</div>
+
+<p>Turning it off <strong>deletes</strong> your row from that table immediately — it does not
+merely hide you. Deleting your account deletes it too.</p>
 
 <h2>intervals.icu access</h2>
 <p>If you connect intervals.icu, the app requests the following scopes and uses them only

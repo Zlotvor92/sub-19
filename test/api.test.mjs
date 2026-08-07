@@ -740,10 +740,15 @@ describe('supabase/provera.sql — alat koji hvata razilaženje baze i repozitor
     }
     return out;
   };
+  /* Spisak fajlova je bio zakucan na tri, pa je `push_pretplata_dodirni` godinu
+     dana stajala van svake provere — mogla je da nestane iz baze bez ijednog
+     traga. Sada su svi fajlovi koji uopšte definišu funkciju. */
   const stvarno = Object.assign({},
     izvuciFunkcije('ai-posao.sql'),
     izvuciFunkcije('api-usage.sql'),
-    izvuciFunkcije('rate-limit.sql'));
+    izvuciFunkcije('rate-limit.sql'),
+    izvuciFunkcije('push.sql'),
+    izvuciFunkcije('zajednica.sql'));
 
   const provera = readRepoFile('supabase/provera.sql');
   const spisak = (naziv) => {
@@ -778,7 +783,8 @@ describe('supabase/provera.sql — alat koji hvata razilaženje baze i repozitor
        dodirnuo `user_state` ili `push_pretplata` kao IZVOR REDOVA, iz baze bi
        izašli tuđi zdravstveni podaci. Imena tabela smeju da se pominju kao
        tekst koji se proverava — `from`/`join` nad njima ne sme. */
-    for (const t of ['user_state', 'push_pretplata', 'ai_posao', 'api_usage']) {
+    for (const t of ['user_state', 'push_pretplata', 'ai_posao', 'api_usage',
+                     'zajednica_profil']) {
       assert.doesNotMatch(provera, new RegExp(`(from|join)\\s+(public\\.)?${t}\\b`, 'i'),
         `provera.sql čita redove iz ${t} — ispis bi nosio korisničke podatke`);
     }

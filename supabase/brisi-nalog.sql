@@ -51,7 +51,8 @@ declare
   fali    text[];
   tabele  text[] := array[
     'user_state', 'push_pretplata', 'ai_posao',
-    'api_usage', 'bug_report_usage', 'endpoint_usage'
+    'api_usage', 'bug_report_usage', 'endpoint_usage',
+    'zajednica_profil'
   ];
 begin
   if p_adrese is null or array_length(p_adrese, 1) is null then
