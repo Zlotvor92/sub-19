@@ -1,0 +1,28 @@
+# Tajne. Najvažniji red u fajlu.
+#
+# `node scripts/vapid.mjs` ispisuje VAPID_PRIVATE_KEY na standardni izlaz —
+# jedno preusmeravanje u .env i `git add .` je dovoljno da privatni ključ za
+# push obaveštenja zauvek ostane u istoriji repozitorijuma. Isto važi za
+# STRAVA_CLIENT_SECRET, SUPABASE service_role ključ i CRON_SECRET: sve to živi
+# u Vercel → Settings → Environment Variables i nigde drugde.
+.env
+.env.*
+
+# Ključ kojim se potpisuje Android paket. Otisak je javan po dizajnu (v.
+# .well-known/README.md), ključ NIJE — ko ga ima može da objavi paket koji
+# Android prihvata kao ovu aplikaciju.
+*.keystore
+*.jks
+
+# Alati i lokalni otpad. U rootu namerno NEMA package.json (v. test/README.md),
+# ali `npm test --prefix test` i slučajan `npm i` ume da napravi ove staze.
+node_modules/
+npm-debug.log*
+.vercel/
+
+# Operativni sistem i editori.
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

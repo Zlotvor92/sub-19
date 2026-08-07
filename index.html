@@ -95,7 +95,6 @@ body{
   radial-gradient(ellipse 83vw 55vh at 6% 54%,rgba(120,90,255,.26),transparent 70%)}
 button,input,select,textarea{font:inherit;color:inherit}
 button{background:none;border:0;cursor:pointer;touch-action:manipulation}
-.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 
 /* ---------- header ---------- */
 header{
@@ -240,7 +239,6 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .hero{display:flex;gap:12px;margin-bottom:14px}
 .hero .card{flex:1;margin:0;text-align:center;padding:18px 10px}
 .hero .big{font-size:2.9rem}
-.pill{display:inline-flex;align-items:center;gap:6px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:999px;padding:6px 12px;font-size:.78rem;font-weight:700;color:var(--txt2)}
 
 /* trening kartica */
 .tag{display:inline-flex;align-items:center;gap:6px;font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:10px}
@@ -288,7 +286,6 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 }
 .btn:active{transform:scale(.96)}
 .btn.ghost{background:var(--glass);color:var(--txt);border:1px solid var(--line);box-shadow:var(--hl)}
-.btn.green{background:var(--green);color:var(--ink)}
 .btn.danger{background:rgba(255,107,133,.16);color:var(--red);border:1px solid rgba(255,107,133,.3)}
 .btn.sm{min-height:44px;font-size:.85rem;flex:none;padding:0 18px}
 .btn[disabled]{opacity:.4;pointer-events:none}
@@ -469,11 +466,6 @@ input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;ba
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;margin-top:-10.5px;box-shadow:0 1px 6px rgba(0,0,0,.5)}
 .range-v{float:right;font-weight:800;font-variant-numeric:tabular-nums;color:var(--txt)}
 
-/* gauge (luk) + pilule za treninge — zamena za dupli prsten */
-.rl:last-child{margin-bottom:0}
-.rl b{display:block;font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.rl span{font-size:.72rem;font-weight:700;letter-spacing:.04em}
-
 /* grafikoni */
 .chart{width:100%;height:auto;display:block;margin-top:4px}
 .ax{font-size:8.5px;fill:var(--txt3);font-weight:600}
@@ -511,16 +503,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .ob-opt{font-size:.66rem;font-weight:700;color:var(--txt3);letter-spacing:.04em;text-transform:none}
 .ob-hint{font-size:.75rem;line-height:1.5;color:var(--txt3);margin-top:10px}
 .ob-hint b{color:var(--txt2);font-weight:700}
-.ob-field{margin:0}
-.ob-field label{display:block;font-size:.68rem;font-weight:700;color:var(--txt3);letter-spacing:.09em;
-  text-transform:uppercase;margin-bottom:12px}
-.ob-card input[type=date],.ob-card input[type=text],.ob-card input[type=number],
-.ob-field input[type=date],.ob-field input[type=text],.ob-field input[type=number]{
+.ob-card input[type=date],.ob-card input[type=text],.ob-card input[type=number]{
   width:100%;min-width:0;max-width:100%;min-height:52px;background:var(--glass-in);
   border:1px solid var(--line-soft);border-radius:15px;padding:0 15px;font-size:1.05rem;
   font-weight:700;outline:none;font-variant-numeric:tabular-nums;color:var(--txt)}
-.ob-card input:focus,.ob-field input:focus{border-color:rgba(255,255,255,.55);background:var(--glass-hi)}
-.ob-card input::placeholder,.ob-field input::placeholder{color:var(--txt3);font-weight:600}
+.ob-card input:focus{border-color:rgba(255,255,255,.55);background:var(--glass-hi)}
+.ob-card input::placeholder{color:var(--txt3);font-weight:600}
 /* iOS: native date polje ima FIKSNU unutrasnju sirinu i ne slusa width:100% (prelivalo
    je preko kartice). Ukidamo native izgled + vlastita SVG ikona (pointer-events:none)
    da polje i dalje jasno cita kao dodirljiva kontrola. */
@@ -680,19 +668,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .bodylegend i.l2{background:rgba(255,192,98,.85)}
 .bodylegend i.l3{background:var(--red)}
 
-/* predikcija */
-.prow{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
-.prow:last-child{border-bottom:0}
-.prow .pi{flex:1;min-width:0}
-.prow .pl{font-size:.85rem;font-weight:700}
-.prow .pm{font-size:.7rem;color:var(--txt3);margin-top:2px;font-weight:600}
-.ptin{width:74px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:12px;padding:9px 6px;text-align:center;font-weight:800;font-size:.95rem;font-variant-numeric:tabular-nums;outline:none;color:var(--txt)}
-.ptin:focus{border-color:var(--cyan)}
-.ptin::placeholder{color:var(--txt3);font-weight:600}
-.pout{min-width:76px;text-align:right}
-.pout b{display:block;font-size:.95rem;font-weight:800;font-variant-numeric:tabular-nums}
-.pout span{font-size:.68rem;font-weight:800}
-.pos{color:var(--green)}.neg{color:var(--red)}
 .wseg{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .wseg:last-child{border-bottom:0}
 .wseg-l{flex:1;min-width:0;font-size:.78rem;font-weight:700;color:var(--txt2)}
@@ -793,12 +768,6 @@ nav button:active{transform:scale(.92)}
    sve iste težine, sa pet crvenih dugmadi koja se međusobno takmiče. Ovde:
    naslov nosi stanje veze kao oznaku, uputstva se sklapaju, a crveno je
    rezervisano za JEDNU glavnu radnju po sekciji. */
-.set-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.set-h .card-t{margin:0;flex:1}
-.chip{font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
-      padding:4px 9px;border-radius:999px;white-space:nowrap}
-.chip.on{background:var(--green-dim);color:var(--green)}
-.chip.off{background:var(--glass-in);color:var(--txt3);border:1px solid var(--line-soft)}
 .set-st{font-size:.74rem;color:var(--txt2);font-weight:600;line-height:1.5;margin:0 0 2px}
 .set-st b{color:var(--txt);font-weight:700}
 .set-sub{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
@@ -856,7 +825,6 @@ details.help>summary::after{content:'⌄';margin-left:auto;font-size:.9rem;line-
 details.help[open]>summary::after{transform:rotate(180deg)}
 details.help p{font-size:.72rem;color:var(--txt3);font-weight:600;line-height:1.6;margin:2px 0 8px}
 details.help b{color:var(--txt2)}
-hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
 
 /* ---------- UVODNA ANIMACIJA ----------
    Znak se iscrta pri hladnom startu i skloni se posle ~1,2 s.

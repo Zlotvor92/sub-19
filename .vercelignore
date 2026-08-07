@@ -6,3 +6,7 @@ test/
 supabase/
 # Alat koji se pokreće jednom, rukom (pravljenje VAPID ključeva).
 scripts/
+# PAŽNJA: isključuje se SAMO uputstvo, ne ceo folder. `.well-known/assetlinks.json`
+# MORA ostati na javnoj adresi — bez njega Android aplikacija (TWA) gubi pun ekran
+# i prikazuje Chrome traku sa adresom.
+.well-known/README.md
