@@ -499,3 +499,82 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
     }
   });
 });
+
+/* ============================================================
+   MRTVA SESIJA NIJE ISTO STO I NEMA SIGNALA.
+
+   Nalog obrisan sa spiska korisnika (ili iz Podesavanja na drugom uredjaju)
+   ostavljao je aplikaciju da IZGLEDA prijavljeno: i sesija i svi podaci zive
+   u localStorage-u, pa se na ekranu ne menja nista. Sinhronizacija bi tiho
+   prestala da radi — `sbEnsure` vrati false, pozivaoci cute — a covek bi
+   nastavio da trenira misleci da mu se sve upisuje na server.
+
+   Ali odjava na svaki neuspeh je jednako losa: aplikacija je offline-first i
+   jedan tunel bez signala ne sme da te izbaci. Razlika se cita iz ODGOVORA
+   SERVERA, i oba smera se cuvaju ovde.
+   ============================================================ */
+describe('Sesija koju je server odbio', () => {
+  const sa = () => {
+    const a = loadApp({ now: '2026-08-07T04:00:00Z' });
+    a.evalIn(`
+      S.log={'n1d1':{status:'done',km:8,sec:2400}};
+      S.wellness={'2026-08-06':{datum:'2026-08-06',hrv:70,pulsUMiru:45}};
+      S.vdotLog=[{date:'2026-08-01',vdot:48.1,measured:1170}];
+      save();
+      SB={access:'a',refresh:'r',expiresAt:Date.now()-1,email:'x@t.rs',userId:'u1',deviceId:'d1'};
+      sbSave();
+      const g0=document.getElementById('sb-gate'); if(g0) g0.innerHTML='';`);
+    return a;
+  };
+  /* Zasto se gore prazni kapija, a ne uklanja: ona POSTOJI od pokretanja, jer
+     pri ucitavanju jos nema sesije. U laznom DOM-u je remove() prazna
+     funkcija, pa se element ne moze skloniti — zato se ne proverava prisustvo
+     kapije nego njen SADRZAJ, koji se prepisuje samo kad je sesija stvarno
+     odbacena. Prva verzija ovog testa je merila prisustvo i padala iako je
+     kod bio ispravan. */
+  const poruka = (a) => String(a.evalIn(`(document.getElementById('sb-gate')||{}).innerHTML||''`));
+  const saOdgovorom = async (a, odg) => {
+    a.ctx.__odg = odg;
+    a.evalIn(`fetch=async()=>{ if(__odg==='throw') throw new Error('offline');
+      return {ok:false, status:__odg, json:async()=>({}), text:async()=>''}; };`);
+    await a.evalIn('sbEnsure()');
+  };
+
+  for (const status of [400, 401, 403]) {
+    test(`server odbija refresh sa ${status} — sesija se odbacuje`, async () => {
+      const a = sa();
+      await saOdgovorom(a, status);
+      assert.equal(a.call('sbAuthed'), false, `sesija je prezivela ${status}`);
+      assert.match(poruka(a), /Nalog više ne postoji/, 'kapija ne objašnjava šta se desilo');
+    });
+  }
+
+  for (const [opis, odg] of [['server pao (500)', 500], ['nema signala', 'throw']]) {
+    test(`${opis} — sesija OSTAJE`, async () => {
+      /* Odjava na nemreznu gresku bi znacila da te vožnja kroz tunel izbaci
+         iz aplikacije, a podaci se dalje ne bi ni upisivali lokalno. */
+      const a = sa();
+      await saOdgovorom(a, odg);
+      assert.equal(a.call('sbAuthed'), true, 'nemrezna greska je odjavila korisnika');
+      assert.equal(poruka(a), '', 'kapija je prikazana bez razloga');
+    });
+  }
+
+  test('odbacivanje sesije NE dira podatke na uredjaju', async () => {
+    /* Lokalni zapis je mozda jedino sto je coveku ostalo — narocito ako mu je
+       nalog obrisan bez najave. Mora ostati, i mora se moci izvesti. */
+    const a = sa();
+    await saOdgovorom(a, 400);
+    assert.equal(a.evalIn('Object.keys(S.log).length'), 1, 'istorija treninga je obrisana');
+    assert.equal(a.evalIn('Object.keys(S.wellness).length'), 1, 'zapisi o oporavku su obrisani');
+    assert.equal(a.evalIn('S.vdotLog.length'), 1, 'VDOT lanac je obrisan');
+    assert.ok(a.evalIn('Object.keys(backupPayload().log).length') > 0, 'backup vise ne nosi podatke');
+  });
+
+  test('poruka na kapiji kaze da su podaci ostali', async () => {
+    /* Bez toga covek vidi kapiju za prijavu i pomisli da je izgubio sve. */
+    const a = sa();
+    await saOdgovorom(a, 400);
+    assert.match(poruka(a), /netaknut/i, 'kapija ne kaže da su podaci ostali');
+  });
+});

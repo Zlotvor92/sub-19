@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='204'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='205'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -10741,6 +10741,24 @@ function sbClaims(jwt){
 /* --- mreza --- */
 function sbHead(){ return {'apikey':SB_ANON,'Authorization':'Bearer '+SB.access,'Content-Type':'application/json'}; }
 
+/* MRTVA SESIJA NIJE ISTO STO I NEMA SIGNALA.
+
+   Do sada je `sbEnsure` na oba slucaja vracao isto — `false` — a pozivaoci na
+   `false` cute i preskacu sinhronizaciju. Za nemreznu situaciju je to tacno
+   ponasanje: aplikacija je offline-first i mora da radi bez signala.
+
+   Ali kad nalog VISE NE POSTOJI (obrisan iz Podesavanja ili sa spiska
+   korisnika) ili je sesija opozvana, ishod je bio isti: aplikacija i dalje
+   izgleda prijavljeno, jer i sesija i svi podaci zive u localStorage-u.
+   Covek nastavi da trenira misleci da mu se sve upisuje na server, a nista se
+   ne upisuje i nikad mu to niko ne kaze. To je najgori moguci tihi kvar u
+   ovoj aplikaciji.
+
+   Razlika se cita iz ODGOVORA SERVERA, ne iz cinjenice da je poziv pao:
+     400/401/403  -> Supabase je izricito odbio refresh token. Nalog je
+                     obrisan ili je sesija opozvana. Sesija se odbacuje.
+     mreza / 5xx  -> ne zna se nista. Sesija OSTAJE, app radi kao offline.
+   Zamena ta dva smera bi znacila da te jedan tunel bez signala odjavi. */
 async function sbEnsure(){
   if(!sbAuthed()) return false;
   if(Date.now() < SB.expiresAt-60000) return true;
@@ -10749,12 +10767,27 @@ async function sbEnsure(){
     const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',
       {method:'POST',headers:{'apikey':SB_ANON,'Content-Type':'application/json'},
        body:JSON.stringify({refresh_token:SB.refresh})});
-    if(!r.ok) return false;
+    if(!r.ok){
+      if(r.status===400||r.status===401||r.status===403) sbSesijaMrtva();
+      return false;
+    }
     const j=await r.json();
     SB.access=j.access_token; SB.refresh=j.refresh_token||SB.refresh;
     SB.expiresAt=Date.now()+((j.expires_in||3600)*1000);
     sbSave(); return true;
-  }catch(e){ return false; }
+  }catch(e){ return false; }   /* mreza — sesija se NE dira */
+}
+
+/* Sesija vise ne vazi na serveru. Cisti se prijava, ali NE i podaci.
+   Lokalni zapis je mozda jedino sto je coveku ostalo — narocito ako mu je
+   nalog obrisan bez najave. Ostaje na uredjaju i moze se izvesti kroz Backup
+   cim se ponovo prijavi. */
+function sbSesijaMrtva(){
+  if(!SB||!SB.access) return;                 /* vec ocisceno */
+  try{ pozadinskiZaboravi(); }catch(e){}      /* da SW ne gura u tudje ime */
+  SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
+  sbSave();
+  sbShowGate('Nalog više ne postoji ili je sesija istekla. Podaci na ovom uređaju su netaknuti — prijavi se da nastaviš.');
 }
 
 function sbLogin(){
