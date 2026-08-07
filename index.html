@@ -920,8 +920,14 @@ body.uvod-radi{overflow:hidden}
 .zrow:last-of-type{border-bottom:0}
 .zrow:active{opacity:.6}
 .zi{flex:1;min-width:0}
-.zime{font-size:.92rem;font-weight:800;letter-spacing:-.01em}
-.zs{font-size:.68rem;color:var(--txt3);font-weight:600;margin-top:3px}
+/* MORAJU biti blokovi. Oba su <span> unutar <span class="zi">, pa bez ovoga
+   ime i podnaslov teku u istom redu i prelamaju se jedan preko drugog —
+   „Miloš 5K · nedelja 8 / 14 · trka 24.09." u dva reda umesto dva reda po
+   svom. Videno na snimku ekrana, ne u testu. */
+.zime{display:block;font-size:.92rem;font-weight:800;letter-spacing:-.01em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.zs{display:block;font-size:.68rem;color:var(--txt3);font-weight:600;margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .zv{text-align:right;flex:none}
 .zv b{display:block;font-size:1.02rem;font-weight:800;font-variant-numeric:tabular-nums}
 .zv span{font-size:.6rem;color:var(--txt3);font-weight:800;letter-spacing:.06em}
@@ -952,6 +958,14 @@ body.uvod-radi{overflow:hidden}
   color:var(--txt3);font-size:.82rem;font-weight:700;min-height:44px}
 .zprazno{text-align:center;padding:44px 20px;color:var(--txt3);font-size:.85rem;font-weight:600;line-height:1.6}
 
+/* „Šta se deli / ne deli" na isključenom ekranu. Ranije je stajalo u
+   `.drow`, gde naslov deli red sa vrednošću — pa se „ne deli se" lomilo u tri
+   reda po jednu reč. Ovde naslov ima svoj red i tekst teče punom širinom. */
+.zsta>div{padding:12px 0;border-top:1px solid var(--line)}
+.zsta>div:last-child{padding-bottom:0}
+.zsta i{display:block;font-style:normal;font-size:.62rem;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--txt3)}
+.zsta p{margin:5px 0 0;font-size:.82rem;font-weight:600;color:var(--txt2);line-height:1.5}
 .zseg{display:flex;gap:6px;background:var(--glass-in);border:1px solid var(--line-soft);
   border-radius:999px;padding:4px;margin:2px 0 6px}
 .zseg button{flex:1;border:0;background:none;color:var(--txt3);font-size:.72rem;font-weight:800;

@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='211'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='212'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -11542,9 +11542,9 @@ function renderZajednica(){
     el.innerHTML=`<div class="card">
       <div class="dhead"><span class="card-t">Zajednica</span><span class="dhead-x">isključena</span></div>
       <div class="set-st">Rang-lista trkača koji koriste ovu aplikaciju. Dok je isključena, ne postojiš na spisku i <b>ne vidiš tuđe profile</b> — vidljivost je uzajamna.</div>
-      <div class="drows" style="margin-top:14px">
-        <div class="drow"><span class="l">deli se</span><span class="v" style="font-weight:600;font-size:.82rem">nadimak i slika, cilj i datum trke, VDOT, test na 3 km, kilometraža, doslednost, niz, značke i poslednja trčanja</span></div>
-        <div class="drow"><span class="l">ne deli se</span><span class="v" style="font-weight:600;font-size:.82rem">HRV, puls u miru, san, težina, mapa bolova, beleške, AI analiza, e-adresa</span></div>
+      <div class="zsta">
+        <div><i>Deli se</i><p>nadimak i slika, cilj i datum trke, nedelja plana, VDOT, test na 3 km, kilometraža, doslednost, niz, značke i poslednja trčanja</p></div>
+        <div><i>Ne deli se nikad</i><p>HRV, puls u miru, san, težina, mapa bolova, beleške sa treninga, puls na treningu, AI analiza, e-adresa</p></div>
       </div>
       <div class="btnrow" style="margin-top:14px"><button class="btn" id="zaj-ka-set">Uključi u Podešavanjima</button></div>
       <div class="note-src"><a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
