@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='202'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='203'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3721,7 +3721,7 @@ function closeSheet(){
 }
 /* ---------- IZMENA TRENINGA (tip / km / opis) ---------- */
 let ALT_DRAFT=null, ALT_ERR='';
-let CHART_SEL={week:null, wt:null, tempo:null, hrv:null, knee:null, vdot:null, pred:null};
+let CHART_SEL={week:null, wt:null, tempo:null, hrv:null, rhr:null, knee:null, vdot:null, pred:null};
 /* izabrana nedelja (bar) i izabrana tačka po grafikonu.
    Sve linije su dodirljive po istom obrascu koji je Telesna masa već imala:
    natpis sa detaljima na vrhu, uvećana izabrana tačka, i NEVIDLJIV širi krug
@@ -7663,12 +7663,10 @@ function karticaOporavka(){
      osnove 61.7" — decimalna TAČKA usred srpskog teksta. */
   const brZa=v=>(v==null||!isFinite(+v))?'—':esc(fmtNum(+v,1));
   const hrvSub=o.hrvOdstupanje!=null?`${o.hrvOdstupanje>=0?'+':''}${brZa(o.hrvOdstupanje)}% od osnove ${brZa(o.hrvBaza7)}`:'nema osnove još';
-  const plsSub=o.pulsOdstupanje!=null?`${o.pulsOdstupanje>=0?'+':''}${brZa(o.pulsOdstupanje)} od osnove ${brZa(o.pulsBaza7)}`:'';
   return `<div class="card">
     ${dGlava('Jutros', esc(fmtD(o.datum)))}
     <div class="ob-vpaces" style="display:flex;gap:8px">
       ${red('HRV', o.hrv!=null?brZa(o.hrv):'—', hrvSub, bojaOdstupanja(o.hrvOdstupanje))}
-      ${red('Puls u miru', o.pulsUMiru!=null?brZa(o.pulsUMiru):'—', plsSub, bojaOdstupanja(o.pulsOdstupanje!=null?-o.pulsOdstupanje*2:null))}
       ${red('San', o.sanH!=null?brZa(o.sanH)+' h':'—', o.sanOcena!=null?('ocena '+brZa(o.sanOcena)):'', o.sanH!=null?(o.sanH<6?'var(--red)':o.sanH<7?'var(--amber)':'var(--green)'):null)}
       ${o.svezina!=null?red('Svežina', brZa(o.svezina), 'forma '+brZa(o.ctl)+' · umor '+brZa(o.atl), o.svezina<-10?'var(--red)':o.svezina<0?'var(--amber)':'var(--green)'):''}
     </div>
@@ -7706,6 +7704,83 @@ function chartHrv(niz){
   g+=`<text x="${W-R}" y="${B+16}" text-anchor="end" font-size="9" fill="var(--txt3)">${fmtD(v[v.length-1].datum)}</text>`;
   g+=`<text x="${W-R}" y="${(Y(v[v.length-1].hrv)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--cyan)">${esc(fmtNum(v[v.length-1].hrv,1))}</text>`;
   g+=`<text x="${L}" y="${T+2}" font-size="9" fill="var(--txt3)">HRV · isprekidano = tvoja sedmodnevna osnova</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:10px">${g}</svg>`;
+}
+
+/* ============================================================
+   PULS U MIRU — zasebna kartica.
+
+   Bio je jedan od cetiri broja u kartici „Jutros", stisnut izmedju HRV-a,
+   sna i svezine. Dva razloga zasto je izdvojen:
+
+   1) Cita se ISTO kao HRV — u odnosu na sopstvenu sedmodnevnu osnovu, jer
+      gola brojka ne znaci nista — ali mu je SMER OBRNUT: kod HRV-a je pad
+      lose, kod pulsa u miru je RAST lose. U nizu od cetiri broja se ta
+      razlika gubila, a boje su izgledale kao da znace isto.
+
+   2) HRV je imao grafikon kroz vreme, puls u miru nije — pa se trend, koji
+      je kod njega jednako informativan, uopste nije video.
+
+   ZASTO NE OBRNUTA Y-OSA. Razmatrano pa odbaceno: nizi puls u miru je bolji,
+   pa bi „bolje = gore" znacilo obrnuti osu. Ali onda linija koja ide nadole
+   znaci poboljsanje, sto je suprotno od HRV grafikona odmah iznad i od svakog
+   drugog grafikona u aplikaciji. Smer se umesto toga objasnjava recima ispod
+   grafikona, a boja poslednje vrednosti nosi ocenu. */
+function karticaPulsUMiru(){
+  const niz=oporavakNiz(90).filter(x=>x&&x.pulsUMiru!=null);
+  if(!niz.length) return '';                 /* nema zapisa — nema ni kartice */
+  const zadnji=niz[niz.length-1];
+  const o=oporavakZa(zadnji.datum)||zadnji;
+  const brZa=v=>(v==null||!isFinite(+v))?'—':esc(fmtNum(+v,1));
+  /* Ista kalibracija koju je red imao u kartici „Jutros": odstupanje je u
+     OTKUCAJIMA (ne procentima), a `bojaOdstupanja` je pisana za procente, pa
+     se mnozi sa 2 — +2,5 otkucaja daje zutu, +5 crvenu. `obrnuto` obrce smer,
+     jer je kod pulsa u miru rast losiji. */
+  const boja=o.pulsOdstupanje!=null?bojaOdstupanja(o.pulsOdstupanje*2, true):'var(--txt)';
+  const cel=(lbl,val,sub,bj)=>`<div class="ob-vp" style="flex:1">
+      <i>${esc(lbl)}</i><b style="color:${esc(bj||'var(--txt)')}">${val}</b>
+      ${sub?`<small style="display:block;font-size:.62rem;color:var(--txt3);margin-top:2px">${sub}</small>`:''}</div>`;
+  const znak=o.pulsOdstupanje!=null?(o.pulsOdstupanje>=0?'+':''):'';
+  return `<div class="card">
+    ${dGlava('Puls u miru', esc(fmtD(o.datum)))}
+    <div class="ob-vpaces" style="display:flex;gap:8px">
+      ${cel('Jutros', brZa(o.pulsUMiru), o.pulsOdstupanje!=null?`${znak}${brZa(o.pulsOdstupanje)} od osnove`:'nema osnove još', boja)}
+      ${cel('Osnova · 7 dana', o.pulsBaza7!=null?brZa(o.pulsBaza7):'—', o.pulsBaza7!=null?'prosek prethodnih dana':'traži bar 3 dana', null)}
+    </div>
+    ${chartRhr(niz)}
+    <div class="note-src">Kod pulsa u miru je <b>niže bolje</b> — obrnuto od HRV-a. Jedno jutro iznad osnove nije ništa; nekoliko dana zaredom, pogotovo uz pad HRV-a i kratak san, znači da oporavak ne stiže. Porast od 5 i više otkucaja uz osećaj umora je razlog da se dan olakša.</div>
+  </div>`;
+}
+
+/* Puls u miru kroz vreme — isti oblik kao chartHrv, druga boja i drugo znacenje. */
+function chartRhr(niz){
+  const v=niz.filter(x=>x&&x.pulsUMiru!=null);
+  if(v.length<4) return '<div class="note-src" style="margin-top:10px">Grafikon se crta kad bude bar 4 dana zapisa.</div>';
+  const W=340,H=156,L=30,R=8,B=132,T=28;
+  const vals=v.map(x=>x.pulsUMiru);
+  /* Raspon je namerno siri nego kod HRV-a: puls u miru se krece u uskom
+     pojasu (44-48), pa bi tesno skaliranje od dva otkucaja razlike napravilo
+     dramaticnu planinu. */
+  const lo=Math.min(...vals)-2, hi=Math.max(...vals)+2;
+  const X=i=>L+(v.length===1?0:i/(v.length-1)*(W-L-R));
+  const Y=y=>B-((y-lo)/Math.max(hi-lo,1))*(B-T);
+  const baza=v.map((_,i)=>{ const od=Math.max(0,i-6); const seg=v.slice(od,i+1).map(x=>x.pulsUMiru);
+                            return seg.reduce((a,b)=>a+b,0)/seg.length; });
+  let g='';
+  const sel=CHART_SEL.rhr!=null?v[CHART_SEL.rhr]:null;
+  g+=chartTop(L, sel ? `${fmtD(sel.datum)} · puls u miru ${fmtNum(sel.pulsUMiru,0)} · osnova ${fmtNum(baza[CHART_SEL.rhr],1)}${sel.hrv!=null?' · HRV '+fmtNum(sel.hrv,1):''}${sel.sanH!=null?' · san '+fmtNum(sel.sanH,1)+' h':''}` : null);
+  g+=`<polyline points="${baza.map((b,i)=>X(i).toFixed(1)+','+Y(b).toFixed(1)).join(' ')}" fill="none" stroke="var(--txt3)" stroke-width="1.4" stroke-dasharray="4 4" opacity=".65"/>`;
+  g+=`<polyline class="ln" points="${v.map((x,i)=>X(i).toFixed(1)+','+Y(x.pulsUMiru).toFixed(1)).join(' ')}" fill="none" stroke="var(--pink)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>`;
+  v.forEach((x,i)=>{
+    const last=i===v.length-1, iz=CHART_SEL.rhr===i;
+    if(last||iz) g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(x.pulsUMiru).toFixed(1)}" r="${iz?5:4.2}" fill="${iz?'var(--pink)':'var(--bg)'}" stroke="${iz?'#fff':'var(--pink)'}" stroke-width="${iz?1:2}"/>`;
+    else g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(x.pulsUMiru).toFixed(1)}" r="2.6" fill="var(--pink)" opacity=".75"/>`;
+    g+=chartHit(X(i),Y(x.pulsUMiru),'rhr',i);
+  });
+  g+=`<text x="${L}" y="${B+16}" font-size="9" fill="var(--txt3)">${fmtD(v[0].datum)}</text>`;
+  g+=`<text x="${W-R}" y="${B+16}" text-anchor="end" font-size="9" fill="var(--txt3)">${fmtD(v[v.length-1].datum)}</text>`;
+  g+=`<text x="${W-R}" y="${(Y(v[v.length-1].pulsUMiru)-9).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="var(--pink)">${esc(fmtNum(v[v.length-1].pulsUMiru,0))}</text>`;
+  g+=`<text x="${L}" y="${T+2}" font-size="9" fill="var(--txt3)">Puls u miru · isprekidano = tvoja sedmodnevna osnova</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:10px">${g}</svg>`;
 }
 function chartWeeks(){
@@ -8028,6 +8103,7 @@ function renderOporavak(){
     </div>`;
   }
   h+=karticaOporavka();
+  h+=karticaPulsUMiru();
   h+=karticaOpterecenja();
   /* Mapa, aktivni delovi i grafikon bola su ranije bile TRI kartice o istoj
      stvari. Sada su jedna: dodirneš deo tela, ispod nje piše šta je aktivno, a

@@ -609,6 +609,17 @@ describe('Zapisi o oporavku (intervals.icu / backup)', () => {
     }
   });
 
+  test('kartica Puls u miru i njen grafikon ne ubacuju HTML', () => {
+    /* Nova povrsina (v202): zasebna kartica sa sopstvenim SVG-om. Prolazi kroz
+       iste otrove kao i „Jutros" — bez ovoga bi nov kvadrat bio jedina
+       nezasticena tacka na ekranu Oporavak. */
+    for (const P of PAYLOADI) {
+      const app = loadApp(); otrovanOporavak(app, P);
+      assert.deepEqual(ubaceniTagovi(app.call('karticaPulsUMiru')), [],
+        `karticaPulsUMiru propustila ${JSON.stringify(P)}`);
+    }
+  });
+
   test('HRV grafikon (SVG) ne ubacuje HTML', () => {
     for (const P of PAYLOADI) {
       const app = loadApp(); app.ctx.__p = P;

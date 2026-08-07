@@ -128,3 +128,73 @@ describe('Oporavak — brojevi se zaokružuju', () => {
     assert.match(h, /—/);
   });
 });
+
+/* ============================================================
+   PULS U MIRU — smer ocene je OBRNUT od HRV-a.
+
+   Kod HRV-a je pad los, kod pulsa u miru je RAST los. Dok su oba stajala kao
+   dva broja u istom redu kartice „Jutros", ta razlika je bila jedan minus u
+   pozivu `bojaOdstupanja(-o.pulsOdstupanje*2)` — lako se gubi u refaktoru, a
+   greska se ne vidi kao greska: kartica se i dalje iscrta, samo zelenom boji
+   jutro u kom je puls u miru skocio pet otkucaja.
+   ============================================================ */
+describe('Puls u miru — ocena ide u suprotnom smeru od HRV-a', () => {
+  /* 13 dana osnove na istoj vrednosti, pa 14. dan koji se testira. */
+  const sa = (polje, osnovaV, danas) => {
+    const a = loadApp({ now: '2026-08-07T04:00:00Z' });
+    const niz = new Array(13).fill(osnovaV).concat(danas);
+    a.ctx.__niz = niz; a.ctx.__polje = polje;
+    a.evalIn(`(()=>{ const w={};
+      for(let i=0;i<__niz.length;i++){ const d=addD(TODAY,-(__niz.length-1)+i);
+        w[d]={datum:d, hrv:70, pulsUMiru:45};
+        w[d][__polje]=__niz[i]; }
+      S.wellness=w; save(); })()`);
+    return a;
+  };
+  const boja = (html, oznaka) => {
+    const m = new RegExp(`<i>${oznaka}</i><b style="color:([^"]+)"`).exec(String(html));
+    return m ? m[1].replace('var(--', '').replace(')', '') : null;
+  };
+
+  test('porast pulsa u miru je UPOZORENJE, ne pohvala', () => {
+    const gore = sa('pulsUMiru', 45, 50);      /* +5 otkucaja */
+    assert.equal(boja(gore.call('karticaPulsUMiru'), 'Jutros'), 'red',
+      'skok od pet otkucaja nije obojen kao problem');
+    const malo = sa('pulsUMiru', 45, 47.5);    /* +2,5 */
+    assert.equal(boja(malo.call('karticaPulsUMiru'), 'Jutros'), 'amber');
+  });
+
+  test('pad pulsa u miru je DOBAR', () => {
+    const dole = sa('pulsUMiru', 45, 40);
+    assert.equal(boja(dole.call('karticaPulsUMiru'), 'Jutros'), 'green',
+      'pad pulsa u miru je obojen kao problem');
+  });
+
+  test('HRV zadrzava suprotan smer — kontrola da minus nije obrnut svuda', () => {
+    /* Ako neko „uskladi" boje pa obrne i HRV, ovaj test pada. */
+    const pao = sa('hrv', 70, 61.6);           /* -12 % */
+    assert.equal(boja(pao.call('karticaOporavka'), 'HRV'), 'red');
+    const rastao = sa('hrv', 70, 78.4);        /* +12 % */
+    assert.equal(boja(rastao.call('karticaOporavka'), 'HRV'), 'green');
+  });
+
+  test('puls u miru je izasao iz kartice „Jutros" i ima svoju', () => {
+    const a = sa('pulsUMiru', 45, 46);
+    assert.doesNotMatch(String(a.call('karticaOporavka')), /Puls u miru/,
+      'puls u miru je i dalje u kartici Jutros');
+    const svoja = String(a.call('karticaPulsUMiru'));
+    assert.match(svoja, /Puls u miru/, 'nema zasebne kartice');
+    assert.match(svoja, /<svg/, 'zasebna kartica nema grafikon');
+    assert.match(svoja, /Osnova · 7 dana/, 'ne pokazuje sedmodnevnu osnovu');
+  });
+
+  test('bez ijednog zapisa o pulsu kartice nema', () => {
+    /* Prazna kartica sa crticama je gore nego nikakva — ko nema sat koji meri
+       puls u miru ne treba da gleda prazan kvadrat svaki dan. */
+    const a = loadApp({ now: '2026-08-07T04:00:00Z' });
+    a.evalIn(`(()=>{ const w={};
+      for(let i=0;i<10;i++){ const d=addD(TODAY,-9+i); w[d]={datum:d, hrv:70}; }
+      S.wellness=w; save(); })()`);
+    assert.equal(String(a.call('karticaPulsUMiru')), '');
+  });
+});
