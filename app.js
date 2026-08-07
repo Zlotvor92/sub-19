@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='210'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='211'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2598,8 +2598,8 @@ function osveziDan(){
   return true;
 }
 const $=s=>document.querySelector(s);
-/* Četiri taba. Progres i Povrede su spojeni u Oporavak — v. renderOporavak. */
-const PAGES={danas:renderDanas,plan:renderPlan,opor:renderOporavak,pred:renderPred};
+/* Pet tabova. Progres i Povrede su spojeni u Oporavak — v. renderOporavak. */
+const PAGES={danas:renderDanas,plan:renderPlan,opor:renderOporavak,pred:renderPred,zajed:renderZajednica};
 /* PREČICE NA IKONICI (dug pritisak na instaliranoj aplikaciji).
    Manifest ih nudi kao adrese `./?tab=plan`, pa aplikacija mora da ume da ih
    pročita — inače bi svaka prečica otvarala Danas i bila laž. Nepoznata ili
@@ -2677,6 +2677,7 @@ function setPage(p){
     USKOK_TMR=setTimeout(()=>el.classList.remove('uskoci'),900);
   }
   PAGES[p]();
+  if(p==='zajed') zajMozdaOsvezi();
   window.scrollTo(0,0);
 }
 
@@ -11446,6 +11447,307 @@ function zajednicaPayload(){
     znacke:       zajZnacke(),
     trcanja:      zajTrcanja()
   };
+}
+
+/* ---------- ZAJEDNICA: EKRAN ----------
+
+   Tri stanja koja se ne smeju pomešati:
+     1. Zajednica isključena — ne prikazuje se NIŠTA tuđe, jer se ništa tuđe
+        ni ne povlači. Kapija je u bazi (RLS), ovde je samo objašnjenje.
+     2. Povlači se — kratko, i mora da se vidi da nešto radi.
+     3. Spisak / profil.
+
+   Poređenje sa drugima se računa OVDE, na uređaju. Ništa od toga ne odlazi
+   nazad na server — niko ne vidi koga s kim porediš. */
+
+let ZAJ = { ljudi:null, izazov:null, greska:null, ucitava:false, kad:0, filter:'sve', merilo:'t3k', otvoren:null };
+
+const ZAJ_CILJEVI = [['sve','Sve'],['5K','5K'],['10K','10K'],['21K','21K'],['42K','42K']];
+
+/* Tri merila, i to je namerno tri.
+   „Test 3 km" je brzina i uvek će je voditi isti ljudi. Da je ostalo samo to,
+   Zajednica bi za početnika bila spisak razloga da odustane. „Napredak" meri
+   pomak od SOPSTVENOG početka, pa tu početnik redovno pobeđuje iskusnog
+   trkača; „Doslednost" meri disciplinu, koja ne zavisi od talenta uopšte. */
+const ZAJ_MERILA = [
+  ['t3k', 'Test 3 km', 'najbrži gore',
+   p => (p.test3k_sec!=null?p.test3k_sec:1e9),
+   p => (p.test3k_sec!=null?fmtClock(p.test3k_sec):'—')],
+  ['nap', 'Napredak', 'od početka plana',
+   p => -zajNapredak(p),
+   p => { const n=zajNapredak(p); return (n>0?'+':'')+fmtNum(n,1)+' VDOT'; }],
+  ['dosl', 'Doslednost', 'plan odrađen',
+   p => -(p.plan_pct!=null?p.plan_pct:-1),
+   p => (p.plan_pct!=null?p.plan_pct+' %':'—')]
+];
+
+function zajNapredak(p){
+  return (typeof p.vdot==='number'&&typeof p.vdot_pocetni==='number') ? r1(p.vdot-p.vdot_pocetni) : 0;
+}
+function zajJa(p){ return !!(p&&SB.userId&&p.user_id===SB.userId); }
+
+/* Boja kruga iz identifikatora — ista osoba uvek ima istu boju, bez ijedne
+   kolone u bazi. */
+const ZAJ_BOJE = ['#5AFFBE','#5AE0FF','#FF6BA6','#FFC062','#A98BFF','#8CE99A','#FF9E7A'];
+function zajBoja(id){
+  let h=0; const s=String(id||'');
+  for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0;
+  return ZAJ_BOJE[h%ZAJ_BOJE.length];
+}
+function zajInicijali(ime){
+  const d=String(ime||'?').trim().split(/\s+/).filter(Boolean);
+  return ((d[0]||'?')[0]+((d[1]||'')[0]||'')).toUpperCase();
+}
+function zajAvatar(p, d){
+  const ime=p.nadimak||'?';
+  const slika=(typeof p.avatar_url==='string'&&/^https:\/\//.test(p.avatar_url))
+    ? `<img src="${esc(p.avatar_url)}" alt="" width="${d}" height="${d}" loading="lazy" referrerpolicy="no-referrer">` : '';
+  return `<span class="zav" style="width:${d}px;height:${d}px;background:${zajBoja(p.user_id)};font-size:${Math.round(d*0.4)}px">`
+       + `<b>${esc(zajInicijali(ime))}</b>${slika}</span>`;
+}
+
+/* --- povlačenje --- */
+async function zajUcitaj(){
+  if(!sbAuthed()||!(S.zajed&&S.zajed.vidljiv)) return;
+  ZAJ.ucitava=true; ZAJ.greska=null;
+  if(!await sbEnsure()){ ZAJ.ucitava=false; ZAJ.greska='veza'; if(ACTIVE==='zajed') renderZajednica(); return; }
+  try{
+    const [rp,ri]=await Promise.all([
+      fetch(SB_URL+'/rest/v1/zajednica_profil?select=*&vidljiv=is.true',{headers:sbHead()}),
+      fetch(SB_URL+'/rest/v1/zajednica_izazov?select=tekst&id=eq.1',{headers:sbHead()})
+    ]);
+    if(!rp.ok){ ZAJ.greska='server'; }
+    else{
+      const j=await rp.json();
+      ZAJ.ljudi=Array.isArray(j)?j:[];
+    }
+    if(ri.ok){ const t=await ri.json(); ZAJ.izazov=(Array.isArray(t)&&t[0]&&t[0].tekst)||null; }
+  }catch(e){ ZAJ.greska='veza'; }
+  ZAJ.ucitava=false;
+  if(!ZAJ.greska) ZAJ.kad=Date.now();
+  if(ACTIVE==='zajed') renderZajednica();
+}
+
+/* --- ekran --- */
+function renderZajednica(){
+  const el=$('#pg-zajed');
+  if(!sbAuthed()){
+    el.innerHTML=`<div class="card"><div class="card-t">Zajednica</div>
+      <div class="zprazno">Zajednica traži nalog, jer se spisak čuva na serveru.<br>Prijavi se u Podešavanjima.</div></div>`;
+    return;
+  }
+  if(!(S.zajed&&S.zajed.vidljiv)){
+    /* Zatvorena vrata se ne prikazuju kao greška nego kao izbor — sa tačnim
+       spiskom šta se deli i dugmetom koje vodi tamo gde se to uključuje. */
+    el.innerHTML=`<div class="card">
+      <div class="dhead"><span class="card-t">Zajednica</span><span class="dhead-x">isključena</span></div>
+      <div class="set-st">Rang-lista trkača koji koriste ovu aplikaciju. Dok je isključena, ne postojiš na spisku i <b>ne vidiš tuđe profile</b> — vidljivost je uzajamna.</div>
+      <div class="drows" style="margin-top:14px">
+        <div class="drow"><span class="l">deli se</span><span class="v" style="font-weight:600;font-size:.82rem">nadimak i slika, cilj i datum trke, VDOT, test na 3 km, kilometraža, doslednost, niz, značke i poslednja trčanja</span></div>
+        <div class="drow"><span class="l">ne deli se</span><span class="v" style="font-weight:600;font-size:.82rem">HRV, puls u miru, san, težina, mapa bolova, beleške, AI analiza, e-adresa</span></div>
+      </div>
+      <div class="btnrow" style="margin-top:14px"><button class="btn" id="zaj-ka-set">Uključi u Podešavanjima</button></div>
+      <div class="note-src"><a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
+    </div>`;
+    const b=$('#zaj-ka-set'); if(b) b.onclick=openSettings;
+    return;
+  }
+  if(ZAJ.ljudi==null&&!ZAJ.greska){
+    el.innerHTML=`<div class="card"><div class="card-t">Zajednica</div>
+      <div class="zprazno">${ZAJ.ucitava?'Povlačim spisak…':'Spisak još nije povučen.'}</div></div>`;
+    if(!ZAJ.ucitava) zajUcitaj();
+    return;
+  }
+  if(ZAJ.greska&&ZAJ.ljudi==null){
+    el.innerHTML=`<div class="card"><div class="dhead"><span class="card-t">Zajednica</span><span class="dhead-x">nije povučeno</span></div>
+      <div class="zprazno">${ZAJ.greska==='veza'?'Nema veze sa internetom.':'Server trenutno ne odgovara.'}<br>Sve ostalo u aplikaciji radi normalno.</div>
+      <div class="btnrow"><button class="btn ghost" id="zaj-opet">Pokušaj ponovo</button></div></div>`;
+    const b=$('#zaj-opet'); if(b) b.onclick=()=>{ ZAJ.greska=null; renderZajednica(); zajUcitaj(); };
+    return;
+  }
+  const otv=ZAJ.otvoren?(ZAJ.ljudi||[]).find(p=>p.user_id===ZAJ.otvoren):null;
+  el.innerHTML=otv?zajProfil(otv):zajSpisak();
+  zajVezi(el);
+}
+
+/* Spisak se osvežava PRI ULASKU u tab, ali ne češće od pet minuta i nikad
+   praznjenjem ekrana: stari spisak ostaje na ekranu dok novi ne stigne. Da se
+   povlači pri svakom dodiru, prelazak između tabova bi značio poziv serveru; da
+   se povlači samo jednom, tuđi brojevi bi ostajali jučerašnji dok se aplikacija
+   ne zatvori — a instalirana PWA stoji otvorena danima. */
+function zajMozdaOsvezi(){
+  if(!sbAuthed()||!(S.zajed&&S.zajed.vidljiv)||ZAJ.ucitava) return;
+  if(ZAJ.ljudi!=null&&Date.now()-ZAJ.kad<300000) return;
+  zajUcitaj();
+}
+
+function zajFiltrirani(){
+  const f=ZAJ.filter;
+  return (ZAJ.ljudi||[]).filter(p=>f==='sve'||p.cilj===f);
+}
+
+function zajSpisak(){
+  const M=ZAJ_MERILA.find(m=>m[0]===ZAJ.merilo)||ZAJ_MERILA[0];
+  const svi=zajFiltrirani();
+  const lista=svi.slice().sort((a,b)=>M[3](a)-M[3](b));
+  const ja=(ZAJ.ljudi||[]).find(zajJa);
+
+  const red=(p,i,vred,pod)=>`
+    <button class="zrow" data-p="${esc(p.user_id)}">
+      <span class="zmesto"${i===0?' style="color:var(--amber)"':''}>${i+1}</span>
+      ${zajAvatar(p,40)}
+      <span class="zi">
+        <span class="zime">${esc(p.nadimak||'Trkač')}${zajJa(p)?' <span style="color:var(--cyan)">· ti</span>':''}</span>
+        <span class="zs">${esc(pod)}</span>
+      </span>
+      <span class="zv"><b${ZAJ.merilo==='nap'?' style="color:var(--green)"':''}>${esc(vred)}</b>
+        <span>${i===0?'PRVI':''}</span></span>
+    </button>`;
+
+  const podnaslov=p=>[p.cilj||'—',
+    (p.nedelja_br&&p.nedelja_od)?('nedelja '+p.nedelja_br+' / '+p.nedelja_od):null,
+    p.trka_datum?('trka '+fmtD(p.trka_datum)):null].filter(Boolean).join(' · ');
+
+  /* IZAZOV. Rangira se po UDELU odrađenog, ne po broju — inače bi onaj kome
+     plan te nedelje daje šest treninga uvek bio ispred onoga sa četiri, iako
+     je drugi odradio sve svoje. */
+  const udeo=p=>(p.izazov_od>0?(p.izazov_ura||0)/p.izazov_od:0);
+  const izazovLista=svi.slice().filter(p=>p.izazov_od>0).sort((a,b)=>udeo(b)-udeo(a));
+  const gotovih=izazovLista.filter(p=>p.izazov_ura>=p.izazov_od).length;
+
+  return `
+  <div class="card">
+    <div class="dhead"><span class="card-t">Izazov nedelje</span><span class="dhead-x">${gotovih} od ${izazovLista.length} završilo</span></div>
+    <div class="set-st"><b>${esc(ZAJ.izazov||'Odradi sve treninge po planu ove nedelje.')}</b></div>
+    ${izazovLista.length?`<div style="margin-top:12px">${izazovLista.map(p=>{
+      const gotov=p.izazov_ura>=p.izazov_od;
+      return `<button class="zrow" data-p="${esc(p.user_id)}" style="align-items:center">
+        ${zajAvatar(p,34)}
+        <span class="zi">
+          <span class="zime" style="font-size:.86rem">${esc(p.nadimak||'Trkač')}${zajJa(p)?' <span style="color:var(--cyan)">· ti</span>':''}${gotov?' <span style="color:var(--green);font-size:.7rem;font-weight:800">✓ gotovo</span>':''}</span>
+          <span class="zprog${gotov?' pun':''}"><i style="width:${Math.max(0,Math.min(100,Math.round(udeo(p)*100)))}%"></i></span>
+        </span>
+        <span class="zv"><b style="font-size:.92rem">${p.izazov_ura||0}/${p.izazov_od}</b></span>
+      </button>`;}).join('')}</div>`:''}
+    <div class="note-src">Izazov ne meri brzinu — samo da se ne preskače.</div>
+  </div>
+
+  <div class="zfilteri" role="tablist" aria-label="Filter po ciljnoj distanci">
+    ${ZAJ_CILJEVI.map(([k,t])=>`<button class="zchip${ZAJ.filter===k?' on':''}" role="tab"
+      aria-selected="${ZAJ.filter===k}" data-f="${k}">${t}</button>`).join('')}
+  </div>
+
+  <div class="card">
+    <div class="zseg" role="tablist" aria-label="Po čemu se rangira">
+      ${ZAJ_MERILA.map(m=>`<button role="tab" aria-selected="${ZAJ.merilo===m[0]}"
+        class="${ZAJ.merilo===m[0]?'on':''}" data-m="${m[0]}">${m[1]}</button>`).join('')}
+    </div>
+    <div class="dhead" style="margin-top:8px"><span class="card-t">${M[1]}</span><span class="dhead-x">${M[2]}</span></div>
+    ${lista.length
+      ? lista.map((p,i)=>red(p,i,M[4](p),podnaslov(p))).join('')
+      : `<div class="zprazno">${ZAJ.filter==='sve'
+          ? 'Za sada niko ne deli profil.<br>Budi prvi.'
+          : 'Niko sa ciljem '+esc(ZAJ.filter)+' još ne deli profil.<br>Budi prvi.'}</div>`}
+    <div class="note-src">${
+      ZAJ.merilo==='nap' ? 'Napredak meri koliko si <b>ti</b> napredovao od početka svog plana — ne koliko si brz. Ovde početnik pobeđuje iskusnog trkača.'
+      : ZAJ.merilo==='dosl' ? 'Koliko je od planiranih treninga stvarno odrađeno. Ne meri talenat nego disciplinu.'
+      : 'Vidiš samo one koji su i sami uključili profil.'}</div>
+  </div>
+
+  <div class="card">
+    <div class="dhead"><span class="card-t">Ove nedelje</span><span class="dhead-x">kilometraža</span></div>
+    ${svi.slice().sort((a,b)=>(b.km_nedelja||0)-(a.km_nedelja||0)).map(p=>`
+      <button class="zrow" data-p="${esc(p.user_id)}">
+        ${zajAvatar(p,34)}
+        <span class="zi"><span class="zime" style="font-size:.86rem">${esc(p.nadimak||'Trkač')}</span></span>
+        <span class="zv"><b style="font-size:.95rem">${p.km_nedelja!=null?fmtKm(p.km_nedelja)+' km':'—'}</b>
+          <span style="letter-spacing:0;text-transform:none;font-weight:600">${zajJa(p)?'ti · ':''}${p.plan_pct!=null?p.plan_pct+' % plana':''}</span></span>
+      </button>`).join('')}
+  </div>
+  ${ja?'':`<div class="note-src" style="margin-top:-4px">Tvoj profil se pojavljuje posle prve sinhronizacije.</div>`}`;
+}
+
+function zajProfil(p){
+  const ja=(ZAJ.ljudi||[]).find(zajJa);
+  const jaSam=zajJa(p);
+  const t=Array.isArray(p.trcanja)?p.trcanja:[];
+  const zn=Array.isArray(p.znacke)?p.znacke:[];
+  /* RAZLIKA SE RAČUNA NA BROJU, pa se tek onda formatira. Prva verzija (u
+     maketi) je poredila već formatiran string — a `"4,2" > 0` je u JS-u uvek
+     false, pa se plus nikad nije pojavio ni zeleno upalilo. */
+  const znak=n=>(n>0?'+':'')+fmtNum(n,1);
+  const napP=zajNapredak(p), napJ=ja?zajNapredak(ja):0;
+
+  const poredjenje=(!jaSam&&ja)?`
+  <div class="card">
+    <div class="dhead"><span class="card-t">Duel</span><span class="dhead-x">doslednost i napredak</span></div>
+    <div class="zduel">
+      <div class="zds"><b style="color:var(--cyan)">${ja.plan_pct!=null?ja.plan_pct+' %':'—'}</b><span>TI</span></div>
+      <div class="zvs">VS</div>
+      <div class="zds"><b>${p.plan_pct!=null?p.plan_pct+' %':'—'}</b><span>${esc(String(p.nadimak||'ON').split(' ')[0].toUpperCase())}</span></div>
+    </div>
+    <div class="drows" style="margin-top:10px">
+      <div class="drow"><span class="l">plan odrađen</span><span class="v">
+        <b style="color:${(ja.plan_pct||0)>=(p.plan_pct||0)?'var(--green)':'var(--txt3)'}">${(ja.plan_pct||0)>=(p.plan_pct||0)?'vodiš':'zaostaješ'}</b></span></div>
+      <div class="drow"><span class="l">niz dana</span><span class="v"><b>${ja.niz_dana||0} : ${p.niz_dana||0}</b></span></div>
+      <div class="drow"><span class="l">napredak VDOT-a</span><span class="v"><b>${znak(napJ)} : ${znak(napP)}</b></span></div>
+    </div>
+    <div class="note-src">Duel meri doslednost i napredak, ne brzinu — zato ima smisla i kad niste isti nivo.</div>
+  </div>
+
+  <div class="card">
+    <div class="dhead"><span class="card-t">U odnosu na tebe</span><span class="dhead-x">${p.cilj===ja.cilj?'isti cilj':esc((p.cilj||'—')+' vs '+(ja.cilj||'—'))}</span></div>
+    <div class="drows">
+      ${(p.vdot!=null&&ja.vdot!=null)?`<div class="drow"><span class="l">VDOT</span><span class="v"><b>${fmtNum(p.vdot,1)}</b>
+        <small style="color:${p.vdot>ja.vdot?'var(--green)':'var(--txt3)'}">${znak(r1(p.vdot-ja.vdot))} od tebe</small></span></div>`:''}
+      ${(p.test3k_sec!=null&&ja.test3k_sec!=null)?(()=>{const r=p.test3k_sec-ja.test3k_sec;
+        return `<div class="drow"><span class="l">test na 3 km</span><span class="v"><b>${fmtClock(p.test3k_sec)}</b>
+        <small style="color:${r<0?'var(--green)':'var(--txt3)'}">${Math.abs(r)} s ${r<0?'brže':'sporije'}</small></span></div>`;})():''}
+      ${(p.km_nedelja!=null&&ja.km_nedelja!=null)?`<div class="drow"><span class="l">ove nedelje</span><span class="v"><b>${fmtKm(p.km_nedelja)} km</b>
+        <small>${znak(r1(p.km_nedelja-ja.km_nedelja))} km</small></span></div>`:''}
+    </div>
+    <div class="note-src">Poređenje se računa na tvom uređaju. Niko ne vidi koga s kim porediš.</div>
+  </div>`:'';
+
+  return `
+  <button class="znazad" data-nazad="1">← Zajednica</button>
+  <div class="card">
+    <div class="zhero">
+      ${zajAvatar(p,74)}
+      <div><div class="zpn">${esc(p.nadimak||'Trkač')}</div>
+        <div class="zpm">${esc([p.cilj||'—',
+          (p.nedelja_br&&p.nedelja_od)?('nedelja '+p.nedelja_br+' / '+p.nedelja_od):null,
+          p.trka_datum?('trka '+fmtD(p.trka_datum)):null].filter(Boolean).join(' · '))}</div></div>
+    </div>
+    <div class="ob-vpaces">
+      <div class="ob-vp"><i>VDOT</i><b>${p.vdot!=null?fmtNum(p.vdot,1):'—'}</b></div>
+      <div class="ob-vp"><i>Test 3 km</i><b>${p.test3k_sec!=null?fmtClock(p.test3k_sec):'—'}</b></div>
+      <div class="ob-vp"><i>Niz</i><b>${p.niz_dana||0}</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="dhead"><span class="card-t">Poslednja trčanja</span><span class="dhead-x">${t.length}</span></div>
+    ${t.length?t.map(x=>`<div class="ztrow">
+      <div class="ztd">${esc(fmtD(x&&x.d))}</div>
+      <div class="ztt">${esc((x&&x.t)||'Trčanje')}<small>${esc((x&&x.o)||'—')}</small></div>
+      <div class="ztp">${esc((x&&x.p)||'—')}</div></div>`).join('')
+      :`<div class="zprazno">Još nema zabeleženih trčanja.</div>`}
+    <div class="note-src">Beleške, puls, oporavak i AI analiza <b>ne izlaze</b> iz ${jaSam?'tvog':'njegovog'} naloga.</div>
+  </div>
+
+  ${zn.length?`<div class="card">
+    <div class="dhead"><span class="card-t">Značke</span><span class="dhead-x">${zn.length}</span></div>
+    <div class="zznacke">${zn.map((z,i)=>`<span class="zznak${i===0?' zlat':''}">${esc(z)}</span>`).join('')}</div>
+  </div>`:''}
+  ${poredjenje}`;
+}
+
+function zajVezi(el){
+  el.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ ZAJ.filter=b.dataset.f; renderZajednica(); });
+  el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{ ZAJ.merilo=b.dataset.m; renderZajednica(); });
+  el.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{ ZAJ.otvoren=b.dataset.p; renderZajednica(); window.scrollTo(0,0); });
+  el.querySelectorAll('[data-nazad]').forEach(b=>b.onclick=()=>{ ZAJ.otvoren=null; renderZajednica(); window.scrollTo(0,0); });
 }
 
 /* --- mreža --- */
