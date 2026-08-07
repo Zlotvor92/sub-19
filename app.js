@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='212'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='213'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9627,7 +9627,13 @@ function openSettings(){
            <p>HRV, puls u miru, san, težinu, mapu bolova, beleške sa treninga, puls na treningu, AI analizu i <b>e-adresu</b>. Ta polja ne postoje u tabeli Zajednice, pa ne mogu da izađu ni greškom u aplikaciji.</p>
            <p>GPS trase aplikacija ne čuva ni za sebe — gde si trčao se ne može podeliti ni ovde.</p></details>
          <details class="help"><summary>Isključivanje</summary>
-           <p>Briše tvoj red iz baze, ne samo što te sklanja sa spiska. Ponovno uključivanje ga pravi iznova iz tvojih tekućih podataka.</p></details>`);
+           <p>Briše tvoj red iz baze, ne samo što te sklanja sa spiska. Ponovno uključivanje ga pravi iznova iz tvojih tekućih podataka.</p></details>
+         ${jeVlasnik()?`<details class="help"><summary>Izazov nedelje · samo ti</summary>
+           <p>Isti tekst stoji svima dok ga ne promeniš. Menja se retko — poenta je da ljudi znaju šta se od njih očekuje, ne da svake nedelje pogađaju.</p>
+           <div class="f-field full"><label for="zaj-izazov">Tekst izazova</label>
+             <input id="zaj-izazov" maxlength="160" value="${esc(ZAJ.izazov||'')}" placeholder="Odradi sve treninge po planu ove nedelje."></div>
+           <div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="zaj-izazov-cuvaj">Sačuvaj izazov</button></div>
+           <div class="note-src" id="zaj-izazov-out"></div></details>`:''}`);
     })():''}
 
     ${jeVlasnik()?kartica(false,
@@ -9661,6 +9667,24 @@ function openSettings(){
     /* Nov nadimak se šalje SAMO ako je profil već vidljiv. Inače bi promena
        teksta u polju napravila red u bazi za nekoga ko Zajednicu nije uključio. */
     if(S.zajed.vidljiv) zajUpisi();
+  };
+  if($('#zaj-izazov-cuvaj')) $('#zaj-izazov-cuvaj').onclick=async e=>{
+    const b=e.target, out=$('#zaj-izazov-out'), polje=$('#zaj-izazov');
+    const tekst=String((polje&&polje.value)||'').trim();
+    if(tekst.length<3||tekst.length>160){ if(out) out.textContent='Izazov mora imati između 3 i 160 znakova.'; return; }
+    b.disabled=true; b.textContent='Čuvam…';
+    try{
+      const tok=await sbToken();
+      if(!tok) throw new Error('Nisi prijavljen.');
+      const r=await fetch('/api/broadcast',{method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+        body:JSON.stringify({admin:'izazov',tekst})});
+      const res=await apiJson(r);
+      if(!res.data||!res.data.ok) throw new Error((res.data&&res.data.error)||res.error||'Nije uspelo.');
+      ZAJ.izazov=res.data.tekst;
+      if(out) out.textContent='Sačuvano. Svi ga vide pri sledećem otvaranju Zajednice.';
+    }catch(err){ if(out) out.textContent=err.message||'Nije uspelo.'; }
+    b.disabled=false; b.textContent='Sačuvaj izazov';
   };
   if($('#zaj-tgl')) $('#zaj-tgl').onclick=async e=>{
     const b=e.target, uk=!!(S.zajed&&S.zajed.vidljiv), out=$('#zaj-out');

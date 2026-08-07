@@ -160,6 +160,38 @@ async function adminRuta(res, body, vlasnik, baza, srvHead) {
     return res.status(200).json({ ok: true, email: meta.email || null, obrisano });
   }
 
+  /* ---------- IZAZOV NEDELJE ----------
+     Jedan jedini red koji vide SVI korisnici. Kroz RLS ga ne menja niko —
+     tabela zajednica_izazov nema nijednu politiku za upis (v.
+     supabase/zajednica.sql). Menja se isključivo ovuda, service_role ključem,
+     iza iste kapije kao brisanje i zabrana: samo vlasnik, nikad CRON_SECRET.
+
+     Zašto ne kroz RLS „samo vlasnik": to bi značilo da vlasnikov identifikator
+     stoji u SQL fajlu u javnom repozitorijumu, i da se menja rukom u bazi kad
+     god se promeni. Kapija koja već postoji u kodu je i tačnija i jedna. */
+  if (body.admin === 'izazov') {
+    const tekst = String(body.tekst == null ? '' : body.tekst).trim();
+    /* Iste granice kao `check` u bazi. Provera je i ovde da bi čovek dobio
+       rečenicu koja mu kaže šta ne valja, umesto sirove greške iz Postgresa. */
+    if (tekst.length < 3 || tekst.length > 160) {
+      return res.status(400).json({ error: 'Izazov mora imati između 3 i 160 znakova.' });
+    }
+    try {
+      const r = await fetch(baza + '/rest/v1/zajednica_izazov', {
+        method: 'POST',
+        headers: { ...srvHead, 'Content-Type': 'application/json',
+                   Prefer: 'resolution=merge-duplicates,return=representation' },
+        body: JSON.stringify({ id: 1, tekst, azurirano: new Date().toISOString() })
+      });
+      if (!r.ok) {
+        console.error('[admin][ALARM] izazov nije upisan — HTTP %s', r.status);
+        return res.status(502).json({ error: 'Nije upisano (' + r.status + ').' });
+      }
+      console.log('[admin] %s je promenio izazov nedelje', vlasnik.email);
+      return res.status(200).json({ ok: true, tekst });
+    } catch (e) { return res.status(503).json({ error: 'Server nije dostupan.' }); }
+  }
+
   /* ---------- SPISAK ---------- */
   let lista;
   try { lista = await sviKorisniciPuni(baza, srvHead.apikey); }

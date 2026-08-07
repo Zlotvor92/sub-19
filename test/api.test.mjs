@@ -1471,4 +1471,80 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
       .map(s => s.replace(/'/g, '')).sort();
     assert.deepEqual(izvuci(IZVOR), izvuci(readRepoFile('api/delete-account.js')));
   });
+
+  /* ---------- IZAZOV NEDELJE ----------
+     Jedini upis u aplikaciji koji menja nesto sto vide SVI korisnici. Tabela
+     zajednica_izazov nema politiku za upis, pa je ova putanja jedina — i to
+     je tacno ono sto ovi testovi cuvaju. */
+  function stubIzazov(korisnik, { padne = false } = {}) {
+    const pozivi = [];
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), metod = (opt && opt.method) || 'GET';
+      pozivi.push({ metod, u, telo: opt && opt.body ? JSON.parse(opt.body) : null });
+      if (u.includes('/auth/v1/user')) {
+        return korisnik ? jsonRes(korisnik) : jsonRes({ error: 'nema' }, false, 401);
+      }
+      if (u.includes('/rest/v1/zajednica_izazov')) {
+        return padne ? jsonRes({ error: 'ne' }, false, 500) : jsonRes([{ id: 1, tekst: 'x' }]);
+      }
+      throw new Error('neocekivan poziv: ' + u);
+    };
+    return pozivi;
+  }
+
+  test('izazov menja SAMO vlasnik — tudj token dobija 404, ne 403', async () => {
+    /* 403 bi bio potvrda da putanja postoji. Isto pravilo kao za spisak. */
+    stubIzazov({ id: 'k9', email: 'neko@drugi.rs', email_confirmed_at: '2026-01-01' });
+    const res = await zovi({ admin: 'izazov', tekst: 'Moj izazov svima' });
+    assert.equal(res.code, 404);
+  });
+
+  test('CRON_SECRET ne sme da promeni izazov', async () => {
+    /* Zakazani posao sme da posalje obavestenje; ne sme da prepise tekst koji
+       svi vide. Kapija admin grane namerno NE gleda tajnu. */
+    /* Tajna se salje TACNO onako kako je kod cita: `Authorization: Bearer`.
+       Prva verzija ovog testa slala je zaglavlje `x-cron-secret`, koje kod
+       uopste ne gleda — pa je test prolazio i kad kapija propusti cron. */
+    stubIzazov(null);
+    const res = await zovi({ admin: 'izazov', tekst: 'Podmetnuto' },
+      { headers: { 'content-type': 'application/json', authorization: 'Bearer ' + ENV.CRON_SECRET } });
+    assert.equal(res.code, 404);
+  });
+
+  test('vlasnik upisuje, i to u red broj 1', async () => {
+    const pozivi = stubIzazov(VLASNIK);
+    const res = await zovi({ admin: 'izazov', tekst: 'Odradi sve treninge po planu.' });
+    assert.equal(res.code, 200);
+    const upis = pozivi.find(x => x.u.includes('zajednica_izazov') && x.metod === 'POST');
+    assert.ok(upis, 'nije bilo upisa');
+    assert.equal(upis.telo.id, 1, 'upisuje se u neki drugi red, a red je samo jedan');
+    assert.equal(upis.telo.tekst, 'Odradi sve treninge po planu.');
+  });
+
+  test('predugacak i prekratak tekst se odbijaju PRE upisa', async () => {
+    /* Baza to ionako odbija (`check`), ali bi covek dobio sirovu gresku iz
+       Postgresa umesto recenice — i to tek posle poziva. */
+    for (const [tekst, sta] of [['', 'prazan'], ['ab', 'dva znaka'], ['x'.repeat(161), '161 znak']]) {
+      const pozivi = stubIzazov(VLASNIK);
+      const res = await zovi({ admin: 'izazov', tekst });
+      assert.equal(res.code, 400, `${sta} je prosao`);
+      assert.ok(!pozivi.some(x => x.u.includes('zajednica_izazov')), `${sta}: ipak je gadjana baza`);
+    }
+  });
+
+  test('granice teksta su iste kao `check` u supabase/zajednica.sql', async () => {
+    const sql = readRepoFile('supabase/zajednica.sql');
+    const m = /char_length\(btrim\(tekst\)\) between (\d+) and (\d+)/.exec(sql);
+    assert.ok(m, 'ne nalazim ogranicenje teksta u zajednica.sql');
+    const uKodu = /tekst\.length < (\d+) \|\| tekst\.length > (\d+)/.exec(IZVOR);
+    assert.ok(uKodu, 'ne nalazim proveru duzine u broadcast.js');
+    assert.equal(uKodu[1], m[1], 'donja granica se razisla');
+    assert.equal(uKodu[2], m[2], 'gornja granica se razisla');
+  });
+
+  test('kad baza odbije upis, to se ne prijavljuje kao uspeh', async () => {
+    stubIzazov(VLASNIK, { padne: true });
+    const res = await zovi({ admin: 'izazov', tekst: 'Nesto sasvim novo' });
+    assert.equal(res.code, 502);
+  });
 });
