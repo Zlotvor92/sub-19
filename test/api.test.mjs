@@ -193,7 +193,7 @@ describe('/api/broadcast — slanje u više poziva', () => {
 
 describe('/api/workouts — brisanje pre ponovnog slanja', () => {
   test('režim "zameni" briše paralelno, ne 60 poziva u nizu', async () => {
-    const { default: handler } = await import('../api/workouts.js?t=' + Date.now());
+    const { default: handler } = await import('../api/icu.js?t=' + Date.now());
     let uToku = 0, maxIstovremeno = 0;
     const obrisani = [];
     globalThis.fetch = async (url, opt) => {
@@ -217,7 +217,7 @@ describe('/api/workouts — brisanje pre ponovnog slanja', () => {
     await handler({
       method: 'POST', headers: { authorization: 'Bearer jwt' },
       body: {
-        athleteId: 'i123', token: 'tttttttttttt', rezim: 'zameni',
+        sta: 'workouts', athleteId: 'i123', token: 'tttttttttttt', rezim: 'zameni',
         events: [{ date: '2026-07-01', externalId: 'sub19-g1d1', name: 'Lako', description: '- 5km' }]
       }
     }, res);
@@ -228,7 +228,7 @@ describe('/api/workouts — brisanje pre ponovnog slanja', () => {
   });
 
   test('briše ISKLJUČIVO događaje sa našim prefiksom', async () => {
-    const { default: handler } = await import('../api/workouts.js?t=' + Date.now());
+    const { default: handler } = await import('../api/icu.js?t=' + Date.now());
     const obrisani = [];
     globalThis.fetch = async (url, opt) => {
       const u = String(url);
@@ -248,7 +248,7 @@ describe('/api/workouts — brisanje pre ponovnog slanja', () => {
     await handler({
       method: 'POST', headers: { authorization: 'Bearer jwt' },
       body: {
-        athleteId: 'i123', token: 'tttttttttttt', rezim: 'zameni',
+        sta: 'workouts', athleteId: 'i123', token: 'tttttttttttt', rezim: 'zameni',
         events: [{ date: '2026-07-01', externalId: 'sub19-g1d1', name: 'Lako', description: '- 5km' }]
       }
     }, res);
@@ -257,7 +257,7 @@ describe('/api/workouts — brisanje pre ponovnog slanja', () => {
   });
 
   test('odbija neispravan externalId (ne sme da piše van svog prostora)', async () => {
-    const { default: handler } = await import('../api/workouts.js?t=' + Date.now());
+    const { default: handler } = await import('../api/icu.js?t=' + Date.now());
     globalThis.fetch = async () => jsonRes({ id: 'u1' });
     const res = makeRes();
     await handler({
@@ -385,8 +385,65 @@ describe('/api/daily-report — paginacija', () => {
   });
 });
 
+describe('/api/auth — obe grane Strava OAuth-a', () => {
+  /* Spojeno iz api/auth.js + api/refresh.js (Vercel Hobby: najvise 12
+     funkcija). Grananje ide po metodi, pa se cuva da obe i dalje traze
+     prijavu i da GET nije poceo da prima refresh token ni obrnuto. */
+  const zovi = async (over) => {
+    const { default: handler } = await import('../api/auth.js?t=' + Date.now() + Math.random());
+    const res = makeRes();
+    await handler({ method: 'GET', headers: {}, query: {}, body: {}, ...over }, res);
+    return res;
+  };
+
+  test('POST grana (osvežavanje) i dalje traži prijavu', async () => {
+    globalThis.fetch = async () => jsonRes({}, false, 401);
+    const res = await zovi({ method: 'POST', headers: { 'content-type': 'application/json' },
+                             body: { refresh_token: 'r' } });
+    assert.equal(res.code, 401, `dobijeno ${res.code}: ${JSON.stringify(res.body)}`);
+  });
+
+  test('POST bez Content-Type: application/json se odbija', async () => {
+    /* Zatvara <form> POST sa tudjeg sajta — bez ovog zaglavlja bi tudja
+       stranica mogla da pozove putanju koja koristi nas client_secret. */
+    globalThis.fetch = async () => jsonRes({ id: 'u1' });
+    const res = await zovi({ method: 'POST', headers: { authorization: 'Bearer t' },
+                             body: { refresh_token: 'r' } });
+    assert.equal(res.code, 415);
+  });
+
+  test('GET šalje authorization_code, POST šalje refresh_token', async () => {
+    /* Bez Strava kljuceva `kaStravi` vrati 500 pre nego sto ista posalje —
+       tada bi test proveravao poruku o nedostajucoj env varijabli umesto
+       grananja. */
+    process.env.STRAVA_CLIENT_ID = 'ci'; process.env.STRAVA_CLIENT_SECRET = 'cs';
+    /* Da se dve grane ne pobrkaju posle spajanja: Strava bi na pogrešan
+       grant_type vratila grešku koju bi korisnik video kao „veza ne radi". */
+    let poslato = null;
+    globalThis.fetch = async (url, opt) => {
+      if (String(url).includes('/auth/v1/user')) return jsonRes({ id: 'u1' });
+      poslato = JSON.parse(opt.body);
+      return jsonRes({ access_token: 'a' });
+    };
+    await zovi({ headers: { authorization: 'Bearer t' }, query: { code: 'abc123' } });
+    assert.equal(poslato.grant_type, 'authorization_code');
+    assert.equal(poslato.code, 'abc123');
+
+    await zovi({ method: 'POST', headers: { authorization: 'Bearer t', 'content-type': 'application/json' },
+                 body: { refresh_token: 'RT' } });
+    assert.equal(poslato.grant_type, 'refresh_token');
+    assert.equal(poslato.refresh_token, 'RT');
+  });
+
+  test('ostale metode se odbijaju', async () => {
+    for (const m of ['PUT', 'DELETE', 'PATCH']) {
+      assert.equal((await zovi({ method: m })).code, 405, `${m} je prošao`);
+    }
+  });
+});
+
 describe('Sve api/ putanje traže prijavu ili tajnu', () => {
-  const putanje = ['analyze', 'auth', 'icu-oauth', 'refresh', 'report-bug', 'wellness', 'workouts'];
+  const putanje = ['analyze', 'auth', 'icu-oauth', 'report-bug', 'icu'];
   for (const p of putanje) {
     test(`/api/${p} odbija zahtev bez Authorization zaglavlja`, async () => {
       const { default: handler } = await import(`../api/${p}.js?t=` + Date.now());
@@ -410,9 +467,11 @@ describe('Sve api/ putanje traže prijavu ili tajnu', () => {
    otkaz brojača ne obori funkciju.
    ================================================================== */
 describe('Dnevni limit — /api/wellness i /api/workouts', () => {
+  /* `sta` bira granu u spojenom api/icu.js — bez njega dispecer vrati 400
+     pre nego sto ijedna provera limita bude pozvana. */
   const zahtev = {
-    wellness: { athleteId: 'i123', token: 'tttttttttttt', oldest: '2026-07-01', newest: '2026-07-10' },
-    workouts: { athleteId: 'i123', token: 'tttttttttttt', rezim: 'azuriraj',
+    wellness: { sta: 'wellness', athleteId: 'i123', token: 'tttttttttttt', oldest: '2026-07-01', newest: '2026-07-10' },
+    workouts: { sta: 'workouts', athleteId: 'i123', token: 'tttttttttttt', rezim: 'azuriraj',
                 events: [{ date: '2026-07-01', externalId: 'sub19-g1d1', name: 'Lako', description: '- 5km' }] }
   };
 
@@ -437,7 +496,7 @@ describe('Dnevni limit — /api/wellness i /api/workouts', () => {
 
   for (const put of ['wellness', 'workouts']) {
     test(`/api/${put} vraća 429 kad je limit potrošen`, async () => {
-      const { default: handler } = await import(`../api/${put}.js?t=` + Date.now());
+      const { default: handler } = await import('../api/icu.js?t=' + Date.now() + Math.random());
       const redosled = stub(() => jsonRes({ message: 'DAILY_LIMIT_EXCEEDED' }, false, 400));
       const res = makeRes();
       await handler({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: zahtev[put] }, res);
@@ -448,7 +507,7 @@ describe('Dnevni limit — /api/wellness i /api/workouts', () => {
     });
 
     test(`/api/${put} pita limit PRE nego što pozove intervals.icu`, async () => {
-      const { default: handler } = await import(`../api/${put}.js?t=` + Date.now());
+      const { default: handler } = await import('../api/icu.js?t=' + Date.now() + Math.random());
       const redosled = stub(() => jsonRes(1));
       const res = makeRes();
       await handler({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: zahtev[put] }, res);
@@ -459,7 +518,7 @@ describe('Dnevni limit — /api/wellness i /api/workouts', () => {
     });
 
     test(`/api/${put} šalje svoje ime i svoj limit`, async () => {
-      const { default: handler } = await import(`../api/${put}.js?t=` + Date.now());
+      const { default: handler } = await import('../api/icu.js?t=' + Date.now() + Math.random());
       let telo = null;
       stub(b => { telo = b; return jsonRes(1); });
       await handler({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: zahtev[put] }, makeRes());
@@ -468,7 +527,7 @@ describe('Dnevni limit — /api/wellness i /api/workouts', () => {
     });
 
     test(`/api/${put} radi i kad brojač otkaže (SQL možda još nije pušten)`, async () => {
-      const { default: handler } = await import(`../api/${put}.js?t=` + Date.now());
+      const { default: handler } = await import('../api/icu.js?t=' + Date.now() + Math.random());
       const redosled = stub(() => jsonRes({ message: 'relation does not exist' }, false, 404));
       const res = makeRes();
       await handler({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: zahtev[put] }, res);
@@ -517,13 +576,15 @@ describe('supabase/rate-limit.sql — ono što se ne sme izgubiti pri izmeni', (
   });
 
   test('imena endpointa iz koda odgovaraju dozvoljenom obliku', () => {
+    /* Sve tri grane su u api/icu.js posle spajanja, pa se imena vade odatle —
+       i tvrdi se da ih ima TRI RAZLICITA. Da se dve grane izjednace, trosenje
+       jedne bi blokiralo drugu, a to se ne bi videlo kao greska. */
     const oblik = /^[a-z0-9_-]{1,40}$/;
-    for (const p of ['wellness', 'workouts']) {
-      const izvor = readFileSync(join(ROOT, 'api', p + '.js'), 'utf8');
-      const m = /limitPrekoracen\(auth\.token,\s*'([^']+)'/.exec(izvor);
-      assert.ok(m, `api/${p}.js ne poziva limitPrekoracen`);
-      assert.match(m[1], oblik, `naziv "${m[1]}" bi funkcija odbila`);
-    }
+    const izvor = readFileSync(join(ROOT, 'api', 'icu.js'), 'utf8');
+    const imena = [...izvor.matchAll(/limitPrekoracen\(auth\.token,\s*'([^']+)'/g)].map(m => m[1]);
+    assert.equal(imena.length, 3, `ocekuju se tri brojaca, nadjeno ${imena.length}: ${imena}`);
+    assert.equal(new Set(imena).size, 3, `dve grane dele isti brojac: ${imena}`);
+    for (const ime of imena) assert.match(ime, oblik, `naziv "${ime}" bi funkcija odbila`);
   });
 
   test('postojeći brojači se ne diraju', () => {
@@ -734,11 +795,16 @@ describe('requireUser je prepisan u 9 fajlova — provera ne sme da se razidje',
      ovde poredi ono što je bezbednosno nosivo — SAMA PROVERA — dok se
      povratna vrednost sme razlikovati (svaki endpoint uzima što mu treba:
      userId / +email / +token). */
-  /* Spisak je bio sedam, a fajlova sa `requireUser` je devet — `activities` i
-     `push` su ispadali iz poređenja, dakle iz jedine stvari koja duplikat drži
-     na okupu. Sada su svi. */
-  const PUTANJE = ['analyze', 'wellness', 'workouts', 'auth', 'refresh', 'icu-oauth',
-                   'report-bug', 'activities', 'push'];
+  /* Spisak se ČITA SA DISKA, ne prepisuje rukom. Ranije je bio zakucan i
+     zaostajao dvaput: prvo su `activities` i `push` ispadali iz poređenja —
+     dakle iz jedine stvari koja duplikat drži na okupu — a onda je spajanje
+     `refresh` u `auth` ostavilo ime fajla koji više ne postoji. Izveden spisak
+     ne može da zaostane: nov endpoint sa `requireUser` ulazi sam. */
+  const PUTANJE = readdirSync(join(ROOT, 'api'))
+    .filter(f => f.endsWith('.js'))
+    .filter(f => /async function requireUser\(req\)/.test(readFileSync(join(ROOT, 'api', f), 'utf8')))
+    .map(f => f.replace(/\.js$/, ''))
+    .sort();
 
   const telo = p => {
     const s = readFileSync(join(ROOT, 'api', p + '.js'), 'utf8');
@@ -771,10 +837,10 @@ describe('requireUser je prepisan u 9 fajlova — provera ne sme da se razidje',
       if (String(u).includes('/auth/v1/user')) { poziva++; return jsonRes({ id: 'u9', email: 'k@t.rs' }); }
       return jsonRes({});
     };
-    const { default: h } = await import('../api/wellness.js?t=' + Date.now());
+    const { default: h } = await import('../api/icu.js?t=' + Date.now());
     const zovi = async (token) => {
       const res = makeRes();
-      await h({ method: 'POST', headers: { authorization: 'Bearer ' + token }, body: {} }, res);
+      await h({ method: 'POST', headers: { authorization: 'Bearer ' + token }, body: { sta: 'wellness' } }, res);
       return res;
     };
     /* Oba puta se stiže do iste greške (telo je prazno) — dakle prijava je
@@ -788,7 +854,7 @@ describe('requireUser je prepisan u 9 fajlova — provera ne sme da se razidje',
     assert.equal(poziva, 2, 'drugi token je prošao na tuđem keširanom unosu');
   });
 
-  test('provera prijave je bajt u bajt ista u svih 9', () => {
+  test('provera prijave je bajt u bajt ista u svakoj kopiji', () => {
     const etalon = telo('analyze');
     for (const p of PUTANJE.slice(1)) {
       assert.equal(telo(p), etalon,

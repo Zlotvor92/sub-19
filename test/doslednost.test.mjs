@@ -15,7 +15,7 @@ const index = readClientSource();
 const sw = readRepoFile('sw.js');
 const manifest = JSON.parse(readRepoFile('manifest.json'));
 const vercel = JSON.parse(readRepoFile('vercel.json'));
-const workouts = readRepoFile('api/workouts.js');
+const workouts = readRepoFile('api/icu.js');
 
 describe('Verzija', () => {
   test('APP_VERSION je isti u app.js i sw.js', () => {
@@ -75,7 +75,7 @@ describe('vercel.json', () => {
     /* Bez ovoga važi podrazumevani limit, a slanje mejlova / brisanje na
        intervals.icu se prekida na pola posla. */
     assert.ok(vercel.functions, 'nema functions bloka');
-    for (const f of ['api/broadcast.js', 'api/workouts.js', 'api/daily-report.js']) {
+    for (const f of ['api/broadcast.js', 'api/icu.js', 'api/daily-report.js']) {
       assert.ok(vercel.functions[f] && vercel.functions[f].maxDuration >= 30,
         `${f} nema maxDuration >= 30`);
     }

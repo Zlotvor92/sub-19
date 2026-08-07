@@ -1,9 +1,18 @@
-/* SUB-20 · Strava OAuth — razmena koda za tokene.
-   Čita STRAVA_CLIENT_ID i STRAVA_CLIENT_SECRET iz Vercel Environment Variables.
+/* SUB-20 · Strava OAuth — OBE strane razmene tokena.
+
+     GET  /api/auth?code=…           kod -> pristupni + refresh token (prva veza)
+     POST /api/auth {refresh_token}  osvezavanje isteklog pristupnog tokena
+
+   ZASTO U ISTOM FAJLU. Bilo je odvojeno (api/auth.js + api/refresh.js), ali
+   Vercel Hobby plan dozvoljava najvise 12 serverless funkcija po deployu i
+   trinaesta obara CEO build — pa se ne objavi nijedna izmena. Ova dva su
+   najprirodniji par: ista dva tajna kljuca, ista provera prijave, isti Strava
+   endpoint, razlika je samo u `grant_type`. Grananje ide po METODI, pa nema
+   novog parametra ni mesta za zabunu.
 
    IZMENE (bezbednost):
 
-   1) Prihvata se samo GET (klijent zove `fetch('/api/auth?code=…')`).
+   1) GET nosi kod, POST nosi refresh token. Svaka druga metoda se odbija.
 
    2) Osnovna provera oblika koda — Strava vraća heksadecimalni niz. Time se
       odbacuje očigledno smeće pre nego što potroši poziv ka Stravi.
@@ -25,8 +34,8 @@
    povratku. Server ga ne može proveriti bez čuvanja stanja. Ta izmena je
    urađena u index.html (stravaConnect / handleOAuthReturn). */
 
-/* Provera Supabase sesije (UGRAĐENA, ne uvezena — isti razlog kao u analyze.js
-   i refresh.js: Vercel funkcije preko GitHub web editora nemaju build korak,
+/* Provera Supabase sesije (UGRAĐENA, ne uvezena — isti razlog kao u
+   analyze.js: Vercel funkcije preko GitHub web editora nemaju build korak,
    pa `import` iz zajedničkog fajla obara funkciju bez jasne poruke). */
 /* KRATKOTRAJAN KEŠ POTVRĐENIH TOKENA — ista provera, jedan mrežni skok manje.
    Do sada je SVAKI poziv ka bilo kojoj putanji plaćao dodatan krug ka
@@ -71,36 +80,74 @@ async function requireUser(req) {
   }
 }
 
-export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET');
-    return res.status(405).json({ message: 'Samo GET.' });
-  }
-
-  const auth = await requireUser(req);
-  if (!auth.ok) return res.status(auth.status).json({ message: auth.error });
-
-  const code = (req.query && req.query.code) || '';
-  if (!code) return res.status(400).json({ message: 'Nedostaje code parametar' });
-  if (typeof code !== 'string' || code.length > 128 || !/^[a-f0-9]+$/i.test(code)) {
-    return res.status(400).json({ message: 'Neispravan oblik koda.' });
-  }
-
+/* Jedno mesto za oba poziva ka Stravi — razlikuju se samo poljem koje nose. */
+async function kaStravi(res, dodatno) {
   const id = process.env.STRAVA_CLIENT_ID;
   const sec = process.env.STRAVA_CLIENT_SECRET;
   if (!id || !sec) {
     return res.status(500).json({ message: 'STRAVA_CLIENT_ID / STRAVA_CLIENT_SECRET nisu podešeni u Vercel → Settings → Environment Variables' });
   }
-
   try {
     const r = await fetch('https://www.strava.com/oauth/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: id, client_secret: sec, code, grant_type: 'authorization_code' })
+      body: JSON.stringify({ client_id: id, client_secret: sec, ...dodatno })
     });
     const j = await r.json();
     return res.status(r.ok ? 200 : r.status).json(j);
   } catch (e) {
     return res.status(502).json({ message: 'Strava nedostupna: ' + e.message });
   }
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    res.setHeader('Allow', 'GET, POST');
+    return res.status(405).json({ message: 'Samo GET ili POST.' });
+  }
+
+  /* POST zahteva Content-Type: application/json. Time se blokira zloupotreba sa
+     TUDJEG sajta preko obicnog <form> POST-a — takav zahtev ne moze da postavi
+     ovo zaglavlje bez preflight provere, a preflight ne odobravamo (nema CORS
+     zaglavlja). */
+  if (req.method === 'POST') {
+    const ct = String(req.headers['content-type'] || '');
+    if (!ct.includes('application/json')) {
+      return res.status(415).json({ message: 'Očekuje se Content-Type: application/json.' });
+    }
+  }
+
+  /* Zahteva prijavljenog korisnika, na OBE grane.
+     Bez toga bi svako sa vazecim Strava kodom — ne mora biti korisnik ove app —
+     mogao da iskoristi NAS client_secret da zameni kod za token i tako trosi
+     ogranicena mesta ("athlete capacity"). Na POST grani je razlog jos
+     direktniji: putanja je nekad bila potpuno otvorena, pa je svako sa
+     ukradenim refresh tokenom mogao da kuje pristupne tokene nasim kljucem. */
+  const auth = await requireUser(req);
+  if (!auth.ok) return res.status(auth.status).json({ message: auth.error });
+
+  /* ---------- GET: prva veza, kod -> tokeni ---------- */
+  if (req.method === 'GET') {
+    const code = (req.query && req.query.code) || '';
+    if (!code) return res.status(400).json({ message: 'Nedostaje code parametar' });
+    /* Strava vraca heksadecimalni niz — ocigledno smece se odbacuje pre nego
+       sto potrosi poziv ka Stravi. */
+    if (typeof code !== 'string' || code.length > 128 || !/^[a-f0-9]+$/i.test(code)) {
+      return res.status(400).json({ message: 'Neispravan oblik koda.' });
+    }
+    return kaStravi(res, { code, grant_type: 'authorization_code' });
+  }
+
+  /* ---------- POST: osvezavanje ---------- */
+  let rt = '';
+  try {
+    const b = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    rt = (b && b.refresh_token) || '';
+  } catch (e) {
+    return res.status(400).json({ message: 'Neispravan JSON.' });
+  }
+  if (!rt || typeof rt !== 'string') {
+    return res.status(400).json({ message: 'Nedostaje refresh_token' });
+  }
+  return kaStravi(res, { refresh_token: rt, grant_type: 'refresh_token' });
 }

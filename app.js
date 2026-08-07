@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='207'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='208'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -768,7 +768,7 @@ function sessKind(d){
 let LS_OK=true;try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){LS_OK=false;}
 let MEM=null;
 /* ZAPISI O OPORAVKU SU BROJEVI — i to se ovde NAMECE, ne pretpostavlja.
-   Server (/api/wellness) ih vec pretvara u brojeve (`broj()` u izvuci()), pa
+   Server (/api/icu) ih vec pretvara u brojeve (`broj()` u izvuci()), pa
    je ziv put bezbedan. Ali UVOZ BACKUPA i sbPull() upisuju u S.wellness sta
    god stoji u JSON-u, a te vrednosti idu pravo u HTML (kartica Oporavak, HRV
    grafikon, red „Tog jutra" na kartici treninga) — dokazano napadom: zapis sa
@@ -8477,7 +8477,7 @@ function chartVdotTrend(){
    sinhronizaciju i izlaze te podatke kroz otvoren API sa obicnim kljucem —
    isti podaci, bez cekanja na odobrenje.
 
-   Ide preko naseg servera (/api/wellness) jer intervals.icu ne salje CORS
+   Ide preko naseg servera (/api/icu) jer intervals.icu ne salje CORS
    zaglavlja, pa bi poziv iz pregledaca bio blokiran.
 
    Cuva se u S.wellness kao mapa datum -> zapis, da spajanje sa treningom bude
@@ -8491,9 +8491,9 @@ async function icuSync(danaUnazad){
   const do_=new Date(), od=new Date(do_.getTime()-(danaUnazad||60)*864e5);
   const ds=d=>d.toISOString().slice(0,10);
   try{
-    const r=await fetch('/api/wellness',{method:'POST',
+    const r=await fetch('/api/icu',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
-      body:JSON.stringify({athleteId:S.icu.athleteId, ...icuVeza(), oldest:ds(od), newest:ds(do_)})});
+      body:JSON.stringify({sta:'wellness', athleteId:S.icu.athleteId, ...icuVeza(), oldest:ds(od), newest:ds(do_)})});
     let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
     if(!r.ok) return {ok:false, error:j.error||('Greška '+r.status)};
     S.wellness=S.wellness||{};
@@ -8529,9 +8529,9 @@ function icuImaTreninge(){
 }
 async function icuApi(telo){
   try{
-    const r=await fetch('/api/activities',{method:'POST',
+    const r=await fetch('/api/icu',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
-      body:JSON.stringify({athleteId:S.icu.athleteId, ...icuVeza(), ...telo})});
+      body:JSON.stringify({sta:'activities', athleteId:S.icu.athleteId, ...icuVeza(), ...telo})});
     let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
     if(!r.ok) return {ok:false, error:j.error||('Greška '+r.status), status:r.status};
     return {ok:true, ...j};
@@ -9153,9 +9153,9 @@ async function icuPosalji(danaUnapred, zameni){
   const events=icuDaniZaSlanje(danaUnapred);
   if(!events.length) return {ok:false, error:'Nema treninga u tom periodu.'};
   try{
-    const r=await fetch('/api/workouts',{method:'POST',
+    const r=await fetch('/api/icu',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
-      body:JSON.stringify({athleteId:S.icu.athleteId, ...icuVeza(), events,
+      body:JSON.stringify({sta:'workouts', athleteId:S.icu.athleteId, ...icuVeza(), events,
                            rezim: zameni?'zameni':'azuriraj'})});
     let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
     if(!r.ok) return {ok:false, error:(j.error||('Greška '+r.status))+(j.detail?' — '+j.detail:'')};
@@ -10300,7 +10300,7 @@ async function apiJson(resp){
 async function ensureToken(){
   if(!S.strava)throw new Error('Strava nije povezana');
   if(S.strava.expiresAt*1000>Date.now()+300000)return;
-  const r=await fetch('/api/refresh',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},body:JSON.stringify({refresh_token:S.strava.refresh})});
+  const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},body:JSON.stringify({refresh_token:S.strava.refresh})});
   const res=await apiJson(r);
   if(!res.data) throw new Error('Osvežavanje Strava tokena nije uspelo — '+res.error);
   const j=res.data;

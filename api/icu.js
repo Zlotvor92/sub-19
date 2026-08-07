@@ -1,30 +1,26 @@
-/* /api/activities.js — čitanje TRENINGA sa intervals.icu.
+/* SUB-20 · intervals.icu — sva tri poziva na jednom mestu.
 
-   ZAŠTO POSTOJI, KAD VEĆ POSTOJI STRAVA SYNC:
-   Strava daje sirove streamove, pa aplikacija sama traži radne deonice
-   (`detectWorkSegments`, prag brzine nad k-means podelom). To radi, ali je
-   sopstvena heuristika i ume da promaši. intervals.icu je iste deonice VEĆ
-   prepoznao — nad izvornim fajlom sa sata, ne nad Stravinom prekodiranom
-   kopijom — i izlaže ih kroz `/activity/{id}/intervals`: svaki rep i svaki
-   oporavak posebno, sa distancom, vremenom, pulsom, kadencom, GAP-om
-   (tempo korigovan za nagib) i razdvajanjem (`decoupling`) PO REPU. Uz to
-   korisnik te deonice može i ručno da ispravi u njihovom interfejsu.
+     {sta:'wellness'}    jutarnja merenja (HRV, puls u miru, san, CTL/ATL)
+     {sta:'activities'}  odradjeni treninzi, sa krugovima
+     {sta:'workouts'}    slanje planiranih treninga u kalendar
 
-   Zato je intervals.icu PRIMARAN izvor kad je povezan; Strava ostaje potpuno
-   ravnopravna rezerva za sve koji intervals.icu nemaju i neće da ga prave.
+   ZASTO U ISTOM FAJLU. Bilo je odvojeno (wellness.js, activities.js,
+   workouts.js), ali Vercel Hobby plan dozvoljava najvise 12 serverless
+   funkcija po deployu — trinaesta obara CEO build, pa se ne objavi nijedna
+   izmena. Ove tri su bile najprirodnija grupa: iste dve env varijable
+   (SUPABASE_URL, SUPABASE_ANON_KEY), ista provera prijave, isti oblik tela
+   zahteva, i sve tri razgovaraju sa intervals.icu KORISNIKOVIM tokenom.
+   Prelude (kes tokena, requireUser, brojac limita, icuAuth) je bio TRI PUTA
+   prepisan; sada je jednom.
 
-   ZAŠTO PREKO SERVERA: isto što i /api/wellness — intervals.icu ne šalje CORS
-   zaglavlja, a ključ ne sme da putuje iz pregledača ka trećoj strani.
+   SVAKA GRANA JE OSTALA DOSLOVNO ISTA, samo je dobila ime. To je namerno:
+   spajanje je bilo iznudjeno granicom platforme, a ne prilika da se prepravi
+   810 linija koje rade. Dnevni limiti i imena brojaca ostaju po grani —
+   wellness 100, activities 200, workouts 40 — jer se broje odvojeno u bazi
+   (v. supabase/rate-limit.sql) i trosenje jednog ne sme da blokira drugi.
 
-   TRI REŽIMA, da odgovor uvek ostane ograničen:
-     { oldest, newest }        -> spisak treninga u opsegu (sažeci)
-     { detalji: [id, id, …] }  -> krugovi za do 12 traženih treninga
-     { tokovi:  [id, id, …] }  -> sirovi tokovi za do 3 treninga, iz kojih se
-                                  na uređaju računa po-km presek za lagana i
-                                  duga trčanja (icu tu nema strukturu)
-
-   U Vercel Project Settings -> Environment Variables treba da postoje:
-   - SUPABASE_URL, SUPABASE_ANON_KEY  (isti kao za /api/analyze) */
+   ZASTO PREKO SERVERA UOPSTE: intervals.icu ne salje CORS zaglavlja, pa bi
+   poziv iz pregledaca bio blokiran. */
 
 /* Provera Supabase sesije — UGRAĐENA, ne uvezena (v. komentar u /api/analyze.js:
    Vercel funkcije bez build koraka ne razrešavaju lokalne import-e). */
@@ -115,7 +111,11 @@ async function limitPrekoracen(token, endpoint, limit) {
   }
 }
 
-/* OAuth token ili stari API ključ — identično kao /api/wellness. */
+/* AUTORIZACIJA KA intervals.icu — dva puta, jer postoje dve vrste veze:
+   - OAuth token  -> "Authorization: Bearer <token>"  (novo, bez unosa ičega)
+   - API kljuc    -> Basic, sa fiksnim korisnickim imenom API_KEY (staro)
+   Stari nacin se ZADRZAVA: korisnici koji su vec uneli kljuc ne smeju da
+   ostanu bez veze zbog nove mogucnosti. */
 function icuAuth(body) {
   const token  = String((body && body.token) || '').trim();
   const apiKey = String((body && body.apiKey) || '').trim();
@@ -131,6 +131,38 @@ function icuAuth(body) {
 }
 
 const DAN = /^\d{4}-\d{2}-\d{2}$/;
+
+/* ---------- jedinstveno za wellness ---------- */
+/* Iz punog zapisa uzima SAMO ono što analiza koristi. Nazivi polja se razlikuju
+   između izvora koje intervals.icu prima (Garmin, Oura, ručni unos), pa se za
+   svaku vrednost pokušava nekoliko poznatih imena. */
+function izvuci(z) {
+  const prvi = (...k) => { for (const x of k) { const v = z[x]; if (v != null && v !== '') return v; } return null; };
+  const broj = v => (v == null || isNaN(+v)) ? null : +v;
+  const san = broj(prvi('sleepSecs', 'sleep_secs'));
+  const out = {
+    datum:      typeof z.id === 'string' ? z.id.slice(0, 10) : null,
+    hrv:        broj(prvi('hrv', 'hrvSDNN', 'hrv_sdnn')),
+    pulsUMiru:  broj(prvi('restingHR', 'resting_hr', 'restingHr')),
+    sanH:       san != null ? Math.round(san / 360) / 10 : null,
+    sanOcena:   broj(prvi('sleepScore', 'sleep_score', 'sleepQuality', 'sleep_quality')),
+    tezina:     broj(prvi('weight')),
+    /* intervals.icu računa i trenažno opterećenje: ctl = dugoročna forma,
+       atl = kratkoročni umor, razlika je "svežina". Dolazi besplatno uz isti
+       poziv, a trend analizi daje ono što iz samih treninga ne može da izvede. */
+    ctl:        broj(prvi('ctl')),
+    atl:        broj(prvi('atl'))
+  };
+  if (out.ctl != null && out.atl != null) out.svezina = Math.round((out.ctl - out.atl) * 10) / 10;
+  /* zapis bez ijednog korisnog podatka se ne vraća */
+  const imaNesto = ['hrv','pulsUMiru','sanH','sanOcena','tezina','ctl'].some(k => out[k] != null);
+  return (out.datum && imaNesto) ? out : null;
+}
+
+/* ---------- jedinstveno za workouts ---------- */
+const MAX_DOGADJAJA = 60;   /* ~2 meseca plana; iznad toga je greška u pozivaocu */
+
+/* ---------- jedinstveno za activities ---------- */
 const broj = v => (v == null || v === '' || isNaN(+v)) ? null : +v;
 const ceo  = v => { const x = broj(v); return x == null ? null : Math.round(x); };
 
@@ -226,7 +258,179 @@ function grupa(g) {
 
 const ID_OBLIK = /^[A-Za-z0-9_-]{1,64}$/;
 
-export default async function handler(req, res) {
+async function obradiWellness(req, res) {
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Samo POST.' }); return; }
+
+  const auth = await requireUser(req);
+  if (!auth.ok) { res.status(auth.status).json({ error: auth.error }); return; }
+
+  /* 100/dan je namerno velikodusno: normalna upotreba je 1 automatsko
+     povlacenje dnevno (`S.icu.autoDan` ga cuva) plus po koji rucni klik na
+     "Povuci sada". Sto puta se ne dodje slucajno — samo skriptom. */
+  const DNEVNI_LIMIT = 100;
+  if (await limitPrekoracen(auth.token, 'wellness', DNEVNI_LIMIT)) {
+    res.status(429).json({ error: 'Dnevni limit povlačenja sa intervals.icu (' + DNEVNI_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
+    return;
+  }
+
+  let body;
+  try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
+  catch { res.status(400).json({ error: 'Neispravan JSON.' }); return; }
+
+  const athleteId = String((body && body.athleteId) || '').trim();
+  const oldest    = String((body && body.oldest) || '').trim();
+  const newest    = String((body && body.newest) || '').trim();
+
+  if (!/^i?\d+$/.test(athleteId)) { res.status(400).json({ error: 'Neispravan intervals.icu ID sportiste.' }); return; }
+  const aut = icuAuth(body);
+  if (!aut.ok) { res.status(400).json({ error: aut.error }); return; }
+  if (!DAN.test(oldest) || !DAN.test(newest)) { res.status(400).json({ error: 'Neispravan opseg datuma.' }); return; }
+  if (newest < oldest) { res.status(400).json({ error: 'Kraj opsega je pre početka.' }); return; }
+
+  const url = 'https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
+              '/wellness?oldest=' + oldest + '&newest=' + newest;
+
+  try {
+    const r = await fetch(url, { headers: { Authorization: aut.header, Accept: 'application/json' } });
+    if (r.status === 401 || r.status === 403) {
+      res.status(401).json({ error: 'intervals.icu je odbio pristup. Otkači pa ponovo poveži intervals.icu u Podešavanjima.' });
+      return;
+    }
+    if (r.status === 429) { res.status(429).json({ error: 'intervals.icu privremeno ograničava zahteve. Pokušaj kasnije.' }); return; }
+    if (!r.ok) { res.status(502).json({ error: 'intervals.icu greška (HTTP ' + r.status + ').' }); return; }
+
+    const j = await r.json();
+    const niz = Array.isArray(j) ? j : (j && Array.isArray(j.wellness) ? j.wellness : []);
+    const dani = niz.map(izvuci).filter(Boolean).sort((a, b) => a.datum < b.datum ? -1 : 1);
+    res.status(200).json({ dani });
+  } catch (e) {
+    /* namerno bez detalja iz greške — u njoj može završiti deo URL-a */
+    res.status(503).json({ error: 'Nema veze sa intervals.icu.' });
+  }
+}
+
+async function obradiWorkouts(req, res) {
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Samo POST.' }); return; }
+
+  const auth = await requireUser(req);
+  if (!auth.ok) { res.status(auth.status).json({ error: auth.error }); return; }
+
+  /* Nizi limit nego kod /api/wellness, jer je ovo SKUPLJI poziv: jedan zahtev
+     u rezimu "zameni" povlaci citanje kalendara + do MAX_DOGADJAJA brisanja +
+     upis. Stvarna upotreba je par slanja dnevno (posalji plan, pa ispravka). */
+  const DNEVNI_LIMIT = 40;
+  if (await limitPrekoracen(auth.token, 'workouts', DNEVNI_LIMIT)) {
+    res.status(429).json({ error: 'Dnevni limit slanja na intervals.icu (' + DNEVNI_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
+    return;
+  }
+
+  let body;
+  try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
+  catch { res.status(400).json({ error: 'Neispravan JSON.' }); return; }
+
+  const athleteId = String((body && body.athleteId) || '').trim();
+  const dogadjaji = Array.isArray(body && body.events) ? body.events : null;
+
+  if (!/^i?\d+$/.test(athleteId)) { res.status(400).json({ error: 'Neispravan intervals.icu ID sportiste.' }); return; }
+  const aut = icuAuth(body);
+  if (!aut.ok) { res.status(400).json({ error: aut.error }); return; }
+  if (!dogadjaji || !dogadjaji.length) { res.status(400).json({ error: 'Nema treninga za slanje.' }); return; }
+  if (dogadjaji.length > MAX_DOGADJAJA) { res.status(400).json({ error: 'Previše treninga odjednom (najviše ' + MAX_DOGADJAJA + ').' }); return; }
+
+  /* Propušta se SAMO ono što intervals.icu treba za planiran trening — ne
+     prosleđuje se sirov objekat iz pregledača. */
+  const cist = [];
+  for (const e of dogadjaji) {
+    const dan = String((e && e.date) || '');
+    if (!DAN.test(dan)) { res.status(400).json({ error: 'Neispravan datum u listi treninga.' }); return; }
+    const ext = String((e && e.externalId) || '').slice(0, 60);
+    if (!/^sub19-[A-Za-z0-9_]+$/.test(ext)) { res.status(400).json({ error: 'Neispravan ID treninga.' }); return; }
+    cist.push({
+      category: 'WORKOUT',
+      type: 'Run',
+      start_date_local: dan + 'T00:00:00',
+      name: String((e && e.name) || 'Trening').slice(0, 120),
+      description: String((e && e.description) || '').slice(0, 4000),
+      external_id: ext,
+      /* iz koje aplikacije dolazi — vidi se u intervals.icu */
+      indoor: false
+    });
+  }
+
+  const url = 'https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
+              '/events/bulk?upsert=true';
+  const zaglavlja = { Authorization: aut.header, Accept: 'application/json' };
+
+  /* REŽIM "ZAMENI" — prvo obriši naše postojeće događaje, pa napravi nove.
+     Zašto uopšte postoji: intervals.icu gradi Garmin izvoz kad se događaj
+     NAPRAVI. Ako se postojeći samo ažurira (upsert), stari izvoz ostaje, pa
+     ispravke koje zavise od podešavanja sportiste (npr. tek unet prag tempa)
+     nikad ne stignu na sat. Tada je jedini put brisanje i ponovno pravljenje.
+     Briše se ISKLJUČIVO ono što nosi naš external_id — tuđi događaji u istom
+     opsegu se ne diraju. */
+  if (String((body && body.rezim) || '') === 'zameni') {
+    const datumi = cist.map(e => e.start_date_local.slice(0, 10)).sort();
+    const gl = 'https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
+               '/events?oldest=' + datumi[0] + '&newest=' + datumi[datumi.length - 1] +
+               '&category=WORKOUT';
+    try {
+      const g = await fetch(gl, { headers: zaglavlja });
+      if (g.status === 401 || g.status === 403) {
+        res.status(401).json({ error: 'intervals.icu je odbio ključ ili nema dozvolu za kalendar.' }); return;
+      }
+      if (g.ok) {
+        const lista = await g.json();
+        const nasi = (Array.isArray(lista) ? lista : [])
+          .filter(e => e && typeof e.external_id === 'string' && /^sub19-/.test(e.external_id) && e.id != null)
+          .slice(0, MAX_DOGADJAJA);
+        /* BRISANJE IDE PARALELNO, U MALIM GRUPAMA.
+           Ranije je bila obicna sekvencijalna petlja: do 60 zahteva jedan za
+           drugim, bez roka i bez provere odgovora. Na 200-400 ms po pozivu to
+           je 12-25 s samo za brisanje, pre GET-a i zavrsnog POST-a — dovoljno
+           da funkciju prekine vremenski limit USRED petlje. Posledica je bila
+           gora od neuspeha: kalendar delimicno obrisan, novi treninzi nikad
+           poslati. Grupe po 5 drze ukupno vreme u sekundama, a `sub19-` filter
+           i dalje garantuje da se tudji dogadjaji ne diraju. */
+        const GRUPA = 5;
+        for (let i = 0; i < nasi.length; i += GRUPA) {
+          await Promise.all(nasi.slice(i, i + GRUPA).map(e =>
+            fetch('https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId) +
+                  '/events/' + encodeURIComponent(e.id), { method: 'DELETE', headers: zaglavlja })
+              .catch(() => null)   /* pojedinacan neuspeh ne sme da obori ceo posao */
+          ));
+        }
+      }
+    } catch (e) {
+      /* brisanje nije uspelo — i dalje se šalje, gore je ne poslati ništa */
+    }
+  }
+
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { Authorization: aut.header, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(cist)
+    });
+    if (r.status === 401 || r.status === 403) {
+      res.status(401).json({ error: 'intervals.icu je odbio ključ ili nema dozvolu za pisanje u kalendar.' });
+      return;
+    }
+    if (r.status === 429) { res.status(429).json({ error: 'intervals.icu privremeno ograničava zahteve. Pokušaj kasnije.' }); return; }
+    if (!r.ok) {
+      let d = '';
+      try { d = (await r.text()).slice(0, 200); } catch {}
+      res.status(502).json({ error: 'intervals.icu greška (HTTP ' + r.status + ').', detail: d });
+      return;
+    }
+    let n = cist.length;
+    try { const j = await r.json(); if (Array.isArray(j)) n = j.length; } catch {}
+    res.status(200).json({ poslato: n });
+  } catch (e) {
+    res.status(503).json({ error: 'Nema veze sa intervals.icu.' });
+  }
+}
+
+async function obradiActivities(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Samo POST.' }); return; }
 
   const auth = await requireUser(req);
@@ -354,4 +558,30 @@ export default async function handler(req, res) {
     /* namerno bez detalja iz greške — u njoj može završiti deo URL-a */
     res.status(503).json({ error: 'Nema veze sa intervals.icu.' });
   }
+}
+
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Samo POST.' }); return; }
+
+  /* PRIJAVA PRE GRANANJA. Ako se prvo gleda `sta`, neprijavljen poziv dobija
+     „Ocekuje se sta: wellness | activities | workouts" — dakle spisak onoga
+     sto putanja ume, pre nego sto je iko dokazao da sme da je zove. Grane i
+     dalje zovu `requireUser` same; drugi poziv je pogodak u kesu (v. AUTH_KES),
+     ne dodatni krug ka Supabase-u. */
+  const auth = await requireUser(req);
+  if (!auth.ok) { res.status(auth.status).json({ error: auth.error }); return; }
+
+  /* `sta` se cita bez trosenja tela: Vercel ga vec isparsira u objekat, pa ga
+     svaka grana cita ponovo — jeftinije od prosledjivanja kroz tri potpisa. */
+  let sta = '';
+  try {
+    const b = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    sta = String((b && b.sta) || '').trim();
+  } catch { res.status(400).json({ error: 'Neispravan JSON.' }); return; }
+
+  if (sta === 'wellness')   return obradiWellness(req, res);
+  if (sta === 'workouts')   return obradiWorkouts(req, res);
+  if (sta === 'activities') return obradiActivities(req, res);
+  res.status(400).json({ error: 'Nepoznat zahtev. Očekuje se sta: wellness | activities | workouts.' });
 }

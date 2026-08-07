@@ -288,7 +288,7 @@ describe('Lagana trčanja dobijaju presek po kilometru i sa icu-a', () => {
 
 describe('Server: /api/activities', () => {
 
-  const src = readRepoFile('api/activities.js');
+  const src = readRepoFile('api/icu.js');
 
   test('režim tokova postoji, ograničen je i vraća Stravin oblik', () => {
     assert.match(src, /Array\.isArray\(body\.tokovi\)/, 'nema režima za sirove tokove');

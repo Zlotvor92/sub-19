@@ -403,7 +403,7 @@ describe('Serverske funkcije', () => {
 
   test('athleteId ne može da odvede zahtev van intervals.icu (SSRF)', async () => {
     Object.assign(process.env, ENV);
-    const { default: h } = await import('../api/wellness.js?t=' + Date.now());
+    const { default: h } = await import('../api/icu.js?t=' + Date.now());
     const pozvani = [];
     globalThis.fetch = async u => {
       pozvani.push(String(u));
