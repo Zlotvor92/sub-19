@@ -142,6 +142,7 @@ export function loadApp(opts = {}) {
      element pri svakom pozivu, inace se ne moze procitati ono sto je render
      upisao. `getElementById` deli isti kes, jer aplikacija koristi oba puta
      za iste elemente (npr. #sb-gate, #update-banner). */
+  const docSlusaoci = {};
   const kesDoc = new Map();
   const nadjiDoc = sel => { const k=String(sel); if(!kesDoc.has(k)) kesDoc.set(k, makeEl()); return kesDoc.get(k); };
   const doc = {
@@ -154,8 +155,17 @@ export function loadApp(opts = {}) {
     /* getElementById dobija '#' prefiks da deli kes sa querySelector-om */
     getElementById: id => nadjiDoc('#' + id),
     createElement: t => makeEl(t),
-    addEventListener: () => {},
-    removeEventListener: () => {},
+    /* Slusaoci se PAMTE, ne bacaju. Bez ovoga se nije moglo testirati nista
+       sto se desava pri povratku u aplikaciju — a instalirana PWA vecinu
+       svog zivota provede upravo u tom prelazu iz pozadine. Prvi put je
+       zatrebalo za proveru da obrisan nalog biva izbacen ODMAH: funkcija
+       koja to radi bila je pokrivena testovima, ali se njeno POZIVANJE nije
+       moglo proveriti, pa je uklanjanje poziva prolazilo neprimeceno. */
+    addEventListener: (tip, fn) => { (docSlusaoci[tip] || (docSlusaoci[tip] = [])).push(fn); },
+    removeEventListener: (tip, fn) => {
+      const n = docSlusaoci[tip]; if (!n) return;
+      const i = n.indexOf(fn); if (i >= 0) n.splice(i, 1);
+    },
     execCommand: () => true
   };
 
@@ -175,14 +185,25 @@ export function loadApp(opts = {}) {
     location: { origin: 'https://example.test', href: 'https://example.test/' + (opts.search || ''),
                 pathname: '/', search: opts.search || '', hash: '', protocol: 'https:', hostname: 'example.test' },
     history: { replaceState: () => {} },
-    navigator: { onLine: false, userAgent: 'test', clipboard: { writeText: async () => {} } },
+    /* `onLine` je podrazumevano false — vecina testova ne zeli mrezu, a i
+       stub `fetch` je odbija. `opts.online: true` je za testove pokretanja
+       koji moraju da prodju kroz provere uslovljene vezom. Podrazumevana
+       vrednost se NE menja: postoje testovi koji se oslanjaju na offline. */
+    navigator: { onLine: !!opts.online, userAgent: 'test', clipboard: { writeText: async () => {} } },
     /* Pravi nasumicne bajtove, ne deterministicki niz — inace bi dva
        uzastopna `secureRandomToken()` dala ISTU vrednost, pa bi testovi koji
        proveravaju nasumicnost OAuth state-a bili besmisleni. */
     crypto: { getRandomValues: a => nodeCrypto.getRandomValues(a) },
     alert: m => { calls.alerts.push(String(m)); },
     confirm: m => { calls.confirms.push(String(m)); return opts.confirmReturns !== undefined ? opts.confirmReturns : false; },
-    fetch: async (...a) => { calls.fetches.push(a); throw new Error('offline (test)'); },
+    /* `opts.fetch` zamenjuje mrezni sloj JOS PRE nego sto se kod aplikacije
+       izvrsi. `setFetch` to ne moze — on radi tek posle `loadApp`, dakle posle
+       celog pokretanja. Zatrebalo je da bi se testirao HLADAN START sa vec
+       postojecom sesijom: aplikacija tada pita server da li nalog jos postoji,
+       i taj odgovor je morao da postoji pre prve linije. */
+    fetch: opts.fetch
+      ? async (...a) => { calls.fetches.push(a); return opts.fetch(...a); }
+      : async (...a) => { calls.fetches.push(a); throw new Error('offline (test)'); },
     Blob: class { constructor(p) { this.parts = p; } },
     FileReader: class { readAsText() {} },
     requestAnimationFrame: cb => setTimeout(cb, 0),
@@ -215,6 +236,14 @@ export function loadApp(opts = {}) {
        do sada bila neproverena. Vraćena vrednost mora ličiti na `Response`
        onoliko koliko je pozivaocu potrebno ({ok, status, json, text}). */
     setFetch: fn => { ctx.fetch = async (...a) => { calls.fetches.push(a); return fn(...a); }; },
+    /* Odglumi dogadjaj na dokumentu — pre svega `visibilitychange`, kojim se
+       simulira povratak u aplikaciju iz pozadine. Vraca broj pozvanih
+       slusalaca, pa test moze da tvrdi da je aplikacija uopste zakacena. */
+    okini: (tip, ev) => {
+      const n = docSlusaoci[tip] || [];
+      for (const fn of n) fn(ev || { type: tip });
+      return n.length;
+    },
     /* čita ime iz konteksta — radi i za const/let i za function */
     get: name => vm.runInContext(name, ctx),
     /* izvršava proizvoljan izraz u kontekstu aplikacije */

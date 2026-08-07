@@ -663,3 +663,89 @@ describe('Provera sesije kod servera', () => {
     assert.equal(a.evalIn('Object.keys(S.log).length'), 1, 'istorija treninga je obrisana');
   });
 });
+
+/* Provera se ne sme oslanjati na to da je neko setio da je pozove. Ovaj test
+   glumi POVRATAK U APLIKACIJU — dogadjaj `visibilitychange` — i tvrdi da je
+   sesija stvarno proverena kod servera. Bez njega je uklanjanje poziva
+   prolazilo neprimeceno: same funkcije su bile pokrivene, njihovo pozivanje
+   nije. */
+describe('Povratak u aplikaciju proverava sesiju', () => {
+  const sa = (status) => {
+    const a = loadApp({ now: '2026-08-07T04:00:00Z' });
+    a.ctx.__st = status;
+    a.evalIn(`
+      SB={access:'a',refresh:'r',expiresAt:Date.now()+3600000,email:'x@t.rs',userId:'u1',deviceId:'d1'};
+      sbSave();
+      navigator.onLine=true;
+      const g=document.getElementById('sb-gate'); if(g) g.innerHTML='';
+      globalThis.__adrese=[];
+      fetch=async(u)=>{ __adrese.push(String(u));
+        return {ok:__st<400, status:__st, json:async()=>({}), text:async()=>''}; };`);
+    return a;
+  };
+  const cekaj = () => new Promise(r => setTimeout(r, 50));
+
+  test('aplikacija JE zakačena na povratak iz pozadine', () => {
+    const a = sa(200);
+    assert.ok(a.okini('visibilitychange') > 0, 'niko ne sluša visibilitychange');
+  });
+
+  test('povratak pita server da li nalog još postoji', async () => {
+    const a = sa(200);
+    a.okini('visibilitychange');
+    await cekaj();
+    assert.ok(a.evalIn('__adrese.filter(u=>u.includes("/auth/v1/user")).length') > 0,
+      'povratak u aplikaciju ne proverava sesiju');
+  });
+
+  test('obrisan nalog biva izbačen pri prvom povratku, pre isteka tokena', async () => {
+    /* expiresAt je sat vremena u budućnosti — stara logika ne bi ni pitala. */
+    const a = sa(401);
+    a.okini('visibilitychange');
+    await cekaj();
+    assert.equal(a.call('sbAuthed'), false, 'obrisan nalog je preživeo povratak u aplikaciju');
+  });
+
+  test('ispravan nalog povratak ne dira', async () => {
+    const a = sa(200);
+    a.okini('visibilitychange');
+    await cekaj();
+    assert.equal(a.call('sbAuthed'), true, 'ispravna sesija je odbačena pri povratku');
+  });
+});
+
+/* HLADAN START sa vec postojecom sesijom — drugi put kojim obrisan nalog
+   ulazi u aplikaciju. Sesija se seje u localStorage PRE pokretanja, a `fetch`
+   se zamenjuje kroz `opts.fetch` jer `setFetch` radi tek posle `loadApp`,
+   dakle posle celog pokretanja. */
+describe('Pokretanje sa zatečenom sesijom', () => {
+  const SESIJA = () => JSON.stringify({
+    access: 'a', refresh: 'r', expiresAt: Date.now() + 3600000,
+    email: 'x@t.rs', userId: 'u1', deviceId: 'd1'
+  });
+  const pokreni = async (status) => {
+    const a = loadApp({
+      now: '2026-08-07T04:00:00Z',
+      seedLocalStorage: { 'sub19_sb': SESIJA() },
+      online: true,
+      fetch: async () => ({ ok: status < 400, status, json: async () => ({}), text: async () => '' })
+    });
+    await new Promise(r => setTimeout(r, 80));
+    return a;
+  };
+
+  test('obrisan nalog ne ulazi u aplikaciju ni pri hladnom startu', async () => {
+    const a = await pokreni(401);
+    assert.equal(a.call('sbAuthed'), false, 'obrisan nalog je ušao u aplikaciju');
+  });
+
+  test('zabranjen nalog ne ulazi ni pri hladnom startu', async () => {
+    const a = await pokreni(403);
+    assert.equal(a.call('sbAuthed'), false, 'zabranjen nalog je ušao u aplikaciju');
+  });
+
+  test('ispravna sesija se pri pokretanju ne dira', async () => {
+    const a = await pokreni(200);
+    assert.equal(a.call('sbAuthed'), true, 'ispravna sesija je odbačena pri pokretanju');
+  });
+});
