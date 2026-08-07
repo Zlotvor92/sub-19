@@ -54,15 +54,81 @@ create table if not exists public.zajednica_profil (
   avatar_url  text    check (avatar_url is null or avatar_url ~ '^https://[a-zA-Z0-9.-]+/'),
   cilj        text    check (cilj is null or cilj in ('5K','10K','21K','42K')),
   trka_datum  date,
+  nedelja_br  integer,
+  nedelja_od  integer,
   vdot        numeric(4,1) check (vdot is null or vdot between 20 and 85),
-  test3k_sec  integer      check (test3k_sec is null or test3k_sec between 480 and 1800),
+  -- VDOT na početku plana. Postoji zbog rangiranja po NAPRETKU, gde početnik
+  -- pobeđuje iskusnog trkača — bez ove kolone bi ostala samo brzina.
+  vdot_pocetni numeric(4,1),
+  -- Gornja granica je 40 minuta, ne 30: početnik na 3 km realno trči i preko
+  -- pola sata, a Zajednica je namenjena i njemu. Donja (8:00) je ispod
+  -- svetskog rekorda, dakle nedostižna — tu je samo protiv upisa besmislice.
+  test3k_sec  integer      check (test3k_sec is null or test3k_sec between 480 and 2400),
   km_nedelja  numeric(6,1) check (km_nedelja is null or km_nedelja between 0 and 300),
   plan_pct    integer      check (plan_pct is null or plan_pct between 0 and 100),
   niz_dana    integer      check (niz_dana is null or niz_dana between 0 and 3650),
+  -- Napredak u izazovu nedelje: odrađeno / planirano trčanja ove nedelje.
+  izazov_od   integer,
+  izazov_ura  integer,
   znacke      text[]  not null default '{}'::text[]
                       check (array_length(znacke, 1) is null or array_length(znacke, 1) <= 20),
+  -- POSLEDNJA TRČANJA — ono zbog čega Zajednica uopšte ima smisla: vidi se
+  -- KAKO neko trenira, ne samo koliko je brz. Niz objekata
+  --   {"d":"2026-08-06","t":"Tempo","o":"2×4 km","p":"5:20 /km"}
+  -- BELEŠKE SA TRENINGA NE ULAZE. One su lične i ostaju u nalogu; aplikacija
+  -- ih ne stavlja u ovaj niz. Isto važi za puls i osećaj.
+  -- GPS traga nema — aplikacija ga uopšte ne čuva, pa najveći rizik javnih
+  -- trkačkih profila ovde ne postoji.
+  trcanja     jsonb   not null default '[]'::jsonb,
   azurirano   timestamptz not null default now()
 );
+
+-- ---------------------------------------------------------------------
+-- 1a. Kolone i ograničenja dodata posle prve verzije ovog fajla
+--
+-- `create table if not exists` NE dodaje kolone u tabelu koja već postoji, pa
+-- bi instalacija koja je pustila prvu verziju pucala na koloni koje nema.
+-- Zato ide odvojeno — za novu instalaciju su ovo prazne operacije.
+--
+-- Ograničenja za te kolone su isto ovde, a ne u `create table`, da bi oba puta
+-- (nova instalacija i dopuna) dala TAČNO ISTI skup. Da su gore, stara tabela bi
+-- dobila kolone bez ijedne provere — a to se ne vidi dok neko ne upiše đubre.
+-- `drop … if exists` pre `add` čini blok bezbednim za ponovno puštanje.
+-- ---------------------------------------------------------------------
+alter table public.zajednica_profil add column if not exists nedelja_br   integer;
+alter table public.zajednica_profil add column if not exists nedelja_od   integer;
+alter table public.zajednica_profil add column if not exists vdot_pocetni numeric(4,1);
+alter table public.zajednica_profil add column if not exists izazov_od    integer;
+alter table public.zajednica_profil add column if not exists izazov_ura   integer;
+alter table public.zajednica_profil add column if not exists trcanja      jsonb not null default '[]'::jsonb;
+
+alter table public.zajednica_profil drop constraint if exists zp_nedelja_br_ok;
+alter table public.zajednica_profil add  constraint zp_nedelja_br_ok
+  check (nedelja_br is null or nedelja_br between 1 and 104);
+
+alter table public.zajednica_profil drop constraint if exists zp_nedelja_od_ok;
+alter table public.zajednica_profil add  constraint zp_nedelja_od_ok
+  check (nedelja_od is null or nedelja_od between 1 and 104);
+
+alter table public.zajednica_profil drop constraint if exists zp_vdot_pocetni_ok;
+alter table public.zajednica_profil add  constraint zp_vdot_pocetni_ok
+  check (vdot_pocetni is null or vdot_pocetni between 20 and 85);
+
+alter table public.zajednica_profil drop constraint if exists zp_izazov_ok;
+alter table public.zajednica_profil add  constraint zp_izazov_ok
+  check ((izazov_od  is null or izazov_od  between 0 and 21)
+     and (izazov_ura is null or izazov_ura between 0 and 21)
+     -- Odrađenih ne sme biti više od planiranih; inače „7 od 5" prolazi i
+     -- rangiranje po izazovu postaje besmisleno.
+     and (izazov_od is null or izazov_ura is null or izazov_ura <= izazov_od));
+
+alter table public.zajednica_profil drop constraint if exists zp_trcanja_ok;
+alter table public.zajednica_profil add  constraint zp_trcanja_ok
+  check (jsonb_typeof(trcanja) = 'array'
+         and jsonb_array_length(trcanja) <= 8
+         -- Gornja granica ukupne veličine: bez nje je `trcanja` neograničeno
+         -- polje za tekst koje svi vide, dakle mesto za spam.
+         and length(trcanja::text) <= 2000);
 
 comment on table public.zajednica_profil is
   'Dobrovoljan javni profil trkača. Podrazumevano nevidljiv. Nema nijedno zdravstveno polje ni e-adresu.';

@@ -36,7 +36,23 @@ describe('Struktura', () => {
   test('svaka sekcija je zasebna kartica', () => {
     const { html } = sa({ prijavljen: true, strava: true, icu: true });
     const k = kartice(html).map(x => x.naslov);
-    assert.deepEqual(k, ['Nalog', 'Plan', 'Strava', 'intervals.icu', 'Slanje na sat', 'Vreme', 'Obaveštenja', 'Podaci']);
+    assert.deepEqual(k, ['Nalog', 'Plan', 'Strava', 'intervals.icu', 'Slanje na sat', 'Vreme', 'Obaveštenja', 'Podaci', 'Zajednica']);
+  });
+
+  test('Zajednica postoji samo prijavljenom, i stoji SKLOPLJENA', () => {
+    /* Sve ostale sekcije se otvaraju same kad nešto „čeka". Ovde ništa ne
+       čeka: isključeno je ispravno stanje, ne nedostatak. Otvorena kartica bi
+       bila blag pritisak da se uključi — a ovo je jedina odluka u aplikaciji
+       koja podatke iznosi iz naloga. */
+    const { html } = sa({ prijavljen: true });
+    const z = kartice(html).find(x => x.naslov === 'Zajednica');
+    assert.ok(z, 'nema kartice Zajednica');
+    assert.equal(z.otvorena, false, 'kartica Zajednica se otvara sama');
+    assert.equal(z.stanje, 'isključena');
+
+    const bez = sa({ prijavljen: false });
+    assert.ok(!kartice(bez.html).some(x => x.naslov === 'Zajednica'),
+      'Zajednica se nudi i neprijavljenom, koji nema gde da je upiše');
   });
 
   test('čitanje i slanje su odvojene kartice', () => {

@@ -38,8 +38,8 @@
 })();
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
-const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='209'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
+const APP_VERSION='210'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -293,6 +293,10 @@ function seedState(){return {
     koji je vec jednom oborio unos tempa preko predLock-a; zato su sad ovde. */
  wellness:{},
  icu:null,
+ /* Zajednica. `vidljiv:false` je JEDINO ispravno pocetno stanje — plan i
+    istorija su do sada bili iskljucivo licni, pa niko ne sme da se nadje na
+    javnom spisku zato sto je azurirao aplikaciju. */
+ zajed:{vidljiv:false,nadimak:''},
  ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null}
 };}
 
@@ -876,6 +880,9 @@ function migrate(o){
   if(o.v<8){o.t3k=o.t3k||[];o.v=8;}
   /* v8→v9: kesirana prognoza. null = ponasanje IDENTICNO kao pre. */
   if(o.v<9){o.vreme=o.vreme||null;o.v=9;}
+  /* v9->v10: Zajednica. `vidljiv:false` = ponasanje IDENTICNO kao pre —
+     postojeci korisnik ne postaje vidljiv nadogradnjom aplikacije. */
+  if(o.v<10){o.zajed={vidljiv:false,nadimak:''};o.v=10;}
   /* ID MORA da nosi prefiks: po njemu `tipSesijeZaVdot` prepoznaje test i daje
      mu najveću težinu u lancu forme. Uvezen zapis bez prefiksa bi tiho pao na
      podrazumevanu težinu — dakle ne bi bio test, samo bi tako izgledao. */
@@ -887,7 +894,7 @@ function migrate(o){
   o.knee=cistDatirane(o.knee);
   o.kg=cistDatirane(o.kg);
   o.vreme=(o.vreme&&typeof o.vreme==='object'&&o.vreme.sati&&typeof o.vreme.sati==='object')?o.vreme:null;
-  o.t3k=o.t3k||[];o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null},o.ui||{});
+  o.t3k=o.t3k||[];o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.zajed=Object.assign({vidljiv:false,nadimak:''},(o.zajed&&typeof o.zajed==='object')?o.zajed:{});o.zajed.vidljiv=o.zajed.vidljiv===true;o.zajed.nadimak=typeof o.zajed.nadimak==='string'?o.zajed.nadimak.slice(0,24):'';o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null},o.ui||{});
   o.v=SCHEMA;
   return o;
 }
@@ -9599,6 +9606,29 @@ function openSettings(){
        <input type="file" id="s-file" accept=".json,application/json" style="display:none">
        ${sbOn()&&sbAuthed()?`<div class="btnrow"><button class="btn ghost sm" id="s-bug">Prijavi problem</button></div>`:''}`)}
 
+    ${sbAuthed()?(()=>{
+      const uk=!!(S.zajed&&S.zajed.vidljiv);
+      /* Kartica se NE otvara sama kad je isključena. Sve ostale sekcije se
+         otvaraju kad nešto „čeka" — ali ovde ništa ne čeka: isključeno je
+         ispravno stanje, ne nedostatak. Sama otvorena kartica bi bila blag
+         pritisak da se uključi, a ovo je jedina odluka u aplikaciji koja
+         podatke iznosi iz naloga. */
+      return kartica(false,
+        glava('Zajednica', uk?'profil je vidljiv drugima':'isključena', uk?true:null),
+        `<div class="set-st">Rang-lista trkača u aplikaciji. Dok je isključena, ne postojiš na spisku i ne vidiš tuđe profile — vidljivost je uzajamna.</div>
+         <div class="f-grid"><div class="f-field full"><label for="zaj-nadimak">Nadimak <small style="color:var(--txt2)">(prazno = ime sa Google naloga)</small></label>
+           <input id="zaj-nadimak" maxlength="24" placeholder="${esc(zajIme()||'kako te zovu')}" value="${esc((S.zajed&&S.zajed.nadimak)||'')}"></div></div>
+         <div class="btnrow"><button class="btn${uk?' ghost':''}" id="zaj-tgl">${uk?'Isključi Zajednicu':'Uključi Zajednicu'}</button></div>
+         <div class="note-src" id="zaj-out" style="margin:6px 0 0"></div>
+         <details class="help"><summary>Šta drugi vide</summary>
+           <p>Nadimak i sliku sa Google naloga, ciljnu distancu i datum trke, koja si nedelja plana, VDOT sada i na početku, test na 3 km, kilometražu ove nedelje, doslednost, niz dana, značke i <b>do osam poslednjih trčanja</b> (datum, tip, dužina, tempo).</p></details>
+         <details class="help"><summary>Šta drugi NIKAD ne vide</summary>
+           <p>HRV, puls u miru, san, težinu, mapu bolova, beleške sa treninga, puls na treningu, AI analizu i <b>e-adresu</b>. Ta polja ne postoje u tabeli Zajednice, pa ne mogu da izađu ni greškom u aplikaciji.</p>
+           <p>GPS trase aplikacija ne čuva ni za sebe — gde si trčao se ne može podeliti ni ovde.</p></details>
+         <details class="help"><summary>Isključivanje</summary>
+           <p>Briše tvoj red iz baze, ne samo što te sklanja sa spiska. Ponovno uključivanje ga pravi iznova iz tvojih tekućih podataka.</p></details>`);
+    })():''}
+
     ${jeVlasnik()?kartica(false,
       glava('Obaveštenje korisnicima','mejl svima koji imaju nalog · samo ti',true),
       `<div class="set-st">Šalje mejl sa linkom na <b>uputstvo</b> svima koji imaju nalog.</div>
@@ -9623,6 +9653,26 @@ function openSettings(){
   if($('#sb-out'))  $('#sb-out').onclick=()=>{ if(confirm('Odjaviti se? Podaci na ovom uređaju ostaju.')){ sbLogout(); closeSheet(); } };
   if($('#sb-del'))  $('#sb-del').onclick=openObrisiNalogSheet;
   if($('#ku-otvori')) $('#ku-otvori').onclick=openKorisniciSheet;
+  if($('#zaj-nadimak')) $('#zaj-nadimak').onchange=e=>{
+    S.zajed=S.zajed||{vidljiv:false,nadimak:''};
+    S.zajed.nadimak=String(e.target.value||'').trim().slice(0,24);
+    save();
+    /* Nov nadimak se šalje SAMO ako je profil već vidljiv. Inače bi promena
+       teksta u polju napravila red u bazi za nekoga ko Zajednicu nije uključio. */
+    if(S.zajed.vidljiv) zajUpisi();
+  };
+  if($('#zaj-tgl')) $('#zaj-tgl').onclick=async e=>{
+    const b=e.target, uk=!!(S.zajed&&S.zajed.vidljiv), out=$('#zaj-out');
+    b.disabled=true; b.textContent=uk?'Isključujem…':'Uključujem…';
+    const ok=await zajPostavi(!uk);
+    if(ok){ osveziPodesavanja(); return; }
+    /* Neuspeh se KAŽE. `zajPostavi` je već vratio staro stanje, pa je jedina
+       preostala greška ćutanje — prekidač koji izgleda kao da je uspeo. */
+    b.disabled=false; b.textContent=uk?'Isključi Zajednicu':'Uključi Zajednicu';
+    if(out) out.textContent=navigator.onLine
+      ? 'Nije uspelo. Pokušaj ponovo — ništa nije promenjeno.'
+      : 'Nema veze sa internetom. Ovo mora da stigne do servera, pa ništa nije promenjeno.';
+  };
   if($('#sb-sync')) $('#sb-sync').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Sinhronizujem…';
     const ok=await sbPush();
@@ -9992,7 +10042,7 @@ async function lokalnoZaboraviSve(){
   for(const k of [LS_KEY,LS_SPAS_KEY,SB_KEY,SB_STATE_KEY,ICU_STATE_KEY,STRAVA_STATE_KEY]){
     try{ localStorage.removeItem(k); }catch(e){}
   }
-  SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
+  SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,slika:null,ime:null,seenAt:null,deviceId:SB.deviceId};
 }
 
 /* SPISAK KORISNIKA — samo vlasnik.
@@ -10634,7 +10684,7 @@ function sbCheckState(gotNonce){
   return !sbNonceRadi();
 }
 
-let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:null};
+let SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,slika:null,ime:null,seenAt:null,deviceId:null};
 let SB_TIMER=null, SB_BUSY=false;
 /* „Stiglo je novije dok je push trajao" — v. sbPush(). */
 let SB_PONOVO=false;
@@ -10755,8 +10805,24 @@ function sbClaims(jwt){
     const sirovo=atob(p+'==='.slice((p.length+3)%4));
     const bajtovi=Uint8Array.from(sirovo, c=>c.charCodeAt(0));
     const j=JSON.parse(new TextDecoder('utf-8').decode(bajtovi));
-    return { email:j.email||null, userId:j.sub||null };
-  }catch(e){ return {email:null,userId:null}; }
+    /* Google ime i slika STOJE U SAMOM TOKENU (`user_metadata`), pa Zajednica
+       ne traži ni jedan dodatan poziv, ni otpremanje slika, ni skladište za
+       njih. Ako polja nema (prijava koja nije Google), ostaje null i profil
+       pada na inicijale — nigde se ne pretpostavlja da slika postoji.
+       `picture` je Googleov naziv, `avatar_url` Supabaseov; stižu oba, u
+       zavisnosti od verzije GoTrue-a. */
+    const um=(j&&typeof j.user_metadata==='object'&&j.user_metadata)?j.user_metadata:{};
+    const slika=um.avatar_url||um.picture||null;
+    return {
+      email:j.email||null,
+      userId:j.sub||null,
+      /* SAMO https. Vrednost ide pravo u `img src`; CSP je već sužen na
+         lh3.googleusercontent.com, ali provera stoji i ovde jer token ne mora
+         doći od Googlea. */
+      slika:(typeof slika==='string'&&/^https:\/\//.test(slika))?slika:null,
+      ime:(typeof um.full_name==='string'&&um.full_name)||(typeof um.name==='string'&&um.name)||null
+    };
+  }catch(e){ return {email:null,userId:null,slika:null,ime:null}; }
 }
 
 /* --- mreza --- */
@@ -10806,7 +10872,7 @@ async function sbEnsure(){
 function sbSesijaMrtva(poruka){
   if(!SB||!SB.access) return;                 /* vec ocisceno */
   try{ pozadinskiZaboravi(); }catch(e){}      /* da SW ne gura u tudje ime */
-  SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
+  SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,slika:null,ime:null,seenAt:null,deviceId:SB.deviceId};
   sbSave();
   sbShowGate(poruka||'Nalog više ne postoji ili je sesija istekla. Podaci na ovom uređaju su netaknuti — prijavi se da nastaviš.');
 }
@@ -10868,7 +10934,7 @@ function sbLogout(){
   const token=SB&&SB.access;
   try{ pushIskljuci(token).then(pozadinskiZaboravi).catch(()=>pozadinskiZaboravi()); }
   catch(e){ try{ pozadinskiZaboravi(); }catch(x){} }
-  SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
+  SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,slika:null,ime:null,seenAt:null,deviceId:SB.deviceId};
   sbSave();
   sbShowGate('');   /* nalog je obavezan — nazad na kapiju */
 }
@@ -10920,6 +10986,11 @@ async function sbPush(){
     const j=await r.json();
     if(j&&j[0]&&j[0].updated_at){ SB.seenAt=j[0].updated_at; sbSave(); }
     pozadinskiOtkazi();          /* uspelo je — red više nije potreban */
+    /* Javni profil se osvežava ISTIM povodom kao i sve ostalo, umesto po
+       sopstvenom rasporedu. Bez `await` i bez uticaja na ishod: Zajednica je
+       dodatak, a njen neuspeh ne sme da prijavi da sinhronizacija nije prošla.
+       `zajUpisi` sam ćuti ako profil nije uključen. */
+    zajUpisi().catch(()=>{});
     return true;
   }catch(e){
     /* Nema signala. Pregledač će sam pokrenuti upis kad se veza vrati, i ako
@@ -11229,6 +11300,199 @@ document.addEventListener('visibilitychange',()=>{
     if(navigator.onLine&&S.ui&&S.ui.geo) vremePovuci(false).then(r=>{ if(r.ok&&!r.kes&&ACTIVE==='danas') renderDanas(); });
   }
 });
+
+/* ============================================================
+   ZAJEDNICA — DOBROVOLJAN JAVNI PROFIL
+
+   Do ovog bloka je sve u aplikaciji bilo isključivo lično. Zato ovde važi
+   jedno pravilo iznad svih ostalih:
+
+     NIŠTA NE IZLAZI IZ NALOGA DOK ČOVEK SAM NE UKLJUČI, I IZLAZI SAMO ONO
+     ŠTO `zajednicaPayload` IZRIČITO NABROJI.
+
+   `zajednicaPayload` je JEDINA tačka kroz koju podaci odlaze u tabelu
+   zajednica_profil. Gradi se nabrajanjem polja, nikad kopiranjem stanja
+   (`Object.assign(…, S)`), jer bi svako buduće polje u S tada izašlo napolje
+   samo zato što je dodato. Test „ne izlazi ništa osim dozvoljenog" visi baš
+   na tome i pada čim se to prekrši.
+
+   ŠTA NIKAD NE ULAZI: HRV, puls u miru, san, težina, mapa bolova, beleške sa
+   treninga, puls na treningu, AI analiza, e-adresa. Tih kolona nema ni u
+   bazi — v. supabase/zajednica.sql.
+
+   BROJEVI SE PROVERAVAJU PRE SLANJA. Baza ima `check` opsege na svakoj
+   koloni; vrednost van opsega ne bi pokvarila samo to polje nego bi oborila
+   CEO upis, pa bi prekidač u Podešavanjima „radio" a profil se ne bi
+   pojavio. `uOpsegu` zato pretvara sve sumnjivo u `null` — polje koje
+   nedostaje je uvek bolje od upisa koji ne prolazi.
+   ============================================================ */
+
+const ZAJ_TRCANJA_MAX = 8;
+/* Isti opsezi kao `check` ograničenja u supabase/zajednica.sql. Kad se tamo
+   promene, moraju i ovde — test „opsezi su isti kao u SQL-u" to čuva. */
+const ZAJ_OPSEG = {
+  vdot:[20,85], vdot_pocetni:[20,85], test3k_sec:[480,2400], km_nedelja:[0,300],
+  plan_pct:[0,100], niz_dana:[0,3650], nedelja_br:[1,104], nedelja_od:[1,104],
+  izazov_od:[0,21], izazov_ura:[0,21]
+};
+function uOpsegu(v, kljuc){
+  const o=ZAJ_OPSEG[kljuc];
+  if(!o||typeof v!=='number'||!isFinite(v)) return null;
+  const z=r1(v);
+  return (z>=o[0]&&z<=o[1])?z:null;
+}
+
+/* Ciljna distanca -> oznaka za filter. Pragovi su na pola puta između
+   standardnih distanci, pa i 42.195 m i „42 km ravno" padaju u istu grupu. */
+function zajCilj(){
+  const m=raceDistActive();
+  if(!(m>0)) return null;
+  if(m>=30000) return '42K';
+  if(m>=15000) return '21K';
+  if(m>=8000)  return '10K';
+  return '5K';
+}
+
+/* Ime na spisku. Nadimak ima prednost; bez njega SAMO PRVO IME sa Google
+   naloga. Prezime se namerno odseca — puno ime i prezime na javnom spisku je
+   znatno više nego što je čovek tražio kad je uključio prekidač. */
+function zajIme(){
+  const n=(S.zajed&&S.zajed.nadimak||'').trim();
+  if(n) return n.slice(0,24);
+  const g=(SB.ime||'').trim();
+  return g?g.split(/\s+/)[0].slice(0,24):null;
+}
+
+/* Doslednost od početka plana: odrađeni trkački treninzi / oni kojima je rok
+   prošao. Snaga i odmor se ne broje — snaga je opciona, a odmor bi razvodnio
+   procenat na svakoga ko ima više dana odmora u nedelji. */
+function zajDoslednost(){
+  let rok=0, ura=0;
+  for(const d of DATED){
+    if(d.date>TODAY) break;
+    if(d.rest||d.tag==='snaga'||d.tag==='trka') continue;
+    rok++;
+    if(stFor(d.id)==='done') ura++;
+  }
+  return rok?Math.round(ura*100/rok):null;
+}
+
+/* Poslednja trčanja — datum, tip, dužina, tempo. NIŠTA VIŠE.
+   Beleške (`l.note`), puls (`l.hr`) i osećaj ostaju u nalogu; ovde se ne
+   pominju ni slučajno, jer se objekat gradi nabrajanjem polja. */
+function zajTrcanja(){
+  const out=[];
+  for(let i=DATED.length-1; i>=0 && out.length<ZAJ_TRCANJA_MAX; i--){
+    const d=DATED[i];
+    if(d.date>TODAY||d.rest||d.tag==='snaga') continue;
+    if(stFor(d.id)!=='done') continue;
+    const l=S.log[d.id]||{};
+    const km=(l.km!=null)?l.km:(d.km!=null?d.km:null);
+    out.push({
+      d:d.date,
+      t:(TAGS[d.tag]||'Trčanje').slice(0,24),
+      o:(km!=null)?fmtKm(km)+' km':'—',
+      p:(km>0&&l.sec>0)?fmtTempo(l.sec/km)+' /km':'—'
+    });
+  }
+  return out;
+}
+
+/* Značke. Sve se računaju iz onoga što aplikacija već zna — nijedna ne traži
+   novu tabelu, novo brojanje ni novo polje u stanju. */
+function zajZnacke(){
+  const z=[], niz=streak(TODAY);
+  if(niz>=7) z.push('Niz 7 dana');
+  if(niz>=30) z.push('Niz 30 dana');
+  if(t3kNiz().length) z.push('Test na 3 km');
+  /* Nedelja u kojoj je odrađeno sve što je planirano — i to ZAVRŠENA nedelja,
+     ne tekuća: u tekućoj je „sve odrađeno" tačno i u ponedeljak ujutru. */
+  for(const w of CUR_PLAN){
+    if(addD(w.start,6)>=TODAY) continue;
+    const n=weekRunCount(w);
+    if(n>0&&weekRunDone(w)===n){ z.push('Nedelja 100%'); break; }
+  }
+  const trka=DATED.find(d=>d.tag==='trka');
+  if(trka&&stFor(trka.id)==='done') z.push('Trka odrađena');
+  return z;
+}
+
+/* JEDINA tačka kroz koju podaci izlaze iz naloga. V. zaglavlje bloka. */
+function zajednicaPayload(){
+  const w=weekOf(TODAY);
+  const vl=(S.vdotLog||[]).filter(e=>e&&typeof e.vdot==='number');
+  const t3=t3kNiz();
+  const najbrzi=t3.length?Math.min.apply(null, t3.map(t=>t.sec)):null;
+  const ime=zajIme();
+  return {
+    user_id:      SB.userId,
+    vidljiv:      true,
+    /* Nadimak kraći od dva znaka baza odbija; radije se šalje `null` (pa se
+       prikazuju inicijali) nego da ceo upis padne. */
+    nadimak:      (ime&&ime.length>=2)?ime:null,
+    avatar_url:   (typeof SB.slika==='string'&&/^https:\/\//.test(SB.slika))?SB.slika:null,
+    cilj:         zajCilj(),
+    trka_datum:   validDatum(s2d(CUR_RACE))?CUR_RACE:null,
+    nedelja_br:   w?uOpsegu(w.w,'nedelja_br'):null,
+    nedelja_od:   uOpsegu(CUR_PLAN.length,'nedelja_od'),
+    vdot:         uOpsegu(currentVdot(),'vdot'),
+    vdot_pocetni: vl.length?uOpsegu(vl[0].vdot,'vdot_pocetni'):null,
+    test3k_sec:   (najbrzi!=null)?uOpsegu(Math.round(najbrzi),'test3k_sec'):null,
+    km_nedelja:   w?uOpsegu(weekRealKm(w),'km_nedelja'):null,
+    plan_pct:     uOpsegu(zajDoslednost(),'plan_pct'),
+    niz_dana:     uOpsegu(streak(TODAY),'niz_dana'),
+    izazov_od:    w?uOpsegu(weekRunCount(w),'izazov_od'):null,
+    izazov_ura:   w?uOpsegu(weekRunDone(w),'izazov_ura'):null,
+    znacke:       zajZnacke(),
+    trcanja:      zajTrcanja()
+  };
+}
+
+/* --- mreža --- */
+
+/* Upis (i osvežavanje) sopstvenog reda. `merge-duplicates` znači da prvi put
+   pravi red, a svaki sledeći put ga menja — bez posebnog puta za jedno i za
+   drugo, i bez pitanja „da li već postojim". */
+async function zajUpisi(){
+  if(!sbAuthed()||!(S.zajed&&S.zajed.vidljiv)) return false;
+  if(!await sbEnsure()) return false;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/zajednica_profil',{
+      method:'POST',
+      headers:Object.assign(sbHead(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body:JSON.stringify(zajednicaPayload())
+    });
+    return r.ok;
+  }catch(e){ return false; }
+}
+
+/* Isključivanje BRIŠE red, ne postavlja `vidljiv=false`.
+   Razlika je stvarna: red sa `vidljiv=false` i dalje sadrži nadimak, sliku,
+   brojeve i poslednja trčanja, i dalje stoji u tuđoj bazi, i vraća se čim
+   neko negde promeni jedan boolean. Politika privatnosti obećava brisanje —
+   pa se briše. */
+async function zajObrisi(){
+  if(!sbAuthed()) return false;
+  if(!await sbEnsure()) return false;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/zajednica_profil?user_id=eq.'+encodeURIComponent(SB.userId),
+      {method:'DELETE',headers:sbHead()});
+    return r.ok;
+  }catch(e){ return false; }
+}
+
+/* Uključivanje/isključivanje iz Podešavanja. Vraća `true` ako je stanje
+   stvarno promenjeno NA SERVERU — prekidač koji klikne a ništa ne upiše je
+   gore od prekidača koji kaže da nije uspeo. */
+async function zajPostavi(vidljiv){
+  S.zajed=S.zajed||{vidljiv:false,nadimak:''};
+  const pre=S.zajed.vidljiv;
+  S.zajed.vidljiv=!!vidljiv;
+  save();
+  const ok=vidljiv?await zajUpisi():await zajObrisi();
+  if(!ok){ S.zajed.vidljiv=pre; save(); }
+  return ok;
+}
 
 /* ============================================================================
    OBAVEŠTENJA, POZADINSKA I POVREMENA SINHRONIZACIJA
