@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='201'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='202'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2892,7 +2892,6 @@ function karticaVremena(d){
   const z=vremeZaSat(d.date,sat);
   if(!z) return '';
   const vr=vrucinaZa(z.osecaj);
-  const kvalitet=(d.tag==='int'||d.tag==='tempo');
   const redovi=[];
   const stepeni=x=>`<b>${esc(fmtNum(x.temp,0))} °C</b>`+
     (x.osecaj!=null&&x.temp!=null&&Math.abs(x.osecaj-x.temp)>=1?` <small>oseća se ${esc(fmtNum(x.osecaj,0))} °C</small>`:'');
@@ -2902,11 +2901,18 @@ function karticaVremena(d){
   if(z.vlaga!=null) redovi.push(['vlažnost', `<b>${esc(fmtNum(z.vlaga,0))} %</b>`]);
   if(z.vetar!=null) redovi.push(['vetar', `<b>${esc(fmtNum(z.vetar,0))} km/h</b>`]);
   if(z.kisa!=null) redovi.push(['padavine', `<b>${esc(fmtNum(z.kisa,0))} %</b>`]);
-  /* Prilagođen tempo se nudi SAMO za kvalitetne sesije: na laganom trčanju se
-     ide po osećaju ionako, pa bi broj tu bio lažna preciznost. */
+  /* PRILAGOĐEN TEMPO SE RAČUNA SVUDA GDE POSTOJI OSNOVA.
+     Ranije je red izlazio samo za kvalitetne sesije (int/tempo), uz obrazloženje
+     da se na laganom ide po osećaju pa bi broj bio lažna preciznost. Namera je
+     bila dobra, ishod nije: savet je i dalje TVRDIO da je tempo sporiji, samo je
+     prepuštao čoveku da sam množi svoj tempo sa 1,04. Ako aplikacija zna i tempo
+     i procenat, račun je njen posao.
+
+     Uslov više nije tip dana nego POSTOJANJE OSNOVE — v. cilJTempoDana(). Gde
+     osnove nema (dan snage, ili nemerena forma), reda nema i rečenica sa
+     procentom ostaje jedino što se nudi. */
   let dodatak='';
-  if(kvalitet&&vr&&vr.pct>0){
-    const pid=predRowFor(d);
+  if(vr&&vr.pct>0){
     const cilj=cilJTempoDana(d);
     if(cilj) dodatak+=`<div class="drow"><span class="l">tempo uz vrućinu</span><span class="v">`+
       `<b>${esc(fmtTempo(Math.round(cilj*(1+vr.pct/100))))}</b> <small>umesto ${esc(fmtTempo(cilj))} · +${esc(vr.pct)} %</small></span></div>`;
@@ -2928,11 +2934,28 @@ function karticaVremena(d){
 }
 /* Ciljni tempo radnog dela za dan — iz sesije kad postoji, inače iz PRED reda
    plana. Bez njega se prilagođen tempo ne prikazuje (ne izmišlja se osnova). */
+/* Lagana trčanja NEMAJU tempo nigde u planu — ni u opisu dana, ni u PRED
+   tabeli (provereno: `extractPaceFromDesc` na „8 km lako + 5×100 m" vraća
+   null, `predRowFor` vraća null). Jedini izvor je forma, kroz iste Danielsove
+   zone kojima plan računa sve ostalo. Da to nije nategnuto vidi se na
+   kvalitetnim danima, gde postoje OBA broja: plan traži 3:55 i 4:25, a zone iz
+   istog VDOT-a daju 3:57 i 4:23 — razlika od dve sekunde po kilometru. */
+const ZONA_ZA_TAG={ lako:'E', lr:'LR' };
 function cilJTempoDana(d){
   if(d&&d.session&&d.session.paceSec>0) return d.session.paceSec;
   const r=predRowFor(d);
   const red=r?CUR_PRED.find(x=>x.id===r):null;
-  return (red&&red.pt>0)?red.pt:null;
+  if(red&&red.pt>0) return red.pt;
+  /* Rezerva iz forme — samo za trčanja sa poznatom zonom. Dan snage nema tempo
+     i ne sme ga dobiti; „rw" (trčanje/hod) takođe ne, tamo tempo ne meri isto. */
+  const zona=d&&ZONA_ZA_TAG[d.tag];
+  if(!zona) return null;
+  /* Bez izmerene forme nema računa. `currentVdot()` je null na svežem uređaju,
+     a `paceForZone(null, …)` vraća besmislicu (mereno: 40:11 /km) — bez ove
+     provere bi nov korisnik na prvom laganom danu dobio baš taj broj. */
+  const v=currentVdot();
+  if(v==null||!isFinite(v)||v<20||v>85) return null;
+  return paceForZone(v, zona);
 }
 
 /* ============================================================

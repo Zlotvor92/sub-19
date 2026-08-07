@@ -548,16 +548,51 @@ describe('Vreme na dan treninga', () => {
     }
   });
 
-  test('kvalitetna sesija dobija prilagođen tempo, lagana ne', () => {
-    /* Na laganom se ide po osećaju ionako — broj bi tu bio lažna preciznost. */
+  test('prilagodjen tempo dobija SVAKO trcanje sa poznatom osnovom', () => {
+    /* IZMENJENO PRAVILO. Test je ranije tvrdio suprotno — „lagana sesija ne
+       dobija broj, jer se na laganom ide po osecaju pa bi broj bio lazna
+       preciznost". Namera je bila dobra, ali ishod nije: savet je i dalje
+       TVRDIO da je tempo sporiji, samo je prepustao coveku da sam mnozi svoj
+       tempo sa 1,04. Ako aplikacija zna i tempo i procenat, racun je njen.
+
+       Osnova za lagana trcanja se izvodi iz forme (Danielsove zone E i LR),
+       jer je plan nigde ne navodi. Da to nije nategnuto: na kvalitetnim danima
+       postoje oba broja i poklapaju se na dve sekunde po kilometru. */
     const a = sa();
-    const kv = a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&(x.tag==='int'||x.tag==='tempo'));
-      return d?karticaVremena(d):''; })()`);
-    assert.match(String(kv), /tempo uz vrućinu/);
-    const lako = a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='lako');
-      return d?karticaVremena(d):''; })()`);
-    assert.doesNotMatch(String(lako), /tempo uz vrućinu/);
-    assert.match(String(lako), /°C/, 'lagan dan ipak vidi vreme');
+    /* Forma se seje NAMERNO: bez nje lagan dan nema odakle da izvede tempo, pa
+       bi test proveravao stanje „nemam sta da pokazem" umesto samog pravila.
+       Slucaj bez izmerene forme pokriva test ispod. */
+    a.evalIn(`S.vdotLog=[{date:TODAY, vdot:48.1, measured:1170}]; save();`);
+    for (const tag of ['int', 'tempo', 'lako', 'lr']) {
+      const h = String(a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='${tag}');
+        return d?karticaVremena(d):''; })()`));
+      if (!h) continue;
+      assert.match(h, /tempo uz vrućinu/, `${tag}: nema prilagodjen tempo`);
+      assert.match(h, /umesto \d+:\d\d/, `${tag}: nema osnovu od koje je racunato`);
+    }
+  });
+
+  test('dan bez tempa ga ne dobija izmisljenog', () => {
+    /* Dan snage nema tempo i ne sme ga dobiti ni iz forme — ZONA_ZA_TAG ga
+       namerno ne pokriva. Isto vazi za svako trcanje dok forma nije izmerena:
+       `currentVdot()` je tada null, a `paceForZone(null, …)` vraca besmislicu
+       (mereno: 40:11 /km). Bez provere bi nov korisnik dobio bas taj broj. */
+    const a = sa();
+    const snaga = String(a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='snaga');
+      return d?karticaVremena(d):''; })()`));
+    if (snaga) {
+      assert.doesNotMatch(snaga, /tempo uz vrućinu/, 'dan snage je dobio tempo');
+      assert.match(snaga, /°C/, 'dan snage ipak vidi vreme');
+    }
+
+    const b = sa();
+    b.evalIn(`S.vdotLog=[]; save();`);
+    const lako = String(b.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='lako');
+      return d?karticaVremena(d):''; })()`));
+    if (lako) {
+      assert.doesNotMatch(lako, /tempo uz vrućinu/, 'bez izmerene forme je izmisljen tempo');
+      assert.doesNotMatch(lako, /40:1\d/, 'prikazan je tempo iz paceForZone(null)');
+    }
   });
 
   test('savet koji tvrdi da je tempo sporiji MORA da kaze za koliko', () => {
