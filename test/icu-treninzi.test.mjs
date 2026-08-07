@@ -595,13 +595,33 @@ describe('Vreme na dan treninga', () => {
   test('u tekstu saveta ne ostaje nezamenjen rezervisani znak', () => {
     /* Procenat se ubacuje zamenom %PCT% pri iscrtavanju. Ako se ime zamene
        promeni na jednom mestu a ne na drugom, korisnik dobija sirov `%PCT%`
-       usred recenice — a nijedan drugi test to ne bi video. */
-    const a = sa();
-    for (const tag of ['int', 'lako']) {
+       usred recenice.
+
+       Prognoza se seje na 27 °C NAMERNO. Prva verzija ovog testa koristila je
+       `sa()`, koji daje osecaj 37 — a tekst tog pojasa uopste ne sadrzi
+       rezervisani znak, pa je test prolazio ne proveravajuci nista. Uhvaceno
+       tako sto je zamena namerno uklonjena i test je i dalje bio zelen.
+       Placeholder nose samo pojasevi na 20 i 25 °C. */
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    a.evalIn(`
+      S.ui.geo={lat:44.81,lon:20.46}; S.ui.satTreninga=17;
+      const sati={};
+      for(let i=0;i<14;i++){ const d=addD(TODAY,i);
+        for(let h=0;h<24;h++) sati[d+'T'+String(h).padStart(2,'0')]=
+          {temp:33, osecaj:27, vlaga:38, vetar:9, kisa:5}; }
+      S.vreme={at:Date.now(), lat:44.81, lon:20.46, sati}; save();`);
+
+    let videno = 0;
+    for (const tag of ['int', 'tempo', 'lako', 'lr', 'snaga']) {
       const h = String(a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='${tag}');
         return d?karticaVremena(d):''; })()`));
+      if (!h) continue;
       assert.doesNotMatch(h, /%PCT%/, `${tag}: rezervisani znak je ostao u tekstu`);
+      assert.match(h, /oko 4 %/, `${tag}: procenat nije ubacen u tekst`);
+      videno++;
     }
+    /* Bez ovoga bi test prosao i da nijedna kartica nije iscrtana. */
+    assert.ok(videno >= 2, `provereno samo ${videno} kartica — prognoza ne pokriva dane`);
   });
 
   test('hladniji termin se nudi samo kad je razlika stvarna', () => {
