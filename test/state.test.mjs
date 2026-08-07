@@ -578,3 +578,88 @@ describe('Sesija koju je server odbio', () => {
     assert.match(poruka(a), /netaknut/i, 'kapija ne kaže da su podaci ostali');
   });
 });
+
+/* ============================================================
+   PROVERA SESIJE PRI POKRETANJU I POVRATKU U APLIKACIJU.
+
+   Pristupni token je JWT: potpisan i vazi do isteka bez obzira na to sto se
+   desilo na serveru. Brisanje ili zabrana naloga NE moze da ga povuce. Do
+   v205 se sesija proveravala tek kad token istekne — do sat vremena — pa je
+   obrisan korisnik sve to vreme normalno koristio aplikaciju. Sada se pita
+   server, ali samo izricito odbijanje sme da odjavi.
+   ============================================================ */
+describe('Provera sesije kod servera', () => {
+  const sa = () => {
+    const a = loadApp({ now: '2026-08-07T04:00:00Z' });
+    a.evalIn(`
+      S.log={'n1d1':{status:'done',km:8,sec:2400}}; save();
+      SB={access:'a',refresh:'r',expiresAt:Date.now()+3600000,email:'x@t.rs',userId:'u1',deviceId:'d1'};
+      sbSave();
+      navigator.onLine=true;
+      const g0=document.getElementById('sb-gate'); if(g0) g0.innerHTML='';`);
+    return a;
+  };
+  const odgovori = (a, status, telo) => {
+    a.ctx.__st = status; a.ctx.__telo = telo || {};
+    a.evalIn(`fetch=async()=>({ok:__st<400,status:__st,json:async()=>__telo,text:async()=>''});`);
+  };
+  const poruka = (a) => String(a.evalIn(`(document.getElementById('sb-gate')||{}).innerHTML||''`));
+
+  test('token JOS VAZI, ali nalog je obrisan — kapija se spusta odmah', async () => {
+    /* Sustina ove izmene: expiresAt je sat vremena u buducnosti, dakle stara
+       logika ne bi ni kontaktirala server. */
+    const a = sa();
+    odgovori(a, 401, { msg: 'invalid token' });
+    assert.equal(await a.evalIn('sbProveriSesiju()'), false);
+    assert.equal(a.call('sbAuthed'), false, 'obrisan nalog je i dalje prijavljen');
+    assert.match(poruka(a), /više ne postoji/);
+  });
+
+  test('zabranjen nalog dobija SVOJU poruku, ne „sesija je istekla"', async () => {
+    /* Covek kome je pristup zabranjen treba da zna da je zabranjen, a ne da
+       misli da je nesto tehnicki puklo pa da pokusava ponovo. */
+    const a = sa();
+    odgovori(a, 403, { error_code: 'user_banned', msg: 'User is banned' });
+    assert.equal(await a.evalIn('sbProveriSesiju()'), false);
+    assert.equal(a.call('sbAuthed'), false);
+    assert.match(poruka(a), /zabranjen/i);
+    assert.doesNotMatch(poruka(a), /više ne postoji/, 'zabranjenom se kaže da je nalog obrisan');
+  });
+
+  test('ispravna sesija se ne dira', async () => {
+    const a = sa();
+    odgovori(a, 200, { id: 'u1' });
+    assert.equal(await a.evalIn('sbProveriSesiju()'), true);
+    assert.equal(a.call('sbAuthed'), true);
+    assert.equal(poruka(a), '');
+  });
+
+  test('server pao ili nema signala — NIKO se ne odjavljuje', async () => {
+    /* Aplikacija je offline-first. Da 5xx odjavljuje, jedan ispad Supabase-a
+       bi izbacio sve korisnike odjednom. */
+    for (const st of [500, 502, 503]) {
+      const a = sa();
+      odgovori(a, st, {});
+      assert.equal(await a.evalIn('sbProveriSesiju()'), true, `${st} je odjavio korisnika`);
+      assert.equal(a.call('sbAuthed'), true, `${st} je obrisao sesiju`);
+    }
+    const b = sa();
+    b.evalIn(`fetch=async()=>{ throw new Error('offline'); };`);
+    assert.equal(await b.evalIn('sbProveriSesiju()'), true);
+    assert.equal(b.call('sbAuthed'), true, 'mrežna greška je odjavila korisnika');
+  });
+
+  test('bez signala se server i ne pita', async () => {
+    const a = sa();
+    a.evalIn(`navigator.onLine=false; fetch=async()=>{ throw new Error('ne sme se zvati'); };`);
+    assert.equal(await a.evalIn('sbProveriSesiju()'), true);
+    assert.equal(a.call('sbAuthed'), true);
+  });
+
+  test('odjava zbog zabrane NE dira podatke', async () => {
+    const a = sa();
+    odgovori(a, 403, { msg: 'User is banned' });
+    await a.evalIn('sbProveriSesiju()');
+    assert.equal(a.evalIn('Object.keys(S.log).length'), 1, 'istorija treninga je obrisana');
+  });
+});

@@ -1335,6 +1335,59 @@ describe('/api/admin-users — kapija vlasnika', () => {
     assert.equal(pozivi.filter(x => x.startsWith('DELETE') && x.includes('/auth/v1/admin/users/')).length, 0);
   });
 
+  test('zabrana i skidanje zabrane idu na isti nalog', async () => {
+    /* GoTrue nema zasebnu „unban" putanju — skidanje je ista izmena sa
+       ban_duration:'none'. Test cuva da se te dve stvari ne raziđu. */
+    let poslato = null;
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) return jsonRes(VLASNIK);
+      if (/\/auth\/v1\/admin\/users\//.test(u) && opt && opt.method === 'PUT') {
+        poslato = JSON.parse(opt.body);
+        return jsonRes({ id: 'k1', email: 'prvi@t.rs' });
+      }
+      throw new Error('neocekivan poziv: ' + u);
+    };
+    let res = await zovi({ banId: 'k1' });
+    assert.equal(res.code, 200);
+    assert.equal(res.body.zabranjen, true);
+    assert.notEqual(poslato.ban_duration, 'none', 'zabrana je poslata kao skidanje');
+
+    res = await zovi({ banId: 'k1', ukini: true });
+    assert.equal(res.code, 200);
+    assert.equal(res.body.zabranjen, false);
+    assert.equal(poslato.ban_duration, 'none', 'skidanje zabrane nije poslato kao none');
+  });
+
+  test('vlasnik NE moze sebe da zabrani', async () => {
+    /* Isti razlog kao kod brisanja: zakljucao bi se van sopstvene aplikacije. */
+    const pozivi = stub(VLASNIK);
+    const res = await zovi({ banId: 'v1' });
+    assert.equal(res.code, 400);
+    assert.equal(pozivi.filter(x => x.startsWith('PUT')).length, 0);
+  });
+
+  test('spisak pokazuje ko je zabranjen', async () => {
+    /* `banned_until` posle skidanja zabrane ume da ostane kao datum u
+       PROSLOSTI, zavisno od verzije GoTrue-a — zato se poredi sa sadasnjim
+       trenutkom, a ne samo proverava postojanje polja. */
+    globalThis.fetch = async (url) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) return jsonRes(VLASNIK);
+      if (u.includes('/auth/v1/admin/users')) return jsonRes([
+        { id: 'a', email: 'a@t.rs', banned_until: '2099-01-01T00:00:00Z' },
+        { id: 'b', email: 'b@t.rs', banned_until: '2020-01-01T00:00:00Z' },
+        { id: 'c', email: 'c@t.rs', banned_until: null }
+      ]);
+      if (u.includes('/rest/v1/user_state')) return jsonRes([]);
+      throw new Error('neocekivan poziv: ' + u);
+    };
+    const k = (await zovi({})).body.korisnici;
+    assert.equal(k.find(x => x.id === 'a').zabranjen, true, 'aktivna zabrana nije prikazana');
+    assert.equal(k.find(x => x.id === 'b').zabranjen, false, 'istekla zabrana je prikazana kao aktivna');
+    assert.equal(k.find(x => x.id === 'c').zabranjen, false);
+  });
+
   test('spisak tabela je ISTI kao u delete-account.js', () => {
     /* Dva mesta brisu isti skup podataka. Kad se raziđu, jedna putanja ostavi
        redove koje druga uklanja — i to se ne vidi ni iz jedne od njih. */

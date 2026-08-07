@@ -96,6 +96,35 @@ export default async function handler(req, res) {
   catch { return res.status(400).json({ error: 'Neispravan JSON.' }); }
   body = body || {};
 
+  /* ---------- ZABRANA / SKIDANJE ZABRANE ---------- */
+  if (body.banId) {
+    if (body.banId === vlasnik.id) {
+      return res.status(400).json({ error: 'Sebe ne možeš da zabraniš.' });
+    }
+    /* GoTrue prima `ban_duration` kao trajanje ('876000h' = sto godina) ili
+       'none' za skidanje. Nema zasebne „unban" putanje. */
+    const trajanje = body.ukini ? 'none' : '876000h';
+    try {
+      const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(String(body.banId)), {
+        method: 'PUT',
+        headers: { ...srvHead, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ban_duration: trajanje })
+      });
+      if (!r.ok) {
+        const telo = await r.text();
+        console.error('[admin][ALARM] zabrana nije primenjena za %s — HTTP %s: %s',
+          body.banId, r.status, telo.slice(0, 200));
+        return res.status(502).json({ error: 'Nije uspelo (' + r.status + ').' });
+      }
+      const u = await r.json();
+      console.log('[admin] %s je %s nalog %s', vlasnik.email,
+        body.ukini ? 'odbranio' : 'zabranio', body.banId);
+      return res.status(200).json({ ok: true, zabranjen: !body.ukini, email: (u && u.email) || null });
+    } catch (e) {
+      return res.status(503).json({ error: 'Server nije dostupan.' });
+    }
+  }
+
   /* ---------- SPISAK ---------- */
   if (!body.obrisiId) {
     let lista;
@@ -110,15 +139,23 @@ export default async function handler(req, res) {
       if (r.ok) for (const x of await r.json()) brojac[x.user_id] = x.updated_at || true;
     } catch (e) { /* bez ovoga spisak i dalje radi */ }
 
-    const korisnici = lista.map(u => ({
-      id: u.id,
-      email: u.email || '—',
-      napravljen: u.created_at || null,
-      poslednjaPrijava: u.last_sign_in_at || null,
-      imaPodatke: !!brojac[u.id],
-      sinhronizovan: typeof brojac[u.id] === 'string' ? brojac[u.id] : null,
-      jaSam: u.id === vlasnik.id
-    })).sort((a, b) => String(b.poslednjaPrijava || '').localeCompare(String(a.poslednjaPrijava || '')));
+    /* `banned_until` je datum u buducnosti dok zabrana traje; GoTrue ga posle
+       skidanja vrati kao null ILI kao datum u proslosti, zavisno od verzije —
+       zato se poredi sa sadasnjim trenutkom, a ne samo proverava postojanje. */
+    const sada = Date.now();
+    const korisnici = lista.map(u => {
+      const do_ = u.banned_until || u.bannedUntil || null;
+      return {
+        id: u.id,
+        email: u.email || '—',
+        napravljen: u.created_at || null,
+        poslednjaPrijava: u.last_sign_in_at || null,
+        imaPodatke: !!brojac[u.id],
+        sinhronizovan: typeof brojac[u.id] === 'string' ? brojac[u.id] : null,
+        zabranjen: !!(do_ && Date.parse(do_) > sada),
+        jaSam: u.id === vlasnik.id
+      };
+    }).sort((a, b) => String(b.poslednjaPrijava || '').localeCompare(String(a.poslednjaPrijava || '')));
 
     return res.status(200).json({ ok: true, korisnici });
   }

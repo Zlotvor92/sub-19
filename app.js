@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='205'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='206'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -10033,11 +10033,32 @@ async function ucitajKorisnike(){
       k.map(u=>`<div class="prow-ku" data-id="${esc(u.id)}" style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)">
         <div style="flex:1;min-width:0">
           <div style="font-size:.84rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.email)}${u.jaSam?' <span style="color:var(--cyan);font-weight:800">· ti</span>':''}</div>
-          <div style="font-size:.68rem;color:var(--txt3);font-weight:600;margin-top:2px">prijava ${esc(kada(u.poslednjaPrijava))} · ${u.imaPodatke?'ima podatke':'prazan'}</div>
+          <div style="font-size:.68rem;color:var(--txt3);font-weight:600;margin-top:2px">prijava ${esc(kada(u.poslednjaPrijava))} · ${u.imaPodatke?'ima podatke':'prazan'}${u.zabranjen?' · <b style="color:var(--red)">zabranjen</b>':''}</div>
         </div>
-        ${u.jaSam?'':`<button class="btn danger sm" data-ku-del="${esc(u.id)}" data-ku-mail="${esc(u.email)}">Obriši</button>`}
+        ${u.jaSam?'':`<button class="btn ghost sm" data-ku-ban="${esc(u.id)}" data-ku-ukini="${u.zabranjen?'1':''}">${u.zabranjen?'Odbrani':'Zabrani'}</button>
+        <button class="btn danger sm" data-ku-del="${esc(u.id)}" data-ku-mail="${esc(u.email)}">Obriši</button>`}
       </div>`).join('')+
       `<div class="note-src" style="margin-top:10px">Brisanje uklanja nalog i <b>sve</b> njegove podatke sa servera. Nepovratno je. Svoj nalog ne brišeš odavde — za to je Nalog → Brisanje naloga.</div>`;
+    /* Zabrana ide na JEDAN dodir, brisanje na dva — zabrana se skida istim
+       dugmetom, pa pogresan dodir kosta jedan dodir nazad. Brisanje ne. */
+    box.querySelectorAll('[data-ku-ban]').forEach(b=>{
+      b.onclick=async()=>{
+        const ukini=b.dataset.kuUkini==='1';
+        b.disabled=true; b.textContent=ukini?'Skidam…':'Zabranjujem…';
+        try{
+          const tok=await sbToken();
+          const r=await fetch('/api/admin-users',{method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+            body:JSON.stringify({banId:b.dataset.kuBan, ukini})});
+          const res=await apiJson(r);
+          if(!res.data||!res.data.ok) throw new Error((res.data&&res.data.error)||res.error||'Nije uspelo.');
+          ucitajKorisnike();
+        }catch(e){
+          b.disabled=false; b.textContent=ukini?'Odbrani':'Zabrani';
+          alert(e.message);
+        }
+      };
+    });
     box.querySelectorAll('[data-ku-del]').forEach(b=>{
       b.onclick=async()=>{
         if(b.dataset.pitano!=='1'){
@@ -10782,12 +10803,47 @@ async function sbEnsure(){
    Lokalni zapis je mozda jedino sto je coveku ostalo — narocito ako mu je
    nalog obrisan bez najave. Ostaje na uredjaju i moze se izvesti kroz Backup
    cim se ponovo prijavi. */
-function sbSesijaMrtva(){
+function sbSesijaMrtva(poruka){
   if(!SB||!SB.access) return;                 /* vec ocisceno */
   try{ pozadinskiZaboravi(); }catch(e){}      /* da SW ne gura u tudje ime */
   SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
   sbSave();
-  sbShowGate('Nalog više ne postoji ili je sesija istekla. Podaci na ovom uređaju su netaknuti — prijavi se da nastaviš.');
+  sbShowGate(poruka||'Nalog više ne postoji ili je sesija istekla. Podaci na ovom uređaju su netaknuti — prijavi se da nastaviš.');
+}
+
+/* PROVERA SESIJE KOD SERVERA — pri pokretanju i pri svakom povratku u app.
+
+   ZASTO NIJE DOVOLJNO cekati istek tokena. Pristupni token je JWT: potpisan
+   je i vazi do isteka bez obzira na to sto se u medjuvremenu desilo na
+   serveru. Brisanje ili zabrana naloga NE moze da ga povuce. Do v205 se
+   sesija proveravala tek kad token istekne — do sat vremena — pa je obrisan
+   korisnik sve to vreme normalno koristio aplikaciju.
+
+   Zato se sada PITA server. Jedan poziv na /auth/v1/user pri pokretanju i pri
+   povratku iz pozadine; ako nalog vise ne postoji ili je zabranjen, kapija se
+   spusta odmah.
+
+   RAZLIKA MREZA/ODBIJANJE se cuva kao i u sbEnsure: samo izricit 401/403
+   obara sesiju. Greska u mrezi ne sme nikoga da odjavi — aplikacija radi
+   offline i to je jedna od njenih glavnih osobina. */
+async function sbProveriSesiju(){
+  if(!sbAuthed()||!navigator.onLine) return true;
+  try{
+    const r=await fetch(SB_URL+'/auth/v1/user',
+      {headers:{'apikey':SB_ANON,'Authorization':'Bearer '+SB.access}});
+    if(r.status===401||r.status===403){
+      let zabranjen=false;
+      /* GoTrue za zabranjen nalog vraca poruku sa „banned"; za obrisan nema
+         takve oznake. Tekst je jedina razlika koja postoji, pa se korisniku
+         kaze tacno sta se desilo umesto neodredjenog „sesija je istekla". */
+      try{ zabranjen=/banned|zabran/i.test(JSON.stringify(await r.json())); }catch(e){}
+      sbSesijaMrtva(zabranjen
+        ? 'Pristup ovom nalogu je zabranjen. Podaci na ovom uređaju su netaknuti. Ako misliš da je greška, javi se vlasniku aplikacije.'
+        : 'Nalog više ne postoji ili je sesija istekla. Podaci na ovom uređaju su netaknuti — prijavi se da nastaviš.');
+      return false;
+    }
+    return true;
+  }catch(e){ return true; }   /* mreza — ne dira se nista */
 }
 
 function sbLogin(){
@@ -11006,6 +11062,10 @@ async function sbInit(){
   if(err) history.replaceState(null,'',location.pathname);
 
   if(!sbHasSession()){ sbShowGate(err||''); return; }
+  /* Nalog je mozda obrisan ili zabranjen dok je aplikacija bila zatvorena.
+     Pita se PRE nego sto se kapija skloni — inace bi na trenutak bljesnuo
+     ceo ekran sa tudjim podacima. */
+  if(!await sbProveriSesiju()) return;
   sbHideGate();
   /* Sveza prijava menja jeVlasnik(), a time i sta Danas ekran prikazuje
      (traka „Ovo nije tvoj plan"). Ako je sesija upravo usvojena iz hash-a,
@@ -11147,6 +11207,11 @@ document.addEventListener('visibilitychange',()=>{
      stoji u pozadini danima, pa se bez ovoga prvo povlacenje desi tek posle
      rucnog restarta. */
   if(document.visibilityState==='visible'){
+    /* PRVO pitanje pri povratku: da li nalog uopste jos postoji. Instalirana
+       PWA stoji u pozadini danima, pa bi bez ovoga obrisan ili zabranjen
+       korisnik nastavio da radi dok mu token ne istekne. Ostalo ispod nema
+       smisla ako je odgovor ne. */
+    sbProveriSesiju();
     /* Ako je u medjuvremenu presla ponoc, ceo ekran gleda pogresan dan —
        iscrtaj ponovo pre nego sto korisnik bilo sta klikne. */
     if(osveziDan()){ renderHeader(); PAGES[ACTIVE](); }
