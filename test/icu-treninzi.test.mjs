@@ -577,22 +577,38 @@ describe('Vreme na dan treninga', () => {
        namerno ne pokriva. Isto vazi za svako trcanje dok forma nije izmerena:
        `currentVdot()` je tada null, a `paceForZone(null, …)` vraca besmislicu
        (mereno: 40:11 /km). Bez provere bi nov korisnik dobio bas taj broj. */
-    const a = sa();
-    const snaga = String(a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='snaga');
+    /* Prognoza mora da pokrije SVE dane, ne samo prvi kvalitetan i prvi lagan
+       kao u sa(). Prva verzija ovog testa je koristila sa() i dan snage joj je
+       ispadao bez kartice, pa je provera bila prazna: uhvaceno tako sto je
+       `snaga` dodata u ZONA_ZA_TAG a nijedan test nije pao. */
+    const seme = (vdotLog) => {
+      const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+      a.evalIn(`
+        S.ui.geo={lat:44.81,lon:20.46}; S.ui.satTreninga=17;
+        S.vdotLog=${vdotLog};
+        const sati={};
+        for(let i=0;i<21;i++){ const d=addD(TODAY,i);
+          for(let h=0;h<24;h++) sati[d+'T'+String(h).padStart(2,'0')]=
+            {temp:33, osecaj:27, vlaga:38, vetar:9, kisa:5}; }
+        S.vreme={at:Date.now(), lat:44.81, lon:20.46, sati}; save();`);
+      return a;
+    };
+    const karta = (a, tag) => String(a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='${tag}');
       return d?karticaVremena(d):''; })()`));
-    if (snaga) {
-      assert.doesNotMatch(snaga, /tempo uz vrućinu/, 'dan snage je dobio tempo');
-      assert.match(snaga, /°C/, 'dan snage ipak vidi vreme');
-    }
 
-    const b = sa();
-    b.evalIn(`S.vdotLog=[]; save();`);
-    const lako = String(b.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='lako');
-      return d?karticaVremena(d):''; })()`));
-    if (lako) {
-      assert.doesNotMatch(lako, /tempo uz vrućinu/, 'bez izmerene forme je izmisljen tempo');
-      assert.doesNotMatch(lako, /40:1\d/, 'prikazan je tempo iz paceForZone(null)');
-    }
+    /* Dan snage — forma POSTOJI, pa izostanak tempa moze doci samo od pravila. */
+    const sSnagom = seme(`[{date:TODAY, vdot:48.1, measured:1170}]`);
+    const snaga = karta(sSnagom, 'snaga');
+    assert.ok(snaga, 'nema kartice za dan snage — test ne proverava nista');
+    assert.doesNotMatch(snaga, /tempo uz vrućinu/, 'dan snage je dobio tempo');
+    assert.match(snaga, /°C/, 'dan snage ipak vidi vreme');
+
+    /* Bez izmerene forme — lagan dan nema odakle da izvede tempo. */
+    const bezForme = seme('[]');
+    const lako = karta(bezForme, 'lako');
+    assert.ok(lako, 'nema kartice za lagan dan — test ne proverava nista');
+    assert.doesNotMatch(lako, /tempo uz vrućinu/, 'bez izmerene forme je izmisljen tempo');
+    assert.doesNotMatch(lako, /\d\d:\d\d\s*\/?\s*km|40:1\d/, 'prikazan je tempo iz paceForZone(null)');
   });
 
   test('savet koji tvrdi da je tempo sporiji MORA da kaze za koliko', () => {
