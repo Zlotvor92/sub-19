@@ -9,7 +9,8 @@
     "api/daily-report.js": { "maxDuration": 60 },
     "api/workouts.js": { "maxDuration": 60 },
     "api/analyze.js": { "maxDuration": 60 },
-    "api/push.js": { "maxDuration": 60 }
+    "api/push.js": { "maxDuration": 60 },
+    "api/delete-account.js": { "maxDuration": 60 }
   },
   "headers": [
     {

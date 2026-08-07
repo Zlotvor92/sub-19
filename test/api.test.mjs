@@ -6,7 +6,7 @@
 
 import { test, describe, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, readRepoFile } from './harness.mjs';
 
@@ -1039,5 +1039,179 @@ describe('Analiza odvojena od cekanja', () => {
     assert.match(src, /"radni deo" postoji SAMO na kvalitetnim sesijama/,
       'nema zabrane „radnog dela" na laganom');
     assert.match(src, /thinkingLevel: 'medium'/, 'razmisljanje je i dalje spusteno na low');
+  });
+});
+
+/* ============================================================
+   /api/delete-account — brisanje naloga na zahtev korisnika.
+
+   Putanja drži service_role ključ u ruci, pa je najvažnije pitanje ČIJI se
+   nalog briše, a odmah zatim REDOSLED: podaci pa nalog, nikad obrnuto.
+   ============================================================ */
+describe('/api/delete-account — brisanje naloga', () => {
+  const IZVOR = readRepoFile('api/delete-account.js');
+  const KORISNIK = 'u-moj';
+  const TOKEN = 'tok-moj';
+
+  /* Beleži svaki poziv da bi se moglo tvrditi šta je obrisano i kojim redom. */
+  function stubFetch({ tabelaPada = null, nalogPada = false, tabela404 = null } = {}) {
+    const pozivi = [];
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), metod = (opt && opt.method) || 'GET';
+      pozivi.push(metod + ' ' + u);
+      if (u.includes('/auth/v1/user')) return jsonRes({ id: KORISNIK, email: 'ja@t.rs' });
+      if (u.includes('/auth/v1/admin/users/')) {
+        return nalogPada ? jsonRes({ error: 'ne' }, false, 500) : jsonRes({}, true, 200);
+      }
+      const m = /\/rest\/v1\/([a-z_]+)\?/.exec(u);
+      if (m) {
+        if (tabelaPada === m[1]) return jsonRes({ error: 'ne' }, false, 500);
+        if (tabela404 === m[1])  return jsonRes({ error: 'nema' }, false, 404);
+        return jsonRes({}, true, 200);
+      }
+      throw new Error('neocekivan poziv: ' + u);
+    };
+    return pozivi;
+  }
+
+  const zovi = async (over = {}) => {
+    const { default: handler } = await import('../api/delete-account.js?t=' + Date.now() + Math.random());
+    const res = makeRes();
+    await handler({
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + TOKEN },
+      body: { potvrda: 'OBRISI NALOG' },
+      ...over
+    }, res);
+    return res;
+  };
+
+  test('samo POST', async () => {
+    stubFetch();
+    const res = await zovi({ method: 'GET' });
+    assert.equal(res.code, 405);
+    assert.equal(res.headers.Allow, 'POST');
+  });
+
+  test('bez Content-Type: application/json ne prolazi', async () => {
+    /* Zatvara <form> POST sa tuđeg sajta — takav zahtev ne može postaviti ovo
+       zaglavlje bez preflight provere, a preflight ne odobravamo. */
+    stubFetch();
+    const res = await zovi({ headers: { authorization: 'Bearer ' + TOKEN } });
+    assert.equal(res.code, 415);
+  });
+
+  test('bez prijave ne prolazi', async () => {
+    stubFetch();
+    const res = await zovi({ headers: { 'content-type': 'application/json' } });
+    assert.equal(res.code, 401);
+  });
+
+  test('bez tačne potvrde ništa se ne briše', async () => {
+    const pozivi = stubFetch();
+    for (const p of [undefined, '', 'da', 'OBRISI', 'obrisi nalog molim']) {
+      const res = await zovi({ body: { potvrda: p } });
+      assert.equal(res.code, 400, 'prošlo je sa potvrdom: ' + JSON.stringify(p));
+    }
+    assert.equal(pozivi.filter(x => x.startsWith('DELETE')).length, 0,
+      'obrisano je nešto iako potvrda nije data');
+  });
+
+  test('potvrda se prima i sa kvačicom i malim slovima', async () => {
+    /* Čovek je kuca rukom; „obriši nalog" i „OBRISI NALOG" su ista namera. */
+    for (const p of ['OBRIŠI NALOG', 'obriši nalog', '  Obrisi   Nalog  ']) {
+      stubFetch();
+      const res = await zovi({ body: { potvrda: p } });
+      assert.equal(res.code, 200, 'odbijena potvrda: ' + JSON.stringify(p));
+    }
+  });
+
+  test('briše SVE tabele pa tek onda nalog', async () => {
+    const pozivi = stubFetch();
+    const res = await zovi();
+    assert.equal(res.code, 200);
+    assert.equal(res.body.ok, true);
+
+    const tabele = pozivi.filter(x => x.includes('/rest/v1/')).map(x => /\/rest\/v1\/([a-z_]+)\?/.exec(x)[1]);
+    for (const t of ['user_state', 'push_pretplata', 'ai_posao', 'api_usage', 'bug_report_usage', 'endpoint_usage']) {
+      assert.ok(tabele.includes(t), 'tabela nije obrisana: ' + t);
+    }
+    const zadnjaTabela = pozivi.findLastIndex(x => x.includes('/rest/v1/'));
+    const nalog = pozivi.findIndex(x => x.includes('/auth/v1/admin/users/'));
+    assert.ok(nalog > zadnjaTabela, 'nalog je obrisan PRE podataka');
+  });
+
+  test('ne briše nalog čiji id stigne u telu zahteva', () => {
+    /* NAJVAŽNIJI TEST U FAJLU. Sa service_role ključem, čitanje bilo kakvog
+       identifikatora iz tela značilo bi brisanje tuđeg naloga jednim poljem
+       u JSON-u. Tvrdi se nad izvorom jer je jedini siguran oblik „ovoga
+       ovde nema": telo se dodiruje samo zbog `potvrda`. */
+    const telo = /body\s*=\s*typeof req\.body[\s\S]*?export|body\s*=\s*typeof req\.body[\s\S]*$/.exec(IZVOR);
+    assert.ok(telo, 'ne nalazim gde se čita telo zahteva');
+    assert.doesNotMatch(IZVOR, /body\.(user_?[Ii]d|id|email|nalog)/,
+      'iz tela zahteva se čita identifikator naloga');
+    /* A brisanje ide isključivo po `auth.userId` iz proverenog tokena. */
+    assert.match(IZVOR, /user_id=eq\.'\s*\+\s*encodeURIComponent\(auth\.userId\)/,
+      'brisanje redova ne ide po korisniku iz tokena');
+    assert.match(IZVOR, /admin\/users\/'\s*\+\s*encodeURIComponent\(auth\.userId\)/,
+      'brisanje naloga ne ide po korisniku iz tokena');
+  });
+
+  test('kad brisanje podataka padne, nalog OSTAJE', async () => {
+    /* Obrnut redosled je najgori ishod: čovek izgubi pristup, podaci ostanu,
+       i više se ne može ni prijaviti da pokuša ponovo. */
+    const pozivi = stubFetch({ tabelaPada: 'ai_posao' });
+    const res = await zovi();
+    assert.equal(res.code, 502);
+    assert.match(res.body.error, /NIJE obrisan/);
+    assert.equal(pozivi.filter(x => x.includes('/auth/v1/admin/users/')).length, 0,
+      'nalog je obrisan iako podaci nisu');
+  });
+
+  test('tabela koja ne postoji (404) ne prekida brisanje', async () => {
+    /* rate-limit.sql se pušta rukom; dok nije pušten, endpoint_usage ne
+       postoji. To nije razlog da čovek ne može da obriše nalog. */
+    const pozivi = stubFetch({ tabela404: 'endpoint_usage' });
+    const res = await zovi();
+    assert.equal(res.code, 200);
+    assert.ok(pozivi.some(x => x.includes('/auth/v1/admin/users/')), 'nalog nije obrisan');
+    assert.ok(!res.body.obrisano.includes('endpoint_usage'),
+      'tabela koje nema prijavljena je kao obrisana');
+  });
+
+  test('kad brisanje naloga padne, to se ne prijavljuje kao uspeh', async () => {
+    stubFetch({ nalogPada: true });
+    const res = await zovi();
+    assert.equal(res.code, 502);
+    assert.match(res.body.error, /nalog nije/i);
+  });
+
+  test('spisak tabela pokriva sve iz supabase/*.sql', () => {
+    /* Tabela koja se doda u šemu a ne i ovde preživi brisanje naloga i
+       ostane siroče sa user_id-jem koji više ne postoji. */
+    const uKodu = new Set((/const TABELE = \[([\s\S]*?)\]/.exec(IZVOR)[1].match(/'([a-z_]+)'/g) || [])
+      .map(s => s.replace(/'/g, '')));
+    const sql = readdirSync(join(ROOT, 'supabase'))
+      .filter(f => f.endsWith('.sql'))
+      .map(f => readFileSync(join(ROOT, 'supabase', f), 'utf8')).join('\n');
+    const uSemi = new Set();
+    const re = /create table if not exists public\.([a-z_]+)\s*\(([\s\S]*?)\n\);/g;
+    let m;
+    while ((m = re.exec(sql))) { if (/\buser_id\b/.test(m[2])) uSemi.add(m[1]); }
+    assert.ok(uSemi.size >= 4, 'nisam našao tabele u supabase/*.sql — regex je zastareo');
+    for (const t of uSemi) {
+      assert.ok(uKodu.has(t), `tabela ${t} ima user_id u šemi, a nije u TABELE spisku`);
+    }
+    /* user_state je pravljena rukom pre nego što je šema ušla u repozitorijum,
+       pa je u SQL-u nema — ali mora biti u spisku. */
+    assert.ok(uKodu.has('user_state'), 'user_state nije u TABELE spisku');
+  });
+
+  test('tekst potvrde je isti u aplikaciji i na serveru', () => {
+    /* Da se raziđu, dugme bi radilo a server bi ćutke odbijao svaki zahtev. */
+    const server = /const POTVRDA = '([^']+)'/.exec(IZVOR);
+    const klijent = /const DEL_POTVRDA='([^']+)'/.exec(readRepoFile('app.js'));
+    assert.ok(server && klijent, 'ne nalazim tekst potvrde na obe strane');
+    assert.equal(server[1], klijent[1]);
   });
 });

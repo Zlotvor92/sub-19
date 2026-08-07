@@ -47,3 +47,16 @@ Tada ovde ide otisak koji piše u Play Console → **Test and release → Setup 
 App signing → App signing key certificate → SHA-256**, a ne onaj iz tvog
 lokalnog ključa. Možeš navesti i oba otiska u nizu — dozvoljeno je više njih, pa
 i verzija koju sam instaliraš i ona iz prodavnice rade bez trake sa adresom.
+
+**Postojeći otisak se DOPUNJUJE, ne zamenjuje.** Ako ga zameniš Play-ovim,
+`sub20.apk` sa ovog sajta prestane da radi preko celog ekrana istog trenutka kad
+se promena objavi — a to se ne vidi kao greška, aplikacija se i dalje instalira i
+radi. Test `android-paket.test.mjs` odbija duplikat otiska (tipično kad se isti
+nalepi dvaput misleći da je dodat Play-ov) i drži da naziv paketa ovde odgovara
+onom zapečenom u `sub20.apk`.
+
+Posle prve objave preko Play-a treba znati i ovo: Play verzija je potpisana
+Google-ovim ključem, a `sub20.apk` tvojim. Android to vidi kao dve različite
+aplikacije istog paketa i **odbija da jednu ažurira preko druge** — ko već ima
+sideloadovanu verziju mora je deinstalirati pre instalacije iz prodavnice.
+Podaci se time ne gube: plan i istorija su na serveru, vrate se posle prijave.

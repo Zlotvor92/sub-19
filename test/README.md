@@ -50,6 +50,7 @@ prelaska preko ponoći.
 | `doslednost.test.mjs` | poklapanje verzija između fajlova, nosivi identifikatori, CSP, pristupačnost |
 | `simetrija-distanci.test.mjs` | zamka za ispravku koja sleti u tri od četiri distance |
 | `generator-otisak.test.mjs` | otisak 2304 plana — razlikuje „preuredio sam kod" od „promenio sam trening" |
+| `android-paket.test.mjs` | `sub20.apk` naspram repozitorijuma — adresa, ime, paket, otisci ključa |
 
 ## Otisak generatora
 
