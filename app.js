@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='206'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='207'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -10021,9 +10021,9 @@ async function ucitajKorisnike(){
   try{
     const tok=await sbToken();
     if(!tok) throw new Error('Nisi prijavljen.');
-    const r=await fetch('/api/admin-users',{method:'POST',
+    const r=await fetch('/api/broadcast',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
-      body:JSON.stringify({})});
+      body:JSON.stringify({admin:'lista'})});
     const res=await apiJson(r);
     if(!res.data||!res.data.ok) throw new Error((res.data&&res.data.error)||res.error||'Nije uspelo.');
     const k=res.data.korisnici||[];
@@ -10047,9 +10047,9 @@ async function ucitajKorisnike(){
         b.disabled=true; b.textContent=ukini?'Skidam…':'Zabranjujem…';
         try{
           const tok=await sbToken();
-          const r=await fetch('/api/admin-users',{method:'POST',
+          const r=await fetch('/api/broadcast',{method:'POST',
             headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
-            body:JSON.stringify({banId:b.dataset.kuBan, ukini})});
+            body:JSON.stringify({admin:'ban', banId:b.dataset.kuBan, ukini})});
           const res=await apiJson(r);
           if(!res.data||!res.data.ok) throw new Error((res.data&&res.data.error)||res.error||'Nije uspelo.');
           ucitajKorisnike();
@@ -10071,9 +10071,9 @@ async function ucitajKorisnike(){
         b.disabled=true; b.textContent='Brišem…';
         try{
           const tok=await sbToken();
-          const r=await fetch('/api/admin-users',{method:'POST',
+          const r=await fetch('/api/broadcast',{method:'POST',
             headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
-            body:JSON.stringify({obrisiId:b.dataset.kuDel})});
+            body:JSON.stringify({admin:'obrisi', obrisiId:b.dataset.kuDel})});
           const res=await apiJson(r);
           if(!res.data||!res.data.ok) throw new Error((res.data&&res.data.error)||res.error||'Nije uspelo.');
           ucitajKorisnike();          /* spisak se povlaci ponovo, ne krpi lokalno */

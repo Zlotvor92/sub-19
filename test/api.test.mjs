@@ -1217,14 +1217,18 @@ describe('/api/delete-account — brisanje naloga', () => {
 });
 
 /* ============================================================
-   /api/admin-users — vlasnikov spisak i brisanje TUDJEG naloga.
+   /api/broadcast {admin:…} — vlasnikov spisak i brisanje TUDJEG naloga.
+
+   Bilo je u zasebnom api/admin-users.js. Spojeno u broadcast jer Vercel Hobby
+   plan dozvoljava najvise 12 serverless funkcija po deployu — trinaesta obara
+   CEO build, pa se ne objavi ni jedna izmena.
 
    Ova putanja drzi service_role kljuc I cita ciji se nalog brise iz zahteva —
    suprotno od delete-account.js. To je opravdano samo dok kapija drzi, pa je
    ona i jedina stvar koju ovi testovi cuvaju.
    ============================================================ */
-describe('/api/admin-users — kapija vlasnika', () => {
-  const IZVOR = readRepoFile('api/admin-users.js');
+describe('/api/broadcast {admin} — kapija vlasnika', () => {
+  const IZVOR = readRepoFile('api/broadcast.js');
   const VLASNIK = { id: 'v1', email: ENV.ADMIN_EMAIL, email_confirmed_at: '2026-01-01' };
 
   function stub(korisnik, { obrisiPada = null } = {}) {
@@ -1251,7 +1255,7 @@ describe('/api/admin-users — kapija vlasnika', () => {
   }
 
   const zovi = async (telo, over = {}) => {
-    const { default: handler } = await import('../api/admin-users.js?t=' + Date.now() + Math.random());
+    const { default: handler } = await import('../api/broadcast.js?t=' + Date.now() + Math.random());
     const res = makeRes();
     await handler({
       method: 'POST',
@@ -1264,15 +1268,15 @@ describe('/api/admin-users — kapija vlasnika', () => {
   test('obican korisnik ne dobija spisak — i ne saznaje da putanja postoji', async () => {
     /* 404, ne 403: „zabranjeno" je potvrda da nesto postoji. */
     stub({ id: 'k1', email: 'neko@t.rs', email_confirmed_at: '2026-01-01' });
-    const res = await zovi({});
+    const res = await zovi({ admin: 'lista' });
     assert.equal(res.code, 404);
     assert.doesNotMatch(JSON.stringify(res.body), /korisnic/i, 'odgovor odaje da putanja lista korisnike');
   });
 
   test('bez prijave ne prolazi', async () => {
     stub(null);
-    assert.equal((await zovi({})).code, 404);
-    assert.equal((await zovi({}, { headers: { 'content-type': 'application/json' } })).code, 404);
+    assert.equal((await zovi({ admin: 'lista' })).code, 404);
+    assert.equal((await zovi({ admin: 'lista' }, { headers: {} })).code, 404);
   });
 
   test('NEPOTVRDJENA vlasnikova adresa ne otvara kapiju', async () => {
@@ -1281,12 +1285,12 @@ describe('/api/admin-users — kapija vlasnika', () => {
        null. Bez ove provere bi time dobio spisak svih korisnika i pravo da ih
        brise. Ista zamka je vec zatvorena u broadcast.js. */
     stub({ id: 'x', email: ENV.ADMIN_EMAIL, email_confirmed_at: null });
-    assert.equal((await zovi({})).code, 404);
+    assert.equal((await zovi({ admin: 'lista' })).code, 404);
   });
 
   test('vlasnik dobija spisak, sa oznakom koji je njegov', async () => {
     stub(VLASNIK);
-    const res = await zovi({});
+    const res = await zovi({ admin: 'lista' });
     assert.equal(res.code, 200);
     const k = res.body.korisnici;
     assert.equal(k.length, 2);
@@ -1299,7 +1303,7 @@ describe('/api/admin-users — kapija vlasnika', () => {
        nalog postoji Podesavanja → Nalog → Brisanje naloga, sa potvrdom
        kucanjem. */
     const pozivi = stub(VLASNIK);
-    const res = await zovi({ obrisiId: 'v1' });
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'v1' });
     assert.equal(res.code, 400);
     assert.match(res.body.error, /Podešavanja/);
     assert.equal(pozivi.filter(x => x.startsWith('DELETE')).length, 0, 'nesto je obrisano');
@@ -1309,14 +1313,14 @@ describe('/api/admin-users — kapija vlasnika', () => {
     /* Bez provere postojanja bi pogresan id obrisao nula redova i vratio
        „ok" — izgledalo bi kao da je neko obrisan a nije. */
     const pozivi = stub(VLASNIK);
-    const res = await zovi({ obrisiId: 'nepostojeci' });
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'nepostojeci' });
     assert.equal(res.code, 404);
     assert.equal(pozivi.filter(x => x.startsWith('DELETE')).length, 0);
   });
 
   test('brise SVE tabele pa tek onda nalog', async () => {
     const pozivi = stub(VLASNIK);
-    const res = await zovi({ obrisiId: 'k1' });
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1' });
     assert.equal(res.code, 200);
     const tabele = pozivi.filter(x => x.startsWith('DELETE') && x.includes('/rest/v1/'));
     for (const t of ['user_state', 'push_pretplata', 'ai_posao', 'api_usage', 'bug_report_usage', 'endpoint_usage']) {
@@ -1329,7 +1333,7 @@ describe('/api/admin-users — kapija vlasnika', () => {
 
   test('kad brisanje podataka padne, nalog OSTAJE', async () => {
     const pozivi = stub(VLASNIK, { obrisiPada: 'ai_posao' });
-    const res = await zovi({ obrisiId: 'k1' });
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1' });
     assert.equal(res.code, 502);
     assert.match(res.body.error, /NIJE obrisan/);
     assert.equal(pozivi.filter(x => x.startsWith('DELETE') && x.includes('/auth/v1/admin/users/')).length, 0);
@@ -1348,12 +1352,12 @@ describe('/api/admin-users — kapija vlasnika', () => {
       }
       throw new Error('neocekivan poziv: ' + u);
     };
-    let res = await zovi({ banId: 'k1' });
+    let res = await zovi({ admin: 'ban', banId: 'k1' });
     assert.equal(res.code, 200);
     assert.equal(res.body.zabranjen, true);
     assert.notEqual(poslato.ban_duration, 'none', 'zabrana je poslata kao skidanje');
 
-    res = await zovi({ banId: 'k1', ukini: true });
+    res = await zovi({ admin: 'ban', banId: 'k1', ukini: true });
     assert.equal(res.code, 200);
     assert.equal(res.body.zabranjen, false);
     assert.equal(poslato.ban_duration, 'none', 'skidanje zabrane nije poslato kao none');
@@ -1362,7 +1366,7 @@ describe('/api/admin-users — kapija vlasnika', () => {
   test('vlasnik NE moze sebe da zabrani', async () => {
     /* Isti razlog kao kod brisanja: zakljucao bi se van sopstvene aplikacije. */
     const pozivi = stub(VLASNIK);
-    const res = await zovi({ banId: 'v1' });
+    const res = await zovi({ admin: 'ban', banId: 'v1' });
     assert.equal(res.code, 400);
     assert.equal(pozivi.filter(x => x.startsWith('PUT')).length, 0);
   });
@@ -1382,7 +1386,7 @@ describe('/api/admin-users — kapija vlasnika', () => {
       if (u.includes('/rest/v1/user_state')) return jsonRes([]);
       throw new Error('neocekivan poziv: ' + u);
     };
-    const k = (await zovi({})).body.korisnici;
+    const k = (await zovi({ admin: 'lista' })).body.korisnici;
     assert.equal(k.find(x => x.id === 'a').zabranjen, true, 'aktivna zabrana nije prikazana');
     assert.equal(k.find(x => x.id === 'b').zabranjen, false, 'istekla zabrana je prikazana kao aktivna');
     assert.equal(k.find(x => x.id === 'c').zabranjen, false);

@@ -44,22 +44,169 @@ function proveriTajnu(req) {
    ova provera cini da odbrana NE ZAVISI od Supabase podesavanja. Prihvata se
    `email_confirmed_at` ILI `confirmed_at` — GoTrue je kroz verzije koristio
    oba naziva za istu potvrdu. */
-async function proveriVlasnika(req) {
+/* Vraca korisnika iz tokena AKO je vlasnik, inace null. Ceo objekat, ne samo
+   `true`, jer administratorskim radnjama treba i njegov id — da se vlasnik ne
+   bi obrisao ili zabranio sam sebi. */
+async function vlasnikIz(req) {
   const admin = String(process.env.ADMIN_EMAIL || process.env.REPORT_TO || '').trim().toLowerCase();
   const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
-  if (!admin || !url || !anon) return false;
+  if (!admin || !url || !anon) return null;
   const h = req.headers.authorization || req.headers.Authorization || '';
   const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
-  if (!m) return false;
+  if (!m) return null;
   try {
     const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
     });
-    if (!r.ok) return false;
+    if (!r.ok) return null;
     const u = await r.json();
     const potvrdjen = !!(u && (u.email_confirmed_at || u.confirmed_at));
-    return !!(u && u.email && potvrdjen && String(u.email).trim().toLowerCase() === admin);
-  } catch (e) { return false; }
+    if (!u || !u.email || !potvrdjen) return null;
+    return String(u.email).trim().toLowerCase() === admin ? u : null;
+  } catch (e) { return null; }
+}
+async function proveriVlasnika(req) { return !!(await vlasnikIz(req)); }
+
+/* ============================================================
+   SPISAK KORISNIKA, BRISANJE I ZABRANA — sve pod `{admin: ...}`.
+
+   ZASTO OVDE, a ne u zasebnom fajlu. Bilo je zasebno (api/admin-users.js) i
+   tako je citljivije, ali Vercel Hobby plan dozvoljava najvise 12 serverless
+   funkcija po deployu — trinaesta obara CEO build, pa se ne objavi ni jedna
+   izmena. Ovo je najprirodnije mesto za spajanje: broadcast je vec vlasnicka
+   putanja sa istom kapijom i vec ume da izlista korisnike.
+
+   ZASTO NE U /api/delete-account. Ta putanja NIKAD ne cita ciji nalog brise
+   iz zahteva — to je njeno jedino bezbednosno obecanje i drzi ga test.
+   Administratorsko brisanje bi ga ponistilo.
+
+   KAPIJA JE UZA NEGO ZA SLANJE MEJLA: samo vlasnik, nikad CRON_SECRET.
+   Zakazani posao sme da posalje obavestenje; ne sme da brise ljude.
+   ============================================================ */
+const TABELE = [
+  'user_state',
+  'push_pretplata',
+  'ai_posao',
+  'api_usage',
+  'bug_report_usage',
+  'endpoint_usage'
+];
+
+async function adminRuta(res, body, vlasnik, baza, srvHead) {
+  /* ---------- ZABRANA / SKIDANJE ---------- */
+  if (body.admin === 'ban') {
+    if (body.banId === vlasnik.id) return res.status(400).json({ error: 'Sebe ne možeš da zabraniš.' });
+    /* GoTrue prima `ban_duration` kao trajanje ('876000h' = sto godina) ili
+       'none' za skidanje. Zasebna „unban" putanja ne postoji. */
+    try {
+      const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(String(body.banId)), {
+        method: 'PUT',
+        headers: { ...srvHead, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ban_duration: body.ukini ? 'none' : '876000h' })
+      });
+      if (!r.ok) {
+        console.error('[admin][ALARM] zabrana nije primenjena za %s — HTTP %s', body.banId, r.status);
+        return res.status(502).json({ error: 'Nije uspelo (' + r.status + ').' });
+      }
+      const u = await r.json();
+      console.log('[admin] %s je %s nalog %s', vlasnik.email, body.ukini ? 'odbranio' : 'zabranio', body.banId);
+      return res.status(200).json({ ok: true, zabranjen: !body.ukini, email: (u && u.email) || null });
+    } catch (e) { return res.status(503).json({ error: 'Server nije dostupan.' }); }
+  }
+
+  /* ---------- BRISANJE ---------- */
+  if (body.admin === 'obrisi') {
+    const cilj = String(body.obrisiId || '');
+    /* Vlasnik ne sme sebe odavde — izgubio bi pristup spisku. Za sopstveni
+       nalog postoji Podesavanja → Nalog → Brisanje naloga, sa potvrdom. */
+    if (cilj === vlasnik.id) {
+      return res.status(400).json({ error: 'Svoj nalog ne brišeš odavde — Podešavanja → Nalog → Brisanje naloga.' });
+    }
+    /* Postojanje se proverava PRE brisanja redova: bez toga bi pogresan id
+       obrisao nula redova i vratio „ok", pa bi izgledalo da je neko obrisan. */
+    let meta = null;
+    try {
+      const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), { headers: srvHead });
+      if (r.ok) meta = await r.json();
+    } catch (e) {}
+    if (!meta || !meta.id) return res.status(404).json({ error: 'Taj nalog ne postoji.' });
+
+    const obrisano = [];
+    for (const t of TABELE) {
+      try {
+        const r = await fetch(baza + '/rest/v1/' + t + '?user_id=eq.' + encodeURIComponent(cilj), {
+          method: 'DELETE', headers: { ...srvHead, Prefer: 'return=minimal' }
+        });
+        if (!r.ok && r.status !== 404) {
+          console.error('[admin][ALARM] tabela %s nije obrisana za %s — HTTP %s', t, cilj, r.status);
+          return res.status(502).json({ error: 'Brisanje podataka nije uspelo (' + t + '). Nalog NIJE obrisan.' });
+        }
+        if (r.ok) obrisano.push(t);
+      } catch (e) {
+        return res.status(503).json({ error: 'Server nije dostupan. Nalog NIJE obrisan.' });
+      }
+    }
+    /* Nalog TEK NA KRAJU — obrnut redosled ostavlja coveka bez pristupa a sa
+       podacima na serveru. */
+    try {
+      const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
+        method: 'DELETE', headers: srvHead
+      });
+      if (!r.ok) return res.status(502).json({ error: 'Podaci su obrisani, ali sam nalog nije.' });
+    } catch (e) { return res.status(503).json({ error: 'Podaci su obrisani, ali sam nalog nije.' }); }
+
+    console.log('[admin] %s obrisao nalog %s (%s)', vlasnik.email, meta.email || '—', cilj);
+    return res.status(200).json({ ok: true, email: meta.email || null, obrisano });
+  }
+
+  /* ---------- SPISAK ---------- */
+  let lista;
+  try { lista = await sviKorisniciPuni(baza, srvHead.apikey); }
+  catch (e) { return res.status(502).json({ error: e.message }); }
+
+  /* Ko uopste ima zapisa — da se prazan probni nalog razlikuje od nekog ko
+     aplikaciju stvarno koristi. Jedan upit za sve, ne po korisniku. */
+  const brojac = {};
+  try {
+    const r = await fetch(baza + '/rest/v1/user_state?select=user_id,updated_at', { headers: srvHead });
+    if (r.ok) for (const x of await r.json()) brojac[x.user_id] = x.updated_at || true;
+  } catch (e) { /* bez ovoga spisak i dalje radi */ }
+
+  /* `banned_until` posle skidanja zabrane ume da ostane kao datum u PROSLOSTI,
+     zavisno od verzije GoTrue-a — zato poredjenje sa sadasnjim trenutkom, a ne
+     samo provera postojanja polja. */
+  const sada = Date.now();
+  const korisnici = lista.map(u => {
+    const do_ = u.banned_until || u.bannedUntil || null;
+    return {
+      id: u.id,
+      email: u.email || '—',
+      napravljen: u.created_at || null,
+      poslednjaPrijava: u.last_sign_in_at || null,
+      imaPodatke: !!brojac[u.id],
+      zabranjen: !!(do_ && Date.parse(do_) > sada),
+      jaSam: u.id === vlasnik.id
+    };
+  }).sort((a, b) => String(b.poslednjaPrijava || '').localeCompare(String(a.poslednjaPrijava || '')));
+
+  return res.status(200).json({ ok: true, korisnici });
+}
+
+/* Kao `sviKorisnici`, ali vraca CELE objekte umesto samo adresa — spisku
+   trebaju id, datum prijave i stanje zabrane. */
+async function sviKorisniciPuni(url, key) {
+  const PER = 200, out = [];
+  for (let page = 1; page <= 25; page++) {
+    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=' + PER + '&page=' + page, {
+      headers: { apikey: key, Authorization: 'Bearer ' + key }
+    });
+    if (!r.ok) throw new Error('spisak korisnika nije uspeo (' + r.status + ')');
+    const j = await r.json();
+    const users = Array.isArray(j) ? j : (Array.isArray(j.users) ? j.users : []);
+    out.push(...users);
+    if (users.length < PER) break;
+  }
+  return out;
 }
 
 async function sviKorisnici(url, key) {
@@ -125,6 +272,24 @@ const NASLOV = 'SUB-20 — uputstvo: kako se koriste sve funkcije';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Samo POST.' }); return; }
+
+  let body = {};
+  try { body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {}); } catch {}
+
+  /* ADMIN GRANA — pre svega ostalog, jer ne trazi Resend podesavanja i ima
+     UZU kapiju: samo vlasnik, nikad CRON_SECRET. Zakazani posao sme da
+     posalje obavestenje; ne sme da brise ljude.
+     Neovlascen zahtev dobija 404, ne 403 — „zabranjeno" je potvrda da nesto
+     postoji. */
+  if (body.admin) {
+    const vlasnik = await vlasnikIz(req);
+    if (!vlasnik) { res.status(404).json({ error: 'Ne postoji.' }); return; }
+    const u = process.env.SUPABASE_URL, s = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!u || !s) { res.status(500).json({ error: 'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY nisu podešeni.' }); return; }
+    const baza = u.replace(/\/+$/, '');
+    return adminRuta(res, body, vlasnik, baza, { apikey: s, Authorization: 'Bearer ' + s });
+  }
+
   if (!proveriTajnu(req) && !(await proveriVlasnika(req))) {
     res.status(401).json({ error: 'Neovlašćeno.' }); return;
   }
@@ -135,9 +300,6 @@ export default async function handler(req, res) {
   const from = process.env.REPORT_FROM;
   if (!url || !srv) { res.status(500).json({ error: 'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY nisu podešeni.' }); return; }
   if (!rk || !from) { res.status(500).json({ error: 'RESEND_API_KEY / REPORT_FROM nisu podešeni.' }); return; }
-
-  let body = {};
-  try { body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {}); } catch {}
   const posalji = body.posalji === true;
   /* probno slanje samo na navedene adrese — da vidiš kako mejl izgleda u sandučetu */
   const samoNa = Array.isArray(body.samoNa) ? body.samoNa.map(x => String(x).toLowerCase()) : null;

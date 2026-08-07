@@ -572,12 +572,13 @@ describe('Serverske funkcije', () => {
        nalog briše iz zahteva — samo iz proverenog tokena; drži to test „ne
        briše nalog čiji id stigne u telu zahteva" u api.test.mjs.
 
-       admin-users.js je peti: vlasnikov spisak korisnika i brisanje TUDJEG
-       naloga. Kapija je ista provera kao u broadcast.js — token se proverava
-       kod Supabase-a i procitana adresa poredi sa ADMIN_EMAIL, uz zahtev da
-       je adresa potvrdjena. `jeVlasnik()` u klijentu samo skriva dugme. */
+       Vlasnikov spisak korisnika, brisanje tudjeg naloga i zabrana ZIVE U
+       broadcast.js — bili su zaseban api/admin-users.js, ali Vercel Hobby plan
+       dozvoljava najvise 12 serverless funkcija po deployu i trinaesta obara
+       ceo build. Kapija za te radnje je UZA nego za slanje mejla: samo vlasnik,
+       nikad CRON_SECRET. */
     const dozvoljeni = new Set(['daily-report.js', 'broadcast.js', 'push.js',
-                                'delete-account.js', 'admin-users.js']);
+                                'delete-account.js']);
     const { readdirSync } = await import('node:fs');
     for (const f of readdirSync(new URL('../api/', import.meta.url))) {
       const izvor = readRepoFile('api/' + f);
