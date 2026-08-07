@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='200'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='201'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2790,8 +2790,14 @@ const VREME_URL='https://api.open-meteo.com/v1/forecast';
 const VRUCINA=[
   { od:35, pct:8, rec:'Preko 35 °C osećaja — kvalitetnu sesiju pomeri ili zameni laganim trčanjem. Tempo tu više ne meri formu.' },
   { od:30, pct:6, rec:'Na ovoj vrućini radni deo drži po osećaju, ne po satu. Skrati ako puls ode iznad uobičajenog za taj tempo.' },
-  { od:25, pct:4, rec:'Toplo — ciljni tempo je realno ovoliko sporiji. To nije pad forme.' },
-  { od:20, pct:2, rec:'Blago toplo; računaj na malo sporiji tempo pri istom naporu.' },
+  /* %PCT% se zamenjuje procentom pri iscrtavanju (v. karticaVremena).
+     Ranije je ovde stajalo „ciljni tempo je realno OVOLIKO sporiji" — pokazna
+     rec koja trazi broj pored sebe. Broj, medjutim, daje red „tempo uz
+     vrucinu", a on po dizajnu postoji samo na kvalitetnim sesijama, pa je na
+     laganom danu recenica pokazivala u prazno: savet koji tvrdi da je nesto
+     „ovoliko" sporije, bez ijedne cifre. Sada tekst nosi broj i stoji sam. */
+  { od:25, pct:4, rec:'Toplo — ciljni tempo je realno oko %PCT% sporiji. To nije pad forme.' },
+  { od:20, pct:2, rec:'Blago toplo; računaj na oko %PCT% sporiji tempo pri istom naporu.' },
   { od:15, pct:1, rec:'' },
   { od:-99, pct:0, rec:'' }
 ];
@@ -2907,7 +2913,11 @@ function karticaVremena(d){
   }
   const bolji=najboljiSat(d.date,sat);
   const nap=[];
-  if(vr&&vr.rec) nap.push(vr.rec);
+  /* Procenat ulazi u SAM tekst — red „tempo uz vrucinu" sa konkretnim tempom
+     postoji samo na kvalitetnim sesijama, pa se recenica ne sme oslanjati na
+     njega. Na laganom danu je ovo jedini broj koji covek dobije, i to je
+     dovoljno: apsolutan tempo se tamo namerno ne nudi. */
+  if(vr&&vr.rec) nap.push(vr.rec.replace('%PCT%', vr.pct+' %'));
   /* „U 5:00 je osećaj 25 °C" je čitano kao TRENUTNA temperatura. Rečenica sada
      počinje glagolom i imenuje dan, pa ne može da se pomeša sa „sada". */
   if(bolji) nap.push(`Hladnije je u ${bolji.sat}:00 (${d.date===TODAY?'danas':dowOf(d.date)+' '+fmtD(d.date)}): osećaj ${fmtNum(bolji.osecaj,0)} °C, ${Math.round((z.osecaj-bolji.osecaj))} °C manje nego u ${sat}:00.`);

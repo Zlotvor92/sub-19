@@ -560,6 +560,50 @@ describe('Vreme na dan treninga', () => {
     assert.match(String(lako), /°C/, 'lagan dan ipak vidi vreme');
   });
 
+  test('savet koji tvrdi da je tempo sporiji MORA da kaze za koliko', () => {
+    /* STVARAN NALAZ. Tekst je glasio „ciljni tempo je realno OVOLIKO sporiji" —
+       pokazna rec koja trazi broj pored sebe. Broj daje red „tempo uz vrucinu",
+       a on po dizajnu postoji samo na kvalitetnim sesijama. Na laganom danu je
+       recenica pokazivala u prazno: savet bez ijedne cifre.
+
+       Invarijanta nije „tekst mora sadrzati procenat" (pojasevi na 30 i 35 °C
+       namerno ne govore o tempu nego o osecaju), nego: AKO tvrdi da je nesto
+       sporije, mora reci za koliko. Pravilo da lagan dan ne dobija apsolutan
+       tempo ostaje netaknuto — proverava ga test iznad. */
+    for (const osecaj of [22, 27, 32, 37]) {
+      const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+      a.evalIn(`
+        S.ui.geo={lat:44.81,lon:20.46}; S.ui.satTreninga=17;
+        const sati={};
+        for(let i=0;i<14;i++){ const d=addD(TODAY,i);
+          for(let h=0;h<24;h++) sati[d+'T'+String(h).padStart(2,'0')]=
+            {temp:33, osecaj:${osecaj}, vlaga:38, vetar:9, kisa:5}; }
+        S.vreme={at:Date.now(), lat:44.81, lon:20.46, sati}; save();`);
+
+      for (const tag of ['int', 'tempo', 'lako', 'lr', 'snaga']) {
+        const h = String(a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='${tag}');
+          return d?karticaVremena(d):''; })()`));
+        if (!h) continue;                       /* plan nema takav dan u prognozi */
+        const nota = (/<div class="note-src">([\s\S]*?)<\/div>/.exec(h) || [, ''])[1];
+        if (!/sporiji/.test(nota)) continue;    /* ne tvrdi nista o tempu */
+        assert.match(nota, /\d+\s*%/,
+          `${osecaj} °C, ${tag}: savet kaze „sporiji" a ne kaze za koliko — ${nota.slice(0, 90)}`);
+      }
+    }
+  });
+
+  test('u tekstu saveta ne ostaje nezamenjen rezervisani znak', () => {
+    /* Procenat se ubacuje zamenom %PCT% pri iscrtavanju. Ako se ime zamene
+       promeni na jednom mestu a ne na drugom, korisnik dobija sirov `%PCT%`
+       usred recenice — a nijedan drugi test to ne bi video. */
+    const a = sa();
+    for (const tag of ['int', 'lako']) {
+      const h = String(a.evalIn(`(()=>{ const d=DATED.find(x=>x.date>=TODAY&&x.tag==='${tag}');
+        return d?karticaVremena(d):''; })()`));
+      assert.doesNotMatch(h, /%PCT%/, `${tag}: rezervisani znak je ostao u tekstu`);
+    }
+  });
+
   test('hladniji termin se nudi samo kad je razlika stvarna', () => {
     const a = sa();
     /* 17h ima osećaj 37, 7h ima 18 — razlika od 19 °C se nudi. */
