@@ -120,6 +120,27 @@ describe('vercel.json', () => {
   });
 });
 
+describe('Izgled obrazaca', () => {
+  test('polja u obrascima nisu bela kutija iz pregledača', () => {
+    /* Pravilo je bilo nabrajanje po tipu (`input[type=text]`, `[type=number]`,
+       `[type=date]`). Takav selektor NE hvata `<input>` bez atributa `type` —
+       a takva su bila tri postojeća polja, plus jedno sa `type=password`. Sva
+       su se crtala kao bela kutija iz pregledača usred tamnog lista.
+
+       Test ne traži konkretan selektor nego SVOJSTVO: da svaki tip koji
+       aplikacija stvarno koristi bude pokriven, uključujući „bez atributa". */
+    const css = readRepoFile('index.html');
+    const m = /\.f-field input([^{]*)\{/.exec(css);
+    assert.ok(m, 'nema pravila za .f-field input');
+    const izuzeti = [...m[0].matchAll(/:not\(\[type=([a-z]+)\]\)/g)].map(x => x[1]);
+    const nabrojani = [...m[0].matchAll(/input\[type=([a-z]+)\]/g)].map(x => x[1]);
+    for (const t of ['text', 'password', 'date', 'number', 'bez-atributa']) {
+      const pokriven = izuzeti.length ? !izuzeti.includes(t) : nabrojani.includes(t);
+      assert.ok(pokriven, `polje tipa „${t}" nije stilizovano — crta se kao bela kutija`);
+    }
+  });
+});
+
 describe("Ništa izvršno ne stoji inline u HTML-u (uslov za script-src 'self')", () => {
   /* Čim jedan `onclick=` ili jedan inline <script> blok uđe nazad u markup,
      stranica se tiho lomi u produkciji (CSP ga blokira), a testovi koji rade

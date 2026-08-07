@@ -458,7 +458,15 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .more-details[open] summary{border-bottom:1px solid var(--line-soft)}
 .more-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
 .more-grid .f-field{background:var(--glass);padding:9px 12px}
-.f-field input[type=text],.f-field input[type=number],.f-field input[type=date],.f-field textarea,.f-field select{
+/* NABRAJANJE PO TIPU JE PROPUŠTALO POLJA. Selektor `input[type=text]` ne
+   hvata `<input>` BEZ atributa `type` — a takva su tri postojeća polja
+   (`icu-id`, `icu-uri`) i jedno sa `type=password` (`icu-key`). Ona su se sve
+   vreme crtala kao bela kutija iz pregledača usred tamnog lista. Uočeno na
+   snimku ekrana, ne u testu.
+   Sada se isključuju tipovi koji imaju SVOJ izgled (range, checkbox, radio,
+   file), a sve ostalo se stiliše — pa novo polje ne može da ispadne. */
+.f-field input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=file]),
+.f-field textarea,.f-field select{
   width:100%;background:none;border:0;outline:none;font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--txt);
   -webkit-appearance:none;appearance:none;
 }

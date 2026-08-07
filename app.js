@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='213'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='214'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9618,7 +9618,7 @@ function openSettings(){
         glava('Zajednica', uk?'profil je vidljiv drugima':'isključena', uk?true:null),
         `<div class="set-st">Rang-lista trkača u aplikaciji. Dok je isključena, ne postojiš na spisku i ne vidiš tuđe profile — vidljivost je uzajamna.</div>
          <div class="f-grid"><div class="f-field full"><label for="zaj-nadimak">Nadimak <small style="color:var(--txt2)">(prazno = ime sa Google naloga)</small></label>
-           <input id="zaj-nadimak" maxlength="24" placeholder="${esc(zajIme()||'kako te zovu')}" value="${esc((S.zajed&&S.zajed.nadimak)||'')}"></div></div>
+           <input id="zaj-nadimak" type="text" maxlength="24" placeholder="${esc(zajIme()||'kako te zovu')}" value="${esc((S.zajed&&S.zajed.nadimak)||'')}"></div></div>
          <div class="btnrow"><button class="btn${uk?' ghost':''}" id="zaj-tgl">${uk?'Isključi Zajednicu':'Uključi Zajednicu'}</button></div>
          <div class="note-src" id="zaj-out" style="margin:6px 0 0"></div>
          <details class="help"><summary>Šta drugi vide</summary>
@@ -9631,7 +9631,7 @@ function openSettings(){
          ${jeVlasnik()?`<details class="help"><summary>Izazov nedelje · samo ti</summary>
            <p>Isti tekst stoji svima dok ga ne promeniš. Menja se retko — poenta je da ljudi znaju šta se od njih očekuje, ne da svake nedelje pogađaju.</p>
            <div class="f-field full"><label for="zaj-izazov">Tekst izazova</label>
-             <input id="zaj-izazov" maxlength="160" value="${esc(ZAJ.izazov||'')}" placeholder="Odradi sve treninge po planu ove nedelje."></div>
+             <input id="zaj-izazov" type="text" maxlength="160" value="${esc(ZAJ.izazov||'')}" placeholder="Odradi sve treninge po planu ove nedelje."></div>
            <div class="btnrow" style="margin-top:8px"><button class="btn ghost sm" id="zaj-izazov-cuvaj">Sačuvaj izazov</button></div>
            <div class="note-src" id="zaj-izazov-out"></div></details>`:''}`);
     })():''}
