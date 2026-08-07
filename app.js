@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='199'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='200'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9384,7 +9384,8 @@ function openSettings(){
       stNalog
         ? `<div class="set-st">${vremeSb?('sinhronizovano '+esc(vremeSb)):'još nije sinhronizovano'}</div>
            <div class="btnrow"><button class="btn ghost" id="sb-sync">Sinhronizuj</button><button class="btn ghost sm" id="sb-out">Odjavi se</button></div>
-           <details class="help"><summary>Čemu služi prijava</summary><p>Podaci i dalje žive na ovom uređaju — server je samo rezervna kopija, pa aplikacija radi i bez signala. Prijava služi da plan bude isti na svim tvojim uređajima.</p></details>`
+           <details class="help"><summary>Čemu služi prijava</summary><p>Podaci i dalje žive na ovom uređaju — server je samo rezervna kopija, pa aplikacija radi i bez signala. Prijava služi da plan bude isti na svim tvojim uređajima.</p></details>
+           <details class="help"><summary>Brisanje naloga</summary><p>Briše nalog i <b>sve</b> podatke sa servera — plan, istoriju treninga, merenja oporavka i prijave za obaveštenja. Ne može da se poništi. Pre brisanja napravi „Backup" ako želiš da zadržiš kopiju.</p><div class="btnrow"><button class="btn ghost sm" id="sb-del">Obriši nalog</button></div></details>`
         : `<div class="btnrow"><button class="btn" id="sb-in">Prijavi se Google nalogom</button></div>
            <details class="help"><summary>Šta dobijam prijavom</summary><p>Bez prijave sve radi kao i do sad, samo bez rezervne kopije na serveru i bez istog plana na više uređaja.</p></details>`):''}
 
@@ -9506,6 +9507,7 @@ function openSettings(){
   if($('#s-bug')) $('#s-bug').onclick=openBugSheet;
   if($('#sb-in'))   $('#sb-in').onclick=sbLogin;
   if($('#sb-out'))  $('#sb-out').onclick=()=>{ if(confirm('Odjaviti se? Podaci na ovom uređaju ostaju.')){ sbLogout(); closeSheet(); } };
+  if($('#sb-del'))  $('#sb-del').onclick=openObrisiNalogSheet;
   if($('#sb-sync')) $('#sb-sync').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Sinhronizujem…';
     const ok=await sbPush();
@@ -9813,6 +9815,71 @@ function openBugSheet(){
     }
   };
 }
+
+/* BRISANJE NALOGA — nepovratna radnja, pa ide kroz kucanje potvrde.
+   Ne `confirm()`: instalirane PWA i deo pregledaca ga prigusuju i tada vraca
+   `false` (ista zamka je vec opisana u prikaziSukobSync). Ovde bi prigusen
+   dijalog znacio da dugme ne radi, sto je bezbedan ali nerazumljiv ishod —
+   a Play trazi da put do brisanja POSTOJI iz aplikacije. Kucanje potvrde
+   radi svuda i istovremeno je jedina prava zastita od slucajnog dodira.
+
+   Isti tekst prima i server (v. POTVRDA u api/delete-account.js); ako se ta
+   dva razidju, brisanje tiho prestane da radi — drzi ih test „potvrda iz
+   aplikacije je ista kao na serveru". */
+const DEL_POTVRDA='OBRISI NALOG';
+function openObrisiNalogSheet(){
+  openSheet(`
+    <div class="sh-t">Obriši nalog</div>
+    <div class="sh-s">Nepovratno. Sa servera nestaju plan, istorija treninga, merenja oporavka i prijave za obaveštenja.</div>
+    <div class="kb warn" style="margin-top:10px"><div><div>Napravi backup pre ovoga</div><small>Podešavanja → „Backup" preuzima kopiju na uređaj. Posle brisanja je više nema odakle vratiti.</small></div></div>
+    <div class="set-st" style="margin-top:12px">Za potvrdu ukucaj <b>${DEL_POTVRDA}</b>:</div>
+    <input id="del-pot" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${DEL_POTVRDA}" style="width:100%;margin-top:6px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--txt);font-size:.95rem;font-weight:700;letter-spacing:.04em">
+    <div class="note-src" id="del-err" style="color:var(--red)"></div>
+    <div class="btnrow" style="margin-top:10px"><button class="btn danger" id="del-go" disabled>Obriši nalog</button></div>
+  `);
+  const btn=$('#del-go'), err=$('#del-err'), inp=$('#del-pot');
+  const uredi=v=>String(v||'').toUpperCase().replace(/Š/g,'S').replace(/\s+/g,' ').trim();
+  inp.oninput=()=>{ btn.disabled=uredi(inp.value)!==DEL_POTVRDA; err.textContent=''; };
+  btn.onclick=async()=>{
+    if(uredi(inp.value)!==DEL_POTVRDA) return;
+    btn.disabled=true; btn.textContent='Brišem…'; err.textContent='';
+    try{
+      const tok=await sbToken();
+      if(!tok) throw new Error('Moraš biti prijavljen.');
+      const r=await fetch('/api/delete-account',{method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+        body:JSON.stringify({potvrda:DEL_POTVRDA})});
+      const res=await apiJson(r);
+      if(!res.data||!res.data.ok){ throw new Error((res.data&&res.data.error)||res.error||'Nepoznata greška'); }
+      btn.textContent='Obrisano ✓';
+      await lokalnoZaboraviSve();
+      closeSheet();
+      /* Nazad na kapiju, sa objasnjenjem — bez ovoga bi ekran izgledao kao
+         obicna odjava i covek ne bi znao da li je brisanje proslo. */
+      sbShowGate('Nalog i svi podaci su obrisani.');
+    }catch(e){
+      err.textContent=e.message;
+      btn.disabled=false; btn.textContent='Obriši nalog';
+    }
+  };
+}
+
+/* Uklanja SVE tragove naloga sa ovog uredjaja. Zove se tek posle potvrdjenog
+   brisanja na serveru — ne sme ranije, jer bi neuspelo brisanje ostavilo
+   coveka bez lokalnih podataka a sa nalogom koji i dalje postoji. */
+async function lokalnoZaboraviSve(){
+  /* Pretplata na obavestenja se gasi BEZ poziva servera: red u bazi je vec
+     obrisan, a token vise ne vazi (naloga nema), pa bi `pushIskljuci` samo
+     dobio 401. Ovde je dovoljno da pregledac zaboravi svoju pretplatu. */
+  try{ const sub=await pushPretplataSada(); if(sub) await sub.unsubscribe(); }catch(e){}
+  try{ await periodicnaOdjava(); }catch(e){}
+  try{ await pozadinskiZaboravi(); }catch(e){}
+  for(const k of [LS_KEY,LS_SPAS_KEY,SB_KEY,SB_STATE_KEY,ICU_STATE_KEY,STRAVA_STATE_KEY]){
+    try{ localStorage.removeItem(k); }catch(e){}
+  }
+  SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
+}
+
 /* STA SME U BACKUP FAJL — jedno mesto, jedna politika.
    Ranije je stajalo samo `delete copy.strava` uz komentar „tokeni ne idu u
    backup fajl". Strava jeste bila skinuta, ali `S.icu` NIJE — a on nosi

@@ -562,8 +562,16 @@ describe('Serverske funkcije', () => {
        gateovano CRON_SECRET-om / vlasnikom), i NIKAD u klijentu.
        push.js je treći iz istog razloga: jutarnji podsetnik i „analiza je
        gotova" šalju se dok korisnik NIJE prisutan, pa njegovog tokena nema —
-       a i te putanje su gateovane CRON_SECRET-om (v. proveriTajnu). */
-    const dozvoljeni = new Set(['daily-report.js', 'broadcast.js', 'push.js']);
+       a i te putanje su gateovane CRON_SECRET-om (v. proveriTajnu).
+
+       delete-account.js je četvrti, i jedini koji ključ koristi DOK je
+       korisnik prisutan. Mora: brojači (`api_usage`, `bug_report_usage`,
+       `endpoint_usage`) se po dizajnu pišu isključivo kroz `check_and_bump_*`
+       i nemaju delete politiku za korisnika, a brisanje reda u `auth.users`
+       je ionako admin operacija. Zauzvrat ta putanja NIKAD ne čita čiji se
+       nalog briše iz zahteva — samo iz proverenog tokena; drži to test „ne
+       briše nalog čiji id stigne u telu zahteva" u api.test.mjs. */
+    const dozvoljeni = new Set(['daily-report.js', 'broadcast.js', 'push.js', 'delete-account.js']);
     const { readdirSync } = await import('node:fs');
     for (const f of readdirSync(new URL('../api/', import.meta.url))) {
       const izvor = readRepoFile('api/' + f);
