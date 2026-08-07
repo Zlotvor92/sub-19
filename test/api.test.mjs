@@ -1215,3 +1215,131 @@ describe('/api/delete-account — brisanje naloga', () => {
     assert.equal(server[1], klijent[1]);
   });
 });
+
+/* ============================================================
+   /api/admin-users — vlasnikov spisak i brisanje TUDJEG naloga.
+
+   Ova putanja drzi service_role kljuc I cita ciji se nalog brise iz zahteva —
+   suprotno od delete-account.js. To je opravdano samo dok kapija drzi, pa je
+   ona i jedina stvar koju ovi testovi cuvaju.
+   ============================================================ */
+describe('/api/admin-users — kapija vlasnika', () => {
+  const IZVOR = readRepoFile('api/admin-users.js');
+  const VLASNIK = { id: 'v1', email: ENV.ADMIN_EMAIL, email_confirmed_at: '2026-01-01' };
+
+  function stub(korisnik, { obrisiPada = null } = {}) {
+    const pozivi = [];
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), metod = (opt && opt.method) || 'GET';
+      pozivi.push(metod + ' ' + u);
+      if (u.includes('/auth/v1/user')) {
+        return korisnik ? jsonRes(korisnik) : jsonRes({ error: 'nema' }, false, 401);
+      }
+      if (/\/auth\/v1\/admin\/users\/([^?]+)$/.test(u)) {
+        const id = /\/auth\/v1\/admin\/users\/([^?]+)$/.exec(u)[1];
+        if (id === 'nepostojeci') return jsonRes({ error: 'nema' }, false, 404);
+        return jsonRes({ id, email: id + '@t.rs' });
+      }
+      if (u.includes('/auth/v1/admin/users')) {
+        return jsonRes([VLASNIK, { id: 'k1', email: 'prvi@t.rs', last_sign_in_at: '2026-08-01' }]);
+      }
+      const m = /\/rest\/v1\/([a-z_]+)\?/.exec(u);
+      if (m) return obrisiPada === m[1] ? jsonRes({ error: 'ne' }, false, 500) : jsonRes([]);
+      throw new Error('neocekivan poziv: ' + u);
+    };
+    return pozivi;
+  }
+
+  const zovi = async (telo, over = {}) => {
+    const { default: handler } = await import('../api/admin-users.js?t=' + Date.now() + Math.random());
+    const res = makeRes();
+    await handler({
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer t' },
+      body: telo, ...over
+    }, res);
+    return res;
+  };
+
+  test('obican korisnik ne dobija spisak — i ne saznaje da putanja postoji', async () => {
+    /* 404, ne 403: „zabranjeno" je potvrda da nesto postoji. */
+    stub({ id: 'k1', email: 'neko@t.rs', email_confirmed_at: '2026-01-01' });
+    const res = await zovi({});
+    assert.equal(res.code, 404);
+    assert.doesNotMatch(JSON.stringify(res.body), /korisnic/i, 'odgovor odaje da putanja lista korisnike');
+  });
+
+  test('bez prijave ne prolazi', async () => {
+    stub(null);
+    assert.equal((await zovi({})).code, 404);
+    assert.equal((await zovi({}, { headers: { 'content-type': 'application/json' } })).code, 404);
+  });
+
+  test('NEPOTVRDJENA vlasnikova adresa ne otvara kapiju', async () => {
+    /* Na Supabase podesavanju bez obavezne potvrde mejla, svako se moze
+       registrovati vlasnikovom adresom i dobiti token sa email_confirmed_at:
+       null. Bez ove provere bi time dobio spisak svih korisnika i pravo da ih
+       brise. Ista zamka je vec zatvorena u broadcast.js. */
+    stub({ id: 'x', email: ENV.ADMIN_EMAIL, email_confirmed_at: null });
+    assert.equal((await zovi({})).code, 404);
+  });
+
+  test('vlasnik dobija spisak, sa oznakom koji je njegov', async () => {
+    stub(VLASNIK);
+    const res = await zovi({});
+    assert.equal(res.code, 200);
+    const k = res.body.korisnici;
+    assert.equal(k.length, 2);
+    assert.equal(k.find(x => x.id === 'v1').jaSam, true);
+    assert.equal(k.find(x => x.id === 'k1').jaSam, false);
+  });
+
+  test('vlasnik NE moze sebe da obrise odavde', async () => {
+    /* Izgubio bi pristup spisku i ne bi mogao ni da povrati stanje. Za svoj
+       nalog postoji Podesavanja → Nalog → Brisanje naloga, sa potvrdom
+       kucanjem. */
+    const pozivi = stub(VLASNIK);
+    const res = await zovi({ obrisiId: 'v1' });
+    assert.equal(res.code, 400);
+    assert.match(res.body.error, /Podešavanja/);
+    assert.equal(pozivi.filter(x => x.startsWith('DELETE')).length, 0, 'nesto je obrisano');
+  });
+
+  test('nepostojeci id ne prolazi kao uspeh', async () => {
+    /* Bez provere postojanja bi pogresan id obrisao nula redova i vratio
+       „ok" — izgledalo bi kao da je neko obrisan a nije. */
+    const pozivi = stub(VLASNIK);
+    const res = await zovi({ obrisiId: 'nepostojeci' });
+    assert.equal(res.code, 404);
+    assert.equal(pozivi.filter(x => x.startsWith('DELETE')).length, 0);
+  });
+
+  test('brise SVE tabele pa tek onda nalog', async () => {
+    const pozivi = stub(VLASNIK);
+    const res = await zovi({ obrisiId: 'k1' });
+    assert.equal(res.code, 200);
+    const tabele = pozivi.filter(x => x.startsWith('DELETE') && x.includes('/rest/v1/'));
+    for (const t of ['user_state', 'push_pretplata', 'ai_posao', 'api_usage', 'bug_report_usage', 'endpoint_usage']) {
+      assert.ok(tabele.some(x => x.includes('/rest/v1/' + t + '?')), 'tabela nije obrisana: ' + t);
+    }
+    const zadnjaTabela = pozivi.findLastIndex(x => x.startsWith('DELETE') && x.includes('/rest/v1/'));
+    const nalog = pozivi.findIndex(x => x.startsWith('DELETE') && x.includes('/auth/v1/admin/users/'));
+    assert.ok(nalog > zadnjaTabela, 'nalog je obrisan PRE podataka');
+  });
+
+  test('kad brisanje podataka padne, nalog OSTAJE', async () => {
+    const pozivi = stub(VLASNIK, { obrisiPada: 'ai_posao' });
+    const res = await zovi({ obrisiId: 'k1' });
+    assert.equal(res.code, 502);
+    assert.match(res.body.error, /NIJE obrisan/);
+    assert.equal(pozivi.filter(x => x.startsWith('DELETE') && x.includes('/auth/v1/admin/users/')).length, 0);
+  });
+
+  test('spisak tabela je ISTI kao u delete-account.js', () => {
+    /* Dva mesta brisu isti skup podataka. Kad se raziđu, jedna putanja ostavi
+       redove koje druga uklanja — i to se ne vidi ni iz jedne od njih. */
+    const izvuci = (src) => (/const TABELE = \[([\s\S]*?)\]/.exec(src)[1].match(/'([a-z_]+)'/g) || [])
+      .map(s => s.replace(/'/g, '')).sort();
+    assert.deepEqual(izvuci(IZVOR), izvuci(readRepoFile('api/delete-account.js')));
+  });
+});

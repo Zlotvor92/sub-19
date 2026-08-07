@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=9, LS_KEY='sub19-v1';
-const APP_VERSION='203'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='204'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9607,6 +9607,11 @@ function openSettings(){
        <div id="bc-out"></div>
        <details class="help"><summary>Šta se tačno šalje</summary><p>Kratak mejl sa dugmetom koje vodi na <b>/uputstvo.html</b>. Ceo tekst se namerno ne šalje mejlom — poslat mejl se ne može ispraviti, a stranica može.</p><p>Svaki mejl ide <b>posebno</b>, da niko ne vidi tuđe adrese. „Pošalji svima" prvo prebroji primaoce i pita za potvrdu.</p></details>`):''}
 
+    ${jeVlasnik()?kartica(false,
+      glava('Korisnici','ko ima nalog · samo ti',true),
+      `<div class="set-st">Spisak svih naloga, sa poslednjom prijavom. Odavde se briše tuđ nalog zajedno sa svim njegovim podacima.</div>
+       <div class="btnrow"><button class="btn ghost sm" id="ku-otvori">👥 Otvori spisak</button></div>`):''}
+
     <div class="btnrow" style="margin-top:16px"><button class="btn ghost sm" id="sw-osvezi">Osveži aplikaciju</button></div>
     <div class="note-src" id="sw-stanje" style="margin:6px 0 0">Proveravam verziju offline kopije…</div>
     <div class="note-src" style="margin-top:6px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_SUB-19_5K_v5.xlsx · trka 24.09.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
@@ -9617,6 +9622,7 @@ function openSettings(){
   if($('#sb-in'))   $('#sb-in').onclick=sbLogin;
   if($('#sb-out'))  $('#sb-out').onclick=()=>{ if(confirm('Odjaviti se? Podaci na ovom uređaju ostaju.')){ sbLogout(); closeSheet(); } };
   if($('#sb-del'))  $('#sb-del').onclick=openObrisiNalogSheet;
+  if($('#ku-otvori')) $('#ku-otvori').onclick=openKorisniciSheet;
   if($('#sb-sync')) $('#sb-sync').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Sinhronizujem…';
     const ok=await sbPush();
@@ -9987,6 +9993,78 @@ async function lokalnoZaboraviSve(){
     try{ localStorage.removeItem(k); }catch(e){}
   }
   SB={access:null,refresh:null,expiresAt:0,email:null,userId:null,seenAt:null,deviceId:SB.deviceId};
+}
+
+/* SPISAK KORISNIKA — samo vlasnik.
+
+   `jeVlasnik()` ovde sluzi SAMO da se dugme ne iscrtava drugima. Prava kapija
+   je na serveru (v. api/admin-users.js): token se proverava kod Supabase-a i
+   procitana adresa poredi sa ADMIN_EMAIL. Ko god pozove putanju bez toga
+   dobija 404 — namerno 404 a ne 403, da se ne potvrdi ni da putanja postoji.
+
+   BRISANJE IDE NA DVA DODIRA, ne kroz `confirm()`. Instalirane PWA umeju da
+   prigusе sistemski dijalog i tada vraca `false` (ista zamka je opisana u
+   prikaziSukobSync) — a ovde bi to znacilo da dugme naizgled ne radi. Dva
+   dodira rade svuda i jednako dobro sprecavaju slucajan dodir. Kucanje
+   potvrde kao kod brisanja SOPSTVENOG naloga bilo bi previse: tamo se brise
+   jednom u zivotu, ovde se cisti vise probnih naloga zaredom. */
+function openKorisniciSheet(){
+  openSheet(`
+    <div class="sh-t">Korisnici</div>
+    <div class="sh-s">Svi nalozi, poređani po poslednjoj prijavi.</div>
+    <div id="ku-lista"><div class="note-src">Učitavam…</div></div>
+  `);
+  ucitajKorisnike();
+}
+async function ucitajKorisnike(){
+  const box=$('#ku-lista'); if(!box) return;
+  try{
+    const tok=await sbToken();
+    if(!tok) throw new Error('Nisi prijavljen.');
+    const r=await fetch('/api/admin-users',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+      body:JSON.stringify({})});
+    const res=await apiJson(r);
+    if(!res.data||!res.data.ok) throw new Error((res.data&&res.data.error)||res.error||'Nije uspelo.');
+    const k=res.data.korisnici||[];
+    if(!k.length){ box.innerHTML='<div class="note-src">Nema nijednog naloga.</div>'; return; }
+    const kada=s=>{ if(!s) return 'nikad'; const d=new Date(s); return isNaN(d)?'—':fmtD(d.toISOString().slice(0,10)); };
+    box.innerHTML=`<div class="note-src" style="margin:10px 0 8px">${k.length} ${pl3(k.length,'nalog','naloga','naloga')}</div>`+
+      k.map(u=>`<div class="prow-ku" data-id="${esc(u.id)}" style="display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.84rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.email)}${u.jaSam?' <span style="color:var(--cyan);font-weight:800">· ti</span>':''}</div>
+          <div style="font-size:.68rem;color:var(--txt3);font-weight:600;margin-top:2px">prijava ${esc(kada(u.poslednjaPrijava))} · ${u.imaPodatke?'ima podatke':'prazan'}</div>
+        </div>
+        ${u.jaSam?'':`<button class="btn danger sm" data-ku-del="${esc(u.id)}" data-ku-mail="${esc(u.email)}">Obriši</button>`}
+      </div>`).join('')+
+      `<div class="note-src" style="margin-top:10px">Brisanje uklanja nalog i <b>sve</b> njegove podatke sa servera. Nepovratno je. Svoj nalog ne brišeš odavde — za to je Nalog → Brisanje naloga.</div>`;
+    box.querySelectorAll('[data-ku-del]').forEach(b=>{
+      b.onclick=async()=>{
+        if(b.dataset.pitano!=='1'){
+          b.dataset.pitano='1'; b.textContent='Sigurno?';
+          /* Vraca se samo od sebe — dugme koje zauvek stoji u stanju „Sigurno?"
+             je mina za sledeci dodir. */
+          setTimeout(()=>{ if(b.dataset.pitano==='1'){ b.dataset.pitano=''; b.textContent='Obriši'; } },4000);
+          return;
+        }
+        b.disabled=true; b.textContent='Brišem…';
+        try{
+          const tok=await sbToken();
+          const r=await fetch('/api/admin-users',{method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+            body:JSON.stringify({obrisiId:b.dataset.kuDel})});
+          const res=await apiJson(r);
+          if(!res.data||!res.data.ok) throw new Error((res.data&&res.data.error)||res.error||'Nije uspelo.');
+          ucitajKorisnike();          /* spisak se povlaci ponovo, ne krpi lokalno */
+        }catch(e){
+          b.disabled=false; b.dataset.pitano=''; b.textContent='Obriši';
+          alert(e.message);
+        }
+      };
+    });
+  }catch(e){
+    box.innerHTML=`<div class="note-src" style="color:var(--red)">${esc(e.message)}</div>`;
+  }
 }
 
 /* STA SME U BACKUP FAJL — jedno mesto, jedna politika.

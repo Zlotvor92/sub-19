@@ -1,131 +1,131 @@
 -- =====================================================================
--- SUB-20 — BRISANJE NALOGA PO E-ADRESI (rucno, iz SQL Editora)
+-- SUB-20 — BRISANJE NALOGA PO E-ADRESI
+--
+-- PUSTI OVAJ FAJL JEDNOM. Posle toga je brisanje jedan red:
+--
+--     select * from public.obrisi_naloge(array['neko@primer.com']);
+--
+-- Prva verzija ovog alata je bila cetiri koraka koje si lepio redom i sam
+-- poredio ispise. Radila je, ali je za brisanje tri naloga trazila tri
+-- kopiranja i budno oko — a budno oko je losa zastita. Sada proveru radi
+-- funkcija, i radi je STROZE nego covek.
 --
 -- ZASTO POSTOJI, kad vec ima /api/delete-account
 -- Ta putanja brise ISKLJUCIVO nalog onoga ko je poziva, i to je namerno: sa
--- service_role kljucem u ruci, citanje bilo kakvog identifikatora iz zahteva
--- znacilo bi brisanje tudjeg naloga jednim poljem u JSON-u. Kad vlasnik treba
--- da ukloni TUDJ nalog (probni nalozi, neko ko je trazio brisanje mejlom),
--- to ide ovuda.
+-- service_role kljucem u ruci, citanje identifikatora iz zahteva znacilo bi
+-- brisanje tudjeg naloga jednim poljem u JSON-u. Kad vlasnik treba da ukloni
+-- TUDJ nalog (probni nalozi, zahtev stigao mejlom), ide ovuda.
 --
--- ZASTO NE SAMO Supabase Dashboard -> Authentication -> Users -> Delete
--- Zato sto se ne zna da li `public.user_state` ima `on delete cascade`.
--- Ostale tabele ga imaju (v. supabase/*.sql), ali je `user_state` pravljena
--- rukom pre nego sto je sema usla u repozitorijum i njena definicija ovde ne
--- postoji. Bez cascade-a Dashboard daje jedan od dva losa ishoda, zavisno od
--- toga kako je tabela napravljena — oba potvrdjena na Postgresu 16.13:
---
---   strani kljuc BEZ cascade  -> brisanje PUKNE:
---     "update or delete on table users violates foreign key constraint
---      user_state_user_id_fkey" — nalog ostaje, a poruka ne kaze sta da radis
---   BEZ stranog kljuca        -> brisanje prodje, ali `user_state` zadrzi red
+-- ZASTO NE Supabase Dashboard -> Authentication -> Users -> Delete
+-- Ostale tabele imaju `on delete cascade`, ali je `public.user_state`
+-- pravljena rukom pre nego sto je sema usla u repozitorijum i njena definicija
+-- ovde ne postoji. Bez cascade-a Dashboard daje jedan od dva losa ishoda,
+-- oba potvrdjena na Postgresu 16.13:
+--   strani kljuc BEZ cascade -> brisanje PUKNE ("violates foreign key
+--     constraint user_state_user_id_fkey"), nalog ostane
+--   BEZ stranog kljuca       -> brisanje prodje, ali red u user_state ostane
 --     sa user_id-jem koji vise ne postoji. To se ne vidi kao greska.
+-- Funkcija ispod radi ispravno u oba slucaja, jer brise eksplicitno.
 --
--- KORAK 0 ispod kaze u kom si slucaju. KORAK 2 radi u oba.
---
--- KAKO SE PUSTA
--- Supabase -> SQL Editor. Pusti KORAK 0 i KORAK 1 prvo i procitaj ispis.
--- Tek onda KORAK 2. Ne lepi sve odjednom.
---
--- ⚠ SQL Editor pusta sve nalepljeno kao JEDAN batch, dakle jednu transakciju.
---   Ako nesto u nalepljenom tekstu pukne, ponistava se SVE — ukljucujuci i
---   brisanja iznad. Zato koraci idu odvojeno.
---
--- NEPOVRATNO JE. Nema „undo". Ako nisi siguran, KORAK 1 ti pokazuje tacno
--- sta ce nestati, bez ijedne izmene.
+-- SIGURNOSNA MREZA: ako ijedna adresa iz spiska ne postoji u bazi, funkcija
+-- baca gresku i NISTA se ne brise — ni ostale adrese. Jedna transakcija, sve
+-- ili nista. Zbog toga vise nema „pusti pregled pa uporedi ocima": greska u
+-- kucanju se ne moze provuci.
 -- =====================================================================
 
 
 -- ---------------------------------------------------------------------
--- KORAK 0 — ima li user_state cascade? (samo cita katalog, nista ne menja)
+-- 1. Funkcija
 -- ---------------------------------------------------------------------
---   CASCADE            -> brisanje naloga samo pocisti i user_state
---   NO ACTION/RESTRICT -> brisanje naloga PUKNE dok red u user_state stoji
---   prazan rezultat    -> nema stranog kljuca; brisanje prodje i ostavi siroce
--- KORAK 2 radi ispravno u sva tri slucaja, pa je ovo samo za tvoje znanje.
-select tc.constraint_name, rc.delete_rule
-from information_schema.table_constraints tc
-join information_schema.referential_constraints rc on rc.constraint_name = tc.constraint_name
-where tc.table_schema = 'public' and tc.table_name = 'user_state' and tc.constraint_type = 'FOREIGN KEY';
-
-
--- ---------------------------------------------------------------------
--- KORAK 1 — PREGLED. Sta bi nestalo. Ne menja nista.
--- ---------------------------------------------------------------------
--- Upisi adrese OVDE. Velika/mala slova nisu bitna.
-with adrese as (
-  select unnest(array[
-    'prva@primer.com',
-    'druga@primer.com'
-  ]) as e
-),
-mete as (
-  select u.id, u.email, u.created_at, u.last_sign_in_at
-  from auth.users u
-  join adrese a on lower(u.email) = lower(a.e)
-)
-select
-  m.email,
-  m.created_at::date                                        as napravljen,
-  m.last_sign_in_at::date                                   as poslednja_prijava,
-  (select count(*) from public.user_state    s where s.user_id = m.id) as redova_stanja,
-  (select count(*) from public.push_pretplata p where p.user_id = m.id) as uredjaja_sa_obavestenjima,
-  (select count(*) from public.ai_posao       j where j.user_id = m.id) as ai_poslova
-from mete m
-order by m.email;
-
--- Ako je rezultat PRAZAN, adrese ne postoje u bazi — proveri kucanje pre nego
--- sto pomislis da je vec obrisano. Broj redova mora odgovarati broju adresa.
-
-
--- ---------------------------------------------------------------------
--- KORAK 2 — BRISANJE. Pusti tek kad si procitao KORAK 1.
--- ---------------------------------------------------------------------
--- Upisi ISTE adrese i ovde.
---
--- Redosled je bitan: podaci pa nalog, nikad obrnuto. Isti razlog kao u
--- api/delete-account.js — ako brisanje naloga prodje a podaci ostanu, redovi
--- vise nemaju vlasnika i niko ih ne moze ukloniti kroz aplikaciju.
---
--- `to_regclass` je tu jer sve tabele ne postoje u svakoj instalaciji:
--- endpoint_usage stize tek sa rate-limit.sql. Bez te provere bi skripta pukla
--- na tabeli koje nema i ponistila brisanja iznad.
-do $$
+create or replace function public.obrisi_naloge(p_adrese text[])
+returns table (email text, tabela text, redova int)
+language plpgsql
+security definer                 -- mora: brise iz auth.users
+set search_path = public, auth   -- bez ovoga je `security definer` funkcija
+                                 -- ranjiva na podmetnutu semu u search_path-u
+as $$
 declare
-  adrese text[] := array[
-    'prva@primer.com',
-    'druga@primer.com'
+  m       record;
+  t       text;
+  n       int;
+  fali    text[];
+  tabele  text[] := array[
+    'user_state', 'push_pretplata', 'ai_posao',
+    'api_usage', 'bug_report_usage', 'endpoint_usage'
   ];
-  m record;
-  t text;
-  obrisano int;
 begin
+  if p_adrese is null or array_length(p_adrese, 1) is null then
+    raise exception 'Nije data nijedna adresa.';
+  end if;
+
+  -- SVE ILI NISTA. Adresa koja ne postoji je skoro uvek greska u kucanju, a
+  -- ne „vec je obrisana" — pa je bezbednije stati nego obrisati ostale i
+  -- ostaviti coveka da nagadja sta je proslo.
+  select array_agg(a)
+    into fali
+  from unnest(p_adrese) a
+  where not exists (select 1 from auth.users u where lower(u.email) = lower(a));
+
+  if fali is not null then
+    raise exception 'Ove adrese ne postoje u bazi: %. Nista nije obrisano.',
+      array_to_string(fali, ', ');
+  end if;
+
   for m in
     select u.id, u.email from auth.users u
-    where lower(u.email) = any (select lower(x) from unnest(adrese) x)
+    where lower(u.email) = any (select lower(x) from unnest(p_adrese) x)
   loop
-    foreach t in array array[
-      'user_state', 'push_pretplata', 'ai_posao',
-      'api_usage', 'bug_report_usage', 'endpoint_usage'
-    ] loop
+    foreach t in array tabele loop
+      -- Tabele ne postoje u svakoj instalaciji: `endpoint_usage` stize tek sa
+      -- rate-limit.sql. Bez ove provere bi funkcija pukla na tabeli koje nema.
       if to_regclass('public.' || t) is not null then
         execute format('delete from public.%I where user_id = $1', t) using m.id;
-        get diagnostics obrisano = row_count;
-        if obrisano > 0 then
-          raise notice '  % : % redova', t, obrisano;
+        get diagnostics n = row_count;
+        if n > 0 then
+          email := m.email; tabela := t; redova := n; return next;
         end if;
       end if;
     end loop;
 
+    -- Nalog TEK NA KRAJU. Obrnut redosled je najgori ishod: covek izgubi
+    -- pristup, podaci ostanu, i vise ne moze ni da se prijavi da pokusa opet.
     delete from auth.users where id = m.id;
-    raise notice 'OBRISAN NALOG: % (%)', m.email, m.id;
+    email := m.email; tabela := '— NALOG OBRISAN —'; redova := 1; return next;
   end loop;
 end $$;
 
+comment on function public.obrisi_naloge(text[]) is
+  'Brise naloge po e-adresi zajedno sa svim podacima. Sve ili nista: nepostojeca adresa obara ceo poziv. Sme da je zove SAMO vlasnik iz SQL Editora.';
+
 
 -- ---------------------------------------------------------------------
--- KORAK 3 — POTVRDA. Mora vratiti 0 redova.
+-- 2. Ko sme da je zove
 -- ---------------------------------------------------------------------
-select count(*) as jos_postoji
-from auth.users
-where lower(email) = any (array['prva@primer.com', 'druga@primer.com']);
+-- KRITICNO. Supabase kroz PostgREST izlaze funkcije iz seme `public` kao
+-- HTTP putanje (/rest/v1/rpc/obrisi_naloge). Bez ovog opoziva bi svako sa
+-- anon kljucem — dakle svako ko otvori sajt — mogao da obrise bilo ciji nalog
+-- jednim POST zahtevom. Funkcija je `security definer`, pa RLS tu ne pomaze.
+revoke all on function public.obrisi_naloge(text[]) from public;
+revoke all on function public.obrisi_naloge(text[]) from anon;
+revoke all on function public.obrisi_naloge(text[]) from authenticated;
+-- Ostaje dostupna vlasniku funkcije (postgres) i service_role kljucu, dakle
+-- SQL Editoru. To je namerno jedini put.
+
+
+-- =====================================================================
+-- KAKO SE KORISTI, od sada pa nadalje
+--
+--   select * from public.obrisi_naloge(array[
+--     'prva@primer.com',
+--     'druga@primer.com'
+--   ]);
+--
+-- Ispis je tabela: koja adresa, koja tabela, koliko redova. Poslednji red po
+-- nalogu je „— NALOG OBRISAN —".
+--
+-- Ako neka adresa ne postoji, dobijas gresku sa spiskom tih adresa i NISTA se
+-- ne brise. Ispravi kucanje i pusti ponovo.
+--
+-- NEPOVRATNO JE. Nema „undo", i podaci ne postoje nigde drugde osim ako ih je
+-- korisnik sam izvezao kroz Podesavanja -> Backup.
+-- =====================================================================
