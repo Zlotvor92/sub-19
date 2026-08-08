@@ -73,6 +73,16 @@ create policy push_pretplata_menjaj on public.push_pretplata for update using (a
 create policy push_pretplata_brisi  on public.push_pretplata for delete using (auth.uid() = user_id);
 
 grant select, insert, update, delete on public.push_pretplata to authenticated;
+-- `anon` NE SME NIŠTA. RLS gleda REDOVE, a `grant` je sloj ispod njega — i
+-- razlika nije teorijska: `TRUNCATE` je privilegija nad TABELOM i RLS ga ne
+-- dodiruje. Sve ostale tabele u ovom folderu ovaj `revoke` imaju; ova ga je
+-- jedina nije imala, i to je uhvatio `provera.sql` posle izmene koja je počela
+-- da gleda i grantove, a ne samo politike.
+-- Ne curi ništa dok se ne dogodi i drugi propust: anon ključ nema JWT, pa je
+-- `auth.uid()` null i nijedna politika ga ne pušta ni do jednog reda. Ovo je
+-- sloj koji je nedostajao, ne rupa koja je bila otvorena.
+revoke all on table public.push_pretplata from anon;
+
 
 -- ---------------------------------------------------------------------
 -- 3. Automatsko `izmenjena`

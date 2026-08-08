@@ -71,6 +71,27 @@ alter table public.user_state enable row level security;
 revoke all on table public.user_state from anon;
 grant select, insert, update, delete on table public.user_state to authenticated;
 
+-- 3a. STARA IMENA SE UKLANJAJU.
+-- Tabela je nastala rukom, pre ovog foldera, pa se kroz vreme nakupilo TRI
+-- kompleta politika sa istim izrazom: `user_state_select_own`, `us_sel` i
+-- `user_state_citaj` — i tako za sve četiri radnje. Nije bila rupa (permisivne
+-- politike se sabiraju kao ILI, a sve tri su `auth.uid() = user_id`, pa ništa
+-- nije bilo šire), ali jeste tačno ono stanje zbog kog ovaj fajl i postoji:
+-- niko ne može da kaže šta je u bazi dok ne pogleda, a kad ih je devet, pogled
+-- ne pomaže. Jedna pogrešna među devet se ne primeti.
+--
+-- Uklanjaju se PRE nego što se nove naprave, da ni u jednom trenutku ne ostane
+-- tabela bez ijedne politike (a sa uključenim RLS-om to znači: niko ne prolazi).
+-- Postgres ovo radi u jednoj transakciji, pa prekid na pola ne ostavlja rupu.
+drop policy if exists user_state_select_own on public.user_state;
+drop policy if exists user_state_insert_own on public.user_state;
+drop policy if exists user_state_update_own on public.user_state;
+drop policy if exists user_state_delete_own on public.user_state;
+drop policy if exists us_sel on public.user_state;
+drop policy if exists us_ins on public.user_state;
+drop policy if exists us_upd on public.user_state;
+drop policy if exists us_del on public.user_state;
+
 -- SVAKA politika veže red za `auth.uid()`. Nema nijednog izuzetka: za razliku
 -- od `zajednica_profil`, ovde ne postoji ništa što bi drugi smeo da vidi.
 drop policy if exists user_state_citaj on public.user_state;

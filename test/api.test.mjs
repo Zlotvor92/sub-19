@@ -2220,3 +2220,57 @@ describe('Politika privatnosti prati serverski kod', () => {
     }
   });
 });
+
+/* ŠEMA — ONO ŠTO SE VIDI TEK NA PRODUKCIJI.
+
+   `provera.sql` je posle proširenja prijavio dve stvari koje nijedan test nije
+   mogao da vidi iz repozitorijuma: `ai_posao` i `push_pretplata` su jedine dve
+   tabele bez `revoke … from anon`, i `user_state` je imao tri kompleta politika
+   sa istim izrazom. Ovde se čuva prvo — drugo se ne može tvrditi iz fajlova,
+   pa ga hvata `provera.sql`. */
+describe('Šema — svaka tabela sa podacima uskraćuje pristup anon ključu', () => {
+  const SQL = readdirSync(join(ROOT, 'supabase'))
+    .filter(f => f.endsWith('.sql') && f !== 'provera.sql')
+    .map(f => [f, readFileSync(join(ROOT, 'supabase', f), 'utf8')]);
+  const sve = SQL.map(([, s]) => s).join('\n');
+
+  test('svaka tabela koju kod čita ima `revoke … from anon`', () => {
+    /* RLS gleda REDOVE; `grant` je sloj ispod njega, i razlika nije teorijska:
+       `TRUNCATE` je privilegija nad TABELOM i RLS ga ne dodiruje. */
+    const tabele = ['user_state', 'user_state_istorija', 'zajednica_profil',
+      'zajednica_izazov', 'push_pretplata', 'ai_posao', 'nalog_za_brisanje',
+      'endpoint_usage', 'api_usage', 'bug_report_usage'];
+    const bez = tabele.filter(t =>
+      !new RegExp('revoke\\s+all\\s+on\\s+(?:table\\s+)?public\\.' + t + '\\b[^;]*from[^;]*anon', 'i').test(sve));
+    assert.deepEqual(bez, [], `nema \`revoke … from anon\`: ${bez.join(', ')}`);
+  });
+
+  test('svaka tabela koju kod čita ima uključen RLS', () => {
+    const tabele = ['user_state', 'user_state_istorija', 'zajednica_profil',
+      'zajednica_izazov', 'push_pretplata', 'ai_posao', 'nalog_za_brisanje'];
+    const bez = tabele.filter(t =>
+      !new RegExp('alter\\s+table\\s+public\\.' + t + '\\s+enable\\s+row\\s+level\\s+security', 'i').test(sve));
+    assert.deepEqual(bez, [], `RLS nije uključen u SQL-u: ${bez.join(', ')}`);
+  });
+
+  test('provera.sql gleda i grantove i izraze politika, ne samo postojanje', () => {
+    /* Ono što je propustilo `using (true)` nad user_state. */
+    const p = readRepoFile('supabase/provera.sql');
+    assert.match(p, /\bqual\b/, 'provera ne čita izraz politike');
+    assert.match(p, /with_check/, 'provera ne čita with_check');
+    assert.match(p, /role_table_grants/, 'provera ne gleda grantove za anon');
+    assert.match(p, /having count\(\*\) > 1/i, 'provera ne hvata više politika za istu radnju');
+  });
+
+  test('namerni izuzeci su IMENOVANI u provera.sql, ne prećutani', () => {
+    /* `zajednica_izazov` je jedan red vidljiv svima — to je svrha tabele, pa
+       `using (true)` tu jeste ispravno. Ali provera koja viče na namerno stanje
+       nauči čoveka da je ignoriše, pa posle propusti i ono pravo. */
+    const p = readRepoFile('supabase/provera.sql');
+    assert.match(p, /tablename = 'zajednica_izazov' and cmd = 'SELECT'/,
+      'izuzetak za izazov nije imenovan — provera će ga prijavljivati kao rupu');
+    /* A ono što se STVARNO mora čuvati i dalje se proverava. */
+    assert.match(p, /izazov · nijedna politika za upis/,
+      'izgubljena je provera da izazov nema politiku za upis');
+  });
+});

@@ -143,6 +143,14 @@ union all
 select 'politika · ' || tablename || '.' || policyname,
        cmd || coalesce(' · using: ' || substr(replace(coalesce(qual,''), E'\n', ' '), 1, 60), ''),
        case
+         -- NAMERAN IZUZETAK, IMENOVAN: `zajednica_izazov` je jedan jedini red
+         -- koji vide svi prijavljeni — to je cela svrha tabele. Ovde je zato
+         -- `using (true)` ispravno, a ono što se stvarno mora čuvati je da nad
+         -- njom nema nijedne politike za UPIS; to proverava tačka 6 niže.
+         -- Provera koja viče na namerno stanje nauči čoveka da je ignoriše, pa
+         -- posle propusti i ono pravo.
+         when tablename = 'zajednica_izazov' and cmd = 'SELECT'
+           then 'OK — namerno vidljiv svima (v. tačku 6: nema politike za upis)'
          when coalesce(qual,'') ~* '\mtrue\M' and coalesce(qual,'') !~ 'auth\.uid'
            then 'PROPUŠTA SVE — using je true, a ne veže red za auth.uid()'
          when cmd in ('INSERT','UPDATE','ALL') and coalesce(with_check,'') = ''
@@ -159,6 +167,25 @@ select 'politika · ' || tablename || '.' || policyname,
    and tablename in ('ai_posao','zajednica_profil','user_state','push_pretplata',
                      'user_state_istorija','zajednica_izazov','nalog_za_brisanje',
                      'api_usage','bug_report_usage','endpoint_usage')
+
+union all
+
+-- 5a. VIŠE POLITIKA ZA ISTU RADNJU NAD ISTOM TABELOM.
+--
+--     Nađeno u produkciji: `user_state` je imao TRI kompleta politika sa istim
+--     izrazom (`user_state_select_own`, `us_sel`, `user_state_citaj`), nataloženih
+--     kroz vreme dok se šema pisala rukom. Same po sebi nisu bile rupa —
+--     permisivne politike se sabiraju kao ILI, a sve tri su bile
+--     `auth.uid() = user_id`. Opasnost je u tome što se SABIRAJU: dovoljno je da
+--     jedna od devet bude šira i ona odlučuje, a nijedna druga to ne poništava.
+--     Uz to, spisak od devet imena niko ne pročita do kraja.
+select 'dupla politika · ' || tablename || ' ' || cmd,
+       string_agg(policyname, ', ' order by policyname),
+       'PROVERI — više politika za istu radnju; one se SABIRAJU, pa najšira odlučuje'
+  from pg_policies
+ where schemaname = 'public' and permissive = 'PERMISSIVE'
+ group by tablename, cmd
+having count(*) > 1
 
 union all
 
