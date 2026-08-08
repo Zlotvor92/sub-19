@@ -29,20 +29,83 @@ export function readRepoFile(name) {
   return readFileSync(join(ROOT, name), 'utf8');
 }
 
+/* ---------- MINIMALNI querySelectorAll ----------
+
+   Do sada je vraćao prazan niz. To nije bila rupa u pokrivenosti nego TIHA
+   rupa: kod koji rukovaoce kači grupno (`document.querySelectorAll('[data-sg]')
+   .forEach(b => b.onclick = …)`) izvršavao se nad praznim nizom, pa nijedan
+   test nije mogao da razlikuje „radi" od „nije ni pokušalo". Ista klasa greške
+   zbog koje elementi moraju da se pamte po selektoru (v. `nadji` niže).
+
+   Nije CSS engine — podržava tačno ono što aplikacija koristi: ime taga,
+   `.klasa` (i spojeno, `.set-grp.on`), `#id` i `[atribut]` / `[atribut="vr"]`.
+   Elementi se izvlače iz već upisanog HTML-a; klase i `dataset` se čitaju iz
+   atributa, pa `classList` posle živi na stubu i menja se kao u pregledaču. */
+const ATRIBUT = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
+function atributiTaga(tag) {
+  const o = {};
+  const telo = tag.replace(/^<\s*[a-zA-Z][^\s/>]*/, '').replace(/\/?>$/, '');
+  ATRIBUT.lastIndex = 0;
+  let m;
+  while ((m = ATRIBUT.exec(telo))) o[m[1].toLowerCase()] = m[2] ?? m[3] ?? m[4] ?? '';
+  return o;
+}
+function pogadja(el, sel) {
+  let s = String(sel).trim();
+  const tagM = /^[a-zA-Z][-\w]*/.exec(s);
+  if (tagM) {
+    if (el.tagName !== tagM[0].toUpperCase()) return false;
+    s = s.slice(tagM[0].length);
+  }
+  const zetoni = s.match(/\.[-\w]+|#[-\w]+|\[[^\]]*\]/g) || [];
+  if (!tagM && !zetoni.length) return false;
+  for (const z of zetoni) {
+    if (z[0] === '.') { if (!el.classList.contains(z.slice(1))) return false; continue; }
+    if (z[0] === '#') { if (el._atr.id !== z.slice(1)) return false; continue; }
+    const m = /^\[([^=\]]+)(?:=["']?([^\]"']*)["']?)?\]$/.exec(z);
+    if (!m) return false;
+    const v = el._atr[m[1].trim().toLowerCase()];
+    if (v === undefined) return false;
+    if (m[2] !== undefined && v !== m[2]) return false;
+  }
+  return true;
+}
+
+/* Izvlači elemente iz upisanog HTML-a. Stub se pamti po REDNOM BROJU I TAGU,
+   pa dva puta pozvan `querySelectorAll` vrati iste objekte — inače bi se klasa
+   dodata u jednom pozivu izgubila do sledećeg, i test bi merio ništa. */
+function qsa(html, sel, kes) {
+  const out = [];
+  const tagovi = String(html || '').match(/<[a-zA-Z][^>]*>/g) || [];
+  tagovi.forEach((t, i) => {
+    const k = 'qsa:' + i + '|' + t;
+    if (!kes.has(k)) {
+      const ime = /^<\s*([a-zA-Z][^\s/>]*)/.exec(t)[1];
+      kes.set(k, makeEl(ime, atributiTaga(t)));
+    }
+    if (pogadja(kes.get(k), sel)) out.push(kes.get(k));
+  });
+  return out;
+}
+
 /* Jedan lažni element koji odgovara na sve što aplikacija traži od DOM-a.
    Namerno permisivan: cilj nije verno simulirati pregledač, nego pustiti
    skriptu da se izvrši do kraja da bi čiste funkcije bile dostupne. */
-function makeEl(tag = 'div') {
+function makeEl(tag = 'div', atr = {}) {
   /* Elementi se PAMTE po selektoru. Bez toga svaki querySelector vraca nov
      objekat, pa `render*()` upise HTML u jedan a test cita iz drugog — dobije
      prazan string i tvrdnja prodje IAKO NISTA NIJE PROVERENO. Tako je nekoliko
      bezbednosnih testova bilo prazan hod. */
   const kes = new Map();
   const nadji = sel => { const k=String(sel); if(!kes.has(k)) kes.set(k, makeEl()); return kes.get(k); };
+  const dataset = {};
+  for (const [k, v] of Object.entries(atr))
+    if (k.startsWith('data-')) dataset[k.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = v;
   const el = {
     tagName: String(tag).toUpperCase(),
     style: {},
-    dataset: {},
+    dataset,
+    _atr: atr,
     children: [],
     _html: '',
     textContent: '',
@@ -51,7 +114,7 @@ function makeEl(tag = 'div') {
     disabled: false,
     scrollTop: 0,
     classList: {
-      _s: new Set(),
+      _s: new Set(String(atr.class || '').split(/\s+/).filter(Boolean)),
       add(...c) { c.forEach(x => this._s.add(x)); },
       remove(...c) { c.forEach(x => this._s.delete(x)); },
       toggle(c, on) { on === undefined ? (this._s.has(c) ? this._s.delete(c) : this._s.add(c)) : (on ? this._s.add(c) : this._s.delete(c)); },
@@ -68,11 +131,11 @@ function makeEl(tag = 'div') {
     remove() { this._removed = true; },
     _removed: false,
     querySelector(sel) { return nadji(sel); },
-    querySelectorAll() { return []; },
+    querySelectorAll(sel) { return qsa(this._html, sel, kes); },
     addEventListener() {},
     removeEventListener() {},
-    setAttribute() {},
-    getAttribute() { return null; },
+    setAttribute(k, v) { this._atr[String(k).toLowerCase()] = String(v); },
+    getAttribute(k) { const v = this._atr[String(k).toLowerCase()]; return v === undefined ? null : v; },
     closest() { return makeEl(); },
     select() {},
     focus() {},
@@ -151,7 +214,17 @@ export function loadApp(opts = {}) {
     head: makeEl('head'),
     visibilityState: 'visible',
     querySelector: sel => nadjiDoc(sel),
-    querySelectorAll: () => [],
+    /* Dokument nema pravo stablo, pa se traži kroz HTML SVIH zapamćenih
+       elemenata. Isti sadržaj se broji jednom: `$('#sheet')` i `$('.sheet')`
+       su dva stuba sa istim `_html`, a u pregledaču bi to bio jedan element. */
+    querySelectorAll: sel => {
+      const vidjeno = new Set(); const delovi = [];
+      for (const el of [doc.documentElement, doc.body, ...kesDoc.values()]) {
+        const h = el._html;
+        if (h && !vidjeno.has(h)) { vidjeno.add(h); delovi.push(h); }
+      }
+      return qsa(delovi.join('\n'), sel, kesDoc);
+    },
     /* getElementById dobija '#' prefiks da deli kes sa querySelector-om */
     getElementById: id => nadjiDoc('#' + id),
     createElement: t => makeEl(t),
@@ -247,13 +320,19 @@ export function loadApp(opts = {}) {
     /* čita ime iz konteksta — radi i za const/let i za function */
     get: name => vm.runInContext(name, ctx),
     /* izvršava proizvoljan izraz u kontekstu aplikacije */
-    evalIn: expr => vm.runInContext(expr, ctx),
+    evalIn: expr => domaci(vm.runInContext(expr, ctx)),
     call: (name, ...args) => {
       ctx.__args = args;
-      return vm.runInContext(`${name}(...__args)`, ctx);
+      return domaci(vm.runInContext(`${name}(...__args)`, ctx));
     }
   };
 }
+
+/* Niz napravljen unutar vm konteksta ima DRUGI Array.prototype, pa
+   `assert.deepEqual(a.evalIn('[1]'), [1])` padne uz poruku u kojoj su
+   očekivano i dobijeno doslovno ista. Zato se nizovi prepisuju u domaći
+   realm na izlazu. Dublje se ne dira: objekti se porede po sadržaju. */
+function domaci(v) { return Array.isArray(v) ? [...v] : v; }
 
 /* Približno poređenje za brojeve sa pomičnim zarezom. */
 export function close(a, b, tol = 1e-6) {

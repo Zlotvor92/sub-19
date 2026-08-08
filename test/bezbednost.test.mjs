@@ -32,13 +32,26 @@ const PAYLOADI = [
 ];
 
 /* Tagovi koje aplikacija sama emituje — sve van toga je ubačeno. */
-const NASI = /^<\/?(p|br|strong|div|span|button|input|select|option|textarea|label|details|summary|svg|path|circle|line|rect|text|polyline|polygon|defs|linearGradient|stop|title|g|table|tr|td|th|small|b|i|a|hr|nav|section|header|main|pre|form|em|ul|ol|li)\b/i;
+const NASI = /^<\/?(p|br|strong|div|span|button|input|select|option|textarea|label|details|summary|svg|path|circle|ellipse|line|rect|text|polyline|polygon|defs|linearGradient|stop|title|g|table|tr|td|th|small|b|i|a|hr|nav|section|header|main|pre|form|em|ul|ol|li)\b/i;
 
-/* Vraća ubačene tagove; prazan niz = nema injekcije.
-   Namerno NE traži nizove kao „onerror=" — escapovan tekst ih legitimno
-   sadrži (`&lt;img ... onerror=alert(1)&gt;`), pa bi to bio lažni alarm. */
+/* Spisak „naših" tagova nije dovoljan sam za sebe: `<svg/onload=alert(1)>`
+   počinje sa <svg i time bi prošao kao naš. Zato i tag sa našim imenom mora da
+   bude čist — aplikacija ne emituje nijedan inline rukovalac događaja ni
+   javascript: URL (provereno grepom kroz app.js), pa je svaki takav ubačen.
+
+   Traži se SAMO van vrednosti atributa: pravilno escapovan tekst legitimno
+   sadrži i „onerror=" i „javascript:" unutar navodnika
+   (`data-day="&quot;&gt;&lt;img src=x onerror=alert(1)&gt;"`) — to je dokaz da
+   escapovanje radi, ne propust. Izuzetak su atributi koji nose URL: tamo
+   javascript: unutar navodnika jeste izvršiv, pa se gleda i u vrednosti. */
+const bezVrednosti = t => t.replace(/"[^"]*"|'[^']*'/g, '""');
+const OPASAN = /[\s/]on[a-z]+\s*=/i;
+const OPASAN_URL = /\b(?:href|src|action|formaction|xlink:href)\s*=\s*["']?\s*javascript:/i;
+
+/* Vraća ubačene tagove; prazan niz = nema injekcije. */
 function ubaceniTagovi(html) {
-  return (String(html).match(/<[a-zA-Z][^>]*>/g) || []).filter(t => !NASI.test(t));
+  return (String(html).match(/<[a-zA-Z][^>]*>/g) || [])
+    .filter(t => !NASI.test(t) || OPASAN.test(bezVrednosti(t)) || OPASAN_URL.test(t));
 }
 
 function prazno() {

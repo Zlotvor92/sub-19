@@ -118,9 +118,12 @@ describe('Šta je otvoreno, a šta sklopljeno', () => {
    daje dugme koje je obavlja. Zato se ovde meri to, a ne izgled. */
 describe('Vrh podešavanja — šta čeka', () => {
 
+  /* Vrh se završava tamo gde počinje traka sa grupama. Kraj se traži po tome
+     što DOLAZI POSLE, a ne po brojanju </div> — ugnežđenih divova ima. */
   const hero = html => {
-    const m = /<div class="set-hero">([\s\S]*?)<\/div>\s*<div class="set-sub">/.exec(html);
-    return m ? m[1] : '';
+    const m = /<div class="set-hero">([\s\S]*?)<\/div>\s*<div class="zseg set-seg"/.exec(html);
+    assert.ok(m, 'vrh podešavanja se više ne završava pred trakom sa grupama');
+    return m[1];
   };
   const naslov = html => (/<b>([^<]*)<\/b>/.exec(hero(html)) || [, ''])[1];
   const dugme  = html => (/<button class="btn" id="(hero-[a-z]+)">([^<]*)</.exec(hero(html)) || [, null, null]).slice(1);
@@ -233,7 +236,11 @@ describe('Ekran prati stanje posle radnje', () => {
   test('kad je poslato na sat, vrh više ne traži tu radnju', () => {
     /* Mora se meriti SAMO vrh. „Pošalji na sat" stoji i kao dugme unutar
        sekcije — provera nad celim HTML-om bi ga tamo našla i uvek padala. */
-    const vrh = h => (/<div class="set-hero">([\s\S]*?)<div class="set-sub">/.exec(h) || [, ''])[1];
+    const vrh = h => {
+      const m = /<div class="set-hero">([\s\S]*?)<div class="zseg set-seg"/.exec(h);
+      assert.ok(m, 'vrh podešavanja se više ne završava pred trakom sa grupama');
+      return m[1];
+    };
 
     const bez = sa({ prijavljen: true, strava: true, icu: true, backup: true });
     assert.match(vrh(bez.html), /Pošalji na sat/, 'pre slanja vrh ne nudi tu radnju');
@@ -333,5 +340,126 @@ describe('Lokacija — poruka mora da kaže ŠTA da uradiš', () => {
     assert.match(blok, /enableHighAccuracy:true, timeout:30000/, 'nema drugog, dužeg pokušaja');
     /* Već odbijena dozvola ne sme da se čeka 12 s da bi se to saznalo. */
     assert.match(blok, /await geoOdbijena\(\)/, 'ne proverava se unapred poznato odbijanje');
+  });
+});
+
+/* GRUPE I IKONICE (segmenti umesto jednog dugačkog spiska).
+
+   Ranije: jedanaest kartica jedna ispod druge. Sve su bile sklopljene, pa je
+   ekran bio uredan — ali da bi se našla jedna, čitao se ceo spisak, jer ništa
+   nije govorilo gde šta pripada. Sada su u pet grupa, sa po jednom linijskom
+   ikonicom u redu.
+
+   Ono što se ovde meri nije izgled nego dve stvari koje tiho odlaze: da svaka
+   sekcija ima i grupu i ikonicu (nova sekcija sutra ne sme da ispadne u
+   „ostalo"), i da skrivanje grupe ne krije dugmad iz DOM-a. */
+describe('Podešavanja — grupe i ikonice', () => {
+
+  const sekcije = h => [...h.matchAll(/data-k="([^"]*)"/g)].map(m => m[1]);
+  const grupe   = h => [...h.matchAll(/data-g="([^"]*)"/g)].map(m => m[1]);
+  const segmenti = h => [...h.matchAll(/data-sg="([^"]*)"/g)].map(m => m[1]);
+  const SVE = { prijavljen: true, vlasnik: true, strava: true, icu: true };
+
+  test('svaka sekcija je svrstana — nijedna ne pada u rezervnu grupu', () => {
+    /* `grupaZaSekciju` ima rezervu (`app`) da preimenovana sekcija ne nestane
+       sa ekrana. Rezerva je zaštita od pucanja, ne raspored: kad se sekcija
+       preimenuje a spisak grupa ne, ovo mora da padne, a ne da je tiho gurne
+       među obaveštenja. */
+    const { a, html } = sa(SVE);
+    const nesvrstane = sekcije(html).filter(n => !a.evalIn(`SET_GRUPE.some(g=>g[3].includes(${JSON.stringify(n)}))`));
+    assert.deepEqual(nesvrstane, [], `nisu ni u jednoj grupi: ${nesvrstane.join(', ')}`);
+  });
+
+  test('svaka sekcija ima ikonicu', () => {
+    const { a, html } = sa(SVE);
+    const bez = sekcije(html).filter(n => !a.evalIn(`!!SET_IKONE[${JSON.stringify(n)}]`));
+    assert.deepEqual(bez, [], `bez ikonice: ${bez.join(', ')}`);
+    /* I obrnuto: ikonica za sekciju koja više ne postoji je mrtav kod koji se
+       prepisuje pri svakoj izmeni. */
+    const visak = a.evalIn('Object.keys(SET_IKONE)').filter(n => !sekcije(html).includes(n));
+    assert.deepEqual(visak, [], `ikonice bez sekcije: ${visak.join(', ')}`);
+  });
+
+  test('ikonice su linijski crtež u jeziku aplikacije, ne emodži', () => {
+    /* Uslov iz zahteva: isti crtački jezik kao ikonice tabova. Emodži se na
+       svakom uređaju crta drugačije i ne prati boju teksta. */
+    const { a } = sa(SVE);
+    const ikone = a.evalIn('Object.entries(SET_IKONE)');
+    for (const [ime, svg] of ikone) {
+      assert.match(svg, /^<svg viewBox="0 0 24 24"/, `${ime}: nije 24×24 svg`);
+      assert.match(svg, /fill="none"/, `${ime}: nije linijski crtež`);
+      assert.match(svg, /stroke="currentColor"/, `${ime}: ne prati boju teksta`);
+      assert.match(svg, /stroke-width="1\.[89]"/, `${ime}: druga debljina linije`);
+      assert.ok(!/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(svg), `${ime}: sadrži emodži`);
+    }
+  });
+
+  test('sakrivena grupa i dalje stoji u DOM-u — dugmad rade bez ponovnog kačenja', () => {
+    /* Da se ne-izabrane grupe izostavljaju iz HTML-a, svaki prelazak segmenta
+       bi tražio ponovno kačenje dvadesetak rukovalaca; prvi zaboravljen bi bio
+       dugme koje tiho ne radi. */
+    const { html } = sa(SVE);
+    assert.equal(new Set(grupe(html)).size, 5, 'nisu iscrtane sve grupe odjednom');
+    for (const id of ['sb-sync', 'st-sync', 'icu-sync', 's-exp', 'bc-svi'])
+      assert.ok(html.includes('id="' + id + '"'), `#${id} nestaje kad mu grupa nije izabrana`);
+  });
+
+  test('Admin grupe za druge ljude nema — ne kao zaključane, nego je nema', () => {
+    const vlasnik = sa(SVE);
+    assert.ok(segmenti(vlasnik.html).includes('admin'), 'vlasnik nema Admin segment');
+
+    const drugi = sa({ prijavljen: true, strava: true, icu: true });
+    assert.ok(!segmenti(drugi.html).includes('admin'), 'Admin segment se nudi i drugima');
+    assert.ok(!grupe(drugi.html).includes('admin'), 'admin grupa je iscrtana pa samo sakrivena');
+    assert.ok(!drugi.html.includes('id="bc-svi"'), 'admin dugme postoji u DOM-u drugog naloga');
+  });
+
+  test('otvara se na grupi u kojoj nešto čeka', () => {
+    /* Nalog je rešen, Strava nije — čeka se u „Veze", pa se tamo i skače. */
+    const veze = sa({ prijavljen: true, backup: true });
+    assert.equal(veze.a.evalIn('SET_GRUPA'), 'veze');
+
+    /* Backup čeka a nalog ne postoji: prvi po prioritetu je nalog. */
+    const nalog = sa({});
+    assert.equal(nalog.a.evalIn('SET_GRUPA'), 'nalog');
+  });
+
+  test('kad ništa ne čeka, uvek ista, prva grupa', () => {
+    const { a } = sa({ prijavljen: true, strava: true, icu: true, push: true, backup: true });
+    assert.equal(a.evalIn('podesavanjaStanje().cekaju.length'), 0);
+    assert.equal(a.evalIn('SET_GRUPA'), 'nalog');
+  });
+
+  test('izbor se NE pamti između otvaranja', () => {
+    /* Pamćenje bi značilo da ekran svaki put počinje na drugom mestu, pa se
+       nijedno ne nauči napamet. */
+    const { a } = sa({ prijavljen: true, strava: true, icu: true, push: true, backup: true });
+    a.evalIn(`document.querySelectorAll('[data-sg]').forEach(b=>{ if(b.dataset.sg==='app') b.onclick(); })`);
+    assert.equal(a.evalIn('SET_GRUPA'), 'app', 'dodir segmenta ne menja grupu');
+    a.call('closeSheet');
+    a.call('openSettings');
+    assert.equal(a.evalIn('SET_GRUPA'), 'nalog', 'izbor se preneo u sledeće otvaranje');
+  });
+
+  test('dodir segmenta prikazuje tačno jednu grupu', () => {
+    const { a } = sa(SVE);
+    for (const g of ['nalog', 'trening', 'veze', 'app', 'admin']) {
+      a.evalIn(`document.querySelectorAll('[data-sg]').forEach(b=>{ if(b.dataset.sg==='${g}') b.onclick(); })`);
+      const vidljive = a.evalIn(`[...document.querySelectorAll('.set-grp.on')].map(x=>x.dataset.g)`);
+      assert.ok(vidljive.length > 0, `grupa ${g} nema nijednu sekciju`);
+      assert.deepEqual([...new Set(vidljive)], [g], `uz ${g} se vidi i tuđa sekcija`);
+      const oznaceni = a.evalIn(`[...document.querySelectorAll('[data-sg].on')].map(x=>x.dataset.sg)`);
+      assert.deepEqual(oznaceni, [g], `označen segment ne prati prikazanu grupu`);
+    }
+  });
+
+  test('grupa koja čeka se ne bira ako je za taj nalog i nema', () => {
+    /* Zaštita od tihe greške: da `grupaKojaCeka` vrati „admin" nekome ko taj
+       segment ne vidi, ekran bi se otvorio prazan. */
+    const { a } = sa({ prijavljen: true, strava: true, icu: true, push: true, backup: true });
+    a.evalIn(`SET_GRUPA='admin'; podesiGrupe()`);
+    assert.notEqual(a.evalIn('SET_GRUPA'), 'admin', 'nevidljiva grupa ostaje izabrana');
+    const vidljive = a.evalIn(`[...document.querySelectorAll('.set-grp.on')].map(x=>x.dataset.g)`);
+    assert.ok(vidljive.length > 0, 'ekran je ostao prazan');
   });
 });

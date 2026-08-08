@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='224'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='225'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9477,27 +9477,129 @@ function podesavanjaStanje(){
   return { stavke, cekaju, prvo:cekaju[0]||null };
 }
 
+/* ============================================================
+   IKONICE SEKCIJA U PODEŠAVANJIMA
+
+   Isti crtački jezik kao ikonice tabova u navigaciji, i to nije ukras nego
+   uslov: 24×24, `fill="none"`, `stroke="currentColor"`, debljina 1,8–1,9,
+   zaobljeni krajevi, naglasak kao popunjen krug. Emodži se ne koriste —
+   oni na svakom uređaju izgledaju drugačije i ne prate boju teksta.
+
+   PLAN I ZAJEDNICA SU DOSLOVNO IKONICE TABOVA. Kad ista stvar ima dva
+   crteža, čovek je uči kao dve stvari.
+
+   Ostale crtaju ŠTA SEKCIJA RADI, ne čiji je znak: Strava je strelica koja
+   ulazi u posudu (uvoz), jer se tuđi znak ne crta. intervals.icu je talas u
+   okviru, a ne srce — srce je već uzeo Oporavak.
+
+   Ključ je NAZIV SEKCIJE, isti onaj koji `kartica()` upisuje u `data-k` da bi
+   se posle iscrtavanja vratilo šta je bilo otvoreno. Jedan ključ, dva
+   korisnika; kad se naziv promeni, mora na oba mesta — a to hvata test. */
+const SET_IKONE = {
+  'Nalog':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 20c.6-3.5 3.4-5.8 6.8-5.8s6.2 2.3 6.8 5.8"/></svg>`,
+  'Plan':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M8.5 6h11M8.5 12h11M8.5 18h11"/><circle cx="4.4" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="4.4" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="4.4" cy="18" r="1.4" fill="currentColor" stroke="none"/></svg>`,
+  'Strava':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6v9.2"/><path d="M8.4 9.4 12 13l3.6-3.6"/><path d="M4.5 15.2v3.1a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3.1"/></svg>`,
+  'intervals.icu':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="5" width="17.6" height="14" rx="3"/><path d="M6.4 12.4h2.4l1.6-3.4 2.2 6.6 1.6-3.2h3.4"/></svg>`,
+  'Slanje na sat':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6.4" y="6.4" width="11.2" height="11.2" rx="3.2"/><path d="M9.2 6.4 9.6 3h4.8l.4 3.4M9.2 17.6 9.6 21h4.8l.4-3.4"/><path d="M12 14.2v-4.4M10.3 11.5 12 9.8l1.7 1.7"/></svg>`,
+  'Vreme':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.6 10.2a4 4 0 1 1 7.7-1.6"/><path d="M17.4 5.4l.9-.9M20.4 9h1.2M16.2 3.2V2"/><path d="M8 19.6h8.6a3.4 3.4 0 0 0 0-6.8 4.4 4.4 0 0 0-8.6 1.2A2.8 2.8 0 0 0 8 19.6Z"/></svg>`,
+  'Obaveštenja':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9.6a6 6 0 1 0-12 0c0 4.2-1.6 5.6-1.6 5.6h15.2S18 13.8 18 9.6Z"/><path d="M13.7 19.2a2 2 0 0 1-3.4 0"/></svg>`,
+  'Podaci':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6.2" rx="7.2" ry="2.8"/><path d="M4.8 6.2v11.6c0 1.55 3.22 2.8 7.2 2.8s7.2-1.25 7.2-2.8V6.2"/><path d="M19.2 12c0 1.55-3.22 2.8-7.2 2.8s-7.2-1.25-7.2-2.8"/></svg>`,
+  'Zajednica':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.3"/><path d="M3.2 19.2c.5-3.1 3-5.2 5.8-5.2s5.3 2.1 5.8 5.2"/><path d="M16.4 5.2a3.3 3.3 0 0 1 0 6.1M17.6 14.4c2.1.6 3.7 2.4 4.1 4.8"/></svg>`,
+  'Obaveštenje korisnicima':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.4" width="18" height="13.2" rx="2.6"/><path d="m3.8 7 7.1 5.2a2 2 0 0 0 2.2 0L20.2 7"/></svg>`,
+  'Korisnici':`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8.4" r="3"/><path d="M3 19c.4-2.9 2.5-4.8 5-4.8s4.6 1.9 5 4.8"/><path d="M15.2 8h5.6M15.2 12h5.6M15.2 16h5.6"/></svg>`
+};
+
+/* GRUPE — po tome ČEMU stvar služi, ne kojim je redom nastala.
+   „Admin" postoji samo vlasniku: ne kao zaključan segment, nego ga uopšte
+   nema (v. podesavanjaGrupe). */
+const SET_GRUPE = [
+  ['nalog',   'Nalog',   'Nalog i podaci',    ['Nalog', 'Podaci']],
+  ['trening', 'Trening', 'Trening',           ['Plan', 'Vreme']],
+  ['veze',    'Veze',    'Veze sa servisima', ['Strava', 'intervals.icu', 'Slanje na sat']],
+  ['app',     'App',     'U aplikaciji',      ['Obaveštenja', 'Zajednica']],
+  ['admin',   'Admin',   'Admin · vidiš samo ti', ['Obaveštenje korisnicima', 'Korisnici']]
+];
+function podesavanjaGrupe(){ return jeVlasnik()?SET_GRUPE:SET_GRUPE.filter(g=>g[0]!=='admin'); }
+function grupaZaSekciju(naziv){
+  const g=SET_GRUPE.find(x=>x[3].includes(naziv));
+  return g?g[0]:'app';
+}
+
+/* IZABRANA GRUPA SE NE PAMTI IZMEĐU OTVARANJA.
+   Pamćenje bi značilo da ekran svaki put počinje na različitom mestu, pa se
+   ništa ne nauči napamet. Umesto toga se pri otvaranju skoči na grupu u kojoj
+   NEŠTO ČEKA — izbor radi umesto čoveka tačno onda kad je bitno, a inače je
+   uvek isto mesto. */
+let SET_GRUPA = 'nalog';
+
+/* Prikaz jedne grupe i vezivanje segmenata. Poziva se posle svakog
+   iscrtavanja lista, jer `osveziPodesavanja` pravi ceo HTML iznova. */
+function podesiGrupe(){
+  const grupe=podesavanjaGrupe();
+  if(!grupe.some(g=>g[0]===SET_GRUPA)) SET_GRUPA=grupe[0][0];
+  const prikazi=()=>{
+    document.querySelectorAll('.set-grp').forEach(x=>{
+      x.classList.toggle('on', x.dataset.g===SET_GRUPA);
+    });
+    document.querySelectorAll('[data-sg]').forEach(b=>{
+      const on=b.dataset.sg===SET_GRUPA;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on?'true':'false');
+    });
+    const n=$('#set-naslov'), g=grupe.find(x=>x[0]===SET_GRUPA);
+    if(n&&g) n.textContent=g[2];
+  };
+  document.querySelectorAll('[data-sg]').forEach(b=>b.onclick=()=>{
+    SET_GRUPA=b.dataset.sg; prikazi();
+    /* Skrol na vrh liste: posle prelaska na kraću grupu ekran bi inače ostao
+       na visini koja u novoj grupi ne postoji, pa bi izgledao prazno. */
+    const sh=$('#sheet'); if(sh) sh.scrollTop=0;
+  });
+  prikazi();
+}
+
+/* Grupa u kojoj nešto čeka — na nju se skače pri otvaranju. Ako ništa ne
+   čeka, ostaje prva. */
+function grupaKojaCeka(){
+  const st=podesavanjaStanje();
+  const prvi=st.cekaju[0];
+  if(!prvi) return podesavanjaGrupe()[0][0];
+  return grupaZaSekciju(prvi.naziv);
+}
+
 function openSettings(){
   AMB_PRE=ACTIVE; ambijent('set');   /* podešavanja imaju svoje, mirnije svetlo */
+  /* Izbor grupe se NE pamti između otvaranja — v. SET_GRUPA. Skače se na onu u
+     kojoj nešto čeka; kad ništa ne čeka, na prvu. */
+  SET_GRUPA=grupaKojaCeka();
   const counts=`${Object.keys(S.log).length} trening-unosa · ${S.knee.length} koleno · ${S.kg.length} težina · ${Object.keys(S.pred).length} predikcija`;
   const vremeSb=SB.seenAt?new Date(SB.seenAt).toLocaleString('sr-RS'):null;
   const stStrava=!!S.strava, stIcu=!!(S.icu&&S.icu.athleteId), stNalog=sbAuthed();
 
-  /* Red sekcije: tačka stanja, naziv i stanje u ISTOM redu, strelica desno.
-     Ikone su namerno uklonjene — sedam emodžija jedan ispod drugog je šara, a
-     ne orijentacija; tačka nosi istu informaciju u trećini prostora. Sve što
-     treba pročitati „u prolazu" stoji u redu, sadržaj se otvara dodirom. */
+  /* Red sekcije: ikonica levo, naziv i stanje u sredini, tačka stanja desno.
+     Ikonica je linijski crtež u jeziku navigacije (v. SET_IKONE), ne emodži —
+     emodži su šara koja se na svakom uređaju crta drugačije. Tačka je pomerena
+     desno da bi levi rub bio jedna kolona: oko klizi niz ikonice i nalazi
+     sekciju bez čitanja. Sve što treba pročitati „u prolazu" stoji u redu,
+     sadržaj se otvara dodirom. */
   const glava=(naslov,stanje,ok)=>
-    `<summary><span class="dot${ok===true?' on':ok==='warn'?' warn':''}"></span>
-      <span class="set-tt"><b>${esc(naslov)}</b><span>${stanje}</span></span></summary>`;
+    `<summary><span class="set-ik">${SET_IKONE[naslov]||''}</span>
+      <span class="set-tt"><b>${esc(naslov)}</b><span>${stanje}</span></span>
+      <span class="dot${ok===true?' on':ok==='warn'?' warn':''}"></span></summary>`;
   /* Sekcija koja traži radnju otvara se sama; ono što radi stoji sklopljeno. */
   /* `data-k` je naziv sekcije, izvučen iz zaglavlja — po njemu se posle
      ponovnog iscrtavanja vraća koje su sekcije bile otvorene. Po REDOSLEDU se
      ne bi smelo: broj kartica se menja (npr. „Slanje na sat" postoji samo dok
      je intervals.icu povezan), pa bi se otvorenost preselila na pogrešnu. */
+  /* Svaka kartica je u omotaču sa svojom grupom. Skrivanje ide kroz CSS, a NE
+     kroz izostavljanje iz HTML-a — svi rukovaoci (`$('#st-sync')` i ostali) se
+     kače jednom, nad celim listom, i rade bez obzira koja je grupa prikazana.
+     Da se ne-izabrane grupe uopšte ne iscrtavaju, svaki prelazak segmenta bi
+     tražio ponovno kačenje dvadesetak rukovalaca — i prvi zaboravljen bi bio
+     dugme koje tiho ne radi. */
   const kartica=(otvorena,glavaHTML,telo)=>{
     const kljuc=(/<b>([^<]*)<\/b>/.exec(glavaHTML)||['',''])[1];
-    return `<details class="set-card" data-k="${esc(kljuc)}"${otvorena?' open':''}>${glavaHTML}<div class="set-body">${telo}</div></details>`;
+    return `<div class="set-grp" data-g="${grupaZaSekciju(kljuc)}"><details class="set-card" data-k="${esc(kljuc)}"${otvorena?' open':''}>${glavaHTML}<div class="set-body">${telo}</div></details></div>`;
   };
 
   /* VRH EKRANA ODGOVARA NA JEDNO PITANJE: je li sve u redu?
@@ -9527,7 +9629,11 @@ function openSettings(){
     ${LS_OK?'':`<div class="kb warn"><div><div>Skladište nedostupno</div><small>Podaci žive samo dok je stranica otvorena (pregled). Na Vercelu/Safariju čuvanje radi normalno.</small></div></div>`}
 
     ${heroHTML}
-    <div class="set-sub">Sve sekcije</div>
+    <div class="zseg set-seg" role="tablist" aria-label="Grupe podešavanja">
+      ${podesavanjaGrupe().map(g=>`<button role="tab" aria-selected="${SET_GRUPA===g[0]}"
+        class="${SET_GRUPA===g[0]?'on':''}" data-sg="${g[0]}">${g[1]}</button>`).join('')}
+    </div>
+    <div class="set-sub" id="set-naslov">${esc((podesavanjaGrupe().find(g=>g[0]===SET_GRUPA)||podesavanjaGrupe()[0])[2])}</div>
 
     ${sbOn()?kartica(!stNalog,
       glava('Nalog', stNalog?esc(SB.email||'—'):'nije prijavljen', stNalog),
@@ -9704,6 +9810,7 @@ function openSettings(){
     <div class="note-src" style="margin-top:6px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_SUB-19_5K_v5.xlsx · trka 24.09.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
   `);
   SET_LIST=true;
+  podesiGrupe();
   $('#s-exp').onclick=()=>{ exportBackup(); setTimeout(osveziPodesavanja,300); };
   if($('#s-ist')) $('#s-ist').onclick=openIstorijaSheet;
   if($('#s-bug')) $('#s-bug').onclick=openBugSheet;

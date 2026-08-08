@@ -975,6 +975,18 @@ body.uvod-radi{overflow:hidden}
 .zsta i{display:block;font-style:normal;font-size:.62rem;font-weight:800;letter-spacing:.08em;
   text-transform:uppercase;color:var(--txt3)}
 .zsta p{margin:5px 0 0;font-size:.82rem;font-weight:600;color:var(--txt2);line-height:1.5}
+/* ---------- PODEŠAVANJA: SEGMENTI I IKONICE ----------
+   Grupa koja nije izabrana se SAKRIVA, a ne izostavlja iz HTML-a: svi
+   rukovaoci se kače jednom nad celim listom i rade bez obzira šta je
+   prikazano. V. komentar uz `kartica()` u app.js. */
+.set-grp{display:none}
+.set-grp.on{display:block}
+.set-seg{margin:4px 0 2px}
+.set-seg button{padding:9px 4px;font-size:.7rem}
+/* Ikonica sekcije. `currentColor` je namerno — ista boja kao tekst pored, pa
+   crtež ne postaje šara nego deo reda. */
+.set-ik{width:22px;height:22px;flex:none;color:var(--txt2);display:block}
+.set-ik svg{width:22px;height:22px;display:block}
 .zseg{display:flex;gap:6px;background:var(--glass-in);border:1px solid var(--line-soft);
   border-radius:999px;padding:4px;margin:2px 0 6px}
 .zseg button{flex:1;border:0;background:none;color:var(--txt3);font-size:.72rem;font-weight:800;
