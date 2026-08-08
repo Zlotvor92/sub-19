@@ -152,10 +152,15 @@ od 30 dana. Podatke koje si već poslao u svoj intervals.icu ili Strava nalog br
 tim servisima.</p>
 
 <h3>Kad nalog ukloni vlasnik aplikacije</h3>
-<p>Ako vlasnik aplikacije ukloni tvoj nalog (probni nalozi, zloupotreba), pristup ti
-prestaje <strong>odmah</strong>, ali se podaci brišu tek posle <strong>7 dana</strong>. Taj
-razmak postoji da bi se greška — ili tuđa zloupotreba vlasnikovog naloga — mogla poništiti
-pre nego što nešto nepovratno nestane. Kraći je od roka od 30 dana naveden gore.</p>
+<p>Ako vlasnik aplikacije ukloni tvoj nalog (probni nalozi, zloupotreba), podaci se brišu
+tek posle <strong>7 dana</strong>. Taj razmak postoji da bi se greška — ili tuđa zloupotreba
+vlasnikovog naloga — mogla poništiti pre nego što nešto nepovratno nestane. Kraći je od roka
+od 30 dana naveden gore.</p>
+<p>Prijava i sve serverske funkcije prestaju da rade <strong>u istom trenutku</strong>. Jedan
+deo aplikacije ipak razgovara sa bazom direktno, a taj razgovor se propušta na osnovu potvrde
+o prijavi koju si već imao — i ona važi <strong>najviše 15 minuta</strong> od izdavanja. Do
+njenog isteka se svoji podaci mogu još čitati i upisivati; tuđi ne, to čuva baza sama. Nova
+potvrda se ne može dobiti, pa se taj prozor sam zatvara i ne otvara ponovo.</p>
 <p>Kada <strong>ti sam</strong> obrišeš nalog iz Podešavanja, brisanje je trenutno i
 nepovratno — tu nema od koga da se brani, ti si otkucao potvrdu.</p>
 
@@ -324,10 +329,16 @@ within 30 days. Data already written to your own intervals.icu or Strava account
 on those services.</p>
 
 <h3>When the app owner removes an account</h3>
-<p>If the app owner removes your account (test accounts, abuse), your access ends
-<strong>immediately</strong>, but the data is deleted only after <strong>7 days</strong>.
-That gap exists so a mistake — or someone else misusing the owner's account — can be undone
-before anything is irreversibly gone. It is shorter than the 30-day limit stated above.</p>
+<p>If the app owner removes your account (test accounts, abuse), the data is deleted only
+after <strong>7 days</strong>. That gap exists so a mistake — or someone else misusing the
+owner's account — can be undone before anything is irreversibly gone. It is shorter than the
+30-day limit stated above.</p>
+<p>Sign-in and every server function stop working <strong>at that same moment</strong>. One
+part of the app does talk to the database directly, and that conversation is admitted on the
+strength of a sign-in proof you already hold — which is valid for <strong>at most 15
+minutes</strong> from issue. Until it expires, your own data can still be read and written;
+other people's cannot, the database itself sees to that. No new proof can be obtained, so
+that window closes on its own and does not reopen.</p>
 <p>When <strong>you</strong> delete your own account from Settings, deletion is immediate and
 irreversible — there is nobody to defend against there, you typed the confirmation yourself.</p>
 

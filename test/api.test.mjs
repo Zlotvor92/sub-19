@@ -2480,3 +2480,73 @@ describe('SQL koji menja stanje završava ispisom tog stanja', () => {
     assert.match(kod, /raise warning/i, 'izgubljeno je upozorenje za ono što nije uklonjeno');
   });
 });
+
+/* PODEŠAVANJA KOJA NISU SQL.
+
+   `public.user_state` je mesecima postojala samo u zaboravljenom tabu SQL
+   Editora — i cela ta zavrzlama je bila posledica jedne stvari: ono što nije u
+   repozitorijumu postaje nevidljivo. Šema je sada opisana, ali aplikacija
+   zavisi i od podešavanja u Supabase i Vercel kontrolnim tablama, koja se ne
+   vide ni iz jednog upita. Ona su sada tačno ono što je user_state bila ranije.
+
+   `supabase/podesavanja.md` ih zapisuje. Ova zamka drži da taj zapis ostane
+   tačan tamo gde se može proveriti: dužina važenja tokena stoji na tri mesta —
+   u Supabase-u (nedostupno odavde), u tom fajlu, i u politici privatnosti na
+   oba jezika. Politika koja tvrdi pogrešan broj je gora od one koja ćuti. */
+describe('Podešavanja van SQL-a su zapisana i međusobno se slažu', () => {
+  const MD = readRepoFile('supabase/podesavanja.md');
+  const PRIVACY = readRepoFile('privacy.html');
+
+  /* Jedini izvor istine u repozitorijumu: vrednost iz naslova u podesavanja.md. */
+  const sekunde = (() => {
+    const m = /Access token \(JWT\) expiry — \*\*(\d+)\*\* sekundi/.exec(MD);
+    assert.ok(m, 'podesavanja.md ne navodi dužinu važenja tokena');
+    return +m[1];
+  })();
+
+  test('dužina važenja tokena je zapisana i razumna', () => {
+    assert.ok(sekunde >= 300 && sekunde <= 3600,
+      `${sekunde} s: ispod 300 aplikacija non-stop osvežava, iznad 3600 Supabase ne prihvata`);
+  });
+
+  test('politika privatnosti navodi ISTI prozor, na oba jezika', () => {
+    const minuta = Math.round(sekunde / 60);
+    /* Markup se skida pre poređenja, i prelom reda postaje razmak. Tvrdnja je o
+       BROJU u rečenici, ne o tome gde je pisac otvorio <strong> — inače pada na
+       preformulaciji koja ništa ne menja, i sledeći put se prosto obriše. */
+    const tekst = PRIVACY.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ');
+    assert.ok(tekst.includes(`najviše ${minuta} minuta`),
+      `srpski deo ne kaže „najviše ${minuta} minuta" — razišao se sa podesavanja.md`);
+    assert.ok(tekst.includes(`at most ${minuta} minutes`),
+      `engleski deo ne kaže „at most ${minuta} minutes" — razišao se sa podesavanja.md`);
+  });
+
+  test('politika više ne tvrdi da pristup prestaje ODMAH u svemu', () => {
+    /* Nalaz X-1: prestaje odmah za /api/*, ali ne i za direktan pristup bazi —
+       PostgREST token proverava kriptografski i ne zna za zabranu. */
+    const odeljak = /<h3>Kad nalog ukloni vlasnik aplikacije<\/h3>([\s\S]*?)<h[23]/.exec(PRIVACY);
+    assert.ok(odeljak, 'nema odeljka o uklanjanju naloga');
+    assert.doesNotMatch(odeljak[1], /pristup ti\s*\n?\s*prestaje <strong>odmah<\/strong>/,
+      'politika i dalje tvrdi da pristup prestaje odmah, bez ograde');
+  });
+
+  test('svaka promenljiva okruženja koju kod čita je zapisana', () => {
+    /* Isti razlog: promenljiva koja nedostaje obara funkciju, a nigde ne piše
+       koja sve postoji. Vrednosti se NE zapisuju — samo imena. */
+    const izKoda = new Set();
+    for (const f of readdirSync(join(ROOT, 'api')).filter(x => x.endsWith('.js')))
+      for (const m of readFileSync(join(ROOT, 'api', f), 'utf8').matchAll(/process\.env\.([A-Z][A-Z0-9_]+)/g))
+        izKoda.add(m[1]);
+    /* Vercel ih postavlja sam — nisu naše. */
+    for (const svoje of ['NODE_ENV', 'VERCEL', 'VERCEL_ENV', 'VERCEL_REGION',
+      'BROADCAST_PAUZA_MS', 'BROADCAST_ROK_MS']) izKoda.delete(svoje);
+    const nema = [...izKoda].filter(v => !MD.includes(v)).sort();
+    assert.deepEqual(nema, [], `nisu zapisane u podesavanja.md: ${nema.join(', ')}`);
+  });
+
+  test('u zapisu nema nijedne VREDNOSTI, samo imena', () => {
+    /* Fajl je u javnom repozitorijumu. */
+    assert.doesNotMatch(MD, /=\s*(sb_secret|eyJ|AIza|re_)/, 'zapisana je stvarna vrednost tajne');
+    assert.doesNotMatch(MD, /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/, 'zapisana je e-adresa');
+  });
+});
