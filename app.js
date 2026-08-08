@@ -11549,12 +11549,32 @@ function zajInicijali(ime){
    „Trkač" a krug je pokazivao „?". */
 function zajPrikazIme(p){ return (p&&p.nadimak)||'Trkač'; }
 
+/* Adresa slike, propuštena kroz usko sito.
+   Vrednost završava u `url("…")` unutar `style` atributa. Pregledač atribut
+   PRVO dekodira kao HTML, pa tek onda parsira kao CSS — zato `esc()` nije
+   dovoljan: `&#39;` bi se pretvorio u apostrof i izašao iz `url(…)`. Ovde se
+   znakovi kojima bi to bilo moguće odbijaju u celosti, a ne beže. */
+function zajSlikaUrl(u){
+  if(typeof u!=='string') return null;
+  if(/["'()\\\s]/.test(u)) return null;
+  return /^https:\/\/[a-zA-Z0-9.-]+\/[A-Za-z0-9\-._~:\/?#\[\]@!$&*+,;=%]*$/.test(u) ? u : null;
+}
+
+/* ZAŠTO POZADINA, A NE <img>.
+   Prvo je stajao `<img>` preko kruga sa inicijalima, računajući da se pri
+   neuspehu vide inicijali ispod. Na iPhoneu se to ne dešava: Safari nacrta
+   SVOJU ikonicu slomljene slike (kvadratić sa upitnikom) tačno preko njih.
+   Prijavljeno sa ekrana — upitnik preko avatara, iako nadimci postoje.
+   Pozadina koja se ne učita ne crta ništa. Nema šta da pukne, i ne treba
+   nijedan `onerror` (koji CSP ionako zabranjuje). */
 function zajAvatar(p, d){
   const ime=zajPrikazIme(p);
-  const slika=(typeof p.avatar_url==='string'&&/^https:\/\//.test(p.avatar_url))
-    ? `<img src="${esc(p.avatar_url)}" alt="" width="${d}" height="${d}" loading="lazy" referrerpolicy="no-referrer">` : '';
-  return `<span class="zav" style="width:${d}px;height:${d}px;background:${zajBoja(p.user_id)};font-size:${Math.round(d*0.4)}px">`
-       + `<b>${esc(zajInicijali(ime))}</b>${slika}</span>`;
+  const slika=zajSlikaUrl(p&&p.avatar_url);
+  const poz=slika
+    ? `background-image:url("${slika}");background-size:cover;background-position:center`
+    : '';
+  return `<span class="zav" style="width:${d}px;height:${d}px;background-color:${zajBoja(p.user_id)};font-size:${Math.round(d*0.4)}px;${poz}">`
+       + `<b${slika?' style="opacity:0"':''}>${esc(zajInicijali(ime))}</b></span>`;
 }
 
 /* --- povlačenje --- */
@@ -11652,7 +11672,7 @@ function zajSpisak(){
         <span class="zs">${esc(pod)}</span>
       </span>
       <span class="zv"><b${ZAJ.merilo==='nap'?' style="color:var(--green)"':''}>${esc(vred)}</b>
-        <span>${i===0?'PRVI':''}</span></span>
+        <span>${(i===0&&vred!=='—')?'PRVI':''}</span></span>
     </button>`;
 
   const podnaslov=p=>[p.cilj||'—',

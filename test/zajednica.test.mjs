@@ -580,4 +580,68 @@ describe('Ime i slika iz tokena', () => {
     a.call('sbPreuzmiIdentitet');
     assert.equal(a.evalIn('SB.slika'), null);
   });
+
+  test('avatar je POZADINA, ne <img> — inače iPhone crta upitnik preko', () => {
+    /* Prijavljeno sa ekrana. Inicijali su bili ispod <img>-a, a Safari pri
+       neuspeloj slici nacrta svoju ikonicu tačno preko njih. Pozadina koja se
+       ne učita ne crta ništa. */
+    const a = app();
+    prijavljen(a);
+    spisak(a, [{ user_id:'u-sl', nadimak:'Sanja', cilj:'5K',
+      avatar_url:'https://lh6.googleusercontent.com/a/AC-slika=s96-c',
+      vdot:45, vdot_pocetni:44, test3k_sec:800, km_nedelja:20, plan_pct:60, niz_dana:1,
+      izazov_od:3, izazov_ura:1, nedelja_br:1, nedelja_od:8, trka_datum:'2026-12-01',
+      znacke:[], trcanja:[] }]);
+    a.call('renderZajednica');
+    const h = ekran(a);
+    assert.ok(!/<img/.test(h), 'avatar i dalje koristi <img>');
+    assert.match(h, /background-image:url\("https:\/\/lh6\.googleusercontent\.com/,
+      'slika se ne postavlja kao pozadina');
+  });
+
+  test('adresa slike ne može da izađe iz url(…)', () => {
+    /* Vrednost završava u `style` atributu. Pregledač atribut PRVO dekodira
+       kao HTML pa tek onda parsira kao CSS — zato esc() nije dovoljan:
+       `&#39;` bi postao apostrof. Ti znakovi se odbijaju u celosti. */
+    const a = app();
+    for (const zlo of [
+      'https://lh3.googleusercontent.com/a");background:url("http://zlo.rs/x',
+      "https://lh3.googleusercontent.com/a');x:url('http://zlo.rs/x",
+      'https://lh3.googleusercontent.com/a\\x',
+      'https://lh3.googleusercontent.com/a x',
+      'http://lh3.googleusercontent.com/a',
+      'javascript:alert(1)', 'data:image/png;base64,AA', '//zlo.rs/x'
+    ]) {
+      assert.equal(a.call('zajSlikaUrl', zlo), null, `prošlo je: ${zlo}`);
+    }
+    assert.equal(a.call('zajSlikaUrl', 'https://lh3.googleusercontent.com/a/AC_x=s96-c'),
+      'https://lh3.googleusercontent.com/a/AC_x=s96-c', 'ispravna adresa je odbijena');
+  });
+
+  test('inicijali se sklanjaju SAMO kad slika stvarno postoji', () => {
+    const a = app();
+    prijavljen(a);
+    const sa = a.call('zajAvatar', { user_id:'x', nadimak:'Sanja Sanjić',
+      avatar_url:'https://lh3.googleusercontent.com/a/x' }, 40);
+    const bez = a.call('zajAvatar', { user_id:'x', nadimak:'Sanja Sanjić' }, 40);
+    assert.match(sa, /opacity:0/, 'inicijali stoje preko slike');
+    assert.ok(!/opacity:0/.test(bez), 'inicijali su sakriveni iako slike nema');
+    assert.match(bez, /<b>SS<\/b>/);
+  });
+
+  test('„PRVI" ne stoji kad merilo nema vrednost', () => {
+    /* Sa ekrana: dvoje ljudi bez testa na 3 km, oba pišu „—", a prvom je ipak
+       dodeljeno PRVI. Prvi po ničemu nije prvi. */
+    const a = app();
+    prijavljen(a);
+    a.evalIn(`S.zajed.vidljiv=true; ZAJ.kad=Date.now(); ZAJ.ljudi=[
+      {user_id:'u-1',nadimak:'Ana',cilj:'5K',test3k_sec:null,vdot:45,vdot_pocetni:44,
+       km_nedelja:10,plan_pct:50,niz_dana:1,izazov_od:4,izazov_ura:2,nedelja_br:7,nedelja_od:14,
+       trka_datum:'2026-09-24',znacke:[],trcanja:[]},
+      {user_id:'u-2',nadimak:'Maša',cilj:'5K',test3k_sec:null,vdot:44,vdot_pocetni:44,
+       km_nedelja:8,plan_pct:0,niz_dana:0,izazov_od:4,izazov_ura:0,nedelja_br:1,nedelja_od:19,
+       trka_datum:'2026-12-13',znacke:[],trcanja:[]}];`);
+    a.call('renderZajednica');
+    assert.ok(!ekran(a).includes('PRVI'), 'PRVI stoji uz vrednost koje nema');
+  });
 });

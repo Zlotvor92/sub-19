@@ -90,9 +90,9 @@ describe('vercel.json', () => {
     assert.ok(!csp.includes('unsafe-eval'), 'CSP dozvoljava unsafe-eval');
   });
 
-  test('img-src pušta samo Google avatare, i to poimenično', () => {
+  test('img-src pušta samo Google avatare, i ništa šire', () => {
     /* Zajednica prikazuje profilne slike sa Google naloga, pa je `img-src`
-       morao da se otvori. Otvara se TAČNO za taj jedan host. Šire pravilo
+       morao da se otvori. Otvara se samo za Googleov domen za slike. Šire pravilo
        (`https:`, `*`) izgleda isto dok sve radi, a znači da svaka slika sa
        interneta sme u aplikaciju — što je i put kojim se piksel za praćenje
        ubacuje kroz nadimak ili bilo koje polje koje završi u `src`. */
@@ -100,7 +100,10 @@ describe('vercel.json', () => {
     const img = /img-src ([^;]+)/.exec(csp);
     assert.ok(img, 'CSP nema img-src');
     const izvori = img[1].trim().split(/\s+/);
-    assert.deepEqual(izvori, ["'self'", 'data:', 'https://lh3.googleusercontent.com'],
+    /* Zvezdica je SAMO u imenu poddomena googleusercontent.com — Google
+       avatare služi i sa lh4/lh5/lh6, ne samo sa lh3, i to bez najave.
+       Šire pravilo (`https:`, `*`) i dalje ne prolazi. */
+    assert.deepEqual(izvori, ["'self'", 'data:', 'https://*.googleusercontent.com'],
       `img-src je "${img[1].trim()}"`);
   });
 
