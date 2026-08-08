@@ -258,4 +258,16 @@ describe('Šema istorije prati kod', () => {
     assert.match(p, /Earlier versions/);
     assert.match(p, /Brisanje naloga briše i njih/);
   });
+
+  test('provera.sql pazi da istorija ostane samo-za-čitanje', () => {
+    /* Test iznad gleda SQL fajl — dakle nameru. Ovo gleda alat koji proverava
+       ŽIVU bazu. Bez njega bi politika dodata rukom u Supabase konzoli stajala
+       neprimećena, a upravo je to način na koji se šema i razilazi.
+       Rupu sam ostavio i uočio je tek na tvom ispisu provere. */
+    const p = readRepoFile('supabase/provera.sql');
+    assert.match(p, /tablename = 'user_state_istorija'\s*\n\s*and cmd <> 'SELECT'/,
+      'provera ne gleda politike za upis nad istorijom');
+    assert.match(p, /has_table_privilege\('anon', 'public\.user_state_istorija'/,
+      'provera ne gleda da li anon vidi istoriju');
+  });
 });

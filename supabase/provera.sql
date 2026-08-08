@@ -155,6 +155,38 @@ select 'izazov · nijedna politika za upis',
 
 union all
 
+-- 6a. ISTORIJA VERZIJA SE SAMO ČITA
+--     Isto pravilo kao za izazov, iz drugog razloga: istorija u koju korisnik
+--     može da piše ili da briše ne štiti od greške napravljene U APLIKACIJI.
+--     Piše je isključivo okidač, koji je `security definer`.
+select 'istorija · nijedna politika za upis',
+       coalesce((select string_agg(distinct cmd, ', ') from pg_policies
+                  where schemaname = 'public' and tablename = 'user_state_istorija'
+                    and cmd <> 'SELECT'), 'nema'),
+       case when to_regclass('public.user_state_istorija') is null then 'NEDOSTAJE'
+            when exists (select 1 from pg_policies
+                          where schemaname = 'public' and tablename = 'user_state_istorija'
+                            and cmd <> 'SELECT')
+              /* Puštanje istorija.sql ponovo ovo NE popravlja — fajl briše samo
+                 politiku koju sam pravi, po imenu. Tuđu obriši rukom. */
+              then 'STARO — neko sme da menja istoriju kroz RLS; obriši tu politiku rukom'
+            else 'OK' end
+
+union all
+
+select 'istorija · anon nema pristup',
+       case when to_regclass('public.user_state_istorija') is null then '—'
+            when not exists (select 1 from pg_roles where rolname = 'anon') then 'nema uloge anon'
+            when has_table_privilege('anon', 'public.user_state_istorija', 'select') then 'ČITA'
+            else 'nema' end,
+       case when to_regclass('public.user_state_istorija') is null then 'NEDOSTAJE'
+            when not exists (select 1 from pg_roles where rolname = 'anon') then 'OK'
+            when has_table_privilege('anon', 'public.user_state_istorija', 'select')
+              then 'STARO — pusti istorija.sql ponovo (revoke iz tačke 3)'
+            else 'OK' end
+
+union all
+
 -- 7. ANON NE SME DO ZAJEDNICE
 --    anon ključ stoji u izvornom kodu stranice, dakle kod svakoga. Da `revoke`
 --    izostane, ceo spisak trkača bi se čitao bez prijave.
