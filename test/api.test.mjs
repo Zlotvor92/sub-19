@@ -111,8 +111,15 @@ describe('/api/broadcast — slanje u više poziva', () => {
     const { default: handler } = await import('../api/broadcast.js?t=' + Date.now());
     const poslato = [];
     stubFetch(poslato);
+    /* Granica krugova je SAMO osigurač protiv beskonačne petlje, ne merilo.
+       Bila je 20, uz rok od 30 ms po pozivu — pa je na opterećenoj mašini u
+       jedan poziv stalo manje mejlova, 250 nije stalo u 20 krugova i test je
+       povremeno padao bez ijedne greške u kodu. Test koji ume da padne sam od
+       sebe truje ceo skup: sledeći put kad padne, poveruje se da je opet
+       „samo mašina". Broj je zato podignut daleko iznad svake razumne
+       potrebe; ono što se stvarno tvrdi je ispod — bez duplikata i svih 250. */
     let posle = '', krugova = 0, kraj = false;
-    while (!kraj && krugova < 20) {
+    while (!kraj && krugova < 400) {
       krugova++;
       const res = makeRes();
       await handler({ method: 'POST', headers: { authorization: 'Bearer tajna' }, body: { posalji: true, posle } }, res);
@@ -748,7 +755,8 @@ describe('supabase/provera.sql — alat koji hvata razilaženje baze i repozitor
     izvuciFunkcije('api-usage.sql'),
     izvuciFunkcije('rate-limit.sql'),
     izvuciFunkcije('push.sql'),
-    izvuciFunkcije('zajednica.sql'));
+    izvuciFunkcije('zajednica.sql'),
+    izvuciFunkcije('istorija.sql'));
 
   const provera = readRepoFile('supabase/provera.sql');
   const spisak = (naziv) => {

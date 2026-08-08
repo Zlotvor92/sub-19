@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='221'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='222'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1739,7 +1739,17 @@ function recomputeVdotZones(){
   });
   return changed;
 }
+/* PODSEĆANJE NA BACKUP — SAMO ZA NEPRIJAVLJENE.
+
+   Sedmodnevni ritam je bio iz vremena kad je telefon bio jedina kopija. Otkad
+   server čuva podatke I ranije verzije (v. supabase/istorija.sql), za
+   prijavljenog korisnika backup fajl nije zaštita nego navika — a podsetnik
+   koji traži nešto što ne štiti ni od čega uči čoveka da ne čita podsetnike.
+
+   Za neprijavljenog se NIŠTA ne menja: njemu je backup i dalje jedina kopija,
+   i ritam ostaje isti. */
 function backupDue(today){
+  if(sbAuthed()) return false;
   const base=S.ui.lastBackup||S.ui.firstRun;
   if(!base)return false;
   if(S.ui.snooze&&today<S.ui.snooze)return false;
@@ -9457,7 +9467,9 @@ function podesavanjaStanje(){
     { k:'sat', naziv:'Slanje na sat', vazi:stIcu, ok:!!(S.icu&&S.icu.lastPush),
       radnja:'Pošalji na sat', dugme:'hero-sat',
       tekst:'Treninzi još nisu poslati na sat — plan za narednih 14 dana čeka.' },
-    { k:'backup', naziv:'Podaci', vazi:true, ok:!!S.ui.lastBackup&&!backupDue(TODAY),
+    /* Prijavljenom ovde ništa ne čeka: server nosi i podatke i ranije verzije.
+       Neprijavljenom je backup jedina kopija, pa mu se i dalje traži. */
+    { k:'backup', naziv:'Podaci', vazi:true, ok:sbAuthed()||(!!S.ui.lastBackup&&!backupDue(TODAY)),
       radnja:'Izvezi backup', dugme:'hero-backup',
       tekst:S.ui.lastBackup?'Od poslednjeg backupa je prošlo dosta — napravi novi.':'Backup još nije napravljen.' }
   ].filter(x=>x.vazi);
@@ -9623,10 +9635,19 @@ function openSettings(){
     })()}
 
     ${kartica(false,
-      glava('Podaci', 'poslednji backup: '+(S.ui.lastBackup?esc(fmtDY(S.ui.lastBackup)):'nikad'), S.ui.lastBackup?true:'warn'),
-      `<div class="btnrow"><button class="btn ghost" id="s-exp">Izvezi backup</button><button class="btn ghost" id="s-imp">Uvezi backup</button></div>
+      glava('Podaci', sbAuthed()?'na serveru · ranije verzije dostupne'
+                                :'samo na ovom uređaju · backup '+(S.ui.lastBackup?esc(fmtDY(S.ui.lastBackup)):'nikad'),
+            sbAuthed()?true:(S.ui.lastBackup?true:'warn')),
+      `${sbAuthed()
+         ? `<div class="set-st">Podaci se čuvaju na serveru, a server pamti i <b>ranije verzije</b> — greška se može vratiti unazad. Backup fajl više nije neophodan; ostaje za slučaj da ti kopija treba van aplikacije.</div>
+            <div class="btnrow"><button class="btn" id="s-ist">🕓 Ranije verzije</button></div>`
+         : `<div class="set-st" style="color:var(--amber)">Nisi prijavljen, pa podaci žive <b>samo na ovom uređaju</b>. Backup je tada jedina kopija — ili se prijavi, pa ih server preuzme.</div>`}
+       <div class="btnrow"><button class="btn ghost sm" id="s-exp">Izvezi backup</button><button class="btn ghost sm" id="s-imp">Uvezi backup</button></div>
        <input type="file" id="s-file" accept=".json,application/json" style="display:none">
-       ${sbOn()&&sbAuthed()?`<div class="btnrow"><button class="btn ghost sm" id="s-bug">Prijavi problem</button></div>`:''}`)}
+       ${sbOn()&&sbAuthed()?`<div class="btnrow"><button class="btn ghost sm" id="s-bug">Prijavi problem</button></div>`:''}
+       <details class="help"><summary>Šta server pamti, a šta ne</summary>
+         <p>Pre svake izmene sačuva se prethodno stanje — najviše 40 verzija i najviše jedna na sat, što u praksi pokriva nedeljama unazad.</p>
+         <p><b>Brisanje naloga briše i istoriju.</b> Obrisano je obrisano; tu backup fajl ostaje jedina kopija, i zato ga dijalog za brisanje i traži.</p></details>`)}
 
     ${sbAuthed()?(()=>{
       const uk=!!(S.zajed&&S.zajed.vidljiv);
@@ -9684,6 +9705,7 @@ function openSettings(){
   `);
   SET_LIST=true;
   $('#s-exp').onclick=()=>{ exportBackup(); setTimeout(osveziPodesavanja,300); };
+  if($('#s-ist')) $('#s-ist').onclick=openIstorijaSheet;
   if($('#s-bug')) $('#s-bug').onclick=openBugSheet;
   if($('#sb-in'))   $('#sb-in').onclick=sbLogin;
   if($('#sb-out'))  $('#sb-out').onclick=()=>{ if(confirm('Odjaviti se? Podaci na ovom uređaju ostaju.')){ sbLogout(); closeSheet(); } };
@@ -11139,24 +11161,36 @@ async function sbPull(){
      i nastaviti sa lokalnim podacima. */
   const mig=migrate(j[0].data);
   if(!mig) return false;
+  SB.seenAt=j[0].updated_at; sbSave();
+  primiStanjeSaServera(mig);
+  return true;
+}
+
+/* USVAJANJE STANJA KOJE JE STIGLO SA SERVERA — jedno mesto za dva puta.
+   Koriste ga `sbPull` („Uzmi sa servera") i vraćanje ranije verzije. Bilo je
+   samo u sbPull-u; kad je stiglo vraćanje verzija, ovih desetak redova je
+   trebalo prepisati — a prepisan korak koji se posle razidje je tačno ono na
+   šta se ova aplikacija već opekla kod `requireUser`.
+
+   Redosled nije proizvoljan:
+     1. VEZE SE ZADRŽAVAJU. Na serveru `strava` i `icu` stoje BEZ tokena
+        (v. sbPayload) — token je pristupni podatak i nikad ne napušta uređaj.
+        Da se preuzmu odande, vraćanje verzije bi te otkačilo sa Strave i
+        intervals.icu-a, a to ni sa čim nema veze.
+     2. `setActivePlan` pre `rebuildDateIndex` — indeksi se grade nad planom
+        koji je tek usvojen, inače ekrani mešaju dva rasporeda.
+     3. `uskladiVlasnickePodatke` jer stanje sa servera može da nosi tuđi seed
+        (v. objašnjenje u toj funkciji). */
+function primiStanjeSaServera(mig){
   const keepStrava=S.strava;                 /* veza sa Stravom je po uredjaju */
   const keepIcu=S.icu;                       /* isto i intervals.icu kljuc */
   S=mig;
   S.strava=keepStrava||null;
   S.icu=keepIcu||null;
-  SB.seenAt=j[0].updated_at; sbSave();
   setActivePlan();
-  /* POVUCENO STANJE MOZE DA NOSI TUDJI SEED.
-     Ciscenje pri pokretanju dira samo localStorage — a stara verzija je
-     vlasnikov seed vec gurnula i u TUDJ Supabase red. Bez ovog poziva
-     povlacenje ga vrati nazad, `moraSvojPlan()` opet postane netacan i covek
-     ponovo sleti na tudji plan. Zato se isto pravilo primenjuje i ovde, na
-     sve sto stigne sa servera. `save()` unutra okida i push, pa ocisceno
-     stanje zameni ono sto je na serveru. */
   uskladiVlasnickePodatke();
   rebuildDateIndex(); save();
   renderHeader(); setPage(ACTIVE);
-  return true;
 }
 
 /* save() ovo okida — odlozeno, jer se save() zove i na svaki pritisak tastera. */
@@ -11433,6 +11467,124 @@ document.addEventListener('visibilitychange',()=>{
     if(navigator.onLine&&S.ui&&S.ui.geo) vremePovuci(false).then(r=>{ if(r.ok&&!r.kes&&ACTIVE==='danas') renderDanas(); });
   }
 });
+
+/* ============================================================
+   RANIJE VERZIJE — VRAĆANJE UNAZAD SA SERVERA
+
+   Server je do sada bio OGLEDALO: `user_state` je jedan red koji se prepisuje
+   u mestu, pa je verno prenosio i grešku. Obrisan unos ili pokvareno stanje
+   stizali su gore za nekoliko sekundi i stara vrednost više nije postojala
+   nigde. Zbog toga je backup fajl ostajao neophodan.
+
+   Sada baza pre svake izmene sačuva prethodnu verziju (v. supabase/istorija.sql),
+   a ovde se te verzije čitaju i vraćaju. Backup fajl time prestaje da bude
+   jedini put nazad.
+
+   ŠTA VRAĆANJE NIJE: nije „poništi poslednju izmenu". Vraća se CELO stanje na
+   trenutak u prošlosti — sve što je posle toga uneseno nestaje sa ekrana.
+   Zato se pre vraćanja pravi verzija i od zatečenog stanja (to radi sam okidač
+   u bazi), pa se i taj korak može poništiti.
+   ============================================================ */
+
+let IST = { spisak:null, ucitava:false, greska:null };
+
+/* Spisak je namerno bez `data`: pun JSON puta 40 verzija je nekoliko stotina
+   kilobajta, a za izbor treba samo kad i sa čega. Sadržaj se povlači tek za
+   verziju koja se stvarno vraća. */
+async function istorijaUcitaj(){
+  if(!sbAuthed()) return;
+  IST.ucitava=true; IST.greska=null;
+  if(!await sbEnsure()){ IST.ucitava=false; IST.greska='mreza'; return; }
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/user_state_istorija'+
+      '?select=id,napravljeno,app_version,device_id&user_id=eq.'+encodeURIComponent(SB.userId)+
+      '&order=napravljeno.desc&limit=40',{headers:sbHead()});
+    if(!r.ok){ IST.greska=zajRazlogIz(r.status); }
+    else IST.spisak=await r.json();
+  }catch(e){ IST.greska='mreza'; }
+  IST.ucitava=false;
+}
+
+/* Vraćanje. Redosled je nosiv:
+     1. povuci sadržaj te verzije
+     2. propusti kroz `migrate` — verzija je mogla nastati u starijoj šemi
+     3. TEK ONDA zameni `S` i upiši
+   Da se `S` menja pre migracije, neuspela migracija bi ostavila aplikaciju u
+   polovičnom stanju. */
+async function istorijaVrati(id){
+  if(!sbAuthed()) return {ok:false, greska:'Nisi prijavljen.'};
+  if(!await sbEnsure()) return {ok:false, greska:'Nema veze sa internetom.'};
+  let sirovo;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/user_state_istorija?select=data&id=eq.'+encodeURIComponent(id)+
+      '&user_id=eq.'+encodeURIComponent(SB.userId),{headers:sbHead()});
+    if(!r.ok) return {ok:false, greska:'Server nije dao tu verziju ('+r.status+').'};
+    const j=await r.json();
+    if(!Array.isArray(j)||!j[0]||!j[0].data) return {ok:false, greska:'Ta verzija više ne postoji.'};
+    sirovo=j[0].data;
+  }catch(e){ return {ok:false, greska:'Nema veze sa internetom.'}; }
+
+  const mig=migrate(JSON.parse(JSON.stringify(sirovo)));
+  if(!mig) return {ok:false, greska:'Ta verzija je iz novije šeme nego što je ova aplikacija. Ažuriraj aplikaciju pa probaj ponovo.'};
+
+  /* ISTI put kao „Uzmi sa servera" — v. primiStanjeSaServera. Naročito je
+     bitno da se veze sa Stravom i intervals.icu-om zadrže: na serveru stoje
+     bez tokena, pa bi ih preuzimanje odande otkačilo. */
+  const prethodno=S;
+  try{ primiStanjeSaServera(mig); }
+  catch(e){
+    S=prethodno; setActivePlan(); rebuildDateIndex();
+    return {ok:false, greska:'Vraćanje nije uspelo ('+e.message+'). Zatečeno stanje je netaknuto.'};
+  }
+  /* Odmah gore, ne za četiri sekunde: čovek je upravo svesno vratio stanje i
+     ne sme da zatvori aplikaciju pre nego što to stigne na server. Sam upis
+     pravi verziju od ZATEČENOG stanja, pa se i ovo može poništiti. */
+  sbPush();
+  return {ok:true};
+}
+
+function istorijaOpis(x){
+  const d=new Date(x&&x.napravljeno);
+  if(isNaN(d)) return '—';
+  return d.toLocaleString('sr-RS',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+function openIstorijaSheet(){
+  const crtaj=()=>{
+    let telo;
+    if(IST.ucitava) telo='<div class="zprazno">Povlačim spisak…</div>';
+    else if(IST.greska) telo=`<div class="zprazno">${esc(zajPoruka(IST.greska))}</div>
+      <div class="btnrow"><button class="btn ghost" id="ist-opet">Pokušaj ponovo</button></div>`;
+    else if(!IST.spisak||!IST.spisak.length) telo=`<div class="zprazno">Još nema ranijih verzija.<br>Prva nastaje pri sledećoj izmeni.</div>`;
+    else telo=IST.spisak.map(x=>`
+      <div class="ztrow">
+        <div class="ztt">${esc(istorijaOpis(x))}
+          <small>verzija aplikacije ${esc(x.app_version||'—')}${x.device_id&&x.device_id!==SB.deviceId?' · drugi uređaj':''}</small></div>
+        <button class="btn ghost sm" data-vrati="${esc(String(x.id))}">Vrati</button>
+      </div>`).join('');
+
+    openSheet(`
+      <div class="sh-t">Ranije verzije</div>
+      <div class="sh-s">Snimci tvojih podataka sa servera. Najviše 40, najviše jedan na sat.</div>
+      <div class="card">${telo}</div>
+      <div class="note-src">Vraćanje menja <b>celo</b> stanje na taj trenutak — sve uneseno posle njega nestaje sa ekrana. I zatečeno stanje se pre toga sačuva kao verzija, pa se i vraćanje može poništiti.</div>
+    `);
+    const o=$('#ist-opet');
+    if(o) o.onclick=async()=>{ IST.greska=null; IST.ucitava=true; crtaj(); await istorijaUcitaj(); crtaj(); };
+    document.querySelectorAll('[data-vrati]').forEach(b=>b.onclick=async()=>{
+      const kada=b.closest('.ztrow');
+      const kad=kada?kada.querySelector('.ztt').textContent.trim().split('\n')[0]:'';
+      if(!confirm('Vratiti podatke na '+kad+'?\n\nSve uneseno posle tog trenutka nestaje sa ekrana. Zatečeno stanje se čuva kao verzija, pa se ovo može poništiti.')) return;
+      b.disabled=true; b.textContent='Vraćam…';
+      const r=await istorijaVrati(b.dataset.vrati);
+      if(!r.ok){ b.disabled=false; b.textContent='Vrati'; alert(r.greska); return; }
+      closeSheet();                    /* iscrtavanje je već uradio primiStanjeSaServera */
+      alert('Vraćeno na '+kad+'.');
+    });
+  };
+  IST.spisak=null; IST.ucitava=true; crtaj();
+  istorijaUcitaj().then(crtaj);
+}
 
 /* ============================================================
    ZAJEDNICA — DOBROVOLJAN JAVNI PROFIL

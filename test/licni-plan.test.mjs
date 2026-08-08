@@ -307,13 +307,25 @@ describe('Sinhronizacija sa servera ne vraća tuđi seed', () => {
     /* Čišćenje pri pokretanju dira samo localStorage. Vlasnikov seed je stara
        verzija gurnula i u tuđ Supabase red, pa ga povlačenje vraća nazad —
        „opet sve vuče na tuđi plan". */
+    /* Od v222 usvajanje stanja sa servera stoji u `primiStanjeSaServera`, koju
+       koriste i „Uzmi sa servera" i vraćanje ranije verzije. Provera zato ide
+       u dva koraka: da sbPull i dalje ide TIM putem, i da taj put čisti. */
     const izvor = readClientSource();
     const blok = /async function sbPull\(\)\{[\s\S]*?\n\}/.exec(izvor);
     assert.ok(blok, 'sbPull nije pronađen');
-    assert.ok(/uskladiVlasnickePodatke\(\)/.test(blok[0]),
-      'sbPull ne čisti povučeno stanje');
-    assert.ok(blok[0].indexOf('setActivePlan()') < blok[0].indexOf('uskladiVlasnickePodatke()'),
+    assert.ok(/primiStanjeSaServera\(mig\)/.test(blok[0]),
+      'sbPull više ne usvaja stanje zajedničkim putem');
+
+    const usvoji = /function primiStanjeSaServera\(mig\)\{[\s\S]*?\n\}/.exec(izvor);
+    assert.ok(usvoji, 'primiStanjeSaServera nije pronađena');
+    assert.ok(/uskladiVlasnickePodatke\(\)/.test(usvoji[0]),
+      'usvajanje stanja sa servera ne čisti tuđi seed');
+    assert.ok(usvoji[0].indexOf('setActivePlan()') < usvoji[0].indexOf('uskladiVlasnickePodatke()'),
       'čišćenje se poziva pre setActivePlan() — rebuildDateIndex bi radio nad starim planom');
+    /* I vraćanje verzije mora da ide istim putem, inače se dva puta raziđu. */
+    const vrati = /async function istorijaVrati\(id\)\{[\s\S]*?\n\}/.exec(izvor);
+    assert.ok(vrati && /primiStanjeSaServera\(mig\)/.test(vrati[0]),
+      'vraćanje ranije verzije usvaja stanje mimo zajedničkog puta');
   });
 
   test('povučeno stanje sa tuđim seedom se očisti', () => {

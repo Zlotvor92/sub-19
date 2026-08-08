@@ -90,7 +90,8 @@ const TABELE = [
   'api_usage',
   'bug_report_usage',
   'endpoint_usage',
-  'zajednica_profil'
+  'zajednica_profil',
+  'user_state_istorija'
 ];
 
 async function adminRuta(res, body, vlasnik, baza, srvHead) {

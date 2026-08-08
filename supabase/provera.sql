@@ -29,7 +29,7 @@ with ocekivano_def as (
                       'check_and_bump_bug_usage','check_and_bump_endpoint',
                       -- Bez `security definer` ova puca sa „infinite recursion
                       -- detected in policy" i Zajednica postane nečitljiva.
-                      'zajednica_vidljiv_ja']) as ime
+                      'zajednica_vidljiv_ja','user_state_zapamti']) as ime
 ),
 ocekivano_obicno as (
   -- Funkcije koje NE TREBA da budu `security definer`. Okidači `dodirni` i
@@ -55,6 +55,20 @@ select 'okidač · ' || o.ime as stavka,
 
 union all
 
+-- 1a. OKIDAČ nad user_state — bez njega nema istorije verzija, a to se ne vidi
+--     dok ne zatreba. Isti oblik provere kao za ai_posao.
+select 'okidač · user_state_zapamti_trg',
+       coalesce(case when t.tgenabled = 'O' then 'aktivan' else 'isključen' end, '—'),
+       case when t.tgname is null then 'NEDOSTAJE — pusti istorija.sql'
+            when t.tgenabled <> 'O' then 'STARO — okidač je isključen'
+            else 'OK' end
+  from (select 1) x
+  left join pg_trigger t
+    on t.tgname = 'user_state_zapamti_trg' and t.tgrelid = to_regclass('public.user_state')
+   and not t.tgisinternal
+
+union all
+
 -- 2. TABELE i RLS
 select 'tabela · ' || o.ime,
        coalesce(case when c.relrowsecurity then 'RLS uključen' else 'RLS ISKLJUČEN' end, '—'),
@@ -63,7 +77,7 @@ select 'tabela · ' || o.ime,
             else 'OK' end
   from (select unnest(array['ai_posao','api_usage','bug_report_usage',
                             'endpoint_usage','push_pretplata','user_state',
-                            'zajednica_profil','zajednica_izazov']) as ime) o
+                            'zajednica_profil','zajednica_izazov','user_state_istorija']) as ime) o
   left join pg_class c on c.oid = to_regclass('public.' || o.ime)
 
 union all
@@ -165,6 +179,7 @@ order by 1;
 --   NEDOSTAJE kod api_usage       -> pusti supabase/api-usage.sql
 --   NEDOSTAJE kod endpoint_usage  -> pusti supabase/rate-limit.sql
 --   NEDOSTAJE kod zajednica_*     -> pusti supabase/zajednica.sql
+--   NEDOSTAJE kod user_state_*    -> pusti supabase/istorija.sql
 --   STARO                         -> pusti taj isti fajl ponovo, ceo
 --
 -- Puštanje bilo kog od tih fajlova dvaput je bezbedno.
