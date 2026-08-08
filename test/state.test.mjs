@@ -749,3 +749,50 @@ describe('Pokretanje sa zatečenom sesijom', () => {
     assert.equal(a.call('sbAuthed'), true, 'ispravna sesija je odbačena pri pokretanju');
   });
 });
+
+describe('Uvezen backup: bol i težina bez upotrebljivog broja', () => {
+  /* ZATEČENO, ne uneseno Zajednicom. `cistDatirane` je proveravala samo datum,
+     pa je zapis bez `pain` prolazio kroz migraciju. Dva ishoda:
+       - grafikon bola je crtao `cy="NaN"` i tačka je nestajala;
+       - `partLevel` je vraćao `undefined`, pa `bol >= 6` nije bilo tačno —
+         unos o povredi POSTOJI, a plan se ponaša kao da ga nema.
+     Drugo je gore: nenacrtana tačka se vidi, prećutana povreda ne. */
+
+  test('zapis bez `pain` se odbacuje, ne provlači kao nula', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const o = JSON.parse(a.evalIn(`JSON.stringify(migrate({v:10, log:{}, knee:[
+      {id:'a', date:'2026-08-01'},
+      {id:'b', date:'2026-08-02', pain:'jako'},
+      {id:'c', date:'2026-08-03', pain:7, part:'ahilova-D'}
+    ]}))`));
+    assert.deepEqual(o.knee.map(k => k.id), ['c']);
+  });
+
+  test('bol van 0–10 se odbacuje', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const o = JSON.parse(a.evalIn(`JSON.stringify(migrate({v:10, log:{}, knee:[
+      {id:'x', date:'2026-08-01', pain:-3},
+      {id:'y', date:'2026-08-02', pain:99},
+      {id:'z', date:'2026-08-03', pain:0}
+    ]}))`));
+    assert.deepEqual(o.knee.map(k => k.id), ['z'], 'bol 0 je legitiman i mora da ostane');
+  });
+
+  test('težina van razumnog opsega se odbacuje', () => {
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const o = JSON.parse(a.evalIn(`JSON.stringify(migrate({v:10, log:{}, kg:[
+      {date:'2026-08-01'}, {date:'2026-08-02', kg:0}, {date:'2026-08-03', kg:'78,5'},
+      {date:'2026-08-04', kg:78.5}
+    ]}))`));
+    assert.deepEqual(o.kg.map(k => k.date), ['2026-08-04']);
+  });
+
+  test('grafikon bola ne crta tačku bez koordinate', () => {
+    /* Zamka nad ISHODOM, ne nad migracijom: i da provera nekad popusti, ovde
+       se vidi da SVG izlazi ispravan. */
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    a.evalIn(`S.knee=[{id:'a',date:'2026-08-01',pain:4},{id:'b',date:'2026-08-03',pain:8}]`);
+    const svg = a.call('chartKnee');
+    assert.ok(!/NaN/.test(svg), `grafikon sadrži NaN: ${svg.slice(0, 200)}`);
+  });
+});
