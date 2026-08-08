@@ -436,59 +436,82 @@ describe('Nemoguće merenje ne ulazi u formu', () => {
    Ova zamka meri OBLIK krive, ne pojedinačne brojeve: kartica tvrdi da je to
    putanja plana ka cilju, pa mora i da izgleda tako. */
 describe('Referentna kriva prati plan, ne propisan tempo', () => {
-  const plan = (a, over = {}) => {
-    a.ctx.__m = Object.assign({
-      startDate: '2026-08-08', raceDate: '2026-11-15', raceDistM: 5000,
-      pb: { distM: 5000, sec: 1350 }, weeklyKm: 30, runDays: 4, quality: 2,
+  /* SVE ČETIRI DISTANCE, ne samo 5K. Aplikacija pravi planove za 5K, 10K,
+     polumaraton i maraton, a dinamički testovi su bili gotovo isključivo na 5K
+     — jedanaest poziva sa 5000, dva sa 21097, jedan sa 42195. Duge distance su
+     baš one koje niko ne koristi u praksi, pa se kvar na njima ne bi ni video.
+     Zadaci se razlikuju i sadržajem: duže pripreme, drugačija rampa, dugo
+     trčanje nosi veći udeo nedelje. */
+  const DISTANCE = [
+    { ime: '5K',      distM: 5000,    pbSec: 1350,  nedelja: 15, km: 30 },
+    { ime: '10K',     distM: 10000,   pbSec: 2800,  nedelja: 16, km: 40 },
+    { ime: 'HM',      distM: 21097.5, pbSec: 6300,  nedelja: 18, km: 50 },
+    { ime: 'Maraton', distM: 42195,   pbSec: 13500, nedelja: 20, km: 60 }
+  ];
+  const dan = (od, n) => new Date(Date.parse(od) + n * 864e5).toISOString().slice(0, 10);
+
+  const plan = (a, d) => {
+    a.ctx.__m = {
+      startDate: '2026-08-08', raceDate: dan('2026-08-08', d.nedelja * 7),
+      raceDistM: d.distM, pb: { distM: d.distM, sec: d.pbSec },
+      weeklyKm: d.km, runDays: 5, quality: 2,
       intensity: 'std', trainedRecently: true, goalSec: null
-    }, over);
+    };
     a.evalIn(`(function(){ const g=generatePlan(__m);
       S.genPlan=adaptGeneratedPlan(g); setActivePlan(); rebuildDateIndex(); })()`);
-    return a.evalIn('CUR_PRED.map(r=>({w:r.w,l:r.l,p5k:r.p5k}))');
+    const r = a.evalIn('CUR_PRED.map(r=>({w:r.w,l:r.l,p5k:r.p5k}))');
+    assert.ok(r.length >= 5, `${d.ime}: plan ima samo ${r.length} kvalitetnih sesija`);
+    return r;
   };
 
   test('trkačka nedelja je NAJBOLJA tačka, ne najgora', () => {
     /* Ovo je bio glavni simptom: šiljak uvis uz desnu ivicu grafikona. */
-    for (const distM of [5000, 10000]) {
-      const a = app();
-      const red = plan(a, { raceDistM: distM });
+    for (const d of DISTANCE) {
+      const red = plan(app(), d);
       const zadnja = red[red.length - 1];
       const najgora = red.reduce((m, x) => (x.p5k > m.p5k ? x : m), red[0]);
       assert.notEqual(najgora.l, zadnja.l,
-        `${distM / 1000}K: trkačka nedelja (${zadnja.l}) je najgora tačka u planu: ${zadnja.p5k}s`);
+        `${d.ime}: trkačka nedelja (${zadnja.l}) je najgora tačka u planu: ${zadnja.p5k}s`);
       assert.ok(zadnja.p5k <= red[0].p5k,
-        `${distM / 1000}K: kraj plana (${zadnja.p5k}s) je gori od početka (${red[0].p5k}s)`);
+        `${d.ime}: kraj plana (${zadnja.p5k}s) je gori od početka (${red[0].p5k}s)`);
     }
   });
 
   test('kriva ne ide unazad — plan ne predviđa pad forme', () => {
-    const a = app();
-    const red = plan(a);
-    const unazad = red.filter((x, i) => i > 0 && x.p5k > red[i - 1].p5k);
-    assert.deepEqual(unazad.map(x => x.l), [],
-      `referentna kriva ide unazad na: ${unazad.map(x => x.l).join(', ')}`);
+    for (const d of DISTANCE) {
+      const red = plan(app(), d);
+      const unazad = red.filter((x, i) => i > 0 && x.p5k > red[i - 1].p5k);
+      assert.deepEqual(unazad.map(x => x.l), [],
+        `${d.ime}: referentna kriva ide unazad na: ${unazad.map(x => x.l).join(', ')}`);
+    }
   });
 
   test('sve sesije iste nedelje imaju istu referentnu vrednost', () => {
     /* Plan ne očekuje različitu formu u utorak i u četvrtak. Kad se razlikuju,
        broj ne meri plan nego to koja je sesija te nedelje ispala na red. */
-    const a = app();
-    const red = plan(a);
-    const poNedelji = {};
-    for (const r of red) (poNedelji[r.w] = poNedelji[r.w] || []).push(r.p5k);
-    const razlicite = Object.entries(poNedelji)
-      .filter(([, v]) => new Set(v).size > 1)
-      .map(([w, v]) => `N${w}: ${v.join('/')}`);
-    assert.deepEqual(razlicite, [], `ista nedelja, različita referenca: ${razlicite.join('  ')}`);
+    for (const d of DISTANCE) {
+      const red = plan(app(), d);
+      const poNedelji = {};
+      for (const r of red) (poNedelji[r.w] = poNedelji[r.w] || []).push(r.p5k);
+      const razlicite = Object.entries(poNedelji)
+        .filter(([, v]) => new Set(v).size > 1)
+        .map(([w, v]) => `N${w}: ${v.join('/')}`);
+      assert.deepEqual(razlicite, [], `${d.ime}: ista nedelja, različita referenca: ${razlicite.join('  ')}`);
+    }
   });
 
   test('kriva stiže do cilja, a ne staje daleko od njega', () => {
-    const a = app();
-    const red = plan(a);
-    const cilj = a.call('goalSecActive');
-    const zadnja = red[red.length - 1].p5k;
-    assert.ok(Math.abs(zadnja - cilj) <= 30,
-      `plan se završava na ${zadnja}s, a cilj je ${cilj}s — razlika ${zadnja - cilj}s`);
+    for (const d of DISTANCE) {
+      const a = app();
+      const red = plan(a, d);
+      const cilj = a.call('goalSecActive');
+      const zadnja = red[red.length - 1].p5k;
+      /* Tolerancija raste sa distancom: ista greška u VDOT-u nosi više sekundi
+         na maratonu nego na 5K, a poređenje je isto. */
+      const dozvoljeno = Math.max(30, Math.round(cilj * 0.005));
+      assert.ok(Math.abs(zadnja - cilj) <= dozvoljeno,
+        `${d.ime}: plan se završava na ${zadnja}s, a cilj je ${cilj}s — razlika ${zadnja - cilj}s`);
+    }
   });
 
   test('propisan tempo ostaje netaknut — menja se SAMO referenca', () => {
