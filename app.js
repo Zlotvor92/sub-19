@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='215'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='216'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -10822,6 +10822,18 @@ function sbParseHash(hash){
    pregledači trpe; uz to je i pogrešan alat — radi nad UTF-16 jedinicama, pa
    je mejl sa ćirilicom ili umlautom umeo da izađe izobličen. `TextDecoder`
    radi tačno ono što treba: bajtovi -> UTF-8 tekst. */
+/* Prepiše ime i sliku iz TEKUĆEG pristupnog tokena u SB.
+   Bezbedno je zvati kad god: `sbClaims` na neispravan token vraća sama
+   `null`-polja, a null se ne upisuje preko postojeće vrednosti. */
+function sbPreuzmiIdentitet(){
+  if(!SB||!SB.access) return false;
+  const c=sbClaims(SB.access);
+  let promena=false;
+  if(c.slika && c.slika!==SB.slika){ SB.slika=c.slika; promena=true; }
+  if(c.ime   && c.ime  !==SB.ime  ){ SB.ime  =c.ime;   promena=true; }
+  return promena;
+}
+
 function sbClaims(jwt){
   try{
     const p=jwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
@@ -10884,6 +10896,12 @@ async function sbEnsure(){
     const j=await r.json();
     SB.access=j.access_token; SB.refresh=j.refresh_token||SB.refresh;
     SB.expiresAt=Date.now()+((j.expires_in||3600)*1000);
+    /* Ime i slika se čitaju iz SVAKOG novog tokena, ne samo pri prijavi.
+       Bez ovoga bi ih dobio jedino onaj ko se prijavio POSLE verzije koja je
+       to počela da čita — svi zatečeni bi doveka imali prazan avatar, i to
+       bez ijedne greške koja bi na to ukazala. Uz to se promena slike na
+       Google nalogu ovako preuzme sama. */
+    sbPreuzmiIdentitet();
     sbSave(); return true;
   }catch(e){ return false; }   /* mreza — sesija se NE dira */
 }
@@ -11160,6 +11178,12 @@ async function sbInit(){
      Pita se PRE nego sto se kapija skloni — inace bi na trenutak bljesnuo
      ceo ekran sa tudjim podacima. */
   if(!await sbProveriSesiju()) return;
+  /* NADOKNADA ZA ZATEČENE SESIJE. Token u localStorage-u je star i pročitan
+     je pre nego što je aplikacija uopšte umela da izvuče ime i sliku iz njega.
+     Osvežavanje tokena to sredi samo od sebe, ali tek kad istekne — do tada bi
+     avatar bio prazan bez ijednog znaka da nešto ne valja. Ovde se pročita
+     odmah, iz tokena koji već postoji. */
+  if(sbPreuzmiIdentitet()) sbSave();
   sbHideGate();
   /* Sveza prijava menja jeVlasnik(), a time i sta Danas ekran prikazuje
      (traka „Ovo nije tvoj plan"). Ako je sesija upravo usvojena iz hash-a,
@@ -11520,8 +11544,13 @@ function zajInicijali(ime){
   const d=String(ime||'?').trim().split(/\s+/).filter(Boolean);
   return ((d[0]||'?')[0]+((d[1]||'')[0]||'')).toUpperCase();
 }
+/* Ime pod kojim se neko prikazuje. Na jednom mestu, jer se koristi i za
+   naslov reda i za inicijale u krugu — dok su bila dva izraza, red je pisao
+   „Trkač" a krug je pokazivao „?". */
+function zajPrikazIme(p){ return (p&&p.nadimak)||'Trkač'; }
+
 function zajAvatar(p, d){
-  const ime=p.nadimak||'?';
+  const ime=zajPrikazIme(p);
   const slika=(typeof p.avatar_url==='string'&&/^https:\/\//.test(p.avatar_url))
     ? `<img src="${esc(p.avatar_url)}" alt="" width="${d}" height="${d}" loading="lazy" referrerpolicy="no-referrer">` : '';
   return `<span class="zav" style="width:${d}px;height:${d}px;background:${zajBoja(p.user_id)};font-size:${Math.round(d*0.4)}px">`
@@ -11619,7 +11648,7 @@ function zajSpisak(){
       <span class="zmesto"${i===0?' style="color:var(--amber)"':''}>${i+1}</span>
       ${zajAvatar(p,40)}
       <span class="zi">
-        <span class="zime">${esc(p.nadimak||'Trkač')}${zajJa(p)?' <span style="color:var(--cyan)">· ti</span>':''}</span>
+        <span class="zime">${esc(zajPrikazIme(p))}${zajJa(p)?' <span style="color:var(--cyan)">· ti</span>':''}</span>
         <span class="zs">${esc(pod)}</span>
       </span>
       <span class="zv"><b${ZAJ.merilo==='nap'?' style="color:var(--green)"':''}>${esc(vred)}</b>
@@ -11646,7 +11675,7 @@ function zajSpisak(){
       return `<button class="zrow" data-p="${esc(p.user_id)}" style="align-items:center">
         ${zajAvatar(p,34)}
         <span class="zi">
-          <span class="zime" style="font-size:.86rem">${esc(p.nadimak||'Trkač')}${zajJa(p)?' <span style="color:var(--cyan)">· ti</span>':''}${gotov?' <span style="color:var(--green);font-size:.7rem;font-weight:800">✓ gotovo</span>':''}</span>
+          <span class="zime" style="font-size:.86rem">${esc(zajPrikazIme(p))}${zajJa(p)?' <span style="color:var(--cyan)">· ti</span>':''}${gotov?' <span style="color:var(--green);font-size:.7rem;font-weight:800">✓ gotovo</span>':''}</span>
           <span class="zprog${gotov?' pun':''}"><i style="width:${Math.max(0,Math.min(100,Math.round(udeo(p)*100)))}%"></i></span>
         </span>
         <span class="zv"><b style="font-size:.92rem">${p.izazov_ura||0}/${p.izazov_od}</b></span>
@@ -11681,7 +11710,7 @@ function zajSpisak(){
     ${svi.slice().sort((a,b)=>(b.km_nedelja||0)-(a.km_nedelja||0)).map(p=>`
       <button class="zrow" data-p="${esc(p.user_id)}">
         ${zajAvatar(p,34)}
-        <span class="zi"><span class="zime" style="font-size:.86rem">${esc(p.nadimak||'Trkač')}</span></span>
+        <span class="zi"><span class="zime" style="font-size:.86rem">${esc(zajPrikazIme(p))}</span></span>
         <span class="zv"><b style="font-size:.95rem">${p.km_nedelja!=null?fmtKm(p.km_nedelja)+' km':'—'}</b>
           <span style="letter-spacing:0;text-transform:none;font-weight:600">${zajJa(p)?'ti · ':''}${p.plan_pct!=null?p.plan_pct+' % plana':''}</span></span>
       </button>`).join('')}
@@ -11706,7 +11735,7 @@ function zajProfil(p){
     <div class="zduel">
       <div class="zds"><b style="color:var(--cyan)">${ja.plan_pct!=null?ja.plan_pct+' %':'—'}</b><span>TI</span></div>
       <div class="zvs">VS</div>
-      <div class="zds"><b>${p.plan_pct!=null?p.plan_pct+' %':'—'}</b><span>${esc(String(p.nadimak||'ON').split(' ')[0].toUpperCase())}</span></div>
+      <div class="zds"><b>${p.plan_pct!=null?p.plan_pct+' %':'—'}</b><span>${esc(zajPrikazIme(p).split(' ')[0].toUpperCase())}</span></div>
     </div>
     <div class="drows" style="margin-top:10px">
       <div class="drow"><span class="l">plan odrađen</span><span class="v">
@@ -11736,7 +11765,7 @@ function zajProfil(p){
   <div class="card">
     <div class="zhero">
       ${zajAvatar(p,74)}
-      <div><div class="zpn">${esc(p.nadimak||'Trkač')}</div>
+      <div><div class="zpn">${esc(zajPrikazIme(p))}</div>
         <div class="zpm">${esc([p.cilj||'—',
           (p.nedelja_br&&p.nedelja_od)?('nedelja '+p.nedelja_br+' / '+p.nedelja_od):null,
           p.trka_datum?('trka '+fmtD(p.trka_datum)):null].filter(Boolean).join(' · '))}</div></div>

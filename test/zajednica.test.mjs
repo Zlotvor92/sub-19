@@ -495,4 +495,89 @@ describe('Ekran Zajednice', () => {
     assert.equal(a.evalIn('ZAJ.razlog'), 'nema-tabele');
     assert.equal(a.evalIn('S.zajed.vidljiv'), false, 'prekidač je ostao uključen bez reda u bazi');
   });
+
+  test('avatar bez nadimka pokazuje slovo imena koje se prikazuje, ne „?"', () => {
+    /* Prijavljeno sa ekrana: preko avatara je stajao znak pitanja. Red je
+       pisao „Trkač", a krug je računao inicijale iz PRAZNOG nadimka — dva
+       izraza za istu stvar, pa su se razišla. */
+    const a = app();
+    prijavljen(a);
+    spisak(a, [{ user_id:'u-bez', nadimak:null, cilj:'5K', vdot:45, vdot_pocetni:44,
+      test3k_sec:800, km_nedelja:20, plan_pct:60, niz_dana:1, izazov_od:3, izazov_ura:1,
+      nedelja_br:1, nedelja_od:8, trka_datum:'2026-12-01', znacke:[], trcanja:[] }]);
+    a.call('renderZajednica');
+    const h = ekran(a);
+    assert.ok(!h.includes('<b>?</b>'), 'preko avatara i dalje stoji znak pitanja');
+    assert.match(h, /<b>T<\/b>/, 'inicijal se ne računa iz prikazanog imena');
+  });
+});
+
+/* ============================================================
+   IDENTITET IZ TOKENA
+
+   Ime i slika stižu u samom Supabase tokenu (`user_metadata`). Do sada su se
+   čitali SAMO pri prijavi — pa je svako ko je bio prijavljen pre te verzije
+   ostajao bez slike doveka, bez ijedne greške koja bi na to ukazala. Tačno to
+   je i prijavljeno sa ekrana: znak pitanja preko avatara.
+   ============================================================ */
+describe('Ime i slika iz tokena', () => {
+
+  /* Token kakav Supabase izdaje: tri dela, srednji je base64url JSON. Potpis
+     se ne proverava na klijentu (ni u kodu ni ovde) — proverava ga server. */
+  const token = (podaci) => {
+    const telo = Buffer.from(JSON.stringify(podaci), 'utf8').toString('base64')
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return 'zaglavlje.' + telo + '.potpis';
+  };
+  const GOOGLE = token({ sub: 'u-1', email: 'ja@primer.com',
+    user_metadata: { full_name: 'Marko Marković',
+                     avatar_url: 'https://lh3.googleusercontent.com/a/slika' } });
+
+  test('zatečena sesija dobija ime i sliku BEZ ponovne prijave', () => {
+    /* Srž prijavljene greške. Sesija u localStorage-u je pročitana pre nego
+       što je aplikacija umela da izvuče ta polja; osvežavanje tokena bi to
+       sredilo tek kad token istekne. */
+    const a = app();
+    a.evalIn(`SB.userId='u-1'; SB.access=${JSON.stringify(GOOGLE)}; SB.slika=null; SB.ime=null;`);
+    assert.equal(a.call('sbPreuzmiIdentitet'), true, 'ništa nije preuzeto');
+    assert.equal(a.evalIn('SB.slika'), 'https://lh3.googleusercontent.com/a/slika');
+    assert.equal(a.evalIn('SB.ime'), 'Marko Marković');
+  });
+
+  test('preuzimanje se poziva pri pokretanju — ne samo pri prijavi', () => {
+    /* Da poziv nestane, zatečene sesije bi opet ostale bez slike, a svi
+       testovi iznad bi i dalje prolazili. */
+    const izvor = readRepoFile('app.js');
+    assert.match(izvor, /if\(sbPreuzmiIdentitet\(\)\) sbSave\(\);\s*\n\s*sbHideGate\(\);/,
+      'pri pokretanju se identitet više ne preuzima pre nego što se kapija skloni');
+    assert.match(izvor, /SB\.expiresAt=Date\.now\(\)[\s\S]{0,400}?sbPreuzmiIdentitet\(\);/,
+      'osvežavanje tokena više ne preuzima ime i sliku');
+  });
+
+  test('token bez Google podataka ne briše ono što već imamo', () => {
+    /* Nije svaka prijava Google prijava. Prazno polje ne sme da pregazi
+       vrednost koja radi. */
+    const a = app();
+    a.evalIn(`SB.userId='u-1'; SB.slika='https://lh3.googleusercontent.com/a/staro'; SB.ime='Marko';
+              SB.access=${JSON.stringify(token({ sub: 'u-1', email: 'x@y.rs' }))};`);
+    assert.equal(a.call('sbPreuzmiIdentitet'), false);
+    assert.equal(a.evalIn('SB.slika'), 'https://lh3.googleusercontent.com/a/staro');
+    assert.equal(a.evalIn('SB.ime'), 'Marko');
+  });
+
+  test('pokvaren token ne obara pokretanje', () => {
+    const a = app();
+    for (const zlo of ['', 'nije-token', 'a.b', 'a.!!!.c']) {
+      a.evalIn(`SB.access=${JSON.stringify(zlo)}`);
+      assert.doesNotThrow(() => a.call('sbPreuzmiIdentitet'), `pao na: ${zlo}`);
+    }
+  });
+
+  test('slika koja nije https se odbija i u tokenu', () => {
+    const a = app();
+    a.evalIn(`SB.slika=null; SB.access=${JSON.stringify(token({ sub:'u-1',
+      user_metadata:{ avatar_url:'http://x.rs/a.png' } }))};`);
+    a.call('sbPreuzmiIdentitet');
+    assert.equal(a.evalIn('SB.slika'), null);
+  });
 });
