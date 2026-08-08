@@ -245,8 +245,17 @@ describe('Ucitavanje POPUNJENOG stanja — mrtva zona `const`-a', () => {
     const telo = /function migrate\(o\)\{([\s\S]*?)\n\}/.exec(src);
     assert.ok(telo, 'migrate() nije nadjen');
     const migratePoz = src.indexOf('function migrate(o){');
-    const pozvane = [...telo[1].matchAll(/\b(validan[A-Za-z]*|cist[A-Za-z]*|je[A-Z][A-Za-z]*)\(/g)]
-      .map(m => m[1]);
+    /* SVAKO pozvano ime, ne samo ona sa poznatim prefiksom.
+       Spisak prefiksa (`validan*|cist*|je[A-Z]*`) je propuštao `jeT3k` —
+       `[A-Za-z]*` ne prihvata cifru — a time i `T3K_PREFIX` koji ta funkcija
+       čita. Zamka koja pokriva samo imena kakva su zatečena ne pokriva ono
+       što se sutra doda; a dodaje se upravo tada kad niko ne misli na mrtvu
+       zonu. Ugrađene funkcije se preskaču — one nisu u ovom fajlu. */
+    const UGRADJENE = new Set(['String', 'Number', 'Boolean', 'Object', 'Array', 'Math', 'JSON',
+      'isFinite', 'isNaN', 'parseInt', 'parseFloat', 'Date', 'RegExp', 'Set', 'Map', 'if', 'for',
+      'while', 'switch', 'catch', 'return', 'typeof', 'function']);
+    const pozvane = [...telo[1].matchAll(/\b([A-Za-z_$][\w$]*)\s*\(/g)]
+      .map(m => m[1]).filter(x => !UGRADJENE.has(x));
     for (const ime of new Set(pozvane)) {
       /* `const X = ...` je u mrtvoj zoni do svoje linije; `function X(){}` nije. */
       const konst = new RegExp(`^const ${ime}\\b`, 'm').exec(src);
@@ -624,6 +633,76 @@ describe('Provera sesije kod servera', () => {
     assert.equal(a.call('sbAuthed'), false);
     assert.match(poruka(a), /zabranjen/i);
     assert.doesNotMatch(poruka(a), /više ne postoji/, 'zabranjenom se kaže da je nalog obrisan');
+  });
+
+  /* PRIJAVA IZ UPOTREBE: „odjavljuje me posle svakog update-a".
+
+     Uzrok nije bio ni rotacija tokena ni obrisan nalog nego najobičnija stvar:
+     pristupni token važi sat vremena, a instalirana PWA stoji u pozadini
+     danima i posle ažuriranja se stranica učita iznova. Provera sesije je taj
+     istekli token slala takav kakav je, dobijala 401 i spuštala kapiju čoveku
+     čija je sesija savršeno ispravna.
+
+     Zato se ovde meri tačno taj scenario: token istekao, refresh token dobar. */
+  test('istekao pristupni token NIJE razlog za odjavu', async () => {
+    const a = sa();
+    a.evalIn(`SB.expiresAt=Date.now()-1000; sbSave();`);
+    a.ctx.__poz = [];
+    a.evalIn(`fetch=async(u)=>{ __poz.push(String(u));
+      if(String(u).indexOf('grant_type=refresh_token')>=0)
+        return {ok:true,status:200,json:async()=>({access_token:'nov',refresh_token:'r2',expires_in:3600})};
+      return {ok:true,status:200,json:async()=>({id:'u1'})}; };`);
+    assert.equal(await a.evalIn('sbProveriSesiju()'), true, 'istekao token je odjavio korisnika');
+    assert.equal(a.call('sbAuthed'), true);
+    assert.equal(a.evalIn('SB.access'), 'nov', 'token nije osvežen pre provere');
+    assert.equal(poruka(a), '', 'kapija se spustila iako je sesija ispravna');
+  });
+
+  test('401 uprkos svežem `expiresAt` — pokuša se osvežavanje, pa tek onda odjava', async () => {
+    /* Sat na uređaju ume da odluta, pa `expiresAt` slaže da je token još živ.
+       Prvi odgovor je tada 401 iako sesija važi; drugi, posle osvežavanja,
+       prolazi. Da se odustajalo na prvom, kvar bi ostao isti. */
+    const a = sa();
+    a.ctx.__n = { i: 0 };
+    a.evalIn(`fetch=async(u)=>{
+      if(String(u).indexOf('grant_type=refresh_token')>=0)
+        return {ok:true,status:200,json:async()=>({access_token:'nov',refresh_token:'r2',expires_in:3600})};
+      __n.i++;
+      return __n.i===1 ? {ok:false,status:401,json:async()=>({msg:'expired'})}
+                       : {ok:true,status:200,json:async()=>({id:'u1'})}; };`);
+    assert.equal(await a.evalIn('sbProveriSesiju()'), true, 'odustalo se na prvom 401');
+    assert.equal(a.call('sbAuthed'), true);
+    assert.equal(a.evalIn('__n.i'), 2, 'poziv se nije ponovio posle osvežavanja');
+  });
+
+  test('zabranjen nalog se prepozna ODMAH, bez drugog kruga', async () => {
+    /* Zabranu server imenuje u telu odgovora, pa nema šta da se osvežava —
+       a i ne sme: ponovljen krug bi zabranjenom rekao „nalog više ne postoji". */
+    const a = sa();
+    a.ctx.__poz = [];
+    a.evalIn(`fetch=async(u)=>{ __poz.push(String(u));
+      return {ok:false,status:403,json:async()=>({msg:'User is banned'})}; };`);
+    assert.equal(await a.evalIn('sbProveriSesiju()'), false);
+    assert.match(poruka(a), /zabranjen/i);
+    assert.equal(a.evalIn('__poz.length'), 1, 'zabrana je pokrenula i osvežavanje tokena');
+  });
+
+  test('osvežavanje se dešava JEDNOM ma koliko ih tražilo odjednom', async () => {
+    /* Supabase rotira refresh token: prvi poziv ga potroši, svaki sledeći sa
+       istim tokenom dobija 400 — što ovaj kod čita kao „nalog ne postoji".
+       Pri pokretanju `sbEnsure` zove pet-šest mesta gotovo istovremeno. */
+    const a = sa();
+    a.evalIn(`SB.expiresAt=Date.now()-1000; sbSave();`);
+    a.ctx.__br = { n: 0 };
+    a.evalIn(`fetch=async(u)=>{
+      if(String(u).indexOf('grant_type=refresh_token')>=0){
+        __br.n++;
+        await new Promise(r=>setTimeout(r,5));
+        return {ok:true,status:200,json:async()=>({access_token:'nov',refresh_token:'r2',expires_in:3600})};
+      }
+      return {ok:true,status:200,json:async()=>({id:'u1'})}; };`);
+    await a.evalIn(`Promise.all([sbEnsure(),sbEnsure(),sbEnsure(),sbEnsure(),sbEnsure()])`);
+    assert.equal(a.evalIn('__br.n'), 1, 'refresh token je potrošen više puta odjednom');
   });
 
   test('ispravna sesija se ne dira', async () => {

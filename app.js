@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='226'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='227'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -872,6 +872,69 @@ function cistRunWalk(rw){
   if(!(r>0&&r<=3600)||!(w>0&&w<=3600)) return null;
   return { runSec:r, walkSec:w, label:runWalkText({runSec:r,walkSec:w}) };
 }
+/* `r1` stoji OVDE, a ne uz ostatak računice: `t3kMoguc` ga zove, a `t3kMoguc`
+   zove `migrate()` sa prvog reda izvršavanja. Dok je stajao dole, učitavanje
+   stanja sa zapisanim testom na 3 km pucalo je sa „Cannot access 'r1' before
+   initialization" i aplikacija se otvarala prazna — treći put ista mrtva zona
+   (v. ID_OBLIK), ovog puta uhvaćena testom pre nego što je izašla. */
+const r1=x=>Math.round(x*10)/10;
+const T3K_DIST_M=3000;
+const T3K_PREFIX='t3k-';
+function jeT3k(id){ return String(id||'').startsWith(T3K_PREFIX); }
+
+/* ============================================================
+   GRANICE MERENJA — ŠTA UOPŠTE MOŽE DA BUDE MERENJE
+
+   Prijava iz upotrebe: „trend ne uračunava 3k test kako treba, analiza je
+   loša". Grafikon forme je sa 48,6 skočio na 73,5 i tu ostao, a AI analiza
+   je taj skok čitala kao činjenicu i pisala da „statistika zabeleženog
+   VDOT-a raste".
+
+   Uzrok: unos vremena na 3 km je propuštao sve preko 5:00. Svetski rekord na
+   3000 m je 7:20, pa je 5:00 dozvoljavalo unos koji nijedan čovek ne može da
+   istrči. Otkucano ~6:50 daje izmeren VDOT 89, a lanac forme sa alfom 0,60 za
+   test skače na tačno 73,5. Ni jedna provera na tom putu nije rekla ni reč.
+
+   NE ISPRAVLJA SE POGAĐANJEM. Vreme se ne „popravlja" na najbliže moguće —
+   to bi bio izmišljen podatak o nečijem trčanju. Nemoguće merenje se ODBIJA,
+   sa rečenicom koja kaže i zašto.
+
+   Granice su granice SAME TABLICE: 85 je njen vrh (svetski vrh), 20 dno.
+   `vdotFromPace` je binarna pretraga baš u tom opsegu, pa izvan njega i ne ume
+   da izrazi ništa — v. `vdotPaceUOpsegu`. Zato je pošteno da isti par brojeva
+   bude i merilo mogućeg: pretvarati se da postoji VDOT 12 ili 130 znači davati
+   broj koji model ne zna da izračuna. */
+const VDOT_TABELA_MIN=20, VDOT_TABELA_MAX=85;
+function vdotMoguc(v){ return v!=null&&isFinite(v)&&v>=VDOT_TABELA_MIN&&v<=VDOT_TABELA_MAX; }
+/* 7:20 = svetski rekord na 3000 m (Daniel Komen, 1996). Brže od toga nije
+   trčanje nego omaška u kucanju.
+
+   GORNJA GRANICA SE NE KUCA KAO DRUGI BROJ. Prvo je bila 60:00 — pa je unos
+   od 30:00 prolazio kroz proveru, a `t3kVdot` mu posle nije umeo da izračuna
+   VDOT (ispod dna tablice), tako da bi test stajao na kartici kao priznat a ne
+   bi radio ništa. To je tačno ono stanje zbog kog je i pisana provera. Zato je
+   pravilo jedno: vreme je moguće ako je iz njega moguć VDOT.
+   `vdotFromRace` je `function`, dakle hoistovana — smе da se zove i odavde,
+   iznad svoje linije (v. komentar uz ID_OBLIK). */
+const T3K_SEC_MIN=440;
+function t3kMoguc(sec){
+  return sec>=T3K_SEC_MIN && vdotMoguc(r1(vdotFromRace(T3K_DIST_M,sec)));
+}
+/* Najsporije vreme koje je još moguće — samo za poruku čoveku. Traži se, a ne
+   pamti kao broj, da se ne bi razišlo sa `t3kMoguc` kad se tablica promeni.
+   Gornja granica petlje (90 min) je osigurač, ne pravilo. */
+function t3kNajsporije(){
+  let s=T3K_SEC_MIN;
+  while(s<5400&&t3kMoguc(s+1)) s++;
+  return s;
+}
+/* MORAJU STAJATI IZNAD migrate() — v. komentar uz ID_OBLIK.
+   `const` je u mrtvoj zoni sve do svoje linije, a migrate() se poziva sa
+   prvog reda izvršavanja. Da su ove granice ostale dole uz ostatak koda o
+   testu na 3 km, prvo učitavanje stanja sa zapisanim testom puklo bi sa
+   „Cannot access 'T3K_SEC_MIN' before initialization" i aplikacija bi se
+   otvorila prazna. */
+
 function migrate(o){
   if(!o||typeof o!=='object')return null;
   if(!o.log||typeof o.log!=='object'||Array.isArray(o.log))return null;
@@ -905,11 +968,21 @@ function migrate(o){
   /* ID MORA da nosi prefiks: po njemu `tipSesijeZaVdot` prepoznaje test i daje
      mu najveću težinu u lancu forme. Uvezen zapis bez prefiksa bi tiho pao na
      podrazumevanu težinu — dakle ne bi bio test, samo bi tako izgledao. */
+  /* Granica je 7:20–60:00, ne 0–7200: brže od svetskog rekorda na 3000 m nije
+     trčanje. Zapis izvan toga se BRIŠE, i to ne samo pri uvozu tuđeg fajla —
+     ovde se leči i stanje koje već stoji na uređaju. Bez toga bi jedna omaška
+     u kucanju zauvek držala grafikon forme na nemogućem broju, a AI analiza bi
+     ga svaki put čitala kao činjenicu. */
   o.t3k=cistDatirane(o.t3k)
     .map(t=>({id:String(t.id||''), date:t.date, sec:Math.round(+t.sec)}))
-    .filter(t=>jeT3k(t.id)&&validanId(t.id)&&t.sec>0&&t.sec<7200);
+    .filter(t=>jeT3k(t.id)&&validanId(t.id)&&t3kMoguc(t.sec));
   o.wellness=cistWellness(o.wellness);
-  o.vdotLog=cistVdotLog(o.vdotLog);
+  /* Isto za lanac forme: merenje van ljudskog opsega ne ostaje u istoriji.
+     Zapis se odbacuje ceo — „popravka" na najbliži mogući broj bila bi
+     izmišljen podatak o nečijem trčanju. */
+  o.vdotLog=cistVdotLog(o.vdotLog)
+    .filter(e=>!(e.measured!=null&&!vdotMoguc(e.measured)))
+    .filter(e=>!(e.measured==null&&e.vdot!=null&&!vdotMoguc(e.vdot)));
   /* Bol van 0–10 nije bol nego đubre; težina van 20–300 kg isto. Zapis bez
      upotrebljivog broja se odbacuje, a ne provlači kao „nula". */
   o.knee=cistBrojPolje(cistDatirane(o.knee), 'pain', 0, 10);
@@ -1445,14 +1518,15 @@ function zoneForPredRow(r){
    može istrčati kad god, više puta, i na generisanom planu koji nema test-dan.
    Zato test živi u S.t3k i u lanac ulazi preko sopstvenog ID-ja.
    ============================================================ */
-const T3K_DIST_M=3000;
-const T3K_PREFIX='t3k-';
-function jeT3k(id){ return String(id||'').startsWith(T3K_PREFIX); }
 function t3kNiz(){
-  return (S.t3k||[]).filter(t=>t&&t.sec>0&&validanDatum(t.date))
+  return (S.t3k||[]).filter(t=>t&&t3kMoguc(t.sec)&&validanDatum(t.date))
                     .slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
 }
-function t3kVdot(sec){ return (sec>0)?r1(vdotFromRace(T3K_DIST_M,sec)):null; }
+function t3kVdot(sec){
+  if(!(sec>0)) return null;
+  const v=r1(vdotFromRace(T3K_DIST_M,sec));
+  return vdotMoguc(v)?v:null;
+}
 /* Upis testa u lanac forme. NE ide kroz recordVdot: ta funkcija računa VDOT iz
    TEMPA i zone kvalitetne sesije, a ovde je reč o trci na 3000 m — VDOT se iz
    nje dobija direktno, bez prevoda na tempo i nazad. Rep je isti: čuva se samo
@@ -1468,10 +1542,15 @@ function zabeleziT3k(id, sec, datum){
   return (S.vdotLog.find(e=>e&&e.id===id)||entry);
 }
 function dodajT3k(datum, sec){
+  const s=Math.round(sec);
+  /* Nemoguć test se NE upisuje ni u listu. Da se upisao a samo ne bi ušao u
+     lanac, stajao bi na kartici kao da je priznat i čovek bi se pitao zašto
+     ništa ne radi. */
+  if(!t3kMoguc(s)) return null;
   S.t3k=S.t3k||[];
   const id=T3K_PREFIX+datum+'-'+Math.random().toString(36).slice(2,7);
-  S.t3k.push({id, date:datum, sec:Math.round(sec)});
-  zabeleziT3k(id, Math.round(sec), datum);
+  S.t3k.push({id, date:datum, sec:s});
+  zabeleziT3k(id, s, datum);
   save();
   return id;
 }
@@ -1625,6 +1704,14 @@ function recordVdot(predId, paceSec, dateOverride, kind, auto, dan){
   const measured=zone!=null
     ? Math.round(vdotFromPace(paceSec,zone)*10)/10
     : Math.round(vdotFromQuality(paceSec,r.q)*10)/10;
+  /* Tempo van opsega tablice nije merenje forme nego omaška u kucanju ili loše
+     prepoznata deonica. Gleda se ZASIĆENJE, ne sama vrednost: pretraga bi
+     2:00/km vratila kao tačno 85 i provera po vrednosti bi to propustila kao
+     „svetski vrh". Odbija se i kad je tempo unet ručno — ručni unos jeste
+     korisnikova izričita tvrdnja, ali tvrdnja da je trčao brže nego što tablica
+     uopšte poznaje nije tvrdnja o formi. */
+  if(zone!=null && !vdotPaceUOpsegu(paceSec,zone)) return null;
+  if(!vdotMoguc(measured)) return null;
   /* AUTOMATSKI IZMEREN TEMPO KOJI NE DRZI VODU SE ODBACUJE.
      Izmereno na stvarnom slucaju: dan rucno prebacen u Tempo, trening
      OverUnder 3x2km (500m @4:00 + 500m @4:20) sa 2 min kaskanja izmedju.
@@ -1683,7 +1770,19 @@ function preracunajVdotLog(){
   let tekuci=baselineVdot();
   niz.forEach(e=>{
     if(!e) return;
-    if(e.measured==null||!isFinite(e.measured)){ if(e.vdot!=null&&isFinite(e.vdot))tekuci=e.vdot; return; }
+    /* NEMOGUĆE MERENJE SE PRESKAČE, ne prigušuje.
+       Prigušenje deli razliku sa prethodnim, pa i besmislica ostavi trag:
+       izmereno 89 sa alfom 0,60 pomeri formu sa 48,6 na 73,5 i tu je ostavi
+       zauvek, jer se lanac odatle nastavlja. Zapis koji je već u stanju (star
+       backup, sinhronizacija sa servera) mora da bude neškodljiv i pre nego
+       što ga migracija očisti — v. VDOT_MOGUC_MIN. */
+    if(e.measured!=null&&isFinite(e.measured)&&!vdotMoguc(e.measured)){
+      e.vdot=tekuci; e.prev=tekuci; e.delta=0; e.nemoguce=true;
+      return;
+    }
+    /* Zapis bez `measured` (star oblik) nosi samo gotov `vdot` — uzima se
+       kakav jeste, ali i on mora da bude moguć. */
+    if(e.measured==null||!isFinite(e.measured)){ if(vdotMoguc(e.vdot))tekuci=e.vdot; return; }
     const prev=tekuci;
     const p=prigusiVdot(prev, e.measured, tipSesijeZaVdot(e.id));
     e.prev=prev; e.vdot=p.vdot; e.alpha=p.alpha; e.delta=Math.round((p.vdot-prev)*10)/10;
@@ -4174,8 +4273,16 @@ function raceTimeForVdot(vdot, distM){
 }
 /* INVERZ od paceForZone: opservirani tempo (sec/km) na datoj zoni -> implicirani VDOT.
    paceForZone je monotono opadajuća funkcija VDOT-a (viša forma = brži tempo) -> binarna pretraga. */
+/* ZASIĆENJE NIJE MERENJE.
+   Pretraga je ograničena na opseg tablice, pa 2:00/km u T zoni vrati tačno 85
+   — isto što i stvarni svetski vrh. Broj sam po sebi ne kaže da li je merenje
+   ili ivica, zato ko o tome odlučuje mora da pita odvojeno. Brži tempo = manji
+   broj sekundi, otud smer poređenja. */
+function vdotPaceUOpsegu(paceSecKm, zone){
+  return paceSecKm>=paceForZone(VDOT_TABELA_MAX,zone) && paceSecKm<=paceForZone(VDOT_TABELA_MIN,zone);
+}
 function vdotFromPace(paceSecKm, zone){
-  let lo=20, hi=85;
+  let lo=VDOT_TABELA_MIN, hi=VDOT_TABELA_MAX;
   for(let i=0;i<40;i++){
     const mid=(lo+hi)/2;
     if(paceForZone(mid,zone) > paceSecKm) lo=mid; else hi=mid;
@@ -4191,7 +4298,6 @@ function vdotFromPace(paceSecKm, zone){
      uticaja na zabelezene vrednosti (zaokruzuju se na jednu decimalu). */
   return hi;
 }
-const r1=x=>Math.round(x*10)/10;
 function fmtP(sec){return fmtClock(sec);} /* delegira: identicno za <1h (tempi), ali HM/maraton cilj daje 3:30:00 umesto 210:00 */
 function riegelDist(sec, fromM, toM){ return sec*Math.pow(toM/fromM,1.06); } /* PREIMENOVANO iz riegel() — V2 već ima riegel(tempoSec,q) sa DRUGAČIJIM potpisom/značenjem; bez preimenovanja bi kasnija (engine.js) definicija tiho pregazila raniju (V2), praveći NaN u postojećem PRED sistemu */
 
@@ -8385,11 +8491,18 @@ function openT3kSheet(id){
   const polje=sh.querySelector('#t3-time'), izlaz=sh.querySelector('#t3-out');
   /* Živa provera: čovek mora da vidi šta je uneo PRE nego što sačuva, jer se
      iz ovog jednog broja forma pomera više nego iz bilo čega drugog. */
+  /* Ista rečenica na oba mesta — živa provera i dugme ne smeju da kažu
+     različito o istom unosu. */
+  /* Granice se ČITAJU iz istog pravila po kome se i odlučuje, ne kucaju se
+     ponovo u tekst: rečenica koja se raziđe sa proverom je gora od nikakve. */
+  const T3K_GRESKA='Vreme za 3 km mora biti između '+fmtClock(T3K_SEC_MIN)+' i '
+    +fmtClock(t3kNajsporije())+'. Brže od '+fmtClock(T3K_SEC_MIN)
+    +' je preko svetskog rekorda — proveri da nije omaška u kucanju.';
   const osvezi=()=>{
     const sec=parseTimeStr(polje.value);
-    if(sec==null||sec<300||sec>3600){
+    if(sec==null||!t3kMoguc(sec)){
       izlaz.textContent=polje.value.trim()
-        ? 'Vreme mora biti između 5:00 i 60:00 za 3 km.'
+        ? T3K_GRESKA
         : 'Unesi vreme pa se ispod prikaže šta znači.';
       return;
     }
@@ -8402,7 +8515,7 @@ function openT3kSheet(id){
   sh.querySelector('#t3-save').onclick=()=>{
     const sec=parseTimeStr(polje.value);
     const datum=sh.querySelector('#t3-date').value||TODAY;
-    if(sec==null||sec<300||sec>3600){ alert('Vreme mora biti između 5:00 i 60:00 za 3 km.'); return; }
+    if(sec==null||!t3kMoguc(sec)){ alert(T3K_GRESKA); return; }
     if(id){
       t.date=datum; t.sec=Math.round(sec);
       zabeleziT3k(id, t.sec, datum);
@@ -11162,29 +11275,46 @@ function sbHead(){ return {'apikey':SB_ANON,'Authorization':'Bearer '+SB.access,
                      obrisan ili je sesija opozvana. Sesija se odbacuje.
      mreza / 5xx  -> ne zna se nista. Sesija OSTAJE, app radi kao offline.
    Zamena ta dva smera bi znacila da te jedan tunel bez signala odjavi. */
+/* JEDAN REFRESH U ISTOM TRENUTKU, MA KOLIKO IH TRAŽILO.
+
+   Pri pokretanju se `sbEnsure` pozove iz pet-šest mesta gotovo istovremeno
+   (provera sesije, povlačenje sa servera, istorija, Zajednica, upis profila).
+   Supabase ROTIRA refresh token: prvi poziv ga potroši i izda nov, a svaki
+   sledeći sa istim, već potrošenim tokenom dobija 400 — što ovaj kod čita kao
+   „nalog ne postoji" i spušta kapiju. Postoji prozor tolerancije na strani
+   servera, ali je kratak i nije nešto na šta se sme računati.
+   Zato svi čekaju isto obećanje: refresh se dešava jednom. */
+let SB_REFRESH=null;
+function sbOsvezi(){
+  if(SB_REFRESH) return SB_REFRESH;
+  SB_REFRESH=(async()=>{
+    try{
+      const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',
+        {method:'POST',headers:{'apikey':SB_ANON,'Content-Type':'application/json'},
+         body:JSON.stringify({refresh_token:SB.refresh})});
+      if(!r.ok){
+        if(r.status===400||r.status===401||r.status===403) sbSesijaMrtva();
+        return false;
+      }
+      const j=await r.json();
+      SB.access=j.access_token; SB.refresh=j.refresh_token||SB.refresh;
+      SB.expiresAt=Date.now()+((j.expires_in||3600)*1000);
+      /* Ime i slika se čitaju iz SVAKOG novog tokena, ne samo pri prijavi.
+         Bez ovoga bi ih dobio jedino onaj ko se prijavio POSLE verzije koja je
+         to počela da čita — svi zatečeni bi doveka imali prazan avatar, i to
+         bez ijedne greške koja bi na to ukazala. Uz to se promena slike na
+         Google nalogu ovako preuzme sama. */
+      sbPreuzmiIdentitet();
+      sbSave(); return true;
+    }catch(e){ return false; }   /* mreza — sesija se NE dira */
+  })().finally(()=>{ SB_REFRESH=null; });
+  return SB_REFRESH;
+}
 async function sbEnsure(){
   if(!sbAuthed()) return false;
   if(Date.now() < SB.expiresAt-60000) return true;
   if(!SB.refresh) return false;
-  try{
-    const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',
-      {method:'POST',headers:{'apikey':SB_ANON,'Content-Type':'application/json'},
-       body:JSON.stringify({refresh_token:SB.refresh})});
-    if(!r.ok){
-      if(r.status===400||r.status===401||r.status===403) sbSesijaMrtva();
-      return false;
-    }
-    const j=await r.json();
-    SB.access=j.access_token; SB.refresh=j.refresh_token||SB.refresh;
-    SB.expiresAt=Date.now()+((j.expires_in||3600)*1000);
-    /* Ime i slika se čitaju iz SVAKOG novog tokena, ne samo pri prijavi.
-       Bez ovoga bi ih dobio jedino onaj ko se prijavio POSLE verzije koja je
-       to počela da čita — svi zatečeni bi doveka imali prazan avatar, i to
-       bez ijedne greške koja bi na to ukazala. Uz to se promena slike na
-       Google nalogu ovako preuzme sama. */
-    sbPreuzmiIdentitet();
-    sbSave(); return true;
-  }catch(e){ return false; }   /* mreza — sesija se NE dira */
+  return sbOsvezi();
 }
 
 /* Sesija vise ne vazi na serveru. Cisti se prijava, ali NE i podaci.
@@ -11213,22 +11343,51 @@ function sbSesijaMrtva(poruka){
 
    RAZLIKA MREZA/ODBIJANJE se cuva kao i u sbEnsure: samo izricit 401/403
    obara sesiju. Greska u mrezi ne sme nikoga da odjavi — aplikacija radi
-   offline i to je jedna od njenih glavnih osobina. */
+   offline i to je jedna od njenih glavnih osobina.
+
+   401 NIJE ISTO STO I „NALOG NE POSTOJI" — ovde je bio kvar.
+   Pristupni token vazi sat vremena. Instalirana PWA stoji u pozadini danima,
+   a posle azuriranja se stranica ucita iznova — u oba slucaja je token po
+   pravilu istekao. Ova provera ga je slala takav kakav je, dobijala 401 i
+   spustala kapiju coveku cija je sesija savrseno ispravna. Zato je
+   „odjavljuje me posle svakog update-a" bilo tacno to: ne rotacija tokena,
+   ne obrisan nalog, nego istekao pristupni token protumacen kao brisanje.
+
+   Sada se prvo osvezi token, a i posle toga se 401 ne uzima zdravo za gotovo:
+   jednom se osvezavanje ponovi silom (sat na uredjaju ume da odluta, pa
+   `expiresAt` slaze da je token jos ziv) i poziv se ponovi. Tek ako REFRESH
+   TOKEN bude izricito odbijen — a to `sbOsvezi` sam prepoznaje i ruši sesiju —
+   nalog stvarno vise ne postoji. Zabrana je izuzetak: nju server imenuje u
+   telu odgovora, pa se prepoznaje odmah i ne pokusava se ponovo. */
 async function sbProveriSesiju(){
   if(!sbAuthed()||!navigator.onLine) return true;
+  /* Ako je token istekao, osvezi ga PRE pitanja. Kad osvezavanje padne zbog
+     mreze, sesija ostaje i ne zna se nista — isto kao da poziv nije ni krenuo.
+     Kad padne zato sto je server odbio refresh token, `sbOsvezi` je vec
+     spustio kapiju, pa je `sbAuthed()` ovde netacno i to je odgovor. */
+  if(!await sbEnsure()) return sbAuthed();
   try{
-    const r=await fetch(SB_URL+'/auth/v1/user',
+    let r=await fetch(SB_URL+'/auth/v1/user',
       {headers:{'apikey':SB_ANON,'Authorization':'Bearer '+SB.access}});
     if(r.status===401||r.status===403){
-      let zabranjen=false;
       /* GoTrue za zabranjen nalog vraca poruku sa „banned"; za obrisan nema
          takve oznake. Tekst je jedina razlika koja postoji, pa se korisniku
          kaze tacno sta se desilo umesto neodredjenog „sesija je istekla". */
-      try{ zabranjen=/banned|zabran/i.test(JSON.stringify(await r.json())); }catch(e){}
-      sbSesijaMrtva(zabranjen
-        ? 'Pristup ovom nalogu je zabranjen. Podaci na ovom uređaju su netaknuti. Ako misliš da je greška, javi se vlasniku aplikacije.'
-        : 'Nalog više ne postoji ili je sesija istekla. Podaci na ovom uređaju su netaknuti — prijavi se da nastaviš.');
-      return false;
+      const jeZabrana=async o=>{ try{ return /banned|zabran/i.test(JSON.stringify(await o.json())); }catch(e){ return false; } };
+      let zabranjen=await jeZabrana(r);
+      if(!zabranjen){
+        /* Drugi pokusaj: mozda je token bio star uprkos `expiresAt`. */
+        if(!await sbOsvezi()) return sbAuthed();
+        r=await fetch(SB_URL+'/auth/v1/user',
+          {headers:{'apikey':SB_ANON,'Authorization':'Bearer '+SB.access}});
+        if(r.status===401||r.status===403) zabranjen=await jeZabrana(r);
+      }
+      if(r.status===401||r.status===403){
+        sbSesijaMrtva(zabranjen
+          ? 'Pristup ovom nalogu je zabranjen. Podaci na ovom uređaju su netaknuti. Ako misliš da je greška, javi se vlasniku aplikacije.'
+          : 'Nalog više ne postoji ili je sesija istekla. Podaci na ovom uređaju su netaknuti — prijavi se da nastaviš.');
+        return false;
+      }
     }
     /* ODAVDE STIŽE SLIKA ZA ZAJEDNICU.
        Ovaj poziv je već postojao — samo se odgovor bacao. `user_metadata` u

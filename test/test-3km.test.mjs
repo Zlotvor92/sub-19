@@ -307,3 +307,115 @@ describe('Aktivacija u trkačkoj nedelji', () => {
       `aktivacija je pomerila formu za ${Math.abs(posle - bv)} poena`);
   });
 });
+
+/* NEMOGUĆE MERENJE.
+
+   PRIJAVA IZ UPOTREBE: „trend ne uračunava 3k test kako treba, analiza je
+   loša". Na ekranu: forma sa 48,6 skoči na 73,5 i tu ostane, a AI analiza taj
+   skok čita kao činjenicu i piše da „statistika zabeleženog VDOT-a raste".
+
+   Uzrok je bio jedan broj u proveri: unos je propuštao sve preko 5:00, a
+   svetski rekord na 3000 m je 7:20. Otkucano ~6:50 daje izmeren VDOT 89, pa
+   lanac sa težinom testa (0,60) skoči tačno na 73,5.
+
+   Ovo nije samo provera unosa. Meri se ceo put: da unos ne prođe, da već
+   upisan zapis ne truje lanac, i da učitavanje takvo stanje izleči. Zamka na
+   samo jednom od tri mesta pušta kvar da uđe kroz preostala dva — a upravo je
+   tako i ušao. */
+describe('Nemoguće merenje ne ulazi u formu', () => {
+
+  test('vreme brže od svetskog rekorda na 3000 m se ne prihvata', () => {
+    const a = app();
+    /* 7:20,67 (Daniel Komen, 1996) — brže od toga nije trčanje. */
+    assert.equal(a.call('t3kMoguc', 439), false, '7:19 je prihvaćeno');
+    assert.equal(a.call('t3kMoguc', 440), true, '7:20 je odbijeno, a to je rekord');
+    assert.equal(a.call('t3kMoguc', 410), false, '6:50 — tačno unos iz prijave — je prihvaćeno');
+    assert.equal(a.call('t3kVdot', 410), null, 'nemoguće vreme je ipak dalo VDOT');
+  });
+
+  test('stvarna vremena i dalje prolaze — provera nije preoštra', () => {
+    const a = app();
+    for (const sec of [600, 702, 750, 900, 1200, 1490]) {
+      assert.equal(a.call('t3kMoguc', sec), true, `${sec}s je odbijeno`);
+      assert.ok(a.call('t3kVdot', sec) > 0, `${sec}s nije dalo VDOT`);
+    }
+  });
+
+  test('nemoguć test se ne upisuje ni u listu', () => {
+    /* Da se upisao a samo ne bi ušao u lanac, stajao bi na kartici kao da je
+       priznat i čovek bi se pitao zašto ništa ne radi. */
+    const a = app();
+    assert.equal(a.call('dodajT3k', '2026-08-05', 410), null);
+    assert.equal(a.evalIn('S.t3k.length'), 0, 'nemoguć test je upisan u listu');
+    assert.equal(a.evalIn('S.vdotLog.length'), 0, 'nemoguć test je ušao u lanac');
+  });
+
+  test('TAČAN SLUČAJ IZ PRIJAVE: forma ostaje gde je bila, ne skače na 73,5', () => {
+    const a = app();
+    /* Prvo jedan stvaran tempo, da lanac ima gde da stoji. */
+    a.evalIn(`CUR_PRED.push({id:'zt', w:1, l:'N1 · Tempo', q:5, pt:258})`);
+    a.call('recordVdot', 'zt', 258, '2026-07-31', null, false);
+    const pre = a.call('currentVdot');
+    assert.ok(pre > 40 && pre < 60, `polazna forma nije razumna: ${pre}`);
+    a.call('dodajT3k', '2026-08-05', 410);
+    assert.equal(a.call('currentVdot'), pre, 'nemoguć test je pomerio formu');
+  });
+
+  test('zapis koji je VEĆ u stanju ne truje lanac', () => {
+    /* Star backup i sinhronizacija sa servera zaobilaze unos. Lanac mora da
+       bude neškodljiv i pre nego što ga učitavanje očisti. */
+    const a = app();
+    const bv = a.call('baselineVdot');
+    a.evalIn(`S.vdotLog=[{id:'t3k-2026-08-05-abc12', ts:'2026-08-05', measured:89.4}];
+              preracunajVdotLog();`);
+    /* Ne „ostalo je u granicama" nego „nije se pomerilo". Prigušenje sa 0,60
+       bi 89,4 svelo na 72,9 — a to je unutar svake granice i tvrdnja tipa
+       „v <= 85" bi to propustila. Nemoguć zapis ne sme da pomeri lanac ni za
+       desetinku. */
+    assert.equal(a.call('currentVdot'), bv, 'nemoguć zapis je pomerio lanac');
+    assert.equal(a.evalIn('S.vdotLog[0].nemoguce'), true, 'zapis nije označen kao nemoguć');
+
+    /* A ispravan zapis pored njega i dalje radi — provera nije zaustavila lanac. */
+    a.evalIn(`S.vdotLog.push({id:'t3k-2026-08-06-def34', ts:'2026-08-06', measured:50.1});
+              preracunajVdotLog();`);
+    assert.notEqual(a.call('currentVdot'), bv, 'ispravan zapis posle nemogućeg ne ulazi u lanac');
+  });
+
+  test('učitavanje stanja BRIŠE nemoguć zapis, a ne popravlja ga', () => {
+    /* Pogađanje najbližeg mogućeg vremena bilo bi izmišljen podatak o nečijem
+       trčanju. Zapis se odbacuje ceo. */
+    const seed = {
+      v: 10, log: {}, knee: [], kg: [], pred: {}, predLock: {}, moves: {}, alts: {},
+      wellness: {}, icu: null, strava: null, genPlan: null, ui: {},
+      t3k: [{ id: 't3k-2026-08-05-abc12', date: '2026-08-05', sec: 410 },
+            { id: 't3k-2026-07-20-def34', date: '2026-07-20', sec: 720 }],
+      vdotLog: [{ id: 't3k-2026-08-05-abc12', ts: '2026-08-05', measured: 89.4 },
+                { id: 't3k-2026-07-20-def34', ts: '2026-07-20', measured: 47.9 }]
+    };
+    const a = loadApp({ now: DANAS, seedLocalStorage: { 'sub19-v1': JSON.stringify(seed) } });
+    assert.equal(a.get('UCITAVANJE_PALO'), null, 'učitavanje je puklo');
+    assert.deepEqual(a.evalIn('S.t3k.map(t=>t.sec)'), [720], 'nemoguć test je preživeo učitavanje');
+    assert.deepEqual(a.evalIn('S.vdotLog.map(e=>e.measured)'), [47.9], 'nemoguć zapis je ostao u lancu');
+    assert.ok(a.call('currentVdot') <= 85);
+  });
+
+  test('kvalitetna sesija sa nemogućim tempom se takođe odbija', () => {
+    /* Isti kvar kroz druga vrata: loše prepoznata deonica ili omaška u
+       kucanju daju tempo koji u zoni znači VDOT preko 85. */
+    const a = app();
+    a.evalIn(`CUR_PRED.push({id:'zt', w:1, l:'N1 · Tempo', q:5, pt:258})`);
+    assert.equal(a.call('recordVdot', 'zt', 120, '2026-08-05', null, false), null,
+      '2:00/km u tempo zoni je primljeno kao merenje forme');
+    assert.equal(a.evalIn('S.vdotLog.length'), 0);
+  });
+
+  test('granica je u JEDNOJ tabeli, ne prepisana po fajlu', () => {
+    const a = app();
+    assert.equal(a.get('VDOT_TABELA_MAX'), 85);
+    assert.equal(a.call('vdotMoguc', 85), true);
+    assert.equal(a.call('vdotMoguc', 85.1), false);
+    assert.equal(a.call('vdotMoguc', 14), false);
+    assert.equal(a.call('vdotMoguc', null), false);
+    assert.equal(a.call('vdotMoguc', Infinity), false);
+  });
+});
