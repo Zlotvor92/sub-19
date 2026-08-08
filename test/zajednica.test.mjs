@@ -785,4 +785,26 @@ describe('Van mreže: pozivi ka Supabase-u ne smeju da bace', () => {
     assert.equal(await a.call('zajUpisi'), false);
     assert.equal(await a.call('zajObrisi'), false);
   });
+
+  test('ko Zajednicu nije uključio ne dodiruje njenu tabelu NI PRI POKRETANJU', async () => {
+    /* Od v219 se javni profil osvežava pri svakom pokretanju. Ta izmena sme da
+       važi SAMO za onoga ko je Zajednicu uključio — inače bi aplikacija pisala
+       u javnu tabelu u ime čoveka koji to nikad nije tražio. Ovo je jedina
+       zamka koja to čuva. */
+    const a = bezMreze();
+    a.evalIn('navigator.onLine=true; S.zajed.vidljiv=false;');
+    const pozivi = [];
+    a.setFetch(async (url) => {
+      pozivi.push(String(url));
+      if (String(url).includes('/auth/v1/user')) {
+        return { ok: true, status: 200, text: async () => '',
+          json: async () => ({ id:'u-1', user_metadata:{ avatar_url:'https://lh3.googleusercontent.com/a/x' } }) };
+      }
+      return { ok: true, status: 200, json: async () => ([]), text: async () => '' };
+    });
+    await a.call('sbProveriSesiju');
+    await new Promise(r => setTimeout(r, 10));
+    assert.ok(!pozivi.some(u => u.includes('zajednica_')),
+      `dodirnuta je tabela Zajednice bez pristanka: ${pozivi.join(', ')}`);
+  });
 });

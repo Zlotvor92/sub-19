@@ -796,3 +796,43 @@ describe('Uvezen backup: bol i težina bez upotrebljivog broja', () => {
     assert.ok(!/NaN/.test(svg), `grafikon sadrži NaN: ${svg.slice(0, 200)}`);
   });
 });
+
+describe('Backup i Zajednica posle skoka šeme na v10', () => {
+
+  test('izvoz nosi `zajed`, a uvoz ga vraća', () => {
+    /* Šema je skočila sa 9 na 10. Da `zajed` ispadne iz backupa, čovek bi
+       posle vraćanja bio isključen iz Zajednice bez ijedne poruke — a mislio
+       bi da je uključen. */
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    a.evalIn(`S.zajed={vidljiv:true, nadimak:'Zlotvor92'}`);
+    const izvoz = JSON.parse(JSON.stringify(a.call('backupPayload')));
+    assert.equal(izvoz.v, 10, 'backup nosi pogrešnu verziju šeme');
+    assert.deepEqual(izvoz.zajed, { vidljiv: true, nadimak: 'Zlotvor92' });
+
+    const nazad = JSON.parse(a.evalIn(`JSON.stringify(migrate(${JSON.stringify(izvoz)}))`));
+    assert.deepEqual(nazad.zajed, { vidljiv: true, nadimak: 'Zlotvor92' });
+  });
+
+  test('backup iz starije verzije aplikacije se i dalje uvozi', () => {
+    /* Backup napravljen pre Zajednice mora da prođe — inače bi nadogradnja
+       obezvredila svaku raniju kopiju. */
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const star = JSON.parse(a.evalIn(`JSON.stringify(migrate({
+      v:9, log:{'n1d1':{status:'done', km:8, sec:2400}},
+      knee:[{id:'k', date:'2026-07-01', pain:4}], kg:[{date:'2026-07-01', kg:79}],
+      pred:{}, predLock:{}, vdotLog:[], t3k:[], moves:{}, alts:{},
+      genPlan:null, strava:null, wellness:{}, icu:null, vreme:null, ui:{}
+    }))`));
+    assert.equal(star.v, 10);
+    assert.equal(star.zajed.vidljiv, false, 'stara kopija te ubacuje u Zajednicu');
+    assert.equal(star.log['n1d1'].km, 8, 'stari dnevnik nije preživeo migraciju');
+    assert.equal(star.knee.length, 1);
+    assert.equal(star.kg.length, 1);
+  });
+
+  test('backup iz NOVIJE šeme se i dalje odbija', () => {
+    /* Postojeća zaštita — proverava se da je skok na v10 nije pomerio. */
+    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    assert.equal(a.evalIn(`migrate({v:11, log:{}})`), null);
+  });
+});
