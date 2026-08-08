@@ -3,8 +3,8 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v219';
-const APP_VERSION = '219';
+const CACHE = 'sub19-cache-v220';
+const APP_VERSION = '220';
 /* './app.js' MORA biti na spisku: od v150 index.html je samo markup, a ceo kod
    aplikacije je u app.js. Da nije tu, dobio bi network-first samo omotač, dok
    bi se logika servirala iz starog keša — tj. „promenio sam kod, ništa se ne
@@ -58,6 +58,15 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const u = new URL(e.request.url);
   if (u.pathname.startsWith('/api/') || u.hostname.endsWith('strava.com')) return; /* uvek mreža, nikad keš */
+  /* TUĐI DOMEN — SW SE NE MEŠA.
+     Ovde je sve vreme prolazila i slika sa Google naloga (Zajednica). Opšta
+     grana ispod bi je uzela, pokušala `fetch(e.request)` iz service workera i
+     — kad to ne uspe — vratila prazan 504. A rezultat te grane se NIKAD ne
+     kešira: `putSafe` je i onako ograničen na sopstveni domen. Dakle za tuđe
+     adrese SW ne donosi ništa, a dodaje put kojim zahtev može da propadne.
+     Prijavljeno sa iPhonea: aplikacija ima adresu slike, a u krugu stoji
+     početno slovo. Bez presretanja pregledač učitava sliku sam. */
+  if (u.origin !== location.origin) return;
   /* SVE iz ASSETS spiska: network-first. Ranije je ovo važilo samo za index.html i
      manifest.json — pa se ISTA greška ponovila na ikonicama (promenio fajl, korisnik
      ne vidi promenu jer je stari keš i dalje tu). ASSETS je mali spisak (par KB ukupno),
@@ -88,7 +97,7 @@ self.addEventListener('fetch', e => {
      to je razlika između praznog mesta i razbijene stranice. */
   e.respondWith(
     caches.match(e.request).then(hit => hit || fetch(e.request).then(r => {
-      if (new URL(e.request.url).origin === location.origin) putSafe(e.request, r);
+      putSafe(e.request, r);       /* dovde stižu samo sopstvene adrese */
       return r;
     })).catch(() => new Response('', { status: 504, statusText: 'Offline' }))
   );

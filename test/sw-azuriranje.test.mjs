@@ -217,6 +217,20 @@ describe('Instalacija service workera preživi jedan fajl koji fali', () => {
     }
   });
 
+  test('zahtevi ka tuđem domenu se NE presreću', () => {
+    /* Slika sa Google naloga je prolazila kroz opštu granu: `fetch` iz service
+       workera, pa prazan 504 kad ne uspe. Rezultat te grane se ionako nikad ne
+       kešira (`putSafe` je ograničen na sopstveni domen), pa SW za tuđe adrese
+       nije donosio ništa — samo put kojim zahtev može da propadne.
+       Prijavljeno sa iPhonea: aplikacija ima adresu slike, krug prazan. */
+    assert.match(kod, /if \(u\.origin !== location\.origin\) return;/,
+      'SW opet presreće tuđe adrese');
+    /* Provera mora da stoji PRE prve `respondWith` grane — inače ne štiti. */
+    const pre = kod.indexOf('u.origin !== location.origin');
+    const prva = kod.indexOf('e.respondWith(');
+    assert.ok(pre > 0 && pre < prva, 'provera stoji posle prve grane, dakle prekasno');
+  });
+
   test('svaki fajl iz ASSETS zaista postoji u repozitorijumu', () => {
     /* Prava odbrana je da spisak ne laže. Ovo hvata i običnu grešku u kucanju. */
     const m = /const ASSETS = \[([^\]]+)\]/.exec(kod);
