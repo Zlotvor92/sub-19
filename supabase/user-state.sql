@@ -236,11 +236,52 @@ drop policy if exists user_state_obrisi on public.user_state;
 create policy user_state_obrisi on public.user_state
   for delete using (auth.uid() = user_id);
 
--- 4. PROVERA ODMAH POSLE PUŠTANJA
--- Očekivano: četiri politike, svaka sa `auth.uid()` u izrazu, i nijedan red
--- za `anon`.
---   select policyname, cmd, qual, with_check
---     from pg_policies where schemaname='public' and tablename='user_state'
---    order by cmd;
---   select grantee, privilege_type from information_schema.role_table_grants
---    where table_schema='public' and table_name='user_state' and grantee='anon';
+-- 4. ISPIS STANJA — POSLEDNJA NAREDBA U FAJLU
+--
+-- ZAŠTO NIJE DOVOLJNO `raise notice`.
+-- Blokovi iznad javljaju šta su uradili preko `raise notice` / `raise warning`.
+-- Supabase SQL Editor te poruke NE PRIKAZUJE — vrati samo „Success. No rows
+-- returned". Ceo fajl je DDL, pa je to tačan odgovor, ali ne kaže ništa: isto
+-- piše i kad je dvojnik uklonjen i kad je preskočen uz upozorenje.
+--
+-- Zato fajl završava upitom KOJI VRAĆA REDOVE. Posle njega „no rows" više nije
+-- mogući ishod — ono što se dogodilo vidi se u tabeli ispod.
+--
+-- ŠTA SE OČEKUJE:
+--   politika        četiri reda, svaki sa auth.uid() u izrazu
+--   okidač          user_state_touch_trg i user_state_zapamti_trg, ništa treće
+--   strani ključ    on delete cascade
+--   anon            nema pristup
+--   ostatak         nijedan red (funkcija bez posla više nema)
+select 'politika' as stavka, policyname as ime,
+       cmd || ' · ' || coalesce(qual, with_check, '—') as detalj
+  from pg_policies where schemaname = 'public' and tablename = 'user_state'
+
+union all
+select 'okidač', tgname, case when tgenabled = 'O' then 'aktivan' else 'ISKLJUČEN' end
+  from pg_trigger where tgrelid = 'public.user_state'::regclass and not tgisinternal
+
+union all
+select 'strani ključ', conname,
+       case confdeltype when 'c' then 'on delete cascade'
+                        else 'NIJE cascade — brisanje naloga kroz Dashboard neće proći' end
+  from pg_constraint where conrelid = 'public.user_state'::regclass and contype = 'f'
+
+union all
+select 'anon', 'grant nad user_state',
+       coalesce((select string_agg(distinct privilege_type, ', ')
+                   from information_schema.role_table_grants
+                  where grantee = 'anon' and table_schema = 'public' and table_name = 'user_state'),
+                'nema pristup — ispravno')
+
+union all
+-- Ostatak koji čišćenje NIJE smelo da ukloni. Prazno je dobro.
+select 'ostatak', p.proname,
+       'funkcija okidača koju nijedan fajl ne pravi — nešto se još oslanja na nju'
+  from pg_proc p join pg_type t on t.oid = p.prorettype
+ where p.pronamespace = 'public'::regnamespace and t.typname = 'trigger'
+   and p.proname not in (
+     'user_state_touch','user_state_zapamti','ai_posao_dodirni','ai_posao_nov',
+     'ai_posao_prelaz','push_pretplata_dodirni','zajednica_profil_dodirni')
+
+order by 1, 2;

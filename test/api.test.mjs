@@ -2438,3 +2438,45 @@ describe('Čišćenje ostataka ne sme da odnese ništa što se koristi', () => {
       'drop function stoji van provere — obrisaće se bez obzira ko ga koristi');
   });
 });
+
+/* FAJL KOJI NEŠTO UKLANJA MORA DA POKAŽE ŠTA JE URADIO.
+
+   `user-state.sql` javlja svoje odluke kroz `raise notice` / `raise warning` —
+   a Supabase SQL Editor te poruke NE PRIKAZUJE. Vrati „Success. No rows
+   returned", i to isto piše i kad je dvojnik uklonjen i kad je preskočen uz
+   upozorenje. Čovek posle puštanja ne zna šta se dogodilo, a fajl je jedini u
+   folderu koji nešto BRIŠE.
+
+   Zato mora da se završi upitom koji vraća redove. */
+describe('SQL koji menja stanje završava ispisom tog stanja', () => {
+  const US = readRepoFile('supabase/user-state.sql');
+  const kod = US.replace(/^\s*--.*$/gm, '').trim();
+  /* POSLEDNJA NAREDBA, ne poslednji `select`. Ispis je lanac `union all`, pa
+     bi traženje poslednjeg `select`-a odseklo sve osim zadnje grane — i test
+     bi tvrdio da ispis ne pokriva politike, iako ih pokriva. */
+  const naredbe = kod.split(';').map(x => x.trim()).filter(Boolean);
+  const poslednja = naredbe[naredbe.length - 1];
+
+  test('user-state.sql se završava upitom koji VRAĆA redove', () => {
+    assert.match(poslednja, /^select\b/i,
+      'poslednja naredba nije `select` — u SQL Editoru se vidi samo „no rows returned"');
+  });
+
+  test('ispis pokriva sve što je fajl mogao da promeni', () => {
+    /* Svaka odluka koju fajl donosi mora da se vidi u ispisu, inače je ispis
+       ukras: politike, okidači (uklonjen dvojnik), strani ključ (cascade),
+       anon grant, i funkcija koju čišćenje NIJE smelo da ukloni. */
+    for (const [sta, re] of [
+      ['politike', /pg_policies/], ['okidače', /pg_trigger/],
+      ['strani ključ', /confdeltype/], ['anon grant', /role_table_grants/],
+      ['preostale funkcije okidača', /typname = 'trigger'/]
+    ]) assert.match(poslednja, re, `ispis ne pokriva ${sta}`);
+  });
+
+  test('`raise` ostaje — ispis ga dopunjuje, ne zamenjuje', () => {
+    /* U psql-u i u logovima poruke jesu vidljive i korisnije su od tabele,
+       jer kažu i ZAŠTO. Ispis postoji zbog Editora, ne umesto njih. */
+    assert.match(kod, /raise notice/i, 'izgubljeno je javljanje šta je uklonjeno');
+    assert.match(kod, /raise warning/i, 'izgubljeno je upozorenje za ono što nije uklonjeno');
+  });
+});
