@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='218'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='219'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9619,6 +9619,14 @@ function openSettings(){
         `<div class="set-st">Rang-lista trkača u aplikaciji. Dok je isključena, ne postojiš na spisku i ne vidiš tuđe profile — vidljivost je uzajamna.</div>
          <div class="f-grid"><div class="f-field full"><label for="zaj-nadimak">Nadimak <small style="color:var(--txt2)">(prazno = ime sa Google naloga)</small></label>
            <input id="zaj-nadimak" type="text" maxlength="24" placeholder="${esc(zajIme()||'kako te zovu')}" value="${esc((S.zajed&&S.zajed.nadimak)||'')}"></div></div>
+         <div class="oprow" style="display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line)">
+           ${zajAvatar({user_id:SB.userId,nadimak:zajIme(),avatar_url:SB.slika},44)}
+           <div style="flex:1;min-width:0">
+             <b style="display:block;font-size:.88rem">${esc(zajIme()||'Trkač')}</b>
+             <small style="display:block;font-size:.7rem;color:var(--txt3);font-weight:600;margin-top:3px">
+               ${SB.slika?'ovako te vide ostali':'slika sa Google naloga još nije stigla — vidi se početno slovo'}</small>
+           </div>
+         </div>
          <div class="btnrow"><button class="btn${uk?' ghost':''}" id="zaj-tgl">${uk?'Isključi Zajednicu':'Uključi Zajednicu'}</button></div>
          <div class="note-src" id="zaj-out" style="margin:6px 0 0"></div>
          <details class="help"><summary>Šta drugi vide</summary>
@@ -11219,6 +11227,13 @@ async function sbInit(){
      avatar bio prazan bez ijednog znaka da nešto ne valja. Ovde se pročita
      odmah, iz tokena koji već postoji. */
   if(sbPreuzmiIdentitet()) sbSave();
+  /* Javni profil se osvežava pri svakom pokretanju, bezuslovno.
+     Ranije je upis visio na „identitet se promenio" — pa je red u bazi
+     ostajao onakav kakav je bio kad je Zajednica uključena. Ko ju je uključio
+     pre nego što je aplikacija znala njegovu sliku, imao je prazan
+     `avatar_url` doveka, jer se promena više nikad nije desila. Jedan upis po
+     pokretanju je zanemarljiv, a jemči da ono što se vidi odgovara stanju. */
+  if(S.zajed&&S.zajed.vidljiv) zajUpisi().catch(()=>{});
   sbHideGate();
   /* Sveza prijava menja jeVlasnik(), a time i sta Danas ekran prikazuje
      (traka „Ovo nije tvoj plan"). Ako je sesija upravo usvojena iz hash-a,

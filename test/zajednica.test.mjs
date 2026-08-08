@@ -548,8 +548,8 @@ describe('Ime i slika iz tokena', () => {
     /* Da poziv nestane, zatečene sesije bi opet ostale bez slike, a svi
        testovi iznad bi i dalje prolazili. */
     const izvor = readRepoFile('app.js');
-    assert.match(izvor, /if\(sbPreuzmiIdentitet\(\)\) sbSave\(\);\s*\n\s*sbHideGate\(\);/,
-      'pri pokretanju se identitet više ne preuzima pre nego što se kapija skloni');
+    assert.match(izvor, /if\(sbPreuzmiIdentitet\(\)\) sbSave\(\);/,
+      'pri pokretanju se identitet više ne preuzima');
     assert.match(izvor, /SB\.expiresAt=Date\.now\(\)[\s\S]{0,400}?sbPreuzmiIdentitet\(\);/,
       'osvežavanje tokena više ne preuzima ime i sliku');
   });
@@ -705,5 +705,33 @@ describe('Ime i slika iz tokena', () => {
     a.evalIn(`SB.userId='u-1'; SB.access='tok'; SB.slika='https://lh3.googleusercontent.com/a/staro';`);
     assert.equal(a.call('sbIzKorisnika', { id: 'u-1' }), false);
     assert.equal(a.evalIn('SB.slika'), 'https://lh3.googleusercontent.com/a/staro');
+  });
+
+  test('javni profil se osvežava pri SVAKOM pokretanju', () => {
+    /* Upis je visio na „identitet se promenio". Ko je Zajednicu uključio pre
+       nego što je aplikacija znala njegovu sliku, imao je prazan avatar_url
+       doveka — promena se više nikad ne desi. Prijavljeno sa telefona dvaput. */
+    const izvor = readRepoFile('app.js');
+    assert.match(izvor, /if\(S\.zajed&&S\.zajed\.vidljiv\) zajUpisi\(\)\.catch\(\(\)=>\{\}\);\s*\n\s*sbHideGate\(\);/,
+      'pri pokretanju se javni profil više ne osvežava bezuslovno');
+  });
+
+  test('Podešavanja pokazuju kako te vide — sa slikom i bez nje', () => {
+    /* Bez ovoga se „da li aplikacija uopšte zna moju sliku" ne može videti
+       nigde, pa se prazan krug u Zajednici ne razlikuje od blokirane slike. */
+    const a = app();
+    prijavljen(a);
+    a.evalIn(`SB.slika=null; S.zajed.nadimak='Zlotvor92';`);
+    a.call('openSettings');
+    const bez = a.evalIn(`$('#sheet').innerHTML`) || '';
+    assert.match(bez, /još nije stigla/, 'ne kaže se da slike nema');
+
+    const b = app();
+    prijavljen(b);
+    b.evalIn(`SB.slika='https://lh3.googleusercontent.com/a/x'; S.zajed.nadimak='Zlotvor92';`);
+    b.call('openSettings');
+    const sa = b.evalIn(`$('#sheet').innerHTML`) || '';
+    assert.match(sa, /ovako te vide ostali/);
+    assert.match(sa, /background-image:url\(&quot;https:\/\/lh3/, 'pregled ne prikazuje sliku');
   });
 });
