@@ -595,7 +595,7 @@ describe('Ime i slika iz tokena', () => {
     a.call('renderZajednica');
     const h = ekran(a);
     assert.ok(!/<img/.test(h), 'avatar i dalje koristi <img>');
-    assert.match(h, /background-image:url\("https:\/\/lh6\.googleusercontent\.com/,
+    assert.match(h, /background-image:url\(&quot;https:\/\/lh6\.googleusercontent\.com/,
       'slika se ne postavlja kao pozadina');
   });
 
@@ -618,15 +618,19 @@ describe('Ime i slika iz tokena', () => {
       'https://lh3.googleusercontent.com/a/AC_x=s96-c', 'ispravna adresa je odbijena');
   });
 
-  test('inicijali se sklanjaju SAMO kad slika stvarno postoji', () => {
+  test('inicijali stoje UVEK — slika je sloj preko njih', () => {
+    /* Adresa slike može da postoji a slika da ne stigne (nema signala, Google
+       je uklonio, CSP). Da su inicijali unapred sakriveni, ostao bi prazan
+       obojen krug — što se i videlo na snimku. Providan sloj ne pokrije
+       ništa, pa inicijali izađu sami. */
     const a = app();
-    prijavljen(a);
     const sa = a.call('zajAvatar', { user_id:'x', nadimak:'Sanja Sanjić',
       avatar_url:'https://lh3.googleusercontent.com/a/x' }, 40);
     const bez = a.call('zajAvatar', { user_id:'x', nadimak:'Sanja Sanjić' }, 40);
-    assert.match(sa, /opacity:0/, 'inicijali stoje preko slike');
-    assert.ok(!/opacity:0/.test(bez), 'inicijali su sakriveni iako slike nema');
-    assert.match(bez, /<b>SS<\/b>/);
+    for (const h of [sa, bez]) assert.match(h, /<b>SS<\/b>/, 'inicijali nedostaju');
+    assert.ok(!/opacity:0/.test(sa), 'inicijali se i dalje sakrivaju unapred');
+    assert.match(sa, /<i style="background-image:url\(&quot;https:/, 'nema sloja sa slikom');
+    assert.ok(!/<i /.test(bez), 'prazan sloj se crta i kad slike nema');
   });
 
   test('„PRVI" ne stoji kad merilo nema vrednost', () => {

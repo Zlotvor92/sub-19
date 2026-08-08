@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='216'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='217'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -11556,7 +11556,6 @@ function zajPrikazIme(p){ return (p&&p.nadimak)||'Trkač'; }
    znakovi kojima bi to bilo moguće odbijaju u celosti, a ne beže. */
 function zajSlikaUrl(u){
   if(typeof u!=='string') return null;
-  if(/["'()\\\s]/.test(u)) return null;
   return /^https:\/\/[a-zA-Z0-9.-]+\/[A-Za-z0-9\-._~:\/?#\[\]@!$&*+,;=%]*$/.test(u) ? u : null;
 }
 
@@ -11570,11 +11569,15 @@ function zajSlikaUrl(u){
 function zajAvatar(p, d){
   const ime=zajPrikazIme(p);
   const slika=zajSlikaUrl(p&&p.avatar_url);
-  const poz=slika
-    ? `background-image:url("${slika}");background-size:cover;background-position:center`
-    : '';
-  return `<span class="zav" style="width:${d}px;height:${d}px;background-color:${zajBoja(p.user_id)};font-size:${Math.round(d*0.4)}px;${poz}">`
-       + `<b${slika?' style="opacity:0"':''}>${esc(zajInicijali(ime))}</b></span>`;
+  /* Slika je zaseban SLOJ preko inicijala, a ne pozadina samog kruga.
+     Razlika je vidljiva tačno u slučaju koji se i dogodio: adresa slike
+     postoji, ali slika ne stigne. Da je pozadina kruga, inicijali bi bili
+     unapred sakriveni i ostao bi prazan obojen krug; ovako providan sloj
+     jednostavno ne pokrije ništa i inicijali se vide. */
+  const sloj=slika
+    ? `<i style="background-image:url(&quot;${slika}&quot;)"></i>` : '';
+  return `<span class="zav" style="width:${d}px;height:${d}px;background-color:${zajBoja(p.user_id)};font-size:${Math.round(d*0.4)}px">`
+       + `<b>${esc(zajInicijali(ime))}</b>${sloj}</span>`;
 }
 
 /* --- povlačenje --- */
