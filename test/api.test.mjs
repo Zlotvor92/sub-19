@@ -2274,3 +2274,59 @@ describe('Šema — svaka tabela sa podacima uskraćuje pristup anon ključu', (
       'izgubljena je provera da izazov nema politiku za upis');
   });
 });
+
+/* `inventar.sql` odgovara na pitanje „smem li da obrišem snippet-ove u SQL
+   Editoru": nabraja šta baza ima i poredi sa onim što repozitorijum opisuje.
+   Vredi tačno onoliko koliko je taj spisak tačan — a spisak je prepisan rukom,
+   pa je prvo što se raziđe. Ova zamka ga drži uz fajlove. */
+describe('inventar.sql poznaje sve što supabase/ pravi', () => {
+  const INV = readRepoFile('supabase/inventar.sql');
+  const SQL = readdirSync(join(ROOT, 'supabase'))
+    .filter(f => f.endsWith('.sql') && f !== 'inventar.sql' && f !== 'provera.sql')
+    .map(f => readFileSync(join(ROOT, 'supabase', f), 'utf8')).join('\n');
+
+  const izFajlova = (re, i = 1) => [...new Set([...SQL.matchAll(re)].map(m => m[i]))].sort();
+
+  test('svaka tabela iz fajlova je na spisku', () => {
+    const t = izFajlova(/create table if not exists public\.([a-z_]+)/g);
+    assert.ok(t.length >= 10, `nađeno premalo tabela: ${t}`);
+    const nema = t.filter(x => !INV.includes(`'tabela:${x}'`));
+    assert.deepEqual(nema, [], `inventar.sql ih ne poznaje, prijaviće ih kao NEPOZNATO: ${nema}`);
+  });
+
+  test('svaka funkcija iz fajlova je na spisku', () => {
+    const f = izFajlova(/create or replace function public\.([a-z_]+)/g);
+    assert.ok(f.length >= 10, `nađeno premalo funkcija: ${f}`);
+    const nema = f.filter(x => !INV.includes(`'funkcija:${x}'`));
+    assert.deepEqual(nema, [], `inventar.sql ih ne poznaje: ${nema}`);
+  });
+
+  test('svaki okidač iz fajlova je na spisku', () => {
+    const o = izFajlova(/create trigger ([a-z_]+)/g);
+    assert.ok(o.length >= 6, `nađeno premalo okidača: ${o}`);
+    const nema = o.filter(x => !INV.includes(`'okidač:${x}'`));
+    assert.deepEqual(nema, [], `inventar.sql ih ne poznaje: ${nema}`);
+  });
+
+  test('spisak ne nabraja ono što fajlovi ne prave', () => {
+    /* Suprotan smer: obrisana tabela ostane na spisku, pa inventar doveka
+       traži da se pusti fajl koji je više ne pravi. */
+    for (const [vrsta, re] of [
+      ['tabela', /create table if not exists public\.([a-z_]+)/g],
+      ['funkcija', /create or replace function public\.([a-z_]+)/g],
+      ['okidač', /create trigger ([a-z_]+)/g]
+    ]) {
+      const stvarni = new Set(izFajlova(re));
+      const naSpisku = [...INV.matchAll(new RegExp(`'${vrsta}:([a-z_]+)'`, 'g'))].map(m => m[1]);
+      const visak = naSpisku.filter(x => !stvarni.has(x));
+      assert.deepEqual(visak, [], `${vrsta} je na spisku a nijedan fajl je ne pravi: ${visak}`);
+    }
+  });
+
+  test('inventar samo čita — ne menja ništa', () => {
+    /* Pušta se da bi se videlo stanje; da može da menja, „pusti pa vidi" bi
+       bio rizik umesto provere. */
+    assert.doesNotMatch(INV, /\b(drop|alter|insert|update|delete|truncate|grant|revoke)\s/i,
+      'inventar.sql sadrži naredbu koja menja bazu');
+  });
+});
