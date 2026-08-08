@@ -464,10 +464,35 @@ describe('Ekran Zajednice', () => {
   test('kad povlačenje padne, ostatak aplikacije se ne dovodi u pitanje', () => {
     const a = app();
     prijavljen(a);
-    a.evalIn(`S.zajed.vidljiv=true; ZAJ.greska='veza';`);
+    a.evalIn(`S.zajed.vidljiv=true; ZAJ.greska='mreza';`);
     a.call('renderZajednica');
-    const h = ekran(a);
-    assert.match(h, /Nema veze sa internetom/);
-    assert.match(h, /Sve ostalo u aplikaciji radi normalno/);
+    assert.match(ekran(a), /Nema veze sa internetom/);
+    assert.match(ekran(a), /Sve ostalo u aplikaciji radi normalno/);
+  });
+
+  test('kad tabele nema u bazi, poruka to KAŽE — ne „pokušaj ponovo"', () => {
+    /* Dok se supabase/zajednica.sql ne pusti rukom, PostgREST na tu tabelu
+       vraća 404. Ponavljanje tada ne pomaže nikad, pa poruka mora da imenuje
+       jedini korak koji pomaže. Prijavljeno sa snimka ekrana: prekidač je
+       pisao „Pokušaj ponovo" i slao čoveka u krug. */
+    const a = app();
+    assert.equal(a.call('zajRazlogIz', 404), 'nema-tabele');
+    assert.equal(a.call('zajRazlogIz', 401), 'nema-prava');
+    assert.equal(a.call('zajRazlogIz', 500), 'server');
+    for (const r of ['nema-tabele', 'nema-prava']) {
+      assert.match(a.call('zajPoruka', r), /zajednica\.sql/,
+        `poruka za „${r}" ne kaže šta da se uradi`);
+    }
+    assert.doesNotMatch(a.call('zajPoruka', 'nema-tabele'), /Pokušaj ponovo/);
+  });
+
+  test('404 sa servera stiže do prekidača kao razlog, ne kao ćutanje', async () => {
+    const a = app();
+    prijavljen(a);
+    a.setFetch(async () => ({ ok: false, status: 404, json: async () => ({}), text: async () => '' }));
+    const ok = await a.call('zajPostavi', true);
+    assert.equal(ok, false);
+    assert.equal(a.evalIn('ZAJ.razlog'), 'nema-tabele');
+    assert.equal(a.evalIn('S.zajed.vidljiv'), false, 'prekidač je ostao uključen bez reda u bazi');
   });
 });

@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='214'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='215'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9694,9 +9694,7 @@ function openSettings(){
     /* Neuspeh se KAŽE. `zajPostavi` je već vratio staro stanje, pa je jedina
        preostala greška ćutanje — prekidač koji izgleda kao da je uspeo. */
     b.disabled=false; b.textContent=uk?'Isključi Zajednicu':'Uključi Zajednicu';
-    if(out) out.textContent=navigator.onLine
-      ? 'Nije uspelo. Pokušaj ponovo — ništa nije promenjeno.'
-      : 'Nema veze sa internetom. Ovo mora da stigne do servera, pa ništa nije promenjeno.';
+    if(out) out.textContent=zajPoruka(navigator.onLine?ZAJ.razlog:'mreza');
   };
   if($('#sb-sync')) $('#sb-sync').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Sinhronizujem…';
@@ -11484,7 +11482,7 @@ function zajednicaPayload(){
    Poređenje sa drugima se računa OVDE, na uređaju. Ništa od toga ne odlazi
    nazad na server — niko ne vidi koga s kim porediš. */
 
-let ZAJ = { ljudi:null, izazov:null, greska:null, ucitava:false, kad:0, filter:'sve', merilo:'t3k', otvoren:null };
+let ZAJ = { ljudi:null, izazov:null, greska:null, razlog:null, ucitava:false, kad:0, filter:'sve', merilo:'t3k', otvoren:null };
 
 const ZAJ_CILJEVI = [['sve','Sve'],['5K','5K'],['10K','10K'],['21K','21K'],['42K','42K']];
 
@@ -11534,19 +11532,19 @@ function zajAvatar(p, d){
 async function zajUcitaj(){
   if(!sbAuthed()||!(S.zajed&&S.zajed.vidljiv)) return;
   ZAJ.ucitava=true; ZAJ.greska=null;
-  if(!await sbEnsure()){ ZAJ.ucitava=false; ZAJ.greska='veza'; if(ACTIVE==='zajed') renderZajednica(); return; }
+  if(!await sbEnsure()){ ZAJ.ucitava=false; ZAJ.greska='mreza'; if(ACTIVE==='zajed') renderZajednica(); return; }
   try{
     const [rp,ri]=await Promise.all([
       fetch(SB_URL+'/rest/v1/zajednica_profil?select=*&vidljiv=is.true',{headers:sbHead()}),
       fetch(SB_URL+'/rest/v1/zajednica_izazov?select=tekst&id=eq.1',{headers:sbHead()})
     ]);
-    if(!rp.ok){ ZAJ.greska='server'; }
+    if(!rp.ok){ ZAJ.greska=zajRazlogIz(rp.status); }
     else{
       const j=await rp.json();
       ZAJ.ljudi=Array.isArray(j)?j:[];
     }
     if(ri.ok){ const t=await ri.json(); ZAJ.izazov=(Array.isArray(t)&&t[0]&&t[0].tekst)||null; }
-  }catch(e){ ZAJ.greska='veza'; }
+  }catch(e){ ZAJ.greska='mreza'; }
   ZAJ.ucitava=false;
   if(!ZAJ.greska) ZAJ.kad=Date.now();
   if(ACTIVE==='zajed') renderZajednica();
@@ -11584,7 +11582,7 @@ function renderZajednica(){
   }
   if(ZAJ.greska&&ZAJ.ljudi==null){
     el.innerHTML=`<div class="card"><div class="dhead"><span class="card-t">Zajednica</span><span class="dhead-x">nije povučeno</span></div>
-      <div class="zprazno">${ZAJ.greska==='veza'?'Nema veze sa internetom.':'Server trenutno ne odgovara.'}<br>Sve ostalo u aplikaciji radi normalno.</div>
+      <div class="zprazno">${esc(zajPoruka(ZAJ.greska))}<br>Sve ostalo u aplikaciji radi normalno.</div>
       <div class="btnrow"><button class="btn ghost" id="zaj-opet">Pokušaj ponovo</button></div></div>`;
     const b=$('#zaj-opet'); if(b) b.onclick=()=>{ ZAJ.greska=null; renderZajednica(); zajUcitaj(); };
     return;
@@ -11779,17 +11777,36 @@ function zajVezi(el){
 /* Upis (i osvežavanje) sopstvenog reda. `merge-duplicates` znači da prvi put
    pravi red, a svaki sledeći put ga menja — bez posebnog puta za jedno i za
    drugo, i bez pitanja „da li već postojim". */
+/* ZAŠTO SE PAMTI RAZLOG, A NE SAMO „nije uspelo".
+   Prva verzija je na svaki neuspeh pisala „Pokušaj ponovo". Kad tabele nema u
+   bazi — a nema je dok se supabase/zajednica.sql ne pusti rukom — ponavljanje
+   ne pomaže nikad, pa je poruka slala čoveka u krug. Razlog se čuva ovde i
+   pretvara u rečenicu koja kaže ŠTA da se uradi. */
+function zajRazlogIz(status){
+  /* PostgREST na nepostojeću tabelu vraća 404 (PGRST205, „Could not find the
+     table in the schema cache"). To je jedini ishod koji se ne rešava
+     ponavljanjem nego puštanjem SQL fajla. */
+  if(status===404) return 'nema-tabele';
+  /* 401/403 znači da tabela postoji ali `grant`/politike nisu prošle — tj.
+     fajl je pušten do pola. Isti lek, ista poruka. */
+  if(status===401||status===403) return 'nema-prava';
+  if(status>=500) return 'server';
+  return 'nepoznato';
+}
+
 async function zajUpisi(){
+  ZAJ.razlog=null;
   if(!sbAuthed()||!(S.zajed&&S.zajed.vidljiv)) return false;
-  if(!await sbEnsure()) return false;
+  if(!await sbEnsure()){ ZAJ.razlog='mreza'; return false; }
   try{
     const r=await fetch(SB_URL+'/rest/v1/zajednica_profil',{
       method:'POST',
       headers:Object.assign(sbHead(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
       body:JSON.stringify(zajednicaPayload())
     });
+    if(!r.ok) ZAJ.razlog=zajRazlogIz(r.status);
     return r.ok;
-  }catch(e){ return false; }
+  }catch(e){ ZAJ.razlog='mreza'; return false; }
 }
 
 /* Isključivanje BRIŠE red, ne postavlja `vidljiv=false`.
@@ -11798,13 +11815,26 @@ async function zajUpisi(){
    neko negde promeni jedan boolean. Politika privatnosti obećava brisanje —
    pa se briše. */
 async function zajObrisi(){
+  ZAJ.razlog=null;
   if(!sbAuthed()) return false;
-  if(!await sbEnsure()) return false;
+  if(!await sbEnsure()){ ZAJ.razlog='mreza'; return false; }
   try{
     const r=await fetch(SB_URL+'/rest/v1/zajednica_profil?user_id=eq.'+encodeURIComponent(SB.userId),
       {method:'DELETE',headers:sbHead()});
+    if(!r.ok) ZAJ.razlog=zajRazlogIz(r.status);
     return r.ok;
-  }catch(e){ return false; }
+  }catch(e){ ZAJ.razlog='mreza'; return false; }
+}
+
+/* Jedna rečenica po razlogu — svaka kaže sledeći korak, ne samo šta ne valja. */
+function zajPoruka(razlog){
+  if(razlog==='nema-tabele'||razlog==='nema-prava')
+    return 'Tabele Zajednice još nema u bazi. Supabase → SQL Editor → nalepi ceo supabase/zajednica.sql → Run, pa probaj opet.';
+  if(razlog==='mreza')
+    return 'Nema veze sa internetom. Ovo mora da stigne do servera, pa ništa nije promenjeno.';
+  if(razlog==='server')
+    return 'Server trenutno ne odgovara. Ništa nije promenjeno — probaj za koji minut.';
+  return 'Nije uspelo. Ništa nije promenjeno.';
 }
 
 /* Uključivanje/isključivanje iz Podešavanja. Vraća `true` ako je stanje
