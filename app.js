@@ -843,6 +843,25 @@ function cistDatirane(niz){
   if(!Array.isArray(niz)) return [];
   return niz.filter(x=>x&&typeof x==='object'&&validanDatum(x.date));
 }
+/* BROJ KOJI SE CRTA I PO KOME SE ODLUČUJE, iz zapisa koji je mogao doći iz
+   uvezenog backupa — dakle iz proizvoljnog JSON-a.
+
+   Zašto ovo nije deo `cistDatirane`: ona služi trima nizovima (`knee`, `kg`,
+   `t3k`) koji nose različita polja, pa bi zajednička provera morala da zna
+   koje polje gde — a to je tačno ono što se posle raziđe.
+
+   Šta se dešavalo bez ovoga (zatečeno, ne uneseno ovim izmenama):
+     - grafikon bola je crtao `cy="NaN"`, što pregledač odbija i tačka nestane;
+     - `partLevel` je vraćao `undefined`, pa je `bol >= 6` bilo netačno —
+       unos o povredi POSTOJI, a plan se ponaša kao da ga nema. To je tiši i
+       skuplji ishod od nenacrtane tačke. */
+function cistBrojPolje(niz, polje, min, max){
+  if(!Array.isArray(niz)) return [];
+  return niz.filter(x=>{
+    const v=x?x[polje]:null;
+    return typeof v==='number' && isFinite(v) && v>=min && v<=max;
+  });
+}
 /* run/walk struktura iz S.alts — ista granica poverenja kao cistWellness:
    vrednosti nastaju računanjem, ali uvoz backupa i sbPull upisuju šta god
    stoji u JSON-u, a odatle idu u opis treninga i u korak koji ide na sat. */
@@ -891,8 +910,10 @@ function migrate(o){
     .filter(t=>jeT3k(t.id)&&validanId(t.id)&&t.sec>0&&t.sec<7200);
   o.wellness=cistWellness(o.wellness);
   o.vdotLog=cistVdotLog(o.vdotLog);
-  o.knee=cistDatirane(o.knee);
-  o.kg=cistDatirane(o.kg);
+  /* Bol van 0–10 nije bol nego đubre; težina van 20–300 kg isto. Zapis bez
+     upotrebljivog broja se odbacuje, a ne provlači kao „nula". */
+  o.knee=cistBrojPolje(cistDatirane(o.knee), 'pain', 0, 10);
+  o.kg=cistBrojPolje(cistDatirane(o.kg), 'kg', 20, 300);
   o.vreme=(o.vreme&&typeof o.vreme==='object'&&o.vreme.sati&&typeof o.vreme.sati==='object')?o.vreme:null;
   o.t3k=o.t3k||[];o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.zajed=Object.assign({vidljiv:false,nadimak:''},(o.zajed&&typeof o.zajed==='object')?o.zajed:{});o.zajed.vidljiv=o.zajed.vidljiv===true;o.zajed.nadimak=typeof o.zajed.nadimak==='string'?o.zajed.nadimak.slice(0,24):'';o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null},o.ui||{});
   o.v=SCHEMA;
@@ -11028,11 +11049,20 @@ function sbLogout(){
    (v. sbDecide). */
 async function sbRemoteAt(){
   if(!await sbEnsure()) return undefined;
-  const r=await fetch(SB_URL+'/rest/v1/user_state?select=updated_at,device_id&user_id=eq.'+SB.userId,{headers:sbHead()});
-  if(!r.ok) return undefined;
-  const j=await r.json();
-  if(!j||!j[0]) return null;                   /* null = red ne postoji */
-  return { at:j[0].updated_at, uredjaj:j[0].device_id||null };
+  /* `undefined` = NEMA SIGNALA, `null` = reda nema. Razlika je nosiva: na
+     `undefined` pozivalac odustaje i radi lokalno, na `null` zna da server
+     nema ništa.
+     Bez ovog `try` bi `fetch` van mreže bacio i obećanje bi odbilo. Ranije to
+     nije moglo: service worker je za tuđe adrese vraćao prazan 504, pa je ovde
+     stizao odgovor sa `ok:false`. Otkad SW ne presreće tuđe adrese (v220),
+     greška stiže dovde i mora da se uhvati. */
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/user_state?select=updated_at,device_id&user_id=eq.'+SB.userId,{headers:sbHead()});
+    if(!r.ok) return undefined;
+    const j=await r.json();
+    if(!j||!j[0]) return null;                   /* null = red ne postoji */
+    return { at:j[0].updated_at, uredjaj:j[0].device_id||null };
+  }catch(e){ return undefined; }
 }
 
 async function sbPush(){
@@ -11093,7 +11123,13 @@ async function sbPush(){
 async function sbPull(){
   if(!sbAuthed()) return false;
   if(!await sbEnsure()) return false;
-  const r=await fetch(SB_URL+'/rest/v1/user_state?select=data,updated_at&user_id=eq.'+SB.userId,{headers:sbHead()});
+  /* Isti razlog kao u sbRemoteAt: od v220 SW ne presreće tuđe adrese, pa van
+     mreže `fetch` baca umesto da vrati 504. Oba mesta koja zovu sbPull su
+     rukovaoci dugmeta bez sopstvenog `catch`, pa bi odbijeno obećanje ostalo
+     neuhvaćeno. */
+  let r;
+  try{ r=await fetch(SB_URL+'/rest/v1/user_state?select=data,updated_at&user_id=eq.'+SB.userId,{headers:sbHead()}); }
+  catch(e){ return false; }
   if(!r.ok) return false;
   const j=await r.json();
   if(!j||!j[0]||!j[0].data) return false;

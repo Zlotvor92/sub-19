@@ -735,3 +735,54 @@ describe('Ime i slika iz tokena', () => {
     assert.match(sa, /background-image:url\(&quot;https:\/\/lh3/, 'pregled ne prikazuje sliku');
   });
 });
+
+/* ============================================================
+   POSLEDICE IZMENE SERVICE WORKERA (v220)
+
+   SW više ne presreće tuđe adrese. Time je nestao sloj koji je van mreže
+   vraćao prazan 504 — sada `fetch` BACA. Svako mesto koje je računalo na
+   odgovor sa `ok:false` mora da preživi i odbijeno obećanje.
+   ============================================================ */
+describe('Van mreže: pozivi ka Supabase-u ne smeju da bace', () => {
+
+  /* Token koji VAŽI — inače sbEnsure odustane pre nego što se stigne do
+     poziva, pa se ništa ne testira. */
+  const bezMreze = () => {
+    const a = loadApp({ now: DANAS });
+    a.evalIn(`SB.userId='u-1'; SB.access='tok'; SB.refresh='r';
+              SB.expiresAt=Date.now()+3600000; navigator.onLine=false;`);
+    a.setFetch(async () => { throw new TypeError('Failed to fetch'); });
+    return a;
+  };
+
+  test('sbRemoteAt vraća „nema signala", ne odbija', async () => {
+    const a = bezMreze();
+    assert.equal(await a.call('sbRemoteAt'), undefined);
+  });
+
+  test('sbPull vraća false, ne odbija', async () => {
+    /* Stoji iza dugmeta „Uzmi sa servera", u rukovaocu bez sopstvenog catch-a
+       — odbijeno obećanje bi ostalo neuhvaćeno. */
+    const a = bezMreze();
+    assert.equal(await a.call('sbPull'), false);
+  });
+
+  test('sbPush vraća false, ne odbija', async () => {
+    const a = bezMreze();
+    assert.equal(await a.call('sbPush'), false);
+  });
+
+  test('zajUcitaj prijavi grešku umesto da baci', async () => {
+    const a = bezMreze();
+    a.evalIn('S.zajed.vidljiv=true');
+    await a.call('zajUcitaj');
+    assert.equal(a.evalIn('ZAJ.greska'), 'mreza');
+  });
+
+  test('zajUpisi i zajObrisi vraćaju false, ne odbijaju', async () => {
+    const a = bezMreze();
+    a.evalIn('S.zajed.vidljiv=true');
+    assert.equal(await a.call('zajUpisi'), false);
+    assert.equal(await a.call('zajObrisi'), false);
+  });
+});
