@@ -142,6 +142,49 @@ begin
   end loop;
 end $$;
 
+-- 2b. FUNKCIJA KOJA JE OSTALA BEZ POSLA.
+--
+-- Kad se dvojnik okidača ukloni (2a), funkcija koju je zvao ostaje u bazi bez
+-- ijednog korisnika. `inventar.sql` je i dalje prijavljuje kao NEPOZNATO, i s
+-- pravom: postoji, a nijedan fajl je ne opisuje.
+--
+-- Briše se SAMO ako je stvarno niko ne koristi — a to Postgres zna sam.
+-- Gleda se `pg_depend`, ne spisak okidača: funkcija može da visi i na
+-- podrazumevanoj vrednosti kolone, u pogledu ili u ograničenju, i nijedno od
+-- toga se ne vidi kroz `pg_trigger`. Ako se bilo šta oslanja na nju, ostaje i
+-- javi se — bolje da inventar ima jedan red viška nego da nešto tiho pukne.
+--
+-- Imenom se ne bira šta se briše: uzimaju se sve funkcije u `public` koje
+-- nijedan fajl u supabase/ ne pravi, koje vraćaju `trigger`, i koje niko ne
+-- koristi. Zato ovo radi i za sledeći takav ostatak, ne samo za ovaj jedan.
+do $$
+declare r record; v_zavisi int;
+begin
+  for r in
+    select p.oid, p.proname
+      from pg_proc p
+      join pg_type t on t.oid = p.prorettype
+     where p.pronamespace = 'public'::regnamespace
+       and t.typname = 'trigger'
+       and p.proname not in (
+         'user_state_touch','user_state_zapamti','ai_posao_dodirni','ai_posao_nov',
+         'ai_posao_prelaz','push_pretplata_dodirni','zajednica_profil_dodirni')
+  loop
+    select count(*) into v_zavisi
+      from pg_depend d
+     where d.refobjid = r.oid
+       and d.deptype <> 'i'
+       and d.classid <> 'pg_proc'::regclass;
+
+    if v_zavisi = 0 then
+      execute format('drop function public.%I()', r.proname);
+      raise notice 'uklonjena funkcija bez posla: % (nijedan okidač, pogled ni podrazumevana vrednost je ne koristi)', r.proname;
+    else
+      raise warning 'funkcija % NIJE uklonjena — nešto se još oslanja na nju (% zavisnosti)', r.proname, v_zavisi;
+    end if;
+  end loop;
+end $$;
+
 -- 3. RLS
 alter table public.user_state enable row level security;
 

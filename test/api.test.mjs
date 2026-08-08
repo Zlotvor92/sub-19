@@ -2375,3 +2375,66 @@ describe('SQL koji opisuje zatečenu tabelu popravlja i ograničenja, ne samo ko
       'petlja bi obrisala okidač istorije iz istorija.sql');
   });
 });
+
+/* ČIŠĆENJE OSTATAKA — najopasniji korak u celom folderu.
+
+   `user-state.sql` briše okidače-dvojnike i funkcije bez posla. To je jedino
+   mesto koje nešto UKLANJA, pa je i jedino gde greška može da odnese nešto
+   tuđe. Dve zaštite se ovde mere:
+
+     1. spisak izuzetaka mora da poznaje SVAKU funkciju okidača koju
+        repozitorijum pravi — inače bi puštanje ovog fajla pre fajla koji pravi
+        njen okidač obrisalo funkciju koja tu legitimno pripada;
+     2. odluka se donosi po ZAVISNOSTIMA (`pg_depend`), ne po spisku okidača:
+        funkcija može da visi i na podrazumevanoj vrednosti kolone, u pogledu
+        ili u ograničenju, i nijedno se ne vidi kroz `pg_trigger`. */
+describe('Čišćenje ostataka ne sme da odnese ništa što se koristi', () => {
+  const US = readRepoFile('supabase/user-state.sql');
+  const SQL = readdirSync(join(ROOT, 'supabase'))
+    .filter(f => f.endsWith('.sql') && f !== 'inventar.sql' && f !== 'provera.sql')
+    .map(f => readFileSync(join(ROOT, 'supabase', f), 'utf8')).join('\n');
+
+  /* Funkcija okidača = ona koju neki `create trigger` u folderu poziva. */
+  const funkcijeOkidaca = [...new Set(
+    [...SQL.matchAll(/create trigger[\s\S]{0,200}?execute function public\.([a-z_]+)\(/g)].map(m => m[1])
+  )].sort();
+
+  test('svaka funkcija okidača iz fajlova je na spisku izuzetaka', () => {
+    assert.ok(funkcijeOkidaca.length >= 6, `nađeno premalo: ${funkcijeOkidaca}`);
+    const nema = funkcijeOkidaca.filter(f => !new RegExp(`'${f}'`).test(US));
+    assert.deepEqual(nema, [],
+      `user-state.sql bi ih obrisao kao „bez posla" ako se pusti pre njihovog fajla: ${nema}`);
+  });
+
+  test('spisak izuzetaka ne štiti ono što nijedan fajl ne pravi', () => {
+    /* Suprotan smer: ime ostane na spisku pošto je funkcija uklonjena, pa
+       čišćenje doveka zaobilazi nešto čega nema — i sledeći ostatak sa tim
+       imenom prođe nekažnjeno. */
+    const blok = /p\.proname not in \(([\s\S]*?)\)/.exec(US);
+    assert.ok(blok, 'nema spiska izuzetaka u user-state.sql');
+    const naSpisku = [...blok[1].matchAll(/'([a-z_]+)'/g)].map(m => m[1]);
+    const visak = naSpisku.filter(f => !funkcijeOkidaca.includes(f));
+    assert.deepEqual(visak, [], `na spisku a nijedan fajl ih ne pravi: ${visak}`);
+  });
+
+  test('odluka se donosi po zavisnostima, ne po spisku okidača', () => {
+    /* KOMENTARI SE SKIDAJU PRE PROVERE. Prva verzija ove tvrdnje je tražila
+       „pg_depend" kroz ceo fajl — a taj niz stoji i u komentaru iznad koda, pa
+       je zamka prolazila i kad je iz upita `pg_depend` zamenjen sa `pg_trigger`.
+       Uhvaćeno mutacijom: bez ovoga bi tvrdnja merila objašnjenje umesto koda. */
+    const kod = US.replace(/^\s*--.*$/gm, '');
+    assert.match(kod, /from pg_depend\b/,
+      'briše se po odsustvu okidača — funkcija na podrazumevanoj vrednosti kolone bi nestala');
+    assert.match(kod, /raise warning[^\n]*NIJE uklonjena/,
+      'funkcija koja se još koristi prolazi ćutke');
+  });
+
+  test('ništa se ne briše bezuslovno — svaki `drop` je iza provere', () => {
+    /* `drop policy if exists` i `drop trigger if exists` su normalni: odmah
+       ispod njih stoji `create`. Opasni su `drop function` i `drop trigger`
+       koji NEMAJU zamenu — oni smeju samo unutar `do $$ … end $$` bloka. */
+    const vanBlokova = US.replace(/do \$\$[\s\S]*?end \$\$;/g, '');
+    assert.doesNotMatch(vanBlokova, /drop function/i,
+      'drop function stoji van provere — obrisaće se bez obzira ko ga koristi');
+  });
+});
