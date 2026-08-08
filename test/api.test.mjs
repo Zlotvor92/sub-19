@@ -8,6 +8,7 @@ import { test, describe, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { createECDH, randomBytes } from 'node:crypto';
 import { ROOT, readRepoFile } from './harness.mjs';
 
 const ENV = {
@@ -1717,5 +1718,194 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
     stubIzazov(VLASNIK, { padne: true });
     const res = await zovi({ admin: 'izazov', tekst: 'Nesto sasvim novo' });
     assert.equal(res.code, 502);
+  });
+});
+
+/* OBJAVA — tekst mejla i push poruke kao parametar.
+
+   Do sada je tekst bio ugrađen u `telo()`, pa je svaka nova objava značila
+   prepisivanje te funkcije: stari tekst bi nestao i posle se ne bi znalo šta
+   je kome poslato. Ovde se meri ono što se pri toj promeni najlakše pokvari —
+   da pogrešno ime ne pošalje ništa, i da nastavak slanja ne pređe na drugi
+   tekst na pola posla. */
+describe('/api/broadcast — koji tekst se šalje', () => {
+  function stub(poslato) {
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/admin/users')) {
+        const page = +(u.match(/[?&]page=(\d+)/) || [])[1];
+        return jsonRes(page === 1 ? [{ email: 'a@t.rs' }, { email: 'b@t.rs' }] : []);
+      }
+      if (u.includes('/auth/v1/user')) return jsonRes({ id: 'u1', email: ENV.ADMIN_EMAIL });
+      if (u.includes('api.resend.com')) { poslato.push(JSON.parse(opt.body)); return jsonRes({ id: 'm' }); }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+  }
+  const zovi = async body => {
+    const { default: handler } = await import('../api/broadcast.js?t=' + Date.now() + Math.random());
+    const poslato = []; stub(poslato);
+    const res = makeRes();
+    await handler({ method: 'POST', headers: { authorization: 'Bearer tajna' }, body }, res);
+    return { res, poslato };
+  };
+
+  test('bez `poruka` ostaje uputstvo — stariji poziv ne menja značenje', async () => {
+    const { res } = await zovi({});
+    assert.equal(res.code, 200);
+    assert.equal(res.body.poruka, 'uputstvo');
+    assert.match(res.body.naslov, /uputstvo/i);
+  });
+
+  test('imenovana poruka menja i naslov i telo', async () => {
+    const { res, poslato } = await zovi({ posalji: true, poruka: 'zajednica' });
+    assert.equal(res.code, 200);
+    assert.equal(poslato.length, 2);
+    assert.match(poslato[0].subject, /Zajednica/);
+    assert.match(poslato[0].html, /Zajednica/);
+    assert.doesNotMatch(poslato[0].html, /uputstvo za aplikaciju/,
+      'telo je ostalo staro iako je naslov nov');
+  });
+
+  test('nepoznato ime NE ŠALJE NIŠTA — ni pod „pa vrati se na podrazumevano"', async () => {
+    /* Slanje pogrešnog teksta hiljadi ljudi se ne može opozvati, pa jedno
+       slovo u imenu mora da bude greška, a ne tiho slanje uputstva. */
+    const { res, poslato } = await zovi({ posalji: true, poruka: 'zajednicaa' });
+    assert.equal(res.code, 400);
+    assert.deepEqual(poslato, [], 'poslalo je uprkos nepoznatom imenu');
+    assert.ok(Array.isArray(res.body.poznate) && res.body.poznate.includes('zajednica'),
+      'greška ne kaže koja imena postoje');
+  });
+
+  test('odgovor vraća ime poruke, da nastavak ne pređe na drugi tekst', async () => {
+    /* Slanje ide u više poziva. Da se ime ne vraća, drugi poziv bi bez njega
+       poslao uputstvo ostatku ljudi — a prva polovina bi već imala objavu. */
+    const { res } = await zovi({ posalji: true, poruka: 'zajednica' });
+    assert.equal(res.body.poruka, 'zajednica');
+  });
+
+  test('suvi poziv pokazuje pravo telo, ne samo naslov', async () => {
+    const { res, poslato } = await zovi({ poruka: 'zajednica' });
+    assert.equal(res.body.probno, true);
+    assert.deepEqual(poslato, []);
+    assert.match(String(res.body.primer), /Zajednica/);
+    /* Ono što se u objavi obećava mora i da piše u njoj: da ništa od merenja
+       ne izlazi iz naloga. */
+    assert.match(String(res.body.primer), /HRV/);
+  });
+});
+
+/* JEDNOKRATNI PUSH SVIMA (/api/push {akcija:'objava'}).
+
+   Jutarnji podsetnik ide svima, ali uvek o planu. Ovo je isti obilazak
+   pretplata sa tekstom kao parametrom — i sa UŽOM kapijom: samo vlasnik,
+   nikad CRON_SECRET. Zakazan posao sme da pošalje podsetnik; ne sme svima da
+   pošalje proizvoljan tekst. */
+describe('/api/push {akcija:"objava"} — kapija i slanje', () => {
+  const IZVOR = readRepoFile('api/push.js');
+
+  /* Par ključeva SAMO ZA TEST — bez pravog para push telo ne može da se
+     šifruje, pa bi slanje „palo" iz razloga koji nema veze sa objavom.
+     Sama kriptografija se proverava u test/push.test.mjs, gde se poslato i
+     dešifruje; ovde je samo da petlja stigne do kraja. */
+  const VAPID = {
+    VAPID_PUBLIC_KEY: 'BKehPjxi6lJF9-yuESqsl5DQ8rqsfWJcvHnCKYrGqkn83dNsWyvT_ve7_R_HufZ8kqWf9rdUfPw9d9aKfW6Rda8',
+    VAPID_PRIVATE_KEY: 'MJ0ol-TwaRrXjQyblH4pmmsZSncM0Ig-pPQQziVb4WM',
+    VAPID_SUBJECT: 'mailto:a@b.c'
+  };
+  const b64u = b => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const pretplatnik = () => {
+    const e = createECDH('prime256v1'); e.generateKeys();
+    return { p256dh: b64u(e.getPublicKey()), auth: b64u(randomBytes(16)) };
+  };
+  beforeEach(() => { for (const k of Object.keys(VAPID)) process.env[k] = VAPID[k]; });
+  afterEach(() => { for (const k of Object.keys(VAPID)) delete process.env[k]; });
+
+  function stub(poslato, korisnik) {
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) return jsonRes(korisnik);
+      if (u.includes('push_pretplata')) {
+        if (opt && opt.method === 'DELETE') return jsonRes({});
+        if (/id=gt\./.test(u)) return jsonRes([]);
+        return jsonRes([
+          Object.assign({ id: 1, user_id: 'a', endpoint: 'https://push.example/1' }, pretplatnik()),
+          Object.assign({ id: 2, user_id: 'b', endpoint: 'https://push.example/2' }, pretplatnik())
+        ]);
+      }
+      if (u.startsWith('https://push.example/')) { poslato.push(u); return { ok: true, status: 201 }; }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+  }
+  const zovi = async (body, korisnik = { id: 'v', email: ENV.ADMIN_EMAIL, email_confirmed_at: '2026-01-01' }) => {
+    const { default: handler } = await import('../api/push.js?t=' + Date.now() + Math.random());
+    const poslato = []; stub(poslato, korisnik);
+    const res = makeRes();
+    await handler({ method: 'POST', headers: { authorization: 'Bearer t' }, body }, res);
+    return { res, poslato };
+  };
+
+  test('tuđ nalog dobija 404, ne 403 — i ne šalje ništa', async () => {
+    /* „Zabranjeno" je potvrda da putanja postoji. */
+    const { res, poslato } = await zovi({ akcija: 'objava', objava: 'zajednica', posalji: true },
+      { id: 'x', email: 'neko@drugi.rs', email_confirmed_at: '2026-01-01' });
+    assert.equal(res.code, 404);
+    assert.deepEqual(poslato, []);
+  });
+
+  test('NEPOTVRĐENA adresa vlasnika ne prolazi', async () => {
+    /* Supabase izda token sa nepotvrđenom adresom ako je Email provider
+       uključen a potvrda isključena — pa bi neko ko se registruje vlasnikovom
+       adresom, bez pristupa njoj, poslao obaveštenje svim korisnicima. */
+    const { res, poslato } = await zovi({ akcija: 'objava', objava: 'zajednica', posalji: true },
+      { id: 'v', email: ENV.ADMIN_EMAIL, email_confirmed_at: null, confirmed_at: null });
+    assert.equal(res.code, 404);
+    assert.deepEqual(poslato, []);
+  });
+
+  test('CRON_SECRET NE otvara objavu — samo jutarnji podsetnik', async () => {
+    const { default: handler } = await import('../api/push.js?t=' + Date.now() + Math.random());
+    const poslato = []; stub(poslato, { id: 'x', email: 'niko@t.rs' });
+    const res = makeRes();
+    await handler({ method: 'POST', headers: { authorization: 'Bearer ' + ENV.CRON_SECRET },
+      body: { akcija: 'objava', objava: 'zajednica', posalji: true } }, res);
+    assert.equal(res.code, 404, 'zakazan posao može svima da pošalje proizvoljan tekst');
+    assert.deepEqual(poslato, []);
+  });
+
+  test('bez `posalji` je suv poziv — pokaže tekst, ne pošalje', async () => {
+    const { res, poslato } = await zovi({ akcija: 'objava', objava: 'zajednica' });
+    assert.equal(res.code, 200);
+    assert.equal(res.body.probno, true);
+    assert.match(res.body.poruka.naslov, /Zajednica/);
+    assert.deepEqual(poslato, [], 'suv poziv je ipak poslao');
+  });
+
+  test('nepoznata objava ne šalje ništa', async () => {
+    const { res, poslato } = await zovi({ akcija: 'objava', objava: 'nema-je', posalji: true });
+    assert.equal(res.code, 400);
+    assert.deepEqual(poslato, []);
+    assert.ok(res.body.poznate.includes('zajednica'));
+  });
+
+  test('šalje svakom uređaju i vraća broj', async () => {
+    const { res, poslato } = await zovi({ akcija: 'objava', objava: 'zajednica', posalji: true });
+    assert.equal(res.code, 200);
+    assert.equal(res.body.poslato, 2);
+    assert.deepEqual(poslato.slice().sort(), ['https://push.example/1', 'https://push.example/2']);
+  });
+
+  test('nastavak ide po id-u, ne po poziciji u listi', async () => {
+    /* Pozicija bi se pomerila čim se između dva poziva prijavi nov uređaj, pa
+       bi tačno jedan čovek bio TIHO preskočen. */
+    assert.match(IZVOR, /id=gt\./, 'nastavak ne filtrira po id-u');
+    assert.doesNotMatch(IZVOR, /objavaSvima[\s\S]{0,900}?offset=/i,
+      'objava se nastavlja po pomeraju u listi');
+  });
+
+  test('objava ne gleda `najave` — to je raspored plana, ne pristanak', async () => {
+    /* „Danas nema treninga" nije razlog da čovek ne sazna da postoji nov
+       ekran. Ko obaveštenja ne želi, nema pretplatu pa ga ovde ni nema. */
+    const blok = /async function objavaSvima[\s\S]*?\n}/.exec(IZVOR)[0];
+    assert.doesNotMatch(blok, /najave/, 'objava se filtrira po rasporedu plana');
   });
 });

@@ -808,3 +808,78 @@ describe('Van mreže: pozivi ka Supabase-u ne smeju da bace', () => {
       `dodirnuta je tabela Zajednice bez pristanka: ${pozivi.join(', ')}`);
   });
 });
+
+/* TRAKA „NOVO: ZAJEDNICA".
+
+   Nov ekran koji niko ne otvori isto je što i nema ga. Mejl i push stižu samo
+   onome ko ih je uključio, pa traka u aplikaciji hvata ostale.
+
+   Ono što se ovde meri je jedino što traka može da pokvari: da se ne vraća
+   pošto je odgovoreno, i da se ne pokazuje ljudima kojima nije upućena. */
+describe('Traka o novom ekranu', () => {
+  const napravi = (opt = {}) => {
+    const a = loadApp({ now: DANAS });
+    if (opt.prijavljen !== false) prijavljen(a);
+    if (opt.firstRun !== undefined) a.evalIn(`S.ui.firstRun=${JSON.stringify(opt.firstRun)}`);
+    if (opt.novo !== undefined) a.evalIn(`S.ui.novo=${JSON.stringify(opt.novo)}`);
+    return a;
+  };
+  const traka = a => { a.call('renderDanas'); return /class="nban"/.test(a.evalIn('$("#pg-danas").innerHTML') || ''); };
+
+  test('starom, prijavljenom korisniku se pokaže', () => {
+    assert.equal(traka(napravi({ firstRun: '2026-06-01' })), true);
+  });
+
+  test('novom korisniku se NE pokazuje — njemu Zajednica nije novost', () => {
+    /* Ko je prvi put otvorio aplikaciju posle objave, zatekao je Zajednicu kao
+       postojeći deo. Traka „novo" o nečemu što oduvek postoji samo zbunjuje. */
+    const a = napravi({ firstRun: '2026-08-08' });
+    assert.equal(traka(a), false);
+  });
+
+  test('neprijavljenom se NE pokazuje — dugme bi vodilo na ekran koji nema', () => {
+    assert.equal(traka(napravi({ prijavljen: false, firstRun: '2026-06-01' })), false);
+  });
+
+  test('kad se odgovori, ne vraća se', () => {
+    const a = napravi({ firstRun: '2026-06-01' });
+    assert.equal(traka(a), true);
+    a.evalIn(`$("#nb-x").onclick()`);
+    assert.equal(a.evalIn('S.ui.novo'), 'zajednica');
+    assert.equal(traka(a), false, 'traka se vratila posle odgovora');
+  });
+
+  test('„Pogledaj" vodi na tab i takođe zatvara traku', () => {
+    const a = napravi({ firstRun: '2026-06-01' });
+    traka(a);
+    a.evalIn(`$("#nb-go").onclick()`);
+    assert.equal(a.evalIn('ACTIVE'), 'zajed');
+    assert.equal(a.evalIn('S.ui.novo'), 'zajednica');
+  });
+
+  test('odgovor preživi ponovno učitavanje — pamti se u stanju, ne u promenljivoj', () => {
+    const a = napravi({ firstRun: '2026-06-01' });
+    traka(a);
+    a.evalIn(`$("#nb-x").onclick()`);
+    const snimljeno = JSON.parse(a.evalIn(`localStorage.getItem(LS_KEY)`));
+    assert.equal(snimljeno.ui.novo, 'zajednica', 'odgovor nije upisan u localStorage');
+  });
+
+  test('ključ je IME OBJAVE, ne broj verzije', () => {
+    /* Da se pamtila verzija, traka bi se vratila pri sledećem ažuriranju iako
+       je već pročitana. */
+    const a = napravi({ firstRun: '2026-06-01', novo: 'zajednica' });
+    assert.equal(traka(a), false);
+    assert.doesNotMatch(readRepoFile('app.js').match(/const NOVOST = \{[\s\S]*?\};/)[0],
+      /APP_VERSION|verzij/i, 'traka se pamti po verziji');
+  });
+
+  test('tekst trake obećava isto što i politika privatnosti', () => {
+    /* „Uključuje se ručno" mora da bude istina i u kodu — v. S.zajed.vidljiv. */
+    const src = readRepoFile('app.js');
+    const nov = /const NOVOST = \{[\s\S]*?\};/.exec(src)[0];
+    assert.match(nov, /isključen|ručno/i, 'traka ne kaže da je Zajednica podrazumevano isključena');
+    const a = napravi({ firstRun: '2026-06-01' });
+    assert.equal(a.evalIn('S.zajed.vidljiv'), false);
+  });
+});

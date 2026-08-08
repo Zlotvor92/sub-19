@@ -19,6 +19,7 @@
      POST  {akcija:'najave',  najave}             korisnikov token   osveži najave
      POST  {akcija:'proba'}                       korisnikov token   pošalji sebi
      POST  {akcija:'posalji', userId, …}          CRON_SECRET        pošalji kome god
+     POST  {akcija:'objava',  objava, posalji}    vlasnikov token    jednokratno svima
      GET   (bez zaglavlja)                        —                  vrati javni ključ
      GET   (Authorization: CRON_SECRET)           Vercel Cron        jutarnji podsetnik
 
@@ -339,6 +340,101 @@ async function jutarnjiPodsetnik() {
   return { ok: true, danas, ukupno, poslato, preskoceno, palo, stalo };
 }
 
+/* --------------------------------------------------------------------------
+   JEDNOKRATNA OBJAVA SVIMA (akcija:'objava')
+
+   Jutarnji podsetnik ide svima, ali uvek sa istim tekstom i samo o planu.
+   Za „dodat je novi tab" nije bilo puta osim ručnog kucanja koda, pa je ovo
+   isti obilazak pretplata sa tekstom kao parametrom.
+
+   ZAŠTO NE NOVA FUNKCIJA: Vercel Hobby plan dozvoljava 12 serverless
+   funkcija po deployu, a već ih je devet. Push kriptografija je ovde i sme
+   da postoji samo na jednom mestu (v. zaglavlje fajla).
+
+   KAPIJA: SAMO VLASNIK, nikad CRON_SECRET — isto pravilo kao za
+   administratorske radnje u broadcast.js. Zakazan posao sme da pošalje
+   jutarnji podsetnik; ne sme da svima pošalje proizvoljan tekst.
+
+   ŠALJE SE SVAKOM UREĐAJU, ne svakom čoveku: ko je aplikaciju instalirao na
+   telefon i tablet, dobija je na oba. Isto radi i jutarnji podsetnik.
+
+   `najave` se NE gleda. To je raspored plana po danima — „danas nema
+   treninga" nije razlog da čovek ne sazna da postoji nov ekran. Ko obaveštenja
+   uopšte ne želi, nema pretplatu i ovde ga nema.
+
+   NASTAVAK IDE PO id-u: slanje na 5000 uređaja ne stane u jedan poziv, pa se
+   vraća `sledeciPosle` — poslednji obrađen id. Nov uređaj koji se u međuvremenu
+   prijavi ima veći id, tako da se niko ne preskoči ni ne dobije dva puta.
+   Zato baš id, a ne pozicija u listi. */
+/* Vlasnik se proverava ISTO kao u broadcast.js, i namerno se ne oslanja na
+   `requireUser`: taj kes pamti id i mejl, ali ne i to da li je adresa
+   POTVRĐENA. Supabase izda token sa nepotvrđenom adresom ako je Email provider
+   uključen a potvrda isključena — pa bi neko ko se registruje vlasnikovom
+   adresom, bez pristupa njoj, mogao da pošalje obaveštenje svim korisnicima.
+   Kod je prepisan, ne uvezen: api/*.js se namerno ne uvoze međusobno
+   (v. zaglavlje analyze.js) — deploy ide preko GitHub web editora, bez build
+   koraka. */
+async function vlasnikIz(req) {
+  const admin = String(process.env.ADMIN_EMAIL || process.env.REPORT_TO || '').trim().toLowerCase();
+  const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
+  if (!admin || !url || !anon) return null;
+  const m = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || req.headers.Authorization || '').trim());
+  if (!m) return null;
+  try {
+    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
+      headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
+    });
+    if (!r.ok) return null;
+    const u = await r.json();
+    if (!u || !u.email || !(u.email_confirmed_at || u.confirmed_at)) return null;
+    return String(u.email).trim().toLowerCase() === admin ? u : null;
+  } catch (e) { return null; }
+}
+
+const OBJAVE = {
+  zajednica: {
+    naslov: 'Novo u SUB-20: Zajednica',
+    telo: 'Nedeljni izazov i tabela sa ostalima. Uključuje se ručno — otvori da vidiš.',
+    url: './?tab=zajed',
+    oznaka: 'objava-zajednica'
+  }
+};
+
+async function objavaSvima(imeObjave, posle) {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return { error: 'SUPABASE_SERVICE_ROLE_KEY nije podešen.' };
+  const poruka = Object.prototype.hasOwnProperty.call(OBJAVE, imeObjave) ? OBJAVE[imeObjave] : null;
+  if (!poruka) return { error: 'Nepoznata objava: ' + imeObjave, poznate: Object.keys(OBJAVE) };
+
+  const kraj = Date.now() + PODSETNIK_ROK_MS;
+  const PO = 200;
+  let poslato = 0, palo = 0, ukupno = 0, stalo = false, zadnji = posle || null;
+
+  for (let strana = 0; strana < 50; strana++) {
+    const filtar = zadnji ? '&id=gt.' + encodeURIComponent(zadnji) : '';
+    const r = await fetch(sbURL(TABELA + '?select=id,user_id,endpoint,p256dh,auth&order=id.asc&limit=' + PO + filtar), {
+      headers: servisGlava()
+    });
+    if (!r.ok && r.status !== 206) return { error: 'Čitanje pretplata nije uspelo (' + r.status + ').' };
+    const red = await r.json();
+    const lista = Array.isArray(red) ? red : [];
+    ukupno += lista.length;
+
+    for (const p of lista) {
+      if (Date.now() > kraj) { stalo = true; break; }
+      const ishod = await posaljiJednoj(p, poruka, process.env);
+      if (ishod.ok) poslato++;
+      else { palo++; if (ishod.mrtva) await obrisiPretplatu(p.id); }
+      /* Kursor je POSLEDNJI OBRAĐEN, ne poslednji uspešan: uređaj koji je push
+         servis odbio neće proći ni sledeći put, a da ostane u kursoru, svaki
+         naredni poziv bi zauvek počinjao od njega. */
+      zadnji = p.id;
+    }
+    if (stalo || lista.length < PO) break;
+  }
+  return { ok: true, objava: imeObjave, ukupno, poslato, palo, stalo,
+           sledeciPosle: stalo ? zadnji : null };
+}
+
 /* ==========================================================================
    4. RUKOVALAC
    ========================================================================== */
@@ -377,6 +473,26 @@ export default async function handler(req, res) {
       tiho: !!body.tiho
     });
     res.status(200).json(Object.assign({ ok: true }, ishod));
+    return;
+  }
+
+  /* --- jednokratna objava svima: samo vlasnik --- */
+  if (akcija === 'objava') {
+    const vlasnik = await vlasnikIz(req);
+    /* 404, ne 403: „zabranjeno" je potvrda da putanja postoji. Isto kao u
+       broadcast.js. */
+    if (!vlasnik) { res.status(404).json({ error: 'Ne postoji.' }); return; }
+    const ime = String(body.objava || '');
+    /* Suv test kao u broadcast.js: bez `posalji:true` samo pokaže tekst. */
+    if (body.posalji !== true) {
+      const p = Object.prototype.hasOwnProperty.call(OBJAVE, ime) ? OBJAVE[ime] : null;
+      if (!p) { res.status(400).json({ error: 'Nepoznata objava: ' + ime, poznate: Object.keys(OBJAVE) }); return; }
+      res.status(200).json({ probno: true, objava: ime, poruka: p,
+        napomena: 'Ništa nije poslato. Ponovi poziv sa {"posalji":true} da stvarno pošalješ.' });
+      return;
+    }
+    const ishod = await objavaSvima(ime, body.posle);
+    res.status(ishod.error ? (ishod.poznate ? 400 : 502) : 200).json(ishod);
     return;
   }
 

@@ -13,6 +13,10 @@
    SUV TEST: bez `posalji: true` samo prebroji primaoce i vrati primer mejla,
    ne šalje ništa. Uvek prvo tako.
 
+   KOJI TEKST: `{"poruka":"zajednica"}` — spisak je u `PORUKE`. Bez tog polja
+   ide „uputstvo", jedini tekst koji je pre postojao. Nepoznato ime vraća 400
+   sa spiskom poznatih; ne šalje se ništa.
+
    Vercel Environment Variables (sve već postoje zbog daily-report):
    CRON_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY,
    REPORT_FROM */
@@ -424,25 +428,57 @@ async function sviKorisnici(url, key) {
 
 const BAZA = 'https://sub-19.vercel.app';
 
-function telo() {
+/* PORUKE — tekst mejla je PARAMETAR, ne ugrađen tekst.
+
+   Prvo je bila jedna `telo()` funkcija sa tekstom o uputstvu. Za svaku sledeću
+   objavu trebalo je prepisati tu funkciju i deployovati — a stari tekst bi tim
+   prepisivanjem nestao, pa se posle ne bi znalo šta je kome poslato. Sada je
+   svaka objava imenovan zapis koji ostaje i posle sledeće.
+
+   NEPOZNATO IME JE GREŠKA, NE POVRATAK NA PODRAZUMEVANO. Slanje pogrešnog
+   teksta svima se ne može opozvati; jedno slovo u imenu ne sme da bude razlika
+   između „objava o Zajednici" i „opet uputstvo".
+
+   `poruka` mora da se PONOVI pri nastavku (v. `sledeciPosle`): slanje ide u
+   više poziva, pa bi izostavljanje značilo da prva polovina ljudi dobije jedan
+   tekst a druga drugi. Zato se vraća u odgovoru. */
+const PORUKE = {
+  uputstvo: {
+    naslov: 'SUB-20 — uputstvo: kako se koriste sve funkcije',
+    zaglavlje: 'SUB-20 — uputstvo za aplikaciju',
+    pasusi: [
+      'Napisao sam detaljno uputstvo: kako se pravi plan, šta znači koja kartica u Progresu, kako rade Strava i intervals.icu, i kako se treninzi šalju direktno na sat.',
+      'Tu su i rešenja za stvari koje najviše zbunjuju — na primer zašto na satu ume da piše „No Target" i šta se tačno radi u tom slučaju.'
+    ],
+    dugme: { tekst: 'Otvori uputstvo', put: '/uputstvo.html' }
+  },
+  zajednica: {
+    naslov: 'SUB-20 — novo: Zajednica',
+    zaglavlje: 'SUB-20 — novi tab „Zajednica"',
+    pasusi: [
+      'Dodao sam tab Zajednica: nedeljni izazov, tabela sa ostalima koji trče po planu i znamenja za odrađene nedelje.',
+      'Uključuje se ručno i podrazumevano je isključena. Kad je uključiš, drugi vide samo nadimak, sliku, pređene kilometre i broj urađenih treninga. HRV, puls u miru, san, težina, mapa bolova, beleške sa treninga i tvoja e-adresa ne izlaze iz naloga ni tada — to nije podešavanje nego je tako napisano.',
+      'Uključuje se u Podešavanja → App → Zajednica. Ako te ne zanima, ne moraš ništa da uradiš — sve ostaje kao do sada.'
+    ],
+    dugme: { tekst: 'Otvori aplikaciju', put: '/' }
+  }
+};
+
+function telo(p) {
+  const pasusi = p.pasusi.map((t, i) =>
+    `    <p style="color:#9C9CA8;font-size:15px;line-height:1.6;margin:${i ? 14 : 16}px 0 0">${t}</p>`
+  ).join('\n');
   return `<!doctype html><html><body style="margin:0;padding:0;background:#0A0A0F">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0F">
 <tr><td align="center" style="padding:28px 16px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#16161D;border-radius:16px;padding:26px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif">
   <tr><td>
-    <div style="font-size:20px;font-weight:800;color:#F5F5F7;letter-spacing:-.3px">SUB-20 — uputstvo za aplikaciju</div>
-    <p style="color:#9C9CA8;font-size:15px;line-height:1.6;margin:16px 0 0">
-      Napisao sam detaljno uputstvo: kako se pravi plan, šta znači koja kartica u Progresu,
-      kako rade Strava i intervals.icu, i kako se treninzi šalju direktno na sat.
-    </p>
-    <p style="color:#9C9CA8;font-size:15px;line-height:1.6;margin:14px 0 0">
-      Tu su i rešenja za stvari koje najviše zbunjuju — na primer zašto na satu ume da piše
-      „No Target" i šta se tačno radi u tom slučaju.
-    </p>
+    <div style="font-size:20px;font-weight:800;color:#F5F5F7;letter-spacing:-.3px">${p.zaglavlje}</div>
+${pasusi}
     <div style="margin:26px 0 8px">
-      <a href="${BAZA}/uputstvo.html"
+      <a href="${BAZA}${p.dugme.put}"
          style="display:inline-block;background:#FF2D55;color:#fff;text-decoration:none;
-                font-weight:800;font-size:15px;padding:14px 26px;border-radius:12px">Otvori uputstvo</a>
+                font-weight:800;font-size:15px;padding:14px 26px;border-radius:12px">${p.dugme.tekst}</a>
     </div>
     <p style="color:#7A7A86;font-size:12px;line-height:1.6;margin:22px 0 0">
       Dobijaš ovo jer imaš nalog u SUB-20. Ovo je jednokratno obaveštenje, ne bilten —
@@ -457,8 +493,6 @@ function telo() {
 </td></tr></table>
 </body></html>`;
 }
-
-const NASLOV = 'SUB-20 — uputstvo: kako se koriste sve funkcije';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Samo POST.' }); return; }
@@ -499,6 +533,16 @@ export default async function handler(req, res) {
   /* probno slanje samo na navedene adrese — da vidiš kako mejl izgleda u sandučetu */
   const samoNa = Array.isArray(body.samoNa) ? body.samoNa.map(x => String(x).toLowerCase()) : null;
 
+  /* Bez `poruka` ostaje uputstvo — jedini tekst koji je do sada postojao, pa
+     stariji poziv u toku ne menja značenje. Pogrešno ime staje ODMAH. */
+  const imePoruke = body.poruka === undefined ? 'uputstvo' : String(body.poruka);
+  const poruka = Object.prototype.hasOwnProperty.call(PORUKE, imePoruke) ? PORUKE[imePoruke] : null;
+  if (!poruka) {
+    res.status(400).json({ error: 'Nepoznata poruka: ' + imePoruke, poznate: Object.keys(PORUKE) });
+    return;
+  }
+  const NASLOV = poruka.naslov;
+
   let svi;
   try { svi = await sviKorisnici(url, srv); }
   catch (e) { res.status(502).json({ error: e.message }); return; }
@@ -507,7 +551,7 @@ export default async function handler(req, res) {
   if (!posalji) {
     res.status(200).json({
       probno: true, primalaca: svi.length, primaoci: svi,
-      naslov: NASLOV,
+      poruka: imePoruke, naslov: NASLOV, primer: telo(poruka),
       napomena: 'Ništa nije poslato. Ponovi poziv sa {"posalji":true} da stvarno pošalješ.'
     });
     return;
@@ -550,7 +594,7 @@ export default async function handler(req, res) {
     /* stari oblik: pozicija u listi. Zadržan samo da poziv u toku ne pukne. */
     : svi.slice(Math.max(0, Math.min(Number(body.od) || 0, svi.length)));
 
-  const html = telo();
+  const html = telo(poruka);
   const uspelo = [], palo = [];
   let i = 0;
   for (; i < primaoci.length; i++) {
@@ -593,6 +637,8 @@ export default async function handler(req, res) {
     /* nastavak: null = gotovo je; adresa = pozovi ponovo sa
        {"posalji":true,"posle":"<ta adresa>"} */
     ukupno: svi.length,
+    /* `poruka` se vraća da bi nastavak slao ISTI tekst — v. komentar uz PORUKE. */
+    poruka: imePoruke,
     sledeciPosle,
     sledeciOd
   });

@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='225'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='226'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -297,7 +297,7 @@ function seedState(){return {
     istorija su do sada bili iskljucivo licni, pa niko ne sme da se nadje na
     javnom spisku zato sto je azurirao aplikaciju. */
  zajed:{vidljiv:false,nadimak:''},
- ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null}
+ ui:{firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null,novo:null}
 };}
 
 /* POTPIS ZATECENOG SEEDA — SAMO IDENTIFIKATORI, bez ijednog licnog podatka.
@@ -915,7 +915,7 @@ function migrate(o){
   o.knee=cistBrojPolje(cistDatirane(o.knee), 'pain', 0, 10);
   o.kg=cistBrojPolje(cistDatirane(o.kg), 'kg', 20, 300);
   o.vreme=(o.vreme&&typeof o.vreme==='object'&&o.vreme.sati&&typeof o.vreme.sati==='object')?o.vreme:null;
-  o.t3k=o.t3k||[];o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.zajed=Object.assign({vidljiv:false,nadimak:''},(o.zajed&&typeof o.zajed==='object')?o.zajed:{});o.zajed.vidljiv=o.zajed.vidljiv===true;o.zajed.nadimak=typeof o.zajed.nadimak==='string'?o.zajed.nadimak.slice(0,24):'';o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null},o.ui||{});
+  o.t3k=o.t3k||[];o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.zajed=Object.assign({vidljiv:false,nadimak:''},(o.zajed&&typeof o.zajed==='object')?o.zajed:{});o.zajed.vidljiv=o.zajed.vidljiv===true;o.zajed.nadimak=typeof o.zajed.nadimak==='string'?o.zajed.nadimak.slice(0,24):'';o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null,novo:null},o.ui||{});
   o.v=SCHEMA;
   return o;
 }
@@ -2712,6 +2712,43 @@ function setPage(p){
   window.scrollTo(0,0);
 }
 
+/* ---------- TRAKA O NOVOM ----------
+
+   Nov ekran koji niko ne otvori isto je što i nema ga. Mejl i push stižu samo
+   onome ko ih je uključio, pa ovo hvata ostale — u aplikaciji, jednom.
+
+   KLJUČ JE IME OBJAVE, NE BROJ VERZIJE. Da se pamtila verzija, traka bi se
+   vratila pri sledećem ažuriranju iako je već pročitana.
+
+   NE POKAZUJE SE:
+     — novom korisniku (`firstRun` posle objave): njemu Zajednica nije novost
+       nego zatečeno stanje, a traka „novo" o nečemu što oduvek postoji samo
+       zbunjuje;
+     — neprijavljenom: Zajednica traži nalog, pa bi dugme vodilo na ekran koji
+       za njega ne postoji.
+
+   Kad prođe, `NOVOST` se postavi na `null` i traka nestaje svima. */
+const NOVOST = {
+  kljuc: 'zajednica',
+  od: '2026-08-08',
+  naslov: 'Novo: Zajednica',
+  tekst: 'Nedeljni izazov i tabela sa ostalima koji trče po planu. Uključuje se ručno — podrazumevano je isključena.',
+  dugme: 'Pogledaj'
+};
+function novostZaPrikaz(){
+  if(!NOVOST) return null;
+  if(!sbAuthed()) return null;
+  if(S.ui&&S.ui.novo===NOVOST.kljuc) return null;
+  const prvi=S.ui&&S.ui.firstRun;
+  if(prvi&&String(prvi)>=NOVOST.od) return null;
+  return NOVOST;
+}
+function novostVidjena(){
+  if(!NOVOST) return;
+  if(S.ui) S.ui.novo=NOVOST.kljuc;
+  save();
+}
+
 /* ---------- DANAS ---------- */
 function renderDanas(){
   const el=$('#pg-danas');
@@ -2720,6 +2757,12 @@ function renderDanas(){
   /* Predlog, ne prinuda: plan koji gleda nije njegov, ali ima unose na njemu. */
   if(tudjPlanSaUnosima())h+=`<div class="kb warn"><div style="flex:1"><div>Ovo nije tvoj plan</div><small>Gledaš ugrađeni plan sa tuđim datumom trke i tuđim tempom. Napravi svoj — postojeći unosi ostaju sačuvani u backup-u.</small></div><button id="tp-gen" style="color:var(--amber);font-weight:800;font-size:.8rem;padding:6px 10px;white-space:nowrap">Napravi svoj</button></div>`;
   if(backupDue(TODAY))h+=`<div class="bban"><span style="flex:1">Uradi backup podataka.</span><button id="bb-do">Izvezi</button><button id="bb-later" style="color:var(--txt3)">Kasnije</button></div>`;
+  const nov=novostZaPrikaz();
+  /* Tekst objave stoji u kodu, ne u podacima — `esc` je svejedno tu, da se
+     pravilo „ništa ne ide u HTML neescapovano" ne lomi na izuzetku koji sutra
+     neko preslika na polje koje jeste iz podataka. */
+  if(nov)h+=`<div class="nban"><div class="nb-t"><b>${esc(nov.naslov)}</b><small>${esc(nov.tekst)}</small></div>
+    <div class="nb-d"><button id="nb-go">${esc(nov.dugme)}</button><button id="nb-x" aria-label="Zatvori">Sakrij</button></div></div>`;
   h+=`<div class="hero">
     <div class="card accent"><div class="big">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
     <div class="card"><div class="big" style="color:var(--green)">${st}</div><div class="big-sub">${plDan(st)} po planu</div><div class="big-sub" style="color:var(--txt3)">🔥 streak</div></div>
@@ -2747,6 +2790,13 @@ function renderDanas(){
   const b1=$('#bb-do'),b2=$('#bb-later');
   if(b1)b1.onclick=exportBackup;
   if(b2)b2.onclick=()=>{S.ui.snooze=addD(TODAY,7);save();renderDanas();};
+  /* Oba dugmeta zatvaraju traku zauvek: i „video sam" i „ne zanima me" su
+     odgovor. Traka koja se vraća posle odgovora je greška, ne podsetnik. */
+  if(nov){
+    const g=$('#nb-go'),x=$('#nb-x');
+    if(g)g.onclick=()=>{novostVidjena();setPage('zajed');};
+    if(x)x.onclick=()=>{novostVidjena();renderDanas();};
+  }
 }
 function nextLine(from){
   const nx=DATED.find(x=>x.date>from&&!x.rest);
