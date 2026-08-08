@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='238'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='239'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2258,14 +2258,35 @@ function vdotPredlog(today){
   if(!changes.length) return null;
 
   const brzi = f.delta > 0;
+  /* SMER SE BROJI PO IZMENAMA, NE POGAĐA IZ JEDNOG ZNAKA.
+     Ranije: `brzi` je bio jedan globalni znak (`f.delta > 0`), a broj sekundi
+     prosek APSOLUTNIH razlika — pa je kartica umela da napiše „7 treninga
+     dobija tempo brži za oko 11 s/km" iznad spiska u kom su tri stavke
+     sporije. Pojedinačne izmene se računaju po zoni svakog dana, pa se za
+     različite zone razlikuju i po znaku; prosek apsolutnih vrednosti taj
+     razlaz sakrije, a spisak ispod ga odmah pokaže.
+
+     Sada se broji: koliko ubrzava, koliko usporava, i koliki je prosek u
+     svakoj grupi. Izmene se NE izbacuju — svaka je za svoj dan ispravna
+     (novi cilj je `paceForZone(forma, zona)` tog dana); netačan je bio samo
+     sažetak. Kartica i spisak sada govore isto. */
+  const brzih   = changes.filter(c => c.novo < c.staro);
+  const sporijih= changes.filter(c => c.novo > c.staro);
+  const prosek  = n => Math.round(n.reduce((s,c)=>s+Math.abs(c.novo-c.staro),0)/n.length);
   const sek = Math.round(changes.reduce((s,c)=>s+Math.abs(c.novo-c.staro),0)/changes.length);
+  const opisIzmena = (brzih.length && sporijih.length)
+    ? changes.length + ' preostalih kvalitetnih treninga menja ciljni tempo: ' +
+      brzih.length + ' ' + (brzih.length===1?'brži':'brže') + ' za oko ' + prosek(brzih) + ' s/km, ' +
+      sporijih.length + ' ' + (sporijih.length===1?'sporiji':'sporije') + ' za oko ' + prosek(sporijih) +
+      ' s/km (tempo se računa po zoni svakog dana, pa se smer po danima ume razlikovati)'
+    : changes.length + ' preostalih kvalitetnih treninga dobija ciljni tempo ' +
+      (brzih.length ? 'brži' : 'sporiji') + ' za oko ' + sek + ' s/km';
   return {
-    ...f, changes, brzi,
+    ...f, changes, brzi, brzih:brzih.length, sporijih:sporijih.length,
     title: brzi ? 'Forma je ispred plana' : 'Forma je iza plana',
-    message: 'Tvoj VDOT je ' + f.forma.toFixed(1) + ', a preostali deo plana računa tempo po VDOT-u ' +
+    message: 'Tvoj VDOT je ' + f.forma.toFixed(1) + ', a plan za ovu nedelju računa tempo po VDOT-u ' +
       f.planVdot.toFixed(1) + ' — razlika ' + (f.delta>0?'+':'') + f.delta.toFixed(1) +
-      ' poena, iz ' + f.merenja + ' izmerenih sesija. Predlog: ' + changes.length +
-      ' preostalih kvalitetnih treninga dobija ciljni tempo ' + (brzi?'brži':'sporiji') + ' za oko ' + sek + ' s/km. ' +
+      ' poena, iz ' + f.merenja + ' izmerenih sesija. Predlog: ' + opisIzmena + '. ' +
       'Obim se NE menja — VDOT određuje tempo, ne koliko se trči. ' +
       (brzi
         ? 'Ako ti nov tempo deluje preteško na terenu, vrati ga — jedna dobra sesija ume da preceni formu.'
@@ -5449,13 +5470,54 @@ function planVdotZaNedelju(meta, w){
    što je i tačno, jer plan ne očekuje različitu formu u utorak i u četvrtak.
    Unet tempo se ovim NE dira: „ostvareno" se računa iz `S.pred[r.id]` u
    `predCalc`, a `p5k` se koristi isključivo za sivu liniju (v. `chartPred`). */
+/* SESIJE ČIJI JE PROPIS IZVEDEN IZ CILJA, NE IZ FORME TE NEDELJE.
+
+   Ovima tempo NIJE `paceForZone(vdotW, zona)` — dakle ono što plan očekuje ove
+   nedelje — nego `racePace`, a `racePace` se računa iz predikcije za DAN TRKE.
+   Propisati ih tako je ispravno i to je smisao specifičnog bloka (Daniels:
+   „M pace = goal marathon pace"). Greška je čitati ih UNAZAD kao merenje: kad
+   je `paceForZone(v,'M')` po definiciji tempo maratona za VDOT v, njegov inverz
+   nad ciljnim tempom vraća tačno `vdotGoal` — svaki put, identično.
+
+   Izmereno na maratoncu koji svaku sesiju odradi TAČNO kako piše: prva
+   `Progresivno (tempo trke)` u N2 upiše 45.7 (= meta.vdotGoal) i podigne formu
+   za +1.3; na agresivnijim ulazima +2.2 i +2.4, uz prag koji aplikacija sama
+   koristi od 1.5. Lanac posle toga cika-cak: gore posle svake M sesije, dole
+   posle svake T. Predikcija se u drugoj nedelji priprema „popravi" za četiri
+   do dvanaest minuta, a trkač nije uradio ništa osim što je poslušao plan.
+
+   Nad svih 2304 scenarija otiska, odstupanje propisa od rampe te nedelje:
+
+     Tempo / Tempo isprekidan / Progresivno   [T]   najviše 0.3   — veran propis
+     Intervali / Fartlek / Piramida           [I]   najviše 2.6
+     Tempo trke                               [T]   medijana −1.1
+     Maratonski tempo                         [M]   do +4.2
+     Trkački ritam                            [I]   medijana −4.4
+     Progresivno (tempo trke)                 [M]   medijana +2.5, do +7.6
+
+   Zato se ne odlučuje po veličini odstupanja (isti tip sesije bi ispadao i
+   ulazio iz nedelje u nedelju) nego po POREKLU propisa. Isto obrazloženje koje
+   komentar iznad `predRow` već daje za intervalni klamp i za aktivaciju —
+   samo primenjeno i na treći potrošač istog podatka, lanac forme.
+
+   ŠTA SE NE GUBI: tempo se i dalje čuva, prikazuje i poredi sa propisom.
+   Merenja forme ostaju sve T, I i R sesije, čiji propis JESTE izveden iz rampe
+   te nedelje, i test na 3 km, koji je i inače najpouzdaniji ulaz u lanac.
+
+   `Kontrolna trka` NIJE ovde namerno: ona nema zonu (v. ZONE_FOR_KIND) i već
+   ide putanjom „trka na toj distanci", koja je za nju ispravna. */
+const KIND_IZ_CILJA = {
+  'Trkački ritam':1, 'Tempo trke':1, 'Progresivno (tempo trke)':1, 'Maratonski tempo':1
+};
 function predRow(w,tip,q,pt,raceDistM,refVdot){
   raceDistM=raceDistM||5000;
   const zone=ZONE_FOR_KIND[tip];
   const p5k = (refVdot!=null&&isFinite(refVdot))
     ? Math.round(raceTimeForVdot(refVdot,raceDistM))
     : (zone!=null ? Math.round(raceTimeForVdot(vdotFromPace(pt,zone),raceDistM)) : Math.round(riegelDist(pt*q, q*1000, raceDistM)));
-  return { w, l:'N'+w+' · '+tip, q, pt, p5k };
+  const red = { w, l:'N'+w+' · '+tip, q, pt, p5k };
+  if(KIND_IZ_CILJA[tip]) red.nemeri = true;
+  return red;
 }
 /* Predikcija i QS (Strava lap-detekcija) IZVEDENI iz trenutnog stanja sesija —
    pozivati posle bilo koje applyEdit, tako da oba ostanu dosledna izmeni

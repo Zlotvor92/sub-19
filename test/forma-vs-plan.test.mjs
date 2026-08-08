@@ -167,10 +167,16 @@ describe('Aktivacija pred trku', () => {
       assert.ok(plan && !plan.error, 'plan se nije napravio');
       const akt = plan.weeks.flatMap(w => w.days).filter(d => /aktivacija/.test(d.desc || ''));
       assert.equal(akt.length, 1, 'plan nema tačno jednu aktivaciju');
-      const nemeri = plan.pred.filter(r => r.nemeri);
-      assert.equal(nemeri.length, 1,
-        `aktivacija nije označena kao sesija koja ne meri formu (${nemeri.length} redova)`);
-      assert.match(nemeri[0].l, /Repeticije/);
+      /* Aktivacija je jedina REPETICIJA koja ne meri: obične repeticije su
+         propisane iz rampe te nedelje i moraju da ostanu merenje. (Sesije iz
+         KIND_IZ_CILJA su takođe `nemeri`, ali nijedna od njih nije Repeticije —
+         zato se broji baš u toj familiji.) */
+      const rep = plan.pred.filter(r => /Repeticije/.test(r.l));
+      const repNemeri = rep.filter(r => r.nemeri);
+      assert.equal(repNemeri.length, 1,
+        `aktivacija nije označena kao sesija koja ne meri formu (${repNemeri.length} od ${rep.length} Repeticija)`);
+      assert.equal(repNemeri[0], rep[rep.length - 1],
+        'označena je pogrešna repeticija — aktivacija je poslednja u planu');
     });
   }
 
@@ -230,7 +236,147 @@ describe('Aktivacija pred trku', () => {
 });
 
 /* ============================================================
-   4. ZAMKA NAD SAMOM ZAMKOM
+   4. SESIJE NA TEMPU TRKE NE MERE FORMU
+
+   `paceForZone(v,'M')` je po Danielsovoj definiciji tempo maratona za VDOT v.
+   M sesije su propisane na CILJNOM tempu, pa njihov inverz vraća tačno
+   `meta.vdotGoal` — svaki put, identično, ma koliko trkač danas bio daleko od
+   cilja. Izmereno: prva `Progresivno (tempo trke)` u N2 podiže formu za +1.3
+   (agresivniji ulazi: +2.2 i +2.4), uz prag koji aplikacija sama koristi od
+   1.5, i lanac posle toga cika-cak — gore posle svake M, dole posle svake T.
+   ============================================================ */
+describe('Propis izveden iz cilja se ne čita kao merenje', () => {
+  test('inverz M propisa JESTE ciljni VDOT — zato se i mora isključiti', () => {
+    /* Ovo nije provera popravke nego njenog RAZLOGA. Ako ova jednakost jednog
+       dana prestane da važi, isključivanje M sesija treba preispitati. */
+    const a = saPlanom(42195);
+    const meta = a.evalIn('JSON.parse(JSON.stringify(S.genPlan.meta))');
+    const mSesija = a.evalIn(`JSON.stringify(CUR_PRED.filter(function(r){
+      return ZONE_FOR_KIND[String(r.l).split(' · ')[1]]==='M'; }))`);
+    const redovi = JSON.parse(mSesija);
+    assert.ok(redovi.length, 'maratonski plan nema nijednu M sesiju');
+    for (const r of redovi) {
+      const izm = Math.round(a.call('vdotFromPace', r.pt, 'M') * 10) / 10;
+      assert.ok(Math.abs(izm - meta.vdotGoal) < 0.15,
+        `${r.l}: propis daje ${izm}, ciljni VDOT je ${meta.vdotGoal}`);
+    }
+  });
+
+  for (const [ime, m] of Object.entries(DIST)) {
+    test(`${ime}: sve sesije na tempu trke su označene kao „ne meri"`, () => {
+      const a = saPlanom(m);
+      const svi = a.evalIn(`JSON.stringify(CUR_PRED.map(function(r){
+        var tip=String(r.l).split(' · ')[1];
+        return {l:r.l,tip:tip,nemeri:!!r.nemeri,izCilja:!!KIND_IZ_CILJA[tip]}; }))`);
+      for (const r of JSON.parse(svi)) {
+        if (r.izCilja) assert.equal(r.nemeri, true, `${r.l} je propisan iz cilja a i dalje meri formu`);
+      }
+      /* I obrnuto: obične T sesije MORAJU da ostanu merenje, inače je lanac
+         forme ostao bez ijednog ulaza. */
+      const merne = JSON.parse(svi).filter(r => !r.nemeri);
+      assert.ok(merne.length >= 3, `ostalo je samo ${merne.length} sesija koje mere formu`);
+    });
+  }
+
+  test('maratonac koji radi tačno kako piše: M sesija ne pomera formu', () => {
+    const a = saPlanom(42195);
+    const svi = kvalitetni(a);
+    let prethodna = null;
+    const skokovi = [];
+    for (const d of svi.slice(0, 12)) {
+      if (!(d.pt > 0)) continue;
+      a.evalIn(`S.log[${JSON.stringify(d.id)}]={status:'done',km:(BY_ID[${JSON.stringify(d.id)}].km||0),runDate:'${d.date}'};
+                S.pred[${JSON.stringify(d.pid)}]=${d.pt};
+                recordVdot(${JSON.stringify(d.pid)}, ${d.pt}, '${d.date}', sessKind(BY_ID[${JSON.stringify(d.id)}]), false, BY_ID[${JSON.stringify(d.id)}]);`);
+      const f = a.call('currentVdot');
+      if (prethodna != null && f != null && /tempo trke|Maratonski tempo/.test(d.l))
+        skokovi.push({ l: d.l, skok: Math.round((f - prethodna) * 10) / 10 });
+      if (f != null) prethodna = f;
+    }
+    assert.ok(skokovi.length, 'u prvih 12 sesija nema nijedne M sesije');
+    for (const s of skokovi)
+      assert.equal(s.skok, 0, `${s.l} je pomerila formu za ${s.skok} poena`);
+  });
+
+  test('forma i dalje konvergira ka stvarnoj — isključenje nije ugasilo lanac', () => {
+    /* Najvažnija kontrola uz ovu popravku: ako se izbaci previše sesija, lanac
+       forme prestane da meri bilo šta. Trkač sa nepromenljivom stvarnom formom
+       mora da bude prepoznat, i dodir na dugme ne sme da promeni ishod. */
+    for (const m of [10000, 42195]) {
+      for (const prava of [44, 50]) {
+        const a = saPlanom(m);
+        for (const d of kvalitetni(a)) {
+          const zona = a.evalIn(`(function(){var r=CUR_PRED.find(function(x){return x.id===${JSON.stringify(d.pid)};});
+                                 return r?zoneForPredRow(r):null;})()`);
+          if (zona == null) continue;
+          const p = Math.round(a.call('paceForZone', prava, zona));
+          if (!(p > 0)) continue;
+          a.evalIn(`S.log[${JSON.stringify(d.id)}]={status:'done',km:(BY_ID[${JSON.stringify(d.id)}].km||0),runDate:'${d.date}'};
+                    S.pred[${JSON.stringify(d.pid)}]=${p};
+                    recordVdot(${JSON.stringify(d.pid)}, ${p}, '${d.date}', sessKind(BY_ID[${JSON.stringify(d.id)}]), false, BY_ID[${JSON.stringify(d.id)}]);`);
+        }
+        const f = a.call('currentVdot');
+        assert.ok(f != null && Math.abs(f - prava) <= 0.5,
+          `distanca ${m}, prava forma ${prava}: aplikacija je izmerila ${f}`);
+      }
+    }
+  });
+});
+
+/* ============================================================
+   5. KARTICA I SPISAK ISPOD NJE GOVORE ISTO
+
+   Smer je bio jedan globalni znak (`f.delta > 0`), a broj sekundi prosek
+   APSOLUTNIH razlika — pa je kartica pisala „7 treninga dobija tempo brži za
+   oko 11 s/km" iznad spiska u kom su tri stavke sporije.
+   ============================================================ */
+describe('Predlog tempa opisuje ono što zaista radi', () => {
+  test('kad spisak ide u oba smera, kartica navodi oba', () => {
+    let mesanih = 0, ukupno = 0;
+    for (const m of Object.values(DIST)) {
+      for (const odst of [-15, +20]) {
+        const a = saPlanom(m);
+        const nedelje = a.evalIn("CUR_PLAN.map(function(w){return w.start;})");
+        const svi = kvalitetni(a);
+        for (const s of nedelje) {
+          for (const d of svi) {
+            if (d.date < s || d.date > dodaj(s, 6) || !(d.pt > 0)) continue;
+            const p = d.pt + odst;
+            a.evalIn(`S.log[${JSON.stringify(d.id)}]={status:'done',km:(BY_ID[${JSON.stringify(d.id)}].km||0),runDate:'${d.date}'};
+                      S.pred[${JSON.stringify(d.pid)}]=${p};
+                      recordVdot(${JSON.stringify(d.pid)}, ${p}, '${d.date}', sessKind(BY_ID[${JSON.stringify(d.id)}]), false, BY_ID[${JSON.stringify(d.id)}]);`);
+          }
+          a.evalIn(`TODAY='${dodaj(s, 6)}';`);
+          const pr = a.call('vdotPredlog', dodaj(s, 6));
+          if (!pr) continue;
+          ukupno++;
+          const stvarnoBrzih = pr.changes.filter(c => c.novo < c.staro).length;
+          const stvarnoSporijih = pr.changes.filter(c => c.novo > c.staro).length;
+          assert.equal(pr.brzih, stvarnoBrzih);
+          assert.equal(pr.sporijih, stvarnoSporijih);
+          const predlogTekst = pr.message.split('Predlog: ')[1].split('. Obim')[0];
+          if (stvarnoBrzih && stvarnoSporijih) {
+            mesanih++;
+            assert.match(predlogTekst, /brže za oko/,
+              `mešan spisak (${stvarnoBrzih} brže / ${stvarnoSporijih} sporije), a kartica kaže: „${predlogTekst}"`);
+            assert.match(predlogTekst, /sporije za oko/,
+              `mešan spisak (${stvarnoBrzih} brže / ${stvarnoSporijih} sporije), a kartica kaže: „${predlogTekst}"`);
+          } else {
+            /* jednosmeran spisak ne sme da pominje oba smera */
+            assert.ok(!(/brž/.test(predlogTekst) && /sporij/.test(predlogTekst)),
+              `jednosmeran spisak opisan kao dvosmeran: „${predlogTekst}"`);
+          }
+        }
+      }
+    }
+    assert.ok(ukupno > 20, `premalo predloga za merenje: ${ukupno}`);
+    assert.ok(mesanih > 0,
+      'nijedan mešan predlog nije ni nastao — zamka ne meri ono zbog čega postoji');
+  });
+});
+
+/* ============================================================
+   6. ZAMKA NAD SAMOM ZAMKOM
 
    Otisak generatora je sam sebe blagosiljao: `node --test` iz korena tretira
    svaki fajl u `test/` kao test fajl, pa je i `otisak-generatora.mjs` bio

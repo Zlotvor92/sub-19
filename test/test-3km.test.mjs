@@ -534,10 +534,26 @@ describe('Referentna kriva prati plan, ne propisan tempo', () => {
     /* `pt` je ono što čovek treba da istrči i mora da ostane onakav kakav ga je
        generator propisao; `p5k` je samo siva linija. Da se i `pt` pomerio,
        izmena bi promenila nečiji trening. */
-    const src = readRepoFile('app.js');
-    const f = /function predRow\([\s\S]*?\n\}/.exec(src)[0];
-    assert.match(f, /return \{ w, l:'N'\+w\+' · '\+tip, q, pt, p5k \}/,
-      'predRow više ne vraća propisan tempo nepromenjen');
-    assert.match(f, /refVdot/, 'predRow ne prima plansku putanju forme');
+    /* Ranije je ovo bila provera nad IZVORNIM TEKSTOM (tražila je doslovan
+       `return { w, l:…, q, pt, p5k }`). Pala je na izmenu koja je taj isti
+       objekat samo nazvala pre vraćanja — dakle na preuređenje koje ne menja
+       ništa. Tvrdnja je sada nad PONAŠANJEM: `pt` izlazi onakav kakav je ušao,
+       a `p5k` se pomera sa `refVdot`. To hvata pravu grešku (dirnut propis) i
+       ne puca na način pisanja. */
+    const a = app();
+    for (const [tip, pt] of [['Tempo', 300], ['Intervali', 240], ['Repeticije', 220], ['Maratonski tempo', 292]]) {
+      for (const ref of [40, 45, 50]) {
+        const r = a.call('predRow', 7, tip, 5, pt, 42195, ref);
+        assert.equal(r.pt, pt, `predRow je promenio propisan tempo za ${tip}`);
+        assert.equal(r.q, 5);
+        assert.equal(r.l, 'N7 · ' + tip);
+      }
+      const niski = a.call('predRow', 7, tip, 5, pt, 42195, 40).p5k;
+      const visoki = a.call('predRow', 7, tip, 5, pt, 42195, 50).p5k;
+      assert.ok(visoki < niski,
+        `p5k ne prati refVdot za ${tip} (${niski} → ${visoki}) — referenca se ne računa iz planske putanje`);
+    }
+    assert.match(readRepoFile('app.js'), /function predRow\(w,tip,q,pt,raceDistM,refVdot\)/,
+      'predRow ne prima plansku putanju forme');
   });
 });
