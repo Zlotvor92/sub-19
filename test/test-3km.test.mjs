@@ -290,21 +290,37 @@ describe('Aktivacija u trkačkoj nedelji', () => {
     assert.ok(p.qs['n' + w.w + 'd' + akt.dow], 'qs ključ ne pokazuje na aktivacioni dan');
   });
 
-  test('kao repeticije, aktivacija formu pomera jedva primetno', () => {
+  test('aktivacija formu ne pomera UOPŠTE', () => {
+    /* RANIJE JE OVDE STAJALO „pomera jedva primetno" (< 0.35 poena), uz
+       oslanjanje na najmanju težinu u lancu (ALPHA.rep). Prigušenje nije
+       isključenje, i merenjem se videlo koliko: trkač koji aktivaciju odradi
+       TAČNO kako piše dobio bi pad forme (maraton 45.4 → 45.0) i predikciju
+       goru nego pre poslednjeg treninga (3:26:44 → 3:28:16) — poslednji broj
+       pred trku lošiji zato što je trening odrađen ispravno.
+
+       Uzrok: aktivaciji je tempo `max(rp-4, pI-6)`, dakle tempo TRKE, a vodi
+       se kao Repeticije. Pročitana kroz R zonu daje VDOT ispod polaznog (na
+       maratonu 35.8 naspram vdot0 41.0). Propis je ispravan kao propis;
+       greška je bila čitati ga kao merenje. */
     const a = app();
     a.ctx.__p = JSON.parse(gen(a));
     a.evalIn('S.genPlan=adaptGeneratedPlan(__p); setActivePlan(); rebuildDateIndex();');
     const red = a.evalIn(`JSON.stringify(CUR_PRED.filter(r=>/Repeticije/.test(r.l)).slice(-1)[0])`);
     const r = JSON.parse(red);
     assert.ok(r, 'nema reda za repeticije');
+    assert.equal(r.nemeri, true, 'aktivacija nije označena kao sesija koja ne meri formu');
     assert.equal(a.call('tipSesijeZaVdot', r.id), 'rep');
-    /* Deset sekundi po kilometru brže od plana — na tempu bi to vidno pomerilo
-       formu; ovde sme jedva. */
-    const bv = a.call('baselineVdot');
-    a.evalIn(`recordVdot(${JSON.stringify(r.id)}, ${r.pt - 10}, '2026-12-04', null, false, null)`);
-    const posle = a.call('currentVdot');
-    assert.ok(Math.abs(posle - bv) < 0.35,
-      `aktivacija je pomerila formu za ${Math.abs(posle - bv)} poena`);
+
+    assert.equal(a.call('recordVdot', r.id, r.pt - 10, '2026-12-04', null, false, null), null,
+      'aktivacija je ušla u lanac forme');
+    assert.equal(a.evalIn('(S.vdotLog||[]).length'), 0, 'aktivacija je ostavila zapis u lancu');
+    assert.equal(a.call('currentVdot'), null, 'forma je nastala iz aktivacije');
+
+    /* Tempo se i dalje čuva i prikazuje — samo ne postaje predikcija. */
+    a.evalIn(`S.pred[${JSON.stringify(r.id)}]=${r.pt}; S.predLock[${JSON.stringify(r.id)}]=true;`);
+    const pc = a.call('predCalc');
+    assert.ok(!pc.entered.some(x => x.r.id === r.id),
+      'aktivacija je ucrtana u predikciju — i to kao najgora tačka, tri dana pred trku');
   });
 });
 

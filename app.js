@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='237'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='238'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1797,7 +1797,10 @@ function predCalc(){
   const rows=CUR_PRED.map(r=>{
     const a=S.pred[r.id];
     let pred=null;
-    if(a){
+    /* `nemeri` redovi (aktivacija pred trku) nose tempo, ali ne i predikciju:
+       bez ovoga bi ih sirov račun — rezerva za redove bez zapisa u lancu —
+       ipak ucrtao, i to kao najgoru tačku u celom planu, tri dana pred trku. */
+    if(a && !r.nemeri){
       const zone=zoneForPredRow(r);
       /* PREDIKCIJA IDE IZ IZGLACANOG VDOT-a, ne iz jedne sesije.
          Kartica "Trenutna forma" prikazuje izglacan lanac, a predikcija je
@@ -1897,6 +1900,11 @@ const AUTO_VDOT_TOL=4;
 function recordVdot(predId, paceSec, dateOverride, kind, auto, dan){
   const r=CUR_PRED.find(x=>x.id===predId);
   if(!r||!paceSec)return null;
+  /* SESIJA KOJA NE MERI FORMU. Za sada samo aktivacija pred trku (6×200 m na
+     tempu trke, vodi se kao Repeticije): propis joj je ispravan kao propis,
+     ali pročitan unazad kroz R zonu daje VDOT ispod polaznog. Tempo se i dalje
+     čuva i prikazuje — samo ne ulazi u lanac forme ni u predikciju. */
+  if(r.nemeri) return null;
   /* Zona: PRVENSTVENO iz PRED reda oznake (pouzdanije, v. zoneForPredRow),
      kind-parametar je fallback za pozivaoce koji (još) ne prosleđuju r.
      IZUZETAK — RUCNO PROMENJEN TIP DANA. Predikcijski red nosi naziv iz plana
@@ -2135,30 +2143,84 @@ function zonaZaDan(d){
   return z ? { r, zone:z } : null;
 }
 
-/* Koliko je stvarna forma iznad/ispod onoga što plan traži od NAREDNIH dana.
-   Planski VDOT se ne modelira posebno — čita se IZ SAMOG PLANA, obrtanjem
-   tempa koji plan traži: vdotFromPace(r.pt, zona). Tako radi jednako za
-   tvrdo kodovan i za generisan plan, bez pretpostavki o rampi. */
+/* ============================================================
+   FORMA KOJU PLAN OČEKUJE U OVOJ NEDELJI
+
+   RANIJE JE OVDE STAJAO PROSEK SVIH PREOSTALIH DANA DO TRKE, i to je bila
+   greška koja je pojela celu pripremu doslednom trkaču.
+
+   Plan po konstrukciji ima rampu: `vdot0` na početku, `vdotGoal` na kraju.
+   Prosek te rampe je otprilike SREDINA između polazne i ciljne forme — dakle
+   broj koji plan traži tek za dva i po meseca. Poređen sa današnjom formom,
+   taj prosek proglašava „iza plana" svakoga ko je tek na početku, ma koliko
+   uredno trčao.
+
+   Izmereno, dosledan trkač koji svaki trening odradi TAČNO na propisanom
+   tempu, na sve četiri distance: razlika oko −2 poena kroz prvih osam nedelja,
+   dakle preko praga od 1.5, i kartica „Forma je iza plana" koja nudi da se
+   svih ~25 preostalih kvalitetnih treninga uspori za ~16 s/km. Ko to prihvati,
+   dobija plan koji više ne traži ništa teže — pa više ni ne meri ništa brže:
+   forma se zamrzne na vrednosti iz druge nedelje do kraja priprema. Na
+   maratonu je razlika u ishodu bila blizu 14 minuta.
+
+   Petlja se zatvarala sama: `staro` se čita preko `effectivePace`, dakle već
+   prilagođenog tempa, pa je posle primene razlika ~0 i aplikacija javlja da se
+   „plan i forma slažu".
+
+   SADA: poredi se sa formom koju plan očekuje U OVOJ NEDELJI. Periodizovan
+   plan namerno traži više nego što trkač danas može — to je stimulus, ne
+   merilo današnje forme (Daniels: rast VDOT-a od ~1 poena na 4–6 nedelja je
+   CILJ plana). Prilagođavati ima smisla samo kad trkač odstupi od SVOJE
+   putanje, ne kad je plan ispred njega po projektu.
+
+   Odakle broj:
+   — generisan plan: `planVdotZaNedelju(meta, w)` — ista rampa iz koje se crta
+     siva referentna kriva na grafikonu predikcije, dakle isti broj koji
+     korisnik već vidi;
+   — tvrdo kodovan lični plan: `p5k` redova TE nedelje, isti niz koji je i
+     tamo referentna kriva.
+   Ni u jednom slučaju to nije nova pretpostavka o rampi — to je podatak koji
+   plan već nosi.
+   ============================================================ */
+function planVdotSada(today){
+  today = today || TODAY;
+  const w = weekOf(today) || CUR_PLAN[CUR_PLAN.length-1];
+  if(!w) return null;
+  if(S.genPlan && S.genPlan.meta){
+    const v = planVdotZaNedelju(S.genPlan.meta, w.w);
+    if(v!=null && isFinite(v)) return Math.round(v*10)/10;
+  }
+  /* Lični plan: p5k redova te nedelje. Nedelja bez kvalitetnih redova (npr.
+     deload) uzima poslednju raniju koja ih ima — referenca ne sme da nestane
+     samo zato što te nedelje nema šta da se meri. */
+  for(let nw = w.w; nw >= 1; nw--){
+    const v = CUR_PRED.filter(r => r && r.w === nw && r.p5k > 0)
+                      .map(r => vdotFrom5k(r.p5k)).filter(x => isFinite(x));
+    if(v.length) return Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10;
+  }
+  return null;
+}
+
+/* Koliko je stvarna forma iznad/ispod onoga što plan traži OVE nedelje. */
 function formaVsPlan(today){
   today = today || TODAY;
   const forma = currentVdot();
   const merenja = (S.vdotLog||[]).filter(e=>e&&e.measured!=null).length;
   if(forma==null || !isFinite(forma)) return null;
-  const uzorci = [];
+  const planVdot = planVdotSada(today);
+  if(planVdot==null || !isFinite(planVdot)) return null;
+  /* Koliko preostalih dana uopšte nosi ciljni tempo — ne ulazi u račun, ali
+     kartica ga prikazuje i predlog bez ijednog takvog dana nema smisla. */
+  let danaSaTempom = 0;
   for(const w of CUR_PLAN) for(const d of w.days){
     if(!d.date || d.date < today || d.rest) continue;
     if(stFor(d.id)==='done') continue;
     const z = zonaZaDan(d);
-    /* VAŽNO: poredi se sa tempom koji plan TRENUTNO traži (effectivePace), ne
-       sa sirovim PRED redom. Bez toga bi već primenjeno prilagođavanje ostalo
-       nevidljivo, pa bi isti predlog iskakao u nedogled. */
-    const trazi = effectivePace(d, z && z.r);
-    if(!z || !(trazi>0)) continue;
-    uzorci.push(vdotFromPace(trazi, z.zone));
+    if(!z || !(effectivePace(d, z.r)>0)) continue;
+    danaSaTempom++;
   }
-  if(!uzorci.length) return null;
-  const planVdot = Math.round(uzorci.reduce((a,b)=>a+b,0)/uzorci.length*10)/10;
-  return { forma, planVdot, delta: Math.round((forma-planVdot)*10)/10, merenja, danaSaTempom: uzorci.length };
+  if(!danaSaTempom) return null;
+  return { forma, planVdot, delta: Math.round((forma-planVdot)*10)/10, merenja, danaSaTempom };
 }
 
 /* Predlog: novi ciljni tempo za svaki preostali kvalitetni dan. */
@@ -2176,6 +2238,14 @@ function vdotPredlog(today){
     if(d.tag==='trka' || d.tag==='test') continue;   /* dan trke ostaje kakav jeste */
     const z = zonaZaDan(d);
     if(!z || !(z.r.pt>0)) continue;
+    /* AKTIVACIJA PRED TRKU SE NE DIRA, ni u jednom smeru. Njen tempo je tempo
+       TRKE, a ne tempo izveden iz forme — pa ga „prilagoditi formi" znači
+       pokvariti ga. Merenjem: dva dana pred trku aplikacija je nudila da se
+       poslednja sesija ubrza za 50 s/km (maraton), a posle popravke imenioca
+       istim putem da se uspori za 16 s/km (10K). Oba su pogrešna iz istog
+       razloga. Taper skida obim a zadržava intenzitet; poslednja sesija pred
+       trku nije mesto za bilo kakvo prilagođavanje. */
+    if(z.r.nemeri) continue;
     /* Ručno zaključan tempo se ne dira — ni u alts, ni u sesiji. */
     if(S.alts && S.alts[d.id] && S.alts[d.id].pace!=null && !S.alts[d.id].paceAuto) continue;
     if(d.session && d.session.overrides && d.session.overrides.paceSec) continue;
@@ -6463,10 +6533,12 @@ function generatePlan(inp){
     if(alloc.lr>plafon) alloc.lr=plafon;
     return alloc;
   }
-  function pushPredQs(dayObj,w){
+  function pushPredQs(dayObj,w,nemeri){
     const ses=dayObj.session;
-    plan.pred.push(predRow(w, ses.kind, sessQKm(ses), ses.paceSec, raceDistM,
-                           a.vdot0 + (a.vdotGoal-a.vdot0)*Math.min(w,rampWeeks)/rampWeeks));
+    const red=predRow(w, ses.kind, sessQKm(ses), ses.paceSec, raceDistM,
+                      a.vdot0 + (a.vdotGoal-a.vdot0)*Math.min(w,rampWeeks)/rampWeeks);
+    if(nemeri) red.nemeri=true;
+    plan.pred.push(red);
     if(ses.type==='int') plan.qs['n'+w+'d'+dayObj.dow]=[ses.repM];
     else if(ses.type==='pyramid') plan.qs['n'+w+'d'+dayObj.dow]=ses.reps.slice();
     else if(ses.type==='tempo') plan.qs['n'+w+'d'+dayObj.dow]=[Math.round(ses.qKm*1000)];
@@ -6539,7 +6611,17 @@ function generatePlan(inp){
         days.push(mk ? mk(dw) : REST(dw));
       }
       const aktU=days.find(d=>d.dow===raceDow-2 && d.session);
-      if(aktU) pushPredQs(aktU, w);
+      /* AKTIVACIJA SE NE MERI. Red joj i dalje treba (dan postoji, tempo se
+         prikazuje i sme da se unese), ali iz nje se ne sme izvoditi forma —
+         v. `nemeri` uz recordVdot. Gornji komentar se oslanjao na to da kao
+         Repeticije dobija najmanju težinu u lancu (ALPHA.rep); prigušenje
+         nije isključenje, i merenjem se videlo koliko: trkač koji aktivaciju
+         odradi TAČNO kako piše dobije pad forme (maraton 45.4 → 45.0) i
+         predikciju goru nego pre poslednjeg treninga (3:26:44 → 3:28:16).
+         Uzrok je što joj je tempo `max(rp-4, pI-6)` — tempo TRKE, a vodi se
+         kao Repeticije, pa pročitana kroz R zonu daje VDOT ispod polaznog
+         (na maratonu 35.8 naspram vdot0 41.0). */
+      if(aktU) pushPredQs(aktU, w, true);
       /* Dani protokola koji ne staju u trkacku nedelju upisuju se u PRETHODNU.
          Dan koji se time gubi mora da povuce i svoj PRED red i qs kljuc —
          inace ostaje predikcijski red za trening koji vise ne postoji (ista
@@ -6560,7 +6642,14 @@ function generatePlan(inp){
           if(j>=0) plan.pred.splice(j,1);
         }
         pw.days[i]=proto[String(off)](cilj);
-        if(pw.days[i].session) pushPredQs(pw.days[i], pw.w);
+        /* `nemeri` i OVDE. Kad trka padne rano u nedelji, aktivacija ne staje u
+           trkačku nedelju nego se upisuje u prethodnu — drugim putem, pa je
+           prva verzija ove popravke nije ni dotakla. Merenjem (trka u
+           ponedeljak, sve četiri distance): forma je i dalje padala posle
+           ispravno odrađene aktivacije, a predikcija na maratonu
+           3:26:21 → 3:27:53. Jedina sesija koja ide kroz `proto[-2]` je
+           aktivacija, pa uslov glasi baš na nju. */
+        if(pw.days[i].session) pushPredQs(pw.days[i], pw.w, off === -2);
         pw.vol=r1(pw.days.reduce((s,x)=>s+(x.km||0),0));
       }
       /* Ako je protokol pregazio samo dugo trcanje, srednje-dugo ostaje kao

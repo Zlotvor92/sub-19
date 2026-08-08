@@ -150,8 +150,28 @@ export function ucitajOtisak() {
   return JSON.parse(readFileSync(FIXTURE, 'utf8'));
 }
 
-/* --- pokretanje iz komandne linije --- */
-if (process.argv[1] && process.argv[1].endsWith('otisak-generatora.mjs')) {
+/* --- pokretanje iz komandne linije ---
+
+   `NODE_TEST_CONTEXT` MORA da bude prazan, i to nije sitnica nego zamka koja je
+   ovaj fajl pretvorila u svoju suprotnost.
+
+   `node --test` iz korena repozitorijuma tretira SVAKI fajl unutar `test/` kao
+   test fajl — dakle i ovaj, koji nije test nego alat. Kad ga pokrene, on postaje
+   `process.argv[1]`, uslov ispod je tačan, argumenta nema — i grana na dnu
+   UPIŠE NOV OTISAK usred prolaza testova.
+
+   Posledica: zamka je sama sebe blagosiljala. Prvi prolaz posle izmene
+   generatora padne, drugi prođe — jer je prvi u međuvremenu prepisao fixture
+   sa novim planovima. Svaka nenamerna izmena generatora bila bi tako tiho
+   odobrena, a to je tačno ono pred čim upozorava komentar u
+   `generator-otisak.test.mjs`: „ponovno uzimanje otiska naslepo, što ubija
+   smisao".
+
+   Otkriveno merenjem: `node --test` iz korena daje 1065 testova i pada, isti
+   `node --test` iz `test/` daje 1063 i prolazi — razlika su baš ovaj fajl i
+   `harness.mjs`, koje runner pokreće kao testove. */
+if (process.argv[1] && process.argv[1].endsWith('otisak-generatora.mjs')
+    && !process.env.NODE_TEST_CONTEXT) {
   const arg = process.argv[2];
 
   if (arg === '--pun') {
