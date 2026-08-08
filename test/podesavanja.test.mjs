@@ -6,7 +6,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp, readAppSource } from './harness.mjs';
+import { loadApp, readAppSource, readRepoFile } from './harness.mjs';
 
 const UID = '0403f8fb-a643-4d4e-843d-f71199a0d6f9';
 
@@ -461,5 +461,85 @@ describe('Podešavanja — grupe i ikonice', () => {
     assert.notEqual(a.evalIn('SET_GRUPA'), 'admin', 'nevidljiva grupa ostaje izabrana');
     const vidljive = a.evalIn(`[...document.querySelectorAll('.set-grp.on')].map(x=>x.dataset.g)`);
     assert.ok(vidljive.length > 0, 'ekran je ostao prazan');
+  });
+});
+
+/* NALAZ QA-4 i QA-5 — ono što se izgubi između dva učitavanja, i ono što je
+   premalo za prst.
+
+   Oba su nađena u pregledaču, ne u kodu: prvo se vidi tek kad se stranica
+   stvarno učita iznova, drugo tek kad se izmeri visina. */
+describe('Otvoren ekran preživljava ponovno učitavanje', () => {
+  const sa = (opt = {}) => loadApp(Object.assign({ now: '2026-08-04T09:00:00Z' }, opt));
+
+  test('prelazak na tab se pamti', () => {
+    const a = sa();
+    a.call('setPage', 'opor');
+    assert.equal(a.evalIn(`sessionStorage.getItem('sub19-tab')`), 'opor',
+      'otvoren tab se nigde ne pamti — posle „Osveži" se gubi mesto na kom je čovek bio');
+  });
+
+  test('pri pokretanju se otvara zapamćen tab', () => {
+    const a = sa({ seedSessionStorage: { 'sub19-tab': 'pred' } });
+    assert.equal(a.call('pocetnaStrana'), 'pred');
+  });
+
+  test('`?tab=` POBEĐUJE pamćenje — izričita namera je jača od nastavka', () => {
+    /* Prečica sa ikonice kaže „hoću baš tu". Da pamćenje pobeđuje, dug pritisak
+       na ikonicu bi otvarao ekran sa kog si slučajno izašao. */
+    const a = sa({ search: '?tab=plan', seedSessionStorage: { 'sub19-tab': 'pred' } });
+    assert.equal(a.call('pocetnaStrana'), 'plan');
+  });
+
+  test('nepoznata zapamćena vrednost tiho pada na Danas', () => {
+    for (const smece of ['nepostojeci', '', '__proto__', 'constructor'])
+      assert.equal(sa({ seedSessionStorage: { 'sub19-tab': smece } }).call('pocetnaStrana'), 'danas',
+        `zapamćeno „${smece}" je prošlo`);
+  });
+
+  test('pamti se u sessionStorage, ne u localStorage', () => {
+    /* Mora da traje tačno koliko i kartica: preko localStorage bi aplikacija
+       sutra ujutru otvarala ekran na kom si stao juče uveče, a Danas je mesto
+       sa kog se počinje. */
+    const src = readAppSource();
+    const f = /function pocetnaStrana\(\)\{[\s\S]*?\n\}/.exec(src)[0];
+    assert.match(f, /sessionStorage/, 'zapamćen tab se ne čita iz sessionStorage');
+    assert.doesNotMatch(f, /localStorage/, 'zapamćen tab bi preživeo i zatvaranje aplikacije');
+  });
+});
+
+describe('Nijedna dodirna meta nije niža od 44 px', () => {
+  /* Izmereno u Chromium-u na 360 px: tri dugmeta su bila 34, 38 i 42 px, četiri
+     sklopiva objašnjenja 28 px, i jedan link 12 px. Visina se dobijala iz
+     `padding`-a i veličine slova, pa je zavisila od dužine teksta umesto od
+     toga koliko je prstu potrebno.
+
+     Zamka gleda CSS, jer harness nema raspored — ali pravilo je isto ono koje
+     je mereno u pregledaču. */
+  const CSS = readRepoFile('index.html');
+
+  const pravilo = sel => {
+    const re = new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}');
+    const m = re.exec(CSS);
+    assert.ok(m, `nema CSS pravila za ${sel}`);
+    return m[1];
+  };
+
+  for (const sel of ['.bodytoggle button', '.zseg button', '.btn-ai', '.nb-d button',
+                     '.seg button', '.zchip', 'details.help>summary']) {
+    test(`${sel} ima min-height od bar 44 px`, () => {
+      const m = /min-height\s*:\s*(\d+)px/.exec(pravilo(sel));
+      assert.ok(m, `${sel} nema min-height — visina zavisi od dužine teksta`);
+      assert.ok(+m[1] >= 44, `${sel} je ${m[1]}px, ispod 44`);
+    });
+  }
+
+  test('link u sitnom redu dobija metu bez lomljenja teksta', () => {
+    /* Jedini izuzetak od `min-height`: inline link u prozi. `min-height` bi ga
+       izvukao iz reda, pa se meta pravi razmakom uz negativnu marginu. */
+    const p = pravilo('.note-src a');
+    assert.match(p, /display\s*:\s*inline-block/, 'link nije inline-block, pa razmak ne radi');
+    const pad = /padding\s*:\s*(\d+)px/.exec(p);
+    assert.ok(pad && +pad[1] >= 16, `uspravni razmak je ${pad && pad[1]}px — meta ostaje ispod 44`);
   });
 });

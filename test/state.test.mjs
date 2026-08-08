@@ -915,3 +915,128 @@ describe('Backup i Zajednica posle skoka šeme na v10', () => {
     assert.equal(a.evalIn(`migrate({v:11, log:{}})`), null);
   });
 });
+
+/* NALAZ QA-2 — ZAGLAVLJE POSLE PONOĆI.
+
+   PRIJAVA IZ UPOTREBE: aplikacija ostane otvorena preko ponoći, čovek dodirne
+   drugi tab pa se vrati — telo pređe na novi dan, a zaglavlje ostane na starom.
+   Na istom ekranu dva različita broja dana do trke i dva različita broja
+   nedelje. I nije se popravljalo samo od sebe: prelazak preko ponoći je bio
+   POTROŠEN u `setPage` (povratna vrednost `osveziDan()` se nije gledala), pa je
+   grana u `visibilitychange` — jedina koja zove `renderHeader()` — posle toga
+   dobijala `false` i preskakala se. Ostajalo je pogrešno do ponovnog učitavanja.
+
+   Komentar uz `let TODAY` je taj slučaj izričito predviđao, pa je i komentar
+   bio netačan, ne samo kod. */
+describe('Prelazak preko ponoći vuče i zaglavlje', () => {
+  const sa = (now) => {
+    const a = loadApp({ now });
+    a.evalIn(`S.log={}; save();`);
+    a.call('setPage', 'danas');
+    return a;
+  };
+  const zaglavlje = a => String(a.evalIn(`$("#h-sub").textContent`) || '');
+
+  test('dodir taba posle ponoći osveži i zaglavlje', () => {
+    const a = sa('2026-08-09T23:58:00Z');
+    const pre = zaglavlje(a);
+    assert.match(pre, /dana do trke|DANAS JE TRKA|Start:|Plan završen/, `zaglavlje je prazno: „${pre}"`);
+    a.clock.set('2026-08-10T00:02:00Z');
+    a.call('setPage', 'plan');
+    a.call('setPage', 'danas');
+    assert.equal(a.evalIn('TODAY'), '2026-08-10', 'dan se nije pomerio');
+    assert.notEqual(zaglavlje(a), pre,
+      `zaglavlje je ostalo na jučerašnjem danu: „${zaglavlje(a)}"`);
+  });
+
+  test('broj dana u zaglavlju se slaže sa danom koji aplikacija drži', () => {
+    /* Suština nalaza nije „tekst se promenio" nego „dva broja na istom ekranu".
+       Zato se poredi sa vrednošću izvedenom iz TODAY, a ne sa prethodnim tekstom. */
+    const a = sa('2026-08-09T23:58:00Z');
+    a.clock.set('2026-08-10T00:02:00Z');
+    a.call('setPage', 'danas');
+    const uZaglavlju = (/(\d+)\s+\S+\s+do trke/.exec(zaglavlje(a)) || [])[1];
+    if (uZaglavlju != null) {
+      const stvarno = a.evalIn('diffD(TODAY, CUR_RACE)');
+      assert.equal(+uZaglavlju, stvarno,
+        `zaglavlje piše ${uZaglavlju} dana, a od TODAY do trke ima ${stvarno}`);
+    }
+  });
+
+  test('kad se dan NIJE promenio, zaglavlje se ne prepisuje bez potrebe', () => {
+    /* `setPage` se zove i pri svakoj sitnici; bezuslovno iscrtavanje zaglavlja
+       bilo bi posao bez razloga na svaki dodir. */
+    const src = readAppSource();
+    const blok = /function setPage\(p\)\{[\s\S]*?\n\}/.exec(src)[0];
+    assert.match(blok, /if\(osveziDan\(\)\)\s*renderHeader\(\)/,
+      'zaglavlje se osvežava bezuslovno, ili se povratna vrednost i dalje ne gleda');
+  });
+});
+
+/* ZAMKA KOJA JE NEDOSTAJALA (QA Z-2) — NAJSKUPLJI MOGUĆI ISHOD.
+
+   Kad se lokalni zapis ne može pročitati (prekinut upis, puna kvota, greška u
+   budućoj migraciji), `S` je prazan seed — a serverska kopija je tada JEDINO
+   mesto gde podaci još postoje. Brana `if(UCITAVANJE_PALO) return false;` u
+   `sbPush` je sve što stoji između toga i prepisivanja te kopije praznim
+   stanjem.
+
+   Provereno mutacijom: brisanje te linije ostavljalo je svih 1003 testa
+   zelenim. Nijedan drugi ishod u ovoj aplikaciji nije skuplji, i nijedan nije
+   bio slabije pokriven. */
+describe('Oštećeno lokalno stanje ne sme da pregazi serversku kopiju', () => {
+  const OSTECEN = '{"v":10,"log":{ ovo nije json';
+
+  const sa = () => {
+    const a = loadApp({
+      seedLocalStorage: {
+        'sub19-v1': OSTECEN,
+        sub19_sb: JSON.stringify({ access: 't', refresh: 'r', expiresAt: Date.now() + 9e6,
+          email: 'x@t.rs', userId: 'u1', seenAt: null, deviceId: 'd1' })
+      }
+    });
+    return a;
+  };
+
+  test('učitavanje je STVARNO palo — inače ostatak ne meri ništa', () => {
+    const a = sa();
+    const palo = a.get('UCITAVANJE_PALO');
+    assert.ok(palo && palo.razlog, 'stanje se učitalo uredno, pa zamka ne bi ništa dokazala');
+    assert.ok(a.evalIn('Object.keys(S.log).length') === 0, 'S nije prazan seed');
+  });
+
+  test('sbPush odbija da pošalje prazan seed preko serverske kopije', async () => {
+    const a = sa();
+    const pozivi = [];
+    a.evalIn(`fetch=async(u,o)=>{ __p.push(((o&&o.method)||'GET')+' '+String(u));
+      return {ok:true,status:200,json:async()=>[{updated_at:'2026-01-01'}],text:async()=>''}; };`,
+      a.ctx.__p = pozivi);
+    a.ctx.__p = pozivi;
+    a.evalIn(`fetch=async(u,o)=>{ __p.push(((o&&o.method)||'GET')+' '+String(u));
+      return {ok:true,status:200,json:async()=>[{updated_at:'2026-01-01'}],text:async()=>''}; };`);
+    assert.equal(await a.evalIn('sbPush()'), false, 'sbPush je pristao da gura prazno stanje');
+    const upisi = pozivi.filter(x => x.startsWith('POST') && x.includes('user_state'));
+    assert.deepEqual(upisi, [], `serverska kopija je prepisana: ${upisi.join(', ')}`);
+  });
+
+  test('ni pozadinski upis ne gura prazno stanje', async () => {
+    /* Druga vrata do istog ishoda: service worker gura iz pozadine, tamo niko
+       ne gleda ekran i ništa se ne bi primetilo. */
+    const a = sa();
+    assert.equal(await a.evalIn('pozadinskiZakazi()'), false,
+      'pozadinski upis je zakazan uprkos oštećenom stanju');
+    const f = /async function pozadinskiZakazi\(\)\{[\s\S]*?\n\}/.exec(readAppSource())[0];
+    assert.match(f, /UCITAVANJE_PALO/,
+      'put ka pozadinskom upisu više ne proverava oštećeno stanje');
+  });
+
+  test('brana stoji PRE svakog izlaza na mrežu u sbPush', () => {
+    /* Da stoji posle prvog `await`, prozor bi ostao otvoren. */
+    const src = readAppSource();
+    const f = /async function sbPush\(\)\{[\s\S]*?\n\}/.exec(src)[0];
+    const brana = f.indexOf('if(UCITAVANJE_PALO)');
+    const prviFetch = f.indexOf('fetch(');
+    assert.ok(brana > 0, 'brana za oštećeno stanje je nestala iz sbPush');
+    assert.ok(brana < prviFetch, 'brana stoji POSLE prvog izlaza na mrežu');
+  });
+});

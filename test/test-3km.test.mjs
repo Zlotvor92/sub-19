@@ -13,7 +13,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp } from './harness.mjs';
+import { loadApp, readRepoFile } from './harness.mjs';
 
 const DANAS = '2026-08-05T09:00:00Z';
 const app = (danas = DANAS) => loadApp({ now: danas });
@@ -417,5 +417,88 @@ describe('Nemoguće merenje ne ulazi u formu', () => {
     assert.equal(a.call('vdotMoguc', 14), false);
     assert.equal(a.call('vdotMoguc', null), false);
     assert.equal(a.call('vdotMoguc', Infinity), false);
+  });
+});
+
+/* NALAZ QA-1 — SIVA REFERENTNA KRIVA NA „PREDIKCIJA KROZ PLAN".
+
+   PRIJAVA IZ UPOTREBE: na planu za 21:09 trkačka nedelja je bila NAJGORA tačka
+   u celom planu — 22:43, gore i od prve nedelje (22:21) i za minut i po gore od
+   cilja. Uz to su intervalne sesije od N9 stajale na 22:10 pet nedelja zaredom
+   dok su tempo sesije iz istih nedelja išle 21:37 → 21:12, pa je linija skakala
+   gore-dole po ceo minut i išla unazad osam puta.
+
+   Uzrok je bilo čitanje UNAZAD: `vdotFromPace(pt, zone)` je propisan tempo
+   tumačio kao izmerenu formu. Propis nije merenje — `pIzaNedelju` u poslednjih
+   6 nedelja namerno klampuje intervalni tempo na tempo trke, a aktivacija pred
+   trku je 6×200 m koja se vodi kao Repeticije.
+
+   Ova zamka meri OBLIK krive, ne pojedinačne brojeve: kartica tvrdi da je to
+   putanja plana ka cilju, pa mora i da izgleda tako. */
+describe('Referentna kriva prati plan, ne propisan tempo', () => {
+  const plan = (a, over = {}) => {
+    a.ctx.__m = Object.assign({
+      startDate: '2026-08-08', raceDate: '2026-11-15', raceDistM: 5000,
+      pb: { distM: 5000, sec: 1350 }, weeklyKm: 30, runDays: 4, quality: 2,
+      intensity: 'std', trainedRecently: true, goalSec: null
+    }, over);
+    a.evalIn(`(function(){ const g=generatePlan(__m);
+      S.genPlan=adaptGeneratedPlan(g); setActivePlan(); rebuildDateIndex(); })()`);
+    return a.evalIn('CUR_PRED.map(r=>({w:r.w,l:r.l,p5k:r.p5k}))');
+  };
+
+  test('trkačka nedelja je NAJBOLJA tačka, ne najgora', () => {
+    /* Ovo je bio glavni simptom: šiljak uvis uz desnu ivicu grafikona. */
+    for (const distM of [5000, 10000]) {
+      const a = app();
+      const red = plan(a, { raceDistM: distM });
+      const zadnja = red[red.length - 1];
+      const najgora = red.reduce((m, x) => (x.p5k > m.p5k ? x : m), red[0]);
+      assert.notEqual(najgora.l, zadnja.l,
+        `${distM / 1000}K: trkačka nedelja (${zadnja.l}) je najgora tačka u planu: ${zadnja.p5k}s`);
+      assert.ok(zadnja.p5k <= red[0].p5k,
+        `${distM / 1000}K: kraj plana (${zadnja.p5k}s) je gori od početka (${red[0].p5k}s)`);
+    }
+  });
+
+  test('kriva ne ide unazad — plan ne predviđa pad forme', () => {
+    const a = app();
+    const red = plan(a);
+    const unazad = red.filter((x, i) => i > 0 && x.p5k > red[i - 1].p5k);
+    assert.deepEqual(unazad.map(x => x.l), [],
+      `referentna kriva ide unazad na: ${unazad.map(x => x.l).join(', ')}`);
+  });
+
+  test('sve sesije iste nedelje imaju istu referentnu vrednost', () => {
+    /* Plan ne očekuje različitu formu u utorak i u četvrtak. Kad se razlikuju,
+       broj ne meri plan nego to koja je sesija te nedelje ispala na red. */
+    const a = app();
+    const red = plan(a);
+    const poNedelji = {};
+    for (const r of red) (poNedelji[r.w] = poNedelji[r.w] || []).push(r.p5k);
+    const razlicite = Object.entries(poNedelji)
+      .filter(([, v]) => new Set(v).size > 1)
+      .map(([w, v]) => `N${w}: ${v.join('/')}`);
+    assert.deepEqual(razlicite, [], `ista nedelja, različita referenca: ${razlicite.join('  ')}`);
+  });
+
+  test('kriva stiže do cilja, a ne staje daleko od njega', () => {
+    const a = app();
+    const red = plan(a);
+    const cilj = a.call('goalSecActive');
+    const zadnja = red[red.length - 1].p5k;
+    assert.ok(Math.abs(zadnja - cilj) <= 30,
+      `plan se završava na ${zadnja}s, a cilj je ${cilj}s — razlika ${zadnja - cilj}s`);
+  });
+
+  test('propisan tempo ostaje netaknut — menja se SAMO referenca', () => {
+    /* `pt` je ono što čovek treba da istrči i mora da ostane onakav kakav ga je
+       generator propisao; `p5k` je samo siva linija. Da se i `pt` pomerio,
+       izmena bi promenila nečiji trening. */
+    const src = readRepoFile('app.js');
+    const f = /function predRow\([\s\S]*?\n\}/.exec(src)[0];
+    assert.match(f, /return \{ w, l:'N'\+w\+' · '\+tip, q, pt, p5k \}/,
+      'predRow više ne vraća propisan tempo nepromenjen');
+    assert.match(f, /refVdot/, 'predRow ne prima plansku putanju forme');
   });
 });

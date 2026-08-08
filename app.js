@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='234'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='235'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -938,12 +938,27 @@ function t3kNajsporije(){
 function migrate(o){
   if(!o||typeof o!=='object')return null;
   if(!o.log||typeof o.log!=='object'||Array.isArray(o.log))return null;
-  o.v=o.v||1;
+  /* OZNAKA VERZIJE MORA DA BUDE BROJ, ne „nešto što liči na broj".
+     Ranije je stajalo `o.v=o.v||1`, pa je string ostajao string — a provera
+     ispod je gledala TIP. Backup sa `"v": "11"` (navodnici oko broja) time nije
+     bio odbijen: nijedna migraciona grana se ne okine (`'11' < 2` je netačno,
+     kao i sve ostale), pa se na kraju bezuslovno postavi `o.v = SCHEMA` i fajl
+     iz NOVIJE šeme prođe kao tekući, uz poruku da je uvoz uspeo. Tačno ono
+     protiv čega provera ispod brani.
+     Ovo je bila i jedina provera u `migrate` koja radi po pravilu „ako nije
+     broj, propusti"; sve ostale (`cistBrojPolje`, `cistWellness`, `zajBr`) rade
+     po pravilu „ono što nije broj postaje null".
+
+     Nečitljiva oznaka se tumači kao NAJSTARIJA, isto kao da je nema. To je jedini
+     bezbedan smer pogađanja: migracione grane samo dopunjuju polja koja
+     nedostaju, pa preterano nizak broj ne može ništa da pokvari — a preterano
+     visok bi preskočio migraciju koja je stvarno trebalo da se izvrši. */
+  o.v = (o.v==null || o.v==='' || !isFinite(+o.v)) ? 1 : +o.v;
   /* Stanje iz NOVIJE seme se odbija. Ranije je `o.v=SCHEMA` na kraju bezuslovno
      spustao verziju, pa bi backup napravljen u novijoj verziji aplikacije bio
      protumacen po starim pravilima i tiho pogresno prikazan — a korisnik bi
      video uredan uvoz. Bolje jasno odbiti i traziti azuriranje aplikacije. */
-  if(typeof o.v==='number' && o.v>SCHEMA) return null;
+  if(o.v>SCHEMA) return null;
   if(o.v<2){o.strava=o.strava||null;o.predLock=o.predLock||{};o.v=2;} /* v1→v2: Strava sync polja — postojeći unosi se NIKAD ne brišu */
   if(o.v<3){o.vdotLog=o.vdotLog||[];o.v=3;} /* v2→v3: VDOT istorija forme — postojeći unosi netaknuti */
   if(o.v<4){o.moves=o.moves||{};o.v=4;} /* v3→v4: zamena dana (swap) — postojeći raspored netaknut (prazna mapa = sve na originalnim mestima) */
@@ -2735,11 +2750,30 @@ const PAGES={danas:renderDanas,plan:renderPlan,opor:renderOporavak,pred:renderPr
    pročita — inače bi svaka prečica otvarala Danas i bila laž. Nepoznata ili
    nepostojeća vrednost tiho pada na Danas; ovo je ulaz sa strane i ne sme da
    obori otvaranje. */
+/* OTVOREN EKRAN PREŽIVLJAVA PONOVNO UČITAVANJE.
+   Ažuriranje aplikacije završava `location.reload()` (v. `controllerchange`), a
+   do sada se posle toga uvek otvarao Danas — čovek bi bio na Oporavku, kliknuo
+   „Osveži", i našao se negde drugde. Podaci i sesija prežive uredno; gubilo se
+   samo mesto na kom je bio.
+
+   `sessionStorage`, ne `localStorage`, i to je ceo izbor: pamćenje mora da traje
+   tačno koliko i ova kartica. Preko `localStorage` bi aplikacija sutra ujutru
+   otvarala ekran na kom si slučajno stao juče uveče — a Danas je mesto sa kog se
+   počinje. Isti mehanizam i isti razlog kao kod uvodnog ekrana (v. vrh fajla).
+
+   `?tab=` IMA PREDNOST. Prečica sa ikonice je izričita namera „hoću baš tu";
+   pamćenje je samo nastavak prekinutog. Kad se sudare, pobeđuje izričito. */
+const TAB_KLJUC='sub19-tab';
 function pocetnaStrana(){
   try{
     const t=new URLSearchParams(location.search).get('tab');
-    return (t&&Object.prototype.hasOwnProperty.call(PAGES,t))?t:'danas';
-  }catch(e){ return 'danas'; }
+    if(t&&Object.prototype.hasOwnProperty.call(PAGES,t)) return t;
+  }catch(e){}
+  try{
+    const z=sessionStorage.getItem(TAB_KLJUC);
+    if(z&&Object.prototype.hasOwnProperty.call(PAGES,z)) return z;
+  }catch(e){}   /* privatni režim ume da zabrani sessionStorage — tada Danas */
+  return 'danas';
 }
 let ACTIVE='danas';
 const openW=new Set();
@@ -2783,7 +2817,19 @@ let AMB_PRE=null;
 
 let USKOK_TMR=null;
 function setPage(p){
-  osveziDan();   /* dan se mogao promeniti dok je app stajala otvorena */
+  /* Dan se mogao promeniti dok je aplikacija stajala otvorena. Kad jeste,
+     ZAGLAVLJE MORA DA IDE SA NJIM — ono nosi „Nedelja N / M · X dana do trke", a
+     to su brojevi izvedeni iz datuma.
+
+     Prijava iz upotrebe: posle ponoći je telo prešlo na novi dan (97 dana, N2), a
+     zaglavlje ostalo na starom (98 dana, Nedelja 1) — dva različita broja dana do
+     trke na istom ekranu. I nije se popravljalo samo: povratna vrednost se ovde
+     nije gledala, pa je prelazak preko ponoći bio POTROŠEN ovde, a grana u
+     `visibilitychange` koja jedina zove `renderHeader()` posle toga dobija
+     `false` i preskoči se. Ostajalo je pogrešno do ponovnog učitavanja stranice. */
+  if(osveziDan()) renderHeader();
+  /* Zapamti gde smo, da ponovno učitavanje (npr. posle „Osveži") vrati ovde. */
+  try{ sessionStorage.setItem(TAB_KLJUC, p); }catch(e){}
   const drugi = ACTIVE!==p;
   ACTIVE=p;
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===p));
@@ -5100,10 +5146,51 @@ function applyEdit(day, field, value){
   day.desc=sessDesc(day.session);
   return day;
 }
-function predRow(w,tip,q,pt,raceDistM){
+/* PLANSKA PUTANJA FORME ZA JEDNU NEDELJU.
+   Ista računica koju `generatePlan` koristi da odredi tempe (v. `vdotW`), samo
+   izvedena iz `meta` da joj mogu i drugi. `null` kad plan ne nosi putanju —
+   tada `predRow` pada na staru računicu (v. tamo). */
+function planVdotZaNedelju(meta, w){
+  if(!meta) return null;
+  const v0=+meta.vdot0, vg=+meta.vdotGoal, uk=+meta.weeks;
+  if(!isFinite(v0)||!isFinite(vg)||!isFinite(uk)) return null;
+  const ramp=Math.min(uk-2, RAMP_CAP_WEEKS);
+  if(!(ramp>0)) return v0;
+  return v0 + (vg-v0)*Math.min(w,ramp)/ramp;
+}
+
+/* `refVdot` je forma koju PLAN očekuje u toj nedelji. Kad je ima, siva
+   referentna kriva se crta iz nje.
+
+   ZAŠTO NE IZ PROPISANOG TEMPA, kako je bilo.
+   Prijavljeno iz upotrebe: na planu za 21:09 trkačka nedelja je bila najgora
+   tačka u celom planu (22:43, gore i od prve), a intervalne sesije su pet
+   nedelja zaredom stajale na 22:10 dok su tempo sesije iz istih nedelja
+   ispravno išle 21:37 → 21:12. Kriva je zato išla gore-dole po ceo minut i
+   osam puta unazad.
+
+   Uzrok je bio čitanje UNAZAD: `vdotFromPace(pt, zone)` je propisan tempo
+   tumačio kao izmerenu formu. Ali propisan tempo nije merenje:
+     — `pIzaNedelju` u poslednjih 6 nedelja NAMERNO klampuje intervalni tempo na
+       tempo trke (`Math.max(pI, racePace)`), da se intervali ne trče brže od
+       trke. Pročitan unazad, taj klamp izgleda kao da forma stoji;
+     — aktivacija pred trku je 6×200 m i vodi se kao Repeticije, pa u R zoni daje
+       VDOT ispod početnog. Komentar uz nju kaže da se „iz šest dvestotinjaka tri
+       dana pred trku ne može izvesti nikakva ozbiljna predikcija" i oslanja se na
+       to da sesija dobija najmanju težinu (`ALPHA.rep`) — a to važi za lanac
+       forme (`recordVdot`), NE i za ovu krivu, koja nije ponderisana nikako.
+   Oba propisa su ispravna kao propis; greška je bila čitati ih kao merenje.
+
+   Posledica izmene: svi redovi iste nedelje dobijaju istu referentnu vrednost —
+   što je i tačno, jer plan ne očekuje različitu formu u utorak i u četvrtak.
+   Unet tempo se ovim NE dira: „ostvareno" se računa iz `S.pred[r.id]` u
+   `predCalc`, a `p5k` se koristi isključivo za sivu liniju (v. `chartPred`). */
+function predRow(w,tip,q,pt,raceDistM,refVdot){
   raceDistM=raceDistM||5000;
   const zone=ZONE_FOR_KIND[tip];
-  const p5k=zone!=null ? Math.round(raceTimeForVdot(vdotFromPace(pt,zone),raceDistM)) : Math.round(riegelDist(pt*q, q*1000, raceDistM));
+  const p5k = (refVdot!=null&&isFinite(refVdot))
+    ? Math.round(raceTimeForVdot(refVdot,raceDistM))
+    : (zone!=null ? Math.round(raceTimeForVdot(vdotFromPace(pt,zone),raceDistM)) : Math.round(riegelDist(pt*q, q*1000, raceDistM)));
   return { w, l:'N'+w+' · '+tip, q, pt, p5k };
 }
 /* Predikcija i QS (Strava lap-detekcija) IZVEDENI iz trenutnog stanja sesija —
@@ -5127,11 +5214,12 @@ function deriveQS(weeks){
   }));
   return qs;
 }
-function derivePred(weeks,raceDistM){
+function derivePred(weeks,raceDistM,meta){
   const pred=[];
   weeks.forEach(w=>w.days.forEach(d=>{
     if(!d.session) return;
-    pred.push(predRow(w.w, d.session.kind, sessQKm(d.session), d.session.paceSec, raceDistM));
+    pred.push(predRow(w.w, d.session.kind, sessQKm(d.session), d.session.paceSec, raceDistM,
+                      planVdotZaNedelju(meta, w.w)));
   }));
   return pred;
 }
@@ -6183,7 +6271,8 @@ function generatePlan(inp){
   }
   function pushPredQs(dayObj,w){
     const ses=dayObj.session;
-    plan.pred.push(predRow(w, ses.kind, sessQKm(ses), ses.paceSec, raceDistM));
+    plan.pred.push(predRow(w, ses.kind, sessQKm(ses), ses.paceSec, raceDistM,
+                           a.vdot0 + (a.vdotGoal-a.vdot0)*Math.min(w,rampWeeks)/rampWeeks));
     if(ses.type==='int') plan.qs['n'+w+'d'+dayObj.dow]=[ses.repM];
     else if(ses.type==='pyramid') plan.qs['n'+w+'d'+dayObj.dow]=ses.reps.slice();
     else if(ses.type==='tempo') plan.qs['n'+w+'d'+dayObj.dow]=[Math.round(ses.qKm*1000)];
@@ -6954,7 +7043,7 @@ function recalibratedPlan(originalInput, currentWeekIdx, vdotNowSmoothed, oldWee
          5000 m i za maratonski/HM plan računao predikcije na pogrešnoj
          distanci. Funkcija se (još) ne poziva iz UI-ja, ali greška ne sme
          da čeka trenutak kad se poveže. */
-      pred: derivePred(weeksSlice, replanned.meta&&replanned.meta.raceDistM),
+      pred: derivePred(weeksSlice, replanned.meta&&replanned.meta.raceDistM, replanned.meta),
       qs: deriveQS(weeksSlice),
       meta: { ...replanned.meta, vdotAtRecal: r1(vdotNowSmoothed), recalWeek: currentWeekIdx }
     };
@@ -12242,7 +12331,16 @@ function zajSlike(){
    `cistWellness`). Drugi sloj uz `zajCistProfil`: zamka u
    test/bezbednost.test.mjs namerno zaobilazi ulaznu proveru i piše pravo u
    `ZAJ.ljudi`, jer iscrtavanje mora da drži i kad validacija otkaže. */
-function zajBr(v){ return (v==null||v===''||typeof v==='boolean'||isNaN(+v))?null:+v; }
+function zajBr(v){
+  /* NIZ NIJE BROJ, iako se ponaša kao broj: `+[]` je 0, `+[42]` je 42. Bez ovoga
+     bi prazan niz iz tuđeg reda ušao kao nula i tiho se prikazao kao stvarna
+     vrednost — uhvaćeno testom nad ulaznim slojem. Isto važi za `true`/`false`,
+     koje `+` pretvara u 1 i 0. Prolazi samo ono što JESTE broj ili niz znakova
+     koji ceo predstavlja broj. */
+  if(v==null||v===''||typeof v==='boolean'||typeof v==='object') return null;
+  const n=+v;
+  return isFinite(n)?n:null;
+}
 
 const ZAJ_BROJEVI = ['vdot','vdot_pocetni','test3k_sec','km_nedelja','plan_pct',
   'niz_dana','izazov_od','izazov_ura','nedelja_br','nedelja_od'];
@@ -12250,10 +12348,9 @@ function zajCistProfil(p){
   if(!p||typeof p!=='object') return null;
   if(typeof p.user_id!=='string'||!p.user_id) return null;
   const c=Object.assign({},p);
-  for(const k of ZAJ_BROJEVI){
-    const v=c[k];
-    c[k]=(v==null||v===''||typeof v==='boolean'||isNaN(+v))?null:+v;
-  }
+  /* ISTO PRAVILO kao pri iscrtavanju — `zajBr`, jedno mesto. Dok su bila dva
+     izraza, razišla su se: ovaj je propuštao `[]` kao nulu. */
+  for(const k of ZAJ_BROJEVI) c[k]=zajBr(c[k]);
   /* Znamenja i trčanja su nizovi; sve ostalo u njima escapuje iscrtavanje. */
   c.znacke=Array.isArray(c.znacke)?c.znacke:[];
   c.trcanja=Array.isArray(c.trcanja)?c.trcanja:[];

@@ -974,3 +974,74 @@ describe('Nalaz Z-1 — CSS iz tuđeg profila', () => {
       'pozadina se ne postavlja kroz CSSOM');
   });
 });
+
+/* ZAMKA KOJA JE NEDOSTAJALA (QA Z-1) — ULAZNI SLOJ ZAJEDNICE.
+
+   `zajCistProfil` čisti brojeve iz tuđeg profila ČIM STIGNU sa servera. Fuzz u
+   test/bezbednost.test.mjs piše otrov PRAVO u `ZAJ.ljudi` — namerno, jer meri
+   drugi sloj: da iscrtavanje drži i kad validacija otkaže. Posledica je bila da
+   ulazni sloj nije merio niko: brisanje celog tela petlje u `zajCistProfil`
+   ostavljalo je svih 1003 testa zelenim.
+
+   Zato ovde ide otrov kroz ISTI put kojim ide i pravi odgovor servera. */
+describe('Ulazno čišćenje tuđeg profila', () => {
+  const OTROV = '"><img src=x onerror=alert(1)>';
+
+  const kroz = (p) => {
+    const a = app();
+    a.ctx.__p = [Object.assign({ user_id: 'u-tudji', vidljiv: true, nadimak: 'Bora' }, p)];
+    return a.evalIn('zajCistiLjude(__p)')[0];
+  };
+
+  test('svaki broj koji nije broj postaje null', () => {
+    const polja = app().get('ZAJ_BROJEVI');
+    assert.ok(polja.length >= 8, `spisak brojčanih polja je premali: ${polja}`);
+    for (const k of polja)
+      for (const smece of [OTROV, 'abc', '', true, false, {}, [], NaN]) {
+        const r = kroz({ [k]: smece });
+        assert.equal(r[k], null,
+          `${k} = ${JSON.stringify(smece)} je prošlo kao ${JSON.stringify(r[k])}`);
+      }
+  });
+
+  test('pravi brojevi prolaze, i to kao brojevi', () => {
+    const r = kroz({ vdot: '48.6', km_nedelja: 40, plan_pct: '90', niz_dana: 0 });
+    assert.equal(r.vdot, 48.6);
+    assert.equal(typeof r.vdot, 'number', 'broj je ostao string');
+    assert.equal(r.km_nedelja, 40);
+    assert.equal(r.plan_pct, 90);
+    assert.equal(r.niz_dana, 0, 'nula je pretvorena u null');
+  });
+
+  test('red bez user_id se odbacuje ceo', () => {
+    const a = app();
+    a.ctx.__p = [{ nadimak: 'Bez id' }, { user_id: '', nadimak: 'Prazan' },
+                 { user_id: 'ok', nadimak: 'Dobar' }, null, 'niz', 42];
+    const r = a.evalIn('zajCistiLjude(__p)');
+    assert.equal(r.length, 1, `prošlo je ${r.length} redova umesto jednog`);
+    assert.equal(r[0].user_id, 'ok');
+  });
+
+  test('znamenja i trčanja su uvek nizovi', () => {
+    /* Iscrtavanje ih obilazi bez provere; nešto drugo bi bacilo na tuđem redu. */
+    for (const smece of [OTROV, null, 42, {}])
+      for (const k of ['znacke', 'trcanja']) {
+        const r = kroz({ [k]: smece });
+        assert.ok(Array.isArray(r[k]), `${k} = ${JSON.stringify(smece)} nije postalo niz`);
+      }
+  });
+
+  test('otrov iz spiska ne stigne ni do iscrtavanja kad prođe kroz ulaz', () => {
+    /* Oba sloja zajedno, kroz pravi put: ulaz očisti, iscrtavanje escapuje. */
+    const a = app();
+    prijavljen(a);
+    a.ctx.__p = [{ user_id: 'u-t', vidljiv: true, nadimak: 'Bora', cilj: '5K',
+      vdot: OTROV, plan_pct: OTROV, niz_dana: OTROV, izazov_ura: OTROV, izazov_od: 4,
+      km_nedelja: OTROV, test3k_sec: OTROV, znacke: [], trcanja: [] }];
+    a.evalIn(`ZAJ.ljudi=zajCistiLjude(__p); ZAJ.kad=Date.now(); ZAJ.ucitava=false;`);
+    a.call('renderZajednica');
+    const h = ekran(a);
+    assert.ok(!/<img src=x/.test(h), 'otrov je stigao do ekrana');
+    assert.ok(!/NaN|undefined/.test(h), `ekran ispisuje NaN/undefined: ${h.slice(0, 200)}`);
+  });
+});

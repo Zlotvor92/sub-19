@@ -1020,3 +1020,64 @@ describe('VDOT zapisi (backup / sbPull)', () => {
     assert.deepEqual(ubaceniTagovi(app.call('vdotDeltaHTML', 'p1', 260)), []);
   });
 });
+
+/* NALAZ QA-3 — OZNAKA VERZIJE SE PROVERAVALA PO TIPU.
+
+   `migrate` odbija stanje iz NOVIJE šeme, jer bi ga inače protumačio po starim
+   pravilima i tiho pogrešno prikazao — uz poruku da je uvoz uspeo. Ta provera
+   je gledala TIP (`typeof o.v==='number'`), pa je backup sa `"v": "11"`
+   (navodnici oko broja) prolazio: nijedna migraciona grana se ne okine, i na
+   kraju se bezuslovno postavi `o.v = SCHEMA`.
+
+   Uvoz je granica poverenja — fajl dolazi spolja i korisnik ga sam otvori. Zato
+   ovo stoji ovde, uz ostale zamke za uvoz, a ne uz testove stanja. */
+describe('Verzija šeme se čita kao BROJ, ne kao tip', () => {
+  const stanje = v => ({ v, log: {}, pred: {}, predLock: {}, knee: [], kg: [], t3k: [],
+    vdotLog: [], moves: {}, alts: {}, genPlan: null, wellness: {}, icu: null, ui: {} });
+
+  test('novija šema se odbija i kad je verzija upisana kao string', () => {
+    const app = loadApp();
+    const SCHEMA = app.get('SCHEMA');
+    for (const v of [SCHEMA + 1, String(SCHEMA + 1), 999, '999', '11.5']) {
+      app.ctx.__z = stanje(v);
+      assert.equal(app.evalIn('migrate(__z)'), null,
+        `stanje sa v=${JSON.stringify(v)} je prošlo — biće protumačeno po starim pravilima`);
+    }
+  });
+
+  test('tekuća i starija šema i dalje prolaze — provera nije preoštra', () => {
+    const app = loadApp();
+    const SCHEMA = app.get('SCHEMA');
+    for (const v of [1, 5, SCHEMA, String(SCHEMA), String(SCHEMA - 1)]) {
+      app.ctx.__z = stanje(v);
+      const r = app.evalIn('migrate(__z)');
+      assert.ok(r, `stanje sa v=${JSON.stringify(v)} je odbijeno, a ne bi smelo`);
+      assert.equal(r.v, SCHEMA, `v nije podignuta na ${SCHEMA}`);
+    }
+  });
+
+  test('nečitljiva oznaka se tumači kao NAJSTARIJA, ne kao tekuća', () => {
+    /* Jedini bezbedan smer pogađanja: migracione grane samo dopunjuju polja
+       koja nedostaju, pa prenizak broj ne može ništa da pokvari — a previsok bi
+       preskočio migraciju koja je stvarno trebalo da se izvrši. Meri se time što
+       stanje bez polja koja v1 nema izađe sa tim poljima popunjenim. */
+    const app = loadApp();
+    for (const v of ['abc', '', null, undefined, {}, []]) {
+      const s = stanje(v);
+      delete s.vdotLog; delete s.moves; delete s.alts;   /* dodati tek u v3/v4/v5 */
+      app.ctx.__z = s;
+      const r = app.evalIn('migrate(__z)');
+      assert.ok(r, `v=${JSON.stringify(v)} je odbijeno`);
+      assert.ok(Array.isArray(r.vdotLog) && r.moves && r.alts,
+        `v=${JSON.stringify(v)}: migracija od v1 nije prošla, polja nedostaju`);
+    }
+  });
+
+  test('provera ne sme opet da zavisi od tipa', () => {
+    const src = readRepoFile('app.js');
+    const m = /function migrate\(o\)\{([\s\S]*?)\n\}/.exec(src)[1];
+    assert.doesNotMatch(m, /typeof o\.v==='number'/,
+      'oznaka verzije se opet proverava po tipu — string je opet propuštan');
+    assert.match(m, /o\.v\s*>\s*SCHEMA\) return null/, 'nema odbijanja novije šeme');
+  });
+});

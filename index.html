@@ -661,8 +661,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .krow .kn{font-size:.78rem;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .krow .ka{font-size:.68rem;color:var(--txt3);font-weight:700}
 /* mapa tela (Povrede) */
+/* DODIRNA META NIJE NIŽA OD 44 px — nigde.
+   Prijavljeno merenjem u pregledaču: tri mete su bile 34, 38 i 42 px („Prednja"/
+   „Zadnja" na mapi bolova, segmentna traka u Podešavanjima, „Objasni trend").
+   Visina se dobijala iz `padding`-a i veličine slova, pa je zavisila od dužine
+   teksta umesto od toga koliko je prstu potrebno. `min-height` to odvaja: tekst
+   sme da se menja, meta ostaje ista. 44 px je donja granica koju i Apple i
+   Google navode, i ispod koje se u hodu promašuje. */
 .bodytoggle{display:flex;gap:8px;margin-bottom:10px}
-.bodytoggle button{flex:1;padding:9px;border-radius:12px;background:var(--glass-in);border:1px solid var(--line-soft);font-size:.78rem;font-weight:700;color:var(--txt2)}
+.bodytoggle button{flex:1;padding:9px;min-height:44px;border-radius:12px;background:var(--glass-in);border:1px solid var(--line-soft);font-size:.78rem;font-weight:700;color:var(--txt2)}
 .bodytoggle button.on{background:rgba(255,255,255,.92);border-color:transparent;color:var(--ink)}
 .bodywrap{display:flex;justify-content:center;padding:4px 0 2px}
 .bodymap{width:186px;height:auto;max-width:100%;display:block}
@@ -687,7 +694,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .wseg-in:focus{border-color:var(--cyan)}
 .wseg-in::placeholder{color:var(--txt3);font-weight:600}
 .wseg-out{min-width:120px;text-align:right}
-.btn-ai{width:100%;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:14px;padding:12px;font-weight:800;font-size:.88rem;color:var(--txt);cursor:pointer}
+.btn-ai{width:100%;min-height:44px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:14px;padding:12px;font-weight:800;font-size:.88rem;color:var(--txt);cursor:pointer}
 .btn-ai:active{opacity:.7}
 .btn-ai:disabled{opacity:.5}
 .ai-out{margin-top:10px;font-size:.85rem;line-height:1.6;color:var(--txt2)}
@@ -707,7 +714,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .nb-t b{display:block;font-size:.86rem;font-weight:800;color:var(--txt);letter-spacing:-.01em}
 .nb-t small{display:block;font-size:.76rem;color:var(--txt3);font-weight:600;line-height:1.5;margin-top:3px}
 .nb-d{display:flex;gap:8px;margin-top:10px}
-.nb-d button{font-weight:800;font-size:.78rem;padding:8px 14px;border-radius:999px;min-height:36px}
+.nb-d button{font-weight:800;font-size:.78rem;padding:8px 14px;border-radius:999px;min-height:44px}
 #nb-go{background:var(--glass-hi);color:var(--txt)}
 #nb-x{color:var(--txt3)}
 
@@ -728,7 +735,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .sh-t{font-size:1.1rem;font-weight:800;margin-bottom:2px}
 .sh-s{font-size:.75rem;color:var(--txt2);font-weight:600;margin-bottom:12px}
 .seg{display:flex;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:14px;padding:3px;margin-top:12px}
-.seg button{flex:1;min-height:40px;border-radius:9px;font-size:.8rem;font-weight:800;color:var(--txt2)}
+.seg button{flex:1;min-height:44px;border-radius:9px;font-size:.8rem;font-weight:800;color:var(--txt2)}
 .seg button.on{background:rgba(255,255,255,.92);color:var(--ink)}
 .seg button.on.c-done{background:var(--green);color:var(--ink)}
 .seg button.on.c-skip{background:var(--amber);color:var(--ink)}
@@ -785,6 +792,11 @@ nav button:active{transform:scale(.92)}
 
 .empty{text-align:center;color:var(--txt3);font-size:.85rem;padding:26px 10px;font-weight:600}
 .note-src{font-size:.7rem;color:var(--txt3);font-weight:600;margin-top:10px}
+/* Linkovi u sitnom redu na dnu ostaju U REČENICI — `min-height` bi ih izvukao
+   iz teksta i razbio red. Umesto toga dobijaju uspravni razmak, pa je meta viša
+   od slova a red se ne lomi. Ovo je jedini svesni izuzetak od pravila od 44 px:
+   inline link u prozi nije dugme, i jedini je takav u aplikaciji. */
+.note-src a{padding:16px 2px;margin:-16px 0;display:inline-block}
 
 /* PODEŠAVANJA — sekcije.
    Ranije je svaka sekcija bila naslov + gomila dugmadi + pasus sitnog teksta,
@@ -841,8 +853,10 @@ nav button:active{transform:scale(.92)}
 
 
 details.help{margin-top:10px}
+/* Sklopivo objašnjenje JESTE dodirna meta, iako izgleda kao red teksta — ovo se
+   otvara i zatvara prstom. Bilo je 28 px. */
 details.help>summary{list-style:none;cursor:pointer;font-size:.72rem;font-weight:700;
-      color:var(--txt3);display:flex;align-items:center;gap:6px;padding:7px 0}
+      color:var(--txt3);display:flex;align-items:center;gap:6px;padding:7px 0;min-height:44px}
 details.help>summary::-webkit-details-marker{display:none}
 details.help>summary::after{content:'⌄';margin-left:auto;font-size:.9rem;line-height:1;transition:transform .15s}
 details.help[open]>summary::after{transform:rotate(180deg)}
@@ -930,7 +944,7 @@ body.uvod-radi{overflow:hidden}
 .zfilteri::-webkit-scrollbar{display:none}
 .zchip{flex:none;font-size:.78rem;font-weight:800;letter-spacing:.02em;padding:9px 16px;
   border-radius:999px;background:var(--glass-in);border:1px solid var(--line-soft);
-  color:var(--txt3);min-height:40px}
+  color:var(--txt3);min-height:44px}
 .zchip.on{background:var(--green-dim);border-color:rgba(90,255,190,.45);color:var(--green)}
 
 .zrow{display:flex;align-items:center;gap:12px;padding:12px 0;width:100%;
@@ -1001,7 +1015,7 @@ body.uvod-radi{overflow:hidden}
 .zseg{display:flex;gap:6px;background:var(--glass-in);border:1px solid var(--line-soft);
   border-radius:999px;padding:4px;margin:2px 0 6px}
 .zseg button{flex:1;border:0;background:none;color:var(--txt3);font-size:.72rem;font-weight:800;
-  padding:8px 6px;border-radius:999px;min-height:38px;letter-spacing:.01em}
+  padding:8px 6px;border-radius:999px;min-height:44px;letter-spacing:.01em}
 .zseg button.on{background:var(--glass-hi);color:var(--txt)}
 
 .zprog{height:7px;border-radius:999px;background:var(--glass-in);overflow:hidden;margin-top:7px;display:block}
