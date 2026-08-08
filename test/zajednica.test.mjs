@@ -648,4 +648,62 @@ describe('Ime i slika iz tokena', () => {
     a.call('renderZajednica');
     assert.ok(!ekran(a).includes('PRVI'), 'PRVI stoji uz vrednost koje nema');
   });
+
+  test('slika stiže i kad je token NEMA — iz /auth/v1/user', () => {
+    /* Prijavljeno dvaput sa telefona. Token ne mora da nosi `user_metadata`;
+       zavisi od verzije GoTrue-a i od toga šta je Google vratio, a to se sa
+       strane aplikacije ne vidi. Poziv na /auth/v1/user je već postojao —
+       samo se odgovor bacao. */
+    const a = app();
+    a.evalIn(`SB.userId='u-1'; SB.access='tok'; SB.refresh='r';
+              SB.expiresAt=Date.now()+3600000; SB.slika=null; SB.ime=null;
+              navigator.onLine=true;`);
+    a.setFetch(async (url) => {
+      if (String(url).includes('/auth/v1/user')) {
+        return { ok: true, status: 200, text: async () => '',
+          json: async () => ({ id: 'u-1', email: 'ja@primer.com',
+            user_metadata: { full_name: 'Aleksandar Vuletić',
+                             avatar_url: 'https://lh3.googleusercontent.com/a/prava=s96-c' } }) };
+      }
+      return { ok: true, status: 200, json: async () => ([]), text: async () => '' };
+    });
+    return a.call('sbProveriSesiju').then(() => {
+      assert.equal(a.evalIn('SB.slika'), 'https://lh3.googleusercontent.com/a/prava=s96-c',
+        'slika se i dalje čita samo iz tokena');
+      assert.equal(a.evalIn('SB.ime'), 'Aleksandar Vuletić');
+    });
+  });
+
+  test('čim se sazna slika, javni profil se osvežava', () => {
+    /* Red u bazi je upisan pre nego što je slika bila poznata, pa nosi prazan
+       avatar_url. Bez ovoga bi slika stigla tek uz sledeću izmenu plana. */
+    const a = app();
+    a.evalIn(`SB.userId='u-1'; SB.access='tok'; SB.refresh='r';
+              SB.expiresAt=Date.now()+3600000; SB.slika=null; SB.ime=null;
+              S.zajed.vidljiv=true; navigator.onLine=true;`);
+    a.setFetch(async (url) => {
+      if (String(url).includes('/auth/v1/user')) {
+        return { ok: true, status: 200, text: async () => '',
+          json: async () => ({ id: 'u-1',
+            user_metadata: { avatar_url: 'https://lh3.googleusercontent.com/a/prava' } }) };
+      }
+      return { ok: true, status: 200, json: async () => ([]), text: async () => '' };
+    });
+    return a.call('sbProveriSesiju')
+      .then(() => new Promise(r => setTimeout(r, 10)))
+      .then(() => {
+        const upis = a.calls.fetches.find(([u, o]) =>
+          String(u).includes('zajednica_profil') && o && o.method === 'POST');
+        assert.ok(upis, 'profil nije osvežen pošto je slika saznata');
+        assert.equal(JSON.parse(upis[1].body).avatar_url,
+          'https://lh3.googleusercontent.com/a/prava');
+      });
+  });
+
+  test('odgovor bez metapodataka ne briše sliku koju već imamo', () => {
+    const a = app();
+    a.evalIn(`SB.userId='u-1'; SB.access='tok'; SB.slika='https://lh3.googleusercontent.com/a/staro';`);
+    assert.equal(a.call('sbIzKorisnika', { id: 'u-1' }), false);
+    assert.equal(a.evalIn('SB.slika'), 'https://lh3.googleusercontent.com/a/staro');
+  });
 });

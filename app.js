@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='217'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='218'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -10828,10 +10828,29 @@ function sbParseHash(hash){
 function sbPreuzmiIdentitet(){
   if(!SB||!SB.access) return false;
   const c=sbClaims(SB.access);
+  return sbUpisiIdentitet(c.slika, c.ime);
+}
+
+/* Upisuje ime i sliku u SB, ali SAMO neprazne vrednosti — prijava koja ih ne
+   nosi ne sme da obriše ono što već radi. Vraća da li se nešto promenilo. */
+function sbUpisiIdentitet(slika, ime){
   let promena=false;
-  if(c.slika && c.slika!==SB.slika){ SB.slika=c.slika; promena=true; }
-  if(c.ime   && c.ime  !==SB.ime  ){ SB.ime  =c.ime;   promena=true; }
+  if(slika && slika!==SB.slika){ SB.slika=slika; promena=true; }
+  if(ime   && ime  !==SB.ime  ){ SB.ime  =ime;   promena=true; }
   return promena;
+}
+
+/* Ime i slika iz odgovora /auth/v1/user. `user_metadata` je jedini pouzdan
+   izvor: JWT ga NOSI ILI NE NOSI, u zavisnosti od verzije GoTrue-a i od toga
+   šta je Google vratio pri prijavi — a to se sa strane aplikacije ne vidi i ne
+   može da se podesi. Zato se ne oslanjamo samo na token. */
+function sbIzKorisnika(u){
+  const um=(u&&typeof u.user_metadata==='object'&&u.user_metadata)?u.user_metadata:{};
+  const sl=um.avatar_url||um.picture||null;
+  return sbUpisiIdentitet(
+    (typeof sl==='string'&&/^https:\/\//.test(sl))?sl:null,
+    (typeof um.full_name==='string'&&um.full_name)||(typeof um.name==='string'&&um.name)||null
+  );
 }
 
 function sbClaims(jwt){
@@ -10948,6 +10967,22 @@ async function sbProveriSesiju(){
         ? 'Pristup ovom nalogu je zabranjen. Podaci na ovom uređaju su netaknuti. Ako misliš da je greška, javi se vlasniku aplikacije.'
         : 'Nalog više ne postoji ili je sesija istekla. Podaci na ovom uređaju su netaknuti — prijavi se da nastaviš.');
       return false;
+    }
+    /* ODAVDE STIŽE SLIKA ZA ZAJEDNICU.
+       Ovaj poziv je već postojao — samo se odgovor bacao. `user_metadata` u
+       njemu sadrži Google ime i sliku i onda kad ih token ne nosi, što je i
+       bio slučaj: profil je u bazi imao prazan `avatar_url`, pa se u krugu
+       video inicijal umesto slike. Nijedan dodatan zahtev. */
+    if(r.ok){
+      try{
+        if(sbIzKorisnika(await r.json())){
+          sbSave();
+          /* Javni profil nosi staru (praznu) sliku dok se ne prepiše. Čim
+             saznamo pravu, red se osvežava — inače bi slika stigla tek uz
+             sledeću izmenu plana. */
+          if(S.zajed&&S.zajed.vidljiv) zajUpisi().catch(()=>{});
+        }
+      }catch(e){}
     }
     return true;
   }catch(e){ return true; }   /* mreza — ne dira se nista */
