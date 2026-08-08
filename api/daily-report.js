@@ -249,7 +249,7 @@ function mergeRows(users, sazetaStanja, aiDays, todayStr) {
   });
 }
 
-function buildHtml(stats, rows, errors) {
+function buildHtml(stats, rows, errors, brisanja) {
   const row = (label, val) =>
     `<tr><td style="padding:6px 14px;color:#7A7A86;font-size:13px">${esc(label)}</td>` +
     `<td style="padding:6px 14px;font-weight:700;font-size:15px">${esc(val)}</td></tr>`;
@@ -280,6 +280,17 @@ function buildHtml(stats, rows, errors) {
       ${errors.aiUsage ? `<p style="color:#7A7A86;font-size:12px;margin-top:4px">Napomena: AI korišćenje nije uspelo da se učita (${esc(errors.aiUsage)}).</p>` : ''}`;
   }
 
+  /* Odložena brisanja se prijavljuju SAMO kad ih ima — prazan red svakog jutra
+     je šum koji se posle nedelju dana ne čita. */
+  const b = brisanja || { obrisano: [], greske: [] };
+  const brisanjaHtml = (b.obrisano.length || b.greske.length)
+    ? `<div style="margin-top:22px;padding:12px 14px;background:#16161D;border-radius:12px">
+         <div style="font-weight:700;font-size:13px;margin-bottom:6px">Odložena brisanja</div>
+         ${b.obrisano.length ? `<div style="color:#7A7A86;font-size:12px">Izvršeno: ${esc(b.obrisano.join(', '))}</div>` : ''}
+         ${b.greske.length ? `<div style="color:#FA2E55;font-size:12px">NIJE uspelo: ${esc(b.greske.join(' · '))}</div>` : ''}
+       </div>`
+    : '';
+
   return `<div style="font-family:-apple-system,sans-serif;max-width:640px;margin:0 auto;padding:20px;background:#0A0A0F;color:#F5F5F7">
     <div style="font-weight:800;font-size:18px;margin-bottom:4px">SUB<span style="color:#FA2E55">-20</span> — dnevni izveštaj</div>
     <div style="color:#7A7A86;font-size:12px;margin-bottom:18px">${esc(new Date().toLocaleDateString('sr-RS', { day: '2-digit', month: 'long', year: 'numeric' }))}</div>
@@ -293,7 +304,70 @@ function buildHtml(stats, rows, errors) {
     </table>
     <div style="font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#7A7A86;margin-bottom:8px">Aktivnost po korisniku</div>
     ${usersHtml}
+    ${brisanjaHtml}
   </div>`;
+}
+
+
+/* ============================================================
+   IZVRŠENJE ODLOŽENOG BRISANJA
+
+   Vlasnik ne briše tuđe naloge odmah — označi ih i zabrani (v.
+   supabase/admin-brisanje.sql i /api/broadcast {admin:'obrisi'}). Ovde se rok
+   naplaćuje: nalozi kojima je istekao brišu se stvarno.
+
+   ZAŠTO OVDE, a ne u zasebnoj funkciji: Vercel Hobby plan dozvoljava dvanaest
+   serverless funkcija po deployu, a već ih je devet. Ovaj posao ide jednom
+   dnevno, kao i izveštaj, i traži isti service_role ključ — pa je ovo
+   najprirodnije mesto.
+
+   NE SME DA OBORI IZVEŠTAJ. Ako brisanje padne, mejl svejedno mora da stigne,
+   jer u njemu i piše šta nije uspelo. Zato ceo posao vraća nalaz umesto da
+   baca. Spisak tabela je NAMERNO prepisan iz api/broadcast.js: fajlovi se ne
+   uvoze međusobno (v. komentar o build koraku u api/analyze.js), pa razliku
+   čuva test „spisak tabela je isti na sva tri mesta". */
+const BRISI_TABELE = [
+  'user_state', 'push_pretplata', 'ai_posao', 'api_usage',
+  'bug_report_usage', 'endpoint_usage', 'zajednica_profil', 'user_state_istorija'
+];
+
+async function izvrsiOdlozenaBrisanja(url, key) {
+  const baza = url.replace(/\/+$/, '');
+  const head = { apikey: key, Authorization: 'Bearer ' + key };
+  const nalaz = { obrisano: [], greske: [] };
+  let redovi = [];
+  try {
+    const r = await fetch(baza + '/rest/v1/nalog_za_brisanje?select=user_id,email,izvrsi_posle'
+      + '&izvrsi_posle=lt.' + encodeURIComponent(new Date().toISOString()), { headers: head });
+    if (!r.ok) { nalaz.greske.push('spisak: HTTP ' + r.status); return nalaz; }
+    redovi = await r.json();
+  } catch (e) { nalaz.greske.push('spisak: ' + e.message); return nalaz; }
+
+  for (const x of (Array.isArray(redovi) ? redovi : [])) {
+    const id = String(x.user_id || '');
+    if (!id) continue;
+    let pao = null;
+    for (const t of BRISI_TABELE) {
+      try {
+        const r = await fetch(baza + '/rest/v1/' + t + '?user_id=eq.' + encodeURIComponent(id),
+          { method: 'DELETE', headers: { ...head, Prefer: 'return=minimal' } });
+        if (!r.ok && r.status !== 404) pao = t + ': HTTP ' + r.status;
+      } catch (e) { pao = t + ': ' + e.message; }
+      if (pao) break;
+    }
+    /* Nalog TEK NA KRAJU, i samo ako su svi podaci prošli. Obrnut redosled
+       ostavlja čoveka bez pristupa a sa podacima na serveru. */
+    if (pao) { nalaz.greske.push((x.email || id) + ' — ' + pao); continue; }
+    try {
+      const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(id),
+        { method: 'DELETE', headers: head });
+      if (!r.ok) { nalaz.greske.push((x.email || id) + ' — nalog: HTTP ' + r.status); continue; }
+    } catch (e) { nalaz.greske.push((x.email || id) + ' — nalog: ' + e.message); continue; }
+    /* Red u nalog_za_brisanje nestaje sam, kroz `on delete cascade`. */
+    nalaz.obrisano.push(x.email || id);
+    console.log('[cron] izvrseno odlozeno brisanje naloga %s (%s)', x.email || '—', id);
+  }
+  return nalaz;
 }
 
 export default async function handler(req, res) {
@@ -330,8 +404,12 @@ export default async function handler(req, res) {
   try { aiDays = await fetchAiUsageDays(url, svcKey); }
   catch (e) { errors.aiUsage = e.message; }
 
+  /* Rok za odložena brisanja se naplaćuje PRE sastavljanja mejla, da bi nalaz
+     mogao da uđe u njega. */
+  const brisanja = await izvrsiOdlozenaBrisanja(url, svcKey);
+
   const rows = mergeRows(users, rawStates, aiDays, todayStr);
-  const html = buildHtml(stats, rows, errors);
+  const html = buildHtml(stats, rows, errors, brisanja);
 
   try {
     const r = await fetch('https://api.resend.com/emails', {

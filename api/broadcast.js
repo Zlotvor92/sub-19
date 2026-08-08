@@ -83,6 +83,101 @@ async function proveriVlasnika(req) { return !!(await vlasnikIz(req)); }
    KAPIJA JE UZA NEGO ZA SLANJE MEJLA: samo vlasnik, nikad CRON_SECRET.
    Zakazani posao sme da posalje obavestenje; ne sme da brise ljude.
    ============================================================ */
+/* ============================================================
+   ZAŠTITA RAZORNIH ADMIN RADNJI
+
+   Ko preuzme vlasnikov Google nalog dobija, bez ičega drugog, spisak svih
+   e-adresa i mogućnost da svakome obriše nalog jednim HTTP pozivom. Ovo su tri
+   sloja koja to sužavaju, poređana po tome šta rade:
+
+     SPREČAVA   drugi faktor — lozinka koja NE stoji u Google nalogu nego u
+                Vercel okruženju. Ukradena sesija je sama po sebi bezvredna.
+     OGRANIČAVA dnevni broj razornih radnji — i kad drugi faktor padne, šteta
+                staje na nekoliko naloga.
+     OTKRIVA    mejl vlasniku pri svakoj razornoj radnji, odmah.
+
+   Sva tri OTKAZUJU U SIGURNOM SMERU: ako lozinka nije podešena ili se brojač
+   ne može dobiti, radnja se ODBIJA. Bezbednosna provera koja se sama isključi
+   kad nije podešena ne štiti ni od čega — a izgleda kao da štiti.
+   ============================================================ */
+
+/* Lozinka za razorne radnje. Nije u bazi i nije u Google nalogu — stoji samo
+   u Vercel → Environment Variables, dakle na trećem mestu koje napadač sa
+   ukradenom sesijom nema. */
+function proveriDrugiFaktor(body) {
+  const tajna = String(process.env.ADMIN_2FA || '');
+  if (!tajna) return { ok: false, kod: 500,
+    greska: 'ADMIN_2FA nije podešen. Vercel → Settings → Environment Variables → dodaj ADMIN_2FA, pa redeploy. Dok ga nema, brisanje i zabrana se odbijaju.' };
+  const dat = String(body.lozinka == null ? '' : body.lozinka);
+  /* Poređenje konstantnog trajanja — isto kao proveriTajnu. Dužina se poredi
+     odvojeno i to curi samo dužinu, što je prihvaćeno svuda u ovom fajlu. */
+  if (dat.length !== tajna.length) return { ok: false, kod: 401, greska: 'Pogrešna lozinka.' };
+  let diff = 0;
+  for (let i = 0; i < dat.length; i++) diff |= dat.charCodeAt(i) ^ tajna.charCodeAt(i);
+  return diff === 0 ? { ok: true } : { ok: false, kod: 401, greska: 'Pogrešna lozinka.' };
+}
+
+/* Dnevni limit razornih radnji.
+
+   RAZLIKA OD `limitPrekoracen` u api/analyze.js: ONA NAMERNO PROPUŠTA kad
+   brojač ne odgovara, jer ne sme da obori analizu zbog baze. Ovde je obrnuto —
+   ovo je granica štete, i brojač koji ne radi znači da granice nema. Zato se
+   radnja odbija. */
+async function razornoDozvoljeno(token, endpoint, limit) {
+  try {
+    const r = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
+      method: 'POST',
+      headers: {
+        apikey: process.env.SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_endpoint: endpoint, p_limit: limit })
+    });
+    if (r.ok) return { ok: true };
+    const telo = await r.text();
+    if (/DAILY_LIMIT_EXCEEDED/i.test(telo)) {
+      return { ok: false, kod: 429,
+        greska: 'Dnevni limit za ovu radnju je dostignut (' + limit + '). Ako ovo nisi ti — promeni lozinku Google naloga i ADMIN_2FA.' };
+    }
+    console.error('[admin][ALARM] brojac razornih radnji nije radio (%s) — radnja ODBIJENA. HTTP %s: %s',
+      endpoint, r.status, telo.slice(0, 200));
+    return { ok: false, kod: 503, greska: 'Brojač ograničenja nije dostupan, pa je radnja odbijena. Pusti supabase/rate-limit.sql ako nije pušten.' };
+  } catch (e) {
+    console.error('[admin][ALARM] brojac razornih radnji nedostupan (%s) — radnja ODBIJENA: %s', endpoint, e.message);
+    return { ok: false, kod: 503, greska: 'Brojač ograničenja nije dostupan, pa je radnja odbijena.' };
+  }
+}
+
+/* Obaveštenje vlasniku. Šalje se POSLE uspešne radnje i NIKAD ne menja njen
+   ishod — mejl koji ne prođe ne sme da pretvori obavljeno brisanje u grešku.
+   Svrha je otkrivanje: ako ovo stigne a ti nisi ništa radio, znaš odmah. */
+async function javiVlasniku(naslov, redovi, req) {
+  const rk = process.env.RESEND_API_KEY, from = process.env.REPORT_FROM;
+  const na = String(process.env.ADMIN_EMAIL || process.env.REPORT_TO || '').trim();
+  if (!rk || !from || !na) return;
+  const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'nepoznata';
+  const kada = new Date().toISOString();
+  const telo = redovi.concat(['', 'Vreme: ' + kada, 'IP: ' + ip,
+    '', 'Ako ovo nisi bio ti: odmah promeni lozinku Google naloga i ADMIN_2FA u Vercel-u.'])
+    .map(r => '<div>' + String(r).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])) + '</div>')
+    .join('');
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + rk, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to: [na], subject: 'SUB-20 · ' + naslov, html: telo })
+    });
+  } catch (e) {
+    console.error('[admin][ALARM] obavestenje o razornoj radnji nije poslato: %s', e.message);
+  }
+}
+
+/* Koliko dana nalog stoji zabranjen pre nego što se podaci stvarno obrišu.
+   Kraće od 30 dana koje politika privatnosti navodi kao rok, pa je usklađeno;
+   dovoljno dugo da se pogrešna ili zlonamerna radnja primeti i poništi. */
+const DANA_DO_BRISANJA = 7;
+
 const TABELE = [
   'user_state',
   'push_pretplata',
@@ -94,10 +189,14 @@ const TABELE = [
   'user_state_istorija'
 ];
 
-async function adminRuta(res, body, vlasnik, baza, srvHead) {
+async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
   /* ---------- ZABRANA / SKIDANJE ---------- */
   if (body.admin === 'ban') {
     if (body.banId === vlasnik.id) return res.status(400).json({ error: 'Sebe ne možeš da zabraniš.' });
+    const f = proveriDrugiFaktor(body);
+    if (!f.ok) return res.status(f.kod).json({ error: f.greska });
+    const lim = await razornoDozvoljeno(token, 'admin_ban', 5);
+    if (!lim.ok) return res.status(lim.kod).json({ error: lim.greska });
     /* GoTrue prima `ban_duration` kao trajanje ('876000h' = sto godina) ili
        'none' za skidanje. Zasebna „unban" putanja ne postoji. */
     try {
@@ -112,6 +211,8 @@ async function adminRuta(res, body, vlasnik, baza, srvHead) {
       }
       const u = await r.json();
       console.log('[admin] %s je %s nalog %s', vlasnik.email, body.ukini ? 'odbranio' : 'zabranio', body.banId);
+      await javiVlasniku(body.ukini ? 'zabrana skinuta' : 'nalog zabranjen',
+        [(body.ukini ? 'Skinuta je zabrana sa naloga: ' : 'Zabranjen je nalog: ') + ((u && u.email) || body.banId)], req);
       return res.status(200).json({ ok: true, zabranjen: !body.ukini, email: (u && u.email) || null });
     } catch (e) { return res.status(503).json({ error: 'Server nije dostupan.' }); }
   }
@@ -124,6 +225,10 @@ async function adminRuta(res, body, vlasnik, baza, srvHead) {
     if (cilj === vlasnik.id) {
       return res.status(400).json({ error: 'Svoj nalog ne brišeš odavde — Podešavanja → Nalog → Brisanje naloga.' });
     }
+    const f = proveriDrugiFaktor(body);
+    if (!f.ok) return res.status(f.kod).json({ error: f.greska });
+    const lim = await razornoDozvoljeno(token, 'admin_obrisi', 3);
+    if (!lim.ok) return res.status(lim.kod).json({ error: lim.greska });
     /* Postojanje se proverava PRE brisanja redova: bez toga bi pogresan id
        obrisao nula redova i vratio „ok", pa bi izgledalo da je neko obrisan. */
     let meta = null;
@@ -133,32 +238,83 @@ async function adminRuta(res, body, vlasnik, baza, srvHead) {
     } catch (e) {}
     if (!meta || !meta.id) return res.status(404).json({ error: 'Taj nalog ne postoji.' });
 
-    const obrisano = [];
-    for (const t of TABELE) {
-      try {
-        const r = await fetch(baza + '/rest/v1/' + t + '?user_id=eq.' + encodeURIComponent(cilj), {
-          method: 'DELETE', headers: { ...srvHead, Prefer: 'return=minimal' }
-        });
-        if (!r.ok && r.status !== 404) {
-          console.error('[admin][ALARM] tabela %s nije obrisana za %s — HTTP %s', t, cilj, r.status);
-          return res.status(502).json({ error: 'Brisanje podataka nije uspelo (' + t + '). Nalog NIJE obrisan.' });
-        }
-        if (r.ok) obrisano.push(t);
-      } catch (e) {
-        return res.status(503).json({ error: 'Server nije dostupan. Nalog NIJE obrisan.' });
-      }
-    }
-    /* Nalog TEK NA KRAJU — obrnut redosled ostavlja coveka bez pristupa a sa
-       podacima na serveru. */
+    /* ODLOŽENO IZVRŠENJE. Nalog se ZABRANI (pristup prestaje u istom trenutku,
+       dakle svrha je ispunjena odmah) i OZNAČI. Podaci se stvarno uklanjaju tek
+       kad jutarnji posao vidi da je rok istekao — v. supabase/admin-brisanje.sql.
+
+       Zašto ne odmah: jedan HTTP poziv koji nepovratno briše tuđ nalog je, u
+       rukama nekoga ko je preuzeo vlasnikovu sesiju, alat za uništenje svih
+       korisnika. Sa odlaganjem ista ta radnja postaje nešto što se u roku od
+       nedelju dana poništi jednim dugmetom. */
     try {
       const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
-        method: 'DELETE', headers: srvHead
+        method: 'PUT', headers: { ...srvHead, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ban_duration: '876000h' })
       });
-      if (!r.ok) return res.status(502).json({ error: 'Podaci su obrisani, ali sam nalog nije.' });
-    } catch (e) { return res.status(503).json({ error: 'Podaci su obrisani, ali sam nalog nije.' }); }
+      if (!r.ok) return res.status(502).json({ error: 'Nalog nije zabranjen (' + r.status + '), pa nije ni označen za brisanje.' });
+    } catch (e) { return res.status(503).json({ error: 'Server nije dostupan. Nalog NIJE dirnut.' }); }
 
-    console.log('[admin] %s obrisao nalog %s (%s)', vlasnik.email, meta.email || '—', cilj);
-    return res.status(200).json({ ok: true, email: meta.email || null, obrisano });
+    const rok = new Date(Date.now() + DANA_DO_BRISANJA * 864e5).toISOString();
+    try {
+      const r = await fetch(baza + '/rest/v1/nalog_za_brisanje', {
+        method: 'POST',
+        headers: { ...srvHead, 'Content-Type': 'application/json',
+                   Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({ user_id: cilj, email: meta.email || null,
+                               oznacio: vlasnik.email, izvrsi_posle: rok })
+      });
+      if (!r.ok) {
+        /* Zabrana je prošla a oznaka nije: nalog bi ostao zaključan zauvek, bez
+           traga zašto. Skida se zabrana da stanje ne bude polovično. */
+        console.error('[admin][ALARM] oznaka za brisanje nije upisana za %s — HTTP %s; skidam zabranu', cilj, r.status);
+        try {
+          await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
+            method: 'PUT', headers: { ...srvHead, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ban_duration: 'none' })
+          });
+        } catch (e2) {}
+        return res.status(502).json({ error: 'Nalog nije označen za brisanje (' + r.status + '). Zabrana je skinuta — ništa nije promenjeno. Pusti supabase/admin-brisanje.sql ako nije pušten.' });
+      }
+    } catch (e) { return res.status(503).json({ error: 'Server nije dostupan. Nalog NIJE označen.' }); }
+
+    console.log('[admin] %s oznacio nalog %s (%s) za brisanje posle %s', vlasnik.email, meta.email || '—', cilj, rok);
+    await javiVlasniku('nalog označen za brisanje', [
+      'Nalog: ' + (meta.email || cilj),
+      'Pristup mu je zabranjen ODMAH.',
+      'Podaci se brišu posle: ' + rok,
+      'Do tada se može poništiti: Podešavanja → Korisnici.'], req);
+    return res.status(200).json({ ok: true, email: meta.email || null, odlozeno: true, izvrsiPosle: rok });
+  }
+
+  /* ---------- PONIŠTAVANJE OZNAKE ----------
+     Nije razorna radnja — vraća stanje na ono pre. Zato bez drugog faktora i
+     bez limita: ko je upravo primio obaveštenje da mu je neko obrisao naloge
+     mora da ih vrati bez ijedne prepreke. */
+  if (body.admin === 'ponisti') {
+    const cilj = String(body.obrisiId || '');
+    try {
+      const r = await fetch(baza + '/rest/v1/nalog_za_brisanje?user_id=eq.' + encodeURIComponent(cilj),
+        { method: 'DELETE', headers: { ...srvHead, Prefer: 'return=minimal' } });
+      if (!r.ok) return res.status(502).json({ error: 'Oznaka nije uklonjena (' + r.status + ').' });
+    } catch (e) { return res.status(503).json({ error: 'Server nije dostupan.' }); }
+    try {
+      await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
+        method: 'PUT', headers: { ...srvHead, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ban_duration: 'none' })
+      });
+    } catch (e) {}
+    console.log('[admin] %s ponistio brisanje naloga %s', vlasnik.email, cilj);
+    return res.status(200).json({ ok: true });
+  }
+
+  /* ---------- SPISAK OZNAČENIH ---------- */
+  if (body.admin === 'zakazano') {
+    try {
+      const r = await fetch(baza + '/rest/v1/nalog_za_brisanje?select=user_id,email,oznaceno,izvrsi_posle&order=izvrsi_posle.asc',
+        { headers: srvHead });
+      if (!r.ok) return res.status(502).json({ error: 'Spisak nije dostupan (' + r.status + ').' });
+      return res.status(200).json({ ok: true, zakazano: await r.json() });
+    } catch (e) { return res.status(503).json({ error: 'Server nije dostupan.' }); }
   }
 
   /* ---------- IZAZOV NEDELJE ----------
@@ -321,7 +477,12 @@ export default async function handler(req, res) {
     const u = process.env.SUPABASE_URL, s = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!u || !s) { res.status(500).json({ error: 'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY nisu podešeni.' }); return; }
     const baza = u.replace(/\/+$/, '');
-    return adminRuta(res, body, vlasnik, baza, { apikey: s, Authorization: 'Bearer ' + s });
+    /* Vlasnikov token ide dalje: dnevni brojač razornih radnji broji PO
+       KORISNIKU (auth.uid()), pa mora da ide njegovim tokenom, ne service_role
+       ključem — sa service_role ključem `auth.uid()` je null i brojanje nema
+       kome da se pripiše. */
+    const tok = (/^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || req.headers.Authorization || '').trim()) || [])[1] || '';
+    return adminRuta(req, res, body, vlasnik, baza, { apikey: s, Authorization: 'Bearer ' + s }, tok);
   }
 
   if (!proveriTajnu(req) && !(await proveriVlasnika(req))) {

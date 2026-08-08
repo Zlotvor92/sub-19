@@ -19,6 +19,7 @@ const ENV = {
   REPORT_TO: 'vlasnik@b.c',
   ADMIN_EMAIL: 'vlasnik@b.c',
   CRON_SECRET: 'tajna',
+  ADMIN_2FA: 'lozinka-za-razorno',
   GEMINI_API_KEY: 'gk',
   /* Bez ovoga bi /api/analyze javljao „nepoznato poreklo" i ćutke preskakao
      obaveštenje „analiza je gotova" — v. sopstvenoPoreklo(). */
@@ -1274,13 +1275,25 @@ describe('/api/delete-account — brisanje naloga', () => {
     const sql = readdirSync(join(ROOT, 'supabase'))
       .filter(f => f.endsWith('.sql'))
       .map(f => readFileSync(join(ROOT, 'supabase', f), 'utf8')).join('\n');
-    const uSemi = new Set();
+    const uSemi = new Map();
     const re = /create table if not exists public\.([a-z_]+)\s*\(([\s\S]*?)\n\);/g;
     let m;
-    while ((m = re.exec(sql))) { if (/\buser_id\b/.test(m[2])) uSemi.add(m[1]); }
+    while ((m = re.exec(sql))) {
+      if (/\buser_id\b/.test(m[2])) uSemi.set(m[1], /user_id[\s\S]{0,200}?on delete cascade/.test(m[2]));
+    }
     assert.ok(uSemi.size >= 4, 'nisam našao tabele u supabase/*.sql — regex je zastareo');
-    for (const t of uSemi) {
-      assert.ok(uKodu.has(t), `tabela ${t} ima user_id u šemi, a nije u TABELE spisku`);
+    /* PRAVILO: tabela sa `user_id` mora ILI biti u spisku za eksplicitno
+       brisanje, ILI imati `on delete cascade`. Bez jednog od toga red preživi
+       brisanje naloga i ostane siroče sa identifikatorom koji ne postoji.
+
+       Ranije se tražio SAMO spisak. To je bilo prestrogo i jednom je već
+       zasmetalo: `nalog_za_brisanje` NAMERNO nije u spisku. On se briše PRE
+       samog naloga, pa bi — da je u spisku — oznaka nestala i pre nego što se
+       vidi da li je brisanje naloga uspelo. Nalog bi ostao zabranjen zauvek,
+       bez ijednog zapisa zašto. Cascade to rešava sam, i to tek POSLE naloga. */
+    for (const [t, cascade] of uSemi) {
+      assert.ok(uKodu.has(t) || cascade,
+        `tabela ${t} ima user_id, a nije ni u TABELE spisku ni pod on delete cascade`);
     }
     /* user_state je pravljena rukom pre nego što je šema ušla u repozitorijum,
        pa je u SQL-u nema — ali mora biti u spisku. */
@@ -1311,7 +1324,7 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
   const IZVOR = readRepoFile('api/broadcast.js');
   const VLASNIK = { id: 'v1', email: ENV.ADMIN_EMAIL, email_confirmed_at: '2026-01-01' };
 
-  function stub(korisnik, { obrisiPada = null } = {}) {
+  function stub(korisnik, { obrisiPada = null, oznakaPada = false, brojacPada = false } = {}) {
     const pozivi = [];
     globalThis.fetch = async (url, opt) => {
       const u = String(url), metod = (opt && opt.method) || 'GET';
@@ -1327,6 +1340,13 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
       if (u.includes('/auth/v1/admin/users')) {
         return jsonRes([VLASNIK, { id: 'k1', email: 'prvi@t.rs', last_sign_in_at: '2026-08-01' }]);
       }
+      if (u.includes('/rest/v1/rpc/check_and_bump_endpoint')) {
+        return brojacPada ? jsonRes({ message: 'nema' }, false, 500) : jsonRes(1);
+      }
+      if (u.includes('/rest/v1/nalog_za_brisanje')) {
+        return oznakaPada ? jsonRes({ error: 'ne' }, false, 500) : jsonRes([]);
+      }
+      if (u.includes('api.resend.com')) return jsonRes({ id: 'mejl' });
       const m = /\/rest\/v1\/([a-z_]+)\?/.exec(u);
       if (m) return obrisiPada === m[1] ? jsonRes({ error: 'ne' }, false, 500) : jsonRes([]);
       throw new Error('neocekivan poziv: ' + u);
@@ -1389,34 +1409,54 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
     assert.equal(pozivi.filter(x => x.startsWith('DELETE')).length, 0, 'nesto je obrisano');
   });
 
+  const LOZ = ENV.ADMIN_2FA;
+
   test('nepostojeci id ne prolazi kao uspeh', async () => {
-    /* Bez provere postojanja bi pogresan id obrisao nula redova i vratio
+    /* Bez provere postojanja bi pogresan id oznacio nepostojeci nalog i vratio
        „ok" — izgledalo bi kao da je neko obrisan a nije. */
     const pozivi = stub(VLASNIK);
-    const res = await zovi({ admin: 'obrisi', obrisiId: 'nepostojeci' });
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'nepostojeci', lozinka: LOZ });
     assert.equal(res.code, 404);
-    assert.equal(pozivi.filter(x => x.startsWith('DELETE')).length, 0);
+    assert.equal(pozivi.filter(x => x.includes('nalog_za_brisanje')).length, 0);
   });
 
-  test('brise SVE tabele pa tek onda nalog', async () => {
+  test('NE brise odmah — zabrani i oznaci', async () => {
+    /* Jedan HTTP poziv koji nepovratno brise tudj nalog je, u rukama nekoga ko
+       je preuzeo vlasnikovu sesiju, alat za unistenje svih korisnika. Sada
+       pristup prestaje odmah, a podaci se uklanjaju tek posle roka. */
     const pozivi = stub(VLASNIK);
-    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1' });
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: LOZ });
     assert.equal(res.code, 200);
-    const tabele = pozivi.filter(x => x.startsWith('DELETE') && x.includes('/rest/v1/'));
-    for (const t of ['user_state', 'push_pretplata', 'ai_posao', 'api_usage', 'bug_report_usage', 'endpoint_usage']) {
-      assert.ok(tabele.some(x => x.includes('/rest/v1/' + t + '?')), 'tabela nije obrisana: ' + t);
-    }
-    const zadnjaTabela = pozivi.findLastIndex(x => x.startsWith('DELETE') && x.includes('/rest/v1/'));
-    const nalog = pozivi.findIndex(x => x.startsWith('DELETE') && x.includes('/auth/v1/admin/users/'));
-    assert.ok(nalog > zadnjaTabela, 'nalog je obrisan PRE podataka');
+    assert.equal(res.body.odlozeno, true);
+    assert.ok(res.body.izvrsiPosle, 'nije vracen rok');
+    assert.ok(new Date(res.body.izvrsiPosle).getTime() > Date.now(), 'rok je u proslosti');
+    assert.equal(pozivi.filter(x => x.startsWith('DELETE') && x.includes('/auth/v1/admin/users/')).length, 0,
+      'nalog je obrisan odmah');
+    assert.equal(pozivi.filter(x => x.startsWith('DELETE') && x.includes('/rest/v1/user_state?')).length, 0,
+      'podaci su obrisani odmah');
+    assert.ok(pozivi.some(x => x.startsWith('PUT') && x.includes('/auth/v1/admin/users/')), 'nalog nije zabranjen');
+    assert.ok(pozivi.some(x => x.includes('nalog_za_brisanje')), 'nalog nije oznacen');
   });
 
-  test('kad brisanje podataka padne, nalog OSTAJE', async () => {
-    const pozivi = stub(VLASNIK, { obrisiPada: 'ai_posao' });
-    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1' });
+  test('kad oznaka ne prodje, zabrana se SKIDA', async () => {
+    /* Inace bi nalog ostao zakljucan zauvek, bez ijednog zapisa zasto —
+       polovicno stanje koje niko ne bi umeo da razmrsi. */
+    const pozivi = stub(VLASNIK, { oznakaPada: true });
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: LOZ });
     assert.equal(res.code, 502);
-    assert.match(res.body.error, /NIJE obrisan/);
-    assert.equal(pozivi.filter(x => x.startsWith('DELETE') && x.includes('/auth/v1/admin/users/')).length, 0);
+    assert.match(res.body.error, /Zabrana je skinuta/);
+    const putovi = pozivi.filter(x => x.startsWith('PUT') && x.includes('/auth/v1/admin/users/'));
+    assert.equal(putovi.length, 2, 'zabrana nije skinuta posle neuspele oznake');
+  });
+
+  test('ponistavanje skida i oznaku i zabranu, BEZ lozinke', async () => {
+    /* Ko je upravo primio obavestenje da mu je neko obrisao naloge mora da ih
+       vrati bez ijedne prepreke. Vracanje na staro nije razorna radnja. */
+    const pozivi = stub(VLASNIK);
+    const res = await zovi({ admin: 'ponisti', obrisiId: 'k1' });
+    assert.equal(res.code, 200);
+    assert.ok(pozivi.some(x => x.startsWith('DELETE') && x.includes('nalog_za_brisanje')), 'oznaka nije uklonjena');
+    assert.ok(pozivi.some(x => x.startsWith('PUT') && x.includes('/auth/v1/admin/users/')), 'zabrana nije skinuta');
   });
 
   test('zabrana i skidanje zabrane idu na isti nalog', async () => {
@@ -1430,14 +1470,16 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
         poslato = JSON.parse(opt.body);
         return jsonRes({ id: 'k1', email: 'prvi@t.rs' });
       }
+      if (u.includes('/rest/v1/rpc/check_and_bump_endpoint')) return jsonRes(1);
+      if (u.includes('api.resend.com')) return jsonRes({ id: 'mejl' });
       throw new Error('neocekivan poziv: ' + u);
     };
-    let res = await zovi({ admin: 'ban', banId: 'k1' });
+    let res = await zovi({ admin: 'ban', banId: 'k1', lozinka: ENV.ADMIN_2FA });
     assert.equal(res.code, 200);
     assert.equal(res.body.zabranjen, true);
     assert.notEqual(poslato.ban_duration, 'none', 'zabrana je poslata kao skidanje');
 
-    res = await zovi({ admin: 'ban', banId: 'k1', ukini: true });
+    res = await zovi({ admin: 'ban', banId: 'k1', ukini: true, lozinka: ENV.ADMIN_2FA });
     assert.equal(res.code, 200);
     assert.equal(res.body.zabranjen, false);
     assert.equal(poslato.ban_duration, 'none', 'skidanje zabrane nije poslato kao none');
@@ -1470,6 +1512,110 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
     assert.equal(k.find(x => x.id === 'a').zabranjen, true, 'aktivna zabrana nije prikazana');
     assert.equal(k.find(x => x.id === 'b').zabranjen, false, 'istekla zabrana je prikazana kao aktivna');
     assert.equal(k.find(x => x.id === 'c').zabranjen, false);
+  });
+
+  /* ---------- TRI SLOJA OKO RAZORNIH RADNJI ----------
+     Ko preuzme vlasnikov Google nalog dobija spisak svih e-adresa i, do sada,
+     mogucnost da svakome obrise nalog jednim pozivom. Ove zamke cuvaju da
+     nijedan od tri sloja ne otkaze U POGRESNOM SMERU. */
+
+  test('bez lozinke se razorne radnje ODBIJAJU', async () => {
+    for (const telo of [{ admin: 'obrisi', obrisiId: 'k1' }, { admin: 'ban', banId: 'k1' }]) {
+      stub(VLASNIK);
+      const res = await zovi(telo);
+      assert.equal(res.code, 401, `${telo.admin} je prosao bez lozinke`);
+    }
+  });
+
+  test('pogresna lozinka ne prolazi', async () => {
+    stub(VLASNIK);
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: 'skoro-tacna-lozinka' });
+    assert.equal(res.code, 401);
+  });
+
+  test('kad ADMIN_2FA nije podesen, radnje se ODBIJAJU — ne propustaju', async () => {
+    /* Bezbednosna provera koja se sama iskljuci kad nije podesena ne stiti ni
+       od cega, a izgleda kao da stiti. Ovo je najvaznija od cetiri zamke. */
+    const staro = process.env.ADMIN_2FA;
+    delete process.env.ADMIN_2FA;
+    try {
+      const pozivi = stub(VLASNIK);
+      const res = await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: 'bilo sta' });
+      assert.equal(res.code, 500);
+      assert.match(res.body.error, /ADMIN_2FA/);
+      assert.equal(pozivi.filter(x => x.includes('nalog_za_brisanje')).length, 0,
+        'nalog je oznacen iako drugi faktor nije podesen');
+    } finally { process.env.ADMIN_2FA = staro; }
+  });
+
+  test('kad brojac ogranicenja ne radi, radnja se ODBIJA', async () => {
+    /* Suprotno od limitPrekoracen u api/analyze.js, koja namerno PROPUSTA:
+       tamo limit ne sme da obori analizu, ovde je limit granica stete i brojac
+       koji ne radi znaci da granice nema. */
+    const pozivi = stub(VLASNIK, { brojacPada: true });
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: ENV.ADMIN_2FA });
+    assert.equal(res.code, 503);
+    assert.equal(pozivi.filter(x => x.includes('nalog_za_brisanje')).length, 0);
+  });
+
+  test('brojac se gadja VLASNIKOVIM tokenom, ne service_role kljucem', async () => {
+    /* Brojac broji po auth.uid(). Sa service_role kljucem je auth.uid() null,
+       pa brojanje nema kome da se pripise i limit tiho ne postoji. */
+    let zaglavlje = null;
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) return jsonRes(VLASNIK);
+      if (u.includes('/rest/v1/rpc/check_and_bump_endpoint')) {
+        zaglavlje = (opt.headers || {}).Authorization;
+        return jsonRes(1);
+      }
+      if (/\/auth\/v1\/admin\/users\//.test(u)) return jsonRes({ id: 'k1', email: 'prvi@t.rs' });
+      if (u.includes('nalog_za_brisanje')) return jsonRes([]);
+      if (u.includes('api.resend.com')) return jsonRes({ id: 'm' });
+      throw new Error('neocekivan poziv: ' + u);
+    };
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: ENV.ADMIN_2FA });
+    assert.equal(res.code, 200);
+    assert.equal(zaglavlje, 'Bearer t', `brojac je gadjan sa: ${zaglavlje}`);
+    assert.notEqual(zaglavlje, 'Bearer srv', 'brojac je gadjan service_role kljucem');
+  });
+
+  test('vlasnik dobije mejl o svakoj razornoj radnji', async () => {
+    /* Ako ovo stigne a ti nisi nista radio, znas u istom minutu. */
+    const pozivi = stub(VLASNIK);
+    await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: ENV.ADMIN_2FA });
+    assert.ok(pozivi.some(x => x.includes('api.resend.com')), 'obavestenje nije poslato');
+  });
+
+  test('neuspelo obavestenje NE obara radnju', async () => {
+    /* Mejl koji ne prodje ne sme da pretvori obavljenu radnju u gresku —
+       covek bi je ponovio misleci da nije prosla. */
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) return jsonRes(VLASNIK);
+      if (u.includes('/rest/v1/rpc/check_and_bump_endpoint')) return jsonRes(1);
+      if (/\/auth\/v1\/admin\/users\//.test(u)) return jsonRes({ id: 'k1', email: 'prvi@t.rs' });
+      if (u.includes('nalog_za_brisanje')) return jsonRes([]);
+      if (u.includes('api.resend.com')) throw new Error('Resend pao');
+      throw new Error('neocekivan poziv: ' + u);
+    };
+    const res = await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: ENV.ADMIN_2FA });
+    assert.equal(res.code, 200, 'radnja je prijavljena kao neuspela zbog mejla');
+  });
+
+  test('izazov i spisak NE traze lozinku', async () => {
+    /* Drugi faktor stiti od nepovratnog. Da se trazi i za citanje spiska,
+       vlasnik bi ga kucao svaki put i naucio da ga kuca bez razmisljanja —
+       cime prestaje da bude drugi faktor. */
+    stub(VLASNIK);
+    assert.equal((await zovi({ admin: 'lista' })).code, 200);
+    globalThis.fetch = async (url) => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) return jsonRes(VLASNIK);
+      if (u.includes('zajednica_izazov')) return jsonRes([{ id: 1, tekst: 'x' }]);
+      throw new Error('neocekivan poziv: ' + u);
+    };
+    assert.equal((await zovi({ admin: 'izazov', tekst: 'Novi izazov nedelje' })).code, 200);
   });
 
   test('spisak tabela je ISTI kao u delete-account.js', () => {
