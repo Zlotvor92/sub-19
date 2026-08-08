@@ -143,10 +143,73 @@ export function vapidZaglavlje(endpoint, javni, privatni, subjekat, sada) {
   return 'vapid t=' + ulaz + '.' + potpis + ', k=' + b64u(k.pub);
 }
 
+/* Dnevni brojač za `proba`. Namerno PROPUŠTA kad baza ne odgovori — v. poziv. */
+async function probaPrekoracena(token) {
+  const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
+  if (!url || !anon) return false;
+  try {
+    const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
+      method: 'POST',
+      headers: { apikey: anon, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_endpoint: 'push_proba', p_limit: 20 })
+    });
+    if (r.ok) return false;
+    return /DAILY_LIMIT_EXCEEDED/i.test(await r.text());
+  } catch (e) { return false; }
+}
+
+/* ============================================================
+   ODREDIŠTE PUSH ZAHTEVA — SAMO POZNATI PUSH SERVISI
+
+   Do sada je adresa uređaja morala samo da počne sa `https://`. To znači da je
+   prijavljen korisnik mogao da upiše „uređaj" čija je adresa bilo koji host, pa
+   da jednim pozivom `{akcija:'proba'}` — i posle toga svakog jutra kroz cron —
+   natera naš server na odlazne POST zahteve gde on kaže. Nije curenje podataka
+   (telo je šifrovano njegovim ključem i odgovor mu se ne vraća), ali jeste slep
+   POST iz izlaznog saobraćaja našeg projekta, pojačivač 1:N ka cilju po
+   njegovom izboru, i trošenje roka jutarnjeg posla.
+
+   Spisak je NAMERNO širok — po vlasniku domena, ne po tačnom hostu. Push
+   servisi menjaju podomene bez najave (`fcm.googleapis.com`,
+   `*.notify.windows.com`, `*.push.apple.com`), a spisak koji je previše uzak
+   tiho obori obaveštenja na nekom pregledaču i to se otkrije mesecima kasnije.
+
+   Poklapanje ide po HOSTU iz `new URL`, ne po `indexOf` nad celim nizom:
+   `https://napadac.example/?x=push.apple.com` sadrži pravi domen, a nije on. */
+const PUSH_DOMENI = [
+  'googleapis.com',      /* Chrome / Edge / Android — fcm.googleapis.com */
+  'google.com',          /* starije FCM adrese */
+  'push.apple.com',      /* Safari, iOS */
+  'mozilla.com',         /* Firefox — updates.push.services.mozilla.com */
+  'notify.windows.com',  /* stariji Edge / Windows */
+  'live.com'
+];
+export function jePushServis(endpoint) {
+  let u;
+  try { u = new URL(String(endpoint)); } catch (e) { return false; }
+  /* ŠEMA SE PROVERAVA OVDE, ne samo pri prijavi. Ovo je jedina provera kroz koju
+     prolazi svako slanje, pa mora da bude potpuna: red upisan pre nje (ili
+     ubuduće drugim putem) sa `http://fcm.googleapis.com/…` inače prođe, a to je
+     nešifrovan zahtev sa VAPID potpisom u zaglavlju. */
+  if (u.protocol !== 'https:') return false;
+  const h = u.hostname.toLowerCase();
+  return PUSH_DOMENI.some(d => h === d || h.endsWith('.' + d));
+}
+/* Koliko uređaja jedan nalog sme da prijavi. Dovoljno za telefon, tablet,
+   računar i rezervu; dovoljno malo da spisak ne postane oruđe. */
+const NAJVISE_UREDJAJA = 8;
+
 /* Jedno slanje. Vraća i HTTP status, jer 404/410 znače „ovaj uređaj više ne
    postoji" i tada se red BRIŠE — inače bi se mrtve pretplate gomilale i svaki
    sledeći podsetnik bio sporiji za njihov broj. */
 export async function posaljiJednoj(pret, poruka, env) {
+  /* Provera odredišta stoji I OVDE, ne samo pri prijavi. Redovi upisani pre nego
+     što je spisak postojao ostaju u bazi; bez ove provere bi jutarnji posao
+     nastavio da ih poziva. Ovo je jedino mesto kroz koje prolazi SVAKO slanje
+     (proba, podsetnik, objava, unutrašnji `posalji`), pa je jedna provera dovoljna. */
+  if (!jePushServis(pret && pret.endpoint)) {
+    return { ok: false, status: 0, mrtva: true, greska: 'Adresa nije push servis pregledača.' };
+  }
   const zag = vapidZaglavlje(pret.endpoint, env.VAPID_PUBLIC_KEY, env.VAPID_PRIVATE_KEY,
     env.VAPID_SUBJECT || 'mailto:sub20@example.com');
   if (!zag) return { ok: false, status: 0, greska: 'VAPID ključevi nisu podešeni ili nisu ispravni.' };
@@ -507,6 +570,29 @@ export default async function handler(req, res) {
     if (!/^https:\/\//.test(endpoint) || !kljucevi.p256dh || !kljucevi.auth) {
       res.status(400).json({ error: 'Pretplata nije potpuna.' }); return;
     }
+    /* ODREDIŠTE MORA BITI PUSH SERVIS PREGLEDAČA — v. jePushServis.
+       Bez ovoga je adresa bila bilo koji https host, pa je server slao slepe
+       POST zahteve gde napadač kaže. */
+    if (!jePushServis(endpoint)) {
+      res.status(400).json({ error: 'Ta adresa nije push servis pregledača.' }); return;
+    }
+    if (endpoint.length > 500) {
+      res.status(400).json({ error: 'Adresa pretplate je predugačka.' }); return;
+    }
+    /* GORNJA GRANICA UREĐAJA. `endpoint` je `unique`, pa svaki nov pravi NOV
+       red — bez granice je jedan nalog mogao da upiše hiljade „uređaja" i time
+       potroši ceo rok jutarnjeg posla, pa pravi ljudi ostanu bez podsetnika.
+       Broji se PRE upisa; postojeći endpoint se samo prepisuje i ne troši mesto. */
+    try {
+      const r = await fetch(sbURL(TABELA + '?select=endpoint'), { headers: korisnikGlava(auth.token) });
+      if (r.ok) {
+        const moji = await r.json();
+        if (Array.isArray(moji) && !moji.some(x => x && x.endpoint === endpoint) && moji.length >= NAJVISE_UREDJAJA) {
+          res.status(409).json({ error: 'Dostignut je najveći broj uređaja (' + NAJVISE_UREDJAJA + '). Isključi obaveštenja na uređaju koji više ne koristiš.' });
+          return;
+        }
+      }
+    } catch (e) { /* provera broja ne sme da obori prijavu zbog baze */ }
     if (!process.env.VAPID_PRIVATE_KEY) {
       res.status(503).json({ error: 'Obaveštenja još nisu podešena na serveru (VAPID ključevi).' }); return;
     }
@@ -564,6 +650,14 @@ export default async function handler(req, res) {
 
   /* --- probno obaveštenje na sopstvene uređaje --- */
   if (akcija === 'proba') {
+    /* Dnevni limit. Proba šalje na SVE prijavljene uređaje, pa je jedan poziv
+       do osam odlaznih zahteva. Za razliku od admin radnji, ovde se na otkaz
+       brojača PROPUŠTA — proba nije razorna, a baza ne sme da obori jedinu
+       proveru kojom čovek vidi da li obaveštenja rade (isti izbor kao u
+       api/icu.js). */
+    if (await probaPrekoracena(auth.token)) {
+      res.status(429).json({ error: 'Previše proba danas. Probaj ponovo sutra.' }); return;
+    }
     const ishod = await posaljiKorisniku(auth.userId, {
       naslov: 'SUB-20 · proba',
       telo: 'Obaveštenja rade. Ovako će izgledati jutarnji podsetnik.',

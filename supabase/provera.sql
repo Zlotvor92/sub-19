@@ -124,15 +124,76 @@ select 'verzija · ' || p.proname || ' računa dan po',
 
 union all
 
--- 5. POLITIKE nad ai_posao — RLS bez politike ne pušta nikoga,
---    a pogrešna politika pušta svakoga.
-select 'politika · ai_posao.' || policyname, cmd, 'OK'
-  from pg_policies where schemaname = 'public' and tablename = 'ai_posao'
+-- 5. POLITIKE — GLEDA SE ŠTA PROPUŠTAJU, NE SAMO DA POSTOJE
+--
+--    Ovo je ranije za svaku politiku koja postoji ispisivalo 'OK', ne gledajući
+--    koga propušta. Time je provera koja postoji BAŠ ZATO da uhvati razilaženje
+--    baze i repozitorijuma proglašavala ispravnom i politiku `using (true)` nad
+--    `user_state` — dakle stanje u kom svaki prijavljen korisnik čita CELO
+--    stanje svakog drugog: plan, dnevnik, beleške, HRV, puls u miru, san,
+--    težinu, mapu bolova. Jedna pogrešna linija u SQL Editoru, i niko to ne vidi.
+--
+--    Pravilo: izraz politike mora da veže red za `auth.uid()`. Jedini namerni
+--    izuzetak je čitanje tuđeg profila u Zajednici, koje ide kroz
+--    `zajednica_vidljiv_ja()` — i to je izuzetak koji se ovde IMENUJE, umesto da
+--    se ćutke propusti.
+--
+--    `qual` je izraz iz `using`, `with_check` iz `with check`. Politika za upis
+--    bez `with_check` propušta svaki red koji prođe `using`, pa se traži oba.
+select 'politika · ' || tablename || '.' || policyname,
+       cmd || coalesce(' · using: ' || substr(replace(coalesce(qual,''), E'\n', ' '), 1, 60), ''),
+       case
+         when coalesce(qual,'') ~* '\mtrue\M' and coalesce(qual,'') !~ 'auth\.uid'
+           then 'PROPUŠTA SVE — using je true, a ne veže red za auth.uid()'
+         when cmd in ('INSERT','UPDATE','ALL') and coalesce(with_check,'') = ''
+           then 'STARO — radnja upisa bez with check'
+         when cmd in ('INSERT','UPDATE','ALL') and coalesce(with_check,'') ~* '\mtrue\M'
+              and coalesce(with_check,'') !~ 'auth\.uid'
+           then 'PROPUŠTA SVE — with check je true'
+         when coalesce(qual,'') !~ 'auth\.uid' and coalesce(with_check,'') !~ 'auth\.uid'
+              and coalesce(qual,'') !~ 'zajednica_vidljiv_ja'
+           then 'PROVERI — izraz ne pominje auth.uid()'
+         else 'OK' end
+  from pg_policies
+ where schemaname = 'public'
+   and tablename in ('ai_posao','zajednica_profil','user_state','push_pretplata',
+                     'user_state_istorija','zajednica_izazov','nalog_za_brisanje',
+                     'api_usage','bug_report_usage','endpoint_usage')
 
 union all
 
-select 'politika · zajednica_profil.' || policyname, cmd, 'OK'
-  from pg_policies where schemaname = 'public' and tablename = 'zajednica_profil'
+-- 5b. `user_state` MORA da ima i politiku za čitanje i politiku za upis.
+--     Tabela nosi CELO stanje korisnika, a njene politike do sada nisu bile ni u
+--     jednom SQL fajlu — pa se nisu mogle ni uporediti ni sa čim. Sada su u
+--     supabase/user-state.sql.
+select 'user_state · politika ' || o.radnja,
+       coalesce((select string_agg(policyname, ', ') from pg_policies
+                  where schemaname = 'public' and tablename = 'user_state'
+                    and cmd in (o.radnja, 'ALL')), '—'),
+       case when exists (select 1 from pg_policies
+                          where schemaname = 'public' and tablename = 'user_state'
+                            and cmd in (o.radnja, 'ALL'))
+            then 'OK' else 'NEDOSTAJE — pusti user-state.sql' end
+  from (select unnest(array['SELECT','INSERT','UPDATE','DELETE']) as radnja) o
+
+union all
+
+-- 5c. `anon` NE SME NIŠTA nad tabelama sa podacima. RLS štiti redove, ali
+--     `grant` je sloj ispod njega: bez `revoke`, javni anon ključ dobija pristup
+--     tabeli i onda sve visi na tome da je politika napisana ispravno.
+select 'anon · ' || o.ime,
+       coalesce((select string_agg(distinct privilege_type, ', ')
+                   from information_schema.role_table_grants
+                  where grantee = 'anon' and table_schema = 'public'
+                    and table_name = o.ime), 'nema pristup'),
+       case when exists (select 1 from information_schema.role_table_grants
+                          where grantee = 'anon' and table_schema = 'public'
+                            and table_name = o.ime)
+            then 'PROPUŠTA — anon ima grant nad ovom tabelom'
+            else 'OK' end
+  from (select unnest(array['user_state','user_state_istorija','zajednica_profil',
+                            'push_pretplata','ai_posao','nalog_za_brisanje',
+                            'endpoint_usage','api_usage','bug_report_usage']) as ime) o
 
 union all
 

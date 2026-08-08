@@ -96,9 +96,11 @@ async function proveriVlasnika(req) { return !!(await vlasnikIz(req)); }
 
      SPREČAVA   drugi faktor — lozinka koja NE stoji u Google nalogu nego u
                 Vercel okruženju. Ukradena sesija je sama po sebi bezvredna.
-     OGRANIČAVA dnevni broj razornih radnji — i kad drugi faktor padne, šteta
+     OGRANIČAVA dnevni broj POKUŠAJA (ne uspeha — v. razornaKapija) i, odvojeno,
+                dnevni broj izvršenih radnji: i kad drugi faktor padne, šteta
                 staje na nekoliko naloga.
-     OTKRIVA    mejl vlasniku pri svakoj razornoj radnji, odmah.
+     OTKRIVA    mejl vlasniku pri svakoj razornoj radnji I pri svakoj pogrešnoj
+                lozinci, odmah.
 
    Sva tri OTKAZUJU U SIGURNOM SMERU: ako lozinka nije podešena ili se brojač
    ne može dobiti, radnja se ODBIJA. Bezbednosna provera koja se sama isključi
@@ -177,6 +179,50 @@ async function javiVlasniku(naslov, redovi, req) {
   }
 }
 
+/* ============================================================
+   KAPIJA ZA RAZORNU RADNJU — BROJI POKUŠAJE, NE USPEHE
+
+   Ovako je bilo: prvo lozinka, pa brojač, pa (posle uspeha) obaveštenje. Sva tri
+   sloja su radila — ali TEK POSLE tačne lozinke. Pogrešna lozinka nije trošila
+   brojač, nije slala mejl i nije ostavljala nikakav trag, pa se drugi faktor
+   pogađao u petlji, neograničeno i nemo. Napadač sa ukradenom vlasnikovom
+   sesijom — tačno pretnja zbog koje drugi faktor i postoji — imao je onoliko
+   pokušaja koliko mu treba.
+
+   Poređenje konstantnog trajanja štiti od merenja vremena, ne od broja pokušaja.
+   Odloženo brisanje od 7 dana je oporavak POSLE proboja, ne prepreka proboju.
+   Vercel Hobby plan ne nudi ograničenje zahteva.
+
+   Sada je redosled obrnut: SVAKI pokušaj se prvo izbroji, pa se lozinka
+   proverava. Isti brojač troše i uspeli i neuspeli pokušaji — inače bi napadač
+   opet imao neograničeno mnogo neuspelih. Na pogrešnu lozinku ide mejl vlasniku,
+   odmah, jer je pogrešna admin lozinka retka i sama po sebi vest.
+
+   ZADRŽANO OTKAZIVANJE U SIGURNOM SMERU: brojač koji ne radi znači da granice
+   nema, pa se radnja odbija — isto kao pre. */
+const RAZORNO_POKUSAJA = 12;   /* dnevno, uspeli i neuspeli zajedno */
+
+async function razornaKapija(req, body, token, radnja) {
+  const lim = await razornoDozvoljeno(token, 'admin_2fa', RAZORNO_POKUSAJA);
+  if (!lim.ok) return lim;
+  const f = proveriDrugiFaktor(body);
+  if (!f.ok) {
+    /* Mejl je najbrži put do čoveka i nikad ne menja ishod (v. javiVlasniku).
+       Sama lozinka se NE upisuje ni u mejl ni u log — poslala bi napadačev
+       pokušaj u sanduče, a pri promašaju za jedan znak i pravu lozinku. */
+    if (f.kod === 401) {
+      console.error('[admin][ALARM] pogresna ADMIN_2FA lozinka za radnju %s', radnja);
+      await javiVlasniku('pogrešna admin lozinka', [
+        'Neko je pokušao razornu radnju sa TVOJOM prijavljenom sesijom, ali sa pogrešnom ADMIN_2FA lozinkom.',
+        'Radnja: ' + radnja,
+        'Radnja NIJE izvršena.'
+      ], req);
+    }
+    return f;
+  }
+  return { ok: true };
+}
+
 /* Koliko dana nalog stoji zabranjen pre nego što se podaci stvarno obrišu.
    Kraće od 30 dana koje politika privatnosti navodi kao rok, pa je usklađeno;
    dovoljno dugo da se pogrešna ili zlonamerna radnja primeti i poništi. */
@@ -197,8 +243,9 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
   /* ---------- ZABRANA / SKIDANJE ---------- */
   if (body.admin === 'ban') {
     if (body.banId === vlasnik.id) return res.status(400).json({ error: 'Sebe ne možeš da zabraniš.' });
-    const f = proveriDrugiFaktor(body);
-    if (!f.ok) return res.status(f.kod).json({ error: f.greska });
+    /* Brojač pokušaja PRVI, pa lozinka — v. razornaKapija. */
+    const k = await razornaKapija(req, body, token, body.ukini ? 'skidanje zabrane' : 'zabrana naloga');
+    if (!k.ok) return res.status(k.kod).json({ error: k.greska });
     const lim = await razornoDozvoljeno(token, 'admin_ban', 5);
     if (!lim.ok) return res.status(lim.kod).json({ error: lim.greska });
     /* GoTrue prima `ban_duration` kao trajanje ('876000h' = sto godina) ili
@@ -229,8 +276,8 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
     if (cilj === vlasnik.id) {
       return res.status(400).json({ error: 'Svoj nalog ne brišeš odavde — Podešavanja → Nalog → Brisanje naloga.' });
     }
-    const f = proveriDrugiFaktor(body);
-    if (!f.ok) return res.status(f.kod).json({ error: f.greska });
+    const k = await razornaKapija(req, body, token, 'brisanje naloga');
+    if (!k.ok) return res.status(k.kod).json({ error: k.greska });
     const lim = await razornoDozvoljeno(token, 'admin_obrisi', 3);
     if (!lim.ok) return res.status(lim.kod).json({ error: lim.greska });
     /* Postojanje se proverava PRE brisanja redova: bez toga bi pogresan id
@@ -296,11 +343,29 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
      mora da ih vrati bez ijedne prepreke. */
   if (body.admin === 'ponisti') {
     const cilj = String(body.obrisiId || '');
+    /* ZABRANA SE SKIDA SAMO UZ STVARNO UKLONJENU OZNAKU.
+
+       Ova grana nema drugi faktor, i to je namerno: oporavak od pogrešnog
+       brisanja mora da bude bez trenja. Ali `DELETE` koji ne nađe nijedan red
+       PostgREST-u je uspeh (204), pa je bezuslovno skidanje zabrane ispod njega
+       značilo da poziv sa proizvoljnim id-em skida zabranu sa BILO KOG naloga —
+       uključujući onaj koji je zabranjen zbog zloupotrebe, a ne zbog brisanja.
+       Napadaču sa vlasnikovom sesijom je to bio jedini razoran potez bez lozinke.
+       Suprotan smer (`admin:'ban'` sa `ukini:true`) lozinku TRAŽI, pa je ovo bila
+       i nedoslednost unutar istog fajla.
+
+       `return=representation` vraća obrisane redove, pa se zna da li je oznaka
+       postojala. Bez reda nema šta da se poništava i ništa se ne dira. */
+    let obrisano = [];
     try {
       const r = await fetch(baza + '/rest/v1/nalog_za_brisanje?user_id=eq.' + encodeURIComponent(cilj),
-        { method: 'DELETE', headers: { ...srvHead, Prefer: 'return=minimal' } });
+        { method: 'DELETE', headers: { ...srvHead, Prefer: 'return=representation' } });
       if (!r.ok) return res.status(502).json({ error: 'Oznaka nije uklonjena (' + r.status + ').' });
+      try { const j = await r.json(); if (Array.isArray(j)) obrisano = j; } catch (e) {}
     } catch (e) { return res.status(503).json({ error: 'Server nije dostupan.' }); }
+    if (!obrisano.length) {
+      return res.status(404).json({ error: 'Taj nalog nije označen za brisanje — nema šta da se poništi. Za skidanje zabrane koristi „Skini zabranu", uz ADMIN_2FA.' });
+    }
     try {
       await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
         method: 'PUT', headers: { ...srvHead, 'Content-Type': 'application/json' },
@@ -308,6 +373,9 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
       });
     } catch (e) {}
     console.log('[admin] %s ponistio brisanje naloga %s', vlasnik.email, cilj);
+    await javiVlasniku('brisanje poništeno',
+      ['Poništeno je odloženo brisanje naloga: ' + ((obrisano[0] && obrisano[0].email) || cilj),
+       'Zabrana je skinuta.'], req);
     return res.status(200).json({ ok: true });
   }
 

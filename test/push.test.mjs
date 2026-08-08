@@ -303,12 +303,14 @@ describe('Rukovalac — ko sme šta', () => {
       if (s.includes('/auth/v1/user')) return { ok: true, json: async () => ({ id: 'u1' }) };
       if (s.includes('push_pretplata') && (!opt || opt.method !== 'DELETE')) {
         return { ok: true, status: 200, json: async () => [
-          { id: 'a', endpoint: 'https://mrtav.example/1', p256dh: u1.p256dh, auth: u1.auth, najave: {} },
-          { id: 'b', endpoint: 'https://ziv.example/2', p256dh: u2.p256dh, auth: u2.auth, najave: {} }
+          { id: 'a', endpoint: 'https://fcm.googleapis.com/fcm/send/mrtav1', p256dh: u1.p256dh, auth: u1.auth, najave: {} },
+          { id: 'b', endpoint: 'https://updates.push.services.mozilla.com/wpush/v2/ziv2', p256dh: u2.p256dh, auth: u2.auth, najave: {} }
         ] };
       }
       if (s.includes('push_pretplata') && opt.method === 'DELETE') { brisano.push(s); return { ok: true, json: async () => [] }; }
-      if (s.startsWith('https://mrtav.example')) return { ok: false, status: 410 };
+      /* dnevni brojač proba — propušta */
+      if (s.includes('/rpc/check_and_bump_endpoint')) return { ok: true, json: async () => 1, text: async () => '1' };
+      if (s.startsWith('https://fcm.googleapis.com/fcm/send/mrtav')) return { ok: false, status: 410 };
       poslato++;
       return { ok: true, status: 201 };
     };
@@ -327,8 +329,8 @@ describe('Rukovalac — ko sme šta', () => {
       if (s.includes('push_pretplata') && (!opt || opt.method !== 'DELETE')) {
         const strana = (opt.headers.Range || '').startsWith('0-');
         return { ok: true, status: 200, json: async () => strana ? [
-          { id: 'a', endpoint: 'https://a.example/1', p256dh: napraviUredjaj().p256dh, auth: b64u(randomBytes(16)), najave: { [danasnji()]: '' } },
-          { id: 'b', endpoint: 'https://b.example/2', p256dh: napraviUredjaj().p256dh, auth: b64u(randomBytes(16)), najave: { [danasnji()]: 'Tempo 8 km' } }
+          { id: 'a', endpoint: 'https://fcm.googleapis.com/fcm/send/a1', p256dh: napraviUredjaj().p256dh, auth: b64u(randomBytes(16)), najave: { [danasnji()]: '' } },
+          { id: 'b', endpoint: 'https://fcm.googleapis.com/fcm/send/b2', p256dh: napraviUredjaj().p256dh, auth: b64u(randomBytes(16)), najave: { [danasnji()]: 'Tempo 8 km' } }
         ] : [] };
       }
       poslato++;
@@ -791,5 +793,136 @@ describe('Doslednost aplikacije i service workera', () => {
     for (const p of ['select', 'insert', 'update', 'delete']) {
       assert.ok(new RegExp('for ' + p + '[\\s\\S]{0,60}auth\\.uid\\(\\) = user_id').test(sql), 'nedostaje RLS za ' + p);
     }
+  });
+});
+
+/* NALAZ N-1 — ODREDIŠTE PUSH ZAHTEVA.
+
+   Adresa uređaja je morala samo da počne sa `https://`. Prijavljen korisnik je
+   time mogao da upiše „uređaj" čija je adresa bilo koji host, pa da jednim
+   pozivom `{akcija:'proba'}` — i posle toga svakog jutra kroz cron — natera naš
+   server na odlazne POST zahteve gde on kaže. Nije curenje (telo je šifrovano
+   njegovim ključem, odgovor mu se ne vraća), ali jeste slep POST iz našeg
+   izlaznog saobraćaja, pojačivač 1:N ka cilju po njegovom izboru koji se sam
+   ponavlja dnevno, i trošenje roka jutarnjeg posla — pa pravi ljudi ostanu bez
+   podsetnika.
+
+   Meri se na OBA mesta: pri prijavi (da ne uđe) i pri slanju (jer redovi upisani
+   pre ove izmene ostaju u bazi). */
+describe('NALAZ N-1 — push ide samo na push servise pregledača', () => {
+  const CILJ = 'https://napadac.example/skupljac';
+  /* Uvozi se iz modula, ne prepisuje u test: spisak domena sme da postoji samo
+     na jednom mestu, inače test posle izmene tvrdi nešto o starom spisku. */
+  let jePushServis;
+  beforeEach(async () => { ({ jePushServis } = await uvezi()); });
+
+  test('poznati push servisi prolaze', () => {
+    for (const e of [
+      'https://fcm.googleapis.com/fcm/send/abc',
+      'https://android.googleapis.com/gcm/send/abc',
+      'https://web.push.apple.com/QWERTY',
+      'https://updates.push.services.mozilla.com/wpush/v2/abc',
+      'https://par02p.notify.windows.com/w/?token=abc'
+    ]) assert.equal(jePushServis(e), true, e + ' je odbijen, a pravi je push servis');
+  });
+
+  test('tuđ host se odbija — i ne pomaže da pravi domen stoji u putanji', () => {
+    /* Poklapanje po HOSTU iz `new URL`, ne po `indexOf` nad celim nizom. */
+    for (const e of [
+      CILJ,
+      'https://napadac.example/?x=push.apple.com',
+      'https://push.apple.com.napadac.example/x',
+      'https://fcm.googleapis.com.zlo.rs/fcm/send/abc',
+      'http://fcm.googleapis.com/fcm/send/abc',
+      'ne-url', ''
+    ]) assert.equal(jePushServis(e), false, e + ' je propušten');
+  });
+
+  test('prijava uređaja odbija adresu koja nije push servis', async () => {
+    const pozivi = [];
+    globalThis.fetch = async (url, opt) => {
+      const s = String(url);
+      pozivi.push(((opt && opt.method) || 'GET') + ' ' + s);
+      if (s.includes('/auth/v1/user')) return { ok: true, json: async () => ({ id: 'u1' }) };
+      return { ok: true, status: 200, json: async () => [], text: async () => '' };
+    };
+    const u = napraviUredjaj();
+    const { default: h } = await uvezi();
+    const r = res();
+    await h({ method: 'POST', headers: { authorization: 'Bearer ok' },
+      body: { akcija: 'prijava', pretplata: { endpoint: CILJ, keys: { p256dh: u.p256dh, auth: u.auth } } } }, r);
+    assert.equal(r.code, 400, 'server je upisao „uređaj" čija je adresa proizvoljan tuđi server');
+    assert.equal(pozivi.filter(x => x.startsWith('POST') && x.includes('push_pretplata')).length, 0,
+      'red je ipak upisan u bazu');
+  });
+
+  test('proba ne šalje na tuđ host ni kad je red VEĆ u bazi', async () => {
+    /* Redovi upisani pre nego što je spisak postojao ostaju u bazi. Bez provere
+       pri slanju bi jutarnji posao nastavio da ih poziva. */
+    const odlazni = [];
+    const u = napraviUredjaj();
+    globalThis.fetch = async (url, opt) => {
+      const s = String(url);
+      if (s.includes('/auth/v1/user')) return { ok: true, json: async () => ({ id: 'u1' }) };
+      if (s.includes('/rpc/check_and_bump_endpoint')) return { ok: true, json: async () => 1, text: async () => '1' };
+      if (s.includes('push_pretplata')) {
+        if (opt && opt.method === 'DELETE') return { ok: true, json: async () => [] };
+        return { ok: true, status: 200, json: async () => [1, 2, 3, 4, 5].map(i => ({
+          id: 'p' + i, endpoint: CILJ + '?n=' + i, p256dh: u.p256dh, auth: u.auth, najave: {} })) };
+      }
+      odlazni.push(((opt && opt.method) || 'GET') + ' ' + s);
+      return { ok: true, status: 201 };
+    };
+    const { default: h } = await uvezi();
+    const r = res();
+    await h({ method: 'POST', headers: { authorization: 'Bearer ok' }, body: { akcija: 'proba' } }, r);
+    assert.deepEqual(odlazni.filter(x => x.includes('napadac.example')), [],
+      `jedan poziv „proba" je proizveo ${odlazni.length} zahteva ka napadačevom hostu`);
+  });
+
+  test('broj uređaja po nalogu je ograničen', async () => {
+    /* `endpoint` je `unique`, pa svaki nov pravi NOV red. Bez granice jedan
+       nalog upiše hiljade „uređaja" i potroši ceo rok jutarnjeg posla. */
+    const u = napraviUredjaj();
+    const postojeci = Array.from({ length: 20 },
+      (_, i) => ({ endpoint: 'https://fcm.googleapis.com/fcm/send/stari' + i }));
+    let upisano = 0;
+    globalThis.fetch = async (url, opt) => {
+      const s = String(url);
+      if (s.includes('/auth/v1/user')) return { ok: true, json: async () => ({ id: 'u1' }) };
+      if (s.includes('push_pretplata') && opt && opt.method === 'POST') { upisano++; return { ok: true, json: async () => [] }; }
+      if (s.includes('push_pretplata')) return { ok: true, status: 200, json: async () => postojeci };
+      return { ok: true, status: 200, json: async () => [], text: async () => '' };
+    };
+    const { default: h } = await uvezi();
+    const r = res();
+    await h({ method: 'POST', headers: { authorization: 'Bearer ok' },
+      body: { akcija: 'prijava',
+        pretplata: { endpoint: 'https://fcm.googleapis.com/fcm/send/nov', keys: { p256dh: u.p256dh, auth: u.auth } } } }, r);
+    assert.equal(r.code, 409, 'dvadeset prvi uređaj je upisan bez ijedne granice');
+    assert.equal(upisano, 0);
+  });
+
+  test('POSTOJEĆI uređaj se prepisuje i kad je granica dostignuta', async () => {
+    /* Inače bi čovek sa punim spiskom izgubio mogućnost da osveži sopstvenu
+       pretplatu — a pregledač je rotira sam od sebe. */
+    const u = napraviUredjaj();
+    const moj = 'https://fcm.googleapis.com/fcm/send/moj';
+    const postojeci = Array.from({ length: 20 },
+      (_, i) => ({ endpoint: i === 0 ? moj : 'https://fcm.googleapis.com/fcm/send/stari' + i }));
+    let upisano = 0;
+    globalThis.fetch = async (url, opt) => {
+      const s = String(url);
+      if (s.includes('/auth/v1/user')) return { ok: true, json: async () => ({ id: 'u1' }) };
+      if (s.includes('push_pretplata') && opt && opt.method === 'POST') { upisano++; return { ok: true, json: async () => [] }; }
+      if (s.includes('push_pretplata')) return { ok: true, status: 200, json: async () => postojeci };
+      return { ok: true, status: 200, json: async () => [], text: async () => '' };
+    };
+    const { default: h } = await uvezi();
+    const r = res();
+    await h({ method: 'POST', headers: { authorization: 'Bearer ok' },
+      body: { akcija: 'prijava', pretplata: { endpoint: moj, keys: { p256dh: u.p256dh, auth: u.auth } } } }, r);
+    assert.equal(r.code, 200, 'osvežavanje sopstvene pretplate je odbijeno zbog granice');
+    assert.equal(upisano, 1);
   });
 });

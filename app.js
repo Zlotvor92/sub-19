@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='227'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='228'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9974,6 +9974,7 @@ function openSettings(){
   `);
   SET_LIST=true;
   podesiGrupe();
+  zajSlike();   /* avatar u sekciji Zajednica — v. zajSlike */
   $('#s-exp').onclick=()=>{ exportBackup(); setTimeout(osveziPodesavanja,300); };
   if($('#s-ist')) $('#s-ist').onclick=openIstorijaSheet;
   if($('#s-bug')) $('#s-bug').onclick=openBugSheet;
@@ -12158,13 +12159,30 @@ function zajInicijali(ime){
 function zajPrikazIme(p){ return (p&&p.nadimak)||'Trkač'; }
 
 /* Adresa slike, propuštena kroz usko sito.
-   Vrednost završava u `url("…")` unutar `style` atributa. Pregledač atribut
-   PRVO dekodira kao HTML, pa tek onda parsira kao CSS — zato `esc()` nije
-   dovoljan: `&#39;` bi se pretvorio u apostrof i izašao iz `url(…)`. Ovde se
-   znakovi kojima bi to bilo moguće odbijaju u celosti, a ne beže. */
+
+   OVDE JE BIO PROPUST. Komentar je tvrdio da se „znakovi kojima bi to bilo
+   moguće odbijaju u celosti", ali dozvoljeni skup je sadržao `&`, `#`, cifre i
+   `;` — dakle sve što je potrebno za NUMERIČKE HTML ENTITETE. Vrednost je išla u
+   `style="background-image:url(&quot;URL&quot;)"`, a pregledač vrednost atributa
+   PRVO dekodira kao HTML: `&#34;` postane `"`, `&#41;` postane `)`, `&#59;`
+   postane `;`. Tuđ `avatar_url` je time ubacivao proizvoljne CSS deklaracije u
+   dokument svakog drugog korisnika. Provereno u pregledaču:
+   `position:fixed;inset:0;z-index:99999` daje sloj preko CELOG ekrana koji beži
+   iz `.zav{overflow:hidden}` i prima dodire umesto dugmadi ispod.
+   Skripta se time ne izvršava (entiteti ne prekidaju atribut, pa se iz `style`
+   ne izlazi u nov tag) i slika sa tuđeg hosta se ne učitava (CSP `img-src`), ali
+   Zajednica postaje neupotrebljiva.
+
+   Dva sloja, jer je jedan već jednom bio „dovoljan":
+     1. ovde — `&` i `#` se odbijaju, pa entitet ne može ni da se sastavi;
+     2. u `zajAvatar` — vrednost više NE ide u HTML atribut nego se posle
+        iscrtavanja postavlja kroz `style.backgroundImage`, gde koraka
+        „dekodiraj kao HTML" uopšte nema.
+   Google avatari (`https://lh3.googleusercontent.com/a/ACg8oc…=s96-c`) nemaju ni
+   `&` ni `#`, pa ih ovo ne dira. */
 function zajSlikaUrl(u){
   if(typeof u!=='string') return null;
-  return /^https:\/\/[a-zA-Z0-9.-]+\/[A-Za-z0-9\-._~:\/?#\[\]@!$&*+,;=%]*$/.test(u) ? u : null;
+  return /^https:\/\/[a-zA-Z0-9.-]+\/[A-Za-z0-9\-._~:\/\[\]@!$*+,=%]*$/.test(u) ? u : null;
 }
 
 /* ZAŠTO POZADINA, A NE <img>.
@@ -12182,10 +12200,67 @@ function zajAvatar(p, d){
      postoji, ali slika ne stigne. Da je pozadina kruga, inicijali bi bili
      unapred sakriveni i ostao bi prazan obojen krug; ovako providan sloj
      jednostavno ne pokrije ništa i inicijali se vide. */
-  const sloj=slika
-    ? `<i style="background-image:url(&quot;${slika}&quot;)"></i>` : '';
+  /* Adresa ide u `data-` atribut, a u `style` je stavlja `zajSlike()` posle
+     iscrtavanja — v. zajSlikaUrl. Time nestaje korak u kom pregledač vrednost
+     atributa dekodira kao HTML pre nego što je pročita kao CSS. */
+  const sloj=slika ? `<i data-zsl="${esc(slika)}"></i>` : '';
   return `<span class="zav" style="width:${d}px;height:${d}px;background-color:${zajBoja(p.user_id)};font-size:${Math.round(d*0.4)}px">`
        + `<b>${esc(zajInicijali(ime))}</b>${sloj}</span>`;
+}
+
+/* Postavlja slike posle iscrtavanja. Poziva se sa svakog mesta koje iscrta
+   avatar; višestruki poziv je bezbedan i bez posla (`delete` skida oznaku).
+   CSSOM sam odbacuje vrednost koja nije ispravan `url(...)`, pa ovde nema šta
+   da se escapuje — a i nema iz čega, jer je izvor već prošao `zajSlikaUrl`. */
+function zajSlike(){
+  document.querySelectorAll('[data-zsl]').forEach(el=>{
+    const u=el.dataset.zsl; if(!u) return;
+    el.style.backgroundImage='url("'+u+'")';
+    delete el.dataset.zsl;
+    el.removeAttribute('data-zsl');
+  });
+}
+
+/* TUĐ PROFIL SE ČISTI NA ULAZU, KAO I SVE OSTALO SA SERVERA.
+
+   Isti obrazac kao `cistWellness` i `cistVdotLog`: vrednosti nastaju računanjem,
+   ali u aplikaciju stižu kao proizvoljan JSON i odatle idu pravo u HTML. Ovde je
+   izvor još širi — red je upisao DRUG korisnik.
+
+   Kolone u bazi jesu `integer`/`numeric` sa `check` opsezima, pa string kroz njih
+   ne prolazi. Ali pravilo ove aplikacije je da ISCRTAVANJE escapuje i kad
+   validacija otkaže (v. „Drugi sloj" u test/bezbednost.test.mjs), a tri broja —
+   `plan_pct`, `niz_dana`, `izazov_ura` — išla su u HTML bez `esc()`, jer su
+   „ionako brojevi". Zamka to nije videla dok Zajednica nije ušla u fuzz petlju.
+   Umesto dvadesetak `esc()` poziva po fajlu, broj postaje broj OVDE: ono što nije
+   konačan broj postaje `null` i nestaje iz prikaza, tačno kao u `cistWellness`.
+
+   Tekstualna polja se i dalje escapuju pri iscrtavanju — ovo ih ne dira. */
+/* Broj iz tuđeg profila, spreman za HTML. `esc()` bi radio isto, ali bi
+   sugerisao da je vrednost tekst — a ovde je jedina ispravna vrednost broj, pa
+   se sve što to nije pretvara u `null` i nestaje iz prikaza (isto pravilo kao
+   `cistWellness`). Drugi sloj uz `zajCistProfil`: zamka u
+   test/bezbednost.test.mjs namerno zaobilazi ulaznu proveru i piše pravo u
+   `ZAJ.ljudi`, jer iscrtavanje mora da drži i kad validacija otkaže. */
+function zajBr(v){ return (v==null||v===''||typeof v==='boolean'||isNaN(+v))?null:+v; }
+
+const ZAJ_BROJEVI = ['vdot','vdot_pocetni','test3k_sec','km_nedelja','plan_pct',
+  'niz_dana','izazov_od','izazov_ura','nedelja_br','nedelja_od'];
+function zajCistProfil(p){
+  if(!p||typeof p!=='object') return null;
+  if(typeof p.user_id!=='string'||!p.user_id) return null;
+  const c=Object.assign({},p);
+  for(const k of ZAJ_BROJEVI){
+    const v=c[k];
+    c[k]=(v==null||v===''||typeof v==='boolean'||isNaN(+v))?null:+v;
+  }
+  /* Znamenja i trčanja su nizovi; sve ostalo u njima escapuje iscrtavanje. */
+  c.znacke=Array.isArray(c.znacke)?c.znacke:[];
+  c.trcanja=Array.isArray(c.trcanja)?c.trcanja:[];
+  return c;
+}
+function zajCistiLjude(niz){
+  return (Array.isArray(niz)?niz:[]).map(zajCistProfil).filter(Boolean);
 }
 
 /* --- povlačenje --- */
@@ -12201,7 +12276,7 @@ async function zajUcitaj(){
     if(!rp.ok){ ZAJ.greska=zajRazlogIz(rp.status); }
     else{
       const j=await rp.json();
-      ZAJ.ljudi=Array.isArray(j)?j:[];
+      ZAJ.ljudi=zajCistiLjude(j);
     }
     if(ri.ok){ const t=await ri.json(); ZAJ.izazov=(Array.isArray(t)&&t[0]&&t[0].tekst)||null; }
   }catch(e){ ZAJ.greska='mreza'; }
@@ -12309,7 +12384,7 @@ function zajSpisak(){
           <span class="zime" style="font-size:.86rem">${esc(zajPrikazIme(p))}${zajJa(p)?' <span style="color:var(--cyan)">· ti</span>':''}${gotov?' <span style="color:var(--green);font-size:.7rem;font-weight:800">✓ gotovo</span>':''}</span>
           <span class="zprog${gotov?' pun':''}"><i style="width:${Math.max(0,Math.min(100,Math.round(udeo(p)*100)))}%"></i></span>
         </span>
-        <span class="zv"><b style="font-size:.92rem">${p.izazov_ura||0}/${p.izazov_od}</b></span>
+        <span class="zv"><b style="font-size:.92rem">${zajBr(p.izazov_ura)||0}/${zajBr(p.izazov_od)||0}</b></span>
       </button>`;}).join('')}</div>`:''}
     <div class="note-src">Izazov ne meri brzinu — samo da se ne preskače.</div>
   </div>
@@ -12343,7 +12418,7 @@ function zajSpisak(){
         ${zajAvatar(p,34)}
         <span class="zi"><span class="zime" style="font-size:.86rem">${esc(zajPrikazIme(p))}</span></span>
         <span class="zv"><b style="font-size:.95rem">${p.km_nedelja!=null?fmtKm(p.km_nedelja)+' km':'—'}</b>
-          <span style="letter-spacing:0;text-transform:none;font-weight:600">${zajJa(p)?'ti · ':''}${p.plan_pct!=null?p.plan_pct+' % plana':''}</span></span>
+          <span style="letter-spacing:0;text-transform:none;font-weight:600">${zajJa(p)?'ti · ':''}${zajBr(p.plan_pct)!=null?zajBr(p.plan_pct)+' % plana':''}</span></span>
       </button>`).join('')}
   </div>
   ${ja?'':`<div class="note-src" style="margin-top:-4px">Tvoj profil se pojavljuje posle prve sinhronizacije.</div>`}`;
@@ -12364,14 +12439,14 @@ function zajProfil(p){
   <div class="card">
     <div class="dhead"><span class="card-t">Duel</span><span class="dhead-x">doslednost i napredak</span></div>
     <div class="zduel">
-      <div class="zds"><b style="color:var(--cyan)">${ja.plan_pct!=null?ja.plan_pct+' %':'—'}</b><span>TI</span></div>
+      <div class="zds"><b style="color:var(--cyan)">${zajBr(ja.plan_pct)!=null?zajBr(ja.plan_pct)+' %':'—'}</b><span>TI</span></div>
       <div class="zvs">VS</div>
-      <div class="zds"><b>${p.plan_pct!=null?p.plan_pct+' %':'—'}</b><span>${esc(zajPrikazIme(p).split(' ')[0].toUpperCase())}</span></div>
+      <div class="zds"><b>${zajBr(p.plan_pct)!=null?zajBr(p.plan_pct)+' %':'—'}</b><span>${esc(zajPrikazIme(p).split(' ')[0].toUpperCase())}</span></div>
     </div>
     <div class="drows" style="margin-top:10px">
       <div class="drow"><span class="l">plan odrađen</span><span class="v">
         <b style="color:${(ja.plan_pct||0)>=(p.plan_pct||0)?'var(--green)':'var(--txt3)'}">${(ja.plan_pct||0)>=(p.plan_pct||0)?'vodiš':'zaostaješ'}</b></span></div>
-      <div class="drow"><span class="l">niz dana</span><span class="v"><b>${ja.niz_dana||0} : ${p.niz_dana||0}</b></span></div>
+      <div class="drow"><span class="l">niz dana</span><span class="v"><b>${zajBr(ja.niz_dana)||0} : ${zajBr(p.niz_dana)||0}</b></span></div>
       <div class="drow"><span class="l">napredak VDOT-a</span><span class="v"><b>${znak(napJ)} : ${znak(napP)}</b></span></div>
     </div>
     <div class="note-src">Duel meri doslednost i napredak, ne brzinu — zato ima smisla i kad niste isti nivo.</div>
@@ -12404,7 +12479,7 @@ function zajProfil(p){
     <div class="ob-vpaces">
       <div class="ob-vp"><i>VDOT</i><b>${p.vdot!=null?fmtNum(p.vdot,1):'—'}</b></div>
       <div class="ob-vp"><i>Test 3 km</i><b>${p.test3k_sec!=null?fmtClock(p.test3k_sec):'—'}</b></div>
-      <div class="ob-vp"><i>Niz</i><b>${p.niz_dana||0}</b></div>
+      <div class="ob-vp"><i>Niz</i><b>${zajBr(p.niz_dana)||0}</b></div>
     </div>
   </div>
 
@@ -12426,6 +12501,7 @@ function zajProfil(p){
 }
 
 function zajVezi(el){
+  zajSlike();   /* pozadine se postavljaju iz JS-a, ne iz HTML atributa */
   el.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ ZAJ.filter=b.dataset.f; renderZajednica(); });
   el.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{ ZAJ.merilo=b.dataset.m; renderZajednica(); });
   el.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{ ZAJ.otvoren=b.dataset.p; renderZajednica(); window.scrollTo(0,0); });

@@ -14,21 +14,37 @@
 
    ZAŠTO JE XSS OVDE NAJTEŽI ISHOD: `localStorage` drži Supabase sesiju
    (`sub19_sb`), Strava access/refresh token i intervals.icu token. Jedan
-   uspešan `<img onerror>` odatle uzima sve. CSP ne pomaže protiv toga jer
-   aplikacija JESTE jedna velika inline skripta, pa `script-src` mora da
-   dozvoli 'unsafe-inline'. */
+   uspešan `<img onerror>` odatle uzima sve.
+
+   CSP POMAŽE, ALI NE ZAVISI SE OD NJEGA. Ovde je do sada stajalo da CSP ne
+   pomaže „jer aplikacija JESTE jedna velika inline skripta, pa `script-src`
+   mora da dozvoli 'unsafe-inline'" — to više nije tačno od kad je kod izdvojen
+   u app.js: `vercel.json` ima `script-src 'self'`, bez 'unsafe-inline', i
+   test/doslednost.test.mjs to i tvrdi. Dva testa u istom repozitorijumu su
+   govorila suprotno o istoj stvari.
+   `style-src 'unsafe-inline'` je i dalje nužan (aplikacija gradi `style`
+   atribute), pa CSP NE zaustavlja ubacivanje CSS-a — v. nalaz Z-1 i zamku za
+   Zajednicu niže. */
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp, readRepoFile, readClientSource } from './harness.mjs';
 
-/* Nekoliko oblika probijanja iz atributa i iz teksta. */
+/* Nekoliko oblika probijanja iz atributa i iz teksta.
+
+   Poslednji je iz nalaza Z-1 i ne liči na ostale: ne probija tag nego VREDNOST
+   ATRIBUTA, kroz numeričke HTML entitete. Pregledač vrednost atributa prvo
+   dekodira kao HTML pa je onda čita kao CSS, pa `&#34;&#41;&#59;` postane
+   `");` i iz `url("…")` se izlazi u nove deklaracije. `esc()` ga ne zaustavlja,
+   jer entiteti u vrednosti atributa i jesu ispravan escapovan tekst — hvata ga
+   `ubaceniCSS`, koji dekodira pre nego što gleda. */
 const PAYLOADI = [
   `"><img src=x onerror=alert(1)>`,
   `'><svg/onload=alert(1)>`,
   `"><script>alert(1)</script>`,
   `javascript:alert(1)`,
-  `" autofocus onfocus=alert(1) x="`
+  `" autofocus onfocus=alert(1) x="`,
+  `https://lh3.googleusercontent.com/a&#34;&#41;&#59;position:fixed&#59;inset:0&#59;z-index:99999&#59;background:red&#59;x:url&#40;&#34;`
 ];
 
 /* Tagovi koje aplikacija sama emituje — sve van toga je ubačeno. */
@@ -52,6 +68,45 @@ const OPASAN_URL = /\b(?:href|src|action|formaction|xlink:href)\s*=\s*["']?\s*ja
 function ubaceniTagovi(html) {
   return (String(html).match(/<[a-zA-Z][^>]*>/g) || [])
     .filter(t => !NASI.test(t) || OPASAN.test(bezVrednosti(t)) || OPASAN_URL.test(t));
+}
+
+/* ---------- I CSS JE UBACIVANJE ----------
+
+   `ubaceniTagovi` gleda imena tagova i rukovaoce. `style` atribut sa
+   proizvoljnim deklaracijama je za nju uredan izlaz — pa je nalaz Z-1 (tuđ
+   `avatar_url` ubacuje `position:fixed;inset:0;z-index:99999` u moj dokument
+   preko numeričkih HTML entiteta) prošao kroz nju i da je Zajednica bila na
+   spisku ekrana. `style-src 'unsafe-inline'` je za ovu aplikaciju nužan, pa CSP
+   to ne zaustavlja.
+
+   Zato se OVDE prvo dekodira kao HTML — tačno ono što pregledač radi sa
+   vrednošću atributa pre nego što je pročita kao CSS — pa se onda traže
+   deklaracije koje aplikacija sama nikad ne emituje. `position` i `inset` nisu
+   na spisku „naših" jer ih nijedan `style` u app.js ne postavlja; kad bi se to
+   promenilo, spisak ide s tim, a ne zamka. */
+const dekodirajHTML = s => String(s)
+  .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+  .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+  .replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+
+const OPASNE_DEKLARACIJE = [
+  /position\s*:\s*(fixed|absolute|sticky)/i,
+  /\binset\s*:/i, /\bz-index\s*:/i,
+  /\bexpression\s*\(/i, /\bbehavior\s*:/i, /url\s*\(\s*['"]?\s*javascript:/i,
+  /-moz-binding/i, /\bcontent\s*:/i
+];
+/* Gleda SAMO unutar `style` atributa. Escapovan tekst legitimno sadrži
+   „position:fixed" kad je to samo opis treninga koji neko kucao — isti lažni
+   alarm zbog kog se ni „onerror=" ne traži kroz ceo HTML. Vrednost atributa se
+   dekodira, jer to radi i pregledač pre nego što je preda CSS parseru. */
+function ubaceniCSS(html) {
+  const nadjeno = [];
+  for (const m of String(html).matchAll(/\sstyle\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
+    const d = dekodirajHTML(m[1] !== undefined ? m[1] : m[2]);
+    for (const re of OPASNE_DEKLARACIJE)
+      if (re.test(d) && !nadjeno.includes(String(re))) nadjeno.push(String(re));
+  }
+  return nadjeno;
 }
 
 function prazno() {
@@ -714,18 +769,54 @@ describe('Fuzz — svako polje stanja otrovano, svaki ekran iscrtan', () => {
           S.wellness[d]={datum:d,hrv:__p,pulsUMiru:__p,sanH:__p,sanOcena:__p,ctl:__p,atl:__p,svezina:__p};}
         S.ui.bodyView=__p;
       `);
+      /* `renderOporavak` je ranije stajao DVA PUTA a `renderZajednica` nijedan —
+         a Zajednica je jedini ekran koji iscrtava podatke koje je uneo DRUG
+         korisnik. Otrov za nju se ubacuje kroz `ZAJ`, ne kroz `S`. */
+      app.evalIn(`
+        SB.userId='u-ja'; SB.access='a'; SB.refresh='r'; SB.expiresAt=Date.now()+36e5;
+        SB.email='ja@primer.rs'; SB.ime=__p; SB.slika=__p;
+        S.zajed={vidljiv:true,nadimak:__p};
+        ZAJ.izazov=__p; ZAJ.kad=Date.now(); ZAJ.ucitava=false; ZAJ.greska=null;
+        /* I MOJ PROFIL MORA BITI U SPISKU. Blok "Duel" u zajProfil iscrtava se
+           samo kad ZAJ.ljudi sadrži i mene, a baš u njemu stoji polovina
+           poređenja — doslednost, niz dana, VDOT, kilometraža. Sa spiskom od
+           jedne osobe zamka je taj deo ekrana ćutke preskakala.
+           (Bez povratnih navodnika: ovo stoji unutar template literala.) */
+        const __red=(id)=>({user_id:id, vidljiv:true, nadimak:__p, avatar_url:__p, cilj:__p,
+          vdot:__p, vdot_pocetni:__p, test3k_sec:__p, km_nedelja:__p, plan_pct:__p,
+          niz_dana:__p, izazov_od:__p, izazov_ura:__p, nedelja_br:__p, nedelja_od:__p,
+          trka_datum:__p, znacke:[__p], trcanja:[{t:__p,o:__p,p:__p,d:__p}]});
+        ZAJ.ljudi=[__red('u-tudji'), __red('u-ja')];
+      `);
       const ekrani = [['renderDanas', '#pg-danas'], ['renderPlan', '#pg-plan'],
-        ['renderOporavak', '#pg-opor'], ['renderOporavak', '#pg-opor'], ['renderPred', '#pg-pred']];
+        ['renderOporavak', '#pg-opor'], ['renderPred', '#pg-pred'],
+        ['renderZajednica', '#pg-zajed']];
       for (const [fn, sel] of ekrani) {
         app.call(fn);
-        const t = ubaceniTagovi(app.evalIn(`$("${sel}").innerHTML`) || '');
-        assert.deepEqual(t, [], `${fn} propustio → ${t.slice(0, 3).join(' ')}`);
+        const html = app.evalIn(`$("${sel}").innerHTML`) || '';
+        const t = ubaceniTagovi(html);
+        assert.deepEqual(t, [], `${fn} propustio tag → ${t.slice(0, 3).join(' ')}`);
+        /* I CSS — v. ubaceniCSS. Bez ovoga zamka ne bi videla nalaz Z-1. */
+        const c = ubaceniCSS(html);
+        assert.deepEqual(c, [], `${fn} propustio CSS deklaraciju → ${c.join(' ')}`);
       }
+      /* i profil pojedinog trkača, koji je zaseban prikaz nad istim podacima */
+      app.evalIn(`ZAJ.otvoren='u-tudji'`);
+      app.call('renderZajednica');
+      {
+        const html = app.evalIn(`$("#pg-zajed").innerHTML`) || '';
+        const t = ubaceniTagovi(html), c = ubaceniCSS(html);
+        assert.deepEqual(t, [], `zajProfil propustio tag → ${t.slice(0, 3).join(' ')}`);
+        assert.deepEqual(c, [], `zajProfil propustio CSS → ${c.join(' ')}`);
+      }
+      app.evalIn(`ZAJ.otvoren=null`);
       /* i modalni prikazi */
       for (const fn of ['openSettings']) {
         app.call(fn);
-        const t = ubaceniTagovi(app.evalIn('$("#sheet").innerHTML') || '');
-        assert.deepEqual(t, [], `${fn} propustio → ${t.slice(0, 3).join(' ')}`);
+        const html = app.evalIn('$("#sheet").innerHTML') || '';
+        const t = ubaceniTagovi(html), c = ubaceniCSS(html);
+        assert.deepEqual(t, [], `${fn} propustio tag → ${t.slice(0, 3).join(' ')}`);
+        assert.deepEqual(c, [], `${fn} propustio CSS → ${c.join(' ')}`);
       }
       for (const izraz of ['openDaySheet("g1d1")', 'openAltSheet("g1d1")',
         'openKneeSheet("k1")', 'openKneeSheet(null)', 'openWeekSwap(1)']) {

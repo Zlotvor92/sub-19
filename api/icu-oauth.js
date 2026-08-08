@@ -26,7 +26,16 @@
    opsega — njegovi pozivi ka treninzima vratice 403, sto /api/activities
    prevodi u poruku „otkaci pa ponovo povezi". Wellness mu i dalje radi, pa
    ponovno povezivanje nije hitno nego dobitak. */
-const SCOPE = 'ACTIVITY:READ,WELLNESS:READ,CALENDAR:WRITE,SETTINGS:WRITE';
+/* NAJMANJA POTREBNA DOZVOLA.
+   `SETTINGS:WRITE` je bio u spisku, a nijedan poziv ga nije koristio — ni ovde,
+   ni u api/icu.js (wellness, activities, workouts), ni u app.js. Token koji
+   čuvamo na korisnikovom uređaju je time imao pravo UPISA u podešavanja njegovog
+   intervals.icu naloga, bez ijednog razloga; ako taj token ikad iscuri, šteta je
+   veća nego što mora da bude. Politika privatnosti je uz to tvrdila da se
+   koristi za upis praga tempa — što se nikad nije dešavalo.
+   Postojeće veze ne treba ponovo povezivati: opseg se sužava pri sledećem
+   povezivanju, a uži opseg ništa ne kvari jer se ni pre nije koristio. */
+const SCOPE = 'ACTIVITY:READ,WELLNESS:READ,CALENDAR:WRITE';
 
 /* KRATKOTRAJAN KEŠ POTVRĐENIH TOKENA — ista provera, jedan mrežni skok manje.
    Do sada je SVAKI poziv ka bilo kojoj putanji plaćao dodatan krug ka
@@ -103,6 +112,45 @@ function povratnaAdresa() {
   return null;
 }
 
+
+/* ============================================================
+   DNEVNI LIMIT — v. supabase/rate-limit.sql
+
+   `rate-limit.sql` postoji doslovno zato što jedan prijavljen korisnik može u
+   petlji da gađa spoljni servis SA NAŠE IP ADRESE, a posledice snosi vlasnik.
+   Ista rečenica važi i ovde, i to jače: ova putanja uz to troši i naš
+   `client_secret`. `api/icu.js` je limit dobio, ova putanja nije — pa je jedan
+   prijavljen korisnik mogao u petlji da iscrpi kvotu naše aplikacije i izazove
+   blokadu, čime sinhronizacija prestaje da radi SVIM korisnicima.
+
+   Provera oblika (`^[a-f0-9]+$` i sl.) štedi jedan poziv na očigledno smeće, ali
+   smeće ISPRAVNOG oblika ide do spoljnog servisa — pa oblik nije limit.
+
+   PROPUŠTA kad baza ne odgovara — namerno, isto kao u api/icu.js: ovo nije
+   razorna radnja i SQL možda još nije pušten. Ali se VIDI: `console.error`. */
+async function limitPrekoracen(token, endpoint, limit) {
+  const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
+  if (!url || !anon) return false;
+  try {
+    const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
+      method: 'POST',
+      headers: { apikey: anon, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_endpoint: endpoint, p_limit: limit })
+    });
+    if (r.ok) return false;
+    const telo = await r.text();
+    let j = null; try { j = JSON.parse(telo); } catch (e) {}
+    if ((j && (j.code === 'P0001' || String(j.message || '').includes('DAILY_LIMIT_EXCEEDED')))
+        || String(telo).includes('DAILY_LIMIT_EXCEEDED')) return true;
+    console.error('[limit][ALARM] brojac nije radio (%s) — propusteno bez brojanja. HTTP %s: %s',
+      endpoint, r.status, telo.slice(0, 200));
+    return false;
+  } catch (e) {
+    console.error('[limit][ALARM] brojac nedostupan (%s) — propusteno bez brojanja: %s', endpoint, e.message);
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   const clientId     = process.env.ICU_CLIENT_ID;
   const clientSecret = process.env.ICU_CLIENT_SECRET;
@@ -142,6 +190,13 @@ export default async function handler(req, res) {
 
   const code = String((body && body.code) || '').trim();
   if (!/^[A-Za-z0-9_\-.]{8,256}$/.test(code)) { res.status(400).json({ error: 'Neispravan kod.' }); return; }
+
+  /* Limit stoji SAMO na ovoj grani: GET samo sklopi adresu i ne izlazi na mrežu,
+     a ovo je poziv ka intervals.icu sa našim `client_secret`-om. Povezivanje se
+     radi jednom, pa je i dvadeset dnevno neuporedivo više od stvarne upotrebe. */
+  if (await limitPrekoracen(auth.token, 'icu_oauth', 20)) {
+    res.status(429).json({ error: 'Previše pokušaja povezivanja danas. Probaj ponovo sutra.' }); return;
+  }
 
   /* Njihov endpoint prima form-urlencoded, ne JSON. */
   const params = new URLSearchParams();

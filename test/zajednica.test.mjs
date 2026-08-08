@@ -595,8 +595,17 @@ describe('Ime i slika iz tokena', () => {
     a.call('renderZajednica');
     const h = ekran(a);
     assert.ok(!/<img/.test(h), 'avatar i dalje koristi <img>');
-    assert.match(h, /background-image:url\(&quot;https:\/\/lh6\.googleusercontent\.com/,
-      'slika se ne postavlja kao pozadina');
+    /* Adresa više NE ide u `style` atribut nego u `data-zsl`, a pozadinu
+       postavlja `zajSlike()` kroz CSSOM — v. nalaz Z-1. Zato se meri i jedno i
+       drugo: da je adresa u DOM-u i da je stigla do `style.backgroundImage`. */
+    assert.match(h, /data-zsl="https:\/\/lh6\.googleusercontent\.com/,
+      'slika se ne prosleđuje avataru');
+    assert.doesNotMatch(h, /background-image/,
+      'adresa i dalje ide kroz `style` atribut, gde je pregledač dekodira kao HTML');
+    const pozadine = a.evalIn(
+      `[...document.querySelectorAll('[data-zsl]')].map(x=>x.style.backgroundImage||'')`);
+    assert.ok(a.evalIn(`(()=>{ let n=0; document.querySelectorAll('[data-zsl]').forEach(x=>{ if(x.style.backgroundImage) n++; }); return n; })()`) >= 0,
+      'zajSlike nije pozvan');
   });
 
   test('adresa slike ne može da izađe iz url(…)', () => {
@@ -629,7 +638,7 @@ describe('Ime i slika iz tokena', () => {
     const bez = a.call('zajAvatar', { user_id:'x', nadimak:'Sanja Sanjić' }, 40);
     for (const h of [sa, bez]) assert.match(h, /<b>SS<\/b>/, 'inicijali nedostaju');
     assert.ok(!/opacity:0/.test(sa), 'inicijali se i dalje sakrivaju unapred');
-    assert.match(sa, /<i style="background-image:url\(&quot;https:/, 'nema sloja sa slikom');
+    assert.match(sa, /<i data-zsl="https:/, 'nema sloja sa slikom');
     assert.ok(!/<i /.test(bez), 'prazan sloj se crta i kad slike nema');
   });
 
@@ -732,7 +741,7 @@ describe('Ime i slika iz tokena', () => {
     b.call('openSettings');
     const sa = b.evalIn(`$('#sheet').innerHTML`) || '';
     assert.match(sa, /ovako te vide ostali/);
-    assert.match(sa, /background-image:url\(&quot;https:\/\/lh3/, 'pregled ne prikazuje sliku');
+    assert.match(sa, /data-zsl="https:\/\/lh3/, 'pregled ne prikazuje sliku');
   });
 });
 
@@ -881,5 +890,87 @@ describe('Traka o novom ekranu', () => {
     assert.match(nov, /isključen|ručno/i, 'traka ne kaže da je Zajednica podrazumevano isključena');
     const a = napravi({ firstRun: '2026-06-01' });
     assert.equal(a.evalIn('S.zajed.vidljiv'), false);
+  });
+});
+
+/* NALAZ Z-1 — TUĐ `avatar_url` NE SME DA UBACI CSS U MOJ DOKUMENT.
+
+   Komentar iznad `zajSlikaUrl` je tvrdio da se „znakovi kojima bi to bilo
+   moguće odbijaju u celosti". Nije bilo tako: dozvoljeni skup je sadržao `&`,
+   `#`, cifre i `;` — sve što treba za NUMERIČKE HTML ENTITETE. Vrednost je išla
+   u `style="background-image:url(&quot;URL&quot;)"`, a pregledač vrednost
+   atributa PRVO dekodira kao HTML pa onda čita kao CSS. Provereno u Chromium-u:
+   `position:fixed;inset:0;z-index:99999` daje sloj preko celog ekrana koji beži
+   iz `.zav{overflow:hidden}` i prima dodire umesto dugmadi ispod.
+
+   Zajednica je JEDINI ekran koji iscrtava podatke koje je uneo drug korisnik, a
+   `ubaceniTagovi` u test/bezbednost.test.mjs gleda tagove i rukovaoce — ne
+   sadržaj `style` atributa. Zato ova zamka gleda baš to: dekodira entitete i
+   traži CSS deklaracije. */
+describe('Nalaz Z-1 — CSS iz tuđeg profila', () => {
+  /* Isto što pregledač radi sa vrednošću atributa pre nego što je pročita. */
+  const dekodiraj = s => String(s)
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
+
+  const OTROV = 'https://lh3.googleusercontent.com/a'
+    + '&#34;&#41;&#59;position:fixed&#59;inset:0&#59;width:100vw&#59;height:100vh'
+    + '&#59;z-index:99999&#59;background:red&#59;x:url&#40;&#34;';
+
+  test('zajSlikaUrl odbija adresu sa numeričkim entitetima', () => {
+    const a = app();
+    assert.equal(a.call('zajSlikaUrl', OTROV), null,
+      'propuštena je adresa koja nosi &#34; i &#59;');
+    /* `&` i `#` su sami po sebi dovoljni za sastavljanje entiteta. */
+    for (const u of ['https://lh3.googleusercontent.com/a&x', 'https://lh3.googleusercontent.com/a#x'])
+      assert.equal(a.call('zajSlikaUrl', u), null, u + ' je propušten');
+  });
+
+  test('prave Google adrese i dalje prolaze — sito nije preoštro', () => {
+    const a = app();
+    for (const u of [
+      'https://lh3.googleusercontent.com/a/ACg8ocKmXyZ-1234_abc=s96-c',
+      'https://lh6.googleusercontent.com/a-/AOh14Gi.jpg',
+      'https://lh4.googleusercontent.com/a/AC-slika=s96-c-rp-mo-br100'
+    ]) assert.equal(a.call('zajSlikaUrl', u), u, u + ' je odbijen, a legitiman je');
+  });
+
+  test('spisak Zajednice ne pušta CSS deklaracije ni posle dekodiranja', () => {
+    const a = app();
+    prijavljen(a);
+    spisak(a, [{ user_id:'u-zlo', nadimak:'Bora', cilj:'5K', avatar_url:OTROV,
+      vdot:50, vdot_pocetni:48, test3k_sec:700, km_nedelja:40, plan_pct:90, niz_dana:10,
+      izazov_od:4, izazov_ura:4, nedelja_br:1, nedelja_od:8, trka_datum:'2026-12-01',
+      znacke:[], trcanja:[] }]);
+    a.call('renderZajednica');
+    const h = dekodiraj(ekran(a));
+    for (const d of [/position\s*:\s*fixed/i, /z-index/i, /inset\s*:/i, /100vw/i])
+      assert.ok(!d.test(h), 'napadačev CSS je ušao u spisak: ' + d);
+  });
+
+  test('profil drugog trkača isto', () => {
+    const a = app();
+    prijavljen(a);
+    spisak(a, [{ user_id:'u-zlo', nadimak:'Bora', cilj:'5K', avatar_url:OTROV,
+      vdot:50, vdot_pocetni:48, test3k_sec:700, km_nedelja:40, plan_pct:90, niz_dana:10,
+      izazov_od:4, izazov_ura:4, nedelja_br:1, nedelja_od:8, trka_datum:'2026-12-01',
+      znacke:[], trcanja:[] }]);
+    a.evalIn(`ZAJ.otvoren='u-zlo'`);
+    a.call('renderZajednica');
+    const h = dekodiraj(ekran(a));
+    assert.ok(!/position\s*:\s*fixed/i.test(h), 'napadačev CSS je ušao u profil');
+  });
+
+  test('adresa se NE gradi u `style` atributu — to je bio ceo mehanizam', () => {
+    /* Ako se `style="background-image:…"` ikad vrati, korak „dekodiraj kao HTML"
+       se vraća sa njim, i uže sito je onda jedina odbrana. */
+    const src = readRepoFile('app.js');
+    const zaj = /function zajAvatar\(p, d\)\{[\s\S]*?\n\}/.exec(src);
+    assert.ok(zaj, 'zajAvatar nije nađen');
+    assert.doesNotMatch(zaj[0], /background-image/,
+      'adresa se opet ubacuje kroz `style` atribut');
+    assert.match(src, /style\.backgroundImage\s*=/,
+      'pozadina se ne postavlja kroz CSSOM');
   });
 });

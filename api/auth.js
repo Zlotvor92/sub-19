@@ -100,6 +100,45 @@ async function kaStravi(res, dodatno) {
   }
 }
 
+
+/* ============================================================
+   DNEVNI LIMIT — v. supabase/rate-limit.sql
+
+   `rate-limit.sql` postoji doslovno zato što jedan prijavljen korisnik može u
+   petlji da gađa spoljni servis SA NAŠE IP ADRESE, a posledice snosi vlasnik.
+   Ista rečenica važi i ovde, i to jače: ova putanja uz to troši i naš
+   `client_secret`. `api/icu.js` je limit dobio, ova putanja nije — pa je jedan
+   prijavljen korisnik mogao u petlji da iscrpi kvotu naše aplikacije i izazove
+   blokadu, čime sinhronizacija prestaje da radi SVIM korisnicima.
+
+   Provera oblika (`^[a-f0-9]+$` i sl.) štedi jedan poziv na očigledno smeće, ali
+   smeće ISPRAVNOG oblika ide do spoljnog servisa — pa oblik nije limit.
+
+   PROPUŠTA kad baza ne odgovara — namerno, isto kao u api/icu.js: ovo nije
+   razorna radnja i SQL možda još nije pušten. Ali se VIDI: `console.error`. */
+async function limitPrekoracen(token, endpoint, limit) {
+  const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
+  if (!url || !anon) return false;
+  try {
+    const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
+      method: 'POST',
+      headers: { apikey: anon, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_endpoint: endpoint, p_limit: limit })
+    });
+    if (r.ok) return false;
+    const telo = await r.text();
+    let j = null; try { j = JSON.parse(telo); } catch (e) {}
+    if ((j && (j.code === 'P0001' || String(j.message || '').includes('DAILY_LIMIT_EXCEEDED')))
+        || String(telo).includes('DAILY_LIMIT_EXCEEDED')) return true;
+    console.error('[limit][ALARM] brojac nije radio (%s) — propusteno bez brojanja. HTTP %s: %s',
+      endpoint, r.status, telo.slice(0, 200));
+    return false;
+  } catch (e) {
+    console.error('[limit][ALARM] brojac nedostupan (%s) — propusteno bez brojanja: %s', endpoint, e.message);
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') {
     res.setHeader('Allow', 'GET, POST');
@@ -125,6 +164,13 @@ export default async function handler(req, res) {
      ukradenim refresh tokenom mogao da kuje pristupne tokene nasim kljucem. */
   const auth = await requireUser(req);
   if (!auth.ok) return res.status(auth.status).json({ message: auth.error });
+
+  /* Limit je velikodušan: pregledač osvežava token na svaki sat, a Strava se
+     povezuje jednom. Sto poziva dnevno nijedan pravi korisnik ne dosegne, a
+     petlja ga dosegne u sekundi. */
+  if (await limitPrekoracen(auth.token, 'strava_token', 100)) {
+    return res.status(429).json({ message: 'Previše poziva ka Stravi danas. Probaj ponovo sutra.' });
+  }
 
   /* ---------- GET: prva veza, kod -> tokeni ---------- */
   if (req.method === 'GET') {

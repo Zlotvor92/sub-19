@@ -136,6 +136,15 @@ function makeEl(tag = 'div', atr = {}) {
     removeEventListener() {},
     setAttribute(k, v) { this._atr[String(k).toLowerCase()] = String(v); },
     getAttribute(k) { const v = this._atr[String(k).toLowerCase()]; return v === undefined ? null : v; },
+    removeAttribute(k) {
+      const n = String(k).toLowerCase();
+      delete this._atr[n];
+      /* `data-x` živi i u `dataset` — u pregledaču su to dva prikaza istog
+         atributa, pa uklanjanje mora da ih drži u skladu. Bez toga kod koji
+         posle proverava `dataset.x` i dalje vidi staru vrednost, i test ne bi
+         mogao da razlikuje „oznaka je skinuta" od „nije". */
+      if (n.startsWith('data-')) delete this.dataset[n.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase())];
+    },
     closest() { return makeEl(); },
     select() {},
     focus() {},

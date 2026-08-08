@@ -580,8 +580,44 @@ describe('supabase/rate-limit.sql — ono što se ne sme izgubiti pri izmeni', (
     assert.match(bezKomentara, /v_user is null[\s\S]{0,120}raise exception/i);
   });
 
-  test('naziv endpointa je ograničen (inače nasumičan naziv = uvek nov brojač)', () => {
-    assert.match(bezKomentara, /p_endpoint[\s\S]{0,80}~[\s\S]{0,40}\^\[a-z0-9_-\]/);
+  /* NALAZ S-2 — naziv mora biti SA SPISKA, ne samo ispravnog oblika.
+
+     Ranije je stajala provera azbuke (`^[a-z0-9_-]{1,40}$`) uz komentar da bez
+     nje „pozivalac sa izmišljenim nazivom svaki put dobija NOV red". Tačno — ali
+     provera azbuke to nije sprečavala: slučajan string je i dalje ispravnog
+     oblika, a naziv je deo primarnog ključa. Mereno na Postgresu: 5000 poziva sa
+     `x1`…`x5000` → 5000 redova, 744 kB, nijedan izuzetak. Tabelu niko ne može ni
+     da pročita, pa se to ne bi ni videlo dok se baza ne napuni — a tada prestaje
+     da radi SVIMA. */
+  test('NALAZ S-2: naziv endpointa mora biti sa spiska, ne samo ispravnog oblika', () => {
+    assert.doesNotMatch(bezKomentara, /p_endpoint[\s\S]{0,80}~[\s\S]{0,40}\^\[a-z0-9_-\]/,
+      'provera je opet samo po azbuci — slučajan naziv i dalje pravi nov red');
+    assert.match(bezKomentara, /p_endpoint\s+not\s+in\s*\(/i,
+      'rate-limit.sql ne nabraja dozvoljene nazive endpointa');
+  });
+
+  test('NALAZ S-2: svaki brojač iz koda stoji na spisku u SQL-u', () => {
+    /* Suprotan smer iste greške: dodat brojač u kodu, a spisak u SQL-u ne — poziv
+       tada pada sa BAD_ENDPOINT i limit ne radi. Zato se spisak i kod porede. */
+    const sql = readRepoFile('supabase/rate-limit.sql');
+    const dozvoljeni = new Set(
+      [...(/p_endpoint\s+not\s+in\s*\(([\s\S]*?)\)\s*then/i.exec(sql) || [, ''])[1]
+        .matchAll(/'([a-z0-9_-]+)'/g)].map(m => m[1]));
+    assert.ok(dozvoljeni.size >= 8, `spisak je premali: ${[...dozvoljeni]}`);
+
+    const izKoda = new Set();
+    for (const f of readdirSync(join(ROOT, 'api')).filter(x => x.endsWith('.js'))) {
+      const src = readFileSync(join(ROOT, 'api', f), 'utf8');
+      for (const m of src.matchAll(/(?:limitPrekoracen|razornoDozvoljeno)\([^,]+,\s*'([a-z0-9_-]+)'/g)) izKoda.add(m[1]);
+      for (const m of src.matchAll(/p_endpoint:\s*'([a-z0-9_-]+)'/g)) izKoda.add(m[1]);
+    }
+    /* i naziv koji okidač u bazi koristi */
+    for (const m of readRepoFile('supabase/ai-posao.sql').matchAll(/check_and_bump_endpoint\('([a-z0-9_-]+)'/g)) izKoda.add(m[1]);
+
+    assert.ok(izKoda.size >= 8, `nije nađen nijedan brojač u kodu: ${[...izKoda]}`);
+    const nema = [...izKoda].filter(x => !dozvoljeni.has(x));
+    assert.deepEqual(nema, [],
+      `brojač postoji u kodu a nije na spisku u rate-limit.sql, pa poziv pada sa BAD_ENDPOINT: ${nema}`);
   });
 
   test('imena endpointa iz koda odgovaraju dozvoljenom obliku', () => {
@@ -1325,6 +1361,8 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
   const IZVOR = readRepoFile('api/broadcast.js');
   const VLASNIK = { id: 'v1', email: ENV.ADMIN_EMAIL, email_confirmed_at: '2026-01-01' };
 
+  /* Podrazumevano „oznaka je postojala"; test koji meri suprotno je podmeće. */
+  let oznakaPrazna = false;
   function stub(korisnik, { obrisiPada = null, oznakaPada = false, brojacPada = false } = {}) {
     const pozivi = [];
     globalThis.fetch = async (url, opt) => {
@@ -1345,7 +1383,13 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
         return brojacPada ? jsonRes({ message: 'nema' }, false, 500) : jsonRes(1);
       }
       if (u.includes('/rest/v1/nalog_za_brisanje')) {
-        return oznakaPada ? jsonRes({ error: 'ne' }, false, 500) : jsonRes([]);
+        if (oznakaPada) return jsonRes({ error: 'ne' }, false, 500);
+        /* DELETE vraća OBRISANE redove (Prefer: return=representation). Prazan
+           niz znači „oznake nije bilo" i po tome `ponisti` odlučuje da li sme
+           da skine zabranu — v. nalaz B-1. Podrazumevano ovde stoji jedan red,
+           dakle „oznaka je postojala"; test koji meri suprotno je podmeće sam. */
+        if (opt && opt.method === 'DELETE') return jsonRes(oznakaPrazna ? [] : [{ user_id: 'k1', email: 'prvi@t.rs' }]);
+        return jsonRes([]);
       }
       if (u.includes('api.resend.com')) return jsonRes({ id: 'mejl' });
       const m = /\/rest\/v1\/([a-z_]+)\?/.exec(u);
@@ -1458,6 +1502,80 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
     assert.equal(res.code, 200);
     assert.ok(pozivi.some(x => x.startsWith('DELETE') && x.includes('nalog_za_brisanje')), 'oznaka nije uklonjena');
     assert.ok(pozivi.some(x => x.startsWith('PUT') && x.includes('/auth/v1/admin/users/')), 'zabrana nije skinuta');
+  });
+
+  test('NALAZ B-1: bez oznake za brisanje, `ponisti` ne skida zabranu', async () => {
+    /* Ova grana namerno nema drugi faktor — oporavak mora da bude bez trenja.
+       Ali PostgREST-u je DELETE koji ne nađe nijedan red uspeh (204), pa je
+       bezuslovno skidanje zabrane ispod njega značilo da poziv sa proizvoljnim
+       id-em skida zabranu sa BILO KOG naloga, uključujući onaj zabranjen zbog
+       zloupotrebe. Napadaču sa vlasnikovom sesijom je to bio jedini razoran
+       potez bez lozinke — a suprotan smer (`ban` sa `ukini:true`) lozinku traži. */
+    oznakaPrazna = true;
+    try {
+      const pozivi = stub(VLASNIK);
+      const res = await zovi({ admin: 'ponisti', obrisiId: 'ma-koji-zabranjen' });
+      assert.equal(res.code, 404, 'poništavanje bez oznake je prošlo kao uspeh');
+      assert.equal(pozivi.filter(x => x.startsWith('PUT') && x.includes('/auth/v1/admin/users/')).length, 0,
+        'zabrana je skinuta iako nalog nije bio označen za brisanje');
+    } finally { oznakaPrazna = false; }
+  });
+
+  /* NALAZ A-1 — pogrešna lozinka mora da se BROJI i da se PRIJAVI.
+
+     Bilo je: prvo lozinka, pa brojač, pa (posle uspeha) mejl. Sva tri sloja su
+     radila, ali tek posle TAČNE lozinke — pa pogrešna nije trošila ništa, nije
+     slala ništa i nije ostavljala trag. Napadač sa ukradenom vlasnikovom
+     sesijom, dakle upravo onaj zbog kog drugi faktor postoji, imao je onoliko
+     pokušaja koliko mu treba.
+
+     Zato se meri BROJANJE i PRIJAVA na neuspehu, a ne samo to da neuspeh
+     vrati 401. Poređenje konstantnog trajanja štiti od merenja vremena, ne od
+     broja pokušaja. */
+  test('NALAZ A-1: pogrešna lozinka troši brojač pokušaja', async () => {
+    for (const radnja of [{ admin: 'obrisi', obrisiId: 'k1' }, { admin: 'ban', banId: 'k1' }]) {
+      const pozivi = stub(VLASNIK);
+      const res = await zovi({ ...radnja, lozinka: 'pogresna-lozinka-xx' });
+      assert.equal(res.code, 401, JSON.stringify(radnja) + ' nije odbijena');
+      const brojanja = pozivi.filter(x => x.includes('check_and_bump_endpoint'));
+      assert.ok(brojanja.length > 0,
+        'pogrešan pokušaj (' + radnja.admin + ') nije izbrojan — lozinka se pogađa bez ograničenja');
+    }
+  });
+
+  test('NALAZ A-1: pogrešna lozinka šalje mejl vlasniku', async () => {
+    for (const radnja of [{ admin: 'obrisi', obrisiId: 'k1' }, { admin: 'ban', banId: 'k1' }]) {
+      const pozivi = stub(VLASNIK);
+      await zovi({ ...radnja, lozinka: 'pogresna-lozinka-xx' });
+      assert.ok(pozivi.some(x => x.includes('api.resend.com')),
+        'napad grubom silom na drugi faktor prolazi nemo — vlasnik ne sazna ništa');
+    }
+  });
+
+  test('NALAZ A-1: sama lozinka NIKAD ne ide u mejl', async () => {
+    /* Poslala bi napadačev pokušaj u sanduče — a pri promašaju za jedan znak i
+       samu pravu lozinku. */
+    let telo = '';
+    const pozivi = stub(VLASNIK);
+    const origFetch = globalThis.fetch;
+    globalThis.fetch = async (url, opt) => {
+      if (String(url).includes('api.resend.com')) telo += String((opt && opt.body) || '');
+      return origFetch(url, opt);
+    };
+    await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: 'tajna-koja-ne-sme-da-izadje' });
+    assert.ok(telo.length > 0, 'mejl nije ni poslat — druga zamka pokriva to');
+    assert.ok(!telo.includes('tajna-koja-ne-sme-da-izadje'), 'pokušana lozinka je poslata mejlom');
+    assert.ok(!telo.includes(LOZ), 'prava lozinka je poslata mejlom');
+  });
+
+  test('NALAZ A-1: brojač pokušaja se troši i kad je lozinka TAČNA', async () => {
+    /* Da se troši samo na neuspeh, napadač bi imao neograničeno mnogo neuspelih
+       pokušaja — brojač bi merio nešto što nije napad. */
+    const pozivi = stub(VLASNIK);
+    await zovi({ admin: 'ban', banId: 'k1', lozinka: LOZ });
+    const brojanja = pozivi.filter(x => x.includes('check_and_bump_endpoint'));
+    assert.ok(brojanja.length >= 2,
+      'uspešna radnja troši samo brojač radnji, ne i brojač pokušaja: ' + brojanja.length);
   });
 
   test('zabrana i skidanje zabrane idu na isti nalog', async () => {
@@ -1828,11 +1946,11 @@ describe('/api/push {akcija:"objava"} — kapija i slanje', () => {
         if (opt && opt.method === 'DELETE') return jsonRes({});
         if (/id=gt\./.test(u)) return jsonRes([]);
         return jsonRes([
-          Object.assign({ id: 1, user_id: 'a', endpoint: 'https://push.example/1' }, pretplatnik()),
-          Object.assign({ id: 2, user_id: 'b', endpoint: 'https://push.example/2' }, pretplatnik())
+          Object.assign({ id: 1, user_id: 'a', endpoint: 'https://fcm.googleapis.com/fcm/send/1' }, pretplatnik()),
+          Object.assign({ id: 2, user_id: 'b', endpoint: 'https://fcm.googleapis.com/fcm/send/2' }, pretplatnik())
         ]);
       }
-      if (u.startsWith('https://push.example/')) { poslato.push(u); return { ok: true, status: 201 }; }
+      if (u.startsWith('https://fcm.googleapis.com/fcm/send/')) { poslato.push(u); return { ok: true, status: 201 }; }
       throw new Error('neočekivan poziv: ' + u);
     };
   }
@@ -1891,7 +2009,7 @@ describe('/api/push {akcija:"objava"} — kapija i slanje', () => {
     const { res, poslato } = await zovi({ akcija: 'objava', objava: 'zajednica', posalji: true });
     assert.equal(res.code, 200);
     assert.equal(res.body.poslato, 2);
-    assert.deepEqual(poslato.slice().sort(), ['https://push.example/1', 'https://push.example/2']);
+    assert.deepEqual(poslato.slice().sort(), ['https://fcm.googleapis.com/fcm/send/1', 'https://fcm.googleapis.com/fcm/send/2']);
   });
 
   test('nastavak ide po id-u, ne po poziciji u listi', async () => {
@@ -1907,5 +2025,198 @@ describe('/api/push {akcija:"objava"} — kapija i slanje', () => {
        ekran. Ko obaveštenja ne želi, nema pretplatu pa ga ovde ni nema. */
     const blok = /async function objavaSvima[\s\S]*?\n}/.exec(IZVOR)[0];
     assert.doesNotMatch(blok, /najave/, 'objava se filtrira po rasporedu plana');
+  });
+});
+
+/* NALAZ L-1 — OAuth putanje bez limita.
+
+   `supabase/rate-limit.sql` postoji doslovno zato što jedan prijavljen korisnik
+   može u petlji da gađa spoljni servis SA NAŠE IP ADRESE, a posledice snosi
+   vlasnik. `api/icu.js` je tu odbranu dobio; `/api/auth` i `/api/icu-oauth`
+   nisu — a one uz to troše i naš `client_secret`.
+
+   Ne dobija tuđe podatke. Dobija iscrpljenu kvotu naše Strava aplikacije i
+   blokadu našeg `client_id`-a, čime sinhronizacija prestaje da radi SVIMA.
+
+   NALAZ P-3 je u istom bloku: `SETTINGS:WRITE` se tražio a nije se koristio. */
+describe('NALAZ L-1 i P-3 — limiti na OAuth putanjama i najmanja dozvola', () => {
+  function stub(trag, limitPrekoracen = false) {
+    globalThis.fetch = async url => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) return jsonRes({ id: 'k1', email: 'obican@t.rs' });
+      if (u.includes('/rest/v1/rpc/check_and_bump_endpoint')) {
+        trag.brojac++;
+        return limitPrekoracen
+          ? jsonRes({ code: 'P0001', message: 'DAILY_LIMIT_EXCEEDED' }, false, 400)
+          : jsonRes(1);
+      }
+      if (u.includes('strava.com/oauth/token')) { trag.spolja++; return jsonRes({ access_token: 'x', refresh_token: 'y', expires_at: 1 }); }
+      if (u.includes('intervals.icu/api/oauth/token')) {
+        trag.spolja++; return jsonRes({ access_token: 'x', athlete: { id: 1, name: 'n' } });
+      }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+  }
+  const zoviAuth = async (trag, over = {}) => {
+    const { default: h } = await import('../api/auth.js?t=' + Date.now() + Math.random());
+    const res = makeRes();
+    await h({ method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer t' },
+      body: { refresh_token: 'rt' }, ...over }, res);
+    return res;
+  };
+  const zoviIcu = async () => {
+    const { default: h } = await import('../api/icu-oauth.js?t=' + Date.now() + Math.random());
+    const res = makeRes();
+    await h({ method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer t' },
+      body: { code: 'abcdefghij' } }, res);
+    return res;
+  };
+
+  test('/api/auth broji svaki poziv ka Stravi', async () => {
+    const trag = { brojac: 0, spolja: 0 };
+    stub(trag);
+    const res = await zoviAuth(trag);
+    assert.equal(res.code, 200);
+    assert.equal(trag.brojac, 1, 'poziv ka Stravi našim client_secret-om nije izbrojan');
+  });
+
+  test('/api/auth vraća 429 kad je limit dostignut, i NE zove Stravu', async () => {
+    const trag = { brojac: 0, spolja: 0 };
+    stub(trag, true);
+    const res = await zoviAuth(trag);
+    assert.equal(res.code, 429);
+    assert.equal(trag.spolja, 0, 'Strava je pozvana iako je limit dostignut');
+  });
+
+  test('/api/icu-oauth broji razmenu koda', async () => {
+    const trag = { brojac: 0, spolja: 0 };
+    stub(trag);
+    const res = await zoviIcu();
+    assert.equal(res.code, 200);
+    assert.equal(trag.brojac, 1, 'razmena koda nije izbrojana');
+  });
+
+  test('/api/icu-oauth vraća 429 kad je limit dostignut, i NE zove intervals.icu', async () => {
+    const trag = { brojac: 0, spolja: 0 };
+    stub(trag, true);
+    const res = await zoviIcu();
+    assert.equal(res.code, 429);
+    assert.equal(trag.spolja, 0, 'intervals.icu je pozvan iako je limit dostignut');
+  });
+
+  test('brojač koji ne radi PROPUŠTA — ovo nije razorna radnja', async () => {
+    /* Suprotno od admin radnji u broadcast.js, gde brojač koji ne radi znači da
+       granice nema pa se radnja odbija. Ovde bi odbijanje oborilo prijavu na
+       Stravu zbog baze — a SQL možda još nije ni pušten. */
+    const trag = { brojac: 0, spolja: 0 };
+    globalThis.fetch = async url => {
+      const u = String(url);
+      if (u.includes('/auth/v1/user')) return jsonRes({ id: 'k1', email: 'o@t.rs' });
+      if (u.includes('/rest/v1/rpc/')) throw new Error('baza nedostupna');
+      if (u.includes('strava.com/oauth/token')) { trag.spolja++; return jsonRes({ access_token: 'x' }); }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    const res = await zoviAuth(trag);
+    assert.equal(res.code, 200, 'otkaz brojača je oborio osvežavanje Strava tokena');
+    assert.equal(trag.spolja, 1);
+  });
+
+  test('NALAZ P-3: ne traži se dozvola koja se ne koristi', async () => {
+    const izvor = readRepoFile('api/icu-oauth.js');
+    const m = /const SCOPE = '([^']*)'/.exec(izvor);
+    assert.ok(m, 'nema SCOPE u icu-oauth.js');
+    const opsezi = m[1].split(',');
+    /* Za svaku traženu dozvolu mora da postoji poziv koji je koristi. */
+    const svudje = ['api/icu.js', 'api/icu-oauth.js', 'app.js'].map(readRepoFile).join('\n');
+    if (opsezi.includes('SETTINGS:WRITE')) {
+      assert.match(svudje, /sport-settings|athlete\/[^'"]*\/settings/,
+        'SETTINGS:WRITE se traži od korisnika, a nijedan poziv ga ne koristi');
+    }
+    assert.ok(opsezi.includes('ACTIVITY:READ') && opsezi.includes('WELLNESS:READ')
+      && opsezi.includes('CALENDAR:WRITE'), 'nedostaje dozvola koja se STVARNO koristi: ' + m[1]);
+  });
+});
+
+/* POLITIKA PRIVATNOSTI MORA DA OPISUJE SVET KOJI POSTOJI.
+
+   Ovo nisu tehnički propusti nego netačne izjave prema korisniku — i, za razliku
+   od koda, ništa ih ne otkriva samo od sebe. Zato se ovde politika poredi sa
+   kodom, u OBA smera:
+
+     P-1  Politika je za Gemini pisala „sažetak trčanja bez imena i bez
+          e-adrese". Stvarno se šalju i HRV, puls u miru, san i svežina — a kod
+          trend-analize do 90 dana tih merenja i beleške sa treninga. Uz to,
+          `api/analyze.js` sam u zaglavlju kaže da Google na besplatnom nivou
+          koristi sadržaj zahteva i odgovora; politika to nije pominjala.
+     P-2  Politika je pisala „podacima pristupaš samo ti", a `/api/daily-report`
+          svakog jutra service_role ključem čita stanje SVAKOG korisnika i
+          vlasniku šalje tabelu sa e-adresom, kilometražom i imenom sa Strave.
+     P-3  Tražio se `SETTINGS:WRITE` koji nijedan poziv ne koristi, a politika je
+          tvrdila da se koristi za upis praga tempa.
+
+   Zamka gleda ono što se lako raziđe: kad kod počne da šalje nov podatak spolja,
+   politika mora da se pomeri sa njim. */
+describe('Politika privatnosti prati serverski kod', () => {
+  const PRIVACY = readRepoFile('privacy.html');
+
+  test('NALAZ P-1: red o Gemini-ju pominje jutarnja merenja', () => {
+    const analyze = readRepoFile('api/analyze.js');
+    /* Prvo se potvrdi da kod to STVARNO šalje — inače zamka meri zastarelu
+       pretpostavku i tiho prestane da vredi. */
+    assert.match(analyze, /Oporavak tog jutra/, 'analyze.js više ne šalje oporavak — zamka je zastarela');
+    assert.match(analyze, /OPORAVAK PO DANIMA/, 'analyze.js više ne šalje istoriju oporavka');
+
+    for (const jezik of [/Google \(Gemini\)<\/td><td>([^<]*(?:<b>[^<]*<\/b>[^<]*)*)</g]) {
+      const redovi = [...PRIVACY.matchAll(jezik)].map(m => m[1]);
+      assert.ok(redovi.length >= 2, `red o Gemini-ju ne postoji na oba jezika: ${redovi.length}`);
+      for (const r of redovi)
+        assert.match(r, /HRV/, `politika kaže da Gemini dobija samo „${r.trim().slice(0, 60)}", a dobija i jutarnja merenja`);
+    }
+  });
+
+  test('NALAZ P-1: politika pominje besplatan nivo Gemini-ja', () => {
+    const analyze = readRepoFile('api/analyze.js');
+    assert.match(analyze, /besplatn|free tier/i, 'analyze.js više ne pominje nivo — zamka je zastarela');
+    assert.match(PRIVACY, /besplatnom nivou/, 'srpski deo ne pominje besplatan nivo');
+    assert.match(PRIVACY, /free tier/i, 'engleski deo ne pominje besplatan nivo');
+  });
+
+  test('NALAZ P-2: dnevni izveštaj vlasniku je objavljen u politici', () => {
+    const dr = readRepoFile('api/daily-report.js');
+    assert.match(dr, /user_state\?select=user_id,data/, 'daily-report više ne čita sirovo stanje — zamka je zastarela');
+    assert.match(dr, /stravaAthlete/, 'daily-report više ne šalje ime sa Strave');
+    assert.match(PRIVACY, /Dnevni izveštaj vlasniku/i, 'politika ne opisuje dnevni izveštaj');
+    assert.match(PRIVACY, /Daily report to the app owner/i, 'engleski deo ne opisuje dnevni izveštaj');
+    /* I da više NE tvrdi suprotno. */
+    assert.doesNotMatch(PRIVACY, /pristupaš samo ti/,
+      'politika i dalje tvrdi „podacima pristupaš samo ti"');
+    assert.doesNotMatch(PRIVACY, /so that only\s*\n?you can read it/,
+      'engleski deo i dalje tvrdi „only you can read it"');
+  });
+
+  test('NALAZ P-2: izveštaj NE nosi sirovo stanje — i politika to kaže', () => {
+    /* Ono što politika obećava mora da bude istina i u kodu: izveštaj su
+       izvedeni pokazatelji, ne kopija dnevnika. */
+    const dr = readRepoFile('api/daily-report.js');
+    for (const polje of ['knee', 'wellness', 'note']) {
+      const uHtml = new RegExp('buildHtml[\\s\\S]*?' + polje + '[\\s\\S]{0,40}esc\\(');
+      assert.ok(!uHtml.test(dr), `izveštaj iscrtava ${polje} — politika tvrdi da ga nema`);
+    }
+    assert.match(PRIVACY, /Šta u njemu NE stoji/, 'politika ne kaže šta izveštaj ne sadrži');
+  });
+
+  test('NALAZ P-3: svaka tražena intervals.icu dozvola je opisana u politici', () => {
+    const m = /const SCOPE = '([^']*)'/.exec(readRepoFile('api/icu-oauth.js'));
+    assert.ok(m, 'nema SCOPE u icu-oauth.js');
+    for (const opseg of m[1].split(',')) {
+      const koliko = (PRIVACY.match(new RegExp('<code>' + opseg.replace(':', ':') + '</code>', 'g')) || []).length;
+      assert.ok(koliko >= 2, `dozvola ${opseg} se traži, a nije opisana na oba jezika (nađeno ${koliko})`);
+    }
+    /* I obrnuto: politika ne sme da opisuje dozvolu koja se ne traži. */
+    for (const opseg of ['SETTINGS:WRITE', 'ACTIVITY:WRITE', 'WELLNESS:WRITE']) {
+      if (!m[1].includes(opseg))
+        assert.ok(!PRIVACY.includes('<code>' + opseg + '</code>'),
+          `politika opisuje ${opseg}, a kod ga ne traži`);
+    }
   });
 });

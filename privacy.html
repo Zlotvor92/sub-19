@@ -51,12 +51,31 @@ brisanje podataka: <a href="mailto:avuletic92@gmail.com">avuletic92@gmail.com</a
   <tr><td>Najava treninga: datum i jedan red teksta za narednih nedelju dana</td><td>sama aplikacija, pri otvaranju</td><td>da jutarnje obaveštenje ima šta da napiše, bez da server zna tvoj plan</td></tr>
 </table>
 <p>Aplikacija ne koristi kolačiće za praćenje, nema analitiku i ne prikazuje reklame.</p>
+<p><strong>O AI analizi:</strong> ide preko Google Gemini API-ja, na besplatnom nivou. Google
+na tom nivou <strong>koristi sadržaj zahteva i odgovora za poboljšanje svojih proizvoda</strong>.
+Zahtev ne nosi ni ime ni e-adresu, ali nosi brojeve o tvom treningu i oporavku i tvoje beleške
+sa treninga — v. tabelu „Kome se podaci prosleđuju". Analiza se pokreće samo kad je sam
+zatražiš; ako to ne želiš, ne traži je.</p>
 
 <h2>Gde se podaci čuvaju</h2>
 <p>Podaci se čuvaju u bazi kod <strong>Supabase</strong> i vezani su za tvoj nalog, tako da
-im pristupaš samo ti. Jedini izuzetak je <a href="#zajednica">Zajednica</a>, koja je
-isključena dok je sam ne uključiš. Aplikacija je hostovana na <strong>Vercel</strong>.
+im ne pristupa nijedan drugi korisnik. Aplikacija je hostovana na <strong>Vercel</strong>.
 Kopija podataka postoji i lokalno u pregledaču, da bi radila bez veze sa internetom.</p>
+<p>Postoje dva izuzetka od „samo ti", i oba su ovde imenovana:
+<a href="#zajednica">Zajednica</a>, koja je isključena dok je sam ne uključiš, i
+<a href="#izvestaj">dnevni izveštaj vlasniku aplikacije</a>.</p>
+
+<h3 id="izvestaj">Dnevni izveštaj vlasniku aplikacije</h3>
+<p>Svakog jutra server pravi jedan izveštaj i šalje ga <strong>vlasniku aplikacije</strong>
+(jednoj osobi, onoj koja je aplikaciju napravila). Za svaki nalog u njemu stoji:
+e-adresa, datum poslednjeg treninga, kilometraža te nedelje, ime sa Strave ako je Strava
+povezana, dan poslednje AI analize i vreme poslednje prijave.</p>
+<p><strong>Šta u njemu NE stoji:</strong> sadržaj tvog dnevnika, beleške sa treninga,
+HRV, puls u miru, san, težina, mapa bolova, ni tekst ijedne AI analize. Izveštaj su
+izvedeni pokazatelji, ne kopija podataka — server sažme stanje i sirov sadržaj odbaci.</p>
+<p>Čemu služi: da vlasnik vidi da aplikacija radi i da neko nije zapao u problem (nema
+unosa nedeljama, sinhronizacija stala). Ne postoji način da se od njega odjaviš odvojeno
+— ako to ne želiš, ostaje brisanje naloga.</p>
 
 <h3>Šta se NIKAD ne šalje na server</h3>
 <div class="box">
@@ -79,7 +98,7 @@ ih i tih poruka nema.</p>
 <h2>Kome se podaci prosleđuju</h2>
 <table>
   <tr><th>Primalac</th><th>Šta dobija</th><th>Kada</th></tr>
-  <tr><td>Google (Gemini)</td><td>sažetak trčanja bez imena i bez e-adrese</td><td>kada zatražiš AI analizu treninga</td></tr>
+  <tr><td>Google (Gemini)</td><td>sažetak trčanja bez imena i bez e-adrese, i <b>jutarnja merenja</b> — HRV, puls u miru, san i svežinu; kod trend-analize do 90 dana tih merenja, uz tvoje beleške sa treninga</td><td>kada zatražiš AI analizu ili trend</td></tr>
   <tr><td>Strava</td><td>zahtev za tvoja trčanja</td><td>kada pokreneš sinhronizaciju</td></tr>
   <tr><td>intervals.icu</td><td>zahtev za jutarnja merenja; planirani treninzi koje šalješ na sat</td><td>kada povučeš oporavak ili pošalješ treninge</td></tr>
   <tr><td>Resend</td><td>tvoja e-adresa i tekst poruke</td><td>dnevni izveštaj i prijava greške</td></tr>
@@ -119,10 +138,10 @@ sa spiska. Brisanje naloga ga briše takođe.</p>
 <p>Ako povežeš intervals.icu, aplikacija traži sledeće dozvole i koristi ih samo za
 navedeno:</p>
 <ul>
+  <li><code>ACTIVITY:READ</code> — čitanje tvojih odrađenih trčanja, da se ne unose ručno.</li>
   <li><code>WELLNESS:READ</code> — čitanje HRV-a, pulsa u miru i sna, radi procene oporavka.</li>
   <li><code>CALENDAR:WRITE</code> — upis planiranih treninga u tvoj kalendar, da bi stigli na sat.
       Aplikacija menja i briše isključivo događaje koje je sama napravila (nose oznaku <code>sub19-</code>).</li>
-  <li><code>SETTINGS:WRITE</code> — čitanje i upis praga tempa, da bi ciljevi tempa na satu bili ispravni. Menja se isključivo to jedno polje.</li>
 </ul>
 <p>Vezu možeš prekinuti u svakom trenutku iz Podešavanja u aplikaciji, kao i sa strane
 intervals.icu.</p>
@@ -204,12 +223,32 @@ data deletion: <a href="mailto:avuletic92@gmail.com">avuletic92@gmail.com</a>.</
   <tr><td>Session headline: a date and one line of text for the next seven days</td><td>the app itself, on open</td><td>so the morning notification has something to say without the server knowing your plan</td></tr>
 </table>
 <p>The app uses no tracking cookies, no analytics and shows no advertising.</p>
+<p><strong>About AI analysis:</strong> it goes through the Google Gemini API on the free tier.
+On that tier Google <strong>uses request and response content to improve its products</strong>.
+The request carries no name or email, but it does carry numbers about your training and
+recovery plus your workout notes — see the "Who we share data with" table. Analysis only runs
+when you ask for it; if you do not want this, do not ask for it.</p>
 
 <h2>Where data is stored</h2>
-<p>Data is stored in a <strong>Supabase</strong> database, scoped to your account so that only
-you can read it. The one exception is <a href="#community">Community</a>, which is off until
-you turn it on yourself. The app is hosted on <strong>Vercel</strong>. A copy is also kept
+<p>Data is stored in a <strong>Supabase</strong> database, scoped to your account so that no
+other user can read it. The app is hosted on <strong>Vercel</strong>. A copy is also kept
 locally in your browser so the app works offline.</p>
+<p>There are two exceptions to "only you", and both are named here:
+<a href="#community">Community</a>, which is off until you turn it on yourself, and the
+<a href="#report">daily report to the app owner</a>.</p>
+
+<h3 id="report">Daily report to the app owner</h3>
+<p>Every morning the server builds one report and emails it to the <strong>app owner</strong>
+(one person — the one who built the app). For each account it lists: email address, date of
+the last workout, that week's mileage, your Strava name if Strava is connected, the day of
+your last AI analysis, and the time of your last sign-in.</p>
+<p><strong>What it does NOT contain:</strong> your journal, workout notes, HRV, resting heart
+rate, sleep, weight, pain map, or the text of any AI analysis. The report holds derived
+indicators, not a copy of your data — the server summarises the state and discards the raw
+content.</p>
+<p>Why it exists: so the owner can see that the app is working and that nobody is stuck (no
+entries for weeks, sync stopped). There is no way to opt out of it separately — if you do not
+want it, account deletion is the option.</p>
 
 <h3>What is NEVER sent to the server</h3>
 <div class="box">
@@ -232,7 +271,7 @@ turn notifications off and those messages stop too.</p>
 <h2>Who we share data with</h2>
 <table>
   <tr><th>Recipient</th><th>What they receive</th><th>When</th></tr>
-  <tr><td>Google (Gemini)</td><td>a summary of a run, without your name or email</td><td>when you request AI analysis</td></tr>
+  <tr><td>Google (Gemini)</td><td>a summary of a run without your name or email, plus <b>morning metrics</b> — HRV, resting heart rate, sleep and freshness; for trend analysis up to 90 days of those metrics, along with your workout notes</td><td>when you request AI analysis or a trend</td></tr>
   <tr><td>Strava</td><td>a request for your activities</td><td>when you run a sync</td></tr>
   <tr><td>intervals.icu</td><td>a request for morning metrics; planned workouts you push to your watch</td><td>when you pull recovery data or send workouts</td></tr>
   <tr><td>Resend</td><td>your email address and the message body</td><td>daily report and bug reports</td></tr>
@@ -272,10 +311,10 @@ merely hide you. Deleting your account deletes it too.</p>
 <p>If you connect intervals.icu, the app requests the following scopes and uses them only
 for the stated purpose:</p>
 <ul>
+  <li><code>ACTIVITY:READ</code> — reading your completed runs, so they need not be entered by hand.</li>
   <li><code>WELLNESS:READ</code> — reading HRV, resting heart rate and sleep, for recovery assessment.</li>
   <li><code>CALENDAR:WRITE</code> — writing planned workouts to your calendar so they reach your watch.
       The app only modifies or deletes events it created itself (marked <code>sub19-</code>).</li>
-  <li><code>SETTINGS:WRITE</code> — reading and writing threshold pace, so pace targets on the watch are correct. That single field only.</li>
 </ul>
 <p>You can disconnect at any time from the app's Settings, or from the intervals.icu side.</p>
 

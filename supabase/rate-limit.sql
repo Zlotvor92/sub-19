@@ -84,10 +84,32 @@ begin
     raise exception 'NOT_AUTHENTICATED' using errcode = '28000';
   end if;
 
-  -- Naziv endpointa ulazi u primarni ključ. Bez ovoga bi pozivalac sa
-  -- izmišljenim nazivom (npr. slučajan string po pozivu) svaki put dobijao
-  -- NOV red sa brojem 1 — limit bi postojao, a ne bi radio.
-  if p_endpoint is null or p_endpoint !~ '^[a-z0-9_-]{1,40}$' then
+  -- NAZIV MORA BITI SA SPISKA, NE SAMO ISPRAVNOG OBLIKA.
+  --
+  -- Ranije je ovde stajala provera azbuke (`^[a-z0-9_-]{1,40}$`) uz komentar da
+  -- bez nje „pozivalac sa izmišljenim nazivom svaki put dobija NOV red". Tačno —
+  -- samo što provera azbuke to nije sprečavala: slučajan string je i dalje
+  -- ispravnog oblika. Funkcija je izložena kroz PostgREST i `grant execute … to
+  -- authenticated`, anon ključ je javan po dizajnu, a naziv endpointa je deo
+  -- primarnog ključa — pa je jedan prijavljen korisnik mogao da napravi
+  -- proizvoljno mnogo redova u tabeli koju niko ne može ni da pročita.
+  -- Mereno: 5000 poziva sa `x1`…`x5000` daje 5000 redova i 744 kB, bez ijednog
+  -- izuzetka. Kad se baza napuni, prestaje da radi SVIMA.
+  --
+  -- `delete … where dan < v_dan - 30` niže to ne krati: briše po DANU, a u istom
+  -- danu ne briše ništa.
+  --
+  -- Nazive bira SERVERSKI KOD, ne korisnik, pa je spisak i tačan opis stvarnosti.
+  -- Kad se doda nov brojač, dodaje se i ovde — a dok se ne doda, poziv pada sa
+  -- BAD_ENDPOINT, dakle glasno, umesto da tiho pravi redove.
+  if p_endpoint is null or p_endpoint not in (
+      'wellness', 'activities', 'workouts',   -- api/icu.js
+      'analyze_citaj', 'ai_posao',            -- api/analyze.js i okidač
+      'strava_token',                         -- api/auth.js
+      'icu_oauth',                            -- api/icu-oauth.js
+      'push_proba',                           -- api/push.js
+      'admin_ban', 'admin_obrisi', 'admin_2fa' -- api/broadcast.js
+    ) then
     raise exception 'BAD_ENDPOINT' using errcode = '22023';
   end if;
 
