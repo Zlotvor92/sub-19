@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='223'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='224'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -10132,13 +10132,66 @@ async function lokalnoZaboraviSve(){
    dodira rade svuda i jednako dobro sprecavaju slucajan dodir. Kucanje
    potvrde kao kod brisanja SOPSTVENOG naloga bilo bi previse: tamo se brise
    jednom u zivotu, ovde se cisti vise probnih naloga zaredom. */
+/* LOZINKA ZA RAZORNE RADNJE — u memoriji, nikad na disku.
+   Stoji samo dok je list otvoren. Da se čuva u localStorage-u, bila bi na istom
+   uređaju kao i sesija — a ceo smisao je da napadač sa ukradenom sesijom NEMA
+   drugi faktor. */
+let ADMIN_LOZ = '';
+
 function openKorisniciSheet(){
   openSheet(`
     <div class="sh-t">Korisnici</div>
     <div class="sh-s">Svi nalozi, poređani po poslednjoj prijavi.</div>
+    <div class="f-field full" style="margin-bottom:12px">
+      <label for="ku-loz">Lozinka za brisanje i zabranu</label>
+      <input id="ku-loz" type="password" placeholder="ADMIN_2FA iz Vercel-a" autocomplete="off">
+    </div>
+    <div class="note-src" style="margin:-6px 0 12px">Traži se samo za razorne radnje. Ne pamti se — kucaš je svaki put kad otvoriš ovaj spisak.</div>
+    <div id="ku-zakazano"></div>
     <div id="ku-lista"><div class="note-src">Učitavam…</div></div>
   `);
+  const l=$('#ku-loz');
+  if(l) l.oninput=e=>{ ADMIN_LOZ=String(e.target.value||''); };
+  ADMIN_LOZ='';
+  ucitajZakazana();
   ucitajKorisnike();
+}
+
+/* Nalozi označeni za brisanje kojima rok još nije istekao. Stoje na vrhu jer
+   su jedina stavka na ovom ekranu koja ima ROK — sve ostalo čeka koliko treba. */
+async function ucitajZakazana(){
+  const box=$('#ku-zakazano'); if(!box) return;
+  try{
+    const tok=await sbToken();
+    if(!tok) return;
+    const r=await fetch('/api/broadcast',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
+      body:JSON.stringify({admin:'zakazano'})});
+    const res=await apiJson(r);
+    if(!res.data||!res.data.ok) return;
+    const z=res.data.zakazano||[];
+    if(!z.length){ box.innerHTML=''; return; }
+    box.innerHTML=`<div class="card" style="border-color:var(--amber)">
+      <div class="dhead"><span class="card-t">Označeno za brisanje</span><span class="dhead-x">${z.length}</span></div>
+      <div class="set-st">Pristup im je već zabranjen. Podaci se brišu kad rok istekne — do tada se sve vraća jednim dodirom.</div>
+      ${z.map(x=>`<div class="ztrow">
+        <div class="ztt">${esc(x.email||x.user_id)}<small>briše se ${esc(fmtDY(String(x.izvrsi_posle).slice(0,10)))}</small></div>
+        <button class="btn ghost sm" data-ku-vrati="${esc(x.user_id)}">Poništi</button>
+      </div>`).join('')}
+    </div>`;
+    box.querySelectorAll('[data-ku-vrati]').forEach(b=>b.onclick=async()=>{
+      b.disabled=true; b.textContent='Vraćam…';
+      try{
+        const tok2=await sbToken();
+        const r2=await fetch('/api/broadcast',{method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok2},
+          body:JSON.stringify({admin:'ponisti', obrisiId:b.dataset.kuVrati})});
+        const res2=await apiJson(r2);
+        if(!res2.data||!res2.data.ok) throw new Error((res2.data&&res2.data.error)||res2.error||'Nije uspelo.');
+        ucitajZakazana(); ucitajKorisnike();
+      }catch(e){ b.disabled=false; b.textContent='Poništi'; alert(e.message); }
+    });
+  }catch(e){ /* spisak označenih je dodatak — njegov neuspeh ne ruši ekran */ }
 }
 async function ucitajKorisnike(){
   const box=$('#ku-lista'); if(!box) return;
@@ -10173,7 +10226,7 @@ async function ucitajKorisnike(){
           const tok=await sbToken();
           const r=await fetch('/api/broadcast',{method:'POST',
             headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
-            body:JSON.stringify({admin:'ban', banId:b.dataset.kuBan, ukini})});
+            body:JSON.stringify({admin:'ban', banId:b.dataset.kuBan, ukini, lozinka:ADMIN_LOZ})});
           const res=await apiJson(r);
           if(!res.data||!res.data.ok) throw new Error((res.data&&res.data.error)||res.error||'Nije uspelo.');
           ucitajKorisnike();
@@ -10197,9 +10250,10 @@ async function ucitajKorisnike(){
           const tok=await sbToken();
           const r=await fetch('/api/broadcast',{method:'POST',
             headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
-            body:JSON.stringify({admin:'obrisi', obrisiId:b.dataset.kuDel})});
+            body:JSON.stringify({admin:'obrisi', obrisiId:b.dataset.kuDel, lozinka:ADMIN_LOZ})});
           const res=await apiJson(r);
           if(!res.data||!res.data.ok) throw new Error((res.data&&res.data.error)||res.error||'Nije uspelo.');
+          ucitajZakazana();
           ucitajKorisnike();          /* spisak se povlaci ponovo, ne krpi lokalno */
         }catch(e){
           b.disabled=false; b.dataset.pitano=''; b.textContent='Obriši';

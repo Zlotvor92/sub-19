@@ -77,7 +77,8 @@ select 'tabela · ' || o.ime,
             else 'OK' end
   from (select unnest(array['ai_posao','api_usage','bug_report_usage',
                             'endpoint_usage','push_pretplata','user_state',
-                            'zajednica_profil','zajednica_izazov','user_state_istorija']) as ime) o
+                            'zajednica_profil','zajednica_izazov','user_state_istorija',
+                            'nalog_za_brisanje']) as ime) o
   left join pg_class c on c.oid = to_regclass('public.' || o.ime)
 
 union all
@@ -187,6 +188,25 @@ select 'istorija · anon nema pristup',
 
 union all
 
+-- 6b. SPISAK ZA BRISANJE NE VIDI NIKO OSIM SERVERA
+--     To je spisak tuđih e-adresa. Ni `anon` ni `authenticated` ne smeju ni da
+--     ga pročitaju — radi se isključivo service_role ključem iz Vercel-a.
+select 'brisanje · samo server ima pristup',
+       case when to_regclass('public.nalog_za_brisanje') is null then '—'
+            when exists (select 1 from pg_policies
+                          where schemaname = 'public' and tablename = 'nalog_za_brisanje') then 'ima politiku'
+            when has_table_privilege('authenticated', 'public.nalog_za_brisanje', 'select') then 'prijavljen ČITA'
+            else 'nema' end,
+       case when to_regclass('public.nalog_za_brisanje') is null then 'NEDOSTAJE — pusti admin-brisanje.sql'
+            when exists (select 1 from pg_policies
+                          where schemaname = 'public' and tablename = 'nalog_za_brisanje')
+              then 'STARO — postoji politika; obriši je rukom'
+            when has_table_privilege('authenticated', 'public.nalog_za_brisanje', 'select')
+              then 'STARO — pusti admin-brisanje.sql ponovo (revoke iz tačke 2)'
+            else 'OK' end
+
+union all
+
 -- 7. ANON NE SME DO ZAJEDNICE
 --    anon ključ stoji u izvornom kodu stranice, dakle kod svakoga. Da `revoke`
 --    izostane, ceo spisak trkača bi se čitao bez prijave.
@@ -212,6 +232,7 @@ order by 1;
 --   NEDOSTAJE kod endpoint_usage  -> pusti supabase/rate-limit.sql
 --   NEDOSTAJE kod zajednica_*     -> pusti supabase/zajednica.sql
 --   NEDOSTAJE kod user_state_*    -> pusti supabase/istorija.sql
+--   NEDOSTAJE kod nalog_za_brisanje -> pusti supabase/admin-brisanje.sql
 --   STARO                         -> pusti taj isti fajl ponovo, ceo
 --
 -- Puštanje bilo kog od tih fajlova dvaput je bezbedno.

@@ -1618,6 +1618,23 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
     assert.equal((await zovi({ admin: 'izazov', tekst: 'Novi izazov nedelje' })).code, 200);
   });
 
+  test('aplikacija salje lozinku uz razorne radnje, i NE cuva je', () => {
+    /* Da se lozinka pamti u localStorage-u, stajala bi na istom uredjaju kao i
+       sesija — a ceo smisao drugog faktora je da napadac sa ukradenom sesijom
+       nema i njega. */
+    const klijent = readRepoFile('app.js');
+    for (const radnja of ["admin:'obrisi'", "admin:'ban'"]) {
+      const m = new RegExp(radnja.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "[^}]*lozinka:ADMIN_LOZ");
+      assert.match(klijent, m, `${radnja} se salje bez lozinke`);
+    }
+    assert.match(klijent, /let ADMIN_LOZ = '';/, 'lozinka se ne drzi u promenljivoj');
+    assert.ok(!/localStorage[^\n]*ADMIN_LOZ|ADMIN_LOZ[^\n]*localStorage/.test(klijent),
+      'lozinka se upisuje u localStorage');
+    /* Ponistavanje NE sme da trazi lozinku — v. serverski test iznad. */
+    assert.ok(!/admin:'ponisti'[^}]*lozinka/.test(klijent),
+      'ponistavanje trazi lozinku, iako nije razorna radnja');
+  });
+
   test('spisak tabela je ISTI kao u delete-account.js', () => {
     /* Dva mesta brisu isti skup podataka. Kad se raziđu, jedna putanja ostavi
        redove koje druga uklanja — i to se ne vidi ni iz jedne od njih. */

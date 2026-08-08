@@ -270,4 +270,11 @@ describe('Šema istorije prati kod', () => {
     assert.match(p, /has_table_privilege\('anon', 'public\.user_state_istorija'/,
       'provera ne gleda da li anon vidi istoriju');
   });
+
+  test('politika kaže i za odloženo brisanje, i da samobrisanje NIJE odloženo', () => {
+    const p = readRepoFile('privacy.html');
+    assert.match(p, /7 dana/, 'ne pominje se rok odloženog brisanja');
+    assert.match(p, /trenutno i\s*\n?nepovratno/, 'ne kaže se da je samobrisanje trenutno');
+    assert.match(p, /7 days/, 'engleska verzija ne pominje rok');
+  });
 });
