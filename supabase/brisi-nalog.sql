@@ -17,9 +17,11 @@
 -- TUDJ nalog (probni nalozi, zahtev stigao mejlom), ide ovuda.
 --
 -- ZASTO NE Supabase Dashboard -> Authentication -> Users -> Delete
--- Ostale tabele imaju `on delete cascade`, ali je `public.user_state`
--- pravljena rukom pre nego sto je sema usla u repozitorijum i njena definicija
--- ovde ne postoji. Bez cascade-a Dashboard daje jedan od dva losa ishoda,
+-- Ovo je pisano dok `public.user_state` nije imala svoj fajl niti `on delete
+-- cascade`. Oboje je od tada resheno (v. supabase/user-state.sql), pa Dashboard
+-- vise nije zamka kakva je bio. Objasnjenje ostaje jer opisuje sta se desava
+-- kad cascade nedostaje — a to je stanje u koje se lako vratiti jednom rucnom
+-- izmenom sheme. Bez cascade-a Dashboard daje jedan od dva losa ishoda,
 -- oba potvrdjena na Postgresu 16.13:
 --   strani kljuc BEZ cascade -> brisanje PUKNE ("violates foreign key
 --     constraint user_state_user_id_fkey"), nalog ostane

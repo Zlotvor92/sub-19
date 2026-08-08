@@ -2330,3 +2330,48 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
       'inventar.sql sadrži naredbu koja menja bazu');
   });
 });
+
+/* ZATEČENA TABELA SE NE POPRAVLJA SA `create table if not exists`.
+
+   `user-state.sql` opisuje tabelu koja u produkciji VEĆ POSTOJI, pa je
+   `create table` nad njom prazan hod. Kolone sam zato dodao kroz
+   `add column if not exists` — a `on delete cascade` sam ostavio samo u
+   `create table`, gde nikad ne stigne da se izvrši. Isti propust, dva metra
+   niže u istom fajlu.
+
+   Ovo važi za SVAKI fajl koji opisuje tabelu nastalu ranije, pa se meri
+   pravilo, ne jedan slučaj. */
+describe('SQL koji opisuje zatečenu tabelu popravlja i ograničenja, ne samo kolone', () => {
+  const US = readRepoFile('supabase/user-state.sql');
+
+  test('`on delete cascade` se primenjuje i na tabelu koja već postoji', () => {
+    assert.match(US, /create table if not exists public\.user_state/,
+      'fajl više ne koristi `if not exists` — zamka je zastarela');
+    assert.match(US, /confdeltype/,
+      'cascade stoji samo u `create table`, gde nad zatečenom tabelom nikad ne stigne da se izvrši');
+    assert.match(US, /add constraint user_state_user_id_fkey[\s\S]{0,200}on delete cascade/,
+      'nema koraka koji dodaje strani ključ sa cascade');
+  });
+
+  test('dvojnik okidača se briše SAMO ako mu je telo dokazano isto', () => {
+    /* U bazi je zatečen okidač `user_state_touch` sa funkcijom
+       `touch_updated_at` — nastao rukom, pre ovog foldera. Ime kaže „touch",
+       ali ime nije dokaz: da funkcija radi i nešto više, brisanje bi to
+       izgubilo bez traga. Zato provera gleda TELO, a Postgres je taj koji zna. */
+    assert.match(US, /pg_get_functiondef/,
+      'dvojnik okidača se briše po imenu, bez provere šta radi');
+    assert.match(US, /new\\\.updated_at/,
+      'ne proverava se da telo stvarno samo postavlja updated_at');
+    assert.match(US, /raise warning/i,
+      'okidač koji se NE ukloni prolazi ćutke — mora da se javi');
+    /* I da ne dira funkciju: možda visi i na drugim tabelama. */
+    assert.doesNotMatch(US, /drop function[^\n]*touch_updated_at/i,
+      'briše se funkcija koja može da visi i na tabelama van ovog fajla');
+  });
+
+  test('sopstveni okidač i okidač istorije se NE brišu kao dvojnici', () => {
+    assert.match(US, /tgname <> 'user_state_touch_trg'/, 'petlja bi obrisala sopstveni okidač');
+    assert.match(US, /tgname <> 'user_state_zapamti_trg'/,
+      'petlja bi obrisala okidač istorije iz istorija.sql');
+  });
+});

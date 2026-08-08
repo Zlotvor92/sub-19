@@ -43,6 +43,48 @@ alter table public.user_state add column if not exists device_id   text;
 alter table public.user_state add column if not exists app_version text;
 alter table public.user_state add column if not exists updated_at  timestamptz not null default now();
 
+-- 1a. `on delete cascade` NA ZATEČENOJ TABELI.
+--
+-- MOJ PROPUST, iste vrste kao kolone iznad: `on delete cascade` je stajalo samo
+-- unutar `create table if not exists`, a to nad tabelom koja već postoji ne radi
+-- ništa. Kolone sam popravio kroz `add column if not exists`, ograničenje nisam.
+--
+-- Zašto je bitno: bez cascade-a brisanje naloga kroz Supabase Dashboard daje
+-- jedan od dva loša ishoda (oba potvrđena na Postgresu 16.13):
+--   strani ključ BEZ cascade -> brisanje PUKNE i nalog ostane
+--   BEZ stranog ključa       -> brisanje prođe, ali red u user_state ostane sa
+--                               user_id-jem koji više ne postoji, i to se ne
+--                               vidi kao greška
+-- `api/delete-account.js` i `obrisi_naloge` brišu eksplicitno, pa njima cascade
+-- ne treba — ali Dashboard je put kojim se ide kad nešto krene naopako.
+--
+-- Idempotentno: ako ograničenje već ima cascade, ništa se ne dešava.
+do $$
+declare v_ime text; v_pravilo text;
+begin
+  select con.conname, con.confdeltype into v_ime, v_pravilo
+    from pg_constraint con
+   where con.conrelid = 'public.user_state'::regclass
+     and con.contype = 'f'
+     and con.confrelid = 'auth.users'::regclass
+   limit 1;
+
+  if v_ime is null then
+    alter table public.user_state
+      add constraint user_state_user_id_fkey
+      foreign key (user_id) references auth.users(id) on delete cascade;
+    raise notice 'user_state: dodat strani ključ sa on delete cascade';
+  elsif v_pravilo <> 'c' then
+    execute format('alter table public.user_state drop constraint %I', v_ime);
+    alter table public.user_state
+      add constraint user_state_user_id_fkey
+      foreign key (user_id) references auth.users(id) on delete cascade;
+    raise notice 'user_state: strani ključ % zamenjen verzijom sa on delete cascade', v_ime;
+  else
+    raise notice 'user_state: strani ključ već ima on delete cascade';
+  end if;
+end $$;
+
 comment on table public.user_state is
   'Celo stanje jednog korisnika, jedan red po nalogu. Prepisuje se u mestu; prethodne verzije čuva user_state_istorija (v. istorija.sql).';
 
@@ -61,6 +103,44 @@ drop trigger if exists user_state_touch_trg on public.user_state;
 create trigger user_state_touch_trg
   before insert or update on public.user_state
   for each row execute function public.user_state_touch();
+
+-- 2a. ZATEČEN OKIDAČ KOJI RADI ISTO.
+--
+-- `inventar.sql` je u bazi našao okidač `user_state_touch` i funkciju
+-- `touch_updated_at` kojih nema ni u jednom fajlu — nastali rukom, pre ovog
+-- foldera. Moj okidač iznad je time postao DRUGI koji radi istu stvar.
+--
+-- NE BRIŠE SE NAPAMET. Ime kaže „touch", ali ime nije dokaz; funkcija je mogla
+-- da radi i nešto više, i to bi se izgubilo bez traga. Zato se briše samo ako
+-- joj TELO stvarno ne radi ništa osim što postavlja `updated_at` — to Postgres
+-- može sam da proveri, pa nema pogađanja.
+--
+-- Funkcija se NE dira: možda visi i na drugim tabelama koje ovaj fajl ne
+-- poznaje. Ostaje, i `inventar.sql` će je prijavljivati dok se ne opiše ili ne
+-- ukloni — što je tačno ono što treba da radi.
+do $$
+declare r record; v_telo text;
+begin
+  for r in
+    select t.tgname, p.proname, pg_get_functiondef(p.oid) as def
+      from pg_trigger t
+      join pg_proc p on p.oid = t.tgfoid
+     where t.tgrelid = 'public.user_state'::regclass
+       and not t.tgisinternal
+       and t.tgname <> 'user_state_touch_trg'
+       and t.tgname <> 'user_state_zapamti_trg'
+  loop
+    v_telo := lower(regexp_replace(r.def, '\s+', ' ', 'g'));
+    if v_telo ~ 'new\.updated_at\s*(:=|=)\s*now\(\)'
+       and v_telo !~ 'insert into|update |delete from|perform |raise exception'
+    then
+      execute format('drop trigger %I on public.user_state', r.tgname);
+      raise notice 'uklonjen dvojnik: okidač % (funkcija %) je radio isto što i user_state_touch_trg', r.tgname, r.proname;
+    else
+      raise warning 'okidač % (funkcija %) NIJE uklonjen — telo radi i nešto drugo, pogledaj ga rukom', r.tgname, r.proname;
+    end if;
+  end loop;
+end $$;
 
 -- 3. RLS
 alter table public.user_state enable row level security;
