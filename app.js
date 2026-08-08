@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='236'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='237'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1209,7 +1209,124 @@ function returnToRunPhase(today){
   if(sinceClear <= 6)  return { week:1, pct:0.50, daysSince, since:painful[0].date };
   if(sinceClear <= 13) return { week:2, pct:0.70, daysSince, since:painful[0].date };
   if(sinceClear <= 20) return { week:3, pct:0.85, daysSince, since:painful[0].date };
-  return null;   /* 3 nedelje posle prestanka bola — pun obim */
+
+  /* ČETVRTA FAZA — lestvica se NE završava po kalendaru.
+     Ranije je ovde stajalo `return null` („3 nedelje pa pun obim"). Merenjem:
+     dok lestvica traje, `injuryProposal` uredno drži ACWR granicu i odnos
+     ostaje oko 1.1–1.4; dvadeset prvog dana lestvica vrati null, sa njom
+     nestane i ta granica, i plan traži ono za šta je projektovan — a hronično
+     opterećenje je za to vreme palo. Rezultat je bio najveći skok obima u
+     celoj pripremi, i to kod čoveka koji se upravo oporavio: na sve četiri
+     distance +40 do +70% nedeljnog obima i ACWR do 1.9, tačno u pojasu za koji
+     aplikacija sama piše „preko 1,5 rizik naglo raste".
+
+     Sada se procenat ne ograničava (pct:1), pa ostaje da važi samo ACWR
+     granica iz `injuryProposal`. Time se lestvica završava kad hronično
+     opterećenje sustigne plan: čim `acwrP` dosegne 1, nijedan dan se više ne
+     smanjuje, `changes` ostane prazan i `injuryProposal` vrati null sam od
+     sebe. Bez novog stanja i bez novog praga. */
+  return { week:4, pct:1, daysSince, since:painful[0].date };
+}
+
+/* ============================================================
+   PREKID BEZ BOLA — bolest, put, poslovna obaveza
+
+   Cela mašinerija povratka je do sada visila isključivo o dnevniku bola: bez
+   unosa nema `returnToRunPhase`, bez nje nema predloga. Ali prekid najčešće
+   NIJE povreda. Dve prazne nedelje u sredini pripreme merene su ovako: plan
+   vrati pun obim i puno dugo trčanje istog dana, ACWR 2.3–2.5 na sve četiri
+   distance, a aplikacija ne kaže ništa — kartica „Opterećenje" pokaže 2.4 tek
+   u nedelju uveče, kad je nedelja već istrčana, jer gleda unazad.
+
+   Podaci su sve vreme postojali: `S.log` zna da nema nijednog `done`, a
+   `hronicniObim()` je već pao. Nedostajalo je samo da ih neko pogleda.
+
+   ZAŠTO NIJE DOVOLJNO SAMO ACWR. Prvo je isprobano „predloži kad god sledećih
+   sedam dana pređe 1.3 × hronično". Merenjem nad 72 kombinacije (četiri
+   distance × obim × broj dana × početnik/trenirao) to okida i kod trkača koji
+   nije propustio NIJEDAN trening: rani porast kod početničkih planova ide do
+   1.49 × hronično sasvim legitimno. Čoveku koji radi tačno ono što plan traži
+   ne sme da se ponudi smanjenje.
+
+   Zato dva uslova zajedno: mora postojati stvaran manjak u odrađenom
+   (`ostvarenost` ispod praga) I sledećih sedam dana moraju prelaziti ACWR
+   granicu. Poslušan trkač ima ostvarenost 1.0 i ne vidi ništa, ma koliko plan
+   rastao. ============================================================ */
+const PREKID_PROZOR = 28;        /* isti horizont kao hronično opterećenje */
+const PREKID_PRAG   = 0.70;      /* ispod ovoga trailing prozor nije rast plana nego prekid */
+const PREKID_BEZ_KVALITETA = 10; /* dana bez trčanja posle kojih prva nedelja ide bez kvaliteta */
+
+/* Koliko je od PLANIRANOG obima u prozoru zaista odrađeno.
+   Meri se od ORIGINALNE kilometraže (origKm): da se gleda trenutna, ranije
+   prihvaćen predlog bi sam sebi podigao ostvarenost na 100% i sakrio prekid
+   koji je do njega i doveo. */
+function ostvarenost(today, prozor){
+  today = today || TODAY;
+  const od = addD(today, -(prozor || PREKID_PROZOR)), doD = addD(today, -1);
+  let plan = 0, real = 0;
+  CUR_PLAN.forEach(w => w.days.forEach(d => {
+    if(d.rest || d.tag === 'trka' || d.tag === 'snaga') return;
+    if(d.date >= od && d.date <= doD) plan += (d.origKm != null ? d.origKm : d.km) || 0;
+    const l = S.log[d.id];
+    if(!l || l.status !== 'done') return;
+    const dat = danTreninga(l, d);
+    if(dat && dat >= od && dat <= doD) real += (l.km != null ? l.km : (d.km || 0));
+  }));
+  if(!(plan > 0)) return null;
+  return Math.round(real / plan * 100) / 100;
+}
+
+/* NAJVEĆI ZAISTA ODRAĐEN NEDELJNI OBIM u poslednjih `danaUnazad` dana —
+   najveći zbir bilo kojih sedam uzastopnih dana koji se završavaju danas ili
+   ranije unutar prozora.
+
+   Zašto ne prosto `akutniObim` (poslednjih 7 dana): on se KOTRLJA, pa opada
+   svakog dana kroz nedelju kako stariji trening ispada iz prozora. Kao pod za
+   povratak to daje sve manji broj što se kasnije u nedelji pogleda — isti
+   predlog bi u ponedeljak nudio 22 km, a u sredu 16 km, bez ijednog novog
+   podatka. Najveći blok u prozoru je stabilan: menja se tek kad ono što je
+   odrađeno zaista ispadne iz prozora. */
+function najveciNedeljniObim(today, danaUnazad){
+  today = today || TODAY;
+  const n = danaUnazad || 14;
+  const po = {};
+  CUR_PLAN.forEach(w => w.days.forEach(d => {
+    const l = S.log[d.id];
+    if(!l || l.status !== 'done') return;
+    const dat = danTreninga(l, d);
+    if(dat) po[dat] = (po[dat] || 0) + (l.km != null ? l.km : (d.km || 0));
+  }));
+  let naj = 0;
+  for(let k = 0; k <= n - 7; k++){
+    const kraj = addD(today, -k);
+    let s = 0;
+    for(let i = 0; i < 7; i++) s += po[addD(kraj, -i)] || 0;
+    if(s > naj) naj = s;
+  }
+  return Math.round(naj * 10) / 10;
+}
+
+/* Dana od poslednjeg odrađenog trčanja. null = u dnevniku nema nijednog. */
+function danaBezTrcanja(today){
+  today = today || TODAY;
+  let zadnji = null;
+  CUR_PLAN.forEach(w => w.days.forEach(d => {
+    const l = S.log[d.id];
+    if(!l || l.status !== 'done') return;
+    const dat = danTreninga(l, d);
+    if(dat && dat <= today && (zadnji == null || dat > zadnji)) zadnji = dat;
+  }));
+  return zadnji == null ? null : diffD(zadnji, today);
+}
+
+/* Prekid postoji kad je u odrađenom stvaran manjak. Da li je taj manjak i
+   OPASAN odlučuje ACWR granica u `injuryProposal` — ako sledećih sedam dana
+   staju u 1.3 × hronično, nijedan dan se ne menja i predloga nema. */
+function pauzaPovratka(today){
+  today = today || TODAY;
+  const o = ostvarenost(today);
+  if(o == null || o > PREKID_PRAG) return null;
+  return { ostvarenost: o, bezTrcanja: danaBezTrcanja(today) };
 }
 
 /* Koji dani se predlažu za izmenu i kako. Čista funkcija — ništa ne menja,
@@ -1280,6 +1397,32 @@ function acwrSada(today){
   return { ak, hron, odnos: (hron != null && hron > 0) ? Math.round(ak/hron * 100)/100 : null };
 }
 
+/* ŠTA PLAN TRAŽI NAREDNIH SEDAM DANA — i koji bi odnos iz toga ispao.
+
+   `akutniObim` gleda UNAZAD, i to je za meru ispravno. Ali kao upozorenje
+   stiže prekasno: u ponedeljak ujutru, kad bi vredelo, pokazuje nulu, a broj
+   od 2.4 se pojavi tek u nedelju uveče — kad je nedelja već istrčana. Merenjem
+   posle dve nedelje pauze: kartica ćuti celu nedelju povratka i progovori kad
+   više nema šta da se promeni.
+
+   Zato i pogled unapred. Isti imenilac (hronično), brojilac je ono što plan
+   traži danas i narednih šest dana. Trka se ne broji: 42 km trke nije trenažno
+   opterećenje koje se poredi sa nedeljnim prosekom. */
+function planiraniObim7(today){
+  today = today || TODAY;
+  const doD = addD(today, 6);
+  let km = 0;
+  CUR_PLAN.forEach(w => w.days.forEach(d => {
+    if(d.rest || d.tag === 'trka') return;
+    if(d.date >= today && d.date <= doD) km += d.km || 0;
+  }));
+  return Math.round(km * 10) / 10;
+}
+function acwrPlan(today){
+  const pl = planiraniObim7(today), hron = hronicniObim(today);
+  return { pl, hron, odnos: (hron != null && hron > 0) ? Math.round(pl/hron * 100)/100 : null };
+}
+
 /* RUN/WALK DOK BOL NE PADNE ISPOD 4 — na CELOM pojasu od 4 naviše.
    Ranije je 6+ značilo brisanje svakog trčanja iz plana. To je i bio problem:
    plan bi se ispraznio, a čovek ostao bez ikakve strukture. Sada se umesto
@@ -1316,8 +1459,11 @@ function injuryProposal(today){
      povratak umesto skoka na pun obim. */
   if(st.cls === 'ok'){
     const ph = returnToRunPhase(today);
-    if(!ph) return null;
-    const pctTxt = Math.round(ph.pct*100) + '%';
+    /* Bola nema i lestvice nema — ali prekid postoji i bez ijednog unosa bola.
+       Tada nema procenta lestvice, ostaje samo ACWR granica (pct:1 niže). */
+    const pz = ph ? null : pauzaPovratka(today);
+    if(!ph && !pz) return null;
+    const pctTxt = Math.round((ph ? ph.pct : 1)*100) + '%';
     /* ISTA ACWR GRANICA KAO U AKTIVNOJ FAZI. Lestvica 50/70/85% računa se od
        PLANIRANOG obima, a plan ne zna da je čovek tri nedelje stajao. Ko je
        pauzirao ima nisko hronično opterećenje i 50% plana može biti daleko
@@ -1338,25 +1484,67 @@ function injuryProposal(today){
        ne trajno smanjenje kao dok bol traje. */
     const acwrP = (hronP != null && planiranoP > 0)
       ? Math.min(1, hronP*ACWR_MAX/planiranoP) : 1;
+    /* Faktor je strože od dva: procenat lestvice i ACWR granica. U četvrtoj
+       fazi i kod prekida bez bola procenta nema (pct:1), pa ostaje čist ACWR —
+       i time se povratak sam završava kad hronično opterećenje sustigne plan. */
+    const pct = ph ? ph.pct : 1;
+    /* POD: povratak posle prekida ne sme da IDE NANIŽE.
+       Bez ovoga se dobija spirala, i to merljiva: predlog se računa od proseka
+       poslednje 4 nedelje, a svaki rez taj prosek dodatno spušta, pa sledeći
+       predlog bude još manji. Posle dve nedelje pauze na planu od 55 km/ned
+       izmereno je 22.6 → 12.9 → 12.6 km, pa tek onda oporavak — čovek koji se
+       vratio biva spušten niže nego prve nedelje povratka.
+
+       Zato pod: nikad manje od najveće nedelje koja je već odrađena otkako je
+       prekid prošao. Prva nedelja povratka je i dalje slobodna (tada je taj
+       broj nula, jer se u prozoru nije trčalo), a posle nje povratak može samo
+       da stoji ili raste.
+
+       SAMO ZA PREKID, ne i posle bola: tamo je spuštanje ISPOD trenutnog obima
+       cela poenta lestvice (50% od punog plana), pa bi isti pod poništio
+       zaštitu čoveku koji je posle unosa bola nastavio da trči. */
+    const podP = ph ? 0 : (planiranoP > 0 ? Math.min(1, najveciNedeljniObim(today, 14)/planiranoP) : 0);
+    /* Bez kvaliteta: posle bola prve dve nedelje lestvice; posle prekida bez
+       bola kad se nije trčalo dovoljno dugo da je detrening merljiv. */
+    const bezKvaliteta = ph
+      ? (ph.week <= 2)
+      : (pz.bezTrcanja != null && pz.bezTrcanja >= PREKID_BEZ_KVALITETA);
+    const razlog = ph ? ' km — povratak posle povrede' : ' km — povratak posle prekida';
     const changes = [];
     for(const x of daniP){
       const d = x.d, date = x.date;
       /* KLJUČNO: računa se od ORIGINALNE kilometraže (origKm), ne od trenutne.
          Inače bi drugi put dalo 70% od već smanjenih 50% = 35%. */
       const baseKm = x.baseKm;
-      const newKm = Math.max(2, Math.round(baseKm * Math.min(ph.pct, acwrP) * 10)/10);
+      const newKm = Math.max(2, Math.round(baseKm * Math.max(podP, Math.min(pct, acwrP)) * 10)/10);
       if(newKm >= baseKm) continue;
-      /* Prve dve nedelje povratka: bez kvalitetnih treninga, samo lagano. */
       const origTag = d.origTag || d.tag;
-      const toTag = (ph.week <= 2 && (origTag === 'int' || origTag === 'tempo')) ? 'lako' : origTag;
+      const toTag = (bezKvaliteta && (origTag === 'int' || origTag === 'tempo')) ? 'lako' : origTag;
       changes.push({ id:d.id, date, from:d.tag, to:toTag, km:newKm,
-        desc: (toTag === 'lako' ? 'Lagano ' : '') + fmtKm(newKm) + ' km — povratak posle povrede' });
+        desc: (toTag === 'lako' ? 'Lagano ' : '') + fmtKm(newKm) + razlog });
     }
     if(!changes.length) return null;
+    /* Ono što je stvarno primenjeno — može biti podignuto podom, pa se ne sme
+       pisati sirov `acwrP` (poruka bi obećala manje nego što predlog radi). */
+    const stvarni = Math.max(podP, Math.min(pct, acwrP));
+    if(!ph) return {
+      level: 'pauza', week: null, pct: stvarni, maxPain: null, parts: [], changes,
+      title: 'Povratak posle prekida',
+      message: (pz.bezTrcanja != null && pz.bezTrcanja >= 3
+                  ? 'Bez trčanja ' + pz.bezTrcanja + ' ' + (pz.bezTrcanja === 1 ? 'dan' : 'dana') + '. '
+                  : 'U poslednje ' + PREKID_PROZOR + ' dana odrađeno je ' + Math.round(pz.ostvarenost*100) + '% planiranog obima. ') +
+        'Plan od sledeće nedelje traži više nego što telo trenutno nosi: prosek stvarno odrađenog u poslednje 4 nedelje je ' +
+        fmtKm(hronP) + ' km/ned, a sledećih 7 dana traži ' + fmtKm(planiranoP) + ' km. ' +
+        'Predlog: ' + Math.round(stvarni*100) + '% planiranog obima narednih ' + changes.length + ' treninga' +
+        (bezKvaliteta ? ', bez kvalitetnih treninga' : '') +
+        '. Predlog se svake nedelje sam podiže i nestaje čim prosek odrađenog sustigne plan; koliko će to trajati zavisi od toga koliko je prekid trajao i koliko plan traži — posle duže pauze u sredini priprema to ume da bude i mesec i po. ' +
+        'Ne ide naniže: nikad se ne predlaže manje nego što si već odradio u nedelji pred ovu. ' +
+        'Posle dve nedelje bez trčanja pada i forma, ne samo obim; dugo trčanje se zato vraća postepeno kao i sve ostalo.'
+    };
     return {
       level: 'return', week: ph.week, pct: ph.pct, maxPain: null, parts: [],
       changes,
-      title: 'Povratak — nedelja ' + ph.week + ' od 3',
+      title: ph.week <= 3 ? 'Povratak — nedelja ' + ph.week + ' od 3' : 'Povratak — obim prati oporavak',
       /* PREDUSLOVI: fizioterapeutski protokoli povratka trče se po ODGOVORU
          TKIVA, ne po kalendaru — "nema fiksnog vremenskog okvira, zavisi od
          toga kako tkivo odgovara na opterećenje". Aplikacija ne može da
@@ -1365,12 +1553,18 @@ function injuryProposal(today){
       /* „Bez bola" je bilo netačno: prag povratne faze je bol ISPOD 3, pa je
          aplikacija pisala „bez bola 21 dan" i onome ko je danas uneo bol 2. */
       message: 'Bez bola 3+ već ' + ph.daysSince + ' ' + (ph.daysSince === 1 ? 'dan' : 'dana') +
-        '. Predlog: ' + (acwrP < ph.pct
+        '. Predlog: ' + (ph.week > 3
+            /* Četvrta faza nema svoj procenat — lestvica je prošla, a puni obim
+               čeka da ga prosek odrađenog sustigne. Zato se ne pominje nikakav
+               „procenat lestvice": jedini razlog za smanjenje je ACWR. */
+            ? Math.round(acwrP*100) + '% planiranog obima — tri nedelje lestvice su prošle, ali je prosek stvarno odrađenog u poslednje 4 nedelje ' +
+              fmtKm(hronP) + ' km/ned, a sledećih 7 dana traži ' + fmtKm(planiranoP) + ' km. Pun obim se vraća sam čim ga prosek sustigne'
+            : acwrP < ph.pct
             ? Math.round(acwrP*100) + '% planiranog obima (lestvica povratka kaže ' + pctTxt +
               ', ali prosek stvarno odrađenog u poslednje 4 nedelje — ' + fmtKm(hronP) + ' km/ned — dozvoljava manje)'
             : pctTxt + ' planiranog obima') +
         ' narednih ' + changes.length + ' treninga' +
-        (ph.week <= 2 ? ', bez kvalitetnih treninga' : '') +
+        (bezKvaliteta ? ', bez kvalitetnih treninga' : '') +
         '. Pre nego što prihvatiš — proveri da možeš: 30 min brzog hoda bez bola, 20 poskoka na povređenoj nozi bez bola, i da nema bola u mirovanju. Ako bilo šta od toga ne prolazi, rano je za trčanje bez obzira na broj dana. Ostavi bar jedan dan odmora između trčanja.'
     };
   }
@@ -8364,6 +8558,18 @@ function karticaOpterecenja(){
     `<div class="ac-v" style="color:${boja}">${acwrBroj(a.odnos)}<span>akutno ${fmtKm(a.ak)} km / hronično ${fmtKm(a.hron)} km</span></div>
      <div class="acwr"><i style="left:${acwrPolozaj(a.odnos).toFixed(1)}%"></i></div>
      <div class="acwr-l"><span style="left:0%">0</span><span style="left:${acwrPolozaj(ACWR_POVRATAK)}%">${esc(fmtNum(ACWR_POVRATAK,1))}</span><span style="left:${acwrPolozaj(ACWR_MAX)}%">${esc(fmtNum(ACWR_MAX,1))}</span><span style="left:${acwrPolozaj(1.5)}%">1,5</span><span style="left:100%">${esc(fmtNum(ACWR_SKALA,1))}</span></div>
+     ${(function(){
+       /* POGLED UNAPRED — vidi komentar uz acwrPlan(). Prikazuje se samo kad
+          plan traži OSETNO više nego što se nosi: inače bi svaka nedelja imala
+          drugi broj koji ništa ne traži od korisnika. */
+       const p = acwrPlan(TODAY);
+       if(p.odnos == null || p.odnos <= ACWR_MAX) return '';
+       const opasno = p.odnos > 1.5;
+       return `<div class="note-src" style="margin-top:10px;color:${opasno?'var(--red)':'var(--amber)'}">
+         Plan narednih 7 dana: ${esc(fmtKm(p.pl))} km — odnos bi bio ${esc(acwrBroj(p.odnos))}.
+         ${opasno ? 'To je preko 1,5 pre nego što je nedelja počela. Skrati je, ili u tabu Oporavak prihvati predlog ako ga aplikacija nudi.'
+                  : 'Iznad gornje ivice pojasa; ako je ovo povratak posle pauze ili povrede, skrati.'}</div>`;
+     })()}
      <div class="note-src">${esc(rec)} Odnos poredi kilometražu poslednjih sedam dana sa prosekom poslednje četiri završene nedelje.</div>`);
 }
 function renderOporavak(){
