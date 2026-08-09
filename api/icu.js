@@ -187,8 +187,15 @@ function sazetak(a) {
   const datum = typeof a.start_date_local === 'string' ? a.start_date_local.slice(0, 10) : null;
   if (!id || !DAN.test(datum || '')) return null;
   const km = broj(a.distance) != null ? Math.round(broj(a.distance) / 100) / 10 : null;
+  /* SAT POČETKA, odvojen od datuma. Aplikacija iz njega traži temperaturu tog
+     trčanja u Open-Meteo prognozi (v. `tempTrcanja` u app.js) umesto da uzme
+     `temp` sa sata, koje je zglobno očitavanje i sistematski je više od
+     vazduha. Čita se iz stringa, bez `new Date()` — vrednost je lokalno vreme
+     trkača, a parsiranje bi je pomerilo za zonu servera. */
+  const sh = /^\d{4}-\d\d-\d\dT(\d\d)/.exec(String(a.start_date_local || ''));
   const o = {
     id, datum,
+    sat: sh ? +sh[1] : null,
     tip: typeof a.type === 'string' ? a.type.slice(0, 32) : null,
     naziv: typeof a.name === 'string' ? a.name.slice(0, 120) : null,
     opis:  typeof a.description === 'string' ? a.description.slice(0, 400) : null,

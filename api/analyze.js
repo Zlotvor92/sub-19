@@ -642,7 +642,7 @@ KAKO SE ČITA PULS — pročitaj ovo PRE nego što doneseš bilo kakav zaključa
 6. DEKUPLOVANJE (Pa:HR) je mera aerobne izdržljivosti: ispod 5% je dobro, 5-8% osrednje, preko 8% znači da druga polovina košta znatno više otkucaja pri istom tempu. Ako je dato, to je pouzdaniji sud o izdržljivosti nego sirov porast pulsa — koristi ga. Ako piše da nije računato jer tempo nije bio ravnomeran, NE izvodi zaključak o izdržljivosti iz porasta pulsa.
    6a. OCENU DEKUPLOVANJA UZIMAŠ IZ OVE SKALE, ne iz sopstvenog utiska. Broj od 5,6% je OSREDNJE — ne "odlično", ne "izvrsno". Ako ti se čini da je trening bio dobar, to nije razlog da broj prekrstiš; reci da je trening bio dobar i da je dekuplovanje osrednje.
    6b. AKO SI NAVEO DEKUPLOVANJE, NE SMEŠ u istom tekstu napisati da "drifta nije bilo" — dekuplovanje JESTE mera tog drifta. Dve tvrdnje koje se poništavaju su gora greška od nijedne.
-7. TOPLOTA diže puls 5-10 otkucaja pri istom tempu. Ako je data temperatura preko 22°C, uračunaj to pre nego što porast pripišeš lošoj formi.
+7. TOPLOTA diže puls 5-10 otkucaja pri istom tempu. Ako je data temperatura preko 22°C, uračunaj to pre nego što porast pripišeš lošoj formi. Uz temperaturu UVEK piše odakle je — meteorološka prognoza za mesto i sat trčanja, ili senzor na ručnom satu. Zglobno očitavanje je 2-5 °C više od vazduha; kad je izvor sat, govori o toploti opisno („bilo je toplo") i NE citiraj cifru kao tačnu temperaturu vazduha. Reč „ekstremno" čuvaj za preko 32 °C IZ PROGNOZE — nikad je ne izvodi iz očitavanja sa sata.
 8. OPORAVAK TOG JUTRA (HRV, puls u miru, san) menja tumačenje SVEGA ostalog. Isti tempo uz isti puls nije isti trening posle 5 sati sna. Pravila:
    - HRV se čita kao ODSTUPANJE od sopstvene sedmodnevne osnove, nikad kao gola brojka; pad preko 10% je značajan, pad preko 20% je jasan znak nedovoljnog oporavka.
    - Puls u miru viši 5+ otkucaja od sopstvene osnove ukazuje na umor, početak bolesti ili loš san.
@@ -710,7 +710,12 @@ Zajedničko pravilo:
         (K.cadence!=null?`, kadenca ${K.cadence}`:'') +
         (K.watts!=null?`, snaga ${K.watts}W`:'') +
         (K.elevM?`, ${K.elevM>0?'uspon':'spust'} ${Math.abs(K.elevM)} m`:'') +
-        (K.temp!=null?`, ${K.temp}°C`:'') +
+        /* TEMPERATURA PO KILOMETRU JE NAMERNO IZOSTAVLJENA. Dolazi iz Strava
+           `temp` toka, dakle sa senzora na zglobu, i ume da „poraste" za 3 °C
+           kroz trčanje samo zato što se sat zagrejao. Sesija sada ima jednu
+           merodavnu temperaturu iz prognoze (v. `dodatno` niže); nizanje
+           zglobnih očitavanja pored nje davalo bi modelu dva izvora koji se ne
+           slažu, i to onaj netačniji u većem broju redova. */
         (K.stopSec?`, stajanje ${K.stopSec} s`:'')
       ).join('\n');
   }
@@ -719,7 +724,28 @@ Zajedničko pravilo:
   const dodatno = [
     entered.maxHr!=null ? `Maksimalan puls sesije: ${entered.maxHr}` : null,
     entered.elevGain!=null ? `Ukupan uspon: ${entered.elevGain} m` : null,
-    entered.temp!=null ? `Temperatura: ${entered.temp}°C` : null,
+    /* TEMPERATURA SA IZVOROM — v. `tempTrcanja` u app.js.
+       Stiže kao objekat {temp, osecaj, sat, izvor}, ne kao broj. Stariji
+       klijenti (offline kopija koja još nije osvežena) šalju go broj, pa se i
+       taj oblik i dalje prima — bez toga bi im temperatura tiho nestala iz
+       analize dok ne osveže aplikaciju.
+       Poreklo se modelu kaže IZRIČITO. Bez toga je zglobno očitavanje čitao kao
+       temperaturu vazduha i nazivao ga ekstremnim (prijavljeno: 33 °C sa sata
+       naspram 30 °C u prognozi za taj sat). */
+    (() => {
+      const t = entered.temp;
+      if (t == null) return null;
+      if (typeof t === 'number') return `Temperatura: ${t}°C (nepoznat izvor — ne pripisuj joj veliku tačnost)`;
+      if (typeof t !== 'object' || !Number.isFinite(+t.temp)) return null;
+      const os = Number.isFinite(+t.osecaj) && Math.abs(+t.osecaj - +t.temp) >= 1 ? `, oseća se kao ${t.osecaj}°C` : '';
+      const sat = Number.isFinite(+t.sat) ? ` u ${t.sat}:00` : '';
+      return t.izvor === 'sat'
+        ? `Temperatura: ${t.temp}°C${os} — IZMERIO SENZOR NA RUČNOM SATU, ne meteorološka stanica. ` +
+          'Sat stoji uz kožu i hvata telesnu toplotu i sunce, pa sistematski čita 2-5 °C više od vazduha. ' +
+          'Koristi je samo kao grubu naznaku da je bilo toplo; NE navodi je kao tačnu temperaturu i ne nazivaj je ekstremnom.'
+        : `Temperatura vazduha${sat} (meteorološka prognoza za mesto i sat trčanja): ${t.temp}°C${os}. ` +
+          'Ovo je temperatura vazduha, ne očitavanje sa sata — možeš je koristiti kao pouzdan podatak.';
+    })(),
     entered.relEffort!=null ? `Strava relative effort: ${entered.relEffort}` : null,
     entered.oporavak ? (() => {
       const o = entered.oporavak, d = [];
@@ -734,12 +760,16 @@ Zajedničko pravilo:
           (entered.decoupling.izvor === 'icu' ? ' (izmerio intervals.icu nad celim fajlom)' : '')
         : `Dekuplovanje nije računato — ${entered.decoupling.razlog}. Ne izvodi zaključak o izdržljivosti iz porasta pulsa.`) : null,
     /* Ono što intervals.icu izračuna sam. Ne dupliraju se polja koja već stoje
-       gore (temperatura, maks. puls) — samo ono što Strava putanja nema. */
+       gore (maks. puls) niti ona koja su zamenjena boljim izvorom (temperatura i
+       osećaj — sada iz prognoze, v. `dodatno` gore) — samo ono što Strava
+       putanja nema. */
     (() => {
       const I = entered.icu; if (!I || typeof I !== 'object') return null;
       const d = [];
       if (I.gapSec != null) d.push(`GAP cele sesije ${fmtPace(I.gapSec)}/km`);
-      if (I.osecaSe != null) d.push(`oseća se kao ${I.osecaSe}°C`);
+      /* `osecaSe` sa intervals.icu se NE šalje: izvedeno je iz `average_temp`,
+         dakle iz istog zglobnog očitavanja, pa bi protivrečilo temperaturi iz
+         prognoze. Osećaj sada dolazi uz nju (`apparent_temperature`). */
       if (I.efikasnost != null) d.push(`faktor efikasnosti ${I.efikasnost}`);
       if (I.opterecenje != null) d.push(`trenažno opterećenje ${I.opterecenje}`);
       if (I.intenzitet != null) d.push(`intenzitet ${I.intenzitet}`);

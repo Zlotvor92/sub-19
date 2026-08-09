@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='251'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='252'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3075,7 +3075,10 @@ function bojaDrifta(n){ return n<5?'var(--green)':n<8?'var(--amber)':'var(--red)
    Ranije je bilo „⌚ Sa sata: kadenca 86 spm · maks. puls 154 · uspon 71 m · …"
    — šest merenja nanizanih u tekst, ništa poravnato. To se ne vidi u prolazu,
    to se čita. Kao redovi, nazivi stoje levo a cifre desno jedna ispod druge. */
-function metrikaSata(l){
+/* `datum` je potreban SAMO za temperaturu: ona više ne dolazi sa sata nego iz
+   Open-Meteo prognoze za sat u kom se trčalo (v. `tempTrcanja`), a prognoza se
+   traži po datumu. Ostali redovi su i dalje čista očitavanja sa sata. */
+function metrikaSata(l, datum){
   if(!l) return [];
   /* BROJ, ne „nije null". Vrednosti dolaze i iz uvezenog backupa, gde `l.cadence`
      ume da bude string ili null — Math.round('x') je NaN, pa bi na kartici
@@ -3089,7 +3092,17 @@ function metrikaSata(l){
     d.push(['maks. puls',`<b>${esc(Math.round(mhr))}</b>${z?` <small>Z${z.n}</small>`:''}`]);
   }
   const usp=br(l.elevGain); if(usp!=null&&usp>0) d.push(['uspon',`<b>${esc(Math.round(usp))}</b> m`]);
-  const tmp=br(l.temp);     if(tmp!=null) d.push(['temperatura',`<b>${esc(Math.round(tmp))}</b> °C`]);
+  /* TEMPERATURA NOSI IZVOR, i to vidljivo. Red stoji na kartici „Sa sata", pa bi
+     bez oznake tvrdio ono što više nije tačno — vrednost je po pravilu iz
+     prognoze za sat trčanja, a ne sa sata. Kad prognoze nema (lokacija
+     isključena ili trčanje starije od prozora), stoji zglobno očitavanje i
+     tako je i označeno; ono je 2-5 °C više od vazduha i ne sme da se čita kao
+     temperatura vazduha. */
+  const tt=tempTrcanja(l, datum);
+  if(tt) d.push(['temperatura',
+    `<b>${esc(Math.round(tt.temp))}</b> °C`+
+    (tt.osecaj!=null&&Math.abs(tt.osecaj-tt.temp)>=1?` <small>oseća se ${esc(Math.round(tt.osecaj))} °C</small>`:'')+
+    ` <small>${tt.izvor==='om'?esc('prognoza u '+tt.sat+':00'):'sa sata'}</small>`]);
   const nap=br(l.relEffort);if(nap!=null&&nap>0) d.push(['Strava napor',`<b>${esc(Math.round(nap))}</b>`]);
   /* DRIFT PULSA (aerobno raspregnuće): koliko je odnos tempo/puls pao u drugoj
      polovini u odnosu na prvu. Ispod 5% je znak dobre aerobne baze; preko toga
@@ -3626,9 +3639,19 @@ async function vremePovuci(sila){
   const pokriva=!!(v&&v.sati&&v.sati[kljucSada]);
   if(!sila&&v&&v.at&&Date.now()-v.at<3*3600000&&v.lat===g.lat&&v.lon===g.lon&&pokriva) return {ok:true, kes:true};
   try{
+    /* `past_days` NIJE ZA KARTICU VREMENA — ona gleda samo unapred (v.
+       `karticaVremena`, koja za prošlost i ne crta ništa). Postoji zbog
+       `tempTrcanja`: temperatura ODRAĐENOG trčanja se čita iz ovog istog keša,
+       za sat u kom se stvarno trčalo. Bez prošlih dana bi svako trčanje
+       analizirano dan kasnije padalo na očitavanje sa sata — tačno ono što je
+       ovaj mehanizam i uveden da izbegne.
+       Sedam dana je izabrano jer pokriva i „analiziraću ovo za vikend", a
+       odgovor ostaje mali (~240 sati umesto 72). Duže se ionako ne isplati:
+       ovaj endpoint prognoze drži ograničen prozor unazad, a arhivski servis je
+       drugi domen i tražio bi izmenu CSP-a. */
     const u=VREME_URL+'?latitude='+encodeURIComponent(g.lat)+'&longitude='+encodeURIComponent(g.lon)+
       '&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,precipitation_probability'+
-      '&forecast_days=3&timezone=auto';
+      '&forecast_days=3&past_days=7&timezone=auto';
     const r=await fetch(u);
     if(!r.ok) return {ok:false, error:'Vremenska prognoza trenutno nije dostupna.'};
     const sati=vremeCist(await r.json());
@@ -3673,6 +3696,69 @@ function najboljiSat(datum, odabrani){
 function satTreninga(){
   const h=S.ui&&S.ui.satTreninga;
   return (h!=null&&isFinite(h)&&h>=0&&h<=23)?+h:18;
+}
+
+/* ============================================================
+   TEMPERATURA ODRAĐENOG TRČANJA — JEDAN IZVOR ZA CEO PROGRAM.
+
+   ZAŠTO OVA FUNKCIJA POSTOJI. Do sada je temperatura trčanja bila
+   `l.temp`, a to polje puni ISKLJUČIVO senzor na satu: sa Strave kao
+   `average_temp`, sa intervals.icu kao `temp`. Senzor stoji uz zglob, pa hvata
+   telesnu toplotu i sunce i po pravilu čita 2-5 °C više od vazduha.
+   Prijavljeno sa ekrana: kartica vremena je za isti dan pokazivala 30 °C
+   (osećaj 29), a AI analiza istog trčanja pisala „na ekstremnoj temperaturi od
+   33 °C" — dva broja za jedno trčanje, i onaj netačniji je nosio jači sud.
+
+   Aplikacija JE imala tačan podatak sve vreme: Open-Meteo prognozu po satima,
+   za koordinate korisnika. Samo ga niko nije vezao za odrađen trening — koristio
+   se samo za dan koji tek predstoji.
+
+   Sada: temperatura trčanja je Open-Meteo vrednost za SAT U KOM SE TRČALO.
+   Očitavanje sa sata ostaje samo kao rezerva i uvek nosi oznaku izvora, da
+   nijedan prikaz (ni ekran ni model) ne predstavi zglobno merenje kao
+   temperaturu vazduha.
+
+   `izvor` je deo povratne vrednosti, ne detalj — svako mesto koje ovo crta ili
+   šalje mora da zna odakle broj dolazi. Zato se vraća objekat, a ne broj.
+   ============================================================ */
+
+/* SAT KOJI SE TRAŽI U PROGNOZI.
+   Ne uzima se sat POČETKA nego SREDINA trčanja: u 8:40 krenuto dvočasovno dugo
+   trčanje se najvećim delom odvija u 9 i 10 h, a avgust ume da doda 4-5 °C
+   između 8 i 10. Za trčanje od pola sata sredina i početak padnu u isti sat,
+   pa se ništa ne menja.
+   `satTrk` upisuje uvoz sa Strave/intervals.icu. Kad ga nema (ručan unos), pada
+   se na sat treninga iz Podešavanja — isti broj po kom kartica vremena crta
+   prognozu, dakle bez nove pretpostavke.
+   Prelazak preko ponoći se ne prati: prognoza se traži po datumu trčanja, pa bi
+   sat 24+ tražio nepostojeći ključ. Takvo trčanje dobija 23 h istog dana. */
+function satTrcanja(l){
+  const br=v=>(v==null||v===''||typeof v==='boolean'||!Number.isFinite(+v))?null:+v;
+  const poc=br(l&&l.satTrk);
+  if(poc==null||poc<0||poc>23) return satTreninga();
+  const sec=br(l&&l.sec);
+  const pola=(sec!=null&&sec>0)?(sec/3600)/2:0;
+  return Math.max(0, Math.min(23, Math.round(poc+pola)));
+}
+
+/* Vraća {temp, osecaj, sat, izvor:'om'|'sat'} ili null.
+   'om'  — Open-Meteo za sat trčanja (merodavno)
+   'sat' — očitavanje sa ručnog sata, kad prognoze za taj sat nema */
+function tempTrcanja(l, datum){
+  if(!l||typeof l!=='object') return null;
+  const br=v=>(v==null||v===''||typeof v==='boolean'||!Number.isFinite(+v))?null:+v;
+  const sat=satTrcanja(l);
+  const z=datum?vremeZaSat(datum,sat):null;
+  if(z&&br(z.temp)!=null) return { temp:br(z.temp), osecaj:br(z.osecaj), sat, izvor:'om' };
+  /* REZERVA. Ko nema uključenu lokaciju, ili analizira trčanje starije od
+     prozora prognoze, i dalje dobija toplotni kontekst — ali označen, jer
+     neoznačeno zglobno merenje je i bio ceo problem.
+     `osecaSe` sa intervals.icu je izvedeno iz ISTOG zglobnog očitavanja, pa
+     deli sudbinu temperature i nikad se ne meša sa Open-Meteo osećajem. */
+  const s=br(l.temp);
+  if(s==null) return null;
+  const os=(l.icu&&typeof l.icu==='object')?br(l.icu.osecaSe):null;
+  return { temp:s, osecaj:os, sat, izvor:'sat' };
 }
 function karticaVremena(d){
   if(!d||d.rest||!d.date) return '';
@@ -3828,7 +3914,14 @@ function merenjaDana(x, l){
   const hrs=laps.map(y=>y&&y.avgHr).filter(y=>br(y)!=null).map(Number);
   const hr=(!lako&&hrs.length) ? Math.round(hrs.reduce((a,b)=>a+b,0)/hrs.length) : (br(l.hr)>0?Math.round(br(l.hr)):null);
   const dr=(l.decoupling&&typeof l.decoupling==='object')?br(l.decoupling.n):null;
-  return { tempo, gap, hr, drift:dr!=null?Math.round(dr*10)/10:null, temp:br(l.temp) };
+  /* Temperatura iz istog izvora kao svuda drugde (v. `tempTrcanja`). Na ovoj
+     kartici je to važnije nego igde: redovi su trčanja iz RAZLIČITIH nedelja, i
+     dok je vrednost dolazila sa sata, dva reda su mogla da se razlikuju za 3 °C
+     samo zato što je jednom sunce grejalo sat, a ne zato što je bilo toplije.
+     `izvor` se prenosi da kartica može da kaže kad je red pao na rezervu. */
+  const tt=tempTrcanja(l, l.runDate||l.ts||x.date);
+  return { tempo, gap, hr, drift:dr!=null?Math.round(dr*10)/10:null,
+           temp:tt?tt.temp:null, tempIzvor:tt?tt.izvor:null };
 }
 /* Ranije odrađene sesije istog potpisa, najnovija prva. */
 function isteSesije(d, maxN){
@@ -3866,6 +3959,21 @@ function razlikaHTML(sad, pre, jed, dec, uporedivo){
    Razlika u pulsu se BOJI samo kad je tempo uporediv — niži puls na 30 s/km
    sporijem trčanju nije napredak nego sporije trčanje. Vrućina isto diže puls,
    pa temperatura stoji uz tempo, a ne kao fusnota. */
+/* Objašnjenje odakle temperature u redovima, i to samo kad ima šta da se
+   objasni. Kartica poredi trčanja iz raznih nedelja, pa se lako desi da novije
+   ima prognozu a starije (van prozora prognoze) samo očitavanje sa sata — dva
+   nesamerljiva broja jedan ispod drugog. Ćutati o tome znači pustiti da razlika
+   u izvoru izgleda kao razlika u vremenu.
+   Vraća '' kad su svi redovi iz istog izvora ili temperature uopšte nema —
+   `nap.join(' ')` prazan član ionako proguta. */
+function napomenaTemp(redovi){
+  const izv=(redovi||[]).filter(x=>x&&x.temp!=null).map(x=>x.tempIzvor);
+  if(!izv.length) return '';
+  const om=izv.includes('om'), sat=izv.includes('sat');
+  if(om&&sat) return 'Temperatura je iz prognoze za sat trčanja; kod starijih trčanja, van prozora prognoze, stoji očitavanje sa sata — ono je 2-5 °C više jer sat stoji uz kožu, pa se ta dva broja ne porede međusobno.';
+  if(sat) return 'Temperatura je očitavanje sa sata (prognoze za te sate više nema). Sat stoji uz kožu, pa čita 2-5 °C više od vazduha — koristi je kao grubu naznaku.';
+  return 'Temperatura je iz prognoze za sat u kom se trčalo, ne sa sata.';
+}
 function karticaLaganaRanije(d, ranije, sada){
   /* Bez ijednog pulsa i bez ijednog drifta ostaje samo poređenje tempa laganih
      trčanja — a to je tačno ono što ništa ne znači. Tada se kartica ne crta. */
@@ -3889,6 +3997,7 @@ function karticaLaganaRanije(d, ranije, sada){
   const pojas=Math.round((+d.km||0)/LAKO_POJAS)*LAKO_POJAS;
   const nap=['Na laganom se ne poredi tempo — po njemu se ide po osećaju. Poredi se PULS na tom tempu i drift (koliko odnos tempo/puls padne u drugoj polovini). Niži puls i manji drift pri sličnom tempu znače jaču aerobnu bazu.'];
   nap.push(`Razlika u pulsu se boji samo kad je tempo u granici od ${TEMPO_UPOREDIV} s/km — inače meri brzinu, ne formu. Vrućina diže puls, zato temperatura stoji uz tempo.`);
+  nap.push(napomenaTemp([sada].concat(ranije)));
   if(sada.hr==null&&sada.drift==null) nap.push('Kad uneseš prosečan puls za danas, prikazaće se i razlika.');
   return dKarta('Slično lagano ranije', esc(`${sessKind(d)} · ~${pojas} km`),
     `<div class="drows">${ranije.map(red).join('')}</div>`+
@@ -3918,8 +4027,9 @@ function karticaIstaSesija(d){
   const struktura=sessCore(d);
   return dKarta('Ista sesija ranije', esc(struktura),
     `<div class="drows">${ranije.map(red).join('')}</div>`+
-    `<div class="note-src">Poredi se ostvaren tempo RADNOG dela, ne prosek celog trčanja. ${
-      sada?'Razlika je u odnosu na današnji.':'Kad uneseš današnji tempo, prikazaće se i razlika.'}</div>`);
+    `<div class="note-src">${esc(['Poredi se ostvaren tempo RADNOG dela, ne prosek celog trčanja.',
+      sada?'Razlika je u odnosu na današnji.':'Kad uneseš današnji tempo, prikazaće se i razlika.',
+      napomenaTemp([sadaM].concat(ranije))].filter(Boolean).join(' '))}</div>`);
 }
 function dayCard(d){
   const s=stFor(d.id);
@@ -3956,7 +4066,7 @@ function dayCard(d){
     l.src==='strava'?`sa Strave${l.lock?' · ručno korigovano':''}`:'',
     formHTML(d));
   /* ── SA SATA i JUTROS: ono što je stiglo samo ── */
-  c+=dKarta('Sa sata','',dRedovi(metrikaSata(l)));
+  c+=dKarta('Sa sata','',dRedovi(metrikaSata(l, l.runDate||l.ts||d.date)));
   c+=dKarta('Jutros','',dRedovi(oporavakRedovi(l.runDate||l.ts||d.date)));
   /* Poređenje stoji ISPOD merenja, iznad AI analize: prvo šta je bilo danas,
      pa šta je bilo prošli put, pa tek onda tumačenje. */
@@ -4135,7 +4245,15 @@ function vezAnalize(root,d){
           km:l.km??null, time:l.sec?fmtClock(l.sec):null,
           hr:l.hr??null, rpe:l.rpe??null, note:l.note||'',
           maxHr:l.maxHr??null, elevGain:l.elevGain??null, relEffort:l.relEffort??null,
-          temp:l.temp??null, decoupling:l.decoupling||null,
+          /* TEMPERATURA ZA MODEL — objekat sa izvorom, ne go broj.
+             Ranije je ovde išlo `l.temp`, dakle očitavanje sa zgloba, i to bez
+             ijedne reči o poreklu. Model ga je zato tumačio kao temperaturu
+             vazduha i gradio na njemu ocenu („na ekstremnoj temperaturi od
+             33 °C" za dan kada je prognoza za sat trčanja davala 30). Sada
+             prvo Open-Meteo za sat trčanja; sat ostaje samo kao označena
+             rezerva, pa model može da mu spusti težinu. */
+          temp:(()=>{ const t=tempTrcanja(l, l.runDate||l.ts||d.date); return t||null; })(),
+          decoupling:l.decoupling||null,
           /* Oporavak na DAN treninga: isti tempo posle lose noci nije isti
              trening, a bez ovoga model to ne moze da zna. */
           oporavak: oporavakZa(l.runDate||l.ts||d.date),
@@ -8616,7 +8734,7 @@ function openDaySheet(id){
     </div>`}
     ${isRest?'':formHTML(d)}
     ${isRest?'':(()=>{ const l=S.log[id]||{};
-        return dKarta('Sa sata','',dRedovi(metrikaSata(l)))
+        return dKarta('Sa sata','',dRedovi(metrikaSata(l, l.runDate||l.ts||d.date)))
              + dKarta('Jutros','',dRedovi(oporavakRedovi(l.runDate||l.ts||d.date)))
              + karticaIstaSesija(d)
              + aiKarta(d,l); })()}
@@ -9709,6 +9827,9 @@ async function icuSyncTreninzi(danaUnazad, manual){
       if(spoj.elev!=null) l.elevGain=spoj.elev;
       if(a.kadenca!=null) l.cadence=a.kadenca;
       if(a.temp!=null) l.temp=a.temp;
+      /* v. isti upis u Strava grani — sat trčanja za `tempTrcanja`. Ovde stiže
+         već izdvojen iz `start_date_local` (api/icu.js → `sazetak`). */
+      if(a.sat!=null&&isFinite(a.sat)&&a.sat>=0&&a.sat<=23) l.satTrk=+a.sat;
       /* Ono što Strava putanja uopšte nema, a icu izračuna sam. */
       const ic={};
       ['gapSec','razdvajanje','efikasnost','opterecenje','intenzitet','trimp','korak','osecaSe','zonePuls','zoneTempo']
@@ -11727,6 +11848,14 @@ async function stravaSync(manual){
         if(a.suffer_score!=null) l.relEffort=Math.round(a.suffer_score);
         if(a.average_cadence!=null) l.cadence=Math.round(a.average_cadence*2)/2;
         if(a.average_temp!=null) l.temp=Math.round(a.average_temp);
+        /* SAT U KOM SE TRČALO — zbog `tempTrcanja`. Do sada se od
+           `start_date_local` uzimao samo datum (`slice(0,10)`), a sat se bacao,
+           pa se temperatura trčanja nije imala gde tražiti u prognozi.
+           Strava vraća LOKALNO vreme trkača i pored završnog „Z" — to je njihova
+           konvencija, ne UTC. Zato se sat čita iz stringa, bez `new Date()`:
+           parsiranje bi ga pomerilo za pomak vremenske zone pregledača. */
+        const sh=/^\d{4}-\d\d-\d\dT(\d\d)/.exec(String(a.start_date_local||''));
+        if(sh) l.satTrk=+sh[1];
         syncSide(d);imp++;
       }
       if(d.tag==='int'||d.tag==='tempo'){ /* bez QS uslova — dan izmenjen u kvalitet nema QS unos, a detectWorkSegments ga i ne traži */
