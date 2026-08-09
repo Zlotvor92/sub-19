@@ -311,8 +311,12 @@ describe('Aktivacija u trkačkoj nedelji', () => {
     assert.equal(r.nemeri, true, 'aktivacija nije označena kao sesija koja ne meri formu');
     assert.equal(a.call('tipSesijeZaVdot', r.id), 'rep');
 
-    assert.equal(a.call('recordVdot', r.id, r.pt - 10, '2026-12-04', null, false, null), null,
-      'aktivacija je ušla u lanac forme');
+    /* Vraća se RAZLOG, ne golo `null` — v. upisiAutoTempo: „ne meri formu" i
+       „merenje nije verodostojno" moraju da se razlikuju, inače automatski unos
+       gubi tempo i uz to optuži merenje da je pogrešno. Ono što se ovde meri
+       ostaje isto: u lanac ne ulazi ništa. */
+    const rr = a.call('recordVdot', r.id, r.pt - 10, '2026-12-04', null, false, null);
+    assert.equal(rr && rr.nemeri, true, 'aktivacija se ne prepoznaje kao sesija koja ne meri');
     assert.equal(a.evalIn('(S.vdotLog||[]).length'), 0, 'aktivacija je ostavila zapis u lancu');
     assert.equal(a.call('currentVdot'), null, 'forma je nastala iz aktivacije');
 

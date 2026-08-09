@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='240'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='241'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1356,7 +1356,31 @@ const ACWR_POVRATAK = 0.8;   /* nedeljni obim posle bola: ispod hroničnog prose
 const ACWR_MAX      = 1.3;   /* gornja ivica bezbednog pojasa; preko 1.5 rizik naglo raste */
 
 function hronicniObim(today){
-  const prosle = CUR_PLAN.filter(w => w.start < today);
+  /* SAMO ZAVRŠENE NEDELJE. Ranije je stajalo `w.start < today`, pa je od UTORKA
+     u prosek ulazila i TEKUĆA nedelja — ona koja ima jedan odrađen dan. Imenilac
+     bi preko noći pao za 17–18%, a odnos skočio, kod čoveka koji nije propustio
+     nijedan trening i kome se između ponedeljka i utorka nije završila nijedna
+     nedelja. Izmereno na sve četiri distance (N11, pun dnevnik):
+
+       5K       52.7 → 43.3 km/ned,  ACWR 1.10 → 1.35
+       10K      62.3 → 51.5,         ACWR 1.10 → 1.27
+       PM       65.1 → 53.3,         ACWR 1.11 → 1.31
+       Maraton  58.4 → 48.4,         ACWR 1.15 → 1.40
+
+     Nije bilo samo kozmetičko: isti broj ide u `injuryProposal` kao osnov
+     povratka, pa je predlog posle povrede zavisio od toga kog dana otvoriš
+     aplikaciju — utorkom oko 15% niži nego nedeljom.
+
+     Brojilac je od iste zamke bio izričito zaštićen (v. komentar uz
+     `akutniObim`: „Namerno NE tekuća nedelja"); imenilac je ostao na
+     kalendarskim nedeljama. I kartica ispod broja piše „prosekom poslednje
+     četiri ZAVRŠENE nedelje" — sada to i jeste.
+
+     Razmatran je i kotrljajući prozor od 28 dana (bliži Gabbettovoj definiciji,
+     isti oblik kao brojilac). Odbačen za sada jer menja ponašanje cele
+     mašinerije povratka iz v237, a ova ispravka uklanja baš i samo lažni skok
+     usred nedelje. */
+  const prosle = CUR_PLAN.filter(w => addD(w.start, 6) < today);
   const zadnje = prosle.slice(-4);
   if(!zadnje.length) return null;
   const km = zadnje.map(weekRealKm);
@@ -1481,7 +1505,15 @@ function injuryProposal(today){
     }
     const planiranoP = daniP.reduce((s,x)=>s+x.baseKm, 0);
     /* Povratak sme na gornju ivicu bezbednog pojasa — cilj je rast ka planu,
-       ne trajno smanjenje kao dok bol traje. */
+       ne trajno smanjenje kao dok bol traje.
+
+       PROBANO PA ODBAČENO: umanjivati budžet za ono što je već istrčano u
+       poslednjih šest dana (`hronP*ACWR_MAX − akutniObim(juče)`), da se predlog
+       ne bi svakog jutra iznova izdavao za pun prozor. Zvuči tačno, a u stanju
+       ravnoteže je pogrešno: tamo je akutno ≈ hronično, pa budžet padne na
+       0.3 × hronično i predlog bi doveka sekao oporavljenog trkača na 30% plana.
+       Uhvatila ga je zamka „lestvica se ipak ZAVRŠI". Granica ostaje po prozoru,
+       ne po ostatku prozora. */
     const acwrP = (hronP != null && planiranoP > 0)
       ? Math.min(1, hronP*ACWR_MAX/planiranoP) : 1;
     /* Faktor je strože od dva: procenat lestvice i ACWR granica. U četvrtoj
@@ -1650,7 +1682,38 @@ function injuryProposal(today){
         : 'Lagano ' + kmTxt + ' — smanjeno zbog bola ' + maxPain + '/10' });
   }
 
-  if(!changes.length) return null;
+  /* TRKA U HORIZONTU — kad se ništa ne menja, mora bar da se KAŽE.
+     Dan trke se namerno nikad ne menja automatski (v. `continue` gore): skratiti
+     ili obrisati trku nije odluka algoritma. Ali iz „ne menjaj" je ispalo
+     „ne pominji": pošto se trkački dan preskoči, na sam dan trke `changes`
+     ostane prazan, funkcija vrati `null`, i kartica se uopšte ne iscrta.
+
+     Izmereno na sve četiri distance, bol 7/10 tri dana pred trku: tab Oporavak
+     tog jutra piše „STANI", tab Danas piše trku na ciljnom tempu, i ništa ne
+     povezuje to dvoje — baš na dan kad je odluka najskuplja.
+
+     Zato: ako je status „stani" i u horizontu postoji dan trke, vraća se predlog
+     i sa praznim `changes`, sa porukom koja imenuje trku i njenu distancu i
+     izričito kaže da je odluka korisnikova. Ne menja se ništa — samo se ne ćuti. */
+  let trka = null;
+  if(hitno){
+    for(let i=0; i<horizon; i++){
+      const d = BY_DATE[addD(today, i)];
+      if(d && d.tag === 'trka'){ trka = { date:addD(today,i), km:d.km, dana:i }; break; }
+    }
+  }
+  if(!changes.length && !trka) return null;
+
+  const trkaTxt = trka
+    ? ' TRKA: ' + fmtKm(trka.km) + ' km ' + (trka.dana === 0 ? 'DANAS' : 'za ' + trka.dana + ' ' + (trka.dana === 1 ? 'dan' : 'dana')) +
+      '. Plan trke se ne menja sam — to je tvoja odluka, i aplikacija je ne donosi umesto tebe. Ali bol ' + maxPain +
+      '/10 nosi status STANI, a startovati sa aktivnim bolom koji ovih dana nije dozvoljavao ni neprekidno trčanje nije isto što i startovati umoran. Ako ideš, znaj da ideš na to; ako sumnjaš, pitaj fizijatra pre starta.'
+    : '';
+  if(!changes.length) return {
+    level: 'trka', hitno, maxPain, parts, changes: [], rw, hron, budzet, trka,
+    title: st.t,
+    message: 'Bol ' + maxPain + '/10 (' + parts.join(', ') + ').' + trkaTxt
+  };
 
   const ukupno = changes.reduce((s,c)=>s+(c.km||0), 0);
   const obimTxt = ' Obim narednih ' + changes.length + ' treninga: ' + fmtKm(ukupno) + ' km umesto ' + fmtKm(planirano) + ' km'
@@ -1671,7 +1734,7 @@ function injuryProposal(today){
       ? 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Neprekidno trčanje je prerano: narednih ' + changes.length + ' treninga ide po run/walk metodi — ' + runWalkText(rw) + '. Hod prekida udarno opterećenje, pa tkivo dobija ciklus opterećenje–rasterećenje umesto neprekidnog rada.' + obimTxt + ' Neprekidno trčanje se vraća kad bol padne ispod ' + RW_BOL_MIN + '.'
         + (hitno ? ' Bol ' + maxPain + '/10 je ozbiljan — ovo je prilagođavanje TRENINGA, ne lečenje. Ako te boli u mirovanju, ako šepaš ili ako bol ne popušta, ne trči ni ovoliko i javi se fizijatru ili lekaru.' : ' Ako bol poraste, prekini i javi se stručnjaku.')
       : 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Predlog: kvalitetni treninzi postaju lagani, obim smanjen narednih ' + changes.length + ' treninga.' + obimTxt + ' Ako bol poraste na ' + RW_BOL_MIN + '+, prelazi se na run/walk.'
-    ) + ostaloTxt
+    ) + ostaloTxt + trkaTxt
   };
 }
 
@@ -1900,11 +1963,7 @@ const AUTO_VDOT_TOL=4;
 function recordVdot(predId, paceSec, dateOverride, kind, auto, dan){
   const r=CUR_PRED.find(x=>x.id===predId);
   if(!r||!paceSec)return null;
-  /* SESIJA KOJA NE MERI FORMU. Za sada samo aktivacija pred trku (6×200 m na
-     tempu trke, vodi se kao Repeticije): propis joj je ispravan kao propis,
-     ali pročitan unazad kroz R zonu daje VDOT ispod polaznog. Tempo se i dalje
-     čuva i prikazuje — samo ne ulazi u lanac forme ni u predikciju. */
-  if(r.nemeri) return null;
+  /* Provera `nemeri` je NIŽE, posle provera verodostojnosti tempa — vidi tamo. */
   /* Zona: PRVENSTVENO iz PRED reda oznake (pouzdanije, v. zoneForPredRow),
      kind-parametar je fallback za pozivaoce koji (još) ne prosleđuju r.
      IZUZETAK — RUCNO PROMENJEN TIP DANA. Predikcijski red nosi naziv iz plana
@@ -1929,6 +1988,27 @@ function recordVdot(predId, paceSec, dateOverride, kind, auto, dan){
      uopšte poznaje nije tvrdnja o formi. */
   if(zone!=null && !vdotPaceUOpsegu(paceSec,zone)) return null;
   if(!vdotMoguc(measured)) return null;
+  /* SESIJA KOJA NE MERI FORMU (aktivacija pred trku, sesije iz KIND_IZ_CILJA):
+     propis joj je izveden iz cilja, ne iz rampe, pa se iz njega ne sme čitati
+     forma. Ali NIJE ista stvar „merenje nije verodostojno" i „ova sesija se po
+     projektu ne meri", a do sada su obe vraćale `null` — pa je `upisiAutoTempo`
+     odustajao pre upisa i lepio poruku „ne odgovara tvojoj formi, verovatno su
+     u prosek ušla kaskanja". Za tempo koji je IDENTIČAN propisu ta rečenica je
+     bila neistinita u oba dela.
+
+     Merenjem, sesija odrađena tačno po propisu i uneta sa sata: automatski put
+     je gubio SVE takve tempe (5K 3/3, 10K 4/4, PM 7/7, maraton 11/11), dok ih je
+     ručni unos svih uredno upisivao. Na maratonu je to trećina kvalitetnih
+     sesija — i to baš maratonski tempo, jedina sesija koja odgovara na pitanje
+     „mogu li da držim ciljni ritam".
+
+     Zato se sada vraća RAZLOG umesto `null`. Provere verodostojnosti tempa
+     (zasićenje tablice, moguć VDOT) su NAMERNO iznad ovoga i i dalje važe —
+     besmislen tempo se ne upisuje ni ovde. Preskače se samo poređenje sa formom
+     (`AUTO_VDOT_TOL`), koje za propis izveden iz cilja i nema smisla: upravo ono
+     je pravilo onu protivrečnost da isti broj sa sata bude odbijen, a otkucan
+     rukom prihvaćen. */
+  if(r.nemeri) return { nemeri:true, measured };
   /* AUTOMATSKI IZMEREN TEMPO KOJI NE DRZI VODU SE ODBACUJE.
      Izmereno na stvarnom slucaju: dan rucno prebacen u Tempo, trening
      OverUnder 3x2km (500m @4:00 + 500m @4:20) sa 2 min kaskanja izmedju.
@@ -1956,6 +2036,22 @@ function recordVdot(predId, paceSec, dateOverride, kind, auto, dan){
    prazan i pozove na rucni unos. */
 function upisiAutoTempo(pid, paceSec, datum, d){
   const r=recordVdot(pid, paceSec, datum, sessKind(d), true, d);
+  /* „Ne meri formu" NIJE „nije verodostojno". Tempo se upisuje i prikazuje kao
+     i sa ručnog unosa; jedino ne ulazi u lanac forme. Nosilac te razlike je
+     `recordVdot`, koji za takvu sesiju vraća RAZLOG umesto `null` — dok je
+     vraćao `null`, automatski put je gubio ceo trag o sesijama na tempu trke i
+     uz to lepio poruku koja optužuje merenje da je pogrešno.
+
+     Grana ispod danas radi tačno ono što bi i propadanje kroz `if(!r)` uradilo,
+     i to je namerno napisano ovako: bez nje se na ovom mestu ne vidi da postoji
+     ishod „nije greška, a nije ni merenje". Ako se ispod nje ikad doda nešto što
+     važi samo za prava merenja (zaključavanje, upis u lanac), razlika prestaje
+     da bude kozmetička. Zamku nosi `recordVdot`, ne ova grana. */
+  if(r && r.nemeri){
+    S.pred[pid]=paceSec;
+    if(S.log[d.id]) delete S.log[d.id].autoOdbijen;
+    return true;
+  }
   if(!r){ if(S.log[d.id]) S.log[d.id].autoOdbijen=paceSec; return false; }
   S.pred[pid]=paceSec;
   if(S.log[d.id]) delete S.log[d.id].autoOdbijen;
@@ -2474,6 +2570,7 @@ function autoRealign(byDate){
   const DAY_WINDOW=2, KM_TOL=0.30;
   const used=new Set();
   let moved=0;
+  /* Neriješen izbor se lomi po KILOMETRAŽI, ne po redosledu u nizu — v. niže. */
   Object.keys(byDate).forEach(date=>{
     const occupant=BY_DATE[date];
     if(occupant && !occupant.rest && occupant.km!=null)return; /* već ima pravi trkački dan — glavna petlja to rešava */
@@ -2481,16 +2578,37 @@ function autoRealign(byDate){
     const orphanWeek=weekOf(date);
     if(!orphanWeek)return;                                      /* van opsega plana — nema gde da se pomeri */
     const runKm=Math.max(...byDate[date].map(a=>a.distance/1000));
-    let best=null,bestDiff=Infinity;
+    let best=null,bestDiff=Infinity,bestKm=Infinity;
     DATED.forEach(d=>{
       if(d.rest||d.km==null)return;
       if(d.week!==orphanWeek)return;                            /* swapDays zahteva istu nedelju */
       if(used.has(d.id))return;
       if(stFor(d.id)==='done')return;                           /* odrađeno se ne dira */
+      /* NI DAN KOJI U OVOJ ISTOJ SINHRONIZACIJI IMA SVOJE TRČANJE. `stFor` gleda
+         šta je VEĆ upisano, a `autoRealign` se zove PRE glavne petlje — pa u tom
+         trenutku nijedno trčanje iz ovog paketa još nije vezano i `stFor` ih sve
+         vidi kao neodrađene. Bez ove provere se dan sa sopstvenim trčanjem odnese
+         kao kandidat, a njegovo trčanje posle nema za šta da se veže i tiho
+         nestane: izmereno na sve četiri distance, nedelja u kojoj je trkač
+         odradio svih pet treninga na svoj dan i dodao jedno lagano trčanje
+         evidentirana je 15–18% niže nego što je istrčana, a nestala je baš
+         kvalitetna sesija (g2d5, tempo). Komentar iznad funkcije to i obećava —
+         „ne dira dane koji već imaju direktan par" — samo je provera postojala
+         za `occupant`, ne i za kandidata. */
+      if(byDate[d.date])return;
       const dd=Math.abs(diffD(d.date,date));
       if(dd===0||dd>DAY_WINDOW)return;
-      if(Math.abs(d.km-runKm)/d.km>KM_TOL)return;
-      if(dd<bestDiff){bestDiff=dd;best=d;}
+      const kmDiff=Math.abs(d.km-runKm);
+      if(kmDiff/d.km>KM_TOL)return;
+      /* NA ISTOJ UDALJENOSTI ODLUČUJE KILOMETRAŽA. Ranije je stajalo samo
+         `dd<bestDiff`, pa je kod izjednačenja pobeđivao onaj koji je ranije u
+         `DATED` — dakle redosled niza, ne sličnost. Izmereno na maratonu:
+         dugo trčanje od 14.7 km odrađeno dan ranije vezalo bi se za tempo dan
+         od 11.6 km (razlika 3.1 km, ali isti dan udaljenosti) umesto za dugo
+         trčanje od tačno 14.7 km, koje je bilo isto toliko daleko. Plan bi se
+         time prepisao naopako: dugo trčanje ostane neodrađeno, a tempo dan
+         „odrađen" kao dugo trčanje. */
+      if(dd<bestDiff || (dd===bestDiff && kmDiff<bestKm)){bestDiff=dd;bestKm=kmDiff;best=d;}
     });
     if(best && occupant){
       const res=swapDays(best.id,occupant.id);
@@ -8738,9 +8856,14 @@ function renderOporavak(){
     h+=`<div class="card" style="border-color:${prop.hitno?'rgba(255,69,58,.35)':'rgba(255,176,32,.3)'}">
       <div class="card-t" style="color:${prop.hitno?'var(--red)':'var(--amber)'}">Plan se može prilagoditi</div>
       <div style="font-size:.85rem;line-height:1.55;color:var(--txt2)">${esc(prop.message)}</div>
-      <div class="note-src" style="margin-top:10px">Menja se ${prop.changes.length} ${prop.changes.length===1?'trening':'treninga'}: ${esc(prop.changes.slice(0,4).map(x=>fmtD(x.date)+' → '+(x.rw?'Run/walk':tagName(x.to))).join(' · '))}${prop.changes.length>4?' …':''}</div>
+      ${prop.changes.length ? `<div class="note-src" style="margin-top:10px">Menja se ${prop.changes.length} ${prop.changes.length===1?'trening':'treninga'}: ${esc(prop.changes.slice(0,4).map(x=>fmtD(x.date)+' → '+(x.rw?'Run/walk':tagName(x.to))).join(' · '))}${prop.changes.length>4?' …':''}</div>
       <div class="btnrow" style="margin-top:12px"><button class="btn" id="inj-apply">Prilagodi plan</button></div>
-      <div class="note-src" style="margin-top:8px">Svaki dan možeš ručno da vratiš u tabu Plan.</div>
+      <div class="note-src" style="margin-top:8px">Svaki dan možeš ručno da vratiš u tabu Plan.</div>`
+      /* Predlog bez ijedne izmene postoji samo kad je trka u horizontu (v.
+         `level:'trka'` u injuryProposal): tu se ništa ne nudi na dugme, jer se
+         trka ne menja automatski. Bez ovog uslova bi kartica pisala „Menja se 0
+         treninga" i nudila dugme koje ne radi ništa. */
+      : `<div class="note-src" style="margin-top:10px">Plan se ovim ne menja — odluku o trci donosiš sam.</div>`}
     </div>`;
   }
   h+=karticaOporavka();

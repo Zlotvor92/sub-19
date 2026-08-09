@@ -194,8 +194,14 @@ describe('Aktivacija pred trku', () => {
       const predPre = a.call('predCalc').last;
       assert.ok(formaPre != null, 'nema forme pred aktivaciju');
 
+      /* `recordVdot` od v241 vraća RAZLOG umesto golog `null`: „ne meri formu"
+         nije isto što i „merenje nije verodostojno", i automatski unos mora da
+         ih razlikuje (v. upisiAutoTempo). Suština je ista i proverava se odmah
+         ispod: u lanac ne ulazi ništa. */
       const r = a.call('recordVdot', akt.pid, akt.pt, akt.date, null, false, null);
-      assert.equal(r, null, 'aktivacija je ušla u lanac forme');
+      assert.equal(r && r.nemeri, true, 'aktivacija se ne prepoznaje kao sesija koja ne meri');
+      assert.equal(a.evalIn(`(S.vdotLog||[]).some(function(e){return e&&e.id===${JSON.stringify(akt.pid)};})`), false,
+        'aktivacija je ušla u lanac forme');
       a.evalIn(`S.pred[${JSON.stringify(akt.pid)}]=${akt.pt};`);
 
       assert.equal(a.call('currentVdot'), formaPre,

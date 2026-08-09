@@ -122,10 +122,16 @@ describe('Posle povrede: lestvica se završava kad opterećenje sustigne plan, n
       /* GLAVNA MERA — rast iz nedelje u nedelju. Nalaz je bio da nedelja posle
          lestvice donosi najveći skok u celoj pripremi (+119 do +153% obima).
          Merenjem posle popravke rast nigde ne prelazi ~30%. */
+      /* Prag je 50%, ne 35%. Prvobitnih 35% je izmereno dok je `hronicniObim`
+         od utorka uračunavao tekuću, nezavršenu nedelju i time obarao imenilac —
+         povratak je bio sporiji nego što treba (35–46% predpauznog obima umesto
+         60–70%). Kad je imenilac ispravljen, rampa je legitimno brža. Nalaz koji
+         se ovde čuva je bio +119 do +153%, pa 50% i dalje ostavlja širok pojas
+         između ispravnog i pogrešnog. */
       for (let i = 1; i < red.length; i++) {
         if (!(red[i - 1].km > 0)) continue;
         const rast = red[i].km / red[i - 1].km - 1;
-        assert.ok(rast <= 0.35,
+        assert.ok(rast <= 0.50,
           `nedelja ${i + 1} povratka je za ${Math.round(rast * 100)}% veća od prethodne (${JSON.stringify(red.map(r => r.km))})`);
       }
 
@@ -197,21 +203,46 @@ describe('Prekid bez bola pokreće isti postepen povratak', () => {
     const PAUZA_OD = dodaj(POCETAK, 8 * 7);
     odradiDo(a, PAUZA_OD);
     a.evalIn(`S.knee=[]; rebuildDateIndex();`);
-    return { a, povratak: dodaj(PAUZA_OD, danaPauze) };
+    /* Prosečan obim tri pune nedelje pred pauzu — mera prema kojoj se sudi
+       da li je povratak doziran, umesto ACWR-a čiji imenilac pamti pauzu. */
+    const dani = daniPlana(a);
+    let preKm = 0;
+    for (let b = 1; b <= 3; b++) {
+      const s = dodaj(PAUZA_OD, -7 * b);
+      preKm += dani.filter(d => !d.rest && d.date >= s && d.date < dodaj(s, 7))
+                   .reduce((x, d) => x + d.km, 0);
+    }
+    return { a, povratak: dodaj(PAUZA_OD, danaPauze), preKm: preKm / 3 };
   }
 
   for (const [ime, m] of Object.entries(DIST)) {
-    test(`${ime}: dve nedelje pauze — predlog postoji i drži ACWR ispod 1.5`, () => {
-      const { a, povratak } = saPauzom(m, 14);
+    test(`${ime}: dve nedelje pauze — povratak je u trenerskom pojasu`, () => {
+      const { a, povratak, preKm } = saPauzom(m, 14);
       a.evalIn(`TODAY='${povratak}';`);
       const p = a.call('injuryProposal', povratak);
       assert.ok(p, 'dve nedelje bez trčanja ne pokreću ništa — plan vraća pun obim istog dana');
       assert.equal(p.level, 'pauza');
       assert.equal(a.call('returnToRunPhase', povratak), null, 'ovo nije povreda — lestvica bola se ne sme uključiti');
 
+      /* MERA JE UDEO PREDPAUZNOG OBIMA, NE ACWR.
+         Ranije je ovde stajalo „ACWR prve nedelje < 1.5". Taj broj je posle
+         pauze strukturno naduvan: imenilac je prosek poslednje četiri završene
+         nedelje, a dve od njih su nule — pa bi ga i savršeno doziran povratak
+         probio. Terati ga ispod 1.3 značilo bi spustiti trkača na ~16 km, što
+         je pre-kočenje, ne oprez.
+
+         Trenerska smernica posle dve nedelje pauze je povratak na oko 60–70%
+         predpauznog obima, pa rast. Taj broj se meri i on je ono što je bitno.
+         Ovaj oblik tvrdnje hvata OBE greške koje su se ovde stvarno desile:
+           — pun obim istog dana (100%, prvobitni nalaz), i
+           — pre-kočenje na 35–46%, koje je pravio pokvaren imenilac
+             `hronicniObim` (uračunavao tekuću, nezavršenu nedelju). */
       const red = odigraj(a, povratak, 3);
-      assert.ok(red[0].acwr != null && red[0].acwr < 1.5,
-        `prva nedelja povratka: ACWR ${red[0].acwr} (pre popravke 2.3–2.5)`);
+      const udeo = red[0].km / preKm;
+      assert.ok(udeo <= 0.85,
+        `prva nedelja povratka je ${Math.round(udeo * 100)}% predpauznog obima (${red[0].km} od ${Math.round(preKm)} km) — nije smanjena`);
+      assert.ok(udeo >= 0.50,
+        `prva nedelja povratka je samo ${Math.round(udeo * 100)}% predpauznog obima (${red[0].km} od ${Math.round(preKm)} km) — pre-kočenje`);
     });
   }
 
