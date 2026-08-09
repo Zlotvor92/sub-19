@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='249'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='250'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3966,10 +3966,15 @@ function formHTML(d){
       const r=CUR_PRED.find(x=>x.id===pid);
       const cur=S.pred[pid];
       const ep=effectivePace(d,r);
-      workBlock+=`<div class="wseg" data-wseg="${esc(pid)}" data-q="${esc(r.q)}">
-        <div class="wseg-l">${esc(r.l.split('·')[1]||r.l)} · plan ${fmtTempo(ep)} /km${S.alts&&S.alts[d.id]&&S.alts[d.id].pace!=null?' <small style="color:var(--pink)">(tvoj cilj)</small>':''} · Q ${fmtKm(r.q)} km</div>
-        <input id="wseg-${esc(pid)}" class="wseg-in" inputmode="numeric" placeholder="356 = 3:56" value="${cur?fmtTempo(cur):''}" data-wpin="${esc(pid)}" aria-label="Ostvaren tempo radnog dela">
-        <div class="wseg-out" data-wout="${esc(pid)}">${vdotDeltaHTML(pid,cur)}</div>
+      /* Isti oblik kao svaka druga tablica podataka u aplikaciji (`drows`/`drow`):
+         natpis levo, vrednost desno, tanka linija između. Ranije je ovo bio
+         sopstveni troredni raspored koji se nigde drugde ne pojavljuje i koji se
+         na telefonu rušio (v. revizija5 zamka). */
+      workBlock+=`<div class="wseg drows" data-wseg="${esc(pid)}" data-q="${esc(r.q)}">
+        <div class="drow"><span class="l">${esc(r.l.split('·')[1]||r.l)} · Q ${fmtKm(r.q)} km</span><span class="v"></span></div>
+        <div class="drow"><span class="l">plan</span><span class="v">${esc(fmtTempo(ep))} /km${S.alts&&S.alts[d.id]&&S.alts[d.id].pace!=null?' <small style="color:var(--pink)">(tvoj cilj)</small>':''}</span></div>
+        <div class="drow"><span class="l">ostvareno</span><span class="v"><input id="wseg-${esc(pid)}" class="wseg-in" inputmode="numeric" placeholder="356" value="${cur?fmtTempo(cur):''}" data-wpin="${esc(pid)}" aria-label="Ostvaren tempo radnog dela"> /km</span></div>
+        <div class="drow"><span class="l">VDOT</span><span class="v" data-wout="${esc(pid)}">${vdotDeltaHTML(pid,cur)}</span></div>
       </div>`;
       /* Tiho preskakanje je isto zamka kao tiho upisivanje pogresnog broja. */
       if(cur==null && l && l.autoOdbijen)

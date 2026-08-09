@@ -381,34 +381,25 @@ test('BY_ID ne pamti dane plana koji više ne postoji', () => {
     a.evalIn(`JSON.stringify(Object.keys(BY_ID).filter(k=>k[0]!=='n').slice(0,5))`));
 });
 
-test('natpis radnog dela ima svoju širinu — ne sruči se u kolonu slova', () => {
-  /* Nađeno na pravom telefonu posle icu sinhronizacije: „Intervali · plan
-     3:55 /km · Q 5 km" bio je iscrtan jedno slovo po redu. Mereno u Chromiumu:
-     natpis dobija 0 px širine i 126 px visine, i to na 320, 390 I 430 px.
+test('radni deo koristi standardnu tablicu podataka aplikacije', () => {
+  /* Nađeno na pravom telefonu: blok je imao sopstveni troredni raspored koji se
+     nigde drugde u aplikaciji ne pojavljuje, i rušio se — natpis je dobijao 0 px
+     širine i 126 px visine (jedno slovo po redu), a polje za unos se razvlačilo
+     na ceo red. Umesto trećeg pokušaja sa istim rasporedom, blok sada koristi
+     `drows`/`drow`, isti oblik kao „SA SATA" i svaka druga tablica: natpis levo,
+     vrednost desno, tanka linija između. */
+  const src = readRepoFile('app.js');
+  const blok = /workBlock\+=`<div class="wseg[\s\S]*?`;/.exec(src);
+  assert.ok(blok, 'blok radnog dela ne postoji');
+  assert.match(blok[0], /class="wseg drows"/, 'radni deo ne koristi standardnu tablicu (`drows`)');
+  for (const red of ['plan', 'ostvareno', 'VDOT'])
+    assert.ok(blok[0].includes('>' + red + '<'), `nedostaje red „${red}"`);
+  assert.match(blok[0], /class="wseg-in"/, 'polje za unos tempa je nestalo — tempo se unosi i rukom');
 
-     Uzrok: `.wseg-l{flex:1}` je flex-basis 0%, pa je uz `min-width:0` natpis bio
-     prvi koji se skuplja — a pored njega stoje polje za unos (82 px) i ishod
-     (min 120 px), koji se ne skupljaju ispod svog sadržaja.
-
-     Zamka je nad CSS-om, ne nad iscrtanim pikselima: svita nema pregledač.
-     Zato pinuje MEHANIZAM — red mora da sme da se prelomi i natpis mora da ima
-     osnovnu širinu. Peta revizija je merila prelivanje van okvira i ovo je
-     prošlo, jer element nije izlazio iz okvira — samo je bio nečitljiv. */
   const css = readRepoFile('index.html');
-  const wseg = /\.wseg\{[^}]*\}/.exec(css);
-  assert.ok(wseg, 'pravilo .wseg ne postoji');
-  assert.match(wseg[0], /flex-wrap:\s*wrap/, '.wseg se ne prelama, pa natpis nema kud');
-  const wsegL = /\.wseg-l\{[^}]*\}/.exec(css);
-  assert.ok(wsegL, 'pravilo .wseg-l ne postoji');
-  assert.doesNotMatch(wsegL[0], /flex:\s*1\s*;/, '.wseg-l opet ima flex:1 (osnova 0) — skuplja se do nule');
-  assert.match(wsegL[0], /flex:\s*1\s+1\s+100%/, '.wseg-l ne uzima ceo red — natpis opet deli prostor sa poljem');
-  /* Druga verzija popravke je natpis rešila, ali je polje za unos pustila na
-     sopstveni red, gde ga je globalno pravilo za `input` razvuklo na punu širinu
-     (mereno 326 px umesto 82) — tempo je stajao sam nasred kartice. Zato širina
-     polja mora da bude tvrda i bez rasta. */
   const wsegIn = /\.wseg-in\{[^}]*\}/.exec(css);
   assert.ok(wsegIn, 'pravilo .wseg-in ne postoji');
-  assert.match(wsegIn[0], /flex:\s*0\s+0\s+\d+px/, '.wseg-in nema tvrdu širinu — razvlači se na ceo red');
-  /* Polje se i unosi prstom, pa mora da ostane iznad praga dodira od 44 px. */
+  /* Polje se unosi prstom, pa mora da ostane iznad praga dodira od 44 px. */
   assert.match(wsegIn[0], /min-height:\s*(4[4-9]|[5-9]\d)px/, '.wseg-in je ispod praga dodira od 44 px');
 });
+
