@@ -295,6 +295,70 @@ select 'brisanje · samo server ima pristup',
 
 union all
 
+-- 6c. BRISANJE NALOGA PO E-ADRESI — NAJOPASNIJA FUNKCIJA U ŠEMI
+--
+--     `public.obrisi_naloge(text[])` briše bilo čiji nalog po e-adresi, i mora
+--     biti `security definer` da bi uopšte mogla u `auth.users`. Supabase kroz
+--     PostgREST izlaže funkcije iz seme `public` kao HTTP putanje
+--     (/rest/v1/rpc/obrisi_naloge), a `anon` ključ stoji u izvornom kodu
+--     stranice — dakle kod svakoga.
+--
+--     Postgres NOVOJ funkciji podrazumevano daje EXECUTE ulozi PUBLIC. Ako se
+--     `brisi-nalog.sql` pusti samo delimično — telo funkcije da, `revoke` na
+--     kraju ne — svako ko otvori sajt može jednim POST zahtevom da obriše bilo
+--     čiji nalog. Provereno na Postgresu 16.13: bez `revoke` i `anon` i
+--     `authenticated` imaju EXECUTE; posle `revoke` nemaju; `create or replace`
+--     zadržava opoziv, pa je ponovno puštanje fajla bezbedno.
+--
+--     Ništa drugo u ovom fajlu nije gledalo prava nad FUNKCIJAMA — samo nad
+--     tabelama. Ovo je bila jedina rupa kroz koju se gubi ceo nalog, a ne red.
+select 'brisi nalog · ' || o.uloga || ' ne sme da je zove',
+       case when to_regclass('public.obrisi_naloge') is null
+                 and not exists (select 1 from pg_proc where proname = 'obrisi_naloge'
+                                   and pronamespace = 'public'::regnamespace) then '—'
+            when not exists (select 1 from pg_roles where rolname = o.uloga) then 'nema te uloge'
+            when has_function_privilege(o.uloga, 'public.obrisi_naloge(text[])', 'execute')
+              then 'ZOVE JE' else 'ne može' end,
+       case when not exists (select 1 from pg_proc where proname = 'obrisi_naloge'
+                               and pronamespace = 'public'::regnamespace)
+              then 'NEDOSTAJE — pusti brisi-nalog.sql'
+            when not exists (select 1 from pg_roles where rolname = o.uloga) then 'OK'
+            when has_function_privilege(o.uloga, 'public.obrisi_naloge(text[])', 'execute')
+              then 'PROPUŠTA — bilo ko može da obriše bilo čiji nalog; pusti brisi-nalog.sql ponovo (revoke sa dna)'
+            else 'OK' end
+  from (select unnest(array['anon','authenticated']) as uloga) o
+
+union all
+
+select 'brisi nalog · security definer',
+       coalesce((select case when prosecdef then 'jeste' else 'NIJE' end from pg_proc
+                  where proname = 'obrisi_naloge' and pronamespace = 'public'::regnamespace), '—'),
+       coalesce((select case when prosecdef then 'OK'
+                             else 'STARO — bez security definer ne može u auth.users' end
+                   from pg_proc
+                  where proname = 'obrisi_naloge' and pronamespace = 'public'::regnamespace),
+                'NEDOSTAJE — pusti brisi-nalog.sql')
+
+union all
+
+-- 6d. KOJE JOŠ FUNKCIJE `anon` SME DA ZOVE — informativno, ne alarm.
+--
+--     Namerno NIJE tvrdo pravilo sa spiskom izuzetaka: `zajednica_vidljiv_ja`
+--     mora da bude pozivljiva jer je zove izraz RLS politike, a spisak koji
+--     viče na namerno stanje nauči čoveka da ga preskače. Ovde se zato samo
+--     ISPISUJE šta anon može, da se novo ime primeti kad se pojavi.
+select 'anon zove funkciju · ' || p.proname,
+       pg_get_function_identity_arguments(p.oid),
+       'PROVERI — anon sme da je zove; je li to namerno?'
+  from pg_proc p
+ where p.pronamespace = 'public'::regnamespace
+   and p.prokind = 'f'
+   and p.prorettype <> 'trigger'::regtype
+   and exists (select 1 from pg_roles where rolname = 'anon')
+   and has_function_privilege('anon', p.oid, 'execute')
+
+union all
+
 -- 7. ANON NE SME DO ZAJEDNICE
 --    anon ključ stoji u izvornom kodu stranice, dakle kod svakoga. Da `revoke`
 --    izostane, ceo spisak trkača bi se čitao bez prijave.
