@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='250'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='251'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2581,6 +2581,37 @@ function vdotDeltaHTML(predId,paceSec){
   const sign=e.delta>0?'+':'';
   return `<span style="color:${col};font-weight:800;font-size:.82rem">VDOT ${esc(fmtNum(e.vdot,1))} ${arrow} <span style="font-size:.72rem">(${sign}${esc(fmtNum(e.delta,1))})</span></span>`;
 }
+/* MERILO RADNOG DELA — luk sa oznakom plana na vrhu i kuglicom na mestu
+   ostvarenog tempa. Levo je brže od plana, desno sporije.
+
+   GEOMETRIJA IZLAZI IZ JEDNOG IZVORA. Središte (52,52) i poluprečnik 40 koriste
+   i putanja luka i položaj kuglice, a krajevi luka se RAČUNAJU iz istog ugla
+   (±110°) umesto da budu prepisani brojevi. Da su krajevi prepisani, prva
+   izmena poluprečnika bi ostavila kuglicu da lebdi pored luka — greška koja se
+   ne vidi u kodu nego tek na ekranu, i to samo pri nekim vrednostima.
+
+   RASPON SE SEČE na ±20 s/km. Bez sečenja bi promašaj od minuta po kilometru —
+   a toliko ume da bude kad se u prosek uvuče kaskanje između deonica
+   (v. `autoOdbijen`) — odbacio kuglicu daleko van luka. Sečenje je pošteno:
+   kuglica na samom kraju znači „mnogo", a tačan broj stoji ispod merila. */
+const MERILO_RASPON=20, MERILO_UGAO=110;
+function meriloHTML(planSec,doneSec){
+  const naLuku=stepeni=>{const a=stepeni*Math.PI/180;
+    return [(52+40*Math.sin(a)).toFixed(1),(52-40*Math.cos(a)).toFixed(1)];};
+  const [x0,y0]=naLuku(-MERILO_UGAO), [x1,y1]=naLuku(MERILO_UGAO);
+  const ima=planSec>0&&doneSec>0;
+  const d=ima?Math.round(doneSec-planSec):null;
+  const t=ima?Math.max(-1,Math.min(1,(doneSec-planSec)/MERILO_RASPON)):null;
+  const p=ima?naLuku(t*MERILO_UGAO):null;
+  const boja=d==null?'var(--txt3)':d<0?'var(--green)':d>0?'var(--pink)':'var(--txt2)';
+  return `<svg viewBox="0 0 104 74" aria-hidden="true">`+
+      `<path d="M ${x0} ${y0} A 40 40 0 1 1 ${x1} ${y1}" fill="none"`+
+      ` stroke="rgba(255,255,255,.14)" stroke-width="7" stroke-linecap="round"/>`+
+      `<line x1="52" y1="6" x2="52" y2="18" stroke="rgba(255,255,255,.55)" stroke-width="2.5" stroke-linecap="round"/>`+
+      (p?`<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="${boja}" stroke="var(--bg)" stroke-width="3"/>`:'')+
+    `</svg>`+
+    `<span class="wseg-d" style="color:${boja}">${d==null?'—':(d>0?'+':'')+d+' s'}</span>`;
+}
 function pickClosest(list,planKm){
   return list.reduce((b,x)=>Math.abs(x.distance/1000-planKm)<Math.abs(b.distance/1000-planKm)?x:b);
 }
@@ -3966,15 +3997,23 @@ function formHTML(d){
       const r=CUR_PRED.find(x=>x.id===pid);
       const cur=S.pred[pid];
       const ep=effectivePace(d,r);
-      /* Isti oblik kao svaka druga tablica podataka u aplikaciji (`drows`/`drow`):
-         natpis levo, vrednost desno, tanka linija između. Ranije je ovo bio
-         sopstveni troredni raspored koji se nigde drugde ne pojavljuje i koji se
-         na telefonu rušio (v. revizija5 zamka). */
-      workBlock+=`<div class="wseg drows" data-wseg="${esc(pid)}" data-q="${esc(r.q)}">
-        <div class="drow"><span class="l">${esc(r.l.split('·')[1]||r.l)} · Q ${fmtKm(r.q)} km</span><span class="v"></span></div>
-        <div class="drow"><span class="l">plan</span><span class="v">${esc(fmtTempo(ep))} /km${S.alts&&S.alts[d.id]&&S.alts[d.id].pace!=null?' <small style="color:var(--pink)">(tvoj cilj)</small>':''}</span></div>
-        <div class="drow"><span class="l">ostvareno</span><span class="v"><input id="wseg-${esc(pid)}" class="wseg-in" inputmode="numeric" placeholder="356" value="${cur?fmtTempo(cur):''}" data-wpin="${esc(pid)}" aria-label="Ostvaren tempo radnog dela"> /km</span></div>
-        <div class="drow"><span class="l">VDOT</span><span class="v" data-wout="${esc(pid)}">${vdotDeltaHTML(pid,cur)}</span></div>
+      /* MERILO LEVO, PODACI DESNO. Odstupanje od plana je jedino što se sa ovog
+         bloka čita u prolazu, a broj se za to mora pročitati i oduzeti — luk se
+         ne čita, vidi se. Tačan broj i dalje stoji, ispod merila.
+
+         Desna strana je USPRAVAN NIZ, ne tablica natpis/vrednost. Tablica je
+         ovde već dvaput pukla (v. istoriju u `.wseg-*` pravilima): sa merilom
+         koje uzima 96 px, na 320 px telefonu ostaje oko 110 px za natpis I
+         polje u istom redu — a polje samo je 96 px. U uspravnom nizu svaki red
+         uzima širinu koja mu treba i ništa se ne otima ni sa čim. */
+      workBlock+=`<div class="wseg" data-wseg="${esc(pid)}" data-q="${esc(r.q)}">
+        <div class="wseg-gauge" data-wgauge="${esc(pid)}">${meriloHTML(ep,cur)}</div>
+        <div class="wseg-info">
+          <div class="wseg-l">${esc(r.l.split('·')[1]||r.l)} · Q ${fmtKm(r.q)} km</div>
+          <div class="wseg-plan">plan <b>${esc(fmtTempo(ep))} /km</b>${S.alts&&S.alts[d.id]&&S.alts[d.id].pace!=null?' <small style="color:var(--pink)">(tvoj cilj)</small>':''}</div>
+          <input id="wseg-${esc(pid)}" class="wseg-in" inputmode="numeric" placeholder="356" value="${cur?fmtTempo(cur):''}" data-wpin="${esc(pid)}" aria-label="Ostvaren tempo radnog dela">
+          <div class="wseg-out" data-wout="${esc(pid)}">${vdotDeltaHTML(pid,cur)}</div>
+        </div>
       </div>`;
       /* Tiho preskakanje je isto zamka kao tiho upisivanje pogresnog broja. */
       if(cur==null && l && l.autoOdbijen)
@@ -4050,6 +4089,14 @@ function bindForm(root,d){
       save();
       const out=g.querySelector(`[data-wout="${esc(pid)}"]`);
       if(out)out.innerHTML=vdotDeltaHTML(pid,S.pred[pid]);
+      /* Merilo se crta iz istog para brojeva kao pri prvom iscrtavanju. Da se
+         ovde ne osvežava, kuglica bi ostala na mestu prethodnog tempa dok se
+         broj ispod nje menja — dva prikaza iste stvari koja se ne slažu. */
+      const gauge=g.querySelector(`[data-wgauge="${esc(pid)}"]`);
+      if(gauge){
+        const r=CUR_PRED.find(x=>x.id===pid);
+        if(r)gauge.innerHTML=meriloHTML(effectivePace(d,r),S.pred[pid]);
+      }
     };
     inp.addEventListener('input',wh);
     inp.addEventListener('change',wh);

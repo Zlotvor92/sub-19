@@ -464,8 +464,16 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
    vreme crtala kao bela kutija iz pregledača usred tamnog lista. Uočeno na
    snimku ekrana, ne u testu.
    Sada se isključuju tipovi koji imaju SVOJ izgled (range, checkbox, radio,
-   file), a sve ostalo se stiliše — pa novo polje ne može da ispadne. */
-.f-field input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=file]),
+   file), a sve ostalo se stiliše — pa novo polje ne može da ispadne.
+
+   `.wseg-in` JE IZRIČITO IZUZET, a ne prepušten redosledu pravila. Ovaj
+   selektor nosi četiri `:not([atribut])`, dakle specifičnost (0,5,1), dok je
+   `.wseg-in` (0,1,0) — pa je `width:100%` odavde TIHO gazio širinu polja
+   radnog dela bez obzira na to što `.wseg-in` stoji niže u fajlu. Posledica se
+   videla na snimku ekrana: polje razvučeno preko celog reda, a jedinica „/km"
+   otisnuta u sledeći red. Izuzimanje je jedini način koji ne traži ni
+   `!important` ni gomilanje klasa da bi se nadmašila specifičnost. */
+.f-field input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=file]):not(.wseg-in),
 .f-field textarea,.f-field select{
   width:100%;background:none;border:0;outline:none;font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--txt);
   -webkit-appearance:none;appearance:none;
@@ -687,26 +695,43 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .bodylegend i.l2{background:rgba(255,192,98,.85)}
 .bodylegend i.l3{background:var(--red)}
 
-.wseg{padding:6px 0 2px}
-.wseg:last-child{border-bottom:0}
-/* RASPORED JE IZRIČIT: natpis u svom redu, ispod njega polje levo i ishod desno.
+/* ---------- RADNI DEO: MERILO LEVO, PODACI DESNO ----------
 
-   Prva verzija je imala `flex:1` (osnova 0%) uz `min-width:0`, pa se natpis
-   skupljao prvi — izmereno u Chromiumu: 0 px širine, 126 px visine, jedno slovo
-   po redu, i to na 320, 390 I 430 px.
+   ISTORIJA OVOG RASPOREDA, jer je pucao dvaput i oba puta na isti način —
+   nešto je dobilo da se skuplja, i skupilo se do nule:
 
-   Druga verzija (osnova 150 px + prelamanje) popravila je natpis, ali je pustila
-   polje za unos na sopstveni red, gde ga je globalno pravilo za `input` razvuklo
-   na punu širinu (mereno 326 px) — pa je tempo stajao sam nasred kartice.
+   1. `flex:1` (osnova 0%) uz `min-width:0` na natpisu — natpis se skupljao prvi.
+      Mereno u Chromiumu: 0 px širine, 126 px visine, jedno slovo po redu, i to
+      na 320, 390 I 430 px.
+   2. Osnova 150 px + prelamanje — natpis je preživeo, ali je polje za unos
+      otišlo u svoj red, gde ga je globalno pravilo za `input` razvuklo na punu
+      širinu (mereno 326 px), pa je tempo stajao sam nasred kartice.
+   3. Standardna tablica `drows` — radila je, ali za merilo nema mesta: uz 96 px
+      merila na 320 px telefonu ostaje ~110 px za natpis I polje u istom redu, a
+      polje samo traži 96 px. Mereno: polje je ispadalo 24 px iz kartice.
 
-   Zato se sada širine ne prepuštaju nasleđivanju: natpis uzima ceo red
-   (`1 1 100%`), polje ima tvrdu osnovu koja ne raste (`0 0 96px`), a ishod uzima
-   ostatak i poravnava se desno. */
-.wseg-l{flex:1 1 100%;min-width:0;font-size:.78rem;font-weight:700;color:var(--txt2);line-height:1.35}
-.wseg-in{width:78px;min-height:44px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:12px;padding:10px 6px;text-align:center;font-weight:800;font-size:.95rem;font-variant-numeric:tabular-nums;outline:none;color:var(--txt)}
+   Zato ovde ništa ne deli red sa poljem za unos. Merilo ima tvrdu širinu i ne
+   skuplja se (`flex:none`), a desna strana je USPRAVAN niz u kome svaki red
+   uzima širinu koja mu treba. `min-width:0` na nizu je i dalje potreban: bez
+   njega dugačak red (VDOT sa deltom) ne bi smeo da se prelomi i gurao bi
+   celu kolonu preko ivice. */
+.wseg{display:flex;align-items:center;gap:12px;padding:6px 0 2px}
+.wseg + .wseg{margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.wseg-gauge{flex:none;width:96px;height:68px;position:relative}
+.wseg-gauge svg{display:block;width:96px;height:68px}
+/* Broj stoji u otvoru luka — luk ide od −110° do +110°, pa je dno slobodno. */
+.wseg-d{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:1rem;font-weight:800;
+        font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.wseg-info{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.wseg-l{font-size:.72rem;font-weight:700;color:var(--txt3);line-height:1.35}
+.wseg-plan{font-size:.76rem;font-weight:700;color:var(--txt3)}
+.wseg-plan b{color:var(--txt2);font-weight:800;font-variant-numeric:tabular-nums}
+/* Širina je tvrda: globalno pravilo `.f-field input{width:100%}` je jače od
+   nasleđivanja i razvuklo bi polje na ceo red (v. tačku 2 gore). */
+.wseg-in{width:96px;min-height:44px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:12px;padding:10px 6px;text-align:center;font-weight:800;font-size:.95rem;font-variant-numeric:tabular-nums;outline:none;color:var(--txt);-webkit-appearance:none;appearance:none}
 .wseg-in:focus{border-color:var(--cyan)}
 .wseg-in::placeholder{color:var(--txt3);font-weight:600}
-.wseg-out{flex:1 1 auto;min-width:0;text-align:right;line-height:1.3}
+.wseg-out{min-width:0;font-size:.78rem;font-weight:800;line-height:1.3}
 .btn-ai{width:100%;min-height:44px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:14px;padding:12px;font-weight:800;font-size:.88rem;color:var(--txt);cursor:pointer}
 .btn-ai:active{opacity:.7}
 .btn-ai:disabled{opacity:.5}

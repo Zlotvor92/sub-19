@@ -381,25 +381,101 @@ test('BY_ID ne pamti dane plana koji više ne postoji', () => {
     a.evalIn(`JSON.stringify(Object.keys(BY_ID).filter(k=>k[0]!=='n').slice(0,5))`));
 });
 
-test('radni deo koristi standardnu tablicu podataka aplikacije', () => {
-  /* Nađeno na pravom telefonu: blok je imao sopstveni troredni raspored koji se
-     nigde drugde u aplikaciji ne pojavljuje, i rušio se — natpis je dobijao 0 px
-     širine i 126 px visine (jedno slovo po redu), a polje za unos se razvlačilo
-     na ceo red. Umesto trećeg pokušaja sa istim rasporedom, blok sada koristi
-     `drows`/`drow`, isti oblik kao „SA SATA" i svaka druga tablica: natpis levo,
-     vrednost desno, tanka linija između. */
+test('radni deo: ništa ne deli red sa poljem za unos', () => {
+  /* Ovaj raspored je pukao TRI puta i svaki put na isti način — nešto je dobilo
+     da se skuplja i skupilo se do nule:
+       1. natpis sa `flex:1` → 0 px širine, 126 px visine, jedno slovo po redu;
+       2. natpis sa osnovom 150 px → polje otišlo u svoj red i razvuklo se;
+       3. standardna tablica `drows` → uz merilo od 96 px na telefonu od 320 px
+          polje je ispadalo 24 px iz kartice (mereno u Chromiumu).
+     Zato sada merilo ima tvrdu širinu i ne skuplja se, a desna strana je
+     uspravan niz u kome svaki red uzima širinu koja mu treba. */
   const src = readRepoFile('app.js');
-  const blok = /workBlock\+=`<div class="wseg[\s\S]*?`;/.exec(src);
+  const blok = /workBlock\+=`<div class="wseg"[\s\S]*?`;/.exec(src);
   assert.ok(blok, 'blok radnog dela ne postoji');
-  assert.match(blok[0], /class="wseg drows"/, 'radni deo ne koristi standardnu tablicu (`drows`)');
-  for (const red of ['plan', 'ostvareno', 'VDOT'])
-    assert.ok(blok[0].includes('>' + red + '<'), `nedostaje red „${red}"`);
   assert.match(blok[0], /class="wseg-in"/, 'polje za unos tempa je nestalo — tempo se unosi i rukom');
+  assert.match(blok[0], /data-wout=/, 'nema čvora za VDOT — ishod se ne bi osvežavao pri kucanju');
+  assert.match(blok[0], /data-wgauge=/, 'merilo nema svoj čvor — ne bi se osvežavalo pri kucanju');
 
   const css = readRepoFile('index.html');
-  const wsegIn = /\.wseg-in\{[^}]*\}/.exec(css);
-  assert.ok(wsegIn, 'pravilo .wseg-in ne postoji');
-  /* Polje se unosi prstom, pa mora da ostane iznad praga dodira od 44 px. */
-  assert.match(wsegIn[0], /min-height:\s*(4[4-9]|[5-9]\d)px/, '.wseg-in je ispod praga dodira od 44 px');
+  const pravilo = (sel) => {
+    const m = new RegExp('\\' + sel + '\\{[^}]*\\}').exec(css);
+    assert.ok(m, `pravilo ${sel} ne postoji`);
+    return m[0];
+  };
+  /* Polje se pogađa prstom — prag dodira je 44 px. */
+  assert.match(pravilo('.wseg-in'), /min-height:\s*(4[4-9]|[5-9]\d)px/,
+    '.wseg-in je ispod praga dodira od 44 px');
+  assert.match(pravilo('.wseg-gauge'), /flex:\s*none/,
+    'merilo sme da se skuplja — na uskom telefonu će se skupiti do nule');
+  const info = pravilo('.wseg-info');
+  assert.match(info, /flex-direction:\s*column/,
+    'desna strana je opet red — polje deli širinu sa natpisom (v. tačke 2 i 3)');
+  assert.match(info, /min-width:\s*0/,
+    'bez `min-width:0` dugačak VDOT red ne sme da se prelomi i gura kolonu preko ivice');
+});
+
+test('kuglica merila stoji NA luku, ma koliko se promašio plan', () => {
+  /* Merilo crta dva oblika iz istih brojeva: luk i kuglicu na njemu. Dok
+     središte i poluprečnik izlaze iz jednog izvora, kuglica je na luku. Čim se
+     jedan broj prepiše, kuglica počne da lebdi pored luka — greška koja se ne
+     vidi u kodu, nego samo na ekranu i samo pri nekim vrednostima. Zato se ovde
+     luk i kuglica mere jedno o drugo, umesto da se poredе sa snimljenim
+     koordinatama (koje bi zamrzle i grešku, kad bi je bilo).
+
+     Poluprečnik se čita IZ PUTANJE, a ne upisuje u test — inače bi test i dalje
+     prolazio kad bi se luk promenio a kuglica ostala na starom. */
+  const a = loadApp({ now: '2026-08-09T10:00:00Z' });
+  const oblik = (plan, ostv) => {
+    const svg = a.evalIn(`meriloHTML(${plan},${ostv === null ? 'null' : ostv})`);
+    const luk = /A (\d+(?:\.\d+)?) \1 0 1 1 /.exec(svg);
+    assert.ok(luk, 'putanja luka nije u očekivanom obliku: ' + svg.slice(0, 160));
+    const kraj = /M (-?[\d.]+) (-?[\d.]+) A/.exec(svg);
+    const kug = /<circle cx="(-?[\d.]+)" cy="(-?[\d.]+)"/.exec(svg);
+    return { r: +luk[1], poc: [+kraj[1], +kraj[2]], kug: kug && [+kug[1], +kug[2]] };
+  };
+  const SREDISTE = [52, 52];
+  const odst = ([x, y]) => Math.hypot(x - SREDISTE[0], y - SREDISTE[1]);
+  /* ugao od uspravnice: 0 = vrh luka (plan), minus = levo (brže) */
+  const ugao = ([x, y]) => Math.atan2(x - SREDISTE[0], SREDISTE[1] - y) * 180 / Math.PI;
+
+  const PLAN = 235;
+  for (const [ostv, opis] of [[230, 'brže 5 s'], [235, 'tačno na plan'], [243, 'sporije 8 s'],
+                              [175, 'brže minut'], [400, 'sporije skoro tri minuta']]) {
+    const o = oblik(PLAN, ostv);
+    assert.ok(o.kug, `nema kuglice za slučaj „${opis}"`);
+    assert.ok(Math.abs(odst(o.poc) - o.r) < 0.2,
+      `sam luk ne izlazi iz središta (52,52): kraj je na ${odst(o.poc).toFixed(2)}, poluprečnik ${o.r}`);
+    assert.ok(Math.abs(odst(o.kug) - o.r) < 0.2,
+      `kuglica lebdi pored luka za „${opis}": udaljena ${odst(o.kug).toFixed(2)}, luk je na ${o.r}`);
+    /* Ne sme da se otkotrlja preko kraja luka ni pri promašaju od tri minuta. */
+    assert.ok(Math.abs(ugao(o.kug)) <= 110.5,
+      `kuglica je izašla van luka za „${opis}": ugao ${ugao(o.kug).toFixed(1)}°`);
+  }
+  /* Smer je pola poruke: brže MORA biti levo od plana, sporije desno. */
+  assert.ok(ugao(oblik(PLAN, 230).kug) < -1, 'brži tempo nije levo od plana');
+  assert.ok(ugao(oblik(PLAN, 243).kug) > 1, 'sporiji tempo nije desno od plana');
+  assert.ok(Math.abs(ugao(oblik(PLAN, PLAN).kug)) < 0.5, 'tempo tačno po planu nije na vrhu luka');
+  /* Pre unosa nema kuglice — prazan luk, bez izmišljenog položaja. */
+  assert.equal(oblik(PLAN, null).kug, null, 'merilo crta kuglicu i pre nego što je tempo unet');
+});
+
+test('globalno pravilo za polja u kartici ne gazi širinu polja radnog dela', () => {
+  /* MERENO, NE PRETPOSTAVLJENO. Selektor `.f-field input:not([type=range])…`
+     nosi četiri `:not([atribut])`, dakle specifičnost (0,5,1), dok je `.wseg-in`
+     (0,1,0) — pa je `width:100%` odatle tiho gazio širinu polja bez obzira na
+     to što `.wseg-in` stoji niže u fajlu. Izmereno u Chromiumu nad pravim
+     izlazom `formHTML` i pravim CSS-om: polje 186 px umesto 96 px, a jedinica
+     „/km" otisnuta u sledeći red. Uočeno na snimku ekrana, ne u testu.
+
+     Zato se ovde ne proverava širina (za to treba pregledač) nego IZUZETAK koji
+     je jedini razlog što širina važi. Ako neko doda novo pravilo za polja i
+     zaboravi izuzetak, ovo pada. */
+  const css = readRepoFile('index.html');
+  const globalna = css.match(/^\.f-field input:not\([^{]*\{/gm) || [];
+  assert.ok(globalna.length, 'globalno pravilo za polja u kartici ne postoji — selektor je promenjen');
+  for (const g of globalna)
+    assert.ok(g.includes(':not(.wseg-in)'),
+      'globalno pravilo za polja ne izuzima .wseg-in — širina polja radnog dela se opet gazi:\n' + g);
 });
 
