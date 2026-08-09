@@ -409,4 +409,6 @@ test('natpis radnog dela ima svoju širinu — ne sruči se u kolonu slova', () 
   const wsegIn = /\.wseg-in\{[^}]*\}/.exec(css);
   assert.ok(wsegIn, 'pravilo .wseg-in ne postoji');
   assert.match(wsegIn[0], /flex:\s*0\s+0\s+\d+px/, '.wseg-in nema tvrdu širinu — razvlači se na ceo red');
+  /* Polje se i unosi prstom, pa mora da ostane iznad praga dodira od 44 px. */
+  assert.match(wsegIn[0], /min-height:\s*(4[4-9]|[5-9]\d)px/, '.wseg-in je ispod praga dodira od 44 px');
 });
