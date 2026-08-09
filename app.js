@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='242'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='243'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -7483,6 +7483,78 @@ function generatePlan(inp){
 
 
 /* ============================================================
+   PROMENA CILJNOG VREMENA USRED PRIPREME
+
+   Do sada toka nije bilo. Cilj se mogao promeniti samo kroz čarobnjak, a on
+   uvek prolazi kroz `purgeGenPlanData()` — merenjem, posle osam nedelja uredne
+   pripreme promena cilja je brisala 40 dana dnevnika, svih 12 izmerenih sesija
+   i celu formu (`currentVdot()` sa 49,3 na `null`), a nova rampa je kretala od
+   PB-a umesto od izmerene forme. Sve to za promenu jednog broja koji govori o
+   BUDUĆNOSTI.
+
+   Cilj i istorija su dve odvojene stvari. Ovde se menja samo ono što cilj
+   zaista određuje: `racePace` i, preko njega, sesije na tempu trke u nedeljama
+   koje TEK DOLAZE. Dnevnik, izmereni tempi i lanac forme se ne diraju.
+
+   ZAŠTO SE ID-JEVI NE POMERAJU. Dani nose ID po nedelji i danu (`g7d2`), pa su
+   stabilni po konstrukciji. PRED redovi nose ID po REDNOM BROJU u nizu
+   (`g7_13`), i za njih je bitno da se stari redovi zadrže NA SVOM MESTU: zato
+   se niz sklapa kao „stari redovi nedelja < tekuće" + „novi redovi od tekuće
+   nadalje". Redovi iz prošlosti time zadržavaju i indeks i ID, a uz njih i sve
+   što na taj ID pokazuje — `S.pred`, `S.predLock` i `S.vdotLog`.
+
+   RUČNE IZMENE SE NE GAZE: `mergeOverrides` prenosi zaključana polja sesija sa
+   starih nedelja na sveže, isto kao kod rekalibracije. */
+/* „3:25:00" / „1:37:12" / „21:09" → sekunde. Čarobnjak ima tri odvojena polja
+   (sati/minuti/sekunde); ovde je jedno polje, jer se cilj menja retko i piše se
+   onako kako se izgovara. Vraća null za sve što nije čist sat–minut–sekunda. */
+function parseClock(txt){
+  const d=String(txt||'').trim().split(':').map(x=>x.trim());
+  if(d.length<2||d.length>3||d.some(x=>!/^\d+$/.test(x))) return null;
+  const n=d.map(Number);
+  const [h,m,s] = d.length===3 ? n : [0,n[0],n[1]];
+  if(m>59||s>59) return null;
+  const t=h*3600+m*60+s;
+  return t>0?t:null;
+}
+function planSaNovimCiljem(noviGoalSec, today){
+  today = today || TODAY;
+  if(!S.genPlan) return { error:'Promena cilja radi samo nad generisanim planom.' };
+  const ulaz = S.genPlan.ulaz;
+  if(!ulaz) return { error:'Ovaj plan je napravljen pre nego što je aplikacija počela da pamti ulazne podatke, pa se ne može regenerisati bez njih. Cilj se može promeniti tek na planu napravljenom od ove verzije nadalje.' };
+  if(!(noviGoalSec>0)) return { error:'Ciljno vreme nije ispravno.' };
+
+  const w = weekOf(today);
+  const idx = w ? w.w : 1;
+  const svez = generatePlan({ ...ulaz, goalSec: noviGoalSec });
+  if(svez.error) return svez;
+  const nov = adaptGeneratedPlan(svez);
+  if(!nov) return { error:'Neočekivana greška pri regenerisanju plana.' };
+
+  const stareNed = S.genPlan.weeks.filter(x => x.w <  idx);
+  const noveNed  = nov.weeks     .filter(x => x.w >= idx);
+  if(!noveNed.length) return { error:'Nema nijedne nedelje koja tek dolazi — cilj se više ne može promeniti.' };
+  mergeOverrides(noveNed, S.genPlan.weeks);
+
+  const weeks = stareNed.concat(noveNed);
+  /* Redosled je bitan (v. gore): prvo stari redovi, pa novi. */
+  const pred = S.genPlan.pred.filter(r => r.w < idx)
+    .concat(derivePred(noveNed, nov.meta && nov.meta.raceDistM, nov.meta))
+    .map((r,i) => ({ ...r, id:'g'+r.w+'_'+i }));
+  const qs = {};
+  Object.entries(S.genPlan.qs||{}).forEach(([k,v])=>{ const m=/^g(\d+)d/.exec(k); if(m && +m[1] <  idx) qs[k]=v; });
+  Object.entries(deriveQS(noveNed)     ).forEach(([k,v])=>{ qs[k]=v; });
+
+  return {
+    weeks, pred, qs,
+    meta: { ...nov.meta, start: S.genPlan.meta && S.genPlan.meta.start },
+    ulaz: { ...ulaz, goalSec: noviGoalSec },
+    promenaCilja: { nedelja: idx, staro: (S.genPlan.meta&&S.genPlan.meta.goalSec)||null, novo: noviGoalSec,
+                    izmenjenoNedelja: noveNed.length }
+  };
+}
+
+/* ============================================================
    ADAPTIVNO REKALIBRISANJE — v3.2
    Koliko se veruje JEDNOM merenju. Inženjerski izbor (NE izmerena
    konstanta), ali redosled nije proizvoljan — prati koliko svaki
@@ -7539,7 +7611,14 @@ function tipSesijeZaVdot(predId){
 function recalibratedPlan(originalInput, currentWeekIdx, vdotNowSmoothed, oldWeeksForMerge){
   const weeksTotal = Math.round((new Date(originalInput.raceDate) - new Date(nextMonday(originalInput.startDate))) / 604800000) + 1;
   const rampWeeks = Math.min(weeksTotal - 2, RAMP_CAP_WEEKS);
-  const backdated = vdotNowSmoothed - RAMP[originalInput.intensity] * Math.min(currentWeekIdx-1, rampWeeks);
+  /* `currentWeekIdx`, NE `currentWeekIdx-1`. Generator za nedelju `w` propisuje
+     po `vdot0 + RAMP*min(w, rampWeeks)` (v. `planVdotZaNedelju`). Ako se
+     `vdot0` izvede oduzimanjem samo `w-1` koraka, plan za tekuću nedelju traži
+     `vdotNow + RAMP` — dakle formu koju trkač još nema. Merenjem: rekalibracija
+     sa formom TAČNO na planskoj putanji mora biti no-op, a davala je +0,20
+     poena u N5, N9 i N14. Ista klasa greške koju je za `formaVsPlan` zatvorio
+     v238: poređenje pomereno za jedan korak rampe. */
+  const backdated = vdotNowSmoothed - RAMP[originalInput.intensity] * Math.min(currentWeekIdx, rampWeeks);
   const virtualPbSec = raceTimeForVdot(Math.max(backdated, 20), 5000);
   /* KRITIČNO: racePace mora ostati stabilan. Ako korisnik NIJE zadao goalSec,
      bez ove linije bi generatePlan iznutra računao FRESH predictedSec iz
@@ -7552,7 +7631,18 @@ function recalibratedPlan(originalInput, currentWeekIdx, vdotNowSmoothed, oldWee
      Rešenje: ako nema eksplicitnog cilja, koristi predikciju iz STVARNE
      trenutne forme kao stabilan oslonac, ne iz veštačke putanje. */
   const raceDistM = originalInput.raceDistM||5000;
-  const stableGoalSec = originalInput.goalSec || raceTimeForVdot(vdotNowSmoothed, raceDistM);
+  /* STABILAN znači „isti kao u originalnom planu", ne „izveden iz današnje
+     forme". Ranije je bez eksplicitnog cilja oslonac bio `vdotNowSmoothed`, pa
+     se `racePace` menjao pri SVAKOJ rekalibraciji — a komentar iznad izričito
+     traži da ostane stabilan. Merenjem na N14: Trkački ritam 238 → 241 s/km,
+     Tempo trke 249 → 253, Maratonski tempo 260 → 264; sesije na tempu trke
+     postanu 3–4 s/km sporije od onoga što plan traži, i to bez ijedne
+     korisnikove odluke. Oslonac je zato projektovana forma na KRAJU originalnog
+     plana (`meta.predictedSec`), koja je i napravila prvobitni `racePace`; na
+     današnju formu se pada samo ako te vrednosti nema. */
+  const stableGoalSec = originalInput.goalSec
+    || (S.genPlan && S.genPlan.meta && S.genPlan.meta.predictedSec)
+    || raceTimeForVdot(vdotNowSmoothed, raceDistM);
   const replanned = generatePlan({ ...originalInput, pb:{ distM:5000, sec:virtualPbSec }, goalSec: stableGoalSec });
   if(replanned.error) return replanned;
   const weeksSlice = replanned.weeks.slice(currentWeekIdx-1);
@@ -8281,6 +8371,12 @@ function finishOnboarding(){
   if(plan.error){ $('#ob-err-1').textContent=plan.error; goObStep(1); return; }
   const adapted=adaptGeneratedPlan(plan);
   if(!adapted){ $('#ob-err-1').textContent='Neočekivana greška pri generisanju plana.'; goObStep(1); return; }
+  /* ULAZ SE PAMTI. `meta` koju generator vrati NE sadrži `pb`, `weeklyKm` ni
+     `trainedRecently` — bez njih se plan ne može ponovo napraviti, pa je svaka
+     izmena cilja usred priprema morala da ide kroz čarobnjak, koji briše ceo
+     dnevnik. Ovde je pun ulaz u ruci; čuva se da bi `planSaNovimCiljem` mogao
+     da regeneriše SAMO buduće nedelje. */
+  adapted.ulaz=JSON.parse(JSON.stringify(meta));
   /* Pita SAMO ako stvarno ima šta da se izgubi (podaci prethodnog GENERISANOG
      plana). Podaci tvog plana se ne diraju, pa nema razloga da te ovo pita
      kad prvi put praviš plan za nekog drugog. */
@@ -10442,7 +10538,12 @@ function openSettings(){
     ${kartica(false,
       glava('Plan', (S.genPlan?(jeVlasnik()?'generisan plan':'tvoj plan'):'tvoj lični plan')+' · '+CUR_PLAN.length+' nedelja', true),
       S.genPlan
-        ? `<div class="btnrow">${jeVlasnik()
+        ? `${S.genPlan.ulaz ? `<div class="set-st">Ciljno vreme · ${esc(fmtClock(goalSecActive()||0))}</div>
+           <div class="btnrow"><input id="pl-goal" class="wseg-in" inputmode="numeric" style="max-width:140px"
+                placeholder="${esc(fmtClock(goalSecActive()||0))}" aria-label="Novo ciljno vreme"
+                value=""><button class="btn ghost sm" id="pl-goal-ok">Promeni cilj</button></div>
+           <details class="help"><summary>Šta se menja kad promeniš cilj</summary><p>Menjaju se samo nedelje koje <b>tek dolaze</b> — i to tempi sesija vezanih za tempo trke. Odrađeni treninzi, uneti tempi i izmerena forma ostaju netaknuti; cilj govori o budućnosti, pa ne dira prošlost. Ručno zaključani tempi zadržavaju svoju vrednost.</p></details>` : ''}
+           <div class="btnrow">${jeVlasnik()
              ?`<button class="btn ghost" id="pl-revert">Vrati na moj plan</button>`
              :`<button class="btn ghost" id="pl-new">🧙 Napravi novi plan</button>`}</div>`
         : `<div class="btnrow"><button class="btn ghost" id="pl-gen">🧙 Generiši novi plan</button></div>
@@ -10884,6 +10985,23 @@ function openSettings(){
   if(sf)sf.onclick=stravaDisconnect;
   const pg=$('#pl-gen'),pr=$('#pl-revert'),pn=$('#pl-new');
   if(pg)pg.onclick=openWizard;
+  /* PROMENA CILJA — ne dira ni jedan odrađen dan (v. planSaNovimCiljem). */
+  const pgo=$('#pl-goal-ok');
+  if(pgo)pgo.onclick=()=>{
+    const inp=$('#pl-goal'); if(!inp) return;
+    const sec=parseClock(String(inp.value||'').trim());
+    if(!(sec>0)){ alert('Unesi ciljno vreme, npr. 3:25:00 ili 21:09.'); return; }
+    const r=planSaNovimCiljem(sec, TODAY);
+    if(r.error){ alert(r.error); return; }
+    /* Realnost cilja se proverava istim merilom koje čarobnjak već koristi. */
+    const upoz=(r.meta&&r.meta.realno===false)
+      ? '\n\nUPOZORENJE: ovaj cilj je po proceni aplikacije van dohvata za preostalo vreme. Plan će ga ipak ispoštovati.' : '';
+    if(!confirm('Promeniti ciljno vreme na '+fmtClock(sec)+'?\n\nMenja se '+r.promenaCilja.izmenjenoNedelja+
+                ' nedelja koje tek dolaze (od N'+r.promenaCilja.nedelja+').\nOdrađeni treninzi, uneti tempi i izmerena forma ostaju netaknuti.'+upoz)) return;
+    S.genPlan={ weeks:r.weeks, pred:r.pred, qs:r.qs, meta:r.meta, ulaz:r.ulaz };
+    setActivePlan(); rebuildDateIndex(); save(); closeSheet();
+    alert('Cilj promenjen. Izmenjeno nedelja: '+r.promenaCilja.izmenjenoNedelja+'.');
+  };
   /* Novi plan PREKO postojeceg. Stari unosi se moraju obrisati pre toga:
      generisani dani nose ID-jeve po istom obrascu ('g3d5'), pa bi se unosi
      starog plana zalepili za dane novog. Isti razlog kao kod "Vrati na moj

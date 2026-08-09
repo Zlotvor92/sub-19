@@ -279,3 +279,189 @@ describe('Dan sa dva trčanja', () => {
     assert.equal(s.hr, 140);
   });
 });
+
+/* ============================================================
+   6. PROMENA CILJA NE BRIŠE ISTORIJU
+
+   Do sada toka nije bilo: cilj se menjao samo kroz čarobnjak, a on prolazi kroz
+   `purgeGenPlanData()`. Merenjem, posle osam nedelja uredne pripreme promena
+   cilja je brisala 40 dana dnevnika, svih 12 izmerenih sesija i celu formu
+   (`currentVdot()` 49.3 → null), a nova rampa je kretala od PB-a umesto od
+   izmerene forme — sve za promenu broja koji govori o BUDUĆNOSTI.
+   ============================================================ */
+describe('Promena ciljnog vremena usred pripreme', () => {
+  /* Plan + osam odigranih nedelja, sa upisanim tempima i merenjima. */
+  function odigranih8(m) {
+    const a = saPlanom(m);
+    a.evalIn(`S.genPlan.ulaz={startDate:'${POCETAK}',raceDate:'${dodaj(POCETAK, 20 * 7)}',raceDistM:${m},
+      pb:{distM:${m},sec:${PB[m]}},weeklyKm:55,runDays:5,quality:2,intensity:'std',trainedRecently:true};`);
+    const granica = dodaj(POCETAK, 8 * 7);
+    const kv = a.evalIn(`(function(){var o=[];DATED.forEach(function(d){
+      if(d.rest||!d.km||d.date>='${granica}')return; var pid=predRowFor(d); if(!pid)return;
+      var r=CUR_PRED.find(function(x){return x.id===pid;}); if(!r)return;
+      o.push({id:d.id,date:d.date,pid:pid,pt:effectivePace(d,r)});});return o;})()`);
+    for (const d of kv) {
+      if (!(d.pt > 0)) continue;
+      a.evalIn(`S.log[${JSON.stringify(d.id)}]={status:'done',km:(BY_ID[${JSON.stringify(d.id)}].km||0),runDate:'${d.date}'};
+                S.pred[${JSON.stringify(d.pid)}]=${d.pt};
+                recordVdot(${JSON.stringify(d.pid)}, ${d.pt}, '${d.date}', sessKind(BY_ID[${JSON.stringify(d.id)}]), false, BY_ID[${JSON.stringify(d.id)}]);`);
+    }
+    a.evalIn(`TODAY='${granica}';`);
+    return { a, danas: granica };
+  }
+
+  for (const [ime, m] of Object.entries(DIST)) {
+    test(`${ime}: dnevnik, tempi i forma preživljavaju promenu cilja`, () => {
+      const { a, danas } = odigranih8(m);
+      const preLog = a.evalIn('Object.keys(S.log).length');
+      const prePred = a.evalIn('Object.keys(S.pred).length');
+      const preVdot = a.evalIn('(S.vdotLog||[]).length');
+      const preForma = a.call('currentVdot');
+      assert.ok(preLog >= 6 && prePred >= 6 && preVdot >= 6 && preForma != null,
+        `scenario nije odigran — nema šta da se izgubi (log ${preLog}, pred ${prePred}, vdot ${preVdot}, forma ${preForma})`);
+
+      const stari = a.evalIn('goalSecActive()');
+      const r = a.call('planSaNovimCiljem', Math.round(stari * 0.95), danas);
+      assert.ok(!r.error, 'promena cilja nije uspela: ' + r.error);
+      a.evalIn(`S.genPlan={weeks:${JSON.stringify(r.weeks)},pred:${JSON.stringify(r.pred)},qs:${JSON.stringify(r.qs)},meta:${JSON.stringify(r.meta)},ulaz:${JSON.stringify(r.ulaz)}};
+                setActivePlan(); rebuildDateIndex();`);
+
+      assert.equal(a.evalIn('Object.keys(S.log).length'), preLog, 'dnevnik je obrisan');
+      assert.equal(a.evalIn('Object.keys(S.pred).length'), prePred, 'uneti tempi su obrisani');
+      assert.equal(a.evalIn('(S.vdotLog||[]).length'), preVdot, 'izmerene sesije su obrisane');
+      assert.equal(a.call('currentVdot'), preForma, 'forma se promenila zbog promene cilja');
+    });
+  }
+
+  test('menjaju se SAMO nedelje koje tek dolaze', () => {
+    const { a, danas } = odigranih8(42195);
+    const preDani = a.evalIn("(function(){var o={};DATED.forEach(function(d){o[d.id]=(d.km||0)+'|'+(d.desc||'');});return o;})()");
+    const idx = a.evalIn(`(weekOf('${danas}')||{}).w`);
+    const r = a.call('planSaNovimCiljem', Math.round(a.evalIn('goalSecActive()') * 0.95), danas);
+    assert.ok(!r.error, r.error);
+    a.evalIn(`S.genPlan={weeks:${JSON.stringify(r.weeks)},pred:${JSON.stringify(r.pred)},qs:${JSON.stringify(r.qs)},meta:${JSON.stringify(r.meta)},ulaz:${JSON.stringify(r.ulaz)}};
+              setActivePlan(); rebuildDateIndex();`);
+    const posle = a.evalIn("(function(){var o={};DATED.forEach(function(d){o[d.id]=(d.km||0)+'|'+(d.desc||'');});return o;})()");
+    const promenjeni = Object.keys(preDani).filter(k => preDani[k] !== posle[k]);
+    const rano = promenjeni.filter(k => +(/^g(\d+)d/.exec(k) || [])[1] < idx);
+    assert.deepEqual(rano, [], `promenjeni su dani iz nedelja pre tekuće: ${rano.join(', ')}`);
+    assert.ok(promenjeni.length, 'nijedan dan se nije promenio — cilj nije ni primenjen');
+  });
+
+  test('ID-jevi PRED redova iz prošlosti se ne pomeraju', () => {
+    /* Na njih pokazuju `S.pred`, `S.predLock` i `S.vdotLog`. Da se pomere,
+       merenja bi se otkačila od svojih sesija i tiho promenila značenje. */
+    const { a, danas } = odigranih8(42195);
+    const idx = a.evalIn(`(weekOf('${danas}')||{}).w`);
+    const pre = a.evalIn(`CUR_PRED.filter(function(r){return r.w<${idx};}).map(function(r){return r.id+'|'+r.l;})`);
+    const r = a.call('planSaNovimCiljem', Math.round(a.evalIn('goalSecActive()') * 0.95), danas);
+    assert.ok(!r.error, r.error);
+    const posle = r.pred.filter(x => x.w < idx).map(x => x.id + '|' + x.l);
+    assert.deepEqual(Array.from(posle), Array.from(pre), 'PRED redovi iz prošlosti su dobili druge ID-jeve');
+  });
+
+  test('cilj zaista promeni tempo sesija na tempu trke', () => {
+    const { a, danas } = odigranih8(42195);
+    const idx = a.evalIn(`(weekOf('${danas}')||{}).w`);
+    const cilj = a.evalIn('goalSecActive()');
+    const pre = a.evalIn(`CUR_PRED.filter(function(r){return r.w>=${idx} && r.nemeri;}).map(function(r){return r.pt;})`);
+    assert.ok(pre.length, 'nema nijedne buduće sesije na tempu trke');
+    const r = a.call('planSaNovimCiljem', Math.round(cilj * 0.90), danas);
+    assert.ok(!r.error, r.error);
+    const posle = r.pred.filter(x => x.w >= idx && x.nemeri).map(x => x.pt);
+    assert.ok(posle.length, 'buduće sesije na tempu trke su nestale');
+    assert.ok(posle[0] < pre[0], `brži cilj nije ubrzao sesije na tempu trke (${pre[0]} → ${posle[0]})`);
+  });
+
+  test('bez zapamćenog ulaza se ne regeneriše ništa — kaže se zašto', () => {
+    /* Stariji planovi nemaju `ulaz`. Bolje odbiti nego regenerisati iz
+       pogođenih ulaznih podataka. */
+    const a = saPlanom(10000);
+    a.evalIn('delete S.genPlan.ulaz;');
+    const r = a.call('planSaNovimCiljem', 2400, dodaj(POCETAK, 30));
+    assert.ok(r.error, 'plan bez zapamćenog ulaza je ipak regenerisan');
+    assert.match(r.error, /ulazn/i);
+  });
+
+  test('parseClock prima ono što ljudi kucaju, i odbija ostalo', () => {
+    const a = saPlanom(5000);
+    assert.equal(a.call('parseClock', '3:25:00'), 12300);
+    assert.equal(a.call('parseClock', '1:37:12'), 5832);
+    assert.equal(a.call('parseClock', '21:09'), 1269);
+    for (const los of ['', '  ', 'abc', '3:70', '1:2:3:4', '-1:00', '25:61', '3::00'])
+      assert.equal(a.call('parseClock', los), null, `prihvaćeno: „${los}"`);
+  });
+});
+
+/* Da plan napravljen kroz čarobnjak zaista NOSI ulaz — bez toga je ceo tok
+   promene cilja mrtav za svakog novog korisnika, a to se ne bi videlo dok neko
+   ne pokuša da promeni cilj. */
+describe('Čarobnjak pamti ulazne podatke', () => {
+  test('novonapravljen plan nosi `ulaz` dovoljan za regenerisanje', () => {
+    const a = loadApp({ now: POCETAK + 'T09:00:00Z' });
+    a.evalIn(`Object.assign(wiz,{raceDist:42195,raceDate:'${dodaj(POCETAK, 20 * 7)}',pbDist:42195,
+      pbH:3,pbMin:45,pbSec:0,weeklyKm:55,trainedRecently:true,runDays:5,quality:2,
+      runDows:[1,2,4,6,7],lrDow:7,qDays:[2,4],intensity:'std',goalH:'',goalMin:'',goalSec:''});
+      finishOnboarding();`);
+    const ulaz = a.evalIn('S.genPlan && S.genPlan.ulaz ? JSON.parse(JSON.stringify(S.genPlan.ulaz)) : null');
+    assert.ok(ulaz, 'plan iz čarobnjaka ne nosi `ulaz` — promena cilja je nedostupna svakom novom korisniku');
+    for (const k of ['startDate', 'raceDate', 'raceDistM', 'pb', 'weeklyKm', 'runDays', 'quality', 'intensity'])
+      assert.ok(ulaz[k] != null, `u zapamćenom ulazu nedostaje ${k}`);
+    /* i da je zaista dovoljan: isti ulaz mora ponovo da napravi plan */
+    a.ctx.__u = ulaz;
+    assert.ok(a.evalIn('!generatePlan(__u).error'), 'zapamćen ulaz ne pravi plan');
+    /* i da promena cilja odatle radi */
+    a.evalIn(`TODAY='${dodaj(POCETAK, 21)}';`);
+    assert.ok(!a.call('planSaNovimCiljem', 12000, dodaj(POCETAK, 21)).error,
+      'promena cilja ne radi nad planom iz čarobnjaka');
+  });
+});
+
+/* ============================================================
+   7. recalibratedPlan — dve greške koje je izveštaj izmerio
+
+   Funkcija je i dalje NEPOVEZANA (drži je spisak u `otpornost.test.mjs`), ali
+   je temelj na kom stoji promena cilja, pa mora da bude tačna pre nego što se
+   ikad poveže.
+   ============================================================ */
+describe('Rekalibracija sa formom tačno na planu ne menja ništa', () => {
+  for (const [ime, m] of Object.entries(DIST)) {
+    test(`${ime}: no-op kad je forma tačno ona koju plan očekuje`, () => {
+      const a = saPlanom(m);
+      const ulaz = {
+        startDate: POCETAK, raceDate: dodaj(POCETAK, 20 * 7), raceDistM: m,
+        pb: { distM: m, sec: PB[m] }, weeklyKm: 55, runDays: 5,
+        quality: 2, intensity: 'std', trainedRecently: true
+      };
+      a.ctx.__u = ulaz;
+      const meta = a.evalIn('JSON.parse(JSON.stringify(S.genPlan.meta))');
+      for (const w of [5, 9, 14]) {
+        const ocekivano = a.call('planVdotZaNedelju', meta, w);
+        const r = a.evalIn(`(function(){var r=recalibratedPlan(__u, ${w}, ${ocekivano}, null);
+          return r&&r.meta?JSON.parse(JSON.stringify(r.meta)):null;})()`);
+        assert.ok(r, `N${w}: rekalibracija nije vratila plan`);
+        const dobijeno = a.call('planVdotZaNedelju', r, w);
+        assert.ok(Math.abs(dobijeno - ocekivano) < 0.05,
+          `N${w}: plan očekuje VDOT ${ocekivano}, rekalibrisan računa ${dobijeno} — pomak za korak rampe`);
+      }
+    });
+  }
+
+  test('racePace ostaje stabilan, kako komentar iznad njega i traži', () => {
+    /* Bez eksplicitnog cilja oslonac je bio TRENUTNA forma, pa se `racePace`
+       menjao pri svakoj rekalibraciji: izmereno na N14, maratonski tempo
+       260 → 264 s/km, bez ijedne korisnikove odluke. */
+    const a = saPlanom(42195);
+    a.ctx.__u = {
+      startDate: POCETAK, raceDate: dodaj(POCETAK, 20 * 7), raceDistM: 42195,
+      pb: { distM: 42195, sec: PB[42195] }, weeklyKm: 55, runDays: 5,
+      quality: 2, intensity: 'std', trainedRecently: true
+    };
+    const meta = a.evalIn('JSON.parse(JSON.stringify(S.genPlan.meta))');
+    const forma = a.call('planVdotZaNedelju', meta, 14);
+    const r = a.evalIn(`(function(){var r=recalibratedPlan(__u, 14, ${forma}, null);
+      return r&&r.meta?r.meta.racePace:null;})()`);
+    assert.equal(r, meta.racePace,
+      `racePace se pomerio ${meta.racePace} → ${r} pri rekalibraciji bez promene cilja`);
+  });
+});
