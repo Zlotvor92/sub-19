@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radni deo — 10 varijanti</title>
+<style>
+/* ============================================================
+   Varijante bloka „Radni deo — ostvaren tempo" (app.js ~3960).
+
+   Tokeni, tipografija i staklo su PREPISANI iz index.html bez izmena —
+   varijanta se ne može oceniti na tuđoj podlozi. Zato je i tema samo jedna
+   (tamna): aplikacija druge nema, pa bi svetla varijanta lagala o izgledu.
+   ============================================================ */
+:root{
+  --bg:#0B0A1F;
+  --glass:rgba(255,255,255,.09);
+  --glass-hi:rgba(255,255,255,.15);
+  --glass-in:rgba(255,255,255,.07);
+  --hl:inset 0 1px 0 rgba(255,255,255,.28);
+  --blur:blur(18px) saturate(140%);
+  --ink:#0B0A1F;
+  --line:rgba(255,255,255,.2); --line-soft:rgba(255,255,255,.12);
+  --txt:#EEF0FF; --txt2:rgba(238,240,255,.78); --txt3:rgba(238,240,255,.6);
+  --pink:#FF6BA6; --green:#5AFFBE; --cyan:#5AE0FF; --amber:#FFC062; --red:#FF6B85;
+  --green-dim:rgba(90,255,190,.16);
+  --r:20px;
+  --sat:env(safe-area-inset-top,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{
+  background:var(--bg); color:var(--txt); min-height:100dvh;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+/* ambijentalno svetlo taba „danas" — isti recept kao u aplikaciji */
+/* z-index:0 (a ne −1 kao u aplikaciji): negativan sloj se oslanja na to da
+   pozadina elementa body pređe na platno, što važi samo ako html nema svoju.
+   Ova stranica se gleda i unutar tuđeg okvira, gde to ne mora da važi — pa
+   svetlo stoji na nuli, a sadržaj se diže iznad njega. */
+#ambijent{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+  radial-gradient(ellipse 83vw 57vh at 14% 2%,rgba(120,90,255,.62),transparent 70%),
+  radial-gradient(ellipse 94vw 50vh at 98% 34%,rgba(0,190,220,.50),transparent 68%),
+  radial-gradient(ellipse 83vw 45vh at 36% 100%,rgba(255,70,140,.40),transparent 70%),
+  var(--bg)}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer;touch-action:manipulation}
+
+.wrap{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:0 16px 64px}
+
+/* ---------- zaglavlje pregleda ---------- */
+.top{position:sticky;top:0;z-index:20;margin:0 -16px 18px;padding:calc(var(--sat) + 16px) 16px 12px;
+  background:rgba(11,10,31,.62);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border-bottom:1px solid var(--line-soft)}
+.top h1{font-size:1.02rem;font-weight:800;letter-spacing:.04em}
+.top h1 span{color:var(--cyan)}
+.top p{font-size:.72rem;color:var(--txt3);font-weight:600;margin-top:3px}
+.sw{display:flex;gap:6px;margin-top:11px}
+.sw-g{display:flex;flex:1;gap:3px;background:var(--glass-in);border:1px solid var(--line-soft);
+  border-radius:12px;padding:3px}
+.sw-g button{flex:1;min-height:34px;border-radius:9px;font-size:.72rem;font-weight:700;color:var(--txt3)}
+.sw-g button[aria-pressed="true"]{background:var(--glass-hi);color:var(--txt)}
+
+/* ---------- okvir jedne varijante ---------- */
+.var{margin-bottom:26px}
+.var-h{display:flex;align-items:baseline;gap:9px;margin-bottom:9px;padding:0 2px}
+.var-n{flex:none;font-size:.68rem;font-weight:800;color:var(--ink);background:var(--txt2);
+  border-radius:7px;padding:2px 7px;font-variant-numeric:tabular-nums}
+.var-t{font-size:.85rem;font-weight:800;letter-spacing:-.01em}
+.var-d{font-size:.72rem;color:var(--txt3);font-weight:600;line-height:1.45;margin:-4px 2px 9px}
+
+/* kontekst: ista kartica i ista forma kao u aplikaciji, da se vidi
+   kako blok stoji između „Pros. puls" i „Više detalja" */
+.card{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);padding:18px;
+  box-shadow:var(--hl)}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f-field{background:var(--glass-in);border:1px solid var(--line-soft);border-radius:14px;padding:9px 12px}
+.f-field.full{grid-column:1/-1}
+.f-field .f-lbl{display:block;font-size:.66rem;font-weight:700;color:var(--txt2);letter-spacing:.05em;
+  text-transform:uppercase;margin-bottom:4px}
+.f-field .val{font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums}
+.f-field .calc{font-size:1.05rem;font-weight:800;color:var(--cyan)}
+.more{padding:11px 14px;background:transparent;border:1px solid var(--line-soft);border-radius:14px;
+  grid-column:1/-1;font-size:.78rem;font-weight:700;color:var(--txt2);display:flex;
+  align-items:center;justify-content:space-between}
+.more::after{content:'▾';color:var(--txt3)}
+
+/* zajedničko za sve varijante */
+.wseg-wrap{background:var(--glass-hi);border-color:var(--line)}
+.wseg-title{display:block;font-size:.7rem;font-weight:800;color:var(--txt);letter-spacing:.04em;
+  text-transform:uppercase;margin-bottom:6px}
+.in{background:var(--glass-in);border:1px solid var(--line-soft);border-radius:12px;
+  text-align:center;font-weight:800;font-variant-numeric:tabular-nums;outline:none;color:var(--txt);
+  width:78px;min-height:44px;padding:10px 6px;font-size:.95rem}
+.in:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(90,224,255,.16)}
+.in::placeholder{color:var(--txt3);font-weight:600}
+.up{color:var(--green)} .down{color:var(--pink)} .flat{color:var(--txt2)}
+.muted{color:var(--txt3)}
+.nums{font-variant-numeric:tabular-nums}
+
+/* ============ V1 — dva stuba ============ */
+.v1-seg + .v1-seg{margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.v1-name{font-size:.72rem;font-weight:700;color:var(--txt3);margin-bottom:8px}
+.v1-pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.v1-cell{min-width:0}
+.v1-cell.r{text-align:right}
+.v1-k{display:block;font-size:.6rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--txt3);margin-bottom:4px}
+.v1-plan{font-size:1.3rem;font-weight:800;color:var(--txt2)}
+.v1-arrow{color:var(--txt3);font-size:.9rem}
+.v1-in{width:100%;max-width:118px;margin-left:auto;display:block;font-size:1.3rem;min-height:48px}
+.v1-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;
+  padding-top:9px;border-top:1px solid var(--line-soft);font-size:.78rem;font-weight:700}
+.v1-foot .d{font-weight:800}
+
+/* ============ V2 — traka odstupanja ============ */
+.v2-seg + .v2-seg{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.v2-top{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:12px}
+.v2-name{font-size:.72rem;font-weight:700;color:var(--txt3);line-height:1.3}
+.v2-name b{display:block;font-size:.95rem;font-weight:800;color:var(--txt);margin-top:2px}
+.v2-track{position:relative;height:34px;margin:0 4px 8px}
+.v2-rail{position:absolute;left:0;right:0;top:15px;height:4px;border-radius:2px;
+  background:rgba(255,255,255,.14)}
+.v2-fill{position:absolute;top:15px;height:4px;border-radius:2px}
+.v2-tick{position:absolute;top:8px;width:2px;height:18px;background:rgba(255,255,255,.45);
+  border-radius:1px;transform:translateX(-50%)}
+.v2-dot{position:absolute;top:9px;width:16px;height:16px;border-radius:50%;transform:translateX(-50%);
+  border:3px solid var(--bg)}
+.v2-lbl{position:absolute;top:-2px;font-size:.6rem;font-weight:800;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--txt3);transform:translateX(-50%);white-space:nowrap}
+.v2-ends{display:flex;justify-content:space-between;font-size:.6rem;font-weight:700;color:var(--txt3);
+  margin:0 4px 12px}
+.v2-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.v2-side{font-size:.72rem;font-weight:700;color:var(--txt3)}
+.v2-side b{display:block;font-size:.9rem;color:var(--txt);margin-top:2px}
+
+/* ============ V3 — veliki unos ============ */
+.v3-seg{text-align:center}
+.v3-seg + .v3-seg{margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.v3-eyebrow{font-size:.66rem;font-weight:700;color:var(--txt3);letter-spacing:.04em;margin-bottom:10px}
+.v3-eyebrow b{color:var(--txt2);font-weight:800}
+.v3-in{width:100%;max-width:210px;margin:0 auto;display:block;font-size:2.1rem;min-height:66px;
+  letter-spacing:-.02em;border-radius:16px}
+.v3-unit{font-size:.7rem;font-weight:700;color:var(--txt3);margin-top:6px}
+.v3-chip{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:7px 13px;
+  border-radius:999px;background:var(--green-dim);font-size:.8rem;font-weight:800}
+.v3-chip.neg{background:rgba(255,107,166,.16)}
+.v3-chip.off{background:var(--glass-in);color:var(--txt3);font-weight:700}
+.v3-chip .s{font-size:.72rem;font-weight:700;opacity:.8}
+
+/* ============ V4 — red čipova ============ */
+.v4-seg + .v4-seg{margin-top:10px}
+.v4-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.v4-name{flex:1 1 100%;font-size:.7rem;font-weight:700;color:var(--txt3);margin-bottom:2px}
+.v4-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:11px;
+  background:var(--glass-in);border:1px solid var(--line-soft);font-size:.86rem;font-weight:800;
+  font-variant-numeric:tabular-nums;min-height:40px}
+.v4-chip i{font-style:normal;font-size:.62rem;font-weight:800;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--txt3)}
+.v4-in{width:74px;min-height:40px;padding:8px 6px;font-size:.86rem;border-radius:11px}
+.v4-sep{color:var(--txt3);font-size:.8rem}
+.v4-vdot{margin-left:auto;font-size:.82rem;font-weight:800}
+
+/* ============ V5 — statusna ivica ============ */
+.v5-seg{position:relative;padding-left:13px;border-radius:12px;overflow:hidden}
+.v5-seg + .v5-seg{margin-top:12px}
+.v5-seg::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:2px;
+  background:var(--txt3)}
+.v5-seg.ok::before{background:var(--green)}
+.v5-seg.bad::before{background:var(--pink)}
+.v5-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.v5-name{font-size:.8rem;font-weight:800}
+.v5-name span{color:var(--txt3);font-weight:700}
+.v5-badge{flex:none;font-size:.72rem;font-weight:800;padding:4px 9px;border-radius:8px;
+  background:var(--green-dim)}
+.v5-badge.neg{background:rgba(255,107,166,.16)}
+.v5-badge.off{background:var(--glass-in);color:var(--txt3)}
+.v5-body{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.v5-plan{font-size:.74rem;font-weight:700;color:var(--txt3)}
+.v5-plan b{display:block;font-size:1.05rem;color:var(--txt2);margin-top:2px}
+.v5-in{width:104px;font-size:1.05rem;min-height:46px}
+
+/* ============ V6 — merilo ============ */
+.v6-seg + .v6-seg{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
+/* Merilo je jedina varijanta sa slikom pored teksta, pa je jedina koja može da
+   ostane bez širine. Na 320 px je desna kolona imala 110 px za natpis + polje
+   od 82 px i polje je ispadalo iz kartice — zato desna strana više nije tablica
+   natpis/vrednost nego uspravan niz: svaki red sam bira širinu koja mu treba. */
+.v6-grid{display:flex;align-items:center;gap:12px}
+.v6-gauge{flex:none;width:96px;height:68px;position:relative}
+.v6-gauge svg{display:block;width:96px;height:68px}
+.v6-gv{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:1.02rem;font-weight:800;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.v6-info{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.v6-name{font-size:.72rem;font-weight:700;color:var(--txt3)}
+.v6-plan{font-size:.76rem;font-weight:700;color:var(--txt3)}
+.v6-plan b{color:var(--txt2);font-weight:800;font-variant-numeric:tabular-nums}
+.v6-vdot{font-size:.78rem;font-weight:800}
+.v6-in{width:96px;min-height:42px;font-size:.95rem;padding:9px 6px}
+
+/* ============ V7 — tablica sa razlikom ============ */
+.v7-seg + .v7-seg{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.drow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;
+  border-top:1px solid var(--line-soft);font-size:.8rem}
+.drow:first-child{border-top:0;padding-top:0}
+.drow:last-child{padding-bottom:0}
+.drow .l{color:var(--txt3);font-weight:600}
+.drow .v{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.v7-diff{background:rgba(90,255,190,.1);margin:0 -8px;padding:7px 8px;border-radius:9px}
+.v7-diff.neg{background:rgba(255,107,166,.1)}
+.v7-diff.off{background:transparent}
+.v7-hd .l{color:var(--txt2);font-weight:800;font-size:.78rem}
+
+/* ============ V8 — VDOT u fokusu ============ */
+.v8-seg + .v8-seg{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.v8-hero{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.v8-big{font-size:2rem;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.v8-meta{font-size:.68rem;font-weight:700;color:var(--txt3);line-height:1.4}
+.v8-meta b{display:block;font-size:.8rem;color:var(--txt2);margin-top:2px}
+/* Tri natpisa i polje u jednom redu nisu stali na 320 px (mereno: polje je
+   ispadalo 24 px iz kartice). Natpis „ostvareno" je izbačen — blok se već zove
+   „Radni deo — ostvaren tempo", pa ga je red ponavljao po treći put. */
+.v8-src{display:flex;align-items:center;gap:10px;background:var(--glass-in);
+  border:1px solid var(--line-soft);border-radius:13px;padding:9px 11px}
+.v8-src .k{min-width:0;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--txt3);line-height:1.3}
+.v8-src .k b{display:block;font-size:.95rem;font-weight:800;color:var(--txt2);letter-spacing:0;
+  text-transform:none;font-variant-numeric:tabular-nums;margin-top:2px}
+.v8-in{width:92px;min-height:44px;font-size:.95rem;margin-left:auto;flex:none}
+.v8-name{font-size:.72rem;font-weight:700;color:var(--txt3);margin-bottom:8px}
+
+/* ============ V9 — tok (plan → ostvareno → VDOT) ============ */
+.v9-seg + .v9-seg{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.v9-name{font-size:.72rem;font-weight:700;color:var(--txt3);margin-bottom:10px}
+.v9-step{position:relative;display:flex;align-items:center;gap:11px;padding:0 0 14px 0}
+.v9-step:last-child{padding-bottom:0}
+.v9-step::before{content:'';position:absolute;left:5px;top:16px;bottom:-2px;width:1.5px;
+  background:var(--line-soft)}
+.v9-step:last-child::before{display:none}
+.v9-node{flex:none;width:12px;height:12px;border-radius:50%;border:2px solid var(--txt3);
+  background:var(--bg);position:relative;z-index:1}
+.v9-step.on .v9-node{border-color:var(--green);background:var(--green)}
+.v9-step.now .v9-node{border-color:var(--cyan)}
+.v9-k{flex:1;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--txt3)}
+.v9-v{font-size:.95rem;font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.v9-in{width:88px;min-height:42px;font-size:.95rem}
+
+/* ============ V10 — segmentirana pilula ============ */
+.v10-seg + .v10-seg{margin-top:10px}
+.v10-name{font-size:.72rem;font-weight:700;color:var(--txt3);margin-bottom:7px}
+.v10-pill{display:grid;grid-template-columns:1fr 1.1fr 1fr;background:var(--glass-in);
+  border:1px solid var(--line-soft);border-radius:15px;overflow:hidden}
+.v10-c{padding:9px 8px;text-align:center;min-width:0}
+.v10-c + .v10-c{border-left:1px solid var(--line-soft)}
+.v10-c .k{display:block;font-size:.58rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--txt3);margin-bottom:5px}
+.v10-c .v{font-size:.95rem;font-weight:800;font-variant-numeric:tabular-nums}
+.v10-c.mid{background:rgba(255,255,255,.06)}
+.v10-in{width:100%;min-height:34px;padding:5px 4px;font-size:.95rem;border-radius:9px;
+  background:rgba(255,255,255,.1)}
+
+/* ---------- pomoć na dnu ---------- */
+.foot{margin-top:8px;font-size:.72rem;color:var(--txt3);font-weight:600;line-height:1.6;
+  padding:14px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:14px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="ambijent"></div>
+
+<div class="wrap">
+  <div class="top">
+    <h1>RADNI DEO · <span>10 varijanti</span></h1>
+    <p>app.js:3963 · <code>.wseg-wrap</code> u formi dana</p>
+    <div class="sw">
+      <div class="sw-g" role="group" aria-label="Stanje unosa">
+        <button type="button" data-st="full" aria-pressed="true">popunjeno</button>
+        <button type="button" data-st="empty" aria-pressed="false">prazno</button>
+        <button type="button" data-st="slow" aria-pressed="false">sporije</button>
+      </div>
+      <div class="sw-g" role="group" aria-label="Broj segmenata">
+        <button type="button" data-sg="1" aria-pressed="true">1 seg.</button>
+        <button type="button" data-sg="2" aria-pressed="false">2 seg.</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lista"></div>
+
+  <p class="foot">Svaka varijanta je prikazana u pravom okruženju — ista kartica, ista forma,
+  isto ambijentalno svetlo kao na ekranu <b>Danas</b>. Prebaci gore na <b>prazno</b> da vidiš stanje
+  pre unosa i na <b>2 seg.</b> da vidiš dan sa dva radna segmenta (tu se rasporedi najlakše lome).</p>
+</div>
+
+<script>
+/* ---------- podaci: stvarni brojevi sa snimka ekrana ---------- */
+const SEG1={ime:'Intervali', q:5, plan:235, done:230, vdot:48.4, delta:0.2};
+const SEG2={ime:'Tempo',     q:6, plan:250, done:256, vdot:47.9, delta:-0.3};
+const SPOR={ime:'Intervali', q:5, plan:235, done:243, vdot:47.6, delta:-0.4};
+
+let STANJE='full', SEGM=1;
+
+const mmss=s=>Math.floor(s/60)+':'+String(Math.round(s%60)).padStart(2,'0');
+const nb=n=>String(n).replace('.',',');
+
+/* segmenti za trenutno stanje; `done:null` = pre unosa */
+function segs(){
+  const baza = STANJE==='slow' ? [SPOR,SEG2] : [SEG1,SEG2];
+  const list = baza.slice(0,SEGM).map(s=>Object.assign({},s));
+  if(STANJE==='empty') list.forEach(s=>{s.done=null;s.vdot=null;s.delta=null;});
+  return list;
+}
+/* razlika u sekundama po km: minus = brže od plana */
+const raz=s=>s.done==null?null:s.done-s.plan;
+const znak=d=>d>0?'+':'';
+/* tempo: MANJI broj je bolji (brže) — pa je minus „gore" */
+const boja=d=>d==null?'flat':d<0?'up':d>0?'down':'flat';
+const strelica=d=>d==null?'':d<0?'↑':d>0?'↓':'→';
+/* VDOT: VEĆI broj je bolji — obrnuto od tempa, zato svoja funkcija */
+const vBoja=v=>v==null?'flat':v>0.05?'up':v<-0.05?'down':'flat';
+const vStrelica=v=>v==null?'':v>0.05?'↑':v<-0.05?'↓':'→';
+
+function vdotTxt(s){
+  if(s.done==null) return '<span class="muted">—</span>';
+  return `<span class="${vBoja(s.delta)}">VDOT ${nb(s.vdot)} ${vStrelica(s.delta)} <small>(${znak(s.delta)}${nb(s.delta)})</small></span>`;
+}
+function inp(cls,s){
+  return `<input class="in ${cls}" inputmode="numeric" placeholder="356" value="${s.done==null?'':mmss(s.done)}" aria-label="Ostvaren tempo radnog dela">`;
+}
+const ime=s=>`${s.ime} · Q ${s.q} km`;
+
+/* ---------- varijante ---------- */
+const V=[
+{
+  t:'Dva stuba',
+  d:'Plan i ostvareno stoje jedno naspram drugog, istom veličinom slova — poređenje je sam raspored. Ispod je jedan red sa razlikom i VDOT-om.',
+  r:s=>`<div class="v1-seg">
+    <div class="v1-name">${ime(s)}</div>
+    <div class="v1-pair">
+      <div class="v1-cell"><span class="v1-k">plan</span><span class="v1-plan nums">${mmss(s.plan)}</span></div>
+      <div class="v1-arrow">→</div>
+      <div class="v1-cell r"><span class="v1-k">ostvareno</span>${inp('v1-in',s)}</div>
+    </div>
+    <div class="v1-foot">
+      <span class="${boja(raz(s))} d">${raz(s)==null?'<span class="muted">unesi tempo</span>':znak(raz(s))+raz(s)+' s/km'}</span>
+      <span>${vdotTxt(s)}</span>
+    </div>
+  </div>`
+},
+{
+  t:'Traka odstupanja',
+  d:'Plan je sredina trake, ostvareno je tačka pored njega. Koliko si promašio vidi se pre nego što pročitaš ijedan broj — levo je brže, desno sporije.',
+  r:s=>{
+    const d=raz(s), R=20; /* raspon trake: ±20 s/km */
+    const p=d==null?50:Math.max(4,Math.min(96,50+(d/R)*50));
+    const c=d==null?'rgba(255,255,255,.3)':d<0?'var(--green)':d>0?'var(--pink)':'var(--txt2)';
+    const l=Math.min(50,p), w=Math.abs(p-50);
+    return `<div class="v2-seg">
+      <div class="v2-top">
+        <div class="v2-name">${ime(s)}<b>plan ${mmss(s.plan)} /km</b></div>
+        ${inp('',s)}
+      </div>
+      <div class="v2-track">
+        <div class="v2-rail"></div>
+        ${d==null?'':`<div class="v2-fill" style="left:${l}%;width:${w}%;background:${c}"></div>`}
+        <div class="v2-tick" style="left:50%"></div>
+        <div class="v2-lbl" style="left:50%">plan</div>
+        ${d==null?'':`<div class="v2-dot" style="left:${p}%;background:${c}"></div>`}
+      </div>
+      <div class="v2-ends"><span>brže</span><span>sporije</span></div>
+      <div class="v2-row">
+        <span class="v2-side">razlika<b class="${boja(d)}">${d==null?'—':znak(d)+d+' s/km'}</b></span>
+        <span class="v2-side" style="text-align:right">forma<b>${vdotTxt(s)}</b></span>
+      </div>
+    </div>`;
+  }
+},
+{
+  t:'Veliki unos',
+  d:'Polje za kucanje je glavni element — to je i jedini posao ovog bloka. Plan stoji kao sitan natpis iznad, ishod kao pilula ispod.',
+  r:s=>{
+    const d=raz(s);
+    const k=d==null?'off':d<0?'':'neg';
+    return `<div class="v3-seg">
+      <div class="v3-eyebrow">${ime(s)} · plan <b>${mmss(s.plan)} /km</b></div>
+      ${inp('v3-in',s)}
+      <div class="v3-unit">min : sek po kilometru</div>
+      <div class="v3-chip ${k}">${d==null?'unesi tempo pa se računa VDOT':
+        `${strelica(d)} ${Math.abs(d)} s/km ${d<0?'brže':'sporije'} <span class="s">· ${vdotTxt(s)}</span>`}</div>
+    </div>`;
+  }
+},
+{
+  t:'Red čipova',
+  d:'Najniži blok od svih — plan, unos i VDOT u jednom redu. Dobija se prostor za sve ostalo na kartici, gubi se svečanost.',
+  r:s=>`<div class="v4-seg">
+    <div class="v4-row">
+      <span class="v4-name">${ime(s)}</span>
+      <span class="v4-chip"><i>plan</i> <span class="nums">${mmss(s.plan)}</span></span>
+      <span class="v4-sep">→</span>
+      ${inp('v4-in',s)}
+      <span class="v4-vdot">${vdotTxt(s)}</span>
+    </div>
+  </div>`
+},
+{
+  t:'Statusna ivica',
+  d:'Boja se seli sa broja na ivicu segmenta, pa se ishod vidi i krajičkom oka pri skrolovanju. VDOT je značka u zaglavlju.',
+  r:s=>{
+    const d=raz(s);
+    const k=d==null?'':d<0?'ok':'bad';
+    const bk=d==null?'off':d<0?'':'neg';
+    return `<div class="v5-seg ${k}">
+      <div class="v5-head">
+        <span class="v5-name">${s.ime} <span>· Q ${s.q} km</span></span>
+        <span class="v5-badge ${bk}">${s.done==null?'—':'VDOT '+nb(s.vdot)+' '+vStrelica(s.delta)}</span>
+      </div>
+      <div class="v5-body">
+        <span class="v5-plan">plan<b class="nums">${mmss(s.plan)} /km</b></span>
+        ${inp('v5-in',s)}
+      </div>
+    </div>`;
+  }
+},
+{
+  t:'Merilo',
+  d:'Luk pokazuje gde si u odnosu na plan. Najviše „opreme" od svih varijanti — lepo stoji na dan sa jednim segmentom, tesno sa dva.',
+  r:s=>{
+    const d=raz(s), R=20;
+    /* Krug: središte (52,52), poluprečnik 40, luk od −110° do +110° mereno od
+       uspravnice. Vrh luka JE plan; levo je brže, desno sporije. Uglovi i
+       putanja moraju izlaziti iz istog središta — inače kuglica lebdi pored. */
+    const ug=(d==null?0:Math.max(-1,Math.min(1,d/R)))*110;
+    const rad=ug*Math.PI/180;
+    const x=52+40*Math.sin(rad), y=52-40*Math.cos(rad);
+    const c=d==null?'var(--txt3)':d<0?'var(--green)':d>0?'var(--pink)':'var(--txt2)';
+    return `<div class="v6-seg"><div class="v6-grid">
+      <div class="v6-gauge">
+        <svg viewBox="0 0 104 74" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <path d="M 14.4 65.7 A 40 40 0 1 1 89.6 65.7" fill="none" stroke="rgba(255,255,255,.14)"
+                stroke-width="7" stroke-linecap="round"/>
+          <line x1="52" y1="6" x2="52" y2="18" stroke="rgba(255,255,255,.55)" stroke-width="2.5"
+                stroke-linecap="round"/>
+          ${d==null?'':`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${c}"
+                stroke="var(--bg)" stroke-width="3"/>`}
+        </svg>
+        <div class="v6-gv ${boja(d)}">${d==null?'—':znak(d)+d+'s'}</div>
+      </div>
+      <div class="v6-info">
+        <div class="v6-name">${ime(s)}</div>
+        <div class="v6-plan">plan <b>${mmss(s.plan)} /km</b></div>
+        ${inp('v6-in',s)}
+        <div class="v6-vdot">${vdotTxt(s)}</div>
+      </div>
+    </div></div>`;
+  }
+},
+{
+  t:'Tablica sa razlikom',
+  d:'Sadašnji izgled plus red koji sada moraš da izračunaš u glavi. Najmanja izmena u odnosu na ono što već stoji u aplikaciji.',
+  r:s=>{
+    const d=raz(s);
+    const k=d==null?'off':d<0?'':'neg';
+    return `<div class="v7-seg">
+      <div class="drow v7-hd"><span class="l">${ime(s)}</span><span class="v"></span></div>
+      <div class="drow"><span class="l">plan</span><span class="v">${mmss(s.plan)} /km</span></div>
+      <div class="drow"><span class="l">ostvareno</span><span class="v">${inp('',s)} /km</span></div>
+      <div class="drow v7-diff ${k}"><span class="l">razlika</span>
+        <span class="v ${boja(d)}">${d==null?'<span class="muted">—</span>':znak(d)+d+' s/km'}</span></div>
+      <div class="drow"><span class="l">VDOT</span><span class="v">${vdotTxt(s)}</span></div>
+    </div>`;
+  }
+},
+{
+  t:'VDOT u fokusu',
+  d:'Vodeći broj je ishod, ne unos: forma je ono zbog čega se tempo uopšte upisuje. Plan i polje stoje ispod, kao izvor tog broja.',
+  r:s=>{
+    const c=s.done==null?'muted':vBoja(s.delta);
+    return `<div class="v8-seg">
+      <div class="v8-name">${ime(s)}</div>
+      <div class="v8-hero">
+        <span class="v8-big ${c}">${s.done==null?'—':nb(s.vdot)}</span>
+        <span class="v8-meta">VDOT posle ove sesije
+          <b class="${c}">${s.done==null?'čeka tempo radnog dela':znak(s.delta)+nb(s.delta)+' u odnosu na prošli'}</b></span>
+      </div>
+      <div class="v8-src">
+        <span class="k">plan<b>${mmss(s.plan)} /km</b></span>
+        ${inp('v8-in',s)}
+      </div>
+    </div>`;
+  }
+},
+{
+  t:'Tok',
+  d:'Tri koraka jedne sesije: šta je bilo zadato, šta si istrčao, šta je od toga ispalo. Čvorići se pale kako se popunjava.',
+  r:s=>`<div class="v9-seg">
+    <div class="v9-name">${ime(s)}</div>
+    <div class="v9-step on"><span class="v9-node"></span><span class="v9-k">plan</span>
+      <span class="v9-v">${mmss(s.plan)} /km</span></div>
+    <div class="v9-step ${s.done==null?'now':'on'}"><span class="v9-node"></span><span class="v9-k">ostvareno</span>
+      <span class="v9-v">${inp('v9-in',s)}</span></div>
+    <div class="v9-step ${s.done==null?'':'on'}"><span class="v9-node"></span><span class="v9-k">forma</span>
+      <span class="v9-v">${vdotTxt(s)}</span></div>
+  </div>`
+},
+{
+  t:'Segmentirana pilula',
+  d:'Isti oblik kao traka Predstoji / Odrađen / Preskočen iznad — blok se ne doživljava kao nov element, nego kao rođak nečega što već postoji.',
+  r:s=>`<div class="v10-seg">
+    <div class="v10-name">${ime(s)}</div>
+    <div class="v10-pill">
+      <div class="v10-c"><span class="k">plan</span><span class="v muted">${mmss(s.plan)}</span></div>
+      <div class="v10-c mid"><span class="k">ostvareno</span>${inp('v10-in',s)}</div>
+      <div class="v10-c"><span class="k">VDOT</span><span class="v">${s.done==null?'<span class="muted">—</span>':
+        `<span class="${vBoja(s.delta)}">${nb(s.vdot)} ${vStrelica(s.delta)}</span>`}</span></div>
+    </div>
+  </div>`
+}
+];
+
+/* ---------- crtanje ---------- */
+function okvir(v,i){
+  const inner=segs().map(v.r).join('');
+  return `<section class="var">
+    <div class="var-h"><span class="var-n">${String(i+1).padStart(2,'0')}</span>
+      <span class="var-t">${v.t}</span></div>
+    <p class="var-d">${v.d}</p>
+    <div class="card">
+      <div class="f-grid">
+        <div class="f-field"><span class="f-lbl">Distanca (km)</span><span class="val">11</span></div>
+        <div class="f-field"><span class="f-lbl">Vreme</span><span class="val">1:02:23</span></div>
+        <div class="f-field"><span class="f-lbl">Pros. tempo</span><span class="calc">5:40 /km</span></div>
+        <div class="f-field"><span class="f-lbl">Pros. puls</span><span class="val">146</span></div>
+        <div class="f-field full wseg-wrap">
+          <span class="wseg-title">Radni deo — ostvaren tempo</span>
+          ${inner}
+        </div>
+        <div class="more">Više detalja (RPE, koleno, masa, datum, beleška)</div>
+      </div>
+    </div>
+  </section>`;
+}
+function crtaj(){
+  document.getElementById('lista').innerHTML=V.map(okvir).join('');
+}
+document.querySelectorAll('[data-st]').forEach(b=>b.addEventListener('click',()=>{
+  STANJE=b.dataset.st;
+  document.querySelectorAll('[data-st]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  crtaj();
+}));
+document.querySelectorAll('[data-sg]').forEach(b=>b.addEventListener('click',()=>{
+  SEGM=+b.dataset.sg;
+  document.querySelectorAll('[data-sg]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  crtaj();
+}));
+crtaj();
+</script>
+</body>
+</html>
