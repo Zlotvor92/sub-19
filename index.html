@@ -687,18 +687,26 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .bodylegend i.l2{background:rgba(255,192,98,.85)}
 .bodylegend i.l3{background:var(--red)}
 
-.wseg{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.wseg{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .wseg:last-child{border-bottom:0}
-/* `flex:1` je značilo flex-basis:0%, pa je uz `min-width:0` natpis bio prvi koji
-   se skuplja — a pored njega stoje polje od 82px i ishod od 120px+. Mereno u
-   pravom pregledaču: natpis je dobijao 0 px širine i 126 px visine, dakle jedno
-   slovo po redu, i to na 320, 390 I 430 px. Sada ima svoju najmanju širinu i red
-   se prelama kad je nema — natpis ide u svoj red umesto da se sruči u kolonu. */
-.wseg-l{flex:1 1 150px;min-width:0;font-size:.78rem;font-weight:700;color:var(--txt2)}
-.wseg-in{width:82px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:12px;padding:9px 6px;text-align:center;font-weight:800;font-size:.95rem;font-variant-numeric:tabular-nums;outline:none;color:var(--txt)}
+/* RASPORED JE IZRIČIT: natpis u svom redu, ispod njega polje levo i ishod desno.
+
+   Prva verzija je imala `flex:1` (osnova 0%) uz `min-width:0`, pa se natpis
+   skupljao prvi — izmereno u Chromiumu: 0 px širine, 126 px visine, jedno slovo
+   po redu, i to na 320, 390 I 430 px.
+
+   Druga verzija (osnova 150 px + prelamanje) popravila je natpis, ali je pustila
+   polje za unos na sopstveni red, gde ga je globalno pravilo za `input` razvuklo
+   na punu širinu (mereno 326 px) — pa je tempo stajao sam nasred kartice.
+
+   Zato se sada širine ne prepuštaju nasleđivanju: natpis uzima ceo red
+   (`1 1 100%`), polje ima tvrdu osnovu koja ne raste (`0 0 96px`), a ishod uzima
+   ostatak i poravnava se desno. */
+.wseg-l{flex:1 1 100%;min-width:0;font-size:.78rem;font-weight:700;color:var(--txt2)}
+.wseg-in{flex:0 0 96px;width:96px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:12px;padding:9px 6px;text-align:center;font-weight:800;font-size:.95rem;font-variant-numeric:tabular-nums;outline:none;color:var(--txt)}
 .wseg-in:focus{border-color:var(--cyan)}
 .wseg-in::placeholder{color:var(--txt3);font-weight:600}
-.wseg-out{min-width:120px;text-align:right}
+.wseg-out{flex:1 1 auto;min-width:0;text-align:right}
 .btn-ai{width:100%;min-height:44px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:14px;padding:12px;font-weight:800;font-size:.88rem;color:var(--txt);cursor:pointer}
 .btn-ai:active{opacity:.7}
 .btn-ai:disabled{opacity:.5}

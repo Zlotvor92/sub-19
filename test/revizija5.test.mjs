@@ -401,5 +401,12 @@ test('natpis radnog dela ima svoju širinu — ne sruči se u kolonu slova', () 
   const wsegL = /\.wseg-l\{[^}]*\}/.exec(css);
   assert.ok(wsegL, 'pravilo .wseg-l ne postoji');
   assert.doesNotMatch(wsegL[0], /flex:\s*1\s*;/, '.wseg-l opet ima flex:1 (osnova 0) — skuplja se do nule');
-  assert.match(wsegL[0], /flex:\s*1\s+1\s+\d+px/, '.wseg-l nema osnovnu širinu');
+  assert.match(wsegL[0], /flex:\s*1\s+1\s+100%/, '.wseg-l ne uzima ceo red — natpis opet deli prostor sa poljem');
+  /* Druga verzija popravke je natpis rešila, ali je polje za unos pustila na
+     sopstveni red, gde ga je globalno pravilo za `input` razvuklo na punu širinu
+     (mereno 326 px umesto 82) — tempo je stajao sam nasred kartice. Zato širina
+     polja mora da bude tvrda i bez rasta. */
+  const wsegIn = /\.wseg-in\{[^}]*\}/.exec(css);
+  assert.ok(wsegIn, 'pravilo .wseg-in ne postoji');
+  assert.match(wsegIn[0], /flex:\s*0\s+0\s+\d+px/, '.wseg-in nema tvrdu širinu — razvlači se na ceo red');
 });
