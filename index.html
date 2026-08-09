@@ -687,9 +687,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .bodylegend i.l2{background:rgba(255,192,98,.85)}
 .bodylegend i.l3{background:var(--red)}
 
-.wseg{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.wseg{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .wseg:last-child{border-bottom:0}
-.wseg-l{flex:1;min-width:0;font-size:.78rem;font-weight:700;color:var(--txt2)}
+/* `flex:1` je značilo flex-basis:0%, pa je uz `min-width:0` natpis bio prvi koji
+   se skuplja — a pored njega stoje polje od 82px i ishod od 120px+. Mereno u
+   pravom pregledaču: natpis je dobijao 0 px širine i 126 px visine, dakle jedno
+   slovo po redu, i to na 320, 390 I 430 px. Sada ima svoju najmanju širinu i red
+   se prelama kad je nema — natpis ide u svoj red umesto da se sruči u kolonu. */
+.wseg-l{flex:1 1 150px;min-width:0;font-size:.78rem;font-weight:700;color:var(--txt2)}
 .wseg-in{width:82px;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:12px;padding:9px 6px;text-align:center;font-weight:800;font-size:.95rem;font-variant-numeric:tabular-nums;outline:none;color:var(--txt)}
 .wseg-in:focus{border-color:var(--cyan)}
 .wseg-in::placeholder{color:var(--txt3);font-weight:600}

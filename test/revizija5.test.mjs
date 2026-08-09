@@ -14,7 +14,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp } from './harness.mjs';
+import { loadApp, readRepoFile } from './harness.mjs';
 
 /* ============================================================
    Lažni Supabase: jedan red `user_state`, kao u produkciji.
@@ -379,4 +379,27 @@ test('BY_ID ne pamti dane plana koji više ne postoji', () => {
   assert.ok(a.evalIn(`Object.keys(BY_ID).every(k=>k[0]==='n')`),
     'posle povratka na lični plan u BY_ID su ostali dani generisanog: ' +
     a.evalIn(`JSON.stringify(Object.keys(BY_ID).filter(k=>k[0]!=='n').slice(0,5))`));
+});
+
+test('natpis radnog dela ima svoju širinu — ne sruči se u kolonu slova', () => {
+  /* Nađeno na pravom telefonu posle icu sinhronizacije: „Intervali · plan
+     3:55 /km · Q 5 km" bio je iscrtan jedno slovo po redu. Mereno u Chromiumu:
+     natpis dobija 0 px širine i 126 px visine, i to na 320, 390 I 430 px.
+
+     Uzrok: `.wseg-l{flex:1}` je flex-basis 0%, pa je uz `min-width:0` natpis bio
+     prvi koji se skuplja — a pored njega stoje polje za unos (82 px) i ishod
+     (min 120 px), koji se ne skupljaju ispod svog sadržaja.
+
+     Zamka je nad CSS-om, ne nad iscrtanim pikselima: svita nema pregledač.
+     Zato pinuje MEHANIZAM — red mora da sme da se prelomi i natpis mora da ima
+     osnovnu širinu. Peta revizija je merila prelivanje van okvira i ovo je
+     prošlo, jer element nije izlazio iz okvira — samo je bio nečitljiv. */
+  const css = readRepoFile('index.html');
+  const wseg = /\.wseg\{[^}]*\}/.exec(css);
+  assert.ok(wseg, 'pravilo .wseg ne postoji');
+  assert.match(wseg[0], /flex-wrap:\s*wrap/, '.wseg se ne prelama, pa natpis nema kud');
+  const wsegL = /\.wseg-l\{[^}]*\}/.exec(css);
+  assert.ok(wsegL, 'pravilo .wseg-l ne postoji');
+  assert.doesNotMatch(wsegL[0], /flex:\s*1\s*;/, '.wseg-l opet ima flex:1 (osnova 0) — skuplja se do nule');
+  assert.match(wsegL[0], /flex:\s*1\s+1\s+\d+px/, '.wseg-l nema osnovnu širinu');
 });
