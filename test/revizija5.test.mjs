@@ -357,3 +357,26 @@ test('kontrola N6 — kad se lokalni i UTC datum poklapaju, prozor je ispravan',
     assert.ok(telo.oldest < telo.newest, 'prozor mora imati dužinu');
   } finally { process.env.TZ = stara; }
 });
+
+test('BY_ID ne pamti dane plana koji više ne postoji', () => {
+  /* Napomena pete revizije, bez nalaza: `rebuildDateIndex` je čistio `BY_DATE`
+     i `DATED`, ali ne i `BY_ID`. Putanja kroz koju se to vidi nije nađena, jer
+     svi pozivaoci ID dobijaju iz tekućeg iscrtavanja — ali time cela zaštita
+     `if(!d) return` po kodu zavisi od toga da se nešto drugo ne promeni.
+     Prostor ID-jeva se menja pri svakom prelasku lični ↔ generisan plan
+     ('n…' ↔ 'g…') i pri uvozu backupa. */
+  const a = loadApp({ now: '2026-08-09T09:00:00Z' });
+  const licni = a.evalIn('Object.keys(BY_ID).length');
+  assert.ok(licni > 0, 'lični plan nije indeksiran — zamka ne meri ništa');
+  assert.ok(a.evalIn(`Object.keys(BY_ID).every(k=>k[0]==='n')`), 'lični plan ne nosi „n" ID-jeve');
+
+  planSaUlazom(a, ULAZ);
+  assert.ok(a.evalIn(`Object.keys(BY_ID).every(k=>k[0]==='g')`),
+    'posle prelaska na generisan plan u BY_ID su ostali dani ličnog plana: ' +
+    a.evalIn(`JSON.stringify(Object.keys(BY_ID).filter(k=>k[0]!=='g').slice(0,5))`));
+
+  a.evalIn('S.genPlan=null; setActivePlan(); rebuildDateIndex();');
+  assert.ok(a.evalIn(`Object.keys(BY_ID).every(k=>k[0]==='n')`),
+    'posle povratka na lični plan u BY_ID su ostali dani generisanog: ' +
+    a.evalIn(`JSON.stringify(Object.keys(BY_ID).filter(k=>k[0]!=='n').slice(0,5))`));
+});

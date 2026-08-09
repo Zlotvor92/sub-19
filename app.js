@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='245'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='246'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -478,6 +478,15 @@ const BY_ID={},BY_DATE={},DATED=[];
    automatski vidi efektivni raspored bez ijedne dodatne izmene. */
 function rebuildDateIndex(){
   for(const k in BY_DATE) delete BY_DATE[k];
+  /* I `BY_ID`, ne samo `BY_DATE`. Ranije je ostajao pun dana STAROG plana do
+     ponovnog učitavanja stranice: uvoz backupa i prelazak sa ličnog na
+     generisan plan i nazad menjaju i prostor ID-jeva ('n…' ↔ 'g…'). Peta
+     revizija je to prijavila kao napomenu bez nalaza — putanju kroz koju se
+     vidi nije našla, jer svi pozivaoci `BY_ID[id]` dobijaju ID iz tekućeg
+     iscrtavanja. Tačno je, ali znači da zaštita `if(!d) return` po celom kodu
+     zavisi od toga da se nešto drugo ne promeni, a takva zavisnost se ne vidi
+     kad se prekrši. Čišćenje je jedan red i uklanja celu klasu. */
+  for(const k in BY_ID) delete BY_ID[k];
   DATED.length=0;
   CUR_PLAN.forEach(w=>{w.days.forEach(d=>{
     d.week=w;
