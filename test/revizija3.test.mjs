@@ -465,3 +465,58 @@ describe('Rekalibracija sa formom tačno na planu ne menja ništa', () => {
       `racePace se pomerio ${meta.racePace} → ${r} pri rekalibraciji bez promene cilja`);
   });
 });
+
+/* ============================================================
+   8. RUČNO ZAKLJUČAN TEMPO NAD PROMENOM CILJA
+
+   Izveštaj je ovo naveo kao prvu stvar koju treba izmeriti AKO se tok za
+   promenu cilja napravi (tačka D5). Napravljen je, pa se meri.
+
+   `S.alts[id].pace` sa `paceAuto:false` je izričita korisnikova odluka za
+   određen dan — mora da preživi promenu cilja. Automatski postavljen tempo
+   (`paceAuto:true`, iz kartice „Prilagodi tempo") nije odluka nego procena i
+   sme da bude pregažen; ali ni on ne sme da ostane a da se ne vidi, jer bi
+   tiho protivrečio novom cilju.
+   ============================================================ */
+describe('Promena cilja i ručno zaključan tempo', () => {
+  function pripremi() {
+    const a = saPlanom(42195);
+    a.evalIn(`S.genPlan.ulaz={startDate:'${POCETAK}',raceDate:'${dodaj(POCETAK, 20 * 7)}',raceDistM:42195,
+      pb:{distM:42195,sec:${PB[42195]}},weeklyKm:55,runDays:5,quality:2,intensity:'std',trainedRecently:true};`);
+    const danas = dodaj(POCETAK, 8 * 7);
+    a.evalIn(`TODAY='${danas}';`);
+    /* budući kvalitetni dan */
+    const d = a.evalIn(`(function(){var o=null;DATED.forEach(function(x){
+      if(o||x.rest||!x.km||x.date<'${danas}')return;
+      if(x.tag!=='int'&&x.tag!=='tempo')return; o={id:x.id,date:x.date,km:x.km,tag:x.tag};});return o;})()`);
+    assert.ok(d, 'nema budućeg kvalitetnog dana');
+    return { a, danas, d };
+  }
+
+  test('ručno zaključan tempo preživi promenu cilja', () => {
+    const { a, danas, d } = pripremi();
+    a.evalIn(`setAlt(${JSON.stringify(d.id)}, {tag:'${d.tag}', km:${d.km}, desc:'ručno', pace:333, paceAuto:false});
+              rebuildDateIndex();`);
+    const r = a.call('planSaNovimCiljem', Math.round(a.evalIn('goalSecActive()') * 0.90), danas);
+    assert.ok(!r.error, r.error);
+    a.evalIn(`S.genPlan={weeks:${JSON.stringify(r.weeks)},pred:${JSON.stringify(r.pred)},qs:${JSON.stringify(r.qs)},meta:${JSON.stringify(r.meta)},ulaz:${JSON.stringify(r.ulaz)}};
+              setActivePlan(); rebuildDateIndex();`);
+    assert.equal(a.evalIn(`S.alts[${JSON.stringify(d.id)}] && S.alts[${JSON.stringify(d.id)}].pace`), 333,
+      'ručno zaključan tempo je obrisan promenom cilja');
+    const ep = a.evalIn(`(function(){var x=BY_ID[${JSON.stringify(d.id)}]; if(!x)return null;
+      var z=zonaZaDan(x); return effectivePace(x, z&&z.r);})()`);
+    assert.equal(ep, 333, `dan više ne koristi ručno zaključan tempo (${ep})`);
+  });
+
+  test('dan sa ručnim tempom i dalje postoji posle promene cilja', () => {
+    /* ID-jevi dana su stabilni po nedelji i danu; da nisu, `S.alts` bi ostao
+       da visi nad danom koga više nema. */
+    const { a, danas, d } = pripremi();
+    a.evalIn(`setAlt(${JSON.stringify(d.id)}, {tag:'${d.tag}', km:${d.km}, desc:'ručno', pace:333, paceAuto:false});`);
+    const r = a.call('planSaNovimCiljem', Math.round(a.evalIn('goalSecActive()') * 0.90), danas);
+    assert.ok(!r.error, r.error);
+    a.evalIn(`S.genPlan={weeks:${JSON.stringify(r.weeks)},pred:${JSON.stringify(r.pred)},qs:${JSON.stringify(r.qs)},meta:${JSON.stringify(r.meta)},ulaz:${JSON.stringify(r.ulaz)}};
+              setActivePlan(); rebuildDateIndex();`);
+    assert.ok(a.evalIn(`!!BY_ID[${JSON.stringify(d.id)}]`), 'dan sa ručnim tempom je nestao iz plana');
+  });
+});
