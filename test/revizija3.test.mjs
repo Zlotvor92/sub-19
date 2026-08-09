@@ -220,3 +220,62 @@ describe('autoRealign bira po sličnosti, ne po redosledu', () => {
       'pomeren je pogrešan dan — na istoj udaljenosti mora da odluči kilometraža');
   });
 });
+
+/* ============================================================
+   5. DVA TRČANJA ISTOG DANA — OBA SE BROJE
+
+   Ranije se uzimalo samo ono bliže planiranoj kilometraži. Na kvalitetnom danu
+   je to sistematski biralo pogrešno (planirana kilometraža uključuje WU/CD koje
+   ljudi trče kraće, pa lagano večernje trčanje ispadne „bliže planu" od
+   jutarnjih intervala), a uz to se gubio i obim: dan sa dva trčanja brojao se
+   kao jedno.
+   ============================================================ */
+describe('Dan sa dva trčanja', () => {
+  const strava = (km, sec, hr) => ({ id: 'a' + km, distance: km * 1000, moving_time: sec, average_heartrate: hr });
+
+  test('kilometraža i vreme su ZBIR, ne izbor', () => {
+    const a = saPlanom(5000);
+    const s = a.call('spojiDan', [strava(7.71, 2400, 158), strava(9.40, 3000, 138)]);
+    assert.equal(s.n, 2);
+    assert.equal(s.km, 17.11, 'obim nije zbir — jedno trčanje je nestalo');
+    assert.equal(s.sec, 5400);
+    /* puls ponderisan trajanjem, ne prosek prosekâ */
+    assert.equal(s.hr, Math.round((158 * 2400 + 138 * 3000) / 5400));
+  });
+
+  test('duplikat se NE sabira', () => {
+    /* Bez ovoga bi popravka koja vraća izgubljeni obim počela da izmišlja
+       nepostojeći: isti trening ume da stigne dvaput. */
+    const a = saPlanom(5000);
+    const s = a.call('spojiDan', [strava(10, 3000, 140), strava(10, 3000, 140)]);
+    assert.equal(s.n, 1, 'isti trening je uračunat dvaput');
+    assert.equal(s.km, 10);
+  });
+
+  test('blizak ali različit trening se sabira', () => {
+    /* Prag za duplikat je 1% — dva stvarno različita trčanja slične dužine
+       moraju da prođu kao dva. */
+    const a = saPlanom(5000);
+    const s = a.call('spojiDan', [strava(10, 3000, 140), strava(10.3, 3120, 142)]);
+    assert.equal(s.n, 2, 'dva različita trčanja spojena u jedno');
+  });
+
+  test('radi i nad intervals.icu oblikom zapisa', () => {
+    const a = saPlanom(5000);
+    const s = a.call('spojiDan', [
+      { id: 'i1', distance: 7710, km: 7.71, sec: 2400, hr: 158 },
+      { id: 'i2', distance: 9400, km: 9.40, sec: 3000, hr: 138 }
+    ]);
+    assert.equal(s.km, 17.11, 'icu oblik se ne čita — obim se gubi');
+    assert.equal(s.sec, 5400);
+  });
+
+  test('jedno trčanje se ponaša tačno kao pre', () => {
+    const a = saPlanom(5000);
+    const s = a.call('spojiDan', [strava(9.4, 3000, 140)]);
+    assert.equal(s.n, 1);
+    assert.equal(s.km, 9.4);
+    assert.equal(s.sec, 3000);
+    assert.equal(s.hr, 140);
+  });
+});

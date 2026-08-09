@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='241'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='242'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2557,6 +2557,64 @@ function vdotDeltaHTML(predId,paceSec){
 }
 function pickClosest(list,planKm){
   return list.reduce((b,x)=>Math.abs(x.distance/1000-planKm)<Math.abs(b.distance/1000-planKm)?x:b);
+}
+/* DVA TRČANJA ISTOG DANA SU DVA TRČANJA — oba se broje.
+
+   Ranije se uzimalo samo ono bliže planiranoj kilometraži, a drugo je nestajalo
+   bez traga. Dve štete, obe merene:
+
+   1. OBIM. Dan sa dva trčanja brojao se kao jedno — isti gubitak kao kod
+      `autoRealign`, i isto truje `akutniObim`, `hronicniObim` i svaki predlog
+      povratka.
+   2. IZBOR. Na kvalitetnom danu je pravilo „bliže planu" sistematski biralo
+      pogrešno, jer planirana kilometraža uključuje zagrevanje i hlađenje koje
+      plan pretpostavlja, a ljudi ih trče kraće. Izmereno (5K, prvi intervalni
+      dan): plan 9.4 km, jutro 7.71 km sa svom strukturom, veče 9.40 km lagano →
+      uzimalo se veče. Intervali su se gubili zajedno sa krugovima, tempom
+      radnog dela i VDOT-om, a dan je dobijao puls i tempo laganog trčanja.
+
+   Sada je kilometraža ZBIR, vreme ZBIR, puls prosek ponderisan trajanjem. Koja
+   je aktivnost „glavna" (iz koje se vade krugovi i tempo radnog dela) bira se
+   posebno i po strukturi, ne po kilometraži — v. pozivaoce.
+
+
+   DUPLIKATI SE NE SABIRAJU. Isti trening ume da stigne dvaput (ponovljen
+   upload, sat i telefon). Aktivnost koja se od već uzete razlikuje manje od 1%
+   i po distanci i po vremenu preskače se — bez toga bi popravka koja vraća
+   izgubljeni obim počela da izmišlja nepostojeći.
+
+   Radi nad OBA oblika: Strava (`distance` u metrima, `moving_time`,
+   `average_heartrate`…) i intervals.icu (`km`, `sec`, `hr`…). icu zapisi nose i
+   `distance`, jer ga `autoRealign` i `pickClosest` traže — pa je čitanje
+   napisano tako da uzme šta god od to dvoje postoji. */
+const _sdM   = a => a && a.distance!=null ? a.distance : (a && a.km!=null ? a.km*1000 : 0);
+const _sdSec = a => a && a.moving_time!=null ? a.moving_time : ((a && a.sec) || 0);
+const _sdHr  = a => a && a.average_heartrate!=null ? a.average_heartrate : (a && a.hr!=null ? a.hr : null);
+const _sdMax = a => a && a.max_heartrate!=null ? a.max_heartrate : (a && a.maxHr!=null ? a.maxHr : null);
+const _sdEl  = a => a && a.total_elevation_gain!=null ? a.total_elevation_gain : (a && a.uspon!=null ? a.uspon : null);
+function spojiDan(list){
+  const uzete=[];
+  (list||[]).forEach(a=>{
+    if(!a) return;
+    const dup=uzete.some(b=>{
+      const dd=Math.abs(_sdM(a)-_sdM(b))/Math.max(_sdM(b),1);
+      const dt=Math.abs(_sdSec(a)-_sdSec(b))/Math.max(_sdSec(b),1);
+      return dd<0.01 && dt<0.01;
+    });
+    if(!dup) uzete.push(a);
+  });
+  const hrT=uzete.reduce((s,a)=>s+(_sdHr(a)!=null?_sdHr(a)*_sdSec(a):0),0);
+  const hrD=uzete.reduce((s,a)=>s+(_sdHr(a)!=null?_sdSec(a):0),0);
+  const maxHr=uzete.reduce((m,a)=>_sdMax(a)!=null?Math.max(m,_sdMax(a)):m,0);
+  return {
+    uzete, n:uzete.length,
+    km: Math.round(uzete.reduce((s,a)=>s+_sdM(a),0)/10)/100,
+    sec: uzete.reduce((s,a)=>s+_sdSec(a),0),
+    hr: hrD>0 ? Math.round(hrT/hrD) : null,
+    maxHr: maxHr>0 ? Math.round(maxHr) : null,
+    elev: uzete.some(a=>_sdEl(a)!=null)
+            ? Math.round(uzete.reduce((s,a)=>s+(_sdEl(a)||0),0)) : null
+  };
 }
 /* Strava trčanje BEZ direktnog poklapanja datuma (npr. trčao utorak umesto
    planiranog ponedeljka) — nađe najbliži PENDING trkački dan iste nedelje sa
@@ -9388,18 +9446,22 @@ async function icuSyncTreninzi(danaUnazad, manual){
   for(const date of Object.keys(byDate)){
     const d=BY_DATE[date];
     if(!d||d.rest||d.km==null) continue;
-    const a=pickClosest(byDate[date], d.km);
+    /* Ista logika kao na Strava putanji: sva trčanja tog dana ulaze u obim,
+       `a` je nosilac imena/opisa/ID-ja. */
+    const spoj=spojiDan(byDate[date]);
+    const a=pickClosest(spoj.uzete, d.km);
     const l=S.log[d.id]||(S.log[d.id]={});
     l.runDate=date;
     if(!l.lock){                                   /* ručna korekcija ima trajnu prednost */
       l.status='done';
-      l.km=a.km; if(a.sec) l.sec=a.sec;
-      if(a.hr!=null) l.hr=a.hr;
+      l.km=spoj.km; if(spoj.sec) l.sec=spoj.sec;
+      if(spoj.n>1) l.spojeno=spoj.n; else delete l.spojeno;
+      if(spoj.hr!=null) l.hr=spoj.hr;
       l.ts=date; l.src='icu'; l.icuId=a.id;
       if(a.naziv) l.stravaName=String(a.naziv).slice(0,120);
       if(a.opis)  l.stravaDesc=String(a.opis).slice(0,400);
-      if(a.maxHr!=null) l.maxHr=a.maxHr;
-      if(a.uspon!=null) l.elevGain=a.uspon;
+      if(spoj.maxHr!=null) l.maxHr=spoj.maxHr;
+      if(spoj.elev!=null) l.elevGain=spoj.elev;
       if(a.kadenca!=null) l.cadence=a.kadenca;
       if(a.temp!=null) l.temp=a.temp;
       /* Ono što Strava putanja uopšte nema, a icu izračuna sam. */
@@ -11367,14 +11429,19 @@ async function stravaSync(manual){
     for(const date of Object.keys(byDate)){
       const d=BY_DATE[date];
       if(!d||d.rest||d.km==null)continue;           /* samo trkački dani plana */
-      const a=pickClosest(byDate[date],d.km);        /* 2 trčanja isti dan → bliže planu */
+      /* Sva trčanja tog dana ulaze u obim; `a` je samo nosilac imena, opisa i
+         ID-ja, i bira se po blizini planu jer je to i dalje najbolji izbor za
+         „koje je od njih trening dana". Struktura se traži posebno, niže. */
+      const spoj=spojiDan(byDate[date]);
+      const a=pickClosest(spoj.uzete,d.km);
       const l=S.log[d.id]||(S.log[d.id]={});
       l.runDate=date; /* pravi datum trčanja iz Strave — NE dira se ručnim izmenama, koristi ga trend */
       if(!l.lock){                                   /* ručna korekcija ima trajnu prednost */
         l.status='done';
-        l.km=Math.round(a.distance/10)/100;
-        l.sec=a.moving_time;
-        if(a.average_heartrate)l.hr=Math.round(a.average_heartrate);
+        l.km=spoj.km;
+        l.sec=spoj.sec;
+        if(spoj.n>1) l.spojeno=spoj.n; else delete l.spojeno;
+        if(spoj.hr)l.hr=spoj.hr;
         l.ts=date;l.src='strava';l.stravaId=a.id;
         /* Ime i opis aktivnosti sa Strave: tu trkac sam kaze STA je hteo tog
            dana ("4km @5:25 / 4km @5:00 ..."). Bez toga AI sudi progresivno
@@ -11386,8 +11453,8 @@ async function stravaSync(manual){
            maksimalan puls (puls na kraju ima smisla samo u odnosu na njega),
            ukupan uspon (dize puls pri istom tempu), Strava "relative effort"
            i prosecna kadenca. */
-        if(a.max_heartrate) l.maxHr=Math.round(a.max_heartrate);
-        if(a.total_elevation_gain!=null) l.elevGain=Math.round(a.total_elevation_gain);
+        if(spoj.maxHr) l.maxHr=spoj.maxHr;
+        if(spoj.elev!=null) l.elevGain=spoj.elev;
         if(a.suffer_score!=null) l.relEffort=Math.round(a.suffer_score);
         if(a.average_cadence!=null) l.cadence=Math.round(a.average_cadence*2)/2;
         if(a.average_temp!=null) l.temp=Math.round(a.average_temp);
@@ -11413,9 +11480,22 @@ async function stravaSync(manual){
             /* PRIMARNO: streamovi + prepoznavanje radnih segmenata po brzini.
                Nezavisno od Stravinih lapova (koji nepouzdano vraćaju čas
                strukturne čas auto-1km podelu). Jedan API poziv. */
-            const st=await stApi('/activities/'+a.id+'/streams?keys=distance,time,heartrate,cadence,watts,moving,altitude,temp&key_by_type=true');
-            const segs=detectWorkSegments(st);
+            /* STRUKTURA SE TRAŽI PO SVIM TRČANJIMA TOG DANA, ne samo po onom
+               bliže planu. Kad se ujutru trče intervali a uveče lagano, ono
+               bliže planu je po pravilu lagano (v. spojiDan) — pa bi se
+               krugovi, tempo radnog dela i VDOT vadili iz pogrešnog trčanja.
+               Kandidati se probaju redom i uzima se PRVI koji zaista ima radne
+               deonice; ako ih nema nijedan, ostaje `a` i sve ide starim putem.
+               Dodatni poziv se troši samo na danima sa više trčanja. */
+            let st=null, segs=null, izvor=a;
+            for(const kand of spoj.uzete){
+              const stK=await stApi('/activities/'+kand.id+'/streams?keys=distance,time,heartrate,cadence,watts,moving,altitude,temp&key_by_type=true');
+              const segK=detectWorkSegments(stK);
+              if(!st){ st=stK; izvor=kand; }          /* prvi je rezerva ako niko nema strukturu */
+              if(segK&&segK.length){ st=stK; segs=segK; izvor=kand; break; }
+            }
             if(segs&&segs.length){
+              if(S.log[d.id]) S.log[d.id].stravaId=izvor.id;
               const totT=segs.reduce((s,x)=>s+x.paceSec*x.distM/1000,0);
               const totD=segs.reduce((s,x)=>s+x.distM,0);
               const t=Math.round(totT/(totD/1000));
@@ -11432,7 +11512,7 @@ async function stravaSync(manual){
                  koji izmenjeni dan nema, pa se preskače */
               const spec=qsFor(d.id);
               if(spec && smeTempo)try{
-                const laps=await stApi('/activities/'+a.id+'/laps');
+                const laps=await stApi('/activities/'+izvor.id+'/laps');
                 const t=workLapsTempo(laps,spec);
                 if(t){ if(upisiAutoTempo(rowId,t,date,d))props++; }
               }catch(e){}
