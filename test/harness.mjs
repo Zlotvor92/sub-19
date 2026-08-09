@@ -203,7 +203,62 @@ export function loadApp(opts = {}) {
   /* Lažni sat: `opts.now` postavlja početno vreme, `clock.set(iso)` ga pomera.
      Potrebno je da bi prelazak preko ponoći uopšte mogao da se testira. */
   const clock = { t: opts.now != null ? new Date(opts.now).getTime() : null };
-  clock.set = iso => { clock.t = new Date(iso).getTime(); };
+  /* LAŽNI SAT MORA DA POKREĆE I TAJMERE, ne samo `Date`.
+
+     Do sada je `clock.set` pomerao samo vreme. Posledica: svaka popravka
+     zasnovana na `setTimeout` bila je NEVIDLJIVA za testove — zamka je merila
+     stanje posle skoka sata, a tajmer koji je trebalo da odradi posao nije se
+     ni pokrenuo. To je tiha rupa iste vrste protiv koje su testovi i pisani:
+     test prolazi ili pada iz razloga koji nema veze sa onim što meri.
+
+     Zato se zakazani tajmeri pamte i `clock.set` odradi one kojima je rok
+     istekao. Prezakazivanje unutar rukovaoca (tajmer koji zove sam sebe) radi
+     kako treba, uz plafon koraka da beskonačno prezakazivanje ne zavrti test. */
+  const tajmeri = new Map();
+  let tajmerId = 1;
+  clock.set = iso => {
+    const cilj = new Date(iso).getTime();
+    for (let krug = 0; krug < 1000; krug++) {
+      let sledeci = null;
+      for (const [id, t] of tajmeri) if (t.kada <= cilj && (!sledeci || t.kada < sledeci[1].kada)) sledeci = [id, t];
+      if (!sledeci) break;
+      clock.t = sledeci[1].kada;
+      /* Brisanje iz mape radi SAM rukovalac (`jednom` niže) — on je i taj koji
+         poništava pravi tajmer. Da se ovde obriše unapred, `jednom` više ne bi
+         našao svoj zapis i odustao bi, pa se posao nikad ne bi odradio. */
+      try { sledeci[1].fn(); } catch (e) { /* rukovalac koji pukne ne obara ceo test */ }
+      if (tajmeri.get(sledeci[0]) === sledeci[1]) tajmeri.delete(sledeci[0]);
+    }
+    clock.t = cilj;
+  };
+  /* `unref` postoji da bi aplikacija mogla da ga pozove (v. `zakaziPonoc`);
+     ovde je bez dejstva jer tajmeri ionako ne drže proces. */
+  /* Tajmer se zakazuje i STVARNO i u lažnom satu. Stvarni je tu jer postojeći
+     testovi čekaju pravo vreme (npr. odloženi upis posle kucanja); lažni je tu
+     da bi skok sata mogao da ga odradi ranije. Šta god prvo odradi, drugo se
+     poništi — pa se rukovalac izvrši tačno jednom. */
+  const fakeSetTimeout = (fn, ms) => {
+    const id = tajmerId++;
+    const jednom = () => {
+      const t = tajmeri.get(id);
+      if (!t) return;
+      tajmeri.delete(id);
+      clearTimeout(t.pravi);
+      fn();
+    };
+    const pravi = setTimeout(jednom, +ms || 0);
+    tajmeri.set(id, { kada: (clock.t != null ? clock.t : Date.now()) + (+ms || 0), fn: jednom, pravi });
+    /* `unref` se PROSLEĐUJE pravom tajmeru, ne guta se. Aplikacija ga zove samo
+       tamo gde tajmer ne sme da drži proces (tajmer za ponoć čeka satima). Da se
+       ovde unref-uju svi, Node bi izlazio iz petlje dok testovi još čekaju
+       obećanja — „Promise resolution is still pending". */
+    return { id, unref(){ if (pravi && pravi.unref) pravi.unref(); return this; },
+                 ref(){ if (pravi && pravi.ref) pravi.ref(); return this; } };
+  };
+  const fakeClearTimeout = h => {
+    if (h && h.id != null) { const t = tajmeri.get(h.id); if (t) clearTimeout(t.pravi); tajmeri.delete(h.id); }
+    else if (typeof h === 'number' || (h && typeof h === 'object')) clearTimeout(h);
+  };
   const RealDate = Date;
   class FakeDate extends RealDate {
     constructor(...a) { if (a.length === 0 && clock.t != null) super(clock.t); else super(...a); }
@@ -253,7 +308,7 @@ export function loadApp(opts = {}) {
 
   const sandbox = {
     console,
-    setTimeout, clearTimeout, setInterval, clearInterval,
+    setTimeout: fakeSetTimeout, clearTimeout: fakeClearTimeout, setInterval, clearInterval,
     Date: FakeDate, Math, JSON, Object, Array, String, Number, Boolean, RegExp, Error,
     Map, Set, Promise, isNaN, isFinite, parseInt, parseFloat, encodeURIComponent,
     decodeURIComponent, escape, unescape, atob, btoa, URL, URLSearchParams,
@@ -288,7 +343,7 @@ export function loadApp(opts = {}) {
       : async (...a) => { calls.fetches.push(a); throw new Error('offline (test)'); },
     Blob: class { constructor(p) { this.parts = p; } },
     FileReader: class { readAsText() {} },
-    requestAnimationFrame: cb => setTimeout(cb, 0),
+    requestAnimationFrame: cb => { cb(); return 0; },
     scrollTo: () => {},
     /* `opts.reducedMotion` uključuje sistemsko „smanji kretanje". Odgovor se
        vezuje za sam upit, a ne vraća se pravo `true` na sve — inače bi svaki

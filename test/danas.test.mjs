@@ -15,10 +15,19 @@ describe('Dan se osvežava', () => {
     assert.equal(app.get('TODAY'), '2026-07-01');
 
     app.clock.set('2026-07-02T00:30:00Z');
-    /* bez osvežavanja i dalje stoji stara vrednost — to je i bio bag */
-    assert.equal(app.get('TODAY'), '2026-07-01');
+    /* OD v245 SE DAN MENJA SAM. Ranije je ovde stajalo da `TODAY` posle ponoći
+       i dalje drži staru vrednost dok je neko ne osveži — i to je bilo tačno
+       opisano kao bag, ali je test tu tačku čuvao kao očekivanje. Peta revizija
+       je izmerila posledicu u pravom pregledaču: telefon na punjaču, aplikacija
+       otvorena preko noći, u 06:15 i dalje piše jučerašnji dan, a „Završi
+       trening" upisuje jučerašnji datum. Sada tajmer za ponoć (`zakaziPonoc`)
+       to hvata bez ijednog dodira. */
+    assert.equal(app.get('TODAY'), '2026-07-02', 'dan se nije osvežio sam posle ponoći');
 
-    assert.equal(app.call('osveziDan'), true, 'osveziDan mora prijaviti promenu');
+    /* `osveziDan` posle toga nema šta da prijavi — posao je već odrađen — ali
+       mora da ostane ispravan, jer je on jedini put kad tajmer ne stigne
+       (zamrznuta pozadina; tada radi `visibilitychange`). */
+    assert.equal(app.call('osveziDan'), false, 'osveziDan prijavljuje promenu koje nema');
     assert.equal(app.get('TODAY'), '2026-07-02');
   });
 

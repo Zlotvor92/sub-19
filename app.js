@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='244'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='245'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -953,7 +953,15 @@ function migrate(o){
      bezbedan smer pogađanja: migracione grane samo dopunjuju polja koja
      nedostaju, pa preterano nizak broj ne može ništa da pokvari — a preterano
      visok bi preskočio migraciju koja je stvarno trebalo da se izvrši. */
-  o.v = (o.v==null || o.v==='' || !isFinite(+o.v)) ? 1 : +o.v;
+  /* Da li je oznaka verzije bila ČITLJIVA, pamti se pre nego što se normalizuje.
+     Razlika je bitna tačno na jednom mestu (grana v<10, Zajednica): zapis koji
+     KAŽE da je starija šema ne može nositi odluku o javnom profilu — ona tamo
+     nije ni postojala, pa može biti samo podmetnuta. Zapis kome je oznaka
+     nečitljiva (`null`, `"x"`, `[]`, `{}`, bez polja) je nešto drugo: sadržaj
+     mu je često pun i tekući, a pokvaren je samo broj. */
+  const vCitljiv = (typeof o.v === 'number' || typeof o.v === 'string')
+                   && o.v !== '' && isFinite(+o.v);
+  o.v = vCitljiv ? +o.v : 1;
   /* Stanje iz NOVIJE seme se odbija. Ranije je `o.v=SCHEMA` na kraju bezuslovno
      spustao verziju, pa bi backup napravljen u novijoj verziji aplikacije bio
      protumacen po starim pravilima i tiho pogresno prikazan — a korisnik bi
@@ -979,7 +987,16 @@ function migrate(o){
   if(o.v<9){o.vreme=o.vreme||null;o.v=9;}
   /* v9->v10: Zajednica. `vidljiv:false` = ponasanje IDENTICNO kao pre —
      postojeci korisnik ne postaje vidljiv nadogradnjom aplikacije. */
-  if(o.v<10){o.zajed={vidljiv:false,nadimak:''};o.v=10;}
+  /* DOPUNA, NE DODELA. Ovo je bila jedina migraciona grana koja je dodeljivala
+     bezuslovno, dok sve ostale rade `o.x = o.x || podrazumevano`. Komentar iznad
+     `migrate` obrazlaže da je bezbedno tumačiti nečitljivu oznaku verzije kao
+     najstariju, jer „migracione grane samo dopunjuju polja koja nedostaju" — za
+     devet od deset grana je to bilo tačno, za ovu nije. Stanje sa punim sadržajem
+     v10 ali nečitljivom oznakom (`null`, `"x"`, `[]`, `{}`, ili bez polja `v`) —
+     ručno izmenjen ili spojen backup — gubilo je vidljivost u Zajednici i nadimak,
+     a uvoz je prijavljivao uspeh. Red niže ionako radi `Object.assign` sa
+     podrazumevanim vrednostima i normalizuje tipove. */
+  if(o.v<10){o.zajed=(!vCitljiv&&o.zajed&&typeof o.zajed==='object'&&!Array.isArray(o.zajed))?o.zajed:{vidljiv:false,nadimak:''};o.v=10;}
   /* ID MORA da nosi prefiks: po njemu `tipSesijeZaVdot` prepoznaje test i daje
      mu najveću težinu u lancu forme. Uvezen zapis bez prefiksa bi tiho pao na
      podrazumevanu težinu — dakle ne bi bio test, samo bi tako izgledao. */
@@ -2588,7 +2605,12 @@ function pickClosest(list,planKm){
    `distance`, jer ga `autoRealign` i `pickClosest` traže — pa je čitanje
    napisano tako da uzme šta god od to dvoje postoji. */
 const _sdM   = a => a && a.distance!=null ? a.distance : (a && a.km!=null ? a.km*1000 : 0);
-const _sdSec = a => a && a.moving_time!=null ? a.moving_time : ((a && a.sec) || 0);
+/* `null` znači NEPOZNATO, a ne nula. Ranije je nedostajuće trajanje davalo 0, pa
+   je „nepoznato" i „nula" bila ista stvar — a nisu: puls je ponderisan
+   trajanjem, pa je ponder 0 pretvarao poznat prosečan puls u `null`, i aktivnost
+   bez `moving_time` (ručni unos na Stravi, prekinut upload) upisivala je u
+   dnevnik `sec:0` kao izmereno vreme. */
+const _sdSec = a => a && a.moving_time!=null ? a.moving_time : ((a && a.sec!=null) ? a.sec : null);
 const _sdHr  = a => a && a.average_heartrate!=null ? a.average_heartrate : (a && a.hr!=null ? a.hr : null);
 const _sdMax = a => a && a.max_heartrate!=null ? a.max_heartrate : (a && a.maxHr!=null ? a.maxHr : null);
 const _sdEl  = a => a && a.total_elevation_gain!=null ? a.total_elevation_gain : (a && a.uspon!=null ? a.uspon : null);
@@ -2603,14 +2625,21 @@ function spojiDan(list){
     });
     if(!dup) uzete.push(a);
   });
-  const hrT=uzete.reduce((s,a)=>s+(_sdHr(a)!=null?_sdHr(a)*_sdSec(a):0),0);
-  const hrD=uzete.reduce((s,a)=>s+(_sdHr(a)!=null?_sdSec(a):0),0);
+  /* Puls: ponderisan trajanjem KAD JE TRAJANJE POZNATO (tako se dva trčanja
+     istog dana spajaju ispravno), a kad nije — prost prosek poznatih pulseva.
+     Bez druge grane se poznat broj gubio zato što uz njega nije stiglo vreme. */
+  const sPulsom=uzete.filter(a=>_sdHr(a)!=null);
+  const hrD=sPulsom.reduce((s,a)=>s+(_sdSec(a)||0),0);
+  const hrT=sPulsom.reduce((s,a)=>s+_sdHr(a)*(_sdSec(a)||0),0);
   const maxHr=uzete.reduce((m,a)=>_sdMax(a)!=null?Math.max(m,_sdMax(a)):m,0);
   return {
     uzete, n:uzete.length,
     km: Math.round(uzete.reduce((s,a)=>s+_sdM(a),0)/10)/100,
-    sec: uzete.reduce((s,a)=>s+_sdSec(a),0),
-    hr: hrD>0 ? Math.round(hrT/hrD) : null,
+    /* `null` kad nijedna uzeta aktivnost nema poznato trajanje — pozivaoci
+       tada ne upisuju ništa, umesto da upišu nulu kao merenje. */
+    sec: uzete.some(a=>_sdSec(a)!=null) ? uzete.reduce((s,a)=>s+(_sdSec(a)||0),0) : null,
+    hr: sPulsom.length ? (hrD>0 ? Math.round(hrT/hrD)
+                                : Math.round(sPulsom.reduce((s,a)=>s+_sdHr(a),0)/sPulsom.length)) : null,
     maxHr: maxHr>0 ? Math.round(maxHr) : null,
     elev: uzete.some(a=>_sdEl(a)!=null)
             ? Math.round(uzete.reduce((s,a)=>s+(_sdEl(a)||0),0)) : null
@@ -3197,6 +3226,33 @@ rebuildDateIndex(); /* prvo punjenje BY_ID/BY_DATE/DATED — sad kad S.moves pos
    Sada je `let`, a `osveziDan()` se poziva pri svakom povratku u aplikaciju i
    pri svakoj promeni stranice; kad se datum promeni, ekran se ponovo iscrta. */
 let TODAY=todayStr();
+/* PONOĆ DOK APLIKACIJA STOJI OTVORENA.
+
+   `osveziDan()` je ispravan, ali se zvao sa samo dva mesta — `setPage` i
+   `visibilitychange`. Nijedan od njih ne postoji u stanju „telefon na punjaču,
+   ekran upaljen, tab se ne menja": mereno u pravom pregledaču, u 23:55 se vidi
+   „Nedelja 10 / 23 · 91 dan do trke", a u 06:15 sledećeg dana i dalje piše isto,
+   sve do prvog dodira. Ko tada pritisne „Završi trening", upiše ga na JUČERAŠNJI
+   datum.
+
+   To je doslovno scenario zbog kog je `TODAY` i postao `let` (v. komentar iznad):
+   popravka je bila tačna, ali su joj okidači pokrivali samo dva od tri načina na
+   koja se ponoć dočeka.
+
+   Tajmer se prezakazuje sam i cilja prvu sekundu posle ponoći. Postojeći okidači
+   OSTAJU: tajmer ne preživi zamrznutu pozadinu, a `visibilitychange` ume. */
+function zakaziPonoc(){
+  const s=new Date();
+  const sutra=new Date(s.getFullYear(), s.getMonth(), s.getDate()+1, 0, 0, 1);
+  const t=setTimeout(()=>{
+    try{ if(osveziDan()){ renderHeader(); if(PAGES[ACTIVE]) PAGES[ACTIVE](); } }catch(e){}
+    zakaziPonoc();
+  }, Math.max(1000, sutra-s));
+  /* `unref` postoji samo u Node-u (u pregledaču `setTimeout` vraća broj). Bez
+     njega tajmer koji čeka do ponoći drži test proces živ i `node --test` se
+     nikad ne završi — nađeno odmah, prvim pokretanjem svite. */
+  if(t && typeof t.unref==='function') t.unref();
+}
 function osveziDan(){
   const t=todayStr();
   if(t===TODAY)return false;
@@ -7524,7 +7580,23 @@ function planSaNovimCiljem(noviGoalSec, today){
   if(!ulaz) return { error:'Ovaj plan je napravljen pre nego što je aplikacija počela da pamti ulazne podatke, pa se ne može regenerisati bez njih. Cilj se može promeniti tek na planu napravljenom od ove verzije nadalje.' };
   if(!(noviGoalSec>0)) return { error:'Ciljno vreme nije ispravno.' };
 
+  /* `weekOf` vraća `null` iz DVA razloga, a ovde su se tumačila kao jedan.
+     Za datum PRE početka plana pad na `idx = 1` je tačan — ništa se nije
+     desilo. Za datum POSLE trke isti pad znači „cela istorija je budućnost":
+     mereno na završenom maratonskom planu, promena cilja tri nedelje posle
+     trke prepiše 13 od 140 odrađenih dana i 11 od 31 PRED reda, a dijalog
+     pritom tvrdi da menja „20 nedelja koje tek dolaze (od N1)". Ostvareni tempi
+     ostaju zakačeni za te iste redove, pa poređenje „planirano vs. ostvareno"
+     za sesije istrčane pre pola godine odjednom pokazuje promašaj koji nikad
+     nije postojao.
+
+     To je ujedno i razlog zašto zaštita niže (`!noveNed.length`) nikad nije
+     opalila: `idx` je uvek ≤ najveći broj nedelje, pa je `noveNed` uvek
+     neprazan. Bila je mrtav kod. */
   const w = weekOf(today);
+  const zadnja = CUR_PLAN[CUR_PLAN.length-1];
+  if(!w && zadnja && today > addD(zadnja.start, 6))
+    return { error:'Plan je završen — cilj se više ne može promeniti. Za novu trku napravi nov plan.' };
   const idx = w ? w.w : 1;
   const svez = generatePlan({ ...ulaz, goalSec: noviGoalSec });
   if(svez.error) return svez;
@@ -9414,7 +9486,15 @@ function icuPovezan(){ return !!(S.icu&&S.icu.athleteId&&(S.icu.token||S.icu.api
 async function icuSync(danaUnazad){
   if(!icuPovezan()) return {ok:false, error:'intervals.icu nije povezan.'};
   const do_=new Date(), od=new Date(do_.getTime()-(danaUnazad||60)*864e5);
-  const ds=d=>d.toISOString().slice(0,10);
+  /* LOKALNI kalendarski datum, ne UTC. `toISOString()` je UTC, a cela ostala
+     aplikacija radi sa lokalnim (`todayStr()` → `d2s`). Mereno: u Beogradu
+     između 00:00 i 02:00 leti (00:00–01:00 zimi) od intervals.icu se tražio
+     prozor zaključno sa JUČERAŠNJIM danom, pa sve istrčano te noći posle ponoći
+     i jutarnja merenja tog dana nisu ni ulazili u zahtev. Kod putovanja na
+     istok prozor greške raste sa pomerajem zone — u Sidneju prvih deset sati
+     dana. (`nextMonday`/`mondayOfWeek` su namerno i dosledno UTC; te dve
+     konvencije se ne smeju mešati, i ovde su bile pomešane.) */
+  const ds=d=>d2s(d);
   try{
     const r=await fetch('/api/icu',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
@@ -9523,7 +9603,15 @@ async function icuSyncTreninzi(danaUnazad, manual){
   if(!icuPovezan()) return {ok:false, error:'intervals.icu nije povezan.'};
   if(!icuImaTreninge()) return {ok:false, error:'Veza sa intervals.icu nema dozvolu za treninge. Otkači pa ponovo poveži — dobićeš i treninge, ne samo jutarnja merenja.'};
   const do_=new Date(), od=new Date(do_.getTime()-(danaUnazad||45)*864e5);
-  const ds=d=>d.toISOString().slice(0,10);
+  /* LOKALNI kalendarski datum, ne UTC. `toISOString()` je UTC, a cela ostala
+     aplikacija radi sa lokalnim (`todayStr()` → `d2s`). Mereno: u Beogradu
+     između 00:00 i 02:00 leti (00:00–01:00 zimi) od intervals.icu se tražio
+     prozor zaključno sa JUČERAŠNJIM danom, pa sve istrčano te noći posle ponoći
+     i jutarnja merenja tog dana nisu ni ulazili u zahtev. Kod putovanja na
+     istok prozor greške raste sa pomerajem zone — u Sidneju prvih deset sati
+     dana. (`nextMonday`/`mondayOfWeek` su namerno i dosledno UTC; te dve
+     konvencije se ne smeju mešati, i ovde su bile pomešane.) */
+  const ds=d=>d2s(d);
   /* Nikad pre početka plana — pre toga ni nema dana na koje bi se zakačilo. */
   const oldest=ds(od)<CUR_START?CUR_START:ds(od);
 
@@ -11557,7 +11645,9 @@ async function stravaSync(manual){
       if(!l.lock){                                   /* ručna korekcija ima trajnu prednost */
         l.status='done';
         l.km=spoj.km;
-        l.sec=spoj.sec;
+        /* Isti uslov koji icu putanja već ima: trajanje se upisuje samo ako je
+           poznato. Dve sestrinske putanje su se ovde bile razišle. */
+        if(spoj.sec) l.sec=spoj.sec;
         if(spoj.n>1) l.spojeno=spoj.n; else delete l.spojeno;
         if(spoj.hr)l.hr=spoj.hr;
         l.ts=date;l.src='strava';l.stravaId=a.id;
@@ -12247,7 +12337,45 @@ async function sbPush(){
      pokreće i sa `visibilitychange`, i to bez odlaganja. */
   if(SB_SUKOB) return false;
   if(!await sbEnsure()) return false;
+  /* NE GAZI TUĐU IZMENU KOJU OVAJ UREĐAJ NIJE VIDEO.
+     Provera sukoba je do sada postojala na TAČNO JEDNOM mestu — u `sbInit()`,
+     dakle samo pri pokretanju. Sve ostalo (odloženi upis posle `save()`,
+     `visibilitychange`, dugme „Sinhronizuj") išlo je pravo na POST sa
+     `resolution=merge-duplicates`, a stanje je JEDAN blob — pa prepis briše
+     celu tuđu sesiju.
+
+     Mereno: dva uređaja na istom nalogu, oba već sinhronizovana. A upiše
+     kilažu i bol; B se vrati iz pozadine (instalirana PWA ume da stoji danima)
+     i snimi bilo šta. Unosi sa A nestanu sa servera bez ijedne poruke, jer je
+     `SB.seenAt` na B ostao na staroj vrednosti — `visibilitychange` osvežava
+     sesiju, dan, icu, Stravu i AI, ali NE i saznanje o serveru. Pošto `sbPush`
+     na kraju upiše nov `updated_at` u `SB.seenAt`, B posle toga više nikad ne
+     vidi sukob.
+
+     Da je hazard poznat, vidi se iz `sw.js`: pozadinski upis (`guraniStanje`)
+     ima baš ovu proveru, uz komentar „sukob rešava aplikacija, koja ume da
+     PITA". Bila je tačna samo za trenutak pokretanja — pozadinski put je bio
+     strože zaštićen od prednjeg.
+
+     Jedan jeftin upit (dve kolone) pre svakog upisa. Tuđi noviji zapis diže
+     traku umesto da bude pregažen; sopstveni noviji zapis nije sukob (isto
+     pravilo koje `sbDecide` već nosi), pa jedan uređaj ne vidi ništa novo.
+
+     ZAUZEĆE SE PODIŽE PRE OVOG UPITA. Provera je mrežni poziv, dakle stvarna
+     pauza — a dok traje, drugi `sbPush()` bi prošao pored `SB_BUSY` i oba bi
+     krenula da pišu. Ranije je jedini `await` pre zauzeća bio `sbEnsure`, koji
+     sa važećim tokenom ne dodiruje mrežu, pa se prozor nije video. Zato se
+     zastavica diže odmah i spušta na svakom ranom izlazu. */
   SB_BUSY=true;
+  try{
+    const dalj=await sbRemoteAt();
+    if(dalj && dalj.at && SB.seenAt && new Date(dalj.at)>new Date(SB.seenAt)
+       && dalj.uredjaj && dalj.uredjaj!==SB.deviceId){
+      prikaziSukobSync(dalj.at);
+      SB_BUSY=false;
+      return false;
+    }
+  }catch(e){ /* bez signala se ne blokira upis — pozadinski red ionako ponavlja */ }
   try{
     const r=await fetch(SB_URL+'/rest/v1/user_state',{
       method:'POST',
@@ -12291,7 +12419,12 @@ async function sbPull(){
   try{ r=await fetch(SB_URL+'/rest/v1/user_state?select=data,updated_at&user_id=eq.'+SB.userId,{headers:sbHead()}); }
   catch(e){ return false; }
   if(!r.ok) return false;
-  const j=await r.json();
+  /* `r.json()` nije bio u try: odgovor 200 sa HTML telom (posrednik, greška
+     platforme) ili prazno telo bacali su neuhvaćeno odbijanje iz rukovaoca
+     dugmeta. Sada je otkaz kao i svaki drugi — vrati `false`, pa pozivalac
+     odluči šta će. */
+  let j;
+  try{ j=await r.json(); }catch(e){ return false; }
   if(!j||!j[0]||!j[0].data) return false;
   /* migrate() vraca null za neprepoznat oblik. Bez ove provere je `S` postajao
      null, pa je sledeca linija bacala TypeError i ostavljala aplikaciju u
@@ -12502,7 +12635,24 @@ function prikaziSukobSync(remoteAt){
     <div class="traka-n">„Uzmi sa servera" prepisuje izmene na ovom uređaju. „Zadrži sa telefona" prepisuje one na serveru.</div>`;
   document.body.appendChild(b);
   const zatvori=()=>{ SB_SUKOB=false; b.remove(); };
-  b.querySelector('#sy-pull').onclick=async()=>{ zatvori(); await sbPull(); };
+  /* TRAKA SE ZATVARA TEK POSLE USPEHA. Ranije je stajalo
+     `zatvori(); await sbPull();` — dakle `SB_SUKOB=false` PRE povlačenja, a
+     povratna vrednost se nije gledala. `sbPull` vraća `false` na svakom otkazu
+     (nema signala, !r.ok, red ne postoji, migrate vratio null), pa je neuspelo
+     povlačenje gubilo obe zaštite odjednom: traku, koja bi pitala ponovo, i
+     `SB_SUKOB`, koji upravo i postoji da spreči „prazno preko punog".
+
+     Ishod je bio tačno suprotan od onoga što je čovek izabrao: bira „Uzmi sa
+     servera", a njegovo lokalno stanje prvim sledećim `save()` pregazi
+     serversko. Mereno u pregledaču na pet načina otkaza (mreža puca, 500, 429,
+     HTML umesto JSON-a, prazan odgovor) — svih pet isto, i bez ijedne poruke.
+
+     Sada: ako povlačenje ne uspe, ništa se ne menja i traka ostaje. */
+  b.querySelector('#sy-pull').onclick=async()=>{
+    const ok=await sbPull().catch(()=>false);
+    if(!ok){ alert('Povlačenje sa servera nije uspelo — ništa nije promenjeno.\n\nProveri vezu pa probaj ponovo. Dok ne uspe, izmene sa ovog uređaja se ne šalju, pa se ništa ne može izgubiti.'); return; }
+    zatvori();
+  };
   b.querySelector('#sy-push').onclick=async()=>{
     /* PRAZNO PREKO PUNOG je najskuplja greška koju ovaj ekran može da napravi:
        treninzi se vrate sa Strave i intervals.icu, ali kilaža i povrede se
@@ -12510,6 +12660,12 @@ function prikaziSukobSync(remoteAt){
        ništa lokalno — pita se još jednom, imenom stvari koje odlaze. */
     if(sbPraznoStanje(S) &&
        !confirm('Na ovom uređaju još nema nijednog unosa, a na serveru ih ima.\n\n„Zadrži sa telefona" će OBRISATI sve sa servera — uključujući kilažu i povrede, koje se ne mogu vratiti ni sa Strave ni sa intervals.icu.\n\nSigurno?')) return;
+    /* IZBOR SE PAMTI. Od kad `sbPush` i sam proverava da li je na serveru tuđi
+       noviji zapis (v. tamo), „Zadrži sa telefona" bi bez ovoga bilo poništeno
+       istog trena: push bi video isti taj zapis, ponovo digao traku i nikad ne
+       bi prošao. `seenAt` se zato pomera na verziju koju je čovek upravo video
+       i svesno pregazio — to je tačno ono što `seenAt` i znači. */
+    if(remoteAt){ SB.seenAt=remoteAt; sbSave(); }
     zatvori(); await sbPush();
   };
 }
@@ -13768,6 +13924,7 @@ uskladiVlasnickePodatke();   /* ciji su podaci — pre prvog iscrtavanja */
 renderHeader();
 setPage(pocetnaStrana());
 prikaziUcitavanjePalo();     /* ako zapis nije procitan — pre nego sto covek pomisli da je sve nestalo */
+zakaziPonoc();               /* dan se menja i kad niko ništa ne dodirne */
 handleOAuthReturn();
 sbInit();
 /* Automatsko povlačenje treninga. Uslov gleda izvor koji će STVARNO biti

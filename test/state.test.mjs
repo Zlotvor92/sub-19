@@ -416,6 +416,9 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
     a.call('prikaziSukobSync', '2026-08-06T10:00:00Z');
     return a;
   }
+  /* Rukovaoci su ASINHRONI: od popravke N2 „Uzmi sa servera" zatvara traku tek
+     kad povlačenje USPE, pa se ishod ne može čitati pre nego što se obećanje
+     razreši. Test koji ne sačeka meri stanje na pola posla. */
   const klik = (a, dugme) => a.evalIn(`__traka.querySelector('${dugme}').onclick()`);
 
   /* PRAVI sbPush, ne stub — meri se šta ode na mrežu. I odloženi tajmer se
@@ -452,8 +455,7 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
   test('posle izbora upis opet radi — zabrana je privremena, ne trajna', async () => {
     const a = saMrezom();
     a.evalIn(`confirm=()=>true; S.kg.push({date:'2026-08-06',kg:77,src:null});`);
-    klik(a, '#sy-push');
-    await a.evalIn(`Promise.resolve()`);
+    await klik(a, '#sy-push');
     await a.evalIn(`sbPush()`);
     assert.ok(upisi(a) > 0, 'posle izbora upis i dalje ne prolazi');
   });
@@ -467,13 +469,25 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
     assert.match(src, /try\{ if\(SB_SUKOB\) return; \}catch/, 'sbSchedulePush ne proverava sukob');
   });
 
-  test('izbor podiže zabranu, u oba smera', () => {
+  test('izbor koji USPE podiže zabranu, u oba smera', async () => {
     for (const dugme of ['#sy-pull', '#sy-push']) {
       const a = saSukobom();
       a.evalIn(`confirm=()=>true;`);
-      klik(a, dugme);
+      await klik(a, dugme);
       assert.equal(a.evalIn('SB_SUKOB'), false, `${dugme} nije podigao zabranu`);
     }
+  });
+
+  test('„Uzmi sa servera" koje NE uspe ne podiže zabranu i kaže zašto', async () => {
+    /* Nalaz pete revizije: `zatvori()` se izvršavao PRE povlačenja, a ishod se
+       nije gledao. Neuspelo povlačenje je time gubilo obe zaštite — traku i
+       `SB_SUKOB` — pa je lokalno stanje prvim sledećim upisom pregazilo server.
+       Ishod tačno suprotan od onoga što je čovek izabrao. */
+    const a = saSukobom();
+    a.evalIn(`sbPull=async()=>false;`);
+    await klik(a, '#sy-pull');
+    assert.equal(a.evalIn('SB_SUKOB'), true, 'neuspelo povlačenje je otključalo upis');
+    assert.ok(a.calls.alerts.length > 0, 'neuspelo povlačenje nije rečeno korisniku');
   });
 
   test('prazno preko punog se pita još jednom, i imenuje šta odlazi', () => {
