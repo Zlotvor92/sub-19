@@ -31,7 +31,7 @@
 
 <p class="lang">Srpski</p>
 <h1>SUB-20 — Politika privatnosti</h1>
-<p class="upd">Poslednja izmena: 8. avgust 2026.</p>
+<p class="upd">Poslednja izmena: 10. avgust 2026.</p>
 
 <p class="lead">SUB-20 je lična aplikacija za planiranje trkačkih priprema. Ovaj dokument
 opisuje koje podatke aplikacija obrađuje, gde ih čuva i kome ih prosleđuje.</p>
@@ -47,6 +47,7 @@ brisanje podataka: <a href="mailto:avuletic92@gmail.com">avuletic92@gmail.com</a
   <tr><td>Podaci o treningu (kilometraža, vreme, tempo, puls, beleške)</td><td>tvoj unos</td><td>vođenje plana i predikcija</td></tr>
   <tr><td>Trčanja (distanca, vreme, puls, deonice, GPS tokovi)</td><td>Strava — samo ako je povežeš</td><td>automatski upis odrađenih treninga</td></tr>
   <tr><td>Jutarnja merenja (HRV, puls u miru, san, trenažno opterećenje)</td><td>intervals.icu — samo ako ga povežeš</td><td>procena oporavka</td></tr>
+  <tr><td><b>Približna lokacija</b> (koordinate zaokružene na ~1 km)</td><td>tvoj uređaj — samo ako uključiš vreme</td><td>vremenska prognoza za sat treninga i temperatura vazduha u satu u kom si trčao</td></tr>
   <tr><td>Adresa za obaveštenja i njeni ključevi za šifrovanje</td><td>tvoj pregledač — samo ako uključiš obaveštenja</td><td>slanje jutarnjeg podsetnika, poruke da je AI analiza gotova i povremenog jednokratnog obaveštenja o novoj funkciji</td></tr>
   <tr><td>Najava treninga: datum i jedan red teksta za narednih nedelju dana</td><td>sama aplikacija, pri otvaranju</td><td>da jutarnje obaveštenje ima šta da napiše, bez da server zna tvoj plan</td></tr>
 </table>
@@ -79,10 +80,30 @@ unosa nedeljama, sinhronizacija stala). Ne postoji način da se od njega odjavi�
 
 <h3>Šta se NIKAD ne šalje na server</h3>
 <div class="box">
-  <p style="margin:0">Strava pristupni tokeni i intervals.icu API ključ ostaju
-  <strong>isključivo na tvom uređaju</strong>. Oni se ne upisuju u bazu i ne napuštaju
-  pregledač osim u trenutku poziva ka samom servisu na koji se odnose.</p>
+  <p style="margin:0">Strava pristupni tokeni, intervals.icu API ključ i <strong>tvoje
+  koordinate</strong> ostaju <strong>isključivo na tvom uređaju</strong>. Ne upisuju se u bazu
+  i ne napuštaju pregledač osim u trenutku poziva ka samom servisu na koji se odnose.</p>
 </div>
+
+<h3 id="lokacija">Lokacija i vremenska prognoza</h3>
+<p>Ovo je <strong>isključeno dok ga sam ne uključiš</strong> (Podešavanja → Vreme → Uključi
+lokaciju). Dok je isključeno, aplikacija ni ne pita za lokaciju i nijedan upit ka vremenskoj
+službi se ne šalje.</p>
+<p>Kad ga uključiš, uređaj jednom pročita svoju poziciju i <strong>zaokruži je na dve decimale
+— oko 1 km</strong>. Zaokružena vrednost se čuva lokalno, kao i svaki drugi podatak, i ide u
+backup. Tačna pozicija se nigde ne pamti.</p>
+<p>Te koordinate <strong>ne prolaze kroz naš server</strong> — idu direktno servisu
+<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, koji ne traži
+ni nalog ni ključ. Uz njih ne ide ništa drugo: ni ime, ni e-adresa, ni identifikator naloga, ni
+jedan jedini podatak o tvom treningu. Sa naše strane taj upit izgleda isto za svakoga ko je u
+istom kilometru.</p>
+<p>Koristi se za dve stvari: prognozu za dan koji ti predstoji (temperatura, osećaj, vlažnost,
+vetar, kiša u sat kad obično trčiš) i za <strong>temperaturu vazduha u satu u kom si zaista
+trčao</strong>, koja se prikazuje uz odrađen trening i ide u AI analizu umesto očitavanja sa
+sata. Zbog toga se prognoza traži i za nekoliko dana unazad.</p>
+<p><strong>Isključivanje briše koordinate i sačuvanu prognozu sa uređaja</strong>, istog časa.
+Dozvolu za lokaciju možeš povući i u samom pregledaču, odnosno u sistemskim podešavanjima
+telefona ako koristiš instaliranu Android aplikaciju.</p>
 <h3>Obaveštenja</h3>
 <p>Ako ih uključiš, u bazi stoji adresa koju je izdao push servis tvog pregledača i dva
 ključa koje je isti taj pregledač napravio. <strong>Sadržaj obaveštenja se šifruje tim
@@ -101,6 +122,7 @@ ih i tih poruka nema.</p>
   <tr><td>Google (Gemini)</td><td>sažetak trčanja bez imena i bez e-adrese, i <b>jutarnja merenja</b> — HRV, puls u miru, san i svežinu; kod trend-analize do 90 dana tih merenja, uz tvoje beleške sa treninga</td><td>kada zatražiš AI analizu ili trend</td></tr>
   <tr><td>Strava</td><td>zahtev za tvoja trčanja</td><td>kada pokreneš sinhronizaciju</td></tr>
   <tr><td>intervals.icu</td><td>zahtev za jutarnja merenja; planirani treninzi koje šalješ na sat</td><td>kada povučeš oporavak ili pošalješ treninge</td></tr>
+  <tr><td><b>Open-Meteo</b> (vremenska služba)</td><td>samo koordinate zaokružene na ~1 km. Bez naloga, bez ključa, bez ičega o tebi — ni imena, ni e-adrese, ni podataka o treningu</td><td>samo dok je vreme uključeno; upit ide direktno sa tvog uređaja, ne preko našeg servera</td></tr>
   <tr><td>Resend</td><td>tvoja e-adresa i tekst poruke</td><td>dnevni izveštaj i prijava greške</td></tr>
   <tr><td>Push servis pregledača (Google, Apple ili Mozilla)</td><td>adresu tvog uređaja i <b>šifrovan</b> sadržaj koji ne može da pročita</td><td>kada ti se šalje obaveštenje</td></tr>
   <tr><td>Drugi korisnici aplikacije</td><td>samo ono što je nabrojano u odeljku <a href="#zajednica">Zajednica</a> — bez e-adrese</td><td>samo dok je Zajednica uključena; podrazumevano je isključena</td></tr>
@@ -208,7 +230,7 @@ samoj aplikaciji.</p>
 
 <p class="lang" style="margin-top:56px">English</p>
 <h1>SUB-20 — Privacy Policy</h1>
-<p class="upd">Last updated: 8 August 2026</p>
+<p class="upd">Last updated: 10 August 2026</p>
 
 <p class="lead">SUB-20 is a personal running-training planner. This document describes what
 data the app processes, where it is stored and who it is shared with.</p>
@@ -224,6 +246,7 @@ data deletion: <a href="mailto:avuletic92@gmail.com">avuletic92@gmail.com</a>.</
   <tr><td>Training data (distance, time, pace, heart rate, notes)</td><td>entered by you</td><td>running the plan and predictions</td></tr>
   <tr><td>Activities (distance, time, heart rate, laps, streams)</td><td>Strava — only if you connect it</td><td>automatic import of completed runs</td></tr>
   <tr><td>Morning metrics (HRV, resting HR, sleep, training load)</td><td>intervals.icu — only if you connect it</td><td>recovery assessment</td></tr>
+  <tr><td><b>Approximate location</b> (coordinates rounded to ~1 km)</td><td>your device — only if you enable weather</td><td>forecast for your training hour, and the air temperature during the hour you actually ran</td></tr>
   <tr><td>Push endpoint and its encryption keys</td><td>your browser — only if you enable notifications</td><td>sending the morning reminder, the "analysis is ready" message and an occasional one-off notice about a new feature</td></tr>
   <tr><td>Session headline: a date and one line of text for the next seven days</td><td>the app itself, on open</td><td>so the morning notification has something to say without the server knowing your plan</td></tr>
 </table>
@@ -257,10 +280,31 @@ want it, account deletion is the option.</p>
 
 <h3>What is NEVER sent to the server</h3>
 <div class="box">
-  <p style="margin:0">Strava access tokens and the intervals.icu API key stay
-  <strong>on your device only</strong>. They are never written to the database and never leave
-  the browser except in the request to the service they belong to.</p>
+  <p style="margin:0">Strava access tokens, the intervals.icu API key and <strong>your
+  coordinates</strong> stay <strong>on your device only</strong>. They are never written to the
+  database and never leave the browser except in the request to the service they belong to.</p>
 </div>
+
+<h3 id="location">Location and weather</h3>
+<p>This is <strong>off until you turn it on</strong> (Settings &rarr; Weather &rarr; enable
+location). While it is off, the app never asks for your location and no request to the weather
+service is made at all.</p>
+<p>When you turn it on, the device reads its position once and <strong>rounds it to two
+decimals &mdash; about 1 km</strong>. Only the rounded value is stored, locally, and it is
+included in your backup. The exact position is never kept.</p>
+<p>Those coordinates <strong>do not pass through our server</strong> &mdash; they go straight to
+<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, which requires
+no account and no key. Nothing else goes with them: no name, no email, no account identifier
+and not a single piece of training data. From our side the request looks identical for anyone
+within the same kilometre.</p>
+<p>It is used for two things: the forecast for your upcoming training day (temperature,
+apparent temperature, humidity, wind, rain at the hour you usually run) and the <strong>air
+temperature during the hour you actually ran</strong>, which is shown with the completed
+workout and sent to the AI analysis instead of the wrist sensor reading. That is why the
+forecast is also requested for a few days back.</p>
+<p><strong>Turning it off deletes the coordinates and the cached forecast from the
+device</strong>, immediately. You can also revoke the location permission in the browser
+itself, or in your phone's system settings if you use the installed Android app.</p>
 <h3>Notifications</h3>
 <p>If you enable them, the database holds the endpoint issued by your browser's push service
 and two keys generated by that same browser. <strong>Notification content is encrypted with
@@ -279,6 +323,7 @@ turn notifications off and those messages stop too.</p>
   <tr><td>Google (Gemini)</td><td>a summary of a run without your name or email, plus <b>morning metrics</b> — HRV, resting heart rate, sleep and freshness; for trend analysis up to 90 days of those metrics, along with your workout notes</td><td>when you request AI analysis or a trend</td></tr>
   <tr><td>Strava</td><td>a request for your activities</td><td>when you run a sync</td></tr>
   <tr><td>intervals.icu</td><td>a request for morning metrics; planned workouts you push to your watch</td><td>when you pull recovery data or send workouts</td></tr>
+  <tr><td><b>Open-Meteo</b> (weather service)</td><td>only coordinates rounded to ~1 km. No account, no key, nothing about you &mdash; no name, no email, no training data</td><td>only while weather is enabled; the request goes straight from your device, not via our server</td></tr>
   <tr><td>Resend</td><td>your email address and the message body</td><td>daily report and bug reports</td></tr>
   <tr><td>Your browser's push service (Google, Apple or Mozilla)</td><td>your device endpoint and <b>encrypted</b> content it cannot read</td><td>when a notification is sent to you</td></tr>
   <tr><td>Other users of the app</td><td>only what is listed under <a href="#community">Community</a> — never your email</td><td>only while Community is on; it is off by default</td></tr>
