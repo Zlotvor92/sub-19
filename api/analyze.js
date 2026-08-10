@@ -567,16 +567,40 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { session, entered, trend, goalCtx, hrZones } = body || {};
-  /* Zone pulsa iz Strave. Bez njih model o pulsu moze samo da nagadja ("visok"),
-     jer ne zna maksimalni puls trkaca. Sa njima moze da kaze u kojoj je zoni
-     trening zaista bio — sto je jedina posteno merljiva tvrdnja o pulsu. */
+  const { session, entered, trend, goalCtx, hrZones, hrZonesIzvor } = body || {};
+  /* ZONE PULSA — I ČIJE SU.
+
+     Bez zona model o pulsu moze samo da nagadja („visok"), jer ne zna
+     maksimalni puls trkaca. Sa njima moze da kaze u kojoj je zoni trening
+     zaista bio — sto je jedina posteno merljiva tvrdnja o pulsu.
+
+     ALI: postoje DVA sistema zona. Strava podrazumevano ima pet, izvedenih iz
+     maksimalnog pulsa; intervals.icu sedam, izvedenih iz praga. Granice se ne
+     poklapaju. Vreme po zonama (`icu.zonePuls`) uvek dolazi sa icu-a, a granice
+     su do sada uvek bile Stravine — pa je model raspodelu sa jednog sistema
+     citao kroz nazive drugog i tvrdio „ceo trening u zoni 1" za trcanje koje je
+     po trkacevim zonama bilo Z2 (prijava korisnika).
+
+     Zato se naziv zone vise ne izmislja: kad icu posalje svoja imena, koriste se
+     njegova; inace se pise samo „Z1", „Z2"… bez opisa koji bi tvrdio sta ta
+     zona znaci u tudjem sistemu. Fiksni spisak od pet naziva je uklonjen —
+     „Z5 VO2max" je za sedmozonski model prosto netacno. */
   const zoneTxt = (z) => {
     if (!Array.isArray(z) || !z.length) return '';
-    const nazivi = ['Z1 oporavak','Z2 lako/aerobno','Z3 umereno','Z4 prag','Z5 VO2max'];
-    return z.slice(0,5).map((x,i)=>`${nazivi[i]||('Z'+(i+1))}: ${x.min}${x.max?('-'+x.max):'+'}`).join(', ');
+    return z.slice(0, 8).map((x, i) => {
+      const ime = (typeof x.ime === 'string' && x.ime.trim()) ? ' ' + x.ime.trim().slice(0, 24) : '';
+      return `Z${i + 1}${ime}: ${x.min}${x.max ? ('-' + x.max) : '+'}`;
+    }).join(', ');
   };
-  const zoneBlok = zoneTxt(hrZones);
+  /* Broj zona je deo tvrdnje, ne ukras: „Z1 od sedam" i „Z1 od pet" nisu isti
+     napor. Uz to se imenuje i sistem, da model ne pomesa sa onim sto trkac vidi
+     na drugom servisu. */
+  const zoneOpis = (z, izvor) => {
+    if (!Array.isArray(z) || !z.length) return '';
+    const odakle = izvor === 'icu' ? 'intervals.icu' : izvor === 'strava' ? 'Strava' : 'nepoznat izvor';
+    return `${zoneTxt(z)} (${z.length} zona, iz: ${odakle})`;
+  };
+  const zoneBlok = zoneOpis(hrZones, hrZonesIzvor);
   /* goalCtx ranije bez ikakvog ogranicenja -> direktno u systemInstruction.
      Neograniceno = i prompt injection prostor i nacin da se nadmasi tokenski
      budzet. 200 znakova je vise nego dovoljno za "5K oko 19:30" stil opisa.
@@ -599,7 +623,8 @@ export default async function handler(req, res) {
 
   // TREND ANALIZA — poseban tip zahteva (svi treninzi od početka plana)
   if (trend) {
-    return handleTrend(trend, res, goalDesc, zoneTxt(trend.hrZones || hrZones));
+    return handleTrend(trend, res, goalDesc,
+      trend.hrZones ? zoneOpis(trend.hrZones, trend.hrZonesIzvor || hrZonesIzvor) : zoneOpis(hrZones, hrZonesIzvor));
   }
 
   if (!session || !entered) {
@@ -649,6 +674,7 @@ KAKO SE ČITA PULS — pročitaj ovo PRE nego što doneseš bilo kakav zaključa
    - San ispod 6 sati objašnjava viši puls i teži osećaj na istom tempu.
    - Ako je oporavak bio loš a trening ipak odrađen po planu, to je uspeh — reci to, ne zamerku.
    - Ako oporavak nije dat, NE nagađaj o njemu.
+9. ZONE PULSA SU TRKAČEVE, NE OPŠTE. Ako su zone date, uz njih piše KOLIKO ih ima i IZ KOG servisa su. Petozonski i sedmozonski model nisu isto: „Z2" od pet zona i „Z2" od sedam su različiti napori, pa nikad ne prevodi jedno u drugo i ne dodaj opise („Z1 je oporavak") koje sam izmisliš — koristi samo nazive koji su dati. Ako zone NISU date, ne imenuj nijednu zonu; o pulsu tada govori kao o broju u odnosu na trkačeve druge treninge. Kad piše da je vreme po zonama računato po drugom sistemu nego što su granice, o zonama NE zaključuj ništa — reci samo da raspodela nije uporediva sa navedenim granicama.
 
 ŠTA MORAŠ DA UZMEŠ U OBZIR PRE ZAKLJUČKA:
 - Šta je sesija TREBALO da bude (plan) i šta je trkač SAM napisao na Stravi da radi tog dana. Ako se to dvoje razlikuje, sudi po onome što je trkač NAMERAVAO, a razliku od plana pomeni jednom rečenicom.
@@ -774,8 +800,28 @@ Zajedničko pravilo:
       if (I.opterecenje != null) d.push(`trenažno opterećenje ${I.opterecenje}`);
       if (I.intenzitet != null) d.push(`intenzitet ${I.intenzitet}`);
       if (I.korak != null) d.push(`dužina koraka ${I.korak} cm`);
-      if (Array.isArray(I.zonePuls) && I.zonePuls.some(x => x > 0))
-        d.push('vreme po zonama pulsa (Z1→) u sekundama: ' + I.zonePuls.join('/'));
+      /* VREME PO ZONAMA — SAMO KAD SE POKLAPA SA GRANICAMA KOJE SU GORE.
+
+         Ovaj niz uvek dolazi sa intervals.icu. Ako su granice zona Stravine,
+         njegov prvi broj NIJE Stravina Z1 — to su dva sistema sa različitim
+         brojem zona i različitim granicama. Ranije se svejedno slao kao
+         „(Z1→)", pa je model raspodelu imenovao tuđim zonama; odatle „ceo
+         trening u zoni 1" za trčanje koje je po Stravinim zonama bilo Z2.
+
+         Dva uslova, oba nužna:
+           1. granice moraju biti IZ ISTOG izvora (icu),
+           2. broj zona mora biti ISTI — icu ume da vrati raspodelu po starom
+              broju zona ako ih je trkač u međuvremenu promenio, a tada se
+              indeksi tiho pomere za jedno mesto.
+         Kad nešto od toga ne stoji, raspodela se ne šalje i modelu se kaže
+         zašto — ćutanje je ovde bolje od tvrdnje koja izgleda merljivo. */
+      if (Array.isArray(I.zonePuls) && I.zonePuls.some(x => x > 0)) {
+        const brZona = Array.isArray(hrZones) ? hrZones.length : 0;
+        if (hrZonesIzvor === 'icu' && brZona === I.zonePuls.length)
+          d.push('vreme po zonama pulsa (Z1→, iste zone kao gore) u sekundama: ' + I.zonePuls.join('/'));
+        else
+          d.push('vreme po zonama pulsa postoji, ali je računato po DRUGOM sistemu zona nego što su granice navedene gore — ne imenuj zone i ne izvodi zaključak o tome u kojoj je zoni trening bio');
+      }
       return d.length ? 'Sa intervals.icu: ' + d.join(' · ') : null;
     })()
   ].filter(Boolean).join('\n');

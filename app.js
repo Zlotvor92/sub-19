@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='252'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='253'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3025,10 +3025,33 @@ function perKmDetail(streams){
    Zone pulsa se isto povlače (S.strava.hrZones) i isto su išle samo AI-u.
    ============================================================ */
 
-/* U kojoj je zoni dati puls, prema zonama iz korisnikovog Strava naloga.
-   Poslednja zona nema gornju granicu (Strava je šalje kao -1 → null). */
+/* ============================================================
+   ODAKLE ZONE PULSA — JEDAN IZVOR, I ZNA SE KOJI.
+
+   Do sada su granice zona dolazile ISKLJUČIVO sa Strave, a vreme po zonama
+   (`l.icu.zonePuls`) sa intervals.icu. To su dva sistema: Strava
+   podrazumevano ima pet zona izvedenih iz maksimalnog pulsa, icu sedam
+   izvedenih iz praga. Granice se ne poklapaju, pa je AI raspodelu sa icu-a
+   čitao kroz Stravine nazive — prijava korisnika: „ceo trening u zoni 1" za
+   trčanje koje je po njegovim zonama bilo Z2.
+
+   Pravilo: ko daje RASPODELU, daje i GRANICE. icu ima prednost jer od njega
+   dolazi `zonePuls`; Strava ostaje kad icu-a nema.
+   ============================================================ */
+function zoneIzvor(){
+  const zi=(S.icu&&S.icu.hrZones)||null;
+  if(Array.isArray(zi)&&zi.length) return {zone:zi, izvor:'icu'};
+  const zs=(S.strava&&S.strava.hrZones)||null;
+  if(Array.isArray(zs)&&zs.length) return {zone:zs, izvor:'strava'};
+  return {zone:null, izvor:null};
+}
+function zoneAktivne(){ return zoneIzvor().zone; }
+
+/* U kojoj je zoni dati puls, prema zonama koje su trenutno merodavne.
+   Poslednja zona nema gornju granicu (Strava je šalje kao -1 → null; icu
+   granicu na maksimalnom pulsu otvaramo iz istog razloga — v. api/icu.js). */
 function zonaZaPuls(hr){
-  const z=(S.strava&&S.strava.hrZones)||null;
+  const z=zoneAktivne();
   if(!Array.isArray(z)||!z.length||!(hr>0)) return null;
   for(let i=0;i<z.length;i++){
     /* Number.isFinite, NE `lo>=0`: u JS-u je `null >= 0` tačno, pa bi zapis
@@ -3040,12 +3063,15 @@ function zonaZaPuls(hr){
   return null;
 }
 
-/* Zone pulsa iz Strava naloga, kao spisak. Povlačile su se od ranije i slale
-   AI-u, ali ih korisnik nigde nije video — pa ni oznaka „Z4" uz maks. puls ne
-   bi imala u šta da se uporedi. */
+/* Zone pulsa kao spisak. Povlačile su se od ranije i slale AI-u, ali ih
+   korisnik nigde nije video — pa ni oznaka „Z4" uz maks. puls ne bi imala u šta
+   da se uporedi. Sada piše i ODAKLE su, jer su dva izvora i njihove granice se
+   ne poklapaju: ko čita „ceo trening u Z1" mora moći da vidi po čijim zonama. */
 function zoneHTML(){
-  const z=(S.strava&&S.strava.hrZones)||null;
+  const {zone:z, izvor}=zoneIzvor();
   if(!Array.isArray(z)||!z.length) return '';
+  /* Šest i sedam zona (icu) prelazi paletu od pet — poslednja boja se ponavlja
+     umesto da `boje[n]` vrati undefined i traka ostane neobojena. */
   const boje=['var(--txt3)','var(--green)','var(--cyan)','var(--amber)','var(--red)'];
   let n=0;
   const redovi=z.map(x=>{
@@ -3053,14 +3079,18 @@ function zoneHTML(){
     if(!Number.isFinite(lo)||lo<0) return '';
     const raspon = (Number.isFinite(hi)&&hi>0) ? `${esc(lo)}–${esc(hi)}` : `${esc(lo)}+`;
     n++;
+    const ime=(x&&typeof x.ime==='string'&&x.ime.trim())?` <span style="color:var(--txt3)">${esc(x.ime.trim())}</span>`:'';
     return `<div style="display:flex;align-items:center;gap:8px;font-size:.78rem;padding:2px 0">
       <span style="width:18px;height:8px;border-radius:4px;background:${boje[Math.min(n-1,boje.length-1)]};flex:none"></span>
-      <b style="width:22px">Z${n}</b><span style="color:var(--txt2)">${raspon} bpm</span></div>`;
+      <b style="width:22px">Z${n}</b><span style="color:var(--txt2)">${raspon} bpm</span>${ime}</div>`;
   }).join('');
   if(!n) return '';
+  const odakle = izvor==='icu'
+    ? 'Iz tvojih <b>intervals.icu</b> sportskih podešavanja (trčanje). Odatle dolazi i raspodela vremena po zonama, pa su granice i raspodela iz istog sistema.'
+    : 'Iz tvojih <b>Strava</b> podešavanja. Ako povežeš intervals.icu, zone se preuzimaju odande — jer odatle dolazi i vreme po zonama, pa ta dva moraju biti iz istog sistema.';
   return `<details class="help" style="margin-top:8px"><summary>Tvoje zone pulsa</summary>
     <div style="margin-top:6px">${redovi}</div>
-    <p style="margin-top:8px">Iz tvojih Strava podešavanja. Koriste se za oznaku zone uz maksimalan puls na kartici treninga i u AI analizi.</p></details>`;
+    <p style="margin-top:8px">${odakle} Koriste se za oznaku zone uz maksimalan puls na kartici treninga i u AI analizi.</p></details>`;
 }
 
 /* DRIFT (aerobno raspregnuće) ima ISTU skalu boja gde god se pojavi: ispod 5 %
@@ -4239,7 +4269,13 @@ function vezAnalize(root,d){
                   /* ono sto je trkac SAM upisao na Stravi za taj dan */
                   stravaName: l.stravaName||null, stravaDesc: l.stravaDesc||null },
         goalCtx: goalCtxText(),
-        hrZones: (S.strava&&S.strava.hrZones)||null,
+        /* ZONE NOSE IZVOR. Vreme po zonama (`icu.zonePuls`) dolazi sa
+           intervals.icu, a granice su ranije uvek bile Stravine — dva sistema
+           sa različitim brojem zona i različitim granicama, spojena u jednu
+           tvrdnju. Model sada dobija i po čijim zonama sudi, pa raspodelu sme
+           da imenuje samo kad su oba iz istog izvora (v. api/analyze.js). */
+        hrZones: zoneIzvor().zone,
+        hrZonesIzvor: zoneIzvor().izvor,
         entered:{
           workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
           km:l.km??null, time:l.sec?fmtClock(l.sec):null,
@@ -9765,9 +9801,42 @@ function icuRadniTempo(laps){
    Trčanja se preskaču bez greške kad veza nema dozvolu za njih (stariji OAuth
    token): jutarnja merenja i dalje moraju da prođu, a razlog se vraća pozivaocu
    da bi mogao da ga prikaže uz uspeh, a ne umesto njega. */
+/* ZONE PULSA SA intervals.icu — najviše jednom nedeljno, isto pravilo kao za
+   Stravine zone. Ne obara sinhronizaciju: zone su dopuna, a ne razlog da
+   trčanja ne uđu. Zato nema `return` na grešku i zato se poziva bez `await`
+   nigde gde bi mogla da uspori povlačenje treninga.
+   `zone:null` sa servera znači da sportska podešavanja za trčanje nisu
+   popunjena — tada se NE briše ono što već imamo. */
+async function icuZoneSync(sila){
+  if(!icuPovezan()) return false;
+  const staro=(S.icu&&S.icu.zonesTs)||0;
+  if(!sila && Date.now()-staro < 7*864e5) return false;
+  try{
+    const r=await fetch('/api/icu',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
+      body:JSON.stringify({sta:'zone', athleteId:S.icu.athleteId, ...icuVeza()})});
+    if(!r.ok) return false;
+    const j=await r.json();
+    if(!Array.isArray(j.zone)||!j.zone.length) return false;
+    /* Isti oblik koji `zonaZaPuls` i `zoneHTML` već čitaju — {min,max}, uz
+       opcion naziv zone. Prevod iz icu gornjih granica je na serveru. */
+    S.icu.hrZones=j.zone.map(x=>({min:x.min, max:(x.max>0?x.max:null), ime:(typeof x.ime==='string'?x.ime:null)}));
+    S.icu.zonesTs=Date.now();
+    if(j.lthr!=null) S.icu.lthr=j.lthr;
+    if(j.maxHr!=null) S.icu.maxHr=j.maxHr;
+    save();
+    return true;
+  }catch(e){ return false; }
+}
 async function icuSyncSve(danaUnazad, manual){
   const w=await icuSync(danaUnazad||120);
   if(!w.ok) return {ok:false, error:w.error};
+  /* Pre treninga, jer AI analiza tih treninga zone već koristi. Neuspeh se
+     namerno guta — v. icuZoneSync.
+     RUČNO „Povuci sve" ZAOBILAZI NEDELJNI KEŠ. Ko je upravo promenio zone na
+     intervals.icu i pritisnuo dugme očekuje da ih dobije sada, a ne za sedam
+     dana — a to je i jedini način da ih osveži bez čekanja. */
+  await icuZoneSync(!!manual);
   const out={ok:true, zapisa:w.n, trcanja:null, krugova:null, trBez:null};
   if(!icuImaTreninge()){
     out.trBez='Veza nema dozvolu za treninge — otkači pa ponovo poveži.';
@@ -10453,7 +10522,7 @@ function trendSummary(){
   const opor=Object.keys(S.wellness||{}).sort().slice(-120)
     .map(k=>S.wellness[k]).filter(z=>z&&(z.hrv!=null||z.pulsUMiru!=null||z.sanH!=null||z.ctl!=null));
   return {treninzi:out, vdot:vl, baseline:baselineVdot(), cilj:goalVdotActive(),
-          obim, hrZones:(S.strava&&S.strava.hrZones)||null, oporavak:opor,
+          obim, hrZones:zoneIzvor().zone, hrZonesIzvor:zoneIzvor().izvor, oporavak:opor,
           naredno:planUnapred(4), doTrke:diffD(TODAY,CUR_RACE),
           tempoNapretka:tempoKaCilju(vl)};
 }

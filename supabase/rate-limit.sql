@@ -103,7 +103,7 @@ begin
   -- Kad se doda nov brojač, dodaje se i ovde — a dok se ne doda, poziv pada sa
   -- BAD_ENDPOINT, dakle glasno, umesto da tiho pravi redove.
   if p_endpoint is null or p_endpoint not in (
-      'wellness', 'activities', 'workouts',   -- api/icu.js
+      'wellness', 'activities', 'workouts', 'zone',  -- api/icu.js
       'analyze_citaj', 'ai_posao',            -- api/analyze.js i okidač
       'strava_token',                         -- api/auth.js
       'icu_oauth',                            -- api/icu-oauth.js

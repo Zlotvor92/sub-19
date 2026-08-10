@@ -1,8 +1,9 @@
-/* SUB-20 · intervals.icu — sva tri poziva na jednom mestu.
+/* SUB-20 · intervals.icu — svi pozivi na jednom mestu.
 
      {sta:'wellness'}    jutarnja merenja (HRV, puls u miru, san, CTL/ATL)
      {sta:'activities'}  odradjeni treninzi, sa krugovima
      {sta:'workouts'}    slanje planiranih treninga u kalendar
+     {sta:'zone'}        granice zona pulsa iz sportskih podesavanja
 
    ZASTO U ISTOM FAJLU. Bilo je odvojeno (wellness.js, activities.js,
    workouts.js), ali Vercel Hobby plan dozvoljava najvise 12 serverless
@@ -18,6 +19,7 @@
    810 linija koje rade. Dnevni limiti i imena brojaca ostaju po grani —
    wellness 100, activities 200, workouts 40 — jer se broje odvojeno u bazi
    (v. supabase/rate-limit.sql) i trosenje jednog ne sme da blokira drugi.
+   Cetvrta grana `zone` ima svoj brojac (20) po istom pravilu.
 
    ZASTO PREKO SERVERA UOPSTE: intervals.icu ne salje CORS zaglavlja, pa bi
    poziv iz pregledaca bio blokiran. */
@@ -316,6 +318,114 @@ async function obradiWellness(req, res) {
   }
 }
 
+/* ============================================================
+   ZONE PULSA SA intervals.icu
+
+   ZAŠTO. Vreme po zonama (`icu_hr_zone_times`) je oduvek dolazilo SA icu-a, a
+   granice zona (šta Z1 uopšte znači) ISKLJUČIVO sa Strave. To su dva sistema:
+   Strava podrazumevano ima pet zona izvedenih iz maksimalnog pulsa, icu sedam
+   izvedenih iz praga (LTHR). Granice se ne poklapaju, pa je AI raspodelu sa
+   icu-a čitao kroz Stravine nazive i tvrdio „ceo trening u zoni 1" za trčanje
+   koje je po Stravinim zonama bilo Z2 (prijava korisnika).
+
+   Sada, kad je icu povezan, i granice i raspodela dolaze iz njega — isti
+   sistem sa obe strane. Strava ostaje izvor samo kad icu-a nema.
+
+   OBLIK. icu daje GORNJE granice (`hr_zones: [130,145,...]`), a aplikacija
+   svuda radi sa `{min,max}` (Stravin oblik). Prevod je ovde, na jednom mestu,
+   da klijent i `zonaZaPuls` ostanu nepromenjeni.
+   ============================================================ */
+function zoneIzSporta(j) {
+  const lista = j && Array.isArray(j.sportSettings) ? j.sportSettings : [];
+  /* Sportska podešavanja su po grupama tipova; traži se ona koja pokriva
+     trčanje. Bez ovog filtera bi se lako uzele biciklističke zone, koje su za
+     istog čoveka bitno drugačije. */
+  const zaTrcanje = lista.find(s => s && Array.isArray(s.types) &&
+    s.types.some(t => /run|trčanje|trcanje/i.test(String(t || ''))));
+  const s = zaTrcanje || null;
+  if (!s) return null;
+  const gornje = Array.isArray(s.hr_zones) ? s.hr_zones.map(ceo).filter(x => x != null) : [];
+  /* Stroga provera, jer ovo postaje merilo po kom se sudi svaki trening:
+     rastući niz uverljivih pulseva. Sve što nije takvo se odbija u celosti —
+     pola tačnih zona je gore od nijedne, jer izgleda ispravno. */
+  if (gornje.length < 2 || gornje.length > 8) return null;
+  for (let i = 0; i < gornje.length; i++) {
+    if (!(gornje[i] >= 50 && gornje[i] <= 250)) return null;
+    if (i > 0 && gornje[i] <= gornje[i - 1]) return null;
+  }
+  const imena = Array.isArray(s.hr_zone_names) ? s.hr_zone_names : [];
+  const zone = gornje.map((g, i) => ({
+    min: i === 0 ? 1 : gornje[i - 1] + 1,
+    /* POSLEDNJA ZONA JE OTVORENA NAGORE, kao i kod Strave. icu poslednju
+       granicu drži na maksimalnom pulsu; da se preslikala doslovno, otkucaj
+       iznad nje ne bi pripadao nijednoj zoni i `zonaZaPuls` bi vratio null
+       baš na najtežim trenucima trke. */
+    max: i === gornje.length - 1 ? null : gornje[i],
+    ime: typeof imena[i] === 'string' ? imena[i].slice(0, 24) : null
+  }));
+  return {
+    zone,
+    lthr: ceo(s.lthr),
+    maxHr: ceo(s.max_hr)
+  };
+}
+
+async function obradiZone(req, res) {
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Samo POST.' }); return; }
+
+  const auth = await requireUser(req);
+  if (!auth.ok) { res.status(auth.status).json({ error: auth.error }); return; }
+
+  /* SOPSTVEN BROJAC, ne deljen sa `activities`.
+
+     Deljenje je bilo prvo resenje — izbegava rucno pustanje SQL-a. Ali brojaci
+     su po grani bas zato da trosenje jedne ne blokira drugu: sa deljenim
+     brojacem bi 200 poziva ka treninzima ugasilo i povlacenje zona, a to se ne
+     bi videlo kao greska nego kao „zone se ne azuriraju". Zamka u
+     test/api.test.mjs to izricito brani.
+
+     TRAZI PUSTANJE supabase/rate-limit.sql (spisak dozvoljenih naziva je u
+     bazi). Dok se ne pusti, `check_and_bump_endpoint` dize BAD_ENDPOINT, a
+     `limitPrekoracen` na gresku PROPUSTA poziv — zone rade, samo nebrojeno i uz
+     ALARM u logu. Dakle: zaboravljena migracija ne kvari funkciju, ali se vidi.
+
+     Limit je nizak jer klijent zone trazi najvise jednom nedeljno; 20 dnevno je
+     brana od petlje u kodu, ne stvarno ogranicenje. */
+  const DNEVNI_LIMIT = 20;
+  if (await limitPrekoracen(auth.token, 'zone', DNEVNI_LIMIT)) {
+    res.status(429).json({ error: 'Dnevni limit povlačenja zona je iskorišćen. Pokušaj ponovo sutra.' });
+    return;
+  }
+
+  let body;
+  try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
+  catch { res.status(400).json({ error: 'Neispravan JSON.' }); return; }
+
+  const athleteId = String((body && body.athleteId) || '').trim();
+  if (!/^i?\d+$/.test(athleteId)) { res.status(400).json({ error: 'Neispravan intervals.icu ID sportiste.' }); return; }
+  const aut = icuAuth(body);
+  if (!aut.ok) { res.status(400).json({ error: aut.error }); return; }
+
+  try {
+    const r = await fetch('https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId),
+                          { headers: { Authorization: aut.header, Accept: 'application/json' } });
+    if (r.status === 401 || r.status === 403) {
+      res.status(401).json({ error: 'intervals.icu je odbio pristup. Otkači pa ponovo poveži intervals.icu u Podešavanjima.' });
+      return;
+    }
+    if (r.status === 429) { res.status(429).json({ error: 'intervals.icu privremeno ograničava zahteve. Pokušaj kasnije.' }); return; }
+    if (!r.ok) { res.status(502).json({ error: 'intervals.icu greška (HTTP ' + r.status + ').' }); return; }
+    const zone = zoneIzSporta(await r.json());
+    /* `zone: null` NIJE greška — sportska podešavanja za trčanje prosto nisu
+       popunjena. Klijent tada zadržava ono što ima (Stravine zone) umesto da
+       prikaže grešku zbog podatka koji je ionako opcion. */
+    res.status(200).json({ zone: zone ? zone.zone : null, lthr: zone ? zone.lthr : null, maxHr: zone ? zone.maxHr : null });
+  } catch (e) {
+    /* namerno bez detalja iz greške — u njoj može završiti deo URL-a */
+    res.status(503).json({ error: 'Nema veze sa intervals.icu.' });
+  }
+}
+
 async function obradiWorkouts(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Samo POST.' }); return; }
 
@@ -590,5 +700,6 @@ export default async function handler(req, res) {
   if (sta === 'wellness')   return obradiWellness(req, res);
   if (sta === 'workouts')   return obradiWorkouts(req, res);
   if (sta === 'activities') return obradiActivities(req, res);
-  res.status(400).json({ error: 'Nepoznat zahtev. Očekuje se sta: wellness | activities | workouts.' });
+  if (sta === 'zone')       return obradiZone(req, res);
+  res.status(400).json({ error: 'Nepoznat zahtev. Očekuje se sta: wellness | activities | workouts | zone.' });
 }

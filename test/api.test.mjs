@@ -621,14 +621,17 @@ describe('supabase/rate-limit.sql — ono što se ne sme izgubiti pri izmeni', (
   });
 
   test('imena endpointa iz koda odgovaraju dozvoljenom obliku', () => {
-    /* Sve tri grane su u api/icu.js posle spajanja, pa se imena vade odatle —
-       i tvrdi se da ih ima TRI RAZLICITA. Da se dve grane izjednace, trosenje
-       jedne bi blokiralo drugu, a to se ne bi videlo kao greska. */
+    /* Sve grane su u api/icu.js posle spajanja, pa se imena vade odatle — i
+       tvrdi se da ih ima CETIRI RAZLICITA (wellness, activities, workouts,
+       zone). Da se dve grane izjednace, trosenje jedne bi blokiralo drugu, a to
+       se ne bi videlo kao greska nego kao „zone se ne azuriraju".
+       Broj je namerno tvrd: nova grana mora da natera i dopunu spiska u
+       supabase/rate-limit.sql, koji se pusta RUCNO. */
     const oblik = /^[a-z0-9_-]{1,40}$/;
     const izvor = readFileSync(join(ROOT, 'api', 'icu.js'), 'utf8');
     const imena = [...izvor.matchAll(/limitPrekoracen\(auth\.token,\s*'([^']+)'/g)].map(m => m[1]);
-    assert.equal(imena.length, 3, `ocekuju se tri brojaca, nadjeno ${imena.length}: ${imena}`);
-    assert.equal(new Set(imena).size, 3, `dve grane dele isti brojac: ${imena}`);
+    assert.equal(imena.length, 4, `ocekuju se cetiri brojaca, nadjeno ${imena.length}: ${imena}`);
+    assert.equal(new Set(imena).size, 4, `dve grane dele isti brojac: ${imena}`);
     for (const ime of imena) assert.match(ime, oblik, `naziv "${ime}" bi funkcija odbila`);
   });
 
