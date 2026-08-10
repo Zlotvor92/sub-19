@@ -675,6 +675,7 @@ KAKO SE ČITA PULS — pročitaj ovo PRE nego što doneseš bilo kakav zaključa
    - Ako je oporavak bio loš a trening ipak odrađen po planu, to je uspeh — reci to, ne zamerku.
    - Ako oporavak nije dat, NE nagađaj o njemu.
 9. ZONE PULSA SU TRKAČEVE, NE OPŠTE. Ako su zone date, uz njih piše KOLIKO ih ima i IZ KOG servisa su. Petozonski i sedmozonski model nisu isto: „Z2" od pet zona i „Z2" od sedam su različiti napori, pa nikad ne prevodi jedno u drugo i ne dodaj opise („Z1 je oporavak") koje sam izmisliš — koristi samo nazive koji su dati. Ako zone NISU date, ne imenuj nijednu zonu; o pulsu tada govori kao o broju u odnosu na trkačeve druge treninge. Kad piše da je vreme po zonama računato po drugom sistemu nego što su granice, o zonama NE zaključuj ništa — reci samo da raspodela nije uporediva sa navedenim granicama.
+10. AKO JE DATA RASPODELA PO ZONAMA, OBAVEZNO JE NAPIŠI, u jednoj rečenici i redom od Z1 naviše: koliko je procenata provedeno u kojoj zoni. Prepiši procente DOSLOVNO onako kako su dati — već su izračunati i trkač ih vidi na ekranu, pa svaki tvoj drugačiji broj izgleda kao greška. Zone sa 0% preskoči. Tek posle toga reci šta ta raspodela znači za OVAJ tip treninga: na laganom i dugom trčanju najveći deo treba da bude u dve najniže zone i svaki veći upad u srednje zone znači da je trčano prebrzo; na intervalima se očekuje da su najviše zone stvarno dosegnute, pa je mali udeo u njima znak da radni deo nije bio dovoljno oštar. Ne izmišljaj ciljne procente kao pravilo („treba 80%") — sudi u odnosu na to šta je plan tog dana tražio.
 
 ŠTA MORAŠ DA UZMEŠ U OBZIR PRE ZAKLJUČKA:
 - Šta je sesija TREBALO da bude (plan) i šta je trkač SAM napisao na Stravi da radi tog dana. Ako se to dvoje razlikuje, sudi po onome što je trkač NAMERAVAO, a razliku od plana pomeni jednom rečenicom.
@@ -815,7 +816,10 @@ Zajedničko pravilo:
               indeksi tiho pomere za jedno mesto.
          Kad nešto od toga ne stoji, raspodela se ne šalje i modelu se kaže
          zašto — ćutanje je ovde bolje od tvrdnje koja izgleda merljivo. */
-      if (Array.isArray(I.zonePuls) && I.zonePuls.some(x => x > 0)) {
+      /* Sirove sekunde su REZERVA za stariju offline kopiju koja još ne šalje
+         `zoneUdeo`. Kad gotovi procenti postoje, ovaj red se preskače — inače bi
+         model dobio dva opisa iste stvari, jedan od kojih traži da sam deli. */
+      if (!entered.zoneUdeo && Array.isArray(I.zonePuls) && I.zonePuls.some(x => x > 0)) {
         const brZona = Array.isArray(hrZones) ? hrZones.length : 0;
         if (hrZonesIzvor === 'icu' && brZona === I.zonePuls.length)
           d.push('vreme po zonama pulsa (Z1→, iste zone kao gore) u sekundama: ' + I.zonePuls.join('/'));
@@ -823,6 +827,28 @@ Zajedničko pravilo:
           d.push('vreme po zonama pulsa postoji, ali je računato po DRUGOM sistemu zona nego što su granice navedene gore — ne imenuj zone i ne izvodi zaključak o tome u kojoj je zoni trening bio');
       }
       return d.length ? 'Sa intervals.icu: ' + d.join(' · ') : null;
+    })(),
+    /* RASPODELA PO ZONAMA — SVOJ RED, ne pod „Sa intervals.icu".
+
+       Prvo je stajala unutar tog bloka i time zavisila od `entered.icu`, sa
+       kojim nema veze: procente računa aplikacija (v. `zoneRaspodela`), pa bi
+       trening bez ijednog drugog icu polja tiho ostao bez raspodele. Uhvaćeno
+       zamkom, ne čitanjem.
+
+       Procenti stižu GOTOVI i identični su onima na kartici „Po zonama" koju
+       trkač vidi tik iznad analize. Zato se modelu izričito zabranjuje da ih
+       preračunava: svaki njegov drugačiji broj čita se kao greška, i bio bi. */
+    (() => {
+      const U = entered.zoneUdeo;
+      if (!U || !Array.isArray(U.redovi)) return null;
+      const vidljivi = U.redovi.filter(x => x && x.sec > 0 && Number.isFinite(+x.pct));
+      if (!vidljivi.length) return null;
+      const opis = vidljivi
+        .map(x => `Z${x.n}${typeof x.ime === 'string' && x.ime.trim() ? ' ' + x.ime.trim().slice(0, 24) : ''} ${x.pct}% (${Math.round(x.sec / 60)} min)`)
+        .join(', ');
+      return `RASPODELA VREMENA PO ZONAMA PULSA (po zonama navedenim na vrhu): ${opis}` +
+             (U.ukupno ? ` — ukupno ${Math.round(U.ukupno / 60)} min` : '') +
+             '. Procenti su VEĆ IZRAČUNATI i trkač ih vidi na ekranu — prepiši ih doslovno i NE preračunavaj ih sam.';
     })()
   ].filter(Boolean).join('\n');
   const userMsg = `${zoneBlok ? `ZONE PULSA OVOG TRKAČA: ${zoneBlok}\n\n` : ''}PLAN SESIJE: ${cap(session.desc, 500)}

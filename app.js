@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='254'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='255'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3047,6 +3047,48 @@ function zoneIzvor(){
 }
 function zoneAktivne(){ return zoneIzvor().zone; }
 
+/* ============================================================
+   RASPODELA VREMENA PO ZONAMA — jedan račun za ekran i za model.
+
+   `l.icu.zonePuls` su SEKUNDE po zoni, sa intervals.icu. Do sada su išle samo
+   modelu, i to kao sirov niz — čovek ih nigde nije video, pa ni tvrdnju o
+   zonama nije imao čime da proveri. Isto je bilo i sa temperaturom, i završilo
+   se time da je analiza tvrdila nešto što ekran nije potvrđivao.
+
+   Procenti se računaju OVDE, a ne u modelu i ne dvaput: isti brojevi idu i na
+   karticu i u zahtev. Da model sam deli sekunde, dobio bi priliku da pogreši u
+   računu koji aplikacija ume tačno.
+
+   Vraća null kad raspodela ne sme da se imenuje — isti uslovi kao u
+   api/analyze.js: granice moraju biti iz icu-a (odatle je i raspodela) i broj
+   zona se mora poklapati. Trkač koji je u međuvremenu promenio broj zona ima
+   starije treninge sa raspodelom po starom broju; tada su indeksi pomereni i
+   svaka oznaka „Z2" je pogrešna. */
+function zoneRaspodela(l){
+  if(!l||typeof l!=='object') return null;
+  const niz=(l.icu&&Array.isArray(l.icu.zonePuls))?l.icu.zonePuls:null;
+  if(!niz||!niz.length) return null;
+  const {zone, izvor}=zoneIzvor();
+  if(izvor!=='icu'||!Array.isArray(zone)||zone.length!==niz.length) return null;
+  const sek=niz.map(x=>(x==null||!Number.isFinite(+x)||+x<0)?0:Math.round(+x));
+  const ukupno=sek.reduce((a,b)=>a+b,0);
+  if(ukupno<60) return null;   /* ispod minuta nema šta da se deli na zone */
+  /* PROCENTI MORAJU DATI 100. Obično zaokruživanje na sedam zona ume da da 99
+     ili 101, a to na ekranu izgleda kao greška u računu — i jeste. Metod
+     najvećeg ostatka: svi dobiju ceo deo, pa se preostali procenti dele onima
+     sa najvećim odbačenim ostatkom. */
+  const tacno=sek.map(s=>s/ukupno*100);
+  const dole=tacno.map(x=>Math.floor(x));
+  let ostalo=100-dole.reduce((a,b)=>a+b,0);
+  const red=tacno.map((x,i)=>({i, ost:x-Math.floor(x)})).sort((a,b)=>b.ost-a.ost);
+  for(let k=0;k<red.length&&ostalo>0;k++,ostalo--) dole[red[k].i]++;
+  const redovi=sek.map((s,i)=>({
+    n:i+1, sec:s, pct:dole[i],
+    ime:(zone[i]&&typeof zone[i].ime==='string'&&zone[i].ime.trim())?zone[i].ime.trim():null
+  }));
+  return { ukupno, redovi, izvor:'icu' };
+}
+
 /* U kojoj je zoni dati puls, prema zonama koje su trenutno merodavne.
    Poslednja zona nema gornju granicu (Strava je šalje kao -1 → null; icu
    granicu na maksimalnom pulsu otvaramo iz istog razloga — v. api/icu.js). */
@@ -3179,6 +3221,30 @@ function dRedovi(rows){
   if(!rows||!rows.length) return '';
   return `<div class="drows">`+rows.map(r=>
     `<div class="drow"><span class="l">${esc(r[0])}</span><span class="v">${r[1]}</span></div>`).join('')+`</div>`;
+}
+/* KARTICA „PO ZONAMA" — isti brojevi koje dobija i model.
+   Postoji tačno zato što je AI analiza počela da izgovara procenat po zoni: broj
+   koji model tvrdi, a čovek ne može da vidi, je bio ceo raniji problem (v.
+   `tempTrcanja` i `zoneRaspodela`). Traka je srazmerna procentu, pa se raspodela
+   čita u prolazu, bez sabiranja u glavi.
+   Zone bez ijedne sekunde se izostavljaju — sedam redova od kojih četiri nule
+   je šum, a ukupan zbir je i dalje 100 %. */
+function karticaZona(l){
+  const r=zoneRaspodela(l);
+  if(!r) return '';
+  const boje=['var(--txt3)','var(--green)','var(--cyan)','var(--amber)','var(--red)'];
+  const vidljivi=r.redovi.filter(x=>x.sec>0);
+  if(!vidljivi.length) return '';
+  const redovi=vidljivi.map(x=>{
+    const boja=boje[Math.min(x.n-1,boje.length-1)];
+    const min=Math.round(x.sec/60);
+    return `<div class="drow"><span class="l"><b>Z${esc(x.n)}</b>${x.ime?` <small>${esc(x.ime)}</small>`:''}</span>`+
+      `<span class="v"><span style="display:inline-block;width:${esc(Math.max(2,x.pct))}%;max-width:90px;height:6px;border-radius:3px;background:${boja};vertical-align:middle;margin-right:8px"></span>`+
+      `<b>${esc(x.pct)} %</b> <small>${esc(min)} min</small></span></div>`;
+  }).join('');
+  return dKarta('Po zonama', esc('puls · ukupno '+Math.round(r.ukupno/60)+' min'),
+    `<div class="drows">${redovi}</div>`+
+    `<div class="note-src">Vreme po zonama pulsa sa intervals.icu, po tvojim zonama za trčanje (Podešavanja → Tvoje zone pulsa). Isti brojevi idu i u AI analizu.</div>`);
 }
 function dGlava(naslov,dodatak){
   return `<div class="dhead"><span class="card-t">${esc(naslov)}</span>`+
@@ -4097,6 +4163,7 @@ function dayCard(d){
     formHTML(d));
   /* ── SA SATA i JUTROS: ono što je stiglo samo ── */
   c+=dKarta('Sa sata','',dRedovi(metrikaSata(l, l.runDate||l.ts||d.date)));
+  c+=karticaZona(l);
   c+=dKarta('Jutros','',dRedovi(oporavakRedovi(l.runDate||l.ts||d.date)));
   /* Poređenje stoji ISPOD merenja, iznad AI analize: prvo šta je bilo danas,
      pa šta je bilo prošli put, pa tek onda tumačenje. */
@@ -4302,6 +4369,14 @@ function vezAnalize(root,d){
              opterećenje, vreme po zonama, „oseća se kao". Model to ne mora da
              procenjuje iz sirovih brojeva. */
           icu: l.icu||null,
+          /* RASPODELA PO ZONAMA, VEĆ IZRAČUNATA. Sirov niz sekundi i dalje ide
+             u `icu.zonePuls`, ali model iz njega ne treba da deli sam —
+             procente računa aplikacija, pa su brojevi u analizi ISTI kao na
+             kartici „Po zonama". Dva računa nad istim podacima bi se pre ili
+             kasnije razišla, i to bi ispalo tako da analiza protivreči ekranu.
+             Vraća null kad raspodela nije uporediva sa granicama (v.
+             `zoneRaspodela`) — tada je i model ne sme imenovati. */
+          zoneUdeo: (()=>{ const r=zoneRaspodela(l); return r?{ukupno:r.ukupno, redovi:r.redovi}:null; })(),
           perKm: Array.isArray(l.perKm)&&l.perKm.length?l.perKm:null
         }
       };
@@ -8771,6 +8846,7 @@ function openDaySheet(id){
     ${isRest?'':formHTML(d)}
     ${isRest?'':(()=>{ const l=S.log[id]||{};
         return dKarta('Sa sata','',dRedovi(metrikaSata(l, l.runDate||l.ts||d.date)))
+             + karticaZona(l)
              + dKarta('Jutros','',dRedovi(oporavakRedovi(l.runDate||l.ts||d.date)))
              + karticaIstaSesija(d)
              + aiKarta(d,l); })()}

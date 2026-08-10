@@ -217,6 +217,49 @@ describe('Zone u zahtevu ka modelu', () => {
     assert.match(p, /DRUGOM sistemu zona/);
   });
 
+  test('gotovi procenti stižu modelu i on ih ne preračunava sam', async () => {
+    const p = await promptZa({
+      hrZones: ICU, hrZonesIzvor: 'icu',
+      entered: { km: 9, zoneUdeo: { ukupno: 3000, redovi: [
+        { n: 1, sec: 600, pct: 20, ime: 'Recovery' },
+        { n: 2, sec: 1800, pct: 60, ime: 'Endurance' },
+        { n: 3, sec: 600, pct: 20, ime: 'Tempo' }
+      ] } }
+    });
+    assert.match(p, /Z2 Endurance 60%/, 'procenti po zoni ne stižu modelu');
+    assert.match(p, /NE preračunavaj/, 'modelu nije zabranjeno da sam deli sekunde');
+  });
+
+  test('model je IZRIČITO obavezan da raspodelu napiše', async () => {
+    /* Bez ovog pravila procenti stignu, a analiza ih ne pomene — traženo
+       ponasanje je da ih ispise redom od Z1 navise. */
+    const p = await promptZa({ hrZones: ICU, hrZonesIzvor: 'icu' });
+    assert.match(p, /OBAVEZNO JE NAPIŠI/, 'nema pravila koje traži ispis raspodele');
+    assert.match(p, /redom od Z1 naviše/);
+    assert.match(p, /Zone sa 0% preskoči/);
+  });
+
+  test('gotovi procenti imaju prednost nad sirovim sekundama', async () => {
+    /* Oba oblika u istom zahtevu: sirov niz je samo rezerva za stariju offline
+       kopiju. Da oba prodju, model bi dobio dva opisa iste stvari. */
+    const p = await promptZa({
+      hrZones: ICU, hrZonesIzvor: 'icu',
+      entered: { km: 9,
+        icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] },
+        zoneUdeo: { ukupno: 3000, redovi: [{ n: 1, sec: 600, pct: 20 }, { n: 2, sec: 1800, pct: 60 }, { n: 3, sec: 600, pct: 20 }] } }
+    });
+    assert.doesNotMatch(p, /u sekundama: 600\/1800/, 'sirov niz se salje uz vec izracunate procente');
+    assert.match(p, /Z2 60%/);
+  });
+
+  test('stara offline kopija bez `zoneUdeo` i dalje dobija sirove sekunde', async () => {
+    const p = await promptZa({
+      hrZones: ICU, hrZonesIzvor: 'icu',
+      entered: { km: 9, icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] } }
+    });
+    assert.match(p, /600\/1800\/600/, 'stariji klijent je ostao bez raspodele');
+  });
+
   test('pravilo zabranjuje imenovanje zone kad zona uopšte nema', async () => {
     const p = await promptZa({});
     assert.doesNotMatch(p, /ZONE PULSA OVOG TRKAČA/, 'prazan blok zona se svejedno šalje');
@@ -243,5 +286,109 @@ describe('Server: povlačenje zona sa intervals.icu', () => {
   test('uzimaju se zone za TRČANJE, ne prve po redu', () => {
     /* Biciklističke zone istog čoveka su bitno drugačije. */
     assert.match(src, /types\.some\(t => \/run\|/, 'sportska podešavanja se ne filtriraju po tipu');
+  });
+});
+
+/* ============================================================
+   RASPODELA PO ZONAMA — PROCENTI
+
+   Traženo posle v253: analiza treba da napiše koliko je procenata trčano u
+   kojoj zoni. Procenti se računaju u aplikaciji, ne u modelu — isti brojevi
+   moraju stajati na kartici „Po zonama" i u zahtevu ka modelu. Da model sam
+   deli sekunde, dobio bi priliku da pogreši u računu koji trkač vidi na ekranu
+   tik iznad analize.
+   ============================================================ */
+describe('Raspodela po zonama — račun', () => {
+
+  const saZonama = (zonePuls, zone = ICU) => {
+    const a = app();
+    a.evalIn(`S.icu={athleteId:'i1',apiKey:'k',hrZones:${JSON.stringify(zone)}};`);
+    return a;
+  };
+  const log = zonePuls => ({ icu: { zonePuls } });
+
+  test('procenti se računaju iz sekundi', () => {
+    const a = saZonama();
+    const r = a.call('zoneRaspodela', log([600, 1800, 600, 0, 0, 0, 0]));
+    assert.equal(r.ukupno, 3000);
+    assert.equal(r.redovi[0].pct, 20);
+    assert.equal(r.redovi[1].pct, 60);
+    assert.equal(r.redovi[2].pct, 20);
+  });
+
+  test('ZBIR JE UVEK 100 — i kad zaokruživanje to ne bi dalo', () => {
+    /* Sedam jednakih zona daje 14.28…% svaka; obično zaokruživanje na 14 daje
+       98, na 15 daje 105. Na ekranu to izgleda kao greška u računu, i jeste. */
+    const a = saZonama();
+    for (const niz of [[100,100,100,100,100,100,100], [333,333,334,0,0,0,0], [1,2,3,5,7,11,13].map(x=>x*60)]) {
+      const r = a.call('zoneRaspodela', log(niz));
+      const zbir = r.redovi.reduce((s, x) => s + x.pct, 0);
+      assert.equal(zbir, 100, `zbir ${zbir} za ${niz}`);
+    }
+  });
+
+  test('nazivi zona sa icu-a se prenose u raspodelu', () => {
+    const a = saZonama();
+    const r = a.call('zoneRaspodela', log([600, 1800, 600, 0, 0, 0, 0]));
+    assert.equal(r.redovi[1].ime, 'Endurance');
+  });
+
+  test('raspodela izostaje kad su granice STRAVINE', () => {
+    /* Isti uslov kao u api/analyze.js: ko daje raspodelu, daje i granice. */
+    const a = app();
+    a.evalIn(`S.strava={hrZones:${JSON.stringify(STRAVA)}}; S.icu=null;`);
+    assert.equal(a.call('zoneRaspodela', log([600, 1800, 600, 0, 0, 0, 0])), null);
+  });
+
+  test('raspodela izostaje kad se broj zona ne poklapa', () => {
+    /* Trkač promeni broj zona; stariji trening nosi raspodelu po starom broju,
+       pa je svaka oznaka „Z2" pomerena za jedno mesto. */
+    const a = saZonama();
+    assert.equal(a.call('zoneRaspodela', log([600, 1800, 600, 0, 0])), null);
+  });
+
+  test('trčanje kraće od minuta se ne deli na zone', () => {
+    const a = saZonama();
+    assert.equal(a.call('zoneRaspodela', log([10, 20, 0, 0, 0, 0, 0])), null);
+  });
+
+  test('bez icu podataka nema raspodele', () => {
+    const a = saZonama();
+    assert.equal(a.call('zoneRaspodela', {}), null);
+    assert.equal(a.call('zoneRaspodela', null), null);
+  });
+
+  test('pokvarene vrednosti iz backupa ne prave NaN procente', () => {
+    const a = saZonama();
+    const r = a.call('zoneRaspodela', log([600, 'x', null, -50, 0, 0, 1800]));
+    assert.ok(r, 'raspodela je otpala iako ima ispravnih vrednosti');
+    for (const x of r.redovi) assert.ok(Number.isFinite(x.pct), `pct nije broj: ${x.pct}`);
+    assert.equal(r.redovi.reduce((s, x) => s + x.pct, 0), 100);
+  });
+});
+
+describe('Raspodela po zonama — kartica', () => {
+
+  test('kartica prikazuje procenat po zoni', () => {
+    const a = app();
+    a.evalIn(`S.icu={athleteId:'i1',apiKey:'k',hrZones:${JSON.stringify(ICU)}};`);
+    const h = a.call('karticaZona', { icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] } });
+    assert.match(h, /Po zonama/);
+    assert.match(h, /60 %/, 'procenat se ne prikazuje');
+    assert.match(h, /Endurance/, 'naziv zone se ne prikazuje');
+  });
+
+  test('zone bez ijedne sekunde se ne crtaju', () => {
+    const a = app();
+    a.evalIn(`S.icu={athleteId:'i1',apiKey:'k',hrZones:${JSON.stringify(ICU)}};`);
+    const h = a.call('karticaZona', { icu: { zonePuls: [600, 1800, 0, 0, 0, 0, 0] } });
+    assert.doesNotMatch(h, /Z5/, 'prazne zone pune karticu nulama');
+    assert.match(h, /Z2/);
+  });
+
+  test('nema kartice kad raspodela nije uporediva', () => {
+    const a = app();
+    a.evalIn(`S.strava={hrZones:${JSON.stringify(STRAVA)}}; S.icu=null;`);
+    assert.equal(a.call('karticaZona', { icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] } }), '');
   });
 });
