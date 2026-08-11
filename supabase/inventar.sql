@@ -27,6 +27,8 @@ with ocekivano as (
     'tabela:endpoint_usage','tabela:nalog_za_brisanje','tabela:push_pretplata',
     'tabela:user_state','tabela:user_state_istorija',
     'tabela:zajednica_izazov','tabela:zajednica_profil',
+    -- pogledi (v. app-stats.sql)
+    'pogled:app_stats',
     -- funkcije
     'funkcija:ai_posao_dodirni','funkcija:ai_posao_nov','funkcija:ai_posao_prelaz',
     'funkcija:check_and_bump_api_usage','funkcija:check_and_bump_bug_usage',
@@ -44,6 +46,16 @@ stvarno as (
   select 'tabela'   as vrsta, c.relname::text as ime, 'tabela:'   || c.relname as kljuc
     from pg_class c join pg_namespace n on n.oid = c.relnamespace
    where n.nspname = 'public' and c.relkind in ('r','p')
+  union all
+  -- POGLEDI TAKOĐE. Ovaj red je nedostajao, i to je propustilo tačno onu vrstu
+  -- objekta zbog koje upit i postoji: `app_stats` je dugo živeo samo u bazi,
+  -- `api/daily-report.js` ga je čitao svakog jutra, a ovde se nikad nije
+  -- pojavio kao „NEPOZNATO" — jer `relkind in ('r','p')` hvata tabele, a pogled
+  -- je 'v' (materijalizovan 'm'). Provera koja ne vidi ceo razred objekata ne
+  -- čuva ništa, isto kao `provera.sql` pre nego što je šema ušla u repozitorijum.
+  select 'pogled', c.relname::text, 'pogled:' || c.relname
+    from pg_class c join pg_namespace n on n.oid = c.relnamespace
+   where n.nspname = 'public' and c.relkind in ('v','m')
   union all
   select 'funkcija', p.proname::text, 'funkcija:' || p.proname
     from pg_proc p

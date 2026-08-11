@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='258'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='259'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -347,7 +347,15 @@ function fmtDL(s){const d=s2d(s);if(!validDatum(d))return'—';const wd=(d.getDa
    cifre: fmtNum(0,0)→"", fmtNum(10,0)→"1", fmtNum(100,0)→"1". Vidljivo je
    postalo na kartici vremena („vetar 1 km/h" umesto 10, „padavine  %" umesto
    0 %), ali je isto vazilo i za puls u miru na HRV grafikonu (50→"5"). */
-function fmtNum(n,dec=1){const v=(Math.round(n*10**dec)/10**dec).toFixed(dec);return (v.includes('.')?v.replace(/\.?0+$/,''):v).replace('.',',');}
+/* NEBROJEVNA VREDNOST DAJE „—", NE „NaN" — isti dogovor koji `fmtClock` vec
+   primenjuje. Do sada je `fmtKm('abc')` davalo doslovno „NaN km" na kartici
+   dana: `d.km` dolazi iz `S.alts[id].km`, dakle iz uvezenog ili sinhronizovanog
+   JSON-a, a `cistAlts` je prvi sloj — ovo je drugi, za sve ostale pozivaoce
+   (ima ih preko sto) koji broj dobijaju iz nekog treceg izvora.
+   `typeof n==='object'` NIJE visak: `+[]` je 0, a `+[42]` je 42 — prazan niz iz
+   pokvarenog zapisa bi se inace prikazao kao stvarna nula. Ista zamka je vec
+   jednom uhvacena u `zajBr` i opisana tamo. */
+function fmtNum(n,dec=1){if(n==null||typeof n==='boolean'||typeof n==='object'||!isFinite(+n))return'—';const v=(Math.round(+n*10**dec)/10**dec).toFixed(dec);return (v.includes('.')?v.replace(/\.?0+$/,''):v).replace('.',',');}
 function fmtKm(n){return fmtNum(n,1);}
 /* Negativna i nebrojevna vrednost daju „—", ne „-1:-1:-5" i „NaN:NaN".
    fmtTempo je to vec hvatao, ali fmtClock se poziva i direktno na ~18 mesta
@@ -635,7 +643,7 @@ function sessCore(d){
     if(s.type==='tempo'&&s.qKm)            return `${fmtKm(s.qKm)} km @ ${fmtTempo(s.paceSec)}/km`;
     if(s.type==='fartlek'&&s.reps)         return `${s.reps}× ${s.repSec} s @ ${fmtTempo(s.paceSec)}/km`;
   }
-  const desc=d.desc||'';
+  const desc=tekstOpisa(d.desc);
   const afterWU=desc.split(/km\s*(?:WU|zagrevanje)\s*\+\s*/i)[1];
   if(afterWU){
     /* „smirivanje" je zadržano uz „hlađenje" NAMERNO. Reč je preimenovana, ali
@@ -731,7 +739,7 @@ function sessBreakdown(d){
     if(rp)rows.push(['Napor','RPE '+rp.min+'–'+rp.max]);
     return rows.length>=2?rows:null;
   }
-  const desc=d.desc||'';
+  const desc=tekstOpisa(d.desc);
   const mWU=desc.match(/([\d.,]+)\s*km\s*(?:WU|zagrevanje)/i);
   const mCD=desc.match(/([\d.,]+)\s*km\s*(?:CD|hlađenje|smirivanje)/i);
   const afterWU=desc.split(/km\s*(?:WU|zagrevanje)\s*\+\s*/i)[1];
@@ -754,7 +762,7 @@ function sessBreakdown(d){
 /* Dodatne napomene iz opisa koje NISU deo strukture (npr. "plafon HR 170",
    "kontrolisan maks. napor") — da se ne izgube kad prikazujemo strukturirano. */
 function sessNote(d){
-  const desc=(d&&d.desc)||'';
+  const desc=tekstOpisa(d&&d.desc);
   /* gledaj SAMO deo posle crte (opis rada) — inače se kvalifikator iz naziva
      sesije ("Tempo (broken, duže reps) — ...") lažno pokupi kao napomena */
   const body=desc.includes('—')?desc.slice(desc.indexOf('—')+1):desc;
@@ -881,6 +889,55 @@ function cistRunWalk(rw){
   if(!(r>0&&r<=3600)||!(w>0&&w<=3600)) return null;
   return { runSec:r, walkSec:w, label:runWalkText({runSec:r,walkSec:w}) };
 }
+/* IZMENE TIPA TRENINGA (S.alts) — POSLEDNJA MAPA KOJA JE ULAZILA NEPROVERENA.
+   Ista granica poverenja kao cistWellness/cistVdotLog, ali sa tezom posledicom:
+   `rebuildDateIndex` prepisuje `d.desc` vrednoscu odavde, a `sessBreakdown` nad
+   njom radi `desc.match(...)`. Kad to nije niska, baca se TypeError iz
+   `dayCard` -> `renderDanas` -> `setPage`, a `setPage(pocetnaStrana())` je
+   CETVRTA izvrsna linija pokretanja: sve posle nje — traka o ostecenom stanju,
+   `sbInit`, sinhronizacije, pracenje novog service workera — ne izvrsi se
+   uopste. Aplikacija ostaje bez ekrana i bez ijedne poruke, i to trajno, jer
+   `loadState()` uspeva pa se spasilacka traka nikad ne pali. (Izmereno na
+   hladnom startu sa `alts.desc = 123`.)
+   Sama aplikacija ovakvu vrednost nikad ne upise — `setAlt` radi `alt.desc||''`
+   — pa moze doci iskljucivo iz uvezenog ili rucno izmenjenog fajla, odnosno sa
+   servera. Tacno granica koju ovaj fajl vec brani na tri druga mesta.
+   Nepoznat `tag` rusi ceo unos: `safeTag`/`tagName` bi ga ionako prikazali kao
+   prazninu, a `d.rest` bi ostao netacan. `km` van opsega postaje null umesto da
+   se provuce kao „NaN km" na kartici dana.
+   MORA STAJATI IZNAD migrate() — v. komentar uz ID_OBLIK. */
+function cistAlts(a){
+  if(!a||typeof a!=='object'||Array.isArray(a)) return {};
+  const out={};
+  for(const id of Object.keys(a)){
+    if(!validanId(id)) continue;
+    const v=a[id];
+    if(!v||typeof v!=='object'||Array.isArray(v)) continue;
+    if(typeof v.tag!=='string'||!TAGS[v.tag]) continue;
+    const km=(v.km==null||v.km===''||typeof v.km==='boolean'||!Number.isFinite(+v.km))?null
+            :Math.min(500,Math.max(0,+v.km));
+    const pace=(v.pace==null||!Number.isFinite(+v.pace)||+v.pace<=0)?null:Math.round(+v.pace);
+    out[id]={
+      tag:v.tag,
+      km:(v.tag==='odmor')?null:km,
+      desc:typeof v.desc==='string'?v.desc:'',
+      pace:pace,
+      rw:(v.tag==='odmor')?null:cistRunWalk(v.rw),
+      paceAuto:pace!=null&&v.paceAuto===true
+    };
+  }
+  return out;
+}
+/* Opis dana kao NISKA, ma odakle stigao. Drugi sloj uz `cistAlts` — po istom
+   pravilu „dva nivoa" koje ovaj fajl vec primenjuje na ID-jeve iz backupa
+   (v. ID_OBLIK): jedan nivo je dovoljan da greska ne prodje, dva su tu jer
+   sutra stigne nov izvor opisa koji prvi nivo ne pokriva. Generisan plan je
+   bas takav izvor — `validanGenPlan` proverava `id`, `dow` i `km`, a opis dana
+   dolazi iz istog JSON-a. */
+/* Sve sto nije niska postaje PRAZNO, ne "NaN" ni "[object Object]" — isto
+   pravilo koje `cistWellness` primenjuje na brojeve. Opis dana je jedino tekst;
+   ono sto to nije nije ni skraceno ni pogodjeno, nego ga prosto nema. */
+function tekstOpisa(x){ return typeof x==='string'?x:''; }
 /* `r1` stoji OVDE, a ne uz ostatak računice: `t3kMoguc` ga zove, a `t3kMoguc`
    zove `migrate()` sa prvog reda izvršavanja. Dok je stajao dole, učitavanje
    stanja sa zapisanim testom na 3 km pucalo je sa „Cannot access 'r1' before
@@ -1029,6 +1086,9 @@ function migrate(o){
   o.knee=cistBrojPolje(cistDatirane(o.knee), 'pain', 0, 10);
   o.kg=cistBrojPolje(cistDatirane(o.kg), 'kg', 20, 300);
   o.vreme=(o.vreme&&typeof o.vreme==='object'&&o.vreme.sati&&typeof o.vreme.sati==='object')?o.vreme:null;
+  /* v. cistAlts — jedina mapa koja je do sada ulazila neproverena, a ide pravo
+     u `d.desc` i odatle u `desc.match()` pri prvom iscrtavanju. */
+  o.alts=cistAlts(o.alts);
   o.t3k=o.t3k||[];o.knee=o.knee||[];o.kg=o.kg||[];o.pred=o.pred||{};o.predLock=o.predLock||{};o.vdotLog=o.vdotLog||[];o.moves=o.moves||{};o.alts=o.alts||{};o.genPlan=o.genPlan!==undefined?o.genPlan:null;o.wellness=o.wellness||{};o.icu=o.icu!==undefined?o.icu:null;o.zajed=Object.assign({vidljiv:false,nadimak:''},(o.zajed&&typeof o.zajed==='object')?o.zajed:{});o.zajed.vidljiv=o.zajed.vidljiv===true;o.zajed.nadimak=typeof o.zajed.nadimak==='string'?o.zajed.nadimak.slice(0,24):'';o.ui=Object.assign({firstRun:null,lastBackup:null,snooze:null,seenWeek:null,geo:null,satTreninga:null,novo:null},o.ui||{});
   o.v=SCHEMA;
   return o;
@@ -3113,7 +3173,36 @@ function zoneRaspodela(l){
     n:i+1, sec:s, pct:dole[i],
     ime:(zone[i]&&typeof zone[i].ime==='string'&&zone[i].ime.trim())?zone[i].ime.trim():null
   }));
-  return { ukupno, redovi, izvor:'icu' };
+  /* GRANICE PO KOJIMA JE OVO IZRACUNATO IDU UZ REZULTAT — v. `zoneZaTrening`.
+     Bez njih je pozivalac morao da ih trazi sam, preko `zoneIzvor()`, i tako je
+     nastao bug koji je ova ispravka i zatvorila: procenti po icu granicama iz
+     aktivnosti, a natpis „iz: Strava" iznad njih. Ko racuna raspodelu, taj i
+     kaze po cemu ju je izracunao. */
+  return { ukupno, redovi, izvor:'icu', zone };
+}
+/* ZONE MERODAVNE ZA JEDAN KONKRETAN TRENING.
+
+   `zoneIzvor()` odgovara na pitanje „koje su tvoje zone DANAS" i tacan je za
+   Podesavanja i za trend. Za pojedinacan trening to nije isto pitanje: od v258
+   raspodela se racuna po granicama koje su stigle UZ TU AKTIVNOST, a one ne
+   moraju biti ni iz istog sistema kao trenutna podesavanja.
+
+   Zateceno stanje (dokazano izvrsavanjem, ne citanjem): veza sa intervals.icu
+   bez `SETTINGS:READ` nema `S.icu.hrZones`, pa je `zoneIzvor()` vracao STRAVINE
+   zone — a `zoneRaspodela` je istovremeno delila sekunde po icu granicama iz
+   aktivnosti. Model je dobijao „Z1–Z5, 5 zona, iz: Strava" i ispod toga
+   procente izracunate po sedam icu zona; posto se zone sa 0 % izostavljaju,
+   sedam ih je izlazilo kao tacno pet redova, bez ijednog signala da nesto ne
+   valja. „Z4 7 %" po icu granicama je prag (154–165), a model ga je citao kao
+   Stravin VO2max (166–178). To je isti onaj bug zbog kog su v252–258 i pisane
+   („ceo trening u zoni 1"), samo vracen kroz nova vrata.
+
+   Pravilo ostaje ono iz zaglavlja `zoneIzvor`: ko daje RASPODELU, daje i
+   GRANICE. Ovde se samo primenjuje na nivou treninga, a ne naloga. */
+function zoneZaTrening(l){
+  const r=zoneRaspodela(l);
+  if(r&&Array.isArray(r.zone)&&r.zone.length) return {zone:r.zone, izvor:r.izvor};
+  return zoneIzvor();
 }
 
 /* U kojoj je zoni dati puls, prema zonama koje su trenutno merodavne.
@@ -3310,9 +3399,20 @@ function karticaZona(l){
       `<span class="v"><span style="display:inline-block;width:${esc(Math.max(2,x.pct))}%;max-width:90px;height:6px;border-radius:3px;background:${boja};vertical-align:middle;margin-right:8px"></span>`+
       `<b>${esc(x.pct)} %</b> <small>${esc(min)} min</small></span></div>`;
   }).join('');
+  /* ODAKLE SU GRANICE — ne precutano, jer nisu uvek iste kao u Podesavanjima.
+     Kartica je do sada bezuslovno upucivala na „Tvoje zone pulsa", a taj spisak
+     ume da bude Stravin dok su ovi procenti izracunati po icu granicama koje su
+     stigle uz samu aktivnost. Dve kartice na istom ekranu su tako tvrdile
+     razlicite stvari o istom broju. */
+  const izPodesavanja=zoneIzvor();
+  const isteKaoUPodesavanjima = izPodesavanja.izvor==='icu'
+    && Array.isArray(izPodesavanja.zone) && izPodesavanja.zone.length===r.zone.length;
+  const odakle = isteKaoUPodesavanjima
+    ? 'po tvojim zonama za trčanje (Podešavanja → Tvoje zone pulsa)'
+    : 'po granicama zona koje su stigle uz sam taj trening sa intervals.icu — zato mogu da se razlikuju od spiska u Podešavanjima';
   return dKarta('Po zonama', esc('puls · ukupno '+Math.round(r.ukupno/60)+' min'),
     `<div class="drows">${redovi}</div>`+
-    `<div class="note-src">Vreme po zonama pulsa sa intervals.icu, po tvojim zonama za trčanje (Podešavanja → Tvoje zone pulsa). Isti brojevi idu i u AI analizu.</div>`);
+    `<div class="note-src">${esc('Vreme po zonama pulsa sa intervals.icu, '+odakle+'. Isti brojevi i iste granice idu i u AI analizu.')}</div>`);
 }
 function dGlava(naslov,dodatak){
   return `<div class="dhead"><span class="card-t">${esc(naslov)}</span>`+
@@ -4409,8 +4509,12 @@ function vezAnalize(root,d){
            sa različitim brojem zona i različitim granicama, spojena u jednu
            tvrdnju. Model sada dobija i po čijim zonama sudi, pa raspodelu sme
            da imenuje samo kad su oba iz istog izvora (v. api/analyze.js). */
-        hrZones: zoneIzvor().zone,
-        hrZonesIzvor: zoneIzvor().izvor,
+        /* ZONE OVOG TRENINGA, ne zone naloga — v. `zoneZaTrening`. Kad je
+           raspodela izracunata po granicama iz same aktivnosti, gore moraju
+           stajati bas te granice; inace model procente po jednom sistemu cita
+           kroz nazive drugog. */
+        hrZones: zoneZaTrening(l).zone,
+        hrZonesIzvor: zoneZaTrening(l).izvor,
         entered:{
           workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
           km:l.km??null, time:l.sec?fmtClock(l.sec):null,
@@ -11852,6 +11956,14 @@ function validanGenPlan(g){
     w.days.every(d=> d && typeof d==='object' &&
       typeof d.dow==='number' && d.dow>=0 && d.dow<=7 &&
       (d.km==null || (typeof d.km==='number' && isFinite(d.km))) &&
+      /* OPIS MORA BITI TEKST. Ova provera je nedostajala, a `d.desc` odavde ide
+         pravo u `sessBreakdown` -> `desc.match(...)`: broj umesto niske obara
+         `setPage()` na cetvrtoj liniji pokretanja i aplikacija se ne otvori
+         uopste. Bas ono sto zaglavlje ove funkcije obecava da nece proci
+         („pokvaren ili rucno izmenjen backup je tu obarao aplikaciju"), samo
+         kroz polje koje spisak nije pokrivao. `tekstOpisa` pri iscrtavanju je
+         drugi sloj; ovo je prvi. */
+      (d.desc==null || typeof d.desc==='string') &&
       (d.id==null || validanId(d.id)))
   );
   if(!daniOk) return false;
@@ -11930,10 +12042,23 @@ function importBackup(file){
         return;
       }
       if(!confirm(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${Object.keys(st.log).length} trening-unosa, ${st.knee.length} koleno, ${st.kg.length} težina.\n\nNastaviti?`))return;
-      /* Veze su po UREDJAJU i ne putuju kroz fajl (v. backupPayload) — zato se
-         zadrzavaju postojece, isto za Stravu i za intervals.icu. */
-      st.strava=st.strava||S.strava;
-      st.icu=st.icu||S.icu;
+      /* VEZE SU PO UREDJAJU I NE PUTUJU KROZ FAJL (v. backupPayload) — zato se
+         zadrzavaju postojece, isto za Stravu i za intervals.icu.
+
+         RANIJE JE OVDE STAJALO `st.strava||S.strava`, dakle postojeca veza se
+         cuvala SAMO ako fajl svoju ne nosi. Kad je nosi, fajl je pobedjivao i
+         tudj token je zavrsavao u S i u localStorage-u, bez ijedne poruke.
+         Nije bilo hipoteticno: do ispravke u backupPayload izvoz je skidao samo
+         `strava`, pa svaki backup napravljen starijom verzijom u sebi ima
+         intervals.icu OAuth token — a on po njihovoj dokumentaciji NE ISTICE.
+         Uvoz tudjeg takvog fajla davao je trajan pristup tudjim zdravstvenim
+         podacima (HRV, puls u miru, san) i pravo pisanja u tudj kalendar, tj.
+         tacno stetu koju je `delete copy.icu` uveden da spreci, samo iz drugog
+         smera. (Dokazano izvrsavanjem pravog importBackup-a.)
+         Sestrinska putanja to vec radi ispravno i bezuslovno — v.
+         `primiStanjeSaServera`; ove dve su se bile razisle. */
+      st.strava=S.strava||null;
+      st.icu=S.icu||null;
       /* Aktivacija se radi tek posle provere; ako i pored svega pukne, vraca se
          prethodno stanje da aplikacija ne ostane razbijena do restarta. */
       const prethodno=S;
@@ -12442,6 +12567,20 @@ function sbPayload(state){
      merenja kao i svako drugo, pa se vide i na drugom uredjaju. */
   /* i OAuth token je pristupni podatak, isto kao API kljuc — ostaje na uredjaju */
   c.icu = state.icu ? { lastSync: state.icu.lastSync || null } : null;
+  /* KOORDINATE NE IDU NA SERVER — to je obecanje iz privacy.html („ne upisuju se
+     u bazu"), a do sada ga je gazio ovaj isti red: `S.ui.geo` i `S.vreme` su
+     prolazili nedirnuti u `user_state.data`.
+     Nije sitnica ni kad se gleda samo kod: cela odbrana zbog koje se Open-Meteo
+     zove DIREKTNO iz pregledaca („da KOORDINATE korisnika ne bi morale da prodju
+     kroz nas server", v. blok VREME NA DAN TRENINGA) nema smisla ako iste te
+     koordinate zavrse u nasoj bazi drugim putem.
+     `vreme` odlazi celo: to je kes tudjeg servisa, nosi lat/lon, i vezan je za
+     mesto — kopija sa drugog uredjaja bi ovde davala temperaturu pogresnog
+     mesta, i to oznacenu kao pouzdanu prognozu (`izvor:'om'`).
+     Oba ostaju na uredjaju i u backupu, i oba se ZADRZAVAJU pri povlacenju sa
+     servera — v. `primiStanjeSaServera`, isti obrazac kao za tokene. */
+  if(c.ui) delete c.ui.geo;
+  delete c.vreme;
   return c;
 }
 /* Odluka pri pokretanju: 'push' (server prazan) - 'ok' (isti) - 'ask' (server
@@ -12883,9 +13022,16 @@ async function sbPull(){
 function primiStanjeSaServera(mig){
   const keepStrava=S.strava;                 /* veza sa Stravom je po uredjaju */
   const keepIcu=S.icu;                       /* isto i intervals.icu kljuc */
+  /* Koordinate i kes prognoze su isto po uredjaju i NE putuju kroz server
+     (v. sbPayload). Bez ovoga bi povlacenje ugasilo vreme na uredjaju koji ga
+     ima: sa servera stize `geo:null`, pa bi kartica vremena tiho nestala. */
+  const keepGeo=S.ui&&S.ui.geo;
+  const keepVreme=S.vreme;
   S=mig;
   S.strava=keepStrava||null;
   S.icu=keepIcu||null;
+  if(keepGeo){ S.ui=S.ui||{}; S.ui.geo=keepGeo; }
+  if(keepVreme) S.vreme=keepVreme;
   setActivePlan();
   uskladiVlasnickePodatke();
   rebuildDateIndex(); save();

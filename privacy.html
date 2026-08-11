@@ -80,9 +80,19 @@ unosa nedeljama, sinhronizacija stala). Ne postoji način da se od njega odjavi�
 
 <h3>Šta se NIKAD ne šalje na server</h3>
 <div class="box">
-  <p style="margin:0">Strava pristupni tokeni, intervals.icu API ključ i <strong>tvoje
-  koordinate</strong> ostaju <strong>isključivo na tvom uređaju</strong>. Ne upisuju se u bazu
-  i ne napuštaju pregledač osim u trenutku poziva ka samom servisu na koji se odnose.</p>
+  <p style="margin:0">Strava pristupni tokeni, intervals.icu token odnosno API ključ i
+  <strong>tvoje koordinate</strong> ostaju <strong>isključivo na tvom uređaju</strong>.
+  <strong>Ne upisuju se u bazu</strong> — ni u tvoj red, ni bilo gde drugde. Tokeni i ključ
+  ne ulaze ni u backup fajl; koordinate ulaze, jer je backup fajl tvoj i ostaje kod tebe.</p>
+  <p>Dva tačna izuzetka, oba samo u trenutku poziva:</p>
+  <ul>
+    <li><strong>Strava token</strong> i <strong>koordinate</strong> idu direktno servisu na
+      koji se odnose (Strava, odnosno Open-Meteo). Ne prolaze kroz naš server.</li>
+    <li><strong>intervals.icu token / API ključ</strong> prolazi <strong>kroz naš
+      server</strong>, jer intervals.icu ne šalje CORS zaglavlja pa poziv iz pregledača ne
+      bi bio moguć. Naš server ga samo prosleđuje njima u istom zahtevu — ne upisuje ga i
+      ne pamti.</li>
+  </ul>
 </div>
 
 <h3 id="lokacija">Lokacija i vremenska prognoza</h3>
@@ -90,8 +100,9 @@ unosa nedeljama, sinhronizacija stala). Ne postoji način da se od njega odjavi�
 lokaciju). Dok je isključeno, aplikacija ni ne pita za lokaciju i nijedan upit ka vremenskoj
 službi se ne šalje.</p>
 <p>Kad ga uključiš, uređaj jednom pročita svoju poziciju i <strong>zaokruži je na dve decimale
-— oko 1 km</strong>. Zaokružena vrednost se čuva lokalno, kao i svaki drugi podatak, i ide u
-backup. Tačna pozicija se nigde ne pamti.</p>
+— oko 1 km</strong>. Zaokružena vrednost se čuva na uređaju i ide u backup fajl. Tačna
+pozicija se nigde ne pamti. Za razliku od ostalih podataka, koordinate se <strong>ne
+sinhronizuju</strong> — na drugom uređaju lokaciju uključuješ ponovo, jednim dodirom.</p>
 <p>Te koordinate <strong>ne prolaze kroz naš server</strong> — idu direktno servisu
 <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, koji ne traži
 ni nalog ni ključ. Uz njih ne ide ništa drugo: ni ime, ni e-adresa, ni identifikator naloga, ni
@@ -284,9 +295,21 @@ want it, account deletion is the option.</p>
 
 <h3>What is NEVER sent to the server</h3>
 <div class="box">
-  <p style="margin:0">Strava access tokens, the intervals.icu API key and <strong>your
-  coordinates</strong> stay <strong>on your device only</strong>. They are never written to the
-  database and never leave the browser except in the request to the service they belong to.</p>
+  <p style="margin:0">Strava access tokens, the intervals.icu token or API key and
+  <strong>your coordinates</strong> stay <strong>on your device only</strong>. They are
+  <strong>never written to the database</strong> — not to your own row, not anywhere else.
+  Tokens and the key are not included in the backup file either; coordinates are, because
+  the backup file is yours and stays with you.</p>
+  <p>Two exact exceptions, both only at the moment of the request:</p>
+  <ul>
+    <li>The <strong>Strava token</strong> and your <strong>coordinates</strong> go straight to
+      the service they belong to (Strava, respectively Open-Meteo). They do not pass through
+      our server.</li>
+    <li>The <strong>intervals.icu token / API key</strong> does pass <strong>through our
+      server</strong>, because intervals.icu sends no CORS headers, so a call from the
+      browser would not be possible. Our server only forwards it to them within the same
+      request &mdash; it neither stores nor remembers it.</li>
+  </ul>
 </div>
 
 <h3 id="location">Location and weather</h3>
@@ -294,8 +317,10 @@ want it, account deletion is the option.</p>
 location). While it is off, the app never asks for your location and no request to the weather
 service is made at all.</p>
 <p>When you turn it on, the device reads its position once and <strong>rounds it to two
-decimals &mdash; about 1 km</strong>. Only the rounded value is stored, locally, and it is
-included in your backup. The exact position is never kept.</p>
+decimals &mdash; about 1 km</strong>. Only the rounded value is stored, on the device, and it
+is included in your backup file. The exact position is never kept. Unlike the rest of your
+data, coordinates are <strong>not synced</strong> &mdash; on a second device you turn location
+on again, with one tap.</p>
 <p>Those coordinates <strong>do not pass through our server</strong> &mdash; they go straight to
 <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, which requires
 no account and no key. Nothing else goes with them: no name, no email, no account identifier

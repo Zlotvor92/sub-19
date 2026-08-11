@@ -838,6 +838,18 @@ Zajedničko pravilo:
        Procenti stižu GOTOVI i identični su onima na kartici „Po zonama" koju
        trkač vidi tik iznad analize. Zato se modelu izričito zabranjuje da ih
        preračunava: svaki njegov drugačiji broj čita se kao greška, i bio bi. */
+    /* „PO ZONAMA NAVEDENIM NA VRHU" SE SME RECI SAMO KAD JE TO ISTINA.
+
+       Ista dva uslova koja `I.zonePuls` grana iznad vec drzi — granice moraju
+       biti date i broj zona se mora poklapati — samo su ovoj grani nedostajala.
+       Posledica je bila tacno onaj bug zbog kog je i pisana provera iznad:
+       procenti izracunati po sedam icu zona, a iznad njih spisak od pet
+       Stravinih, uz recenicu koja ta dva izricito povezuje. Aplikacija sada
+       salje granice po kojima je stvarno racunala (v. `zoneZaTrening`), pa ovo
+       stoji zbog starijih offline kopija — one i dalje salju `zoneUdeo` uz zone
+       naloga i ne znaju za razliku.
+       Kad se ne poklapa, raspodela se i dalje salje (brojevi su tacni i trkac
+       ih vidi na ekranu), ali se modelu kaze da imena zona nisu ta. */
     (() => {
       const U = entered.zoneUdeo;
       if (!U || !Array.isArray(U.redovi)) return null;
@@ -846,7 +858,11 @@ Zajedničko pravilo:
       const opis = vidljivi
         .map(x => `Z${x.n}${typeof x.ime === 'string' && x.ime.trim() ? ' ' + x.ime.trim().slice(0, 24) : ''} ${x.pct}% (${Math.round(x.sec / 60)} min)`)
         .join(', ');
-      return `RASPODELA VREMENA PO ZONAMA PULSA (po zonama navedenim na vrhu): ${opis}` +
+      const poklapaSe = Array.isArray(hrZones) && hrZones.length === U.redovi.length;
+      const glava = poklapaSe
+        ? 'RASPODELA VREMENA PO ZONAMA PULSA (po zonama navedenim na vrhu)'
+        : 'RASPODELA VREMENA PO ZONAMA PULSA (računata po zonama iz samog tog treninga, koje NISU one navedene na vrhu — navedi procente, ali NE imenuj zone i ne zaključuj u kojoj je zoni trening bio)';
+      return `${glava}: ${opis}` +
              (U.ukupno ? ` — ukupno ${Math.round(U.ukupno / 60)} min` : '') +
              '. Procenti su VEĆ IZRAČUNATI i trkač ih vidi na ekranu — prepiši ih doslovno i NE preračunavaj ih sam.';
     })()

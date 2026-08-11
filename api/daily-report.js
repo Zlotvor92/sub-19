@@ -294,14 +294,24 @@ function buildHtml(stats, rows, errors, brisanja) {
   return `<div style="font-family:-apple-system,sans-serif;max-width:640px;margin:0 auto;padding:20px;background:#0A0A0F;color:#F5F5F7">
     <div style="font-weight:800;font-size:18px;margin-bottom:4px">SUB<span style="color:#FA2E55">-20</span> — dnevni izveštaj</div>
     <div style="color:#7A7A86;font-size:12px;margin-bottom:18px">${esc(new Date().toLocaleDateString('sr-RS', { day: '2-digit', month: 'long', year: 'numeric' }))}</div>
-    <table style="border-collapse:collapse;width:100%;background:#16161D;border-radius:12px;overflow:hidden;margin-bottom:22px">
+    ${errors.stats
+      /* NULA KOJA ZNACI „NISAM DOBIO BROJ" MORA DA SE RAZLIKUJE OD NULE.
+         Otkad izostanak statistike vise ne obara ceo izvestaj, tabela bi bez
+         ovoga pokazala sest nula kao cinjenicu — a to je gore od greske, jer
+         izgleda kao da je aplikaciju preko noci napustio svako. */
+      ? `<div style="background:#2A1116;border:1px solid #FA2E55;border-radius:12px;padding:12px;margin-bottom:22px;font-size:13px">
+           <b style="color:#FA2E55">Statistika nije učitana</b><br>
+           <span style="color:#7A7A86">${esc(errors.stats)}</span><br>
+           <span style="color:#7A7A86">Ako pogled <code>app_stats</code> ne postoji: Supabase → SQL Editor → <code>supabase/app-stats.sql</code>. Brojevi po korisniku ispod su i dalje tačni.</span>
+         </div>`
+      : `<table style="border-collapse:collapse;width:100%;background:#16161D;border-radius:12px;overflow:hidden;margin-bottom:22px">
       ${row('Korisnika ukupno', stats.korisnika ?? 0)}
       ${row('Aktivnih (24h)', stats.aktivnih_24h ?? 0)}
       ${row('Aktivnih (7 dana)', stats.aktivnih_7d ?? 0)}
       ${row('Aktivnih (30 dana)', stats.aktivnih_30d ?? 0)}
       ${row('Novih (7 dana)', stats.novih_7d ?? 0)}
       ${row('Sa generisanim planom', stats.sa_generisanim_planom ?? 0)}
-    </table>
+    </table>`}
     <div style="font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#7A7A86;margin-bottom:8px">Aktivnost po korisniku</div>
     ${usersHtml}
     ${brisanjaHtml}
@@ -382,15 +392,19 @@ export default async function handler(req, res) {
     .filter(k => !process.env[k]);
   if (missing.length) return res.status(500).json({ error: 'Nedostaju env varijable: ' + missing.join(', ') });
 
-  let stats;
-  try {
-    stats = await fetchStats(url, svcKey);
-  } catch (e) {
-    return res.status(502).json({ error: 'Statistika nije uspela: ' + e.message });
-  }
-
   const todayStr = new Date().toISOString().slice(0, 10);
   const errors = {};
+
+  /* STATISTIKA OTKAZUJE KAO I SVAKI DRUGI KORAK — u svom try/catch.
+     Ranije je ovde stajao `return res.status(502)`, dakle jedini korak koji je
+     obarao CEO posao. To nije bila samo izgubljena tabelica na vrhu mejla:
+     `izvrsiOdlozenaBrisanja()` se poziva NIZE, pa se odlozena brisanja naloga
+     ne bi izvrsila nijedan dan dok god `app_stats` ne odgovara — a jedina
+     poruka koja bi to javila je isti onaj izvestaj koji nije poslat.
+     Klasa greske ista kao kod svake rucne migracije: tiho, i mesecima. */
+  let stats = {};
+  try { stats = await fetchStats(url, svcKey); }
+  catch (e) { errors.stats = e.message; }
 
   let users = [];
   try { users = await fetchUserList(url, svcKey); }
@@ -417,7 +431,10 @@ export default async function handler(req, res) {
       headers: { 'Authorization': 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         from, to,
-        subject: 'SUB-20 dnevni izveštaj — ' + (stats.korisnika ?? 0) + ' korisnika',
+        /* Naslov ne sme da tvrdi „0 korisnika" kad brojac nije ni odgovorio. */
+        subject: errors.stats
+          ? 'SUB-20 dnevni izveštaj — statistika nije učitana'
+          : 'SUB-20 dnevni izveštaj — ' + (stats.korisnika ?? 0) + ' korisnika',
         html
       })
     });
