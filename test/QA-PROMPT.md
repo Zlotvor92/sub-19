@@ -241,7 +241,7 @@ ponaša isto — nisi našao ono što misliš da si našao.
 Na kraju ponovo pusti ceo paket i potvrdi da je radno stablo čisto:
 ```bash
 node --test "test/**/*.test.mjs"
-git status --short          # mora biti prazno osim izveštaja
+git status --short          # MORA biti prazno — izveštaj ide u ćaskanje, ne u repo
 ```
 
 ---
@@ -269,7 +269,21 @@ git status --short          # mora biti prazno osim izveštaja
 
 ## IZVEŠTAJ
 
-Napiši ga u **`IZVESTAJ-QA.md`** u korenu repozitorijuma. Bez izmena koda.
+**Isporučuje se U ĆASKANJU, kao `.md` fajl — ne u repozitorijum.**
+
+- Napiši ga u fajl `IZVESTAJ-QA.md` **izvan repozitorijuma** (u radni/privremeni
+  direktorijum sesije), pa ga **priloži u ćaskanju** da vlasnik ima kopiju kod
+  sebe.
+- **Ne komituj ga, ne guraj, ne ostavljaj ga u radnom stablu.** Koren
+  repozitorijuma nije u `.vercelignore`, pa bi fajl ostavljen tamo završio javno
+  dostupan na `sub-19.vercel.app/IZVESTAJ-QA.md` — a izveštaj o slabostima
+  aplikacije je poslednje što treba da stoji na javnoj adresi.
+- Na kraju `git status --short` mora biti **prazan**.
+- Pored priloženog fajla, u samoj poruci napiši kratak sažetak (5–10 rečenica):
+  koliko nalaza po ozbiljnosti i šta je najhitnije. Vlasnik treba da zna na čemu
+  je i pre nego što otvori fajl.
+
+Bez izmena koda.
 
 ### Struktura
 
