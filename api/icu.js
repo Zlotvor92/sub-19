@@ -219,6 +219,19 @@ function sazetak(a) {
     trimp: ceo(a.trimp),
     korak: ceo(a.average_stride),
     zonePuls: Array.isArray(a.icu_hr_zone_times) ? a.icu_hr_zone_times.map(ceo).slice(0, 8) : null,
+    /* GRANICE ZONA IZ SAME AKTIVNOSTI — gornje granice u otkucajima.
+
+       Ovo je bolji izvor od sportskih podešavanja, iz dva razloga:
+       1. DOZVOLA. Podešavanja traže opseg `SETTINGS:READ`; ovo stiže uz
+          aktivnost, dakle pod `ACTIVITY:READ` koji svaka veza koja uopšte uvozi
+          treninge već ima. Prijava „zone se ne povlače ma šta radim" je bila
+          upravo 403 na podešavanjima.
+       2. DOSLEDNOST. `icu_hr_zone_times` je izračunat PO OVIM granicama, za ovu
+          aktivnost. Uzeti granice odavde znači da se broj zona i njihove
+          vrednosti ne mogu razići sa raspodelom — ni kad trkač promeni zone
+          posle trčanja. Sportska podešavanja pokazuju stanje DANAS, a raspodela
+          je od tada, i to je bio ceo razlog za proveru „isti broj zona". */
+    zoneGranice: Array.isArray(a.icu_hr_zones) ? a.icu_hr_zones.map(ceo).slice(0, 8) : null,
     zoneTempo: Array.isArray(a.pace_zone_times) ? a.pace_zone_times.map(ceo).slice(0, 8) : null
   };
   return o;

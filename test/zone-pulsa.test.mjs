@@ -436,7 +436,8 @@ describe('Kad raspodele nema, kartica kaže zašto', () => {
   test('trening bez zonePuls-a, a nije zaključan — druga rečenica', () => {
     const a = saIcu(`,hrZones:${JSON.stringify(ICU)}`);
     const r = a.call('zoneRazlog', {});
-    assert.match(r, /nije vratio vreme po zonama/);
+    assert.match(r, /vreme po zonama/);
+    assert.match(r, /Povuci sve/, 'ne kaže šta korisnik treba da uradi');
     assert.doesNotMatch(r, /ručno/i, 'meša zaključan trening sa običnim');
   });
 
@@ -494,14 +495,19 @@ describe('OAuth opseg za zone', () => {
     assert.equal(a.call('icuImaZone'), true, 'veza preko ključa je odbijena');
   });
 
-  test('kartica kaže „otkači pa poveži", ne „pritisni Povuci sve"', () => {
-    /* Uputstvo koje ne može da pomogne je gore od nikakvog: korisnik je
-       pritiskao „Povuci sve" u krug. */
+  test('STARA VEZA NE SME DA BUDE PREPREKA — granice stižu uz aktivnost', () => {
+    /* Ovo je jezgro ispravke posle druge prijave („ništa ne radi i dalje").
+       Granice zona dolaze uz samu aktivnost, pod `ACTIVITY:READ` koji svaka
+       veza koja uvozi treninge već ima. Veza bez `SETTINGS` i dalje mora da
+       da punu raspodelu — inače se korisnik šalje na otkačivanje bez potrebe. */
     const a = app();
     a.evalIn("S.icu={athleteId:'i1',token:'t',scope:'ACTIVITY:READ,WELLNESS:READ'};");
-    const r = a.call('zoneRazlog', { icu: { zonePuls: [600, 1800] } });
-    assert.match(r, /Otkači|otkači/, 'ne upućuje na ponovno povezivanje');
-    assert.doesNotMatch(r, /Povuci sve/, 'i dalje šalje na dugme koje ne može da pomogne');
+    const l = { icu: { zonePuls: [600, 1800, 600], zoneGranice: [130, 150, 175] } };
+    const r = a.call('zoneRaspodela', l);
+    assert.ok(r, 'raspodela izostaje iako aktivnost nosi i granice i vremena');
+    assert.equal(r.redovi.length, 3);
+    assert.equal(r.redovi[1].pct, 60);
+    assert.equal(a.call('zoneRazlog', l), '', 'javlja se razlog iako sve radi');
   });
 
   test('zapamćena greška sa servera ima prednost nad opštim uputstvom', () => {
@@ -537,5 +543,77 @@ describe('Server: oblik odgovora sa intervals.icu', () => {
 
   test('prazne zone nose razlog, ne ćutanje', () => {
     assert.match(src, /razlog: zone \? null :/, 'odsustvo zona se ne objašnjava');
+  });
+});
+
+/* ============================================================
+   GRANICE IZ SAME AKTIVNOSTI
+
+   Druga prijava: „ništa ne radi i dalje", uz karticu koja i dalje traži da se
+   zone povuku. Prva ispravka je dodala opseg `SETTINGS:READ` i time tražila od
+   svakog korisnika da otkači pa ponovo poveže — rešenje koje radi, ali traži
+   ručnu radnju i ostavlja svakog ko je ne uradi bez raspodele.
+
+   Bolji izvor je stajao tu sve vreme: intervals.icu uz svaku aktivnost šalje i
+   granice zona po kojima je `icu_hr_zone_times` izračunat. To je pod
+   `ACTIVITY:READ`, koji svaka veza koja uopšte uvozi treninge već ima — i po
+   definiciji se poklapa sa raspodelom, jer je iz istog zapisa.
+   ============================================================ */
+describe('Granice zona iz aktivnosti', () => {
+
+  test('gornje granice se prevode u {min,max}, poslednja otvorena', () => {
+    const a = app();
+    const z = a.call('zoneIzGranica', [122, 141, 153, 165, 175]);
+    assert.equal(z.length, 5);
+    assert.deepEqual({ min: z[0].min, max: z[0].max }, { min: 1, max: 122 });
+    assert.deepEqual({ min: z[1].min, max: z[1].max }, { min: 123, max: 141 });
+    assert.equal(z[4].max, null, 'poslednja zona nije otvorena nagore');
+  });
+
+  test('besmislene granice se odbijaju u celosti', () => {
+    /* Pola tačnih zona je gore od nijedne — izgleda ispravno. */
+    const a = app();
+    for (const los of [[130, 120], [130], [10, 20, 30], [130, 130, 150],
+                       [130, null, 160], [130, 'x', 160], null, [300, 400]])
+      assert.equal(a.call('zoneIzGranica', los), null, `prošlo: ${JSON.stringify(los)}`);
+  });
+
+  test('granice iz aktivnosti imaju PREDNOST nad sportskim podešavanjima', () => {
+    /* Podešavanja pokazuju stanje DANAS, a raspodela je od dana trčanja. Ako se
+       razilaze, merodavno je ono iz zapisa tog trčanja. */
+    const a = app();
+    a.evalIn(`S.icu={athleteId:'i1',apiKey:'k',hrZones:${JSON.stringify(ICU)}};`);
+    const r = a.call('zoneRaspodela', { icu: { zonePuls: [600, 1800, 600], zoneGranice: [130, 150, 175] } });
+    assert.ok(r, 'raspodela izostaje');
+    assert.equal(r.redovi.length, 3, 'uzete su zone iz podešavanja (7) umesto iz aktivnosti (3)');
+  });
+
+  test('kad granica uz aktivnost nema, pada se na podešavanja', () => {
+    /* Stariji uvozi nemaju `zoneGranice`; njima podešavanja i dalje rade. */
+    const a = app();
+    a.evalIn(`S.icu={athleteId:'i1',apiKey:'k',hrZones:${JSON.stringify(ICU)}};`);
+    const r = a.call('zoneRaspodela', { icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] } });
+    assert.ok(r, 'rezerva preko podešavanja više ne radi');
+    assert.equal(r.redovi.length, 7);
+  });
+
+  test('granice koje se ne poklapaju po broju se ignorišu, ne koriste naslepo', () => {
+    const a = app();
+    a.evalIn('S.icu={athleteId:"i1",apiKey:"k"};');
+    assert.equal(a.call('zoneRaspodela', { icu: { zonePuls: [600, 1800, 600], zoneGranice: [130, 150] } }), null);
+  });
+
+  test('stariji uvoz bez granica i bez podešavanja upućuje na „Povuci sve"', () => {
+    const a = app();
+    a.evalIn('S.icu={athleteId:"i1",apiKey:"k"};');
+    const r = a.call('zoneRazlog', { icu: { zonePuls: [600, 1800, 600] } });
+    assert.match(r, /Povuci sve/);
+    assert.match(r, /nije potrebna nikakva nova dozvola/, 'i dalje sugeriše problem sa dozvolom');
+  });
+
+  test('server prosleđuje granice uz aktivnost', () => {
+    const src = readRepoFile('api/icu.js');
+    assert.match(src, /zoneGranice: Array\.isArray\(a\.icu_hr_zones\)/, 'granice se ne čitaju sa aktivnosti');
+    assert.match(readRepoFile('app.js'), /'zoneTempo','zoneGranice'/, 'granice se ne prenose u dnevnik');
   });
 });

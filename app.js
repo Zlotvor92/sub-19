@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='257'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='258'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3064,12 +3064,39 @@ function zoneAktivne(){ return zoneIzvor().zone; }
    zona se mora poklapati. Trkač koji je u međuvremenu promenio broj zona ima
    starije treninge sa raspodelom po starom broju; tada su indeksi pomereni i
    svaka oznaka „Z2" je pogrešna. */
+/* Gornje granice iz icu-a (`[122,141,153,…]`) u `{min,max}` oblik koji ostatak
+   aplikacije koristi. Isti prevod kao na serveru (v. `zoneIzSporta`), i iz istog
+   razloga otvorena poslednja zona: icu je drži na maksimalnom pulsu, pa bi
+   otkucaj iznad nje ostao van svake zone.
+   Vraća null na sve što nije rastući niz uverljivih pulseva — pola tačnih zona
+   je gore od nijedne, jer izgleda ispravno. */
+function zoneIzGranica(gornje){
+  if(!Array.isArray(gornje)||gornje.length<2||gornje.length>8) return null;
+  const g=gornje.map(x=>(x==null||!Number.isFinite(+x))?null:Math.round(+x));
+  for(let i=0;i<g.length;i++){
+    if(g[i]==null||g[i]<50||g[i]>250) return null;
+    if(i>0&&g[i]<=g[i-1]) return null;
+  }
+  return g.map((x,i)=>({ min:i===0?1:g[i-1]+1, max:i===g.length-1?null:x, ime:null }));
+}
+
 function zoneRaspodela(l){
   if(!l||typeof l!=='object') return null;
   const niz=(l.icu&&Array.isArray(l.icu.zonePuls))?l.icu.zonePuls:null;
   if(!niz||!niz.length) return null;
-  const {zone, izvor}=zoneIzvor();
-  if(izvor!=='icu'||!Array.isArray(zone)||zone.length!==niz.length) return null;
+  /* GRANICE IZ SAME AKTIVNOSTI IMAJU PREDNOST. Stižu uz `zonePuls`, izračunate
+     su po njima i za taj dan — pa se broj zona po definiciji poklapa i ne
+     zavise ni od jedne dodatne dozvole. Sportska podešavanja ostaju rezerva:
+     ona pokazuju stanje DANAS, a raspodela je od dana trčanja, zato i postoji
+     provera da se broj zona poklapa. */
+  const izAkt=(l.icu&&Array.isArray(l.icu.zoneGranice))?zoneIzGranica(l.icu.zoneGranice):null;
+  let zone=null;
+  if(izAkt&&izAkt.length===niz.length) zone=izAkt;
+  else {
+    const g=zoneIzvor();
+    if(g.izvor==='icu'&&Array.isArray(g.zone)&&g.zone.length===niz.length) zone=g.zone;
+  }
+  if(!zone) return null;
   const sek=niz.map(x=>(x==null||!Number.isFinite(+x)||+x<0)?0:Math.round(+x));
   const ukupno=sek.reduce((a,b)=>a+b,0);
   if(ukupno<60) return null;   /* ispod minuta nema šta da se deli na zone */
@@ -3237,23 +3264,24 @@ function zoneRazlog(l){
   if(!l||typeof l!=='object') return '';
   if(!icuPovezan()) return '';
   const niz=(l.icu&&Array.isArray(l.icu.zonePuls))?l.icu.zonePuls:null;
-  const {zone, izvor}=zoneIzvor();
-  if(!Array.isArray(zone)||!zone.length||izvor!=='icu'){
-    /* STVARAN RAZLOG IMA PREDNOST nad opštim uputstvom. „Pritisni Povuci sve"
-       je beskorisno onome kome poziv vraća 403 — pritiskaće ga koliko hoće.
-       `zoneGreska` upisuje `icuZoneSync` pri svakom neuspehu. */
+  /* REDOSLED PROVERA PRATI `zoneRaspodela`. Prvo se traži vreme po zonama, jer
+     bez njega granice ni ne trebaju — a ranije je bilo obrnuto, pa je trkač
+     dobijao „povuci zone" i za trening koji vreme po zonama uopšte nema. */
+  if(!niz||!niz.length){
+    if(l.lock)
+      return 'Ovo trčanje je ručno korigovano, pa se podaci sa intervals.icu za njega više ne prepisuju (tako ispravka ostaje trajna). Zato za njega nema vremena po zonama.';
     if(S.icu&&typeof S.icu.zoneGreska==='string'&&S.icu.zoneGreska) return S.icu.zoneGreska;
-    if(!icuImaZone())
-      return 'Veza sa intervals.icu je starija od ove funkcije i nema dozvolu za čitanje podešavanja, pa zone ne mogu da se povuku. Podešavanja → intervals.icu → „Otkači", pa „Poveži intervals.icu" ponovo.';
-    return 'Zone pulsa još nisu povučene sa intervals.icu. Podešavanja → intervals.icu → „Povuci sve" — dugme namerno zaobilazi nedeljni keš, pa ih dobijaš odmah.';
+    return 'Za ovo trčanje intervals.icu još nije dao vreme po zonama. Podešavanja → intervals.icu → „Povuci sve" — treninzi se tada uvoze ponovo, sa zonama. Ako i posle toga nema, tog podatka nema ni na njihovoj strani.';
   }
-  if(!niz||!niz.length)
-    return l.lock
-      ? 'Ovo trčanje je ručno korigovano, pa se podaci sa intervals.icu za njega više ne prepisuju (tako ispravka ostaje trajna). Zato za njega nema vremena po zonama.'
-      : 'intervals.icu za ovo trčanje nije vratio vreme po zonama. Pokreni „Povuci sve" pa proveri ponovo; ako i dalje nema, tog podatka nema ni na njihovoj strani.';
-  if(zone.length!==niz.length)
-    return `Raspodela za ovo trčanje je računata po ${niz.length} zona, a tvoje zone sada imaju ${zone.length}. Oznake bi bile pomerene za jedno mesto, pa se ne prikazuju — sledeći „Povuci sve" to izjednačava.`;
-  return '';
+  /* Vreme po zonama postoji, ali granice ne — dakle uvoz je stariji od verzije
+     koja granice donosi uz aktivnost. Rešenje je isto: ponovo uvezi. */
+  const izAkt=(l.icu&&Array.isArray(l.icu.zoneGranice))?zoneIzGranica(l.icu.zoneGranice):null;
+  if(izAkt&&izAkt.length===niz.length) return '';
+  const g=zoneIzvor();
+  if(g.izvor==='icu'&&Array.isArray(g.zone)&&g.zone.length===niz.length) return '';
+  if(g.izvor==='icu'&&Array.isArray(g.zone)&&g.zone.length)
+    return `Raspodela za ovo trčanje je računata po ${niz.length} zona, a tvoje zone sada imaju ${g.zone.length}. Oznake bi bile pomerene za jedno mesto, pa se ne prikazuju — „Povuci sve" uvozi trening ponovo, sa granicama iz same aktivnosti, i to rešava.`;
+  return 'Ovo trčanje je uvezeno pre nego što je aplikacija počela da preuzima i granice zona. Podešavanja → intervals.icu → „Povuci sve" i raspodela će se pojaviti — nije potrebna nikakva nova dozvola.';
 }
 
 /* KARTICA „PO ZONAMA" — isti brojevi koje dobija i model.
@@ -10042,7 +10070,7 @@ async function icuSyncTreninzi(danaUnazad, manual){
       if(a.sat!=null&&isFinite(a.sat)&&a.sat>=0&&a.sat<=23) l.satTrk=+a.sat;
       /* Ono što Strava putanja uopšte nema, a icu izračuna sam. */
       const ic={};
-      ['gapSec','razdvajanje','efikasnost','opterecenje','intenzitet','trimp','korak','osecaSe','zonePuls','zoneTempo']
+      ['gapSec','razdvajanje','efikasnost','opterecenje','intenzitet','trimp','korak','osecaSe','zonePuls','zoneTempo','zoneGranice']
         .forEach(k=>{ if(a[k]!=null) ic[k]=a[k]; });
       if(Object.keys(ic).length) l.icu=ic; else delete l.icu;
       /* icu-ovo razdvajanje je merenje nad celim fajlom — bolje od naše
