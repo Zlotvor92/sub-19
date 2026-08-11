@@ -31,7 +31,7 @@
 
 <p class="lang">Srpski</p>
 <h1>SUB-20 — Politika privatnosti</h1>
-<p class="upd">Poslednja izmena: 10. avgust 2026.</p>
+<p class="upd">Poslednja izmena: 11. avgust 2026.</p>
 
 <p class="lead">SUB-20 je lična aplikacija za planiranje trkačkih priprema. Ovaj dokument
 opisuje koje podatke aplikacija obrađuje, gde ih čuva i kome ih prosleđuje.</p>
@@ -164,6 +164,10 @@ navedeno:</p>
   <li><code>WELLNESS:READ</code> — čitanje HRV-a, pulsa u miru i sna, radi procene oporavka.</li>
   <li><code>CALENDAR:WRITE</code> — upis planiranih treninga u tvoj kalendar, da bi stigli na sat.
       Aplikacija menja i briše isključivo događaje koje je sama napravila (nose oznaku <code>sub19-</code>).</li>
+  <li><code>SETTINGS:READ</code> — čitanje tvojih sportskih podešavanja za trčanje, i to samo
+      <b>zona pulsa</b> (granice i njihovi nazivi). Bez toga aplikacija ne zna šta Z1 ili Z2 kod
+      tebe znače, pa vreme provedeno po zonama ne bi umela ni da prikaže ni da protumači.
+      Dozvola je samo za <b>čitanje</b> — aplikacija tvoja podešavanja ne menja.</li>
 </ul>
 <p>Vezu možeš prekinuti u svakom trenutku iz Podešavanja u aplikaciji, kao i sa strane
 intervals.icu.</p>
@@ -230,7 +234,7 @@ samoj aplikaciji.</p>
 
 <p class="lang" style="margin-top:56px">English</p>
 <h1>SUB-20 — Privacy Policy</h1>
-<p class="upd">Last updated: 10 August 2026</p>
+<p class="upd">Last updated: 11 August 2026</p>
 
 <p class="lead">SUB-20 is a personal running-training planner. This document describes what
 data the app processes, where it is stored and who it is shared with.</p>
@@ -365,6 +369,10 @@ for the stated purpose:</p>
   <li><code>WELLNESS:READ</code> — reading HRV, resting heart rate and sleep, for recovery assessment.</li>
   <li><code>CALENDAR:WRITE</code> — writing planned workouts to your calendar so they reach your watch.
       The app only modifies or deletes events it created itself (marked <code>sub19-</code>).</li>
+  <li><code>SETTINGS:READ</code> — reading your sport settings for running, and only the
+      <b>heart-rate zones</b> (boundaries and their names). Without them the app cannot know what
+      Z1 or Z2 mean for you, so it could neither show nor interpret time spent in each zone.
+      This is <b>read-only</b> — the app never changes your settings.</li>
 </ul>
 <p>You can disconnect at any time from the app's Settings, or from the intervals.icu side.</p>
 

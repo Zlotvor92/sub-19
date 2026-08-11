@@ -453,3 +453,89 @@ describe('Kad raspodele nema, kartica kaže zašto', () => {
     assert.equal(a.call('zoneRazlog', { icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] } }), '');
   });
 });
+
+/* ============================================================
+   STVARNI UZROK PRIJAVE: OAUTH OPSEG
+
+   Korisnik je posle v256 prijavio da ništa ne pomaže — brisao unos, sinhronizovao
+   ponovo, a kartica je i dalje pisala „zone još nisu povučene". Poziv je uredno
+   odlazio i uredno bio ODBIJEN: `SETTINGS:READ` nije bio u OAuth opsegu, jer je
+   opseg nastao pre grane za zone. `icuZoneSync` je grešku gutala (`return false`
+   bez traga), pa se spolja videlo samo odsustvo.
+
+   Dve stvari se ovde drže: da opseg sadrži dozvolu, i da se neuspeh nikad više
+   ne izgubi bez rečenice.
+   ============================================================ */
+describe('OAuth opseg za zone', () => {
+
+  test('SETTINGS:READ je u traženom opsegu', () => {
+    /* Bez njega intervals.icu na `/sport-settings` vraća 403 — a to je bio
+       stvarni uzrok prijave. */
+    const src = readRepoFile('api/icu-oauth.js');
+    const m = /const SCOPE = '([^']+)'/.exec(src);
+    assert.ok(m, 'SCOPE se više ne definiše ovako — zamka je zastarela');
+    assert.match(m[1], /SETTINGS:READ/, 'opseg nema dozvolu za čitanje podešavanja');
+    assert.doesNotMatch(m[1], /SETTINGS:WRITE/, 'vratio se opseg za UPIS, koji ništa ne koristi');
+  });
+
+  test('stara veza se prepoznaje pre nego što se poziv pošalje', () => {
+    /* Poziv koji je unapred osuđen ne treba ni slati — a razlog se zna odmah. */
+    const a = app();
+    a.evalIn("S.icu={athleteId:'i1',token:'t',scope:'ACTIVITY:READ,WELLNESS:READ,CALENDAR:WRITE'};");
+    assert.equal(a.call('icuImaZone'), false, 'stara veza je prošla kao da sme');
+    a.evalIn("S.icu={athleteId:'i1',token:'t',scope:'ACTIVITY:READ,WELLNESS:READ,CALENDAR:WRITE,SETTINGS:READ'};");
+    assert.equal(a.call('icuImaZone'), true, 'nova veza je odbijena');
+  });
+
+  test('veza preko API ključa nema scope i mora da prođe', () => {
+    /* API ključ ima pun pristup; isto pravilo kao `icuImaTreninge`. */
+    const a = app();
+    a.evalIn("S.icu={athleteId:'i1',apiKey:'k'};");
+    assert.equal(a.call('icuImaZone'), true, 'veza preko ključa je odbijena');
+  });
+
+  test('kartica kaže „otkači pa poveži", ne „pritisni Povuci sve"', () => {
+    /* Uputstvo koje ne može da pomogne je gore od nikakvog: korisnik je
+       pritiskao „Povuci sve" u krug. */
+    const a = app();
+    a.evalIn("S.icu={athleteId:'i1',token:'t',scope:'ACTIVITY:READ,WELLNESS:READ'};");
+    const r = a.call('zoneRazlog', { icu: { zonePuls: [600, 1800] } });
+    assert.match(r, /Otkači|otkači/, 'ne upućuje na ponovno povezivanje');
+    assert.doesNotMatch(r, /Povuci sve/, 'i dalje šalje na dugme koje ne može da pomogne');
+  });
+
+  test('zapamćena greška sa servera ima prednost nad opštim uputstvom', () => {
+    const a = app();
+    a.evalIn("S.icu={athleteId:'i1',apiKey:'k',zoneGreska:'Konkretan razlog sa servera.'};");
+    assert.equal(a.call('zoneRazlog', {}), 'Konkretan razlog sa servera.');
+  });
+
+  test('kad zone stignu, zapamćena greška se briše', () => {
+    /* Inače bi stara poruka nadživela ispravku i tvrdila da je i dalje loše. */
+    const src = readRepoFile('app.js');
+    assert.match(src, /zapamti\(null\);/, 'uspeh ne čisti zapamćenu grešku');
+  });
+});
+
+describe('Server: oblik odgovora sa intervals.icu', () => {
+
+  const src = readRepoFile('api/icu.js');
+
+  test('probaju se OBE putanje za sportska podešavanja', () => {
+    /* Pretpostavka o obliku odgovora je već jednom bila mesto gde je sve stalo.
+       `/sport-settings` vraća go niz, `/athlete/{id}` ugnježdeno u
+       `sportSettings` — prihvataju se oba. */
+    assert.match(src, /sport-settings/, 'namenska putanja se ne poziva');
+    assert.match(src, /Array\.isArray\(j\) \? j/, 'go niz se ne prihvata');
+    assert.match(src, /j\.sportSettings/, 'ugnježden oblik se ne prihvata');
+  });
+
+  test('403 se prevodi u uputstvo, ne u golu grešku', () => {
+    assert.match(src, /nema dozvolu za čitanje podešavanja/,
+      '403 na zonama ne kaže korisniku šta da uradi');
+  });
+
+  test('prazne zone nose razlog, ne ćutanje', () => {
+    assert.match(src, /razlog: zone \? null :/, 'odsustvo zona se ne objašnjava');
+  });
+});

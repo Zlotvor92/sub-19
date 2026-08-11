@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='256'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='257'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3238,8 +3238,15 @@ function zoneRazlog(l){
   if(!icuPovezan()) return '';
   const niz=(l.icu&&Array.isArray(l.icu.zonePuls))?l.icu.zonePuls:null;
   const {zone, izvor}=zoneIzvor();
-  if(!Array.isArray(zone)||!zone.length||izvor!=='icu')
+  if(!Array.isArray(zone)||!zone.length||izvor!=='icu'){
+    /* STVARAN RAZLOG IMA PREDNOST nad opštim uputstvom. „Pritisni Povuci sve"
+       je beskorisno onome kome poziv vraća 403 — pritiskaće ga koliko hoće.
+       `zoneGreska` upisuje `icuZoneSync` pri svakom neuspehu. */
+    if(S.icu&&typeof S.icu.zoneGreska==='string'&&S.icu.zoneGreska) return S.icu.zoneGreska;
+    if(!icuImaZone())
+      return 'Veza sa intervals.icu je starija od ove funkcije i nema dozvolu za čitanje podešavanja, pa zone ne mogu da se povuku. Podešavanja → intervals.icu → „Otkači", pa „Poveži intervals.icu" ponovo.';
     return 'Zone pulsa još nisu povučene sa intervals.icu. Podešavanja → intervals.icu → „Povuci sve" — dugme namerno zaobilazi nedeljni keš, pa ih dobijaš odmah.';
+  }
   if(!niz||!niz.length)
     return l.lock
       ? 'Ovo trčanje je ručno korigovano, pa se podaci sa intervals.icu za njega više ne prepisuju (tako ispravka ostaje trajna). Zato za njega nema vremena po zonama.'
@@ -9916,17 +9923,42 @@ function icuRadniTempo(laps){
    nigde gde bi mogla da uspori povlačenje treninga.
    `zone:null` sa servera znači da sportska podešavanja za trčanje nisu
    popunjena — tada se NE briše ono što već imamo. */
+/* Da li ova veza SME da čita zone. Isto pravilo kao `icuImaTreninge`: OAuth
+   token izdat pre nego što je opseg `SETTINGS:READ` dodat nema tu dozvolu, pa
+   poziv vraća 403. API ključ nema `scope` uopšte i ima pun pristup — zato se
+   odsutan `scope` tumači kao „sme".
+   Postoji da se poziv koji je unapred osuđen NE šalje, i da se razlog zna pre
+   nego što se čeka odgovor. */
+function icuImaZone(){
+  if(!icuPovezan()) return false;
+  const s=S.icu.scope;
+  if(typeof s!=='string'||!s) return true;
+  return /SETTINGS/i.test(s);
+}
 async function icuZoneSync(sila){
   if(!icuPovezan()) return false;
+  /* GREŠKA SE PAMTI, NE GUTA. Prva verzija je na svaki neuspeh vraćala `false`
+     bez traga, pa je korisnik video samo da zona nema — a stvarni uzrok (403
+     zbog starog opsega) nije bio vidljiv ni njemu ni meni. Zbog toga je jedna
+     prijava potrošila ceo krug nagađanja. */
+  const zapamti=(g)=>{ if(S.icu){ if(g) S.icu.zoneGreska=String(g).slice(0,300); else delete S.icu.zoneGreska; save(); } return !!g; };
+  if(!icuImaZone()){
+    zapamti('Veza sa intervals.icu je starija od ove funkcije i nema dozvolu za čitanje podešavanja. Otkači pa ponovo poveži intervals.icu — dobićeš i zone pulsa.');
+    return false;
+  }
   const staro=(S.icu&&S.icu.zonesTs)||0;
   if(!sila && Date.now()-staro < 7*864e5) return false;
   try{
     const r=await fetch('/api/icu',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
       body:JSON.stringify({sta:'zone', athleteId:S.icu.athleteId, ...icuVeza()})});
-    if(!r.ok) return false;
-    const j=await r.json();
-    if(!Array.isArray(j.zone)||!j.zone.length) return false;
+    let j=null; try{ j=await r.json(); }catch(e){}
+    if(!r.ok){ zapamti((j&&j.error)||('Server je vratio grešku '+r.status+' pri povlačenju zona.')); return false; }
+    if(!Array.isArray(j.zone)||!j.zone.length){
+      zapamti(j&&j.razlog ? j.razlog : 'intervals.icu nije vratio nijednu zonu pulsa za trčanje.');
+      return false;
+    }
+    zapamti(null);
     /* Isti oblik koji `zonaZaPuls` i `zoneHTML` već čitaju — {min,max}, uz
        opcion naziv zone. Prevod iz icu gornjih granica je na serveru. */
     S.icu.hrZones=j.zone.map(x=>({min:x.min, max:(x.max>0?x.max:null), ime:(typeof x.ime==='string'?x.ime:null)}));
@@ -9935,7 +9967,7 @@ async function icuZoneSync(sila){
     if(j.maxHr!=null) S.icu.maxHr=j.maxHr;
     save();
     return true;
-  }catch(e){ return false; }
+  }catch(e){ zapamti('Nema veze sa serverom pri povlačenju zona.'); return false; }
 }
 async function icuSyncSve(danaUnazad, manual){
   const w=await icuSync(danaUnazad||120);

@@ -33,9 +33,20 @@
    intervals.icu naloga, bez ijednog razloga; ako taj token ikad iscuri, šteta je
    veća nego što mora da bude. Politika privatnosti je uz to tvrdila da se
    koristi za upis praga tempa — što se nikad nije dešavalo.
-   Postojeće veze ne treba ponovo povezivati: opseg se sužava pri sledećem
-   povezivanju, a uži opseg ništa ne kvari jer se ni pre nije koristio. */
-const SCOPE = 'ACTIVITY:READ,WELLNESS:READ,CALENDAR:WRITE';
+
+   `SETTINGS:READ` je DODAT sa granom `{sta:'zone'}`: zone pulsa žive u sportskim
+   podešavanjima, i bez ovog opsega intervals.icu na taj poziv vraća 403. To je
+   bio i stvarni uzrok prijave „zone se ne povlače, ma koliko puta pritisnem
+   Povuci sve" — poziv je uredno odlazio i uredno bio odbijen, a klijent je
+   grešku gutao, pa se spolja videlo samo da ničega nema.
+   READ, ne WRITE: aplikacija zone samo čita. Prag tempa i dalje unosiš sam.
+
+   POSTOJEĆE VEZE MORAJU DA SE OBNOVE. Opseg se dobija pri autorizaciji, pa ko je
+   povezan pre ove izmene ima token bez `SETTINGS` i za njega zone neće raditi
+   dok ne uradi „Otkači" pa „Poveži intervals.icu". Aplikacija to sada i kaže
+   izričito (v. `icuImaZone` i `zoneRazlog` u app.js) umesto da ćuti. Veza preko
+   API ključa ima pun pristup i nju ovo ne dira. */
+const SCOPE = 'ACTIVITY:READ,WELLNESS:READ,CALENDAR:WRITE,SETTINGS:READ';
 
 /* KRATKOTRAJAN KEŠ POTVRĐENIH TOKENA — ista provera, jedan mrežni skok manje.
    Do sada je SVAKI poziv ka bilo kojoj putanji plaćao dodatan krug ka

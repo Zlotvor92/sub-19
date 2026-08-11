@@ -336,7 +336,12 @@ async function obradiWellness(req, res) {
    da klijent i `zonaZaPuls` ostanu nepromenjeni.
    ============================================================ */
 function zoneIzSporta(j) {
-  const lista = j && Array.isArray(j.sportSettings) ? j.sportSettings : [];
+  /* DVA MOGUĆA OBLIKA. `/athlete/{id}` vraća sportska podešavanja ugnježdena u
+     `sportSettings`, a namenski `/athlete/{id}/sport-settings` vraća go niz.
+     Prihvataju se oba, jer se zove i jedno i drugo (v. `obradiZone`) — i jer je
+     pretpostavka o obliku odgovora već jednom bila mesto gde je sve stalo. */
+  const lista = Array.isArray(j) ? j
+              : (j && Array.isArray(j.sportSettings) ? j.sportSettings : []);
   /* Sportska podešavanja su po grupama tipova; traži se ona koja pokriva
      trčanje. Bez ovog filtera bi se lako uzele biciklističke zone, koje su za
      istog čoveka bitno drugačije. */
@@ -406,21 +411,47 @@ async function obradiZone(req, res) {
   const aut = icuAuth(body);
   if (!aut.ok) { res.status(400).json({ error: aut.error }); return; }
 
-  try {
-    const r = await fetch('https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId),
-                          { headers: { Authorization: aut.header, Accept: 'application/json' } });
+  const zovi = async (url) => {
+    const r = await fetch(url, { headers: { Authorization: aut.header, Accept: 'application/json' } });
     if (r.status === 401 || r.status === 403) {
-      res.status(401).json({ error: 'intervals.icu je odbio pristup. Otkači pa ponovo poveži intervals.icu u Podešavanjima.' });
-      return;
+      const e = new Error('odbijen'); e.status = 401;
+      /* 403 ovde gotovo uvek znači STAR TOKEN bez opsega `SETTINGS:READ` —
+         zone su dodate posle njega. Poruka mora reći šta da se uradi, ne samo
+         da je odbijeno; upravo je nedostatak te rečenice pretvorio prijavu u
+         „ništa ne šljaka". */
+      e.poruka = 'intervals.icu je odbio pristup zonama. Veza je starija od ove funkcije i nema dozvolu za čitanje podešavanja — otkači pa ponovo poveži intervals.icu u Podešavanjima.';
+      throw e;
     }
-    if (r.status === 429) { res.status(429).json({ error: 'intervals.icu privremeno ograničava zahteve. Pokušaj kasnije.' }); return; }
-    if (!r.ok) { res.status(502).json({ error: 'intervals.icu greška (HTTP ' + r.status + ').' }); return; }
-    const zone = zoneIzSporta(await r.json());
+    if (r.status === 429) { const e = new Error('limit'); e.status = 429; e.poruka = 'intervals.icu privremeno ograničava zahteve. Pokušaj kasnije.'; throw e; }
+    if (r.status === 404) return null;   /* putanja ne postoji — proba se druga */
+    if (!r.ok) { const e = new Error('http'); e.status = 502; e.poruka = 'intervals.icu greška (HTTP ' + r.status + ').'; throw e; }
+    return r.json();
+  };
+
+  try {
+    const baza = 'https://intervals.icu/api/v1/athlete/' + encodeURIComponent(athleteId);
+    /* Prvo namenska putanja, pa athlete objekat kao rezerva. Redosled je takav
+       jer `/sport-settings` vraća baš ono što nam treba, dok athlete objekat
+       nosi i sve ostalo i nije zajemčeno da podešavanja ugnezdi. */
+    let zone = null;
+    for (const url of [baza + '/sport-settings', baza]) {
+      const j = await zovi(url);
+      if (!j) continue;
+      zone = zoneIzSporta(j);
+      if (zone) break;
+    }
     /* `zone: null` NIJE greška — sportska podešavanja za trčanje prosto nisu
        popunjena. Klijent tada zadržava ono što ima (Stravine zone) umesto da
-       prikaže grešku zbog podatka koji je ionako opcion. */
-    res.status(200).json({ zone: zone ? zone.zone : null, lthr: zone ? zone.lthr : null, maxHr: zone ? zone.maxHr : null });
+       prikaže grešku zbog podatka koji je ionako opcion. Ali se KAŽE, da se
+       „nisu popunjena" ne bi čitalo isto kao „nisam ni pokušao". */
+    res.status(200).json({
+      zone: zone ? zone.zone : null,
+      lthr: zone ? zone.lthr : null,
+      maxHr: zone ? zone.maxHr : null,
+      razlog: zone ? null : 'U intervals.icu Sport Settings za trčanje nisu podešene zone pulsa.'
+    });
   } catch (e) {
+    if (e && e.status) { res.status(e.status).json({ error: e.poruka || 'Greška.' }); return; }
     /* namerno bez detalja iz greške — u njoj može završiti deo URL-a */
     res.status(503).json({ error: 'Nema veze sa intervals.icu.' });
   }
