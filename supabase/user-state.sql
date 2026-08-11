@@ -35,13 +35,23 @@ create table if not exists public.user_state (
   data        jsonb       not null default '{}'::jsonb,
   device_id   text,
   app_version text,
-  updated_at  timestamptz not null default now()
+  updated_at  timestamptz not null default now(),
+  -- `created_at` NIJE UKRAS: `app_stats` iz njega racuna `novih_7d`
+  -- (v. supabase/app-stats.sql). Kolona je u bazi postojala godinama, a ovaj
+  -- fajl je nije opisivao — pa bi tabela napravljena iz repozitorijuma bila
+  -- tiho nepotpuna, a pogled nad njom ne bi mogao ni da se napravi.
+  -- Isto razilazenje kao i sam `app_stats`, samo jedan sloj dublje; nadjeno
+  -- tek kad je njegova definicija prepisana iz zive baze.
+  created_at  timestamptz not null default now()
 );
 
 -- Kolone koje su dodate kasnije — na zatečenoj tabeli ih možda nema.
 alter table public.user_state add column if not exists device_id   text;
 alter table public.user_state add column if not exists app_version text;
 alter table public.user_state add column if not exists updated_at  timestamptz not null default now();
+-- Na zatecenoj tabeli ovo je bez dejstva (kolona vec postoji); postoji zbog
+-- svakog buduceg okruzenja koje se pravi IZ OVOG FAJLA. v. `app_stats`.
+alter table public.user_state add column if not exists created_at  timestamptz not null default now();
 
 -- 1a. `on delete cascade` NA ZATEČENOJ TABELI.
 --

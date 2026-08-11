@@ -440,6 +440,23 @@ describe('N-4 · Koordinate naspram obećanja iz privacy.html', () => {
    ============================================================ */
 describe('N-5 · app_stats i inventar baze', () => {
 
+  /* Telo SAME NAREDBE, ne prve pojave tih reči u fajlu. Prva verzija je
+     tražila `indexOf('create or replace view')`, a taj niz stoji i u komentaru
+     u zaglavlju — pa je „telo" počinjalo od komentara i obe zamke su ostajale
+     zelene i kad se kolona ukloni iz definicije. Treći put ista greška u ovom
+     fajlu (v. politika privatnosti, pa `prosek_treninga`): tvrdnja nad tekstom
+     mora da bude vezana za mesto, ne za pojavu niza. */
+  function teloPogleda() {
+    const s = readRepoFile('supabase/app-stats.sql');
+    const m = /^create or replace view public\.app_stats as$/m.exec(s);
+    assert.ok(m, 'naredba `create or replace view public.app_stats as` nije nađena');
+    const od = m.index;
+    const doIdx = s.indexOf(';', od);
+    assert.ok(doIdx > od, 'definicija pogleda nije zatvorena tačka-zarezom');
+    return s.slice(od, doIdx + 1);
+  }
+
+
   test('svaki naziv iz baze koji kod čita ima svoj fajl u supabase/', () => {
     /* `app_stats` je godinu dana postojao samo u bazi: kod ga je čitao svakog
        jutra, a nijedan fajl ga nije opisivao. Ovo je opšti oblik te provere. */
@@ -454,6 +471,41 @@ describe('N-5 · app_stats i inventar baze', () => {
     assert.ok(nazivi.size >= 8, `pretraga nije našla nazive (${nazivi.size})`);
     for (const n of nazivi)
       assert.ok(sql.includes(n), `kod čita "${n}", a nijedan supabase/*.sql ga ne pominje`);
+  });
+
+  test('svaka kolona koju app_stats čita opisana je u user-state.sql', () => {
+    /* NAĐENO TEK KAD JE DEFINICIJA PREPISANA IZ ŽIVE BAZE: pogled računa
+       `novih_7d` iz `user_state.created_at`, a `user-state.sql` tu kolonu nije
+       pominjao nigde. Tabela napravljena iz repozitorijuma bila bi tiho
+       nepotpuna, a `create or replace view` nad njom bi pukao sa „column
+       created_at does not exist".
+       Isto razilaženje kao i sam `app_stats`, samo jedan sloj dublje — zato
+       zamka gleda ODNOS između ta dva fajla, ne samo postojanje svakog. */
+    const tabela = readRepoFile('supabase/user-state.sql');
+    const telo = teloPogleda();
+    const kolone = new Set();
+    for (const m of telo.matchAll(/\b(updated_at|created_at|device_id|app_version|data|user_id)\b/g))
+      kolone.add(m[1]);
+    assert.ok(kolone.has('created_at'), 'zamka ne meri ništa — created_at se više ne koristi');
+    for (const k of kolone)
+      assert.ok(new RegExp(`\\b${k}\\b`).test(tabela),
+        `app_stats čita user_state.${k}, a user-state.sql tu kolonu ne opisuje`);
+  });
+
+  test('definicija pogleda je prepisana iz baze, ne rekonstruisana', () => {
+    /* Prva verzija ovog fajla bila je rekonstrukcija iz koda i razilazila se u
+       tri stvari (dve kolone manje, pogrešan izvor za `korisnika` i `novih_7d`).
+       Ove dve kolone niko ne čita — baš zato su dokaz da je definicija
+       prepisana, a ne izvedena iz onoga što `daily-report.js` koristi. */
+    /* SAMO TELO UPITA. Prva verzija ove zamke gledala je ceo fajl, a oba
+       naziva stoje i u komentaru iznad („DVE KOLONE KOJE NIKO NE ČITA") — pa
+       je uklanjanje kolone iz same definicije prolazilo neprimećeno. Isti
+       propust kao kod provere teksta politike; zato se ovde reže telo. */
+    const telo = teloPogleda();
+    assert.match(telo, /prosek_treninga/, 'definicija ne odgovara zatečenoj u bazi');
+    assert.match(telo, /prosek_vdot_unosa/, 'definicija ne odgovara zatečenoj u bazi');
+    assert.match(telo, /from public\.user_state;/,
+      'pogled više ne čita user_state — proveri da li se definicija promenila');
   });
 
   test('inventar.sql vidi i poglede, ne samo tabele', () => {
