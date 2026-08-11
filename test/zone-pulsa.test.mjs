@@ -392,3 +392,64 @@ describe('Raspodela po zonama — kartica', () => {
     assert.equal(a.call('karticaZona', { icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] } }), '');
   });
 });
+
+/* ============================================================
+   ZAŠTO RASPODELE NEMA
+
+   Posle v255 raspodela se kod korisnika nije pojavila, a kartica je prosto
+   nestala — isti prazan ekran za četiri različita uzroka. Nije se moglo
+   razlikovati „nisi povukao zone" od „icu za ovo trčanje nema taj podatak", ni
+   sa ekrana ni iz analize. Ovde se drži da svaki uzrok ima svoju rečenicu.
+   ============================================================ */
+describe('Kad raspodele nema, kartica kaže zašto', () => {
+
+  const beziIcu = () => { const a = app(); a.evalIn('S.icu=null; S.strava=null;'); return a; };
+  const saIcu = (extra = '') => {
+    const a = app();
+    a.evalIn(`S.icu={athleteId:'i1',apiKey:'k'${extra}};`);
+    return a;
+  };
+
+  test('bez povezanog intervals.icu se ne javlja ništa', () => {
+    /* Ko nema icu nema ni odakle da dobije raspodelu — poruka bi bila šum na
+       svakom treningu, ne obaveštenje. */
+    const a = beziIcu();
+    assert.equal(a.call('zoneRazlog', { icu: { zonePuls: [600, 1800] } }), '');
+    assert.equal(a.call('karticaZona', {}), '');
+  });
+
+  test('icu povezan ali zone nisu povučene — uputi na „Povuci sve"', () => {
+    const a = saIcu();
+    const r = a.call('zoneRazlog', { icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] } });
+    assert.match(r, /Povuci sve/, 'ne kaže šta korisnik treba da uradi');
+    assert.match(a.call('karticaZona', { icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] } }), /Povuci sve/);
+  });
+
+  test('ručno korigovan trening ima svoje objašnjenje', () => {
+    /* `l.lock` blokira prepisivanje sa icu-a, pa `l.icu` za taj dan ne postoji.
+       Bez ove rečenice izgleda kao kvar, a namerno je. */
+    const a = saIcu(`,hrZones:${JSON.stringify(ICU)}`);
+    const r = a.call('zoneRazlog', { lock: true });
+    assert.match(r, /ručno korigovano/i, 'ne objašnjava zašto baš taj trening nema podatke');
+  });
+
+  test('trening bez zonePuls-a, a nije zaključan — druga rečenica', () => {
+    const a = saIcu(`,hrZones:${JSON.stringify(ICU)}`);
+    const r = a.call('zoneRazlog', {});
+    assert.match(r, /nije vratio vreme po zonama/);
+    assert.doesNotMatch(r, /ručno/i, 'meša zaključan trening sa običnim');
+  });
+
+  test('nepoklapanje broja zona kaže OBA broja', () => {
+    /* Bez konkretnih brojeva poruka ne govori ništa upotrebljivo. */
+    const a = saIcu(`,hrZones:${JSON.stringify(ICU)}`);
+    const r = a.call('zoneRazlog', { icu: { zonePuls: [600, 1800, 600, 0, 0] } });
+    assert.match(r, /5 zona/, 'ne kaže po koliko zona je raspodela računata');
+    assert.match(r, /7/, 'ne kaže koliko zona trkač sada ima');
+  });
+
+  test('kad raspodela POSTOJI, razloga nema', () => {
+    const a = saIcu(`,hrZones:${JSON.stringify(ICU)}`);
+    assert.equal(a.call('zoneRazlog', { icu: { zonePuls: [600, 1800, 600, 0, 0, 0, 0] } }), '');
+  });
+});

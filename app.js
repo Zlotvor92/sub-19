@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='255'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='256'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3222,6 +3222,33 @@ function dRedovi(rows){
   return `<div class="drows">`+rows.map(r=>
     `<div class="drow"><span class="l">${esc(r[0])}</span><span class="v">${r[1]}</span></div>`).join('')+`</div>`;
 }
+/* ZAŠTO RASPODELE NEMA — izgovoreno, ne prećutano.
+
+   `zoneRaspodela` vraća null iz četiri različita razloga, a kartica koja tada
+   prosto nestane izgleda identično u sva četiri slučaja: čovek vidi prazno i ne
+   zna da li nešto treba da uradi, da li je pokvareno ili prosto nema podatka.
+   To je isti obrazac zbog kog su nastale i prethodne dve ispravke — broj koji
+   negde postoji, a nemaš gde da ga proveriš.
+
+   Objašnjava se SAMO kad ima šta da se objasni: ko nema povezan intervals.icu
+   nema ni odakle da dobije raspodelu, pa mu poruka ne bi bila obaveštenje nego
+   šum na svakom treningu. Vraća '' kad treba ćutati. */
+function zoneRazlog(l){
+  if(!l||typeof l!=='object') return '';
+  if(!icuPovezan()) return '';
+  const niz=(l.icu&&Array.isArray(l.icu.zonePuls))?l.icu.zonePuls:null;
+  const {zone, izvor}=zoneIzvor();
+  if(!Array.isArray(zone)||!zone.length||izvor!=='icu')
+    return 'Zone pulsa još nisu povučene sa intervals.icu. Podešavanja → intervals.icu → „Povuci sve" — dugme namerno zaobilazi nedeljni keš, pa ih dobijaš odmah.';
+  if(!niz||!niz.length)
+    return l.lock
+      ? 'Ovo trčanje je ručno korigovano, pa se podaci sa intervals.icu za njega više ne prepisuju (tako ispravka ostaje trajna). Zato za njega nema vremena po zonama.'
+      : 'intervals.icu za ovo trčanje nije vratio vreme po zonama. Pokreni „Povuci sve" pa proveri ponovo; ako i dalje nema, tog podatka nema ni na njihovoj strani.';
+  if(zone.length!==niz.length)
+    return `Raspodela za ovo trčanje je računata po ${niz.length} zona, a tvoje zone sada imaju ${zone.length}. Oznake bi bile pomerene za jedno mesto, pa se ne prikazuju — sledeći „Povuci sve" to izjednačava.`;
+  return '';
+}
+
 /* KARTICA „PO ZONAMA" — isti brojevi koje dobija i model.
    Postoji tačno zato što je AI analiza počela da izgovara procenat po zoni: broj
    koji model tvrdi, a čovek ne može da vidi, je bio ceo raniji problem (v.
@@ -3231,7 +3258,13 @@ function dRedovi(rows){
    je šum, a ukupan zbir je i dalje 100 %. */
 function karticaZona(l){
   const r=zoneRaspodela(l);
-  if(!r) return '';
+  if(!r){
+    /* Bez podataka kartica ipak stoji — ali samo kad ima šta da kaže, i tada
+       nosi razlog umesto praznog mesta. */
+    const razlog=zoneRazlog(l);
+    return razlog ? dKarta('Po zonama', 'nema podatka',
+      `<div class="note-src" style="margin:0">${esc(razlog)}</div>`) : '';
+  }
   const boje=['var(--txt3)','var(--green)','var(--cyan)','var(--amber)','var(--red)'];
   const vidljivi=r.redovi.filter(x=>x.sec>0);
   if(!vidljivi.length) return '';
