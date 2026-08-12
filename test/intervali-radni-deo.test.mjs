@@ -153,6 +153,128 @@ describe('Zagrevanje i hlađenje pojedinačno', () => {
   });
 });
 
+/* ============================================================
+   DRUGA PRIJAVA: 4:22 umesto 4:40 — bolje, ali i dalje pogrešno.
+
+   Prva ispravka je skidala samo KRAJEVE niza. Ono što je ostajalo je bilo u
+   SREDINI: intervals.icu ne označava uvek kaskanja tipom `RECOVERY`, a kad ih
+   ne označi, ona stoje između repova — tamo gde pravilo po položaju po
+   definiciji ne dopire. Rekonstrukcija te strukture daje 4:26, dakle praktično
+   prijavljenih 4:22.
+
+   Odatle tri sloja, svaki sa svojim poslom:
+     1. DUŽINA REPA IZ PLANA — odlučujuća kad je plan zna (`qsFor`);
+     2. OČIGLEDNO KASKANJE — sporije od najbržeg preko `KASKANJE_PRAG`, ma gde
+        stajalo; jedini sloj koji doseže u sredinu;
+     3. POLOŽAJ — zagrevanje i hlađenje na krajevima.
+   ============================================================ */
+describe('Kaskanja koja icu nije označio kao oporavak', () => {
+
+  const WU2 = { tip: 'rad', distM: 1500, sec: 495, paceSec: 330 };
+  const CD2 = { tip: 'rad', distM: 2500, sec: 900, paceSec: 360 };
+  const kaskanje = { tip: 'rad', distM: 300, sec: 120, paceSec: 400 };
+  const r2 = s => ({ tip: 'rad', distM: 1000, sec: s, paceSec: s });
+  /* Kaskanja kao OBIČNE deonice, ne kao `oporavak` — dakle u sredini niza. */
+  const NEOZNACENA = [WU2,
+    r2(234), kaskanje, r2(234), kaskanje, r2(232), kaskanje,
+    r2(235), kaskanje, r2(232), kaskanje, r2(226), CD2];
+
+  test('bez plana: kaskanje iz sredine i dalje ispada', () => {
+    const a = app();
+    const laps = a.call('icuKrugoviULaps', NEOZNACENA);
+    assert.equal(laps.length, 6, 'kaskanja iz sredine su ostala među repovima');
+    assert.equal(a.call('icuRadniTempo', laps), TACAN);
+  });
+
+  test('sa planom: isti rezultat, drugim putem', () => {
+    const a = app();
+    const laps = a.call('icuKrugoviULaps', NEOZNACENA, [1000]);
+    assert.equal(laps.length, 6);
+    assert.equal(a.call('icuRadniTempo', laps, [1000]), TACAN);
+  });
+
+  test('plan bira po dužini repa — sve što nije ~1000 m ispada ma gde stajalo', () => {
+    /* Najgori zamišljeni oblik: isečeno zagrevanje, stride, neoznačena
+       kaskanja, isečeno hlađenje. Položaj tu ne pomaže; plan pomaže uvek. */
+    const a = app();
+    const kosmar = [
+      { tip: 'rad', distM: 800, sec: 280, paceSec: 350 },
+      { tip: 'rad', distM: 700, sec: 225, paceSec: 321 },
+      { tip: 'rad', distM: 120, sec: 24, paceSec: 200 },
+      r2(234), kaskanje, r2(234), kaskanje, r2(232), kaskanje,
+      r2(235), kaskanje, r2(232), kaskanje, r2(226),
+      { tip: 'rad', distM: 1200, sec: 430, paceSec: 358 },
+      { tip: 'rad', distM: 1300, sec: 480, paceSec: 369 }
+    ];
+    const laps = a.call('icuKrugoviULaps', kosmar, [1000]);
+    assert.equal(laps.length, 6, 'ostalo je nešto što nije rep');
+    assert.deepEqual(laps.map(x => x.paceSec), REPOVI);
+    assert.equal(a.call('icuRadniTempo', laps, [1000]), TACAN);
+  });
+
+  test('plan koji se NE poklapa sa istrčanim se ne primenjuje naslepo', () => {
+    /* Plan kaže 1000 m, čovek istrčao 5×600. Da se pravilo primeni doslovno,
+       ostalo bi NIŠTA i tempa ne bi bilo uopšte. */
+    const a = app();
+    const drugacije = [WU2,
+      { tip: 'rad', distM: 600, sec: 138, paceSec: 230 },
+      { tip: 'rad', distM: 600, sec: 139, paceSec: 232 },
+      { tip: 'rad', distM: 600, sec: 137, paceSec: 228 },
+      CD2];
+    const laps = a.call('icuKrugoviULaps', drugacije, [1000]);
+    assert.equal(laps.length, 3, 'plan je obrisao stvarno istrčane repove');
+    assert.equal(a.call('icuRadniTempo', laps, [1000]), 230);
+  });
+
+  /* KASKANJE U TRČKARANJU — jedini oblik koji SAMO plan rešava.
+     Hod od dva minuta je preko dva puta sporiji od repa, pa ga grubi sloj hvata
+     bez ičije pomoći. Ali ko kaska trčkaranjem na 5:00/km uz repove na 3:52 je
+     na odnosu 1,33 — ispod `KASKANJE_PRAG`, a u sredini niza, dakle van domašaja
+     i pravila po položaju. Tu je dužina repa iz plana jedino što razlikuje
+     kaskanje od repa. Ova zamka to i drži: bez plana ostaje pogrešno, i to je
+     zapisano, a ne prećutano. */
+  const kaskTrk = { tip: 'rad', distM: 400, sec: 120, paceSec: 300 };
+  const SA_TRCKARANJEM = [WU2,
+    r2(234), kaskTrk, r2(234), kaskTrk, r2(232), kaskTrk,
+    r2(235), kaskTrk, r2(232), kaskTrk, r2(226), CD2];
+
+  test('kaskanje u trčkaranju: plan ga skida, ostali slojevi ne mogu', () => {
+    const a = app();
+    const bezPlana = a.call('icuKrugoviULaps', SA_TRCKARANJEM);
+    assert.ok(bezPlana.length > 6,
+      'zamka ne meri ništa — grubi sloj je već sve rešio, pa plan nema šta da dokaže');
+    assert.notEqual(a.call('icuRadniTempo', bezPlana), TACAN);
+
+    const saPlanom = a.call('icuKrugoviULaps', SA_TRCKARANJEM, [1000]);
+    assert.equal(saPlanom.length, 6, 'plan nije izdvojio repove');
+    assert.equal(a.call('icuRadniTempo', saPlanom, [1000]), TACAN);
+  });
+
+  test('lestvica preživljava i grubi sloj', () => {
+    /* KASKANJE_PRAG mora biti širi od razlike među repovima u lestvici
+       (1600 @4:00 uz 400 @3:00 je odnos 1,33), a uži od hoda. */
+    const a = app();
+    assert.ok(a.get('KASKANJE_PRAG') > 1.34, 'prag bi izbacio sporiji rep lestvice');
+    assert.ok(a.get('KASKANJE_PRAG') < 2.0, 'prag je toliko širok da hod prolazi');
+    const laps = a.call('icuKrugoviULaps', [
+      WU2,
+      { tip: 'rad', distM: 1600, sec: 384, paceSec: 240 },
+      kaskanje,
+      { tip: 'rad', distM: 400, sec: 72, paceSec: 180 },
+      CD2
+    ]);
+    assert.equal(laps.length, 2, 'lestvica je izgubila rep');
+    assert.equal(a.call('icuRadniTempo', laps), 228);
+  });
+
+  test('hod od dva minuta je van svake sumnje kaskanje', () => {
+    const a = app();
+    const hod = { tip: 'rad', distM: 180, sec: 120, paceSec: 667 };
+    const laps = a.call('icuKrugoviULaps', [r2(234), hod, r2(232), hod, r2(226)]);
+    assert.deepEqual(laps.map(x => x.paceSec), [234, 232, 226]);
+  });
+});
+
 describe('Treninzi uvezeni PRE ispravke', () => {
 
   /* Sinhronizacija ih više nikad ne dodirne (`lapsIzvor` počinje sa 'icu'), pa
@@ -188,16 +310,121 @@ describe('Treninzi uvezeni PRE ispravke', () => {
       'uslov ponovnog povlačenja ne gleda verziju — stari treninzi ostaju pokvareni');
   });
 
-  test('trend iz starog zapisa daje tačan tempo i tačan broj repova', () => {
-    const a = app();
-    a.evalIn(`S.log['n8d3']={status:'done',km:11,sec:3464,src:'icu',ts:'2026-08-12',runDate:'2026-08-12',
+  /* Star zapis sa kaskanjima u TRČKARANJU (400 m @5:00) — grubi sloj i položaj
+     ih ne mogu skinuti, pa ove dve zamke istovremeno drže da drugi sloj zaista
+     dobija plan (`qsFor`) na oba mesta gde se stari niz čita. */
+  const STAR_ZAPIS = `S.log['n8d3']={status:'done',km:11,sec:3464,src:'icu',
+      ts:'2026-08-12',runDate:'2026-08-12',lapsIzvor:'icu',
       laps:[{distM:1500,paceSec:330,avgHr:140},
-            ${REPOVI.map(p => `{distM:1000,paceSec:${p},avgHr:170,restSec:120}`).join(',')},
-            {distM:2500,paceSec:360,avgHr:145}]};`);
+            {distM:1000,paceSec:234,avgHr:172,restSec:120},{distM:400,paceSec:300,avgHr:150},
+            {distM:1000,paceSec:234,avgHr:172,restSec:120},{distM:400,paceSec:300,avgHr:150},
+            {distM:1000,paceSec:232,avgHr:172,restSec:120},{distM:400,paceSec:300,avgHr:150},
+            {distM:1000,paceSec:235,avgHr:172,restSec:120},{distM:400,paceSec:300,avgHr:150},
+            {distM:1000,paceSec:232,avgHr:172,restSec:120},{distM:400,paceSec:300,avgHr:150},
+            {distM:1000,paceSec:226,avgHr:172},
+            {distM:2500,paceSec:360,avgHr:145}]};`;
+
+  test('trend iz starog zapisa daje tačan tempo', () => {
+    const a = app();
+    a.evalIn(STAR_ZAPIS);
+    /* Da zamka nešto zaista meri: bez plana ovaj niz JESTE pogrešan. */
+    assert.notEqual(a.evalIn(`icuRadniTempo(S.log['n8d3'].laps)`), TACAN,
+      'ulaz nije zagađen — zamka ne dokazuje ništa');
     const r = JSON.parse(a.evalIn(
       `JSON.stringify(trendSummary().treninzi.find(x=>x.date==='2026-08-12')||null)`));
     assert.ok(r, 'trening nije ušao u trend');
-    assert.equal(r.tempo, TACAN, 'trend i dalje računa tempo sa zagrevanjem i hlađenjem');
+    assert.equal(r.tempo, TACAN, 'trend računa tempo sa kaskanjima u proseku');
+  });
+
+  test('kartica „Ostvaren tempo" iz starog zapisa takođe', () => {
+    const a = app();
+    a.evalIn(STAR_ZAPIS);
+    const m = JSON.parse(a.evalIn(
+      `JSON.stringify(merenjaDana(BY_ID['n8d3'], S.log['n8d3']))`));
+    assert.equal(m.tempo, TACAN, 'kartica pokazuje tempo sa kaskanjima u proseku');
+  });
+});
+
+/* ============================================================
+   CEO LANAC — od odgovora intervals.icu do upisanog tempa.
+
+   Zamke iznad zovu `icuKrugoviULaps` neposredno, pa ne vide da li
+   sinhronizacija uopšte PROSLEĐUJE plan. Mutacija koja je uklonila
+   `qsFor(x.d.id)` iz poziva prolazila je zelena — ista klasa promašaja kao
+   tvrdnja nad celim fajlom umesto nad granom.
+   Datum je stvaran: 12.08.2026. je `n8d3`, sesija iz prijave.
+   ============================================================ */
+describe('Sinhronizacija: od icu odgovora do upisanog tempa', () => {
+
+  function sinhronizuj(krugovi) {
+    const a = loadApp({ now: '2026-08-13T09:00:00Z', online: true });
+    a.evalIn(`S.icu={athleteId:'i1', token:'t', scope:'ACTIVITY:READ,WELLNESS:READ'};
+      SB={access:'t',refresh:'r',expiresAt:Date.now()+3600e3,email:'x@t.rs',
+          userId:'0403f8fb-a643-4d4e-843d-f71199a0d6f9',seenAt:null,deviceId:'d1'};
+      S.vdotLog=[{id:'seed',ts:'2026-06-22',measured:48.6}]; preracunajVdotLog();`);
+    a.ctx.__kr = krugovi;
+    a.setFetch(async (url, opt) => {
+      const b = JSON.parse(opt.body || '{}');
+      if (b.detalji) return { ok: true, status: 200, json: async () =>
+        ({ detalji: Object.fromEntries(b.detalji.map(i => [i, { krugovi: krugovi, grupe: [] }])) }) };
+      if (b.tokovi) return { ok: true, status: 200, json: async () =>
+        ({ tokovi: Object.fromEntries(b.tokovi.map(i => [i, { greska: true }])) }) };
+      return { ok: true, status: 200, json: async () => ({ treninzi: [
+        { id: 'a1', datum: '2026-08-12', sat: 20, tip: 'Run', naziv: 'Intervali',
+          km: 11, sec: 3464, hr: 157, maxHr: 182 }
+      ] }) };
+    });
+    return a;
+  }
+
+  const WU3 = { tip: 'rad', distM: 1500, sec: 495, paceSec: 330, hr: 140 };
+  const CD3 = { tip: 'rad', distM: 2500, sec: 900, paceSec: 360, hr: 145 };
+  const kask = { tip: 'rad', distM: 300, sec: 120, paceSec: 400, hr: 150 };
+  const r3 = s => ({ tip: 'rad', distM: 1000, sec: s, paceSec: s, hr: 172 });
+
+  /* Kaskanje u TRČKARANJU (400 m @5:00), ne u hodu: grubi sloj i položaj ga ne
+     mogu skinuti, pa ovo istovremeno proverava i da sinhronizacija zaista
+     PROSLEĐUJE plan `icuKrugoviULaps`-u. Sa hodom bi zamka prolazila i kad se
+     plan izgubi iz poziva. */
+  const kaskT = { tip: 'rad', distM: 400, sec: 120, paceSec: 300, hr: 150 };
+
+  test('upisuje se 3:52, a ne 4:22 — i žuta poruka se ne pali', async () => {
+    const a = sinhronizuj([WU3,
+      r3(234), kaskT, r3(234), kaskT, r3(232), kaskT,
+      r3(235), kaskT, r3(232), kaskT, r3(226), CD3]);
+    const r = await a.evalIn('icuSyncTreninzi(30, true)');
+    assert.ok(r.ok, 'sinhronizacija nije prošla: ' + JSON.stringify(r));
+
+    const l = JSON.parse(a.evalIn('JSON.stringify(S.log["n8d3"]||null)'));
+    assert.ok(l, 'trening nije vezan za n8d3 — zamka ne meri ništa');
+    assert.equal(l.laps.length, 6, `u dnevnik je upisano ${l.laps.length} „repova"`);
+    assert.equal(l.lapsVer, a.get('LAPS_VER'), 'verzija krugova nije upisana');
+    assert.equal(l.autoOdbijen, undefined,
+      'tempo je odbijen kao neverodostojan — žuta poruka bi i dalje stajala');
+
+    const pid = a.evalIn(`predRowFor(BY_ID["n8d3"])`);
+    assert.equal(a.evalIn(`S.pred[${JSON.stringify(pid)}]`), TACAN,
+      'u Predikciju je upisan pogrešan tempo radnog dela');
+  });
+
+  test('forma raste, umesto da padne zbog dobrog treninga', () => {
+    /* 4:22 u zoni I znači VDOT oko 41 — pad od sedam poena posle sesije koja je
+       odrađena po planu. Zbog toga je `recordVdot` i odbijao upis. */
+    const a = loadApp({ now: '2026-08-13T09:00:00Z' });
+    const dobar = a.evalIn(`Math.round(vdotFromPace(${TACAN},'I')*10)/10`);
+    const los = a.evalIn(`Math.round(vdotFromPace(262,'I')*10)/10`);
+    assert.ok(dobar > 48, `tempo 3:52 daje VDOT ${dobar}`);
+    assert.ok(los < 44, `tempo 4:22 daje VDOT ${los}`);
+  });
+
+  test('ručno unet tempo zadržava prednost nad automatskim', async () => {
+    /* Ko je posle prijave sam ukucao tempo ne sme da ga izgubi ponovnim uvozom. */
+    const a = sinhronizuj([WU3, r3(234), kask, r3(232), kask, r3(226), CD3]);
+    const pid = a.evalIn(`predRowFor(BY_ID["n8d3"])`);
+    a.evalIn(`S.pred[${JSON.stringify(pid)}]=240; S.predLock[${JSON.stringify(pid)}]=true;`);
+    await a.evalIn('icuSyncTreninzi(30, true)');
+    assert.equal(a.evalIn(`S.pred[${JSON.stringify(pid)}]`), 240,
+      'automatski uvoz je pregazio ručno unet tempo');
   });
 });
 

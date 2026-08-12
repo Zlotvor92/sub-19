@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='260'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='261'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2814,6 +2814,14 @@ function autoRealign(byDate){
    Stajalo je samo na Stravinoj putanji; icu putanja nije imala NIKAKAV izbor —
    v. `icuKrugoviULaps`. Sada je izdvojeno da se ta dva ne mogu razici. */
 const RADNI_PRAG = 1.25;
+/* Koliko sporija od najbrzeg radnog deonica mora da bude da bi bila SIGURNO
+   kaskanje, ma gde u nizu stajala. Sire od RADNI_PRAG namerno: mora da propusti
+   sporiji rep u lestvici (1600 m @4:00 uz 400 m @3:00 je odnos 1,33), a da
+   uhvati dvominutni hod (9-11 min/km naspram repa od 3:52 je odnos preko 2,3).
+   Postoji jer intervals.icu NE oznacava uvek kaskanja tipom RECOVERY: kad ih ne
+   oznaci, ona stoje u SREDINI niza, gde pravilo po polozaju po definiciji ne
+   dopire. Izmereno na prijavljenoj sesiji: 4:22-4:26 umesto 3:52. */
+const KASKANJE_PRAG = 1.5;
 function zadrziRadne(stavke, tempoOd){
   if(!stavke||!stavke.length) return [];
   const t=stavke.map(tempoOd).filter(x=>x>0&&isFinite(x));
@@ -3054,8 +3062,9 @@ const PERKM_VER = 2;
    ostaju sa starim brojevima, a sinhronizacija ih nikad ne dodirne ponovo
    (`lapsIzvor` pocinje sa 'icu' pa se preskacu). Dizanjem ovog broja oni se
    jednom povuku iznova.
-   v2: zagrevanje i hladjenje vise nisu radni krugovi (v. `icuKrugoviULaps`). */
-const LAPS_VER = 2;
+   v2: zagrevanje i hladjenje vise nisu radni krugovi (v. `icuKrugoviULaps`).
+   v3: radni krugovi se biraju po PLANIRANOJ duzini repa kad je plan zna. */
+const LAPS_VER = 3;
 function perKmDetail(streams){
   if(!streams)return [];
   const dist=streams.distance&&streams.distance.data, hr=streams.heartrate&&streams.heartrate.data,
@@ -4185,7 +4194,7 @@ function merenjaDana(x, l){
   } else {
     const pid=predRowFor(x);
     tempo=(pid&&S.pred[pid]!=null) ? S.pred[pid]
-        : (Array.isArray(l.laps)&&l.laps.length ? icuRadniTempo(l.laps) : null);
+        : (Array.isArray(l.laps)&&l.laps.length ? icuRadniTempo(l.laps, qsFor(x.id)) : null);
   }
   const laps=Array.isArray(l.laps)?l.laps:[];
   const gaps=laps.filter(y=>y&&y.gapSec>0&&y.distM>0);
@@ -10030,7 +10039,7 @@ async function icuApi(telo){
    oporavka KOJI SLEDI. Oporavci se ne vode kao krugovi (inače bi „6×800"
    ispalo 11 krugova i prosečan tempo bi bio besmislen), nego se lepe na rep
    ispred sebe, gde i pripadaju po značenju. */
-function icuKrugoviULaps(krugovi){
+function icuKrugoviULaps(krugovi, specs){
   if(!Array.isArray(krugovi)) return [];
   const out=[];
   krugovi.forEach(k=>{
@@ -10063,7 +10072,7 @@ function icuKrugoviULaps(krugovi){
      trend, gde je `repova` bilo 8 umesto 6.
      Stravina putanja je ovaj izbor imala sve vreme (`workLapsSelect`); ovoj je
      nedostajao. Sada obe koriste isto pravilo. */
-  return icuRadniKrugovi(out);
+  return icuRadniKrugovi(out, specs);
 }
 /* SKIDA SAMO KRAJEVE, I SAMO KAD SU JASNO SPORIJI.
 
@@ -10080,9 +10089,32 @@ function icuKrugoviULaps(krugovi){
    Rep u sredini, ma koliko sporiji, ostaje rep.
 
    Ispod tri deonice se ne dira nista: tu nema „sredine" iz koje bi se merilo. */
-function icuRadniKrugovi(niz){
+function icuRadniKrugovi(niz, specs){
   if(!Array.isArray(niz)) return [];
-  const ok=niz.filter(x=>x&&x.distM>0&&x.paceSec>0&&isFinite(x.paceSec));
+  let ok=niz.filter(x=>x&&x.distM>0&&x.paceSec>0&&isFinite(x.paceSec));
+  /* DUZINA REPA IZ PLANA JE NAJPOUZDANIJI KLJUC — kad ga ima, njime se i bira.
+     Polozaj je heuristika i pokrio je samo najcesci oblik (jedno zagrevanje na
+     pocetku, jedno hladjenje na kraju). Prijava posle prve ispravke: tempo je
+     sa 4:40 pao na 4:22, dakle nesto sto NIJE rep je i dalje ostajalo u sredini
+     niza — a sredinu polozaj po definiciji ne dira.
+     Plan zna tacno: `qsFor('n8d3')` je [1000]. Deonica od 1500 m (zagrevanje),
+     2500 m (hladjenje) ili 180 m (kaskanje) tu ne moze da se provuce, ma gde u
+     nizu stajala. Isto pravilo i ista tolerancija (15%) koje Stravina putanja
+     vec koristi u `workLapsSelect`.
+     Ako nijedna deonica ne odgovara planu — covek je trcao drugaciju strukturu
+     nego sto je pisalo — pravilo se NE primenjuje, jer bi inace obrisalo sve. */
+  if(Array.isArray(specs)&&specs.length){
+    const poPlanu=ok.filter(x=>specs.some(m=>m>0&&Math.abs(x.distM-m)/m<=0.15));
+    if(poPlanu.length) ok=poPlanu;
+  }
+  /* OCIGLEDNO KASKANJE ISPADA MA GDE STAJALO — v. KASKANJE_PRAG. Ovo je jedini
+     sloj koji doseze u sredinu niza, i namerno je grub: hvata samo ono sto
+     nijedan rep ne moze da bude. */
+  if(ok.length>1){
+    const najbrziSvi=Math.min(...ok.map(x=>x.paceSec));
+    const grub=ok.filter(x=>x.paceSec<=najbrziSvi*KASKANJE_PRAG);
+    if(grub.length) ok=grub;
+  }
   if(ok.length<3) return ok;
   const jezgro=ok.slice(1,-1).map(x=>x.paceSec);
   const prag=Math.min(...jezgro)*RADNI_PRAG;
@@ -10096,9 +10128,9 @@ function icuRadniKrugovi(niz){
    upisan sa zagrevanjem i hladjenjem unutra, a ovaj racun se poziva i nad njim
    (kartica „Ostvaren tempo", trend). Filtriranje pri uvozu ih ne bi doticalo.
    Nad vec ociscenim nizom je bez dejstva. */
-function icuRadniTempo(laps){
+function icuRadniTempo(laps, specs){
   if(!Array.isArray(laps)||!laps.length) return null;
-  const radni=icuRadniKrugovi(laps);
+  const radni=icuRadniKrugovi(laps, specs);
   if(!radni.length) return null;
   const d=radni.reduce((s,x)=>s+(x.distM||0),0);
   const t=radni.reduce((s,x)=>s+(x.paceSec*(x.distM||0)/1000),0);
@@ -10283,13 +10315,13 @@ async function icuSyncTreninzi(danaUnazad, manual){
     grupa.forEach(x=>{
       const det=(r.detalji||{})[x.id];
       if(!det||det.greska) return;
-      const laps=icuKrugoviULaps(det.krugovi);
+      const laps=icuKrugoviULaps(det.krugovi, qsFor(x.d.id));
       const l=S.log[x.dayId]; if(!l) return;
       if(laps.length){
         l.laps=laps; l.lapsIzvor='icu'; l.lapsVer=LAPS_VER; detalja++;
         if(Array.isArray(det.grupe)&&det.grupe.length) l.icuGrupe=det.grupe; else delete l.icuGrupe;
         const rowId=predRowFor(x.d);
-        const t=icuRadniTempo(laps);
+        const t=icuRadniTempo(laps, qsFor(x.d.id));
         if(rowId&&!S.predLock[rowId]&&S.pred[rowId]==null&&t) upisiAutoTempo(rowId,t,l.runDate||x.d.date,x.d);
       } else {
         /* icu nije našao strukturu — kontinuirano trčanje. To je odgovor, ne
@@ -10796,7 +10828,7 @@ function trendSummary(){
          (1600 m + 400 m) prosek prosekâ ume da promaši za 18 s/km — v. isti
          račun u `icuRadniTempo`, koji se ovde i koristi da bi postojao samo
          jedan. Stari račun je bio tačan samo kad su svi repovi iste dužine. */
-      if(row.tempo==null){ const t=icuRadniTempo(l.laps); if(t) row.tempo=t; }
+      if(row.tempo==null){ const t=icuRadniTempo(l.laps, qsFor(d.id)); if(t) row.tempo=t; }
       if(hrs.length>=2){row.driftStart=hrs[0];row.driftEnd=hrs[hrs.length-1];row.drift=hrs[hrs.length-1]-hrs[0];}
       if(cads.length)row.cadence=Math.round(cads.reduce((s,x)=>s+x,0)/cads.length);
       /* ŠTO SAMO intervals.icu DAJE — v. icuSyncTreninzi. Trend bez ovoga vidi
