@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='259'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='260'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -2808,14 +2808,26 @@ function autoRealign(byDate){
    workLapsTempo (za VDOT) i workLapsDetail (za po-krug analizu). Radni intervali
    su NAJBRŽI lapovi ciljane distance i međusobno konzistentni; WU/CD/hod su iste
    distance ali dramatično sporiji. Sidro = najbrži lap, zadrži unutar 25%. */
+/* KOJI KRUG JE RADNI — JEDNO PRAVILO, DVA IZVORA.
+   Sidro je najbrzi krug, zadrzavaju se oni unutar 25% od njega. WU/CD i hod su
+   iste distance ali dramaticno sporiji, pa ispadaju sami.
+   Stajalo je samo na Stravinoj putanji; icu putanja nije imala NIKAKAV izbor —
+   v. `icuKrugoviULaps`. Sada je izdvojeno da se ta dva ne mogu razici. */
+const RADNI_PRAG = 1.25;
+function zadrziRadne(stavke, tempoOd){
+  if(!stavke||!stavke.length) return [];
+  const t=stavke.map(tempoOd).filter(x=>x>0&&isFinite(x));
+  if(!t.length) return [];
+  const najbrzi=Math.min(...t);
+  return stavke.filter(x=>{ const p=tempoOd(x); return p>0&&isFinite(p)&&p<=najbrzi*RADNI_PRAG; });
+}
 function workLapsSelect(laps,specs){
   if(!laps||!laps.length)return [];
   const paceOf=L=>((L.moving_time||L.elapsed_time)/(L.distance/1000));
   const cand=laps.filter(L=>L.distance>0&&(L.moving_time||L.elapsed_time)>0
     && specs.some(m=>Math.abs(L.distance-m)/m<=0.15));
   if(!cand.length)return [];
-  const fastest=Math.min(...cand.map(paceOf));
-  return cand.filter(L=>paceOf(L)<=fastest*1.25);
+  return zadrziRadne(cand, paceOf);
 }
 function workLapsTempo(laps,specs){
   const work=workLapsSelect(laps,specs);
@@ -3037,6 +3049,13 @@ function detectWorkSegments(streams){
    trcanja koja su vec u bazi (prijava korisnika: ista pogresna analiza i posle
    ispravke, jer je perKm bio kesiran iz starog sync-a). */
 const PERKM_VER = 2;
+/* VERZIJA KRUGOVA SA intervals.icu — isti obrazac kao PERKM_VER, i iz istog
+   razloga: kad se promeni NACIN na koji se krugovi izvode, vec uvezeni treninzi
+   ostaju sa starim brojevima, a sinhronizacija ih nikad ne dodirne ponovo
+   (`lapsIzvor` pocinje sa 'icu' pa se preskacu). Dizanjem ovog broja oni se
+   jednom povuku iznova.
+   v2: zagrevanje i hladjenje vise nisu radni krugovi (v. `icuKrugoviULaps`). */
+const LAPS_VER = 2;
 function perKmDetail(streams){
   if(!streams)return [];
   const dist=streams.distance&&streams.distance.data, hr=streams.heartrate&&streams.heartrate.data,
@@ -10030,14 +10049,59 @@ function icuKrugoviULaps(krugovi){
     if(k.oznaka) o.oznaka=String(k.oznaka).slice(0,40);
     out.push(o);
   });
-  return out;
+  /* ZAGREVANJE I HLADJENJE NISU RADNI KRUGOVI — v. `icuRadniKrugovi`.
+     intervals.icu oznacava tipom `RECOVERY` samo kaskanja IZMEDJU repova; WU i
+     CD dolaze kao obicne deonice, pa su do sada ulazili u „radni deo" kao da su
+     repovi. Prijava sa ekrana, sesija 1,5 km WU + 6×1000 m @ 3:55 + 2,5 km CD:
+     `icuRadniTempo` je dao 4:40/km umesto 3:52 — jer je delio ukupno vreme svih
+     osam deonica ukupnom distancom od 10 km.
+     Steta je bila dvostruka. Prvo, taj tempo u zoni I znaci VDOT ~39 naspram
+     stvarnih ~49, pa ga je `recordVdot` (s pravom) odbio kao neverodostojan —
+     korisnik je dobio zutu poruku „verovatno su u prosek usla kaskanja" i morao
+     da kuca tempo rucno posle SVAKIH intervala. Drugo, tise: isti niz ide u AI
+     analizu, gde je zagrevanje stajalo kao „Rep 1 (1500 m): tempo 5:30", i u
+     trend, gde je `repova` bilo 8 umesto 6.
+     Stravina putanja je ovaj izbor imala sve vreme (`workLapsSelect`); ovoj je
+     nedostajao. Sada obe koriste isto pravilo. */
+  return icuRadniKrugovi(out);
+}
+/* SKIDA SAMO KRAJEVE, I SAMO KAD SU JASNO SPORIJI.
+
+   Prva verzija ove ispravke primenjivala je Stravino pravilo („sidro je
+   najbrzi, zadrzi unutar 25%") na CEO niz — i time je resila prijavljeni
+   slucaj, ali napravila drugu gresku, koju su postojece zamke odmah uhvatile:
+   u lestvici 1600 m @4:00 + 400 m @3:00 oba SU radni repovi, a razlika im je
+   33%, pa bi duzi ispao. Tempo bi tada bio 3:00 umesto 3:48 — greska u
+   suprotnom smeru, i tisa, jer izgleda kao napredak.
+
+   Ono sto zagrevanje i hladjenje zaista razlikuje od repova nije samo tempo
+   nego POLOZAJ: oni su prvi i poslednji, a repovi su izmedju. Zato se gleda
+   samo prva i poslednja deonica, i to naspram najbrzeg iz JEZGRA (sve izmedju).
+   Rep u sredini, ma koliko sporiji, ostaje rep.
+
+   Ispod tri deonice se ne dira nista: tu nema „sredine" iz koje bi se merilo. */
+function icuRadniKrugovi(niz){
+  if(!Array.isArray(niz)) return [];
+  const ok=niz.filter(x=>x&&x.distM>0&&x.paceSec>0&&isFinite(x.paceSec));
+  if(ok.length<3) return ok;
+  const jezgro=ok.slice(1,-1).map(x=>x.paceSec);
+  const prag=Math.min(...jezgro)*RADNI_PRAG;
+  const od=ok[0].paceSec>prag?1:0;
+  const doIdx=ok[ok.length-1].paceSec>prag?ok.length-1:ok.length;
+  return ok.slice(od,doIdx);
 }
 /* Prosečan tempo RADNOG dela iz krugova — isti račun kao kod Strave
    (ukupno vreme / ukupna distanca, ne prosek prosekâ). */
+/* DRUGI SLOJ, za treninge uvezene PRE ove ispravke: njihov `l.laps` je vec
+   upisan sa zagrevanjem i hladjenjem unutra, a ovaj racun se poziva i nad njim
+   (kartica „Ostvaren tempo", trend). Filtriranje pri uvozu ih ne bi doticalo.
+   Nad vec ociscenim nizom je bez dejstva. */
 function icuRadniTempo(laps){
   if(!Array.isArray(laps)||!laps.length) return null;
-  const d=laps.reduce((s,x)=>s+(x.distM||0),0);
-  const t=laps.reduce((s,x)=>s+(x.paceSec*(x.distM||0)/1000),0);
+  const radni=icuRadniKrugovi(laps);
+  if(!radni.length) return null;
+  const d=radni.reduce((s,x)=>s+(x.distM||0),0);
+  const t=radni.reduce((s,x)=>s+(x.paceSec*(x.distM||0)/1000),0);
   return (d>0&&t>0)?Math.round(t/(d/1000)):null;
 }
 /* JEDNO POVLAČENJE ZA SVE ŠTO intervals.icu NOSI.
@@ -10191,7 +10255,12 @@ async function icuSyncTreninzi(danaUnazad, manual){
        postoji: prikupljanje detalja nema veze sa izvođenjem tempa. */
     /* Ne traži se ponovo ni kad je icu već rekao da strukture NEMA — inače bi
        svako kontinuirano trčanje trošilo poziv pri svakoj sinhronizaciji. */
-    if((d.tag==='int'||d.tag==='tempo') && a.id && !String(l.lapsIzvor||'').startsWith('icu'))
+    /* I KAD SU KRUGOVI VEC TU, ALI IZ STARIJE VERZIJE. Bez provere verzije bi
+       treninzi uvezeni pre ispravke zauvek nosili zagrevanje i hladjenje medju
+       repovima — sinhronizacija ih vise nikad ne dodirne. Jedan poziv po
+       treningu, jednom; posle toga `lapsVer` iskljucuje ovu granu. */
+    if((d.tag==='int'||d.tag==='tempo') && a.id
+       && !(String(l.lapsIzvor||'').startsWith('icu') && l.lapsVer===LAPS_VER))
       trazi.push({id:a.id, dayId:d.id, d});
     /* KONTINUIRANA TRCANJA (lako/dugo): icu tu NEMA strukturu — `icu_intervals`
        je prazan i to je tacan odgovor. Ali bez po-km preseka nema ni tempa po
@@ -10217,7 +10286,7 @@ async function icuSyncTreninzi(danaUnazad, manual){
       const laps=icuKrugoviULaps(det.krugovi);
       const l=S.log[x.dayId]; if(!l) return;
       if(laps.length){
-        l.laps=laps; l.lapsIzvor='icu'; detalja++;
+        l.laps=laps; l.lapsIzvor='icu'; l.lapsVer=LAPS_VER; detalja++;
         if(Array.isArray(det.grupe)&&det.grupe.length) l.icuGrupe=det.grupe; else delete l.icuGrupe;
         const rowId=predRowFor(x.d);
         const t=icuRadniTempo(laps);
@@ -10225,7 +10294,7 @@ async function icuSyncTreninzi(danaUnazad, manual){
       } else {
         /* icu nije našao strukturu — kontinuirano trčanje. To je odgovor, ne
            greška; upisuje se da se ne bi tražilo iznova pri svakoj sinhronizaciji. */
-        l.lapsIzvor='icu-bez-strukture';
+        l.lapsIzvor='icu-bez-strukture'; l.lapsVer=LAPS_VER;
       }
     });
   }
