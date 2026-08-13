@@ -215,14 +215,16 @@ main{padding:var(--pad) var(--pad) calc(var(--tab-h) + var(--sab) + 26px);
    izgleda: skoro sva brzina ode na početak, a kraj se dugo smiruje — po tome
    se pokret čita kao težak i gladak, a ne kao ravnomerno klizanje.
 
-   `vuce` nosi zamućenje po pravcu kretanja (v. `#pv-mut` u telu dokumenta) i
-   stoji na obe stranice sve vreme dok se pomeraju — i pod prstom i u letu.
-   Klasa se NE pali i gasi po jačini: dok filter stoji a jačina se ne menja,
-   pregledač sloj rasterizuje jednom i dalje ga samo pomera; paljenje i gašenje
-   bi ga teralo da to radi iznova. Jačinu menja kod, u koracima od pola piksela. */
+   OVDE JE STAJALO ZAMUĆENJE PO PRAVCU KRETANJA i namerno ga više nema (v264 →
+   v265). Bio je vodoravni SVG filter na obe stranice, jačine vezane za brzinu.
+   U pregledaču, i sa osmostruko usporenim procesorom, nije koštao nijedan
+   ispušten kadar — a na telefonu je vidno seckalo. Merenje je bilo na stonom
+   pregledaču, a iznad sadržaja koji se pomera stoje ZAGLAVLJE i TRAKA TABOVA sa
+   `backdrop-filter`: one pri svakom kadru iznova uzorkuju ono ispod sebe, i
+   filter preko pokretnog sloja im obara jeftin put. Ako se ikad vraća — prvo
+   merenje na pravom telefonu, pa tek onda kod. */
 .page.dolazi{display:block;position:absolute;left:var(--pad);right:var(--pad);
   top:calc(var(--pv-vrh,0px) + var(--pad));pointer-events:none}
-.page.vuce{filter:url(#pv-mut)}
 .page.klizi{transition:transform var(--pv-ms,300ms) cubic-bezier(.16,.84,.3,1)}
 
 /* ---------- cards ---------- */
@@ -1026,7 +1028,6 @@ body.uvod-radi{overflow:hidden}
      Ceo prelazak (i praćenje prsta i dovršetak) preskače sam kod, v. `pvMirno`
      u app.js; ovde stoji brana za slučaj da klasa ipak negde ostane. */
   .page.klizi{transition:none!important}
-  .page.vuce{filter:none!important}
   /* Uvod nema statičnu svrhu — ako je kretanje isključeno, ne prikazuje se
      uopšte. Skriptu ne čeka: sakriven je već ovde, da ne trepne. */
   #uvod{display:none}
@@ -1163,25 +1164,6 @@ body.uvod-radi{overflow:hidden}
   <i data-t="danas" class="on"></i><i data-t="plan"></i><i data-t="opor"></i>
   <i data-t="pred"></i><i data-t="zaj"></i><i data-t="set"></i>
 </div>
-
-<!-- ZAMUĆENJE PO PRAVCU KRETANJA (prevlačenje između tabova).
-     Obično `filter:blur()` muti na sve strane i izgleda kao nedostatak fokusa;
-     ovo muti SAMO vodoravno (`stdDeviation="X 0"`), dakle tačno duž pravca u
-     kom se ekran pomera — a to oko čita kao brzinu, ne kao mutnu sliku.
-
-     Jačinu upisuje app.js (`pvMutno`) i ona prati BRZINU: dok prst miruje nema
-     ga, u punom zamahu ga ima najviše 2,5 px, i opada zajedno sa usporavanjem.
-     Vrednost se zaokružuje na pola piksela — svaka promena tera pregledač da
-     iznova rasterizuje sloj, a stepenice sitnije od pola piksela se ne vide.
-
-     `color-interpolation-filters="sRGB"` je obavezan: podrazumevani linearRGB
-     bi na tamnoj podlozi vidno isprao boje kartica. Oblast filtera je
-     proširena samo bočno, jer uspravno zamućenja nema. -->
-<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
-  <filter id="pv-mut" x="-6%" y="0%" width="112%" height="100%" color-interpolation-filters="sRGB">
-    <feGaussianBlur id="pv-mut-b" stdDeviation="0 0"/>
-  </filter>
-</svg>
 
 <div id="wizard" style="display:none"></div>
 
