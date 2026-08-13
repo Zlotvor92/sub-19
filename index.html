@@ -48,6 +48,11 @@
   --pink:#FF6BA6; --green:#5AFFBE; --cyan:#5AE0FF; --amber:#FFC062; --red:#FF6B85;
   --green-dim:rgba(90,255,190,.16);
   --r:20px; --tab-h:58px;
+  /* Bočni razmak sadržaja. Bio je ukucan u `main`; sada ga mora znati i ekran
+     koji dolazi pri prevlačenju, jer se postavlja apsolutno i mora da stane
+     tačno na isto mesto — razmimoilaženje od 16 px bi se videlo kao trzaj u
+     trenutku kad prelazak legne. */
+  --pad:16px;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -71,6 +76,12 @@ body{
 #ambijent{position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--bg)}
 #ambijent i{position:absolute;inset:0;display:block;opacity:0;transition:opacity .45s ease}
 #ambijent i.on{opacity:1}
+/* Dok prst vuče, svetlo se pretapa ZAJEDNO sa sadržajem — kod upisuje
+   `opacity` po pređenom delu puta (v. `pvSvetlo`). Prelaz tada mora da ćuti:
+   sa njim bi boja kasnila skoro pola sekunde za rukom, pa bi se ekran pomerao
+   u jednoj boji a stigao u drugu. Po puštanju klasa `vuce` odlazi i poslednji
+   deo pretapanja opet ide preko prelaza. */
+#ambijent.vuce i{transition:none}
 #ambijent i[data-t="danas"]{background:
   radial-gradient(ellipse 83vw 57vh at 14% 2%,rgba(120,90,255,.62),transparent 70%),
   radial-gradient(ellipse 94vw 50vh at 98% 34%,rgba(0,190,220,.50),transparent 68%),
@@ -118,8 +129,14 @@ header{
   background:var(--glass-in);border:1px solid var(--line-soft)}
 .h-gear:active{transform:scale(.9);color:var(--txt);background:var(--glass-hi)}
 
-/* ---------- pages ---------- */
-main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
+/* ---------- pages ----------
+   `position:relative` i `overflow-x:clip` postoje zbog prevlačenja između
+   tabova (v. odeljak niže): ekran koji dolazi je APSOLUTNO postavljen unutar
+   `main` i mora da se od njega meri, a ono što u tom trenutku viri sa strane ne
+   sme da širi stranicu. Namerno `clip`, a ne `hidden`: `hidden` bi od `main`
+   napravio uspravni skrol-okvir sa sopstvenom trakom, a `clip` samo seče. */
+main{padding:var(--pad) var(--pad) calc(var(--tab-h) + var(--sab) + 26px);
+  position:relative;overflow-x:clip}
 .page{display:none}
 .page.active{display:block}
 
@@ -173,41 +190,32 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 @keyframes crtaj{from{stroke-dashoffset:2000}}
 
 /* ---------- PREVLAČENJE IZMEĐU TABOVA ----------
-   Tab se menja i prevlačenjem prsta levo/desno (mehanika je u app.js, odeljak
-   „PREVLAČENJE IZMEĐU TABOVA"). Dodir na ikonicu radi tačno kao pre — ovo je
-   dodatak, ne zamena, pa klik namerno NE dobija nijednu od ovih klasa.
+   Tabovi se menjaju i prevlačenjem prsta levo/desno; mehanika je u app.js,
+   odeljak „PREVLAČENJE IZMEĐU TABOVA". Dodir na ikonicu radi tačno kao pre.
 
-   TRI ODVOJENA STANJA, i to nije ukras nego odgovor ruci:
-   1. `vuce` — dok prst stoji na ekranu. Ekran ide ZA prstom, ali prigušeno
-      (oko trećine puta, najviše 34 px). To nije praćenje nego POTVRDA da je
-      pokret primljen; da ide 1:1, svako uspravno klizanje prsta bi napola
-      otvorilo susedni ekran. Prelaz je isključen jer bi kasnio za prstom.
-   2. `sleva` / `sdesna` — kad se tab STVARNO promenio. Novi ekran ulazi sa one
-      strane sa koje je pokret došao, pa se smena čita kao pomeranje kroz niz
-      tabova, a ne kao zamena slike na istom mestu.
-   3. `vraca` — pokret nije bio dovoljan. Jedini od tri koji je tranzicija, jer
-      jedini kreće od vrednosti koju je ostavio prst; ekran koji skoči nazad
-      izgleda kao greška, ekran koji se vrati kaže „primljeno, ali premalo".
+   DVA EKRANA SE POMERAJU ZAJEDNO, KAO TRAKA. Ekran koji odlazi ide 1:1 sa
+   prstom, a susedni stoji uz njega i ulazi u kadar istom brzinom. To je jedina
+   razlika između „pomeram stranicu" i „pritisnuo sam dugme pa se slika
+   promenila": ruka vidi da vuče sadržaj, a ne da pokreće animaciju. Prvi pokušaj
+   je pomerao samo aktivni ekran za 34 px i onda ubacivao novi — i to se čitalo
+   kao slajdšou, jer se ništa nije KRETALO ka novom ekranu dok je prst radio.
 
-   Ni `tab-sleva` ni `tab-sdesna` NEMAJU `to`, po istom pravilu kao prstenovi i
-   linije iznad: kraj je ono što element ionako nosi, pa posle animacije nema
-   šta da se čisti — a inline `transform` koji je ostavio prst se ukloni u
-   kodu, ne ovde.
+   `dolazi` — ekran koji je u kadru, a još nije aktivan. Apsolutno postavljen
+   unutar `main` da ne pomeri ništa u toku (visina stranice ostaje visina one
+   koja odlazi, pa se dokument ne trza) i bez `pointer-events`, jer dok putuje
+   ne sme da prima dodire.
 
-   Pomera se SAMO stranica unutar `main`. Zaglavlje, traka tabova i ambijentalno
-   svetlo ostaju mirni — oni su okvir, a kroz okvir se sadržaj pomera.
+   `--pv-vrh` postavlja kod: stranica ispod je možda skrolovana na sredinu, a
+   nova se otvara od vrha, pa ekran koji dolazi mora da počne tačno na vrhu
+   VIDLJIVOG dela — inače bi u trenutku kad prelazak legne sadržaj poskočio.
 
-   REDOSLED `vraca` pa `vuce` NIJE slučajan. Kad se novo prevlačenje započne
-   dok se prethodno još vraća, na elementu se nakratko zateknu obe klase; kod ih
-   razdvaja (v. `pvOtkazi`), ali ako ikad promakne, pobeđuje ono što je niže —
-   a to mora biti `vuce`, jer prelaz zaostao za prstom je vidljiva greška, dok
-   je preskočen povratak neprimetan. */
-.page.vraca{transition:transform .26s cubic-bezier(.2,.9,.3,1)}
-.page.vuce{transition:none}
-.page.sleva{animation:tab-sleva .3s cubic-bezier(.2,.9,.3,1)}
-.page.sdesna{animation:tab-sdesna .3s cubic-bezier(.2,.9,.3,1)}
-@keyframes tab-sleva{from{transform:translateX(-26px);opacity:.35}}
-@keyframes tab-sdesna{from{transform:translateX(26px);opacity:.35}}
+   `klizi` je dovršetak posle puštanja, i trajanje mu NIJE u CSS-u: `--pv-ms`
+   računa kod iz preostalog puta i brzine prsta, da bi se pokret nastavio tamo
+   gde je prst stao umesto da kreće iznova. Kriva je ovde jer je ona stvar
+   izgleda: bez odskoka, sa usporenjem na kraju. */
+.page.dolazi{display:block;position:absolute;left:var(--pad);right:var(--pad);
+  top:calc(var(--pv-vrh,0px) + var(--pad));pointer-events:none}
+.page.klizi{transition:transform var(--pv-ms,300ms) cubic-bezier(.22,.61,.36,1)}
 
 /* ---------- cards ---------- */
 .card{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;
@@ -1007,9 +1015,9 @@ body.uvod-radi{overflow:hidden}
      ODMAH prekriven punim potezom — treptaj. Bolje da animacije nema. */
   .page.uskoci .pr-val,.page.uskoci .ln{animation:none!important}
   /* Prevlačenje: tab se i dalje menja prstom — gasi se KRETANJE, ne radnja.
-     Klizanje za prstom isključuje sam kod (v. `pvMirno` u app.js), a ovde
-     ostaje ulazak novog ekrana, koji ide preko animacije. */
-  .page.sleva,.page.sdesna{animation:none!important}
+     Ceo prelazak (i praćenje prsta i dovršetak) preskače sam kod, v. `pvMirno`
+     u app.js; ovde stoji brana za slučaj da klasa ipak negde ostane. */
+  .page.klizi{transition:none!important}
   /* Uvod nema statičnu svrhu — ako je kretanje isključeno, ne prikazuje se
      uopšte. Skriptu ne čeka: sakriven je već ovde, da ne trepne. */
   #uvod{display:none}
