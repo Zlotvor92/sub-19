@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='261'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='262'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -3678,7 +3678,11 @@ function ambijent(tab){
 let AMB_PRE=null;
 
 let USKOK_TMR=null;
-function setPage(p){
+/* `smer` postoji SAMO zbog prevlačenja i namerno je neobavezan: dodir na
+   ikonicu zove `setPage(p)` kao i pre i dobija tačno ono što je i do sada
+   dobijao. Vrednost je 1 kad novi ekran stiže zdesna (prst je otišao ulevo,
+   dakle sledeći tab) i -1 kad stiže sleva. */
+function setPage(p,smer){
   /* Dan se mogao promeniti dok je aplikacija stajala otvorena. Kad jeste,
      ZAGLAVLJE MORA DA IDE SA NJIM — ono nosi „Nedelja N / M · X dana do trke", a
      to su brojevi izvedeni iz datuma.
@@ -3695,9 +3699,20 @@ function setPage(p){
   const drugi = ACTIVE!==p;
   ACTIVE=p;
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===p));
-  document.querySelectorAll('.page').forEach(x=>{x.classList.remove('active');x.classList.remove('uskoci');});
+  document.querySelectorAll('.page').forEach(x=>{x.classList.remove('active');x.classList.remove('uskoci');x.classList.remove('sleva','sdesna');});
   const el=$('#pg-'+p);
   el.classList.add('active');
+  /* Ulazak sa strane visi na SMERU, ne na `.active` — i skida se sa svih
+     stranica u redu iznad. Da klasa ostane na sakrivenoj stranici, sledeći
+     DODIR na njenu ikonicu bi je pustio ponovo (element se vraća iz
+     `display:none`, pa animacija kreće iz početka), a dodir mora da izgleda
+     tačno kao pre.
+
+     Inline `transform` koji je ostavio prst se ovde ne dira: sklanja ga
+     `pvOtkazi` pre nego što `setPage` uopšte bude pozvan. Da ostane, gazio bi
+     kraj animacije — animacija nadjačava inline stil DOK traje, a posle njega
+     se vraća ono što piše u `style`. */
+  if(drugi&&smer) el.classList.add(smer>0?'sdesna':'sleva');
   ambijent(p);
   /* Kartice se slažu jedna za drugom SAMO kad se stvarno menja tab. Ekran se
      iznova iscrtava i pri svakoj sitnici (obeležen trening, unet kilometar) —
@@ -12507,6 +12522,162 @@ async function handleOAuthReturn(){
 
 /* ---------- INIT ---------- */
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>setPage(b.dataset.pg));
+
+/* ---------- PREVLAČENJE IZMEĐU TABOVA ----------
+
+   Palac koji drži telefon dohvata donju traku, ali ne i baš onu ikonicu koju
+   traži: pet meta od ~75 px, u pokretu, znojavim rukama, često jednom rukom.
+   Prevlačenje levo/desno je isti prelazak bez ciljanja — prst ide u stranu, a
+   ekran se pomera kroz niz koji je već pred očima (Danas · Plan · Oporavak ·
+   Trka · Zajednica). DODIR NA IKONICU OSTAJE NEPROMENJEN: ovo je drugi put do
+   istog mesta, ne zamena za postojeći.
+
+   REDOSLED SE ČITA IZ `PAGES`, ne piše ovde ponovo. Da stoji svoj niz, šesti
+   tab bi ga tiho preskočio — traka bi imala šest meta, prst bi obilazio pet, i
+   ništa ne bi puklo. `test/prevlacenje.test.mjs` drži da se redosled u `PAGES`
+   i redosled ikonica u index.html poklapaju.
+
+   ZAŠTO `touch*`, A NE `pointer*`: da bi prevlačenje smelo da uzme dodir,
+   uspravno skrolovanje mora da se ODBIJE (`preventDefault`). Kod pointer
+   događaja se to ne može uraditi iz koda nego se traži `touch-action` u CSS-u —
+   a to pravilo se nasleđuje na ceo sadržaj ispod sebe i tiho bi ubilo i
+   vodoravne trake u njemu (filteri u Zajednici) i pinch-zoom, koji je izričito
+   vraćen zbog WCAG 1.4.4 (v. meta viewport u index.html). Ovako odluka stoji u
+   kodu, uz uslove pod kojima važi. */
+const TAB_RED=Object.keys(PAGES);
+/* Pragovi su u PIKSELIMA, ne u procentu ekrana: prst pređe isto rastojanje na
+   svakom telefonu, a procenat bi na velikom ekranu tražio duži pokret za isti
+   posao. 56 px je oko širine palca u pokretu — ispod toga se ne razlikuje od
+   promašenog dodira. Brz pokret prolazi i kraći (24 px), jer je namera u
+   njegovoj brzini, a ne u dužini: flik palcem je gotov pre nego što ruka
+   stigne da pređe pola ekrana. */
+const PV_PRAG=56, PV_FLIK=24, PV_BRZINA=.55;
+const PV_UGAO=1.3;             /* vodoravno mora biti toliko puta duže od uspravnog */
+const PV_VUCA=.3, PV_MAX=34;   /* koliko ekran ide za prstom, i dokle */
+let PV=null, PV_TMR=null;
+
+function pvMirno(){
+  try{ return typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  catch(e){ return false; }
+}
+/* Ekrani koji pokrivaju sve imaju svoj sadržaj i svoj izlaz; ispod njih tab ne
+   sme da se menja. Inače bi čovek zatvorio list i našao se na drugom ekranu, a
+   da nikad nije dodirnuo traku. */
+function pvDozvoljeno(){
+  const m=document.querySelector('main');
+  if(m&&m.style.display==='none') return false;        /* čarobnjak (v. openWizard) */
+  const sh=$('#sheet');
+  if(sh&&sh.classList.contains('on')) return false;    /* modalni list */
+  const g=document.getElementById('sb-gate');
+  if(g&&g.style.display==='flex') return false;        /* kapija za prijavu */
+  /* Uvodni ekran se prepoznaje po klasi na `body`, ne po postojanju `#uvod`:
+     klasa stoji tačno dok uvod TRAJE (skida je `skloni`, i pri isteku i pri
+     dodiru koji ga preskače), dok sam element živi i koji trenutak duže. */
+  if(document.body&&document.body.classList.contains('uvod-radi')) return false;
+  return true;
+}
+/* Dodir koji je počeo u nečemu što se i samo pomera vodoravno pripada TOME:
+   traka filtera u Zajednici, `<pre>` sa dugim redovima u podešavanjima, klizač
+   za bol. Provera je OPŠTA (stvarna pomerljivost + `overflow-x`), a ne spisak
+   klasa — spisak bi zaboravio prvi sledeći vodoravni element, i to tako da se
+   greška vidi tek kad neko pokuša da pomeri listu a promeni mu se ekran.
+   `overflow-x` se mora pitati: skraćen tekst sa `text-overflow:ellipsis` je
+   takođe širi od svog okvira, a ne pomera se nikuda. */
+function pvDodirZauzet(el){
+  for(let n=el;n&&n!==document.body;n=n.parentElement){
+    const t=n.tagName;
+    if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT') return true;
+    if(n.scrollWidth-n.clientWidth>4){
+      const st=typeof getComputedStyle==='function'?getComputedStyle(n):null;
+      const ox=st?st.overflowX:'';
+      if(ox==='auto'||ox==='scroll') return true;
+    }
+  }
+  return false;
+}
+/* Susedni tab u smeru pokreta, ili `null` na kraju niza. */
+function pvSusedni(korak){
+  const i=TAB_RED.indexOf(ACTIVE);
+  if(i<0) return null;
+  const j=i+korak;
+  return (j>=0&&j<TAB_RED.length)?TAB_RED[j]:null;
+}
+function pvPomeri(el,px){
+  if(!el||!el.style) return;
+  el.style.transform=px?('translateX('+px.toFixed(1)+'px)'):'';
+}
+/* Kraj pokreta koji NE menja tab. `vrati` je tačno tada true: ekran se vraća
+   na svoje mesto uz prelaz. Kad tab jeste promenjen, pomeraj se briše bez
+   prelaza — stranica u tom trenutku ionako odlazi u `display:none`, a novi
+   ekran nosi svoju animaciju ulaska. */
+function pvOtkazi(vrati){
+  const p=PV; PV=null;
+  if(!p||!p.el) return;
+  const el=p.el;
+  el.classList.remove('vuce');
+  if(!vrati||!p.pomeren){ pvPomeri(el,0); return; }
+  el.classList.add('vraca');
+  pvPomeri(el,0);
+  clearTimeout(PV_TMR);
+  /* Rok mora da preživi prelaz iz CSS-a (.26 s), inače bi se `vraca` skinula
+     usred njega i ekran bi ostatak puta preskočio. Isti razlog kao kod roka za
+     `uskoci` u setPage. */
+  PV_TMR=setTimeout(()=>el.classList.remove('vraca'),320);
+}
+document.addEventListener('touchstart',e=>{
+  pvOtkazi(false);                                     /* zaostalo stanje ne sme da se sabira */
+  const t=e.touches;
+  if(!t||t.length!==1) return;                         /* dva prsta su zumiranje, ne prevlačenje */
+  if(!pvDozvoljeno()) return;
+  if(pvDodirZauzet(e.target)) return;
+  PV={x:t[0].clientX,y:t[0].clientY,t:Date.now(),osa:'',dx:0,pomeren:false,
+      el:$('#pg-'+ACTIVE),mirno:pvMirno()};
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+  if(!PV) return;
+  const t=e.touches;
+  if(!t||t.length!==1){ pvOtkazi(true); return; }
+  const dx=t[0].clientX-PV.x, dy=t[0].clientY-PV.y;
+  if(!PV.osa){
+    if(Math.abs(dx)<10&&Math.abs(dy)<10) return;       /* još se ne zna šta pokret hoće */
+    /* PRI NEODLUČNOSTI POBEĐUJE USPRAVNO. Skrolovanje se radi stotinu puta po
+       ekranu, tab se menja nekoliko puta po otvaranju — pa vodoravno mora da
+       bude izričito (1,3 puta duže), a ne tek malo duže. Bez toga bi svako
+       skrolovanje palcem, koje ide u luku, povremeno promenilo ekran. */
+    if(Math.abs(dx)<=Math.abs(dy)*PV_UGAO){ PV=null; return; }
+    PV.osa='x';
+    /* Prethodni pokret se možda još vraća. Njegov prelaz mora da ode ODMAH,
+       inače bi ovaj pokret klizio sa zaostatkom od .26 s — prst napred, ekran
+       za njim. Zato i klasa i njen rok. */
+    if(PV.el){ clearTimeout(PV_TMR); PV.el.classList.remove('vraca'); PV.el.classList.add('vuce'); }
+  }
+  PV.dx=dx;
+  /* Od trenutka kad je osa vodoravna, dodir je naš. Bez ovoga stranica nastavi
+     da se skroluje uspravno na svako odstupanje prsta, pa ekran istovremeno
+     klizi u stranu i poskakuje gore-dole. */
+  if(e.cancelable&&typeof e.preventDefault==='function') e.preventDefault();
+  if(PV.mirno) return;          /* isključeno kretanje: tab se menja, ekran ne klizi */
+  const kraj=!pvSusedni(dx<0?1:-1);
+  /* Na kraju niza nema šta da dođe, pa ekran jedva popusti. Otpor je odgovor
+     „tu je kraj" — bolje nego pokret koji izgleda isto a ne uradi ništa. */
+  const vuca=kraj?PV_VUCA*.35:PV_VUCA, max=kraj?PV_MAX*.4:PV_MAX;
+  PV.pomeren=true;
+  pvPomeri(PV.el,Math.max(-max,Math.min(max,dx*vuca)));
+},{passive:false});
+function pvKraj(){
+  if(!PV) return;
+  const dx=PV.dx, ms=Date.now()-PV.t, osa=PV.osa;
+  const brz=ms>0?Math.abs(dx)/ms:0;
+  const dovoljno = osa==='x' && (Math.abs(dx)>=PV_PRAG || (Math.abs(dx)>=PV_FLIK&&brz>=PV_BRZINA));
+  /* Prst ulevo znači SLEDEĆI tab (sadržaj ide za prstom), pa novi ekran stiže
+     zdesna — otud smer 1. Udesno je obrnuto. */
+  const cilj = dovoljno ? pvSusedni(dx<0?1:-1) : null;
+  pvOtkazi(!cilj);
+  if(cilj) setPage(cilj, dx<0?1:-1);
+}
+document.addEventListener('touchend',pvKraj,{passive:true});
+document.addEventListener('touchcancel',()=>pvOtkazi(true),{passive:true});
+
 $('#btn-gear').onclick=openSettings;
 $('#backdrop').onclick=closeSheet;
 if(fixVdotDates())save(); /* jednokratna popravka VDOT datuma iz postojećih runDate */

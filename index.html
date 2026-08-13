@@ -172,6 +172,43 @@ main{padding:16px 16px calc(var(--tab-h) + var(--sab) + 26px)}
 .page.uskoci .ln{stroke-dasharray:2000;animation:crtaj .75s .08s cubic-bezier(.35,.82,.3,1) backwards}
 @keyframes crtaj{from{stroke-dashoffset:2000}}
 
+/* ---------- PREVLAČENJE IZMEĐU TABOVA ----------
+   Tab se menja i prevlačenjem prsta levo/desno (mehanika je u app.js, odeljak
+   „PREVLAČENJE IZMEĐU TABOVA"). Dodir na ikonicu radi tačno kao pre — ovo je
+   dodatak, ne zamena, pa klik namerno NE dobija nijednu od ovih klasa.
+
+   TRI ODVOJENA STANJA, i to nije ukras nego odgovor ruci:
+   1. `vuce` — dok prst stoji na ekranu. Ekran ide ZA prstom, ali prigušeno
+      (oko trećine puta, najviše 34 px). To nije praćenje nego POTVRDA da je
+      pokret primljen; da ide 1:1, svako uspravno klizanje prsta bi napola
+      otvorilo susedni ekran. Prelaz je isključen jer bi kasnio za prstom.
+   2. `sleva` / `sdesna` — kad se tab STVARNO promenio. Novi ekran ulazi sa one
+      strane sa koje je pokret došao, pa se smena čita kao pomeranje kroz niz
+      tabova, a ne kao zamena slike na istom mestu.
+   3. `vraca` — pokret nije bio dovoljan. Jedini od tri koji je tranzicija, jer
+      jedini kreće od vrednosti koju je ostavio prst; ekran koji skoči nazad
+      izgleda kao greška, ekran koji se vrati kaže „primljeno, ali premalo".
+
+   Ni `tab-sleva` ni `tab-sdesna` NEMAJU `to`, po istom pravilu kao prstenovi i
+   linije iznad: kraj je ono što element ionako nosi, pa posle animacije nema
+   šta da se čisti — a inline `transform` koji je ostavio prst se ukloni u
+   kodu, ne ovde.
+
+   Pomera se SAMO stranica unutar `main`. Zaglavlje, traka tabova i ambijentalno
+   svetlo ostaju mirni — oni su okvir, a kroz okvir se sadržaj pomera.
+
+   REDOSLED `vraca` pa `vuce` NIJE slučajan. Kad se novo prevlačenje započne
+   dok se prethodno još vraća, na elementu se nakratko zateknu obe klase; kod ih
+   razdvaja (v. `pvOtkazi`), ali ako ikad promakne, pobeđuje ono što je niže —
+   a to mora biti `vuce`, jer prelaz zaostao za prstom je vidljiva greška, dok
+   je preskočen povratak neprimetan. */
+.page.vraca{transition:transform .26s cubic-bezier(.2,.9,.3,1)}
+.page.vuce{transition:none}
+.page.sleva{animation:tab-sleva .3s cubic-bezier(.2,.9,.3,1)}
+.page.sdesna{animation:tab-sdesna .3s cubic-bezier(.2,.9,.3,1)}
+@keyframes tab-sleva{from{transform:translateX(-26px);opacity:.35}}
+@keyframes tab-sdesna{from{transform:translateX(26px);opacity:.35}}
+
 /* ---------- cards ---------- */
 .card{background:var(--glass);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;
   box-shadow:var(--hl)}
@@ -969,6 +1006,10 @@ body.uvod-radi{overflow:hidden}
      doduše odmah dovelo do kraja, ali `.ln` bi u tom trenu bio nacrtan pa
      ODMAH prekriven punim potezom — treptaj. Bolje da animacije nema. */
   .page.uskoci .pr-val,.page.uskoci .ln{animation:none!important}
+  /* Prevlačenje: tab se i dalje menja prstom — gasi se KRETANJE, ne radnja.
+     Klizanje za prstom isključuje sam kod (v. `pvMirno` u app.js), a ovde
+     ostaje ulazak novog ekrana, koji ide preko animacije. */
+  .page.sleva,.page.sdesna{animation:none!important}
   /* Uvod nema statičnu svrhu — ako je kretanje isključeno, ne prikazuje se
      uopšte. Skriptu ne čeka: sakriven je već ovde, da ne trepne. */
   #uvod{display:none}

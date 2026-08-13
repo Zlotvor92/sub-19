@@ -981,7 +981,11 @@ describe('Prelazak preko ponoći vuče i zaglavlje', () => {
     /* `setPage` se zove i pri svakoj sitnici; bezuslovno iscrtavanje zaglavlja
        bilo bi posao bez razloga na svaki dodir. */
     const src = readAppSource();
-    const blok = /function setPage\(p\)\{[\s\S]*?\n\}/.exec(src)[0];
+    /* Potpis sme da dobije još parametara (`smer` je stigao uz prevlačenje
+       između tabova) — tvrdnja je o TELU funkcije, pa je ne sme obarati broj
+       argumenata. `[^)]*` je namerno usko: hvata dopunu potpisa, ali ne bi
+       preskočilo preimenovanu funkciju. */
+    const blok = /function setPage\(p[^)]*\)\{[\s\S]*?\n\}/.exec(src)[0];
     assert.match(blok, /if\(osveziDan\(\)\)\s*renderHeader\(\)/,
       'zaglavlje se osvežava bezuslovno, ili se povratna vrednost i dalje ne gleda');
   });
