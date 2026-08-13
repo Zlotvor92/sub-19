@@ -351,12 +351,67 @@ describe('CSS koji kod očekuje', () => {
     assert.match(app, /setProperty\('--pv-ms'/, 'kod ne postavlja trajanje dovršetka');
   });
 
-  test('rok koji čisti prelazak preživi najduži dovršetak', () => {
-    /* Ista zamka kao kod `uskoci`: da rok istekne ranije, stranica bi ostala
-       pomerena ili bi se tab promenio usred klizanja. */
+  test('rok koji čisti prelazak istekne POSLE dovršetka, ne u njemu', () => {
+    /* Ista zamka kao kod `uskoci`: da rok istekne ranije, tab bi se promenio
+       usred klizanja i stranica bi ostala pomerena. */
+    const min = +(/PV_MS_MIN=(\d+)/.exec(app) || [])[1];
     const max = +(/PV_MS_MAX=(\d+)/.exec(app) || [])[1];
     const rez = +(/setTimeout\(pvOdmah, ms\+(\d+)\)/.exec(app) || [])[1];
-    assert.ok(max > 0 && rez > 0, 'granica trajanja ili rezerva nisu nađene');
-    assert.ok(rez > 0 && max <= 420, `najduži dovršetak je ${max} ms`);
+    assert.ok(min > 0 && max > 0 && rez > 0, 'granice trajanja ili rezerva nisu nađene');
+    assert.ok(min < max, `donja granica (${min}) nije ispod gornje (${max})`);
+    assert.ok(rez > 0, 'rok se poklapa sa krajem dovršetka umesto da ga preživi');
+  });
+});
+
+describe('Zamućenje po pravcu kretanja', () => {
+  const html = readRepoFile('index.html');
+  const css = html.replace(/\/\*[\s\S]*?\*\//g, '');
+  const app = readRepoFile('app.js');
+
+  test('muti se SAMO vodoravno — inače je to nedostatak fokusa, ne brzina', () => {
+    const f = /<feGaussianBlur id="pv-mut-b" stdDeviation="([^"]*)"/.exec(html);
+    assert.ok(f, 'filter #pv-mut-b nije u index.html');
+    assert.match(f[1], /^0 0$/, 'filter u miru nije ugašen');
+    /* Uspravna komponenta mora ostati nula i kad je kod upisuje. */
+    const upis = /setAttribute\('stdDeviation', st\+' 0'\)/.test(app);
+    assert.ok(upis, 'kod upisuje i uspravno zamućenje');
+  });
+
+  test('boje se ne peru — filter radi u sRGB', () => {
+    assert.match(html, /<filter id="pv-mut"[^>]*color-interpolation-filters="sRGB"/,
+      'podrazumevani linearRGB bi na tamnoj podlozi isprao boje kartica');
+  });
+
+  test('zamućenje visi na klasi koju kod postavlja na obe stranice', () => {
+    assert.match(css, /\.page\.vuce\{filter:url\(#pv-mut\)\}/);
+    assert.match(app, /el\.classList\.add\('dolazi','vuce'\)/, 'dolazeća stranica nema zamućenje');
+    assert.match(app, /PV\.el\.classList\.add\('vuce'\)/, 'odlazeća stranica nema zamućenje');
+  });
+
+  test('jačina se zaokružuje na pola piksela i upisuje samo kad se promeni', () => {
+    /* Svaka promena filtera tera pregledač da iznova rasterizuje sloj. Bez
+       zaokruživanja bi to bilo na svakom kadru pokreta. */
+    const f = /function pvMutno\(px\)\{[\s\S]*?\n\}/.exec(app)[0];
+    assert.match(f, /\*2\)\/2/, 'jačina se ne zaokružuje na pola piksela');
+    assert.match(f, /if\(st===PV_MUT\) return/, 'ista vrednost se upisuje ponovo');
+  });
+
+  test('petlja koja gasi zamućenje ne može da se zavrti', () => {
+    /* Jedina petlja u aplikaciji koja sama sebe zakazuje. Kad `rAF` negde bude
+       sinhron (u testovima jeste), bez brojača se ne bi zaustavila. */
+    const f = /function pvMutniPad\(od,ms\)\{[\s\S]*?\n\}/.exec(app)[0];
+    assert.match(f, /kadrova>\d+/, 'nema gornje granice broja kadrova');
+  });
+
+  test('isključeno kretanje gasi i zamućenje', () => {
+    const blok = /@media\(prefers-reduced-motion:reduce\)\{[\s\S]*?\n\}/.exec(css)[0];
+    assert.match(blok, /\.page\.vuce\{filter:none!important\}/);
+  });
+
+  test('u miru nijedna stranica ne nosi filter', () => {
+    const s = stolica();
+    s.prevuci({ dx: -160 });
+    for (const pg of ['danas', 'plan'])
+      assert.ok(!/vuce/.test(s.stanje(pg).klase), `${pg} je ostao zamućen`);
   });
 });

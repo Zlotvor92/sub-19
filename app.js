@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='263'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='264'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -12571,9 +12571,19 @@ const PV_BRZINA=.45;
 const PV_UGAO=1.3;             /* vodoravno mora biti toliko puta duže od uspravnog */
 const PV_OTPOR=.34, PV_RUB=70; /* na kraju niza: koliko ekran popusti, i dokle */
 /* Granice trajanja dovršetka. Donja da vrlo brz prst ne dobije trzaj, gornja da
-   vrlo spor ne ostavi ekran da puzi. */
-const PV_MS_MIN=170, PV_MS_MAX=420;
-let PV=null, PV_TMR=null, PV_ZAVRSI=null;
+   vrlo spor ne ostavi ekran da puzi. Namerno je duže nego što bi „brzo" tražilo:
+   pokret koji se dugo smiruje čita se kao težak i gladak, dok kratak deluje
+   isečeno — a smirivanje nosi kriva u CSS-u, ne ravnomerno klizanje. */
+const PV_MS_MIN=240, PV_MS_MAX=560;
+/* ZAMUĆENJE PO PRAVCU KRETANJA. Ne ukras: pravi ekran u pokretu se na mrežnjači
+   razmazuje, i mozak iz TE mrlje čita brzinu. Bez nje slika u svakom kadru
+   stoji oštro na novom mestu — što je tačno ono što se vidi kao „skače" na
+   ekranu od 60 Hz. Sa njom isti broj kadrova izgleda glađe.
+   2,5 px je gornja granica namerno nisko: iznad toga se gubi tekst, a cilj je
+   da se oseti, ne da se primeti. Množilac veže jačinu za brzinu prsta —
+   pri 1 px/ms (brz, ali običan pokret) daje oko 1,6 px. */
+const PV_MUT_MAX=2.5, PV_MUT_PO_BRZINI=1.6;
+let PV=null, PV_TMR=null, PV_ZAVRSI=null, PV_MUT=-1;
 
 function pvMirno(){
   try{ return typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches; }
@@ -12641,11 +12651,41 @@ function pvPomeri(el,px){
   if(!el||!el.style) return;
   el.style.transform='translate3d('+px.toFixed(1)+'px,0,0)';
 }
+/* Jačina zamućenja, u pikselima. Zaokružuje se na POLA PIKSELA i upisuje samo
+   kad se stvarno promeni: svaka promena filtera tera pregledač da iznova
+   rasterizuje sloj, dok ga pri nepromenjenoj vrednosti samo pomera. Razlika
+   manja od pola piksela se ionako ne vidi, a ovako ih po celom pokretu bude
+   svega nekoliko. */
+function pvMutno(px){
+  const st=Math.round(Math.min(PV_MUT_MAX,Math.max(0,px||0))*2)/2;
+  if(st===PV_MUT) return;
+  PV_MUT=st;
+  const f=document.getElementById('pv-mut-b');
+  if(f&&f.setAttribute) f.setAttribute('stdDeviation', st+' 0');
+}
+/* Zamućenje opada ZAJEDNO sa brzinom, ne sa pređenim putem — zato kvadrat:
+   kriva dovršetka najviše uspori na kraju, pa bi zamućenje vezano za put
+   ostalo vidljivo i kad se ekran već skoro zaustavio.
+   Broj kadrova je ograničen jer je ovo jedina petlja u aplikaciji koja sama
+   sebe zakazuje: da `requestAnimationFrame` negde bude sinhron (npr. u
+   testovima), bez brojača se ne bi zaustavila. */
+function pvMutniPad(od,ms){
+  if(!od||typeof requestAnimationFrame!=='function'){ pvMutno(0); return; }
+  const t0=Date.now();
+  let kadrova=0;
+  const korak=()=>{
+    const d=(Date.now()-t0)/ms;
+    if(d>=1||++kadrova>120){ pvMutno(0); return; }
+    pvMutno(od*(1-d)*(1-d));
+    requestAnimationFrame(korak);
+  };
+  korak();
+}
 /* Vraća stranicu u stanje u kom je bila pre prevlačenja. Isti posao i za onu
    koja odlazi i za onu koja dolazi — druga samo ima još i klasu `dolazi`. */
 function pvSkloni(el){
   if(!el||!el.style) return;
-  el.classList.remove('dolazi','klizi');
+  el.classList.remove('dolazi','klizi','vuce');
   el.style.transform='';
   el.style.willChange='';
   if(el.style.removeProperty){ el.style.removeProperty('--pv-vrh'); el.style.removeProperty('--pv-ms'); }
@@ -12665,7 +12705,7 @@ function pvCilj(znak){
   PAGES[PV.cilj]();                    /* sadržaj mora postojati pre nego što uđe u kadar */
   if(el.style.setProperty) el.style.setProperty('--pv-vrh', pvVrh()+'px');
   el.style.willChange='transform';
-  el.classList.add('dolazi');
+  el.classList.add('dolazi','vuce');
   pvPomeri(el, PV.dx+znak*PV.W);
   PV.ciljEl=el;
 }
@@ -12733,6 +12773,12 @@ function pvLeti(p,ciljPx,ms,tab){
   });
   pvPomeri(el,ciljPx);
   if(ciljEl) pvPomeri(ciljEl, ciljPx+p.znak*p.W);
+  /* Početna jačina mrlje: brzina prsta u trenutku puštanja, ali ne manja od one
+     koju ekran ionako dobija po krivoj dovršetka — ona najviše brzine potroši
+     na početku, oko dvostruko iznad proseka. Bez toga bi ekran pušten iz
+     mirovanja preleteo pola širine potpuno oštar. */
+  const ost=Math.abs(ciljPx-(p.px||0));
+  pvMutniPad(Math.max(Math.abs(p.brz), ms>0?ost/ms*2:0)*PV_MUT_PO_BRZINI, ms);
   PV_ZAVRSI=()=>{
     pvSkloni(el); pvSkloni(ciljEl);
     /* Ako je u međuvremenu neko drugi promenio ekran (dodir na ikonicu dok je
@@ -12748,7 +12794,7 @@ document.addEventListener('touchstart',e=>{
   if(!t||t.length!==1) return;                         /* dva prsta su zumiranje */
   if(!pvDozvoljeno()) return;
   if(pvDodirZauzet(e.target)) return;
-  PV={x:t[0].clientX,y:t[0].clientY,dx:0,osa:'',znak:0,cilj:null,ciljEl:null,
+  PV={x:t[0].clientX,y:t[0].clientY,dx:0,px:0,osa:'',znak:0,cilj:null,ciljEl:null,
       el:$('#pg-'+ACTIVE),W:pvSirina(),mirno:pvMirno(),
       vx:0,vt:Date.now(),brz:0};
 },{passive:true});
@@ -12765,7 +12811,9 @@ document.addEventListener('touchmove',e=>{
        skrolovanje palcem, koje ide u luku, povremeno promenilo ekran. */
     if(Math.abs(dx)<=Math.abs(dy)*PV_UGAO){ PV=null; return; }
     PV.osa='x';
-    if(PV.el&&PV.el.style) PV.el.style.willChange='transform';
+    /* Sloj na grafičkoj i zamućenje traže se samo ako će se nešto pomerati —
+       kome je kretanje isključeno, stranica ostaje običan sadržaj. */
+    if(!PV.mirno&&PV.el&&PV.el.style){ PV.el.style.willChange='transform'; PV.el.classList.add('vuce'); }
   }
   /* Od trenutka kad je osa vodoravna, dodir je naš. Bez ovoga stranica nastavi
      da se skroluje uspravno na svako odstupanje prsta, pa ekran istovremeno
@@ -12779,14 +12827,20 @@ document.addEventListener('touchmove',e=>{
   if(Math.abs(dx)>=6) pvCilj(dx<0?1:-1);
   if(PV.mirno) return;                                 /* isključeno kretanje: samo promena taba */
   if(PV.ciljEl){
+    PV.px=dx;
     pvPomeri(PV.el,dx);
     pvPomeri(PV.ciljEl,dx+PV.znak*PV.W);
     pvSvetlo(PV.cilj, Math.min(1,Math.abs(dx)/PV.W));
+    pvMutno(Math.abs(PV.brz)*PV_MUT_PO_BRZINI);
   }else{
     /* Kraj niza: nema šta da uđe u kadar, pa ekran samo popusti i vrati se.
        Otpor je odgovor „tu je kraj" — bolje nego pokret koji izgleda isto kao
        uspešan a ne uradi ništa. */
-    pvPomeri(PV.el, Math.max(-PV_RUB,Math.min(PV_RUB,dx*PV_OTPOR)));
+    PV.px=Math.max(-PV_RUB,Math.min(PV_RUB,dx*PV_OTPOR));
+    pvPomeri(PV.el,PV.px);
+    /* Zamućenje prati brzinu EKRANA, a on ovde ide otporom usporen — pa i
+       mrlja mora da bude toliko slabija. */
+    pvMutno(Math.abs(PV.brz)*PV_OTPOR*PV_MUT_PO_BRZINI);
   }
 },{passive:false});
 function pvVrati(){
