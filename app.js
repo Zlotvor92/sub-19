@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='265'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='266'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -314,6 +314,66 @@ const STARI_SEED_POTPIS = {
   kg:   ['2026-06-22','2026-06-29'],
   pred: ['p1','p2']
 };
+
+/* ============ MREŽA SA ROKOM ============
+   `fetch` NEMA podrazumevan rok, i to nije teorijska sitnica nego najčešće
+   stanje mreže koje trkač zaista ima: telefon je SPOJEN, a saobraćaj ne
+   prolazi — metro, lift, wifi sa captive portalom, podrum stadiona, slab
+   signal na stazi. `fetch` tada NE odbija; visi, ponekad minutima, dok mu
+   sam operativni sistem ne preseče vezu.
+
+   POSLEDICA NIJE BILA SPOR EKRAN NEGO TRAJNO ZAKLJUČAVANJE.
+   Svaka sinhronizacija ovde diže zastavicu „u toku" (`ZAJ.ucitava`,
+   `IST.ucitava`, `SB_BUSY`, `TR_POVLACIM`) i spušta je tek kad se obećanje
+   razreši — `finally` tu ne pomaže, jer se i on čeka. Dok `fetch` visi,
+   zastavica stoji podignuta, svaki sledeći pokušaj izlazi na prvom redu, a
+   grana sa greškom — ona u kojoj JESTE dugme „Pokušaj ponovo" — nikad se ne
+   iscrta. Izmereno nad `zajUcitaj`: Zajednica ostaje na „Povlačim spisak…",
+   bez ijednog dugmeta, do ponovnog učitavanja strane. Instalirana PWA stoji
+   otvorena danima, pa to znači „danima".
+
+   ROK JE IZNAD SERVEROVOG, NE ISPOD NJEGA.
+   Sopstvene `/api` putanje imaju `maxDuration` 60 s (v. vercel.json) i same
+   paze na svoj rok (v. `ROK_MS` u api/analyze.js). Klijentski rok kraći od
+   toga sekao bi pozive koji uredno rade — jedna sinhronizacija sa
+   intervals.icu legitimno traje i pola minuta. Zato `dug` stoji IZNAD 60 s:
+   ne takmiči se sa serverovim rokom nego hvata utihnuo socket, u kom slučaju
+   odgovora nema ni posle sat vremena. Sve ostalo (Supabase REST, prognoza)
+   odgovara u desetinkama i dobija `brz`.
+
+   ODREDIŠTE BIRA ROK, NE POZIVALAC. Pravilo je jedno i stoji na jednom mestu;
+   da se prosleđuje kroz argument, tridesetak poziva bi svaki nosio svoju
+   odluku i prvi novi bi je promašio.
+
+   Objekat, a ne dve `const`, da bi test paket mogao da ih skrati — inače bi
+   zamka za ovo morala da čeka pravih 12 s po tvrdnji. */
+const MREZA_ROK={brz:12000, dug:70000};
+function mrezaSignal(ms){
+  /* `AbortSignal.timeout` postoji od Chrome 103 / Safari 16. Stariji uređaji
+     dobijaju isti efekat preko `AbortController`-a. Ako nema ni njega, poziv
+     ide bez roka — dakle tačno kao pre ove izmene, ništa se ne pogoršava. */
+  try{
+    if(typeof AbortSignal!=='undefined'&&typeof AbortSignal.timeout==='function') return AbortSignal.timeout(ms);
+    if(typeof AbortController==='function'){
+      const c=new AbortController();
+      const t=setTimeout(()=>{ try{ c.abort(); }catch(e){} }, ms);
+      if(t&&typeof t.unref==='function') t.unref();
+      return c.signal;
+    }
+  }catch(e){}
+  return null;
+}
+/* Zamena za `fetch` na SVAKOM mestu u ovom fajlu. Pozivalac koji sam donese
+   `signal` zadržava svoj — rok se ne nameće preko tuđe odluke. */
+function fetchRok(ulaz,opcije,ms){
+  const o=Object.assign({},opcije||{});
+  if(!o.signal){
+    const adresa=String((ulaz&&ulaz.url)||ulaz||'');
+    const s=mrezaSignal(ms>0?ms:(/^\/api\//.test(adresa)?MREZA_ROK.dug:MREZA_ROK.brz));
+    if(s) o.signal=s;
+  }
+  return fetch(ulaz,o);
+}
 
 /* ============ POMOĆNE (čiste funkcije) ============ */
 const pad2=n=>String(n).padStart(2,'0');
@@ -3496,6 +3556,46 @@ function aiIzvor(l){
 function aiMoze(d,l){
   return (d.tag==='int'||d.tag==='tempo'||d.tag==='lako'||d.tag==='lr')&&!!l.km&&!!l.sec;
 }
+
+/* ============ POSAO KOJI JE ZAGLAVIO ============
+
+   `l.aiPosao.at` se UPISIVAO I NIKAD ČITAO. Vremenska oznaka je uzeta baš za
+   ovu svrhu i nijedna linija je nije koristila, pa posao koji jednom zaglavi
+   nije imao izlaz: kartica bi zauvek pokazivala „Nova analiza je u toku" i —
+   pošto ta grana namerno nema dugme — čovek nije imao ni šta da dodirne.
+   Provereno nad poslom starim 40 dana: isti tekst, nula dugmadi.
+
+   ZAGLAVLJIVANJE JE STVARNO, DVA PUTA:
+   1. `posao:'radi'` se šalje TAČNO JEDNOM, bez `await` i bez ponavljanja. Ako
+      taj zahtev ne stigne (čovek zatvori aplikaciju u tom trenutku, signal
+      pukne), red ostaje u stanju 'radi' i niko ga više ne preuzme.
+   2. Ako serverska funkcija umre usred poziva modela, red ostaje u 'u_toku'.
+      Okidač `ai_posao_prelaz` (v. supabase/ai-posao.sql) s pravom zabranjuje
+      povratak na 'radi' — dakle taj red se više ne može ni oživeti.
+   U oba slučaja je kvota već potrošena, a rezultata nema.
+
+   DVA PRAGA, jer su i uzroci dva:
+   - posle PONOVI: pošalji `posao:'radi'` opet. Za slučaj (1) to je cela
+     popravka i ne košta ništa — faza 'radi' se ne broji u dnevni limit, a
+     server je preuzima samo ako je red još u stanju 'radi', pa ponovljen
+     poziv nad poslom koji uveliko radi ne može da ga pokvari.
+   - posle ODUSTANI: proglasi neuspeh i vrati dugme. Za slučaj (2) drugog
+     izlaza nema, a ćutanje bez dugmeta je gore od poštene greške.
+
+   Pragovi su iznad svakog poštenog trajanja: model odgovara za desetak
+   sekundi do minut, pa pet minuta znači „ovo se više neće desiti samo od
+   sebe", a pola sata „ni ponavljanje nije pomoglo". */
+const AI_PONOVI_MS=5*60e3, AI_ODUSTANI_MS=30*60e3;
+/* Koliko posao traje. Posao bez `at` je zapisan starijom verzijom (ili stigao
+   iz backupa): tada se oznaka postavlja SADA umesto da se posao odmah proglasi
+   zaglavljenim — ažuriranje aplikacije usred računanja ne sme da obori analizu
+   koja uredno radi. Gubi se najviše jedan prozor čekanja, jednom. */
+function aiStarost(l){
+  const p=l&&l.aiPosao;
+  if(!p||!p.id) return 0;
+  if(typeof p.at!=='number'||!isFinite(p.at)){ p.at=Date.now(); save(); }
+  return Math.max(0, Date.now()-p.at);
+}
 function aiTelo(d,l){
   const izvor=aiIzvor(l);
   const preostalo=aiPreostalo(l);
@@ -3512,8 +3612,16 @@ function aiTelo(d,l){
      da se ništa nije ni pokrenulo. Sada stanje ima prednost UVEK; stari tekst
      ostaje ispod, jasno označen, jer je i dalje valjan podatak. */
   if(l.aiPosao&&l.aiPosao.id){
+    /* Posle PONOVI prag stanje više nije samo „u toku" nego „predugo traje", i
+       tada mora postojati nešto što se dodiruje. Bez ovoga je jedini izlaz iz
+       zaglavljenog posla bio da čovek pokrene analizu za NEKI DRUGI dan — jer
+       tek to na serveru okine brisanje redova starijih od 24 h. */
+    const zaglavio=aiStarost(l)>=AI_PONOVI_MS;
     return dGlava('Analiza',esc(izvor))+
-      `<div class="ai-radi">Nova analiza je u toku. Rezultat se upisuje sam — možeš da zatvoriš aplikaciju.</div>`+
+      (zaglavio
+        ? `<div class="ai-radi">Analiza traje duže nego što bi trebalo. Rezultat i dalje može da stigne sam.</div>`+
+          `<button type="button" class="ai-again" data-ai-ponovi="${esc(d.id)}">Pokušaj ponovo · ne troši analizu</button>`
+        : `<div class="ai-radi">Nova analiza je u toku. Rezultat se upisuje sam — možeš da zatvoriš aplikaciju.</div>`)+
       (tekst ? `<div class="ai-staro">prethodna analiza</div><div class="ai-out">${mdToHtml(tekst)}</div>` : '');
   }
   if(tekst){
@@ -3805,6 +3913,12 @@ function renderDanas(){
      planu posle toga vise nemaju gde da se prikazu, pa neka ih bar ima u
      fajlu. Odbijanje ne blokira — plan je njegov izbor. */
   if(tp)tp.onclick=()=>{
+    /* JEDINI `confirm()` koji NAMERNO nije prešao na `potvrdi()`. `potvrdi` je
+       za KAPIJE — `if(!potvrdi(...)) return;` — gde prigušen dijalog znači da se
+       akcija tiho ne desi. Ovo nije kapija nego ponuda: čarobnjak se otvara u
+       oba slučaja, a prigušen dijalog ovde znači samo „bez backupa", što je
+       ishod koji čovek i inače sme da izabere. Traka „dodirni još jednom" bi
+       ovde bila laž, jer se ništa ne čeka. */
     if(confirm('Prvo izvezi backup postojećih unosa?\n\nOK = izvezi pa nastavi\nOtkaži = idi odmah na pravljenje plana')) exportBackup();
     openWizard();
   };
@@ -3958,7 +4072,7 @@ async function vremePovuci(sila){
     const u=VREME_URL+'?latitude='+encodeURIComponent(g.lat)+'&longitude='+encodeURIComponent(g.lon)+
       '&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,precipitation_probability'+
       '&forecast_days=3&past_days=7&timezone=auto';
-    const r=await fetch(u);
+    const r=await fetchRok(u);
     if(!r.ok) return {ok:false, error:'Vremenska prognoza trenutno nije dostupna.'};
     const sati=vremeCist(await r.json());
     if(!sati) return {ok:false, error:'Prognoza je stigla u neočekivanom obliku.'};
@@ -4385,7 +4499,7 @@ function bindDayCard(root,d){
   root.querySelectorAll('#tcard [data-a]').forEach(b=>{
     b.onclick=()=>{
       const a=b.dataset.a;
-      if(a==='skip'&&!confirm('Označi trening kao preskočen?'))return;
+      if(a==='skip'&&!potvrdi('Označi trening kao preskočen?'))return;
       const l=S.log[d.id]||(S.log[d.id]={});
       l.status=a;
       if(a==='done'&&!l.ts)l.ts=d.date||TODAY;
@@ -4524,9 +4638,93 @@ function bindForm(root,d){
 
 /* Dugme za analizu ne zivi vise u formi nego u svojoj kartici, pa se i vezuje
    odvojeno — i iz Danas ekrana i iz lista dana u Planu. */
+/* GRADNJA ZAHTEVA ZA MODEL — IZDVOJENA, jer je sada ima DVA pozivaoca.
+   Klik gradi zahtev prvi put, a `aiPonovoPokreni` isti taj zahtev gradi
+   ponovo kad posao zaglavi (v. „POSAO KOJI JE ZAGLAVIO" niže). Dok je stajao
+   inline u rukovaocu klika, ponovni pokušaj nije imao odakle da ga uzme — pa
+   ga nije ni bilo. */
+function aiPayload(d,l){
+  const predIds=predRowsFor(d);
+  const mainPid=predIds[0];
+  const r=mainPid?CUR_PRED.find(x=>x.id===mainPid):null;
+  return {
+    session:{ desc:d.desc||'', planPace: r?fmtTempo(effectivePace(d,r)):'—', q: r?r.q:null, tag:d.tag,
+              kind: sessKind(d),
+              /* ono sto je trkac SAM upisao na Stravi za taj dan */
+              stravaName: l.stravaName||null, stravaDesc: l.stravaDesc||null },
+    goalCtx: goalCtxText(),
+    /* ZONE NOSE IZVOR. Vreme po zonama (`icu.zonePuls`) dolazi sa
+       intervals.icu, a granice su ranije uvek bile Stravine — dva sistema
+       sa različitim brojem zona i različitim granicama, spojena u jednu
+       tvrdnju. Model sada dobija i po čijim zonama sudi, pa raspodelu sme
+       da imenuje samo kad su oba iz istog izvora (v. api/analyze.js). */
+    /* ZONE OVOG TRENINGA, ne zone naloga — v. `zoneZaTrening`. Kad je
+       raspodela izracunata po granicama iz same aktivnosti, gore moraju
+       stajati bas te granice; inace model procente po jednom sistemu cita
+       kroz nazive drugog. */
+    hrZones: zoneZaTrening(l).zone,
+    hrZonesIzvor: zoneZaTrening(l).izvor,
+    entered:{
+      workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
+      km:l.km??null, time:l.sec?fmtClock(l.sec):null,
+      hr:l.hr??null, rpe:l.rpe??null, note:l.note||'',
+      maxHr:l.maxHr??null, elevGain:l.elevGain??null, relEffort:l.relEffort??null,
+      /* TEMPERATURA ZA MODEL — objekat sa izvorom, ne go broj.
+         Ranije je ovde išlo `l.temp`, dakle očitavanje sa zgloba, i to bez
+         ijedne reči o poreklu. Model ga je zato tumačio kao temperaturu
+         vazduha i gradio na njemu ocenu („na ekstremnoj temperaturi od
+         33 °C" za dan kada je prognoza za sat trčanja davala 30). Sada
+         prvo Open-Meteo za sat trčanja; sat ostaje samo kao označena
+         rezerva, pa model može da mu spusti težinu. */
+      temp:(()=>{ const t=tempTrcanja(l, l.runDate||l.ts||d.date); return t||null; })(),
+      decoupling:l.decoupling||null,
+      /* Oporavak na DAN treninga: isti tempo posle lose noci nije isti
+         trening, a bez ovoga model to ne moze da zna. */
+      oporavak: oporavakZa(l.runDate||l.ts||d.date),
+      laps: Array.isArray(l.laps)&&l.laps.length?l.laps:null,
+      lapsIzvor: l.lapsIzvor||null,
+      /* „6×800" kao jedna stavka — model iz toga vidi seriju kao celinu,
+         pored pojedinačnih repova. Samo sa intervals.icu. */
+      grupe: Array.isArray(l.icuGrupe)&&l.icuGrupe.length?l.icuGrupe:null,
+      /* Već izračunato na intervals.icu: GAP, razdvajanje, efikasnost,
+         opterećenje, vreme po zonama, „oseća se kao". Model to ne mora da
+         procenjuje iz sirovih brojeva. */
+      icu: l.icu||null,
+      /* RASPODELA PO ZONAMA, VEĆ IZRAČUNATA. Sirov niz sekundi i dalje ide
+         u `icu.zonePuls`, ali model iz njega ne treba da deli sam —
+         procente računa aplikacija, pa su brojevi u analizi ISTI kao na
+         kartici „Po zonama". Dva računa nad istim podacima bi se pre ili
+         kasnije razišla, i to bi ispalo tako da analiza protivreči ekranu.
+         Vraća null kad raspodela nije uporediva sa granicama (v.
+         `zoneRaspodela`) — tada je i model ne sme imenovati. */
+      zoneUdeo: (()=>{ const r=zoneRaspodela(l); return r?{ukupno:r.ukupno, redovi:r.redovi}:null; })(),
+      perKm: Array.isArray(l.perKm)&&l.perKm.length?l.perKm:null
+    }
+  };
+}
+
 function vezAnalize(root,d){
   const karta=root.querySelector(`#ai-card-${esc(d.id)}`);
   if(!karta) return;
+  /* DUGME ZA ZAGLAVLJEN POSAO. Stoji PRE provere `[data-ai]` jer se te dve
+     grane isključuju: dok posao traje, kartica nema `[data-ai]`, pa bi rani
+     `return` ispod ostavio ovo dugme nevezanim — dakle nacrtano, a mrtvo. */
+  const opet=karta.querySelector('[data-ai-ponovi]');
+  if(opet) opet.addEventListener('click',async()=>{
+    const l=S.log[d.id]||(S.log[d.id]={});
+    opet.disabled=true; opet.textContent='Šaljem ponovo…';
+    await aiPonovoPokreni(d,l);
+    /* Ne čeka se ishod na ekranu: faza „radi" sme da traje koliko joj treba, a
+       rezultat pokupi `aiSacekaj` odnosno `aiPokupiSve`. Kartica se vraća u
+       stanje „u toku" sa osveženim brojačem starosti. */
+    const konac=await aiSacekaj(d,l);
+    karta.innerHTML=aiTelo(d,l);
+    vezAnalize(root,d);
+    if(konac==='greska'){
+      const izlaz=karta.querySelector('.ai-radi');
+      if(izlaz&&l.aiGreska) izlaz.textContent=l.aiGreska;
+    }
+  });
   const dug=karta.querySelector('[data-ai]');
   if(!dug) return;
   dug.addEventListener('click',async()=>{
@@ -4537,63 +4735,7 @@ function vezAnalize(root,d){
       karta.innerHTML=dGlava('Analiza',esc(aiIzvor(l)))+`<div class="ai-out" id="ai-out-${esc(d.id)}">Analiziram…</div>`;
       const out=karta.querySelector(`#ai-out-${esc(d.id)}`);
       const gotovo=()=>{ karta.classList.toggle('prazna',!(typeof l.aiText==='string'&&l.aiText.trim())); };
-      const predIds=predRowsFor(d);
-      const mainPid=predIds[0];
-      const r=mainPid?CUR_PRED.find(x=>x.id===mainPid):null;
-      const payload={
-        session:{ desc:d.desc||'', planPace: r?fmtTempo(effectivePace(d,r)):'—', q: r?r.q:null, tag:d.tag,
-                  kind: sessKind(d),
-                  /* ono sto je trkac SAM upisao na Stravi za taj dan */
-                  stravaName: l.stravaName||null, stravaDesc: l.stravaDesc||null },
-        goalCtx: goalCtxText(),
-        /* ZONE NOSE IZVOR. Vreme po zonama (`icu.zonePuls`) dolazi sa
-           intervals.icu, a granice su ranije uvek bile Stravine — dva sistema
-           sa različitim brojem zona i različitim granicama, spojena u jednu
-           tvrdnju. Model sada dobija i po čijim zonama sudi, pa raspodelu sme
-           da imenuje samo kad su oba iz istog izvora (v. api/analyze.js). */
-        /* ZONE OVOG TRENINGA, ne zone naloga — v. `zoneZaTrening`. Kad je
-           raspodela izracunata po granicama iz same aktivnosti, gore moraju
-           stajati bas te granice; inace model procente po jednom sistemu cita
-           kroz nazive drugog. */
-        hrZones: zoneZaTrening(l).zone,
-        hrZonesIzvor: zoneZaTrening(l).izvor,
-        entered:{
-          workPace: mainPid&&S.pred[mainPid]?fmtTempo(S.pred[mainPid]):null,
-          km:l.km??null, time:l.sec?fmtClock(l.sec):null,
-          hr:l.hr??null, rpe:l.rpe??null, note:l.note||'',
-          maxHr:l.maxHr??null, elevGain:l.elevGain??null, relEffort:l.relEffort??null,
-          /* TEMPERATURA ZA MODEL — objekat sa izvorom, ne go broj.
-             Ranije je ovde išlo `l.temp`, dakle očitavanje sa zgloba, i to bez
-             ijedne reči o poreklu. Model ga je zato tumačio kao temperaturu
-             vazduha i gradio na njemu ocenu („na ekstremnoj temperaturi od
-             33 °C" za dan kada je prognoza za sat trčanja davala 30). Sada
-             prvo Open-Meteo za sat trčanja; sat ostaje samo kao označena
-             rezerva, pa model može da mu spusti težinu. */
-          temp:(()=>{ const t=tempTrcanja(l, l.runDate||l.ts||d.date); return t||null; })(),
-          decoupling:l.decoupling||null,
-          /* Oporavak na DAN treninga: isti tempo posle lose noci nije isti
-             trening, a bez ovoga model to ne moze da zna. */
-          oporavak: oporavakZa(l.runDate||l.ts||d.date),
-          laps: Array.isArray(l.laps)&&l.laps.length?l.laps:null,
-          lapsIzvor: l.lapsIzvor||null,
-          /* „6×800" kao jedna stavka — model iz toga vidi seriju kao celinu,
-             pored pojedinačnih repova. Samo sa intervals.icu. */
-          grupe: Array.isArray(l.icuGrupe)&&l.icuGrupe.length?l.icuGrupe:null,
-          /* Već izračunato na intervals.icu: GAP, razdvajanje, efikasnost,
-             opterećenje, vreme po zonama, „oseća se kao". Model to ne mora da
-             procenjuje iz sirovih brojeva. */
-          icu: l.icu||null,
-          /* RASPODELA PO ZONAMA, VEĆ IZRAČUNATA. Sirov niz sekundi i dalje ide
-             u `icu.zonePuls`, ali model iz njega ne treba da deli sam —
-             procente računa aplikacija, pa su brojevi u analizi ISTI kao na
-             kartici „Po zonama". Dva računa nad istim podacima bi se pre ili
-             kasnije razišla, i to bi ispalo tako da analiza protivreči ekranu.
-             Vraća null kad raspodela nije uporediva sa granicama (v.
-             `zoneRaspodela`) — tada je i model ne sme imenovati. */
-          zoneUdeo: (()=>{ const r=zoneRaspodela(l); return r?{ukupno:r.ukupno, redovi:r.redovi}:null; })(),
-          perKm: Array.isArray(l.perKm)&&l.perKm.length?l.perKm:null
-        }
-      };
+      const payload=aiPayload(d,l);
       try{
         /* 1. POKRENI. Odgovor je trenutan — server samo otvori red u bazi. */
         const zapoc=await aiPozovi({posao:'start'});
@@ -4636,7 +4778,7 @@ function vezAnalize(root,d){
    pitanju ili pri sledećem otvaranju aplikacije. ============================ */
 async function aiPozovi(telo){
   try{
-    const r=await fetch('/api/analyze',{
+    const r=await fetchRok('/api/analyze',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
       body:JSON.stringify(telo)
@@ -4671,7 +4813,30 @@ async function aiProveri(d, l){
     delete l.aiPosao; save();
     return 'greska';
   }
+  /* POSAO KOJI SE NIKAD NE ZAVRŠI — v. „POSAO KOJI JE ZAGLAVIO" iznad `aiTelo`.
+     Baza ne zna da razlikuje „radi se" od „umrlo je usred posla": u oba slučaja
+     stoji 'radi' odnosno 'u_toku'. Posle pola sata ta razlika više nije ni
+     važna — čovek mora da dobije natrag dugme, a ne rečenicu koja se ne menja.
+     Odustaje se SAMO lokalno; ako rezultat kasnije ipak stigne u bazu, red se
+     ionako briše pri sledećem pokretanju posla. */
+  if(aiStarost(l)>=AI_ODUSTANI_MS){
+    l.aiGreska='Analiza nije završena na vreme. Pokušaj ponovo.';
+    delete l.aiPosao; save();
+    return 'greska';
+  }
   return 'radi';
+}
+/* PONOVO POŠALJI FAZU „radi" ZA POSAO KOJI VEĆ POSTOJI.
+   Ne troši kvotu: dnevni limit se broji u fazi 'start' (v. api/analyze.js), a
+   server posao preuzme samo ako je red još u stanju 'radi' — pa ponovljen poziv
+   nad poslom koji uveliko računa ne može da ga pokvari ni udvostruči. */
+async function aiPonovoPokreni(d,l){
+  const p=l&&l.aiPosao;
+  if(!p||!p.id) return false;
+  p.at=Date.now();          /* prozor čekanja kreće ispočetka */
+  save();
+  const r=await aiPozovi(Object.assign({posao:'radi', posaoId:p.id, danId:d.id}, aiPayload(d,l)));
+  return !!(r&&r.ok);
 }
 /* Pita na svake tri sekunde, najviše minut i po. Ako ne dočeka, posao ostaje
    zapisan — nista nije izgubljeno. */
@@ -4956,12 +5121,100 @@ function nedeljaTelo(w){
    uz osveziPodesavanja — `let` deklarisan niže bio bi u mrtvoj zoni za svaki
    poziv koji se desi pre nego što se skripta izvrši do kraja. */
 let SET_LIST=false;
+
+/* ============ LIST KAO PRAV DIJALOG ============
+
+   NALAZ: `#sheet` je bio go `<div>`. Bez `role`, bez `aria-modal`, bez naziva,
+   bez ijednog `focus()` u celom fajlu i bez zamke za fokus. Za čitač ekrana i
+   za tastaturu modal nije postojao: fokus je ostajao na stranici ISPOD lista,
+   „Tab" je šetao po dugmadima koja se ne vide, a Escape nije radio ništa.
+
+   To je bilo u raskoraku sa ostatkom aplikacije, gde je pristupačnost inače
+   uzeta ozbiljno — `user-scalable=no` je uklonjen zbog WCAG 1.4.4, a
+   providnost teksta je birana da i na staklu ostane iznad 4.5:1.
+
+   ČETIRI STVARI, i sve četiri su obavezne da bi modal bio modal:
+   1. naziv — inače čitač kaže samo „dijalog"; uzima se iz naslova sadržaja,
+      jer list nosi različit sadržaj pri svakom otvaranju;
+   2. fokus ULAZI u list pri otvaranju i VRAĆA SE na dugme koje ga je otvorilo
+      pri zatvaranju — bez povratka fokus pada na `<body>` i čitač počinje od
+      vrha stranice, što je za čoveka isto kao da je izgubio mesto;
+   3. pozadina postaje `inert` — bez toga „Tab" izlazi iz lista;
+   4. Escape zatvara, jer se to od dijaloga očekuje.
+
+   `inert` postoji od Chrome 102 / Safari 15.5. Gde ga nema, pada se na
+   `aria-hidden`, koji sakriva pozadinu bar od čitača — i postavlja se TEK
+   POSLE pomeranja fokusa, jer `aria-hidden` nad granom u kojoj fokus još stoji
+   nije dozvoljen. */
+const POZADINA_SEL=['header','main','#tabbar'];
+let FOKUS_PRE=null;
+function pozadinaInertna(uklj){
+  let inertPodrzan=false;
+  try{ inertPodrzan=('inert' in document.createElement('div')); }catch(e){}
+  for(const sel of POZADINA_SEL){
+    const el=$(sel); if(!el) continue;
+    try{
+      if(inertPodrzan) el.inert=!!uklj;
+      else if(uklj) el.setAttribute('aria-hidden','true');
+      else el.removeAttribute('aria-hidden');
+    }catch(e){}
+  }
+}
+/* Naziv dijaloga iz prvog naslova u sadržaju. Bez naslova ostaje opšte
+   „Detalji" — bolje nego bezimen dijalog, i nikad prazno. */
+function listNaziv(list){
+  /* Traži se prvi naslov SA TEKSTOM, ne prvi naslov koji postoji. Razlika je
+     stvarna: `querySelector('.card-t')||querySelector('h2')` bira ELEMENT, pa
+     jedan prazan `.card-t` (npr. kartica čiji se naslov popunjava kasnije)
+     gasi ceo lanac i dijalog ostaje „Detalji" iako `h2` odmah ispod ima ime.
+     Uhvaćeno zamkom, ne u pregledaču. */
+  try{
+    for(const sel of ['.card-t','h2','h3']){
+      const n=list.querySelector(sel);
+      const t=n&&String(n.textContent||'').trim();
+      if(t) return t;
+    }
+  }catch(e){}
+  return 'Detalji';
+}
+const FOKUSIRAJUCI='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+/* ZAMKA ZA FOKUS. Bez nje „Tab" na poslednjem dugmetu u listu odlazi na
+   adresnu traku pa u stranicu ispod — a ta stranica je za korisnika sakrivena
+   listom, pa fokus naizgled nestane. */
+function listTab(e){
+  const list=$('#sheet');
+  if(!list||!list.classList.contains('on')) return;
+  if(e.key==='Escape'){ e.preventDefault(); closeSheet(); return; }
+  if(e.key!=='Tab') return;
+  let polja=[];
+  try{ polja=Array.prototype.slice.call(list.querySelectorAll(FOKUSIRAJUCI)); }catch(err){ return; }
+  if(!polja.length){ e.preventDefault(); try{ list.focus(); }catch(err){} return; }
+  const prvi=polja[0], zadnji=polja[polja.length-1];
+  const sada=document.activeElement;
+  if(e.shiftKey&&(sada===prvi||sada===list)){ e.preventDefault(); try{ zadnji.focus(); }catch(err){} }
+  else if(!e.shiftKey&&sada===zadnji){ e.preventDefault(); try{ prvi.focus(); }catch(err){} }
+}
+document.addEventListener('keydown',listTab);
+
 function openSheet(html){
   SET_LIST=false;   /* svaki drugi list gasi zastavicu; openSettings je posle pali */
-  $('#sheet').innerHTML=`<div class="grab"></div>`+html;
-  $('#sheet').classList.add('on');$('#backdrop').classList.add('on');
+  const list=$('#sheet');
+  /* Dugme koje je list otvorilo — tu se fokus vraća na zatvaranju. Pamti se PRE
+     nego što se išta promeni, jer ga posle iscrtavanja više nema u DOM-u. */
+  try{ FOKUS_PRE=document.activeElement||null; }catch(e){ FOKUS_PRE=null; }
+  list.innerHTML=`<div class="grab"></div>`+html;
+  list.classList.add('on');$('#backdrop').classList.add('on');
   document.body.style.overflow='hidden';
-  $('#sheet').scrollTop=0;
+  list.scrollTop=0;
+  try{
+    list.setAttribute('aria-hidden','false');
+    list.setAttribute('aria-label',listNaziv(list));
+    /* Fokus ide NA SAM LIST, ne na prvo dugme u njemu: čitač tada pročita naziv
+       dijaloga pa sadržaj od vrha. Skok pravo na dugme preskače naslov, pa se
+       ne zna ni šta se otvorilo. */
+    list.focus();
+  }catch(e){}
+  pozadinaInertna(true);   /* tek posle pomeranja fokusa — v. objašnjenje gore */
 }
 function closeSheet(){
   /* List nosi polja u koja se kuca (beleška treninga, beleška o bolu), a
@@ -4969,10 +5222,17 @@ function closeSheet(){
      upis mora ovde. */
   saveOdmah();
   SET_LIST=false;
-  $('#sheet').classList.remove('on');$('#backdrop').classList.remove('on');
+  const list=$('#sheet');
+  /* Pozadina prestaje da bude inertna PRE vraćanja fokusa — u inertnu granu se
+     fokus ne može pomeriti, pa bi obrnut redosled tiho pao na `<body>`. */
+  pozadinaInertna(false);
+  list.classList.remove('on');$('#backdrop').classList.remove('on');
+  try{ list.setAttribute('aria-hidden','true'); }catch(e){}
   document.body.style.overflow='';
   if(AMB_PRE){ ambijent(AMB_PRE); AMB_PRE=null; }   /* svetlo nazad na tab ispod lista */
   PAGES[ACTIVE]();renderHeader();
+  try{ if(FOKUS_PRE&&typeof FOKUS_PRE.focus==='function') FOKUS_PRE.focus(); }catch(e){}
+  FOKUS_PRE=null;
 }
 /* ---------- IZMENA TRENINGA (tip / km / opis) ---------- */
 let ALT_DRAFT=null, ALT_ERR='';
@@ -5079,7 +5339,7 @@ function renderAltSheet(d){
   };
   const rs=sh.querySelector('#alt-reset');
   if(rs)rs.onclick=()=>{
-    if(!confirm('Vratiti ovaj dan na originalni trening iz plana?'))return;
+    if(!potvrdi('Vratiti ovaj dan na originalni trening iz plana?'))return;
     clearAlt(d.id);ALT_DRAFT=null;closeSheet();
   };
 }
@@ -8823,7 +9083,7 @@ function updateVdotPreview(){
 function bindOnboardEvents(){
   /* dugmeta nema kad korisnik jos nema svoj plan — nema iza cega da se zatvori */
   if($('#obCancel')) $('#obCancel').addEventListener('click',()=>{
-    if(!confirm('Otkazati generisanje plana?'))return;
+    if(!potvrdi('Otkazati generisanje plana?'))return;
     closeWizard();
   });
   $('#in-raceDate').addEventListener('input',e=>{ wiz.raceDate=e.target.value; goObStep(obStep); renderOutlook(); renderWizWarningsSoon(); });
@@ -8956,7 +9216,7 @@ function finishOnboarding(){
   /* Pita SAMO ako stvarno ima šta da se izgubi (podaci prethodnog GENERISANOG
      plana). Podaci tvog plana se ne diraju, pa nema razloga da te ovo pita
      kad prvi put praviš plan za nekog drugog. */
-  if(hasGenPlanData() && !confirm('Već postoji generisan plan. Njegovi unosi (treninzi, predikcije, VDOT) biće obrisani.\n\nTvoj lični plan i njegova istorija ostaju netaknuti.\n\nNastaviti?')) return;
+  if(hasGenPlanData() && !potvrdi('Već postoji generisan plan. Njegovi unosi (treninzi, predikcije, VDOT) biće obrisani.\n\nTvoj lični plan i njegova istorija ostaju netaknuti.\n\nNastaviti?')) return;
   purgeGenPlanData();
   S.genPlan=adapted;
   setActivePlan();rebuildDateIndex();save();
@@ -9016,7 +9276,7 @@ function renderWeekSwap(w){
   });
   const undo=sh.querySelector('#swap-undo');
   if(undo)undo.onclick=()=>{
-    if(!confirm('Vratiti sve pomerene dane ove nedelje na originalni raspored iz plana?'))return;
+    if(!potvrdi('Vratiti sve pomerene dane ove nedelje na originalni raspored iz plana?'))return;
     undoWeekMoves(w);SWAP_SEL=null;renderWeekSwap(w);
   };
 }
@@ -9085,7 +9345,7 @@ function openDaySheet(id){
   });
   const del=sh.querySelector('#del-log');
   if(del)del.onclick=()=>{
-    if(!confirm('Obriši sve unete podatke za ovaj trening?'))return;
+    if(!potvrdi('Obriši sve unete podatke za ovaj trening?'))return;
     delete S.log[id];
     S.knee=S.knee.filter(k=>k.src!==id);
     S.kg=S.kg.filter(k=>k.src!==id);
@@ -9628,7 +9888,7 @@ function renderOporavak(){
   if(ia) ia.onclick=()=>{
     const pr=injuryProposal(TODAY);
     if(!pr) return;
-    if(!confirm('Prilagoditi plan? Menja se '+pr.changes.length+' treninga. Možeš ih ručno vratiti u tabu Plan.')) return;
+    if(!potvrdi('Prilagoditi plan? Menja se '+pr.changes.length+' treninga. Možeš ih ručno vratiti u tabu Plan.')) return;
     const n=applyInjuryProposal(pr);
     alert(n+' '+(n===1?'trening prilagođen':'treninga prilagođeno')+'.');
     renderOporavak(); renderDanas(); renderPlan();
@@ -9691,7 +9951,7 @@ function openKneeSheet(id,presetPart){
     sh.querySelector('#kf-note').oninput=e=>{k.note=e.target.value;saveOdlozeno();};
     sh.querySelector('#kf-note').onblur=saveOdmah;
     sh.querySelector('#kf-del').onclick=()=>{
-      if(!confirm('Obriši ovaj unos?'))return;
+      if(!potvrdi('Obriši ovaj unos?'))return;
       S.knee=S.knee.filter(x=>x.id!==id);save();closeSheet();
     };
   }else{
@@ -9825,7 +10085,7 @@ function openT3kSheet(id){
   };
   const del=sh.querySelector('#t3-del');
   if(del) del.onclick=()=>{
-    if(!confirm('Obrisati ovaj test? Forma se preračunava bez njega.')) return;
+    if(!potvrdi('Obrisati ovaj test? Forma se preračunava bez njega.')) return;
     obrisiT3k(id); closeSheet(); renderPred();
   };
 }
@@ -9895,7 +10155,7 @@ function renderPred(){
   if(vdA) vdA.onclick=()=>{
     const pr=vdotPredlog(TODAY);
     if(!pr) return;
-    if(!confirm('Prilagoditi ciljni tempo tvojoj formi? Menja se '+pr.changes.length+' treninga. Obim ostaje isti, a sve se vraća dugmetom „Vrati planski tempo".')) return;
+    if(!potvrdi('Prilagoditi ciljni tempo tvojoj formi? Menja se '+pr.changes.length+' treninga. Obim ostaje isti, a sve se vraća dugmetom „Vrati planski tempo".')) return;
     const n=primeniVdotPredlog(pr);
     alert(n+' '+(n===1?'trening prilagođen':'treninga prilagođeno')+'.');
     renderPred(); if(ACTIVE==='danas')renderDanas();
@@ -9919,7 +10179,7 @@ function renderPred(){
       tBtn.disabled=true; tBtn.textContent='Analiziram trend…';
       out.className='ai-out'; out.textContent='';
       try{
-        const resp=await fetch('/api/analyze',{
+        const resp=await fetchRok('/api/analyze',{
           method:'POST',
           headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
           body:JSON.stringify({trend:sum, goalCtx: goalCtxText()})
@@ -10001,7 +10261,7 @@ async function icuSync(danaUnazad){
      konvencije se ne smeju mešati, i ovde su bile pomešane.) */
   const ds=d=>d2s(d);
   try{
-    const r=await fetch('/api/icu',{method:'POST',
+    const r=await fetchRok('/api/icu',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
       body:JSON.stringify({sta:'wellness', athleteId:S.icu.athleteId, ...icuVeza(), oldest:ds(od), newest:ds(do_)})});
     let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
@@ -10039,7 +10299,7 @@ function icuImaTreninge(){
 }
 async function icuApi(telo){
   try{
-    const r=await fetch('/api/icu',{method:'POST',
+    const r=await fetchRok('/api/icu',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
       body:JSON.stringify({sta:'activities', athleteId:S.icu.athleteId, ...icuVeza(), ...telo})});
     let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
@@ -10191,7 +10451,7 @@ async function icuZoneSync(sila){
   const staro=(S.icu&&S.icu.zonesTs)||0;
   if(!sila && Date.now()-staro < 7*864e5) return false;
   try{
-    const r=await fetch('/api/icu',{method:'POST',
+    const r=await fetchRok('/api/icu',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
       body:JSON.stringify({sta:'zone', athleteId:S.icu.athleteId, ...icuVeza()})});
     let j=null; try{ j=await r.json(); }catch(e){}
@@ -10410,7 +10670,7 @@ async function icuConnect(){
   const tok=await sbToken();
   if(!tok){ alert('Moraš biti prijavljen da bi povezao intervals.icu.'); return; }
   try{
-    const r=await fetch('/api/icu-oauth?akcija=url&state='+encodeURIComponent(icuMakeState()),
+    const r=await fetchRok('/api/icu-oauth?akcija=url&state='+encodeURIComponent(icuMakeState()),
                         {headers:{'Authorization':'Bearer '+tok}});
     const j=await r.json();
     if(!r.ok||!j.url){ alert(j.error||'Povezivanje trenutno nije moguće.'); return; }
@@ -10422,7 +10682,7 @@ async function icuFinish(code){
   const tok=await sbToken();
   if(!tok){ alert('Moraš biti prijavljen da bi povezao intervals.icu.'); return; }
   try{
-    const r=await fetch('/api/icu-oauth',{method:'POST',
+    const r=await fetchRok('/api/icu-oauth',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
       body:JSON.stringify({code})});
     const j=await r.json();
@@ -10747,7 +11007,7 @@ function uskladiVlasnickePodatke(){
 function tudjPlanSaUnosima(){ return !S.genPlan && !jeVlasnik() && imaUnosaNaLicnom(); }
 async function posaljiUputstvo(opcije){
   try{
-    const r=await fetch('/api/broadcast',{method:'POST',
+    const r=await fetchRok('/api/broadcast',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
       body:JSON.stringify(opcije||{})});
     let j; try{ j=await r.json(); }catch{ return {ok:false, error:'Server nije vratio ispravan odgovor.'}; }
@@ -10809,7 +11069,7 @@ async function icuPosalji(danaUnapred, zameni){
   const events=icuDaniZaSlanje(danaUnapred);
   if(!events.length) return {ok:false, error:'Nema treninga u tom periodu.'};
   try{
-    const r=await fetch('/api/icu',{method:'POST',
+    const r=await fetchRok('/api/icu',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},
       body:JSON.stringify({sta:'workouts', athleteId:S.icu.athleteId, ...icuVeza(), events,
                            rezim: zameni?'zameni':'azuriraj'})});
@@ -11438,7 +11698,7 @@ function openSettings(){
   if($('#s-ist')) $('#s-ist').onclick=openIstorijaSheet;
   if($('#s-bug')) $('#s-bug').onclick=openBugSheet;
   if($('#sb-in'))   $('#sb-in').onclick=sbLogin;
-  if($('#sb-out'))  $('#sb-out').onclick=()=>{ if(confirm('Odjaviti se? Podaci na ovom uređaju ostaju.')){ sbLogout(); closeSheet(); } };
+  if($('#sb-out'))  $('#sb-out').onclick=()=>{ if(potvrdi('Odjaviti se? Podaci na ovom uređaju ostaju.')){ sbLogout(); closeSheet(); } };
   if($('#sb-del'))  $('#sb-del').onclick=openObrisiNalogSheet;
   if($('#ku-otvori')) $('#ku-otvori').onclick=openKorisniciSheet;
   if($('#zaj-nadimak')) $('#zaj-nadimak').onchange=e=>{
@@ -11457,7 +11717,7 @@ function openSettings(){
     try{
       const tok=await sbToken();
       if(!tok) throw new Error('Nisi prijavljen.');
-      const r=await fetch('/api/broadcast',{method:'POST',
+      const r=await fetchRok('/api/broadcast',{method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
         body:JSON.stringify({admin:'izazov',tekst})});
       const res=await apiJson(r);
@@ -11570,7 +11830,7 @@ function openSettings(){
     if(!p.ok){ alert(p.error||'Nije uspelo.'); return; }
     const n=p.j.primalaca||0;
     if(!n){ alert('Nema nijednog primaoca.'); return; }
-    if(!confirm('Poslati uputstvo na '+n+' '+pl3(n,'adresu','adrese','adresa')+'?\n\nMejl se ne može povući. Traje oko '+Math.ceil(n*0.6)+' s — ne zatvaraj aplikaciju.')) return;
+    if(!potvrdi('Poslati uputstvo na '+n+' '+pl3(n,'adresu','adrese','adresa')+'?\n\nMejl se ne može povući. Traje oko '+Math.ceil(n*0.6)+' s — ne zatvaraj aplikaciju.')) return;
     /* SLANJE IDE U VISE POZIVA. Jedan poziv stane u vremenski limit Vercel
        funkcije (~90 mejlova); server vrati `sledeciOd` i ovde se nastavlja
        odatle. Bez ovoga je slanje na vise od ~90 adresa zavrsavalo prekidom
@@ -11594,7 +11854,7 @@ function openSettings(){
   if($('#icu-push2')) $('#icu-push2').onclick=async e=>{
     const n=icuDaniZaSlanje(14).length;
     if(!n){ alert('Nema treninga u narednih 14 dana.'); return; }
-    if(!confirm('Obrisati '+n+' '+pl3(n,'ranije poslat trening','ranije poslata treninga','ranije poslatih treninga')+' i napraviti ih iz početka?\n\nBriše se samo ono što je poslala ova aplikacija — ostalo u kalendaru se ne dira.\n\nOvo je potrebno posle unosa praga tempa: Garmin izvoz se pravi kad događaj nastane, pa obično ažuriranje ne pomaže.')) return;
+    if(!potvrdi('Obrisati '+n+' '+pl3(n,'ranije poslat trening','ranije poslata treninga','ranije poslatih treninga')+' i napraviti ih iz početka?\n\nBriše se samo ono što je poslala ova aplikacija — ostalo u kalendaru se ne dira.\n\nOvo je potrebno posle unosa praga tempa: Garmin izvoz se pravi kad događaj nastane, pa obično ažuriranje ne pomaže.')) return;
     const b=e.target; b.disabled=true; b.textContent='Šaljem…';
     const r=await icuPosalji(14, true);
     b.textContent=r.ok?('Poslato '+r.n+' ✓'):'Nije uspelo';
@@ -11605,7 +11865,7 @@ function openSettings(){
   if($('#icu-push')) $('#icu-push').onclick=async e=>{
     const n=icuDaniZaSlanje(14).length;
     if(!n){ alert('Nema treninga u narednih 14 dana.'); return; }
-    if(!confirm('Poslati '+n+' treninga u intervals.icu kalendar?\n\nPostojeći koje je poslala ova aplikacija biće ažurirani, ostali se ne diraju.')) return;
+    if(!potvrdi('Poslati '+n+' treninga u intervals.icu kalendar?\n\nPostojeći koje je poslala ova aplikacija biće ažurirani, ostali se ne diraju.')) return;
     const b=e.target; b.disabled=true; b.textContent='Šaljem…';
     const r=await icuPosalji(14);
     b.textContent=r.ok?('Poslato '+r.n+' ✓'):'Nije uspelo';
@@ -11615,7 +11875,7 @@ function openSettings(){
     if(r.ok) setTimeout(osveziPodesavanja,900);
     else setTimeout(()=>{ b.disabled=false; b.textContent='📤 Pošalji treninge na sat (14 dana)'; },2200);
   };
-  if($('#icu-off')) $('#icu-off').onclick=()=>{ if(confirm('Otkačiti intervals.icu? Već povučeni podaci ostaju.')){ S.icu=null; save(); closeSheet(); } };
+  if($('#icu-off')) $('#icu-off').onclick=()=>{ if(potvrdi('Otkačiti intervals.icu? Već povučeni podaci ostaju.')){ S.icu=null; save(); closeSheet(); } };
   if($('#icu-sync')) $('#icu-sync').onclick=async e=>{
     const b=e.target; b.disabled=true; b.textContent='Povlačim…';
     const r=await icuSyncSve(120, true);
@@ -11723,7 +11983,7 @@ function openSettings(){
     /* Realnost cilja se proverava istim merilom koje čarobnjak već koristi. */
     const upoz=(r.meta&&r.meta.realno===false)
       ? '\n\nUPOZORENJE: ovaj cilj je po proceni aplikacije van dohvata za preostalo vreme. Plan će ga ipak ispoštovati.' : '';
-    if(!confirm('Promeniti ciljno vreme na '+fmtClock(sec)+'?\n\nMenja se '+r.promenaCilja.izmenjenoNedelja+
+    if(!potvrdi('Promeniti ciljno vreme na '+fmtClock(sec)+'?\n\nMenja se '+r.promenaCilja.izmenjenoNedelja+
                 ' nedelja koje tek dolaze (od N'+r.promenaCilja.nedelja+').\nOdrađeni treninzi, uneti tempi i izmerena forma ostaju netaknuti.'+upoz)) return;
     S.genPlan={ weeks:r.weeks, pred:r.pred, qs:r.qs, meta:r.meta, ulaz:r.ulaz };
     setActivePlan(); rebuildDateIndex(); save(); closeSheet();
@@ -11734,12 +11994,12 @@ function openSettings(){
      starog plana zalepili za dane novog. Isti razlog kao kod "Vrati na moj
      plan", samo bez plana na koji se vraca. */
   if(pn)pn.onclick=()=>{
-    if(!confirm('Napraviti nov plan?\n\nPostojeći plan i svi unosi uz njega se TRAJNO brišu — nema arhive.\n\nAko ti trebaju, prvo izvezi backup.'))return;
+    if(!potvrdi('Napraviti nov plan?\n\nPostojeći plan i svi unosi uz njega se TRAJNO brišu — nema arhive.\n\nAko ti trebaju, prvo izvezi backup.'))return;
     purgeGenPlanData();
     S.genPlan=null;setActivePlan();rebuildDateIndex();save();closeSheet();openWizard();
   };
   if(pr)pr.onclick=()=>{
-    if(!confirm('Vratiti se na tvoj originalni plan? Generisan plan se TRAJNO briše (napredak/unosi uz njega takođe) — nema arhive.\n\nTvoj plan i njegova istorija se vraćaju netaknuti.'))return;
+    if(!potvrdi('Vratiti se na tvoj originalni plan? Generisan plan se TRAJNO briše (napredak/unosi uz njega takođe) — nema arhive.\n\nTvoj plan i njegova istorija se vraćaju netaknuti.'))return;
     /* Ranije se brisao samo S.genPlan, a njegovi 'g' unosi su ostajali kao
        siročići u S.log/S.pred/S.vdotLog — nevidljivi, ali su se lepili za
        sledeći generisan plan (isti 'g' ID-jevi). Sad odlaze zajedno sa planom,
@@ -11788,7 +12048,7 @@ function openBugSheet(){
     try{
       const tok=await sbToken();
       if(!tok){ err.textContent='Moraš biti prijavljen.'; btn.disabled=false; btn.textContent='Pošalji'; return; }
-      const r=await fetch('/api/report-bug',{method:'POST',
+      const r=await fetchRok('/api/report-bug',{method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
         body:JSON.stringify({description,context:{version:APP_VERSION,tab:ACTIVE,userAgent:navigator.userAgent}})});
       const res=await apiJson(r);
@@ -11832,7 +12092,7 @@ function openObrisiNalogSheet(){
     try{
       const tok=await sbToken();
       if(!tok) throw new Error('Moraš biti prijavljen.');
-      const r=await fetch('/api/delete-account',{method:'POST',
+      const r=await fetchRok('/api/delete-account',{method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
         body:JSON.stringify({potvrda:DEL_POTVRDA})});
       const res=await apiJson(r);
@@ -11911,7 +12171,7 @@ async function ucitajZakazana(){
   try{
     const tok=await sbToken();
     if(!tok) return;
-    const r=await fetch('/api/broadcast',{method:'POST',
+    const r=await fetchRok('/api/broadcast',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
       body:JSON.stringify({admin:'zakazano'})});
     const res=await apiJson(r);
@@ -11930,7 +12190,7 @@ async function ucitajZakazana(){
       b.disabled=true; b.textContent='Vraćam…';
       try{
         const tok2=await sbToken();
-        const r2=await fetch('/api/broadcast',{method:'POST',
+        const r2=await fetchRok('/api/broadcast',{method:'POST',
           headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok2},
           body:JSON.stringify({admin:'ponisti', obrisiId:b.dataset.kuVrati})});
         const res2=await apiJson(r2);
@@ -11945,7 +12205,7 @@ async function ucitajKorisnike(){
   try{
     const tok=await sbToken();
     if(!tok) throw new Error('Nisi prijavljen.');
-    const r=await fetch('/api/broadcast',{method:'POST',
+    const r=await fetchRok('/api/broadcast',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
       body:JSON.stringify({admin:'lista'})});
     const res=await apiJson(r);
@@ -11971,7 +12231,7 @@ async function ucitajKorisnike(){
         b.disabled=true; b.textContent=ukini?'Skidam…':'Zabranjujem…';
         try{
           const tok=await sbToken();
-          const r=await fetch('/api/broadcast',{method:'POST',
+          const r=await fetchRok('/api/broadcast',{method:'POST',
             headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
             body:JSON.stringify({admin:'ban', banId:b.dataset.kuBan, ukini, lozinka:ADMIN_LOZ})});
           const res=await apiJson(r);
@@ -11995,7 +12255,7 @@ async function ucitajKorisnike(){
         b.disabled=true; b.textContent='Brišem…';
         try{
           const tok=await sbToken();
-          const r=await fetch('/api/broadcast',{method:'POST',
+          const r=await fetchRok('/api/broadcast',{method:'POST',
             headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},
             body:JSON.stringify({admin:'obrisi', obrisiId:b.dataset.kuDel, lozinka:ADMIN_LOZ})});
           const res=await apiJson(r);
@@ -12156,7 +12416,7 @@ function importBackup(file){
               'Ovo se dešava kod ručno izmenjenog fajla. Tvoji trenutni podaci su netaknuti.');
         return;
       }
-      if(!confirm(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${Object.keys(st.log).length} trening-unosa, ${st.knee.length} koleno, ${st.kg.length} težina.\n\nNastaviti?`))return;
+      if(!potvrdi(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${Object.keys(st.log).length} trening-unosa, ${st.knee.length} koleno, ${st.kg.length} težina.\n\nNastaviti?`))return;
       /* VEZE SU PO UREDJAJU I NE PUTUJU KROZ FAJL (v. backupPayload) — zato se
          zadrzavaju postojece, isto za Stravu i za intervals.icu.
 
@@ -12223,7 +12483,7 @@ function stravaConnect(){
     +'&state='+encodeURIComponent(stravaMakeState());
 }
 function stravaDisconnect(){
-  if(!confirm('Otkači Stravu? Uvezeni podaci ostaju, samo prestaje sinhronizacija.'))return;
+  if(!potvrdi('Otkači Stravu? Uvezeni podaci ostaju, samo prestaje sinhronizacija.'))return;
   S.strava=null;save();closeSheet();
 }
 /* Naše /api putanje mogu vratiti i NE-JSON: kad se serverless funkcija sruši,
@@ -12246,7 +12506,7 @@ async function apiJson(resp){
 async function ensureToken(){
   if(!S.strava)throw new Error('Strava nije povezana');
   if(S.strava.expiresAt*1000>Date.now()+300000)return;
-  const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},body:JSON.stringify({refresh_token:S.strava.refresh})});
+  const r=await fetchRok('/api/auth',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(await sbToken())},body:JSON.stringify({refresh_token:S.strava.refresh})});
   const res=await apiJson(r);
   if(!res.data) throw new Error('Osvežavanje Strava tokena nije uspelo — '+res.error);
   const j=res.data;
@@ -12255,7 +12515,7 @@ async function ensureToken(){
 }
 async function stApi(path,_retried){
   await ensureToken();
-  const r=await fetch('https://www.strava.com/api/v3'+path,{headers:{Authorization:'Bearer '+S.strava.access}});
+  const r=await fetchRok('https://www.strava.com/api/v3'+path,{headers:{Authorization:'Bearer '+S.strava.access}});
   if(r.ok)return r.json();
   let body=null;try{body=await r.json();}catch(e){}
   const msg=(body&&body.message)?body.message:'';
@@ -12501,7 +12761,7 @@ async function handleOAuthReturn(){
   }
   const tok=await sbToken();
   if(!tok){ alert('Moraš biti prijavljen da bi povezao Stravu.'); return; }
-  fetch('/api/auth?code='+encodeURIComponent(code),{headers:{'Authorization':'Bearer '+tok}}).then(async r=>{
+  fetchRok('/api/auth?code='+encodeURIComponent(code),{headers:{'Authorization':'Bearer '+tok}}).then(async r=>{
     const res=await apiJson(r);
     if(!res.data) throw new Error(res.error);   /* HTML stranica greske umesto JSON-a */
     return res.data;
@@ -13148,7 +13408,7 @@ function sbOsvezi(){
   if(SB_REFRESH) return SB_REFRESH;
   SB_REFRESH=(async()=>{
     try{
-      const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',
+      const r=await fetchRok(SB_URL+'/auth/v1/token?grant_type=refresh_token',
         {method:'POST',headers:{'apikey':SB_ANON,'Content-Type':'application/json'},
          body:JSON.stringify({refresh_token:SB.refresh})});
       if(!r.ok){
@@ -13226,7 +13486,7 @@ async function sbProveriSesiju(){
      spustio kapiju, pa je `sbAuthed()` ovde netacno i to je odgovor. */
   if(!await sbEnsure()) return sbAuthed();
   try{
-    let r=await fetch(SB_URL+'/auth/v1/user',
+    let r=await fetchRok(SB_URL+'/auth/v1/user',
       {headers:{'apikey':SB_ANON,'Authorization':'Bearer '+SB.access}});
     if(r.status===401||r.status===403){
       /* GoTrue za zabranjen nalog vraca poruku sa „banned"; za obrisan nema
@@ -13237,7 +13497,7 @@ async function sbProveriSesiju(){
       if(!zabranjen){
         /* Drugi pokusaj: mozda je token bio star uprkos `expiresAt`. */
         if(!await sbOsvezi()) return sbAuthed();
-        r=await fetch(SB_URL+'/auth/v1/user',
+        r=await fetchRok(SB_URL+'/auth/v1/user',
           {headers:{'apikey':SB_ANON,'Authorization':'Bearer '+SB.access}});
         if(r.status===401||r.status===403) zabranjen=await jeZabrana(r);
       }
@@ -13308,7 +13568,7 @@ async function sbRemoteAt(){
      stizao odgovor sa `ok:false`. Otkad SW ne presreće tuđe adrese (v220),
      greška stiže dovde i mora da se uhvati. */
   try{
-    const r=await fetch(SB_URL+'/rest/v1/user_state?select=updated_at,device_id&user_id=eq.'+SB.userId,{headers:sbHead()});
+    const r=await fetchRok(SB_URL+'/rest/v1/user_state?select=updated_at,device_id&user_id=eq.'+SB.userId,{headers:sbHead()});
     if(!r.ok) return undefined;
     const j=await r.json();
     if(!j||!j[0]) return null;                   /* null = red ne postoji */
@@ -13378,7 +13638,7 @@ async function sbPush(){
     }
   }catch(e){ /* bez signala se ne blokira upis — pozadinski red ionako ponavlja */ }
   try{
-    const r=await fetch(SB_URL+'/rest/v1/user_state',{
+    const r=await fetchRok(SB_URL+'/rest/v1/user_state',{
       method:'POST',
       headers:Object.assign(sbHead(),{'Prefer':'resolution=merge-duplicates,return=representation'}),
       body:JSON.stringify({user_id:SB.userId,data:sbPayload(S),
@@ -13417,7 +13677,7 @@ async function sbPull(){
      rukovaoci dugmeta bez sopstvenog `catch`, pa bi odbijeno obećanje ostalo
      neuhvaćeno. */
   let r;
-  try{ r=await fetch(SB_URL+'/rest/v1/user_state?select=data,updated_at&user_id=eq.'+SB.userId,{headers:sbHead()}); }
+  try{ r=await fetchRok(SB_URL+'/rest/v1/user_state?select=data,updated_at&user_id=eq.'+SB.userId,{headers:sbHead()}); }
   catch(e){ return false; }
   if(!r.ok) return false;
   /* `r.json()` nije bio u try: odgovor 200 sa HTML telom (posrednik, greška
@@ -13667,7 +13927,7 @@ function prikaziSukobSync(remoteAt){
        unose rukom i ne postoje nigde drugde. Baš taj slučaj — svež uređaj,
        ništa lokalno — pita se još jednom, imenom stvari koje odlaze. */
     if(sbPraznoStanje(S) &&
-       !confirm('Na ovom uređaju još nema nijednog unosa, a na serveru ih ima.\n\n„Zadrži sa telefona" će OBRISATI sve sa servera — uključujući kilažu i povrede, koje se ne mogu vratiti ni sa Strave ni sa intervals.icu.\n\nSigurno?')) return;
+       !potvrdi('Na ovom uređaju još nema nijednog unosa, a na serveru ih ima.\n\n„Zadrži sa telefona" će OBRISATI sve sa servera — uključujući kilažu i povrede, koje se ne mogu vratiti ni sa Strave ni sa intervals.icu.\n\nSigurno?')) return;
     /* IZBOR SE PAMTI. Od kad `sbPush` i sam proverava da li je na serveru tuđi
        noviji zapis (v. tamo), „Zadrži sa telefona" bi bez ovoga bilo poništeno
        istog trena: push bi video isti taj zapis, ponovo digao traku i nikad ne
@@ -13679,6 +13939,67 @@ function prikaziSukobSync(remoteAt){
 }
 
 /* Zajednicki okvir za trake upozorenja — isti izgled kao traka sukoba sync-a. */
+/* ============ POTVRDA KOJU PRIGUŠEN DIJALOG NE MOŽE DA POJEDE ============
+
+   Već je dvaput ovde zapisano (v. `prijaviProblem` i spisak korisnika) da
+   instalirane PWA i deo pregledača prigušuju sistemski dijalog i da `confirm()`
+   tada vraća `false` — a popravka je oba puta bila lokalna, za jedno dugme.
+   Ostala su dvadeset dva poziva oblika `if(!confirm(...)) return;`, gde
+   prigušen dijalog znači da akcija TIHO NE URADI NIŠTA. Za čoveka to izgleda
+   kao dugme koje ne radi: dodirne „Obriši unos", ne desi se ništa, dodirne
+   opet — opet ništa.
+
+   `false` iz prigušenog dijaloga se ne razlikuje od `false` koji je čovek
+   izabrao — osim po VREMENU. Dijalog koji se stvarno prikazao mora da se
+   pročita i da se u njega klikne; odgovor za manje od ~40 ms nije ljudski,
+   nego pregledač koji je dijalog progutao. To je jedini pokazatelj koji
+   postoji, i namerno je konzervativan: kad pogreši, pogreši u smeru „pitaj
+   još jednom", nikad u smeru „uradi neupitano".
+
+   Kad se prepozna prigušenje, prelazi se na DVA DODIRA — isti obrazac koji
+   brisanje naloga već koristi. Prvi dodir ne uradi ništa i podigne traku sa
+   objašnjenjem, drugi (u roku od deset sekundi, na ISTO dugme) važi kao
+   potvrda. Razorno dejstvo time i dalje traži dva svesna dodira.
+
+   VRAĆA `true`/`false`, dakle drop-in je za `confirm()`. Nijedan pozivalac se
+   ne prepravlja u asinhroni, što je i bio uslov da se popravka uopšte primeni
+   na sva mesta umesto na jedno. */
+const POTVRDA_PRAG_MS=40, POTVRDA_ROK_MS=10000;
+let POTVRDA_CEKA=null;
+function potvrdi(tekst, kljuc){
+  const k=String(kljuc||tekst);
+  /* Drugi dodir na isto pitanje, u roku — to JE potvrda. */
+  if(POTVRDA_CEKA&&POTVRDA_CEKA.kljuc===k&&Date.now()<POTVRDA_CEKA.do){
+    POTVRDA_CEKA=null;
+    const t=document.getElementById('potvrda-dva');
+    if(t&&t.remove) t.remove();
+    return true;
+  }
+  POTVRDA_CEKA=null;
+  let odgovor=false, pitano=true;
+  const t0=Date.now();
+  try{ odgovor=confirm(tekst); }catch(e){ pitano=false; }
+  /* „Da" je uvek odgovor, ma koliko brzo stigao — prigušen dijalog vraća
+     isključivo `false`, pa se `true` ne može pomešati sa prigušenjem. */
+  if(pitano&&(odgovor===true||Date.now()-t0>=POTVRDA_PRAG_MS)) return odgovor;
+
+  POTVRDA_CEKA={kljuc:k, do:Date.now()+POTVRDA_ROK_MS};
+  try{
+    const b=trakaUpozorenja('potvrda-dva','upozorenje',
+      `<b>Potvrda se nije prikazala</b>
+       <p>Pregledač je prigušio pitanje, pa ništa nije urađeno. <b style="display:inline;font-size:inherit;margin:0">Dodirni isto dugme još jednom</b>
+         u narednih 10 sekundi i to će važiti kao potvrda.</p>
+       <p style="opacity:.75">${esc(tekst)}</p>
+       <div class="btnrow"><button id="pd-ne" class="btn ghost">Odustani</button></div>`);
+    if(b&&b.querySelector('#pd-ne')) b.querySelector('#pd-ne').onclick=()=>{ POTVRDA_CEKA=null; b.remove(); };
+    /* Traka nestaje sa rokom — inače bi stajala i pošto potvrda više ne važi,
+       pa bi drugi dodir izgledao kao da je prošao a ne bi bio prihvaćen. */
+    const gasi=setTimeout(()=>{ const x=document.getElementById('potvrda-dva'); if(x&&x.remove) x.remove(); }, POTVRDA_ROK_MS);
+    if(gasi&&typeof gasi.unref==='function') gasi.unref();
+  }catch(e){}
+  return false;
+}
+
 function trakaUpozorenja(id, vrsta, html){
   try{
     if(document.getElementById(id)) return null;
@@ -13798,7 +14119,7 @@ async function istorijaUcitaj(){
   IST.ucitava=true; IST.greska=null;
   if(!await sbEnsure()){ IST.ucitava=false; IST.greska='mreza'; return; }
   try{
-    const r=await fetch(SB_URL+'/rest/v1/user_state_istorija'+
+    const r=await fetchRok(SB_URL+'/rest/v1/user_state_istorija'+
       '?select=id,napravljeno,app_version,device_id&user_id=eq.'+encodeURIComponent(SB.userId)+
       '&order=napravljeno.desc&limit=40',{headers:sbHead()});
     if(!r.ok){ IST.greska=zajRazlogIz(r.status); }
@@ -13818,7 +14139,7 @@ async function istorijaVrati(id){
   if(!await sbEnsure()) return {ok:false, greska:'Nema veze sa internetom.'};
   let sirovo;
   try{
-    const r=await fetch(SB_URL+'/rest/v1/user_state_istorija?select=data&id=eq.'+encodeURIComponent(id)+
+    const r=await fetchRok(SB_URL+'/rest/v1/user_state_istorija?select=data&id=eq.'+encodeURIComponent(id)+
       '&user_id=eq.'+encodeURIComponent(SB.userId),{headers:sbHead()});
     if(!r.ok) return {ok:false, greska:'Server nije dao tu verziju ('+r.status+').'};
     const j=await r.json();
@@ -13876,7 +14197,7 @@ function openIstorijaSheet(){
     document.querySelectorAll('[data-vrati]').forEach(b=>b.onclick=async()=>{
       const kada=b.closest('.ztrow');
       const kad=kada?kada.querySelector('.ztt').textContent.trim().split('\n')[0]:'';
-      if(!confirm('Vratiti podatke na '+kad+'?\n\nSve uneseno posle tog trenutka nestaje sa ekrana. Zatečeno stanje se čuva kao verzija, pa se ovo može poništiti.')) return;
+      if(!potvrdi('Vratiti podatke na '+kad+'?\n\nSve uneseno posle tog trenutka nestaje sa ekrana. Zatečeno stanje se čuva kao verzija, pa se ovo može poništiti.')) return;
       b.disabled=true; b.textContent='Vraćam…';
       const r=await istorijaVrati(b.dataset.vrati);
       if(!r.ok){ b.disabled=false; b.textContent='Vrati'; alert(r.greska); return; }
@@ -14209,8 +14530,8 @@ async function zajUcitaj(){
   if(!await sbEnsure()){ ZAJ.ucitava=false; ZAJ.greska='mreza'; if(ACTIVE==='zajed') renderZajednica(); return; }
   try{
     const [rp,ri]=await Promise.all([
-      fetch(SB_URL+'/rest/v1/zajednica_profil?select=*&vidljiv=is.true',{headers:sbHead()}),
-      fetch(SB_URL+'/rest/v1/zajednica_izazov?select=tekst&id=eq.1',{headers:sbHead()})
+      fetchRok(SB_URL+'/rest/v1/zajednica_profil?select=*&vidljiv=is.true',{headers:sbHead()}),
+      fetchRok(SB_URL+'/rest/v1/zajednica_izazov?select=tekst&id=eq.1',{headers:sbHead()})
     ]);
     if(!rp.ok){ ZAJ.greska=zajRazlogIz(rp.status); }
     else{
@@ -14474,7 +14795,7 @@ async function zajUpisi(){
   if(!sbAuthed()||!(S.zajed&&S.zajed.vidljiv)) return false;
   if(!await sbEnsure()){ ZAJ.razlog='mreza'; return false; }
   try{
-    const r=await fetch(SB_URL+'/rest/v1/zajednica_profil',{
+    const r=await fetchRok(SB_URL+'/rest/v1/zajednica_profil',{
       method:'POST',
       headers:Object.assign(sbHead(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
       body:JSON.stringify(zajednicaPayload())
@@ -14494,7 +14815,7 @@ async function zajObrisi(){
   if(!sbAuthed()) return false;
   if(!await sbEnsure()){ ZAJ.razlog='mreza'; return false; }
   try{
-    const r=await fetch(SB_URL+'/rest/v1/zajednica_profil?user_id=eq.'+encodeURIComponent(SB.userId),
+    const r=await fetchRok(SB_URL+'/rest/v1/zajednica_profil?user_id=eq.'+encodeURIComponent(SB.userId),
       {method:'DELETE',headers:sbHead()});
     if(!r.ok) ZAJ.razlog=zajRazlogIz(r.status);
     return r.ok;
@@ -14662,7 +14983,7 @@ let PUSH_VAPID=null;   /* javni ključ; čita se sa servera, ne stoji u kodu */
 async function pushVapid(){
   if(PUSH_VAPID) return PUSH_VAPID;
   try{
-    const r=await fetch('/api/push');
+    const r=await fetchRok('/api/push');
     if(!r.ok) return null;
     const j=await r.json();
     if(!j||!j.podeseno||!j.kljuc) return null;
@@ -14702,7 +15023,7 @@ async function pushPosalji(akcija,dodatno,token){
   const t=token||await sbToken();
   if(!t) return {ok:false,error:'Prijava je istekla — prijavi se ponovo.'};
   try{
-    const r=await fetch('/api/push',{method:'POST',
+    const r=await fetchRok('/api/push',{method:'POST',
       headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},
       body:JSON.stringify(Object.assign({akcija},dodatno||{}))});
     let j={}; try{ j=await r.json(); }catch(e){}

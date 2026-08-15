@@ -21,6 +21,28 @@
    CRON_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY,
    REPORT_FROM */
 
+/* ROK NA IZLAZNI POZIV.
+   Isti problem je opisan i rešen za poziv modela u api/analyze.js (v. `ROK_MS`
+   tamo); ovo je ista mera na ostalim izlazima.
+   `fetch` nema podrazumevan rok. Kad upstream (Supabase, intervals.icu, Strava,
+   Resend, push servis) ZASTANE a ne odbije, poziv visi dok ga ne preseče
+   `maxDuration` — a tada Vercel vraća SVOJU HTML stranicu 504 umesto našeg
+   JSON-a. Klijent na nju radi `response.json()` i čovek dobija „...is not valid
+   JSON" (Chrome) odnosno „The string did not match the expected pattern"
+   (Safari): poruku koju ne kontrolišemo, o kvaru koji nismo imenovali.
+   Rok stoji ISPOD `maxDuration` ove funkcije, da odgovor stigne od nas i sa
+   razlogom. Pozivalac koji sam donese `signal` zadržava svoj — rok se ne
+   nameće preko tuđe odluke. */
+const IZLAZNI_ROK_MS = 15000;
+function fetchRok(ulaz, opcije, ms) {
+  const o = Object.assign({}, opcije || {});
+  if (!o.signal) {
+    try { o.signal = AbortSignal.timeout(ms > 0 ? ms : IZLAZNI_ROK_MS); } catch (e) { /* stariji Node — bez roka, kao pre */ }
+  }
+  return fetch(ulaz, o);
+}
+
+
 function proveriTajnu(req) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
@@ -59,7 +81,7 @@ async function vlasnikIz(req) {
   const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
   if (!m) return null;
   try {
-    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
     });
     if (!r.ok) return null;
@@ -131,7 +153,7 @@ function proveriDrugiFaktor(body) {
    radnja odbija. */
 async function razornoDozvoljeno(token, endpoint, limit) {
   try {
-    const r = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
+    const r = await fetchRok(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
       method: 'POST',
       headers: {
         apikey: process.env.SUPABASE_ANON_KEY,
@@ -169,7 +191,7 @@ async function javiVlasniku(naslov, redovi, req) {
     .map(r => '<div>' + String(r).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])) + '</div>')
     .join('');
   try {
-    await fetch('https://api.resend.com/emails', {
+    await fetchRok('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + rk, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from, to: [na], subject: 'SUB-20 · ' + naslov, html: telo })
@@ -251,7 +273,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
     /* GoTrue prima `ban_duration` kao trajanje ('876000h' = sto godina) ili
        'none' za skidanje. Zasebna „unban" putanja ne postoji. */
     try {
-      const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(String(body.banId)), {
+      const r = await fetchRok(baza + '/auth/v1/admin/users/' + encodeURIComponent(String(body.banId)), {
         method: 'PUT',
         headers: { ...srvHead, 'Content-Type': 'application/json' },
         body: JSON.stringify({ ban_duration: body.ukini ? 'none' : '876000h' })
@@ -284,7 +306,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
        obrisao nula redova i vratio „ok", pa bi izgledalo da je neko obrisan. */
     let meta = null;
     try {
-      const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), { headers: srvHead });
+      const r = await fetchRok(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), { headers: srvHead });
       if (r.ok) meta = await r.json();
     } catch (e) {}
     if (!meta || !meta.id) return res.status(404).json({ error: 'Taj nalog ne postoji.' });
@@ -298,7 +320,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
        korisnika. Sa odlaganjem ista ta radnja postaje nešto što se u roku od
        nedelju dana poništi jednim dugmetom. */
     try {
-      const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
+      const r = await fetchRok(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
         method: 'PUT', headers: { ...srvHead, 'Content-Type': 'application/json' },
         body: JSON.stringify({ ban_duration: '876000h' })
       });
@@ -307,7 +329,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
 
     const rok = new Date(Date.now() + DANA_DO_BRISANJA * 864e5).toISOString();
     try {
-      const r = await fetch(baza + '/rest/v1/nalog_za_brisanje', {
+      const r = await fetchRok(baza + '/rest/v1/nalog_za_brisanje', {
         method: 'POST',
         headers: { ...srvHead, 'Content-Type': 'application/json',
                    Prefer: 'resolution=merge-duplicates,return=minimal' },
@@ -319,7 +341,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
            traga zašto. Skida se zabrana da stanje ne bude polovično. */
         console.error('[admin][ALARM] oznaka za brisanje nije upisana za %s — HTTP %s; skidam zabranu', cilj, r.status);
         try {
-          await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
+          await fetchRok(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
             method: 'PUT', headers: { ...srvHead, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ban_duration: 'none' })
           });
@@ -358,7 +380,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
        postojala. Bez reda nema šta da se poništava i ništa se ne dira. */
     let obrisano = [];
     try {
-      const r = await fetch(baza + '/rest/v1/nalog_za_brisanje?user_id=eq.' + encodeURIComponent(cilj),
+      const r = await fetchRok(baza + '/rest/v1/nalog_za_brisanje?user_id=eq.' + encodeURIComponent(cilj),
         { method: 'DELETE', headers: { ...srvHead, Prefer: 'return=representation' } });
       if (!r.ok) return res.status(502).json({ error: 'Oznaka nije uklonjena (' + r.status + ').' });
       try { const j = await r.json(); if (Array.isArray(j)) obrisano = j; } catch (e) {}
@@ -367,7 +389,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
       return res.status(404).json({ error: 'Taj nalog nije označen za brisanje — nema šta da se poništi. Za skidanje zabrane koristi „Skini zabranu", uz ADMIN_2FA.' });
     }
     try {
-      await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
+      await fetchRok(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
         method: 'PUT', headers: { ...srvHead, 'Content-Type': 'application/json' },
         body: JSON.stringify({ ban_duration: 'none' })
       });
@@ -382,7 +404,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
   /* ---------- SPISAK OZNAČENIH ---------- */
   if (body.admin === 'zakazano') {
     try {
-      const r = await fetch(baza + '/rest/v1/nalog_za_brisanje?select=user_id,email,oznaceno,izvrsi_posle&order=izvrsi_posle.asc',
+      const r = await fetchRok(baza + '/rest/v1/nalog_za_brisanje?select=user_id,email,oznaceno,izvrsi_posle&order=izvrsi_posle.asc',
         { headers: srvHead });
       if (!r.ok) return res.status(502).json({ error: 'Spisak nije dostupan (' + r.status + ').' });
       return res.status(200).json({ ok: true, zakazano: await r.json() });
@@ -406,7 +428,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
       return res.status(400).json({ error: 'Izazov mora imati između 3 i 160 znakova.' });
     }
     try {
-      const r = await fetch(baza + '/rest/v1/zajednica_izazov', {
+      const r = await fetchRok(baza + '/rest/v1/zajednica_izazov', {
         method: 'POST',
         headers: { ...srvHead, 'Content-Type': 'application/json',
                    Prefer: 'resolution=merge-duplicates,return=representation' },
@@ -430,7 +452,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
      aplikaciju stvarno koristi. Jedan upit za sve, ne po korisniku. */
   const brojac = {};
   try {
-    const r = await fetch(baza + '/rest/v1/user_state?select=user_id,updated_at', { headers: srvHead });
+    const r = await fetchRok(baza + '/rest/v1/user_state?select=user_id,updated_at', { headers: srvHead });
     if (r.ok) for (const x of await r.json()) brojac[x.user_id] = x.updated_at || true;
   } catch (e) { /* bez ovoga spisak i dalje radi */ }
 
@@ -459,7 +481,7 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
 async function sviKorisniciPuni(url, key) {
   const PER = 200, out = [];
   for (let page = 1; page <= 25; page++) {
-    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=' + PER + '&page=' + page, {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=' + PER + '&page=' + page, {
       headers: { apikey: key, Authorization: 'Bearer ' + key }
     });
     if (!r.ok) throw new Error('spisak korisnika nije uspeo (' + r.status + ')');
@@ -474,7 +496,7 @@ async function sviKorisniciPuni(url, key) {
 async function sviKorisnici(url, key) {
   const PER = 200, out = [];
   for (let page = 1; page <= 25; page++) {
-    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=' + PER + '&page=' + page, {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=' + PER + '&page=' + page, {
       headers: { apikey: key, Authorization: 'Bearer ' + key }
     });
     if (!r.ok) throw new Error('lista korisnika nije uspela (' + r.status + ')');
@@ -669,7 +691,7 @@ export default async function handler(req, res) {
     if (Date.now() - pocetak > ROK_MS) break;   /* stani pre nego sto te platforma prekine */
     const to = primaoci[i];
     try {
-      const r = await fetch('https://api.resend.com/emails', {
+      const r = await fetchRok('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + rk, 'Content-Type': 'application/json' },
         body: JSON.stringify({ from, to, subject: NASLOV, html })

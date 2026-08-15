@@ -3,8 +3,8 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v265';
-const APP_VERSION = '265';
+const CACHE = 'sub19-cache-v266';
+const APP_VERSION = '266';
 /* './app.js' MORA biti na spisku: od v150 index.html je samo markup, a ceo kod
    aplikacije je u app.js. Da nije tu, dobio bi network-first samo omotač, dok
    bi se logika servirala iz starog keša — tj. „promenio sam kod, ništa se ne
@@ -54,6 +54,52 @@ self.addEventListener('activate', e => {
   );
 });
 
+/* NETWORK-FIRST SA ROKOM, NE NETWORK-FIRST BEZ KRAJA.
+
+   Ranije je ova grana glasila `fetch(req).then(…).catch(() => caches.match(k))`,
+   dakle keš se koristio SAMO ako `fetch` ODBIJE. A mreža koja je mrtva a
+   spojena — metro, lift, wifi sa captive portalom, slab signal — ne odbija;
+   visi. Dok visi, visi i obećanje dato `respondWith`-u, a to su navigacija i
+   `app.js`: aplikacija se u tom stanju NE OTVORI UOPŠTE, iako ispravna offline
+   kopija stoji u kešu i čeka. To je poricalo ono zbog čega keš i postoji.
+
+   Sada je to trka. Mreža dobija `SW_ROK` da odgovori; ako ne stigne, a keš ima
+   traženo, korisnik odmah dobija keširano. Mrežni odgovor se NE otkazuje —
+   kad kasnije stigne, `putSafe` osveži keš, pa je sledeće otvaranje već novo.
+   Rok je namerno kratak: sve iz ASSETS je već u kešu, pa je najgori ishod
+   „aplikacija se otvorila iz keša jedan krug starija", a ne „ne otvara se".
+
+   Uz to nestaje i tiha rupa stare grane: kad keša NEMA, `caches.match` vraća
+   `undefined`, a `respondWith(undefined)` daje pregledačevu stranicu mrežne
+   greške umesto praznog odgovora. Donja grana je to već rešavala svojim 504;
+   ova nije. */
+/* Objekat, a ne gola `const`, da bi zamka mogla da skrati rok — inače bi svaka
+   tvrdnja o ovom ponašanju čekala pravih 3,5 s. Isti razlog i isti oblik kao
+   `MREZA_ROK` u app.js. */
+const MREZA_ROK = { ms: 3500 };
+function mrezaIliKes(req, cacheKey) {
+  return new Promise(res => {
+    let odgovoreno = false;
+    const posalji = r => { if (!odgovoreno && r) { odgovoreno = true; res(r); } };
+    const tajmer = setTimeout(() => {
+      /* Keš se traži TEK kad rok istekne, i samo ako mreža još ćuti. Pogodak
+         odgovara odmah; promašaj ne radi ništa i čeka se mreža dalje — nema
+         šta bolje da se ponudi. */
+      caches.match(cacheKey).then(posalji).catch(() => {});
+    }, MREZA_ROK.ms);
+    fetch(req).then(r => {
+      clearTimeout(tajmer);
+      putSafe(cacheKey, r);   /* i kad je keš već odgovorio — sledeći put je nov */
+      posalji(r);
+    }).catch(() => {
+      clearTimeout(tajmer);
+      caches.match(cacheKey)
+        .then(hit => posalji(hit || new Response('', { status: 504, statusText: 'Offline' })))
+        .catch(() => posalji(new Response('', { status: 504, statusText: 'Offline' })));
+    });
+  });
+}
+
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const u = new URL(e.request.url);
@@ -82,12 +128,7 @@ self.addEventListener('fetch', e => {
      hvatao SVAKU putanju sa kosom crtom) već je jednom popravljena ovde. */
   const key = ASSETS.find(a => u.pathname === a.replace(/^\./, ''));
   if (e.request.mode === 'navigate' || key) {
-    const cacheKey = key || './index.html';
-    e.respondWith(
-      fetch(e.request)
-        .then(r => { putSafe(cacheKey, r); return r; })
-        .catch(() => caches.match(cacheKey))
-    );
+    e.respondWith(mrezaIliKes(e.request, key || './index.html'));
     return;
   }
   /* `.catch()` NIJE ukras. Grana iznad ga ima (pada na keš), a ova nije imala:

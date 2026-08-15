@@ -17,7 +17,7 @@ import { runInNewContext } from 'node:vm';
 import {
   createECDH, createHmac, createDecipheriv, createPublicKey, verify, randomBytes
 } from 'node:crypto';
-import { readRepoFile } from './harness.mjs';
+import { readRepoFile, loadApp } from './harness.mjs';
 
 const b64u = b => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const odB64u = s => Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64');
@@ -761,12 +761,24 @@ describe('Doslednost aplikacije i service workera', () => {
     assert.ok(/nalog\.isticeMs/.test(sw), 'sw.js ne čita isticeMs');
   });
 
-  test('javni VAPID ključ NIJE ukucan u app.js', () => {
+  test('javni VAPID ključ NIJE ukucan u app.js', async () => {
     /* Da jeste, promena ključeva na serveru bi ćutke razvalila sve pretplate:
        pregledač bi slao stari ključ, push servis vraćao 403, a Podešavanja
        tvrdila da su obaveštenja uključena. */
     assert.ok(!/B[A-Za-z0-9_-]{85}/.test(app), 'ključ je ukucan u klijentu umesto da se čita sa servera');
-    assert.ok(/fetch\('\/api\/push'\)/.test(app), 'app.js ne čita ključ sa servera');
+    /* Druga polovina se NE traži kao oblik poziva nego kao ISHOD. Ranija
+       verzija je tvrdila `/fetch\('\/api\/push'\)/` i pala je na preimenovanje
+       omotača (`fetch` → `fetchRok`) iako se ponašanje nije promenilo ni za
+       bajt — dakle merila je kako je kod napisan, ne šta radi. */
+    const a = loadApp();
+    const KLJUC = 'B' + 'x'.repeat(85);
+    let trazeno = null;
+    a.setFetch(async u => {
+      trazeno = String(u);
+      return { ok: true, json: async () => ({ podeseno: true, kljuc: KLJUC }) };
+    });
+    assert.equal(await a.call('pushVapid'), KLJUC, 'ključ sa servera se ne koristi');
+    assert.equal(trazeno, '/api/push', 'app.js ne pita server za ključ');
   });
 
   test('odjava sa naloga gasi i obaveštenja i pozadinu', () => {

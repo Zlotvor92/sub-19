@@ -1053,8 +1053,15 @@ describe('Oštećeno lokalno stanje ne sme da pregazi serversku kopiju', () => {
     const src = readAppSource();
     const f = /async function sbPush\(\)\{[\s\S]*?\n\}/.exec(src)[0];
     const brana = f.indexOf('if(UCITAVANJE_PALO)');
-    const prviFetch = f.indexOf('fetch(');
+    /* Traži se BILO KOJI izlaz na mrežu, ne doslovno `fetch(`: pozivi idu kroz
+       omotač `fetchRok` (v. „MREŽA SA ROKOM" u app.js), a ranija verzija je
+       tražila samo `fetch(` — pa je posle preimenovanja `indexOf` vraćao −1 i
+       poređenje `brana < −1` obaralo zamku iz razloga koji nema veze sa onim
+       što meri. Redosled naredbi se ne može očitati iz ponašanja, pa ova
+       provera ostaje nad izvorom — ali nad obrascem koji preživi omotač. */
+    const izlaz = /\bfetchRok\(|\bfetch\(/.exec(f);
     assert.ok(brana > 0, 'brana za oštećeno stanje je nestala iz sbPush');
-    assert.ok(brana < prviFetch, 'brana stoji POSLE prvog izlaza na mrežu');
+    assert.ok(izlaz, 'sbPush više nigde ne izlazi na mrežu — proveri ručno');
+    assert.ok(brana < izlaz.index, 'brana stoji POSLE prvog izlaza na mrežu');
   });
 });

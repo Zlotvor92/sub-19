@@ -1196,7 +1196,17 @@ body.uvod-radi{overflow:hidden}
 </main>
 
 <div class="backdrop" id="backdrop"></div>
-<div class="sheet" id="sheet"></div>
+<!-- LIST JE DIJALOG, I MORA TO I DA KAŽE.
+     Do sada je bio go `<div>`: za čitač ekrana i tastaturu nije postojao kao
+     modal — fokus je ostajao na stranici ISPOD njega, pa se „Tab" šetao po
+     dugmadima koja se ne vide, a Escape nije radio ništa. To je bilo u raskoraku
+     sa ostatkom aplikacije, koja pristupačnost inače uzima ozbiljno (v. uklonjen
+     `user-scalable=no` gore i providnost teksta birana na 4.5:1 u CSS-u).
+     `aria-label` upisuje `openSheet` iz naslova sadržaja — list nosi različit
+     sadržaj pri svakom otvaranju, pa statičan naziv ne bi značio ništa.
+     `tabindex="-1"` postoji da fokus može da se pomeri NA sam list; bez njega
+     `focus()` na `div` ne radi. -->
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true" tabindex="-1"></div>
 
 <nav id="tabbar">
   <button data-pg="danas" class="on">

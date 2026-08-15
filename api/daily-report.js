@@ -33,6 +33,28 @@
    CRON_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY,
    REPORT_TO, REPORT_FROM. */
 
+/* ROK NA IZLAZNI POZIV.
+   Isti problem je opisan i rešen za poziv modela u api/analyze.js (v. `ROK_MS`
+   tamo); ovo je ista mera na ostalim izlazima.
+   `fetch` nema podrazumevan rok. Kad upstream (Supabase, intervals.icu, Strava,
+   Resend, push servis) ZASTANE a ne odbije, poziv visi dok ga ne preseče
+   `maxDuration` — a tada Vercel vraća SVOJU HTML stranicu 504 umesto našeg
+   JSON-a. Klijent na nju radi `response.json()` i čovek dobija „...is not valid
+   JSON" (Chrome) odnosno „The string did not match the expected pattern"
+   (Safari): poruku koju ne kontrolišemo, o kvaru koji nismo imenovali.
+   Rok stoji ISPOD `maxDuration` ove funkcije, da odgovor stigne od nas i sa
+   razlogom. Pozivalac koji sam donese `signal` zadržava svoj — rok se ne
+   nameće preko tuđe odluke. */
+const IZLAZNI_ROK_MS = 15000;
+function fetchRok(ulaz, opcije, ms) {
+  const o = Object.assign({}, opcije || {});
+  if (!o.signal) {
+    try { o.signal = AbortSignal.timeout(ms > 0 ? ms : IZLAZNI_ROK_MS); } catch (e) { /* stariji Node — bez roka, kao pre */ }
+  }
+  return fetch(ulaz, o);
+}
+
+
 function checkCron(req) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
@@ -45,7 +67,7 @@ function checkCron(req) {
 }
 
 async function fetchStats(url, key) {
-  const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/app_stats?select=*', {
+  const r = await fetchRok(url.replace(/\/+$/, '') + '/rest/v1/app_stats?select=*', {
     headers: { apikey: key, Authorization: 'Bearer ' + key }
   });
   if (!r.ok) throw new Error('app_stats upit nije uspeo (' + r.status + ')');
@@ -84,7 +106,7 @@ async function fetchRawUserState(url, key, todayStr) {
   const PER = 200, MAX_PAGES = 50, sazeto = {};
   for (let page = 0; page < MAX_PAGES; page++) {
     const od = page * PER, doIdx = od + PER - 1;
-    const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/user_state?select=user_id,data,updated_at&order=user_id.asc', {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/rest/v1/user_state?select=user_id,data,updated_at&order=user_id.asc', {
       headers: {
         apikey: key, Authorization: 'Bearer ' + key,
         Range: od + '-' + doIdx, 'Range-Unit': 'items'
@@ -114,7 +136,7 @@ async function fetchAiUsageDays(url, key) {
   const PER = 1000, MAX_PAGES = 50, lastByUser = {};
   for (let page = 0; page < MAX_PAGES; page++) {
     const od = page * PER, doIdx = od + PER - 1;
-    const r = await fetch(url.replace(/\/+$/, '') +
+    const r = await fetchRok(url.replace(/\/+$/, '') +
       '/rest/v1/api_usage?select=user_id,day,calls&calls=gt.0&order=day.desc,user_id.asc', {
       headers: {
         apikey: key, Authorization: 'Bearer ' + key,
@@ -139,7 +161,7 @@ async function fetchUserList(url, key) {
   const PER = 200, MAX_PAGES = 25;   /* gornja granica da greska na serveru ne napravi beskonacnu petlju */
   const out = [];
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=' + PER + '&page=' + page, {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/auth/v1/admin/users?per_page=' + PER + '&page=' + page, {
       headers: { apikey: key, Authorization: 'Bearer ' + key }
     });
     if (!r.ok) throw new Error('lista korisnika nije uspela (' + r.status + ')');
@@ -347,7 +369,7 @@ async function izvrsiOdlozenaBrisanja(url, key) {
   const nalaz = { obrisano: [], greske: [] };
   let redovi = [];
   try {
-    const r = await fetch(baza + '/rest/v1/nalog_za_brisanje?select=user_id,email,izvrsi_posle'
+    const r = await fetchRok(baza + '/rest/v1/nalog_za_brisanje?select=user_id,email,izvrsi_posle'
       + '&izvrsi_posle=lt.' + encodeURIComponent(new Date().toISOString()), { headers: head });
     if (!r.ok) { nalaz.greske.push('spisak: HTTP ' + r.status); return nalaz; }
     redovi = await r.json();
@@ -359,7 +381,7 @@ async function izvrsiOdlozenaBrisanja(url, key) {
     let pao = null;
     for (const t of BRISI_TABELE) {
       try {
-        const r = await fetch(baza + '/rest/v1/' + t + '?user_id=eq.' + encodeURIComponent(id),
+        const r = await fetchRok(baza + '/rest/v1/' + t + '?user_id=eq.' + encodeURIComponent(id),
           { method: 'DELETE', headers: { ...head, Prefer: 'return=minimal' } });
         if (!r.ok && r.status !== 404) pao = t + ': HTTP ' + r.status;
       } catch (e) { pao = t + ': ' + e.message; }
@@ -369,7 +391,7 @@ async function izvrsiOdlozenaBrisanja(url, key) {
        ostavlja čoveka bez pristupa a sa podacima na serveru. */
     if (pao) { nalaz.greske.push((x.email || id) + ' — ' + pao); continue; }
     try {
-      const r = await fetch(baza + '/auth/v1/admin/users/' + encodeURIComponent(id),
+      const r = await fetchRok(baza + '/auth/v1/admin/users/' + encodeURIComponent(id),
         { method: 'DELETE', headers: head });
       if (!r.ok) { nalaz.greske.push((x.email || id) + ' — nalog: HTTP ' + r.status); continue; }
     } catch (e) { nalaz.greske.push((x.email || id) + ' — nalog: ' + e.message); continue; }
@@ -426,7 +448,7 @@ export default async function handler(req, res) {
   const html = buildHtml(stats, rows, errors, brisanja);
 
   try {
-    const r = await fetch('https://api.resend.com/emails', {
+    const r = await fetchRok('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + resendKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({

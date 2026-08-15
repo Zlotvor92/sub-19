@@ -51,6 +51,11 @@ prelaska preko ponoći.
 | `simetrija-distanci.test.mjs` | zamka za ispravku koja sleti u tri od četiri distance |
 | `generator-otisak.test.mjs` | otisak 2304 plana — razlikuje „preuredio sam kod" od „promenio sam trening" |
 | `android-paket.test.mjs` | `sub20.apk` naspram repozitorijuma — adresa, ime, paket, otisci ključa |
+| `mreza-rok.test.mjs` | mreža koja VISI a ne odbija — zastavice „u toku" se spuštaju, rok se bira po odredištu, nijedna serverska funkcija ne izlazi bez roka |
+| `ai-zaglavljen.test.mjs` | AI posao koji se nikad ne završi — ponavljanje, odustajanje, kvota koju neuspeh ne sme da pojede |
+| `potvrda.test.mjs` | prigušen `confirm()` ne prolazi kao „ne"; dijalog koji se stvarno prikazao ostaje merodavan |
+| `list-dijalog.test.mjs` | modalni list kao prav dijalog — naziv, fokus unutra i nazad, inertna pozadina, Escape, zamka za Tab |
+| `requireuser-kopije.test.mjs` | sedam namernih kopija `requireUser` provučeno kroz iste scenarije — duplikat sme da postoji, ali ne sme da se razidje |
 
 ## Otisak generatora
 

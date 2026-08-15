@@ -1140,8 +1140,16 @@ describe('Analiza odvojena od cekanja', () => {
     assert.doesNotMatch(m[0].split('{')[0], /aiText/,
       'stanje „u toku" je i dalje uslovljeno nepostojanjem starog teksta');
     assert.match(m[1], /prethodna analiza/, 'stari tekst se gubi umesto da se oznaci');
-    /* Dok posao traje NEMA dugmeta — inace bi se poslovi gomilali. */
-    assert.doesNotMatch(m[1], /ai-again/, 'moze se pokrenuti jos jedna analiza preko one koja traje');
+    /* Dok posao traje ne sme postojati ništa što POKREĆE NOV posao — inače bi
+       se poslovi gomilali i svaki bi trošio kvotu.
+       Ranije je ovde stajalo `doesNotMatch(/ai-again/)`, dakle odsustvo CSS
+       KLASE. To je bio pogrešan pokazatelj: kad je dodato dugme koje ponavlja
+       ISTI posao (ne troši kvotu, ne pravi nov red — v. „POSAO KOJI JE
+       ZAGLAVIO" u app.js), zamka je pala iako se ono što čuva nije promenilo.
+       Pravi okidač je `data-ai`, atribut po kom `vezAnalize` veže pokretanje;
+       ponavljanje nosi `data-ai-ponovi` i namerno se ne poklapa. */
+    assert.doesNotMatch(m[1], /data-ai="/,
+      'moze se pokrenuti jos jedna analiza preko one koja traje');
   });
 
   test('brojac analiza raste tek kad tekst STVARNO stigne', () => {
