@@ -50,24 +50,41 @@ function atributiTaga(tag) {
   while ((m = ATRIBUT.exec(telo))) o[m[1].toLowerCase()] = m[2] ?? m[3] ?? m[4] ?? '';
   return o;
 }
+/* ZAREZ I `:not()` — dodato kad je modalni list dobio zamku za fokus.
+   Skup fokusabilnih polja je u pregledaču jedan selektor sa zarezima i
+   negacijama (`button:not([disabled]),[tabindex]:not([tabindex="-1"])`, v.
+   `FOKUSIRAJUCI` u app.js). Dok ovo nije postojalo, `querySelectorAll` je nad
+   njim vraćao PRAZAN niz — pa je zamka za „Tab ne izlazi iz lista" merila
+   granu za list bez ijednog polja i prolazila bi i da zamke za fokus nema.
+   Ista klasa tihe rupe zbog koje je `querySelectorAll` i uveden. */
 function pogadja(el, sel) {
+  const delovi = String(sel).split(',').map(x => x.trim()).filter(Boolean);
+  return delovi.length > 1 ? delovi.some(d => pogadjaJedan(el, d)) : pogadjaJedan(el, delovi[0] || '');
+}
+function zetonPogadja(el, z) {
+  if (z[0] === '.') return el.classList.contains(z.slice(1));
+  if (z[0] === '#') return el._atr.id === z.slice(1);
+  const m = /^\[([^=\]]+)(?:=["']?([^\]"']*)["']?)?\]$/.exec(z);
+  if (!m) return false;
+  const v = el._atr[m[1].trim().toLowerCase()];
+  if (v === undefined) return false;
+  return m[2] === undefined || v === m[2];
+}
+function pogadjaJedan(el, sel) {
   let s = String(sel).trim();
   const tagM = /^[a-zA-Z][-\w]*/.exec(s);
   if (tagM) {
     if (el.tagName !== tagM[0].toUpperCase()) return false;
     s = s.slice(tagM[0].length);
   }
+  /* `:not(...)` se izdvaja PRE ostalih žetona — inače bi se `[disabled]` iz
+     njegove zagrade brojao kao običan uslov i značio tačno suprotno. */
+  const negacije = [];
+  s = s.replace(/:not\(([^)]*)\)/g, (_, unutra) => { negacije.push(unutra.trim()); return ''; });
   const zetoni = s.match(/\.[-\w]+|#[-\w]+|\[[^\]]*\]/g) || [];
-  if (!tagM && !zetoni.length) return false;
-  for (const z of zetoni) {
-    if (z[0] === '.') { if (!el.classList.contains(z.slice(1))) return false; continue; }
-    if (z[0] === '#') { if (el._atr.id !== z.slice(1)) return false; continue; }
-    const m = /^\[([^=\]]+)(?:=["']?([^\]"']*)["']?)?\]$/.exec(z);
-    if (!m) return false;
-    const v = el._atr[m[1].trim().toLowerCase()];
-    if (v === undefined) return false;
-    if (m[2] !== undefined && v !== m[2]) return false;
-  }
+  if (!tagM && !zetoni.length && !negacije.length) return false;
+  for (const z of zetoni) if (!zetonPogadja(el, z)) return false;
+  for (const n of negacije) if (zetonPogadja(el, n)) return false;
   return true;
 }
 
@@ -91,6 +108,11 @@ function qsa(html, sel, kes) {
 /* Jedan lažni element koji odgovara na sve što aplikacija traži od DOM-a.
    Namerno permisivan: cilj nije verno simulirati pregledač, nego pustiti
    skriptu da se izvrši do kraja da bi čiste funkcije bile dostupne. */
+/* Trenutno fokusiran element — `document.activeElement` u pregledaču.
+   Postavlja ga `focus()` na stubu; `loadApp` ga briše pri svakom pokretanju da
+   se stanje ne prenosi između testova. */
+let FOKUSIRAN = null;
+
 function makeEl(tag = 'div', atr = {}) {
   /* Elementi se PAMTE po selektoru. Bez toga svaki querySelector vraca nov
      objekat, pa `render*()` upise HTML u jedan a test cita iz drugog — dobije
@@ -147,7 +169,17 @@ function makeEl(tag = 'div', atr = {}) {
     },
     closest() { return makeEl(); },
     select() {},
-    focus() {},
+    /* FOKUS SE PAMTI, ne guta se. Dok je ovo bilo prazno telo, nijedan test
+       nije mogao da razlikuje „fokus je pomeren u dijalog" od „focus() se ne
+       poziva uopšte" — a to je tačno razlika koju modalni list mora da drži
+       (v. „LIST KAO PRAV DIJALOG" u app.js). Ista klasa praznog hoda kao kod
+       `remove()` i `querySelectorAll` iznad. */
+    focus() { FOKUSIRAN = this; this._fokusa = (this._fokusa || 0) + 1; },
+    blur() { if (FOKUSIRAN === this) FOKUSIRAN = null; },
+    /* `inert` postoji kao svojstvo i u pregledaču (Chrome 102+ / Safari 15.5+),
+       pa ga stub mora imati — inače kod pada na `aria-hidden` granu i testira
+       se rezerva umesto onoga što korisnik zaista dobija. */
+    inert: false,
     click() {}
   };
   return el;
@@ -272,7 +304,11 @@ export function loadApp(opts = {}) {
   const docSlusaoci = {};
   const kesDoc = new Map();
   const nadjiDoc = sel => { const k=String(sel); if(!kesDoc.has(k)) kesDoc.set(k, makeEl()); return kesDoc.get(k); };
+  FOKUSIRAN = null;
   const doc = {
+    /* Geter, ne polje: `focus()` na bilo kom stubu mora odmah da se vidi ovde,
+       isto kao u pregledaču. */
+    get activeElement() { return FOKUSIRAN; },
     documentElement: makeEl('html'),
     body: makeEl('body'),
     head: makeEl('head'),
@@ -313,6 +349,13 @@ export function loadApp(opts = {}) {
     Map, Set, Promise, isNaN, isFinite, parseInt, parseFloat, encodeURIComponent,
     decodeURIComponent, escape, unescape, atob, btoa, URL, URLSearchParams,
     Uint8Array, Buffer, TextEncoder, TextDecoder, structuredClone,
+    /* PREKID MREŽNOG POZIVA. Bez ovoga `mrezaSignal` (v. „MREŽA SA ROKOM" u
+       app.js) tiho pada na granu „nema AbortSignal-a, idi bez roka" — pa bi
+       zamka za rok merila kod koji u testu i ne postoji, i prolazila bi i kad
+       je rok obrisan. Node ih ima kao globale; ovde se samo unose u kontekst.
+       `AbortSignal.timeout` u Node-u ne drži proces živ (tajmer je unref-ovan),
+       pa `node --test` i dalje uredno završava. */
+    AbortController, AbortSignal,
 
     document: doc,
     localStorage: ls,

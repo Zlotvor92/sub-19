@@ -12,6 +12,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
+import { createContext, runInContext } from 'node:vm';
 import { loadApp, readRepoFile } from './harness.mjs';
 
 /* Traka se meri po STVARNOM dodavanju u DOM. Harness pamti elemente po
@@ -200,21 +201,15 @@ describe('Instalacija service workera preživi jedan fajl koji fali', () => {
       'neuspeh je nem — isti problem bi se opet tražio na pogrešnom mestu');
   });
 
-  test('nijedna grana odgovora ne sme da ostane bez `.catch()`', () => {
-    /* `respondWith` prima OBEĆANJE. Ako ono odbije, pregledač prikaže SVOJU
-       stranicu mrežne greške umesto da zahtev prosto propadne — na slici koja
-       se ne učita to je razlika između praznog mesta i razbijene stranice.
-       Grana za ASSETS/navigaciju je `.catch()` imala (pada na keš), a opšta
-       grana nije: van mreže, za nešto što nije u kešu, `fetch` odbija i
-       obećanje sa njim.
-       Provera je nad kodom bez komentara — inače bi objašnjenje iznad popravke
-       samo sebe prijavilo kao dokaz. */
+  test('obe grane odgovora i dalje postoje', () => {
+    /* Samo brojanje grana. Šta svaka od njih VRAĆA proverava se izvršavanjem,
+       niže — v. „Mreža koja visi ne sme da zaključa otvaranje". Ranija verzija
+       je ovde tražila `.catch(` u prvih 400 znakova svake grane; kad je grana
+       izdvojena u `mrezaIliKes`, `.catch` je i dalje postojao ali izvan tog
+       prozora — zamka je pala na PREMEŠTANJE koda, a ne bi pala da je `catch`
+       zaista uklonjen iz izdvojene funkcije. */
     const grane = kod.split('e.respondWith(').slice(1);
     assert.equal(grane.length, 2, 'broj grana se promenio — proveri obe ručno');
-    for (const [i, g] of grane.entries()) {
-      assert.match(g.slice(0, 400), /\.catch\(/,
-        `grana ${i + 1} u fetch rukovaocu nema .catch() — odbijeno obećanje ruši prikaz`);
-    }
   });
 
   test('zahtevi ka tuđem domenu se NE presreću', () => {
@@ -244,5 +239,111 @@ describe('Instalacija service workera preživi jedan fajl koji fali', () => {
       try { readRepoFile(put.replace(/^\.\//, '')); } catch { ima = false; }
       assert.ok(ima, `ASSETS pominje ${put}, a tog fajla nema — instalacija bi ga preskočila`);
     }
+  });
+});
+
+/* ============================================================
+   MREŽA KOJA VISI
+
+   NALAZ: `network-first` grana je glasila
+   `fetch(req).then(…).catch(() => caches.match(k))` — dakle keš se koristio
+   SAMO kad `fetch` ODBIJE. A mreža koja je mrtva a spojena (metro, lift, wifi
+   sa captive portalom, slab signal) ne odbija; visi. Dok visi, visi i obećanje
+   dato `respondWith`-u, a to su navigacija i `app.js`: aplikacija se u tom
+   stanju NE OTVORI, iako ispravna offline kopija stoji u kešu.
+
+   Sve tvrdnje ispod se IZVRŠAVAJU. Zamka koja bi ovo merila nad izvorom
+   („ima li `.catch`", „ima li `setTimeout`") prolazila bi i kad rok postoji a
+   ne radi — a upravo to je klasa greške zbog koje je i pisana.
+   ============================================================ */
+describe('Mreža koja visi ne sme da zaključa otvaranje', () => {
+  /* sw.js nije modul i nema izvoz, pa se — po istom načelu kao `harness.mjs`
+     za app.js — pušta nad lažnim globalima, a funkcije se čitaju iz konteksta.
+     Kod se ne prekraja zbog testa. */
+  function ucitajSw({ fetch: mreza, kesirano } = {}) {
+    const upisano = [];
+    const ctx = {
+      console: { warn() {}, log() {}, error() {} },
+      setTimeout, clearTimeout, Promise, Object, Array, String, Number, Boolean,
+      JSON, Math, Date, RegExp, Error, Map, Set, URL,
+      location: { origin: 'https://sub-20.test' },
+      Response: class {
+        constructor(telo, o) {
+          this.telo = telo; this.status = (o && o.status) || 200;
+          this.ok = this.status < 300; this.statusText = (o && o.statusText) || '';
+        }
+        clone() { return this; }
+      },
+      caches: {
+        match: async () => kesirano,
+        open: async () => ({ put: async (k, v) => { upisano.push([k, v]); }, add: async () => {} }),
+        keys: async () => [], delete: async () => true
+      },
+      fetch: mreza || (async () => { throw new Error('offline (test)'); }),
+      indexedDB: { open: () => ({}) }
+    };
+    ctx.self = { addEventListener: () => {}, registration: {}, clients: {}, skipWaiting() {} };
+    ctx.globalThis = ctx;
+    const vmCtx = createContext(ctx);
+    runInContext(readRepoFile('sw.js'), vmCtx, { filename: 'sw.js' });
+    /* Rok se skraćuje da zamka ne čeka pravih 3,5 s (v. `MREZA_ROK` u sw.js). */
+    runInContext('MREZA_ROK.ms = 40', vmCtx);
+    return {
+      upisano,
+      zovi: (kljuc = './index.html') => {
+        ctx.__k = kljuc;
+        return runInContext('mrezaIliKes({url:"https://sub-20.test/"}, __k)', vmCtx);
+      }
+    };
+  }
+
+  const KES = { ok: true, status: 200, izKesa: true, clone() { return this; } };
+  const MREZA = { ok: true, status: 200, izMreze: true, clone() { return this; } };
+
+  test('mreža koja VISI pada na keš umesto da čeka bez kraja', async () => {
+    /* Ovo je sam nalaz. Pre popravke ovaj `await` se nikad ne bi razrešio i
+       test bi istekao — što je tačno ono što korisnik vidi kao „aplikacija se
+       ne otvara", samo bez poruke. */
+    const sw = ucitajSw({ fetch: () => new Promise(() => {}), kesirano: KES });
+    const r = await sw.zovi();
+    assert.equal(r.izKesa, true, 'keš nije uskočio — otvaranje visi koliko i mreža');
+  });
+
+  test('mreža koja odbija i dalje pada na keš', async () => {
+    const sw = ucitajSw({ fetch: async () => { throw new Error('offline'); }, kesirano: KES });
+    const r = await sw.zovi();
+    assert.equal(r.izKesa, true, 'offline više ne dobija keširanu kopiju');
+  });
+
+  test('mreža koja odbije BEZ keša vraća odgovor, ne `undefined`', async () => {
+    /* Tiha rupa stare grane: `caches.match` promašaj vraća `undefined`, a
+       `respondWith(undefined)` daje pregledačevu stranicu mrežne greške umesto
+       praznog odgovora. Donja grana je to već rešavala svojim 504; ova nije. */
+    const sw = ucitajSw({ fetch: async () => { throw new Error('offline'); }, kesirano: undefined });
+    const r = await sw.zovi();
+    assert.ok(r, 'grana vraća undefined — pregledač prikazuje svoju stranicu greške');
+    assert.equal(r.status, 504);
+  });
+
+  test('mreža koja stigne pre roka pobeđuje keš', async () => {
+    /* Rok ne sme da pretvori network-first u cache-first: dok mreža radi,
+       korisnik mora da dobije NOVO, inače izmena na sajtu ne bi stizala. */
+    const sw = ucitajSw({ fetch: async () => MREZA, kesirano: KES });
+    const r = await sw.zovi();
+    assert.equal(r.izMreze, true, 'keš je pretekao mrežu koja radi');
+  });
+
+  test('odgovor koji zakasni ipak osveži keš', async () => {
+    /* Korisnik je već dobio keširano, ali sledeće otvaranje mora biti novo —
+       inače bi jedna spora mreža zamrzla verziju do sledećeg pravog otkaza. */
+    const sw = ucitajSw({
+      fetch: () => new Promise(res => setTimeout(() => res(MREZA), 80)),
+      kesirano: KES
+    });
+    const r = await sw.zovi();
+    assert.equal(r.izKesa, true, 'keš nije uskočio na vreme');
+    await new Promise(res => setTimeout(res, 160));
+    assert.equal(sw.upisano.length, 1, 'zakasneli odgovor nije upisan u keš');
+    assert.equal(sw.upisano[0][0], './index.html');
   });
 });

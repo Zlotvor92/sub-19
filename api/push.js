@@ -38,6 +38,28 @@
 
 import { createECDH, createHmac, createCipheriv, createPrivateKey, randomBytes, sign as ecdsaPotpis } from 'node:crypto';
 
+/* ROK NA IZLAZNI POZIV.
+   Isti problem je opisan i rešen za poziv modela u api/analyze.js (v. `ROK_MS`
+   tamo); ovo je ista mera na ostalim izlazima.
+   `fetch` nema podrazumevan rok. Kad upstream (Supabase, intervals.icu, Strava,
+   Resend, push servis) ZASTANE a ne odbije, poziv visi dok ga ne preseče
+   `maxDuration` — a tada Vercel vraća SVOJU HTML stranicu 504 umesto našeg
+   JSON-a. Klijent na nju radi `response.json()` i čovek dobija „...is not valid
+   JSON" (Chrome) odnosno „The string did not match the expected pattern"
+   (Safari): poruku koju ne kontrolišemo, o kvaru koji nismo imenovali.
+   Rok stoji ISPOD `maxDuration` ove funkcije, da odgovor stigne od nas i sa
+   razlogom. Pozivalac koji sam donese `signal` zadržava svoj — rok se ne
+   nameće preko tuđe odluke. */
+const IZLAZNI_ROK_MS = 15000;
+function fetchRok(ulaz, opcije, ms) {
+  const o = Object.assign({}, opcije || {});
+  if (!o.signal) {
+    try { o.signal = AbortSignal.timeout(ms > 0 ? ms : IZLAZNI_ROK_MS); } catch (e) { /* stariji Node — bez roka, kao pre */ }
+  }
+  return fetch(ulaz, o);
+}
+
+
 /* ==========================================================================
    1. KRIPTOGRAFIJA
    ========================================================================== */
@@ -148,7 +170,7 @@ async function probaPrekoracena(token) {
   const url = process.env.SUPABASE_URL, anon = process.env.SUPABASE_ANON_KEY;
   if (!url || !anon) return false;
   try {
-    const r = await fetch(url.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
       method: 'POST',
       headers: { apikey: anon, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ p_endpoint: 'push_proba', p_limit: 20 })
@@ -217,7 +239,7 @@ export async function posaljiJednoj(pret, poruka, env) {
   try { telo = sifruj(JSON.stringify(poruka), pret.p256dh, pret.auth); }
   catch (e) { return { ok: false, status: 0, greska: 'Šifrovanje nije uspelo: ' + e.message }; }
   try {
-    const r = await fetch(pret.endpoint, {
+    const r = await fetchRok(pret.endpoint, {
       method: 'POST',
       headers: {
         Authorization: zag,
@@ -273,13 +295,23 @@ async function requireUser(req) {
   const kes = AUTH_KES.get(m[1]);
   if (kes && kes.doKada > Date.now()) return { ok: true, userId: kes.id, email: kes.email, token: m[1] };
   try {
-    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
     });
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
-    if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    if (AUTH_KES.size >= AUTH_KES_MAX) {
+      /* Izbacuju se ISTEKLI, ne ceo keš. `clear()` je na toploj instanci značio
+         da svaki 500. poziv baci i sve što je tog trenutka još važilo, pa
+         sledećih nekoliko poziva ponovo plaća krug ka Supabase-u bez razloga —
+         a keš i postoji da bi ih poštedeo. Ako posle čišćenja i dalje nema
+         mesta (500 VAŽEĆIH tokena unutar 30 s), prazni se sve: gornja granica
+         je tu da instanca ne raste bez kraja i ta namera ostaje. */
+      const sada = Date.now();
+      for (const [k, v] of AUTH_KES) if (v.doKada <= sada) AUTH_KES.delete(k);
+      if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    }
     AUTH_KES.set(m[1], { id: u.id, email: u.email || null, doKada: Date.now() + AUTH_KES_MS });
     return { ok: true, userId: u.id, email: u.email || null, token: m[1] };
   } catch (e) {
@@ -315,7 +347,7 @@ function servisGlava() {
    analyze.js — tamo korisnikov token ne postoji). */
 async function pretplateKorisnika(userId) {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
-  const r = await fetch(sbURL(TABELA + '?select=id,endpoint,p256dh,auth&user_id=eq.' + encodeURIComponent(userId)),
+  const r = await fetchRok(sbURL(TABELA + '?select=id,endpoint,p256dh,auth&user_id=eq.' + encodeURIComponent(userId)),
     { headers: servisGlava() });
   if (!r.ok) return [];
   const j = await r.json();
@@ -323,7 +355,7 @@ async function pretplateKorisnika(userId) {
 }
 
 async function obrisiPretplatu(id) {
-  try { await fetch(sbURL(TABELA + '?id=eq.' + encodeURIComponent(id)), { method: 'DELETE', headers: servisGlava() }); }
+  try { await fetchRok(sbURL(TABELA + '?id=eq.' + encodeURIComponent(id)), { method: 'DELETE', headers: servisGlava() }); }
   catch (e) { /* mrtva pretplata više smeta nego što šteti — probaj sledeći put */ }
 }
 
@@ -380,7 +412,7 @@ async function jutarnjiPodsetnik() {
 
   for (let strana = 0; strana < 50; strana++) {
     const od = strana * PO;
-    const r = await fetch(sbURL(TABELA + '?select=id,user_id,endpoint,p256dh,auth,najave&order=id.asc'), {
+    const r = await fetchRok(sbURL(TABELA + '?select=id,user_id,endpoint,p256dh,auth,najave&order=id.asc'), {
       headers: Object.assign(servisGlava(), { Range: od + '-' + (od + PO - 1), 'Range-Unit': 'items' })
     });
     if (!r.ok && r.status !== 206) return { error: 'Čitanje pretplata nije uspelo (' + r.status + ').' };
@@ -444,7 +476,7 @@ async function vlasnikIz(req) {
   const m = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || req.headers.Authorization || '').trim());
   if (!m) return null;
   try {
-    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
     });
     if (!r.ok) return null;
@@ -474,7 +506,7 @@ async function objavaSvima(imeObjave, posle) {
 
   for (let strana = 0; strana < 50; strana++) {
     const filtar = zadnji ? '&id=gt.' + encodeURIComponent(zadnji) : '';
-    const r = await fetch(sbURL(TABELA + '?select=id,user_id,endpoint,p256dh,auth&order=id.asc&limit=' + PO + filtar), {
+    const r = await fetchRok(sbURL(TABELA + '?select=id,user_id,endpoint,p256dh,auth&order=id.asc&limit=' + PO + filtar), {
       headers: servisGlava()
     });
     if (!r.ok && r.status !== 206) return { error: 'Čitanje pretplata nije uspelo (' + r.status + ').' };
@@ -584,7 +616,7 @@ export default async function handler(req, res) {
        potroši ceo rok jutarnjeg posla, pa pravi ljudi ostanu bez podsetnika.
        Broji se PRE upisa; postojeći endpoint se samo prepisuje i ne troši mesto. */
     try {
-      const r = await fetch(sbURL(TABELA + '?select=endpoint'), { headers: korisnikGlava(auth.token) });
+      const r = await fetchRok(sbURL(TABELA + '?select=endpoint'), { headers: korisnikGlava(auth.token) });
       if (r.ok) {
         const moji = await r.json();
         if (Array.isArray(moji) && !moji.some(x => x && x.endpoint === endpoint) && moji.length >= NAJVISE_UREDJAJA) {
@@ -607,7 +639,7 @@ export default async function handler(req, res) {
       najave: ocistiNajave(body.najave) || {}
     };
     try {
-      const r = await fetch(sbURL(TABELA + '?on_conflict=endpoint'), {
+      const r = await fetchRok(sbURL(TABELA + '?on_conflict=endpoint'), {
         method: 'POST',
         headers: Object.assign(korisnikGlava(auth.token), { Prefer: 'resolution=merge-duplicates,return=minimal' }),
         body: JSON.stringify(red)
@@ -625,7 +657,7 @@ export default async function handler(req, res) {
     try {
       /* RLS pušta brisanje samo sopstvenog reda, pa je filter po endpointu
          dovoljan — tuđi red se ne može obrisati ni greškom ni namerno. */
-      await fetch(sbURL(TABELA + '?endpoint=eq.' + encodeURIComponent(endpoint)),
+      await fetchRok(sbURL(TABELA + '?endpoint=eq.' + encodeURIComponent(endpoint)),
         { method: 'DELETE', headers: korisnikGlava(auth.token) });
     } catch (e) { res.status(503).json({ error: 'Baza nije dostupna.' }); return; }
     res.status(200).json({ ok: true });
@@ -637,7 +669,7 @@ export default async function handler(req, res) {
     const najave = ocistiNajave(body.najave);
     if (!najave) { res.status(400).json({ error: 'Najave nisu ispravne.' }); return; }
     try {
-      const r = await fetch(sbURL(TABELA + '?user_id=eq.' + encodeURIComponent(auth.userId)), {
+      const r = await fetchRok(sbURL(TABELA + '?user_id=eq.' + encodeURIComponent(auth.userId)), {
         method: 'PATCH',
         headers: Object.assign(korisnikGlava(auth.token), { Prefer: 'return=minimal' }),
         body: JSON.stringify({ najave })

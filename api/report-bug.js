@@ -8,6 +8,28 @@
    - SUPABASE_URL, SUPABASE_ANON_KEY   (JWT provera + rate limit RPC)
    - RESEND_API_KEY, REPORT_TO, REPORT_FROM   (slanje mejla) */
 
+/* ROK NA IZLAZNI POZIV.
+   Isti problem je opisan i rešen za poziv modela u api/analyze.js (v. `ROK_MS`
+   tamo); ovo je ista mera na ostalim izlazima.
+   `fetch` nema podrazumevan rok. Kad upstream (Supabase, intervals.icu, Strava,
+   Resend, push servis) ZASTANE a ne odbije, poziv visi dok ga ne preseče
+   `maxDuration` — a tada Vercel vraća SVOJU HTML stranicu 504 umesto našeg
+   JSON-a. Klijent na nju radi `response.json()` i čovek dobija „...is not valid
+   JSON" (Chrome) odnosno „The string did not match the expected pattern"
+   (Safari): poruku koju ne kontrolišemo, o kvaru koji nismo imenovali.
+   Rok stoji ISPOD `maxDuration` ove funkcije, da odgovor stigne od nas i sa
+   razlogom. Pozivalac koji sam donese `signal` zadržava svoj — rok se ne
+   nameće preko tuđe odluke. */
+const IZLAZNI_ROK_MS = 8000;
+function fetchRok(ulaz, opcije, ms) {
+  const o = Object.assign({}, opcije || {});
+  if (!o.signal) {
+    try { o.signal = AbortSignal.timeout(ms > 0 ? ms : IZLAZNI_ROK_MS); } catch (e) { /* stariji Node — bez roka, kao pre */ }
+  }
+  return fetch(ulaz, o);
+}
+
+
 /* KRATKOTRAJAN KEŠ POTVRĐENIH TOKENA — ista provera, jedan mrežni skok manje.
    Do sada je SVAKI poziv ka bilo kojoj putanji plaćao dodatan krug ka
    Supabase-u. Jedna sinhronizacija sa intervals.icu su četiri poziva, dakle
@@ -37,13 +59,23 @@ async function requireUser(req) {
   const kes = AUTH_KES.get(m[1]);
   if (kes && kes.doKada > Date.now()) return { ok: true, userId: kes.id, email: kes.email, token: m[1] };
   try {
-    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
     });
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
-    if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    if (AUTH_KES.size >= AUTH_KES_MAX) {
+      /* Izbacuju se ISTEKLI, ne ceo keš. `clear()` je na toploj instanci značio
+         da svaki 500. poziv baci i sve što je tog trenutka još važilo, pa
+         sledećih nekoliko poziva ponovo plaća krug ka Supabase-u bez razloga —
+         a keš i postoji da bi ih poštedeo. Ako posle čišćenja i dalje nema
+         mesta (500 VAŽEĆIH tokena unutar 30 s), prazni se sve: gornja granica
+         je tu da instanca ne raste bez kraja i ta namera ostaje. */
+      const sada = Date.now();
+      for (const [k, v] of AUTH_KES) if (v.doKada <= sada) AUTH_KES.delete(k);
+      if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    }
     AUTH_KES.set(m[1], { id: u.id, email: u.email || null, doKada: Date.now() + AUTH_KES_MS });
     return { ok: true, userId: u.id, email: u.email || null, token: m[1] };
   } catch (e) {
@@ -89,7 +121,7 @@ export default async function handler(req, res) {
      (bug_report_usage, ne api_usage) da koriscenje jednog ne blokira drugo. */
   const DAILY_LIMIT = 10;
   try {
-    const rl = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_bug_usage', {
+    const rl = await fetchRok(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_bug_usage', {
       method: 'POST',
       headers: {
         apikey: process.env.SUPABASE_ANON_KEY,
@@ -144,7 +176,7 @@ export default async function handler(req, res) {
   </div>`;
 
   try {
-    const r = await fetch('https://api.resend.com/emails', {
+    const r = await fetchRok('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({

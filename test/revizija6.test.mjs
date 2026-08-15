@@ -543,13 +543,27 @@ describe('N-5 · app_stats i inventar baze', () => {
    ============================================================ */
 describe('N-6 · intervals.icu ključ prolazi kroz naš server', () => {
 
-  test('kod zaista šalje ključ na /api/icu, ne pravo servisu', () => {
+  test('kod zaista šalje ključ na /api/icu, ne pravo servisu', async () => {
     /* Ne može drugačije — intervals.icu ne šalje CORS zaglavlja (v. zaglavlje
-       api/icu.js). Zamka postoji da politika ne bi tvrdila suprotno. */
-    const src = readRepoFile('app.js');
-    assert.match(src, /function icuVeza\(\)\{[^}]*S\.icu\.token/, 'icuVeza se promenila');
-    assert.match(src, /fetch\('\/api\/icu'[\s\S]{0,400}?\.\.\.icuVeza\(\)/,
+       api/icu.js). Zamka postoji da politika ne bi tvrdila suprotno.
+
+       PROVERAVA SE ODREDIŠTE STVARNOG POZIVA, ne oblik izvora. Ranija verzija
+       je tražila `/fetch\('\/api\/icu'…/` i pala je kad je omotač preimenovan
+       u `fetchRok` — a ključ je i dalje išao tačno tamo gde treba. Provera koja
+       pada na preimenovanje, a ne bi pala na slanje ključa pravo servisu, čuva
+       pogrešnu stvar. */
+    const a = loadApp();
+    a.evalIn(`S.icu={athleteId:'i1', token:'TAJNI-TOKEN'}`);
+    let poziv = null;
+    a.setFetch(async (u, o) => {
+      poziv = { url: String(u), telo: JSON.parse(o.body) };
+      return { ok: true, json: async () => ({ dani: [] }) };
+    });
+    await a.call('icuSync', 30);
+    assert.ok(poziv, 'sinhronizacija nije ni izašla na mrežu');
+    assert.equal(poziv.url, '/api/icu',
       'ključ više ne ide kroz naš server — proveri da politika to prati');
+    assert.equal(poziv.telo.token, 'TAJNI-TOKEN', 'ključ se ne prosleđuje našem serveru');
   });
 
   test('politika to i kaže, u oba jezika', () => {

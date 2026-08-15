@@ -18,6 +18,27 @@
    nivoa). Ako to ne želiš, treba prebaciti na plaćen nivo (i dalje jeftino:
    $0.30/$2.50 po milion tokena za standardni 3.5 Flash poziv). */
 
+/* ROK NA IZLAZNI POZIV — ista mera koju lanac pokušaja ka modelu već ima
+   (v. `ROK_MS` ispod), sada i na pozivima ka Supabase-u.
+   `fetch` nema podrazumevan rok. Kad upstream (Supabase, intervals.icu, Strava,
+   Resend, push servis) ZASTANE a ne odbije, poziv visi dok ga ne preseče
+   `maxDuration` — a tada Vercel vraća SVOJU HTML stranicu 504 umesto našeg
+   JSON-a. Klijent na nju radi `response.json()` i čovek dobija „...is not valid
+   JSON" (Chrome) odnosno „The string did not match the expected pattern"
+   (Safari): poruku koju ne kontrolišemo, o kvaru koji nismo imenovali.
+   Rok stoji ISPOD `maxDuration` ove funkcije, da odgovor stigne od nas i sa
+   razlogom. Pozivalac koji sam donese `signal` zadržava svoj — rok se ne
+   nameće preko tuđe odluke. */
+const IZLAZNI_ROK_MS = 20000;
+function fetchRok(ulaz, opcije, ms) {
+  const o = Object.assign({}, opcije || {});
+  if (!o.signal) {
+    try { o.signal = AbortSignal.timeout(ms > 0 ? ms : IZLAZNI_ROK_MS); } catch (e) { /* stariji Node — bez roka, kao pre */ }
+  }
+  return fetch(ulaz, o);
+}
+
+
 /* --- Provera Supabase sesije (UGRAĐENA, ne uvezena) ---
    Ranije je ovo bio zajednički `_auth.js` sa `import`-om. Vercel funkcije
    deployovane preko GitHub web editora nemaju build korak ni package.json
@@ -57,13 +78,23 @@ async function requireUser(req) {
   const kes = AUTH_KES.get(m[1]);
   if (kes && kes.doKada > Date.now()) return { ok: true, userId: kes.id, email: kes.email, token: m[1] };
   try {
-    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
     });
     if (!r.ok) return { ok: false, status: 401, error: 'Prijava je istekla — prijavi se ponovo.' };
     const u = await r.json();
     if (!u || !u.id) return { ok: false, status: 401, error: 'Neispravna prijava.' };
-    if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    if (AUTH_KES.size >= AUTH_KES_MAX) {
+      /* Izbacuju se ISTEKLI, ne ceo keš. `clear()` je na toploj instanci značio
+         da svaki 500. poziv baci i sve što je tog trenutka još važilo, pa
+         sledećih nekoliko poziva ponovo plaća krug ka Supabase-u bez razloga —
+         a keš i postoji da bi ih poštedeo. Ako posle čišćenja i dalje nema
+         mesta (500 VAŽEĆIH tokena unutar 30 s), prazni se sve: gornja granica
+         je tu da instanca ne raste bez kraja i ta namera ostaje. */
+      const sada = Date.now();
+      for (const [k, v] of AUTH_KES) if (v.doKada <= sada) AUTH_KES.delete(k);
+      if (AUTH_KES.size >= AUTH_KES_MAX) AUTH_KES.clear();
+    }
     AUTH_KES.set(m[1], { id: u.id, email: u.email || null, doKada: Date.now() + AUTH_KES_MS });
     return { ok: true, userId: u.id, email: u.email || null, token: m[1] };
   } catch (e) {
@@ -102,10 +133,10 @@ async function posaoNapravi(auth) {
     /* Stari poslovi se brišu usput — red je potreban samo dok se rezultat ne
        pokupi, a tekst ionako živi na uređaju i u backupu. */
     const pre = new Date(Date.now() - 24 * 3600e3).toISOString();
-    fetch(sbURL(TABELA + '?user_id=eq.' + auth.userId + '&napravljen=lt.' + encodeURIComponent(pre)),
+    fetchRok(sbURL(TABELA + '?user_id=eq.' + auth.userId + '&napravljen=lt.' + encodeURIComponent(pre)),
       { method: 'DELETE', headers: sbGlava(auth) }).catch(() => {});
 
-    const r = await fetch(sbURL(TABELA), {
+    const r = await fetchRok(sbURL(TABELA), {
       method: 'POST',
       headers: sbGlava(auth, { Prefer: 'return=representation' }),
       body: JSON.stringify({ user_id: auth.userId, stanje: 'radi' })
@@ -130,7 +161,7 @@ async function posaoNapravi(auth) {
    Time dva paralelna pokušaja ne mogu da pozovu model dvaput za isti posao. */
 async function posaoPreuzmi(auth, id) {
   try {
-    const r = await fetch(sbURL(TABELA + '?id=eq.' + id + '&stanje=eq.radi'), {
+    const r = await fetchRok(sbURL(TABELA + '?id=eq.' + id + '&stanje=eq.radi'), {
       method: 'PATCH',
       headers: sbGlava(auth, { Prefer: 'return=representation' }),
       body: JSON.stringify({ stanje: 'u_toku' })
@@ -143,7 +174,7 @@ async function posaoPreuzmi(auth, id) {
 
 async function posaoZavrsi(auth, id, polja) {
   try {
-    await fetch(sbURL(TABELA + '?id=eq.' + id), {
+    await fetchRok(sbURL(TABELA + '?id=eq.' + id), {
       method: 'PATCH', headers: sbGlava(auth), body: JSON.stringify(polja)
     });
   } catch (e) { /* rezultat je izgubljen, ali odgovor klijentu ionako ne čeka */ }
@@ -199,7 +230,7 @@ async function javiDaJeGotovo(req, userId, uspeh, danId) {
   const poreklo = sopstvenoPoreklo();
   if (!poreklo) return;
   try {
-    await fetch(poreklo + '/api/push', {
+    await fetchRok(poreklo + '/api/push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + process.env.CRON_SECRET },
       body: JSON.stringify({
@@ -219,7 +250,7 @@ async function javiDaJeGotovo(req, userId, uspeh, danId) {
 
 async function posaoCitaj(auth, id) {
   try {
-    const r = await fetch(sbURL(TABELA + '?id=eq.' + id + '&select=stanje,tekst,greska'),
+    const r = await fetchRok(sbURL(TABELA + '?id=eq.' + id + '&select=stanje,tekst,greska'),
       { headers: sbGlava(auth) });
     if (!r.ok) return { ok: false, status: 502, error: 'Rezultat nije pročitan.' };
     const niz = await r.json();
@@ -272,7 +303,7 @@ async function tryModel(model, systemText, userText, doKada) {
   }
   let r;
   try {
-    r = await fetch(urlFor(model), {
+    r = await fetchRok(urlFor(model), {
       method: 'POST',
       /* Ceo preostali rok — kraćenje ovde ne donosi ništa osim ranijeg otkaza. */
       signal: AbortSignal.timeout(ostalo),
@@ -392,7 +423,7 @@ function jeLimit(telo) {
    isto kao limit koji radi — mesecima. */
 async function limitPrekoracen(token, endpoint, limit) {
   try {
-    const r = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
+    const r = await fetchRok(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_endpoint', {
       method: 'POST',
       headers: {
         apikey: process.env.SUPABASE_ANON_KEY,
@@ -423,7 +454,7 @@ async function jeVlasnik(req) {
   const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
   if (!m) return false;
   try {
-    const r = await fetch(url.replace(/\/+$/, '') + '/auth/v1/user', {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/auth/v1/user', {
       headers: { apikey: anon, Authorization: 'Bearer ' + m[1] }
     });
     if (!r.ok) return false;
@@ -520,7 +551,7 @@ export default async function handler(req, res) {
      nema preskakanja, pa ni buduća faza ne može da se provuče istim putem. */
   const nastavakIzbrojanogPosla = (posao === 'radi' && UUID.test(posaoId));
   if (!vlasnik && !nastavakIzbrojanogPosla) try {
-    const rl = await fetch(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_api_usage', {
+    const rl = await fetchRok(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_api_usage', {
       method: 'POST',
       headers: {
         apikey: process.env.SUPABASE_ANON_KEY,
