@@ -56,6 +56,7 @@ prelaska preko ponoći.
 | `potvrda.test.mjs` | prigušen `confirm()` ne prolazi kao „ne"; dijalog koji se stvarno prikazao ostaje merodavan |
 | `list-dijalog.test.mjs` | modalni list kao prav dijalog — naziv, fokus unutra i nazad, inertna pozadina, Escape, zamka za Tab |
 | `requireuser-kopije.test.mjs` | sedam namernih kopija `requireUser` provučeno kroz iste scenarije — duplikat sme da postoji, ali ne sme da se razidje |
+| `deload-ostrina.test.mjs` | deload zadržava jednu kratku oštrinu i ostaje u pojasu rasterećenja; svaka nedelja kaže čemu služi |
 
 ## Otisak generatora
 

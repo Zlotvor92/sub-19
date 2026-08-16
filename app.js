@@ -39,7 +39,7 @@
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
 const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='266'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='267'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -496,7 +496,13 @@ function adaptGeneratedPlan(gen){
   const weeks=gen.weeks.map((w,wi)=>({
     w:w.w!=null?w.w:wi+1,
     start:addD(startMon,wi*7),
-    focus:w.deload?'DELOAD':'',
+    /* `deload` SE PRENOSI. Do sada nije, pa je `weekPhase` nedelju rasterećenja
+       prepoznavao ISKLJUČIVO po tome što je `focus` doslovno jednak 'DELOAD'.
+       Čim je focus dobio pun tekst (v. `fokusNedelje`), ta jednakost je pala i
+       cela nedelja bi se prikazala kao VRHUNAC. Zastavica je izvor istine,
+       tekst je prikaz — sada se prenose oba. */
+    deload:!!w.deload,
+    focus:w.focus||(w.deload?'DELOAD':''),
     days:w.days.map((d,di)=>{
       const dow0=d.dow-1; /* NORMALIZACIJA: engine.js dow je 1-7 (Pon=1), V2 očekuje 0-6 (Pon=0) */
       return {...d,dow:dow0,id:'g'+(w.w!=null?w.w:wi+1)+'d'+(dow0+1)};
@@ -770,7 +776,10 @@ function rpeTarget(d){
    je konkretnija informacija od faze. */
 function weekPhase(w, totalWeeks){
   if(!w) return '';
-  if(w.deload || w.focus === 'DELOAD') return 'DELOAD';
+  /* Zastavica prvo, tekst kao rezerva — i to kao PREFIKS, ne kao jednakost.
+     Ručno pisan plan nosi „DELOAD (intenzitetski) — …", a generisan „DELOAD —
+     obim dole, …"; jednakost bi promašila oba i prikazala VRHUNAC. */
+  if(w.deload || /^DELOAD/i.test(String(w.focus||''))) return 'DELOAD';
   const n = w.w, T = totalWeeks || 1;
   if(n >= T) return 'TRKA';
   if(n >= T - 1) return 'TAPER';
@@ -5891,6 +5900,77 @@ function wuCdZaObim(vol){
   return [ Math.max(1, Math.min(2, r1(vol*0.055))),
            Math.max(0.8, Math.min(1.5, r1(vol*0.04))) ];
 }
+/* ============ OŠTRINA U DELOAD NEDELJI ============
+
+   Do sada je deload brisao SAV kvalitet: `if(isDeload) continue;` je preskakao
+   oba slota, pa je nedelja bila četiri identična laka trčanja plus dugo.
+   Izmereno na generisanom planu: 3 od 16 nedelja (5K/10K) odnosno 4 od 20
+   (PM/maraton) bez ijednog stimulusa — dakle petina pripreme.
+
+   To je odbranjivo, ali je na oštrom kraju: standardna praksa (i Daniels i
+   Pfitzinger) u nedelji rasterećenja zadržava kratku oštrinu. Razlog nije
+   „da se ne izgubi forma" za sedam dana — nego neuromišićni: kratka brza
+   ponavljanja sa PUNIM oporavkom ne stvaraju metabolički umor, a održavaju
+   ekonomiju koraka i osećaj za brzinu koji se posle deloada inače vraća tek
+   za nekoliko dana.
+
+   ZAŠTO JE OVA FUNKCIJA ZAJEDNIČKA, A NE ČETIRI PO DISTANCI.
+   Ostatak generatora namerno drži odvojenu logiku po distanci (v. otisak
+   generatora u test/README.md), i to je ispravno tamo gde je razlika trenerska
+   odluka. Ovde nije: kratka ponavljanja u nedelji rasterećenja su ista stvar za
+   peticu i za maraton — neuromišićni stimulus, ne specifičnost trke. Četiri
+   kopije bi ovde bile četiri mesta za istu grešku, bez ijedne odluke koja bi
+   ih razlikovala. Razlika koja NE postoji ne sme se glumiti.
+
+   OBIM SE NE MENJA. `allocEasyLR` deli ono što ostane posle kvalitetnih sesija,
+   pa ova sesija ne dodaje kilometre — uzima ih iz laganog dana na čije mesto
+   dolazi. Namerno je manja od tog laganog dana, da nedelja ostane rasterećenje.
+   Ista zamka je ovde već dvaput uhvaćena: tvrdo kodovane taper sesije su na
+   niskom obimu ispadale VEĆE od redovnih, pa je taper imao više kilometara od
+   vrhunca. Zato sve ide kroz `wuCdZaObim` i skalira se obimom. */
+/* ============ ČEMU NEDELJA SLUŽI ============
+
+   `focus` je polje koje UI već iscrtava (v. `nedeljaTelo`) i koje vlasnikov
+   ručno pisan plan uredno nosi — „Int + Tempo", „Jak blok 1", „Specifični
+   ritam", „Taper — serije na 2, eksplozivno i daleko od otkaza". Generisan plan
+   ga je jedini ostavljao PRAZAN (`focus: w.deload?'DELOAD':''`), pa je od cele
+   te trake ostajala samo faza: „VRHUNAC", pa opet „VRHUNAC", pa opet.
+
+   Zbog toga se ponavljanje čitalo kao previd. Ponavljanje sesije je namerno i
+   trenerski ispravno — ista sesija tri nedelje kasnije na bržem tempu je
+   MERLJIV napredak, to je ceo Danielsov model — ali plan koji tu nameru ne
+   izgovori ostavlja čoveka da nagađa. Ovde se ne menja nijedan trening; menja
+   se to što nedelja kaže šta radi.
+
+   Gradi se IZ STVARNIH SESIJA te nedelje, ne iz faze: faza se već prikazuje
+   pored (`weekPhase`), pa bi njeno ponavljanje bilo šum. Ako se sutra doda nova
+   familija sesija, njeno ime se pojavi ovde samo od sebe. */
+function fokusNedelje(days, st){
+  if(st.isRace)   return 'TRKA';
+  /* DELOAD ostaje PREFIKS, ne cela rečenica: `weekPhase` i dnevni izveštaj
+     prepoznaju nedelju rasterećenja po toj reči (v. `/DELOAD/i` tamo). */
+  if(st.isDeload) return 'DELOAD — obim dole, ostaje kratka oštrina';
+  if(st.isBase)   return 'Baza — aerobni obim, bez kvaliteta';
+  const kinds=[];
+  for(const d of days){
+    const k=d && d.session && d.session.kind;
+    if(k && kinds.indexOf(k)<0) kinds.push(k);
+  }
+  if(!kinds.length) return st.isTaper1||st.isTaper2 ? 'Taper — obim dole, oštrina ostaje' : '';
+  const spisak=kinds.join(' + ');
+  if(st.isTaper1||st.isTaper2) return 'Taper · '+spisak;
+  return spisak;
+}
+
+function mkDeloadOstrina(dow,vol,pR){
+  const [wu,cd]=wuCdZaObim(vol);
+  /* 4-8 × 200 m. Na deload nedelji od 36 km to je 4 ponavljanja, dakle 800 m
+     rada — manje od jednog kilometra u celoj nedelji. Pauza je 2 min PUNOG
+     oporavka: cilj je kvalitet koraka, ne zadihanost. */
+  const n=Math.max(4, Math.min(8, Math.round(vol*0.12)));
+  return sessInt(dow, r1(Math.max(wu*0.7,1)), n, 200, pR, 120, r1(Math.max(cd*0.7,0.8)), 'Oštrina');
+}
+
 function mkIntervali5K(dow,vol,pI,faza,wkIdx){
   /* Pod od 1.6 km rada (npr. 4x400 ili 2x800) umesto 2.4 — na 17 km/ned je
      2.4 km rada previse za prvi ozbiljan interval trening. */
@@ -7838,7 +7918,13 @@ function generatePlan(inp){
       for(let dow=1; dow<=7; dow++){
         const role=slots[dow];
         if(role!=='q1' && role!=='q2') continue;
-        if(isDeload) continue;
+        /* DELOAD: jedna kratka oštrina umesto potpunog brisanja kvaliteta
+           (v. `mkDeloadOstrina`). Samo q1 — drugi slot ostaje lagan dan, jer
+           dva kvaliteta u nedelji rasterećenja više nisu rasterećenje. */
+        if(isDeload){
+          if(role==='q1') sessions[dow]=mkDeloadOstrina(dow,volQ,pR);
+          continue;
+        }
         if(isFirstQualWeek && role==='q2') continue;
         if(isFirstQualWeek && role==='q1'){
           /* UVODNA sesija: lagan kontinuiran tempo, ne intervali — prvi kvalitet
@@ -7915,6 +8001,18 @@ function generatePlan(inp){
            Taper skida količinu; ako nedelja zbog toga ne stigne do broja, to je
            namera, ne manjak. */
         if(isTaper1) return;
+        /* OŠTRINA U DELOAD NEDELJI SE OVDE NE IZUZIMA — probano, i bilo je gore.
+           Prva verzija je mislila da 4×200 m ne treba da nosi produženo
+           zagrevanje, pa je sesiju izuzela odavde. Posledica je bila da deload
+           nedelja nema odakle da stigne do svog (već smanjenog) cilja: q1 dan
+           je od punog laganog trčanja postao mala sesija, a ostatak nije imao
+           gde da ode jer LR i lagani dani imaju svoje plafone.
+           Mereno na 6720 deload nedelja iz otiska: prosek je pao sa 73.9% na
+           70.9% prethodne nedelje, a broj nedelja ispod 60% skočio sa 52 na
+           489, najgora na 46% — to više nije rasterećenje nego nedelja odmora,
+           i to kao TIHA posledica, ne kao trenerska odluka.
+           Zagrevanje i smirivanje JESU trčanje: „5.7 km sa 4×200 m u sredini"
+           je tačno ono što deload dan i treba da bude. */
         const strana=Object.values(sessions).filter(d=>d.session && d.session.type!=='prog'
                           && d.session.wuKm!=null && d.session.cdKm!=null);
         if(!strana.length) return;
@@ -8204,7 +8302,8 @@ function generatePlan(inp){
         }
       }
     }
-    plan.weeks.push({ w, vol: r1(days.reduce((s,d)=>s+(d.km||0),0)), days, deload:isDeload });
+    plan.weeks.push({ w, vol: r1(days.reduce((s,d)=>s+(d.km||0),0)), days, deload:isDeload,
+                      focus: fokusNedelje(days, {isDeload, isTaper1, isTaper2, isRace, isBase: w<=baseWeeks}) });
   }
   /* PROVERA STVARNO ISPORUCENOG OBIMA (nadjeno prijavom korisnika:
      "izaberem 45 km, prva nedelja ide na 37 km, a ja vec trcim 45").
