@@ -3,8 +3,8 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v266';
-const APP_VERSION = '266';
+const CACHE = 'sub19-cache-v267';
+const APP_VERSION = '267';
 /* './app.js' MORA biti na spisku: od v150 index.html je samo markup, a ceo kod
    aplikacije je u app.js. Da nije tu, dobio bi network-first samo omotač, dok
    bi se logika servirala iz starog keša — tj. „promenio sam kod, ništa se ne
@@ -63,7 +63,7 @@ self.addEventListener('activate', e => {
    `app.js`: aplikacija se u tom stanju NE OTVORI UOPŠTE, iako ispravna offline
    kopija stoji u kešu i čeka. To je poricalo ono zbog čega keš i postoji.
 
-   Sada je to trka. Mreža dobija `SW_ROK` da odgovori; ako ne stigne, a keš ima
+   Sada je to trka. Mreža dobija `MREZA_ROK.ms` da odgovori; ako ne stigne, a keš ima
    traženo, korisnik odmah dobija keširano. Mrežni odgovor se NE otkazuje —
    kad kasnije stigne, `putSafe` osveži keš, pa je sledeće otvaranje već novo.
    Rok je namerno kratak: sve iz ASSETS je već u kešu, pa je najgori ishod
