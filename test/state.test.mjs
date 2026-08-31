@@ -890,7 +890,7 @@ describe('Uvezen backup: bol i težina bez upotrebljivog broja', () => {
   });
 });
 
-describe('Backup i Zajednica posle skoka šeme na v10', () => {
+describe('Backup i Zajednica posle skoka šeme', () => {
 
   test('izvoz nosi `zajed`, a uvoz ga vraća', () => {
     /* Šema je skočila sa 9 na 10. Da `zajed` ispadne iz backupa, čovek bi
@@ -899,7 +899,7 @@ describe('Backup i Zajednica posle skoka šeme na v10', () => {
     const a = loadApp({ now: '2026-08-05T09:00:00Z' });
     a.evalIn(`S.zajed={vidljiv:true, nadimak:'Zlotvor92'}`);
     const izvoz = JSON.parse(JSON.stringify(a.call('backupPayload')));
-    assert.equal(izvoz.v, 10, 'backup nosi pogrešnu verziju šeme');
+    assert.equal(izvoz.v, a.get('SCHEMA'), 'backup nosi pogrešnu verziju šeme');
     assert.deepEqual(izvoz.zajed, { vidljiv: true, nadimak: 'Zlotvor92' });
 
     const nazad = JSON.parse(a.evalIn(`JSON.stringify(migrate(${JSON.stringify(izvoz)}))`));
@@ -916,7 +916,7 @@ describe('Backup i Zajednica posle skoka šeme na v10', () => {
       pred:{}, predLock:{}, vdotLog:[], t3k:[], moves:{}, alts:{},
       genPlan:null, strava:null, wellness:{}, icu:null, vreme:null, ui:{}
     }))`));
-    assert.equal(star.v, 10);
+    assert.equal(star.v, a.get('SCHEMA'));
     assert.equal(star.zajed.vidljiv, false, 'stara kopija te ubacuje u Zajednicu');
     assert.equal(star.log['n1d1'].km, 8, 'stari dnevnik nije preživeo migraciju');
     assert.equal(star.knee.length, 1);
@@ -924,9 +924,65 @@ describe('Backup i Zajednica posle skoka šeme na v10', () => {
   });
 
   test('backup iz NOVIJE šeme se i dalje odbija', () => {
-    /* Postojeća zaštita — proverava se da je skok na v10 nije pomerio. */
+    /* Postojeća zaštita — proverava se da je skok šeme nije pomerio. */
     const a = loadApp({ now: '2026-08-05T09:00:00Z' });
-    assert.equal(a.evalIn(`migrate({v:11, log:{}})`), null);
+    assert.equal(a.evalIn(`migrate({v:SCHEMA+1, log:{}})`), null);
+  });
+});
+
+/* v10→v11: REVIZIJA N11/N12. Iz plana su ispali dan `n11t` (test na 3 km) i
+   PRED redovi p15–p18. Stanje koje na njih pokazuje mora da ode sa njima —
+   ali ni jedan zapis o STVARNO istrčanom treningu ne sme da strada. */
+describe('Migracija v10→v11 čisti ostatke revidiranih N11/N12', () => {
+  const staro = () => ({
+    v: 10,
+    log: { n11t: { status: 'done', km: 3, sec: 700 },
+           n11d2: { status: 'done', km: 8, sec: 2400 },
+           n12d7: { status: 'done', km: 13, sec: 3900 } },
+    knee: [{ id: 'k1', src: 'n11t', date: '2026-09-06', pain: 3 },
+           { id: 'k2', src: null, date: '2026-09-06', pain: 2 }],
+    kg: [{ date: '2026-09-06', kg: 77 }],
+    pred: { p14: 232, p15: 258, p17: 230, p18: 236 },
+    predLock: { p15: true, p14: true },
+    vdotLog: [{ id: 'p14', ts: '2026-09-03', vdot: 49 },
+              { id: 'p18', ts: '2026-09-11', vdot: 50 }],
+    t3k: [], moves: { n11d3: '2026-09-04', n13d3: '2026-09-16' },
+    alts: { n11d5: { tag: 'lako', km: 6, desc: 'x', pace: null, rw: null },
+            n13d5: { tag: 'lako', km: 6, desc: 'y', pace: null, rw: null } },
+    genPlan: null, strava: null, wellness: {}, icu: null, vreme: null,
+    zajed: { vidljiv: false, nadimak: '' }, ui: {}
+  });
+  const migriran = () => {
+    const a = loadApp({ now: '2026-08-31T09:00:00Z' });
+    return JSON.parse(a.evalIn(`JSON.stringify(migrate(${JSON.stringify(staro())}))`));
+  };
+
+  test('lažni „odrađen" test na 3 km odlazi, pravi treninzi ostaju', () => {
+    const m = migriran();
+    assert.equal(m.v, 11);
+    assert.equal(m.log.n11t, undefined, 'obrisan dan je zadržao completed flag');
+    assert.equal(m.log.n11d2.km, 8, 'obrisan je stvarno istrčan trening');
+    assert.equal(m.log.n12d7.km, 13, 'obrisan je stvarno istrčan trening');
+  });
+
+  test('unosi na obrisanim PRED redovima odlaze, p14 ostaje', () => {
+    const m = migriran();
+    assert.deepEqual(Object.keys(m.pred), ['p14']);
+    assert.deepEqual(Object.keys(m.predLock), ['p14']);
+    assert.deepEqual(m.vdotLog.map(e => e.id), ['p14'],
+      'karika lanca forme pokazuje na red kog više nema');
+  });
+
+  test('pomeraji i izmene tipa za N11/N12 se vraćaju na plan, ostale nedelje ne', () => {
+    const m = migriran();
+    assert.deepEqual(Object.keys(m.moves), ['n13d3']);
+    assert.deepEqual(Object.keys(m.alts), ['n13d5']);
+  });
+
+  test('koleno izvedeno iz obrisanog dana odlazi, ručni unos ostaje', () => {
+    const m = migriran();
+    assert.deepEqual(m.knee.map(k => k.id), ['k2']);
+    assert.equal(m.kg.length, 1, 'merenje mase nije vezano za dan i mora ostati');
   });
 });
 

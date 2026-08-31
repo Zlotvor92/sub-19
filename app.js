@@ -38,21 +38,26 @@
 })();
 
 /* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
-const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='267'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const START='2026-06-22', RACE='2026-09-24', SCHEMA=11, LS_KEY='sub19-v1';
+const APP_VERSION='268'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
    pa se kvota moze meriti po korisniku. */
 const STRAVA_CLIENT_ID='259960';
-const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
+/* CILJ je od revizije N11/N12 JEDNA vrednost, ne opseg: 19:59 je sub-20 sa
+   rezervom, i tempo se iz njega izvodi tačno (1199 s / 5 km = 239.8 s/km).
+   Opseg „19:20–19:30" je značio dva različita tempa u istom redu i nije više
+   ono što plan traži. Sve izvedeno (goalSecActive, goalVdotActive, prsten
+   „% do cilja", plan-linija predikcije) čita 1199 s, v. niže. */
+const CILJ='19:59', CILJ_TEMPO='4:00 /km';
 /* Opis cilja AKTIVNOG plana — koristi se i u AI promptu i u Progres UI-ju.
-   BEZ ovoga su oba mesta imala TVOJ cilj (5K ~19:30) tvrdo ukucan, čak i dok
+   BEZ ovoga su oba mesta imala TVOJ cilj (tada 5K ~19:30) tvrdo ukucan, čak i dok
    je generisan plan (npr. maraton za druga) aktivan — AI bi sudio tuđ
    maratonski tempo kroz prizmu tvog 5K cilja. Za tvoj plan vraća IDENTIČAN
    tekst kao pre (nulta izmena za tebe), za generisan plan gradi iz meta. */
 function goalCtxText(){
-  if(!S.genPlan) return '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)';
+  if(!S.genPlan) return '5K u 19:59 (cilj je sub-20, sa rezervom za lošiji dan)';
   const m=(S.genPlan.meta)||{};
   const name=m.raceName||'trka';
   /* Cilj i procena NISU ista stvar i ne smeju se opisati istom recenicom —
@@ -178,24 +183,28 @@ const PLAN=[
  {id:'n10d6',dow:5,rest:true},
  {id:'n10d7',dow:6,tag:'lr',km:15,desc:`15 km LR  ·  24% nedelje`}
 ]},
-{w:11,start:'2026-08-31',focus:'Jak blok 2 · Int + Tempo',days:[
- {id:'n11d1',dow:0,tag:'lako',km:11,desc:`11 km lako  +  SNAGA — Plavi blok (držimo opterećenje visokim)`},
- {id:'n11d2',dow:1,tag:'lako',km:8,desc:`8 km lako (Z2) — dodatni aerobni obim (progresija N11: 46 → 54 km, vrhunac pred taper)`},
- {id:'n11d3',dow:2,tag:'int',km:11,desc:`Intervali — 1.5 km WU + 4×1500 m @ 3:50/km (2.5 min hod) + 3.5 km CD`},
- {id:'n11d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (držimo opterećenje visokim)`},
- {id:'n11d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 2 km WU + 6 km @ 4:18/km + 2 km CD`},
- {id:'n11d6',dow:5,rest:true},
- {id:'n11d7',dow:6,tag:'lr',km:14,desc:`14 km LR  ·  24% nedelje`},
- {id:'n11t',test:true,tag:'test',km:null,desc:`Test na 3 km — poslednja provera forme pred taper (kraj N11, opciono)`}
+/* N11 i N12 su REVIDIRANE u odnosu na Plan_SUB-19_5K_v5.xlsx (v. `phase`).
+   Sheet je ovde imao dva jaka bloka pred taper; stvarnost je tražila povratak
+   u ritam i test trku u Nišu, pa obe nedelje nose eksplicitnu fazu — inače bi
+   `weekPhase` iz same pozicije u planu i dalje pisao „VRHUNAC" nad nedeljom
+   koja to više nije. N13/N14 su ostale doslovno iz sheeta. */
+{w:11,start:'2026-08-31',phase:'PRILAGOĐENO',focus:'Povratak u ritam',days:[
+ {id:'n11d1',dow:0,rest:true,desc:`Odmor ili 5 km vrlo lako po osećaju`},
+ {id:'n11d2',dow:1,tag:'lako',km:8,desc:`8 km lako`},
+ {id:'n11d3',dow:2,tag:'lako',km:8,desc:`8 km lako + 6×100 m strides`},
+ {id:'n11d4',dow:3,tag:'int',km:11,desc:`4×1500 m @ 3:52/km · ako san nije sređen: 3×1500 m i prekid bez dvoumljenja`},
+ {id:'n11d5',dow:4,tag:'snaga',km:null,desc:`Mobilnost + snaga bez opterećenja za noge`},
+ {id:'n11d6',dow:5,tag:'lako',km:6,desc:`6 km lako`},
+ {id:'n11d7',dow:6,tag:'lr',km:14,desc:`14 km LR, poslednja 3 km @ 4:30/km`}
 ]},
-{w:12,start:'2026-09-07',focus:'Specifični ritam',days:[
- {id:'n12d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA — Plavi blok (poslednji težak trening snage)`},
- {id:'n12d2',dow:1,rest:true},
- {id:'n12d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 3×2000 m @ 3:50/km (2.5 min hod) + 2.5 km CD`},
- {id:'n12d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (poslednja teška pliometrija)`},
- {id:'n12d5',dow:4,tag:'tempo',km:9,desc:`Trkački ritam — 2 km WU + 4 km neprekidno @ 3:54–3:58/km (ciljni) + 3 km CD  ·  proba ciljnog ritma 19:30`},
- {id:'n12d6',dow:5,rest:true},
- {id:'n12d7',dow:6,tag:'lr',km:13,desc:`13 km LR  ·  24% nedelje`}
+{w:12,start:'2026-09-07',phase:'TRKA',focus:'Test trka Niš',days:[
+ {id:'n12d1',dow:0,tag:'lako',km:8,desc:`8 km lako`},
+ {id:'n12d2',dow:1,tag:'lako',km:6,desc:`6 km lako`},
+ {id:'n12d3',dow:2,tag:'lako',km:5,desc:`5 km lako + 4×100 m strides`},
+ {id:'n12d4',dow:3,tag:'trka',km:5,desc:`🏁 TEST TRKA 5 km — Business Run Niš · start 4:00–4:02/km, bez jurenja K1, guraj od 3,5 km`},
+ {id:'n12d5',dow:4,rest:true,desc:`Odmor — povratak iz Niša`},
+ {id:'n12d6',dow:5,tag:'lako',km:6,desc:`6 km lako`},
+ {id:'n12d7',dow:6,tag:'lr',km:12,desc:`12 km LR lagano`}
 ]},
 {w:13,start:'2026-09-14',focus:'Taper — serije na 2, eksplozivno i daleko od otkaza',days:[
  {id:'n13d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA TAPER (Plavi): Diagonal Pogo 2×30 s, Box Jump 2×4, SL Deadlift 2×6 (8 kg) — bez doskoka pod opterećenjem`},
@@ -210,7 +219,7 @@ const PLAN=[
  {id:'n14d1',dow:0,tag:'lako',km:3,desc:`3 km shakeout (skroz lagano) + samo lagani core (bez nogu)`},
  {id:'n14d2',dow:1,tag:'int',km:3.7,desc:`1.5 km WU + 6×200 m @ 3:48/km (200 m hod) + 1 km CD (aktivacija)`},
  {id:'n14d3',dow:2,tag:'lako',km:2,desc:`2 km shakeout + lagana mobilnost celog tela`},
- {id:'n14d4',dow:3,tag:'trka',km:5,desc:`🏁 TRKA 5 km — Cilj: 19:20–19:30 / Ritam: 3:52–3:54/km`}
+ {id:'n14d4',dow:3,tag:'trka',km:5,desc:`🏁 TRKA 5 km — Cilj: 19:59 / Ritam: 4:00/km`}
 ]}
 ];
 
@@ -233,11 +242,14 @@ const PRED=[
  {id:'p11',w:9, l:'N9 · Tempo',     q:6,   pt:262, p5k:1232},
  {id:'p12',w:10,l:'N10 · Intervali',q:6,   pt:230, p5k:1198},
  {id:'p13',w:10,l:'N10 · Test',    q:3,   pt:233, p5k:1201.26},
- {id:'p14',w:11,l:'N11 · Intervali',q:6,   pt:230, p5k:1198},
- {id:'p15',w:11,l:'N11 · Tempo',    q:6,   pt:258, p5k:1212},
- {id:'p16',w:11,l:'N11 · Test',    q:5,   pt:234, p5k:1170},
- {id:'p17',w:12,l:'N12 · Intervali',q:6,   pt:230, p5k:1198},
- {id:'p18',w:12,l:'N12 · Ritam',    q:4,   pt:236, p5k:1195.905},
+ /* N11 ima SAMO intervale (4×1500 @ 3:52 = 6 km radnog dela). Redovi
+    „N11 · Tempo", „N11 · Test", „N12 · Intervali" i „N12 · Ritam" su OBRISANI
+    zajedno sa danima kojima su pripadali: red bez svog dana nema gde da se
+    popuni (predRaspored deli redove samo danima tag int/tempo), a i dalje bi
+    crtao tačku na plan-liniji grafikona predikcije — dakle plan bi na ekranu
+    obećavao sesije kojih u planu nema. Test trka u N12 nema svoj red iz istog
+    razloga iz kog ga nema ni trka u N14: dan tag-a 'trka' se redovima ne deli. */
+ {id:'p14',w:11,l:'N11 · Intervali',q:6,   pt:232, p5k:1198},
  {id:'p19',w:13,l:'N13 · Intervali',q:2,   pt:230, p5k:1198},
  {id:'p20',w:13,l:'N13 · Tempo',    q:3,   pt:255, p5k:1198},
  {id:'p21',w:14,l:'N14 · Intervali',q:1.2, pt:228, p5k:1187}
@@ -463,7 +475,7 @@ function riegel(tempoSec,q){return tempoSec*q*Math.pow(5/q,1.06);}
 /* ===== Daniels-Gilbert VDOT (za rekalibraciju forme) =====
    VDOT se računa iz Riegel-ekvivalent-5K-vremena kvalitetne sesije,
    konzistentno sa predikcijom. Plan NE prati čist VDOT→zona mapiranje
-   (plan gradi od trenutne forme ~20:40 ka cilju 19:30 ≈ VDOT 51.1; ne ka trenutnom
+   (plan gradi od trenutne forme ~20:40 ka cilju 19:59 ≈ VDOT 49.9; ne ka trenutnom
    PB ≈ VDOT 48), zato zonske tempove ne izvodimo iz VDOT-a. */
 function vo2(tMin){ return 0.8+0.1894393*Math.exp(-0.012778*tMin)+0.2989558*Math.exp(-0.1932605*tMin); }
 /* vdotFromRace JE OVDE NAMERNO IZOSTAVLJEN.
@@ -776,6 +788,13 @@ function rpeTarget(d){
    je konkretnija informacija od faze. */
 function weekPhase(w, totalWeeks){
   if(!w) return '';
+  /* EKSPLICITNA FAZA PRETEŽE NAD POZICIJOM. Faza izvedena iz `n/T` je tačna
+     dok plan teče kako je napisan; kad se nedelja revidira (N11 iz „jak blok"
+     u povratak u ritam, N12 u test trku), pozicija u planu više ne govori šta
+     se u njoj radi — a naslov nedelje bi i dalje pisao „VRHUNAC". Isti obrazac
+     kao `w.deload`: zastavica je izvor istine, izračun je rezerva. Generisani
+     planovi je ne postavljaju, pa se za njih ništa ne menja. */
+  if(w.phase) return String(w.phase);
   /* Zastavica prvo, tekst kao rezerva — i to kao PREFIKS, ne kao jednakost.
      Ručno pisan plan nosi „DELOAD (intenzitetski) — …", a generisan „DELOAD —
      obim dole, …"; jednakost bi promašila oba i prikazala VRHUNAC. */
@@ -1132,6 +1151,38 @@ function migrate(o){
      a uvoz je prijavljivao uspeh. Red niže ionako radi `Object.assign` sa
      podrazumevanim vrednostima i normalizuje tipove. */
   if(o.v<10){o.zajed=(!vCitljiv&&o.zajed&&typeof o.zajed==='object'&&!Array.isArray(o.zajed))?o.zajed:{vidljiv:false,nadimak:''};o.v=10;}
+  /* v10→v11: REVIZIJA N11/N12. Obe nedelje su prepisane (v. PLAN), pa stanje
+     koje pokazuje na ono što je iz njih ispalo mora da ode sa njima — inače
+     ostaje tiho, nevidljivo i pogrešno:
+       - `n11t` (test na 3 km) više ne postoji kao dan. Njegov `done` je
+         obeležavao trening koji nikad nije istrčan, a ni na jednom ekranu se
+         više ne bi video da se ponisti — samo bi ulazio u brojače;
+       - redovi p15–p18 su obrisani, pa njihov unet tempo (`pred`), zaključan
+         cilj (`predLock`) i karika u lancu forme (`vdotLog`) više nemaju red
+         uz koji stoje. Lanac se ionako preračunava na startu
+         (`popraviVdotLanac`), pa je dovoljno izbaciti karike;
+       - `moves` i `alts` za N11/N12 su izmene NAD STARIM rasporedom: pomeraj
+         na dan koji je sad drugi trening, ili „zameni tip" nad sesijom koje
+         nema. Vraćaju se na plan.
+     ODRAĐENI TRENINZI SE NE DIRAJU. Svaki `log` unos osim `n11t` ostaje — to
+     je zapis o istrčanom, i nijedna izmena plana ne sme da ga obriše. */
+  if(o.v<11){
+    const izbaci=(mapa,pogodak)=>{ if(mapa&&typeof mapa==='object')
+      Object.keys(mapa).forEach(k=>{ if(pogodak(k))delete mapa[k]; }); };
+    const mrtviRedovi=new Set(['p15','p16','p17','p18']);
+    const n11n12=k=>typeof k==='string'&&/^n1[12]d\d$/.test(k);
+    izbaci(o.log,   k=>k==='n11t');
+    izbaci(o.alts,  k=>k==='n11t'||n11n12(k));
+    izbaci(o.moves, k=>k==='n11t'||n11n12(k));
+    izbaci(o.pred,     k=>mrtviRedovi.has(k));
+    izbaci(o.predLock, k=>mrtviRedovi.has(k));
+    if(Array.isArray(o.vdotLog)) o.vdotLog=o.vdotLog.filter(e=>!(e&&mrtviRedovi.has(e.id)));
+    /* koleno/težina izvedeni IZ obrisanog dana (src) — isti princip kao u
+       purgeGenPlanData: ručni unosi (src null) su zapis o telu i ostaju. */
+    if(Array.isArray(o.knee)) o.knee=o.knee.filter(k=>!(k&&k.src==='n11t'));
+    if(Array.isArray(o.kg))   o.kg=o.kg.filter(x=>!(x&&x.src==='n11t'));
+    o.v=11;
+  }
   /* ID MORA da nosi prefiks: po njemu `tipSesijeZaVdot` prepoznaje test i daje
      mu najveću težinu u lancu forme. Uvezen zapis bez prefiksa bi tiho pao na
      podrazumevanu težinu — dakle ne bi bio test, samo bi tako izgledao. */
@@ -2070,7 +2121,7 @@ function currentVdot(){
 /* ============================================================
    REFERENTNE VREDNOSTI AKTIVNOG PLANA (početni VDOT / ciljni VDOT / ciljno
    vreme / ciljna distanca). Ranije su sve četiri bile TVRDO KODOVANE na
-   vlasnikov 5K (PB 20:37 = 1237 s, cilj 19:30 = 1170 s) i primenjivale se i
+   vlasnikov 5K (PB 20:37 = 1237 s, cilj 19:59 = 1199 s) i primenjivale se i
    na generisan plan za drugu osobu i drugu distancu. Posledice izmerene
    testom na maratonskom planu (PB 3:45):
      - prvi zabeležen VDOT se glačao od TUĐEG baseline-a 48.1 umesto 41.0
@@ -2093,7 +2144,7 @@ function goalVdotActive(){ /* ciljni VDOT: eksplicitan cilj ima prednost nad pro
     if(m.goalVdot!=null&&isFinite(m.goalVdot))return m.goalVdot;
     if(m.vdotGoal!=null&&isFinite(m.vdotGoal))return m.vdotGoal;
   }
-  return Math.round(vdotFrom5k(1170)*10)/10;   /* tvoj cilj 19:30 */
+  return Math.round(vdotFrom5k(1199)*10)/10;   /* tvoj cilj 19:59 */
 }
 function goalSecActive(){ /* ciljno VREME na ciljnoj distanci (sec) */
   const m=S.genPlan&&S.genPlan.meta;
@@ -2102,7 +2153,7 @@ function goalSecActive(){ /* ciljno VREME na ciljnoj distanci (sec) */
     if(m.predictedSec!=null&&isFinite(m.predictedSec))return m.predictedSec;
     return null;
   }
-  return 1170;
+  return 1199;   /* 19:59 — v. CILJ */
 }
 function raceDistActive(){
   return (S.genPlan&&S.genPlan.meta&&S.genPlan.meta.raceDistM)||5000;
@@ -2326,9 +2377,13 @@ function backupDue(today){
 const QS={
  n1d3:[4000],n2d3:[800],n2d5:[2000],n3d3:[1000],n3d5:[2500],n4d3:[1000],n4d5:[2000],
  n5d3:[1000],n5d5:[3000],n6d3:[1000],n6d5:[4000,2000],n8d3:[1000],n8d5:[6000],n9d3:[1000],
- n9d5:[6000],n10d3:[1000],n10d5:[3000],n11d3:[1500],n11d5:[6000],n12d3:[2000],
- n12d5:[4000],n13d3:[400],n13d5:[3000],n14d2:[200]
+ n9d5:[6000],n10d3:[1000],n10d5:[3000],n11d4:[1500],n13d3:[400],n13d5:[3000],
+ n14d2:[200]
 };
+/* n11d3 → n11d4: intervali su premešteni sa srede na četvrtak. n11d5 (tempo),
+   n12d3 (intervali) i n12d5 (tempo) su ispali jer tih sesija više nema — ključ
+   koji pokazuje na lagan dan naveo bi detekciju radnih lapova da 6 km laganog
+   trčanja pročita kao radni deo. Dan trke u N12 nema ključ, isto kao n14d4. */
 /* Spec radnih lapova za dan — iz AKTIVNOG plana.
    Globalni QS je tabela tvog hardkodovanog plana ('n' ID-jevi). Generisan plan
    nosi svoj u S.genPlan.qs ('g' ID-jevi). Bez ovoga je poslednji fallback za
@@ -5022,8 +5077,15 @@ function planFaze(){
   const grupe=[]; let tek=null;
   CUR_PLAN.forEach(w=>{
     let f=weekPhase(w,CUR_PLAN.length);
-    if(f==='DELOAD') f=tek?tek.ime:'BAZA';
-    if(f==='TAPER'||f==='TRKA') f='TAPER I TRKA';
+    /* Eksplicitna faza (v. weekPhase) je NAZIV, ne izračun — ne sme da uđe u
+       spajanja ispod. Bez ovoga bi N12 („TRKA" = test trka u Nišu) bila
+       preimenovana u „TAPER I TRKA" i slepljena sa N13–N14, pa bi traka
+       tapera prijavljivala 85.7 km umesto 43.7 i pokrivala nedelju koja sa
+       taperom nema veze. */
+    if(!w.phase){
+      if(f==='DELOAD') f=tek?tek.ime:'BAZA';
+      if(f==='TAPER'||f==='TRKA') f='TAPER I TRKA';
+    }
     if(!tek||tek.ime!==f){ tek={ime:f,nedelje:[]}; grupe.push(tek); }
     tek.nedelje.push(w);
   });
@@ -14419,7 +14481,11 @@ function zajZnacke(){
     const n=weekRunCount(w);
     if(n>0&&weekRunDone(w)===n){ z.push('Nedelja 100%'); break; }
   }
-  const trka=DATED.find(d=>d.tag==='trka');
+  /* POSLEDNJA trka u planu, ne prva. Otkad plan sme da nosi više od jednog dana
+     tag-a 'trka' (test trka u N12 pored ciljne u N14), `find` bi značku
+     „Trka odrađena" dodelio dve nedelje pre trke — za trku koja je bila proba. */
+  const trke=DATED.filter(d=>d.tag==='trka');
+  const trka=trke.length?trke[trke.length-1]:null;
   if(trka&&stFor(trka.id)==='done') z.push('Trka odrađena');
   return z;
 }

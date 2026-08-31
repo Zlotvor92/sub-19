@@ -19,8 +19,63 @@ describe('Konstante ličnog plana', () => {
   test('datumi i cilj su nepromenjeni', () => {
     assert.equal(app.get('START'), '2026-06-22');
     assert.equal(app.get('RACE'), '2026-09-24');
-    assert.equal(app.get('CILJ'), '19:20–19:30');
-    assert.equal(app.get('CILJ_TEMPO'), '3:52–3:54 /km');
+    assert.equal(app.get('CILJ'), '19:59');
+    assert.equal(app.get('CILJ_TEMPO'), '4:00 /km');
+  });
+
+  /* REVIZIJA N11/N12 (31.08–13.09.2026). N11 je iz „jakog bloka 2" prešla u
+     povratak u ritam (intervali sa srede na četvrtak, tempo i test na 3 km
+     ispali), N12 iz „specifičnog ritma" u nedelju test trke u Nišu. Ovde se
+     tvrdi TAČNO šta te dve nedelje sada jesu — iz istog razloga iz kog se
+     tvrdi i sve ostalo u ovom fajlu. N13/N14 su netaknute. */
+  test('N11 je revidirana — povratak u ritam, bez tempa i testa', () => {
+    const n11 = app.get('PLAN')[10];
+    assert.equal(n11.start, '2026-08-31');
+    assert.equal(n11.phase, 'PRILAGOĐENO');
+    assert.equal(n11.focus, 'Povratak u ritam');
+    assert.equal(n11.days.length, 7, 'test na 3 km je obrisan, ostaje sedam dana');
+    assert.deepEqual(Array.from(n11.days).map(d => d.rest ? 'odmor' : d.tag),
+      ['odmor', 'lako', 'lako', 'int', 'snaga', 'lako', 'lr']);
+    assert.deepEqual(Array.from(n11.days).map(d => d.km ?? 0), [0, 8, 8, 11, 0, 6, 14]);
+    assert.equal(Array.from(n11.days).reduce((s, d) => s + (d.km || 0), 0), 47);
+    assert.ok(!Array.from(n11.days).some(d => d.test), 'test na 3 km je i dalje u N11');
+    assert.match(n11.days[3].desc, /4×1500 m @ 3:52\/km/, 'intervali nisu u četvrtak na 3:52');
+  });
+
+  test('N12 je nedelja test trke u Nišu', () => {
+    const n12 = app.get('PLAN')[11];
+    assert.equal(n12.start, '2026-09-07');
+    assert.equal(n12.phase, 'TRKA');
+    assert.equal(n12.focus, 'Test trka Niš');
+    assert.deepEqual(Array.from(n12.days).map(d => d.rest ? 'odmor' : d.tag),
+      ['lako', 'lako', 'lako', 'trka', 'odmor', 'lako', 'lr']);
+    assert.deepEqual(Array.from(n12.days).map(d => d.km ?? 0), [8, 6, 5, 5, 0, 6, 12]);
+    assert.equal(Array.from(n12.days).reduce((s, d) => s + (d.km || 0), 0), 42);
+    const trka = Array.from(n12.days).find(d => d.tag === 'trka');
+    assert.equal(trka.id, 'n12d4');
+    assert.equal(trka.km, 5);
+    assert.ok(!Array.from(n12.days).some(d => d.tag === 'int' || d.tag === 'tempo' || d.tag === 'snaga'),
+      'u nedelji test trke nema kvalitetnih sesija ni snage');
+  });
+
+  test('eksplicitna faza ne slepljuje N12 sa taperom', () => {
+    /* Traka faza u tabu Plan: N13–N14 mora ostati svoja grupa. */
+    const a = loadApp();
+    const grupe = JSON.parse(a.evalIn(`JSON.stringify(planFaze().map(g =>
+      ({ime:g.ime, od:g.nedelje[0].w, do:g.nedelje[g.nedelje.length-1].w})))`));
+    assert.deepEqual(Array.from(grupe).map(g => g.ime),
+      ['BAZA', 'RAZVOJ', 'VRHUNAC', 'PRILAGOĐENO', 'TRKA', 'TAPER I TRKA']);
+    const taper = grupe[grupe.length - 1];
+    assert.equal(taper.od, 13);
+    assert.equal(taper.do, 14);
+  });
+
+  test('N13 i N14 su netaknute (osim ciljnog vremena na kartici trke)', () => {
+    const plan = app.get('PLAN');
+    assert.deepEqual(Array.from(plan[12].days).map(d => d.km ?? 0), [10, 0, 5, 0, 8, 0, 7]);
+    assert.equal(plan[12].focus, 'Taper — serije na 2, eksplozivno i daleko od otkaza');
+    assert.deepEqual(Array.from(plan[13].days).map(d => d.km ?? 0), [3, 3.7, 2, 5]);
+    assert.equal(plan[13].days[3].desc, '🏁 TRKA 5 km — Cilj: 19:59 / Ritam: 4:00/km');
   });
 
   test('plan ima 14 nedelja i nepromenjen raspored', () => {
@@ -36,12 +91,16 @@ describe('Konstante ličnog plana', () => {
     assert.ok(trka, 'nema dana trke');
     assert.equal(trka.km, 5);
     assert.equal(trka.id, 'n14d4');
+    /* CILJNA trka je poslednja u planu — od revizije N12 nije i jedina. */
+    const sveTrke = Array.from(plan).flatMap(w => Array.from(w.days)
+      .filter(d => d.tag === 'trka')).map(d => d.id);
+    assert.deepEqual(sveTrke, ['n12d4', 'n14d4']);
   });
 
   test('ukupna kilometraža i broj treninga su nepromenjeni', () => {
     const plan = app.get('PLAN');
     const ukupno = plan.reduce((s, w) => s + w.days.reduce((a, d) => a + (d.km || 0), 0), 0);
-    assert.equal(Math.round(ukupno * 10) / 10, 533.7, 'ukupna kilometraža plana se promenila');
+    assert.equal(Math.round(ukupno * 10) / 10, 526.7, 'ukupna kilometraža plana se promenila');
     const treninga = plan.reduce((n, w) => n + w.days.filter(d => !d.rest).length, 0);
     assert.equal(treninga, 72, 'broj treninga se promenio');
   });
@@ -56,9 +115,13 @@ describe('Konstante ličnog plana', () => {
   });
 
   test('predikciona tabela i ciljna težina su nepromenjene', () => {
-    assert.equal(app.get('PRED').length, 25);
+    /* 25 → 21: p15–p18 su otišli sa sesijama koje su iz N11/N12 ispale. */
+    assert.equal(app.get('PRED').length, 21);
     assert.equal(app.evalIn('PRED[0].id'), 'p1');
-    assert.equal(app.evalIn('PRED[24].id'), 'p21');
+    assert.equal(app.evalIn('PRED[20].id'), 'p21');
+    assert.deepEqual(
+      JSON.parse(app.evalIn(`JSON.stringify(PRED.filter(r => r.w === 11 || r.w === 12).map(r => r.id))`)),
+      ['p14'], 'PRED redovi N11/N12 nisu usklađeni sa revidiranim nedeljama');
     const wt = app.get('WT_TARGET');
     assert.equal(wt.length, 14);
     assert.equal(wt[0].kg, 82);
@@ -67,8 +130,15 @@ describe('Konstante ličnog plana', () => {
 
   test('QS tabela (Strava lapovi) je nepromenjena', () => {
     const qs = app.get('QS');
-    assert.equal(Object.keys(qs).length, 24);
+    /* 24 → 21: intervali N11 su prešli sa n11d3 na n11d4, a n11d5/n12d3/n12d5
+       su ispali sa svojim sesijama. */
+    assert.equal(Object.keys(qs).length, 21);
     assert.deepEqual(Array.from(qs.n6d5), [4000, 2000]);
+    assert.deepEqual(Array.from(qs.n11d4), [1500]);
+    assert.equal(qs.n11d3, undefined);
+    assert.equal(qs.n11d5, undefined);
+    assert.equal(qs.n12d3, undefined);
+    assert.equal(qs.n12d5, undefined);
     assert.deepEqual(Array.from(qs.n14d2), [200]);
   });
 
@@ -152,20 +222,20 @@ describe('Lični plan je aktivan kad nema generisanog', () => {
     assert.equal(a.evalIn('CUR_PLAN.length'), 14);
     assert.equal(a.evalIn('CUR_START'), '2026-06-22');
     assert.equal(a.evalIn('CUR_RACE'), '2026-09-24');
-    assert.equal(a.evalIn('CUR_PRED.length'), 25);
+    assert.equal(a.evalIn('CUR_PRED.length'), 21);
   });
 
   test('podrazumevani opis cilja za AI je vlasnikov 5K cilj', () => {
     const a = loadApp();
     assert.equal(a.call('goalCtxText'),
-      '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)');
+      '5K u 19:59 (cilj je sub-20, sa rezervom za lošiji dan)');
   });
 
-  test('baseline i ciljni VDOT su vlasnikovi (PB 20:37 -> cilj 19:30)', () => {
+  test('baseline i ciljni VDOT su vlasnikovi (PB 20:37 -> cilj 19:59)', () => {
     const a = loadApp();
     assert.equal(a.call('baselineVdot'), 48.1);
-    assert.equal(a.call('goalVdotActive'), 51.3);
-    assert.equal(a.call('goalSecActive'), 1170);
+    assert.equal(a.call('goalVdotActive'), 49.9);
+    assert.equal(a.call('goalSecActive'), 1199);
     assert.equal(a.call('raceDistActive'), 5000);
   });
 

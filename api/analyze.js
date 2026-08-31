@@ -634,7 +634,7 @@ export default async function handler(req, res) {
   const zoneBlok = zoneOpis(hrZones, hrZonesIzvor);
   /* goalCtx ranije bez ikakvog ogranicenja -> direktno u systemInstruction.
      Neograniceno = i prompt injection prostor i nacin da se nadmasi tokenski
-     budzet. 200 znakova je vise nego dovoljno za "5K oko 19:30" stil opisa.
+     budzet. 200 znakova je vise nego dovoljno za "5K u 19:59" stil opisa.
 
      DUŽINA NIJE BILA DOVOLJNA. Ovaj tekst ulazi u SISTEMSKO uputstvo, a u
      njemu se rađa iz `raceName` — polja koje korisnik sam ukuca u čarobnjaku.
@@ -645,12 +645,12 @@ export default async function handler(req, res) {
      je lošija od nikakve — po njoj se trenira.
      Zato se ovde ruše sredstva za izlazak iz rečenice: prelomi reda (bez njih
      se ne može otvoriti nov „odeljak" uputstva) i znaci kojima je ostatak
-     prompta strukturiran. Normalne vrednosti („Beogradski maraton", „5K oko
-     19:30") prolaze nedirnute. */
+     prompta strukturiran. Normalne vrednosti („Beogradski maraton", „5K u
+     19:59") prolaze nedirnute. */
   const goalDesc = (typeof goalCtx === 'string' && goalCtx.trim())
     ? (goalCtx.replace(/[\r\n\t]+/g, ' ').replace(/[`{}<>*#]/g, '').replace(/\s{2,}/g, ' ').trim().slice(0, 200)
-       || '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)')
-    : '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)';
+       || '5K u 19:59 (cilj je sub-20, sa rezervom za lošiji dan)')
+    : '5K u 19:59 (cilj je sub-20, sa rezervom za lošiji dan)';
 
   // TREND ANALIZA — poseban tip zahteva (svi treninzi od početka plana)
   if (trend) {
