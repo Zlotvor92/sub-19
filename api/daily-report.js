@@ -12,9 +12,12 @@
    po ts polju — datum kad je STVARNO trčano, ne planiran dan), km ove
    nedelje, poslednji Strava sync. Direktan signal, ne posredan.
 
-   AI korišćenje se NE čita iz user_state (analiza se ne čuva u stanju) —
-   čita se iz api_usage tabele, koja VEĆ postoji za dnevni limit i sama
-   po sebi je tačan zapis "kog dana je ovaj korisnik pozvao AI analizu".
+   AI korišćenje se čita iz DVA izvora i uzima se kasniji: `log[*].aiAt` u
+   user_state (app ga upisuje pri svakom preuzetom rezultatu, za svakog
+   korisnika, i nikad ga ne briše) i `api_usage` tabela (brojač dnevnog
+   limita). Sam `api_usage` nije bio dovoljan: vlasniku se dnevni limit ne
+   naplaćuje, pa mu je kolona stajala zamrznuta na poslednjem danu pre nego
+   što je taj izuzetak uveden — analize su radile, izveštaj o njima nije znao.
 
    TOK:
    1) Vercel poziva ovu putanju, CRON_SECRET provera (nepromenjeno).
@@ -99,7 +102,7 @@ async function fetchStats(url, key) {
    sme da obori citanje cele strane. */
 const PRAZNA_AKTIVNOST = {
   lastWorkoutDate: null, weekKm: 0, lastStravaSync: null,
-  stravaConnected: false, stravaAthlete: null
+  stravaConnected: false, stravaAthlete: null, lastAiDay: null
 };
 
 async function fetchRawUserState(url, key, todayStr) {
@@ -185,14 +188,51 @@ function mondayOfWeekUTC(dateStr) {
   return d.toISOString().slice(0, 10);
 }
 
+/* KOG JE DANA TRENING STVARNO ODRAĐEN — prepisano iz `danTreninga()` u app.js,
+   uz isti redosled izvora: pravi datum sa sata (`runDate`), pa ručno uneti
+   (`ts`), pa ništa. Trećeg izvora koji app ima (planski `d.date`) ovde nema,
+   jer izveštaj ne čita plan.
+
+   ZAŠTO NIJE SVEJEDNO. Na obe putanje sinhronizacije (`Strava` i `intervals.icu`)
+   `l.runDate` se upisuje IZVAN `if(!l.lock)` bloka, a `l.ts` unutar njega — pa
+   kod ručno ispravljenog unosa (`lock`) `ts` ostaje PLANSKI dan, a jedino
+   `runDate` zna kad se stvarno trčalo. Izveštaj je do sada gledao samo `ts` i
+   time prikazivao dan iz plana kao „poslednji trening".
+
+   Oblik se proverava iz istog razloga kao u app.js: u starijim zapisima `ts`
+   ume da bude epoch, a `'1785834000' >= '2026-09-01'` je poređenje koje uvek
+   laže. */
+function danTreninga(e) {
+  const k = [e && e.runDate, e && e.ts]
+    .find(x => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}/.test(x));
+  return k ? k.slice(0, 10) : null;
+}
+
+/* DAN U BEOGRADU, ne u UTC-u. `l.aiAt` je epoch u milisekundama, a poredi se i
+   spaja sa `api_usage.day` — koji Postgres računa kao
+   `(now() at time zone 'Europe/Belgrade')::date`. Analiza u 01:30 po Beogradu
+   je u UTC-u još prethodni dan; bez ovoga bi se ista analiza u dva izvora
+   vodila pod dva različita datuma. */
+function danBeograd(ms) {
+  if (typeof ms !== 'number' || !isFinite(ms) || ms <= 0) return null;
+  const d = new Date(ms);
+  if (isNaN(d.getTime())) return null;
+  try {
+    return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Belgrade' }).format(d);
+  } catch (e) {
+    return d.toISOString().slice(0, 10);   /* Node bez pune ICU baze — UTC je bolji od ničega */
+  }
+}
+
 function deriveActivity(data, todayStr) {
   const log = (data && data.log) || {};
-  const entries = Object.values(log).filter(e => e && e.status === 'done');
+  const sviUnosi = Object.values(log).filter(e => e && typeof e === 'object');
+  const entries = sviUnosi.filter(e => e.status === 'done');
 
   let lastWorkout = null;
   for (const e of entries) {
-    const d = e.ts;
-    if (d && typeof d === 'string' && (!lastWorkout || d > lastWorkout.date)) {
+    const d = danTreninga(e);
+    if (d && (!lastWorkout || d > lastWorkout.date)) {
       lastWorkout = { date: d, km: typeof e.km === 'number' ? e.km : null };
     }
   }
@@ -200,9 +240,24 @@ function deriveActivity(data, todayStr) {
   const monday = mondayOfWeekUTC(todayStr);
   let weekKm = 0;
   for (const e of entries) {
-    if (typeof e.ts === 'string' && e.ts >= monday && e.ts <= todayStr && typeof e.km === 'number') {
+    const d = danTreninga(e);
+    if (d && d >= monday && d <= todayStr && typeof e.km === 'number') {
       weekKm += e.km;
     }
+  }
+
+  /* POSLEDNJA AI ANALIZA — IZ STANJA, ne samo iz brojača.
+     `api_usage` je bio jedini izvor, i zato je kolona umela da stoji zamrznuta
+     mesecima: brojač se NE pomera vlasniku (v. `jeVlasnik` u api/analyze.js),
+     pa za njega u toj tabeli posle uvođenja izuzetka nema nijednog reda.
+     `l.aiAt` upisuje sam app pri svakom preuzetom rezultatu (v. `aiProveri`),
+     za SVAKOG korisnika, i nikad se ne briše — dakle direktan zapis, i to
+     unazad. Brojač ostaje drugi izvor (hvata i pokrenute analize čiji rezultat
+     korisnik nikad nije pokupio); u izveštaj ide kasniji od ta dva. */
+  let lastAiDay = null;
+  for (const e of sviUnosi) {
+    const dan = danBeograd(e.aiAt);
+    if (dan && (!lastAiDay || dan > lastAiDay)) lastAiDay = dan;
   }
 
   /* `data` je U POTPUNOSTI pod kontrolom korisnika (sbPush gura proizvoljan
@@ -226,7 +281,8 @@ function deriveActivity(data, todayStr) {
     weekKm: Math.round(weekKm * 10) / 10,
     lastStravaSync,
     stravaConnected,
-    stravaAthlete
+    stravaAthlete,
+    lastAiDay
   };
 }
 
@@ -266,7 +322,12 @@ function mergeRows(users, sazetaStanja, aiDays, todayStr) {
       lastStravaSync: act.lastStravaSync,
       stravaConnected: act.stravaConnected,
       stravaAthlete: act.stravaAthlete,
-      lastAiDay: (aiDays && aiDays[u.id]) || null
+      /* Kasniji od dva izvora, v. obrazloženje u deriveActivity. Oba su
+         'GGGG-MM-DD', pa je poređenje niski ispravno. */
+      lastAiDay: [act.lastAiDay, (aiDays && aiDays[u.id]) || null]
+        .filter(x => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x))
+        .sort()
+        .pop() || null
     };
   });
 }

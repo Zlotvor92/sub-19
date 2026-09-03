@@ -392,6 +392,95 @@ describe('/api/daily-report — paginacija', () => {
     await handler({ method: 'POST', headers: { authorization: 'Bearer pogresno' } }, res);
     assert.equal(res.code, 401);
   });
+
+  /* Jedan korisnik, jedno stanje — svaki test ispod menja samo `data`. */
+  async function izvestajZa(data, aiRedovi) {
+    const { default: handler } = await import('../api/daily-report.js?t=' + Math.random());
+    let html = '';
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), h = (opt && opt.headers) || {};
+      if (u.includes('app_stats')) return jsonRes([{ korisnika: 1 }]);
+      if (u.includes('/auth/v1/admin/users')) {
+        const page = +(u.match(/[?&]page=(\d+)/) || [])[1];
+        return jsonRes(page === 1 ? [{ id: 'u1', email: 'a@t.rs' }] : []);
+      }
+      if (u.includes('user_state')) {
+        const od = +String(h.Range || '0-').split('-')[0];
+        return jsonRes(od > 0 ? [] : [{ user_id: 'u1', updated_at: '2026-09-01T00:00:00Z', data }]);
+      }
+      if (u.includes('api_usage')) {
+        const od = +String(h.Range || '0-').split('-')[0];
+        return jsonRes(od > 0 ? [] : (aiRedovi || []));
+      }
+      if (u.includes('nalog_za_brisanje')) return jsonRes([]);
+      if (u.includes('api.resend.com')) { html = JSON.parse(opt.body).html; return jsonRes({ id: 'm' }); }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    const res = makeRes();
+    await handler({ method: 'GET', headers: { authorization: 'Bearer tajna' } }, res);
+    assert.equal(res.code, 200, JSON.stringify(res.body));
+    return html;
+  }
+
+  test('poslednji trening ide po runDate, ne po ts', async () => {
+    /* Na obe putanje sinhronizacije `l.runDate` se upisuje IZVAN `if(!l.lock)`
+       bloka, a `l.ts` unutar njega — pa kod ručno ispravljenog („zaključanog")
+       unosa `ts` ostaje PLANSKI dan, a `runDate` zna kad se stvarno trčalo.
+       Izveštaj je gledao samo `ts` i time prikazivao dan iz plana. */
+    const html = await izvestajZa({
+      log: { a: { status: 'done', lock: true, ts: '2026-08-20', runDate: '2026-08-23', km: 10 } }
+    });
+    assert.match(html, /23\.08\.2026/, 'poslednji trening je uzet iz plana, ne iz runDate');
+    assert.ok(!html.includes('20.08.2026'), 'planski dan je prikazan kao dan treninga');
+  });
+
+  test('epoch u `ts` ne prolazi kao datum', async () => {
+    /* `'1785834000' >= '2026-09-01'` je poređenje niski koje uvek laže; stariji
+       zapisi umeju da nose epoch. Takav unos nema upotrebljiv datum — kolona
+       mora ostati prazna, ne pokazati broj. */
+    const html = await izvestajZa({ log: { a: { status: 'done', ts: '1785834000', km: 10 } } });
+    assert.ok(!html.includes('1785834000'), 'epoch je procurio u kolonu datuma');
+  });
+
+  test('poslednja AI analiza se čita i iz stanja (aiAt), ne samo iz api_usage', async () => {
+    /* REGRESIJA IZ PRIJAVE: kolona je stajala na 06.08.2026 iako su se analize
+       radile skoro posle svakog treninga. `api_usage` je bio jedini izvor, a
+       vlasniku se dnevni limit ne naplaćuje — pa za njega tamo posle uvođenja
+       izuzetka nema nijednog reda. `aiAt` app upisuje pri svakom preuzetom
+       rezultatu i nikad ga ne briše. */
+    const html = await izvestajZa({
+      log: {
+        a: { status: 'done', runDate: '2026-08-30', km: 10, aiAt: Date.UTC(2026, 7, 30, 9, 0) },
+        b: { status: 'done', runDate: '2026-09-01', km: 12, aiAt: Date.UTC(2026, 8, 1, 9, 0) }
+      }
+    }, [{ user_id: 'u1', day: '2026-08-06', calls: 1 }]);
+    assert.match(html, /01\.09\.2026/, 'AI analiza iz stanja nije stigla do izveštaja');
+    assert.ok(!html.includes('06.08.2026'), 'prikazan je stariji od dva izvora');
+  });
+
+  test('api_usage ostaje izvor kad je noviji od aiAt', async () => {
+    /* Brojač hvata i POKRENUTE analize čiji rezultat korisnik nikad nije
+       pokupio — te u stanju nemaju `aiAt`. Zato se uzima kasniji od dva, a ne
+       jedan umesto drugog. */
+    const html = await izvestajZa({
+      log: { a: { status: 'done', runDate: '2026-08-30', km: 10, aiAt: Date.UTC(2026, 7, 30, 9, 0) } }
+    }, [{ user_id: 'u1', day: '2026-09-02', calls: 3 }]);
+    assert.match(html, /02\.09\.2026/, 'noviji dan iz api_usage je izgubljen');
+  });
+
+  test('pokvaren aiAt ne obara kolonu', async () => {
+    /* `data` je u potpunosti pod kontrolom korisnika (uvezen backup, ručna
+        izmena). Neupotrebljiva vrednost mora da da prazno polje, ne grešku. */
+    const html = await izvestajZa({
+      log: {
+        a: { status: 'done', runDate: '2026-08-30', km: 10, aiAt: 'juče' },
+        b: { status: 'done', runDate: '2026-08-31', km: 10, aiAt: 0 },
+        c: { status: 'done', runDate: '2026-09-01', km: 10, aiAt: NaN }
+      }
+    }, []);
+    assert.ok(html.includes('a@t.rs'), 'izveštaj je pao na pokvarenom aiAt');
+    assert.ok(!/Invalid|NaN/.test(html), 'pokvarena vrednost je prikazana: ' + html.slice(0, 400));
+  });
 });
 
 describe('/api/auth — obe grane Strava OAuth-a', () => {

@@ -537,7 +537,17 @@ export default async function handler(req, res) {
      Provera je ISTA kao u /api/broadcast.js: adresa mora da se poklopi sa
      ADMIN_EMAIL I da bude POTVRĐENA. Bez provere potvrde bi se, na Supabase
      podešavanju bez obavezne potvrde mejla, svako mogao registrovati
-     vlasnikovom adresom i time skinuti limit sebi. */
+     vlasnikovom adresom i time skinuti limit sebi.
+
+     „NEMA LIMIT" NIJE ISTO ŠTO I „NE BROJI SE". Ranije je vlasnik preskakao
+     ceo poziv ka `check_and_bump_api_usage`, pa u `api_usage` za njega nije
+     ostajao NIJEDAN red — a ta tabela je izvor kolone „AI analiza" u dnevnom
+     izveštaju. Posledica: kolona je stala na poslednjem danu pre uvođenja
+     izuzetka i mesecima stajala zamrznuta, dok su analize radile normalno.
+     Zato se brojač pomera i vlasniku, samo sa granicom koju stvarna upotreba
+     ne može da dotakne (funkcija odbija `p_limit > 100000`, pa je to i gornja
+     dozvoljena vrednost). Zapis ostaje tačan, izuzetak i dalje važi. */
+  const VLASNIK_LIMIT = 100000;
   const vlasnik = await jeVlasnik(req);
   /* KO PRESKAČE BROJAČ — jedan izraz, ne razbacana provera.
      Preskače SAMO nastavak posla koji je pri pokretanju već izbrojan: faza
@@ -550,7 +560,8 @@ export default async function handler(req, res) {
      sada odbijen gore, a ovde stoji druga brava: bez ispravnog ID-a posla
      nema preskakanja, pa ni buduća faza ne može da se provuče istim putem. */
   const nastavakIzbrojanogPosla = (posao === 'radi' && UUID.test(posaoId));
-  if (!vlasnik && !nastavakIzbrojanogPosla) try {
+  const vaziLimit = vlasnik ? VLASNIK_LIMIT : DAILY_LIMIT;
+  if (!nastavakIzbrojanogPosla) try {
     const rl = await fetchRok(process.env.SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/rpc/check_and_bump_api_usage', {
       method: 'POST',
       headers: {
@@ -558,12 +569,12 @@ export default async function handler(req, res) {
         Authorization: 'Bearer ' + auth.token,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ p_limit: DAILY_LIMIT })
+      body: JSON.stringify({ p_limit: vaziLimit })
     });
     if (!rl.ok) {
       const errBody = await rl.text();
       if (jeLimit(errBody)) {
-        res.status(429).json({ error: 'Dnevni limit AI analiza (' + DAILY_LIMIT + ') je iskorišćen. Pokušaj ponovo sutra.' });
+        res.status(429).json({ error: 'Dnevni limit AI analiza (' + vaziLimit + ') je iskorišćen. Pokušaj ponovo sutra.' });
         return;
       }
       /* Funkcija/tabela mozda jos nije podesena u Supabase-u — ne blokiramo

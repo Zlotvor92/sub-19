@@ -467,12 +467,16 @@ describe('Vlasnik nema limit AI analiza', () => {
     };
     const staro = {};
     for (const k of Object.keys(env)) { staro[k] = process.env[k]; process.env[k] = env[k]; }
-    let brojano = 0;
+    let brojano = 0, limiti = [];
     globalThis.fetch = async (u, o) => {
       const s = String(u);
       const J = (b) => ({ ok: true, status: 200, json: async () => b, text: async () => JSON.stringify(b) });
       if (s.includes('/auth/v1/user')) return J(korisnik);
-      if (s.includes('check_and_bump_api_usage')) { brojano++; return J({}); }
+      if (s.includes('check_and_bump_api_usage')) {
+        brojano++;
+        try { limiti.push(JSON.parse(o.body).p_limit); } catch (e) { limiti.push(null); }
+        return J({});
+      }
       if (s.includes('ai_posao') && o && o.method === 'POST') return J([{ id: 'p1' }]);
       return J({});
     };
@@ -480,22 +484,32 @@ describe('Vlasnik nema limit AI analiza', () => {
       const { default: h } = await import('../api/analyze.js?t=' + Math.random());
       const r = { code: null, body: null, status(c) { this.code = c; return this; }, json(b) { this.body = b; return this; }, setHeader() {} };
       await h({ method: 'POST', headers: { authorization: 'Bearer jwt' }, body: { posao: 'start' } }, r);
-      return { brojano, code: r.code };
+      return { brojano, limiti, code: r.code };
     } finally {
       globalThis.fetch = stariFetch;
       for (const k of Object.keys(env)) { if (staro[k] === undefined) delete process.env[k]; else process.env[k] = staro[k]; }
     }
   }
 
-  test('vlasniku se dnevni limit ne broji', async () => {
+  /* REGRESIJA IZ PRIJAVE: „u dnevnom izveštaju piše da je poslednja AI analiza
+     06.08.2026", a analize su se radile skoro posle svakog treninga.
+     Uzrok nije bio u izveštaju nego ovde: vlasnik je preskakao CEO poziv ka
+     brojaču, pa u `api_usage` — jedinom izvoru te kolone — za njega nije
+     ostajao nijedan red posle dana kad je izuzetak uveden.
+     Ispravka razdvaja dve stvari koje su bile spojene: brojač se pomera SVIMA
+     (zapis mora da postoji), a vlasniku se samo postavlja granica koju stvarna
+     upotreba ne može da dotakne. */
+  test('vlasniku se analiza BROJI, ali sa granicom koja ne seče', async () => {
     const o = await pozoviAnalizu({ id: 'v', email: 'vlasnik@t.rs', email_confirmed_at: '2026-01-01' });
     assert.equal(o.code, 200);
-    assert.equal(o.brojano, 0, 'vlasniku se troši sopstvena kvota');
+    assert.equal(o.brojano, 1, 'vlasnikova analiza nije ostavila trag u api_usage');
+    assert.equal(o.limiti[0], 100000, 'vlasniku je poslata granica koja ga može preseći');
   });
 
-  test('drugom korisniku se broji', async () => {
+  test('drugom korisniku se broji, sa pravim limitom', async () => {
     const o = await pozoviAnalizu({ id: 'k', email: 'neko@t.rs', email_confirmed_at: '2026-01-01' });
     assert.equal(o.brojano, 1, 'običan korisnik je preskočio brojač');
+    assert.equal(o.limiti[0], 30, 'običnom korisniku je skinut dnevni limit');
   });
 
   test('NEPOTVRĐENA vlasnikova adresa ne skida limit', async () => {
@@ -504,6 +518,7 @@ describe('Vlasnik nema limit AI analiza', () => {
        email_confirmed_at: null`. Bez provere potvrde time skida limit sebi. */
     const o = await pozoviAnalizu({ id: 'a', email: 'vlasnik@t.rs', email_confirmed_at: null });
     assert.equal(o.brojano, 1, 'nepotvrđena vlasnikova adresa je skinula limit');
+    assert.equal(o.limiti[0], 30, 'nepotvrđena vlasnikova adresa je dobila vlasnikovu granicu');
   });
 });
 
