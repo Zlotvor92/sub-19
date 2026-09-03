@@ -21,16 +21,19 @@
 
    TOK:
    1) Vercel poziva ovu putanju, CRON_SECRET provera (nepromenjeno).
-   2) app_stats pogled — agregatni brojevi za vrh mejla (nepromenjeno).
-   3) SIROV user_state.data za SVAKOG korisnika (NOVO) — service_role
-      zaobilazi RLS namerno, ovo je jedino mesto gde taj ključ sme da postoji.
-   4) api_usage dani sa pozivima > 0, po korisniku (NOVO) — za "poslednja AI
-      analiza".
-   5) Lista naloga (email) preko Admin API-ja — kao pre.
-   6) Sve se spaja po user_id u JEDNU tabelu po korisniku. Svaki od koraka
-      3-5 je u SOPSTVENOM try/catch — ako neki padne, ostali podaci i dalje
-      stižu, samo se ta kolona prikaže kao nepoznata.
-   7) Mejl preko Resend-a.
+   2) app_stats pogled — samo tri broja: ukupno korisnika, novih za 7 dana i
+      sa generisanim planom. Brojevi „Aktivnih" se VIŠE NE ČITAJU odatle nego
+      se računaju ovde (v. agregatAktivnosti).
+   3) SIROV user_state.data za SVAKOG korisnika — service_role zaobilazi RLS
+      namerno, ovo je jedino mesto gde taj ključ sme da postoji.
+   4) api_usage dani sa pozivima > 0, po korisniku — za "poslednja AI analiza".
+   5) endpoint_usage dani, po korisniku — nezavisan zapis o korišćenju, jedini
+      koji preživi neuspelu sinhronizaciju stanja.
+   6) Lista naloga (email) preko Admin API-ja — kao pre.
+   7) Sve se spaja po user_id u JEDNU tabelu po korisniku. Svaki od koraka
+      2-6 je u SOPSTVENOM try/catch — ako neki padne, ostali podaci i dalje
+      stižu, samo se to polje prikaže kao nepoznato („—", ne nula).
+   8) Mejl preko Resend-a.
 
    POTREBNE Vercel Environment Variables — NEPROMENJENO od ranije verzije:
    CRON_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY,
@@ -102,7 +105,7 @@ async function fetchStats(url, key) {
    sme da obori citanje cele strane. */
 const PRAZNA_AKTIVNOST = {
   lastWorkoutDate: null, weekKm: 0, lastStravaSync: null,
-  stravaConnected: false, stravaAthlete: null, lastAiDay: null
+  stravaConnected: false, stravaAthlete: null, lastAiDay: null, upisDan: null
 };
 
 async function fetchRawUserState(url, key, todayStr) {
@@ -119,43 +122,56 @@ async function fetchRawUserState(url, key, todayStr) {
     const j = await r.json();
     const red = Array.isArray(j) ? j : [];
     for (const row of red) {
-      try { sazeto[row.user_id] = deriveActivity(row.data, todayStr); }
-      catch (e) { sazeto[row.user_id] = PRAZNA_AKTIVNOST; }
+      /* `updated_at` piše Postgres, ne korisnik — pa se čita izvan izvlačenja
+         iz `data` i preživljava pokvaren blob. */
+      const upisDan = danBeograd(Date.parse(row.updated_at));
+      try { sazeto[row.user_id] = Object.assign(deriveActivity(row.data, todayStr), { upisDan }); }
+      catch (e) { sazeto[row.user_id] = Object.assign({}, PRAZNA_AKTIVNOST, { upisDan }); }
     }
     if (red.length < PER) break;   /* `red` izlazi iz opsega ovde — blob se oslobađa */
   }
   return sazeto;
 }
 
-/* PAGINIRANO, iz istog razloga kao fetchUserList i fetchRawUserState.
-   Ovaj upit je pri toj ispravci promašen — a raste BRŽE od oba: jedan red po
-   korisniku PO DANU. Bez `Range` zaglavlja PostgREST vraća do `max-rows`
-   (podrazumevano 1000) i tu staje, bez greške; korisnici sa starijim danima
-   na vrhu tako tiho gube kolonu „AI analiza".
-   `order=day.desc` je uslov za tačnost: prvi viđen red po korisniku je i
-   najnoviji, pa se ostali smeju preskočiti. Redosled mora biti određen i
+/* POSLEDNJI DAN PO KORISNIKU, iz bilo kog dnevnog brojača.
+   `api_usage` i `endpoint_usage` su istog oblika (user_id, dan, broj) i čitaju
+   se istom petljom; razlikuju se samo imena tabele i kolone.
+
+   PAGINIRANO, iz istog razloga kao fetchUserList i fetchRawUserState. Ovaj
+   upit je pri toj ispravci promašen — a raste BRŽE od oba: jedan red po
+   korisniku PO DANU (za `endpoint_usage` još i po endpointu). Bez `Range`
+   zaglavlja PostgREST vraća do `max-rows` (podrazumevano 1000) i tu staje, bez
+   greške; korisnici sa starijim danima na vrhu tako tiho ispadaju.
+   Silazni redosled po danu je uslov za tačnost: prvi viđen red po korisniku je
+   i najnoviji, pa se ostali smeju preskočiti. Redosled mora biti određen i
    preko granica strana — zato i drugi kriterijum (`user_id`). */
-async function fetchAiUsageDays(url, key) {
+async function fetchPoslednjiDan(url, key, tabela, kolona, filter) {
   const PER = 1000, MAX_PAGES = 50, lastByUser = {};
   for (let page = 0; page < MAX_PAGES; page++) {
     const od = page * PER, doIdx = od + PER - 1;
-    const r = await fetchRok(url.replace(/\/+$/, '') +
-      '/rest/v1/api_usage?select=user_id,day,calls&calls=gt.0&order=day.desc,user_id.asc', {
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/rest/v1/' + tabela
+      + '?select=user_id,' + kolona + '&' + filter
+      + '&order=' + kolona + '.desc,user_id.asc', {
       headers: {
         apikey: key, Authorization: 'Bearer ' + key,
         Range: od + '-' + doIdx, 'Range-Unit': 'items'
       }
     });
-    if (!r.ok && r.status !== 206) throw new Error('api_usage upit nije uspeo (' + r.status + ')');
+    if (!r.ok && r.status !== 206) throw new Error(tabela + ' upit nije uspeo (' + r.status + ')');
     const j = await r.json();
     const rows = Array.isArray(j) ? j : [];
     for (const row of rows) {
-      if (!(row.user_id in lastByUser)) lastByUser[row.user_id] = row.day;
+      if (!(row.user_id in lastByUser)) lastByUser[row.user_id] = row[kolona];
     }
     if (rows.length < PER) break;
   }
   return lastByUser;
 }
+
+const fetchAiUsageDays  = (url, key) => fetchPoslednjiDan(url, key, 'api_usage', 'day', 'calls=gt.0');
+/* `endpoint_usage` čuva 30 dana (v. `check_and_bump_endpoint`) — tačno koliko
+   najširi prozor u izveštaju i traži. */
+const fetchEndpointDays = (url, key) => fetchPoslednjiDan(url, key, 'endpoint_usage', 'dan', 'broj=gt.0');
 
 /* Admin API vraca najvise per_page po strani. Ranije se citala SAMO prva strana
    (per_page=200) — preko toga su korisnici tiho ispadali iz izvestaja, bez
@@ -179,6 +195,56 @@ async function fetchUserList(url, key) {
     created: u.created_at || null,
     lastSignIn: u.last_sign_in_at || null
   }));
+}
+
+function danMinus(ymd, n) {
+  const d = new Date(ymd + 'T00:00:00Z');
+  if (isNaN(d.getTime())) return null;
+  d.setUTCDate(d.getUTCDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
+/* ============================================================
+   KOLIKO IH JE AKTIVNO — RAČUNA SE OVDE, NE U `app_stats`
+
+   Pogled `app_stats` broji aktivnost isključivo kroz `user_state.updated_at`,
+   dakle kroz POSLEDNJI USPEŠAN UPIS STANJA. Kad ta jedna sinhronizacija ne
+   uspe (token istekao baš tada, aplikacija zatvorena pre odloženog upisa —
+   sync je odložen 4 s posle svakog save()), čovek je koristio aplikaciju a u
+   izveštaju ispada neaktivan.
+
+   ČITANJE SADRŽAJA `data` TO NE POPRAVLJA, i važno je zašto: sve u `data`
+   stiže na server ISTIM tim upisom, pa nijedno polje unutra ne može biti
+   novije od `updated_at`. Popravka mora doći iz izvora koji se piše DRUGIM
+   putem.
+   Takva dva postoje i već su u bazi: `api_usage` (RPC pri svakoj AI analizi)
+   i `endpoint_usage` (RPC pri sinhronizaciji sa intervals.icu, osvežavanju
+   Strava tokena, čitanju rezultata analize…). Oba se upisuju direktno iz
+   servera, nezavisno od toga da li je stanje uspelo da se sačuva.
+
+   PROZORI SU DANI, NE SATI. Oba brojača pamte DAN (beogradski, v.
+   `check_and_bump_endpoint`), ne trenutak — pa je „aktivnih u 24 sata"
+   preciznost koju izvor ne nosi. Zaglavlje zato kaže „danas", „7 dana",
+   „30 dana", i to je tačno ono što se meri.
+   ============================================================ */
+function agregatAktivnosti(sazeta, endpointDani, aiDani, danasStr) {
+  const svi = new Set([].concat(
+    Object.keys(sazeta || {}), Object.keys(endpointDani || {}), Object.keys(aiDani || {})
+  ));
+  const prag7 = danMinus(danasStr, 6), prag30 = danMinus(danasStr, 29);
+  const out = { danas: 0, d7: 0, d30: 0 };
+  for (const id of svi) {
+    const zadnji = [
+      (sazeta && sazeta[id] && sazeta[id].upisDan) || null,
+      (endpointDani && endpointDani[id]) || null,
+      (aiDani && aiDani[id]) || null
+    ].filter(x => typeof x === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x)).sort().pop();
+    if (!zadnji) continue;
+    if (zadnji >= prag30) out.d30++;
+    if (zadnji >= prag7) out.d7++;
+    if (zadnji >= danasStr) out.danas++;
+  }
+  return out;
 }
 
 function mondayOfWeekUTC(dateStr) {
@@ -332,10 +398,21 @@ function mergeRows(users, sazetaStanja, aiDays, todayStr) {
   });
 }
 
-function buildHtml(stats, rows, errors, brisanja) {
+function buildHtml(stats, rows, errors, brisanja, aktivni) {
   const row = (label, val) =>
     `<tr><td style="padding:6px 14px;color:#7A7A86;font-size:13px">${esc(label)}</td>` +
     `<td style="padding:6px 14px;font-weight:700;font-size:15px">${esc(val)}</td></tr>`;
+
+  /* NULA KOJA ZNAČI „NISAM DOBIO BROJ" MORA DA SE RAZLIKUJE OD NULE.
+     Bez ovoga bi izostanak jednog upita prikazao nule kao činjenicu — a to je
+     gore od greške, jer izgleda kao da je aplikaciju preko noći napustio svako.
+     Ranije je ceo blok padao u crveni okvir čim `app_stats` ne odgovori; sada
+     otkazuje POLJE PO POLJE, jer brojevi više ne dolaze iz jednog izvora. */
+  const broj = (v, palo) => (palo || v == null) ? '—' : v;
+  /* „Aktivnih" se računa iz tri izvora (v. agregatAktivnosti); ako ijedan nije
+     stigao, broj je poznato manji od stvarnog i ne sme se prikazati kao tačan. */
+  const aktivnoPalo = !!(errors.rawState || errors.endpointUsage || errors.aiUsage);
+  const a = aktivni || { danas: null, d7: null, d30: null };
 
   let usersHtml;
   if (errors.users) {
@@ -360,7 +437,8 @@ function buildHtml(stats, rows, errors, brisanja) {
       </tr>`).join('')}
       </table></div>
       ${errors.rawState ? `<p style="color:#7A7A86;font-size:12px;margin-top:8px">Napomena: podaci o treningu nisu uspeli da se učitaju (${esc(errors.rawState)}) — kolone treninga mogu biti prazne.</p>` : ''}
-      ${errors.aiUsage ? `<p style="color:#7A7A86;font-size:12px;margin-top:4px">Napomena: AI korišćenje nije uspelo da se učita (${esc(errors.aiUsage)}).</p>` : ''}`;
+      ${errors.aiUsage ? `<p style="color:#7A7A86;font-size:12px;margin-top:4px">Napomena: AI korišćenje nije uspelo da se učita (${esc(errors.aiUsage)}).</p>` : ''}
+      ${errors.endpointUsage ? `<p style="color:#7A7A86;font-size:12px;margin-top:4px">Napomena: zapis o pozivima nije uspeo da se učita (${esc(errors.endpointUsage)}) — brojevi „Aktivnih" su zato prazni.</p>` : ''}`;
   }
 
   /* Odložena brisanja se prijavljuju SAMO kad ih ima — prazan red svakog jutra
@@ -378,23 +456,20 @@ function buildHtml(stats, rows, errors, brisanja) {
     <div style="font-weight:800;font-size:18px;margin-bottom:4px">SUB<span style="color:#FA2E55">-20</span> — dnevni izveštaj</div>
     <div style="color:#7A7A86;font-size:12px;margin-bottom:18px">${esc(new Date().toLocaleDateString('sr-RS', { day: '2-digit', month: 'long', year: 'numeric' }))}</div>
     ${errors.stats
-      /* NULA KOJA ZNACI „NISAM DOBIO BROJ" MORA DA SE RAZLIKUJE OD NULE.
-         Otkad izostanak statistike vise ne obara ceo izvestaj, tabela bi bez
-         ovoga pokazala sest nula kao cinjenicu — a to je gore od greske, jer
-         izgleda kao da je aplikaciju preko noci napustio svako. */
       ? `<div style="background:#2A1116;border:1px solid #FA2E55;border-radius:12px;padding:12px;margin-bottom:22px;font-size:13px">
-           <b style="color:#FA2E55">Statistika nije učitana</b><br>
+           <b style="color:#FA2E55">Deo statistike nije učitan</b><br>
            <span style="color:#7A7A86">${esc(errors.stats)}</span><br>
-           <span style="color:#7A7A86">Ako pogled <code>app_stats</code> ne postoji: Supabase → SQL Editor → <code>supabase/app-stats.sql</code>. Brojevi po korisniku ispod su i dalje tačni.</span>
+           <span style="color:#7A7A86">Ako pogled <code>app_stats</code> ne postoji: Supabase → SQL Editor → <code>supabase/app-stats.sql</code>. Ostali brojevi su i dalje tačni.</span>
          </div>`
-      : `<table style="border-collapse:collapse;width:100%;background:#16161D;border-radius:12px;overflow:hidden;margin-bottom:22px">
-      ${row('Korisnika ukupno', stats.korisnika ?? 0)}
-      ${row('Aktivnih (24h)', stats.aktivnih_24h ?? 0)}
-      ${row('Aktivnih (7 dana)', stats.aktivnih_7d ?? 0)}
-      ${row('Aktivnih (30 dana)', stats.aktivnih_30d ?? 0)}
-      ${row('Novih (7 dana)', stats.novih_7d ?? 0)}
-      ${row('Sa generisanim planom', stats.sa_generisanim_planom ?? 0)}
-    </table>`}
+      : ''}
+    <table style="border-collapse:collapse;width:100%;background:#16161D;border-radius:12px;overflow:hidden;margin-bottom:22px">
+      ${row('Korisnika ukupno', broj(stats.korisnika, errors.stats))}
+      ${row('Aktivnih (danas)', broj(a.danas, aktivnoPalo))}
+      ${row('Aktivnih (7 dana)', broj(a.d7, aktivnoPalo))}
+      ${row('Aktivnih (30 dana)', broj(a.d30, aktivnoPalo))}
+      ${row('Novih (7 dana)', broj(stats.novih_7d, errors.stats))}
+      ${row('Sa generisanim planom', broj(stats.sa_generisanim_planom, errors.stats))}
+    </table>
     <div style="font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#7A7A86;margin-bottom:8px">Aktivnost po korisniku</div>
     ${usersHtml}
     ${brisanjaHtml}
@@ -475,7 +550,12 @@ export default async function handler(req, res) {
     .filter(k => !process.env[k]);
   if (missing.length) return res.status(500).json({ error: 'Nedostaju env varijable: ' + missing.join(', ') });
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  /* DAN JE BEOGRADSKI, ne UTC. Aplikacija je cela u jednoj zoni (v.
+     `danasBeograd` u api/push.js, `v_dan` u supabase/rate-limit.sql), pa je i
+     „danas" u izveštaju isti dan koji brojači upisuju. Cron ide u 05:00 UTC,
+     gde se to dvoje poklapa — ali poklapanje po rasporedu nije razlog da
+     ostane netačno. */
+  const todayStr = danBeograd(Date.now()) || new Date().toISOString().slice(0, 10);
   const errors = {};
 
   /* STATISTIKA OTKAZUJE KAO I SVAKI DRUGI KORAK — u svom try/catch.
@@ -501,12 +581,19 @@ export default async function handler(req, res) {
   try { aiDays = await fetchAiUsageDays(url, svcKey); }
   catch (e) { errors.aiUsage = e.message; }
 
+  /* Nezavisan zapis o korišćenju — jedini koji preživi neuspelu sinhronizaciju
+     stanja (v. agregatAktivnosti). */
+  let endpointDays = {};
+  try { endpointDays = await fetchEndpointDays(url, svcKey); }
+  catch (e) { errors.endpointUsage = e.message; }
+
   /* Rok za odložena brisanja se naplaćuje PRE sastavljanja mejla, da bi nalaz
      mogao da uđe u njega. */
   const brisanja = await izvrsiOdlozenaBrisanja(url, svcKey);
 
   const rows = mergeRows(users, rawStates, aiDays, todayStr);
-  const html = buildHtml(stats, rows, errors, brisanja);
+  const aktivni = agregatAktivnosti(rawStates, endpointDays, aiDays, todayStr);
+  const html = buildHtml(stats, rows, errors, brisanja, aktivni);
 
   try {
     const r = await fetchRok('https://api.resend.com/emails', {

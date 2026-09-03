@@ -531,10 +531,59 @@ describe('N-5 · app_stats i inventar baze', () => {
       'statistika ne otkazuje kao ostali koraci');
   });
 
-  test('neuspela statistika se VIDI, ne prikazuje se kao šest nula', () => {
-    const s = readRepoFile('api/daily-report.js');
-    assert.match(s, /Statistika nije učitana/, 'nula bez broja izgleda kao činjenica');
-    assert.match(s, /statistika nije učitana/, 'naslov mejla i dalje tvrdi „0 korisnika"');
+  test('neuspela statistika se VIDI, ne prikazuje se kao nula', async () => {
+    /* Ovde je do sada stajala provera regularnim izrazom nad izvornim kodom
+       (dve niske u fajlu). Takav test kaže samo da kod IZGLEDA očekivano — a
+       otkad brojevi u zaglavlju dolaze iz VIŠE izvora, „šest nula" nije više ni
+       tačan opis kvara: `app_stats` može da padne a da brojevi „Aktivnih",
+       koji se računaju u samom izveštaju, budu ispravni.
+       Zato se sada vozi pravi poziv i gleda ono što jedino znači nešto: da
+       polje bez broja piše „—", a ne 0. */
+    const stariFetch = globalThis.fetch;
+    const env = {
+      CRON_SECRET: 'tajna', SUPABASE_URL: 'https://x.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'svc', RESEND_API_KEY: 'r',
+      REPORT_TO: 'a@t.rs', REPORT_FROM: 'b@t.rs'
+    };
+    const staro = {};
+    for (const k of Object.keys(env)) { staro[k] = process.env[k]; process.env[k] = env[k]; }
+    let html = '', naslov = '';
+    globalThis.fetch = async (u, o) => {
+      const s = String(u);
+      const J = (b) => ({ ok: true, status: 200, json: async () => b, text: async () => JSON.stringify(b) });
+      if (s.includes('app_stats')) return { ok: false, status: 404, json: async () => ({}), text: async () => '' };
+      if (s.includes('/auth/v1/admin/users')) {
+        return J(/[?&]page=1\b/.test(s) ? [{ id: 'u1', email: 'k@t.rs' }] : []);
+      }
+      if (s.includes('user_state')) {
+        return J(+String((o.headers || {}).Range || '0-').split('-')[0] > 0 ? []
+          : [{ user_id: 'u1', updated_at: new Date().toISOString(), data: { log: {} } }]);
+      }
+      if (s.includes('api.resend.com')) {
+        const t = JSON.parse(o.body); html = t.html; naslov = t.subject; return J({ id: 'm' });
+      }
+      return J([]);
+    };
+    try {
+      const { default: h } = await import('../api/daily-report.js?t=' + Math.random());
+      const r = { code: null, body: null, status(c) { this.code = c; return this; }, json(b) { this.body = b; return this; } };
+      await h({ method: 'GET', headers: { authorization: 'Bearer tajna' } }, r);
+      assert.equal(r.code, 200, JSON.stringify(r.body));
+    } finally {
+      globalThis.fetch = stariFetch;
+      for (const k of Object.keys(env)) { if (staro[k] === undefined) delete process.env[k]; else process.env[k] = staro[k]; }
+    }
+    assert.match(html, /statistike nije učitan/i, 'kvar se ne vidi u mejlu');
+    assert.match(naslov, /statistika nije učitana/, 'naslov mejla i dalje tvrdi „0 korisnika"');
+    /* Tri polja iz app_stats moraju biti prazna… */
+    const red = (n) => (html.match(new RegExp(esc(n) + '</td>\\s*<td[^>]*>([^<]*)</td>')) || [])[1];
+    assert.equal(red('Korisnika ukupno'), '—', 'nula bez broja izgleda kao činjenica');
+    assert.equal(red('Novih (7 dana)'), '—', 'nula bez broja izgleda kao činjenica');
+    assert.equal(red('Sa generisanim planom'), '—', 'nula bez broja izgleda kao činjenica');
+    /* …a onaj koji se računa ovde, i čiji su izvori odgovorili, mora ostati. */
+    assert.equal(red('Aktivnih (danas)'), '1', 'ispravan broj je bačen zajedno sa pokvarenim');
+
+    function esc(x) { return x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   });
 });
 

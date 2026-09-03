@@ -42,14 +42,25 @@
 -- ishod koji se vidi odmah; gori je onaj u kom se ne vidi ništa.
 -- ---------------------------------------------------------------------
 --
--- DVE KOLONE KOJE NIKO NE ČITA
--- `prosek_treninga` i `prosek_vdot_unosa` se računaju, ali ih
--- `api/daily-report.js` nigde ne koristi (`buildHtml` čita šest kolona:
--- korisnika, aktivnih_24h/7d/30d, novih_7d, sa_generisanim_planom).
--- Ostavljene su NAMERNO, jer je ovaj fajl zapis zatečenog stanja, a ne prilika
--- da se ono menja. Ako se ikad brišu, to je zasebna odluka i zaseban commit —
--- `prosek_treninga` je i najskuplji deo upita (korelisan podupit po svakom
--- redu), pa bi brisanje bilo i ubrzanje.
+-- PET KOLONA KOJE NIKO NE ČITA
+-- `api/daily-report.js` iz ovog pogleda uzima SAMO TRI broja: `korisnika`,
+-- `novih_7d` i `sa_generisanim_planom`.
+--
+-- `prosek_treninga` i `prosek_vdot_unosa` se nikad nisu ni čitali.
+--
+-- `aktivnih_24h`, `aktivnih_7d` i `aktivnih_30d` su se čitali do izmene koja je
+-- brojanje aktivnosti preselila u sam izveštaj (v. `agregatAktivnosti` u
+-- api/daily-report.js). Razlog: ovde je jedini izvor `updated_at`, dakle
+-- poslednji uspešan upis STANJA — pa korisnik čija sinhronizacija tog dana nije
+-- prošla ispada neaktivan iako je aplikaciju koristio. Izveštaj sada gleda i
+-- `endpoint_usage` i `api_usage`, koji se pišu drugim putem (RPC iz servera) i
+-- preživljavaju neuspeo upis stanja. Iz `data` se to nije moglo popraviti: sve
+-- unutra stiže istim tim upisom, pa ne može biti novije od `updated_at`.
+--
+-- Sve su ostavljene NAMERNO, jer je ovaj fajl zapis zatečenog stanja, a ne
+-- prilika da se ono menja. Ako se ikad brišu, to je zasebna odluka i zaseban
+-- commit — `prosek_treninga` je i najskuplji deo upita (korelisan podupit po
+-- svakom redu), pa bi brisanje bilo i ubrzanje.
 --
 -- ŠTA `korisnika` ZAPRAVO BROJI
 -- Redove u `user_state`, ne naloge u `auth.users` — dakle ljude koji su bar

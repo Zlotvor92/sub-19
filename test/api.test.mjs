@@ -393,25 +393,29 @@ describe('/api/daily-report — paginacija', () => {
     assert.equal(res.code, 401);
   });
 
-  /* Jedan korisnik, jedno stanje — svaki test ispod menja samo `data`. */
-  async function izvestajZa(data, aiRedovi) {
+  /* Jedan korisnik, jedno stanje — svaki test ispod menja samo ono što meri.
+     `izvori` prima gotove redove pomoćnih tabela i vreme poslednjeg upisa. */
+  async function izvestajZa(data, aiRedovi, izvori) {
     const { default: handler } = await import('../api/daily-report.js?t=' + Math.random());
+    const iz = izvori || {};
     let html = '';
     globalThis.fetch = async (url, opt) => {
       const u = String(url), h = (opt && opt.headers) || {};
+      const strana = () => +String(h.Range || '0-').split('-')[0];
       if (u.includes('app_stats')) return jsonRes([{ korisnika: 1 }]);
       if (u.includes('/auth/v1/admin/users')) {
         const page = +(u.match(/[?&]page=(\d+)/) || [])[1];
         return jsonRes(page === 1 ? [{ id: 'u1', email: 'a@t.rs' }] : []);
       }
       if (u.includes('user_state')) {
-        const od = +String(h.Range || '0-').split('-')[0];
-        return jsonRes(od > 0 ? [] : [{ user_id: 'u1', updated_at: '2026-09-01T00:00:00Z', data }]);
+        return jsonRes(strana() > 0 ? [] : [{
+          user_id: 'u1',
+          updated_at: iz.updatedAt || '2026-09-01T00:00:00Z',
+          data
+        }]);
       }
-      if (u.includes('api_usage')) {
-        const od = +String(h.Range || '0-').split('-')[0];
-        return jsonRes(od > 0 ? [] : (aiRedovi || []));
-      }
+      if (u.includes('endpoint_usage')) return jsonRes(strana() > 0 ? [] : (iz.endpoint || []));
+      if (u.includes('api_usage')) return jsonRes(strana() > 0 ? [] : (aiRedovi || []));
       if (u.includes('nalog_za_brisanje')) return jsonRes([]);
       if (u.includes('api.resend.com')) { html = JSON.parse(opt.body).html; return jsonRes({ id: 'm' }); }
       throw new Error('neočekivan poziv: ' + u);
@@ -420,6 +424,13 @@ describe('/api/daily-report — paginacija', () => {
     await handler({ method: 'GET', headers: { authorization: 'Bearer tajna' } }, res);
     assert.equal(res.code, 200, JSON.stringify(res.body));
     return html;
+  }
+
+  /* Vrednost jednog reda iz tabelice u zaglavlju mejla. */
+  function zaglavljeRed(html, naziv) {
+    const kljuc = naziv.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const m = html.match(new RegExp(kljuc + '</td>\\s*<td[^>]*>([^<]*)</td>'));
+    return m ? m[1] : null;
   }
 
   test('poslednji trening ide po runDate, ne po ts', async () => {
@@ -466,6 +477,119 @@ describe('/api/daily-report — paginacija', () => {
       log: { a: { status: 'done', runDate: '2026-08-30', km: 10, aiAt: Date.UTC(2026, 7, 30, 9, 0) } }
     }, [{ user_id: 'u1', day: '2026-09-02', calls: 3 }]);
     assert.match(html, /02\.09\.2026/, 'noviji dan iz api_usage je izgubljen');
+  });
+
+  /* ============================================================
+     „AKTIVNIH" SE VIŠE NE MERI SAMO KROZ user_state.updated_at
+     ============================================================ */
+
+  /* Beogradski dan, isti račun koji radi i izveštaj — bez njega bi test bio
+     tačan samo dok se ne pokrene posle ponoći UTC. */
+  const danBg = (ms) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Belgrade' }).format(new Date(ms));
+  const DAN = 86400000;
+
+  test('korisnik čija sinhronizacija stanja nije uspela i dalje je aktivan', async () => {
+    /* SUŠTINA NALAZA: `app_stats` meri aktivnost isključivo kroz
+       `user_state.updated_at`, dakle kroz poslednji uspešan upis STANJA. Kad ta
+       jedna sinhronizacija ne uspe (token istekao baš tada, aplikacija
+       zatvorena pre odloženog upisa), čovek je koristio aplikaciju a ispada
+       neaktivan.
+       Čitanje sadržaja `data` to NE popravlja — sve unutra stiže istim tim
+       upisom, pa ne može biti novije od `updated_at`. Popravka mora doći iz
+       izvora koji se piše drugim putem: `endpoint_usage` (RPC pri sinhronizaciji
+       sa sata) i `api_usage` (RPC pri AI analizi). */
+    const html = await izvestajZa({ log: {} }, [], {
+      updatedAt: new Date(Date.now() - 20 * DAN).toISOString(),
+      endpoint: [{ user_id: 'u1', dan: danBg(Date.now()) }]
+    });
+    assert.equal(zaglavljeRed(html, 'Aktivnih (danas)'), '1',
+      'poziv ka serveru se ne računa kao aktivnost');
+    assert.equal(zaglavljeRed(html, 'Aktivnih (7 dana)'), '1');
+  });
+
+  test('bez ijednog traga u 30 dana korisnik nije aktivan', async () => {
+    const html = await izvestajZa({ log: {} }, [], {
+      updatedAt: new Date(Date.now() - 60 * DAN).toISOString(),
+      endpoint: [{ user_id: 'u1', dan: danBg(Date.now() - 45 * DAN) }]
+    });
+    assert.equal(zaglavljeRed(html, 'Aktivnih (danas)'), '0');
+    assert.equal(zaglavljeRed(html, 'Aktivnih (7 dana)'), '0');
+    assert.equal(zaglavljeRed(html, 'Aktivnih (30 dana)'), '0',
+      'stariji trag se broji u prozor od 30 dana');
+  });
+
+  test('sedmi dan je unutra, osmi nije', async () => {
+    /* Prozor je 7 KALENDARSKIH dana uključujući danas — dakle `danas-6`.
+       Granica se meri sa obe strane, inače zamka ne bi pala ni na `danas-7`
+       ni na `danas-5`. */
+    const naDan = async (n) => zaglavljeRed(await izvestajZa({ log: {} }, [], {
+      updatedAt: new Date(Date.now() - 90 * DAN).toISOString(),
+      endpoint: [{ user_id: 'u1', dan: danBg(Date.now() - n * DAN) }]
+    }), 'Aktivnih (7 dana)');
+    assert.equal(await naDan(6), '1', 'šesti dan unazad je ispao iz prozora');
+    assert.equal(await naDan(7), '0', 'sedmi dan unazad je ušao u prozor od 7 dana');
+  });
+
+  test('kad zapis o pozivima ne stigne, „Aktivnih" je prazno — ne nula', async () => {
+    /* Broj koji je poznato manji od stvarnog ne sme da se prikaže kao tačan;
+       ista logika kao za `app_stats` (v. revizija6). */
+    const { default: handler } = await import('../api/daily-report.js?t=' + Math.random());
+    let html = '';
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), h = (opt && opt.headers) || {};
+      if (u.includes('app_stats')) return jsonRes([{ korisnika: 1 }]);
+      if (u.includes('/auth/v1/admin/users')) {
+        return jsonRes(/[?&]page=1\b/.test(u) ? [{ id: 'u1', email: 'a@t.rs' }] : []);
+      }
+      if (u.includes('endpoint_usage')) return { ok: false, status: 500, json: async () => ({}) };
+      if (u.includes('user_state')) {
+        return jsonRes(+String(h.Range || '0-').split('-')[0] > 0 ? []
+          : [{ user_id: 'u1', updated_at: new Date().toISOString(), data: { log: {} } }]);
+      }
+      if (u.includes('api_usage')) return jsonRes([]);
+      if (u.includes('nalog_za_brisanje')) return jsonRes([]);
+      if (u.includes('api.resend.com')) { html = JSON.parse(opt.body).html; return jsonRes({ id: 'm' }); }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    const res = makeRes();
+    await handler({ method: 'GET', headers: { authorization: 'Bearer tajna' } }, res);
+    assert.equal(res.code, 200, JSON.stringify(res.body));
+    assert.equal(zaglavljeRed(html, 'Aktivnih (danas)'), '—',
+      'nepotpun broj je prikazan kao činjenica');
+    assert.match(html, /zapis o pozivima nije uspeo/, 'kvar se ne vidi u mejlu');
+  });
+
+  test('endpoint_usage se čita paginirano', async () => {
+    /* Raste najbrže od svih: red po korisniku, po danu, PO ENDPOINTU. Bez
+       `Range` zaglavlja PostgREST staje na `max-rows` i tu staje bez greške. */
+    const { default: handler } = await import('../api/daily-report.js?t=' + Math.random());
+    const opsezi = [];
+    let html = '';
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), h = (opt && opt.headers) || {};
+      if (u.includes('app_stats')) return jsonRes([{ korisnika: 1 }]);
+      if (u.includes('/auth/v1/admin/users')) {
+        return jsonRes(/[?&]page=1\b/.test(u) ? [{ id: 'kasni', email: 'a@t.rs' }] : []);
+      }
+      if (u.includes('endpoint_usage')) {
+        opsezi.push(h.Range);
+        const od = +String(h.Range || '0-').split('-')[0];
+        if (od === 0) return jsonRes(Array.from({ length: 1000 }, (_, i) => ({ user_id: 'x' + i, dan: danBg(Date.now()) })));
+        if (od === 1000) return jsonRes([{ user_id: 'kasni', dan: danBg(Date.now()) }]);
+        return jsonRes([]);
+      }
+      if (u.includes('user_state')) return jsonRes([]);
+      if (u.includes('api_usage')) return jsonRes([]);
+      if (u.includes('nalog_za_brisanje')) return jsonRes([]);
+      if (u.includes('api.resend.com')) { html = JSON.parse(opt.body).html; return jsonRes({ id: 'm' }); }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    const res = makeRes();
+    await handler({ method: 'GET', headers: { authorization: 'Bearer tajna' } }, res);
+    assert.equal(res.code, 200, JSON.stringify(res.body));
+    assert.ok(opsezi.length >= 2, 'endpoint_usage je čitan bez paginacije: ' + JSON.stringify(opsezi));
+    assert.equal(zaglavljeRed(html, 'Aktivnih (danas)'), '1001',
+      'korisnik sa druge strane je ispao iz brojanja');
   });
 
   test('pokvaren aiAt ne obara kolonu', async () => {
