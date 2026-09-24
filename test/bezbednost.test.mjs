@@ -93,7 +93,10 @@ const OPASNE_DEKLARACIJE = [
   /position\s*:\s*(fixed|absolute|sticky)/i,
   /\binset\s*:/i, /\bz-index\s*:/i,
   /\bexpression\s*\(/i, /\bbehavior\s*:/i, /url\s*\(\s*['"]?\s*javascript:/i,
-  /-moz-binding/i, /\bcontent\s*:/i
+  /* `content:` kao SVOJSTVO, ne kao deo imena drugog (`justify-content:`,
+     `align-content:`) — `\b` ispred crtice je granica reči, pa je zamka
+     obarala sopstveni `style` aplikacije čim se nedelja otvori u Planu. */
+  /-moz-binding/i, /(?<![\w-])content\s*:/i
 ];
 /* Gleda SAMO unutar `style` atributa. Escapovan tekst legitimno sadrži
    „position:fixed" kad je to samo opis treninga koji neko kucao — isti lažni
@@ -995,7 +998,9 @@ describe('VDOT zapisi (backup / sbPull)', () => {
 
   test('migrate čisti vdotLog (pokriva i uvoz i sbPull)', () => {
     const app = loadApp();
-    app.ctx.__z = { v: 7, log: {}, vdotLog: [{ id: 'p1', ts: '2026-07-01', vdot: PAYLOADI[0] }] };
+    /* Tekuća šema: iz v10 i starijih migracija v11 briše 'p' zapise starog
+       ličnog plana, pa ovde ne bi ostalo šta da se čisti. */
+    app.ctx.__z = { v: app.get('SCHEMA'), log: {}, vdotLog: [{ id: 'p1', ts: '2026-07-01', vdot: PAYLOADI[0] }] };
     const st = app.evalIn('migrate(__z)');
     assert.equal(st.vdotLog[0].vdot, null, 'migrate nije očistio vdotLog');
   });

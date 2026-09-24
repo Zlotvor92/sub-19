@@ -30,7 +30,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp, readRepoFile } from './harness.mjs';
 
-const app = (o = {}) => loadApp({ now: '2026-08-12T20:00:00Z', ...o });
+const app = (o = {}) => loadApp({ now: '2026-10-28T20:00:00Z', ...o });
 
 const WU = { tip: 'rad', distM: 1500, sec: 495, paceSec: 330, hr: 140 };
 const CD = { tip: 'rad', distM: 2500, sec: 900, paceSec: 360, hr: 145 };
@@ -73,7 +73,7 @@ describe('Prijavljena sesija: 1,5 km WU + 6×1000 m + 2,5 km CD', () => {
   test('taj tempo daje formu koja odgovara trkaču, pa se UPISUJE', () => {
     /* Jezgro prijave: automatski put je odustajao i tražio ručni unos. */
     const a = app();
-    a.evalIn("S.vdotLog=[{id:'seed',ts:'2026-06-22',measured:48.6}]; preracunajVdotLog();");
+    a.evalIn("S.vdotLog=[{id:'seed',ts:'2026-09-21',measured:48.6}]; preracunajVdotLog();");
     const forma = a.call('currentVdot');
     const t = a.call('icuRadniTempo', a.call('icuKrugoviULaps', SESIJA));
     const izmeren = a.evalIn(`Math.round(vdotFromPace(${t},'I')*10)/10`);
@@ -313,8 +313,8 @@ describe('Treninzi uvezeni PRE ispravke', () => {
   /* Star zapis sa kaskanjima u TRČKARANJU (400 m @5:00) — grubi sloj i položaj
      ih ne mogu skinuti, pa ove dve zamke istovremeno drže da drugi sloj zaista
      dobija plan (`qsFor`) na oba mesta gde se stari niz čita. */
-  const STAR_ZAPIS = `S.log['n8d3']={status:'done',km:11,sec:3464,src:'icu',
-      ts:'2026-08-12',runDate:'2026-08-12',lapsIzvor:'icu',
+  const STAR_ZAPIS = `S.log['n6d3']={status:'done',km:11,sec:3464,src:'icu',
+      ts:'2026-10-28',runDate:'2026-10-28',lapsIzvor:'icu',
       laps:[{distM:1500,paceSec:330,avgHr:140},
             {distM:1000,paceSec:234,avgHr:172,restSec:120},{distM:400,paceSec:300,avgHr:150},
             {distM:1000,paceSec:234,avgHr:172,restSec:120},{distM:400,paceSec:300,avgHr:150},
@@ -328,10 +328,10 @@ describe('Treninzi uvezeni PRE ispravke', () => {
     const a = app();
     a.evalIn(STAR_ZAPIS);
     /* Da zamka nešto zaista meri: bez plana ovaj niz JESTE pogrešan. */
-    assert.notEqual(a.evalIn(`icuRadniTempo(S.log['n8d3'].laps)`), TACAN,
+    assert.notEqual(a.evalIn(`icuRadniTempo(S.log['n6d3'].laps)`), TACAN,
       'ulaz nije zagađen — zamka ne dokazuje ništa');
     const r = JSON.parse(a.evalIn(
-      `JSON.stringify(trendSummary().treninzi.find(x=>x.date==='2026-08-12')||null)`));
+      `JSON.stringify(trendSummary().treninzi.find(x=>x.date==='2026-10-28')||null)`));
     assert.ok(r, 'trening nije ušao u trend');
     assert.equal(r.tempo, TACAN, 'trend računa tempo sa kaskanjima u proseku');
   });
@@ -340,7 +340,7 @@ describe('Treninzi uvezeni PRE ispravke', () => {
     const a = app();
     a.evalIn(STAR_ZAPIS);
     const m = JSON.parse(a.evalIn(
-      `JSON.stringify(merenjaDana(BY_ID['n8d3'], S.log['n8d3']))`));
+      `JSON.stringify(merenjaDana(BY_ID['n6d3'], S.log['n6d3']))`));
     assert.equal(m.tempo, TACAN, 'kartica pokazuje tempo sa kaskanjima u proseku');
   });
 });
@@ -352,16 +352,17 @@ describe('Treninzi uvezeni PRE ispravke', () => {
    sinhronizacija uopšte PROSLEĐUJE plan. Mutacija koja je uklonila
    `qsFor(x.d.id)` iz poziva prolazila je zelena — ista klasa promašaja kao
    tvrdnja nad celim fajlom umesto nad granom.
-   Datum je stvaran: 12.08.2026. je `n8d3`, sesija iz prijave.
+   Datum je stvaran: 12.08.2026. je bio `n8d3` starog plana, sesija iz prijave; u
+   sadašnjem planu isti oblik (1000 m deonice) nosi `n6d3` (28.10.2026.).
    ============================================================ */
 describe('Sinhronizacija: od icu odgovora do upisanog tempa', () => {
 
   function sinhronizuj(krugovi) {
-    const a = loadApp({ now: '2026-08-13T09:00:00Z', online: true });
+    const a = loadApp({ now: '2026-10-29T09:00:00Z', online: true });
     a.evalIn(`S.icu={athleteId:'i1', token:'t', scope:'ACTIVITY:READ,WELLNESS:READ'};
       SB={access:'t',refresh:'r',expiresAt:Date.now()+3600e3,email:'x@t.rs',
           userId:'0403f8fb-a643-4d4e-843d-f71199a0d6f9',seenAt:null,deviceId:'d1'};
-      S.vdotLog=[{id:'seed',ts:'2026-06-22',measured:48.6}]; preracunajVdotLog();`);
+      S.vdotLog=[{id:'seed',ts:'2026-09-21',measured:48.6}]; preracunajVdotLog();`);
     a.ctx.__kr = krugovi;
     a.setFetch(async (url, opt) => {
       const b = JSON.parse(opt.body || '{}');
@@ -370,7 +371,7 @@ describe('Sinhronizacija: od icu odgovora do upisanog tempa', () => {
       if (b.tokovi) return { ok: true, status: 200, json: async () =>
         ({ tokovi: Object.fromEntries(b.tokovi.map(i => [i, { greska: true }])) }) };
       return { ok: true, status: 200, json: async () => ({ treninzi: [
-        { id: 'a1', datum: '2026-08-12', sat: 20, tip: 'Run', naziv: 'Intervali',
+        { id: 'a1', datum: '2026-10-28', sat: 20, tip: 'Run', naziv: 'Intervali',
           km: 11, sec: 3464, hr: 157, maxHr: 182 }
       ] }) };
     });
@@ -395,14 +396,14 @@ describe('Sinhronizacija: od icu odgovora do upisanog tempa', () => {
     const r = await a.evalIn('icuSyncTreninzi(30, true)');
     assert.ok(r.ok, 'sinhronizacija nije prošla: ' + JSON.stringify(r));
 
-    const l = JSON.parse(a.evalIn('JSON.stringify(S.log["n8d3"]||null)'));
-    assert.ok(l, 'trening nije vezan za n8d3 — zamka ne meri ništa');
+    const l = JSON.parse(a.evalIn('JSON.stringify(S.log["n6d3"]||null)'));
+    assert.ok(l, 'trening nije vezan za n6d3 — zamka ne meri ništa');
     assert.equal(l.laps.length, 6, `u dnevnik je upisano ${l.laps.length} „repova"`);
     assert.equal(l.lapsVer, a.get('LAPS_VER'), 'verzija krugova nije upisana');
     assert.equal(l.autoOdbijen, undefined,
       'tempo je odbijen kao neverodostojan — žuta poruka bi i dalje stajala');
 
-    const pid = a.evalIn(`predRowFor(BY_ID["n8d3"])`);
+    const pid = a.evalIn(`predRowFor(BY_ID["n6d3"])`);
     assert.equal(a.evalIn(`S.pred[${JSON.stringify(pid)}]`), TACAN,
       'u Predikciju je upisan pogrešan tempo radnog dela');
   });
@@ -410,7 +411,7 @@ describe('Sinhronizacija: od icu odgovora do upisanog tempa', () => {
   test('forma raste, umesto da padne zbog dobrog treninga', () => {
     /* 4:22 u zoni I znači VDOT oko 41 — pad od sedam poena posle sesije koja je
        odrađena po planu. Zbog toga je `recordVdot` i odbijao upis. */
-    const a = loadApp({ now: '2026-08-13T09:00:00Z' });
+    const a = loadApp({ now: '2026-10-29T09:00:00Z' });
     const dobar = a.evalIn(`Math.round(vdotFromPace(${TACAN},'I')*10)/10`);
     const los = a.evalIn(`Math.round(vdotFromPace(262,'I')*10)/10`);
     assert.ok(dobar > 48, `tempo 3:52 daje VDOT ${dobar}`);
@@ -420,7 +421,7 @@ describe('Sinhronizacija: od icu odgovora do upisanog tempa', () => {
   test('ručno unet tempo zadržava prednost nad automatskim', async () => {
     /* Ko je posle prijave sam ukucao tempo ne sme da ga izgubi ponovnim uvozom. */
     const a = sinhronizuj([WU3, r3(234), kask, r3(232), kask, r3(226), CD3]);
-    const pid = a.evalIn(`predRowFor(BY_ID["n8d3"])`);
+    const pid = a.evalIn(`predRowFor(BY_ID["n6d3"])`);
     a.evalIn(`S.pred[${JSON.stringify(pid)}]=240; S.predLock[${JSON.stringify(pid)}]=true;`);
     await a.evalIn('icuSyncTreninzi(30, true)');
     assert.equal(a.evalIn(`S.pred[${JSON.stringify(pid)}]`), 240,

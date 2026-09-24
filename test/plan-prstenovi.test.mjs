@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 import { loadApp } from './harness.mjs';
 
 /* Stanje sa odrađenim nedeljama do zadatog dana. */
-function planSa(nedelje, danas = '2026-08-04T09:00:00Z') {
+function planSa(nedelje, danas = '2026-11-03T09:00:00Z') {
   const a = loadApp({ now: danas });
   a.evalIn(`
     ${JSON.stringify(nedelje)}.forEach(([w, km]) => {
@@ -41,9 +41,9 @@ describe('Dva velika prstena mere dve različite stvari', () => {
 
   test('„do sada" broji tekuću nedelju samo do današnjeg dana', () => {
     /* Inače bi u utorak pisalo da kasniš za celom nedeljom koja tek traje. */
-    const a = planSa([], '2026-08-04T09:00:00Z');   /* utorak N7 */
+    const a = planSa([], '2026-11-03T09:00:00Z');   /* utorak N7 */
     const z = a.call('planSazetak');
-    const doKraja = a.evalIn(`CUR_PLAN.filter(w => w.start <= '2026-08-04')
+    const doKraja = a.evalIn(`CUR_PLAN.filter(w => w.start <= '2026-11-03')
       .reduce((s, w) => s + weekPlanKm(w), 0)`);
     assert.ok(z.doSada < doKraja,
       `„do sada" (${z.doSada}) broji celu tekuću nedelju umesto samo do danas`);
@@ -59,7 +59,7 @@ describe('Dva velika prstena mere dve različite stvari', () => {
   test('prekoračenje plana ne seče prsten, ali ni ne pravi NaN', () => {
     /* Sat mora biti odmah po kraju prve nedelje — inače imenilac „do sada"
        obuhvata i svih šest narednih, pa prekoračenja nema. */
-    const a = planSa([[1, 60]], '2026-06-29T09:00:00Z');   /* plan N1 je 30, istrčano 60 */
+    const a = planSa([[1, 60]], '2026-09-28T09:00:00Z');   /* plan N1 je 30, istrčano 60 */
     const z = a.call('planSazetak');
     assert.ok(z.drziPlan > 100, `prekoračenje nije prikazano: ${z.drziPlan}%`);
     const svg = a.call('prstenSVG', 2, '200%', 104, 'red');
@@ -84,7 +84,7 @@ describe('Brojevi ispod prstenova', () => {
 
   test('na praznom planu prosek je „nema podatka", ne nula', () => {
     /* Nula bi značila „trčao si nula", a ovde još nijedna nedelja nije prošla. */
-    const a = planSa([], '2026-06-23T09:00:00Z');   /* druga dan prve nedelje */
+    const a = planSa([], '2026-09-22T09:00:00Z');   /* druga dan prve nedelje */
     assert.equal(a.call('planSazetak').prosek, null);
   });
 
@@ -96,8 +96,8 @@ describe('Brojevi ispod prstenova', () => {
   });
 
   test('bez ijednog trčanja najjača nedelja se ne izmišlja', () => {
-    const h = planSa([], '2026-06-23T09:00:00Z').call('renderPlan') ||
-              planSa([], '2026-06-23T09:00:00Z').evalIn('$("#pg-plan").innerHTML');
+    const h = planSa([], '2026-09-22T09:00:00Z').call('renderPlan') ||
+              planSa([], '2026-09-22T09:00:00Z').evalIn('$("#pg-plan").innerHTML');
     assert.doesNotMatch(String(h), /najjača · N\d/, 'prikazana je „najjača" nedelja bez ijednog km');
   });
 

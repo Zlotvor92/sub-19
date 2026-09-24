@@ -20,7 +20,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp, readRepoFile } from './harness.mjs';
 
-const DANAS = '2026-08-05T09:00:00Z';
+const DANAS = '2026-11-04T09:00:00Z';
 
 /* Prijavljen korisnik sa Google slikom i imenom. Bez ovoga `zajednicaPayload`
    nema ni `user_id`, pa bi svaka tvrdnja merila prazan objekat. */
@@ -37,13 +37,13 @@ function prijavljen(a) {
 /* Stanje sa svim osetljivim podacima koje aplikacija ume da zabeleži. */
 function osetljivo(a) {
   a.evalIn(`
-    S.wellness={'2026-08-05':{hrv:78,rhr:44,sleep:7.5,load:210}};
-    S.kg=[{date:'2026-08-04', kg:71.4}];
-    S.knee=[{date:'2026-08-04', v:6, part:'ahilova'}];
+    S.wellness={'2026-11-04':{hrv:78,rhr:44,sleep:7.5,load:210}};
+    S.kg=[{date:'2026-11-03', kg:71.4}];
+    S.knee=[{date:'2026-11-03', v:6, part:'ahilova'}];
     const _prvi=DATED.find(d=>!d.rest);
     if(_prvi){ S.log[_prvi.id]={status:'done', km:10, sec:3000,
       note:'kolena me ubijaju, ne valja mi san', hr:162, feel:2}; }
-    S.ai={'2026-08-04':{tekst:'AI analiza: opterećenje previsoko'}};
+    S.ai={'2026-11-03':{tekst:'AI analiza: opterećenje previsoko'}};
   `);
 }
 

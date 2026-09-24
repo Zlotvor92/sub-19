@@ -303,7 +303,7 @@ test('kontrola N5 — sa ispravnom oznakom isto stanje zadržava podešavanje', 
     'sa v:10 podešavanje mora da preživi — inače zamka N5 ne razlikuje uzrok');
   /* i da je „najstarije" zaista ono što se pogađa kad oznake nema */
   const m1 = a.call('migrate', { log: {} });
-  assert.equal(m1.v, 10, 'stanje bez oznake se migrira do tekuće šeme');
+  assert.equal(m1.v, a.get('SCHEMA'), 'stanje bez oznake se migrira do tekuće šeme');
 });
 
 test('NALAZ N6 — prozor koji se traži od intervals.icu mora da obuhvati LOKALNI današnji dan', async () => {

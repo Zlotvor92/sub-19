@@ -12,7 +12,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp } from './harness.mjs';
 
-const DANAS = '2026-08-11';
+const DANAS = '2026-11-10';
 
 /* Aplikacija sa stvarnom istorijom trčanja (za hronično opterećenje) i
    jednim zapisom o bolu. */

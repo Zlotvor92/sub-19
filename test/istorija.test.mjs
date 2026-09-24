@@ -13,7 +13,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp, readRepoFile } from './harness.mjs';
 
-const DANAS = '2026-08-08T09:00:00Z';
+const DANAS = '2026-11-07T09:00:00Z';
 const app = () => loadApp({ now: DANAS });
 
 function prijavljen(a) {
@@ -27,7 +27,9 @@ const SERVERSKO = {
      (STARI_SEED_POTPIS), pa ih `uskladiVlasnickePodatke` čisti iz tuđeg
      naloga. Prva verzija ovog skupa je koristila baš njih i test je padao —
      ali zato što je zaštita RADILA. Za posebnu zamku v. dole. */
-  v: 10, log: { 'n5d3': { status: 'done', km: 8, sec: 2400 } },
+  /* Tekuća šema (11): verzija iz v10 prolazi kroz migraciju koja briše
+     unose STAROG ličnog plana, pa bi `n5d3` ovde nestao iz drugog razloga. */
+  v: 11, log: { 'n5d3': { status: 'done', km: 8, sec: 2400 } },
   knee: [], kg: [], pred: {}, predLock: {}, vdotLog: [], t3k: [], moves: {}, alts: {},
   genPlan: null, wellness: {}, vreme: null, zajed: { vidljiv: false, nadimak: '' },
   strava: { lastSync: 1, athlete: 'A V', scope: 'read' }, icu: { lastSync: 1 }, ui: {}
@@ -74,7 +76,7 @@ describe('Vraćanje verzije', () => {
         json: async () => (data === null ? [] : [{ data }]) };
     }
     return { ok: true, status: 200, text: async () => '',
-      json: async () => ([{ updated_at: '2026-08-08T09:00:00Z' }]) };
+      json: async () => ([{ updated_at: '2026-11-07T09:00:00Z' }]) };
   });
 
   test('veze sa Stravom i intervals.icu ostaju NETAKNUTE', async () => {
@@ -186,9 +188,9 @@ describe('Backup više nije jedina kopija', () => {
        čita podsetnike. */
     const a = app();
     a.evalIn(`S.ui.firstRun='2026-01-01'; S.ui.lastBackup=null;`);
-    assert.equal(a.call('backupDue', '2026-08-08'), true, 'neprijavljenom se i dalje traži');
+    assert.equal(a.call('backupDue', '2026-11-07'), true, 'neprijavljenom se i dalje traži');
     prijavljen(a);
-    assert.equal(a.call('backupDue', '2026-08-08'), false, 'prijavljenom se backup i dalje traži');
+    assert.equal(a.call('backupDue', '2026-11-07'), false, 'prijavljenom se backup i dalje traži');
   });
 
   test('neprijavljenom Podešavanja i dalje kažu da je backup jedina kopija', () => {

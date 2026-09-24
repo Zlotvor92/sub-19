@@ -13,10 +13,10 @@ import { loadApp } from './harness.mjs';
 
 /* Dan sa punim podacima: uneto, sve sa sata, jutarnja merenja. */
 function danSaSvim(extra = {}) {
-  const a = loadApp({ now: '2026-08-04T09:00:00Z' });
+  const a = loadApp({ now: '2026-11-03T09:00:00Z' });
   a.evalIn(`
     S.strava={athlete:'x',hrZones:[{min:0,max:120},{min:120,max:140},{min:140,max:155},{min:155,max:168},{min:168,max:-1}]};
-    const d=CUR_PLAN[0].days.find(x=>x.tag==='lako'); __id=d.id;
+    const d=CUR_PLAN[1].days.find(x=>x.tag==='lako'); __id=d.id;
     S.log[d.id]=Object.assign({status:'done',km:8.01,sec:2679,hr:141,ts:d.date,
       cadence:86,maxHr:154,elevGain:71,temp:31,relEffort:19,decoupling:{n:11.2},
       perKm:[1,2,3,4,5,6,7,8].map(i=>({paceSec:334,hr:140,cadence:86}))},
@@ -47,8 +47,8 @@ describe('Kartice po izvoru podataka', () => {
   test('kartica koja nema šta da pokaže se ne crta', () => {
     /* Bez podataka sa sata i bez jutarnjih merenja ostaju samo Plan i Uneto.
        Prazna kartica sa naslovom je gori od nikakve — obećava sadržaj. */
-    const a = loadApp({ now: '2026-08-04T09:00:00Z' });
-    a.evalIn(`const d=CUR_PLAN[0].days.find(x=>x.tag==='lako'); __id=d.id;
+    const a = loadApp({ now: '2026-11-03T09:00:00Z' });
+    a.evalIn(`const d=CUR_PLAN[1].days.find(x=>x.tag==='lako'); __id=d.id;
       S.log[d.id]={status:'done',km:8,sec:2679}; S.wellness={}; rebuildDateIndex();`);
     a.ctx.__d = a.evalIn('BY_ID[__id]');
     const n = naslovi(a.evalIn('dayCard(__d)'));
@@ -57,8 +57,8 @@ describe('Kartice po izvoru podataka', () => {
   });
 
   test('dok trening nije odrađen vidi se samo Plan', () => {
-    const a = loadApp({ now: '2026-08-04T09:00:00Z' });
-    a.evalIn(`const d=CUR_PLAN[0].days.find(x=>x.tag==='lako'); __id=d.id; rebuildDateIndex();`);
+    const a = loadApp({ now: '2026-11-03T09:00:00Z' });
+    a.evalIn(`const d=CUR_PLAN[1].days.find(x=>x.tag==='lako'); __id=d.id; rebuildDateIndex();`);
     a.ctx.__d = a.evalIn('BY_ID[__id]');
     const h = a.evalIn('dayCard(__d)');
     assert.deepEqual(naslovi(h), ['Plan']);
@@ -120,8 +120,8 @@ describe('AI analiza — kartica u dva stanja', () => {
   });
 
   test('bez unetih km i vremena analize nema uopšte', () => {
-    const a = loadApp({ now: '2026-08-04T09:00:00Z' });
-    a.evalIn(`const d=CUR_PLAN[0].days.find(x=>x.tag==='lako'); __id=d.id;
+    const a = loadApp({ now: '2026-11-03T09:00:00Z' });
+    a.evalIn(`const d=CUR_PLAN[1].days.find(x=>x.tag==='lako'); __id=d.id;
       S.log[d.id]={status:'done'}; rebuildDateIndex();`);
     a.ctx.__d = a.evalIn('BY_ID[__id]');
     assert.doesNotMatch(a.evalIn('dayCard(__d)'), /ai-card/);

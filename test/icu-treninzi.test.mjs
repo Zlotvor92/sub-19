@@ -16,7 +16,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp, readRepoFile } from './harness.mjs';
 
-const app = (o = {}) => loadApp({ now: '2026-08-05T09:00:00Z', ...o });
+const app = (o = {}) => loadApp({ now: '2026-11-04T09:00:00Z', ...o });
 
 /* Odgovor kakav vraća /api/activities za jednu 6×800 sesiju. */
 const KRUGOVI = [
@@ -352,15 +352,15 @@ describe('Trend analiza koristi ono što icu daje', () => {
     /* 1600 m @4:00 + 400 m @3:00 = 2000 m za 456 s = 228 s/km. Prosek prosekâ
        bi dao 210 — 18 s/km brže nego što je istrčano, i to bi u trendu
        izgledalo kao napredak koga nema. */
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
-    const r = JSON.parse(saKrugovima(a, '2026-07-01'));
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
+    const r = JSON.parse(saKrugovima(a, '2026-09-30'));
     assert.equal(r.tempo, 228);
     assert.notEqual(r.tempo, 210);
   });
 
   test('GAP, broj repova i oporavci ulaze u trend', () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
-    const r = JSON.parse(saKrugovima(a, '2026-07-01'));
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
+    const r = JSON.parse(saKrugovima(a, '2026-09-30'));
     assert.equal(r.repova, 2);
     assert.equal(r.pauzaPrva, 120);
     assert.equal(r.pauzaZadnja, 150, 'produžavanje oporavka je najraniji znak da serija puca');
@@ -368,21 +368,21 @@ describe('Trend analiza koristi ono što icu daje', () => {
   });
 
   test('mere koje icu sam izračuna stižu do trenda', () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
-    const r = JSON.parse(saKrugovima(a, '2026-07-01'));
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
+    const r = JSON.parse(saKrugovima(a, '2026-09-30'));
     assert.equal(r.efikasnost, 1.82);
     assert.equal(r.opterecenje, 68);
     assert.equal(r.osecaSe, 36);
   });
 
   test('bez icu-a trend radi kao i pre — nema izmišljenih polja', () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     a.evalIn(`
-      const d = BY_DATE['2026-07-01'];
-      S.log[d.id] = { status:'done', km:8.3, sec:2800, ts:'2026-07-01', lapsIzvor:'strava',
+      const d = BY_DATE['2026-09-30'];
+      S.log[d.id] = { status:'done', km:8.3, sec:2800, ts:'2026-09-30', lapsIzvor:'strava',
         laps:[{distM:800,paceSec:233,avgHr:168,cadence:88},{distM:800,paceSec:239,avgHr:175,cadence:88}] };
       rebuildDateIndex();`);
-    const r = JSON.parse(a.evalIn(`JSON.stringify(trendSummary().treninzi.find(x=>x.date==='2026-07-01'))`));
+    const r = JSON.parse(a.evalIn(`JSON.stringify(trendSummary().treninzi.find(x=>x.date==='2026-09-30'))`));
     assert.equal(r.tempo, 236, 'tempo se i dalje računa iz Stravinih krugova');
     for (const k of ['gap', 'pauzaPrva', 'efikasnost', 'opterecenje'])
       assert.equal(r[k], undefined, `polje ${k} je izmišljeno bez icu podataka`);
@@ -527,7 +527,7 @@ describe('Vreme na dan treninga', () => {
   /* Prognoza se seje za DANAS i za prvi predstojeći kvalitetan dan — stvarna
      prognoza pokriva tri dana, pa fiksni datumi ne bi uvek pogodili sesiju. */
   const sa = () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     a.evalIn(`
       S.ui.geo={lat:44.81,lon:20.46}; S.ui.satTreninga=17;
       const kv=DATED.find(x=>x.date>=TODAY&&(x.tag==='int'||x.tag==='tempo'));
@@ -597,7 +597,7 @@ describe('Vreme na dan treninga', () => {
        ispadao bez kartice, pa je provera bila prazna: uhvaceno tako sto je
        `snaga` dodata u ZONA_ZA_TAG a nijedan test nije pao. */
     const seme = (vdotLog) => {
-      const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+      const a = loadApp({ now: '2026-11-04T09:00:00Z' });
       a.evalIn(`
         S.ui.geo={lat:44.81,lon:20.46}; S.ui.satTreninga=17;
         S.vdotLog=${vdotLog};
@@ -637,7 +637,7 @@ describe('Vreme na dan treninga', () => {
        sporije, mora reci za koliko. Pravilo da lagan dan ne dobija apsolutan
        tempo ostaje netaknuto — proverava ga test iznad. */
     for (const osecaj of [22, 27, 32, 37]) {
-      const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+      const a = loadApp({ now: '2026-11-04T09:00:00Z' });
       a.evalIn(`
         S.ui.geo={lat:44.81,lon:20.46}; S.ui.satTreninga=17;
         const sati={};
@@ -668,7 +668,7 @@ describe('Vreme na dan treninga', () => {
        rezervisani znak, pa je test prolazio ne proveravajuci nista. Uhvaceno
        tako sto je zamena namerno uklonjena i test je i dalje bio zelen.
        Placeholder nose samo pojasevi na 20 i 25 °C. */
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     a.evalIn(`
       S.ui.geo={lat:44.81,lon:20.46}; S.ui.satTreninga=17;
       const sati={};
@@ -703,7 +703,7 @@ describe('Vreme na dan treninga', () => {
     /* „Idi u 5:00" u dva po podne nije savet. Baš je ta rečenica pročitana kao
        trenutna temperatura („piše 25 °C, a napolju je 36"). */
     const a = sa();
-    a.clock.set('2026-08-05T14:30:00Z');
+    a.clock.set('2026-11-04T14:30:00Z');
     const danas = a.get('TODAY');
     const b = a.call('najboljiSat', danas, 17);
     if (b) assert.ok(b.sat > 14, `nudi ${b.sat}:00, a sada je 14:30`);
@@ -718,7 +718,7 @@ describe('Vreme na dan treninga', () => {
        jedini stepen koji je ličio na trenutni bio onaj iz saveta o hladnijem
        satu — i tako je i pročitan. */
     const a = sa();
-    a.clock.set('2026-08-05T14:30:00Z');
+    a.clock.set('2026-11-04T14:30:00Z');
     const h = String(a.evalIn(`(()=>{ const d=BY_DATE[TODAY]; return d&&!d.rest?karticaVremena(d):''; })()`));
     if (h) {
       assert.match(h, /sada · 14:00/, 'nema reda „sada"');
@@ -750,7 +750,7 @@ describe('Vreme na dan treninga', () => {
   });
 
   test('bez lokacije se ništa ne crta i ništa ne šalje', () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     const d = a.evalIn(`JSON.stringify(karticaVremena(BY_DATE[TODAY]||DATED[0]))`);
     assert.equal(JSON.parse(d), '');
   });
@@ -771,7 +771,7 @@ describe('Ista sesija ranije', () => {
 
   test('potpis razlikuje 6×800 od 5×1000', () => {
     /* Oba su „Intervali"; poređenje po tempu između njih ne znači ništa. */
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     const potpisi = JSON.parse(a.evalIn(`JSON.stringify(
       DATED.filter(d=>sesijaPotpis(d)).map(d=>sesijaPotpis(d)))`));
     assert.ok(potpisi.length > 3, 'nijedan dan nema potpis');
@@ -780,20 +780,20 @@ describe('Ista sesija ranije', () => {
   });
 
   test('lagano trčanje se poredi po POJASU distance, ne po strukturi', () => {
-    /* 8 km lako i 9 km lako su isti stimulus; 8 km i 20 km nisu. */
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    /* 5 km lako i 6 km lako su isti stimulus; 6 km i 20 km nisu. */
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     const laki = a.evalIn(`DATED.filter(d=>(d.tag==='lako'||d.tag==='lr')&&sesijaPotpis(d)).length`);
     assert.ok(laki > 0, 'lagana trčanja nemaju potpis — nemaju se sa čim porediti');
     const p = JSON.parse(a.evalIn(`(()=>{
       const nadji=km=>{ const d=DATED.find(x=>x.tag==='lako'&&x.km===km); return d?sesijaPotpis(d):null; };
-      return JSON.stringify({ k7:nadji(7), k8:nadji(8), k11:nadji(11) }); })()`));
-    assert.ok(p.k7 && p.k8, 'nema laganih trčanja od 7 i 8 km u planu');
-    assert.equal(p.k7, p.k8, '7 km i 8 km lako moraju biti u istom pojasu');
-    assert.notEqual(p.k8, p.k11, '8 km i 11 km lako ne smeju u isti pojas');
+      return JSON.stringify({ k5:nadji(5), k6:nadji(6), k7:nadji(7) }); })()`));
+    assert.ok(p.k5 && p.k6 && p.k7, 'nema laganih trčanja od 5, 6 i 7 km u planu');
+    assert.equal(p.k5, p.k6, '5 km i 6 km lako moraju biti u istom pojasu');
+    assert.notEqual(p.k6, p.k7, '6 km i 7 km lako ne smeju u isti pojas (pojas je 2 km)');
   });
 
   test('porede se samo RANIJE i samo odrađene sesije', () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     const r = JSON.parse(a.evalIn(`(()=>{
       const m={}; DATED.forEach(d=>{ const s=sesijaPotpis(d); if(s)(m[s]=m[s]||[]).push(d); });
       const par=Object.values(m).find(v=>v.length>=3);
@@ -814,10 +814,10 @@ describe('Lagano trčanje se poredi po pulsu i driftu', () => {
 
   /* Dva ranija lagana trčanja istog pojasa + današnje, sve sa pulsom i driftom. */
   const sa = (danasnji) => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     a.ctx.__d = danasnji || { km: 8, sec: 8 * 300, hr: 145, dek: 3.1 };
     a.evalIn(`(()=>{
-      const laki=DATED.filter(x=>x.tag==='lako'&&sesijaPotpis(x)===sesijaPotpis(DATED.find(y=>y.tag==='lako'&&y.km===8)));
+      const laki=DATED.filter(x=>x.tag==='lako'&&sesijaPotpis(x)===sesijaPotpis(DATED.find(y=>y.tag==='lako'&&y.km===6)));
       DAN_A=laki[0]; DAN_B=laki[1]; DANAS=laki[2];
       S.log[DAN_A.id]={status:'done', km:8, sec:8*310, hr:155, ts:DAN_A.date, temp:22, decoupling:{n:6.4}};
       S.log[DAN_B.id]={status:'done', km:8, sec:8*305, hr:150, ts:DAN_B.date, temp:24, decoupling:{n:5.0}};
@@ -872,9 +872,9 @@ describe('Lagano trčanje se poredi po pulsu i driftu', () => {
   });
 
   test('bez ijednog pulsa i drifta kartice nema — tempo laganog ne znači ništa', () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     a.evalIn(`(()=>{
-      const laki=DATED.filter(x=>x.tag==='lako'&&sesijaPotpis(x)===sesijaPotpis(DATED.find(y=>y.tag==='lako'&&y.km===8)));
+      const laki=DATED.filter(x=>x.tag==='lako'&&sesijaPotpis(x)===sesijaPotpis(DATED.find(y=>y.tag==='lako'&&y.km===6)));
       laki.slice(0,2).forEach(x=>{ S.log[x.id]={status:'done',km:8,sec:2480,ts:x.date}; });
       DANAS=laki[2]; S.log[DANAS.id]={status:'done',km:8,sec:2460,ts:DANAS.date};
       rebuildDateIndex(); })()`);
@@ -884,7 +884,7 @@ describe('Lagano trčanje se poredi po pulsu i driftu', () => {
   test('kvalitetna sesija je i dalje poređenje po TEMPU', () => {
     /* Nova grana ne sme da pregazi staru — intervali se porede po tempu
        radnog dela, ne po pulsu. */
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     const h = String(a.evalIn(`(()=>{
       const m={}; DATED.forEach(d=>{ const s=sesijaPotpis(d); if(s&&(d.tag==='int'||d.tag==='tempo'))(m[s]=m[s]||[]).push(d); });
       const par=Object.values(m).find(v=>v.length>=2);
