@@ -12,19 +12,24 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp } from './harness.mjs';
 
-const DANAS = '2026-08-04';
+const DANAS = '2026-10-20';
 
 function sa(merenja, opt = {}) {
   const a = loadApp({ now: DANAS + 'T09:00:00Z' });
   if (opt.generisan) {
     a.ctx.__m = {
-      startDate: DANAS, raceDate: '2026-11-15', raceDistM: 5000,
+      startDate: DANAS, raceDate: '2027-02-01', raceDistM: 5000,
       pb: { distM: 5000, sec: 1237 }, weeklyKm: 40, runDays: 4, quality: 2,
       intensity: 'std', trainedRecently: true, goalSec: null
     };
     a.evalIn(`(function(){ const g=generatePlan(__m);
       S.genPlan=adaptGeneratedPlan(g); setActivePlan(); rebuildDateIndex(); })()`);
   }
+  /* Lični plan (Bokeški polumaraton) ima samo dve sesije koje MERE formu —
+     deonice tempom trke su `nemeri`, jer im je propis izveden iz cilja (v.
+     KIND_IZ_CILJA). Mehanika prilagođavanja se ovde proverava nad svim
+     kvalitetnim danima, pa se ta oznaka u OVOJ instanci skida. */
+  if (!opt.generisan) a.evalIn(`CUR_PRED.forEach(r=>{ delete r.nemeri; })`);
   /* ID-jevi moraju biti STVARNI PRED redovi — prigušenje se bira po tipu
      sesije preko njih; izmišljen ID pada na srednji koeficijent i test bi
      merio nešto drugo nego što se u aplikaciji dešava. */
@@ -42,7 +47,8 @@ const tempo = (a, id) => a.evalIn(
      const r=pid?CUR_PRED.find(x=>x.id===pid):null;return effectivePace(d,r);})()`);
 
 const BRZA = [53.5, 54.0, 54.2, 54.5, 54.8, 55.0, 55.2, 55.4];
-const SPORA = [44.5, 44.0, 43.8, 43.5, 43.2, 43.0, 42.8, 42.6];
+/* Plan očekuje VDOT 45.1 (polumaraton 1:40:00), pa „sporo" mora biti jasno ispod toga. */
+const SPORA = [40.5, 40.0, 39.8, 39.5, 39.2, 39.0, 38.8, 38.6];
 
 describe('Kada se predlog uopšte javlja', () => {
   test('jedna ili dve sesije nisu dovoljne', () => {
@@ -51,7 +57,7 @@ describe('Kada se predlog uopšte javlja', () => {
   });
 
   test('kad se forma i plan slažu, nema šta da se menja', () => {
-    const a = sa([48.5, 48.6, 48.7, 48.6]);
+    const a = sa([45.0, 45.1, 45.2, 45.1]);
     const f = a.call('formaVsPlan', DANAS);
     assert.ok(Math.abs(f.delta) < a.get('VDOT_PRAG'), `razlika ${f.delta}`);
     assert.equal(a.call('vdotPredlog', DANAS), null);
@@ -216,7 +222,7 @@ describe('Prikaz', () => {
   });
 
   test('bez predloga nema ni kartice', () => {
-    const a = sa([48.5, 48.6, 48.7, 48.6]);
+    const a = sa([45.0, 45.1, 45.2, 45.1]);
     a.call('renderPred');
     const html = a.evalIn('$("#pg-pred").innerHTML') || '';
     assert.ok(!/vd-apply/.test(html));

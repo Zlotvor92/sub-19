@@ -14,7 +14,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp } from './harness.mjs';
 
-const D = '2026-08-11';
+const D = '2026-11-10';
 
 function sa() {
   const a = loadApp({ now: D + 'T09:00:00Z' });
@@ -22,6 +22,9 @@ function sa() {
     const log={}; CUR_PLAN.forEach(w=>w.days.forEach(d=>{
       if(!d.rest&&d.km&&d.date&&d.date<'${D}') log[d.id]={status:'done',km:d.km,sec:Math.round(d.km*330),ts:d.date}; }));
     S.log=log;
+    /* Tempo trke u ličnom planu je \`nemeri\` (propis iz cilja) i predlog forme
+       ga ne dira; spoj se ovde meri nad svim kvalitetnim danima. */
+    CUR_PRED.forEach(r=>{ delete r.nemeri; });
     const m=[53.5,54,54.2,54.5,54.8,55,55.2,55.4];
     S.vdotLog=CUR_PRED.slice(0,m.length).map((r,i)=>({id:r.id,ts:'2026-07-'+String(10+i).padStart(2,'0'),measured:m[i]}));
     preracunajVdotLog(); rebuildDateIndex();`);

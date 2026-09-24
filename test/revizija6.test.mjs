@@ -19,14 +19,14 @@ const SB_SESIJA = JSON.stringify({
 });
 
 const OSNOVNO = {
-  v: 10, log: {}, knee: [], kg: [], pred: {}, predLock: {}, vdotLog: [], t3k: [],
+  v: 11, log: {}, knee: [], kg: [], pred: {}, predLock: {}, vdotLog: [], t3k: [],
   vreme: null, moves: {}, alts: {}, genPlan: null, wellness: {}, icu: null,
-  zajed: { vidljiv: false, nadimak: '' }, ui: { firstRun: '2026-06-22' }
+  zajed: { vidljiv: false, nadimak: '' }, ui: { firstRun: '2026-09-21' }
 };
 
-/* 2026-08-14 je petak, dan `n8d5` (tempo 10 km) — dakle dan koji se tog dana
+/* 2026-11-13 je petak, dan `n8d5` (lako 6 km) — dakle dan koji se tog dana
    stvarno crta na ekranu Danas. Bez toga zamka meri prazan hod. */
-const NA_DAN_N8D5 = '2026-08-14T09:00:00Z';
+const NA_DAN_N8D5 = '2026-11-13T09:00:00Z';
 
 function saStanjem(mut, opts = {}) {
   const st = JSON.parse(JSON.stringify(OSNOVNO));
@@ -124,8 +124,8 @@ describe('N-1 · Uvezen opis dana koji nije niska', () => {
        `desc.match()` a nije bilo na spisku. */
     const a = loadApp();
     const dobar = {
-      meta: { start: '2026-08-10' },
-      weeks: [{ w: 1, start: '2026-08-10', days: [{ dow: 4, id: 'g1d5', km: 10, desc: 'Tempo' }] }],
+      meta: { start: '2026-11-09' },
+      weeks: [{ w: 1, start: '2026-11-09', days: [{ dow: 4, id: 'g1d5', km: 10, desc: 'Tempo' }] }],
       pred: [], qs: {}
     };
     assert.equal(a.call('validanGenPlan', dobar), true, 'ispravan plan je odbijen');
@@ -139,8 +139,8 @@ describe('N-1 · Uvezen opis dana koji nije niska', () => {
        servera, i može biti zatečeno od ranije. */
     const a = saStanjem(s => {
       s.genPlan = {
-        meta: { start: '2026-08-10', raceDate: '2026-09-20' },
-        weeks: [{ w: 1, start: '2026-08-10', days: [{ dow: 4, id: 'g1d5', km: 10, desc: 777, tag: 'tempo' }] }],
+        meta: { start: '2026-11-09', raceDate: '2026-12-20' },
+        weeks: [{ w: 1, start: '2026-11-09', days: [{ dow: 4, id: 'g1d5', km: 10, desc: 777, tag: 'tempo' }] }],
         pred: [], qs: {}
       };
     });
@@ -389,7 +389,7 @@ describe('N-4 · Koordinate naspram obećanja iz privacy.html', () => {
 
   const saKoordinatama = a => a.evalIn(`
     S.ui.geo={lat:44.81, lon:20.46};
-    S.vreme={at:Date.now(), lat:44.81, lon:20.46, sati:{'2026-08-11T18':{temp:31,osecaj:33}}};`);
+    S.vreme={at:Date.now(), lat:44.81, lon:20.46, sati:{'2026-11-10T18':{temp:31,osecaj:33}}};`);
 
   test('sbPayload ne nosi koordinate ni u jednom polju', () => {
     const a = loadApp(); saKoordinatama(a);
@@ -420,7 +420,7 @@ describe('N-4 · Koordinate naspram obećanja iz privacy.html', () => {
     /* Sa servera sada stiže `geo:null`. Bez zadržavanja lokalne vrednosti bi
        jedno „Uzmi sa servera" tiho ugasilo karticu vremena. */
     const a = loadApp(); saKoordinatama(a);
-    a.ctx.__sa = Object.assign({}, OSNOVNO, { ui: { firstRun: '2026-06-22' } });
+    a.ctx.__sa = Object.assign({}, OSNOVNO, { ui: { firstRun: '2026-09-21' } });
     a.evalIn('primiStanjeSaServera(migrate(__sa))');
     assert.equal(a.evalIn('S.ui.geo && S.ui.geo.lat'), 44.81, 'lokacija je izgubljena pri povlačenju');
     assert.ok(a.evalIn('!!S.vreme'), 'keš prognoze je izgubljen pri povlačenju');

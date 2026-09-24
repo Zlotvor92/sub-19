@@ -9,7 +9,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp } from './harness.mjs';
 
-const DANAS = '2026-08-04';
+const DANAS = '2026-11-03';
 
 function sa() {
   const a = loadApp({ now: DANAS + 'T09:00:00Z' });
@@ -24,9 +24,9 @@ function sa() {
     wellness[dt] = { datum: dt, hrv: 100 + ((i * 7) % 20), pulsUMiru: 46 + (i % 5), sanH: 6.5 + (i % 4) / 10 };
   }
   a.evalIn(`S.log=${JSON.stringify(log)};
-    S.kg=[{date:'2026-06-22',kg:82},{date:'2026-07-06',kg:81},{date:'2026-08-03',kg:79}];
-    S.knee=[{id:'k1',date:'2026-07-10',pain:3,part:'koleno-D',act:'Trčanje',note:'posle intervala'},
-            {id:'k2',date:'2026-07-20',pain:5,part:'ahilova-D',act:'Trčanje',note:''}];
+    S.kg=[{date:'2026-09-21',kg:82},{date:'2026-10-05',kg:81},{date:'2026-11-02',kg:79}];
+    S.knee=[{id:'k1',date:'2026-10-09',pain:3,part:'koleno-D',act:'Trčanje',note:'posle intervala'},
+            {id:'k2',date:'2026-10-19',pain:5,part:'ahilova-D',act:'Trčanje',note:''}];
     S.wellness=${JSON.stringify(wellness)};
     const ids=CUR_PRED.slice(0,8).map(r=>r.id);
     S.pred={}; S.vdotLog=[];
@@ -63,7 +63,10 @@ describe('Svaka linija je dodirljiva', () => {
       const bez = a.evalIn(`$(${JSON.stringify(g.sel)}).innerHTML`) || '';
       assert.match(bez, /Dodirni tačku za detalje/, `${g.ime}: nema poziva na dodir`);
 
-      a.evalIn(`CHART_SEL.${g.kljuc}=1`);
+      /* Predikcija: indeks je red plana, a redovi `nemeri` (tempo trke — propis
+         iz cilja) nemaju tačku; bira se prvi red koji je stvarno nacrtan. */
+      a.evalIn(g.kljuc === 'pred' ? `CHART_SEL.pred=CUR_PRED.findIndex(r=>!r.nemeri&&S.pred[r.id]!=null)`
+                                  : `CHART_SEL.${g.kljuc}=1`);
       a.call(g.render);
       const sa_ = a.evalIn(`$(${JSON.stringify(g.sel)}).innerHTML`) || '';
       const m = /class="chart-info"[^>]*>([^<]+)</.exec(sa_);
@@ -91,7 +94,7 @@ describe('Ponašanje izbora', () => {
     a.call('renderPred');
     const html = a.evalIn('$("#pg-pred").innerHTML') || '';
     assert.equal((html.match(/data-cpt="pred"/g) || []).length,
-                 Object.keys(a.evalIn('({...S.pred})')).length);
+                 a.evalIn('Object.keys(S.pred).filter(id=>{const r=CUR_PRED.find(x=>x.id===id);return r&&!r.nemeri;}).length'));
     assert.equal((html.match(/data-cpt="vdot"/g) || []).length, a.evalIn('S.vdotLog.length'));
   });
 

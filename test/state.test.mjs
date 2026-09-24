@@ -35,19 +35,62 @@ describe('migrate — šema stanja', () => {
   });
 
   test('nikad ne briše postojeće unose', () => {
-    const ulaz = {
-      v: 1,
-      log: { n1d1: { status: 'done', km: 7 } },
-      knee: [{ id: 'k1', date: '2026-06-22', pain: 3 }],
-      kg: [{ date: '2026-06-22', kg: 81 }],
-      pred: { p1: 265 }
-    };
+    /* Tekuća šema i 'g' prostor: migracija ovde nema šta da ukloni. Jedini
+       izuzetak od pravila je v10->v11 (stari lični plan) — v. test ispod. */
+    for (const ulaz of [
+      { v: SCHEMA, log: { n1d1: { status: 'done', km: 7 } }, pred: { p1: 265 } },
+      { v: 1, log: { g1d1: { status: 'done', km: 7 } }, pred: { g1_0: 265 } }
+    ]) {
+      ulaz.knee = [{ id: 'k1', date: '2026-09-21', pain: 3 }];
+      ulaz.kg = [{ date: '2026-09-21', kg: 81 }];
+      const o = migrate(JSON.parse(JSON.stringify(ulaz)));
+      const id = Object.keys(ulaz.log)[0], pid = Object.keys(ulaz.pred)[0];
+      assert.deepEqual(Object.keys(o.log), [id]);
+      assert.equal(o.log[id].km, 7);
+      assert.equal(o.knee.length, 1);
+      assert.equal(o.kg.length, 1);
+      assert.equal(o.pred[pid], 265);
+    }
+  });
+
+  test('v10->v11: unosi STAROG ličnog plana odlaze, sve ostalo ostaje', () => {
+    /* Novi lični plan (Bokeški polumaraton) koristi iste 'n'/'p' ID-jeve kao
+       uklonjeni 5K plan; bez čišćenja bi se stari treninzi prikazali na
+       nepovezanim danima novog plana. */
+    const o = migrate({
+      v: 10,
+      log: { n3d3: { status: 'done', km: 10 }, g1d1: { status: 'done', km: 5 } },
+      alts: { n5d5: { tag: 'lako', km: 6, desc: 'x' }, g2d2: { tag: 'lako', km: 4, desc: 'y' } },
+      moves: { n4d1: '2026-07-14', g1d3: '2026-10-01' },
+      pred: { p3: 240, p2b: 255, g1_0: 250 }, predLock: { p3: true, g1_0: true },
+      vdotLog: [{ id: 'p3', ts: '2026-07-08', measured: 50 }, { id: 'g1_0', ts: '2026-10-01', measured: 48 },
+                { id: 't3k-2026-08-01-ab12x', ts: '2026-08-01', measured: 49 }],
+      t3k: [{ id: 't3k-2026-08-01-ab12x', date: '2026-08-01', sec: 700 }],
+      knee: [{ id: 'kt-n3d3', src: 'n3d3', date: '2026-07-08', pain: 2 }, { id: 'k9', date: '2026-07-09', pain: 1 }],
+      kg: [{ date: '2026-07-08', kg: 80, src: 'n3d3' }, { date: '2026-07-09', kg: 79.8 }]
+    });
+    assert.equal(o.v, SCHEMA);
+    assert.deepEqual(Object.keys(o.log), ['g1d1']);
+    assert.deepEqual(Object.keys(o.alts), ['g2d2']);
+    assert.deepEqual(Object.keys(o.moves), ['g1d3']);
+    assert.deepEqual(Object.keys(o.pred), ['g1_0']);
+    assert.deepEqual(Object.keys(o.predLock), ['g1_0']);
+    assert.deepEqual(o.vdotLog.map(e => e.id).sort(), ['g1_0', 't3k-2026-08-01-ab12x']);
+    assert.equal(o.t3k.length, 1, 'test na 3 km nije deo plana');
+    /* zapisi o telu ostaju, ali više nisu vezani za dan plana */
+    assert.equal(o.knee.length, 2);
+    assert.equal(o.knee[0].src, 'arhiva');
+    assert.equal(o.knee[0].id, 'kt-arhiva-n3d3');
+    assert.equal(o.kg.length, 2);
+    assert.equal(o.kg[0].src, 'arhiva');
+    assert.equal(o.kg[1].src, undefined);
+  });
+
+  test('v11 stanje se pri ponovnoj migraciji ne dira', () => {
+    const ulaz = { v: SCHEMA, log: { n4d3: { status: 'done', km: 10.5 } }, pred: { p1: 283 } };
     const o = migrate(JSON.parse(JSON.stringify(ulaz)));
-    assert.deepEqual(Object.keys(o.log), ['n1d1']);
-    assert.equal(o.log.n1d1.km, 7);
-    assert.equal(o.knee.length, 1);
-    assert.equal(o.kg.length, 1);
-    assert.equal(o.pred.p1, 265);
+    assert.equal(o.log.n4d3.km, 10.5);
+    assert.equal(o.pred.p1, 283);
   });
 
   test('odbija stanje iz BUDUĆE šeme umesto da ga tiho spusti', () => {
@@ -62,7 +105,7 @@ describe('VDOT lanac (preracunajVdotLog)', () => {
   test('idempotentan — ponovni unos istih podataka ne diže VDOT', () => {
     /* Dokumentovan bag: 48.1 -> 50.1 -> 51.3 -> 52.0 na istim podacima. */
     const app = loadApp();
-    app.evalIn(`S.vdotLog=[{id:'p1',ts:'2026-07-01',measured:52}]`);
+    app.evalIn(`S.vdotLog=[{id:'p1',ts:'2026-09-30',measured:52}]`);
     const prvi = app.evalIn('preracunajVdotLog(), S.vdotLog[0].vdot');
     for (let i = 0; i < 5; i++) app.evalIn('preracunajVdotLog()');
     const posle = app.evalIn('S.vdotLog[0].vdot');
@@ -72,8 +115,8 @@ describe('VDOT lanac (preracunajVdotLog)', () => {
   test('sortira po datumu — ispravka starije sesije prepravlja i sve posle nje', () => {
     const app = loadApp();
     app.evalIn(`S.vdotLog=[
-      {id:'b',ts:'2026-08-01',measured:52},
-      {id:'a',ts:'2026-07-01',measured:50}
+      {id:'b',ts:'2026-10-31',measured:52},
+      {id:'a',ts:'2026-09-30',measured:50}
     ]`);
     app.evalIn('preracunajVdotLog()');
     const redosled = app.evalIn('S.vdotLog.map(e=>e.id).join(",")');
@@ -92,7 +135,7 @@ describe('VDOT lanac (preracunajVdotLog)', () => {
     const zaZonu = zona => {
       const id = app.evalIn(`(CUR_PRED.find(r=>zoneForPredRow(r)==='${zona}')||{}).id`);
       assert.ok(id, `nema PRED reda u zoni ${zona}`);
-      app.evalIn(`S.vdotLog=[{id:${JSON.stringify(id)},ts:'2026-07-01',measured:${baseline + 10}}]`);
+      app.evalIn(`S.vdotLog=[{id:${JSON.stringify(id)},ts:'2026-09-30',measured:${baseline + 10}}]`);
       app.evalIn('preracunajVdotLog()');
       return app.evalIn('S.vdotLog[0]');
     };
@@ -109,14 +152,14 @@ describe('VDOT lanac (preracunajVdotLog)', () => {
        svog reda. Ne sme da pukne ni da tiho preskoči merenje. */
     const app = loadApp();
     const baseline = app.call('baselineVdot');
-    app.evalIn(`S.vdotLog=[{id:'nepostojeci',ts:'2026-07-01',measured:${baseline + 10}}]`);
+    app.evalIn(`S.vdotLog=[{id:'nepostojeci',ts:'2026-09-30',measured:${baseline + 10}}]`);
     app.evalIn('preracunajVdotLog()');
     assert.equal(app.evalIn('S.vdotLog[0].alpha'), 0.15);
   });
 
   test('zapis bez `measured` (stari backup) se ne dira', () => {
     const app = loadApp();
-    app.evalIn(`S.vdotLog=[{id:'stari',ts:'2026-07-01',vdot:47.7}]`);
+    app.evalIn(`S.vdotLog=[{id:'stari',ts:'2026-09-30',vdot:47.7}]`);
     app.evalIn('preracunajVdotLog()');
     assert.equal(app.evalIn('S.vdotLog[0].vdot'), 47.7);
   });
@@ -150,8 +193,8 @@ describe('Backup — izvoz ne sme da nosi pristupne podatke', () => {
 
   test('izvoz čuva sve stvarne podatke (dnevnik, koleno, težina, VDOT)', () => {
     const app = loadApp();
-    app.evalIn(`S.log={n1d1:{status:'done',km:7}}; S.knee=[{id:'k1',date:'2026-06-22',pain:2}];
-                S.kg=[{date:'2026-06-22',kg:81}]; S.vdotLog=[{id:'p1',ts:'2026-07-01',measured:50}]`);
+    app.evalIn(`S.log={n1d1:{status:'done',km:7}}; S.knee=[{id:'k1',date:'2026-09-21',pain:2}];
+                S.kg=[{date:'2026-09-21',kg:81}]; S.vdotLog=[{id:'p1',ts:'2026-09-30',measured:50}]`);
     const p = app.evalIn('backupPayload()');
     assert.equal(p.log.n1d1.km, 7);
     assert.equal(p.knee.length, 1);
@@ -166,7 +209,7 @@ describe('Backup — uvoz odbija pokvaren plan umesto da razbije aplikaciju', ()
 
   test('prihvata ispravan generisan plan', () => {
     const dobar = {
-      weeks: [{ w: 1, start: '2026-06-22', days: [{ dow: 0, tag: 'lako', km: 5 }] }],
+      weeks: [{ w: 1, start: '2026-09-21', days: [{ dow: 0, tag: 'lako', km: 5 }] }],
       pred: [], qs: {}, meta: {}
     };
     assert.equal(ok(dobar), true);
@@ -183,9 +226,9 @@ describe('Backup — uvoz odbija pokvaren plan umesto da razbije aplikaciju', ()
     assert.equal(ok({ weeks: [] }), false, 'prazan plan');
     assert.equal(ok({ weeks: [{ w: 1 }] }), false, 'nedelja bez days');
     assert.equal(ok({ weeks: [{ w: 1, days: 'x' }] }), false);
-    assert.equal(ok({ weeks: [{ w: 1, start: '2026-06-22', days: [{ dow: 99 }] }] }), false, 'dow van opsega');
+    assert.equal(ok({ weeks: [{ w: 1, start: '2026-09-21', days: [{ dow: 99 }] }] }), false, 'dow van opsega');
     assert.equal(ok({ weeks: [{ w: 1, start: 'nije-datum', days: [{ dow: 0 }] }] }), false);
-    assert.equal(ok({ weeks: [{ w: 1, start: '2026-06-22', days: [{ dow: 0, km: 'x' }] }] }), false, 'km nije broj');
+    assert.equal(ok({ weeks: [{ w: 1, start: '2026-09-21', days: [{ dow: 0, km: 'x' }] }] }), false, 'km nije broj');
   });
 });
 
@@ -200,18 +243,18 @@ describe('Ucitavanje POPUNJENOG stanja — mrtva zona `const`-a', () => {
      Zato se ovde ne testira validanId nego UCITAVANJE stanja u kom je svako
      polje popunjeno — jedini oblik koji bi tu klasu greske uhvatio. */
   const PUNO = {
-    v: 9,
-    log: { n1d1: { status: 'done', km: 8, sec: 2400, hr: 150, ts: '2026-06-22', decoupling: { n: 4.2 } } },
+    v: 11,
+    log: { n1d1: { status: 'done', km: 8, sec: 2400, hr: 150, ts: '2026-09-21', decoupling: { n: 4.2 } } },
     pred: { 'n1-t': 240 }, predLock: {},
-    vdotLog: [{ id: 't3k-2026-07-01-ab12x', ts: '2026-07-01', measured: 48.1, vdotMigrated: true }],
-    t3k: [{ id: 't3k-2026-07-01-ab12x', date: '2026-07-01', sec: 718 }],
-    knee: [{ id: 'k1', src: 'n1d1', date: '2026-06-22', act: 'Trčanje', pain: 3, note: '', part: 'koleno-D' }],
-    kg: [{ date: '2026-06-22', kg: 80.4, src: 'n1d1' }],
-    wellness: { '2026-06-22': { datum: '2026-06-22', hrv: 62, pulsUMiru: 47, sanH: 7.1 } },
+    vdotLog: [{ id: 't3k-2026-09-30-ab12x', ts: '2026-09-30', measured: 48.1, vdotMigrated: true }],
+    t3k: [{ id: 't3k-2026-09-30-ab12x', date: '2026-09-30', sec: 718 }],
+    knee: [{ id: 'k1', src: 'n1d1', date: '2026-09-21', act: 'Trčanje', pain: 3, note: '', part: 'koleno-D' }],
+    kg: [{ date: '2026-09-21', kg: 80.4, src: 'n1d1' }],
+    wellness: { '2026-09-21': { datum: '2026-09-21', hrv: 62, pulsUMiru: 47, sanH: 7.1 } },
     moves: {}, alts: {}, genPlan: null,
     icu: { athleteId: 'i1', token: 't', scope: 'ACTIVITY:READ' },
-    vreme: { at: 1, lat: 44.81, lon: 20.46, sati: { '2026-08-05T18': { temp: 30 } } },
-    ui: { firstRun: '2026-06-22', geo: { lat: 44.81, lon: 20.46 }, satTreninga: 18 }
+    vreme: { at: 1, lat: 44.81, lon: 20.46, sati: { '2026-11-04T18': { temp: 30 } } },
+    ui: { firstRun: '2026-09-21', geo: { lat: 44.81, lon: 20.46 }, satTreninga: 18 }
   };
 
   /* Vlasnicka sesija: bez nje `uskladiVlasnickePodatke()` skine seed sa licnog
@@ -361,7 +404,7 @@ describe('Sinhronizacija: zauzet nije isto što i odrađen', () => {
       if (s.includes('/rest/v1/user_state') && o && o.method === 'POST') {
         upisa++;
         if (upisa === 1) await cekanje;          /* prvi upis visi */
-        return { ok: true, json: async () => [{ updated_at: '2026-08-01T00:00:00Z' }] };
+        return { ok: true, json: async () => [{ updated_at: '2026-10-31T00:00:00Z' }] };
       }
       return { ok: true, json: async () => [] };
     });
@@ -400,7 +443,7 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
      istinit i pre nego sto traka postoji — `prikaziSukobSync` bi odmah izasao
      i test bi merio nista. Zato se traka HVATA pri dodavanju u telo. */
   function saSukobom() {
-    const a = loadApp({ now: '2026-08-06T09:00:00Z',
+    const a = loadApp({ now: '2026-11-05T09:00:00Z',
       seedLocalStorage: { sub19_sb: JSON.stringify({
         access: 't', refresh: 'r', expiresAt: Date.now() + 9e6,
         email: 'a@b.c', userId: '1111', seenAt: null, deviceId: 'd1' }) } });
@@ -413,7 +456,7 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
       document.getElementById=(id)=>(id==='sync-sukob')?__traka:__g(id);
       document.body.appendChild=(c)=>{ if(c&&c.id==='sync-sukob') __traka=c; return c; };
     `);
-    a.call('prikaziSukobSync', '2026-08-06T10:00:00Z');
+    a.call('prikaziSukobSync', '2026-11-05T10:00:00Z');
     return a;
   }
   /* Rukovaoci su ASINHRONI: od popravke N2 „Uzmi sa servera" zatvara traku tek
@@ -432,7 +475,7 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
       setTimeout=(f)=>{ __odlozeno.push(f); return __odlozeno.length; };
       clearTimeout=()=>{};
       fetch=async(u,o)=>{ __req.push({u:String(u), m:(o&&o.method)||'GET'});
-        return {ok:true, status:200, json:async()=>[{updated_at:'2026-08-06T11:00:00Z'}]}; };
+        return {ok:true, status:200, json:async()=>[{updated_at:'2026-11-05T11:00:00Z'}]}; };
     `);
     return a;
   }
@@ -440,7 +483,7 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
 
   test('dok traka stoji, izmena se NE šalje na server', async () => {
     const a = saMrezom();
-    a.evalIn(`S.kg.push({date:'2026-08-06',kg:77,src:null}); save();`);
+    a.evalIn(`S.kg.push({date:'2026-11-05',kg:77,src:null}); save();`);
     await a.evalIn(`Promise.all(__odlozeno.map(f=>f()))`);
     assert.equal(upisi(a), 0, 'prazno stanje je poslato uprkos nerešenom sukobu');
     assert.equal(a.evalIn('SB_SUKOB'), true);
@@ -454,7 +497,7 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
 
   test('posle izbora upis opet radi — zabrana je privremena, ne trajna', async () => {
     const a = saMrezom();
-    a.evalIn(`confirm=()=>true; S.kg.push({date:'2026-08-06',kg:77,src:null});`);
+    a.evalIn(`confirm=()=>true; S.kg.push({date:'2026-11-05',kg:77,src:null});`);
     await klik(a, '#sy-push');
     await a.evalIn(`sbPush()`);
     assert.ok(upisi(a) > 0, 'posle izbora upis i dalje ne prolazi');
@@ -504,7 +547,7 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
 
   test('kad uređaj IMA unose, pitanja nema — to je normalan izbor', () => {
     const a = saSukobom();
-    a.evalIn(`S.kg.push({date:'2026-08-06',kg:77,src:null});
+    a.evalIn(`S.kg.push({date:'2026-11-05',kg:77,src:null});
               confirm=(p)=>{ __pitano=p; return true; };`);
     klik(a, '#sy-push');
     assert.equal(a.evalIn('__pitano'), null, 'pita i kad ima šta da se sačuva');
@@ -513,10 +556,10 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
   test('sbPraznoStanje gleda ono što se ne može vratiti spolja', () => {
     const a = loadApp();
     assert.equal(a.evalIn(`sbPraznoStanje(seedState())`), true);
-    for (const polje of [`{kg:[{date:'2026-08-06',kg:77}]}`,
-                         `{knee:[{date:'2026-08-06',pain:2}]}`,
+    for (const polje of [`{kg:[{date:'2026-11-05',kg:77}]}`,
+                         `{knee:[{date:'2026-11-05',pain:2}]}`,
                          `{log:{n1d1:{status:'done'}}}`,
-                         `{wellness:{'2026-08-06':{hrv:60}}}`]) {
+                         `{wellness:{'2026-11-05':{hrv:60}}}`]) {
       assert.equal(a.evalIn(`sbPraznoStanje(Object.assign(seedState(),${polje}))`), false,
         `${polje} je protumačeno kao prazno stanje`);
     }
@@ -538,11 +581,11 @@ describe('Sukob sinhronizacije — obećanje „ništa se ne menja" mora da važ
    ============================================================ */
 describe('Sesija koju je server odbio', () => {
   const sa = () => {
-    const a = loadApp({ now: '2026-08-07T04:00:00Z' });
+    const a = loadApp({ now: '2026-11-06T04:00:00Z' });
     a.evalIn(`
       S.log={'n1d1':{status:'done',km:8,sec:2400}};
-      S.wellness={'2026-08-06':{datum:'2026-08-06',hrv:70,pulsUMiru:45}};
-      S.vdotLog=[{date:'2026-08-01',vdot:48.1,measured:1170}];
+      S.wellness={'2026-11-05':{datum:'2026-11-05',hrv:70,pulsUMiru:45}};
+      S.vdotLog=[{date:'2026-10-31',vdot:48.1,measured:1170}];
       save();
       SB={access:'a',refresh:'r',expiresAt:Date.now()-1,email:'x@t.rs',userId:'u1',deviceId:'d1'};
       sbSave();
@@ -613,7 +656,7 @@ describe('Sesija koju je server odbio', () => {
    ============================================================ */
 describe('Provera sesije kod servera', () => {
   const sa = () => {
-    const a = loadApp({ now: '2026-08-07T04:00:00Z' });
+    const a = loadApp({ now: '2026-11-06T04:00:00Z' });
     a.evalIn(`
       S.log={'n1d1':{status:'done',km:8,sec:2400}}; save();
       SB={access:'a',refresh:'r',expiresAt:Date.now()+3600000,email:'x@t.rs',userId:'u1',deviceId:'d1'};
@@ -764,7 +807,7 @@ describe('Provera sesije kod servera', () => {
    nije. */
 describe('Povratak u aplikaciju proverava sesiju', () => {
   const sa = (status) => {
-    const a = loadApp({ now: '2026-08-07T04:00:00Z' });
+    const a = loadApp({ now: '2026-11-06T04:00:00Z' });
     a.ctx.__st = status;
     a.evalIn(`
       SB={access:'a',refresh:'r',expiresAt:Date.now()+3600000,email:'x@t.rs',userId:'u1',deviceId:'d1'};
@@ -852,54 +895,54 @@ describe('Uvezen backup: bol i težina bez upotrebljivog broja', () => {
      Drugo je gore: nenacrtana tačka se vidi, prećutana povreda ne. */
 
   test('zapis bez `pain` se odbacuje, ne provlači kao nula', () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     const o = JSON.parse(a.evalIn(`JSON.stringify(migrate({v:10, log:{}, knee:[
-      {id:'a', date:'2026-08-01'},
-      {id:'b', date:'2026-08-02', pain:'jako'},
-      {id:'c', date:'2026-08-03', pain:7, part:'ahilova-D'}
+      {id:'a', date:'2026-10-31'},
+      {id:'b', date:'2026-11-01', pain:'jako'},
+      {id:'c', date:'2026-11-02', pain:7, part:'ahilova-D'}
     ]}))`));
     assert.deepEqual(o.knee.map(k => k.id), ['c']);
   });
 
   test('bol van 0–10 se odbacuje', () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     const o = JSON.parse(a.evalIn(`JSON.stringify(migrate({v:10, log:{}, knee:[
-      {id:'x', date:'2026-08-01', pain:-3},
-      {id:'y', date:'2026-08-02', pain:99},
-      {id:'z', date:'2026-08-03', pain:0}
+      {id:'x', date:'2026-10-31', pain:-3},
+      {id:'y', date:'2026-11-01', pain:99},
+      {id:'z', date:'2026-11-02', pain:0}
     ]}))`));
     assert.deepEqual(o.knee.map(k => k.id), ['z'], 'bol 0 je legitiman i mora da ostane');
   });
 
   test('težina van razumnog opsega se odbacuje', () => {
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     const o = JSON.parse(a.evalIn(`JSON.stringify(migrate({v:10, log:{}, kg:[
-      {date:'2026-08-01'}, {date:'2026-08-02', kg:0}, {date:'2026-08-03', kg:'78,5'},
-      {date:'2026-08-04', kg:78.5}
+      {date:'2026-10-31'}, {date:'2026-11-01', kg:0}, {date:'2026-11-02', kg:'78,5'},
+      {date:'2026-11-03', kg:78.5}
     ]}))`));
-    assert.deepEqual(o.kg.map(k => k.date), ['2026-08-04']);
+    assert.deepEqual(o.kg.map(k => k.date), ['2026-11-03']);
   });
 
   test('grafikon bola ne crta tačku bez koordinate', () => {
     /* Zamka nad ISHODOM, ne nad migracijom: i da provera nekad popusti, ovde
        se vidi da SVG izlazi ispravan. */
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
-    a.evalIn(`S.knee=[{id:'a',date:'2026-08-01',pain:4},{id:'b',date:'2026-08-03',pain:8}]`);
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
+    a.evalIn(`S.knee=[{id:'a',date:'2026-10-31',pain:4},{id:'b',date:'2026-11-02',pain:8}]`);
     const svg = a.call('chartKnee');
     assert.ok(!/NaN/.test(svg), `grafikon sadrži NaN: ${svg.slice(0, 200)}`);
   });
 });
 
-describe('Backup i Zajednica posle skoka šeme na v10', () => {
+describe('Backup i Zajednica posle skoka šeme na v10 (sada v11)', () => {
 
   test('izvoz nosi `zajed`, a uvoz ga vraća', () => {
     /* Šema je skočila sa 9 na 10. Da `zajed` ispadne iz backupa, čovek bi
        posle vraćanja bio isključen iz Zajednice bez ijedne poruke — a mislio
        bi da je uključen. */
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     a.evalIn(`S.zajed={vidljiv:true, nadimak:'Zlotvor92'}`);
     const izvoz = JSON.parse(JSON.stringify(a.call('backupPayload')));
-    assert.equal(izvoz.v, 10, 'backup nosi pogrešnu verziju šeme');
+    assert.equal(izvoz.v, 11, 'backup nosi pogrešnu verziju šeme');
     assert.deepEqual(izvoz.zajed, { vidljiv: true, nadimak: 'Zlotvor92' });
 
     const nazad = JSON.parse(a.evalIn(`JSON.stringify(migrate(${JSON.stringify(izvoz)}))`));
@@ -909,24 +952,24 @@ describe('Backup i Zajednica posle skoka šeme na v10', () => {
   test('backup iz starije verzije aplikacije se i dalje uvozi', () => {
     /* Backup napravljen pre Zajednice mora da prođe — inače bi nadogradnja
        obezvredila svaku raniju kopiju. */
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
     const star = JSON.parse(a.evalIn(`JSON.stringify(migrate({
-      v:9, log:{'n1d1':{status:'done', km:8, sec:2400}},
-      knee:[{id:'k', date:'2026-07-01', pain:4}], kg:[{date:'2026-07-01', kg:79}],
+      v:9, log:{'g1d1':{status:'done', km:8, sec:2400}},
+      knee:[{id:'k', date:'2026-09-30', pain:4}], kg:[{date:'2026-09-30', kg:79}],
       pred:{}, predLock:{}, vdotLog:[], t3k:[], moves:{}, alts:{},
       genPlan:null, strava:null, wellness:{}, icu:null, vreme:null, ui:{}
     }))`));
-    assert.equal(star.v, 10);
+    assert.equal(star.v, 11);
     assert.equal(star.zajed.vidljiv, false, 'stara kopija te ubacuje u Zajednicu');
-    assert.equal(star.log['n1d1'].km, 8, 'stari dnevnik nije preživeo migraciju');
+    assert.equal(star.log['g1d1'].km, 8, 'stari dnevnik nije preživeo migraciju');
     assert.equal(star.knee.length, 1);
     assert.equal(star.kg.length, 1);
   });
 
   test('backup iz NOVIJE šeme se i dalje odbija', () => {
     /* Postojeća zaštita — proverava se da je skok na v10 nije pomerio. */
-    const a = loadApp({ now: '2026-08-05T09:00:00Z' });
-    assert.equal(a.evalIn(`migrate({v:11, log:{}})`), null);
+    const a = loadApp({ now: '2026-11-04T09:00:00Z' });
+    assert.equal(a.evalIn(`migrate({v:12, log:{}})`), null);
   });
 });
 
@@ -952,13 +995,13 @@ describe('Prelazak preko ponoći vuče i zaglavlje', () => {
   const zaglavlje = a => String(a.evalIn(`$("#h-sub").textContent`) || '');
 
   test('dodir taba posle ponoći osveži i zaglavlje', () => {
-    const a = sa('2026-08-09T23:58:00Z');
+    const a = sa('2026-11-08T23:58:00Z');
     const pre = zaglavlje(a);
     assert.match(pre, /dana do trke|DANAS JE TRKA|Start:|Plan završen/, `zaglavlje je prazno: „${pre}"`);
-    a.clock.set('2026-08-10T00:02:00Z');
+    a.clock.set('2026-11-09T00:02:00Z');
     a.call('setPage', 'plan');
     a.call('setPage', 'danas');
-    assert.equal(a.evalIn('TODAY'), '2026-08-10', 'dan se nije pomerio');
+    assert.equal(a.evalIn('TODAY'), '2026-11-09', 'dan se nije pomerio');
     assert.notEqual(zaglavlje(a), pre,
       `zaglavlje je ostalo na jučerašnjem danu: „${zaglavlje(a)}"`);
   });
@@ -966,8 +1009,8 @@ describe('Prelazak preko ponoći vuče i zaglavlje', () => {
   test('broj dana u zaglavlju se slaže sa danom koji aplikacija drži', () => {
     /* Suština nalaza nije „tekst se promenio" nego „dva broja na istom ekranu".
        Zato se poredi sa vrednošću izvedenom iz TODAY, a ne sa prethodnim tekstom. */
-    const a = sa('2026-08-09T23:58:00Z');
-    a.clock.set('2026-08-10T00:02:00Z');
+    const a = sa('2026-11-08T23:58:00Z');
+    a.clock.set('2026-11-09T00:02:00Z');
     a.call('setPage', 'danas');
     const uZaglavlju = (/(\d+)\s+\S+\s+do trke/.exec(zaglavlje(a)) || [])[1];
     if (uZaglavlju != null) {

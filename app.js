@@ -37,22 +37,30 @@
   },{once:true});
 })();
 
-/* ============ KONSTANTE PLANA — izvor: Plan_SUB-19_5K_v5.xlsx (doslovno) ============ */
-const START='2026-06-22', RACE='2026-09-24', SCHEMA=10, LS_KEY='sub19-v1';
-const APP_VERSION='267'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+/* ============ KONSTANTE PLANA — izvor: Plan_Bokeski_polumaraton.xlsx ============
+   Prethodni lični plan (Plan_SUB-19_5K_v5.xlsx, 5K 24.09.2026) je UKLONJEN u
+   celini; njegovi unosi se brišu migracijom v10->v11 (v. `ukloniStariLicniPlan`).
+   Excel nedelje počinju u petak 25.09 (ned. 0 ima 10 dana), a aplikacija radi u
+   nedeljama od ponedeljka — zato je Excel ned. 0 ovde N1+N2, a Excel ned. k je N(k+2).
+   Fokus svake nedelje nosi izvorni broj („Plan ned. k"). */
+const START='2026-09-21', RACE='2026-12-12', SCHEMA=11, LS_KEY='sub19-v1';
+const APP_VERSION='268'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
    pa se kvota moze meriti po korisniku. */
 const STRAVA_CLIENT_ID='259960';
-const CILJ='19:20–19:30', CILJ_TEMPO='3:52–3:54 /km';
+const CILJ='ispod 1:40', CILJ_TEMPO='4:40–4:44 /km';
+/* Cilj ličnog plana — isto što generisan plan nosi u `S.genPlan.meta`.
+   Polazni VDOT ostaje iz PB-a na 5K (20:37): novi Excel ne navodi drugi. */
+const LICNI={raceName:'Bokeški polumaraton', raceDistM:21097.5, goalSec:6000, pb5kSec:1237};
 /* Opis cilja AKTIVNOG plana — koristi se i u AI promptu i u Progres UI-ju.
    BEZ ovoga su oba mesta imala TVOJ cilj (5K ~19:30) tvrdo ukucan, čak i dok
    je generisan plan (npr. maraton za druga) aktivan — AI bi sudio tuđ
-   maratonski tempo kroz prizmu tvog 5K cilja. Za tvoj plan vraća IDENTIČAN
-   tekst kao pre (nulta izmena za tebe), za generisan plan gradi iz meta. */
+   maratonski tempo kroz prizmu tvog 5K cilja. Za tvoj plan vraća cilj ličnog
+   plana (LICNI), za generisan plan gradi iz meta. */
 function goalCtxText(){
-  if(!S.genPlan) return '5K oko 19:30 (cilj koji i na lošiji dan iznosi sub-20)';
+  if(!S.genPlan) return 'Bokeški polumaraton 12.12.2026 — cilj ispod 1:40 (4:40–4:44/km)';
   const m=(S.genPlan.meta)||{};
   const name=m.raceName||'trka';
   /* Cilj i procena NISU ista stvar i ne smeju se opisati istom recenicom —
@@ -67,190 +75,338 @@ function goalCtxText(){
 }
 
 const PLAN=[
-{w:1,start:'2026-06-22',focus:'TEMPO nedelja',days:[
- {id:'n1d1',dow:0,tag:'lako',km:7,desc:`7 km lako (Z2)  +  SNAGA — Plavi blok (Re-entry):
-• Single Leg Deadlift: 3×8 (1 KB 8 kg)
-• Glute Bridge: 3×12
-• Side Plank Hip Abduction: 3×8 po strani
-• Standing Heel Raise: 3×12 (bez deficita)
-• Clamshell: 3×15 po strani`},
- {id:'n1d2',dow:1,rest:true},
- {id:'n1d3',dow:2,tag:'tempo',km:8,desc:`Tempo — 2 km WU + 4 km @ 4:22/km + 2 km CD`},
- {id:'n1d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (Re-entry, izometrija):
-• Wall Sit: 3×40 s
-• Spanish Squat: 3×30 s
-• Single Leg Glute Bridge: 3×10 po nozi
-• Controlled Step Up: 3×8 po nozi
-• TIB Raises: 3×20 s`},
- {id:'n1d5',dow:4,tag:'lako',km:7,desc:`7 km lako + 4×20 s strides`},
- {id:'n1d6',dow:5,rest:true},
- {id:'n1d7',dow:6,tag:'lr',km:8,desc:`8 km LR (Z2)  ·  23% nedelje`}
+{w:1,start:'2026-09-21',focus:`Plan ned. 0 (1/2) — oporavak posle trke 5 km`,days:[
+ {id:'n1d5',dow:4,rest:true,desc:`Odmor · Dan posle trke 5 km`},
+ {id:'n1d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n1d7',dow:6,tag:'lr',km:11,desc:`Lako trčanje 10–12 km · po osećaju (razgovorni) · Samo ako test cevanica prođe`}
 ]},
-{w:2,start:'2026-06-29',focus:'Int + Tempo',days:[
- {id:'n2d1',dow:0,tag:'lako',km:8,desc:`8 km lako  +  SNAGA — Plavi blok (iste vežbe kao N1)`},
- {id:'n2d2',dow:1,rest:true},
- {id:'n2d3',dow:2,tag:'int',km:9,desc:`Intervali — 1.5 km WU + 6×800 m @ 3:58/km (2 min hod) + 2.7 km CD`},
- {id:'n2d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (iste vežbe kao N1)`},
- {id:'n2d5',dow:4,tag:'tempo',km:7,desc:`Tempo (broken) — 2 km WU + 2×2 km @ ~4:20/km (90 s float) + 1 km CD  ·  plafon HR 170 (vrh Z4), tempo ustupa HR  ← lagano ako koleno reaguje (čet snaga je dan ranije)`},
- {id:'n2d6',dow:5,rest:true},
- {id:'n2d7',dow:6,tag:'lr',km:9,desc:`9 km LR  ·  24% nedelje`}
+{w:2,start:'2026-09-28',focus:`Plan ned. 0 (2/2) — Niš polumaraton LAGANO, ne trka`,days:[
+ {id:'n2d1',dow:0,tag:'lako',km:6,desc:`Lako trčanje 6 km · po osećaju (razgovorni)`},
+ {id:'n2d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — lagano, 2 serije · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 2×15
+• Dorsifleksija sa trakom: 2×12/noga · Traka
+• Inverzija i everzija sa trakom: 2×12 svaka · Traka
+• Podizanje na prste, pravo koleno: 3×15 obe noge · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 3×12/noga · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×20 m
+• Odvođenje kuka stojeći: 2×12/noga · Traka
+• Pallof pritisak: 2×8/strana · Traka
+• Bočna plank: 2×20 s
+Napomena: Bez pliometrije`},
+ {id:'n2d3',dow:2,tag:'lako',km:7,desc:`Lako trčanje 7 km · po osećaju (razgovorni)`},
+ {id:'n2d4',dow:3,tag:'snaga',km:null,desc:`Snaga A — lagano, 2 serije · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 2×15
+• Dorsifleksija sa trakom: 2×12/noga · Traka
+• Inverzija i everzija sa trakom: 2×12 svaka · Traka
+• Podizanje na prste, pravo koleno: 3×15 obe noge · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 3×12/noga · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×20 m
+• Odvođenje kuka stojeći: 2×12/noga · Traka
+• Pallof pritisak: 2×8/strana · Traka
+• Bočna plank: 2×20 s
+Napomena: 2 dana pred Niš: bez težine`},
+ {id:'n2d5',dow:4,tag:'lako',km:3,desc:`Shakeout 3 km · po osećaju (razgovorni) · Bez ubrzanja`},
+ {id:'n2d6',dow:5,tag:'lr',km:21.1,desc:`Niš polumaraton — LAGANO, ne trka · po osećaju (razgovorni) · Ne juriš vreme. Bol u cevanici raste → staješ/hodaš`},
+ {id:'n2d7',dow:6,rest:true,desc:`Odmor`}
 ]},
-{w:3,start:'2026-07-06',focus:'Int + Tempo',days:[
- {id:'n3d1',dow:0,tag:'lako',km:8,desc:`8 km lako  +  SNAGA — Plavi blok (uvod lagane pliometrije AKO je koleno tiho: dodaj Pogo Jumps 3×20 s; SL Deadlift → 3×10 sa 16 kg)`},
- {id:'n3d2',dow:1,rest:true},
- {id:'n3d3',dow:2,tag:'int',km:10,desc:`Intervali — 2.5 km WU + 5×1000 m @ 3:56/km (2 min hod) + 2.5 km CD`},
- {id:'n3d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (dodaj Box Jump 3×5 na nisku kutiju, SIĐI korakom; Explosive Step Up 3×6 TT. BEZ Lateral Step Down i Drop Jump)`},
- {id:'n3d5',dow:4,tag:'tempo',km:9,desc:`Tempo (broken) — 2 km WU + 2×2.5 km @ ~4:18/km (90 s float) + 2 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
- {id:'n3d6',dow:5,rest:true},
- {id:'n3d7',dow:6,tag:'lr',km:9,desc:`9 km LR  ·  25% nedelje`}
+{w:3,start:'2026-10-05',focus:`Plan ned. 1 — povratak posle polumaratona, bez pliometrije`,days:[
+ {id:'n3d1',dow:0,rest:true,desc:`Odmor · 2 dana posle polumaratona; šetnja 30 min je u redu`},
+ {id:'n3d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 2×15
+• Dorsifleksija sa trakom: 2×12/noga · Traka
+• Inverzija i everzija sa trakom: 2×12 svaka · Traka
+• Podizanje na prste, pravo koleno: 3×15 obe noge · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 3×12/noga · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×20 m
+• Odvođenje kuka stojeći: 2×12/noga · Traka
+• Pallof pritisak: 2×8/strana · Traka
+• Bočna plank: 2×20 s`},
+ {id:'n3d3',dow:2,tag:'lako',km:6,desc:`Lako trčanje 6 km · po osećaju (razgovorni)`},
+ {id:'n3d4',dow:3,tag:'snaga',km:null,desc:`Snaga B — snaga nogu + bez pliometrije · ~40 min, pliometrija prva (sveže noge)
+SNAGA (odmor između serija 60–90 s):
+• Goblet čučanj: 3×10 · 1× zvono 8 kg
+• Bugarski čučanj: 2×8/noga · 2× zvono 8 kg
+• Rumunsko mrtvo dizanje na jednoj nozi: 2×8/noga · 1–2× zvono 8 kg
+• Most na jednoj nozi: 3×10/noga · Zvono 8 kg na kuku (od ned. 5)
+• Podizanje na prste, jedna noga: 2×12 · Zvono 8 kg
+• Mrtva buba: 2×8/strana`},
+ {id:'n3d5',dow:4,tag:'lako',km:6,desc:`Lako trčanje 6 km · po osećaju (razgovorni)`},
+ {id:'n3d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n3d7',dow:6,tag:'lr',km:12,desc:`Dugo trčanje 12 km · po osećaju (razgovorni)`}
 ]},
-{w:4,start:'2026-07-13',focus:'Int + Tempo',days:[
- {id:'n4d1',dow:0,tag:'lako',km:9,desc:`9 km lako  +  SNAGA — Plavi blok (kao N3)`},
- {id:'n4d2',dow:1,rest:true},
- {id:'n4d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 5×1000 m @ 4:00/km (2 min hod) + 3.5 km CD`},
- {id:'n4d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (kao N3)`},
- {id:'n4d5',dow:4,tag:'tempo',km:10,desc:`Tempo (broken) — 2 km WU + 3×2 km @ ~4:28/km (75 s float) + 2 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
- {id:'n4d6',dow:5,rest:true},
- {id:'n4d7',dow:6,tag:'lr',km:10,desc:`10 km LR  ·  23% nedelje`}
+{w:4,start:'2026-10-12',focus:`Plan ned. 2 — prvi ključni: deonice tempom trke`,days:[
+ {id:'n4d1',dow:0,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n4d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 2×15
+• Dorsifleksija sa trakom: 2×12/noga · Traka
+• Inverzija i everzija sa trakom: 2×12 svaka · Traka
+• Podizanje na prste, pravo koleno: 3×15 obe noge · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 3×12/noga · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×20 m
+• Odvođenje kuka stojeći: 2×12/noga · Traka
+• Pallof pritisak: 2×8/strana · Traka
+• Bočna plank: 2×20 s`},
+ {id:'n4d3',dow:2,tag:'tempo',km:10.5,desc:`Ključni (tempo trke) — 2 km WU + 3×2000 m @ 4:40–4:45/km (90 s lagani džog) + 2 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja`},
+ {id:'n4d4',dow:3,tag:'snaga',km:null,desc:`Snaga B — snaga nogu + bez pliometrije · ~40 min, pliometrija prva (sveže noge)
+SNAGA (odmor između serija 60–90 s):
+• Goblet čučanj: 3×10 · 1× zvono 8 kg
+• Bugarski čučanj: 2×8/noga · 2× zvono 8 kg
+• Rumunsko mrtvo dizanje na jednoj nozi: 2×8/noga · 1–2× zvono 8 kg
+• Most na jednoj nozi: 3×10/noga · Zvono 8 kg na kuku (od ned. 5)
+• Podizanje na prste, jedna noga: 2×12 · Zvono 8 kg
+• Mrtva buba: 2×8/strana`},
+ {id:'n4d5',dow:4,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n4d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n4d7',dow:6,tag:'lr',km:13,desc:`Dugo trčanje 13 km · po osećaju (razgovorni)`}
 ]},
-{w:5,start:'2026-07-20',focus:'Int + Tempo',days:[
- {id:'n5d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA — Plavi blok (AKO potpuno bez bola, uvedi Lateral Step Down 3×8 TT)`},
- {id:'n5d2',dow:1,rest:true},
- {id:'n5d3',dow:2,tag:'int',km:10,desc:`Intervali — 2.5 km WU + 5×1000 m @ 3:58/km (2 min hod) + 2.5 km CD`},
- {id:'n5d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (RFE Split Squat 3×8 TT; Side Plank Hip Abduction 3×10)`},
- {id:'n5d5',dow:4,tag:'tempo',km:11,desc:`Tempo (broken, duže reps) — 2.5 km WU + 2×3 km @ ~4:25/km (90 s float) + 2.5 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
- {id:'n5d6',dow:5,rest:true},
- {id:'n5d7',dow:6,tag:'lr',km:11,desc:`11 km LR  ·  24% nedelje`}
+{w:5,start:'2026-10-19',focus:`Plan ned. 3 — pliometrija nivo 1 (samo ako test cevanica prođe)`,days:[
+ {id:'n5d1',dow:0,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n5d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 3×15
+• Dorsifleksija sa trakom: 3×12/noga · Traka
+• Inverzija i everzija sa trakom: 2×15 svaka · Traka
+• Podizanje na prste, pravo koleno: 3×12 jedna noga · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 3×15/noga · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×20 m
+• Odvođenje kuka stojeći: 3×12/noga · Traka
+• Pallof pritisak: 3×10/strana · Traka
+• Bočna plank: 2×30 s`},
+ {id:'n5d3',dow:2,tag:'tempo',km:13.5,desc:`Ključni (tempo trke) — 2 km WU + 3×3000 m @ 4:40–4:45/km (2 min džog) + 2 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja`},
+ {id:'n5d4',dow:3,tag:'snaga',km:null,desc:`Snaga B — snaga nogu + pliometrija nivo 1 · ~40 min, pliometrija prva (sveže noge)
+PLIOMETRIJA — samo ako test cevanica prođe:
+• Pogo skokovi snožno: Nivo 1: 3×15
+• A-skip: 2×20 m
+SNAGA (odmor između serija 60–90 s):
+• Goblet čučanj: 3×12 · 1× zvono 8 kg
+• Bugarski čučanj: 3×8/noga · 2× zvono 8 kg
+• Rumunsko mrtvo dizanje na jednoj nozi: 3×8/noga · 1–2× zvono 8 kg
+• Most na jednoj nozi: 3×12/noga · Zvono 8 kg na kuku (od ned. 5)
+• Podizanje na prste, jedna noga: 3×12 · Zvono 8 kg
+• Mrtva buba: 3×10/strana
+Napomena: Pliometrija SAMO ako test cevanica prođe`},
+ {id:'n5d5',dow:4,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n5d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n5d7',dow:6,tag:'lr',km:15,desc:`Dugo trčanje 15 km · po osećaju (razgovorni)`}
 ]},
-{w:6,start:'2026-07-27',focus:'Int + Tempo',days:[
- {id:'n6d1',dow:0,tag:'lako',km:11,desc:`11 km lako  +  SNAGA — Plavi blok (kao N5)`},
- {id:'n6d2',dow:1,rest:true},
- {id:'n6d3',dow:2,tag:'int',km:11,desc:`Intervali — 1.5 km WU + 5×1000 m @ 3:55/km (2.5 min hod) + 4.5 km CD`},
- {id:'n6d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (kao N5)`},
- {id:'n6d5',dow:4,tag:'tempo',km:10,desc:`Tempo (broken, duži blok) — 2 km WU + 4 km + 2 km @ ~4:25/km (75 s float) + 2 km CD  ·  plafon HR 170  ← lagano ako koleno reaguje`},
- {id:'n6d6',dow:5,rest:true},
- {id:'n6d7',dow:6,tag:'lr',km:12,desc:`12 km LR  ·  25% nedelje`},
- {id:'n6t',test:true,tag:'test',km:null,desc:`Test na 3 km, istrčan kao trka — rekalibriše tempo Faze 3 (kraj N6, opciono)`}
+{w:6,start:'2026-10-26',deload:true,focus:`Plan ned. 4 — LAKŠA nedelja`,days:[
+ {id:'n6d1',dow:0,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n6d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — LAKŠA nedelja: 1 serija manje · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 3×15
+• Dorsifleksija sa trakom: 3×12/noga · Traka
+• Inverzija i everzija sa trakom: 2×15 svaka · Traka
+• Podizanje na prste, pravo koleno: 3×12 jedna noga · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 3×15/noga · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×20 m
+• Odvođenje kuka stojeći: 3×12/noga · Traka
+• Pallof pritisak: 3×10/strana · Traka
+• Bočna plank: 2×30 s`},
+ {id:'n6d3',dow:2,tag:'int',km:10,desc:`Ključni (intervali) — 2 km WU + 5×1000 m @ 4:15/km (90 s džog) + 2 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja · Lakša nedelja`},
+ {id:'n6d4',dow:3,tag:'snaga',km:null,desc:`Snaga B — snaga nogu + pliometrija nivo 1 (lakša nedelja) · ~40 min, pliometrija prva (sveže noge)
+PLIOMETRIJA — samo ako test cevanica prođe:
+• Pogo skokovi snožno: Nivo 1: 3×15
+• A-skip: 2×20 m
+SNAGA (odmor između serija 60–90 s):
+• Goblet čučanj: 3×12 · 1× zvono 8 kg
+• Bugarski čučanj: 3×8/noga · 2× zvono 8 kg
+• Rumunsko mrtvo dizanje na jednoj nozi: 3×8/noga · 1–2× zvono 8 kg
+• Most na jednoj nozi: 3×12/noga · Zvono 8 kg na kuku (od ned. 5)
+• Podizanje na prste, jedna noga: 3×12 · Zvono 8 kg
+• Mrtva buba: 3×10/strana
+Napomena: Pliometrija SAMO ako test cevanica prođe`},
+ {id:'n6d5',dow:4,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n6d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n6d7',dow:6,tag:'lr',km:12,desc:`Dugo trčanje 12 km · po osećaju (razgovorni) · Lakša nedelja`}
 ]},
-{w:7,start:'2026-08-03',focus:'DELOAD (intenzitetski) — bez kvaliteta i pliometrije, cilj je oporavak',days:[
- {id:'n7d1',dow:0,tag:'lako',km:8,desc:`8 km lako  +  lagana snaga (2 serije, bez pliometrije)`},
- {id:'n7d2',dow:1,rest:true},
- {id:'n7d3',dow:2,tag:'lako',km:7,desc:`7 km lako + 6×15 s strides`},
- {id:'n7d4',dow:3,rest:true,desc:`Odmor (dodatni pun dan)`},
- {id:'n7d5',dow:4,tag:'lako',km:8,desc:`8 km lako + 5×100 m opušteno brzo (ubrzanja, ne intervali)`},
- {id:'n7d6',dow:5,rest:true},
- {id:'n7d7',dow:6,tag:'lr',km:9,desc:`9 km LR (Z2)  ·  25%`}
+{w:7,start:'2026-11-02',focus:`Plan ned. 5 — 2×5 km tempom trke, pliometrija nivo 2`,days:[
+ {id:'n7d1',dow:0,tag:'lako',km:6,desc:`Lako trčanje 6 km · po osećaju (razgovorni)`},
+ {id:'n7d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 3×20
+• Dorsifleksija sa trakom: 3×15/noga · Traka
+• Inverzija i everzija sa trakom: 3×15 svaka · Traka
+• Podizanje na prste, pravo koleno: 3×12 jedna noga + 8 kg · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 3×15/noga + 8 kg · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×30 m
+• Odvođenje kuka stojeći: 3×15/noga · Traka
+• Pallof pritisak: 3×10/strana · Traka
+• Bočna plank: 3×30 s`},
+ {id:'n7d3',dow:2,tag:'tempo',km:14.5,desc:`Ključni (tempo trke) — 2 km WU + 2×5000 m @ 4:40–4:45/km (3 min džog) + 2 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja`},
+ {id:'n7d4',dow:3,tag:'snaga',km:null,desc:`Snaga B — snaga nogu + pliometrija nivo 2 · ~40 min, pliometrija prva (sveže noge)
+PLIOMETRIJA — samo ako test cevanica prođe:
+• Pogo skokovi snožno: Nivo 2: 3×20
+• A-skip: 2×20 m
+• Bočni skokovi preko linije: Nivo 2: 2×15
+• Skok iz čučnja: Nivo 2: 3×5
+SNAGA (odmor između serija 60–90 s):
+• Goblet čučanj: 3×12 (spust 4 s) · 1× zvono 8 kg
+• Bugarski čučanj: 3×10/noga · 2× zvono 8 kg
+• Rumunsko mrtvo dizanje na jednoj nozi: 3×10/noga · 1–2× zvono 8 kg
+• Most na jednoj nozi: 3×12/noga + 8 kg · Zvono 8 kg na kuku (od ned. 5)
+• Podizanje na prste, jedna noga: 3×15 · Zvono 8 kg
+• Mrtva buba: 3×10/strana
+Napomena: Pliometrija SAMO ako test cevanica prođe`},
+ {id:'n7d5',dow:4,tag:'lako',km:6,desc:`Lako trčanje 6 km · po osećaju (razgovorni)`},
+ {id:'n7d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n7d7',dow:6,tag:'lr',km:16,desc:`Dugo trčanje 16 km · po osećaju (razgovorni)`}
 ]},
-{w:8,start:'2026-08-10',focus:'Int + Tempo',days:[
- {id:'n8d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA — Plavi blok (Faza 3, pun intenzitet):
-• Diagonal Pogo Jumps: 3×45 s
-• Box Jump: 3×6
-• Lateral Step Down: 3×10 (1 KB 8 kg)
-• Single Leg Deadlift: 3×10 (16 kg)
-• Single Leg Deficit Heel Raise: 3×10 (8 kg)`},
- {id:'n8d2',dow:1,rest:true},
- {id:'n8d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 6×1000 m @ 3:55/km (2 min hod) + 2.5 km CD`},
- {id:'n8d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (Faza 3):
-• Drop Jump: 3×6 (uvodi se TEK sada, samo ako je koleno čisto)
-• Explosive Step Up: 3×6
-• RFE Split Squat (Goblet): 3×8 (8 kg)
-• Side Plank Hip Abduction: 3×12 po strani
-• Seated Deficit Heel Raise: 3×12 (16 kg)`},
- {id:'n8d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 2 km WU + 6 km NEPREKIDNO @ ~4:25/km + 2 km CD  ·  prvi vezani 6 km  ← 4 km lako ako je sreda bila teška`},
- {id:'n8d6',dow:5,rest:true},
- {id:'n8d7',dow:6,tag:'lr',km:12,desc:`12 km LR  ·  24% nedelje`}
+{w:8,start:'2026-11-09',focus:`Plan ned. 6 — KONTROLNA TAČKA za sub-1:40 (8 km na 4:40)`,days:[
+ {id:'n8d1',dow:0,tag:'lako',km:6,desc:`Lako trčanje 6 km · po osećaju (razgovorni)`},
+ {id:'n8d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 3×20
+• Dorsifleksija sa trakom: 3×15/noga · Traka
+• Inverzija i everzija sa trakom: 3×15 svaka · Traka
+• Podizanje na prste, pravo koleno: 3×12 jedna noga + 8 kg · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 3×15/noga + 8 kg · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×30 m
+• Odvođenje kuka stojeći: 3×15/noga · Traka
+• Pallof pritisak: 3×10/strana · Traka
+• Bočna plank: 3×30 s`},
+ {id:'n8d3',dow:2,tag:'tempo',km:12,desc:`Ključni (tempo trke) — 2 km WU + 8 km bez pauze @ 4:40/km + 2 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja · KONTROLNA TAČKA za sub-1:40`},
+ {id:'n8d4',dow:3,tag:'snaga',km:null,desc:`Snaga B — snaga nogu + pliometrija nivo 2 · ~40 min, pliometrija prva (sveže noge)
+PLIOMETRIJA — samo ako test cevanica prođe:
+• Pogo skokovi snožno: Nivo 2: 3×20
+• A-skip: 2×20 m
+• Bočni skokovi preko linije: Nivo 2: 2×15
+• Skok iz čučnja: Nivo 2: 3×5
+SNAGA (odmor između serija 60–90 s):
+• Goblet čučanj: 3×12 (spust 4 s) · 1× zvono 8 kg
+• Bugarski čučanj: 3×10/noga · 2× zvono 8 kg
+• Rumunsko mrtvo dizanje na jednoj nozi: 3×10/noga · 1–2× zvono 8 kg
+• Most na jednoj nozi: 3×12/noga + 8 kg · Zvono 8 kg na kuku (od ned. 5)
+• Podizanje na prste, jedna noga: 3×15 · Zvono 8 kg
+• Mrtva buba: 3×10/strana
+Napomena: Pliometrija SAMO ako test cevanica prođe`},
+ {id:'n8d5',dow:4,tag:'lako',km:6,desc:`Lako trčanje 6 km · po osećaju (razgovorni)`},
+ {id:'n8d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n8d7',dow:6,tag:'lr',km:18,desc:`Dugo trčanje 18 km · po osećaju (razgovorni)`}
 ]},
-{w:9,start:'2026-08-17',focus:'Int + Tempo',days:[
- {id:'n9d1',dow:0,tag:'lako',km:11,desc:`11 km lako  +  SNAGA — Plavi blok (Faza 3, kao N8)`},
- {id:'n9d2',dow:1,rest:true},
- {id:'n9d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 6×1000 m @ 3:52/km (2 min hod) + 2.5 km CD`},
- {id:'n9d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (Faza 3, kao N8)`},
- {id:'n9d5',dow:4,tag:'tempo',km:11,desc:`Tempo — 2 km WU + 6 km @ 4:22/km + 3 km CD`},
- {id:'n9d6',dow:5,rest:true},
- {id:'n9d7',dow:6,tag:'lr',km:14,desc:`14 km LR  ·  24% nedelje`}
+{w:9,start:'2026-11-16',focus:`Plan ned. 7 — najveći obim, pliometrija nivo 3`,days:[
+ {id:'n9d1',dow:0,tag:'lako',km:6,desc:`Lako trčanje 6 km · po osećaju (razgovorni)`},
+ {id:'n9d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 3×20
+• Dorsifleksija sa trakom: 3×15/noga · Traka
+• Inverzija i everzija sa trakom: 3×15 svaka · Traka
+• Podizanje na prste, pravo koleno: 3×12 jedna noga + 8 kg · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 3×15/noga + 8 kg · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×30 m
+• Odvođenje kuka stojeći: 3×15/noga · Traka
+• Pallof pritisak: 3×10/strana · Traka
+• Bočna plank: 3×30 s`},
+ {id:'n9d3',dow:2,tag:'int',km:11.5,desc:`Ključni (intervali) — 2 km WU + 4×1600 m @ 4:15/km (2 min džog) + 2 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja`},
+ {id:'n9d4',dow:3,tag:'snaga',km:null,desc:`Snaga B — snaga nogu + pliometrija nivo 3 · ~40 min, pliometrija prva (sveže noge)
+PLIOMETRIJA — samo ako test cevanica prođe:
+• Pogo skokovi snožno: Nivo 2: 3×20
+• A-skip: 2×20 m
+• Bočni skokovi preko linije: Nivo 2: 2×15
+• Skok iz čučnja: Nivo 2: 3×5
+• Pogo na jednoj nozi: Ned. 7: 2×10/noga
+SNAGA (odmor između serija 60–90 s):
+• Goblet čučanj: 3×12 (spust 4 s) · 1× zvono 8 kg
+• Bugarski čučanj: 3×10/noga · 2× zvono 8 kg
+• Rumunsko mrtvo dizanje na jednoj nozi: 3×10/noga · 1–2× zvono 8 kg
+• Most na jednoj nozi: 3×12/noga + 8 kg · Zvono 8 kg na kuku (od ned. 5)
+• Podizanje na prste, jedna noga: 3×15 · Zvono 8 kg
+• Mrtva buba: 3×10/strana
+Napomena: Pliometrija SAMO ako test cevanica prođe`},
+ {id:'n9d5',dow:4,tag:'lako',km:6,desc:`Lako trčanje 6 km · po osećaju (razgovorni)`},
+ {id:'n9d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n9d7',dow:6,tag:'lr',km:19,desc:`Dugo 19 km: 13 km lako + poslednjih 6 km ciljnim tempom · po osećaju (razgovorni) · Poslednjih 6 km 4:45`}
 ]},
-{w:10,start:'2026-08-24',focus:'Jak blok 1 · Int + Tempo',days:[
- {id:'n10d1',dow:0,tag:'lako',km:11,desc:`11 km lako  +  SNAGA — Plavi blok (kao N8)`},
- {id:'n10d2',dow:1,tag:'lako',km:4,desc:`4 km lako (Z2) — dodatni aerobni obim (progresija N10: 46 → 50 km)`},
- {id:'n10d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 6×1000 m @ 3:50/km (2.5 min hod) + 2.5 km CD  ·  kapija: kad ovo držiš, prelazimo na duže repove`},
- {id:'n10d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (kao N8)`},
- {id:'n10d5',dow:4,tag:'tempo',km:10,desc:`🔥 TIME TRIAL — 3 km WU + 3 km TT (kontrolisan maks. napor, cilj ~3:53–3:55/km) + 4 km CD  ·  kontrola forme i finalna kalibracija`},
- {id:'n10d6',dow:5,rest:true},
- {id:'n10d7',dow:6,tag:'lr',km:15,desc:`15 km LR  ·  24% nedelje`}
+{w:10,start:'2026-11-23',deload:true,focus:`Plan ned. 8 — LAKŠA nedelja`,days:[
+ {id:'n10d1',dow:0,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n10d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — LAKŠA nedelja: 1 serija manje · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 2×20
+• Dorsifleksija sa trakom: 2×15/noga · Traka
+• Inverzija i everzija sa trakom: 2×15 svaka · Traka
+• Podizanje na prste, pravo koleno: 2×12 jedna noga + 8 kg · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 2×15/noga + 8 kg · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×20 m
+• Odvođenje kuka stojeći: 2×12/noga · Traka
+• Pallof pritisak: 2×10/strana · Traka
+• Bočna plank: 2×30 s`},
+ {id:'n10d3',dow:2,tag:'tempo',km:13.5,desc:`Ključni (tempo trke) — 2 km WU + 3×3000 m @ 4:35/km (2 min džog) + 2 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja · Lakša nedelja`},
+ {id:'n10d4',dow:3,tag:'snaga',km:null,desc:`Snaga B — snaga nogu + pliometrija nivo 1 (lakša nedelja) · ~40 min, pliometrija prva (sveže noge)
+PLIOMETRIJA — samo ako test cevanica prođe:
+• Pogo skokovi snožno: Nivo 1: 2×15 (ned. 8: 3×15)
+• A-skip: 2×20 m
+SNAGA (odmor između serija 60–90 s):
+• Goblet čučanj: 2×12 · 1× zvono 8 kg
+• Bugarski čučanj: 2×8/noga · 2× zvono 8 kg
+• Rumunsko mrtvo dizanje na jednoj nozi: 2×8/noga · 1–2× zvono 8 kg
+• Most na jednoj nozi: 2×12/noga · Zvono 8 kg na kuku (od ned. 5)
+• Podizanje na prste, jedna noga: 2×12 · Zvono 8 kg
+• Mrtva buba: 2×10/strana
+Napomena: Pliometrija SAMO ako test cevanica prođe`},
+ {id:'n10d5',dow:4,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n10d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n10d7',dow:6,tag:'lr',km:14,desc:`Dugo trčanje 14 km · po osećaju (razgovorni) · Lakša nedelja`}
 ]},
-{w:11,start:'2026-08-31',focus:'Jak blok 2 · Int + Tempo',days:[
- {id:'n11d1',dow:0,tag:'lako',km:11,desc:`11 km lako  +  SNAGA — Plavi blok (držimo opterećenje visokim)`},
- {id:'n11d2',dow:1,tag:'lako',km:8,desc:`8 km lako (Z2) — dodatni aerobni obim (progresija N11: 46 → 54 km, vrhunac pred taper)`},
- {id:'n11d3',dow:2,tag:'int',km:11,desc:`Intervali — 1.5 km WU + 4×1500 m @ 3:50/km (2.5 min hod) + 3.5 km CD`},
- {id:'n11d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (držimo opterećenje visokim)`},
- {id:'n11d5',dow:4,tag:'tempo',km:10,desc:`Tempo — 2 km WU + 6 km @ 4:18/km + 2 km CD`},
- {id:'n11d6',dow:5,rest:true},
- {id:'n11d7',dow:6,tag:'lr',km:14,desc:`14 km LR  ·  24% nedelje`},
- {id:'n11t',test:true,tag:'test',km:null,desc:`Test na 3 km — poslednja provera forme pred taper (kraj N11, opciono)`}
+{w:11,start:'2026-11-30',focus:`Plan ned. 9 — početak smanjenja obima`,days:[
+ {id:'n11d1',dow:0,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n11d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 2×20
+• Dorsifleksija sa trakom: 2×15/noga · Traka
+• Inverzija i everzija sa trakom: 2×15 svaka · Traka
+• Podizanje na prste, pravo koleno: 2×12 jedna noga + 8 kg · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 2×15/noga + 8 kg · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 2×20 m
+• Odvođenje kuka stojeći: 2×12/noga · Traka
+• Pallof pritisak: 2×10/strana · Traka
+• Bočna plank: 2×30 s`},
+ {id:'n11d3',dow:2,tag:'tempo',km:10,desc:`Ključni (tempo trke) — 2 km WU + 6 km bez pauze @ 4:40/km + 2 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja · Početak smanjenja obima`},
+ {id:'n11d4',dow:3,tag:'snaga',km:null,desc:`Snaga B — snaga nogu + pliometrija nivo 1, 2 serije · ~40 min, pliometrija prva (sveže noge)
+PLIOMETRIJA — samo ako test cevanica prođe:
+• Pogo skokovi snožno: Nivo 1: 2×15 (ned. 8: 3×15)
+• A-skip: 2×20 m
+SNAGA (odmor između serija 60–90 s):
+• Goblet čučanj: 2×12 · 1× zvono 8 kg
+• Bugarski čučanj: 2×8/noga · 2× zvono 8 kg
+• Rumunsko mrtvo dizanje na jednoj nozi: 2×8/noga · 1–2× zvono 8 kg
+• Most na jednoj nozi: 2×12/noga · Zvono 8 kg na kuku (od ned. 5)
+• Podizanje na prste, jedna noga: 2×12 · Zvono 8 kg
+• Mrtva buba: 2×10/strana
+Napomena: Pliometrija SAMO ako test cevanica prođe`},
+ {id:'n11d5',dow:4,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n11d6',dow:5,rest:true,desc:`Odmor`},
+ {id:'n11d7',dow:6,tag:'lr',km:12,desc:`Dugo trčanje 12 km · po osećaju (razgovorni)`}
 ]},
-{w:12,start:'2026-09-07',focus:'Specifični ritam',days:[
- {id:'n12d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA — Plavi blok (poslednji težak trening snage)`},
- {id:'n12d2',dow:1,rest:true},
- {id:'n12d3',dow:2,tag:'int',km:10,desc:`Intervali — 1.5 km WU + 3×2000 m @ 3:50/km (2.5 min hod) + 2.5 km CD`},
- {id:'n12d4',dow:3,tag:'snaga',km:null,desc:`Mobilnost  +  SNAGA — Crveni blok (poslednja teška pliometrija)`},
- {id:'n12d5',dow:4,tag:'tempo',km:9,desc:`Trkački ritam — 2 km WU + 4 km neprekidno @ 3:54–3:58/km (ciljni) + 3 km CD  ·  proba ciljnog ritma 19:30`},
- {id:'n12d6',dow:5,rest:true},
- {id:'n12d7',dow:6,tag:'lr',km:13,desc:`13 km LR  ·  24% nedelje`}
-]},
-{w:13,start:'2026-09-14',focus:'Taper — serije na 2, eksplozivno i daleko od otkaza',days:[
- {id:'n13d1',dow:0,tag:'lako',km:10,desc:`10 km lako  +  SNAGA TAPER (Plavi): Diagonal Pogo 2×30 s, Box Jump 2×4, SL Deadlift 2×6 (8 kg) — bez doskoka pod opterećenjem`},
- {id:'n13d2',dow:1,rest:true},
- {id:'n13d3',dow:2,tag:'int',km:5,desc:`1.5 km WU + 5×400 m @ 3:50/km (90 s hod) + 1.5 km CD`},
- {id:'n13d4',dow:3,tag:'snaga',km:null,desc:`Odmor  +  SNAGA TAPER (Crveni): Drop Jump 2×4, Explosive Step Up 2×4, RFE Split Squat 2×6 TT`},
- {id:'n13d5',dow:4,tag:'tempo',km:8,desc:`2 km WU + 3 km tempo @ 4:15/km + 3 km CD`},
- {id:'n13d6',dow:5,rest:true},
- {id:'n13d7',dow:6,tag:'lr',km:7,desc:`7 km LR lagano  ·  23% nedelje`}
-]},
-{w:14,start:'2026-09-21',focus:'TRKAČKA NEDELJA — bez opterećenja za noge u teretani',days:[
- {id:'n14d1',dow:0,tag:'lako',km:3,desc:`3 km shakeout (skroz lagano) + samo lagani core (bez nogu)`},
- {id:'n14d2',dow:1,tag:'int',km:3.7,desc:`1.5 km WU + 6×200 m @ 3:48/km (200 m hod) + 1 km CD (aktivacija)`},
- {id:'n14d3',dow:2,tag:'lako',km:2,desc:`2 km shakeout + lagana mobilnost celog tela`},
- {id:'n14d4',dow:3,tag:'trka',km:5,desc:`🏁 TRKA 5 km — Cilj: 19:20–19:30 / Ritam: 3:52–3:54/km`}
+{w:12,start:'2026-12-07',focus:`Plan ned. 10 — TRKAČKA NEDELJA`,days:[
+ {id:'n12d1',dow:0,tag:'lako',km:5,desc:`Lako trčanje 5 km · po osećaju (razgovorni)`},
+ {id:'n12d2',dow:1,tag:'snaga',km:null,desc:`Snaga A — lagano, 2 serije, bez težine · ~25 min, lagano, bez umora pred sredu
+• Podizanje prstiju uz zid (tibialis): 2×15
+• Dorsifleksija sa trakom: 1×15/noga · Traka
+• Inverzija i everzija sa trakom: 1×15 svaka · Traka
+• Podizanje na prste, pravo koleno: 2×12 obe noge · Zvono 8 kg u ruci (od ned. 3)
+• Podizanje na prste, savijeno koleno (soleus): 1×15/noga · Zvono 8 kg (od ned. 3)
+• Hod na prstima / na petama: 1×20 m
+Napomena: Trkačka nedelja`},
+ {id:'n12d3',dow:2,tag:'tempo',km:6.5,desc:`Ključni (tempo trke) — 2 km WU + 3 km @ 4:40/km + 1.5 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja · Trkačka nedelja`},
+ {id:'n12d4',dow:3,tag:'snaga',km:null,desc:`Samo mobilnost 10–15 min, bez opterećenja
+Napomena: Bez pliometrije i snage`},
+ {id:'n12d5',dow:4,tag:'lako',km:3,desc:`Shakeout 3 km · po osećaju (razgovorni) · Dan pred trku`},
+ {id:'n12d6',dow:5,tag:'trka',km:21.1,desc:`🏁 BOKEŠKI POLUMARATON — cilj ispod 1:40 · ritam 4:40–4:44/km · Proveri datum i satnicu na sajtu organizatora`},
+ {id:'n12d7',dow:6,rest:true,desc:`Odmor · Oporavak`}
 ]}
 ];
 
-/* Race Predictor — redovi doslovno iz sheeta (plan5k u sekundama, kako su sačuvani) */
+/* Race Predictor — ključni treninzi iz Excel-a. `p5k` je (istorijsko ime) plansko
+   vreme na CILJNOJ distanci: Excel nema rampu forme, tempi su izvedeni iz cilja,
+   pa je referenca svuda 1:40:00. Deonice tempom trke su `nemeri` — propis je iz
+   cilja, ne iz forme (v. KIND_IZ_CILJA); formu mere 4:15 deonice i test na 3 km. */
 const PRED=[
- {id:'p1', w:1, l:'N1 · Tempo',     q:4,   pt:262, p5k:1232},
- {id:'p2', w:2, l:'N2 · Intervali', q:4.8, pt:238, p5k:1242},
- {id:'p2b',w:2, l:'N2 · Tempo',     q:4,   pt:260, p5k:1222},
- {id:'p3', w:3, l:'N3 · Tempo',     q:5,   pt:258, p5k:1212},
- {id:'p3b',w:3, l:'N3 · Intervali', q:5,   pt:236, p5k:1231},
- {id:'p4', w:4, l:'N4 · Intervali', q:5,   pt:240, p5k:1253},
- {id:'p4b',w:4, l:'N4 · Tempo',     q:6,   pt:268, p5k:1262},
- {id:'p5', w:5, l:'N5 · Tempo',     q:6,   pt:265, p5k:1247},
- {id:'p5b',w:5, l:'N5 · Intervali', q:5,   pt:238, p5k:1242},
- {id:'p6', w:6, l:'N6 · Intervali', q:5,   pt:235, p5k:1226},
- {id:'p7', w:6, l:'N6 · Tempo',     q:6,   pt:265, p5k:1247},
- {id:'p8', w:8, l:'N8 · Intervali', q:6,   pt:235, p5k:1226},
- {id:'p9', w:8, l:'N8 · Tempo',     q:6,   pt:265, p5k:1247},
- {id:'p10',w:9, l:'N9 · Intervali', q:6,   pt:232, p5k:1209},
- {id:'p11',w:9, l:'N9 · Tempo',     q:6,   pt:262, p5k:1232},
- {id:'p12',w:10,l:'N10 · Intervali',q:6,   pt:230, p5k:1198},
- {id:'p13',w:10,l:'N10 · Test',    q:3,   pt:233, p5k:1201.26},
- {id:'p14',w:11,l:'N11 · Intervali',q:6,   pt:230, p5k:1198},
- {id:'p15',w:11,l:'N11 · Tempo',    q:6,   pt:258, p5k:1212},
- {id:'p16',w:11,l:'N11 · Test',    q:5,   pt:234, p5k:1170},
- {id:'p17',w:12,l:'N12 · Intervali',q:6,   pt:230, p5k:1198},
- {id:'p18',w:12,l:'N12 · Ritam',    q:4,   pt:236, p5k:1195.905},
- {id:'p19',w:13,l:'N13 · Intervali',q:2,   pt:230, p5k:1198},
- {id:'p20',w:13,l:'N13 · Tempo',    q:3,   pt:255, p5k:1198},
- {id:'p21',w:14,l:'N14 · Intervali',q:1.2, pt:228, p5k:1187}
+ {id:'p1', w:4, l:'N4 · Tempo trke', q:6, pt:283, p5k:6000, nemeri:true},
+ {id:'p2', w:5, l:'N5 · Tempo trke', q:9, pt:283, p5k:6000, nemeri:true},
+ {id:'p3', w:6, l:'N6 · Intervali', q:5, pt:255, p5k:6000},
+ {id:'p4', w:7, l:'N7 · Tempo trke', q:10, pt:283, p5k:6000, nemeri:true},
+ {id:'p5', w:8, l:'N8 · Tempo trke', q:8, pt:280, p5k:6000, nemeri:true},
+ {id:'p6', w:9, l:'N9 · Intervali', q:6.4, pt:255, p5k:6000},
+ {id:'p7', w:10, l:'N10 · Tempo trke', q:9, pt:275, p5k:6000, nemeri:true},
+ {id:'p8', w:11, l:'N11 · Tempo trke', q:6, pt:280, p5k:6000, nemeri:true},
+ {id:'p9', w:12, l:'N12 · Tempo trke', q:3, pt:280, p5k:6000, nemeri:true}
 ];
 
-/* Weight Tracker — ciljna linija iz sheeta */
-const WT_TARGET=[
- {w:1,date:'2026-06-22',kg:82},{w:2,date:'2026-06-29',kg:81.5},{w:3,date:'2026-07-06',kg:81},
- {w:4,date:'2026-07-13',kg:80.5},{w:5,date:'2026-07-20',kg:80},{w:6,date:'2026-07-27',kg:79.5},
- {w:7,date:'2026-08-03',kg:79},{w:8,date:'2026-08-10',kg:78.5},{w:9,date:'2026-08-17',kg:78},
- {w:10,date:'2026-08-24',kg:77.5},{w:11,date:'2026-08-31',kg:77},{w:12,date:'2026-09-07',kg:76.5},
- {w:13,date:'2026-09-14',kg:76},{w:14,date:'2026-09-21',kg:75.5}
-];
+/* Weight Tracker — novi Excel nema ciljnu liniju mase (stara 82->75,5 kg je
+   pripadala uklonjenom planu). Prazan niz = grafikon bez ciljne linije. */
+const WT_TARGET=[];
 
 /* ============ POČETNO STANJE ============
    PRAZNO ZA SVAKOGA. Ranije je ova funkcija svakom novom korisniku upisivala
@@ -682,7 +838,7 @@ function undoWeekMoves(w){
   if(changed){ rebuildDateIndex(); save(); }
   return changed;
 }
-let TOTAL_TR=PLAN.reduce((n,w)=>n+w.days.filter(d=>!d.rest).length,0); /* dinamički; 72 posle dodatih laganih dana u N10/N11 */
+let TOTAL_TR=PLAN.reduce((n,w)=>n+w.days.filter(d=>!d.rest).length,0); /* dinamički — rebuildDateIndex ga preračunava posle S.alts */
 function weekPlanKm(w){return w.days.reduce((s,d)=>s+(d.km||0),0);}
 function weekOf(dateStr){for(const w of CUR_PLAN){const end=addD(w.start,6);if(dateStr>=w.start&&dateStr<=end)return w;}return null;}
 /* Poznati tipovi treninga. Sve van ovog skupa je NEPOVERLJIVO — moze doci iz
@@ -1070,6 +1226,27 @@ function t3kNajsporije(){
    „Cannot access 'T3K_SEC_MIN' before initialization" i aplikacija bi se
    otvorila prazna. */
 
+/* v10->v11: ZAMENA LIČNOG PLANA. Stari plan (5K, 22.06–24.09.2026) je uklonjen,
+   a novi (Bokeški polumaraton) koristi ISTI prostor ID-jeva ('n{ned}d{dan}',
+   'p{k}'). Bez ovoga bi se stari unosi zalepili za nepovezane dane novog plana
+   — npr. odrađen 'n3d3' od 06.07. prikazao bi se kao odrađen ključni trening
+   od 14.10. Isti obrazac kao `purgeGenPlanData` za 'g' prostor, s jednom
+   razlikom: zapisi o telu (bol, masa) su korisnikovi podaci, ne podaci plana,
+   pa se NE brišu nego se odvezuju od dana ('arhiva') — inače bi ih `syncSide`
+   prvog novog dana sa istim ID-jem tiho obrisao. Generisan plan ('g') i testovi
+   na 3 km se ne diraju. Server čuva prethodnu verziju (v. supabase/istorija.sql). */
+const jeStariLicniId=k=>typeof k==='string'&&k.charAt(0)==='n';
+const jeStariPredId=k=>typeof k==='string'&&k.charAt(0)==='p';
+function ukloniStariLicniPlan(o){
+  const izbaci=(mapa,uslov)=>{ if(mapa&&typeof mapa==='object') Object.keys(mapa).forEach(k=>{ if(uslov(k)) delete mapa[k]; }); };
+  izbaci(o.log,jeStariLicniId); izbaci(o.alts,jeStariLicniId); izbaci(o.moves,jeStariLicniId);
+  izbaci(o.pred,jeStariPredId); izbaci(o.predLock,jeStariPredId);
+  if(Array.isArray(o.vdotLog)) o.vdotLog=o.vdotLog.filter(e=>!(e&&jeStariPredId(e.id)));
+  if(Array.isArray(o.knee)) o.knee=o.knee.map(k=>(k&&jeStariLicniId(k.src))
+    ? Object.assign({},k,{src:'arhiva',id:String(k.id||'').replace(/^kt-/,'kt-arhiva-')}) : k);
+  if(Array.isArray(o.kg)) o.kg=o.kg.map(x=>(x&&jeStariLicniId(x.src)) ? Object.assign({},x,{src:'arhiva'}) : x);
+}
+
 function migrate(o){
   if(!o||typeof o!=='object')return null;
   if(!o.log||typeof o.log!=='object'||Array.isArray(o.log))return null;
@@ -1132,6 +1309,7 @@ function migrate(o){
      a uvoz je prijavljivao uspeh. Red niže ionako radi `Object.assign` sa
      podrazumevanim vrednostima i normalizuje tipove. */
   if(o.v<10){o.zajed=(!vCitljiv&&o.zajed&&typeof o.zajed==='object'&&!Array.isArray(o.zajed))?o.zajed:{vidljiv:false,nadimak:''};o.v=10;}
+  if(o.v<11){ukloniStariLicniPlan(o);o.v=11;}
   /* ID MORA da nosi prefiks: po njemu `tipSesijeZaVdot` prepoznaje test i daje
      mu najveću težinu u lancu forme. Uvezen zapis bez prefiksa bi tiho pao na
      podrazumevanu težinu — dakle ne bi bio test, samo bi tako izgledao. */
@@ -2085,7 +2263,7 @@ function currentVdot(){
 function baselineVdot(){ /* početni VDOT: iz PB-a aktivnog plana */
   const m=S.genPlan&&S.genPlan.meta;
   if(m&&m.vdot0!=null&&isFinite(m.vdot0))return m.vdot0;
-  return Math.round(vdotFrom5k(1237)*10)/10;   /* tvoj PB 20:37 */
+  return Math.round(vdotFrom5k(LICNI.pb5kSec)*10)/10;   /* tvoj PB 20:37 */
 }
 function goalVdotActive(){ /* ciljni VDOT: eksplicitan cilj ima prednost nad projekcijom */
   const m=S.genPlan&&S.genPlan.meta;
@@ -2093,7 +2271,7 @@ function goalVdotActive(){ /* ciljni VDOT: eksplicitan cilj ima prednost nad pro
     if(m.goalVdot!=null&&isFinite(m.goalVdot))return m.goalVdot;
     if(m.vdotGoal!=null&&isFinite(m.vdotGoal))return m.vdotGoal;
   }
-  return Math.round(vdotFrom5k(1170)*10)/10;   /* tvoj cilj 19:30 */
+  return Math.round(vdotFromRace(LICNI.raceDistM,LICNI.goalSec)*10)/10;   /* tvoj cilj: polumaraton ispod 1:40 */
 }
 function goalSecActive(){ /* ciljno VREME na ciljnoj distanci (sec) */
   const m=S.genPlan&&S.genPlan.meta;
@@ -2102,10 +2280,11 @@ function goalSecActive(){ /* ciljno VREME na ciljnoj distanci (sec) */
     if(m.predictedSec!=null&&isFinite(m.predictedSec))return m.predictedSec;
     return null;
   }
-  return 1170;
+  return LICNI.goalSec;
 }
 function raceDistActive(){
-  return (S.genPlan&&S.genPlan.meta&&S.genPlan.meta.raceDistM)||5000;
+  if(S.genPlan) return (S.genPlan.meta&&S.genPlan.meta.raceDistM)||5000;
+  return LICNI.raceDistM;
 }
 /* Zabeleži VDOT iz kvalitetne sesije. Vraća {vdot, prev, delta, dir} ili null.
    Prigušenje: jedna sesija je šum — pomeramo VDOT samo delimično ka izmerenom. */
@@ -2324,10 +2503,7 @@ function backupDue(today){
 }
 /* ---- Strava: rep-distance (m) po kvalitetnim danima, za detekciju radnih lapova ---- */
 const QS={
- n1d3:[4000],n2d3:[800],n2d5:[2000],n3d3:[1000],n3d5:[2500],n4d3:[1000],n4d5:[2000],
- n5d3:[1000],n5d5:[3000],n6d3:[1000],n6d5:[4000,2000],n8d3:[1000],n8d5:[6000],n9d3:[1000],
- n9d5:[6000],n10d3:[1000],n10d5:[3000],n11d3:[1500],n11d5:[6000],n12d3:[2000],
- n12d5:[4000],n13d3:[400],n13d5:[3000],n14d2:[200]
+ n4d3:[2000],n5d3:[3000],n6d3:[1000],n7d3:[5000],n8d3:[8000],n9d3:[1600],n10d3:[3000],n11d3:[6000],n12d3:[3000]
 };
 /* Spec radnih lapova za dan — iz AKTIVNOG plana.
    Globalni QS je tabela tvog hardkodovanog plana ('n' ID-jevi). Generisan plan
@@ -2446,7 +2622,7 @@ function planVdotSada(today){
      samo zato što te nedelje nema šta da se meri. */
   for(let nw = w.w; nw >= 1; nw--){
     const v = CUR_PRED.filter(r => r && r.w === nw && r.p5k > 0)
-                      .map(r => vdotFrom5k(r.p5k)).filter(x => isFinite(x));
+                      .map(r => vdotFromRace(raceDistActive(), r.p5k)).filter(x => isFinite(x));
     if(v.length) return Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10;
   }
   return null;
@@ -9662,8 +9838,9 @@ function chartWeight(){
      20+ nedelja tačke su izlazile van okvira (izmereno: N20 -> x=471 u okviru
      širine 340, N44 -> x=1029). Ista klasa greške koja je već ispravljena u
      chartWeeks(), samo je ovaj grafikon tada promašen.
-     WT_TARGET je VLASNIKOVA ciljna linija iz Excel plana (82->75,5 kg) — za
-     generisan plan ne postoji unet cilj težine, pa se ta linija tamo i ne crta
+     WT_TARGET je VLASNIKOVA ciljna linija iz Excel plana (trenutni plan je nema,
+     pa je niz prazan) — za generisan plan ne postoji unet cilj težine, pa se ta
+     linija tamo i ne crta
      umesto da se tuđi cilj prikazuje kao da je korisnikov. */
   const nW=Math.max(CUR_PLAN.length,1);
   const act=S.kg.slice().sort((a,b)=>a.date<b.date?-1:1);
@@ -10099,7 +10276,7 @@ function t3kKarta(){
   const niz=t3kNiz().slice().reverse();   /* najnoviji gore */
   const zadnji=niz[0]||null;
   const dist=raceDistActive();
-  const imeTrke=S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K';
+  const imeTrke=S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):LICNI.raceName;
   let telo='';
   if(zadnji){
     const v=t3kVdot(zadnji.sec);
@@ -10231,7 +10408,7 @@ function renderPred(){
       <div class="btnrow" style="margin-top:12px"><button class="btn ghost" id="vd-undo">Vrati planski tempo</button></div>
     </div>`;
   }
-  const predRaceName=esc(S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):'5K');
+  const predRaceName=esc(S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):LICNI.raceName);
   h+=`<div class="card">${dGlava('Predikcija '+predRaceName+' kroz plan','cilj '+esc(ciljTekst))}<div id="pchart">${chartPred(pc)}</div>
     <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span>${
       pc.testovi&&pc.testovi.length?`<span><i class="romb" style="background:var(--cyan)"></i>test 3 km</span>`:''}</div></div>`;
@@ -11788,7 +11965,7 @@ function openSettings(){
 
     <div class="btnrow" style="margin-top:16px"><button class="btn ghost sm" id="sw-osvezi">Osveži aplikaciju</button></div>
     <div class="note-src" id="sw-stanje" style="margin:6px 0 0">Proveravam verziju offline kopije…</div>
-    <div class="note-src" style="margin-top:6px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_SUB-19_5K_v5.xlsx · trka 24.09.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
+    <div class="note-src" style="margin-top:6px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_Bokeski_polumaraton.xlsx · trka 12.12.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
   `);
   SET_LIST=true;
   podesiGrupe();

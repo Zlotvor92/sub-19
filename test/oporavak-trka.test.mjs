@@ -16,11 +16,11 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadApp } from './harness.mjs';
 
-const DANAS = '2026-08-05T09:00:00Z';
+const DANAS = '2026-11-04T09:00:00Z';
 
 function app(danas = DANAS) { return loadApp({ now: danas }); }
 
-/* Upiše odrađena trčanja po datumima: {'2026-08-01': 12, …} */
+/* Upiše odrađena trčanja po datumima: {'2026-10-31': 12, …} */
 function trcanja(a, mapa, polje = 'ts') {
   a.ctx.__m = mapa; a.ctx.__p = polje;
   a.evalIn(`
@@ -67,7 +67,7 @@ describe('Oporavak je jedan tab, ne dva', () => {
 
   test('grafikoni koji su se odselili nisu ostali i ovde', () => {
     const a = app();
-    trcanja(a, { '2026-07-01': 9, '2026-07-08': 10 });
+    trcanja(a, { '2026-09-30': 9, '2026-10-07': 10 });
     a.call('renderOporavak');
     const h = html(a, '#pg-opor');
     assert.doesNotMatch(h, /Nedeljna kilometraža/, 'nedeljna kilometraža je i dalje na Oporavku');
@@ -87,39 +87,39 @@ describe('Opterećenje (ACWR)', () => {
 
   test('akutno broji SAMO poslednjih sedam dana', () => {
     const a = app();
-    trcanja(a, { '2026-08-04': 10, '2026-07-30': 8, '2026-07-20': 30 });
+    trcanja(a, { '2026-11-03': 10, '2026-10-29': 8, '2026-10-19': 30 });
     /* 30 km od 20.07. je van prozora; 8 km od 30.07. je unutra (danas −6). */
-    assert.equal(a.call('akutniObim', '2026-08-05'), 18);
+    assert.equal(a.call('akutniObim', '2026-11-04'), 18);
   });
 
   test('brojač gleda STVARAN dan trčanja, ne planski', () => {
     /* Trening pomeren sa 30.07. na 04.08. pripada danu kad je odrađen. */
     const a = app();
     a.evalIn(`
-      const d = CUR_PLAN.flatMap(w=>w.days).find(x=>x.date==='2026-07-20');
-      S.log[d.id] = { status:'done', km: 11, sec: 3300, runDate: '2026-08-04' };
+      const d = CUR_PLAN.flatMap(w=>w.days).find(x=>x.date==='2026-10-19');
+      S.log[d.id] = { status:'done', km: 11, sec: 3300, runDate: '2026-11-03' };
       rebuildDateIndex();`);
-    assert.equal(a.call('akutniObim', '2026-08-05'), 11);
+    assert.equal(a.call('akutniObim', '2026-11-04'), 11);
   });
 
   test('brojčani `ts` ne ulazi u poređenje datuma', () => {
-    /* '1785834000000' >= '2026-07-30' je poređenje niski koje uvek laže —
+    /* '1785834000000' >= '2026-10-29' je poređenje niski koje uvek laže —
        trening bi upao u prozor bez obzira na to kad je bio. Zato se broj
        odbacuje i pada se na planski datum. */
     const a = app();
     a.evalIn(`
-      const d = CUR_PLAN.flatMap(w=>w.days).find(x=>x.date==='2026-07-20');
+      const d = CUR_PLAN.flatMap(w=>w.days).find(x=>x.date==='2026-10-19');
       S.log[d.id] = { status:'done', km: 11, sec: 3300, ts: 1785834000000 };
       rebuildDateIndex();`);
-    assert.equal(a.call('akutniObim', '2026-08-05'), 0,
+    assert.equal(a.call('akutniObim', '2026-11-04'), 0,
       'trening od 20.07. je ušao u prozor poslednjih 7 dana');
   });
 
   test('odnos je akutno / hronično, ne obrnuto', () => {
     const a = app();
-    trcanja(a, { '2026-08-01': 20, '2026-08-03': 20 });   /* akutno 40 */
-    const z = a.call('acwrSada', '2026-08-05');
-    const hron = a.call('hronicniObim', '2026-08-05');
+    trcanja(a, { '2026-10-31': 20, '2026-11-02': 20 });   /* akutno 40 */
+    const z = a.call('acwrSada', '2026-11-04');
+    const hron = a.call('hronicniObim', '2026-11-04');
     assert.equal(z.ak, 40);
     assert.equal(z.hron, hron);
     assert.equal(z.odnos, Math.round(40 / hron * 100) / 100);
@@ -127,8 +127,8 @@ describe('Opterećenje (ACWR)', () => {
   });
 
   test('bez hronične osnove odnos se ne izmišlja', () => {
-    const a = app('2026-06-23T09:00:00Z');   /* drugi dan prve nedelje */
-    assert.equal(a.call('acwrSada', '2026-06-23').odnos, null);
+    const a = app('2026-09-22T09:00:00Z');   /* drugi dan prve nedelje */
+    assert.equal(a.call('acwrSada', '2026-09-22').odnos, null);
     const h = a.call('karticaOpterecenja');
     assert.doesNotMatch(String(h), /class="acwr"/, 'traka se crta bez imenioca');
   });
@@ -157,7 +157,7 @@ describe('Opterećenje (ACWR)', () => {
   test('kartica imenuje i brojilac i imenilac', () => {
     /* Gola brojka „1,06" ne znači ništa bez oba broja iz kojih je nastala. */
     const a = app();
-    trcanja(a, { '2026-08-01': 12, '2026-08-03': 9 });
+    trcanja(a, { '2026-10-31': 12, '2026-11-02': 9 });
     const h = String(a.call('karticaOpterecenja'));
     assert.match(h, /akutno .* km \/ hronično .* km/);
     assert.doesNotMatch(h, /NaN|undefined/);
@@ -197,8 +197,14 @@ describe('Trka: dva mala prstena', () => {
     assert.doesNotMatch(h, /class="pstat"/, 'stare kockice su i dalje tu');
   });
 
+  /* Udeo ima smisla samo kad je polazna forma SPORIJA od cilja. Lični plan to
+     trenutno nije (PB 20:37 na 5K ≈ 1:34:38 na polumaratonu, cilj 1:40:00 — v.
+     test niže), pa se mehanika proverava nad generisanim 5K planom. */
+  const petK = a => a.evalIn(`S.genPlan={meta:{raceDistM:5000,vdot0:48.1,goalSec:1170},weeks:[],pred:[],qs:{}}`);
+
   test('udeo meri put od polazne forme do cilja', () => {
     const a = app();
+    petK(a);
     const cilj = a.call('goalSecActive');
     const base = a.evalIn('raceTimeForVdot(baselineVdot(), raceDistActive())');
     assert.ok(Math.abs(a.call('trkaUdeo', base) - 0) < 0.02, 'polazna nije nula');
@@ -211,10 +217,25 @@ describe('Trka: dva mala prstena', () => {
        cela poenta prikaza — prsten se u oba slučaja crta prazan, ali natpis
        ispod njega mora da kaže istinu. */
     const a = app();
+    petK(a);
     const base = a.evalIn('raceTimeForVdot(baselineVdot(), raceDistActive())');
     assert.ok(a.call('trkaUdeo', base + 20) < 0);
     const p = String(a.call('trkaPrsten', { pred: base + 20 }, 'zadnja'));
     assert.match(p, /iza polazne/);
+  });
+
+  test('lični plan: cilj sporiji od polazne forme — udeo se ne izmišlja', () => {
+    /* Po Daniels–Gilbertu PB 20:37 na 5K odgovara ~1:34:38 na polumaratonu,
+       dakle brže od cilja 1:40:00. Put „polazna → cilj" je tada negativan i
+       procenat bi bio besmislen; prsten sme da kaže samo „cilj dostignut". */
+    const a = app();
+    const cilj = a.call('goalSecActive');
+    const base = a.evalIn('raceTimeForVdot(baselineVdot(), raceDistActive())');
+    assert.equal(cilj, 6000);
+    assert.ok(base < cilj, `polazna ${base} nije brža od cilja`);
+    assert.equal(a.call('trkaUdeo', cilj - 30), null);
+    assert.match(String(a.call('trkaPrsten', { pred: cilj - 30 }, 'zadnja')), /cilj dostignut/);
+    assert.doesNotMatch(String(a.call('trkaPrsten', { pred: cilj + 30 }, 'zadnja')), /NaN|%/);
   });
 
   test('bez ijedne predikcije prsten ne izmišlja vreme', () => {
@@ -259,7 +280,7 @@ describe('Preseljene kartice su stigle na odredište', () => {
 
   test('prosečan tempo je na Trci, i nigde više', () => {
     const a = app();
-    trcanja(a, { '2026-07-01': 9, '2026-07-08': 10 });
+    trcanja(a, { '2026-09-30': 9, '2026-10-07': 10 });
     a.call('renderPred'); a.call('renderOporavak'); a.call('renderPlan');
     assert.match(html(a, '#pg-pred'), /Prosečan tempo/);
     assert.doesNotMatch(html(a, '#pg-opor'), /Prosečan tempo/);
@@ -274,8 +295,8 @@ describe('Brojevi na novim ekranima pišu se srpski', () => {
        TAČKA cifra van atributa (u atributima su koordinate SVG-a). */
     const a = app();
     a.evalIn(`
-      S.vdotLog = [{ id:'p1', ts:'2026-07-01', vdot:48.4, delta:0.3, measured:49.2 },
-                   { id:'p3', ts:'2026-07-10', vdot:49.3, delta:0.9, measured:50.1 }];
+      S.vdotLog = [{ id:'p1', ts:'2026-09-30', vdot:48.4, delta:0.3, measured:49.2 },
+                   { id:'p3', ts:'2026-10-09', vdot:49.3, delta:0.9, measured:50.1 }];
       S.wellness = {}; for (let i=1;i<=8;i++){ const d='2026-08-0'+i;
         S.wellness[d]={datum:d,hrv:61.4,pulsUMiru:47,sanH:6.7,sanOcena:79,ctl:27.728786,atl:41.52341,svezina:-13.804}; }`);
     for (const [fn, sel] of [['renderPred', '#pg-pred'], ['renderOporavak', '#pg-opor']]) {

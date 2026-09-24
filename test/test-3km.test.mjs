@@ -150,12 +150,14 @@ describe('Test ulazi u predikciju', () => {
 
   test('crvena linija grafikona staje na poslednjoj SESIJI, ne na testu', () => {
     const a = app();
-    a.evalIn(`S.pred['p1']=250; recordVdot('p1',250,'2026-06-26',null,false,null);`);
-    a.call('dodajT3k', '2026-08-01', 702);
+    /* p3 = 5×1000 m (Intervali) — prvi red plana koji MERI formu; redovi tempa
+       trke su `nemeri` i ne daju predikciju. */
+    a.evalIn(`S.pred['p3']=250; recordVdot('p3',250,'2026-10-28',null,false,null);`);
+    a.call('dodajT3k', '2026-11-05', 702);
     const pc = a.call('predCalc');
     assert.ok(pc.last.r.test3k, 'test nije najnoviji');
     assert.ok(pc.lastRed && !pc.lastRed.r.test3k, 'lastRed pokazuje na test');
-    assert.equal(pc.lastRed.r.id, 'p1');
+    assert.equal(pc.lastRed.r.id, 'p3');
   });
 
   test('test se crta kao zaseban znak na grafikonu predikcije', () => {
