@@ -1,7 +1,7 @@
 /* LIČNI (hardkodovan) PLAN — zaključan.
 
    Ovo je vlasnikov plan iz Plan_Bokeski_polumaraton.xlsx: 80 dana od
-   25.09.2026, Bokeški polumaraton 12.12.2026 (cilj ispod 1:40). U aplikaciji je
+   25.09.2026, Bokeški polumaraton 13.12.2026 (cilj ispod 1:40; Excel pogrešno navodi 12.12). U aplikaciji je
    12 nedelja od ponedeljka 21.09: Excel ned. 0 (10 dana) je N1+N2, Excel ned. k
    je N(k+2). Nije podrazumevani plan aplikacije nego NEČIJI STVARNI plan.
    (Prethodni plan, Plan_SUB-19_5K_v5.xlsx, uklonjen je u celini.)
@@ -20,7 +20,7 @@ const app = loadApp();
 describe('Konstante ličnog plana', () => {
   test('datumi i cilj su nepromenjeni', () => {
     assert.equal(app.get('START'), '2026-09-21');
-    assert.equal(app.get('RACE'), '2026-12-12');
+    assert.equal(app.get('RACE'), '2026-12-13');
     assert.equal(app.get('CILJ'), 'ispod 1:40');
     assert.equal(app.get('CILJ_TEMPO'), '4:40–4:44 /km');
     const L = app.get('LICNI');
@@ -43,9 +43,13 @@ describe('Konstante ličnog plana', () => {
     assert.deepEqual(Array.from(plan.filter(w => w.deload).map(w => w.w)), [6, 10]);
     const trke = plan.flatMap(w => w.days).filter(d => d.tag === 'trka');
     assert.equal(trke.length, 1, 'plan ima tačno jednu trku');
-    assert.equal(trke[0].id, 'n12d6');
+    assert.equal(trke[0].id, 'n12d7');
     assert.equal(trke[0].km, 21.1);
-    assert.equal(app.evalIn(`BY_ID['n12d6'].date`), '2026-12-12');
+    assert.equal(app.evalIn(`BY_ID['n12d7'].date`), '2026-12-13');
+    /* dan pred trku je shakeout, dan pre njega odmor */
+    assert.equal(app.evalIn(`BY_ID['n12d6'].tag`), 'lako');
+    assert.equal(app.evalIn(`BY_ID['n12d6'].km`), 3);
+    assert.equal(app.evalIn(`BY_ID['n12d5'].rest`), true);
   });
 
   test('ukupna kilometraža i broj treninga su nepromenjeni', () => {
@@ -184,14 +188,14 @@ describe('Lični plan je aktivan kad nema generisanog', () => {
     assert.equal(a.evalIn('S.genPlan'), null);
     assert.equal(a.evalIn('CUR_PLAN.length'), 12);
     assert.equal(a.evalIn('CUR_START'), '2026-09-21');
-    assert.equal(a.evalIn('CUR_RACE'), '2026-12-12');
+    assert.equal(a.evalIn('CUR_RACE'), '2026-12-13');
     assert.equal(a.evalIn('CUR_PRED.length'), 9);
   });
 
   test('podrazumevani opis cilja za AI je vlasnikov polumaratonski cilj', () => {
     const a = loadApp();
     assert.equal(a.call('goalCtxText'),
-      'Bokeški polumaraton 12.12.2026 — cilj ispod 1:40 (4:40–4:44/km)');
+      'Bokeški polumaraton 13.12.2026 — cilj ispod 1:40 (4:40–4:44/km)');
   });
 
   test('baseline i ciljni VDOT su vlasnikovi (PB 20:37 na 5K -> polumaraton 1:40:00)', () => {

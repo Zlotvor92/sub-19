@@ -42,9 +42,13 @@
    celini; njegovi unosi se brišu migracijom v10->v11 (v. `ukloniStariLicniPlan`).
    Excel nedelje počinju u petak 25.09 (ned. 0 ima 10 dana), a aplikacija radi u
    nedeljama od ponedeljka — zato je Excel ned. 0 ovde N1+N2, a Excel ned. k je N(k+2).
-   Fokus svake nedelje nosi izvorni broj („Plan ned. k"). */
-const START='2026-09-21', RACE='2026-12-12', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='268'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+   Fokus svake nedelje nosi izvorni broj („Plan ned. k").
+   DATUM TRKE JE 13.12 (nedelja), ne 12.12 kako stoji u Excel-u (vlasnik je
+   proverio kod organizatora). Kraj N12 je zato pomeren za dan: pet odmor,
+   sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
+   ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
+const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
+const APP_VERSION='269'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -60,7 +64,7 @@ const LICNI={raceName:'Bokeški polumaraton', raceDistM:21097.5, goalSec:6000, p
    maratonski tempo kroz prizmu tvog 5K cilja. Za tvoj plan vraća cilj ličnog
    plana (LICNI), za generisan plan gradi iz meta. */
 function goalCtxText(){
-  if(!S.genPlan) return 'Bokeški polumaraton 12.12.2026 — cilj ispod 1:40 (4:40–4:44/km)';
+  if(!S.genPlan) return 'Bokeški polumaraton 13.12.2026 — cilj ispod 1:40 (4:40–4:44/km)';
   const m=(S.genPlan.meta)||{};
   const name=m.raceName||'trka';
   /* Cilj i procena NISU ista stvar i ne smeju se opisati istom recenicom —
@@ -382,9 +386,9 @@ Napomena: Trkačka nedelja`},
  {id:'n12d3',dow:2,tag:'tempo',km:6.5,desc:`Ključni (tempo trke) — 2 km WU + 3 km @ 4:40/km + 1.5 km CD · samo ako test cevanica prođe; ako ne prođe — lako, a nedelja se ponavlja · Trkačka nedelja`},
  {id:'n12d4',dow:3,tag:'snaga',km:null,desc:`Samo mobilnost 10–15 min, bez opterećenja
 Napomena: Bez pliometrije i snage`},
- {id:'n12d5',dow:4,tag:'lako',km:3,desc:`Shakeout 3 km · po osećaju (razgovorni) · Dan pred trku`},
- {id:'n12d6',dow:5,tag:'trka',km:21.1,desc:`🏁 BOKEŠKI POLUMARATON — cilj ispod 1:40 · ritam 4:40–4:44/km · Proveri datum i satnicu na sajtu organizatora`},
- {id:'n12d7',dow:6,rest:true,desc:`Odmor · Oporavak`}
+ {id:'n12d5',dow:4,rest:true,desc:`Odmor`},
+ {id:'n12d6',dow:5,tag:'lako',km:3,desc:`Shakeout 3 km · po osećaju (razgovorni) · Dan pred trku`},
+ {id:'n12d7',dow:6,tag:'trka',km:21.1,desc:`🏁 BOKEŠKI POLUMARATON — cilj ispod 1:40 · ritam 4:40–4:44/km · Proveri satnicu na sajtu organizatora`}
 ]}
 ];
 
@@ -11965,7 +11969,7 @@ function openSettings(){
 
     <div class="btnrow" style="margin-top:16px"><button class="btn ghost sm" id="sw-osvezi">Osveži aplikaciju</button></div>
     <div class="note-src" id="sw-stanje" style="margin:6px 0 0">Proveravam verziju offline kopije…</div>
-    <div class="note-src" style="margin-top:6px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_Bokeski_polumaraton.xlsx · trka 12.12.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
+    <div class="note-src" style="margin-top:6px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_Bokeski_polumaraton.xlsx · trka 13.12.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
   `);
   SET_LIST=true;
   podesiGrupe();
