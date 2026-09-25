@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='273'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='274'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -5703,7 +5703,11 @@ const ZONE_FOR_KIND = {
    agr 0.43 — kalibrisano na dokumentovanu putanju autora plana (20:37→cilj 18:55 za 14 ned.,
    uz paralelno mršavljenje i nizak trenažni staž) — plafon, uz obaveznu ogradu u UI. */
 const RAMP = { kons: 0.15, std: 0.25, agr: 0.43 };
-const GROW_MAX = 1.08;          /* maks. +8% nedeljnog volumena */
+const GROW_MAX = 1.08;          /* +8% — koristi ga SAMO reentryPlan (povratak posle pauze).
+  Generator NE: rast isporučene nedelje ograničava apsolutni korak (prof.korakRasta × 1.6,
+  v. IZRAVNAVANJE RASTA), što pri ≥30 km/ned daje do ~+11%, a na malom obimu do ~+17%
+  (tamo je korak namerno apsolutan, v. KORAK_5K). „10% pravilo" nije potvrđeno u RCT-u
+  (Buist 2008); rizik je vezan za skokove >30% (Nielsen 2014). */
 const DELOAD_EVERY = 4;         /* svaka 4. nedelja */
 const DELOAD_F = 0.73;          /* deload = 73% prethodne (etalon: 32/44) */
 const TAPER_F = 0.65;           /* pretposlednja = 65% vrhunca (etalon: 30/46) */
@@ -6137,6 +6141,14 @@ function allocEasyLR(vol, qKms, easyCount, runDays, pLRsecPerKm, lrCapFn, mlrF){
 /* ============================================================
    5K KVALITETNE SESIJE
 
+   NAPOMENA O BUDŽETIMA (audit v274): budžet se računa iz CILJNOG obima nedelje,
+   a izravnavanje rasta posle toga ume da skrati lagane dane. Na ISPORUČENOJ
+   nedelji ≥30 km budžet je zato prekoračen u ~1.5% (I) i ~3.7% (T) nedelja,
+   najviše do ~12% (I, 5K) odnosno ~15% (T, maraton). Ispod ~30 km češće, zbog
+   namernih podova (intervali ≥1.6 km, prag ≥12% nedelje). Svesno ostavljeno:
+   Danielsovi procenti su trenerska smernica, ne izmerena granica, a secenje
+   kvaliteta posle sklapanja bi pomerilo LR/izravnavanje (v. klampLR).
+
    Budžeti po zoni su Danielsovi, primenjeni na 5K bez kompromisa sa dužim
    distancama (raniji kod je koristio 10% za I i 12% za T "kao kompromis" —
    to je bilo iz maratonske strane, 5K to ne traži):
@@ -6261,6 +6273,9 @@ function mkIntervali5K(dow,vol,pI,faza,wkIdx){
   const q=Math.min(Math.max(vol*I_PCT_5K, 1.6), I_MAX_5K);
   const {rep,n}=reps5K(q,faza,wkIdx);
   const [wu,cd]=wuCdZaObim(vol);
+  /* Pauza je fiksnih 2 min HODA (etalon — vlasnikov 5K plan), a ne 0.8× trajanja
+     deonice kao na 10K/PM/maratonu. Na 5K je to namerno kraće: hod umesto
+     džoga, a sesija je glavni stimulus plana. */
   return sessInt(dow,wu,n,rep,pI,120,cd,'Intervali');
 }
 /* Trkački ritam: intervali TAČNO na ciljnom tempu 5K, duža ponavljanja i
@@ -6728,8 +6743,21 @@ function fmtRest(sec){
   const m=Math.floor(sec/60), s=sec%60;
   return m+':'+String(s).padStart(2,'0')+' min';
 }
+/* PREĐENO U PAUZAMA između ponavljanja. Bilo je fiksnih 150 m po pauzi, što
+   odgovara ~2 min HODA — ali pragovski i race-pace formati (RECOVERY_JOG) imaju
+   pauzu u laganom TRČANJU, i to do 3 min: „2×5000 m (3 min laganog trčanja)"
+   prelazi ~0.5 km, ne 0.15. Kilometraža dana i nedelje bila je zato niža od
+   istrčane. Džog se računa kao ~35% sporiji od tempa deonice (lagan oporavak
+   posle praga/tempa trke), hod ostaje 150 m po pauzi. */
+function kmPauze(s){
+  const n=Math.max((s.reps|0)-1,0);
+  if(!n) return 0;
+  if(RECOVERY_JOG.includes(s.kind) && s.restSec>0 && s.paceSec>0)
+    return n * s.restSec / (s.paceSec*1.35);
+  return n*0.15;
+}
 function sessKm(s){
-  if(s.type==='int')    return r1(s.wuKm + s.reps*s.repM/1000 + s.cdKm + Math.max(s.reps-1,0)*0.15);
+  if(s.type==='int')    return r1(s.wuKm + s.reps*s.repM/1000 + s.cdKm + kmPauze(s));
   if(s.type==='pyramid')return r1(s.wuKm + s.reps.reduce((a,b)=>a+b,0)/1000 + s.cdKm + (s.reps.length-1)*0.15);
   if(s.type==='fartlek')return r1(s.wuKm + s.cdKm + s.reps*(s.repSec/s.paceSec + s.restSec/s.easyPaceSec));
   if(s.type==='prog')   return r1(s.qKm);
@@ -7845,8 +7873,8 @@ function generatePlan(inp){
      ono sto DISTANCA trazi (5K ~55 km/ned, 10K ~70), pa se kilometraza ne gura
      preko toga onima koji trce manje, niti se koci onima koji trce vise.
      Nedeljni korak se IZVODI iz vrhunca i broja rampnih nedelja, da se vrhunac
-     dostigne TACNO pred taper — bez platoa u sredini plana. GROW_MAX (+8%)
-     ostaje apsolutna bezbednosna granica jednog koraka.
+     dostigne TACNO pred taper — bez platoa u sredini plana. Granica jednog
+     koraka ISPORUČENE nedelje je korak×1.6 (v. IZRAVNAVANJE RASTA), ne GROW_MAX.
      ============================================================ */
   const vols=[]; let cur=_cur0;
   const rampSteps = _ramp0;
@@ -7898,8 +7926,7 @@ function generatePlan(inp){
      trener i na ravnom obimu talasa unutar bloka (lakse -> normalno -> malo
      tezе, pa deload).
      Primenjuje se ISKLJUCIVO na nedelje koje su vec dosegle vrhunac — dok
-     rampa jos raste ne dira se nista. 5K profil ovo nema (undulacija:null),
-     pa mu je izlaz nepromenjen. */
+     rampa jos raste ne dira se nista. Sva cetiri profila ga imaju (0.94/0.99/1.03). */
   if(prof.undulacija){
     for(let w=baseWeeks+1; w<=zadnjaRadna; w++){
       if(w%DELOAD_EVERY===0) continue;                 /* deload ima svoju ulogu */
@@ -8493,6 +8520,17 @@ function generatePlan(inp){
           const f = limit / sada;
           days.forEach(d=>{
             if(d.rest || d.km==null) return;
+            if(d.session){
+              /* Dan sa SESIJOM (oštrina) se skalira KROZ sesiju — skraćuju se
+                 zagrevanje i hlađenje, deonice ostaju. Ranije se skalirao sam
+                 `km`, pa je kartica pokazivala jedan broj a opis (zagrevanje +
+                 deonice + hlađenje) drugi — mereno do 1.6 km razlike. */
+              const ses=d.session;
+              ses.wuKm=r1(Math.max(1, ses.wuKm*f));
+              ses.cdKm=r1(Math.max(0.8, ses.cdKm*f));
+              d.km=sessKm(ses); d.desc=sessDesc(ses);
+              return;
+            }
             d.km = Math.max(POD, r1(d.km * f));
             preimenuj(d);
           });
