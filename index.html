@@ -304,6 +304,7 @@ main{padding:var(--pad) var(--pad) calc(var(--tab-h) + var(--sab) + 26px);
 .niz7 .n-odmor{background:rgba(90,255,190,.32)}
 .niz7 .n-ne{background:rgba(255,107,133,.55)}
 .niz7 .n-danas{background:transparent;box-shadow:inset 0 0 0 1px rgba(238,240,255,.45)}
+.alt-hint{font-size:.68rem;color:var(--txt3);margin-top:8px;line-height:1.4}
 .niz7-l{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);margin-top:7px}
 
 /* trening kartica */
@@ -842,7 +843,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 .sh-t{font-size:1.1rem;font-weight:800;margin-bottom:2px}
 .sh-s{font-size:.75rem;color:var(--txt2);font-weight:600;margin-bottom:12px}
 .seg{display:flex;background:var(--glass-in);border:1px solid var(--line-soft);border-radius:14px;padding:3px;margin-top:12px}
-.seg button{flex:1;min-height:44px;border-radius:9px;font-size:.8rem;font-weight:800;color:var(--txt2)}
+.seg button{flex:1;min-height:44px;border-radius:9px;font-size:.8rem;font-weight:800;color:var(--txt2);
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}   /* dugo držanje ne sme da otvori meni za kopiranje */
 .seg button.on{background:rgba(255,255,255,.92);color:var(--ink)}
 .seg button.on.c-done{background:var(--green);color:var(--ink)}
 .seg button.on.c-skip{background:var(--amber);color:var(--ink)}
