@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='275'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='276'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1463,6 +1463,29 @@ function jeDanSnage(d){ return !!d && !d.rest && d.tag==='snaga'; }
 function snagaSaTrcanjem(d){ const l=jeDanSnage(d)&&S.log[d.id]; return !!(l&&l.status==='done'&&l.km>0); }
 function weekRunCount(w){return w.days.filter(d=>!d.rest && (d.tag!=='snaga'||snagaSaTrcanjem(d))).length;}
 function weekRunDone(w){return w.days.filter(d=>!d.rest && (d.tag!=='snaga'||snagaSaTrcanjem(d)) && stFor(d.id)==='done').length;}
+/* POSLEDNJIH SEDAM DANA — red crtica ispod broja dana po planu.
+   Zamenio je emodži (🔥), koji nije nosio nikakvu informaciju. Crtica kaže šta
+   je bilo tog dana: odrađen trening, odmor po planu, propušten trening, danas
+   (još predstoji) ili dan van plana. Najstariji levo, danas desno. */
+function nizDanaHTML(today){
+  const IME={da:'odrađen',odmor:'odmor po planu',ne:'propušten',danas:'danas — predstoji',van:'van plana'};
+  const dani=[];
+  for(let i=6;i>=0;i--){
+    const dt=addD(today,-i), d=BY_DATE[dt];
+    let st='van';
+    if(d){
+      if(d.rest) st='odmor';
+      else if(stFor(d.id)==='done') st='da';
+      else if(dt===today) st='danas';
+      else st='ne';
+    }
+    dani.push({dt,st});
+  }
+  const poPlanu=dani.filter(x=>x.st==='da'||x.st==='odmor').length;
+  return `<div class="niz7" role="img" aria-label="Poslednjih 7 dana: ${poPlanu} po planu">`+
+    dani.map(x=>`<i class="n-${x.st}" title="${esc(dowOf(x.dt)+' '+fmtD(x.dt)+' — '+IME[x.st])}"></i>`).join('')+
+    `</div><div class="niz7-l">poslednjih 7 dana</div>`;
+}
 function streak(today){
   let cur=today,n=0;
   const t=BY_DATE[today];
@@ -4178,7 +4201,7 @@ function renderDanas(){
     <div class="nb-d"><button id="nb-go">${esc(nov.dugme)}</button><button id="nb-x" aria-label="Zatvori">Sakrij</button></div></div>`;
   h+=`<div class="hero">
     <div class="card accent"><div class="big">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
-    <div class="card"><div class="big" style="color:var(--green)">${st}</div><div class="big-sub">${plDan(st)} po planu</div><div class="big-sub" style="color:var(--txt3)">🔥 zaredom</div></div>
+    <div class="card"><div class="big" style="color:var(--green)">${st}</div><div class="big-sub">${plDan(st)} po planu</div>${nizDanaHTML(TODAY)}</div>
   </div>`;
   h+=`<div style="font-size:.8rem;color:var(--txt2);font-weight:700;margin:2px 2px 10px">${fmtDL(TODAY)}</div>`;
   const d=BY_DATE[TODAY];
