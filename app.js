@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='272'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='273'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -457,6 +457,9 @@ function seedState(){return {
     koji je vec jednom oborio unos tempa preko predLock-a; zato su sad ovde. */
  wellness:{},
  icu:null,
+ /* Trčanja PRE prvog dana plana, po datumu: {'GGGG-MM-DD': km}. Samo za
+    opterećenje dok plan nema četiri svoje nedelje — v. hronicniObim. */
+ vanPlana:{},
  /* Zajednica. `vidljiv:false` je JEDINO ispravno pocetno stanje — plan i
     istorija su do sada bili iskljucivo licni, pa niko ne sme da se nadje na
     javnom spisku zato sto je azurirao aplikaciju. */
@@ -1244,6 +1247,17 @@ function t3kNajsporije(){
    pa se NE brišu nego se odvezuju od dana ('arhiva') — inače bi ih `syncSide`
    prvog novog dana sa istim ID-jem tiho obrisao. Generisan plan ('g') i testovi
    na 3 km se ne diraju. Server čuva prethodnu verziju (v. supabase/istorija.sql). */
+/* Trčanja pre plana — datum -> km, broj u ljudskom opsegu. Dolazi iz uvoza
+   backupa i sa servera, pa se čisti kao i ostale mape. */
+function cistVanPlana(m){
+  const out={};
+  if(!m||typeof m!=='object'||Array.isArray(m)) return out;
+  for(const k of Object.keys(m)){
+    const v=+m[k];
+    if(validanDatum(k)&&typeof m[k]==='number'&&isFinite(v)&&v>0&&v<=300) out[k]=Math.round(v*100)/100;
+  }
+  return out;
+}
 const jeStariLicniId=k=>typeof k==='string'&&k.charAt(0)==='n';
 const jeStariPredId=k=>typeof k==='string'&&k.charAt(0)==='p';
 function ukloniStariLicniPlan(o){
@@ -1331,6 +1345,7 @@ function migrate(o){
     .map(t=>({id:String(t.id||''), date:t.date, sec:Math.round(+t.sec)}))
     .filter(t=>jeT3k(t.id)&&validanId(t.id)&&t3kMoguc(t.sec));
   o.wellness=cistWellness(o.wellness);
+  o.vanPlana=cistVanPlana(o.vanPlana);
   /* Isto za lanac forme: merenje van ljudskog opsega ne ostaje u istoriji.
      Zapis se odbacuje ceo — „popravka" na najbliži mogući broj bila bi
      izmišljen podatak o nečijem trčanju. */
@@ -1726,10 +1741,26 @@ function hronicniObim(today){
      isti oblik kao brojilac). Odbačen za sada jer menja ponašanje cele
      mašinerije povratka iz v237, a ova ispravka uklanja baš i samo lažni skok
      usred nedelje. */
+  /* PRVE NEDELJE PLANA. Plan nema četiri završene nedelje, pa je imenilac
+     ranije bio samo ono što je istrčano PO PLANU — a sve istrčano pre prvog
+     dana plana aplikacija nije videla. Izmereno na ovom planu (početak 25.09):
+     30.09 odnos 1,55 i „plan narednih 7 dana: 2,83 — skrati", 02.10 odnos 2,18,
+     iako je stvarni obim prethodne četiri nedelje ~28 km nedeljno. Sada se
+     nedostajuće nedelje dopunjuju kalendarskim nedeljama pre plana, iz
+     `S.vanPlana` (sinhronizacija ih puni). Bez tih podataka — ponašanje kao
+     pre. */
   const prosle = CUR_PLAN.filter(w => addD(w.start, 6) < today);
-  const zadnje = prosle.slice(-4);
-  if(!zadnje.length) return null;
-  const km = zadnje.map(weekRealKm);
+  const vp = S.vanPlana || {};
+  const imaVan = Object.keys(vp).length > 0;
+  const nedelje = prosle.slice(-4).map(w => weekRealKm(w) + vanPlanaKm(w.start, addD(w.start, 6)));
+  if(imaVan){
+    for(let k = 1; nedelje.length < 4; k++){
+      const od = addD(CUR_START, -7*k);
+      nedelje.unshift(vanPlanaKm(od, addD(od, 6)));
+    }
+  }
+  if(!nedelje.length) return null;
+  const km = nedelje;
   /* Nule se BROJE (tri nedelje pauze zaista spuštaju hronično opterećenje),
      ali ako je sve nula nemamo od čega da računamo. */
   if(!km.some(v => v > 0)) return null;
@@ -1749,9 +1780,33 @@ function danTreninga(l, d){
 /* AKUTNO OPTEREĆENJE — kilometraža poslednjih sedam dana, kotrljajuće (danas i
    šest dana unazad). Namerno NE „tekuća nedelja": u utorak bi ona sadržala
    jedan trening, pa bi odnos ispao bezopasan baš onda kad je najkorisniji. */
+/* Zbir trčanja pre plana u zatvorenom opsegu datuma. */
+function vanPlanaKm(od, doD){
+  const vp = S.vanPlana || {};
+  let km = 0;
+  for(const dt in vp) if(dt >= od && dt <= doD) km += +vp[dt] || 0;
+  return Math.round(km * 10) / 10;
+}
+/* Poslednji dan pre prvog dana plana. Trčanja do tog dana nemaju dan plana
+   za koji bi se vezala, pa se pamte u `S.vanPlana`. */
+function granicaVanPlana(){ return DATED.length ? DATED[0].date : CUR_START; }
+/* Upis trčanja pre plana iz sinhronizacije: datum -> ukupno km tog dana.
+   Stariji zapisi od četiri nedelje pre plana se ne čuvaju — ne trebaju nikom. */
+function upisiVanPlana(kmPoDanu){
+  const g = granicaVanPlana(), najstarije = addD(g, -35);
+  S.vanPlana = S.vanPlana || {};
+  let promena = false;
+  for(const dt of Object.keys(kmPoDanu)){
+    if(!validanDatum(dt) || dt >= g || dt < najstarije) continue;
+    const v = Math.round(kmPoDanu[dt] * 100) / 100;
+    if(v > 0 && S.vanPlana[dt] !== v){ S.vanPlana[dt] = v; promena = true; }
+  }
+  for(const dt of Object.keys(S.vanPlana)) if(dt < najstarije || dt >= g){ delete S.vanPlana[dt]; promena = true; }
+  return promena;
+}
 function akutniObim(today){
   const od = addD(today, -6);
-  let km = 0;
+  let km = vanPlanaKm(od, today);
   CUR_PLAN.forEach(w => w.days.forEach(d => {
     const l = S.log[d.id];
     if(!l || l.status !== 'done') return;
@@ -10919,7 +10974,10 @@ async function icuSyncTreninzi(danaUnazad, manual){
      konvencije se ne smeju mešati, i ovde su bile pomešane.) */
   const ds=d=>d2s(d);
   /* Nikad pre početka plana — pre toga ni nema dana na koje bi se zakačilo. */
-  const oldest=ds(od)<CUR_START?CUR_START:ds(od);
+  /* Četiri nedelje pre prvog dana plana — za opterećenje u prvim nedeljama
+     (v. hronicniObim). Na dane plana se i dalje kači samo ono što je u planu. */
+  const pocetak=addD(granicaVanPlana(),-28);
+  const oldest=ds(od)<pocetak?pocetak:ds(od);
 
   const lista=await icuApi({oldest, newest:ds(do_)});
   if(!lista.ok) return lista;
@@ -10930,6 +10988,11 @@ async function icuSyncTreninzi(danaUnazad, manual){
      rade nepromenjeni — jedan pomeraj plana, jedno pravilo, oba izvora. */
   const byDate={};
   treninzi.forEach(a=>{ if(a&&a.datum&&a.km>0)(byDate[a.datum]=byDate[a.datum]||[]).push({...a, distance:a.km*1000}); });
+  {
+    const van={};
+    Object.keys(byDate).forEach(dt=>{ van[dt]=byDate[dt].filter(x=>/run/i.test(String(x.tip||'Run'))).reduce((s,x)=>s+x.km,0); });
+    upisiVanPlana(van);
+  }
   autoRealign(byDate);
 
   let n=0; const trazi=[], tokovi=[];
@@ -12944,7 +13007,7 @@ async function stApi(path,_retried){
 async function stravaSync(manual){
   if(!S.strava){if(manual)alert('Strava nije povezana.');return;}
   try{
-    const after=Math.floor(s2d(CUR_START).getTime()/1000);
+    const after=Math.floor(s2d(addD(granicaVanPlana(),-28)).getTime()/1000);   /* v. hronicniObim */
     /* ZONE PULSA. Bez njih model nema pojma sta znaci "puls 171" — moze samo da
        kaze "visok", sto je neosnovano jer ne zna maksimalni puls trkaca. Sa
        zonama moze da kaze "zona 5". Povlaci se najvise jednom nedeljno. */
@@ -12965,6 +13028,11 @@ async function stravaSync(manual){
     const runs=acts.filter(a=>a.type==='Run'||a.sport_type==='Run');
     const byDate={};
     runs.forEach(a=>{const dt=String(a.start_date_local||'').slice(0,10);if(dt)(byDate[dt]=byDate[dt]||[]).push(a);});
+    {
+      const van={};
+      Object.keys(byDate).forEach(dt=>{ van[dt]=byDate[dt].reduce((s,a)=>s+(+a.distance||0)/1000,0); });
+      upisiVanPlana(van);
+    }
     const moved=autoRealign(byDate); /* pomeri plan PRE glavne petlje da odmah nađe par */
     let imp=0,props=0;
     for(const date of Object.keys(byDate)){
