@@ -157,3 +157,42 @@ describe('Hlađenje na ekranu, ne samo u funkciji', () => {
     assert.doesNotMatch(html, /Smirivanje/);
   });
 });
+
+/* ============================================================
+   BROJ I IMENICA — audit v275.
+   Pronađeno na ekranu: „narednih 1 treninga", „Menja se 3 treninga",
+   „trening-unosa · 1 koleno", „Na 3 dana sa 1 kvalitetna treninga",
+   „Za Polumaraton se preporučuje". Slaganje ide kroz pomoćne funkcije,
+   pa se ovde drže one, ne svaka rečenica posebno.
+   ============================================================ */
+describe('Broj i imenica se slažu', () => {
+  test('nedelja, trening i glagol uz broj', () => {
+    const exp = { 1: '1 nedelja', 3: '3 nedelje', 5: '5 nedelja', 11: '11 nedelja', 21: '21 nedelja', 22: '22 nedelje' };
+    for (const [n, t] of Object.entries(exp)) assert.equal(app.call('brojNedelja', +n), t);
+    assert.equal(app.call('brojTreninga', 1), '1 trening');
+    assert.equal(app.call('brojTreninga', 4), '4 treninga');
+    assert.equal(app.call('glagolZaBroj', 1, 'Menja se', 'Menjaju se'), 'Menja se');
+    assert.equal(app.call('glagolZaBroj', 3, 'Menja se', 'Menjaju se'), 'Menjaju se');
+    assert.equal(app.call('glagolZaBroj', 7, 'Menja se', 'Menjaju se'), 'Menja se');
+    assert.equal(app.call('narednihTreninga', 1), 'narednog treninga');
+    assert.equal(app.call('narednihTreninga', 6), 'narednih 6 treninga');
+  });
+
+  test('ime distance usred rečenice je malim slovom, osim 5K/10K', () => {
+    assert.equal(app.call('distUReceni', 'Polumaraton'), 'polumaraton');
+    assert.equal(app.call('distUReceni', 'Maraton'), 'maraton');
+    assert.equal(app.call('distUReceni', '10K'), '10K');
+  });
+
+  test('nijedan tekst ne spaja broj sa „nedelja"/„treninga" mimo pomoćnih funkcija', () => {
+    const redovi = kod.split('\n').filter(r =>
+      /\+\s*'\s*(nedelja|treninga)\b|\}\s(nedelja|treninga)\b/.test(r) && !/pl3|brojNedelja|brojTreninga|narednih|Plan ned\./.test(r));
+    assert.deepEqual(redovi.map(r => r.trim().slice(0, 120)), []);
+  });
+
+  test('stari, pogrešni obrasci se ne vraćaju', () => {
+    for (const los of ['trening-unosa', 'Bol u kolenu', '🔥 streak', "' kvalitetna treninga ostaje'",
+                       'Plan vrhunac ima', 'U poslednje \' + PREKID_PROZOR'])
+      assert.ok(!kod.includes(los), `vratio se obrazac: ${los}`);
+  });
+});
