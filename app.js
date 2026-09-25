@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='274'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='275'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1965,10 +1965,10 @@ function injuryProposal(today){
       title: 'Povratak posle prekida',
       message: (pz.bezTrcanja != null && pz.bezTrcanja >= 3
                   ? 'Bez trčanja ' + pz.bezTrcanja + ' ' + (pz.bezTrcanja === 1 ? 'dan' : 'dana') + '. '
-                  : 'U poslednje ' + PREKID_PROZOR + ' dana odrađeno je ' + Math.round(pz.ostvarenost*100) + '% planiranog obima. ') +
+                  : 'U poslednjih ' + PREKID_PROZOR + ' dana odrađeno je ' + Math.round(pz.ostvarenost*100) + '% planiranog obima. ') +
         'Plan od sledeće nedelje traži više nego što telo trenutno nosi: prosek stvarno odrađenog u poslednje 4 nedelje je ' +
         fmtKm(hronP) + ' km/ned, a sledećih 7 dana traži ' + fmtKm(planiranoP) + ' km. ' +
-        'Predlog: ' + Math.round(stvarni*100) + '% planiranog obima narednih ' + changes.length + ' treninga' +
+        'Predlog: ' + Math.round(stvarni*100) + '% planiranog obima ' + narednihTreninga(changes.length) +
         (bezKvaliteta ? ', bez kvalitetnih treninga' : '') +
         '. Predlog se svake nedelje sam podiže i nestaje čim prosek odrađenog sustigne plan; koliko će to trajati zavisi od toga koliko je prekid trajao i koliko plan traži — posle duže pauze u sredini priprema to ume da bude i mesec i po. ' +
         'Ne ide naniže: nikad se ne predlaže manje nego što si već odradio u nedelji pred ovu. ' +
@@ -1996,7 +1996,7 @@ function injuryProposal(today){
             ? Math.round(acwrP*100) + '% planiranog obima (lestvica povratka kaže ' + pctTxt +
               ', ali prosek stvarno odrađenog u poslednje 4 nedelje — ' + fmtKm(hronP) + ' km/ned — dozvoljava manje)'
             : pctTxt + ' planiranog obima') +
-        ' narednih ' + changes.length + ' treninga' +
+        ' ' + narednihTreninga(changes.length) +
         (bezKvaliteta ? ', bez kvalitetnih treninga' : '') +
         '. Pre nego što prihvatiš — proveri da možeš: 30 min brzog hoda bez bola, 20 poskoka na povređenoj nozi bez bola, i da nema bola u mirovanju. Ako bilo šta od toga ne prolazi, rano je za trčanje bez obzira na broj dana. Ostavi bar jedan dan odmora između trčanja.'
     };
@@ -2117,7 +2117,7 @@ function injuryProposal(today){
   };
 
   const ukupno = changes.reduce((s,c)=>s+(c.km||0), 0);
-  const obimTxt = ' Obim narednih ' + changes.length + ' treninga: ' + fmtKm(ukupno) + ' km umesto ' + fmtKm(planirano) + ' km'
+  const obimTxt = ' Obim ' + narednihTreninga(changes.length) + ': ' + fmtKm(ukupno) + ' km umesto ' + fmtKm(planirano) + ' km'
       + (hron != null ? ' (prosek stvarno odrađenog u poslednje 4 nedelje: ' + fmtKm(hron) + ' km/ned).' : '.');
   /* Bol koji ne nosi trčanje se NE prećutkuje — samo ne prepisuje plan. */
   const ostalo = nenosiviBol(from, today);
@@ -2132,9 +2132,9 @@ function injuryProposal(today){
     /* Poruka je namerno različita po ozbiljnosti — plan se prilagođava, ali
        app NE glumi da je jak bol rešen kraćim trčanjem. */
     message: (rw
-      ? 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Neprekidno trčanje je prerano: narednih ' + changes.length + ' treninga ide po run/walk metodi — ' + runWalkText(rw) + '. Hod prekida udarno opterećenje, pa tkivo dobija ciklus opterećenje–rasterećenje umesto neprekidnog rada.' + obimTxt + ' Neprekidno trčanje se vraća kad bol padne ispod ' + RW_BOL_MIN + '.'
+      ? 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Neprekidno trčanje je prerano: ' + pl3(changes.length,'naredni trening ide','naredna '+changes.length+' treninga idu','narednih '+changes.length+' treninga ide') + ' po run/walk metodi — ' + runWalkText(rw) + '. Hod prekida udarno opterećenje, pa tkivo dobija ciklus opterećenje–rasterećenje umesto neprekidnog rada.' + obimTxt + ' Neprekidno trčanje se vraća kad bol padne ispod ' + RW_BOL_MIN + '.'
         + (hitno ? ' Bol ' + maxPain + '/10 je ozbiljan — ovo je prilagođavanje TRENINGA, ne lečenje. Ako te boli u mirovanju, ako šepaš ili ako bol ne popušta, ne trči ni ovoliko i javi se fizijatru ili lekaru.' : ' Ako bol poraste, prekini i javi se stručnjaku.')
-      : 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Predlog: kvalitetni treninzi postaju lagani, obim smanjen narednih ' + changes.length + ' treninga.' + obimTxt + ' Ako bol poraste na ' + RW_BOL_MIN + '+, prelazi se na run/walk.'
+      : 'Bol ' + maxPain + '/10 (' + parts.join(', ') + '). Predlog: kvalitetni treninzi postaju lagani, obim smanjen za ' + pl3(changes.length,'naredni trening','naredna '+changes.length+' treninga','narednih '+changes.length+' treninga') + '.' + obimTxt + ' Ako bol poraste na ' + RW_BOL_MIN + '+, prelazi se na run/walk.'
     ) + ostaloTxt + trkaTxt
   };
 }
@@ -4033,6 +4033,16 @@ function pl3(n,jedan,dva,pet){const m=n%10,h=n%100;
   if(m===1&&h!==11)return jedan;
   if(m>=2&&m<=4&&(h<12||h>14))return dva;
   return pet;}
+/* Broj sa imenicom u pravom obliku: „1 nedelja", „3 nedelje", „12 nedelja". */
+function brojNedelja(n){ return n+' '+pl3(n,'nedelja','nedelje','nedelja'); }
+function brojTreninga(n){ return n+' '+pl3(n,'trening','treninga','treninga'); }
+/* Glagol se slaže sa brojem: „Menja se 1 trening", „Menjaju se 3 treninga",
+   „Menja se 5 treninga" (uz 5+ glagol ostaje u jednini). */
+function glagolZaBroj(n, jednina, mnozina){ return pl3(n, jednina, mnozina, jednina); }
+/* „narednog treninga" / „narednih N treninga" — za genitiv („obim narednih…"). */
+function narednihTreninga(n){ return n===1 ? 'narednog treninga' : 'narednih '+n+' treninga'; }
+/* Ime distance usred rečenice: „za polumaraton", ali „za 5K". */
+function distUReceni(ime){ return /^\d/.test(String(ime)) ? String(ime) : String(ime||'').toLowerCase(); }
 function fmtDY(s){const d=s2d(s);if(!validDatum(d))return'—';return pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.'+d.getFullYear()+'.';}
 
 function renderHeader(){
@@ -4168,7 +4178,7 @@ function renderDanas(){
     <div class="nb-d"><button id="nb-go">${esc(nov.dugme)}</button><button id="nb-x" aria-label="Zatvori">Sakrij</button></div></div>`;
   h+=`<div class="hero">
     <div class="card accent"><div class="big">${dd>0?dd:(dd===0?'🏁':'✓')}</div><div class="big-sub">${dd>0?plDan(dd)+' do trke':(dd===0?'danas je trka':'trka je prošla')}</div><div class="big-sub" style="color:var(--txt3)">${fmtDL(CUR_RACE)}</div></div>
-    <div class="card"><div class="big" style="color:var(--green)">${st}</div><div class="big-sub">${plDan(st)} po planu</div><div class="big-sub" style="color:var(--txt3)">🔥 streak</div></div>
+    <div class="card"><div class="big" style="color:var(--green)">${st}</div><div class="big-sub">${plDan(st)} po planu</div><div class="big-sub" style="color:var(--txt3)">🔥 zaredom</div></div>
   </div>`;
   h+=`<div style="font-size:.8rem;color:var(--txt2);font-weight:700;margin:2px 2px 10px">${fmtDL(TODAY)}</div>`;
   const d=BY_DATE[TODAY];
@@ -4840,10 +4850,10 @@ function formHTML(d){
     <div class="f-field"><span class="f-lbl" id="lbl-tempo-${esc(d.id)}">Pros. tempo</span><div class="calc" data-tempo role="status" aria-labelledby="lbl-tempo-${esc(d.id)}">${tempo}</div></div>
     <div class="f-field"><label for="${fid('hr')}">Pros. puls</label><input id="${fid('hr')}" type="text" inputmode="numeric" data-f="hr" value="${l.hr!=null?esc(l.hr):''}" placeholder="bpm"></div>
     ${workBlock}
-    <details class="f-field full more-details"><summary>Više detalja (RPE, koleno, masa, datum, beleška)</summary>
+    <details class="f-field full more-details"><summary>Više detalja (RPE, bol, masa, datum, beleška)</summary>
     <div class="more-grid">
     <div class="f-field"><label for="${fid('rpe')}">RPE (1–10)</label><select id="${fid('rpe')}" data-f="rpe">${opt(l.rpe,1,10)}</select></div>
-    <div class="f-field"><label for="${fid('knee')}">Bol u kolenu (0–10)</label><select id="${fid('knee')}" data-f="knee">${opt(l.knee,0,10)}</select></div>
+    <div class="f-field"><label for="${fid('knee')}">Bol (0–10)</label><select id="${fid('knee')}" data-f="knee">${opt(l.knee,0,10)}</select></div>
     <div class="f-field"><label for="${fid('kg')}">Telesna masa (kg)</label><input id="${fid('kg')}" type="text" inputmode="decimal" data-f="kg" value="${l.kg!=null?esc(String(l.kg).replace('.',',')):''}" placeholder="npr. 80,5"></div>
     <div class="f-field"><label for="${fid('ts')}">Datum</label><input id="${fid('ts')}" type="date" data-f="ts" value="${esc(l.ts||d.date||TODAY)}"></div>
     <div class="f-field full"><label for="${fid('note')}">Beleška</label><textarea id="${fid('note')}" data-f="note" placeholder="Kako je bilo…">${esc(l.note||'')}</textarea></div>
@@ -5569,7 +5579,7 @@ function altSheetHTML(d){
   }
   if(cur.tag==='int'||cur.tag==='tempo'){
     h+=`<div class="f-field full" style="margin-top:10px"><label for="alt-pace">Ciljni tempo radnog dela (m:ss/km)</label>
-      <div style="font-size:.72rem;color:var(--txt3);margin-bottom:6px">Ovo vidi AI analiza i kartica treninga kao "plan" — nezavisno od podrazumevanog cilja te nedelje.</div>
+      <div style="font-size:.72rem;color:var(--txt3);margin-bottom:6px">Ovo vidi AI analiza i kartica treninga kao „plan" — nezavisno od podrazumevanog cilja te nedelje.</div>
       <div style="display:flex;gap:8px">
         <input type="text" inputmode="numeric" id="alt-pace" placeholder="410 = 4:10" value="${cur.pace!=null?fmtTempo(cur.pace):''}" style="flex:1">
         <button type="button" id="alt-pace-auto" class="btn ghost sm" style="flex:none">🔍 Iz opisa</button>
@@ -7722,8 +7732,8 @@ function generatePlan(inp){
   const daysN = Math.round((new Date(inp.raceDate) - new Date(start)) / 86400000);
   const weeks = Math.floor(daysN/7) + 1;
   const maxWeeks = 104; /* bezbednosni plafon (2 god.) protiv degenerisanog unosa (npr. pogrešan datum), NE ograničenje planiranja — korisnik sme da se sprema koliko god unapred želi */
-  if(weeks < prof.minWeeks) return { error: `Manje od ${prof.minWeeks} nedelja do trke (minimum za ${prof.name}) — puna periodizacija nije moguća.` };
-  if(weeks > maxWeeks) return { error: `Više od ${maxWeeks} nedelja (2 godine) — proveri datum trke, verovatno je pogrešno unet.` };
+  if(weeks < prof.minWeeks) return { error: `Manje od ${brojNedelja(prof.minWeeks)} do trke (minimum za ${distUReceni(prof.name)}) — puna periodizacija nije moguća.` };
+  if(weeks > maxWeeks) return { error: `Više od ${brojNedelja(maxWeeks)} (2 godine) — proveri datum trke, verovatno je pogrešno unet.` };
   const runDays = Math.max(2, Math.min(7, Math.round(inp.runDays||4)));
   let qWant = Math.max(1, Math.min(2, Math.round(inp.quality||2)));
   const QUAL2_MIN_KM = prof.qual2MinKm;
@@ -7782,7 +7792,7 @@ function generatePlan(inp){
       'na tempu napretka „' + imeIzabranog + '" predviđanje za dan trke je ' + fmtClock(a.predictedSec) + '. ' +
       (stize
         ? 'Tempo napretka „' + stize[1] + '" bi ga dostigao.'
-        : 'Nijedan tempo napretka ga ne dostiže za ' + weeks + ' nedelja — treba ti više vremena do trke ili blaži cilj.') +
+        : 'Nijedan tempo napretka ga ne dostiže za ' + brojNedelja(weeks) + ' — treba ti više vremena do trke ili blaži cilj.') +
       ' Plan i dalje računa tempo trke IZ TVOG CILJA, ne iz predviđanja, pa će kvalitetni treninzi biti brži ' +
       'nego što forma trenutno nosi. To je namerno — ali znaj da je tako.');
   }
@@ -7838,7 +7848,7 @@ function generatePlan(inp){
      rasporediti bez da svaki dan bude dugacak. Plan se i dalje pravi — samo se
      kaze sta to znaci. */
   if(prof.minDanaPrep && runDays < prof.minDanaPrep){
-    dayWarnings.push('Za ' + prof.name + ' se preporučuje bar ' + prof.minDanaPrep +
+    dayWarnings.push('Za ' + distUReceni(prof.name) + ' se preporučuje bar ' + prof.minDanaPrep +
       ' dana trčanja nedeljno; izabrao si ' + runDays + '. Na tako malo dana dugo trčanje postaje ' +
       'polovina cele nedelje, pa se obim ne može rasporediti a da svaki trening ne bude dugačak. ' +
       'Plan je napravljen, ali računaj na duže oporavke i manje prostora za kvalitet.');
@@ -8646,7 +8656,7 @@ function generatePlan(inp){
     if(manjak > 0.15){
       const easyCount = Math.max(runDays - 1 - effQ, 0);
       const predlog = easyCount <= 1
-        ? ' Na ' + runDays + ' dana sa ' + effQ + ' kvalitetna treninga ostaje samo ' +
+        ? ' Na ' + runDays + ' dana sa ' + (effQ===1 ? 'jednim kvalitetnim treningom' : effQ + ' kvalitetna treninga') + ' ostaje samo ' +
           (easyCount===1?'jedan lagan dan':'nijedan lagan dan') +
           ', pa se toliki obim ne može bezbedno rasporediti — lagan dan bi morao da bude dug koliko i dugo trčanje. Dodaj jedan dan trčanja.'
         : ' Dodaj jedan dan trčanja ili smanji broj kvalitetnih treninga.';
@@ -8690,7 +8700,7 @@ function generatePlan(inp){
        Danielsove konstante — zato "orijentaciono". */
     const BAZA_MIN = prof.bazaMin;   /* odluka po distanci — v. DIST_PROFILES */
     if(BAZA_MIN && pik > 0 && pik < BAZA_MIN*0.85){
-      dayWarnings.push('Plan vrhunac ima na oko ' + pik.toFixed(0) + ' km/ned, a za ' + prof.name +
+      dayWarnings.push('Vrhunac plana je oko ' + pik.toFixed(0) + ' km/ned, a za ' + distUReceni(prof.name) +
         ' se orijentaciono računa sa ~' + BAZA_MIN + ' km/ned. Rast je namerno postupan (od tvojih ' +
         inp.weeklyKm + ' km/ned) jer je nagli skok obima najčešći uzrok povrede — ' +
         'ali to znači da je ovo plan da distancu ISTRČIŠ, ne da je trčiš na vreme. ' +
@@ -9373,8 +9383,8 @@ function renderOutlook(){
   const el=$('#ob-outlook'); if(!el) return;
   const d=outlookData();
   if(!d){ el.innerHTML='<div class="ob-ct">Predviđanje na dan trke</div><div class="ob-hint">Unesi skorašnji rezultat i datum trke da bi se predviđanje izračunalo.</div>'; return; }
-  if(d.short){ el.innerHTML=`<div class="ob-ct">Predviđanje na dan trke</div><div class="ob-hint">${d.weeks} nedelja je manje od minimuma za ${esc(d.name)} (<b>${d.minWeeks}</b>) — plan se ne može napraviti, pa ni predvideti.</div>`; return; }
-  let h=`<div class="ob-ct">Predviđanje na dan trke <span class="ob-opt">— ${d.weeks} nedelja, ${esc(d.name)}</span></div>`;
+  if(d.short){ el.innerHTML=`<div class="ob-ct">Predviđanje na dan trke</div><div class="ob-hint">${brojNedelja(d.weeks)} ${glagolZaBroj(d.weeks,'je','su')} manje od minimuma za ${esc(distUReceni(d.name))} (<b>${d.minWeeks}</b>) — plan se ne može napraviti, pa ni predvideti.</div>`; return; }
+  let h=`<div class="ob-ct">Predviđanje na dan trke <span class="ob-opt">— ${brojNedelja(d.weeks)}, ${esc(d.name)}</span></div>`;
   h+=`<div class="ob-preds">`;
   d.rows.forEach(r=>{
     const sel=r.k===wiz.intensity;
@@ -9475,7 +9485,7 @@ function updateWeeksHint(){
      sazna da nije moglo. */
   t += wks<prof.minWeeks
     ? `${prof.name} traži najmanje <b>${prof.minWeeks}</b>, pa plan za ovaj datum ne može da se napravi. Pomeri trku ili izaberi kraću distancu.`
-    : `dovoljno za pun ${prof.name} ciklus sa deload nedeljom i taperom.`;
+    : `dovoljno za pun ciklus pripreme za ${distUReceni(prof.name)}, sa deload nedeljom i taperom.`;
   el.innerHTML=t;
 }
 function updateVdotPreview(){
@@ -10334,7 +10344,7 @@ function karticaOpterecenja(){
        const opasno = p.odnos > 1.5;
        return `<div class="note-src" style="margin-top:10px;color:${opasno?'var(--red)':'var(--amber)'}">
          Plan narednih 7 dana: ${esc(fmtKm(p.pl))} km — odnos bi bio ${esc(acwrBroj(p.odnos))}.
-         ${opasno ? 'To je preko 1,5 pre nego što je nedelja počela. Skrati je, ili u tabu Oporavak prihvati predlog ako ga aplikacija nudi.'
+         ${opasno ? 'To je preko 1,5 pre nego što je nedelja počela. Skrati je, ili prihvati predlog za prilagođavanje plana ako ga aplikacija nudi.'
                   : 'Iznad gornje ivice pojasa; ako je ovo povratak posle pauze ili povrede, skrati.'}</div>`;
      })()}
      <div class="note-src">${esc(rec)} Odnos poredi kilometražu poslednjih sedam dana sa prosekom poslednje četiri završene nedelje.</div>`);
@@ -10354,7 +10364,7 @@ function renderOporavak(){
     h+=`<div class="card" style="border-color:${prop.hitno?'rgba(255,69,58,.35)':'rgba(255,176,32,.3)'}">
       <div class="card-t" style="color:${prop.hitno?'var(--red)':'var(--amber)'}">Plan se može prilagoditi</div>
       <div style="font-size:.85rem;line-height:1.55;color:var(--txt2)">${esc(prop.message)}</div>
-      ${prop.changes.length ? `<div class="note-src" style="margin-top:10px">Menja se ${prop.changes.length} ${prop.changes.length===1?'trening':'treninga'}: ${esc(prop.changes.slice(0,4).map(x=>fmtD(x.date)+' → '+(x.rw?'Run/walk':tagName(x.to))).join(' · '))}${prop.changes.length>4?' …':''}</div>
+      ${prop.changes.length ? `<div class="note-src" style="margin-top:10px">${glagolZaBroj(prop.changes.length,'Menja se','Menjaju se')} ${brojTreninga(prop.changes.length)}: ${esc(prop.changes.slice(0,4).map(x=>fmtD(x.date)+' → '+(x.rw?'Run/walk':tagName(x.to))).join(' · '))}${prop.changes.length>4?' …':''}</div>
       <div class="btnrow" style="margin-top:12px"><button class="btn" id="inj-apply">Prilagodi plan</button></div>
       <div class="note-src" style="margin-top:8px">Svaki dan možeš ručno da vratiš u tabu Plan.</div>`
       /* Predlog bez ijedne izmene postoji samo kad je trka u horizontu (v.
@@ -10395,7 +10405,7 @@ function renderOporavak(){
   if(ia) ia.onclick=()=>{
     const pr=injuryProposal(TODAY);
     if(!pr) return;
-    if(!potvrdi('Prilagoditi plan? Menja se '+pr.changes.length+' treninga. Možeš ih ručno vratiti u tabu Plan.')) return;
+    if(!potvrdi('Prilagoditi plan? '+glagolZaBroj(pr.changes.length,'Menja se ','Menjaju se ')+brojTreninga(pr.changes.length)+'. '+(pr.changes.length===1?'Možeš ga':'Možeš ih')+' ručno vratiti u tabu Plan.')) return;
     const n=applyInjuryProposal(pr);
     alert(n+' '+(n===1?'trening prilagođen':'treninga prilagođeno')+'.');
     renderOporavak(); renderDanas(); renderPlan();
@@ -10520,7 +10530,7 @@ function t3kKarta(){
     telo+=dRedovi([
       ['tempo', esc(fmtTempo(tempo))+' /km'],
       ['VDOT iz testa', esc(fmtNum(v,1))],
-      ['predikcija '+esc(imeTrke), esc(fmtClock(Math.round(raceTimeForVdot(v,dist))))]
+      ['predikcija · '+esc(imeTrke), esc(fmtClock(Math.round(raceTimeForVdot(v,dist))))]
     ]);
     if(niz.length>1){
       telo+=`<div class="op-sub">Raniji testovi</div>`;
@@ -10641,7 +10651,7 @@ function renderPred(){
     </div>`;
   }
   const predRaceName=esc(S.genPlan?((S.genPlan.meta&&S.genPlan.meta.raceName)||'trke'):LICNI.raceName);
-  h+=`<div class="card">${dGlava('Predikcija '+predRaceName+' kroz plan','cilj '+esc(ciljTekst))}<div id="pchart">${chartPred(pc)}</div>
+  h+=`<div class="card">${dGlava('Predikcija kroz plan · '+predRaceName,'cilj '+esc(ciljTekst))}<div id="pchart">${chartPred(pc)}</div>
     <div class="legend"><span><i style="background:var(--pink)"></i>ostvareno</span><span><i style="background:rgba(255,255,255,.28)"></i>plan (referenca)</span><span><i style="background:var(--cyan)"></i>cilj</span>${
       pc.testovi&&pc.testovi.length?`<span><i class="romb" style="background:var(--cyan)"></i>test 3 km</span>`:''}</div></div>`;
   /* PROSEČAN TEMPO — došao iz Progresa, i namerno na DNO. Isti lanac se ovde
@@ -10663,7 +10673,7 @@ function renderPred(){
   if(vdA) vdA.onclick=()=>{
     const pr=vdotPredlog(TODAY);
     if(!pr) return;
-    if(!potvrdi('Prilagoditi ciljni tempo tvojoj formi? Menja se '+pr.changes.length+' treninga. Obim ostaje isti, a sve se vraća dugmetom „Vrati planski tempo".')) return;
+    if(!potvrdi('Prilagoditi ciljni tempo tvojoj formi? '+glagolZaBroj(pr.changes.length,'Menja se ','Menjaju se ')+brojTreninga(pr.changes.length)+'. Obim ostaje isti, a sve se vraća dugmetom „Vrati planski tempo".')) return;
     const n=primeniVdotPredlog(pr);
     alert(n+' '+(n===1?'trening prilagođen':'treninga prilagođeno')+'.');
     renderPred(); if(ACTIVE==='danas')renderDanas();
@@ -10704,7 +10714,7 @@ function renderPred(){
 /* VDOT trend kroz vreme — crta vdotLog kao liniju. Vidi se raste li forma. */
 function chartVdotTrend(){
   const vl=(S.vdotLog||[]).slice().sort((a,b)=>a.ts<b.ts?-1:1);
-  if(vl.length<2) return '<div style="color:var(--txt3);font-size:.8rem;padding:12px 0">Trend se prikazuje kad bude bar 2 zabeležene VDOT vrednosti. Nakupljaj kroz treninge.</div>';
+  if(vl.length<2) return '<div style="color:var(--txt3);font-size:.8rem;padding:12px 0">Trend se prikazuje kad budu bar 2 zabeležene VDOT vrednosti — skupljaju se kroz kvalitetne treninge i testove na 3 km.</div>';
   const W=340,H=166,L=32,R=8,B=142,T=26;   /* +16 px za natpis izabrane tačke */
   const vals=vl.map(e=>e.vdot);
   const bv=baselineVdot(), goal=goalVdotActive();
@@ -11965,7 +11975,8 @@ function openSettings(){
   /* Izbor grupe se NE pamti između otvaranja — v. SET_GRUPA. Skače se na onu u
      kojoj nešto čeka; kad ništa ne čeka, na prvu. */
   SET_GRUPA=grupaKojaCeka();
-  const counts=`${Object.keys(S.log).length} trening-unosa · ${S.knee.length} koleno · ${S.kg.length} težina · ${Object.keys(S.pred).length} predikcija`;
+  const nL=Object.keys(S.log).length, nB=S.knee.length, nM=S.kg.length, nT=Object.keys(S.pred).length;
+  const counts=`${brojTreninga(nL)} · ${nB} ${pl3(nB,'zapis','zapisa','zapisa')} o bolu · ${nM} ${pl3(nM,'merenje','merenja','merenja')} mase · ${nT} ${pl3(nT,'tempo','tempa','tempa')} radnog dela`;
   const vremeSb=SB.seenAt?new Date(SB.seenAt).toLocaleString('sr-RS'):null;
   const stStrava=!!S.strava, stIcu=!!(S.icu&&S.icu.athleteId), stNalog=sbAuthed();
 
@@ -12039,7 +12050,7 @@ function openSettings(){
            <details class="help"><summary>Šta dobijam prijavom</summary><p>Bez prijave sve radi kao i do sad, samo bez rezervne kopije na serveru i bez istog plana na više uređaja.</p></details>`):''}
 
     ${kartica(false,
-      glava('Plan', (S.genPlan?(jeVlasnik()?'generisan plan':'tvoj plan'):'tvoj lični plan')+' · '+CUR_PLAN.length+' nedelja', true),
+      glava('Plan', (S.genPlan?(jeVlasnik()?'generisan plan':'tvoj plan'):'tvoj lični plan')+' · '+brojNedelja(CUR_PLAN.length), true),
       S.genPlan
         ? `${S.genPlan.ulaz ? `<div class="set-st">Ciljno vreme · ${esc(fmtClock(goalSecActive()||0))}</div>
            <div class="btnrow"><input id="pl-goal" class="wseg-in" inputmode="numeric" style="max-width:140px"
@@ -12205,7 +12216,7 @@ function openSettings(){
 
     <div class="btnrow" style="margin-top:16px"><button class="btn ghost sm" id="sw-osvezi">Osveži aplikaciju</button></div>
     <div class="note-src" id="sw-stanje" style="margin:6px 0 0">Proveravam verziju offline kopije…</div>
-    <div class="note-src" style="margin-top:6px">Verzija ${APP_VERSION} · šema v${S.v} · ${TOTAL_TR} treninga / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_Bokeski_polumaraton.xlsx · trka 13.12.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
+    <div class="note-src" style="margin-top:6px">Verzija ${APP_VERSION} · šema v${S.v} · ${brojTreninga(TOTAL_TR)} / ${fmtKm(CUR_PLAN.reduce((s,w)=>s+weekPlanKm(w),0))} km · ${S.genPlan?'generisan plan':'Plan_Bokeski_polumaraton.xlsx · trka 13.12.2026.'} · <a href="./uputstvo.html" target="_blank" rel="noopener" style="color:inherit">Uputstvo</a> · <a href="./privacy.html" target="_blank" rel="noopener" style="color:inherit">Politika privatnosti</a></div>
   `);
   SET_LIST=true;
   podesiGrupe();
@@ -12292,7 +12303,7 @@ function openSettings(){
     if(!ev.length){ box.innerHTML='<div class="note-src">Nema treninga u narednih 14 dana.</div>'; return; }
     /* koji od njih uopste nose strukturu — to je ono sto korisnik proverava */
     const strukt=ev.filter(e=>/^- /m.test(e.description) && e.description.split('\n').filter(l=>/^- /.test(l)).length>1);
-    box.innerHTML='<div class="note-src" style="margin:10px 0 6px">Šalje se '+ev.length+' treninga, '+
+    box.innerHTML='<div class="note-src" style="margin:10px 0 6px">'+glagolZaBroj(ev.length,'Šalje se ','Šalju se ')+brojTreninga(ev.length)+', '+
       (strukt.length?'sa strukturom: '+strukt.length+' ('+strukt.map(e=>fmtDY(e.date)).join(', ')+')'
                     :'nijedan sa strukturom — svi su lagani/dugi dani')+
       '.<br>intervals.icu prosleđuje Garminu otprilike nedelju dana unapred, pa dalji dani stižu kasnije sami.'+
@@ -12381,7 +12392,7 @@ function openSettings(){
   if($('#icu-push')) $('#icu-push').onclick=async e=>{
     const n=icuDaniZaSlanje(14).length;
     if(!n){ alert('Nema treninga u narednih 14 dana.'); return; }
-    if(!potvrdi('Poslati '+n+' treninga u intervals.icu kalendar?\n\nPostojeći koje je poslala ova aplikacija biće ažurirani, ostali se ne diraju.')) return;
+    if(!potvrdi('Poslati '+brojTreninga(n)+' u intervals.icu kalendar?\n\nPostojeći koje je poslala ova aplikacija biće ažurirani, ostali se ne diraju.')) return;
     const b=e.target; b.disabled=true; b.textContent='Šaljem…';
     const r=await icuPosalji(14);
     b.textContent=r.ok?('Poslato '+r.n+' ✓'):'Nije uspelo';
@@ -12499,8 +12510,8 @@ function openSettings(){
     /* Realnost cilja se proverava istim merilom koje čarobnjak već koristi. */
     const upoz=(r.meta&&r.meta.realno===false)
       ? '\n\nUPOZORENJE: ovaj cilj je po proceni aplikacije van dohvata za preostalo vreme. Plan će ga ipak ispoštovati.' : '';
-    if(!potvrdi('Promeniti ciljno vreme na '+fmtClock(sec)+'?\n\nMenja se '+r.promenaCilja.izmenjenoNedelja+
-                ' nedelja koje tek dolaze (od N'+r.promenaCilja.nedelja+').\nOdrađeni treninzi, uneti tempi i izmerena forma ostaju netaknuti.'+upoz)) return;
+    if(!potvrdi('Promeniti ciljno vreme na '+fmtClock(sec)+'?\n\n'+glagolZaBroj(r.promenaCilja.izmenjenoNedelja,'Menja se ','Menjaju se ')+brojNedelja(r.promenaCilja.izmenjenoNedelja)+
+                ' '+pl3(r.promenaCilja.izmenjenoNedelja,'koja tek dolazi','koje tek dolaze','koje tek dolaze')+' (od N'+r.promenaCilja.nedelja+').\nOdrađeni treninzi, uneti tempi i izmerena forma ostaju netaknuti.'+upoz)) return;
     S.genPlan={ weeks:r.weeks, pred:r.pred, qs:r.qs, meta:r.meta, ulaz:r.ulaz };
     setActivePlan(); rebuildDateIndex(); save(); closeSheet();
     alert('Cilj promenjen. Izmenjeno nedelja: '+r.promenaCilja.izmenjenoNedelja+'.');
@@ -12588,14 +12599,15 @@ function openBugSheet(){
    Isti tekst prima i server (v. POTVRDA u api/delete-account.js); ako se ta
    dva razidju, brisanje tiho prestane da radi — drzi ih test „potvrda iz
    aplikacije je ista kao na serveru". */
-const DEL_POTVRDA='OBRISI NALOG';
+const DEL_POTVRDA='OBRISI NALOG';   /* ono što ide serveru; unos se svodi Š→S (v. `uredi`) */
+const DEL_PRIKAZ='OBRIŠI NALOG';    /* ono što korisnik vidi — pravopisno */
 function openObrisiNalogSheet(){
   openSheet(`
     <div class="sh-t">Obriši nalog</div>
     <div class="sh-s">Nepovratno. Sa servera nestaju plan, istorija treninga, merenja oporavka i prijave za obaveštenja.</div>
     <div class="kb warn" style="margin-top:10px"><div><div>Napravi backup pre ovoga</div><small>Podešavanja → „Backup" preuzima kopiju na uređaj. Posle brisanja je više nema odakle vratiti.</small></div></div>
-    <div class="set-st" style="margin-top:12px">Za potvrdu ukucaj <b>${DEL_POTVRDA}</b>:</div>
-    <input id="del-pot" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${DEL_POTVRDA}" style="width:100%;margin-top:6px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--txt);font-size:.95rem;font-weight:700;letter-spacing:.04em">
+    <div class="set-st" style="margin-top:12px">Za potvrdu ukucaj <b>${DEL_PRIKAZ}</b>:</div>
+    <input id="del-pot" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${DEL_PRIKAZ}" style="width:100%;margin-top:6px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--txt);font-size:.95rem;font-weight:700;letter-spacing:.04em">
     <div class="note-src" id="del-err" style="color:var(--red)"></div>
     <div class="btnrow" style="margin-top:10px"><button class="btn danger" id="del-go" disabled>Obriši nalog</button></div>
   `);
@@ -12932,7 +12944,7 @@ function importBackup(file){
               'Ovo se dešava kod ručno izmenjenog fajla. Tvoji trenutni podaci su netaknuti.');
         return;
       }
-      if(!potvrdi(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${Object.keys(st.log).length} trening-unosa, ${st.knee.length} koleno, ${st.kg.length} težina.\n\nNastaviti?`))return;
+      if(!potvrdi(`Uvoz će PREPISATI postojeće podatke.\n\nU fajlu: ${brojTreninga(Object.keys(st.log).length)}, ${st.knee.length} ${pl3(st.knee.length,'zapis','zapisa','zapisa')} o bolu, ${st.kg.length} ${pl3(st.kg.length,'merenje','merenja','merenja')} mase.\n\nNastaviti?`))return;
       /* VEZE SU PO UREDJAJU I NE PUTUJU KROZ FAJL (v. backupPayload) — zato se
          zadrzavaju postojece, isto za Stravu i za intervals.icu.
 
