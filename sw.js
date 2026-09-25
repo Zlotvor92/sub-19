@@ -3,8 +3,8 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v272';
-const APP_VERSION = '272';
+const CACHE = 'sub19-cache-v273';
+const APP_VERSION = '273';
 /* './app.js' MORA biti na spisku: od v150 index.html je samo markup, a ceo kod
    aplikacije je u app.js. Da nije tu, dobio bi network-first samo omotač, dok
    bi se logika servirala iz starog keša — tj. „promenio sam kod, ništa se ne
