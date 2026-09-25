@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='271'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='272'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -57,7 +57,11 @@ const STRAVA_CLIENT_ID='259960';
 const CILJ='ispod 1:40', CILJ_TEMPO='4:40–4:44 /km';
 /* Cilj ličnog plana — isto što generisan plan nosi u `S.genPlan.meta`.
    Polazni VDOT ostaje iz PB-a na 5K (20:37): novi Excel ne navodi drugi. */
-const LICNI={raceName:'Bokeški polumaraton', raceDistM:21097.5, goalSec:6000, pb5kSec:1237};
+const LICNI={raceName:'Bokeški polumaraton', raceDistM:21097.5, goalSec:6000, pb5kSec:1237,
+  /* POLAZNA TAČKA ZA POLUMARATON: Niš polumaraton (03.10). Dok nije upisan,
+     polazna je PB na 5K. Po Danielsu 20:37 na 5K ≈ 1:34:38 na 21,1 km — brže
+     od cilja, pa ekran Trka nije imao šta da meri; vlasnik je izabrao Niš. */
+  polazniDan:'n2d6'};
 /* Opis cilja AKTIVNOG plana — koristi se i u AI promptu i u Progres UI-ju.
    BEZ ovoga su oba mesta imala TVOJ cilj (5K ~19:30) tvrdo ukucan, čak i dok
    je generisan plan (npr. maraton za druga) aktivan — AI bi sudio tuđ
@@ -792,7 +796,8 @@ function swapDays(idA,idB){
 function altDescTemplate(tag,km){
   const k=km!=null&&km!==''?fmtKm(km)+' km ':'';
   return {lako:k+'lako (Z2)', lr:k+'LR (Z2)', int:'Intervali — unesi strukturu',
-          tempo:'Tempo — unesi strukturu', snaga:'Snaga / mobilnost', odmor:'Odmor'}[tag]||'';
+          tempo:'Tempo — unesi strukturu', snaga:'Snaga / mobilnost', odmor:'Odmor',
+          trka:'🏁 Trka'+(km!=null&&km!==''?' — '+imeTrkeZaKm(+km)+(TRKA_DISTANCE.some(([k,n])=>n!==fmtKm(k)+' km'&&Math.abs(k-km)<0.05)?' ('+fmtKm(km)+' km)':''):'')}[tag]||'';
 }
 function setAlt(id,alt){
   const d=BY_ID[id];
@@ -1438,8 +1443,11 @@ function weekRealKm(w){return w.days.reduce((s,d)=>s+realKmDay(d),0);}
    generisanom planu izricito OPCION ("po sopstvenom programu, bez trcanja").
    Brojac je i dalje isti (snaga se sme oznaciti kao odradjena), ali se
    prikazuje odvojeno da broj trcanja odgovara onome sto je covek uneo. */
-function weekRunCount(w){return w.days.filter(d=>!d.rest && d.tag!=='snaga').length;}
-function weekRunDone(w){return w.days.filter(d=>!d.rest && d.tag!=='snaga' && stFor(d.id)==='done').length;}
+/* Dan snage na kom je upisano i trčanje broji se kao trčanje (v. autoRealign). */
+function jeDanSnage(d){ return !!d && !d.rest && d.tag==='snaga'; }
+function snagaSaTrcanjem(d){ const l=jeDanSnage(d)&&S.log[d.id]; return !!(l&&l.status==='done'&&l.km>0); }
+function weekRunCount(w){return w.days.filter(d=>!d.rest && (d.tag!=='snaga'||snagaSaTrcanjem(d))).length;}
+function weekRunDone(w){return w.days.filter(d=>!d.rest && (d.tag!=='snaga'||snagaSaTrcanjem(d)) && stFor(d.id)==='done').length;}
 function streak(today){
   let cur=today,n=0;
   const t=BY_DATE[today];
@@ -1602,8 +1610,9 @@ function ostvarenost(today, prozor){
   const od = addD(today, -(prozor || PREKID_PROZOR)), doD = addD(today, -1);
   let plan = 0, real = 0;
   CUR_PLAN.forEach(w => w.days.forEach(d => {
-    if(d.rest || d.tag === 'trka' || d.tag === 'snaga') return;
-    if(d.date >= od && d.date <= doD) plan += (d.origKm != null ? d.origKm : d.km) || 0;
+    if(d.rest || d.tag === 'trka') return;
+    /* Snaga nema planske km, ali trčanje upisano na taj dan jeste istrčano. */
+    if(d.tag !== 'snaga' && d.date >= od && d.date <= doD) plan += (d.origKm != null ? d.origKm : d.km) || 0;
     const l = S.log[d.id];
     if(!l || l.status !== 'done') return;
     const dat = danTreninga(l, d);
@@ -2267,7 +2276,23 @@ function currentVdot(){
 function baselineVdot(){ /* početni VDOT: iz PB-a aktivnog plana */
   const m=S.genPlan&&S.genPlan.meta;
   if(m&&m.vdot0!=null&&isFinite(m.vdot0))return m.vdot0;
+  const p=polaznaTrka();
+  if(p) return p.vdot;                                  /* Niš polumaraton, kad je upisan */
   return Math.round(vdotFrom5k(LICNI.pb5kSec)*10)/10;   /* tvoj PB 20:37 */
+}
+/* Upisan rezultat polaznog dana ličnog plana, ili null. Traži se ceo
+   polumaraton (bar 20 km) i vreme; kraće trčanje tog dana nije polazna tačka
+   za 21,1 km. */
+function polaznaTrka(){
+  if(S.genPlan||!LICNI.polazniDan) return null;
+  const l=S.log&&S.log[LICNI.polazniDan];
+  if(!l||l.status!=='done'||!(l.sec>0)) return null;
+  const d=BY_ID[LICNI.polazniDan];
+  const km=l.km!=null?+l.km:(d&&d.km);
+  if(!(km>=20&&km<=25)) return null;
+  const v=vdotFromRace(km*1000, l.sec);
+  if(!isFinite(v)||v<20||v>90) return null;
+  return {vdot:Math.round(v*10)/10, sec:l.sec, km, date:danTreninga(l,d)};
 }
 function goalVdotActive(){ /* ciljni VDOT: eksplicitan cilj ima prednost nad projekcijom */
   const m=S.genPlan&&S.genPlan.meta;
@@ -3010,6 +3035,11 @@ function autoRealign(byDate){
   Object.keys(byDate).forEach(date=>{
     const occupant=BY_DATE[date];
     if(occupant && !occupant.rest && occupant.km!=null)return; /* već ima pravi trkački dan — glavna petlja to rešava */
+    /* DAN SNAGE PRIMA TRČANJE. Ranije je trčanje na dan snage ili prelazilo na
+       susedni trkački dan (koji bi se prebacio i upisao kao odrađen sa tuđom
+       kilometražom, a snaga odlazila na njegov dan), ili nestajalo iz obima.
+       Sada ostaje na svom danu: dan je i dalje Snaga, a km se broje. */
+    if(occupant && occupant.tag==='snaga')return;
     if(occupant && occupant.test)return;                        /* test dan se ne pomera */
     const orphanWeek=weekOf(date);
     if(!orphanWeek)return;                                      /* van opsega plana — nema gde da se pomeri */
@@ -4789,6 +4819,8 @@ function bindForm(root,d){
       syncSide(d);
       /* Beleška je jedino polje u koje se KUCA — v. saveOdlozeno(). Ostala su
          brojevi i izbori, dakle jedan dodir, pa idu odmah. */
+      /* Polazni dan ličnog plana menja polazni VDOT, a od njega kreće lanac forme. */
+      if(d.id===LICNI.polazniDan&&(f==='km'||f==='sec')) preracunajVdotLog();
       if(f==='note') saveOdlozeno(); else save();
     };
     inp.addEventListener('input',h);
@@ -5452,7 +5484,11 @@ function vezisTacke(el, ponovo){
     ponovo();
   });
 }
-const ALT_TYPES=[['lako','Lako'],['int','Intervali'],['tempo','Tempo'],['lr','Dugo'],['snaga','Snaga'],['odmor','Odmor']];
+const ALT_TYPES=[['lako','Lako'],['int','Intervali'],['tempo','Tempo'],['lr','Dugo'],['snaga','Snaga'],['odmor','Odmor'],['trka','Trka']];
+/* Distance koje se nude kad je izabrana Trka. Kilometraža ostaje i ručno
+   upisiva, za trke koje nisu standardne. */
+const TRKA_DISTANCE=[[5,'5 km'],[10,'10 km'],[21.1,'Polumaraton'],[42.2,'Maraton']];
+function imeTrkeZaKm(km){ const t=TRKA_DISTANCE.find(([k])=>Math.abs(k-km)<0.05); return t?t[1]:(km!=null&&isFinite(km)?fmtKm(km)+' km':''); }
 function altSheetHTML(d){
   /* `cur` se gradi iz DANA, a rucni cilj tempa i run/walk zive u S.alts —
      bez njih bi se polje „Ciljni tempo" otvaralo prazno i cuvanje bi obrisalo
@@ -5466,6 +5502,10 @@ function altSheetHTML(d){
     <div class="sh-s">N${d.week.w} · ${dowOf(d.date)} ${fmtDY(d.date)}${edited?' · izmenjen':''}</div>`;
   if(ALT_ERR)h+=`<div style="font-size:.75rem;color:var(--red);margin-bottom:10px">${esc(ALT_ERR)}</div>`;
   h+=`<div class="f-field full" role="group" aria-label="Tip treninga"><span class="f-lbl">Tip treninga</span>${segBtns(ALT_TYPES.slice(0,3))}${segBtns(ALT_TYPES.slice(3))}</div>`;
+  if(cur.tag==='trka'){
+    h+=`<div class="f-field full" role="group" aria-label="Dužina trke" style="margin-top:10px"><span class="f-lbl">Dužina trke</span>
+      ${[TRKA_DISTANCE.slice(0,2),TRKA_DISTANCE.slice(2)].map(red=>`<div class="seg" style="margin-top:6px">${red.map(([k,n])=>`<button type="button" data-tkm="${k}" class="${cur.km!=null&&Math.abs(cur.km-k)<0.05?'on':''}">${n}</button>`).join('')}</div>`).join('')}</div>`;
+  }
   if(cur.tag!=='odmor'){
     h+=`<div class="f-field full" style="margin-top:10px"><label for="alt-km">Kilometraža</label>
       <input type="number" inputmode="decimal" step="0.1" min="0" id="alt-km" value="${cur.km!=null?esc(cur.km):''}" placeholder="prazno = bez km (npr. snaga)"></div>`;
@@ -5509,6 +5549,15 @@ function renderAltSheet(d){
     /* opis se menja u šablon SAMO ako ga korisnik nije već dirao (još je plan) */
     if(!ALT_DRAFT.desc||ALT_DRAFT.desc===(d.origDesc||''))ALT_DRAFT.desc=altDescTemplate(t,ALT_DRAFT.km);
     ALT_DRAFT.tag=t;
+    renderAltSheet(d);
+  });
+  sh.querySelectorAll('[data-tkm]').forEach(b=>b.onclick=()=>{
+    readAltFields(sh);
+    const km=+b.dataset.tkm;
+    /* opis prati izabranu dužinu dok ga korisnik sam nije menjao */
+    const sablon=ALT_DRAFT.desc===altDescTemplate('trka',ALT_DRAFT.km)||ALT_DRAFT.desc===(d.origDesc||'')||!ALT_DRAFT.desc;
+    ALT_DRAFT.km=km;
+    if(sablon) ALT_DRAFT.desc=altDescTemplate('trka',km);
     renderAltSheet(d);
   });
   const sv=sh.querySelector('#alt-save');
@@ -10476,7 +10525,7 @@ function renderPred(){
     <div class="vd-now"><b>${esc(fmtNum(cv!=null?cv:bv,1))}</b><i style="color:${vCol}">${vArrow}${vdotDelta!=null?(vdotDelta>0?' +':' ')+esc(fmtNum(vdotDelta,1)):''}</i></div>
     <div id="vdottrend">${chartVdotTrend()}</div>
     <div class="legend"><span><i style="background:var(--cyan)"></i>cilj ${esc(fmtNum(goalV,1))}</span><span><i style="background:var(--pink)"></i>tvoja forma</span></div>
-    <div class="note-src">Početni VDOT${S.genPlan?'':' (PB 20:37)'}: ${esc(fmtNum(bv,1))} · cilj ${esc(ciljTekst)} ≈ VDOT ${esc(fmtNum(goalV,1))}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
+    <div class="note-src">Početni VDOT${S.genPlan?'':(polaznaTrka()?' (Niš polumaraton '+esc(fmtClock(polaznaTrka().sec))+')':' (PB 20:37 na 5K, dok ne upišeš Niš)')}: ${esc(fmtNum(bv,1))} · cilj ${esc(ciljTekst)} ≈ VDOT ${esc(fmtNum(goalV,1))}. Forma se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).</div>
     <button type="button" id="trend-go" class="btn-ai" style="margin-top:10px">📈 Objasni trend (AI)</button>
     <div id="trend-out" class="ai-out"></div></div>`;
   /* PRILAGOĐAVANJE PLANA FORMI — stoji odmah ispod VDOT-a, jer je to mesto gde
@@ -10886,7 +10935,7 @@ async function icuSyncTreninzi(danaUnazad, manual){
   let n=0; const trazi=[], tokovi=[];
   for(const date of Object.keys(byDate)){
     const d=BY_DATE[date];
-    if(!d||d.rest||d.km==null) continue;
+    if(!d||d.rest||(d.km==null&&!jeDanSnage(d))) continue;
     /* Ista logika kao na Strava putanji: sva trčanja tog dana ulaze u obim,
        `a` je nosilac imena/opisa/ID-ja. */
     const spoj=spojiDan(byDate[date]);
@@ -12920,7 +12969,7 @@ async function stravaSync(manual){
     let imp=0,props=0;
     for(const date of Object.keys(byDate)){
       const d=BY_DATE[date];
-      if(!d||d.rest||d.km==null)continue;           /* samo trkački dani plana */
+      if(!d||d.rest||(d.km==null&&!jeDanSnage(d)))continue;   /* trkački dani plana + dan snage (v. autoRealign) */
       /* Sva trčanja tog dana ulaze u obim; `a` je samo nosilac imena, opisa i
          ID-ja, i bira se po blizini planu jer je to i dalje najbolji izbor za
          „koje je od njih trening dana". Struktura se traži posebno, niže. */
