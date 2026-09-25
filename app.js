@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='269'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='270'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -5249,7 +5249,7 @@ function renderPlan(){
         const pkw=weekPlanKm(w), rkw=weekRealKm(w);
         const cur=weekOf(TODAY)===w, proslo=addD(w.start,6)<TODAY;
         const udeo=pkw?rkw/pkw:0;
-        const boja=cur?'#EEF0FF':(rkw===0?'rgba(238,240,255,.22)':udeo>=.95?'var(--green)':udeo>=.7?'var(--amber)':'var(--red)');
+        const boja=cur?'var(--cyan)':(rkw===0?'rgba(238,240,255,.22)':udeo>=.95?'var(--green)':udeo>=.7?'var(--amber)':'var(--red)');
         h+=`<button class="pl-w${cur?' now':''}${proslo&&rkw===0?' prazna':''}${openW.has(w.w)?' on':''}" data-w="${w.w}">
           ${prstenSVG(udeo, String(w.w), 58, boja)}
           <b>${rkw>0?fmtKm(rkw):'—'}<span>/${fmtKm(pkw)}</span></b>

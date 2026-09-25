@@ -392,9 +392,14 @@ main{padding:var(--pad) var(--pad) calc(var(--tab-h) + var(--sab) + 26px);
 .pl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
 .pl-w{background:var(--glass-in);border:1px solid var(--line-soft);border-radius:15px;
       padding:10px 4px 9px;text-align:center;min-width:0;min-height:44px}
-.pl-w.now{background:var(--glass-hi);border-color:rgba(255,255,255,.32)}
 .pl-w.prazna{opacity:.5}
+/* OTVORENA nedelja je bela, TEKUĆA je cijan — ranije su obe bile ista svetla
+   podloga, pa se „ovo je ova nedelja" nije razlikovalo od „ovo sam otvorio". */
 .pl-w.on{background:var(--glass-hi);border-color:rgba(255,255,255,.4)}
+.pl-w.now{background:rgba(90,224,255,.10);border:1.5px solid var(--cyan);
+          box-shadow:0 0 0 1px rgba(90,224,255,.18),0 0 14px rgba(90,224,255,.18)}
+.pl-w.now.on{background:rgba(90,224,255,.18)}
+.pl-w.now b,.pl-w.now .pl-t{color:var(--cyan)}
 .pl-w svg{display:block;margin:0 auto}
 .pl-w b{display:block;font-size:.68rem;font-weight:800;margin-top:6px;
         font-variant-numeric:tabular-nums;letter-spacing:-.02em}
