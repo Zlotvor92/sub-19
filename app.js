@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='270'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='271'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -9837,51 +9837,46 @@ function chartWeeks(){
 }
 function chartWeight(){
   const W=340,H=168,L=30,R=8,B=146,T=26; /* T/B pomereni za 16px da napravi mesta info-liniji na vrhu */
-  /* Skala i X-osa su DINAMIČKE — bile su tvrdo kodovane na 14 nedelja
-     ((i-1)/13) i raspon 74-83 kg (mere tvog plana). Na generisanom planu od
-     20+ nedelja tačke su izlazile van okvira (izmereno: N20 -> x=471 u okviru
-     širine 340, N44 -> x=1029). Ista klasa greške koja je već ispravljena u
-     chartWeeks(), samo je ovaj grafikon tada promašen.
+  /* X-OSA JE VREME, NE NEDELJA PLANA. Dok je bila nedelja plana, svako merenje
+     pre početka plana (a masa se meri i van priprema) klemovano je na N1, pa su
+     se merenja iz tri meseca slagala u jednu uspravnu liniju. Sada se osa
+     proteže od prvog merenja do danas (ili poslednjeg merenja, ako je kasnije).
      WT_TARGET je VLASNIKOVA ciljna linija iz Excel plana (trenutni plan je nema,
      pa je niz prazan) — za generisan plan ne postoji unet cilj težine, pa se ta
-     linija tamo i ne crta
-     umesto da se tuđi cilj prikazuje kao da je korisnikov. */
-  const nW=Math.max(CUR_PLAN.length,1);
-  const act=S.kg.slice().sort((a,b)=>a.date<b.date?-1:1);
-  const tgt=S.genPlan?[]:WT_TARGET;
+     linija tamo i ne crta umesto da se tuđi cilj prikazuje kao da je korisnikov. */
+  const act=(S.kg||[]).filter(a=>a&&validanDatum(a.date)&&isFinite(a.kg)).sort((a,b)=>a.date<b.date?-1:1);
+  const tgt=(S.genPlan?[]:WT_TARGET).filter(t=>t&&validanDatum(t.date));
+  if(!act.length&&!tgt.length) return `<div class="empty">Još nema merenja — unesi prvo ispod.</div>`;
   const vals=act.map(a=>a.kg).concat(tgt.map(t=>t.kg)).filter(v=>v!=null&&isFinite(v));
-  let min,max;
-  if(vals.length){
-    min=Math.min(...vals); max=Math.max(...vals);
-    const pad=Math.max((max-min)*0.15, 1);
-    min=Math.floor(min-pad); max=Math.ceil(max+pad);
-  } else { min=74; max=83; }
+  let min=Math.min(...vals), max=Math.max(...vals);
+  const pad=Math.max((max-min)*0.15, 1);
+  min=Math.floor(min-pad); max=Math.ceil(max+pad);
   if(max-min<2)max=min+2;
-  /* i se OGRANICAVA na opseg plana. Y je odavno klemovan (Math.max/min u Y
-     ispod), ali X nije — pa je unos tezine sa datumom pre pocetka ili posle
-     kraja plana (lako se desi: merenje uneto rucno, ili backup iz starijeg
-     ciklusa) crtao tacku IZVAN okvira grafikona. Ista klasa greske koja je vec
-     ispravljena u chartWeeks() i chartPred(), samo je ovaj grafikon promasen. */
-  const X=i=>{ const k=Math.max(1,Math.min(nW,i)); return L+(nW<=1?0:(k-1)/(nW-1))*(W-L-R); };
+  const datumi=act.map(a=>a.date).concat(tgt.map(t=>t.date));
+  let d0=datumi.reduce((m,x)=>x<m?x:m), d1=datumi.reduce((m,x)=>x>m?x:m);
+  if(TODAY>d1&&TODAY>d0) d1=TODAY;
+  if(diffD(d0,d1)<7){ d0=addD(d0,-3); d1=addD(d1,3); }
+  const raspon=Math.max(1,diffD(d0,d1));
+  const X=dt=>L+Math.max(0,Math.min(1,diffD(d0,dt)/raspon))*(W-L-R);
   const Y=v=>B-(Math.max(min,Math.min(max,v))-min)/(max-min)*(B-T);
   let g='';
   let natpis=null;
   if(CHART_SEL.wt!=null && act[CHART_SEL.wt]){
-    const a=act[CHART_SEL.wt], wIdx=Math.round(1+diffD(CUR_START,a.date)/7);
-    const t=tgt.find(x=>x.w===wIdx);
-    natpis=`${fmtD(a.date)} · N${wIdx}${t?' · plan '+fmtNum(t.kg,1)+' kg':''} · uneto ${fmtNum(a.kg,1)} kg`;
+    const a=act[CHART_SEL.wt], w=weekOf(a.date);
+    natpis=`${fmtDY(a.date)}${w?' · N'+w.w:''} · ${fmtNum(a.kg,1)} kg`;
   }
   g+=chartTop(L,natpis);
-  /* 5 ravnomerno raspoređenih linija/oznaka umesto fiksnih [75..83] i [N1..N14] */
   for(let k=0;k<5;k++){
     const v=min+(max-min)*k/4;
     g+=`<line class="gl" x1="${L}" y1="${Y(v).toFixed(1)}" x2="${W-R}" y2="${Y(v).toFixed(1)}"/><text class="ax" x="${L-4}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end">${fmtNum(v,1)}</text>`;
   }
-  const wkTicks=[...new Set([1,Math.round(nW*0.25),Math.round(nW*0.5),Math.round(nW*0.75),nW].map(i=>Math.max(1,Math.min(nW,i))))];
-  wkTicks.forEach(i=>{g+=`<text class="ax" x="${X(i).toFixed(1)}" y="${B+12}" text-anchor="middle">N${i}</text>`;});
-  if(tgt.length)g+=`<polyline fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4 4" points="${tgt.map(t=>X(t.w).toFixed(1)+','+Y(t.kg).toFixed(1)).join(' ')}"/>`;
+  [0,0.5,1].forEach((f,k)=>{
+    const dt=addD(d0,Math.round(raspon*f));
+    g+=`<text class="ax" x="${X(dt).toFixed(1)}" y="${B+12}" text-anchor="${k===0?'start':k===2?'end':'middle'}">${fmtD(dt)}</text>`;
+  });
+  if(tgt.length)g+=`<polyline fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4 4" points="${tgt.map(t=>X(t.date).toFixed(1)+','+Y(t.kg).toFixed(1)).join(' ')}"/>`;
   if(act.length){
-    const pts=act.map(a=>({x:X(1+diffD(CUR_START,a.date)/7),y:Y(a.kg)}));
+    const pts=act.map(a=>({x:X(a.date),y:Y(a.kg)}));
     if(pts.length>1){
       g+=`<defs><linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="var(--pink)" stop-opacity=".32"/>
@@ -9900,6 +9895,96 @@ function chartWeight(){
   }
   if(tgt.length)g+=`<text class="ax" x="${W-R}" y="${T-4}" text-anchor="end">isprekidano = cilj ${fmtNum(tgt[0].kg,1)}→${fmtNum(tgt[tgt.length-1].kg,1)}</text>`;
   return svgW(W,H,g);
+}
+/* ============ TELESNA MASA — RUČNI UNOS I BRISANJE ============
+   Masa se do sada unosila SAMO uz trening (polje na kartici dana), pa je bez
+   treninga nije bilo gde upisati, a obrisati se nije mogla nikako: dan starog
+   plana za koji je merenje bilo vezano više ne postoji.
+   Ručni unos nema `src`. Za isti datum ručni unos ZAMENJUJE prethodni ručni —
+   jedno jutarnje merenje po danu je ono što se prati. */
+const MASA_MIN=20, MASA_MAX=300;   /* ista granica kao u migrate() */
+function dodajMasu(datum, unos){
+  if(!validanDatum(datum)) return {ok:false, err:'Datum nije ispravan.'};
+  if(datum>TODAY) return {ok:false, err:'Datum je u budućnosti.'};
+  const kg=parseFloat(String(unos==null?'':unos).trim().replace(',','.'));
+  if(!isFinite(kg)||kg<MASA_MIN||kg>MASA_MAX) return {ok:false, err:`Masa mora biti između ${MASA_MIN} i ${MASA_MAX} kg.`};
+  const v=Math.round(kg*10)/10;
+  S.kg=(S.kg||[]).filter(x=>!(x&&x.src==null&&x.date===datum));
+  S.kg.push({date:datum, kg:v});
+  S.kg.sort((a,b)=>a.date<b.date?-1:1);
+  save();
+  return {ok:true, kg:v};
+}
+/* Brisanje zapisa vezanog za trening briše i masu upisanu NA treningu — inače
+   bi je `syncSide` vratio pri prvoj sledećoj izmeni tog dana. */
+function odvojiMasuOdTreninga(x){
+  if(x&&x.src&&S.log&&S.log[x.src]&&S.log[x.src].kg!=null) delete S.log[x.src].kg;
+}
+function obrisiMasu(i){
+  const x=(S.kg||[])[i];
+  if(!x) return false;
+  odvojiMasuOdTreninga(x);
+  S.kg.splice(i,1);
+  save();
+  return true;
+}
+function obrisiMasuPre(datum){
+  const pre=(S.kg||[]).length;
+  (S.kg||[]).forEach(x=>{ if(x&&x.date<datum) odvojiMasuOdTreninga(x); });
+  S.kg=(S.kg||[]).filter(x=>!(x&&x.date<datum));
+  const n=pre-S.kg.length;
+  if(n) save();
+  return n;
+}
+let MASA_ERR='';
+function karticaMase(){
+  const niz=(S.kg||[]).map((x,i)=>({x,i})).filter(o=>o.x&&validanDatum(o.x.date))
+    .sort((a,b)=>a.x.date<b.x.date?1:a.x.date>b.x.date?-1:0);
+  const stari=niz.filter(o=>o.x.date<CUR_START).length;
+  const posl=niz[0]?niz[0].x:null;
+  const pod=posl?`poslednje ${fmtNum(posl.kg,1)} kg · ${fmtD(posl.date)}`:'bez unosa';
+  const redovi=niz.map(o=>`
+    <div class="krow wt-row">
+      <div class="ki"><div class="kd">${esc(fmtNum(o.x.kg,1))} kg <span class="ka">· ${DOW[(s2d(o.x.date).getDay()+6)%7]} ${fmtDY(o.x.date)}${o.x.src?' · iz treninga':''}</span></div></div>
+      <button type="button" class="wt-del" data-wtdel="${o.i}" aria-label="Obriši merenje ${esc(fmtNum(o.x.kg,1))} kg od ${esc(fmtD(o.x.date))}">✕</button>
+    </div>`).join('');
+  return `<div class="card">${dGlava('Telesna masa',pod)}${chartWeight()}
+    <div class="f-grid">
+      <div class="f-field"><label for="wt-date">Datum</label><input type="date" id="wt-date" value="${esc(TODAY)}" max="${esc(TODAY)}"></div>
+      <div class="f-field"><label for="wt-kg">Masa (kg)</label><input type="text" id="wt-kg" inputmode="decimal" placeholder="npr. 79,4" autocomplete="off"></div>
+    </div>
+    ${MASA_ERR?`<div class="note-src" style="color:var(--red);margin-top:8px">${esc(MASA_ERR)}</div>`:''}
+    <div class="btnrow" style="margin-top:10px"><button type="button" class="btn" id="wt-save">Sačuvaj merenje</button></div>
+    ${stari?`<div class="btnrow" style="margin-top:8px"><button type="button" class="btn ghost" id="wt-stari">Obriši ${stari} ${pl3(stari,'merenje','merenja','merenja')} pre ${esc(fmtD(CUR_START))}</button></div>`:''}
+    ${niz.length?`<details class="help" style="margin-top:12px"><summary>Sva merenja (${niz.length})</summary>${redovi}</details>`:''}
+  </div>`;
+}
+function vezisKarticuMase(el){
+  const sv=el.querySelector('#wt-save');
+  if(sv) sv.onclick=()=>{
+    const r=dodajMasu(el.querySelector('#wt-date').value, el.querySelector('#wt-kg').value);
+    MASA_ERR=r.ok?'':r.err;
+    CHART_SEL.wt=null;
+    renderOporavak();
+  };
+  const st=el.querySelector('#wt-stari');
+  if(st) st.onclick=()=>{
+    const n=(S.kg||[]).filter(x=>x&&x.date<CUR_START).length;
+    if(!potvrdi(`Obrisati ${n} ${pl3(n,'merenje','merenja','merenja')} mase pre ${fmtD(CUR_START)}? Ovo se ne može poništiti.`)) return;
+    obrisiMasuPre(CUR_START);
+    CHART_SEL.wt=null; MASA_ERR='';
+    renderOporavak();
+  };
+  el.querySelectorAll('[data-wtdel]').forEach(b=>b.onclick=()=>{
+    const x=(S.kg||[])[+b.dataset.wtdel];
+    if(!x) return;
+    if(!potvrdi(`Obrisati merenje ${fmtNum(x.kg,1)} kg od ${fmtD(x.date)}?`)) return;
+    obrisiMasu(+b.dataset.wtdel);
+    CHART_SEL.wt=null;
+    renderOporavak();
+    const d=document.querySelector('#pg-opor details.help');
+    if(d) d.open=true;
+  });
 }
 function chartTempo(){
   const runs=[];
@@ -10152,7 +10237,7 @@ function renderOporavak(){
     <div class="op-sub">Kroz vreme · 0–10</div>${chartKnee()}
   </div>`;
   h+=`<div class="btnrow" style="margin:0 0 14px"><button class="btn ghost" id="k-add">+ Dodaj unos bola</button></div>`;
-  h+=`<div class="card">${dGlava('Telesna masa','cilj vs. stvarno')}${chartWeight()}</div>`;
+  h+=karticaMase();
   h+=`<div class="card">${dGlava('Istorija bola', list.length?list.length+' '+pl3(list.length,'unos','unosa','unosa'):'')}`+
     (list.length?list.map(k=>`
     <button class="krow" data-k="${esc(k.id)}">
@@ -10175,6 +10260,7 @@ function renderOporavak(){
   };
   $('#k-add').onclick=()=>openKneeSheet(null);
   el.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>openKneeSheet(b.dataset.k));
+  vezisKarticuMase(el);
 }
 function chartKnee(){
   const es=S.knee.slice().sort((a,b)=>a.date<b.date?-1:1);
