@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='276'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='277'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -745,8 +745,10 @@ function rebuildDateIndex(){
       d.desc=ov.desc;
       /* run/walk iz izmene gazi onaj iz plana; bez izmene se plan poštuje */
       if(ov.rw) d.runWalk=ov.rw; else if(d.origRunWalk!==undefined) d.runWalk=d.origRunWalk;
+      d.snaga=!!(ov.snaga && !d.rest);
     } else {
       d.tag=d.origTag;d.rest=d.origRest;d.km=d.origKm;d.desc=d.origDesc;d.runWalk=d.origRunWalk;
+      d.snaga=false;
     }
     if(!d.test){
       if(!d.origDate) d.origDate=addD(w.start,d.dow);
@@ -828,10 +830,12 @@ function setAlt(id,alt){
   /* identično planu I bez ručnog cilja tempa → briši unos umesto da ga čuvaš.
      Ako je pace eksplicitno postavljen, unos ostaje čak i kad se tag/km/desc
      slažu sa planom — to je i dalje namerna izmena (samo cilja tempo, ne strukturu). */
-  if(alt.tag===planTag && km===(d.origKm!=null?d.origKm:null) && desc===(d.origDesc||(d.origRest?'Odmor':'')) && pace==null && rw==null){
+  const snaga = alt.snaga===true && !!SNAGA_UZ[alt.tag];
+  if(alt.tag===planTag && km===(d.origKm!=null?d.origKm:null) && desc===(d.origDesc||(d.origRest?'Odmor':'')) && pace==null && rw==null && !snaga){
     delete S.alts[id];
   } else {
     S.alts[id]={tag:alt.tag,km:km,desc:desc,pace:pace,rw:rw,paceAuto:pace!=null&&!!alt.paceAuto};
+    if(snaga) S.alts[id].snaga=true;
   }
   rebuildDateIndex();save();
   return {ok:true};
@@ -855,6 +859,8 @@ function weekPlanKm(w){return w.days.reduce((s,d)=>s+(d.km||0),0);}
 function weekOf(dateStr){for(const w of CUR_PLAN){const end=addD(w.start,6);if(dateStr>=w.start&&dateStr<=end)return w;}return null;}
 /* Poznati tipovi treninga. Sve van ovog skupa je NEPOVERLJIVO — moze doci iz
    uvezenog backup fajla (S.alts[id].tag, genPlan session.kind). */
+/* Trkački tipovi uz koje sme da stoji i snaga istog dana („Lako + Snaga"). */
+const SNAGA_UZ={lako:1,int:1,tempo:1,lr:1};
 const TAGS={lako:'Lako',rw:'Trčanje/hod',tempo:'Tempo',int:'Intervali',lr:'Dugo (LR)',snaga:'Snaga',odmor:'Odmor',trka:'TRKA',test:'Test'};
 /* Ranije: `[t]||t` — vracalo je SIROV ulaz za nepoznat tag, pa je zlonameran
    backup mogao da ubaci HTML kroz ime tipa treninga. Sad neutralan tekst. */
@@ -1010,6 +1016,9 @@ function sessNote(d){
   if(tail)parts.push(tail[1].trim());
   return parts.join(' · ');
 }
+/* Oznaka dana ZA PRIKAZ: vrsta treninga, i „+ Snaga" kad je uz trčanje
+   dodata i snaga. sessKind ostaje čist — iz njega se izvode zone i VDOT. */
+function oznakaDana(d){ return sessKind(d) + (d && d.snaga ? ' + Snaga' : ''); }
 function sessKind(d){
   if(d.rest)return tagName('odmor');
   /* Ako je dan RUČNO izmenjen (Izmeni trening), d.session i dalje nosi
@@ -1162,6 +1171,8 @@ function cistAlts(a){
       rw:(v.tag==='odmor')?null:cistRunWalk(v.rw),
       paceAuto:pace!=null&&v.paceAuto===true
     };
+    /* „+ Snaga" uz trčanje (dugo držanje u Izmeni trening). Samo uz trkački tip. */
+    if(v.snaga===true && SNAGA_UZ[v.tag]) out[id].snaga=true;
   }
   return out;
 }
@@ -4766,7 +4777,7 @@ function dayCard(d){
   /* ── PLAN: šta je za danas ── */
   let plan=dGlava('Plan',`N${d.week.w}${d.date?' · '+dowOf(d.date)+' '+fmtD(d.date):' · opciono, kraj nedelje'}`)+
     `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">
-      <span class="tag ${safeTag(d.tag)}">${esc(sessKind(d))}</span>
+      <span class="tag ${safeTag(d.tag)}">${esc(oznakaDana(d))}</span>
       <span class="st ${s}">${s==='done'?'Odrađen':s==='skip'?'Preskočen':'Predstoji'}</span></div>`;
   const rows=sessBreakdown(d);
   if(rows){
@@ -5415,7 +5426,7 @@ function nedeljaTelo(w){
     h+=`<button class="day t-${d.rest?'rest':safeTag(d.tag)}" data-d="${esc(d.id)}">
       <div class="day-d"><span class="dw">${d.test?'TT':dowOf(d.date)}</span>${d.date?`<span class="dn">${pad2(s2d(d.date).getDate())}</span>`:''}</div>
       <div class="day-mid">
-        <div class="day-type">${d.rest?'Odmor':esc(sessKind(d))}</div>
+        <div class="day-type">${d.rest?'Odmor':esc(oznakaDana(d))}</div>
         <div class="day-desc">${esc(d.rest?(d.desc||'—'):sessCore(d))}</div>
       </div>
       <div class="day-km">${d.km!=null?fmtKm(d.km)+' km':''}</div>
@@ -5572,6 +5583,7 @@ function vezisTacke(el, ponovo){
     ponovo();
   });
 }
+const ALT_DRZANJE_MS=600;   /* koliko se drži dugme da bi se tip DODAO, ne izabrao */
 const ALT_TYPES=[['lako','Lako'],['int','Intervali'],['tempo','Tempo'],['lr','Dugo'],['snaga','Snaga'],['odmor','Odmor'],['trka','Trka']];
 /* Distance koje se nude kad je izabrana Trka. Kilometraža ostaje i ručno
    upisiva, za trke koje nisu standardne. */
@@ -5583,13 +5595,15 @@ function altSheetHTML(d){
      vec postavljen cilj (svoj ili onaj iz prilagodjavanja formi). */
   const _a=(S.alts&&S.alts[d.id])||null;
   const cur=ALT_DRAFT||{tag:d.rest?'odmor':d.tag, km:d.km, desc:d.desc||'',
-                        pace:_a?_a.pace:null, rw:_a?_a.rw:null};
+                        pace:_a?_a.pace:null, rw:_a?_a.rw:null, snaga:!!(_a&&_a.snaga)};
   const edited=!!(S.alts&&S.alts[d.id]);
-  const segBtns=arr=>`<div class="seg" style="margin-top:6px">${arr.map(([t,n])=>`<button type="button" data-t="${t}" class="${cur.tag===t?'on':''}">${n}</button>`).join('')}</div>`;
+  const izabran=t=>cur.tag===t || (t==='snaga' && cur.snaga && !!SNAGA_UZ[cur.tag]);
+  const segBtns=arr=>`<div class="seg" style="margin-top:6px">${arr.map(([t,n])=>`<button type="button" data-t="${t}" class="${izabran(t)?'on':''}" aria-pressed="${izabran(t)}">${n}</button>`).join('')}</div>`;
   let h=`<div class="sh-t">Izmeni trening</div>
     <div class="sh-s">N${d.week.w} · ${dowOf(d.date)} ${fmtDY(d.date)}${edited?' · izmenjen':''}</div>`;
   if(ALT_ERR)h+=`<div style="font-size:.75rem;color:var(--red);margin-bottom:10px">${esc(ALT_ERR)}</div>`;
-  h+=`<div class="f-field full" role="group" aria-label="Tip treninga"><span class="f-lbl">Tip treninga</span>${segBtns(ALT_TYPES.slice(0,3))}${segBtns(ALT_TYPES.slice(3))}</div>`;
+  h+=`<div class="f-field full" role="group" aria-label="Tip treninga"><span class="f-lbl">Tip treninga</span>${segBtns(ALT_TYPES.slice(0,3))}${segBtns(ALT_TYPES.slice(3))}
+    <div class="alt-hint">Zadrži dugme da uz trčanje dodaš i snagu (npr. Lako + Snaga).</div></div>`;
   if(cur.tag==='trka'){
     h+=`<div class="f-field full" role="group" aria-label="Dužina trke" style="margin-top:10px"><span class="f-lbl">Dužina trke</span>
       ${[TRKA_DISTANCE.slice(0,2),TRKA_DISTANCE.slice(2)].map(red=>`<div class="seg" style="margin-top:6px">${red.map(([k,n])=>`<button type="button" data-tkm="${k}" class="${cur.km!=null&&Math.abs(cur.km-k)<0.05?'on':''}">${n}</button>`).join('')}</div>`).join('')}</div>`;
@@ -5624,20 +5638,48 @@ function openAltSheet(id){
   const existing=S.alts&&S.alts[id];
   let pace=existing&&existing.pace!=null?existing.pace:extractPaceFromDesc(d.desc);
   if(pace==null){ const pid=predRowFor(d); const r=pid?CUR_PRED.find(x=>x.id===pid):null; if(r)pace=r.pt; }
-  ALT_DRAFT={tag:d.rest?'odmor':d.tag,km:d.km,desc:d.desc||'',pace:pace};ALT_ERR='';
+  ALT_DRAFT={tag:d.rest?'odmor':d.tag,km:d.km,desc:d.desc||'',pace:pace,snaga:!!(existing&&existing.snaga)};ALT_ERR='';
   renderAltSheet(d);
 }
 function renderAltSheet(d){
   openSheet(altSheetHTML(d));
   ALT_ERR='';
   const sh=$('#sheet');
-  sh.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{
+  /* DUGO DRŽANJE = DODAJ, KRATAK DODIR = IZABERI. Držanjem se uz trkački tip
+     dodaje snaga (ili uz snagu trkački tip) — dan tada nosi trčanje (km, tempo,
+     sinhronizacija, obim), a oznaka kaže „+ Snaga". Kratak dodir ostaje kao
+     ranije: bira JEDAN tip i skida dodatu snagu. */
+  sh.querySelectorAll('[data-t]').forEach(b=>{
+    let tajmer=null, dugo=false;
+    const pusti=()=>{ if(tajmer){ clearTimeout(tajmer); tajmer=null; } };
+    b.addEventListener('pointerdown',()=>{
+      dugo=false; pusti();
+      tajmer=setTimeout(()=>{
+        tajmer=null;
+        const t=b.dataset.t, sad=ALT_DRAFT.tag;
+        let nov=null;
+        if(t==='snaga' && SNAGA_UZ[sad]) nov={tag:sad, snaga:!ALT_DRAFT.snaga};
+        else if(SNAGA_UZ[t] && (sad==='snaga' || (SNAGA_UZ[sad] && ALT_DRAFT.snaga))) nov={tag:t, snaga:true};
+        if(!nov) return;
+        dugo=true;
+        readAltFields(sh);
+        ALT_DRAFT.tag=nov.tag; ALT_DRAFT.snaga=nov.snaga;
+        if(navigator.vibrate) try{ navigator.vibrate(15); }catch(e){}
+        renderAltSheet(d);
+      }, ALT_DRZANJE_MS);
+    });
+    ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,pusti));
+    b.addEventListener('contextmenu',e=>e.preventDefault());
+    b.onclick=()=>{
+    if(dugo){ dugo=false; return; }     /* dugo držanje je već odradilo svoje */
     readAltFields(sh); /* sačuvaj otkucano pre ponovnog crtanja */
     const t=b.dataset.t;
+    ALT_DRAFT.snaga=false;
     /* opis se menja u šablon SAMO ako ga korisnik nije već dirao (još je plan) */
     if(!ALT_DRAFT.desc||ALT_DRAFT.desc===(d.origDesc||''))ALT_DRAFT.desc=altDescTemplate(t,ALT_DRAFT.km);
     ALT_DRAFT.tag=t;
     renderAltSheet(d);
+    };
   });
   sh.querySelectorAll('[data-tkm]').forEach(b=>b.onclick=()=>{
     readAltFields(sh);
@@ -9763,7 +9805,7 @@ function openDaySheet(id){
   const isRest=!!d.rest; /* odmor se ne loguje — prikaz bez forme, samo izmena */
   openSheet(`
     <div class="sh-t">N${d.week.w} · ${d.test?'TEST (opciono)':dowOf(d.date)+' '+fmtDY(d.date)}</div>
-    <div class="sh-s">${esc(sessKind(d))}${d.km!=null?' · plan '+fmtKm(d.km)+' km':''}${S.alts&&S.alts[id]?' · izmenjen':''}</div>
+    <div class="sh-s">${esc(oznakaDana(d))}${d.km!=null?' · plan '+fmtKm(d.km)+' km':''}${S.alts&&S.alts[id]?' · izmenjen':''}</div>
     ${isRest?'':`<div class="desc" style="font-size:.85rem">${esc(d.desc)}</div>`}
     ${!isRest&&SESS_GUIDE[sessKind(d)]?`<div class="note-src" style="margin-top:6px">💡 ${esc(SESS_GUIDE[sessKind(d)])}</div>`:''}
     ${isRest?'':`<div class="seg" id="seg">
