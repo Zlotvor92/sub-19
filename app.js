@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='278'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='279'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1016,40 +1016,26 @@ function sessNote(d){
   if(tail)parts.push(tail[1].trim());
   return parts.join(' · ');
 }
-/* Vežbe snage → YouTube pretraga „kako se izvodi". Namerno pretraga, a ne
-   konkretan video: link na pretragu ne može da nestane ni da postane privatan.
-   Upit je na engleskom — tamo su snimci tehnike. Link dobija samo red koji
-   POČINJE poznatim nazivom („• Naziv: …"); ostatak opisa ide kroz esc(). */
-const VEZBE_YT={
-  'Podizanje prstiju uz zid (tibialis)':'tibialis raise against wall',
-  'Dorsifleksija sa trakom':'banded ankle dorsiflexion exercise',
-  'Inverzija i everzija sa trakom':'resistance band ankle inversion eversion',
-  'Podizanje na prste, pravo koleno':'straight knee calf raise',
-  'Podizanje na prste, savijeno koleno (soleus)':'bent knee soleus calf raise',
-  'Hod na prstima / na petama':'toe walks heel walks exercise',
-  'Odvođenje kuka stojeći':'standing hip abduction exercise',
-  'Pallof pritisak':'pallof press',
-  'Bočna plank':'side plank proper form',
-  'Pogo skokovi snožno':'pogo jumps runners',
-  'A-skip':'A skip running drill',
-  'Bočni skokovi preko linije':'lateral line hops',
-  'Skok iz čučnja':'squat jump proper form',
-  'Pogo na jednoj nozi':'single leg pogo hops',
-  'Goblet čučanj':'goblet squat proper form',
-  'Bugarski čučanj':'bulgarian split squat proper form',
-  'Rumunsko mrtvo dizanje na jednoj nozi':'single leg romanian deadlift',
-  'Most na jednoj nozi':'single leg glute bridge',
-  'Podizanje na prste, jedna noga':'single leg calf raise',
-  'Mrtva buba':'dead bug exercise'
+/* Vežbe snage → snimak tehnike. SAMO zaseban snimak baš te vežbe sa kanala
+   E3 Rehab ili Squat University (fizioterapeuti) — izbor vlasnika plana.
+   Proverene su sve 20 vežbi ličnog plana (pretraga oba kanala, 27.09.2026);
+   ostale nemaju zaseban snimak (samo zbirne ili Shorts sa varijantom), pa
+   nemaju ni link. E3 Rehab „Bulgarian Split Squats But Better" je Short sa
+   izmenjenom varijantom, zato je za bugarski čučanj Squat University.
+   Link dobija samo red koji POČINJE poznatim nazivom („• Naziv: …"). */
+const VEZBE_VIDEO={
+  'Bugarski čučanj':{id:'hPlKPjohFS0',autor:'Squat University'},
+  'Rumunsko mrtvo dizanje na jednoj nozi':{id:'Zfr6wizR8rs',autor:'Squat University'},
+  'Mrtva buba':{id:'0XVbn86Btj0',autor:'Squat University'}
 };
-function vezbaYtUrl(naziv){
-  const q=VEZBE_YT[naziv];
-  return q?'https://www.youtube.com/results?search_query='+encodeURIComponent(q+' how to'):null;
+function vezbaVideo(naziv){
+  const v=Object.prototype.hasOwnProperty.call(VEZBE_VIDEO,naziv)?VEZBE_VIDEO[naziv]:null;
+  return v?{url:'https://www.youtube.com/watch?v='+v.id,autor:v.autor}:null;
 }
 function opisSaVezbamaHTML(desc){
   return tekstOpisa(desc).split('\n').map(red=>{
-    const m=/^• ([^:]+):/.exec(red), url=m&&vezbaYtUrl(m[1]);
-    return url?`${esc(red)} <a class="yt" href="${url}" target="_blank" rel="noopener noreferrer" aria-label="Kako se izvodi: ${esc(m[1])} (YouTube)">▶ video</a>`:esc(red);
+    const m=/^• ([^:]+):/.exec(red), v=m&&vezbaVideo(m[1]);
+    return v?`${esc(red)} <a class="yt" href="${v.url}" target="_blank" rel="noopener noreferrer" aria-label="Kako se izvodi: ${esc(m[1])} (${esc(v.autor)}, YouTube)">▶ video</a>`:esc(red);
   }).join('\n');
 }
 /* Oznaka dana ZA PRIKAZ: vrsta treninga, i „+ Snaga" kad je uz trčanje
