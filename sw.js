@@ -3,13 +3,13 @@
    stari keš se briše, a PODACI u localStorage OSTAJU netaknuti.
    Update-flow: novi SW NE preuzima kontrolu odmah (ne skipWaiting na install) —
    čeka korisnikov klik na "Osveži" (baner u aplikaciji), da se ne prekine unos. */
-const CACHE = 'sub19-cache-v281';
-const APP_VERSION = '281';
+const CACHE = 'sub19-cache-v282';
+const APP_VERSION = '282';
 /* './app.js' MORA biti na spisku: od v150 index.html je samo markup, a ceo kod
    aplikacije je u app.js. Da nije tu, dobio bi network-first samo omotač, dok
    bi se logika servirala iz starog keša — tj. „promenio sam kod, ništa se ne
    vidi", tačno ona greška zbog koje je ceo spisak i prebačen na network-first. */
-const ASSETS = ['./', './index.html', './app.js', './sw-reg.js', './manifest.json', './icon-32.png', './icon-192.png', './icon-512.png', './icon-128.png', './icon-maskable-512.png', './apple-touch-icon.png', './privacy.html', './uputstvo.html'];
+const ASSETS = ['./', './index.html', './app.js', './sw-reg.js', './manifest.json', './icon-32.png', './icon-192.png', './icon-512.png', './icon-128.png', './icon-maskable-512.png', './badge-96.png', './icon-monochrome-512.png', './apple-touch-icon.png', './privacy.html', './uputstvo.html'];
 
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
@@ -193,7 +193,10 @@ self.addEventListener('push', e => {
   const opcije = {
     body: String(d.telo || '').slice(0, 300),
     icon: './icon-192.png',
-    badge: './icon-128.png',
+    /* Android crta `badge` u statusnoj traci KAO MASKU: uzima samo providnost,
+       boju baca. Ranije je ovde bila icon-128 (97% neprozirna), pa se videla
+       samo bela mrlja. Bela figura na providnom je jedini oblik koji radi. */
+    badge: './badge-96.png',
     lang: 'sr',
     /* Ista `tag` vrednost menja prethodno obaveštenje umesto da doda novo —
        jutarnji podsetnik ne sme da se gomila u listi ako telefon danima

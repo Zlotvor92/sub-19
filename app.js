@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='281'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='282'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
