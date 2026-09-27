@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='280'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='281'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1021,10 +1021,9 @@ function sessNote(d){
    2. inače YouTube Short sa JEDNOM vežbom, pod uslovom da su komentari
       pozitivni (bar tri pohvale, bez preovlađujućih primedbi na tehniku).
    Komentari mere prijem kod gledalaca, ne ispravnost tehnike.
-   Bez linka ostaju vežbe za koje nijedan kandidat nije prošao (malo ili
-   nimalo komentara, ili primedbe na izvođenje): inverzija/everzija, podizanje
-   na prste pravo i savijeno koleno, hod na prstima/petama, odvođenje kuka,
-   bočni skokovi preko linije, pogo na jednoj nozi.
+   3. za vežbe gde nijedan kandidat nije prošao 2. (malo ili nimalo
+      komentara): najbolji Short po autoru i naslovu, označen `neprov` i u
+      prikazu „neprovereno" — vlasnik plana ih pregleda i javlja šta ostaje.
    E3 Rehab „Bulgarian Split Squats But Better" je Short sa izmenjenom
    varijantom, zato je za bugarski čučanj Squat University.
    Link dobija samo red koji POČINJE poznatim nazivom („• Naziv: …"). */
@@ -1041,16 +1040,23 @@ const VEZBE_VIDEO={
   'Skok iz čučnja':{id:'IfqrxS_-8oU',autor:'Girls Gone Strong',short:1},
   'Goblet čučanj':{id:'lRYBbchqxtI',autor:'SquatCouple',short:1},
   'Most na jednoj nozi':{id:'n1IZ168x2Bw',autor:'Rogith23',short:1},
-  'Podizanje na prste, jedna noga':{id:'E1mG5L9rpFc',autor:'Evolutio Sports Physio',short:1}
+  'Podizanje na prste, jedna noga':{id:'E1mG5L9rpFc',autor:'Evolutio Sports Physio',short:1},
+  'Inverzija i everzija sa trakom':{id:'DfSkLqIWykA',autor:'University of Texas Athletic Performance',short:1,neprov:1},
+  'Podizanje na prste, pravo koleno':{id:'n-5T_oYc1oU',autor:'Luke Selway',short:1,neprov:1},
+  'Podizanje na prste, savijeno koleno (soleus)':{id:'IdPEqTS6QUc',autor:'Westcoast SCI Physiotherapy',short:1,neprov:1},
+  'Hod na prstima / na petama':{id:'BI4glY2Alhw',autor:'Tension Intervention',short:1,neprov:1},
+  'Odvođenje kuka stojeći':{id:'7Sph-K6Nmgc',autor:'Ty Training',short:1,neprov:1},
+  'Bočni skokovi preko linije':{id:'FqbcTmDy6Ps',autor:'Tennessee Tech Athletic Performance',short:1,neprov:1},
+  'Pogo na jednoj nozi':{id:'_pDStuHcvTc',autor:'The Exercise Library',short:1,neprov:1}
 };
 function vezbaVideo(naziv){
   const v=Object.prototype.hasOwnProperty.call(VEZBE_VIDEO,naziv)?VEZBE_VIDEO[naziv]:null;
-  return v?{url:'https://www.youtube.com/'+(v.short?'shorts/':'watch?v=')+v.id,autor:v.autor}:null;
+  return v?{url:'https://www.youtube.com/'+(v.short?'shorts/':'watch?v=')+v.id,autor:v.autor,neprov:!!v.neprov}:null;
 }
 function opisSaVezbamaHTML(desc){
   return tekstOpisa(desc).split('\n').map(red=>{
     const m=/^• ([^:]+):/.exec(red), v=m&&vezbaVideo(m[1]);
-    return v?`${esc(red)} <a class="yt" href="${v.url}" target="_blank" rel="noopener noreferrer" aria-label="Kako se izvodi: ${esc(m[1])} (${esc(v.autor)}, YouTube)">▶ video</a>`:esc(red);
+    return v?`${esc(red)} <a class="yt" href="${v.url}" target="_blank" rel="noopener noreferrer" aria-label="Kako se izvodi: ${esc(m[1])} (${esc(v.autor)}, YouTube${v.neprov?', neprovereno':''})">▶ video${v.neprov?' · neprovereno':''}</a>`:esc(red);
   }).join('\n');
 }
 /* Oznaka dana ZA PRIKAZ: vrsta treninga, i „+ Snaga" kad je uz trčanje
