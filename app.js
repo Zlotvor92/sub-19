@@ -48,7 +48,7 @@
    sub shakeout (dan pred trku), ned trka. Excelov dan oporavka posle trke
    ispada iz plana — ukupno je i dalje 80 dana i 408,2 km. */
 const START='2026-09-21', RACE='2026-12-13', SCHEMA=11, LS_KEY='sub19-v1';
-const APP_VERSION='279'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
+const APP_VERSION='280'; /* mora se poklapati sa APP_VERSION u sw.js — v. test/sw-azuriranje.test.mjs */
 /* ANALYZE_SECRET je UKLONJEN. Bio je deljena tajna vidljiva svakome ko otvori
    dev tools — dakle nikakva zastita, samo prag. Zamenjuje ga Supabase JWT
    korisnika: /api/analyze sada proverava token kod Supabase-a i zna KO zove,
@@ -1016,21 +1016,36 @@ function sessNote(d){
   if(tail)parts.push(tail[1].trim());
   return parts.join(' · ');
 }
-/* Vežbe snage → snimak tehnike. SAMO zaseban snimak baš te vežbe sa kanala
-   E3 Rehab ili Squat University (fizioterapeuti) — izbor vlasnika plana.
-   Proverene su sve 20 vežbi ličnog plana (pretraga oba kanala, 27.09.2026);
-   ostale nemaju zaseban snimak (samo zbirne ili Shorts sa varijantom), pa
-   nemaju ni link. E3 Rehab „Bulgarian Split Squats But Better" je Short sa
-   izmenjenom varijantom, zato je za bugarski čučanj Squat University.
+/* Vežbe snage → snimak tehnike (izbor vlasnika plana, 27.09.2026):
+   1. zaseban snimak baš te vežbe sa kanala E3 Rehab ili Squat University;
+   2. inače YouTube Short sa JEDNOM vežbom, pod uslovom da su komentari
+      pozitivni (bar tri pohvale, bez preovlađujućih primedbi na tehniku).
+   Komentari mere prijem kod gledalaca, ne ispravnost tehnike.
+   Bez linka ostaju vežbe za koje nijedan kandidat nije prošao (malo ili
+   nimalo komentara, ili primedbe na izvođenje): inverzija/everzija, podizanje
+   na prste pravo i savijeno koleno, hod na prstima/petama, odvođenje kuka,
+   bočni skokovi preko linije, pogo na jednoj nozi.
+   E3 Rehab „Bulgarian Split Squats But Better" je Short sa izmenjenom
+   varijantom, zato je za bugarski čučanj Squat University.
    Link dobija samo red koji POČINJE poznatim nazivom („• Naziv: …"). */
 const VEZBE_VIDEO={
   'Bugarski čučanj':{id:'hPlKPjohFS0',autor:'Squat University'},
   'Rumunsko mrtvo dizanje na jednoj nozi':{id:'Zfr6wizR8rs',autor:'Squat University'},
-  'Mrtva buba':{id:'0XVbn86Btj0',autor:'Squat University'}
+  'Mrtva buba':{id:'0XVbn86Btj0',autor:'Squat University'},
+  'Podizanje prstiju uz zid (tibialis)':{id:'pQcvW08rnAk',autor:'Physio Room Co',short:1},
+  'Dorsifleksija sa trakom':{id:'3yFwR4z0gT0',autor:'Feel Good Life with Coach Todd',short:1},
+  'Pallof pritisak':{id:'5aZ0IhJS8O8',autor:'Beyond Measure Fitness Training',short:1},
+  'Bočna plank':{id:'BFOyHDlY2UE',autor:'PS Fit',short:1},
+  'Pogo skokovi snožno':{id:'ztjByc9Afj4',autor:'Health & High Performance',short:1},
+  'A-skip':{id:'NEBEQba4Fb8',autor:'Chari Hawkins',short:1},
+  'Skok iz čučnja':{id:'IfqrxS_-8oU',autor:'Girls Gone Strong',short:1},
+  'Goblet čučanj':{id:'lRYBbchqxtI',autor:'SquatCouple',short:1},
+  'Most na jednoj nozi':{id:'n1IZ168x2Bw',autor:'Rogith23',short:1},
+  'Podizanje na prste, jedna noga':{id:'E1mG5L9rpFc',autor:'Evolutio Sports Physio',short:1}
 };
 function vezbaVideo(naziv){
   const v=Object.prototype.hasOwnProperty.call(VEZBE_VIDEO,naziv)?VEZBE_VIDEO[naziv]:null;
-  return v?{url:'https://www.youtube.com/watch?v='+v.id,autor:v.autor}:null;
+  return v?{url:'https://www.youtube.com/'+(v.short?'shorts/':'watch?v=')+v.id,autor:v.autor}:null;
 }
 function opisSaVezbamaHTML(desc){
   return tekstOpisa(desc).split('\n').map(red=>{
