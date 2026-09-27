@@ -1,5 +1,6 @@
 /* Vežbe snage: zaseban snimak E3 Rehab / Squat University, inače Short
-   jedne vežbe sa pozitivnim komentarima; bez kandidata — bez linka. */
+   jedne vežbe sa pozitivnim komentarima (SA), inače najbolji Short označen
+   „neprovereno". */
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,7 +17,7 @@ const nazivi = new Set(JSON.parse(a.evalIn(`JSON.stringify(CUR_PLAN.flatMap(w=>w
 describe('Snimak tehnike uz vežbe snage', () => {
   test('svaki snimak pripada vežbi iz plana i jednom od dva kanala', () => {
     const kljucevi = JSON.parse(a.evalIn('JSON.stringify(Object.keys(VEZBE_VIDEO))'));
-    assert.deepEqual([...kljucevi].sort(), [...SA].sort());
+    assert.deepEqual([...kljucevi].sort(), [...nazivi].sort());
     for (const n of kljucevi) {
       assert.ok(nazivi.has(n), `${n} nije u planu`);
       const v = JSON.parse(a.evalIn(`JSON.stringify(vezbaVideo(${JSON.stringify(n)}))`));
@@ -25,18 +26,23 @@ describe('Snimak tehnike uz vežbe snage', () => {
     }
   });
 
-  test('vežbe bez zasebnog snimka nemaju link', () => {
+  test('svaka vežba iz plana ima snimak; neproverene su označene', () => {
     assert.ok(nazivi.size >= 20);
-    for (const n of nazivi) if (!SA.includes(n))
-      assert.equal(a.evalIn(`vezbaVideo(${JSON.stringify(n)})`), null, n);
+    for (const n of nazivi) {
+      const v = JSON.parse(a.evalIn(`JSON.stringify(vezbaVideo(${JSON.stringify(n)}))`));
+      assert.ok(v, n);
+      assert.equal(v.neprov, !SA.includes(n), n);
+    }
     assert.equal(a.evalIn(`vezbaVideo('toString')`), null);
+    const h = a.call('opisSaVezbamaHTML', '• Pogo na jednoj nozi: 2×10\n• A-skip: 2×20 m');
+    assert.equal((h.match(/· neprovereno</g) || []).length, 1);
   });
 
-  test('dan Snage B: linkovi samo uz vežbe sa snimkom, ostalo escapovano', () => {
+  test('dan Snage B: link uz svaku vežbu, ostalo escapovano', () => {
     const d = a.evalIn(`CUR_PLAN.flatMap(w=>w.days).find(d=>d.tag==='snaga'&&d.desc.includes('• Mrtva buba')).desc`);
     const h = a.call('opisSaVezbamaHTML', d);
     assert.equal((h.match(/<a class="yt"/g) || []).length,
-      SA.filter(n => d.includes('• ' + n + ':')).length);
+      (d.match(/^• /gm) || []).length);
     assert.match(h, /target="_blank" rel="noopener noreferrer"/);
     assert.doesNotMatch(a.call('opisSaVezbamaHTML', '• <img src=x>: 3×10'), /<img/);
   });
