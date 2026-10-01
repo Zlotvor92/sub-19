@@ -26,8 +26,7 @@ const valid = (): PlanGenerationInput => ({
 });
 
 /** Ulaz sa polem zamenjenim vrednošću koju tip zabranjuje (kao da je stigla iz nepouzdanog JSON-a). */
-const withBad = (patch: Record<string, unknown>): PlanGenerationInput =>
-  ({ ...valid(), ...patch }) as unknown as PlanGenerationInput;
+const withBad = (patch: Record<string, unknown>): PlanGenerationInput => ({ ...valid(), ...patch });
 
 const isError = (inp: PlanGenerationInput): boolean => 'error' in generatePlan(inp);
 
