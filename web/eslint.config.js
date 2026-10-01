@@ -16,7 +16,20 @@ import { domainRules } from './eslint.domain-rules.js';
    sloja stvarno hvataju prekršaj.
    ============================================================ */
 export default tseslint.config(
-  { ignores: ['dist', 'coverage', 'playwright-report', 'test-results', 'node_modules'] },
+  {
+    /* `public/` i `sw/` su običan JavaScript bez modula koji se izvršava u pregledaču/service workeru (ponašanje starog koda, dokazano testovima
+       `src/pwa/sw.*.test.ts`); `scripts/*.mjs` ima `.d.mts` opis. Ništa od toga nije deo TS projekta. */
+    ignores: [
+      'dist',
+      'coverage',
+      'playwright-report',
+      'test-results',
+      'node_modules',
+      'public',
+      'sw',
+      'scripts/*.mjs'
+    ]
+  },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {

@@ -2,12 +2,21 @@
 <html lang="sr">
   <head>
     <meta charset="UTF-8" />
+    <!-- `user-scalable=no` je namerno UKLONJEN: blokira pinch-zoom (WCAG 2.1 SC 1.4.4). Slučajan zoom pri dvostrukom dodiru sprečava `touch-action:manipulation` u CSS-u. -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>SUB-20 · Trkački plan</title>
     <meta name="theme-color" content="#0B0A1F" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-    <!-- Nema inline skripti: CSP u vercel.json je `script-src 'self'`. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="SUB-20" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+    <!-- Nema inline skripti: CSP u vercel.json je `script-src 'self'`. Registracija service workera je sićušan zaseban fajl koji se učitava PRE svega ostalog
+         (v. komentar u sw-reg.js: registracija ne sme da čeka na ceo paket aplikacije). -->
+    <script src="./sw-reg.js"></script>
   </head>
   <body>
     <div id="root"></div>

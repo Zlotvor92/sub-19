@@ -36,12 +36,26 @@ export default defineConfig({
         }
       },
       {
+        /* NODE: kod koji se izvršava van pregledača (service worker u `node:vm` sandbox-u, skripte izgradnje). Treba Node API; ostatku NE. */
+        extends: true,
+        test: {
+          name: 'node',
+          environment: 'node',
+          include: ['src/**/*.node.test.ts', 'scripts/**/*.node.test.ts']
+        }
+      },
+      {
         extends: true,
         test: {
           name: 'ui',
           environment: 'jsdom',
           include: ['src/**/*.test.{ts,tsx}'],
-          exclude: ['src/domain/**', 'src/**/*.oracle.test.ts', 'node_modules/**'],
+          exclude: [
+            'src/domain/**',
+            'src/**/*.oracle.test.ts',
+            'src/**/*.node.test.ts',
+            'node_modules/**'
+          ],
           setupFiles: ['src/test/setup.ts']
         }
       }
