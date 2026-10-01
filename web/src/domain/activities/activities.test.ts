@@ -118,7 +118,7 @@ describe('po-kilometarski presek', () => {
     const even = Array.from({ length: 10 }, (_, i) => ({ paceSec: 300, hr: 140 + i }));
     expect(typeof decouplingPerKm(even)?.n).toBe('number');
     const prog = Array.from({ length: 10 }, (_, i) => ({ paceSec: 330 - i * 10, hr: 140 + i }));
-    expect(decouplingPerKm(prog)).toEqual({ n: null, reason: 'tempo nije bio ravnomeran' });
+    expect(decouplingPerKm(prog)).toEqual({ n: null, razlog: 'tempo nije bio ravnomeran' });
     expect(decouplingPerKm([{ paceSec: 300, hr: 140 }])).toBeNull();
   });
 });

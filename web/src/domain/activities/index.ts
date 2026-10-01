@@ -33,3 +33,15 @@ export {
   type RealignInput,
   type RealignResult
 } from './realign';
+export {
+  hasDetails,
+  importedEntry,
+  isRun,
+  kmByDate,
+  localStartHour,
+  perKmStale,
+  pickClosest,
+  runsByDate,
+  type ImportedRun,
+  type StravaActivity
+} from './stravaImport';

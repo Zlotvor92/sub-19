@@ -24,14 +24,16 @@ import {
   AccountBody,
   DataBody,
   PlanBody,
+  StravaBody,
   useAccountInfo,
   useDataInfo,
   usePlanInfo,
+  useStravaInfo,
   type SectionInfo
 } from './sections';
 
 /* Stavke vrha ekrana za koje postoji sekcija sa dugmetom koje radnju obavlja (stavka bez sekcije bi imala mrtvo dugme). */
-const IMPLEMENTED: ReadonlySet<SettingsItem['key']> = new Set(['nalog', 'backup']);
+const IMPLEMENTED: ReadonlySet<SettingsItem['key']> = new Set(['nalog', 'strava', 'backup']);
 
 const ITEM_SECTION: Record<SettingsItem['key'], string> = {
   nalog: 'Nalog',
@@ -59,6 +61,7 @@ export function SettingsSheet() {
   const infos: Record<string, SectionInfo> = {
     Nalog: useAccountInfo(),
     Plan: usePlanInfo(),
+    Strava: useStravaInfo(),
     Podaci: useDataInfo()
   };
 
@@ -90,6 +93,7 @@ export function SettingsSheet() {
 
   const heroAction = (key: SettingsItem['key']): void => {
     if (key === 'nalog') getApp().login();
+    else if (key === 'strava') getApp().strava.connect();
     else if (key === 'backup') downloadText(`sub19-backup-${today}.json`, getApp().exportBackup());
   };
 
@@ -194,6 +198,7 @@ export function SettingsSheet() {
       {section('Nalog', <AccountBody />)}
       {section('Podaci', <DataBody />)}
       {section('Plan', <PlanBody />)}
+      {section('Strava', <StravaBody />)}
 
       <div className="note-src" style={{ marginTop: 6 }}>
         Verzija {APP_VERSION} · šema v{SCHEMA_VERSION} · {brojTreninga(trainings)} /{' '}

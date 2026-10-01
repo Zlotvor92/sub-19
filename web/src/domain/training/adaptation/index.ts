@@ -27,3 +27,4 @@ export {
   type ProposalChange,
   type ApplyResult
 } from './proposal';
+export { alignVdotDates } from './dates';

@@ -90,9 +90,9 @@ function boot(signedIn: boolean, state: PersistedState = stateWithPlan()): Ctx {
   const app = createApp({
     kv: createKeyValueStore(store),
     fetcher: (url, init) => {
-      if (url.startsWith('/api/')) {
+      if (url.startsWith('/api/') || url.startsWith('https://www.strava.com')) {
         extra.push({ url, init: init ?? {} });
-        const h = api.get(url);
+        const h = [...api].find(([prefix]) => url.startsWith(prefix))?.[1];
         return Promise.resolve(h ? h(init ?? {}) : new Response('{}', { status: 404 }));
       }
       return fake.fetcher(url, init);
@@ -109,6 +109,7 @@ function boot(signedIn: boolean, state: PersistedState = stateWithPlan()): Ctx {
   setApp(app);
   return { fake, store, extra, api, navigate, app };
 }
+const c0 = (): number => Date.UTC(2026, 6, 12, 10, 0, 0); // sat lažnog servera
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 const open = (kind = 'settings'): void => {
@@ -140,7 +141,7 @@ describe('Podešavanja', () => {
     const c = boot(false);
     open();
     render(<Screen />);
-    expect(screen.getByText('Dve stvari čekaju')).toBeInTheDocument();
+    expect(screen.getByText('Tri stvari čekaju')).toBeInTheDocument();
     expect(screen.getByText(/Nalog čuva plan i istoriju/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Prijavi se' }));
     expect(c.navigate).toHaveBeenCalledWith(
@@ -155,6 +156,7 @@ describe('Podešavanja', () => {
     useAuthStore.setState({ configured: false });
     open();
     render(<Screen />);
+    await user.click(screen.getByText('Nalog', { selector: 'button' }));
     await user.click(screen.getByText('Podaci', { selector: 'b' }));
     await user.click(document.querySelector('#hero-backup') as HTMLElement); // vrh ekrana radi isto što i dugme u sekciji
     expect(download).toHaveBeenCalledTimes(1);
@@ -172,6 +174,7 @@ describe('Podešavanja', () => {
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     open();
     const { container } = render(<Screen />);
+    await user.click(screen.getByText('Nalog', { selector: 'button' }));
     await user.click(screen.getByText('Podaci', { selector: 'b' }));
     const input = container.querySelector('#s-file') as HTMLInputElement;
 
@@ -209,6 +212,7 @@ describe('Podešavanja', () => {
     useAuthStore.setState({ hasSession: true, email: 'tester@x.rs' });
     open();
     render(<Screen />);
+    await user.click(screen.getByText('Nalog', { selector: 'button' }));
     expect(screen.getByText('tester@x.rs')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Sinhronizuj' }));
     await waitFor(() => expect(c.fake.count('/rest/v1/user_state', 'POST')).toBeGreaterThan(0));
@@ -257,6 +261,64 @@ describe('Podešavanja', () => {
     await waitFor(() => expect(useTrainingStore.getState().genPlan).toBeNull());
     expect(useTrainingStore.getState().log).toEqual({});
     expect(useUIStore.getState().wizard).toBe(true);
+  });
+});
+
+describe('Strava u podešavanjima', () => {
+  it('nije povezana: prva stvar koja čeka; dugme vodi na Stravu', async () => {
+    const user = userEvent.setup();
+    const c = boot(false);
+    useAuthStore.setState({ configured: false });
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    await user.click(document.querySelector('#st-on') as HTMLElement);
+    expect(c.navigate).toHaveBeenCalledWith(
+      expect.stringContaining('https://www.strava.com/oauth/authorize')
+    );
+  });
+
+  it('povezana: uvoz traži/šalje i prikazuje sažetak; otkačivanje traži potvrdu i čuva podatke', async () => {
+    const user = userEvent.setup();
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const c = boot(false, {
+      ...stateWithPlan(),
+      strava: {
+        access: 'AT',
+        refresh: 'RT',
+        expiresAt: Math.floor(c0() / 1000) + 21600,
+        athlete: 'Mika',
+        lastSync: 0,
+        zonesTs: c0(),
+        hrZones: [
+          { min: 0, max: 130 },
+          { min: 130, max: null }
+        ]
+      }
+    });
+    useAuthStore.setState({ configured: false });
+    c.api.set('https://www.strava.com/api/v3/athlete/activities', () => json(200, []));
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    expect(screen.getByText(/Mika · uvoz/)).toBeInTheDocument();
+    await user.click(screen.getByText('Tvoje zone pulsa'));
+    expect(screen.getByText('0–130 bpm')).toBeInTheDocument();
+    expect(screen.getByText('130+ bpm')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Uvezi trčanja' }));
+    await waitFor(() =>
+      expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Sinhronizacija gotova\./))
+    );
+    // sheet se zatvara posle uvoza (kao u starom kodu)
+    await waitFor(() => expect(useUIStore.getState().sheet).toBeNull());
+    open();
+    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    await user.click(screen.getByRole('button', { name: 'Otkači' }));
+    expect(useUIStore.getState().confirm?.text).toMatch(/^Otkači Stravu\?/);
+    act(() => useUIStore.getState().confirm?.resolve(true));
+    await waitFor(() => expect(collectPersisted().strava).toBeNull());
+    expect(Object.keys(useTrainingStore.getState().log)).toEqual([]); // uvezeni podaci ostaju (ovde ih nije ni bilo)
+    alert.mockRestore();
   });
 });
 

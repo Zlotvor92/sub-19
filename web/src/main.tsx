@@ -18,7 +18,8 @@ const app = createApp({
   navigate: (url) => {
     window.location.href = url;
   },
-  online: () => navigator.onLine
+  online: () => navigator.onLine,
+  notify: (message) => window.alert(message)
 });
 setApp(app);
 useUIStore.getState().setTab(initialTab(window.location.search, window.sessionStorage));

@@ -91,7 +91,7 @@ export function perKmDetail(streams: ActivityStreams | null | undefined): PerKmR
   return out;
 }
 
-export type Decoupling = { n: number } | { n: null; reason: string } | null;
+export type Decoupling = { n: number } | { n: null; razlog: string } | null;
 
 /**
  * DEKUPLOVANJE (Pa:HR) — koliko se odnos tempa i pulsa pokvario u drugoj polovini trčanja; standardna
@@ -115,7 +115,7 @@ export function decouplingPerKm(
   const pA = avg(A, (x) => x.paceSec as number);
   const pB = avg(B, (x) => x.paceSec as number);
   if (!(pA > 0) || Math.abs(pB - pA) / pA > 0.03)
-    return { n: null, reason: 'tempo nije bio ravnomeran' };
+    return { n: null, razlog: 'tempo nije bio ravnomeran' };
   const rA = 1000 / pA / avg(A, (x) => x.hr as number);
   const rB = 1000 / pB / avg(B, (x) => x.hr as number);
   if (!(rA > 0)) return null;

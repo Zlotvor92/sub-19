@@ -165,10 +165,7 @@ describe('radni segmenti i po-km presek naspram starog koda', () => {
       expect(firstDiff(canonical(j(perKmDetail(s))), canonical(oldKm)), `po km ${i}`).toBeNull();
       const dec = j<unknown>(legacy.call('decouplingPerKm', oldKm));
       const mineDec = decouplingPerKm(perKmDetail(s));
-      expect(
-        mineDec && 'reason' in mineDec ? { n: null, razlog: mineDec.reason } : mineDec,
-        `dekuplovanje ${i}`
-      ).toEqual(dec);
+      expect(mineDec, `dekuplovanje ${i}`).toEqual(dec); // `razlog` je deo PERZISTIRANOG zapisa (log[dan].decoupling)
     }
     expect(kinds.segs, 'uzorak mora da sadrži prepoznate segmente').toBeGreaterThan(80);
     expect(kinds.empty, 'uzorak mora da sadrži kontinuirana trčanja').toBeGreaterThan(20);
