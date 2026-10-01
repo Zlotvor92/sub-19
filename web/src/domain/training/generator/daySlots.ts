@@ -19,8 +19,12 @@ const dowName = (d: number): string => DOW_NAMES[d - 1] ?? '?';
 /** Izbor dana za lagana trčanja kad korisnik nije izabrao konkretne dane. */
 const EASY_DAY_ORDER = [1, 3, 5, 2, 6, 4, 7] as const;
 
+/** Dani 1–7 iz opcionog niza; sve što nije konačan broj se odbacuje (nepouzdan ulaz, ne NaN). */
 const asDays = (a: readonly number[] | undefined): number[] =>
-  (Array.isArray(a) ? (a as number[]) : []).map(Math.round).filter((d) => d >= 1 && d <= 7);
+  (Array.isArray(a) ? (a as unknown[]) : [])
+    .filter((x): x is number => typeof x === 'number' && Number.isFinite(x))
+    .map(Math.round)
+    .filter((d) => d >= 1 && d <= 7);
 
 /**
  * Promenljiv broj dana trčanja (2–7) i broj kvalitetnih sesija (1–2). Kvalitet
@@ -38,7 +42,9 @@ export function buildDaySlots(
   const effQ = runDays <= 3 ? Math.min(qualityCount, 1) : Math.min(qualityCount, 2);
   const lrPref = prefs?.lrDow;
   const lrDow =
-    lrPref !== undefined && lrPref >= 1 && lrPref <= 7 ? Math.round(lrPref) : DEFAULT_LONG_RUN_DOW;
+    typeof lrPref === 'number' && lrPref >= 1 && lrPref <= 7
+      ? Math.round(lrPref)
+      : DEFAULT_LONG_RUN_DOW;
 
   const slots: DaySlots = {
     1: 'rest',

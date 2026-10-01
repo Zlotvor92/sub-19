@@ -54,6 +54,7 @@ import { allocEasyLongRun, perRunFloor, type Allocation, type LongRunCapFn } fro
 import { assess } from './assess';
 import { buildDaySlots, dayPreferenceWarnings, pickStrengthDay } from './daySlots';
 import { weekFocus } from './focus';
+import { validateInput } from './validateInput';
 import { runWalkForWeek, runWalkText } from './runWalk';
 import { fuelText } from '../sessions/longRun';
 import { longRunCap, peakVolume, rampStep } from './volume';
@@ -97,10 +98,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     };
   }
   const prof: DistanceProfile = maybeProfile;
-  if (!inp.pb || !(inp.pb.sec > 0) || !(inp.pb.distM > 0)) {
-    return { error: 'Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).' };
-  }
-  if (!(inp.weeklyKm > 0)) return { error: 'Nedeljna kilometraža mora biti veća od nule.' };
+  const invalid = validateInput(inp);
+  if (invalid) return { error: invalid };
 
   /* Plan kreće OD DANA generisanja, ne od sledećeg ponedeljka. Nedelja 1 zadržava
      PRAVU pon–ned strukturu; dani PRE datuma generisanja se filtriraju na kraju. */
@@ -122,8 +121,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     };
   }
 
-  const runDays = Math.max(2, Math.min(7, Math.round(inp.runDays || DEFAULT_RUN_DAYS)));
-  let qWant = Math.max(1, Math.min(2, Math.round(inp.quality || DEFAULT_QUALITY)));
+  const runDays = Math.max(2, Math.min(7, softInt(inp.runDays, DEFAULT_RUN_DAYS)));
+  let qWant = Math.max(1, Math.min(2, softInt(inp.quality, DEFAULT_QUALITY)));
   const H = prof.heuristic;
   const QUAL2_MIN_KM = prof.product.qual2MinKm;
   /* Taper nedelje: 5K i 10K jedna, HM i maraton dve. Zadnja RADNA nedelja je ona iza koje
@@ -979,6 +978,11 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     });
   }
   return plan;
+}
+
+/** Opciono celobrojno polje: ono što nije konačan, nenulti broj postaje podrazumevana vrednost (ne NaN). */
+function softInt(v: unknown, fallback: number): number {
+  return typeof v === 'number' && Number.isFinite(v) && v !== 0 ? Math.round(v) : fallback;
 }
 
 /** `arr[i]` za indeks koji je po konstrukciji validan; baca ako to nije tačno (ne tiho NaN). */

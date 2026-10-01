@@ -43,3 +43,11 @@ export const STRUCTURAL_CEILING_RATIO = 0.93;
 /** Gornja granica unetog obima koju generator uopšte uvažava (degenerisan unos). */
 export const MAX_INPUT_WEEKLY_KM = 120;
 export const MIN_START_WEEKLY_KM = 8;
+
+/**
+ * Verodostojan tempo [s/km] za lični rekord i ciljno vreme. Granice su šire od svega što čarobnjak
+ * dozvoljava (5K 12:00–99:59 je 2:24–20:00 po km) i uže od svega besmislenog (Infinity, 1 s, 0).
+ * [P] — proizvodna odluka (v. docs/TRAINING_ENGINE_AUDIT.md D4).
+ */
+export const MIN_PLAUSIBLE_PACE_SEC_PER_KM = 140;
+export const MAX_PLAUSIBLE_PACE_SEC_PER_KM = 1200;
