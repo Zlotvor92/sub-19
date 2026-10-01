@@ -1,0 +1,324 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { canonical } from '@/test/fingerprint';
+import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import { migrateState } from './migrate';
+
+/* parity: test/state.test.mjs :: migracija šeme; test/otpornost.test.mjs :: oštećen ulaz
+   DIFERENCIJALNI TEST data contract-a: stari `migrate()` i novi `migrateState()` moraju dati ISTO
+   stanje (ili oba `null`) za bogato osnovno stanje sa nasumično pokvarenim poljima. Ovo je jedina
+   mreža koja garantuje da postojeći korisnici posle prelaska na novi frontend dobiju iste podatke. */
+
+function rng(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
+
+let legacy: LegacyApp;
+let base: Json;
+
+beforeAll(async () => {
+  legacy = await loadLegacyApp('2026-01-07T09:00:00Z');
+  /* pravi generisan plan iz STAROG koda, u perzistiranom obliku */
+  const gen = legacy.call('generatePlan', {
+    startDate: '2026-01-05',
+    raceDate: '2026-04-26',
+    raceDistM: 10000,
+    pb: { distM: 10000, sec: 2700 },
+    weeklyKm: 35,
+    runDays: 4,
+    quality: 2,
+    intensity: 'std',
+    trainedRecently: true
+  });
+  const adapted = JSON.parse(JSON.stringify(legacy.call('adaptGeneratedPlan', gen))) as Json;
+  (adapted as { [k: string]: Json })['ulaz'] = { raceDistM: 10000, weeklyKm: 35 };
+  base = {
+    v: 11,
+    log: {
+      g1d1: {
+        status: 'done',
+        km: 8,
+        sec: 2400,
+        hr: 150,
+        ts: '2026-01-05',
+        runDate: '2026-01-05',
+        src: 'strava'
+      },
+      g1d2: { status: 'skip' },
+      g2d1: { status: 'pending', note: 'x' },
+      n1d1: { status: 'done' }
+    },
+    knee: [
+      {
+        id: 'k1',
+        src: null,
+        date: '2026-01-05',
+        act: 'Trčanje',
+        pain: 3,
+        note: '',
+        part: 'kolenoL'
+      },
+      { id: 'kt-g1d1', src: 'g1d1', date: '2026-01-05', pain: 0 },
+      { id: 'kt-n1d1', src: 'n1d1', date: '2025-12-01', pain: 5 }
+    ],
+    kg: [
+      { date: '2026-01-05', kg: 75.5, src: 'g1d1' },
+      { date: '2026-01-12', kg: 75 },
+      { date: '2025-12-01', kg: 80, src: 'n1d1' }
+    ],
+    pred: { g1_0: 270, p1: 240 },
+    predLock: { g1_0: true, p1: true },
+    vdotLog: [
+      { id: 'g1_0', ts: '2026-01-06', measured: 48, vdot: 48.1, prev: 47, delta: 1.1, alpha: 0.12 },
+      { id: 'p1', ts: '2025-12-02', measured: 50, vdot: 49, prev: 48, delta: 1 },
+      { id: 'g2_1', ts: '2026-01-13', vdot: 49.2, vdotMigrated: true }
+    ],
+    t3k: [
+      { id: 't3k-1', date: '2026-01-10', sec: 700 },
+      { id: 't3k-2', date: '2026-01-17', sec: 690 }
+    ],
+    vreme: { at: 1, lat: 1, lon: 2, sati: { '2026-01-05T09': { t: 3 } } },
+    moves: { g2d1: '2026-01-13', n1d3: '2025-12-04' },
+    alts: {
+      g1d2: { tag: 'lako', km: 5, desc: '5 km lako', pace: null, rw: null, paceAuto: false },
+      g1d3: {
+        tag: 'int',
+        km: 7,
+        desc: 'x',
+        pace: 250,
+        rw: { runSec: 60, walkSec: 60 },
+        paceAuto: true,
+        snaga: true
+      },
+      n1d1: { tag: 'odmor', km: null, desc: 'Odmor' }
+    },
+    genPlan: adapted,
+    strava: { access: 'a', refresh: 'b', lastSync: 5 },
+    wellness: {
+      '2026-01-05': {
+        hrv: 60,
+        pulsUMiru: 48,
+        sanH: 7.5,
+        sanOcena: 80,
+        tezina: 75,
+        ctl: 40,
+        atl: 45,
+        svezina: 10
+      },
+      '2026-01-06': { hrv: '61', pulsUMiru: null }
+    },
+    icu: { athleteId: 'i1', token: 't' },
+    vanPlana: { '2025-12-30': 5, '2025-12-29': 7.123 },
+    zajed: { vidljiv: true, nadimak: 'Marko' },
+    ui: {
+      firstRun: '2026-01-05',
+      lastBackup: null,
+      snooze: null,
+      seenWeek: 1,
+      geo: null,
+      satTreninga: null,
+      novo: null
+    },
+    nepoznatoPolje: { x: 1 }
+  };
+});
+
+const GARBAGE: Json[] = [
+  null,
+  true,
+  false,
+  0,
+  -1,
+  1e9,
+  3.5,
+  '',
+  'abc',
+  '12',
+  '2026-01-05',
+  '2026-02-31',
+  [],
+  {},
+  [1, 2],
+  [null],
+  { a: 1 },
+  { date: '2026-01-05' },
+  { date: '2026-01-05', pain: 11 },
+  { date: '2026-01-05', pain: 10 },
+  { date: '2026-01-05', pain: 0 },
+  { date: '2026-01-05', pain: -1 },
+  { date: '2026-01-05', pain: '4' },
+  { date: '2026-01-05', pain: 4 },
+  { date: '2026-01-05', kg: 19 },
+  { date: '2026-01-05', kg: 20 },
+  { date: '2026-01-05', kg: 300 },
+  { date: '2026-01-05', kg: 301 },
+  { date: '2026-01-05', kg: 80 },
+  {
+    '2026-01-05': 0,
+    '2026-02-31': 5,
+    '2026-01-06': 300,
+    '2026-01-07': 301,
+    '2026-01-08': -2,
+    abc: 4,
+    '2026-01-09': '5'
+  },
+  { tag: 'lako', km: 500, desc: 'a', pace: 0 },
+  { tag: 'lako', km: 501, desc: 'a', pace: 1 },
+  { tag: 'tempo', km: '5.5', pace: -5, paceAuto: true },
+  { tag: 'lr', km: true, snaga: true },
+  { tag: 'rw', km: 5, snaga: true, rw: { runSec: 3600, walkSec: 3600 } },
+  { tag: 'rw', km: 5, rw: { runSec: 3601, walkSec: 60 } },
+  { tag: 'odmor', km: 5, rw: { runSec: 60, walkSec: 60 } },
+  { id: 't3k-9', date: '2026-01-05', sec: 439 },
+  { id: 't3k-9', date: '2026-01-05', sec: 440 },
+  { id: 't3k-9', date: '2026-01-05', sec: 5400 },
+  { id: 't3k-9', date: '2026-01-05', sec: 5401 },
+  { id: 'abc', date: '2026-01-05', sec: 750 },
+  { id: 'g9_9', ts: '2026-01-05', measured: 20 },
+  { id: 'g9_9', ts: '2026-01-05', measured: 19.9 },
+  { id: 'g9_9', ts: '2026-01-05', measured: 85 },
+  { id: 'g9_9', ts: '2026-01-05', measured: 85.1 },
+  { id: 'g9_9', ts: '2026-01-05', vdot: 90 },
+  { id: 'x"><img>', ts: '2026-01-05', vdot: 50 },
+  { id: 'g9_9', ts: '2026-01-05', measured: 89 },
+  { id: 'g9_9', ts: '2026-01-05', measured: '49' },
+  { id: 't3k-9', date: '2026-01-05', sec: 100 },
+  { id: 't3k-9', date: '2026-01-05', sec: 750 },
+  { tag: 'lako', km: -3, desc: 5 },
+  { tag: 'xyz', km: 5 },
+  { tag: 'int', km: '7', pace: '250', rw: { runSec: 9999, walkSec: 60 } },
+  { hrv: '"><img src=x>', ctl: 'abc' },
+  { vidljiv: 'yes', nadimak: 'x'.repeat(100) },
+  { sati: {} }
+];
+
+function paths(
+  x: Json,
+  prefix: Array<string | number> = [],
+  depth = 0,
+  out: Array<Array<string | number>> = []
+): Array<Array<string | number>> {
+  out.push(prefix);
+  if (depth >= 3 || x === null || typeof x !== 'object') return out;
+  const keys = Array.isArray(x) ? x.map((_, i) => i) : Object.keys(x);
+  for (const k of keys)
+    paths((x as Record<string | number, Json>)[k] as Json, [...prefix, k], depth + 1, out);
+  return out;
+}
+
+function mutate(state: Json, r: () => number): Json {
+  const s = JSON.parse(JSON.stringify(state)) as Json;
+  const all = paths(s).filter((p) => p.length > 0);
+  const n = 1 + Math.floor(r() * 4);
+  for (let i = 0; i < n; i++) {
+    const p = all[Math.floor(r() * all.length)];
+    if (!p) continue;
+    let parent: Json = s;
+    for (let j = 0; j < p.length - 1; j++) {
+      const next = (parent as Record<string | number, Json>)[p[j] as string];
+      if (next === null || typeof next !== 'object') {
+        parent = null;
+        break;
+      }
+      parent = next;
+    }
+    if (parent === null || typeof parent !== 'object') continue;
+    const key = p[p.length - 1] as string;
+    const op = r();
+    if (op < 0.2) {
+      if (Array.isArray(parent)) parent.splice(Number(key), 1);
+      else delete (parent as Record<string, Json>)[key];
+    } else if (op < 0.35 && Array.isArray(parent)) {
+      parent.push(GARBAGE[Math.floor(r() * GARBAGE.length)] as Json);
+    } else if (op < 0.45) {
+      (parent as Record<string, Json>)[`zz${Math.floor(r() * 5)}`] = GARBAGE[
+        Math.floor(r() * GARBAGE.length)
+      ] as Json;
+    } else {
+      (parent as Record<string, Json>)[key] = GARBAGE[Math.floor(r() * GARBAGE.length)] as Json;
+    }
+  }
+  /* verzija šeme: ponekad nečitljiva, stara ili novija */
+  const vr = r();
+  if (vr < 0.3) {
+    const variants: Json[] = [
+      undefined as unknown as Json,
+      null,
+      1,
+      2,
+      5,
+      7,
+      9,
+      10,
+      11,
+      12,
+      99,
+      '11',
+      '10',
+      'abc',
+      '',
+      true,
+      -1
+    ];
+    const v = variants[Math.floor(r() * variants.length)];
+    if (v === undefined) delete (s as Record<string, Json>)['v'];
+    else (s as Record<string, Json>)['v'] = v as Json;
+  }
+  return s;
+}
+
+/** Ono što stari kod radi „po nesreći" a novi namerno strože (v. migrate.ts, STROŽE): niz/niska umesto
+ *  objekta u `zajed`/`ui`, i `tag` koji je nasleđeno svojstvo objekta. Takvi ulazi se ne generišu. */
+function hasDocumentedDivergence(s: Json): boolean {
+  const o = s as Record<string, Json>;
+  const nonObj = (x: Json | undefined): boolean =>
+    x !== undefined && x !== null && (typeof x !== 'object' || Array.isArray(x)) && !!x;
+  return nonObj(o['ui']) || nonObj(o['zajed']);
+}
+
+describe('migrateState naspram starog migrate()', () => {
+  it('nepromenjeno bogato stanje: isti izlaz, ulaz se ne menja', () => {
+    const input = JSON.parse(JSON.stringify(base)) as Json;
+    const before = JSON.stringify(input);
+    const oldOut = legacy.call('migrate', JSON.parse(JSON.stringify(base)));
+    const newOut = migrateState(input);
+    expect(JSON.stringify(canonical(newOut))).toBe(
+      JSON.stringify(canonical(JSON.parse(JSON.stringify(oldOut))))
+    );
+    expect(JSON.stringify(input), 'ulaz mutiran').toBe(before);
+  });
+
+  it('4 000 slučajno pokvarenih stanja daje identičan ishod', () => {
+    const r = rng(20261001);
+    let nulls = 0;
+    let compared = 0;
+    const problems: string[] = [];
+    for (let i = 0; i < 4000; i++) {
+      const input = mutate(base, r);
+      if (hasDocumentedDivergence(input)) continue;
+      const oldRaw = legacy.call('migrate', JSON.parse(JSON.stringify(input)));
+      const oldOut = oldRaw === null ? null : (JSON.parse(JSON.stringify(oldRaw)) as Json);
+      const newOut = migrateState(input);
+      compared++;
+      if (oldOut === null) nulls++;
+      const a = JSON.stringify(canonical(oldOut));
+      const b = JSON.stringify(canonical(newOut));
+      if (a !== b)
+        problems.push(
+          `#${i}\n  ulaz: ${JSON.stringify(input).slice(0, 400)}\n  staro: ${a.slice(0, 300)}\n  novo:  ${b.slice(0, 300)}`
+        );
+      if (problems.length >= 3) break;
+    }
+    expect(problems, problems.join('\n')).toEqual([]);
+    expect(compared).toBeGreaterThan(3000);
+    expect(nulls).toBeGreaterThan(50); // test ne sme da bude prazan hod: ima i odbijenih stanja
+  });
+});

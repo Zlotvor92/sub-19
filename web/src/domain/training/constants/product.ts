@@ -51,3 +51,8 @@ export const MIN_START_WEEKLY_KM = 8;
  */
 export const MIN_PLAUSIBLE_PACE_SEC_PER_KM = 140;
 export const MAX_PLAUSIBLE_PACE_SEC_PER_KM = 1200;
+
+/** Test na 3 km (v. domain/training/t3k): distanca, prefiks ID-ja i najbrže verodostojno vreme. */
+export const T3K_DIST_M = 3000;
+export const T3K_ID_PREFIX = 't3k-';
+export const T3K_SEC_MIN = 440;
