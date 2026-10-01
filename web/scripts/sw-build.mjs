@@ -6,6 +6,7 @@ export const STATIC_ASSETS = [
   './',
   './index.html',
   './sw-reg.js',
+  './uvod.js',
   './manifest.json',
   './icon-32.png',
   './icon-192.png',

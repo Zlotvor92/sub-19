@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import { setApp } from './app/appContext';
 import { createApp } from './app/createApp';
-import { shouldShowSplash } from './app/splash';
 import { initialTab } from './app/tabs';
 import { localDate } from './lib/clock';
 import { browserGeo } from './lib/geo';
@@ -28,10 +27,6 @@ const app = createApp({
   pwa: browserPwa()
 });
 setApp(app);
-const intro = shouldShowSplash({
-  storage: window.sessionStorage,
-  reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-});
 useUIStore
   .getState()
   .setTab(initialTab(window.location.search, window.sessionStorage), { glided: true });
@@ -40,6 +35,6 @@ startServiceWorker({ onAiPush: () => void app.ai.collectAll() });
 
 createRoot(root).render(
   <StrictMode>
-    <App intro={intro} />
+    <App />
   </StrictMode>
 );

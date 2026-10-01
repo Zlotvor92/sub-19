@@ -151,7 +151,7 @@ describe('izgrađeni izlaz', () => {
       )
     );
     const needed = [
-      ...index.matchAll(/(?:src|href)="\/?(assets\/[^"]+|sw-reg\.js|manifest\.json)"/g)
+      ...index.matchAll(/(?:src|href)="\/?(assets\/[^"]+|sw-reg\.js|uvod\.js|manifest\.json)"/g)
     ].map((m) => m[1] ?? '');
     expect(needed.length).toBeGreaterThan(3);
     for (const n of needed) expect(listed.has(n), `${n} nije u kešu`).toBe(true);

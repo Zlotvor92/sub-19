@@ -66,3 +66,30 @@ redove; `planVdotNow` pokriva samo generisan plan (`meta`), jer lični plan nije
 
 Ostalo je bit-za-bit isto (oracle): `sbPayload` (200 stanja; nijedan token ni koordinata ne prelazi granicu),
 `sbDecide` (sve 3 750 kombinacija), `sbClaims`, `sbParseHash`, `sbIzKorisnika`.
+
+---
+
+## Korak B.4 — namerne razlike u ponašanju van generatora (frontend, servisi)
+
+Ovo nije generator, ali je isti ugovor: **svaka** razlika naspram starog `app.js` (APP_VERSION 282) koju sam svesno uveo stoji ovde, sa razlogom i testom. Sve ostalo iz
+bloka „Šta je dokazano" (v. `REWRITE_STATUS.md`) je poređeno sa starim kodom diferencijalnim testovima (`*.oracle.test.ts`) i identično je.
+
+| # | Staro ponašanje | Zašto je problem | Novo ponašanje | Test |
+|---|---|---|---|---|
+| F1 | Tekst „Pravila uvoza" (Strava): „Ako su dva trčanja istog dana, uzima se ono bliže planiranoj kilometraži." | Tekst NE opisuje kod: kod ih **sabira** (kilometraža i vreme su zbir; duplikat se ne sabira). Test `revizija3` („kilometraža i vreme su ZBIR, ne izbor") drži kod, tekst je zastareo. | Tekst kaže ono što kod radi. | `settings.test.tsx` („Pravila uvoza"), `activities.test.ts`, `activities.oracle.test.ts` |
+| F2 | `aiCount` koji nije broj (iz ručno izmenjenog backupa) → `NaN` → dugme „Analiziraj" nestaje bez objašnjenja | Pokvaren zapis tiho gasi funkciju | Ne-broj se računa kao 0 (dnevni limit se računa od nule) | `ai.oracle.test.ts` (brojač pokrivenosti slučajeva), `ai.test.tsx` |
+| F3 | Slanje obaveštenja svima (vlasnik) nastavlja po **poziciji** u listi (`sledeciOd`) | Lista se između krugova čita iznova; novi nalog koji pada ispred tekućeg mesta pomera sve indekse i **jedna osoba biva tiho preskočena** (server to sam opisuje u `api/broadcast.js`, v. „NASTAVAK IDE PO ADRESI") | Nastavak po **adresi** (`sledeciPosle`); pozicija ostaje samo kao rezerva ako server ne vrati adresu. Krug koji ne obradi nijednu adresu a traži isti nastavak je greška, ne 60 praznih krugova. | `adminApi.test.ts`, `settings.test.tsx` (Admin) |
+| F4 | Dugme „Pošalji na sat" posle neuspeha se vraća na natpis „📤 Pošalji **treninge** na sat (14 dana)", a pri otvaranju piše „📤 Pošalji na sat (14 dana)" | Dva različita natpisa za isto dugme | Uvek isti natpis (onaj iz prvog prikaza) | `settings.test.tsx` (sat) |
+| F5 | Odgovor greške čije telo nije JSON (stranica posrednika) → poruka zavisi od mesta poziva | Nekonzistentne poruke | Jedna funkcija `httpErrorText` (isti tekstovi kao `apiJson`: 401 / 404 / „Server je vratio grešku (N): …") | `http.oracle.test.ts` (54 kombinacije status × telo, poređeno sa starim `apiJson`) |
+| F6 | Pri pokretanju se prvo čeka provera naloga (`/auth/v1/user`, rok 12 s), a ekran se prikazuje tek posle | Mreža koja „visi" drži praznu stranicu do 12 s; aplikacija je „offline-first" | Ekran se prikazuje iz lokalnih podataka posle **1,5 s** ako provera još traje; ako je nalog mrtav, kapija stiže kad provera završi. Brza provera (uobičajen slučaj) i dalje ne „bljesne" ekran pre odluke. | `createApp.test.ts` (dva testa, lažni sat) |
+| F7 | `domain/weather` (privremeni modul sa engleskim ključevima `feel/humidity`) | Ključevi se ne poklapaju sa ugovorom stanja v11 (`osecaj`, `vlaga`…) | Modul prepisan na srpske ključeve iz ugovora; stari testovi preneti | `weather.oracle.test.ts`, `weather.test.ts` |
+| F8 | Kartica „ista sesija": `nap.join(' ')` ostavlja zalutale razmake u tekstu | Nevidljivo (HTML skuplja razmake) | Razmaci se normalizuju; poredi se tekst bez razlike u razmacima | `compare.oracle.test.ts` |
+| F9 | Uvodni ekran: odluka u `app.js` pri učitavanju | — | Ista odluka (`sessionStorage` + isključeno kretanje), ali se donosi jednom u `main.tsx` pre iscrtavanja (StrictMode bi je dvaput pozvao) | `splash.test.ts`, `ui.test.tsx` |
+
+**Nije preneto (namerno, čeka odluku vlasnika — v. `REWRITE_STATUS.md` „Otvorene odluke"):** ugrađeni LIČNI plan vlasnika (`LICNI`, `QS`, `PRED`, `jeVlasnik()`, traka „Ovo nije tvoj plan", „Vrati na moj plan").
+Novi frontend bez generisanog plana uvek otvara čarobnjaka. Stari frontend ostaje u repozitorijumu do Phase 12, pa vlasnik ne gubi ništa dok se ne odluči.
+
+### Poznati nedostatak STAROG klijenta (nije preuzet)
+
+Stari klijent u ~1 od 12 pokretanja prikaže traku „sukob" odmah posle prvog upisa: druga provera vidi red koji je upravo upisao, a `seenAt` još nije zabeležen
+(`sbDecide`: `!seenAt` → `'ask'`). Dokaz: `e2e/cutover.spec.ts` (stari frontend, 12 uzastopnih pokretanja). Novi klijent: 16/16 čistih pokretanja. Stari kod nije menjan.

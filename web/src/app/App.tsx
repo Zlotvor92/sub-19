@@ -1,12 +1,11 @@
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef } from 'react';
 import { headerSubtitle } from '../domain/plan';
 import { PAGES } from '../features/registry';
-import { Ambient, AuthGate, Header, Page, Splash, Tabbar } from '../components/ui/Shell';
+import { Ambient, AuthGate, Header, Page, Tabbar } from '../components/ui/Shell';
 import { BannerHost } from '../components/ui/BannerHost';
 import { ConfirmHost } from '../components/ui/ConfirmHost';
 import { Sheet } from '../components/ui/Sheet';
 import { downloadText } from '../lib/download';
-import { localDate, msUntilMidnight } from '../lib/clock';
 import { requestPersist, useResolvedPlan, useTrainingStore } from '../stores';
 import { useAuthStore } from '../stores/authStore';
 import { useUpdateStore } from '../pwa/updateStore';
@@ -17,43 +16,14 @@ import { getApp } from './appContext';
 import { confirmAction } from './confirm';
 import { dayFromSearch, rememberTab } from './tabs';
 import { useSwipeNav } from './useSwipeNav';
+import { useToday } from './useToday';
 import { BANNER, useSystemBanners } from './useSystemBanners';
 import { SheetHost } from '../features/sheets';
 import { Wizard } from '../features/onboarding';
 
 /* LJUSKA APLIKACIJE: zaglavlje, ekrani po tabovima, traka tabova, list, dijalog potvrde, trake i kapija za prijavu. */
 
-function useToday(): string {
-  const today = useUIStore((s) => s.today);
-  const setToday = useUIStore((s) => s.setToday);
-  useEffect(() => {
-    const refresh = (): void => setToday(localDate());
-    refresh();
-    /* PONOĆ DOK APLIKACIJA STOJI OTVORENA: tajmer cilja prvu sekundu posle ponoći i prezakazuje se sam; povratak u aplikaciju
-       (`visibilitychange`) je drugi okidač — tajmer ne preživljava zamrznutu pozadinu, a `visibilitychange` ume. Bez ovoga
-       „Završi trening" posle ponoći upiše JUČERAŠNJI datum. */
-    let t: ReturnType<typeof setTimeout>;
-    const arm = (): void => {
-      t = setTimeout(() => {
-        refresh();
-        arm();
-      }, msUntilMidnight());
-    };
-    arm();
-    const onVis = (): void => {
-      if (document.visibilityState === 'visible') refresh();
-    };
-    document.addEventListener('visibilitychange', onVis);
-    return () => {
-      clearTimeout(t);
-      document.removeEventListener('visibilitychange', onVis);
-    };
-  }, [setToday]);
-  return today;
-}
-
-/** `intro`: uvodni ekran se prikazuje (hladan start); odluku donosi `main` (`shouldShowSplash`) jednom, pre iscrtavanja. */
-export function App({ intro = false }: { intro?: boolean }) {
+export function App() {
   const ready = useAuthStore((s) => s.ready);
   const gate = useAuthStore((s) => s.gate);
   const tab = useUIStore((s) => s.tab);
@@ -69,8 +39,6 @@ export function App({ intro = false }: { intro?: boolean }) {
   );
   const wizard = useUIStore((s) => s.wizard);
   const hasPlan = useTrainingStore((s) => !!s.genPlan);
-  const [splash, setSplash] = useState(intro);
-  const doneSplash = useCallback(() => setSplash(false), []);
   /* List nosi polja u koja se kuca (beleška); zatvaranje ih uklanja pre `blur`-a, pa se zakazan upis završava ovde. */
   const onSheetClose = useCallback(() => {
     requestPersist('now');
@@ -160,9 +128,9 @@ export function App({ intro = false }: { intro?: boolean }) {
     [today]
   );
 
-  useSwipeNav(ready && !splash && gate === null && !wizard && hasPlan && !sheet);
+  useSwipeNav(ready && gate === null && !wizard && hasPlan && !sheet);
 
-  if (!ready) return splash ? <Splash onDone={doneSplash} /> : null;
+  if (!ready) return null;
 
   /* Bez plana čarobnjak je jedini ekran (nema iza čega da se zatvori); sa planom se otvara iz Podešavanja. */
   const showWizard = gate === null && (wizard || !hasPlan);
@@ -171,7 +139,6 @@ export function App({ intro = false }: { intro?: boolean }) {
 
   return (
     <>
-      {splash ? <Splash onDone={doneSplash} /> : null}
       <Ambient tab={tab} settingsOpen={settingsOpen} />
       {showWizard ? <Wizard today={today} /> : null}
       <div style={showWizard ? { display: 'none' } : undefined}>

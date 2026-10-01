@@ -292,6 +292,18 @@ describe('Strava u podešavanjima', () => {
     );
   });
 
+  it('„Pravila uvoza" kažu ono što kod radi: dva trčanja istog dana se SABIRAJU (stari tekst je tvrdio da se bira bliže planu)', async () => {
+    const user = userEvent.setup();
+    boot(false, { ...stateWithPlan(), strava: { access: 'A', refresh: 'R', expiresAt: 4e9 } });
+    useAuthStore.setState({ configured: false });
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    await user.click(screen.getByText('Pravila uvoza'));
+    expect(screen.getByText(/oba se broje u kilometražu/)).toBeInTheDocument();
+    expect(screen.queryByText(/uzima se ono bliže planiranoj/)).toBeNull();
+  });
+
   it('povezana: uvoz traži/šalje i prikazuje sažetak; otkačivanje traži potvrdu i čuva podatke', async () => {
     const user = userEvent.setup();
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);

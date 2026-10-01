@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { TABS, type Tab, useUIStore } from '../../stores/uiStore';
 import { BrandMark, GearIcon, TabIcon, TAB_LABELS } from './icons';
 
@@ -68,69 +68,6 @@ export function Ambient({ tab, settingsOpen }: { tab: Tab; settingsOpen: boolean
       {['danas', 'plan', 'opor', 'pred', 'zaj', 'set'].map((t) => (
         <i key={t} data-t={t} className={t === key ? 'on' : ''} />
       ))}
-    </div>
-  );
-}
-
-/** Uvodni ekran: ako se ne ukloni, sam se gasi CSS animacijom posle 1,55 s (1,15 s odlaganje + 0,3 s gašenje, ne pre — inače bi se isekao usred prelaza).
-    Dodir ga preskače (`gasi`, 0,24 s). Dok traje, `body.uvod-radi` zaključava skrol. */
-export function Splash({ onDone }: { onDone: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const skipped = useRef(false);
-  const timers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
-  useEffect(() => {
-    document.body.classList.add('uvod-radi');
-    timers.current.push(setTimeout(onDone, 1550));
-    const pending = timers.current;
-    return () => {
-      document.body.classList.remove('uvod-radi');
-      for (const t of pending) clearTimeout(t);
-    };
-  }, [onDone]);
-  const skip = (): void => {
-    if (skipped.current) return;
-    skipped.current = true;
-    for (const t of timers.current) clearTimeout(t);
-    ref.current?.classList.add('gasi');
-    timers.current = [setTimeout(onDone, 240)];
-  };
-  return (
-    <div id="uvod" ref={ref} aria-hidden="true" onPointerDown={skip}>
-      <div className="zn">
-        <svg viewBox="0 0 120 120" width="100%" height="100%">
-          <defs>
-            <linearGradient id="uvodG" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#5AFFBE" />
-              <stop offset="55%" stopColor="#00BEDC" />
-              <stop offset="100%" stopColor="#785AFF" />
-            </linearGradient>
-          </defs>
-          <circle
-            className="traka"
-            cx="60"
-            cy="60"
-            r="44"
-            fill="none"
-            stroke="rgba(238,240,255,.14)"
-            strokeWidth="11"
-          />
-          <circle
-            className="luk"
-            cx="60"
-            cy="60"
-            r="44"
-            fill="none"
-            stroke="url(#uvodG)"
-            strokeWidth="11"
-            strokeLinecap="round"
-            strokeDashoffset="47.63"
-            transform="rotate(-59 60 60)"
-          />
-        </svg>
-      </div>
-      <div className="ime">
-        SUB<span>·</span>20
-      </div>
     </div>
   );
 }

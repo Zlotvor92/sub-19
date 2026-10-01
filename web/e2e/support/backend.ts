@@ -157,6 +157,7 @@ export async function seedSession(
     try {
       if (sessionStorage.getItem('__e2e_seeded')) return;
       sessionStorage.setItem('__e2e_seeded', '1');
+      sessionStorage.setItem('sub20-uvod', '1'); // toplo pokretanje: uvodni ekran se preskače (njegov tok ima svoj test)
       localStorage.setItem('sub19_sb', JSON.stringify(s));
     } catch {
       /* bez skladišta nema ni testa */

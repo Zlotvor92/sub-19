@@ -197,7 +197,9 @@ export function useSwipeNav(enabled: boolean): void {
       flushPending();
       abort();
       if (e.touches.length !== 1) return; // dva prsta su zumiranje
-      if (!allowed.current || touchBusy(e.target)) return;
+      /* Uvodni ekran se prepoznaje po klasi na `body` (skida je `uvod.js`), ne po postojanju elementa: klasa stoji tačno dok uvod TRAJE. */
+      if (!allowed.current || document.body.classList.contains('uvod-radi')) return;
+      if (touchBusy(e.target)) return;
       const t = e.touches[0];
       if (!t) return;
       g = {
