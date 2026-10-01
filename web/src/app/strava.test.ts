@@ -241,12 +241,16 @@ describe('Strava u aplikaciji', () => {
     c.routes.set('https://www.strava.com/api/v3/athlete/activities', () =>
       json(500, { message: 'Strava je pala' })
     );
-    const first = c.app.strava.sync();
-    const second = await c.app.strava.sync();
+    const first = c.app.activities.sync(false);
+    const second = await c.app.activities.sync(false);
     expect(second).toMatchObject({ ok: false, busy: true });
     release();
     await gate;
-    expect(await first).toEqual({ ok: false, error: 'Strava 500 — Strava je pala' });
+    expect(await first).toEqual({
+      ok: false,
+      source: 'strava',
+      error: 'Strava 500 — Strava je pala'
+    });
     expect(useTrainingStore.getState().log).toEqual({});
   });
 });

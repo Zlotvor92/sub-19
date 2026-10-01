@@ -89,7 +89,11 @@ export function errorMessage(body: unknown, fallback: string): string {
     const o = body as Record<string, unknown>;
     for (const k of ['error', 'message', 'msg', 'error_description']) {
       const v = o[k];
-      if (typeof v === 'string' && v) return v;
+      /* `detail` je dijagnostika servera uz grešku (npr. telo odgovora intervals.icu pri 502). */
+      if (typeof v === 'string' && v)
+        return k === 'error' && typeof o['detail'] === 'string' && o['detail']
+          ? `${v} — ${o['detail']}`
+          : v;
     }
   }
   return fallback;

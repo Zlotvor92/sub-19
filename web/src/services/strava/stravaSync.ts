@@ -22,7 +22,6 @@ import {
   runsByDate,
   workLapsPace,
   type ActivityStreams,
-  type Lap,
   type StravaActivity
 } from '../../domain/activities';
 import { recordAutoPace, syncSideRecords, type WorkPaceContext } from '../../domain/day';
@@ -41,7 +40,10 @@ import {
   matchWeekRows,
   type StoredPredRow
 } from '../../domain/training/adaptation';
+import { parseLaps, parseStreams } from '../streams';
 import type { StravaApi, StravaLinkStore } from './stravaApi';
+
+export { parseLaps, parseStreams };
 
 export interface ImportState {
   genPlan: GenPlanState | null;
@@ -101,47 +103,6 @@ export function parseActivities(raw: unknown): StravaActivity[] | null {
   const out: StravaActivity[] = [];
   for (const item of raw as unknown[]) {
     const p = Activity.safeParse(item);
-    if (p.success) out.push(p.data);
-  }
-  return out;
-}
-
-const SERIES = [
-  'distance',
-  'time',
-  'heartrate',
-  'cadence',
-  'watts',
-  'altitude',
-  'temp',
-  'moving'
-] as const;
-const Series = z.object({ data: z.array(z.unknown()) }).passthrough();
-
-/** Streamovi u obliku `{ ključ: { data: [...] } }`; ključ sa neispravnim telom se preskače. `null` kad nije objekat. */
-export function parseStreams(raw: unknown): ActivityStreams | null {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-  const out: Record<string, { data: unknown[] }> = {};
-  for (const k of SERIES) {
-    const p = Series.safeParse((raw as Record<string, unknown>)[k]);
-    if (p.success) out[k] = { data: p.data.data };
-  }
-  return out;
-}
-
-const LapShape = z
-  .object({
-    distance: z.number(),
-    moving_time: z.number().nullish(),
-    elapsed_time: z.number().nullish()
-  })
-  .passthrough();
-
-export function parseLaps(raw: unknown): Lap[] {
-  if (!Array.isArray(raw)) return [];
-  const out: Lap[] = [];
-  for (const item of raw as unknown[]) {
-    const p = LapShape.safeParse(item);
     if (p.success) out.push(p.data);
   }
   return out;

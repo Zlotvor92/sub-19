@@ -19,7 +19,6 @@ import { useAuthStore } from '../../stores/authStore';
 import { useSyncStore } from '../../stores/syncStore';
 import { useUIStore } from '../../stores/uiStore';
 import { zoneSource } from '../../domain/zones';
-import { syncMessage } from '../../services/strava/messages';
 import { Help, type DotState } from './SettingCard';
 
 export interface SectionInfo {
@@ -515,9 +514,9 @@ export function StravaBody() {
           onClick={() => {
             setBusy(true);
             void getApp()
-              .strava.sync()
+              .activities.sync(true)
               .then((r) => {
-                if (!('busy' in r)) window.alert(syncMessage(r));
+                if (!('busy' in r)) window.alert(getApp().activities.message(r));
               })
               .finally(() => {
                 setBusy(false);

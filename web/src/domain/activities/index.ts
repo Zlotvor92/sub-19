@@ -45,3 +45,13 @@ export {
   type ImportedRun,
   type StravaActivity
 } from './stravaImport';
+export {
+  icuImportedEntry,
+  icuKmByDate,
+  icuRunsByDate,
+  needsIcuDetails,
+  needsIcuStreams,
+  type IcuActivity,
+  type IcuRun,
+  type ImportedIcuRun
+} from './icuImport';

@@ -7,22 +7,7 @@ import { collectPersisted, hydratePersisted, onPersistRequest, type PersistMode 
 import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useSettingsStore } from '../stores/settingsStore';
-import { useTrainingStore } from '../stores/trainingStore';
-import { useRecoveryStore } from '../stores/recoveryStore';
-import {
-  ICU_REJECTED_MESSAGE,
-  STRAVA_REJECTED_MESSAGE,
-  classifyOAuthReturn,
-  makeOAuthState,
-  stravaAuthorizeUrl
-} from '../services/oauth';
-import { syncMessage } from '../services/strava/messages';
-import { createStravaApi, type StravaApi, type StravaLink } from '../services/strava/stravaApi';
-import {
-  createStravaSync,
-  type ImportState,
-  type StravaSyncResult
-} from '../services/strava/stravaSync';
+import { createIntegrations, type Integrations } from './integrations';
 import { checkLoginReturn, parseAuthHash, jwtClaims } from '../lib/auth';
 import { createUserStateApi, type UserStateApi } from '../services/api/userStateApi';
 import { createAppApi, type AppApi } from '../services/api/appApi';
@@ -49,7 +34,7 @@ import {
   type SessionState
 } from '../services/supabase/session';
 import { createSyncEngine, type SyncEngine } from '../services/sync/engine';
-import { APP_VERSION, STRAVA_CLIENT_ID, SUPABASE_ANON_KEY, SUPABASE_URL } from '../services/config';
+import { APP_VERSION, SUPABASE_ANON_KEY, SUPABASE_URL } from '../services/config';
 import type { Fetcher } from '../services/http';
 
 export interface AppDeps {
@@ -107,14 +92,11 @@ export interface App {
   restoreVersion(id: string | number): Promise<{ ok: true } | { ok: false; error: string }>;
   /** Uklanja SVE tragove naloga sa ovog uređaja (tek posle potvrđenog brisanja na serveru). */
   forgetEverything(): void;
-  /** Strava: povezivanje, otkačivanje, uvoz trčanja. */
-  strava: {
-    api: StravaApi;
-    connect(): void;
-    disconnect(): void;
-    /** Uvoz trčanja; ne baca. Dva uvoza se ne preklapaju (drugi vraća `busy`). */
-    sync(): Promise<StravaSyncResult | { ok: false; error: string; busy: true }>;
-  };
+  /** Strava i intervals.icu: povezivanje, otkačivanje. */
+  strava: Integrations['strava'];
+  icu: Integrations['icu'];
+  /** Uvoz treninga iz primarnog izvora (intervals.icu, inače Strava). */
+  activities: Integrations['activities'];
 }
 
 const randomHex = (): string => {
@@ -249,100 +231,20 @@ export function createApp(deps: AppDeps): App {
     return { adopted: false, error };
   }
 
-  /* Strava */
-  const stravaLink = {
-    get: (): StravaLink | null => useSettingsStore.getState().strava,
-    set: (v: StravaLink | null): void => useSettingsStore.getState().setStrava(v)
-  };
-  const stravaApi = createStravaApi({ fetcher, appApi, link: stravaLink, now });
-  let stravaBusy = false;
-  const stravaSync = createStravaSync({
-    api: stravaApi,
-    link: stravaLink,
+  const notify = deps.notify ?? ((): void => undefined);
+  const integrations = createIntegrations({
+    kv,
+    fetcher,
+    appApi,
+    session,
     now,
     today: deps.today,
-    ports: {
-      read: (): ImportState => {
-        const t = useTrainingStore.getState();
-        const r = useRecoveryStore.getState();
-        return {
-          genPlan: t.genPlan,
-          log: t.log,
-          pred: t.pred,
-          predLock: t.predLock,
-          vdotLog: t.vdotLog,
-          alts: t.alts,
-          moves: t.moves,
-          vanPlana: r.vanPlana,
-          knee: r.knee,
-          kg: r.kg
-        };
-      },
-      commit: (n: ImportState): void => {
-        const t = useTrainingStore.getState();
-        const r = useRecoveryStore.getState();
-        r.setPain(n.knee, 'soon');
-        r.setWeight(n.kg, 'soon');
-        r.setOutOfPlan(n.vanPlana);
-        t.patch({
-          log: n.log,
-          pred: n.pred,
-          predLock: n.predLock,
-          vdotLog: n.vdotLog,
-          moves: n.moves
-        });
-      }
-    }
+    origin: loc.origin,
+    randomToken: deps.randomToken ?? randomHex,
+    ...(deps.navigate ? { navigate: deps.navigate } : {}),
+    online: () => (deps.online ? deps.online() : true),
+    notify
   });
-  const notify = deps.notify ?? ((): void => undefined);
-
-  /* Povratak sa Strave / intervals.icu (`?code=`): proverava se `state`, razmenjuje kod, odmah se povlače trčanja. */
-  async function consumeOAuthReturn(): Promise<void> {
-    const ret = classifyOAuthReturn(loc.search, kv, now());
-    if (ret.kind === 'none') return;
-    deps.replaceUrl?.(loc.pathname);
-    if (ret.kind === 'rejected') {
-      notify(ret.service === 'icu' ? ICU_REJECTED_MESSAGE : STRAVA_REJECTED_MESSAGE);
-      return;
-    }
-    if (ret.service === 'strava') {
-      if (!session.isAuthed()) {
-        notify('Moraš biti prijavljen da bi povezao Stravu.');
-        return;
-      }
-      const r = await stravaApi.exchange(ret.code, ret.scope);
-      if (!r.ok) {
-        notify(`Povezivanje nije uspelo: ${r.error}`);
-        return;
-      }
-      notify(`Strava povezana${r.athlete ? ` — ${r.athlete}` : ''}.`);
-      const s = await runStravaSync();
-      notify(syncMessage(s));
-    }
-  }
-
-  async function runStravaSync(): Promise<
-    StravaSyncResult | { ok: false; error: string; busy: true }
-  > {
-    if (stravaBusy) return { ok: false, error: 'Uvoz je već u toku.', busy: true };
-    stravaBusy = true;
-    try {
-      return await stravaSync.run();
-    } finally {
-      stravaBusy = false;
-    }
-  }
-
-  /* Tihi uvoz pri otvaranju i povratku u aplikaciju: instalirana PWA se ne učitava iznova nego se budi iz pozadine, pa bi bez ovoga
-     završeno trčanje stajalo kao „Predstoji" dok se ručno ne pritisne dugme. Prag je kraći pri povratku (15 min) nego pri učitavanju (60). */
-  function pullActivitiesIfDue(thresholdMs: number): void {
-    if (stravaBusy || !(deps.online ? deps.online() : true)) return;
-    const link = useSettingsStore.getState().strava;
-    if (!link) return;
-    const last = typeof link['lastSync'] === 'number' ? link['lastSync'] : 0;
-    if (now() - last < thresholdMs) return;
-    void runStravaSync();
-  }
 
   return {
     kv,
@@ -375,8 +277,8 @@ export function createApp(deps: AppDeps): App {
       }
       auth.set({ gate: null, ready: true });
       await engine.start().catch(() => 'offline');
-      await consumeOAuthReturn();
-      pullActivitiesIfDue(60 * 60000);
+      await integrations.consumeOAuthReturn(loc.search, deps.replaceUrl, loc.pathname);
+      integrations.pullIfDue(60 * 60000);
     },
     login() {
       if (!session.isConfigured()) return;
@@ -399,7 +301,7 @@ export function createApp(deps: AppDeps): App {
     async onVisible() {
       if (!session.isAuthed()) return;
       await session.verify(deps.online ? deps.online() : true);
-      pullActivitiesIfDue(15 * 60000);
+      integrations.pullIfDue(15 * 60000);
     },
     adopt() {
       saver.save(collectPersisted());
@@ -457,17 +359,9 @@ export function createApp(deps: AppDeps): App {
       void engine.pushNow();
       return { ok: true };
     },
-    strava: {
-      api: stravaApi,
-      connect() {
-        const st = makeOAuthState(kv, 'strava', deps.randomToken ?? randomHex, now());
-        deps.navigate?.(stravaAuthorizeUrl(STRAVA_CLIENT_ID, loc.origin, st));
-      },
-      disconnect() {
-        useSettingsStore.getState().setStrava(null);
-      },
-      sync: runStravaSync
-    },
+    strava: integrations.strava,
+    icu: integrations.icu,
+    activities: integrations.activities,
     forgetEverything() {
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
       for (const k of ALL_LOCAL_KEYS) kv.remove(k);
