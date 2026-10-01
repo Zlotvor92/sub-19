@@ -4,6 +4,7 @@ export {
   canPush,
   decideStartup,
   isForeignNewer,
+  isLocalEmpty,
   type PushGuards,
   type PushVerdict,
   type ServerRow,

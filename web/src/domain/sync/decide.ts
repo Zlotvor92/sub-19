@@ -79,3 +79,34 @@ export function canPush(g: PushGuards): PushVerdict {
 
 /** Rok odloženog upisa posle izmene: `save()` se zove i na svaki pritisak tastera. */
 export const PUSH_DEBOUNCE_MS = 4000;
+
+/**
+ * Ima li na ovom uređaju IŠTA što bi vredelo poslati. Gleda samo ono što se unosi rukom ili povlači — ne i
+ * podešavanja, koja postoje i u praznom seedu. Služi da „Zadrži sa telefona" na svežem uređaju traži još jednu
+ * potvrdu: prazno preko punog je najskuplja greška ovog ekrana (treninzi se vrate sa Strave, kilaža i povrede ne).
+ */
+export function isLocalEmpty(
+  s:
+    | {
+        log?: object | null;
+        knee?: readonly unknown[] | null;
+        kg?: readonly unknown[] | null;
+        t3k?: readonly unknown[] | null;
+        wellness?: object | null;
+        pred?: object | null;
+      }
+    | null
+    | undefined
+): boolean {
+  if (!s) return true;
+  const n = (x: readonly unknown[] | null | undefined): number => (Array.isArray(x) ? x.length : 0);
+  const k = (o: object | null | undefined): number => Object.keys(o ?? {}).length;
+  return (
+    k(s.log) === 0 &&
+    n(s.knee) === 0 &&
+    n(s.kg) === 0 &&
+    n(s.t3k) === 0 &&
+    k(s.wellness) === 0 &&
+    k(s.pred) === 0
+  );
+}
