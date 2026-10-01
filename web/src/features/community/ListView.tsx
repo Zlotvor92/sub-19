@@ -24,7 +24,9 @@ export function ListView({
   userId: string | null;
   hasMe: boolean;
 }) {
-  const { filter, measure, challenge } = useCommunityStore();
+  const filter = useCommunityStore((s) => s.filter);
+  const measure = useCommunityStore((s) => s.measure);
+  const challenge = useCommunityStore((s) => s.challenge);
   const setRemote = useCommunityStore((s) => s.setRemote);
   const M = measureFor(measure);
   const shown = filterProfiles(all, filter);

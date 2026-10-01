@@ -15,7 +15,10 @@ export default function Page() {
   const authed = useAuthStore((s) => s.hasSession);
   const userId = useAuthStore((s) => s.userId);
   const visible = useCommunityStore((s) => s.zajed.vidljiv);
-  const { profiles, loading, error, opened } = useCommunityStore();
+  const profiles = useCommunityStore((s) => s.profiles);
+  const loading = useCommunityStore((s) => s.loading);
+  const error = useCommunityStore((s) => s.error);
+  const opened = useCommunityStore((s) => s.opened);
   const openSheet = useUIStore((s) => s.openSheet);
 
   useEffect(() => {

@@ -56,6 +56,9 @@ import { createSyncEngine, type SyncEngine } from '../services/sync/engine';
 import { APP_VERSION, SUPABASE_ANON_KEY, SUPABASE_URL } from '../services/config';
 import type { Fetcher } from '../services/http';
 
+/** Koliko se čeka provera naloga pre nego što se ekran prikaže iz lokalnih podataka. */
+export const VERIFY_PATIENCE_MS = 1500;
+
 export interface AppDeps {
   kv?: KeyValueStore;
   fetcher?: Fetcher;
@@ -391,8 +394,18 @@ export function createApp(deps: AppDeps): App {
         auth.set({ gate: r.error, ready: true });
         return;
       }
-      /* Nalog je možda obrisan ili zabranjen dok je aplikacija bila zatvorena: pita se PRE nego što se kapija skloni. */
-      const alive = await session.verify(deps.online ? deps.online() : true);
+      /* Nalog je možda obrisan ili zabranjen dok je aplikacija bila zatvorena: pita se PRE nego što se ekran prikaže. Ali ne zauvek — veza koja
+         „visi" (mreža jeste tu, odgovora nema) ne sme da drži praznu stranicu do isteka roka od 12 s, a aplikacija radi i bez servera. Posle
+         `VERIFY_PATIENCE_MS` ekran se prikazuje iz lokalnih podataka, a provera se završava u pozadini (kapija se spušta ako nalog ne važi). */
+      const verifying = session.verify(deps.online ? deps.online() : true);
+      let alive: boolean | null = await Promise.race([
+        verifying,
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), VERIFY_PATIENCE_MS))
+      ]);
+      if (alive === null) {
+        auth.set({ gate: null, ready: true });
+        alive = await verifying;
+      }
       if (!alive) {
         auth.set({ ready: true });
         return;

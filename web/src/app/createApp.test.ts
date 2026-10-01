@@ -176,6 +176,51 @@ describe('pokretanje', () => {
     expect(useAuthStore.getState()).toMatchObject({ gate: null, ready: true });
   });
 
+  it('veza visi (mreža jeste tu, odgovora nema): ekran se prikazuje iz lokalnih podataka posle 1,5 s, ne posle roka od 12 s', async () => {
+    vi.useFakeTimers();
+    const fake = createFakeSupabase();
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const hang = (input: string, init?: RequestInit) =>
+      input.includes('/auth/v1/user')
+        ? gate.then(() => fake.fetcher(input, init))
+        : fake.fetcher(input, init);
+    const s = setup({ localState: filled(), fake, extra: { fetcher: hang } });
+    const started = s.app.start();
+    await vi.advanceTimersByTimeAsync(1400);
+    expect(useAuthStore.getState().ready).toBe(false); // još se čeka (brza provera ne sme da bljesne ekran)
+    await vi.advanceTimersByTimeAsync(200);
+    expect(useAuthStore.getState()).toMatchObject({ ready: true, gate: null });
+    expect(useTrainingStore.getState().log['g1d1']).toBeDefined();
+    release();
+    await started;
+    expect(useAuthStore.getState()).toMatchObject({ ready: true, gate: null });
+  });
+
+  it('veza visi, a nalog ne važi: ekran se prikaže, pa kapija stiže sa porukom i ništa se ne šalje', async () => {
+    vi.useFakeTimers();
+    const fake = createFakeSupabase();
+    fake.userStatuses = [{ status: 401 }];
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const hang = (input: string, init?: RequestInit) =>
+      input.includes('/auth/v1/user')
+        ? gate.then(() => fake.fetcher(input, init))
+        : fake.fetcher(input, init);
+    const s = setup({ localState: filled(), fake, extra: { fetcher: hang } });
+    const started = s.app.start();
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(useAuthStore.getState()).toMatchObject({ ready: true, gate: null });
+    release();
+    await started;
+    expect(useAuthStore.getState().gate).toContain('Nalog više ne postoji');
+    expect(posts(fake)).toHaveLength(0);
+  });
+
   it('supabase nije podešen: radi bez naloga', async () => {
     const s = setup({ session: null, extra: { supabaseUrl: '', anonKey: '' } });
     await s.app.start();
