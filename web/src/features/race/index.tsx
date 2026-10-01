@@ -27,6 +27,7 @@ import { confirmAction } from '../../app/confirm';
 import { useResolvedPlan, useTrainingStore } from '../../stores';
 import { applyProposal, currentVdotProposal, undoAdjustments } from '../../stores/raceActions';
 import { useUIStore } from '../../stores/uiStore';
+import { TrendAi } from './TrendAi';
 import { PaceChart, PredictionChart, VdotTrendChart } from './charts';
 
 const Head = ({ title, extra }: { title: string; extra?: string }) => (
@@ -283,6 +284,7 @@ export default function RacePage() {
           Početni VDOT: {fmtNum(bv, 1)} · cilj {goalText} ≈ VDOT {fmtNum(refs.goalVdot, 1)}. Forma
           se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).
         </div>
+        <TrendAi />
       </div>
 
       {m.proposal ? (

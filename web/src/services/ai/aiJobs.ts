@@ -205,4 +205,32 @@ export function createAiJobs(deps: AiJobsDeps) {
   return { check, wait, run, retry, collectAll };
 }
 
+export type TrendResult = { ok: true; text: string } | { ok: false; error: string };
+
+export const TREND_MIN_WORKOUTS = 3;
+const Trend = z.object({ text: z.unknown().optional() }).passthrough();
+
+/** Trend analiza: jedan zahtev, jedan odgovor (nema reda u bazi). Ne baca. */
+export function createTrendAi(api: AppApi) {
+  return async function trend(
+    summary: { treninzi: readonly unknown[] },
+    goalCtx: string | null
+  ): Promise<TrendResult> {
+    if (summary.treninzi.length < TREND_MIN_WORKOUTS)
+      return {
+        ok: false,
+        error: `Za trend analizu treba bar ${TREND_MIN_WORKOUTS} odrađena treninga. Trenutno: ${summary.treninzi.length}. Nakupljaj kroz nedelje.`
+      };
+    const r = await api.post('/api/analyze', { trend: summary, goalCtx }, Trend);
+    if (r.ok) return { ok: true, text: text(r.data.text) };
+    if (r.kind === 'network') return { ok: false, error: 'Nema veze sa serverom.' };
+    if (r.kind === 'http')
+      return {
+        ok: false,
+        error: `Greška (${r.status ?? 0}): ${r.error === `Greška ${r.status}` ? 'nepoznata' : r.error}`
+      };
+    return { ok: false, error: `Server nije vratio ispravan odgovor (HTTP ${r.status ?? 0}).` };
+  };
+}
+
 export type AiJobs = ReturnType<typeof createAiJobs>;

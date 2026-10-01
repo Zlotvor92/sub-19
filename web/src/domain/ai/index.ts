@@ -254,3 +254,5 @@ export function buildAiPayload(i: AiPayloadInput): Record<string, unknown> {
     }
   };
 }
+
+export * from './trend';

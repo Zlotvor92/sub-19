@@ -163,3 +163,27 @@ describe('Trka', () => {
     alert.mockRestore();
   });
 });
+
+describe('Trka · AI trend', () => {
+  it('manje od 3 odrađena treninga: poruka sa brojem, bez poziva ka serveru; sa dovoljno: tekst iz odgovora', async () => {
+    const trend = vi.fn();
+    const { setApp } = await import('../../app/appContext');
+    setApp({ ai: { trend } } as never);
+    trend.mockResolvedValueOnce({
+      ok: false,
+      error: 'Za trend analizu treba bar 3 odrađena treninga. Trenutno: 0. Nakupljaj kroz nedelje.'
+    });
+    render(<Screen />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /Objasni trend/ }));
+    expect(await screen.findByText(/Trenutno: 0/)).toHaveClass('err');
+    const req = trend.mock.calls[0] as [{ treninzi: unknown[] }, string];
+    expect(req[0].treninzi).toEqual([]);
+    expect(req[1]).toMatch(/ciljno vreme 42:00/);
+
+    trend.mockResolvedValueOnce({ ok: true, text: '**Forma** raste.' });
+    await user.click(screen.getByRole('button', { name: /Objasni trend/ }));
+    expect(await screen.findByText('Forma')).toBeInTheDocument();
+    setApp(null);
+  });
+});

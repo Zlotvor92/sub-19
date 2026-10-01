@@ -6,6 +6,8 @@ import { confirmAction } from '../../app/confirm';
 import { useResolvedPlan, useTrainingStore } from '../../stores';
 import { deleteEntry, setStatus } from '../../stores/dayActions';
 import { useUIStore } from '../../stores/uiStore';
+import { AiCard } from '../today/AiCard';
+import { CompareCard, MorningCard, WatchCard, ZonesCard, dataDate } from '../today/Cards';
 import { Description } from '../today/DayCard';
 import { DayEntry } from '../today/DayEntry';
 
@@ -22,6 +24,7 @@ export function DaySheet({ id }: { id: string }) {
   const day = plan?.byId.get(id);
   const status = useTrainingStore((s) => s.log[id]?.status || 'pending');
   const hasEntry = useTrainingStore((s) => !!s.log[id]);
+  const entry = useTrainingStore((s) => s.log[id]);
   const edited = useTrainingStore((s) => !!s.alts[id]);
   const today = useUIStore((s) => s.today);
   const openSheet = useUIStore((s) => s.openSheet);
@@ -70,6 +73,15 @@ export function DaySheet({ id }: { id: string }) {
         </div>
       )}
       {rest ? null : <DayEntry day={day} plan={plan} today={today} />}
+      {rest ? null : (
+        <>
+          <WatchCard log={entry} date={dataDate(entry, day.date)} />
+          <ZonesCard log={entry} />
+          <MorningCard date={dataDate(entry, day.date)} />
+          <CompareCard day={day} plan={plan} />
+          <AiCard day={day} />
+        </>
+      )}
       {day.test ? (
         <div className="note-src">
           Rezultat unesi u tabu <b>Trka → Test 3 km</b>. Test se ne mora istrčati baš na ovaj dan —

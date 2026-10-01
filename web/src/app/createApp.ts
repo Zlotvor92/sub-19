@@ -8,7 +8,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { createIntegrations, type Integrations } from './integrations';
-import { createAiJobs, type AiJobs } from '../services/ai/aiJobs';
+import { createAiJobs, createTrendAi, type AiJobs } from '../services/ai/aiJobs';
 import { aiLogPort } from '../stores/aiActions';
 import { ADMIN_UID } from '../services/config';
 import type { GeoPort } from '../services/weather/weatherSync';
@@ -106,7 +106,7 @@ export interface App {
   /** Prognoza i lokacija (Open-Meteo, direktno). */
   weather: Integrations['weather'];
   /** AI analiza treninga: pokretanje, čekanje, pokupljanje rezultata. */
-  ai: AiJobs;
+  ai: AiJobs & { trend: ReturnType<typeof createTrendAi> };
   /** Prijavljen je vlasnik (bez limita analiza; server proverava isto). */
   isOwner(): boolean;
 }
@@ -390,7 +390,7 @@ export function createApp(deps: AppDeps): App {
     icu: integrations.icu,
     activities: integrations.activities,
     weather: integrations.weather,
-    ai,
+    ai: { ...ai, trend: createTrendAi(appApi) },
     isOwner,
     forgetEverything() {
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
