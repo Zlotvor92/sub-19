@@ -8,6 +8,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { createIntegrations, type Integrations } from './integrations';
+import type { GeoPort } from '../services/weather/weatherSync';
 import { checkLoginReturn, parseAuthHash, jwtClaims } from '../lib/auth';
 import { createUserStateApi, type UserStateApi } from '../services/api/userStateApi';
 import { createAppApi, type AppApi } from '../services/api/appApi';
@@ -61,6 +62,8 @@ export interface AppDeps {
   online?: () => boolean;
   /** Poruka korisniku (u pregledaču `alert`) — posle povratka sa povezivanja, uvoza… */
   notify?: (message: string) => void;
+  /** Lokacija uređaja (u pregledaču `navigator.geolocation`). */
+  geo?: GeoPort;
 }
 
 export interface App {
@@ -97,6 +100,8 @@ export interface App {
   icu: Integrations['icu'];
   /** Uvoz treninga iz primarnog izvora (intervals.icu, inače Strava). */
   activities: Integrations['activities'];
+  /** Prognoza i lokacija (Open-Meteo, direktno). */
+  weather: Integrations['weather'];
 }
 
 const randomHex = (): string => {
@@ -243,7 +248,8 @@ export function createApp(deps: AppDeps): App {
     randomToken: deps.randomToken ?? randomHex,
     ...(deps.navigate ? { navigate: deps.navigate } : {}),
     online: () => (deps.online ? deps.online() : true),
-    notify
+    notify,
+    ...(deps.geo ? { geo: deps.geo } : {})
   });
 
   return {
@@ -255,6 +261,7 @@ export function createApp(deps: AppDeps): App {
     sync: engine,
     saver,
     async start() {
+      void integrations.weather.refresh();
       if (!session.isConfigured()) {
         auth.set({ gate: null, ready: true }); // nije podešeno — radi bez naloga
         return;
@@ -299,6 +306,7 @@ export function createApp(deps: AppDeps): App {
       if (session.isAuthed()) void engine.pushNow();
     },
     async onVisible() {
+      void integrations.weather.refresh();
       if (!session.isAuthed()) return;
       await session.verify(deps.online ? deps.online() : true);
       integrations.pullIfDue(15 * 60000);
@@ -362,6 +370,7 @@ export function createApp(deps: AppDeps): App {
     strava: integrations.strava,
     icu: integrations.icu,
     activities: integrations.activities,
+    weather: integrations.weather,
     forgetEverything() {
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
       for (const k of ALL_LOCAL_KEYS) kv.remove(k);

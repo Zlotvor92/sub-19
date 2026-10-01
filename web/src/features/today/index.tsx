@@ -7,6 +7,7 @@ import { setStatus } from '../../stores/dayActions';
 import { DayHeader, NextLine, PlanCard, Description, type DayStatus } from './DayCard';
 import { DayEntry } from './DayEntry';
 import { Hero } from './Hero';
+import { WeatherCard } from './WeatherCard';
 import { useTodayModel } from './useTodayModel';
 
 /* Potvrda završetka: kratka animacija kvačice (CSS `.done-pop`), ukloni se sama. */
@@ -76,6 +77,7 @@ export default function TodayPage() {
             hasAlt={hasAlt(day.id)}
             onStatus={(s) => void onStatus(day, s)}
           />
+          <WeatherCard day={day} today={today} />
           {log[day.id]?.status === 'done' ? (
             <div className="card">
               <DayHeader

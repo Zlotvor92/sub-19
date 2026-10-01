@@ -10,6 +10,8 @@ import { createIcuApi, type IcuApi } from '../services/api/icuApi';
 import type { AppApi } from '../services/api/appApi';
 import type { Fetcher } from '../services/http';
 import { createIcuSync } from '../services/icu/icuSync';
+import { createWeather, type GeoPort } from '../services/weather/weatherSync';
+import type { ForecastCache } from '../domain/weather';
 import { createWatchPush } from '../services/icu/icuPush';
 import { resolvePlan, type ResolvedPlan } from '../domain/plan';
 import { currentVdot } from '../domain/training/adaptation';
@@ -55,6 +57,8 @@ export interface IntegrationDeps {
   navigate?: (url: string) => void;
   online: () => boolean;
   notify: (message: string) => void;
+  /** Lokacija uređaja; bez nje se vreme ne može uključiti. */
+  geo?: GeoPort;
 }
 
 export interface Integrations {
@@ -83,6 +87,10 @@ export interface Integrations {
     /** Uvoz treninga iz primarnog izvora; ne baca. Dva uvoza se ne preklapaju. */
     sync(manual: boolean): Promise<ActivitySyncResult>;
     message(r: ActivitySyncResult): string;
+  };
+  weather: ReturnType<typeof createWeather> & {
+    /** Tihi osvežen na startu i povratku: samo online, samo uz uključenu lokaciju. */
+    refresh(): Promise<void>;
   };
   /** Povratak sa povezivanja (`?code=`). */
   consumeOAuthReturn(
@@ -288,7 +296,47 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     );
   }
 
+  const noGeo: GeoPort = {
+    available: () => false,
+    denied: () => Promise.resolve(false),
+    position: () => Promise.reject(new Error('geo')),
+    inApp: () => false
+  };
+  const weatherCore = createWeather({
+    fetcher: deps.fetcher,
+    geo: deps.geo ?? noGeo,
+    cache: {
+      get: () => {
+        const v = useSettingsStore.getState().vreme;
+        return v && typeof v['at'] === 'number' && v['sati'] && typeof v['sati'] === 'object'
+          ? (v as unknown as ForecastCache)
+          : null;
+      },
+      set: (v) => useSettingsStore.getState().setForecastCache(v as never)
+    },
+    location: {
+      get: () => {
+        const g = useSettingsStore.getState().ui.geo as { lat?: unknown; lon?: unknown } | null;
+        return g && typeof g.lat === 'number' && typeof g.lon === 'number'
+          ? { lat: g.lat, lon: g.lon }
+          : null;
+      },
+      set: (v) => useSettingsStore.getState().patchUi({ geo: v })
+    },
+    now,
+    today: deps.today,
+    hour: () => new Date(now()).getHours()
+  });
+  const weather = {
+    ...weatherCore,
+    async refresh(): Promise<void> {
+      if (!deps.online() || !useSettingsStore.getState().ui.geo) return;
+      await weatherCore.pull(false);
+    }
+  };
+
   return {
+    weather,
     strava: {
       api: stravaApi,
       connect() {

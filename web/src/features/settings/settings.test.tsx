@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeSupabase, type FakeSupabase } from '@/test/fakeSupabase';
 import { adaptGeneratedPlan } from '../../domain/plan/adapt';
+import type { GeoPort } from '../../services/weather/weatherSync';
 import { seedState, type PersistedState } from '../../domain/state';
 import { generatePlan } from '../../domain/training/generator/generatePlan';
 import type { PlanGenerationInput } from '../../domain/training/types';
@@ -68,7 +69,7 @@ interface Ctx {
   navigate: ReturnType<typeof vi.fn>;
   app: ReturnType<typeof createApp>;
 }
-function boot(signedIn: boolean, state: PersistedState = stateWithPlan()): Ctx {
+function boot(signedIn: boolean, state: PersistedState = stateWithPlan(), geo?: GeoPort): Ctx {
   const fake = createFakeSupabase();
   const store = new Mem();
   store.setItem(LS_KEY, JSON.stringify(state));
@@ -90,7 +91,11 @@ function boot(signedIn: boolean, state: PersistedState = stateWithPlan()): Ctx {
   const app = createApp({
     kv: createKeyValueStore(store),
     fetcher: (url, init) => {
-      if (url.startsWith('/api/') || url.startsWith('https://www.strava.com')) {
+      if (
+        url.startsWith('/api/') ||
+        url.startsWith('https://www.strava.com') ||
+        url.startsWith('https://api.open-meteo.com')
+      ) {
         extra.push({ url, init: init ?? {} });
         const h = [...api].find(([prefix]) => url.startsWith(prefix))?.[1];
         return Promise.resolve(h ? h(init ?? {}) : new Response('{}', { status: 404 }));
@@ -104,7 +109,8 @@ function boot(signedIn: boolean, state: PersistedState = stateWithPlan()): Ctx {
     appVersion: '283',
     location: { hash: '', search: '', origin: 'https://sub-19.vercel.app', pathname: '/' },
     navigate,
-    online: () => true
+    online: () => true,
+    ...(geo ? { geo } : {})
   });
   setApp(app);
   return { fake, store, extra, api, navigate, app };
@@ -440,6 +446,82 @@ describe('intervals.icu i slanje na sat', () => {
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(alert).toHaveBeenCalledWith('Odbijeno — No Target'));
     expect(collectPersisted().icu).not.toHaveProperty('lastPush');
+    alert.mockRestore();
+  });
+});
+
+describe('Vreme', () => {
+  const okGeo: GeoPort = {
+    available: () => true,
+    denied: () => Promise.resolve(false),
+    position: () => Promise.resolve({ lat: 44.80412, lon: 20.4649 }),
+    inApp: () => false
+  };
+  const forecast = {
+    hourly: {
+      time: ['2026-01-14T18:00'],
+      temperature_2m: [31],
+      apparent_temperature: [34],
+      relative_humidity_2m: [40],
+      wind_speed_10m: [5],
+      precipitation_probability: [0]
+    }
+  };
+
+  it('uključivanje: koordinate se zaokružuju i čuvaju, prognoza stiže direktno sa Open-Meteo', async () => {
+    const user = userEvent.setup();
+    const c = boot(false, stateWithPlan(), okGeo);
+    useAuthStore.setState({ configured: false });
+    c.api.set('https://api.open-meteo.com/', () => json(200, forecast));
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Trening', { selector: 'button' }));
+    await user.click(screen.getByText('Vreme', { selector: 'b' }));
+    expect(screen.getByText('lokacija nije uključena')).toBeInTheDocument();
+    await user.click(document.querySelector('#vr-on') as HTMLElement);
+    await waitFor(() => expect(collectPersisted().ui.geo).toEqual({ lat: 44.8, lon: 20.46 }));
+    await waitFor(() => expect(collectPersisted().vreme).not.toBeNull());
+    const call = c.extra.find((e) => e.url.startsWith('https://api.open-meteo.com/'));
+    expect(call?.url).toContain('latitude=44.8&longitude=20.46');
+    expect(c.extra.some((e) => e.url.startsWith('/api/'))).toBe(false); // koordinate NIKAD ne idu na naš server
+    expect(await screen.findByLabelText('U koliko sati obično trčiš')).toHaveValue('18');
+  });
+
+  it('sat treninga se pamti; isključivanje briše koordinate i prognozu', async () => {
+    const user = userEvent.setup();
+    boot(false, {
+      ...stateWithPlan(),
+      vreme: { at: 1, lat: 1, lon: 2, sati: {} },
+      ui: { ...stateWithPlan().ui, geo: { lat: 1, lon: 2 } }
+    });
+    useAuthStore.setState({ configured: false });
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Trening', { selector: 'button' }));
+    await user.selectOptions(screen.getByLabelText('U koliko sati obično trčiš'), '7');
+    expect(collectPersisted().ui.satTreninga).toBe(7);
+    await user.click(document.querySelector('#vr-off') as HTMLElement);
+    expect(collectPersisted().ui.geo).toBeNull();
+    expect(collectPersisted().vreme).toBeNull();
+  });
+
+  it('odbijena lokacija: poruka, ništa se ne čuva', async () => {
+    const user = userEvent.setup();
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    boot(false, stateWithPlan(), {
+      ...okGeo,
+      position: () => Promise.reject(Object.assign(new Error('x'), { code: 1 }))
+    });
+    useAuthStore.setState({ configured: false });
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Trening', { selector: 'button' }));
+    await user.click(screen.getByText('Vreme', { selector: 'b' }));
+    await user.click(document.querySelector('#vr-on') as HTMLElement);
+    await waitFor(() =>
+      expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Pristup lokaciji je odbijen\./))
+    );
+    expect(collectPersisted().ui.geo).toBeNull();
     alert.mockRestore();
   });
 });

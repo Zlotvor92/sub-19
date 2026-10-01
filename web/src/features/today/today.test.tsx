@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan, type ResolvedDay } from '../../domain/plan';
 import { seedState, type PersistedState } from '../../domain/state';
@@ -206,3 +206,67 @@ describe('Danas', () => {
     vi.useRealTimers();
   });
 });
+
+describe('Vreme na kartici dana', () => {
+  /* Sat „sada" se čita iz sata uređaja: zamrznut na 06:00 da ishod ne zavisi od toga kad se test pokrene. */
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2026, 0, 1, 6, 0, 0));
+  });
+  afterEach(() => vi.useRealTimers());
+  const hourly = (date: string, feel: number) => {
+    const sati: Record<string, unknown> = {};
+    for (let h = 0; h < 24; h++)
+      sati[`${date}T${String(h).padStart(2, '0')}`] = {
+        temp: feel - 2,
+        osecaj: feel,
+        vlaga: 40,
+        vetar: 6,
+        kisa: 10
+      };
+    return sati;
+  };
+  const withWeather = (date: string, feel: number): void => {
+    const st = freshState();
+    st.ui = { ...st.ui, geo: { lat: 1, lon: 2 }, satTreninga: 18 };
+    st.vreme = { at: 1, lat: 1, lon: 2, sati: hourly(date, feel) };
+    hydratePersisted(st);
+  };
+
+  it('stoji odmah ispod plana dok trening predstoji: temperatura, vlažnost, vetar, padavine i tempo uz vrućinu', () => {
+    const q = firstOf((d) => d.tag === 'int' && !!d.date);
+    withWeather(q.date, 31);
+    goTo(q.date);
+    render(<TodayPage />);
+    const card = screen.getByText('Vreme', { selector: '.card-t' }).closest('.card') as HTMLElement;
+    // današnji dan: red „sada" (6:00 po satu uređaja) i red za sat treninga
+    expect(within(card).getByText('sada · 6:00')).toBeInTheDocument();
+    expect(within(card).getByText('u 18:00')).toBeInTheDocument();
+    expect(within(card).getAllByText('29 °C')).toHaveLength(2);
+    expect(within(card).getAllByText('oseća se 31 °C')).toHaveLength(2);
+    expect(within(card).getByText('40 %')).toBeInTheDocument();
+    expect(within(card).getByText('6 km/h')).toBeInTheDocument();
+    expect(within(card).getByText('tempo uz vrućinu')).toBeInTheDocument();
+    expect(within(card).getByText(/Na ovoj vrućini radni deo drži po osećaju/)).toBeInTheDocument();
+    expect(within(card).getByText(/Procena usporavanja je približna/)).toBeInTheDocument();
+  });
+
+  it('bez lokacije, za prošli dan i za odmor kartice nema', () => {
+    const q = firstOf((d) => d.tag === 'int' && !!d.date);
+    goTo(q.date);
+    const { unmount } = render(<TodayPage />);
+    expect(screen.queryByText('Vreme', { selector: '.card-t' })).toBeNull(); // lokacija nije uključena
+    unmount();
+    withWeather(q.date, 31);
+    goTo(addDaysIso(q.date, 1));
+    const rest = render(<TodayPage />);
+    expect(screen.queryByText('Vreme', { selector: '.card-t' })).toBeNull(); // nema prognoze za taj datum
+    rest.unmount();
+  });
+});
+
+const addDaysIso = (iso: string, n: number): string => {
+  const d = new Date(`${iso}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+};

@@ -20,6 +20,7 @@ import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { SettingCard } from './SettingCard';
+import { WeatherBody, useWeatherInfo } from './weatherSection';
 import { IcuBody, WatchBody, pushToWatch, useIcuInfo, useWatchInfo } from './icuSections';
 import {
   AccountBody,
@@ -69,6 +70,7 @@ export function SettingsSheet() {
     Nalog: useAccountInfo(),
     Plan: usePlanInfo(),
     Strava: useStravaInfo(),
+    Vreme: useWeatherInfo(),
     'intervals.icu': useIcuInfo(),
     'Slanje na sat': useWatchInfo(),
     Podaci: useDataInfo()
@@ -214,6 +216,7 @@ export function SettingsSheet() {
       {section('Nalog', <AccountBody />)}
       {section('Podaci', <DataBody />)}
       {section('Plan', <PlanBody />)}
+      {section('Vreme', <WeatherBody />)}
       {section('Strava', <StravaBody />)}
       {section('intervals.icu', <IcuBody />)}
       {section('Slanje na sat', <WatchBody />)}

@@ -12,3 +12,6 @@ export function msUntilMidnight(now: Date = new Date()): number {
   const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
   return Math.max(1000, next.getTime() - now.getTime());
 }
+
+/** Lokalni sat u danu (0–23). */
+export const localHour = (d: Date = new Date()): number => d.getHours();
