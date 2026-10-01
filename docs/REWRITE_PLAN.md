@@ -123,7 +123,7 @@ Svaka kapija je izvršiva komanda sa zelenim izlazom. „Gate" = uslov za počet
 
 | # | Faza | Isporuka | **Gate** |
 |---|---|---|---|
-| 1 | Audit | 5 dokumenata + probe (**ovaj commit**) | pregled vlasnika; odluke D1–D5 (AUDIT §12) i O1–O5 (§9) |
+| 1 | Audit | 5 dokumenata + probe (**gotovo**) | Odluke D1–D5 (AUDIT §12) i O1–O5 (§9) blokiraju **samo** Korak B (Phase 4) i deploy (Phase 11). Phase 2–3 (Korak A) ne zavise od njih |
 | 2 | Scaffold | `web/`: Vite+React+TS strict, ESLint (domen-izolacija), Prettier, Vitest (node+jsdom), RTL, Playwright config, CI job | `npm run typecheck && lint && test` zeleno u `web/` na praznom projektu; **legacy `node --test` i dalje 1 553/1 553** |
 | 3 | Domain | `domain/date`, `vdot/*`, `constants/*`, `sessions/*`, `distances/*`, `generator/*`, `validateInput`, `validatePlan`, `adaptation/*`, `recovery/*` | **Korak A:** otisak 2 304/2 304 identičan; svi ekvivalenti iz AUDIT §9 zeleni |
 | 4 | Parity | diferencijalni testovi protiv starog generatora (seeded slučajni ulazi), `check-test-parity` | 0 neobjašnjenih razlika; **tek tada** Korak B (izmene G1–G9, svaka sa commit-om i diff-om otiska) |

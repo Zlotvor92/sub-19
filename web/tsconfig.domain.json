@@ -1,0 +1,29 @@
+{
+  "//": "DOMEN SE PREVODI BEZ DOM-a I BEZ NODE-a: lib je samo ES, types je prazan. Zato `window`, `document`, `localStorage`, `fetch`, `setTimeout`, `console` NE POSTOJE kao imena i svaki pokušaj korišćenja je TS greška, ne samo ESLint upozorenje. Testovi (*.test.ts) se proveravaju u tsconfig.app.json.",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.domain.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": [],
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src/domain"],
+  "exclude": ["src/domain/**/*.test.ts", "src/domain/**/*.test.tsx", "src/domain/**/__tests__/**"]
+}
