@@ -5,6 +5,7 @@ import { confirmAction } from '../../app/confirm';
 import { useTrainingStore } from '../../stores';
 import { setStatus } from '../../stores/dayActions';
 import { DayHeader, NextLine, PlanCard, Description, type DayStatus } from './DayCard';
+import { AiCard } from './AiCard';
 import { CompareCard, MorningCard, WatchCard, ZonesCard, dataDate } from './Cards';
 import { DayEntry } from './DayEntry';
 import { Hero } from './Hero';
@@ -98,6 +99,7 @@ export default function TodayPage() {
               <ZonesCard log={log[day.id]} />
               <MorningCard date={dataDate(log[day.id], day.date)} />
               <CompareCard day={day} plan={plan} />
+              <AiCard day={day} />
             </>
           ) : null}
         </>

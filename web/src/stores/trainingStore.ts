@@ -160,5 +160,11 @@ export function useResolvedPlan(): ResolvedPlan | null {
   );
 }
 
+/** Izvedeni plan iz TRENUTNOG stanja (izvan komponenti). `null` kad nema plana ili je neispravan. */
+export function currentPlan(): ResolvedPlan | null {
+  const s = useTrainingStore.getState();
+  return s.genPlan ? safeResolve(s.genPlan, s.alts, s.moves) : null;
+}
+
 export const trainingSlice = (): TrainingSlice =>
   pickKnown(useTrainingStore.getState() as unknown as PersistedState, TRAINING_KEYS);

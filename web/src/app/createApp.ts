@@ -8,6 +8,9 @@ import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { createIntegrations, type Integrations } from './integrations';
+import { createAiJobs, type AiJobs } from '../services/ai/aiJobs';
+import { aiLogPort } from '../stores/aiActions';
+import { ADMIN_UID } from '../services/config';
 import type { GeoPort } from '../services/weather/weatherSync';
 import { checkLoginReturn, parseAuthHash, jwtClaims } from '../lib/auth';
 import { createUserStateApi, type UserStateApi } from '../services/api/userStateApi';
@@ -102,6 +105,10 @@ export interface App {
   activities: Integrations['activities'];
   /** Prognoza i lokacija (Open-Meteo, direktno). */
   weather: Integrations['weather'];
+  /** AI analiza treninga: pokretanje, čekanje, pokupljanje rezultata. */
+  ai: AiJobs;
+  /** Prijavljen je vlasnik (bez limita analiza; server proverava isto). */
+  isOwner(): boolean;
 }
 
 const randomHex = (): string => {
@@ -236,6 +243,16 @@ export function createApp(deps: AppDeps): App {
     return { adopted: false, error };
   }
 
+  const isOwner = (): boolean => session.isAuthed() && session.state.userId === ADMIN_UID;
+  const ai = createAiJobs({
+    api: appApi,
+    log: aiLogPort,
+    now,
+    online: () => (deps.online ? deps.online() : true),
+    isAuthed: () => session.isAuthed(),
+    isOwner,
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+  });
   const notify = deps.notify ?? ((): void => undefined);
   const integrations = createIntegrations({
     kv,
@@ -286,6 +303,7 @@ export function createApp(deps: AppDeps): App {
       await engine.start().catch(() => 'offline');
       await integrations.consumeOAuthReturn(loc.search, deps.replaceUrl, loc.pathname);
       integrations.pullIfDue(60 * 60000);
+      void ai.collectAll();
     },
     login() {
       if (!session.isConfigured()) return;
@@ -310,6 +328,7 @@ export function createApp(deps: AppDeps): App {
       if (!session.isAuthed()) return;
       await session.verify(deps.online ? deps.online() : true);
       integrations.pullIfDue(15 * 60000);
+      void ai.collectAll();
     },
     adopt() {
       saver.save(collectPersisted());
@@ -371,6 +390,8 @@ export function createApp(deps: AppDeps): App {
     icu: integrations.icu,
     activities: integrations.activities,
     weather: integrations.weather,
+    ai,
+    isOwner,
     forgetEverything() {
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
       for (const k of ALL_LOCAL_KEYS) kv.remove(k);
