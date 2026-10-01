@@ -8,6 +8,8 @@ import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { createIntegrations, type Integrations } from './integrations';
+import { createCommunity, type Community } from './community';
+import { createCommunityApi } from '../services/community/communityApi';
 import { createAiJobs, createTrendAi, type AiJobs } from '../services/ai/aiJobs';
 import { aiLogPort } from '../stores/aiActions';
 import { ADMIN_UID } from '../services/config';
@@ -107,6 +109,8 @@ export interface App {
   weather: Integrations['weather'];
   /** AI analiza treninga: pokretanje, čekanje, pokupljanje rezultata. */
   ai: AiJobs & { trend: ReturnType<typeof createTrendAi> };
+  /** Zajednica: javni profil i rang-liste. */
+  community: Community;
   /** Prijavljen je vlasnik (bez limita analiza; server proverava isto). */
   isOwner(): boolean;
 }
@@ -253,6 +257,13 @@ export function createApp(deps: AppDeps): App {
     isOwner,
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms))
   });
+  const community = createCommunity({
+    api: createCommunityApi({ fetcher, session, supabaseUrl, anonKey }),
+    session,
+    now,
+    today: deps.today,
+    online: () => (deps.online ? deps.online() : true)
+  });
   const notify = deps.notify ?? ((): void => undefined);
   const integrations = createIntegrations({
     kv,
@@ -304,6 +315,7 @@ export function createApp(deps: AppDeps): App {
       await integrations.consumeOAuthReturn(loc.search, deps.replaceUrl, loc.pathname);
       integrations.pullIfDue(60 * 60000);
       void ai.collectAll();
+      community.publishOnStart();
     },
     login() {
       if (!session.isConfigured()) return;
@@ -391,6 +403,7 @@ export function createApp(deps: AppDeps): App {
     activities: integrations.activities,
     weather: integrations.weather,
     ai: { ...ai, trend: createTrendAi(appApi) },
+    community,
     isOwner,
     forgetEverything() {
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju

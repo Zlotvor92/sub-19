@@ -20,6 +20,7 @@ import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { SettingCard } from './SettingCard';
+import { CommunityBody, useCommunityInfo } from './communitySection';
 import { WeatherBody, useWeatherInfo } from './weatherSection';
 import { IcuBody, WatchBody, pushToWatch, useIcuInfo, useWatchInfo } from './icuSections';
 import {
@@ -71,6 +72,7 @@ export function SettingsSheet() {
     Plan: usePlanInfo(),
     Strava: useStravaInfo(),
     Vreme: useWeatherInfo(),
+    Zajednica: useCommunityInfo(),
     'intervals.icu': useIcuInfo(),
     'Slanje na sat': useWatchInfo(),
     Podaci: useDataInfo()
@@ -217,6 +219,7 @@ export function SettingsSheet() {
       {section('Podaci', <DataBody />)}
       {section('Plan', <PlanBody />)}
       {section('Vreme', <WeatherBody />)}
+      {section('Zajednica', <CommunityBody />)}
       {section('Strava', <StravaBody />)}
       {section('intervals.icu', <IcuBody />)}
       {section('Slanje na sat', <WatchBody />)}

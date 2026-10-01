@@ -94,7 +94,8 @@ function boot(signedIn: boolean, state: PersistedState = stateWithPlan(), geo?: 
       if (
         url.startsWith('/api/') ||
         url.startsWith('https://www.strava.com') ||
-        url.startsWith('https://api.open-meteo.com')
+        url.startsWith('https://api.open-meteo.com') ||
+        url.includes('/rest/v1/zajednica')
       ) {
         extra.push({ url, init: init ?? {} });
         const h = [...api].find(([prefix]) => url.startsWith(prefix))?.[1];
@@ -523,6 +524,47 @@ describe('Vreme', () => {
     );
     expect(collectPersisted().ui.geo).toBeNull();
     alert.mockRestore();
+  });
+});
+
+describe('Zajednica u podešavanjima', () => {
+  it('uključivanje šalje profil i pamti stanje; neuspeh vraća prekidač i kaže šta da se uradi', async () => {
+    const user = userEvent.setup();
+    const c = boot(true, { ...stateWithPlan(), zajed: { vidljiv: false, nadimak: 'Marko' } });
+    useAuthStore.setState({
+      configured: true,
+      hasSession: true,
+      userId: 'u1',
+      name: 'Marko Marković',
+      picture: null
+    });
+    c.api.set(
+      'https://x.supabase.co/rest/v1/zajednica_profil',
+      () => new Response(null, { status: 404 })
+    );
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('App', { selector: 'button' }));
+    await user.click(screen.getByText('Zajednica', { selector: 'b' }));
+    expect(screen.getByText('isključena')).toBeInTheDocument();
+    await user.click(document.querySelector('#zaj-tgl') as HTMLElement);
+    expect(await screen.findByText(/Tabele Zajednice još nema u bazi/)).toBeInTheDocument();
+    expect(collectPersisted().zajed.vidljiv).toBe(false); // nije prošlo na serveru → ništa se ne pamti
+
+    c.api.set(
+      'https://x.supabase.co/rest/v1/zajednica_profil',
+      () => new Response(null, { status: 201 })
+    );
+    await user.click(document.querySelector('#zaj-tgl') as HTMLElement);
+    await waitFor(() => expect(collectPersisted().zajed.vidljiv).toBe(true));
+    const post = c.extra.filter((e) => e.url.includes('/rest/v1/zajednica_profil')).at(-1);
+    expect(post?.init.method).toBe('POST');
+    expect(JSON.parse(bodyText(post?.init))).toMatchObject({
+      user_id: 'u1',
+      vidljiv: true,
+      nadimak: 'Marko'
+    });
+    expect(await screen.findByRole('button', { name: 'Isključi Zajednicu' })).toBeInTheDocument();
   });
 });
 

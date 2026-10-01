@@ -2,10 +2,11 @@
   "//": "Oracle testovi uče iz STAROG generatora (../test/harness.mjs, node:vm). Zato im treba Node; ostatku koda NE.",
   "compilerOptions": {
     "target": "ES2023",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "types": ["node", "vitest/globals"],
+    "types": ["node", "vite/client", "vitest/globals"],
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
