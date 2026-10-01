@@ -25,3 +25,4 @@ export {
 } from './replan';
 export { hasGenPlanData, isGenId, purgeGenPlanData } from './purge';
 export { headerSubtitle } from './header';
+export * from './altEditor';

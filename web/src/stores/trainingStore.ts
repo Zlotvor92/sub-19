@@ -37,14 +37,14 @@ export interface TrainingActions {
   setGenPlan: (plan: GenPlanState | null) => void;
   patchLog: (id: string, patch: Partial<LogEntry>, mode?: PersistMode) => void;
   setLog: (log: Record<string, LogEntry>) => void;
-  setAlt(id: string, input: AltInput): { ok: true } | { ok: false; err: string };
+  setAlt: (id: string, input: AltInput) => { ok: true } | { ok: false; err: string };
   clearAlt: (id: string) => void;
-  swapDays(idA: string, idB: string): { ok: true } | { ok: false; err: string };
+  swapDays: (idA: string, idB: string) => { ok: true } | { ok: false; err: string };
   undoWeekMoves: (weekNumber: number) => boolean;
   setAlts: (alts: Record<string, AltRecord>) => void;
   setPlanAndAlts: (p: { genPlan: GenPlanState | null; alts: Record<string, AltRecord> }) => void;
   setVdotLog: (list: VdotRecord[]) => void;
-  setT3k(list: T3kRecord[]): void;
+  setT3k: (list: T3kRecord[]) => void;
   setPred: (pred: Record<string, unknown>) => void;
   /** Više polja odjednom, jedan upis (npr. unos tempa menja pred, zaključavanje, lanac i dnevnik). */
   patch: (p: Partial<TrainingSlice>, mode?: PersistMode) => void;

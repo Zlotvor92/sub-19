@@ -1,18 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fmtDayLong } from '../../domain/format';
-import type { LogField } from '../../domain/day';
 import type { ResolvedDay } from '../../domain/plan';
 import { confirmAction } from '../../app/confirm';
-import { requestPersist, useTrainingStore } from '../../stores';
-import {
-  editField,
-  enterPace,
-  predRowsForDay,
-  setStatus,
-  storedRows
-} from '../../stores/dayActions';
+import { useTrainingStore } from '../../stores';
+import { setStatus } from '../../stores/dayActions';
 import { DayHeader, NextLine, PlanCard, Description, type DayStatus } from './DayCard';
-import { EntryForm } from './EntryForm';
+import { DayEntry } from './DayEntry';
 import { Hero } from './Hero';
 import { useTodayModel } from './useTodayModel';
 
@@ -35,9 +28,7 @@ function DonePop({ onDone }: { onDone: () => void }) {
 export default function TodayPage() {
   const model = useTodayModel();
   const log = useTrainingStore((s) => s.log);
-  const pred = useTrainingStore((s) => s.pred);
   const alts = useTrainingStore((s) => s.alts);
-  const vdotLog = useTrainingStore((s) => s.vdotLog);
   const [pop, setPop] = useState(false);
   const donePop = useCallback(() => setPop(false), []);
 
@@ -95,19 +86,7 @@ export default function TodayPage() {
                     : ''
                 }
               />
-              <EntryForm
-                key={day.id}
-                day={day}
-                entry={log[day.id]}
-                today={today}
-                rows={predRowsForDay(plan, day, storedRows())}
-                pred={pred}
-                alts={alts}
-                vdotLog={vdotLog}
-                onField={(f: LogField, raw) => editField(day, f, raw, today)}
-                onPace={(id, raw) => void enterPace(day, id, raw)}
-                onBlur={() => requestPersist('now')}
-              />
+              <DayEntry day={day} plan={plan} today={today} />
             </div>
           ) : null}
         </>

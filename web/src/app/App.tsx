@@ -7,7 +7,7 @@ import { ConfirmHost } from '../components/ui/ConfirmHost';
 import { Sheet } from '../components/ui/Sheet';
 import { downloadText } from '../lib/download';
 import { localDate, msUntilMidnight } from '../lib/clock';
-import { useResolvedPlan, useTrainingStore } from '../stores';
+import { requestPersist, useResolvedPlan, useTrainingStore } from '../stores';
 import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useUIStore, type Banner } from '../stores/uiStore';
@@ -66,6 +66,11 @@ export function App() {
   const hasPlan = useTrainingStore((s) => !!s.genPlan);
   const [splash, setSplash] = useState(true);
   const doneSplash = useCallback(() => setSplash(false), []);
+  /* List nosi polja u koja se kuca (beleška); zatvaranje ih uklanja pre `blur`-a, pa se zakazan upis završava ovde. */
+  const onSheetClose = useCallback(() => {
+    requestPersist('now');
+    closeSheet();
+  }, [closeSheet]);
   useSystemBanners();
 
   useEffect(() => {
@@ -155,7 +160,7 @@ export function App() {
           })}
         </main>
         <Tabbar />
-        <Sheet open={!!sheet} onClose={closeSheet}>
+        <Sheet open={!!sheet} onClose={onSheetClose}>
           <SheetHost />
         </Sheet>
       </div>

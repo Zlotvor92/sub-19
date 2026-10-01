@@ -89,3 +89,20 @@ export function enterPace(
   t.patch({ pred: r.pred, predLock: r.predLock, vdotLog: [...r.vdotLog], log: r.log });
   return r;
 }
+
+/** „Obriši unos": dnevnik dana i zapisi o bolu/težini uneti uz njega. Tempo i lanac forme ostaju (kao u starom kodu). */
+export function deleteEntry(dayId: string): void {
+  const t = useTrainingStore.getState();
+  const rest = { ...t.log };
+  delete rest[dayId];
+  const r = useRecoveryStore.getState();
+  r.setPain(
+    r.knee.filter((k) => k.src !== dayId),
+    'soon'
+  );
+  r.setWeight(
+    r.kg.filter((k) => k.src !== dayId),
+    'soon'
+  );
+  t.patch({ log: rest });
+}
