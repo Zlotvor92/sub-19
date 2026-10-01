@@ -60,3 +60,16 @@ export function fmtNum(n: unknown, dec = 1): string {
 }
 
 export const fmtKm = (n: unknown): string => fmtNum(n, 1);
+
+/** „07.03.2026." — pun datum iz `YYYY-MM-DD`; nevažeći daje „—" (stari `fmtDY`). */
+export function fmtDayMonthYear(iso: string | null | undefined): string {
+  const dm = fmtDayMonth(iso);
+  return dm === '—' ? dm : `${dm}${String(iso).slice(0, 4)}.`;
+}
+
+/** „dan" / „dana" po poslednjoj cifri (stari `plDan`): 1 → dan, ostalo → dana (11–14 uvek dana). */
+export function plDan(n: number): string {
+  const m = n % 10;
+  const h = n % 100;
+  return m === 1 && h !== 11 ? 'dan' : 'dana';
+}

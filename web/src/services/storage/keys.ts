@@ -13,7 +13,7 @@ export const SB_STATE_KEY = 'sub19_sb_state';
 export const SB_NONCE_OK_KEY = 'sub19_sb_nonce_ok';
 export const STRAVA_STATE_KEY = 'sub19_st_state';
 export const ICU_STATE_KEY = 'sub19-icu-state';
-/** Poslednji tab. */
+/** Poslednji tab (sessionStorage: preživljava ponovno učitavanje posle ažuriranja, ne i zatvaranje). */
 export const TAB_KEY = 'sub19-tab';
 /** Uvodni ekran viđen u ovoj sesiji (sessionStorage). */
 export const INTRO_SEEN_KEY = 'sub20-uvod';

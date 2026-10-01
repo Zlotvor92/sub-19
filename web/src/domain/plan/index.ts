@@ -23,3 +23,5 @@ export {
   type ReentryResult,
   type ReplanError
 } from './replan';
+export { hasGenPlanData, isGenId, purgeGenPlanData } from './purge';
+export { headerSubtitle } from './header';
