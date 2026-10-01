@@ -109,6 +109,8 @@ function boot(signedIn: boolean, state: PersistedState = stateWithPlan()): Ctx {
   setApp(app);
   return { fake, store, extra, api, navigate, app };
 }
+const bodyText = (init: RequestInit | undefined): string =>
+  typeof init?.body === 'string' ? init.body : '{}';
 const c0 = (): number => Date.UTC(2026, 6, 12, 10, 0, 0); // sat lažnog servera
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -368,7 +370,7 @@ describe('intervals.icu i slanje na sat', () => {
     const c = boot(true, { ...stateWithPlan(), icu: linked });
     useAuthStore.setState({ configured: true, hasSession: true, email: 'tester@x.rs' });
     c.api.set('/api/icu', (init) => {
-      const sta = (JSON.parse(String(init.body)) as { sta: string }).sta;
+      const sta = (JSON.parse(bodyText(init)) as { sta: string }).sta;
       if (sta === 'wellness') return json(200, { dani: [] });
       if (sta === 'zone') return json(200, { zone: null, razlog: null });
       return json(200, { treninzi: [] });
@@ -412,7 +414,7 @@ describe('intervals.icu i slanje na sat', () => {
     act(() => useUIStore.getState().confirm?.resolve(true));
     expect(await screen.findByRole('button', { name: 'Poslato 7 ✓' })).toBeInTheDocument();
     const sent = c.extra.find((e) => e.url === '/api/icu');
-    expect(JSON.parse(String(sent?.init.body))).toMatchObject({
+    expect(JSON.parse(bodyText(sent?.init))).toMatchObject({
       sta: 'workouts',
       athleteId: 'i77',
       token: 'icu-tok',

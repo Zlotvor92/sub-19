@@ -100,9 +100,7 @@ export interface IcuZones {
   reason: string | null;
 }
 
-export interface IcuEvent {
-  [field: string]: unknown;
-}
+export type IcuEvent = object;
 
 export interface IcuApi {
   wellness(

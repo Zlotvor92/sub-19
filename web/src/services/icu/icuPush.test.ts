@@ -27,6 +27,7 @@ const plan = (): ResolvedPlan => {
       trainedRecently: true
     })
   );
+  if (!a) throw new Error('adapt');
   return resolvePlan(a.weeks, { alts: {}, moves: {} });
 };
 
