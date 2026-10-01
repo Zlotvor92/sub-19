@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useUpdateStore } from '../pwa/updateStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useUIStore } from '../stores/uiStore';
 
@@ -8,13 +9,17 @@ import { useUIStore } from '../stores/uiStore';
 export const BANNER = {
   conflict: 'sync-sukob',
   loadFailure: 'stanje-osteceno',
-  writeFailed: 'upis-pao'
+  writeFailed: 'upis-pao',
+  /* Isti id kao u starom kodu (`#update-banner`). */
+  update: 'update-banner'
 } as const;
 
 export function useSystemBanners(): void {
   const conflict = useSyncStore((s) => s.conflict);
   const loadFailure = useSyncStore((s) => s.loadFailure);
   const writeFailed = useSyncStore((s) => s.writeFailed);
+  const updateWorker = useUpdateStore((s) => s.worker);
+  const applying = useUpdateStore((s) => s.applying);
   const { pushBanner, removeBanner } = useUIStore.getState();
 
   useEffect(() => {
@@ -60,4 +65,16 @@ export function useSystemBanners(): void {
       });
     } else removeBanner(BANNER.writeFailed);
   }, [writeFailed, pushBanner, removeBanner]);
+
+  /* Nov service worker čeka: traka se nudi dok unos ne bude prekinut (SW ne preuzima kontrolu sam). */
+  useEffect(() => {
+    removeBanner(BANNER.update);
+    if (!updateWorker) return;
+    pushBanner({
+      id: BANNER.update,
+      kind: 'info',
+      title: applying ? 'Osvežavam…' : 'Dostupna je nova verzija',
+      ...(applying ? {} : { actions: [{ id: 'apply', label: 'Osveži' }] })
+    });
+  }, [updateWorker, applying, pushBanner, removeBanner]);
 }

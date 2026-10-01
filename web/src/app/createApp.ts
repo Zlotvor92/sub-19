@@ -10,6 +10,18 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { createIntegrations, type Integrations } from './integrations';
 import { createCommunity, type Community } from './community';
 import { createCommunityApi } from '../services/community/communityApi';
+import { createBackground, type Background, type SyncRegistration } from '../pwa/background';
+import type { Idb } from '../pwa/idb';
+import {
+  createPush,
+  type Push,
+  type PushBrowser,
+  type PushRegistration
+} from '../services/push/push';
+import { createPushApi } from '../services/push/pushApi';
+import { weekAnnouncements } from '../domain/push';
+import { toServerPayload } from '../domain/sync';
+import { currentPlan, useTrainingStore } from '../stores/trainingStore';
 import { createAiJobs, createTrendAi, type AiJobs } from '../services/ai/aiJobs';
 import { aiLogPort } from '../stores/aiActions';
 import { ADMIN_UID } from '../services/config';
@@ -65,6 +77,13 @@ export interface AppDeps {
   onSessionChanged?: (s: SessionState) => void;
   onPushed?: () => void;
   online?: () => boolean;
+  /** Pregledač iza priključaka (service worker, IndexedDB, obaveštenja); bez njega pozadina i obaveštenja nisu dostupni. */
+  pwa?: {
+    idb: Idb;
+    registration(timeoutMs: number): Promise<(PushRegistration & SyncRegistration) | null>;
+    periodicPermission(): Promise<string | null>;
+    push: PushBrowser;
+  };
   /** Poruka korisniku (u pregledaču `alert`) — posle povratka sa povezivanja, uvoza… */
   notify?: (message: string) => void;
   /** Lokacija uređaja (u pregledaču `navigator.geolocation`). */
@@ -109,6 +128,9 @@ export interface App {
   weather: Integrations['weather'];
   /** AI analiza treninga: pokretanje, čekanje, pokupljanje rezultata. */
   ai: AiJobs & { trend: ReturnType<typeof createTrendAi> };
+  /** Obaveštenja (Web Push) i pozadinski rad (Background/Periodic Sync). */
+  push: Push;
+  background: Background;
   /** Zajednica: javni profil i rang-liste. */
   community: Community;
   /** Prijavljen je vlasnik (bez limita analiza; server proverava isto). */
@@ -147,15 +169,22 @@ export function createApp(deps: AppDeps): App {
       picture: s.slika
     });
   };
+  const late: { background?: Background } = {};
   const session = createSessionManager({
     kv,
     fetcher,
     supabaseUrl,
     anonKey,
     now,
-    onDead: (message) => auth.set({ gate: message ?? '', hasSession: false, userId: null }),
+    onDead: (message) => {
+      auth.set({ gate: message ?? '', hasSession: false, userId: null });
+      /* Sesija ne važi: pozadina ne sme da gura u tuđe ime. */
+      void late.background?.forgetAll();
+    },
     onChanged: (s) => {
       mirror(s);
+      /* Kopija naloga za service worker se piše pri prijavi i pri svakom osvežavanju tokena — tačno kad se ono što pozadina zna promeni. */
+      void late.background?.writeAccount();
       deps.onSessionChanged?.(s);
     }
   });
@@ -164,6 +193,58 @@ export function createApp(deps: AppDeps): App {
 
   const api = createUserStateApi({ fetcher, session, supabaseUrl, anonKey });
   const appApi = createAppApi({ fetcher, session });
+  const pwa = deps.pwa;
+  const noIdb: Idb = {
+    read: () => Promise.resolve(null),
+    write: () => Promise.resolve(null),
+    remove: () => Promise.resolve(null)
+  };
+  const background = createBackground({
+    idb: pwa?.idb ?? noIdb,
+    registration: (ms) => (pwa ? pwa.registration(ms) : Promise.resolve(null)),
+    session: () => session.state,
+    payload: () => toServerPayload(collectPersisted()),
+    loadFailed: () => !!loaded.loadFailure,
+    isAuthed: () => session.isAuthed(),
+    supabaseUrl,
+    anonKey,
+    now,
+    periodicPermission: () => (pwa ? pwa.periodicPermission() : Promise.resolve(null))
+  });
+  late.background = background;
+  const unsupportedBrowser: PushBrowser = {
+    supported: () => false,
+    isIos: () => false,
+    permission: () => 'unsupported',
+    requestPermission: () => Promise.resolve('unsupported'),
+    registration: () => Promise.resolve(null)
+  };
+  const push = createPush({
+    api: createPushApi({ api: appApi, fetcher }),
+    browser: pwa?.push ?? unsupportedBrowser,
+    background,
+    idb: pwa?.idb ?? noIdb,
+    isAuthed: () => session.isAuthed(),
+    deviceId: () => session.state.deviceId,
+    online: () => (deps.online ? deps.online() : true),
+    today: deps.today,
+    announcements: () => {
+      const plan = currentPlan();
+      return plan
+        ? weekAnnouncements(plan, deps.today(), (id) => !!useTrainingStore.getState().alts[id])
+        : {};
+    },
+    flags: {
+      get: () => {
+        const ui = useSettingsStore.getState().ui;
+        return {
+          push: ui['push'] === true,
+          najaveDan: typeof ui['najaveDan'] === 'string' ? ui['najaveDan'] : null
+        };
+      },
+      set: (p) => useSettingsStore.getState().patchUi(p)
+    }
+  });
   const account = createAccountApi(appApi);
 
   /* 3. Čuvanje: svaki upis na uređaj okida odloženo slanje na server. */
@@ -188,7 +269,10 @@ export function createApp(deps: AppDeps): App {
     },
     appVersion,
     loadFailed: !!loaded.loadFailure,
-    ...(deps.background ? { background: deps.background } : {}),
+    background: deps.background ?? {
+      schedule: () => void background.schedule(),
+      cancel: () => void background.cancel()
+    },
     ...(deps.onPushed ? { onPushed: deps.onPushed } : {})
   });
   ref.engine = engine;
@@ -316,6 +400,7 @@ export function createApp(deps: AppDeps): App {
       integrations.pullIfDue(60 * 60000);
       void ai.collectAll();
       community.publishOnStart();
+      void push.refreshOnStart();
     },
     login() {
       if (!session.isConfigured()) return;
@@ -328,6 +413,13 @@ export function createApp(deps: AppDeps): App {
       );
     },
     logout() {
+      /* Odjava mora da očisti i POZADINU: bez ovoga bi service worker zadržao kopiju tokena i neposlato stanje pa ih gurnuo posle odjave — na tuđem
+         telefonu bi to bio tuđ nalog. Obaveštenja se gase iz istog razloga; token se prosleđuje jer se sesija briše u istom potezu. */
+      const token = session.state.access ?? undefined;
+      void push
+        .disable(token)
+        .catch(() => undefined)
+        .finally(() => void background.forgetAll());
       session.logout();
       auth.set({ gate: '', hasSession: false });
     },
@@ -404,8 +496,15 @@ export function createApp(deps: AppDeps): App {
     weather: integrations.weather,
     ai: { ...ai, trend: createTrendAi(appApi) },
     community,
+    push,
+    background,
     isOwner,
     forgetEverything() {
+      /* Pretplata se gasi BEZ poziva servera: red u bazi je već obrisan, a token više ne važi (naloga nema). */
+      void push
+        .forget()
+        .catch(() => undefined)
+        .finally(() => void background.forgetAll());
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
       for (const k of ALL_LOCAL_KEYS) kv.remove(k);
       hydratePersisted(seedState(deps.today()));

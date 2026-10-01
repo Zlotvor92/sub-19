@@ -6,6 +6,8 @@ import { createApp } from './app/createApp';
 import { initialTab } from './app/tabs';
 import { localDate } from './lib/clock';
 import { browserGeo } from './lib/geo';
+import { browserPwa } from './pwa/browser';
+import { startServiceWorker } from './pwa/register';
 import { useUIStore } from './stores/uiStore';
 import './styles/legacy.css';
 
@@ -21,11 +23,13 @@ const app = createApp({
   },
   online: () => navigator.onLine,
   notify: (message) => window.alert(message),
-  geo: browserGeo()
+  geo: browserGeo(),
+  pwa: browserPwa()
 });
 setApp(app);
 useUIStore.getState().setTab(initialTab(window.location.search, window.sessionStorage));
 void app.start();
+startServiceWorker({ onAiPush: () => void app.ai.collectAll() });
 
 createRoot(root).render(
   <StrictMode>

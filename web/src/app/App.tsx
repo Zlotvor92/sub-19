@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { headerSubtitle } from '../domain/plan';
 import { PAGES } from '../features/registry';
 import { Ambient, AuthGate, Header, Page, Splash, Tabbar } from '../components/ui/Shell';
@@ -9,12 +9,13 @@ import { downloadText } from '../lib/download';
 import { localDate, msUntilMidnight } from '../lib/clock';
 import { requestPersist, useResolvedPlan, useTrainingStore } from '../stores';
 import { useAuthStore } from '../stores/authStore';
+import { useUpdateStore } from '../pwa/updateStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useUIStore, type Banner } from '../stores/uiStore';
 import { LS_RESCUE_KEY } from '../services/storage/keys';
 import { getApp } from './appContext';
 import { confirmAction } from './confirm';
-import { rememberTab } from './tabs';
+import { dayFromSearch, rememberTab } from './tabs';
 import { BANNER, useSystemBanners } from './useSystemBanners';
 import { SheetHost } from '../features/sheets';
 import { Wizard } from '../features/onboarding';
@@ -73,6 +74,26 @@ export function App() {
   }, [closeSheet]);
   useSystemBanners();
 
+  /* ULAZ IZ OBAVEŠTENJA (`./?dan=<id>`): adresa se čisti ODMAH (inače svako osvežavanje ponovo otvara list), plan se pogleda tek kad postoji (dan
+     je u međuvremenu mogao nestati — tada se ostaje na početnom ekranu), a rezultat analize se pokupi PRE nego što čovek pročita „u toku". */
+  const deepLinkDone = useRef(false);
+  useEffect(() => {
+    if (!ready || deepLinkDone.current || !plan) return;
+    deepLinkDone.current = true;
+    const id = dayFromSearch(window.location.search);
+    if (!id) return;
+    try {
+      window.history.replaceState(null, '', window.location.pathname);
+    } catch {
+      /* privatni režim */
+    }
+    const day = plan.byId.get(id);
+    if (!day) return;
+    useUIStore.getState().setTab(day.date === today ? 'danas' : 'plan');
+    openSheet({ kind: 'day', props: { id } });
+    if (useTrainingStore.getState().log[id]?.['aiPosao']) void getApp().ai.check(id);
+  }, [ready, plan, today, openSheet]);
+
   useEffect(() => {
     rememberTab(tab, window.sessionStorage);
     window.scrollTo(0, 0);
@@ -126,6 +147,8 @@ export function App() {
           useSyncStore.getState().set({ loadFailure: null });
           void app.sync.pull();
         }
+      } else if (b.id === BANNER.update) {
+        useUpdateStore.getState().apply();
       } else if (b.id === BANNER.writeFailed) {
         useSyncStore.getState().set({ writeFailed: null });
       }

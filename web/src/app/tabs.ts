@@ -28,3 +28,19 @@ export function rememberTab(tab: Tab, storage?: Pick<Storage, 'setItem'>): void 
     /* privatni režim */
   }
 }
+
+/** Oblik ID-a dana (isti kao `ID_OBLIK` u starom kodu): adresa iz obaveštenja se otvara bez pitanja, pa oblik mora da se proveri. */
+export const DAY_ID_SHAPE = /^[A-Za-z0-9_-]{1,64}$/;
+
+/**
+ * ULAZ IZ OBAVEŠTENJA: `./?dan=<id>`. „Analiza je gotova" je ranije vodila na `?tab=danas`, a analiza živi u listu SVOG dana, koji najčešće nije
+ * današnji (analizira se trening istrčan juče). `null` kad adrese nema ili ID nije ispravnog oblika (podmetnut ID ne može da izađe iz aplikacije).
+ */
+export function dayFromSearch(search: string): string | null {
+  try {
+    const id = new URLSearchParams(search).get('dan');
+    return id && DAY_ID_SHAPE.test(id) ? id : null;
+  } catch {
+    return null;
+  }
+}

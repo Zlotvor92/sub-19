@@ -20,6 +20,8 @@ import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { SettingCard } from './SettingCard';
+import { AppRefresh } from './AppRefresh';
+import { PushBody, usePushInfo, usePushStatus } from './pushSection';
 import { CommunityBody, useCommunityInfo } from './communitySection';
 import { WeatherBody, useWeatherInfo } from './weatherSection';
 import { IcuBody, WatchBody, pushToWatch, useIcuInfo, useWatchInfo } from './icuSections';
@@ -67,12 +69,14 @@ export function SettingsSheet() {
   const signedIn = useAuthStore((s) => s.hasSession);
   const configured = useAuthStore((s) => s.configured);
 
+  const [pushStatus, reloadPush] = usePushStatus();
   const infos: Record<string, SectionInfo> = {
     Nalog: useAccountInfo(),
     Plan: usePlanInfo(),
     Strava: useStravaInfo(),
     Vreme: useWeatherInfo(),
     Zajednica: useCommunityInfo(),
+    Obaveštenja: usePushInfo(pushStatus),
     'intervals.icu': useIcuInfo(),
     'Slanje na sat': useWatchInfo(),
     Podaci: useDataInfo()
@@ -219,11 +223,13 @@ export function SettingsSheet() {
       {section('Podaci', <DataBody />)}
       {section('Plan', <PlanBody />)}
       {section('Vreme', <WeatherBody />)}
+      {section('Obaveštenja', <PushBody status={pushStatus} reload={reloadPush} />)}
       {section('Zajednica', <CommunityBody />)}
       {section('Strava', <StravaBody />)}
       {section('intervals.icu', <IcuBody />)}
       {section('Slanje na sat', <WatchBody />)}
 
+      <AppRefresh />
       <div className="note-src" style={{ marginTop: 6 }}>
         Verzija {APP_VERSION} · šema v{SCHEMA_VERSION} · {brojTreninga(trainings)} /{' '}
         {fmtKm(totalKm)} km ·{' '}
