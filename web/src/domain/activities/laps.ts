@@ -130,3 +130,140 @@ export function predictRange(
     loPace
   };
 }
+
+/* ---------- krugovi sa intervals.icu ---------- */
+
+/** Krug sa intervals.icu u njegovom (srpskom) obliku — spoljni ugovor `api/icu.js`. */
+export interface IcuRound {
+  tip?: string | null;
+  sec?: number | null;
+  paceSec?: number | null;
+  distM?: number | null;
+  hr?: number | null;
+  kadenca?: number | null;
+  watts?: number | null;
+  gapSec?: number | null;
+  maxHr?: number | null;
+  minHr?: number | null;
+  razdvajanje?: number | string | null;
+  oznaka?: string | null;
+}
+
+/** Radni krug u obliku koji aplikacija čuva (`l.laps`). */
+export interface WorkLap {
+  distM: number;
+  paceSec: number;
+  avgHr: number | null;
+  cadence: number | null;
+  watts: number | null;
+  gapSec?: number;
+  maxHr?: number;
+  minHr?: number;
+  razdvajanje?: number | string;
+  oznaka?: string;
+  restSec?: number;
+  restPaceSec?: number;
+}
+
+type PacedLap = { distM?: number | null; paceSec?: number | null };
+
+/**
+ * SKIDA SAMO KRAJEVE, I SAMO KAD SU JASNO SPORIJI. Primena Stravinog pravila („sidro je najbrži, zadrži
+ * unutar 25 %") na CEO niz pokvarila bi lestvicu 1600 m @4:00 + 400 m @3:00: oba su radni repovi, razlika je
+ * 33 %, pa bi duži ispao i tempo bio 3:00 umesto 3:48 (greška koja izgleda kao napredak). Zagrevanje i
+ * hlađenje razlikuje POLOŽAJ — prvi su i poslednji — pa se gledaju samo prva i poslednja deonica naspram
+ * najbrže iz JEZGRA. Rep u sredini, ma koliko sporiji, ostaje rep. Ispod tri deonice se ne dira ništa.
+ *
+ * Dužina repa iz PLANA je najpouzdaniji ključ kad postoji (isti prag 15 % kao Stravina putanja); ako nijedna
+ * deonica ne odgovara planu (čovek je trčao drugačiju strukturu), pravilo se NE primenjuje.
+ * Očigledno kaskanje (> `JOG_LAP_PACE_RATIO` od najbrže) ispada ma gde stajalo — jedini sloj koji doseže u
+ * sredinu niza, namerno grub.
+ */
+export function selectIcuWorkLaps<T extends PacedLap>(
+  items: readonly (T | null | undefined)[] | null | undefined,
+  specs?: readonly number[] | null
+): T[] {
+  if (!Array.isArray(items)) return [];
+  const list: readonly (T | null | undefined)[] = items;
+  let ok = list.filter(
+    (x): x is T => !!x && (x.distM ?? 0) > 0 && (x.paceSec ?? 0) > 0 && Number.isFinite(x.paceSec)
+  );
+  const planned: readonly number[] | null | undefined = specs;
+  if (planned && planned.length) {
+    const byPlan = ok.filter((x) =>
+      planned.some((m) => m > 0 && Math.abs((x.distM as number) - m) / m <= LAP_DISTANCE_TOLERANCE)
+    );
+    if (byPlan.length) ok = byPlan;
+  }
+  if (ok.length > 1) {
+    const fastestAll = Math.min(...ok.map((x) => x.paceSec as number));
+    const coarse = ok.filter((x) => (x.paceSec as number) <= fastestAll * JOG_LAP_PACE_RATIO);
+    if (coarse.length) ok = coarse;
+  }
+  if (ok.length < 3) return ok;
+  const core = ok.slice(1, -1).map((x) => x.paceSec as number);
+  const limit = Math.min(...core) * WORK_LAP_PACE_RATIO;
+  const from = (ok[0] as T).paceSec! > limit ? 1 : 0;
+  const to = (ok[ok.length - 1] as T).paceSec! > limit ? ok.length - 1 : ok.length;
+  return ok.slice(from, to);
+}
+
+/**
+ * Krugovi sa icu-a u `l.laps` oblik: dodaje GAP, maks/min puls, razdvajanje po repu i trajanje oporavka KOJI
+ * SLEDI. Oporavci se ne vode kao krugovi (inače bi „6×800" ispalo 11 krugova), nego se lepe na rep ispred
+ * sebe. Zagrevanje i hlađenje NISU radni krugovi (v. `selectIcuWorkLaps`): sesija 1,5 km WU + 6×1000 m @3:55 +
+ * 2,5 km CD davala je 4:40/km umesto 3:52, što je `recordVdot` s pravom odbijao, a korisnik je morao da kuca
+ * tempo ručno posle svakih intervala.
+ */
+export function icuRoundsToLaps(
+  rounds: readonly (IcuRound | null | undefined)[] | null | undefined,
+  specs?: readonly number[] | null
+): WorkLap[] {
+  if (!Array.isArray(rounds)) return [];
+  const list: readonly (IcuRound | null | undefined)[] = rounds;
+  const out: WorkLap[] = [];
+  for (const k of list) {
+    if (!k) continue;
+    if (k.tip === 'oporavak') {
+      const last = out[out.length - 1];
+      if (last && (k.sec ?? 0) > 0) {
+        last.restSec = k.sec as number;
+        if (k.paceSec) last.restPaceSec = k.paceSec;
+      }
+      continue;
+    }
+    if (!((k.distM ?? 0) > 0) || !((k.paceSec ?? 0) > 0)) continue;
+    const o: WorkLap = {
+      distM: k.distM as number,
+      paceSec: k.paceSec as number,
+      avgHr: k.hr ?? null,
+      cadence: k.kadenca ?? null,
+      watts: k.watts ?? null
+    };
+    if (k.gapSec != null) o.gapSec = k.gapSec;
+    if (k.maxHr != null) o.maxHr = k.maxHr;
+    if (k.minHr != null) o.minHr = k.minHr;
+    if (k.razdvajanje != null) o.razdvajanje = k.razdvajanje;
+    if (k.oznaka) o.oznaka = String(k.oznaka).slice(0, 40);
+    out.push(o);
+  }
+  return selectIcuWorkLaps(out, specs);
+}
+
+/**
+ * Prosečan tempo RADNOG dela iz krugova — ukupno vreme / ukupna distanca, ne prosek proseka. Poziva se i nad
+ * već upisanim `l.laps` (kartica „Ostvaren tempo", trend): treninzi uvezeni PRE ispravke imaju zagrevanje i
+ * hlađenje unutra, a filtriranje pri uvozu ih ne dotiče. Nad već očišćenim nizom je bez dejstva.
+ */
+export function icuWorkPace(
+  laps: readonly (PacedLap | null | undefined)[] | null | undefined,
+  specs?: readonly number[] | null
+): number | null {
+  if (!Array.isArray(laps) || !laps.length) return null;
+  const list: readonly (PacedLap | null | undefined)[] = laps;
+  const work = selectIcuWorkLaps(list, specs);
+  if (!work.length) return null;
+  const d = work.reduce((s, x) => s + (x.distM || 0), 0);
+  const t = work.reduce((s, x) => s + ((x.paceSec as number) * (x.distM || 0)) / 1000, 0);
+  return d > 0 && t > 0 ? Math.round(t / (d / 1000)) : null;
+}

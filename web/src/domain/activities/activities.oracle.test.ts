@@ -12,13 +12,17 @@ import {
   decouplingPerKm,
   detectWorkSegments,
   extractPaceFromDesc,
+  icuRoundsToLaps,
+  icuWorkPace,
   mergeDay,
   perKmDetail,
   predictRange,
   realignPlan,
+  selectIcuWorkLaps,
   selectWorkLaps,
   workLapsPace,
   type ActivityStreams,
+  type IcuRound,
   type Lap
 } from './index';
 
@@ -355,5 +359,60 @@ describe('pomeranje plana za trčanje bez para naspram starog autoRealign', () =
       moved += mine.moved;
     }
     expect(moved, 'uzorak mora da sadrži stvarna pomeranja').toBeGreaterThan(20);
+  });
+});
+
+/* ---------- krugovi sa intervals.icu ---------- */
+
+function randomRounds(r: () => number): { rounds: IcuRound[]; specs: number[] | undefined } {
+  const spec = pick(r, [400, 800, 1000, 1600]);
+  const reps = 3 + Math.floor(r() * 6);
+  const out: IcuRound[] = [];
+  if (r() < 0.8) out.push({ distM: 1200 + r() * 600, paceSec: 330 + r() * 80, hr: 130 }); // zagrevanje
+  for (let k = 0; k < reps; k++) {
+    const d = spec * (0.95 + r() * 0.1);
+    out.push({
+      distM: d,
+      paceSec: 215 + r() * 40,
+      hr: 165,
+      kadenca: 180,
+      gapSec: r() < 0.5 ? 210 : null,
+      maxHr: r() < 0.5 ? 175 : null,
+      oznaka: r() < 0.3 ? 'x'.repeat(50) : null
+    });
+    if (k < reps - 1) {
+      const kind = r();
+      if (kind < 0.6) out.push({ tip: 'oporavak', sec: 90, paceSec: 420 });
+      else if (kind < 0.8)
+        out.push({ distM: 200, paceSec: 540 + r() * 100 }); // kaskanje bez oznake
+      else out.push({ tip: 'oporavak', sec: 0 });
+    }
+  }
+  if (r() < 0.8) out.push({ distM: 1500 + r() * 1500, paceSec: 340 + r() * 80, hr: 135 }); // hlađenje
+  if (r() < 0.2) out.push(null as unknown as IcuRound);
+  if (r() < 0.1) out.push({ distM: 0, paceSec: 300 });
+  return { rounds: out, specs: r() < 0.6 ? [spec] : r() < 0.5 ? [] : undefined };
+}
+
+describe('krugovi sa icu-a naspram starog koda', () => {
+  it('500 nasumičnih sesija: isti l.laps i isti tempo radnog dela', () => {
+    const r = rng(404);
+    let withRest = 0;
+    for (let i = 0; i < 500; i++) {
+      const { rounds, specs } = randomRounds(r);
+      const ctx = (legacy as unknown as { ctx: Record<string, unknown> }).ctx;
+      ctx['__k'] = j(rounds);
+      ctx['__s'] = specs === undefined ? undefined : j(specs);
+      const old = j<unknown>(legacy.evalIn('icuKrugoviULaps(__k,__s)'));
+      const mine = icuRoundsToLaps(rounds, specs);
+      expect(firstDiff(canonical(j(mine)), canonical(old)), `laps ${i}`).toBeNull();
+      ctx['__k2'] = j(mine);
+      expect(icuWorkPace(mine, specs), `tempo ${i}`).toBe(legacy.evalIn('icuRadniTempo(__k2,__s)'));
+      expect(selectIcuWorkLaps(rounds.map((x) => x && { ...x }) as never, specs)).toEqual(
+        j(legacy.evalIn('icuRadniKrugovi(__k,__s)'))
+      );
+      if (mine.some((x) => x.restSec)) withRest++;
+    }
+    expect(withRest).toBeGreaterThan(200);
   });
 });

@@ -6,10 +6,13 @@ import type { GenPlanState } from '../state';
 import {
   decouplingPerKm,
   detectWorkSegments,
+  icuRoundsToLaps,
+  icuWorkPace,
   keepWorkItems,
   mergeDay,
   perKmDetail,
   realignPlan,
+  selectIcuWorkLaps,
   selectWorkLaps,
   workLapsPace,
   type ActivityStreams
@@ -244,5 +247,62 @@ describe('pomeranje plana za trčanje bez para', () => {
     });
     expect(res.moved).toBe(0);
     expect(JSON.stringify([plan, log, moves])).toBe(before);
+  });
+});
+
+describe('krugovi sa intervals.icu', () => {
+  it('zagrevanje i hlađenje ne ulaze u radni tempo (sesija 1,5 km WU + 6×1000 @ 3:55 + 2,5 km CD)', () => {
+    const rounds = [
+      { distM: 1500, paceSec: 330 },
+      ...Array.from({ length: 6 }, () => [
+        { distM: 1000, paceSec: 235 },
+        { tip: 'oporavak', sec: 90, paceSec: 420 }
+      ]).flat(),
+      { distM: 2500, paceSec: 345 }
+    ];
+    const laps = icuRoundsToLaps(rounds, [1000]);
+    expect(laps).toHaveLength(6);
+    expect(icuWorkPace(laps, [1000])).toBe(235);
+    expect(laps[0]?.restSec).toBe(90);
+    // bez plana (specs) sporiji krajevi se svejedno skidaju po položaju
+    expect(icuWorkPace(icuRoundsToLaps(rounds), undefined)).toBe(235);
+  });
+
+  it('lestvica: kratak brz rep na krajevima i dugi sporiji u sredini — svi su radni (sredina se ne dira)', () => {
+    const rounds = [
+      { distM: 400, paceSec: 180 },
+      { distM: 1600, paceSec: 240 },
+      { distM: 400, paceSec: 180 }
+    ];
+    expect(selectIcuWorkLaps(rounds)).toHaveLength(3);
+  });
+
+  it('prva deonica sporija od 1,25 × najbrža iz jezgra je zagrevanje (poznato ponašanje, ne zakon)', () => {
+    const rounds = [
+      { distM: 1600, paceSec: 240 },
+      { distM: 400, paceSec: 180 },
+      { distM: 1600, paceSec: 240 },
+      { distM: 400, paceSec: 180 }
+    ];
+    expect(selectIcuWorkLaps(rounds)).toHaveLength(3);
+  });
+
+  it('ispod tri deonice se ne dira ništa; deonice bez tempa ili dužine ispadaju', () => {
+    const two = [
+      { distM: 1000, paceSec: 240 },
+      { distM: 1000, paceSec: 330 }
+    ];
+    expect(selectIcuWorkLaps(two)).toEqual(two);
+    expect(selectIcuWorkLaps([{ distM: 0, paceSec: 200 }, null, { distM: 500 }])).toEqual([]);
+    expect(icuWorkPace([], [1000])).toBeNull();
+  });
+
+  it('ako nijedna deonica ne odgovara planu, pravilo se NE primenjuje (ne briše sve)', () => {
+    const laps = [
+      { distM: 1000, paceSec: 240 },
+      { distM: 1000, paceSec: 242 },
+      { distM: 1000, paceSec: 238 }
+    ];
+    expect(selectIcuWorkLaps(laps, [400])).toHaveLength(3);
   });
 });

@@ -16,9 +16,14 @@ export {
   keepWorkItems,
   predictRange,
   riegelTo5kFromPace,
+  icuRoundsToLaps,
+  icuWorkPace,
+  selectIcuWorkLaps,
   selectWorkLaps,
   workLapsPace,
-  type PredictRange
+  type IcuRound,
+  type PredictRange,
+  type WorkLap
 } from './laps';
 export { extractPaceFromDesc, mergeDay, type MergedDay, type RawActivity } from './merge';
 export {
