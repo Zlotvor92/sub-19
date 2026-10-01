@@ -7,7 +7,7 @@ import { KIND_FROM_GOAL, ZONE_FOR_KIND } from '../vdot/zoneForKind';
 import { riegelDist, raceTimeForVdot } from '../vdot/racePrediction';
 import { vdotFromPace } from '../vdot/vdotFromPace';
 import { sessQKm } from '../sessions/calc';
-import type { PlanMeta, PredictionRow, Session, Week } from '../types';
+import type { PlanMeta, PredictionRow, Session } from '../types';
 
 /**
  * Red predikcije. `refVdot` je forma koju PLAN očekuje te nedelje; kad je ima,
@@ -65,7 +65,13 @@ export function planVdotForWeek(
   return v0 + ((vg - v0) * Math.min(w, ramp)) / ramp;
 }
 
-export function deriveQS(weeks: readonly Week[], idPrefix = 'n'): Record<string, number[]> {
+/** Nedelje sa danima koji nose sesiju — i generatorski `Week` i perzistirani `StoredWeek`. */
+export type WeeksWithSessions = ReadonlyArray<{
+  w: number;
+  days: ReadonlyArray<{ dow: number; id?: string; session?: Session }>;
+}>;
+
+export function deriveQS(weeks: WeeksWithSessions, idPrefix = 'n'): Record<string, number[]> {
   const out: Record<string, number[]> = {};
   weeks.forEach((wk) =>
     wk.days.forEach((d) => {
@@ -77,8 +83,26 @@ export function deriveQS(weeks: readonly Week[], idPrefix = 'n'): Record<string,
   return out;
 }
 
+/**
+ * Isto što `deriveQS`, ali ključ je ID dana (`g5d4`). Stari kod je posle promene cilja pozivao
+ * `deriveQS` nad perzistiranim nedeljama (dow 0–6, bez prefiksa „g"): ključevi su ispadali `n5d3`
+ * umesto `g5d4`, pa je 26 od 30 sesija gubilo spec radnih deonica i lap-detekcija sa Strave je tiho
+ * prestajala da radi za ceo ostatak plana (docs/ENGINE_CHANGES.md, A3).
+ */
+export function deriveQSById(weeks: WeeksWithSessions): Record<string, number[]> {
+  const out: Record<string, number[]> = {};
+  weeks.forEach((wk) =>
+    wk.days.forEach((d) => {
+      if (!d.session || !d.id) return;
+      const spec = qsFor(d.session);
+      if (spec) out[d.id] = spec;
+    })
+  );
+  return out;
+}
+
 export function derivePred(
-  weeks: readonly Week[],
+  weeks: WeeksWithSessions,
   raceDistM: number,
   meta: Pick<PlanMeta, 'vdot0' | 'vdotGoal' | 'weeks'> | null | undefined
 ): PredictionRow[] {

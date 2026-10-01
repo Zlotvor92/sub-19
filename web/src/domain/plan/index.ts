@@ -13,3 +13,13 @@ export {
   type RpeTarget
 } from './describe';
 export type { DayOrigin, ResolvedDay, ResolvedPlan, ResolvedWeek } from './types';
+export {
+  mergeOverrides,
+  planWithNewGoal,
+  recalibratedPlan,
+  reentryPlan,
+  type GoalChangeResult,
+  type RecalibrationResult,
+  type ReentryResult,
+  type ReplanError
+} from './replan';
