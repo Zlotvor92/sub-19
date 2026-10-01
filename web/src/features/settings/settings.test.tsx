@@ -141,7 +141,7 @@ describe('Podešavanja', () => {
     const c = boot(false);
     open();
     render(<Screen />);
-    expect(screen.getByText('Tri stvari čekaju')).toBeInTheDocument();
+    expect(screen.getByText('Četiri stvari čekaju')).toBeInTheDocument();
     expect(screen.getByText(/Nalog čuva plan i istoriju/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Prijavi se' }));
     expect(c.navigate).toHaveBeenCalledWith(
@@ -151,7 +151,11 @@ describe('Podešavanja', () => {
 
   it('izvoz backupa: preuzima fajl bez tokena, beleži datum, i vrh prelazi na „Sve je povezano"', async () => {
     const user = userEvent.setup();
-    boot(false, { ...stateWithPlan(), strava: { access: 'STRAVA-SECRET' } });
+    boot(false, {
+      ...stateWithPlan(),
+      strava: { access: 'STRAVA-SECRET' },
+      icu: { athleteId: 'i1', token: 'icu-tok', lastPush: 1 }
+    });
     // neprijavljen, a nalog je potreban samo kad je podešen — isključi „nalog" stavku
     useAuthStore.setState({ configured: false });
     open();
@@ -318,6 +322,122 @@ describe('Strava u podešavanjima', () => {
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(collectPersisted().strava).toBeNull());
     expect(Object.keys(useTrainingStore.getState().log)).toEqual([]); // uvezeni podaci ostaju (ovde ih nije ni bilo)
+    alert.mockRestore();
+  });
+});
+
+describe('intervals.icu i slanje na sat', () => {
+  const linked = {
+    athleteId: 'i77',
+    token: 'icu-tok',
+    scope: 'ACTIVITY:READ,WELLNESS:READ,SETTINGS:READ,CALENDAR:WRITE',
+    lastSync: null
+  };
+
+  it('nije povezan: OAuth traži adresu sa servera i vodi na nju; ručni ključ proverava ID i dužinu pre poziva', async () => {
+    const user = userEvent.setup();
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const c = boot(true);
+    useAuthStore.setState({ hasSession: true, configured: true });
+    c.api.set('/api/icu-oauth', () =>
+      json(200, { url: 'https://intervals.icu/oauth/authorize?x=1' })
+    );
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    await user.click(document.querySelector('#icu-oauth') as HTMLElement);
+    await waitFor(() =>
+      expect(c.navigate).toHaveBeenCalledWith('https://intervals.icu/oauth/authorize?x=1')
+    );
+    expect(c.extra.some((e) => e.url.startsWith('/api/icu-oauth?akcija=url&state='))).toBe(true);
+
+    await user.click(screen.getByText('Ručno povezivanje (ako gornje ne radi)'));
+    await user.click(document.querySelector('#icu-on') as HTMLElement);
+    expect(alert).toHaveBeenLastCalledWith('ID sportiste izgleda kao broj, npr. i123456.');
+    await user.type(document.querySelector('#icu-id') as HTMLElement, 'i5');
+    await user.type(document.querySelector('#icu-key') as HTMLElement, 'kratko');
+    await user.click(document.querySelector('#icu-on') as HTMLElement);
+    expect(alert).toHaveBeenLastCalledWith('API ključ deluje prekratak.');
+    expect(c.extra.filter((e) => e.url === '/api/icu')).toHaveLength(0);
+    alert.mockRestore();
+  });
+
+  it('povezan: „Povuci sve" imenuje šta je stiglo; otkačivanje traži potvrdu', async () => {
+    const user = userEvent.setup();
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const c = boot(true, { ...stateWithPlan(), icu: linked });
+    useAuthStore.setState({ configured: true, hasSession: true, email: 'tester@x.rs' });
+    c.api.set('/api/icu', (init) => {
+      const sta = (JSON.parse(String(init.body)) as { sta: string }).sta;
+      if (sta === 'wellness') return json(200, { dani: [] });
+      if (sta === 'zone') return json(200, { zone: null, razlog: null });
+      return json(200, { treninzi: [] });
+    });
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    expect(screen.getByText(/odobreno na intervals.icu/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Povuci sve' }));
+    expect(
+      await screen.findByRole('button', { name: /merenja 0 · trčanja 0 · krugovi 0 ✓/ })
+    ).toBeInTheDocument();
+    await user.click(document.querySelector('#icu-off') as HTMLElement);
+    expect(useUIStore.getState().confirm?.text).toBe(
+      'Otkačiti intervals.icu? Već povučeni podaci ostaju.'
+    );
+    act(() => useUIStore.getState().confirm?.resolve(true));
+    await waitFor(() => expect(collectPersisted().icu).toBeNull());
+    alert.mockRestore();
+  });
+
+  it('slanje na sat: pregled pokazuje tačno ono što odlazi; slanje traži potvrdu, pamti vreme i javlja ishod', async () => {
+    const user = userEvent.setup();
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const c = boot(true, { ...stateWithPlan(), icu: linked });
+    useAuthStore.setState({ configured: true, hasSession: true, email: 'tester@x.rs' });
+    c.api.set('/api/icu', () => json(200, { poslato: 7 }));
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    await user.click(screen.getByText('Slanje na sat', { selector: 'b' }));
+    await user.click(document.querySelector('#icu-vidi') as HTMLElement);
+    const box = document.querySelector('#icu-pregled') as HTMLElement;
+    expect(box.querySelectorAll('pre').length).toBeGreaterThan(3);
+    expect(box.textContent).toMatch(/Šalj(e se|u se) /);
+
+    await user.click(document.querySelector('#icu-push') as HTMLElement);
+    expect(useUIStore.getState().confirm?.text).toMatch(
+      /^Poslati \d+ .* u intervals\.icu kalendar\?/
+    );
+    act(() => useUIStore.getState().confirm?.resolve(true));
+    expect(await screen.findByRole('button', { name: 'Poslato 7 ✓' })).toBeInTheDocument();
+    const sent = c.extra.find((e) => e.url === '/api/icu');
+    expect(JSON.parse(String(sent?.init.body))).toMatchObject({
+      sta: 'workouts',
+      athleteId: 'i77',
+      token: 'icu-tok',
+      rezim: 'azuriraj'
+    });
+    await waitFor(() =>
+      expect(typeof (collectPersisted().icu as { lastPush?: unknown }).lastPush).toBe('number')
+    );
+    alert.mockRestore();
+  });
+
+  it('greška servera pri slanju: poruka sa detaljem, vreme slanja se ne upisuje', async () => {
+    const user = userEvent.setup();
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const c = boot(true, { ...stateWithPlan(), icu: linked });
+    useAuthStore.setState({ configured: true, hasSession: true, email: 'tester@x.rs' });
+    c.api.set('/api/icu', () => json(400, { error: 'Odbijeno', detail: 'No Target' }));
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    await user.click(screen.getByText('Slanje na sat', { selector: 'b' }));
+    await user.click(document.querySelector('#icu-push') as HTMLElement);
+    act(() => useUIStore.getState().confirm?.resolve(true));
+    await waitFor(() => expect(alert).toHaveBeenCalledWith('Odbijeno — No Target'));
+    expect(collectPersisted().icu).not.toHaveProperty('lastPush');
     alert.mockRestore();
   });
 });

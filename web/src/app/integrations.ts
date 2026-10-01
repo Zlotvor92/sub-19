@@ -10,6 +10,9 @@ import { createIcuApi, type IcuApi } from '../services/api/icuApi';
 import type { AppApi } from '../services/api/appApi';
 import type { Fetcher } from '../services/http';
 import { createIcuSync } from '../services/icu/icuSync';
+import { createWatchPush } from '../services/icu/icuPush';
+import { resolvePlan, type ResolvedPlan } from '../domain/plan';
+import { currentVdot } from '../domain/training/adaptation';
 import {
   ICU_REJECTED_MESSAGE,
   STRAVA_REJECTED_MESSAGE,
@@ -73,6 +76,8 @@ export interface Integrations {
     /** „Povuci sve": merenja + zone + treninzi. */
     syncAll(manual: boolean): ReturnType<ReturnType<typeof createIcuSync>['syncAll']>;
     sync: ReturnType<typeof createIcuSync>;
+    /** Slanje planiranih treninga na sat (pregled + slanje). */
+    watch: ReturnType<typeof createWatchPush>;
   };
   activities: {
     /** Uvoz treninga iz primarnog izvora; ne baca. Dva uvoza se ne preklapaju. */
@@ -158,6 +163,27 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     wellness: {
       read: () => useRecoveryStore.getState().wellness,
       write: (w) => useRecoveryStore.getState().setWellness(w)
+    },
+    now,
+    today: deps.today
+  });
+
+  const watch = createWatchPush({
+    api: icuApi,
+    link: icuLinkStore,
+    plan: (): ResolvedPlan | null => {
+      const t = useTrainingStore.getState();
+      if (!t.genPlan) return null;
+      try {
+        return resolvePlan(t.genPlan.weeks, { alts: t.alts, moves: t.moves });
+      } catch {
+        return null;
+      }
+    },
+    vdot: () => {
+      const t = useTrainingStore.getState();
+      const v0 = (t.genPlan?.meta as { vdot0?: unknown } | undefined)?.vdot0;
+      return currentVdot(t.vdotLog) || (typeof v0 === 'number' && Number.isFinite(v0) ? v0 : null);
     },
     now,
     today: deps.today
@@ -301,7 +327,8 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
         useSettingsStore.getState().setIcu(null);
       },
       syncAll: (manual) => icuSync.syncAll(120, manual),
-      sync: icuSync
+      sync: icuSync,
+      watch
     },
     activities: { sync: syncActivities, message },
     consumeOAuthReturn,

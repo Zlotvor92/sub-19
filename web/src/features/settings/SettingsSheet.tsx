@@ -20,6 +20,7 @@ import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { SettingCard } from './SettingCard';
+import { IcuBody, WatchBody, pushToWatch, useIcuInfo, useWatchInfo } from './icuSections';
 import {
   AccountBody,
   DataBody,
@@ -33,7 +34,13 @@ import {
 } from './sections';
 
 /* Stavke vrha ekrana za koje postoji sekcija sa dugmetom koje radnju obavlja (stavka bez sekcije bi imala mrtvo dugme). */
-const IMPLEMENTED: ReadonlySet<SettingsItem['key']> = new Set(['nalog', 'strava', 'backup']);
+const IMPLEMENTED: ReadonlySet<SettingsItem['key']> = new Set([
+  'nalog',
+  'strava',
+  'icu',
+  'sat',
+  'backup'
+]);
 
 const ITEM_SECTION: Record<SettingsItem['key'], string> = {
   nalog: 'Nalog',
@@ -62,6 +69,8 @@ export function SettingsSheet() {
     Nalog: useAccountInfo(),
     Plan: usePlanInfo(),
     Strava: useStravaInfo(),
+    'intervals.icu': useIcuInfo(),
+    'Slanje na sat': useWatchInfo(),
     Podaci: useDataInfo()
   };
 
@@ -94,6 +103,13 @@ export function SettingsSheet() {
   const heroAction = (key: SettingsItem['key']): void => {
     if (key === 'nalog') getApp().login();
     else if (key === 'strava') getApp().strava.connect();
+    else if (key === 'icu')
+      void getApp()
+        .icu.connect()
+        .then((r) => {
+          if (!r.ok) window.alert(r.error);
+        });
+    else if (key === 'sat') void pushToWatch(false);
     else if (key === 'backup') downloadText(`sub19-backup-${today}.json`, getApp().exportBackup());
   };
 
@@ -199,6 +215,8 @@ export function SettingsSheet() {
       {section('Podaci', <DataBody />)}
       {section('Plan', <PlanBody />)}
       {section('Strava', <StravaBody />)}
+      {section('intervals.icu', <IcuBody />)}
+      {section('Slanje na sat', <WatchBody />)}
 
       <div className="note-src" style={{ marginTop: 6 }}>
         Verzija {APP_VERSION} · šema v{SCHEMA_VERSION} · {brojTreninga(trainings)} /{' '}
