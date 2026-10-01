@@ -15,7 +15,7 @@ import { fmtKm, pl3 } from '../../domain/format';
 import { weekOf } from '../../domain/plan';
 import { useResolvedPlan, useTrainingStore } from '../../stores';
 import { useUIStore } from '../../stores/uiStore';
-import { Ring } from './Ring';
+import { Ring } from '../../components/ui/Ring';
 import { WeekBody } from './WeekBody';
 import { WeekChart } from './WeekChart';
 

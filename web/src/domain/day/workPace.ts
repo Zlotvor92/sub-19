@@ -38,7 +38,8 @@ export interface WorkPaceContext {
   hasAlt: boolean;
 }
 
-const chainOf = (list: readonly VdotRecord[], ctx: WorkPaceContext): VdotRecord[] =>
+/** Lanac forme iznova iz izmerenih vrednosti (v. `recomputeVdotChain`). */
+export const recomputeChain = (list: readonly VdotRecord[], ctx: WorkPaceContext): VdotRecord[] =>
   recomputeVdotChain(list, ctx.baselineVdot, (id) =>
     sessionClassFor(isT3kId(id), ctx.rows.find((r) => r.id === id)?.l)
   );
@@ -67,7 +68,7 @@ function measure(
   ctx: WorkPaceContext
 ): MeasureOutcome {
   const row = ctx.rows.find((r) => r.id === predId);
-  const chain = chainOf(state.vdotLog, ctx);
+  const chain = recomputeChain(state.vdotLog, ctx);
   return classifyMeasurement({
     row,
     paceSec: pace,
@@ -93,8 +94,8 @@ export function enterWorkPace(
   const outcome = measure(day, predId, paceSec, false, state, ctx);
   const vdotLog =
     outcome.status === 'accepted'
-      ? chainOf(upsert(state.vdotLog, predId, date, outcome.measured), ctx)
-      : chainOf(state.vdotLog, ctx);
+      ? recomputeChain(upsert(state.vdotLog, predId, date, outcome.measured), ctx)
+      : recomputeChain(state.vdotLog, ctx);
   return { pred, predLock, vdotLog, log: state.log, outcome };
 }
 
@@ -109,7 +110,7 @@ export function clearWorkPace(
   delete pred[predId];
   const predLock = { ...state.predLock };
   delete predLock[predId];
-  const vdotLog = chainOf(
+  const vdotLog = recomputeChain(
     state.vdotLog.filter((e) => e.id !== predId),
     ctx
   );
@@ -138,12 +139,12 @@ export function recordAutoPace(
   if (outcome.status === 'rejected') {
     const l = state.log[day.id];
     const log = l ? { ...state.log, [day.id]: { ...l, autoOdbijen: paceSec } } : state.log;
-    return { ...state, vdotLog: chainOf(state.vdotLog, ctx), log, outcome, written: false };
+    return { ...state, vdotLog: recomputeChain(state.vdotLog, ctx), log, outcome, written: false };
   }
   const vdotLog =
     outcome.status === 'accepted'
-      ? chainOf(upsert(state.vdotLog, predId, date, outcome.measured), ctx)
-      : chainOf(state.vdotLog, ctx);
+      ? recomputeChain(upsert(state.vdotLog, predId, date, outcome.measured), ctx)
+      : recomputeChain(state.vdotLog, ctx);
   const l = state.log[day.id];
   let log = state.log;
   if (l && 'autoOdbijen' in l) {
