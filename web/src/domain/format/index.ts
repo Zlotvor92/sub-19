@@ -1,6 +1,8 @@
 /* Formatiranje koje domen mora da zna jer ulazi u PERZISTIRANE opise treninga
    (`day.desc`). Ostatak formatiranja (datumi za prikaz, itd.) živi u `lib/`. */
 
+import { parseIsoDate, weekdayIndex } from '../date';
+
 /** Zaokruživanje na jednu decimalu — jedino zaokruživanje kilometraže u planu. */
 export const r1 = (x: number): number => Math.round(x * 10) / 10;
 
@@ -107,4 +109,43 @@ export function parseTimeStr(str: unknown): number | null {
   }
   if (se > 59 || mi > (m[3] != null ? 59 : 99)) return null;
   return h * 3600 + mi * 60 + se;
+}
+
+const DOW_SHORT = ['Pon', 'Uto', 'Sre', 'Čet', 'Pet', 'Sub', 'Ned'] as const;
+const DOW_LONG = [
+  'ponedeljak',
+  'utorak',
+  'sreda',
+  'četvrtak',
+  'petak',
+  'subota',
+  'nedelja'
+] as const;
+const MONTHS_GEN = [
+  'januara',
+  'februara',
+  'marta',
+  'aprila',
+  'maja',
+  'juna',
+  'jula',
+  'avgusta',
+  'septembra',
+  'oktobra',
+  'novembra',
+  'decembra'
+] as const;
+
+/** Dan u nedelji iz DATUMA (ispravan i posle zamene dana, za razliku od izvorne pozicije); nevažeći datum daje „—". */
+export function dowShort(iso: string | null | undefined): string {
+  const d = parseIsoDate(iso);
+  return d ? DOW_SHORT[weekdayIndex(d)] : '—';
+}
+
+/** „Sreda, 7. oktobra" (stari `fmtDL`); nevažeći datum daje „—". */
+export function fmtDayLong(iso: string | null | undefined): string {
+  const d = parseIsoDate(iso);
+  if (!d) return '—';
+  const name = DOW_LONG[weekdayIndex(d)];
+  return `${name.charAt(0).toUpperCase()}${name.slice(1)}, ${Number(d.slice(8, 10))}. ${MONTHS_GEN[Number(d.slice(5, 7)) - 1]}`;
 }

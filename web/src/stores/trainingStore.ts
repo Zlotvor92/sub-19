@@ -46,6 +46,8 @@ export interface TrainingActions {
   setVdotLog: (list: VdotRecord[]) => void;
   setT3k(list: T3kRecord[]): void;
   setPred: (pred: Record<string, unknown>) => void;
+  /** Više polja odjednom, jedan upis (npr. unos tempa menja pred, zaključavanje, lanac i dnevnik). */
+  patch: (p: Partial<TrainingSlice>, mode?: PersistMode) => void;
 }
 
 const empty: TrainingSlice = {
@@ -128,6 +130,9 @@ export const useTrainingStore = create<TrainingState & TrainingActions>()((set, 
     },
     setPred(pred) {
       commit({ pred });
+    },
+    patch(p, mode = 'now') {
+      commit(p, mode);
     }
   };
 });

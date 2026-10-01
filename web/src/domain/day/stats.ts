@@ -146,3 +146,14 @@ export function planSummary(plan: ResolvedPlan, log: Log, today: IsoDate): PlanS
 export function nextTraining(plan: ResolvedPlan, from: string): ResolvedDay | undefined {
   return plan.dated.find((x) => x.date > from && !x.rest);
 }
+
+/** Datum trke aktivnog plana: iz `meta.raceDate`, a kad ga nema (stariji planovi) poslednji dan poslednje nedelje. */
+export function effectiveRaceDate(
+  plan: ResolvedPlan | null,
+  metaRaceDate: unknown
+): IsoDate | null {
+  if (typeof metaRaceDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(metaRaceDate))
+    return metaRaceDate as IsoDate;
+  const last = plan?.weeks[plan.weeks.length - 1];
+  return last ? addDays(last.start, 6) : null;
+}

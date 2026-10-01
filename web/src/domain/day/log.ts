@@ -7,7 +7,7 @@
      sinhronizacija ga više ne prepisuje;
    - bol (`knee`) i težina (`kg`) uneti uz trening se izvode u zasebne zapise (`kt-<dan>` / `src: <dan>`), da se vide u oporavku. */
 
-import { parseTimeStr } from '../format';
+import { fmtClock, parseTimeStr } from '../format';
 import type { ResolvedDay } from '../plan/types';
 import type { LogEntry, PainRecord, WeightRecord } from '../state/types';
 
@@ -94,4 +94,20 @@ export function setDayStatus(
   const l: LogEntry = { ...(entry ?? {}), status };
   if (status === 'done' && !l.ts) l.ts = dayDate || today;
   return l;
+}
+
+/** Tekst polja za prikaz u formi (obrnuto od `applyLogField`): decimalni zarez, vreme kao m:ss. */
+export function fieldText(entry: LogEntry | undefined, field: LogField, fallbackDate = ''): string {
+  const l = entry;
+  if (field === 'km' || field === 'kg') {
+    const v = l?.[field];
+    return typeof v === 'number' || typeof v === 'string' ? String(v).replace('.', ',') : '';
+  }
+  if (field === 'sec') return l?.sec ? fmtClock(l.sec) : '';
+  if (field === 'hr' || field === 'rpe' || field === 'knee') {
+    const v = l?.[field];
+    return typeof v === 'number' || typeof v === 'string' ? String(v) : '';
+  }
+  if (field === 'ts') return l?.ts || fallbackDate;
+  return typeof l?.note === 'string' ? l.note : '';
 }

@@ -1,0 +1,91 @@
+/* RADNJE NAD DANOM (ekran Danas i list dana): status, unos u dnevnik, tempo radnog dela.
+
+   Sva pravila su u `domain/day`; ovde se samo čita stanje iz store-ova, poziva čista funkcija i upisuje rezultat — jednim
+   upisom po radnji, da se nikad ne sačuva polovično stanje (npr. tempo bez zaključavanja). */
+
+import {
+  applyLogField,
+  clearWorkPace,
+  enterWorkPace,
+  setDayStatus,
+  syncSideRecords,
+  type LogField,
+  type PaceResult,
+  type WorkPaceContext
+} from '../domain/day';
+import { parseTimeStr } from '../domain/format';
+import { matchWeekRows, type StoredPredRow } from '../domain/training/adaptation';
+import type { ResolvedDay, ResolvedPlan } from '../domain/plan';
+import { useRecoveryStore } from './recoveryStore';
+import { useTrainingStore } from './trainingStore';
+
+type Status = 'done' | 'skip' | 'pending';
+
+export function setStatus(day: ResolvedDay, status: Status, today: string): void {
+  const t = useTrainingStore.getState();
+  t.patchLog(day.id, setDayStatus(t.log[day.id], status, day.date, today));
+}
+
+/** Unos jednog polja forme. Beleška (kuca se) ide odloženim upisom, ostalo odmah. */
+export function editField(day: ResolvedDay, field: LogField, raw: string, today: string): void {
+  const t = useTrainingStore.getState();
+  const entry = applyLogField(t.log[day.id], field, raw, t.log[day.id]?.status ?? 'pending');
+  const r = useRecoveryStore.getState();
+  const side = syncSideRecords(r.knee, r.kg, day, entry, today);
+  /* Bol i težina menjaju samo oporavak; upis radi poslednja radnja da bi ceo `PersistedState` bio sklopljen iz svih. */
+  useRecoveryStore.getState().setPain(side.knee, 'soon');
+  useRecoveryStore.getState().setWeight(side.kg, 'soon');
+  t.patch({ log: { ...t.log, [day.id]: entry } }, field === 'note' ? 'soon' : 'now');
+}
+
+/** Redovi predikcije koji pripadaju danu (kvalitetne sesije). */
+export function predRowsForDay(
+  plan: ResolvedPlan,
+  day: ResolvedDay,
+  rows: readonly StoredPredRow[]
+): StoredPredRow[] {
+  if (day.tag !== 'int' && day.tag !== 'tempo') return [];
+  const week = plan.weeks.find((w) => w.w === day.w);
+  if (!week) return [];
+  const ids = matchWeekRows(week, rows)[day.id] ?? [];
+  return ids.flatMap((id) => rows.filter((r) => r.id === id));
+}
+
+/** Redovi sa ID-jem (stari generisani planovi bez ID-ja se ne spajaju — nemaju na šta). */
+export function storedRows(): StoredPredRow[] {
+  const gp = useTrainingStore.getState().genPlan;
+  return (gp?.pred ?? []).filter((r): r is StoredPredRow => typeof r.id === 'string');
+}
+
+export function workPaceContext(day: Pick<ResolvedDay, 'id'>): WorkPaceContext {
+  const t = useTrainingStore.getState();
+  const v0 = (t.genPlan?.meta as { vdot0?: unknown } | undefined)?.vdot0;
+  return {
+    rows: storedRows(),
+    baselineVdot: typeof v0 === 'number' && Number.isFinite(v0) ? v0 : null,
+    hasAlt: !!t.alts[day.id]
+  };
+}
+
+/** Ručni unos tempa radnog dela. Prazno polje briše tempo; nečitljiv unos se ignoriše (dok se kuca). */
+export function enterPace(
+  day: ResolvedDay,
+  predId: string,
+  raw: string
+): PaceResult | 'cleared' | 'ignored' {
+  const t = useTrainingStore.getState();
+  const state = { pred: t.pred, predLock: t.predLock, vdotLog: t.vdotLog, log: t.log };
+  const ctx = workPaceContext(day);
+  if (raw.trim() === '') {
+    const r = clearWorkPace(day, predId, state, ctx);
+    t.patch({ ...r, vdotLog: [...r.vdotLog] });
+    return 'cleared';
+  }
+  const pace = parseTimeStr(raw);
+  if (!pace) return 'ignored';
+  const entry = t.log[day.id];
+  const date = entry?.runDate || entry?.ts || day.date;
+  const r = enterWorkPace(day, predId, pace, date, state, ctx);
+  t.patch({ pred: r.pred, predLock: r.predLock, vdotLog: [...r.vdotLog], log: r.log });
+  return r;
+}
