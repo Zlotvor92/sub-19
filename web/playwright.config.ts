@@ -12,6 +12,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4173',
     trace: 'retain-on-failure',
+    /* Service worker presreće mrežu pre Playwright-a (`page.route` ga ne vidi), pa je podrazumevano ISKLJUČEN; specifikacije za PWA ga uključuju. */
+    serviceWorkers: 'block',
     ...devices['Pixel 7'],
     launchOptions: executablePath ? { executablePath } : {}
   },

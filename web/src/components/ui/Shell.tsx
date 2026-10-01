@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { TABS, type Tab, useUIStore } from '../../stores/uiStore';
 import { BrandMark, GearIcon, TabIcon, TAB_LABELS } from './icons';
 
@@ -72,14 +72,30 @@ export function Ambient({ tab, settingsOpen }: { tab: Tab; settingsOpen: boolean
   );
 }
 
-/** Uvodni ekran: ako se ne ukloni, sam se gasi CSS animacijom i ne zaključava aplikaciju. */
+/** Uvodni ekran: ako se ne ukloni, sam se gasi CSS animacijom posle 1,55 s (1,15 s odlaganje + 0,3 s gašenje, ne pre — inače bi se isekao usred prelaza).
+    Dodir ga preskače (`gasi`, 0,24 s). Dok traje, `body.uvod-radi` zaključava skrol. */
 export function Splash({ onDone }: { onDone: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const skipped = useRef(false);
+  const timers = useRef<Array<ReturnType<typeof setTimeout>>>([]);
   useEffect(() => {
-    const t = setTimeout(onDone, 1550);
-    return () => clearTimeout(t);
+    document.body.classList.add('uvod-radi');
+    timers.current.push(setTimeout(onDone, 1550));
+    const pending = timers.current;
+    return () => {
+      document.body.classList.remove('uvod-radi');
+      for (const t of pending) clearTimeout(t);
+    };
   }, [onDone]);
+  const skip = (): void => {
+    if (skipped.current) return;
+    skipped.current = true;
+    for (const t of timers.current) clearTimeout(t);
+    ref.current?.classList.add('gasi');
+    timers.current = [setTimeout(onDone, 240)];
+  };
   return (
-    <div id="uvod" aria-hidden="true" onPointerDown={onDone}>
+    <div id="uvod" ref={ref} aria-hidden="true" onPointerDown={skip}>
       <div className="zn">
         <svg viewBox="0 0 120 120" width="100%" height="100%">
           <defs>

@@ -52,7 +52,8 @@ function useToday(): string {
   return today;
 }
 
-export function App() {
+/** `intro`: uvodni ekran se prikazuje (hladan start); odluku donosi `main` (`shouldShowSplash`) jednom, pre iscrtavanja. */
+export function App({ intro = false }: { intro?: boolean }) {
   const ready = useAuthStore((s) => s.ready);
   const gate = useAuthStore((s) => s.gate);
   const tab = useUIStore((s) => s.tab);
@@ -68,7 +69,7 @@ export function App() {
   );
   const wizard = useUIStore((s) => s.wizard);
   const hasPlan = useTrainingStore((s) => !!s.genPlan);
-  const [splash, setSplash] = useState(true);
+  const [splash, setSplash] = useState(intro);
   const doneSplash = useCallback(() => setSplash(false), []);
   /* List nosi polja u koja se kuca (beleška); zatvaranje ih uklanja pre `blur`-a, pa se zakazan upis završava ovde. */
   const onSheetClose = useCallback(() => {
@@ -161,7 +162,7 @@ export function App() {
 
   useSwipeNav(ready && !splash && gate === null && !wizard && hasPlan && !sheet);
 
-  if (!ready) return <Splash onDone={doneSplash} />;
+  if (!ready) return splash ? <Splash onDone={doneSplash} /> : null;
 
   /* Bez plana čarobnjak je jedini ekran (nema iza čega da se zatvori); sa planom se otvara iz Podešavanja. */
   const showWizard = gate === null && (wizard || !hasPlan);

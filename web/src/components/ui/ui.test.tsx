@@ -7,7 +7,7 @@ import { useUIStore, type Banner } from '../../stores/uiStore';
 import { BannerHost } from './BannerHost';
 import { ConfirmHost } from './ConfirmHost';
 import { Sheet, sheetTitle } from './Sheet';
-import { AuthGate, Page, Tabbar } from './Shell';
+import { AuthGate, Page, Splash, Tabbar } from './Shell';
 
 /* parity: test/list-dijalog.test.mjs (Sheet), test/potvrda.test.mjs (potvrda). Namera: modal je modal — naziv, fokus ulazi i
    vraća se, pozadina je inertna, Escape zatvara, Tab ne izlazi; potvrda se uvek prikazuje. */
@@ -215,5 +215,50 @@ describe('traka tabova i kapija', () => {
     );
     expect(screen.queryByText('skriveno')).toBeNull();
     expect(screen.getByText('vidljivo')).toBeInTheDocument();
+  });
+});
+
+describe('uvodni ekran', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('zaključava skrol dok traje, i sam se gasi posle 1,55 s', () => {
+    const done = vi.fn();
+    const view = render(<Splash onDone={done} />);
+    expect(document.body.classList.contains('uvod-radi')).toBe(true);
+    act(() => {
+      vi.advanceTimersByTime(1549);
+    });
+    expect(done).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(2);
+    });
+    expect(done).toHaveBeenCalledTimes(1);
+    view.unmount();
+    expect(document.body.classList.contains('uvod-radi')).toBe(false);
+  });
+
+  it('dodir ga preskače: klasa `gasi`, pa gašenje posle 0,24 s — samo jednom, bez dvostrukog zatvaranja', () => {
+    const done = vi.fn();
+    const { container } = render(<Splash onDone={done} />);
+    const el = container.querySelector('#uvod') as HTMLElement;
+    act(() => {
+      el.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+      el.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    });
+    expect(el.classList.contains('gasi')).toBe(true);
+    expect(done).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    expect(done).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(done).toHaveBeenCalledTimes(1); // stari rok od 1,55 s je otkazan
   });
 });

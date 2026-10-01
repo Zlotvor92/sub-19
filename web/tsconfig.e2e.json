@@ -1,0 +1,17 @@
+{
+  "//": "E2E (Playwright): test kod je u Node-u, ali `page.evaluate(() => \u2026)` se izvr\u0161ava u pregleda\u010du \u2014 zato i DOM tipovi.",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "strict": true
+  },
+  "include": ["e2e"]
+}

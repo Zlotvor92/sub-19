@@ -7,3 +7,4 @@ src/styles/legacy.css
 public
 sw
 scripts/*.mjs
+deploy/vercel.cutover.json
