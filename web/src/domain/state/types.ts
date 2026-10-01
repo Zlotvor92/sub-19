@@ -100,8 +100,12 @@ export interface AltRecord {
 }
 
 /** Generisan plan u perzistiranom obliku (posle `adaptGeneratedPlan`: dani nose `id`, nedelje `start`). */
-export interface StoredWeek extends Omit<Week, 'days'> {
+export interface StoredWeek {
+  w: number;
   start: string;
+  deload: boolean;
+  focus: string;
+  /** Napomena: perzistirana nedelja NEMA `vol` (ukupan km se računa iz dana). */
   days: Array<Week['days'][number] & { id?: string }>;
 }
 export interface GenPlanState {

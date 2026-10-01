@@ -5,6 +5,7 @@
    polja prvog nivoa se ČUVAJU (novija verzija ih možda koristi; stariji klijent ih ne sme brisati).
    Namerno strože od starog koda: v. oznake „STROŽE". */
 
+import { isIsoDate } from '../date';
 import { idToString, isValidId } from './ids';
 import {
   cleanAlts,
@@ -194,16 +195,15 @@ export function isValidGenPlan(g: unknown): g is GenPlanState | null {
   const daysOk = (weeks as unknown[]).every(
     (w) =>
       isPlainObject(w) &&
-      typeof w['start'] === 'string' &&
-      /^\d{4}-\d{2}-\d{2}$/.test(w['start']) &&
+      isIsoDate(w['start']) &&
       Array.isArray(w['days']) &&
       w['days'].length > 0 &&
       (w['days'] as unknown[]).every(
         (d) =>
           isPlainObject(d) &&
-          typeof d['dow'] === 'number' &&
-          d['dow'] >= 0 &&
-          d['dow'] <= 7 &&
+          Number.isInteger(d['dow']) &&
+          (d['dow'] as number) >= 0 &&
+          (d['dow'] as number) <= 7 &&
           (d['km'] == null || (typeof d['km'] === 'number' && Number.isFinite(d['km']))) &&
           /* OPIS MORA BITI TEKST: broj umesto niske rušio je `setPage()` na četvrtoj liniji pokretanja. */
           (d['desc'] == null || typeof d['desc'] === 'string') &&
