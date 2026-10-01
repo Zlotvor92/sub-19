@@ -49,6 +49,9 @@ export interface PainRecord {
   id?: string;
   src?: string | null;
   part?: string;
+  /** Aktivnost pri kojoj je bol nastao (Trčanje / Snaga / Odmor / Drugo). */
+  act?: string;
+  note?: string;
   [field: string]: unknown;
 }
 

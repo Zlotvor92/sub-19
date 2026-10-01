@@ -7,15 +7,10 @@
      sinhronizacija ga više ne prepisuje;
    - bol (`knee`) i težina (`kg`) uneti uz trening se izvode u zasebne zapise (`kt-<dan>` / `src: <dan>`), da se vide u oporavku. */
 
+import { leadingNumber } from '../lib/number';
 import { fmtClock, parseTimeStr } from '../format';
 import type { ResolvedDay } from '../plan/types';
 import type { LogEntry, PainRecord, WeightRecord } from '../state/types';
-
-/** Broj s početka teksta, kao `parseFloat` („8.5 km" → 8.5); `NaN` kad ga nema. Bez `parseFloat` (domen ne zavisi od okruženja). */
-function leadingNumber(s: string): number {
-  const m = /^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/.exec(s);
-  return m?.[1] ? Number(m[1]) : NaN;
-}
 
 export type LogField = 'km' | 'sec' | 'hr' | 'rpe' | 'knee' | 'kg' | 'ts' | 'note';
 
@@ -76,7 +71,7 @@ export function syncSideRecords(
       date,
       act: day.km != null ? 'Trčanje' : 'Snaga',
       pain: l['knee'] as number,
-      note: l.note || ''
+      note: (typeof l.note === 'string' && l.note) || ''
     });
   const w = kg.filter((x) => x.src !== day.id);
   if (l['kg'] != null) w.push({ date, kg: l['kg'] as number, src: day.id });

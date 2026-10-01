@@ -149,3 +149,11 @@ export function fmtDayLong(iso: string | null | undefined): string {
   const name = DOW_LONG[weekdayIndex(d)];
   return `${name.charAt(0).toUpperCase()}${name.slice(1)}, ${Number(d.slice(8, 10))}. ${MONTHS_GEN[Number(d.slice(5, 7)) - 1]}`;
 }
+
+/** „3 treninga" (množina po srpskim pravilima). */
+export const brojTreninga = (n: number): string =>
+  `${n} ${pl3(n, 'trening', 'treninga', 'treninga')}`;
+
+/** Glagol se slaže sa brojem: „Menja se 1 trening", „Menjaju se 3 treninga", „Menja se 5 treninga". */
+export const glagolZaBroj = (n: number, jednina: string, mnozina: string): string =>
+  pl3(n, jednina, mnozina, jednina);

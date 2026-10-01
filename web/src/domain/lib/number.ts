@@ -8,3 +8,9 @@ export function looseNumber(v: unknown): number | null {
   const n = +(v as number);
   return Number.isFinite(n) ? n : null;
 }
+
+/** Broj s početka teksta, kao `parseFloat` („8.5 km" → 8.5); `NaN` kad ga nema. Bez `parseFloat` (domen ne zavisi od okruženja). */
+export function leadingNumber(s: string): number {
+  const m = /^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/.exec(s);
+  return m?.[1] ? Number(m[1]) : NaN;
+}

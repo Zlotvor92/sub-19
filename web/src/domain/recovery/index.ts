@@ -37,3 +37,5 @@ export {
   type InjuryProposal,
   type RecoveryContext
 } from './proposal';
+export * from './view';
+export * from './charts';
