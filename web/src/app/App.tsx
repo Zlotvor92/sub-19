@@ -17,6 +17,7 @@ import { confirmAction } from './confirm';
 import { rememberTab } from './tabs';
 import { BANNER, useSystemBanners } from './useSystemBanners';
 import { SheetHost } from '../features/sheets';
+import { Wizard } from '../features/onboarding';
 
 /* LJUSKA APLIKACIJE: zaglavlje, ekrani po tabovima, traka tabova, list, dijalog potvrde, trake i kapija za prijavu. */
 
@@ -61,6 +62,8 @@ export function App() {
   const raceDate = useTrainingStore(
     (s) => (s.genPlan?.meta as { raceDate?: string } | undefined)?.raceDate ?? null
   );
+  const wizard = useUIStore((s) => s.wizard);
+  const hasPlan = useTrainingStore((s) => !!s.genPlan);
   const [splash, setSplash] = useState(true);
   const doneSplash = useCallback(() => setSplash(false), []);
   useSystemBanners();
@@ -127,6 +130,8 @@ export function App() {
 
   if (!ready) return <Splash onDone={doneSplash} />;
 
+  /* Bez plana čarobnjak je jedini ekran (nema iza čega da se zatvori); sa planom se otvara iz Podešavanja. */
+  const showWizard = gate === null && (wizard || !hasPlan);
   const subtitle = headerSubtitle(plan, raceDate, today);
   const settingsOpen = sheet?.kind === 'settings';
 
@@ -134,23 +139,26 @@ export function App() {
     <>
       {splash ? <Splash onDone={doneSplash} /> : null}
       <Ambient tab={tab} settingsOpen={settingsOpen} />
-      <Header subtitle={subtitle} onSettings={() => openSheet({ kind: 'settings' })} />
-      <main>
-        {(Object.keys(PAGES) as Array<keyof typeof PAGES>).map((t) => {
-          const Screen = PAGES[t];
-          return (
-            <Page key={t} id={t} active={t === tab}>
-              <Suspense fallback={null}>
-                <Screen />
-              </Suspense>
-            </Page>
-          );
-        })}
-      </main>
-      <Tabbar />
-      <Sheet open={!!sheet} onClose={closeSheet}>
-        <SheetHost />
-      </Sheet>
+      {showWizard ? <Wizard today={today} /> : null}
+      <div style={showWizard ? { display: 'none' } : undefined}>
+        <Header subtitle={subtitle} onSettings={() => openSheet({ kind: 'settings' })} />
+        <main>
+          {(Object.keys(PAGES) as Array<keyof typeof PAGES>).map((t) => {
+            const Screen = PAGES[t];
+            return (
+              <Page key={t} id={t} active={t === tab}>
+                <Suspense fallback={null}>
+                  <Screen />
+                </Suspense>
+              </Page>
+            );
+          })}
+        </main>
+        <Tabbar />
+        <Sheet open={!!sheet} onClose={closeSheet}>
+          <SheetHost />
+        </Sheet>
+      </div>
       <ConfirmHost />
       <BannerHost onAction={onBannerAction} />
       {gate !== null ? <AuthGate message={gate} onLogin={() => getApp().login()} /> : null}

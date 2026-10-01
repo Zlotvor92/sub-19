@@ -38,6 +38,8 @@ export interface UiState {
   banners: Banner[];
   /** Kad se promeni, ekran se ponovo iscrtava (prelazak preko ponoći). */
   today: string;
+  /** Čarobnjak za plan je otvoren preko cele aplikacije. */
+  wizard: boolean;
 }
 
 export interface UiActions {
@@ -48,6 +50,7 @@ export interface UiActions {
   pushBanner: (b: Banner) => void;
   removeBanner: (id: string) => void;
   setToday: (today: string) => void;
+  setWizard: (open: boolean) => void;
 }
 
 export const useUIStore = create<UiState & UiActions>()((set, get) => ({
@@ -56,6 +59,7 @@ export const useUIStore = create<UiState & UiActions>()((set, get) => ({
   confirm: null,
   banners: [],
   today: '',
+  wizard: false,
   setTab(tab) {
     set({ tab });
   },
@@ -78,5 +82,8 @@ export const useUIStore = create<UiState & UiActions>()((set, get) => ({
   },
   setToday(today) {
     set({ today });
+  },
+  setWizard(wizard) {
+    set({ wizard });
   }
 }));
