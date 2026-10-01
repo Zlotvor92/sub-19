@@ -25,5 +25,5 @@
     "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src"],
-  "exclude": ["src/**/*.oracle.test.ts", "src/test/legacyOracle.ts"]
+  "exclude": ["src/**/*.oracle.test.ts", "src/test/legacyOracle.ts", "src/test/fingerprint.ts"]
 }

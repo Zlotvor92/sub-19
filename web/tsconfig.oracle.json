@@ -18,5 +18,5 @@
     "noUnusedParameters": true,
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src/**/*.oracle.test.ts", "src/test/legacyOracle.ts"]
+  "include": ["src/**/*.oracle.test.ts", "src/test/legacyOracle.ts", "src/test/fingerprint.ts"]
 }
