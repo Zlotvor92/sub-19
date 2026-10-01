@@ -270,3 +270,97 @@ const addDaysIso = (iso: string, n: number): string => {
   d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
 };
+
+describe('Kartice sa sata, po zonama i jutros', () => {
+  const doneWith = (extra: Record<string, unknown>) => {
+    const q = firstOf((d) => d.tag === 'lako' && !!d.date);
+    const st = freshState();
+    st.log = {
+      [q.id]: {
+        status: 'done',
+        km: 8,
+        sec: 2800,
+        ts: q.date,
+        runDate: q.date,
+        cadence: 172.4,
+        maxHr: 171,
+        elevGain: 63.2,
+        decoupling: { n: 6.1 },
+        icu: { zonePuls: [300, 1200, 900, 400, 0], zoneGranice: [130, 150, 165, 178, 190] },
+        ...extra
+      }
+    };
+    st.wellness = {
+      [addDaysIso(q.date, -1)]: { hrv: 50 },
+      [addDaysIso(q.date, -2)]: { hrv: 52 },
+      [addDaysIso(q.date, -3)]: { hrv: 51 },
+      [addDaysIso(q.date, -4)]: { hrv: 49 },
+      [q.date]: { hrv: 44, pulsUMiru: 51, sanH: 6.5, svezina: 3.2 }
+    } as never;
+    st.icu = {
+      athleteId: 'i1',
+      token: 't',
+      hrZones: [
+        { min: 1, max: 130 },
+        { min: 131, max: 150 },
+        { min: 151, max: 165 },
+        { min: 166, max: 178 },
+        { min: 179, max: null }
+      ]
+    };
+    hydratePersisted(st);
+    goTo(q.date);
+  };
+
+  it('Sa sata: kadenca, maks. puls sa zonom, uspon i drift sa bojom; Po zonama: procenti daju 100; Jutros: HRV sa odstupanjem od osnove', () => {
+    doneWith({});
+    render(<TodayPage />);
+    const watch = screen
+      .getByText('Sa sata', { selector: '.card-t' })
+      .closest('.card') as HTMLElement;
+    expect(within(watch).getByText('172')).toBeInTheDocument();
+    expect(within(watch).getByText('171')).toBeInTheDocument();
+    expect(within(watch).getByText('Z4')).toBeInTheDocument();
+    expect(within(watch).getByText('63')).toBeInTheDocument();
+    const drift = within(watch).getByText('+6,1 %');
+    expect(drift).toHaveStyle({ color: 'var(--amber)' });
+
+    const zones = screen
+      .getByText('Po zonama', { selector: '.card-t' })
+      .closest('.card') as HTMLElement;
+    expect(within(zones).getByText('puls · ukupno 47 min')).toBeInTheDocument();
+    const pcts = [...zones.querySelectorAll('.drow b')]
+      .map((e) => e.textContent)
+      .filter((t) => t?.endsWith(' %'));
+    expect(pcts.reduce((a, t) => a + parseInt(t ?? '0', 10), 0)).toBe(100);
+
+    const morning = screen
+      .getByText('Jutros', { selector: '.card-t' })
+      .closest('.card') as HTMLElement;
+    expect(within(morning).getByText('44')).toHaveStyle({ color: 'var(--red)' }); // −12 % od osnove
+    expect(within(morning).getByText('6,5 h')).toHaveStyle({ color: 'var(--amber)' });
+  });
+
+  it('dok trening predstoji, kartice sa sata nema', () => {
+    doneWith({});
+    const q = firstOf((d) => d.tag === 'lako' && !!d.date);
+    act(() => {
+      useTrainingStore.getState().patch({ log: { [q.id]: { status: 'pending' } } });
+    });
+    render(<TodayPage />);
+    expect(screen.queryByText('Sa sata', { selector: '.card-t' })).toBeNull();
+    expect(screen.queryByText('Jutros', { selector: '.card-t' })).toBeNull();
+  });
+
+  it('bez raspodele po zonama kartica kaže ZAŠTO (povezan intervals.icu, trening bez zona)', () => {
+    doneWith({ icu: undefined });
+    render(<TodayPage />);
+    const zones = screen
+      .getByText('Po zonama', { selector: '.card-t' })
+      .closest('.card') as HTMLElement;
+    expect(within(zones).getByText('nema podatka')).toBeInTheDocument();
+    expect(
+      within(zones).getByText(/intervals\.icu još nije dao vreme po zonama/)
+    ).toBeInTheDocument();
+  });
+});

@@ -200,7 +200,7 @@ export function runHour(
 }
 
 export interface RunTemp {
-  temp: number | null;
+  temp: number;
   osecaj: number | null;
   sat: number;
   /** `om`: Open-Meteo za sat trčanja (merodavno); `sat`: očitavanje sa ručnog sata (zglob čita 2–5 °C više od vazduha) — rezerva. */
@@ -217,8 +217,8 @@ export function runTemp(
   if (!log || typeof log !== 'object') return null;
   const sat = runHour(log, trainingHr);
   const z = date ? hourFor(cache, date, sat) : null;
-  if (z && num(z.temp) != null)
-    return { temp: num(z.temp), osecaj: num(z.osecaj), sat, izvor: 'om' };
+  const airTemp = z ? num(z.temp) : null;
+  if (z && airTemp != null) return { temp: airTemp, osecaj: num(z.osecaj), sat, izvor: 'om' };
   const wrist = num(log['temp']);
   if (wrist == null) return null;
   const icu = log['icu'];
