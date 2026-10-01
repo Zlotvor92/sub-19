@@ -73,3 +73,38 @@ export function plDan(n: number): string {
   const h = n % 100;
   return m === 1 && h !== 11 ? 'dan' : 'dana';
 }
+
+/**
+ * Vreme iz unosa: „4:33", „1:02:03", ili samo cifre („433" = 4:33, „4233" = 42:33, „10203" = 1:02:03; zarez i tačka
+ * su dvotačka). `null` za sve što nije vreme (sekunde > 59, minuti > 59 uz sate, ≥ 100 min bez sati).
+ */
+export function parseTimeStr(str: unknown): number | null {
+  if (!str) return null;
+  const s = (typeof str === 'string' ? str : typeof str === 'number' ? String(str) : '')
+    .trim()
+    .replace(/[,.]/g, ':');
+  if (/^\d{3,6}$/.test(s)) {
+    const se = +s.slice(-2);
+    if (se > 59) return null;
+    const rest = s.slice(0, -2);
+    if (rest.length <= 2) return +rest * 60 + se;
+    const mi = +rest.slice(-2);
+    if (mi > 59) return null;
+    return +rest.slice(0, -2) * 3600 + mi * 60 + se;
+  }
+  const m = /^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/.exec(s);
+  if (!m) return null;
+  let h = 0;
+  let mi: number;
+  let se: number;
+  if (m[3] != null) {
+    h = +(m[1] as string);
+    mi = +(m[2] as string);
+    se = +m[3];
+  } else {
+    mi = +(m[1] as string);
+    se = +(m[2] as string);
+  }
+  if (se > 59 || mi > (m[3] != null ? 59 : 99)) return null;
+  return h * 3600 + mi * 60 + se;
+}
