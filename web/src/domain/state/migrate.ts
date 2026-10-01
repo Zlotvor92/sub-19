@@ -5,7 +5,7 @@
    polja prvog nivoa se ČUVAJU (novija verzija ih možda koristi; stariji klijent ih ne sme brisati).
    Namerno strože od starog koda: v. oznake „STROŽE". */
 
-import { isValidId } from './ids';
+import { idToString, isValidId } from './ids';
 import {
   cleanAlts,
   cleanDated,
@@ -55,7 +55,7 @@ function dropOldPersonalPlan(o: Obj): void {
         ? {
             ...(k as Obj),
             src: 'arhiva',
-            id: String((k as Obj)['id'] || '').replace(/^kt-/, 'kt-arhiva-')
+            id: idToString((k as Obj)['id']).replace(/^kt-/, 'kt-arhiva-')
           }
         : k
     );

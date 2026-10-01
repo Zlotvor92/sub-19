@@ -8,7 +8,7 @@
 import { isIsoDate } from '../date';
 import { runWalkText } from '../training/generator/runWalk';
 import { isT3kId, t3kPossible } from '../training/vdot/limits';
-import { isValidId } from './ids';
+import { idToString, isValidId } from './ids';
 import {
   DAY_TAGS,
   STRENGTH_WITH,
@@ -27,7 +27,7 @@ const isObject = (x: unknown): x is Obj => x !== null && typeof x === 'object';
 /** Isto što stari `broj`: ono što se ne da pretvoriti u broj postaje `null`, ostalo `+v`. */
 function toNumberOrNull(v: unknown): number | null {
   if (v == null || v === '') return null;
-  const n = Number(v as number);
+  const n = Number(v);
   return Number.isNaN(n) ? null : n;
 }
 
@@ -65,7 +65,7 @@ export function cleanWellness(w: unknown): Record<string, WellnessRecord> {
       atl: null,
       svezina: null
     };
-    for (const f of WELLNESS_FIELDS) c[f] = toNumberOrNull((z as Obj)[f]);
+    for (const f of WELLNESS_FIELDS) c[f] = toNumberOrNull(z[f]);
     out[k] = c;
   }
   return out;
@@ -195,7 +195,7 @@ export function cleanOutOfPlanKm(m: unknown): Record<string, number> {
 export function cleanT3k(arr: unknown): T3kRecord[] {
   return cleanDated<Obj>(arr)
     .map((t) => ({
-      id: String(t['id'] || ''),
+      id: idToString(t['id']),
       date: t['date'] as string,
       sec: Math.round(+(t['sec'] as number))
     }))

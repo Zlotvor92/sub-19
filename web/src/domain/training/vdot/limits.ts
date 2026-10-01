@@ -6,6 +6,7 @@ import {
   VDOT_TABLE_MIN
 } from '../constants/product';
 import { r1 } from '../../format';
+import { idToString } from '../../state/ids';
 import { vdotFromRace } from './calculateVDOT';
 
 /**
@@ -17,7 +18,7 @@ export function vdotPossible(v: number | null | undefined): v is number {
   return v != null && Number.isFinite(v) && v >= VDOT_TABLE_MIN && v <= VDOT_TABLE_MAX;
 }
 
-export const isT3kId = (id: unknown): boolean => String(id || '').startsWith(T3K_ID_PREFIX);
+export const isT3kId = (id: unknown): boolean => idToString(id).startsWith(T3K_ID_PREFIX);
 
 /** Test na 3 km: najmanje 7:20 (T3K_SEC_MIN) i VDOT iz opsega tablice. */
 export function t3kPossible(sec: number): boolean {

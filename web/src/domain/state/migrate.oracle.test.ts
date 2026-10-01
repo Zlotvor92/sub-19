@@ -270,7 +270,7 @@ function mutate(state: Json, r: () => number): Json {
     ];
     const v = variants[Math.floor(r() * variants.length)];
     if (v === undefined) delete (s as Record<string, Json>)['v'];
-    else (s as Record<string, Json>)['v'] = v as Json;
+    else (s as Record<string, Json>)['v'] = v;
   }
   return s;
 }
