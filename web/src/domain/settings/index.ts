@@ -153,3 +153,40 @@ export function dataCounts(n: {
 }): string {
   return `${brojTreninga(n.workouts)} · ${n.pain} ${pl3(n.pain, 'zapis', 'zapisa', 'zapisa')} o bolu · ${n.weight} ${pl3(n.weight, 'merenje', 'merenja', 'merenja')} mase · ${n.paces} ${pl3(n.paces, 'tempo', 'tempa', 'tempa')} radnog dela`;
 }
+
+/* ------------------------------------------------------------- objava „novo" */
+
+export interface Announcement {
+  /** IME objave, ne broj verzije: da se pamtila verzija, traka bi se vratila pri sledećem ažuriranju iako je već pročitana. */
+  key: string;
+  /** Datum objave: novom korisniku (prvo otvaranje posle ovog datuma) objava nije novost nego zatečeno stanje. */
+  from: string;
+  title: string;
+  text: string;
+  button: string;
+}
+
+/** PROIZVODNA ODLUKA (ne nauka): jedna objava u jednom trenutku. Kad prođe, postavi se na `null` i traka nestaje svima. */
+export const ANNOUNCEMENT: Announcement | null = {
+  key: 'zajednica',
+  from: '2026-08-08',
+  title: 'Novo: Zajednica',
+  text: 'Nedeljni izazov i tabela sa ostalima koji trče po planu. Uključuje se ručno — podrazumevano je isključena.',
+  button: 'Pogledaj'
+};
+
+/**
+ * Objava koja se prikazuje, ili `null`. NE pokazuje se: neprijavljenom (Zajednica traži nalog, pa bi dugme vodilo na ekran koji za njega ne
+ * postoji), onome ko je objavu već video, i novom korisniku.
+ */
+export function announcementToShow(
+  announcement: Announcement | null,
+  signedIn: boolean,
+  ui: { novo?: unknown; firstRun?: unknown }
+): Announcement | null {
+  if (!announcement || !signedIn) return null;
+  if (ui.novo === announcement.key) return null;
+  if (typeof ui.firstRun === 'string' && ui.firstRun && ui.firstRun >= announcement.from)
+    return null;
+  return announcement;
+}

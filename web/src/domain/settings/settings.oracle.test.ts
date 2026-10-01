@@ -1,7 +1,15 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
-import { backupDue, dataCounts, groupForSection, settingsHero, waitingText } from './index';
+import {
+  ANNOUNCEMENT,
+  announcementToShow,
+  backupDue,
+  dataCounts,
+  groupForSection,
+  settingsHero,
+  waitingText
+} from './index';
 
 /* parity: backupDue, podesavanjaStanje, grupaZaSekciju, brojevi u openSettings (app.js). */
 
@@ -82,5 +90,36 @@ describe('podešavanja naspram starog koda', () => {
     expect(dataCounts({ workouts: 21, pain: 2, weight: 5, paces: 1 })).toBe(
       '21 trening · 2 zapisa o bolu · 5 merenja mase · 1 tempo radnog dela'
     );
+  });
+
+  it('objava „novo": ista pravila (neprijavljen, već viđeno, novi korisnik) i isti tekst', () => {
+    const nov = legacy.evalIn('NOVOST') as {
+      kljuc: string;
+      od: string;
+      naslov: string;
+      tekst: string;
+      dugme: string;
+    };
+    expect(ANNOUNCEMENT).toEqual({
+      key: nov.kljuc,
+      from: nov.od,
+      title: nov.naslov,
+      text: nov.tekst,
+      button: nov.dugme
+    });
+    for (const authed of [true, false])
+      for (const novo of [null, undefined, 'zajednica', 'nesto drugo'])
+        for (const firstRun of [null, '', '2026-01-01', '2026-08-07', '2026-08-08', '2026-09-01']) {
+          (legacy as unknown as { ctx: Record<string, unknown> }).ctx['__a'] = authed;
+          (legacy as unknown as { ctx: Record<string, unknown> }).ctx['__u'] = {
+            novo: novo ?? null,
+            firstRun
+          };
+          legacy.evalIn('sbAuthed=function(){return __a}; S.ui=Object.assign({}, S.ui, __u); 0');
+          const old = legacy.evalIn('novostZaPrikaz()');
+          const mine = announcementToShow(ANNOUNCEMENT, authed, { novo, firstRun });
+          expect(!!mine, `${authed} ${String(novo)} ${firstRun}`).toBe(!!old);
+        }
+    expect(announcementToShow(null, true, {})).toBeNull();
   });
 });

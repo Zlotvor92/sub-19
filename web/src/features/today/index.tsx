@@ -8,6 +8,7 @@ import { DayHeader, NextLine, PlanCard, Description, type DayStatus } from './Da
 import { AiCard } from './AiCard';
 import { CompareCard, MorningCard, WatchCard, ZonesCard, dataDate } from './Cards';
 import { DayEntry } from './DayEntry';
+import { Banners } from './Banners';
 import { Hero } from './Hero';
 import { WeatherCard } from './WeatherCard';
 import { useTodayModel } from './useTodayModel';
@@ -47,6 +48,7 @@ export default function TodayPage() {
 
   return (
     <>
+      <Banners today={today} />
       <Hero
         daysToRace={model.daysToRace}
         raceDate={model.raceDate}

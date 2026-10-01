@@ -12,6 +12,7 @@ import {
   useTrainingStore
 } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
+import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import TodayPage from './index';
 
@@ -415,5 +416,53 @@ describe('Poređenje sa ranijim istim treningom', () => {
     goTo(q.date);
     render(<TodayPage />);
     expect(screen.queryByText(/ranije$/, { selector: '.card-t' })).toBeNull();
+  });
+});
+
+describe('Trake na vrhu', () => {
+  const withUi = (ui: Record<string, unknown>): void => {
+    const st = freshState();
+    st.ui = { ...st.ui, ...ui };
+    hydratePersisted(st);
+    goTo('2026-01-14');
+  };
+
+  it('backup: nudi se neprijavljenom posle nedelju dana; „Kasnije" odlaže za nedelju dana i traka nestaje', async () => {
+    withUi({ lastBackup: '2026-01-01' });
+    useAuthStore.setState({ hasSession: false });
+    render(<TodayPage />);
+    expect(screen.getByText('Uradi backup podataka.')).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Kasnije' }));
+    expect(collectPersisted().ui.snooze).toBe('2026-01-21');
+    expect(screen.queryByText('Uradi backup podataka.')).toBeNull();
+  });
+
+  it('backup: prijavljenom se ne nudi (server nosi podatke)', () => {
+    withUi({ lastBackup: '2026-01-01' });
+    useAuthStore.setState({ hasSession: true });
+    render(<TodayPage />);
+    expect(screen.queryByText('Uradi backup podataka.')).toBeNull();
+  });
+
+  it('objava „novo": samo prijavljenom koji nije video i nije nov; „Sakrij" i „Pogledaj" je gase zauvek, a „Pogledaj" vodi u Zajednicu', async () => {
+    withUi({ firstRun: '2026-01-01', lastBackup: '2026-01-13' });
+    useAuthStore.setState({ hasSession: false });
+    const a = render(<TodayPage />);
+    expect(screen.queryByText('Novo: Zajednica')).toBeNull();
+    a.unmount();
+
+    useAuthStore.setState({ hasSession: true });
+    const b = render(<TodayPage />);
+    expect(screen.getByText('Novo: Zajednica')).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Pogledaj' }));
+    expect(collectPersisted().ui.novo).toBe('zajednica');
+    expect(useUIStore.getState().tab).toBe('zajed');
+    expect(screen.queryByText('Novo: Zajednica')).toBeNull();
+    b.unmount();
+
+    withUi({ firstRun: '2026-01-01', lastBackup: '2026-01-13' });
+    render(<TodayPage />);
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Zatvori' }));
+    expect(collectPersisted().ui.novo).toBe('zajednica');
   });
 });
