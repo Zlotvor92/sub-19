@@ -20,6 +20,13 @@ import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { SettingCard } from './SettingCard';
+import {
+  BroadcastBody,
+  ChallengeEditor,
+  UsersBody,
+  useBroadcastInfo,
+  useUsersInfo
+} from './adminSections';
 import { AppRefresh } from './AppRefresh';
 import { PushBody, usePushInfo, usePushStatus } from './pushSection';
 import { CommunityBody, useCommunityInfo } from './communitySection';
@@ -77,6 +84,8 @@ export function SettingsSheet() {
     Vreme: useWeatherInfo(),
     Zajednica: useCommunityInfo(),
     Obaveštenja: usePushInfo(pushStatus),
+    'Obaveštenje korisnicima': useBroadcastInfo(),
+    Korisnici: useUsersInfo(),
     'intervals.icu': useIcuInfo(),
     'Slanje na sat': useWatchInfo(),
     Podaci: useDataInfo()
@@ -224,7 +233,15 @@ export function SettingsSheet() {
       {section('Plan', <PlanBody />)}
       {section('Vreme', <WeatherBody />)}
       {section('Obaveštenja', <PushBody status={pushStatus} reload={reloadPush} />)}
-      {section('Zajednica', <CommunityBody />)}
+      {section(
+        'Zajednica',
+        <>
+          <CommunityBody />
+          <ChallengeEditor />
+        </>
+      )}
+      {section('Obaveštenje korisnicima', <BroadcastBody />)}
+      {section('Korisnici', <UsersBody />)}
       {section('Strava', <StravaBody />)}
       {section('intervals.icu', <IcuBody />)}
       {section('Slanje na sat', <WatchBody />)}

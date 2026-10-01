@@ -5,6 +5,7 @@ import { DaySheet } from './plan/DaySheet';
 import { SwapSheet } from './plan/SwapSheet';
 import { T3kSheet } from './race/T3kSheet';
 import { BugSheet, DeleteAccountSheet, HistorySheet } from './settings/AccountSheets';
+import { UsersSheet } from './settings/UsersSheet';
 import { SettingsSheet } from './settings/SettingsSheet';
 import { KneeSheet } from './recovery/KneeSheet';
 
@@ -16,6 +17,7 @@ const SHEETS: Record<string, (props: Record<string, unknown>) => ReactNode> = {
   'delete-account': () => <DeleteAccountSheet />,
   bug: () => <BugSheet />,
   history: () => <HistorySheet />,
+  users: () => <UsersSheet />,
   day: (p) => (typeof p['id'] === 'string' ? <DaySheet id={p['id']} /> : null),
   alt: (p) => (typeof p['id'] === 'string' ? <AltSheet id={p['id']} /> : null),
   swap: (p) => (typeof p['w'] === 'number' ? <SwapSheet w={p['w']} /> : null),

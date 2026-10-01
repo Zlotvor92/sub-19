@@ -12,6 +12,7 @@ import { createApp } from '../../app/createApp';
 import { collectPersisted, hydratePersisted, useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
+import { ADMIN_UID } from '../../services/config';
 import { LS_KEY, SB_KEY } from '../../services/storage/keys';
 import { createKeyValueStore, type StorageLike } from '../../services/storage/kv';
 import { emptySession } from '../../services/supabase/session';
@@ -667,5 +668,217 @@ describe('Prijava problema i ranije verzije', () => {
     render(<Screen />);
     expect(await screen.findByText('Nema veze sa serverom.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Pokušaj ponovo' })).toBeInTheDocument();
+  });
+});
+
+describe('Admin (samo vlasnik)', () => {
+  const asOwner = (): void => {
+    useAuthStore.setState({
+      configured: true,
+      hasSession: true,
+      userId: ADMIN_UID,
+      email: 'Vlasnik@X.rs'
+    });
+  };
+  const send = (c: Ctx, fn: (b: Record<string, unknown>) => Response) =>
+    c.api.set('/api/broadcast', (init) =>
+      fn(JSON.parse(bodyText(init)) as Record<string, unknown>)
+    );
+  const bodies = (c: Ctx): Array<Record<string, unknown>> =>
+    c.extra
+      .filter((e) => e.url === '/api/broadcast')
+      .map((e) => JSON.parse(bodyText(e.init)) as Record<string, unknown>);
+
+  it('običan korisnik ne vidi grupu Admin; vlasnik vidi', async () => {
+    const user = userEvent.setup();
+    boot(true);
+    useAuthStore.setState({ configured: true, hasSession: true, userId: 'u1' });
+    open();
+    const first = render(<Screen />);
+    expect(screen.queryByText('Admin', { selector: 'button' })).toBeNull();
+    first.unmount();
+    asOwner();
+    render(<Screen />);
+    await user.click(screen.getByText('Admin', { selector: 'button' }));
+    expect(screen.getByText('Obaveštenje korisnicima', { selector: 'b' })).toBeInTheDocument();
+    expect(screen.getByText('Korisnici', { selector: 'b' })).toBeInTheDocument();
+  });
+
+  it('spisak adresa: suvi poziv, BCC napomena, prazan spisak kaže da nema naloga', async () => {
+    const user = userEvent.setup();
+    const c = boot(true);
+    asOwner();
+    send(c, () => json(200, { primalaca: 2, primaoci: ['a@x.rs', 'b@x.rs'] }));
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Admin', { selector: 'button' }));
+    await user.click(screen.getByText('Obaveštenje korisnicima', { selector: 'b' }));
+    await user.click(screen.getByRole('button', { name: /Spisak adresa/ }));
+    expect(await screen.findByDisplayValue('a@x.rs, b@x.rs')).toBeInTheDocument();
+    expect(screen.getByText(/2 adrese/)).toBeInTheDocument();
+    expect(bodies(c)).toEqual([{}]); // ništa se ne šalje
+  });
+
+  it('proba na mene: šalje SAMO na adresu iz prijavljene sesije (malim slovima)', async () => {
+    const user = userEvent.setup();
+    const c = boot(true);
+    asOwner();
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    send(c, () => json(200, { poslato: 1, palo: 0, sledeciOd: null }));
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Admin', { selector: 'button' }));
+    await user.click(screen.getByText('Obaveštenje korisnicima', { selector: 'b' }));
+    await user.click(screen.getByRole('button', { name: 'Proba na mene' }));
+    await waitFor(() => expect(alert).toHaveBeenCalled());
+    expect(bodies(c)).toEqual([{ posalji: true, samoNa: ['vlasnik@x.rs'] }]);
+    expect(alert).toHaveBeenCalledWith('Poslato na vlasnik@x.rs. Proveri sanduče — i spam.');
+    alert.mockRestore();
+  });
+
+  it('pošalji svima: prvo prebroji, pita; odbijeno = ništa nije poslato; potvrđeno = krugovi po adresi', async () => {
+    const user = userEvent.setup();
+    const c = boot(true);
+    asOwner();
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    send(c, (b) => {
+      if (!b['posalji']) return json(200, { primalaca: 130, primaoci: [] });
+      return b['posle']
+        ? json(200, { poslato: 40, palo: 0, sledeciPosle: null, sledeciOd: null })
+        : json(200, { poslato: 90, palo: 1, sledeciPosle: 'm@x.rs', sledeciOd: 91 });
+    });
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('Admin', { selector: 'button' }));
+    await user.click(screen.getByText('Obaveštenje korisnicima', { selector: 'b' }));
+
+    await user.click(screen.getByRole('button', { name: 'Pošalji svima…' }));
+    await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
+    expect(useUIStore.getState().confirm?.text).toMatch(/^Poslati uputstvo na 130 adresa\?/);
+    act(() => useUIStore.getState().confirm?.resolve(false));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Pošalji svima…' })).toBeEnabled()
+    );
+    expect(bodies(c).filter((b) => b['posalji'])).toEqual([]);
+
+    await user.click(screen.getByRole('button', { name: 'Pošalji svima…' }));
+    await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
+    act(() => useUIStore.getState().confirm?.resolve(true));
+    await waitFor(() => expect(alert).toHaveBeenCalledWith('Poslato: 130 · nije stiglo: 1'));
+    expect(bodies(c).filter((b) => b['posalji'])).toEqual([
+      { posalji: true, od: 0 },
+      { posalji: true, posle: 'm@x.rs' }
+    ]);
+    alert.mockRestore();
+  });
+
+  it('izazov nedelje: premalo/previše znakova se odbija bez poziva; uspeh upisuje tekst u store', async () => {
+    const user = userEvent.setup();
+    const c = boot(true);
+    asOwner();
+    send(c, (b) => json(200, { ok: true, tekst: b['tekst'] }));
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('App', { selector: 'button' }));
+    await user.click(screen.getByText('Izazov nedelje · samo ti', { selector: 'summary' }));
+    const input = document.querySelector('#zaj-izazov') as HTMLInputElement;
+    await user.clear(input);
+    await user.type(input, 'ab');
+    await user.click(document.querySelector('#zaj-izazov-cuvaj') as HTMLElement);
+    expect(screen.getByText('Izazov mora imati između 3 i 160 znakova.')).toBeInTheDocument();
+    expect(bodies(c)).toEqual([]);
+    await user.type(input, 'c  ');
+    await user.click(document.querySelector('#zaj-izazov-cuvaj') as HTMLElement);
+    expect(await screen.findByText(/^Sačuvano\./)).toBeInTheDocument();
+    expect(bodies(c)).toEqual([{ admin: 'izazov', tekst: 'abc' }]);
+  });
+
+  it('korisnici: spisak, zabrana na jedan dodir, brisanje na dva sa lozinkom; sebe ne možeš', async () => {
+    const user = userEvent.setup();
+    const c = boot(true);
+    asOwner();
+    let banned = false;
+    send(c, (b) => {
+      switch (b['admin']) {
+        case 'lista':
+          return json(200, {
+            ok: true,
+            korisnici: [
+              { id: ADMIN_UID, email: 'vlasnik@x.rs', jaSam: true, imaPodatke: true },
+              {
+                id: 'U2',
+                email: 'ana@x.rs',
+                poslednjaPrijava: '2026-01-10T08:00:00Z',
+                imaPodatke: false,
+                zabranjen: banned
+              }
+            ]
+          });
+        case 'zakazano':
+          return json(200, { ok: true, zakazano: [] });
+        default:
+          if (b['admin'] === 'ban') banned = !b['ukini'];
+          return json(200, { ok: true });
+      }
+    });
+    open('users');
+    render(<Screen />);
+    expect(await screen.findByText('ana@x.rs')).toBeInTheDocument();
+    expect(screen.getByText('2 naloga')).toBeInTheDocument();
+    // vlasnik nema dugmad za sebe: samo jedan red ima Zabrani/Obriši
+    expect(screen.getAllByRole('button', { name: 'Zabrani' })).toHaveLength(1);
+
+    await user.type(document.querySelector('#ku-loz') as HTMLElement, 'tajna');
+    await user.click(screen.getByRole('button', { name: 'Zabrani' }));
+    expect(await screen.findByRole('button', { name: 'Odbrani' })).toBeInTheDocument();
+    expect(bodies(c).find((b) => b['admin'] === 'ban')).toEqual({
+      admin: 'ban',
+      banId: 'U2',
+      ukini: false,
+      lozinka: 'tajna'
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Obriši' }));
+    expect(screen.getByRole('button', { name: 'Sigurno?' })).toBeInTheDocument();
+    expect(bodies(c).some((b) => b['admin'] === 'obrisi')).toBe(false); // prvi dodir ne briše
+    await user.click(screen.getByRole('button', { name: 'Sigurno?' }));
+    await waitFor(() =>
+      expect(bodies(c).find((b) => b['admin'] === 'obrisi')).toEqual({
+        admin: 'obrisi',
+        obrisiId: 'U2',
+        lozinka: 'tajna'
+      })
+    );
+  });
+
+  it('korisnici: greška servera (pogrešna lozinka) se prikazuje; označeni za brisanje se vraćaju', async () => {
+    const user = userEvent.setup();
+    const c = boot(true);
+    asOwner();
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    send(c, (b) => {
+      if (b['admin'] === 'lista')
+        return json(200, { ok: true, korisnici: [{ id: 'U2', email: 'ana@x.rs' }] });
+      if (b['admin'] === 'zakazano')
+        return json(200, {
+          ok: true,
+          zakazano: [{ user_id: 'U3', email: 'bojan@x.rs', izvrsi_posle: '2026-01-20T00:00:00Z' }]
+        });
+      if (b['admin'] === 'ban') return json(200, { ok: false, error: 'Pogrešna lozinka.' });
+      return json(200, { ok: true });
+    });
+    open('users');
+    render(<Screen />);
+    expect(await screen.findByText('Označeno za brisanje')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Zabrani' }));
+    await waitFor(() => expect(alert).toHaveBeenCalledWith('Pogrešna lozinka.'));
+    await user.click(screen.getByRole('button', { name: 'Poništi' }));
+    await waitFor(() =>
+      expect(bodies(c).find((b) => b['admin'] === 'ponisti')).toEqual({
+        admin: 'ponisti',
+        obrisiId: 'U3'
+      })
+    );
+    alert.mockRestore();
   });
 });

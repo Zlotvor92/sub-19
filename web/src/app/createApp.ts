@@ -8,6 +8,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { createIntegrations, type Integrations } from './integrations';
+import { createAdminApi, type AdminApi } from '../services/api/adminApi';
 import { createCommunity, type Community } from './community';
 import { createCommunityApi } from '../services/community/communityApi';
 import { createBackground, type Background, type SyncRegistration } from '../pwa/background';
@@ -128,6 +129,8 @@ export interface App {
   weather: Integrations['weather'];
   /** AI analiza treninga: pokretanje, čekanje, pokupljanje rezultata. */
   ai: AiJobs & { trend: ReturnType<typeof createTrendAi> };
+  /** Vlasničke radnje (`/api/broadcast`): mejl svima, spisak naloga, izazov nedelje. */
+  admin: AdminApi;
   /** Obaveštenja (Web Push) i pozadinski rad (Background/Periodic Sync). */
   push: Push;
   background: Background;
@@ -496,6 +499,7 @@ export function createApp(deps: AppDeps): App {
     weather: integrations.weather,
     ai: { ...ai, trend: createTrendAi(appApi) },
     community,
+    admin: createAdminApi(appApi),
     push,
     background,
     isOwner,
