@@ -5,7 +5,12 @@
 
 import { fmtClock, r1 } from '../../format';
 import { HEURISTIC_42K as H, PRODUCT_42K } from '../constants/distances';
-import { sessInt, sessProg, sessTempo, wuCdForVolume } from '../sessions/build';
+import { sessInt, sessTempo, wuCdForVolume } from '../sessions/build';
+import { cruiseIntervals, type CruiseParams } from '../sessions/cruise';
+import { chooseReps, intervalsOf, proportionalRest } from '../sessions/intervals';
+import { progressionRun, type ProgressionParams } from '../sessions/progression';
+import { repetitions } from '../sessions/repetitions';
+import { continuousTempo, type TempoParams } from '../sessions/tempo';
 import type { SessionDay } from '../types';
 import type { DistanceProfile, LongRunCycleContext, Phase, QualityRequest } from './types';
 
@@ -36,40 +41,31 @@ export function longRunCycle42K(w: number, c: LongRunCycleContext): number {
   return c.isDeload ? Math.min(f, 0.7) : f;
 }
 
-function reps42K(workKm: number, wkIdx: number): { rep: number; n: number } {
-  const menu = [1200, 1600, 2000];
-  const wish = menu[wkIdx % menu.length] as number;
-  const budgetM = workKm * 1000;
-  const ladder = [2000, 1600, 1200, 1000, 800].filter((x) => x <= wish);
-  const rep = ladder.find((x) => 3 * x <= budgetM * 1.15) ?? 800;
-  const n = Math.max(3, Math.floor(budgetM / rep + 0.08));
-  return { rep, n };
-}
+const TEMPO: TempoParams = { floorCapKm: 6, floorShare: 0.09 };
+const CRUISE: CruiseParams = {
+  floorCapKm: 3,
+  floorShare: 0.1,
+  ladder: [
+    { fromKm: 10, repKm: 3.0 },
+    { fromKm: 6, repKm: 2.5 },
+    { fromKm: 3.5, repKm: 1.6 }
+  ],
+  minRepKm: 1.0,
+  restSec: (repKm) => (repKm >= 2.5 ? 75 : 60)
+};
+const PROGRESSION: ProgressionParams = { minKm: 8, maxKm: 18, pct: 0.2 };
+const INTERVAL_MENU_M = [1200, 1600, 2000] as const;
+const INTERVAL_LADDER_M = [2000, 1600, 1200, 1000, 800] as const;
 
 const mkIntervals = (dow: number, vol: number, pI: number, wkIdx: number): SessionDay => {
   const q = Math.min(Math.max(vol * H.intervalBudget.pct, 2.4), H.intervalBudget.maxKm);
-  const { rep, n } = reps42K(q, wkIdx);
-  const [wu, cd] = wuCdForVolume(vol);
-  const rest = Math.min(180, Math.max(90, Math.round((rep / 1000) * pI * 0.8)));
-  return sessInt(dow, wu, n, rep, pI, rest, cd, 'Intervali');
+  const wish = INTERVAL_MENU_M[wkIdx % INTERVAL_MENU_M.length] as number;
+  const { rep, n } = chooseReps(q, wish, INTERVAL_LADDER_M, 800);
+  return intervalsOf(dow, vol, n, rep, pI, proportionalRest(rep, pI));
 };
 
-const mkCruise = (dow: number, vol: number, pT: number, share?: number | null): SessionDay => {
-  const total = Math.max(Math.min(3, vol * 0.1), vol * H.tempoBudget.pct) * (share || 1);
-  const repKm = total >= 10 ? 3.0 : total >= 6 ? 2.5 : total >= 3.5 ? 1.6 : 1.0;
-  const n = Math.max(2, Math.floor(total / repKm + 0.08));
-  const [wu, cd] = wuCdForVolume(vol);
-  return sessInt(
-    dow,
-    wu,
-    n,
-    Math.round(repKm * 1000),
-    pT,
-    repKm >= 2.5 ? 75 : 60,
-    Math.max(cd, 1),
-    'Tempo isprekidan'
-  );
-};
+const mkCruise = (dow: number, vol: number, pT: number, share?: number | null): SessionDay =>
+  cruiseIntervals(H.tempoBudget.pct, CRUISE, dow, vol, pT, share);
 
 const mkTempo = (
   dow: number,
@@ -77,15 +73,7 @@ const mkTempo = (
   pT: number,
   fixKm?: number | null,
   share?: number | null
-): SessionDay => {
-  const floor = Math.min(6, r1(vol * 0.09)) * (share || 1);
-  const q =
-    fixKm != null
-      ? fixKm
-      : r1(Math.max(floor, Math.min(vol * H.tempoBudget.pct * (share || 1), H.tempoMaxSec / pT)));
-  const [wu, cd] = wuCdForVolume(vol);
-  return sessTempo(dow, wu, q, pT, Math.max(cd, 1), 'Tempo');
-};
+): SessionDay => continuousTempo(H, TEMPO, dow, vol, pT, fixKm, share);
 
 /** Rad na tempu maratona: naizmenično blokovi 3–5 km sa pauzom i kontinuiran deo. */
 const mkMarathonPace = (dow: number, vol: number, pM: number, qualW: number): SessionDay => {
@@ -118,18 +106,10 @@ const mkProgression = (
   pE: number,
   share: number | null,
   atRacePace: boolean
-): SessionDay => {
-  const total = r1(Math.max(8, Math.min(vol * 0.2 * (share || 1), 18)));
-  return sessProg(dow, total, endPace, pE, atRacePace ? 'Progresivno (tempo trke)' : 'Progresivno');
-};
+): SessionDay => progressionRun(PROGRESSION, dow, vol, endPace, pE, { share, atRacePace });
 
-const mkRepetitions = (dow: number, vol: number, pR: number): SessionDay => {
-  const total = Math.max(1.0, Math.min(vol * H.repetitionBudget.pct, H.repetitionBudget.maxKm));
-  const repM = 200;
-  const n = Math.max(4, Math.floor((total * 1000) / repM + 0.08));
-  const [wu, cd] = wuCdForVolume(vol);
-  return sessInt(dow, wu, n, repM, pR, Math.round((repM / 1000) * pR * 2.5), cd, 'Repeticije');
-};
+const mkRepetitions = (dow: number, vol: number, pR: number): SessionDay =>
+  repetitions({ minTotalKm: 1.0, ...H.repetitionBudget }, 200, dow, vol, pR);
 
 type Family = 'R' | 'I' | 'M';
 

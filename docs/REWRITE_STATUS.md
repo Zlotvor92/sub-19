@@ -44,3 +44,29 @@
 | Šta | Vrednost |
 |---|---|
 | Initial JS, prazna React ljuska | 219 KB / **68 KB gzip** (stara aplikacija: 914 KB / 327 KB gzip) — budžet za celu aplikaciju se postavlja tek kad postoje feature-i |
+
+## Dnevnik koraka
+
+### 2026-10-01 — Korak A generatora završen (Phase 3, prvi deo)
+
+- `domain/training/**` portovan bez promene ponašanja. Gate zadovoljen: **otisak 2 304/2 304 identičan**,
+  mutacija jedne konstante (`deloadFactor` 5K) obara test i vraćanje ga vraća.
+- Dodat **diferencijalni test** (1 500 seeded slučajnih ulaza: `goalSec`, `lrDow`, `qDows`, `runDows`, `quality:1`,
+  početak usred nedelje, trka bilo kog dana u nedelji) — identični planovi ili identične greške. Otisak ima trku
+  uvek u ponedeljak i nikad ne menja ta polja, pa je ovo jedina mreža za njih.
+- Sesije refaktorisane u parametrizovane familije (`sessions/{tempo,cruise,repetitions,intervals,progression}.ts`);
+  profili distanci su sada podaci + strategije. Refaktor je prošao isti gate (otisak + diferencijalni).
+- Prenešeni testovi (rade nad novim kodom, bez starog harnessa): `generator.invariants` (21), `science.invariants` (13,
+  uključuje poređenje sa objavljenom Danielsovom tabelom ±0,5%), `generator.calc` (3), `deload` (11 od 13; 2 čekaju
+  `domain/plan`), `profiles.invariants` (15, zamenjuje 11 testova simetrije — matricu familija sada drži tip).
+- Jedina namerna razlika od starog koda: nevažeći/nemoguć datum vraća `{error}` (G1/G2/G3 iz audita).
+
+| Stari test | Stanje u novom kodu |
+|---|---|
+| `generator.test.mjs` (21) | **preneseno** — `generator.invariants.test.ts` |
+| `nauka.test.mjs` (13) | **preneseno** — `science.invariants.test.ts` |
+| `generator-racunica.test.mjs` (3) | **preneseno** — `generator.calc.test.ts` |
+| `deload-ostrina.test.mjs` (11) | **9/11** — preostala 2 (`adaptGeneratedPlan`, `weekPhase`) čekaju `domain/plan` |
+| `simetrija-distanci.test.mjs` (11) | **preneseno u izmenjenom obliku** — `profiles.invariants.test.ts` |
+| `generator-otisak.test.mjs` (2) | **preneseno** — `generator.fingerprint.oracle.test.ts` (živi do Phase 12) |
+| `pure.test.mjs` (19) | VDOT/zone/Riegel preneseni oracle-om (`vdot.oracle.test.ts`); `parseTimeStr`, `esc`, `mdToHtml` čekaju `lib/` |

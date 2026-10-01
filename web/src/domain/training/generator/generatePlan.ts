@@ -55,7 +55,7 @@ import { assess } from './assess';
 import { buildDaySlots, dayPreferenceWarnings, pickStrengthDay } from './daySlots';
 import { weekFocus } from './focus';
 import { runWalkForWeek, runWalkText } from './runWalk';
-import { fuelText } from './fuel';
+import { fuelText } from '../sessions/longRun';
 import { longRunCap, peakVolume, rampStep } from './volume';
 
 const hasKm = (d: Day): d is RunningDay => typeof d.km === 'number';
