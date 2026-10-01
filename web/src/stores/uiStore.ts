@@ -40,10 +40,16 @@ export interface UiState {
   today: string;
   /** Čarobnjak za plan je otvoren preko cele aplikacije. */
   wizard: boolean;
+  /** Tab čije se kartice upravo slažu (klasa `uskoci`, ~0,9 s) — samo kad se tab stvarno menja dodirom, ne prstom ni pri iscrtavanju. */
+  entering: Tab | null;
+  /** Susedni tab koji se iscrtava dok ga prst vuče u kadar (prevlačenje). */
+  peek: Tab | null;
 }
 
 export interface UiActions {
-  setTab: (tab: Tab) => void;
+  /** `glided`: ekran je već doklizao prstom i bio je pred očima, pa se ulazna animacija ne igra po drugi put. */
+  setTab: (tab: Tab, opts?: { glided?: boolean }) => void;
+  setPeek: (tab: Tab | null) => void;
   openSheet: (sheet: SheetRequest) => void;
   closeSheet: () => void;
   setConfirm: (c: ConfirmRequest | null) => void;
@@ -53,6 +59,9 @@ export interface UiActions {
   setWizard: (open: boolean) => void;
 }
 
+export const ENTERING_MS = 900;
+let enteringTimer: ReturnType<typeof setTimeout> | undefined;
+
 export const useUIStore = create<UiState & UiActions>()((set, get) => ({
   tab: 'danas',
   sheet: null,
@@ -60,8 +69,22 @@ export const useUIStore = create<UiState & UiActions>()((set, get) => ({
   banners: [],
   today: '',
   wizard: false,
-  setTab(tab) {
-    set({ tab });
+  entering: null,
+  peek: null,
+  setTab(tab, opts) {
+    const changed = get().tab !== tab;
+    clearTimeout(enteringTimer);
+    const entering = changed && !opts?.glided ? tab : null;
+    set({ tab, entering, peek: null });
+    /* Rok mora da preživi NAJDUŽU animaciju na `uskoci` (crtanje linija na grafikonima: .08 + .75 s), inače linija „pukne" u pun potez. */
+    if (entering) {
+      enteringTimer = setTimeout(() => {
+        if (get().entering === entering) set({ entering: null });
+      }, ENTERING_MS);
+    }
+  },
+  setPeek(peek) {
+    set({ peek });
   },
   openSheet(sheet) {
     set({ sheet });

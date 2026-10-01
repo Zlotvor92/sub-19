@@ -58,8 +58,11 @@ export function Tabbar({ onSelect }: { onSelect?: (tab: Tab) => void }) {
 }
 
 /** Ambijentalno svetlo: menja se samo `opacity` sloja koji već postoji (gradijenti se ne mogu animirati). */
+/** Ključ sloja ambijentalnog svetla za tab (Zajednica ima kratko ime sloja). */
+export const ambientKey = (tab: Tab): string => (tab === 'zajed' ? 'zaj' : tab);
+
 export function Ambient({ tab, settingsOpen }: { tab: Tab; settingsOpen: boolean }) {
-  const key = settingsOpen ? 'set' : tab === 'zajed' ? 'zaj' : tab;
+  const key = settingsOpen ? 'set' : ambientKey(tab);
   return (
     <div id="ambijent" aria-hidden="true">
       {['danas', 'plan', 'opor', 'pred', 'zaj', 'set'].map((t) => (
@@ -148,14 +151,28 @@ export function AuthGate({ message, onLogin }: { message: string; onLogin: () =>
   );
 }
 
-export function Page({ id, active, children }: { id: Tab; active: boolean; children: ReactNode }) {
+export function Page({
+  id,
+  active,
+  entering = false,
+  peek = false,
+  children
+}: {
+  id: Tab;
+  active: boolean;
+  /** Kartice se slažu (tab se promenio dodirom). */
+  entering?: boolean;
+  /** Susedni ekran koji prst upravo vuče u kadar: sadržaj mora postojati pre nego što uđe. */
+  peek?: boolean;
+  children: ReactNode;
+}) {
   return (
     <section
-      className={`page${active ? ' active' : ''}`}
+      className={`page${active ? ' active' : ''}${entering ? ' uskoci' : ''}`}
       id={`pg-${id === 'zajed' ? 'zajed' : id}`}
       aria-hidden={!active}
     >
-      {active ? children : null}
+      {active || peek ? children : null}
     </section>
   );
 }

@@ -16,6 +16,7 @@ import { LS_RESCUE_KEY } from '../services/storage/keys';
 import { getApp } from './appContext';
 import { confirmAction } from './confirm';
 import { dayFromSearch, rememberTab } from './tabs';
+import { useSwipeNav } from './useSwipeNav';
 import { BANNER, useSystemBanners } from './useSystemBanners';
 import { SheetHost } from '../features/sheets';
 import { Wizard } from '../features/onboarding';
@@ -55,6 +56,8 @@ export function App() {
   const ready = useAuthStore((s) => s.ready);
   const gate = useAuthStore((s) => s.gate);
   const tab = useUIStore((s) => s.tab);
+  const entering = useUIStore((s) => s.entering);
+  const peek = useUIStore((s) => s.peek);
   const sheet = useUIStore((s) => s.sheet);
   const closeSheet = useUIStore((s) => s.closeSheet);
   const openSheet = useUIStore((s) => s.openSheet);
@@ -156,6 +159,8 @@ export function App() {
     [today]
   );
 
+  useSwipeNav(ready && !splash && gate === null && !wizard && hasPlan && !sheet);
+
   if (!ready) return <Splash onDone={doneSplash} />;
 
   /* Bez plana čarobnjak je jedini ekran (nema iza čega da se zatvori); sa planom se otvara iz Podešavanja. */
@@ -174,7 +179,7 @@ export function App() {
           {(Object.keys(PAGES) as Array<keyof typeof PAGES>).map((t) => {
             const Screen = PAGES[t];
             return (
-              <Page key={t} id={t} active={t === tab}>
+              <Page key={t} id={t} active={t === tab} entering={t === entering} peek={t === peek}>
                 <Suspense fallback={null}>
                   <Screen />
                 </Suspense>
