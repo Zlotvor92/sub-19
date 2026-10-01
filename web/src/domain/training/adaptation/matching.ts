@@ -4,7 +4,7 @@
    Dan se zato spaja sa redom u četiri prolaza, od najpouzdanijeg: (1) tačan naziv sesije, (2) isti tip kao
    po planu, (3) isti tip kao sada, (4) tip koji je dan imao po planu. Jedan red pripada najviše jednom danu. */
 
-import type { ResolvedDay, ResolvedWeek } from '../../plan/types';
+import type { ResolvedDay, ResolvedPlan, ResolvedWeek } from '../../plan/types';
 import type { PredictionRow } from '../types';
 import { zoneForPredLabel } from './chain';
 import type { Zone } from '../types';
@@ -63,6 +63,19 @@ export function matchWeekRows(
     if (d.origin.tag && d.origin.tag !== d.tag) take(d, (r) => tagMatch(d.origin.tag, r));
   });
   return map;
+}
+
+/** Redovi predikcije koji pripadaju danu (kvalitetne sesije). */
+export function predRowsForDay(
+  plan: Pick<ResolvedPlan, 'weeks'>,
+  day: ResolvedDay,
+  rows: readonly StoredPredRow[]
+): StoredPredRow[] {
+  if (day.tag !== 'int' && day.tag !== 'tempo') return [];
+  const week = plan.weeks.find((w) => w.w === day.w);
+  if (!week) return [];
+  const ids = matchWeekRows(week, rows)[day.id] ?? [];
+  return ids.flatMap((id) => rows.filter((r) => r.id === id));
 }
 
 /** Spajanje za ceo plan odjednom (jedan prolaz po nedelji). */

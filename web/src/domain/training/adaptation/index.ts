@@ -11,7 +11,13 @@ export {
   type MeasureOutcome,
   type RejectReason
 } from './measure';
-export { matchWeekRows, matchPlanRows, dayZone, type StoredPredRow } from './matching';
+export {
+  matchWeekRows,
+  matchPlanRows,
+  predRowsForDay,
+  dayZone,
+  type StoredPredRow
+} from './matching';
 export {
   planVdotNow,
   effectivePace,

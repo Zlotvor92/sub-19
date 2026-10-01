@@ -5,7 +5,7 @@ import { confirmAction } from '../../app/confirm';
 import { useTrainingStore } from '../../stores';
 import { setStatus } from '../../stores/dayActions';
 import { DayHeader, NextLine, PlanCard, Description, type DayStatus } from './DayCard';
-import { MorningCard, WatchCard, ZonesCard, dataDate } from './Cards';
+import { CompareCard, MorningCard, WatchCard, ZonesCard, dataDate } from './Cards';
 import { DayEntry } from './DayEntry';
 import { Hero } from './Hero';
 import { WeatherCard } from './WeatherCard';
@@ -97,6 +97,7 @@ export default function TodayPage() {
               <WatchCard log={log[day.id]} date={dataDate(log[day.id], day.date)} />
               <ZonesCard log={log[day.id]} />
               <MorningCard date={dataDate(log[day.id], day.date)} />
+              <CompareCard day={day} plan={plan} />
             </>
           ) : null}
         </>

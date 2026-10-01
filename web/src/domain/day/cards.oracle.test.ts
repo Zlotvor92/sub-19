@@ -1,8 +1,9 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import type { WellnessRecord } from '../state';
+import { normalize, parseValue, unesc } from '@/test/legacyHtml';
 import { zoneSource } from '../zones';
-import { morningRows, watchRows, zonesCard, type CardRow, type RichPart } from './cards';
+import { morningRows, watchRows, zonesCard, type CardRow } from './cards';
 
 /* parity: metrikaSata, oporavakRedovi, karticaZona, zoneRazlog (app.js). Stari kod vraća HTML; poredi se strukturno. */
 
@@ -24,60 +25,6 @@ beforeAll(async () => {
 });
 const ctx = (): Record<string, unknown> =>
   (legacy as unknown as { ctx: Record<string, unknown> }).ctx;
-
-const unesc = (t: string): string =>
-  t
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&');
-const TONES: Record<string, string> = {
-  'var(--green)': 'green',
-  'var(--amber)': 'amber',
-  'var(--red)': 'red',
-  'var(--txt2)': 'neutral'
-};
-
-/** `<b style="color:var(--red)">x</b> spm <small>y</small>` → delovi; susedni goli tekstovi se spajaju. */
-function parseValue(html: string): RichPart[] {
-  const out: RichPart[] = [];
-  const push = (p: RichPart): void => {
-    const last = out[out.length - 1];
-    if (p.tag === 'text' && last?.tag === 'text') last.text += p.text;
-    else out.push(p);
-  };
-  let rest = html;
-  const re = /^<(b|small)(?: style="color:([^"]+)")?>(.*?)<\/\1>/;
-  while (rest) {
-    const m = re.exec(rest);
-    if (m) {
-      const tone = m[2] ? TONES[m[2]] : undefined;
-      push({
-        tag: m[1] as 'b' | 'small',
-        text: unesc(m[3] as string),
-        ...(tone ? { tone: tone as never } : {})
-      });
-      rest = rest.slice(m[0].length);
-    } else {
-      const next = rest.indexOf('<');
-      const chunk = next === -1 ? rest : rest.slice(0, next === 0 ? 1 : next);
-      push({ tag: 'text', text: unesc(chunk) });
-      rest = rest.slice(chunk.length);
-    }
-  }
-  return out;
-}
-const normalize = (rows: CardRow[]): CardRow[] =>
-  rows.map((r) => ({
-    label: r.label,
-    parts: r.parts.reduce<RichPart[]>((acc, p) => {
-      const last = acc[acc.length - 1];
-      if (p.tag === 'text' && last?.tag === 'text') last.text += p.text;
-      else acc.push({ ...p });
-      return acc;
-    }, [])
-  }));
 
 describe('„Sa sata" naspram starog koda', () => {
   it('redovi, oznaka zone, temperatura sa izvorom i drift — na nasumičnim zapisima', () => {

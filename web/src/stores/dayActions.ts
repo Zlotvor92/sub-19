@@ -14,8 +14,8 @@ import {
   type WorkPaceContext
 } from '../domain/day';
 import { parseTimeStr } from '../domain/format';
-import { matchWeekRows, type StoredPredRow } from '../domain/training/adaptation';
-import type { ResolvedDay, ResolvedPlan } from '../domain/plan';
+import { predRowsForDay, type StoredPredRow } from '../domain/training/adaptation';
+import type { ResolvedDay } from '../domain/plan';
 import { useRecoveryStore } from './recoveryStore';
 import { useTrainingStore } from './trainingStore';
 
@@ -38,18 +38,7 @@ export function editField(day: ResolvedDay, field: LogField, raw: string, today:
   t.patch({ log: { ...t.log, [day.id]: entry } }, field === 'note' ? 'soon' : 'now');
 }
 
-/** Redovi predikcije koji pripadaju danu (kvalitetne sesije). */
-export function predRowsForDay(
-  plan: ResolvedPlan,
-  day: ResolvedDay,
-  rows: readonly StoredPredRow[]
-): StoredPredRow[] {
-  if (day.tag !== 'int' && day.tag !== 'tempo') return [];
-  const week = plan.weeks.find((w) => w.w === day.w);
-  if (!week) return [];
-  const ids = matchWeekRows(week, rows)[day.id] ?? [];
-  return ids.flatMap((id) => rows.filter((r) => r.id === id));
-}
+export { predRowsForDay };
 
 /** Redovi sa ID-jem (stari generisani planovi bez ID-ja se ne spajaju — nemaju na šta). */
 export function storedRows(): StoredPredRow[] {

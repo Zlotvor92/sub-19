@@ -17,9 +17,12 @@ import { runTemp, type ForecastCache } from '../weather';
 
 /** Deo reda: `b` (broj), `small` (dopuna), `text` (obično). `tone` boji samo ono što stvarno nosi značenje. */
 export interface RichPart {
-  tag: 'b' | 'small' | 'text';
+  tag: 'b' | 'small' | 'text' | 'sec';
   text: string;
-  tone?: Tone;
+  /** `pink` = pogoršanje u poređenju, `muted` = poređenje ne važi / nema razlike. */
+  tone?: Tone | 'pink' | 'muted';
+  /** Samo za `sec` (drugi po važnosti podatak u redu): tekst pa ugnežđeni delovi. */
+  children?: RichPart[];
 }
 export interface CardRow {
   label: string;

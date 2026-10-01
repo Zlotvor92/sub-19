@@ -364,3 +364,56 @@ describe('Kartice sa sata, po zonama i jutros', () => {
     ).toBeInTheDocument();
   });
 });
+
+describe('Poređenje sa ranijim istim treningom', () => {
+  it('lagano trčanje: puls i drift naspram ranijeg sličnog; razlika u pulsu se boji samo kad je tempo uporediv', () => {
+    const easy = days().filter((d) => d.tag === 'lako' && !!d.date && (d.km ?? 0) > 0);
+    const [earlier, current] = [
+      easy[0],
+      easy.find(
+        (d) =>
+          d.id !== easy[0]?.id && Math.round((d.km ?? 0) / 2) === Math.round((easy[0]?.km ?? 0) / 2)
+      )
+    ];
+    if (!earlier || !current) throw new Error('nema para laganih dana');
+    const st = freshState();
+    st.log = {
+      [earlier.id]: {
+        status: 'done',
+        km: earlier.km,
+        sec: Math.round((earlier.km ?? 0) * 330),
+        hr: 150,
+        decoupling: { n: 6.2 },
+        ts: earlier.date
+      },
+      [current.id]: {
+        status: 'done',
+        km: current.km,
+        sec: Math.round((current.km ?? 0) * 330),
+        hr: 146,
+        decoupling: { n: 3.1 },
+        ts: current.date
+      }
+    };
+    hydratePersisted(st);
+    goTo(current.date);
+    render(<TodayPage />);
+    const card = screen
+      .getByText('Slično lagano ranije', { selector: '.card-t' })
+      .closest('.card') as HTMLElement;
+    expect(within(card).getByText('150')).toBeInTheDocument();
+    expect(within(card).getByText('−4')).toHaveStyle({ color: 'var(--green)' }); // niži puls, isti tempo
+    expect(within(card).getByText('+6,2 %')).toHaveStyle({ color: 'var(--amber)' });
+    expect(within(card).getByText('−3,1')).toBeInTheDocument(); // razlika drifta
+  });
+
+  it('bez ranijeg istog treninga kartice nema', () => {
+    const q = firstOf((d) => d.tag === 'lako' && !!d.date && (d.km ?? 0) > 0);
+    const st = freshState();
+    st.log = { [q.id]: { status: 'done', km: q.km, sec: 2800, hr: 146, ts: q.date } };
+    hydratePersisted(st);
+    goTo(q.date);
+    render(<TodayPage />);
+    expect(screen.queryByText(/ranije$/, { selector: '.card-t' })).toBeNull();
+  });
+});
