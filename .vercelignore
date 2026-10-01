@@ -10,3 +10,10 @@ scripts/
 # MORA ostati na javnoj adresi — bez njega Android aplikacija (TWA) gubi pun ekran
 # i prikazuje Chrome traku sa adresom.
 .well-known/README.md
+# Dokumentacija rewrite-a (audit, arhitektura, bezbednosni nalazi) ne treba da
+# stoji na javnoj adresi (/docs/*.md, /ARCHITECTURE.md) — isti razlog kao supabase/.
+docs/
+ARCHITECTURE.md
+# Novi frontend (Vite) živi u web/ i NE sme da se servira kao statika dok se
+# deploy ne prebaci na build korak (v. docs/REWRITE_PLAN.md §5).
+web/
