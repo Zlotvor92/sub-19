@@ -47,3 +47,35 @@ export function activateNewPlan(plan: GenPlanState): void {
 }
 
 export type { PersistedState };
+
+/**
+ * „Napravi novi plan": stari plan i svi unosi uz njega se TRAJNO brišu (nema arhive) — generisani dani nose ID-jeve po istom obrascu
+ * („g3d5"), pa bi se unosi starog plana zalepili za dane novog. Test na 3 km ostaje. Jedan upis.
+ */
+export function discardPlan(): void {
+  const t = useTrainingStore.getState();
+  const r = useRecoveryStore.getState();
+  const purged = purgeGenPlanData({
+    log: t.log,
+    pred: t.pred,
+    predLock: t.predLock,
+    alts: t.alts,
+    moves: t.moves,
+    vdotLog: t.vdotLog,
+    knee: r.knee,
+    kg: r.kg
+  });
+  withoutPersist(() => {
+    useTrainingStore.setState({
+      log: purged.log,
+      pred: purged.pred,
+      predLock: purged.predLock,
+      alts: purged.alts,
+      moves: purged.moves,
+      vdotLog: purged.vdotLog,
+      genPlan: null
+    });
+    useRecoveryStore.setState({ knee: purged.knee, kg: purged.kg });
+  });
+  requestPersist('now');
+}

@@ -319,3 +319,101 @@ describe('prijava', () => {
     expect(s.store.getItem(LS_KEY)).not.toBeNull();
   });
 });
+
+describe('podaci: backup, uvoz, ranije verzije, zaboravljanje', () => {
+  const withLinks = () => ({
+    ...filled(),
+    strava: { access: 'STRAVA-TOKEN', athlete: 'x' },
+    icu: { athleteId: 'i1', token: 'ICU-TOKEN' }
+  });
+
+  it('izvoz: bez tokena, sa podacima; beleži datum backupa i gasi odlaganje', () => {
+    const s = setup({ localState: withLinks() });
+    const text = s.app.exportBackup();
+    expect(text).not.toContain('STRAVA-TOKEN');
+    expect(text).not.toContain('ICU-TOKEN');
+    const parsed = JSON.parse(text) as { app: string; state: { log: unknown } };
+    expect(parsed.app).toBe('SUB-19');
+    expect(parsed.state.log).toEqual({ g1d1: { status: 'done', km: 8 } });
+    expect(collectPersisted().ui.lastBackup).toBe('2026-07-12');
+  });
+
+  it('uvoz: provera ne menja ništa; potvrđen uvoz zamenjuje podatke, a veze ostaju SVOJE (ne iz fajla)', () => {
+    const s = setup({ localState: withLinks() });
+    const foreign = {
+      app: 'SUB-19',
+      state: {
+        ...seedState(),
+        v: 11,
+        log: { g2d2: { status: 'done' } },
+        icu: { athleteId: 'TUDJ', token: 'TUDJ-TOKEN' }
+      }
+    };
+    const prep = s.app.prepareImport(foreign);
+    expect(prep.ok).toBe(true);
+    expect(useTrainingStore.getState().log['g1d1']).toBeDefined(); // još ništa nije promenjeno
+    if (!prep.ok) return;
+    expect(s.app.commitImport(prep.state)).toEqual({ ok: true });
+    const now = collectPersisted();
+    expect(now.log).toEqual({ g2d2: { status: 'done' } });
+    expect(now.icu).toEqual({ athleteId: 'i1', token: 'ICU-TOKEN' });
+    expect(now.strava).toEqual({ access: 'STRAVA-TOKEN', athlete: 'x' });
+    expect(readLog(s.store)).toEqual({ g2d2: { status: 'done' } });
+  });
+
+  it('uvoz: neispravan identifikator se odbija, ništa se ne dira', () => {
+    const s = setup({ localState: withLinks() });
+    const bad = {
+      app: 'SUB-19',
+      state: { ...seedState(), v: 11, log: { '"><img src=x>': { status: 'done' } } }
+    };
+    const r = s.app.prepareImport(bad);
+    expect(r).toMatchObject({ ok: false, reason: 'bad-id' });
+    expect(useTrainingStore.getState().log['g1d1']).toBeDefined();
+  });
+
+  it('vraćanje ranije verzije: stanje se usvaja uz zadržane veze i odmah ide na server', async () => {
+    const fake = createFakeSupabase();
+    fake.history = [
+      {
+        id: 7,
+        napravljeno: '2026-07-01T10:00:00.000Z',
+        app_version: '283',
+        device_id: 'dME',
+        data: { ...seedState(), v: 11, log: { stara: { status: 'done' } } }
+      }
+    ];
+    fake.row = { data: filled(), updated_at: '2026-07-10T10:00:00.000Z', device_id: 'dME' };
+    const s = setup({
+      localState: withLinks(),
+      fake,
+      session: { seenAt: '2026-07-10T10:00:00.000Z' }
+    });
+    const r = await s.app.restoreVersion(7);
+    expect(r).toEqual({ ok: true });
+    expect(useTrainingStore.getState().log).toEqual({ stara: { status: 'done' } });
+    expect(collectPersisted().icu).toEqual({ athleteId: 'i1', token: 'ICU-TOKEN' });
+    await vi.waitFor(() => expect(posts(fake).length).toBeGreaterThan(0));
+  });
+
+  it('vraćanje: nepostojeća verzija i verzija iz novije šeme daju poruku, stanje ostaje', async () => {
+    const fake = createFakeSupabase();
+    fake.history = [
+      { id: 8, napravljeno: 'x', app_version: null, device_id: null, data: { v: 999, log: {} } }
+    ];
+    const s = setup({ localState: filled(), fake });
+    expect(await s.app.restoreVersion(99)).toMatchObject({ ok: false });
+    const newer = await s.app.restoreVersion(8);
+    expect(newer).toMatchObject({ ok: false });
+    expect(useTrainingStore.getState().log['g1d1']).toBeDefined();
+  });
+
+  it('zaboravljanje: brišu se svi ključevi naloga i stanje, sesija je odjavljena', () => {
+    const s = setup({ localState: withLinks() });
+    s.app.forgetEverything();
+    expect(s.store.getItem(LS_KEY)).toBeNull();
+    expect(s.store.getItem(SB_KEY)).toBeNull();
+    expect(useTrainingStore.getState().log).toEqual({});
+    expect(s.app.session.hasSession()).toBe(false);
+  });
+});

@@ -6,9 +6,25 @@
 import { collectPersisted, hydratePersisted, onPersistRequest, type PersistMode } from '../stores';
 import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
+import { useSettingsStore } from '../stores/settingsStore';
 import { checkLoginReturn, parseAuthHash, jwtClaims } from '../lib/auth';
 import { createUserStateApi, type UserStateApi } from '../services/api/userStateApi';
-import { SB_LOGIN_WINDOW_MS, SB_NONCE_OK_KEY, SB_STATE_KEY } from '../services/storage/keys';
+import { createAppApi, type AppApi } from '../services/api/appApi';
+import { createAccountApi, type AccountApi } from '../services/api/accountApi';
+import {
+  buildBackup,
+  importBackup,
+  type ImportFailure,
+  type ImportSuccess
+} from '../domain/state/backup';
+import { migrateState, seedState, type PersistedState } from '../domain/state';
+import { adoptServerState } from '../domain/sync/payload';
+import {
+  ALL_LOCAL_KEYS,
+  SB_LOGIN_WINDOW_MS,
+  SB_NONCE_OK_KEY,
+  SB_STATE_KEY
+} from '../services/storage/keys';
 import { browserStore, type KeyValueStore } from '../services/storage/kv';
 import { createStateSaver, loadState, type StateSaver } from '../services/storage/stateStorage';
 import {
@@ -48,6 +64,9 @@ export interface App {
   kv: KeyValueStore;
   session: SessionManager;
   api: UserStateApi;
+  /** Naši /api endpointi sa prijavom. */
+  appApi: AppApi;
+  account: AccountApi;
   sync: SyncEngine;
   saver: StateSaver;
   /** Pokretanje posle učitavanja: povratak sa prijave, provera sesije, sinhronizacija. */
@@ -60,6 +79,16 @@ export interface App {
   onVisible(): Promise<void>;
   /** Odjava iz sync-a: usvoji stanje (npr. iz „Uzmi sa servera"). */
   adopt(): void;
+  /** Tekst backup fajla (bez veza/tokena); beleži datum backupa i gasi podsetnik. */
+  exportBackup(): string;
+  /** Provera uvoza — NE menja ništa. Pozivalac pokaže potvrdu, pa pozove `commitImport`. */
+  prepareImport(raw: unknown): ImportFailure | ImportSuccess;
+  /** Zamena stanja uvezenim; pri grešci vraća prethodno. */
+  commitImport(state: PersistedState): { ok: true } | { ok: false; error: string };
+  /** Vraćanje na raniju verziju sa servera; zatečeno stanje čuva baza (okidač), pa se i ovo može poništiti. */
+  restoreVersion(id: string | number): Promise<{ ok: true } | { ok: false; error: string }>;
+  /** Uklanja SVE tragove naloga sa ovog uređaja (tek posle potvrđenog brisanja na serveru). */
+  forgetEverything(): void;
 }
 
 const randomHex = (): string => {
@@ -110,6 +139,8 @@ export function createApp(deps: AppDeps): App {
   mirror(session.state);
 
   const api = createUserStateApi({ fetcher, session, supabaseUrl, anonKey });
+  const appApi = createAppApi({ fetcher, session });
+  const account = createAccountApi(appApi);
 
   /* 3. Čuvanje: svaki upis na uređaj okida odloženo slanje na server. */
   const ref: { engine?: SyncEngine } = {};
@@ -196,6 +227,8 @@ export function createApp(deps: AppDeps): App {
     kv,
     session,
     api,
+    appApi,
+    account,
     sync: engine,
     saver,
     async start() {
@@ -246,6 +279,64 @@ export function createApp(deps: AppDeps): App {
     },
     adopt() {
       saver.save(collectPersisted());
+    },
+    exportBackup() {
+      const today = deps.today();
+      const text = JSON.stringify(
+        buildBackup(collectPersisted(), new Date(now()).toISOString()),
+        null,
+        1
+      );
+      useSettingsStore.getState().patchUi({ lastBackup: today, snooze: null });
+      return text;
+    },
+    prepareImport(raw) {
+      return importBackup(raw, collectPersisted());
+    },
+    commitImport(state) {
+      const before = collectPersisted();
+      try {
+        hydratePersisted(state);
+        saver.save(collectPersisted());
+        return { ok: true };
+      } catch (e) {
+        hydratePersisted(before);
+        return { ok: false, error: e instanceof Error ? e.message : 'nepoznata greška' };
+      }
+    },
+    async restoreVersion(id) {
+      if (!session.isAuthed()) return { ok: false, error: 'Nisi prijavljen.' };
+      if (!(await session.ensure())) return { ok: false, error: 'Nema veze sa internetom.' };
+      const r = await api.historyData(id);
+      if (!r.ok) return { ok: false, error: r.error };
+      const migrated = migrateState(JSON.parse(JSON.stringify(r.data)) as unknown);
+      if (!migrated)
+        return {
+          ok: false,
+          error:
+            'Ta verzija je iz novije šeme nego što je ova aplikacija. Ažuriraj aplikaciju pa probaj ponovo.'
+        };
+      /* ISTI put kao „Uzmi sa servera": veze sa Stravom i intervals.icu-om i koordinate ostaju (na serveru su bez tokena). */
+      const before = collectPersisted();
+      try {
+        const next = adoptServerState(migrated, before);
+        hydratePersisted(next);
+        saver.save(next);
+      } catch (e) {
+        hydratePersisted(before);
+        return {
+          ok: false,
+          error: `Vraćanje nije uspelo (${e instanceof Error ? e.message : 'nepoznata greška'}). Zatečeno stanje je netaknuto.`
+        };
+      }
+      /* Odmah gore, ne za četiri sekunde: čovek je svesno vratio stanje i ne sme da zatvori aplikaciju pre nego što stigne. */
+      void engine.pushNow();
+      return { ok: true };
+    },
+    forgetEverything() {
+      session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
+      for (const k of ALL_LOCAL_KEYS) kv.remove(k);
+      hydratePersisted(seedState(deps.today()));
     }
   };
 }
