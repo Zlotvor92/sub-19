@@ -26,3 +26,11 @@ export {
   cleanVdotLog,
   cleanWellness
 } from './clean';
+export {
+  backupPayload,
+  buildBackup,
+  importBackup,
+  type BackupFile,
+  type ImportFailure,
+  type ImportSuccess
+} from './backup';

@@ -55,3 +55,14 @@ trke / testa / ručno zaključanih dana.
 Poznato ograničenje (nije ispravljeno): stari `planVdotSada` za tvrdo kodovan LIČNI plan čita `p5k`
 redove; `planVdotNow` pokriva samo generisan plan (`meta`), jer lični plan nije u novom frontendu
 (FEATURE_INVENTORY F-27, odluka vlasnika O2).
+
+---
+
+## Korak B.3 — sinhronizacija i sesija (`domain/sync`, `lib/auth`)
+
+| # | Staro ponašanje | Zašto je problem | Novo ponašanje | Test |
+|---|---|---|---|---|
+| A5 | `sbParseHash` računa rok tokena kao `Date.now() + parseInt(expires_in) * 1000`. Neupotrebljiv `expires_in` (npr. `abc`) daje `NaN`. | `now < NaN` je uvek netačno, pa se token osvežava pri SVAKOM pozivu (nepotreban promet i rizik rotacije refresh tokena). | Neupotrebljiv ili nepozitivan rok pada na podrazumevanih 3600 s. | `sync.oracle.test.ts` (parseAuthHash) |
+
+Ostalo je bit-za-bit isto (oracle): `sbPayload` (200 stanja; nijedan token ni koordinata ne prelazi granicu),
+`sbDecide` (sve 3 750 kombinacija), `sbClaims`, `sbParseHash`, `sbIzKorisnika`.
