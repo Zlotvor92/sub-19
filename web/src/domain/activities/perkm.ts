@@ -93,6 +93,9 @@ export function perKmDetail(streams: ActivityStreams | null | undefined): PerKmR
 
 export type Decoupling = { n: number } | { n: null; razlog: string } | null;
 
+/** Najmanje kilometara sa tempom i pulsom iz kojih se drift uopšte računa (isti broj stoji u uputstvu). */
+export const DECOUPLING_MIN_KM = 6;
+
 /**
  * DEKUPLOVANJE (Pa:HR) — koliko se odnos tempa i pulsa pokvario u drugoj polovini trčanja; standardna
  * mera AEROBNE IZDRŽLJIVOSTI (ispod 5 % dobro, preko 8 % znači da tempo u drugoj polovini košta znatno više
@@ -106,7 +109,7 @@ export function decouplingPerKm(
   if (!Array.isArray(perKm)) return null;
   const list: ReadonlyArray<Pick<PerKmRow, 'paceSec' | 'hr'>> = perKm;
   const v = list.filter((k) => k && (k.paceSec ?? 0) > 0 && (k.hr ?? 0) > 0);
-  if (v.length < 6) return null;
+  if (v.length < DECOUPLING_MIN_KM) return null;
   const half = Math.floor(v.length / 2);
   const A = v.slice(0, half);
   const B = v.slice(v.length - half);

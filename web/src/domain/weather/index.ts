@@ -155,6 +155,9 @@ export function forecastFresh(
 
 /* ------------------------------------------------------------- najhladniji sat */
 
+/** Koliko stepeni (osećaj) sat mora biti hladniji da se uopšte predloži (isti broj stoji u uputstvu). */
+export const COOLER_HOUR_DELTA = 3;
+
 /** Najhladniji sat u razumnom prozoru (5–21 h); nudi se samo kad je razlika ≥ 3 °C (inače pomeranje je smetnja, ne savet). */
 export function bestHour(
   cache: Pick<ForecastCache, 'sati'> | null | undefined,
@@ -174,7 +177,7 @@ export function bestHour(
   if (!best) return null;
   const cur = hourFor(cache, date, chosen);
   if (!cur || cur.osecaj == null) return best;
-  return cur.osecaj - best.osecaj >= 3 && best.hour !== chosen ? best : null;
+  return cur.osecaj - best.osecaj >= COOLER_HOUR_DELTA && best.hour !== chosen ? best : null;
 }
 
 /* ------------------------------------------------------------- temperatura odrađenog trčanja */

@@ -204,7 +204,11 @@ export function missingZonesReason(
   return 'Ovo trčanje je uvezeno pre nego što je aplikacija počela da preuzima i granice zona. Podešavanja → intervals.icu → „Povuci sve" i raspodela će se pojaviti — nije potrebna nikakva nova dozvola.';
 }
 
+/** Pragovi skale drifta (%): ispod prvog zdrava aerobna baza, do drugog granično, preko drugog tempo košta znatno više otkucaja. Isti brojevi stoje u uputstvu. */
+export const DRIFT_GOOD_BELOW = 5;
+export const DRIFT_WARN_BELOW = 8;
+
 /** Skala boje drifta: < 5 % zdrava aerobna baza, 5–8 % granično, > 8 % tempo košta znatno više otkucaja. */
 export function driftLevel(n: number): 'good' | 'warn' | 'bad' {
-  return n < 5 ? 'good' : n < 8 ? 'warn' : 'bad';
+  return n < DRIFT_GOOD_BELOW ? 'good' : n < DRIFT_WARN_BELOW ? 'warn' : 'bad';
 }
