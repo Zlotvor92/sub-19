@@ -107,15 +107,36 @@ export interface RequestOptions {
   timeoutMs?: number;
 }
 
-/** Čita telo kao JSON; `undefined` kad ga nema ili nije JSON (nikad ne baca). */
+/** Čita telo kao JSON (nikad ne baca). Kad telo nije JSON, vraća sirov tekst — stranica greške posrednika ili platforme govori više od statusa. */
 export async function readJson(
   res: Response
-): Promise<{ ok: true; value: unknown } | { ok: false }> {
+): Promise<{ ok: true; value: unknown } | { ok: false; text: string }> {
+  let text = '';
   try {
-    return { ok: true, value: (await res.json()) as unknown };
+    text = await res.text();
   } catch {
-    return { ok: false };
+    return { ok: false, text: '' };
   }
+  try {
+    return { ok: true, value: JSON.parse(text) as unknown };
+  } catch {
+    return { ok: false, text };
+  }
+}
+
+/**
+ * Poruka za grešku čije telo NIJE JSON (server je pao ili je odgovorila stranica posrednika). „Request failed with status 502" i slični tekstovi
+ * ne znače korisniku ništa i kriju pravi uzrok, pa svaki slučaj dobija rečenicu koja kaže šta da se uradi.
+ */
+export function httpErrorText(status: number, text: string): string {
+  if (status === 401) return 'Nisi prijavljen — prijavi se ponovo.';
+  if (status === 404) return 'Serverska putanja ne postoji (proveri da su fajlovi u api/ folderu).';
+  const short = text
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120);
+  return `Server je vratio grešku (${status})${short ? `: ${short}` : ''}`;
 }
 
 /**
@@ -143,7 +164,9 @@ export async function requestJson<T>(
   }
   const body = await readJson(res);
   if (!res.ok) {
-    const msg = body.ok ? errorMessage(body.value, `Greška ${res.status}`) : `Greška ${res.status}`;
+    const msg = body.ok
+      ? errorMessage(body.value, `Greška ${res.status}`)
+      : httpErrorText(res.status, body.text);
     return { ok: false, kind: 'http', status: res.status, error: msg };
   }
   if (!body.ok)

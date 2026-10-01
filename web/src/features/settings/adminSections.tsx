@@ -8,7 +8,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useCommunityStore } from '../../stores/communityStore';
 import { useUIStore } from '../../stores/uiStore';
 import { Help } from './SettingCard';
-import type { SectionInfo } from './sections';
+import type { SectionInfo } from './sectionInfo';
 
 /* VLASNIČKE SEKCIJE. Dugmad vidi samo vlasnik (`ADMIN_UID` odlučuje SAMO o prikazu); pravu proveru radi server nad adresom iz tokena. */
 

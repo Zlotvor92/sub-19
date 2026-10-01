@@ -32,17 +32,11 @@ import { PushBody, usePushInfo, usePushStatus } from './pushSection';
 import { CommunityBody, useCommunityInfo } from './communitySection';
 import { WeatherBody, useWeatherInfo } from './weatherSection';
 import { IcuBody, WatchBody, pushToWatch, useIcuInfo, useWatchInfo } from './icuSections';
-import {
-  AccountBody,
-  DataBody,
-  PlanBody,
-  StravaBody,
-  useAccountInfo,
-  useDataInfo,
-  usePlanInfo,
-  useStravaInfo,
-  type SectionInfo
-} from './sections';
+import { AccountBody, useAccountInfo } from './accountSection';
+import { DataBody, useDataInfo } from './dataSection';
+import { PlanBody, usePlanInfo } from './planSection';
+import type { SectionInfo } from './sectionInfo';
+import { StravaBody, useStravaInfo } from './stravaSection';
 
 /* Stavke vrha ekrana za koje postoji sekcija sa dugmetom koje radnju obavlja (stavka bez sekcije bi imala mrtvo dugme). */
 const IMPLEMENTED: ReadonlySet<SettingsItem['key']> = new Set([

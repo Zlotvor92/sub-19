@@ -3,7 +3,7 @@ import { trainingHour } from '../../domain/weather';
 import { getApp } from '../../app/appContext';
 import { useSettingsStore } from '../../stores';
 import { Help } from './SettingCard';
-import type { SectionInfo } from './sections';
+import type { SectionInfo } from './sectionInfo';
 
 const timeOf = (ms: unknown): string =>
   typeof ms === 'number' && ms

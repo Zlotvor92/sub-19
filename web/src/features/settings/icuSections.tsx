@@ -7,7 +7,7 @@ import { useSettingsStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
 import { Help } from './SettingCard';
-import type { SectionInfo } from './sections';
+import type { SectionInfo } from './sectionInfo';
 
 const dateOf = (ms: unknown): string =>
   typeof ms === 'number' && ms ? new Date(ms).toLocaleDateString('sr-RS') : '';

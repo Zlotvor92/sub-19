@@ -5,7 +5,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useCommunityStore } from '../../stores/communityStore';
 import { Avatar } from '../community/Avatar';
 import { Help } from './SettingCard';
-import type { SectionInfo } from './sections';
+import type { SectionInfo } from './sectionInfo';
 
 export function useCommunityInfo(): SectionInfo {
   const signedIn = useAuthStore((s) => s.hasSession);

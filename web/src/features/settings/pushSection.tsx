@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getApp } from '../../app/appContext';
 import { useSettingsStore } from '../../stores';
 import { Help } from './SettingCard';
-import type { SectionInfo } from './sections';
+import type { SectionInfo } from './sectionInfo';
 import type { PushStatus } from '../../services/push/push';
 
 /* „Obaveštenja": stanje se čita ASINHRONO (dozvola je sinhrona, ali pretplata i javni ključ nisu), pa dugmad postoje tek kad se zna šta smeju da
