@@ -25,3 +25,8 @@ export function raceTimeForVdot(vdot: number, distM: number): number {
 export function riegelDist(sec: number, fromM: number, toM: number): number {
   return sec * Math.pow(toM / fromM, RIEGEL_EXPONENT);
 }
+
+/** Riegel: tempo [s/km] kvalitetne sesije od `qKm` radnih km → vreme [s] na 5 km. */
+export function riegelTo5k(paceSec: number, qKm: number): number {
+  return paceSec * qKm * Math.pow(5 / qKm, RIEGEL_EXPONENT);
+}
