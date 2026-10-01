@@ -45,3 +45,18 @@ export function fmtDayMonth(iso: string | null | undefined): string {
   if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return '—';
   return `${pad2(d)}.${pad2(mo)}.`;
 }
+
+/**
+ * Broj sa zarezom kao decimalnim znakom i bez završnih nula. NEBROJEVNA VREDNOST DAJE „—", NE „NaN"
+ * (stari `fmtKm('abc')` je davao doslovno „NaN km" na kartici dana). Nule se skidaju SAMO iza
+ * decimalne tačke: stari regex nad celim stringom je `fmtNum(10, 0)` pretvarao u „1".
+ */
+export function fmtNum(n: unknown, dec = 1): string {
+  if (n == null || typeof n === 'boolean' || typeof n === 'object') return '—';
+  const x = +(n as number);
+  if (!Number.isFinite(x)) return '—';
+  const v = (Math.round(x * 10 ** dec) / 10 ** dec).toFixed(dec);
+  return (v.includes('.') ? v.replace(/\.?0+$/, '') : v).replace('.', ',');
+}
+
+export const fmtKm = (n: unknown): string => fmtNum(n, 1);
