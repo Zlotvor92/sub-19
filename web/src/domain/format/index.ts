@@ -35,3 +35,13 @@ export function distUReceni(ime: string | null | undefined): string {
   const s = String(ime ?? '');
   return /^\d/.test(s) ? s : s.toLowerCase();
 }
+
+/** „07.03." — dan i mesec iz `YYYY-MM-DD`; nevažeći datum daje „—" (stari `fmtD`). */
+export function fmtDayMonth(iso: string | null | undefined): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso ?? ''));
+  if (!m) return '—';
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return '—';
+  return `${pad2(d)}.${pad2(mo)}.`;
+}
