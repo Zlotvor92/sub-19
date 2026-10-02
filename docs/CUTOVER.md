@@ -1,7 +1,7 @@
 # CUTOVER — prelazak produkcije sa starog frontenda na `web/`
 
-**Stanje: pripremljeno i probano u pregledaču, NE izvršeno.** Ovaj repozitorijum nema pristup Vercel-u, pa produkcija i dalje servira stari frontend (`index.html` + `app.js`).
-Sve ispod je ono što vlasnik (ili neko sa pristupom Vercel projektu) radi; svaki korak ima dokaz ili je izričito označen kao **neproveren**.
+**Stanje: IZVRŠENO 2026-10-02** (PR #26 → `main` → Vercel produkcija `sub-19.vercel.app`). Rollback: Vercel → Deployments → prethodni produkcioni deployment → Promote (stari frontend je i dalje u repozitorijumu do Phase 12).
+Dole je ostavljen opis koraka kakav je bio pre izvršenja; `vercel.json` u korenu je sada cutover konfiguracija, a stara je zamrznuta u `web/deploy/vercel.legacy.json`.
 
 ## Šta se tačno menja
 
