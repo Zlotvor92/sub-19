@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Icon } from '../../components/ui/icons';
 import { getApp } from '../../app/appContext';
 import { AnalysisText } from '../today/AiCard';
 import { aiTrendRequest } from '../../stores/aiActions';
@@ -23,15 +24,14 @@ export function TrendAi() {
   };
   return (
     <>
-      <button
-        type="button"
-        id="trend-go"
-        className="btn-ai"
-        style={{ marginTop: 10 }}
-        disabled={busy}
-        onClick={go}
-      >
-        {busy ? 'Analiziram trend…' : '📈 Objasni trend (AI)'}
+      <button type="button" id="trend-go" className="btn-ai" disabled={busy} onClick={go}>
+        {busy ? (
+          'Analiziram trend…'
+        ) : (
+          <>
+            <Icon name="sparkle" size={18} /> Objasni trend (AI)
+          </>
+        )}
       </button>
       <div id="trend-out" className={`ai-out${out.kind === 'error' ? ' err' : ''}`}>
         {out.kind === 'text' ? (

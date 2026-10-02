@@ -1,10 +1,10 @@
 import { useState } from 'react';
+import { Icon } from '../../components/ui/icons';
 import { parseIsoDate, type IsoDate } from '../../domain/date';
 import { dowShort, fmtDayMonth, fmtDayMonthYear, fmtNum, pl3 } from '../../domain/format';
 import { weightModel } from '../../domain/recovery';
 import type { WeightRecord } from '../../domain/state';
 import { WeightChart } from './charts';
-import { CardHead } from './cards';
 
 /* TELESNA MASA: grafikon, ručni unos (zamenjuje prethodni ručni za isti datum), brisanje merenja i merenja pre početka plana. */
 export function WeightCard({
@@ -34,17 +34,17 @@ export function WeightCard({
   const last = valid[0]?.x;
   const model = weightModel(kg, today);
   return (
-    <div className="card">
-      <CardHead
-        title="Telesna masa"
-        extra={
-          last ? `poslednje ${fmtNum(last.kg, 1)} kg · ${fmtDayMonth(last.date)}` : 'bez unosa'
-        }
-      />
+    <section className="card chart-card" aria-labelledby="ws-h">
+      <div className="dhead">
+        <h3 id="ws-h">Telesna masa</h3>
+        <span className="dhead-x">
+          {last ? `poslednje ${fmtNum(last.kg, 1)} kg · ${fmtDayMonth(last.date)}` : 'bez unosa'}
+        </span>
+      </div>
       {model ? (
         <WeightChart model={model} selected={sel} onSelect={setSel} />
       ) : (
-        <div className="empty">Još nema merenja — unesi prvo ispod.</div>
+        <p className="empty">Još nema merenja — unesi prvo ispod.</p>
       )}
       <div className="f-grid">
         <div className="f-field">
@@ -71,11 +71,11 @@ export function WeightCard({
         </div>
       </div>
       {err ? (
-        <div role="alert" className="note-src" style={{ color: 'var(--red)', marginTop: 8 }}>
+        <p role="alert" className="note-src err">
           {err}
-        </div>
+        </p>
       ) : null}
-      <div className="btnrow" style={{ marginTop: 10 }}>
+      <div className="btnrow">
         <button
           type="button"
           className="btn"
@@ -92,25 +92,23 @@ export function WeightCard({
         </button>
       </div>
       {old ? (
-        <div className="btnrow" style={{ marginTop: 8 }}>
+        <div className="btnrow">
           <button type="button" className="btn ghost" onClick={onDeleteBefore}>
             Obriši {old} {pl3(old, 'merenje', 'merenja', 'merenja')} pre {fmtDayMonth(planStart)}
           </button>
         </div>
       ) : null}
       {valid.length ? (
-        <details className="help" style={{ marginTop: 12 }}>
+        <details className="help">
           <summary>Sva merenja ({valid.length})</summary>
           {valid.map((o) => (
             <div className="krow wt-row" key={`${o.i}-${o.x.date}`}>
               <div className="ki">
-                <div className="kd">
-                  {fmtNum(o.x.kg, 1)} kg{' '}
-                  <span className="ka">
-                    · {dowShort(o.x.date)} {fmtDayMonthYear(o.x.date)}
-                    {o.x.src ? ' · iz treninga' : ''}
-                  </span>
-                </div>
+                <b className="num">{fmtNum(o.x.kg, 1)} kg</b>
+                <span className="ka">
+                  {dowShort(o.x.date)} {fmtDayMonthYear(o.x.date)}
+                  {o.x.src ? ' · iz treninga' : ''}
+                </span>
               </div>
               <button
                 type="button"
@@ -121,12 +119,12 @@ export function WeightCard({
                   onDelete(o.i);
                 }}
               >
-                ✕
+                <Icon name="close" size={18} />
               </button>
             </div>
           ))}
         </details>
       ) : null}
-    </div>
+    </section>
   );
 }

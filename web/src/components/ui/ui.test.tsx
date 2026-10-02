@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { confirmAction } from '../../app/confirm';
+import type { CycleModel } from '../../features/cycle/cycle';
 import { useUIStore, type Banner } from '../../stores/uiStore';
 import { BannerHost } from './BannerHost';
 import { ConfirmHost } from './ConfirmHost';
@@ -191,7 +192,9 @@ describe('traka tabova i kapija', () => {
     expect(useUIStore.getState().tab).toBe('plan');
     expect(screen.getByRole('button', { name: 'Plan' })).toHaveAttribute('aria-current', 'page');
     expect(onSelect).toHaveBeenCalledWith('plan');
-    expect(screen.getAllByRole('button')).toHaveLength(5);
+    /* Zajednica je ugašena: u traci su četiri ekrana */
+    expect(screen.getAllByRole('button')).toHaveLength(4);
+    expect(screen.queryByRole('button', { name: 'Zajednica' })).toBeNull();
   });
   it('kapija: poruka greške je `alert`, dugme poziva prijavu', async () => {
     const user = userEvent.setup();
@@ -215,5 +218,113 @@ describe('traka tabova i kapija', () => {
     );
     expect(screen.queryByText('skriveno')).toBeNull();
     expect(screen.getByText('vidljivo')).toBeInTheDocument();
+  });
+});
+
+describe('Oznake (Badge)', () => {
+  it('poreklo podatka nosi REČ i oblik, ne samo boju; stanje ima tačku i reč', async () => {
+    const { ProvenanceBadge, StatusBadge, PhaseBadge } = await import('./Badge');
+    render(
+      <>
+        <ProvenanceBadge kind="measured" />
+        <ProvenanceBadge kind="estimated" />
+        <ProvenanceBadge kind="projected" />
+        <StatusBadge tone="warn">Pazi</StatusBadge>
+        <PhaseBadge phase="RAZVOJ" />
+      </>
+    );
+    expect(screen.getByText('Izmereno')).toHaveClass('prov-m');
+    expect(screen.getByText('Procena')).toHaveClass('prov-e');
+    expect(screen.getByText('Projekcija')).toHaveClass('prov-p');
+    const st = screen.getByText('Pazi');
+    expect(st).toHaveClass('badge', 'warn');
+    expect(st.querySelector('.led')).not.toBeNull();
+    expect(screen.getByText('RAZVOJ')).toHaveClass('phase-tag');
+  });
+});
+
+describe('Traka ciklusa (CycleRail)', () => {
+  it('dugme sa rečenicom za čitač ekrana; jedan segment po nedelji; tekuća označena; klik otvara plan', async () => {
+    const { CycleRail } = await import('../../features/cycle/CycleRail');
+    const model = {
+      total: 3,
+      weeks: [
+        {
+          w: 1,
+          phase: 'BAZA',
+          deload: false,
+          state: 'done',
+          start: '2026-01-05',
+          planKm: 10,
+          realKm: 10
+        },
+        {
+          w: 2,
+          phase: 'BAZA',
+          deload: true,
+          state: 'now',
+          start: '2026-01-12',
+          planKm: 8,
+          realKm: 2
+        },
+        {
+          w: 3,
+          phase: 'TRKA',
+          deload: false,
+          state: 'future',
+          start: '2026-01-19',
+          planKm: 5,
+          realKm: 0
+        }
+      ],
+      phases: [],
+      current: null
+    } as never as CycleModel;
+    (model as { current: unknown }).current = (model as { weeks: unknown[] }).weeks[1];
+    const onOpen = vi.fn();
+    const user = userEvent.setup();
+    const { container } = render(<CycleRail model={model} daysToRace={10} onOpen={onOpen} />);
+    const btn = screen.getByRole('button', {
+      name: /^Ciklus: nedelja 2 od 3, faza .*\(rasterećenje\), 10 dana do trke/
+    });
+    expect(container.querySelectorAll('.rail > i')).toHaveLength(3);
+    expect(container.querySelector('i[data-s="now"]')).not.toBeNull();
+    expect(container.querySelector('i[data-deload]')).not.toBeNull();
+    await user.click(btn);
+    expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Disclosure', () => {
+  it('izvorni <details>: zatvoren po podrazumevanju, summary je fokusabilan i otvara ga', async () => {
+    const { Disclosure } = await import('./Disclosure');
+    const user = userEvent.setup();
+    const { container } = render(
+      <Disclosure title="Struktura" meta="5 koraka">
+        <p>sadržaj</p>
+      </Disclosure>
+    );
+    const d = container.querySelector('details') as HTMLDetailsElement;
+    expect(d.open).toBe(false);
+    expect(screen.getByText('5 koraka')).toBeInTheDocument();
+    const sum = screen.getByText('Struktura').closest('summary') as HTMLElement;
+    sum.focus();
+    expect(sum).toHaveFocus();
+    await user.click(sum); // jsdom ne preslikava Enter u otvaranje; u pregledaču to radi izvorni <summary> (proveren Tab-om)
+    expect(d.open).toBe(true);
+  });
+});
+
+describe('Num', () => {
+  it('čitač ekrana dobija samo konačnu vrednost; pod „smanjeno kretanje" odmah tačnu', async () => {
+    const { Num } = await import('./Num');
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (q: string) => ({ matches: /reduce/.test(q), media: q })
+    });
+    const { container } = render(<Num value={91} format={(n) => `${Math.round(n)}%`} />);
+    expect(container.querySelector('.sr-only')).toHaveTextContent('91%');
+    expect(container.querySelector('[aria-hidden="true"]')).toHaveTextContent('91%');
+    Reflect.deleteProperty(window, 'matchMedia');
   });
 });

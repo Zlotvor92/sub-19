@@ -58,7 +58,7 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe('Plan', () => {
-  it('sažetak: dva prstena i činjenice; faze; nedelje se otvaraju dodirom i nose dane', async () => {
+  it('sažetak: traka napretka i činjenice; faze; nedelje se otvaraju dodirom i nose dane', async () => {
     const user = userEvent.setup();
     act(() =>
       useTrainingStore.getState().patchLog(firstOf((d) => d.km === 8 || (d.km ?? 0) > 5).id, {
@@ -70,18 +70,18 @@ describe('Plan', () => {
     expect(screen.getByText('od plana do sada')).toBeInTheDocument();
     expect(screen.getByText('ceo plan')).toBeInTheDocument();
     expect(screen.getByText('Nedeljna kilometraža')).toBeInTheDocument();
-    expect(screen.getByText('BAZA')).toBeInTheDocument();
-    expect(screen.getByText('TAPER I TRKA')).toBeInTheDocument();
-    expect(screen.queryByText('⇄ Pomeri treninge')).toBeNull();
+    expect(screen.getByRole('heading', { level: 2, name: 'BAZA' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'TRKA' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Pomeri treninge' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Nedelja 2' }));
     expect(screen.getByRole('button', { name: 'Nedelja 2' })).toHaveAttribute(
       'aria-expanded',
       'true'
     );
     expect(screen.getByText(/tekuća nedelja/)).toBeInTheDocument(); // 14.1. je u N2
-    expect(screen.getByText('⇄ Pomeri treninge')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pomeri treninge' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Nedelja 2' }));
-    expect(screen.queryByText('⇄ Pomeri treninge')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Pomeri treninge' })).toBeNull();
   });
 
   it('grafikon: dodir na nedelju pokazuje plan i urađeno, isti dodir poništava', async () => {

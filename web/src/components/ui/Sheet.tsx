@@ -33,9 +33,9 @@ function setBackgroundInert(on: boolean): void {
   }
 }
 
-/** Naziv dijaloga: prvi naslov SA TEKSTOM (prazan `.card-t` ne gasi ceo lanac). */
+/** Naziv dijaloga: prvi naslov SA TEKSTOM (prazan naslov ne gasi ceo lanac); naslov lista (`.sh-t`) pre naslova kartica unutar njega. */
 export function sheetTitle(root: HTMLElement): string {
-  for (const sel of ['.card-t', 'h2', 'h3', '.sh-t']) {
+  for (const sel of ['.sh-t', 'h2', '.card-t', 'h3']) {
     const t = root.querySelector(sel)?.textContent?.trim();
     if (t) return t;
   }

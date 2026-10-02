@@ -11,11 +11,10 @@ import {
   stepOf,
   type Axis
 } from '../domain/shell/swipe';
-import { ambientKey } from '../components/ui/Shell';
-import { TABS, useUIStore, type Tab } from '../stores/uiStore';
+import { VISIBLE_TABS, useUIStore, type Tab } from '../stores/uiStore';
 
 /* PREVLAČENJE IZMEĐU TABOVA. Dva ekrana se pomeraju ZAJEDNO, kao traka: onaj što odlazi ide 1:1 sa prstom, susedni stoji uz njega i ulazi u kadar istom
-   brzinom — ruka vidi da vuče sadržaj, a ne da pokreće animaciju. Ambijentalno svetlo se pretapa sa sadržajem. Odluke (osa, prag, flik, trajanje) su u
+   brzinom — ruka vidi da vuče sadržaj, a ne da pokreće animaciju. Odluke (osa, prag, flik, trajanje) su u
    `domain/shell/swipe`; ovde su samo slušaoci dodira i pomeranje elemenata.
 
    `touch*`, a ne `pointer*`: da bi prevlačenje smelo da uzme dodir, uspravno skrolovanje mora da se ODBIJE (`preventDefault`), a `touch-action` u CSS-u
@@ -87,33 +86,11 @@ function clear(el: HTMLElement | null): void {
   el.style.removeProperty('--pv-ms');
 }
 
-const ambient = (): HTMLElement | null => document.getElementById('ambijent');
-
-function lightFollows(from: Tab, to: Tab | null, share: number): void {
-  const a = ambient();
-  if (!a) return;
-  const f = a.querySelector<HTMLElement>(`i[data-t="${ambientKey(from)}"]`);
-  const t = to ? a.querySelector<HTMLElement>(`i[data-t="${ambientKey(to)}"]`) : null;
-  a.classList.add('vuce');
-  if (f) f.style.opacity = String(1 - share);
-  if (t) t.style.opacity = String(share);
-}
-
-function lightRestore(): void {
-  const a = ambient();
-  if (!a) return;
-  a.classList.remove('vuce');
-  a.querySelectorAll<HTMLElement>('i').forEach((x) => x.style.removeProperty('opacity'));
-}
-
-/** Ikonica i svetlo se menjaju PO PUŠTANJU, ne kad ekran legne: boja tada putuje zajedno sa sadržajem. */
+/** Oznaka aktivnog taba se menja PO PUŠTANJU, ne kad ekran legne: tada putuje zajedno sa sadržajem. */
 function announce(tab: Tab): void {
   document
     .querySelectorAll<HTMLElement>('nav button')
     .forEach((b) => b.classList.toggle('on', b.dataset['pg'] === tab));
-  document
-    .querySelectorAll<HTMLElement>('#ambijent i')
-    .forEach((x) => x.classList.toggle('on', x.dataset['t'] === ambientKey(tab)));
 }
 
 /** `enabled` je netačno kad nešto drugo pokriva ekran (čarobnjak, list, kapija za prijavu, uvodni ekran): tada tab ne sme da se menja. */
@@ -132,7 +109,6 @@ export function useSwipeNav(enabled: boolean): void {
     const release = (p: Gesture): void => {
       clear(p.el);
       clear(p.targetEl);
-      lightRestore();
     };
     /* Dovršetak koji još leti se izvršava ODMAH: dva prelaska u vazduhu istovremeno nemaju smisla, a ni čekanje da prvi istekne. */
     const flushPending = (): void => {
@@ -157,7 +133,7 @@ export function useSwipeNav(enabled: boolean): void {
       clear(p.targetEl);
       p.targetEl = null;
       p.step = step;
-      p.target = neighborTab(TABS, ui.getState().tab, step);
+      p.target = neighborTab(VISIBLE_TABS, ui.getState().tab, step);
       if (!p.target || p.calm) return;
       const target = p.target;
       /* sadržaj mora postojati pre nego što uđe u kadar */
@@ -174,7 +150,6 @@ export function useSwipeNav(enabled: boolean): void {
     /* Dovršetak posle puštanja. `to` je gde staje ekran koji odlazi; onaj što dolazi ide za njim, uvek na razmaku od jedne širine. */
     const fly = (p: Gesture, to: number, ms: number, tab: Tab | null): void => {
       const from = ui.getState().tab;
-      lightRestore(); // od ovog trena boju dovršava prelaz, ne prst
       for (const x of [p.el, p.targetEl]) {
         if (!x) continue;
         x.style.setProperty('--pv-ms', `${ms}ms`);
@@ -255,7 +230,6 @@ export function useSwipeNav(enabled: boolean): void {
       if (p.targetEl) {
         move(p.el, dx);
         move(p.targetEl, dx + p.step * p.width);
-        lightFollows(ui.getState().tab, p.target, Math.min(1, Math.abs(dx) / p.width));
       } else {
         /* Kraj niza: ekran samo popusti i vrati se. Otpor je odgovor „tu je kraj". */
         move(p.el, edgeOffset(dx));

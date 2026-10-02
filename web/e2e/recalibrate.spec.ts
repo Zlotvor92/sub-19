@@ -20,7 +20,7 @@ const plan = (): ServerPlan =>
   ((backend.row?.data ?? {}) as { genPlan?: ServerPlan }).genPlan ?? { meta: {}, weeks: [] };
 
 async function addTest(page: Page, time: string): Promise<void> {
-  await page.getByRole('button', { name: /^(Unesi test na 3 km|\+ Novi test)$/ }).click();
+  await page.getByRole('button', { name: /^(Unesi test na 3 km|Novi test)$/ }).click();
   const sheet = page.getByRole('dialog');
   await sheet.getByLabel('Vreme').fill(time);
   await sheet.getByRole('button', { name: 'Sačuvaj' }).click();

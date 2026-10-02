@@ -1,3 +1,4 @@
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { fmtDayMonth, fmtDayMonthYear, fmtNum } from '../../domain/format';
 import {
   partName,
@@ -18,7 +19,7 @@ const info = (x: number, text: string) => (
   </text>
 );
 
-/** Dodirni cilj preko tačke (r=11 je ~44 px na telefonu — preporučeni minimum za dodir). */
+/** Dodirni cilj preko tačke (r=15 u viewBox-u od 340 je ~30 px prečnika pri širini telefona; susedne tačke se ne preklapaju zbog razmaka među merenjima). */
 function Hit({
   x,
   y,
@@ -34,7 +35,7 @@ function Hit({
     <circle
       cx={x.toFixed(1)}
       cy={y.toFixed(1)}
-      r={11}
+      r={15}
       fill="transparent"
       role="button"
       aria-label={label}
@@ -57,7 +58,6 @@ const poly = (pts: ReadonlyArray<{ x: number; y: number }>): string =>
 export function SeriesChart({
   model,
   field,
-  color,
   caption,
   selected,
   onSelect,
@@ -65,26 +65,57 @@ export function SeriesChart({
 }: {
   model: SeriesModel<WellnessRecord>;
   field: 'hrv' | 'pulsUMiru';
-  color: string;
   caption: string;
   selected: number | null;
   onSelect: (i: number | null) => void;
   describe: (rec: WellnessRecord, base: number) => string;
 }) {
   const { items, base, left: L, right: R, bottom: B, top: T, width: W, height: H } = model;
+  const color = 'var(--measured)';
   const sel = selected != null ? items[selected] : undefined;
   const last = items[items.length - 1];
   const first = items[0];
+  const text = sel ? describe(sel.rec, model.baseValues[selected as number] as number) : null;
+  /* Dnevni nizovi su gusti (do 90 tačaka u ~330 px), pa se tačka bira po najbližem x (dodir) ili strelicama — ne po jednoj meti za svaku. */
+  const pick = (e: MouseEvent<SVGSVGElement>): void => {
+    const r = e.currentTarget.getBoundingClientRect();
+    if (!r.width) return;
+    const x = ((e.clientX - r.left) / r.width) * W;
+    let best = 0;
+    items.forEach((p, i) => {
+      if (Math.abs(p.x - x) < Math.abs((items[best]?.x ?? 0) - x)) best = i;
+    });
+    onSelect(selected === best ? null : best);
+  };
+  const key = (e: KeyboardEvent<SVGSVGElement>): void => {
+    const step = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0;
+    if (e.key === 'Escape') onSelect(null);
+    if (!step) return;
+    e.preventDefault();
+    const from = selected ?? (step < 0 ? items.length : -1);
+    onSelect(Math.max(0, Math.min(items.length - 1, from + step)));
+  };
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', marginTop: 10 }}>
-      {sel ? info(L, describe(sel.rec, model.baseValues[selected as number] as number)) : hint(L)}
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="chart series"
+      role="slider"
+      tabIndex={0}
+      aria-label={caption}
+      aria-valuemin={1}
+      aria-valuemax={items.length}
+      aria-valuenow={(selected ?? items.length - 1) + 1}
+      aria-valuetext={text ?? 'Nijedan dan nije izabran'}
+      onClick={pick}
+      onKeyDown={key}
+    >
+      {text ? info(L, text) : hint(L)}
       <polyline
         points={poly(base)}
         fill="none"
-        stroke="var(--txt3)"
-        strokeWidth="1.4"
+        stroke="var(--text-3)"
+        strokeWidth="1.5"
         strokeDasharray="4 4"
-        opacity=".65"
       />
       <polyline
         className="ln"
@@ -112,23 +143,24 @@ export function SeriesChart({
             ) : (
               <circle cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r={2.6} fill={color} opacity=".75" />
             )}
-            <Hit
-              x={p.x}
-              y={p.y}
-              label={`${fmtDayMonth(p.rec.datum)}: ${fmtNum(p.value, field === 'hrv' ? 1 : 0)}`}
-              onClick={() => onSelect(isSel ? null : i)}
-            />
           </g>
         );
       })}
       {first ? (
-        <text x={L} y={B + 16} fontSize="9" fill="var(--txt3)">
+        <text x={L} y={B + 16} fontSize="10.5" fontWeight="600" fill="var(--text-3)">
           {fmtDayMonth(first.rec.datum)}
         </text>
       ) : null}
       {last ? (
         <>
-          <text x={W - R} y={B + 16} textAnchor="end" fontSize="9" fill="var(--txt3)">
+          <text
+            x={W - R}
+            y={B + 16}
+            textAnchor="end"
+            fontSize="10.5"
+            fontWeight="600"
+            fill="var(--text-3)"
+          >
             {fmtDayMonth(last.rec.datum)}
           </text>
           <text
@@ -143,7 +175,7 @@ export function SeriesChart({
           </text>
         </>
       ) : null}
-      <text x={L} y={T + 2} fontSize="9" fill="var(--txt3)">
+      <text x={L} y={T + 2} fontSize="10.5" fontWeight="600" fill="var(--text-3)">
         {caption}
       </text>
     </svg>
@@ -198,20 +230,10 @@ export function WeightChart({
       ))}
       {items.length > 1 && first && lastPt ? (
         <>
-          <defs>
-            <linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--pink)" stopOpacity=".32" />
-              <stop offset="100%" stopColor="var(--pink)" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <polygon
-            points={`${first.x.toFixed(1)},${B} ${line} ${lastPt.x.toFixed(1)},${B}`}
-            fill="url(#wtGrad)"
-          />
           <polyline
             className="ln"
             fill="none"
-            stroke="var(--pink)"
+            stroke="var(--measured)"
             strokeWidth="2.25"
             strokeLinejoin="round"
             points={line}
@@ -226,7 +248,7 @@ export function WeightChart({
               cx={p.x.toFixed(1)}
               cy={p.y.toFixed(1)}
               r={isSel ? 4.8 : 3.4}
-              fill="var(--pink)"
+              fill="var(--measured)"
               {...(isSel ? { stroke: '#fff', strokeWidth: 1 } : {})}
             />
             <Hit
@@ -274,7 +296,8 @@ export function PainChart({
         y1={yOf(3)}
         x2={W - R}
         y2={yOf(3)}
-        stroke="rgba(255,176,32,.4)"
+        stroke="var(--warn)"
+        opacity=".6"
         strokeDasharray="3 4"
       />
       <line
@@ -282,14 +305,15 @@ export function PainChart({
         y1={yOf(6)}
         x2={W - R}
         y2={yOf(6)}
-        stroke="rgba(255,69,58,.4)"
+        stroke="var(--bad)"
+        opacity=".6"
         strokeDasharray="3 4"
       />
       {items.length > 1 ? (
         <polyline
           className="ln"
           fill="none"
-          stroke="rgba(255,255,255,.3)"
+          stroke="var(--text-3)"
           strokeWidth="1.5"
           points={poly(items)}
         />
@@ -303,7 +327,7 @@ export function PainChart({
               cx={p.x.toFixed(1)}
               cy={p.y.toFixed(1)}
               r={isSel ? 5.2 : 3.6}
-              fill={pain >= 6 ? 'var(--red)' : pain >= 1 ? 'var(--amber)' : 'var(--green)'}
+              fill={pain >= 6 ? 'var(--bad)' : pain >= 1 ? 'var(--warn)' : 'var(--ok)'}
               {...(isSel ? { stroke: '#fff', strokeWidth: 1 } : {})}
             />
             <Hit

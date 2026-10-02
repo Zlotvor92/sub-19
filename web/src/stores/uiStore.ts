@@ -2,11 +2,17 @@
    sessionStorage-u, što radi `app/tabs`). */
 
 import { create } from 'zustand';
+import { COMMUNITY_ENABLED } from '../services/config';
 
+/** Svi ekrani koje kod poznaje (Zajednica ostaje u kodu, ali se ne prikazuje dok je ugašena — v. `COMMUNITY_ENABLED`). */
 export const TABS = ['danas', 'plan', 'opor', 'pred', 'zajed'] as const;
 export type Tab = (typeof TABS)[number];
+/** Ekrani koje čovek stvarno vidi: traka tabova, prevlačenje i vraćanje poslednjeg taba rade samo nad ovim spiskom. */
+export const VISIBLE_TABS: readonly Tab[] = COMMUNITY_ENABLED
+  ? TABS
+  : TABS.filter((t) => t !== 'zajed');
 export const isTab = (x: unknown): x is Tab =>
-  typeof x === 'string' && (TABS as readonly string[]).includes(x);
+  typeof x === 'string' && (VISIBLE_TABS as readonly string[]).includes(x);
 
 export interface SheetRequest {
   /** Identifikator sadržaja (`settings`, `alt`, `knee`, …) — komponenta ga mapira na prikaz. */

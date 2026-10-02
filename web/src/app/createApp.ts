@@ -64,7 +64,12 @@ import {
   type SessionState
 } from '../services/supabase/session';
 import { createSyncEngine, type SyncEngine } from '../services/sync/engine';
-import { APP_VERSION, SUPABASE_ANON_KEY, SUPABASE_URL } from '../services/config';
+import {
+  APP_VERSION,
+  COMMUNITY_ENABLED,
+  SUPABASE_ANON_KEY,
+  SUPABASE_URL
+} from '../services/config';
 import type { Fetcher } from '../services/http';
 
 /** Koliko se čeka provera naloga pre nego što se ekran prikaže iz lokalnih podataka. */
@@ -393,7 +398,8 @@ export function createApp(deps: AppDeps): App {
     session,
     now,
     today: deps.today,
-    online: () => (deps.online ? deps.online() : true)
+    online: () => (deps.online ? deps.online() : true),
+    enabled: () => COMMUNITY_ENABLED
   });
   const notify = deps.notify ?? ((): void => undefined);
   const integrations = createIntegrations({
@@ -458,6 +464,7 @@ export function createApp(deps: AppDeps): App {
       integrations.pullIfDue(60 * 60000);
       void ai.collectAll();
       community.publishOnStart();
+      void community.withdrawIfDisabled();
       void push.refreshOnStart();
     },
     login() {

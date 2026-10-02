@@ -1,20 +1,125 @@
-/* Tokeni su preuzeti doslovno iz ../../index.html (:root) — v. docs/REWRITE_PLAN.md odluka I. */
-:root {
-  --bg: #0b0a1f;
-  --txt: #eef0ff;
-  --txt2: rgba(238, 240, 255, 0.78);
+/* OSNOVA: reset, tipografija, fokus, kretanje. Tokeni su u tokens.css. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 body {
   background: var(--bg);
-  color: var(--txt);
+  color: var(--text);
   min-height: 100dvh;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  font-feature-settings:
+    'tnum' 1,
+    'lnum' 1;
+  -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
 }
-main {
-  padding: 24px 16px;
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+a {
+  color: inherit;
+}
+svg {
+  flex: none;
+}
+
+/* NASLOVI: semantika je u markupu (h1 ekran, h2 panel, h3 oznaka odeljka); izgled je ovde. `.lbl` daje izgled oznake (h3) naslovu drugog nivoa kad panel nema nadređeni h2. */
+h1 {
+  font-size: var(--fs-h1);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+h2 {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+h3,
+.lbl {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.3;
+}
+.eyebrow {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.3;
+}
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.02em;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* FOKUS: vidljiv za tastaturu, nevidljiv za dodir. */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--r-1);
+}
+::selection {
+  background: rgba(125, 179, 255, 0.35);
+}
+
+/* KRETANJE: jedan izvor pravila. Svaka animacija u aplikaciji traje 120–480 ms i mora da može da se
+   prekine; pod „smanjeno kretanje“ ostaje samo promena stanja bez puta. Dugme „Završi“ i pozicioniranje
+   ne zavise od animacije. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
 }

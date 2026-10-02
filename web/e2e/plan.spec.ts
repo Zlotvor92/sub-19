@@ -73,7 +73,7 @@ test('pravljenje plana: završava na „Danas", plan ima nedelje do trke, a stan
   await createPlan(page);
   await expect(tab(page, 'Danas')).toHaveAttribute('aria-current', 'page');
   // Danas: 88 dana do trke 12. aprila, prvi trening je planiran za danas
-  await expect(page.locator('#h-sub')).toHaveText('Nedelja 1 / 13 · 88 dana do trke');
+  await expect(page.locator('#h-sub')).toHaveText('N1/13 · BAZA · 88 d');
   await expect(page.getByRole('button', { name: 'Završi trening' })).toBeVisible();
   await tab(page, 'Plan').click();
   await expect(page.getByText('NEDELJNA KILOMETRAŽA')).toBeVisible();

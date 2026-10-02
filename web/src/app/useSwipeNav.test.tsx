@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Ambient, Page, Tabbar } from '../components/ui/Shell';
+import { Page, Tabbar } from '../components/ui/Shell';
 import { TABS, useUIStore } from '../stores/uiStore';
 import { useSwipeNav } from './useSwipeNav';
 
@@ -13,7 +13,6 @@ function Harness({ enabled = true }: { enabled?: boolean }) {
   const peek = useUIStore((s) => s.peek);
   return (
     <div>
-      <Ambient tab={tab} settingsOpen={false} />
       <header />
       <main>
         {TABS.map((t) => (
@@ -259,18 +258,17 @@ describe('prevlačenje između tabova', () => {
     expect(tab()).toBe('pred');
   });
 
-  it('ambijentalno svetlo prati prst, a posle puštanja se vraća na klase', () => {
+  it('oznaka aktivnog taba se menja po puštanju prsta (ne kad ekran legne), a ekran koji dolazi prati prst', () => {
     render(<Harness />);
     drag(300, 100); // 200/400 = pola puta
-    const amb = document.getElementById('ambijent') as HTMLElement;
-    expect(amb.classList.contains('vuce')).toBe(true);
-    expect(amb.querySelector<HTMLElement>('i[data-t="danas"]')?.style.opacity).toBe('0.5');
-    expect(amb.querySelector<HTMLElement>('i[data-t="plan"]')?.style.opacity).toBe('0.5');
+    const on = (): string | null =>
+      document.querySelector('nav button.on')?.getAttribute('data-pg') ?? null;
+    expect(on()).toBe('danas'); // dok prst vuče, oznaka još stoji
     fire('touchend', []);
-    expect(amb.classList.contains('vuce')).toBe(false);
-    expect(amb.querySelector<HTMLElement>('i[data-t="plan"]')?.style.opacity).toBe('');
+    expect(on()).toBe('plan'); // po puštanju se menja odmah, ekran još doklizava
     settle();
-    expect(amb.querySelector('i.on')?.getAttribute('data-t')).toBe('plan');
+    expect(tab()).toBe('plan');
+    expect(on()).toBe('plan');
   });
 });
 

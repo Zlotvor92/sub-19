@@ -73,7 +73,9 @@ test('povezivanje: odobrenje vraća na aplikaciju, kod se menja za tokene na NA�
   await expect.poll(() => backend.count('/api/auth')).toBeGreaterThan(0);
 
   // trčanje je uvezeno u plan: „Danas" je odrađen sa podacima sa Strave
-  await expect(page.locator('.st.done')).toHaveText('Odrađen', { timeout: 15_000 });
+  await expect(page.locator('#tcard[data-status="done"] .focus-top .badge')).toHaveText('Odrađen', {
+    timeout: 15_000
+  });
   await expect(page.getByLabel(/Distanca \(km\)/)).toHaveValue('8,6');
   await expect(page.getByRole('status', { name: 'Pros. tempo' })).toHaveText('4:57 /km');
   // tokeni žive samo na uređaju: ne idu na server

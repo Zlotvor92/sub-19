@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { sessionGuide } from '../../domain/day';
-import { dowShort, fmtDayMonthYear, fmtKm } from '../../domain/format';
-import { dayLabel, sessKind } from '../../domain/plan';
+import { dowShort, fmtDayMonthYear } from '../../domain/format';
 import { confirmAction } from '../../app/confirm';
+import { PhaseBadge, StatusBadge } from '../../components/ui/Badge';
+import { Icon } from '../../components/ui/icons';
 import { useResolvedPlan, useTrainingStore } from '../../stores';
 import { deleteEntry, setStatus } from '../../stores/dayActions';
 import { useUIStore } from '../../stores/uiStore';
+import { useCycleModel } from '../cycle/useCycleModel';
+import { sessionView } from '../session/sessionModel';
+import { useEasyPace } from '../session/useEasyPace';
+import { WorkoutBrief } from '../session/WorkoutBrief';
 import { AiCard } from '../today/AiCard';
 import { CompareCard, MorningCard, WatchCard, ZonesCard, dataDate } from '../today/Cards';
 import { Description } from '../today/DayCard';
@@ -17,6 +21,7 @@ const STATUSES: ReadonlyArray<readonly [Status, string, string]> = [
   ['done', 'Odrađen', 'c-done '],
   ['skip', 'Preskočen', 'c-skip ']
 ];
+const TONE = { pending: 'none', done: 'ok', skip: 'warn' } as const;
 
 /* LIST DANA: opis, status, forma za unos, izmena i brisanje unosa. Dan odmora nema formu ni status — samo izmenu. */
 export function DaySheet({ id }: { id: string }) {
@@ -25,35 +30,47 @@ export function DaySheet({ id }: { id: string }) {
   const status = useTrainingStore((s) => s.log[id]?.status || 'pending');
   const hasEntry = useTrainingStore((s) => !!s.log[id]);
   const entry = useTrainingStore((s) => s.log[id]);
-  const edited = useTrainingStore((s) => !!s.alts[id]);
+  const alt = useTrainingStore((s) => s.alts[id]);
+  const edited = !!alt;
+  const cycle = useCycleModel();
+  const easy = useEasyPace();
   const today = useUIStore((s) => s.today);
   const openSheet = useUIStore((s) => s.openSheet);
   const closeSheet = useUIStore((s) => s.closeSheet);
   const [, bump] = useState(0);
   if (!plan || !day) return null;
   const rest = day.rest;
-  const guide = rest ? null : sessionGuide(sessKind(day, edited));
+  const view = sessionView(day, { alt, easyPaceSec: easy });
+  const phase = cycle?.weeks.find((w) => w.w === day.w)?.phase ?? null;
+  const weekFocus = plan?.weeks.find((w) => w.w === day.w)?.focus ?? '';
   return (
     <>
-      <div className="sh-t">
-        N{day.w} ·{' '}
-        {day.test ? 'TEST (opciono)' : `${dowShort(day.date)} ${fmtDayMonthYear(day.date)}`}
+      <div className="sheet-top">
+        <div className="eyebrow">
+          N{day.w} ·{' '}
+          {day.test ? 'TEST (opciono)' : `${dowShort(day.date)} ${fmtDayMonthYear(day.date)}`}
+        </div>
+        <div className="sheet-badges">
+          {phase ? <PhaseBadge phase={phase} /> : null}
+          {rest ? null : (
+            <StatusBadge tone={TONE[status as Status]}>
+              {STATUSES.find((x) => x[0] === status)?.[1]}
+            </StatusBadge>
+          )}
+        </div>
       </div>
-      <div className="sh-s">
-        {rest ? 'Odmor' : dayLabel(day, edited)}
-        {day.km != null ? ` · plan ${fmtKm(day.km)} km` : ''}
-        {edited ? ' · izmenjen' : ''}
-      </div>
-      {rest ? null : (
-        <div style={{ fontSize: '.85rem' }}>
+      <h2 className="sh-t big">
+        {rest ? 'Odmor' : view.title}
+        {edited ? <small> · izmenjen</small> : null}
+      </h2>
+      {rest ? null : view.rows ? (
+        <WorkoutBrief view={view} phase={phase} weekFocus={weekFocus} />
+      ) : (
+        <>
           <Description desc={day.desc} />
-        </div>
+          <WorkoutBrief view={view} phase={phase} weekFocus={weekFocus} />
+        </>
       )}
-      {guide ? (
-        <div className="note-src" style={{ marginTop: 6 }}>
-          💡 {guide}
-        </div>
-      ) : null}
       {rest ? null : (
         <div className="seg" id="seg">
           {STATUSES.map(([s, label, cls]) => (
@@ -94,7 +111,8 @@ export function DaySheet({ id }: { id: string }) {
             className="btn ghost"
             onClick={() => openSheet({ kind: 'alt', props: { id } })}
           >
-            ✏️ Izmeni trening
+            <Icon name="edit" size={18} />
+            Izmeni trening
           </button>
         </div>
       )}

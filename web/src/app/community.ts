@@ -22,14 +22,17 @@ export interface CommunityDeps {
   now: () => number;
   today: () => string;
   online: () => boolean;
+  /** Prekidač funkcije (`COMMUNITY_ENABLED`). Ugašena: ništa se ne upisuje, ne učitava i ne uključuje; pri pokretanju se povlači raniji javni red. */
+  enabled?: () => boolean;
 }
 
 export type CommunityResult = { ok: true } | { ok: false; reason: FailReason };
 
 export function createCommunity(deps: CommunityDeps) {
   const store = useCommunityStore;
+  const enabled = (): boolean => (deps.enabled ? deps.enabled() : true);
   const visible = (): boolean => store.getState().zajed.vidljiv;
-  const active = (): boolean => deps.session.isAuthed() && visible();
+  const active = (): boolean => enabled() && deps.session.isAuthed() && visible();
 
   /** Red za upis iz trenutnog stanja; `null` kad nema plana ili datuma. */
   function currentRow(): CommunityRow | null {
@@ -79,6 +82,7 @@ export function createCommunity(deps: CommunityDeps) {
 
   /** Uključivanje/isključivanje: stanje se menja SAMO ako je server stvarno primio promenu. */
   async function setVisible(next: boolean): Promise<CommunityResult> {
+    if (!enabled() && next) return { ok: false, reason: 'nepoznato' };
     const before = visible();
     store.getState().patchSettings({ vidljiv: next });
     const r = next ? await publish() : await unpublish();
@@ -93,7 +97,7 @@ export function createCommunity(deps: CommunityDeps) {
   /** Nov nadimak se šalje SAMO ako je profil već vidljiv — inače bi promena teksta napravila red u bazi za nekoga ko Zajednicu nije uključio. */
   function setNickname(value: string): void {
     store.getState().patchSettings({ nadimak: value.trim().slice(0, 24) });
-    if (visible()) void publish();
+    if (active()) void publish();
   }
 
   async function load(): Promise<void> {
@@ -130,6 +134,19 @@ export function createCommunity(deps: CommunityDeps) {
     /** Jedan upis po pokretanju, bezuslovno: ko je Zajednicu uključio pre nego što je aplikacija znala njegovu sliku, inače bi imao prazan avatar doveka. */
     publishOnStart(): void {
       if (active()) void publish();
+    },
+    /**
+     * Ugašena funkcija ne sme da ostavi javan red koji niko ne osvežava i koji čovek više ne može da ukloni (nema ekrana): ko je ranije imao
+     * `vidljiv`, pri pokretanju se povlači — i tek kad server potvrdi, `vidljiv` se gasi. Bez mreže ostaje kako jeste i pokušava se ponovo
+     * pri sledećem pokretanju. Uključena funkcija ovo ne radi nikad.
+     */
+    async withdrawIfDisabled(): Promise<void> {
+      if (enabled() || !visible() || !deps.session.isAuthed()) return;
+      const r = await unpublish();
+      if (r.ok) {
+        store.getState().patchSettings({ vidljiv: false });
+        store.getState().setRemote({ profiles: null, opened: null });
+      }
     },
     reason: (): FailReason | null => lastReason
   };

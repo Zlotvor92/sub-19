@@ -5,7 +5,7 @@
     <!-- `user-scalable=no` je namerno UKLONJEN: blokira pinch-zoom (WCAG 2.1 SC 1.4.4). Slučajan zoom pri dvostrukom dodiru sprečava `touch-action:manipulation` u CSS-u. -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>SUB-20 · Trkački plan</title>
-    <meta name="theme-color" content="#0B0A1F" />
+    <meta name="theme-color" content="#0E1217" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -24,35 +24,38 @@
          aplikaciju — zato `uvod-kraj` ostaje na `opacity:0` i element prestaje da hvata dodire. -->
     <div id="uvod" aria-hidden="true">
       <div class="zn">
-        <svg viewBox="0 0 120 120" width="100%" height="100%">
-          <defs>
-            <linearGradient id="uvodG" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#5AFFBE" />
-              <stop offset="55%" stop-color="#00BEDC" />
-              <stop offset="100%" stop-color="#785AFF" />
-            </linearGradient>
-          </defs>
+        <svg viewBox="70 145 372 224" width="100%" height="100%">
+          <path
+            class="dva"
+            d="M107 216C107 192 126 178 150 178C174 178 192 194 192 218C192 258 142 290 107 334L198 334"
+            transform="translate(-8 0)"
+            fill="none"
+            stroke="#E8EDF2"
+            stroke-width="46"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
           <circle
             class="traka"
-            cx="60"
-            cy="60"
-            r="44"
+            cx="334"
+            cy="256"
+            r="78"
             fill="none"
-            stroke="rgba(238,240,255,.14)"
-            stroke-width="11"
+            stroke="#2A3641"
+            stroke-width="46"
           />
           <circle
             class="luk"
-            cx="60"
-            cy="60"
-            r="44"
+            cx="334"
+            cy="256"
+            r="78"
             fill="none"
-            stroke="url(#uvodG)"
-            stroke-width="11"
-            stroke-linecap="round"
-            stroke-dashoffset="47.63"
-            transform="rotate(-59 60 60)"
+            stroke="#2CC0D6"
+            stroke-width="46"
+            stroke-dashoffset="93.5"
+            transform="rotate(-90 334 256)"
           />
+          <circle class="tacka" cx="261.68" cy="226.78" r="23" fill="#2CC0D6" />
         </svg>
       </div>
       <div class="ime">SUB<span>·</span>20</div>

@@ -9,6 +9,11 @@ import { browserGeo } from './lib/geo';
 import { browserPwa } from './pwa/browser';
 import { startServiceWorker } from './pwa/register';
 import { useUIStore } from './stores/uiStore';
+import './styles/tokens.css';
+import './styles/base.css';
+import './styles/components.css';
+import './styles/shell.css';
+import './styles/screens.css';
 import './styles/legacy.css';
 
 const root = document.getElementById('root');

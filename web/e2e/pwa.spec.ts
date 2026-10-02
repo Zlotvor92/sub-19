@@ -48,11 +48,11 @@ test('bez mreže: aplikacija se otvara iz keša sa podacima sa uređaja, bez ije
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
-  await expect(page.locator('#h-sub')).toHaveText(/Nedelja 1 \/ 13 · 88 dana do trke/);
+  await expect(page.locator('#h-sub')).toHaveText(/N1\/13 · BAZA · 88 d/);
   await expect(page.getByRole('button', { name: 'Završi trening' })).toBeVisible();
   // radi i bez mreže: unos se čuva lokalno
   await page.getByRole('button', { name: 'Završi trening' }).click();
-  await expect(page.locator('.st.done')).toHaveText('Odrađen');
+  await expect(page.locator('#tcard[data-status="done"] .focus-top .badge')).toHaveText('Odrađen');
   const saved = await page.evaluate(() => localStorage.getItem('sub19-v1'));
   expect(saved).toContain('"status":"done"');
   expect(dialogs).toEqual([]);

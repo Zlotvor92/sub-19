@@ -1,90 +1,47 @@
 import { expect, test } from '@playwright/test';
 import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
-import { createPlan, openSetting } from './support/flows';
+import { createPlan } from './support/flows';
 
-/* Zajednica: podrazumevano ISKLJUČENA; uključivanje šalje tačno određena polja (nikad beleške, telesnu masu ni bol), a isključivanje BRIŠE red. */
+/* Zajednica je UGAŠENA (`COMMUNITY_ENABLED = false`): nema taba, nema podešavanja, nema ni jednog poziva ka tabeli zajednice. Kod i servis ostaju iza
+   prekidača (v. `app/community.test.ts` za ponašanje kad je uključena i za povlačenje ranijeg javnog reda pri pokretanju). */
 
 let backend: Backend;
-const profiles: unknown[] = [];
 
 test.beforeEach(async ({ page }) => {
-  profiles.length = 0;
   await fixToday(page);
   await seedSession(page);
   backend = await installBackend(page);
-  backend.api.set('/rest/v1/zajednica_profil', ({ method, body }) => {
-    if (method === 'GET') return { body: profiles };
-    if (method === 'POST') {
-      profiles.splice(0, profiles.length, {
-        ...(body as object),
-        azurirano: '2026-01-14T09:00:00Z'
-      });
-      return { status: 201, body: {} };
-    }
-    if (method === 'DELETE') {
-      profiles.length = 0;
-      return { status: 204, body: {} };
-    }
-    return { status: 404, body: {} };
-  });
-  backend.api.set('/rest/v1/zajednica_izazov', () => ({
-    body: [{ tekst: 'Odradi sve treninge po planu ove nedelje.' }]
-  }));
   await createPlan(page);
 });
 
-test('uključivanje: tabela se popunjava, šalje se samo dozvoljeno, isključivanje briše red', async ({
+test('traka tabova ima četiri ekrana, bez Zajednice; adresa ?tab=zajed pada na Danas', async ({
   page
 }) => {
-  // beleška, bol i masa postoje u stanju — ne smeju da izađu
-  await page.getByRole('button', { name: 'Završi trening' }).click();
-  await page.getByLabel(/Distanca \(km\)/).fill('8,6');
-  await page.getByLabel(/^Vreme/).fill('4233');
-  await page.getByText('Više detalja (RPE, bol, masa, datum, beleška)').click();
-  await page.getByLabel('Beleška').fill('TAJNA BELEŠKA');
-  await page.getByLabel('Beleška').blur();
+  const nav = page.getByRole('navigation', { name: 'Glavna navigacija' });
+  await expect(nav.getByRole('button')).toHaveText(['Danas', 'Plan', 'Oporavak', 'Trka']);
+  await expect(nav.getByRole('button', { name: 'Zajednica' })).toHaveCount(0);
+  await page.goto('/?tab=zajed');
+  await expect(page.getByRole('heading', { level: 1, name: 'Danas' })).toBeVisible();
+  await expect(page.locator('#pg-zajed')).toHaveCount(0);
+});
 
-  await openSetting(page, 'App', 'Zajednica');
-  await page.locator('#zaj-tgl').click();
-  await expect.poll(() => backend.count('/rest/v1/zajednica_profil', 'POST')).toBe(1);
-  const sent = backend.requests.find(
-    (r) => r.method === 'POST' && r.url.includes('/rest/v1/zajednica_profil')
-  )?.body as Record<string, unknown>;
-  expect(sent).toMatchObject({ user_id: 'u-e2e', vidljiv: true, cilj: '10K' });
-  expect(JSON.stringify(sent)).not.toContain('TAJNA');
-  expect(Object.keys(sent).sort()).toEqual(
-    [
-      'avatar_url',
-      'cilj',
-      'izazov_od',
-      'izazov_ura',
-      'km_nedelja',
-      'nadimak',
-      'nedelja_br',
-      'nedelja_od',
-      'niz_dana',
-      'plan_pct',
-      'test3k_sec',
-      'trcanja',
-      'trka_datum',
-      'user_id',
-      'vdot',
-      'vdot_pocetni',
-      'vidljiv',
-      'znacke'
-    ].sort()
-  );
+test('u podešavanjima nema Zajednice: ni sekcije, ni prekidača, ni nadimka', async ({ page }) => {
+  await page.getByRole('button', { name: 'Podešavanja' }).click();
+  const sheet = page.getByRole('dialog');
+  await page.getByRole('tab', { name: 'App' }).click();
+  await expect(sheet.locator('details[data-k="Obaveštenja"]')).toBeVisible();
+  await expect(sheet.locator('details[data-k="Zajednica"]')).toHaveCount(0);
+  await expect(sheet.getByText('Zajednica')).toHaveCount(0);
+  await expect(page.locator('#zaj-tgl')).toHaveCount(0);
+});
 
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await page
-    .getByRole('navigation', { name: 'Glavna navigacija' })
-    .getByRole('button', { name: 'Zajednica' })
-    .click();
-  await expect(page.getByText('Odradi sve treninge po planu ove nedelje.')).toBeVisible();
-
-  await openSetting(page, 'App', 'Zajednica');
-  await page.getByRole('button', { name: 'Isključi Zajednicu' }).click();
-  await expect.poll(() => backend.count('/rest/v1/zajednica_profil', 'DELETE')).toBe(1);
-  expect(profiles).toHaveLength(0); // red je OBRISAN, ne samo sakriven
+test('nijedan zahtev ne ide ka tabeli zajednice (ni čitanje, ni upis, ni brisanje)', async ({
+  page
+}) => {
+  const nav = page.getByRole('navigation', { name: 'Glavna navigacija' });
+  for (const name of ['Plan', 'Oporavak', 'Trka', 'Danas'])
+    await nav.getByRole('button', { name: name }).click();
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1, name: 'Danas' })).toBeVisible();
+  expect(backend.count('/rest/v1/zajednica')).toBe(0);
 });

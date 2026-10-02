@@ -184,10 +184,17 @@ describe('Oporavak', () => {
     }
     hydratePersisted(freshState({ wellness: w }));
     render(<Screen />);
-    expect(screen.getByText('Jutros', { selector: '.card-t' })).toBeInTheDocument();
-    expect(screen.getByText(/-20% od osnove 60/)).toBeInTheDocument();
-    expect(screen.getByText('Puls u miru', { selector: '.card-t' })).toBeInTheDocument();
-    expect(screen.getByText(/\+6 od osnove/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Jutros' })).toBeInTheDocument();
+    /* isti signal je u kartici stanja i u kartici sa detaljima */
+    expect(screen.getAllByText(/−20% od osnove 60/).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole('heading', { name: 'Puls u miru' })).toBeInTheDocument();
+    expect(screen.getAllByText(/\+6 od osnove/).length).toBeGreaterThanOrEqual(2);
+    /* HRV −20 % je crveno, pa najlošiji signal odlučuje i kaže šta da radiš */
+    const ready = screen.getByRole('heading', { name: 'Stanje danas' }).closest('section');
+    expect(within(ready as HTMLElement).getByText('Olakšaj')).toBeInTheDocument();
+    expect(
+      within(ready as HTMLElement).getByText('Oporavak zaostaje: lakši dan.')
+    ).toBeInTheDocument();
     expect(screen.getAllByText(/Dodirni tačku za detalje/).length).toBe(2);
   });
 
@@ -204,7 +211,9 @@ describe('Oporavak', () => {
     const ctx = { plan: resolved, log, outOfPlan: {}, pain: [] };
     const now = acwrNow(ctx, '2026-02-08' as IsoDate);
     expect(now.ratio).not.toBeNull();
-    const card = screen.getByText('Opterećenje').closest('.card') as HTMLElement;
+    const card = screen
+      .getByRole('heading', { name: 'Opterećenje' })
+      .closest('.card') as HTMLElement;
     expect(card.querySelector('.ac-v')).toHaveTextContent(acwrText(now.ratio));
     expect(card.querySelector('.acwr i')).toHaveStyle({
       left: `${acwrPosition(now.ratio ?? 0).toFixed(1)}%`

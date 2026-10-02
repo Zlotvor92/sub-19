@@ -6,6 +6,7 @@ import { aiPayloadFor } from '../../stores/aiActions';
 import { ADMIN_UID } from '../../services/config';
 import { useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
+import { Icon } from '../../components/ui/icons';
 import { DayHeader } from './DayCard';
 
 /** Tekst analize: samo `**bold**` i pasusi — ništa iz teksta ne postaje oznaka (analiza iz uvezenog backupa ne može da unese HTML). */
@@ -153,7 +154,9 @@ export function AiCard({ day }: { day: ResolvedDay }) {
     return (
       <div className="card ai-card prazna" id={id}>
         <div className="ai-row off">
-          <span className="ai-ic">✨</span>
+          <span className="ai-ic">
+            <Icon name="sparkle" />
+          </span>
           <span className="ai-tt">
             <b>Analiza</b>
             <span>iskorišćene obe za ovaj trening</span>
@@ -165,14 +168,18 @@ export function AiCard({ day }: { day: ResolvedDay }) {
   return (
     <div className="card ai-card prazna" id={id}>
       <button type="button" className="ai-row" onClick={start}>
-        <span className="ai-ic">✨</span>
+        <span className="ai-ic">
+          <Icon name="sparkle" />
+        </span>
         <span className="ai-tt">
           <b>Analiziraj trening</b>
           <span>
             {view.source} · {remainingText(view.remaining)}
           </span>
         </span>
-        <span className="ai-ch">›</span>
+        <span className="ai-ch">
+          <Icon name="chevron" size={16} />
+        </span>
       </button>
     </div>
   );
