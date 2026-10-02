@@ -54,7 +54,8 @@
   #cta h1 { position: absolute; left: 0; width: 1080px; top: 640px; text-align: center; font-size: 118px; font-weight: 800; letter-spacing: -.035em; line-height: 1; }
   #cta .pill { position: absolute; left: 290px; width: 500px; top: 860px; height: 112px; border-radius: 56px; background: var(--text); color: #0A0E12; font-size: 52px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 18px; }
   #cta .arrow { position: absolute; left: 0; width: 1080px; top: 1010px; text-align: center; }
-  #cta .small { position: absolute; left: 0; width: 1080px; top: 1110px; text-align: center; font-size: 38px; font-weight: 600; color: var(--text2); }
+  #cta .free { position: absolute; left: 0; width: 1080px; top: 1096px; text-align: center; font-size: 58px; font-weight: 800; letter-spacing: -.015em; color: var(--cyan); }
+  #cta .small { position: absolute; left: 0; width: 1080px; top: 1190px; text-align: center; font-size: 38px; font-weight: 600; color: var(--text2); }
   #cta .icon { position: absolute; left: 450px; top: 410px; width: 180px; height: 180px; }
 </style>
 </head>
@@ -100,6 +101,7 @@
     <h1>Isprobaj SUB-20</h1>
     <div class="pill">Link u bio</div>
     <div class="arrow"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#E8EDF2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></div>
+    <div class="free">Besplatna. I ostaje besplatna.</div>
     <div class="small">Plan, tempo i oporavak. U džepu.</div>
   </div>
 </div>
@@ -255,6 +257,9 @@ window.render = (t) => {
   $('cta').style.opacity = ca;
   iconAt('c', 1, 1);
   $('cta').querySelector('h1').style.transform = `translateY(${(1 - ca) * 30}px)`;
+  const fa = eo(seg(t, b1 + .7, b1 + 1.2));
+  $('cta').querySelector('.free').style.opacity = fa;
+  $('cta').querySelector('.free').style.transform = `translateY(${(1 - fa) * 24}px)`;
   const pulse = 1 + .04 * Math.sin((t - b1) * 6.5) * seg(t, b1 + .8, b1 + 1.2);
   $('cta').querySelector('.pill').style.transform = `scale(${pulse})`;
   $('cta').querySelector('.arrow').style.transform = `translateY(${-Math.abs(Math.sin((t - b1) * 3.2)) * 14}px)`;

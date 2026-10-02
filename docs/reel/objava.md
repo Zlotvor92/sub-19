@@ -53,7 +53,7 @@ Besplatna je i ostaće besplatna. Link u bio. 🏁
 | 12,0–16,8 | Plan | „Ceo ciklus pred tobom." / „Baza, razvoj, vrhunac, taper, trka." | traka ciklusa, faze |
 | 16,8–21,6 | Oporavak | „Kaže ti kad da usporiš." / „Stanje iz HRV-a, sna i opterećenja." | „Olakšaj", savet |
 | 21,6–26,4 | Brend | „SUB·20" / „Plan za 5K, 10K, polumaraton i maraton" | Danielsova VDOT metoda · radi i bez interneta · uvoz sa Strave |
-| 26,4–28,8 | Poziv | „Isprobaj SUB-20" / „Link u bio" | nova ikona |
+| 26,4–28,8 | Poziv | „Isprobaj SUB-20" / „Link u bio" / „Besplatna. I ostaje besplatna." | nova ikona |
 
 Pokazivač napretka na vrhu je traka ciklusa iz aplikacije (12 segmenata); svaki segment je 2,4 s, tj. jedan takt muzike (100 BPM).
 
@@ -73,7 +73,7 @@ Pokazivač napretka na vrhu je traka ciklusa iz aplikacije (12 segmenata); svaki
 - **Bezbedna zona:** glavni sadržaj je između 280 px odozgo i 1540 px (380 px odozdo slobodno); to je praktična preporuka, Instagram je ne garantuje. Sitna napomena „demo podaci" je tik ispod.
 - **Titl:** u videu nema govora, pa je sve čitljivo i bez zvuka.
 - **Demo podaci:** ekrani su iz stvarne aplikacije, ali sa izmišljenim planom (5K, nedelja 6 od 12) i izmišljenim merenjima. Ostavi napomenu „podaci su demo" u opisu (već je u tekstu iznad) i ne predstavljaj brojeve kao rezultate stvarnog korisnika.
-- **Provera tvrdnji:** „radi i bez interneta" proverava e2e test (otvaranje iz keša bez mreže); „uvoz sa Strave" je u Podešavanjima → Strava; „Danielsova VDOT metoda" je u opisu aplikacije. „Besplatna i ostaće besplatna" stoji u opisu po tvojoj izjavi kao vlasnika; u samom videu to ne piše (ako hoćeš, dodajem red na završnu scenu).
+- **Provera tvrdnji:** „radi i bez interneta" proverava e2e test (otvaranje iz keša bez mreže); „uvoz sa Strave" je u Podešavanjima → Strava; „Danielsova VDOT metoda" je u opisu aplikacije. „Besplatna i ostaće besplatna" stoji u opisu i na završnoj sceni videa, po tvojoj izjavi kao vlasnika.
 - **Link:** Instagram ne aktivira linkove u opisu ni u komentarima — stavi adresu aplikacije u bio (ili Linktree). Ne znam tačnu adresu, pa je u videu samo „Link u bio".
 
 ## Ponovno pravljenje
