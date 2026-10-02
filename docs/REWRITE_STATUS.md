@@ -2,8 +2,8 @@
 
 Živi dokument. Plan i kapije: `REWRITE_PLAN.md`. Završni izveštaj: `../REWRITE_REPORT.md`. Prelaz na produkciju: `CUTOVER.md`.
 
-**Stanje (grana `claude/sub20-frontend-rewrite-q6dlvr`):** novi frontend (`web/`) je funkcionalno kompletan prema starom `app.js`, sa dokazom (diferencijalni testovi naspram starog koda, 1 077 vitest testova,
-35 Playwright tokova). **Isporučen na produkciju 2026-10-02** (PR #26, Vercel projekat `sub-19`, domen `sub-19.vercel.app`; proveren javni domen: sve statike i `/api/push`, CSP, SW aktivan + keš `v283`, offline reload). **Stari frontend nije uklonjen** (Phase 12 sledi posle provere sa pravom prijavom i servisima na uređaju).
+**Stanje (grana `claude/sub20-frontend-rewrite-q6dlvr`):** novi frontend (`web/`) je funkcionalno kompletan prema starom `app.js`, sa dokazom (testovi naspram zamrznutih odgovora starog koda, 1 079 vitest testova,
+33 Playwright toka, 388 testova backenda). **Isporučen na produkciju 2026-10-02** (PR #26, Vercel projekat `sub-19`, domen `sub-19.vercel.app`; proveren javni domen: sve statike i `/api/push`, CSP, SW aktivan + keš `v283`, offline reload). **Stari frontend je obrisan (Phase 12, 2026-10-02)**; poslednji commit na kome postoji je `b7afc41`.
 
 ## Faze
 
@@ -20,15 +20,15 @@
 | 9 | PWA/offline | **gotovo** | `sw.js` iz starog koda bajt-za-bajt + injekcija verzije/spiska pri izgradnji; offline i ažuriranje u pregledaču; **v282 → novi frontend** i povratak (E2E) |
 | 10 | E2E + perf + sec | **gotovo, sa ograničenjima** | 35 Playwright tokova; merenja ispod; bezbednosni pregled ispod. **Nema** automatskog a11y testa (axe), Lighthouse nije pokrenut |
 | 11 | Produkcija (postojeći Vercel projekat i domen) | **urađeno** (2026-10-02) | stvarni Vercel build (preview + produkcija) uspeo; pronađen i ispravljen defekt: neusidreni obrasci u `.vercelignore` (`test/`, `supabase/`, `scripts/`) izbacivali su `web/src/test`, `web/src/services/supabase`, `web/scripts`; test `deploy/cutover.node.test.ts`. **Nije proveren**: prava prijava/Strava/icu/AI/push na produkciji, telefon |
-| 12 | Uklanjanje starog frontenda | **NIJE urađeno** (namerno) | posle ručne provere prave prijave i servisa na telefonu + prolaska starih testova jedan po jedan (mapiranje ispod je po naslovima); v. „Šta se briše" u `CUTOVER.md`. Rollback ostaje jednostavan dok `app.js` postoji |
+| 12 | Uklanjanje starog frontenda | **urađeno** (2026-10-02) | obrisano: `app.js`, `index.html`, `sw.js`, `sw-reg.js`, duplikati statike, `test/harness.mjs`, 39 od 53 starih test fajlova (oni koji su učitavali `app.js`); v. „Phase 12" u `CUTOVER.md` i „Šta je obrisano" ispod. Nije rađeno: provera svakog starog testa jedan po jedan (v. ograničenje mapiranja) |
 
 ## Brojke
 
 | Šta | Vrednost |
 |---|---|
-| Vitest | **1 077 testova / 100 fajlova** (domain 383 · oracle 273 · node 72 · ui 349), `npm run check` zelen |
-| Playwright | **35 tokova** (Chromium, `Pixel 7`); poslednji pun prolaz zelen (2 uzastopna prolaza za prethodnih 33) |
-| Stari testovi (backend + stari frontend) | `node --test` **1 553 / 1 553** zeleno — `api/*`, `supabase/`, `app.js`, `sw.js` NISU menjani (`git diff` naspram osnove: samo `web/`, `docs/`, `.github/`, `.vercelignore`, `ARCHITECTURE.md`) |
+| Vitest | **1 079 testova / 100 fajlova** (domain 383 · oracle (zamrznut) 268 · node 79 · ui 349), `npm run check` zelen |
+| Playwright | **33 toka** (Chromium, `Pixel 7`); poslednji pun prolaz zelen. Dva toka prelaza v282 → novi i povratka (`cutover.spec`) obrisana: prelaz je obavljen na produkciji |
+| Testovi backenda i repozitorijuma (`test/`) | `node --test` **388 / 388** zeleno (14 fajlova). Pre Phase 12 bilo je 1 553 testova u 53 fajla; 1 165 ih je učitavalo stari frontend i obrisano je. `api/*` i `supabase/` NISU menjani |
 | Kod | ~31,6 k redova izvora u `web/src`, ~22,4 k redova testova (uključujući E2E) |
 | Najveći fajlovi | `generatePlan.ts` 994 (čist domen, portovan), `createApp.ts` ~560 (koren kompozicije); komponente < 430 redova |
 | `any` / `dangerouslySetInnerHTML` / `fetch` u komponentama | **0** (grep + lint) |
@@ -57,10 +57,18 @@ vreme, AI, Zajednica, backup izvoz/uvoz (sa zlonamernim ID-jem), brisanje naloga
 **NIJE dokazano (nedovoljno dokaza):** rad sa pravim Supabase-om/Google prijavom, pravom Stravom/intervals.icu/Gemini/Resend/Web Push servisom, stvarna dozvola za obaveštenja, instalirana PWA na telefonu, Android (TWA) ponašanje, Vercel izgradnja
 (`outputDirectory` uz `api/` funkcije), realna brzina na telefonu, pristupačnost čitačem ekrana (postoji samo lint `jsx-a11y` i ručno prenete provere), Safari/Firefox (E2E je samo Chromium).
 
-## Mapiranje starih testova (`test/*.test.mjs`) na nove
+## Šta je obrisano u Phase 12 i zamrznuti oracle testovi
+
+**Obrisano (1 165 starih testova, 39 fajlova):** svi koji su pokretali `app.js` u `node:vm` (`harness.mjs`). Iz 14 fajlova koji ostaju (backend, SQL, `vercel.json`, javna statika, politika privatnosti naspram koda) sklonjeni su samo testovi koji su čitali `app.js`/`index.html`/`sw.js`; ostali nisu menjani, osim putanja do statike koja je premeštena u `web/public/`.
+
+**Zamrznuti oracle testovi (268):** novi kod se i dalje poredi sa starim, ali sa SNIMLJENIM odgovorima. Svaki poziv starog koda (`call`/`get`/`evalIn`, 4 MB gzip u `web/src/test/legacy-recordings/`) zapisan je sa SHA argumenata; test koji bi poslao drugačiji ulaz pada sa jasnom porukom. Provereno mutacijom: promena `ZONE_FRACTION.T` obara 31 oracle test. Generator ima dva zamrznuta poređenja: golden master (2 304 scenarija) i 1 500 slučajnih ulaza (SHA starog izlaza). Mala tri `*.oracle.test.ts` koja su čitala fajlove starog koda (SW, `sw-reg.js`, `uvod.js`, podaci ličnog plana) zamenjena su SHA-256 izmerenim nad starim fajlovima (`pwa/frozen.node.test.ts`, `personal.oracle.test.ts`).
+
+**Šta se NE može više:** uzeti nov snimak iz ovog repozitorijuma. Novi oracle test = snimak nad commit-om `b7afc41` (`git worktree add ../legacy b7afc41`), pa snimak ovde. Statika i `sub20.apk` su u `web/public/`.
+
+## Mapiranje starih testova (`test/*.test.mjs`) na nove (istorijski zapis)
 
 Oznake: **P** = preneto (nov test pokriva isto), **L** = backend/repo fajlovi — ostaje kao staro (ne zavisi od frontenda), **D** = delimično.
-Stari frontend testovi se brišu TEK u Phase 12 i samo uz ovu pokrivenost.
+Stari frontend testovi su obrisani u Phase 12 uz ovu pokrivenost.
 
 | Stari fajl (n) | Novi dokaz | |
 |---|---|---|
@@ -90,7 +98,7 @@ Stari frontend testovi se brišu TEK u Phase 12 i samo uz ovu pokrivenost.
 | uvod (19) | `pwa/uvod.{test,oracle.test,node.test}`, `e2e/smoke` | P |
 | zajednica (71) | `domain/community/*.oracle`, `app/community.test`, `features/community/*` | P |
 
-**Ograničenje ovog mapiranja:** tabela je izvedena iz naslova starih testova i oblasti koje nova suita pokriva, ne iz mehaničkog poređenja svake tvrdnje (to nije urađeno). Pre Phase 12 treba proći stare testove po jedan i potvrditi svaki.
+**Ograničenje ovog mapiranja:** tabela je izvedena iz naslova starih testova i oblasti koje nova suita pokriva, ne iz mehaničkog poređenja svake tvrdnje. Provera „svaki stari test jedan po jedan" NIJE urađena pre brisanja (po izričitom nalogu vlasnika); stari testovi su sačuvani u istoriji (`git show b7afc41:test/<fajl>`).
 
 ## Otvorene odluke
 

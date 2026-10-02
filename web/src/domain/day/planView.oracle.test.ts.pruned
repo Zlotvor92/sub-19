@@ -1,0 +1,68 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import { addDays, type IsoDate } from '../date';
+import { adaptGeneratedPlan } from '../plan/adapt';
+import { resolvePlan } from '../plan/resolve';
+import type { AltRecord, GenPlanState, LogEntry } from '../state';
+import { generatePlan } from '../training/generator/generatePlan';
+import { planPhases, ringView, sessionCore, weekChart, weekPlanKm, weekRealKm } from './index';
+
+/* parity: sessCore, planFaze, prstenSVG, chartWeeks (app.js) — Plan tab. */
+
+function rng(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const j = <T>(x: unknown): T => JSON.parse(JSON.stringify(x)) as T;
+const START = '2026-01-05' as IsoDate;
+
+let legacy: LegacyApp;
+const PLANS: GenPlanState[] = [];
+beforeAll(async () => {
+  legacy = await loadLegacyApp('2026-01-07T09:00:00Z');
+  for (const [dist, weeks] of [
+    [5000, 12],
+    [10000, 18],
+    [21097.5, 24],
+    [42195, 30]
+  ] as const) {
+    const a = adaptGeneratedPlan(
+      generatePlan({
+        startDate: START,
+        raceDate: addDays(START, weeks * 7 + 3),
+        raceDistM: dist,
+        pb: {
+          distM: dist,
+          sec: ({ 5000: 1237, 10000: 2570, 21097.5: 5700, 42195: 13500 } as Record<number, number>)[
+            dist
+          ] as number
+        },
+        weeklyKm: 50,
+        runDays: 5,
+        quality: 2,
+        intensity: 'std',
+        trainedRecently: true
+      })
+    );
+    if (!a) throw new Error('adapt');
+    PLANS.push(a);
+  }
+});
+const ctx = (): Record<string, unknown> =>
+  (legacy as unknown as { ctx: Record<string, unknown> }).ctx;
+function load(plan: GenPlanState, over: Record<string, unknown>): void {
+  ctx()['__p'] = j(plan);
+  ctx()['__o'] = j(over);
+  legacy.evalIn(
+    'S.genPlan=__p; S.alts={}; S.moves={}; S.log={}; Object.assign(S,__o); setActivePlan(); rebuildDateIndex(); 0'
+  );
+}
+
+describe('Plan tab naspram starog koda', () => {
+});

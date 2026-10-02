@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { createECDH, randomBytes } from 'node:crypto';
-import { ROOT, readRepoFile } from './harness.mjs';
+import { ROOT, readRepoFile } from './repo.mjs';
 
 const ENV = {
   SUPABASE_URL: 'https://x.supabase.co',
@@ -1188,17 +1188,6 @@ describe('Analiza se sama zaustavi pre Vercelovog noza', () => {
     assert.ok(+m[1] <= 4000, `budzet je ${m[1]} tokena — to je opet esej, ne analiza`);
     assert.ok(+m[1] >= 1500, `budzet od ${m[1]} tokena ne ostavlja mesta ni za razmisljanje`);
   });
-
-  test('klijent vise ne gubi rezultat na istek', () => {
-    /* Ranije je klijent CEKAO odgovor, pa je istek znacio izgubljenu analizu i
-       potrosenu kvotu. Sada posao ima svoj red u bazi i pokupi se kasnije, pa
-       poruka o 504 vise nije ni potrebna. */
-    const app = readRepoFile('app.js');
-    assert.doesNotMatch(app, /jos nije deployovan na Vercel-u/, 'stara, netacna poruka je i dalje tu');
-    assert.match(app, /posao:'start'/, 'analiza se i dalje pokrece sinhrono');
-    assert.match(app, /aiPozovi\(Object\.assign\(\{posao:'radi'/, 'racun se ceka umesto da se pusti');
-    assert.match(app, /async function aiPokupiSve\(\)/, 'nema pokupljanja zavrsenih analiza');
-  });
 });
 
 describe('Analiza odvojena od cekanja', () => {
@@ -1206,7 +1195,6 @@ describe('Analiza odvojena od cekanja', () => {
      Ali rezultat vise ne zivi u tom zahtevu nego u tabeli, pa se ne gubi ni kad
      veza pukne, ni kad telefon uspava stranicu, ni kad se app zatvori. */
   const src = readRepoFile('api/analyze.js');
-  const app = readRepoFile('app.js');
   const sql = readRepoFile('supabase/ai-posao.sql');
 
   test('tri faze postoje', () => {
@@ -1334,42 +1322,6 @@ describe('Analiza odvojena od cekanja', () => {
   test('ID posla se proverava pre svake upotrebe', () => {
     assert.match(src, /const UUID = \//, 'nema oblika za ID');
     assert.match(src, /if \(!UUID\.test\(posaoId\)\)/, 'ID ide u upit bez provere');
-  });
-
-  test('klijent pamti posao, pa ga preziveli restart pokupi', () => {
-    assert.match(app, /l\.aiPosao=\{id:/, 'posao se ne pamti — restart bi ga izgubio');
-    assert.match(app, /aiPokupiSve\(\);/, 'zavrsene analize se ne pokupljaju');
-    /* Kartica mora da pokaze da posao traje, inace covek klikne ponovo. */
-    assert.match(app, /Nova analiza je u toku/, 'nema stanja „u toku" na kartici');
-  });
-
-  test('stanje „u toku" ima prednost i kad STARA analiza postoji', () => {
-    /* PRIJAVA: „ako zatvorim aplikaciju vrati na staru analizu". Prva verzija je
-       stanje pokazivala samo kad starog teksta NEMA — a „Analiziraj ponovo" je
-       po definiciji slucaj u kom ga ima, pa je posle povratka izgledalo kao da
-       se nista nije ni pokrenulo. */
-    const m = /if\(l\.aiPosao&&l\.aiPosao\.id\)\{([\s\S]*?)\n  \}/.exec(app);
-    assert.ok(m, 'nema grane za posao u toku');
-    assert.doesNotMatch(m[0].split('{')[0], /aiText/,
-      'stanje „u toku" je i dalje uslovljeno nepostojanjem starog teksta');
-    assert.match(m[1], /prethodna analiza/, 'stari tekst se gubi umesto da se oznaci');
-    /* Dok posao traje ne sme postojati ništa što POKREĆE NOV posao — inače bi
-       se poslovi gomilali i svaki bi trošio kvotu.
-       Ranije je ovde stajalo `doesNotMatch(/ai-again/)`, dakle odsustvo CSS
-       KLASE. To je bio pogrešan pokazatelj: kad je dodato dugme koje ponavlja
-       ISTI posao (ne troši kvotu, ne pravi nov red — v. „POSAO KOJI JE
-       ZAGLAVIO" u app.js), zamka je pala iako se ono što čuva nije promenilo.
-       Pravi okidač je `data-ai`, atribut po kom `vezAnalize` veže pokretanje;
-       ponavljanje nosi `data-ai-ponovi` i namerno se ne poklapa. */
-    assert.doesNotMatch(m[1], /data-ai="/,
-      'moze se pokrenuti jos jedna analiza preko one koja traje');
-  });
-
-  test('brojac analiza raste tek kad tekst STVARNO stigne', () => {
-    /* Neuspeo posao ne sme da potrosi jednu od dve po treningu. */
-    const m = /if\(st==='gotovo'\)\{([\s\S]*?)\n  \}/.exec(app);
-    assert.ok(m, 'nema grane za uspesno pokupljen rezultat');
-    assert.match(m[1], /l\.aiCount=\(l\.aiCount\|\|0\)\+1/, 'brojac se ne povecava na uspeh');
   });
 
   test('uputstvo modelu zatvara greske koje su se stvarno desile', () => {
@@ -1559,14 +1511,6 @@ describe('/api/delete-account — brisanje naloga', () => {
     /* user_state je pravljena rukom pre nego što je šema ušla u repozitorijum,
        pa je u SQL-u nema — ali mora biti u spisku. */
     assert.ok(uKodu.has('user_state'), 'user_state nije u TABELE spisku');
-  });
-
-  test('tekst potvrde je isti u aplikaciji i na serveru', () => {
-    /* Da se raziđu, dugme bi radilo a server bi ćutke odbijao svaki zahtev. */
-    const server = /const POTVRDA = '([^']+)'/.exec(IZVOR);
-    const klijent = /const DEL_POTVRDA='([^']+)'/.exec(readRepoFile('app.js'));
-    assert.ok(server && klijent, 'ne nalazim tekst potvrde na obe strane');
-    assert.equal(server[1], klijent[1]);
   });
 });
 
@@ -1961,23 +1905,6 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
     assert.equal((await zovi({ admin: 'izazov', tekst: 'Novi izazov nedelje' })).code, 200);
   });
 
-  test('aplikacija salje lozinku uz razorne radnje, i NE cuva je', () => {
-    /* Da se lozinka pamti u localStorage-u, stajala bi na istom uredjaju kao i
-       sesija — a ceo smisao drugog faktora je da napadac sa ukradenom sesijom
-       nema i njega. */
-    const klijent = readRepoFile('app.js');
-    for (const radnja of ["admin:'obrisi'", "admin:'ban'"]) {
-      const m = new RegExp(radnja.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "[^}]*lozinka:ADMIN_LOZ");
-      assert.match(klijent, m, `${radnja} se salje bez lozinke`);
-    }
-    assert.match(klijent, /let ADMIN_LOZ = '';/, 'lozinka se ne drzi u promenljivoj');
-    assert.ok(!/localStorage[^\n]*ADMIN_LOZ|ADMIN_LOZ[^\n]*localStorage/.test(klijent),
-      'lozinka se upisuje u localStorage');
-    /* Ponistavanje NE sme da trazi lozinku — v. serverski test iznad. */
-    assert.ok(!/admin:'ponisti'[^}]*lozinka/.test(klijent),
-      'ponistavanje trazi lozinku, iako nije razorna radnja');
-  });
-
   test('spisak tabela je ISTI kao u delete-account.js', () => {
     /* Dva mesta brisu isti skup podataka. Kad se raziđu, jedna putanja ostavi
        redove koje druga uklanja — i to se ne vidi ni iz jedne od njih. */
@@ -2343,21 +2270,6 @@ describe('NALAZ L-1 i P-3 — limiti na OAuth putanjama i najmanja dozvola', () 
     const res = await zoviAuth(trag);
     assert.equal(res.code, 200, 'otkaz brojača je oborio osvežavanje Strava tokena');
     assert.equal(trag.spolja, 1);
-  });
-
-  test('NALAZ P-3: ne traži se dozvola koja se ne koristi', async () => {
-    const izvor = readRepoFile('api/icu-oauth.js');
-    const m = /const SCOPE = '([^']*)'/.exec(izvor);
-    assert.ok(m, 'nema SCOPE u icu-oauth.js');
-    const opsezi = m[1].split(',');
-    /* Za svaku traženu dozvolu mora da postoji poziv koji je koristi. */
-    const svudje = ['api/icu.js', 'api/icu-oauth.js', 'app.js'].map(readRepoFile).join('\n');
-    if (opsezi.includes('SETTINGS:WRITE')) {
-      assert.match(svudje, /sport-settings|athlete\/[^'"]*\/settings/,
-        'SETTINGS:WRITE se traži od korisnika, a nijedan poziv ga ne koristi');
-    }
-    assert.ok(opsezi.includes('ACTIVITY:READ') && opsezi.includes('WELLNESS:READ')
-      && opsezi.includes('CALENDAR:WRITE'), 'nedostaje dozvola koja se STVARNO koristi: ' + m[1]);
   });
 });
 

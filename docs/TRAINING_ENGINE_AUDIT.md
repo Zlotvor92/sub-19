@@ -1,7 +1,7 @@
 # TRAINING ENGINE AUDIT
 
 Predmet: `generatePlan` i sve što ga hrani ili čita (`app.js` 5757–9110 + VDOT lanac 2388–2970 + povreda/opterećenje 1576–1960).
-Metoda: čitanje koda, pokretanje starog generatora kroz `test/harness.mjs`, reproduktivne probe u `docs/probes/`.
+Metoda: čitanje koda, pokretanje starog generatora kroz `test/harness.mjs` (obrisan u Phase 12; commit `b7afc41`), reproduktivne probe u `docs/probes/`.
 Oznake: **[E]** evidence-based (objavljena matematika), **[H]** coaching heuristic, **[P]** product decision, **[?]** potencijalno sporno, **[B]** dokazan defekt.
 Gde nema dokaza piše **„Nedovoljno dokaza"**. Izvori navedeni u komentarima koda (Daniels, Riegel, Bosquet, Buist, Nielsen, Pfitzinger, 158.000 maratonaca…) **nisu proveravani u ovom auditu** — navode se kao „kod tvrdi".
 

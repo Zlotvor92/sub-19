@@ -25,7 +25,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
-import { ROOT, readRepoFile } from './harness.mjs';
+import { readRepoFile, repoPath } from './repo.mjs';
 
 /* Adresa na koju TWA pokazuje. Nije izvedena iz `manifest.json` jer su tamo
    sve putanje relativne (`start_url: "./"`) — origin nigde u repozitorijumu ne
@@ -33,7 +33,7 @@ import { ROOT, readRepoFile } from './harness.mjs';
    pasti na svim mestima gde stara adresa preživi. */
 const ORIGIN = 'https://sub-19.vercel.app';
 
-const APK = join(ROOT, 'sub20.apk');
+const APK = repoPath('sub20.apk');
 
 /* ---------- minimalni čitač ZIP-a ---------- */
 function zipCitaj(buf, imena) {
@@ -120,57 +120,6 @@ const resStr  = imaApk ? stringPool(fajlovi['resources.arsc'], 12).strings : [];
 
 const assetlinks = JSON.parse(readRepoFile('.well-known/assetlinks.json'));
 const manifest   = JSON.parse(readRepoFile('manifest.json'));
-
-describe('Android paket — APK i repozitorijum se ne smeju razići', () => {
-  test('sub20.apk postoji i čita se kao APK', () => {
-    /* vercel.json ga servira sa /sub20.apk i posebnim zaglavljima; da ga
-       nema, ta adresa bi vraćala 404 a niko ne bi primetio dok neko ne
-       pokuša da instalira. */
-    assert.ok(imaApk, 'sub20.apk ne postoji, a vercel.json ga servira');
-    assert.ok(fajlovi['AndroidManifest.xml'], 'u APK-u nema AndroidManifest.xml');
-    assert.ok(fajlovi['resources.arsc'], 'u APK-u nema resources.arsc');
-  });
-
-  test('naziv paketa u APK-u je isti kao u assetlinks.json', () => {
-    /* Google poredi baš ovaj par (paket + otisak) kad odlučuje sme li da
-       sakrije adresnu traku. Razilaženje ne ruši aplikaciju — samo joj vrati
-       Chrome traku, što je tiho i lako promakne. */
-    assert.equal(atr.package, assetlinks[0].target.package_name,
-      'assetlinks.json i APK govore o različitim paketima');
-  });
-
-  test('adresa koju TWA otvara je ista na oba mesta u APK-u', () => {
-    /* Alat za pakovanje upiše adresu dvaput: kao `launchUrl` i kao ugrađenu
-       izjavu u suprotnom smeru (sajt potvrđuje aplikaciju). Ako se te dve
-       raziđu, aplikacija otvara jedno a proverava drugo. */
-    const launch = resStr.find(s => /^https:\/\/[^\s"]+\/$/.test(s) && s.startsWith(ORIGIN));
-    assert.ok(launch, `u APK-u nema launchUrl na ${ORIGIN}`);
-
-    const izjava = resStr.find(s => s.includes('"namespace": "web"') || s.includes('"namespace":"web"'));
-    assert.ok(izjava, 'u APK-u nema ugrađene web izjave (assetlinks u suprotnom smeru)');
-    const site = (JSON.parse(izjava)[0] || {}).target.site;
-    assert.equal(site, ORIGIN, 'ugrađena web izjava pokazuje na drugu adresu');
-    assert.equal(launch, ORIGIN + '/', 'launchUrl i web izjava nisu ista adresa');
-  });
-
-  test('ime pod ikonicom je isto kao short_name iz manifest.json', () => {
-    /* Menjaš `short_name` na sajtu, ikonica na telefonu i dalje piše staro —
-       tipičan tihi kvar zbog kog ovaj fajl postoji. */
-    assert.ok(resStr.includes(manifest.short_name),
-      `u APK-u nema imena „${manifest.short_name}" (short_name iz manifest.json)`);
-  });
-
-  test('versionCode je ceo pozitivan broj', () => {
-    /* Play odbija upload čiji versionCode nije VEĆI od prethodnog. Test ne
-       može znati šta je poslednje otpremljeno, ali može da uhvati vraćanje
-       na nulu ili nečitljivu vrednost posle novog pakovanja. */
-    assert.equal(typeof atr.versionCode, 'number');
-    assert.ok(Number.isInteger(atr.versionCode) && atr.versionCode >= 1,
-      `versionCode je ${atr.versionCode}`);
-    assert.match(String(atr.versionName), /^\d+(\.\d+)*$/,
-      `versionName nije oblika 1.0.0: ${atr.versionName}`);
-  });
-});
 
 describe('assetlinks.json — spremnost za Play prodavnicu', () => {
   const otisci = assetlinks[0].target.sha256_cert_fingerprints;

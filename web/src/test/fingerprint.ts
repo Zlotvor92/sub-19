@@ -1,30 +1,44 @@
-/* Golden-master otisak generatora — most ka ../../../test/otisak-generatora.mjs.
-   Isti scenariji, isti kanonski zapis, isti SHA-256 → poređenje sa upisanim
-   fixture-om (test/fixtures/otisak-generatora.json). Ne uvozi se iz produkcije. */
+/* Golden-master otisak generatora: kanonski zapis plana + SHA-256, poređeno sa upisanim fixture-om (`fixtures/otisak-generatora.json`, uzet nad starim
+   generatorom APP_VERSION 282). Scenarije drži `generatorScenarios.ts`. Ne uvozi se iz produkcije. */
 import { createHash } from 'node:crypto';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-export interface Scenario {
-  ime: string;
-  inp: Record<string, unknown>;
+export type { Scenario } from './generatorScenarios';
+
+export const FIXTURE = fileURLToPath(new URL('./fixtures/otisak-generatora.json', import.meta.url));
+
+export interface FingerprintRow {
+  sha: string;
+  pregled: unknown;
+}
+export interface FingerprintFile {
+  sat: string;
+  pocetak: string;
+  scenarija: number;
+  ukupno: string;
+  redovi: Record<string, FingerprintRow>;
 }
 
-interface FingerprintModule {
-  scenariji(): Scenario[];
-  ucitajOtisak(): {
-    redovi: Record<string, { sha: string; pregled: unknown }>;
-    ukupno: string;
-  } | null;
+export function loadFingerprintFile(): FingerprintFile | null {
+  if (!existsSync(FIXTURE)) return null;
+  return JSON.parse(readFileSync(FIXTURE, 'utf8')) as FingerprintFile;
 }
 
-let mod: Promise<FingerprintModule> | undefined;
-export function loadFingerprint(): Promise<FingerprintModule> {
-  mod ??= import(
-    /* @vite-ignore */ pathToFileURL(
-      fileURLToPath(new URL('../../../test/otisak-generatora.mjs', import.meta.url))
-    ).href
-  ) as Promise<FingerprintModule>;
-  return mod;
+/** Jedan scenario = jedan red (diff u kom se vidi GDE se plan pomerio; v. komentar u `uzmiOtisak` starog alata). */
+export function writeFingerprintFile(f: FingerprintFile): void {
+  const rows = Object.keys(f.redovi)
+    .sort()
+    .map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(f.redovi[k])}`)
+    .join(',\n');
+  const text =
+    '{\n' +
+    `  "sat": ${JSON.stringify(f.sat)},\n` +
+    `  "pocetak": ${JSON.stringify(f.pocetak)},\n` +
+    `  "scenarija": ${f.scenarija},\n` +
+    `  "ukupno": ${JSON.stringify(f.ukupno)},\n` +
+    `  "redovi": {\n${rows}\n  }\n}\n`;
+  writeFileSync(FIXTURE, text);
 }
 
 /**

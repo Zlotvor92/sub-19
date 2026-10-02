@@ -111,9 +111,9 @@ describe('izgrađeni izlaz', () => {
     }
   });
 
-  it('manifest je isti kao stari, a prečice vode na postojeće tabove', () => {
+  it('manifest u izlazu je onaj iz public/, a prečice vode na postojeće tabove', () => {
     const m = readFileSync(join(out, 'manifest.json'), 'utf8');
-    expect(m).toBe(readFileSync(join(ROOT, 'manifest.json'), 'utf8'));
+    expect(m).toBe(readFileSync(join(WEB, 'public', 'manifest.json'), 'utf8'));
     const parsed = JSON.parse(m) as {
       shortcuts?: Array<{ url: string }>;
       icons?: Array<{ src: string }>;
@@ -126,9 +126,9 @@ describe('izgrađeni izlaz', () => {
       expect(existsSync(join(out, i.src.replace(/^\.?\//, '')))).toBe(true);
   });
 
-  it('Android veza i APK stoje na javnoj adresi, bajt-za-bajt kao u korenu', () => {
+  it('Android veza i APK stoje na javnoj adresi, bajt-za-bajt kao u public/', () => {
     for (const f of ['.well-known/assetlinks.json', 'sub20.apk'])
-      expect(readFileSync(join(out, f)).equals(readFileSync(join(ROOT, f))), f).toBe(true);
+      expect(readFileSync(join(out, f)).equals(readFileSync(join(WEB, 'public', f))), f).toBe(true);
   });
 
   it('CSP: svaki spoljni izvor u kodu je dozvoljen u `connect-src`/`img-src`, a ostalo je poznato i ne šalje se', () => {

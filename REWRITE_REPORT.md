@@ -1,6 +1,6 @@
 # REWRITE REPORT — SUB-20 frontend
 
-**Zaključak:** novi frontend (`web/`) je funkcionalno ekvivalentan starom `app.js` (APP_VERSION 282) u meri u kojoj to može da se dokaže testovima. **Isporučen na produkciju 2026-10-02** (PR #26, `sub-19.vercel.app`); stari frontend **nije** uklonjen (Phase 12 čeka ručnu proveru prijave i servisa na telefonu). Cilj „početni JS < 150 KB gzip" **nije ispunjen** (≈ 216 KB; stari je 327 KB).
+**Zaključak:** novi frontend (`web/`) je funkcionalno ekvivalentan starom `app.js` (APP_VERSION 282) u meri u kojoj to može da se dokaže testovima. **Isporučen na produkciju 2026-10-02** (PR #26, `sub-19.vercel.app`); stari frontend je obrisan u Phase 12 (poslednji commit na kome postoji: `b7afc41`). Cilj „početni JS < 150 KB gzip" **nije ispunjen** (≈ 216 KB; stari je 327 KB).
 
 Branch: `claude/sub20-frontend-rewrite-q6dlvr`. Detalji po fazama i brojke: `docs/REWRITE_STATUS.md`. Namerne razlike u ponašanju: `docs/ENGINE_CHANGES.md`. Prelaz na produkciju: `docs/CUTOVER.md`.
 
@@ -33,14 +33,14 @@ Iz klijenta je uklonjeno (zamenjeno, ne izgubljeno):
 - `recalibratedPlan` je zadržan kao čist domen, ali nema poziva iz UI-ja (kao i u starom kodu); ispravljen A4.
 - Ništa funkcionalno **nije** izbačeno. Namerne razlike u ponašanju su navedene u §4 i u `ENGINE_CHANGES.md`.
 
-Nije uklonjeno: `app.js`, `index.html`, `sw.js`, `sw-reg.js`, stari testovi — ostaju do Phase 12 (v. §10).
+Uklonjeno u Phase 12: `app.js`, `index.html`, `sw.js`, `sw-reg.js`, `test/harness.mjs` i 39 od 53 starih test fajlova (v. §6). Sve je u istoriji (`git show b7afc41:app.js`).
 
 ## 3. Preserved
 
 Bajt-za-bajt ili neizmenjeno (`git diff` naspram osnove menja samo `web/`, `docs/`, `.github/`, `.vercelignore`, `ARCHITECTURE.md`, ovaj fajl; `docs/probes/*` su skripte koje dokazuju stare defekte):
 
 - `api/*.js`, `supabase/`, `vercel.json` (CSP, cron, funkcije), domen, Supabase projekat, Vercel projekat, Strava OAuth, Gemini, Web Push, ugovor baze (`user_state`).
-- Service worker: `web/sw/sw.js` je telo starog `sw.js` doslovno; pri izgradnji se ubacuju samo `CACHE`/`APP_VERSION`/`ASSETS` (ime keša `sub19-cache-v283-<8hex>`, stari je `v282`). Test `pwa/sw.oracle.test.ts` poredi sa starim.
+- Service worker: `web/sw/sw.js` je telo starog `sw.js` doslovno; pri izgradnji se ubacuju samo `CACHE`/`APP_VERSION`/`ASSETS` (ime keša `sub19-cache-v283-<8hex>`, stari je `v282`). Test `pwa/frozen.node.test.ts` proverava SHA-256 tela (izmeren nad starim `sw.js`).
 - CSS: `legacy.css` se koristi kao jeste — vizuelni izgled nije menjan.
 - Obećanja iz `privacy.html`: tokeni i koordinate ne napuštaju uređaj (`domain/sync/payload`, oracle nad 200 stanja).
 - Vlasnikov ugrađeni plan (`data/personalPlan.ts`, generisan iz starog `PLAN`/`PRED`/`QS`, duboka jednakost proverena).
@@ -73,17 +73,17 @@ Ostale razlike van generatora: F1–F9 u `ENGINE_CHANGES.md` (tekst „Pravila u
 
 | Šta | Vrednost |
 |---|---|
-| Vitest | **1 077 testova / 100 fajlova** (domain 383 · oracle 273 · node 72 · ui 349); `npm run check` (tsc, lint, format, testovi, build) zelen |
-| Stari testovi (backend + stari frontend) | `node --test` **1 553 / 1 553** zeleno, nepromenjeni |
+| Vitest | **1 079 testova / 100 fajlova** (domain 383 · oracle (zamrznut) 268 · node 79 · ui 349); `npm run check` (tsc, lint, format, testovi, build) zelen |
+| Testovi backenda i repozitorijuma (`test/`) | `node --test` **388 / 388** zeleno. Pre Phase 12: 1 553 testova u 53 fajla; **1 165 koji su učitavali stari frontend je obrisano** (39 fajlova), ostalih 14 fajlova je zadržano (iz njih su sklonjeni samo testovi koji su čitali `app.js`/`index.html`/`sw.js`) |
 | `any`, `dangerouslySetInnerHTML`, `fetch` u komponentama | 0 (grep + lint) |
-| Mutacione provere | oracle testovi imaju brojače pokrivenosti slučajeva i ciljane slučajeve koji ubijaju preživele mutante |
+| Mutacione provere | oracle testovi imaju brojače pokrivenosti slučajeva i ciljane slučajeve koji ubijaju preživele mutante; zamrznuti oracle i golden master provereni mutacijom (promena konstante obara 31 oracle test, odnosno oba generatorska poređenja) |
 | Mapiranje starih testova | `docs/REWRITE_STATUS.md` — izvedeno iz naslova i oblasti, **ne** iz poređenja svake tvrdnje |
 
-Oracle pristup: `src/test/legacyOracle.ts` učitava stari `app.js` u `node:vm` i poziva njegove funkcije sa istim ulazima kao novi kod. Poređeni su, između ostalog, `sbDecide` (sve 3 750 kombinacije), `sbPayload` (200 stanja), `http` poruke (54 kombinacije), `uvod.js`, SW (bajt-za-bajt), lični plan (65 testova).
+Oracle pristup: dok je stari `app.js` postojao, `src/test/legacyOracle.ts` ga je učitavao u `node:vm` i pozivao njegove funkcije sa istim ulazima kao novi kod. U Phase 12 su svi ti pozivi SNIMLJENI (`src/test/legacy-recordings/`, 4 MB gzip; SHA argumenata se proverava pri svakom pozivu) pa oracle testovi rade nad zamrznutim odgovorima starog koda. Poređeni su, između ostalog, `sbDecide` (sve 3 750 kombinacije), `sbPayload` (200 stanja), `http` poruke (54 kombinacije), lični plan, generator (golden master 2 304 + 1 500 slučajnih ulaza). Snimak se više ne može ponovo uzeti iz repozitorijuma — samo nad commit-om `b7afc41`.
 
 ## 7. E2E
 
-35 Playwright tokova (Chromium, profil `Pixel 7`), poslednji pun prolaz zelen, **protiv lažnog backenda** (`e2e/support/backend.ts`): prvi start, prijava (nonce), odjava, čarobnjak, pravljenje plana, završi/preskoči/pomeri/izmeni, oporavak, trka (test 3 km), Strava (OAuth sa proverom `state`), vreme, AI, Zajednica, backup izvoz/uvoz (sa zlonamernim ID-jem), brisanje naloga, offline, ažuriranje SW-a, prelaz v282 → novi → povratak, vlasnikov plan, uvodni ekran.
+33 Playwright toka (Chromium, profil `Pixel 7`), poslednji pun prolaz zelen, **protiv lažnog backenda** (`e2e/support/backend.ts`): prvi start, prijava (nonce), odjava, čarobnjak, pravljenje plana, završi/preskoči/pomeri/izmeni, oporavak, trka (test 3 km), Strava (OAuth sa proverom `state`), vreme, AI, Zajednica, backup izvoz/uvoz (sa zlonamernim ID-jem), brisanje naloga, offline, ažuriranje SW-a, vlasnikov plan, preračunavanje plana, uvodni ekran. (Toka prelaza v282 → novi i povratka više nema: prelaz je obavljen na produkciji.)
 
 Nije pokriveno: pravi Supabase/Google prijava, prava Strava/intervals.icu/Gemini/Resend/Web Push, Safari, Firefox, Android (TWA), instalirana PWA.
 
@@ -115,7 +115,7 @@ Lokalno, `vite preview`, stoni Chromium, lažni backend — **nije produkcija, n
 
 1. Početni JS ≈ 216 KB umesto cilja < 150 KB (v. §8).
 2. Nema automatskog a11y testa (samo lint `jsx-a11y` i ručno preneta svojstva).
-3. Mapiranje starih testova je po naslovima/oblastima; pre Phase 12 treba proći stare testove jedan po jedan.
+3. Mapiranje starih testova je po naslovima/oblastima; provera „svaki stari test jedan po jedan" NIJE urađena pre brisanja (nalog vlasnika). 1 165 obrisanih testova je u istoriji (`git show b7afc41:test/<fajl>`); nova suita ih pokriva po oblastima, ne po tvrdnjama.
 4. E2E samo Chromium, samo lažni backend.
 5. Odluke o generatoru (D1–D5) su donete; ostaje samo nezavisna provera konstanti koje nisu potvrđene (audit §14: zone E i R, `agr`, taper faktori).
 6. Stari klijent u ≈ 1 od 12 pokretanja prikaže traku „sukob" posle prvog upisa (`sbDecide`: `!seenAt` → `'ask'`). Nije preuzeto; novi klijent: 16/16 čistih pokretanja. Stari kod nije menjan.
@@ -131,4 +131,4 @@ Stvarni Vercel build je otkrio defekt koji lokalni testovi nisu: neusidreni obra
 
 **Nije provereno na produkciji:** prava Google prijava i sinhronizacija, Strava, intervals.icu, Gemini, push, telefon/Android/Safari/Firefox. Rollback: Vercel → Deployments → prethodni produkcioni → Promote.
 
-Phase 12 (brisanje `app.js`, `index.html`, starog `sw.js`, `sw-reg.js`, starih frontend testova) čeka tu ručnu proveru i prolazak starih testova jedan po jedan.
+**Phase 12 je izvršena** (2026-10-02, na nalog vlasnika): obrisani `app.js`, `index.html`, `sw.js`, `sw-reg.js`, duplikati statike u korenu i 39 starih test fajlova; statika (`.well-known/assetlinks.json`, `sub20.apk`) premeštena u `web/public/`. Povratak na stari frontend: samo kroz git (`b7afc41`) ili Vercel „Promote" ranijeg deployment-a.

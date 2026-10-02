@@ -125,7 +125,7 @@ describe('Manifest je spreman za pakovanje u Android aplikaciju', () => {
   });
   it('assetlinks.json: otisak ključa je STVARAN otisak (SHA-256, 32 bajta), ne rezervisano mesto', () => {
     const j = JSON.parse(
-      readFileSync(join(WEB, '..', '.well-known/assetlinks.json'), 'utf8')
+      readFileSync(join(WEB, 'public', '.well-known/assetlinks.json'), 'utf8')
     ) as Array<{
       relation: string[];
       target: { namespace: string; package_name: string; sha256_cert_fingerprints: string[] };

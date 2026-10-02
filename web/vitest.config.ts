@@ -20,12 +20,12 @@ export default defineConfig({
           name: 'domain',
           environment: 'node',
           include: ['src/domain/**/*.test.ts'],
-          exclude: ['src/**/*.oracle.test.ts']
+          exclude: ['src/**/*.oracle.test.ts', 'src/**/*.node.test.ts']
         }
       },
       {
-        /* ORACLE: poredi novi kod sa STARIM (../test/harness.mjs, node:vm).
-           Živi do Phase 12 — kad se app.js obriše, brišu se i ovi testovi. */
+        /* ORACLE (zamrznut): poredi novi kod sa odgovorima STAROG frontenda (APP_VERSION 282, commit b7afc41). Stari kod više ne postoji; njegovi odgovori
+           su snimljeni u `src/test/legacy-recordings/` i `legacyOracle.ts` ih vraća istim redom (v. komentar u njemu). */
         extends: true,
         test: {
           name: 'oracle',

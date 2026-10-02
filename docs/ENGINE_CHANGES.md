@@ -4,7 +4,7 @@ Svaka izmena u odnosu na stari `generatePlan` (APP_VERSION 282) ima četiri dela
 **zašto je problem**, **novo ponašanje**, **test koji potvrđuje**. Izmene koje ne menjaju ponašanje
 (restrukturiranje) nisu ovde — njih drži golden-master otisak.
 
-Otisak (`test/fixtures/otisak-generatora.json`, 2 304 scenarija) pokriva samo važeće ulaze. Zato nijedna
+Otisak (`web/src/test/fixtures/otisak-generatora.json`, 2 304 scenarija; do Phase 12 `test/fixtures/`) pokriva samo važeće ulaze. Zato nijedna
 izmena ispod ne pomera otisak: ako ga pomeri, to je novi unos u ovaj dokument i ponovno uzimanje otiska
 **u istom commit-u**, sa diff-om u review-u.
 
