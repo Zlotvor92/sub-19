@@ -1,0 +1,139 @@
+// @vitest-environment jsdom
+import { createElement } from 'react';
+import { cleanup, render } from '@testing-library/react';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import { setApp } from '../../app/appContext';
+import type { App } from '../../app/createApp';
+import { cleanProfiles } from '../../domain/community';
+import { useAuthStore } from '../../stores/authStore';
+import { useCommunityStore } from '../../stores/communityStore';
+import Page from './index';
+
+/* parity: zajSpisak, zajProfil (app.js) — poredi se TEKST ekrana (isti redosled, isti sadržaj) sa starim HTML-om. Novi ekran se iscrtava u jsdom-u. */
+
+const NOW = '2026-07-14T14:30:00Z';
+let legacy: LegacyApp;
+beforeAll(async () => {
+  legacy = await loadLegacyApp(NOW);
+  setApp({ community: { refreshIfDue: () => undefined, load: () => undefined } } as unknown as App);
+});
+const ctx = (): Record<string, unknown> =>
+  (legacy as unknown as { ctx: Record<string, unknown> }).ctx;
+
+function rng(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const rawProfiles = (n: number): unknown[] => {
+  const r = rng(5);
+  return Array.from({ length: n }, (_, i) => ({
+    user_id: `u${i}`,
+    vidljiv: true,
+    nadimak: i % 4 === 3 ? null : ['Marko', 'Ana Marija', 'Jelena', 'Petar'][i % 4],
+    avatar_url: i % 3 === 0 ? 'https://lh3.googleusercontent.com/a/x=s96-c' : null,
+    cilj: ['5K', '10K', '21K', '42K'][i % 4],
+    trka_datum: '2026-12-13',
+    nedelja_br: 5 + i,
+    nedelja_od: 14,
+    vdot: r() < 0.9 ? 44 + Math.round(r() * 80) / 10 : null,
+    vdot_pocetni: r() < 0.9 ? 43 + Math.round(r() * 30) / 10 : null,
+    test3k_sec: r() < 0.7 ? 640 + Math.floor(r() * 200) : null,
+    km_nedelja: r() < 0.9 ? Math.round(r() * 600) / 10 : null,
+    plan_pct: r() < 0.9 ? Math.floor(r() * 101) : null,
+    niz_dana: Math.floor(r() * 40),
+    izazov_od: i % 5 === 4 ? null : 4 + (i % 3),
+    izazov_ura: Math.floor(r() * 7),
+    znacke: i % 2 ? ['Niz 7 dana', 'Test na 3 km'] : [],
+    trcanja:
+      i % 3 === 1
+        ? []
+        : [
+            { d: '2026-07-10', t: 'Lako', o: '8 km', p: '5:30 /km' },
+            { d: '2026-07-08', t: 'Intervali', o: '10 km', p: '—' }
+          ]
+  }));
+};
+
+const unesc = (t: string): string =>
+  t
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&amp;/g, '&');
+/* Razmaci se ne porede: šablon starog koda ima nove redove između elemenata, a prikaz ih ionako spaja; sadržaj i REDOSLED se porede u celosti. */
+const textOf = (html: string): string => unesc(html.replace(/<[^>]*>/g, '')).replace(/\s+/g, '');
+
+const shown = (): string => {
+  cleanup();
+  return render(createElement(Page)).container.innerHTML;
+};
+
+const reset = (userId: string): void => {
+  useAuthStore.setState({ hasSession: true, userId });
+  useCommunityStore.setState({
+    zajed: { vidljiv: true, nadimak: '' },
+    profiles: null,
+    challenge: null,
+    loading: false,
+    error: null,
+    filter: 'sve',
+    measure: 't3k',
+    opened: null
+  });
+};
+
+describe('Zajednica — ekran naspram starog koda', () => {
+  it('spisak: isti tekst za sva tri merila i sve filtere', () => {
+    reset('u2');
+    const profiles = cleanProfiles(rawProfiles(12));
+    ctx()['__ljudi'] = JSON.parse(JSON.stringify(profiles));
+    legacy.evalIn(
+      "SB.userId='u2'; ZAJ.ljudi=__ljudi; ZAJ.izazov='Svi treninzi po planu.'; ZAJ.otvoren=null; 0"
+    );
+    let compared = 0;
+    for (const measure of ['t3k', 'nap', 'dosl'] as const)
+      for (const filter of ['sve', '5K', '10K', '21K', '42K']) {
+        ctx()['__f'] = filter;
+        ctx()['__m'] = measure;
+        legacy.evalIn('ZAJ.filter=__f; ZAJ.merilo=__m; 0');
+        const old = textOf(legacy.evalIn('zajSpisak()') as string);
+        useCommunityStore.setState({
+          profiles,
+          challenge: 'Svi treninzi po planu.',
+          filter,
+          measure,
+          opened: null
+        });
+        expect(textOf(shown()), `${measure} ${filter}`).toBe(old);
+        compared++;
+      }
+    expect(compared).toBe(15);
+  });
+
+  it('profil: isti tekst, sa i bez poređenja sa sobom', () => {
+    const profiles = cleanProfiles(rawProfiles(8));
+    ctx()['__ljudi'] = JSON.parse(JSON.stringify(profiles));
+    let compared = 0;
+    for (const myId of ['u2', 'nepostojeci']) {
+      reset(myId);
+      legacy.evalIn(`SB.userId='${myId}'; ZAJ.ljudi=__ljudi; 0`);
+      for (const p of profiles) {
+        ctx()['__pp'] = JSON.parse(JSON.stringify(p));
+        const old = textOf(legacy.evalIn('zajProfil(__pp)') as string);
+        useCommunityStore.setState({ profiles, opened: p.user_id });
+        expect(textOf(shown()), `${myId} ${p.user_id}`).toBe(old);
+        compared++;
+      }
+    }
+    expect(compared).toBe(16);
+  });
+});
