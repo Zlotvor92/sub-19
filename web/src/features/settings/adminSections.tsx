@@ -1,19 +1,16 @@
 import { useState } from 'react';
 import { pl3 } from '../../domain/format';
 import { broadcastAll } from '../../services/api/adminApi';
-import { ADMIN_UID } from '../../services/config';
 import { getApp } from '../../app/appContext';
 import { confirmAction } from '../../app/confirm';
 import { useAuthStore } from '../../stores/authStore';
 import { useCommunityStore } from '../../stores/communityStore';
 import { useUIStore } from '../../stores/uiStore';
+import { useIsOwner } from '../../stores/owner';
 import { Help } from './SettingCard';
 import type { SectionInfo } from './sectionInfo';
 
 /* VLASNIČKE SEKCIJE. Dugmad vidi samo vlasnik (`ADMIN_UID` odlučuje SAMO o prikazu); pravu proveru radi server nad adresom iz tokena. */
-
-export const useIsOwner = (): boolean =>
-  useAuthStore((s) => s.hasSession && s.userId === ADMIN_UID);
 
 export function useBroadcastInfo(): SectionInfo {
   const owner = useIsOwner();

@@ -22,6 +22,13 @@ import {
   type AltInput,
   type ResolvedPlan
 } from '../domain/plan';
+import {
+  ownsEntries,
+  personalBaselineVdot,
+  personalPlan,
+  personalVisible
+} from '../domain/personal';
+import { isOwnerNow, useIsOwner } from './owner';
 import { pickKnown, requestPersist, TRAINING_KEYS, type PersistMode } from './persistence';
 
 export type TrainingSlice = Pick<PersistedState, (typeof TRAINING_KEYS)[number]>;
@@ -68,7 +75,8 @@ export const useTrainingStore = create<TrainingState & TrainingActions>()((set, 
   };
   const resolved = (): ResolvedPlan | null => {
     const s = get();
-    return s.genPlan ? safeResolve(s.genPlan, s.alts, s.moves) : null;
+    const plan = activeOf(s, isOwnerNow());
+    return plan ? safeResolve(plan, s.alts, s.moves) : null;
   };
   return {
     ...empty,
@@ -149,21 +157,52 @@ function safeResolve(
   }
 }
 
-/** Izvedeni plan, memoizovan po (plan, izmene, pomeranja). `null` kad nema plana ili je neispravan. */
-export function useResolvedPlan(): ResolvedPlan | null {
+/**
+ * AKTIVNI PLAN: pravi `genPlan`, a kad njega nema i plan sme da se vidi (vlasnik, ili ko je već upisivao treninge na njega) — ugrađeni lični plan.
+ * SAMO za ČITANJE. Pisanja (promena cilja, primena predloga tempa, aktiviranje novog plana) idu na pravi `genPlan`, koji za ugrađeni plan ostaje `null`:
+ * ugrađeni plan se nikad ne upisuje u perzistirano stanje.
+ */
+export function activeOf(
+  s: Pick<TrainingSlice, 'genPlan' | 'log'>,
+  isOwner: boolean
+): GenPlanState | null {
+  if (s.genPlan) return s.genPlan;
+  return personalVisible({ hasGenPlan: false, isOwner, log: s.log })
+    ? personalPlan(personalBaselineVdot(s.log))
+    : null;
+}
+
+/** Aktivni plan iz TRENUTNOG stanja (izvan komponenti). */
+export function activeGenPlan(): GenPlanState | null {
+  return activeOf(useTrainingStore.getState(), isOwnerNow());
+}
+
+/** Aktivni plan za komponente; ponovo se računa samo kad se promeni ono od čega zavisi (pravi plan, pristup ugrađenom, polazna trka). */
+export function useActiveGenPlan(): GenPlanState | null {
   const genPlan = useTrainingStore((s) => s.genPlan);
+  const owner = useIsOwner();
+  const entries = useTrainingStore((s) => ownsEntries(s.log));
+  const baseline = useTrainingStore((s) => (s.genPlan ? null : personalBaselineVdot(s.log)));
+  return useMemo(() => {
+    if (genPlan) return genPlan;
+    if (!(owner || entries) || baseline == null) return null;
+    return personalPlan(baseline);
+  }, [genPlan, owner, entries, baseline]);
+}
+
+/** Izvedeni plan, memoizovan po (aktivni plan, izmene, pomeranja). `null` kad nema plana ili je neispravan. */
+export function useResolvedPlan(): ResolvedPlan | null {
+  const plan = useActiveGenPlan();
   const alts = useTrainingStore((s) => s.alts);
   const moves = useTrainingStore((s) => s.moves);
-  return useMemo(
-    () => (genPlan ? safeResolve(genPlan, alts, moves) : null),
-    [genPlan, alts, moves]
-  );
+  return useMemo(() => (plan ? safeResolve(plan, alts, moves) : null), [plan, alts, moves]);
 }
 
 /** Izvedeni plan iz TRENUTNOG stanja (izvan komponenti). `null` kad nema plana ili je neispravan. */
 export function currentPlan(): ResolvedPlan | null {
   const s = useTrainingStore.getState();
-  return s.genPlan ? safeResolve(s.genPlan, s.alts, s.moves) : null;
+  const plan = activeOf(s, isOwnerNow());
+  return plan ? safeResolve(plan, s.alts, s.moves) : null;
 }
 
 export const trainingSlice = (): TrainingSlice =>

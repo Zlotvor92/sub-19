@@ -14,7 +14,7 @@ import { currentVdot } from '../domain/training/adaptation';
 import type { CommunityApi } from '../services/community/communityApi';
 import type { SessionManager } from '../services/supabase/session';
 import { useCommunityStore } from '../stores/communityStore';
-import { currentPlan, useTrainingStore } from '../stores/trainingStore';
+import { activeGenPlan, currentPlan, useTrainingStore } from '../stores/trainingStore';
 
 export interface CommunityDeps {
   api: CommunityApi;
@@ -37,7 +37,7 @@ export function createCommunity(deps: CommunityDeps) {
     const today = parseIsoDate(deps.today());
     if (!plan || !today) return null;
     const t = useTrainingStore.getState();
-    const meta = t.genPlan?.meta as Record<string, unknown> | undefined;
+    const meta = activeGenPlan()?.meta as Record<string, unknown> | undefined;
     const st = deps.session.state;
     return communityPayload({
       userId: st.userId,

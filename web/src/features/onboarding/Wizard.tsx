@@ -17,7 +17,7 @@ import {
   type WizardState
 } from '../../domain/onboarding';
 import { generatePlan } from '../../domain/training/generator/generatePlan';
-import { useTrainingStore } from '../../stores';
+import { useActiveGenPlan, useTrainingStore } from '../../stores';
 import { activateNewPlan } from '../../stores/actions';
 import { useUIStore } from '../../stores/uiStore';
 import { Step1Race } from './Step1Race';
@@ -34,7 +34,7 @@ export function Wizard({ today }: { today: string }) {
   const [w, setW] = useState<WizardState>(initialWizard);
   const [step, setStep] = useState(1);
   const [err, setErr] = useState('');
-  const hasPlan = useTrainingStore((s) => !!s.genPlan);
+  const hasPlan = !!useActiveGenPlan();
   const closeWizard = useUIStore((s) => s.setWizard);
   const set = (patch: Partial<WizardState>): void => setW((cur) => ({ ...cur, ...patch }));
   const setDays = (patch: Partial<WizardState>): void =>

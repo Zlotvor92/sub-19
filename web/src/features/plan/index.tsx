@@ -13,7 +13,7 @@ import {
 } from '../../domain/day';
 import { fmtKm, pl3 } from '../../domain/format';
 import { weekOf } from '../../domain/plan';
-import { useResolvedPlan, useTrainingStore } from '../../stores';
+import { useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../../stores';
 import { useUIStore } from '../../stores/uiStore';
 import { Ring } from '../../components/ui/Ring';
 import { WeekBody } from './WeekBody';
@@ -38,7 +38,7 @@ export default function PlanPage() {
   const plan = useResolvedPlan();
   const log = useTrainingStore((s) => s.log);
   const alts = useTrainingStore((s) => s.alts);
-  const warnings = useTrainingStore((s) => s.genPlan?.meta?.dayWarnings);
+  const warnings = useActiveGenPlan()?.meta?.dayWarnings;
   const todayStr = useUIStore((s) => s.today);
   const openSheet = useUIStore((s) => s.openSheet);
   const [open, setOpen] = useState<ReadonlySet<number>>(new Set());

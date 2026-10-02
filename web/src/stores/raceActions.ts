@@ -12,7 +12,7 @@ import { addT3k, removeT3k, t3kVdot, upsertMeasurement } from '../domain/trainin
 import { t3kPossible } from '../domain/training/vdot/limits';
 import type { ResolvedPlan } from '../domain/plan';
 import { storedRows, workPaceContext } from './dayActions';
-import { useTrainingStore } from './trainingStore';
+import { activeGenPlan, useTrainingStore } from './trainingStore';
 
 const ctx = () => workPaceContext({ id: '' });
 
@@ -48,7 +48,7 @@ export function removeTest(id: string): void {
 /** Predlog novih tempa iz forme; `null` kad ga nema. */
 export function currentVdotProposal(plan: ResolvedPlan, today: string): VdotProposal | null {
   const t = useTrainingStore.getState();
-  const meta = t.genPlan?.meta;
+  const meta = activeGenPlan()?.meta;
   if (!meta) return null;
   return vdotProposal({
     today,

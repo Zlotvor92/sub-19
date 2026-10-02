@@ -12,7 +12,7 @@ import type { StoredPredRow } from '../../domain/training/adaptation';
 import type { LogEntry } from '../../domain/state';
 import { trainingHour, type ForecastHours } from '../../domain/weather';
 import { zoneSource } from '../../domain/zones';
-import { useSettingsStore, useTrainingStore } from '../../stores';
+import { useActiveGenPlan, useSettingsStore, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { DayHeader } from './DayCard';
 
@@ -162,7 +162,7 @@ export function CompareCard({ day, plan }: { day: ResolvedDay; plan: ResolvedPla
   const log = useTrainingStore((s) => s.log);
   const pred = useTrainingStore((s) => s.pred);
   const alts = useTrainingStore((s) => s.alts);
-  const genPlan = useTrainingStore((s) => s.genPlan);
+  const genPlan = useActiveGenPlan();
   const forecast = useSettingsStore((s) => s.vreme);
   const hourSetting = useSettingsStore((s) => s.ui.satTreninga);
   const sati = forecast?.['sati'];

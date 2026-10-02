@@ -6,7 +6,7 @@ import { BannerHost } from '../components/ui/BannerHost';
 import { ConfirmHost } from '../components/ui/ConfirmHost';
 import { Sheet } from '../components/ui/Sheet';
 import { downloadText } from '../lib/download';
-import { requestPersist, useResolvedPlan, useTrainingStore } from '../stores';
+import { requestPersist, useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../stores';
 import { useAuthStore } from '../stores/authStore';
 import { useUpdateStore } from '../pwa/updateStore';
 import { useSyncStore } from '../stores/syncStore';
@@ -34,11 +34,10 @@ export function App() {
   const openSheet = useUIStore((s) => s.openSheet);
   const today = useToday();
   const plan = useResolvedPlan();
-  const raceDate = useTrainingStore(
-    (s) => (s.genPlan?.meta as { raceDate?: string } | undefined)?.raceDate ?? null
-  );
+  const active = useActiveGenPlan();
+  const raceDate = (active?.meta as { raceDate?: string } | undefined)?.raceDate ?? null;
   const wizard = useUIStore((s) => s.wizard);
-  const hasPlan = useTrainingStore((s) => !!s.genPlan);
+  const hasPlan = !!active;
   /* List nosi polja u koja se kuca (beleška); zatvaranje ih uklanja pre `blur`-a, pa se zakazan upis završava ovde. */
   const onSheetClose = useCallback(() => {
     requestPersist('now');

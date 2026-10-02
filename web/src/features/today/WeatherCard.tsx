@@ -1,4 +1,9 @@
-import { useResolvedPlan, useSettingsStore, useTrainingStore } from '../../stores';
+import {
+  useActiveGenPlan,
+  useResolvedPlan,
+  useSettingsStore,
+  useTrainingStore
+} from '../../stores';
 import { currentVdot } from '../../domain/training/adaptation';
 import { weatherCard, trainingHour, type ForecastHours } from '../../domain/weather';
 import type { ResolvedDay } from '../../domain/plan';
@@ -15,7 +20,7 @@ export function WeatherCard({ day, today }: { day: ResolvedDay; today: string })
   const hourSetting = useSettingsStore((s) => s.ui.satTreninga);
   const plan = useResolvedPlan();
   const vdotLog = useTrainingStore((s) => s.vdotLog);
-  const pred = useTrainingStore((s) => s.genPlan?.pred);
+  const pred = useActiveGenPlan()?.pred;
 
   const sati = forecast?.['sati'];
   const cache = sati && typeof sati === 'object' ? { sati: sati as ForecastHours } : null;

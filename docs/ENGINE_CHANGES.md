@@ -52,9 +52,7 @@ Nepromenjeno namerno (potvrđeno oracle testom): minimum merenja 3, prag 1,5 VDO
 sesije, odbijanje automatskog merenja udaljenog > 4 VDOT, `nemeri` sesije van lanca, zaštita odrađenih /
 trke / testa / ručno zaključanih dana.
 
-Poznato ograničenje (nije ispravljeno): stari `planVdotSada` za tvrdo kodovan LIČNI plan čita `p5k`
-redove; `planVdotNow` pokriva samo generisan plan (`meta`), jer lični plan nije u novom frontendu
-(FEATURE_INVENTORY F-27, odluka vlasnika O2).
+`planVdotNow` pokriva i ugrađeni lični plan (`p5k` redovi), kao stari `planVdotSada` (F-27).
 
 ---
 
@@ -86,8 +84,9 @@ bloka „Šta je dokazano" (v. `REWRITE_STATUS.md`) je poređeno sa starim kodom
 | F8 | Kartica „ista sesija": `nap.join(' ')` ostavlja zalutale razmake u tekstu | Nevidljivo (HTML skuplja razmake) | Razmaci se normalizuju; poredi se tekst bez razlike u razmacima | `compare.oracle.test.ts` |
 | F9 | Uvodni ekran: odluka u `app.js` pri učitavanju | — | Ista odluka (`sessionStorage` + isključeno kretanje), ali se donosi jednom u `main.tsx` pre iscrtavanja (StrictMode bi je dvaput pozvao) | `splash.test.ts`, `ui.test.tsx` |
 
-**Nije preneto (namerno, čeka odluku vlasnika — v. `REWRITE_STATUS.md` „Otvorene odluke"):** ugrađeni LIČNI plan vlasnika (`LICNI`, `QS`, `PRED`, `jeVlasnik()`, traka „Ovo nije tvoj plan", „Vrati na moj plan").
-Novi frontend bez generisanog plana uvek otvara čarobnjaka. Stari frontend ostaje u repozitorijumu do Phase 12, pa vlasnik ne gubi ništa dok se ne odluči.
+**Lični plan vlasnika (O2) JE preneto** — kao podatak (`web/src/data/personalPlan.ts`, generisan iz starog `PLAN`/`PRED`/`QS`, duboka jednakost proverena oracle testom) i pravila (`domain/personal`:
+ko ga vidi, polazna trka, uklanjanje tuđeg seeda). Ugrađeni plan se u aplikaciji tretira kao generisan (aktivni plan = pravi `genPlan`, a kad njega nema i sme da se vidi — ugrađeni); perzistirano
+`genPlan` ostaje `null`, pa oblik stanja na serveru nije promenjen. Namerna razlika: planska forma („planVdotNow") sada ume i `p5k` redove (stari `planVdotSada`) — bez toga ugrađeni plan nema referencu.
 
 ### Poznati nedostatak STAROG klijenta (nije preuzet)
 

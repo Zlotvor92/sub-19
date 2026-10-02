@@ -6,7 +6,7 @@ import { t3kVdot } from '../../domain/training/test3k';
 import { t3kPossible, t3kSlowest } from '../../domain/training/vdot/limits';
 import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
 import { confirmAction } from '../../app/confirm';
-import { useTrainingStore } from '../../stores';
+import { useActiveGenPlan, useTrainingStore } from '../../stores';
 import { addTest, editTest, removeTest } from '../../stores/raceActions';
 import { useUIStore } from '../../stores/uiStore';
 
@@ -20,7 +20,7 @@ const EMPTY = 'Unesi vreme pa se ispod prikaže šta znači.';
    iz bilo čega drugog. */
 export function T3kSheet({ id, today }: { id: string | null; today: string }) {
   const existing = useTrainingStore((s) => (id ? s.t3k.find((x) => x && x.id === id) : undefined));
-  const meta = useTrainingStore((s) => s.genPlan?.meta);
+  const meta = useActiveGenPlan()?.meta;
   const closeSheet = useUIStore((s) => s.closeSheet);
   const [date, setDate] = useState(existing?.date ?? today);
   const [time, setTime] = useState(existing ? fmtClock(existing.sec) : '');

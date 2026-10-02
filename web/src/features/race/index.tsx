@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Ring } from '../../components/ui/Ring';
 import { addDays, parseIsoDate } from '../../domain/date';
+import { PERSONAL, isPersonalMeta, startingRace } from '../../domain/personal';
 import {
   brojTreninga,
   fmtClock,
@@ -24,7 +25,7 @@ import { t3kRows, t3kSeries, t3kVdot } from '../../domain/training/test3k';
 import { T3K_DIST_M } from '../../domain/training/constants/product';
 import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
 import { confirmAction } from '../../app/confirm';
-import { useResolvedPlan, useTrainingStore } from '../../stores';
+import { useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../../stores';
 import { applyProposal, currentVdotProposal, undoAdjustments } from '../../stores/raceActions';
 import { useUIStore } from '../../stores/uiStore';
 import { TrendAi } from './TrendAi';
@@ -63,7 +64,7 @@ function HeroRingView({ ring, name }: { ring: HeroRing; name: string }) {
    plan i prosečan tempo. Čitanje: sažeto → sirovo (prstenovi → VDOT → predikcija → tempo svakog trčanja). */
 export default function RacePage() {
   const plan = useResolvedPlan();
-  const genPlan = useTrainingStore((s) => s.genPlan);
+  const genPlan = useActiveGenPlan();
   const log = useTrainingStore((s) => s.log);
   const pred = useTrainingStore((s) => s.pred);
   const vdotLog = useTrainingStore((s) => s.vdotLog);
@@ -116,7 +117,13 @@ export default function RacePage() {
   if (!plan || !m) return null;
   const { refs, summary } = m;
   const bv = refs.baselineVdot;
-  const goalText = refs.goalSec != null ? fmtClock(refs.goalSec) : '—';
+  const personal = isPersonalMeta(genPlan?.meta);
+  const goalText = personal
+    ? PERSONAL.goalText
+    : refs.goalSec != null
+      ? fmtClock(refs.goalSec)
+      : '—';
+  const starting = personal ? startingRace(log) : null;
   const delta = m.cv != null && bv != null ? Math.round((m.cv - bv) * 10) / 10 : null;
   const arrow = delta == null ? '' : delta > 0.05 ? '↑' : delta < -0.05 ? '↓' : '→';
   const color =
@@ -281,8 +288,14 @@ export default function RacePage() {
           </span>
         </div>
         <div className="note-src">
-          Početni VDOT: {fmtNum(bv, 1)} · cilj {goalText} ≈ VDOT {fmtNum(refs.goalVdot, 1)}. Forma
-          se računa iz radnog dela kvalitetnih sesija (unosi se u Danas → trening).
+          Početni VDOT
+          {personal
+            ? starting
+              ? ` (Niš polumaraton ${fmtClock(starting.sec)})`
+              : ' (PB 20:37 na 5K, dok ne upišeš Niš)'
+            : ''}
+          : {fmtNum(bv, 1)} · cilj {goalText} ≈ VDOT {fmtNum(refs.goalVdot, 1)}. Forma se računa iz
+          radnog dela kvalitetnih sesija (unosi se u Danas → trening).
         </div>
         <TrendAi />
       </div>

@@ -13,7 +13,7 @@ import { zoneSource } from '../domain/zones';
 import type { AiLogPort } from '../services/ai/aiJobs';
 import { useRecoveryStore } from './recoveryStore';
 import { useSettingsStore } from './settingsStore';
-import { currentPlan, useTrainingStore } from './trainingStore';
+import { activeGenPlan, currentPlan, useTrainingStore } from './trainingStore';
 
 /** Zapis dana kao priključak za servis: jedan upis po akciji, odmah (korisnik ne sme da izgubi rezultat zatvaranjem aplikacije). */
 export const aiLogPort: AiLogPort = {
@@ -29,6 +29,7 @@ export const aiLogPort: AiLogPort = {
 export function aiPayloadFor(day: ResolvedDay): Record<string, unknown> | null {
   const t = useTrainingStore.getState();
   const plan = currentPlan();
+  const active = activeGenPlan();
   const log = t.log[day.id];
   if (!plan || !log) return null;
   const s = useSettingsStore.getState();
@@ -37,10 +38,10 @@ export function aiPayloadFor(day: ResolvedDay): Record<string, unknown> | null {
     day,
     log,
     plan,
-    predRows: (t.genPlan?.pred ?? []).filter((r): r is StoredPredRow => typeof r.id === 'string'),
+    predRows: (active?.pred ?? []).filter((r): r is StoredPredRow => typeof r.id === 'string'),
     pred: t.pred,
     alts: t.alts,
-    meta: t.genPlan?.meta,
+    meta: active?.meta,
     currentZones: zoneSource(s.icu, s.strava),
     wellness: useRecoveryStore.getState().wellness,
     forecast: sati && typeof sati === 'object' ? { sati: sati as ForecastHours } : null,
@@ -57,15 +58,16 @@ export function aiTrendRequest(
   const day = parseIsoDate(today);
   if (!plan || !day) return null;
   const s = useSettingsStore.getState();
-  const meta = t.genPlan?.meta as Record<string, unknown> | undefined;
+  const active = activeGenPlan();
+  const meta = active?.meta as Record<string, unknown> | undefined;
   const refs = raceRefs(meta);
   const summary = buildTrendSummary({
     plan,
     log: t.log,
     pred: t.pred,
     predLock: t.predLock,
-    predRows: (t.genPlan?.pred ?? []).filter((r): r is StoredPredRow => typeof r.id === 'string'),
-    qs: t.genPlan?.qs,
+    predRows: (active?.pred ?? []).filter((r): r is StoredPredRow => typeof r.id === 'string'),
+    qs: active?.qs,
     vdotLog: t.vdotLog,
     wellness: useRecoveryStore.getState().wellness,
     currentZones: zoneSource(s.icu, s.strava),

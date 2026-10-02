@@ -4,6 +4,7 @@
    Servis (`services/ai`) vodi posao: start → radi → čitaj. Ovde je šta kartica pokazuje u kom stanju i šta se šalje modelu. Oblik zahteva je
    UGOVOR sa `api/analyze.js` i ne sme se menjati. */
 
+import { PERSONAL, isPersonalMeta } from '../personal';
 import { fmtClock, pl3 } from '../format';
 import { sessKind, type ResolvedDay, type ResolvedPlan } from '../plan';
 import type { LogEntry, WellnessRecord } from '../state/types';
@@ -167,6 +168,8 @@ export function goalContext(
   meta: Readonly<Record<string, unknown>> | null | undefined
 ): string | null {
   if (!meta) return null;
+  /* Ugrađeni lični plan nosi svoj opis cilja (isto što je stari kod vraćao kad nema generisanog). */
+  if (isPersonalMeta(meta)) return PERSONAL.goalContext;
   const name = typeof meta['raceName'] === 'string' && meta['raceName'] ? meta['raceName'] : 'trka';
   const goal = meta['goalSec'];
   const predicted = meta['predictedSec'];

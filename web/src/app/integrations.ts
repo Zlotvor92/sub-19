@@ -34,7 +34,7 @@ import {
 import type { SessionManager } from '../services/supabase/session';
 import { useRecoveryStore } from '../stores/recoveryStore';
 import { useSettingsStore } from '../stores/settingsStore';
-import { useTrainingStore } from '../stores/trainingStore';
+import { activeGenPlan, useTrainingStore } from '../stores/trainingStore';
 
 export type Busy = { ok: false; error: string; busy: true };
 
@@ -127,7 +127,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
       const t = useTrainingStore.getState();
       const r = useRecoveryStore.getState();
       return {
-        genPlan: t.genPlan,
+        genPlan: activeGenPlan(), // ugrađeni plan se čita isto kao generisani; `commit` ga nikad ne upisuje
         log: t.log,
         pred: t.pred,
         predLock: t.predLock,
@@ -181,16 +181,17 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     link: icuLinkStore,
     plan: (): ResolvedPlan | null => {
       const t = useTrainingStore.getState();
-      if (!t.genPlan) return null;
+      const plan = activeGenPlan();
+      if (!plan) return null;
       try {
-        return resolvePlan(t.genPlan.weeks, { alts: t.alts, moves: t.moves });
+        return resolvePlan(plan.weeks, { alts: t.alts, moves: t.moves });
       } catch {
         return null;
       }
     },
     vdot: () => {
       const t = useTrainingStore.getState();
-      const v0 = (t.genPlan?.meta as { vdot0?: unknown } | undefined)?.vdot0;
+      const v0 = (activeGenPlan()?.meta as { vdot0?: unknown } | undefined)?.vdot0;
       return currentVdot(t.vdotLog) || (typeof v0 === 'number' && Number.isFinite(v0) ? v0 : null);
     },
     now,

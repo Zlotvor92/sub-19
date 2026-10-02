@@ -2,7 +2,9 @@ import { announcementToShow, ANNOUNCEMENT, backupDue } from '../../domain/settin
 import { addDays, parseIsoDate } from '../../domain/date';
 import { getApp } from '../../app/appContext';
 import { downloadText } from '../../lib/download';
-import { useSettingsStore } from '../../stores';
+import { foreignPlanWithEntries } from '../../domain/personal';
+import { useSettingsStore, useTrainingStore } from '../../stores';
+import { useIsOwner } from '../../stores/owner';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 
@@ -14,11 +16,51 @@ export function Banners({ today }: { today: string }) {
   const signedIn = useAuthStore((s) => s.hasSession);
   const setTab = useUIStore((s) => s.setTab);
   const announcement = announcementToShow(ANNOUNCEMENT, signedIn, ui);
+  const hasGenPlan = useTrainingStore((s) => !!s.genPlan);
+  const log = useTrainingStore((s) => s.log);
+  const owner = useIsOwner();
+  const setWizard = useUIStore((s) => s.setWizard);
+  /* Predlog, ne prinuda: plan koji gleda nije njegov, ali ima unose na njemu. */
+  const foreign = foreignPlanWithEntries({ hasGenPlan, isOwner: owner, log });
   const seen = (): void => {
     if (ANNOUNCEMENT) patchUi({ novo: ANNOUNCEMENT.key });
   };
   return (
     <>
+      {foreign ? (
+        <div className="kb warn">
+          <div style={{ flex: 1 }}>
+            <div>Ovo nije tvoj plan</div>
+            <small>
+              Gledaš ugrađeni plan sa tuđim datumom trke i tuđim tempom. Napravi svoj — postojeći
+              unosi ostaju sačuvani u backup-u.
+            </small>
+          </div>
+          <button
+            type="button"
+            id="tp-gen"
+            style={{
+              color: 'var(--amber)',
+              fontWeight: 800,
+              fontSize: '.8rem',
+              padding: '6px 10px',
+              whiteSpace: 'nowrap'
+            }}
+            onClick={() => {
+              /* JEDINI dijalog koji NAMERNO nije kapija: ovo je ponuda (čarobnjak se otvara u oba slučaja), pa prigušen dijalog znači samo „bez backupa". */
+              if (
+                window.confirm(
+                  'Prvo izvezi backup postojećih unosa?\n\nOK = izvezi pa nastavi\nOtkaži = idi odmah na pravljenje plana'
+                )
+              )
+                downloadText(`sub19-backup-${today}.json`, getApp().exportBackup());
+              setWizard(true);
+            }}
+          >
+            Napravi svoj
+          </button>
+        </div>
+      ) : null}
       {backupDue(today, ui, signedIn) ? (
         <div className="bban">
           <span style={{ flex: 1 }}>Uradi backup podataka.</span>

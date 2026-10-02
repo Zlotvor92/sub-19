@@ -6,6 +6,7 @@ import { raceRefs } from '../../domain/race';
 import { confirmAction } from '../../app/confirm';
 import { useResolvedPlan, useTrainingStore } from '../../stores';
 import { discardPlan } from '../../stores/actions';
+import { useIsOwner } from '../../stores/owner';
 import { useUIStore } from '../../stores/uiStore';
 import { Help } from './SettingCard';
 import { type SectionInfo } from './sectionInfo';
@@ -14,9 +15,12 @@ import { type SectionInfo } from './sectionInfo';
 
 export function usePlanInfo(): SectionInfo {
   const plan = useResolvedPlan();
+  const hasGenPlan = useTrainingStore((s) => !!s.genPlan);
+  const owner = useIsOwner();
+  const kind = hasGenPlan ? (owner ? 'generisan plan' : 'tvoj plan') : 'tvoj lični plan';
   return {
     visible: !!plan,
-    summary: `tvoj plan · ${brojNedelja(plan?.weeks.length ?? 0)}`,
+    summary: `${kind} · ${brojNedelja(plan?.weeks.length ?? 0)}`,
     dot: true,
     open: false
   };
@@ -28,8 +32,25 @@ export function PlanBody() {
   const today = useUIStore((s) => s.today);
   const setWizard = useUIStore((s) => s.setWizard);
   const closeSheet = useUIStore((s) => s.closeSheet);
+  const owner = useIsOwner();
   const [goal, setGoal] = useState('');
-  if (!genPlan) return null;
+  /* Ugrađeni lični plan (nema generisanog): ne menja se cilj, nego se pravi novi plan. */
+  if (!genPlan)
+    return (
+      <>
+        <div className="btnrow">
+          <button type="button" className="btn ghost" id="pl-gen" onClick={() => setWizard(true)}>
+            🧙 Generiši novi plan
+          </button>
+        </div>
+        <Help summary="Za koga je novi plan">
+          <p>
+            Pravi poseban plan za nekog drugog — tvoj plan ostaje netaknut i uvek mu se vraćaš ovim
+            istim dugmetom.
+          </p>
+        </Help>
+      </>
+    );
   const refs = raceRefs(genPlan.meta);
   const goalText = fmtClock(refs.goalSec ?? 0);
 
@@ -96,23 +117,42 @@ export function PlanBody() {
         </>
       ) : null}
       <div className="btnrow">
-        <button
-          type="button"
-          className="btn ghost"
-          id="pl-new"
-          onClick={() => {
-            void confirmAction(
-              'Napraviti nov plan?\n\nPostojeći plan i svi unosi uz njega se TRAJNO brišu — nema arhive.\n\nAko ti trebaju, prvo izvezi backup.'
-            ).then((ok) => {
-              if (!ok) return;
-              discardPlan();
-              setWizard(true);
-              closeSheet();
-            });
-          }}
-        >
-          🧙 Napravi novi plan
-        </button>
+        {owner ? (
+          <button
+            type="button"
+            className="btn ghost"
+            id="pl-revert"
+            onClick={() => {
+              void confirmAction(
+                'Vratiti se na tvoj originalni plan? Generisan plan se TRAJNO briše (napredak/unosi uz njega takođe) — nema arhive.\n\nTvoj plan i njegova istorija se vraćaju netaknuti.'
+              ).then((ok) => {
+                if (!ok) return;
+                discardPlan();
+                closeSheet();
+              });
+            }}
+          >
+            Vrati na moj plan
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn ghost"
+            id="pl-new"
+            onClick={() => {
+              void confirmAction(
+                'Napraviti nov plan?\n\nPostojeći plan i svi unosi uz njega se TRAJNO brišu — nema arhive.\n\nAko ti trebaju, prvo izvezi backup.'
+              ).then((ok) => {
+                if (!ok) return;
+                discardPlan();
+                setWizard(true);
+                closeSheet();
+              });
+            }}
+          >
+            🧙 Napravi novi plan
+          </button>
+        )}
       </div>
     </>
   );

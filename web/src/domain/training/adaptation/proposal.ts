@@ -22,6 +22,7 @@ import {
 import { planVdotForWeek } from '../prediction';
 import { sessDesc, sessKm } from '../sessions/calc';
 import type { PlanMeta, Session, Zone } from '../types';
+import { vdotFromRace } from '../vdot/calculateVDOT';
 import { paceForZone } from '../vdot/paceForZone';
 import { currentVdot } from './chain';
 import { dayZone, matchPlanRows, type StoredPredRow } from './matching';
@@ -37,11 +38,27 @@ export interface ProposalContext {
 }
 
 /** Plan-forma za tekuću nedelju (poslednja nedelja plana ako je plan završen), na jednu decimalu. */
-export function planVdotNow(ctx: Pick<ProposalContext, 'today' | 'plan' | 'meta'>): number | null {
+export function planVdotNow(
+  ctx: Pick<ProposalContext, 'today' | 'plan' | 'meta'> & {
+    pred?: readonly Pick<StoredPredRow, 'w' | 'p5k'>[];
+  }
+): number | null {
   const w = weekOf(ctx.plan, ctx.today) ?? ctx.plan.weeks[ctx.plan.weeks.length - 1];
   if (!w) return null;
   const v = planVdotForWeek(ctx.meta, w.w);
-  return v != null && Number.isFinite(v) ? Math.round(v * 10) / 10 : null;
+  if (v != null && Number.isFinite(v)) return Math.round(v * 10) / 10;
+  /* Plan bez rampe forme (ugrađeni lični plan): `p5k` redova te nedelje. Nedelja bez kvalitetnih redova (npr. deload) uzima poslednju raniju koja ih ima —
+     referenca ne sme da nestane samo zato što te nedelje nema šta da se meri. */
+  const dist = (ctx.meta as { raceDistM?: unknown } | null)?.raceDistM;
+  const raceDistM = typeof dist === 'number' && dist > 0 ? dist : 5000;
+  for (let nw = w.w; nw >= 1; nw--) {
+    const vs = (ctx.pred ?? [])
+      .filter((r) => r && r.w === nw && r.p5k > 0)
+      .map((r) => vdotFromRace(raceDistM, r.p5k))
+      .filter((x) => Number.isFinite(x));
+    if (vs.length) return Math.round((vs.reduce((a, b) => a + b, 0) / vs.length) * 10) / 10;
+  }
+  return null;
 }
 
 /** Ciljni tempo dana: ručna izmena ima prednost nad propisom iz PRED reda. */

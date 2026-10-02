@@ -192,3 +192,44 @@ describe('Animacije napretka — prstenovi i linije', () => {
     for (const p of drawn) expect(p).not.toMatch(/strokeDasharray=/);
   });
 });
+
+describe('Prevlačenje između tabova — CSS i kod su uskladjeni', () => {
+  const plain = stripComments(css);
+  const hook = read('src/app/useSwipeNav.ts');
+
+  it('svaka klasa koju kod postavlja ima svoje pravilo', () => {
+    for (const k of ['dolazi', 'klizi']) {
+      expect(plain).toMatch(new RegExp('\\.page\\.' + k + '[,{]'));
+      expect(hook).toContain(`'${k}'`);
+    }
+    expect(plain).toMatch(/#ambijent\.vuce i\{transition:none\}/);
+  });
+
+  it('ekran koji dolazi ne pomera ništa u toku i ne prima dodire', () => {
+    const rule = /\.page\.dolazi\{([^}]*)\}/.exec(plain)?.[1] ?? '';
+    expect(rule).toMatch(/position:absolute/);
+    expect(rule).toMatch(/pointer-events:none/);
+  });
+
+  it('bočni razmak dolazećeg ekrana je ISTI kao razmak sadržaja (inače sadržaj poskoči kad prelazak legne)', () => {
+    expect(plain).toMatch(/main\{padding:var\(--pad\) var\(--pad\)/);
+    expect(/\.page\.dolazi\{([^}]*)\}/.exec(plain)?.[1]).toMatch(
+      /left:var\(--pad\);right:var\(--pad\)/
+    );
+  });
+
+  it('trajanje dovršetka dolazi iz koda (`--pv-ms`), a kriva iz CSS-a', () => {
+    expect(plain).toMatch(/\.page\.klizi\{transition:transform var\(--pv-ms,[^)]*\) cubic-bezier/);
+    expect(hook).toMatch(/setProperty\('--pv-ms'/);
+  });
+
+  it('rok koji čisti prelazak ističe POSLE dovršetka (`ms + 20`), ne u njemu', () => {
+    expect(hook).toMatch(/setTimeout\(flushPending, ms \+ 20\)/);
+  });
+
+  it('nijedna stranica ne nosi filter dok se pomera (backdrop-filter na zaglavlju i traci bi obarao jeftin put)', () => {
+    for (const sel of ['.page.dolazi', '.page.klizi'])
+      expect(/\.page\.(dolazi|klizi)\{([^}]*)\}/.exec(plain)?.[2] ?? '', sel).not.toMatch(/filter/);
+    expect(stripComments(hook)).not.toMatch(/\.style\.filter|filter:|feGaussianBlur/);
+  });
+});

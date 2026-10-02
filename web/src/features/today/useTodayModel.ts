@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { effectiveRaceDate, lastSevenDays, streak } from '../../domain/day';
 import { diffDays, parseIsoDate, type IsoDate } from '../../domain/date';
 import type { ResolvedDay, ResolvedPlan } from '../../domain/plan';
-import { useResolvedPlan, useTrainingStore } from '../../stores';
+import { useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../../stores';
 import { useUIStore } from '../../stores/uiStore';
 
 export interface TodayModel {
@@ -19,7 +19,7 @@ export interface TodayModel {
 export function useTodayModel(): TodayModel | null {
   const plan = useResolvedPlan();
   const log = useTrainingStore((s) => s.log);
-  const metaRace = useTrainingStore((s) => s.genPlan?.meta?.['raceDate']);
+  const metaRace = useActiveGenPlan()?.meta?.['raceDate'];
   const todayStr = useUIStore((s) => s.today);
   return useMemo(() => {
     const today = parseIsoDate(todayStr);

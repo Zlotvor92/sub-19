@@ -14,10 +14,17 @@ import {
   type WorkPaceContext
 } from '../domain/day';
 import { parseTimeStr } from '../domain/format';
-import { predRowsForDay, type StoredPredRow } from '../domain/training/adaptation';
+import { PERSONAL, personalBaselineVdot } from '../domain/personal';
+import { isT3kId } from '../domain/training/vdot/limits';
+import {
+  predRowsForDay,
+  recomputeVdotChain,
+  sessionClassFor,
+  type StoredPredRow
+} from '../domain/training/adaptation';
 import type { ResolvedDay } from '../domain/plan';
 import { useRecoveryStore } from './recoveryStore';
-import { useTrainingStore } from './trainingStore';
+import { activeGenPlan, useTrainingStore } from './trainingStore';
 
 type Status = 'done' | 'skip' | 'pending';
 
@@ -35,20 +42,33 @@ export function editField(day: ResolvedDay, field: LogField, raw: string, today:
   /* Bol i težina menjaju samo oporavak; upis radi poslednja radnja da bi ceo `PersistedState` bio sklopljen iz svih. */
   useRecoveryStore.getState().setPain(side.knee, 'soon');
   useRecoveryStore.getState().setWeight(side.kg, 'soon');
-  t.patch({ log: { ...t.log, [day.id]: entry } }, field === 'note' ? 'soon' : 'now');
+  const log = { ...t.log, [day.id]: entry };
+  /* UPISAN REZULTAT POLAZNOG DANA ugrađenog plana (Niš polumaraton) menja POLAZNI VDOT, pa se ceo lanac forme preračunava naspram nove polazne tačke — u istom upisu. */
+  if (day.id === PERSONAL.startingDay && (field === 'km' || field === 'sec')) {
+    const base = personalBaselineVdot(log);
+    const preds = storedRows();
+    t.patch({
+      log,
+      vdotLog: recomputeVdotChain(t.vdotLog, base, (id) =>
+        sessionClassFor(isT3kId(id), preds.find((p) => p.id === id)?.l)
+      )
+    });
+    return;
+  }
+  t.patch({ log }, field === 'note' ? 'soon' : 'now');
 }
 
 export { predRowsForDay };
 
 /** Redovi sa ID-jem (stari generisani planovi bez ID-ja se ne spajaju — nemaju na šta). */
 export function storedRows(): StoredPredRow[] {
-  const gp = useTrainingStore.getState().genPlan;
+  const gp = activeGenPlan();
   return (gp?.pred ?? []).filter((r): r is StoredPredRow => typeof r.id === 'string');
 }
 
 export function workPaceContext(day: Pick<ResolvedDay, 'id'>): WorkPaceContext {
   const t = useTrainingStore.getState();
-  const v0 = (t.genPlan?.meta as { vdot0?: unknown } | undefined)?.vdot0;
+  const v0 = (activeGenPlan()?.meta as { vdot0?: unknown } | undefined)?.vdot0;
   return {
     rows: storedRows(),
     baselineVdot: typeof v0 === 'number' && Number.isFinite(v0) ? v0 : null,

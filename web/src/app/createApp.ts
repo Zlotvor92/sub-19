@@ -3,7 +3,18 @@
    Sve zavisnosti (skladište, mreža, sat) se prosleđuju, pa se ceo tok — od učitavanja stanja do upisa na server —
    testira bez pregledača i bez mreže. UI zove samo metode ovog objekta; komponente ne dodiruju `fetch` ni skladište. */
 
-import { collectPersisted, hydratePersisted, onPersistRequest, type PersistMode } from '../stores';
+import {
+  collectPersisted,
+  hydratePersisted,
+  onPersistRequest,
+  withoutPersist,
+  type PersistMode
+} from '../stores';
+import { recomputeChain } from '../domain/day';
+import { removeForeignSeed } from '../domain/personal';
+import { useRecoveryStore } from '../stores/recoveryStore';
+import { isOwnerNow } from '../stores/owner';
+import { workPaceContext } from '../stores/dayActions';
 import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useSettingsStore } from '../stores/settingsStore';
@@ -265,12 +276,42 @@ export function createApp(deps: AppDeps): App {
     else saver.save(collectPersisted());
   });
 
+  /** ČIJI SU PODACI NA OVOM UREĐAJU: ko nije vlasnik ne sme da zadrži vlasnikov zatečeni seed. Vlasniku se ništa ne ubacuje iz koda (podaci stižu sa servera ili iz backup-a). */
+  function reconcileOwnerData(): boolean {
+    if (isOwnerNow()) return false;
+    const t = useTrainingStore.getState();
+    const r = useRecoveryStore.getState();
+    const res = removeForeignSeed({
+      log: t.log,
+      knee: r.knee,
+      kg: r.kg,
+      pred: t.pred,
+      predLock: t.predLock,
+      vdotLog: t.vdotLog
+    });
+    if (!res.changed) return false;
+    withoutPersist(() => {
+      useTrainingStore.setState({
+        log: res.next.log,
+        pred: res.next.pred,
+        predLock: res.next.predLock
+      });
+      useRecoveryStore.setState({ knee: res.next.knee, kg: res.next.kg });
+      useTrainingStore.setState({
+        vdotLog: recomputeChain(res.next.vdotLog, workPaceContext({ id: '' }))
+      });
+    });
+    saver.save(collectPersisted());
+    return true;
+  }
   const engine = createSyncEngine({
     session,
     api,
     getState: collectPersisted,
     adopt: (state) => {
       hydratePersisted(state);
+      /* Stanje sa servera može da nosi tuđ seed iz starih verzija — čisti se i ovde, ne samo pri pokretanju. */
+      if (reconcileOwnerData()) return;
       saver.save(state);
     },
     appVersion,
@@ -411,6 +452,7 @@ export function createApp(deps: AppDeps): App {
         return;
       }
       auth.set({ gate: null, ready: true });
+      reconcileOwnerData(); // sesija je potvrđena: sada se pouzdano zna čiji je nalog
       await engine.start().catch(() => 'offline');
       await integrations.consumeOAuthReturn(loc.search, deps.replaceUrl, loc.pathname);
       integrations.pullIfDue(60 * 60000);

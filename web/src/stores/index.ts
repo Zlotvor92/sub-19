@@ -41,7 +41,12 @@ export function hydratePersisted(state: PersistedState): void {
 
 export { extrasOf };
 export * from './persistence';
-export { useTrainingStore, useResolvedPlan } from './trainingStore';
+export {
+  activeGenPlan,
+  useActiveGenPlan,
+  useResolvedPlan,
+  useTrainingStore
+} from './trainingStore';
 export { useRecoveryStore } from './recoveryStore';
 export { useSettingsStore, useStravaConnected, useIcuConnected } from './settingsStore';
 export { useCommunityStore } from './communityStore';
