@@ -1,7 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ringView } from '../domain/day';
 import { COMPARABLE_PACE_SEC, EASY_BAND_KM } from '../domain/day/compare';
 import { DECOUPLING_MIN_KM } from '../domain/activities/perkm';
 import { COOLER_HOUR_DELTA } from '../domain/weather';
@@ -14,7 +13,24 @@ import { ENTERING_MS } from '../stores/uiStore';
 const WEB = process.cwd();
 const read = (p: string): string => readFileSync(join(WEB, p), 'utf8');
 const stripComments = (s: string): string => s.replace(/\/\*[\s\S]*?\*\//g, '');
-const css = read('src/styles/legacy.css');
+/* CSS je u više fajlova (tokeni, osnova, komponente, ljuska, ekrani, ostatak); pravila se proveravaju na SKUPU, a razmaci se sažimaju
+   („a { b: c; }" → „a{b:c;}"), da testovi ne zavise od načina na koji je fajl formatiran. */
+const CSS_FILES = ['tokens', 'base', 'components', 'shell', 'screens', 'legacy'].map(
+  (n) => `src/styles/${n}.css`
+);
+const css = CSS_FILES.map(read).join('\n');
+const squash = (s: string): string =>
+  stripComments(s)
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([{};,:>])\s*/g, '$1')
+    .trim();
+const tokens = (): Record<string, number> =>
+  Object.fromEntries(
+    [...read('src/styles/tokens.css').matchAll(/--(dur-\d):\s*(\d+)ms/g)].map((m) => [
+      m[1] as string,
+      Number(m[2])
+    ])
+  );
 const uputstvo = read('public/uputstvo.html');
 const privacy = read('public/privacy.html');
 const manifest = JSON.parse(read('public/manifest.json')) as {
@@ -71,10 +87,14 @@ describe('Politika privatnosti pominje sve treće strane kojima podaci odlaze', 
 
 describe('Izgled obrazaca', () => {
   it('polja u obrascima nisu bela kutija iz pregledača: pravilo pokriva svaki tip koji se koristi, uključujući polje bez `type`', () => {
-    const rule = /\.f-field input([^{]*)\{/.exec(css);
+    const rule = /\.f-field input([^{]*)\{/.exec(squash(css));
     expect(rule).not.toBeNull();
-    const excluded = [...(rule?.[0] ?? '').matchAll(/:not\(\[type=([a-z]+)\]\)/g)].map((m) => m[1]);
-    const listed = [...(rule?.[0] ?? '').matchAll(/input\[type=([a-z]+)\]/g)].map((m) => m[1]);
+    const excluded = [...(rule?.[0] ?? '').matchAll(/:not\(\[type=['"]?([a-z]+)['"]?\]\)/g)].map(
+      (m) => m[1]
+    );
+    const listed = [...(rule?.[0] ?? '').matchAll(/input\[type=['"]?([a-z]+)['"]?\]/g)].map(
+      (m) => m[1]
+    );
     for (const t of ['text', 'password', 'date', 'number']) {
       const covered = excluded.length ? !excluded.includes(t) : listed.includes(t);
       expect(covered, `tip ${t} nije pokriven`).toBe(true);
@@ -140,47 +160,65 @@ describe('Manifest je spreman za pakovanje u Android aplikaciju', () => {
   });
 });
 
-describe('Animacije napretka — prstenovi i linije', () => {
-  const plain = stripComments(css);
-  /* „.75s .08s" → 830 ms; „.7s" → 700 ms. */
-  const duration = (selector: string): number | null => {
+describe('Animacije napretka — linije, stubovi, trake', () => {
+  const plain = squash(css);
+  const dur = tokens();
+  /* Vreme iz izjave: „480ms", „.75s" ili „var(--dur-4)". */
+  const ms = (t: string): number | null => {
+    const v = /^var\(--(dur-\d)\)$/.exec(t);
+    if (v) return dur[v[1] as string] ?? null;
+    const m = /^([\d.]+)(ms|s)$/.exec(t);
+    return m ? parseFloat(m[1] ?? '0') * (m[2] === 's' ? 1000 : 1) : null;
+  };
+  /* Trajanje + kašnjenje prve animacije u pravilu čiji selektor počinje sa `selector`; najgori slučaj za kašnjenje `min(var(--i,0),N)*Kms`. */
+  const total = (selector: string): number | null => {
     const esc = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const m = new RegExp(`${esc}\\{[^}]*animation:[a-z-]+ ([\\d.]+)s(?: ([\\d.]+)s)?`).exec(plain);
-    return m ? Math.round((parseFloat(m[1] ?? '0') + (m[2] ? parseFloat(m[2]) : 0)) * 1000) : null;
+    const rule = new RegExp(`${esc}\\{([^}]*)\\}`).exec(plain)?.[1];
+    if (!rule) return null;
+    const decl = /animation:([^;]+)/.exec(rule)?.[1] ?? '';
+    const times = decl
+      .split(' ')
+      .map(ms)
+      .filter((x): x is number => x != null);
+    if (!times.length) return null;
+    const capped = /animation-delay:calc\(min\(var\(--i,0\),(\d+)\)\*(\d+)ms\)/.exec(rule);
+    const delay = capped ? Number(capped[1]) * Number(capped[2]) : (times[1] ?? 0);
+    return (times[0] ?? 0) + delay;
   };
 
   it('tajmer klase `uskoci` traje duže od najduže animacije na njoj (inače klasa pada usred crtanja i linija „pukne")', () => {
-    const longest = ['.page.uskoci .pr-val', '.page.uskoci .ln'].map((s) => ({
+    const longest = ['.page.uskoci .ln', '.page.uskoci .grow', '.page.uskoci .j-fill'].map((s) => ({
       s,
-      ms: duration(s)
+      ms: total(s)
     }));
     for (const a of longest) expect(a.ms, `nema animacije za ${a.s}`).not.toBeNull();
-    expect(ENTERING_MS).toBeGreaterThan(Math.max(...longest.map((a) => a.ms ?? 0)));
+    /* ulazak kartica: osnovno trajanje + najveće kašnjenje iz `nth-child(n+6)` */
+    const delays = [
+      ...plain.matchAll(/\.page\.uskoci:is\([^)]*\):nth-child\([^)]*\)\{animation-delay:(\d+)ms/g)
+    ].map((m) => Number(m[1]));
+    const rise = total('.page.uskoci:is(.card,.screen-head,.section-head,.state,.chart-card)');
+    expect(rise, 'nema animacije ulaska kartica').not.toBeNull();
+    expect(delays.length).toBeGreaterThan(0);
+    const all = [...longest.map((a) => a.ms ?? 0), (rise ?? 0) + Math.max(...delays)];
+    expect(ENTERING_MS).toBeGreaterThan(Math.max(...all));
   });
 
-  it('prsten kreće od PRAZNOG, i to od tačnog obima (2πr, r = 42)', () => {
-    const from = Number(
-      /@keyframes prsten-puni\{from\{stroke-dashoffset:([\d.]+)\}/.exec(plain)?.[1]
-    );
-    expect(Math.abs(from - 2 * Math.PI * 42)).toBeLessThan(0.1);
-    const empty = ringView(0);
-    expect(empty.radius).toBe(42);
-    expect(empty.offset).toBeCloseTo(empty.circumference, 6); // prazan prsten: ceo obim je „neispunjen"
-    expect(Math.abs(from - empty.circumference)).toBeLessThan(0.1);
-    expect(read('src/components/ui/Ring.tsx')).toMatch(/pr-val/);
-    // uvodni VDOT prsten ima SVOJU tranziciju i ne sme da upadne u animaciju plana
-    expect(plain).not.toMatch(/\.ob-vval[^{]*\{[^}]*animation:prsten-puni/);
+  it('traka napretka kreće od PRAZNE (scaleX 0, sa leve strane), a ne od pune', () => {
+    expect(plain).toMatch(/@keyframes fill-x\{from\{transform:scaleX\(0\);?\}/);
+    expect(/\.planbar \.run\{([^}]*)\}/.exec(plain)?.[1]).toMatch(/transform-origin:left/);
+    expect(/(?<=\})\.j-fill\{([^}]*)\}/.exec(plain)?.[1]).toMatch(/transform-origin:left/);
+    expect(plain).toMatch(/@keyframes draw-line\{from\{stroke-dashoffset:2000;?\}\}/);
+    expect(plain).toMatch(/@keyframes grow-y\{from\{transform:scaleY\(0\);?\}\}/);
   });
 
-  it('isključeno kretanje gasi obe animacije', () => {
-    const blocks = [
-      ...plain.matchAll(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{([\s\S]*?)\n\}/g)
-    ]
+  it('isključeno kretanje gasi SVE animacije i prelaze, jednim pravilom', () => {
+    const blocks = [...plain.matchAll(/@media \(prefers-reduced-motion:reduce\)\{(.*?\}\})/g)]
       .map((m) => m[1])
       .join('\n');
-    expect(blocks).toMatch(
-      /\.page\.uskoci \.pr-val,\.page\.uskoci \.ln\{animation:none!important\}/
-    );
+    expect(blocks).toMatch(/\*,\*::before,\*::after\{/);
+    expect(blocks).toMatch(/animation-duration:0\.001ms !important/);
+    expect(blocks).toMatch(/animation-delay:0ms !important/);
+    expect(blocks).toMatch(/transition-duration:0\.001ms !important/);
   });
 
   it('linije se crtaju samo na PODACIMA, ne na pomoćnim (isprekidanim) linijama cilja i osnove', () => {
@@ -194,7 +232,7 @@ describe('Animacije napretka — prstenovi i linije', () => {
 });
 
 describe('Prevlačenje između tabova — CSS i kod su uskladjeni', () => {
-  const plain = stripComments(css);
+  const plain = squash(css);
   const hook = read('src/app/useSwipeNav.ts');
 
   it('svaka klasa koju kod postavlja ima svoje pravilo', () => {
@@ -202,7 +240,9 @@ describe('Prevlačenje između tabova — CSS i kod su uskladjeni', () => {
       expect(plain).toMatch(new RegExp('\\.page\\.' + k + '[,{]'));
       expect(hook).toContain(`'${k}'`);
     }
-    expect(plain).toMatch(/#ambijent\.vuce i\{transition:none\}/);
+    /* pozadinska „atmosfera" (ambijent) je uklonjena iz redizajna: ni kod ni CSS ne smeju da ostanu vezani za nju */
+    expect(plain).not.toMatch(/#ambijent/);
+    expect(hook).not.toMatch(/ambijent/);
   });
 
   it('ekran koji dolazi ne pomera ništa u toku i ne prima dodire', () => {
@@ -212,7 +252,7 @@ describe('Prevlačenje između tabova — CSS i kod su uskladjeni', () => {
   });
 
   it('bočni razmak dolazećeg ekrana je ISTI kao razmak sadržaja (inače sadržaj poskoči kad prelazak legne)', () => {
-    expect(plain).toMatch(/main\{padding:var\(--pad\) var\(--pad\)/);
+    expect(plain).toMatch(/main\{[^}]*padding:var\(--pad\) var\(--pad\)/);
     expect(/\.page\.dolazi\{([^}]*)\}/.exec(plain)?.[1]).toMatch(
       /left:var\(--pad\);right:var\(--pad\)/
     );

@@ -23,7 +23,7 @@ test('oporavak: prazno stanje, unos bola, pa masa — sve stiže na server i pre
   await expect(page.getByText('Nema unosa.').first()).toBeVisible();
 
   // bol: 4/10 na listi
-  await page.getByRole('button', { name: '+ Dodaj unos bola' }).click();
+  await page.getByRole('button', { name: 'Dodaj unos bola' }).click();
   const sheet = page.getByRole('dialog');
   await sheet.getByLabel(/Bol \(0–10\)/).fill('4');
   await sheet.getByLabel('Beleška').fill('Zategnuto posle tempa');
@@ -57,8 +57,11 @@ test('trka: cilj i početni VDOT, test na 3 km pomera formu, može da se obriše
   page
 }) => {
   await tab(page, 'Trka').click();
-  await expect(page.getByText('42:00 · VDOT 49,1')).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Napredak' })).toBeVisible();
+  /* cilj i polazna forma iz plana; bez merenja verdikt kaže da ih nema (ne „sve je u redu") */
+  await expect(page.getByText(/cilj 42:00 ≈ VDOT 49,1/)).toBeVisible();
   await expect(page.getByText('Početni VDOT: 45,3')).toBeVisible();
+  await expect(page.getByText('Još nema merenja')).toBeVisible();
   await page.getByRole('button', { name: 'Unesi test na 3 km' }).click();
   const sheet = page.getByRole('dialog');
   await sheet.getByLabel('Vreme').fill('11:42');
@@ -66,8 +69,9 @@ test('trka: cilj i početni VDOT, test na 3 km pomera formu, može da se obriše
   await expect(sheet).toBeHidden();
   await expect.poll(() => list('t3k').length).toBe(1);
   expect(list('t3k')[0]).toMatchObject({ sec: 702 });
-  // test je u formi: „Zadnja" više nije prazna
-  await expect(page.getByText('još nema unosa')).toHaveCount(0);
+  // test je u formi: odgovor „Da li napredujem?" više ne kaže da merenja nema
+  await expect(page.getByText('Još nema merenja')).toHaveCount(0);
+  await expect(page.getByText(/sada · procena/)).toBeVisible();
   // brisanje
   await page.getByRole('button', { name: /11:42/ }).first().click();
   await page.getByRole('dialog').getByRole('button', { name: 'Obriši test' }).click();

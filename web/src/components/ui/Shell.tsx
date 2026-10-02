@@ -2,32 +2,44 @@ import type { ReactNode } from 'react';
 import { TABS, type Tab, useUIStore } from '../../stores/uiStore';
 import { BrandMark, GearIcon, TabIcon, TAB_LABELS } from './icons';
 
-/* ZAGLAVLJE, TRAKA TABOVA, AMBIJENTALNO SVETLO, UVODNI EKRAN, KAPIJA ZA PRIJAVU. Markup i klase su iz starog index.html
-   (vizuelna vernost: ista CSS datoteka). */
+/* LJUSKA: zaglavlje (znak, kratak natpis, podešavanja, traka ciklusa), traka tabova, kapija za prijavu, ekran jednog taba. */
 
-export function Header({ subtitle, onSettings }: { subtitle: string; onSettings: () => void }) {
+export function Header({
+  caption,
+  rail,
+  onSettings
+}: {
+  /** Kratak natpis ciklusa („N6/12 · RAZVOJ · 46 d"). */
+  caption: ReactNode;
+  /** Traka ciklusa (dodirna: otvara plan). */
+  rail: ReactNode;
+  onSettings: () => void;
+}) {
   return (
-    <header>
-      <div className="h-brand">
-        <BrandMark />
-        <div>
-          <div className="h-title">
-            SUB<span>-20</span>
+    <header className="app-head">
+      <div className="app-head-in">
+        <div className="app-head-row">
+          <div className="brand">
+            <BrandMark />
+            <div>
+              SUB<span>-20</span>
+            </div>
           </div>
-          <div className="h-sub" id="h-sub">
-            {subtitle}
+          <div className="cycle-cap" id="h-sub">
+            {caption}
           </div>
+          <button
+            type="button"
+            className="h-gear"
+            id="btn-gear"
+            aria-label="Podešavanja"
+            onClick={onSettings}
+          >
+            <GearIcon />
+          </button>
         </div>
+        {rail}
       </div>
-      <button
-        type="button"
-        className="h-gear"
-        id="btn-gear"
-        aria-label="Podešavanja"
-        onClick={onSettings}
-      >
-        <GearIcon />
-      </button>
     </header>
   );
 }
@@ -54,21 +66,6 @@ export function Tabbar({ onSelect }: { onSelect?: (tab: Tab) => void }) {
         </button>
       ))}
     </nav>
-  );
-}
-
-/** Ambijentalno svetlo: menja se samo `opacity` sloja koji već postoji (gradijenti se ne mogu animirati). */
-/** Ključ sloja ambijentalnog svetla za tab (Zajednica ima kratko ime sloja). */
-export const ambientKey = (tab: Tab): string => (tab === 'zajed' ? 'zaj' : tab);
-
-export function Ambient({ tab, settingsOpen }: { tab: Tab; settingsOpen: boolean }) {
-  const key = settingsOpen ? 'set' : ambientKey(tab);
-  return (
-    <div id="ambijent" aria-hidden="true">
-      {['danas', 'plan', 'opor', 'pred', 'zaj', 'set'].map((t) => (
-        <i key={t} data-t={t} className={t === key ? 'on' : ''} />
-      ))}
-    </div>
   );
 }
 
@@ -109,6 +106,7 @@ export function Page({
   active,
   entering = false,
   peek = false,
+  label,
   children
 }: {
   id: Tab;
@@ -117,13 +115,16 @@ export function Page({
   entering?: boolean;
   /** Susedni ekran koji prst upravo vuče u kadar: sadržaj mora postojati pre nego što uđe. */
   peek?: boolean;
+  /** Naziv regiona za čitač ekrana (isti kao naslov ekrana). */
+  label?: string;
   children: ReactNode;
 }) {
   return (
     <section
       className={`page${active ? ' active' : ''}${entering ? ' uskoci' : ''}`}
-      id={`pg-${id === 'zajed' ? 'zajed' : id}`}
+      id={`pg-${id}`}
       aria-hidden={!active}
+      aria-label={label ?? TAB_LABELS[id]}
     >
       {active || peek ? children : null}
     </section>

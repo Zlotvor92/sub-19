@@ -27,7 +27,7 @@ function Hit({
     <circle
       cx={x.toFixed(1)}
       cy={y.toFixed(1)}
-      r={11}
+      r={15}
       fill="transparent"
       role="button"
       aria-label={label}
@@ -46,26 +46,6 @@ function Hit({
 const poly = (pts: ReadonlyArray<{ x: number; y: number }>): string =>
   pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
-function Gradient({
-  id,
-  color,
-  stops
-}: {
-  id: string;
-  color: string;
-  stops: Array<[string, number]>;
-}) {
-  return (
-    <defs>
-      <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-        {stops.map(([o, a]) => (
-          <stop key={o} offset={o} stopColor={color} stopOpacity={a} />
-        ))}
-      </linearGradient>
-    </defs>
-  );
-}
-
 export function VdotTrendChart({
   model,
   goal,
@@ -77,13 +57,18 @@ export function VdotTrendChart({
   selected: number | null;
   onSelect: (i: number | null) => void;
 }) {
-  const { items, left: L, right: R, bottom: B, width: W, height: H } = model;
+  const { items, left: L, right: R, width: W, height: H } = model;
   const sel = selected != null ? items[selected] : undefined;
   const first = items[0];
   const last = items[items.length - 1];
   const line = poly(items);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}>
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="chart"
+      role="group"
+      aria-label="Forma (VDOT) kroz vreme: procena iz merenja, sa ciljem"
+    >
       {sel
         ? info(
             L,
@@ -95,7 +80,7 @@ export function VdotTrendChart({
         y1={model.goalY.toFixed(1)}
         x2={W - R}
         y2={model.goalY.toFixed(1)}
-        stroke="var(--cyan)"
+        stroke="var(--text-2)"
         strokeWidth="1.5"
         strokeDasharray="5 4"
       />
@@ -103,9 +88,9 @@ export function VdotTrendChart({
         x={W - R}
         y={(model.goalY - 4).toFixed(1)}
         textAnchor="end"
-        fontSize="9"
+        fontSize="10.5"
         fontWeight="700"
-        fill="var(--cyan)"
+        fill="var(--text-2)"
       >
         cilj {fmtNum(goal, 1)}
       </text>
@@ -114,31 +99,16 @@ export function VdotTrendChart({
         y1={model.baseY.toFixed(1)}
         x2={W - R}
         y2={model.baseY.toFixed(1)}
-        stroke="var(--txt3)"
+        stroke="var(--text-3)"
         strokeWidth="1"
         strokeDasharray="2 3"
         opacity="0.5"
       />
-      <Gradient
-        id="vdotGrad"
-        color="var(--pink)"
-        stops={[
-          ['0%', 0.38],
-          ['55%', 0.08],
-          ['100%', 0]
-        ]}
-      />
-      {first && last ? (
-        <polygon
-          points={`${first.x.toFixed(1)},${B} ${line} ${last.x.toFixed(1)},${B}`}
-          fill="url(#vdotGrad)"
-        />
-      ) : null}
       <polyline
         className="ln"
         points={line}
         fill="none"
-        stroke="var(--pink)"
+        stroke="var(--estimated)"
         strokeWidth="2.25"
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -152,8 +122,8 @@ export function VdotTrendChart({
               cx={p.x.toFixed(1)}
               cy={p.y.toFixed(1)}
               r={isSel ? 5 : isLast ? 4.4 : 3.2}
-              fill={isLast && !isSel ? 'var(--bg)' : 'var(--pink)'}
-              stroke={isSel ? '#fff' : isLast ? 'var(--pink)' : 'none'}
+              fill={isLast && !isSel ? 'var(--bg)' : 'var(--estimated)'}
+              stroke={isSel ? '#fff' : isLast ? 'var(--estimated)' : 'none'}
               strokeWidth={isSel ? 1 : 2}
             />
             <Hit
@@ -169,9 +139,9 @@ export function VdotTrendChart({
         <text
           x={first.x.toFixed(1)}
           y={(first.y - 9).toFixed(1)}
-          fontSize="10"
+          fontSize="10.5"
           fontWeight="700"
-          fill="var(--txt2)"
+          fill="var(--text-2)"
         >
           {fmtNum(first.rec.vdot, 1)}
         </text>
@@ -183,10 +153,20 @@ export function VdotTrendChart({
           textAnchor="end"
           fontSize="11"
           fontWeight="800"
-          fill="var(--pink)"
+          fill="var(--estimated)"
         >
           {fmtNum(last.rec.vdot, 1)}
         </text>
+      ) : null}
+      {first && last ? (
+        <>
+          <text className="ax" x={first.x.toFixed(1)} y={H - 6} textAnchor="start">
+            {fmtDayMonth(String(first.rec.ts).slice(0, 10))}
+          </text>
+          <text className="ax" x={last.x.toFixed(1)} y={H - 6} textAnchor="end">
+            {fmtDayMonth(String(last.rec.ts).slice(0, 10))}
+          </text>
+        </>
       ) : null}
     </svg>
   );
@@ -205,12 +185,15 @@ export function PredictionChart({
   selected: number | null;
   onSelect: (i: number | null) => void;
 }) {
-  const { left: L, right: R, bottom: B, width: W, height: H } = model;
-  const first = model.entries[0];
-  const last = model.entries[model.entries.length - 1];
+  const { left: L, right: R, width: W, height: H } = model;
   const text = selected != null ? describe(selected) : null;
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${H}`}>
+    <svg
+      className="chart"
+      viewBox={`0 0 ${W} ${H}`}
+      role="group"
+      aria-label="Predikcija kroz plan: ostvareno, plan i cilj"
+    >
       {text ? info(L, text) : hint(L)}
       {model.ticks.map((t) => (
         <g key={t.minutes}>
@@ -226,41 +209,29 @@ export function PredictionChart({
           y1={model.goalY.toFixed(1)}
           x2={W - R}
           y2={model.goalY.toFixed(1)}
-          stroke="var(--cyan)"
+          stroke="var(--text-2)"
           strokeWidth="1.5"
           strokeDasharray="5 4"
         />
       ) : null}
       <polyline
         fill="none"
-        stroke="rgba(255,255,255,.25)"
-        strokeWidth="1.5"
+        stroke="var(--projected)"
+        strokeWidth="1.75"
+        strokeDasharray="2 5"
+        strokeLinecap="round"
         points={poly(model.planLine)}
       />
-      {model.entries.length > 1 && first && last ? (
-        <>
-          <Gradient
-            id="predGrad"
-            color="var(--pink)"
-            stops={[
-              ['0%', 0.38],
-              ['55%', 0.08],
-              ['100%', 0]
-            ]}
-          />
-          <polygon
-            points={`${first.x.toFixed(1)},${B} ${poly(model.entries)} ${last.x.toFixed(1)},${B}`}
-            fill="url(#predGrad)"
-          />
-          <polyline
-            fill="none"
-            stroke="var(--pink)"
-            strokeWidth="2.25"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            points={poly(model.entries)}
-          />
-        </>
+      {model.entries.length > 1 ? (
+        <polyline
+          className="ln"
+          fill="none"
+          stroke="var(--estimated)"
+          strokeWidth="2.25"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          points={poly(model.entries)}
+        />
       ) : null}
       {model.entries.map((e, idx) => {
         const isLast = idx === model.entries.length - 1;
@@ -271,8 +242,8 @@ export function PredictionChart({
               cx={e.x.toFixed(1)}
               cy={e.y.toFixed(1)}
               r={isSel ? 5 : isLast ? 4.4 : 3.2}
-              fill={isLast && !isSel ? 'var(--bg)' : 'var(--pink)'}
-              stroke={isSel ? '#fff' : isLast ? 'var(--pink)' : 'none'}
+              fill={isLast && !isSel ? 'var(--bg)' : 'var(--estimated)'}
+              stroke={isSel ? '#fff' : isLast ? 'var(--estimated)' : 'none'}
               strokeWidth={isSel ? 1 : 2}
             />
             <Hit
@@ -290,7 +261,7 @@ export function PredictionChart({
           <path
             key={`${t.x}-${t.y}`}
             d={`M${t.x.toFixed(1)},${(t.y - r).toFixed(1)} L${(t.x + r).toFixed(1)},${t.y.toFixed(1)} L${t.x.toFixed(1)},${(t.y + r).toFixed(1)} L${(t.x - r).toFixed(1)},${t.y.toFixed(1)} Z`}
-            fill="var(--cyan)"
+            fill="var(--measured)"
             stroke="var(--bg)"
             strokeWidth="1"
           />
@@ -302,7 +273,7 @@ export function PredictionChart({
           x={W - R}
           y={(model.goalY - 5).toFixed(1)}
           textAnchor="end"
-          fill="var(--cyan)"
+          fill="var(--text-2)"
         >
           cilj {fmtClock(goalSec)}
         </text>
@@ -320,17 +291,19 @@ export function PaceChart({
   selected: number | null;
   onSelect: (i: number | null) => void;
 }) {
-  const { items, left: L, right: R, bottom: B, width: W, height: H } = model;
+  const { items, left: L, right: R, width: W, height: H } = model;
   const sel = selected != null ? items[selected] : undefined;
-  const first = items[0];
-  const last = items[items.length - 1];
-  const line = poly(items);
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${H}`}>
+    <svg
+      className="chart"
+      viewBox={`0 0 ${W} ${H}`}
+      role="group"
+      aria-label="Tempo svakog odrađenog trčanja, jedna tačka po trčanju (gore je brže)"
+    >
       {sel
         ? info(
             L,
-            `${sel.run.date ? fmtDayMonth(sel.run.date) : ''} · ${sel.run.kind ? `${sel.run.kind} · ` : ''}${fmtClock(sel.run.t)}/km · ${fmtNum(sel.run.km, 1)} km · ${fmtClock(sel.run.sec)}`
+            `${sel.run.date ? fmtDayMonth(sel.run.date.slice(0, 10)) : ''} · ${sel.run.kind ? `${sel.run.kind} · ` : ''}${fmtClock(sel.run.t)}/km · ${fmtNum(sel.run.km, 1)} km · ${fmtClock(sel.run.sec)}`
           )
         : hint(L)}
       {model.ticks.map((t) => (
@@ -341,30 +314,6 @@ export function PaceChart({
           </text>
         </g>
       ))}
-      {items.length > 1 && first && last ? (
-        <>
-          <Gradient
-            id="tempoGrad"
-            color="var(--cyan)"
-            stops={[
-              ['0%', 0.3],
-              ['100%', 0]
-            ]}
-          />
-          <polygon
-            points={`${first.x.toFixed(1)},${B} ${line} ${last.x.toFixed(1)},${B}`}
-            fill="url(#tempoGrad)"
-          />
-          <polyline
-            className="ln"
-            fill="none"
-            stroke="var(--cyan)"
-            strokeWidth="2.25"
-            strokeLinejoin="round"
-            points={line}
-          />
-        </>
-      ) : null}
       {items.map((p, i) => {
         const isLast = i === items.length - 1;
         const isSel = selected === i;
@@ -373,9 +322,9 @@ export function PaceChart({
             <circle
               cx={p.x.toFixed(1)}
               cy={p.y.toFixed(1)}
-              r={isSel ? 5 : isLast ? 4.2 : 3.2}
-              fill={isLast && !isSel ? 'var(--bg)' : 'var(--cyan)'}
-              stroke={isSel ? '#fff' : isLast ? 'var(--cyan)' : 'none'}
+              r={isSel ? 5.5 : isLast ? 4.6 : 3.6}
+              fill={isLast && !isSel ? 'var(--bg)' : 'var(--measured)'}
+              stroke={isSel ? '#fff' : isLast ? 'var(--measured)' : 'none'}
               strokeWidth={isSel ? 1 : 2}
             />
             <Hit
@@ -387,8 +336,14 @@ export function PaceChart({
           </g>
         );
       })}
-      <text className="ax" x={W - R} y={B + 12} textAnchor="end">
+      <text className="ax" x={L} y={H - 6} textAnchor="start">
+        {items[0] ? fmtDayMonth(items[0].run.date.slice(0, 10)) : ''}
+      </text>
+      <text className="ax" x={(L + W - R) / 2} y={H - 6} textAnchor="middle">
         gore = brže
+      </text>
+      <text className="ax" x={W - R} y={H - 6} textAnchor="end">
+        {items.length > 1 ? fmtDayMonth(items[items.length - 1]?.run.date.slice(0, 10)) : ''}
       </text>
     </svg>
   );

@@ -1,95 +1,138 @@
 import { fmtKm } from '../../domain/format';
 import type { WeekChart as WeekChartData } from '../../domain/day';
+import { PHASE_COLOR, type PhaseKey } from '../cycle/cycle';
 
 const W = 340;
-const H = 168;
+const H = 178;
 const L = 26;
-const B = 146;
-const T = 24;
+const B = 128;
+const T = 8;
 
-/* Grafikon „plan vs. realizovano": blede trake su plan, ružičaste urađeno. Nevidljiva puna kolona preko svake nedelje je
-   širi, udobniji dodirni cilj od uskog bara. Isti dodir opet poništava izbor. */
+/* GRAFIKON „plan vs. ostvareno": stub je PLANIRANI km (kontura), unutra je OSTVARENO (puna boja faze) — čita se kao napredak u kupi. Ispod stubova traka
+   boja faza (sa nazivom tamo gde faza ima bar dve nedelje). Tekuća nedelja je uokvirena. Pogodak na nedelju je ceo stub; isto što i lista nedelja ispod,
+   koja je dodirna meta od 44 px. Dodir ponovo na istu nedelju poništava izbor. */
 export function WeekChart({
   chart,
   selected,
-  onSelect
+  onSelect,
+  phases,
+  current
 }: {
   chart: WeekChartData;
   selected: number | null;
   onSelect: (w: number | null) => void;
+  phases: ReadonlyMap<number, PhaseKey>;
+  current: number | null;
 }) {
   const n = Math.max(chart.bars.length, 1);
   const gw = (W - L - 6) / n;
-  const sel = selected != null ? chart.bars.find((b) => b.w === selected) : undefined;
+  const bw = gw - 4;
+  const Y = (v: number): number => B - (v / chart.max) * (B - T);
+  const runs: Array<{ key: PhaseKey; from: number; len: number }> = [];
+  chart.bars.forEach((b, i) => {
+    const p = phases.get(b.w);
+    if (!p) return;
+    const last = runs[runs.length - 1];
+    if (last && last.key === p) last.len += 1;
+    else runs.push({ key: p, from: i, len: 1 });
+  });
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${H}`}>
-      {sel ? (
-        <text className="chart-info" x={L} y={14} textAnchor="start">
-          N{sel.w} · plan {fmtKm(sel.planKm)} km · urađeno {fmtKm(sel.realKm)} km
-        </text>
-      ) : (
-        <text className="chart-hint" x={L} y={14} textAnchor="start">
-          Dodirni nedelju za detalje
-        </text>
-      )}
-      {chart.ticks.map((v) => {
-        const y = B - (v / chart.max) * (B - T);
-        return (
-          <g key={v}>
-            <line className="gl" x1={L} y1={y} x2={W - 2} y2={y} />
-            <text className="ax" x={L - 4} y={y + 3} textAnchor="end">
-              {v}
-            </text>
-          </g>
-        );
-      })}
+    <svg
+      className="chart wk-chart"
+      viewBox={`0 0 ${W} ${H}`}
+      role="group"
+      aria-label="Nedeljna kilometraža: plan i ostvareno"
+    >
+      {chart.ticks.map((v) => (
+        <g key={v}>
+          <line className="gl" x1={L} y1={Y(v)} x2={W - 2} y2={Y(v)} />
+          <text className="ax" x={L - 5} y={Y(v) + 3.5} textAnchor="end">
+            {v}
+          </text>
+        </g>
+      ))}
       {chart.bars.map((b, i) => {
-        const x = L + i * gw + 2.5;
-        const isSel = selected === b.w;
+        const x = L + i * gw + 2;
+        const phase = phases.get(b.w);
+        const color = phase ? PHASE_COLOR[phase] : 'var(--text-2)';
         const ph = (b.planKm / chart.max) * (B - T);
         const rh = (b.realKm / chart.max) * (B - T);
+        const isSel = selected === b.w;
+        const isNow = current === b.w;
         return (
           <g key={b.w}>
             <rect
+              className={`wk-plan${isSel ? ' sel' : ''}${isNow ? ' now' : ''}`}
               x={x}
               y={B - ph}
-              width={gw / 2 - 1.5}
+              width={bw}
               height={Math.max(ph, 1)}
               rx={2}
-              fill={isSel ? 'rgba(255,255,255,.34)' : 'rgba(255,255,255,.16)'}
             />
             {rh > 0 ? (
               <rect
-                x={x + gw / 2 - 0.5}
+                className="wk-real grow"
+                style={{ ['--i' as string]: i, fill: color }}
+                x={x}
                 y={B - rh}
-                width={gw / 2 - 1.5}
+                width={bw}
                 height={Math.max(rh, 1)}
                 rx={2}
-                fill="var(--pink)"
-                {...(isSel ? { stroke: '#fff', strokeWidth: 0.8 } : {})}
               />
             ) : null}
             <text
-              className="ax"
-              x={x + gw / 2 - 1.5}
-              y={B + 12}
+              className={`ax wk-n${isNow ? ' now' : ''}`}
+              x={x + bw / 2}
+              y={B + 14}
               textAnchor="middle"
-              {...(isSel ? { fill: 'var(--pink)' } : {})}
             >
               {b.w}
             </text>
             <rect
-              x={x - 2.5}
+              className="wk-hit"
+              x={x - 2}
               y={T}
-              width={gw - 1}
-              height={B - T}
-              fill="transparent"
+              width={gw}
+              height={B - T + 18}
               data-wk={b.w}
+              role="button"
+              tabIndex={0}
+              aria-label={`Nedelja ${b.w}: plan ${fmtKm(b.planKm)} km, urađeno ${fmtKm(b.realKm)} km`}
+              aria-pressed={isSel}
               onClick={() => onSelect(isSel ? null : b.w)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect(isSel ? null : b.w);
+                }
+              }}
             />
           </g>
         );
       })}
+      {runs.map((r) => (
+        <g key={`${r.key}-${r.from}`}>
+          <rect
+            className="wk-phase"
+            x={L + r.from * gw + 2}
+            y={B + 22}
+            width={r.len * gw - 4}
+            height={5}
+            rx={2}
+            style={{ fill: PHASE_COLOR[r.key] }}
+          />
+          {r.len >= 2 ? (
+            <text
+              className="ax wk-pl"
+              x={L + r.from * gw + 2}
+              y={B + 42}
+              style={{ fill: PHASE_COLOR[r.key] }}
+            >
+              {r.key}
+            </text>
+          ) : null}
+        </g>
+      ))}
     </svg>
   );
 }

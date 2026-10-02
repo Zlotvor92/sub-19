@@ -1,0 +1,138 @@
+/* DESIGN TOKENI — jedini izvor boja, razmaka, veličina slova, radijusa i kretanja.
+   Pravila sistema:
+   - BOJA FAZE (--ph-*) postoji samo uz oznaku faze, traku ciklusa i naslove faza, i UVEK uz tekst — nikad sama.
+   - POREKLO PODATKA (merenje / procena / projekcija) se razlikuje OBLIKOM (romb / puna linija / isprekidano), boja je drugi signal.
+   - Akcija je neutralno svetla (--text na --ink): nijedna nijansa faze ne sme da liči na dugme.
+   - Nema stakla, nema gradijenata za ukras, nema senki na površinama. Dubina = svetlina površine (--surface-0..3).
+   Kontrasti (WCAG 2.x, izračunati): --text 14.9:1, --text-2 9.5:1, --text-3 6.1:1 na --surface-1; sve faze ≥ 6.2:1 na --surface-1. */
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('./fonts/archivo-latin.woff2') format('woff2');
+  unicode-range:
+    U+0020-007E, U+00A0, U+00B0, U+00B7, U+00D7, U+2013-2014, U+2018-201E, U+2022, U+2026,
+    U+2190-2193, U+2212, U+2248, U+25B2, U+25BC, U+25CF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('./fonts/archivo-latin-ext.woff2') format('woff2');
+  unicode-range: U+0106-0107, U+010C-010D, U+0110-0111, U+0160-0161, U+017D-017E;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* površine: svetlina ODREĐUJE dubinu */
+  --bg: #0e1217;
+  --surface-0: #0a0e12; /* traka tabova, zaglavlje */
+  --surface-1: #141a20; /* panel */
+  --surface-2: #1b232b; /* polje, uvučeno, uzdignuto na panelu */
+  --surface-3: #242f39; /* pritisnuto / izabrano */
+  --line: #26313a;
+  --line-strong: #3a4854;
+  --border-ui: #5c6c7c; /* ivica kontrole (≥ 3:1 prema podlozi, WCAG 1.4.11) */
+
+  /* tekst */
+  --text: #e8edf2;
+  --text-2: #b4c0cc;
+  --text-3: #8d9aa8;
+  --ink: #0a0e12; /* tekst na svetlom dugmetu */
+
+  /* stanja (uvek uz reč ili ikonu) */
+  --ok: #4fcb8d;
+  --warn: #f2a93b;
+  --bad: #f27468;
+  --focus: #7db3ff;
+
+  /* faze ciklusa */
+  --ph-base: #6d9cf5;
+  --ph-build: #2cc0d6;
+  --ph-peak: #f2a93b;
+  --ph-taper: #b196f0;
+  --ph-race: #f27468;
+
+  /* poreklo podatka */
+  --measured: #e8edf2;
+  --estimated: #8fb5ff;
+  --projected: #b4c0cc;
+
+  /* vrsta treninga (3 nivoa težine + dugo) */
+  --k-easy: #7c8c9c;
+  --k-quality: #f27468;
+  --k-long: #c9d4df;
+
+  /* tipografija */
+  --font: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --fs-label: 0.6875rem; /* 11 px — verzal sa razmakom, samo za oznake */
+  --fs-caption: 0.75rem; /* 12 */
+  --fs-small: 0.8125rem; /* 13 */
+  --fs-body: 0.9375rem; /* 15 */
+  --fs-lead: 1.0625rem; /* 17 */
+  --fs-h3: 1.25rem; /* 20 */
+  --fs-h2: 1.625rem; /* 26 */
+  --fs-h1: 2.125rem; /* 34 */
+  --fs-num: 2.5rem; /* 40 — broj u redu statistike */
+  --fs-hero: clamp(3.25rem, 15vw, 4.5rem); /* ciljni tempo */
+  --track-label: 0.12em;
+
+  /* razmak (4 px osnova) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --pad: 16px; /* bočni razmak sadržaja; deli ga i ekran koji dolazi pri prevlačenju */
+
+  /* radijus */
+  --r-1: 4px; /* oznake, ćelije dana */
+  --r-2: 8px; /* paneli, polja, dugmad */
+  --r-3: 16px; /* list (sheet), dijalog */
+
+  /* uzdizanje: samo za stvari koje lebde iznad sadržaja */
+  --elev-float: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  /* kretanje: 120–320 ms; sve je prekidljivo i gasi se pod prefers-reduced-motion */
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --dur-4: 480ms; /* samo crtanje podataka */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-io: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ljuska */
+  --tab-h: 58px;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --content-max: 560px;
+
+  /* ──────────────────────────────────────────────────────────────────────
+     STARI NAZIVI — ekrani koje ovaj redizajn nije dirao (čarobnjak, podešavanja, zajednica,
+     prijava) i dalje čitaju ova imena. Vrednosti su preusmerene na nove tokene, pa se ti
+     ekrani presvlače bez izmene markupa; „staklo“ je spljošteno (bez providnosti i bez blura). */
+  --glass: var(--surface-1);
+  --glass-hi: var(--surface-2);
+  --glass-in: var(--surface-2);
+  --card: var(--surface-1);
+  --card2: var(--surface-2);
+  --hl: none;
+  --blur: none;
+  --line-soft: var(--line);
+  --txt: var(--text);
+  --txt2: var(--text-2);
+  --txt3: var(--text-3);
+  --pink: var(--k-quality);
+  --green: var(--ok);
+  --cyan: var(--ph-build);
+  --amber: var(--warn);
+  --red: var(--bad);
+  --green-dim: rgba(79, 203, 141, 0.16);
+  --r: var(--r-2);
+}

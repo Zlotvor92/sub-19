@@ -14,7 +14,7 @@ test('vlasnik bez generisanog plana vidi ugrađeni plan (Bokeški polumaraton), 
   await page.goto('/');
   await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
   await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toHaveCount(0);
-  await expect(page.locator('#h-sub')).toHaveText(/Nedelja 2 \/ 12 · 73 dana do trke/);
+  await expect(page.locator('#h-sub')).toHaveText(/N2\/12 · BAZA · 73 d/);
   await tab(page, 'Plan').click();
   await expect(page.getByText('OSTALO · 11 NEDELJA')).toBeVisible();
   await tab(page, 'Trka').click();

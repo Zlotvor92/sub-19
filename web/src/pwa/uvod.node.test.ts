@@ -105,13 +105,10 @@ describe('Znak u zaglavlju', () => {
     expect(icons + shell).toMatch(/h-mark/);
   });
 
-  it('gradijenti uvoda i zaglavlja imaju različite id-jeve (dva <defs> sa istim id-jem: drugi se ignoriše)', () => {
-    const uvod = /<linearGradient id="([^"]+)"/.exec(html)?.[1];
-    const header = /BrandMark\(\{[^}]*id = '([^']+)'/.exec(
-      readFileSync(join(WEB, 'src/components/ui/icons.tsx'), 'utf8')
-    )?.[1];
-    expect(uvod).toBeTruthy();
-    expect(header).toBeTruthy();
-    expect(uvod).not.toBe(header);
+  it('znak u zaglavlju je ravan (bez <defs> i id-jeva), pa ne može da zasenči gradijent uvoda (dva <defs> sa istim id-jem: drugi se ignoriše)', () => {
+    const icons = readFileSync(join(WEB, 'src/components/ui/icons.tsx'), 'utf8');
+    const mark = /export function BrandMark[\s\S]*?\n\}\n/.exec(icons)?.[0] ?? '';
+    expect(mark).not.toBe('');
+    expect(mark).not.toMatch(/<defs|linearGradient|radialGradient|\bid=/);
   });
 });

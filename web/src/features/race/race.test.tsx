@@ -47,14 +47,38 @@ beforeEach(() => {
 });
 
 describe('Trka', () => {
-  it('bez unosa: prstenovi kažu „još nema unosa", cilj i polazna forma iz plana, nema predloga', () => {
+  it('bez unosa: verdikt kaže „Još nema merenja", cilj i polazna forma iz plana, nema predloga', () => {
     const { container } = render(<Screen />);
-    expect(screen.getAllByText('još nema unosa')).toHaveLength(2);
-    expect(container.querySelector('.tr-cilj')).toHaveTextContent(/^cilj42:00 · VDOT/);
+    expect(screen.getByRole('heading', { level: 1, name: 'Napredak' })).toBeInTheDocument();
+    expect(container.querySelector('header.screen-head p')).toHaveTextContent(/cilj 42:00$/);
+    expect(screen.getByText('Još nema merenja')).toBeInTheDocument();
+    expect(screen.getByText('Procena će se pojaviti posle prvog merenja.')).toBeInTheDocument();
     expect(screen.getByText(/Trend se prikazuje kad budu bar 2/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Unesi test na 3 km' })).toBeInTheDocument();
     expect(screen.queryByText('Prilagodi tempo')).toBeNull();
     expect(screen.getByText(/Unesi distancu i vreme/)).toBeInTheDocument();
+    /* polazna tačka i cilj su na osi puta do cilja, procena danas još nije */
+    const journey = container.querySelector('.journey');
+    expect(journey?.getAttribute('aria-label')).toMatch(
+      /^Put do cilja: start \d+:\d\d, cilj 42:00/
+    );
+    expect(journey?.getAttribute('aria-label')).not.toMatch(/sada/);
+  });
+
+  it('procene po distancama: iz polazne forme dok nema merenja, a trka iz plana je označena', () => {
+    render(<Screen />);
+    const card = screen.getByRole('heading', { name: 'Procena po distancama' }).closest('section');
+    expect(card).not.toBeNull();
+    const rows = within(card as HTMLElement).getAllByRole('listitem');
+    expect(rows.map((r) => r.querySelector('.rt-n')?.firstChild?.textContent)).toEqual([
+      '5 km',
+      '10 km',
+      'Polumaraton',
+      'Maraton'
+    ]);
+    expect(within(rows[1] as HTMLElement).getByText('tvoja trka')).toBeInTheDocument();
+    expect(within(card as HTMLElement).getByText(/Iz polazne forme, VDOT/)).toBeInTheDocument();
+    expect(within(card as HTMLElement).getByText('Procena')).toBeInTheDocument();
   });
 
   it('test na 3 km: živa provera; nemoguće vreme se ne upisuje; ispravno ulazi u listu i lanac forme', async () => {
@@ -87,8 +111,8 @@ describe('Trka', () => {
     expect(t.vdotLog[0]).toMatchObject({ id: t.t3k[0]?.id, vdotMigrated: true });
     expect(t.vdotLog[0]?.vdot).not.toBeNull();
     expect(useUIStore.getState().sheet).toBeNull();
-    expect(screen.queryAllByText('još nema unosa')).toHaveLength(0);
-    expect(screen.getByRole('button', { name: '+ Novi test' })).toBeInTheDocument();
+    expect(screen.queryByText('Još nema merenja')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Novi test' })).toBeInTheDocument();
     alert.mockRestore();
   });
 
@@ -128,6 +152,12 @@ describe('Trka', () => {
     const { container } = render(<Screen />);
     expect(container.querySelector('#vdottrend svg')).not.toBeNull();
     expect(screen.getByText('Raniji testovi')).toBeInTheDocument();
+    /* brži drugi test → forma je viša od polazne → odgovor „Da", a procena i projekcija su na osi */
+    expect(screen.getByText('Da')).toBeInTheDocument();
+    expect(container.querySelector('.journey')?.getAttribute('aria-label')).toMatch(
+      /sada · procena/
+    );
+    expect(screen.getByText(/Merenja u lancu forme: 2\. Malo merenja/)).toBeInTheDocument();
     const older = screen.getAllByRole('button').find((b) => b.className === 'krow') as HTMLElement;
     await user.click(older);
     expect(document.querySelector('#sheet .sh-t')).toHaveTextContent('Test 3 km —');

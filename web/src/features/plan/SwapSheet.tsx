@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { dowShort, fmtDayMonth, fmtKm } from '../../domain/format';
 import { confirmAction } from '../../app/confirm';
+import { Icon } from '../../components/ui/icons';
 import { useResolvedPlan, useTrainingStore } from '../../stores';
 
-/* POMERANJE TRENINGA: dodir na dan, pa dodir na drugi dan iste nedelje → zamena. Odrađeni dani (✓) se ne pomeraju. */
+/* POMERANJE TRENINGA: dodir na dan, pa dodir na drugi dan iste nedelje → zamena. Odrađeni dani (sa kvačicom) se ne pomeraju. */
 export function SwapSheet({ w }: { w: number }) {
   const plan = useResolvedPlan();
   const log = useTrainingStore((s) => s.log);
@@ -43,7 +44,10 @@ export function SwapSheet({ w }: { w: number }) {
           : 'Dodirni dan koji hoćeš da pomeriš'}
       </div>
       {err ? (
-        <div role="alert" style={{ fontSize: '.75rem', color: 'var(--red)', marginBottom: 10 }}>
+        <div
+          role="alert"
+          style={{ fontSize: 'var(--fs-small)', color: 'var(--bad)', marginBottom: 10 }}
+        >
           {err}
         </div>
       ) : null}
@@ -63,8 +67,10 @@ export function SwapSheet({ w }: { w: number }) {
                 {moves[d.id] != null ? <small>pomeren sa {fmtDayMonth(d.origDate)}</small> : null}
               </div>
               <div className="day-km">{d.km != null ? fmtKm(d.km) : ''}</div>
-              <span className={`st ${locked ? 'done' : selected ? 'skip' : 'pending'}`}>
-                {locked ? '✓' : selected ? '⇄' : '○'}
+              <span className={`day-st ${locked ? 'done' : selected ? 'skip' : 'pending'}`}>
+                {locked ? <Icon name="check" size={14} strokeWidth={3} /> : null}
+                {selected ? <Icon name="swap" size={13} strokeWidth={2.4} /> : null}
+                {locked ? <span className="sr-only">odrađen, ne pomera se</span> : null}
               </span>
             </>
           );
@@ -105,8 +111,8 @@ export function SwapSheet({ w }: { w: number }) {
         </div>
       ) : null}
       <div className="note-src">
-        Odrađeni dani (✓) se ne pomeraju — istorija ostaje netaknuta. Zamena je moguća unutar iste
-        nedelje.
+        Odrađeni dani (sa kvačicom) se ne pomeraju — istorija ostaje netaknuta. Zamena je moguća
+        unutar iste nedelje.
       </div>
     </>
   );

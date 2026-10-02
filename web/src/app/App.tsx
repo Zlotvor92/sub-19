@@ -1,7 +1,11 @@
 import { Suspense, useCallback, useEffect, useRef } from 'react';
-import { headerSubtitle } from '../domain/plan';
+import { diffDays, parseIsoDate } from '../domain/date';
+import { effectiveRaceDate } from '../domain/day';
+import { fmtDayMonth } from '../domain/format';
 import { PAGES } from '../features/registry';
-import { Ambient, AuthGate, Header, Page, Tabbar } from '../components/ui/Shell';
+import { AuthGate, Header, Page, Tabbar } from '../components/ui/Shell';
+import { useCycleModel } from '../features/cycle/useCycleModel';
+import { CycleCaption, CycleRail } from '../features/cycle/CycleRail';
 import { BannerHost } from '../components/ui/BannerHost';
 import { ConfirmHost } from '../components/ui/ConfirmHost';
 import { Sheet } from '../components/ui/Sheet';
@@ -35,9 +39,13 @@ export function App() {
   const today = useToday();
   const plan = useResolvedPlan();
   const active = useActiveGenPlan();
-  const raceDate = (active?.meta as { raceDate?: string } | undefined)?.raceDate ?? null;
   const wizard = useUIStore((s) => s.wizard);
   const hasPlan = !!active;
+  const metaRace = (active?.meta as { raceDate?: string } | undefined)?.raceDate;
+  const todayIso = parseIsoDate(today);
+  const raceIso = effectiveRaceDate(plan, metaRace);
+  const cycle = useCycleModel();
+  const daysToRace = todayIso && raceIso ? diffDays(todayIso, raceIso) : null;
   /* List nosi polja u koja se kuca (beleška); zatvaranje ih uklanja pre `blur`-a, pa se zakazan upis završava ovde. */
   const onSheetClose = useCallback(() => {
     requestPersist('now');
@@ -133,15 +141,28 @@ export function App() {
 
   /* Bez plana čarobnjak je jedini ekran (nema iza čega da se zatvori); sa planom se otvara iz Podešavanja. */
   const showWizard = gate === null && (wizard || !hasPlan);
-  const subtitle = headerSubtitle(plan, raceDate, today);
-  const settingsOpen = sheet?.kind === 'settings';
 
   return (
     <>
-      <Ambient tab={tab} settingsOpen={settingsOpen} />
       {showWizard ? <Wizard today={today} /> : null}
-      <div style={showWizard ? { display: 'none' } : undefined}>
-        <Header subtitle={subtitle} onSettings={() => openSheet({ kind: 'settings' })} />
+      <div className="app-shell" style={showWizard ? { display: 'none' } : undefined}>
+        <Header
+          caption={
+            <CycleCaption
+              model={cycle}
+              daysToRace={daysToRace}
+              startLabel={plan?.weeks[0] ? fmtDayMonth(plan.weeks[0].start) : ''}
+            />
+          }
+          rail={
+            <CycleRail
+              model={cycle}
+              daysToRace={daysToRace}
+              onOpen={() => useUIStore.getState().setTab('plan')}
+            />
+          }
+          onSettings={() => openSheet({ kind: 'settings' })}
+        />
         <main>
           {(Object.keys(PAGES) as Array<keyof typeof PAGES>).map((t) => {
             const Screen = PAGES[t];

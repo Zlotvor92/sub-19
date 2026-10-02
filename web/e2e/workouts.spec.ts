@@ -19,7 +19,7 @@ test('završi trening: unos km i vremena računa prosečan tempo, sačuvan je lo
   page
 }) => {
   await page.getByRole('button', { name: 'Završi trening' }).click();
-  await expect(page.locator('.st.done')).toHaveText('Odrađen');
+  await expect(page.locator('#tcard[data-status="done"] .focus-top .badge')).toHaveText('Odrađen');
   await page.getByLabel(/Distanca \(km\)/).fill('8,6');
   await page.getByLabel(/^Vreme/).fill('4233');
   await page.getByLabel('Pros. puls').fill('152');
@@ -31,17 +31,17 @@ test('završi trening: unos km i vremena računa prosečan tempo, sačuvan je lo
   expect(entry).toMatchObject({ status: 'done', km: 8.6, sec: 2553, hr: 152 });
   await page.reload();
   await expect(page.getByLabel(/Distanca \(km\)/)).toHaveValue('8,6');
-  await expect(page.locator('.st.done')).toHaveText('Odrađen');
+  await expect(page.locator('#tcard[data-status="done"] .focus-top .badge')).toHaveText('Odrađen');
 });
 
 test('preskoči trening, pa „Vrati": status se menja i nema unosa na „Danas"', async ({ page }) => {
   await page.getByRole('button', { name: 'Preskoči' }).click();
   await expect(page.getByText('Označi trening kao preskočen?')).toBeVisible();
   await page.getByRole('button', { name: 'Ne', exact: true }).click();
-  await expect(page.locator('.st.skip')).toHaveCount(0); // „Ne" ne menja ništa
+  await expect(page.locator('#tcard[data-status="skip"]')).toHaveCount(0); // „Ne" ne menja ništa
   await page.getByRole('button', { name: 'Preskoči' }).click();
   await page.getByRole('button', { name: 'Da', exact: true }).click();
-  await expect(page.locator('.st.skip')).toBeVisible();
+  await expect(page.locator('#tcard[data-status="skip"]')).toBeVisible();
   await page.getByRole('button', { name: 'Vrati' }).click();
   await expect(page.getByRole('button', { name: 'Završi trening' })).toBeVisible();
 });
@@ -51,7 +51,7 @@ test('pomeri trening: zamena dva dana u nedelji, vidi se u planu, stiže na serv
 }) => {
   await tab(page, 'Plan').click();
   await page.getByRole('button', { name: 'Nedelja 2', exact: true }).click();
-  await page.getByRole('button', { name: '⇄ Pomeri treninge' }).click();
+  await page.getByRole('button', { name: 'Pomeri treninge' }).click();
   const sheet = page.getByRole('dialog');
   await expect(sheet.getByText('Dodirni dan koji hoćeš da pomeriš')).toBeVisible();
   const days = sheet.locator('.swap-list button.day');
