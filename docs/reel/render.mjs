@@ -2,6 +2,7 @@
    Pokretanje:
      node docs/reel/render.mjs --preview 1.2,4.6,9,14,19,23.5,27     → docs/reel/preview/*.png (provera rasporeda)
      node docs/reel/render.mjs --full                                → docs/reel/out/sub20-reel.mp4 (+ -bez-zvuka.mp4, cover.png, cover-4x5.png)
+     node docs/reel/render.mjs --mux                                 → samo zvuk: nova muzika u postojeći video
      node docs/reel/render.mjs --cover                               → samo naslovnice
    Zvuk: docs/reel/out/muzika.wav (node docs/reel/audio.mjs); bez njega izlazi samo video bez zvuka. */
 import { chromium } from '../../web/node_modules/@playwright/test/index.mjs';
@@ -50,6 +51,13 @@ try {
     await page.screenshot({ path: join(OUT, 'cover.png'), type: 'png' });
     await page.screenshot({ path: join(OUT, 'cover-4x5.png'), type: 'png', clip: { x: 0, y: 262, width: 1080, height: 1350 } });
     console.log('✓ naslovnica');
+  } else if (args[0] === '--mux') {
+    /* samo zvuk: video se ne renderuje ponovo, nova muzika se ugrađuje u postojeći video bez zvuka */
+    await new Promise((resolve, reject) => {
+      const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-i', join(OUT, 'sub20-reel-bez-zvuka.mp4'), '-i', join(OUT, 'muzika.wav'), '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', join(OUT, 'sub20-reel.mp4')], { stdio: 'inherit' });
+      ff.on('close', (c) => (c === 0 ? resolve() : reject(new Error('ffmpeg ' + c))));
+    });
+    console.log('✓ sub20-reel.mp4 (nov zvuk)');
   } else if (args[0] === '--full') {
     mkdirSync(OUT, { recursive: true });
     const wav = join(OUT, 'muzika.wav');
