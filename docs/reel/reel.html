@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8" />
+<title>SUB-20 · reel</title>
+<style>
+  @font-face { font-family: 'Archivo'; font-weight: 400 800; src: url('../../web/src/styles/fonts/archivo-latin.woff2') format('woff2'); unicode-range: U+0020-007E, U+00A0, U+00B0, U+00B7, U+00D7, U+2013-2014, U+2018-201E, U+2022, U+2026, U+2190-2193, U+2212, U+2248, U+25B2, U+25BC, U+25CF; }
+  @font-face { font-family: 'Archivo'; font-weight: 400 800; src: url('../../web/src/styles/fonts/archivo-latin-ext.woff2') format('woff2'); unicode-range: U+0106-0107, U+010C-010D, U+0110-0111, U+0160-0161, U+017D-017E; }
+  :root { --bg:#0A0E12; --app:#0E1217; --text:#E8EDF2; --text2:#B4C0CC; --text3:#8D9AA8; --line:#26313A; --cyan:#2CC0D6; --bad:#F27468; --ok:#4FCB8D; --warn:#F2A93B; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); }
+  body { width: 1080px; height: 1920px; overflow: hidden; font-family: 'Archivo', system-ui, sans-serif; color: var(--text); font-feature-settings: 'tnum' 1, 'lnum' 1; -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; }
+
+  /* traka ciklusa kao pokazivač napretka reela */
+  #rail { position: absolute; left: 90px; top: 280px; width: 900px; height: 30px; display: flex; gap: 6px; align-items: center; }
+  #rail i { flex: 1; height: 14px; border-radius: 4px; background: var(--c); opacity: .28; }
+  #rail .flag { flex: none; width: 34px; height: 34px; margin-left: 4px; }
+
+  .copy { position: absolute; left: 90px; width: 900px; opacity: 0; }
+  .copy h1 { font-size: 78px; font-weight: 800; letter-spacing: -.03em; line-height: 1.03; text-wrap: balance; }
+  .copy h2 { margin-top: 18px; font-size: 40px; font-weight: 600; color: var(--text2); line-height: 1.2; letter-spacing: -.005em; }
+  .copy.hook { left: 0; width: 1080px; text-align: center; }
+  .copy.hook h1 { font-size: 150px; line-height: .98; letter-spacing: -.04em; }
+  .copy.hook h2 { font-size: 52px; margin-top: 36px; }
+
+  #win { position: absolute; left: 160px; top: 520px; width: 760px; height: 1020px; border-radius: 58px; background: var(--app); border: 3px solid #2A3641; overflow: hidden; opacity: 0; }
+  #win img { position: absolute; left: 0; width: 760px; height: auto; display: block; }
+  #head { top: 0; }
+  #bodyclip { position: absolute; left: 0; top: 162px; width: 760px; height: 745px; overflow: hidden; }
+  #bodyclip img { top: 0; will-change: transform; }
+  #tabs img { bottom: 0; }
+  #tabs { position: absolute; left: 0; top: 907px; width: 760px; height: 113px; background: #0A0E12; border-top: 1px solid var(--line); }
+  #tabs img { position: absolute; left: 0; top: 0; width: 760px; height: 113px; }
+  .hl { position: absolute; border: 4px solid var(--cyan); border-radius: 22px; opacity: 0; box-shadow: 0 0 0 3000px rgba(10,14,18,.68); }
+  #winhl { position: absolute; left: 0; top: 0; width: 760px; height: 1020px; pointer-events: none; overflow: hidden; }
+  #demo { position: absolute; left: 0; width: 1080px; top: 1558px; text-align: center; font-size: 26px; font-weight: 600; color: var(--text3); letter-spacing: .04em; opacity: 0; }
+
+  .chip { position: absolute; padding: 15px 28px; border-radius: 22px; background: var(--text); color: #0A0E12; font-size: 42px; font-weight: 800; letter-spacing: -.01em; white-space: nowrap; opacity: 0; display: flex; align-items: baseline; gap: 14px; }
+  .chip small { font-size: 28px; font-weight: 700; opacity: .72; letter-spacing: 0; }
+  .chip.bad { background: var(--bad); }
+  .chip.ok { background: var(--ok); }
+  .chip.cyan { background: var(--cyan); }
+
+  #brand { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; opacity: 0; }
+  #brand .icon { position: absolute; left: 390px; top: 410px; width: 300px; height: 300px; }
+  #brand .name { position: absolute; left: 0; width: 1080px; top: 760px; text-align: center; font-size: 104px; font-weight: 800; letter-spacing: .14em; }
+  #brand .name span { color: var(--text3); }
+  #brand .sub { position: absolute; left: 0; width: 1080px; top: 900px; text-align: center; font-size: 42px; font-weight: 600; color: var(--text2); }
+  #brand ul { position: absolute; left: 190px; top: 1010px; list-style: none; }
+  #brand li { display: flex; align-items: center; gap: 26px; font-size: 52px; font-weight: 700; margin-bottom: 38px; opacity: 0; }
+  #brand li b { display: block; width: 26px; height: 26px; border-radius: 50%; border: 8px solid var(--cyan); flex: none; }
+  #cta { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; opacity: 0; }
+  #cta h1 { position: absolute; left: 0; width: 1080px; top: 640px; text-align: center; font-size: 118px; font-weight: 800; letter-spacing: -.035em; line-height: 1; }
+  #cta .pill { position: absolute; left: 290px; width: 500px; top: 860px; height: 112px; border-radius: 56px; background: var(--text); color: #0A0E12; font-size: 52px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 18px; }
+  #cta .arrow { position: absolute; left: 0; width: 1080px; top: 1010px; text-align: center; }
+  #cta .small { position: absolute; left: 0; width: 1080px; top: 1110px; text-align: center; font-size: 38px; font-weight: 600; color: var(--text2); }
+  #cta .icon { position: absolute; left: 450px; top: 410px; width: 180px; height: 180px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="rail"></div>
+  <svg id="hookring" viewBox="0 0 1080 1920" style="position:absolute;left:0;top:0;width:1080px;height:1920px;opacity:0"><circle cx="540" cy="780" r="430" fill="none" stroke="#1B232B" stroke-width="30"/><circle id="hookarc" cx="540" cy="780" r="430" fill="none" stroke="#2CC0D6" stroke-width="30" stroke-dasharray="2701.77" stroke-dashoffset="2701.77" transform="rotate(-90 540 780)"/></svg>
+  <div id="copy"></div>
+
+  <div id="win">
+    <img id="head" src="assets/head.png" alt="" />
+    <div id="bodyclip">
+      <img id="b-pred" src="assets/pred-body.png" alt="" />
+      <img id="b-danas" src="assets/danas-body.png" alt="" />
+      <img id="b-plan" src="assets/plan-body.png" alt="" />
+      <img id="b-opor" src="assets/opor-body.png" alt="" />
+      <div id="bodyhl"></div>
+    </div>
+    <div id="tabs">
+      <img id="t-pred" src="assets/tabbar-pred.png" alt="" />
+      <img id="t-danas" src="assets/tabbar-danas.png" alt="" />
+      <img id="t-plan" src="assets/tabbar-plan.png" alt="" />
+      <img id="t-opor" src="assets/tabbar-opor.png" alt="" />
+    </div>
+    <div id="winhl"></div>
+  </div>
+  <div id="chips"></div>
+  <div id="cover" style="position:absolute;left:90px;top:350px;width:900px;opacity:0"><div style="font-size:132px;font-weight:800;letter-spacing:-.04em;line-height:.98">Da li<br>napredujem?</div><div style="margin-top:26px;font-size:50px;font-weight:700;color:#2CC0D6">SUB-20 ti odgovori.</div></div>
+  <div id="demo">demo podaci</div>
+
+  <div id="brand">
+    <svg class="icon" viewBox="0 0 512 512" id="brandsvg"></svg>
+    <div class="name">SUB<span>·</span>20</div>
+    <div class="sub">Plan za 5K, 10K, polumaraton i maraton</div>
+    <ul>
+      <li><b></b>Danielsova VDOT metoda</li>
+      <li><b></b>Radi i bez interneta</li>
+      <li><b></b>Uvoz sa Strave</li>
+    </ul>
+  </div>
+  <div id="cta">
+    <svg class="icon" viewBox="0 0 512 512" id="ctasvg"></svg>
+    <h1>Isprobaj SUB-20</h1>
+    <div class="pill">Link u bio</div>
+    <div class="arrow"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#E8EDF2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></div>
+    <div class="small">Plan, tempo i oporavak. U džepu.</div>
+  </div>
+</div>
+
+<script>
+/* Sve je čista funkcija vremena: window.render(t) postavlja stanje za t sekundi. Kadrove snima render.mjs, kadar po kadar. */
+const FPS = 30, BAR = 2.4, DURATION = BAR * 12;
+window.DURATION = DURATION; window.FPS = FPS;
+const S = 760 / 390;                       // CSS px aplikacije → px kadra
+const WIN = { x: 160, y: 520, head: 162, body: 745, tab: 113 };
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eio = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const $ = (id) => document.getElementById(id);
+const PH = ['#6D9CF5','#6D9CF5','#6D9CF5','#6D9CF5','#2CC0D6','#2CC0D6','#2CC0D6','#2CC0D6','#F2A93B','#F2A93B','#B196F0','#F27468'];
+
+/* ikona aplikacije (isto što docs/brand/icon-rounded.svg), ring se crta preko stroke-dashoffset */
+const ICON = (id) => `
+  <rect width="512" height="512" rx="112" fill="#0E1217"/>
+  <path d="M107 216C107 192 126 178 150 178C174 178 192 194 192 218C192 258 142 290 107 334L198 334" transform="translate(-8 0)" fill="none" stroke="#E8EDF2" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" id="${id}-two"/>
+  <circle cx="334" cy="256" r="78" fill="none" stroke="#2A3641" stroke-width="46"/>
+  <circle id="${id}-arc" cx="334" cy="256" r="78" fill="none" stroke="#2CC0D6" stroke-width="46" stroke-dasharray="490.09" stroke-dashoffset="490.09" transform="rotate(-90 334 256)"/>
+  <circle id="${id}-dot" cx="261.68" cy="226.78" r="23" fill="#2CC0D6" opacity="0"/>`;
+$('brandsvg').innerHTML = ICON('b'); $('ctasvg').innerHTML = ICON('c');
+const iconAt = (id, p, two = 1) => {          // p: 0..1 napredak luka (do 292°)
+  $(id + '-arc').setAttribute('stroke-dashoffset', (490.09 - 490.09 * (292 / 360) * p).toFixed(2));
+  $(id + '-dot').setAttribute('opacity', p > .985 ? 1 : 0);
+  $(id + '-two').setAttribute('opacity', two);
+};
+
+/* traka */
+const rail = $('rail');
+rail.innerHTML = PH.map((c) => `<i style="--c:${c};background:${c}"></i>`).join('') + `<svg class="flag" viewBox="0 0 24 24" fill="none" stroke="#F27468" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V3.5M6 4.5h12l-2.7 3.9 2.7 3.9H6"/></svg>`;
+const railSegs = [...rail.querySelectorAll('i')];
+
+/* scene: tekst i vreme */
+const SC = [
+  { id: 'hook',  t0: 0,        t1: BAR,      h1: 'Da li<br>napredujem?', h2: 'Svaki trkač se to pita.', hook: true, top: 640 },
+  { id: 'pred',  t0: BAR,      t1: BAR * 3,  h1: 'SUB-20 ti odgovori.', h2: 'Odgovor, ne gomila grafikona.' },
+  { id: 'danas', t0: BAR * 3,  t1: BAR * 5,  h1: 'Znaš šta trčiš danas.', h2: 'Ciljni tempo, struktura, trajanje.' },
+  { id: 'plan',  t0: BAR * 5,  t1: BAR * 7,  h1: 'Ceo ciklus pred tobom.', h2: 'Baza, razvoj, vrhunac, taper, trka.' },
+  { id: 'opor',  t0: BAR * 7,  t1: BAR * 9,  h1: 'Kaže ti kad da usporiš.', h2: 'Stanje iz HRV-a, sna i opterećenja.' }
+];
+const copyEl = $('copy');
+for (const s of SC) {
+  const d = document.createElement('div');
+  d.className = 'copy' + (s.hook ? ' hook' : ''); d.style.top = (s.top ?? 338) + 'px';
+  d.innerHTML = `<h1>${s.h1}</h1><h2>${s.h2}</h2>`; copyEl.appendChild(d); s.el = d;
+}
+
+/* ekran u prozoru: scroll u CSS px aplikacije */
+const PAGES = {
+  pred:  { img: $('b-pred'),  tab: $('t-pred'),  t0: BAR * 1, scroll: [[BAR * 1, 0], [BAR * 3, 70]] },
+  danas: { img: $('b-danas'), tab: $('t-danas'), t0: BAR * 3, scroll: [[BAR * 3, 0], [BAR * 3 + 2.0, 0], [BAR * 5, 175]] },
+  plan:  { img: $('b-plan'),  tab: $('t-plan'),  t0: BAR * 5, scroll: [[BAR * 5, 0], [BAR * 5 + 1.6, 0], [BAR * 7, 560]] },
+  opor:  { img: $('b-opor'),  tab: $('t-opor'),  t0: BAR * 7, scroll: [[BAR * 7, 0], [BAR * 7 + 2.2, 0], [BAR * 9, 285]] }
+};
+const order = ['pred', 'danas', 'plan', 'opor'];
+const scrollOf = (key, t) => {
+  const k = PAGES[key].scroll; if (t <= k[0][0]) return k[0][1];
+  for (let i = 1; i < k.length; i++) if (t <= k[i][0]) return k[i - 1][1] + (k[i][1] - k[i - 1][1]) * eio(seg(t, k[i - 1][0], k[i][0]));
+  return k[k.length - 1][1];
+};
+const BOX = {};     // iz assets/boxes.json
+const chipsEl = $('chips'), bodyhl = $('bodyhl'), winhl = $('winhl');
+const BEATS = [
+  { page: 'pred',  box: 'answer',  t0: BAR * 1 + 1.3, t1: BAR * 2 + .6,  chip: 'Forma raste ▲', tone: 'ok' },
+  { page: 'pred',  box: 'journey', t0: BAR * 2 + .7,  t1: BAR * 3 - .1,  chip: 'Sada 20:13', small: 'cilj 19:59', tone: '' },
+  { page: 'danas', box: 'pace',    t0: BAR * 3 + .9,  t1: BAR * 4 + .4,  chip: 'Ciljni tempo', tone: 'cyan' },
+  { page: 'danas', box: 'profile', t0: BAR * 4 + .5,  t1: BAR * 5 - .1,  chip: '7 × 60 s brzo', small: 'struktura', tone: '' },
+  { page: 'plan',  head: true,     t0: BAR * 5 + .6,  t1: BAR * 6 + .3,  chip: 'Nedelja 6 od 12', tone: 'cyan' },
+  { page: 'plan',  box: 'phases',  t0: BAR * 6 + .4,  t1: BAR * 7 - .1,  chip: '5 faza do trke', tone: '' },
+  { page: 'opor',  box: 'answer',  t0: BAR * 7 + 1.2, t1: BAR * 8 + .5,  chip: 'Iz 6 signala', tone: 'bad' },
+  { page: 'opor',  box: 'todo',    t0: BAR * 8 + .6,  t1: BAR * 9 - .1,  chip: 'Konkretan savet', tone: '' }
+];
+for (const b of BEATS) {
+  const c = document.createElement('div'); c.className = 'chip ' + b.tone;
+  c.innerHTML = `${b.chip}${b.small ? `<small>${b.small}</small>` : ''}`; chipsEl.appendChild(c); b.el = c;
+  const h = document.createElement('div'); h.className = 'hl'; (b.head ? winhl : bodyhl).appendChild(h); b.hlEl = h;
+}
+
+window.render = (t) => {
+  /* traka: segmenti se pune sa vremenom */
+  const prog = clamp(t / DURATION) * 12;
+  railSegs.forEach((el, i) => {
+    const cur = Math.floor(prog) === i, done = prog >= i + 1;
+    el.style.opacity = done || cur ? 1 : .28; el.style.height = cur ? '26px' : '14px';
+    el.style.borderRadius = cur ? '6px' : '4px';
+  });
+  /* uvod: prsten štoperice se crta iza pitanja, pa se gasi kad prozor uđe */
+  const ringA = Math.min(eo(seg(t, .1, 1.7)), 1 - seg(t, BAR - .1, BAR + .5));
+  $('hookring').style.opacity = ringA;
+  $('hookarc').setAttribute('stroke-dashoffset', (2701.77 - 2701.77 * (292 / 360) * eo(seg(t, .1, 1.7))).toFixed(1));
+  /* tekstovi po scenama */
+  for (const s of SC) {
+    const a = eo(seg(t, s.t0 + .05, s.t0 + .5)), o = 1 - seg(t, s.t1 - .3, s.t1);
+    const v = Math.min(a, o);
+    s.el.style.opacity = v; s.el.style.transform = `translateY(${(1 - a) * 28 - (1 - o) * 12}px)`;
+  }
+  /* prozor: ulazi pred kraj uvoda, izlazi pred brend scenu */
+  const enter = eo(seg(t, BAR - .35, BAR + .5)), leave = eio(seg(t, BAR * 9 - .1, BAR * 9 + .55));
+  const win = $('win');
+  win.style.opacity = Math.min(enter, 1 - leave);
+  win.style.transform = `translateY(${(1 - enter) * 620 + leave * 700}px)`;
+  $('demo').style.opacity = Math.min(enter, 1 - leave) * .9;
+  /* aktivan ekran + prelaz */
+  let active = 'pred';
+  for (const k of order) if (t >= PAGES[k].t0 - 0.001) active = k;
+  for (const k of order) {
+    const P = PAGES[k], x = clamp((t - P.t0) / .45);
+    const isActive = k === active;
+    const prevIdx = order.indexOf(active) - 1, isPrev = order.indexOf(k) === prevIdx && x < 1;
+    P.img.style.opacity = isActive ? (k === 'pred' ? 1 : eo(x)) : isPrev ? 1 - eo(x) : 0;
+    const sx = isActive ? (1 - eo(x)) * 70 * (k === 'pred' ? 0 : 1) : isPrev ? -eo(x) * 70 : 0;
+    P.img.style.transform = `translate(${sx}px, ${-scrollOf(k, t) * S}px)`;
+    P.tab.style.opacity = isActive ? (k === 'pred' ? 1 : eo(x)) : isPrev ? 1 - eo(x) : 0;
+  }
+  /* oznake */
+  for (const b of BEATS) {
+    const a = eo(seg(t, b.t0, b.t0 + .35)) * (1 - seg(t, b.t1 - .25, b.t1));
+    const box = b.head ? { x: 20 / S, y: 0, w: 660 / S, h: 0 } : BOX[b.page]?.[b.box];
+    if (!box) { b.el.style.opacity = 0; b.hlEl.style.opacity = 0; continue; }
+    const sc = scrollOf(b.page, t);
+    let rectTop, rectH;
+    if (b.head) {
+      rectTop = 94; rectH = 66;
+      Object.assign(b.hlEl.style, { left: '16px', top: rectTop + 'px', width: '728px', height: rectH + 'px' });
+      b.chipY = WIN.y + rectTop + rectH + 30;
+    } else {
+      const top = (box.y - sc) * S, left = box.x * S - 10, w = box.w * S + 20, h = box.h * S;
+      Object.assign(b.hlEl.style, { left: left + 'px', top: (top - 8) + 'px', width: w + 'px', height: (h + 16) + 'px' });
+      const below = WIN.y + WIN.head + top + h + 24;
+      const above = WIN.y + WIN.head + top - 8 - 24 - 86;
+      b.chipY = below + 90 < WIN.y + WIN.head + WIN.body ? below : above;
+    }
+    b.el.style.top = b.chipY + 'px';
+    b.hlEl.style.opacity = a;
+    b.el.style.opacity = a;
+    b.el.style.left = (WIN.x + 760 - 28 - b.el.offsetWidth) + 'px';
+    b.el.style.transform = `translateY(${(1 - a) * 22}px) scale(${.92 + a * .08})`;
+  }
+  /* brend scena (21.6 → 26.4), pa poziv na akciju */
+  const b0 = BAR * 9, b1 = BAR * 11;
+  const ba = Math.min(eo(seg(t, b0 + .3, b0 + .9)), 1 - seg(t, b1 - .35, b1));
+  $('brand').style.opacity = ba;
+  iconAt('b', eo(seg(t, b0 + .5, b0 + 1.5)), eo(seg(t, b0 + .35, b0 + .9)));
+  $('brandsvg').style.transform = `scale(${.86 + .14 * eo(seg(t, b0 + .3, b0 + 1))})`;
+  document.querySelectorAll('#brand li').forEach((li, i) => {
+    const a = eo(seg(t, b0 + 1.5 + i * .5, b0 + 2 + i * .5)); li.style.opacity = a; li.style.transform = `translateX(${(1 - a) * 40}px)`;
+  });
+  const ca = eo(seg(t, b1 + .05, b1 + .6));
+  $('cta').style.opacity = ca;
+  iconAt('c', 1, 1);
+  $('cta').querySelector('h1').style.transform = `translateY(${(1 - ca) * 30}px)`;
+  const pulse = 1 + .04 * Math.sin((t - b1) * 6.5) * seg(t, b1 + .8, b1 + 1.2);
+  $('cta').querySelector('.pill').style.transform = `scale(${pulse})`;
+  $('cta').querySelector('.arrow').style.transform = `translateY(${-Math.abs(Math.sin((t - b1) * 3.2)) * 14}px)`;
+};
+/* naslovnica: čist kadar bez oznaka i zatamnjenja, sa pitanjem; prozor je spušten da ne dodiruje tekst */
+window.renderCover = () => {
+  window.render(BAR + 1.0);
+  for (const s of SC) s.el.style.opacity = 0;
+  $('hookring').style.opacity = 0;
+  $('cover').style.opacity = 1;
+  $('win').style.transform = 'translateY(290px)';
+  $('demo').style.top = '1848px';
+};
+window.boot = async () => {
+  const r = await fetch('assets/boxes.json');
+  Object.assign(BOX, await r.json());
+  await document.fonts.ready;
+  await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+  window.render(0);
+};
+</script>
+</body>
+</html>

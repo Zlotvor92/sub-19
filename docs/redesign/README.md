@@ -50,3 +50,10 @@ Stanje: **implementirano u radnom stablu, ništa nije commit-ovano ni pushovano.
 - Grafikoni se crtaju u fiksnom koordinatnom sistemu od 340 jedinica (u domenu: `domain/race/view.ts`, `domain/recovery/charts.ts`, nisu menjani); zato je širina ograničena na 480 px, a tekst na telefonu je ≈ 10 px.
 - „Procena po distancama" koristi VDOT ekvivalente (uz upozorenje da važe za one koji treniraju baš za tu distancu). „Plan vodi do" je `meta.predictedSec` generatora.
 - Stanje oporavka ne uključuje jutarnji zapis stariji od jednog dana (prikazan je kao „Star zapis").
+
+## Naknadne izmene
+
+- **Ikona aplikacije „2○"** (cifra 2 + prsten štoperice) i **ikone tabova** (štoperica, stubovi, prsten sa pulsom, zastavica) — izvor i generator: `docs/brand/build-icons.mjs`. APK u `web/public/sub20.apk` nije ponovo pravljen, pa ima staru ikonu dok se ne izgradi novi.
+- **Zajednica je ugašena** iza jednog prekidača (`COMMUNITY_ENABLED` u `web/src/services/config.ts`): nema taba ni podešavanja, nema poziva ka tabeli; kod, domen, store i servis su na mestu. Ko je ranije bio vidljiv, pri pokretanju mu se javni red povlači.
+- **Reel za Instagram:** `docs/reel/` (v. `objava.md`).
+
