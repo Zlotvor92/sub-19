@@ -3,7 +3,7 @@
 Živi dokument. Plan i kapije: `REWRITE_PLAN.md`. Završni izveštaj: `../REWRITE_REPORT.md`. Prelaz na produkciju: `CUTOVER.md`.
 
 **Stanje (grana `claude/sub20-frontend-rewrite-q6dlvr`):** novi frontend (`web/`) je funkcionalno kompletan prema starom `app.js`, sa dokazom (diferencijalni testovi naspram starog koda, 1 019 vitest testova,
-33 Playwright toka). **Nije isporučen na produkciju** (nema Vercel pristupa) i **stari frontend nije uklonjen** (Phase 12 sledi tek posle provere na produkciji).
+33 Playwright toka). **Isporučen na produkciju 2026-10-02** (PR #26, Vercel projekat `sub-19`, domen `sub-19.vercel.app`; proveren javni domen: sve statike i `/api/push`, CSP, SW aktivan + keš `v283`, offline reload). **Stari frontend nije uklonjen** (Phase 12 sledi posle provere sa pravom prijavom i servisima na uređaju).
 
 ## Faze
 
@@ -19,8 +19,8 @@
 | 8 | Integracije | **gotovo** (prema lažnim servisima) | Strava, intervals.icu (+ slanje na sat), vreme, AI, push — **nijedna nije probana protiv pravog servisa u ovoj sesiji** |
 | 9 | PWA/offline | **gotovo** | `sw.js` iz starog koda bajt-za-bajt + injekcija verzije/spiska pri izgradnji; offline i ažuriranje u pregledaču; **v282 → novi frontend** i povratak (E2E) |
 | 10 | E2E + perf + sec | **gotovo, sa ograničenjima** | 33 Playwright toka; merenja ispod; bezbednosni pregled ispod. **Nema** automatskog a11y testa (axe), Lighthouse nije pokrenut |
-| 11 | Produkcija (postojeći Vercel projekat i domen) | **NIJE urađeno** | zahteva vlasnika; spremno: `web/deploy/vercel.cutover.json` + `docs/CUTOVER.md` + test `deploy/cutover.node.test.ts` |
-| 12 | Uklanjanje starog frontenda | **NIJE urađeno** (namerno) | tek posle faze 11; v. „Šta se briše" u `CUTOVER.md` |
+| 11 | Produkcija (postojeći Vercel projekat i domen) | **urađeno** (2026-10-02) | stvarni Vercel build (preview + produkcija) uspeo; pronađen i ispravljen defekt: neusidreni obrasci u `.vercelignore` (`test/`, `supabase/`, `scripts/`) izbacivali su `web/src/test`, `web/src/services/supabase`, `web/scripts`; test `deploy/cutover.node.test.ts`. **Nije proveren**: prava prijava/Strava/icu/AI/push na produkciji, telefon |
+| 12 | Uklanjanje starog frontenda | **NIJE urađeno** (namerno) | posle ručne provere prave prijave i servisa na telefonu + prolaska starih testova jedan po jedan (mapiranje ispod je po naslovima); v. „Šta se briše" u `CUTOVER.md`. Rollback ostaje jednostavan dok `app.js` postoji |
 
 ## Brojke
 
@@ -96,7 +96,7 @@ Stari frontend testovi se brišu TEK u Phase 12 i samo uz ovu pokrivenost.
 
 | ID | Pitanje | Stanje |
 |---|---|---|
-| O1 | Vercel pristup / preview | **vlasnik** |
+| O1 | Vercel pristup / preview | **rešeno** (`VERCEL_TOKEN` u okruženju sesije; cutover urađen) |
 | O2 | Lični plan vlasnika | **rešeno kao u planu: ostaje kao podatak** (`data/personalPlan.ts`) |
 | O3 / D1 | Spregnutost obima i tempa u generatoru | zadržano (a), nepromenjeno; v. `TRAINING_ENGINE_AUDIT` |
 | O4 | `intensity` nepoznat → greška | urađeno (G4) |

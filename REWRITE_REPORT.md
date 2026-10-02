@@ -1,7 +1,6 @@
 # REWRITE REPORT — SUB-20 frontend
 
-**Zaključak:** novi frontend (`web/`) je funkcionalno ekvivalentan starom `app.js` (APP_VERSION 282) u meri u kojoj to može da se dokaže bez pristupa produkciji. **Nije isporučen i stari nije uklonjen.**
-Phase 11 (Vercel, postojeći projekat i domen) i Phase 12 (brisanje starog) nisu urađene — traže vlasnika. Cilj „početni JS < 150 KB gzip" **nije ispunjen** (≈ 216 KB; stari je 327 KB).
+**Zaključak:** novi frontend (`web/`) je funkcionalno ekvivalentan starom `app.js` (APP_VERSION 282) u meri u kojoj to može da se dokaže testovima. **Isporučen na produkciju 2026-10-02** (PR #26, `sub-19.vercel.app`); stari frontend **nije** uklonjen (Phase 12 čeka ručnu proveru prijave i servisa na telefonu). Cilj „početni JS < 150 KB gzip" **nije ispunjen** (≈ 216 KB; stari je 327 KB).
 
 Branch: `claude/sub20-frontend-rewrite-q6dlvr`. Detalji po fazama i brojke: `docs/REWRITE_STATUS.md`. Namerne razlike u ponašanju: `docs/ENGINE_CHANGES.md`. Prelaz na produkciju: `docs/CUTOVER.md`.
 
@@ -124,13 +123,12 @@ Lokalno, `vite preview`, stoni Chromium, lažni backend — **nije produkcija, n
 
 ## 11. Deployment
 
-**Ništa nije isporučeno.** Ova sesija nema pristup Vercel-u; produkcija i dalje servira stari frontend.
+**Isporučeno** (PR #26 → `main` → postojeći Vercel projekat `sub-19`, domen `sub-19.vercel.app`; DNS, Supabase, env promenljive nisu menjani).
 
-Pripremljeno i proveravano lokalno:
+Proveren javni domen posle deploy-a: `/`, `/sw.js` (keš `sub19-cache-v283-…`), `/uvod.js`, `/manifest.json`, `/.well-known/assetlinks.json`, `/sub20.apk`, `/api/push` odgovaraju; `/app.js`, `/docs/*`, `/web/*` su 404; CSP identičan; SW se aktivira i offline reload radi (Chromium).
 
-- `web/deploy/vercel.cutover.json` — identičan `vercel.json` osim `installCommand`, `buildCommand`, `outputDirectory` (test).
-- `docs/CUTOVER.md` — preduslovi (Node ≥ 22.12 na Vercel-u, Supabase Redirect URLs, Strava/icu domen), preview na posebnoj grani, redosled, povratak.
-- `.vercelignore` ima red `web/` koji se **briše** pri cutover-u; `docs/`, `ARCHITECTURE.md`, `REWRITE_REPORT.md` ostaju isključeni (`REWRITE_REPORT.md` je sada u `.vercelignore`).
-- Neproveren na Vercel-u: da li `outputDirectory: web/dist` radi uz `api/*.js` funkcije u korenu.
+Stvarni Vercel build je otkrio defekt koji lokalni testovi nisu: neusidreni obrasci u `.vercelignore` (`test/`, `supabase/`, `scripts/`) važe na svakoj dubini i izbacivali su `web/src/test`, `web/src/services/supabase`, `web/scripts` iz upload-a (build pao). Sada su usidreni (`/test/` …); test `deploy/cutover.node.test.ts` to čuva.
 
-Koraci za vlasnika: (1) preview grana po `CUTOVER.md`, (2) ručna provera prijave, Strave, intervals.icu, push-a i AI na preview-u i na telefonu, (3) cutover na produkciju, (4) tek posle toga Phase 12 (brisanje `app.js`, `index.html`, starog `sw.js`, `sw-reg.js`, starih frontend testova uz proveru mapiranja).
+**Nije provereno na produkciji:** prava Google prijava i sinhronizacija, Strava, intervals.icu, Gemini, push, telefon/Android/Safari/Firefox. Rollback: Vercel → Deployments → prethodni produkcioni → Promote.
+
+Phase 12 (brisanje `app.js`, `index.html`, starog `sw.js`, `sw-reg.js`, starih frontend testova) čeka tu ručnu proveru i prolazak starih testova jedan po jedan.
