@@ -11,7 +11,7 @@ import {
   stepOf,
   type Axis
 } from '../domain/shell/swipe';
-import { TABS, useUIStore, type Tab } from '../stores/uiStore';
+import { VISIBLE_TABS, useUIStore, type Tab } from '../stores/uiStore';
 
 /* PREVLAČENJE IZMEĐU TABOVA. Dva ekrana se pomeraju ZAJEDNO, kao traka: onaj što odlazi ide 1:1 sa prstom, susedni stoji uz njega i ulazi u kadar istom
    brzinom — ruka vidi da vuče sadržaj, a ne da pokreće animaciju. Odluke (osa, prag, flik, trajanje) su u
@@ -133,7 +133,7 @@ export function useSwipeNav(enabled: boolean): void {
       clear(p.targetEl);
       p.targetEl = null;
       p.step = step;
-      p.target = neighborTab(TABS, ui.getState().tab, step);
+      p.target = neighborTab(VISIBLE_TABS, ui.getState().tab, step);
       if (!p.target || p.calm) return;
       const target = p.target;
       /* sadržaj mora postojati pre nego što uđe u kadar */

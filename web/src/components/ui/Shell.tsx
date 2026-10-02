@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { TABS, type Tab, useUIStore } from '../../stores/uiStore';
+import { VISIBLE_TABS, type Tab, useUIStore } from '../../stores/uiStore';
 import { BrandMark, GearIcon, TabIcon, TAB_LABELS } from './icons';
 
 /* LJUSKA: zaglavlje (znak, kratak natpis, podešavanja, traka ciklusa), traka tabova, kapija za prijavu, ekran jednog taba. */
@@ -49,7 +49,7 @@ export function Tabbar({ onSelect }: { onSelect?: (tab: Tab) => void }) {
   const setTab = useUIStore((s) => s.setTab);
   return (
     <nav id="tabbar" aria-label="Glavna navigacija">
-      {TABS.map((t) => (
+      {VISIBLE_TABS.map((t) => (
         <button
           key={t}
           type="button"

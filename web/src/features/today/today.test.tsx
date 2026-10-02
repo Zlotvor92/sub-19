@@ -1,3 +1,4 @@
+import type * as Config from '../../services/config';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -15,6 +16,17 @@ import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import TodayPage from './index';
+
+/* Zajednica je UGAŠENA u izdanju (`COMMUNITY_ENABLED = false`). Testovi ovog fajla koji je pominju drže da kod iza prekidača i dalje radi kad se
+   prekidač vrati (ovde je podrazumevano uključen); ugašeno stanje je proveren posebnim opisom ispod, prebacivanjem `flag.community`. */
+const flag = vi.hoisted(() => ({ community: true }));
+vi.mock('../../services/config', async (orig) => {
+  const actual = await orig<typeof Config>();
+  return Object.defineProperty({ ...actual }, 'COMMUNITY_ENABLED', {
+    enumerable: true,
+    get: () => flag.community
+  });
+});
 
 /* parity: dayCard / bindDayCard / bindForm / renderDanas (app.js) — Danas ekran: hero, kartica dana, status, unos, tempo radnog dela. */
 
@@ -464,5 +476,22 @@ describe('Trake na vrhu', () => {
     render(<TodayPage />);
     await userEvent.setup().click(screen.getByRole('button', { name: 'Zatvori' }));
     expect(collectPersisted().ui.novo).toBe('zajednica');
+  });
+});
+
+describe('Trake — Zajednica ugašena', () => {
+  afterEach(() => {
+    flag.community = true;
+  });
+  it('objava „Novo: Zajednica" se ne pokazuje nikome dok je funkcija ugašena', () => {
+    flag.community = false;
+    const st = freshState();
+    st.ui = { ...st.ui, firstRun: '2026-01-01', lastBackup: '2026-01-13' };
+    hydratePersisted(st);
+    goTo('2026-01-14');
+    useAuthStore.setState({ hasSession: true });
+    render(<TodayPage />);
+    expect(screen.queryByText('Novo: Zajednica')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Pogledaj' })).toBeNull();
   });
 });

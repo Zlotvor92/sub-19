@@ -34,7 +34,13 @@ function stateWithPlan(): PersistedState {
 }
 
 function make(
-  opts: { authed?: boolean; online?: boolean; replies?: Reply[]; now?: () => number } = {}
+  opts: {
+    authed?: boolean;
+    online?: boolean;
+    replies?: Reply[];
+    now?: () => number;
+    enabled?: boolean;
+  } = {}
 ) {
   const calls: Array<{
     url: string;
@@ -80,7 +86,8 @@ function make(
     session,
     now: opts.now ?? (() => NOW),
     today: () => '2026-02-20',
-    online: () => opts.online ?? true
+    online: () => opts.online ?? true,
+    ...(opts.enabled === undefined ? {} : { enabled: () => opts.enabled as boolean })
   });
   return { community, calls };
 }
@@ -229,5 +236,55 @@ describe('Zajednica — tok', () => {
     const none = make({ authed: false });
     none.community.refreshIfDue();
     expect(none.calls).toHaveLength(0);
+  });
+});
+
+describe('Zajednica — ugašena funkcija (prekidač isključen)', () => {
+  const on = { zajed: { vidljiv: true, nadimak: 'Mare' }, profiles: [], loadedAt: 0 };
+
+  it('ništa se ne upisuje, ne učitava i ne uključuje', async () => {
+    useCommunityStore.setState(on);
+    const m = make({ enabled: false });
+    m.community.publishOnStart();
+    m.community.refreshIfDue();
+    m.community.setNickname('Novi');
+    expect(await m.community.publish()).toMatchObject({ ok: false });
+    expect(await m.community.setVisible(true)).toMatchObject({ ok: false });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(m.calls).toHaveLength(0);
+  });
+
+  it('ko je ranije bio vidljiv, pri pokretanju se povlači: DELETE sopstvenog reda, pa tek onda vidljiv=false', async () => {
+    useCommunityStore.setState({ ...on, opened: 'x', profiles: [] });
+    const m = make({ enabled: false, replies: [{ status: 204 }] });
+    await m.community.withdrawIfDisabled();
+    expect(m.calls).toHaveLength(1);
+    expect(m.calls[0]).toMatchObject({
+      method: 'DELETE',
+      url: 'https://x.supabase.co/rest/v1/zajednica_profil?user_id=eq.u1'
+    });
+    expect(useCommunityStore.getState().zajed.vidljiv).toBe(false);
+    expect(useCommunityStore.getState()).toMatchObject({ profiles: null, opened: null });
+  });
+
+  it('server ne primi brisanje: ostaje vidljiv=true (da se pokuša sledeći put), ne laže da je povučeno', async () => {
+    useCommunityStore.setState(on);
+    const m = make({ enabled: false, replies: [{ status: 500 }] });
+    await m.community.withdrawIfDisabled();
+    expect(m.calls).toHaveLength(1);
+    expect(useCommunityStore.getState().zajed.vidljiv).toBe(true);
+  });
+
+  it('bez poziva ako nije bio vidljiv, ako nije prijavljen, i uvek kad je funkcija uključena', async () => {
+    useCommunityStore.setState({ zajed: { vidljiv: false, nadimak: '' } });
+    const a = make({ enabled: false });
+    await a.community.withdrawIfDisabled();
+    useCommunityStore.setState(on);
+    const b = make({ enabled: false, authed: false });
+    await b.community.withdrawIfDisabled();
+    const c = make({ enabled: true, replies: [{ status: 204 }] });
+    await c.community.withdrawIfDisabled();
+    expect(a.calls.length + b.calls.length + c.calls.length).toBe(0);
+    expect(useCommunityStore.getState().zajed.vidljiv).toBe(true);
   });
 });

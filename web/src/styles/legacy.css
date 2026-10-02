@@ -262,13 +262,16 @@
   animation:uvod-kraj .3s 1.15s ease-out both;
 }
 body.uvod-radi{overflow:hidden}
-#uvod .zn{width:116px;height:116px}
+#uvod .zn{width:190px;height:114px}
 #uvod .traka{animation:uvod-utopi .45s .1s ease-out both}
-#uvod .luk{stroke-dasharray:276.46;animation:uvod-luk .8s cubic-bezier(.35,.82,.3,1) both}
+#uvod .luk{stroke-dasharray:490.09;animation:uvod-luk .8s .1s cubic-bezier(.35,.82,.3,1) both}
+#uvod .dva{animation:uvod-dva .45s ease-out both}
+#uvod .tacka{animation:uvod-utopi .12s .85s ease-out both}
 #uvod .ime{font-weight:800;font-size:1rem;letter-spacing:.16em;color:#E8EDF2;
            animation:uvod-ime .42s .52s cubic-bezier(.2,1,.3,1) both}
 #uvod .ime span{color:#8D9AA8}
-@keyframes uvod-luk{from{stroke-dashoffset:276.46}to{stroke-dashoffset:47.63}}
+@keyframes uvod-luk{from{stroke-dashoffset:490.09}to{stroke-dashoffset:93.5}}
+@keyframes uvod-dva{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
 @keyframes uvod-utopi{from{opacity:0}to{opacity:1}}
 @keyframes uvod-ime{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 /* `visibility` se prebacuje tek na samom kraju, ne u `to` bloku: to je diskretno

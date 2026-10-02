@@ -1,3 +1,4 @@
+import type * as Config from '../../services/config';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -20,6 +21,17 @@ import { SheetHost } from '../sheets';
 
 const download = vi.hoisted(() => vi.fn());
 vi.mock('../../lib/download', () => ({ downloadText: download }));
+
+/* Zajednica je UGAŠENA u izdanju (`COMMUNITY_ENABLED = false`). Testovi ovog fajla koji je pominju drže da kod iza prekidača i dalje radi kad se
+   prekidač vrati (ovde je podrazumevano uključen); ugašeno stanje je proveren posebnim opisom ispod, prebacivanjem `flag.community`. */
+const flag = vi.hoisted(() => ({ community: true }));
+vi.mock('../../services/config', async (orig) => {
+  const actual = await orig<typeof Config>();
+  return Object.defineProperty({ ...actual }, 'COMMUNITY_ENABLED', {
+    enumerable: true,
+    get: () => flag.community
+  });
+});
 
 /* parity: openSettings, openObrisiNalogSheet, openBugSheet, openIstorijaSheet, exportBackup/importBackup (app.js). */
 
@@ -969,5 +981,32 @@ describe('Admin (samo vlasnik)', () => {
       })
     );
     alert.mockRestore();
+  });
+});
+
+describe('Zajednica ugašena (prekidač isključen)', () => {
+  afterEach(() => {
+    flag.community = true;
+  });
+
+  it('u podešavanjima nema sekcije, prekidača, nadimka ni izazova; ostale sekcije grupe „App" ostaju', async () => {
+    flag.community = false;
+    const user = userEvent.setup();
+    boot(true, { ...stateWithPlan(), zajed: { vidljiv: false, nadimak: 'Marko' } });
+    useAuthStore.setState({
+      configured: true,
+      hasSession: true,
+      userId: ADMIN_UID,
+      name: 'Marko Marković',
+      picture: null
+    });
+    open();
+    render(<Screen />);
+    await user.click(screen.getByText('App', { selector: 'button' }));
+    expect(screen.getByText('Obaveštenja', { selector: 'b' })).toBeInTheDocument();
+    expect(screen.queryByText('Zajednica', { selector: 'b' })).toBeNull();
+    expect(document.querySelector('#zaj-tgl')).toBeNull();
+    expect(document.querySelector('#zaj-nadimak')).toBeNull();
+    expect(screen.queryByText(/izazov/i)).toBeNull();
   });
 });

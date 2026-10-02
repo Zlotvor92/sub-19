@@ -192,7 +192,9 @@ describe('traka tabova i kapija', () => {
     expect(useUIStore.getState().tab).toBe('plan');
     expect(screen.getByRole('button', { name: 'Plan' })).toHaveAttribute('aria-current', 'page');
     expect(onSelect).toHaveBeenCalledWith('plan');
-    expect(screen.getAllByRole('button')).toHaveLength(5);
+    /* Zajednica je ugašena: u traci su četiri ekrana */
+    expect(screen.getAllByRole('button')).toHaveLength(4);
+    expect(screen.queryByRole('button', { name: 'Zajednica' })).toBeNull();
   });
   it('kapija: poruka greške je `alert`, dugme poziva prijavu', async () => {
     const user = userEvent.setup();

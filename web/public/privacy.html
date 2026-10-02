@@ -63,7 +63,7 @@ zatražiš; ako to ne želiš, ne traži je.</p>
 im ne pristupa nijedan drugi korisnik. Aplikacija je hostovana na <strong>Vercel</strong>.
 Kopija podataka postoji i lokalno u pregledaču, da bi radila bez veze sa internetom.</p>
 <p>Postoje dva izuzetka od „samo ti", i oba su ovde imenovana:
-<a href="#zajednica">Zajednica</a>, koja je isključena dok je sam ne uključiš, i
+<a href="#zajednica">Zajednica</a>, koja je trenutno ugašena u aplikaciji (ništa se ne deli), i
 <a href="#izvestaj">dnevni izveštaj vlasniku aplikacije</a>.</p>
 
 <h3 id="izvestaj">Dnevni izveštaj vlasniku aplikacije</h3>
@@ -136,16 +136,20 @@ ih i tih poruka nema.</p>
   <tr><td><b>Open-Meteo</b> (vremenska služba)</td><td>samo koordinate zaokružene na ~1 km. Bez naloga, bez ključa, bez ičega o tebi — ni imena, ni e-adrese, ni podataka o treningu</td><td>samo dok je vreme uključeno; upit ide direktno sa tvog uređaja, ne preko našeg servera</td></tr>
   <tr><td>Resend</td><td>tvoja e-adresa i tekst poruke</td><td>dnevni izveštaj i prijava greške</td></tr>
   <tr><td>Push servis pregledača (Google, Apple ili Mozilla)</td><td>adresu tvog uređaja i <b>šifrovan</b> sadržaj koji ne može da pročita</td><td>kada ti se šalje obaveštenje</td></tr>
-  <tr><td>Drugi korisnici aplikacije</td><td>samo ono što je nabrojano u odeljku <a href="#zajednica">Zajednica</a> — bez e-adrese</td><td>samo dok je Zajednica uključena; podrazumevano je isključena</td></tr>
+  <tr><td>Drugi korisnici aplikacije</td><td>samo ono što je nabrojano u odeljku <a href="#zajednica">Zajednica</a> — bez e-adrese</td><td>trenutno nikada: Zajednica je ugašena u aplikaciji</td></tr>
 </table>
 <p>Podaci se ne prodaju, ne ustupaju oglašivačima i ne koriste za obuku modela.</p>
 
 <h2 id="zajednica">Zajednica</h2>
-<p><strong>Podrazumevano je isključena.</strong> Dok je ne uključiš u Podešavanjima, ne
-postojiš na spisku i ne vidiš tuđe profile. Vidljivost je uzajamna: tuđe profile vidi
+<p><strong>Trenutno je ugašena.</strong> Ekran Zajednice i njeno podešavanje ne postoje u
+aplikaciji i ništa se ne šalje u tu tabelu. Ako si je ranije imao uključenu, aplikacija
+pri sledećem pokretanju <strong>briše tvoj red</strong> iz tabele. Ostatak ovog odeljka
+opisuje kako je radila i važi samo ako se funkcija ponovo uvede.</p>
+<p>Dok je bila dostupna, bila je podrazumevano isključena: ko je nije uključio, nije
+postojao na spisku i nije video tuđe profile. Vidljivost je uzajamna: tuđe profile vidi
 samo onaj ko je i sam vidljiv.</p>
 
-<p>Kad je uključiš, ostali prijavljeni korisnici koji su je takođe uključili vide:</p>
+<p>Kad je uključena, ostali prijavljeni korisnici koji su je takođe uključili vide:</p>
 <ul>
   <li>nadimak (ako ga ne uneseš — ime sa Google naloga) i profilnu sliku sa Google naloga;</li>
   <li>ciljnu distancu, datum trke i koja si nedelja plana;</li>

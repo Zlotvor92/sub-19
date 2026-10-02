@@ -6,6 +6,7 @@ import { foreignPlanWithEntries } from '../../domain/personal';
 import { useSettingsStore, useTrainingStore } from '../../stores';
 import { useIsOwner } from '../../stores/owner';
 import { useAuthStore } from '../../stores/authStore';
+import { COMMUNITY_ENABLED } from '../../services/config';
 import { useUIStore } from '../../stores/uiStore';
 
 /* TRAKE NA VRHU „DANAS". Backup: nudi se neprijavljenom (server nosi podatke prijavljenom); „Kasnije" odlaže za nedelju dana. Objava „novo": oba
@@ -15,7 +16,8 @@ export function Banners({ today }: { today: string }) {
   const patchUi = useSettingsStore((s) => s.patchUi);
   const signedIn = useAuthStore((s) => s.hasSession);
   const setTab = useUIStore((s) => s.setTab);
-  const announcement = announcementToShow(ANNOUNCEMENT, signedIn, ui);
+  /* Jedina objava je o Zajednici: dok je Zajednica ugašena, nema šta da se objavi. */
+  const announcement = COMMUNITY_ENABLED ? announcementToShow(ANNOUNCEMENT, signedIn, ui) : null;
   const hasGenPlan = useTrainingStore((s) => !!s.genPlan);
   const log = useTrainingStore((s) => s.log);
   const owner = useIsOwner();

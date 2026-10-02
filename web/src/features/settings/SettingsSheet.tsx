@@ -18,6 +18,7 @@ import { APP_VERSION } from '../../services/config';
 import { useResolvedPlan, useSettingsStore, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useAuthStore } from '../../stores/authStore';
+import { COMMUNITY_ENABLED } from '../../services/config';
 import { useUIStore } from '../../stores/uiStore';
 import { SettingCard } from './SettingCard';
 import {
@@ -71,12 +72,14 @@ export function SettingsSheet() {
   const configured = useAuthStore((s) => s.configured);
 
   const [pushStatus, reloadPush] = usePushStatus();
+  const communityInfo = useCommunityInfo();
   const infos: Record<string, SectionInfo> = {
     Nalog: useAccountInfo(),
     Plan: usePlanInfo(),
     Strava: useStravaInfo(),
     Vreme: useWeatherInfo(),
-    Zajednica: useCommunityInfo(),
+    /* Zajednica je ugašena (`COMMUNITY_ENABLED`): bez informacije sekcija ne postoji, pa nema ni prekidača, ni nadimka, ni izazova. */
+    ...(COMMUNITY_ENABLED ? { Zajednica: communityInfo } : {}),
     Obaveštenja: usePushInfo(pushStatus),
     'Obaveštenje korisnicima': useBroadcastInfo(),
     Korisnici: useUsersInfo(),
@@ -227,13 +230,15 @@ export function SettingsSheet() {
       {section('Plan', <PlanBody />)}
       {section('Vreme', <WeatherBody />)}
       {section('Obaveštenja', <PushBody status={pushStatus} reload={reloadPush} />)}
-      {section(
-        'Zajednica',
-        <>
-          <CommunityBody />
-          <ChallengeEditor />
-        </>
-      )}
+      {COMMUNITY_ENABLED
+        ? section(
+            'Zajednica',
+            <>
+              <CommunityBody />
+              <ChallengeEditor />
+            </>
+          )
+        : null}
       {section('Obaveštenje korisnicima', <BroadcastBody />)}
       {section('Korisnici', <UsersBody />)}
       {section('Strava', <StravaBody />)}

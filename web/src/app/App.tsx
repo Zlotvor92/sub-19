@@ -14,7 +14,7 @@ import { requestPersist, useActiveGenPlan, useResolvedPlan, useTrainingStore } f
 import { useAuthStore } from '../stores/authStore';
 import { useUpdateStore } from '../pwa/updateStore';
 import { useSyncStore } from '../stores/syncStore';
-import { useUIStore, type Banner } from '../stores/uiStore';
+import { VISIBLE_TABS, useUIStore, type Banner } from '../stores/uiStore';
 import { LS_RESCUE_KEY } from '../services/storage/keys';
 import { getApp } from './appContext';
 import { confirmAction } from './confirm';
@@ -164,7 +164,7 @@ export function App() {
           onSettings={() => openSheet({ kind: 'settings' })}
         />
         <main>
-          {(Object.keys(PAGES) as Array<keyof typeof PAGES>).map((t) => {
+          {VISIBLE_TABS.map((t) => {
             const Screen = PAGES[t];
             return (
               <Page key={t} id={t} active={t === tab} entering={t === entering} peek={t === peek}>

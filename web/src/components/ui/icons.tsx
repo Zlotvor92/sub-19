@@ -96,46 +96,38 @@ export function Icon({
 
 export function TabIcon({ tab }: { tab: Tab }) {
   switch (tab) {
+    /* Danas: štoperica — današnji trening i tempo (isti prsten kao u ikoni aplikacije). */
     case 'danas':
       return (
-        <svg {...common} strokeWidth="1.8">
-          <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
-          <path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" />
-          <circle cx="12" cy="15" r="2.4" fill="currentColor" stroke="none" />
+        <svg {...common} strokeWidth="1.9">
+          <circle cx="12" cy="13.5" r="7.5" />
+          <path d="M9.5 3h5M12 3v3M12 13.5V9.8" />
+          <circle cx="12" cy="13.5" r="1.3" fill="currentColor" stroke="none" />
         </svg>
       );
+    /* Plan: stubovi kilometraže, tekuća nedelja puna — isti jezik kao grafikon na ekranu Plan. */
     case 'plan':
       return (
-        <svg {...common} strokeWidth="1.8">
-          <rect x="4" y="4" width="4.5" height="4.5" rx="1" />
-          <rect x="9.75" y="4" width="4.5" height="4.5" rx="1" />
-          <rect x="15.5" y="4" width="4.5" height="4.5" rx="1" />
-          <rect x="4" y="10.75" width="4.5" height="4.5" rx="1" />
-          <rect
-            x="9.75"
-            y="10.75"
-            width="4.5"
-            height="4.5"
-            rx="1"
-            fill="currentColor"
-            stroke="none"
-          />
-          <rect x="15.5" y="10.75" width="4.5" height="4.5" rx="1" />
-          <rect x="4" y="17.5" width="4.5" height="2.5" rx="1" />
+        <svg {...common} strokeWidth="1.9">
+          <rect x="2.6" y="12" width="4.4" height="8" rx="1.6" />
+          <rect x="9.8" y="5" width="4.4" height="15" rx="1.6" fill="currentColor" />
+          <rect x="17" y="9.5" width="4.4" height="10.5" rx="1.6" />
         </svg>
       );
+    /* Oporavak: prsten sa pulsom. */
     case 'opor':
       return (
-        <svg {...common} strokeWidth="1.8">
-          <path d="M20.4 7.1a4.55 4.55 0 0 0-6.45 0L12 9.05 10.05 7.1a4.55 4.55 0 1 0-6.45 6.45L12 21.9l8.4-8.35a4.55 4.55 0 0 0 0-6.45Z" />
-          <path d="M3.4 13.1h3.9l1.5-2.5 2.2 4.3 1.7-2.9 1.1 1.1h4.8" />
+        <svg {...common} strokeWidth="1.9">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M6.4 12.6h3l1.6-3.6 2.5 6.3 1.7-2.7h2.4" />
         </svg>
       );
+    /* Trka (ekran „Napredak"): zastavica cilja, ista kao na kraju trake ciklusa. */
     case 'pred':
       return (
-        <svg {...common} strokeWidth="1.8">
-          <path d="M4 18l5-5 3 3 7-8" />
-          <path d="M14 8h5v5" />
+        <svg {...common} strokeWidth="1.9">
+          <path d="M6 21V3.5" />
+          <path d="M6 4.5h12l-2.7 3.9 2.7 3.9H6" />
         </svg>
       );
     case 'zajed':
@@ -158,23 +150,13 @@ export function GearIcon() {
   );
 }
 
-/** Znak: prsten sa lukom (isti oblik kao ikona aplikacije), u zaglavlju bez gradijenta. */
+/** Znak: prsten štoperice iz ikone aplikacije (ravan početak na 12 časova, praznina pred ciljem); u zaglavlju jednobojan, bez gradijenta. */
 export function BrandMark({ size = 26 }: { size?: number }) {
   return (
     <svg className="h-mark" viewBox="0 0 120 120" width={size} height={size} aria-hidden="true">
-      <circle cx="60" cy="60" r="44" fill="none" stroke="var(--line-strong)" strokeWidth="14" />
-      <circle
-        cx="60"
-        cy="60"
-        r="44"
-        fill="none"
-        stroke="var(--text)"
-        strokeWidth="14"
-        strokeLinecap="round"
-        strokeDasharray="276.46"
-        strokeDashoffset="47.63"
-        transform="rotate(-59 60 60)"
-      />
+      <circle cx="60" cy="60" r="40" fill="none" stroke="var(--line-strong)" strokeWidth="24" />
+      <path d="M60 20A40 40 0 1 1 22.91 45.02" fill="none" stroke="var(--text)" strokeWidth="24" />
+      <circle cx="22.91" cy="45.02" r="12" fill="var(--text)" />
     </svg>
   );
 }
