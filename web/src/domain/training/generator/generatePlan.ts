@@ -124,6 +124,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const runDays = Math.max(2, Math.min(7, softInt(inp.runDays, DEFAULT_RUN_DAYS)));
   let qWant = Math.max(1, Math.min(2, softInt(inp.quality, DEFAULT_QUALITY)));
   const H = prof.heuristic;
+  /* Rast obima ima SVOJ izbor; bez njega (stari planovi) prati tempo napretka. */
+  const volIntensity = inp.volIntensity ?? inp.intensity;
   const QUAL2_MIN_KM = prof.product.qual2MinKm;
   /* Taper nedelje: 5K i 10K jedna, HM i maraton dve. Zadnja RADNA nedelja je ona iza koje
      slede taper nedelje i trkačka. */
@@ -134,7 +136,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const cur0 = Math.max(MIN_START_WEEKLY_KM, Math.min(inp.weeklyKm, MAX_INPUT_WEEKLY_KM));
   const deload0 = Math.floor(lastWorking / DELOAD_EVERY);
   const ramp0 = Math.max(lastWorking - deload0, 1);
-  const peakEstimate = peakVolume(H, cur0, ramp0, inp.intensity);
+  const peakEstimate = peakVolume(H, cur0, ramp0, volIntensity);
   const mlrCfg = H.midweekLong;
   const wantMLR = !!(mlrCfg && runDays >= mlrCfg.minDays && peakEstimate >= mlrCfg.minKm);
   /* Koliko kvaliteta obim UOPŠTE podnosi: dva kvalitetna u nedelji od 12 km su besmislena. */
@@ -259,7 +261,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const vols: number[] = [];
   let cur = cur0;
   const peakTarget = peakEstimate;
-  const next = (v: number): number => Math.min(v + rampStep(H, v, inp.intensity), peakTarget);
+  const next = (v: number): number => Math.min(v + rampStep(H, v, volIntensity), peakTarget);
   /** Najviši dosadašnji ciljni obim, ali ne ispod tekuće vrednosti `cur`. */
   const peak = (arr: readonly number[]): number => Math.max(...arr, cur);
 
@@ -417,7 +419,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         }
       } else if (prevVol > 0) {
         /* Granica isporučenog rasta prati isti apsolutni korak (uz margin za diskretnost). */
-        const limit = prevVol + rampStep(H, prevVol, inp.intensity) * DELIVERED_GROWTH_FACTOR;
+        const limit = prevVol + rampStep(H, prevVol, volIntensity) * DELIVERED_GROWTH_FACTOR;
         if (now > limit) {
           /* I SREDNJE-DUGO učestvuje (Z2 dan bez radnog dela); dugo trčanje se NE dira. */
           const easy = days.filter(
@@ -481,7 +483,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       vol: r1(sumKm(days)),
       days,
       deload: isDeload,
-      focus: weekFocus(days, { isDeload, isTaper1, isTaper2, isRace, isBase: w <= baseWeeks })
+      focus: weekFocus(days, { isDeload, isTaper1, isTaper2, isRace, isBase: w <= baseWeeks }),
+      ...(isTaper1 || isTaper2 ? { taper: true as const } : {})
     });
 
     /* ---------------------------------------------------------- trkačka nedelja */

@@ -30,7 +30,7 @@ import {
   icuConnected,
   type IcuLink
 } from '../../domain/icu';
-import { resolvePlan, type ResolvedDay } from '../../domain/plan';
+import { planBaselineVdot, resolvePlan, type ResolvedDay } from '../../domain/plan';
 import { planBoundary, recordOutOfPlan } from '../../domain/recovery';
 import type { LogEntry, WellnessRecord } from '../../domain/state';
 import {
@@ -203,9 +203,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
     plan = resolve();
 
     const rows = genPlan.pred.filter((r): r is StoredPredRow => typeof r.id === 'string');
-    const meta = genPlan.meta as { vdot0?: unknown } | undefined;
-    const baseline =
-      typeof meta?.vdot0 === 'number' && Number.isFinite(meta.vdot0) ? meta.vdot0 : null;
+    const baseline = planBaselineVdot(genPlan.meta);
     const paceCtx = (d: ResolvedDay): WorkPaceContext => ({
       rows,
       baselineVdot: baseline,

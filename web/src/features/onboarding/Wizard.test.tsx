@@ -111,6 +111,30 @@ describe('čarobnjak', () => {
     expect(writes).toEqual(['now']);
   });
 
+  it('korak 4: tempo napretka i tempo rasta obima su ODVOJENI izbori; oba idu u ulaz plana', async () => {
+    const user = userEvent.setup();
+    render(<Wizard today={TODAY} />);
+    await fill(user, { raceDate: '2026-04-12', min: '24', sec: '30', km: '30' });
+    const vol = screen.getByRole('group', { name: 'Tempo rasta obima' });
+    // podrazumevano standardno, i NE prati izbor tempa napretka
+    expect(within(vol).getByRole('button', { name: 'Standardno' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await user.click(screen.getByRole('button', { name: /^Agresivno Brz rast/ }));
+    expect(within(vol).getByRole('button', { name: 'Standardno' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await user.click(within(vol).getByRole('button', { name: 'Konzervativno' }));
+    await user.click(screen.getByRole('button', { name: 'Napravi plan' }));
+    await waitFor(() => expect(collectPersisted().genPlan).not.toBeNull());
+    expect(collectPersisted().genPlan?.ulaz).toMatchObject({
+      intensity: 'agr',
+      volIntensity: 'kons'
+    });
+  });
+
   it('cilj koji nije realan se kaže; cilj koji jeste realan imenuje tempo napretka', async () => {
     const user = userEvent.setup();
     render(<Wizard today={TODAY} />);

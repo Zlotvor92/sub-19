@@ -65,7 +65,7 @@ Pun audit: `docs/TRAINING_ENGINE_AUDIT.md`. Namerne izmene (svaka sa starim pona
 | A4 | `recalibratedPlan` spaja zaključana polja na pravi dan (dow 1–7). |
 | A5 | Neupotrebljiv `expires_in` → 3600 s (ne `NaN`, koji je izazivao osvežavanje tokena pri svakom pozivu). |
 
-**Namerno nije menjano:** spregnutost kilometraže i tempa kroz vremenske plafone (G9/D1) — čeka odluku vlasnika; D2–D5 u audit §12. Granice tempa 2:20–20:00/km su proizvodna odluka (`constants/product.ts`).
+**Odluke vlasnika (2026-10-02, `ENGINE_CHANGES` Korak C):** D1 ostaje — spregnutost kilometraže i tempa kroz vremenske plafone je zadržana (efekat ograničen testom); D2 urađeno — rast forme i rast obima su dva odvojena izbora (`volIntensity`, izostavljen = kao pre); D3 ne; D5 urađeno — zastavica `taper` u nedelji (usput ispravljen prikaz faze: prva taper nedelja HM/maratona je bila VRHUNAC); `recalibratedPlan` povezan sa ekranom (Podešavanja → Trening → Plan). Granice tempa 2:20–20:00/km su proizvodna odluka (`constants/product.ts`).
 
 Ostale razlike van generatora: F1–F9 u `ENGINE_CHANGES.md` (tekst „Pravila uvoza", `aiCount` koji nije broj, nastavak slanja po adresi umesto po poziciji, jedan natpis dugmeta „Pošalji na sat", `httpErrorText`, strpljenje 1,5 s pri proveri naloga, itd.).
 
@@ -73,7 +73,7 @@ Ostale razlike van generatora: F1–F9 u `ENGINE_CHANGES.md` (tekst „Pravila u
 
 | Šta | Vrednost |
 |---|---|
-| Vitest | **1 019 testova / 96 fajlova** (domain 335 · oracle 273 · node 71 · ui 340); `npm run check` (tsc, lint, format, testovi, build) zelen |
+| Vitest | **1 077 testova / 100 fajlova** (domain 383 · oracle 273 · node 72 · ui 349); `npm run check` (tsc, lint, format, testovi, build) zelen |
 | Stari testovi (backend + stari frontend) | `node --test` **1 553 / 1 553** zeleno, nepromenjeni |
 | `any`, `dangerouslySetInnerHTML`, `fetch` u komponentama | 0 (grep + lint) |
 | Mutacione provere | oracle testovi imaju brojače pokrivenosti slučajeva i ciljane slučajeve koji ubijaju preživele mutante |
@@ -83,7 +83,7 @@ Oracle pristup: `src/test/legacyOracle.ts` učitava stari `app.js` u `node:vm` i
 
 ## 7. E2E
 
-33 Playwright toka (Chromium, profil `Pixel 7`), 2 uzastopna prolaza zelena, **protiv lažnog backenda** (`e2e/support/backend.ts`): prvi start, prijava (nonce), odjava, čarobnjak, pravljenje plana, završi/preskoči/pomeri/izmeni, oporavak, trka (test 3 km), Strava (OAuth sa proverom `state`), vreme, AI, Zajednica, backup izvoz/uvoz (sa zlonamernim ID-jem), brisanje naloga, offline, ažuriranje SW-a, prelaz v282 → novi → povratak, vlasnikov plan, uvodni ekran.
+35 Playwright tokova (Chromium, profil `Pixel 7`), poslednji pun prolaz zelen, **protiv lažnog backenda** (`e2e/support/backend.ts`): prvi start, prijava (nonce), odjava, čarobnjak, pravljenje plana, završi/preskoči/pomeri/izmeni, oporavak, trka (test 3 km), Strava (OAuth sa proverom `state`), vreme, AI, Zajednica, backup izvoz/uvoz (sa zlonamernim ID-jem), brisanje naloga, offline, ažuriranje SW-a, prelaz v282 → novi → povratak, vlasnikov plan, uvodni ekran.
 
 Nije pokriveno: pravi Supabase/Google prijava, prava Strava/intervals.icu/Gemini/Resend/Web Push, Safari, Firefox, Android (TWA), instalirana PWA.
 
@@ -117,7 +117,7 @@ Lokalno, `vite preview`, stoni Chromium, lažni backend — **nije produkcija, n
 2. Nema automatskog a11y testa (samo lint `jsx-a11y` i ručno preneta svojstva).
 3. Mapiranje starih testova je po naslovima/oblastima; pre Phase 12 treba proći stare testove jedan po jedan.
 4. E2E samo Chromium, samo lažni backend.
-5. Otvorene odluke vlasnika: D1–D5 (generator; v. audit §12), O1 (Vercel pristup).
+5. Odluke o generatoru (D1–D5) su donete; ostaje samo nezavisna provera konstanti koje nisu potvrđene (audit §14: zone E i R, `agr`, taper faktori).
 6. Stari klijent u ≈ 1 od 12 pokretanja prikaže traku „sukob" posle prvog upisa (`sbDecide`: `!seenAt` → `'ask'`). Nije preuzeto; novi klijent: 16/16 čistih pokretanja. Stari kod nije menjan.
 7. Vlasnikov ugrađeni plan je podatak u paketu (`data/personalPlan.ts`), ne red u bazi — kao i ranije.
 

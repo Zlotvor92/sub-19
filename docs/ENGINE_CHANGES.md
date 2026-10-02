@@ -92,3 +92,26 @@ ko ga vidi, polazna trka, uklanjanje tuđeg seeda). Ugrađeni plan se u aplikaci
 
 Stari klijent u ~1 od 12 pokretanja prikaže traku „sukob" odmah posle prvog upisa: druga provera vidi red koji je upravo upisao, a `seenAt` još nije zabeležen
 (`sbDecide`: `!seenAt` → `'ask'`). Dokaz: `e2e/cutover.spec.ts` (stari frontend, 12 uzastopnih pokretanja). Novi klijent: 16/16 čistih pokretanja. Stari kod nije menjan.
+
+---
+
+## Korak C — odluke vlasnika o generatoru (2026-10-02)
+
+Odluke D1–D5 iz `TRAINING_ENGINE_AUDIT.md` §12. Vlasnik je odlučio: **D1 ostaje (a)**, **D2 se razdvaja**, **D3 ne**, **D5 po proceni (dugoročno bolje)**, a `recalibratedPlan` se **povezuje** sa ekranom.
+Ništa od ovoga ne pomera golden-master otisak (2 304 scenarija) ni diferencijalni test (1 500 ulaza) — v. napomene uz svaku stavku.
+
+| # | Staro ponašanje | Zašto je problem | Novo ponašanje | Test |
+|---|---|---|---|---|
+| D1 | Kilometraža nekih sesija (tempo, dugo trčanje, fartlek) ograničena je i VREMENOM, pa PB menja km (5K: do 1,7 km, 10K: do 7,9 km, HM: do 4,2 km — za ekstremne PB-ove) | Tvrdnja „obim ne zavisi od forme" nije doslovno tačna | **Nepromenjeno (opcija a).** Tvrdnja je ispravljena u dokumentaciji; efekat je ograničen testom (≤ 0,5 km po nedelji pri promeni tempa napretka, 5K) | `generator.volIntensity.test.ts` („obrnuto…") |
+| D2 | JEDAN izbor („tempo napretka") je istovremeno određivao rast VDOT-a I rast nedeljnog obima; opis u čarobnjaku je tvrdio „ne koliko ćeš trčati", što nije tačno | Dve nepovezane stvari na jednoj ručici | Novi opcioni ulaz `volIntensity` (rast OBIMA); `intensity` ostaje samo rast FORME. Čarobnjak ima dva izbora. **Izostavljen `volIntensity` = isto kao `intensity`** pa je svaki plan već u bazi i svaki scenario otiska bit-za-bit isti | `generator.volIntensity.test.ts` (4 distance × 3 tempa: bez polja = sa `volIntensity = intensity`; procena forme ne zavisi od njega; validacija), `Wizard.test.tsx`, `onboarding.oracle.test.ts` (kad su oba izbora ista, ponašanje je identično starom) |
+| D3 | Nema veličine „pouzdanost" procene forme | — | **Ne radi se** (odluka vlasnika) | — |
+| D5 | „Taper" u prikazu faze je određen POZICIJOM (`n ≥ T−1`), a generator ima 2 taper nedelje na HM i maratonu. Prva taper nedelja HM/maratona (obim već na 80 %) stajala je kao „VRHUNAC" | Prikaz i generator se ne slažu; nije tvrdnja iz audita (audit je tvrdio da taper postoji samo u tekstu opisa — to je bilo nepotpuno) | Nedelja nosi zastavicu `taper: true` (samo kad je tačna), po istom principu kao `deload` (zastavica je izvor istine, opis je prikaz). `weekPhase` je čita; planovi napravljeni pre nje se prepoznaju po prefiksu opisa „Taper …"; ručno pisan plan zadržava pretposlednju nedelju. Nema promene verzije šeme (opciono polje u `genPlan.weeks`, prolazi nepromenjeno kroz čišćenje). **Jedina razlika u izlazu generatora naspram starog koda je ta zastavica; poređenja sa starim kodom i otiskom je izostavljaju (`canonical`)** | `taper.test.ts` (broj taper nedelja = 1 na 5K/10K, 2 na HM/42K, neposredno pre trke; zastavica ⇔ prefiks opisa), `planView.oracle.test.ts` (jedina dozvoljena razlika u grupisanju: prva od dve taper nedelje) |
+| R1 | `recalibratedPlan` je postojao ali ga nijedan ekran nije zvao | Funkcionalnost bez ulaza; nikad nije proverena sa pravim stanjem | Povezano: Podešavanja → Trening → Plan → „Preračunaj plan prema formi". Kapija kao za predlog tempa (bar 3 merenja, razlika ≥ 1,5 VDOT); prikaz brojeva i potvrda; **nema vraćanja** (kao promena cilja). Nedelje ispod tekuće, PRED redovi, dnevnik, izmene, lanac forme i ručno zaključana polja se ne diraju; tempo trke se ne menja; do 4 nedelje pre trke se ne preračunava | `recalibrate.test.ts` (29), `recalibration.test.ts` (4), `settings.test.tsx` (4), `e2e/recalibrate.spec.ts` (2), `replan.oracle.test.ts` (generacija i dalje identična starom) |
+
+**Posledice rekalibracije po ostatak sistema (nađeno pri povezivanju, stari kod ih nije imao jer funkcija nikad nije bila pozvana):**
+
+1. `recalibratedPlan` vraća meta sa `vdot0` = VIRTUELNA polazna tačka putanje. Lanac forme (`vdotLog`) se računa od `meta.vdot0` (6 mesta), pa bi rekalibracija pomerila CELU prošlost lanca. Rešenje: stvarna polazna forma ide u `meta.vdotBase`, a sva čitanja polazne forme prolaze kroz `planBaselineVdot` (`vdotBase ?? vdot0`). Planovi bez `vdotBase` se ponašaju kao pre.
+2. Generator pri rekalibraciji dobija STABILAN cilj samo kao oslonac za tempo trke. Bez zadatog cilja on ne sme postati cilj plana: `meta.goalSec/goalVdot/realno` se vraćaju na stare vrednosti. Oslonac se pamti u `meta.predictedSecAtStart`, pa se tempo trke ne pomera ni posle više rekalibracija (test: 3 uzastopne).
+3. `ulaz.pb` postaje virtuelni PB (5K) — tako promena cilja POSLE rekalibracije ostaje na istoj putanji (`planWithNewGoal` nosi `vdotBase` dalje). Ulaz je interni zapis plana, ne prikazuje se.
+4. Realnost zadatog cilja (`meta.realno`) se preračunava prema novoj projekciji: slabija forma može cilj da učini nerealnim, i to je ispravno.
+

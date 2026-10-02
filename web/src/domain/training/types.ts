@@ -144,6 +144,11 @@ export interface Week {
   days: Day[];
   deload: boolean;
   focus: string;
+  /**
+   * Taper nedelja (jedna na 5K/10K, dve na HM/maratonu). Izvor istine je ZASTAVICA, ne opis (kao `deload`); upisuje se samo kad je tačna,
+   * pa se plan bez taper nedelje ne razlikuje od starog. Planovi napravljeni pre nje je nemaju — `weekPhase` tada čita opis (ENGINE_CHANGES D5).
+   */
+  taper?: true;
 }
 
 /** Red predikcije: `p5k` NOSI VREME NA CILJNOJ DISTANCI (ime je istorijsko i perzistirano). */
@@ -214,7 +219,13 @@ export interface PlanGenerationInput {
   runDays?: number;
   /** 1–2, podrazumevano 2. */
   quality?: number;
+  /** Tempo napretka FORME (rast VDOT-a). */
   intensity: Intensity;
+  /**
+   * Tempo rasta OBIMA (nedeljni korak i vrhunac). Izostavljeno = isto kao `intensity` — tako se ponašaju svi planovi napravljeni
+   * pre nego što je izbor razdvojen (ENGINE_CHANGES D2).
+   */
+  volIntensity?: Intensity;
   goalSec?: number | null;
   /** Samo `false` znači „početnik"; izostavljeno = treniran. */
   trainedRecently?: boolean;

@@ -40,7 +40,10 @@ export interface WizardState {
   lrDow: number | null;
   lrDowManual: boolean;
   qDays: number[];
+  /** Tempo napretka FORME (rast VDOT-a). */
   intensity: Intensity;
+  /** Tempo rasta OBIMA (nedeljni koraci) — poseban izbor od `intensity`. */
+  volIntensity: Intensity;
   goalH: string;
   goalMin: string;
   goalSec: string;
@@ -62,6 +65,7 @@ export const initialWizard = (): WizardState => ({
   lrDowManual: false,
   qDays: [],
   intensity: 'std',
+  volIntensity: 'std',
   goalH: '',
   goalMin: '',
   goalSec: ''
@@ -237,6 +241,7 @@ export function toGenerationInput(w: WizardState, today: string): PlanGeneration
     qDows: [...w.qDays],
     runDows: [...w.runDows],
     intensity: w.intensity,
+    volIntensity: w.volIntensity,
     goalSec: goalTotalSec(w),
     trainedRecently: w.trainedRecently
   };

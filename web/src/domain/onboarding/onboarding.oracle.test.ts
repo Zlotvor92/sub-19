@@ -129,7 +129,9 @@ describe('čarobnjak naspram starog koda', () => {
     const r = rng(12);
     let lists = 0;
     for (let i = 0; i < 60; i++) {
-      const w = randomWizard(r);
+      /* Stari čarobnjak ima JEDAN izbor; novi ima dva (ENGINE_CHANGES D2). Kad su jednaki, ponašanje je identično starom. */
+      const w = { ...randomWizard(r) };
+      w.volIntensity = w.intensity;
       legacyWiz(w);
       const old = j<string[] | null>(legacy.evalIn('wizardWarnings()'));
       const mine = wizardWarnings(w, TODAY);

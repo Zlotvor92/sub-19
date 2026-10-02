@@ -1,7 +1,7 @@
 /* RADNJE KOJE DOTIČU VIŠE STORE-OVA. Domen je čist; ovde se samo čita iz jednog store-a, poziva domen i piše u više njih. */
 
 import type { GenPlanState, PersistedState } from '../domain/state';
-import { purgeGenPlanData } from '../domain/plan';
+import { planBaselineVdot, purgeGenPlanData } from '../domain/plan';
 import { recomputeVdotChain, sessionClassFor } from '../domain/training/adaptation';
 import { isT3kId } from '../domain/training/vdot/limits';
 import { withoutPersist, requestPersist } from './persistence';
@@ -26,7 +26,7 @@ export function activateNewPlan(plan: GenPlanState): void {
     knee: r.knee,
     kg: r.kg
   });
-  const baseline = (plan.meta as { vdot0?: number } | undefined)?.vdot0 ?? null;
+  const baseline = planBaselineVdot(plan.meta);
   const preds = plan.pred as Array<{ id?: string; l: string }>;
   const chain = recomputeVdotChain(purged.vdotLog, baseline, (id) =>
     sessionClassFor(isT3kId(id), preds.find((p) => p.id === id)?.l)

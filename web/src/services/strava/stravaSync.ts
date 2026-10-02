@@ -25,7 +25,12 @@ import {
   type StravaActivity
 } from '../../domain/activities';
 import { recordAutoPace, syncSideRecords, type WorkPaceContext } from '../../domain/day';
-import { resolvePlan, type ResolvedDay, type ResolvedPlan } from '../../domain/plan';
+import {
+  planBaselineVdot,
+  resolvePlan,
+  type ResolvedDay,
+  type ResolvedPlan
+} from '../../domain/plan';
 import { planBoundary, recordOutOfPlan } from '../../domain/recovery';
 import type {
   AltRecord,
@@ -191,9 +196,7 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
     plan = resolve();
 
     const rows = genPlan.pred.filter((r): r is StoredPredRow => typeof r.id === 'string');
-    const meta = genPlan.meta as { vdot0?: unknown } | undefined;
-    const baseline =
-      typeof meta?.vdot0 === 'number' && Number.isFinite(meta.vdot0) ? meta.vdot0 : null;
+    const baseline = planBaselineVdot(genPlan.meta);
     const paceCtx = (d: ResolvedDay): WorkPaceContext => ({
       rows,
       baselineVdot: baseline,

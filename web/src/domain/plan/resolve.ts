@@ -80,7 +80,14 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
       }
       days.push(resolved);
     }
-    out.push({ w: wk.w, start, deload: !!wk.deload, focus: wk.focus, days });
+    out.push({
+      w: wk.w,
+      start,
+      deload: !!wk.deload,
+      focus: wk.focus,
+      ...(wk.taper === true ? { taper: true as const } : {}),
+      days
+    });
   }
   dated.sort((a, b) => (a.date < b.date ? -1 : 1));
   const trainingDays = out.reduce((n, wk) => n + wk.days.filter((d) => !d.rest).length, 0);
