@@ -14,6 +14,7 @@ scripts/
 # stoji na javnoj adresi (/docs/*.md, /ARCHITECTURE.md) — isti razlog kao supabase/.
 docs/
 ARCHITECTURE.md
+REWRITE_REPORT.md
 # Novi frontend (Vite) živi u web/ i NE sme da se servira kao statika dok se
 # deploy ne prebaci na build korak (v. docs/REWRITE_PLAN.md §5).
 web/

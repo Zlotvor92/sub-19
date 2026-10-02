@@ -151,3 +151,29 @@ Kategorije (broj testova): API/serverski (`api.test` 173, `push` 63, `icu-trenin
 ## 11. Ciljna arhitektura (sažetak)
 
 Detalji, redosled i kapije su u `docs/REWRITE_PLAN.md`. Ukratko: `web/` (Vite + React 19 + TypeScript strict), `src/domain/**` čisti TS (bez DOM-a), `src/services/**` (api/supabase/strava/sync/push/sw), `src/stores/**` Zustand, `src/features/**`, `src/components/ui/**`. Backend, Supabase, domen, Vercel projekat: **nepromenjeni**.
+
+## 12. Kako je izgrađeno (as-built, 2026-10-02)
+
+Ovaj odeljak opisuje stanje na grani `claude/sub20-frontend-rewrite-q6dlvr`; §1–11 su audit starog stanja. Pun izveštaj: `REWRITE_REPORT.md`, faze i brojke: `docs/REWRITE_STATUS.md`.
+
+**Slojevi** (zavisnost samo nadole; ESLint + `domain/isolation.test.ts`): `domain` (čist TS) → `stores` (Zustand, jedan persist po akciji) → `services` (`Result`, Zod na granici) → `app` (koren kompozicije `createApp`) → `features` / `components`.
+
+```
+web/src/
+  domain/      activities ai community date day format icu onboarding personal plan push race recovery
+               settings shell state sync training{generator,adaptation,test3k} watch weather zones
+  services/    ai api community icu push storage strava supabase sync weather http oauth
+  stores/      training recovery settings sync auth community ui owner + *Actions
+  app/         createApp integrations community useSwipeNav useToday tabs
+  features/    today plan recovery race community settings onboarding
+  components/ui  Shell Sheet Ring BannerHost ConfirmHost
+  pwa/         SW registracija, ažuriranje, offline, uvodni ekran
+  data/        personalPlan (generisano iz starog PLAN/PRED/QS)
+web/sw/sw.js   telo starog sw.js; verzija i spisak se ubacuju pri izgradnji
+```
+
+**Aktivni plan.** `activeOf(state, isOwner)` = pravi `genPlan`, a ako ga nema i `personalVisible` (vlasnik, ili nalog sa `n*` unosima u statusu done/skip) — ugrađeni lični plan. Samo za čitanje; upisi idu u pravi `genPlan`, koji za lični plan ostaje `null`, pa se oblik stanja v11 i `user_state` na serveru ne menjaju. (Zatvara F-27 iz `FEATURE_INVENTORY`.)
+
+**Strategija testova.** Četiri Vitest projekta (`domain`, `oracle`, `node`, `ui`) + Playwright. *Oracle* testovi (`*.oracle.test.ts`) učitavaju stari `app.js` u `node:vm` (`src/test/legacyOracle.ts`) i porede izlaze za iste ulaze; namerne razlike su jedino u `docs/ENGINE_CHANGES.md`. Stari `test/*.test.mjs` ostaju netaknuti do Phase 12.
+
+**Nije urađeno:** produkcioni cutover (Phase 11) i uklanjanje starog frontenda (Phase 12) — `docs/CUTOVER.md`.
