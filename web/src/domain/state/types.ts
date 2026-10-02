@@ -108,6 +108,8 @@ export interface StoredWeek {
   start: string;
   deload: boolean;
   focus: string;
+  /** Taper nedelja (zastavica iz generatora; stariji planovi je nemaju). */
+  taper?: true;
   /** Napomena: perzistirana nedelja NEMA `vol` (ukupan km se računa iz dana). */
   days: Array<Week['days'][number] & { id?: string }>;
 }

@@ -27,6 +27,9 @@ export function validateInput(inp: PlanGenerationInput): string | null {
   if (!INTENSITIES.includes(inp.intensity)) {
     return 'Nepoznat tempo napretka (očekuje se „kons", „std" ili „agr").';
   }
+  if (inp.volIntensity !== undefined && !INTENSITIES.includes(inp.volIntensity)) {
+    return 'Nepoznat tempo rasta obima (očekuje se „kons", „std" ili „agr").';
+  }
   if (
     !Number.isFinite(inp.pb.sec) ||
     !Number.isFinite(inp.pb.distM) ||

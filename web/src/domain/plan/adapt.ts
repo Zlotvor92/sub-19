@@ -21,6 +21,7 @@ export function adaptGeneratedPlan(gen: PlanGenerationResult): GenPlanState | nu
          samo po tekstu bi palo čim `focus` dobije pun tekst. */
       deload: !!w.deload,
       focus: w.focus || (w.deload ? 'DELOAD' : ''),
+      ...(w.taper ? { taper: true as const } : {}),
       days: w.days.map((d) => {
         const dow0 = d.dow - 1; // generator: 1–7 (Pon=1), aplikacija: 0–6 (Pon=0)
         return { ...d, dow: dow0, id: `g${num}d${dow0 + 1}` };

@@ -45,6 +45,8 @@ export interface ResolvedWeek {
   start: IsoDate;
   deload: boolean;
   focus: string;
+  /** Taper nedelja (zastavica iz generatora; stariji planovi je nemaju). */
+  taper?: true;
   days: ResolvedDay[];
 }
 

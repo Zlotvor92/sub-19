@@ -231,3 +231,24 @@ Skripte: `docs/probes/legacy-degenerate-input.mjs`, `legacy-nan-leak.mjs`, `lega
 **Promeniti (Korak B):** G1–G8 (validacija), spojiti tri Riegel funkcije, ukloniti zavisnost od TZ-a, jedan izvor `PB_SANITY`, `confidence` samo za prikaz (ako D3).
 **Dodatni testovi:** Daniels tabela za zone (sve 4 zone × VDOT 30–80), Newton konvergencija van 20–85, property testovi za datume, diferencijalni test protiv starog generatora na `lrDow/qDows/runDows/goalSec/quality`, `validatePlan` nad svim planovima otiska, `recalibratedPlan`/`reentryPlan` kroz otisak varijante.
 **Ne znam / nedovoljno dokaza:** tačnost konstanti zona prema Danielsovim tabelama; izvori taper brojeva; da li je `agr=.43` šire primenljiv; da li je `qDows`/`runDows` kombinacija koje nisu `4d/2q` ikad klinički proveravana.
+
+## 14. Odluke vlasnika i provera tvrdnji (2026-10-02)
+
+**Odluke:** D1 (a) ostaje · D2 razdvojeno (`volIntensity`) · D3 ne · D5 zastavica `taper` · `recalibratedPlan` povezan. Detalji i testovi: `ENGINE_CHANGES.md` Korak C.
+
+**Provera tvrdnji iz odgovora o generatoru** (svaka ponovo izvedena, ne preuzeta):
+
+| Tvrdnja | Rezultat | Kako |
+|---|---|---|
+| D1: PB menja obim — 5K 10/17 nedelja (do 1,7 km), 10K 17/21 (do 7,9), HM 19/27 (do 4,2) | **Tačno, ali sa ispravkom:** PB-ovi nisu isti po distancama — 5K 18:20 vs 25:00, 10K 40:00 vs 55:00, HM 1:23:20 vs 2:05:00; maraton (3:00:00 vs 4:20:00) 12/34 nedelja, do 0,3 km (u odgovoru nije bilo) | `node docs/probes/legacy-volume-vs-vdot.mjs` (stari kod) |
+| D1: „tebe ova razlika praktično ne pogađa" | **Potvrđeno za 5K / 40 km nedeljno / 5 dana:** PB 19:30, 20:00, 21:30, 22:30 naspram 20:37 menja 4–7 od 25 nedelja, najviše za 0,2–0,6 km | skripta nad starim kodom (isti ulaz, 5 PB-ova) |
+| D2: „tempo napretka određuje i rast obima i ciljni VDOT" | **Tačno.** Dodatak koji nisam rekao: na 5K ovaj izbor ne menja vrhunac plana (55,3 / 55,2 / 55,2 km za kons/std/agr) — samo koliko brzo se do njega stiže (prvih ~8 nedelja); na maratonu menja i vrhunac (62,3 / 65,0 / 67,8 km) | probe (stari kod), `generator.volIntensity.test.ts` |
+| D5: „taper se prepoznaje samo po tekstu opisa nedelje" | **Netačno / nepotpuno.** Prikaz faze (`weekPhase`) je koristio POZICIJU (pretposlednja nedelja = TAPER), a tekst „Taper …" je postojao samo u opisu. Posledica: na HM i maratonu (2 taper nedelje u generatoru) prva je prikazivana kao „VRHUNAC". Ispravljeno | čitanje koda + `taper.test.ts` |
+| „Taper: 5K i 10K jedna nedelja, HM i maraton dve" | **Tačno** (`taperWeeks`: samo 21K i 42K ga definišu = 2, ostalo podrazumevano 1) | `distances.ts` |
+| „Granice tempa 2:20–20:00 po km" | **Tačno** (`MIN/MAX_PLAUSIBLE_PACE_SEC_PER_KM` 140 / 1200) | `constants/product.ts`, `generator.input.test.ts` |
+| „Prag 1,5 VDOT, bar 3 merenja, 3 s/km" | **Tačno** | `constants/heuristics.ts` + oracle test adaptacije |
+| VDOT/Daniels-Gilbert formula | **Slaže se sa objavljenim vrednostima** (sekundarni izvor, nije Danielsova knjiga): 5K 20:00 → VDOT 49,8 (kod: 49,81); ekvivalenti 1 milja 5:51, 10K 41:28, HM 1:31:50, M 3:11:17 — sve se poklapaju do sekunde; prag-tempo 6:52/mi (kod 4:16/km = 6:52/mi); VO2max-tempo 3:51/km (kod 3:51/km) | `vdotFromRace`, `raceTimeForVdot`, `paceForZone` pokrenuti nad 5K 20:00; izvori: runbuzz.com, brenoamelo.com (pretraga) |
+| Taper obim | **Smer i trajanje se slažu sa metaanalizom** (Bosquet i sar., 2007: taper 8–14 dana, obim −41–60 %, intenzitet i frekvencija neizmenjeni). Konkretne vrednosti u kodu (`taperFactor` 0,65–0,75, trkačka nedelja 0,3–0,4) NISU izvedene iz te studije i izvor im ne znam | pretraga; `distances.ts` |
+
+**I dalje „nedovoljno dokaza" (nije moglo da se potvrdi):** udeli VO2max za zone **E** (0,70) i **R** (1,05) — sekundarni izvori se razilaze oko lakog tempa; `agr = 0,43 VDOT/nedelji` („kalibrisano na jedan dokumentovan slučaj" — slučaj nije dostupan); izvor konkretnih taper faktora. T, I i M zone i sve race-ekvivalencije jesu potvrđene.
+

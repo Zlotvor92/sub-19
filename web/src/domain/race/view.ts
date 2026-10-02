@@ -4,6 +4,7 @@
    padao na vlasnikove tvrdo kodovane brojeve (PB 20:37, cilj 19:30) — na tuđem planu to je bilo pogrešno; ovde ih nema. */
 
 import type { LogEntry, VdotRecord } from '../state/types';
+import { planBaselineVdot } from '../plan/baseline';
 import { sessKind } from '../plan/describe';
 import type { ResolvedPlan } from '../plan/types';
 import type { PredictionSummary } from '../training/prediction/summary';
@@ -25,7 +26,7 @@ export interface RaceRefs {
 export function raceRefs(meta: Readonly<Record<string, unknown>> | null | undefined): RaceRefs {
   const m = meta ?? {};
   return {
-    baselineVdot: fin(m['vdot0']) ? m['vdot0'] : null,
+    baselineVdot: planBaselineVdot(m),
     goalVdot: fin(m['goalVdot']) ? m['goalVdot'] : fin(m['vdotGoal']) ? m['vdotGoal'] : null,
     goalSec: fin(m['goalSec']) ? m['goalSec'] : fin(m['predictedSec']) ? m['predictedSec'] : null,
     raceDistM: fin(m['raceDistM']) && m['raceDistM'] ? m['raceDistM'] : 5000,

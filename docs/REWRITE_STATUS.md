@@ -2,8 +2,8 @@
 
 Živi dokument. Plan i kapije: `REWRITE_PLAN.md`. Završni izveštaj: `../REWRITE_REPORT.md`. Prelaz na produkciju: `CUTOVER.md`.
 
-**Stanje (grana `claude/sub20-frontend-rewrite-q6dlvr`):** novi frontend (`web/`) je funkcionalno kompletan prema starom `app.js`, sa dokazom (diferencijalni testovi naspram starog koda, 1 019 vitest testova,
-33 Playwright toka). **Isporučen na produkciju 2026-10-02** (PR #26, Vercel projekat `sub-19`, domen `sub-19.vercel.app`; proveren javni domen: sve statike i `/api/push`, CSP, SW aktivan + keš `v283`, offline reload). **Stari frontend nije uklonjen** (Phase 12 sledi posle provere sa pravom prijavom i servisima na uređaju).
+**Stanje (grana `claude/sub20-frontend-rewrite-q6dlvr`):** novi frontend (`web/`) je funkcionalno kompletan prema starom `app.js`, sa dokazom (diferencijalni testovi naspram starog koda, 1 077 vitest testova,
+35 Playwright tokova). **Isporučen na produkciju 2026-10-02** (PR #26, Vercel projekat `sub-19`, domen `sub-19.vercel.app`; proveren javni domen: sve statike i `/api/push`, CSP, SW aktivan + keš `v283`, offline reload). **Stari frontend nije uklonjen** (Phase 12 sledi posle provere sa pravom prijavom i servisima na uređaju).
 
 ## Faze
 
@@ -18,7 +18,7 @@
 | 7 | Feature-i | **gotovo** | onboarding, Danas, Plan, Oporavak, Trka, Zajednica, Podešavanja (sve sekcije), lični plan vlasnika |
 | 8 | Integracije | **gotovo** (prema lažnim servisima) | Strava, intervals.icu (+ slanje na sat), vreme, AI, push — **nijedna nije probana protiv pravog servisa u ovoj sesiji** |
 | 9 | PWA/offline | **gotovo** | `sw.js` iz starog koda bajt-za-bajt + injekcija verzije/spiska pri izgradnji; offline i ažuriranje u pregledaču; **v282 → novi frontend** i povratak (E2E) |
-| 10 | E2E + perf + sec | **gotovo, sa ograničenjima** | 33 Playwright toka; merenja ispod; bezbednosni pregled ispod. **Nema** automatskog a11y testa (axe), Lighthouse nije pokrenut |
+| 10 | E2E + perf + sec | **gotovo, sa ograničenjima** | 35 Playwright tokova; merenja ispod; bezbednosni pregled ispod. **Nema** automatskog a11y testa (axe), Lighthouse nije pokrenut |
 | 11 | Produkcija (postojeći Vercel projekat i domen) | **urađeno** (2026-10-02) | stvarni Vercel build (preview + produkcija) uspeo; pronađen i ispravljen defekt: neusidreni obrasci u `.vercelignore` (`test/`, `supabase/`, `scripts/`) izbacivali su `web/src/test`, `web/src/services/supabase`, `web/scripts`; test `deploy/cutover.node.test.ts`. **Nije proveren**: prava prijava/Strava/icu/AI/push na produkciji, telefon |
 | 12 | Uklanjanje starog frontenda | **NIJE urađeno** (namerno) | posle ručne provere prave prijave i servisa na telefonu + prolaska starih testova jedan po jedan (mapiranje ispod je po naslovima); v. „Šta se briše" u `CUTOVER.md`. Rollback ostaje jednostavan dok `app.js` postoji |
 
@@ -26,8 +26,8 @@
 
 | Šta | Vrednost |
 |---|---|
-| Vitest | **1 019 testova / 96 fajlova** (domain 335 · oracle 273 · node 71 · ui 340), `npm run check` zelen |
-| Playwright | **33 toka** (Chromium, `Pixel 7`), 2 uzastopna prolaza zelena |
+| Vitest | **1 077 testova / 100 fajlova** (domain 383 · oracle 273 · node 72 · ui 349), `npm run check` zelen |
+| Playwright | **35 tokova** (Chromium, `Pixel 7`); poslednji pun prolaz zelen (2 uzastopna prolaza za prethodnih 33) |
 | Stari testovi (backend + stari frontend) | `node --test` **1 553 / 1 553** zeleno — `api/*`, `supabase/`, `app.js`, `sw.js` NISU menjani (`git diff` naspram osnove: samo `web/`, `docs/`, `.github/`, `.vercelignore`, `ARCHITECTURE.md`) |
 | Kod | ~31,6 k redova izvora u `web/src`, ~22,4 k redova testova (uključujući E2E) |
 | Najveći fajlovi | `generatePlan.ts` 994 (čist domen, portovan), `createApp.ts` ~560 (koren kompozicije); komponente < 430 redova |
@@ -98,10 +98,14 @@ Stari frontend testovi se brišu TEK u Phase 12 i samo uz ovu pokrivenost.
 |---|---|---|
 | O1 | Vercel pristup / preview | **rešeno** (`VERCEL_TOKEN` u okruženju sesije; cutover urađen) |
 | O2 | Lični plan vlasnika | **rešeno kao u planu: ostaje kao podatak** (`data/personalPlan.ts`) |
-| O3 / D1 | Spregnutost obima i tempa u generatoru | zadržano (a), nepromenjeno; v. `TRAINING_ENGINE_AUDIT` |
+| O3 / D1 | Spregnutost obima i tempa u generatoru | **odluka vlasnika 2026-10-02: ostaje (a)**; efekat ograničen testom |
 | O4 | `intensity` nepoznat → greška | urađeno (G4) |
 | O5 | TypeScript/ESLint verzije | TS `~6.0.3`, ESLint 9 (odstupanje obrazloženo u dnevniku ispod) |
-| D2–D5 | v. `TRAINING_ENGINE_AUDIT` §12 | nepromenjeno, čeka odluku |
+| D2 | Dva izbora (rast forme / rast obima) | **urađeno** (`volIntensity`), `ENGINE_CHANGES` Korak C |
+| D3 | Prikaz pouzdanosti forme | **odluka vlasnika: ne** |
+| D4 | Granice tempa u domenu | urađeno ranije (2:20–20:00/km) |
+| D5 | Taper kao zastavica | **urađeno** (`Week.taper`), uz ispravku prikaza faze za HM/maraton |
+| R1 | `recalibratedPlan` povezan sa ekranom | **urađeno** (Podešavanja → Trening → Plan) |
 
 ## Odstupanja od plana
 

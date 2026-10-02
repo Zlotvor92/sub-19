@@ -11,6 +11,17 @@ import {
 import type { Intensity } from '../../domain/training/types';
 import { Chips, DaysChips, TimeFields } from './controls';
 
+const VOLUME_RAMPS: ReadonlyArray<readonly [Intensity, string]> = [
+  ['kons', 'Konzervativno'],
+  ['std', 'Standardno'],
+  ['agr', 'Agresivno']
+];
+const VOLUME_HINT: Readonly<Record<Intensity, string>> = {
+  kons: 'Najmanji nedeljni skokovi kilometraže — najmanji rizik od preopterećenja.',
+  std: 'Uobičajeni nedeljni skokovi kilometraže.',
+  agr: 'Najveći nedeljni skokovi kilometraže — brže do vrhunca, ali veći rizik od preopterećenja.'
+};
+
 /* KORAK 4: kvalitet, tempo napretka, predviđanje na dan trke i upozorenja generatora (sve računa domen). */
 
 export function Step4Intensity({
@@ -35,7 +46,8 @@ export function Step4Intensity({
       <div className="ob-eyebrow">Korak 4 od 4</div>
       <h1 className="ob-h1">Koliko brzo da raste forma?</h1>
       <div className="ob-sub">
-        Ovo određuje koliko se tempo pooštrava kroz nedelje — ne koliko ćeš trčati.
+        Ovo određuje koliko se tempo pooštrava kroz nedelje. Koliko brzo raste obim biraš odvojeno,
+        niže.
       </div>
       <div className="ob-card">
         <div className="ob-ct">Kvalitetnih treninga nedeljno</div>
@@ -87,6 +99,19 @@ export function Step4Intensity({
             <span className="ob-tag">{tag}</span>
           </button>
         ))}
+      </div>
+      <div className="ob-card">
+        <div className="ob-ct">Tempo rasta obima</div>
+        <Chips
+          items={VOLUME_RAMPS}
+          value={w.volIntensity}
+          label="Tempo rasta obima"
+          onPick={(v) => set({ volIntensity: v })}
+        />
+        <div className="ob-hint">
+          {VOLUME_HINT[w.volIntensity]} Ovo ne menja predviđeno vreme — samo koliko se nedeljno
+          povećava kilometraža do vrhunca plana.
+        </div>
       </div>
       <div className="ob-card">
         <div className="ob-ct">

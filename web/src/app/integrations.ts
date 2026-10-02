@@ -13,7 +13,7 @@ import { createIcuSync } from '../services/icu/icuSync';
 import { createWeather, type GeoPort } from '../services/weather/weatherSync';
 import type { ForecastCache } from '../domain/weather';
 import { createWatchPush } from '../services/icu/icuPush';
-import { resolvePlan, type ResolvedPlan } from '../domain/plan';
+import { planBaselineVdot, resolvePlan, type ResolvedPlan } from '../domain/plan';
 import { currentVdot } from '../domain/training/adaptation';
 import {
   ICU_REJECTED_MESSAGE,
@@ -191,8 +191,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     },
     vdot: () => {
       const t = useTrainingStore.getState();
-      const v0 = (activeGenPlan()?.meta as { vdot0?: unknown } | undefined)?.vdot0;
-      return currentVdot(t.vdotLog) || (typeof v0 === 'number' && Number.isFinite(v0) ? v0 : null);
+      return currentVdot(t.vdotLog) || planBaselineVdot(activeGenPlan()?.meta);
     },
     now,
     today: deps.today

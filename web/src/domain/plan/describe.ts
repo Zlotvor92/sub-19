@@ -56,7 +56,7 @@ export type WeekPhase = 'DELOAD' | 'TRKA' | 'TAPER' | 'BAZA' | 'RAZVOJ' | 'VRHUN
  * `focus` (ručno pisan plan ima „DELOAD (intenzitetski) — …"). Preostale faze po udelu plana.
  */
 export function weekPhase(
-  w: { w: number; deload?: boolean; focus?: string } | null | undefined,
+  w: { w: number; deload?: boolean; focus?: string; taper?: boolean } | null | undefined,
   totalWeeks: number
 ): WeekPhase {
   if (!w) return '';
@@ -64,7 +64,10 @@ export function weekPhase(
   const n = w.w;
   const T = totalWeeks || 1;
   if (n >= T) return 'TRKA';
-  if (n >= T - 1) return 'TAPER';
+  /* Taper je jedna nedelja (5K, 10K) ili dve (HM, maraton) — pozicija sama ne zna koliko ih ima. Izvor istine je zastavica `taper`;
+     planovi napravljeni pre nje nose samo PREFIKS opisa („Taper …", v. `weekFocus`), a ručno pisan plan ni to — njemu ostaje
+     pretposlednja nedelja. */
+  if (n >= T - 1 || w.taper || /^Taper/i.test(String(w.focus || ''))) return 'TAPER';
   const frac = n / T;
   if (frac <= 0.3) return 'BAZA';
   if (frac <= 0.65) return 'RAZVOJ';

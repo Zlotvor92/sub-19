@@ -101,19 +101,34 @@ describe('Plan tab naspram starog koda', () => {
     expect(checked).toBeGreaterThan(300);
   });
 
-  it('planPhases: isto grupisanje nedelja kao planFaze', () => {
+  it('planPhases: isto grupisanje nedelja kao planFaze — jedina namerna razlika je prva od DVE taper nedelje (ENGINE_CHANGES D5)', () => {
+    let moved = 0;
     for (const plan of PLANS) {
       load(plan, {});
-      const mine = planPhases(resolvePlan(plan.weeks, { alts: {}, moves: {} })).map((g) => [
-        g.name,
-        g.weeks.map((w) => w.w)
-      ]);
+      const resolved = resolvePlan(plan.weeks, { alts: {}, moves: {} });
+      const mine = planPhases(resolved);
       const old = j<Array<[string, number[]]>>(
         legacy.evalIn('planFaze().map(g=>[g.ime,g.nedelje.map(w=>w.w)])')
       );
-      expect(mine).toEqual(old);
+      const nameByWeek = (
+        groups: ReadonlyArray<readonly [string, number[]]>
+      ): Map<number, string> =>
+        new Map(groups.flatMap(([name, ws]) => ws.map((n) => [n, name] as const)));
+      const a = nameByWeek(mine.map((g) => [g.name, g.weeks.map((w) => w.w)] as const));
+      const b = nameByWeek(old);
+      expect([...a.keys()]).toEqual([...b.keys()]);
+      const total = resolved.weeks.length;
+      for (const wk of resolved.weeks) {
+        if (a.get(wk.w) === b.get(wk.w)) continue;
+        /* Razlika je dozvoljena SAMO tamo gde opis nedelje kaže „Taper", a stari kod je nedelju video kao običnu (n < T−1). */
+        expect(/^Taper/i.test(String(wk.focus || '')), `nedelja ${wk.w}`).toBe(true);
+        expect(wk.w, `nedelja ${wk.w}`).toBeLessThan(total - 1);
+        expect(a.get(wk.w)).toBe('TAPER I TRKA');
+        moved++;
+      }
       expect(mine.length).toBeGreaterThan(1);
     }
+    expect(moved, 'uzorak mora da sadrži plan sa dve taper nedelje').toBeGreaterThan(0);
   });
 
   it('weekChart: isti kilometri po nedelji, ista skala', () => {

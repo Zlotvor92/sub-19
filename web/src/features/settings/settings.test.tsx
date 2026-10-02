@@ -260,6 +260,83 @@ describe('Podešavanja', () => {
     alert.mockRestore();
   });
 
+  describe('preračunavanje plana prema formi', () => {
+    const withForm = (vdot: number, measurements: number): PersistedState => {
+      const s = stateWithPlan();
+      s.vdotLog = Array.from({ length: measurements }, (_, i) => ({
+        id: `t${i}`,
+        ts: `2026-01-0${i + 6}`,
+        vdot,
+        prev: null,
+        delta: null,
+        measured: vdot
+      }));
+      return s;
+    };
+    const run = async (state: PersistedState) => {
+      const user = userEvent.setup();
+      boot(false, state);
+      useAuthStore.setState({ configured: false });
+      const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+      open();
+      render(<Screen />);
+      await user.click(screen.getByText('Trening', { selector: 'button' }));
+      await user.click(screen.getByText('Plan', { selector: 'b' }));
+      await user.click(screen.getByRole('button', { name: 'Preračunaj plan prema formi' }));
+      return alert;
+    };
+
+    it('bez merenja forme: objašnjava zašto, plan se ne menja', async () => {
+      const before = stateWithPlan().genPlan;
+      const alert = await run(stateWithPlan());
+      expect(alert).toHaveBeenCalledWith(expect.stringMatching(/bar 3 izmerena rezultata/));
+      expect(useUIStore.getState().confirm).toBeNull();
+      expect(useTrainingStore.getState().genPlan).toEqual(before);
+      alert.mockRestore();
+    });
+
+    it('forma se slaže sa planom: kaže da nema šta da se preračuna', async () => {
+      const planVdot = (stateWithPlan().genPlan?.meta as { vdot0: number }).vdot0;
+      const alert = await run(withForm(planVdot, 3));
+      expect(alert).toHaveBeenCalledWith(expect.stringMatching(/se slažu/));
+      expect(useUIStore.getState().confirm).toBeNull();
+      alert.mockRestore();
+    });
+
+    it('forma se razilazi: potvrda sa brojevima, pa preračunavanje; prošla nedelja ostaje, polazna forma lanca se čuva', async () => {
+      const state = withForm(56, 3);
+      const before = state.genPlan;
+      const baseVdot = (before?.meta as { vdot0: number }).vdot0;
+      const alert = await run(state);
+      await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
+      const text = useUIStore.getState().confirm?.text ?? '';
+      expect(text).toMatch(/^Preračunati preostali plan prema izmerenoj formi\?/);
+      expect(text).toMatch(/Izmerena forma: VDOT 56 · plan je očekivao: VDOT 45,8/);
+      expect(text).toMatch(/Nema vraćanja/);
+      act(() => useUIStore.getState().confirm?.resolve(true));
+      await waitFor(() => expect(useTrainingStore.getState().genPlan).not.toEqual(before));
+      const after = useTrainingStore.getState().genPlan;
+      expect(after?.weeks[0]).toEqual(before?.weeks[0]); // N1 je prošla (14.1. je u N2)
+      const m = after?.meta as { vdotBase?: number; recalWeek?: number; vdotAtRecal?: number };
+      expect(m.vdotBase).toBe(baseVdot);
+      expect(m.recalWeek).toBe(2);
+      expect(m.vdotAtRecal).toBe(56);
+      expect(useTrainingStore.getState().vdotLog).toHaveLength(3); // lanac forme se ne dira
+      expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Plan preračunat\./));
+      alert.mockRestore();
+    });
+
+    it('odustajanje u potvrdi ne menja ništa', async () => {
+      const state = withForm(56, 3);
+      const alert = await run(state);
+      await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
+      act(() => useUIStore.getState().confirm?.resolve(false));
+      await waitFor(() => expect(useUIStore.getState().confirm).toBeNull());
+      expect(useTrainingStore.getState().genPlan).toEqual(state.genPlan);
+      alert.mockRestore();
+    });
+  });
+
   it('nov plan: potvrda; plan i unosi uz njega nestaju, otvara se čarobnjak', async () => {
     const user = userEvent.setup();
     boot(false);

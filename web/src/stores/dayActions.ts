@@ -22,7 +22,7 @@ import {
   sessionClassFor,
   type StoredPredRow
 } from '../domain/training/adaptation';
-import type { ResolvedDay } from '../domain/plan';
+import { planBaselineVdot, type ResolvedDay } from '../domain/plan';
 import { useRecoveryStore } from './recoveryStore';
 import { activeGenPlan, useTrainingStore } from './trainingStore';
 
@@ -68,10 +68,9 @@ export function storedRows(): StoredPredRow[] {
 
 export function workPaceContext(day: Pick<ResolvedDay, 'id'>): WorkPaceContext {
   const t = useTrainingStore.getState();
-  const v0 = (activeGenPlan()?.meta as { vdot0?: unknown } | undefined)?.vdot0;
   return {
     rows: storedRows(),
-    baselineVdot: typeof v0 === 'number' && Number.isFinite(v0) ? v0 : null,
+    baselineVdot: planBaselineVdot(activeGenPlan()?.meta),
     hasAlt: !!t.alts[day.id]
   };
 }
