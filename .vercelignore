@@ -1,20 +1,17 @@
 # Testovi i CI ne idu u deploy — nisu deo aplikacije.
-test/
-.github/
+/test/
+/.github/
 # SQL se pušta rukom u Supabase SQL Editoru. Nema tajni u njemu, ali nema ni
 # razloga da stoji na javnoj adresi (/supabase/rate-limit.sql).
-supabase/
+/supabase/
 # Alat koji se pokreće jednom, rukom (pravljenje VAPID ključeva).
-scripts/
+/scripts/
 # PAŽNJA: isključuje se SAMO uputstvo, ne ceo folder. `.well-known/assetlinks.json`
 # MORA ostati na javnoj adresi — bez njega Android aplikacija (TWA) gubi pun ekran
 # i prikazuje Chrome traku sa adresom.
 .well-known/README.md
 # Dokumentacija rewrite-a (audit, arhitektura, bezbednosni nalazi) ne treba da
 # stoji na javnoj adresi (/docs/*.md, /ARCHITECTURE.md) — isti razlog kao supabase/.
-docs/
-ARCHITECTURE.md
-REWRITE_REPORT.md
-# Novi frontend (Vite) živi u web/ i NE sme da se servira kao statika dok se
-# deploy ne prebaci na build korak (v. docs/REWRITE_PLAN.md §5).
-web/
+/docs/
+/ARCHITECTURE.md
+/REWRITE_REPORT.md

@@ -1,16 +1,37 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm ci --prefix web",
+  "buildCommand": "npm run build --prefix web",
+  "outputDirectory": "web/dist",
   "crons": [
-    { "path": "/api/daily-report", "schedule": "0 5 * * *" },
-    { "path": "/api/push", "schedule": "0 4 * * *" }
+    {
+      "path": "/api/daily-report",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/push",
+      "schedule": "0 4 * * *"
+    }
   ],
   "functions": {
-    "api/broadcast.js": { "maxDuration": 60 },
-    "api/daily-report.js": { "maxDuration": 60 },
-    "api/icu.js": { "maxDuration": 60 },
-    "api/analyze.js": { "maxDuration": 60 },
-    "api/push.js": { "maxDuration": 60 },
-    "api/delete-account.js": { "maxDuration": 60 }
+    "api/broadcast.js": {
+      "maxDuration": 60
+    },
+    "api/daily-report.js": {
+      "maxDuration": 60
+    },
+    "api/icu.js": {
+      "maxDuration": 60
+    },
+    "api/analyze.js": {
+      "maxDuration": 60
+    },
+    "api/push.js": {
+      "maxDuration": 60
+    },
+    "api/delete-account.js": {
+      "maxDuration": 60
+    }
   },
   "headers": [
     {
@@ -20,22 +41,40 @@
           "key": "Content-Security-Policy",
           "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.googleusercontent.com; connect-src 'self' https://*.supabase.co https://www.strava.com https://api.open-meteo.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'"
         },
-        { "key": "Referrer-Policy", "value": "same-origin" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
+        {
+          "key": "Referrer-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
       ]
     },
     {
       "source": "/app.js",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     },
     {
       "source": "/sub20.apk",
       "headers": [
-        { "key": "Content-Type", "value": "application/vnd.android.package-archive" },
-        { "key": "Content-Disposition", "value": "attachment; filename=\"sub20.apk\"" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"sub20.apk\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     }
   ]

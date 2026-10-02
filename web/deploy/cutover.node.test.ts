@@ -12,8 +12,10 @@ const WEB = process.cwd();
 const ROOT = join(WEB, '..');
 const readJson = (p: string): Record<string, unknown> =>
   JSON.parse(readFileSync(p, 'utf8')) as Record<string, unknown>;
-const current = readJson(join(ROOT, 'vercel.json'));
+/* `legacy` = vercel.json PRE prelaza (zamrznuta kopija); `live` = vercel.json koji Vercel stvarno čita. */
+const legacy = readJson(join(WEB, 'deploy', 'vercel.legacy.json'));
 const cutover = readJson(join(WEB, 'deploy', 'vercel.cutover.json'));
+const live = readJson(join(ROOT, 'vercel.json'));
 
 let out = '';
 let index = '';
@@ -46,13 +48,28 @@ afterAll(() => {
 });
 
 describe('cutover konfiguracija', () => {
-  it('menja SAMO korak izgradnje: zaglavlja (CSP), cron i funkcije su isti kao u trenutnom vercel.json', () => {
+  it('menja SAMO korak izgradnje: zaglavlja (CSP), cron i funkcije su isti kao u vercel.json pre prelaza', () => {
     const { installCommand, buildCommand, outputDirectory, ...rest } = cutover;
-    expect(rest).toEqual(current);
+    expect(rest).toEqual(legacy);
     expect(installCommand).toBe('npm ci --prefix web');
     expect(buildCommand).toBe('npm run build --prefix web');
     expect(outputDirectory).toBe('web/dist');
-    expect(current).not.toHaveProperty('outputDirectory'); // trenutno stanje: nema build koraka
+    expect(legacy).not.toHaveProperty('outputDirectory'); // stanje pre prelaza: nema build koraka
+  });
+
+  it('vercel.json u korenu JE cutover konfiguracija, a web/ više nije u .vercelignore', () => {
+    expect(live).toEqual(cutover);
+    const ignore = readFileSync(join(ROOT, '.vercelignore'), 'utf8')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('#'));
+    expect(ignore).not.toContain('web/');
+    /* Neusidreni obrasci (`test/`, `supabase/`, `scripts/`, `docs/`) važe na SVAKOJ dubini i izbacili bi web/src/test, web/src/services/supabase,
+       web/scripts (nađeno stvarnim Vercel build-om). Moraju počinjati sa `/`. */
+    for (const dir of ['test', '.github', 'supabase', 'scripts', 'docs']) {
+      expect(ignore, dir).toContain(`/${dir}/`);
+      expect(ignore, dir).not.toContain(`${dir}/`);
+    }
   });
 });
 
@@ -116,8 +133,8 @@ describe('izgrađeni izlaz', () => {
 
   it('CSP: svaki spoljni izvor u kodu je dozvoljen u `connect-src`/`img-src`, a ostalo je poznato i ne šalje se', () => {
     const csp = (
-      (current['headers'] as Array<{ headers: Array<{ key: string; value: string }> }>)[0]
-        ?.headers ?? []
+      (live['headers'] as Array<{ headers: Array<{ key: string; value: string }> }>)[0]?.headers ??
+      []
     ).find((h) => h.key === 'Content-Security-Policy')?.value;
     expect(csp).toBeTruthy();
     const allowed = new Set<string>();
