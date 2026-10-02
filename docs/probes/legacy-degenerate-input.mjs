@@ -1,3 +1,5 @@
+/* NAPOMENA (Phase 12): ova skripta učitava stari `app.js` kroz `test/harness.mjs`, koji su obrisani. Radi samo nad commit-om b7afc41:
+   `git worktree add ../legacy b7afc41 && cd ../legacy && node docs/probes/legacy-degenerate-input.mjs`. Ostaje kao dokaz nalaza iz docs/TRAINING_ENGINE_AUDIT.md §11. */
 /* Probe starog (legacy) generatora — reproducibilan dokaz za docs/TRAINING_ENGINE_AUDIT.md.
    Pokretanje iz korena repozitorijuma:  node docs/probes/legacy-degenerate-input.mjs
    Ne menja nijedan fajl; učitava app.js kroz test/harness.mjs (node:vm). */

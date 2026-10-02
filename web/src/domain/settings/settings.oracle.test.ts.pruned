@@ -1,0 +1,58 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import { addDays, type IsoDate } from '../date';
+import {
+  ANNOUNCEMENT,
+  announcementToShow,
+  backupDue,
+  dataCounts,
+  groupForSection,
+  settingsHero,
+  waitingText
+} from './index';
+
+/* parity: backupDue, podesavanjaStanje, grupaZaSekciju, brojevi u openSettings (app.js). */
+
+let legacy: LegacyApp;
+beforeAll(async () => {
+  legacy = await loadLegacyApp('2026-03-01T09:00:00Z');
+});
+
+describe('podešavanja naspram starog koda', () => {
+
+  it('hero: redosled i tekstovi stavki; brojanje', () => {
+    const h = settingsHero({
+      accountConfigured: true,
+      signedIn: false,
+      stravaConnected: false,
+      icuConnected: true,
+      watchPushed: false,
+      backupOk: false,
+      hasBackupDate: false
+    });
+    expect(h.items.map((i) => i.key)).toEqual(['nalog', 'strava', 'icu', 'sat', 'backup']);
+    expect(h.first?.key).toBe('nalog');
+    expect(h.waiting).toHaveLength(4);
+    const ok = settingsHero({
+      accountConfigured: false,
+      signedIn: false,
+      stravaConnected: true,
+      icuConnected: false,
+      watchPushed: false,
+      backupOk: true,
+      hasBackupDate: true
+    });
+    expect(ok.items.map((i) => i.key)).toEqual(['strava', 'icu', 'backup']);
+    expect(ok.first?.key).toBe('icu');
+    expect([1, 2, 3, 4, 5].map(waitingText)).toEqual([
+      'Jedna stvar čeka',
+      'Dve stvari čekaju',
+      'Tri stvari čekaju',
+      'Četiri stvari čekaju',
+      'Pet stvari čeka'
+    ]);
+    expect(dataCounts({ workouts: 21, pain: 2, weight: 5, paces: 1 })).toBe(
+      '21 trening · 2 zapisa o bolu · 5 merenja mase · 1 tempo radnog dela'
+    );
+  });
+});

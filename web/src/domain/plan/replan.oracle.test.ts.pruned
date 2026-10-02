@@ -1,0 +1,110 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { canonical } from '@/test/fingerprint';
+import { firstDiff } from '@/test/firstDiff';
+import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import { addDays, type IsoDate } from '../date';
+import type { GenPlanState } from '../state';
+import { generatePlan } from '../training/generator/generatePlan';
+import type { PlanGenerationInput, Session } from '../training/types';
+import { adaptGeneratedPlan } from './adapt';
+import { mergeOverrides, planWithNewGoal, recalibratedPlan, reentryPlan } from './replan';
+
+/* parity: test/ostali (planSaNovimCiljem u test/podesavanja + revizija6), test/generator (rekalibracija,
+   re-entry). Poredi `plan/replan` sa starim `planSaNovimCiljem`, `mergeOverrides`, `recalibratedPlan`,
+   `reentryPlan`. JEDNA NAMERNA RAZLIKA: ključevi `qs` posle promene cilja (docs/ENGINE_CHANGES.md, A3). */
+
+const START = '2026-01-05' as IsoDate;
+const j = <T>(x: unknown): T => JSON.parse(JSON.stringify(x)) as T;
+
+const PB: Record<number, number> = { 5000: 1237, 10000: 2570, 21097.5: 5700, 42195: 13500 };
+const input = (
+  raceDistM: number,
+  over: Partial<PlanGenerationInput> = {}
+): PlanGenerationInput => ({
+  startDate: START,
+  raceDate: addDays(START, 20 * 7),
+  raceDistM,
+  pb: { distM: raceDistM, sec: PB[raceDistM] as number },
+  weeklyKm: 50,
+  runDays: 5,
+  quality: 2,
+  intensity: 'std',
+  trainedRecently: true,
+  ...over
+});
+
+let legacy: LegacyApp;
+beforeAll(async () => {
+  legacy = await loadLegacyApp('2026-01-07T09:00:00Z');
+});
+
+function stored(inp: PlanGenerationInput, withInput = true): GenPlanState {
+  const a = adaptGeneratedPlan(generatePlan(inp));
+  if (!a) throw new Error('adapt');
+  return withInput ? { ...a, ulaz: inp } : a;
+}
+
+function loadLegacy(plan: GenPlanState): void {
+  const ctx = (legacy as unknown as { ctx: Record<string, unknown> }).ctx;
+  ctx['__p'] = j(plan);
+  legacy.evalIn('S.genPlan=__p; S.alts={}; S.moves={}; setActivePlan(); rebuildDateIndex(); 0');
+}
+
+/** Zaključava nekoliko polja sesija — tempo, broj ponavljanja — da `mergeOverrides` ima šta da prenese. */
+function withLocks(plan: GenPlanState): GenPlanState {
+  const p = j<GenPlanState>(plan);
+  let n = 0;
+  for (const w of p.weeks)
+    for (const d of w.days) {
+      const s = d.session as (Session & Record<string, unknown>) | undefined;
+      if (!s || n++ % 2) continue;
+      s['paceSec'] = s.paceSec + 7;
+      s.overrides = { ...s.overrides, paceSec: true };
+      if (s.type === 'int') {
+        s['reps'] = s.reps + 1;
+        s.overrides['reps'] = true;
+      }
+    }
+  return p;
+}
+
+describe('promena cilja naspram starog planSaNovimCiljem', () => {
+
+  it('ulaz se ne menja', () => {
+    const plan = stored(input(10000));
+    const before = JSON.stringify(plan);
+    planWithNewGoal(plan, 2400, addDays(START, 14));
+    expect(JSON.stringify(plan)).toBe(before);
+  });
+});
+
+describe('mergeOverrides naspram starog', () => {
+});
+
+describe('rekalibracija i povratak naspram starih funkcija', () => {
+});
+
+describe('A4: zaključana polja pri rekalibraciji stižu na ISTI dan', () => {
+  it('perzistirana nedelja sa zaključanim tempom → sveža nedelja ima isti tempo istog dana', () => {
+    const inp = input(10000);
+    const plan = withLocks(stored(inp));
+    const idx = 4;
+    const res = recalibratedPlan(inp, idx, 46, {
+      oldWeeks: plan.weeks,
+      originalPredictedSec: 2500
+    });
+    if ('error' in res) throw new Error(res.error);
+    let checked = 0;
+    for (const w of res.weeks) {
+      const old = plan.weeks.find((x) => x.w === w.w);
+      for (const d of w.days) {
+        const o = old?.days.find((x) => x.dow === d.dow - 1);
+        if (!d.session || !o?.session || o.session.type !== d.session.type) continue;
+        if (!o.session.overrides['paceSec']) continue;
+        expect(d.session.paceSec, `N${w.w} dow ${d.dow}`).toBe(o.session.paceSec);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(3);
+  });
+});

@@ -1,0 +1,21 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import type { Zone } from '../types';
+import { vdotFromRace } from './calculateVDOT';
+import { paceForZone } from './paceForZone';
+import { raceTimeForVdot, riegelDist } from './racePrediction';
+import { vdotFromPace, vdotPaceInRange } from './vdotFromPace';
+
+/* parity: test/pure.test.mjs :: Daniels–Gilbert VDOT, Zone i tempi, Riegel
+   Isti izrazi, isti redosled operacija → rezultat mora biti BITNO identičan
+   (Object.is), ne „približno". */
+
+const ZONES: Zone[] = ['E', 'LR', 'T', 'M', 'I', 'R'];
+let legacy: LegacyApp;
+
+beforeAll(async () => {
+  legacy = await loadLegacyApp();
+});
+
+describe('VDOT matematika naspram starog koda', () => {
+});

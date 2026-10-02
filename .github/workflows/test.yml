@@ -13,17 +13,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      # Nema `npm install` — testovi nemaju zavisnosti, sve je iz standardne
-      # biblioteke. Nema ni build koraka, jer se aplikacija deployuje bez njega.
+      # Backend i konfiguracija repozitorijuma. Nema `npm install` — testovi nemaju zavisnosti, sve je iz standardne biblioteke.
       - name: Provera sintakse
         run: |
-          for f in api/*.js sw.js; do node --check "$f"; done
+          for f in api/*.js; do node --check "$f"; done
       - name: Testovi
         run: node --test "test/**/*.test.mjs"
 
-  # Novi frontend (web/) — v. docs/REWRITE_PLAN.md. Odvojen posao: stari testovi
-  # iznad ostaju netaknuti i bez `npm install`, jer se produkcija i dalje
-  # deployuje bez build koraka sve do cutover-a.
+  # Frontend (web/) — v. docs/REWRITE_PLAN.md. Odvojen posao: testovi backenda iznad rade bez `npm install`.
   web:
     runs-on: ubuntu-latest
     defaults:
@@ -43,7 +40,7 @@ jobs:
         run: npm run lint
       - name: Format
         run: npm run format:check
-      - name: Unit/domain/oracle testovi
+      - name: Unit/domain/zamrznuti oracle/node testovi
         run: npm test
       - name: Build
         run: npm run build

@@ -127,7 +127,7 @@ Auth: **samo Google OAuth**, JWT važi **900 s** (podešavanje u Supabase kontro
 
 ## 9. Testovi kao specifikacija
 
-Harness (`test/harness.mjs`) učitava `app.js` u `node:vm` sa lažnim DOM-om i izlaže `app.call(fn, …)`, `app.get(const)`, `app.evalIn(expr)`. Testovi su **vezani za imena funkcija i globala iz `app.js`** — kad se `app.js` obriše, ~55 fajlova gubi svoj subjekat. Zato je strategija u REWRITE_PLAN: **legacy harness ostaje u repou kao „oracle"** do kraja parity faze; stari testovi se ne brišu dok svaka njihova invarijanta nema TS pandan (mapa u `docs/TRAINING_ENGINE_AUDIT.md` §9 i `docs/REWRITE_PLAN.md` §6).
+Harness (`test/harness.mjs`, obrisan u Phase 12 — commit `b7afc41`) učitava `app.js` u `node:vm` sa lažnim DOM-om i izlaže `app.call(fn, …)`, `app.get(const)`, `app.evalIn(expr)`. Testovi su **vezani za imena funkcija i globala iz `app.js`** — kad se `app.js` obriše, ~55 fajlova gubi svoj subjekat. Zato je strategija u REWRITE_PLAN: **legacy harness ostaje u repou kao „oracle"** do kraja parity faze; stari testovi se ne brišu dok svaka njihova invarijanta nema TS pandan (mapa u `docs/TRAINING_ENGINE_AUDIT.md` §9 i `docs/REWRITE_PLAN.md` §6).
 
 Kategorije (broj testova): API/serverski (`api.test` 173, `push` 63, `icu-treninzi` 66), bezbednost (66+), stanje/migracija (71), zajednica (71), zone pulsa (57), generator (21 + otisak 2 + simetrija 11 + deload 11 + račun 3), VDOT/forma (20 + 15 + 19), povreda/opterećenje (17 + 12 + 7), test na 3 km (39), SW (24), dosledenost/CSP/a11y (49), ostalo. Tačna mapa: REWRITE_PLAN §6.
 
@@ -176,4 +176,4 @@ web/sw/sw.js   telo starog sw.js; verzija i spisak se ubacuju pri izgradnji
 
 **Strategija testova.** Četiri Vitest projekta (`domain`, `oracle`, `node`, `ui`) + Playwright. *Oracle* testovi (`*.oracle.test.ts`) učitavaju stari `app.js` u `node:vm` (`src/test/legacyOracle.ts`) i porede izlaze za iste ulaze; namerne razlike su jedino u `docs/ENGINE_CHANGES.md`. Stari `test/*.test.mjs` ostaju netaknuti do Phase 12.
 
-**Nije urađeno:** produkcioni cutover (Phase 11) i uklanjanje starog frontenda (Phase 12) — `docs/CUTOVER.md`.
+**Stanje posle Phase 12 (2026-10-02):** produkcija servira `web/dist`; stari frontend (`app.js`, `index.html`, `sw.js`, `sw-reg.js`) je obrisan — poslednji commit na kome postoji je `b7afc41`. §1–11 iznad opisuju stanje PRE rewrite-a. Statika (`manifest.json`, ikone, `privacy.html`, `uputstvo.html`, `.well-known/assetlinks.json`, `sub20.apk`) živi u `web/public/`. `test/` drži testove backenda i konfiguracije (388); frontend testovi su u `web/`.

@@ -7,7 +7,7 @@
 
    KORAK A (port bez promene ponašanja): isti redosled operacija i zaokruživanja
    kao stari `generatePlan`; izlaz mora da prođe golden-master otisak
-   (test/fixtures/otisak-generatora.json). Rationale za pojedine odluke:
+   (web/src/test/fixtures/otisak-generatora.json). Rationale za pojedine odluke:
    docs/TRAINING_ENGINE_AUDIT.md.
    ============================================================ */
 

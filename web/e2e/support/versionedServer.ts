@@ -1,6 +1,4 @@
-import { readFile } from 'node:fs/promises';
 import { createServer, type Server } from 'node:http';
-import { extname, join, normalize } from 'node:path';
 import type { AddressInfo } from 'node:net';
 
 /* PROXY ISPRED `vite preview` KOJI MOŽE DA „IZDA NOVU VERZIJU". Pregledač prepoznaje novi service worker ISKLJUČIVO po promeni bajtova `sw.js`, a `page.route` ne
@@ -9,49 +7,19 @@ import type { AddressInfo } from 'node:net';
 
 export interface VersionedServer {
   url: string;
-  /** Šta se servira: novi izgrađeni frontend (`vite preview`) ili STARI frontend iz korena repozitorija (prelaz sa v282 na novi je upravo taj preklop). */
-  mode: 'new' | 'legacy';
   /** Od sada `sw.js` ima nova bajta (kao posle novog deploya); vraća ime novog keša. */
   bump(): string;
   close(): Promise<void>;
 }
 
-const TYPES: Record<string, string> = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.webp': 'image/webp'
-};
-/** Samo ono što stari frontend zaista servira (nema `web/`, `test/`, `docs/`…). */
-const LEGACY_FILES =
-  /^\/(index\.html|app\.js|sw\.js|sw-reg\.js|manifest\.json|[\w.-]+\.(png|webp))$/;
-
 export async function startVersionedServer(
-  target = 'http://localhost:4173',
-  legacyRoot = join(process.cwd(), '..')
+  target = 'http://localhost:4173'
 ): Promise<VersionedServer> {
   let suffix = '';
-  let mode: 'new' | 'legacy' = 'new';
   const server: Server = createServer((req, res) => {
     void (async () => {
       const path = req.url ?? '/';
       try {
-        if (mode === 'legacy') {
-          const file = path.split('?')[0] === '/' ? '/index.html' : (path.split('?')[0] ?? '');
-          if (!LEGACY_FILES.test(file)) {
-            res.writeHead(404);
-            res.end('nema');
-            return;
-          }
-          const body = await readFile(normalize(join(legacyRoot, file)));
-          res.writeHead(200, {
-            'content-type': TYPES[extname(file)] ?? 'application/octet-stream',
-            'cache-control': 'no-cache'
-          });
-          res.end(body);
-          return;
-        }
         const up = await fetch(target + path, { method: req.method, redirect: 'manual' });
         let body = Buffer.from(await up.arrayBuffer());
         if (path.split('?')[0] === '/sw.js' && suffix)
@@ -79,12 +47,6 @@ export async function startVersionedServer(
   const port = (server.address() as AddressInfo).port;
   return {
     url: `http://localhost:${port}`,
-    get mode() {
-      return mode;
-    },
-    set mode(m) {
-      mode = m;
-    },
     bump() {
       suffix = `e2e${Date.now().toString(36)}`;
       return suffix;

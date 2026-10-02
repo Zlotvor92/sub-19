@@ -22,7 +22,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { createContext, runInContext } from 'node:vm';
-import { readRepoFile } from './harness.mjs';
+import { readRepoFile } from './repo.mjs';
 
 const FAJLOVI = ['analyze', 'auth', 'delete-account', 'icu-oauth', 'icu', 'push', 'report-bug']
   .map(x => `api/${x}.js`);

@@ -21,10 +21,9 @@
 
 import { test, describe, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp, readRepoFile } from './harness.mjs';
+import { readRepoFile } from './repo.mjs';
 
 const DAN = '2026-08-09';
-const app = (o = {}) => loadApp({ now: DAN + 'T21:00:00Z', ...o });
 
 /* Prognoza kakvu `vremeCist` ostavlja u `S.vreme.sati`: ključ je 'YYYY-MM-DDTHH'.
    Brojevi su iz prijavljenog slučaja — 20 h je 30 °C uz osećaj 29. */
@@ -33,130 +32,6 @@ function saPrognozom(a, sati) {
   Object.keys(sati).forEach(h => { zapis[DAN + 'T' + h] = sati[h]; });
   a.evalIn(`S.vreme={at:Date.now(), lat:44.8, lon:20.5, sati:${JSON.stringify(zapis)}}`);
 }
-
-describe('Sat u kom se trčalo', () => {
-
-  test('kratko trčanje ostaje u satu polaska', () => {
-    const a = app();
-    assert.equal(a.call('satTrcanja', { satTrk: 9, sec: 1800 }), 9);
-  });
-
-  test('dugo trčanje se meri po SREDINI, ne po polasku', () => {
-    /* U 8:00 krenuto dvočasovno trčanje se najvećim delom odvija u 9 i 10 h.
-       Avgust ume da doda 4-5 °C između 8 i 10 — uzeti sat polaska znači
-       sistematski potceniti toplotu baš na treninzima gde ona najviše boli. */
-    const a = app();
-    assert.equal(a.call('satTrcanja', { satTrk: 8, sec: 7200 }), 9);
-  });
-
-  test('bez sata sa uvoza pada na sat treninga iz Podešavanja', () => {
-    /* Ručan unos nema `satTrk`. Pretpostavka mora biti ISTA ona po kojoj
-       kartica vremena crta prognozu — inače bi ekran i analiza gledali dva
-       različita sata istog dana. */
-    const a = app();
-    a.evalIn("S.ui.satTreninga=7;");
-    assert.equal(a.call('satTrcanja', {}), 7);
-    assert.equal(a.call('satTrcanja', { satTrk: null, sec: 3600 }), 7);
-  });
-
-  test('ne prelazi u sledeći dan', () => {
-    /* Ključ u kešu je 'datum + sat'; sat 24 ne postoji i vratio bi null, pa bi
-       kasno večernje dugo trčanje tiho ostalo bez temperature. */
-    const a = app();
-    assert.equal(a.call('satTrcanja', { satTrk: 23, sec: 7200 }), 23);
-    assert.equal(a.call('satTrcanja', { satTrk: 0, sec: 60 }), 0);
-  });
-
-  test('besmislen `satTrk` iz backupa ne prolazi', () => {
-    const a = app();
-    a.evalIn("S.ui.satTreninga=18;");
-    for (const loš of [{ satTrk: 25 }, { satTrk: -3 }, { satTrk: 'devet' }, { satTrk: NaN }])
-      assert.equal(a.call('satTrcanja', loš), 18, `prošlo: ${JSON.stringify(loš)}`);
-  });
-});
-
-describe('Odakle dolazi temperatura odrađenog trčanja', () => {
-
-  test('PRIJAVLJEN SLUČAJ: prognoza pobeđuje očitanje sa sata', () => {
-    /* Ovo je cela poenta izmene. Sat je zabeležio 33, prognoza za taj sat kaže
-       30 — mora izaći 30, sa oznakom da je iz prognoze. */
-    const a = app();
-    saPrognozom(a, { '20': { temp: 30, osecaj: 29 } });
-    const t = a.call('tempTrcanja', { satTrk: 20, sec: 1200, temp: 33 }, DAN);
-    assert.equal(t.temp, 30, 'i dalje se uzima očitanje sa sata');
-    assert.equal(t.osecaj, 29);
-    assert.equal(t.izvor, 'om');
-    assert.equal(t.sat, 20);
-  });
-
-  test('bez prognoze za taj sat pada na sat — ali OZNAČENO', () => {
-    const a = app();
-    saPrognozom(a, { '20': { temp: 30, osecaj: 29 } });
-    /* Trčano u 6 h, prognoza pokriva samo 20 h. */
-    const t = a.call('tempTrcanja', { satTrk: 6, sec: 1800, temp: 33 }, DAN);
-    assert.equal(t.temp, 33);
-    assert.equal(t.izvor, 'sat', 'zglobno očitanje se predstavlja kao prognoza');
-  });
-
-  test('bez lokacije uopšte — i dalje označena rezerva', () => {
-    const a = app();   /* S.vreme ostaje prazno */
-    const t = a.call('tempTrcanja', { satTrk: 9, sec: 1800, temp: 31 }, DAN);
-    assert.equal(t.izvor, 'sat');
-    assert.equal(t.temp, 31);
-  });
-
-  test('kad nema nijednog izvora, nema ni broja', () => {
-    const a = app();
-    assert.equal(a.call('tempTrcanja', { satTrk: 9, sec: 1800 }, DAN), null);
-    assert.equal(a.call('tempTrcanja', null, DAN), null);
-  });
-
-  test('„oseća se" sa sata NE ulazi u prognozu i obrnuto', () => {
-    /* `icu.osecaSe` je izvedeno iz istog zglobnog očitanja. Ako bi se zalepilo
-       na Open-Meteo temperaturu, dobio bi se par „30 °C, oseća se 36" — dva
-       broja iz dva sveta koja tvrde da opisuju isti trenutak. */
-    const a = app();
-    saPrognozom(a, { '20': { temp: 30, osecaj: 29 } });
-    const izPrognoze = a.call('tempTrcanja', { satTrk: 20, sec: 1200, temp: 33, icu: { osecaSe: 36 } }, DAN);
-    assert.equal(izPrognoze.osecaj, 29, 'osećaj sa sata se zalepio na temperaturu iz prognoze');
-
-    const izSata = a.call('tempTrcanja', { satTrk: 6, sec: 1200, temp: 33, icu: { osecaSe: 36 } }, DAN);
-    assert.equal(izSata.osecaj, 36, 'kad je izvor sat, njegov osećaj sme i treba');
-  });
-
-  test('prognoza bez temperature nije prognoza', () => {
-    /* Open-Meteo ume da vrati sat sa `null` poljima. Tada se ide na rezervu,
-       a ne „temp: null uz izvor om" — to bi bio broj koji ne postoji, označen
-       kao pouzdan. */
-    const a = app();
-    saPrognozom(a, { '20': { temp: null, osecaj: null } });
-    const t = a.call('tempTrcanja', { satTrk: 20, sec: 1200, temp: 33 }, DAN);
-    assert.equal(t.izvor, 'sat');
-    assert.equal(t.temp, 33);
-  });
-});
-
-describe('Keš prognoze mora pokrivati i prošlost', () => {
-
-  test('poziv ka Open-Meteo traži i prošle dane', async () => {
-    /* Bez `past_days` keš drži samo današnji i naredna dva dana. Svako trčanje
-       analizirano dan kasnije bi tada padalo na očitanje sa sata — mehanizam bi
-       postojao a gotovo nikad ne bi radio. Zato se traži URL, ne izvorni kod:
-       konstanta se lako preimenuje, ponašanje ne. */
-    const a = app();
-    a.evalIn("S.ui.geo={lat:44.8, lon:20.5};");
-    let trazeno = null;
-    a.ctx.fetch = async (u) => {
-      trazeno = String(u);
-      return { ok: true, json: async () => ({ hourly: { time: [DAN + 'T20:00'], temperature_2m: [30], apparent_temperature: [29], relative_humidity_2m: [24], wind_speed_10m: [8], precipitation_probability: [0] } }) };
-    };
-    const r = await a.call('vremePovuci', true);
-    assert.ok(r.ok, 'povlačenje nije uspelo: ' + JSON.stringify(r));
-    assert.match(trazeno, /[?&]past_days=\d+/, 'prognoza se traži samo unapred');
-    const past = +/[?&]past_days=(\d+)/.exec(trazeno)[1];
-    assert.ok(past >= 3, `past_days=${past} je prekratko da pokrije trčanje od pre par dana`);
-  });
-});
 
 /* ============================================================
    ŠTA STVARNO STIGNE DO MODELA
@@ -273,44 +148,6 @@ describe('Šta stiže do modela', () => {
   });
 });
 
-describe('Prikaz u aplikaciji koristi isti izvor kao analiza', () => {
-
-  test('kartica „Sa sata" piše odakle je temperatura', () => {
-    const a = app();
-    saPrognozom(a, { '20': { temp: 30, osecaj: 29 } });
-    const redovi = a.call('metrikaSata', { satTrk: 20, sec: 1200, temp: 33 }, DAN);
-    const red = redovi.find(r => r[0] === 'temperatura');
-    assert.ok(red, 'nema reda sa temperaturom');
-    assert.match(red[1], /30/, 'i dalje se crta očitanje sa sata');
-    assert.doesNotMatch(red[1], /33/, 'zglobno očitanje je ostalo na kartici');
-    assert.match(red[1], /prognoza/, 'red ne kaže odakle je broj');
-  });
-
-  test('kad radi rezerva, kartica to kaže', () => {
-    const a = app();
-    const redovi = a.call('metrikaSata', { satTrk: 6, sec: 1200, temp: 33 }, DAN);
-    const red = redovi.find(r => r[0] === 'temperatura');
-    assert.match(red[1], /33/);
-    assert.match(red[1], /sa sata/, 'rezerva se predstavlja kao prognoza');
-  });
-
-  test('poređenje sa ranijim treninzima objašnjava mešane izvore', () => {
-    /* Kartica niže redove iz raznih nedelja. Novije trčanje ima prognozu,
-       starije (van prozora) samo sat — bez rečenice o tome, razlika u IZVORU
-       čita se kao razlika u vremenu. */
-    const a = app();
-    const mesano = a.call('napomenaTemp', [{ temp: 30, tempIzvor: 'om' }, { temp: 33, tempIzvor: 'sat' }]);
-    assert.match(mesano, /2-5 °C/, 'ne objašnjava zašto se ta dva broja ne porede');
-
-    const samoSat = a.call('napomenaTemp', [{ temp: 33, tempIzvor: 'sat' }]);
-    assert.match(samoSat, /sa sata/);
-
-    assert.equal(a.call('napomenaTemp', [{ temp: null, tempIzvor: null }]), '',
-      'napomena se javlja i kad temperature uopšte nema');
-    assert.equal(a.call('napomenaTemp', []), '');
-  });
-});
-
 describe('Sat trčanja stiže sa oba izvora', () => {
 
   test('intervals.icu sažetak nosi sat, ne samo datum', () => {
@@ -318,19 +155,5 @@ describe('Sat trčanja stiže sa oba izvora', () => {
        Bez sata se temperatura nema gde tražiti u prognozi. */
     const src = readRepoFile('api/icu.js');
     assert.match(src, /sat: sh \? \+sh\[1\] : null/, 'icu sažetak ne vraća sat početka');
-  });
-
-  test('Strava uvoz upisuje sat u dnevnik', () => {
-    const src = readRepoFile('app.js');
-    assert.match(src, /l\.satTrk=\+sh\[1\]/, 'Strava putanja ne pamti sat trčanja');
-  });
-
-  test('sat se čita iz stringa, ne kroz new Date()', () => {
-    /* Strava i intervals.icu vraćaju LOKALNO vreme trkača uz završno „Z".
-       `new Date(...)` bi ga protumačio kao UTC i pomerio za zonu — trčanje u
-       9 h iz Beograda postalo bi 11 h, i tražila bi se pogrešna prognoza. */
-    for (const f of ['app.js', 'api/icu.js'])
-      assert.match(readRepoFile(f), /\/\^\\d\{4\}-\\d\\d-\\d\\dT\(\\d\\d\)\//,
-        `${f} ne čita sat iz stringa`);
   });
 });

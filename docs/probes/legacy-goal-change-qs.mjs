@@ -1,3 +1,5 @@
+/* NAPOMENA (Phase 12): ova skripta učitava stari `app.js` kroz `test/harness.mjs`, koji su obrisani. Radi samo nad commit-om b7afc41:
+   `git worktree add ../legacy b7afc41 && cd ../legacy && node docs/probes/legacy-goal-change-qs.mjs`. Ostaje kao dokaz nalaza iz docs/TRAINING_ENGINE_AUDIT.md §11. */
 // PROBA: posle planSaNovimCiljem ključevi `qs` za nove nedelje ispadnu `n…` (dow 0–6) umesto `g…` (dow 1–7).
 // Pokretanje: node docs/probes/legacy-goal-change-qs.mjs   (ENGINE_CHANGES A3)
 import { loadApp } from '../../test/harness.mjs';

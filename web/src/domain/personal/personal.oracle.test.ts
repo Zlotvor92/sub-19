@@ -1,5 +1,4 @@
-import { readFileSync } from 'node:fs';
-import vm from 'node:vm';
+import { createHash } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import {
@@ -36,22 +35,33 @@ beforeAll(async () => {
   legacy = await loadLegacyApp('2026-10-01T09:00:00Z');
 });
 
-/** Netaknute konstante: izvor se parsira i izvršava u praznom kontekstu (PLAN u živom `vm` je već izmenjen `rebuildDateIndex`-om). */
-function pristine(name: string, startPrefix: string): unknown {
-  const lines = readFileSync(`${process.cwd()}/../app.js`, 'utf8').split('\n');
-  const s = lines.findIndex((l) => l.startsWith(startPrefix));
-  let e = s;
-  while (!/^[\]}];?\s*$/.test(lines[e] ?? '')) e++;
-  return JSON.parse(
-    JSON.stringify(vm.runInNewContext(`${lines.slice(s, e + 1).join('\n')};${name}`))
-  );
-}
+/** Kanonski (sortirani ključevi) SHA-256 — isti zapis kao pri merenju nad starim kodom. */
+const canon = (x: unknown): unknown =>
+  Array.isArray(x)
+    ? x.map(canon)
+    : x && typeof x === 'object'
+      ? Object.fromEntries(
+          Object.keys(x)
+            .sort()
+            .map((k) => [k, canon((x as Record<string, unknown>)[k])])
+        )
+      : x;
+const sha = (x: unknown): string =>
+  createHash('sha256')
+    .update(JSON.stringify(canon(JSON.parse(JSON.stringify(x)))))
+    .digest('hex');
 
 describe('podaci ličnog plana su isti kao u starom kodu', () => {
-  it('PLAN, PRED i QS: duboka jednakost', () => {
-    expect(JSON.parse(JSON.stringify(PERSONAL_WEEKS))).toEqual(pristine('PLAN', 'const PLAN=['));
-    expect(JSON.parse(JSON.stringify(PERSONAL_PRED))).toEqual(pristine('PRED', 'const PRED=['));
-    expect(PERSONAL_QS).toEqual(pristine('QS', 'const QS={'));
+  it('PLAN, PRED i QS: isti sadržaj kao u starom kodu (SHA-256 izmeren nad konstantama starog app.js, APP_VERSION 282)', () => {
+    expect(sha(PERSONAL_WEEKS)).toBe(
+      'e76067a554ad99bc2aff5de3d14389b20a70440c32aed7dfce95ed1a7ad2d03b'
+    );
+    expect(sha(PERSONAL_PRED)).toBe(
+      '7f0fc254c3adf46d4333b881e84e67ec8b1ba87f0715d3acdc5187f9aa7b056c'
+    );
+    expect(sha(PERSONAL_QS)).toBe(
+      '78a5c092dbe5bc280148528779300be1b9f9065affd9bb4f9ffd58277ea7372a'
+    );
   });
 
   it('datumi, cilj i konstante', () => {

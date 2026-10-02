@@ -1,0 +1,22 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import { addDays, type IsoDate } from '../date';
+import { adaptGeneratedPlan } from '../plan/adapt';
+import { resolvePlan } from '../plan/resolve';
+import type { AltRecord } from '../state';
+import { generatePlan } from '../training/generator/generatePlan';
+import { weekAnnouncements } from './index';
+
+/* parity: najaveZaNedelju (app.js). */
+
+const NOW = '2026-07-14T14:30:00Z';
+let legacy: LegacyApp;
+beforeAll(async () => {
+  legacy = await loadLegacyApp(NOW);
+});
+const ctx = (): Record<string, unknown> =>
+  (legacy as unknown as { ctx: Record<string, unknown> }).ctx;
+const j = <T>(x: unknown): T => JSON.parse(JSON.stringify(x)) as T;
+
+describe('najave za nedelju naspram starog koda', () => {
+});

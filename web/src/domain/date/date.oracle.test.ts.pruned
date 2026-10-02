@@ -1,0 +1,35 @@
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import {
+  addDays,
+  diffDays,
+  mondayOnOrAfter,
+  mondayOnOrBefore,
+  parseIsoDate,
+  weekdayIndex,
+  type IsoDate
+} from './index';
+
+/* parity: test/danas.test.mjs :: datumska aritmetika (osnova), pure.test.mjs
+   Novi `domain/date` poredi se sa starim addD / diffD / dowOf / mondayOfWeek / nextMonday
+   na svakom danu 1990–2060. Pokreće se i pod različitim TZ (v. REWRITE_STATUS). */
+
+const DOW = ['Pon', 'Uto', 'Sre', 'Čet', 'Pet', 'Sub', 'Ned'];
+let legacy: LegacyApp;
+
+beforeAll(async () => {
+  legacy = await loadLegacyApp();
+});
+
+function* days(from: string, to: string): Generator<IsoDate> {
+  let cur = parseIsoDate(from);
+  const end = parseIsoDate(to);
+  if (!cur || !end) throw new Error('test: opseg');
+  while (cur <= end) {
+    yield cur;
+    cur = addDays(cur, 1);
+  }
+}
+
+describe('domain/date naspram starog koda', () => {
+});

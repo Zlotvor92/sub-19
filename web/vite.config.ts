@@ -1,15 +1,7 @@
 import { fileURLToPath, URL } from 'node:url';
 import react from '@vitejs/plugin-react';
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-  readdirSync,
-  statSync
-} from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import { renderServiceWorker } from './scripts/sw-build.mjs';
 
@@ -39,34 +31,10 @@ function serviceWorker(version: string): Plugin {
   };
 }
 
-/* Dva fajla stoje u korenu repozitorijuma i moraju na javnu adresu, a nisu deo koda aplikacije: `.well-known/assetlinks.json` (bez njega Android
-   aplikacija / TWA gubi pun ekran) i `sub20.apk` (preuzimanje). Kopiraju se u izlaz dok stoje u korenu; pri uklanjanju starog frontenda (Phase 12) se
-   sele u `web/public/`, i tada ovo postaje prazan hod (ako fajl već postoji u izlazu, ne prepisuje se). */
-const ROOT_STATIC = ['.well-known/assetlinks.json', 'sub20.apk'];
-function rootStatic(): Plugin {
-  let outDir = 'dist';
-  return {
-    name: 'sub19-root-static',
-    apply: 'build',
-    configResolved(c) {
-      outDir = c.build.outDir;
-    },
-    closeBundle() {
-      for (const f of ROOT_STATIC) {
-        const from = fileURLToPath(new URL(`../${f}`, import.meta.url));
-        const to = join(outDir, f);
-        if (!existsSync(from) || existsSync(to)) continue;
-        mkdirSync(dirname(to), { recursive: true });
-        copyFileSync(from, to);
-      }
-    }
-  };
-}
-
 const APP_VERSION = process.env['VITE_APP_VERSION'] || '283';
 
 export default defineConfig({
-  plugins: [react(), rootStatic(), serviceWorker(APP_VERSION)],
+  plugins: [react(), serviceWorker(APP_VERSION)],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   build: {
     target: 'es2022',

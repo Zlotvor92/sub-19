@@ -25,7 +25,7 @@
 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadApp } from './harness.mjs';
+import {} from './repo.mjs';
 
 const pauza = ms => new Promise(r => setTimeout(r, ms));
 
@@ -51,94 +51,6 @@ function prijavljen(a) {
   `);
   assert.equal(a.evalIn('sbAuthed()'), true, 'priprema: sesija nije prihvaćena');
 }
-
-describe('Zastavica „u toku" se spušta i kad mreža ćuti', () => {
-
-  test('Zajednica se ne zaključa na „Povlačim spisak…"', async () => {
-    /* IZMERENO PRE POPRAVKE: `ZAJ.ucitava` ostaje `true` i posle pet minuta,
-       `ZAJ.greska` ostaje `null`, ekran stoji na „Povlačim spisak…" i nema
-       nijedno dugme — do ponovnog učitavanja strane. */
-    const a = loadApp();
-    prijavljen(a);
-    a.evalIn('MREZA_ROK.brz = 60');
-    a.setFetch(mrezaKojaVisi());
-
-    a.evalIn(`ACTIVE='zajed'; zajUcitaj();`);
-    await pauza(250);
-
-    assert.equal(a.evalIn('ZAJ.ucitava'), false,
-      'zastavica je i dalje podignuta — svaki sledeći pokušaj izlazi na prvom redu');
-    assert.equal(a.evalIn('ZAJ.greska'), 'mreza',
-      'neuspeh nije zabeležen, pa se grana sa dugmetom „Pokušaj ponovo" ne iscrtava');
-
-    a.evalIn('renderZajednica()');
-    assert.match(a.evalIn(`document.querySelector('#pg-zajed').innerHTML`), /zaj-opet/,
-      'čovek nema nijedno dugme kojim bi pokušao ponovo');
-  });
-
-  test('drugi pokušaj posle utihle mreže zaista izađe na mrežu', async () => {
-    /* Spuštena zastavica ne vredi ništa ako `zajMozdaOsvezi` i dalje odustaje. */
-    const a = loadApp();
-    prijavljen(a);
-    a.evalIn('MREZA_ROK.brz = 60');
-    let pozivi = 0;
-    a.setFetch(mrezaKojaVisi(() => { pozivi++; }));
-
-    a.evalIn('zajUcitaj()');
-    await pauza(250);
-    const posle1 = pozivi;
-    assert.ok(posle1 > 0, 'priprema: prvi pokušaj nije ni izašao');
-
-    a.evalIn('zajUcitaj()');
-    await pauza(250);
-    assert.ok(pozivi > posle1, 'drugi pokušaj je odbijen zbog zaostale zastavice');
-  });
-
-  test('istorija verzija se ne zaključa iz istog razloga', async () => {
-    const a = loadApp();
-    prijavljen(a);
-    a.evalIn('MREZA_ROK.brz = 60');
-    a.setFetch(mrezaKojaVisi());
-
-    a.evalIn('istorijaUcitaj()');
-    await pauza(250);
-    assert.equal(a.evalIn('IST.ucitava'), false, 'IST.ucitava je ostala podignuta');
-  });
-});
-
-describe('Rok se bira po odredištu', () => {
-
-  test('sopstvene /api putanje dobijaju DUŽI rok od Supabase-a', async () => {
-    /* Naše funkcije imaju `maxDuration` 60 s i same paze na svoj rok (v.
-       `ROK_MS` u api/analyze.js). Klijentski rok kraći od toga sekao bi pozive
-       koji uredno rade — jedna sinhronizacija sa intervals.icu legitimno traje
-       i pola minuta. Zamka drži baš taj odnos, ne konkretne brojeve. */
-    const a = loadApp();
-    a.evalIn('MREZA_ROK.brz = 60; MREZA_ROK.dug = 5000;');
-    a.setFetch(mrezaKojaVisi());
-
-    a.evalIn('__brzPukao=false; __dugPukao=false;');
-    a.evalIn(`fetchRok('https://x.supabase.co/rest/v1/nesto').then(()=>{},()=>{ __brzPukao=true; });`);
-    a.evalIn(`fetchRok('/api/icu',{method:'POST'}).then(()=>{},()=>{ __dugPukao=true; });`);
-    await pauza(250);
-    const brzPukao = a.evalIn('__brzPukao'), dugPukao = a.evalIn('__dugPukao');
-
-    assert.equal(brzPukao, true, 'Supabase poziv nije prekinut ni posle isteka kratkog roka');
-    assert.equal(dugPukao, false,
-      'poziv ka sopstvenoj /api putanji je presečen pre nego što je server stigao da odgovori');
-  });
-
-  test('pozivalac koji sam donese `signal` zadržava svoj', async () => {
-    /* Lanac pokušaja ka modelu u api/analyze.js radi baš tako; pravilo mora da
-       važi i ovde, inače bi omotač tiho gazio tuđu odluku. */
-    const a = loadApp();
-    let dobijen = null;
-    a.setFetch(async (u, o) => { dobijen = o.signal; return { ok: true }; });
-    a.evalIn(`__moj = AbortSignal.timeout(99999); fetchRok('/api/push', {signal: __moj});`);
-    await pauza(20);
-    assert.equal(dobijen, a.evalIn('__moj'), 'omotač je pregazio signal koji je pozivalac doneo');
-  });
-});
 
 describe('Serverske funkcije ne izlaze na mrežu bez roka', () => {
   /* Ovde se ne meri stanje ekrana nego SAM ZAHTEV: šta je funkcija prosledila
