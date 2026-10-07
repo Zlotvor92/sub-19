@@ -15,13 +15,12 @@ import {
   icuRunsByDate,
   icuWorkPace,
   LAPS_VERSION,
-  mergeDay,
+  importedDay,
   needsIcuDetails,
   needsIcuStreams,
   perKmDetail,
   perKmStale,
   PERKM_VERSION,
-  pickClosest,
   realignPlan,
   type IcuActivity
 } from '../../domain/activities';
@@ -238,11 +237,14 @@ export function createIcuSync(deps: IcuSyncDeps) {
     for (const date of Object.keys(byDate)) {
       const d = plan.byDate.get(date as IsoDate);
       if (!d || d.rest || (d.km == null && d.tag !== 'snaga')) continue;
-      /* Isto kao na Strava putanji: sva trčanja tog dana ulaze u obim, `a` je nosilac imena/opisa/ID-ja. */
-      const merged = mergeDay(byDate[date] ?? []);
-      if (!merged.taken.length) continue;
-      const a = pickClosest(merged.taken, d.km);
-      const imp = icuImportedEntry(s.log[d.id], date, merged, a);
+      /* Trka je samo glavna aktivnost; ostali dani i dalje sabiraju sva trčanja. */
+      const {
+        merged,
+        activity: a,
+        current
+      } = importedDay(byDate[date] ?? [], d.tag, s.log[d.id], d.km, 'icu');
+      if (!a || !merged.taken.length) continue;
+      const imp = icuImportedEntry(current, date, merged, a);
       s.log[d.id] = imp.entry;
       if (imp.imported) {
         const side = syncSideRecords(s.knee, s.kg, d, imp.entry, deps.today());

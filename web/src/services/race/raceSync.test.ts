@@ -235,3 +235,73 @@ it('does not merge ambiguous cross-provider matches', async () => {
   expect(await s.sync.refresh('day', '2026-10-04')).toMatchObject({ ok: false, splits: 0 });
   expect(s.icu.streams).not.toHaveBeenCalled();
 });
+
+it('repairs a previously summed race and replaces a warm-up ID without modifying notes or official context', async () => {
+  const s = setup();
+  Object.assign(s.get(), {
+    lock: false,
+    km: 2.9,
+    sec: 930,
+    hr: 150,
+    spojeno: 2,
+    icuId: 'warm',
+    stravaId: 41,
+    raceAi: { context: { distanceM: 2500, officialSec: 770 }, aiText: 'pogrešan prosek' }
+  });
+  s.icu.activities.mockImplementation(() =>
+    Promise.resolve(
+      success({
+        activities: [
+          { id: 'warm', datum: '2026-10-04', km: 0.4, sec: 180, hr: 120, zonePuls: [] },
+          { id: 'i1', datum: '2026-10-04', km: 2.5, sec: 750, hr: 158, zonePuls: [] }
+        ]
+      })
+    )
+  );
+  s.strava.get.mockImplementation(
+    (path) =>
+      Promise.resolve(
+        success(
+          path.includes('/athlete/activities')
+            ? [
+                {
+                  id: 41,
+                  type: 'Run',
+                  start_date_local: '2026-10-04T09:00:00',
+                  distance: 400,
+                  moving_time: 180
+                },
+                {
+                  id: 42,
+                  type: 'Run',
+                  start_date_local: '2026-10-04T09:10:00',
+                  distance: 2500,
+                  moving_time: 750
+                }
+              ]
+            : path.includes('/streams')
+              ? streams
+              : {
+                  distance: 2500,
+                  moving_time: 750,
+                  elapsed_time: 760,
+                  start_date_local: '2026-10-04T09:10:00'
+                }
+        )
+      ) as never
+  );
+  expect(await s.sync.refresh('day', '2026-10-04')).toMatchObject({ ok: true, splits: 3 });
+  expect(s.icu.streams).toHaveBeenCalledWith(expect.anything(), ['i1']);
+  expect(s.strava.get).toHaveBeenCalledWith('/activities/42');
+  expect(s.strava.get).not.toHaveBeenCalledWith('/activities/41');
+  expect(s.get()).toMatchObject({
+    km: 2.5,
+    sec: 750,
+    hr: 158,
+    icuId: 'i1',
+    note: 'ručno',
+    raceDetails: { version: 2 },
+    raceAi: { context: { distanceM: 2500, officialSec: 770 }, dataUpdated: true }
+  });
+  expect(s.get()['spojeno']).toBeUndefined();
+});

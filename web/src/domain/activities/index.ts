@@ -55,3 +55,5 @@ export {
   type IcuRun,
   type ImportedIcuRun
 } from './icuImport';
+
+export { importedDay, isRaceDay, raceDistanceKm, selectRaceActivity } from './raceDay';

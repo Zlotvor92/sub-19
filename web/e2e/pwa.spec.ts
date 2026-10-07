@@ -65,7 +65,7 @@ test('ažuriranje: novi service worker čeka klik, traka „Osveži" ga aktivira
 }) => {
   await ready(page);
   const [oldCache] = await cacheNames(page);
-  expect(oldCache).toMatch(/^sub19-cache-v286-[0-9a-f]{8}$/);
+  expect(oldCache).toMatch(/^sub19-cache-v287-[0-9a-f]{8}$/);
   await expect(page.getByText('Dostupna je nova verzija')).toHaveCount(0);
 
   // „novi deploy": sw.js dobija drugačija bajta

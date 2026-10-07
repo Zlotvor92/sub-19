@@ -94,6 +94,7 @@ for (const fallback of [false, true]) {
       return {
         body: {
           treninzi: [
+            { id: 'warmup', datum: '2026-01-14', tip: 'Run', km: 0.4, sec: 180, hr: 120 },
             {
               id: 'i42',
               datum: '2026-01-14',
@@ -112,6 +113,13 @@ for (const fallback of [false, true]) {
     });
     backend.api.set('https://www.strava.com/api/v3/athlete/activities', () => ({
       body: [
+        {
+          id: 41,
+          type: 'Run',
+          start_date_local: '2026-01-14T08:45:00',
+          distance: 400,
+          moving_time: 180
+        },
         {
           id: 42,
           type: 'Run',

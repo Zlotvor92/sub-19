@@ -13,3 +13,9 @@ The race panel offers “Osveži kilometarske prolaze” and a mobile table, inc
 The backend sends all bounded kilometer rows, source-labeled laps, source-specific supplemental summaries and ICU metrics to the model. It distinguishes official result, GPS distance, moving time and elapsed time. Morning wellness is labeled as preceding the race, not post-race recovery. The prompt requires concrete pacing observations and excludes VDOT conclusions from controlled or first-distance races. Model quality is not verified by mocked tests; these tests verify that the complete race data reaches the model boundary.
 
 Validation includes stream math (sparse samples, stops, missing sensors, corrupt streams and partial kilometers), existing race backfill, both-provider fallback, incomplete/ambiguous activity rejection, preservation on failure, account changes, payload privacy, and browser flows for ICU streams and Strava metric splits through saved AI results and reloads.
+
+## v287: one activity per race
+
+Race imports (plan tag `trka` or saved race context) now choose the individual activity matching the race distance before aggregating metrics. A separate warm-up/cool-down is excluded from race distance, duration, weighted HR, elevation and pace. Ordinary training days retain the original multi-run aggregation. Race context distance takes precedence over the ordinary plan distance; a stale warm-up ID cannot override it. Missing or ambiguous race files do not overwrite the saved result.
+
+Race details cache version 2 forces existing entries to be verified again. Explicit race refresh also repairs unlocked imported totals and removes the old merged-run marker, while preserving manual/locked data, notes, official result, context and analyses. Regression tests cover a 400m warm-up with a half marathon in both providers and ordinary-day aggregation.

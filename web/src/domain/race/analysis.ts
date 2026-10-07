@@ -34,7 +34,7 @@ export function racePayload(
     icu: log['icu'],
     ...entered
   };
-  const selected = d['version'] === 1 && d['date'] === context.date;
+  const selected = (d['version'] === 1 || d['version'] === 2) && d['date'] === context.date;
   return {
     analysisType: 'race',
     race: context,

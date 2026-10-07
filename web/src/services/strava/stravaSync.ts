@@ -14,10 +14,9 @@ import {
   hasDetails,
   importedEntry,
   kmByDate,
-  mergeDay,
+  importedDay,
   perKmDetail,
   perKmStale,
-  pickClosest,
   realignPlan,
   runsByDate,
   workLapsPace,
@@ -227,11 +226,13 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
       const d = plan.byDate.get(date as IsoDate);
       /* trkački dani plana + dan snage (v. `realignPlan`) */
       if (!d || d.rest || (d.km == null && d.tag !== 'snaga')) continue;
-      const merged = mergeDay(byDate[date] ?? []);
-      if (!merged.taken.length) continue;
-      /* Sva trčanja tog dana ulaze u obim; `a` je samo nosilac imena, opisa i ID-ja. */
-      const a = pickClosest(merged.taken, d.km);
-      const imp = importedEntry(s.log[d.id], date, merged, a);
+      const {
+        merged,
+        activity: a,
+        current
+      } = importedDay(byDate[date] ?? [], d.tag, s.log[d.id], d.km, 'strava');
+      if (!a || !merged.taken.length) continue;
+      const imp = importedEntry(current, date, merged, a);
       s.log[d.id] = imp.entry;
       if (imp.imported) {
         const side = syncSideRecords(s.knee, s.kg, d, imp.entry, deps.today());

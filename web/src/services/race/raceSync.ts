@@ -1,3 +1,4 @@
+import { raceDistanceKm, selectRaceActivity } from '../../domain/activities';
 import { raceSplits, stravaRaceSplits, type RaceSplit } from '../../domain/race/splits';
 import { icuCanReadActivities, icuConnected, type IcuLink } from '../../domain/icu';
 import type { LogEntry } from '../../domain/state';
@@ -21,7 +22,7 @@ export interface RaceActivityDetails {
   icu?: Record<string, unknown>;
 }
 export interface RaceDetails extends RaceActivityDetails {
-  version: 1;
+  version: 2;
   date: string;
   providers: Partial<Record<'icu' | 'strava', RaceActivityDetails>>;
 }
@@ -92,8 +93,10 @@ export function createRaceSync(deps: Deps) {
     const log = deps.get(id);
     if (!log) return { ok: false, error: 'Trčanje nije sačuvano.', splits: 0 };
     const cached = obj(log['raceDetails']);
+    const targetKm =
+      raceDistanceKm(log) ?? ((num(log['spojeno']) ?? 0) > 1 ? (log.km ?? null) : null);
     const cacheMatches =
-      cached['version'] === 1 &&
+      cached['version'] === 2 &&
       cached['date'] === date &&
       (!activityKey(log[cached['source'] === 'icu' ? 'icuId' : 'stravaId']) ||
         activityKey(log[cached['source'] === 'icu' ? 'icuId' : 'stravaId']) ===
@@ -116,8 +119,9 @@ export function createRaceSync(deps: Deps) {
       const runs = list.ok
         ? list.data.activities.filter((a) => a.datum === date && /run/i.test(a.tip || 'Run'))
         : [];
-      const a =
-        activityKey(log['icuId']) != null
+      const a = targetKm
+        ? selectRaceActivity(runs, targetKm, log['icuId'])
+        : activityKey(log['icuId']) != null
           ? runs.find((a) => a.id === activityKey(log['icuId']))
           : match(
               runs,
@@ -179,7 +183,7 @@ export function createRaceSync(deps: Deps) {
     }
     if (hasStrava) {
       let activityId = activityKey(log['stravaId']);
-      if (!activityId && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      if ((!activityId || targetKm != null) && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
         // Broad UTC window; filter by the athlete's local calendar date.
         const epoch = Date.parse(`${date}T00:00:00Z`) / 1000;
         const list = await deps.strava.get(
@@ -193,15 +197,21 @@ export function createRaceSync(deps: Deps) {
                 a.start_date_local?.slice(0, 10) === date
             )
           : [];
-        activityId =
-          match(
-            runs,
-            providers.icu
-              ? { km: providers.icu.km, sec: providers.icu.movingSec ?? undefined }
-              : log,
-            (a) => (a.distance ?? 0) / 1000,
-            (a) => a.moving_time ?? null
-          )?.id?.toString() ?? null;
+        if (list.ok)
+          activityId = targetKm
+            ? (selectRaceActivity(
+                runs,
+                providers.icu?.km ?? targetKm,
+                log['stravaId']
+              )?.id.toString() ?? null)
+            : (match(
+                runs,
+                providers.icu
+                  ? { km: providers.icu.km, sec: providers.icu.movingSec ?? undefined }
+                  : log,
+                (a) => (a.distance ?? 0) / 1000,
+                (a) => a.moving_time ?? null
+              )?.id.toString() ?? null);
         if (!list.ok) errors.push(`Strava: ${list.error}`);
       }
       if (activityId) {
@@ -262,23 +272,41 @@ export function createRaceSync(deps: Deps) {
     if (changed()) return { ok: false, error: 'Nalog je promenjen.', splits: 0 };
     // A complete alternative beats a truncated primary file; never concatenate the two series.
     const available = [providers.icu, providers.strava].filter(
-      (x): x is RaceActivityDetails => !!x && complete(x)
+      (x): x is RaceActivityDetails =>
+        !!x &&
+        complete(x) &&
+        (!targetKm || Math.abs(x.km - targetKm) <= Math.max(0.25, targetKm * 0.15))
     );
     for (const p of [providers.icu, providers.strava]) {
-      if (p?.perKm.length && !complete(p))
+      if (
+        p?.perKm.length &&
+        (!complete(p) || (targetKm && Math.abs(p.km - targetKm) > Math.max(0.25, targetKm * 0.15)))
+      )
         errors.push(`${p.source}: Tokovi ne pokrivaju celu distancu aktivnosti.`);
     }
     const chosen = available[0];
     if (chosen) {
       const current = deps.get(id);
       if (!current) return { ok: false, error: 'Trčanje više nije dostupno.', splits: 0 };
-      const raceDetails: RaceDetails = { ...chosen, version: 1, date, providers };
+      const raceDetails: RaceDetails = { ...chosen, version: 2, date, providers };
       const raceAi = { ...obj(current['raceAi']) };
       if (JSON.stringify(cached['perKm']) !== JSON.stringify(chosen.perKm) && !raceAi['aiPosao']) {
         delete raceAi['aiCount'];
         raceAi['dataUpdated'] = !!raceAi['aiText'];
       }
-      deps.set(id, { ...current, raceDetails, raceAi });
+      const next: LogEntry = { ...current, raceDetails, raceAi };
+      // Repair old aggregated imports; locked/manual values remain the user's own input.
+      if (!current.lock && (current.src === 'icu' || current.src === 'strava')) {
+        next.km = chosen.km;
+        if (chosen.movingSec != null) next.sec = chosen.movingSec;
+        if (chosen.hr != null) next.hr = chosen.hr;
+        if (chosen.maxHr != null) next['maxHr'] = chosen.maxHr;
+        if (chosen.elevGain != null) next['elevGain'] = chosen.elevGain;
+        next[chosen.source === 'icu' ? 'icuId' : 'stravaId'] = chosen.activityId;
+        next['perKm'] = chosen.perKm;
+        delete next['spojeno'];
+      }
+      deps.set(id, next);
       return {
         ok: true,
         error: errors.length ? errors.join(' ') : null,
