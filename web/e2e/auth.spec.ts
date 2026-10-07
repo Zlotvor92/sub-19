@@ -74,12 +74,21 @@ test('prijava: povratak sa POGREŠNIM nonce-om se odbija (CSRF) — nema sesije,
   expect(JSON.parse(stored ?? '{}')).toMatchObject({ access: null, refresh: null, email: null });
 });
 
-test('odjava: sesija se briše, kapija se vraća i ostaje posle ponovnog učitavanja', async ({
+test('odjava: kapija ostaje posle učitavanja, a plan se vraća istom nalogu i bez servera', async ({
   page
 }) => {
   await seedSession(page);
-  await installBackend(page);
+  const backend = await installBackend(page);
   await createPlan(page);
+  const ownerKey = 'sub19-v1:account:u-e2e';
+  await expect
+    .poll(() => page.evaluate((key) => localStorage.getItem(key), ownerKey))
+    .not.toBeNull();
+  const savedPlan = await page.evaluate(
+    (key) => JSON.parse(localStorage.getItem(key) ?? '{}').genPlan,
+    ownerKey
+  );
+  expect(savedPlan).toBeTruthy();
   await page.getByRole('button', { name: 'Podešavanja' }).click();
   await page.getByRole('tab', { name: 'Nalog' }).click();
   await page.locator('details[data-k="Nalog"] > summary').click();
@@ -89,8 +98,28 @@ test('odjava: sesija se briše, kapija se vraća i ostaje posle ponovnog učitav
   await expect(page.getByRole('heading', { name: 'Prijavi se da nastaviš' })).toBeVisible();
   const left = await page.evaluate(() => localStorage.getItem('sub19_sb'));
   expect(JSON.parse(left ?? '{}')).toMatchObject({ access: null, refresh: null });
-  // podaci na uređaju ostaju (plan se ne briše odjavom)
-  expect(await page.evaluate(() => localStorage.getItem('sub19-v1'))).toContain('genPlan');
+  // Odjava aktivira gosta; plan ostaje sačuvan samo u prostoru vlasnika.
+  expect(await page.evaluate(() => localStorage.getItem('sub19-local-owner'))).toBe('__guest__');
+  expect(await page.evaluate(() => localStorage.getItem('sub19-v1'))).toBeNull();
+  expect(
+    await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? '{}').genPlan, ownerKey)
+  ).toEqual(savedPlan);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Prijavi se da nastaviš' })).toBeVisible();
+  // Ponovna prijava vraća lokalni plan čak i kada cloud sync nije dostupan.
+  backend.offline = true;
+  await page.route(`${SUPABASE}/auth/v1/authorize**`, async (route) => {
+    const back = new URL(route.request().url()).searchParams.get('redirect_to') ?? '';
+    await route.fulfill({
+      status: 302,
+      headers: { location: `${back}${hash('e2e@sub20.test')}` }
+    });
+  });
+  await page.getByRole('button', { name: 'Prijavi se Google nalogom' }).click();
+  await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('sub19-local-owner'))).toBe('u-e2e');
+  expect(
+    await page.evaluate(() => JSON.parse(localStorage.getItem('sub19-v1') ?? '{}').genPlan)
+  ).toEqual(savedPlan);
 });
