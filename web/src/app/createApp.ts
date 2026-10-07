@@ -409,6 +409,7 @@ export function createApp(deps: AppDeps): App {
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms))
   });
   const raceAi = createAiJobs({
+    textMax: 6000,
     accountKey,
     api: appApi,
     log: raceAiLogPort,

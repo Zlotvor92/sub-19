@@ -32,6 +32,8 @@ export interface AiLogPort {
 }
 
 export interface AiJobsDeps {
+  /** Race reports use the same 6000-character limit as server storage. */
+  textMax?: number;
   api: AppApi;
   log: AiLogPort;
   now: () => number;
@@ -82,7 +84,7 @@ export function createAiJobs(deps: AiJobsDeps) {
     const st = r.data.stanje;
     if (st === 'gotovo') {
       update(dayId, (l) => {
-        l['aiText'] = text(r.data.tekst).slice(0, AI_TEXT_MAX);
+        l['aiText'] = text(r.data.tekst).slice(0, deps.textMax ?? AI_TEXT_MAX);
         l['aiAt'] = deps.now();
         l['aiCount'] = (Number(l['aiCount']) || 0) + 1;
         delete l['aiPosao'];

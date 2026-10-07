@@ -1181,12 +1181,11 @@ describe('Analiza se sama zaustavi pre Vercelovog noza', () => {
   });
 
   test('izlazni budžet je srazmeran zadatku', () => {
-    /* 8000 tokena je bilo daleko iznad potrebe (analiza je desetak recenica),
-       a svaki dozvoljen token je i vreme. */
-    const m = /maxOutputTokens: (\d+)/.exec(src);
-    assert.ok(m, 'nema budzeta za izlaz');
-    assert.ok(+m[1] <= 4000, `budzet je ${m[1]} tokena — to je opet esej, ne analiza`);
-    assert.ok(+m[1] >= 1500, `budzet od ${m[1]} tokena ne ostavlja mesta ni za razmisljanje`);
+    /* Trka ima pet odeljaka i sve prolaze; trening ostaje kratak. */
+    const m = /maxOutputTokens: systemText === RACE_SYSTEM \? (\d+) : (\d+)/.exec(src);
+    assert.ok(m, 'nema zasebnog budzeta za trku i trening');
+    assert.ok(+m[1] <= 6000 && +m[1] >= 4000, 'trka treba prostor za kompletan odgovor');
+    assert.ok(+m[2] <= 4000 && +m[2] >= 1500, 'budzet treninga ostaje srazmeran zadatku');
   });
 });
 

@@ -16,7 +16,13 @@ test('ručna trka: zaseban AI zahtev i rezultat opstaju posle ponovnog učitavan
         b.posao === 'start'
           ? { posaoId: 'race-job' }
           : b.posao === 'citaj'
-            ? { stanje: 'gotovo', tekst: 'Prvi polumaraton je završen uz kontrolisan napor.' }
+            ? {
+                stanje: 'gotovo',
+                tekst:
+                  'Prvi polumaraton je završen uz kontrolisan napor.\n\n' +
+                  'Potpun tekst analize. '.repeat(205) +
+                  '\n\n**Sledeći koraci**\nOdmori, zatim lagano trči. Sledeću trku otvori kontrolisano.'
+              }
             : {}
     };
   });
@@ -46,8 +52,14 @@ test('ručna trka: zaseban AI zahtev i rezultat opstaju posle ponovnog učitavan
     session: { tag: 'trka' }
   });
   await expect.poll(() => JSON.stringify(backend.row?.data)).toContain('raceAi');
+  await expect(
+    form.getByText('Odmori, zatim lagano trči. Sledeću trku otvori kontrolisano.')
+  ).toBeVisible();
   await page.reload();
   await tab(page, 'Trka').click();
+  await expect(
+    form.getByText('Odmori, zatim lagano trči. Sledeću trku otvori kontrolisano.')
+  ).toBeVisible();
   await expect(form.getByText('Prvi polumaraton je završen uz kontrolisan napor.')).toBeVisible();
 });
 
