@@ -1,6 +1,7 @@
 /* AI ANALIZA: spona između stanja i servisa. Zahtev za model gradi domen (`buildAiPayload`), tok vodi servis (`createAiJobs`); ovde se samo
    čitaju store-ovi i upisuje zapis dana. */
 
+import { racePayload, type RaceContext } from '../domain/race/analysis';
 import { buildAiPayload, buildTrendSummary, goalContext } from '../domain/ai';
 import { parseIsoDate } from '../domain/date';
 import { effectiveRaceDate } from '../domain/day';
@@ -77,4 +78,55 @@ export function aiTrendRequest(
     goalVdot: refs.goalVdot
   });
   return { summary, goalCtx: goalContext(meta) };
+}
+
+// LogEntry is an extensible record; existing clients preserve this nested namespace.
+const AI_FIELDS = ['aiText', 'aiAt', 'aiCount', 'aiGreska', 'aiPosao'] as const;
+export const raceAiLogPort: AiLogPort = {
+  get(id) {
+    const base = aiLogPort.get(id);
+    if (!base) return undefined;
+    const out = { ...base };
+    for (const key of AI_FIELDS) delete out[key];
+    const race = base['raceAi'];
+    if (race && typeof race === 'object')
+      for (const key of AI_FIELDS) {
+        if (key in race) out[key] = (race as Record<string, unknown>)[key];
+      }
+    return out;
+  },
+  set(id, entry) {
+    const base = aiLogPort.get(id);
+    if (!base) return;
+    const old = base['raceAi'];
+    const race: Record<string, unknown> = { ...(old && typeof old === 'object' ? old : {}) };
+    for (const key of AI_FIELDS) {
+      if (key in entry) race[key] = entry[key];
+      else delete race[key];
+    }
+    aiLogPort.set(id, { ...base, raceAi: race });
+  },
+  ids: () => aiLogPort.ids().filter((id) => !!aiLogPort.get(id)?.['raceAi'])
+};
+export function aiRacePayloadFor(
+  day: ResolvedDay,
+  context: RaceContext
+): Record<string, unknown> | null {
+  const log = aiLogPort.get(day.id);
+  if (!log) return null;
+  const enriched = aiPayloadFor(day);
+  return {
+    ...enriched,
+    ...racePayload(log, context, enriched?.['entered'] as Record<string, unknown> | undefined)
+  };
+}
+
+export function saveRaceContext(id: string, context: RaceContext): void {
+  const base = aiLogPort.get(id);
+  if (!base) return;
+  const old = base['raceAi'];
+  aiLogPort.set(id, {
+    ...base,
+    raceAi: { ...(old && typeof old === 'object' ? old : {}), context }
+  });
 }

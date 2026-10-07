@@ -38,6 +38,7 @@ export interface AiJobsDeps {
   online: () => boolean;
   isAuthed: () => boolean;
   isOwner: () => boolean;
+  accountKey?: () => string;
   sleep: (ms: number) => Promise<void>;
 }
 
@@ -64,10 +65,12 @@ export function createAiJobs(deps: AiJobsDeps) {
 
   /** Jedan pogled u bazu. */
   async function check(dayId: string): Promise<CheckResult> {
+    const account = deps.accountKey?.();
     const l0 = log.get(dayId);
     const job = aiJobOf(l0);
     if (!l0 || !job) return null;
     const r = await api.post('/api/analyze', { posao: 'citaj', posaoId: job.id }, Read);
+    if (account !== deps.accountKey?.() || aiJobOf(log.get(dayId))?.id !== job.id) return null;
     if (!r.ok) {
       /* 404 znači da je red istekao ili obrisan — nema šta da se čeka. */
       if (r.status === 404) {
@@ -113,8 +116,10 @@ export function createAiJobs(deps: AiJobsDeps) {
 
   /** Pita na svake tri sekunde, najviše minut i po. Ako ne dočeka, posao ostaje zapisan — ništa nije izgubljeno. */
   async function wait(dayId: string): Promise<CheckResult> {
+    const account = deps.accountKey?.();
     for (let i = 0; i < POLL_TIMES; i++) {
       await deps.sleep(POLL_EVERY_MS);
+      if (account !== deps.accountKey?.()) return null;
       const st = await check(dayId);
       if (st === 'gotovo' || st === 'greska') return st;
       if (st === null) return 'gotovo'; // neko drugi ga je već pokupio
@@ -132,7 +137,9 @@ export function createAiJobs(deps: AiJobsDeps) {
     onStarted?: () => void
   ): Promise<RunResult> {
     if (!aiRemaining(log.get(dayId), deps.isOwner())) return { phase: null, error: null };
+    const account = deps.accountKey?.();
     const started = await api.post('/api/analyze', { posao: 'start' }, Started);
+    if (account !== deps.accountKey?.()) return { phase: null, error: null };
     if (!started.ok) return { phase: 'greska', error: started.error };
     update(dayId, (l) => {
       l['aiPosao'] = { id: started.data.posaoId, at: deps.now() };
@@ -147,6 +154,7 @@ export function createAiJobs(deps: AiJobsDeps) {
         Any
       )
       .catch(() => undefined);
+    if (account !== deps.accountKey?.()) return { phase: null, error: null };
     const phase = await wait(dayId);
     return {
       phase,
@@ -162,6 +170,7 @@ export function createAiJobs(deps: AiJobsDeps) {
    * ako je red još u stanju „radi" — ponovljen poziv nad poslom koji uveliko računa ne može da ga pokvari ni udvostruči.
    */
   async function retry(dayId: string, payload: Record<string, unknown>): Promise<RunResult> {
+    const account = deps.accountKey?.();
     const job = aiJobOf(log.get(dayId));
     if (!job) return { phase: null, error: null };
     update(dayId, (l) => {
@@ -172,6 +181,7 @@ export function createAiJobs(deps: AiJobsDeps) {
       { posao: 'radi', posaoId: job.id, danId: dayId, ...payload },
       Any
     );
+    if (account !== deps.accountKey?.()) return { phase: null, error: null };
     const phase = await wait(dayId);
     return {
       phase,
@@ -188,11 +198,13 @@ export function createAiJobs(deps: AiJobsDeps) {
     if (collecting || !deps.online() || !deps.isAuthed()) return false;
     const days = log.ids().filter((id) => aiJobOf(log.get(id)));
     if (!days.length) return false;
+    const account = deps.accountKey?.();
     collecting = true;
     let changed = false;
     /* try/finally: da je `check` ikad bacio, zastavica bi ostala podignuta i pokupljanje bi TIHO prestalo do sledećeg učitavanja. */
     try {
       for (const id of days.slice(0, 5)) {
+        if (account !== deps.accountKey?.()) break;
         const st = await check(id);
         if (st === 'gotovo' || st === 'greska') changed = true;
       }

@@ -96,7 +96,7 @@ describe('Vlasnik nema limit AI analiza', () => {
   async function pozoviAnalizu(korisnik) {
     const stariFetch = globalThis.fetch;
     const env = {
-      SUPABASE_URL: 'https://x.supabase.co', SUPABASE_ANON_KEY: 'anon',
+      SUPABASE_URL: 'https://x.supabase.co', SUPABASE_ANON_KEY: 'anon', SUPABASE_SERVICE_ROLE_KEY: 'srv',
       GEMINI_API_KEY: 'k', ADMIN_EMAIL: 'vlasnik@t.rs', VERCEL_URL: 'x.vercel.app'
     };
     const staro = {};
@@ -106,10 +106,10 @@ describe('Vlasnik nema limit AI analiza', () => {
       const s = String(u);
       const J = (b) => ({ ok: true, status: 200, json: async () => b, text: async () => JSON.stringify(b) });
       if (s.includes('/auth/v1/user')) return J(korisnik);
-      if (s.includes('check_and_bump_api_usage')) {
+      if ((s.includes('check_and_bump_api_usage') || s.includes('ai_posao_otvori'))) {
         brojano++;
         try { limiti.push(JSON.parse(o.body).p_limit); } catch (e) { limiti.push(null); }
-        return J({});
+        return J(s.includes('ai_posao_otvori')?'11111111-1111-4111-8111-111111111111':{});
       }
       if (s.includes('ai_posao') && o && o.method === 'POST') return J([{ id: 'p1' }]);
       return J({});

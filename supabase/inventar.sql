@@ -30,6 +30,7 @@ with ocekivano as (
     -- pogledi (v. app-stats.sql)
     'pogled:app_stats',
     -- funkcije
+    'funkcija:ai_posao_kvota_zastiti','funkcija:ai_posao_otvori',
     'funkcija:ai_posao_dodirni','funkcija:ai_posao_nov','funkcija:ai_posao_prelaz',
     'funkcija:check_and_bump_api_usage','funkcija:check_and_bump_bug_usage',
     'funkcija:check_and_bump_endpoint','funkcija:obrisi_naloge',
@@ -37,7 +38,7 @@ with ocekivano as (
     'funkcija:user_state_zapamti','funkcija:zajednica_profil_dodirni',
     'funkcija:zajednica_vidljiv_ja',
     -- okidači
-    'okidač:ai_posao_dodirni_trg','okidač:ai_posao_nov_trg','okidač:ai_posao_prelaz_trg',
+    'okidač:ai_posao_kvota_zastiti_trg','okidač:ai_posao_dodirni_trg','okidač:ai_posao_nov_trg','okidač:ai_posao_prelaz_trg',
     'okidač:push_pretplata_dodirni_trg','okidač:user_state_touch_trg',
     'okidač:user_state_zapamti_trg','okidač:zajednica_profil_dodirni_trg'
   ] ) as kljuc

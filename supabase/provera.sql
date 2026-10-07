@@ -389,3 +389,17 @@ order by 1;
 --
 -- Puštanje bilo kog od tih fajlova dvaput je bezbedno.
 -- =====================================================================
+
+-- Post-migration effective access (no private data): all rows should show unsafe_access=false.
+select c.relname as tabela,
+       has_table_privilege('authenticated',c.oid,'TRUNCATE')
+       or has_table_privilege('authenticated',c.oid,'TRIGGER')
+       or has_table_privilege('authenticated',c.oid,'REFERENCES') as unsafe_access
+from pg_class c join pg_namespace n on n.oid=c.relnamespace
+where n.nspname='public' and c.relkind='r';
+select p.oid::regprocedure as funkcija,
+       has_function_privilege('anon',p.oid,'EXECUTE') as anon_execute,
+       has_function_privilege('authenticated',p.oid,'EXECUTE') as authenticated_execute,
+       has_function_privilege('service_role',p.oid,'EXECUTE') as service_execute
+from pg_proc p where p.pronamespace='public'::regnamespace
+and p.proname in('ai_posao_otvori','obrisi_naloge');

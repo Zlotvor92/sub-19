@@ -2,7 +2,17 @@ import { useEffect, useState } from 'react';
 import { aiCardView, parseAnalysis, remainingText } from '../../domain/ai';
 import type { ResolvedDay } from '../../domain/plan';
 import { getApp } from '../../app/appContext';
-import { aiPayloadFor } from '../../stores/aiActions';
+import {
+  aiPayloadFor,
+  aiRacePayloadFor,
+  raceAiLogPort,
+  saveRaceContext
+} from '../../stores/aiActions';
+import {
+  defaultRaceContext,
+  normalizeRaceContext,
+  type RaceContext
+} from '../../domain/race/analysis';
 import { ADMIN_UID } from '../../services/config';
 import { useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
@@ -38,8 +48,20 @@ type Local =
 /* Kartica analize je JEDAN element u više stanja: dok nema analize je jedan red (sama radnja, a napomena o izvoru podataka je njen
    podnaslov — pitanje „vredi li uopšte" stoji tamo gde se odlučuje); kad analiza postoji je puna kartica sa naslovom. Posao koji traje ima
    prednost UVEK, jer bi se inače posle povratka u aplikaciju činilo da se ništa nije pokrenulo. */
-export function AiCard({ day }: { day: ResolvedDay }) {
-  const log = useTrainingStore((s) => s.log[day.id]);
+export function AiCard({ day, raceContext }: { day: ResolvedDay; raceContext?: RaceContext }) {
+  const entry = useTrainingStore((s) => s.log[day.id]);
+  const race = raceContext != null || day.tag === 'trka';
+  const storedRace = entry?.['raceAi'];
+  const context =
+    raceContext ??
+    normalizeRaceContext(
+      storedRace && typeof storedRace === 'object'
+        ? (storedRace as Record<string, unknown>)['context']
+        : null,
+      defaultRaceContext(entry ?? {}, day.date)
+    );
+  const log = race ? raceAiLogPort.get(day.id) : entry;
+  const service = () => (race ? getApp().raceAi : getApp().ai);
   const [local, setLocal] = useState<Local>({ kind: 'idle' });
   const isOwner = useAuthStore((a) => a.hasSession && a.userId === ADMIN_UID);
   /* Starost posla se prati satom koji kuca dok posao traje: zaglavljen posao mora da dobije dugme i bez dodira. */
@@ -50,7 +72,7 @@ export function AiCard({ day }: { day: ResolvedDay }) {
     const t = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(t);
   }, [running]);
-  const view = aiCardView(day, log, { isOwner, now });
+  const view = aiCardView(race ? { ...day, tag: 'lako' } : day, log, { isOwner, now });
   if (view.kind === 'hidden') return null;
 
   const finish = (r: { phase: string | null; error: string | null }): void => {
@@ -59,18 +81,19 @@ export function AiCard({ day }: { day: ResolvedDay }) {
     else setLocal({ kind: 'idle' });
   };
   const start = (): void => {
-    const payload = aiPayloadFor(day);
+    const payload = race ? aiRacePayloadFor(day, context) : aiPayloadFor(day);
     if (!payload) return;
+    if (race) saveRaceContext(day.id, context);
     setLocal({ kind: 'starting' });
-    void getApp()
-      .ai.run(day.id, payload, () => setLocal({ kind: 'waiting' }))
+    void service()
+      .run(day.id, payload, () => setLocal({ kind: 'waiting' }))
       .then(finish);
   };
   const retry = (): void => {
-    const payload = aiPayloadFor(day);
+    const payload = race ? aiRacePayloadFor(day, context) : aiPayloadFor(day);
     if (!payload) return;
     setLocal({ kind: 'resending' });
-    void getApp().ai.retry(day.id, payload).then(finish);
+    void service().retry(day.id, payload).then(finish);
   };
 
   const hasText = view.kind === 'done' || (view.kind === 'running' && !!view.previous);
@@ -94,7 +117,7 @@ export function AiCard({ day }: { day: ResolvedDay }) {
             : local.text;
     return (
       <div className="card ai-card prazna" id={id}>
-        <DayHeader title="Analiza" extra={source} />
+        <DayHeader title={race ? 'Analiza trke' : 'Analiza'} extra={source} />
         <div className={`ai-out${local.kind === 'error' ? ' err' : ''}`}>{text}</div>
       </div>
     );
@@ -103,7 +126,7 @@ export function AiCard({ day }: { day: ResolvedDay }) {
   if (view.kind === 'running')
     return (
       <div className={className} id={id}>
-        <DayHeader title="Analiza" extra={view.source} />
+        <DayHeader title={race ? 'Analiza trke' : 'Analiza'} extra={view.source} />
         {view.stuck ? (
           <>
             <div className="ai-radi">
@@ -137,7 +160,7 @@ export function AiCard({ day }: { day: ResolvedDay }) {
   if (view.kind === 'done')
     return (
       <div className={className} id={id}>
-        <DayHeader title="Analiza" extra={view.source} />
+        <DayHeader title={race ? 'Analiza trke' : 'Analiza'} extra={view.source} />
         {view.error ? <div className="ai-radi err">{view.error}</div> : null}
         <div className="ai-out">
           <AnalysisText text={view.text} />
@@ -172,7 +195,7 @@ export function AiCard({ day }: { day: ResolvedDay }) {
           <Icon name="sparkle" />
         </span>
         <span className="ai-tt">
-          <b>Analiziraj trening</b>
+          <b>{race ? 'Analiziraj trku' : 'Analiziraj trening'}</b>
           <span>
             {view.source} · {remainingText(view.remaining)}
           </span>

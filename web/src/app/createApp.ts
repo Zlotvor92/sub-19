@@ -35,7 +35,7 @@ import { weekAnnouncements } from '../domain/push';
 import { toServerPayload } from '../domain/sync';
 import { currentPlan, useTrainingStore } from '../stores/trainingStore';
 import { createAiJobs, createTrendAi, type AiJobs } from '../services/ai/aiJobs';
-import { aiLogPort } from '../stores/aiActions';
+import { aiLogPort, raceAiLogPort } from '../stores/aiActions';
 import { ADMIN_UID } from '../services/config';
 import type { GeoPort } from '../services/weather/weatherSync';
 import { checkLoginReturn, parseAuthHash, jwtClaims } from '../lib/auth';
@@ -149,6 +149,7 @@ export interface App {
   /** Prognoza i lokacija (Open-Meteo, direktno). */
   weather: Integrations['weather'];
   /** AI analiza treninga: pokretanje, čekanje, pokupljanje rezultata. */
+  raceAi: AiJobs;
   ai: AiJobs & { trend: ReturnType<typeof createTrendAi> };
   /** Vlasničke radnje (`/api/broadcast`): mejl svima, spisak naloga, izazov nedelje. */
   admin: AdminApi;
@@ -398,8 +399,19 @@ export function createApp(deps: AppDeps): App {
 
   const isOwner = (): boolean => session.isAuthed() && session.state.userId === ADMIN_UID;
   const ai = createAiJobs({
+    accountKey,
     api: appApi,
     log: aiLogPort,
+    now,
+    online: () => (deps.online ? deps.online() : true),
+    isAuthed: () => session.isAuthed(),
+    isOwner,
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+  });
+  const raceAi = createAiJobs({
+    accountKey,
+    api: appApi,
+    log: raceAiLogPort,
     now,
     online: () => (deps.online ? deps.online() : true),
     isAuthed: () => session.isAuthed(),
@@ -487,6 +499,7 @@ export function createApp(deps: AppDeps): App {
       await integrations.consumeOAuthReturn(loc.search, deps.replaceUrl, loc.pathname);
       integrations.pullIfDue(60 * 60000);
       void ai.collectAll();
+      void raceAi.collectAll();
       community.publishOnStart();
       void community.withdrawIfDisabled();
       void push.refreshOnStart();
@@ -528,6 +541,7 @@ export function createApp(deps: AppDeps): App {
       await session.verify(deps.online ? deps.online() : true);
       integrations.pullIfDue(15 * 60000);
       void ai.collectAll();
+      void raceAi.collectAll();
     },
     adopt() {
       saver.save(collectPersisted());
@@ -594,6 +608,7 @@ export function createApp(deps: AppDeps): App {
     icu: integrations.icu,
     activities: integrations.activities,
     weather: integrations.weather,
+    raceAi,
     ai: { ...ai, trend: createTrendAi(appApi) },
     community,
     admin: createAdminApi(appApi),

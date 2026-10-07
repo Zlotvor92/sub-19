@@ -1629,3 +1629,38 @@
 .analysis:not(:has(.card)) {
   display: none;
 }
+
+/* Race context form follows the existing card/field sizing on phones. */
+.race-analysis .field {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+  color: var(--text-2);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+.race-analysis .field :is(input, select, textarea) {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 9px 12px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--r-2);
+  font-size: 16px;
+}
+.race-analysis .field textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.race-analysis .btn {
+  min-height: 44px;
+  padding: 10px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--r-2);
+}
+.race-analysis .ai-card {
+  margin-top: 16px;
+}

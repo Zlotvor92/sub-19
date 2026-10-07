@@ -1220,10 +1220,10 @@ describe('Analiza odvojena od cekanja', () => {
       if (u.includes('/auth/v1/user')) {
         return jsonRes({ id: 'u1', email: 'korisnik@t.rs', email_confirmed_at: '2026-01-01' });
       }
-      if (u.includes('check_and_bump_api_usage')) {
+      if (u.includes('ai_posao_otvori') || u.includes('check_and_bump_api_usage')) {
         stanje.brojano++;
         if (stanje.preko) return { ok: false, status: 400, text: async () => JSON.stringify({ code: 'P0001', message: 'DAILY_LIMIT_EXCEEDED' }) };
-        return jsonRes({});
+        return jsonRes(u.includes('ai_posao_otvori') ? '11111111-1111-4111-8111-111111111111' : {});
       }
       if (u.includes('check_and_bump_endpoint')) { stanje.citanja++; return jsonRes({}); }
       if (u.includes('generativelanguage')) {
@@ -1306,16 +1306,17 @@ describe('Analiza odvojena od cekanja', () => {
 
   test('posao se ne moze pokrenuti dvaput', () => {
     /* Dva paralelna pokusaja bi inace pozvala model dvaput za isti red. */
-    assert.match(src, /'\?id=eq\.' \+ id \+ '&stanje=eq\.radi'/, 'preuzimanje nije uslovljeno stanjem');
+    assert.match(src, /&stanje=eq\.radi&kvota_uracunata=eq\.true/, 'preuzimanje traži otvoren i izbrojan posao');
+    assert.match(src, /user_id=eq.*encodeURIComponent\(auth.userId\)/, 'nema vlasničkog filtera');
     assert.match(src, /stanje: 'u_toku'/, 'red se ne oznacava kao preuzet');
   });
 
-  test('tabela ide kroz RLS i korisnikov token, ne kroz service_role', () => {
+  test('čitanje ide kroz RLS, upis server proverava i ograničava po vlasniku', () => {
     assert.match(sql, /alter table public\.ai_posao enable row level security/);
     assert.match(sql, /using \(auth\.uid\(\) = user_id\)/, 'nema ogranicenja na sopstvene redove');
     /* Trazi se UPOTREBA kljuca, ne pomen reci — komentar koji objasnjava zasto
        se service_role NE koristi je upravo ono sto zelimo da ostane. */
-    assert.doesNotMatch(src, /process\.env\.[A-Z_]*SERVICE_ROLE/, 'server zaobilazi RLS');
+    assert.match(src, /p_user_id: auth.userId, p_limit: limit/, 'RPC ne koristi provereni nalog');
     assert.match(src, /Authorization: 'Bearer ' \+ auth\.token/, 'tabela se ne cita korisnikovim tokenom');
   });
 
@@ -2419,7 +2420,7 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
   const INV = readRepoFile('supabase/inventar.sql');
   const SQL = readdirSync(join(ROOT, 'supabase'))
     .filter(f => f.endsWith('.sql') && f !== 'inventar.sql' && f !== 'provera.sql')
-    .map(f => readFileSync(join(ROOT, 'supabase', f), 'utf8')).join('\n');
+    .map(f => readFileSync(join(ROOT, 'supabase', f), 'utf8')).join('\n') + readdirSync(join(ROOT,'supabase','migrations')).map(f=>readFileSync(join(ROOT,'supabase','migrations',f),'utf8')).join('\n').toLowerCase();
 
   const izFajlova = (re, i = 1) => [...new Set([...SQL.matchAll(re)].map(m => m[i]))].sort();
 
@@ -2431,7 +2432,7 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
   });
 
   test('svaka funkcija iz fajlova je na spisku', () => {
-    const f = izFajlova(/create or replace function public\.([a-z_]+)/g);
+    const f = izFajlova(/create (?:or replace )?function public\.([a-z_]+)/g);
     assert.ok(f.length >= 10, `nađeno premalo funkcija: ${f}`);
     const nema = f.filter(x => !INV.includes(`'funkcija:${x}'`));
     assert.deepEqual(nema, [], `inventar.sql ih ne poznaje: ${nema}`);
@@ -2449,7 +2450,7 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
        traži da se pusti fajl koji je više ne pravi. */
     for (const [vrsta, re] of [
       ['tabela', /create table if not exists public\.([a-z_]+)/g],
-      ['funkcija', /create or replace function public\.([a-z_]+)/g],
+      ['funkcija', /create (?:or replace )?function public\.([a-z_]+)/g],
       ['okidač', /create trigger ([a-z_]+)/g]
     ]) {
       const stvarni = new Set(izFajlova(re));
@@ -2528,7 +2529,7 @@ describe('Čišćenje ostataka ne sme da odnese ništa što se koristi', () => {
   const US = readRepoFile('supabase/user-state.sql');
   const SQL = readdirSync(join(ROOT, 'supabase'))
     .filter(f => f.endsWith('.sql') && f !== 'inventar.sql' && f !== 'provera.sql')
-    .map(f => readFileSync(join(ROOT, 'supabase', f), 'utf8')).join('\n');
+    .map(f => readFileSync(join(ROOT, 'supabase', f), 'utf8')).join('\n') + readdirSync(join(ROOT,'supabase','migrations')).map(f=>readFileSync(join(ROOT,'supabase','migrations',f),'utf8')).join('\n').toLowerCase();
 
   /* Funkcija okidača = ona koju neki `create trigger` u folderu poziva. */
   const funkcijeOkidaca = [...new Set(

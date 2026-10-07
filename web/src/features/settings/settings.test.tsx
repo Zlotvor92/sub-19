@@ -728,7 +728,7 @@ describe('Prijava problema i ranije verzije', () => {
       context: { version: string };
     };
     expect(body.description).toBe('ne radi');
-    expect(body.context.version).toBe('284');
+    expect(body.context.version).toBe('285');
   });
 
   it('ranije verzije: spisak sa servera, „Vrati" traži potvrdu i vraća stanje', async () => {

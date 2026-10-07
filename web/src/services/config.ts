@@ -17,7 +17,7 @@ export const STRAVA_CLIENT_ID = env['VITE_STRAVA_CLIENT_ID'] || '259960';
  * Verzija aplikacije. Mora se poklapati sa `APP_VERSION` u `sw.js` — to je kontrakt koji proverava
  * `test/sw-azuriranje.test.mjs` u starom kodu, a ovde `scripts/check-sw-version`. Server je upisuje uz stanje.
  */
-export const APP_VERSION = env['VITE_APP_VERSION'] || '284';
+export const APP_VERSION = env['VITE_APP_VERSION'] || '285';
 
 /**
  * ZAJEDNICA JE UGAŠENA (odluka proizvoda): nema taba, nema sekcije u podešavanjima, nema poziva ka tabeli zajednice.

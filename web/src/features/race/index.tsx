@@ -31,6 +31,7 @@ import { applyProposal, currentVdotProposal, undoAdjustments } from '../../store
 import { useUIStore } from '../../stores/uiStore';
 import { Journey } from './Journey';
 import { gapToGoal } from './journey';
+import { RaceAnalysis } from './RaceAnalysis';
 import { TrendAi } from './TrendAi';
 import { PaceChart, PredictionChart, VdotTrendChart } from './charts';
 
@@ -129,7 +130,7 @@ export default function RacePage() {
       tests: t3kSeries(t3k).slice().reverse()
     };
   }, [plan, genPlan, today, pred, vdotLog, t3k, log, alts, todayStr]);
-  if (!plan || !m) return null;
+  if (!plan || !m) return <RaceAnalysis />;
   const { refs, summary } = m;
   const bv = refs.baselineVdot;
   const personal = isPersonalMeta(genPlan?.meta);
@@ -198,6 +199,7 @@ export default function RacePage() {
           {refs.raceName} · cilj {goalText}
         </p>
       </header>
+      <RaceAnalysis />
       <div className="cols">
         <div className="col">
           <section

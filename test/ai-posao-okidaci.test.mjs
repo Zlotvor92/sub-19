@@ -26,7 +26,7 @@ import assert from 'node:assert/strict';
 const origFetch = globalThis.fetch;
 const ENV = {
   SUPABASE_URL: 'https://x.supabase.co',
-  SUPABASE_ANON_KEY: 'anon',
+  SUPABASE_ANON_KEY: 'anon', SUPABASE_SERVICE_ROLE_KEY:'srv',
   GEMINI_API_KEY: 'gk',
   VERCEL_URL: 'sub-19.vercel.app'
 };
@@ -97,6 +97,11 @@ function stub(baza, stanje) {
     const u = String(url), metod = (opt && opt.method) || 'GET';
 
     if (u.includes('/auth/v1/user')) return J({ id: 'u1', email: 'k@t.rs' });
+    if (u.includes('ai_posao_otvori')) {
+      assert.equal(opt.headers.Authorization, 'Bearer srv');
+      assert.equal(JSON.parse(opt.body).p_user_id, 'u1');
+      stanje.brojano++; return J(baza.upisi({})[0].id);
+    }
     if (u.includes('check_and_bump_api_usage')) { stanje.brojano++; return J({}); }
     if (u.includes('check_and_bump_endpoint')) return J({});
     if (u.includes('generativelanguage')) {
@@ -115,6 +120,8 @@ function stub(baza, stanje) {
       if (metod === 'PATCH') {
         /* PostgREST filtrira PA menja: red koji ne odgovara filteru se ne dira. */
         if (!red) return J([]);
+        assert.match(u,/user_id=eq.u1/);
+        assert.equal(opt.headers.Authorization,'Bearer srv');
         if (/stanje=eq\.radi/.test(u) && red.stanje !== 'radi') return J([]);
         const r = baza.izmeni(red, JSON.parse(opt.body));
         if (!r.ok) return J({ code: 'P0001', message: r.kod }, false, 400);
