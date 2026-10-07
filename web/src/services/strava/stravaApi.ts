@@ -59,6 +59,7 @@ export interface StravaApi {
 }
 
 export interface StravaApiDeps {
+  accountKey?: () => string;
   fetcher: Fetcher;
   appApi: AppApi;
   link: StravaLinkStore;
@@ -67,6 +68,7 @@ export interface StravaApiDeps {
 
 export function createStravaApi(deps: StravaApiDeps): StravaApi {
   async function ensureToken(force = false): Promise<{ ok: true } | { ok: false; error: string }> {
+    const owner = deps.accountKey?.();
     const link = deps.link.get();
     if (!link) return { ok: false, error: 'Strava nije povezana' };
     const expiresAt = typeof link['expiresAt'] === 'number' ? link['expiresAt'] : 0;
@@ -77,6 +79,7 @@ export function createStravaApi(deps: StravaApiDeps): StravaApi {
       TokenResponse
     );
     if (!r.ok) return { ok: false, error: `Osvežavanje Strava tokena nije uspelo — ${r.error}` };
+    if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
     deps.link.set({
       ...link,
       access: r.data.access_token,
@@ -139,11 +142,13 @@ export function createStravaApi(deps: StravaApiDeps): StravaApi {
   return {
     get: (path) => get(path),
     async exchange(code, scope) {
+      const owner = deps.accountKey?.();
       const r = await deps.appApi.getAuthed(
         `/api/auth?code=${encodeURIComponent(code)}`,
         ExchangeResponse
       );
       if (!r.ok) return { ok: false, error: r.error };
+      if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
       const a = r.data.athlete;
       const athlete = a ? `${a.firstname ?? ''} ${a.lastname ?? ''}`.trim() : '';
       deps.link.set({

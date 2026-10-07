@@ -323,7 +323,7 @@ describe('Podešavanja', () => {
       await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
       const text = useUIStore.getState().confirm?.text ?? '';
       expect(text).toMatch(/^Preračunati preostali plan prema izmerenoj formi\?/);
-      expect(text).toMatch(/Izmerena forma: VDOT 56 · plan je očekivao: VDOT 45,8/);
+      expect(text).toMatch(/Izmerena forma: VDOT 56 · plan je očekivao: VDOT 45,3/);
       expect(text).toMatch(/Nema vraćanja/);
       act(() => useUIStore.getState().confirm?.resolve(true));
       await waitFor(() => expect(useTrainingStore.getState().genPlan).not.toEqual(before));
@@ -728,7 +728,7 @@ describe('Prijava problema i ranije verzije', () => {
       context: { version: string };
     };
     expect(body.description).toBe('ne radi');
-    expect(body.context.version).toBe('283');
+    expect(body.context.version).toBe('284');
   });
 
   it('ranije verzije: spisak sa servera, „Vrati" traži potvrdu i vraća stanje', async () => {

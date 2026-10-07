@@ -116,13 +116,18 @@ export function createFakeSupabase(): FakeSupabase {
             return json(200, [{ data: fake.row.data, updated_at: fake.row.updated_at }]);
           return json(200, [{ updated_at: fake.row.updated_at, device_id: fake.row.device_id }]);
         }
-        if (method === 'POST') {
+        if (method === 'POST' || method === 'PATCH') {
           if (fake.pushGate) await fake.pushGate;
           const next = fake.nextPush.shift() ?? 'ok';
           if (next === 'network') throw new TypeError('Failed to fetch');
           if (next === 'http500') return json(500, { error: 'boom' });
           if (next === 'http403') return json(403, { message: 'denied' });
           if (next === 'html') return new Response('<html>gateway</html>', { status: 200 });
+          const expected = new URL(input).searchParams.get('updated_at')?.slice(3);
+          if (method === 'PATCH' && (!fake.row || fake.row.updated_at !== expected))
+            return json(200, []);
+          if (method === 'POST' && headers['prefer']?.includes('ignore-duplicates') && fake.row)
+            return json(200, []);
           fake.clock.value += 1000;
           const b = body as { data: unknown; device_id: string };
           fake.row = {

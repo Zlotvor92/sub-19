@@ -38,5 +38,7 @@ export const KIND_FROM_GOAL: ReadonlySet<string> = new Set([
   'Trkački ritam',
   'Tempo trke',
   'Progresivno (tempo trke)',
-  'Maratonski tempo'
+  'Maratonski tempo',
+  'Kontrolna trka',
+  'Oštrina'
 ]);

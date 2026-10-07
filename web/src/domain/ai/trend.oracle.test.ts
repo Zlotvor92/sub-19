@@ -6,7 +6,7 @@ import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { GenPlanState, LogEntry, VdotRecord, WellnessRecord } from '../state';
 import type { StoredPredRow } from '../training/adaptation';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import { raceRefs } from '../race';
 import { zoneSource } from '../zones';
 import { buildTrendSummary, planAhead, progressRate } from './trend';

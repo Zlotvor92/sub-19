@@ -6,7 +6,7 @@ import { addDays, type IsoDate } from '../../date';
 import { adaptGeneratedPlan } from '../../plan/adapt';
 import { resolvePlan, weekOf } from '../../plan/resolve';
 import type { GenPlanState, T3kRecord, VdotRecord } from '../../state';
-import { generatePlan } from '../generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import { recomputeVdotChain, sessionClassFor } from '../adaptation';
 import { predictionSummary } from '../prediction/summary';
 import { isT3kId } from '../vdot/limits';

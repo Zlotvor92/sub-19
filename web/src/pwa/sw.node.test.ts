@@ -130,8 +130,14 @@ const ACCOUNT = {
   isticeMs: Date.now() + 3600e3,
   vapid: 'BPubKey'
 };
-const QUEUE = { seenAt: '2026-08-06T10:00:00Z', podaci: { v: 9 }, at: Date.now() };
-const posts = (sw: Sw): Call[] => sw.calls.filter((c) => c.opt?.method === 'POST');
+const QUEUE = {
+  userId: ACCOUNT.userId,
+  seenAt: '2026-08-06T10:00:00Z',
+  podaci: { v: 9 },
+  at: Date.now()
+};
+const posts = (sw: Sw): Call[] =>
+  sw.calls.filter((c) => c.opt?.method === 'POST' || c.opt?.method === 'PATCH');
 const json = (v: unknown) => () => Promise.resolve(v);
 
 describe('izgradnja service workera', () => {
@@ -283,13 +289,13 @@ describe('pozadinski upis stanja (Background Sync)', () => {
     expect(sw.idb.map.has('stanje')).toBe(false);
   });
 
-  it('sopstvena ranija izmena sa istog uređaja se sme prepisati', async () => {
+  it('zastareli pozadinski red ne gazi noviji foreground upis istog uređaja', async () => {
     const sw = runSw({
       idb: { nalog: ACCOUNT, stanje: QUEUE },
       fetch: merge([{ updated_at: '2026-08-06T12:00:00Z', device_id: 'ovaj' }])
     });
     await fire(sw, 'sync', { tag: 'sub19-stanje' });
-    expect(posts(sw)).toHaveLength(1);
+    expect(posts(sw)).toHaveLength(0);
   });
 
   it('istekao token odustaje TIHO; token se NE osvežava iz pozadine (rotacija bi odjavila korisnika)', async () => {

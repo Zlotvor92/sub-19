@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { canonical, shaOf } from '@/test/fingerprint';
@@ -104,19 +104,32 @@ const recorded = JSON.parse(
   )
 ) as Recorded;
 
-describe('generatePlan: novi naspram zamrznutog izlaza starog na slučajnim ulazima', () => {
-  it('1 500 slučajnih ulaza daje isti SHA-256 kao stari generator (ili istu grešku)', () => {
+describe('generatePlan: D6 zamrznuti izlazi na slučajnim ulazima', () => {
+  it('1 500 slučajnih ulaza daje isti SHA-256 kao pregledani D6 generator (ili istu grešku)', () => {
     const r = rng(recorded.seed);
     let errors = 0;
     let withGoal = 0;
     const problems: string[] = [];
+    const shas: string[] = [];
+    const update = process.env['UPDATE_FINGERPRINT'] === '1';
     for (let i = 0; i < recorded.count; i++) {
       const inp = randomInput(r);
       const plan = run(() => generatePlan(inp as unknown as PlanGenerationInput));
       if ((plan as { greska?: string }).greska) errors++;
       if (inp['goalSec'] != null) withGoal++;
-      if (shaOf(plan) !== recorded.shas[i]) problems.push(`#${i} ${JSON.stringify(inp)}`);
+      shas.push(shaOf(plan));
+      if (!update && shaOf(plan) !== recorded.shas[i])
+        problems.push(`#${i} ${JSON.stringify(inp)}`);
       if (problems.length >= 5) break;
+    }
+    if (update) {
+      writeFileSync(
+        fileURLToPath(
+          new URL('../../../test/fixtures/generator-differential.json', import.meta.url)
+        ),
+        JSON.stringify({ ...recorded, errors, withGoal, shas }, null, 2) + '\n'
+      );
+      return;
     }
     expect(problems, problems.join('\n')).toEqual([]);
     /* test ne sme da bude prazan hod: dovoljno i grešaka (prekratak plan) i planova sa ciljem */

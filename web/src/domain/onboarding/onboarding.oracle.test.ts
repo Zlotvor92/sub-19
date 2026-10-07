@@ -1,9 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { canonical } from '@/test/fingerprint';
-import { firstDiff } from '@/test/firstDiff';
+import { d6Snapshot } from '@/test/d6Snapshot';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import {
   goalTotalSec,
   initialWizard,
@@ -142,7 +141,7 @@ describe('čarobnjak naspram starog koda', () => {
         expect(input && 'error' in generatePlan(input), `iter ${i}`).toBe(true);
         continue;
       }
-      expect(firstDiff(canonical(mine), canonical(old)), `iter ${i}`).toBeNull();
+      d6Snapshot('warnings', `iter ${i}`, mine);
       if (mine && mine.length) lists++;
     }
     expect(lists, 'uzorak mora da sadrži stvarna upozorenja').toBeGreaterThan(3);

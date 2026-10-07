@@ -70,6 +70,7 @@ export interface ImportPorts {
 }
 
 export interface StravaSyncDeps {
+  accountKey?: () => string;
   api: StravaApi;
   link: StravaLinkStore;
   ports: ImportPorts;
@@ -127,12 +128,13 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
   const { api, link, ports } = deps;
 
   async function refreshZones(): Promise<void> {
+    const owner = deps.accountKey?.();
     const cur = link.get();
     if (!cur) return;
     const last = typeof cur['zonesTs'] === 'number' ? cur['zonesTs'] : 0;
     if (deps.now() - last <= WEEK_MS) return;
     const r = await api.get('/athlete/zones');
-    if (!r.ok) return; // dopuna, ne razlog da uvoz stane
+    if (!r.ok || deps.accountKey?.() !== owner) return; // dopuna, ne razlog da uvoz stane
     const p = HrZones.safeParse(r.data);
     const zones = p.success ? p.data.heart_rate?.zones : undefined;
     if (!zones?.length) return;
@@ -144,6 +146,7 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
   }
 
   async function run(): Promise<StravaSyncResult> {
+    const owner = deps.accountKey?.();
     if (!link.get()) return { ok: false, error: 'Strava nije povezana.' };
     const start = ports.read();
     if (!start.genPlan) return { ok: false, error: 'Nema plana.' };
@@ -332,6 +335,7 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
     const aligned = alignVdotDates(s.vdotLog, plan, rows, s.log, baseline);
     if (aligned.changed) s.vdotLog = aligned.vdotLog;
 
+    if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
     ports.commit(s);
     const cur = link.get();
     if (cur) link.set({ ...cur, lastSync: deps.now() });

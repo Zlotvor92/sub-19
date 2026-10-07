@@ -211,8 +211,7 @@ function activePainProposal(
 
   const maxPain = recent.reduce((m, k) => Math.max(m, k.pain), 0);
   const parts = [...new Set(recent.map((k) => partName(k.part)))];
-  /* Bol 4+ ide na run/walk, bez obzira koliko je jak — plan se ne prazni. `urgent` (bol 6+) menja SAMO
-     ton poruke i boju kartice, ne i to da li se trči: to je odluka koju čovek donosi sam, uz lekara. */
+  /* Status STANI predlaže pauzu; blaži status zadržava prilagođavanje opterećenja. */
   const urgent = st.cls === 'stop';
   const rwS = runWalkForPain(maxPain);
   const rw = rwS ? rwS.rw : null;
@@ -270,6 +269,28 @@ function activePainProposal(
         break;
       }
     }
+  }
+  if (urgent && (changes.length || race)) {
+    return {
+      level: changes.length ? 'pauza' : 'trka',
+      week: null,
+      urgent: true,
+      maxPain,
+      parts,
+      rw: null,
+      chronicKm: hron,
+      budgetKm: 0,
+      race,
+      changes: changes.map((c) => ({
+        ...c,
+        to: 'odmor',
+        km: null,
+        rw: null,
+        desc: 'Pauza od trčanja — status STANI; proceni bol sa stručnjakom.'
+      })),
+      title: st.t,
+      message: `Bol ${maxPain}/10 nosi status STANI. Predlog je pauza od trčanja i stručna procena, bez automatskog run/walk nastavka. Povratak se planira nakon procene i oporavka.${race ? ` TRKA: ${fmtKm(race.km)} km ${race.days === 0 ? 'DANAS' : `za ${race.days} dana`}; nastup je tvoja odluka, uz procenu stručnjaka.` : ''}`
+    };
   }
   if (!changes.length && !race) return null;
 

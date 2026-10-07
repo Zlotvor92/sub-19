@@ -8,6 +8,7 @@ import type { GenPlanState } from '../state';
 import { generatePlan } from '../training/generator/generatePlan';
 import { planVdotForWeek } from '../training/prediction';
 import type { PlanGenerationInput, PlanMeta, Session } from '../training/types';
+import { raceTimeForVdot } from '../training/vdot/racePrediction';
 import { adaptGeneratedPlan } from './adapt';
 import { planBaselineVdot } from './baseline';
 import {
@@ -209,12 +210,15 @@ describe('planRecalibrated: idempotencija i stabilnost', () => {
     expect(b.ulaz).toEqual(a.ulaz);
   });
 
-  it('tempo trke se ne menja, ni sa ni bez cilja; cilj koji korisnik nije zadao ne postaje cilj', () => {
+  it('trkački trening prati izmerenu formu; korisnikov cilj se čuva', () => {
     for (const over of [{}, { goalSec: 1170 }] as Array<Partial<PlanGenerationInput>>) {
       const plan = stored(input(5000, over));
       for (const form of [46, 50, 58]) {
         const r = ok(planRecalibrated(plan, form, dayIn(IDX)));
-        expect(r.meta.racePace, JSON.stringify(over)).toBe(meta(plan).racePace);
+        expect(r.meta.racePace, JSON.stringify(over)).toBeCloseTo(
+          Math.max((over.goalSec ?? 0) / 5, raceTimeForVdot(form, 5000) / 5),
+          0
+        );
         expect(r.meta.goalSec).toBe(meta(plan).goalSec);
         expect(r.meta.goalVdot).toBe(meta(plan).goalVdot);
         if (over.goalSec) {
@@ -227,16 +231,15 @@ describe('planRecalibrated: idempotencija i stabilnost', () => {
     }
   });
 
-  it('tempo trke ostaje isti i posle VIŠE uzastopnih rekalibracija sa različitom formom', () => {
+  it('trkački trening prati i slabiju i bolju formu kroz više rekalibracija', () => {
     let plan = stored(input());
-    const pace = meta(plan).racePace;
     for (const [form, idx] of [
       [50, 6],
       [47, 9],
       [55, 12]
     ] as const) {
       plan = asPlan(ok(planRecalibrated(plan, form, dayIn(idx))));
-      expect(meta(plan).racePace, `N${idx}`).toBe(pace);
+      expect(meta(plan).racePace, `N${idx}`).toBeCloseTo(raceTimeForVdot(form, 5000) / 5, 0);
     }
   });
 });

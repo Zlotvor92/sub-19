@@ -9,6 +9,7 @@ import type { SessionManager } from '../supabase/session';
 export interface AppApiDeps {
   fetcher: Fetcher;
   session: Pick<SessionManager, 'token'>;
+  accountKey?: () => string;
 }
 
 export interface AppApi {
@@ -34,22 +35,34 @@ export function createAppApi(deps: AppApiDeps): AppApi {
   };
   return {
     async post(path, body, schema, opts) {
+      const owner = deps.accountKey?.();
       const headers = await authHeaders();
+      if (deps.accountKey?.() !== owner)
+        return { ok: false, kind: 'http', status: 401, error: NOT_SIGNED_IN };
       if (!headers) return { ok: false, kind: 'http', status: 401, error: NOT_SIGNED_IN };
-      return requestJson(deps.fetcher, path, schema, {
+      const result = await requestJson(deps.fetcher, path, schema, {
         method: 'POST',
         headers,
         body,
         ...(opts?.timeoutMs ? { timeoutMs: opts.timeoutMs } : {})
       });
+      return deps.accountKey?.() === owner
+        ? result
+        : { ok: false, kind: 'http', status: 401, error: NOT_SIGNED_IN };
     },
     get(path, schema) {
       return requestJson(deps.fetcher, path, schema, { method: 'GET' });
     },
     async getAuthed(path, schema) {
+      const owner = deps.accountKey?.();
       const headers = await authHeaders();
+      if (deps.accountKey?.() !== owner)
+        return { ok: false, kind: 'http', status: 401, error: NOT_SIGNED_IN };
       if (!headers) return { ok: false, kind: 'http', status: 401, error: NOT_SIGNED_IN };
-      return requestJson(deps.fetcher, path, schema, { method: 'GET', headers });
+      const result = await requestJson(deps.fetcher, path, schema, { method: 'GET', headers });
+      return deps.accountKey?.() === owner
+        ? result
+        : { ok: false, kind: 'http', status: 401, error: NOT_SIGNED_IN };
     }
   };
 }

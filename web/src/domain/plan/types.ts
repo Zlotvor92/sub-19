@@ -1,6 +1,6 @@
 import type { IsoDate } from '../date';
 import type { DayTag } from '../state';
-import type { RunWalk, Session } from '../training/types';
+import type { FastFinish, Strides, RunWalk, Session } from '../training/types';
 
 /** Original dana kakav ga je generator napravio — za poređenje i vraćanje izmena. */
 export interface DayOrigin {
@@ -9,6 +9,8 @@ export interface DayOrigin {
   desc: string | null;
   rest: boolean;
   runWalk: RunWalk | undefined;
+  finish?: FastFinish;
+  strides?: Strides;
 }
 
 /**
@@ -32,6 +34,8 @@ export interface ResolvedDay {
   km: number | null;
   desc: string | null;
   runWalk: RunWalk | undefined;
+  finish?: FastFinish;
+  strides?: Strides;
   snaga: boolean;
   /** Originalna struktura sesije (i posle ručne izmene — služi predikciji i lap-detekciji). */
   session: Session | undefined;

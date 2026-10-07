@@ -45,6 +45,7 @@ function setup(
   over: {
     session?: Partial<ReturnType<typeof emptySession>> | null;
     localState?: unknown;
+    store?: Mem;
     hash?: string;
     search?: string;
     fake?: FakeSupabase;
@@ -52,7 +53,7 @@ function setup(
   } = {}
 ): Setup {
   const fake = over.fake ?? createFakeSupabase();
-  const store = new Mem();
+  const store = over.store ?? new Mem();
   if (over.session !== null)
     store.setItem(
       SB_KEY,
@@ -122,7 +123,9 @@ const readLog = (st: Mem): Record<string, Record<string, unknown>> =>
   (JSON.parse(st.getItem(LS_KEY) as string) as { log: Record<string, Record<string, unknown>> })
     .log;
 const posts = (f: FakeSupabase) =>
-  f.requests.filter((r) => r.method === 'POST' && r.url.includes('/rest/v1/user_state'));
+  f.requests.filter(
+    (r) => ['POST', 'PATCH'].includes(r.method) && r.url.includes('/rest/v1/user_state')
+  );
 const filled = () => ({
   ...seedState(),
   v: 11,
@@ -356,12 +359,39 @@ describe('prijava', () => {
     expect(useAuthStore.getState().gate).toBe('Korisnik je odbio');
   });
 
+  it('A → odjava → B → A: lokalni podaci se ne šalju drugom nalogu i vraćaju se vlasniku', async () => {
+    const a = setup({ localState: filled() });
+    await a.app.start();
+    await vi.waitFor(() => expect(posts(a.fake)).toHaveLength(1));
+    a.app.logout();
+    const b = setup({
+      store: a.store,
+      session: { userId: 'u2', access: token('u2'), email: 'b@b.rs' }
+    });
+    await b.app.start();
+    await vi.waitFor(() => expect(posts(b.fake)).toHaveLength(1));
+    expect(collectPersisted().kg).toEqual([]);
+    expect(collectPersisted().log).toEqual({});
+    expect(posts(b.fake)[0]?.body as { user_id: string; data: { kg: unknown[] } }).toMatchObject({
+      user_id: 'u2',
+      data: { kg: [] }
+    });
+    b.app.logout();
+    const again = setup({ store: a.store });
+    await again.app.start();
+    await vi.waitFor(() => expect(posts(again.fake)).toHaveLength(1));
+    expect(collectPersisted().kg).toEqual(filled().kg);
+    expect(collectPersisted().log['g1d1']).toMatchObject({ status: 'done', km: 8 });
+  });
+
   it('odjava zatvara kapiju i briše tokene, ali ne i podatke', () => {
     const s = setup({ localState: filled() });
     s.app.logout();
     expect(useAuthStore.getState()).toMatchObject({ gate: '', hasSession: false });
     expect(s.app.session.isAuthed()).toBe(false);
-    expect(s.store.getItem(LS_KEY)).not.toBeNull();
+    expect(s.store.getItem(LS_KEY)).toBeNull();
+    expect(s.store.getItem(`${LS_KEY}:account:u1`)).not.toBeNull();
+    expect(collectPersisted().kg).toEqual([]);
   });
 });
 

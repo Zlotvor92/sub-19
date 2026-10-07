@@ -312,6 +312,7 @@ async function guraniStanje() {
   const nalog = await idbCitaj('nalog');
   const red = await idbCitaj('stanje');
   if (!red || !nalog || !nalog.url || !nalog.anon || !nalog.userId || !nalog.access) { await idbObrisi('stanje'); return; }
+  if (red.userId !== nalog.userId) { await idbObrisi('stanje'); return; }
   /* Istekao token — odustani TIHO (bez bacanja), inače bi pregledač ponavljao
      posao koji ne može da uspe dok se aplikacija ne otvori. */
   if (Date.now() > (nalog.isticeMs || 0) - 60000) { await idbObrisi('stanje'); return; }
@@ -323,22 +324,27 @@ async function guraniStanje() {
      verziju, ovaj red je zastareo — a stanje je JEDAN blob, pa bi prepis
      obrisao celu tuđu sesiju. Sukob rešava aplikacija, koja ume da PITA
      (v. sbDecide u app.js); pozadina za to nema kome da se obrati. */
+  let expectedAt = null;
   try {
     const r = await fetch(baza + '/rest/v1/user_state?select=updated_at,device_id&user_id=eq.' + nalog.userId, { headers: glava });
     if (r.ok) {
       const j = await r.json();
       const na = j && j[0];
-      if (na && na.device_id && na.device_id !== nalog.uredjaj &&
+      expectedAt = na ? na.updated_at : null;
+      if (na &&
           (!red.seenAt || new Date(na.updated_at) > new Date(red.seenAt))) {
         await idbObrisi('stanje');
         return;
       }
-    }
+    } else { throw new Error('provera nije uspela'); }
   } catch (x) { throw new Error('mreza'); }   /* baci -> pregledač ponavlja kasnije */
 
-  const r = await fetch(baza + '/rest/v1/user_state', {
-    method: 'POST',
-    headers: Object.assign({}, glava, { Prefer: 'resolution=merge-duplicates,return=minimal' }),
+  const active = await idbCitaj('nalog');
+  if (!active || active.userId !== nalog.userId || active.access !== nalog.access) { await idbObrisi('stanje'); return; }
+  const path = '/rest/v1/user_state' + (expectedAt ? '?user_id=eq.' + encodeURIComponent(nalog.userId) + '&updated_at=eq.' + encodeURIComponent(expectedAt) : '');
+  const r = await fetch(baza + path, {
+    method: expectedAt ? 'PATCH' : 'POST',
+    headers: Object.assign({}, glava, { Prefer: expectedAt ? 'return=representation' : 'resolution=ignore-duplicates,return=representation' }),
     body: JSON.stringify({
       user_id: nalog.userId, data: red.podaci,
       device_id: nalog.uredjaj, app_version: APP_VERSION

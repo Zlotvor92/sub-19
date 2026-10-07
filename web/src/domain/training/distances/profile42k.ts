@@ -3,7 +3,7 @@
    repeticije su minimalni. Dugo trčanje ima SOPSTVEN talas (trčanje od 3 sata
    se ne ponavlja svake nedelje), srednje-dugo trčanje je važnije nego za HM. */
 
-import { fmtClock, r1 } from '../../format';
+import { r1 } from '../../format';
 import { HEURISTIC_42K as H, PRODUCT_42K } from '../constants/distances';
 import { sessInt, sessTempo, wuCdForVolume } from '../sessions/build';
 import { cruiseIntervals, type CruiseParams } from '../sessions/cruise';
@@ -11,7 +11,7 @@ import { chooseReps, intervalsOf, proportionalRest } from '../sessions/intervals
 import { progressionRun, type ProgressionParams } from '../sessions/progression';
 import { repetitions } from '../sessions/repetitions';
 import { continuousTempo, type TempoParams } from '../sessions/tempo';
-import type { SessionDay } from '../types';
+import type { FastFinish, SessionDay } from '../types';
 import type { DistanceProfile, LongRunCycleContext, Phase, QualityRequest } from './types';
 
 /** <33% izdržljivost, <73% prag, ostalo specifika. */
@@ -174,11 +174,11 @@ function longRunFinish42K(
   racePace: number,
   _strategy: unknown,
   cycleFactor: number | null
-): string {
-  if (phase !== 'specific' || !(lrKm >= 16)) return '';
-  if (cycleFactor != null && cycleFactor >= 0.99) return '';
+): FastFinish | null {
+  if (phase !== 'specific' || !(lrKm >= 16)) return null;
+  if (cycleFactor != null && cycleFactor >= 0.99) return null;
   const finish = r1(Math.max(5, Math.min(12, lrKm * 0.35)));
-  return ` · poslednjih ${finish} km @ ${fmtClock(racePace)}/km (maratonski tempo, na umornim nogama)`;
+  return { km: finish, paceSec: racePace, zone: 'M' };
 }
 
 export const PROFILE_42K: DistanceProfile = {

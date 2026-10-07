@@ -46,6 +46,7 @@ export type ActivitySyncResult =
   | Busy;
 
 export interface IntegrationDeps {
+  accountKey?: () => string;
   kv: KeyValueStore;
   fetcher: Fetcher;
   appApi: AppApi;
@@ -116,6 +117,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     set: (v: StravaLink | null): void => useSettingsStore.getState().setStrava(v)
   };
   const stravaApi = createStravaApi({
+    accountKey: deps.accountKey,
     fetcher: deps.fetcher,
     appApi: deps.appApi,
     link: stravaLink,
@@ -155,6 +157,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     }
   };
   const stravaSync = createStravaSync({
+    accountKey: deps.accountKey,
     api: stravaApi,
     link: stravaLink,
     ports,
@@ -165,6 +168,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
   /* ---------------------------------------------------------------- intervals.icu */
   const icuApi = createIcuApi(deps.appApi);
   const icuSync = createIcuSync({
+    accountKey: deps.accountKey,
     api: icuApi,
     link: icuLinkStore,
     ports,
@@ -253,6 +257,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     replaceUrl: ((path: string) => void) | undefined,
     pathname: string
   ): Promise<void> {
+    const owner = deps.accountKey?.();
     const ret = classifyOAuthReturn(search, deps.kv, now());
     if (ret.kind === 'none') return;
     replaceUrl?.(pathname);
@@ -279,6 +284,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
       return;
     }
     const x = await icuApi.exchange(ret.code);
+    if (deps.accountKey?.() !== owner) return;
     if (!x.ok) {
       deps.notify(x.error || 'Povezivanje nije uspelo.');
       return;
@@ -359,6 +365,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
         return { ok: true };
       },
       async connectWithKey(athleteId, apiKey) {
+        const owner = deps.accountKey?.();
         const id = athleteId.trim();
         const key = apiKey.trim();
         if (!isAthleteId(id))
@@ -367,6 +374,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
         const before = icuLinkStore.get();
         icuLinkStore.set({ athleteId: id, apiKey: key, lastSync: null });
         const r = await icuSync.syncWellness(14);
+        if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
         if (r.ok) return { ok: true, n: r.n };
         icuLinkStore.set(before);
         return { ok: false, error: r.error || 'Nije uspelo.' };

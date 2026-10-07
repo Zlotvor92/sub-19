@@ -51,6 +51,7 @@ export function createBackground(deps: BackgroundDeps) {
       const s = deps.session();
       if (!s.userId || !s.refresh) return;
       const old = (await idb.read(IDB_KEYS.account)) as { vapid?: string | null } | null;
+      if (deps.session().userId !== s.userId || !deps.isAuthed()) return;
       await idb.write(IDB_KEYS.account, {
         url: deps.supabaseUrl,
         anon: deps.anonKey,
@@ -78,14 +79,23 @@ export function createBackground(deps: BackgroundDeps) {
   async function schedule(): Promise<boolean> {
     try {
       if (!deps.isAuthed() || deps.loadFailed()) return false;
+      const userId = deps.session().userId;
+      const payload = deps.payload();
+      const seenAt = deps.session().seenAt || null;
       const reg = await deps.registration(2000);
+      if (deps.session().userId !== userId || !deps.isAuthed()) return false;
       if (!reg?.sync) return false; // iOS nema Background Sync
       await writeAccount();
       await idb.write(IDB_KEYS.queuedState, {
-        seenAt: deps.session().seenAt || null,
-        podaci: deps.payload(),
+        userId,
+        seenAt,
+        podaci: payload,
         at: deps.now()
       });
+      if (deps.session().userId !== userId || !deps.isAuthed()) {
+        await cancel();
+        return false;
+      }
       await reg.sync.register(SYNC_TAG);
       return true;
     } catch {

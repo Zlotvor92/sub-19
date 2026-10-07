@@ -24,12 +24,17 @@ export type PullOutcome =
 export type PushOutcome =
   | { ok: true; updatedAt: string | null }
   /** 5xx je privremen — takav upis ide u pozadinski red. 4xx se ponavljanjem ne popravlja. */
-  | { ok: false; retryable: boolean; status?: number };
+  | { ok: false; retryable: boolean; status?: number; conflict?: boolean };
 
 export interface UserStateApi {
   remoteRow(): Promise<RemoteRow>;
   pull(): Promise<PullOutcome>;
-  push(state: PersistedState, deviceId: string, appVersion: string): Promise<PushOutcome>;
+  push(
+    state: PersistedState,
+    deviceId: string,
+    appVersion: string,
+    expectedAt: string | null
+  ): Promise<PushOutcome>;
   historyList(): Promise<
     | { ok: true; list: HistoryEntry[] }
     | { ok: false; reason: 'network' | 'forbidden' | 'http'; status?: number }
@@ -89,23 +94,31 @@ export function createUserStateApi(deps: UserStateApiDeps): UserStateApi {
       return { ok: true, data: row.data, updatedAt: row.updated_at };
     },
 
-    async push(state, deviceId, appVersion) {
-      if (!(await session.ensure())) return { ok: false, retryable: true };
+    async push(state, deviceId, appVersion, expectedAt) {
+      const userId = session.state.userId;
+      if (!userId || !(await session.ensure()) || session.state.userId !== userId)
+        return { ok: false, retryable: false };
+      const existing = expectedAt != null;
       const r = await requestJson(
         deps.fetcher,
-        `${supabaseUrl}/rest/v1/user_state`,
+        `${supabaseUrl}/rest/v1/user_state${existing ? `?user_id=eq.${encodeURIComponent(userId)}&updated_at=eq.${encodeURIComponent(expectedAt)}` : ''}`,
         PushResultList,
         {
-          method: 'POST',
-          headers: headers({ Prefer: 'resolution=merge-duplicates,return=representation' }),
+          method: existing ? 'PATCH' : 'POST',
+          headers: headers({
+            Prefer: existing
+              ? 'return=representation'
+              : 'resolution=ignore-duplicates,return=representation'
+          }),
           body: {
-            user_id: session.state.userId,
+            user_id: userId,
             data: toServerPayload(state),
             device_id: deviceId,
             app_version: appVersion
           }
         }
       );
+      if (r.ok && !r.data.length) return { ok: false, retryable: false, conflict: true };
       if (r.ok) return { ok: true, updatedAt: r.data[0]?.updated_at ?? null };
       /* mreža i 5xx su privremeni; 4xx se ponavljanjem ne popravlja */
       return {

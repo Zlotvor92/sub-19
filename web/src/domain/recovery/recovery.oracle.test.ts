@@ -6,7 +6,7 @@ import { addDays, type IsoDate } from '../date';
 import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry, PainRecord } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import {
   acuteKm,
   acwrNow,
@@ -282,20 +282,32 @@ describe('predlog povratka i prilagođavanja naspram starog injuryProposal', () 
       const c = context(s);
       const old = j<Record<string, unknown> | null>(legacy.call('injuryProposal', s.today));
       const mine = injuryProposal(c, s.today);
-      expect(
-        firstDiff(canonical(normalizeMine(mine)), canonical(normalizeLegacy(old))),
-        `predlog ${i} ${s.today}`
-      ).toBeNull();
+      const intentionalPause = mine?.urgent && (mine.level === 'pauza' || mine.level === 'trka');
+      if (intentionalPause) {
+        expect(old?.['hitno']).toBe(true);
+        expect(mine.rw).toBeNull();
+        expect(mine.changes.every((c) => c.to === 'odmor' && c.km === null && c.rw === null)).toBe(
+          true
+        );
+        expect(mine.changes.map((c) => c.id)).toEqual(
+          (normalizeLegacy(old) as { changes: { id: string }[] }).changes.map((c) => c.id)
+        );
+      } else
+        expect(
+          firstDiff(canonical(normalizeMine(mine)), canonical(normalizeLegacy(old))),
+          `predlog ${i} ${s.today}`
+        ).toBeNull();
       const lvl = mine?.level ?? 'null';
       levels[lvl] = (levels[lvl] ?? 0) + 1;
       if (mine && mine.changes.length && i % 3 === 0) {
         const res = applyInjuryProposal(mine, c.plan, s.log, s.alts);
         const n = legacy.call('applyInjuryProposal', legacy.call('injuryProposal', s.today));
         expect(res.applied, `applied ${i}`).toBe(n);
-        expect(
-          firstDiff(canonical(res.alts), canonical(j(legacy.evalIn('S.alts')))),
-          `alts ${i}`
-        ).toBeNull();
+        const oldAlts = j(legacy.evalIn('S.alts'));
+        if (intentionalPause) {
+          for (const c of mine.changes)
+            expect(res.alts[c.id]).toMatchObject({ tag: 'odmor', km: null });
+        } else expect(firstDiff(canonical(res.alts), canonical(oldAlts)), `alts ${i}`).toBeNull();
       }
     }
     for (const lvl of ['warn', 'runwalk', 'return', 'pauza', 'trka'])

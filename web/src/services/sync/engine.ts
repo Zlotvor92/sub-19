@@ -47,6 +47,7 @@ export interface SyncDeps {
   /** Usvaja stanje koje je stiglo sa servera (već spojeno sa lokalnim vezama/lokacijom). */
   adopt: (state: PersistedState) => void;
   appVersion: string;
+  stateOwner?: () => string | null;
   /** Lokalni zapis se nije mogao pročitati pri učitavanju. */
   loadFailed?: boolean;
   setTimer?: (fn: () => void, ms: number) => unknown;
@@ -60,7 +61,8 @@ export interface SyncDeps {
 export type StartOutcome = 'offline' | 'pushed' | 'conflict';
 export type ConflictChoice = 'pull' | 'push';
 export type ResolveResult =
-  { ok: true } | { ok: false; reason: 'pull-failed' | 'confirm-empty-needed' | 'no-conflict' };
+  | { ok: true }
+  | { ok: false; reason: 'pull-failed' | 'push-failed' | 'confirm-empty-needed' | 'no-conflict' };
 
 export interface SyncEngine {
   readonly status: SyncStatus;
@@ -80,6 +82,7 @@ export interface SyncEngine {
   acknowledgeLoadFailure(): void;
   /** Dugme „Sinhronizuj". */
   syncNow(): Promise<boolean>;
+  reset(loadFailed?: boolean): void;
 }
 
 export function createSyncEngine(deps: SyncDeps): SyncEngine {
@@ -112,24 +115,38 @@ export function createSyncEngine(deps: SyncDeps): SyncEngine {
       conflictOpen: status.conflict != null
     });
     if (verdict === 'skip') return false;
-    if (!(await deps.session.ensure())) return false;
-
-    /* Zauzeće se podiže PRE mrežne provere. */
+    const userId = deps.session.state.userId;
+    const sameOwner = (): boolean =>
+      deps.session.state.userId === userId && (!deps.stateOwner || deps.stateOwner() === userId);
+    if (!sameOwner()) return false;
     set({ busy: true });
     try {
-      try {
-        const row = await deps.api.remoteRow();
-        const remote = toRow(row);
-        if (isForeignNewer(remote, deps.session.state.seenAt, deps.session.state.deviceId)) {
-          openConflict((remote as ServerRow).at);
-          return false;
-        }
-      } catch {
-        /* bez signala se ne blokira upis — pozadinski red ionako ponavlja */
+      if (!(await deps.session.ensure()) || !sameOwner()) return false;
+      const row = await deps.api.remoteRow();
+      if (!sameOwner()) return false;
+      if (row.kind === 'unknown') {
+        deps.background?.schedule();
+        return false;
+      }
+      const remote = toRow(row);
+      if (isForeignNewer(remote, deps.session.state.seenAt, deps.session.state.deviceId)) {
+        openConflict((remote as ServerRow).at);
+        return false;
       }
       const state = deps.getState();
-      const res = await deps.api.push(state, deps.session.state.deviceId ?? '', deps.appVersion);
+      const res = await deps.api.push(
+        state,
+        deps.session.state.deviceId ?? '',
+        deps.appVersion,
+        row.kind === 'row' ? row.at : null
+      );
+      if (!sameOwner()) return false;
       if (!res.ok) {
+        if (res.conflict) {
+          const latest = await deps.api.remoteRow();
+          if (sameOwner())
+            openConflict(latest.kind === 'row' ? latest.at : row.kind === 'row' ? row.at : '');
+        }
         if (res.retryable) deps.background?.schedule();
         return false;
       }
@@ -142,7 +159,7 @@ export function createSyncEngine(deps: SyncDeps): SyncEngine {
       }
       return true;
     } catch {
-      deps.background?.schedule();
+      if (sameOwner()) deps.background?.schedule();
       return false;
     } finally {
       set({ busy: false });
@@ -158,9 +175,15 @@ export function createSyncEngine(deps: SyncDeps): SyncEngine {
 
   async function pull(): Promise<boolean> {
     if (!deps.session.isAuthed()) return false;
-    if (!(await deps.session.ensure())) return false;
+    const userId = deps.session.state.userId;
+    if (!(await deps.session.ensure()) || deps.session.state.userId !== userId) return false;
     const r = await deps.api.pull();
-    if (!r.ok) return false;
+    if (
+      !r.ok ||
+      deps.session.state.userId !== userId ||
+      (deps.stateOwner && deps.stateOwner() !== userId)
+    )
+      return false;
     /* `migrateState` vraća null za neprepoznat oblik: bez provere bi stanje postalo null i aplikacija ostala razbijena. */
     const migrated = migrateState(r.data);
     if (!migrated) return false;
@@ -186,6 +209,12 @@ export function createSyncEngine(deps: SyncDeps): SyncEngine {
         void push();
       }, PUSH_DEBOUNCE_MS);
     },
+    reset(loadFailed = false) {
+      if (timer != null) clearTimer(timer);
+      timer = null;
+      again = false;
+      set({ conflict: null, loadFailed });
+    },
     async pushNow() {
       if (timer != null) clearTimer(timer);
       timer = null;
@@ -193,7 +222,10 @@ export function createSyncEngine(deps: SyncDeps): SyncEngine {
     },
     pull,
     async start() {
+      const userId = deps.session.state.userId;
       const row = await deps.api.remoteRow();
+      if (deps.session.state.userId !== userId || (deps.stateOwner && deps.stateOwner() !== userId))
+        return 'offline';
       if (row.kind === 'unknown') return 'offline'; // nema signala — radi lokalno
       const remote = toRow(row);
       const decision = decideStartup(
@@ -227,8 +259,8 @@ export function createSyncEngine(deps: SyncDeps): SyncEngine {
          `push` video isti zapis, ponovo digao traku i nikad ne bi prošao. */
       deps.session.patch({ seenAt: conflict.remoteAt });
       set({ conflict: null });
-      await push();
-      return { ok: true };
+      const ok = await push();
+      return ok ? { ok: true } : { ok: false, reason: 'push-failed' };
     },
     acknowledgeLoadFailure() {
       set({ loadFailed: false });

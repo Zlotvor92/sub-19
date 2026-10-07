@@ -104,7 +104,11 @@ export class Backend {
           ? { body: [{ data: this.row.data, updated_at: this.row.updated_at }] }
           : { body: [{ updated_at: this.row.updated_at, device_id: this.row.device_id }] };
       }
-      if (method === 'POST') {
+      if (method === 'POST' || method === 'PATCH') {
+        const expected = new URL(url).searchParams.get('updated_at')?.slice(3);
+        if (method === 'PATCH' && (!this.row || this.row.updated_at !== expected))
+          return { body: [] };
+        if (method === 'POST' && this.row) return { body: [] };
         this.clock += 1000;
         const b = body as { data: unknown; device_id: string };
         this.row = {

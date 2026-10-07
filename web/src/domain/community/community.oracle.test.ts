@@ -7,7 +7,7 @@ import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { GenPlanState, LogEntry, T3kRecord, VdotRecord } from '../state';
 import { currentVdot } from '../training/adaptation';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import {
   MEASURES,
   avatarColor,

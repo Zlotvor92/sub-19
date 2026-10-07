@@ -1,10 +1,11 @@
+import { d6Snapshot } from '@/test/d6Snapshot';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
 import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, VdotRecord } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import {
   icuDistance,
   icuDuration,
@@ -82,8 +83,11 @@ describe('slanje na sat naspram starog koda', () => {
         expect(icuPace(a, b), `${String(a)} ${String(b)}`).toBe(
           legacy.evalIn(`icuTempo(${JSON.stringify(a)}, ${JSON.stringify(b ?? undefined)})`)
         );
-    for (const s of [null, 0, 30, 59, 60, 89, 90, 119, 120, 150, 1])
-      expect(icuDuration(s), String(s)).toBe(legacy.evalIn(`icuTrajanje(${JSON.stringify(s)})`));
+    for (const s of [null, 0, 30, 59, 60, 89, 90, 119, 120, 150, 1]) {
+      const old = legacy.evalIn(`icuTrajanje(${JSON.stringify(s)})`);
+      // D6: seconds are exact; all other legacy formatting stays identical.
+      expect(icuDuration(s), String(s)).toBe(s != null && s >= 90 && s % 60 !== 0 ? `${s}s` : old);
+    }
     for (const k of [null, 0, 0.2, 0.4, 0.999, 1, 1.005, 2.5, 8.123, 21.0975])
       expect(icuDistance(k), String(k)).toBe(legacy.evalIn(`icuRazdaljina(${JSON.stringify(k)})`));
   });
@@ -166,7 +170,12 @@ describe('slanje na sat naspram starog koda', () => {
         const meta = plan.meta as { vdot0?: number };
         const vdot = vdotLog.length ? 47.4 : (meta.vdot0 ?? null);
         const mine = workoutsForWatch(resolved, TODAY, 14, vdot);
-        expect(mine.events, `${plan.meta?.raceDistM} v${variant}`).toEqual(old.events);
+        d6Snapshot('watch', `${plan.meta?.raceDistM}/${plan.weeks.length}/${variant}`, mine);
+        // D6 changes workout names/steps. Preserve scheduling and identity; exact new steps are tested in icuWorkouts.test.ts.
+        const identity = (e: { date?: unknown; externalId?: unknown }) => [e.date, e.externalId];
+        expect(mine.events.map(identity), `${plan.meta?.raceDistM} v${variant}`).toEqual(
+          old.events.map(identity)
+        );
         expect(mine.skipped).toBe(old.preskoceno);
         events += mine.events.length;
         if (mine.skipped) withSkipped++;

@@ -130,7 +130,92 @@ function harness(
 }
 
 const posts = (h: Harness) =>
-  h.fake.requests.filter((r) => r.method === 'POST' && r.url.includes('/rest/v1/user_state'));
+  h.fake.requests.filter(
+    (r) => ['POST', 'PATCH'].includes(r.method) && r.url.includes('/rest/v1/user_state')
+  );
+
+describe('audit: atomic writes and identity changes', () => {
+  it('two writes with the same expected version cannot both succeed', async () => {
+    const h = harness({ row: { at: '2026-07-01T00:00:00Z', device: 'dME' } });
+    const api = createUserStateApi({
+      fetcher: h.fake.fetcher,
+      session: h.session,
+      supabaseUrl: 'https://x.supabase.co',
+      anonKey: 'anon'
+    });
+    const first = filledState();
+    const second = filledState();
+    second.kg = [{ date: '2026-07-01', kg: 99 }];
+    const outcomes = await Promise.all([
+      api.push(first, 'A', '284', '2026-07-01T00:00:00Z'),
+      api.push(second, 'B', '284', '2026-07-01T00:00:00Z')
+    ]);
+    expect(outcomes.filter((r) => r.ok)).toHaveLength(1);
+    expect(outcomes.find((r) => !r.ok)).toMatchObject({
+      ok: false,
+      conflict: true,
+      retryable: false
+    });
+    expect(h.fake.row?.data).toMatchObject({ kg: first.kg });
+    expect(posts(h).every((r) => r.method === 'PATCH' && r.url.includes('updated_at=eq.'))).toBe(
+      true
+    );
+  });
+  it('two first inserts cannot overwrite each other', async () => {
+    const h = harness();
+    const api = createUserStateApi({
+      fetcher: h.fake.fetcher,
+      session: h.session,
+      supabaseUrl: 'https://x.supabase.co',
+      anonKey: 'anon'
+    });
+    const outcomes = await Promise.all([
+      api.push(filledState(), 'A', '284', null),
+      api.push(filledState(), 'B', '284', null)
+    ]);
+    expect(outcomes.filter((r) => r.ok)).toHaveLength(1);
+    expect(outcomes.find((r) => !r.ok)).toMatchObject({ conflict: true });
+  });
+  it('holds the mutex while token refresh is still pending', async () => {
+    const h = harness();
+    let release!: (ok: boolean) => void;
+    const ensure = vi.spyOn(h.session, 'ensure').mockImplementationOnce(
+      () =>
+        new Promise<boolean>((resolve) => {
+          release = resolve;
+        })
+    );
+    const first = h.engine.pushNow();
+    expect(h.engine.status.busy).toBe(true);
+    expect(await h.engine.pushNow()).toBe(false);
+    expect(ensure).toHaveBeenCalledTimes(1);
+    release(true);
+    expect(await first).toBe(true);
+    expect(posts(h)).toHaveLength(1);
+  });
+  it('does not upload a captured state after the session changes', async () => {
+    const h = harness();
+    let release!: (ok: boolean) => void;
+    vi.spyOn(h.session, 'ensure').mockImplementationOnce(
+      () =>
+        new Promise<boolean>((resolve) => {
+          release = resolve;
+        })
+    );
+    const pending = h.engine.pushNow();
+    h.session.patch({ userId: 'other-user' });
+    release(true);
+    expect(await pending).toBe(false);
+    expect(posts(h)).toHaveLength(0);
+  });
+  it('does not write when it cannot establish the current server version', async () => {
+    const h = harness();
+    h.fake.readsFail = true;
+    expect(await h.engine.pushNow()).toBe(false);
+    expect(posts(h)).toHaveLength(0);
+    expect(h.background.schedule).toHaveBeenCalled();
+  });
+});
 const flush = async (n = 6): Promise<void> => {
   for (let i = 0; i < n; i++) await Promise.resolve();
 };
@@ -151,7 +236,7 @@ describe('upis', () => {
     ])
       expect(sent, secret).not.toContain(secret);
     expect(req?.body).toMatchObject({ user_id: 'u1', device_id: 'dME', app_version: '283' });
-    expect(req?.headers['prefer']).toContain('resolution=merge-duplicates');
+    expect(req?.headers['prefer']).toContain('resolution=ignore-duplicates');
     expect(h.session.state.seenAt).toBe(h.fake.row?.updated_at);
     expect(h.background.cancel).toHaveBeenCalled();
     expect(h.onPushed).toHaveBeenCalledTimes(1);

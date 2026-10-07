@@ -116,10 +116,10 @@ function buildQuality5K(req: QualityRequest): SessionDay {
         r1(Math.max(twu * 0.75, 1)),
         n,
         400,
-        Math.max(pI, racePace),
+        racePace,
         90,
         r1(Math.max(tcd * 0.75, 0.8)),
-        'Intervali'
+        'Trkački ritam'
       );
     }
     return mkTempo(dow, vol, pT, r1(Math.min(3, Math.max(1.5, vol * 0.08))));
@@ -161,6 +161,5 @@ export const PROFILE_5K: DistanceProfile = {
   phase: phase5K,
   buildQuality: buildQuality5K,
   /* Pred kraj (≤6 nedelja) intervali se vezuju za tempo trke da se ne trče BRŽE od trke. */
-  intervalPaceForWeek: (pI, racePace, weeksToRace) =>
-    weeksToRace <= 6 ? Math.max(pI, racePace) : pI
+  intervalPaceForWeek: (pI) => pI
 };

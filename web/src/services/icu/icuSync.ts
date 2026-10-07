@@ -53,6 +53,7 @@ export interface WellnessPorts {
 }
 
 export interface IcuSyncDeps {
+  accountKey?: () => string;
   api: IcuApi;
   link: IcuLinkStore;
   ports: ImportPorts;
@@ -80,10 +81,12 @@ export function createIcuSync(deps: IcuSyncDeps) {
 
   /** `days` dana unazad do danas. Preklapanje ne smeta: zapisi se upisuju po datumu, pa se isti dan samo prepiše istom vrednošću. */
   async function syncWellness(days: number): Promise<IcuResult<{ n: number }>> {
+    const owner = deps.accountKey?.();
     const cur = link.get();
     if (!icuConnected(cur) || !cur) return { ok: false, error: 'intervals.icu nije povezan.' };
     /* LOKALNI kalendarski datum, ne UTC: posle ponoći po lokalnom vremenu UTC je još „juče", pa bi se tražio prozor bez današnjeg dana. */
     const r = await api.wellness(cur, daysAgo(days || 60), deps.today());
+    if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
     if (!r.ok) return { ok: false, error: r.error };
     const merged = { ...deps.wellness.read(), ...r.data.days };
     deps.wellness.write(merged);
@@ -99,6 +102,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
    * (403 zbog starog opsega) nije video ni korisniku ni meni.
    */
   async function syncZones(force: boolean): Promise<boolean> {
+    const owner = deps.accountKey?.();
     const cur = link.get();
     if (!icuConnected(cur) || !cur) return false;
     const remember = (msg: string | null): boolean => {
@@ -118,6 +122,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
     const last = typeof cur['zonesTs'] === 'number' ? cur['zonesTs'] : 0;
     if (!force && deps.now() - last < WEEK_MS) return false;
     const r = await api.zones(cur);
+    if (deps.accountKey?.() !== owner) return false;
     if (!r.ok) {
       remember(
         r.kind === 'network'
@@ -153,6 +158,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
     daysBack: number,
     manual: boolean
   ): Promise<IcuResult<{ n: number; details: number; streams: number }>> {
+    const owner = deps.accountKey?.();
     const start0 = link.get();
     if (!icuConnected(start0) || !start0)
       return { ok: false, error: 'intervals.icu nije povezan.' };
@@ -179,6 +185,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
     const oldest = asked < floor ? floor : asked;
 
     const list = await api.activities(start0, oldest, deps.today());
+    if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
     if (!list.ok) return { ok: false, error: list.error };
     const activities: IcuActivity[] = list.data.activities;
     if (!activities.length) {
@@ -250,6 +257,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
     }
 
     const finish = (): void => {
+      if (deps.accountKey?.() !== owner) return;
       const aligned = alignVdotDates(s.vdotLog, plan, rows, s.log, baseline);
       if (aligned.changed) s.vdotLog = aligned.vdotLog;
       ports.commit(s);
@@ -384,6 +392,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
   let autoRunning = false;
   async function autoSync(online: boolean): Promise<boolean> {
     if (autoRunning) return false;
+    const owner = deps.accountKey?.();
     const cur = link.get();
     if (!icuConnected(cur) || !cur || !online) return false;
     const day = deps.today();
@@ -396,7 +405,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
       r = null;
     }
     autoRunning = false;
-    if (r && r.ok) {
+    if (r && r.ok && deps.accountKey?.() === owner) {
       const l = link.get();
       if (l) link.set({ ...l, autoDan: day });
       return true;

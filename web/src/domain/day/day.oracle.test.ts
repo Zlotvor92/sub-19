@@ -13,7 +13,7 @@ import type {
   VdotRecord,
   WeightRecord
 } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import type { StoredPredRow } from '../training/adaptation';
 import { parseTimeStr } from '../format';
 import {

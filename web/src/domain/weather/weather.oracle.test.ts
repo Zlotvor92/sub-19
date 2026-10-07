@@ -6,7 +6,7 @@ import { resolvePlan } from '../plan/resolve';
 import type { GenPlanState, VdotRecord } from '../state';
 import { currentVdot, type StoredPredRow } from '../training/adaptation';
 import { predRowsForDay } from '../training/adaptation';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import {
   bestHour,
   geoMessage,

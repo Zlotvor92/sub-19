@@ -40,7 +40,7 @@ export function icuDuration(sec: number | null | undefined): string {
   if (!((sec ?? 0) > 0)) return '1m';
   const s = sec as number;
   if (s % 60 === 0) return `${s / 60}m`;
-  return s < 90 ? `${s}s` : `${Math.round(s / 60)}m`;
+  return `${Math.round(s)}s`;
 }
 
 export function icuDistance(km: number | null | undefined): string | null {
@@ -49,10 +49,10 @@ export function icuDistance(km: number | null | undefined): string | null {
   return k < 1 ? `${Math.round(k * 1000)}mtr` : `${Math.round(k * 100) / 100}km`;
 }
 
-function recovery(kind: string, restSec: number, jog = false): string {
+function recovery(kind: string, restSec: number, jog = false, easy = JOG_FROM): string {
   const isJog = jog || RECOVERY_JOG.includes(kind);
   return isJog
-    ? `- Oporavak kaskanje ${icuDuration(restSec)} ${icuPace(JOG_FROM, JOG_TO)}`
+    ? `- Oporavak kaskanje ${icuDuration(restSec)} ${icuPace(Math.max(JOG_FROM, easy), Math.max(JOG_TO, easy + 40))}`
     : `- Pauza hod ${icuDuration(restSec)} ${icuPace(WALK_FROM, WALK_TO)}`;
 }
 
@@ -129,7 +129,8 @@ export function sessionFromDescription(
   return null; // običan trčanje — ide kao jedan korak na laganom tempu
 }
 
-type DayForWatch = Pick<ResolvedDay, 'rest' | 'tag' | 'desc' | 'km' | 'mlr' | 'session'>;
+type DayForWatch = Pick<ResolvedDay, 'rest' | 'tag' | 'desc' | 'km' | 'mlr' | 'session'> &
+  Partial<Pick<ResolvedDay, 'runWalk' | 'finish' | 'strides'>>;
 
 /** Tekst jednog dana u sintaksi intervals.icu; `null` za dane koje nema smisla slati. `easy` je lagan (E) tempo u s/km. */
 export function dayWorkoutText(
@@ -138,12 +139,39 @@ export function dayWorkoutText(
 ): string | null {
   if (!d || d.rest || d.tag === 'snaga' || d.tag === 'trka') return null;
   if (/TIME TRIAL|TT\b/i.test(d.desc || '')) return null;
-  const ses = (d.session as WatchSession | undefined) ?? sessionFromDescription(d.desc, d.tag);
+  const ses =
+    d.tag === 'int' || d.tag === 'tempo'
+      ? ((d.session as WatchSession | undefined) ?? sessionFromDescription(d.desc, d.tag))
+      : null;
   const easyPace = icuPace(easy, (easy ?? 0) > 0 ? (easy as number) + EASY_RANGE_SEC : 0);
   if (!easyPace) return null;
   const row = (label: string, measure: string | null, pace: string | null): string =>
     `- ${label ? `${label} ` : ''}${measure}${pace ? ` ${pace}` : ''}`;
   const sections: string[] = [];
+  if (d.runWalk && d.km && easy) {
+    const rw = d.runWalk;
+    const cycleKm = rw.runSec / easy + rw.walkSec / WALK_FROM;
+    if (!(cycleKm > 0)) return null;
+    const n = Math.max(1, Math.round(d.km / cycleKm));
+    return `Run/walk ${n}x\n${row('Trčanje', icuDuration(rw.runSec), easyPace)}\n${row('Hod', icuDuration(rw.walkSec), icuPace(WALK_FROM, WALK_TO))}\n\nCilj je smena trčanja i hoda; kilometraža je procena.`;
+  }
+  if (d.finish && d.km) {
+    const fast = Math.min(d.finish.km, d.km);
+    return `Dugo trčanje\n${row('Lagani deo', icuDistance(d.km - fast), easyPace)}\n${row('Brzi završetak', icuDistance(fast), icuPace(d.finish.paceSec))}`;
+  }
+  if (d.strides && d.km && easy) {
+    const s = d.strides;
+    const stridesKm =
+      (s.reps * s.runSec) / s.paceSec + (Math.max(0, s.reps - 1) * s.restSec) / easy;
+    const lead = row('Lagano', icuDistance(Math.max(0.1, d.km - stridesKm)), easyPace);
+    const legs = Array.from(
+      { length: s.reps },
+      (_, i) =>
+        row('Ubrzanje', icuDuration(s.runSec), icuPace(s.paceSec)) +
+        (i < s.reps - 1 ? `\n${recovery('Tempo trke', s.restSec, true, easy)}` : '')
+    );
+    return `Lagano\n${lead}\n\nUbrzanja\n${legs.join('\n')}`;
+  }
   if (!ses) {
     if (d.km == null) return null;
     const measure = icuDistance(d.km);
@@ -158,9 +186,13 @@ export function dayWorkoutText(
     if (!measure) return null;
     sections.push(`${ses.kind || 'Tempo'}\n${row('', measure, pace)}`);
   } else if (ses.type === 'int') {
-    sections.push(
-      `${ses.kind || 'Radni deo'} ${String(ses.reps)}x\n${row('', icuDistance((ses.repM ?? 0) / 1000), pace)}\n${recovery(ses.kind, ses.restSec ?? 0)}`
-    );
+    const n = Number(ses.reps);
+    const work = row('', icuDistance((ses.repM ?? 0) / 1000), pace);
+    if (n > 1)
+      sections.push(
+        `${ses.kind || 'Radni deo'} ${n - 1}x\n${work}\n${recovery(ses.kind, ses.restSec ?? 0, false, easy ?? JOG_FROM)}`
+      );
+    sections.push(`Poslednja deonica\n${work}`);
   } else if (ses.type === 'pyramid') {
     const reps = ses.reps as number[];
     /* posle POSLEDNJE deonice nema pauze — odmah ide smirivanje */
@@ -169,14 +201,16 @@ export function dayWorkoutText(
         .map(
           (m, i) =>
             row('', icuDistance(m / 1000), pace) +
-            (i < reps.length - 1 ? `\n${recovery(ses.kind, ses.restSec ?? 0)}` : '')
+            (i < reps.length - 1
+              ? `\n${recovery(ses.kind, ses.restSec ?? 0, false, easy ?? JOG_FROM)}`
+              : '')
         )
         .join('\n')}`
     );
   } else if (ses.type === 'fartlek') {
     /* fartlek pauza je uvek kaskanje — brzo se smenjuje sa naporom */
     sections.push(
-      `Fartlek ${String(ses.reps)}x\n${row('', icuDuration(ses.repSec), pace)}\n${recovery(ses.kind, ses.restSec ?? 0, true)}`
+      `Fartlek ${String(ses.reps)}x\n${row('', icuDuration(ses.repSec), pace)}\n${recovery(ses.kind, ses.restSec ?? 0, true, easy ?? JOG_FROM)}`
     );
   } else if (ses.type === 'prog') {
     const total = ses.qKm ?? 0;
@@ -255,7 +289,9 @@ export function workoutsForWatch(
         continue;
       }
       const source =
-        (d.session as WatchSession | undefined) ?? sessionFromDescription(d.desc, d.tag);
+        d.tag === 'int' || d.tag === 'tempo'
+          ? ((d.session as WatchSession | undefined) ?? sessionFromDescription(d.desc, d.tag))
+          : null;
       /* Naziv nosi i kilometražu: u Garmin kalendaru i na satu vidi se samo naziv, pa je golo „Lagano" beskorisno kad se bira trening. */
       const base =
         source?.kind || (d.mlr ? 'Srednje-dugo' : d.tag === 'lr' ? 'Dugo trčanje' : 'Lagano');

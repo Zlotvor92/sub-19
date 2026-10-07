@@ -23,7 +23,7 @@ export function chooseReps(
 
 /** Pauza: 80% vremena deonice, u granicama 90–180 s. */
 export const proportionalRest = (repM: number, paceSec: number): number =>
-  Math.min(180, Math.max(90, Math.round((repM / 1000) * paceSec * 0.8)));
+  Math.min(240, Math.max(60, Math.round((repM / 1000) * paceSec * 0.75)));
 
 export interface PyramidParams {
   /** Od najvećeg radnog budžeta nadole: prva piramida čiji je `fromKm` ≤ budžet. */

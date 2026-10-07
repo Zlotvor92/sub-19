@@ -4,7 +4,7 @@ import { addDays, type IsoDate } from '../date';
 import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import { planPhases, ringView, sessionCore, weekChart, weekPlanKm, weekRealKm } from './index';
 
 /* parity: sessCore, planFaze, prstenSVG, chartWeeks (app.js) — Plan tab. */

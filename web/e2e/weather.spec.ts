@@ -54,7 +54,12 @@ test('uključivanje: zaokružene koordinate idu samo Open-Meteo, kartica pokazuj
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('sub19-v1') ?? ''))
     .toContain('"geo":{"lat":44.81,"lon":20.47}');
-  await expect.poll(() => backend.count('/rest/v1/user_state', 'POST')).toBeGreaterThan(1);
+  await expect
+    .poll(
+      () =>
+        backend.count('/rest/v1/user_state', 'POST') + backend.count('/rest/v1/user_state', 'PATCH')
+    )
+    .toBeGreaterThan(1);
   const onServer = JSON.stringify(backend.row?.data ?? {});
   expect(onServer).not.toContain('44.81');
   expect(onServer).not.toContain('"vreme"');

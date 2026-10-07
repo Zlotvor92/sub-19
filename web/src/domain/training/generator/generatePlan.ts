@@ -13,7 +13,7 @@
 
 import { addDays, diffDays, mondayOnOrBefore, parseIsoDate } from '../../date';
 import { brojNedelja, distUReceni, fmtClock, r1 } from '../../format';
-import { DELIVERED_GROWTH_FACTOR, DELOAD_EVERY, RAMP_CAP_WEEKS } from '../constants/heuristics';
+import { DELIVERED_GROWTH_FACTOR, DELOAD_EVERY } from '../constants/heuristics';
 import {
   BEGINNER_MAX_WEEKLY_KM,
   DEFAULT_QUALITY,
@@ -32,6 +32,8 @@ import type { DistanceProfile } from '../distances/types';
 import { predRow, qsFor } from '../prediction';
 import { mkDeloadSharpness, sessInt, sessTempo, wuCdForVolume } from '../sessions/build';
 import { sessDesc, sessKm, sessQKm } from '../sessions/calc';
+import { constrainWeek } from '../sessions/constraints';
+import { raceTimeForVdot } from '../vdot/racePrediction';
 import type {
   Day,
   EasyRunDay,
@@ -177,8 +179,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           : 'Nijedan tempo napretka ga ne dostiže za ' +
             brojNedelja(weeks) +
             ' — treba ti više vremena do trke ili blaži cilj.') +
-        ' Plan i dalje računa tempo trke IZ TVOG CILJA, ne iz predviđanja, pa će kvalitetni treninzi biti brži ' +
-        'nego što forma trenutno nosi. To je namerno — ali znaj da je tako.'
+        ' Tempo treninga ostaje vezan za potvrđenu formu. Cilj je sačuvan kao želja; proveri napredak novom trkom ili testom pre ubrzavanja.'
     );
   }
 
@@ -190,9 +191,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const trainedRecently = inp.trainedRecently !== false;
   const isBeginner = !trainedRecently;
   const wantedBase = isBeginner ? prof.product.baseWeeksBeginner : 0;
-  const baseWeeks = wantedBase
-    ? Math.max(0, Math.min(wantedBase, weeks - prof.product.minWeeks))
-    : 0;
+  const baseWeeks = wantedBase ? Math.max(0, Math.min(wantedBase, weeks - 1)) : 0;
   const rwWeeks = isBeginner ? Math.min(RUN_WALK_WEEKS, baseWeeks) : 0;
 
   if (qCut) {
@@ -305,11 +304,14 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     vols[w - 1] = r1(peakTarget * at(UNDULATION, (w - 1) % DELOAD_EVERY));
   }
 
-  const rampWeeks = Math.min(weeks - 2, RAMP_CAP_WEEKS);
-  const racePace = Math.round((inp.goalSec || a.predictedSec) / (raceDistM / 1000));
+  const currentRaceSec = raceTimeForVdot(a.vdot0, raceDistM);
+  const racePace = Math.round(
+    Math.max(inp.goalSec || currentRaceSec, currentRaceSec) / (raceDistM / 1000)
+  );
   const raceDow = daysN - (weeks - 1) * 7 + 1; // 1..7 unutar poslednje nedelje
   const meta: PlanMeta = {
     ...a,
+    trainingVdot: a.vdot0,
     start,
     weeks,
     intensity: inp.intensity,
@@ -339,14 +341,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
 
   const pushPredQs = (day: SessionDay, w: number, doesNotMeasure?: boolean): void => {
     const ses = day.session;
-    const row = predRow(
-      w,
-      ses.kind,
-      sessQKm(ses),
-      ses.paceSec,
-      raceDistM,
-      a.vdot0 + ((a.vdotGoal - a.vdot0) * Math.min(w, rampWeeks)) / rampWeeks
-    );
+    const row = predRow(w, ses.kind, sessQKm(ses), ses.paceSec, raceDistM, a.vdot0);
     if (doesNotMeasure) row.nemeri = true;
     plan.pred.push(row);
     const spec = qsFor(ses);
@@ -360,7 +355,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       : (v, pl) => longRunCap(H, v, pl);
 
   for (let w = 1; w <= weeks; w++) {
-    const vdotW = a.vdot0 + ((a.vdotGoal - a.vdot0) * Math.min(w, rampWeeks)) / rampWeeks;
+    const vdotW = a.vdot0;
     /* Specifičnost tek u POSLEDNJIH 6 nedelja pred taper — APSOLUTAN broj, ne razlomak. */
     const pI = prof.intervalPaceForWeek(paceForZone(vdotW, 'I'), racePace, weeks - w);
     const pT = paceForZone(vdotW, 'T');
@@ -478,6 +473,30 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         }
       }
     }
+    // Final delivered-volume guard also covers the transition out of a longer beginner base.
+    if (!isRace && !isTaper1 && !isTaper2 && !isDeload && plan.weeks.length) {
+      const previous = at(plan.weeks, plan.weeks.length - 1);
+      const reference =
+        previous.deload && plan.weeks.length > 1 ? at(plan.weeks, plan.weeks.length - 2) : previous;
+      const limit =
+        reference.vol + rampStep(H, reference.vol, volIntensity) * DELIVERED_GROWTH_FACTOR;
+      let excess = Math.max(0, sumKm(days) - limit);
+      for (const d of days
+        .filter(
+          (d): d is RunningDay =>
+            hasKm(d) &&
+            !d.session &&
+            (d.tag === 'lako' || d.tag === 'rw' || (d.tag === 'lr' && !!d.mlr))
+        )
+        .sort((a, b) => b.km - a.km)) {
+        if (excess <= 0.05) break;
+        const before = d.km;
+        d.km = r1(Math.max(perRunFloor(vol, runDays), d.km - excess));
+        excess -= before - d.km;
+        renameKm(d);
+      }
+    }
+    constrainWeek(days, H.tempoMaxSec, pE);
     plan.weeks.push({
       w,
       vol: r1(sumKm(days)),
@@ -524,6 +543,26 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
             `🏁 TRKA ${distKm} km (${prof.product.name}) — cilj ${fmtClock(inp.goalSec || a.predictedSec)} / ritam ${fmtClock(rp)}/km`
           )
       };
+      const activationFactory = proto['-2'];
+      const preparation: number[] = [];
+      let nextRun = 0;
+      for (let off = -1; off >= -6; off--) {
+        const dw = ((raceDow + off - 1 + 7) % 7) + 1;
+        if (slots[dw] === 'rest' || (runDays < 5 && nextRun - off < 2)) continue;
+        if (preparation.length >= Math.min(3, runDays - 1)) break;
+        preparation.push(off);
+        nextRun = off;
+      }
+      const activationOffset = trainedRecently
+        ? preparation.find((off) => off <= -2 && off !== -3)
+        : undefined;
+      for (let off = -6; off <= -1; off++) {
+        proto[String(off)] = !preparation.includes(off)
+          ? (dw) => REST(dw)
+          : off === activationOffset && activationFactory
+            ? activationFactory
+            : (dw) => D.easy(dw, shakeA, `${shakeA} km shakeout @ ~${fmtClock(pE)}/km`);
+      }
       for (let dw = 1; dw <= raceDow; dw++) {
         const mk = proto[String(dw - raceDow)];
         days.push(mk ? mk(dw) : REST(dw));
@@ -535,7 +574,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       /* Dani protokola koji ne staju u trkačku nedelju upisuju se u PRETHODNU; dan koji se time
          gubi povlači i svoj PRED red i qs ključ. */
       let overwroteLongRun = false;
-      for (let off = -3; off <= -1; off++) {
+      for (let off = -6; off <= -1; off++) {
         const dw = raceDow + off;
         if (dw >= 1 || !plan.weeks.length) continue;
         const pw = at(plan.weeks, plan.weeks.length - 1);
@@ -684,10 +723,20 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       }
       /* „Uvodna" prva kvalitetna nedelja (samo q1, lagan tempo) ima smisla za nekoga ko ULAZI u kvalitet. */
       const isFirstQualWeek = qualW === 1 && (baseWeeks > 0 || !trainedRecently);
+      const recent = plan.weeks.filter((pw) => !pw.deload).slice(-3);
+      const supportedKm = Math.min(
+        inp.weeklyKm + Math.max(0, w - 1) * 2,
+        ...(recent.length ? recent.map((pw) => pw.vol) : [inp.weeklyKm])
+      );
+      const weeklyQ = Math.min(
+        effQ,
+        volQ >= QUAL2_MIN_KM && supportedKm >= QUAL2_MIN_KM && qualW > (isBeginner ? 2 : 0) ? 2 : 1
+      );
       const sessions: Record<number, SessionDay> = {};
       for (let dow = 1; dow <= 7; dow++) {
         const role = slots[dow];
         if (role !== 'q1' && role !== 'q2') continue;
+        if (role === 'q2' && weeklyQ < 2) continue;
         /* DELOAD: jedna kratka oštrina umesto potpunog brisanja kvaliteta; samo q1. */
         if (isDeload) {
           if (role === 'q1') sessions[dow] = mkDeloadSharpness(dow, volQ, pR);
@@ -705,7 +754,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           qualW,
           qualWeeks,
           slotRole: role,
-          effQ,
+          effQ: weeklyQ,
           vol: volQ,
           pI,
           pT,
@@ -719,7 +768,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       }
       const sessionList = (): SessionDay[] => Object.values(sessions);
       /* MLR se broji među „lagane" dane jer se hrani iz istog ostatka. */
-      const easyDowsCount = [1, 2, 3, 4, 5, 6, 7].filter((d) => {
+      let easyDowsCount = [1, 2, 3, 4, 5, 6, 7].filter((d) => {
         const role = slots[d];
         return (
           role === 'easy' || role === 'mlr' || ((role === 'q1' || role === 'q2') && !sessions[d])
@@ -743,6 +792,30 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           mlrShareQ
         );
       let alloc = allocFor();
+      const hasTrial = sessionList().some((d) => d.session.kind === 'Kontrolna trka');
+      const finishCandidate =
+        !isTaper1 &&
+        !isTaper2 &&
+        !isDeload &&
+        !hasTrial &&
+        prof.longRunFinish?.(
+          prof.phase(qualW, qualWeeks),
+          qualW,
+          alloc.lr,
+          racePace,
+          prof.paceStrategy?.(racePace) ?? null,
+          lrF
+        );
+      if ((finishCandidate || hasTrial) && sessionList().length > 1) {
+        const second = Object.keys(sessions)
+          .map(Number)
+          .find((dow) => slots[dow] === 'q2');
+        if (second != null) {
+          delete sessions[second];
+          easyDowsCount++;
+          alloc = allocFor();
+        }
+      }
 
       /* PRODUŽENO ZAGREVANJE/SMIRIVANJE kad nedelja podbacuje ciljni obim: raspodela se stvarno
          izvrši, izmeri se pravi manjak, WU/CD se prošire i raspodela ponovi (dva prolaza). U
@@ -822,7 +895,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
             );
           } else {
             const finish =
-              !isTaper1 && !isDeload && prof.longRunFinish
+              !isTaper1 && !isTaper2 && !isDeload && !hasTrial && prof.longRunFinish
                 ? prof.longRunFinish(
                     prof.phase(Math.max(w - baseWeeks, 1), weeks - baseWeeks),
                     Math.max(w - baseWeeks, 1),
@@ -833,14 +906,14 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
                       ? prof.longRunCycle(w, { weeks, baseWeeks, taperW, isDeload })
                       : null
                   )
-                : '';
-            days.push(
-              D.longRun(
-                dow,
-                alloc.lr,
-                `${alloc.lr} km LR (Z2) @ ~${fmtClock(pLR)}/km — najduže trčanje te nedelje${fuelText(alloc.lr, pLR, H)}${finish}`
-              )
+                : null;
+            const longDay = D.longRun(
+              dow,
+              alloc.lr,
+              `${alloc.lr} km LR (Z2) @ ~${fmtClock(pLR)}/km — najduže trčanje te nedelje${fuelText(alloc.lr, pLR, H)}${finish ? ` · poslednjih ${finish.km} km @ ${fmtClock(finish.paceSec)}/km (${finish.zone === 'M' ? 'maratonski' : 'tempo trke'})` : ''}`
             );
+            if (finish) longDay.finish = finish;
+            days.push(longDay);
           }
           continue;
         }
@@ -979,6 +1052,31 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       const i = plan.pred.findIndex((p) => p.w === w1.w && p.l === `N${w1.w} · ${d.session?.kind}`);
       if (i >= 0) plan.pred.splice(i, 1);
     });
+  }
+  plan.pred = [];
+  plan.qs = {};
+  for (const wk of plan.weeks) {
+    constrainWeek(wk.days, H.tempoMaxSec, paceForZone(a.vdot0, 'E'));
+    wk.vol = r1(sumKm(wk.days));
+    for (const day of wk.days) {
+      if (day.session) pushPredQs(day, wk.w, wk.w === weeks || day.session.kind === 'Oštrina');
+      const strides = /([0-9]+)×([0-9]+) s ubrzanja/.exec(day.desc || '');
+      if (strides && day.tag === 'lako')
+        day.strides = {
+          reps: Number(strides[1]),
+          runSec: Number(strides[2]),
+          restSec: 60,
+          paceSec: paceForZone(a.vdot0, 'R')
+        };
+    }
+    if (wk.w !== weeks)
+      wk.focus = weekFocus(wk.days, {
+        isDeload: wk.deload,
+        isTaper1: !!wk.taper,
+        isTaper2: false,
+        isRace: false,
+        isBase: wk.w <= baseWeeks
+      });
   }
   return plan;
 }

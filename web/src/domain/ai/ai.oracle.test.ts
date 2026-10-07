@@ -5,7 +5,7 @@ import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry, WellnessRecord } from '../state';
 import type { StoredPredRow } from '../training/adaptation';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import { zoneSource } from '../zones';
 import {
   AI_GIVE_UP_MS,

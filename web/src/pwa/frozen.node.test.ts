@@ -9,12 +9,12 @@ import { describe, expect, it } from 'vitest';
 const sha = (s: string): string => createHash('sha256').update(s).digest('hex');
 const read = (p: string): string => readFileSync(join(process.cwd(), p), 'utf8');
 
-describe('service worker i mali skriptovi su isti kao u APP_VERSION 282', () => {
+describe('service worker D6 i nepromenjeni mali skriptovi iz APP_VERSION 282', () => {
   it('telo sw.js (message, install, activate, fetch, IndexedDB, push, sync, periodicsync, putSafe) — zaglavlje se upisuje pri izgradnji', () => {
     const src = read('sw/sw.js');
     const body = src.slice(src.indexOf("self.addEventListener('message'"));
-    expect(body.length).toBe(18863);
-    expect(sha(body)).toBe('f0f62be751b5f1bb915f1390fd90d151a18c5b1be8add4b90254dd237a16a4d7');
+    expect(body.length).toBe(19387);
+    expect(sha(body)).toBe('95006e24eb4bf6581d4854cbad3b6b0708bc822009d29604dbb17a4ede8cfaf6');
   });
 
   it('sw-reg.js', () => {

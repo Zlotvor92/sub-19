@@ -2,6 +2,9 @@ import { fileURLToPath, URL } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
+// Recorded local-time fixtures were captured in UTC.
+process.env['TZ'] = 'UTC';
+
 const alias = { '@': fileURLToPath(new URL('./src', import.meta.url)) };
 
 /* Dva projekta, namerno:

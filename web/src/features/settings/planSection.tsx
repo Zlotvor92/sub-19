@@ -103,7 +103,7 @@ export function PlanBody() {
     const delta = pv.form - pv.planVdot;
     const before = r.predictedBefore ? fmtClock(r.predictedBefore) : '—';
     const ok = await confirmAction(
-      `Preračunati preostali plan prema izmerenoj formi?\n\nIzmerena forma: VDOT ${fmtNum(pv.form, 1)} · plan je očekivao: VDOT ${fmtNum(pv.planVdot, 1)} (${delta > 0 ? '+' : ''}${fmtNum(delta, 1)}).\nProjektovano vreme na dan trke: ${before} → ${fmtClock(r.predictedAfter)}.\n\n${glagolZaBroj(n, 'Menja se ', 'Menjaju se ')}${brojNedelja(n)} ${pl3(n, 'koja tek dolazi', 'koje tek dolaze', 'koje tek dolaze')} (od N${r.week}): tempi sesija, a kilometraža najviše za nekoliko km. Tempo trke, kalendar i raspored dana ostaju isti.\nOdrađeni treninzi, uneti tempi, ručno zaključana polja i izmerena forma ostaju netaknuti.\n\nNema vraćanja — ako ti treba, prvo izvezi backup.`
+      `Preračunati preostali plan prema izmerenoj formi?\n\nIzmerena forma: VDOT ${fmtNum(pv.form, 1)} · plan je očekivao: VDOT ${fmtNum(pv.planVdot, 1)} (${delta > 0 ? '+' : ''}${fmtNum(delta, 1)}).\nProjektovano vreme na dan trke: ${before} → ${fmtClock(r.predictedAfter)}.\n\n${glagolZaBroj(n, 'Menja se ', 'Menjaju se ')}${brojNedelja(n)} ${pl3(n, 'koja tek dolazi', 'koje tek dolaze', 'koje tek dolaze')} (od N${r.week}): tempi i obim sesija prema izmerenoj formi. Cilj, kalendar i raspored dana ostaju isti. Trkački treninzi ne idu brže nego što trenutna forma podržava.\nOdrađeni treninzi, uneti tempi, ručno zaključana polja i izmerena forma ostaju netaknuti.\n\nNema vraćanja — ako ti treba, prvo izvezi backup.`
     );
     if (!ok) return;
     commitRecalibration(pv.result);
@@ -157,10 +157,10 @@ export function PlanBody() {
           <Help summary="Čime se razlikuje od „Prilagodi tempo“">
             <p>
               „Prilagodi tempo“ (na tabu Trka) menja samo ciljne tempe sesija. Ovo preračunava{' '}
-              <b>ceo ostatak plana</b> po putanji koja prolazi kroz tvoju stvarnu formu: tempi,
-              projektovano vreme na dan trke i — vrlo malo — kilometraža. Tempo trke i kalendar se
-              ne menjaju. Radi tek kad postoji bar 3 merenja i kad se forma i plan razilaze za 1,5
-              VDOT ili više.
+              <b>ceo ostatak plana</b> prema tvojoj izmerenoj formi: tempi, projektovano vreme na
+              dan trke i obim treninga. Cilj i kalendar ostaju isti, a tempo trkačkih treninga prati
+              trenutnu formu. Radi tek kad postoji bar 3 merenja i kad se forma i plan razilaze za
+              1,5 VDOT ili više.
             </p>
           </Help>
         </>

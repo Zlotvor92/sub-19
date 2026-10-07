@@ -52,10 +52,11 @@ export function qsFor(session: Session): number[] | null {
 
 /** Planska putanja forme (VDOT) za jednu nedelju, izvedena iz `meta`; `null` ako plan nema putanju. */
 export function planVdotForWeek(
-  meta: Pick<PlanMeta, 'vdot0' | 'vdotGoal' | 'weeks'> | null | undefined,
+  meta: Pick<PlanMeta, 'vdot0' | 'vdotGoal' | 'weeks' | 'trainingVdot'> | null | undefined,
   w: number
 ): number | null {
   if (!meta) return null;
+  if (meta.trainingVdot != null) return meta.trainingVdot;
   const v0 = +meta.vdot0;
   const vg = +meta.vdotGoal;
   const total = +meta.weeks;
@@ -104,7 +105,7 @@ export function deriveQSById(weeks: WeeksWithSessions): Record<string, number[]>
 export function derivePred(
   weeks: WeeksWithSessions,
   raceDistM: number,
-  meta: Pick<PlanMeta, 'vdot0' | 'vdotGoal' | 'weeks'> | null | undefined
+  meta: Pick<PlanMeta, 'vdot0' | 'vdotGoal' | 'weeks' | 'trainingVdot'> | null | undefined
 ): PredictionRow[] {
   const pred: PredictionRow[] = [];
   weeks.forEach((wk) =>

@@ -19,7 +19,7 @@ export function weekFocus(days: readonly Day[], st: WeekKind): string {
   if (st.isBase) return 'Baza — aerobni obim, bez kvaliteta';
   const kinds: string[] = [];
   for (const d of days) {
-    const k = d.session?.kind;
+    const k = d.finish ? 'LR sa brzim završetkom' : d.session?.kind;
     if (k && !kinds.includes(k)) kinds.push(k);
   }
   if (!kinds.length) return st.isTaper1 || st.isTaper2 ? 'Taper — obim dole, oštrina ostaje' : '';

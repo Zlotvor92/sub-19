@@ -24,6 +24,19 @@ export interface RunWalk {
   label: string;
 }
 
+/** Structured additions survive rendering, persistence and watch export. */
+export interface FastFinish {
+  km: number;
+  paceSec: number;
+  zone: 'M' | 'RP';
+}
+export interface Strides {
+  reps: number;
+  runSec: number;
+  restSec: number;
+  paceSec: number;
+}
+
 /* ---------- sesije (kvalitetni treninzi) ---------- */
 
 interface SessionBase {
@@ -36,6 +49,10 @@ interface SessionBase {
   overrides: Record<string, boolean>;
   /** Izvorni tempo pre automatskog prilagođavanja formi (v. adaptation). */
   paceSec0?: number;
+  zone?: Zone | 'RP';
+  paceSource?: 'current-fitness' | 'race-specific';
+  /** Coaching instructions are not replaced when kilometres are recalculated. */
+  notes?: string;
 }
 
 export interface IntervalSession extends SessionBase {
@@ -76,6 +93,8 @@ export type WorkoutSession = Session;
 interface DayBase {
   /** 1 = ponedeljak … 7 = nedelja (generator). `adaptGeneratedPlan` ga pomera na 0–6. */
   dow: number;
+  finish?: FastFinish;
+  strides?: Strides;
 }
 
 export interface RestDay extends DayBase {
@@ -171,6 +190,8 @@ export interface Assessment {
 }
 
 export interface PlanMeta extends Assessment {
+  /** New plans prescribe current fitness; vdotGoal is a projection only. */
+  trainingVdot?: number;
   start: IsoDate;
   weeks: number;
   intensity: Intensity;

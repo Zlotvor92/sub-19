@@ -5,7 +5,7 @@ import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
 import { adaptGeneratedPlan } from '../plan/adapt';
 import type { AltRecord, GenPlanState, LogEntry } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import {
   allWorkLapsPace,
   blockPace,

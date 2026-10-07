@@ -12,7 +12,7 @@
 import { addDays, diffDays, mondayOnOrAfter, parseIsoDate, type IsoDate } from '../date';
 import { r1 } from '../format';
 import type { GenPlanState, StoredWeek } from '../state';
-import { GROW_MAX, RAMP_CAP_WEEKS, VDOT_RAMP_PER_WEEK } from '../training/constants/heuristics';
+import { GROW_MAX } from '../training/constants/heuristics';
 import { generatePlan } from '../training/generator/generatePlan';
 import { derivePred, deriveQS, deriveQSById, planVdotForWeek } from '../training/prediction';
 import { sessDesc, sessKm } from '../training/sessions/calc';
@@ -201,15 +201,10 @@ export interface RecalibratedStoredPlan {
 }
 
 /**
- * REKALIBRACIJA PLANA: preostale nedelje (od tekuće) se regenerišu po putanji koja kroz tekuću nedelju prolazi TAČNO kroz izmerenu formu
- * (`formVdot`). Iste garancije kao promena cilja: nedelje ISPOD tekuće i svi njihovi ID-jevi/PRED redovi ostaju netaknuti, ručno
- * zaključana polja sesija se prenose (`mergeOverrides`), odrađeni dani se ne diraju.
- *
- * Šta se NE menja: tempo trke (`racePace`; oslonac je cilj, ili — kad cilja nema — projekcija iz prve rekalibracije), kalendar, struktura
- * nedelje. Šta se menja: tempi sesija i (preko vremenskih plafona, D1) kilometraža za najviše nekoliko km, projektovano vreme na dan trke.
- *
- * `meta.vdot0` postaje VIRTUELNA polazna tačka putanje; stvarna polazna forma ide u `meta.vdotBase` (v. `planBaselineVdot`) da lanac
- * forme ne bi menjao prošlost. Idempotentno: ista forma, ista nedelja → isti plan.
+ * Preostale nedelje koriste izmerenu formu bez automatskog rasta VDOT-a (D6).
+ * Istorija i zaključana polja ostaju; cilj se čuva, ali tempo trkačkih treninga
+ * ne može biti brži od trenutne forme. Ista forma i nedelja daju isti plan.
+ * `vdotBase` čuva stvarnu početnu formu za istorijski lanac merenja.
  */
 export function planRecalibrated(
   plan: GenPlanState | null,
@@ -250,7 +245,7 @@ export function planRecalibrated(
       ? oldMeta['predictedSecAtStart']
       : predictedBefore || null;
 
-  const regenInput = recalibrationInput(original, idx, formVdot, anchor);
+  const regenInput = recalibrationInput(original, formVdot);
   const generated = generatePlan(regenInput);
   if (isPlanError(generated)) return generated;
   const fresh = adaptGeneratedPlan(generated);
@@ -283,7 +278,7 @@ export function planRecalibrated(
     recalWeek: idx,
     ...(anchor != null ? { predictedSecAtStart: anchor } : {})
   };
-  /* Bez zadatog cilja je generator dobio STABILAN cilj samo kao oslonac tempa trke — to ne sme postati cilj plana. */
+  /* Rekalibracija ne dodaje cilj korisniku koji ga nije zadao. */
   if (!original.goalSec) {
     meta.goalSec = (oldMeta['goalSec'] as number | null | undefined) ?? null;
     meta.goalVdot = (oldMeta['goalVdot'] as number | null | undefined) ?? null;
@@ -297,7 +292,7 @@ export function planRecalibrated(
     pred,
     qs,
     meta,
-    /* Ulaz dobija virtuelni PB (putanja ostaje ista pri kasnijoj promeni cilja); cilj korisnika se ne dira. */
+    /* Sačuvaj novu polaznu formu i za kasniju promenu cilja. */
     ulaz: { ...original, pb: regenInput.pb },
     recalibration: {
       week: idx,
@@ -324,37 +319,15 @@ export interface RecalibrationResult {
   meta: PlanMeta & { vdotAtRecal: number; recalWeek: number };
 }
 
-/**
- * Ulaz generatora koji reprodukuje POPRAVLJENU putanju forme: „virtuelni PB" (5K) koji bi originalnom formulom, primenjenom od
- * nedelje 1, dao tačno `vdotNow` na tekućoj nedelji, i STABILAN cilj (v. `recalibratedPlan`). Zajednički za `recalibratedPlan`
- * i `planRecalibrated`, da pravilo postoji na JEDNOM mestu.
- */
+/** Sintetički PB prenosi izmerenu formu generatoru; cilj ostaje korisnikova odluka. */
 function recalibrationInput(
   originalInput: PlanGenerationInput,
-  currentWeekIdx: number,
-  vdotNow: number,
-  originalPredictedSec: number | null | undefined
+  vdotNow: number
 ): PlanGenerationInput {
-  const total = weeksTotal(originalInput);
-  const rampWeeks = Math.min(total - 2, RAMP_CAP_WEEKS);
-  const backdated =
-    vdotNow - VDOT_RAMP_PER_WEEK[originalInput.intensity] * Math.min(currentWeekIdx, rampWeeks);
-  const virtualPbSec = raceTimeForVdot(Math.max(backdated, 20), 5000);
-  const raceDistM = originalInput.raceDistM || 5000;
-  const stableGoalSec =
-    originalInput.goalSec || originalPredictedSec || raceTimeForVdot(vdotNow, raceDistM);
-  return { ...originalInput, pb: { distM: 5000, sec: virtualPbSec }, goalSec: stableGoalSec };
+  return { ...originalInput, pb: { distM: 5000, sec: raceTimeForVdot(vdotNow, 5000) } };
 }
 
-/**
- * Regeneriše SAMO preostale nedelje (≥ `currentWeekIdx`) po ispravljenoj putanji: računa „virtuelni PB" koji
- * bi originalnom formulom, primenjenom od nedelje 1, dao tačno `vdotNow` na tekućoj nedelji. Forma tačno
- * NA planskoj putanji mora biti no-op (`min(w, rampWeeks)` koraka rampe, ne `w−1`).
- *
- * `racePace` mora ostati STABILAN: oslonac je projektovana forma na KRAJU originalnog plana
- * (`originalPredictedSec`), ne današnja forma — inače se tempo trke menja pri svakoj rekalibraciji, bez
- * ijedne korisnikove odluke.
- */
+/** Regeneriše preostale nedelje prema trenutnoj formi, uz prenos ručnih zaključavanja. */
 export function recalibratedPlan(
   originalInput: PlanGenerationInput,
   currentWeekIdx: number,
@@ -364,12 +337,7 @@ export function recalibratedPlan(
     originalPredictedSec?: number | null;
   } = {}
 ): RecalibrationResult | ReplanError {
-  const regenInput = recalibrationInput(
-    originalInput,
-    currentWeekIdx,
-    vdotNow,
-    opts.originalPredictedSec
-  );
+  const regenInput = recalibrationInput(originalInput, vdotNow);
   const replanned = generatePlan(regenInput);
   if (isPlanError(replanned)) return replanned;
   const slice = replanned.weeks.slice(currentWeekIdx - 1);
@@ -423,18 +391,7 @@ export function reentryPlan(
       error:
         'Manje od 4 nedelje do trke posle pauze — pun re-entry nije moguć. Cilj treba ručno preispitati.'
     };
-  const backdated =
-    vdotAtPause -
-    VDOT_RAMP_PER_WEEK[originalInput.intensity] *
-      Math.min(resumeWeekIdx - 1, Math.min(total - 2, RAMP_CAP_WEEKS));
-  const virtualPbSec = raceTimeForVdot(Math.max(backdated, 20), 5000);
-  const raceDistM = originalInput.raceDistM || 5000;
-  const stableGoalSec = originalInput.goalSec || raceTimeForVdot(vdotAtPause, raceDistM);
-  const replanned = generatePlan({
-    ...originalInput,
-    pb: { distM: 5000, sec: virtualPbSec },
-    goalSec: stableGoalSec
-  });
+  const replanned = generatePlan(recalibrationInput(originalInput, Math.max(vdotAtPause, 20)));
   if (isPlanError(replanned)) return replanned;
   const w0 = replanned.weeks[resumeWeekIdx - 1];
   if (!w0) return { error: 'Nedelja povratka je van plana.' };

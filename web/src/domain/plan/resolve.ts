@@ -35,7 +35,9 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         km: d.km ?? null,
         desc: d.desc ?? null,
         rest: !!d.rest,
-        runWalk: 'runWalk' in d ? d.runWalk : undefined
+        runWalk: 'runWalk' in d ? d.runWalk : undefined,
+        ...(d.finish ? { finish: d.finish } : {}),
+        ...(d.strides ? { strides: d.strides } : {})
       };
       const alt = overlay.alts[id];
       const isTest = !!day['test'];
@@ -52,6 +54,8 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         km: origin.km,
         desc: origin.desc,
         runWalk: origin.runWalk,
+        ...(d.finish ? { finish: d.finish } : {}),
+        ...(d.strides ? { strides: d.strides } : {}),
         snaga: false,
         session: d.session,
         mlr: 'mlr' in d && d.mlr === true,
@@ -59,6 +63,8 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         origin
       };
       if (alt) {
+        delete resolved.finish;
+        delete resolved.strides;
         resolved.rest = alt.tag === 'odmor';
         resolved.tag = resolved.rest ? undefined : alt.tag;
         resolved.km = resolved.rest ? null : alt.km != null ? alt.km : null;

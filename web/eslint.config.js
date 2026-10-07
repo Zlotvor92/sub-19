@@ -27,7 +27,8 @@ export default tseslint.config(
       'node_modules',
       'public',
       'sw',
-      'scripts/*.mjs'
+      'scripts/*.mjs',
+      'src/test/fixtures/legacy-generator.mjs'
     ]
   },
   js.configs.recommended,

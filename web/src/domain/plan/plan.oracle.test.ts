@@ -4,7 +4,7 @@ import { firstDiff } from '@/test/firstDiff';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, parseIsoDate, type IsoDate } from '../date';
 import type { AltRecord, GenPlanState } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import type { PlanGenerationInput } from '../training/types';
 import { adaptGeneratedPlan } from './adapt';
 import { sessKind, tagName, weekPhase } from './describe';

@@ -99,9 +99,6 @@ describe('Računica generatora', () => {
             const zone = ZONE[s.kind];
             expect(zone, `nepoznata vrsta sesije: ${s.kind}`).toBeDefined();
             expected = paceForZone(v, zone as 'I' | 'T' | 'R');
-            if (zone === 'I' && m.raceDistM === 5000 && total - w.w <= 6) {
-              expected = Math.max(expected, m.racePace);
-            }
           }
           expect(
             Math.abs(s.paceSec - expected),

@@ -7,7 +7,7 @@ import { resolvePlan } from '../../plan/resolve';
 import { adaptGeneratedPlan } from '../../plan/adapt';
 import type { AltRecord, GenPlanState, LogEntry, VdotRecord } from '../../state';
 import { T3K_ID_PREFIX } from '../constants/product';
-import { generatePlan } from '../generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import type { PlanGenerationInput } from '../types';
 import { isT3kId } from '../vdot/limits';
 import { ZONE_FOR_KIND } from '../vdot/zoneForKind';

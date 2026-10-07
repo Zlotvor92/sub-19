@@ -1,5 +1,5 @@
 import type { DistanceHeuristic, DistanceProduct } from '../constants/distances';
-import type { Intensity, SessionDay } from '../types';
+import type { FastFinish, Intensity, SessionDay } from '../types';
 
 /** Faza kvalitetnog ciklusa. Imena po distancama se razlikuju (5K: economy→peak→sharpening;
  *  10K i HM: threshold→peak→specific; 42K: endurance→threshold→specific). */
@@ -59,7 +59,7 @@ export interface DistanceProfile {
     racePace: number,
     strategy: PaceStrategy | null,
     cycleFactor: number | null
-  ): string;
+  ): FastFinish | null;
   /** Faktor ciklusa dugog trčanja po nedelji (samo maraton). */
   longRunCycle?(w: number, ctx: LongRunCycleContext): number;
 }

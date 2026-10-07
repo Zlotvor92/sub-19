@@ -106,6 +106,7 @@ describe('odložen upis (Background Sync)', () => {
     expect(await m.bg.schedule()).toBe(true);
     expect(tags).toEqual([SYNC_TAG]);
     expect(m.idb.map.get(IDB_KEYS.queuedState)).toEqual({
+      userId: 'u1',
       seenAt: '2026-08-01T00:00:00Z',
       podaci: { v: 11 },
       at: 1234

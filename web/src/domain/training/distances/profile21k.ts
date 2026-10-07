@@ -18,7 +18,7 @@ import {
 import { progressionRun, type ProgressionParams } from '../sessions/progression';
 import { repetitions } from '../sessions/repetitions';
 import { continuousTempo, type TempoParams } from '../sessions/tempo';
-import type { SessionDay } from '../types';
+import type { FastFinish, SessionDay } from '../types';
 import type { DistanceProfile, PaceStrategy, Phase, QualityRequest } from './types';
 
 /** <30% prag, <60% vrhunac, ostalo specifika. */
@@ -131,20 +131,21 @@ const mkTimeTrial = (dow: number, vol: number, racePace: number): SessionDay => 
   const [wu, cd] = wuCdForVolume(vol);
   const trialKm = Math.max(5, Math.min(10, Math.round(vol * 0.15)));
   const km = r1(wu + trialKm + cd);
-  const what = trialKm >= 8 ? '10K trka' : 'kraća trka (5K ili 10K)';
   return {
     dow,
     tag: 'tempo',
     km,
     desc:
       `Kontrolna trka — ${wu} km zagrevanje + ${trialKm} km + ${cd} km hlađenje. ` +
-      `Ako nađeš pravu trku (${what}) — trči je PUNOM SNAGOM, brže od tempa polumaratona; to je najpošteniji presek forme. ` +
-      `Ako je nema, istrči ${trialKm} km sam, kontrolisano na ${fmtClock(racePace)}/km (tempo polumaratona). ` +
+      `Kontrolisano na ${fmtClock(racePace)}/km (tempo polumaratona), bez maksimalnog testa. ` +
       `Isprobaj opremu, doručak i gorivo tačno kako planiraš na dan trke. ` +
       `Sledeća 2–3 dana drži skroz lagano, bez obzira kako se osećaš.`,
     session: {
       type: 'tempo',
       kind: 'Kontrolna trka',
+      zone: 'RP',
+      notes:
+        'Kontrolisano na ritmu polumaratona; isprobaj opremu i gorivo. Ovo nije maksimalan test forme. Pravu trku unesi zasebno kao test. Naredna 2–3 dana lagano.',
       wuKm: wu,
       qKm: trialKm,
       paceSec: racePace,
@@ -258,12 +259,12 @@ function longRunFinish21K(
   lrKm: number,
   racePace: number,
   strategy: PaceStrategy | null
-): string {
-  if (phase !== 'specific' || !(lrKm >= 10)) return '';
+): FastFinish | null {
+  if (phase !== 'specific' || !(lrKm >= 10)) return null;
   const often = strategy === 'long';
-  if (!often && qualW % 2 === 0) return '';
+  if (!often && qualW % 2 === 0) return null;
   const finish = r1(Math.max(3, Math.min(6, lrKm * 0.25)));
-  return ` · brz završetak: poslednjih ${finish} km @ ${fmtClock(racePace)}/km (tempo trke, na umornim nogama)`;
+  return { km: finish, paceSec: racePace, zone: 'RP' };
 }
 
 export const PROFILE_21K: DistanceProfile = {

@@ -115,3 +115,39 @@ Ništa od ovoga ne pomera golden-master otisak (2 304 scenarija) ni diferencijal
 3. `ulaz.pb` postaje virtuelni PB (5K) — tako promena cilja POSLE rekalibracije ostaje na istoj putanji (`planWithNewGoal` nosi `vdotBase` dalje). Ulaz je interni zapis plana, ne prikazuje se.
 4. Realnost zadatog cilja (`meta.realno`) se preračunava prema novoj projekciji: slabija forma može cilj da učini nerealnim, i to je ispravno.
 
+
+## D6 — revizija generatora i integriteta podataka (2026-10-06, v284)
+
+Ova revizija namerno menja izlaze generatora iz prethodnog odeljka. Odobrena je posle pregleda repozitorijuma na `26afe83`. Pravila su inspirisana Danielsovim smernicama; zone tempa, kriva obima i izbor dužina ostaju dokumentovane heuristike aplikacije, ne doslovna reprodukcija njegovih planova.
+
+| Oblast | Promena |
+|---|---|
+| Forma | Novi `meta.trainingVdot` drži propisane tempe na trenutnoj formi. `vdotGoal` ostaje projekcija. Brži cilj ne ubrzava trening preko tempa koji trenutni rezultat podržava. |
+| Rekalibracija | Novi rezultat direktno određuje buduće tempe, bez oduzimanja stare VDOT rampe. Istorijske nedelje i ručno zaključana polja ostaju. Cilj ostaje korisnikov, dok se ritam trkačkih treninga može promeniti sa formom. Ovo zamenjuje opis stabilnog `racePace` u R1. |
+| Završna ograničenja | Posle raspodele kilometraže i posle kalendarskih izmena proverava se stvarno isporučena nedelja: I do 8% / 10 km i 5 min po deonici, R do 5% / 8 km i 2 min, T do 10% i postojeći vremenski plafon profila. Minimum ponavljanja ne može nadjačati maksimum. Uklonjen rad postaje lagano trčanje; premali kvalitet postaje lagan dan. |
+| Baza i drugi kvalitet | Kratak početnički plan zadržava run/walk i bazu. Drugi kvalitet zavisi od obima tekuće i prethodnih nedelja, ne samo budućeg vrhunca. Završna kontrola rasta obima obuhvata i izlazak iz produžene baze. |
+| Dužina | Brzi završetak je strukturisan (`finish`) i računa se kao kvalitet, uz uklanjanje drugog kvalitetnog treninga. Izvozi se na sat. |
+| Trkačka nedelja | Priprema prati izabrane dane i učestalost; kod manjeg broja dana ostavlja razmake. Početnici dobijaju laganu pripremu. Kontrolna sesija polumaratona je kontrolisan RP rad, nije istovremeno maksimalna trka. |
+| Oznake i merenje | I tempo se ne pretvara tiho u ciljni 5K tempo. Trkački rad nosi RP oznaku i ne služi kao samostalan dokaz VDOT-a; isto važi za kratku oštrinu. |
+| Sat | 90 s ostaje 90 s. Run/walk čuva smenu rada i hoda, strides i brzi završetak imaju zasebne korake. Nema dodatnog odmora posle poslednjeg običnog intervala. Oporavak prati sporiji E tempo kada je potrebno. Kilometraža vremenskog run/walk izvoza ostaje procena. |
+| Aktivni bol | Postojeći status STANI predlaže pauzu umesto automatskog run/walk nastavka; informacija o predstojećoj trci ostaje vidljiva. Pragovi bola nisu menjani. |
+| Lokalni nalozi | Stanje i rezervna kopija odvojeni su po korisniku. Odjava učitava gostujuće stanje; ponovna prijava vraća podatke vlasnika. Odgovori koji stignu posle promene naloga ne mogu usvojiti staro stanje; zaštićeni su i uvozi Strava/ICU. |
+| Konkurentni upisi | Zauzeće sync motora počinje pre osvežavanja sesije. Postojeći red se menja atomskim uslovnim PATCH-om na `user_id` i tačan `updated_at`; prvi INSERT ignoriše duplikat. Prazan odgovor otvara sukob, ne prijavljuje uspeh. Nepoznata serverska verzija ne dozvoljava slepi upis. Isto pravilo važi u service workeru. |
+
+### Kompatibilnost i primena
+
+- Nema izmene SQL šeme: koristi se postojeći `updated_at` trigger i PostgREST uslovni UPDATE. Stariji klijenti i dalje mogu bezuslovno pisati; svi uređaji treba da preuzmu v284 da bi zaštita važila za svaki upis.
+- Pri prvom prelasku postojeći lokalni zapis pripisuje se prethodno sačuvanoj sesiji. Bez pouzdanog vlasnika ostaje gostujući zapis i ne šalje se automatski novom nalogu. Stari aktivni ključ ostaje ogledalo radi kompatibilnosti; izvor je kopija po nalogu.
+- Pozadinski red sada nosi `userId`. Stari red bez vlasnika odbacuje se; lokalni original ostaje sačuvan.
+- Sačuvani planovi se ne regenerišu pri otvaranju. Nova pravila važe pri kreiranju ili preračunavanju plana. Istorija ostaje. Stari plan bez `trainingVdot` zadržava staru referentnu putanju do preračunavanja. Strukturisani strides/finish postoje u novim planovima; stari slobodan opis se ne pretvara automatski u novu strukturu.
+- Ručno zaključana polja i dalje imaju prednost pri regeneraciji; ova revizija ih ne prepravlja na svoju ruku.
+
+### Provere i namerne razlike u oracle testovima
+
+480 kombinacija distance, PB-a, obima i učestalosti proverava granice pojedinačnih sesija, dužine deonica i broj kvalitetnih dana. Zasebni testovi proveravaju kratak početnički plan, nerealan cilj, strukturu izvoza, rekalibraciju, A → B → A izolaciju, zakašnjele odgovore, konkurentna dva prva INSERT-a i dva UPDATE-a iste verzije.
+
+Golden master (2.304 scenarija) i diferencijalni otisak (1.500 determinističkih ulaza) namerno su osveženi za D6. Stari generator je zamrznut kao testni bundle `legacy-generator.mjs`, napravljen iz izvora na `26afe83` pomoću Rolldown-a; koristi se samo za reprodukciju ulaza snimljenih oracle poziva. Produkcija ga ne uvozi. Izlazi funkcija koje sada pozivaju novi generator imaju zasebne D6 otiske, uz nezavisne provere istorije, zaključavanja i forme. Postojeći nazivi oracle testova ostaju jer su ključevi snimaka. Za urgentni bol poredi se identitet predloženih dana i primena pauze, a ostali slučajevi se i dalje porede sa starim ponašanjem. SHA tela service workera osvežen je zbog uslovnih upisa i provere vlasnika reda.
+
+Osvežavanje otisaka: iz `web/`, `UPDATE_FINGERPRINT=1 npx vitest run --project node generator.fingerprint generator.differential`, zatim isti flag za `replan.oracle.test.ts` i `onboarding.oracle.test.ts`. Provere bez tog flag-a moraju proći pre commita.
+
+Izvori za trenerske granice: [Daniels Training Definitions](https://vdoto2.com/learn-more/training-definitions), [VO2max rad](https://news.vdoto2.com/2025/07/how-to-effectively-improve-your-vo2max/), [V.O2 FAQ](https://support.vdoto2.com/v-o2-faq/). Ograničenja dužine, kalibracija zona i veći arhitektonski refaktor ostaju odvojene odluke; nisu predstavljeni kao ispravljene programske greške u ovoj reviziji.

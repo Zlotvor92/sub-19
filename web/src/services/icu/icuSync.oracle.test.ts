@@ -4,7 +4,7 @@ import { addDays, type IsoDate } from '../../domain/date';
 import { resolvePlan } from '../../domain/plan';
 import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import type { GenPlanState, LogEntry, VdotRecord, WellnessRecord } from '../../domain/state';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import type { Result } from '../http';
 import type { IcuApi } from '../api/icuApi';
 import type { ImportState } from '../strava/stravaSync';

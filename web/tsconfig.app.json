@@ -29,6 +29,7 @@
     "src/**/*.oracle.test.ts",
     "src/**/*.node.test.ts",
     "src/test/legacyOracle.ts",
-    "src/test/fingerprint.ts"
+    "src/test/fingerprint.ts",
+    "src/test/d6Snapshot.ts"
   ]
 }

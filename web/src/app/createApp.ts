@@ -54,10 +54,12 @@ import {
   ALL_LOCAL_KEYS,
   SB_LOGIN_WINDOW_MS,
   SB_NONCE_OK_KEY,
-  SB_STATE_KEY
+  SB_STATE_KEY,
+  SB_KEY
 } from '../services/storage/keys';
 import { browserStore, type KeyValueStore } from '../services/storage/kv';
 import { createStateSaver, loadState, type StateSaver } from '../services/storage/stateStorage';
+import { createAccountStorage } from '../services/storage/accountStorage';
 import {
   createSessionManager,
   type SessionManager,
@@ -177,7 +179,17 @@ export function createApp(deps: AppDeps): App {
   const sync = useSyncStore.getState();
 
   /* 1. Stanje: učitaj, raspodeli po store-ovima. Nečitljiv zapis NE sme da pregazi server (v. stateStorage). */
-  const loaded = loadState(kv, deps.today());
+  let previousUser: string | null = null;
+  try {
+    previousUser =
+      (JSON.parse(kv.get(SB_KEY) || 'null') as { userId?: string } | null)?.userId ?? null;
+  } catch {
+    /* damaged session */
+  }
+  const accountStorage = createAccountStorage(kv, previousUser);
+  let accountGeneration = 0;
+  const accountKey = (): string => `${session.state.userId}:${accountGeneration}`;
+  let loaded = loadState(accountStorage.kv, deps.today());
   hydratePersisted(loaded.state);
   if (loaded.loadFailure) sync.set({ loadFailure: loaded.loadFailure });
 
@@ -214,7 +226,7 @@ export function createApp(deps: AppDeps): App {
   mirror(session.state);
 
   const api = createUserStateApi({ fetcher, session, supabaseUrl, anonKey });
-  const appApi = createAppApi({ fetcher, session });
+  const appApi = createAppApi({ fetcher, session, accountKey });
   const pwa = deps.pwa;
   const noIdb: Idb = {
     read: () => Promise.resolve(null),
@@ -227,7 +239,7 @@ export function createApp(deps: AppDeps): App {
     session: () => session.state,
     payload: () => toServerPayload(collectPersisted()),
     loadFailed: () => !!loaded.loadFailure,
-    isAuthed: () => session.isAuthed(),
+    isAuthed: () => session.isAuthed() && accountStorage.owner() === session.state.userId,
     supabaseUrl,
     anonKey,
     now,
@@ -272,7 +284,7 @@ export function createApp(deps: AppDeps): App {
   /* 3. Čuvanje: svaki upis na uređaj okida odloženo slanje na server. */
   const ref: { engine?: SyncEngine } = {};
   const saver = createStateSaver({
-    kv,
+    kv: accountStorage.kv,
     onWriteFailed: (name) => sync.set({ writeFailed: name }),
     onSaved: () => ref.engine?.schedulePush()
   });
@@ -313,6 +325,7 @@ export function createApp(deps: AppDeps): App {
     session,
     api,
     getState: collectPersisted,
+    stateOwner: accountStorage.owner,
     adopt: (state) => {
       hydratePersisted(state);
       /* Stanje sa servera može da nosi tuđ seed iz starih verzija — čisti se i ovde, ne samo pri pokretanju. */
@@ -403,6 +416,7 @@ export function createApp(deps: AppDeps): App {
   });
   const notify = deps.notify ?? ((): void => undefined);
   const integrations = createIntegrations({
+    accountKey,
     kv,
     fetcher,
     appApi,
@@ -444,22 +458,32 @@ export function createApp(deps: AppDeps): App {
       /* Nalog je možda obrisan ili zabranjen dok je aplikacija bila zatvorena: pita se PRE nego što se ekran prikaže. Ali ne zauvek — veza koja
          „visi" (mreža jeste tu, odgovora nema) ne sme da drži praznu stranicu do isteka roka od 12 s, a aplikacija radi i bez servera. Posle
          `VERIFY_PATIENCE_MS` ekran se prikazuje iz lokalnih podataka, a provera se završava u pozadini (kapija se spušta ako nalog ne važi). */
+      const startingUser = session.state.userId;
       const verifying = session.verify(deps.online ? deps.online() : true);
       let alive: boolean | null = await Promise.race([
         verifying,
         new Promise<null>((resolve) => setTimeout(() => resolve(null), VERIFY_PATIENCE_MS))
       ]);
       if (alive === null) {
-        auth.set({ gate: null, ready: true });
+        if (accountStorage.owner() === session.state.userId) auth.set({ gate: null, ready: true });
         alive = await verifying;
       }
-      if (!alive) {
+      if (!alive || session.state.userId !== startingUser) {
         auth.set({ ready: true });
         return;
+      }
+      saver.flush(collectPersisted);
+      if (accountStorage.select(session.state.userId)) {
+        accountGeneration++;
+        loaded = loadState(accountStorage.kv, deps.today());
+        hydratePersisted(loaded.state);
+        engine.reset(!!loaded.loadFailure);
+        sync.set({ conflict: null, loadFailure: loaded.loadFailure });
       }
       auth.set({ gate: null, ready: true });
       reconcileOwnerData(); // sesija je potvrđena: sada se pouzdano zna čiji je nalog
       await engine.start().catch(() => 'offline');
+      if (session.state.userId !== startingUser) return;
       await integrations.consumeOAuthReturn(loc.search, deps.replaceUrl, loc.pathname);
       integrations.pullIfDue(60 * 60000);
       void ai.collectAll();
@@ -478,6 +502,7 @@ export function createApp(deps: AppDeps): App {
       );
     },
     logout() {
+      accountGeneration++;
       /* Odjava mora da očisti i POZADINU: bez ovoga bi service worker zadržao kopiju tokena i neposlato stanje pa ih gurnuo posle odjave — na tuđem
          telefonu bi to bio tuđ nalog. Obaveštenja se gase iz istog razloga; token se prosleđuje jer se sesija briše u istom potezu. */
       const token = session.state.access ?? undefined;
@@ -485,7 +510,12 @@ export function createApp(deps: AppDeps): App {
         .disable(token)
         .catch(() => undefined)
         .finally(() => void background.forgetAll());
+      saver.flush(collectPersisted);
       session.logout();
+      accountStorage.select(null);
+      loaded = loadState(accountStorage.kv, deps.today());
+      hydratePersisted(loaded.state);
+      engine.reset(!!loaded.loadFailure);
       auth.set({ gate: '', hasSession: false });
     },
     onHidden() {
@@ -528,8 +558,13 @@ export function createApp(deps: AppDeps): App {
     },
     async restoreVersion(id) {
       if (!session.isAuthed()) return { ok: false, error: 'Nisi prijavljen.' };
+      const restoringUser = session.state.userId;
       if (!(await session.ensure())) return { ok: false, error: 'Nema veze sa internetom.' };
+      if (session.state.userId !== restoringUser)
+        return { ok: false, error: 'Nalog je promenjen.' };
       const r = await api.historyData(id);
+      if (session.state.userId !== restoringUser || accountStorage.owner() !== restoringUser)
+        return { ok: false, error: 'Nalog je promenjen.' };
       if (!r.ok) return { ok: false, error: r.error };
       const migrated = migrateState(JSON.parse(JSON.stringify(r.data)) as unknown);
       if (!migrated)
@@ -566,11 +601,14 @@ export function createApp(deps: AppDeps): App {
     background,
     isOwner,
     forgetEverything() {
+      accountGeneration++;
       /* Pretplata se gasi BEZ poziva servera: red u bazi je već obrisan, a token više ne važi (naloga nema). */
       void push
         .forget()
         .catch(() => undefined)
         .finally(() => void background.forgetAll());
+      accountStorage.forget();
+      engine.reset();
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
       for (const k of ALL_LOCAL_KEYS) kv.remove(k);
       hydratePersisted(seedState(deps.today()));

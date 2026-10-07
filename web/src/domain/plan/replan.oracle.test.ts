@@ -1,15 +1,17 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import { d6Snapshot } from '@/test/d6Snapshot';
 import { canonical } from '@/test/fingerprint';
 import { firstDiff } from '@/test/firstDiff';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
 import type { GenPlanState } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
+import { generatePlan } from '@/test/legacyGenerator';
 import type { PlanGenerationInput, Session } from '../training/types';
 import { adaptGeneratedPlan } from './adapt';
 import { mergeOverrides, planWithNewGoal, recalibratedPlan, reentryPlan } from './replan';
 
-/* parity: test/ostali (planSaNovimCiljem u test/podesavanja + revizija6), test/generator (rekalibracija,
+/* Test names are recording keys and remain unchanged; generated outputs now use D6 snapshots.
+   parity: test/ostali (planSaNovimCiljem u test/podesavanja + revizija6), test/generator (rekalibracija,
    re-entry). Poredi `plan/replan` sa starim `planSaNovimCiljem`, `mergeOverrides`, `recalibratedPlan`,
    `reentryPlan`. JEDNA NAMERNA RAZLIKA: ključevi `qs` posle promene cilja (docs/ENGINE_CHANGES.md, A3). */
 
@@ -87,15 +89,13 @@ describe('promena cilja naspram starog planSaNovimCiljem', () => {
             continue;
           }
           if ('error' in mine) throw new Error(`${where}: ${mine.error}`);
-          for (const key of ['weeks', 'pred', 'meta', 'ulaz']) {
-            expect(
-              firstDiff(
-                canonical(j((mine as unknown as Record<string, unknown>)[key])),
-                canonical(old[key])
-              ),
-              `${where} ${key}`
-            ).toBeNull();
-          }
+          // D6: new workouts intentionally differ; historical weeks remain byte-for-byte intact.
+          d6Snapshot('replan', `goal ${where}`, mine);
+          expect(mine.weeks.filter((w) => w.w < week)).toEqual(
+            plan.weeks.filter((w) => w.w < week)
+          );
+          expect(mine.pred.filter((p) => p.w < week)).toEqual(plan.pred.filter((p) => p.w < week));
+          expect(mine.ulaz.goalSec).toBe(goal);
           // qs: stari ključevi (prošle nedelje) isti; novi ključevi po ID-ju dana (g…) umesto n…
           const oldQs = old['qs'] as Record<string, number[]>;
           const keptOld = Object.fromEntries(
@@ -229,10 +229,12 @@ describe('rekalibracija i povratak naspram starih funkcija', () => {
               ...(merge ? { oldWeeks: plan.weeks } : {}),
               originalPredictedSec: predicted
             });
-            expect(
-              firstDiff(canonical(j(mine)), canonical(old)),
-              `${dist} N${idx} ${intensity} merge=${merge}`
-            ).toBeNull();
+            // Consume the legacy recording, but assert the deliberately changed D6 output.
+            expect(old).toBeTruthy();
+            d6Snapshot('replan', `recal ${dist} N${idx} ${intensity} merge=${merge}`, mine);
+            if ('error' in mine) throw new Error(mine.error);
+            expect(mine.meta.trainingVdot).toBeCloseTo(vdot, 1);
+            expect(mine.weeks[0]?.w).toBe(idx);
           }
         }
       }
@@ -247,7 +249,13 @@ describe('rekalibracija i povratak naspram starih funkcija', () => {
         ctx['__i'] = j(inp);
         const old = j<unknown>(legacy.evalIn(`reentryPlan(__i, ${resume}, 22.5, 47.3)`));
         const mine = reentryPlan(inp, resume, 22.5, 47.3);
-        expect(firstDiff(canonical(j(mine)), canonical(old)), `${dist} N${resume}`).toBeNull();
+        if (old && typeof old === 'object' && 'error' in old) expect(mine).toEqual(old);
+        else {
+          d6Snapshot('replan', `reentry ${dist} N${resume}`, mine);
+          if ('error' in mine) throw new Error(mine.error);
+          expect(mine.meta.trainingVdot).toBeCloseTo(47.3, 1);
+          expect(mine.weeks[0]?.vol).toBeLessThanOrEqual(22.5 * 1.08 + 0.05);
+        }
       }
     }
   });

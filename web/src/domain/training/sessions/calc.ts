@@ -50,6 +50,11 @@ const fartlekKm = (s: FartlekSession): number =>
   s.reps * (s.repSec / s.paceSec + s.restSec / s.easyPaceSec);
 
 export function sessDesc(s: Session): string {
+  const text = sessionSummary(s);
+  return s.notes ? `${text} · ${s.notes}` : text;
+}
+
+function sessionSummary(s: Session): string {
   switch (s.type) {
     case 'int': {
       const restWord = RECOVERY_JOG.includes(s.kind) ? 'laganog trčanja' : 'hoda';
