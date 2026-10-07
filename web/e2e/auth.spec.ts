@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { SUPABASE, fixToday, installBackend, jwt, seedSession } from './support/backend';
 import { createPlan } from './support/flows';
 
@@ -6,6 +6,13 @@ import { createPlan } from './support/flows';
 
 const hash = (email: string): string =>
   `#access_token=${jwt(email)}&refresh_token=RT&expires_in=3600&token_type=bearer`;
+
+const localPlan = (page: Page, key: string): Promise<unknown> =>
+  page.evaluate((storageKey) => {
+    const state: unknown = JSON.parse(localStorage.getItem(storageKey) ?? '{}');
+    if (!state || typeof state !== 'object' || !('genPlan' in state)) return null;
+    return state.genPlan;
+  }, key);
 
 test.beforeEach(async ({ page }) => {
   await fixToday(page);
@@ -84,10 +91,7 @@ test('odjava: kapija ostaje posle učitavanja, a plan se vraća istom nalogu i b
   await expect
     .poll(() => page.evaluate((key) => localStorage.getItem(key), ownerKey))
     .not.toBeNull();
-  const savedPlan = await page.evaluate(
-    (key) => JSON.parse(localStorage.getItem(key) ?? '{}').genPlan,
-    ownerKey
-  );
+  const savedPlan = await localPlan(page, ownerKey);
   expect(savedPlan).toBeTruthy();
   await page.getByRole('button', { name: 'Podešavanja' }).click();
   await page.getByRole('tab', { name: 'Nalog' }).click();
@@ -101,9 +105,7 @@ test('odjava: kapija ostaje posle učitavanja, a plan se vraća istom nalogu i b
   // Odjava aktivira gosta; plan ostaje sačuvan samo u prostoru vlasnika.
   expect(await page.evaluate(() => localStorage.getItem('sub19-local-owner'))).toBe('__guest__');
   expect(await page.evaluate(() => localStorage.getItem('sub19-v1'))).toBeNull();
-  expect(
-    await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? '{}').genPlan, ownerKey)
-  ).toEqual(savedPlan);
+  expect(await localPlan(page, ownerKey)).toEqual(savedPlan);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Prijavi se da nastaviš' })).toBeVisible();
   // Ponovna prijava vraća lokalni plan čak i kada cloud sync nije dostupan.
@@ -119,7 +121,5 @@ test('odjava: kapija ostaje posle učitavanja, a plan se vraća istom nalogu i b
   await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
   await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('sub19-local-owner'))).toBe('u-e2e');
-  expect(
-    await page.evaluate(() => JSON.parse(localStorage.getItem('sub19-v1') ?? '{}').genPlan)
-  ).toEqual(savedPlan);
+  expect(await localPlan(page, 'sub19-v1')).toEqual(savedPlan);
 });
