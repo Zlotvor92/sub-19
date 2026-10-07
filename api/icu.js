@@ -235,6 +235,7 @@ function sazetak(a) {
     opis:  typeof a.description === 'string' ? a.description.slice(0, 400) : null,
     km,
     sec: ceo(a.moving_time),
+    elapsedSec: ceo(a.elapsed_time),
     hr: ceo(a.average_heartrate), maxHr: ceo(a.max_heartrate),
     kadenca: broj(a.average_cadence) != null ? Math.round(broj(a.average_cadence) * 2) / 2 : null,
     uspon: ceo(a.total_elevation_gain),
@@ -694,7 +695,8 @@ async function obradiActivities(req, res) {
             if (!ZELJENI.includes(s.type)) continue;
             /* Vrednosti se svode na broj ili null — u tokovima ume da bude i
                `false` i string, a perKmDetail sabira. */
-            tok[s.type] = { data: s.data.map(v => (v == null || v === false) ? null
+            tok[s.type] = { data: s.data.map(v => s.type === 'moving' && v === false ? 0
+                                                : (v == null || v === false) ? null
                                                 : (v === true ? 1 : (Number.isFinite(+v) ? +v : null))) };
           }
           out[id] = (tok.distance && tok.distance.data.length) ? tok : { greska: true };

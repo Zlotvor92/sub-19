@@ -1664,3 +1664,20 @@
 .race-analysis .ai-card {
   margin-top: 16px;
 }
+
+.race-data table {
+  width: 100%;
+  min-width: 320px;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+.race-data th,
+.race-data td {
+  padding: 8px 4px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+.race-data summary {
+  padding: 12px 0;
+  cursor: pointer;
+}

@@ -1,6 +1,7 @@
 /* AI ANALIZA: spona između stanja i servisa. Zahtev za model gradi domen (`buildAiPayload`), tok vodi servis (`createAiJobs`); ovde se samo
    čitaju store-ovi i upisuje zapis dana. */
 
+import { wellnessFor } from '../domain/recovery';
 import { racePayload, type RaceContext } from '../domain/race/analysis';
 import { buildAiPayload, buildTrendSummary, goalContext } from '../domain/ai';
 import { parseIsoDate } from '../domain/date';
@@ -100,6 +101,7 @@ export const raceAiLogPort: AiLogPort = {
     if (!base) return;
     const old = base['raceAi'];
     const race: Record<string, unknown> = { ...(old && typeof old === 'object' ? old : {}) };
+    if (entry['aiText'] !== race['aiText']) race['dataUpdated'] = false;
     for (const key of AI_FIELDS) {
       if (key in entry) race[key] = entry[key];
       else delete race[key];
@@ -117,7 +119,18 @@ export function aiRacePayloadFor(
   const enriched = aiPayloadFor(day);
   return {
     ...enriched,
-    ...racePayload(log, context, enriched?.['entered'] as Record<string, unknown> | undefined)
+    ...racePayload(log, context, {
+      ...(enriched?.['entered'] as Record<string, unknown> | undefined),
+      km: log.km,
+      movingSec: log.sec,
+      hr: log.hr,
+      maxHr: log['maxHr'],
+      perKm: log['perKm'],
+      laps: log['laps'],
+      lapsIzvor: log['lapsIzvor'],
+      icu: log['icu'],
+      oporavak: wellnessFor(useRecoveryStore.getState().wellness, context.date)
+    })
   };
 }
 

@@ -19,6 +19,8 @@ import {
   needsIcuDetails,
   needsIcuStreams,
   perKmDetail,
+  perKmStale,
+  PERKM_VERSION,
   pickClosest,
   realignPlan,
   type IcuActivity
@@ -253,7 +255,11 @@ export function createIcuSync(deps: IcuSyncDeps) {
       if (needsIcuDetails(d.tag, a, s.log[d.id])) askDetails.push({ id: a.id, dayId: d.id, d });
       /* KONTINUIRANA TRČANJA (lako/dugo): icu tu nema strukturu, ali bez preseka po km nema ni tempa/pulsa po kilometru ni drifta — traže
          se sirovi tokovi i obrađuju ISTOM funkcijom kao Stravini. */
-      if (needsIcuStreams(d.tag, a, s.log[d.id])) askStreams.push({ id: a.id, dayId: d.id, d });
+      if (
+        needsIcuStreams(d.tag, a, s.log[d.id]) ||
+        ((d.tag === 'trka' || !!s.log[d.id]?.['raceAi']) && perKmStale(s.log[d.id], PERKM_VERSION))
+      )
+        askStreams.push({ id: a.id, dayId: d.id, d });
     }
 
     const finish = (): void => {
@@ -310,7 +316,13 @@ export function createIcuSync(deps: IcuSyncDeps) {
        sinhronizaciji — a ne traži se ponovo jer `perKm` sa tekućom verzijom ovu granu isključuje. */
     let streams = 0;
     if (askStreams.length) {
-      const group = askStreams.slice(0, 3);
+      const group = [...askStreams]
+        .sort(
+          (a, b) =>
+            Number(b.d.tag === 'trka' || !!s.log[b.dayId]?.['raceAi']) -
+            Number(a.d.tag === 'trka' || !!s.log[a.dayId]?.['raceAi'])
+        )
+        .slice(0, 3);
       const r = await api.streams(
         start0,
         group.map((x) => x.id)

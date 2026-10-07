@@ -5,6 +5,7 @@
    prepisivao naizmenično, a `src` bi zavisio od toga ko je poslednji stigao. Kad icu otkaže (istekla dozvola, njihov server, mreža), pada
    se na Stravu ako postoji: bolje sinhronizovan trening iz slabijeg izvora nego nijedan. */
 
+import { createRaceSync } from '../services/race/raceSync';
 import { icuCanReadActivities, isAthleteId, type IcuLink } from '../domain/icu';
 import { createIcuApi, type IcuApi } from '../services/api/icuApi';
 import type { AppApi } from '../services/api/appApi';
@@ -85,6 +86,7 @@ export interface Integrations {
     watch: ReturnType<typeof createWatchPush>;
   };
   activities: {
+    raceDetails: ReturnType<typeof createRaceSync>['refresh'];
     /** Uvoz treninga iz primarnog izvora; ne baca. Dva uvoza se ne preklapaju. */
     sync(manual: boolean): Promise<ActivitySyncResult>;
     message(r: ActivitySyncResult): string;
@@ -178,6 +180,19 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     },
     now,
     today: deps.today
+  });
+
+  const raceSync = createRaceSync({
+    accountKey: deps.accountKey,
+    strava: stravaApi,
+    icu: icuApi,
+    stravaConnected: () => !!stravaLink.get(),
+    icuLink: () => icuLinkStore.get(),
+    get: (id) => useTrainingStore.getState().log[id],
+    set: (id, entry) => {
+      const t = useTrainingStore.getState();
+      t.patch({ log: { ...t.log, [id]: entry } }, 'now');
+    }
   });
 
   const watch = createWatchPush({
@@ -386,7 +401,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
       sync: icuSync,
       watch
     },
-    activities: { sync: syncActivities, message },
+    activities: { sync: syncActivities, message, raceDetails: raceSync.refresh },
     consumeOAuthReturn,
     pullIfDue
   };

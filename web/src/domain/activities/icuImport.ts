@@ -18,6 +18,7 @@ export interface IcuActivity {
   opis?: string | null;
   km?: number | null;
   sec?: number | null;
+  elapsedSec?: number | null;
   hr?: number | null;
   maxHr?: number | null;
   kadenca?: number | null;

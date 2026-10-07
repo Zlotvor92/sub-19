@@ -16,6 +16,7 @@ import {
 import { ADMIN_UID } from '../../services/config';
 import { useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
+import { RaceData } from '../race/RaceData';
 import { Icon } from '../../components/ui/icons';
 import { DayHeader } from './DayCard';
 
@@ -40,6 +41,7 @@ export function AnalysisText({ text }: { text: string }) {
 type Local =
   | { kind: 'idle' }
   | { kind: 'starting' }
+  | { kind: 'refreshing' }
   | { kind: 'waiting' }
   | { kind: 'still' }
   | { kind: 'resending' }
@@ -48,7 +50,18 @@ type Local =
 /* Kartica analize je JEDAN element u više stanja: dok nema analize je jedan red (sama radnja, a napomena o izvoru podataka je njen
    podnaslov — pitanje „vredi li uopšte" stoji tamo gde se odlučuje); kad analiza postoji je puna kartica sa naslovom. Posao koji traje ima
    prednost UVEK, jer bi se inače posle povratka u aplikaciju činilo da se ništa nije pokrenulo. */
-export function AiCard({ day, raceContext }: { day: ResolvedDay; raceContext?: RaceContext }) {
+export function AiCard(props: { day: ResolvedDay; raceContext?: RaceContext }) {
+  return (
+    <>
+      {props.raceContext || props.day.tag === 'trka' ? (
+        <RaceData day={props.day} context={props.raceContext} />
+      ) : null}
+      <AiAnalysisCard {...props} />
+    </>
+  );
+}
+
+function AiAnalysisCard({ day, raceContext }: { day: ResolvedDay; raceContext?: RaceContext }) {
   const entry = useTrainingStore((s) => s.log[day.id]);
   const race = raceContext != null || day.tag === 'trka';
   const storedRace = entry?.['raceAi'];
@@ -72,7 +85,22 @@ export function AiCard({ day, raceContext }: { day: ResolvedDay; raceContext?: R
     const t = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(t);
   }, [running]);
-  const view = aiCardView(race ? { ...day, tag: 'lako' } : day, log, { isOwner, now });
+  const details = entry?.['raceDetails'];
+  const splitLog =
+    race && details && typeof details === 'object' && 'perKm' in details
+      ? { ...log, perKm: (details as Record<string, unknown>)['perKm'], laps: undefined }
+      : log;
+  const originalView = aiCardView(race ? { ...day, tag: 'lako' } : day, splitLog, { isOwner, now });
+  const detailsRecord =
+    details && typeof details === 'object' ? (details as Record<string, unknown>) : {};
+  const splits = Array.isArray(detailsRecord['perKm']) ? detailsRecord['perKm'].length : 0;
+  const view =
+    splits && 'source' in originalView
+      ? {
+          ...originalView,
+          source: `po kilometru · ${splits} deonica · ${detailsRecord['source'] === 'icu' ? 'intervals.icu' : 'Strava'}`
+        }
+      : originalView;
   if (view.kind === 'hidden') return null;
 
   const finish = (r: { phase: string | null; error: string | null }): void => {
@@ -81,13 +109,31 @@ export function AiCard({ day, raceContext }: { day: ResolvedDay; raceContext?: R
     else setLocal({ kind: 'idle' });
   };
   const start = (): void => {
-    const payload = race ? aiRacePayloadFor(day, context) : aiPayloadFor(day);
-    if (!payload) return;
-    if (race) saveRaceContext(day.id, context);
-    setLocal({ kind: 'starting' });
-    void service()
-      .run(day.id, payload, () => setLocal({ kind: 'waiting' }))
-      .then(finish);
+    const owner = useAuthStore.getState().userId;
+    void (async () => {
+      if (race) {
+        setLocal({ kind: 'refreshing' });
+        const result = await getApp().activities.raceDetails(day.id, context.date);
+        if (useAuthStore.getState().userId !== owner) {
+          setLocal({ kind: 'idle' });
+          return;
+        }
+        if (!result.ok) {
+          setLocal({ kind: 'error', text: result.error ?? 'Prolazi nisu dostupni.' });
+          return;
+        }
+        saveRaceContext(day.id, context);
+      }
+      const payload = race ? aiRacePayloadFor(day, context) : aiPayloadFor(day);
+      if (!payload) {
+        setLocal({ kind: 'idle' });
+        return;
+      }
+      setLocal({ kind: 'starting' });
+      finish(await service().run(day.id, payload, () => setLocal({ kind: 'waiting' })));
+    })().catch(() =>
+      setLocal({ kind: 'error', text: 'Povlačenje ili analiza nije uspela. Pokušaj ponovo.' })
+    );
   };
   const retry = (): void => {
     const payload = race ? aiRacePayloadFor(day, context) : aiPayloadFor(day);
@@ -101,6 +147,7 @@ export function AiCard({ day, raceContext }: { day: ResolvedDay; raceContext?: R
   const id = `ai-card-${day.id}`;
 
   if (
+    local.kind === 'refreshing' ||
     local.kind === 'starting' ||
     local.kind === 'waiting' ||
     local.kind === 'still' ||
@@ -108,17 +155,24 @@ export function AiCard({ day, raceContext }: { day: ResolvedDay; raceContext?: R
   ) {
     const source = view.kind === 'exhausted' ? '' : view.source;
     const text =
-      local.kind === 'starting'
-        ? 'Analiziram…'
-        : local.kind === 'waiting'
-          ? 'Analiziram… ovo traje do minut. Možeš da zatvoriš aplikaciju, rezultat te čeka.'
-          : local.kind === 'still'
-            ? 'Analiza još traje. Rezultat će se pojaviti sam — možeš da zatvoriš aplikaciju.'
-            : local.text;
+      local.kind === 'refreshing'
+        ? 'Povlačim kilometarske prolaze…'
+        : local.kind === 'starting'
+          ? 'Analiziram…'
+          : local.kind === 'waiting'
+            ? 'Analiziram… ovo traje do minut. Možeš da zatvoriš aplikaciju, rezultat te čeka.'
+            : local.kind === 'still'
+              ? 'Analiza još traje. Rezultat će se pojaviti sam — možeš da zatvoriš aplikaciju.'
+              : local.text;
     return (
       <div className="card ai-card prazna" id={id}>
         <DayHeader title={race ? 'Analiza trke' : 'Analiza'} extra={source} />
         <div className={`ai-out${local.kind === 'error' ? ' err' : ''}`}>{text}</div>
+        {local.kind === 'error' ? (
+          <button type="button" className="ai-again" onClick={() => setLocal({ kind: 'idle' })}>
+            Nazad na analizu
+          </button>
+        ) : null}
       </div>
     );
   }

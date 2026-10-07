@@ -55,7 +55,7 @@ brisanje podataka: <a href="mailto:avuletic92@gmail.com">avuletic92@gmail.com</a
 <p><strong>O AI analizi:</strong> ide preko Google Gemini API-ja, na besplatnom nivou. Google
 na tom nivou <strong>koristi sadržaj zahteva i odgovora za poboljšanje svojih proizvoda</strong>.
 Zahtev ne nosi ni ime ni e-adresu, ali nosi brojeve o tvom treningu i oporavku i tvoje beleške
-sa treninga — v. tabelu „Kome se podaci prosleđuju". Analiza se pokreće samo kad je sam
+sa treninga. Analiza trke uključuje naziv i datum trke, zvanični rezultat, cilj, kilometarske prolaze (tempo, puls, kadenca, snaga, visinska razlika, pauze i dostupna očitavanja temperature sa sata), krugove i tvoje beleške o uslovima, hrani i tečnosti — v. tabelu „Kome se podaci prosleđuju". Analiza se pokreće samo kad je sam
 zatražiš; ako to ne želiš, ne traži je.</p>
 
 <h2>Gde se podaci čuvaju</h2>
@@ -130,7 +130,7 @@ ih i tih poruka nema.</p>
 <h2>Kome se podaci prosleđuju</h2>
 <table>
   <tr><th>Primalac</th><th>Šta dobija</th><th>Kada</th></tr>
-  <tr><td>Google (Gemini)</td><td>sažetak trčanja bez imena i bez e-adrese, i <b>jutarnja merenja</b> — HRV, puls u miru, san i svežinu; kod trend-analize do 90 dana tih merenja, uz tvoje beleške sa treninga</td><td>kada zatražiš AI analizu ili trend</td></tr>
+  <tr><td>Google (Gemini)</td><td>sažetak trčanja bez imena i bez e-adrese, i <b>jutarnja merenja</b> — HRV, puls u miru, san i svežinu; kod trend-analize do 90 dana tih merenja, uz tvoje beleške sa treninga; za analizu trke i naziv/datum trke, zvaničan rezultat i cilj, kilometarske prolaze, krugove, dostupna očitavanja senzora i tvoje beleške o uslovima, hrani i tečnosti</td><td>kada zatražiš AI analizu ili trend</td></tr>
   <tr><td>Strava</td><td>zahtev za tvoja trčanja</td><td>kada pokreneš sinhronizaciju</td></tr>
   <tr><td>intervals.icu</td><td>zahtev za jutarnja merenja; planirani treninzi koje šalješ na sat</td><td>kada povučeš oporavak ili pošalješ treninge</td></tr>
   <tr><td><b>Open-Meteo</b> (vremenska služba)</td><td>samo koordinate zaokružene na ~1 km. Bez naloga, bez ključa, bez ičega o tebi — ni imena, ni e-adrese, ni podataka o treningu</td><td>samo dok je vreme uključeno; upit ide direktno sa tvog uređaja, ne preko našeg servera</td></tr>
@@ -353,7 +353,7 @@ turn notifications off and those messages stop too.</p>
 <h2>Who we share data with</h2>
 <table>
   <tr><th>Recipient</th><th>What they receive</th><th>When</th></tr>
-  <tr><td>Google (Gemini)</td><td>a summary of a run without your name or email, plus <b>morning metrics</b> — HRV, resting heart rate, sleep and freshness; for trend analysis up to 90 days of those metrics, along with your workout notes</td><td>when you request AI analysis or a trend</td></tr>
+  <tr><td>Google (Gemini)</td><td>a summary of a run without your name or email, plus <b>morning metrics</b> — HRV, resting heart rate, sleep and freshness; for trend analysis up to 90 days of those metrics, along with your workout notes; race analysis also includes race name/date, official result and target, kilometer splits, laps, available sensor readings, and your notes about conditions, food and fluids</td><td>when you request AI analysis, a race analysis or a trend</td></tr>
   <tr><td>Strava</td><td>a request for your activities</td><td>when you run a sync</td></tr>
   <tr><td>intervals.icu</td><td>a request for morning metrics; planned workouts you push to your watch</td><td>when you pull recovery data or send workouts</td></tr>
   <tr><td><b>Open-Meteo</b> (weather service)</td><td>only coordinates rounded to ~1 km. No account, no key, nothing about you &mdash; no name, no email, no training data</td><td>only while weather is enabled; the request goes straight from your device, not via our server</td></tr>

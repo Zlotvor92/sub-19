@@ -307,7 +307,7 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
           }
         }
       } else if (
-        (d.tag === 'lako' || d.tag === 'lr') &&
+        (d.tag === 'lako' || d.tag === 'lr' || d.tag === 'trka' || !!s.log[d.id]?.['raceAi']) &&
         s.log[d.id] &&
         perKmStale(s.log[d.id], PERKM_VERSION)
       ) {

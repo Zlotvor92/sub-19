@@ -15,6 +15,26 @@ export function racePayload(
   context: RaceContext,
   entered?: Record<string, unknown>
 ) {
+  const details = log['raceDetails'];
+  const d =
+    details && typeof details === 'object' && !Array.isArray(details)
+      ? (details as Record<string, unknown>)
+      : {};
+  const data = {
+    km: log.km,
+    time: log.sec,
+    hr: log.hr,
+    rpe: log['rpe'],
+    note: log['note'],
+    maxHr: log['maxHr'],
+    elevGain: log['elevGain'],
+    perKm: log['perKm'],
+    laps: log['laps'],
+    lapsIzvor: log['lapsIzvor'],
+    icu: log['icu'],
+    ...entered
+  };
+  const selected = d['version'] === 1 && d['date'] === context.date;
   return {
     analysisType: 'race',
     race: context,
@@ -24,18 +44,33 @@ export function racePayload(
       desc: context.name,
       stravaName: log['stravaName'] ?? null
     },
-    entered: entered ?? {
-      km: log.km,
-      time: log.sec,
+    entered: {
+      ...data,
       movingSec: log.sec,
-      hr: log.hr,
-      rpe: log['rpe'],
-      note: log['note'],
-      maxHr: log['maxHr'],
-      elevGain: log['elevGain'],
-      perKm: log['perKm'],
-      laps: log['laps'],
-      icu: log['icu']
+      ...(selected
+        ? {
+            km: d['km'],
+            movingSec: d['movingSec'],
+            elapsedSec: d['elapsedSec'],
+            hr: d['hr'],
+            maxHr: d['maxHr'],
+            cadence: d['cadence'],
+            elevGain: d['elevGain'],
+            perKm: d['perKm'],
+            perKmSource: d['source'],
+            laps: d['laps'],
+            lapsIzvor: d['source'],
+            icu: d['source'] === 'icu' ? d['icu'] : undefined,
+            zoneUdeo: undefined,
+            decoupling: undefined,
+            time: undefined,
+            providerDetails: d['providers']
+          }
+        : {}),
+      dataSource: selected ? d['source'] : (log.src ?? 'manual'),
+      // Daily wellness is a morning record, not a measurement taken after the finish.
+      oporavakTiming: 'morning_of_race',
+      oporavakDate: context.date
     }
   };
 }

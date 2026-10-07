@@ -56,3 +56,19 @@ test('handler šalje modelu poseban prompt trke i ograničava serverski upis na 
     assert.ok(!JSON.stringify(modelBody).includes('Planiran tempo radnog dela'));
   }finally{globalThis.fetch=savedFetch;for(const [k,v]of Object.entries(saved)){if(v===undefined)delete process.env[k];else process.env[k]=v;}}
 });
+
+test('race prompt preserves every kilometer, partial segment and source-specific supplemental laps without private fields', () => {
+  const perKm = Array.from({length:22},(_,i)=>({km:i+1,paceSec:300+i,distanceM:i===21?500:1000,elapsedSec:i===21?150:300,movingSec:i===21?145:295,timeBasis:'moving',partial:i===21,hr:160+i/2,stopSec:5,temp:20,lat:43,token:'private'}));
+  const out = JSON.parse(racePrompt({race:{distanceM:21097.5,officialSec:6272,intent:'first_distance'},entered:{perKm,perKmSource:'strava',movingSec:6252,elapsedSec:6272,oporavak:{datum:'2026-10-04',sanH:3.8},oporavakTiming:'morning_of_race',providerDetails:{icu:{icu:{zonePuls:[10,20],zoneGranice:[140,160]},laps:[{distM:21097,sec:6272,gapSec:295,private:'hidden'}]}}}}));
+  assert.equal(out.activity.perKm.length,22);
+  assert.equal(out.activity.perKm[21].partial,true);
+  assert.equal(out.activity.perKm[21].distanceM,500);
+  assert.equal(out.activity.perKm[0].lat,undefined);
+  assert.equal(out.activity.perKm[0].token,undefined);
+  assert.equal(out.activity.providerDetails.icu.laps[0].gapSec,295);
+  assert.equal(out.activity.providerDetails.icu.laps[0].private,undefined);
+  assert.deepEqual(out.activity.providerDetails.icu.icu.zoneGranice,[140,160]);
+  assert.equal(out.activity.oporavak.datum,'2026-10-04');
+  assert.match(RACE_SYSTEM,/PRE trke/);
+  assert.match(RACE_SYSTEM,/za controlled ili first_distance ne navodi VDOT/);
+});
