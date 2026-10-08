@@ -31,16 +31,9 @@ export function WeightCard({
     .filter((o) => o.x && parseIsoDate(o.x.date))
     .sort((a, b) => (a.x.date < b.x.date ? 1 : a.x.date > b.x.date ? -1 : 0));
   const old = valid.filter((o) => o.x.date < planStart).length;
-  const last = valid[0]?.x;
   const model = weightModel(kg, today);
   return (
-    <section className="card chart-card" aria-labelledby="ws-h">
-      <div className="dhead">
-        <h3 id="ws-h">Telesna masa</h3>
-        <span className="dhead-x">
-          {last ? `poslednje ${fmtNum(last.kg, 1)} kg · ${fmtDayMonth(last.date)}` : 'bez unosa'}
-        </span>
-      </div>
+    <section aria-label="Telesna masa">
       {model ? (
         <WeightChart model={model} selected={sel} onSelect={setSel} />
       ) : (
@@ -75,7 +68,7 @@ export function WeightCard({
           {err}
         </p>
       ) : null}
-      <div className="btnrow">
+      <div className="btnrow start">
         <button
           type="button"
           className="btn"
@@ -92,7 +85,7 @@ export function WeightCard({
         </button>
       </div>
       {old ? (
-        <div className="btnrow">
+        <div className="btnrow start">
           <button type="button" className="btn ghost" onClick={onDeleteBefore}>
             Obriši {old} {pl3(old, 'merenje', 'merenja', 'merenja')} pre {fmtDayMonth(planStart)}
           </button>
@@ -102,10 +95,10 @@ export function WeightCard({
         <details className="help">
           <summary>Sva merenja ({valid.length})</summary>
           {valid.map((o) => (
-            <div className="krow wt-row" key={`${o.i}-${o.x.date}`}>
-              <div className="ki">
+            <div className="wt-row" key={`${o.i}-${o.x.date}`}>
+              <div className="wt-i">
                 <b className="num">{fmtNum(o.x.kg, 1)} kg</b>
-                <span className="ka">
+                <span>
                   {dowShort(o.x.date)} {fmtDayMonthYear(o.x.date)}
                   {o.x.src ? ' · iz treninga' : ''}
                 </span>

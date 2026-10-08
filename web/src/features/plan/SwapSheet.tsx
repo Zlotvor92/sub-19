@@ -4,14 +4,17 @@ import { confirmAction } from '../../app/confirm';
 import { Icon } from '../../components/ui/icons';
 import { useResolvedPlan, useTrainingStore } from '../../stores';
 
-/* POMERANJE TRENINGA: dodir na dan, pa dodir na drugi dan iste nedelje → zamena. Odrađeni dani (sa kvačicom) se ne pomeraju. */
-export function SwapSheet({ w }: { w: number }) {
+/* POMERANJE TRENINGA: dodir na dan, pa dodir na drugi dan iste nedelje → zamena. Kad se otvori iz Detalja treninga, dan je već izabran, pa je
+   dovoljan jedan dodir. Odrađeni dani (sa kvačicom) se ne pomeraju. */
+export function SwapSheet({ w, from }: { w: number; from?: string }) {
   const plan = useResolvedPlan();
   const log = useTrainingStore((s) => s.log);
   const moves = useTrainingStore((s) => s.moves);
   const swapDays = useTrainingStore((s) => s.swapDays);
   const undoWeekMoves = useTrainingStore((s) => s.undoWeekMoves);
-  const [sel, setSel] = useState<string | null>(null);
+  const [sel, setSel] = useState<string | null>(() =>
+    from && log[from]?.status !== 'done' ? from : null
+  );
   const [err, setErr] = useState('');
   const week = plan?.weeks.find((x) => x.w === w);
   if (!plan || !week) return null;
@@ -44,10 +47,7 @@ export function SwapSheet({ w }: { w: number }) {
           : 'Dodirni dan koji hoćeš da pomeriš'}
       </div>
       {err ? (
-        <div
-          role="alert"
-          style={{ fontSize: 'var(--fs-small)', color: 'var(--bad)', marginBottom: 10 }}
-        >
+        <div role="alert" className="note-src err">
           {err}
         </div>
       ) : null}
@@ -58,31 +58,31 @@ export function SwapSheet({ w }: { w: number }) {
           const title = d.rest ? d.desc || 'Odmor' : (d.desc || '').split('\n')[0];
           const content = (
             <>
-              <div className="day-d">
+              <span className="swap-d">
                 {dowShort(d.date)}
                 <small>{fmtDayMonth(d.date)}</small>
-              </div>
-              <div className="day-t" style={d.rest ? { color: 'var(--txt3)' } : undefined}>
+              </span>
+              <span className={`swap-t${d.rest ? ' muted' : ''}`}>
                 {title}
                 {moves[d.id] != null ? <small>pomeren sa {fmtDayMonth(d.origDate)}</small> : null}
-              </div>
-              <div className="day-km">{d.km != null ? fmtKm(d.km) : ''}</div>
-              <span className={`day-st ${locked ? 'done' : selected ? 'skip' : 'pending'}`}>
-                {locked ? <Icon name="check" size={14} strokeWidth={3} /> : null}
-                {selected ? <Icon name="swap" size={13} strokeWidth={2.4} /> : null}
-                {locked ? <span className="sr-only">odrađen, ne pomera se</span> : null}
               </span>
+              <span className="swap-km num">{d.km != null ? `${fmtKm(d.km)} km` : ''}</span>
+              <span className="swap-st" aria-hidden="true">
+                {locked ? <Icon name="check" size={18} strokeWidth={2.4} /> : null}
+                {selected ? <Icon name="swap" size={18} strokeWidth={2.2} /> : null}
+              </span>
+              {locked ? <span className="sr-only">odrađen, ne pomera se</span> : null}
             </>
           );
           return locked ? (
-            <div key={d.id} className="day swap-lock">
+            <div key={d.id} className="swap-row lock">
               {content}
             </div>
           ) : (
             <button
               type="button"
               key={d.id}
-              className={`day${selected ? ' swap-sel' : ''}`}
+              className={`swap-row${selected ? ' sel' : ''}`}
               aria-pressed={selected}
               onClick={() => pick(d.id)}
             >
@@ -92,10 +92,10 @@ export function SwapSheet({ w }: { w: number }) {
         })}
       </div>
       {moved ? (
-        <div className="btnrow" style={{ marginTop: 14 }}>
+        <div className="btnrow">
           <button
             type="button"
-            className="btn ghost"
+            className="btn ghost block"
             onClick={() => {
               void confirmAction(
                 'Vratiti sve pomerene dane ove nedelje na originalni raspored iz plana?'
@@ -110,10 +110,10 @@ export function SwapSheet({ w }: { w: number }) {
           </button>
         </div>
       ) : null}
-      <div className="note-src">
+      <p className="note-src">
         Odrađeni dani (sa kvačicom) se ne pomeraju — istorija ostaje netaknuta. Zamena je moguća
         unutar iste nedelje.
-      </div>
+      </p>
     </>
   );
 }

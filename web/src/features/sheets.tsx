@@ -1,26 +1,25 @@
 import type { ReactNode } from 'react';
 import { useUIStore } from '../stores/uiStore';
 import { AltSheet } from './plan/AltSheet';
-import { DaySheet } from './plan/DaySheet';
 import { SwapSheet } from './plan/SwapSheet';
 import { T3kSheet } from './race/T3kSheet';
-import { BugSheet, DeleteAccountSheet, HistorySheet } from './settings/AccountSheets';
-import { UsersSheet } from './settings/UsersSheet';
-import { SettingsSheet } from './settings/SettingsSheet';
+import { BugSheet, DeleteAccountSheet, HistorySheet } from './ti/AccountSheets';
+import { UsersSheet } from './ti/UsersSheet';
 import { KneeSheet } from './recovery/KneeSheet';
 
-/* REGISTAR LISTOVA: `kind` → sadržaj. Svaka funkcionalnost koja se otvara u listu (podešavanja, izmena treninga, bol,
-   test na 3 km, istorija verzija…) registruje svoj sadržaj ovde. Svojstva (`props`) dolaze iz `openSheet` i proveravaju se
-   OVDE, na granici — komponenta dobija samo ono što je tipizirano. */
+/* REGISTAR LISTOVA: `kind` → sadržaj. Mali listovi odozdo za kratke izmene (izmena treninga, pomeranje, test na 3 km, unos bola, istorija verzija…).
+   Veći sadržaj ima svoj ekran (`features/screens`). Svojstva (`props`) dolaze iz `openSheet` i proveravaju se OVDE, na granici — komponenta dobija samo
+   ono što je tipizirano. */
 const SHEETS: Record<string, (props: Record<string, unknown>) => ReactNode> = {
-  settings: () => <SettingsSheet />,
   'delete-account': () => <DeleteAccountSheet />,
   bug: () => <BugSheet />,
   history: () => <HistorySheet />,
   users: () => <UsersSheet />,
-  day: (p) => (typeof p['id'] === 'string' ? <DaySheet id={p['id']} /> : null),
   alt: (p) => (typeof p['id'] === 'string' ? <AltSheet id={p['id']} /> : null),
-  swap: (p) => (typeof p['w'] === 'number' ? <SwapSheet w={p['w']} /> : null),
+  swap: (p) =>
+    typeof p['w'] === 'number' ? (
+      <SwapSheet w={p['w']} {...(typeof p['from'] === 'string' ? { from: p['from'] } : {})} />
+    ) : null,
   t3k: (p) => (
     <T3kSheet
       id={typeof p['id'] === 'string' ? p['id'] : null}

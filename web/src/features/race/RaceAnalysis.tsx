@@ -10,13 +10,23 @@ import {
 import { useResolvedPlan, useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
+import { ScreenFrame } from '../../components/ui/Shell';
 import { AiCard } from '../today/AiCard';
 
-export function RaceAnalysis() {
+/* ANALIZA TRKE: ekran sa svojim ulazom (Napredak → Analiza trke, ili aktivnost van plana). Ranije je ovo bila forma na vrhu ekrana Napredak, i kad nema nijedne trke. */
+export function RaceAnalysisScreen({ id }: { id?: string }) {
   const account = useAuthStore((s) => s.userId);
-  return <RaceAnalysisForm key={account} />;
+  return (
+    <ScreenFrame>
+      <header className="screen-head">
+        <h1>Analiza trke</h1>
+        <p>Rezultat, prolazi po kilometru i analiza, odvojeno od analize treninga.</p>
+      </header>
+      <RaceAnalysisForm key={account} initialId={id} />
+    </ScreenFrame>
+  );
 }
-function RaceAnalysisForm() {
+function RaceAnalysisForm({ initialId }: { initialId?: string }) {
   const fieldId = useId();
   const plan = useResolvedPlan();
   const log = useTrainingStore((s) => s.log);
@@ -30,7 +40,7 @@ function RaceAnalysisForm() {
         ),
     [log]
   );
-  const [selection, setSelection] = useState('');
+  const [selection, setSelection] = useState(initialId ?? '');
   const [manualId, setManualId] = useState('');
   const id =
     selection === 'manual'
@@ -153,13 +163,9 @@ function RaceAnalysisForm() {
         }
       : null;
   return (
-    <section className="card race-analysis" aria-labelledby="race-analysis-heading">
-      <div className="dhead">
-        <h2 id="race-analysis-heading">Analiza trke</h2>
-      </div>
+    <section className="race-analysis" aria-label="Kontekst trke">
       <p className="muted">
         Izaberi već odrađeno trčanje, čak i ako nije bilo trka u planu, ili unesi rezultat ručno.
-        Analiza trke se čuva odvojeno od analize treninga.
       </p>
       <div className="field">
         <label htmlFor={fieldId + '-1'}>Trčanje</label>
@@ -241,53 +247,64 @@ function RaceAnalysisForm() {
           />
         </div>
       ) : null}
-      <div className="field">
-        <label htmlFor={fieldId + '-7'}>Zvanično vreme (opciono)</label>
-        <input
-          id={fieldId + '-7'}
-          placeholder="hh:mm:ss ili mm:ss"
-          value={official ?? (context.officialSec ? fmtClock(context.officialSec) : '')}
-          onChange={(e) => {
-            setOfficial(e.target.value);
-            setDirty(true);
-          }}
-        />
+      <details className="more-details optional">
+        <summary>Dodatno (opciono): zvanično i ciljno vreme, hrana, uslovi</summary>
+        <div className="field">
+          <label htmlFor={fieldId + '-7'}>Zvanično vreme (opciono)</label>
+          <input
+            id={fieldId + '-7'}
+            placeholder="hh:mm:ss ili mm:ss"
+            value={official ?? (context.officialSec ? fmtClock(context.officialSec) : '')}
+            onChange={(e) => {
+              setOfficial(e.target.value);
+              setDirty(true);
+            }}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor={fieldId + '-8'}>Ciljno vreme te trke (opciono)</label>
+          <input
+            id={fieldId + '-8'}
+            placeholder="hh:mm:ss ili mm:ss"
+            value={target ?? (context.targetSec ? fmtClock(context.targetSec) : '')}
+            onChange={(e) => {
+              setTarget(e.target.value);
+              setDirty(true);
+            }}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor={fieldId + '-9'}>Unos hrane i tečnosti</label>
+          <textarea
+            id={fieldId + '-9'}
+            maxLength={600}
+            value={context.nutrition}
+            onChange={(e) => patch({ nutrition: e.target.value })}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor={fieldId + '-10'}>Uslovi i osećaj tokom trke</label>
+          <textarea
+            id={fieldId + '-10'}
+            maxLength={600}
+            value={context.conditions}
+            onChange={(e) => patch({ conditions: e.target.value })}
+          />
+        </div>
+      </details>
+      <div className="btnrow start">
+        <button type="button" className="btn" onClick={save}>
+          Sačuvaj kontekst trke
+        </button>
       </div>
-      <div className="field">
-        <label htmlFor={fieldId + '-8'}>Ciljno vreme te trke (opciono)</label>
-        <input
-          id={fieldId + '-8'}
-          placeholder="hh:mm:ss ili mm:ss"
-          value={target ?? (context.targetSec ? fmtClock(context.targetSec) : '')}
-          onChange={(e) => {
-            setTarget(e.target.value);
-            setDirty(true);
-          }}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor={fieldId + '-9'}>Unos hrane i tečnosti</label>
-        <textarea
-          id={fieldId + '-9'}
-          maxLength={600}
-          value={context.nutrition}
-          onChange={(e) => patch({ nutrition: e.target.value })}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor={fieldId + '-10'}>Uslovi i osećaj tokom trke</label>
-        <textarea
-          id={fieldId + '-10'}
-          maxLength={600}
-          value={context.conditions}
-          onChange={(e) => patch({ conditions: e.target.value })}
-        />
-      </div>
-      <button type="button" className="btn" onClick={save}>
-        Sačuvaj kontekst trke
-      </button>
-      {error ? <p role="alert">{error}</p> : null}
-      {dirty || !storedContext ? <p className="muted">Pre analize sačuvaj kontekst trke.</p> : null}
+      {error ? (
+        <p role="alert" className="note-src err">
+          {error}
+        </p>
+      ) : null}
+      {dirty || !storedContext ? (
+        <p className="note-src">Pre analize sačuvaj kontekst trke.</p>
+      ) : null}
       {day &&
       !dirty &&
       (draft !== null || storedContext != null) &&

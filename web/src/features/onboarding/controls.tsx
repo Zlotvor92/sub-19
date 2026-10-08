@@ -47,7 +47,6 @@ export function Chips<T extends string | number>({
             className={`ob-chip${v === value ? ' on' : ''}`}
             aria-pressed={v === value}
             disabled={off}
-            style={off ? { opacity: 0.3 } : undefined}
             onClick={() => onPick(v)}
           >
             {text}
@@ -82,7 +81,6 @@ export function DaysChips({
             className={`ob-chip${on ? ' on' : ''}`}
             aria-pressed={on}
             disabled={off}
-            style={off ? { opacity: 0.3 } : undefined}
             onClick={() => onToggle(d)}
           >
             {n}

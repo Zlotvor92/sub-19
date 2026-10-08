@@ -1,5 +1,6 @@
 import { fmtClock } from '../../domain/format';
 import { usesHours, type WizardState, type formPreview } from '../../domain/onboarding';
+import { Notice } from '../../components/ui/primitives';
 import { Chips, PB_DISTS, TimeFields } from './controls';
 
 /* KORAK 2: poslednji rezultat. VDOT i tempa se računaju u domenu (`formPreview`); „Dalje“ je zaključano dok unos nije moguć, a razlog stoji na ekranu. */
@@ -55,7 +56,7 @@ export function Step2Result({
         />
       </div>
       {form ? (
-        <div className="ob-card accent ob-vdot show" id="vdotWrap">
+        <div className="ob-card accent" id="vdotWrap">
           <div className="ob-ct">Tvoja forma</div>
           <div className="ob-vrow">
             <svg className="ob-vring" viewBox="0 0 64 64" aria-hidden="true">
@@ -88,12 +89,9 @@ export function Step2Result({
       ) : null}
       {pbMsg ? (
         /* RECI ZAŠTO: „Dalje" je zaključano, a razlog se ranije nigde nije video (mrtvo dugme bez ijedne reči). */
-        <div className="kb warn" role="alert">
-          <div>
-            <div>Proveri uneto vreme</div>
-            <small>{pbMsg}</small>
-          </div>
-        </div>
+        <Notice tone="warn" role="alert" title="Proveri uneto vreme">
+          {pbMsg}
+        </Notice>
       ) : null}
     </div>
   );

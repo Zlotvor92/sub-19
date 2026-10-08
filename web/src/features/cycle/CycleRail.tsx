@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { plDan } from '../../domain/format';
 import { Icon } from '../../components/ui/icons';
-import { PHASE_COLOR, cycleCaption, type CycleModel, type PhaseKey } from './cycle';
+import { PHASE_COLOR, type CycleModel, type PhaseKey } from './cycle';
 
 const PHASE_NAME: Readonly<Record<PhaseKey, string>> = {
   BAZA: 'Baza',
@@ -10,28 +10,6 @@ const PHASE_NAME: Readonly<Record<PhaseKey, string>> = {
   TAPER: 'Taper',
   TRKA: 'Trka'
 };
-
-/** Natpis u zaglavlju: „N6/12 · RAZVOJ · 46 d". Pre početka i posle kraja plana nema faze. */
-export function CycleCaption({
-  model,
-  daysToRace,
-  startLabel
-}: {
-  model: CycleModel | null;
-  daysToRace: number | null;
-  startLabel: string;
-}) {
-  if (!model) return null;
-  const cap = cycleCaption(model);
-  if (!cap)
-    return <>{daysToRace != null && daysToRace < 0 ? 'Plan završen' : `Start ${startLabel}`}</>;
-  return (
-    <>
-      {cap.week} · <b style={{ ['--c' as string]: PHASE_COLOR[cap.phase] }}>{cap.phase}</b>
-      {daysToRace == null ? '' : daysToRace === 0 ? ' · danas je trka' : ` · ${daysToRace} d`}
-    </>
-  );
-}
 
 /** Rečenica za čitač ekrana: isto što traka pokazuje, bez oslanjanja na boju. */
 export function cycleLabel(model: CycleModel, daysToRace: number | null): string {
@@ -45,28 +23,21 @@ export function cycleLabel(model: CycleModel, daysToRace: number | null): string
           ? ', danas je trka'
           : ', trka je prošla';
   return c
-    ? `Ciklus: nedelja ${c.w} od ${model.total}, faza ${PHASE_NAME[c.phase]}${c.deload ? ' (rasterećenje)' : ''}${race}. Otvori plan.`
-    : `Ciklus: plan od ${model.total} nedelja${race}. Otvori plan.`;
+    ? `Ciklus: nedelja ${c.w} od ${model.total}, faza ${PHASE_NAME[c.phase]}${c.deload ? ' (rasterećenje)' : ''}${race}.`
+    : `Ciklus: plan od ${model.total} nedelja${race}.`;
 }
 
-/** Trajni prikaz pozicije u ciklusu: jedan segment po nedelji, boja faze, tekuća nedelja uzdignuta, rasterećenje niže, zastavica trke. */
+/** Pregled cele pripreme u jednoj liniji: jedan segment po nedelji, tonovi po fazi, tekuća nedelja uzdignuta, rasterećenje niže, zastavica trke. */
 export const CycleRail = memo(function CycleRail({
   model,
-  daysToRace,
-  onOpen
+  daysToRace
 }: {
   model: CycleModel | null;
   daysToRace: number | null;
-  onOpen: () => void;
 }) {
   if (!model || !model.weeks.length) return null;
   return (
-    <button
-      type="button"
-      className="rail"
-      aria-label={cycleLabel(model, daysToRace)}
-      onClick={onOpen}
-    >
+    <div className="rail" role="img" aria-label={cycleLabel(model, daysToRace)}>
       {model.weeks.map((w) => (
         <i
           key={w.w}
@@ -78,6 +49,6 @@ export const CycleRail = memo(function CycleRail({
       <span className="flag" aria-hidden="true">
         <Icon name="flag" size={16} />
       </span>
-    </button>
+    </div>
   );
 });

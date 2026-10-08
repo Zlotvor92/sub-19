@@ -5,16 +5,21 @@ import {
   useTrainingStore
 } from '../../stores';
 import { currentVdot } from '../../domain/training/adaptation';
-import { weatherCard, trainingHour, type ForecastHours } from '../../domain/weather';
+import {
+  weatherCard,
+  trainingHour,
+  type ForecastHours,
+  type WeatherCardModel
+} from '../../domain/weather';
 import type { ResolvedDay } from '../../domain/plan';
 import { localHour } from '../../lib/clock';
 import { predRowsForDay } from '../../stores/dayActions';
 import type { StoredPredRow } from '../../domain/training/adaptation';
-import { DayHeader } from './DayCard';
+import { Section } from '../../components/ui/primitives';
 
-/* Kartica „Vreme": stoji ODMAH ispod plana i vidi se DOK trening još predstoji — posle je kasno, to je jedini podatak koji menja
-   odluku unapred. Odluke (vrućina, hladniji sat, tempo uz vrućinu) su u `domain/weather`. */
-export function WeatherCard({ day, today }: { day: ResolvedDay; today: string }) {
+/* VREME ZA DAN KOJI PREDSTOJI. Odluke (vrućina, hladniji sat, tempo uz vrućinu) su u `domain/weather`; domen vraća `null` kad prikaz nema smisla (odmor,
+   prošlost, bez lokacije ili prognoze). Na Danas stoji JEDAN red (ono što menja odluku pre izlaska), a puna slika u Detaljima treninga. */
+export function useWeatherModel(day: ResolvedDay, today: string): WeatherCardModel | null {
   const geo = useSettingsStore((s) => s.ui.geo);
   const forecast = useSettingsStore((s) => s.vreme);
   const hourSetting = useSettingsStore((s) => s.ui.satTreninga);
@@ -25,7 +30,7 @@ export function WeatherCard({ day, today }: { day: ResolvedDay; today: string })
   const sati = forecast?.['sati'];
   const cache = sati && typeof sati === 'object' ? { sati: sati as ForecastHours } : null;
   const rows = (pred ?? []).filter((r): r is StoredPredRow => typeof r.id === 'string');
-  const model = weatherCard({
+  return weatherCard({
     day,
     today,
     nowHour: localHour(),
@@ -35,26 +40,44 @@ export function WeatherCard({ day, today }: { day: ResolvedDay; today: string })
     predPace: plan ? (predRowsForDay(plan, day, rows)[0]?.pt ?? null) : null,
     vdot: currentVdot(vdotLog)
   });
+}
+
+/** Jedan red za Danas: „Vreme u 7:00 · 14 °C, oseća se 12 °C · tempo uz vrućinu 5:50". */
+export function weatherLine(model: WeatherCardModel): string {
+  const main = model.rows.find((r) => r.label === 'temperatura' || /^u \d/.test(r.label));
+  const heat = model.rows.find((r) => r.label === 'tempo uz vrućinu');
+  const text = (r: { parts: Array<{ text: string }> }): string =>
+    r.parts.map((p) => p.text).join(', ');
+  const at = /u (\d+:\d+)$/.exec(model.extra)?.[1];
+  const parts = [
+    `Vreme${at ? ` u ${at}` : ''}${main ? ` · ${text(main)}` : ''}`,
+    heat ? `tempo uz vrućinu ${heat.parts[0]?.text ?? ''}` : ''
+  ].filter(Boolean);
+  return parts.join(' · ');
+}
+
+/** Puna slika za Detalje treninga. */
+export function WeatherSection({ day, today }: { day: ResolvedDay; today: string }) {
+  const model = useWeatherModel(day, today);
   if (!model) return null;
   return (
-    <div className="card">
-      <DayHeader title="Vreme" extra={model.extra} />
-      <div className="drows">
+    <Section title="Vreme" extra={model.extra}>
+      <dl className="facts">
         {model.rows.map((r) => (
-          <div className="drow" key={r.label}>
-            <span className="l">{r.label}</span>
-            <span className="v">
+          <div key={r.label}>
+            <dt>{r.label}</dt>
+            <dd>
               {r.parts.map((p, i) => (
                 <span key={i}>
                   {i ? ' ' : ''}
-                  {p.kind === 'b' ? <b>{p.text}</b> : <small>{p.text}</small>}
+                  {p.kind === 'b' ? p.text : <small>{p.text}</small>}
                 </span>
               ))}
-            </span>
+            </dd>
           </div>
         ))}
-      </div>
-      <div className="note-src">{model.note}</div>
-    </div>
+      </dl>
+      <p className="note-src">{model.note}</p>
+    </Section>
   );
 }

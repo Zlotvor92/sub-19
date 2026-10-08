@@ -17,8 +17,7 @@ import { ADMIN_UID } from '../../services/config';
 import { useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
 import { RaceData } from '../race/RaceData';
-import { Icon } from '../../components/ui/icons';
-import { DayHeader } from './DayCard';
+import { Row, Section } from '../../components/ui/primitives';
 
 /** Tekst analize: samo `**bold**` i pasusi — ništa iz teksta ne postaje oznaka (analiza iz uvezenog backupa ne može da unese HTML). */
 export function AnalysisText({ text }: { text: string }) {
@@ -142,9 +141,8 @@ function AiAnalysisCard({ day, raceContext }: { day: ResolvedDay; raceContext?: 
     void service().retry(day.id, payload).then(finish);
   };
 
-  const hasText = view.kind === 'done' || (view.kind === 'running' && !!view.previous);
-  const className = `card ai-card${hasText ? '' : ' prazna'}`;
   const id = `ai-card-${day.id}`;
+  const title = race ? 'Analiza trke' : 'Analiza';
 
   if (
     local.kind === 'refreshing' ||
@@ -165,22 +163,22 @@ function AiAnalysisCard({ day, raceContext }: { day: ResolvedDay; raceContext?: 
               ? 'Analiza još traje. Rezultat će se pojaviti sam — možeš da zatvoriš aplikaciju.'
               : local.text;
     return (
-      <div className="card ai-card prazna" id={id}>
-        <DayHeader title={race ? 'Analiza trke' : 'Analiza'} extra={source} />
-        <div className={`ai-out${local.kind === 'error' ? ' err' : ''}`}>{text}</div>
+      <Section title={title} extra={source} id={id}>
+        <div className={`ai-out${local.kind === 'error' ? ' err' : ''}`} role="status">
+          {text}
+        </div>
         {local.kind === 'error' ? (
           <button type="button" className="ai-again" onClick={() => setLocal({ kind: 'idle' })}>
             Nazad na analizu
           </button>
         ) : null}
-      </div>
+      </Section>
     );
   }
 
   if (view.kind === 'running')
     return (
-      <div className={className} id={id}>
-        <DayHeader title={race ? 'Analiza trke' : 'Analiza'} extra={view.source} />
+      <Section title={title} extra={view.source} id={id}>
         {view.stuck ? (
           <>
             <div className="ai-radi">
@@ -208,13 +206,12 @@ function AiAnalysisCard({ day, raceContext }: { day: ResolvedDay; raceContext?: 
             </div>
           </>
         ) : null}
-      </div>
+      </Section>
     );
 
   if (view.kind === 'done')
     return (
-      <div className={className} id={id}>
-        <DayHeader title={race ? 'Analiza trke' : 'Analiza'} extra={view.source} />
+      <Section title={title} extra={view.source} id={id}>
         {view.error ? <div className="ai-radi err">{view.error}</div> : null}
         <div className="ai-out">
           <AnalysisText text={view.text} />
@@ -224,40 +221,24 @@ function AiAnalysisCard({ day, raceContext }: { day: ResolvedDay; raceContext?: 
             Analiziraj ponovo · {remainingText(view.remaining)}
           </button>
         ) : null}
-      </div>
+      </Section>
     );
 
   if (view.kind === 'exhausted')
     return (
-      <div className="card ai-card prazna" id={id}>
-        <div className="ai-row off">
-          <span className="ai-ic">
-            <Icon name="sparkle" />
-          </span>
-          <span className="ai-tt">
-            <b>Analiza</b>
-            <span>iskorišćene obe za ovaj trening</span>
-          </span>
-        </div>
+      <div className="ai-solo" id={id}>
+        <Row icon="sparkle" title="Analiza" sub="iskorišćene obe za ovaj trening" muted />
       </div>
     );
 
   return (
-    <div className="card ai-card prazna" id={id}>
-      <button type="button" className="ai-row" onClick={start}>
-        <span className="ai-ic">
-          <Icon name="sparkle" />
-        </span>
-        <span className="ai-tt">
-          <b>{race ? 'Analiziraj trku' : 'Analiziraj trening'}</b>
-          <span>
-            {view.source} · {remainingText(view.remaining)}
-          </span>
-        </span>
-        <span className="ai-ch">
-          <Icon name="chevron" size={16} />
-        </span>
-      </button>
+    <div className="ai-solo" id={id}>
+      <Row
+        icon="sparkle"
+        title={race ? 'Analiziraj trku' : 'Analiziraj trening'}
+        sub={`${view.source} · ${remainingText(view.remaining)}`}
+        onClick={start}
+      />
     </div>
   );
 }

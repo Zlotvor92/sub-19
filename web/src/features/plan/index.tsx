@@ -1,255 +1,205 @@
 import { useMemo, useState } from 'react';
-import { parseIsoDate } from '../../domain/date';
-import {
-  effectiveRaceDate,
-  planSummary,
-  weekChart,
-  weekRunCount,
-  weekRunDone,
-  type RingTone
-} from '../../domain/day';
-import { fmtDayLong, fmtKm, pl3 } from '../../domain/format';
-import { useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../../stores';
+import { addDays, diffDays, parseIsoDate } from '../../domain/date';
+import { effectiveRaceDate, weekPlanKm, weekRealKm } from '../../domain/day';
+import { fmtDayLong, fmtDayMonth, fmtKm, plDan } from '../../domain/format';
+import { raceRefs } from '../../domain/race';
+import { AppBar } from '../../components/ui/Shell';
+import { Icon } from '../../components/ui/icons';
+import { Disclosure } from '../../components/ui/Disclosure';
+import { Row } from '../../components/ui/primitives';
+import { dayOfMonth, dowInitial } from '../../lib/dates';
+import { useActiveGenPlan, useIcuConnected, useResolvedPlan, useTrainingStore } from '../../stores';
 import { useUIStore } from '../../stores/uiStore';
-import { Num } from '../../components/ui/Num';
-import { PHASE_COLOR, type PhaseKey } from '../cycle/cycle';
-import { weekCells } from '../cycle/dayCells';
+import { PHASE_LINE, type PhaseKey } from '../cycle/cycle';
 import { useCycleModel } from '../cycle/useCycleModel';
-import { WeekBody } from './WeekBody';
-import { WeekChart } from './WeekChart';
-import { WeekRow } from './WeekRow';
+import { useEasyPace } from '../session/useEasyPace';
+import { DayRow } from './DayRow';
 
-const TONE: Record<RingTone, string> = {
-  green: 'var(--ok)',
-  amber: 'var(--warn)',
-  red: 'var(--bad)',
-  cyan: 'var(--ph-build)',
-  faint: 'var(--text-3)'
+const byDate = (a: { date: string }, b: { date: string }): number => {
+  const da = a.date || '9999-99-99';
+  const db = b.date || '9999-99-99';
+  return da < db ? -1 : da > db ? 1 : 0;
 };
-const STATE_WORD = { done: 'završeno', now: 'u toku', future: '' } as const;
 
-const kmFmt = (n: number): string => fmtKm(Math.round(n * 10) / 10);
-const pctFmt = (n: number): string => `${Math.round(n)}%`;
-
-/* EKRAN PLAN: gde sam u celini (jedna traka umesto dva prstena), poruka grafikona, pa MAPA CIKLUSA — faze, nedelje sa sedam ćelija dana.
-   Nedelja se otvara dodirom i nosi dane (list dana, pomeranje). Na širokom ekranu: pregled levo, mapa desno. */
+/* EKRAN PLAN: jedna nedelja odjednom (tekuća, a ‹ › pomeraju na ostale), sa stanjem svakog dana — završeno, danas, predstoji, odmor. Ispod su
+   dve radnje: cela priprema (faze, nedelje, kilometri) i prilagođavanje plana. Sve ostalo što je Plan ranije nosio je u „Pregledu celog plana“. */
 export default function PlanPage() {
   const plan = useResolvedPlan();
   const log = useTrainingStore((s) => s.log);
   const alts = useTrainingStore((s) => s.alts);
   const gen = useActiveGenPlan();
-  const warnings = gen?.meta?.dayWarnings;
+  const icuOn = useIcuConnected();
   const todayStr = useUIStore((s) => s.today);
+  const openScreen = useUIStore((s) => s.openScreen);
   const openSheet = useUIStore((s) => s.openSheet);
   const cycle = useCycleModel();
-  const [open, setOpen] = useState<ReadonlySet<number>>(new Set());
-  const [chartSel, setChartSel] = useState<number | null>(null);
+  const easy = useEasyPace();
+  const [picked, setPicked] = useState<number | null>(null);
   const today = parseIsoDate(todayStr);
 
+  const warnings = gen?.meta?.dayWarnings;
   const view = useMemo(() => {
     if (!plan || !today) return null;
-    return {
-      sum: planSummary(plan, log, today),
-      chart: weekChart(plan, log),
-      race: effectiveRaceDate(plan, gen?.meta?.['raceDate'])
-    };
-  }, [plan, today, log, gen]);
-  const phases = useMemo(
-    () => new Map<number, PhaseKey>((cycle?.weeks ?? []).map((w) => [w.w, w.phase])),
-    [cycle]
-  );
+    return { race: effectiveRaceDate(plan, gen?.meta?.['raceDate']) };
+  }, [plan, today, gen]);
   if (!plan || !today || !view || !cycle) return null;
-  const { sum, chart, race } = view;
-  const toggle = (w: number): void =>
-    setOpen((cur) => {
-      const next = new Set(cur);
-      if (!next.delete(w)) next.add(w);
-      return next;
-    });
-  const holdTone: RingTone =
-    sum.keepingPlanPct >= 95 ? 'green' : sum.keepingPlanPct >= 80 ? 'amber' : 'red';
-  const total = Math.max(sum.total, 1);
-  const selBar = chartSel != null ? chart.bars.find((b) => b.w === chartSel) : undefined;
-  const nowW = cycle.current?.w ?? null;
+
+  /* Tekuća nedelja; pre početka plana prva, posle kraja poslednja. */
+  const last = plan.weeks[plan.weeks.length - 1];
+  const nowW =
+    cycle.current?.w ??
+    (today < (plan.weeks[0]?.start ?? '') ? (plan.weeks[0]?.w ?? 1) : (last?.w ?? 1));
+  const w = picked ?? nowW;
+  const week = plan.weeks.find((x) => x.w === w) ?? plan.weeks[0];
+  if (!week) return null;
+  const idx = plan.weeks.findIndex((x) => x.w === week.w);
+  const prev = plan.weeks[idx - 1];
+  const next = plan.weeks[idx + 1];
+  const phase: PhaseKey | null = cycle.weeks.find((x) => x.w === week.w)?.phase ?? null;
+  const isNow = cycle.current?.w === week.w;
+  const started = week.start <= todayStr;
+  const planKm = weekPlanKm(week);
+  const realKm = weekRealKm(week, log);
+  const days = week.days.slice().sort(byDate);
+  const stripDays = Array.from({ length: 7 }, (_, i) => addDays(week.start, i));
+  const refs = gen ? raceRefs(gen.meta) : null;
+  const daysToRace = view.race ? diffDays(today, view.race) : null;
+  const rangeText = `${fmtDayMonth(week.start)} – ${fmtDayMonth(addDays(week.start, 6))}`;
 
   return (
     <>
+      <AppBar right={phase} tag />
       <header className="screen-head">
-        <h1>Plan</h1>
-        <p>
-          {cycle.total} {pl3(cycle.total, 'nedelja', 'nedelje', 'nedelja')}
-          {race ? ` · trka ${fmtDayLong(race).toLowerCase()}` : ''}
-        </p>
-      </header>
-      <div className="cols plan-cols">
-        <div className="col col-side">
-          {warnings?.length ? (
-            <div className="pl-warn">
-              <div className="gw-h">Na šta da paziš u ovom planu</div>
-              {warnings.map((t) => (
-                <div className="gw" key={t}>
-                  <p>{t}</p>
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          <section className="card" aria-labelledby="pl-sum-h">
-            <h2 id="pl-sum-h" className="lbl">
-              Gde sam u planu
-            </h2>
-            <div className="stats">
-              <div className="stat">
-                <b className="stat-v num" style={{ color: TONE[holdTone] }}>
-                  <Num value={sum.keepingPlanPct} format={pctFmt} />
-                </b>
-                <span className="stat-l">od plana do sada</span>
-                <span className="stat-s num">
-                  {fmtKm(sum.run)} / {fmtKm(sum.untilToday)} km
-                </span>
-              </div>
-              <div className="stat">
-                <b className="stat-v num">
-                  <Num value={sum.wholePlanPct} format={pctFmt} />
-                </b>
-                <span className="stat-l">ceo plan</span>
-                <span className="stat-s num">
-                  {fmtKm(sum.run)} / {fmtKm(sum.total)} km
-                </span>
-              </div>
-            </div>
-            <div
-              className="planbar"
-              role="img"
-              aria-label={`Ostvareno ${kmFmt(sum.run)} od ${kmFmt(sum.total)} km; do danas planirano ${kmFmt(sum.untilToday)} km`}
-            >
-              <i className="ghost" style={{ width: `${(sum.untilToday / total) * 100}%` }} />
-              <i
-                className="run"
-                style={{ width: `${(sum.run / total) * 100}%`, background: TONE[holdTone] }}
-              />
-            </div>
-            <div className="planbar-l">
-              <span>ostvareno</span>
-              <span>planirano do danas</span>
-              <span className="num">{fmtKm(sum.total)} km</span>
-            </div>
-            <dl className="facts4">
-              <div>
-                <dt>km nedeljno</dt>
-                <dd className="num">{sum.average != null ? fmtKm(sum.average) : '—'}</dd>
-              </div>
-              <div>
-                <dt>
-                  {sum.strongestKm > 0 ? `najjača · N${sum.strongest?.w}` : 'najjača nedelja'}
-                </dt>
-                <dd className="num">{sum.strongestKm > 0 ? fmtKm(sum.strongestKm) : '—'}</dd>
-              </div>
-              <div>
-                <dt>
-                  ostalo · {sum.remainingWeeks}{' '}
-                  {pl3(sum.remainingWeeks, 'nedelja', 'nedelje', 'nedelja')}
-                </dt>
-                <dd className="num">{fmtKm(sum.remaining)}</dd>
-              </div>
-              <div>
-                <dt>trčanja</dt>
-                <dd className="num">
-                  {sum.runsDone}
-                  <span>/{sum.runsTotal}</span>
-                </dd>
-              </div>
-            </dl>
-          </section>
-
-          <section className="card chart-card" aria-labelledby="pl-ch-h">
-            <div className="dhead">
-              <h2 id="pl-ch-h" className="lbl">
-                Nedeljna kilometraža
-              </h2>
-              <span className="dhead-x">plan i ostvareno</span>
-            </div>
-            <p className="chart-msg" aria-live="polite">
-              {selBar
-                ? `N${selBar.w} · plan ${fmtKm(selBar.planKm)} km · urađeno ${fmtKm(selBar.realKm)} km`
-                : 'Dodirni nedelju za detalje'}
-            </p>
-            <WeekChart
-              chart={chart}
-              selected={chartSel}
-              onSelect={setChartSel}
-              phases={phases}
-              current={nowW}
-            />
-            <div className="legend">
-              <span>
-                <i className="lg-plan" />
-                plan
-              </span>
-              <span>
-                <i style={{ background: 'var(--text-2)' }} />
-                ostvareno (boja faze)
-              </span>
-            </div>
-          </section>
-        </div>
-
-        <div className="col col-main">
-          {cycle.phases.map((p) => (
-            <section
-              key={`${p.key}-${p.from}`}
-              className={`phase-block ${p.state}`}
-              style={{ ['--c' as string]: PHASE_COLOR[p.key] }}
-              aria-labelledby={`ph-${p.from}`}
-            >
-              <header className="phase-head">
-                <h2 id={`ph-${p.from}`}>
-                  <i className="led" aria-hidden="true" />
-                  {p.key}
-                </h2>
-                <span className="num">
-                  N{p.from}
-                  {p.to > p.from ? `–N${p.to}` : ''} ·{' '}
-                  {p.state === 'future' ? '' : `${kmFmt(p.realKm)}/`}
-                  {kmFmt(p.planKm)} km
-                </span>
-                {STATE_WORD[p.state] ? <em>{STATE_WORD[p.state]}</em> : null}
-              </header>
-              {p.weeks.map((w) => {
-                const rw = plan.weeks.find((x) => x.w === w.w);
-                if (!rw) return null;
-                const isOpen = open.has(w.w);
-                return (
-                  <div key={w.w}>
-                    <WeekRow
-                      week={w}
-                      cells={weekCells(rw, log, today)}
-                      open={isOpen}
-                      onToggle={() => toggle(w.w)}
-                      runsText={`${weekRunDone(rw, log)} od ${weekRunCount(rw, log)} trčanja`}
-                    />
-                    {isOpen ? (
-                      <WeekBody
-                        week={rw}
-                        totalWeeks={plan.weeks.length}
-                        current={nowW === w.w}
-                        log={log}
-                        alts={alts}
-                        onDay={(id) => openSheet({ kind: 'day', props: { id } })}
-                        onSwap={(wn) => openSheet({ kind: 'swap', props: { w: wn } })}
-                      />
-                    ) : null}
-                  </div>
-                );
-              })}
-            </section>
-          ))}
-          <p className="note-src key-note">
-            Ćelije: popunjeno = urađeno · prsten = danas · kontura = predstoji · isprekidano =
-            propušteno ili preskočeno · tačka = odmor.
+        <h1>Tvoj plan</h1>
+        {view.race ? (
+          <p>
+            {refs?.raceName ? `${refs.raceName} · ` : 'Trka · '}
+            {fmtDayLong(view.race).toLowerCase()}
+            {daysToRace != null && daysToRace > 0
+              ? ` · za ${daysToRace} ${plDan(daysToRace)}`
+              : daysToRace === 0
+                ? ' · danas'
+                : ''}
           </p>
+        ) : null}
+      </header>
+
+      <div className="weeknav">
+        <div className="weeknav-t">
+          <h2 id="week-h">
+            Nedelja {week.w} od {plan.weeks.length}
+          </h2>
+          <span className="weeknav-s">
+            {rangeText}
+            {isNow ? ' · ova nedelja' : ''}
+          </span>
+        </div>
+        <div className="weeknav-b">
+          <button
+            type="button"
+            className="iconbtn"
+            aria-label="Prethodna nedelja"
+            disabled={!prev}
+            onClick={() => prev && setPicked(prev.w)}
+          >
+            <Icon name="chevron-left" size={22} />
+          </button>
+          <button
+            type="button"
+            className="iconbtn"
+            aria-label="Sledeća nedelja"
+            disabled={!next}
+            onClick={() => next && setPicked(next.w)}
+          >
+            <Icon name="chevron" size={22} />
+          </button>
         </div>
       </div>
+      {phase ? (
+        <p className="phase-line">
+          Faza {phase}: {PHASE_LINE[phase]}
+          {week.deload || /^DELOAD/i.test(week.focus) ? ' Nedelja rasterećenja.' : ''}
+        </p>
+      ) : null}
+
+      <div className="daystrip" aria-hidden="true">
+        {stripDays.map((d) => (
+          <span key={d} className={`ds${d === todayStr ? ' now' : ''}`}>
+            <span className="ds-l">{dowInitial(d)}</span>
+            <span className="ds-n num">{dayOfMonth(d)}</span>
+          </span>
+        ))}
+      </div>
+
+      <div className="weekkm">
+        <div className="hero">
+          <span className="hero-v num">{fmtKm(planKm)}</span>
+          <span className="hero-u">km</span>
+        </div>
+        <p className="weekkm-l">
+          {isNow
+            ? `planirano ove nedelje · ostvareno ${fmtKm(realKm)} km`
+            : started
+              ? `planirano · ostvareno ${fmtKm(realKm)} km`
+              : 'planirano za ovu nedelju'}
+        </p>
+      </div>
+
+      <div className="rows" aria-labelledby="week-h">
+        {days.map((d) => (
+          <DayRow
+            key={d.id}
+            day={d}
+            entry={log[d.id]}
+            alt={alts[d.id]}
+            today={todayStr}
+            easyPaceSec={easy}
+            onOpen={() => openScreen({ kind: 'trening', props: { id: d.id } })}
+          />
+        ))}
+      </div>
+
+      {warnings?.length ? (
+        <div className="plan-warn">
+          <Disclosure title="Na šta da paziš u ovom planu" meta={String(warnings.length)}>
+            {warnings.map((t) => (
+              <p className="note-src" key={t}>
+                {t}
+              </p>
+            ))}
+          </Disclosure>
+        </div>
+      ) : null}
+
+      <div className="plan-acts">
+        <Row
+          icon="swap"
+          title="Pomeri treninge"
+          sub="Zameni dane u ovoj nedelji"
+          onClick={() => openSheet({ kind: 'swap', props: { w: week.w } })}
+        />
+        <Row
+          icon="sliders"
+          title="Prilagodi plan"
+          sub="Cilj, forma, bol, novi plan"
+          onClick={() => openScreen({ kind: 'plan-prilagodi' })}
+        />
+        {icuOn ? (
+          <Row
+            icon="watch"
+            title="Pošalji na sat"
+            sub="Narednih 14 dana"
+            onClick={() => openScreen({ kind: 'sat' })}
+          />
+        ) : null}
+      </div>
+      <button
+        type="button"
+        className="btn ghost block plan-cta"
+        onClick={() => openScreen({ kind: 'plan-pregled' })}
+      >
+        Pregled celog plana
+      </button>
     </>
   );
 }

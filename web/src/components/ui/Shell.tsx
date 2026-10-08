@@ -1,46 +1,35 @@
 import type { ReactNode } from 'react';
-import { VISIBLE_TABS, type Tab, useUIStore } from '../../stores/uiStore';
-import { BrandMark, GearIcon, TabIcon, TAB_LABELS } from './icons';
+import { navBack } from '../../app/navHistory';
+import { TABS, type Tab, useUIStore } from '../../stores/uiStore';
+import { Icon, TabIcon, TAB_LABELS } from './icons';
 
-/* LJUSKA: zaglavlje (znak, kratak natpis, podešavanja, traka ciklusa), traka tabova, kapija za prijavu, ekran jednog taba. */
+/* LJUSKA: gornji red taba, ekran iznad taba („Nazad“), traka tabova, kapija za prijavu, stranica jednog taba. */
 
-export function Header({
-  caption,
-  rail,
-  onSettings
-}: {
-  /** Kratak natpis ciklusa („N6/12 · RAZVOJ · 46 d"). */
-  caption: ReactNode;
-  /** Traka ciklusa (dodirna: otvara plan). */
-  rail: ReactNode;
-  onSettings: () => void;
-}) {
+/** Gornji red korena taba: znak „sub20“ levo, podatak koji pripada ekranu desno (datum, faza…). Deo je stranice, pa se prevlači zajedno sa njom. */
+export function AppBar({ right, tag }: { right?: ReactNode; tag?: boolean }) {
   return (
-    <header className="app-head">
-      <div className="app-head-in">
-        <div className="app-head-row">
-          <div className="brand">
-            <BrandMark />
-            <div>
-              SUB<span>-20</span>
-            </div>
-          </div>
-          <div className="cycle-cap" id="h-sub">
-            {caption}
-          </div>
-          <button
-            type="button"
-            className="h-gear"
-            id="btn-gear"
-            aria-label="Podešavanja"
-            onClick={onSettings}
-          >
-            <GearIcon />
-          </button>
-        </div>
-        {rail}
+    <div className="appbar">
+      <span className="wordmark" aria-hidden="true">
+        sub20
+      </span>
+      {right ? <div className={`appbar-r${tag ? ' tag' : ''}`}>{right}</div> : null}
+    </div>
+  );
+}
+
+/** Ekran iznad taba: dugme „Nazad“ i, po želji, radnja desno. Naslov (h1) nosi sadržaj ekrana, ne ova traka. */
+export function ScreenFrame({ right, children }: { right?: ReactNode; children: ReactNode }) {
+  return (
+    <div className="screen">
+      <div className="screenbar">
+        <button type="button" className="backbtn" onClick={navBack}>
+          <Icon name="chevron-left" size={22} />
+          Nazad
+        </button>
+        {right ? <div className="screenbar-r">{right}</div> : null}
       </div>
-    </header>
+      {children}
+    </div>
   );
 }
 
@@ -49,7 +38,7 @@ export function Tabbar({ onSelect }: { onSelect?: (tab: Tab) => void }) {
   const setTab = useUIStore((s) => s.setTab);
   return (
     <nav id="tabbar" aria-label="Glavna navigacija">
-      {VISIBLE_TABS.map((t) => (
+      {TABS.map((t) => (
         <button
           key={t}
           type="button"
@@ -61,7 +50,7 @@ export function Tabbar({ onSelect }: { onSelect?: (tab: Tab) => void }) {
             onSelect?.(t);
           }}
         >
-          <TabIcon tab={t} />
+          <TabIcon tab={t} active={t === active} />
           <span>{TAB_LABELS[t]}</span>
         </button>
       ))}
@@ -73,21 +62,21 @@ export function AuthGate({ message, onLogin }: { message: string; onLogin: () =>
   return (
     <div
       id="sb-gate"
+      className="gate"
       style={{ display: 'flex' }}
       role="dialog"
       aria-modal="true"
       aria-label="Prijava"
     >
       <div className="gate-in">
-        <div className="gate-brand">
-          SUB<span>-20</span>
-        </div>
+        <img className="gate-logo" src="./icon-192.png" alt="" width="72" height="72" />
+        <div className="gate-brand">sub20</div>
         <h1 className="gate-h1">Prijavi se da nastaviš</h1>
         <div className="gate-sub">
           Nalog čuva tvoj plan i istoriju treninga na serveru — ako izgubiš telefon ili obrišeš
           podatke pretraživača, sve je i dalje tu.
         </div>
-        <button type="button" className="gate-btn" id="gate-go" onClick={onLogin}>
+        <button type="button" className="btn block" id="gate-go" onClick={onLogin}>
           Prijavi se Google nalogom
         </button>
         {message ? (
@@ -104,15 +93,12 @@ export function AuthGate({ message, onLogin }: { message: string; onLogin: () =>
 export function Page({
   id,
   active,
-  entering = false,
   peek = false,
   label,
   children
 }: {
   id: Tab;
   active: boolean;
-  /** Kartice se slažu (tab se promenio dodirom). */
-  entering?: boolean;
   /** Susedni ekran koji prst upravo vuče u kadar: sadržaj mora postojati pre nego što uđe. */
   peek?: boolean;
   /** Naziv regiona za čitač ekrana (isti kao naslov ekrana). */
@@ -121,7 +107,7 @@ export function Page({
 }) {
   return (
     <section
-      className={`page${active ? ' active' : ''}${entering ? ' uskoci' : ''}`}
+      className={`page${active ? ' active' : ''}`}
       id={`pg-${id}`}
       aria-hidden={!active}
       aria-label={label ?? TAB_LABELS[id]}

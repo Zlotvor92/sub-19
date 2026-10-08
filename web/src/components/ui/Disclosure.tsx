@@ -24,3 +24,13 @@ export function Disclosure({
     </details>
   );
 }
+
+/** Kratko objašnjenje uz radnju: skriveno dok se ne zatraži (jedan red „Šta se dobija…“), tekst ispod. */
+export function Help({ summary, children }: { summary: string; children: ReactNode }) {
+  return (
+    <details className="help">
+      <summary>{summary}</summary>
+      {children}
+    </details>
+  );
+}

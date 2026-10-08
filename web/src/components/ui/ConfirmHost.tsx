@@ -59,10 +59,7 @@ export function ConfirmHost() {
         style={{ zIndex: 310, maxHeight: 'none' }}
       >
         <div className="grab" />
-        <p
-          id="confirm-text"
-          style={{ whiteSpace: 'pre-line', lineHeight: 1.5, margin: '4px 0 6px' }}
-        >
+        <p id="confirm-text" className="confirm-text">
           {confirm.text}
         </p>
         <div className="btnrow">

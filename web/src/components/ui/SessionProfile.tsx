@@ -48,8 +48,7 @@ export const SessionProfile = memo(function SessionProfile({
         const rect = (
           <rect
             key={i}
-            className={`sp-bar ${KIND_CLASS[s.kind]} grow`}
-            style={{ ['--i' as string]: i }}
+            className={`sp-bar ${KIND_CLASS[s.kind]}`}
             x={x + gap / 2}
             y={H - h}
             width={Math.max(0.8, w - gap)}

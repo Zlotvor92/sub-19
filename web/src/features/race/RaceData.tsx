@@ -29,7 +29,7 @@ export function RaceData({ day, context }: { day: ResolvedDay; context?: RaceCon
       .finally(() => setBusy(false));
   };
   return (
-    <div className="card race-data">
+    <div className="race-data">
       <button
         type="button"
         className="ai-again"

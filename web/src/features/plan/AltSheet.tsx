@@ -17,6 +17,7 @@ import { predRowsForDay, storedRows } from '../../stores/dayActions';
 import { useUIStore } from '../../stores/uiStore';
 import { dowShort, fmtDayMonthYear } from '../../domain/format';
 import { STRENGTH_WITH } from '../../domain/state';
+import { Icon } from '../../components/ui/icons';
 
 function TypeButton({
   tag,
@@ -91,7 +92,7 @@ export function AltSheet({ id }: { id: string }) {
     cur.tag === t || (t === 'snaga' && cur.snaga && STRENGTH_WITH.has(cur.tag));
   const quality = cur.tag === 'int' || cur.tag === 'tempo';
   const typeRow = (items: typeof ALT_TYPES) => (
-    <div className="seg" style={{ marginTop: 6 }}>
+    <div className="seg wrap">
       {items.map(([t, label]) => (
         <TypeButton
           key={t}
@@ -138,28 +139,38 @@ export function AltSheet({ id }: { id: string }) {
         {existing ? ' · izmenjen' : ''}
       </div>
       {err ? (
-        <div role="alert" style={{ fontSize: '.75rem', color: 'var(--red)', marginBottom: 10 }}>
+        <div role="alert" className="note-src err">
           {err}
         </div>
       ) : null}
-      <div className="f-field full" role="group" aria-label="Tip treninga">
+      <div className="f-field full alt-block" role="group" aria-label="Tip treninga">
         <span className="f-lbl">Tip treninga</span>
         {typeRow(ALT_TYPES.slice(0, 3))}
         {typeRow(ALT_TYPES.slice(3))}
-        <div className="alt-hint">
-          Zadrži dugme da uz trčanje dodaš i snagu (npr. Lako + Snaga).
-        </div>
+        {STRENGTH_WITH.has(cur.tag) ? (
+          <button
+            type="button"
+            className={`chip${cur.snaga ? ' on' : ''}`}
+            aria-pressed={!!cur.snaga}
+            onClick={() => {
+              const next = holdType(cur, 'snaga');
+              if (next) set(next);
+            }}
+          >
+            {cur.snaga ? (
+              <Icon name="check" size={16} strokeWidth={2.4} />
+            ) : (
+              <Icon name="plus" size={16} />
+            )}
+            Dodaj snagu uz trčanje
+          </button>
+        ) : null}
       </div>
       {cur.tag === 'trka' ? (
-        <div
-          className="f-field full"
-          role="group"
-          aria-label="Dužina trke"
-          style={{ marginTop: 10 }}
-        >
+        <div className="f-field full alt-block" role="group" aria-label="Dužina trke">
           <span className="f-lbl">Dužina trke</span>
           {[RACE_DISTANCES.slice(0, 2), RACE_DISTANCES.slice(2)].map((row) => (
-            <div className="seg" style={{ marginTop: 6 }} key={row[0]?.[0]}>
+            <div className="seg wrap" key={row[0]?.[0]}>
               {row.map(([k, n]) => (
                 <button
                   type="button"
@@ -176,7 +187,7 @@ export function AltSheet({ id }: { id: string }) {
       ) : null}
       {cur.tag !== 'odmor' ? (
         <>
-          <div className="f-field full" style={{ marginTop: 10 }}>
+          <div className="f-field full alt-block">
             <label htmlFor="alt-km">Kilometraža</label>
             <input
               type="number"
@@ -191,7 +202,7 @@ export function AltSheet({ id }: { id: string }) {
               }
             />
           </div>
-          <div className="f-field full" style={{ marginTop: 10 }}>
+          <div className="f-field full alt-block">
             <label htmlFor="alt-desc">Opis</label>
             <textarea
               id="alt-desc"
@@ -203,26 +214,24 @@ export function AltSheet({ id }: { id: string }) {
         </>
       ) : null}
       {quality ? (
-        <div className="f-field full" style={{ marginTop: 10 }}>
+        <div className="f-field full alt-block">
           <label htmlFor="alt-pace">Ciljni tempo radnog dela (m:ss/km)</label>
-          <div style={{ fontSize: '.72rem', color: 'var(--txt3)', marginBottom: 6 }}>
-            Ovo vidi AI analiza i kartica treninga kao „plan" — nezavisno od podrazumevanog cilja te
+          <div className="note-src">
+            Ovo vidi AI analiza i ekran treninga kao „plan“ — nezavisno od podrazumevanog cilja te
             nedelje.
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="inline-pair">
             <input
               type="text"
               inputMode="numeric"
               id="alt-pace"
               placeholder="410 = 4:10"
               value={paceText ?? (cur.pace != null ? fmtClock(cur.pace) : '')}
-              style={{ flex: 1 }}
               onChange={(e) => setPaceText(e.target.value)}
             />
             <button
               type="button"
               className="btn ghost sm"
-              style={{ flex: 'none' }}
               onClick={() => {
                 const r = paceFromDraftDesc(cur);
                 if (r.ok) {
@@ -231,21 +240,21 @@ export function AltSheet({ id }: { id: string }) {
                 } else setErr(r.err);
               }}
             >
-              🔍 Iz opisa
+              Iz opisa
             </button>
           </div>
         </div>
       ) : null}
-      <div className="btnrow" style={{ marginTop: 14 }}>
-        <button type="button" className="btn" onClick={save}>
+      <div className="btnrow">
+        <button type="button" className="btn block" onClick={save}>
           Sačuvaj
         </button>
       </div>
       {existing ? (
-        <div className="btnrow" style={{ marginTop: 8 }}>
+        <div className="btnrow">
           <button
             type="button"
-            className="btn ghost"
+            className="btn ghost block"
             onClick={() => {
               void confirmAction('Vratiti ovaj dan na originalni trening iz plana?').then((ok) => {
                 if (!ok) return;

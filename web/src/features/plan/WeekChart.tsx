@@ -71,8 +71,8 @@ export function WeekChart({
             />
             {rh > 0 ? (
               <rect
-                className="wk-real grow"
-                style={{ ['--i' as string]: i, fill: color }}
+                className="wk-real"
+                style={{ fill: color }}
                 x={x}
                 y={B - rh}
                 width={bw}

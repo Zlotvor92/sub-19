@@ -14,15 +14,15 @@ import { trainingHour, type ForecastHours } from '../../domain/weather';
 import { zoneSource } from '../../domain/zones';
 import { useActiveGenPlan, useSettingsStore, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
-import { DayHeader } from './DayCard';
+import { Section } from '../../components/ui/primitives';
 
 const TONE_VAR: Record<string, string> = {
-  green: 'var(--green)',
-  pink: 'var(--pink)',
-  muted: 'var(--txt3)',
-  amber: 'var(--amber)',
-  red: 'var(--red)',
-  neutral: 'var(--txt2)'
+  green: 'var(--ok)',
+  pink: 'var(--accent-text)',
+  muted: 'var(--text-3)',
+  amber: 'var(--warn)',
+  red: 'var(--bad)',
+  neutral: 'var(--text-2)'
 };
 
 function Part({ p }: { p: RichPart }) {
@@ -43,18 +43,18 @@ function Part({ p }: { p: RichPart }) {
 
 export function Rows({ rows }: { rows: readonly CardRow[] }) {
   return (
-    <div className="drows">
+    <dl className="facts">
       {rows.map((r) => (
-        <div className="drow" key={r.label}>
-          <span className="l">{r.label}</span>
-          <span className="v">
+        <div key={r.label}>
+          <dt>{r.label}</dt>
+          <dd>
             {r.parts.map((p, i) => (
               <Part key={i} p={p} />
             ))}
-          </span>
+          </dd>
         </div>
       ))}
-    </div>
+    </dl>
   );
 }
 
@@ -81,14 +81,19 @@ export function WatchCard({ log, date }: { log: LogEntry | undefined; date: stri
   });
   if (!rows.length) return null;
   return (
-    <div className="card">
-      <DayHeader title="Sa sata" />
+    <Section title="Sa sata">
       <Rows rows={rows} />
-    </div>
+    </Section>
   );
 }
 
-const ZONE_COLORS = ['var(--txt3)', 'var(--green)', 'var(--cyan)', 'var(--amber)', 'var(--red)'];
+const ZONE_COLORS = [
+  'var(--text-3)',
+  'var(--ph-build)',
+  'var(--accent)',
+  'var(--warn)',
+  'var(--bad)'
+];
 
 /** „Po zonama": vreme po zonama pulsa; bez raspodele samo razlog (kad ga ima). */
 export function ZonesCard({ log }: { log: LogEntry | undefined }) {
@@ -99,48 +104,35 @@ export function ZonesCard({ log }: { log: LogEntry | undefined }) {
   const model = zonesCard(log, { current, icuConnected: connected, zoneError });
   if (!model) return null;
   return (
-    <div className="card">
-      <DayHeader title="Po zonama" extra={model.extra} />
+    <Section title="Po zonama" extra={model.extra}>
       {model.reason ? (
-        <div className="note-src" style={{ margin: 0 }}>
-          {model.reason}
-        </div>
+        <p className="note-src">{model.reason}</p>
       ) : (
         <>
-          <div className="drows">
+          <dl className="facts">
             {model.rows.map((r) => (
-              <div className="drow" key={r.n}>
-                <span className="l">
+              <div key={r.n}>
+                <dt>
                   <b>Z{r.n}</b>
-                  {r.name ? (
-                    <>
-                      {' '}
-                      <small>{r.name}</small>
-                    </>
-                  ) : null}
-                </span>
-                <span className="v">
+                  {r.name ? <> {r.name}</> : null}
+                </dt>
+                <dd>
                   <span
+                    className="zbar"
                     style={{
-                      display: 'inline-block',
                       width: `${Math.max(2, r.pct)}%`,
-                      maxWidth: 90,
-                      height: 6,
-                      borderRadius: 3,
-                      background: ZONE_COLORS[Math.min(r.n - 1, ZONE_COLORS.length - 1)],
-                      verticalAlign: 'middle',
-                      marginRight: 8
+                      background: ZONE_COLORS[Math.min(r.n - 1, ZONE_COLORS.length - 1)]
                     }}
                   />
-                  <b>{r.pct} %</b> <small>{r.minutes} min</small>
-                </span>
+                  {r.pct} % <small>{r.minutes} min</small>
+                </dd>
               </div>
             ))}
-          </div>
-          <div className="note-src">{model.note}</div>
+          </dl>
+          <p className="note-src">{model.note}</p>
         </>
       )}
-    </div>
+    </Section>
   );
 }
 
@@ -150,10 +142,9 @@ export function MorningCard({ date }: { date: string }) {
   const rows = morningRows(wellness, date);
   if (!rows.length) return null;
   return (
-    <div className="card">
-      <DayHeader title="Jutros" />
+    <Section title="Jutros">
       <Rows rows={rows} />
-    </div>
+    </Section>
   );
 }
 
@@ -180,29 +171,23 @@ export function CompareCard({ day, plan }: { day: ResolvedDay; plan: ResolvedPla
   const model = sessionCompareCard(day, ctx);
   if (!model) return null;
   return (
-    <div className="card">
-      <DayHeader title={model.title} extra={model.extra} />
-      <div className="drows">
+    <Section title={model.title} extra={model.extra}>
+      <dl className="facts">
         {model.rows.map((r) => (
-          <div className="drow" key={r.label}>
-            <span className="l">
+          <div key={r.label}>
+            <dt>
               {r.label}
-              {r.sub ? (
-                <>
-                  {' '}
-                  <small>{r.sub}</small>
-                </>
-              ) : null}
-            </span>
-            <span className="v">
+              {r.sub ? <> {r.sub}</> : null}
+            </dt>
+            <dd>
               {r.parts.map((p, i) => (
                 <Part key={i} p={p} />
               ))}
-            </span>
+            </dd>
           </div>
         ))}
-      </div>
-      <div className="note-src">{model.note}</div>
-    </div>
+      </dl>
+      <p className="note-src">{model.note}</p>
+    </Section>
   );
 }

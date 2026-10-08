@@ -1,21 +1,22 @@
-/* EFEMERNO STANJE EKRANA: tab, otvoren list (sheet), dijalozi potvrde, banneri. NE perzistira se (osim tab-a u
+/* EFEMERNO STANJE EKRANA: tab, otvoreni ekrani (stek iznad taba), list (sheet), dijalozi potvrde, banneri. NE perzistira se (osim tab-a u
    sessionStorage-u, što radi `app/tabs`). */
 
 import { create } from 'zustand';
-import { COMMUNITY_ENABLED } from '../services/config';
 
-/** Svi ekrani koje kod poznaje (Zajednica ostaje u kodu, ali se ne prikazuje dok je ugašena — v. `COMMUNITY_ENABLED`). */
-export const TABS = ['danas', 'plan', 'opor', 'pred', 'zajed'] as const;
+/** Četiri taba. Zajednica je ugašena i nema svoj tab (`COMMUNITY_ENABLED`); stari `opor` i `pred` su aliasi u `app/tabs`. */
+export const TABS = ['danas', 'plan', 'napredak', 'ti'] as const;
 export type Tab = (typeof TABS)[number];
-/** Ekrani koje čovek stvarno vidi: traka tabova, prevlačenje i vraćanje poslednjeg taba rade samo nad ovim spiskom. */
-export const VISIBLE_TABS: readonly Tab[] = COMMUNITY_ENABLED
-  ? TABS
-  : TABS.filter((t) => t !== 'zajed');
 export const isTab = (x: unknown): x is Tab =>
-  typeof x === 'string' && (VISIBLE_TABS as readonly string[]).includes(x);
+  typeof x === 'string' && (TABS as readonly string[]).includes(x);
+
+export interface ScreenRequest {
+  /** Identifikator ekrana (`trening`, `forma`, `servisi`, …) — registar ekrana ga mapira na prikaz. */
+  kind: string;
+  props?: Record<string, unknown>;
+}
 
 export interface SheetRequest {
-  /** Identifikator sadržaja (`settings`, `alt`, `knee`, …) — komponenta ga mapira na prikaz. */
+  /** Identifikator sadržaja (`alt`, `swap`, `t3k`, …) — komponenta ga mapira na prikaz. */
   kind: string;
   props?: Record<string, unknown>;
 }
@@ -39,6 +40,8 @@ export interface Banner {
 
 export interface UiState {
   tab: Tab;
+  /** Ekrani otvoreni iznad taba (detalji treninga, pregled plana, …); poslednji je na vrhu. Prazno = koren taba. */
+  screens: ScreenRequest[];
   sheet: SheetRequest | null;
   confirm: ConfirmRequest | null;
   banners: Banner[];
@@ -46,16 +49,17 @@ export interface UiState {
   today: string;
   /** Čarobnjak za plan je otvoren preko cele aplikacije. */
   wizard: boolean;
-  /** Tab čije se kartice upravo slažu (klasa `uskoci`, ~0,9 s) — samo kad se tab stvarno menja dodirom, ne prstom ni pri iscrtavanju. */
-  entering: Tab | null;
   /** Susedni tab koji se iscrtava dok ga prst vuče u kadar (prevlačenje). */
   peek: Tab | null;
 }
 
 export interface UiActions {
-  /** `glided`: ekran je već doklizao prstom i bio je pred očima, pa se ulazna animacija ne igra po drugi put. */
+  /** Promena taba vraća na njegov koren (otvoreni ekrani se zatvaraju). `glided`: ekran je već doklizao prstom. */
   setTab: (tab: Tab, opts?: { glided?: boolean }) => void;
   setPeek: (tab: Tab | null) => void;
+  openScreen: (screen: ScreenRequest) => void;
+  /** Zatvara vrhunski ekran (jedan korak nazad). */
+  closeScreen: () => void;
   openSheet: (sheet: SheetRequest) => void;
   closeSheet: () => void;
   setConfirm: (c: ConfirmRequest | null) => void;
@@ -65,32 +69,27 @@ export interface UiActions {
   setWizard: (open: boolean) => void;
 }
 
-export const ENTERING_MS = 900;
-let enteringTimer: ReturnType<typeof setTimeout> | undefined;
-
 export const useUIStore = create<UiState & UiActions>()((set, get) => ({
   tab: 'danas',
+  screens: [],
   sheet: null,
   confirm: null,
   banners: [],
   today: '',
   wizard: false,
-  entering: null,
   peek: null,
-  setTab(tab, opts) {
-    const changed = get().tab !== tab;
-    clearTimeout(enteringTimer);
-    const entering = changed && !opts?.glided ? tab : null;
-    set({ tab, entering, peek: null });
-    /* Rok mora da preživi NAJDUŽU animaciju na `uskoci` (crtanje linija na grafikonima: .08 + .75 s), inače linija „pukne" u pun potez. */
-    if (entering) {
-      enteringTimer = setTimeout(() => {
-        if (get().entering === entering) set({ entering: null });
-      }, ENTERING_MS);
-    }
+  setTab(tab) {
+    set({ tab, screens: [], peek: null });
   },
   setPeek(peek) {
     set({ peek });
+  },
+  openScreen(screen) {
+    set({ screens: [...get().screens, screen], sheet: null });
+  },
+  closeScreen() {
+    const cur = get().screens;
+    if (cur.length) set({ screens: cur.slice(0, -1) });
   },
   openSheet(sheet) {
     set({ sheet });

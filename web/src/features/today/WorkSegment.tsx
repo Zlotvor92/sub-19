@@ -4,10 +4,10 @@ import type { VdotRecord } from '../../domain/state';
 import { DraftInput } from './DraftInput';
 
 const TONE_COLOR = {
-  none: 'var(--txt3)',
-  faster: 'var(--green)',
-  slower: 'var(--pink)',
-  same: 'var(--txt2)'
+  none: 'var(--text-3)',
+  faster: 'var(--ok)',
+  slower: 'var(--warn)',
+  same: 'var(--text-2)'
 } as const;
 
 export function Gauge({ plan, done }: { plan: number | null; done: number | null }) {
@@ -19,7 +19,7 @@ export function Gauge({ plan, done }: { plan: number | null; done: number | null
         <path
           d={g.arc}
           fill="none"
-          stroke="rgba(255,255,255,.14)"
+          stroke="var(--line-strong)"
           strokeWidth="7"
           strokeLinecap="round"
         />
@@ -28,7 +28,7 @@ export function Gauge({ plan, done }: { plan: number | null; done: number | null
           y1="6"
           x2="52"
           y2="18"
-          stroke="rgba(255,255,255,.55)"
+          stroke="var(--text-3)"
           strokeWidth="2.5"
           strokeLinecap="round"
         />
@@ -52,19 +52,16 @@ export function Gauge({ plan, done }: { plan: number | null; done: number | null
 
 export function VdotDelta({ pace, entry }: { pace: number | null; entry: VdotRecord | undefined }) {
   const v = vdotDeltaView(pace, entry);
-  if (v.kind === 'enter')
-    return <span style={{ color: 'var(--txt3)', fontSize: '.78rem' }}>unesi tempo →</span>;
-  if (v.kind === 'none') return <span style={{ color: 'var(--txt3)', fontSize: '.78rem' }}>—</span>;
-  const color =
-    v.tone === 'up' ? 'var(--green)' : v.tone === 'down' ? 'var(--pink)' : 'var(--txt2)';
+  if (v.kind === 'enter') return <span className="vdelta none">unesi tempo</span>;
+  if (v.kind === 'none') return <span className="vdelta none">—</span>;
   const d = v.delta ?? 0;
   return (
-    <span style={{ color, fontWeight: 800, fontSize: '.82rem' }}>
+    <span className={`vdelta ${v.tone}`}>
       VDOT {fmtNum(v.vdot, 1)} {v.arrow}{' '}
-      <span style={{ fontSize: '.72rem' }}>
+      <small>
         ({d > 0 ? '+' : ''}
         {fmtNum(d, 1)})
-      </span>
+      </small>
     </span>
   );
 }
@@ -100,7 +97,7 @@ export function WorkSegment(p: WorkSegmentProps) {
           </div>
           <div className="wseg-plan">
             plan <b>{fmtClock(p.planPace)} /km</b>
-            {p.ownGoal ? <small style={{ color: 'var(--pink)' }}> (tvoj cilj)</small> : null}
+            {p.ownGoal ? <small> (tvoj cilj)</small> : null}
           </div>
           <DraftInput
             className="wseg-in"
@@ -117,7 +114,7 @@ export function WorkSegment(p: WorkSegmentProps) {
         </div>
       </div>
       {p.pace == null && p.rejectedAuto ? (
-        <div className="note-src" style={{ color: 'var(--amber)', marginTop: 6 }}>
+        <div className="note-src warn">
           Automatski izmeren tempo ({fmtClock(p.rejectedAuto)} /km) ne odgovara tvojoj formi —
           verovatno su u prosek ušla i kaskanja između deonica. Nije upisan; unesi tempo radnog dela
           ručno.

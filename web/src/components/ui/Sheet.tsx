@@ -9,7 +9,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
       postavlja TEK POSLE pomeranja fokusa (nad granom u kojoj fokus još stoji nije dozvoljen);
    4. ESCAPE zatvara. Zamka za fokus drži „Tab" unutar lista. */
 
-const BACKGROUND = ['header', 'main', '#tabbar'];
+const BACKGROUND = ['main', '#tabbar'];
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 

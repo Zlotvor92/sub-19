@@ -5,7 +5,6 @@ import type { Tab } from '../stores/uiStore';
 export const PAGES: Record<Tab, LazyExoticComponent<ComponentType>> = {
   danas: lazy(() => import('./today')),
   plan: lazy(() => import('./plan')),
-  opor: lazy(() => import('./recovery')),
-  pred: lazy(() => import('./race')),
-  zajed: lazy(() => import('./community'))
+  napredak: lazy(() => import('./progress')),
+  ti: lazy(() => import('./ti'))
 };

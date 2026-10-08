@@ -11,7 +11,7 @@ import {
   stepOf,
   type Axis
 } from '../domain/shell/swipe';
-import { VISIBLE_TABS, useUIStore, type Tab } from '../stores/uiStore';
+import { TABS, useUIStore, type Tab } from '../stores/uiStore';
 
 /* PREVLAČENJE IZMEĐU TABOVA. Dva ekrana se pomeraju ZAJEDNO, kao traka: onaj što odlazi ide 1:1 sa prstom, susedni stoji uz njega i ulazi u kadar istom
    brzinom — ruka vidi da vuče sadržaj, a ne da pokreće animaciju. Odluke (osa, prag, flik, trajanje) su u
@@ -54,9 +54,7 @@ const calmMotion = (): boolean => {
 function visibleTop(): number {
   const main = document.querySelector('main');
   if (!main) return 0;
-  const header = document.querySelector('header');
-  const h = header ? header.getBoundingClientRect().height : 0;
-  return Math.max(0, h - main.getBoundingClientRect().top);
+  return Math.max(0, -main.getBoundingClientRect().top);
 }
 
 /** Dodir koji je počeo u nečemu što se i samo pomera vodoravno pripada TOME (filteri u Zajednici, `<pre>`, klizač). Provera je OPŠTA, ne spisak klasa. */
@@ -133,7 +131,7 @@ export function useSwipeNav(enabled: boolean): void {
       clear(p.targetEl);
       p.targetEl = null;
       p.step = step;
-      p.target = neighborTab(VISIBLE_TABS, ui.getState().tab, step);
+      p.target = neighborTab(TABS, ui.getState().tab, step);
       if (!p.target || p.calm) return;
       const target = p.target;
       /* sadržaj mora postojati pre nego što uđe u kadar */
