@@ -1,140 +1,12 @@
-/* LJUSKA: zaglavlje sa trakom ciklusa, ekrani po tabovima, traka tabova (dole na telefonu, levo na širokom ekranu). */
+/* LJUSKA: sadržaj po tabovima, gornja traka ekrana, traka tabova (dole na telefonu, levo na širokom ekranu). Bez trajnog zaglavlja: svaki ekran nosi
+   svoj naslov, pa ništa ne troši visinu na ekranima koji ga ne trebaju. */
 
-/* ───────── ZAGLAVLJE + TRAKA CIKLUSA ─────────
-   Traka ciklusa je trajni kontekst: 12 segmenata obojenih po fazi, tekuća nedelja je uzdignuta, rasterećenje je niže, na kraju zastavica trke.
-   Boja faze je uvek uz tekst (natpis „N6/12 · RAZVOJ“), nikad sama. */
-.app-head {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  background: var(--surface-0);
-  border-bottom: 1px solid var(--line);
-  padding: calc(var(--sat) + var(--s-2)) var(--pad) 0;
-}
-.app-head-in {
-  /* isto što i sadržaj ispod: `main` ima max-width sa paddingom unutra, pa je zaglavlje uže za dva bočna razmaka */
-  max-width: calc(var(--content-max) - 2 * var(--pad));
-  margin-inline: auto;
-}
-.app-head-row {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  min-height: 44px;
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  font-weight: 800;
-  font-size: var(--fs-lead);
-  letter-spacing: 0.1em;
-}
-.brand span {
-  color: var(--text-3);
-}
-.h-mark {
-  display: block;
-  flex: none;
-}
-.cycle-cap {
-  margin-left: auto;
-  text-align: right;
-  font-size: var(--fs-caption);
-  font-weight: 700;
-  color: var(--text-2);
-  letter-spacing: 0.02em;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.cycle-cap b {
-  color: var(--c, var(--text));
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-.h-gear {
-  width: 44px;
-  height: 44px;
-  margin-right: -8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: var(--text-2);
-  flex: none;
-  transition:
-    background-color var(--dur-2),
-    color var(--dur-2);
-}
-.h-gear svg {
-  width: 22px;
-  height: 22px;
-}
-.h-gear:active {
-  background: var(--surface-2);
-  color: var(--text);
-}
-.rail {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  width: 100%;
-  height: 16px;
-  padding: 0;
-  margin: 2px 0 var(--s-3);
-}
-/* meta dodira je viša od crteža: 16 px traka + 14 px sa svake strane = 44 px */
-.rail::after {
-  content: '';
-  position: absolute;
-  inset: -14px 0;
-}
-.rail > i {
-  flex: 1;
-  height: 10px;
-  border-radius: 2px;
-  background: var(--c);
-  opacity: 0.28;
-  transition: opacity var(--dur-2);
-}
-.rail > i[data-s='done'] {
-  opacity: 1;
-}
-.rail > i[data-s='now'] {
-  opacity: 1;
-  height: 16px;
-  border-radius: 3px;
-  box-shadow:
-    0 0 0 2px var(--surface-0),
-    0 0 0 3.5px var(--c);
-}
-.rail > i[data-deload] {
-  height: 5px;
-}
-.rail > i[data-deload][data-s='now'] {
-  height: 11px;
-}
-.rail > .flag {
-  flex: none;
-  display: flex;
-  margin-left: 2px;
-  color: var(--ph-race);
-}
-.rail > .flag svg {
-  width: 16px;
-  height: 16px;
-}
-
-/* ───────── EKRANI ───────── */
 main {
   position: relative;
   overflow-x: clip;
   max-width: var(--content-max);
   margin-inline: auto;
-  padding: var(--pad) var(--pad) calc(var(--tab-h) + var(--sab) + var(--s-6));
+  padding: var(--sat) var(--pad) calc(var(--tab-h) + var(--sab) + var(--s-7));
 }
 .page {
   display: none;
@@ -143,61 +15,69 @@ main {
   display: block;
 }
 
-/* Ulazak sadržaja: blokovi ulaze jedan za drugim (40 ms), samo pri promeni taba (klasa `uskoci` se skida po isteku).
-   Ukupno ≤ 520 ms; pod „smanjeno kretanje“ se ne igra. */
-.page.uskoci :is(.card, .screen-head, .section-head, .state, .chart-card) {
-  animation: rise var(--dur-3) var(--ease-out) both;
+/* ───────── GORNJI RED TABA: znak „sub20“ + podatak koji pripada ekranu ───────── */
+.appbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-height: 60px;
 }
-.page.uskoci :is(.card, .screen-head, .section-head, .state, .chart-card):nth-child(2) {
-  animation-delay: 40ms;
+.wordmark {
+  font-size: 1.625rem;
+  font-weight: var(--w-heavy);
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
-.page.uskoci :is(.card, .screen-head, .section-head, .state, .chart-card):nth-child(3) {
-  animation-delay: 80ms;
-}
-.page.uskoci :is(.card, .screen-head, .section-head, .state, .chart-card):nth-child(4) {
-  animation-delay: 120ms;
-}
-.page.uskoci :is(.card, .screen-head, .section-head, .state, .chart-card):nth-child(5) {
-  animation-delay: 160ms;
-}
-.page.uskoci :is(.card, .screen-head, .section-head, .state, .chart-card):nth-child(n + 6) {
-  animation-delay: 200ms;
-}
-/* Dve kolone na širokom ekranu; na telefonu omotači nestaju (display: contents) i blokovi teku jedan ispod drugog. */
-.cols,
-.col {
-  display: contents;
-}
-.screen-head {
-  margin-bottom: var(--s-4);
-}
-.screen-head p {
-  font-size: var(--fs-body);
+.appbar-r {
+  min-width: 0;
+  text-align: right;
+  font-size: var(--fs-small);
   color: var(--text-2);
+}
+.appbar-r.tag {
+  font-size: var(--fs-label);
+  font-weight: var(--w-strong);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+/* ───────── EKRAN IZNAD TABA: „Nazad“ + sadržaj ───────── */
+.screen {
+  min-height: 60dvh;
+}
+.screenbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 60px;
+  margin-inline: calc(-1 * var(--pad));
+  padding: var(--sat) var(--pad) 0;
+  background: var(--bg);
+}
+.backbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: var(--touch);
+  margin-left: -10px;
+  padding: 0 var(--s-3) 0 var(--s-2);
+  border-radius: var(--r-pill);
+  color: var(--text);
   font-weight: 500;
-  margin-top: 2px;
 }
-/* Linije i stubovi se crtaju jednom pri ulasku u tab; ostaju gde jesu kad animacija istekne (nema `to`).
-   Kašnjenje stuba je ograničeno na 12 koraka (300 ms): plan sa 20 nedelja inače ne bi stigao da se nacrta dok klasa `uskoci` ne padne. */
-.page.uskoci .ln {
-  stroke-dasharray: 2000;
-  animation: draw-line var(--dur-4) 80ms var(--ease-out) backwards;
+.backbtn:active {
+  background: var(--surface-2);
 }
-@keyframes draw-line {
-  from {
-    stroke-dashoffset: 2000;
-  }
-}
-.page.uskoci .grow {
-  transform-origin: bottom;
-  transform-box: fill-box;
-  animation: grow-y var(--dur-4) var(--ease-out) backwards;
-  animation-delay: calc(min(var(--i, 0), 12) * 25ms);
-}
-@keyframes grow-y {
-  from {
-    transform: scaleY(0);
-  }
+.screenbar-r {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+  color: var(--text-2);
 }
 
 /* Prevlačenje između tabova: dva ekrana idu zajedno, kao traka. `dolazi` je ekran u kadru koji još nije aktivan (apsolutan da ne pomera
@@ -207,7 +87,7 @@ main {
   position: absolute;
   left: var(--pad);
   right: var(--pad);
-  top: calc(var(--pv-vrh, 0px) + var(--pad));
+  top: calc(var(--pv-vrh, 0px) + var(--sat));
   pointer-events: none;
 }
 .page.klizi {
@@ -224,7 +104,7 @@ main {
   height: calc(var(--tab-h) + var(--sab));
   padding-bottom: var(--sab);
   display: flex;
-  background: var(--surface-0);
+  background: var(--bg);
   border-top: 1px solid var(--line);
 }
 #tabbar button {
@@ -234,50 +114,34 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  color: var(--text-3);
-  min-height: 44px;
+  gap: 2px;
+  color: var(--text-2);
+  min-height: var(--touch);
+  text-align: center;
   transition: color var(--dur-2);
 }
-#tabbar button svg {
-  width: 23px;
-  height: 23px;
-}
 #tabbar button span {
-  font-size: var(--fs-label);
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 #tabbar button.on {
-  color: var(--text);
+  color: var(--accent-text);
 }
-#tabbar button::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 50%;
-  width: 28px;
-  height: 2px;
-  margin-left: -14px;
-  background: var(--text);
-  transform: scaleX(0);
-  transition: transform var(--dur-2) var(--ease-out);
-}
-#tabbar button.on::before {
-  transform: scaleX(1);
+#tabbar button.on span {
+  font-weight: var(--w-heavy);
 }
 #tabbar button:active {
-  transform: scale(0.94);
+  background: var(--surface-2);
 }
 
 /* ───────── ŠIROKI EKRANI ─────────
-   ≥ 768: sadržaj do 720 px, list postaje dijalog u sredini.
-   ≥ 1024: traka tabova prelazi levo (96 px), sadržaj dobija dve kolone (glavna + pomoćna).
-   ≥ 1440: do 1240 px, tri kolone na Danas. */
+   ≥ 768: sadržaj do 680 px, list postaje dijalog u sredini.
+   ≥ 1024: traka tabova prelazi levo (96 px); sadržaj ostaje jedna čitljiva kolona. */
 @media (min-width: 768px) {
   :root {
-    --content-max: 720px;
-    --pad: 24px;
+    --content-max: 680px;
+    --pad: 28px;
   }
   .sheet {
     left: 50%;
@@ -286,7 +150,7 @@ main {
     top: 50%;
     width: min(560px, calc(100vw - 48px));
     max-height: min(86dvh, 820px);
-    border: 1px solid var(--line-strong);
+    border: 1px solid var(--line);
     border-radius: var(--r-3);
     padding-bottom: var(--s-5);
     transform: translate(-50%, -46%) scale(0.98);
@@ -305,19 +169,7 @@ main {
   }
 }
 @media (min-width: 1024px) {
-  .cols {
-    display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-    column-gap: var(--s-5);
-    align-items: start;
-  }
-  .col {
-    display: block;
-    min-width: 0;
-  }
   :root {
-    --content-max: 1080px;
-    --pad: 32px;
     --rail-w: 96px;
   }
   .app-shell {
@@ -338,18 +190,7 @@ main {
   }
   #tabbar button {
     flex: none;
-    min-height: 68px;
-  }
-  #tabbar button::before {
-    top: 50%;
-    left: -1px;
-    width: 3px;
-    height: 28px;
-    margin: -14px 0 0;
-    transform: scaleY(0);
-  }
-  #tabbar button.on::before {
-    transform: scaleY(1);
+    min-height: 72px;
   }
   main {
     padding-bottom: var(--s-7);
@@ -357,10 +198,5 @@ main {
   .traka {
     left: calc(var(--rail-w) + var(--s-3));
     bottom: var(--s-4);
-  }
-}
-@media (min-width: 1440px) {
-  :root {
-    --content-max: 1240px;
   }
 }

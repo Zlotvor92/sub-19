@@ -1,6 +1,6 @@
 {
-  "name": "SUB-20 · Trkački plan",
-  "short_name": "SUB-20",
+  "name": "sub20 · Trkački plan",
+  "short_name": "sub20",
   "description": "Plan treninga za 5K, 10K, polumaraton i maraton — po Danielsovoj VDOT metodologiji.",
   "lang": "sr",
   "dir": "ltr",
@@ -9,8 +9,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0E1217",
-  "theme_color": "#0E1217",
+  "background_color": "#335e35",
+  "theme_color": "#f6f7f5",
   "categories": [
     "health",
     "fitness",
@@ -100,8 +100,8 @@
       ]
     },
     {
-      "name": "Trka",
-      "short_name": "Trka",
+      "name": "Forma i predikcija",
+      "short_name": "Forma",
       "description": "Predikcija vremena i test na 3 km",
       "url": "./?tab=pred",
       "icons": [

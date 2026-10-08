@@ -1,87 +1,102 @@
-/* DESIGN TOKENI — jedini izvor boja, razmaka, veličina slova, radijusa i kretanja.
+/* DESIGN TOKENI — „Quiet Athlete“. Jedini izvor boja, razmaka, veličina slova, radijusa i kretanja.
    Pravila sistema:
-   - BOJA FAZE (--ph-*) postoji samo uz oznaku faze, traku ciklusa i naslove faza, i UVEK uz tekst — nikad sama.
-   - POREKLO PODATKA (merenje / procena / projekcija) se razlikuje OBLIKOM (romb / puna linija / isprekidano), boja je drugi signal.
-   - Akcija je neutralno svetla (--text na --ink): nijedna nijansa faze ne sme da liči na dugme.
-   - Nema stakla, nema gradijenata za ukras, nema senki na površinama. Dubina = svetlina površine (--surface-0..3).
-   Kontrasti (WCAG 2.x, izračunati): --text 14.9:1, --text-2 9.5:1, --text-3 6.1:1 na --surface-1; sve faze ≥ 6.2:1 na --surface-1. */
+   - Dve teme sa istim imenima tokena: svetla (osnovna, prati sistem) i tamna. `[data-theme]` na <html> je ručni izbor (Ti → Izgled),
+     bez njega odlučuje `prefers-color-scheme`. Komponente nikad ne čitaju sirovu boju, samo token.
+   - Površine su ravne: bez stakla, gradijenata i senki. Dubina = razlika površine i jedna tanka linija.
+   - Akcija je tamnozelena (--accent). Zelena je i jedina „boja marke“; stanja (--warn, --bad) postoje samo uz reč ili ikonu.
+   - Poreklo podatka (izmereno / procena / projekcija) se razlikuje OBLIKOM (puna / puna zelena / isprekidana), boja je drugi signal.
+   - Boja faze postoji samo uz naziv faze i uvek uz tekst.
+   Kontrasti (WCAG 2.x, izračunati skriptom pri izradi, v. docs/redesign/QUIET_ATHLETE.md): tekst ≥ 4,5:1 na --bg i --surface u obe teme,
+   dugme (--accent-ink na --accent) ≥ 4,5:1, ivica kontrole (--border-ui) ≥ 3:1. */
 
 @font-face {
-  font-family: 'Archivo';
+  font-family: 'Figtree';
   font-style: normal;
-  font-weight: 400 800;
+  font-weight: 300 900;
   font-display: swap;
-  src: url('./fonts/archivo-latin.woff2') format('woff2');
+  src: url('./fonts/figtree-latin.woff2') format('woff2');
   unicode-range:
-    U+0020-007E, U+00A0, U+00B0, U+00B7, U+00D7, U+2013-2014, U+2018-201E, U+2022, U+2026,
-    U+2190-2193, U+2212, U+2248, U+25B2, U+25BC, U+25CF;
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-  font-family: 'Archivo';
+  font-family: 'Figtree';
   font-style: normal;
-  font-weight: 400 800;
+  font-weight: 300 900;
   font-display: swap;
-  src: url('./fonts/archivo-latin-ext.woff2') format('woff2');
-  unicode-range: U+0106-0107, U+010C-010D, U+0110-0111, U+0160-0161, U+017D-017E;
+  src: url('./fonts/figtree-latin-ext.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light dark;
 
-  /* površine: svetlina ODREĐUJE dubinu */
-  --bg: #0e1217;
-  --surface-0: #0a0e12; /* traka tabova, zaglavlje */
-  --surface-1: #141a20; /* panel */
-  --surface-2: #1b232b; /* polje, uvučeno, uzdignuto na panelu */
-  --surface-3: #242f39; /* pritisnuto / izabrano */
-  --line: #26313a;
-  --line-strong: #3a4854;
-  --border-ui: #5c6c7c; /* ivica kontrole (≥ 3:1 prema podlozi, WCAG 1.4.11) */
+  /* ── svetla tema ── */
+  --bg: #f6f7f5;
+  --surface: #ffffff; /* polja, list, dijalog */
+  --surface-2: #edf0eb; /* staza trake, pritisnuto, uvučeno */
+  --surface-sel: #e6eee5; /* izabrano / današnji red */
+  --line: #e0e5de; /* tanka razdelna linija */
+  --line-strong: #c5ccc2;
+  --border-ui: #848f87; /* ivica kontrole (≥ 3:1 prema podlozi) */
 
-  /* tekst */
-  --text: #e8edf2;
-  --text-2: #b4c0cc;
-  --text-3: #8d9aa8;
-  --ink: #0a0e12; /* tekst na svetlom dugmetu */
+  --text: #19251e;
+  --text-2: #46554b; /* sekundarni tekst */
+  --text-3: #5c6b61; /* oznake i napomene (≥ 4,5:1 na --bg) */
 
-  /* stanja (uvek uz reč ili ikonu) */
-  --ok: #4fcb8d;
-  --warn: #f2a93b;
-  --bad: #f27468;
-  --focus: #7db3ff;
+  --accent: #335e35;
+  --accent-ink: #ffffff; /* tekst na --accent */
+  --accent-press: #284a2a;
+  --accent-text: #2b5230; /* zelena kao boja teksta/ikone na --bg */
 
-  /* faze ciklusa */
-  --ph-base: #6d9cf5;
-  --ph-build: #2cc0d6;
-  --ph-peak: #f2a93b;
-  --ph-taper: #b196f0;
-  --ph-race: #f27468;
+  --ok: #2b5230;
+  --warn: #8a5600;
+  --warn-soft: #f6ead2;
+  --bad: #a3322a;
+  --bad-soft: #f8e1de;
+  --focus: #1f5fbf;
+
+  /* faze ciklusa: tonovi jedne boje, uvek uz naziv faze */
+  --ph-base: #7ca07f;
+  --ph-build: #4f8056;
+  --ph-peak: #335e35;
+  --ph-taper: #838871;
+  --ph-race: #19251e;
 
   /* poreklo podatka */
-  --measured: #e8edf2;
-  --estimated: #8fb5ff;
-  --projected: #b4c0cc;
+  --measured: #19251e;
+  --estimated: #335e35;
+  --projected: #5c6b61;
 
-  /* vrsta treninga (3 nivoa težine + dugo) */
-  --k-easy: #7c8c9c;
-  --k-quality: #f27468;
-  --k-long: #c9d4df;
+  /* vrsta treninga na ćelijama dana */
+  --k-easy: #78877c;
+  --k-quality: #335e35;
+  --k-long: #4f8056;
 
-  /* tipografija */
-  --font: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-  --fs-label: 0.6875rem; /* 11 px — verzal sa razmakom, samo za oznake */
-  --fs-caption: 0.75rem; /* 12 */
-  --fs-small: 0.8125rem; /* 13 */
-  --fs-body: 0.9375rem; /* 15 */
-  --fs-lead: 1.0625rem; /* 17 */
-  --fs-h3: 1.25rem; /* 20 */
-  --fs-h2: 1.625rem; /* 26 */
-  --fs-h1: 2.125rem; /* 34 */
+  --scrim: rgba(25, 37, 30, 0.42);
+
+  /* ── tipografija ── */
+  --font: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --fs-label: 0.8125rem; /* 13 — oznaka (verzal) */
+  --fs-caption: 0.8125rem; /* 13 */
+  --fs-small: 0.875rem; /* 14 — sekundarni tekst */
+  --fs-body: 1rem; /* 16 — osnovni tekst */
+  --fs-lead: 1.125rem; /* 18 */
+  --fs-h3: 1.25rem; /* 20 — naslov reda / odeljka */
+  --fs-h2: 1.5rem; /* 24 */
+  --fs-h1: clamp(1.75rem, 7.4vw, 2.125rem); /* 28–34 */
   --fs-num: 2.5rem; /* 40 — broj u redu statistike */
-  --fs-hero: clamp(3.25rem, 15vw, 4.5rem); /* ciljni tempo */
-  --track-label: 0.12em;
+  --fs-hero: clamp(4.5rem, 25vw, 6.5rem); /* 72–104 — jedini veliki broj na ekranu */
+  --track-label: 0.08em;
+  --w-body: 400;
+  --w-strong: 600;
+  --w-heavy: 700;
+  --w-light: 300; /* samo za velike brojeve (≥ 56 px) */
 
-  /* razmak (4 px osnova) */
+  /* ── razmak (4 px osnova) ── */
   --s-1: 4px;
   --s-2: 8px;
   --s-3: 12px;
@@ -89,17 +104,15 @@
   --s-5: 24px;
   --s-6: 32px;
   --s-7: 48px;
-  --pad: 16px; /* bočni razmak sadržaja; deli ga i ekran koji dolazi pri prevlačenju */
+  --pad: 20px; /* bočni razmak sadržaja */
 
-  /* radijus */
-  --r-1: 4px; /* oznake, ćelije dana */
-  --r-2: 8px; /* paneli, polja, dugmad */
-  --r-3: 16px; /* list (sheet), dijalog */
+  /* ── radijus ── */
+  --r-1: 6px; /* oznake, ćelije */
+  --r-2: 12px; /* polja, istaknuti red */
+  --r-3: 20px; /* list, dijalog */
+  --r-pill: 999px; /* dugmad */
 
-  /* uzdizanje: samo za stvari koje lebde iznad sadržaja */
-  --elev-float: 0 8px 24px rgba(0, 0, 0, 0.45);
-
-  /* kretanje: 120–320 ms; sve je prekidljivo i gasi se pod prefers-reduced-motion */
+  /* ── kretanje: 120–320 ms, prekidljivo, gasi se pod prefers-reduced-motion ── */
   --dur-1: 120ms;
   --dur-2: 200ms;
   --dur-3: 320ms;
@@ -107,32 +120,104 @@
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-io: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* ljuska */
-  --tab-h: 58px;
+  /* ── ljuska ── */
+  --tab-h: 62px;
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
-  --content-max: 560px;
+  --content-max: 600px;
+  --touch: 44px;
+}
 
-  /* ──────────────────────────────────────────────────────────────────────
-     STARI NAZIVI — ekrani koje ovaj redizajn nije dirao (čarobnjak, podešavanja, zajednica,
-     prijava) i dalje čitaju ova imena. Vrednosti su preusmerene na nove tokene, pa se ti
-     ekrani presvlače bez izmene markupa; „staklo“ je spljošteno (bez providnosti i bez blura). */
-  --glass: var(--surface-1);
-  --glass-hi: var(--surface-2);
-  --glass-in: var(--surface-2);
-  --card: var(--surface-1);
-  --card2: var(--surface-2);
-  --hl: none;
-  --blur: none;
-  --line-soft: var(--line);
-  --txt: var(--text);
-  --txt2: var(--text-2);
-  --txt3: var(--text-3);
-  --pink: var(--k-quality);
-  --green: var(--ok);
-  --cyan: var(--ph-build);
-  --amber: var(--warn);
-  --red: var(--bad);
-  --green-dim: rgba(79, 203, 141, 0.16);
-  --r: var(--r-2);
+/* ── tamna tema: sistemska (bez ručnog izbora) ── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0f1612;
+    --surface: #161f19;
+    --surface-2: #1f2a23;
+    --surface-sel: #1e3024;
+    --line: #26332b;
+    --line-strong: #394a3f;
+    --border-ui: #6f7f74;
+
+    --text: #e9f0ea;
+    --text-2: #b4c2b8;
+    --text-3: #93a398;
+
+    --accent: #8cc79a;
+    --accent-ink: #0b160e;
+    --accent-press: #a3d5af;
+    --accent-text: #8cc79a;
+
+    --ok: #8cc79a;
+    --warn: #e6b04a;
+    --warn-soft: #2d2410;
+    --bad: #f0897d;
+    --bad-soft: #321a17;
+    --focus: #7db3ff;
+
+    --ph-base: #4f6b53;
+    --ph-build: #6e9a75;
+    --ph-peak: #a4d3ac;
+    --ph-taper: #8e9580;
+    --ph-race: #e9f0ea;
+
+    --measured: #e9f0ea;
+    --estimated: #8cc79a;
+    --projected: #93a398;
+
+    --k-easy: #6f7f74;
+    --k-quality: #8cc79a;
+    --k-long: #5f8d68;
+
+    --scrim: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* ── tamna tema: ručni izbor ── */
+:root[data-theme='dark'] {
+  --bg: #0f1612;
+  --surface: #161f19;
+  --surface-2: #1f2a23;
+  --surface-sel: #1e3024;
+  --line: #26332b;
+  --line-strong: #394a3f;
+  --border-ui: #6f7f74;
+
+  --text: #e9f0ea;
+  --text-2: #b4c2b8;
+  --text-3: #93a398;
+
+  --accent: #8cc79a;
+  --accent-ink: #0b160e;
+  --accent-press: #a3d5af;
+  --accent-text: #8cc79a;
+
+  --ok: #8cc79a;
+  --warn: #e6b04a;
+  --warn-soft: #2d2410;
+  --bad: #f0897d;
+  --bad-soft: #321a17;
+  --focus: #7db3ff;
+
+  --ph-base: #4f6b53;
+  --ph-build: #6e9a75;
+  --ph-peak: #a4d3ac;
+  --ph-taper: #8e9580;
+  --ph-race: #e9f0ea;
+
+  --measured: #e9f0ea;
+  --estimated: #8cc79a;
+  --projected: #93a398;
+
+  --k-easy: #6f7f74;
+  --k-quality: #8cc79a;
+  --k-long: #5f8d68;
+
+  --scrim: rgba(0, 0, 0, 0.6);
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
