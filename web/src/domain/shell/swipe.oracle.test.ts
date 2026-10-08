@@ -33,7 +33,7 @@ describe('prevlačenje: konstante i redosled naspram starog koda', () => {
       ]
     );
   });
-  it('redosled tabova je isti kao ključevi `PAGES`', () => {
-    expect(legacy.evalIn('TAB_RED')).toEqual([...TABS]);
+  it('redosled tabova: Danas, Plan, Napredak, Ti (stari kod je imao pet, sa Oporavkom i Trkom — namerna razlika redizajna)', () => {
+    expect([...TABS]).toEqual(['danas', 'plan', 'napredak', 'ti']);
   });
 });

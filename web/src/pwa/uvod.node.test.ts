@@ -3,11 +3,11 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { STATIC_ASSETS } from '../../scripts/sw-build.mjs';
 
-/* parity: test/uvod.test.mjs — markup i CSS uvodnog ekrana, ikonice, znak u zaglavlju. Čita IZVORNE fajlove novog frontenda (index.html, legacy.css, public/). */
+/* parity: test/uvod.test.mjs — markup i CSS uvodnog ekrana, ikonice, znak u zaglavlju. Čita IZVORNE fajlove novog frontenda (index.html, base.css, public/). */
 
 const WEB = process.cwd();
 const html = readFileSync(join(WEB, 'index.html'), 'utf8');
-const css = readFileSync(join(WEB, 'src/styles/legacy.css'), 'utf8');
+const css = readFileSync(join(WEB, 'src/styles/base.css'), 'utf8');
 const manifest = JSON.parse(readFileSync(join(WEB, 'public/manifest.json'), 'utf8')) as {
   background_color: string;
   icons: Array<{ src: string; purpose?: string }>;
@@ -24,7 +24,7 @@ describe('Uvodni ekran — markup i CSS', () => {
   });
 
   it('animacija je u CSS-u, ne čeka paket aplikacije', () => {
-    expect(css).toMatch(/@keyframes uvod-luk/);
+    expect(css).toMatch(/@keyframes uvod-znak/);
     expect(css).toMatch(/#uvod\s*\{[^}]*animation:\s*uvod-kraj/);
   });
 
@@ -46,21 +46,21 @@ describe('Uvodni ekran — markup i CSS', () => {
     expect(css).toMatch(/@keyframes uvod-preskok/);
   });
 
-  it('smanjeno kretanje sakriva uvod već u CSS-u i GASI slaganje kartica (ne samo skraćuje)', () => {
+  it('smanjeno kretanje sakriva uvod već u CSS-u', () => {
     const blocks = [
       ...css.matchAll(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{([\s\S]*?)\n\}/g)
     ]
       .map((m) => m[1])
       .join('\n');
     expect(blocks).toMatch(/#uvod\s*\{\s*display:\s*none/);
-    expect(blocks).toMatch(/\.page\.uskoci>\*\s*\{\s*animation:\s*none\s*!important/);
   });
 
   it('uvod je iznad svega ostalog, uključujući prijavni ekran', () => {
     const mine = Number(/#uvod\s*\{[\s\S]*?z-index:\s*(\d+)/.exec(css)?.[1]);
-    const others = [...css.matchAll(/z-index:\s*(\d+)/g)]
-      .map((m) => Number(m[1]))
-      .filter((z) => z !== mine);
+    const all = ['ui', 'shell', 'screens', 'charts', 'wizard']
+      .map((n) => readFileSync(join(WEB, `src/styles/${n}.css`), 'utf8'))
+      .join('\n');
+    const others = [...all.matchAll(/z-index:\s*(\d+)/g)].map((m) => Number(m[1]));
     expect(mine).toBeGreaterThan(Math.max(0, ...others));
   });
 
@@ -98,17 +98,11 @@ describe('Ikonice', () => {
   });
 });
 
-describe('Znak u zaglavlju', () => {
-  it('zaglavlje nosi znak aplikacije', () => {
-    const icons = readFileSync(join(WEB, 'src/components/ui/icons.tsx'), 'utf8');
+describe('Znak aplikacije', () => {
+  it('znak „sub20“ stoji u gornjem redu svakog taba, a ikonice su napravljene od priloženog logoa', () => {
     const shell = readFileSync(join(WEB, 'src/components/ui/Shell.tsx'), 'utf8');
-    expect(icons + shell).toMatch(/h-mark/);
-  });
-
-  it('znak u zaglavlju je ravan (bez <defs> i id-jeva), pa ne može da zasenči gradijent uvoda (dva <defs> sa istim id-jem: drugi se ignoriše)', () => {
-    const icons = readFileSync(join(WEB, 'src/components/ui/icons.tsx'), 'utf8');
-    const mark = /export function BrandMark[\s\S]*?\n\}\n/.exec(icons)?.[0] ?? '';
-    expect(mark).not.toBe('');
-    expect(mark).not.toMatch(/<defs|linearGradient|radialGradient|\bid=/);
+    expect(shell).toMatch(/className="wordmark"/);
+    /* ikonice i uvod koriste isti znak: zelena podloga + beo znak, pa uvod i sistemski splash (isti `background_color`) ne trzaju */
+    expect(html).toMatch(/<img src="\.\/icon-192\.png"/);
   });
 });

@@ -5,7 +5,6 @@ import { COMPARABLE_PACE_SEC, EASY_BAND_KM } from '../domain/day/compare';
 import { DECOUPLING_MIN_KM } from '../domain/activities/perkm';
 import { COOLER_HOUR_DELTA } from '../domain/weather';
 import { DRIFT_GOOD_BELOW, DRIFT_WARN_BELOW } from '../domain/zones';
-import { ENTERING_MS } from '../stores/uiStore';
 
 /* parity: test/doslednost.test.mjs — stvari koje se održavaju ručno i tiho zastare: uputstvo naspram koda, sidra, obrasci, politika privatnosti, trajanje animacija
    naspram tajmera. Čita izvorne fajlove novog frontenda. */
@@ -15,7 +14,7 @@ const read = (p: string): string => readFileSync(join(WEB, p), 'utf8');
 const stripComments = (s: string): string => s.replace(/\/\*[\s\S]*?\*\//g, '');
 /* CSS je u više fajlova (tokeni, osnova, komponente, ljuska, ekrani, ostatak); pravila se proveravaju na SKUPU, a razmaci se sažimaju
    („a { b: c; }" → „a{b:c;}"), da testovi ne zavise od načina na koji je fajl formatiran. */
-const CSS_FILES = ['tokens', 'base', 'components', 'shell', 'screens', 'legacy'].map(
+const CSS_FILES = ['tokens', 'base', 'ui', 'shell', 'screens', 'charts', 'wizard'].map(
   (n) => `src/styles/${n}.css`
 );
 const css = CSS_FILES.map(read).join('\n');
@@ -24,13 +23,6 @@ const squash = (s: string): string =>
     .replace(/\s+/g, ' ')
     .replace(/\s*([{};,:>])\s*/g, '$1')
     .trim();
-const tokens = (): Record<string, number> =>
-  Object.fromEntries(
-    [...read('src/styles/tokens.css').matchAll(/--(dur-\d):\s*(\d+)ms/g)].map((m) => [
-      m[1] as string,
-      Number(m[2])
-    ])
-  );
 const uputstvo = read('public/uputstvo.html');
 const privacy = read('public/privacy.html');
 const manifest = JSON.parse(read('public/manifest.json')) as {
@@ -160,55 +152,12 @@ describe('Manifest je spreman za pakovanje u Android aplikaciju', () => {
   });
 });
 
-describe('Animacije napretka — linije, stubovi, trake', () => {
+describe('Kretanje', () => {
   const plain = squash(css);
-  const dur = tokens();
-  /* Vreme iz izjave: „480ms", „.75s" ili „var(--dur-4)". */
-  const ms = (t: string): number | null => {
-    const v = /^var\(--(dur-\d)\)$/.exec(t);
-    if (v) return dur[v[1] as string] ?? null;
-    const m = /^([\d.]+)(ms|s)$/.exec(t);
-    return m ? parseFloat(m[1] ?? '0') * (m[2] === 's' ? 1000 : 1) : null;
-  };
-  /* Trajanje + kašnjenje prve animacije u pravilu čiji selektor počinje sa `selector`; najgori slučaj za kašnjenje `min(var(--i,0),N)*Kms`. */
-  const total = (selector: string): number | null => {
-    const esc = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const rule = new RegExp(`${esc}\\{([^}]*)\\}`).exec(plain)?.[1];
-    if (!rule) return null;
-    const decl = /animation:([^;]+)/.exec(rule)?.[1] ?? '';
-    const times = decl
-      .split(' ')
-      .map(ms)
-      .filter((x): x is number => x != null);
-    if (!times.length) return null;
-    const capped = /animation-delay:calc\(min\(var\(--i,0\),(\d+)\)\*(\d+)ms\)/.exec(rule);
-    const delay = capped ? Number(capped[1]) * Number(capped[2]) : (times[1] ?? 0);
-    return (times[0] ?? 0) + delay;
-  };
 
-  it('tajmer klase `uskoci` traje duže od najduže animacije na njoj (inače klasa pada usred crtanja i linija „pukne")', () => {
-    const longest = ['.page.uskoci .ln', '.page.uskoci .grow', '.page.uskoci .j-fill'].map((s) => ({
-      s,
-      ms: total(s)
-    }));
-    for (const a of longest) expect(a.ms, `nema animacije za ${a.s}`).not.toBeNull();
-    /* ulazak kartica: osnovno trajanje + najveće kašnjenje iz `nth-child(n+6)` */
-    const delays = [
-      ...plain.matchAll(/\.page\.uskoci:is\([^)]*\):nth-child\([^)]*\)\{animation-delay:(\d+)ms/g)
-    ].map((m) => Number(m[1]));
-    const rise = total('.page.uskoci:is(.card,.screen-head,.section-head,.state,.chart-card)');
-    expect(rise, 'nema animacije ulaska kartica').not.toBeNull();
-    expect(delays.length).toBeGreaterThan(0);
-    const all = [...longest.map((a) => a.ms ?? 0), (rise ?? 0) + Math.max(...delays)];
-    expect(ENTERING_MS).toBeGreaterThan(Math.max(...all));
-  });
-
-  it('traka napretka kreće od PRAZNE (scaleX 0, sa leve strane), a ne od pune', () => {
-    expect(plain).toMatch(/@keyframes fill-x\{from\{transform:scaleX\(0\);?\}/);
-    expect(/\.planbar \.run\{([^}]*)\}/.exec(plain)?.[1]).toMatch(/transform-origin:left/);
-    expect(/(?<=\})\.j-fill\{([^}]*)\}/.exec(plain)?.[1]).toMatch(/transform-origin:left/);
-    expect(plain).toMatch(/@keyframes draw-line\{from\{stroke-dashoffset:2000;?\}\}/);
-    expect(plain).toMatch(/@keyframes grow-y\{from\{transform:scaleY\(0\);?\}\}/);
+  it('nema ulazne animacije kartica pri promeni taba (klasa `uskoci` je uklonjena: usporavala je rad bez ikakve koristi)', () => {
+    expect(plain).not.toMatch(/\.page\.uskoci/);
+    expect(read('src/stores/uiStore.ts')).not.toMatch(/ENTERING_MS|entering/);
   });
 
   it('isključeno kretanje gasi SVE animacije i prelaze, jednim pravilom', () => {
@@ -252,7 +201,7 @@ describe('Prevlačenje između tabova — CSS i kod su uskladjeni', () => {
   });
 
   it('bočni razmak dolazećeg ekrana je ISTI kao razmak sadržaja (inače sadržaj poskoči kad prelazak legne)', () => {
-    expect(plain).toMatch(/main\{[^}]*padding:var\(--pad\) var\(--pad\)/);
+    expect(plain).toMatch(/main\{[^}]*padding:var\(--sat\) var\(--pad\)/);
     expect(/\.page\.dolazi\{([^}]*)\}/.exec(plain)?.[1]).toMatch(
       /left:var\(--pad\);right:var\(--pad\)/
     );

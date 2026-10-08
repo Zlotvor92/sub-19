@@ -10,8 +10,8 @@ import { hydratePersisted, useActiveGenPlan, useResolvedPlan, useTrainingStore }
 import { useAuthStore } from '../stores/authStore';
 import { editField, setStatus } from '../stores/dayActions';
 import { useUIStore } from '../stores/uiStore';
-import { Banners } from './today/Banners';
-import { PlanBody, usePlanInfo } from './settings/planSection';
+import { Advisories } from './today/Advisories';
+import { AdjustPlan } from './plan/AdjustPlan';
 import { setApp } from '../app/appContext';
 import { createApp } from '../app/createApp';
 import { createKeyValueStore, type StorageLike } from '../services/storage/kv';
@@ -39,7 +39,7 @@ class Mem implements StorageLike {
 
 beforeEach(() => {
   hydratePersisted(empty());
-  useUIStore.setState({ today: TODAY, sheet: null, confirm: null, wizard: false });
+  useUIStore.setState({ today: TODAY, sheet: null, confirm: null, wizard: false, screens: [] });
   setApp(
     createApp({
       kv: createKeyValueStore(new Mem()),
@@ -109,17 +109,17 @@ describe('ko vidi ugrađeni plan', () => {
   });
 });
 
-describe('traka „Ovo nije tvoj plan"', () => {
+describe('upozorenje „Ovo nije tvoj plan" (Danas)', () => {
   it('pokazuje se SAMO nalogu koji nije vlasnik, ima unose na ugrađenom planu i nema svoj plan; „Napravi svoj" nudi backup pa otvara čarobnjaka', async () => {
     const user = userEvent.setup();
     asUser('neko-drugi');
-    const view = render(<Banners today={TODAY} />);
+    const view = render(<Advisories today={TODAY} />);
     expect(screen.queryByText('Ovo nije tvoj plan')).toBeNull();
     view.unmount();
 
     act(() => useTrainingStore.setState({ log: { n2d1: { status: 'done' } } }));
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    render(<Banners today={TODAY} />);
+    render(<Advisories today={TODAY} />);
     expect(screen.getByText('Ovo nije tvoj plan')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Napravi svoj' }));
     expect(confirm).toHaveBeenCalledWith(expect.stringMatching(/^Prvo izvezi backup/));
@@ -129,33 +129,14 @@ describe('traka „Ovo nije tvoj plan"', () => {
   it('vlasnik je ne vidi', () => {
     asUser(ADMIN_UID);
     act(() => useTrainingStore.setState({ log: { n2d1: { status: 'done' } } }));
-    render(<Banners today={TODAY} />);
+    render(<Advisories today={TODAY} />);
     expect(screen.queryByText('Ovo nije tvoj plan')).toBeNull();
   });
 });
 
-describe('Podešavanja → Plan', () => {
-  const Probe = () => (
-    <>
-      <span id="info">{usePlanInfo().summary}</span>
-      <PlanBody />
-    </>
-  );
-
-  it('ugrađeni plan: „tvoj lični plan", dugme „Generiši novi plan" otvara čarobnjaka', async () => {
-    const user = userEvent.setup();
-    asUser(ADMIN_UID);
-    const { container } = render(<Probe />);
-    expect(container.querySelector('#info')?.textContent).toBe('tvoj lični plan · 12 nedelja');
-    expect(screen.queryByRole('button', { name: /Promeni cilj/ })).toBeNull(); // cilj se ne menja na ugrađenom
-    await user.click(screen.getByRole('button', { name: /Generiši novi plan/ }));
-    expect(useUIStore.getState().wizard).toBe(true);
-  });
-
-  it('vlasnik sa generisanim planom: „Vrati na moj plan" briše generisan plan i vraća ugrađeni', async () => {
-    const user = userEvent.setup();
-    asUser(ADMIN_UID);
-    const g = adaptGeneratedPlan(
+describe('Plan → Prilagodi plan: radnje nad planom', () => {
+  const genPlan = () =>
+    adaptGeneratedPlan(
       generatePlan({
         startDate: '2026-10-05',
         raceDate: '2027-01-17',
@@ -168,34 +149,34 @@ describe('Podešavanja → Plan', () => {
         trainedRecently: true
       })
     );
-    act(() => useTrainingStore.setState({ genPlan: g }));
-    const { container } = render(<Probe />);
-    expect(container.querySelector('#info')?.textContent).toMatch(/^generisan plan · /);
-    await user.click(screen.getByRole('button', { name: 'Vrati na moj plan' }));
+
+  it('ugrađeni plan: nudi „Generiši novi plan“ (otvara čarobnjaka), a cilj se ne menja', async () => {
+    const user = userEvent.setup();
+    asUser(ADMIN_UID);
+    render(<AdjustPlan />);
+    expect(screen.queryByRole('button', { name: /Promeni ciljno vreme/ })).toBeNull(); // cilj se ne menja na ugrađenom
+    expect(screen.queryByRole('button', { name: /Preračunaj plan/ })).toBeNull();
+    await user.click(screen.getByRole('button', { name: /Generiši novi plan/ }));
+    expect(useUIStore.getState().wizard).toBe(true);
+  });
+
+  it('vlasnik sa generisanim planom: „Vrati na moj plan“ briše generisan plan i vraća ugrađeni', async () => {
+    const user = userEvent.setup();
+    asUser(ADMIN_UID);
+    act(() => useTrainingStore.setState({ genPlan: genPlan() }));
+    render(<AdjustPlan />);
+    await user.click(screen.getByRole('button', { name: /Vrati na moj plan/ }));
     expect(useUIStore.getState().confirm?.text).toMatch(/^Vratiti se na tvoj originalni plan\?/);
     act(() => useUIStore.getState().confirm?.resolve(true));
     await vi.waitFor(() => expect(useTrainingStore.getState().genPlan).toBeNull());
     expect(renderHook(() => useResolvedPlan()).result.current?.weeks).toHaveLength(12);
   });
 
-  it('tuđ nalog sa generisanim planom: „Napravi novi plan", ne „Vrati na moj plan"', () => {
+  it('tuđ nalog sa generisanim planom: „Napravi novi plan“, ne „Vrati na moj plan“', () => {
     asUser('neko-drugi');
-    const g = adaptGeneratedPlan(
-      generatePlan({
-        startDate: '2026-10-05',
-        raceDate: '2027-01-17',
-        raceDistM: 5000,
-        pb: { distM: 5000, sec: 1290 },
-        weeklyKm: 40,
-        runDays: 5,
-        quality: 2,
-        intensity: 'std',
-        trainedRecently: true
-      })
-    );
-    act(() => useTrainingStore.setState({ genPlan: g }));
-    render(<Probe />);
-    expect(screen.queryByRole('button', { name: 'Vrati na moj plan' })).toBeNull();
+    act(() => useTrainingStore.setState({ genPlan: genPlan() }));
+    render(<AdjustPlan />);
+    expect(screen.queryByRole('button', { name: /Vrati na moj plan/ })).toBeNull();
     expect(screen.getByRole('button', { name: /Napravi novi plan/ })).toBeInTheDocument();
   });
 });

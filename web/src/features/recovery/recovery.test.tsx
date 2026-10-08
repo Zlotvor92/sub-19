@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IsoDate } from '../../domain/date';
 import { adaptGeneratedPlan } from '../../domain/plan/adapt';
@@ -10,10 +11,14 @@ import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { hydratePersisted, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
+import { AdjustPlan } from '../plan/AdjustPlan';
 import { SheetHost } from '../sheets';
-import RecoveryPage from './index';
+import { BolScreen } from './BolScreen';
+import { MasaScreen } from './MasaScreen';
+import { OporavakScreen } from './OporavakScreen';
 
-/* parity: renderOporavak, karticaOporavka, karticaPulsUMiru, karticaOpterecenja, karticaMase, openKneeSheet (app.js). */
+/* parity: renderOporavak, karticaOporavka, karticaPulsUMiru, karticaOpterecenja, karticaMase, openKneeSheet (app.js) — sada tri ekrana: Oporavak, Bol, Masa.
+   Predlog izmene plana zbog bola je u Plan → Prilagodi plan. */
 
 const TODAY = '2026-01-14';
 function freshState(extra: Partial<PersistedState> = {}): PersistedState {
@@ -35,32 +40,36 @@ function freshState(extra: Partial<PersistedState> = {}): PersistedState {
   s.genPlan = a;
   return { ...s, ...extra };
 }
-const Screen = () => (
+const withSheet = (screen: ReactElement): ReactElement => (
   <>
-    <RecoveryPage />
+    {screen}
     <div id="sheet">
       <SheetHost />
     </div>
   </>
 );
+const Oporavak = (): ReactElement => withSheet(<OporavakScreen />);
+const Bol = (): ReactElement => withSheet(<BolScreen />);
+const Masa = (): ReactElement => withSheet(<MasaScreen />);
 const day = (n: number): string => new Date(Date.UTC(2026, 0, 14 - n)).toISOString().slice(0, 10);
 
 beforeEach(() => {
   hydratePersisted(freshState());
-  useUIStore.setState({ today: TODAY, sheet: null, confirm: null });
+  useUIStore.setState({ today: TODAY, sheet: null, confirm: null, screens: [] });
 });
 
 describe('Oporavak', () => {
-  it('bez unosa: „Bez povreda", nema predloga; kartice bez podataka kažu zašto', () => {
-    render(<Screen />);
-    expect(screen.getByText('Bez povreda')).toBeInTheDocument();
+  it('bez unosa: stanje danas bez povreda, bez predloga; odeljci bez podataka kažu zašto', () => {
+    render(<Oporavak />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Oporavak' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Stanje danas' })).toBeInTheDocument();
     expect(screen.queryByText('Plan se može prilagoditi')).toBeNull();
-    expect(screen.getByText(/Nije povezano/)).toBeInTheDocument();
     expect(screen.getByText(/Odnos se prikazuje kad prođe bar jedna nedelja/)).toBeInTheDocument();
-    expect(screen.getAllByText('Nema unosa.').length).toBeGreaterThan(0);
+    expect(screen.getByText(/stižu preko intervals\.icu/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Poveži intervals\.icu/ })).toBeInTheDocument();
   });
 
-  it('jak bol: „STANI", predlog izmene plana; „Prilagodi plan" traži potvrdu i upisuje izmene', async () => {
+  it('jak bol: „STANI“ u stanju danas; predlog izmene plana je u Prilagodi plan i traži potvrdu', async () => {
     const user = userEvent.setup();
     hydratePersisted(
       freshState({
@@ -68,9 +77,13 @@ describe('Oporavak', () => {
       })
     );
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
-    render(<Screen />);
-    expect(screen.getByText('STANI')).toBeInTheDocument();
-    expect(screen.getByText('Plan se može prilagoditi')).toBeInTheDocument();
+    const view = render(<Oporavak />);
+    expect(screen.getAllByText('STANI').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: 'Prilagodi plan' })).toBeNull();
+    view.unmount();
+
+    render(<AdjustPlan />);
+    expect(screen.getByText('Zbog bola')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Prilagodi plan' }));
     expect(useUIStore.getState().confirm?.text).toMatch(/^Prilagoditi plan\?/);
     act(() => useUIStore.getState().confirm?.resolve(true));
@@ -81,9 +94,70 @@ describe('Oporavak', () => {
     alert.mockRestore();
   });
 
-  it('mapa tela: dodir otvara novi unos za taj deo; „Dodaj" upisuje zapis sa id-jem i delom', async () => {
+  it('jutarnja merenja: HRV prema sopstvenoj osnovi i puls u miru (obrnut smer)', () => {
+    const w: Record<string, WellnessRecord> = {};
+    for (let i = 8; i >= 0; i--) {
+      const d = day(i);
+      w[d] = {
+        datum: d,
+        hrv: 60 + (i === 0 ? -12 : 0),
+        pulsUMiru: 46 + (i === 0 ? 6 : 0),
+        sanH: 7.4
+      } as WellnessRecord;
+    }
+    hydratePersisted(freshState({ wellness: w }));
+    render(<Oporavak />);
+    expect(screen.getByRole('heading', { name: 'HRV' })).toBeInTheDocument();
+    /* signal sa brojem i stanjem je jednom (Stanje danas), a odeljak ispod nosi kretanje i objašnjenje */
+    expect(screen.getAllByText(/−20% od osnove 60/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('heading', { name: 'Puls u miru' })).toBeInTheDocument();
+    expect(screen.getAllByText(/\+6 od osnove/).length).toBeGreaterThanOrEqual(1);
+    /* HRV −20 % je crveno, pa najlošiji signal odlučuje i kaže šta da radiš */
+    const ready = screen.getByRole('heading', { name: 'Stanje danas' }).closest('section');
+    expect(within(ready as HTMLElement).getByText('Olakšaj')).toBeInTheDocument();
+    expect(
+      within(ready as HTMLElement).getByText('Oporavak zaostaje: lakši dan.')
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/Dodirni tačku za detalje/).length).toBe(2);
+  });
+
+  it('opterećenje: sa četiri završene nedelje prikazuje odnos i pojas koje računa domen', () => {
+    const gp = freshState().genPlan;
+    if (!gp) throw new Error('plan');
+    const resolved = resolvePlan(gp.weeks, { alts: {}, moves: {} });
+    const log: PersistedState['log'] = {};
+    for (const d of resolved.dated)
+      if (d.km && d.date < '2026-02-09') log[d.id] = { status: 'done', km: d.km, ts: d.date };
+    hydratePersisted(freshState({ log }));
+    useUIStore.setState({ today: '2026-02-08' });
+    render(<Oporavak />);
+    const ctx = { plan: resolved, log, outOfPlan: {}, pain: [] };
+    const now = acwrNow(ctx, '2026-02-08' as IsoDate);
+    expect(now.ratio).not.toBeNull();
+    const card = screen
+      .getByRole('heading', { name: 'Opterećenje' })
+      .closest('section') as HTMLElement;
+    expect(card.querySelector('.ac-v')).toHaveTextContent(acwrText(now.ratio));
+    expect(card.querySelector('.acwr i')).toHaveStyle({
+      left: `${acwrPosition(now.ratio ?? 0).toFixed(1)}%`
+    });
+    expect(card.textContent).toMatch(
+      /bezbednom pojasu|bezbednog pojasa|Iznad gornje ivice|Preko 1,5/
+    );
+  });
+});
+
+describe('Bol', () => {
+  it('bez unosa: poziva na dodir, mapa i grafikon kažu da nema unosa', () => {
+    render(<Bol />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Bol' })).toBeInTheDocument();
+    expect(screen.getByText('Dodirni deo koji te boli')).toBeInTheDocument();
+    expect(screen.getAllByText('Nema unosa.').length).toBeGreaterThan(0);
+  });
+
+  it('mapa tela: dodir otvara novi unos za taj deo; „Dodaj“ upisuje zapis sa id-jem i delom', async () => {
     const user = userEvent.setup();
-    render(<Screen />);
+    render(<Bol />);
     await user.click(screen.getByRole('button', { name: 'Levo koleno' }));
     const sheet = document.querySelector('#sheet') as HTMLElement;
     expect(within(sheet).getByText(/Novi unos — Levo koleno/)).toBeInTheDocument();
@@ -102,7 +176,7 @@ describe('Oporavak', () => {
     });
     expect(k[0]?.id).toMatch(/^k\d+$/);
     expect(useUIStore.getState().sheet).toBeNull();
-    expect(screen.getByText('PAZI')).toBeInTheDocument(); // bol 4 u poslednjih 7 dana
+    expect(screen.getByText(/1 deo tela u poslednjih 14 dana/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Levo koleno — bol 4' })).toBeInTheDocument();
   });
 
@@ -113,13 +187,9 @@ describe('Oporavak', () => {
         knee: [{ id: 'k1', date: day(2), pain: 2, part: 'list-D', act: 'Trčanje', note: 'x' }]
       })
     );
-    render(<Screen />);
-    await user.click(
-      screen
-        .getByText('Istorija bola')
-        .closest('.card')
-        ?.querySelector('button.krow') as HTMLElement
-    );
+    render(<Bol />);
+    const history = screen.getByRole('heading', { name: 'Istorija' }).closest('section');
+    await user.click(history?.querySelector('button.krow') as HTMLElement);
     const sheet = document.querySelector('#sheet') as HTMLElement;
     fireEvent.change(within(sheet).getByLabelText(/Bol \(0–10\)/), { target: { value: '5' } });
     expect(useRecoveryStore.getState().knee[0]?.pain).toBe(5);
@@ -129,10 +199,12 @@ describe('Oporavak', () => {
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(useRecoveryStore.getState().knee).toEqual([]));
   });
+});
 
-  it('masa: greška za nemoguć unos; ispravan unos zamenjuje ručni za isti datum; brisanje traži potvrdu', async () => {
+describe('Telesna masa', () => {
+  it('greška za nemoguć unos; ispravan unos zamenjuje ručni za isti datum; brisanje traži potvrdu', async () => {
     const user = userEvent.setup();
-    render(<Screen />);
+    render(<Masa />);
     const kg = screen.getByLabelText('Masa (kg)');
     await user.type(kg, '19');
     await user.click(screen.getByRole('button', { name: 'Sačuvaj merenje' }));
@@ -162,64 +234,12 @@ describe('Oporavak', () => {
         ]
       })
     );
-    render(<Screen />);
+    render(<Masa />);
     await user.click(screen.getByRole('button', { name: /Obriši 2 merenja pre 05\.01\./ }));
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() =>
       expect(useRecoveryStore.getState().kg).toEqual([{ date: '2026-01-10', kg: 80 }])
     );
     expect(screen.queryByRole('button', { name: /pre 05\.01\./ })).toBeNull();
-  });
-
-  it('jutarnja merenja: HRV prema sopstvenoj osnovi i puls u miru (obrnut smer)', () => {
-    const w: Record<string, WellnessRecord> = {};
-    for (let i = 8; i >= 0; i--) {
-      const d = day(i);
-      w[d] = {
-        datum: d,
-        hrv: 60 + (i === 0 ? -12 : 0),
-        pulsUMiru: 46 + (i === 0 ? 6 : 0),
-        sanH: 7.4
-      } as WellnessRecord;
-    }
-    hydratePersisted(freshState({ wellness: w }));
-    render(<Screen />);
-    expect(screen.getByRole('heading', { name: 'Jutros' })).toBeInTheDocument();
-    /* isti signal je u kartici stanja i u kartici sa detaljima */
-    expect(screen.getAllByText(/−20% od osnove 60/).length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByRole('heading', { name: 'Puls u miru' })).toBeInTheDocument();
-    expect(screen.getAllByText(/\+6 od osnove/).length).toBeGreaterThanOrEqual(2);
-    /* HRV −20 % je crveno, pa najlošiji signal odlučuje i kaže šta da radiš */
-    const ready = screen.getByRole('heading', { name: 'Stanje danas' }).closest('section');
-    expect(within(ready as HTMLElement).getByText('Olakšaj')).toBeInTheDocument();
-    expect(
-      within(ready as HTMLElement).getByText('Oporavak zaostaje: lakši dan.')
-    ).toBeInTheDocument();
-    expect(screen.getAllByText(/Dodirni tačku za detalje/).length).toBe(2);
-  });
-
-  it('opterećenje: sa četiri završene nedelje prikazuje odnos i pojas koje računa domen', () => {
-    const gp = freshState().genPlan;
-    if (!gp) throw new Error('plan');
-    const resolved = resolvePlan(gp.weeks, { alts: {}, moves: {} });
-    const log: PersistedState['log'] = {};
-    for (const d of resolved.dated)
-      if (d.km && d.date < '2026-02-09') log[d.id] = { status: 'done', km: d.km, ts: d.date };
-    hydratePersisted(freshState({ log }));
-    useUIStore.setState({ today: '2026-02-08' });
-    render(<Screen />);
-    const ctx = { plan: resolved, log, outOfPlan: {}, pain: [] };
-    const now = acwrNow(ctx, '2026-02-08' as IsoDate);
-    expect(now.ratio).not.toBeNull();
-    const card = screen
-      .getByRole('heading', { name: 'Opterećenje' })
-      .closest('.card') as HTMLElement;
-    expect(card.querySelector('.ac-v')).toHaveTextContent(acwrText(now.ratio));
-    expect(card.querySelector('.acwr i')).toHaveStyle({
-      left: `${acwrPosition(now.ratio ?? 0).toFixed(1)}%`
-    });
-    expect(card.textContent).toMatch(
-      /bezbednom pojasu|bezbednog pojasa|Iznad gornje ivice|Preko 1,5/
-    );
   });
 });

@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { adaptGeneratedPlan } from '../../domain/plan/adapt';
@@ -7,10 +7,11 @@ import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { hydratePersisted, useTrainingStore } from '../../stores';
 import { addTest } from '../../stores/raceActions';
 import { useUIStore } from '../../stores/uiStore';
+import { AdjustPlan } from '../plan/AdjustPlan';
 import { SheetHost } from '../sheets';
-import RacePage from './index';
+import { FormScreen } from './FormScreen';
 
-/* parity: renderPred, t3kKarta, openT3kSheet, vdotPredlog (app.js) — tab Trka. */
+/* parity: renderPred, t3kKarta, openT3kSheet, vdotPredlog (app.js) — ekran „Forma i predikcija“ (Napredak) i predlog tempa u Plan → Prilagodi plan. */
 
 function freshState(): PersistedState {
   const s = JSON.parse(JSON.stringify(seedState())) as PersistedState;
@@ -34,7 +35,7 @@ function freshState(): PersistedState {
 }
 const Screen = () => (
   <>
-    <RacePage />
+    <FormScreen />
     <div id="sheet">
       <SheetHost />
     </div>
@@ -43,20 +44,21 @@ const Screen = () => (
 
 beforeEach(() => {
   hydratePersisted(freshState());
-  useUIStore.setState({ today: '2026-02-20', sheet: null, confirm: null });
+  useUIStore.setState({ today: '2026-02-20', sheet: null, confirm: null, screens: [] });
 });
 
-describe('Trka', () => {
+describe('Forma i predikcija', () => {
   it('bez unosa: verdikt kaže „Još nema merenja", cilj i polazna forma iz plana, nema predloga', () => {
     const { container } = render(<Screen />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Napredak' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Forma i predikcija' })
+    ).toBeInTheDocument();
     expect(container.querySelector('header.screen-head p')).toHaveTextContent(/cilj 42:00$/);
     expect(screen.getByText('Još nema merenja')).toBeInTheDocument();
     expect(screen.getByText('Procena će se pojaviti posle prvog merenja.')).toBeInTheDocument();
     expect(screen.getByText(/Trend se prikazuje kad budu bar 2/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Unesi test na 3 km' })).toBeInTheDocument();
-    expect(screen.queryByText('Prilagodi tempo')).toBeNull();
-    expect(screen.getByText(/Unesi distancu i vreme/)).toBeInTheDocument();
+    expect(screen.queryByText('Prilagodi tempo')).toBeNull(); // predlog tempa živi u Plan → Prilagodi plan
     /* polazna tačka i cilj su na osi puta do cilja, procena danas još nije */
     const journey = container.querySelector('.journey');
     expect(journey?.getAttribute('aria-label')).toMatch(
@@ -158,7 +160,12 @@ describe('Trka', () => {
       /sada · procena/
     );
     expect(screen.getByText(/Merenja u lancu forme: 2\. Malo merenja/)).toBeInTheDocument();
-    const older = screen.getAllByRole('button').find((b) => b.className === 'krow') as HTMLElement;
+    const tests = screen
+      .getByRole('heading', { name: 'Test 3 km' })
+      .closest('section') as HTMLElement;
+    const older = within(tests)
+      .getAllByRole('button')
+      .find((b) => b.className === 'row') as HTMLElement;
     await user.click(older);
     expect(document.querySelector('#sheet .sh-t')).toHaveTextContent('Test 3 km —');
     expect(useTrainingStore.getState().vdotLog[1]?.prev).toBe(
@@ -177,6 +184,9 @@ describe('Trka', () => {
     });
     expect(useTrainingStore.getState().t3k).toHaveLength(4);
     render(<Screen />);
+    expect(screen.queryByText('Forma je ispred plana')).toBeNull(); // Forma i predikcija ne nosi radnju nad planom
+    cleanup();
+    render(<AdjustPlan />);
     expect(screen.getByText('Forma je ispred plana')).toBeInTheDocument();
     const btn = screen.getByRole('button', { name: 'Prilagodi tempo' });
     const planBefore = JSON.stringify(useTrainingStore.getState().genPlan);
@@ -194,7 +204,7 @@ describe('Trka', () => {
   });
 });
 
-describe('Trka · AI trend', () => {
+describe('Forma · AI trend', () => {
   it('manje od 3 odrađena treninga: poruka sa brojem, bez poziva ka serveru; sa dovoljno: tekst iz odgovora', async () => {
     const trend = vi.fn();
     const { setApp } = await import('../../app/appContext');

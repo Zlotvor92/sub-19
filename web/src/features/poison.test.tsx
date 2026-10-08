@@ -9,14 +9,35 @@ import { createApp } from '../app/createApp';
 import { hydratePersisted } from '../stores';
 import { createKeyValueStore, type StorageLike } from '../services/storage/kv';
 import { useAuthStore } from '../stores/authStore';
-import { useCommunityStore } from '../stores/communityStore';
 import { useUIStore } from '../stores/uiStore';
-import CommunityPage from './community';
+import { DayScreen } from './day/DayScreen';
+import { AdjustPlan } from './plan/AdjustPlan';
 import PlanPage from './plan';
-import RacePage from './race';
-import RecoveryPage from './recovery';
+import { PlanOverview } from './plan/PlanOverview';
+import ProgressPage from './progress';
+import { ActivitiesScreen } from './progress/ActivitiesScreen';
+import { FormScreen } from './race/FormScreen';
+import { RaceAnalysisScreen } from './race/RaceAnalysis';
+import { BolScreen } from './recovery/BolScreen';
+import { MasaScreen } from './recovery/MasaScreen';
+import { OporavakScreen } from './recovery/OporavakScreen';
 import { SheetHost } from './sheets';
 import TodayPage from './today';
+import TiPage from './ti';
+import {
+  AboutScreen,
+  AppearanceScreen,
+  GoalScreen,
+  IcuScreen,
+  NotificationsScreen,
+  OwnerScreen,
+  PrivacyScreen,
+  ProfileScreen,
+  ServicesScreen,
+  StravaScreen,
+  TrainingSettingsScreen,
+  WatchScreen
+} from './ti/screens';
 
 /* parity: test/bezbednost.test.mjs → „Fuzz — svako polje stanja otrovano, svaki ekran iscrtan" (+ „Drugi sloj — iscrtavanje escapuje i kad validacija otkaže").
    Catch-all: ne cilja poznatu rupu nego traži one koje niko nije nabrojao. Ako neka buduća kartica zaboravi da je tekst iz stanja NEPOVERLjIV (npr. postavi ga
@@ -39,8 +60,11 @@ const DANGEROUS_STYLE =
 /** Sve što bi značilo da je tekst iz stanja postao KOD: nedozvoljen element, rukovalac događaja, `javascript:` adresa ili CSS koji aplikacija sama ne emituje. */
 function injected(root: ParentNode): string[] {
   const found: string[] = [];
-  for (const el of Array.from(root.querySelectorAll(FORBIDDEN_TAGS)))
+  for (const el of Array.from(root.querySelectorAll(FORBIDDEN_TAGS))) {
+    /* Jedina slika koju aplikacija sama iscrtava je njen znak (statična adresa); sve ostalo bi značilo da je adresa došla iz stanja. */
+    if (el.tagName === 'IMG' && el.getAttribute('src') === './icon-192.png') continue;
     found.push(`<${el.tagName.toLowerCase()}>`);
+  }
   for (const el of Array.from(root.querySelectorAll('*'))) {
     for (const a of Array.from(el.attributes)) {
       if (/^on/i.test(a.name)) found.push(`${el.tagName.toLowerCase()}[${a.name}]`);
@@ -129,29 +153,6 @@ function poisoned(p: string): PersistedState {
   return s;
 }
 
-function profile(userId: string, p: string): Record<string, unknown> {
-  return {
-    user_id: userId,
-    vidljiv: true,
-    nadimak: p,
-    avatar_url: p,
-    cilj: p,
-    vdot: 50,
-    vdot_pocetni: 45,
-    test3k_sec: 700,
-    km_nedelja: 40,
-    plan_pct: 80,
-    niz_dana: 5,
-    izazov_od: 4,
-    izazov_ura: 2,
-    nedelja_br: 3,
-    nedelja_od: 14,
-    trka_datum: '2026-09-27',
-    znacke: [p],
-    trcanja: [{ t: p, o: p, p, d: p }]
-  };
-}
-
 class Mem implements StorageLike {
   d = new Map<string, string>();
   getItem(k: string): string | null {
@@ -166,8 +167,8 @@ class Mem implements StorageLike {
 }
 
 beforeEach(() => {
-  useUIStore.setState({ today: TODAY, sheet: null, confirm: null, wizard: false });
-  /* Pravi `App` sa lažnom mrežom (sve 404): neki ekrani zovu servise već pri iscrtavanju (obaveštenja, Zajednica), a ovde se gleda samo ono što se iscrta. */
+  useUIStore.setState({ today: TODAY, sheet: null, confirm: null, wizard: false, screens: [] });
+  /* Pravi `App` sa lažnom mrežom (sve 404): neki ekrani zovu servise već pri iscrtavanju (obaveštenja, vreme), a ovde se gleda samo ono što se iscrta. */
   setApp(
     createApp({
       kv: createKeyValueStore(new Mem()),
@@ -205,45 +206,54 @@ describe('nijedan ekran ne pretvara tekst iz stanja u kod', () => {
         name: p,
         picture: p
       });
-      useCommunityStore.getState().setRemote({
-        profiles: [profile('u-tudji', p), profile('u-ja', p)] as never,
-        challenge: p,
-        loading: false,
-        error: null,
-        loadedAt: Date.now()
-      });
 
+      const plan = (migrated as PersistedState).genPlan;
+      const dayId = plan?.weeks[0]?.days.find((d) => !(d as { rest?: boolean }).rest)?.id ?? 'g1d1';
+      /* Četiri taba + SVAKI ekran iznad njih (v. `features/screens`) + listovi. Ekrani se uvoze direktno (ne preko lenjog registra) da iscrtavanje bude sinhrono. */
       const screens: Array<[string, () => ReactElement]> = [
         ['Danas', () => <TodayPage />],
         ['Plan', () => <PlanPage />],
-        ['Oporavak', () => <RecoveryPage />],
-        ['Trka', () => <RacePage />],
-        ['Zajednica', () => <CommunityPage />]
+        ['Napredak', () => <ProgressPage />],
+        ['Ti', () => <TiPage />],
+        ['trening', () => <DayScreen id={dayId} />],
+        ['plan-pregled', () => <PlanOverview />],
+        ['plan-prilagodi', () => <AdjustPlan />],
+        ['aktivnosti', () => <ActivitiesScreen />],
+        ['forma', () => <FormScreen />],
+        ['analiza-trke', () => <RaceAnalysisScreen id={dayId} />],
+        ['oporavak', () => <OporavakScreen />],
+        ['bol', () => <BolScreen />],
+        ['masa', () => <MasaScreen />],
+        ['profil', () => <ProfileScreen />],
+        ['cilj', () => <GoalScreen />],
+        ['postavke-treninga', () => <TrainingSettingsScreen />],
+        ['servisi', () => <ServicesScreen />],
+        ['strava', () => <StravaScreen />],
+        ['icu', () => <IcuScreen />],
+        ['sat', () => <WatchScreen />],
+        ['obavestenja', () => <NotificationsScreen />],
+        ['izgled', () => <AppearanceScreen />],
+        ['privatnost', () => <PrivacyScreen />],
+        ['o-aplikaciji', () => <AboutScreen />],
+        ['vlasnik', () => <OwnerScreen />]
       ];
+      const reached: string[] = [];
       for (const [name, make] of screens) {
         const view = render(make());
         expect(injected(view.container), name).toEqual([]);
-        // otrov je zaista stigao do ekrana (inače zamka ne bi proveravala ništa)
-        expect(view.container.innerHTML, `${name}: otrov nije stigao do ekrana`).toContain(marker);
         expect(view.container.textContent, name).not.toMatch(/\[object Object\]|undefined/);
+        if (view.container.innerHTML.includes(marker)) reached.push(name);
         view.unmount();
       }
-      // profil pojedinog trkača je zaseban prikaz nad istim podacima
-      act(() => useCommunityStore.setState({ opened: 'u-tudji' }));
-      const profileView = render(<CommunityPage />);
-      expect(injected(profileView.container), 'profil').toEqual([]);
-      profileView.unmount();
-      act(() => useCommunityStore.setState({ opened: null }));
+      /* Otrov je zaista stigao do ekrana (inače zamka ne bi proveravala ništa): bar ovi ekrani prikazuju tekst iz stanja. */
+      for (const name of ['Plan', 'trening', 'plan-pregled'])
+        expect(reached, `${name}: otrov nije stigao do ekrana`).toContain(name);
 
-      // listovi: dan, izmena, pomeranje, bol (postojeći unos), Podešavanja
-      const plan = (migrated as PersistedState).genPlan;
-      const dayId = plan?.weeks[0]?.days[0]?.id ?? 'g1d1';
+      // listovi: izmena, pomeranje, bol (postojeći unos)
       for (const sheet of [
-        { kind: 'day', props: { id: dayId } },
         { kind: 'alt', props: { id: dayId } },
         { kind: 'swap', props: { w: 1 } },
-        { kind: 'knee', props: { id: 'k1' } },
-        { kind: 'settings' }
+        { kind: 'knee', props: { id: 'k1' } }
       ]) {
         act(() => useUIStore.getState().openSheet(sheet));
         const view = render(<SheetHost />);

@@ -17,10 +17,8 @@ function Harness() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <header>
-        <button onClick={() => setOpen(true)}>Otvori</button>
-      </header>
       <main>
+        <button onClick={() => setOpen(true)}>Otvori</button>
         <button>pozadina</button>
       </main>
       <nav id="tabbar">
@@ -49,7 +47,7 @@ describe('Sheet', () => {
     const dlg = screen.getByRole('dialog', { name: 'Izmeni trening' });
     expect(dlg).toHaveFocus();
     expect(dlg).toHaveAttribute('aria-modal', 'true');
-    for (const sel of ['header', 'main', '#tabbar']) expect(hidden(sel), sel).toBe(true);
+    for (const sel of ['main', '#tabbar']) expect(hidden(sel), sel).toBe(true);
     expect(document.body.style.overflow).toBe('hidden');
   });
 
@@ -244,7 +242,7 @@ describe('Oznake (Badge)', () => {
 });
 
 describe('Traka ciklusa (CycleRail)', () => {
-  it('dugme sa rečenicom za čitač ekrana; jedan segment po nedelji; tekuća označena; klik otvara plan', async () => {
+  it('rečenica za čitač ekrana; jedan segment po nedelji; tekuća označena; pregled, ne dugme', async () => {
     const { CycleRail } = await import('../../features/cycle/CycleRail');
     const model = {
       total: 3,
@@ -281,17 +279,17 @@ describe('Traka ciklusa (CycleRail)', () => {
       current: null
     } as never as CycleModel;
     (model as { current: unknown }).current = (model as { weeks: unknown[] }).weeks[1];
-    const onOpen = vi.fn();
-    const user = userEvent.setup();
-    const { container } = render(<CycleRail model={model} daysToRace={10} onOpen={onOpen} />);
-    const btn = screen.getByRole('button', {
-      name: /^Ciklus: nedelja 2 od 3, faza .*\(rasterećenje\), 10 dana do trke/
-    });
+    const { container } = render(<CycleRail model={model} daysToRace={10} />);
+    /* pregled cele pripreme, ne dugme: rečenica za čitač ekrana, ali nema radnje (ona je Plan → Pregled celog plana) */
+    expect(
+      screen.getByRole('img', {
+        name: /^Ciklus: nedelja 2 od 3, faza .*\(rasterećenje\), 10 dana do trke/
+      })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button')).toBeNull();
     expect(container.querySelectorAll('.rail > i')).toHaveLength(3);
     expect(container.querySelector('i[data-s="now"]')).not.toBeNull();
     expect(container.querySelector('i[data-deload]')).not.toBeNull();
-    await user.click(btn);
-    expect(onOpen).toHaveBeenCalledTimes(1);
   });
 });
 

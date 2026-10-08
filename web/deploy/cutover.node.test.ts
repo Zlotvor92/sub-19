@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { build } from 'vite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { initialRoute } from '../src/app/tabs';
 import { TABS } from '../src/stores/uiStore';
 
 /* parity: test/doslednost.test.mjs (CSP, index.html bez inline skripti, manifest, SW, assetlinks) — ali nad IZGRAĐENIM izlazom novog frontenda,
@@ -119,8 +120,10 @@ describe('izgrađeni izlaz', () => {
       icons?: Array<{ src: string }>;
     };
     for (const s of parsed.shortcuts ?? []) {
-      const tab = new URL(s.url, 'https://x.rs/').searchParams.get('tab');
-      expect(TABS as readonly string[]).toContain(tab);
+      /* prečice nose i stare nazive (`opor`, `pred`); aplikacija ih preusmerava na Napredak */
+      const search = new URL(s.url, 'https://x.rs/').search;
+      expect(TABS as readonly string[]).toContain(initialRoute(search).tab);
+      expect(new URL(s.url, 'https://x.rs/').searchParams.get('tab')).not.toBeNull();
     }
     for (const i of parsed.icons ?? [])
       expect(existsSync(join(out, i.src.replace(/^\.?\//, '')))).toBe(true);

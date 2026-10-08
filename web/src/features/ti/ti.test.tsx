@@ -1,6 +1,6 @@
-import type * as Config from '../../services/config';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeSupabase, type FakeSupabase } from '@/test/fakeSupabase';
 import { adaptGeneratedPlan } from '../../domain/plan/adapt';
@@ -17,23 +17,28 @@ import { ADMIN_UID } from '../../services/config';
 import { LS_KEY, SB_KEY } from '../../services/storage/keys';
 import { createKeyValueStore, type StorageLike } from '../../services/storage/kv';
 import { emptySession } from '../../services/supabase/session';
+import { AdjustPlan } from '../plan/AdjustPlan';
+import { Advisories } from '../today/Advisories';
 import { SheetHost } from '../sheets';
+import {
+  GoalScreen,
+  IcuScreen,
+  OwnerScreen,
+  PrivacyScreen,
+  ProfileScreen,
+  ServicesScreen,
+  StravaScreen,
+  TrainingSettingsScreen,
+  WatchScreen
+} from './screens';
+import TiPage from './index';
 
 const download = vi.hoisted(() => vi.fn());
 vi.mock('../../lib/download', () => ({ downloadText: download }));
 
-/* Zajednica je UGAŠENA u izdanju (`COMMUNITY_ENABLED = false`). Testovi ovog fajla koji je pominju drže da kod iza prekidača i dalje radi kad se
-   prekidač vrati (ovde je podrazumevano uključen); ugašeno stanje je proveren posebnim opisom ispod, prebacivanjem `flag.community`. */
-const flag = vi.hoisted(() => ({ community: true }));
-vi.mock('../../services/config', async (orig) => {
-  const actual = await orig<typeof Config>();
-  return Object.defineProperty({ ...actual }, 'COMMUNITY_ENABLED', {
-    enumerable: true,
-    get: () => flag.community
-  });
-});
-
-/* parity: openSettings, openObrisiNalogSheet, openBugSheet, openIstorijaSheet, exportBackup/importBackup (app.js). */
+/* parity: openSettings, openObrisiNalogSheet, openBugSheet, openIstorijaSheet, exportBackup/importBackup (app.js) — sada ekrani taba Ti (profil, cilj, zone i
+   vreme, servisi, privatnost i podaci, vlasnik) i listovi (brisanje naloga, prijava problema, ranije verzije). Radnje nad planom (preračunavanje, novi plan)
+   su u Plan → Prilagodi plan. Zajednica i njena podešavanja više ne postoje u aplikaciji. */
 
 class Mem implements StorageLike {
   d = new Map<string, string>();
@@ -134,19 +139,30 @@ const bodyText = (init: RequestInit | undefined): string =>
 const c0 = (): number => Date.UTC(2026, 6, 12, 10, 0, 0); // sat lažnog servera
 const json = (status: number, body: unknown): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-const open = (kind = 'settings'): void => {
+const open = (kind: string): void => {
   act(() => useUIStore.getState().openSheet({ kind }));
 };
-const Screen = () => (
-  <div id="sheet">
-    <SheetHost />
-  </div>
+/** Ekran + mesto za listove koje on otvara. */
+const Host = ({ children }: { children?: ReactNode }) => (
+  <>
+    {children}
+    <div id="sheet">
+      <SheetHost />
+    </div>
+  </>
 );
+const Screen = () => <Host />;
 
 beforeEach(() => {
   download.mockReset();
   hydratePersisted(seedState());
-  useUIStore.setState({ today: '2026-01-14', sheet: null, confirm: null, wizard: false });
+  useUIStore.setState({
+    today: '2026-01-14',
+    sheet: null,
+    confirm: null,
+    wizard: false,
+    screens: []
+  });
   useAuthStore.setState({
     configured: true,
     hasSession: false,
@@ -157,40 +173,86 @@ beforeEach(() => {
 });
 afterEach(() => setApp(null));
 
-describe('Podešavanja', () => {
-  it('neprijavljen: vrh kaže šta čeka (nalog pa backup), dugme prijave vodi na Google', async () => {
+describe('Moj profil', () => {
+  it('neprijavljen: kaže da nije prijavljen, dugme prijave vodi na Google', async () => {
     const user = userEvent.setup();
     const c = boot(false);
-    open();
-    render(<Screen />);
-    expect(screen.getByText('Četiri stvari čekaju')).toBeInTheDocument();
-    expect(screen.getByText(/Nalog čuva plan i istoriju/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Prijavi se' }));
+    render(
+      <Host>
+        <ProfileScreen />
+      </Host>
+    );
+    expect(screen.getByText('Nisi prijavljen')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Prijavi se Google nalogom' }));
     expect(c.navigate).toHaveBeenCalledWith(
       expect.stringContaining('/auth/v1/authorize?provider=google')
     );
   });
 
-  it('izvoz backupa: preuzima fajl bez tokena, beleži datum, i vrh prelazi na „Sve je povezano"', async () => {
+  it('prijavljen: nalog, „Sinhronizuj" šalje na server, odjava traži potvrdu', async () => {
+    const user = userEvent.setup();
+    const c = boot(true);
+    useAuthStore.setState({ hasSession: true, email: 'tester@x.rs' });
+    render(
+      <Host>
+        <ProfileScreen />
+      </Host>
+    );
+    expect(screen.getAllByText('tester@x.rs').length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: 'Sinhronizuj' }));
+    await waitFor(() => expect(c.fake.count('/rest/v1/user_state', 'POST')).toBeGreaterThan(0));
+    await user.click(screen.getByRole('button', { name: 'Odjavi se' }));
+    expect(useUIStore.getState().confirm?.text).toBe('Odjaviti se? Podaci na ovom uređaju ostaju.');
+    act(() => useUIStore.getState().confirm?.resolve(true));
+    await waitFor(() => expect(useAuthStore.getState().hasSession).toBe(false));
+    expect(c.app.session.isAuthed()).toBe(false);
+  });
+
+  it('trkačko iskustvo: ono što je plan dobio pri pravljenju; ugrađeni plan to ne nosi', () => {
+    boot(false);
+    const first = render(
+      <Host>
+        <ProfileScreen />
+      </Host>
+    );
+    expect(screen.getByText('Trkačko iskustvo')).toBeInTheDocument();
+    expect(first.container.querySelectorAll('.facts > div').length).toBeGreaterThan(2);
+    first.unmount();
+    boot(false, JSON.parse(JSON.stringify(seedState())) as PersistedState);
+    render(
+      <Host>
+        <ProfileScreen />
+      </Host>
+    );
+    expect(screen.getByText(/Koristiš ugrađeni plan/)).toBeInTheDocument();
+  });
+});
+
+describe('Privatnost i podaci', () => {
+  it('izvoz backupa: preuzima fajl bez tokena, beleži datum, a upozorenje na Danas nestaje', async () => {
     const user = userEvent.setup();
     boot(false, {
       ...stateWithPlan(),
       strava: { access: 'STRAVA-SECRET' },
-      icu: { athleteId: 'i1', token: 'icu-tok', lastPush: 1 }
+      icu: { athleteId: 'i1', token: 'icu-tok', lastPush: 1 },
+      ui: { ...stateWithPlan().ui, lastBackup: '2026-01-01' }
     });
-    // neprijavljen, a nalog je potreban samo kad je podešen — isključi „nalog" stavku
     useAuthStore.setState({ configured: false });
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Nalog', { selector: 'button' }));
-    await user.click(screen.getByText('Podaci', { selector: 'b' }));
-    await user.click(document.querySelector('#hero-backup') as HTMLElement); // vrh ekrana radi isto što i dugme u sekciji
+    render(
+      <>
+        <Advisories today="2026-01-14" />
+        <PrivacyScreen />
+      </>
+    );
+    expect(screen.getByText('Uradi backup podataka')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Izvezi backup' }));
     expect(download).toHaveBeenCalledTimes(1);
     const [name, text] = download.mock.calls[0] as [string, string];
     expect(name).toBe('sub19-backup-2026-01-14.json');
     expect(text).not.toContain('STRAVA-SECRET');
+    expect(text).not.toContain('icu-tok');
     expect(collectPersisted().ui.lastBackup).toBe('2026-01-14');
-    expect(await screen.findByText('Sve je povezano')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText('Uradi backup podataka')).toBeNull());
   });
 
   it('uvoz backupa: potvrda sa brojevima; potvrđen uvoz prepisuje podatke; pokvaren fajl se odbija bez promene', async () => {
@@ -198,10 +260,7 @@ describe('Podešavanja', () => {
     boot(false);
     useAuthStore.setState({ configured: false });
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
-    open();
-    const { container } = render(<Screen />);
-    await user.click(screen.getByText('Nalog', { selector: 'button' }));
-    await user.click(screen.getByText('Podaci', { selector: 'b' }));
+    const { container } = render(<PrivacyScreen />);
     const input = container.querySelector('#s-file') as HTMLInputElement;
 
     const bad = new File(
@@ -228,37 +287,47 @@ describe('Podešavanja', () => {
     );
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(useTrainingStore.getState().log['g1d1']).toMatchObject({ km: 5 }));
-    expect(useUIStore.getState().sheet).toBeNull();
+    expect(await screen.findByText('Backup je uvezen.')).toBeInTheDocument();
     alert.mockRestore();
   });
 
-  it('prijavljen: nalog, „Sinhronizuj" šalje na server, odjava traži potvrdu', async () => {
+  it('neprijavljenom kaže da je backup jedina kopija; prijavljenom nudi ranije verzije, prijavu problema i brisanje naloga', async () => {
     const user = userEvent.setup();
-    const c = boot(true);
-    useAuthStore.setState({ hasSession: true, email: 'tester@x.rs' });
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Nalog', { selector: 'button' }));
-    expect(screen.getByText('tester@x.rs')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Sinhronizuj' }));
-    await waitFor(() => expect(c.fake.count('/rest/v1/user_state', 'POST')).toBeGreaterThan(0));
-    await user.click(screen.getByRole('button', { name: 'Odjavi se' }));
-    expect(useUIStore.getState().confirm?.text).toBe('Odjaviti se? Podaci na ovom uređaju ostaju.');
-    act(() => useUIStore.getState().confirm?.resolve(true));
-    await waitFor(() => expect(useAuthStore.getState().hasSession).toBe(false));
-    expect(c.app.session.isAuthed()).toBe(false);
-  });
+    boot(false);
+    const out = render(
+      <Host>
+        <PrivacyScreen />
+      </Host>
+    );
+    expect(screen.getByText(/samo na ovom uređaju/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ranije verzije' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Obriši nalog/ })).toBeNull();
+    out.unmount();
 
+    boot(true);
+    useAuthStore.setState({ hasSession: true, email: 'tester@x.rs' });
+    render(
+      <Host>
+        <PrivacyScreen />
+      </Host>
+    );
+    await user.click(screen.getByRole('button', { name: 'Ranije verzije' }));
+    expect(useUIStore.getState().sheet?.kind).toBe('history');
+    act(() => useUIStore.getState().closeSheet());
+    await user.click(screen.getByRole('button', { name: /Obriši nalog/ }));
+    expect(useUIStore.getState().sheet?.kind).toBe('delete-account');
+  });
+});
+
+describe('Cilj', () => {
   it('promena cilja: samo nedelje koje tek dolaze; potvrda; plan se zamenjuje, prošlost ostaje', async () => {
     const user = userEvent.setup();
     boot(false);
     useAuthStore.setState({ configured: false });
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     const before = useTrainingStore.getState().genPlan;
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Trening', { selector: 'button' }));
-    await user.click(screen.getByText('Plan', { selector: 'b' }));
+    render(<GoalScreen />);
+    expect(screen.getByText('42:00')).toBeInTheDocument();
     await user.type(screen.getByLabelText('Novo ciljno vreme'), '41:00');
     await user.click(screen.getByRole('button', { name: 'Promeni cilj' }));
     await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
@@ -272,81 +341,102 @@ describe('Podešavanja', () => {
     alert.mockRestore();
   });
 
-  describe('preračunavanje plana prema formi', () => {
-    const withForm = (vdot: number, measurements: number): PersistedState => {
-      const s = stateWithPlan();
-      s.vdotLog = Array.from({ length: measurements }, (_, i) => ({
-        id: `t${i}`,
-        ts: `2026-01-0${i + 6}`,
-        vdot,
-        prev: null,
-        delta: null,
-        measured: vdot
-      }));
-      return s;
-    };
-    const run = async (state: PersistedState) => {
-      const user = userEvent.setup();
-      boot(false, state);
-      useAuthStore.setState({ configured: false });
-      const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
-      open();
-      render(<Screen />);
-      await user.click(screen.getByText('Trening', { selector: 'button' }));
-      await user.click(screen.getByText('Plan', { selector: 'b' }));
-      await user.click(screen.getByRole('button', { name: 'Preračunaj plan prema formi' }));
-      return alert;
-    };
+  it('nemoguć unos se odbija porukom, plan se ne menja', async () => {
+    const user = userEvent.setup();
+    boot(false);
+    useAuthStore.setState({ configured: false });
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const before = useTrainingStore.getState().genPlan;
+    render(<GoalScreen />);
+    await user.click(screen.getByRole('button', { name: 'Promeni cilj' }));
+    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Unesi ciljno vreme/));
+    expect(useUIStore.getState().confirm).toBeNull();
+    expect(useTrainingStore.getState().genPlan).toBe(before);
+    alert.mockRestore();
+  });
 
-    it('bez merenja forme: objašnjava zašto, plan se ne menja', async () => {
-      const before = stateWithPlan().genPlan;
-      const alert = await run(stateWithPlan());
-      expect(alert).toHaveBeenCalledWith(expect.stringMatching(/bar 3 izmerena rezultata/));
-      expect(useUIStore.getState().confirm).toBeNull();
-      expect(useTrainingStore.getState().genPlan).toEqual(before);
-      alert.mockRestore();
-    });
+  it('ugrađeni plan: cilj se ne menja, nudi se novi plan', async () => {
+    const user = userEvent.setup();
+    boot(false, JSON.parse(JSON.stringify(seedState())) as PersistedState);
+    useAuthStore.setState({ configured: true, hasSession: true, userId: ADMIN_UID });
+    render(<GoalScreen />);
+    expect(screen.queryByLabelText('Novo ciljno vreme')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Generiši novi plan' }));
+    expect(useUIStore.getState().wizard).toBe(true);
+  });
+});
 
-    it('forma se slaže sa planom: kaže da nema šta da se preračuna', async () => {
-      const planVdot = (stateWithPlan().genPlan?.meta as { vdot0: number }).vdot0;
-      const alert = await run(withForm(planVdot, 3));
-      expect(alert).toHaveBeenCalledWith(expect.stringMatching(/se slažu/));
-      expect(useUIStore.getState().confirm).toBeNull();
-      alert.mockRestore();
-    });
+describe('Plan → Prilagodi plan: preračunavanje i novi plan', () => {
+  const withForm = (vdot: number, measurements: number): PersistedState => {
+    const s = stateWithPlan();
+    s.vdotLog = Array.from({ length: measurements }, (_, i) => ({
+      id: `t${i}`,
+      ts: `2026-01-0${i + 6}`,
+      vdot,
+      prev: null,
+      delta: null,
+      measured: vdot
+    }));
+    return s;
+  };
+  const run = async (state: PersistedState) => {
+    const user = userEvent.setup();
+    boot(false, state);
+    useAuthStore.setState({ configured: false });
+    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    render(<AdjustPlan />);
+    await user.click(screen.getByRole('button', { name: /^Preračunaj plan prema formi/ }));
+    return alert;
+  };
 
-    it('forma se razilazi: potvrda sa brojevima, pa preračunavanje; prošla nedelja ostaje, polazna forma lanca se čuva', async () => {
-      const state = withForm(56, 3);
-      const before = state.genPlan;
-      const baseVdot = (before?.meta as { vdot0: number }).vdot0;
-      const alert = await run(state);
-      await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
-      const text = useUIStore.getState().confirm?.text ?? '';
-      expect(text).toMatch(/^Preračunati preostali plan prema izmerenoj formi\?/);
-      expect(text).toMatch(/Izmerena forma: VDOT 56 · plan je očekivao: VDOT 45,3/);
-      expect(text).toMatch(/Nema vraćanja/);
-      act(() => useUIStore.getState().confirm?.resolve(true));
-      await waitFor(() => expect(useTrainingStore.getState().genPlan).not.toEqual(before));
-      const after = useTrainingStore.getState().genPlan;
-      expect(after?.weeks[0]).toEqual(before?.weeks[0]); // N1 je prošla (14.1. je u N2)
-      const m = after?.meta as { vdotBase?: number; recalWeek?: number; vdotAtRecal?: number };
-      expect(m.vdotBase).toBe(baseVdot);
-      expect(m.recalWeek).toBe(2);
-      expect(m.vdotAtRecal).toBe(56);
-      expect(useTrainingStore.getState().vdotLog).toHaveLength(3); // lanac forme se ne dira
-      expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Plan preračunat\./));
-      alert.mockRestore();
-    });
+  it('bez merenja forme: objašnjava zašto, plan se ne menja', async () => {
+    const before = stateWithPlan().genPlan;
+    const alert = await run(stateWithPlan());
+    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/bar 3 izmerena rezultata/));
+    expect(useUIStore.getState().confirm).toBeNull();
+    expect(useTrainingStore.getState().genPlan).toEqual(before);
+    alert.mockRestore();
+  });
 
-    it('odustajanje u potvrdi ne menja ništa', async () => {
-      const state = withForm(56, 3);
-      const alert = await run(state);
-      await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
-      act(() => useUIStore.getState().confirm?.resolve(false));
-      await waitFor(() => expect(useUIStore.getState().confirm).toBeNull());
-      expect(useTrainingStore.getState().genPlan).toEqual(state.genPlan);
-      alert.mockRestore();
-    });
+  it('forma se slaže sa planom: kaže da nema šta da se preračuna', async () => {
+    const planVdot = (stateWithPlan().genPlan?.meta as { vdot0: number }).vdot0;
+    const alert = await run(withForm(planVdot, 3));
+    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/se slažu/));
+    expect(useUIStore.getState().confirm).toBeNull();
+    alert.mockRestore();
+  });
+
+  it('forma se razilazi: potvrda sa brojevima, pa preračunavanje; prošla nedelja ostaje, polazna forma lanca se čuva', async () => {
+    const state = withForm(56, 3);
+    const before = state.genPlan;
+    const baseVdot = (before?.meta as { vdot0: number }).vdot0;
+    const alert = await run(state);
+    await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
+    const text = useUIStore.getState().confirm?.text ?? '';
+    expect(text).toMatch(/^Preračunati preostali plan prema izmerenoj formi\?/);
+    expect(text).toMatch(/Izmerena forma: VDOT 56 · plan je očekivao: VDOT 45,3/);
+    expect(text).toMatch(/Nema vraćanja/);
+    act(() => useUIStore.getState().confirm?.resolve(true));
+    await waitFor(() => expect(useTrainingStore.getState().genPlan).not.toEqual(before));
+    const after = useTrainingStore.getState().genPlan;
+    expect(after?.weeks[0]).toEqual(before?.weeks[0]); // N1 je prošla (14.1. je u N2)
+    const m = after?.meta as { vdotBase?: number; recalWeek?: number; vdotAtRecal?: number };
+    expect(m.vdotBase).toBe(baseVdot);
+    expect(m.recalWeek).toBe(2);
+    expect(m.vdotAtRecal).toBe(56);
+    expect(useTrainingStore.getState().vdotLog).toHaveLength(3); // lanac forme se ne dira
+    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Plan preračunat\./));
+    alert.mockRestore();
+  });
+
+  it('odustajanje u potvrdi ne menja ništa', async () => {
+    const state = withForm(56, 3);
+    const alert = await run(state);
+    await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
+    act(() => useUIStore.getState().confirm?.resolve(false));
+    await waitFor(() => expect(useUIStore.getState().confirm).toBeNull());
+    expect(useTrainingStore.getState().genPlan).toEqual(state.genPlan);
+    alert.mockRestore();
   });
 
   it('nov plan: potvrda; plan i unosi uz njega nestaju, otvara se čarobnjak', async () => {
@@ -354,10 +444,7 @@ describe('Podešavanja', () => {
     boot(false);
     useAuthStore.setState({ configured: false });
     act(() => useTrainingStore.getState().patchLog('g1d1', { status: 'done' }));
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Trening', { selector: 'button' }));
-    await user.click(screen.getByText('Plan', { selector: 'b' }));
+    render(<AdjustPlan />);
     await user.click(screen.getByRole('button', { name: /Napravi novi plan/ }));
     expect(useUIStore.getState().confirm?.text).toMatch(/TRAJNO brišu/);
     act(() => useUIStore.getState().confirm?.resolve(true));
@@ -367,15 +454,13 @@ describe('Podešavanja', () => {
   });
 });
 
-describe('Strava u podešavanjima', () => {
+describe('Strava', () => {
   it('nije povezana: prva stvar koja čeka; dugme vodi na Stravu', async () => {
     const user = userEvent.setup();
     const c = boot(false);
     useAuthStore.setState({ configured: false });
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Veze', { selector: 'button' }));
-    await user.click(document.querySelector('#st-on') as HTMLElement);
+    render(<StravaScreen />);
+    await user.click(screen.getByRole('button', { name: 'Poveži Stravu' }));
     expect(c.navigate).toHaveBeenCalledWith(
       expect.stringContaining('https://www.strava.com/oauth/authorize')
     );
@@ -385,15 +470,13 @@ describe('Strava u podešavanjima', () => {
     const user = userEvent.setup();
     boot(false, { ...stateWithPlan(), strava: { access: 'A', refresh: 'R', expiresAt: 4e9 } });
     useAuthStore.setState({ configured: false });
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    render(<StravaScreen />);
     await user.click(screen.getByText('Pravila uvoza'));
     expect(screen.getByText(/oba se broje u kilometražu/)).toBeInTheDocument();
     expect(screen.queryByText(/uzima se ono bliže planiranoj/)).toBeNull();
   });
 
-  it('povezana: uvoz traži/šalje i prikazuje sažetak; otkačivanje traži potvrdu i čuva podatke', async () => {
+  it('povezana: spisak servisa je pokazuje; uvoz traži/šalje i javlja ishod; otkačivanje traži potvrdu i čuva podatke', async () => {
     const user = userEvent.setup();
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     const c = boot(false, {
@@ -413,21 +496,21 @@ describe('Strava u podešavanjima', () => {
     });
     useAuthStore.setState({ configured: false });
     c.api.set('https://www.strava.com/api/v3/athlete/activities', () => json(200, []));
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Veze', { selector: 'button' }));
+
+    const list = render(<ServicesScreen />);
     expect(screen.getByText(/Mika · uvoz/)).toBeInTheDocument();
-    await user.click(screen.getByText('Tvoje zone pulsa'));
+    list.unmount();
+
+    const zones = render(<TrainingSettingsScreen />);
     expect(screen.getByText('0–130 bpm')).toBeInTheDocument();
     expect(screen.getByText('130+ bpm')).toBeInTheDocument();
+    zones.unmount();
+
+    render(<StravaScreen />);
     await user.click(screen.getByRole('button', { name: 'Uvezi trčanja' }));
     await waitFor(() =>
       expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Sinhronizacija gotova\./))
     );
-    // sheet se zatvara posle uvoza (kao u starom kodu)
-    await waitFor(() => expect(useUIStore.getState().sheet).toBeNull());
-    open();
-    await user.click(screen.getByText('Veze', { selector: 'button' }));
     await user.click(screen.getByRole('button', { name: 'Otkači' }));
     expect(useUIStore.getState().confirm?.text).toMatch(/^Otkači Stravu\?/);
     act(() => useUIStore.getState().confirm?.resolve(true));
@@ -453,9 +536,7 @@ describe('intervals.icu i slanje na sat', () => {
     c.api.set('/api/icu-oauth', () =>
       json(200, { url: 'https://intervals.icu/oauth/authorize?x=1' })
     );
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    render(<IcuScreen />);
     await user.click(document.querySelector('#icu-oauth') as HTMLElement);
     await waitFor(() =>
       expect(c.navigate).toHaveBeenCalledWith('https://intervals.icu/oauth/authorize?x=1')
@@ -484,9 +565,7 @@ describe('intervals.icu i slanje na sat', () => {
       if (sta === 'zone') return json(200, { zone: null, razlog: null });
       return json(200, { treninzi: [] });
     });
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Veze', { selector: 'button' }));
+    render(<IcuScreen />);
     expect(screen.getByText(/odobreno na intervals.icu/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Povuci sve' }));
     expect(
@@ -507,10 +586,7 @@ describe('intervals.icu i slanje na sat', () => {
     const c = boot(true, { ...stateWithPlan(), icu: linked });
     useAuthStore.setState({ configured: true, hasSession: true, email: 'tester@x.rs' });
     c.api.set('/api/icu', () => json(200, { poslato: 7 }));
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Veze', { selector: 'button' }));
-    await user.click(screen.getByText('Slanje na sat', { selector: 'b' }));
+    render(<WatchScreen />);
     await user.click(document.querySelector('#icu-vidi') as HTMLElement);
     const box = document.querySelector('#icu-pregled') as HTMLElement;
     expect(box.querySelectorAll('pre').length).toBeGreaterThan(3);
@@ -541,10 +617,7 @@ describe('intervals.icu i slanje na sat', () => {
     const c = boot(true, { ...stateWithPlan(), icu: linked });
     useAuthStore.setState({ configured: true, hasSession: true, email: 'tester@x.rs' });
     c.api.set('/api/icu', () => json(400, { error: 'Odbijeno', detail: 'No Target' }));
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Veze', { selector: 'button' }));
-    await user.click(screen.getByText('Slanje na sat', { selector: 'b' }));
+    render(<WatchScreen />);
     await user.click(document.querySelector('#icu-push') as HTMLElement);
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(alert).toHaveBeenCalledWith('Odbijeno — No Target'));
@@ -553,7 +626,7 @@ describe('intervals.icu i slanje na sat', () => {
   });
 });
 
-describe('Vreme', () => {
+describe('Vreme i lokacija (Zone i postavke treninga)', () => {
   const okGeo: GeoPort = {
     available: () => true,
     denied: () => Promise.resolve(false),
@@ -576,11 +649,9 @@ describe('Vreme', () => {
     const c = boot(false, stateWithPlan(), okGeo);
     useAuthStore.setState({ configured: false });
     c.api.set('https://api.open-meteo.com/', () => json(200, forecast));
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Trening', { selector: 'button' }));
-    await user.click(screen.getByText('Vreme', { selector: 'b' }));
-    expect(screen.getByText('lokacija nije uključena')).toBeInTheDocument();
+    render(<TrainingSettingsScreen />);
+    expect(screen.getByRole('button', { name: 'Uključi lokaciju' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Osveži prognozu' })).toBeNull();
     await user.click(document.querySelector('#vr-on') as HTMLElement);
     await waitFor(() => expect(collectPersisted().ui.geo).toEqual({ lat: 44.8, lon: 20.46 }));
     await waitFor(() => expect(collectPersisted().vreme).not.toBeNull());
@@ -598,9 +669,7 @@ describe('Vreme', () => {
       ui: { ...stateWithPlan().ui, geo: { lat: 1, lon: 2 } }
     });
     useAuthStore.setState({ configured: false });
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Trening', { selector: 'button' }));
+    render(<TrainingSettingsScreen />);
     await user.selectOptions(screen.getByLabelText('U koliko sati obično trčiš'), '7');
     expect(collectPersisted().ui.satTreninga).toBe(7);
     await user.click(document.querySelector('#vr-off') as HTMLElement);
@@ -616,57 +685,13 @@ describe('Vreme', () => {
       position: () => Promise.reject(Object.assign(new Error('x'), { code: 1 }))
     });
     useAuthStore.setState({ configured: false });
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Trening', { selector: 'button' }));
-    await user.click(screen.getByText('Vreme', { selector: 'b' }));
+    render(<TrainingSettingsScreen />);
     await user.click(document.querySelector('#vr-on') as HTMLElement);
     await waitFor(() =>
       expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Pristup lokaciji je odbijen\./))
     );
     expect(collectPersisted().ui.geo).toBeNull();
     alert.mockRestore();
-  });
-});
-
-describe('Zajednica u podešavanjima', () => {
-  it('uključivanje šalje profil i pamti stanje; neuspeh vraća prekidač i kaže šta da se uradi', async () => {
-    const user = userEvent.setup();
-    const c = boot(true, { ...stateWithPlan(), zajed: { vidljiv: false, nadimak: 'Marko' } });
-    useAuthStore.setState({
-      configured: true,
-      hasSession: true,
-      userId: 'u1',
-      name: 'Marko Marković',
-      picture: null
-    });
-    c.api.set(
-      'https://x.supabase.co/rest/v1/zajednica_profil',
-      () => new Response(null, { status: 404 })
-    );
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('App', { selector: 'button' }));
-    await user.click(screen.getByText('Zajednica', { selector: 'b' }));
-    expect(screen.getByText('isključena')).toBeInTheDocument();
-    await user.click(document.querySelector('#zaj-tgl') as HTMLElement);
-    expect(await screen.findByText(/Tabele Zajednice još nema u bazi/)).toBeInTheDocument();
-    expect(collectPersisted().zajed.vidljiv).toBe(false); // nije prošlo na serveru → ništa se ne pamti
-
-    c.api.set(
-      'https://x.supabase.co/rest/v1/zajednica_profil',
-      () => new Response(null, { status: 201 })
-    );
-    await user.click(document.querySelector('#zaj-tgl') as HTMLElement);
-    await waitFor(() => expect(collectPersisted().zajed.vidljiv).toBe(true));
-    const post = c.extra.filter((e) => e.url.includes('/rest/v1/zajednica_profil')).at(-1);
-    expect(post?.init.method).toBe('POST');
-    expect(JSON.parse(bodyText(post?.init))).toMatchObject({
-      user_id: 'u1',
-      vidljiv: true,
-      nadimak: 'Marko'
-    });
-    expect(await screen.findByRole('button', { name: 'Isključi Zajednicu' })).toBeInTheDocument();
   });
 });
 
@@ -772,7 +797,7 @@ describe('Prijava problema i ranije verzije', () => {
   });
 });
 
-describe('Admin (samo vlasnik)', () => {
+describe('Vlasnik (samo vlasnik)', () => {
   const asOwner = (): void => {
     useAuthStore.setState({
       configured: true,
@@ -790,19 +815,23 @@ describe('Admin (samo vlasnik)', () => {
       .filter((e) => e.url === '/api/broadcast')
       .map((e) => JSON.parse(bodyText(e.init)) as Record<string, unknown>);
 
-  it('običan korisnik ne vidi grupu Admin; vlasnik vidi', async () => {
-    const user = userEvent.setup();
+  it('običan korisnik ne vidi red „Vlasnik“ ni ekran; vlasnik vidi oba', () => {
     boot(true);
     useAuthStore.setState({ configured: true, hasSession: true, userId: 'u1' });
-    open();
-    const first = render(<Screen />);
-    expect(screen.queryByText('Admin', { selector: 'button' })).toBeNull();
+    const first = render(<TiPage />);
+    expect(screen.queryByText('Vlasnik')).toBeNull();
     first.unmount();
+    const screenView = render(<OwnerScreen />);
+    expect(screenView.container).toBeEmptyDOMElement();
+    screenView.unmount();
+
     asOwner();
-    render(<Screen />);
-    await user.click(screen.getByText('Admin', { selector: 'button' }));
-    expect(screen.getByText('Obaveštenje korisnicima', { selector: 'b' })).toBeInTheDocument();
-    expect(screen.getByText('Korisnici', { selector: 'b' })).toBeInTheDocument();
+    const row = render(<TiPage />);
+    expect(screen.getByText('Vlasnik')).toBeInTheDocument();
+    row.unmount();
+    render(<OwnerScreen />);
+    expect(screen.getByRole('heading', { name: 'Obaveštenje korisnicima' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Korisnici' })).toBeInTheDocument();
   });
 
   it('spisak adresa: suvi poziv, BCC napomena, prazan spisak kaže da nema naloga', async () => {
@@ -810,10 +839,7 @@ describe('Admin (samo vlasnik)', () => {
     const c = boot(true);
     asOwner();
     send(c, () => json(200, { primalaca: 2, primaoci: ['a@x.rs', 'b@x.rs'] }));
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Admin', { selector: 'button' }));
-    await user.click(screen.getByText('Obaveštenje korisnicima', { selector: 'b' }));
+    render(<OwnerScreen />);
     await user.click(screen.getByRole('button', { name: /Spisak adresa/ }));
     expect(await screen.findByDisplayValue('a@x.rs, b@x.rs')).toBeInTheDocument();
     expect(screen.getByText(/2 adrese/)).toBeInTheDocument();
@@ -826,10 +852,7 @@ describe('Admin (samo vlasnik)', () => {
     asOwner();
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     send(c, () => json(200, { poslato: 1, palo: 0, sledeciOd: null }));
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Admin', { selector: 'button' }));
-    await user.click(screen.getByText('Obaveštenje korisnicima', { selector: 'b' }));
+    render(<OwnerScreen />);
     await user.click(screen.getByRole('button', { name: 'Proba na mene' }));
     await waitFor(() => expect(alert).toHaveBeenCalled());
     expect(bodies(c)).toEqual([{ posalji: true, samoNa: ['vlasnik@x.rs'] }]);
@@ -848,10 +871,7 @@ describe('Admin (samo vlasnik)', () => {
         ? json(200, { poslato: 40, palo: 0, sledeciPosle: null, sledeciOd: null })
         : json(200, { poslato: 90, palo: 1, sledeciPosle: 'm@x.rs', sledeciOd: 91 });
     });
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('Admin', { selector: 'button' }));
-    await user.click(screen.getByText('Obaveštenje korisnicima', { selector: 'b' }));
+    render(<OwnerScreen />);
 
     await user.click(screen.getByRole('button', { name: 'Pošalji svima…' }));
     await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
@@ -871,27 +891,6 @@ describe('Admin (samo vlasnik)', () => {
       { posalji: true, posle: 'm@x.rs' }
     ]);
     alert.mockRestore();
-  });
-
-  it('izazov nedelje: premalo/previše znakova se odbija bez poziva; uspeh upisuje tekst u store', async () => {
-    const user = userEvent.setup();
-    const c = boot(true);
-    asOwner();
-    send(c, (b) => json(200, { ok: true, tekst: b['tekst'] }));
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('App', { selector: 'button' }));
-    await user.click(screen.getByText('Izazov nedelje · samo ti', { selector: 'summary' }));
-    const input = document.querySelector('#zaj-izazov') as HTMLInputElement;
-    await user.clear(input);
-    await user.type(input, 'ab');
-    await user.click(document.querySelector('#zaj-izazov-cuvaj') as HTMLElement);
-    expect(screen.getByText('Izazov mora imati između 3 i 160 znakova.')).toBeInTheDocument();
-    expect(bodies(c)).toEqual([]);
-    await user.type(input, 'c  ');
-    await user.click(document.querySelector('#zaj-izazov-cuvaj') as HTMLElement);
-    expect(await screen.findByText(/^Sačuvano\./)).toBeInTheDocument();
-    expect(bodies(c)).toEqual([{ admin: 'izazov', tekst: 'abc' }]);
   });
 
   it('korisnici: spisak, zabrana na jedan dodir, brisanje na dva sa lozinkom; sebe ne možeš', async () => {
@@ -981,32 +980,5 @@ describe('Admin (samo vlasnik)', () => {
       })
     );
     alert.mockRestore();
-  });
-});
-
-describe('Zajednica ugašena (prekidač isključen)', () => {
-  afterEach(() => {
-    flag.community = true;
-  });
-
-  it('u podešavanjima nema sekcije, prekidača, nadimka ni izazova; ostale sekcije grupe „App" ostaju', async () => {
-    flag.community = false;
-    const user = userEvent.setup();
-    boot(true, { ...stateWithPlan(), zajed: { vidljiv: false, nadimak: 'Marko' } });
-    useAuthStore.setState({
-      configured: true,
-      hasSession: true,
-      userId: ADMIN_UID,
-      name: 'Marko Marković',
-      picture: null
-    });
-    open();
-    render(<Screen />);
-    await user.click(screen.getByText('App', { selector: 'button' }));
-    expect(screen.getByText('Obaveštenja', { selector: 'b' })).toBeInTheDocument();
-    expect(screen.queryByText('Zajednica', { selector: 'b' })).toBeNull();
-    expect(document.querySelector('#zaj-tgl')).toBeNull();
-    expect(document.querySelector('#zaj-nadimak')).toBeNull();
-    expect(screen.queryByText(/izazov/i)).toBeNull();
   });
 });

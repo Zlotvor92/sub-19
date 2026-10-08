@@ -9,14 +9,13 @@ import { useSwipeNav } from './useSwipeNav';
 function Harness({ enabled = true }: { enabled?: boolean }) {
   useSwipeNav(enabled);
   const tab = useUIStore((s) => s.tab);
-  const entering = useUIStore((s) => s.entering);
   const peek = useUIStore((s) => s.peek);
   return (
     <div>
       <header />
       <main>
         {TABS.map((t) => (
-          <Page key={t} id={t} active={t === tab} entering={t === entering} peek={t === peek}>
+          <Page key={t} id={t} active={t === tab} peek={t === peek}>
             <span data-testid={`sadrzaj-${t}`}>{t}</span>
             {t === 'danas' ? <input aria-label="polje" /> : null}
           </Page>
@@ -55,7 +54,7 @@ const tab = (): string => useUIStore.getState().tab;
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
-  useUIStore.setState({ tab: 'danas', peek: null, entering: null });
+  useUIStore.setState({ tab: 'danas', peek: null, screens: [] });
   Object.defineProperty(window, 'innerWidth', { value: 400, configurable: true });
 });
 afterEach(() => {
@@ -82,7 +81,6 @@ describe('prevlačenje između tabova', () => {
     expect(tab()).toBe('danas');
     settle();
     expect(tab()).toBe('plan');
-    expect(useUIStore.getState().entering).toBeNull(); // doklizao je prstom — kartice se ne slažu po drugi put
     expect(useUIStore.getState().peek).toBeNull();
     expect(document.getElementById('pg-plan')?.classList.contains('dolazi')).toBe(false);
     expect(document.getElementById('pg-plan')?.getAttribute('style') ?? '').not.toContain(
@@ -92,7 +90,7 @@ describe('prevlačenje između tabova', () => {
   });
 
   it('prst udesno vraća na prethodni tab', () => {
-    useUIStore.setState({ tab: 'opor' });
+    useUIStore.setState({ tab: 'napredak' });
     render(<Harness />);
     drag(50, 250);
     expect(useUIStore.getState().peek).toBe('plan');
@@ -253,9 +251,9 @@ describe('prevlačenje između tabova', () => {
     render(<Harness />);
     drag(300, 100);
     fire('touchend', []);
-    act(() => useUIStore.getState().setTab('pred'));
+    act(() => useUIStore.getState().setTab('ti'));
     settle();
-    expect(tab()).toBe('pred');
+    expect(tab()).toBe('ti');
   });
 
   it('oznaka aktivnog taba se menja po puštanju prsta (ne kad ekran legne), a ekran koji dolazi prati prst', () => {
@@ -272,20 +270,20 @@ describe('prevlačenje između tabova', () => {
   });
 });
 
-describe('ulazna animacija pri dodiru na ikonicu', () => {
-  it('menjanje taba dodirom slaže kartice (`uskoci`) ~0,9 s; isti tab ne', () => {
+describe('promena taba', () => {
+  it('dodir na ikonicu zatvara ekrane otvorene iznad taba (vraća na koren)', () => {
     render(<Harness />);
-    act(() => useUIStore.getState().setTab('plan'));
-    expect(document.getElementById('pg-plan')?.classList.contains('uskoci')).toBe(true);
     act(() => {
-      vi.advanceTimersByTime(899);
+      useUIStore.getState().openScreen({ kind: 'plan-pregled' });
     });
-    expect(document.getElementById('pg-plan')?.classList.contains('uskoci')).toBe(true);
-    act(() => {
-      vi.advanceTimersByTime(2);
-    });
-    expect(document.getElementById('pg-plan')?.classList.contains('uskoci')).toBe(false);
+    expect(useUIStore.getState().screens).toHaveLength(1);
     act(() => useUIStore.getState().setTab('plan'));
-    expect(document.getElementById('pg-plan')?.classList.contains('uskoci')).toBe(false);
+    expect(useUIStore.getState().screens).toEqual([]);
+  });
+
+  it('dok je ekran otvoren iznad taba, prevlačenje je isključeno (`enabled` je netačno)', () => {
+    render(<Harness enabled={false} />);
+    const e = drag(300, 100);
+    expect(e.defaultPrevented).toBe(false);
   });
 });
