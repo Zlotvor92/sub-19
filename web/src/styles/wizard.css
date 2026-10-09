@@ -1,9 +1,11 @@
 /* ČAROBNJAK ZA PLAN: preko cele aplikacije, četiri koraka. Isti sistem kao ostatak: otvoreni odeljci umesto kartica, jedno istaknuto polje (forma),
    pilule za izbor, dugmad uvek na dnu. Imena klasa (`ob-*`) su ista kao ranije — menja se samo izgled. */
+/* Ispod sistemskih traka (.traka = 211) i iznad sadržaja: traka „Skini spašeno“ / „Uzmi sa servera“ mora da se vidi i kad je čarobnjak jedini ekran. Dijalog potvrde (300+)
+   i kapija za prijavu (400) ostaju iznad. */
 #wizard {
   position: fixed;
   inset: 0;
-  z-index: 300;
+  z-index: 150;
   overflow-y: auto;
   background: var(--bg);
   color: var(--text);
@@ -460,4 +462,9 @@
   font-size: var(--fs-small);
   line-height: 1.5;
   color: var(--text-2);
+}
+
+/* Dok je čarobnjak otvoren nema trake tabova, a dno zauzima red sa dugmadima: traka ide iznad njega. */
+body:has(#wizard) .traka {
+  bottom: calc(var(--sab) + 104px);
 }

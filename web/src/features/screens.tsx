@@ -1,4 +1,5 @@
 import { Suspense, lazy, type ReactNode } from 'react';
+import { ScreenFrame } from '../components/ui/Shell';
 import { useUIStore } from '../stores/uiStore';
 
 /* REGISTAR EKRANA: `kind` → sadržaj ekrana koji se otvara iznad taba (`openScreen`). Svojstva (`props`) dolaze iz `openScreen` i proveravaju se OVDE, na
@@ -75,7 +76,15 @@ export function ScreenHost() {
   /* Ključ se menja kad se otvori drugi dan/trka istog tipa ekrana, da stanje starog ne preživi u novom. */
   const id = top.props?.['id'];
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <ScreenFrame>
+          <div className="screen-loading" role="status" aria-busy="true">
+            Učitavam…
+          </div>
+        </ScreenFrame>
+      }
+    >
       <div key={`${screens.length}-${top.kind}-${typeof id === 'string' ? id : ''}`}>
         {render(top.props ?? {})}
       </div>

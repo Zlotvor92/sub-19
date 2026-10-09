@@ -116,6 +116,7 @@ export const useUIStore = create<UiState & UiActions>()((set, get) => ({
     set({ today });
   },
   setWizard(wizard) {
-    set({ wizard });
+    /* Čarobnjak je preko cele aplikacije: ekrani ispod njega se zatvaraju (isto kao ranije list podešavanja), da posle plana čovek stane na početni ekran. */
+    set(wizard ? { wizard, screens: [], sheet: null } : { wizard });
   }
 }));

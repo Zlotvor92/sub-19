@@ -15,7 +15,7 @@ import { LS_RESCUE_KEY } from '../services/storage/keys';
 import { getApp } from './appContext';
 import { confirmAction } from './confirm';
 import { dayFromSearch, rememberTab } from './tabs';
-import { startNavHistory } from './navHistory';
+import { navBack, startNavHistory } from './navHistory';
 import { useSwipeNav } from './useSwipeNav';
 import { useToday } from './useToday';
 import { BANNER, useSystemBanners } from './useSystemBanners';
@@ -28,6 +28,11 @@ import { Wizard } from '../features/onboarding';
 /** Postoji li aktivan plan (generisan ili ugrađeni lični) — bez njega je čarobnjak jedini ekran. */
 function useActiveGenPlanPresent(): boolean {
   return !!useActiveGenPlan();
+}
+
+/** Završava odloženi upis, ali nikad iza kapije za prijavu: odjava i brisanje naloga ostavljaju lokalno skladište prazno, bez novog upisa. */
+function flushPending(): void {
+  if (useAuthStore.getState().gate === null) requestPersist('now');
 }
 
 export function App() {
@@ -56,6 +61,21 @@ export function App() {
     if (prevGate.current === null && gate !== null) useUIStore.getState().setTab('danas');
     prevGate.current = gate;
   }, [gate]);
+
+  /* Escape zatvara ekran iznad taba (listovi i dijalog potvrde to već rade sami). */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      const ui = useUIStore.getState();
+      if (ui.screens.length === 0 || ui.sheet || ui.confirm || ui.wizard) return;
+      const t = e.target;
+      if (t instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+      e.preventDefault();
+      navBack();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   /* Taster „Nazad“ zatvara ekran/list, ne aplikaciju (v. `navHistory`). */
   useEffect(() => {
@@ -86,6 +106,7 @@ export function App() {
   /* Pozicija skrolovanja: ekran se otvara od vrha, a pri povratku se vraća tamo gde je bio; promena taba uvek počinje od vrha. */
   const scrolls = useRef<number[]>([]);
   const openers = useRef<Array<HTMLElement | null>>([]);
+  const shownTab = useRef<string | null>(null);
   const layers = useRef(0);
   useEffect(() => {
     const n = screens.length;
@@ -96,6 +117,8 @@ export function App() {
       );
       window.scrollTo(0, 0);
     } else if (n < layers.current) {
+      /* Beleška upisana u ekranu koji se zatvara ne sme da čeka odloženi upis (kao pri zatvaranju lista). */
+      flushPending();
       const y = scrolls.current[n] ?? 0;
       scrolls.current.length = n;
       window.scrollTo(0, y);
@@ -109,6 +132,9 @@ export function App() {
   }, [screens.length]);
   useEffect(() => {
     rememberTab(tab, window.sessionStorage);
+    /* Promena taba je trenutak da se odloženi upis (beleška) završi — ali ne pri prvom iscrtavanju, pre nego što je išta uneto. */
+    if (shownTab.current !== null && shownTab.current !== tab) flushPending();
+    shownTab.current = tab;
     scrolls.current = [];
     openers.current = [];
     layers.current = 0;

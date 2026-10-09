@@ -1132,3 +1132,10 @@
 .hist-list .ztrow:last-child {
   border-bottom: 0;
 }
+
+/* Ekran se učitava (prvo otvaranje, lenji paket): traka „Nazad“ je odmah tu, a ispod nje tiha poruka. */
+.screen-loading {
+  padding: var(--s-6) 0;
+  color: var(--text-3);
+  font-size: var(--fs-small);
+}
