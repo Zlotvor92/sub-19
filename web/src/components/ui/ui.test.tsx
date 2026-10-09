@@ -8,7 +8,7 @@ import { useUIStore, type Banner } from '../../stores/uiStore';
 import { BannerHost } from './BannerHost';
 import { ConfirmHost } from './ConfirmHost';
 import { Sheet, sheetTitle } from './Sheet';
-import { AuthGate, Page, Tabbar } from './Shell';
+import { AuthGate, Page, ScreenFrame, Tabbar } from './Shell';
 
 /* parity: test/list-dijalog.test.mjs (Sheet), test/potvrda.test.mjs (potvrda). Namera: modal je modal — naziv, fokus ulazi i
    vraća se, pozadina je inertna, Escape zatvara, Tab ne izlazi; potvrda se uvek prikazuje. */
@@ -324,5 +324,22 @@ describe('Num', () => {
     expect(container.querySelector('.sr-only')).toHaveTextContent('91%');
     expect(container.querySelector('[aria-hidden="true"]')).toHaveTextContent('91%');
     Reflect.deleteProperty(window, 'matchMedia');
+  });
+});
+
+describe('ekran iznad taba (ScreenFrame)', () => {
+  it('pri otvaranju fokus ide na naslov ekrana, da tastatura i čitač nastave odatle', () => {
+    render(
+      <ScreenFrame>
+        <h1>Prilagodi plan</h1>
+        <button>Radnja</button>
+      </ScreenFrame>
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'Prilagodi plan' })).toHaveFocus();
+  });
+
+  it('bez naslova ne puca; „Nazad“ postoji uvek', () => {
+    render(<ScreenFrame>sadržaj</ScreenFrame>);
+    expect(screen.getByRole('button', { name: 'Nazad' })).toBeInTheDocument();
   });
 });

@@ -15,6 +15,7 @@ import { zoneSource } from '../../domain/zones';
 import { useActiveGenPlan, useSettingsStore, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { Section } from '../../components/ui/primitives';
+import { currentPaths } from '../../lib/copy';
 
 const TONE_VAR: Record<string, string> = {
   green: 'var(--ok)',
@@ -106,7 +107,7 @@ export function ZonesCard({ log }: { log: LogEntry | undefined }) {
   return (
     <Section title="Po zonama" extra={model.extra}>
       {model.reason ? (
-        <p className="note-src">{model.reason}</p>
+        <p className="note-src">{currentPaths(model.reason)}</p>
       ) : (
         <>
           <dl className="facts">
@@ -129,7 +130,7 @@ export function ZonesCard({ log }: { log: LogEntry | undefined }) {
               </div>
             ))}
           </dl>
-          <p className="note-src">{model.note}</p>
+          <p className="note-src">{currentPaths(model.note)}</p>
         </>
       )}
     </Section>

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
 import {
   back,
@@ -22,8 +22,7 @@ test.beforeEach(async ({ page }) => {
   await createPlan(page);
 });
 
-const h1 = (page: import('@playwright/test').Page) =>
-  page.locator('.page.active').getByRole('heading', { level: 1 });
+const h1 = (page: Page) => page.locator('.page.active').getByRole('heading', { level: 1 });
 
 test('traka tabova ima četiri ekrana, bez Zajednice; adresa ?tab=zajed pada na Danas', async ({
   page
@@ -104,6 +103,18 @@ test('Back sistema zatvara ekran i list, ne izlazi iz aplikacije', async ({ page
   await expect(page.getByRole('heading', { level: 1, name: 'Bol' })).toBeVisible();
   await page.goBack(); // …pa ekran
   await expect(h1(page)).toHaveText('Napredak');
+});
+
+test('fokus: ekran preuzima fokus na svom naslovu, a „Nazad“ ga vraća na red koji ga je otvorio', async ({
+  page
+}) => {
+  await tab(page, 'Danas').click();
+  const opener = page.getByRole('button', { name: /^Detalji (treninga|dana)/ });
+  await opener.focus();
+  await opener.click();
+  await expect(page.locator('.page.active h1:visible')).toBeFocused();
+  await back(page).click();
+  await expect(opener).toBeFocused();
 });
 
 test('promena taba zatvara ekran iznad; „Nazad“ vraća jedan nivo', async ({ page }) => {

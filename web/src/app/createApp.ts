@@ -377,7 +377,7 @@ export function createApp(deps: AppDeps): App {
         return {
           adopted: false,
           error:
-            'Prijava je odbijena: prijavio si se nalogom koji nije onaj sa kojim je aplikacija već povezana. Ako želiš da promeniš nalog, prvo se odjavi u Podešavanjima, pa se prijavi ponovo.'
+            'Prijava je odbijena: prijavio si se nalogom koji nije onaj sa kojim je aplikacija već povezana. Ako želiš da promeniš nalog, prvo se odjavi (Ti → Moj profil), pa se prijavi ponovo.'
         };
       }
       session.adopt(tokens);

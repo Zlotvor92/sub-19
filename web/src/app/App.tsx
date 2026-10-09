@@ -78,22 +78,32 @@ export function App() {
 
   /* Pozicija skrolovanja: ekran se otvara od vrha, a pri povratku se vraća tamo gde je bio; promena taba uvek počinje od vrha. */
   const scrolls = useRef<number[]>([]);
+  const openers = useRef<Array<HTMLElement | null>>([]);
   const layers = useRef(0);
   useEffect(() => {
     const n = screens.length;
     if (n > layers.current) {
       scrolls.current.push(window.scrollY);
+      openers.current.push(
+        document.activeElement instanceof HTMLElement ? document.activeElement : null
+      );
       window.scrollTo(0, 0);
     } else if (n < layers.current) {
       const y = scrolls.current[n] ?? 0;
       scrolls.current.length = n;
       window.scrollTo(0, y);
+      /* Fokus se vraća na red koji je ekran otvorio (ako još postoji i vidljiv je); inače ostaje gde jeste. */
+      const opener = openers.current[n] ?? null;
+      openers.current.length = n;
+      if (opener?.isConnected && opener.offsetParent !== null)
+        opener.focus({ preventScroll: true });
     }
     layers.current = n;
   }, [screens.length]);
   useEffect(() => {
     rememberTab(tab, window.sessionStorage);
     scrolls.current = [];
+    openers.current = [];
     layers.current = 0;
     window.scrollTo(0, 0);
   }, [tab]);

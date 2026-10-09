@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
-import { createPlan, openProgress, tab } from './support/flows';
+import { createPlan, openProgress } from './support/flows';
 
 /* Tokovi 8–9: bol i masa (Napredak → Bol, Telesna masa) i forma (Napredak → Forma i predikcija: test na 3 km, VDOT). */
 

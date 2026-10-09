@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { navBack } from '../../app/navHistory';
 import { TABS, type Tab, useUIStore } from '../../stores/uiStore';
 import { Icon, TabIcon, TAB_LABELS } from './icons';
@@ -19,8 +19,17 @@ export function AppBar({ right, tag }: { right?: ReactNode; tag?: boolean }) {
 
 /** Ekran iznad taba: dugme „Nazad“ i, po želji, radnja desno. Naslov (h1) nosi sadržaj ekrana, ne ova traka. */
 export function ScreenFrame({ right, children }: { right?: ReactNode; children: ReactNode }) {
+  const root = useRef<HTMLDivElement>(null);
+  /* Otvaranje ekrana pomera fokus na njegov naslov: tastatura i čitač ekrana nastavljaju odatle, a ne sa dugmeta koje je ostalo ispod (sakriveno).
+     Pri zatvaranju fokus se vraća na red koji je ekran otvorio (v. `App`). */
+  useEffect(() => {
+    const h1 = root.current?.querySelector('h1');
+    if (!h1) return;
+    h1.tabIndex = -1;
+    h1.focus({ preventScroll: true });
+  }, []);
   return (
-    <div className="screen">
+    <div className="screen" ref={root}>
       <div className="screenbar">
         <button type="button" className="backbtn" onClick={navBack}>
           <Icon name="chevron-left" size={22} />

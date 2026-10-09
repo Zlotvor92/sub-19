@@ -88,7 +88,7 @@ export function classifyOAuthReturn(search: string, kv: KeyValueStore, now: numb
 }
 
 export const STRAVA_REJECTED_MESSAGE =
-  'Povezivanje odbijeno — bezbednosna provera nije prošla.\n\nOvo se dešava ako si otvorio link za povezivanje sa strane, ili je prošlo previše vremena. Pokreni povezivanje ponovo iz Podešavanja.';
+  'Povezivanje odbijeno — bezbednosna provera nije prošla.\n\nOvo se dešava ako si otvorio link za povezivanje sa strane, ili je prošlo previše vremena. Pokreni povezivanje ponovo iz Ti → Povezani servisi.';
 export const ICU_REJECTED_MESSAGE = 'Povezivanje odbijeno — bezbednosna provera nije prošla.';
 
 export function stravaAuthorizeUrl(clientId: string, origin: string, state: string): string {

@@ -1,4 +1,4 @@
-import { fmtClock } from '../../domain/format';
+import { fmtClock, fmtNum } from '../../domain/format';
 import { usesHours, type WizardState, type formPreview } from '../../domain/onboarding';
 import { Notice } from '../../components/ui/primitives';
 import { Chips, PB_DISTS, TimeFields } from './controls';
@@ -71,7 +71,7 @@ export function Step2Result({
               />
             </svg>
             <div>
-              <div className="ob-vnum">{form.vdot.toFixed(1)}</div>
+              <div className="ob-vnum">{fmtNum(form.vdot, 1)}</div>
               <div className="ob-vlbl">
                 VDOT — jedan broj iz kog se računa <b>svaki</b> tempo u planu.
               </div>
