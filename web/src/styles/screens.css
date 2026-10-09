@@ -157,6 +157,13 @@
   align-items: center;
   min-height: 68px;
 }
+/* Najuži telefoni (≤ 380 px): kolona dana je uža, da vrsta treninga i kilometri ne lome red na tri. */
+@media (max-width: 380px) {
+  .rows > .plan-row {
+    grid-template-columns: minmax(5.6rem, 6.2rem) minmax(0, 1fr) auto;
+    gap: var(--s-2);
+  }
+}
 .plan-row.is-today {
   margin-inline: calc(-1 * var(--s-3));
   width: calc(100% + 2 * var(--s-3));

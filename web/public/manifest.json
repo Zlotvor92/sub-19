@@ -48,28 +48,28 @@
       "sizes": "720x1558",
       "type": "image/webp",
       "form_factor": "narrow",
-      "label": "Današnji trening, vreme i prilagođen cilj"
+      "label": "Današnji trening i napredak nedelje"
     },
     {
       "src": "./screenshot-plan.webp",
       "sizes": "720x1558",
       "type": "image/webp",
       "form_factor": "narrow",
-      "label": "Cela priprema, nedelju po nedelju"
+      "label": "Jedna nedelja plana, dan po dan"
     },
     {
-      "src": "./screenshot-trka.webp",
+      "src": "./screenshot-napredak.webp",
+      "sizes": "720x1558",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Kilometri, forma i procena za trku"
+    },
+    {
+      "src": "./screenshot-forma.webp",
       "sizes": "720x1558",
       "type": "image/webp",
       "form_factor": "narrow",
       "label": "Predikcija vremena i test na 3 km"
-    },
-    {
-      "src": "./screenshot-oporavak.webp",
-      "sizes": "720x1558",
-      "type": "image/webp",
-      "form_factor": "narrow",
-      "label": "HRV, puls u miru i trenažno opterećenje"
     }
   ],
   "shortcuts": [
