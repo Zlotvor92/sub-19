@@ -19,4 +19,4 @@ This archive covers database schemas/data the database login can read (including
 
 ## Race analysis
 
-Race context and AI results live under the extensible `log[id].raceAi` namespace. Existing training analyses and log fields are retained; no root schema version change is needed. Select any completed run on the Race page, enter official distance/time and intent, save context, then analyze. Manual races are stored as completed run records. Race results never automatically recalibrate VDOT or modify the plan.
+Race context and AI results live under the extensible `log[id].raceAi` namespace. Existing training analyses and log fields are retained; no root schema version change is needed. In the app, open Napredak → Analiza trke, select any completed run, enter official distance/time and intent, save context, then analyze. Manual races are stored as completed run records. Race results never automatically recalibrate VDOT or modify the plan.

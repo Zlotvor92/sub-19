@@ -1,6 +1,8 @@
+> **ISTORIJA. Ovaj dokument opisuje PRETHODNI pravac („Komandni centar“, font Archivo, boje faza). Zamenjen je pravcem „Quiet Athlete“: v. [QUIET_ATHLETE.md](QUIET_ATHLETE.md).** Sve ispod je zapis tadašnjeg stanja i ne važi za trenutni kod: tabovi Oporavak i Trka (sada ekrani u Napredak), zupčanik i Podešavanja (sada tab Ti), trajna traka ciklusa u zaglavlju i izgled samo u tamnoj temi više ne postoje.
+
 # SUB-20 — UI/UX redizajn (pravac: „Komandni centar")
 
-Stanje: **implementirano u radnom stablu, ništa nije commit-ovano ni pushovano.** Domen (`web/src/domain`), store-ovi (`web/src/stores`) i servisi (`web/src/services`) nisu menjani (`git status` nema nijedan fajl u njima).
+Stanje: **commit-ovano i pushovano** (`9fdca98`, 2026-10-02, prisutno u `origin/main`), a zatim zamenjeno pravcem Quiet Athlete. Domen (`web/src/domain`), store-ovi (`web/src/stores`) i servisi (`web/src/services`) nisu menjani u tom commit-u (`git show --stat 9fdca98 -- web/src/domain web/src/stores web/src/services` ne daje nijedan fajl).
 
 ## Kako je izabran pravac
 

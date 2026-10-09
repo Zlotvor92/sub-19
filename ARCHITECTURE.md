@@ -1,6 +1,6 @@
 # SUB-20 — ARCHITECTURE (stanje pre rewrite-a)
 
-Ovo je audit **postojećeg** sistema. Ciljna arhitektura je u `docs/REWRITE_PLAN.md`.
+Ovo je audit **postojećeg** sistema. Ciljna arhitektura je u `docs/REWRITE_PLAN.md`. Stanje danas (folderi, tabovi, ekrani, stil): §12.
 Datum audita: 2026-10-01. Osnova: grana `claude/sub20-frontend-rewrite-q6dlvr`, APP_VERSION `282`, SCHEMA `11`.
 
 ## 0. Šta je ovim auditom pročitano, a šta nije
@@ -154,23 +154,35 @@ Detalji, redosled i kapije su u `docs/REWRITE_PLAN.md`. Ukratko: `web/` (Vite + 
 
 ## 12. Kako je izgrađeno (as-built, 2026-10-02)
 
-Ovaj odeljak opisuje stanje na grani `claude/sub20-frontend-rewrite-q6dlvr`; §1–11 su audit starog stanja. Pun izveštaj: `REWRITE_REPORT.md`, faze i brojke: `docs/REWRITE_STATUS.md`.
+Ovaj odeljak opisuje izgrađeno stanje: slojevi i domen su sa grane `claude/sub20-frontend-rewrite-q6dlvr`, a folderi `features/`, `components/`, `styles/` i opis interfejsa ispod su ažurirani 2026-10-09 prema grani `claude/quiet-athlete`. §1–11 su audit starog stanja. Pun izveštaj: `REWRITE_REPORT.md` (istorijski zapis), faze i brojke: `docs/REWRITE_STATUS.md`.
 
 **Slojevi** (zavisnost samo nadole; ESLint + `domain/isolation.test.ts`): `domain` (čist TS) → `stores` (Zustand, jedan persist po akciji) → `services` (`Result`, Zod na granici) → `app` (koren kompozicije `createApp`) → `features` / `components`.
 
 ```
 web/src/
-  domain/      activities ai community date day format icu onboarding personal plan push race recovery
-               settings shell state sync training{generator,adaptation,test3k} watch weather zones
-  services/    ai api community icu push storage strava supabase sync weather http oauth
+  domain/      activities ai community date day format icu lib onboarding personal plan push race recovery
+               settings shell state sync training{adaptation,constants,distances,generator,prediction,sessions,test3k,vdot}
+               watch weather zones
+  services/    ai api community icu push race storage strava supabase sync weather + http oauth streams config
   stores/      training recovery settings sync auth community ui owner + *Actions
-  app/         createApp integrations community useSwipeNav useToday tabs
-  features/    today plan recovery race community settings onboarding
-  components/ui  Shell Sheet Ring BannerHost ConfirmHost
+  app/         createApp integrations community useSwipeNav useToday tabs navHistory confirm useSystemBanners
+  features/    today day session plan progress race recovery ti onboarding cycle + registry screens sheets
+  components/ui  Shell Sheet primitives icons Disclosure Badge Num SessionProfile BannerHost ConfirmHost
+  lib/         theme useTheme auth clock copy dates download geo
+  styles/      tokens base ui shell screens charts wizard (.css) + fonts/ (Figtree, self-hosted)
   pwa/         SW registracija, ažuriranje, offline, uvodni ekran
   data/        personalPlan (generisano iz starog PLAN/PRED/QS)
 web/sw/sw.js   telo starog sw.js; verzija i spisak se ubacuju pri izgradnji
 ```
+
+**Interfejs („Quiet Athlete").**
+- Četiri taba: Danas · Plan · Napredak · Ti (`stores/uiStore.ts`, `features/registry.tsx`). Zajednica nema taba ni ekrana (`features/community/` i `features/settings/` ne postoje); modalni list „Podešavanja" pod zupčanikom je zamenjen tabom Ti (`features/ti/`).
+- Ekran se otvara iznad taba (`uiStore.screens`, `openScreen`; registar `features/screens.tsx`) sa dugmetom „Nazad"; mala izmena je list odozdo (`features/sheets.tsx`, `components/ui/Sheet.tsx`). Sistemski taster „Nazad" zatvara list pa ekran (`app/navHistory.ts`); aplikacija nema rute, adresa se ne menja.
+- Detalji treninga (`features/day/DayScreen.tsx`) su jedino mesto za dan: zamenjuju raniji list dana i kartice na Danas. Plan prikazuje jednu nedelju; ceo plan je ekran „Pregled celog plana", izmene plana su ekran „Prilagodi plan" (`features/plan/`). Forma i predikcija, Oporavak, Bol, Telesna masa i Analiza trke su ekrani iz tab-a Napredak (`features/progress/`, `race/`, `recovery/`).
+- Deep link `?tab=`: `opor` → Napredak + Oporavak, `pred` → Napredak + Forma i predikcija, nepoznata vrednost → Danas (`app/tabs.ts`). Obaveštenje `?dan=<id>` otvara Detalje treninga.
+- Stil: tokeni (boje, razmak, font Figtree) u `styles/tokens.css`, svetla i tamna tema. Izbor teme (Prati sistem / Svetla / Tamna) je po uređaju u `localStorage` ključu `sub20-tema` (`lib/theme.ts`, `web/public/tema.js`); ne sinhronizuje se i ne menja SCHEMA 11.
+- Zajednica: `COMMUNITY_ENABLED = false` (`services/config.ts`); kod iza prekidača ostaje (`domain/community`, `services/community`, `stores/communityStore.ts`, `app/community.ts`), UI ne. Pri pokretanju `withdrawIfDisabled` povlači ranije objavljen red.
+- Gde je koja funkcija u UI-ju: `docs/FEATURE_INVENTORY.md`, odeljak H.
 
 **Aktivni plan.** `activeOf(state, isOwner)` = pravi `genPlan`, a ako ga nema i `personalVisible` (vlasnik, ili nalog sa `n*` unosima u statusu done/skip) — ugrađeni lični plan. Samo za čitanje; upisi idu u pravi `genPlan`, koji za lični plan ostaje `null`, pa se oblik stanja v11 i `user_state` na serveru ne menjaju. (Zatvara F-27 iz `FEATURE_INVENTORY`.)
 

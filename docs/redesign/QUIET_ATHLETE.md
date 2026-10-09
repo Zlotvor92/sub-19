@@ -10,13 +10,13 @@ Pravilo dokumenta: sve što je ovde navedeno proveravano je čitanjem koda ili p
 
 ## 1. Cilj i princip
 
-**Zaključak.** Aplikacija ima četiri taba: Danas, Plan, Napredak, Ti. Sve ostalo je ekran koji se otvara iznad taba (dugme „Nazad“) ili mali list odozdo. Svaka funkcija ima jedno mesto. Izgled je miran: svetla i tamna tema, jedan veliki broj po ključnom podatku, tanke linije, otvorene sekcije umesto kartica. Domen, auth, baza, API i sinhronizacija nisu menjani.
+**Zaključak.** Aplikacija ima četiri taba: Danas, Plan, Napredak, Ti. Sve ostalo je ekran koji se otvara iznad taba (dugme „Nazad“) ili mali list odozdo. Svaka funkcija ima jedno mesto. Izgled je miran: svetla i tamna tema, jedan veliki broj po ključnom podatku, tanke linije, otvorene sekcije umesto kartica. Domen, auth, baza, API i sinhronizacija nisu menjani (jedina razlika u tim oblastima: tekst dve poruke, v. tabelu ispod).
 
 **Stanje pre** (iz koda u `d40c2b6`; nije utvrđeno ispitivanjem korisnika):
 
 - Podešavanja su bila modalni list pod zupčanikom: 5 grupa i 11 sekcija (`SETTINGS_GROUPS` u `web/src/domain/settings/index.ts`), među njima Zajednica, ugašena prekidačem.
-- Isti trening je imao dve verzije: kartice na Danas i list dana (`DaySheet`) otvoren iz Plana.
-- Napredak je bio razbijen na dva taba (Oporavak, Trka). Komentari u kodu beleže ponavljanje: forma je bila „pet kartica sa istim brojem u svakoj“, a HRV, san, svežina i puls u miru su se prikazivali i kao brojke i kao kartice.
+- Isti trening je imao dve verzije istog sadržaja: kartice na Danas i list dana (`DaySheet`), otvaran iz Plana i sa Danas.
+- Napredak je bio razbijen na dva taba (Oporavak, Trka). Komentari u kodu beleže ponavljanje: forma je bila „pet kartica sa istim brojem u svakoj“, a HRV, san, svežina i puls u miru su bili ponovljeni u više kartica.
 - Samo tamna tema. Pet nijansi faza različitih boja (plava, cijan, ćilibar, ljubičasta, crvena), trajna traka ciklusa u zaglavlju, font Archivo.
 
 **Odluke:**
@@ -54,10 +54,10 @@ Posledica: domenski tekstovi su zamrznuti oracle testovima, pa neki i dalje pomi
 
 | Tab | h1 | Koren sadrži | Ekrani iznad (`kind`) |
 | --- | --- | --- | --- |
-| Danas | „Danas“ (vidi se samo čitaču) | trening dana sa jednim glavnim dugmetom „Detalji treninga“, tihe radnje „Završi trening“ / „Preskoči“, „Ove nedelje“ (km, traka), red „Sledeće trčanje“, obaveštenja samo kad su relevantna | `trening` |
-| Plan | „Tvoj plan“ | jedna nedelja sa ‹ ›, 7 redova dana sa stanjem, redovi „Pomeri treninge“, „Prilagodi plan“, „Pošalji na sat“ (samo uz intervals.icu), dugme „Pregled celog plana“ | `trening`, `plan-pregled` (h1 „Cela priprema“), `plan-prilagodi`, `sat` |
+| Danas | „Danas“ (vidi se samo čitaču) | trening dana sa jednim glavnim dugmetom „Detalji treninga“, tihe radnje „Završi trening“ / „Preskoči“, „Ove nedelje“ (km, traka), red „Sledeće trčanje“, obaveštenja samo kad su relevantna | `trening`, `plan-prilagodi` i `oporavak` (iz obaveštenja) |
+| Plan | „Tvoj plan“ | jedna nedelja sa ‹ ›, 7 redova dana sa stanjem, redovi „Pomeri treninge“, „Prilagodi plan“, „Pošalji na sat“ (samo uz intervals.icu), dugme „Pregled celog plana“ | `trening`, `plan-pregled` (h1 „Cela priprema“), `plan-prilagodi`, `sat`, `cilj` (iz Prilagodi plan) |
 | Napredak | „Napredak“ | km poslednje 4 nedelje, VDOT i procena, poslednja aktivnost, rekordi, redovi ka detaljima | `forma`, `oporavak`, `bol`, `masa`, `analiza-trke`, `aktivnosti`, `trening` |
-| Ti | „Ti“ | profil, blok „Trenutni cilj“, osam redova (sedmi nosi „Vlasnik“ samo vlasniku) | `profil`, `cilj`, `postavke-treninga`, `servisi`, `strava`, `icu`, `sat`, `obavestenja`, `izgled`, `privatnost`, `o-aplikaciji`, `vlasnik` |
+| Ti | „Ti“ | profil, blok „Trenutni cilj“, sedam redova i, samo vlasniku, osmi red „Vlasnik“ | `profil`, `cilj`, `postavke-treninga`, `servisi`, `strava`, `icu`, `sat`, `obavestenja`, `izgled`, `privatnost`, `o-aplikaciji`, `vlasnik` |
 
 Izvor: `web/src/features/registry.tsx` (tabovi), `web/src/features/screens.tsx` (ekrani), `web/src/features/sheets.tsx` (listovi).
 
@@ -75,7 +75,7 @@ Osnova za „staro“: kod u `d40c2b6`. „Podešavanja“ = modalni list pod zu
 | --- | --- | --- |
 | Trajno zaglavlje sa natpisom ciklusa („N6/12 · RAZVOJ · 46 d“) | Plan: „Nedelja X od Y“, oznaka faze u gornjem redu, „za N dana“ uz trku u podnaslovu | spojeno |
 | Trajna traka ciklusa (dugme koje vodi na Plan) | Plan → Pregled celog plana → „Cela priprema“: traka ciklusa kao slika sa celom rečenicom | premešteno |
-| Zupčanik → Podešavanja | tab Ti (odeljak G) | uklonjeno, 8a |
+| Zupčanik → Podešavanja | tab Ti (tabela F) | uklonjeno, 8a |
 | Animacija ulaska ekrana | — | uklonjeno, 8a |
 | Tabovi Danas · Plan · Oporavak · Trka (Zajednica ugašena) | Danas · Plan · Napredak · Ti | spojeno |
 
@@ -94,7 +94,7 @@ Osnova za „staro“: kod u `d40c2b6`. „Podešavanja“ = modalni list pod zu
 | „Zašto ovaj trening“ | Detalji treninga → „Zašto ovaj trening“ | premešteno |
 | „Završi trening“, „Preskoči“, „Ipak sam odradio“, „Vrati“ | Danas, isto (tihe radnje); Detalji treninga → „Status“ (Predstoji / Odrađen / Preskočen) | nepromenjeno |
 | Linija „Odrađeno · km · vreme · tempo“ | Danas, ista linija | nepromenjeno |
-| Kartica „Vreme“ | Danas: jedan red u kartici dok trening predstoji; Detalji treninga → „Vreme“ | spojeno |
+| Kartica „Vreme“ | Danas: jedan red u bloku treninga dok trening predstoji; Detalji treninga → „Vreme“ | spojeno |
 | Kartica „Uneto“ (forma unosa) | Detalji treninga → „Unos“ (km, vreme, puls, „Više detalja“: RPE, bol, masa, datum, beleška; radni deo — ostvaren tempo) | premešteno |
 | „Analiza treninga“: „Sa sata“, „Po zonama“, „Jutros“, poređenje sa ranijim, AI analiza | Detalji treninga, isti redosled, tek kad je trening odrađen | premešteno |
 | „Završeno · N“ (lista dana sa km) | Danas → „Ove nedelje“: zbir km i traka; lista dana nestaje (8b) | spojeno |
@@ -113,11 +113,11 @@ Osnova za „staro“: kod u `d40c2b6`. „Podešavanja“ = modalni list pod zu
 | „Gde sam u planu“: km nedeljno (prosek), najjača nedelja, ostalo, trčanja | najjača nedelja i trčanja po planu → Napredak → „Rekordi“; prosek i „ostalo“ nestaju (8b) | spojeno |
 | „Nedeljna kilometraža“ (grafik) | Pregled celog plana → „Nedeljna kilometraža“ | premešteno |
 | Faze → nedelje sa 7 ćelija dana | Pregled celog plana, isto | premešteno |
-| Nedelje rasklopljene u listu dana | Plan: tekuća nedelja uvek otvorena, ‹ › pomeraju; Pregled celog plana: isto rasklapanje kao pre | spojeno |
+| Nedelje rasklopljene u listu dana | Plan: uvek je prikazana jedna nedelja (tekuća; pre početka plana prva, posle kraja poslednja), ‹ › pomeraju; Pregled celog plana: isto rasklapanje kao pre | spojeno |
 | „Pomeri treninge“ (zamena dana, „Vrati raspored nedelje na plan“) | Plan → red „Pomeri treninge“; Pregled celog plana → nedelja; Detalji treninga → „Pomeri na drugi dan“ | premešteno |
 | List dana (`DaySheet`) | ekran Detalji treninga | premešteno |
 | List dana: „Izmeni trening“ | Detalji treninga → „Prilagodi trening“ → „Zameni ili skrati“ (list se i dalje zove „Izmeni trening“); odmor: „Dodaj trening“ | premešteno |
-| List dana: vraćanje na planski trening | Detalji treninga → „Vrati na plan“; dugme „Vrati“ ostaje i u listu | premešteno |
+| List „Izmeni trening“: dugme „Vrati na plan“ | ostaje u listu; dodat je i red „Vrati na plan“ u Detalji treninga → „Prilagodi trening“ | nepromenjeno (dodat red) |
 | List dana: „Obriši unos“ | Detalji treninga → „Obriši unos“ | nepromenjeno |
 | Dan testa: napomena „Trka → Test 3 km“ | Detalji treninga → „Rezultat testa“ → „Unesi test na 3 km“ | premešteno |
 | Legenda ćelija | Pregled celog plana | premešteno |
@@ -151,7 +151,7 @@ Osnova za „staro“: kod u `d40c2b6`. „Podešavanja“ = modalni list pod zu
 | „Test 3 km“ (unos, izmena, raniji testovi) | Forma i predikcija → „Test 3 km“ (list `t3k`) | premešteno |
 | „Tempo svakog trčanja“ (grafik) | — | uklonjeno, 8b |
 | „Poslednja trčanja“ (4, bez otvaranja) | Napredak → „Poslednja aktivnost“ (otvara Detalje) + „Sve aktivnosti“ | spojeno |
-| „Do sada“: % plana, najjača nedelja, najduže trčanje, najbrži test 3 km, trčanja po planu | Napredak → „Rekordi“ (četiri stavke) + km poslednje 4 nedelje; % plana → Pregled celog plana | spojeno |
+| „Do sada“: % plana, najjača nedelja, najduže trčanje, najbrži test 3 km, trčanja po planu | Napredak → „Rekordi“ (do četiri stavke, prikazuju se one za koje ima podataka) + km poslednje 4 nedelje; % plana → Pregled celog plana | spojeno |
 | „Do sada“: km nedeljno (prosek) | — | uklonjeno, 8b |
 | Veza „Cela mapa ciklusa“ | Plan → „Pregled celog plana“ | premešteno |
 
@@ -165,9 +165,9 @@ Sve uklonjeno, 8a: rang-lista, filter po ciljnoj distanci, izbor mere rangiranja
 | --- | --- | --- |
 | Naslov + brojač podataka („N treninga · … zapisa o bolu · …“) | Ti → O aplikaciji → „Na uređaju“ | premešteno |
 | Upozorenje „Skladište nedostupno“ | Ti → O aplikaciji (tekst upozorenja, bez trake) | premešteno |
-| „Šta čeka“ (zbirni status nalog / Strava / intervals.icu / sat / backup + jedno dugme) | statusi u redovima (Ti: „Nisi prijavljen“; Povezani servisi: tačke i sažetak); backup na Danas | uklonjeno, 8b |
-| Grupe Nalog / Trening / Veze / App / Admin | spisak redova u Ti | uklonjeno, 8a |
-| Nalog: „Prijavi se Google nalogom“, sinhronizuj sada, „Odjavi se“, „Obriši nalog“, objašnjenja | Ti → Moj profil → „Nalog“; „Obriši nalog“ i u Privatnost i podaci | premešteno |
+| Vrh Podešavanja („Dve stvari čekaju“ / „Sve je povezano“): zbirni status nalog / Strava / intervals.icu / sat / backup + jedno dugme za prvu stvar koja čeka | statusi u redovima (Ti: „Nisi prijavljen“; Povezani servisi: tačke i sažetak); backup na Danas | uklonjeno, 8b |
+| Grupe Nalog / Trening / Veze / App / Admin | spisak redova u Ti | uklonjeno, 8b |
+| Nalog: „Prijavi se Google nalogom“, „Sinhronizuj“, „Odjavi se“, „Obriši nalog“, objašnjenja | Ti → Moj profil → „Nalog“; „Obriši nalog“ i u Privatnost i podaci | premešteno |
 | Podaci: „Ranije verzije“, „Izvezi backup“, „Uvezi backup“, „Prijavi problem“ | Ti → Privatnost i podaci | premešteno |
 | Plan: „Ciljno vreme“ / „Promeni cilj“ | Ti → Cilj (blok „Trenutni cilj“ na Ti); Plan → Prilagodi plan → „Promeni ciljno vreme“ | premešteno |
 | Plan: „Preračunaj plan prema formi“ | Plan → Prilagodi plan | premešteno |
@@ -246,7 +246,7 @@ Poređenje sa starim putem (čitanjem koda u `d40c2b6`, **nije izvršeno**; gde 
 | List | `sheet` (jedan) | `openSheet({ kind, props })` | Back, Escape, dodir na pozadinu, „Sačuvaj“ | da |
 | Potvrda | `confirm` | `confirmAction` (`ConfirmHost`, `alertdialog`) | odgovor | ne |
 | Sistemske trake | `banners` | sukob sinhronizacije, oštećen zapis, nova verzija, greška upisa (`BannerHost`) | radnja na traci | ne |
-| Čarobnjak / prijava | `wizard`, `gate` | bez plana je jedini ekran; kapija kad je potrebna prijava | — | ne |
+| Čarobnjak / prijava | `wizard` (`uiStore`), `gate` (`authStore`) | bez plana je jedini ekran; kapija kad je potrebna prijava | — | ne |
 
 **Tabovi.** `TABS = danas, plan, napredak, ti`. `setTab` briše stek ekrana. Koren otvorenog taba ostaje montiran, samo skriven (`hidden`), pa mu stanje preživi dok je ekran iznad. Zapamćen je samo tab (sessionStorage, `TAB_KEY`), ne i ekrani: posle ponovnog učitavanja vraća se koren taba.
 
@@ -304,12 +304,12 @@ Figtree, self-hosted (`web/src/styles/fonts/figtree-latin.woff2`, `figtree-latin
 | `--fs-body` | 16 px | osnovni tekst |
 | `--fs-lead` | 18 px | uvodna rečenica |
 | `--fs-h3` | 20 px | h2 (naslov odeljka), `base.css` mapira h2 na ovaj token |
-| `--fs-h2` | 24 px | naslovi većeg ranga u ekranima |
+| `--fs-h2` | 24 px | naziv treninga na Danas, naslov lista, naslov poslednje aktivnosti |
 | `--fs-h1` | `clamp(1.75rem, 7.4vw, 2.125rem)`, 28–34 px | h1 |
 | `--fs-num` | 40 px | broj u redu statistike |
 | `--fs-hero` | `clamp(4.5rem, 25vw, 6.5rem)`, 72–104 px | veliki broj ekrana |
 
-Težine: 300 (`--w-light`, samo za velike brojeve, ≥ 56 px), 400, 600, 700. Brojevi imaju `tabular-nums lining-nums`. Veliki broj po ključnom podatku: Danas (km), Plan (km nedelje), Napredak (km perioda), Ti i Cilj (ciljno vreme). Izuzetak od 13 px kao najmanjeg: tekst unutar SVG grafikona je zadat u jedinicama crteža (11,5; crtež je širok 340 jedinica), pa je na telefonu širine 390 px (grafik 350 px) ≈ 11,8 px. Ovo je poznato odstupanje.
+Težine u upotrebi: 300 (`--w-light`, samo za velike brojeve, ≥ 56 px), 400, 500, 600 (`--w-strong`), 700 (`--w-heavy`). Brojevi imaju `tabular-nums lining-nums`. Veliki broj po ključnom podatku: Danas (km), Plan (km nedelje), Napredak (km perioda), Ti i Cilj (ciljno vreme). Izuzetak od 13 px kao najmanjeg: tekst unutar SVG grafikona je zadat u jedinicama crteža (11,5; crtež je širok 340 jedinica), pa je na telefonu širine 390 px (grafik 350 px) ≈ 11,8 px. Ovo je poznato odstupanje.
 
 ### 4.3 Razmak, radijus, dodir, kretanje
 
@@ -317,7 +317,7 @@ Težine: 300 (`--w-light`, samo za velike brojeve, ≥ 56 px), 400, 600, 700. Br
 | --- | --- |
 | Razmak (osnova 4 px) | 4 · 8 · 12 · 16 · 24 · 32 · 48 px (`--s-1`…`--s-7`); bočni razmak sadržaja 20 px (28 px od 768 px) |
 | Radijus | 6 px (oznake, ćelije) · 12 px (polja, istaknuti red) · 20 px (list, dijalog) · pilula (dugmad) |
-| Dodir | `--touch: 44px`; dugme ≥ 52 px; red spiska ≥ 60 px; segment ≥ 44 px |
+| Dodir | `--touch: 44px`; dugme 52 px (`.btn.sm` 44 px); red spiska ≥ 60 px; segment ≥ 44 px |
 | Kretanje | 120 · 200 · 320 · 480 ms (`--dur-1`…`--dur-4`; 480 samo za crtanje podataka); `ease-out` i `ease-in-out`; gasi se pod `prefers-reduced-motion` |
 
 ### 4.4 Komponente (`web/src/components/ui/`)
@@ -343,7 +343,7 @@ Jedan skup linijskih ikona (`web/src/components/ui/icons.tsx`): 46 imena u `Icon
 
 ### 4.6 Šta namerno ne postoji (i izuzeci nađeni u kodu)
 
-- Kartice: klasa `.card` ne postoji ni u CSS-u ni u TSX-u.
+- Kartice: klasa `.card` ne postoji ni u CSS-u ni u TSX-u. Jedini okviri u obliku kartice su `.ob-card` u čarobnjaku (`wizard.css`).
 - Gradijenti i senke za ukras: ne. Izuzeci: isprekidane linije u legendi grafikona (`repeating-linear-gradient`, `charts.css`), prsten oko tačke grafikona (`box-shadow: 0 0 0 Npx var(--bg)`), tačka izbora u čarobnjaku (`radial-gradient`, `wizard.css`), jedna prava senka na sistemskoj traci (`.traka`: `0 6px 24px rgba(0,0,0,.12)`).
 - Staklo i zamućenje: ne (`backdrop-filter` ne postoji).
 - Zaglavlje sa zupčanikom i trajna traka ciklusa: ne.
@@ -408,7 +408,7 @@ Svih 16 parova ≥ 4,5:1 u obe teme (skripta ispisuje „OK“ za sve).
 | `accent` na `bg` | 7,00 | 9,40 |
 | `ph-build` na `bg` | 4,29 | 5,72 |
 | `k-easy` na `bg` | 3,52 | 4,34 |
-| `ph-base` na `bg` (prag 1,0: svetli ton faze, uvek uz naziv) | 2,72 | 3,11 |
+| `ph-base` na `bg` — skripta ga meri sa pragom 1,0, tj. namerno ga izuzima od 3:1 (najsvetliji ton faze; faza se nikad ne prikazuje bez naziva) | 2,72 | 3,11 |
 
 Najtanja margina u tabeli teksta: `text-3` na `surface-sel` u svetloj temi, 4,75.
 
@@ -454,7 +454,7 @@ Automatske provere: `web/e2e/redesign.spec.ts`. Ručni prolaz čitačem ekrana (
 | Oblast | Stanje u kodu | Provera |
 | --- | --- | --- |
 | Jezik | `<html lang="sr">` | — |
-| Naslovi | tačno jedan h1 po tabu i po ekranu iznad taba, bez preskakanja nivoa (Danas ima h1 samo za čitač ekrana) | e2e: „svaki tab ima tačno jedan h1…“, „svaki ekran iznad taba ima tačno jedan vidljiv h1 i „Nazad““ |
+| Naslovi | tačno jedan h1 po tabu i po ekranu iznad taba, bez preskakanja nivoa (Danas ima h1 samo za čitač ekrana) | `redesign.spec.ts`: po jedan test za tabove i za ekrane iznad taba |
 | Regioni i uloge | `nav` „Glavna navigacija“ + `aria-current="page"`; stranica taba je `section` sa `aria-label`, neaktivna `aria-hidden`; list `role="dialog" aria-modal="true"`, naziv iz prvog naslova u listu; potvrda `alertdialog`; čarobnjak `dialog` „Pravljenje plana“; kapija za prijavu `dialog` „Prijava“; trake `alert` (greška) ili `status` | kod |
 | Oznake | segmenti `role="group"` + `aria-pressed`; `‹ ›` imaju „Prethodna nedelja“ / „Sledeća nedelja“; današnji red `aria-current="date"`; veliki brojevi su `aria-hidden` uz tekst za čitač („…, 8 kilometara“); `Bar` i traka ciklusa su `role="img"` sa celom rečenicom; grafikoni `role="group"` sa opisom | kod |
 | Poruke posle unosa | `Notice` tona greška je `role="alert"`; poruke u formama `role="alert"`; poruka o nemogućem vremenu u čarobnjaku se najavljuje | kod; `c0720bd` |
@@ -479,7 +479,7 @@ Zapis o odobrenju u repozitorijumu postoji samo za Zajednicu (poruka commit-a `a
 1. **UI Zajednice**: tab, ekran (rang-lista, filteri, profil, poređenje, izazov nedelje), sekcija u Podešavanjima (uključivanje, nadimak), uređivanje izazova (vlasnik), traka „Novo: Zajednica“, testovi `features/community/*`, `e2e/community.spec.ts`. Ostaje (iza prekidača `COMMUNITY_ENABLED = false` u `web/src/services/config.ts`): `web/src/app/community.ts`, `web/src/stores/communityStore.ts`, `web/src/services/community/communityApi.ts`, `web/src/domain/community/`. Aplikacija ne šalje nijedan zahtev ka tabeli zajednice (e2e: „nijedan zahtev ne ide ka tabeli zajednice“). Napomena: komentar uz `COMMUNITY_ENABLED` još kaže da ekran ostaje netaknut iza prekidača; to više ne važi — ekrana nema, pa vraćanje prekidača na `true` ne vraća UI.
 2. **Animacija ulaska ekrana** (stanje `entering`, klasa `uskoci`, `ENTERING_MS`, testovi trajanja).
 3. **Zaglavlje**: zupčanik i trajna traka ciklusa sa natpisom. Funkcije su premeštene (odeljak 2.2).
-4. **Duple kartice**: pet kartica forme u Trci (ostaje jedan ekran Forma i predikcija); HRV, san, svežina i puls u miru kao kartice i kao brojke (ostaju brojke u „Stanju danas“ + grafikoni); „Poslednjih 14 dana“ i „Istorija bola“ (jedna istorija); „Gde sam u planu“ i „Do sada“ (dva sažetka istog); list dana i kartice na Danas (jedan ekran Detalji treninga).
+4. **Duple kartice**: pet kartica forme u Trci (ostaje jedan ekran Forma i predikcija); HRV, san, svežina i puls u miru ponovljeni u više kartica (ostaju brojke u „Stanju danas“ + grafikoni); „Poslednjih 14 dana“ i „Istorija bola“ (jedna istorija); „Gde sam u planu“ i „Do sada“ (dva sažetka istog); list dana i kartice na Danas (jedan ekran Detalji treninga).
 
 ### 8b. Uklonjeno, odobrenje nije proveren
 
@@ -489,7 +489,7 @@ Nema zapisa o odobrenju. Računice ostaju u domenu; nestao je samo prikaz.
 2. Grafikon „Tempo svakog trčanja“. Komponenta `PaceChart` ostaje u `web/src/features/race/charts.tsx`, model `pace` se računa u `useFormModel`, ali se nigde ne prikazuje.
 3. „km nedeljno“ (prosek završenih nedelja) i „ostalo“ (km do kraja plana) iz sažetaka plana (`planSummary` ih i dalje računa).
 4. Lista „Završeno · N“ po danima i „Sledeće“ sa do tri treninga na Danas (sada zbir km i jedan red).
-5. Zbirni „Šta čeka“ na vrhu Podešavanja i izbor grupa (Nalog / Trening / Veze / App / Admin).
+5. Zbirni vrh Podešavanja („… stvari čekaju“ / „Sve je povezano“) i izbor grupa (Nalog / Trening / Veze / App / Admin).
 
 ---
 
@@ -509,7 +509,7 @@ Testovi stoje uz kod (`*.test.ts`, `*.test.tsx`); e2e u `web/e2e/` (`navigation.
 | `web/src/features/race/` | `FormScreen.tsx`; `RaceAnalysis.tsx`; `useFormModel.ts`; `T3kSheet.tsx`; `Journey.tsx`, `charts.tsx`, `TrendAi.tsx`, `RaceData.tsx` |
 | `web/src/features/recovery/` | `OporavakScreen.tsx`, `BolScreen.tsx`, `MasaScreen.tsx`; `useRecoveryModel.ts`; `ReadinessCard.tsx`, `cards.tsx`, `WeightCard.tsx`, `BodyMap.tsx`, `charts.tsx`; list `KneeSheet.tsx` (unos bola) |
 | `web/src/features/ti/` | `index.tsx` tab Ti; `screens.tsx` svi ekrani taba; `profileModel.ts`; sekcije `accountSection.tsx`, `dataSection.tsx`, `stravaSection.tsx`, `icuSections.tsx`, `weatherSection.tsx`, `pushSection.tsx`, `adminSections.tsx`, `AppRefresh.tsx`; listovi `AccountSheets.tsx`, `UsersSheet.tsx` |
-| `web/src/features/session/`, `cycle/`, `onboarding/` | model sesije i delovi Detalja (`WorkoutParts.tsx`); model ciklusa i `CycleRail.tsx`; čarobnjak (samo preobojen tokenima) |
+| `web/src/features/session/`, `cycle/`, `onboarding/` | model sesije i delovi Detalja (`WorkoutParts.tsx`); model ciklusa i `CycleRail.tsx`; čarobnjak (koraci i logika isti, u TSX-u izmenjeno nekoliko redova; stilovi napisani iznova u `styles/wizard.css`) |
 | `web/src/lib/` | `theme.ts`, `useTheme.ts` (tema); `copy.ts` (putevi u porukama); `dates.ts` (nazivi dana) |
 | `web/src/styles/` | `tokens.css` · `base.css` · `ui.css` · `shell.css` · `screens.css` · `charts.css` · `wizard.css`; `fonts/` Figtree |
 | `web/public/` | `tema.js` (tema pre iscrtavanja), `manifest.json`, ikone `icon-*.png`, `apple-touch-icon.png`, `badge-96.png` |

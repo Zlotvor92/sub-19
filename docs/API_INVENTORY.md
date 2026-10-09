@@ -53,6 +53,8 @@ URL i publishable ključ su u `app.js` (`SB_URL`, `SB_ANON`) → u novom kodu `V
 | `GET /rest/v1/zajednica_izazov` | `zajednica_izazov` | izazovi | RLS select |
 | RPC (serverski, ne sa klijenta) | `check_and_bump_*`, `ai_posao_*` | limiti, AI posao | poziva ih `/api/*` sa korisnikovim JWT-om |
 
+**Zajednica je ugašena** (`COMMUNITY_ENABLED = false` u `services/config.ts`; nema taba ni ekrana): klijent ne čita `zajednica_profil` ni `zajednica_izazov` i ne upisuje u `zajednica_profil`. Jedini poziv je DELETE nad `zajednica_profil` za sopstveni `user_id` pri pokretanju (`withdrawIfDisabled` u `app/community.ts`), i to samo ako je nalog ranije bio vidljiv. Dva reda o Zajednici iznad opisuju kod iza prekidača (`services/community/communityApi.ts`).
+
 **Ugovori o privatnosti koji su deo koda i moraju preživeti** (`privacy.html` ih obećava):
 1. Tokeni (Strava, intervals.icu) **ne idu** na server niti u backup (`sbPayload`, `backupPayload`).
 2. Koordinate (`S.ui.geo`, `S.vreme`) **ne idu** na server; pri povlačenju sa servera lokalna vrednost se **zadržava**.
