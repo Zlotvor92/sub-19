@@ -45,11 +45,14 @@
 
 <nav class="toc"><ol>
   <li><a href="#pocetak">Prvi koraci</a></li>
-  <li><a href="#danas">Danas — dan po dan</a></li>
-  <li><a href="#plan">Plan — cela priprema</a></li>
-  <li><a href="#oporavak">Oporavak — da li telo prati</a></li>
-  <li><a href="#trka">Trka — predikcija i forma</a></li>
+  <li><a href="#danas">Danas — šta radim danas</a></li>
+  <li><a href="#trening">Detalji treninga — jedan dan</a></li>
+  <li><a href="#plan">Plan — jedna nedelja i cela priprema</a></li>
+  <li><a href="#napredak">Napredak — da li se rad sabira</a></li>
+  <li><a href="#oporavak">Oporavak, bol, telesna masa</a></li>
+  <li><a href="#forma">Forma i predikcija</a></li>
   <li><a href="#ai">AI analiza</a></li>
+  <li><a href="#ti">Ti — profil i postavke</a></li>
   <li><a href="#strava">Strava</a></li>
   <li><a href="#icu">intervals.icu — oporavak i sat</a></li>
   <li><a href="#obavestenja">Obaveštenja</a></li>
@@ -65,19 +68,40 @@
 Tada radi u punom ekranu i <b>bez interneta</b> — podaci žive na telefonu.</p>
 
 <h3>Prijavi se</h3>
-<p>Prijava Google nalogom služi za rezervnu kopiju na serveru i za isti plan na više
-uređaja. Bez nje sve radi, ali ako izgubiš telefon — nema povratka.</p>
+<p>Aplikacija pri otvaranju traži prijavu Google nalogom (<b>Prijavi se Google nalogom</b>).
+Nalog čuva plan i istoriju treninga na serveru i daje isti plan na više uređaja. Posle prijave
+aplikacija radi i bez interneta. Sinhronizacija i odjava: <b>Ti → Moj profil → Nalog</b>.</p>
 
-<h3>Kreći se kroz tabove</h3>
-<p>Četiri ekrana stoje u traci na dnu: <b>Danas · Plan · Oporavak · Trka</b>.
-Dodirni ikonicu, ili <b>prevuci prstom levo/desno</b> preko ekrana — prevlačenje ide istim
-redom kao traka. Unutar vodoravnih lista (filteri u Zajednici) i preko klizača pokret ostaje
-njihov, pa se tab tada ne menja.</p>
+<h3>Kreći se kroz aplikaciju</h3>
+<p>Četiri taba stoje u traci na dnu: <b>Danas · Plan · Napredak · Ti</b>.</p>
+<table>
+  <tr><th>Tab</th><th>Šta je na njemu</th></tr>
+  <tr><td><b>Danas</b></td><td>današnji trening, kilometri ove nedelje, sledeće trčanje, upozorenja (samo kad ih ima)</td></tr>
+  <tr><td><b>Plan</b></td><td>jedna nedelja plana sa 7 dana; ‹ › menjaju nedelju; radnje nad planom</td></tr>
+  <tr><td><b>Napredak</b></td><td>kilometri poslednjih nedelja, VDOT i procena za trku, poslednja aktivnost, rekordi; odatle Forma i predikcija, Oporavak, Bol, Telesna masa, Analiza trke, Sve aktivnosti</td></tr>
+  <tr><td><b>Ti</b></td><td>nalog i ciljno vreme; odatle profil, zone i postavke, servisi, obaveštenja, izgled, privatnost i podaci, o aplikaciji</td></tr>
+</table>
+<p>Sve ostalo se otvara kao <b>ekran iznad taba</b>. Dugme <b>Nazad</b> na vrhu ekrana ga
+zatvara, isto kao sistemski taster Nazad na telefonu. Mali obrasci (pomeranje treninga, izmena
+treninga, unos testa na 3 km, unos bola) otvaraju se kao <b>list odozdo</b>; i njih zatvara Nazad.</p>
+<p>Putanje u ovom uputstvu pišu se strelicom: <b>Ti → Povezani servisi → Strava</b> znači tab
+Ti, red Povezani servisi, pa red Strava.</p>
+<p>Kad nijedan ekran ni list nije otvoren, tab se menja i <b>prevlačenjem prsta levo/desno</b> —
+istim redom kao traka. Gde sadržaj sam ide vodoravno (klizač, polje za unos, lista koja se
+pomera), pokret ostaje njegov i tab se ne menja.</p>
 
 <h3>Napravi plan</h3>
-<p>Čarobnjak pita distancu (<span class="tag">5K</span> <span class="tag">10K</span>
-<span class="tag">21K</span> <span class="tag">42K</span>), datum trke, koliko km trčiš
-nedeljno sada i koliko dana u nedelji možeš. Iz toga se gradi cela priprema.</p>
+<p>Pri prvom otvaranju čarobnjak ima 4 koraka:</p>
+<ol>
+  <li>distanca (<span class="tag">5K</span> <span class="tag">10K</span>
+      <span class="tag">Polumaraton</span> <span class="tag">Maraton</span>) i datum trke;</li>
+  <li>poslednji rezultat — iz njega se računa svaki ciljni tempo u planu;</li>
+  <li>koliko km trčiš nedeljno sada i kojim danima;</li>
+  <li>koliko brzo da raste forma: kvalitetni treninzi nedeljno, tempo rasta obima, dani za
+      kvalitet.</li>
+</ol>
+<p>Iz toga se gradi cela priprema. Novi plan kasnije: <b>Plan → Prilagodi plan → Generiši novi
+plan</b> (ili <b>Napravi novi plan</b> ako već imaš generisan plan).</p>
 <div class="box tip">
   <p><b>Budi iskren oko trenutne kilometraže.</b> To je jedini broj iz kog se računa koliko
   plan sme da raste. Ako napišeš više nego što stvarno trčiš, plan će te preopteretiti od
@@ -86,45 +110,104 @@ nedeljno sada i koliko dana u nedelji možeš. Iz toga se gradi cela priprema.</
 <p>Svaka distanca ima <b>svoju logiku</b> — 5K plan nije skraćen maratonski. Razlikuju se
 tempo sesija, dužina dugog trčanja, broj kvalitetnih dana i način na koji se ide u taper.</p>
 
-<h2 id="danas">2. Danas — dan po dan</h2>
-<p>Prvi tab pokazuje <b>samo današnji trening</b>, sa punim opisom: zagrevanje, radni deo,
-ciljni tempo, pauze, smirivanje.</p>
+<h2 id="danas">2. Danas — šta radim danas</h2>
+<p>Prvi tab pokazuje <b>samo današnji trening</b>. Redom, odozgo:</p>
 <ul>
-  <li><b>Završi trening</b> — otvara unos: pređeni kilometri, vreme, prosečan puls.</li>
-  <li><b>Preskoči</b> — dan ostaje zabeležen kao preskočen; plan se ne pomera sam.</li>
+  <li><b>Upozorenja</b> — samo kad su relevantna (tabela ispod). Kad ničega nema, ništa se ne
+      prikazuje.</li>
+  <li><b>Trening</b> — veliki broj (kilometri, a bez njih minuti), vrsta treninga, ciljni tempo
+      ili napor, trajanje. Ako je lokacija uključena, za dan koji predstoji stoji i jedan red o
+      vremenu (v. <a href="#vreme">Vreme na dan treninga</a>).</li>
+  <li><b>Detalji treninga</b> — glavno dugme. Otvara ekran sa celim opisom: zagrevanje, radni
+      deo, ciljni tempo, pauze, smirivanje, unos i analiza (v. <a href="#trening">Detalji
+      treninga</a>).</li>
+  <li><b>Završi trening</b> — označava dan kao odrađen. Kilometre, vreme i puls upisuješ u
+      Detaljima treninga (<b>Unos</b>) ili ih donosi Strava / intervals.icu.</li>
+  <li><b>Preskoči</b> — traži potvrdu; dan ostaje zabeležen kao preskočen, plan se ne pomera
+      sam. Posle preskoka stoje <b>Ipak sam odradio</b> i <b>Vrati</b>.</li>
+  <li><b>Ove nedelje</b> — pređeni / planirani kilometri nedelje.</li>
+  <li><b>Sledeće trčanje</b> — dan i kilometri; dodir otvara njegove Detalje treninga.</li>
 </ul>
+<p>Na danu odmora stoji „Odmor" i dugme <b>Detalji dana</b>.</p>
+<table>
+  <tr><th>Upozorenje</th><th>Kad se pojavi</th><th>Radnja</th></tr>
+  <tr><td><b>Ovo nije tvoj plan</b></td><td>gledaš ugrađeni plan sa tuđim datumom trke i tuđim tempom, a postoje unosi</td><td><b>Napravi svoj</b> — nudi prvo izvoz backupa, pa otvara čarobnjak</td></tr>
+  <tr><td><b>Plan se može prilagoditi</b></td><td>postoji predlog zbog bola</td><td><b>Prilagodi plan</b> → Plan → Prilagodi plan</td></tr>
+  <tr><td><b>Oporavak: …</b></td><td>stanje oporavka upozorava, a nema predloga zbog bola</td><td><b>Pogledaj oporavak</b> → Napredak → Oporavak</td></tr>
+  <tr><td><b>Tempo se može prilagoditi tvojoj formi</b></td><td>postoji predlog tempa prema formi</td><td><b>Pogledaj</b> → Plan → Prilagodi plan</td></tr>
+  <tr><td><b>Uradi backup podataka</b></td><td>nisi prijavljen, a prošlo je 7 dana od poslednjeg backupa (ili od prvog otvaranja)</td><td><b>Izvezi</b>, ili <b>Kasnije</b> (odlaže 7 dana)</td></tr>
+</table>
 <div class="box tip">
-  <p><b>Kod kvalitetnih sesija upiši tempo radnog dela.</b> Iz njega se računa tvoja forma
-  (VDOT), a iz forme sve ostalo — budući tempi, predikcija trke i tempo koji odlazi na sat.
-  Lagana trčanja u tome ne učestvuju.</p>
+  <p><b>Kod kvalitetnih sesija upiši tempo radnog dela</b> (Detalji treninga → Unos → Radni deo
+  — ostvaren tempo). Iz njega se računa tvoja forma (VDOT), a iz forme sve ostalo — budući
+  tempi, predikcija trke i tempo koji odlazi na sat. Lagana trčanja u tome ne učestvuju.</p>
 </div>
 <div class="box tip">
-  <p><b>Kod laganih trčanja upiši prosečan puls.</b> Njihov tempo ne meri ništa, ali puls meri:
-  po njemu i po driftu se vidi da li baza raste (v. <a href="#poredjenje">poređenje sa ranijim
-  treninzima</a>). Ako je sat povezan, puls stiže sam.</p>
+  <p><b>Kod laganih trčanja upiši prosečan puls</b> (Pros. puls). Njihov tempo ne meri ništa, ali
+  puls meri: po njemu i po driftu se vidi da li baza raste (v. <a href="#poredjenje">poređenje sa
+  ranijim treninzima</a>). Ako je sat povezan, puls stiže sam.</p>
 </div>
 
-<h2 id="plan">3. Plan — cela priprema</h2>
-<p>Sve nedelje odjednom, sa kilometražom po nedelji i oznakom faze. Dodirni bilo koji dan
-za detalje.</p>
+<h2 id="trening">3. Detalji treninga — jedan dan</h2>
+<p>Jedan ekran za sve što se o jednom danu zna i može. Otvara se iz Danas (<b>Detalji
+treninga</b>), iz Plana (dodir na dan), iz Napredka (Poslednja aktivnost, Sve aktivnosti) i iz
+obaveštenja o gotovoj analizi. Redom, odozgo:</p>
+<table>
+  <tr><th>Deo</th><th>Šta je u njemu</th></tr>
+  <tr><td><b>Zaglavlje</b></td><td>nedelja (N), datum, faza; naziv i opis treninga; ciljni tempo, distanca, trajanje i napor, što od toga postoji</td></tr>
+  <tr><td><b>Status</b></td><td>Predstoji · Odrađen · Preskočen (isto što rade Završi trening i Preskoči na Danas)</td></tr>
+  <tr><td><b>Prilagodi trening</b></td><td>Pomeri na drugi dan · Zameni ili skrati · Vrati na plan</td></tr>
+  <tr><td><b>Vreme</b></td><td>za dan koji predstoji, ako je lokacija uključena</td></tr>
+  <tr><td><b>Struktura</b>, <b>Zašto ovaj trening</b></td><td>koraci treninga; svrha treninga, svrha faze i fokus nedelje</td></tr>
+  <tr><td><b>Unos</b></td><td>polja za upis odrađenog (ispod)</td></tr>
+  <tr><td><b>Posle trčanja</b></td><td><b>Sa sata</b>, <b>Po zonama</b>, <b>Jutros</b>, poređenje sa ranijim (<b>Ista sesija ranije</b> / <b>Slično lagano ranije</b>), <b>Analiziraj trening</b></td></tr>
+</table>
+<p>Na dnu je <b>Obriši unos</b> (traži potvrdu; briše sve unete podatke tog treninga). Sve
+izmene se čuvaju automatski. Dan odmora nema unos ni status, samo prilagođavanje. Na danu
+<b>TEST (opciono)</b> umesto prilagođavanja stoji <b>Unesi test na 3 km</b>.</p>
+
+<h3>Prilagodi trening</h3>
 <ul>
-  <li><b>Izmeni trening</b> — promeni kilometre, tempo ili opis pojedinog dana.</li>
-  <li><b>Pomeri trening</b> — prebaci ga na drugi dan iste nedelje kad ti se poklopi
-      obaveza. Nedeljni obim ostaje isti.</li>
+  <li><b>Pomeri na drugi dan</b> — zamena mesta sa drugim danom iste nedelje; nedeljni obim
+      ostaje isti. Isto radi <b>Plan → Pomeri treninge</b>: dodir na dan, pa dodir na dan sa
+      kojim menja mesto. Odrađeni dani (sa kvačicom) se ne pomeraju. Kad je nešto pomereno, u
+      listu stoji <b>Vrati raspored nedelje na plan</b>.</li>
+  <li><b>Zameni ili skrati</b> — list „Izmeni trening": tip treninga, kilometraža, opis i, za
+      kvalitetne sesije, ciljni tempo radnog dela (<b>Sačuvaj</b>). Na danu odmora ovaj red je
+      <b>Dodaj trening</b> (pretvara odmor u trening).</li>
+  <li><b>Vrati na plan</b> — poništava izmenu tog dana; traži potvrdu.</li>
 </ul>
+<p>Pomeranje i zamena rade dok dan nije odrađen.</p>
 <div class="box warn">
   <p><b>Ne pomeraj kvalitetne sesije jednu uz drugu.</b> Dva teška dana zaredom su glavni
   način da se pokupi povreda. Ako moraš da preskočiš — preskoči, nemoj da nagomilavaš.</p>
 </div>
 
-<h3>Vreme na dan treninga</h3>
-<p>Podešavanja → <b>Vreme</b> → Uključi lokaciju. Na kartici dana koji tek predstoji pojavi se
-temperatura, <b>osećaj</b>, vlažnost, vetar i verovatnoća kiše u sat kad obično trčiš — i, za
-kvalitetne sesije, koliko je realno sporiji ciljni tempo na toj vrućini.</p>
+<h3>Unos</h3>
+<table>
+  <tr><th>Polje</th><th>Napomena</th></tr>
+  <tr><td><b>Distanca (km)</b>, <b>Vreme</b></td><td>obavezno; vreme se kuca bez dvotačke (4233 = 42:33)</td></tr>
+  <tr><td><b>Pros. tempo</b></td><td>računa se sam iz distance i vremena</td></tr>
+  <tr><td><b>Pros. puls</b></td><td>bpm</td></tr>
+  <tr><td><b>Radni deo — ostvaren tempo</b></td><td>samo na kvalitetnim sesijama; od njega zavisi forma</td></tr>
+  <tr><td><b>Više detalja</b></td><td>RPE (1–10), Bol (0–10), Telesna masa (kg), Datum, Beleška</td></tr>
+</table>
+<p>Bol i masa upisani ovde pojavljuju se i u <b>Napredak → Bol</b> i <b>Napredak → Telesna
+masa</b> (uz oznaku „iz treninga"). Ako je unos stigao sa Strave, piše „sa Strave"; ručno
+ispravljeno polje je zaštićeno (v. <a href="#strava">Strava</a>).</p>
+
+<h3 id="vreme">Vreme na dan treninga</h3>
+<p>Ti → Zone i postavke treninga → <b>Vreme i lokacija</b> → Uključi lokaciju. Tu se bira i
+„U koliko sati obično trčiš", a <b>Osveži prognozu</b> ručno povlači novu prognozu. U Detaljima
+treninga, u odeljku <b>Vreme</b> za dan koji tek predstoji, pojavi se temperatura, <b>osećaj</b>,
+vlažnost, vetar i padavine (verovatnoća) u sat kad obično trčiš — i, kad vrućina usporava, koliko
+je realno sporiji ciljni tempo (red „tempo uz vrućinu"; ne računa se za snagu i trčanje/hod). Na
+Danas stoji samo jedan red tog odeljka.</p>
 <p>Za <b>današnji</b> dan prvi red pokazuje <b>„sada"</b> sa trenutnim satom, a red ispod sat
 treninga. Tako se odmah vidi i koliko je napolju u ovom trenutku i koliko će biti kad izađeš.</p>
-<p>Ako je neki sat tog dana <b>bar 3 °C hladniji</b>, kartica ga predloži — ali samo sat koji tek
-dolazi, ne onaj koji je već prošao, i uz ime dana da se ne pomeša sa trenutnim stanjem.</p>
+<p>Ako je neki sat tog dana <b>bar 3 °C hladniji</b>, odeljak ga predloži u napomeni — ali samo
+sat koji tek dolazi, ne onaj koji je već prošao, i uz ime dana da se ne pomeša sa trenutnim
+stanjem.</p>
 <p>Usporavanje se računa iz <b>osećaja</b>, ne iz temperature vazduha: vlažnost je ta koja ubija
 hlađenje znojenjem, pa 30 °C na 80% vlage nije isto što i 30 °C na 25%. Na suvoj vrućini osećaj
 ume da bude i <i>niži</i> od temperature vazduha — znojenje tada radi svoj posao. Procena je
@@ -135,9 +218,10 @@ približna i tako je i označena: služi da tempo na vrućini ne pročitaš kao 
 </div>
 
 <h3 id="poredjenje">Poređenje sa ranijim treninzima</h3>
-<p>Ispod merenja stoji kartica sa <b>istim treningom iz ranijih nedelja</b>. To je direktniji
-dokaz napretka od VDOT krive: između dva ista treninga nema nijedne pretpostavke, samo dva broja.
-Šta se poredi zavisi od toga kakav je trening bio.</p>
+<p>Posle merenja (Sa sata, Po zonama, Jutros) stoji odeljak sa <b>istim treningom iz ranijih
+nedelja</b>: <b>Ista sesija ranije</b> za kvalitetne sesije, <b>Slično lagano ranije</b> za
+lagana i duga trčanja. To je direktniji dokaz napretka od VDOT krive: između dva ista treninga
+nema nijedne pretpostavke, samo dva broja. Šta se poredi zavisi od toga kakav je trening bio.</p>
 
 <p><b>Kvalitetne sesije — po tempu.</b> 6×800 se poredi sa 6×800, ne sa bilo kojim intervalima.
 Prikazuje ostvaren tempo <b>radnog dela</b> (ne prosek celog trčanja), GAP, puls, temperaturu i
@@ -153,7 +237,7 @@ tempo i temperatura su kontekst sa strane.</p>
   <tr><td><b>drift</b></td><td>koliko je odnos tempo/puls pao u drugoj polovini trčanja. Ispod <b>5 %</b> je zdrava baza, 5–8 % granično, preko <b>8 %</b> znači da je tempo bio prebrz za trenutnu izdržljivost. Razlika se boji uvek — drift je već odnos tempo/puls, pa ne zavisi od toga koliko si brzo trčao</td></tr>
 </table>
 <p>Porede se trčanja iz istog <b>pojasa distance</b> (2 km): 8 km i 9 km lako su isti stimulus,
-8 km i 20 km nisu. Ako ni danas ni ranije nema nijednog pulsa i nijednog drifta, kartice nema —
+8 km i 20 km nisu. Ako ni danas ni ranije nema nijednog pulsa i nijednog drifta, odeljka nema —
 ostalo bi golo poređenje tempa, tačno ono što ništa ne znači.</p>
 <div class="box tip">
   <p><b>Vrućina diže puls</b> na istom tempu, zato temperatura stoji odmah uz tempo. Isti trening
@@ -170,42 +254,115 @@ sata — ali tada tako i piše, i uz njega stoji ograda. Isti broj i istu ogradu
 <p>Drift stiže sam: sa <b>intervals.icu</b> kao merenje nad celim fajlom sa sata, a sa Strave se
 računa iz preseka po kilometru. Za taj račun treba bar <b>6 km</b> i približno ravnomeran tempo
 (±3 %) — na progresivnom trčanju je razlika po definiciji ogromna i ne govori ništa o
-izdržljivosti, pa tada piše razlog umesto broja. Isti drift se vidi i na kartici <b>Sa sata</b>,
+izdržljivosti, pa tada piše razlog umesto broja. Isti drift se vidi i u odeljku <b>Sa sata</b>,
 za taj jedan dan.</p>
 
-<h2 id="oporavak">4. Oporavak — da li telo prati</h2>
-<p>Jedan ekran za sve što nije trening: kako si se probudio, koliko te opterećenje gura i
-šta te boli. Kartice idu po hitnosti — prvo stanje danas, pa upozorenje, pa telo.</p>
+<h2 id="plan">4. Plan — jedna nedelja i cela priprema</h2>
+<p>Tab Plan pokazuje <b>jednu nedelju</b> odjednom: tekuću, a ‹ › (<b>Prethodna nedelja</b> /
+<b>Sledeća nedelja</b>) pomeraju na ostale. Gore stoje trka i broj dana do nje, pa „Nedelja N od
+M" sa datumima, faza, planirani kilometri nedelje i ostvareni kilometri. Ispod je 7 redova dana.</p>
+<p>Red dana pokazuje dan, datum, naziv treninga i kilometre, a uz njih tempo ili stanje:
+<b>završeno</b> (kvačica), <b>preskočeno</b>, <b>nije odrađeno</b>. Današnji red je istaknut
+(„Danas"), dan odmora je tih red „Odmor". Dodir na red otvara <a href="#trening">Detalje
+treninga</a>.</p>
+<p>Ispod dana stoje redovi:</p>
+<ul>
+  <li><b>Pomeri treninge</b> — zamena dana unutar ove nedelje (v. <a href="#trening">Prilagodi
+      trening</a>). Nedeljni obim ostaje isti.</li>
+  <li><b>Prilagodi plan</b> — sve što menja plan kao celinu (ispod).</li>
+  <li><b>Pošalji na sat</b> — vidi se samo kad je intervals.icu povezan; otvara Slanje na sat,
+      treninzi narednih 14 dana (v. <a href="#icu">intervals.icu</a>).</li>
+  <li><b>Pregled celog plana</b> — dugme na dnu (ispod).</li>
+</ul>
+<p>Generisan plan ponekad nosi i „Na šta da paziš u ovom planu" — sklopljen odeljak sa
+upozorenjima za taj plan.</p>
+
+<h3>Prilagodi plan</h3>
+<p>Plan → <b>Prilagodi plan</b>. Predlozi se pojavljuju samo kad postoje; Danas tada nosi jedan
+red koji vodi ovamo.</p>
 <table>
-  <tr><th>Kartica</th><th>Šta ti kaže</th></tr>
-  <tr><td>Jutros</td><td>HRV, puls u miru, san i svežina — samo ako je intervals.icu povezan</td></tr>
-  <tr><td>Opterećenje</td><td>odnos poslednjih 7 dana i proseka poslednje 4 nedelje</td></tr>
-  <tr><td>Bol</td><td>mapa tela, šta je aktivno i kriva bola kroz vreme</td></tr>
-  <tr><td>Telesna masa</td><td>cilj naspram stvarnog, ako unosiš težinu</td></tr>
-  <tr><td>Istorija bola</td><td>svi unosi, i ručni i oni vezani za trening</td></tr>
+  <tr><th>Radnja</th><th>Šta radi</th></tr>
+  <tr><td><b>Zbog bola</b> (predlog)</td><td>pokazuje koji se treninzi menjaju; <b>Prilagodi plan</b> ih menja. Svaki dan možeš ručno da vratiš u Detaljima treninga. Kad je trka u horizontu, plan se ovim ne menja — odluku o trci donosiš sam</td></tr>
+  <tr><td><b>Forma je ispred plana</b> / <b>Forma je iza plana</b> (predlog tempa)</td><td><b>Prilagodi tempo</b> menja samo ciljne tempe sesija. Ručno izmenjeni i odrađeni treninzi se ne diraju. Sve se vraća dugmetom <b>Vrati planski tempo</b></td></tr>
+  <tr><td><b>Preračunaj plan prema formi</b></td><td>tempi i obim preostalih nedelja prema izmerenoj formi; cilj, kalendar i raspored dana ostaju isti, a odrađeni treninzi, uneti tempi, ručno zaključana polja i izmerena forma ostaju netaknuti. Radi samo nad generisanim planom, kad postoje bar 3 izmerena rezultata forme i kad se forma i plan razilaze za 1,5 VDOT ili više; ne radi kad je do trke manje od 4 nedelje. Pre upisa pokazuje pregled. <b>Nema vraćanja</b> — prvo izvezi backup</td></tr>
+  <tr><td><b>Promeni ciljno vreme</b></td><td>otvara ekran Cilj (isti kao Ti → Trenutni cilj): novo vreme, <b>Promeni cilj</b>. Menjaju se samo nedelje koje tek dolaze — tempi sesija vezanih za tempo trke. Ugrađeni plan ima svoj cilj koji se ne menja</td></tr>
+  <tr><td><b>Generiši novi plan</b></td><td>kad koristiš ugrađeni plan: poseban plan za drugu trku, ugrađeni ostaje netaknut</td></tr>
+  <tr><td><b>Napravi novi plan</b></td><td>kad već imaš generisan plan: postojeći plan i svi unosi uz njega se <b>trajno brišu</b>, nema arhive — prvo izvezi backup</td></tr>
+  <tr><td><b>Vrati na moj plan</b></td><td>samo vlasnik ugrađenog plana: generisan plan se trajno briše</td></tr>
+  <tr><td><b>Pošalji na sat</b></td><td>samo kad je intervals.icu povezan</td></tr>
 </table>
-<p>Dodirni deo tela na mapi i upiši bol od <b>0 do 10</b>. Vremenom dobiješ krivu bola po
-delu tela, pa se vidi da li nešto raste — obično nedelju-dve pre nego što to sam primetiš.</p>
+
+<h3>Pregled celog plana</h3>
+<p>Plan → <b>Pregled celog plana</b> (naslov „Cela priprema"): traka ciklusa; <b>Gde sam u planu</b>
+(procenat plana do sada i procenat celog plana, uz kilometre); <b>Nedeljna kilometraža</b>
+(plan i ostvareno, dodir na stubac pokazuje nedelju); pa faze sa nedeljama. Nedelja se otvara
+dodirom i nosi svoje dane (dodir na dan otvara Detalje treninga) i pomeranje treninga. Ćelije:
+popunjeno = urađeno · prsten = danas · kontura = predstoji · isprekidano = propušteno ili
+preskočeno · tačka = odmor.</p>
+
+<h2 id="napredak">5. Napredak — da li se rad sabira</h2>
+<p>Tab Napredak, odozgo:</p>
+<ul>
+  <li><b>Kilometri</b> poslednjih nedelja — ukupan broj i stubić po nedelji (N, „u toku" za
+      tekuću).</li>
+  <li><b>Potvrđen VDOT</b> (ili <b>Polazni VDOT</b> dok nema merenja) i <b>Procena</b> za tvoju
+      trku; dodir otvara Formu i predikciju.</li>
+  <li><b>Poslednja aktivnost</b> — dodir otvara njene Detalje treninga. Dugme <b>Sve
+      aktivnosti</b> otvara istoriju odrađenog, najnovije prvo (ručni unosi i uvoz sa Strave i
+      intervals.icu), po 30 odjednom; <b>Prikaži starije</b> učitava još. Unos van plana
+      (ručno uneta trka) otvara Analizu trke.</li>
+  <li><b>Rekordi</b> — najjača nedelja, najduže trčanje, najbrži test 3 km, trčanja po planu
+      (što od toga postoji).</li>
+  <li><b>Detaljnije</b> — redovi: <b>Forma i predikcija</b>, <b>Oporavak</b>, <b>Bol</b>,
+      <b>Telesna masa</b>, <b>Analiza trke</b>.</li>
+</ul>
+
+<h2 id="oporavak">6. Oporavak, bol, telesna masa</h2>
+
+<h3>Napredak → Oporavak — da li telo prati</h3>
+<p>Odgovor na „Da li smem da treniram po planu?". Odeljci idu po hitnosti: prvo stanje danas,
+pa opterećenje, pa kretanje HRV-a i pulsa u miru.</p>
+<table>
+  <tr><th>Odeljak</th><th>Šta ti kaže</th></tr>
+  <tr><td>Stanje danas</td><td>jedna reč, razlog i šta da radiš; ispod svi signali sa brojkom i stanjem. Najlošiji signal je prvi i on odlučuje</td></tr>
+  <tr><td>Opterećenje</td><td>odnos poslednjih 7 dana i proseka poslednje 4 nedelje; ako plan narednih 7 dana vodi iznad gornje ivice pojasa, to piše unapred</td></tr>
+  <tr><td>HRV</td><td>kretanje kroz vreme prema tvojoj sedmodnevnoj osnovi</td></tr>
+  <tr><td>Puls u miru</td><td>isto, ali obrnuto: rast je lošiji</td></tr>
+</table>
+<p>HRV, puls u miru i san stižu samo ako je intervals.icu povezan (v. <a href="#icu">intervals.icu</a>).
+Isti podaci za dan trčanja stoje u Detaljima treninga, odeljak <b>Jutros</b>.</p>
 <div class="box tip">
   <p><b>Opterećenje je jedini broj koji upozorava pre nego što nešto zaboli.</b> Bezbedan
   pojas je <b>0,80–1,30</b>. Ispod znači da si smanjio obim (na deload nedelji je to i
   poenta), preko <b>1,50</b> rizik od povrede naglo raste — tu skrati sledeću nedelju.</p>
 </div>
+
+<h3>Napredak → Bol</h3>
+<p>Mapa tela (<b>Prednja</b> / <b>Zadnja</b>): dodirni deo tela, ili <b>Dodaj unos bola</b>, i
+upiši bol od <b>0 do 10</b>. <b>Kroz vreme</b> je kriva bola (dodir na tačku pokazuje deo tela,
+aktivnost i belešku), pa se vidi da li nešto raste — obično nedelju-dve pre nego što to sam
+primetiš. <b>Istorija</b> su svi unosi, i ručni i oni vezani za trening („iz treninga"); dodir na
+unos ga menja.</p>
 <div class="box warn">
   <p>Bol preko <b>4</b> koji traje više od nekoliko dana, ili koji menja način na koji trčiš,
   nije nešto što se „istrči". Prekid od tri dana košta mnogo manje od šest nedelja pauze.</p>
 </div>
 
-<h2 id="trka">5. Trka — predikcija i forma</h2>
-<p>Gore stoje dva prstena: <b>zadnja</b> i <b>najbrža</b> predikcija. Prsten meri koliki je
-deo puta od tvoje polazne forme do cilja pređen — prazan prsten znači da se ništa nije
-pomerilo, i to je informacija, ne greška.</p>
+<h3>Napredak → Telesna masa</h3>
+<p>Grafikon merenja i ručni unos: <b>Datum</b>, <b>Masa (kg)</b>, <b>Sačuvaj merenje</b> (unos za
+isti datum zamenjuje prethodni ručni). <b>Sva merenja</b> je lista sa brisanjem; <b>Obriši N
+merenja pre …</b> briše ona pre početka plana. Isto merenje možeš da upišeš i uz trening.</p>
+
+<h2 id="forma">7. Forma i predikcija</h2>
+<p>Napredak → <b>Forma i predikcija</b>. Odozgo:</p>
 <table>
-  <tr><th>Kartica</th><th>Šta ti kaže</th></tr>
+  <tr><th>Odeljak</th><th>Šta ti kaže</th></tr>
+  <tr><td>Da li napredujem?</td><td>odgovor (Da / Ne / Za sada isto, prema promeni VDOT-a od starta), procena za tvoju trku danas i koliko fali do cilja; ispod osa sa start, sada (procena), cilj i „plan vodi do"</td></tr>
+  <tr><td>Procena po distancama</td><td>VDOT i vreme za 5 km, 10 km, polumaraton i maraton; tvoja trka je označena. Vremena za duže distance pretpostavljaju da si trenirao baš za njih</td></tr>
+  <tr><td>VDOT kroz vreme</td><td>jedan broj koji sažima formu; iz njega se izvode svi tempi. Trend se crta kad postoje bar 2 zabeležene vrednosti</td></tr>
+  <tr><td>Predikcija kroz plan</td><td>kako se procena menjala kroz pripremu; test 3 km je romb</td></tr>
   <tr><td>Test 3 km</td><td>vreme na 3000 m istrčano kao trka — najjači pojedinačan pokazatelj forme</td></tr>
-  <tr><td>VDOT kroz vreme</td><td>jedan broj koji sažima formu; iz njega se izvode svi tempi</td></tr>
-  <tr><td>Predikcija kroz plan</td><td>kako se procena menjala kroz pripremu; testovi su rombovi</td></tr>
-  <tr><td>Prosečan tempo</td><td>kroz sva odrađena trčanja — najsiroviji podatak, zato je na dnu</td></tr>
+  <tr><td>Tumačenje</td><td><b>Objasni trend (AI)</b> (v. <a href="#ai">AI analiza</a>)</td></tr>
 </table>
 <p>Sve se puni iz radnog dela kvalitetnih sesija — što ih više upišeš, procena je mirnija i
 tačnija. Rana predikcija zna da skače: sa dve tačke se ne vidi trend.</p>
@@ -221,9 +378,11 @@ doprinosa, koji VDOT ne meri; duže zavisi sve više od toga koliki udeo VO2max-
 održiš i od ekonomije trčanja, a sve manje od samog VO2max-a. Test na 3 km traje baš u tom
 prozoru — zato je najbolji pokazatelj forme koji možeš sam da izvedeš, i zato formu pomera
 znatno više nego bilo koji trening.</p>
-<p>Unosi se u tabu <b>Trka → Test 3 km</b>: vreme i datum. Ne mora da bude na test-dan iz
-plana — istrči ga kad ti odgovara, i unesi kad god. Svaki test ostaje zapisan, pa se vidi i
-kako se forma menjala kroz njih.</p>
+<p>Unosi se u <b>Napredak → Forma i predikcija → Test 3 km</b> (<b>Unesi test na 3 km</b>, a
+posle prvog testa <b>Novi test</b>): vreme i datum. Ne mora da bude na test-dan iz plana —
+istrči ga kad ti odgovara, i unesi kad god (na test-danu isti list otvara i <b>Unesi test na 3
+km</b> u Detaljima treninga). Svaki test ostaje zapisan, pa se vidi i kako se forma menjala kroz
+njih; raniji testovi stoje u listi, dodir na test ga menja.</p>
 <table>
   <tr><th>Odakle merenje</th><th>Koliko pomera formu</th><th>Zašto</th></tr>
   <tr><td>Test 3 km</td><td>najviše</td><td>maksimalan napor, tačno u prozoru u kom je formula najtačnija</td></tr>
@@ -236,18 +395,23 @@ kako se forma menjala kroz njih.</p>
   istrčiš „kontrolisano", procena forme će biti niža nego što jesi — a plan se gradi od nje.</p>
 </div>
 
-<h2 id="ai">6. AI analiza</h2>
-<p>Dva mesta:</p>
+<h2 id="ai">8. AI analiza</h2>
+<p>Tri mesta:</p>
 <ul>
-  <li><b>🤖 Analiziraj trening</b> — na svakom odrađenom treningu. Gleda tempo po kilometru,
-      puls, kadencu, visinsku razliku, temperaturu, raspad tempa i puls-tempo odnos
-      (dekapling), i poredi to sa onim što je trening <i>trebalo</i> da bude.</li>
-  <li><b>📈 Objasni trend</b> — u tabu Trka, preko cele istorije umesto jednog dana.</li>
+  <li><b>Analiziraj trening</b> — u Detaljima treninga, na svakom odrađenom treningu. Gleda tempo
+      po kilometru, puls, kadencu, visinsku razliku, temperaturu, raspad tempa i puls-tempo odnos
+      (dekapling), i poredi to sa onim što je trening <i>trebalo</i> da bude. Kad analiza
+      postoji, stoji <b>Analiziraj ponovo</b>.</li>
+  <li><b>Objasni trend (AI)</b> — u Napredak → Forma i predikcija → Tumačenje, preko cele
+      istorije umesto jednog dana.</li>
+  <li><b>Analiziraj trku</b> — Napredak → Analiza trke: rezultat, prolazi po kilometru i
+      analiza, odvojeno od analize treninga.</li>
 </ul>
-<p>Ograničenje je <b>2 analize po treningu</b> (ista analiza za iste podatke ne donosi ništa novo) i <b>30 dnevno</b> ukupno.</p>
+<p>Ograničenje je <b>2 analize po treningu</b> (ista analiza za iste podatke ne donosi ništa novo) i <b>30 dnevno</b> ukupno.
+Koliko ti je ostalo, piše uz dugme.</p>
 <p>Koliko će analiza biti konkretna zavisi od toga <b>odakle stižu podaci o trčanju</b>.
-Na samoj kartici piše šta je analiza imala — „po krugu", „po kilometru" ili „samo prosek
-cele sesije".</p>
+Uz dugme i uz gotovu analizu piše šta je analiza imala — „po krugu", „po kilometru" ili „samo
+prosek cele sesije".</p>
 <table>
   <tr><th>Izvor</th><th>Šta analiza dobija</th></tr>
   <tr><td><b>intervals.icu</b></td><td>svaki interval posebno — tempo, GAP, puls (prosečan i najviši), kadenca i <b>trajanje oporavka između repova</b>; uz to serija kao celina i već izračunato razdvajanje, efikasnost i vreme po zonama</td></tr>
@@ -259,9 +423,27 @@ cele sesije".</p>
   telo je u pravu.</p>
 </div>
 
-<h2 id="strava">7. Strava</h2>
-<p>Podešavanja → Strava → <b>Poveži Stravu</b>. Posle toga <b>Uvezi trčanja</b> sam popunjava
-distancu, vreme i puls, a tempo intervala čita iz lapova.</p>
+<h2 id="ti">9. Ti — profil i postavke</h2>
+<p>Gore: nalog (adresa i gde su podaci) i blok <b>Trenutni cilj</b> — ciljno vreme, trka i
+polazni rezultat (ili procena danas). Dodir na blok otvara ekran Cilj. Ispod je po jedan red za
+svaku temu; svaki red otvara svoj ekran.</p>
+<table>
+  <tr><th>Red</th><th>Šta je unutra</th></tr>
+  <tr><td><b>Moj profil</b></td><td><b>Nalog</b> (Sinhronizuj, Odjavi se, Obriši nalog) i <b>Trkačko iskustvo</b> — ono što je plan dobio kad je pravljen, samo za čitanje. Cilj menjaš u Ti → Trenutni cilj, ostalo novim planom (Plan → Prilagodi plan)</td></tr>
+  <tr><td><b>Zone i postavke treninga</b></td><td><b>Zone pulsa</b> (iz intervals.icu, a bez njega sa Strave) i <b>Vreme i lokacija</b> (v. <a href="#vreme">Vreme na dan treninga</a>)</td></tr>
+  <tr><td><b>Povezani servisi</b></td><td>Strava, intervals.icu i Slanje na sat (vidi se tek kad je intervals.icu povezan); tačka uz red pokazuje da li je povezano</td></tr>
+  <tr><td><b>Obaveštenja</b></td><td>v. <a href="#obavestenja">Obaveštenja</a></td></tr>
+  <tr><td><b>Izgled aplikacije</b></td><td><b>Prati sistem</b> · <b>Svetla</b> · <b>Tamna</b></td></tr>
+  <tr><td><b>Privatnost i podaci</b></td><td>backup, Ranije verzije, Prijavi problem, politika privatnosti, Obriši nalog (v. <a href="#podaci">Podaci i backup</a>)</td></tr>
+  <tr><td><b>O aplikaciji</b></td><td>verzija, Offline kopija (<b>Osveži aplikaciju</b>), Uputstvo, politika privatnosti</td></tr>
+</table>
+<p><b>Izgled aplikacije</b> važi samo za ovaj uređaj i ne šalje se na server. <b>Prati sistem</b>
+prati podešavanje telefona ili računara; Svetla i Tamna ga nadjačavaju.</p>
+
+<h2 id="strava">10. Strava</h2>
+<p>Ti → Povezani servisi → Strava → <b>Poveži Stravu</b>. Posle toga <b>Uvezi trčanja</b> sam
+popunjava distancu, vreme i puls, a tempo intervala čita iz lapova. <b>Otkači</b> prekida vezu;
+uvezeni podaci ostaju.</p>
 <div class="box tip">
   <p><b>Redosled izvora:</b> ako je intervals.icu povezan, trčanja se povlače odatle jer su
   tamo intervali već prepoznati nad izvornim fajlom sa sata. Ako nije — sve ide preko Strave,
@@ -272,18 +454,20 @@ distancu, vreme i puls, a tempo intervala čita iz lapova.</p>
   <li>Strava ima prednost nad ručnim unosom.</li>
   <li>Ali ako <b>ti</b> ručno ispraviš km, vreme ili puls — taj trening je trajno zaštićen
       od prepisivanja.</li>
-  <li>Dva trčanja istog dana → uzima se ono bliže planiranoj kilometraži.</li>
+  <li>Dva trčanja istog dana se oba broje: kilometraža i vreme se sabiraju, puls je prosek
+      ponderisan trajanjem. Isti trening koji stigne dvaput (razlika manja od 1 % i u distanci
+      i u vremenu) se ne sabira.</li>
 </ul>
 
-<h2 id="icu">8. intervals.icu — oporavak i sat</h2>
+<h2 id="icu">11. intervals.icu — oporavak i sat</h2>
 <p>Dve odvojene stvari kroz istu vezu.</p>
 
 <h3>Čitanje — jutarnja merenja i trčanja</h3>
-<p>Podešavanja → <b>intervals.icu</b> → <b>Povuci sve</b>. Jedno dugme donosi obe stvari, jer
+<p>Ti → Povezani servisi → intervals.icu → <b>Povuci sve</b>. Jedno dugme donosi obe stvari, jer
 obe stižu sa iste veze:</p>
 <ul>
   <li><b>HRV, puls u miru, san i trenažno opterećenje</b> koje Garmin već šalje na
-      intervals.icu. Prikazuje se u tabu Oporavak, sa sedmodnevnom osnovom, pa se vidi kada
+      intervals.icu. Prikazuje se u Napredak → Oporavak, sa sedmodnevnom osnovom, pa se vidi kada
       odstupaš od <i>sopstvenog</i> proseka — a ne od tuđe tabele.</li>
   <li><b>Sama trčanja</b>, sa već prepoznatim intervalima: svaki rep posebno, sa tempom,
       GAP-om, pulsom i trajanjem oporavka između repova. To je ono što AI analizu pretvara iz
@@ -298,20 +482,21 @@ ume da bude Z1 u jednom i Z2 u drugom, pa je analiza znala da tvrdi „ceo treni
 trčanje koje je po tvojim zonama bilo Z2.</p>
 <p>Sada, kad je icu povezan, i granice i raspodela dolaze iz njega — isti sistem sa obe strane.
 Strava ostaje izvor samo dok icu nije povezan. Šta aplikacija drži kao tvoje zone i odakle su,
-piše u <b>Podešavanja → Tvoje zone pulsa</b>.</p>
-<p>Na svakom odrađenom treningu tada stoji kartica <b>Po zonama</b>: koliko je procenata
-vremena provedeno u kojoj zoni, sa trakom srazmernom procentu i brojem minuta. Zone u kojima
-nema nijedne sekunde se ne prikazuju, a zbir je uvek 100 %. <b>Iste te procente dobija i AI
-analiza</b> — ne računa ih sama, nego prepisuje, pa broj u tekstu i broj na kartici ne mogu da
+piše u <b>Ti → Zone i postavke treninga → Zone pulsa</b>.</p>
+<p>Na svakom odrađenom treningu tada stoji odeljak <b>Po zonama</b> (Detalji treninga): koliko je
+procenata vremena provedeno u kojoj zoni, sa trakom srazmernom procentu i brojem minuta. Zone u
+kojima nema nijedne sekunde se ne prikazuju, a zbir je uvek 100 %. <b>Iste te procente dobija i AI
+analiza</b> — ne računa ih sama, nego prepisuje, pa broj u tekstu i broj na ekranu ne mogu da
 se raziđu.</p>
 <div class="box tip">
   <p><b>Promenio si zone na intervals.icu?</b> Povlače se same najviše jednom nedeljno, ali
   <b>„Povuci sve"</b> ih uzima odmah — pritisni ga posle izmene i zone su ažurne istog časa.</p>
 </div>
-<p><b>Povezivanje ide jednim dugmetom:</b> Podešavanja → intervals.icu → <b>Poveži
+<p><b>Povezivanje ide jednim dugmetom:</b> Ti → Povezani servisi → intervals.icu → <b>Poveži
 intervals.icu</b>. Odobravaš na njihovoj strani, nikakav ključ ne prepisuješ. Ako to ne prođe,
-pod <b>Ručno povezivanje</b> stoji stari put: intervals.icu → Settings → dole <b>Developer
-Settings</b> → ID sportiste i API ključ. <b>Ključ nikad ne napušta tvoj telefon</b> — ne
+pod <b>Ručno povezivanje (ako gornje ne radi)</b> stoji stari put: intervals.icu → Settings →
+dole <b>Developer Settings</b> → ID sportiste i API ključ, pa <b>Poveži ključem</b>. Ručno
+povezivanje radi bez slanja treninga na sat. <b>Ključ nikad ne napušta tvoj telefon</b> — ne
 upisuje se u bazu.</p>
 <div class="box tip">
   <p><b>Jedno dugme za sve.</b> „Povuci sve" donosi i jutarnja merenja i trčanja odjednom —
@@ -319,8 +504,9 @@ upisuje se u bazu.</p>
 </div>
 
 <h3>Slanje treninga na sat (pisanje)</h3>
-<p>Šalje strukturu treninga u intervals.icu kalendar, odakle intervals.icu prosleđuje
-Garminu, a Garmin satu. Da lanac radi, treba oboje:</p>
+<p>Ti → Povezani servisi → <b>Slanje na sat</b> (ili Plan → Pošalji na sat; oba se vide tek kad
+je intervals.icu povezan). Šalje strukturu treninga u intervals.icu kalendar, odakle
+intervals.icu prosleđuje Garminu, a Garmin satu. Da lanac radi, treba oboje:</p>
 <ol>
   <li>intervals.icu → Settings → uključi <b>„Upload planned workouts"</b> i autorizuj
       Garmin Connect.</li>
@@ -329,9 +515,10 @@ Garminu, a Garmin satu. Da lanac radi, treba oboje:</p>
 <div class="box warn">
   <p><b>Ako na satu svaki korak piše „No Target"</b> — nedostaje prag tempa. Bez njega
   intervals.icu izbacuje ciljeve tempa iz Garmin izvoza, iako struktura stigne ispravno.
-  Aplikacija ti u Podešavanjima ispisuje tačan broj koji treba uneti.</p>
+  Ekran Slanje na sat, pod „Ako na satu piše „No Target"", ispisuje broj koji treba uneti
+  (po tvojoj formi).</p>
   <p>Pošto se Garmin izvoz pravi kad događaj <b>nastane</b>, posle unosa praga obično slanje
-  ne pomaže — tada ide <b>„Pošalji iz početka"</b>, koje briše ranije poslato i pravi ga
+  ne pomaže — tada ide <b>„Iz početka"</b>, koje briše ranije poslato i pravi ga
   iznova.</p>
 </div>
 <p>Još dve stvari koje zbune:</p>
@@ -341,19 +528,22 @@ Garminu, a Garmin satu. Da lanac radi, treba oboje:</p>
   <li>intervals.icu prosleđuje Garminu otprilike <b>nedelju dana unapred</b>, iako mi šaljemo
       14 dana. Dalji dani stižu sami kako se približavaju.</li>
 </ul>
-<p>Dugme <b>👁 Vidi šta se šalje</b> ispisuje doslovno ono što odlazi, po danima — koristi ga
-kad nisi siguran da li je problem kod nas ili dalje niz lanac.</p>
+<p>Dugme <b>Vidi šta se šalje</b> ispisuje doslovno ono što odlazi, po danima — koristi ga
+kad nisi siguran da li je problem kod nas ili dalje niz lanac. Slanje ide dugmetom
+<b>Pošalji na sat (14 dana)</b>.</p>
 
-<h2 id="obavestenja">9. Obaveštenja</h2>
-<p><b>Podešavanja → Obaveštenja → Uključi.</b> Pregledač pita za dozvolu jednom; posle toga
+<h2 id="obavestenja">12. Obaveštenja</h2>
+<p><b>Ti → Obaveštenja → Uključi obaveštenja.</b> Pregledač pita za dozvolu jednom; posle toga
 stižu dve stvari:</p>
 <ul>
   <li><b>Ujutru</b> — jedan red o tome šta je danas na planu („8×400 m · 12 km"). Dani odmora
       se preskaču, telefon tada ćuti.</li>
   <li><b>Kad AI analiza završi</b> — analiza se računa na serveru, pa smeš da zatvoriš
-      aplikaciju čim je pokreneš. Obaveštenje stiže kad je tekst gotov. Ako si u tom trenutku
-      u aplikaciji, tekst se pojavi sam i obaveštenje ne iskače.</li>
+      aplikaciju čim je pokreneš. Obaveštenje stiže kad je tekst gotov, a dodir na njega
+      otvara Detalje treninga tog dana. Ako si u tom trenutku u aplikaciji, tekst se pojavi sam
+      i obaveštenje ne iskače.</li>
 </ul>
+<p>Na istom ekranu: <b>Probno obaveštenje</b> i <b>Isključi</b>.</p>
 <div class="box tip">
   <p><b>Na iPhoneu obaveštenja radi samo instalirana aplikacija.</b> U Safariju dodirni
   <b>Podeli → Dodaj na početni ekran</b>, otvori SUB-20 sa ikonice, pa uključi obaveštenja.
@@ -372,29 +562,41 @@ i sa uređaja i sa servera.</p>
       osvežavaju i dok aplikacija stoji zatvorena, pa te traka <b>„Osveži"</b> čeka odmah.</li>
 </ul>
 
-<h2 id="podaci">10. Podaci i backup</h2>
+<h2 id="podaci">13. Podaci i backup</h2>
 <p>Podaci žive <b>na tvom telefonu</b>; server je rezervna kopija. Zato aplikacija radi u
-avionu, u šumi i bez signala.</p>
+avionu, u šumi i bez signala. Sve u <b>Ti → Privatnost i podaci</b>:</p>
 <ul>
   <li><b>Izvezi backup</b> — jedan JSON fajl sa svime. Snimi ga pre veće promene.</li>
-  <li><b>Uvezi backup</b> — vraća stanje iz tog fajla.</li>
+  <li><b>Uvezi backup</b> — vraća stanje iz tog fajla. Uvoz <b>prepisuje</b> postojeće podatke i
+      traži potvrdu.</li>
+  <li><b>Ranije verzije</b> (samo prijavljen) — server pamti ranija stanja: najviše 40, najviše
+      jedno na sat. Greška se može vratiti unazad.</li>
+  <li><b>Prijavi problem</b> (samo prijavljen) — opis stiže na mejl, sa verzijom aplikacije i
+      tabom na kom si bio.</li>
+  <li><b>Obriši nalog</b> (samo prijavljen) — briše nalog i <b>sve</b> podatke sa servera, i
+      istoriju verzija. Ne može da se poništi.</li>
 </ul>
+<p>Backup fajl ne nosi veze sa Stravom i intervals.icu (tokeni su po uređaju); na novom uređaju
+ih povežeš ponovo. Ko nije prijavljen, ima backup kao jedinu kopiju; Danas tada jednom
+nedeljno podseća na backup.</p>
 <div class="box tip">
-  <p>Izvezi backup pre nego što promeniš plan ili očistiš podatke pregledača. Traje pet
-  sekundi i jedini je način da se vratiš unazad.</p>
+  <p>Izvezi backup pre nego što promeniš plan ili očistiš podatke pregledača. <b>Preračunaj plan
+  prema formi</b> i <b>Napravi novi plan</b> nemaju vraćanje.</p>
 </div>
 
-<h2 id="problemi">11. Kad nešto ne radi</h2>
+<h2 id="problemi">14. Kad nešto ne radi</h2>
 <table>
   <tr><th>Simptom</th><th>Prvo probaj</th></tr>
-  <tr><td>Aplikacija izgleda staro / promena se ne vidi</td><td>Podešavanja → dole piše i verzija koju vidiš i verzija <b>offline kopije</b>; dugme <b>Osveži aplikaciju</b> ih izjednačava odmah, bez gubitka podataka</td></tr>
-  <tr><td>Na satu piše „No Target"</td><td>unesi prag tempa, pa <b>Pošalji iz početka</b></td></tr>
+  <tr><td>Aplikacija izgleda staro / promena se ne vidi</td><td>Ti → O aplikaciji: piše verzija koju vidiš, a pod <b>Offline kopija</b> verzija offline kopije; dugme <b>Osveži aplikaciju</b> ih izjednačava odmah, bez gubitka podataka. Traka <b>„Osveži"</b> radi isto</td></tr>
+  <tr><td>Na satu piše „No Target"</td><td>unesi prag tempa, pa <b>Iz početka</b> (Ti → Povezani servisi → Slanje na sat)</td></tr>
   <tr><td>Treninga nema na Garmin kalendaru</td><td>proveri „Upload planned workouts" u intervals.icu</td></tr>
-  <tr><td>Strava ne uvozi trčanje</td><td>Uvezi trčanja ručno; ako je polje ručno menjano, zaštićeno je namerno</td></tr>
+  <tr><td>Nema reda „Pošalji na sat" / „Slanje na sat"</td><td>vide se tek kad je intervals.icu povezan (Ti → Povezani servisi → intervals.icu)</td></tr>
+  <tr><td>Strava ne uvozi trčanje</td><td>Ti → Povezani servisi → Strava → <b>Uvezi trčanja</b>; ako je polje ručno menjano, zaštićeno je namerno</td></tr>
   <tr><td>Predikcija skače gore-dole</td><td>normalno dok ima malo unosa; smiruje se</td></tr>
-  <tr><td>Obaveštenja ne stižu</td><td>Podešavanja → Obaveštenja → <b>Probno obaveštenje</b>; ako ni ono ne dođe, dozvola je odbijena u pregledaču (ikonica pored adrese → Obaveštenja)</td></tr>
+  <tr><td>Nema „Preračunaj plan prema formi"</td><td>red postoji samo nad generisanim planom; radi tek uz bar 3 izmerena rezultata forme i razliku od 1,5 VDOT ili više</td></tr>
+  <tr><td>Obaveštenja ne stižu</td><td>Ti → Obaveštenja → <b>Probno obaveštenje</b>; ako ni ono ne dođe, dozvola je odbijena u pregledaču (ikonica pored adrese → Obaveštenja)</td></tr>
   <tr><td>Na iPhoneu nema dugmeta za obaveštenja</td><td>otvori aplikaciju sa <b>ikonice na početnom ekranu</b>, ne iz Safarija</td></tr>
-  <tr><td>Nešto drugo</td><td>Podešavanja → <b>Prijavi problem</b> — stiže sa verzijom i tabom na kom si bio</td></tr>
+  <tr><td>Nešto drugo</td><td>Ti → Privatnost i podaci → <b>Prijavi problem</b> — stiže sa verzijom i tabom na kom si bio</td></tr>
 </table>
 
 <footer>

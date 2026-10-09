@@ -8,6 +8,9 @@ Nijedna stavka se ne sme izbaciti zato što je „teško migrirati" (zahtev §31
 
 Putanje su relativne na `web/src/`. `domain/*` = čist TS bez DOM-a; `services/*` = I/O; `stores/*` = Zustand; `features/*` = React.
 
+**Stanje UI-ja (2026-10-09, grana `claude/quiet-athlete`):** četiri taba — Danas · Plan · Napredak · Ti. Ekran se otvara iznad taba (stek u `stores/uiStore`, registar `features/screens.tsx`, dugme „Nazad"), mala izmena je list odozdo (registar `features/sheets.tsx`). Zajednica nema UI. Gde je koja funkcija u UI-ju: odeljak H na kraju.
+Kolona *Nova lokacija*: `features/*` i `components/*` su proverene prema kodu (2026-10-09). `domain/*`, `services/*`, `stores/*`, `data/*` su imena iz audita (plan, 2026-10-01), nisu popis stvarnih fajlova i ovde nisu usklađivana; stvarno stanje je `ls web/src/<folder>`.
+
 ## A. Platforma i podaci
 
 | ID | Feature | Postojeća implementacija | Nova lokacija | Pr. | Rizik | Pročitati pre porta |
