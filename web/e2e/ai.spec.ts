@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
-import { createPlan } from './support/flows';
+import { createPlan, logToday, openDetails } from './support/flows';
 
 /* AI analiza treninga: tri faze (`start` troši kvotu, `radi` računa bez čekanja, `citaj` se pita na 3 s), tekst se čuva uz trening. Backend je lažan. */
 
@@ -25,10 +25,7 @@ test('analiza: pokretanje → „radi se" → rezultat se upisuje uz trening i p
       ? { body: { stanje: 'radi' } }
       : { body: { stanje: 'gotovo', tekst: 'Dobar rad: tempo je ujednačen, puls miran.' } };
   });
-  await page.getByRole('button', { name: 'Završi trening' }).click();
-  await page.getByLabel(/Distanca \(km\)/).fill('8,6');
-  await page.getByLabel(/^Vreme/).fill('4233');
-  await page.getByLabel(/^Vreme/).blur();
+  await logToday(page, { km: '8,6', time: '4233' });
 
   await page.getByRole('button', { name: /Analiziraj trening/ }).click();
   await expect(page.getByText(/^Analiziram…/)).toBeVisible();
@@ -49,6 +46,7 @@ test('analiza: pokretanje → „radi se" → rezultat se upisuje uz trening i p
     .toContain('Dobar rad: tempo je ujednačen');
   const before = backend.count('/api/analyze');
   await page.reload();
+  await openDetails(page);
   await expect(page.getByText('Dobar rad: tempo je ujednačen, puls miran.')).toBeVisible();
   expect(backend.count('/api/analyze')).toBe(before);
 });
@@ -58,10 +56,7 @@ test('analiza: dnevni limit se prikazuje kao poruka, ne kao pad', async ({ page 
     status: 429,
     body: { error: 'Dnevni limit analiza je potrošen.' }
   }));
-  await page.getByRole('button', { name: 'Završi trening' }).click();
-  await page.getByLabel(/Distanca \(km\)/).fill('8,6');
-  await page.getByLabel(/^Vreme/).fill('4233');
-  await page.getByLabel(/^Vreme/).blur();
+  await logToday(page, { km: '8,6', time: '4233' });
   await page.getByRole('button', { name: /Analiziraj trening/ }).click();
   await expect(page.getByText('Dnevni limit analiza je potrošen.')).toBeVisible();
 });

@@ -72,12 +72,14 @@ test('pravljenje plana: završava na „Danas", plan ima nedelje do trke, a stan
   page.on('pageerror', (e) => errors.push(e.message));
   await createPlan(page);
   await expect(tab(page, 'Danas')).toHaveAttribute('aria-current', 'page');
-  // Danas: 88 dana do trke 12. aprila, prvi trening je planiran za danas
-  await expect(page.locator('#h-sub')).toHaveText('N1/13 · BAZA · 88 d');
+  // Danas: prvi trening je planiran za danas
   await expect(page.getByRole('button', { name: 'Završi trening' })).toBeVisible();
+  // Plan: 88 dana do trke 12. aprila, nedelja 1 od 13
   await tab(page, 'Plan').click();
-  await expect(page.getByText('NEDELJNA KILOMETRAŽA')).toBeVisible();
-  await expect(page.getByText('OSTALO · 13 NEDELJA')).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'Nedelja 1 od 13' })).toBeVisible();
+  await expect(page.getByText(/za 88 dana/)).toBeVisible();
+  await page.getByRole('button', { name: 'Pregled celog plana' }).click();
+  await expect(page.getByText('Nedeljna kilometraža')).toBeVisible();
   // server je dobio stanje sa generisanim planom
   await expect
     .poll(() => (backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan != null)

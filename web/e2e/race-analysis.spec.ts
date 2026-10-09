@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { fixToday, installBackend, seedSession } from './support/backend';
-import { createPlan, tab } from './support/flows';
+import { createPlan, openProgress } from './support/flows';
 
 test('ručna trka: zaseban AI zahtev i rezultat opstaju posle ponovnog učitavanja', async ({
   page
@@ -26,13 +26,14 @@ test('ručna trka: zaseban AI zahtev i rezultat opstaju posle ponovnog učitavan
             : {}
     };
   });
-  await tab(page, 'Trka').click();
-  const form = page.getByRole('region', { name: 'Analiza trke' });
+  await openProgress(page, /^Analiza trke/);
+  const form = page.locator('.screen');
   await form.getByLabel('Trčanje', { exact: true }).selectOption('manual');
   await form.getByLabel('Naziv trke').fill('Niški polumaraton');
   await form.getByLabel('Zvanična distanca (km)').fill('21.0975');
   await form.getByLabel('Namera nastupa').selectOption('first_distance');
   await form.getByLabel('Vreme trčanja', { exact: true }).fill('1:45:00');
+  await form.getByText(/^Dodatno \(opciono\)/).click(); // zvanično vreme je u izborno
   await form.getByLabel('Zvanično vreme (opciono)').fill('1:46:00');
   await form.getByRole('button', { name: 'Sačuvaj kontekst trke' }).click();
   await form.getByRole('button', { name: /Analiziraj trku/ }).click();
@@ -56,7 +57,7 @@ test('ručna trka: zaseban AI zahtev i rezultat opstaju posle ponovnog učitavan
     form.getByText('Odmori, zatim lagano trči. Sledeću trku otvori kontrolisano.')
   ).toBeVisible();
   await page.reload();
-  await tab(page, 'Trka').click();
+  await openProgress(page, /^Analiza trke/);
   await expect(
     form.getByText('Odmori, zatim lagano trči. Sledeću trku otvori kontrolisano.')
   ).toBeVisible();
@@ -71,12 +72,13 @@ for (const fallback of [false, true]) {
     await seedSession(page);
     const backend = await installBackend(page);
     await createPlan(page);
-    await tab(page, 'Trka').click();
-    const form = page.getByRole('region', { name: 'Analiza trke' });
+    await openProgress(page, /^Analiza trke/);
+    const form = page.locator('.screen');
     await form.getByLabel('Trčanje', { exact: true }).selectOption('manual');
     await form.getByLabel('Naziv trke').fill('Niški polumaraton');
     await form.getByLabel('Zvanična distanca (km)').fill('21.0975');
     await form.getByLabel('Vreme trčanja', { exact: true }).fill('1:44:12');
+    await form.getByText(/^Dodatno \(opciono\)/).click();
     await form.getByLabel('Zvanično vreme (opciono)').fill('1:44:32');
     await form.getByRole('button', { name: 'Sačuvaj kontekst trke' }).click();
     // The manually entered official distance is close to the GPS distance;
@@ -190,7 +192,7 @@ for (const fallback of [false, true]) {
       body: { stanje: 'gotovo', tekst: 'Prolazi su analizirani po svakom kilometru.' }
     }));
     await page.reload();
-    await tab(page, 'Trka').click();
+    await openProgress(page, /^Analiza trke/);
     await form.getByRole('button', { name: /Analiziraj trku/ }).click();
     await expect(form.getByText('Prolazi su analizirani po svakom kilometru.')).toBeVisible({
       timeout: 15000
@@ -222,7 +224,7 @@ for (const fallback of [false, true]) {
     await expect(form.getByRole('cell', { name: '22 (500 m)', exact: true })).toBeVisible();
     await expect.poll(() => JSON.stringify(backend.row?.data)).toContain('raceDetails');
     await page.reload();
-    await tab(page, 'Trka').click();
+    await openProgress(page, /^Analiza trke/);
     await expect(form.getByText('Prolazi su analizirani po svakom kilometru.')).toBeVisible();
     await expect(form.getByText(/22 deonica/).first()).toBeVisible();
   });

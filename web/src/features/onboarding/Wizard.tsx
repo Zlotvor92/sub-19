@@ -102,9 +102,7 @@ export function Wizard({ today }: { today: string }) {
       <div className="ob-wrap">
         <div className="ob-top">
           <div className="ob-toprow">
-            <div className="ob-brand">
-              SUB<span>-20</span>
-            </div>
+            <div className="ob-brand">sub20</div>
             {hasPlan ? (
               <button
                 type="button"

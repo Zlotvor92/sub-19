@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { SUPABASE, fixToday, installBackend, jwt, seedSession } from './support/backend';
-import { createPlan } from './support/flows';
+import { createPlan, openTi } from './support/flows';
 
 /* Tokovi 1, 10, 11: prvi start bez naloga, prijava (povratak sa Google-a preko Supabase-a, sa proverom nonce-a), odjava. */
 
@@ -93,9 +93,7 @@ test('odjava: kapija ostaje posle učitavanja, a plan se vraća istom nalogu i b
     .not.toBeNull();
   const savedPlan = await localPlan(page, ownerKey);
   expect(savedPlan).toBeTruthy();
-  await page.getByRole('button', { name: 'Podešavanja' }).click();
-  await page.getByRole('tab', { name: 'Nalog' }).click();
-  await page.locator('details[data-k="Nalog"] > summary').click();
+  await openTi(page, /^Moj profil/);
   await page.getByRole('button', { name: 'Odjavi se' }).click();
   await expect(page.getByText('Odjaviti se? Podaci na ovom uređaju ostaju.')).toBeVisible();
   await page.getByRole('button', { name: 'Da', exact: true }).click();

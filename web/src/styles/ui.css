@@ -571,7 +571,7 @@ input[type='range'] {
 }
 .seg button {
   flex: 1 1 0;
-  min-height: 40px;
+  min-height: var(--touch);
   padding: 0 var(--s-3);
   border-radius: var(--r-pill);
   color: var(--text-2);

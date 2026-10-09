@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
-import { createPlan, openSetting, tab } from './support/flows';
+import { back, createPlan, openAdjust, openProgress } from './support/flows';
 
-/* Preračunavanje plana prema formi (Podešavanja → Trening → Plan): kroz pravi interfejs, plan pravi čarobnjak, forma dolazi iz tri testa na 3 km. */
+/* Preračunavanje plana prema formi (Plan → Prilagodi plan): kroz pravi interfejs, plan pravi čarobnjak, forma dolazi iz tri testa na 3 km. */
 
 let backend: Backend;
 test.beforeEach(async ({ page }) => {
@@ -34,9 +34,8 @@ test('bez merenja forme: objašnjenje, plan se ne menja', async ({ page }) => {
     void d.accept();
   });
   await expect.poll(() => plan().weeks.length).toBeGreaterThan(0);
-  await page.getByRole('button', { name: 'Podešavanja' }).click();
-  await openSetting(page, 'Trening', 'Plan');
-  await page.getByRole('button', { name: 'Preračunaj plan prema formi' }).click();
+  await openAdjust(page);
+  await page.getByRole('button', { name: /^Preračunaj plan prema formi/ }).click();
   await expect.poll(() => dialogs.length).toBe(1);
   expect(dialogs[0]).toMatch(/bar 3 izmerena rezultata/);
   expect(plan().meta['recalWeek']).toBeUndefined();
@@ -51,14 +50,14 @@ test('tri brza testa: plan i forma se razilaze → preračunavanje; posle njega 
     void d.accept();
   });
   await expect.poll(() => plan().weeks.length).toBeGreaterThan(0); // plan je stigao na server
-  await tab(page, 'Trka').click();
+  await openProgress(page, /^Forma i predikcija/);
   const baseVdot = plan().meta['vdot0'] as number;
   for (const t of ['10:30', '10:25', '10:20']) await addTest(page, t);
-  await expect(page.getByRole('button', { name: 'Prilagodi tempo' })).toBeVisible();
+  await back(page).click();
 
-  await page.getByRole('button', { name: 'Podešavanja' }).click();
-  await openSetting(page, 'Trening', 'Plan');
-  await page.getByRole('button', { name: 'Preračunaj plan prema formi' }).click();
+  await openAdjust(page);
+  await expect(page.getByRole('button', { name: 'Prilagodi tempo' })).toBeVisible();
+  await page.getByRole('button', { name: /^Preračunaj plan prema formi/ }).click();
   await expect(page.getByText(/^Preračunati preostali plan prema izmerenoj formi\?/)).toBeVisible();
   await expect(page.getByText(/Nema vraćanja/)).toBeVisible();
   await page.getByRole('button', { name: 'Da', exact: true }).click();
@@ -69,13 +68,9 @@ test('tri brza testa: plan i forma se razilaze → preračunavanje; posle njega 
   expect(plan().meta['vdotBase']).toBe(baseVdot);
   expect(plan().meta['vdot0']).not.toBe(baseVdot);
 
-  await page.keyboard.press('Escape');
-  await tab(page, 'Trka').click();
   await expect(page.getByRole('button', { name: 'Prilagodi tempo' })).toHaveCount(0);
   // ponovo: forma i plan se slažu
-  await page.getByRole('button', { name: 'Podešavanja' }).click();
-  await openSetting(page, 'Trening', 'Plan');
-  await page.getByRole('button', { name: 'Preračunaj plan prema formi' }).click();
+  await page.getByRole('button', { name: /^Preračunaj plan prema formi/ }).click();
   await expect.poll(() => dialogs.length).toBe(2);
   expect(dialogs[1]).toMatch(/se slažu/);
 });

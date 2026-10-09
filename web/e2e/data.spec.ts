@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
-import { createPlan, openSetting } from './support/flows';
+import { back, createPlan, logToday, openTi, tab } from './support/flows';
 
 /* Kritični tokovi podataka (nisu među 14, ali ih zahteva definicija završenosti): izvoz/uvoz backupa i brisanje naloga. */
 
@@ -12,20 +12,19 @@ test.beforeEach(async ({ page }) => {
   await createPlan(page);
 });
 
-const openSection = openSetting;
-
+/** Završen današnji trening sa unetim km; vraća se na Danas. */
 async function completeToday(page: Page, km: string): Promise<void> {
-  await page.getByRole('button', { name: 'Završi trening' }).click();
-  await page.getByLabel(/Distanca \(km\)/).fill(km);
-  await page.getByLabel(/^Vreme/).fill('4233');
-  await page.getByLabel(/^Vreme/).blur();
+  await logToday(page, { km, time: '4233' });
+  await back(page).click();
 }
+
+const openPrivacy = (page: Page) => openTi(page, /^Privatnost i podaci/);
 
 test('backup: izvoz daje ispravan fajl; uvoz ga vraća; pokvaren fajl se odbija bez promene podataka', async ({
   page
 }) => {
   await completeToday(page, '8,6');
-  await openSection(page, 'Nalog', 'Podaci');
+  await openPrivacy(page);
   const [download] = await Promise.all([
     page.waitForEvent('download'),
     page.getByRole('button', { name: 'Izvezi backup' }).click()
@@ -63,8 +62,11 @@ test('backup: izvoz daje ispravan fajl; uvoz ga vraća; pokvaren fajl se odbija 
   await expect(page.getByText(/^Uvoz će PREPISATI postojeće podatke\./)).toBeVisible();
   await expect(page.locator('#confirm-text')).toContainText('U fajlu: 1 trening');
   await page.getByRole('button', { name: 'Da', exact: true }).click();
-  await expect(page.getByLabel(/Distanca \(km\)/)).toHaveValue('9,9');
+  await expect(page.getByText('Backup je uvezen.')).toBeVisible();
   await expect.poll(() => JSON.stringify(backend.row?.data ?? {})).toContain('"km":9.9');
+  await tab(page, 'Danas').click();
+  await expect(page.getByText(/^Odrađeno · 9,9 km/)).toBeVisible();
+  await openPrivacy(page);
 
   // fajl koji nije backup: poruka, a ništa se ne menja
   const alerts: string[] = [];
@@ -72,7 +74,6 @@ test('backup: izvoz daje ispravan fajl; uvoz ga vraća; pokvaren fajl se odbija 
     alerts.push(d.message());
     void d.dismiss();
   });
-  await openSection(page, 'Nalog', 'Podaci');
   await page.locator('#s-file').setInputFiles({
     name: 'nije.json',
     mimeType: 'application/json',
@@ -80,9 +81,8 @@ test('backup: izvoz daje ispravan fajl; uvoz ga vraća; pokvaren fajl se odbija 
   });
   await expect.poll(() => alerts.length).toBe(1);
   expect(alerts[0]).toMatch(/^Fajl nije prepoznat kao backup ove aplikacije/);
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(page.getByLabel(/Distanca \(km\)/)).toHaveValue('9,9');
+  await tab(page, 'Danas').click();
+  await expect(page.getByText(/^Odrađeno · 9,9 km/)).toBeVisible();
 });
 
 test('backup: ručno izmenjen fajl sa opasnim identifikatorom se odbija (XSS vektor kroz ID)', async ({
@@ -93,7 +93,7 @@ test('backup: ručno izmenjen fajl sa opasnim identifikatorom se odbija (XSS vek
     alerts.push(d.message());
     void d.dismiss();
   });
-  await openSection(page, 'Nalog', 'Podaci');
+  await openPrivacy(page);
   await page.locator('#s-file').setInputFiles({
     name: 'zlo.json',
     mimeType: 'application/json',
@@ -112,9 +112,8 @@ test('backup: ručno izmenjen fajl sa opasnim identifikatorom se odbija (XSS vek
 test('brisanje naloga: dugme je zaključano dok se ne ukuca potvrda; greška servera NE briše lokalne podatke; uspeh briše sve', async ({
   page
 }) => {
-  await openSection(page, 'Nalog', 'Nalog');
-  await page.getByText('Brisanje naloga', { exact: true }).click();
-  await page.getByRole('button', { name: 'Obriši nalog' }).click();
+  await openPrivacy(page);
+  await page.getByRole('button', { name: /^Obriši nalog/ }).click();
   const sheet = page.getByRole('dialog');
   const go = sheet.getByRole('button', { name: 'Obriši nalog' });
   await expect(go).toBeDisabled();

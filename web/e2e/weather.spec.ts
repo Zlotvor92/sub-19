@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
-import { createPlan, openSetting } from './support/flows';
+import { back, createPlan, openDetails, openTi, tab } from './support/flows';
 
-/* Vreme: uključivanje lokacije (dozvola pregledača), prognoza direktno od Open-Meteo (koordinate zaokružene na ~1 km), kartica na „Danas", isključivanje briše lokaciju. */
+/* Vreme: uključivanje lokacije (Ti → Zone i postavke treninga; dozvola pregledača), prognoza direktno od Open-Meteo (koordinate zaokružene na ~1 km), red na „Danas" i odeljak u Detaljima treninga, isključivanje briše lokaciju. */
 
 test.use({
   geolocation: { latitude: 44.81234, longitude: 20.46789 },
@@ -37,8 +37,8 @@ test.beforeEach(async ({ page }) => {
 test('uključivanje: zaokružene koordinate idu samo Open-Meteo, kartica pokazuje vrućinu, isključivanje briše lokaciju', async ({
   page
 }) => {
-  await expect(page.getByText('Vreme', { exact: true })).toHaveCount(0); // bez lokacije nema kartice
-  await openSetting(page, 'Trening', 'Vreme');
+  await expect(page.getByText(/^Vreme u /)).toHaveCount(0); // bez lokacije nema reda o vremenu
+  await openTi(page, /^Zone i postavke treninga/);
   await page.getByRole('button', { name: 'Uključi lokaciju' }).click();
   await expect.poll(() => backend.count('open-meteo.com')).toBeGreaterThan(0);
 
@@ -64,14 +64,19 @@ test('uključivanje: zaokružene koordinate idu samo Open-Meteo, kartica pokazuj
   expect(onServer).not.toContain('44.81');
   expect(onServer).not.toContain('"vreme"');
 
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toBeHidden();
-  const card = page.locator('.card', { has: page.getByText('Vreme', { exact: true }) });
-  await expect(card).toBeVisible();
-  await expect(card).toContainText('31');
+  // Danas nosi jedan red o vremenu, a Detalji treninga punu sliku
+  await tab(page, 'Danas').click();
+  await expect(page.getByText(/^Vreme u /)).toContainText('31');
+  await openDetails(page);
+  const section = page.locator('section.section', {
+    has: page.getByRole('heading', { name: 'Vreme', exact: true })
+  });
+  await expect(section).toBeVisible();
+  await expect(section).toContainText('31');
+  await back(page).click();
 
   // isključivanje: lokacija se briše sa uređaja
-  await openSetting(page, 'Trening', 'Vreme');
+  await openTi(page, /^Zone i postavke treninga/);
   await page.getByRole('button', { name: /Isključi/ }).click();
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('sub19-v1') ?? ''))
@@ -88,7 +93,7 @@ test('dozvola odbijena: poruka umesto pada, lokacija se ne pamti', async ({ page
     alerts.push(d.message());
     void d.dismiss();
   });
-  await openSetting(page, 'Trening', 'Vreme');
+  await openTi(page, /^Zone i postavke treninga/);
   await page.getByRole('button', { name: 'Uključi lokaciju' }).click();
   await expect.poll(() => alerts.length).toBe(1);
   expect(backend.count('open-meteo.com')).toBe(0);

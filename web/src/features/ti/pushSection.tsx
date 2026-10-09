@@ -47,7 +47,7 @@ export function PushBody({ status, reload }: { status: PushStatus | null; reload
     return status.ios ? (
       <div className="note-src">
         Na iPhoneu obaveštenja radi samo <b>instalirana</b> aplikacija. U Safariju dodirni{' '}
-        <b>Podeli → Dodaj na početni ekran</b>, otvori SUB-20 sa ikonice i vrati se ovde.
+        <b>Podeli → Dodaj na početni ekran</b>, otvori sub20 sa ikonice i vrati se ovde.
       </div>
     ) : (
       <div className="note-src">

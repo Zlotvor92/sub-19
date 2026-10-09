@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
-import { createPlan, tab } from './support/flows';
+import { back, createPlan, logToday, openDetails, tab } from './support/flows';
 
 /* Tokovi 5–7: završi trening, pomeri trening, izmeni trening. Plan se pravi kroz čarobnjaka (v. support/flows). */
 
@@ -18,20 +18,18 @@ const state = (): Record<string, Record<string, Record<string, unknown>>> =>
 test('završi trening: unos km i vremena računa prosečan tempo, sačuvan je lokalno i na serveru, preživljava ponovno učitavanje', async ({
   page
 }) => {
-  await page.getByRole('button', { name: 'Završi trening' }).click();
-  await expect(page.locator('#tcard[data-status="done"] .focus-top .badge')).toHaveText('Odrađen');
-  await page.getByLabel(/Distanca \(km\)/).fill('8,6');
-  await page.getByLabel(/^Vreme/).fill('4233');
-  await page.getByLabel('Pros. puls').fill('152');
-  await page.getByLabel('Pros. puls').blur();
+  await logToday(page, { km: '8,6', time: '4233', hr: '152' });
   // 42:33 na 8,6 km = 4:57/km
   await expect(page.getByRole('status', { name: 'Pros. tempo' })).toHaveText('4:57 /km');
   await expect.poll(() => Object.values(state()['log'] ?? {})[0]?.['km']).toBe(8.6);
   const entry = Object.values(state()['log'] ?? {})[0] ?? {};
   expect(entry).toMatchObject({ status: 'done', km: 8.6, sec: 2553, hr: 152 });
   await page.reload();
+  await expect(page.locator('#tcard[data-status="done"]')).toContainText(
+    'Odrađeno · 8,6 km · 42:33 · 4:57 /km'
+  );
+  await openDetails(page);
   await expect(page.getByLabel(/Distanca \(km\)/)).toHaveValue('8,6');
-  await expect(page.locator('#tcard[data-status="done"] .focus-top .badge')).toHaveText('Odrađen');
 });
 
 test('preskoči trening, pa „Vrati": status se menja i nema unosa na „Danas"', async ({ page }) => {
@@ -50,11 +48,12 @@ test('pomeri trening: zamena dva dana u nedelji, vidi se u planu, stiže na serv
   page
 }) => {
   await tab(page, 'Plan').click();
-  await page.getByRole('button', { name: 'Nedelja 2', exact: true }).click();
-  await page.getByRole('button', { name: 'Pomeri treninge' }).click();
+  await page.getByRole('button', { name: 'Sledeća nedelja' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: /^Nedelja 2 od/ })).toBeVisible();
+  await page.getByRole('button', { name: /^Pomeri treninge/ }).click();
   const sheet = page.getByRole('dialog');
   await expect(sheet.getByText('Dodirni dan koji hoćeš da pomeriš')).toBeVisible();
-  const days = sheet.locator('.swap-list button.day');
+  const days = sheet.locator('.swap-list .swap-row');
   const before = await days.allInnerTexts();
   await days.nth(0).click();
   await expect(sheet.getByText(/Izabrano:/)).toBeVisible();
@@ -77,26 +76,24 @@ test('izmeni trening: promena kilometraže važi samo za taj dan, sa oznakom „
   page
 }) => {
   await tab(page, 'Plan').click();
-  await page.getByRole('button', { name: 'Nedelja 2', exact: true }).click();
-  const firstRun = page.locator('.pl-body button.day[class*="t-"]:not(.t-rest)').first();
+  const firstRun = page.locator('.plan-row:not(.s-rest)').first();
   await firstRun.click();
+  await page.getByRole('button', { name: /^Zameni ili skrati/ }).click();
   const sheet = page.getByRole('dialog');
-  await sheet.getByRole('button', { name: /Izmeni trening/ }).click();
   await expect(sheet.getByText('Izmeni trening').first()).toBeVisible();
   await sheet.getByLabel('Kilometraža').fill('5');
   await sheet.getByRole('button', { name: 'Sačuvaj' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(page.locator('.pl-body button.day[class*="t-"]').first()).toContainText(/5 km/);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('izmenjen');
   await expect
     .poll(() => Object.keys((state()['alts'] as Record<string, unknown> | undefined) ?? {}).length)
     .toBe(1);
+  // u planu se vidi izmenjena kilometraža
+  await back(page).click();
+  await expect(page.locator('.plan-row:not(.s-rest)').first()).toContainText(/5 km/);
   // povratak na plan
-  await page.locator('.pl-body button.day[class*="t-"]:not(.t-rest)').first().click();
-  await page
-    .getByRole('dialog')
-    .getByRole('button', { name: /Izmeni trening/ })
-    .click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Vrati na plan' }).click();
+  await page.locator('.plan-row:not(.s-rest)').first().click();
+  await page.getByRole('button', { name: /^Vrati na plan/ }).click();
   await page.getByRole('button', { name: 'Da', exact: true }).click();
   await expect
     .poll(() => Object.keys((state()['alts'] as Record<string, unknown> | undefined) ?? {}).length)

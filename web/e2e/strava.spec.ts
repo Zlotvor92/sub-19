@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
-import { createPlan } from './support/flows';
+import { back, createPlan, openDetails, openTi, tab } from './support/flows';
 
 /* Tok 14: povezivanje Strave (OAuth povratak sa proverom `state`), razmena koda preko našeg `/api/auth`, uvoz trčanja i njegov upis u plan. Strava i
    `/api/auth` su lažni (nema tajni); testira se ono što klijent radi, ne Stravin server. */
@@ -60,8 +60,9 @@ test('povezivanje: odobrenje vraća na aplikaciju, kod se menja za tokene na NA�
 }) => {
   const authorize = await strava(page);
   await createPlan(page);
-  await page.getByRole('button', { name: 'Podešavanja' }).click();
-  await page.getByRole('button', { name: 'Poveži Stravu' }).first().click();
+  await openTi(page, /^Povezani servisi/);
+  await page.getByRole('button', { name: /^Strava/ }).click();
+  await page.getByRole('button', { name: 'Poveži Stravu' }).click();
 
   // povratak: aplikacija radi sa `code`, adresa se čisti, a Strava je povezana
   await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
@@ -73,19 +74,24 @@ test('povezivanje: odobrenje vraća na aplikaciju, kod se menja za tokene na NA�
   await expect.poll(() => backend.count('/api/auth')).toBeGreaterThan(0);
 
   // trčanje je uvezeno u plan: „Danas" je odrađen sa podacima sa Strave
-  await expect(page.locator('#tcard[data-status="done"] .focus-top .badge')).toHaveText('Odrađen', {
-    timeout: 15_000
-  });
+  await tab(page, 'Danas').click();
+  await expect(page.locator('#tcard[data-status="done"]')).toContainText(
+    'Odrađeno · 8,6 km · 42:33 · 4:57 /km',
+    { timeout: 15_000 }
+  );
+  await openDetails(page);
   await expect(page.getByLabel(/Distanca \(km\)/)).toHaveValue('8,6');
   await expect(page.getByRole('status', { name: 'Pros. tempo' })).toHaveText('4:57 /km');
+  await expect(page.getByText('sa Strave', { exact: true })).toBeVisible(); // poreklo unosa je vidljivo
+  await back(page).click();
   // tokeni žive samo na uređaju: ne idu na server
   await expect
     .poll(() => (backend.row?.data as { log?: unknown } | undefined)?.log !== undefined)
     .toBe(true);
   expect(JSON.stringify(backend.row?.data ?? {})).not.toContain('"AT"');
   expect(JSON.stringify(backend.row?.data ?? {})).not.toContain('"RT"');
-  // veza je vidljiva u podešavanjima
-  await page.getByRole('button', { name: 'Podešavanja' }).click();
+  // veza je vidljiva u Ti → Povezani servisi
+  await openTi(page, /^Povezani servisi/);
   await expect(page.getByText(/Ana Trkač/).first()).toBeVisible();
 });
 
@@ -99,8 +105,9 @@ test('povratak sa POGREŠNIM `state`-om se odbija (CSRF): nema razmene koda i ne
   });
   await strava(page, { state: 'podmetnut' });
   await createPlan(page);
-  await page.getByRole('button', { name: 'Podešavanja' }).click();
-  await page.getByRole('button', { name: 'Poveži Stravu' }).first().click();
+  await openTi(page, /^Povezani servisi/);
+  await page.getByRole('button', { name: /^Strava/ }).click();
+  await page.getByRole('button', { name: 'Poveži Stravu' }).click();
   await expect.poll(() => alerts.length).toBeGreaterThan(0);
   expect(alerts[0]).toMatch(/^Povezivanje odbijeno — bezbednosna provera nije prošla\./);
   expect(backend.count('/api/auth')).toBe(0);

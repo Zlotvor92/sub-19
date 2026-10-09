@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { fixToday, installBackend, seedSession } from './support/backend';
-import { createPlan } from './support/flows';
+import { createPlan, tab } from './support/flows';
 import { startVersionedServer, type VersionedServer } from './support/versionedServer';
 
 /* Tokovi 12–13: ponašanje bez mreže i ažuriranje aplikacije (novi service worker → traka „Osveži" → nova verzija). Service worker je ovde UKLJUČEN. */
@@ -48,11 +48,13 @@ test('bez mreže: aplikacija se otvara iz keša sa podacima sa uređaja, bez ije
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
-  await expect(page.locator('#h-sub')).toHaveText(/N1\/13 · BAZA · 88 d/);
   await expect(page.getByRole('button', { name: 'Završi trening' })).toBeVisible();
+  await tab(page, 'Plan').click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Nedelja 1 od 13' })).toBeVisible();
+  await tab(page, 'Danas').click();
   // radi i bez mreže: unos se čuva lokalno
   await page.getByRole('button', { name: 'Završi trening' }).click();
-  await expect(page.locator('#tcard[data-status="done"] .focus-top .badge')).toHaveText('Odrađen');
+  await expect(page.locator('#tcard[data-status="done"]')).toContainText('Odrađeno');
   const saved = await page.evaluate(() => localStorage.getItem('sub19-v1'));
   expect(saved).toContain('"status":"done"');
   expect(dialogs).toEqual([]);
