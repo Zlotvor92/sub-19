@@ -51,10 +51,13 @@ export function DayRow({
   const title = day.rest ? 'Odmor' : dayLabel(day, !!alt);
   const view = day.rest ? null : sessionView(day, { alt, easyPaceSec });
   const parts: string[] = [];
+  /* Struktura sesije („6×1000 m @ 4:10/km“) je ono što čovek traži u listi nedelje; ostalo (km, stanje) ide posle nje. */
+  const core = view?.rows && view.core && view.core !== title ? view.core : null;
+  if (core) parts.push(core);
   if (!day.rest && day.km != null) parts.push(`${fmtKm(day.km)} km`);
   const stateText = STATE_TEXT[state];
   if (stateText) parts.push(stateText);
-  else if (view?.paceSec != null) parts.push(`${fmtClock(view.paceSec)} /km`);
+  else if (!core && view?.paceSec != null) parts.push(`${fmtClock(view.paceSec)} /km`);
   else if (day.rest && day.desc) parts.push(day.desc.split('\n')[0] ?? '');
   const quiet = state === 'rest' || state === 'miss';
   return (

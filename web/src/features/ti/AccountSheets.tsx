@@ -87,7 +87,8 @@ export function DeleteAccountSheet() {
 /* PRIJAVA PROBLEMA — stiže direktno na mejl vlasnika (10 dnevno po nalogu, server). */
 export function BugSheet() {
   const closeSheet = useUIStore((s) => s.closeSheet);
-  const tab = useUIStore((s) => s.tab);
+  /* „Ti“ je mesto odakle se prijavljuje, ne mesto problema: javlja se tab na kom je čovek bio pre toga. */
+  const tab = useUIStore((s) => (s.tab === 'ti' ? (s.prevTab ?? s.tab) : s.tab));
   const [desc, setDesc] = useState('');
   const [err, setErr] = useState('');
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');

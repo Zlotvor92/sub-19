@@ -8,6 +8,7 @@ import { useUIStore, type Banner } from '../../stores/uiStore';
 import { BannerHost } from './BannerHost';
 import { ConfirmHost } from './ConfirmHost';
 import { Sheet, sheetTitle } from './Sheet';
+import { Row } from './primitives';
 import { AuthGate, Page, ScreenFrame, Tabbar } from './Shell';
 
 /* parity: test/list-dijalog.test.mjs (Sheet), test/potvrda.test.mjs (potvrda). Namera: modal je modal — naziv, fokus ulazi i
@@ -341,5 +342,21 @@ describe('ekran iznad taba (ScreenFrame)', () => {
   it('bez naslova ne puca; „Nazad“ postoji uvek', () => {
     render(<ScreenFrame>sadržaj</ScreenFrame>);
     expect(screen.getByRole('button', { name: 'Nazad' })).toBeInTheDocument();
+  });
+});
+
+describe('Row sa vezom', () => {
+  it('statične stranice (uputstvo, politika) se otvaraju u novoj kartici — instalirana aplikacija ne sme da ostane bez puta nazad', () => {
+    render(
+      <>
+        <Row title="Uputstvo" href="./uputstvo.html" />
+        <Row title="Spoljna" href="https://intervals.icu" />
+      </>
+    );
+    for (const name of ['Uputstvo', 'Spoljna']) {
+      const a = screen.getByRole('link', { name });
+      expect(a).toHaveAttribute('target', '_blank');
+      expect(a).toHaveAttribute('rel', 'noopener');
+    }
   });
 });

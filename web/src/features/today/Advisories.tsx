@@ -11,6 +11,15 @@ import { useUIStore } from '../../stores/uiStore';
 import { useAdjustments } from '../plan/useAdjustments';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
 
+/** Skladište radi; kad aplikacija još nije pokrenuta (ekran iscrtan van nje) nema razloga za upozorenje. */
+function storagePersistent(): boolean {
+  try {
+    return getApp().kv.persistent;
+  } catch {
+    return true;
+  }
+}
+
 /* UPOZORENJA NA DANAS — samo ono što je relevantno SADA, svako u jednom redu sa jednom radnjom: tuđ plan, oporavak, predlozi za prilagođavanje plana, backup.
    Kad nema ničega, ništa se ne prikazuje (nema „sve je u redu“ trake). Detalji i radnje žive na svom mestu (Oporavak, Plan → Prilagodi plan); ovde je samo
    upućivanje. Sistemske trake (sukob, oštećeno stanje, nova verzija) su zasebne (`BannerHost`) jer traže odluku. */
@@ -92,6 +101,15 @@ export function Advisories({ today }: { today: string }) {
         actions={[{ label: 'Pogledaj', onClick: () => openScreen({ kind: 'plan-prilagodi' }) }]}
       >
         {adj.proposal.message}
+      </Notice>
+    );
+
+  /* Bez skladišta podaci žive samo dok je stranica otvorena: o tome se ne ćuti u dnu „O aplikaciji“. */
+  if (!storagePersistent())
+    items.unshift(
+      <Notice key="storage" tone="bad" title="Skladište nije dostupno">
+        Podaci žive samo dok je stranica otvorena. Proveri da pregledač ne blokira čuvanje podataka
+        za ovu stranicu.
       </Notice>
     );
 

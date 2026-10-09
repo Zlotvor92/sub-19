@@ -46,3 +46,16 @@ describe('ulaz iz adrese', () => {
     expect(initialTab('?tab=opor')).toBe('napredak');
   });
 });
+
+describe('prethodni tab (za prijavu problema)', () => {
+  it('pamti tab sa kog se došlo; isti tab ga ne briše', async () => {
+    const { useUIStore } = await import('../stores/uiStore');
+    useUIStore.setState({ tab: 'danas', prevTab: null, screens: [] });
+    useUIStore.getState().setTab('plan');
+    expect(useUIStore.getState().prevTab).toBe('danas');
+    useUIStore.getState().setTab('plan');
+    expect(useUIStore.getState().prevTab).toBe('danas');
+    useUIStore.getState().setTab('ti');
+    expect(useUIStore.getState().prevTab).toBe('plan');
+  });
+});

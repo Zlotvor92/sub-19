@@ -42,16 +42,22 @@ export function useWeatherModel(day: ResolvedDay, today: string): WeatherCardMod
   });
 }
 
-/** Jedan red za Danas: „Vreme u 7:00 · 14 °C, oseća se 12 °C · tempo uz vrućinu 5:50". */
+/** Jedan red za Danas: „Vreme u 7:00 · 14 °C, oseća se 12 °C · tempo uz vrućinu 5:50 · padavine 60 %". Ostalo (vlažnost, vetar, „sada“) je u Detaljima. */
 export function weatherLine(model: WeatherCardModel): string {
   const main = model.rows.find((r) => r.label === 'temperatura' || /^u \d/.test(r.label));
   const heat = model.rows.find((r) => r.label === 'tempo uz vrućinu');
+  const rain = model.rows.find((r) => r.label === 'padavine');
   const text = (r: { parts: Array<{ text: string }> }): string =>
     r.parts.map((p) => p.text).join(', ');
   const at = /u (\d+:\d+)$/.exec(model.extra)?.[1];
+  /* Kiša menja odluku pre izlaska, pa ulazi u red samo kad je verovatna. */
+  const rainPct = Number(/\d+/.exec(rain ? text(rain) : '')?.[0] ?? NaN);
+  const cooler = /Hladnije je u \d+:\d+/.exec(model.note)?.[0];
   const parts = [
     `Vreme${at ? ` u ${at}` : ''}${main ? ` · ${text(main)}` : ''}`,
-    heat ? `tempo uz vrućinu ${heat.parts[0]?.text ?? ''}` : ''
+    heat ? `tempo uz vrućinu ${heat.parts[0]?.text ?? ''}` : '',
+    rainPct >= 40 ? `padavine ${rainPct} %` : '',
+    cooler ?? ''
   ].filter(Boolean);
   return parts.join(' · ');
 }

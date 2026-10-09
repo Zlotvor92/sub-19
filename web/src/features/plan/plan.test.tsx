@@ -14,6 +14,8 @@ import { DayScreen } from '../day/DayScreen';
 import PlanPage from './index';
 import { PlanOverview } from './PlanOverview';
 import { dayRowState } from './DayRow';
+import { dayLabel } from '../../domain/plan';
+import { sessionView } from '../session/sessionModel';
 
 /* parity: renderPlan / nedeljaTelo / openDaySheet / renderWeekSwap / renderAltSheet (app.js) — Plan (jedna nedelja), Pregled celog plana, Detalji treninga. */
 
@@ -105,6 +107,16 @@ describe('Plan (jedna nedelja)', () => {
     await user.click(screen.getByRole('button', { name: 'Pregled celog plana' }));
     expect(useUIStore.getState().screens.at(-1)?.kind).toBe('plan-pregled');
     expect(screen.queryByRole('button', { name: /Pošalji na sat/ })).toBeNull(); // bez intervals.icu nema slanja
+  });
+
+  it('struktura sesije (npr. intervali) je u redu dana, ne samo kilometri', () => {
+    const structured = days()
+      .filter((d) => d.w === 2 && !d.rest)
+      .map((d) => ({ d, v: sessionView(d, { alt: undefined, easyPaceSec: null }) }))
+      .filter((x) => x.v.rows && x.v.core && x.v.core !== dayLabel(x.d, false));
+    expect(structured.length).toBeGreaterThan(0);
+    const { container } = render(<Screen />);
+    for (const { v } of structured) expect(container.textContent).toContain(v.core);
   });
 
   it('stanje dana: odmor, današnji, predstojeći, završen, preskočen i propušten se razlikuju', () => {

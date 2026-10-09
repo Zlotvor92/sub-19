@@ -253,6 +253,7 @@ describe('Privatnost i podaci', () => {
     expect(text).not.toContain('icu-tok');
     expect(collectPersisted().ui.lastBackup).toBe('2026-01-14');
     await waitFor(() => expect(screen.queryByText('Uradi backup podataka')).toBeNull());
+    expect(screen.getByText(/^Poslednji backup: /)).toBeInTheDocument();
   });
 
   it('uvoz backupa: potvrda sa brojevima; potvrđen uvoz prepisuje podatke; pokvaren fajl se odbija bez promene', async () => {
@@ -339,6 +340,17 @@ describe('Cilj', () => {
     expect(after?.weeks[0]).toEqual(before?.weeks[0]); // N1 je prošla (14.1. je u N2)
     expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Cilj promenjen\./));
     alert.mockRestore();
+  });
+
+  it('generisan plan bez sačuvanih polaznih podataka: kaže zašto se cilj ne menja, ne laže da je ugrađen', () => {
+    const s = stateWithPlan();
+    if (s.genPlan) delete (s.genPlan as { ulaz?: unknown }).ulaz;
+    boot(false, s);
+    useAuthStore.setState({ configured: false });
+    render(<GoalScreen />);
+    expect(screen.getByText(/nema sačuvane polazne podatke/)).toBeInTheDocument();
+    expect(screen.queryByText(/Ugrađeni plan ima svoj cilj/)).toBeNull();
+    expect(screen.queryByLabelText('Novo ciljno vreme')).toBeNull();
   });
 
   it('nemoguć unos se odbija porukom, plan se ne menja', async () => {

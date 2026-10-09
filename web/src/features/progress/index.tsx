@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { fmtClock, fmtDayMonth, fmtKm, fmtNum } from '../../domain/format';
+import { fmtClock, fmtDayMonth, fmtKm, fmtNum, pl3 } from '../../domain/format';
 import { AppBar } from '../../components/ui/Shell';
 import { Row, Section } from '../../components/ui/primitives';
 import { useResolvedPlan, useTrainingStore } from '../../stores';
@@ -77,7 +77,7 @@ export default function ProgressPage() {
         title="Bol"
         sub={
           painNow
-            ? `${painNow} ${painNow === 1 ? 'deo tela' : 'dela tela'} u poslednjih 14 dana`
+            ? `${painNow} ${pl3(painNow, 'deo tela', 'dela tela', 'delova tela')} u poslednjih 14 dana`
             : 'Mapa tela i istorija unosa'
         }
         onClick={() => openScreen({ kind: 'bol' })}

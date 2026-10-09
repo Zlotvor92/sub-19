@@ -83,7 +83,13 @@ export function Row({
   const cls = `row${current ? ' is-today' : ''}${muted ? ' muted' : ''}`;
   if (href)
     return (
-      <a className={cls} href={href} id={id} aria-label={ariaLabel}>
+      <a
+        className={cls}
+        href={href}
+        id={id}
+        aria-label={ariaLabel}
+        {...(/^https?:|^\.\/[a-z-]+\.html/.test(href) ? { target: '_blank', rel: 'noopener' } : {})}
+      >
         {body}
       </a>
     );

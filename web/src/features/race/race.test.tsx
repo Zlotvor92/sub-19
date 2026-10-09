@@ -67,6 +67,13 @@ describe('Forma i predikcija', () => {
     expect(journey?.getAttribute('aria-label')).not.toMatch(/sada/);
   });
 
+  it('tempo svakog trčanja: odeljak postoji i bez trčanja kaže šta da se uradi', () => {
+    render(<Screen />);
+    const sec = screen.getByRole('heading', { name: 'Tempo svakog trčanja' }).closest('section');
+    expect(sec).not.toBeNull();
+    expect(within(sec as HTMLElement).getByText(/trend se crta automatski/)).toBeInTheDocument();
+  });
+
   it('procene po distancama: iz polazne forme dok nema merenja, a trka iz plana je označena', () => {
     render(<Screen />);
     const card = screen.getByRole('heading', { name: 'Procena po distancama' }).closest('section');

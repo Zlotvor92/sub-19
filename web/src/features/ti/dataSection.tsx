@@ -26,6 +26,7 @@ export function DataBody() {
   const signedIn = useAuthStore((s) => s.hasSession);
   const today = useUIStore((s) => s.today);
   const openSheet = useUIStore((s) => s.openSheet);
+  const lastBackup = useSettingsStore((s) => s.ui.lastBackup);
   const file = useRef<HTMLInputElement>(null);
   const [imported, setImported] = useState(false);
 
@@ -102,6 +103,11 @@ export function DataBody() {
           Uvezi backup
         </button>
       </div>
+      <p className="note-src">
+        {lastBackup
+          ? `Poslednji backup: ${fmtDayMonthYear(lastBackup)}.`
+          : 'Backup još nije pravljen.'}
+      </p>
       {imported ? (
         <p className="note-src" role="status">
           Backup je uvezen.

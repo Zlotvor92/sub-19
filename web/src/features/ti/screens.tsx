@@ -136,6 +136,14 @@ export function GoalScreen() {
             </p>
           </Help>
         </Section>
+      ) : genPlan ? (
+        <Section>
+          <p className="note-src">
+            Ovaj plan nema sačuvane polazne podatke iz čarobnjaka, pa se cilj ne može promeniti
+            ovde. Za drugi cilj napravi novi plan (Plan → Prilagodi plan); postojeći plan i unosi uz
+            njega se tada trajno brišu, pa prvo izvezi backup.
+          </p>
+        </Section>
       ) : (
         <Section>
           <p className="note-src">

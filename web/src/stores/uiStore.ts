@@ -40,6 +40,8 @@ export interface Banner {
 
 export interface UiState {
   tab: Tab;
+  /** Tab na kom je čovek bio pre sadašnjeg (prijava problema javlja gde je primetio grešku, a ne da je bio u „Ti“). */
+  prevTab: Tab | null;
   /** Ekrani otvoreni iznad taba (detalji treninga, pregled plana, …); poslednji je na vrhu. Prazno = koren taba. */
   screens: ScreenRequest[];
   sheet: SheetRequest | null;
@@ -71,6 +73,7 @@ export interface UiActions {
 
 export const useUIStore = create<UiState & UiActions>()((set, get) => ({
   tab: 'danas',
+  prevTab: null,
   screens: [],
   sheet: null,
   confirm: null,
@@ -79,7 +82,8 @@ export const useUIStore = create<UiState & UiActions>()((set, get) => ({
   wizard: false,
   peek: null,
   setTab(tab) {
-    set({ tab, screens: [], peek: null });
+    const cur = get().tab;
+    set({ tab, prevTab: tab !== cur ? cur : get().prevTab, screens: [], peek: null });
   },
   setPeek(peek) {
     set({ peek });

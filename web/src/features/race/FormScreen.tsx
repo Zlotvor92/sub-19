@@ -10,7 +10,7 @@ import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
 import { useUIStore } from '../../stores/uiStore';
 import { Journey } from './Journey';
 import { TrendAi } from './TrendAi';
-import { PredictionChart, VdotTrendChart } from './charts';
+import { PaceChart, PredictionChart, VdotTrendChart } from './charts';
 import { useFormModel } from './useFormModel';
 
 const DISTANCES: ReadonlyArray<{ m: number; name: string }> = [
@@ -30,10 +30,13 @@ const secWord = (s: number): string =>
 export function FormScreen() {
   const m = useFormModel();
   const openSheet = useUIStore((s) => s.openSheet);
-  const [sel, setSel] = useState<{ vdot: number | null; pred: number | null }>({
-    vdot: null,
-    pred: null
-  });
+  const [sel, setSel] = useState<{ vdot: number | null; pred: number | null; pace: number | null }>(
+    {
+      vdot: null,
+      pred: null,
+      pace: null
+    }
+  );
   if (!m)
     return (
       <ScreenFrame>
@@ -219,6 +222,24 @@ export function FormScreen() {
             </span>
           ) : null}
         </div>
+      </Section>
+
+      <Section title="Tempo svakog trčanja" extra={<ProvenanceBadge kind="measured" />}>
+        {m.pace ? (
+          <>
+            <PaceChart
+              model={m.pace}
+              selected={sel.pace}
+              onSelect={(i) => setSel({ ...sel, pace: i })}
+            />
+            <p className="note-src">
+              Jedna tačka je jedno trčanje. Tempo zavisi od vrste treninga, pa se brza i laka
+              trčanja ne porede među sobom.
+            </p>
+          </>
+        ) : (
+          <p className="empty">Unesi distancu i vreme na treninzima — trend se crta automatski.</p>
+        )}
       </Section>
 
       <Section title="Test 3 km" extra={<ProvenanceBadge kind="measured" />}>

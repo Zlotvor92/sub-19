@@ -50,6 +50,13 @@ export function App() {
   }, [closeSheet]);
   useSystemBanners();
 
+  /* Odjava ili brisanje naloga: otvoreni ekrani pripadaju prethodnom nalogu, pa se posle ponovne prijave kreće od početnog ekrana. */
+  const prevGate = useRef(gate);
+  useEffect(() => {
+    if (prevGate.current === null && gate !== null) useUIStore.getState().setTab('danas');
+    prevGate.current = gate;
+  }, [gate]);
+
   /* Taster „Nazad“ zatvara ekran/list, ne aplikaciju (v. `navHistory`). */
   useEffect(() => {
     const nav = startNavHistory(window);
