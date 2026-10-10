@@ -21,7 +21,7 @@ test('vlasnik bez generisanog plana vidi ugrađeni plan (Bokeški polumaraton), 
   await expect(
     page
       .locator('.screen')
-      .getByText(/ispod 1:40/)
+      .getByText(/1:35:00/)
       .first()
   ).toBeVisible();
 });
