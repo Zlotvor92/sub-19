@@ -44,7 +44,7 @@ describe('current-fitness assessment, without unsupported improvement promises',
     expect(goalContext({ predictedSec: 1200, raceName: '5 km' })).toContain('procenjeno vreme');
   });
 
-  it('identical delivered training has identical reference time for all legacy intensities', () => {
+  it('dose preference changes training without changing the confirmed fitness reference', () => {
     const start = '2026-10-12' as IsoDate;
     const plans = intensities.map((intensity): TrainingPlan => {
       const p = generatePlan({
@@ -63,10 +63,13 @@ describe('current-fitness assessment, without unsupported improvement promises',
       return p;
     });
     for (const plan of plans) {
-      expect(plan.weeks).toEqual(plans[0]!.weeks);
       expect(plan.meta.predictedSec).toBe(plans[0]!.meta.predictedSec);
+      expect(plan.meta.vdot0).toBe(plans[0]!.meta.vdot0);
+      expect(plan.meta.vdotGoal).toBe(plans[0]!.meta.vdotGoal);
       expect(plan.meta.racePace).toBeGreaterThanOrEqual(247);
       expect(plan.meta.assessmentBasis).toBe('current-fitness');
     }
+    // This check is meaningful now that intensity controls quality dose.
+    expect(plans[0]!.weeks).not.toEqual(plans[2]!.weeks);
   });
 });

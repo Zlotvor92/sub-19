@@ -55,6 +55,21 @@ export function Step2Result({
           }
         />
       </div>
+      <div className="ob-card">
+        <label className="ob-ct" htmlFor="pb-date">
+          Datum rezultata <span className="ob-opt">— opciono</span>
+        </label>
+        <input
+          id="pb-date"
+          type="date"
+          value={w.pbDate ?? ''}
+          onChange={(e) => set({ pbDate: e.target.value })}
+        />
+        <div className="ob-hint">
+          Unesi datum poslednje trke ili testa. Stari rekord posle pauze nije potvrda sadašnje
+          forme.
+        </div>
+      </div>
       {form ? (
         <div className="ob-card accent" id="vdotWrap">
           <div className="ob-ct">Tvoja forma</div>

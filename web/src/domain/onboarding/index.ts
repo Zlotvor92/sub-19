@@ -7,7 +7,7 @@ import { assess } from '../training/generator/assess';
 import { profileFor } from '../training/distances';
 import { vdotFromRace } from '../training/vdot/calculateVDOT';
 import { paceForZone } from '../training/vdot/paceForZone';
-import type { Intensity, PlanGenerationInput } from '../training/types';
+import type { Intensity, PlanGenerationInput, QualityExperience } from '../training/types';
 
 export const TOTAL_STEPS = 4;
 /** Od ove distance (m) vreme se unosi i u satima (polumaraton, maraton). */
@@ -34,13 +34,18 @@ export interface WizardState {
   pbSec: string;
   weeklyKm: string;
   trainedRecently: boolean;
+  pbDate?: string;
+  recentLongRunKm?: string;
+  consistentWeeks?: string;
+  breakWeeks?: string;
+  qualityExperience?: QualityExperience | '';
   runDays: number;
   quality: number;
   runDows: number[];
   lrDow: number | null;
   lrDowManual: boolean;
   qDays: number[];
-  /** Legacy preference retained in stored inputs; no assumed fitness improvement. */
+  /** Quality dose, independent of pace and volume growth. */
   intensity: Intensity;
   /** Tempo rasta OBIMA (nedeljni koraci) — poseban izbor od `intensity`. */
   volIntensity: Intensity;
@@ -58,6 +63,11 @@ export const initialWizard = (): WizardState => ({
   pbSec: '',
   weeklyKm: '',
   trainedRecently: true,
+  pbDate: '',
+  recentLongRunKm: '',
+  consistentWeeks: '',
+  breakWeeks: '',
+  qualityExperience: '',
   runDays: 4,
   quality: 2,
   runDows: [],
@@ -121,10 +131,35 @@ export function weeksToRace(raceDate: string, today: string): number | null {
   return w > 0 ? w : null;
 }
 
-export function stepValid(w: WizardState, step: number): boolean {
+export function historyValidationMessage(w: WizardState): string | null {
+  for (const [value, max, label] of [
+    [w.recentLongRunKm, 100, 'Skorašnja dužina'],
+    [w.consistentWeeks, 5200, 'Kontinuitet'],
+    [w.breakWeeks, 5200, 'Pauza']
+  ] as const)
+    if (value && (!Number.isFinite(+value) || +value < 0 || +value > max))
+      return `${label} mora biti broj od 0 do ${max}.`;
+  return null;
+}
+
+export function resultDateMessage(w: WizardState, today: string): string | null {
+  if (!w.pbDate) return null;
+  const result = parseIsoDate(w.pbDate);
+  return !result || w.pbDate > today
+    ? 'Datum rezultata mora biti ispravan datum koji nije u budućnosti.'
+    : null;
+}
+
+export function stepValid(w: WizardState, step: number, today?: string): boolean {
   if (step === 1) return !!w.raceDate;
-  if (step === 2) return pbSanityOk(w);
-  if (step === 3) return w.weeklyKm !== '' && +w.weeklyKm > 0;
+  if (step === 2) return pbSanityOk(w) && !(today && resultDateMessage(w, today));
+  if (step === 3)
+    return (
+      w.weeklyKm !== '' &&
+      +w.weeklyKm > 0 &&
+      Number.isFinite(+w.weeklyKm) &&
+      !historyValidationMessage(w)
+    );
   return true;
 }
 
@@ -217,8 +252,12 @@ export function toGenerationInput(w: WizardState, today: string): PlanGeneration
     startDate: today,
     raceDate: w.raceDate,
     raceDistM: w.raceDist,
-    pb: { distM: w.pbDist, sec: pbSec },
+    pb: { distM: w.pbDist, sec: pbSec, ...(w.pbDate ? { date: w.pbDate } : {}) },
     weeklyKm: +w.weeklyKm,
+    ...(w.recentLongRunKm ? { recentLongRunKm: +w.recentLongRunKm } : {}),
+    ...(w.consistentWeeks ? { consistentWeeks: +w.consistentWeeks } : {}),
+    ...(w.breakWeeks ? { breakWeeks: +w.breakWeeks } : {}),
+    ...(w.qualityExperience ? { qualityExperience: w.qualityExperience } : {}),
     runDays: w.runDays,
     quality: w.quality,
     ...(w.lrDow != null ? { lrDow: w.lrDow } : {}),

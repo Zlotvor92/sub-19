@@ -5,6 +5,7 @@
 
 import { MAX_PLAUSIBLE_PACE_SEC_PER_KM, MIN_PLAUSIBLE_PACE_SEC_PER_KM } from '../constants/product';
 import type { PlanGenerationInput } from '../types';
+import { diffDays, parseIsoDate } from '../../date';
 
 const INTENSITIES: readonly string[] = ['kons', 'std', 'agr'];
 
@@ -25,10 +26,29 @@ export function validateInput(inp: PlanGenerationInput): string | null {
     return 'Nedeljna kilometraža mora biti veća od nule.';
   }
   if (!INTENSITIES.includes(inp.intensity)) {
-    return 'Nepoznat tempo napretka (očekuje se „kons", „std" ili „agr").';
+    return 'Nepoznata težina kvalitetnog rada (očekuje se „kons", „std" ili „agr").';
   }
   if (inp.volIntensity !== undefined && !INTENSITIES.includes(inp.volIntensity)) {
     return 'Nepoznat tempo rasta obima (očekuje se „kons", „std" ili „agr").';
+  }
+  for (const [value, max, label] of [
+    [inp.recentLongRunKm, 100, 'Skorašnja dužina'],
+    [inp.consistentWeeks, 5200, 'Kontinuitet'],
+    [inp.breakWeeks, 5200, 'Pauza']
+  ] as const) {
+    if (value !== undefined && (!Number.isFinite(value) || value < 0 || value > max))
+      return `${label} mora biti broj od 0 do ${max}.`;
+  }
+  if (
+    inp.qualityExperience !== undefined &&
+    !['none', 'some', 'experienced'].includes(inp.qualityExperience)
+  )
+    return 'Nepoznato iskustvo sa kvalitetnim treningom.';
+  if (inp.pb.date !== undefined) {
+    const result = parseIsoDate(inp.pb.date);
+    const start = parseIsoDate(inp.startDate);
+    if (!result || !start || diffDays(result, start) < 0)
+      return 'Datum rezultata mora biti ispravan datum koji nije posle početka plana.';
   }
   if (
     !Number.isFinite(inp.pb.sec) ||

@@ -96,7 +96,9 @@ describe('Računica generatora', () => {
           if (FROM_GOAL.has(s.kind)) {
             expected = m.racePace;
           } else {
-            const zone = ZONE[s.kind];
+            // A timed format can serve different purposes: the introductory
+            // fartlek is explicitly threshold work, not an I session.
+            const zone = s.zone ?? ZONE[s.kind];
             expect(zone, `nepoznata vrsta sesije: ${s.kind}`).toBeDefined();
             expected = paceForZone(v, zone as 'I' | 'T' | 'R');
           }

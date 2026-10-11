@@ -1,5 +1,5 @@
 import type { DistanceHeuristic, DistanceProduct } from '../constants/distances';
-import type { FastFinish, Intensity, SessionDay } from '../types';
+import type { FastFinish, Intensity, QualityReadiness, SessionDay } from '../types';
 
 /** Faza kvalitetnog ciklusa. Imena po distancama se razlikuju (5K: economy→peak→sharpening;
  *  10K i HM: threshold→peak→specific; 42K: endurance→threshold→specific). */
@@ -16,6 +16,10 @@ export interface QualityContext {
 }
 
 export interface QualityRequest {
+  readiness?: QualityReadiness;
+  qualityIntensity?: Intensity;
+  /** A demanding LR replaces q2; q1 keeps its family with a recalculated dose. */
+  replacesSecondQuality?: boolean;
   /** Redni broj nedelje unutar kvalitetnog ciklusa (1-indeksiran). */
   qualW: number;
   qualWeeks: number;

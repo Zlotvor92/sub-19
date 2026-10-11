@@ -18,6 +18,7 @@ import { CycleRail } from '../cycle/CycleRail';
 import { weekCells } from '../cycle/dayCells';
 import { useCycleModel } from '../cycle/useCycleModel';
 import { useEasyPace } from '../session/useEasyPace';
+import { preparationSummary } from '../../domain/plan/preparation';
 import { WeekBody } from './WeekBody';
 import { WeekChart } from './WeekChart';
 import { WeekRow } from './WeekRow';
@@ -66,6 +67,7 @@ export function PlanOverview() {
   const selBar = chartSel != null ? chart.bars.find((b) => b.w === chartSel) : undefined;
   const nowW = cycle.current?.w ?? null;
   const daysToRace = race ? diffDays(today, race) : null;
+  const preparation = preparationSummary(gen?.meta);
 
   return (
     <ScreenFrame>
@@ -77,6 +79,24 @@ export function PlanOverview() {
         </p>
       </header>
       <CycleRail model={cycle} daysToRace={daysToRace} />
+      {preparation ? (
+        <Section title="Osnova pripreme" id="pl-preparation">
+          <p>
+            <b>{preparation.label}</b>
+          </p>
+          <p>
+            Planirani vrhunac: {fmtKm(preparation.peakWeeklyKm)} km/ned · najduže trčanje{' '}
+            {fmtKm(preparation.peakLongRunKm)} km.
+          </p>
+          {preparation.reasons.map((reason) => (
+            <p key={reason}>{reason}</p>
+          ))}
+          <p className="note-src">
+            Procena uzima u obzir prijavljenu bazu i stvarno sastavljen plan. Ona ne potvrđuje da će
+            priprema biti odrađena niti garantuje završetak ili cilj.
+          </p>
+        </Section>
+      ) : null}
 
       <Section title="Gde sam u planu" id="pl-sum">
         <div className="stats">

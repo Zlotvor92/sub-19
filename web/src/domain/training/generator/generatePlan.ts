@@ -28,9 +28,9 @@ import {
 } from '../constants/product';
 import { UNDULATION } from '../constants/distances';
 import { profileFor } from '../distances';
-import type { DistanceProfile } from '../distances/types';
+import type { DistanceProfile, QualityRequest } from '../distances/types';
 import { predRow, qsFor } from '../prediction';
-import { mkDeloadSharpness, sessInt, sessTempo, wuCdForVolume } from '../sessions/build';
+import { sessInt } from '../sessions/build';
 import { sessDesc, sessKm, sessQKm } from '../sessions/calc';
 import { constrainWeek } from '../sessions/constraints';
 import { raceTimeForVdot } from '../vdot/racePrediction';
@@ -51,14 +51,17 @@ import type {
   TrainingPlan
 } from '../types';
 import { paceForZone } from '../vdot/paceForZone';
-import { allocEasyLongRun, perRunFloor, type Allocation, type LongRunCapFn } from './allocation';
+import { allocEasyLongRun, perRunFloor, type Allocation } from './allocation';
 import { assess } from './assess';
 import { buildDaySlots, dayPreferenceWarnings, pickStrengthDay } from './daySlots';
 import { weekFocus } from './focus';
 import { validateInput } from './validateInput';
 import { runWalkForWeek, runWalkText } from './runWalk';
 import { fuelText } from '../sessions/longRun';
-import { longRunCap, peakVolume, rampStep } from './volume';
+import { peakVolume, rampStep } from './volume';
+import { assessAthlete, assessPreparation } from './athleteAssessment';
+import { nextLongRunTarget } from './longRunProgression';
+import { reducedQualityForDeload } from '../sessions/deload';
 
 const hasKm = (d: Day): d is RunningDay => typeof d.km === 'number';
 const kmOf = (d: Day): number => d.km || 0;
@@ -125,6 +128,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const runDays = Math.max(2, Math.min(7, softInt(inp.runDays, DEFAULT_RUN_DAYS)));
   let qWant = Math.max(1, Math.min(2, softInt(inp.quality, DEFAULT_QUALITY)));
   const H = prof.heuristic;
+  const athlete = assessAthlete(inp, H);
   /* Rast obima ima SVOJ izbor; bez njega (stari planovi) prati tempo napretka. */
   const volIntensity = inp.volIntensity ?? inp.intensity;
   const QUAL2_MIN_KM = prof.product.qual2MinKm;
@@ -143,6 +147,10 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   /* Koliko kvaliteta obim UOPŠTE podnosi: dva kvalitetna u nedelji od 12 km su besmislena. */
   const qCut = qWant > 1 && peakEstimate < QUAL2_MIN_KM;
   if (qCut) qWant = 1;
+  // Three running days must leave an easy day alongside quality and the LR.
+  // Otherwise shrinking sessions and the LR share cap can reinforce each other.
+  const frequencyQCut = qWant > 1 && runDays < 4;
+  if (frequencyQCut) qWant = 1;
   const slots = buildDaySlots(
     runDays,
     qWant,
@@ -151,6 +159,11 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   );
   const dayWarnings = dayPreferenceWarnings(slots);
   const effQ = Object.values(slots).filter((r) => r === 'q1' || r === 'q2').length;
+  if (frequencyQCut)
+    dayWarnings.push(
+      'Na tri dana trčanja ovaj generator planira najviše jedan kvalitet, uz lagan dan i dužinu. ' +
+        'Tražena dva kvaliteta ostavila bi premalo prostora za lagani obim i oporavak.'
+    );
   const a = assess(inp.pb, weeks, inp.intensity, inp.goalSec || null, raceDistM);
 
   /* Cilj je želja; ekvivalent trenutne forme nije prognoza napretka kroz pripremu. */
@@ -171,10 +184,24 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
      fazu. Koliko traje je odluka distance; ŠTA se u njoj radi je isto za sve.
      ============================================================ */
   const trainedRecently = inp.trainedRecently !== false;
-  const isBeginner = !trainedRecently;
-  const wantedBase = isBeginner ? prof.product.baseWeeksBeginner : 0;
+  const isBeginner = athlete.qualityReadiness === 'beginner';
+  const isReturning = athlete.qualityReadiness === 'returning';
+  const wantedBase = isBeginner
+    ? prof.product.baseWeeksBeginner
+    : isReturning
+      ? Math.min(3, Math.max(1, Math.ceil(athlete.breakWeeks / 2)))
+      : 0;
   const baseWeeks = wantedBase ? Math.max(0, Math.min(wantedBase, weeks - 1)) : 0;
   const rwWeeks = isBeginner ? Math.min(RUN_WALK_WEEKS, baseWeeks) : 0;
+  dayWarnings.push(...athlete.assumptions);
+  if (isReturning)
+    dayWarnings.push(
+      `Posle pauze od ${athlete.breakWeeks} nedelja plan počinje sa ${baseWeeks} lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.`
+    );
+  if (athlete.speedConfidence === 'stale-result')
+    dayWarnings.push(
+      'Rezultat je stariji od 90 dana. Tempa su referenca tog rezultata; ona nisu potvrda sadašnje forme niti automatska procena gubitka brzine.'
+    );
 
   if (qCut) {
     dayWarnings.push(
@@ -201,15 +228,12 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const minRunDaysRec = prof.product.recommendedMinRunDays;
   if (minRunDaysRec && runDays < minRunDaysRec) {
     dayWarnings.push(
-      'Za ' +
-        distUReceni(prof.product.name) +
-        ' se preporučuje bar ' +
-        minRunDaysRec +
-        ' dana trčanja nedeljno; izabrao si ' +
+      'Izabrao si ' +
         runDays +
-        '. Na tako malo dana dugo trčanje postaje ' +
-        'polovina cele nedelje, pa se obim ne može rasporediti a da svaki trening ne bude dugačak. ' +
-        'Plan je napravljen, ali računaj na duže oporavke i manje prostora za kvalitet.'
+        ' dana za ' +
+        distUReceni(prof.product.name) +
+        '. Manje dana ostavlja manje prostora za raspodelu obima i oporavak između dužine i kvaliteta. ' +
+        'Spremnost zavisi od tvoje baze i isporučene pripreme, a ne samo od broja dana.'
     );
   }
   if (isBeginner && rwWeeks < RUN_WALK_WEEKS) {
@@ -293,6 +317,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const raceDow = daysN - (weeks - 1) * 7 + 1; // 1..7 unutar poslednje nedelje
   const meta: PlanMeta = {
     ...a,
+    athlete,
     trainingVdot: a.vdot0,
     start,
     weeks,
@@ -329,12 +354,6 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     const spec = qsFor(ses);
     if (spec) plan.qs[`n${w}d${day.dow}`] = spec;
   };
-
-  /** Plafon dugog trčanja, opciono skaliran faktorom ciklusa (maraton). */
-  const lrCapFor = (factor: number | null): LongRunCapFn =>
-    factor !== null && factor !== 1
-      ? (v, pl) => longRunCap(H, v, pl) * factor
-      : (v, pl) => longRunCap(H, v, pl);
 
   /** Konačni LR opis se izvodi iz završne kilometraže, uključujući gorivo i brz završetak. */
   const refreshLongRun = (day: LongRunDay, w: number): void => {
@@ -412,6 +431,29 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     /* Prva taper nedelja (kad ih ima dve) NIJE `isTaper1`: kvalitet je normalan, samo je obim manji. */
     const isTaper2 = taperW >= 2 && w > lastWorking && w < weeks - 1;
     const days: Day[] = [];
+    const previousLongRunPeak = Math.max(
+      0,
+      ...plan.weeks.flatMap((pw) =>
+        pw.days
+          .filter((d) => (d.tag === 'lr' && !d.mlr) || (d.tag === 'rw' && slots[d.dow] === 'lr'))
+          .map(kmOf)
+      )
+    );
+    const longRunTarget = nextLongRunTarget({
+      heuristic: H,
+      week: w,
+      recentLongRunKm: athlete.repeatableLongRunKm,
+      ...(athlete.consistentWeeks != null ? { consistentWeeks: athlete.consistentWeeks } : {}),
+      trainedRecently: !isBeginner && !isReturning,
+      ...(w > 1 ? { previousPeakKm: previousLongRunPeak } : {}),
+      startingWeeklyKm: inp.weeklyKm,
+      weeklyKm: vol,
+      paceSecPerKm: pLR,
+      isDeload,
+      ...(isTaper1 ? { taperFactor: H.taperLongRunFactor } : isTaper2 ? { taperFactor: 0.85 } : {}),
+      marathon: raceDistM === 42195
+    });
+    const independentLR = { km: longRunTarget.km, maxShare: H.longRunMaxShare };
 
     if (isRace) {
       buildRaceWeek();
@@ -433,10 +475,9 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         prevW.deload && plan.weeks.length >= 2 ? at(plan.weeks, plan.weeks.length - 2) : prevW;
       const prevVol = sumKm(baseW.days);
       const now = sumKm(days);
-      const floorKm = perRunFloor(vol, runDays);
-
       if (prevVol > 0 && isDeload) {
         const limit = prevVol * (H.deloadFactor || 0.73);
+        const deloadFloor = perRunFloor(limit, runDays);
         if (now > limit) {
           const f = limit / now;
           days.forEach((d) => {
@@ -451,43 +492,19 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
               d.desc = sessDesc(ses);
               return;
             }
-            d.km = Math.max(floorKm, r1(d.km * f));
+            d.km = Math.max(deloadFloor, r1(d.km * f));
             renameKm(d);
           });
-        }
-      } else if (prevVol > 0) {
-        /* Granica isporučenog rasta prati isti apsolutni korak (uz margin za diskretnost). */
-        const limit = prevVol + rampStep(H, prevVol, volIntensity) * DELIVERED_GROWTH_FACTOR;
-        if (now > limit) {
-          /* I SREDNJE-DUGO učestvuje (Z2 dan bez radnog dela); dugo trčanje se NE dira. */
-          const easy = days.filter(
-            (d): d is EasyRunDay | RunWalkDay | LongRunDay =>
-              hasKm(d) &&
-              (d.tag === 'lako' || d.tag === 'rw' || (d.tag === 'lr' && !!d.mlr)) &&
-              d.km > floorKm
-          );
-          let excess = now - limit;
-          /* skraćuje od NAJDUŽEG laganog dana nanize — ravnomernije nego redom */
-          easy.sort((x, y) => y.km - x.km);
-          for (const d of easy) {
-            if (excess <= 0.05) break;
-            /* Plafon od 30% SOPSTVENE vrednosti dana: jedini lak dan ne sme izgubiti 70%. */
-            const can = Math.min(d.km - floorKm, d.km * 0.3);
-            const take = Math.min(can, excess);
-            if (take > 0) {
-              const nova = Math.max(floorKm, r1(d.km - take));
-              excess -= d.km - nova;
-              d.km = nova;
-              renameKm(d);
-            }
-          }
         }
       }
     }
     /* TAPER SE MERI PREMA STVARNO ISPORUČENOM VRHUNCU, ne prema ciljnom. Klamp SAMO SEČE. */
     if ((isTaper1 || isTaper2) && plan.weeks.length) {
       const pik = Math.max(...plan.weeks.map((pw) => sumKm(pw.days)), 0);
-      const limit = pik * (isTaper1 ? H.taperFactor : H.firstTaperFactor || 0.82);
+      const limit = Math.min(
+        pik * (isTaper1 ? H.taperFactor : H.firstTaperFactor || 0.82),
+        at(plan.weeks, plan.weeks.length - 1).vol
+      );
       const now = sumKm(days);
       if (pik > 0 && now > limit) {
         /* Skida se SAMO sa dana bez kvalitetne sesije; kvalitet u taperu je već mali i nosi oštrinu. */
@@ -514,6 +531,27 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
             renameKm(d);
           });
         }
+        let remaining = Math.max(0, sumKm(days) - limit);
+        for (const day of days) {
+          if (remaining <= 0.05) break;
+          if (!day.session) continue;
+          const s = day.session;
+          for (const [key, minimum] of [
+            ['cdKm', 0.8],
+            ['wuKm', 1]
+          ] as const) {
+            const before = s[key];
+            s[key] = r1(Math.max(minimum, s[key] - remaining));
+            remaining -= before - s[key];
+          }
+          day.km = sessKm(s);
+          day.desc = sessDesc(s);
+        }
+        if (lrDay && remaining > 0.05) {
+          const finalMaxQ = maxOf(days.filter((d) => d.session).map(kmOf));
+          lrDay.km = r1(Math.max(floorKm, finalMaxQ * 1.05, lrDay.km - remaining));
+          renameKm(lrDay);
+        }
       }
     }
     // Final delivered-volume guard also covers the transition out of a longer beginner base.
@@ -524,19 +562,47 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       const limit =
         reference.vol + rampStep(H, reference.vol, volIntensity) * DELIVERED_GROWTH_FACTOR;
       let excess = Math.max(0, sumKm(days) - limit);
-      for (const d of days
-        .filter(
-          (d): d is RunningDay =>
-            hasKm(d) &&
-            !d.session &&
-            (d.tag === 'lako' || d.tag === 'rw' || (d.tag === 'lr' && !!d.mlr))
-        )
-        .sort((a, b) => b.km - a.km)) {
+      const maxQualityKm = maxOf(days.filter((day) => day.session).map(kmOf));
+      const softDays = days.filter((day): day is RunningDay => hasKm(day) && !day.session);
+      const floorFor = (day: RunningDay): number =>
+        (day.tag === 'lr' && !day.mlr) || (day.tag === 'rw' && slots[day.dow] === 'lr')
+          ? Math.max(perRunFloor(limit, runDays), r1(maxQualityKm * 1.05))
+          : perRunFloor(limit, runDays);
+      const slack = softDays.reduce((n, day) => n + Math.max(0, day.km - floorFor(day)), 0);
+      const reduction = slack > 0 ? Math.min(1, excess / slack) : 0;
+      // Preserve the easy/LR balance. Cutting the only easy day first starves
+      // the LR share denominator and causes a repeated downward feedback loop.
+      for (const day of softDays) {
+        day.km = r1(
+          Math.max(floorFor(day), day.km - Math.max(0, day.km - floorFor(day)) * reduction)
+        );
+        renameKm(day);
+      }
+      excess = Math.max(0, sumKm(days) - limit);
+      // A new workout family can exceed the limit even after easy days reach
+      // their floors. Remove optional easy padding before cutting LR exposure.
+      for (const day of days) {
         if (excess <= 0.05) break;
-        const before = d.km;
-        d.km = r1(Math.max(perRunFloor(vol, runDays), d.km - excess));
-        excess -= before - d.km;
-        renameKm(d);
+        if (!day.session) continue;
+        const s = day.session;
+        for (const [key, minimum] of [
+          ['cdKm', 0.8],
+          ['wuKm', 1]
+        ] as const) {
+          const take = Math.min(Math.max(0, s[key] - minimum), excess);
+          s[key] = r1(s[key] - take);
+          excess -= take;
+        }
+        day.km = sessKm(s);
+        day.desc = sessDesc(s);
+      }
+      const mainLR = days.find(
+        (d) => (d.tag === 'lr' && !d.mlr) || (d.tag === 'rw' && slots[d.dow] === 'lr')
+      );
+      if (mainLR && hasKm(mainLR) && excess > 0.05) {
+        const maxQ = maxOf(days.filter((d) => d.session).map(kmOf));
+        mainLR.km = r1(Math.max(perRunFloor(vol, runDays), maxQ * 1.05, mainLR.km - excess));
+        renameKm(mainLR);
       }
     }
     finalizeWeek(days, w);
@@ -583,7 +649,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           D.race(
             dw,
             raceDistM / 1000,
-            `🏁 TRKA ${distKm} km (${prof.product.name}) — ${inp.goalSec ? `željeni cilj ${fmtClock(inp.goalSec)} · ` : ''}preporučeni ritam ${fmtClock(rp)}/km (oko ${fmtClock(Math.round((rp * raceDistM) / 1000))}, prema trenutnoj formi${inp.goalSec && inp.goalSec >= currentRaceSec ? ' i izabranom cilju' : ''})`
+            `🏁 TRKA ${distKm} km (${prof.product.name}) — ${inp.goalSec ? `željeni cilj ${fmtClock(inp.goalSec)} · ` : ''}preporučeni ritam ${fmtClock(rp)}/km (oko ${fmtClock(Math.round((rp * raceDistM) / 1000))}, prema unetom rezultatu${inp.goalSec && inp.goalSec >= currentRaceSec ? ' i izabranom cilju' : ''})`
           )
       };
       const activationFactory = proto['-2'];
@@ -656,16 +722,9 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     /* ------------------------------------------------------------ bazna nedelja */
     function buildBaseWeek(): void {
       const mlrShare = wantMLR && mlrCfg ? mlrCfg.share : 0;
-      /* DUGO TRČANJE U BAZI RASTE POSTEPENO (`baseLongRunStart`): baza gradi obim, ne testira maksimum. */
-      const baseStart = H.baseLongRunStart;
-      const bazaF =
-        baseStart && baseWeeks > 0 ? baseStart + (1 - baseStart) * (w / Math.max(baseWeeks, 1)) : 1;
-      const lrCapBase =
-        bazaF < 1
-          ? (v: number, pl: number): number => longRunCap(H, v, pl) * bazaF
-          : (v: number, pl: number): number => longRunCap(H, v, pl);
+      const lrCapBase = (): number => longRunTarget.km;
       const alloc = clampLongRun(
-        allocEasyLongRun(vol, [], runDays - 1, runDays, pLR, lrCapBase, mlrShare),
+        allocEasyLongRun(vol, [], runDays - 1, runDays, pLR, lrCapBase, mlrShare, independentLR),
         []
       );
       let ei = 0;
@@ -731,9 +790,10 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     function capAfterLongRun(dow: number, km: number): number {
       if (dow === 1 && slots[7] === 'lr' && plan.weeks.length > 0) {
         const prevW = at(plan.weeks, plan.weeks.length - 1);
+        if (prevW.deload) return km;
         const prevLR = maxOf(prevW.days.filter((d) => d.tag === 'lr').map(kmOf));
         if (prevLR > 0) {
-          const capKm = Math.min(14, Math.max(r1(prevLR * 0.5), Math.min(12, r1(prevLR * 0.7))));
+          const capKm = Math.min(14, r1(prevLR * 0.8));
           return Math.min(km, capKm);
         }
       }
@@ -748,10 +808,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
          njen zbir je pošten donji procenitelj. Važi za SVE četiri distance. */
       let volQ = vol;
       {
-        const cycleF = prof.longRunCycle
-          ? prof.longRunCycle(w, { weeks, baseWeeks, taperW, isDeload })
-          : null;
-        const probeCap = lrCapFor(cycleF);
+        const probeCap = (): number => longRunTarget.km;
         const probe = allocEasyLongRun(
           vol,
           [],
@@ -759,55 +816,65 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           runDays,
           pLR,
           probeCap,
-          wantMLR && mlrCfg ? mlrCfg.share : 0
+          wantMLR && mlrCfg ? mlrCfg.share : 0,
+          independentLR
         );
         const possible = probe.lr + (probe.mlr || 0) + sum(probe.easies);
         if (possible > 0) volQ = Math.min(vol, r1(possible * 1.05));
       }
       /* „Uvodna" prva kvalitetna nedelja (samo q1, lagan tempo) ima smisla za nekoga ko ULAZI u kvalitet. */
-      const isFirstQualWeek = qualW === 1 && (baseWeeks > 0 || !trainedRecently);
       const recent = plan.weeks.filter((pw) => !pw.deload).slice(-3);
       const supportedKm = Math.min(
         inp.weeklyKm + Math.max(0, w - 1) * 2,
         ...(recent.length ? recent.map((pw) => pw.vol) : [inp.weeklyKm])
       );
+      // Session sizing follows demonstrated delivered volume as well as the
+      // target allocation, especially when availability limits the real base.
+      volQ = Math.min(volQ, supportedKm + rampStep(H, supportedKm, volIntensity));
       const weeklyQ = Math.min(
         effQ,
-        volQ >= QUAL2_MIN_KM && supportedKm >= QUAL2_MIN_KM && qualW > (isBeginner ? 2 : 0) ? 2 : 1
+        runDays >= 4 &&
+          volQ >= QUAL2_MIN_KM &&
+          supportedKm >= QUAL2_MIN_KM &&
+          (athlete.qualityReadiness === 'experienced' || qualW > (isReturning ? 3 : 2))
+          ? 2
+          : 1
       );
       const sessions: Record<number, SessionDay> = {};
+      const requestFor = (dow: number, slotRole: 'q1' | 'q2'): QualityRequest => ({
+        qualW,
+        qualWeeks,
+        slotRole,
+        effQ: weeklyQ,
+        vol: volQ,
+        pI,
+        pT,
+        pE,
+        pR,
+        isTaper1,
+        dow,
+        racePace,
+        ctx: { weeks, w, taperW },
+        readiness: athlete.qualityReadiness,
+        qualityIntensity: inp.intensity
+      });
       for (let dow = 1; dow <= 7; dow++) {
         const role = slots[dow];
         if (role !== 'q1' && role !== 'q2') continue;
         if (role === 'q2' && weeklyQ < 2) continue;
         /* DELOAD: jedna kratka oštrina umesto potpunog brisanja kvaliteta; samo q1. */
         if (isDeload) {
-          if (role === 'q1') sessions[dow] = mkDeloadSharpness(dow, volQ, pR);
+          if (role === 'q1') {
+            const previous = plan.weeks
+              .flatMap((week) => week.days)
+              .filter((day): day is SessionDay => !!day.session)
+              .at(-1);
+            const reduced = previous ? reducedQualityForDeload(previous, dow) : null;
+            if (reduced) sessions[dow] = reduced;
+          }
           continue;
         }
-        if (isFirstQualWeek && role === 'q2') continue;
-        if (isFirstQualWeek && role === 'q1') {
-          /* UVODNA sesija: lagan kontinuiran tempo — najblaži kvalitet ciklusa, skalira se obimom. */
-          const [uwu, ucd] = wuCdForVolume(vol);
-          const qT = r1(Math.min(Math.max(volQ * H.introShare, 1.5), 5, H.tempoMaxSec / pT));
-          sessions[dow] = sessTempo(dow, uwu, qT, pT, Math.max(ucd, 1), 'Tempo');
-          continue;
-        }
-        sessions[dow] = prof.buildQuality({
-          qualW,
-          qualWeeks,
-          slotRole: role,
-          effQ: weeklyQ,
-          vol: volQ,
-          pI,
-          pT,
-          pE,
-          pR,
-          isTaper1,
-          dow,
-          racePace,
-          ctx: { weeks, w, taperW }
-        });
+        sessions[dow] = prof.buildQuality(requestFor(dow, role));
       }
       const sessionList = (): SessionDay[] => Object.values(sessions);
       /* MLR se broji među „lagane" dane jer se hrani iz istog ostatka. */
@@ -823,7 +890,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       const lrF = prof.longRunCycle
         ? prof.longRunCycle(w, { weeks, baseWeeks, taperW, isDeload })
         : 1;
-      const lrCapW = lrCapFor(lrF !== 1 ? lrF : null);
+      const lrCapW = (): number => longRunTarget.km;
       const allocFor = (): Allocation =>
         allocEasyLongRun(
           vol,
@@ -832,7 +899,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           runDays,
           pLR,
           lrCapW,
-          mlrShareQ
+          mlrShareQ,
+          independentLR
         );
       let alloc = allocFor();
       const hasTrial = sessionList().some((d) => d.session.kind === 'Kontrolna trka');
@@ -841,6 +909,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         !isTaper2 &&
         !isDeload &&
         !hasTrial &&
+        athlete.qualityReadiness === 'experienced' &&
+        inp.intensity !== 'kons' &&
         prof.longRunFinish?.(
           prof.phase(qualW, qualWeeks),
           qualW,
@@ -856,6 +926,14 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         if (second != null) {
           delete sessions[second];
           easyDowsCount++;
+          const first = Object.keys(sessions)
+            .map(Number)
+            .find((dow) => slots[dow] === 'q1');
+          if (first != null && finishCandidate)
+            sessions[first] = prof.buildQuality({
+              ...requestFor(first, 'q1'),
+              replacesSecondQuality: true
+            });
           alloc = allocFor();
         }
       }
@@ -879,9 +957,12 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
             let moved = false;
             base.forEach((b) => {
               const s = b.d.session;
+              // Easy padding must not force the independently progressed LR upward.
+              const spare = Math.max(0, longRunTarget.km / 1.05 - b.d.km);
+              const add = Math.min(step, spare / 2);
               /* nikad ne SMANJUJE postojeći WU/CD — samo raste, do osnova+maxAdd */
-              const nw = Math.max(s.wuKm, r1(Math.min(b.wu + maxAdd, s.wuKm + step)));
-              const nc = Math.max(s.cdKm, r1(Math.min(b.cd + maxAdd, s.cdKm + step)));
+              const nw = Math.max(s.wuKm, r1(Math.min(b.wu + maxAdd, s.wuKm + add)));
+              const nc = Math.max(s.cdKm, r1(Math.min(b.cd + maxAdd, s.cdKm + add)));
               if (nw > s.wuKm || nc > s.cdKm) {
                 s.wuKm = nw;
                 s.cdKm = nc;
@@ -939,7 +1020,13 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
             );
           } else {
             const finish =
-              !isTaper1 && !isTaper2 && !isDeload && !hasTrial && prof.longRunFinish
+              !isTaper1 &&
+              !isTaper2 &&
+              !isDeload &&
+              !hasTrial &&
+              athlete.qualityReadiness === 'experienced' &&
+              inp.intensity !== 'kons' &&
+              prof.longRunFinish
                 ? prof.longRunFinish(
                     prof.phase(Math.max(w - baseWeeks, 1), weeks - baseWeeks),
                     Math.max(w - baseWeeks, 1),
@@ -1007,17 +1094,13 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       const actual = sumKm(at(first, 0).days);
       const shortfall = 1 - actual / inp.weeklyKm;
       if (shortfall > FIRST_WEEK_SHORTFALL_WARN) {
-        const easyCount = Math.max(runDays - 1 - effQ, 0);
+        const actualQuality = at(first, 0).days.filter((day) => day.session).length;
         const suggestion =
-          easyCount <= 1
-            ? ' Na ' +
-              runDays +
-              ' dana sa ' +
-              (effQ === 1 ? 'jednim kvalitetnim treningom' : effQ + ' kvalitetna treninga') +
-              ' ostaje samo ' +
-              (easyCount === 1 ? 'jedan lagan dan' : 'nijedan lagan dan') +
-              ', pa se toliki obim ne može bezbedno rasporediti — lagan dan bi morao da bude dug koliko i dugo trčanje. Dodaj jedan dan trčanja.'
-            : ' Dodaj jedan dan trčanja ili smanji broj kvalitetnih treninga.';
+          ' Prva nedelja ima ' +
+          actualQuality +
+          ' kvalitetnih treninga. ' +
+          'Početna ponovljiva dužina i raspored ograničavaju raspodelu obima. ' +
+          'Proveri prijavljeni nedeljni obim i ponovljivu dužinu; dodatni dan može pomoći raspodeli, ali ne zamenjuje postojeću bazu.';
         dayWarnings.push(
           'Tražio si ' +
             inp.weeklyKm +
@@ -1127,6 +1210,15 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         isRace: false,
         isBase: wk.w <= baseWeeks
       });
+  }
+  meta.preparation = assessPreparation(plan, prof.product.minPeakKm);
+  dayWarnings.push(...meta.preparation.reasons);
+  if (meta.preparation.endurance !== 'supported' || athlete.speedConfidence !== 'recent-result') {
+    for (const day of plan.weeks.flatMap((week) => week.days)) {
+      if (day.tag === 'trka')
+        day.desc +=
+          ' · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.';
+    }
   }
   return plan;
 }

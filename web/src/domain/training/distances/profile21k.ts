@@ -18,7 +18,8 @@ import {
 import { progressionRun, type ProgressionParams } from '../sessions/progression';
 import { repetitions } from '../sessions/repetitions';
 import { continuousTempo, type TempoParams } from '../sessions/tempo';
-import type { FastFinish, SessionDay } from '../types';
+import type { FastFinish, QualityReadiness, SessionDay } from '../types';
+import { applyQualityDose, introductoryQuality } from './qualityDose';
 import type { DistanceProfile, PaceStrategy, Phase, QualityRequest } from './types';
 
 /** <30% prag, <60% vrhunac, ostalo specifika. */
@@ -161,22 +162,35 @@ type Family = 'I' | 'R' | 'T' | 'RP';
  * Koji sistem gađa q1 te nedelje — JEDAN izvor istine za izbor sesije I za
  * deljenje nedeljnog budžeta praga (Danielsov budžet je NEDELJNI, ne po sesiji).
  */
-function q1Family(phase: Phase, strat: PaceStrategy, qualW: number): Family {
-  if (phase === 'threshold') return qualW % 3 === 0 ? 'I' : 'R';
+function q1Family(
+  phase: Phase,
+  strat: PaceStrategy,
+  qualW: number,
+  readiness?: QualityReadiness
+): Family {
+  if (phase === 'threshold') {
+    if (readiness === 'experienced' || readiness === 'developing')
+      return qualW % 3 === 0 ? 'I' : 'T';
+    return qualW % 3 === 0 ? 'I' : 'R';
+  }
   if (phase === 'peak') return 'I'; // faza vrhunca je VO2max faza
   if (strat === 'blocks') return 'RP';
   if (strat === 'threshold') return qualW % 3 === 0 ? 'I' : 'T';
   return qualW % 2 === 1 ? 'RP' : 'T'; // 'long'
 }
 
-function buildQuality21K(req: QualityRequest): SessionDay {
+function chooseQuality21K(req: QualityRequest): SessionDay {
   const { qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, isTaper1, dow, racePace, ctx } =
     req;
   const phase = phase21K(qualW, qualWeeks);
   const strat = paceStrategy21K(racePace);
   /* Kad q1 ide na prag (T), deli nedeljni budžet praga sa q2: 60% / 40%. */
   const share =
-    effQ === 2 && q1Family(phase, strat, qualW) === 'T' ? (slotRole === 'q1' ? 0.6 : 0.4) : 1;
+    effQ === 2 && !req.replacesSecondQuality && q1Family(phase, strat, qualW, req.readiness) === 'T'
+      ? slotRole === 'q1'
+        ? 0.6
+        : 0.4
+      : 1;
 
   if (isTaper1) {
     const [twu, tcd] = wuCdForVolume(vol);
@@ -213,8 +227,11 @@ function buildQuality21K(req: QualityRequest): SessionDay {
   }
 
   if (effQ === 1) {
-    if (phase === 'threshold')
+    if (phase === 'threshold') {
+      if (req.readiness === 'experienced' || req.readiness === 'developing')
+        return qualW % 3 === 0 ? mkIntervals(dow, vol, pI, phase, qualW) : mkCruise(dow, vol, pT);
       return qualW % 3 === 2 ? mkRepetitions(dow, vol, pR) : mkCruise(dow, vol, pT);
+    }
     if (phase === 'peak') {
       const m = qualW % 3;
       return m === 1 ? mkIntervals(dow, vol, pI, phase, qualW) : mkCruise(dow, vol, pT);
@@ -228,7 +245,7 @@ function buildQuality21K(req: QualityRequest): SessionDay {
   }
 
   if (slotRole === 'q1') {
-    const fam = q1Family(phase, strat, qualW);
+    const fam = q1Family(phase, strat, qualW, req.readiness);
     if (fam === 'R') return mkRepetitions(dow, vol, pR);
     if (fam === 'I') {
       return qualW % 4 === 2
@@ -251,6 +268,13 @@ function buildQuality21K(req: QualityRequest): SessionDay {
     return qualW % 2 === 1 ? mkTempo(dow, vol, pT, null, share) : mkCruise(dow, vol, pT, share);
   }
   return qualW % 2 === 1 ? mkCruise(dow, vol, pT, share) : mkTempo(dow, vol, pT, null, share);
+}
+
+function buildQuality21K(req: QualityRequest): SessionDay {
+  const day = introductoryQuality(req) ?? chooseQuality21K(req);
+  // This is a dated race rehearsal, not a normal interchangeable quality dose.
+  if (day.session.kind === 'Kontrolna trka') return day;
+  return applyQualityDose(day, req);
 }
 
 /** Brz završetak dugog trčanja na tempu trke u specifičnoj fazi (češće za strategiju „dugo"). */

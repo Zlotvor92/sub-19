@@ -188,7 +188,9 @@ describe('Pragovski stimulus pri ograničavanju obima', () => {
       intensity: 'std',
       volIntensity: 'std',
       goalSec: 1199,
-      trainedRecently: true
+      trainedRecently: true,
+      qualityExperience: 'experienced',
+      consistentWeeks: 16
     });
     if ('error' in plan) throw new Error(plan.error);
     expect(plan.meta.quality).toBe(2);

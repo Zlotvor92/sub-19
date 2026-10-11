@@ -31,6 +31,50 @@ async function fill(
 }
 
 describe('čarobnjak', () => {
+  it('istorija i odvojena težina preživljavaju pravljenje, čuvanje i ponovno učitavanje stanja', async () => {
+    const user = userEvent.setup();
+    render(<Wizard today={TODAY} />);
+    await fill(user, { raceDate: '2026-04-12', min: '24', sec: '30', km: '40' });
+    await user.click(screen.getByRole('button', { name: 'Nazad' }));
+    await user.click(screen.getByText('Tvoja trenutna baza — opciono'));
+    await user.type(screen.getByLabelText('Skorašnja ponovljiva dužina (km)'), '12');
+    await user.type(screen.getByLabelText('Nedelja redovnog trčanja u kontinuitetu'), '24');
+    await user.type(screen.getByLabelText('Skorašnja pauza (nedelja)'), '0');
+    await user.selectOptions(
+      screen.getByLabelText('Iskustvo sa intervalima i tempo treningom'),
+      'experienced'
+    );
+    await user.click(screen.getByRole('button', { name: 'Dalje' }));
+    await user.click(
+      within(screen.getByRole('group', { name: 'Težina kvalitetnog rada' })).getByRole('button', {
+        name: 'Konzervativno'
+      })
+    );
+    await user.click(
+      within(screen.getByRole('group', { name: 'Tempo rasta obima' })).getByRole('button', {
+        name: 'Agresivno'
+      })
+    );
+    await user.click(screen.getByRole('button', { name: 'Napravi plan' }));
+    await waitFor(() => expect(collectPersisted().genPlan).not.toBeNull());
+    const saved = collectPersisted();
+    expect(saved.genPlan?.ulaz).toMatchObject({
+      recentLongRunKm: 12,
+      consistentWeeks: 24,
+      breakWeeks: 0,
+      qualityExperience: 'experienced',
+      intensity: 'kons',
+      volIntensity: 'agr'
+    });
+    expect(saved.genPlan?.meta).toMatchObject({
+      athlete: { qualityReadiness: 'experienced' },
+      preparation: { forecastBasis: 'result-and-delivered-preparation' }
+    });
+    hydratePersisted(JSON.parse(JSON.stringify(saved)) as PersistedState);
+    expect(collectPersisted().genPlan?.ulaz).toEqual(saved.genPlan?.ulaz);
+    expect(collectPersisted().genPlan?.meta).toEqual(saved.genPlan?.meta);
+  });
+
   it('„Dalje" je zaključano dok korak nije ispunjen; bez plana nema „✕"', async () => {
     const user = userEvent.setup();
     render(<Wizard today={TODAY} />);

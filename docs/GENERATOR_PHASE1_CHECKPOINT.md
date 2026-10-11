@@ -39,7 +39,7 @@ Podaci: `docs/qa/generator-phase1/comparison.json`, `before-probes.json`, `after
 - Sesije: regresije za zadržavanje T/I/R stimulusa, dozu, oporavak, očuvanje obima i idempotentnost.
 - UI: trenutna referenca forme, kompatibilnost starih sačuvanih procena i tačni segmenti progresivnog treninga.
 - Pregledane namerne promene baseline-a: svih 2.304 hash-a se menja zbog novog marker-a/forme; 1.164 scenarija menja nedeljni obim, 366 broj kvalitetnih sesija. Baseline je osvežen posle nezavisnih provera. Promene nisu dokaz trenerske validnosti svih scenarija.
-- Browser E2E u ovom okruženju nije verifikovan: nema Chromium izvršne datoteke; pokušaj preuzimanja Playwright browsera je neuspešan. Unit/UI provere ne zamenjuju ovaj tok. Relevantni postojeći E2E testovi ostaju za CI.
+- Lokalni Chromium nije dostupan, ali browser tokovi su zatim verifikovani u GitHub Actions: sva tri CI posla uspešna, uključujući 64 E2E testa. [CI run 38127641229](https://github.com/Zlotvor92/sub-19/actions/runs/38127641229), commit `4b2f647d4aeb4555f1370c636d761d8115df7848`, [draft PR #32](https://github.com/Zlotvor92/sub-19/pull/32).
 
 ## Komande za nastavak
 

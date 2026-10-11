@@ -30,7 +30,9 @@ export function allocEasyLongRun(
   runDays: number,
   longRunPaceSecPerKm: number,
   lrCapFn: LongRunCapFn,
-  mlrShare?: number
+  mlrShare?: number,
+  /** An independently progressed target replaces the legacy proportional LR choice. */
+  targetLR?: { km: number; maxShare: number }
 ): Allocation {
   const floorPerRun = perRunFloor(vol, runDays);
   const qSum = qKms.reduce((a, b) => a + b, 0);
@@ -45,10 +47,12 @@ export function allocEasyLongRun(
   }
   /* Na malo dana svako trčanje je veći udeo nedelje — zato strukturni cap po broju dana. */
   const capShare = runDays >= 5 ? 0.32 : runDays === 4 ? 0.36 : runDays === 3 ? 0.5 : 0.68;
-  const cap = Math.min(vol * capShare, dayCap);
+  const cap = Math.min(vol * (targetLR?.maxShare ?? capShare), dayCap);
   /* Pod od 4 km važi tek od ~13 km/ned naviše; na 10 km/ned to je 40% nedelje. */
   const floor = Math.max(maxQ * 1.05, Math.min(4, vol * 0.3));
-  let lr = Math.max(rem * 0.45, maxQ * 1.12, (rem / (easyCount + 1)) * 1.3);
+  let lr = targetLR
+    ? targetLR.km
+    : Math.max(rem * 0.45, maxQ * 1.12, (rem / (easyCount + 1)) * 1.3);
   lr = Math.min(lr, cap, rem - floorPerRun * easyCount);
   lr = Math.max(lr, Math.min(floor, rem - floorPerRun * 0.85 * easyCount));
   const weights = [1.15, 1, 0.9, 0.85, 0.8, 0.75].slice(0, easyCount);
@@ -56,7 +60,9 @@ export function allocEasyLongRun(
   let easies = weights.map((x) => Math.max(floorPerRun, r1(((rem - lr) * x) / wsum)));
   /* Lagan dan: do 70% LR-a dok je LR kratak, strogih 50% kad poraste, nikad preko 14 km. */
   const mx = Math.max(...easies);
-  const easyCeil = Math.min(14, Math.max(lr * 0.5, Math.min(12, lr * 0.7)));
+  const easyCeil = targetLR
+    ? Math.min(14, lr * 0.8)
+    : Math.min(14, Math.max(lr * 0.5, Math.min(12, lr * 0.7)));
   if (mx >= easyCeil && mx > 0) {
     const sc = easyCeil / mx;
     easies = easies.map((e) => Math.max(floorPerRun, r1(e * sc)));

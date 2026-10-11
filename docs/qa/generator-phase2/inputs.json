@@ -1,0 +1,202 @@
+[
+  {
+    "scenario": "01_base",
+    "historySource": "synthetic QA assumptions, not inferred facts about the original runner",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 2100,
+        "date": "2026-09-13"
+      },
+      "weeklyKm": 8,
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "kons",
+      "volIntensity": "kons",
+      "goalSec": 1800,
+      "trainedRecently": false,
+      "recentLongRunKm": 3,
+      "consistentWeeks": 0,
+      "breakWeeks": 0,
+      "qualityExperience": "none"
+    }
+  },
+  {
+    "scenario": "02_base",
+    "historySource": "synthetic QA assumptions, not inferred facts about the original runner",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1620,
+        "date": "2025-10-12"
+      },
+      "weeklyKm": 15,
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "std",
+      "volIntensity": "kons",
+      "goalSec": 3600,
+      "trainedRecently": false,
+      "recentLongRunKm": 4,
+      "consistentWeeks": 1,
+      "breakWeeks": 8,
+      "qualityExperience": "some"
+    }
+  },
+  {
+    "scenario": "04_base",
+    "historySource": "synthetic QA assumptions, not inferred facts about the original runner",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1199,
+      "trainedRecently": true,
+      "recentLongRunKm": 10,
+      "consistentWeeks": 12,
+      "breakWeeks": 0,
+      "qualityExperience": "some"
+    }
+  },
+  {
+    "scenario": "05_base",
+    "historySource": "synthetic QA assumptions, not inferred facts about the original runner",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 50,
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1139,
+      "trainedRecently": true,
+      "recentLongRunKm": 14,
+      "consistentWeeks": 24,
+      "breakWeeks": 0,
+      "qualityExperience": "experienced"
+    }
+  },
+  {
+    "scenario": "07_base",
+    "historySource": "synthetic QA assumptions, not inferred facts about the original runner",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 6300,
+      "trainedRecently": true,
+      "recentLongRunKm": 10,
+      "consistentWeeks": 12,
+      "breakWeeks": 0,
+      "qualityExperience": "some"
+    }
+  },
+  {
+    "scenario": "08_highvol",
+    "historySource": "synthetic QA assumptions, not inferred facts about the original runner",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-17",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 55,
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 5700,
+      "trainedRecently": true,
+      "recentLongRunKm": 16,
+      "consistentWeeks": 24,
+      "breakWeeks": 0,
+      "qualityExperience": "experienced"
+    }
+  },
+  {
+    "scenario": "09_30km",
+    "historySource": "synthetic QA assumptions, not inferred facts about the original runner",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-02-28",
+      "raceDistM": 42195,
+      "pb": {
+        "distM": 21097.5,
+        "sec": 6300,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 14400,
+      "trainedRecently": true,
+      "recentLongRunKm": 10,
+      "consistentWeeks": 12,
+      "breakWeeks": 0,
+      "qualityExperience": "some"
+    }
+  },
+  {
+    "scenario": "09_base",
+    "historySource": "synthetic QA assumptions, not inferred facts about the original runner",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-02-28",
+      "raceDistM": 42195,
+      "pb": {
+        "distM": 21097.5,
+        "sec": 6300,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 50,
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 14400,
+      "trainedRecently": true,
+      "recentLongRunKm": 18,
+      "consistentWeeks": 24,
+      "breakWeeks": 0,
+      "qualityExperience": "experienced"
+    }
+  }
+]

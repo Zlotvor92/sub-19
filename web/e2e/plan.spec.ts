@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { fixToday, installBackend, seedSession } from './support/backend';
-import { createPlan, tab } from './support/flows';
+import { createPlan, tab, TEN_K } from './support/flows';
 
 /* Tokovi 2–4: prvi start sa nalogom, čarobnjak, pravljenje plana, ekran „Danas". */
 
@@ -98,4 +98,56 @@ test('plan preživljava ponovno učitavanje: čarobnjak se ne vraća', async ({ 
   await page.reload();
   await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
   await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toHaveCount(0);
+});
+
+test('istorija, težina i dužinska procena prolaze ceo tok i ostaju posle osvežavanja', async ({
+  page
+}) => {
+  const backend = await installBackend(page);
+  await createPlan(page, {
+    ...TEN_K,
+    pbDate: '2025-12-20',
+    history: {
+      longRunKm: '12',
+      consistentWeeks: '24',
+      breakWeeks: '0',
+      qualityExperience: 'experienced'
+    },
+    preferences: { difficulty: 'Konzervativno', volume: 'Agresivno' }
+  });
+  await expect
+    .poll(
+      () =>
+        (backend.row?.data as { genPlan?: { ulaz?: { recentLongRunKm?: number } } } | undefined)
+          ?.genPlan?.ulaz?.recentLongRunKm
+    )
+    .toBe(12);
+  const saved = backend.row?.data as {
+    genPlan?: {
+      ulaz?: Record<string, unknown>;
+      meta?: { athlete?: Record<string, unknown>; preparation?: Record<string, unknown> };
+    };
+  };
+  expect(saved.genPlan?.ulaz).toMatchObject({
+    recentLongRunKm: 12,
+    consistentWeeks: 24,
+    breakWeeks: 0,
+    qualityExperience: 'experienced',
+    intensity: 'kons',
+    volIntensity: 'agr',
+    pb: { date: '2025-12-20' }
+  });
+  expect(saved.genPlan?.meta?.athlete).toMatchObject({
+    qualityReadiness: 'experienced',
+    speedConfidence: 'recent-result'
+  });
+  expect(saved.genPlan?.meta?.preparation).toHaveProperty(
+    'forecastBasis',
+    'result-and-delivered-preparation'
+  );
+  await page.reload();
+  await tab(page, 'Plan').click();
+  await page.getByRole('button', { name: 'Pregled celog plana' }).click();
+  await expect(page.getByText('Osnova pripreme', { exact: true })).toBeVisible();
+  await expect(page.getByText(/Planirani vrhunac:/)).toBeVisible();
 });

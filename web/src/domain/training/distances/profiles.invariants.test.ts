@@ -19,6 +19,7 @@ import { addDays, parseIsoDate, type IsoDate } from '../../date';
 import { generatePlan } from '../generator/generatePlan';
 import { longRunCap, peakVolume, rampStep } from '../generator/volume';
 import { wuCdForVolume } from '../sessions/build';
+import { constrainSession } from '../sessions/constraints';
 import { DISTANCE_PROFILES, profileFor } from './index';
 
 const DISTANCES = [
@@ -96,8 +97,33 @@ describe('Ograničenje tempa dolazi iz JEDNOG izvora po distanci', () => {
           }
         }
       }
-      /* zamka ne sme da bude prazan hod: ograničenje stvarno veže */
-      expect(longest, `${d.name}: ograničenje nikad ne veže — test ne meri ništa`).toBeGreaterThan(
+      // Readiness dosing can impose a stricter ceiling than tempoMaxSec; a
+      // generated runner with unknown quality history need not reach that cap.
+      expect(longest, `${d.name}: nema nijednog kontinuiranog praga`).toBeGreaterThan(0);
+      // Independently force the profile's unmodified factory into its upper
+      // boundary. Omitting readiness isolates the distance limit from dosing.
+      let factoryLongest = 0;
+      for (let qualW = 1; qualW <= 20; qualW++) {
+        const s = profile(d.m).buildQuality({
+          qualW,
+          qualWeeks: 20,
+          slotRole: 'q2',
+          effQ: 2,
+          vol: 120,
+          pI: 270,
+          pT: 300,
+          pE: 360,
+          pR: 250,
+          isTaper1: false,
+          dow: 4,
+          racePace: 290,
+          ctx: { weeks: 24, w: 12, taperW: 1 }
+        }).session;
+        if (s.type !== 'tempo' || s.kind !== 'Tempo') continue;
+        expect(constrainSession(s, 120, cap)).toBe(true);
+        factoryLongest = Math.max(factoryLongest, s.qKm * s.paceSec);
+      }
+      expect(factoryLongest, `${d.name}: ekstremni profil ne testira granicu`).toBeGreaterThan(
         cap * 0.9
       );
     });

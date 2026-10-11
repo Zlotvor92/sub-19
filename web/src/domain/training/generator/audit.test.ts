@@ -109,7 +109,15 @@ describe('Audit: current fitness, readiness and independently bounded workouts',
   });
   it('fast finish is structured and replaces the second quality workout', () => {
     const p = plan(
-      { raceDistM: 42195, pb: { distM: 42195, sec: 14400 }, weeklyKm: 70, runDays: 5 },
+      {
+        raceDistM: 42195,
+        pb: { distM: 42195, sec: 14400 },
+        weeklyKm: 70,
+        runDays: 5,
+        qualityExperience: 'experienced',
+        consistentWeeks: 24,
+        recentLongRunKm: 20
+      },
       20
     );
     const weeks = p.weeks.filter((w) => w.days.some((d) => d.finish));

@@ -13,6 +13,31 @@
 import type { IsoDate } from '../date';
 
 export type Intensity = 'kons' | 'std' | 'agr';
+export type QualityReadiness = 'beginner' | 'returning' | 'developing' | 'experienced';
+export type QualityExperience = 'none' | 'some' | 'experienced';
+
+export interface AthleteAssessment {
+  qualityReadiness: QualityReadiness;
+  weeklyBaseKm: number;
+  repeatableLongRunKm: number;
+  longRunBasis: 'reported' | 'inferred';
+  consistentWeeks: number | null;
+  breakWeeks: number;
+  resultAgeDays: number | null;
+  speedConfidence: 'recent-result' | 'undated-result' | 'stale-result' | 'returning';
+  assumptions: string[];
+}
+
+export interface PreparationAssessment {
+  endurance: 'limited' | 'developing' | 'supported';
+  goalStatus: 'needs-speed-improvement' | 'endurance-limited' | 'reference-only';
+  peakLongRunKm: number;
+  peakWeeklyKm: number;
+  demandingDaysMax: number;
+  reasons: string[];
+  /** No validated individual improvement model: the reference is not a forecast. */
+  forecastBasis: 'result-and-delivered-preparation';
+}
 export type Zone = 'I' | 'T' | 'M' | 'E' | 'LR' | 'R';
 
 /** Podržane ciljne distance u metrima. Ključ profila distance. */
@@ -194,6 +219,9 @@ export interface Assessment {
 }
 
 export interface PlanMeta extends Assessment {
+  /** Optional additions preserve reading of plans created before phase 2. */
+  athlete?: AthleteAssessment;
+  preparation?: PreparationAssessment;
   /** New plans prescribe current fitness. Older plans may retain projected vdotGoal. */
   trainingVdot?: number;
   start: IsoDate;
@@ -231,6 +259,7 @@ export const isPlanError = (r: PlanGenerationResult): r is PlanError => 'error' 
 export interface PersonalBest {
   distM: number;
   sec: number;
+  date?: string;
 }
 
 export interface PlanGenerationInput {
@@ -240,11 +269,18 @@ export interface PlanGenerationInput {
   raceDistM?: number;
   pb: PersonalBest;
   weeklyKm: number;
+  /** Recent repeatable long run, not the lifetime maximum. */
+  recentLongRunKm?: number;
+  /** Consecutive recent running weeks; zero means no established continuity. */
+  consistentWeeks?: number;
+  /** Recent break before the current base, in weeks. */
+  breakWeeks?: number;
+  qualityExperience?: QualityExperience;
   /** 2–7, podrazumevano 4. */
   runDays?: number;
   /** 1–2, podrazumevano 2. */
   quality?: number;
-  /** Legacy preference retained for stored inputs; does not project fitness gains. */
+  /** Quality dose preference; never projects fitness gains or changes training pace. */
   intensity: Intensity;
   /**
    * Tempo rasta OBIMA (nedeljni korak i vrhunac). Izostavljeno = isto kao `intensity` — tako se ponašaju svi planovi napravljeni

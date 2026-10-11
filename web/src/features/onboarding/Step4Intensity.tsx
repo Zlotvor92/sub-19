@@ -66,6 +66,19 @@ export function Step4Intensity({
         </div>
       </div>
       <div className="ob-card">
+        <div className="ob-ct">Težina kvalitetnog rada</div>
+        <Chips
+          items={VOLUME_RAMPS}
+          value={w.intensity}
+          label="Težina kvalitetnog rada"
+          onPick={(v) => set({ intensity: v })}
+        />
+        <div className="ob-hint">
+          Menja količinu bržeg rada i zahtevne završetke dužine. Tempa ostaju ista; rast kilometraže
+          biraš odvojeno.
+        </div>
+      </div>
+      <div className="ob-card">
         <div className="ob-ct">Tempo rasta obima</div>
         <Chips
           items={VOLUME_RAMPS}

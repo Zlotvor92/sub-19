@@ -36,6 +36,9 @@ describe('Faza 1: nezavisne reprodukcije audita', () => {
       weeklyKm: 55,
       runDays: 5,
       goalSec: 5700,
+      qualityExperience: 'experienced',
+      consistentWeeks: 24,
+      recentLongRunKm: 22,
       raceDate: '2027-01-17'
     });
     const first = p.weeks[0]!;

@@ -167,3 +167,20 @@ stare VDOT rampe. Osveženi generator fingerprint/differential i D6 izlazi
 onboarding/replan prate pregledane namerne promene; nisu dokaz kvaliteta plana.
 
 Obuhvat, dokazi, ograničenja i nastavak: [GENERATOR_PHASE1_CHECKPOINT.md](GENERATOR_PHASE1_CHECKPOINT.md).
+
+
+## Generator faza 2 — istorija, doza i dužinska priprema (2026-10-11)
+
+Baza: `4b2f647d4aeb4555f1370c636d761d8115df7848` (faza 1). Kriterijumi i potpuni izlazi: `GENERATOR_PHASE2_CRITERIA.md`, `GENERATOR_PHASE2_REVIEW.md`, `GENERATOR_PHASE2_CHECKPOINT.md` i `qa/generator-phase2/`.
+
+| Staro ponašanje | Problem | Novo ponašanje | Nezavisna provera |
+| --- | --- | --- | --- |
+| PB/obim određuju isti početni blok bez istorije | Brzina ne potvrđuje iskustvo; obavezni R300 potiskuje raniji T/I kod iskusnih | Opciono iskustvo, kontinuitet, pauza i datum; početni fartlek/doza po readiness-u, T/I za iskusne | `phase2.regression`, `qualityDose`, osam kompletnih planova |
+| Intensity ne menja trening posle uklanjanja proizvoljne prognoze | Preference nema aktivnu svrhu | Nezavisna težina rada i rast obima; fitness tempa se ne menjaju | `generator.volIntensity`, `assess`, Wizard UI/E2E |
+| LR proporcija i nizak trajni plafon | HM/maraton mogu ostati bez progresivne dužinske pripreme | Progresija iz ponovljive dužine i prethodnog stvarnog vrha, u postojećim granicama trajanja/udela | `longRunProgression`, `phase1.regression`, nedeljni pregled |
+| Deload uvodi novi stimulans ili veću početnu dozu | Naziv rasterećenja protivreči sadržaju | Najviše 60% poslednje uvedenog rada, ili lagana nedelja bez prve nove sesije | `deload`, konkretne W8/W4 regresije |
+| Novi 10K početni T/T dobija dva puna budžeta | Nedeljni zbir praga prelazi zamišljenu dozu | Podela 60/40 kada su oba dana prag | `qualityDose`, stroži `science.invariants` sa eksplicitnom T zonom |
+| Rast se seče pretežno sa lakog dana; ponedeljak dodatno prati kratki deload LR | Konačni LR udeo i manji volQ stvaraju ponovljeni kolaps obima | Srazmerna redukcija easy/LR; isti 80% easy plafon; nema dodatnog Monday reza posle deload-a | Regresija M70/3d i mreža 192 plana |
+| Referenca PB bez vidljive konačne pripreme | Kratak rezultat ne potvrđuje maratonsku izdržljivost | Preparation status, konačni LR/obim i lokalno ograničenje na kartici trke | `phase2.regression`, čuvanje/adaptacija i UI/E2E |
+
+Pregledani namerni baseline diff: 2.304/2.304 hash-a i nedeljna km niza se menjaju; 1.722 scenarija menja broj kvalitetnih sesija. `vdot0` i `vdotGoal` ostaju identični u svim scenarijima. Četiri zamrznuta generator/warnings/replan baseline-a osvežena su posle nezavisnih provera. To čuva stabilnost nove implementacije i ne daje trenersko odobrenje 2.304 scenarija.

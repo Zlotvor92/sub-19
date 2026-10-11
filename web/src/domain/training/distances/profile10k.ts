@@ -21,6 +21,7 @@ import { repetitions } from '../sessions/repetitions';
 import { continuousTempo, type TempoParams } from '../sessions/tempo';
 import type { SessionDay } from '../types';
 import type { DistanceProfile, Phase, QualityRequest } from './types';
+import { applyQualityDose, introductoryQuality } from './qualityDose';
 
 const TEMPO: TempoParams = { floorCapKm: 4, floorShare: 0.12 };
 const CRUISE: CruiseParams = {
@@ -93,18 +94,32 @@ const mkPyramid = (dow: number, vol: number, pI: number): SessionDay =>
 const mkRepetitions = (dow: number, vol: number, pR: number): SessionDay =>
   repetitions({ minTotalKm: 1.2, ...H.repetitionBudget }, 300, dow, vol, pR);
 
-const mkTempo = (dow: number, vol: number, pT: number, fixKm?: number | null): SessionDay =>
-  continuousTempo(H, TEMPO, dow, vol, pT, fixKm);
+const mkTempo = (
+  dow: number,
+  vol: number,
+  pT: number,
+  fixKm?: number | null,
+  share?: number
+): SessionDay => continuousTempo(H, TEMPO, dow, vol, pT, fixKm, share);
 
-const mkCruise = (dow: number, vol: number, pT: number): SessionDay =>
-  cruiseIntervals(H.tempoBudget.pct, CRUISE, dow, vol, pT);
+const mkCruise = (dow: number, vol: number, pT: number, share?: number): SessionDay =>
+  cruiseIntervals(H.tempoBudget.pct, CRUISE, dow, vol, pT, share);
 
 const mkProgression = (dow: number, vol: number, pT: number, pE: number): SessionDay =>
   progressionRun(PROGRESSION, dow, vol, pT, pE);
 
-function buildQuality10K(req: QualityRequest): SessionDay {
+function chooseQuality10K(req: QualityRequest): SessionDay {
   const { qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, isTaper1, dow, racePace } = req;
   const phase = phase10K(qualW, qualWeeks);
+  // Threshold is a weekly budget. A threshold-first opening with two quality
+  // days shares it rather than assigning the full allowance to both days.
+  const bothThreshold =
+    effQ === 2 &&
+    !isTaper1 &&
+    phase === 'threshold' &&
+    qualW % 2 === 1 &&
+    (req.readiness === 'experienced' || req.readiness === 'developing');
+  const thresholdShare = bothThreshold ? (slotRole === 'q1' ? 0.6 : 0.4) : 1;
 
   if (isTaper1) {
     const [twu, tcd] = wuCdForVolume(vol);
@@ -125,6 +140,12 @@ function buildQuality10K(req: QualityRequest): SessionDay {
   }
 
   if (effQ === 1) {
+    if (
+      phase === 'threshold' &&
+      (req.readiness === 'experienced' || req.readiness === 'developing')
+    ) {
+      return qualW % 3 === 0 ? mkIntervals(dow, vol, pI, phase, qualW) : mkCruise(dow, vol, pT);
+    }
     if (phase === 'threshold')
       return qualW % 3 === 2 ? mkRepetitions(dow, vol, pR) : mkCruise(dow, vol, pT);
     if (phase === 'specific') {
@@ -139,6 +160,14 @@ function buildQuality10K(req: QualityRequest): SessionDay {
   }
 
   if (slotRole === 'q1') {
+    if (
+      phase === 'threshold' &&
+      (req.readiness === 'experienced' || req.readiness === 'developing')
+    ) {
+      return qualW % 2 === 1
+        ? mkCruise(dow, vol, pT, thresholdShare)
+        : mkIntervals(dow, vol, pI, phase, qualW);
+    }
     if (phase === 'threshold') return mkRepetitions(dow, vol, pR);
     if (phase === 'specific') {
       return qualW % 3 === 0
@@ -151,10 +180,16 @@ function buildQuality10K(req: QualityRequest): SessionDay {
   }
 
   if (phase === 'threshold')
-    return qualW % 2 === 1 ? mkCruise(dow, vol, pT) : mkTempo(dow, vol, pT);
+    return qualW % 2 === 1
+      ? mkCruise(dow, vol, pT, thresholdShare)
+      : mkTempo(dow, vol, pT, null, thresholdShare);
   if (phase === 'specific')
     return qualW % 2 === 1 ? mkProgression(dow, vol, pT, pE) : mkTempo(dow, vol, pT);
   return qualW % 2 === 1 ? mkCruise(dow, vol, pT) : mkTempo(dow, vol, pT);
+}
+
+function buildQuality10K(req: QualityRequest): SessionDay {
+  return applyQualityDose(introductoryQuality(req) ?? chooseQuality10K(req), req);
 }
 
 export const PROFILE_10K: DistanceProfile = {
