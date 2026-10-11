@@ -1,3 +1,5 @@
+import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
+import { t3kVdot } from '../../domain/training/test3k';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
@@ -381,13 +383,18 @@ describe('Cilj', () => {
 describe('Plan → Prilagodi plan: preračunavanje i novi plan', () => {
   const withForm = (vdot: number, measurements: number): PersistedState => {
     const s = stateWithPlan();
-    s.vdotLog = Array.from({ length: measurements }, (_, i) => ({
-      id: `t${i}`,
-      ts: `2026-01-0${i + 6}`,
+    s.t3k = Array.from({ length: measurements }, (_, i) => ({
+      id: `t3k-2026-01-0${i + 6}-qa`,
+      date: `2026-01-0${i + 6}`,
+      sec: Math.round(raceTimeForVdot(vdot, 3000))
+    }));
+    s.vdotLog = s.t3k.map((test) => ({
+      id: test.id,
+      ts: test.date,
       vdot,
       prev: null,
       delta: null,
-      measured: vdot
+      measured: t3kVdot(test.sec)
     }));
     return s;
   };
@@ -404,7 +411,7 @@ describe('Plan → Prilagodi plan: preračunavanje i novi plan', () => {
   it('bez merenja forme: objašnjava zašto, plan se ne menja', async () => {
     const before = stateWithPlan().genPlan;
     const alert = await run(stateWithPlan());
-    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/bar 3 izmerena rezultata/));
+    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/bar 3 različita dana/));
     expect(useUIStore.getState().confirm).toBeNull();
     expect(useTrainingStore.getState().genPlan).toEqual(before);
     alert.mockRestore();
@@ -426,8 +433,8 @@ describe('Plan → Prilagodi plan: preračunavanje i novi plan', () => {
     await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
     const text = useUIStore.getState().confirm?.text ?? '';
     expect(text).toMatch(/^Preračunati preostali plan prema izmerenoj formi\?/);
-    expect(text).toMatch(/Izmerena forma: VDOT 56 · plan je očekivao: VDOT 45,3/);
-    expect(text).toMatch(/Nema vraćanja/);
+    expect(text).toMatch(/Izmerena forma: VDOT 55,3 · plan je očekivao: VDOT 45,3/);
+    expect(text).toMatch(/istoriji plana/);
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(useTrainingStore.getState().genPlan).not.toEqual(before));
     const after = useTrainingStore.getState().genPlan;
@@ -435,7 +442,7 @@ describe('Plan → Prilagodi plan: preračunavanje i novi plan', () => {
     const m = after?.meta as { vdotBase?: number; recalWeek?: number; vdotAtRecal?: number };
     expect(m.vdotBase).toBe(baseVdot);
     expect(m.recalWeek).toBe(2);
-    expect(m.vdotAtRecal).toBe(56);
+    expect(m.vdotAtRecal).toBe(55.3);
     expect(useTrainingStore.getState().vdotLog).toHaveLength(3); // lanac forme se ne dira
     expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Plan preračunat\./));
     alert.mockRestore();

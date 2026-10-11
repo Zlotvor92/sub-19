@@ -1,6 +1,6 @@
 /* PERZISTENCIJA STORE-OVA — jedan `PersistedState`, sklopljen iz više store-ova.
 
-   Šema (v11) je ugovor sa postojećim korisnicima i serverom: ne sme se deliti na više ključeva. Zato store-ovi drže
+   Šema (v12) je ugovor sa postojećim korisnicima i serverom: ne sme se deliti na više ključeva. Zato store-ovi drže
    SVOJE POLJE (training: log/pred/plan…, recovery: knee/kg/wellness…, settings: ui/veze, community: zajed), a ovaj modul
    ih sklapa u jedan objekat pri upisu i raspodeljuje pri učitavanju/usvajanju sa servera.
 

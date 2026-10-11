@@ -9,6 +9,8 @@ import type { PlanGenerationInput } from '../domain/training/types';
 import { hydratePersisted, useTrainingStore } from './index';
 import { workPaceContext } from './dayActions';
 import { commitRecalibration, currentVdotProposal, previewRecalibration } from './raceActions';
+import { raceTimeForVdot } from '../domain/training/vdot/racePrediction';
+import { t3kVdot } from '../domain/training/test3k';
 
 const INPUT: PlanGenerationInput = {
   startDate: '2026-01-05',
@@ -28,13 +30,18 @@ function state(form: number): PersistedState {
   const a = adaptGeneratedPlan(generatePlan(INPUT));
   if (!a) throw new Error('plan');
   s.genPlan = { ...a, ulaz: INPUT };
-  s.vdotLog = [0, 1, 2, 3].map((i) => ({
-    id: `t${i}`,
-    ts: `2026-02-0${i + 1}`,
+  s.t3k = [0, 1, 2, 3].map((i) => ({
+    id: `t3k-2026-02-0${i + 1}-qa`,
+    date: `2026-02-0${i + 1}`,
+    sec: Math.round(raceTimeForVdot(form, 3000))
+  }));
+  s.vdotLog = s.t3k.map((test) => ({
+    id: test.id,
+    ts: test.date,
     vdot: form,
     prev: null,
     delta: null,
-    measured: form
+    measured: t3kVdot(test.sec)
   }));
   return s;
 }

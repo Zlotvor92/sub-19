@@ -365,13 +365,26 @@ describe('upis tempa radnog dela naspram starog recordVdot / brisanja / upisiAut
         delta: e['delta'] ?? null,
         measured: e['measured'] ?? null
       });
-      expect(mine.pred, `pred ${mode} ${i}`).toEqual(j(legacy.evalIn('S.pred')));
-      expect(mine.predLock, `lock ${mode} ${i}`).toEqual(j(legacy.evalIn('S.predLock')));
+      const oldPred = j<Record<string, unknown>>(legacy.evalIn('S.pred'));
+      const oldLock = j<Record<string, unknown>>(legacy.evalIn('S.predLock'));
+      const oldChain = j<Array<Record<string, unknown>>>(legacy.evalIn('S.vdotLog'));
+      const oldLog = j<Record<string, LogEntry>>(legacy.evalIn('S.log'));
+      const outcome = (mine as { outcome?: { status: string } }).outcome;
+      const excluded = outcome != null && outcome.status !== 'accepted';
+      // Phase 3: R/RP pace remains visible but cannot create a form-chain entry.
+      // Automatic R pace may now be retained where the old aerobic-outlier check rejected it.
+      if (mode === 'auto' && outcome?.status === 'not-measured') {
+        oldPred[row.id] = pace;
+        const oldEntry = oldLog[day.id];
+        if (oldEntry) delete oldEntry.autoOdbijen;
+      }
+      expect(mine.pred, `pred ${mode} ${i}`).toEqual(oldPred);
+      expect(mine.predLock, `lock ${mode} ${i}`).toEqual(oldLock);
       expect(
         mine.vdotLog.map((e) => proj(e as unknown as Record<string, unknown>)),
         `lanac ${mode} ${i}`
-      ).toEqual(j<Array<Record<string, unknown>>>(legacy.evalIn('S.vdotLog')).map(proj));
-      expect(mine.log, `log ${mode} ${i}`).toEqual(j(legacy.evalIn('S.log')));
+      ).toEqual(oldChain.filter((e) => !excluded || e['id'] !== row.id).map(proj));
+      expect(mine.log, `log ${mode} ${i}`).toEqual(oldLog);
       if ('outcome' in mine) {
         const oc = (mine as { outcome: { status: string } }).outcome;
         if (oc.status === 'rejected') rejected++;

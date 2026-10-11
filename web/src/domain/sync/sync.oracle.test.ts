@@ -3,7 +3,7 @@ import { canonical } from '@/test/fingerprint';
 import { firstDiff } from '@/test/firstDiff';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { identityFromUser, jwtClaims, mergeIdentity, parseAuthHash } from '@/lib/auth';
-import { seedState, type PersistedState } from '../state';
+import { seedState, SCHEMA_VERSION, type PersistedState } from '../state';
 import { adoptServerState, decideStartup, toServerPayload } from './index';
 
 /* parity: test/state.test.mjs (sbPayload), test/mreza-rok.test.mjs, test/requireuser-kopije.test.mjs,
@@ -61,9 +61,12 @@ describe('šta ide na server — naspram starog sbPayload', () => {
     for (let i = 0; i < 200; i++) {
       const s = randomState(r);
       set('__s', j(s));
-      const old = j<unknown>(legacy.evalIn('sbPayload(__s)'));
+      const old = j<Record<string, unknown>>(legacy.evalIn('sbPayload(__s)'));
       const mine = toServerPayload(s);
-      expect(firstDiff(canonical(j(mine)), canonical(old)), `iter ${i}`).toBeNull();
+      expect(
+        firstDiff(canonical(j(mine)), canonical({ ...old, v: SCHEMA_VERSION })),
+        `iter ${i}`
+      ).toBeNull();
       const text = JSON.stringify(mine);
       for (const secret of ['SECRET-A', 'SECRET-R', 'ICU-TOKEN', 'ICU-KEY', '44.81', '20.46'])
         expect(text, `${secret} ${i}`).not.toContain(secret);

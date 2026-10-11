@@ -19,9 +19,10 @@ interface ServerPlan {
 const plan = (): ServerPlan =>
   ((backend.row?.data ?? {}) as { genPlan?: ServerPlan }).genPlan ?? { meta: {}, weeks: [] };
 
-async function addTest(page: Page, time: string): Promise<void> {
+async function addTest(page: Page, time: string, date: string): Promise<void> {
   await page.getByRole('button', { name: /^(Unesi test na 3 km|Novi test)$/ }).click();
   const sheet = page.getByRole('dialog');
+  await sheet.getByLabel('Datum', { exact: true }).fill(date);
   await sheet.getByLabel('Vreme').fill(time);
   await sheet.getByRole('button', { name: 'Sačuvaj' }).click();
   await expect(sheet).toBeHidden();
@@ -37,7 +38,7 @@ test('bez merenja forme: objašnjenje, plan se ne menja', async ({ page }) => {
   await openAdjust(page);
   await page.getByRole('button', { name: /^Preračunaj plan prema formi/ }).click();
   await expect.poll(() => dialogs.length).toBe(1);
-  expect(dialogs[0]).toMatch(/bar 3 izmerena rezultata/);
+  expect(dialogs[0]).toMatch(/bar 3 različita dana/);
   expect(plan().meta['recalWeek']).toBeUndefined();
 });
 
@@ -52,14 +53,15 @@ test('tri brza testa: plan i forma se razilaze → preračunavanje; posle njega 
   await expect.poll(() => plan().weeks.length).toBeGreaterThan(0); // plan je stigao na server
   await openProgress(page, /^Forma i predikcija/);
   const baseVdot = plan().meta['vdot0'] as number;
-  for (const t of ['10:30', '10:25', '10:20']) await addTest(page, t);
+  for (const [i, time] of ['10:30', '10:25', '10:20'].entries())
+    await addTest(page, time, `2026-01-${12 + i}`);
   await back(page).click();
 
   await openAdjust(page);
   await expect(page.getByRole('button', { name: 'Prilagodi tempo' })).toBeVisible();
   await page.getByRole('button', { name: /^Preračunaj plan prema formi/ }).click();
   await expect(page.getByText(/^Preračunati preostali plan prema izmerenoj formi\?/)).toBeVisible();
-  await expect(page.getByText(/Nema vraćanja/)).toBeVisible();
+  await expect(page.getByText(/istoriji plana/)).toBeVisible();
   await page.getByRole('button', { name: 'Da', exact: true }).click();
   await expect.poll(() => dialogs.length).toBe(1);
   expect(dialogs[0]).toMatch(/^Plan preračunat\./);

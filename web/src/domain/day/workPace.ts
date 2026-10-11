@@ -40,9 +40,10 @@ export interface WorkPaceContext {
 
 /** Lanac forme iznova iz izmerenih vrednosti (v. `recomputeVdotChain`). */
 export const recomputeChain = (list: readonly VdotRecord[], ctx: WorkPaceContext): VdotRecord[] =>
-  recomputeVdotChain(list, ctx.baselineVdot, (id) =>
-    sessionClassFor(isT3kId(id), ctx.rows.find((r) => r.id === id)?.l)
-  );
+  recomputeVdotChain(list, ctx.baselineVdot, (id) => {
+    const row = ctx.rows.find((r) => r.id === id);
+    return sessionClassFor(isT3kId(id), row?.l, row?.zone);
+  });
 
 function upsert(
   list: readonly VdotRecord[],
@@ -71,6 +72,7 @@ function measure(
   const chain = recomputeChain(state.vdotLog, ctx);
   return classifyMeasurement({
     row,
+    zone: day.session?.zone,
     paceSec: pace,
     kind: sessKind(day, ctx.hasAlt),
     auto,
@@ -95,7 +97,10 @@ export function enterWorkPace(
   const vdotLog =
     outcome.status === 'accepted'
       ? recomputeChain(upsert(state.vdotLog, predId, date, outcome.measured), ctx)
-      : recomputeChain(state.vdotLog, ctx);
+      : recomputeChain(
+          state.vdotLog.filter((e) => e.id !== predId),
+          ctx
+        );
   return { pred, predLock, vdotLog, log: state.log, outcome };
 }
 
@@ -136,15 +141,33 @@ export function recordAutoPace(
   ctx: WorkPaceContext
 ): PaceResult & { written: boolean } {
   const outcome = measure(day, predId, paceSec, true, state, ctx);
+  // A retained manual work pace is authoritative. An automatic import must not replace
+  // either its displayed pace or its evidence, even when the imported result is invalid.
+  if (state.predLock[predId]) return { ...state, outcome, written: false };
   if (outcome.status === 'rejected') {
     const l = state.log[day.id];
     const log = l ? { ...state.log, [day.id]: { ...l, autoOdbijen: paceSec } } : state.log;
-    return { ...state, vdotLog: recomputeChain(state.vdotLog, ctx), log, outcome, written: false };
+    const pred = { ...state.pred };
+    if (!state.predLock[predId]) delete pred[predId];
+    return {
+      ...state,
+      pred,
+      vdotLog: recomputeChain(
+        state.vdotLog.filter((e) => e.id !== predId),
+        ctx
+      ),
+      log,
+      outcome,
+      written: false
+    };
   }
   const vdotLog =
     outcome.status === 'accepted'
       ? recomputeChain(upsert(state.vdotLog, predId, date, outcome.measured), ctx)
-      : recomputeChain(state.vdotLog, ctx);
+      : recomputeChain(
+          state.vdotLog.filter((e) => e.id !== predId),
+          ctx
+        );
   const l = state.log[day.id];
   let log = state.log;
   if (l && 'autoOdbijen' in l) {

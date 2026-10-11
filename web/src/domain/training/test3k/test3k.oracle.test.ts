@@ -7,7 +7,7 @@ import { adaptGeneratedPlan } from '../../plan/adapt';
 import { resolvePlan, weekOf } from '../../plan/resolve';
 import type { GenPlanState, T3kRecord, VdotRecord } from '../../state';
 import { generatePlan } from '@/test/legacyGenerator';
-import { recomputeVdotChain, sessionClassFor } from '../adaptation';
+import { recomputeVdotChain, sessionClassFor, zoneForPredLabel } from '../adaptation';
 import { predictionSummary } from '../prediction/summary';
 import { isT3kId } from '../vdot/limits';
 import { addT3k, removeT3k, t3kRows, t3kSeries, t3kVdot } from './index';
@@ -211,7 +211,13 @@ describe('predikcija kroz plan naspram starog predCalc', () => {
       expect(
         firstDiff(
           canonical(s.rows.map((x) => [x.r.id, x.a ?? null, x.pred])),
-          canonical(old.rows.map((x) => [x.r.id, x.a ?? null, x.pred]))
+          canonical(
+            old.rows.map((x) => [
+              x.r.id,
+              x.a ?? null,
+              zoneForPredLabel(pred.find((p) => p.id === x.r.id)?.l) === 'R' ? null : x.pred
+            ])
+          )
         ),
         `rows ${i}`
       ).toBeNull();
@@ -223,10 +229,25 @@ describe('predikcija kroz plan naspram starog predCalc', () => {
           return [x.r.id, x.a, x.pred, full?.w, full?.l];
         })
       );
-      expect(s.entered.map((x) => x.r.id)).toEqual(old.entered.map((x) => x.r.id));
-      expect(s.last?.r.id ?? null).toBe(old.last?.r.id ?? null);
-      expect(s.best?.r.id ?? null).toBe(old.best ? old.best.r.id : null);
-      expect(s.lastRow?.r.id ?? null).toBe(old.lastRed?.r.id ?? null);
+      // Phase 3: the unchanged numerical oracle remains exact for all T/I/test rows.
+      // Only R rows leave the prediction/last/best population.
+      const retained = new Set(pred.filter((p) => zoneForPredLabel(p.l) !== 'R').map((p) => p.id));
+      const expectedRows = old.rows.filter((x) => retained.has(x.r.id) && x.pred != null);
+      const expectedEntered = [...expectedRows, ...old.testovi.filter((x) => x.pred != null)];
+      const newest = <T extends { r: { id: string } }>(xs: T[]) =>
+        xs.reduce<T | null>((m, x) => {
+          const ts = chain.find((e) => e.id === x.r.id)?.ts;
+          const previous = m ? chain.find((e) => e.id === m.r.id)?.ts : null;
+          return !m || (ts && (!previous || ts > previous)) ? x : m;
+        }, null);
+      const fastest = expectedEntered.reduce<(typeof expectedEntered)[number] | null>(
+        (m, x) => (!m || (x.pred as number) < (m.pred as number) ? x : m),
+        null
+      );
+      expect(s.entered.map((x) => x.r.id)).toEqual(expectedEntered.map((x) => x.r.id));
+      expect(s.last?.r.id ?? null).toBe(newest(expectedEntered)?.r.id ?? null);
+      expect(s.best?.r.id ?? null).toBe(fastest?.r.id ?? null);
+      expect(s.lastRow?.r.id ?? null).toBe(newest(expectedRows)?.r.id ?? null);
       tested += s.entered.length;
       if (s.best) withBest++;
     }

@@ -348,7 +348,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
 
   const pushPredQs = (day: SessionDay, w: number, doesNotMeasure?: boolean): void => {
     const ses = day.session;
-    const row = predRow(w, ses.kind, sessQKm(ses), ses.paceSec, raceDistM, a.vdot0);
+    const row = predRow(w, ses.kind, sessQKm(ses), ses.paceSec, raceDistM, a.vdot0, ses.zone);
     if (doesNotMeasure) row.nemeri = true;
     plan.pred.push(row);
     const spec = qsFor(ses);

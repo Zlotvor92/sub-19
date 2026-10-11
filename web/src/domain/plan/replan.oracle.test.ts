@@ -7,6 +7,7 @@ import { addDays, type IsoDate } from '../date';
 import type { GenPlanState } from '../state';
 import { generatePlan } from '@/test/legacyGenerator';
 import type { PlanGenerationInput, Session } from '../training/types';
+import { KIND_FROM_GOAL, ZONE_FOR_KIND } from '../training/vdot/zoneForKind';
 import { adaptGeneratedPlan } from './adapt';
 import { mergeOverrides, planWithNewGoal, recalibratedPlan, reentryPlan } from './replan';
 
@@ -252,7 +253,12 @@ describe('rekalibracija i povratak naspram starih funkcija', () => {
         if (old && typeof old === 'object' && 'error' in old) expect(mine).toEqual(old);
         else {
           d6Snapshot('replan', `reentry ${dist} N${resume}`, mine);
-          if ('error' in mine) throw new Error(mine.error);
+          if ('error' in mine) {
+            // Phase 3 regenerates the remaining cycle; a short window below the distance
+            // minimum is blocked instead of slicing an incoherent full old curve.
+            expect(mine.error).toMatch(/minimum.*puna periodizacija nije moguća/);
+            continue;
+          }
           expect(mine.meta.trainingVdot).toBeCloseTo(47.3, 1);
           expect(mine.weeks[0]?.vol).toBeLessThanOrEqual(22.5 * 1.08 + 0.05);
         }
@@ -276,7 +282,25 @@ describe('A4: zaključana polja pri rekalibraciji stižu na ISTI dan', () => {
       const old = plan.weeks.find((x) => x.w === w.w);
       for (const d of w.days) {
         const o = old?.days.find((x) => x.dow === d.dow - 1);
-        if (!d.session || !o?.session || o.session.type !== d.session.type) continue;
+        if (
+          !d.session ||
+          !o?.session ||
+          o.session.type !== d.session.type ||
+          o.session.kind !== d.session.kind ||
+          (o.session.zone ??
+            (o.session.kind === 'Oštrina'
+              ? 'R'
+              : KIND_FROM_GOAL.has(o.session.kind)
+                ? 'RP'
+                : ZONE_FOR_KIND[o.session.kind])) !==
+            (d.session.zone ??
+              (d.session.kind === 'Oštrina'
+                ? 'R'
+                : KIND_FROM_GOAL.has(d.session.kind)
+                  ? 'RP'
+                  : ZONE_FOR_KIND[d.session.kind]))
+        )
+          continue;
         if (!o.session.overrides['paceSec']) continue;
         expect(d.session.paceSec, `N${w.w} dow ${d.dow}`).toBe(o.session.paceSec);
         checked++;

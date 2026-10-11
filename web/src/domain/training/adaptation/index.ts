@@ -34,3 +34,11 @@ export {
   type ApplyResult
 } from './proposal';
 export { alignVdotDates } from './dates';
+export {
+  fitnessEvidence,
+  FITNESS_EVIDENCE_WINDOW_DAYS,
+  FITNESS_EVIDENCE_MIN_WORK_SEC,
+  type FitnessEvidence,
+  type FitnessEvidenceContext,
+  type EvidenceExclusion
+} from './evidence';

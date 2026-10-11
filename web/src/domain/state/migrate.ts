@@ -1,4 +1,4 @@
-/* Migracija i čišćenje stanja: `unknown` → `PersistedState` (schema v11) ili `null` ako se stanje
+/* Migracija i čišćenje stanja: `unknown` → `PersistedState` (schema v12) ili `null` ako se stanje
    ne može prihvatiti (nije objekat, nema `log`, ili je iz NOVIJE šeme).
 
    Port starog `migrate()` — isti redosled koraka. Ne mutira ulaz (stari kod jeste), nepoznata
@@ -174,6 +174,8 @@ export function migrateState(input: unknown): PersistedState | null {
     ...(isPlainObject(o['ui']) ? o['ui'] : {})
   };
   o['ui'] = ui;
+  // v11 → v12 adds optional explicit prediction zones and bounded plan revisions.
+  // Old rows keep label fallback; no defaults or existing plan/history fields are rewritten.
   o['v'] = SCHEMA_VERSION;
 
   return o as unknown as PersistedState;

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeSupabase, type FakeSupabase } from '@/test/fakeSupabase';
-import { seedState } from '../domain/state';
+import { seedState, migrateState } from '../domain/state';
 import { collectPersisted, hydratePersisted, useTrainingStore } from '../stores';
 import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
@@ -284,7 +284,7 @@ describe('čuvanje', () => {
   it('sklopljeno stanje je isto što je učitano (nema gubitka polja)', () => {
     const state = filled();
     const s = setup({ session: null, localState: state });
-    expect(collectPersisted()).toEqual(JSON.parse(s.store.getItem(LS_KEY) as string));
+    expect(collectPersisted()).toEqual(migrateState(JSON.parse(s.store.getItem(LS_KEY) as string)));
   });
 });
 

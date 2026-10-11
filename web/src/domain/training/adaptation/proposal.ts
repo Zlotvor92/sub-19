@@ -1,6 +1,6 @@
 /* PREDLOG NOVIH TEMPA — forma naspram plana.
 
-   Princip (zahtev §13): VDOT određuje TEMPO, ne koliko se trči. Obim nosi plan opterećenja i menja ga
+   Princip (zahtev §13): VDOT određuje TEMPO, ne novu dozu treninga. Dozu nosi plan opterećenja i menja je
    povreda, ne forma. Automatika NIKAD ne ubrzava plan sama: predlog se javlja tek posle bar 3 izmerene
    sesije i razlike od bar 1,5 VDOT poena, i primenjuje se samo klikom korisnika. Ne dira se: odrađen dan,
    dan trke/testa, aktivacija pred trku (njen tempo je tempo TRKE), ručno zaključan tempo.
@@ -24,7 +24,8 @@ import { sessDesc, sessKm } from '../sessions/calc';
 import type { PlanMeta, Session, Zone } from '../types';
 import { vdotFromRace } from '../vdot/calculateVDOT';
 import { paceForZone } from '../vdot/paceForZone';
-import { currentVdot } from './chain';
+import { fitnessEvidence } from './evidence';
+import type { T3kRecord } from '../../state/types';
 import { dayZone, matchPlanRows, type StoredPredRow } from './matching';
 
 export interface ProposalContext {
@@ -35,6 +36,12 @@ export interface ProposalContext {
   log: Readonly<Record<string, LogEntry>>;
   alts: Readonly<Record<string, AltRecord>>;
   vdotChain: readonly VdotRecord[];
+  tests?: readonly T3kRecord[];
+  /** Recorded work paces/locks preserve their prescription, even if not valid fitness evidence. */
+  enteredPaces?: Readonly<Record<string, unknown>>;
+  predLock?: Readonly<Record<string, unknown>>;
+  /** Caller supplies a recovery gate from reported effort, pain and recent continuity. */
+  positiveAdjustmentAllowed?: boolean;
 }
 
 /** Plan-forma za tekuću nedelju (poslednja nedelja plana ako je plan završen), na jednu decimalu. */
@@ -76,13 +83,23 @@ export interface FormVsPlan {
   planVdot: number;
   delta: number;
   measurements: number;
+  distinctDays: number;
+  confirmedTests: number;
   /** Koliko preostalih dana uopšte nosi ciljni tempo. */
   daysWithPace: number;
 }
 
+function hasRecordedWork(ctx: ProposalContext, rowId: string): boolean {
+  return (
+    ctx.enteredPaces?.[rowId] != null ||
+    !!ctx.predLock?.[rowId] ||
+    ctx.vdotChain.some((record) => record.id === rowId && record.measured != null)
+  );
+}
+
 export function formVsPlan(ctx: ProposalContext): FormVsPlan | null {
-  const form = currentVdot(ctx.vdotChain);
-  const measurements = ctx.vdotChain.filter((e) => e && e.measured != null).length;
+  const evidence = fitnessEvidence(ctx);
+  const { form, measurements, distinctDays, confirmedTests } = evidence;
   if (form == null || !Number.isFinite(form)) return null;
   const planVdot = planVdotNow(ctx);
   if (planVdot == null || !Number.isFinite(planVdot)) return null;
@@ -90,10 +107,15 @@ export function formVsPlan(ctx: ProposalContext): FormVsPlan | null {
   let daysWithPace = 0;
   for (const w of ctx.plan.weeks) {
     for (const d of w.days) {
-      if (!d.date || d.date < ctx.today || d.rest) continue;
+      if (!d.date || d.date <= ctx.today || d.rest) continue;
       if (ctx.log[d.id]?.status === 'done') continue;
       const z = dayZone(matched, d);
-      if (!z || !((effectivePace(ctx.alts, d, z.row.pt) ?? 0) > 0)) continue;
+      if (
+        !z ||
+        hasRecordedWork(ctx, z.row.id) ||
+        !((effectivePace(ctx.alts, d, z.row.pt) ?? 0) > 0)
+      )
+        continue;
       daysWithPace++;
     }
   }
@@ -103,6 +125,8 @@ export function formVsPlan(ctx: ProposalContext): FormVsPlan | null {
     planVdot,
     delta: Math.round((form - planVdot) * 10) / 10,
     measurements,
+    distinctDays,
+    confirmedTests,
     daysWithPace
   };
 }
@@ -129,18 +153,19 @@ export interface VdotProposal extends FormVsPlan {
 export function vdotProposal(ctx: ProposalContext): VdotProposal | null {
   const f = formVsPlan(ctx);
   if (!f) return null;
-  if (f.measurements < VDOT_PROPOSAL_MIN_MEASUREMENTS) return null; // premalo merenja da se veruje
+  if (f.distinctDays < VDOT_PROPOSAL_MIN_MEASUREMENTS) return null;
   if (Math.abs(f.delta) < VDOT_PROPOSAL_THRESHOLD) return null; // plan i forma se slažu
+  if (f.delta > 0 && ctx.positiveAdjustmentAllowed === false) return null;
 
   const matched = matchPlanRows(ctx.plan.weeks, ctx.pred);
   const changes: ProposalChange[] = [];
   for (const w of ctx.plan.weeks) {
     for (const d of w.days) {
-      if (!d.date || d.date < ctx.today || d.rest) continue;
+      if (!d.date || d.date <= ctx.today || d.rest) continue;
       if (ctx.log[d.id]?.status === 'done') continue;
       if (d.tag === 'trka' || d.tag === 'test') continue; // dan trke ostaje kakav jeste
       const z = dayZone(matched, d);
-      if (!z || !(z.row.pt > 0)) continue;
+      if (!z || hasRecordedWork(ctx, z.row.id) || !(z.row.pt > 0)) continue;
       /* AKTIVACIJA PRED TRKU SE NE DIRA, ni u jednom smeru: njen tempo je tempo TRKE, ne forme. */
       if (z.row.nemeri) continue;
       /* Ručno zaključan tempo se ne dira — ni u alts, ni u sesiji. */
@@ -187,11 +212,11 @@ export function vdotProposal(ctx: ProposalContext): VdotProposal | null {
     faster,
     fasterCount: fasters.length,
     slowerCount: slowers.length,
-    title: faster ? 'Forma je ispred plana' : 'Forma je iza plana',
+    title: faster ? 'Merenja ukazuju na brži tempo' : 'Merenja ukazuju na sporiji tempo',
     message:
-      `Tvoj VDOT je ${f.form.toFixed(1)}, a plan za ovu nedelju računa tempo po VDOT-u ${f.planVdot.toFixed(1)} — razlika ` +
-      `${f.delta > 0 ? '+' : ''}${f.delta.toFixed(1)} poena, iz ${f.measurements} izmerenih sesija. Predlog: ${description}. ` +
-      `Obim se NE menja — VDOT određuje tempo, ne koliko se trči. ` +
+      `Procena iz prihvatljivih merenja je VDOT ${f.form.toFixed(1)}, a plan za ovu nedelju računa tempo po VDOT-u ${f.planVdot.toFixed(1)} — razlika ` +
+      `${f.delta > 0 ? '+' : ''}${f.delta.toFixed(1)} poena, iz ${f.measurements} merenja tokom ${f.distinctDays} različitih dana u poslednje 42 dana (${f.confirmedTests} testova na 3 km). Trenažna procena nije potvrđen rezultat trke. Predlog: ${description}. ` +
+      `Broj deonica, trajanje rada i raspored ostaju isti. Kilometraža treninga na vreme i laganih pauza može se malo promeniti zbog novog tempa; ručno zadati kilometri ostaju sačuvani. ` +
       (faster
         ? 'Ako ti nov tempo deluje preteško na terenu, vrati ga — jedna dobra sesija ume da preceni formu.'
         : 'Sporiji tempo nije nazadovanje: bolje je pogoditi zonu nego juriti broj koji telo trenutno ne nosi.')
@@ -273,10 +298,16 @@ export function applyVdotProposal(
     const d = plan.byId.get(ch.id);
     if (!d) continue;
     const post = nextAlts[ch.id] ?? null;
+    const refreshed = nextPlan ? refreshSessionPace(nextPlan, ch.id, ch.newPace).genPlan : null;
+    const freshDay = refreshed?.weeks.flatMap((w) => w.days).find((day) => day.id === ch.id);
+    // An automatic pace alt must not freeze the previous generated distance/description.
+    // Values that differ from the current source are explicit user choices and survive.
+    const automaticKm = !post || post.km === (d.origin.km ?? null);
+    const automaticDesc = !post || post.desc === (d.origin.desc ?? '');
     const r = setAlt(plan, log, nextAlts, ch.id, {
       tag: post ? post.tag : d.rest ? 'odmor' : (d.tag as string),
-      km: post ? post.km : d.km != null ? d.km : null,
-      desc: post ? post.desc : d.desc || '',
+      km: automaticKm && freshDay ? (freshDay.km ?? null) : post ? post.km : (d.km ?? null),
+      desc: automaticDesc && freshDay ? (freshDay.desc ?? '') : post ? post.desc : d.desc || '',
       rw: post ? post.rw : null,
       pace: ch.newPace,
       paceAuto: true,
@@ -286,7 +317,7 @@ export function applyVdotProposal(
     if (!r.ok) continue;
     nextAlts = r.alts;
     applied++;
-    if (nextPlan) nextPlan = refreshSessionPace(nextPlan, ch.id, ch.newPace).genPlan;
+    if (refreshed) nextPlan = refreshed;
   }
   return { applied, alts: nextAlts, genPlan: nextPlan };
 }
@@ -311,8 +342,16 @@ export function undoVdotAdjustments(
   for (const id of Object.keys(next)) {
     const a = next[id];
     if (!a || !a.paceAuto) continue;
-    next[id] = { ...a, pace: null, paceAuto: false };
+    const source = nextPlan?.weeks.flatMap((w) => w.days).find((d) => d.id === id);
     if (nextPlan) nextPlan = restoreSessionPace(nextPlan, id).genPlan;
+    const restored = nextPlan?.weeks.flatMap((w) => w.days).find((d) => d.id === id);
+    next[id] = {
+      ...a,
+      pace: null,
+      paceAuto: false,
+      ...(source && restored && a.km === source.km ? { km: restored.km ?? null } : {}),
+      ...(source && restored && a.desc === source.desc ? { desc: restored.desc ?? '' } : {})
+    };
     undone.push(id);
   }
   /* Ako je tempo bila JEDINA izmena tog dana, ceo unos nestaje. Original se čita iz plana posle vraćanja. */

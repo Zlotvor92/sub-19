@@ -203,12 +203,12 @@ describe('Forma i predikcija', () => {
     });
     expect(useTrainingStore.getState().t3k).toHaveLength(4);
     render(<Screen />);
-    expect(screen.queryByText('Forma je ispred plana')).toBeNull(); // Forma i predikcija ne nosi radnju nad planom
+    expect(screen.queryByText('Merenja ukazuju na brži tempo')).toBeNull(); // Forma i predikcija ne nosi radnju nad planom
     cleanup();
     render(<AdjustPlan />);
-    expect(screen.getByText('Forma je ispred plana')).toBeInTheDocument();
+    expect(screen.getByText('Merenja ukazuju na brži tempo')).toBeInTheDocument();
     const btn = screen.getByRole('button', { name: 'Prilagodi tempo' });
-    const planBefore = JSON.stringify(useTrainingStore.getState().genPlan);
+    const planBefore = useTrainingStore.getState().genPlan!;
     await user.click(btn);
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() =>
@@ -218,7 +218,15 @@ describe('Forma i predikcija', () => {
     expect(await screen.findByText('Tempi su prilagođeni tvojoj formi')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Vrati planski tempo' }));
     await waitFor(() => expect(useTrainingStore.getState().alts).toEqual({}));
-    expect(JSON.stringify(useTrainingStore.getState().genPlan)).toBe(planBefore); // tempo sesija se vratio na izvorni
+    const restored = useTrainingStore.getState().genPlan!;
+    for (const key of ['weeks', 'pred', 'qs', 'meta', 'ulaz'] as const) {
+      expect(restored[key]).toEqual(planBefore[key]); // prescription restored; revision remains inspectable
+    }
+    expect(restored.planRevisions).toHaveLength(2);
+    expect(restored.planRevisions).toMatchObject([
+      { reason: 'pace', date: '2026-02-20' },
+      { reason: 'pace', date: '2026-02-20' }
+    ]);
     alert.mockRestore();
   });
 });

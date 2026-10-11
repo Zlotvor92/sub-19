@@ -2,7 +2,7 @@
    TIPOVI GENERATORA PLANA — WIRE OBLIK.
 
    Izlaz `generatePlan` je istovremeno i PERZISTIRANI oblik (`S.genPlan` u
-   `user_state.data`, schema v11). Zato polja zadržavaju stara imena (`tag`,
+   `user_state.data`, schema v12). Zato polja zadržavaju stara imena (`tag`,
    `desc`, `km`, `session.type`, `p5k`, …) i ne smeju se preimenovati bez bump-a
    SCHEMA i unazad-kompatibilnog čitanja — v. docs/REWRITE_PLAN.md odluka B.
 
@@ -202,6 +202,8 @@ export interface PredictionRow {
   q: number;
   pt: number;
   p5k: number;
+  /** Explicit prescription zone; legacy rows fall back to their kind label. */
+  zone?: Zone | 'RP';
   /** Sesija čiji je propis izveden iz cilja — ne sme se čitati kao merenje forme. */
   nemeri?: true;
 }

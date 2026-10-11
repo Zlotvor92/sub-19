@@ -13,11 +13,12 @@ export type MeasureOutcome =
   | { status: 'rejected'; reason: RejectReason }
   /** Sesija čiji je propis izveden iz cilja (aktivacija, tempo trke): tempo se čuva i prikazuje, ali NE
    *  ulazi u lanac forme. Nije isto što i „merenje nije verodostojno". */
-  | { status: 'not-measured'; measured: number }
+  | { status: 'not-measured'; measured: number; reason?: 'short-repetition' | 'race-prescription' }
   | { status: 'accepted'; measured: number };
 
 export interface MeasureInput {
-  row: Pick<PredictionRow, 'l' | 'q' | 'nemeri'> | undefined;
+  row: Pick<PredictionRow, 'l' | 'q' | 'nemeri' | 'zone'> | undefined;
+  zone?: Zone | 'RP';
   paceSec: number | null | undefined;
   /** Naziv sesije dana (`sessKind`), kad je poznat. */
   kind: string | null;
@@ -39,7 +40,9 @@ export function classifyMeasurement(i: MeasureInput): MeasureOutcome {
   const { row } = i;
   if (!row) return { status: 'rejected', reason: 'no-row' };
   if (!i.paceSec) return { status: 'rejected', reason: 'no-pace' };
-  let zone: Zone | null | undefined = zoneForPredLabel(row.l);
+  const prescribedZone = i.zone ?? row.zone;
+  let zone: Zone | null | undefined =
+    prescribedZone === 'RP' ? null : (prescribedZone ?? zoneForPredLabel(row.l));
   if (i.retagged && i.kind != null && ZONE_FOR_KIND[i.kind]) zone = ZONE_FOR_KIND[i.kind];
   if (zone == null && i.kind != null) zone = ZONE_FOR_KIND[i.kind];
   const measured = r1(
@@ -48,7 +51,9 @@ export function classifyMeasurement(i: MeasureInput): MeasureOutcome {
   if (zone != null && !vdotPaceInRange(i.paceSec, zone))
     return { status: 'rejected', reason: 'out-of-table' };
   if (!vdotPossible(measured)) return { status: 'rejected', reason: 'impossible' };
-  if (row.nemeri) return { status: 'not-measured', measured };
+  if (row.nemeri || prescribedZone === 'RP')
+    return { status: 'not-measured', measured, reason: 'race-prescription' };
+  if (zone === 'R') return { status: 'not-measured', measured, reason: 'short-repetition' };
   if (i.auto) {
     const form = i.currentVdot != null ? i.currentVdot : i.baselineVdot;
     if (form != null && Math.abs(measured - form) > AUTO_VDOT_TOLERANCE) {

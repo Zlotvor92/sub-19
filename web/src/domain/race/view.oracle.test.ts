@@ -4,7 +4,9 @@ import { addDays, type IsoDate } from '../date';
 import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { GenPlanState, LogEntry, T3kRecord, VdotRecord } from '../state';
-import type { StoredPredRow } from '../training/adaptation';
+import { zoneForPredLabel, type StoredPredRow } from '../training/adaptation';
+import { raceTimeForVdot } from '../training/vdot/racePrediction';
+import { vdotFromPace } from '../training/vdot/vdotFromPace';
 import { generatePlan } from '@/test/legacyGenerator';
 import { t3kRows } from '../training/test3k';
 import { predictionSummary } from '../training/prediction/summary';
@@ -179,7 +181,26 @@ describe('Trka naspram starog koda', () => {
         raceDistM: refs.raceDistM
       });
       const svgP = String(legacy.evalIn('chartPred(predCalc())'));
-      const pm = predictionChartModel(sc.rows, summary, refs.goalSec);
+      // R was historically drawn as an aerobic estimate. The new summary excludes it;
+      // reconstruct only that former data point to retain frozen chart-geometry parity.
+      const oldRows = summary.rows.map((x) => {
+        if (zoneForPredLabel(x.r.l) !== 'R' || !x.a || x.r.nemeri) return x;
+        expect(x.pred).toBeNull();
+        const v = chain.find((e) => e.id === x.r.id)?.vdot ?? vdotFromPace(x.a, 'R');
+        return { ...x, pred: raceTimeForVdot(v, refs.raceDistM) };
+      });
+      const oldLast = oldRows
+        .filter((x) => x.pred != null)
+        .reduce<(typeof oldRows)[number] | null>((m, x) => {
+          const ts = chain.find((e) => e.id === x.r.id)?.ts;
+          const previous = m ? chain.find((e) => e.id === m.r.id)?.ts : null;
+          return !m || (ts && (!previous || ts > previous)) ? x : m;
+        }, null);
+      const pm = predictionChartModel(
+        sc.rows,
+        { ...summary, rows: oldRows, lastRow: oldLast },
+        refs.goalSec
+      );
       expect(pm).not.toBeNull();
       if (pm) {
         pcs++;

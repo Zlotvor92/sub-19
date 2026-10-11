@@ -5,6 +5,7 @@ import {
   importBackup,
   migrateState,
   seedState,
+  SCHEMA_VERSION,
   type PersistedState
 } from './index';
 
@@ -37,7 +38,7 @@ describe('izvoz', () => {
   it('fajl nosi naziv aplikacije, vreme izvoza i stanje', () => {
     const f = buildBackup(withTokens(), '2026-07-12T10:00:00.000Z');
     expect(f).toMatchObject({ app: 'SUB-19', exportedAt: '2026-07-12T10:00:00.000Z' });
-    expect(f.state.v).toBe(11);
+    expect(f.state.v).toBe(SCHEMA_VERSION);
   });
 });
 

@@ -8,6 +8,8 @@ import type { ResolvedDay, ResolvedPlan, ResolvedWeek } from '../../plan/types';
 import type { PredictionRow } from '../types';
 import { zoneForPredLabel } from './chain';
 import type { Zone } from '../types';
+import { ZONE_FOR_KIND } from '../vdot/zoneForKind';
+import { sessKind } from '../../plan/describe';
 
 export type StoredPredRow = PredictionRow & { id: string };
 
@@ -104,6 +106,9 @@ export function dayZone(
 ): { row: StoredPredRow; zone: Zone } | null {
   const row = matched.get(d.id);
   if (!row) return null;
-  const zone = zoneForPredLabel(row.l);
-  return zone ? { row, zone } : null;
+  const retagged = !!d.origin.tag && d.origin.tag !== d.tag;
+  const zone = retagged
+    ? ZONE_FOR_KIND[sessKind(d, true)]
+    : (d.session?.zone ?? row.zone ?? zoneForPredLabel(row.l));
+  return zone && zone !== 'RP' ? { row, zone } : null;
 }

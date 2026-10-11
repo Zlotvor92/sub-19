@@ -42,6 +42,9 @@ export function predictionSummary(input: {
   chain: readonly VdotRecord[];
   tests: readonly T3kRow[];
   raceDistM: number;
+  /** Production form view uses only the recent/performed evidence chain. Legacy callers may
+   * still show a per-session equivalent, which must never drive recommendations. */
+  requireAcceptedEvidence?: boolean;
 }): PredictionSummary {
   const { raceDistM } = input;
   const chainOf = (id: string): VdotRecord | undefined => input.chain.find((x) => x && x.id === id);
@@ -53,20 +56,24 @@ export function predictionSummary(input: {
   const rows = input.pred.map((r) => {
     const a = input.paces[r.id];
     let pred: number | null = null;
-    if (a && !r.nemeri) {
-      const zone = zoneForPredLabel(r.l);
-      const v = chainVdot(r.id) ?? (zone != null ? vdotFromPace(a, zone) : null);
+    const zone = r.zone ?? zoneForPredLabel(r.l);
+    if (a && !r.nemeri && zone !== 'R' && zone !== 'RP') {
+      const v =
+        chainVdot(r.id) ??
+        (!input.requireAcceptedEvidence && zone != null ? vdotFromPace(a, zone) : null);
       pred =
         v != null
           ? raceTimeForVdot(v, raceDistM)
-          : Math.round(riegelDist(a * r.q, r.q * 1000, raceDistM));
+          : !input.requireAcceptedEvidence
+            ? Math.round(riegelDist(a * r.q, r.q * 1000, raceDistM))
+            : null;
     }
     return { r, a, pred };
   });
 
   /* Testovi su u ZASEBNOM nizu, ne u `rows`: grafikon crta `rows` po indeksu naspram plana. */
   const tests = input.tests.map((r) => {
-    const v = chainVdot(r.id) ?? t3kVdot(r.sec);
+    const v = chainVdot(r.id) ?? (!input.requireAcceptedEvidence ? t3kVdot(r.sec) : null);
     return {
       r,
       a: r.pt,

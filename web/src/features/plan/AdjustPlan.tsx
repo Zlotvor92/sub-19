@@ -11,6 +11,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
 import { backToOwnPlan, recalibratePlan, startNewPlan } from './planActions';
 import { useAdjustments } from './useAdjustments';
+import { ExecutionAdjustment } from './ExecutionAdjustment';
 
 /* PRILAGODI PLAN: jedino mesto za sve što menja plan kao celinu — predlog zbog bola, predlog tempa prema formi, preračunavanje, novi plan. Predlozi se
    pojavljuju samo kad postoje (Danas tada nosi jedan red koji vodi ovamo). Pomeranje i izmena JEDNOG dana je u Detaljima treninga. */
@@ -44,7 +45,7 @@ export function AdjustPlan() {
     if (!pace) return;
     const n = pace.changes.length;
     const ok = await confirmAction(
-      `Prilagoditi ciljni tempo tvojoj formi? ${glagolZaBroj(n, 'Menja se ', 'Menjaju se ')}${brojTreninga(n)}. Obim ostaje isti, a sve se vraća dugmetom „Vrati planski tempo“.`
+      `Prilagoditi ciljni tempo tvojoj formi? ${glagolZaBroj(n, 'Menja se ', 'Menjaju se ')}${brojTreninga(n)}. Trajanje rada ostaje isto; kilometraža može blago da se promeni. Tempe možeš vratiti dugmetom „Vrati planski tempo“.`
     );
     if (!ok) return;
     const done = applyPace(plan, pace);
@@ -130,9 +131,13 @@ export function AdjustPlan() {
         </Section>
       ) : null}
 
+      {adj.blockedReason ? <p className="note-src">{adj.blockedReason}</p> : null}
+
       {!injury && !pace && !adj.adjusted ? (
         <p className="empty">Trenutno nema predloga za prilagođavanje plana.</p>
       ) : null}
+
+      <ExecutionAdjustment plan={plan} today={todayStr} />
 
       <Section title="Plan">
         <div className="rows">
@@ -186,8 +191,9 @@ export function AdjustPlan() {
       </Section>
       <p className="note-src">
         „Prilagodi tempo“ menja samo ciljne tempe sesija. „Preračunaj plan“ menja ceo ostatak plana
-        prema formi: tempi, projektovano vreme na dan trke i obim. Radi tek kad postoji bar 3
-        merenja i kad se forma i plan razilaze za 1,5 VDOT ili više.
+        prema formi i dostupnim unosima. Procena vremena je referenca iz trenutne forme.
+        Preračunavanje zahteva najmanje tri prihvaćena merenja različitih dana i razliku od 1,5 VDOT
+        ili više.
       </p>
     </ScreenFrame>
   );

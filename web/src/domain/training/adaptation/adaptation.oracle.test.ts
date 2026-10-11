@@ -4,6 +4,8 @@ import { firstDiff } from '@/test/firstDiff';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../../date';
 import { resolvePlan } from '../../plan/resolve';
+import { sessKind } from '../../plan/describe';
+import { paceForZone } from '../vdot/paceForZone';
 import { adaptGeneratedPlan } from '../../plan/adapt';
 import type { AltRecord, GenPlanState, LogEntry, VdotRecord } from '../../state';
 import { T3K_ID_PREFIX } from '../constants/product';
@@ -16,6 +18,13 @@ import {
   classifyMeasurement,
   currentVdot,
   formVsPlan,
+  fitnessEvidence,
+  planVdotNow,
+  matchPlanRows,
+  dayZone,
+  effectivePace,
+  zoneForPredLabel,
+  type ProposalChange,
   recomputeVdotChain,
   sessionClassFor,
   undoVdotAdjustments,
@@ -257,10 +266,19 @@ describe('prijem merenja naspram starog recordVdot', () => {
       });
       counts[out.status]++;
       const where = `iter ${i} ${row.l} ${pace} ${String(kind)}`;
-      if (old === null) {
+      const zone =
+        retagged && kind && ZONE_FOR_KIND[kind]
+          ? ZONE_FOR_KIND[kind]
+          : (zoneForPredLabel(row.l) ?? (kind ? ZONE_FOR_KIND[kind] : null));
+      // Phase 3: R is retained as a recorded pace, never as aerobic fitness evidence.
+      if (zone === 'R' && out.status === 'not-measured') {
+        expect(out.reason, where).toBe(row.nemeri ? 'race-prescription' : 'short-repetition');
+        if (old) expect(out.measured, where).toBe(old['measured']);
+      } else if (old === null) {
         expect(out.status, where).toBe('rejected');
       } else if (old['nemeri']) {
-        expect(out, where).toEqual({ status: 'not-measured', measured: old['measured'] });
+        expect(out.status, where).toBe('not-measured');
+        if (out.status === 'not-measured') expect(out.measured, where).toBe(old['measured']);
       } else {
         expect(out, where).toEqual({ status: 'accepted', measured: old['measured'] });
       }
@@ -283,6 +301,50 @@ function proposalContext(s: Scenario): ProposalContext {
   };
 }
 
+/** Reconstruct only the former fixture selection (not production evidence rules), so the
+ * immutable legacy recording is still consumed in its original order. */
+function oldFixtureChanges(ctx: ProposalContext): ProposalChange[] {
+  const form = currentVdot(ctx.vdotChain);
+  const reference = planVdotNow(ctx);
+  if (
+    form == null ||
+    reference == null ||
+    ctx.vdotChain.filter((e) => e.measured != null).length < 3 ||
+    Math.abs(Math.round((form - reference) * 10) / 10) < 1.5
+  )
+    return [];
+  const matched = matchPlanRows(ctx.plan.weeks, ctx.pred);
+  return ctx.plan.weeks.flatMap((w) =>
+    w.days.flatMap((d) => {
+      if (
+        !d.date ||
+        d.date < ctx.today ||
+        d.rest ||
+        ctx.log[d.id]?.status === 'done' ||
+        d.tag === 'trka' ||
+        d.tag === 'test'
+      )
+        return [];
+      const z = dayZone(matched, d);
+      const alt = ctx.alts[d.id];
+      if (
+        !z ||
+        !(z.row.pt > 0) ||
+        z.row.nemeri ||
+        (alt?.pace != null && !alt.paceAuto) ||
+        d.session?.overrides['paceSec']
+      )
+        return [];
+      const newPace = paceForZone(form, z.zone);
+      const oldPace = effectivePace(ctx.alts, d, z.row.pt) ?? 0;
+      if (!(oldPace > 0) || !(newPace > 0) || Math.abs(newPace - oldPace) < 3) return [];
+      return [
+        { id: d.id, date: d.date, kind: sessKind(d, !!alt), zone: z.zone, oldPace, newPace, w: w.w }
+      ];
+    })
+  );
+}
+
 describe('forma naspram plana i predlog — naspram starog vdotPredlog', () => {
   it('400 nasumičnih stanja: isti formaVsPlan, isti predlog (izmene, smer, tekst)', () => {
     const r = rng(2024);
@@ -295,52 +357,15 @@ describe('forma naspram plana i predlog — naspram starog vdotPredlog', () => {
 
       const oldF = j<Record<string, number> | null>(legacy.evalIn(`formaVsPlan("${s.today}")`));
       const f = formVsPlan(ctx);
-      expect(
-        f && {
-          forma: f.form,
-          planVdot: f.planVdot,
-          delta: f.delta,
-          merenja: f.measurements,
-          danaSaTempom: f.daysWithPace
-        },
-        `formaVsPlan ${i}`
-      ).toEqual(oldF);
-
+      const evidence = fitnessEvidence(ctx);
+      // The frozen scenarios contain done flags without actual distance and orphan tests.
+      // They used to manufacture form/proposals; the new performed-result gate must reject them.
+      expect(evidence.measurements, `performed evidence ${i}`).toBe(0);
+      expect(f, `formaVsPlan ${i}`).toBeNull();
+      if (oldF) expect(planVdotNow(ctx), `plan reference ${i}`).toBe(oldF['planVdot']);
       const old = j<Record<string, unknown> | null>(legacy.evalIn(`vdotPredlog("${s.today}")`));
-      const mine = vdotProposal(ctx);
-      if (old === null) {
-        expect(mine, `predlog ${i}`).toBeNull();
-        continue;
-      }
-      proposals++;
-      expect(mine, `predlog ${i} postoji`).not.toBeNull();
-      if (!mine) continue;
-      expect(
-        {
-          changes: mine.changes.map((c) => ({
-            id: c.id,
-            date: c.date,
-            kind: c.kind,
-            zone: c.zone,
-            staro: c.oldPace,
-            novo: c.newPace,
-            w: c.w
-          })),
-          brzi: mine.faster,
-          brzih: mine.fasterCount,
-          sporijih: mine.slowerCount,
-          title: mine.title,
-          message: mine.message
-        },
-        `predlog ${i}`
-      ).toEqual({
-        changes: old['changes'],
-        brzi: old['brzi'],
-        brzih: old['brzih'],
-        sporijih: old['sporijih'],
-        title: old['title'],
-        message: old['message']
-      });
+      expect(vdotProposal(ctx), `unconfirmed proposal ${i}`).toBeNull();
+      if (old) proposals++;
     }
     expect(proposals, 'test mora da proizvede predloge').toBeGreaterThan(40);
   });
@@ -355,18 +380,30 @@ describe('forma naspram plana i predlog — naspram starog vdotPredlog', () => {
       setLegacy(s);
       legacy.evalIn('preracunajVdotLog(); 0');
       const ctx = proposalContext(s);
-      const prop = vdotProposal(ctx);
-      if (!prop) continue;
+      const changes = oldFixtureChanges(ctx);
+      if (!changes.length) continue;
+      // Exercise application parity with the old explicit changes, even though production
+      // now correctly refuses the unconfirmed evidence that originally produced them.
+      const prop = { changes };
       const before = JSON.stringify([s.plan, s.alts]);
       const res = applyVdotProposal(prop, ctx.plan, s.log, s.alts, s.plan);
       expect(JSON.stringify([s.plan, s.alts]), 'ulaz se ne mutira').toBe(before);
 
       const n = legacy.evalIn(`primeniVdotPredlog(vdotPredlog("${s.today}"))`);
       expect(res.applied, `applied ${i}`).toBe(n);
-      expect(
-        firstDiff(canonical(res.alts), canonical(j(legacy.evalIn('S.alts')))),
-        `alts ${i}`
-      ).toBeNull();
+      const oldAppliedAlts = j<Record<string, AltRecord>>(legacy.evalIn('S.alts'));
+      const expectedAlts = j<Record<string, AltRecord>>(oldAppliedAlts);
+      for (const change of changes) {
+        const source = ctx.plan.byId.get(change.id)?.origin;
+        const fresh = res.genPlan?.weeks.flatMap((w) => w.days).find((d) => d.id === change.id);
+        const beforeAlt = s.alts[change.id];
+        const alt = expectedAlts[change.id];
+        if (!source || !fresh || !alt) continue;
+        // Phase 3: only copied km/description follow regenerated sessions. Manual values survive.
+        if (!beforeAlt || beforeAlt.km === (source.km ?? null)) alt.km = fresh.km ?? null;
+        if (!beforeAlt || beforeAlt.desc === (source.desc ?? '')) alt.desc = fresh.desc ?? '';
+      }
+      expect(firstDiff(canonical(res.alts), canonical(expectedAlts)), `alts ${i}`).toBeNull();
       expect(
         firstDiff(canonical(res.genPlan), canonical(j(legacy.evalIn('S.genPlan')))),
         `genPlan ${i}`

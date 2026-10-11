@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { seedState } from '../../domain/state';
+import { seedState, SCHEMA_VERSION } from '../../domain/state';
 import { LS_KEY, LS_RESCUE_KEY } from './keys';
 import { createKeyValueStore, type StorageLike } from './kv';
 import { createStateSaver, loadState } from './stateStorage';
@@ -111,7 +111,7 @@ describe('čuvanje stanja', () => {
   it('puni upis je odmah i javlja okidač slanja', () => {
     const { st, saver, onSaved } = setup();
     saver.save(state);
-    expect(JSON.parse(st.getItem(LS_KEY) as string)).toMatchObject({ v: 11 });
+    expect(JSON.parse(st.getItem(LS_KEY) as string)).toMatchObject({ v: SCHEMA_VERSION });
     expect(onSaved).toHaveBeenCalledTimes(1);
   });
   it('odloženi upis se spaja: hiljadu slova = jedan upis, i rok se ne pomera unedogled', () => {
