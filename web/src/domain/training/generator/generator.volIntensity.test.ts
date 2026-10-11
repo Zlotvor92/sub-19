@@ -1,6 +1,6 @@
-/* D2 (docs/ENGINE_CHANGES.md): tempo rasta OBIMA (`volIntensity`) je odvojen od tempa napretka FORME (`intensity`).
-   Stari generator je koristio JEDAN izbor za oba. Izostavljen `volIntensity` mora davati TAČNO isti plan kao pre
-   (planovi već u bazi nemaju to polje) — to drži i golden-master otisak, a ovde je dokazano po distancama. */
+/* Volume preference remains independent from the current-fitness reference.
+   Legacy inputs without volIntensity still use intensity for volume progression;
+   the former arbitrary intensity-dependent fitness projection is retired. */
 
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
@@ -98,11 +98,11 @@ describe('volIntensity: menja obim, ne menja procenu forme', () => {
     }
   });
 
-  it('tempo napretka i dalje određuje formu: agr ima viši cilj od kons', () => {
+  it('legacy izbor intenziteta ne obećava različit napredak za isti trening', () => {
     const lo = plan({ intensity: 'kons', volIntensity: 'std' }).meta;
     const hi = plan({ intensity: 'agr', volIntensity: 'std' }).meta;
-    expect(hi.vdotGoal).toBeGreaterThan(lo.vdotGoal);
-    expect(hi.predictedSec).toBeLessThan(lo.predictedSec);
+    expect(hi.vdotGoal).toBe(lo.vdotGoal);
+    expect(hi.predictedSec).toBe(lo.predictedSec);
   });
 });
 

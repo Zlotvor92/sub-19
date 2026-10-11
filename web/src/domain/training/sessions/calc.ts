@@ -40,7 +40,7 @@ export function sessKm(s: Session): number {
     case 'fartlek':
       return r1(s.wuKm + s.cdKm + fartlekKm(s));
     case 'prog':
-      return r1(s.qKm);
+      return r1(s.wuKm + s.qKm + s.cdKm);
     case 'tempo':
       return r1(s.wuKm + s.qKm + s.cdKm);
   }
@@ -64,8 +64,10 @@ function sessionSummary(s: Session): string {
       return `${s.kind} — ${s.wuKm} km zagrevanje + ${s.reps.join('-')} m @ ${fmtClock(s.paceSec)}/km (${fmtRest(s.restSec)} hoda između ponavljanja) + ${s.cdKm} km hlađenje`;
     case 'fartlek':
       return `Fartlek — ${s.wuKm} km zagrevanje + ${s.reps}×${s.repSec} s brzo @ ~${fmtClock(s.paceSec)}/km (${s.restSec} s laganog trčanja) + ${s.cdKm} km hlađenje`;
-    case 'prog':
-      return `Progresivno — ${s.qKm} km: prve dve trećine @ ~${fmtClock(s.easyPaceSec)}/km → poslednja trećina @ ${fmtClock(s.paceSec)}/km`;
+    case 'prog': {
+      const work = `${s.qKm} km: prve dve trećine @ ~${fmtClock(s.easyPaceSec)}/km → poslednja trećina @ ${fmtClock(s.paceSec)}/km`;
+      return `Progresivno — ${s.wuKm ? `${s.wuKm} km zagrevanje + ` : ''}${work}${s.cdKm ? ` + ${s.cdKm} km hlađenje` : ''}`;
+    }
     case 'tempo':
       return `${s.kind || 'Tempo'} — ${s.wuKm} km zagrevanje + ${s.qKm} km @ ${fmtClock(s.paceSec)}/km + ${s.cdKm} km hlađenje`;
   }

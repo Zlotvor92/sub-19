@@ -113,8 +113,10 @@ export function sessionSegments(
     case 'prog': {
       if (day.km == null) return null;
       const easy = s.easyPaceSec;
-      out.push({ kind: 'steady', sec: Math.max(0, day.km - s.qKm) * easy, paceSec: easy });
-      out.push({ kind: 'rep', sec: s.qKm * s.paceSec, paceSec: s.paceSec });
+      if (s.wuKm > 0) out.push({ kind: 'wu', sec: s.wuKm * easy, paceSec: easy });
+      out.push({ kind: 'steady', sec: ((s.qKm * 2) / 3) * easy, paceSec: easy });
+      out.push({ kind: 'rep', sec: (s.qKm / 3) * s.paceSec, paceSec: s.paceSec });
+      if (s.cdKm > 0) out.push({ kind: 'cd', sec: s.cdKm * easy, paceSec: easy });
       return out;
     }
   }

@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { d6Snapshot } from '@/test/d6Snapshot';
+import { r1 } from '../format';
+import { raceTimeForVdot } from '../training/vdot/racePrediction';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
 import { generatePlan } from '@/test/legacyGenerator';
@@ -107,17 +109,19 @@ describe('čarobnjak naspram starog koda', () => {
           name: old.name
         });
       else {
+        // Phase 1 deliberately removes the old unearned VDOT ramp. Keep the
+        // legacy input/calendar contract, then check current-fitness references.
         expect(
-          mine && !mine.short
-            ? {
-                rows: mine.rows.map((x) => ({ k: x.k, lbl: x.label, sec: x.sec, vdot: x.vdot })),
-                weeks: mine.weeks,
-                name: mine.name,
-                goal: mine.goal
-              }
-            : mine,
-          `predviđanje ${where}`
-        ).toEqual(old);
+          mine && !mine.short ? { weeks: mine.weeks, name: mine.name, goal: mine.goal } : mine,
+          where
+        ).toEqual({ weeks: old.weeks, name: old.name, goal: old.goal });
+        if (!mine || mine.short) throw new Error(`Missing outlook ${where}`);
+        const current = formPreview(w)!;
+        expect(mine.rows).toHaveLength(3);
+        for (const row of mine.rows) {
+          expect(row.vdot, where).toBe(r1(current.vdot));
+          expect(row.sec, where).toBe(raceTimeForVdot(current.vdot, w.raceDist));
+        }
         outlooks++;
       }
     }

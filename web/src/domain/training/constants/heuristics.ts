@@ -6,7 +6,7 @@
    zapis u docs/ENGINE_CHANGES.md. Pregled sa ocenama: docs/TRAINING_ENGINE_AUDIT.md §5.2.
    ============================================================ */
 
-import type { Intensity, Zone } from '../types';
+import type { Zone } from '../types';
 
 /** Udeo VO2max po zoni (E, LR, I, T, R). Zona M se NE računa iz procenta —
  *  ona je po definiciji tempo maratona za dati VDOT (v. `paceForZone`). `M`
@@ -20,14 +20,7 @@ export const ZONE_FRACTION: Readonly<Record<Zone, number>> = {
   R: 1.05
 };
 
-/** Rast VDOT-a po nedelji (poena). `agr` je kalibrisan na putanju jednog autora plana. */
-export const VDOT_RAMP_PER_WEEK: Readonly<Record<Intensity, number>> = {
-  kons: 0.15,
-  std: 0.25,
-  agr: 0.43
-};
-
-/** Najviše ovoliko nedelja neprekidnog linearnog rasta forme; dalje plato. */
+/** Legacy projected plans interpolate over at most this many weeks. New plans do not assume gains. */
 export const RAMP_CAP_WEEKS = 20;
 
 /** Dozvoljeni rast obima pri povratku posle pauze (`reentryPlan`). */

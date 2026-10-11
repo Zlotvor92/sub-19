@@ -1,0 +1,107 @@
+{
+  "intensityOnly": [
+    {
+      "intensity": "kons",
+      "predictedSec": 1191,
+      "vdotGoal": 50.3,
+      "weeksIdenticalToStd": true,
+      "paces": [
+        228,
+        263,
+        237,
+        247,
+        243
+      ]
+    },
+    {
+      "intensity": "std",
+      "predictedSec": 1163,
+      "vdotGoal": 51.7,
+      "weeksIdenticalToStd": true,
+      "paces": [
+        228,
+        263,
+        237,
+        247,
+        243
+      ]
+    },
+    {
+      "intensity": "agr",
+      "predictedSec": 1117,
+      "vdotGoal": 54.2,
+      "weeksIdenticalToStd": true,
+      "paces": [
+        228,
+        263,
+        237,
+        247,
+        243
+      ]
+    }
+  ],
+  "cruiseBefore": {
+    "type": "int",
+    "kind": "Tempo isprekidan",
+    "wuKm": 1.7,
+    "reps": 2,
+    "repM": 1600,
+    "paceSec": 301,
+    "restSec": 90,
+    "cdKm": 1.2,
+    "overrides": {}
+  },
+  "cruiseSurvives": false,
+  "cruiseAfter": {
+    "type": "int",
+    "kind": "Tempo isprekidan",
+    "wuKm": 1.7,
+    "reps": 1,
+    "repM": 1600,
+    "paceSec": 301,
+    "restSec": 90,
+    "cdKm": 1.2,
+    "overrides": {},
+    "zone": "T",
+    "paceSource": "current-fitness"
+  },
+  "sweep": {
+    "generated": 144,
+    "errors": 0,
+    "arithmeticFailures": 0,
+    "emptyFocus": 88,
+    "lrShareFailures": 370,
+    "lrFinalClampFailures": 456,
+    "examples": {
+      "emptyFocus": {
+        "raceDistM": 5000,
+        "weeklyKm": 12,
+        "runDays": 3,
+        "sec": 1235,
+        "week": 2,
+        "volume": 13.5
+      },
+      "lrShare": {
+        "raceDistM": 5000,
+        "weeklyKm": 12,
+        "runDays": 3,
+        "sec": 1235,
+        "week": 2,
+        "lr": 5.8,
+        "volume": 13.5,
+        "share": 0.42962962962962964
+      },
+      "lrFinalClamp": {
+        "raceDistM": 5000,
+        "weeklyKm": 12,
+        "runDays": 3,
+        "sec": 1235,
+        "week": 2,
+        "lr": 5.8,
+        "volume": 13.5,
+        "maxQ": 0,
+        "ceiling": 5.1
+      }
+    }
+  }
+}

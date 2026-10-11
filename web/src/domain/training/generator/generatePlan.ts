@@ -37,7 +37,6 @@ import { raceTimeForVdot } from '../vdot/racePrediction';
 import type {
   Day,
   EasyRunDay,
-  Intensity,
   LongRunDay,
   PlanGenerationInput,
   PlanGenerationResult,
@@ -154,32 +153,15 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const effQ = Object.values(slots).filter((r) => r === 'q1' || r === 'q2').length;
   const a = assess(inp.pb, weeks, inp.intensity, inp.goalSec || null, raceDistM);
 
-  /* NEREALAN CILJ SE MORA IZGOVORITI: racePace se računa IZ CILJA, ne iz predviđanja. */
+  /* Cilj je želja; ekvivalent trenutne forme nije prognoza napretka kroz pripremu. */
   if (inp.goalSec && a.realno === false) {
-    const ORDER: ReadonlyArray<readonly [Intensity, string]> = [
-      ['kons', 'Konzervativno'],
-      ['std', 'Standardno'],
-      ['agr', 'Agresivno']
-    ];
-    const reaches = ORDER.find(
-      ([k]) => assess(inp.pb, weeks, k, inp.goalSec ?? null, raceDistM).realno
-    );
-    const chosenName = (ORDER.find(([k]) => k === inp.intensity) ?? [null, 'izabranom'])[1];
     dayWarnings.push(
       'Ciljno vreme ' +
         fmtClock(inp.goalSec) +
-        ' je iznad onoga što ovaj plan realno donosi — ' +
-        'na tempu napretka „' +
-        chosenName +
-        '" predviđanje za dan trke je ' +
+        ' je brže od reference trenutne forme (' +
         fmtClock(a.predictedSec) +
-        '. ' +
-        (reaches
-          ? 'Tempo napretka „' + reaches[1] + '" bi ga dostigao.'
-          : 'Nijedan tempo napretka ga ne dostiže za ' +
-            brojNedelja(weeks) +
-            ' — treba ti više vremena do trke ili blaži cilj.') +
-        ' Tempo treninga ostaje vezan za potvrđenu formu. Cilj je sačuvan kao želja; proveri napredak novom trkom ili testom pre ubrzavanja.'
+        '). To ne procenjuje napredak do dana trke ni izdržljivost za ciljnu distancu. ' +
+        'Tempo treninga ostaje vezan za potvrđenu formu. Cilj je sačuvan kao želja; proveri napredak novom trkom ili testom pre ubrzavanja.'
     );
   }
 
@@ -354,6 +336,67 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       ? (v, pl) => longRunCap(H, v, pl) * factor
       : (v, pl) => longRunCap(H, v, pl);
 
+  /** Konačni LR opis se izvodi iz završne kilometraže, uključujući gorivo i brz završetak. */
+  const refreshLongRun = (day: LongRunDay, w: number): void => {
+    const pLR = paceForZone(a.vdot0, 'LR');
+    if (day.mlr) {
+      day.desc = `${day.km} km srednje-dugo (Z2) @ ~${fmtClock(pLR)}/km — drugo duže trčanje u nedelji`;
+      return;
+    }
+    if (day.finish) {
+      const finish = prof.longRunFinish?.(
+        prof.phase(Math.max(w - baseWeeks, 1), qualWeeks),
+        Math.max(w - baseWeeks, 1),
+        day.km,
+        racePace,
+        prof.paceStrategy?.(racePace) ?? null,
+        prof.longRunCycle?.(w, {
+          weeks,
+          baseWeeks,
+          taperW,
+          isDeload: w % DELOAD_EVERY === 0 && w < lastWorking
+        }) ?? null
+      );
+      if (finish) day.finish = finish;
+      else delete day.finish;
+    }
+    const base = w <= baseWeeks;
+    day.desc = `${day.km} km ${base ? 'lako-dugo' : 'LR'} (Z2) @ ~${fmtClock(pLR)}/km — ${base ? 'bazna faza, bez kvaliteta' : 'najduže trčanje te nedelje'}${fuelText(day.km, pLR, H)}${day.finish ? ` · poslednjih ${day.finish.km} km @ ${fmtClock(day.finish.paceSec)}/km (${day.finish.zone === 'M' ? 'maratonski' : 'tempo trke'})` : ''}`;
+  };
+
+  /** Proveri sastavljenu nedelju posle rezanja obima; LR i sesije dele konačni imenilac. */
+  const finalizeWeek = (days: Day[], w: number): void => {
+    for (let pass = 0; pass < 30; pass++) {
+      constrainWeek(days, H.tempoMaxSec, paceForZone(a.vdot0, 'E'));
+      if (w === weeks) break; // kilometraža same trke nije trening dužine
+      const lr = days.find(
+        (d): d is LongRunDay | RunWalkDay =>
+          (d.tag === 'lr' && !d.mlr) || (d.tag === 'rw' && slots[d.dow] === 'lr')
+      );
+      if (!lr || !H.longRunMaxShare) break;
+      const rest = sumKm(days) - lr.km;
+      const maxQ = maxOf(days.filter((d) => d.session).map(kmOf));
+      const before = sumKm(days);
+      const ceiling = Math.max(
+        r1((rest * H.longRunMaxShare) / (1 - H.longRunMaxShare)),
+        r1(maxQ * 1.05)
+      );
+      // Deload podovi WU/CD mogu ostaviti kvalitet duži od LR-a; isti izuzetak
+      // kao u raspodeli zadržava LR najdužim, bez povećavanja kvalitetne doze.
+      lr.km = Math.min(Math.max(lr.km, r1(maxQ * 1.05)), ceiling);
+      renameKm(lr);
+      for (const day of days) {
+        if (!hasKm(day) || day === lr || day.session || day.tag === 'trka') continue;
+        if (day.km > lr.km) {
+          day.km = lr.km;
+          renameKm(day);
+        }
+      }
+      if (Math.abs(before - sumKm(days)) < 0.05) break;
+    }
+    for (const day of days) if (day.tag === 'lr') refreshLongRun(day, w);
+  };
+
   for (let w = 1; w <= weeks; w++) {
     const vdotW = a.vdot0;
     /* Specifičnost tek u POSLEDNJIH 6 nedelja pred taper — APSOLUTAN broj, ne razlomak. */
@@ -496,7 +539,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         renameKm(d);
       }
     }
-    constrainWeek(days, H.tempoMaxSec, pE);
+    finalizeWeek(days, w);
     plan.weeks.push({
       w,
       vol: r1(sumKm(days)),
@@ -540,7 +583,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           D.race(
             dw,
             raceDistM / 1000,
-            `🏁 TRKA ${distKm} km (${prof.product.name}) — cilj ${fmtClock(inp.goalSec || a.predictedSec)} / ritam ${fmtClock(rp)}/km`
+            `🏁 TRKA ${distKm} km (${prof.product.name}) — ${inp.goalSec ? `željeni cilj ${fmtClock(inp.goalSec)} · ` : ''}preporučeni ritam ${fmtClock(rp)}/km (oko ${fmtClock(Math.round((rp * raceDistM) / 1000))}, prema trenutnoj formi${inp.goalSec && inp.goalSec >= currentRaceSec ? ' i izabranom cilju' : ''})`
           )
       };
       const activationFactory = proto['-2'];
@@ -825,7 +868,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           (d) => d.session.type !== 'prog' && d.session.wuKm != null && d.session.cdKm != null
         );
         if (side.length) {
-          const total = (): number => sumKm(sessionList()) + alloc.lr + sum(alloc.easies);
+          const total = (): number =>
+            sumKm(sessionList()) + alloc.lr + (alloc.mlr || 0) + sum(alloc.easies);
           const maxAdd = H.wuCdMaxExtraKm;
           const base = side.map((d) => ({ d, wu: d.session.wuKm, cd: d.session.cdKm }));
           for (let pass = 0; pass < 2; pass++) {
@@ -1031,11 +1075,17 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           minPeak +
           ' km/ned. Rast je namerno postupan (od tvojih ' +
           inp.weeklyKm +
-          ' km/ned) jer je nagli skok obima najčešći uzrok povrede — ' +
-          'ali to znači da je ovo plan da distancu ISTRČIŠ, ne da je trčiš na vreme. ' +
+          ' km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. ' +
           'Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.'
       );
     }
+  }
+
+  /* Protokol trke menja već sastavljenu taper nedelju: proveri je ponovo pre filtriranja.
+     Delimična početna nedelja nije nova puna nedelja i ne podleže novom LR udelu. */
+  for (const wk of plan.weeks) {
+    finalizeWeek(wk.days, wk.w);
+    wk.vol = r1(sumKm(wk.days));
   }
 
   /* Filtriraj dane PRE datuma generisanja iz nedelje 1 (samo ona može imati dane pre `startDate`);

@@ -182,15 +182,19 @@ export interface PredictionRow {
 }
 
 export interface Assessment {
+  /** Absent on legacy stored projections; no schema migration needed. */
+  assessmentBasis?: 'current-fitness';
   vdot0: number;
+  /** Legacy name: new plans use current-fitness reference, not projected improvement. */
   vdotGoal: number;
+  /** Current-fitness race equivalent; not a promise of readiness or future improvement. */
   predictedSec: number;
   realno: boolean | null;
   goalVdot: number | null;
 }
 
 export interface PlanMeta extends Assessment {
-  /** New plans prescribe current fitness; vdotGoal is a projection only. */
+  /** New plans prescribe current fitness. Older plans may retain projected vdotGoal. */
   trainingVdot?: number;
   start: IsoDate;
   weeks: number;
@@ -240,7 +244,7 @@ export interface PlanGenerationInput {
   runDays?: number;
   /** 1–2, podrazumevano 2. */
   quality?: number;
-  /** Tempo napretka FORME (rast VDOT-a). */
+  /** Legacy preference retained for stored inputs; does not project fitness gains. */
   intensity: Intensity;
   /**
    * Tempo rasta OBIMA (nedeljni korak i vrhunac). Izostavljeno = isto kao `intensity` — tako se ponašaju svi planovi napravljeni

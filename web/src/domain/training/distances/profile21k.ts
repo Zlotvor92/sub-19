@@ -175,7 +175,8 @@ function buildQuality21K(req: QualityRequest): SessionDay {
   const phase = phase21K(qualW, qualWeeks);
   const strat = paceStrategy21K(racePace);
   /* Kad q1 ide na prag (T), deli nedeljni budžet praga sa q2: 60% / 40%. */
-  const share = effQ === 2 && q1Family(phase, strat, qualW) === 'T' ? 0.6 : 1;
+  const share =
+    effQ === 2 && q1Family(phase, strat, qualW) === 'T' ? (slotRole === 'q1' ? 0.6 : 0.4) : 1;
 
   if (isTaper1) {
     const [twu, tcd] = wuCdForVolume(vol);

@@ -65,6 +65,18 @@ describe('Forma i predikcija', () => {
       /^Put do cilja: start \d+:\d\d, cilj 42:00/
     );
     expect(journey?.getAttribute('aria-label')).not.toMatch(/sada/);
+    expect(journey?.getAttribute('aria-label')).not.toMatch(/plan vodi do/);
+  });
+
+  it('stari sačuvani plan zadržava projekciju bez novog markera', () => {
+    const state = freshState();
+    delete state.genPlan!.meta!.assessmentBasis;
+    state.genPlan!.meta!.predictedSec = 2400;
+    hydratePersisted(state);
+    const { container } = render(<Screen />);
+    expect(container.querySelector('.journey')?.getAttribute('aria-label')).toContain(
+      'plan vodi do 40:00'
+    );
   });
 
   it('tempo svakog trčanja: odeljak postoji i bez trčanja kaže šta da se uradi', () => {

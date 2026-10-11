@@ -89,7 +89,10 @@ export function useFormModel() {
       runs,
       pace: paceChartModel(runs),
       sum: planSummary(plan, log, today),
-      projectionSec: num(genPlan.meta?.['predictedSec']),
+      projectionSec:
+        genPlan.meta?.['assessmentBasis'] === 'current-fitness'
+          ? null
+          : num(genPlan.meta?.['predictedSec']),
       tests: t3kSeries(t3k).slice().reverse()
     };
   }, [plan, genPlan, pred, vdotLog, t3k, log, alts, todayStr]);

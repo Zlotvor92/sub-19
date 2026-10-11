@@ -1,0 +1,746 @@
+[
+  {
+    "scenario": "01_base",
+    "before": {
+      "weeks": 12,
+      "peakTrainingKm": 15.2,
+      "peakLR": 6.5,
+      "qualitySessions": 5,
+      "emptyWorkingWeeks": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "referenceSec": 2004,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 12,
+      "peakTrainingKm": 14,
+      "peakLR": 5.6,
+      "qualitySessions": 5,
+      "emptyWorkingWeeks": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "referenceSec": 2100,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "01_frequency",
+    "before": {
+      "weeks": 12,
+      "peakTrainingKm": 22.6,
+      "peakLR": 8,
+      "qualitySessions": 5,
+      "emptyWorkingWeeks": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "referenceSec": 2004,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 12,
+      "peakTrainingKm": 22.6,
+      "peakLR": 8,
+      "qualitySessions": 5,
+      "emptyWorkingWeeks": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "referenceSec": 2100,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "01_recent",
+    "before": {
+      "weeks": 12,
+      "peakTrainingKm": 15.3,
+      "peakLR": 6.9,
+      "qualitySessions": 8,
+      "emptyWorkingWeeks": [
+        1,
+        2,
+        7
+      ],
+      "referenceSec": 2004,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 12,
+      "peakTrainingKm": 14.1,
+      "peakLR": 5.7,
+      "qualitySessions": 11,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 2100,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "02_base",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 25.7,
+      "peakLR": 11,
+      "qualitySessions": 5,
+      "emptyWorkingWeeks": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        11,
+        13
+      ],
+      "referenceSec": 3103,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 19,
+      "peakLR": 8.2,
+      "qualitySessions": 7,
+      "emptyWorkingWeeks": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7
+      ],
+      "referenceSec": 3365,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "02_recent",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 27,
+      "peakLR": 11,
+      "qualitySessions": 11,
+      "emptyWorkingWeeks": [
+        1,
+        3,
+        5,
+        11
+      ],
+      "referenceSec": 3103,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 21.2,
+      "peakLR": 9.3,
+      "qualitySessions": 15,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 3365,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "02_short",
+    "before": {
+      "weeks": 8,
+      "peakTrainingKm": 18.9,
+      "peakLR": 8.3,
+      "qualitySessions": 0,
+      "emptyWorkingWeeks": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "referenceSec": 3247,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 8,
+      "peakTrainingKm": 18.3,
+      "peakLR": 7.7,
+      "qualitySessions": 0,
+      "emptyWorkingWeeks": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "referenceSec": 3365,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "03_base",
+    "before": {
+      "weeks": 12,
+      "peakTrainingKm": 21.9,
+      "peakLR": 8.9,
+      "qualitySessions": 10,
+      "emptyWorkingWeeks": [
+        2
+      ],
+      "referenceSec": 1529,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 12,
+      "peakTrainingKm": 19.3,
+      "peakLR": 7.7,
+      "qualitySessions": 11,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1620,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "03_quality2",
+    "before": {
+      "weeks": 12,
+      "peakTrainingKm": 21.9,
+      "peakLR": 8.9,
+      "qualitySessions": 10,
+      "emptyWorkingWeeks": [
+        2
+      ],
+      "referenceSec": 1529,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 12,
+      "peakTrainingKm": 19.3,
+      "peakLR": 7.7,
+      "qualitySessions": 11,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1620,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "03_volume12",
+    "before": {
+      "weeks": 12,
+      "peakTrainingKm": 20,
+      "peakLR": 8,
+      "qualitySessions": 10,
+      "emptyWorkingWeeks": [
+        2
+      ],
+      "referenceSec": 1529,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 12,
+      "peakTrainingKm": 18.7,
+      "peakLR": 7.5,
+      "qualitySessions": 11,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1620,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "04_base",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 41.2,
+      "peakLR": 14,
+      "qualitySessions": 23,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1329,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 41.2,
+      "peakLR": 14,
+      "qualitySessions": 27,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1425,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "04_long24",
+    "before": {
+      "weeks": 24,
+      "peakTrainingKm": 42.9,
+      "peakLR": 14.6,
+      "qualitySessions": 37,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1291,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 24,
+      "peakTrainingKm": 42.9,
+      "peakLR": 14.6,
+      "qualitySessions": 41,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1425,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "04_slowgoal",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 41.2,
+      "peakLR": 14,
+      "qualitySessions": 23,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1329,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 41.2,
+      "peakLR": 14,
+      "qualitySessions": 27,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1425,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "05_base",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 55.2,
+      "peakLR": 15.3,
+      "qualitySessions": 27,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1163,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 55.2,
+      "peakLR": 15.3,
+      "qualitySessions": 27,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1235,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "05_conservative",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 55.2,
+      "peakLR": 15.3,
+      "qualitySessions": 27,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1191,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 55.2,
+      "peakLR": 15.3,
+      "qualitySessions": 27,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1235,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "05_volume",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 70.6,
+      "peakLR": 16.7,
+      "qualitySessions": 27,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1163,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 70.6,
+      "peakLR": 16.7,
+      "qualitySessions": 27,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 1235,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "06_base",
+    "before": {
+      "weeks": 12,
+      "peakTrainingKm": 46.3,
+      "peakLR": 16,
+      "qualitySessions": 20,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 2810,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 12,
+      "peakTrainingKm": 46.3,
+      "peakLR": 16,
+      "qualitySessions": 20,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 2956,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "06_goal55",
+    "before": {
+      "weeks": 12,
+      "peakTrainingKm": 46.3,
+      "peakLR": 16,
+      "qualitySessions": 20,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 2810,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 12,
+      "peakTrainingKm": 46.3,
+      "peakLR": 16,
+      "qualitySessions": 20,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 2956,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "06_highvol",
+    "before": {
+      "weeks": 12,
+      "peakTrainingKm": 64,
+      "peakLR": 17,
+      "qualitySessions": 20,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 2810,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 12,
+      "peakTrainingKm": 64,
+      "peakLR": 17,
+      "qualitySessions": 20,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 2956,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "07_base",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 46.2,
+      "peakLR": 15.3,
+      "qualitySessions": 25,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 6107,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 46.2,
+      "peakLR": 15.3,
+      "qualitySessions": 25,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 6555,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "07_quality1",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 46.2,
+      "peakLR": 15.3,
+      "qualitySessions": 15,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 6107,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 46.2,
+      "peakLR": 15.3,
+      "qualitySessions": 15,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 6555,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "07_short",
+    "before": {
+      "weeks": 10,
+      "peakTrainingKm": 42.9,
+      "peakLR": 14,
+      "qualitySessions": 15,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 6291,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 10,
+      "peakTrainingKm": 42.9,
+      "peakLR": 14,
+      "qualitySessions": 15,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 6555,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "07_slower",
+    "before": {
+      "weeks": 16,
+      "peakTrainingKm": 45.8,
+      "peakLR": 15.3,
+      "qualitySessions": 24,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 6107,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 16,
+      "peakTrainingKm": 45.8,
+      "peakLR": 15.3,
+      "qualitySessions": 24,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 6555,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "08_base",
+    "before": {
+      "weeks": 14,
+      "peakTrainingKm": 55.7,
+      "peakLR": 20,
+      "qualitySessions": 21,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 5383,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 14,
+      "peakTrainingKm": 55.7,
+      "peakLR": 20,
+      "qualitySessions": 21,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 5672,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "08_highvol",
+    "before": {
+      "weeks": 14,
+      "peakTrainingKm": 71.9,
+      "peakLR": 22,
+      "qualitySessions": 21,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 5383,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 14,
+      "peakTrainingKm": 71.9,
+      "peakLR": 22,
+      "qualitySessions": 21,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 5672,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "08_lowvol",
+    "before": {
+      "weeks": 14,
+      "peakTrainingKm": 46.7,
+      "peakLR": 15.7,
+      "qualitySessions": 21,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 5383,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 14,
+      "peakTrainingKm": 46.7,
+      "peakLR": 15.7,
+      "qualitySessions": 21,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 5672,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "09_30km",
+    "before": {
+      "weeks": 20,
+      "peakTrainingKm": 43.3,
+      "peakLR": 16,
+      "qualitySessions": 22,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 12021,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 20,
+      "peakTrainingKm": 43.1,
+      "peakLR": 16,
+      "qualitySessions": 22,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 13070,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "09_4days",
+    "before": {
+      "weeks": 20,
+      "peakTrainingKm": 60.2,
+      "peakLR": 26,
+      "qualitySessions": 33,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 12021,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 20,
+      "peakTrainingKm": 59,
+      "peakLR": 24.8,
+      "qualitySessions": 33,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 13070,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "09_base",
+    "before": {
+      "weeks": 20,
+      "peakTrainingKm": 76.8,
+      "peakLR": 26,
+      "qualitySessions": 33,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 12021,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 20,
+      "peakTrainingKm": 76.8,
+      "peakLR": 26,
+      "qualitySessions": 33,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 13070,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "10_4days",
+    "before": {
+      "error": "Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća."
+    },
+    "after": {
+      "error": "Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća."
+    }
+  },
+  {
+    "scenario": "10_base",
+    "before": {
+      "error": "Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća."
+    },
+    "after": {
+      "error": "Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća."
+    }
+  },
+  {
+    "scenario": "10_sunday",
+    "before": {
+      "weeks": 10,
+      "peakTrainingKm": 35.1,
+      "peakLR": 14,
+      "qualitySessions": 8,
+      "emptyWorkingWeeks": [
+        1
+      ],
+      "referenceSec": 5476,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 10,
+      "peakTrainingKm": 35.1,
+      "peakLR": 14,
+      "qualitySessions": 8,
+      "emptyWorkingWeeks": [
+        1
+      ],
+      "referenceSec": 5672,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "10_sunday4days",
+    "before": {
+      "weeks": 10,
+      "peakTrainingKm": 43,
+      "peakLR": 14,
+      "qualitySessions": 13,
+      "emptyWorkingWeeks": [
+        1
+      ],
+      "referenceSec": 5476,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 10,
+      "peakTrainingKm": 43,
+      "peakLR": 14,
+      "qualitySessions": 13,
+      "emptyWorkingWeeks": [
+        1
+      ],
+      "referenceSec": 5672,
+      "basis": "current-fitness"
+    }
+  },
+  {
+    "scenario": "10_validmonday",
+    "before": {
+      "weeks": 10,
+      "peakTrainingKm": 35.1,
+      "peakLR": 14,
+      "qualitySessions": 9,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 5476,
+      "basis": "legacy-projection"
+    },
+    "after": {
+      "weeks": 10,
+      "peakTrainingKm": 35.1,
+      "peakLR": 14,
+      "qualitySessions": 9,
+      "emptyWorkingWeeks": [],
+      "referenceSec": 5672,
+      "basis": "current-fitness"
+    }
+  }
+]

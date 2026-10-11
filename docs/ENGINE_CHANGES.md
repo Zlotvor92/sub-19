@@ -151,3 +151,19 @@ Golden master (2.304 scenarija) i diferencijalni otisak (1.500 determinističkih
 Osvežavanje otisaka: iz `web/`, `UPDATE_FINGERPRINT=1 npx vitest run --project node generator.fingerprint generator.differential`, zatim isti flag za `replan.oracle.test.ts` i `onboarding.oracle.test.ts`. Provere bez tog flag-a moraju proći pre commita.
 
 Izvori za trenerske granice: [Daniels Training Definitions](https://vdoto2.com/learn-more/training-definitions), [VO2max rad](https://news.vdoto2.com/2025/07/how-to-effectively-improve-your-vo2max/), [V.O2 FAQ](https://support.vdoto2.com/v-o2-faq/). Ograničenja dužine, kalibracija zona i veći arhitektonski refaktor ostaju odvojene odluke; nisu predstavljeni kao ispravljene programske greške u ovoj reviziji.
+## Faza 1 generatora — 11.10.2026.
+
+Namerno izmenjeno ponašanje: očuvanje smislene kvalitetne doze unutar postojećih
+limita; MLR u konačnom zbiru; zajednička završna provera sesija i LR-a; opisi iz
+konačne strukture; progresija sa odvojenim laganim WU/CD; HM podela 60/40;
+odvojeni željeni cilj i preporučeni ritam trke; referenca trenutne forme umesto
+neutemeljenog linearnog napretka. Wire imena ostaju, dodat je opcioni
+`assessmentBasis: 'current-fitness'`; stari planovi zadržavaju stari prikaz.
+
+Nezavisne provere: `phase1.regression.test.ts`, `cruise.test.ts`, `assess.test.ts`,
+session UI, postojeće strukturne i fiziološke invarijante. Onboarding oracle
+zadržava kalendar/validaciju, ali sada izričito proverava trenutnu formu umesto
+stare VDOT rampe. Osveženi generator fingerprint/differential i D6 izlazi
+onboarding/replan prate pregledane namerne promene; nisu dokaz kvaliteta plana.
+
+Obuhvat, dokazi, ograničenja i nastavak: [GENERATOR_PHASE1_CHECKPOINT.md](GENERATOR_PHASE1_CHECKPOINT.md).

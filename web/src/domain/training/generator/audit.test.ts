@@ -25,9 +25,9 @@ function plan(over: Partial<PlanGenerationInput> = {}, weeks = 16): TrainingPlan
 }
 
 describe('Audit: current fitness, readiness and independently bounded workouts', () => {
-  it('a projected improvement never accelerates prescribed I/T/R paces', () => {
+  it('current-fitness reference never accelerates prescribed I/T/R paces', () => {
     const p = plan();
-    expect(p.meta.vdotGoal).toBeGreaterThan(p.meta.vdot0);
+    expect(p.meta.vdotGoal).toBe(p.meta.vdot0);
     for (const w of p.weeks.slice(0, -1))
       for (const d of w.days) {
         const s = d.session;

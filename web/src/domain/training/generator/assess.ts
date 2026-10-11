@@ -1,27 +1,26 @@
 import { r1 } from '../../format';
-import { RAMP_CAP_WEEKS, VDOT_RAMP_PER_WEEK } from '../constants/heuristics';
 import type { Assessment, Intensity, PersonalBest } from '../types';
 import { vdotFromRace } from '../vdot/calculateVDOT';
 import { raceTimeForVdot } from '../vdot/racePrediction';
 
 /**
- * Procena: polazni VDOT iz PB-a, projektovani VDOT na dan trke
- * (`vdot0 + rampa × min(nedelje−2, 20)`), predviđeno vreme i — ako je cilj
- * zadat — da li je realan (tolerancija zaokruživanja 0,3 VDOT).
+ * Reference equivalent at current confirmed fitness, not a race-day promise.
+ * Legacy argument/field names remain for stored plans and callers. Neither weeks
+ * nor an intensity preference supplies evidence of an improvement in fitness.
  */
 export function assess(
   pb: PersonalBest,
-  weeks: number,
-  intensity: Intensity,
+  _weeks: number,
+  _intensity: Intensity,
   goalSec: number | null,
   raceDistM: number
 ): Assessment {
   const dist = raceDistM || 5000;
   const vdot0 = vdotFromRace(pb.distM, pb.sec);
-  const rampW = Math.min(Math.max(weeks - 2, 1), RAMP_CAP_WEEKS);
-  const vdotGoal = vdot0 + VDOT_RAMP_PER_WEEK[intensity] * rampW;
+  const vdotGoal = vdot0;
   const predictedSec = raceTimeForVdot(vdotGoal, dist);
   const out: Assessment = {
+    assessmentBasis: 'current-fitness',
     vdot0: r1(vdot0),
     vdotGoal: r1(vdotGoal),
     predictedSec,

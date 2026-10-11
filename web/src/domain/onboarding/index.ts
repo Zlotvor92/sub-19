@@ -40,7 +40,7 @@ export interface WizardState {
   lrDow: number | null;
   lrDowManual: boolean;
   qDays: number[];
-  /** Tempo napretka FORME (rast VDOT-a). */
+  /** Legacy preference retained in stored inputs; no assumed fitness improvement. */
   intensity: Intensity;
   /** Tempo rasta OBIMA (nedeljni koraci) — poseban izbor od `intensity`. */
   volIntensity: Intensity;
@@ -163,7 +163,7 @@ export type Outlook =
   | { short: true; weeks: number; minWeeks: number; name: string }
   | { short: false; rows: OutlookRow[]; weeks: number; name: string; goal: number | null };
 
-/** Predviđanje na dan trke za sva tri intenziteta — iste funkcije kao generator (`assess`), ne paralelna matematika. */
+/** Referenca trenutne forme; legacy rows stay compatible, but no assumed improvement. */
 export function outlook(w: WizardState, today: string): Outlook {
   const pbSec = pbTotalSec(w);
   const weeks = weeksToRace(w.raceDate, today);
@@ -187,42 +187,26 @@ export interface Verdict {
   rest: string;
 }
 
-/** Ocena ciljnog vremena naspram predviđanja. Isti tekstovi kao u starom kodu. */
+/** A desired target is compared with current fitness, not promised future gains. */
 export function goalVerdict(
   o: Extract<Outlook, { short: false }>,
   selected: Intensity
 ): Verdict | null {
   const goal = o.goal;
-  if (goal == null) return null;
-  const reach = o.rows.find((r) => r.sec <= goal);
-  const sel = o.rows.find((r) => r.k === selected);
-  const agr = o.rows[o.rows.length - 1];
-  if (!agr) return null;
-  if (!reach) {
-    const diff = agr.sec - goal;
+  const reference = o.rows.find((r) => r.k === selected) ?? o.rows[0];
+  if (goal == null || !reference) return null;
+  if (goal < reference.sec) {
     return {
-      tone: 'bad',
-      lead: `Cilj ${fmtClock(goal)} nije realan za ovaj plan.`,
-      rest: ` Brži je ${fmtClock(diff)} i od najagresivnijeg scenarija (${fmtClock(agr.sec)}). Realno bi tražio više nedelja ili veći nedeljni obim.`
+      tone: 'warn',
+      lead: `Cilj ${fmtClock(goal)} traži napredak u odnosu na trenutnu formu.`,
+      rest: ` Referentno vreme je ${fmtClock(reference.sec)}. Plan ne garantuje ovaj napredak; proveri formu novom trkom ili testom pre ubrzavanja.`
     };
   }
-  let lead: string;
-  let rest: string;
-  let tone: Verdict['tone'] = 'good';
-  if (reach.k === o.rows[0]?.k) {
-    lead = `Cilj ${fmtClock(goal)} je dostižan i najopreznijim pristupom`;
-    rest = ` (${fmtClock(reach.sec)}). Slobodno ciljaj brže.`;
-  } else if (reach.k === 'agr') {
-    tone = 'warn';
-    lead = `Cilj ${fmtClock(goal)} je na granici`;
-    rest = ` — dostiže ga samo Agresivno (${fmtClock(reach.sec)}), a to je realno uglavnom uz nizak trenažni staž ili paralelan gubitak telesne mase.`;
-  } else {
-    lead = `Cilj ${fmtClock(goal)} je realan`;
-    rest = ` — dostiže ga ${reach.label} (${fmtClock(reach.sec)}).`;
-  }
-  if (sel && sel.sec > goal)
-    rest += ` Trenutno je izabrano ${sel.label} (${fmtClock(sel.sec)}) — prebaci na ${reach.label}.`;
-  return { tone, lead, rest };
+  return {
+    tone: 'good',
+    lead: `Cilj ${fmtClock(goal)} je u okviru procene trenutne forme.`,
+    rest: ' Ovo je poređenje sa rezultatom, ne potvrda spremnosti za dužinu trke niti garancija ishoda.'
+  };
 }
 
 /** Pun ulaz generatora iz stanja čarobnjaka (`null` dok obavezna polja nisu popunjena). */

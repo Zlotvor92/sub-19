@@ -284,9 +284,7 @@ describe('generatePlan — trenerske invarijante', () => {
     const p = gen(
       baseInput({ pb: { distM: 5000, sec: 1500 }, goalSec: 900, raceDate: raceDateIn(8) })
     );
-    expect(p.meta.dayWarnings.some((t) => /iznad onoga što ovaj plan realno donosi/.test(t))).toBe(
-      true
-    );
+    expect(p.meta.dayWarnings.some((t) => /brže od reference trenutne forme/.test(t))).toBe(true);
   });
 });
 

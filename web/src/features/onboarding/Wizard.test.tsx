@@ -91,9 +91,9 @@ describe('čarobnjak', () => {
     render(<Wizard today={TODAY} />);
     await fill(user, { raceDate: '2026-04-12', min: '24', sec: '30', km: '30' });
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Koliko brzo da raste forma?'
+      'Kako da izgleda priprema?'
     );
-    // predviđanje za tri tempa napretka
+    // jedna referenca trenutne forme
     expect(
       within(document.getElementById('ob-outlook') as HTMLElement).getAllByText(/VDOT/).length
     ).toBeGreaterThan(0);
@@ -111,40 +111,41 @@ describe('čarobnjak', () => {
     expect(writes).toEqual(['now']);
   });
 
-  it('korak 4: tempo napretka i tempo rasta obima su ODVOJENI izbori; oba idu u ulaz plana', async () => {
+  it('korak 4: rast obima je dostupan bez izbora obećanog napretka forme', async () => {
     const user = userEvent.setup();
     render(<Wizard today={TODAY} />);
     await fill(user, { raceDate: '2026-04-12', min: '24', sec: '30', km: '30' });
     const vol = screen.getByRole('group', { name: 'Tempo rasta obima' });
-    // podrazumevano standardno, i NE prati izbor tempa napretka
     expect(within(vol).getByRole('button', { name: 'Standardno' })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
-    await user.click(screen.getByRole('button', { name: /^Agresivno Brz rast/ }));
-    expect(within(vol).getByRole('button', { name: 'Standardno' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
+    expect(screen.queryByText('Tempo napretka')).not.toBeInTheDocument();
+    expect(screen.getByText('Trenutna forma')).toBeInTheDocument();
     await user.click(within(vol).getByRole('button', { name: 'Konzervativno' }));
     await user.click(screen.getByRole('button', { name: 'Napravi plan' }));
     await waitFor(() => expect(collectPersisted().genPlan).not.toBeNull());
     expect(collectPersisted().genPlan?.ulaz).toMatchObject({
-      intensity: 'agr',
+      intensity: 'std',
       volIntensity: 'kons'
+    });
+    expect(collectPersisted().genPlan?.meta).toMatchObject({
+      assessmentBasis: 'current-fitness'
     });
   });
 
-  it('cilj koji nije realan se kaže; cilj koji jeste realan imenuje tempo napretka', async () => {
+  it('cilj se poredi sa trenutnom formom bez obećanja budućeg rezultata', async () => {
     const user = userEvent.setup();
     render(<Wizard today={TODAY} />);
     await fill(user, { raceDate: '2026-04-12', min: '24', sec: '30', km: '30' });
     await user.type(screen.getByLabelText('minuti', { selector: '#in-goalMin' }), '15');
     await user.type(screen.getByLabelText('sekunde', { selector: '#in-goalSec' }), '00');
-    expect(await screen.findByText(/nije realan za ovaj plan/)).toBeInTheDocument();
+    expect(await screen.findByText(/Cilj 15:00 traži napredak/)).toBeInTheDocument();
     await user.clear(screen.getByLabelText('minuti', { selector: '#in-goalMin' }));
     await user.type(screen.getByLabelText('minuti', { selector: '#in-goalMin' }), '26');
-    expect(await screen.findByText(/Cilj 26:00 je dostižan/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Cilj 26:00 je u okviru procene trenutne forme/)
+    ).toBeInTheDocument();
   });
 
   it('upozorenja generatora stižu posle kratke tišine (ne na svaki taster)', async () => {
