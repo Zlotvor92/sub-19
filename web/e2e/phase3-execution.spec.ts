@@ -74,6 +74,7 @@ test('potvrđen povratak: pregled, primena i vraćanje verzije preživljavaju re
   expect(state().genPlan?.planRevisions?.[1]?.reason).toBe('restore');
   expect(state().log).toEqual(logBeforeRestore);
   await page.reload();
+  await tab(page, 'Danas').click();
   await expect(page.locator('#tcard[data-status="done"]')).toContainText('Odrađeno · 6,2 km');
   await openDetails(page);
   await expect(page.getByLabel(/Distanca \(km\)/)).toHaveValue('6,2');

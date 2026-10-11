@@ -28,3 +28,5 @@ Ovo je agentska analiza prema javnim trenerskim principima i izvršivi QA; nije 
 ## Nastavak
 
 Pregledati i prihvatiti PR-ove redom #32 → #33 → faza 3. Produkciju ne menjati pre tog pregleda. Posle prihvatanja napraviti stvarne planove u test nalogu i sa trenerom oceniti kvalitetnu dozu, dugoročni rast i smer prilagođavanja; menjati pravila na osnovu tih nalaza, ne uvoditi obavezan šablon iste sesije za svaki profil.
+
+Prvi CI faze 3 (run 38147773277) prošao je backend, database, sve 1404 frontend provere i build; browser je imao 64 prolaza i dve test greške: stari literal šeme 11 pri izvozu i provera dnevne kartice bez prelaska na tab Danas posle reload-a. Ispravljene su obe provere; očekivanja očuvanog dnevnika nisu ublažena. Konačni ponovljeni CI je naveden u PR-u.
