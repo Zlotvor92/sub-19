@@ -46,6 +46,7 @@ Nezavisni agentski pregled svih nedelja pronašao je početničko povećanje T r
 - UI test pokriva nove podatke, nezavisne preference i čuvanje/rehidraciju; dodat je browser E2E sa ponovnim učitavanjem i prikazom pripreme.
 - Mreža 192 plana / 3.840 nedelja: bez grešaka generisanja, zbirova, broja kvaliteta i ponovnog kolapsa obima. Ulazi i sve metrike su u `grid.json`, uz digest pregledanog koda.
 - Problem M70/3d pon/sre/ned: poslednja radna nedelja 10,2 → 41,6 km uz prvu 40,9 km. Traženih 70 km nije obećano; status ostaje ograničen, LR 17,5 km.
+- Prvi CI pokušaj je stao samo na 5 s timeout-u velikog testa T budžeta (1.314 drugih testova prošlo). Taj test dobija 20 s; sve njegove provere i veličina mreže ostaju iste. CI se ponavlja posle ove ispravke.
 - Lokalni Chromium nije dostupan. Browser potvrda se izvršava kroz GitHub Actions po otvaranju draft PR-a; merodavan je status provera i zapis u njegovom opisu.
 
 Pregled baseline diff-a: svih 2.304 hash-a i nedeljnih km nizova menjaju se; 1.722 scenarija menja broj kvalitetnih sesija. VDOT reference ostaju iste u svim scenarijima.

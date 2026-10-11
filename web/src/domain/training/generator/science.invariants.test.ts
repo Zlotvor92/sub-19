@@ -211,7 +211,7 @@ describe('Danielsovi budžeti zona', () => {
         `${P.ime}: ${over}/${total} nedelja preko 11% praga`
       ).toBeLessThanOrEqual(0.05);
     }
-  });
+  }, 20_000); // The full generated-plan grid exceeds 5 s on slower CI runners.
 
   it('dugo trčanje ne pojede nedelju', () => {
     /* JOSPT: preko ~30% nedelje u jednom trčanju raste rizik povrede. Niskoobimni izuzetak do
