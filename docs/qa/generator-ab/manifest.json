@@ -1,0 +1,21 @@
+{
+  "lockedAt": "2026-10-11",
+  "oldCommit": "aea8dc66e5e6a9940ce48d63a94daace76be1297",
+  "newCommit": "f7bcbe99d135cd4c1e7b837d0369e8066c1b3baa",
+  "localRoots": {
+    "old": "/workspace/scratch/9da334c4750a/sub-19-qa-baseline",
+    "new": "/workspace/scratch/9da334c4750a/sub-19"
+  },
+  "blindPolicy": "Alternating A/B order, identity withheld until all four reports are frozen; shape may permit inference, no guarantee of perfect blinding",
+  "scope": "10 user agents + 4 independent specialist AI reviewers; no implementation changes during evaluation",
+  "rubric": {
+    "fit": 20,
+    "quality": 20,
+    "progression": 15,
+    "recovery": 15,
+    "specificity": 10,
+    "deloadTaper": 10,
+    "coherence": 10
+  },
+  "browserScope": "Real UI in isolated Playwright contexts with fake backend; not production or actual watch integration"
+}
