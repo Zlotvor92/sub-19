@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Section } from '../../components/ui/primitives';
 import { fmtDayMonth } from '../../domain/format';
 import type { ResolvedPlan } from '../../domain/plan';
+import type { RunWalkMode } from '../../domain/plan/runWalkAdjustment';
 import { getPlanRevisions } from '../../domain/plan/versions';
 import { useRecoveryStore, useTrainingStore } from '../../stores';
 import {
@@ -9,6 +10,9 @@ import {
   executionModel,
   previewExecution,
   previewRestore,
+  previewRunWalk,
+  qualityGateModel,
+  runWalkModel,
   type PlanChangePreview
 } from '../../stores/executionActions';
 
@@ -21,7 +25,10 @@ export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today
   useRecoveryStore((s) => s.vanPlana);
   const { analysis, recommendation } = executionModel(plan, today);
   const revisions = useMemo(() => getPlanRevisions(training.genPlan), [training.genPlan]);
-  const [mode, setMode] = useState<'reduce' | 'return'>('reduce');
+  const runWalk = runWalkModel(plan, today);
+  const gate = qualityGateModel(plan, today);
+  const [mode, setMode] = useState<'reduce' | 'return' | 'runwalk'>('reduce');
+  const [rwMode, setRwMode] = useState<RunWalkMode>('hold');
   const [pauseConfirmed, setPauseConfirmed] = useState(false);
   const [breakDays, setBreakDays] = useState('7');
   const [weeklyKm, setWeeklyKm] = useState('');
@@ -47,6 +54,10 @@ export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today
     setPreview(result);
   };
   const reviewExecution = (): void => {
+    if (mode === 'runwalk') {
+      showPreview(previewRunWalk(plan, today, { mode: rwMode }));
+      return;
+    }
     if (mode === 'return' && !pauseConfirmed) {
       setError('Potvrdi da si zaista pravio pauzu. Nedostatak unosa to ne potvrđuje.');
       return;
@@ -99,21 +110,65 @@ export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today
             {reason}
           </p>
         ))}
+        {runWalk.decision !== 'not-applicable' ? (
+          <>
+            <p className="prop-m">Trčanje/hod: {runWalk.advice}</p>
+            {runWalk.reasons.map((reason) => (
+              <p className="note-src" key={reason}>
+                {reason}
+              </p>
+            ))}
+          </>
+        ) : null}
+        {gate ? (
+          <>
+            <p className="prop-m">
+              {gate.open
+                ? 'Forma je potvrđena i uslovi su ispunjeni: zahtevniji rad je opravdan.'
+                : 'Forma nije potvrđena: zahtevniji rad čeka ispunjene uslove, a do tada napor vodi.'}
+            </p>
+            {[...gate.unmet, ...gate.unknown].map((item) => (
+              <p className="note-src" key={item}>
+                {item}
+              </p>
+            ))}
+          </>
+        ) : null}
         <div className="f-field full alt-block">
           <label htmlFor="execution-mode">Šta želiš da prilagodiš?</label>
           <select
             id="execution-mode"
             value={mode}
             onChange={(e) => {
-              setMode(e.target.value as 'reduce' | 'return');
+              setMode(e.target.value as 'reduce' | 'return' | 'runwalk');
               setPauseConfirmed(false);
               resetPreview();
             }}
           >
             <option value="reduce">Opterećenje prema trenutnom obimu</option>
             <option value="return">Povratak posle potvrđene pauze</option>
+            {runWalk.decision !== 'not-applicable' ? (
+              <option value="runwalk">Ponovi ili zadrži trčanje/hod</option>
+            ) : null}
           </select>
         </div>
+        {mode === 'runwalk' ? (
+          <div className="f-field full alt-block">
+            <label htmlFor="execution-runwalk">Kako da produžim fazu?</label>
+            <select
+              id="execution-runwalk"
+              value={rwMode}
+              onChange={(e) => {
+                setRwMode(e.target.value as RunWalkMode);
+                resetPreview();
+              }}
+            >
+              <option value="hold">Zadrži trenutni korak još nedelju dana</option>
+              <option value="step-back">Vrati se jedan korak</option>
+              <option value="repeat-phase">Ponovi celu fazu od prvog koraka</option>
+            </select>
+          </div>
+        ) : null}
         {mode === 'return' ? (
           <>
             <div className="f-field full alt-block">
@@ -145,48 +200,52 @@ export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today
             </label>
           </>
         ) : null}
-        <div className="f-field full alt-block">
-          <label htmlFor="execution-weekly">
-            {mode === 'return'
-              ? 'Ponovljiva baza pre pauze (km/ned)'
-              : 'Trenutna odrađena baza (km/ned)'}
-          </label>
-          <input
-            id="execution-weekly"
-            type="number"
-            inputMode="decimal"
-            min="1"
-            step="0.1"
-            value={weeklyKm}
-            placeholder={recommendation.weeklyKm?.toString() ?? 'Unesi stvarni obim'}
-            onChange={(e) => {
-              setWeeklyKm(e.target.value);
-              resetPreview();
-            }}
-          />
-        </div>
-        <div className="f-field full alt-block">
-          <label htmlFor="execution-lr">
-            {mode === 'return'
-              ? 'Ponovljiva dužina pre pauze (km, opciono)'
-              : 'Nedavna ponovljiva dužina (km, opciono)'}
-          </label>
-          <input
-            id="execution-lr"
-            type="number"
-            inputMode="decimal"
-            min="1"
-            step="0.1"
-            value={longRunKm}
-            placeholder={
-              recommendation.recentLongRunKm?.toString() ?? 'Najduži redovno odrađeni trening'
-            }
-            onChange={(e) => {
-              setLongRunKm(e.target.value);
-              resetPreview();
-            }}
-          />
-        </div>
+        {mode === 'runwalk' ? null : (
+          <div className="f-field full alt-block">
+            <label htmlFor="execution-weekly">
+              {mode === 'return'
+                ? 'Ponovljiva baza pre pauze (km/ned)'
+                : 'Trenutna odrađena baza (km/ned)'}
+            </label>
+            <input
+              id="execution-weekly"
+              type="number"
+              inputMode="decimal"
+              min="1"
+              step="0.1"
+              value={weeklyKm}
+              placeholder={recommendation.weeklyKm?.toString() ?? 'Unesi stvarni obim'}
+              onChange={(e) => {
+                setWeeklyKm(e.target.value);
+                resetPreview();
+              }}
+            />
+          </div>
+        )}
+        {mode === 'runwalk' ? null : (
+          <div className="f-field full alt-block">
+            <label htmlFor="execution-lr">
+              {mode === 'return'
+                ? 'Ponovljiva dužina pre pauze (km, opciono)'
+                : 'Nedavna ponovljiva dužina (km, opciono)'}
+            </label>
+            <input
+              id="execution-lr"
+              type="number"
+              inputMode="decimal"
+              min="1"
+              step="0.1"
+              value={longRunKm}
+              placeholder={
+                recommendation.recentLongRunKm?.toString() ?? 'Najduži redovno odrađeni trening'
+              }
+              onChange={(e) => {
+                setLongRunKm(e.target.value);
+                resetPreview();
+              }}
+            />
+          </div>
+        )}
         <div className="btnrow start">
           <button type="button" className="btn ghost" onClick={reviewExecution}>
             Pregledaj predlog

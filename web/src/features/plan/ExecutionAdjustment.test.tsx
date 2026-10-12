@@ -14,13 +14,19 @@ const actions = vi.hoisted(() => ({
   model: vi.fn(),
   preview: vi.fn(),
   restore: vi.fn(),
-  commit: vi.fn()
+  commit: vi.fn(),
+  runWalk: vi.fn(),
+  runWalkPreview: vi.fn(),
+  gate: vi.fn()
 }));
 vi.mock('../../stores/executionActions', () => ({
   executionModel: actions.model,
   previewExecution: actions.preview,
   previewRestore: actions.restore,
-  commitPlanChange: actions.commit
+  commitPlanChange: actions.commit,
+  runWalkModel: actions.runWalk,
+  previewRunWalk: actions.runWalkPreview,
+  qualityGateModel: actions.gate
 }));
 
 const today = '2026-01-14';
@@ -56,7 +62,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   hydratePersisted({ ...seedState(), genPlan: structuredClone(stored) });
   actions.model.mockReturnValue({ analysis, recommendation: recommendExecution(analysis) });
+  actions.runWalk.mockReturnValue({ decision: 'not-applicable', reasons: [], advice: null });
+  actions.gate.mockReturnValue(null);
   actions.preview.mockReturnValue(ready());
+  actions.runWalkPreview.mockReturnValue(ready());
   actions.restore.mockReturnValue({ ...ready(), reason: 'restore' });
   actions.commit.mockReturnValue({ ok: true });
 });
@@ -176,5 +185,36 @@ describe('ExecutionAdjustment', () => {
     );
     expect(screen.getByText(/Preostali km i opterećenje/)).toHaveTextContent('dane posle danas');
     expect(actions.commit).not.toHaveBeenCalled();
+  });
+
+  it('trčanje/hod: prikazuje procenu tolerancije i šalje izabrani režim bez unosa baze', async () => {
+    const user = userEvent.setup();
+    actions.runWalk.mockReturnValue({
+      decision: 'hold',
+      reasons: ['1 trčanja uz napor 7+/10 ili bol 4+/10.'],
+      advice: 'Zadrži korak „5 min trčanja / 1 min hoda" još nedelju dana pre prelaza.'
+    });
+    renderAdjustment();
+    expect(screen.getByText(/Trčanje\/hod: Zadrži korak/)).toBeInTheDocument();
+    expect(screen.getByText(/uz napor 7\+\/10/)).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText('Šta želiš da prilagodiš?'), 'runwalk');
+    expect(screen.queryByLabelText('Trenutna odrađena baza (km/ned)')).toBeNull();
+    await user.selectOptions(screen.getByLabelText('Kako da produžim fazu?'), 'step-back');
+    await user.click(screen.getByRole('button', { name: 'Pregledaj predlog' }));
+    expect(actions.runWalkPreview).toHaveBeenCalledWith(plan, today, { mode: 'step-back' });
+    expect(actions.preview).not.toHaveBeenCalled();
+  });
+
+  it('bez run/walk faze nema te opcije; nepotvrđena forma prikazuje nezadovoljene uslove', () => {
+    actions.gate.mockReturnValue({
+      open: false,
+      met: [],
+      unmet: ['Forma potvrđena merenjem u poslednjih 90 dana — do tada napor vodi.'],
+      unknown: []
+    });
+    renderAdjustment();
+    expect(screen.queryByRole('option', { name: 'Ponovi ili zadrži trčanje/hod' })).toBeNull();
+    expect(screen.getByText(/Forma nije potvrđena: zahtevniji rad čeka/)).toBeInTheDocument();
+    expect(screen.getByText(/Forma potvrđena merenjem u poslednjih 90 dana/)).toBeInTheDocument();
   });
 });

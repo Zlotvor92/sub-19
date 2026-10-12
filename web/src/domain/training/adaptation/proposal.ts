@@ -24,6 +24,7 @@ import { sessDesc, sessKm } from '../sessions/calc';
 import type { PlanMeta, Session, Zone } from '../types';
 import { vdotFromRace } from '../vdot/calculateVDOT';
 import { paceForZone } from '../vdot/paceForZone';
+import { isReferenceNote, referenceQualityNote } from '../generator/formPolicy';
 import { fitnessEvidence } from './evidence';
 import type { T3kRecord } from '../../state/types';
 import { dayZone, matchPlanRows, type StoredPredRow } from './matching';
@@ -247,6 +248,18 @@ function mapSession(
   return { genPlan: changed ? { ...genPlan, weeks } : genPlan, changed };
 }
 
+/** Ritam iz izmerene forme više nije referenca: nepotvrđena-forma napomena ne sme ostati u opisu. */
+function withoutReferenceNote(
+  session: Session,
+  basis: 'measured'
+): Pick<Session, 'paceBasis' | 'notes'> {
+  const notes = (session.notes ?? '')
+    .split(' · ')
+    .filter((part) => part && !isReferenceNote(part))
+    .join(' · ');
+  return { paceBasis: basis, notes: notes || undefined };
+}
+
 /**
  * Prepisuje `paceSec` u izvoru istine za generisan plan i preračunava opis/km iz sesije — ISTO što radi
  * ručna izmena, ali BEZ postavljanja `overrides`: ovo je prilagođavanje formi, ne ručno zaključavanje.
@@ -258,7 +271,8 @@ export function refreshSessionPace(genPlan: GenPlanState, id: string, paceSec: n
     const session: Session = {
       ...d.session,
       paceSec0: d.session.paceSec0 ?? d.session.paceSec,
-      paceSec
+      paceSec,
+      ...(d.session.paceBasis === 'reference' ? withoutReferenceNote(d.session, 'measured') : {})
     };
     return { ...d, session, km: sessKm(session), desc: sessDesc(session) };
   });
@@ -270,6 +284,10 @@ export function restoreSessionPace(genPlan: GenPlanState, id: string) {
     if (d.session.paceSec0 == null) return null;
     const { paceSec0, ...rest } = d.session;
     const session = { ...rest, paceSec: paceSec0 } as Session;
+    if (rest.paceBasis === 'measured') {
+      session.paceBasis = 'reference';
+      session.notes = [session.notes, referenceQualityNote(session)].filter(Boolean).join(' · ');
+    }
     return { ...d, session, km: sessKm(session), desc: sessDesc(session) };
   });
 }

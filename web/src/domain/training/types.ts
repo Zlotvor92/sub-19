@@ -28,6 +28,24 @@ export interface AthleteAssessment {
   assumptions: string[];
 }
 
+/** Koliko se istorijska referenca brzine sme koristiti za propisivanje rada. */
+export interface FormPolicy {
+  /** `effort-first`: napor vodi, ritam je samo orijentir iz starog rezultata. */
+  basis: 'confirmed' | 'effort-first';
+  reason: string;
+  /** Uslovi za uvođenje zahtevnijeg rada; prazno kad je forma potvrđena. */
+  entryConditions: string[];
+}
+
+/** Faza trčanja/hoda: koraci lestvice po nedelji i prelaz koji korisnik mora da potvrdi. */
+export interface RunWalkPhase {
+  /** Korak lestvice (1–4) za svaku nedelju faze, redom. */
+  ladder: number[];
+  /** Prva nedelja sa neprekidnim trčanjem; probna dok se tolerancija ne potvrdi. */
+  transitionWeek: number;
+  conditions: string[];
+}
+
 export interface PreparationAssessment {
   endurance: 'limited' | 'developing' | 'supported';
   goalStatus: 'needs-speed-improvement' | 'endurance-limited' | 'reference-only';
@@ -76,6 +94,8 @@ interface SessionBase {
   paceSec0?: number;
   zone?: Zone | 'RP';
   paceSource?: 'current-fitness' | 'race-specific';
+  /** `reference`: ritam iz neproverene reference (star rezultat/pauza), vodi se naporom. `measured`: prilagođen merenjem. */
+  paceBasis?: 'reference' | 'measured';
   /** Coaching instructions are not replaced when kilometres are recalculated. */
   notes?: string;
 }
@@ -224,6 +244,8 @@ export interface PlanMeta extends Assessment {
   /** Optional additions preserve reading of plans created before phase 2. */
   athlete?: AthleteAssessment;
   preparation?: PreparationAssessment;
+  formPolicy?: FormPolicy;
+  runWalk?: RunWalkPhase;
   /** New plans prescribe current fitness. Older plans may retain projected vdotGoal. */
   trainingVdot?: number;
   start: IsoDate;
@@ -292,6 +314,11 @@ export interface PlanGenerationInput {
   goalSec?: number | null;
   /** Samo `false` znači „početnik"; izostavljeno = treniran. */
   trainedRecently?: boolean;
+  /**
+   * Koraci lestvice trčanje/hod (1–4) po nedelji početničke faze, npr. `[3, 3, 4]` = zadrži korak 3 dve nedelje.
+   * Izostavljeno = standardna lestvica 1→4. Samo za početnike.
+   */
+  runWalkLadder?: number[];
   /** Dan dugog trčanja 1–7 (podrazumevano 7). */
   lrDow?: number;
   qDows?: number[];

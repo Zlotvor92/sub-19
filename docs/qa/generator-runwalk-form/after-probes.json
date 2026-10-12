@@ -1,0 +1,303 @@
+{
+ "U01": {
+  "input": {
+   "startDate": "2026-10-12",
+   "raceDate": "2027-01-03",
+   "raceDistM": 5000,
+   "pb": {
+    "distM": 5000,
+    "sec": 2100,
+    "date": "2026-09-13"
+   },
+   "weeklyKm": 8,
+   "recentLongRunKm": 3,
+   "consistentWeeks": 0,
+   "breakWeeks": 0,
+   "qualityExperience": "none",
+   "runDays": 3,
+   "quality": 1,
+   "intensity": "kons",
+   "volIntensity": "kons",
+   "trainedRecently": false,
+   "goalSec": 1800,
+   "lrDow": 7
+  },
+  "warnings": [
+   "Ciljno vreme 30:00 je brže od reference trenutne forme (35:00). To ne procenjuje napredak do dana trke ni izdržljivost za ciljnu distancu. Tempo treninga ostaje vezan za potvrđenu formu. Cilj je sačuvan kao želja; proveri napredak novom trkom ili testom pre ubrzavanja.",
+   "Trčanje/hod traje 4 nedelje. Prelaz na neprekidno trčanje u 5. nedelji nije automatska potvrda tolerancije: potvrdi je naporom do 5/10 i odsustvom bola, inače ponovi poslednji korak. Prazan dnevnik ne znači ni uspeh ni neuspeh.",
+   "Vrhunac plana je oko 12 km/ned, a za 5K se orijentaciono računa sa ~30 km/ned. Rast je namerno postupan (od tvojih 8 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+   "Isporučeni vrhunac 12.4 km/ned je ispod okvirne baze za pun vremenski pristup (30 km/ned).",
+   "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a."
+  ],
+  "formPolicy": null,
+  "runWalk": {
+   "ladder": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "transitionWeek": 5,
+   "conditions": [
+    "sva run/walk trčanja poslednjeg koraka završena uz napor do 5/10",
+    "nema zapisa bola 3/10 ili jačeg uz ta trčanja",
+    "bar tri trčanja imaju upisan napor; prazan dnevnik ostaje nepoznat podatak"
+   ]
+  },
+  "weeks": [
+   {
+    "w": 1,
+    "focus": "Baza — aerobni obim, bez kvaliteta",
+    "days": [
+     "1:rw:2.4:2.4 km — 1 min trčanje / 1 min hod",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:rw:2:2 km — 1 min trčanje / 1 min hod",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:rw:2.9:2.9 km — 1 min trčanje / 1 min hod, najduže trčanje te nedelje"
+    ]
+   },
+   {
+    "w": 2,
+    "focus": "Baza — aerobni obim, bez kvaliteta",
+    "days": [
+     "1:rw:2.4:2.4 km — 2 min trčanje / 1 min hod",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:rw:2.3:2.3 km — 2 min trčanje / 1 min hod",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:rw:3:3 km — 2 min trčanje / 1 min hod, najduže trčanje te nedelje"
+    ]
+   },
+   {
+    "w": 3,
+    "focus": "Baza — aerobni obim, bez kvaliteta",
+    "days": [
+     "1:rw:2.6:2.6 km — 3 min trčanje / 1 min hod",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:rw:2.6:2.6 km — 3 min trčanje / 1 min hod",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:rw:3.1:3.1 km — 3 min trčanje / 1 min hod, najduže trčanje te nedelje"
+    ]
+   },
+   {
+    "w": 4,
+    "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+    "days": [
+     "1:rw:1.9:1.9 km — 5 min trčanje / 1 min hod",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:rw:1.9:1.9 km — 5 min trčanje / 1 min hod",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:rw:2.3:2.3 km — 5 min trčanje / 1 min hod, najduže trčanje te nedelje"
+    ]
+   },
+   {
+    "w": 5,
+    "focus": "Baza — aerobni obim, bez kvaliteta",
+    "days": [
+     "1:lako:2.9:2.9 km lako (Z2) @ ~8:38/km · Prelaz na neprekidno trčanje je probni: radi ga samo ako su poslednja run/walk trčanja bila razgovorna (napor do 5/10) i bez bola. Ako nisu, ponovi korak „5 min trčanja / 1 min hoda\" i prilagodi plan u kartici „Prema odrađenim treninzima\"",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:lako:2.9:2.9 km lako (Z2) @ ~8:38/km · Prelaz na neprekidno trčanje je probni: radi ga samo ako su poslednja run/walk trčanja bila razgovorna (napor do 5/10) i bez bola. Ako nisu, ponovi korak „5 min trčanja / 1 min hoda\" i prilagodi plan u kartici „Prema odrađenim treninzima\"",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:3.5:3.5 km lako-dugo (Z2) @ ~8:49/km — bazna faza, bez kvaliteta · Prelaz na neprekidno trčanje je probni: radi ga samo ako su poslednja run/walk trčanja bila razgovorna (napor do 5/10) i bez bola. Ako nisu, ponovi korak „5 min trčanja / 1 min hoda\" i prilagodi plan u kartici „Prema odrađenim treninzima\""
+    ]
+   },
+   {
+    "w": 6,
+    "focus": "Baza — aerobni obim, bez kvaliteta",
+    "days": [
+     "1:lako:2.8:2.8 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:lako:3:3 km lako (Z2) @ ~8:38/km",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:3.8:3.8 km lako-dugo (Z2) @ ~8:49/km — bazna faza, bez kvaliteta"
+    ]
+   },
+   {
+    "w": 7,
+    "focus": "Fartlek",
+    "days": [
+     "1:lako:3:3 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:int:3.9:Fartlek — 1.3 km zagrevanje + 6×30 s brzo @ ~7:15/km (90 s laganog trčanja) + 1.1 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak.",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:4.1:4.1 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+    ]
+   },
+   {
+    "w": 8,
+    "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+    "days": [
+     "1:lako:2.5:2.5 km lako (Z2) @ ~8:38/km + 4×15 s ubrzanja (lagani ubrzani koraci)",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:lako:2.5:2.5 km lako (Z2) @ ~8:38/km",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:3:3 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+    ]
+   }
+  ]
+ },
+ "U06": {
+  "input": {
+   "startDate": "2026-10-12",
+   "raceDate": "2027-01-31",
+   "raceDistM": 10000,
+   "pb": {
+    "distM": 5000,
+    "sec": 1620,
+    "date": "2025-10-12"
+   },
+   "weeklyKm": 15,
+   "recentLongRunKm": 4,
+   "consistentWeeks": 1,
+   "breakWeeks": 8,
+   "qualityExperience": "some",
+   "runDays": 3,
+   "quality": 1,
+   "intensity": "std",
+   "volIntensity": "kons",
+   "trainedRecently": false,
+   "goalSec": 3600,
+   "lrDow": 7
+  },
+  "warnings": [
+   "Posle pauze od 8 nedelja plan počinje sa 3 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+   "Posle pauze od 8 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+   "Tražio si 15 km/ned, a plan prve nedelje daje oko 10 km. Prva nedelja ima 0 kvalitetnih treninga. Početna ponovljiva dužina i raspored ograničavaju raspodelu obima. Proveri prijavljeni nedeljni obim i ponovljivu dužinu; dodatni dan može pomoći raspodeli, ali ne zamenjuje postojeću bazu.",
+   "Vrhunac plana je oko 18 km/ned, a za 10K se orijentaciono računa sa ~40 km/ned. Rast je namerno postupan (od tvojih 15 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+   "Isporučeni vrhunac 18.2 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+   "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+   "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+  ],
+  "formPolicy": {
+   "basis": "effort-first",
+   "reason": "Posle pauze od 8 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma.",
+   "entryConditions": [
+    "poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg",
+    "u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim",
+    "tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir"
+   ]
+  },
+  "runWalk": null,
+  "weeks": [
+   {
+    "w": 1,
+    "focus": "Baza — aerobni obim, bez kvaliteta",
+    "days": [
+     "1:lako:3.2:3.2 km lako (Z2) @ ~6:47/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:lako:3:3 km lako (Z2) @ ~6:47/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:4:4 km lako-dugo (Z2) @ ~6:57/km — bazna faza, bez kvaliteta · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći"
+    ]
+   },
+   {
+    "w": 2,
+    "focus": "Baza — aerobni obim, bez kvaliteta",
+    "days": [
+     "1:lako:3.2:3.2 km lako (Z2) @ ~6:47/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:lako:3:3 km lako (Z2) @ ~6:47/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:4.2:4.2 km lako-dugo (Z2) @ ~6:57/km — bazna faza, bez kvaliteta · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći"
+    ]
+   },
+   {
+    "w": 3,
+    "focus": "Baza — aerobni obim, bez kvaliteta",
+    "days": [
+     "1:lako:3.4:3.4 km lako (Z2) @ ~6:47/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:lako:3:3 km lako (Z2) @ ~6:47/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:4.4:4.4 km lako-dugo (Z2) @ ~6:57/km — bazna faza, bez kvaliteta · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći"
+    ]
+   },
+   {
+    "w": 4,
+    "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+    "days": [
+     "1:lako:2.5:2.5 km lako (Z2) @ ~6:47/km + 4×15 s ubrzanja (lagani ubrzani koraci) · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:lako:2.4:2.4 km lako (Z2) @ ~6:47/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:3.2:3.2 km LR (Z2) @ ~6:57/km — najduže trčanje te nedelje · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći"
+    ]
+   },
+   {
+    "w": 5,
+    "focus": "Fartlek",
+    "days": [
+     "1:lako:3.7:3.7 km lako (Z2) @ ~6:47/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak) · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:int:4.4:Fartlek — 1.6 km zagrevanje + 4×45 s brzo @ ~5:40/km (90 s laganog trčanja) + 1.4 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 7/10 (prijatno teško, kratke rečenice). Ritam ~5:40/km je referenca iz starog rezultata, ne zahtev · Uvodi se tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:4.6:4.6 km LR (Z2) @ ~6:57/km — najduže trčanje te nedelje · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći"
+    ]
+   },
+   {
+    "w": 6,
+    "focus": "Fartlek",
+    "days": [
+     "1:lako:3.7:3.7 km lako (Z2) @ ~6:47/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak) · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:int:4.6:Fartlek — 1.8 km zagrevanje + 3×60 s brzo @ ~5:40/km (90 s laganog trčanja) + 1.6 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 7/10 (prijatno teško, kratke rečenice). Ritam ~5:40/km je referenca iz starog rezultata, ne zahtev",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:4.8:4.8 km LR (Z2) @ ~6:57/km — najduže trčanje te nedelje · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći"
+    ]
+   },
+   {
+    "w": 7,
+    "focus": "Fartlek",
+    "days": [
+     "1:lako:3.8:3.8 km lako (Z2) @ ~6:47/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak) · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:int:4.7:Fartlek — 1.4 km zagrevanje + 3×90 s brzo @ ~5:07/km (90 s laganog trčanja) + 1.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 7/10 (prijatno teško, kratke rečenice). Ritam ~5:07/km je referenca iz starog rezultata, ne zahtev",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:5:5 km LR (Z2) @ ~6:57/km — najduže trčanje te nedelje · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći"
+    ]
+   },
+   {
+    "w": 8,
+    "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+    "days": [
+     "1:lako:3.2:3.2 km lako (Z2) @ ~6:47/km + 4×15 s ubrzanja (lagani ubrzani koraci) · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "2:snaga::Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+     "3:lako:3:3 km lako (Z2) @ ~6:47/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+     "4:rest::null",
+     "5:rest::null",
+     "6:rest::null",
+     "7:lr:4:4 km LR (Z2) @ ~6:57/km — najduže trčanje te nedelje · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći"
+    ]
+   }
+  ]
+ }
+}

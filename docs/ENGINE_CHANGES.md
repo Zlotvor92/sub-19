@@ -184,3 +184,16 @@ Baza: `4b2f647d4aeb4555f1370c636d761d8115df7848` (faza 1). Kriterijumi i potpuni
 | Referenca PB bez vidljive konačne pripreme | Kratak rezultat ne potvrđuje maratonsku izdržljivost | Preparation status, konačni LR/obim i lokalno ograničenje na kartici trke | `phase2.regression`, čuvanje/adaptacija i UI/E2E |
 
 Pregledani namerni baseline diff: 2.304/2.304 hash-a i nedeljna km niza se menjaju; 1.722 scenarija menja broj kvalitetnih sesija. `vdot0` i `vdotGoal` ostaju identični u svim scenarijima. Četiri zamrznuta generator/warnings/replan baseline-a osvežena su posle nezavisnih provera. To čuva stabilnost nove implementacije i ne daje trenersko odobrenje 2.304 scenarija.
+
+
+## Generator: run/walk prelaz i nepouzdana forma (2026-10-12)
+
+Baza: `f8cb2081ed4ba223fe7efe14a621144beb9bce0d` (zaključani QA commit, već sadrži popravke faza 1–3). Dokazi: [GENERATOR_RUNWALK_FORM_CHECKPOINT.md](GENERATOR_RUNWALK_FORM_CHECKPOINT.md), `qa/generator-runwalk-form/`.
+
+| Staro ponašanje | Problem | Novo ponašanje | Provera |
+| --- | --- | --- | --- |
+| Posle 4 nedelje run/walk lestvice početnik automatski prelazi na neprekidno trčanje (U01, W5) | Tolerancija nije potvrđena; nema načina da se faza ponovi ili zadrži | Prva neprekidna nedelja je probna, bez ubrzanja, sa uslovom i rezervom; `runWalkLadder` ulaz i `buildRunWalkAdjustment` zadržavaju/vraćaju/ponavljaju fazu; `assessRunWalkProgress` odlučuje iz napora (`rpe`), bola (`knee`) i preskočenih; prazan dnevnik je „nepoznato" | `runWalkAndForm.regression`, `runWalkProgress`, `runWalkAdjustment` |
+| Povratnik/star PB (U06) dobija precizne ritmove i ubrzanja kao potvrđenu formu | Istorijska referenca se predstavlja kao spremnost | `meta.formPolicy` (`effort-first`) za `returning` i `stale-result`: laki rad ima napor 3–4/10 i ritam kao gornju granicu; kvalitet nosi `paceBasis: 'reference'`, napor i uslove; bez ubrzanja u bazi; `qualityEntryGate` proverava uslove; merenje (`refreshSessionPace`) uklanja napomenu | `runWalkAndForm.regression`, `qualityGate`, `referenceNote`, `ExecutionAdjustment` |
+
+Fixture promene (namerne, samo beginner scenariji): `otisak-generatora.json` 1.152/2.304 hash-eva (nedeljni km i broj kvaliteta nepromenjeni, 0 razlika u `pregled`), `generator-differential.json`, `d6-warnings.json`, `d6-replan.json` (reentry plan je početnički). Hash-evi bez početnika su nepromenjeni.
+
