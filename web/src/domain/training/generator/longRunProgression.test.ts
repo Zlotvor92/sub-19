@@ -157,22 +157,27 @@ describe('HM q1 when a hard LR finish replaces q2', () => {
     ctx: { weeks: 20, w: 13, taperW: 2 }
   };
 
-  it('restores q1 threshold allocation while preserving its original training family', () => {
-    const split = PROFILE_21K.buildQuality(req);
-    const rebuilt = PROFILE_21K.buildQuality({ ...req, replacesSecondQuality: true });
-    expect(rebuilt.session.kind).toBe(split.session.kind);
-    expect(rebuilt.session.zone).toBe(split.session.zone);
-    expect(rebuilt.session.type).toBe(split.session.type);
-    expect(sessQKm(rebuilt.session)).toBeGreaterThan(sessQKm(split.session));
+  // Behaviour change (HM progression): HM no longer splits one weekly T budget 60/40, so
+  // there is no "restored allocation". A race-pace LR finish makes the LR the HM-rhythm day:
+  // the remaining q1 is threshold, never a second RP session.
+  it('an LR race-pace finish turns the remaining q1 into threshold work', () => {
+    const normal = PROFILE_21K.buildQuality(req);
+    expect(normal.session).toMatchObject({ kind: 'Tempo trke', zone: 'RP' });
+    const rebuilt = PROFILE_21K.buildQuality({
+      ...req,
+      replacesSecondQuality: true,
+      lrFinish: true
+    });
+    expect(rebuilt.session).toMatchObject({ kind: 'Tempo isprekidan', zone: 'T' });
     expect(sessQKm(rebuilt.session)).toBeLessThanOrEqual(req.vol * 0.1);
   });
 
-  it('preserves a non-threshold q1 instead of switching it to the one-quality menu', () => {
-    const intervalReq = { ...req, qualW: 9 };
-    const normal = PROFILE_21K.buildQuality(intervalReq);
-    const rebuilt = PROFILE_21K.buildQuality({ ...intervalReq, replacesSecondQuality: true });
-    expect(rebuilt).toEqual(normal);
-    expect(ZONE_FOR_KIND[rebuilt.session.kind]).toBe('I');
+  it('one quality day without a finish alternates HM rhythm and threshold', () => {
+    const zones = [11, 12].map(
+      (qualW) =>
+        PROFILE_21K.buildQuality({ ...req, qualW, replacesSecondQuality: true }).session.zone
+    );
+    expect(zones).toEqual(['RP', 'T']);
   });
 
   it('prioritizes threshold for an experienced HM runner from the start', () => {

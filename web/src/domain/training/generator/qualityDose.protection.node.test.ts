@@ -90,7 +90,9 @@ describe('beginner, returning and developing protection is unchanged', () => {
 
 describe('experienced taper and race weeks keep their previous sessions', () => {
   /* SHA-256 of the taper + race week session days from docs/qa/session-purpose (38ecc08).
-     The experienced policy changes build weeks only; taper sessions stay identical. */
+     The experienced policy changes build weeks only; taper sessions stay identical.
+     HM (U08) is excluded since the HM progression segment: its taper is now derived from the
+     HM target doses (hmProgression.test.ts locks that taper's shape instead). */
   const EXPERIENCED: Record<string, { sha: string; input: PlanGenerationInput }> = {
     U03: {
       sha: '430d6a2f61b5',
@@ -118,21 +120,6 @@ describe('experienced taper and race weeks keep their previous sessions', () => 
         qualityExperience: 'experienced',
         runDays: 5,
         goalSec: 2520
-      }
-    },
-    U08: {
-      sha: 'af3d12f877ae',
-      input: {
-        ...QA_BASE,
-        raceDate: '2027-01-17',
-        raceDistM: 21097.5,
-        pb: { distM: 5000, sec: 1235, date: '2026-09-20' },
-        weeklyKm: 55,
-        recentLongRunKm: 16,
-        consistentWeeks: 24,
-        qualityExperience: 'experienced',
-        runDays: 5,
-        goalSec: 5700
       }
     },
     U10: {

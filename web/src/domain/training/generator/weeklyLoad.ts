@@ -42,11 +42,13 @@ export interface WeeklyEnvelopeInput {
   easyPaceSec: number;
   longRunKm: number;
   longRunPaceSec: number;
+  /** Distance-specific share; replaces the shared default when given. */
+  share?: number | undefined;
 }
 
 /** Infinity where the readiness level has no weekly envelope. */
 export function weeklyFastEnvelopeSec(x: WeeklyEnvelopeInput): number {
-  const share = WEEKLY_FAST_SHARE[x.readiness];
+  const share = x.share ?? WEEKLY_FAST_SHARE[x.readiness];
   if (share == null) return Infinity;
   const demanding = (x.longRunKm * x.longRunPaceSec) / 60 >= DEMANDING_LONG_RUN_MIN;
   return x.volKm * x.easyPaceSec * share * (demanding ? DEMANDING_LONG_RUN_FACTOR : 1);

@@ -106,8 +106,17 @@ describe('prescription purpose precedes dose and constraints', () => {
   });
 
   it('HM race progression is RP, while marathon progression is M', () => {
+    // HM race-specific work is built as RP blocks with jog recovery (hmProgression), not
+    // as a progression run; it must still carry RP purpose from construction.
     const hm = PROFILE_21K.buildQuality({ ...req, qualW: 13, slotRole: 'q1', racePace: 360 });
-    expect(hm.session).toMatchObject({ type: 'prog', purpose: 'RP', zone: 'RP', paceSec: 360 });
+    expect(hm.session).toMatchObject({
+      type: 'int',
+      kind: 'Tempo trke',
+      purpose: 'RP',
+      zone: 'RP',
+      paceSec: 360
+    });
+    expect(hm.session.type === 'int' && hm.session.restSec).toBeLessThanOrEqual(90);
     const marathon = PROFILE_42K.buildQuality({ ...req, qualW: 1, slotRole: 'q1', racePace: 360 });
     expect(marathon.session).toMatchObject({ type: 'prog', purpose: 'M', zone: 'M', paceSec: 360 });
   });

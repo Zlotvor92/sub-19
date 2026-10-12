@@ -464,6 +464,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       buildQualityWeek();
     }
 
+    if (!isRace) limitEasyAfterLongRun();
+
     /* IZRAVNAVANJE RASTA: ciljni niz poštuje korak, ali STVARNI zbir dana odstupa jer su
        kvalitetne sesije diskretne. Višak se seče SAMO sa laganih dana (kvalitet i LR se ne
        diraju), pod po danu se poštuje. Deload se meri prema STVARNO ISPORUČENOJ prethodnoj
@@ -790,6 +792,53 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       }
     }
 
+    /** Lak dan posle zahtevne duge (iste ili prethodne nedelje) je kraći; višak ide na lake dane
+     *  koji nisu uz dugu, do plafona lakog dana. U taperu se višak ne vraća (taper skida obim). */
+    function limitEasyAfterLongRun(): void {
+      const rule = H.easyAfterLongRun;
+      if (!rule) return;
+      const isMainLR = (d: Day): boolean => d.tag === 'lr' && !d.mlr;
+      const lrHere = days.find(isMainLR);
+      const prevW = plan.weeks.length ? at(plan.weeks, plan.weeks.length - 1) : null;
+      const prevSundayLR = prevW?.days.find((d) => d.dow === 7 && isMainLR(d));
+      const pairs: { lrKm: number; dow: number }[] = [];
+      if (lrHere && lrHere.dow < 7) pairs.push({ lrKm: kmOf(lrHere), dow: lrHere.dow + 1 });
+      if (prevSundayLR) pairs.push({ lrKm: kmOf(prevSundayLR), dow: 1 });
+      const neighbours = new Set(
+        lrHere ? [lrHere.dow - 1, lrHere.dow + 1].concat(lrHere.dow === 7 ? [1] : []) : []
+      );
+      const lrKm = lrHere ? kmOf(lrHere) : 0;
+      for (const pair of pairs) {
+        if ((pair.lrKm * pLR) / 60 < rule.demandingMin) continue;
+        const day = days.find((d): d is EasyRunDay => d.dow === pair.dow && d.tag === 'lako');
+        if (!day) continue;
+        const cap = Math.max(
+          perRunFloor(vol, runDays),
+          Math.floor(Math.min(pair.lrKm * rule.maxShare, (rule.maxMin * 60) / pE) * 10) / 10
+        );
+        let excess = r1(day.km - cap);
+        if (excess <= 0.05) continue;
+        day.km = cap;
+        renameKm(day);
+        if (isTaper1 || isTaper2) continue;
+        const ceiling = Math.min(14, r1(lrKm * 0.8));
+        const others = days.filter(
+          (d): d is EasyRunDay =>
+            d.tag === 'lako' &&
+            d !== day &&
+            !neighbours.has(d.dow) &&
+            !pairs.some((p) => p.dow === d.dow)
+        );
+        for (const other of others) {
+          const add = Math.min(excess, Math.max(0, ceiling - other.km));
+          if (add <= 0.05) continue;
+          other.km = r1(other.km + add);
+          renameKm(other);
+          excess = r1(excess - add);
+        }
+      }
+    }
+
     /** Među-nedeljno susedstvo: lak dan odmah posle LR-a prethodne nedelje ne sme biti skoro isti kao LR. */
     function capAfterLongRun(dow: number, km: number): number {
       if (dow === 1 && slots[7] === 'lr' && plan.weeks.length > 0) {
@@ -926,7 +975,19 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           prof.paceStrategy?.(racePace) ?? null,
           lrF
         );
-      if ((finishCandidate || hasTrial) && sessionList().length > 1) {
+      /* Profil može da zadrži jedan kvalitet uz zahtevnu dugu (HM prvi polumaraton na ≤ 4 dana). */
+      const singleQuality =
+        !finishCandidate &&
+        !isTaper1 &&
+        !isTaper2 &&
+        !isDeload &&
+        !hasTrial &&
+        !!prof.singleQualityWeek?.({
+          readiness: athlete.qualityReadiness,
+          runDays,
+          longRunMin: (alloc.lr * pLR) / 60
+        });
+      if ((finishCandidate || hasTrial || singleQuality) && sessionList().length > 1) {
         const second = Object.keys(sessions)
           .map(Number)
           .find((dow) => slots[dow] === 'q2');
@@ -936,15 +997,24 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           const first = Object.keys(sessions)
             .map(Number)
             .find((dow) => slots[dow] === 'q1');
-          if (first != null && finishCandidate) {
+          if (first != null && (finishCandidate || singleQuality)) {
             replacedSecond = true;
             sessions[first] = prof.buildQuality({
               ...requestFor(first, 'q1'),
-              replacesSecondQuality: true
+              replacesSecondQuality: true,
+              ...(finishCandidate ? { lrFinish: true } : {})
             });
           }
           alloc = allocFor();
         }
+      }
+
+      /* Jedini kvalitet uz brz završetak duge: profil zna da je duga već dan tempa trke. */
+      if (finishCandidate && !replacedSecond && sessionList().length === 1) {
+        const only = Number(Object.keys(sessions)[0]);
+        const role = slots[only] === 'q2' ? 'q2' : 'q1';
+        sessions[only] = prof.buildQuality({ ...requestFor(only, role), lrFinish: true });
+        alloc = allocFor();
       }
 
       /* NEDELJNI OBUHVAT BRZOG RADA: brz završetak dugog trčanja i zahtevna dužina ulaze u
@@ -958,11 +1028,12 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           volKm: volQ,
           easyPaceSec: pE,
           longRunKm: alloc.lr,
-          longRunPaceSec: pLR
+          longRunPaceSec: pLR,
+          share: prof.weeklyFastShare?.(athlete.qualityReadiness)
         });
         const finishSec = finishLoadSec(finishCandidate || null);
         const specific = (d: SessionDay): number =>
-          d.session.zone === 'RP' || d.session.zone === 'M' ? 1 : 0;
+          prof.trimPriority?.(d) ?? (d.session.zone === 'RP' || d.session.zone === 'M' ? 1 : 0);
         const order = Object.keys(sessions)
           .map(Number)
           .sort(
@@ -983,6 +1054,9 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
               ? prof.buildQuality({
                   ...requestFor(dow, role),
                   ...(role === 'q1' && replacedSecond ? { replacesSecondQuality: true } : {}),
+                  ...(finishCandidate && (replacedSecond || sessionList().length === 1)
+                    ? { lrFinish: true }
+                    : {}),
                   maxWorkSec: allowedLoad / weight
                 })
               : null;

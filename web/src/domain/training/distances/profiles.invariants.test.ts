@@ -20,6 +20,7 @@ import { generatePlan } from '../generator/generatePlan';
 import { longRunCap, peakVolume, rampStep } from '../generator/volume';
 import { wuCdForVolume } from '../sessions/build';
 import { constrainSession } from '../sessions/constraints';
+import { hmContinuousThreshold } from './hmProgression';
 import { DISTANCE_PROFILES, profileFor } from './index';
 
 const DISTANCES = [
@@ -103,6 +104,13 @@ describe('Ograničenje tempa dolazi iz JEDNOG izvora po distanci', () => {
       // Independently force the profile's unmodified factory into its upper
       // boundary. Omitting readiness isolates the distance limit from dosing.
       let factoryLongest = 0;
+      // HM continuous threshold is sized from target minutes (hmProgression); force its
+      // builder past the cap so the profile limit still has to bind.
+      if (d.m === 21097.5) {
+        const s = hmContinuousThreshold(4, 300, 120, cap, { track: 'performance', vol: 120 });
+        if (s?.session.type === 'tempo') factoryLongest = s.session.qKm * s.session.paceSec;
+        expect(factoryLongest).toBeLessThanOrEqual(cap + 0.06 * 300);
+      }
       for (let qualW = 1; qualW <= 20; qualW++) {
         const s = profile(d.m).buildQuality({
           qualW,
@@ -161,11 +169,15 @@ describe('Zajedničko ostaje zajedničko', () => {
           racePace: 290,
           ctx: { weeks: 20, w: 8, taperW: 1 }
         }).session;
-        return `${s.wuKm}/${s.cdKm}`;
+        return { wu: s.wuKm, cd: s.cdKm, jog: s.type !== 'int' || s.kind !== 'Intervali' };
       });
       const [wu, cd] = wuCdForVolume(vol);
-      expect(new Set(seen).size, `${vol} km/ned: ${seen.join(' ')}`).toBe(1);
-      expect(seen[0]).toBe(`${wu}/${Math.max(cd, 1)}`);
+      // Threshold/race-pace builders keep at least 1 km cool-down; shared I builders
+      // (here HM's q2 support session) use the unclamped value from the same function.
+      for (const x of seen) {
+        expect(x.wu, `${vol} km/ned`).toBe(wu);
+        expect(x.cd, `${vol} km/ned`).toBe(x.jog ? Math.max(cd, 1) : cd);
+      }
     }
   });
 });
@@ -244,8 +256,14 @@ describe('Oblik profila je zaključan — polje dodato u tri od četiri se vidi'
       '10K': { product: COMMON_PRODUCT, heuristic: COMMON_HEURISTIC, strategies: [] },
       HM: {
         product: [...COMMON_PRODUCT, 'recommendedMinRunDays'],
-        heuristic: [...COMMON_HEURISTIC, ...LONG, 'racePaceBudget'],
-        strategies: ['longRunFinish', 'paceStrategy']
+        heuristic: [...COMMON_HEURISTIC, ...LONG, 'racePaceBudget', 'easyAfterLongRun'],
+        strategies: [
+          'longRunFinish',
+          'paceStrategy',
+          'singleQualityWeek',
+          'trimPriority',
+          'weeklyFastShare'
+        ]
       },
       Maraton: {
         product: [...COMMON_PRODUCT, 'recommendedMinRunDays'],
@@ -263,7 +281,14 @@ describe('Oblik profila je zaključan — polje dodato u tri od četiri se vidi'
         strategies: string[];
       };
       const optionalStrategies = (
-        ['longRunCycle', 'longRunFinish', 'paceStrategy'] as const
+        [
+          'longRunCycle',
+          'longRunFinish',
+          'paceStrategy',
+          'singleQualityWeek',
+          'trimPriority',
+          'weeklyFastShare'
+        ] as const
       ).filter((k) => typeof p[k] === 'function');
       expect({
         product: Object.keys(p.product).sort(),

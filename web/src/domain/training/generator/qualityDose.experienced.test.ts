@@ -10,6 +10,7 @@ import type { PlanGenerationInput, TrainingPlan, Week } from '../types';
 import { paceForZone } from '../vdot/paceForZone';
 import { generatePlan } from './generatePlan';
 import { finishLoadSec, sessionLoadSec, weeklyFastEnvelopeSec } from './weeklyLoad';
+import { HM_WEEKLY_FAST_SHARE } from '../distances/hmProgression';
 
 /* Locked generator-ab QA inputs (docs/qa/generator-ab/inputs.json, commit f8cb208). */
 const QA_BASE = {
@@ -222,7 +223,9 @@ describe('weekly envelope counts LR fast finishes and demanding long runs', () =
           volKm: w.vol,
           easyPaceSec: paceForZone(v, 'E'),
           longRunKm: lr?.km ?? 0,
-          longRunPaceSec: paceForZone(v, 'LR')
+          longRunPaceSec: paceForZone(v, 'LR'),
+          // HM carries threshold + race-pace systems and has its own envelope share.
+          share: inp.raceDistM === 21097.5 ? HM_WEEKLY_FAST_SHARE.performance : undefined
         });
         const load = w.days.reduce(
           (n, d) => n + (d.session ? sessionLoadSec(d) : 0) + finishLoadSec(d.finish),

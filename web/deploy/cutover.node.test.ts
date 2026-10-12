@@ -63,7 +63,11 @@ describe('cutover konfiguracija', () => {
     const { git, ...productionConfig } = live;
     expect(productionConfig).toEqual(cutover);
     expect(git).toEqual({
-      deploymentEnabled: { 'fix/session-purpose': false, 'fix/quality-dose': false }
+      deploymentEnabled: {
+        'fix/session-purpose': false,
+        'fix/quality-dose': false,
+        'fix/hm-quality-progression': false
+      }
     });
     const ignore = readFileSync(join(ROOT, '.vercelignore'), 'utf8')
       .split('\n')

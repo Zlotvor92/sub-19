@@ -20,6 +20,8 @@ export interface QualityRequest {
   qualityIntensity?: Intensity;
   /** A demanding LR replaces q2; q1 keeps its family with a recalculated dose. */
   replacesSecondQuality?: boolean;
+  /** The week's long run carries a race-pace fast finish (it is the race-specific day). */
+  lrFinish?: boolean;
   /** Confirmed consecutive training weeks; refines the experienced starting dose. */
   consistentWeeks?: number | null;
   /** Fraction of the zone budget this session may use when two days share it (60/40). */
@@ -54,6 +56,14 @@ export interface ZoneBudgets {
   repetitionBudget: BudgetParams;
 }
 
+/** Week context for a profile's decision to keep one quality day beside the long run. */
+export interface SingleQualityContext {
+  readiness: QualityReadiness;
+  runDays: number;
+  /** Planned long-run duration [min]. */
+  longRunMin: number;
+}
+
 export interface LongRunCycleContext {
   weeks: number;
   baseWeeks: number;
@@ -82,6 +92,12 @@ export interface DistanceProfile {
     strategy: PaceStrategy | null,
     cycleFactor: number | null
   ): FastFinish | null;
+  /** A demanding long run leaves room for only one other quality day (HM first track). */
+  singleQualityWeek?(x: SingleQualityContext): boolean;
+  /** Weekly envelope trimming order: lower values are cut first (default: general before RP/M). */
+  trimPriority?(day: SessionDay): number;
+  /** Share of weekly running time allowed at T-or-faster; overrides the shared default. */
+  weeklyFastShare?(readiness: QualityReadiness): number | undefined;
   /** Faktor ciklusa dugog trčanja po nedelji (samo maraton). */
   longRunCycle?(w: number, ctx: LongRunCycleContext): number;
 }
