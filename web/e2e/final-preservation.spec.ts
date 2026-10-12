@@ -10,7 +10,7 @@ import { back, createPlan, logToday, openAdjust, TEN_K } from './support/flows';
  * Mock auth/backend: no live-service sync or watch-export claim; no plan/log/overlay injection. */
 test('return apply/reload/restore/reload preserves future alt, moved date, measured lock and actuals', async ({
   page
-}) => {
+}, info) => {
   test.setTimeout(120_000);
   await fixToday(page);
   await seedSession(page);
@@ -45,14 +45,12 @@ test('return apply/reload/restore/reload preserves future alt, moved date, measu
   };
   const futureWeek = resolved().weeks[1];
   const manualDay = futureWeek.days.find((d) => d.tag === 'lako' && !d.test);
-  const swapTarget = futureWeek.days.find(
-    (d) => d.tag === 'lako' && !d.test && d.id !== manualDay?.id
-  );
+  const swapTarget = futureWeek.days.find((d) => d.rest && !d.test && d.id !== manualDay?.id);
   const measuredDay = resolved().weeks[2].days.find(
     (d) => !!d.session && (d.tag === 'int' || d.tag === 'tempo') && !d.test
   );
   if (!manualDay || !swapTarget || !measuredDay)
-    throw new Error('Wizard must deliver two future easy slots and a quality session');
+    throw new Error('Wizard must deliver a future easy slot, rest slot and quality session');
   expect(manualDay.date > '2026-01-14').toBe(true);
   expect(measuredDay.date > '2026-01-14').toBe(true);
 
@@ -140,6 +138,14 @@ test('return apply/reload/restore/reload preserves future alt, moved date, measu
   await expect(preview.getByRole('heading', { name: 'Pregled promene' })).toBeVisible();
   expect(getPlanRevisions(plan())).toHaveLength(0);
   assertBaselineSurvives();
+  await info.attach('protected-before-apply', {
+    body: Buffer.from(JSON.stringify(baseline, null, 2)),
+    contentType: 'application/json'
+  });
+  await info.attach('protected-return-preview', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png'
+  });
   await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
   await expect.poll(() => getPlanRevisions(plan()).length).toBe(1);
   expect(getPlanRevisions(plan())[0].reason).toBe('execution');
@@ -166,6 +172,10 @@ test('return apply/reload/restore/reload preserves future alt, moved date, measu
     await expect(page.getByLabel(/^Vreme/)).toHaveValue('34:00');
   };
   await assertUi();
+  await info.attach('protected-after-apply', {
+    body: Buffer.from(JSON.stringify(capture(protectedIds), null, 2)),
+    contentType: 'application/json'
+  });
   // An actual entered AFTER apply must also survive restoring its predecessor.
   const secondDone = resolved().dated.find(
     (d) => !d.rest && !d.test && d.tag !== 'snaga' && d.date < '2026-01-14' && d.id !== doneId
@@ -197,5 +207,13 @@ test('return apply/reload/restore/reload preserves future alt, moved date, measu
   await openDay(secondDone.id);
   await expect(page.getByLabel(/Distanca \(km\)/)).toHaveValue('7,1');
   await expect(page.getByLabel(/^Vreme/)).toHaveValue('38:00');
+  await info.attach('protected-after-restore', {
+    body: Buffer.from(JSON.stringify(capture([...protectedIds, secondDone.id]), null, 2)),
+    contentType: 'application/json'
+  });
+  await info.attach('protected-restored-actual', {
+    body: await page.screenshot({ fullPage: true }),
+    contentType: 'image/png'
+  });
   expect(errors).toEqual([]);
 });
