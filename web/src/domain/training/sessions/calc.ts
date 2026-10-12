@@ -35,7 +35,10 @@ export function sessKm(s: Session): number {
       return r1(s.wuKm + (s.reps * s.repM) / 1000 + s.cdKm + kmBetweenReps(s));
     case 'pyramid':
       return r1(
-        s.wuKm + s.reps.reduce((a, b) => a + b, 0) / 1000 + s.cdKm + (s.reps.length - 1) * 0.15
+        s.wuKm +
+          s.reps.reduce((a, b) => a + b, 0) / 1000 +
+          s.cdKm +
+          Math.max(0, s.reps.length - 1) * 0.15
       );
     case 'fartlek':
       return r1(s.wuKm + s.cdKm + fartlekKm(s));

@@ -79,7 +79,7 @@ const mkRacePace = (dow: number, vol: number, racePace: number, wkIdx: number): 
   const rep = q >= 6 ? (longer ? 1600 : 1200) : q >= 3.5 ? (longer ? 1200 : 1000) : 1000;
   const n = Math.max(3, Math.floor((q * 1000) / rep + 0.08));
   const [wu, cd] = wuCdForVolume(vol);
-  return sessInt(dow, wu, n, rep, racePace, rep >= 1600 ? 75 : 60, cd, 'Trkački ritam');
+  return sessInt(dow, wu, n, rep, racePace, rep >= 1600 ? 75 : 60, cd, 'Trkački ritam', 'RP');
 };
 
 const mkPyramid = (dow: number, vol: number, pI: number): SessionDay =>
@@ -133,7 +133,8 @@ function chooseQuality10K(req: QualityRequest): SessionDay {
         Math.max(pI, racePace),
         75,
         r1(Math.max(tcd * 0.8, 0.8)),
-        'Trkački ritam'
+        'Trkački ritam',
+        'RP'
       );
     }
     return mkTempo(dow, vol, pT, r1(Math.min(4, Math.max(2, vol * 0.08))));

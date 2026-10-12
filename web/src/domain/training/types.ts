@@ -64,8 +64,12 @@ export interface Strides {
 
 /* ---------- sesije (kvalitetni treninzi) ---------- */
 
+export type SessionPurpose = 'T' | 'I' | 'R' | 'RP' | 'M' | 'activation';
+
 interface SessionBase {
-  /** Naziv sesije („Intervali", „Tempo isprekidan", …) — iz njega se izvodi zona. */
+  /** Explicit prescription intent; optional for historical stored sessions. */
+  purpose?: SessionPurpose;
+  /** Display label; measured-form inference has a separate legacy map. */
   kind: string;
   wuKm: number;
   cdKm: number;

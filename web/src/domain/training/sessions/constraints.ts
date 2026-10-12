@@ -1,6 +1,6 @@
 import { r1 } from '../../format';
 import type { Day, Session } from '../types';
-import { KIND_FROM_GOAL, ZONE_FOR_KIND } from '../vdot/zoneForKind';
+import { resolvePrescription, validIntervalLeg } from './prescription';
 import { sessDesc, sessKm, sessQKm } from './calc';
 import { proportionalRest } from './intervals';
 
@@ -11,16 +11,18 @@ const appendNote = (s: Session, note: string): void => {
 
 /** Upper limits win over repetition minimums, including after volume/taper adjustments. */
 export function constrainSession(s: Session, weeklyKm: number, tempoMaxSec: number): boolean {
-  const zone =
-    s.zone ??
-    (s.kind === 'Oštrina'
-      ? 'R'
-      : KIND_FROM_GOAL.has(s.kind) && s.kind !== 'Oštrina'
-        ? 'RP'
-        : ZONE_FOR_KIND[s.kind]);
-  s.zone = zone;
-  s.paceSource = zone === 'RP' || zone === 'M' ? 'race-specific' : 'current-fitness';
-  const pct = zone === 'I' ? 0.08 : zone === 'R' ? 0.05 : zone === 'T' ? 0.1 : 0.2;
+  const purpose = resolvePrescription(s);
+  const zone = s.zone;
+  const pct =
+    purpose === 'activation'
+      ? 0.05
+      : zone === 'I'
+        ? 0.08
+        : zone === 'R'
+          ? 0.05
+          : zone === 'T'
+            ? 0.1
+            : 0.2;
   const budget = Math.min(weeklyKm * pct, zone === 'I' ? 10 : zone === 'R' ? 8 : Infinity);
   if (s.type === 'int') {
     const originalQKm = (s.reps * s.repM) / 1000;
@@ -68,14 +70,17 @@ export function constrainSession(s: Session, weeklyKm: number, tempoMaxSec: numb
     s.reps = Math.min(s.reps, Math.floor((budget * 1000 + 1e-8) / s.repM));
     if (zone === 'I') s.restSec = proportionalRest(s.repM, s.paceSec);
     if (zone === 'R') s.restSec = Math.round((s.repM / 1000) * s.paceSec * 2.5);
-    return s.repM >= 100 && s.reps >= 2;
+    return s.repM >= 100 && s.reps >= 2 && (zone !== 'I' || validIntervalLeg(s.repM, s.paceSec));
   }
   if (s.type === 'pyramid') {
-    const maxM = Math.floor((300 * 1000) / s.paceSec / 100) * 100;
+    const maxSec = zone === 'I' ? 300 : zone === 'R' ? 120 : Infinity;
+    const maxM = Math.floor((maxSec * 1000) / s.paceSec / 100) * 100;
     s.reps = s.reps.map((m) => Math.min(m, maxM));
+    if (zone === 'I') s.reps = s.reps.filter((m) => validIntervalLeg(m, s.paceSec));
     while (s.reps.length && s.reps.reduce((a, b) => a + b, 0) > budget * 1000 + 1e-8)
       s.reps.splice(Math.floor(s.reps.length / 2), 1);
-    s.restSec = proportionalRest(Math.max(...s.reps, 0), s.paceSec);
+    if (zone === 'I') s.restSec = proportionalRest(Math.max(...s.reps, 0), s.paceSec);
+    if (zone === 'R') s.restSec = Math.round((Math.max(...s.reps, 0) / 1000) * s.paceSec * 2.5);
     return s.reps.length >= 2;
   }
   if (s.type === 'fartlek') {

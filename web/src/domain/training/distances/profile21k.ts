@@ -107,7 +107,8 @@ const mkRaceRhythm = (
     racePace,
     Math.round(pE * 0.9),
     Math.max(cd, 1),
-    'Tempo trke'
+    'Tempo trke',
+    'RP'
   );
 };
 
@@ -121,7 +122,8 @@ const mkProgression = (
   pE: number,
   share: number | null,
   atRacePace: boolean
-): SessionDay => progressionRun(PROGRESSION, dow, vol, endPace, pE, { share, atRacePace });
+): SessionDay =>
+  progressionRun(PROGRESSION, dow, vol, endPace, pE, { share, atRacePace, racePurpose: 'RP' });
 
 /**
  * Kontrolna trka: pravi presek forme 3–4 nedelje pred cilj — i probni dan za
@@ -144,7 +146,9 @@ const mkTimeTrial = (dow: number, vol: number, racePace: number): SessionDay => 
     session: {
       type: 'tempo',
       kind: 'Kontrolna trka',
+      purpose: 'RP',
       zone: 'RP',
+      paceSource: 'race-specific',
       notes:
         'Kontrolisano na ritmu polumaratona; isprobaj opremu i gorivo. Ovo nije maksimalan test forme. Pravu trku unesi zasebno kao test. Naredna 2–3 dana lagano.',
       wuKm: wu,
@@ -202,7 +206,8 @@ function chooseQuality21K(req: QualityRequest): SessionDay {
         km,
         racePace,
         r1(Math.max(tcd * 0.8, 0.8)),
-        'Tempo trke'
+        'Tempo trke',
+        'RP'
       );
     }
     return mkTempo(dow, vol, pT, r1(Math.min(4, Math.max(2, vol * 0.07))));

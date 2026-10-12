@@ -6,7 +6,7 @@ import { r1 } from '../../format';
 import { sessFartlek, wuCdForVolume } from '../sessions/build';
 import { sessDesc, sessKm, sessQKm } from '../sessions/calc';
 import { proportionalRest } from '../sessions/intervals';
-import { ZONE_FOR_KIND } from '../vdot/zoneForKind';
+import { resolvePrescription, validIntervalLeg } from '../sessions/prescription';
 import type { Intensity, SessionDay } from '../types';
 import type { QualityRequest } from './types';
 
@@ -34,7 +34,8 @@ export function introductoryQuality(req: QualityRequest): SessionDay | null {
   const repSec = req.qualW === 1 ? 30 : req.qualW === 2 ? 45 : 60;
   const reps = Math.max(6, Math.ceil((MINIMUM_MEANINGFUL_WORK_KM * req.pT) / repSec));
   const day = sessFartlek(req.dow, wu, reps, repSec, 90, req.pT, cd, req.pE);
-  day.session.zone = 'T';
+  day.session.purpose = 'T';
+  resolvePrescription(day.session);
   day.session.paceSource = 'current-fitness';
   day.session.notes = 'Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak.';
   day.desc = sessDesc(day.session);
@@ -46,7 +47,8 @@ export function introductoryQuality(req: QualityRequest): SessionDay | null {
  * constrainSession/constrainWeek guard still enforces the actual weekly zone
  * budget. Warm-up, cool-down and prescribed fitness pace are never reduced. */
 export function applyQualityDose(day: SessionDay, req: QualityRequest): SessionDay {
-  if (!req.readiness && !req.qualityIntensity) return day;
+  const purpose = resolvePrescription(day.session);
+  if (purpose === 'activation' || (!req.readiness && !req.qualityIntensity)) return day;
   const readiness = req.readiness ?? 'experienced';
   const intensity = req.qualityIntensity ?? 'std';
   const progress = Math.min(1, Math.max(0, (req.qualW - 1) / QUALITY_BUILD_WEEKS));
@@ -54,7 +56,7 @@ export function applyQualityDose(day: SessionDay, req: QualityRequest): SessionD
   // Taper is already shortened by the distance profile; never grow it again.
   const factor = DOSE_FACTOR[intensity] * (req.isTaper1 ? 1 : initial + (1 - initial) * progress);
   const s = day.session;
-  const zone = s.zone ?? ZONE_FOR_KIND[s.kind];
+  const zone = s.zone;
   const timePolicy = FAST_WORK_SECONDS[readiness];
   const timeCap =
     (timePolicy.start + (timePolicy.end - timePolicy.start) * progress) *
@@ -89,6 +91,7 @@ export function applyQualityDose(day: SessionDay, req: QualityRequest): SessionD
   } else if (s.type === 'pyramid') {
     const scale = Math.min(1, capKm / originalWork);
     s.reps = s.reps.map((m) => Math.max(100, Math.floor((m * scale) / 100) * 100));
+    if (zone === 'I') s.reps = s.reps.filter((m) => validIntervalLeg(m, s.paceSec));
   } else if (s.type === 'tempo') {
     s.qKm = Math.floor((capKm + 1e-9) * 10) / 10;
   } else {

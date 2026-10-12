@@ -639,9 +639,12 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
             activationPace,
             120,
             activationCd,
-            'Repeticije'
+            'Aktivacija',
+            'activation'
           );
-          s.desc += ' — aktivacija';
+          s.session.notes =
+            'Kratka aktivacija približno na ritmu trke, bez sprinta; oporavak 120 s hoda.';
+          s.desc = sessDesc(s.session);
           return s;
         },
         '-1': (dw) => D.easy(dw, shakeB, `${shakeB} km shakeout + lagana mobilnost`),

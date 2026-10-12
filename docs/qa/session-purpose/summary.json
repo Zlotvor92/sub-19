@@ -1,0 +1,98 @@
+{
+  "baseline": "56269a6",
+  "lockedQA": "f8cb2081ed4ba223fe7efe14a621144beb9bce0d",
+  "scope": "Technical invariants and unchanged ten inputs; no new coach scoring",
+  "profiles": [
+    {
+      "id": "U01",
+      "sessions": 4,
+      "sha256": "c7ea630a0e19f901514f418568849894b0a50e28ddd8c060b847dc18311df2b0"
+    },
+    {
+      "id": "U02",
+      "sessions": 23,
+      "sha256": "ea3ba8848f07ca32d0fefc373d3da27df06291c320d6a1537cbe5f20429a8d56"
+    },
+    {
+      "id": "U03",
+      "sessions": 25,
+      "sha256": "fe54ce6bc843fcb1490bf150438fa89f12c3411947e1e5867c9b9559e3cc3a4c"
+    },
+    {
+      "id": "U04",
+      "sessions": 24,
+      "sha256": "355c527a892318a89f3aa531fb1dcdbe89a30aa21acadb9ca4d00ee14a8dc791"
+    },
+    {
+      "id": "U05",
+      "sessions": 25,
+      "sha256": "033cd7fc56f8362eb6bc58b3015cf6040ffbace54d2e540a19d4a4a0fbeb4b0e"
+    },
+    {
+      "id": "U06",
+      "sessions": 10,
+      "sha256": "0b8b0abc7629b6a8e2c972be9385592ea55a5c96b78018a341ca2a421eaec439"
+    },
+    {
+      "id": "U07",
+      "sessions": 23,
+      "sha256": "b5a2bef9f714818d9ffe07c599e0516d7c95d3c8f5803770058d64d9cc5b38f2"
+    },
+    {
+      "id": "U08",
+      "sessions": 20,
+      "sha256": "1cf3c271ae89bfc445a44e35f51cc3a5b1165dfde07a40840e45a70691b82c22"
+    },
+    {
+      "id": "U09",
+      "sessions": 21,
+      "sha256": "f6818dea907652b5d46c6d3be0bdf5dbc2628a5cc6dbe82a08c57cac54953ca3"
+    },
+    {
+      "id": "U10",
+      "sessions": 32,
+      "sha256": "2bb45791a46b59ff6080a5252b07a73e88e09dac13638c2df107bca3c32bdeff"
+    }
+  ],
+  "builder": {
+    "dow": 2,
+    "tag": "int",
+    "km": 13,
+    "desc": "Trkački ritam — 3 km zagrevanje + 6×1200 m @ 4:30/km (1 min hoda) + 2 km hlađenje",
+    "session": {
+      "type": "int",
+      "kind": "Trkački ritam",
+      "wuKm": 3,
+      "reps": 6,
+      "repM": 1200,
+      "paceSec": 270,
+      "restSec": 60,
+      "cdKm": 2,
+      "overrides": {},
+      "purpose": "RP",
+      "zone": "RP",
+      "paceSource": "race-specific"
+    }
+  },
+  "result": {
+    "dow": 2,
+    "tag": "int",
+    "km": 8.9,
+    "desc": "Trkački ritam — 3 km zagrevanje + 3×1200 m @ 4:30/km (1 min hoda) + 2 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+    "session": {
+      "type": "int",
+      "kind": "Trkački ritam",
+      "wuKm": 3,
+      "reps": 3,
+      "repM": 1200,
+      "paceSec": 270,
+      "restSec": 60,
+      "cdKm": 2,
+      "overrides": {},
+      "purpose": "RP",
+      "zone": "RP",
+      "paceSource": "race-specific",
+      "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+    }
+  }
+}

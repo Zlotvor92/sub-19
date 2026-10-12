@@ -103,7 +103,7 @@ async function screenshot(page: Page, info: TestInfo, name: string): Promise<voi
 }
 
 // CI command uses --workers=2. One independent browser context per locked synthetic athlete.
-test.describe('locked generator A/B: ten genuine wizard and persistence flows', () => {
+test.describe('locked inputs: current purpose-aware wizard and persistence flows', () => {
   test.describe.configure({ mode: 'parallel', timeout: 90_000 });
   for (const profile of profiles) {
     test(`${profile.id}: ${profile.label}`, async ({ page }, info) => {
@@ -118,10 +118,11 @@ test.describe('locked generator A/B: ten genuine wizard and persistence flows', 
       const state = (): Persisted => backend.row?.data ?? {};
       const revisions = () =>
         (state().genPlan?.['planRevisions'] ?? []) as Array<{ reason: string; summary: string }>;
-      const frozen = JSON.parse(readFileSync(resolve(root, `raw/${profile.id}.json`), 'utf8')) as {
-        versions: { new: { plan: PlanGenerationResult } };
-      };
-      const expected = adaptGeneratedPlan(frozen.versions.new.plan)!;
+      // Historical raw/blind plans stay frozen. New prescriptions are separate evidence.
+      const current = JSON.parse(
+        readFileSync(resolve(root, `../session-purpose/${profile.id}.json`), 'utf8')
+      ) as { plan: PlanGenerationResult };
+      const expected = adaptGeneratedPlan(current.plan)!;
       // Empty scheduling arrays are genuine wizard serialization, absent from the locked domain input.
       const wizardInput = { ...profile.input, qDows: [], runDows: [] };
       expected.ulaz = wizardInput;

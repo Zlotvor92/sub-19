@@ -94,10 +94,11 @@ const mkMarathonPace = (dow: number, vol: number, pM: number, qualW: number): Se
       pM,
       90,
       Math.max(cd, 1),
-      'Maratonski tempo'
+      'Maratonski tempo',
+      'M'
     );
   }
-  return sessTempo(dow, wu, r1(q), pM, Math.max(cd, 1), 'Maratonski tempo');
+  return sessTempo(dow, wu, r1(q), pM, Math.max(cd, 1), 'Maratonski tempo', 'M');
 };
 
 const mkProgression = (
@@ -107,7 +108,8 @@ const mkProgression = (
   pE: number,
   share: number | null,
   atRacePace: boolean
-): SessionDay => progressionRun(PROGRESSION, dow, vol, endPace, pE, { share, atRacePace });
+): SessionDay =>
+  progressionRun(PROGRESSION, dow, vol, endPace, pE, { share, atRacePace, racePurpose: 'M' });
 
 const mkRepetitions = (dow: number, vol: number, pR: number): SessionDay =>
   repetitions({ minTotalKm: 1.0, ...H.repetitionBudget }, 200, dow, vol, pR);
@@ -138,7 +140,8 @@ function chooseQuality42K(req: QualityRequest): SessionDay {
         km,
         pM,
         r1(Math.max(tcd * 0.8, 0.8)),
-        'Maratonski tempo'
+        'Maratonski tempo',
+        'M'
       );
     }
     return mkTempo(dow, vol, pT, r1(Math.min(5, Math.max(2.5, vol * 0.07))));

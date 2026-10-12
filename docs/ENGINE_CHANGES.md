@@ -184,3 +184,7 @@ Baza: `4b2f647d4aeb4555f1370c636d761d8115df7848` (faza 1). Kriterijumi i potpuni
 | Referenca PB bez vidljive konačne pripreme | Kratak rezultat ne potvrđuje maratonsku izdržljivost | Preparation status, konačni LR/obim i lokalno ograničenje na kartici trke | `phase2.regression`, čuvanje/adaptacija i UI/E2E |
 
 Pregledani namerni baseline diff: 2.304/2.304 hash-a i nedeljna km niza se menjaju; 1.722 scenarija menja broj kvalitetnih sesija. `vdot0` i `vdotGoal` ostaju identični u svim scenarijima. Četiri zamrznuta generator/warnings/replan baseline-a osvežena su posle nezavisnih provera. To čuva stabilnost nove implementacije i ne daje trenersko odobrenje 2.304 scenarija.
+
+## Session purpose before dose (2026-10-12)
+
+Prescriptions now resolve explicit T/I/R/RP/M/activation intent at construction, before dosing or limits; actual-workout inference keeps its legacy map. The 10K RP reproduction retains builder recovery (60 s rather than erroneous I-derived 240 s). I pyramid legs must remain 60–300 s; insufficient valid legs defer the session to easy work. Near-RP race activation is explicitly activation/RP with its existing pace and 120 s recovery. HM race progression is RP, marathon progression M. New metadata and these deliberate workout changes explain refreshed generator/differential/replan fingerprints. Historical QA evidence remains frozen; separate ten-profile outputs and full rationale: `docs/qa/session-purpose/REPORT.md`.
