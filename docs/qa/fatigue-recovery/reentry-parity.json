@@ -1,0 +1,426 @@
+[
+  {
+    "dist": 5000,
+    "resume": 3,
+    "identicalWeeks": true,
+    "identicalPrediction": true,
+    "changes": [
+      {
+        "path": "meta.athlete.consistentWeeks",
+        "before": 0,
+        "after": null
+      },
+      {
+        "path": "meta.athlete.assumptions",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ]
+      },
+      {
+        "path": "meta.athlete.currentReadiness",
+        "after": "returning"
+      },
+      {
+        "path": "meta.dayWarnings",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ]
+      }
+    ]
+  },
+  {
+    "dist": 5000,
+    "resume": 9,
+    "identicalWeeks": true,
+    "identicalPrediction": true,
+    "changes": [
+      {
+        "path": "meta.athlete.consistentWeeks",
+        "before": 0,
+        "after": null
+      },
+      {
+        "path": "meta.athlete.assumptions",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ]
+      },
+      {
+        "path": "meta.athlete.currentReadiness",
+        "after": "returning"
+      },
+      {
+        "path": "meta.dayWarnings",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ]
+      }
+    ]
+  },
+  {
+    "dist": 10000,
+    "resume": 3,
+    "identicalWeeks": true,
+    "identicalPrediction": true,
+    "changes": [
+      {
+        "path": "meta.athlete.consistentWeeks",
+        "before": 0,
+        "after": null
+      },
+      {
+        "path": "meta.athlete.assumptions",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ]
+      },
+      {
+        "path": "meta.athlete.currentReadiness",
+        "after": "returning"
+      },
+      {
+        "path": "meta.dayWarnings",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ]
+      }
+    ]
+  },
+  {
+    "dist": 10000,
+    "resume": 9,
+    "identicalWeeks": true,
+    "identicalPrediction": true,
+    "changes": [
+      {
+        "path": "meta.athlete.consistentWeeks",
+        "before": 0,
+        "after": null
+      },
+      {
+        "path": "meta.athlete.assumptions",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ]
+      },
+      {
+        "path": "meta.athlete.currentReadiness",
+        "after": "returning"
+      },
+      {
+        "path": "meta.dayWarnings",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Isporučeni vrhunac 37.7 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Isporučeni vrhunac 37.7 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ]
+      }
+    ]
+  },
+  {
+    "dist": 21097.5,
+    "resume": 3,
+    "identicalWeeks": true,
+    "identicalPrediction": true,
+    "changes": [
+      {
+        "path": "meta.athlete.consistentWeeks",
+        "before": 0,
+        "after": null
+      },
+      {
+        "path": "meta.athlete.assumptions",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ]
+      },
+      {
+        "path": "meta.athlete.currentReadiness",
+        "after": "returning"
+      },
+      {
+        "path": "meta.dayWarnings",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Najduže planirano trčanje je 12.9 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 43.7 km/ned je ispod okvirne baze za pun vremenski pristup (45 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Najduže planirano trčanje je 12.9 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 43.7 km/ned je ispod okvirne baze za pun vremenski pristup (45 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ]
+      }
+    ]
+  },
+  {
+    "dist": 21097.5,
+    "resume": 9,
+    "identicalWeeks": true,
+    "identicalPrediction": true,
+    "changes": [
+      {
+        "path": "meta.athlete.consistentWeeks",
+        "before": 0,
+        "after": null
+      },
+      {
+        "path": "meta.athlete.assumptions",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ]
+      },
+      {
+        "path": "meta.athlete.currentReadiness",
+        "after": "returning"
+      },
+      {
+        "path": "meta.dayWarnings",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Vrhunac plana je oko 38 km/ned, a za polumaraton se orijentaciono računa sa ~45 km/ned. Rast je namerno postupan (od tvojih 22.5 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+          "Najduže planirano trčanje je 9.9 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 37.8 km/ned je ispod okvirne baze za pun vremenski pristup (45 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Vrhunac plana je oko 38 km/ned, a za polumaraton se orijentaciono računa sa ~45 km/ned. Rast je namerno postupan (od tvojih 22.5 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+          "Najduže planirano trčanje je 9.9 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 37.8 km/ned je ispod okvirne baze za pun vremenski pristup (45 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ]
+      }
+    ]
+  },
+  {
+    "dist": 42195,
+    "resume": 3,
+    "identicalWeeks": true,
+    "identicalPrediction": true,
+    "changes": [
+      {
+        "path": "meta.athlete.consistentWeeks",
+        "before": 0,
+        "after": null
+      },
+      {
+        "path": "meta.athlete.assumptions",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ]
+      },
+      {
+        "path": "meta.athlete.currentReadiness",
+        "after": "returning"
+      },
+      {
+        "path": "meta.dayWarnings",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Vrhunac plana je oko 41 km/ned, a za maraton se orijentaciono računa sa ~55 km/ned. Rast je namerno postupan (od tvojih 22.5 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+          "Najduže planirano trčanje je 10.6 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 40.5 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Vrhunac plana je oko 41 km/ned, a za maraton se orijentaciono računa sa ~55 km/ned. Rast je namerno postupan (od tvojih 22.5 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+          "Najduže planirano trčanje je 10.6 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 40.5 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ]
+      }
+    ]
+  },
+  {
+    "dist": 42195,
+    "resume": 9,
+    "identicalWeeks": true,
+    "identicalPrediction": true,
+    "changes": [
+      {
+        "path": "meta.athlete.consistentWeeks",
+        "before": 0,
+        "after": null
+      },
+      {
+        "path": "meta.athlete.assumptions",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+        ]
+      },
+      {
+        "path": "meta.athlete.currentReadiness",
+        "after": "returning"
+      },
+      {
+        "path": "meta.dayWarnings",
+        "before": [
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Vrhunac plana je oko 33 km/ned, a za maraton se orijentaciono računa sa ~55 km/ned. Rast je namerno postupan (od tvojih 22.5 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+          "Najduže planirano trčanje je 8.5 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 33.2 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ],
+        "after": [
+          "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+          "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+          "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+          "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+          "Posle pauze od 1 nedelja rezultat je istorijska referenca, ne potvrđena trenutna forma. Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: 1) poslednje dve pune nedelje imaju upisano trčanje, bar 75% planiranih kilometara, bez zapisa bola 4/10 ili jačeg; 2) u poslednje dve nedelje najviše jedan lak trening prijavljen sa naporom 7/10 ili većim; 3) tempa potvrdi novim rezultatom ili kontrolisanim testom (najviše 90 dana starim); do tada napor vodi, ritam je orijentir. Vremenski cilj ostaje cilj i ne potvrđuje formu.",
+          "Vrhunac plana je oko 33 km/ned, a za maraton se orijentaciono računa sa ~55 km/ned. Rast je namerno postupan (od tvojih 22.5 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+          "Najduže planirano trčanje je 8.5 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 33.2 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ]
+      }
+    ]
+  }
+]

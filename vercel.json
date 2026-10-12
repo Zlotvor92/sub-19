@@ -4,7 +4,8 @@
     "deploymentEnabled": {
       "fix/session-purpose": false,
       "fix/quality-dose": false,
-      "fix/hm-quality-progression": false
+      "fix/hm-quality-progression": false,
+      "fix/fatigue-recovery": false
     }
   },
   "installCommand": "npm ci --prefix web",

@@ -11,6 +11,7 @@ import type { GenPlanState, StoredWeek } from '../state';
 import { profileFor } from '../training/distances';
 import type { PlanGenerationInput, PreparationAssessment, RaceDistanceM } from '../training/types';
 import type { ReplanContext } from './future';
+import { fatigueWindowFor } from './fatigueRecovery';
 import { graftFuturePlan } from './future';
 import {
   finalWarnings,
@@ -382,6 +383,18 @@ export function buildReturnBase(
   });
   const meta = {
     ...current.meta,
+    ...(basis.input.currentReadiness?.reason === 'fatigued' &&
+    basis.input.currentReadiness.until > today
+      ? {
+          fatigueRecovery: fatigueWindowFor(
+            current,
+            today,
+            basis.input.weeklyKm,
+            basis.input.currentReadiness.until,
+            context
+          )
+        }
+      : {}),
     goalSec: null,
     goalVdot: null,
     realno: null,

@@ -6,6 +6,7 @@ import { derivePred, deriveQSById } from '../training/prediction';
 import { isPlanError, type PlanGenerationInput } from '../training/types';
 import { adaptGeneratedPlan } from './adapt';
 import { graftFuturePlan, type ReplanContext } from './future';
+import { fatigueWindowFor } from './fatigueRecovery';
 import { guardReturnGrowth } from './returnGrowth';
 
 /** Transparent product defaults, not a physiological or medical recovery model. */
@@ -28,6 +29,7 @@ export function returnPolicyFor(breakDays: number | undefined): ReturnPolicy | n
 /** Persisted on adjusted plans; a later preparation decision reuses the same confirmed facts. */
 export interface ExecutionAdjustmentMeta {
   date: IsoDate;
+  reason?: 'confirmed-break' | 'fatigue' | 'reduced-volume';
   breakDays: number;
   reportedBaseKm: number;
   startingKm: number;
@@ -99,6 +101,17 @@ export function regenerateFuture(
   }
   fresh.meta = {
     ...fresh.meta,
+    ...(input.currentReadiness?.reason === 'fatigued' && input.currentReadiness.until > today
+      ? {
+          fatigueRecovery: fatigueWindowFor(
+            current,
+            today,
+            input.weeklyKm,
+            input.currentReadiness.until,
+            context
+          )
+        }
+      : {}),
     ...(options.execution ? { executionAdjustment: options.execution } : {}),
     ...(options.meta ?? {}),
     dayWarnings: [...fresh.meta.dayWarnings, ...(options.notes ?? [])]
@@ -124,5 +137,7 @@ export function regenerateFuture(
 /** Final warning lines that previews must repeat verbatim. */
 export const finalWarnings = (result: GenPlanState): string[] =>
   (result.meta?.dayWarnings ?? []).filter((s) =>
-    /^(Finalni preostali plan:|Povratni period |Konflikt povratne politike:)/.test(s)
+    /^(Finalni preostali plan:|Povratni period |Konflikt povratne politike:|Neposredni oporavak |Konflikt oporavka:)/.test(
+      s
+    )
   );

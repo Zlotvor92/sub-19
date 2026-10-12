@@ -19,12 +19,14 @@ const plan = (inp: PlanGenerationInput) => {
   return p;
 };
 
-describe('beginner, returning and developing protection is unchanged', () => {
-  /* SHA-256 of JSON.stringify(plan) from docs/qa/session-purpose/summary.json, the
-     previous segment (38ecc08). Any change to these plans is outside this segment. */
+describe('beginner, returning and developing protection follows the reviewed completed-segment baseline', () => {
+  /* U04 retains its 38ecc08 hash. U01/U06 include completed step 7: conditional run/walk
+     transition, removed early strides, effort-first descriptions and explicit current return readiness.
+     Numeric weeks and predictions match the integrated completed-step baseline; independent
+     runWalkAndForm/fatigue regressions verify these deliberate semantic changes. */
   const LOCKED: Record<string, { sha: string; input: PlanGenerationInput }> = {
     U01: {
-      sha: 'c7ea630a0e19',
+      sha: '93f00602b617',
       input: {
         startDate: '2026-10-12',
         raceDate: '2027-01-03',
@@ -59,7 +61,7 @@ describe('beginner, returning and developing protection is unchanged', () => {
       }
     },
     U06: {
-      sha: '0b8b0abc7629',
+      sha: '3857db62e272',
       input: {
         startDate: '2026-10-12',
         raceDate: '2027-01-31',
@@ -81,7 +83,7 @@ describe('beginner, returning and developing protection is unchanged', () => {
     }
   };
   for (const [id, { sha, input }] of Object.entries(LOCKED))
-    it(`${id} plan is byte-identical to the previous segment`, () => {
+    it(`${id} plan matches its reviewed baseline`, () => {
       const p = plan(input);
       expect(p.meta.athlete?.qualityReadiness).not.toBe('experienced');
       expect(createHash('sha256').update(JSON.stringify(p)).digest('hex').slice(0, 12)).toBe(sha);

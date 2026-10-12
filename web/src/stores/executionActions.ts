@@ -133,6 +133,9 @@ export function qualityGateModel(plan: ResolvedPlan, today: string) {
 export function positiveAdjustmentBlock(plan: ResolvedPlan, todayStr: string): string | null {
   const today = parseIsoDate(todayStr);
   if (!today) return 'Neispravan datum.';
+  const recovery = useTrainingStore.getState().genPlan?.meta?.fatigueRecovery;
+  if (recovery && today >= recovery.start && today < recovery.end)
+    return 'Neposredno rasterećenje zbog visokog napora još traje; brži rad se ne predlaže.';
   const pain = useRecoveryStore.getState().knee.some((record) => {
     const date = parseIsoDate(record.date);
     return (

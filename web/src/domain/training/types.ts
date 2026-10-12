@@ -18,6 +18,8 @@ export type QualityExperience = 'none' | 'some' | 'experienced';
 
 export interface AthleteAssessment {
   qualityReadiness: QualityReadiness;
+  /** Current load tolerance is separate from confirmed historical continuity. */
+  currentReadiness?: 'normal' | 'returning' | 'fatigued' | 'reduced-volume';
   weeklyBaseKm: number;
   repeatableLongRunKm: number;
   longRunBasis: 'reported' | 'inferred';
@@ -43,6 +45,8 @@ export interface RunWalkPhase {
   ladder: number[];
   /** Prva nedelja sa neprekidnim trčanjem; probna dok se tolerancija ne potvrdi. */
   transitionWeek: number;
+  /** Effective calendar anchor after grafting into an existing plan. */
+  transitionStart?: IsoDate;
   conditions: string[];
 }
 
@@ -250,6 +254,13 @@ export interface PlanMeta extends Assessment {
   preparation?: PreparationAssessment;
   formPolicy?: FormPolicy;
   runWalk?: RunWalkPhase;
+  /** Calendar recovery guard survives subsequent goal changes and recalibration. */
+  fatigueRecovery?: {
+    start: IsoDate;
+    end: IsoDate;
+    weekCapsKm: Record<string, number>;
+    dayCapsKm?: Record<string, number>;
+  };
   /** New plans prescribe current fitness. Older plans may retain projected vdotGoal. */
   trainingVdot?: number;
   start: IsoDate;
@@ -299,7 +310,9 @@ export interface PlanGenerationInput {
   weeklyKm: number;
   /** Recent repeatable long run, not the lifetime maximum. */
   recentLongRunKm?: number;
-  /** Consecutive recent running weeks; zero means no established continuity. */
+  /** Temporary readiness constraint; never replaces historical continuity. */
+  currentReadiness?: { reason: 'fatigued' | 'reduced-volume' | 'returning'; until: IsoDate };
+  /** Confirmed running continuity at assessment; retained as history during replanning. */
   consistentWeeks?: number;
   /** Recent break before the current base, in weeks. */
   breakWeeks?: number;

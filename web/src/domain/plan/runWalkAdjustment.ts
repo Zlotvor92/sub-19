@@ -59,7 +59,7 @@ export function buildRunWalkAdjustment(
     ...original,
     startDate: addDays(today, 1),
     weeklyKm: Math.round(base * 10) / 10,
-    consistentWeeks: 0,
+    consistentWeeks: original.consistentWeeks,
     breakWeeks: 0,
     trainedRecently: false,
     runWalkLadder: ladder

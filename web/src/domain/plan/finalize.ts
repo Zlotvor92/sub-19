@@ -55,7 +55,7 @@ export function finalizeFuturePlan(
     days: w.days.map((d) => {
       if (!d.id || protectedDays.has(d.id) || (view.byId.get(d.id)?.date ?? today) <= today)
         return d;
-      return { ...d, desc: describePrescription(d, meta) } as typeof d;
+      return { ...d, desc: describePrescription(d, meta, view.byId.get(d.id)?.date) } as typeof d;
     })
   }));
   const delivered = deliveredWeeks({ ...plan, weeks }, today, ctx);
@@ -89,7 +89,7 @@ export function finalizeFuturePlan(
   const warnings = meta.dayWarnings.filter(
     (s) =>
       !previousReasons.has(s) &&
-      !/^(Posle pauze od |Potvrđena pauza: .*sa \d+ početne nedelje|Povratni period |Isporučeni vrhunac |Najduže planirano trčanje je |Vrhunac plana je oko |Plan daje JEDAN kvalitetan trening |Tražio si .*plan prve nedelje|Na \d+ dana trčanja plan realno dostiže oko |Finalni preostali plan:)/.test(
+      !/^(Posle pauze od |Potvrđena pauza: .*sa \d+ početne nedelje|Povratni period |Isporučeni vrhunac |Najduže planirano trčanje je |Vrhunac plana je oko |Plan daje JEDAN kvalitetan trening |Tražio si .*plan prve nedelje|Na \d+ dana trčanja plan realno dostiže oko |Finalni preostali plan:|Neposredni oporavak |Konflikt oporavka:)/.test(
         s
       )
   );
@@ -130,6 +130,10 @@ export function finalizeFuturePlan(
       `Posle pauze od ${meta.athlete.breakWeeks} nedelja finalni plan ima ${easyWeeks} početnih lakih kalendarskih nedelja. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.`
     );
   }
+  if (meta.fatigueRecovery && meta.fatigueRecovery.end > today)
+    warnings.push(
+      `Neposredni oporavak ${meta.fatigueRecovery.start}–${addDays(meta.fatigueRecovery.end, -1)} zbog visokog napora: kalendarsko rasterećenje bez kvaliteta i ubrzanja ostaje i nakon regeneracije/promene cilja; zaštićeni konflikti su posebno navedeni.`
+    );
   warnings.push(...(meta.preparation?.reasons ?? []), ...conflicts);
   meta.dayWarnings = [...new Set(warnings)];
   meta.finalization = {

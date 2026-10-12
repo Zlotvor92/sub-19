@@ -66,7 +66,8 @@ describe('cutover konfiguracija', () => {
       deploymentEnabled: {
         'fix/session-purpose': false,
         'fix/quality-dose': false,
-        'fix/hm-quality-progression': false
+        'fix/hm-quality-progression': false,
+        'fix/fatigue-recovery': false
       }
     });
     const ignore = readFileSync(join(ROOT, '.vercelignore'), 'utf8')

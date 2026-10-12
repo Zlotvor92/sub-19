@@ -15,15 +15,24 @@ const ESTABLISHED_CONTINUITY_WEEKS = 8;
 export function assessAthlete(inp: PlanGenerationInput, h: DistanceHeuristic): AthleteAssessment {
   const consistentWeeks = inp.consistentWeeks ?? null;
   const breakWeeks = inp.breakWeeks ?? 0;
-  const returning = breakWeeks > 0 && (consistentWeeks ?? 0) < 4;
+  const explicitReturn =
+    inp.currentReadiness?.reason === 'returning' && inp.startDate < inp.currentReadiness.until;
+  const returning = explicitReturn || (breakWeeks > 0 && (consistentWeeks ?? 0) < 4);
+  const currentReadiness = returning
+    ? 'returning'
+    : inp.currentReadiness && inp.startDate < inp.currentReadiness.until
+      ? inp.currentReadiness.reason
+      : 'normal';
   const qualityReadiness = returning
     ? 'returning'
     : inp.trainedRecently === false
       ? 'beginner'
-      : inp.qualityExperience === 'experienced' &&
-          (consistentWeeks ?? 0) >= ESTABLISHED_CONTINUITY_WEEKS
-        ? 'experienced'
-        : 'developing';
+      : currentReadiness !== 'normal'
+        ? 'developing'
+        : inp.qualityExperience === 'experienced' &&
+            (consistentWeeks ?? 0) >= ESTABLISHED_CONTINUITY_WEEKS
+          ? 'experienced'
+          : 'developing';
   const start = parseIsoDate(inp.startDate);
   const resultDate = inp.pb.date ? parseIsoDate(inp.pb.date) : null;
   const resultAgeDays = start && resultDate ? diffDays(resultDate, start) : null;
@@ -49,6 +58,7 @@ export function assessAthlete(inp: PlanGenerationInput, h: DistanceHeuristic): A
   );
   return {
     qualityReadiness,
+    ...(currentReadiness !== 'normal' ? { currentReadiness } : {}),
     weeklyBaseKm: inp.weeklyKm,
     repeatableLongRunKm: r1(reportedLR ? inp.recentLongRunKm! : inferredLR),
     longRunBasis: reportedLR ? 'reported' : 'inferred',
@@ -108,6 +118,12 @@ export function assessPreparation(plan: TrainingPlan, minPeakKm: number): Prepar
   if (!established)
     reasons.push(
       'Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.'
+    );
+  if (athlete?.currentReadiness === 'fatigued')
+    reasons.push(
+      ((athlete.consistentWeeks ?? 0) > 0
+        ? 'Potvrđeni kontinuitet ostaje istorijska činjenica; '
+        : '') + 'Visok napor trenutno zahteva rasterećenje i proveru oporavka.'
     );
   if (athlete?.speedConfidence !== 'recent-result')
     reasons.push(

@@ -170,7 +170,10 @@ export function planWithNewGoal(
     };
   const idx = cur ? cur.w : 1;
 
-  const goalInput = { ...(input as unknown as PlanGenerationInput), goalSec: newGoalSec };
+  const goalInput = {
+    ...currentReadinessInput(input as unknown as PlanGenerationInput, today),
+    goalSec: newGoalSec
+  };
   const raw = generatePlan(goalInput);
   if (isPlanError(raw)) return raw;
   const originalAnchor = parseIsoDate(plan.meta?.start);
@@ -185,7 +188,7 @@ export function planWithNewGoal(
     {
       ...fresh,
       meta: { ...fresh.meta!, ...carriedRecalibration(plan.meta) },
-      ulaz: { ...(input as unknown as PlanGenerationInput), goalSec: newGoalSec }
+      ulaz: goalInput
     },
     today,
     context
@@ -261,7 +264,7 @@ export function planRecalibrated(
   )
     return { error: 'Izmerena forma nije verodostojna — plan se ne preračunava.' };
 
-  const original = input as unknown as PlanGenerationInput;
+  const original = currentReadinessInput(input as unknown as PlanGenerationInput, today);
   const total = plan.weeks.length;
   const cur = storedWeekOf(plan.weeks, today);
   const last = plan.weeks[plan.weeks.length - 1];
@@ -298,7 +301,7 @@ export function planRecalibrated(
           startDate: addDays(today, 1),
           weeklyKm: execution.recentWeeklyKm!,
           recentLongRunKm: execution.recentLongRunKm ?? undefined,
-          consistentWeeks: Math.min(coveredWeeks.length, 4)
+          consistentWeeks: original.consistentWeeks ?? Math.min(coveredWeeks.length, 4)
         }
       : {})
   };
@@ -387,6 +390,14 @@ export interface RecalibrationResult {
   pred: PredictionRow[];
   qs: Record<string, number[]>;
   meta: PlanMeta & { vdotAtRecal: number; recalWeek: number };
+}
+
+/** A finished temporary fatigue/volume period must not become a permanent readiness downgrade. */
+function currentReadinessInput(input: PlanGenerationInput, today: IsoDate): PlanGenerationInput {
+  const readiness = input.currentReadiness;
+  return readiness && readiness.reason !== 'returning' && readiness.until <= today
+    ? { ...input, currentReadiness: undefined }
+    : input;
 }
 
 /** Sintetički PB prenosi izmerenu formu generatoru; cilj ostaje korisnikova odluka. */
@@ -482,7 +493,8 @@ export function reentryPlan(
       originalInput.recentLongRunKm ?? lastRealizedVolKm * 0.3,
       lastRealizedVolKm * 0.35
     ),
-    consistentWeeks: 0,
+    consistentWeeks: originalInput.consistentWeeks,
+    currentReadiness: { reason: 'returning', until: addDays(resume, 14) },
     breakWeeks: Math.max(1, originalInput.breakWeeks ?? 1),
     trainedRecently: false
   });

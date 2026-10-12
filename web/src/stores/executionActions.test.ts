@@ -230,6 +230,26 @@ describe('execution preview and lifecycle', () => {
     expect(positiveAdjustmentBlock(resolved(), TODAY)).toMatch(/novijeg/);
   });
 
+  it('active calendar recovery blocks faster work even after high-RPE records age out', () => {
+    const t = useTrainingStore.getState();
+    t.patch({
+      genPlan: {
+        ...t.genPlan!,
+        meta: {
+          ...t.genPlan!.meta!,
+          fatigueRecovery: {
+            start: parseIsoDate('2026-02-19')!,
+            end: parseIsoDate('2026-03-02')!,
+            weekCapsKm: { '2026-02-23': 30 }
+          }
+        }
+      },
+      log: { g1d1: { status: 'done', km: 5, runDate: '2026-02-27', rpe: 4 } }
+    });
+    expect(positiveAdjustmentBlock(resolved(), '2026-03-01')).toMatch(/rasterećenje/);
+    expect(positiveAdjustmentBlock(resolved(), '2026-03-02')).toBeNull();
+  });
+
   it('v11 migration retains plan, new zones and bounded revisions; v12 export/import is stable', () => {
     commitPlanChange(ready());
     const t = useTrainingStore.getState();

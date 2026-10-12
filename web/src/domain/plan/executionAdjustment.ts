@@ -1,4 +1,4 @@
-import { addDays, diffDays, parseIsoDate, type IsoDate } from '../date';
+import { addDays, diffDays, mondayOnOrBefore, parseIsoDate, type IsoDate } from '../date';
 import { distUReceni } from '../format';
 import type { GenPlanState } from '../state';
 import {
@@ -73,7 +73,11 @@ export function executionBasis(
   if (lr !== undefined && lr !== null && (!Number.isFinite(lr) || lr <= 0 || lr > base))
     return { error: 'Ponovljiva dužina mora biti pozitivna i ne veća od nedeljne baze.' };
   const policy = returning ? returnPolicyFor(options.breakDays) : null;
-  const fraction = policy?.fraction ?? (analysis.easyHighRpeCount >= 2 ? 0.85 : 1);
+  const fatigued = analysis.easyHighRpeCount >= 2;
+  const reason = returning ? 'confirmed-break' : fatigued ? 'fatigue' : 'reduced-volume';
+  const recoveryStart = addDays(today, 1);
+  const recoveryEnd = addDays(mondayOnOrBefore(today), 14);
+  const fraction = policy?.fraction ?? (fatigued ? 0.85 : 1);
   const weeklyKm = Math.round(base * fraction * 10) / 10;
   const input: PlanGenerationInput = {
     ...original,
@@ -82,7 +86,13 @@ export function executionBasis(
     ...(lr != null
       ? { recentLongRunKm: Math.round(lr * fraction * 10) / 10 }
       : { recentLongRunKm: undefined }),
-    consistentWeeks: 0,
+    consistentWeeks: original.consistentWeeks,
+    currentReadiness: returning
+      ? {
+          reason: 'returning',
+          until: addDays(mondayOnOrBefore(recoveryStart), policy!.easyWeeks * 7)
+        }
+      : { reason: fatigued ? 'fatigued' : 'reduced-volume', until: recoveryEnd },
     breakWeeks: returning ? Math.ceil(options.breakDays! / 7) : 0,
     intensity: 'kons',
     volIntensity: 'kons',
@@ -94,6 +104,7 @@ export function executionBasis(
     guardBaseKm: weeklyKm,
     execution: {
       date: today,
+      reason,
       breakDays: options.breakDays ?? 0,
       reportedBaseKm: base,
       startingKm: weeklyKm,
@@ -120,13 +131,24 @@ export function buildExecutionAdjustment(
   const notes = [
     'Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.',
     'Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.',
-    'Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.'
+    basis.returning
+      ? 'Vremenski cilj ostaje cilj. Referentni PB ne potvrđuje spremnost niti tempo posle pauze.'
+      : 'Vremenski cilj ostaje cilj. Referentni PB ne potvrđuje trenutnu toleranciju opterećenja.'
   ];
   if (policy)
     notes.push(
       `Potvrđena pauza: ${options.breakDays} dana. Polazni obim je ${Math.round(policy.fraction * 100)}% prijavljene baze (${weeklyKm} km). Ovo su oprezne postavke aplikacije, ne medicinska procena.`
     );
   else notes.push(`Polazni obim prati stvarno odrađenu/prijavljenu bazu: ${weeklyKm} km nedeljno.`);
+  if (!policy && basis.execution?.reason === 'fatigue') {
+    const end = basis.input.currentReadiness!.until;
+    notes.push(
+      `Visok napor bez potvrđene pauze: kontinuitet je sačuvan. Neposredno rasterećenje ${basis.input.startDate}–${addDays(end, -1)} ostaje bez kvaliteta i ubrzanja; pojedinačni treninzi ne prelaze prethodni raspored, a nedeljni obim ni 85% baze (delimična nedelja srazmerno danima). Deload se ne odlaže ponovnim indeksiranjem faze.`
+    );
+  } else if (!policy)
+    notes.push(
+      'Manji izvršeni obim/propušteni treninzi: baza se prilagođava izvršenju, bez pretpostavke pauze i bez brisanja kontinuiteta.'
+    );
   const built = regenerateFuture(current, basis.input, today, context, {
     policy,
     guardBaseKm: weeklyKm,
@@ -143,7 +165,9 @@ export function buildExecutionAdjustment(
   notes.push(...finalWarnings(result));
   let summary = policy
     ? `Povratak posle ${options.breakDays} dana pauze, baza ${weeklyKm} km`
-    : `Plan prema odrađenoj bazi ${weeklyKm} km`;
+    : basis.execution?.reason === 'fatigue'
+      ? `Rasterećenje zbog visokog napora, baza ${weeklyKm} km`
+      : `Plan prema manjem izvršenom obimu ${weeklyKm} km`;
   if (!isLimitedLongPreparation(result.meta)) return { result, notes, summary };
   // A limited long-distance result is a return plan to the existing date, not a full preparation.
   const decision = preparationDecision(

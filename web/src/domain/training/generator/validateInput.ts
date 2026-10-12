@@ -47,6 +47,13 @@ export function validateInput(inp: PlanGenerationInput): string | null {
     return 'Nepoznato iskustvo sa kvalitetnim treningom.';
   if (inp.runWalkLadder !== undefined && !validRunWalkLadder(inp.runWalkLadder))
     return 'Lestvica trčanja/hoda mora imati 1–8 koraka, svaki od 1 do 4.';
+  if (
+    inp.currentReadiness !== undefined &&
+    (!inp.currentReadiness ||
+      !['fatigued', 'reduced-volume', 'returning'].includes(inp.currentReadiness.reason) ||
+      !parseIsoDate(inp.currentReadiness.until))
+  )
+    return 'Trenutna spremnost zahteva poznat razlog i ispravan datum provere.';
   if (inp.pb.date !== undefined) {
     const result = parseIsoDate(inp.pb.date);
     const start = parseIsoDate(inp.startDate);

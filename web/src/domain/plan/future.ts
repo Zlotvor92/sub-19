@@ -6,6 +6,7 @@ import { derivePred, deriveQSById } from '../training/prediction';
 import type { PlanMeta } from '../training/types';
 import { resolvePlan } from './resolve';
 import { alignAutomaticOverlays } from './automaticAlts';
+import { guardFatigueRecovery } from './fatigueRecovery';
 import { finalizeFuturePlan, type FinalizationOptions } from './finalize';
 
 export interface ReplanContext {
@@ -123,6 +124,55 @@ export function graftFuturePlan(
     start: plan.meta?.start ?? fresh.meta?.start,
     weeks: weeks.length
   } as PlanMeta & Record<string, unknown>;
+  if (fresh.meta?.runWalk)
+    meta.runWalk = {
+      ...fresh.meta.runWalk,
+      transitionStart: addDays(fresh.meta.start, (fresh.meta.runWalk.transitionWeek - 1) * 7)
+    };
+  // Keep an active calendar guard across goal changes, recalibration and restore.
+  const activeRecovery = plan.meta?.fatigueRecovery;
+  const nextRecovery = fresh.meta?.fatigueRecovery;
+  if (activeRecovery && activeRecovery.end > today) {
+    if (!nextRecovery || nextRecovery.end <= today) meta.fatigueRecovery = activeRecovery;
+    else {
+      const weekCapsKm = { ...activeRecovery.weekCapsKm, ...nextRecovery.weekCapsKm };
+      for (const [week, cap] of Object.entries(activeRecovery.weekCapsKm))
+        weekCapsKm[week] = Math.min(cap, nextRecovery.weekCapsKm[week] ?? cap);
+      const dayCapsKm = { ...activeRecovery.dayCapsKm, ...nextRecovery.dayCapsKm };
+      for (const [date, cap] of Object.entries(activeRecovery.dayCapsKm ?? {}))
+        dayCapsKm[date] = Math.min(cap, nextRecovery.dayCapsKm?.[date] ?? cap);
+      meta.fatigueRecovery = {
+        start:
+          activeRecovery.start < nextRecovery.start ? activeRecovery.start : nextRecovery.start,
+        end: activeRecovery.end > nextRecovery.end ? activeRecovery.end : nextRecovery.end,
+        weekCapsKm,
+        dayCapsKm
+      };
+    }
+  }
+  if (
+    meta.fatigueRecovery &&
+    meta.fatigueRecovery.end > today &&
+    meta.athlete &&
+    meta.athlete.currentReadiness !== 'returning'
+  )
+    meta.athlete = {
+      ...meta.athlete,
+      currentReadiness: 'fatigued',
+      qualityReadiness: 'developing'
+    };
+  const recoveryContext = {
+    ...ctx,
+    alts: alignAutomaticOverlays(plan, { ...fresh, weeks, meta }, today, ctx)
+  };
+  const recovered = guardFatigueRecovery(
+    { ...fresh, weeks, meta },
+    today,
+    recoveryContext,
+    protectedDays,
+    conflicts
+  );
+  weeks = recovered.weeks;
   const finalized = finalizeFuturePlan(
     { ...fresh, weeks, meta },
     today,

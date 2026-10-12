@@ -1084,7 +1084,9 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       if (finishCandidate && !replacedSecond && sessionList().length === 1) {
         const only = Number(Object.keys(sessions)[0]);
         const role = slots[only] === 'q2' ? 'q2' : 'q1';
-        sessions[only] = prof.buildQuality({ ...requestFor(only, role), lrFinish: true });
+        sessions[only] = markReferencePace(
+          prof.buildQuality({ ...requestFor(only, role), lrFinish: true })
+        );
         alloc = allocFor();
       }
 
@@ -1138,7 +1140,13 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           ) {
             delete sessions[dow];
             easyDowsCount++;
-          } else sessions[dow] = rebuilt;
+          } else {
+            if (effortFirst && own.session.notes?.includes(QUALITY_ENTRY_NOTE))
+              rebuilt.session.notes = [rebuilt.session.notes, QUALITY_ENTRY_NOTE]
+                .filter(Boolean)
+                .join(' · ');
+            sessions[dow] = markReferencePace(rebuilt);
+          }
           trimmed = true;
         }
         if (trimmed) alloc = allocFor();
