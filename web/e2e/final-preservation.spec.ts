@@ -178,9 +178,17 @@ test('return apply/reload/restore/reload preserves future alt, moved date, measu
   });
   // An actual entered AFTER apply must also survive restoring its predecessor.
   const secondDone = resolved().dated.find(
-    (d) => !d.rest && !d.test && d.tag !== 'snaga' && d.date < '2026-01-14' && d.id !== doneId
+    (d) =>
+      !d.rest &&
+      !d.test &&
+      d.tag !== 'snaga' &&
+      (d.km ?? 0) > 0 &&
+      d.date > '2026-01-14' &&
+      !protectedIds.includes(d.id)
   );
-  if (!secondDone) throw new Error('Wizard must have an earlier runnable day');
+  if (!secondDone) throw new Error('Return plan must have another future runnable day');
+  // Completing a future prescription early is stronger than relying only on the cutoff:
+  // restore must keep its current body because of done status, not because it is in the past.
   await openDay(secondDone.id);
   await page.getByRole('button', { name: 'Odrađen', exact: true }).click();
   await page.getByLabel(/Distanca \(km\)/).fill('7,1');
