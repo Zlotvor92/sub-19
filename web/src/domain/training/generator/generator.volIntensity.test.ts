@@ -1,11 +1,13 @@
-/* D2 (docs/ENGINE_CHANGES.md): tempo rasta OBIMA (`volIntensity`) je odvojen od tempa napretka FORME (`intensity`).
-   Stari generator je koristio JEDAN izbor za oba. Izostavljen `volIntensity` mora davati TAČNO isti plan kao pre
-   (planovi već u bazi nemaju to polje) — to drži i golden-master otisak, a ovde je dokazano po distancama. */
+/* Volume preference remains independent from the current-fitness reference.
+   Legacy inputs without volIntensity still use intensity for volume progression;
+   the former arbitrary intensity-dependent fitness projection is retired. */
 
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
 import type { Intensity, PlanGenerationInput, TrainingPlan } from '../types';
 import { generatePlan } from './generatePlan';
+import { sessQKm } from '../sessions/calc';
+import { HEURISTIC_5K } from '../constants/distances';
 
 const START = parseIsoDate('2026-10-05') as IsoDate;
 const INTENSITIES: readonly Intensity[] = ['kons', 'std', 'agr'];
@@ -80,29 +82,30 @@ describe('volIntensity: menja obim, ne menja procenu forme', () => {
     expect(sum(s)).toBeLessThan(sum(a));
   });
 
-  it('vrhunac plana je odredište distance, ne izbor tempa — na 5K su svi isti (±0,5 km)', () => {
+  it('rast obima ostaje u okviru odredišta, uz diskretne sesije i nezavisnu dužinu', () => {
     const peaks = INTENSITIES.map((v) => Math.max(...vols(by(v))));
-    expect(Math.max(...peaks) - Math.min(...peaks)).toBeLessThan(0.5);
-  });
-
-  it('obrnuto: tempo napretka forme NE menja plan obima (preostala sprega preko vremenskih plafona ≤ 0,5 km po nedelji — D1)', () => {
-    const ref = vols(plan({ intensity: 'std', volIntensity: 'std' }));
-    for (const intensity of INTENSITIES) {
-      const v = vols(plan({ intensity, volIntensity: 'std' }));
-      v.forEach((x, i) =>
-        expect(
-          Math.abs(x - (ref[i] as number)),
-          `${intensity} nedelja ${i + 1}`
-        ).toBeLessThanOrEqual(0.5)
-      );
+    for (const peak of peaks) {
+      expect(peak).toBeGreaterThan(40);
+      expect(peak).toBeLessThanOrEqual(HEURISTIC_5K.targetVolumeKm * 1.1);
     }
   });
 
-  it('tempo napretka i dalje određuje formu: agr ima viši cilj od kons', () => {
+  it('težina menja radnu dozu, uz istu formu i tempo rasta obima', () => {
+    const lo = plan({ intensity: 'kons', volIntensity: 'std' });
+    const hi = plan({ intensity: 'agr', volIntensity: 'std' });
+    const work = (p: TrainingPlan): number =>
+      p.weeks.flatMap((w) => w.days).reduce((n, d) => n + (d.session ? sessQKm(d.session) : 0), 0);
+    expect(work(lo)).toBeLessThan(work(hi));
+    expect(lo.meta.vdot0).toBe(hi.meta.vdot0);
+    expect(lo.meta.racePace).toBe(hi.meta.racePace);
+    expect(lo.meta.athlete).toEqual(hi.meta.athlete);
+  });
+
+  it('legacy izbor intenziteta ne obećava različit napredak za isti trening', () => {
     const lo = plan({ intensity: 'kons', volIntensity: 'std' }).meta;
     const hi = plan({ intensity: 'agr', volIntensity: 'std' }).meta;
-    expect(hi.vdotGoal).toBeGreaterThan(lo.vdotGoal);
-    expect(hi.predictedSec).toBeLessThan(lo.predictedSec);
+    expect(hi.vdotGoal).toBe(lo.vdotGoal);
+    expect(hi.predictedSec).toBe(lo.predictedSec);
   });
 });
 

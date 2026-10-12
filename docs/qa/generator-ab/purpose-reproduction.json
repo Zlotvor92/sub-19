@@ -1,0 +1,83 @@
+{
+  "scope": "Isolated production builder→dose→constraint reproduction, not proposed coaching prescription or implementation change",
+  "request": {
+    "qualW": 10,
+    "qualWeeks": 13,
+    "slotRole": "q1",
+    "effQ": 2,
+    "vol": 60,
+    "pI": 250,
+    "pT": 280,
+    "pE": 360,
+    "pR": 240,
+    "isTaper1": false,
+    "dow": 2,
+    "racePace": 270,
+    "readiness": "experienced",
+    "qualityIntensity": "std"
+  },
+  "builder": {
+    "dow": 2,
+    "tag": "int",
+    "km": 13,
+    "desc": "Trkački ritam — 3 km zagrevanje + 6×1200 m @ 4:30/km (1 min hoda) + 2 km hlađenje",
+    "session": {
+      "type": "int",
+      "kind": "Trkački ritam",
+      "wuKm": 3,
+      "reps": 6,
+      "repM": 1200,
+      "paceSec": 270,
+      "restSec": 60,
+      "cdKm": 2,
+      "overrides": {}
+    }
+  },
+  "ambiguous": {
+    "dow": 2,
+    "tag": "int",
+    "km": 8.9,
+    "desc": "Trkački ritam — 3 km zagrevanje + 3×1200 m @ 4:30/km (4 min hoda) + 2 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+    "session": {
+      "type": "int",
+      "kind": "Trkački ritam",
+      "wuKm": 3,
+      "reps": 3,
+      "repM": 1200,
+      "paceSec": 270,
+      "restSec": 240,
+      "cdKm": 2,
+      "overrides": {},
+      "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+      "zone": "RP",
+      "paceSource": "race-specific"
+    }
+  },
+  "correctPurpose": {
+    "dow": 2,
+    "tag": "int",
+    "km": 8.9,
+    "desc": "Trkački ritam — 3 km zagrevanje + 3×1200 m @ 4:30/km (1 min hoda) + 2 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+    "session": {
+      "type": "int",
+      "kind": "Trkački ritam",
+      "wuKm": 3,
+      "reps": 3,
+      "repM": 1200,
+      "paceSec": 270,
+      "restSec": 60,
+      "cdKm": 2,
+      "overrides": {},
+      "zone": "RP",
+      "paceSource": "race-specific",
+      "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+    }
+  },
+  "checks": {
+    "bothRemainRaceSpecific": true,
+    "restChangedWhenPurposeAbsent": true,
+    "explicitPurposePreservesBuilderRest": true,
+    "bothValid": true
+  },
+  "rootCause": "applyQualityDose falls back to legacy ZONE_FOR_KIND[Trkački ritam]=I before constrainSession later assigns RP via KIND_FROM_GOAL; the RP builder recovery is overwritten as I recovery."
+}

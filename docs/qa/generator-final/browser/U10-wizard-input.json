@@ -1,0 +1,24 @@
+{
+  "startDate": "2026-10-12",
+  "raceDate": "2027-02-28",
+  "raceDistM": 42195,
+  "pb": {
+    "distM": 42195,
+    "sec": 13500,
+    "date": "2026-09-20"
+  },
+  "weeklyKm": 60,
+  "recentLongRunKm": 24,
+  "consistentWeeks": 32,
+  "breakWeeks": 0,
+  "qualityExperience": "experienced",
+  "runDays": 5,
+  "quality": 2,
+  "lrDow": 7,
+  "qDows": [],
+  "runDows": [],
+  "intensity": "std",
+  "volIntensity": "std",
+  "goalSec": 12600,
+  "trainedRecently": true
+}

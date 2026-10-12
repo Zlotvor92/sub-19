@@ -62,10 +62,25 @@ describe('sessionSegments', () => {
     const f = sessionSegments({ session: fartlek, km: 8 }, null);
     expect(f?.filter((x) => x.kind === 'rep')).toHaveLength(3);
     expect(f?.[0]?.paceSec).toBe(330);
-    const p = sessionSegments({ session: prog, km: 10 }, null);
-    expect(p?.map((x) => x.kind)).toEqual(['steady', 'rep']);
-    expect(p?.[0]?.sec).toBe((10 - 3) * 320);
+    const p = sessionSegments({ session: prog, km: 6 }, null);
+    expect(p?.map((x) => x.kind)).toEqual(['wu', 'steady', 'rep', 'cd']);
+    expect(p?.map((x) => x.sec)).toEqual([2 * 320, 2 * 320, 240, 320]);
     expect(sessionSegments({ session: prog, km: null }, null)).toBeNull();
+  });
+
+  it('progresija sa skraćenim brzim delom prikazuje odvojeno zagrevanje i hlađenje', () => {
+    const constrained: Session = {
+      ...prog,
+      wuKm: 3,
+      qKm: 6,
+      cdKm: 1,
+      paceSec: 280,
+      easyPaceSec: 350
+    };
+    const segments = sessionSegments({ session: constrained, km: 10 }, null);
+    expect(segments?.map((x) => x.kind)).toEqual(['wu', 'steady', 'rep', 'cd']);
+    expect(sum(segments)).toBe(3 * 350 + 4 * 350 + 2 * 280 + 350);
+    expect(segments?.filter((x) => x.kind === 'rep').map((x) => x.sec)).toEqual([560]);
   });
 
   it('dan bez sesije nema segmente', () => {

@@ -9,6 +9,7 @@ import {
   initialWizard,
   outlook,
   pbSanityMessage,
+  resultDateMessage,
   stepValid,
   syncRunDays,
   toGenerationInput,
@@ -50,9 +51,9 @@ export function Wizard({ today }: { today: string }) {
   const hint = useMemo(() => weeksHint(w, today), [w, today]);
   const out = useMemo(() => outlook(w, today), [w, today]);
   const form = useMemo(() => formPreview(w), [w]);
-  const pbMsg = pbSanityMessage(w);
+  const pbMsg = pbSanityMessage(w) || resultDateMessage(w, today);
   const avail = availableDays(w);
-  const valid = stepValid(w, step);
+  const valid = stepValid(w, step, today);
   const verdict = out && !out.short ? goalVerdict(out, w.intensity) : null;
 
   async function finish(): Promise<void> {

@@ -1,0 +1,156 @@
+[
+  {
+    "id": "U08",
+    "today": "2026-11-25",
+    "sourceEvidenceSha256": "232c491c1ee143f813a2bd99757594813429e1551e8cb61435d8e89f0507840d",
+    "before": "Preostalo vreme ne podržava novi pun ciklus: Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća. Datum trke nije automatski pomeren.",
+    "returnWindowEnd": "2026-12-14",
+    "oldScheduleInReturnWindow": {
+      "demanding": 5,
+      "maxKm": 22
+    },
+    "after": "Preostalo vreme ne podržava novi pun ciklus: Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća. Datum trke nije automatski pomeren.",
+    "mode": null,
+    "statement": "Pun ciklus za polumaraton nije moguć: do trke 17.01.2027. ostaje manje od 10 nedelja. Postojeći budući raspored nije preporuka za povratak — izaberi naredni korak.",
+    "conditions": [
+      "Povratni blok: 3 nedelje lakog trčanja od 26.11.2026., bez nadoknade propuštenog.",
+      "Nastavak ka punoj pripremi za polumaraton: upisani treninzi treba da potvrde rast ponovljive baze i dužine; zatim ponovo pregledaj opcije u Prilagodi plan.",
+      "Za ovaj datum više nema 10 nedelja za pun ciklus; ostaju pomeranje trke, kraća distanca ili povratni režim bez vremenskog cilja."
+    ],
+    "unavailable": [],
+    "options": [
+      {
+        "id": "extend",
+        "title": "Pomeri trku na 21.02.2027.",
+        "raceDate": "2027-02-21",
+        "raceDistM": 21097.5,
+        "goalSec": 5700,
+        "coverage": "full",
+        "peakLongRunKm": 16.3,
+        "peakWeeklyKm": 51.5,
+        "demandingInReturnWindow": 0,
+        "maxKmInReturnWindow": 12.5
+      },
+      {
+        "id": "shorter-10000",
+        "title": "Kraća distanca: 10K istog datuma",
+        "raceDate": "2027-01-17",
+        "raceDistM": 10000,
+        "goalSec": null,
+        "coverage": "full",
+        "peakLongRunKm": 13.9,
+        "peakWeeklyKm": 44.7,
+        "demandingInReturnWindow": 0,
+        "maxKmInReturnWindow": 12.5
+      },
+      {
+        "id": "base",
+        "title": "Povratni/bazni režim do istog datuma, bez vremenskog cilja",
+        "raceDate": "2027-01-17",
+        "raceDistM": 21097.5,
+        "goalSec": null,
+        "coverage": "distance",
+        "peakLongRunKm": 16,
+        "peakWeeklyKm": 54.8,
+        "demandingInReturnWindow": 0,
+        "maxKmInReturnWindow": 13.1
+      }
+    ]
+  },
+  {
+    "id": "U09",
+    "today": "2026-11-25",
+    "sourceEvidenceSha256": "ac2f2d8428c259b299fa7f6d8b033fef0853c99c08a34ae6914eee3e191f0ecd",
+    "before": "Povratak posle 14 dana pauze, baza 21 km",
+    "returnWindowEnd": "2026-12-14",
+    "oldScheduleInReturnWindow": {
+      "demanding": 3,
+      "maxKm": 12.3
+    },
+    "after": "Povratak posle 14 dana pauze, baza 21 km — povratni plan do postojećeg datuma, nije puna priprema za maraton",
+    "mode": "Povratni plan do postojećeg datuma — nije puna priprema za maraton",
+    "statement": "Ovo nije puna priprema za maraton. Isporučeno: najduže 8,8 km, vrhunac 29 km/ned. Pravila pune pripreme: najduže ≥ 26 km, bar dva trčanja ≥ 22,1 km i vrhunac ≥ 55 km/ned.",
+    "conditions": [
+      "Povratni blok: 3 nedelje lakog trčanja od 26.11.2026., bez nadoknade propuštenog.",
+      "Nastavak ka punoj pripremi za maraton: upisani treninzi treba da potvrde rast ponovljive baze i dužine; zatim ponovo pregledaj opcije u Prilagodi plan.",
+      "Najkasniji početak punog ciklusa za ovaj datum: 06.12.2026. (minimum 12 nedelja). Do tada potvrđena baza i dužina moraju podržati punu pripremu; inače ostaju pomeranje trke, kraća distanca ili povratni režim."
+    ],
+    "unavailable": [
+      "Pomeranje trke do 52 nedelje kasnije ne daje punu pripremu sa trenutno potvrđenom bazom: najviše 17,7 km najduže i 42,2 km/ned. Prvo treba podići ponovljivu bazu i dužinu."
+    ],
+    "options": [
+      {
+        "id": "shorter-10000",
+        "title": "Kraća distanca: 10K istog datuma",
+        "raceDate": "2027-02-28",
+        "raceDistM": 10000,
+        "goalSec": null,
+        "coverage": "distance",
+        "peakLongRunKm": 11.3,
+        "peakWeeklyKm": 32.7,
+        "demandingInReturnWindow": 0,
+        "maxKmInReturnWindow": 7.8
+      },
+      {
+        "id": "base",
+        "title": "Povratni/bazni režim do istog datuma, bez vremenskog cilja",
+        "raceDate": "2027-02-28",
+        "raceDistM": 42195,
+        "goalSec": null,
+        "coverage": "insufficient",
+        "peakLongRunKm": 10,
+        "peakWeeklyKm": 29.8,
+        "demandingInReturnWindow": 0,
+        "maxKmInReturnWindow": 8.2
+      }
+    ]
+  },
+  {
+    "id": "U10",
+    "today": "2026-11-25",
+    "sourceEvidenceSha256": "fe147d40fcfe0813a1f2575f169cc7f3c43e61b07f3338e680b48153e92adc89",
+    "before": "Povratak posle 28 dana pauze, baza 33 km",
+    "returnWindowEnd": "2026-12-21",
+    "oldScheduleInReturnWindow": {
+      "demanding": 9,
+      "maxKm": 28
+    },
+    "after": "Povratak posle 28 dana pauze, baza 33 km — povratni plan do postojećeg datuma, nije puna priprema za maraton",
+    "mode": "Povratni plan do postojećeg datuma — nije puna priprema za maraton",
+    "statement": "Ovo nije puna priprema za maraton. Isporučeno: najduže 17,3 km, vrhunac 47,4 km/ned. Pravila pune pripreme: najduže ≥ 26 km, bar dva trčanja ≥ 22,1 km i vrhunac ≥ 55 km/ned.",
+    "conditions": [
+      "Povratni blok: 4 nedelje lakog trčanja od 26.11.2026., bez nadoknade propuštenog.",
+      "Nastavak ka punoj pripremi za maraton: upisani treninzi treba da potvrde rast ponovljive baze i dužine; zatim ponovo pregledaj opcije u Prilagodi plan.",
+      "Najkasniji početak punog ciklusa za ovaj datum: 06.12.2026. (minimum 12 nedelja). Do tada potvrđena baza i dužina moraju podržati punu pripremu; inače ostaju pomeranje trke, kraća distanca ili povratni režim."
+    ],
+    "unavailable": [
+      "Pomeranje trke do 52 nedelje kasnije ne daje punu pripremu sa trenutno potvrđenom bazom: najviše 24,9 km najduže i 62,2 km/ned. Prvo treba podići ponovljivu bazu i dužinu."
+    ],
+    "options": [
+      {
+        "id": "shorter-21097.5",
+        "title": "Kraća distanca: polumaraton istog datuma",
+        "raceDate": "2027-02-28",
+        "raceDistM": 21097.5,
+        "goalSec": null,
+        "coverage": "full",
+        "peakLongRunKm": 19.3,
+        "peakWeeklyKm": 47.2,
+        "demandingInReturnWindow": 0,
+        "maxKmInReturnWindow": 14.4
+      },
+      {
+        "id": "base",
+        "title": "Povratni/bazni režim do istog datuma, bez vremenskog cilja",
+        "raceDate": "2027-02-28",
+        "raceDistM": 42195,
+        "goalSec": null,
+        "coverage": "insufficient",
+        "peakLongRunKm": 24,
+        "peakWeeklyKm": 60,
+        "demandingInReturnWindow": 0,
+        "maxKmInReturnWindow": 16.6
+      }
+    ]
+  }
+]

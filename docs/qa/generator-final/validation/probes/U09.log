@@ -1,0 +1,247 @@
+{
+  "originalHash": "ac2f2d8428c259b299fa7f6d8b033fef0853c99c08a34ae6914eee3e191f0ecd",
+  "raw": {
+    "old": {
+      "counts": {
+        "weeks": 20,
+        "days": 140,
+        "runs": 80,
+        "sessions": 21,
+        "strides": 18,
+        "finishes": 0
+      },
+      "failures": [],
+      "peak": 49.1,
+      "lr": 17.7
+    },
+    "new": {
+      "counts": {
+        "weeks": 20,
+        "days": 140,
+        "runs": 80,
+        "sessions": 21,
+        "strides": 18,
+        "finishes": 0
+      },
+      "failures": [],
+      "peak": 49.1,
+      "lr": 17.7
+    }
+  },
+  "event": {
+    "primary": {
+      "old": {
+        "counts": {
+          "weeks": 20,
+          "days": 140,
+          "runs": 80,
+          "sessions": 11,
+          "strides": 13,
+          "finishes": 0,
+          "futureDays": 95,
+          "futureRuns": 54,
+          "protectedDays": 45,
+          "editableDays": 95,
+          "editableSessions": 5
+        },
+        "failures": [],
+        "protectedChanges": [],
+        "peak": 29,
+        "lr": 8.8
+      },
+      "new": {
+        "counts": {
+          "weeks": 20,
+          "days": 140,
+          "runs": 80,
+          "sessions": 11,
+          "strides": 13,
+          "finishes": 0,
+          "futureDays": 95,
+          "futureRuns": 54,
+          "protectedDays": 45,
+          "editableDays": 95,
+          "editableSessions": 5
+        },
+        "failures": [],
+        "protectedChanges": [],
+        "peak": 29,
+        "lr": 8.8
+      }
+    },
+    "protection": {
+      "old": {
+        "counts": {
+          "weeks": 20,
+          "days": 140,
+          "runs": 80,
+          "sessions": 13,
+          "strides": 13,
+          "finishes": 0,
+          "futureDays": 95,
+          "futureRuns": 53,
+          "protectedDays": 49,
+          "editableDays": 91,
+          "editableSessions": 5
+        },
+        "failures": [],
+        "protectedChanges": [],
+        "peak": 29.2,
+        "lr": 8.8
+      },
+      "new": {
+        "counts": {
+          "weeks": 20,
+          "days": 140,
+          "runs": 80,
+          "sessions": 13,
+          "strides": 13,
+          "finishes": 0,
+          "futureDays": 95,
+          "futureRuns": 53,
+          "protectedDays": 49,
+          "editableDays": 91,
+          "editableSessions": 5
+        },
+        "failures": [],
+        "protectedChanges": [],
+        "peak": 29.2,
+        "lr": 8.8
+      }
+    }
+  },
+  "choices": {
+    "shorter-10000": {
+      "change": {
+        "from": {
+          "raceDate": "2027-02-28",
+          "raceDistM": 42195,
+          "goalSec": 14400
+        },
+        "to": {
+          "raceDate": "2027-02-28",
+          "raceDistM": 10000,
+          "goalSec": null
+        }
+      },
+      "counts": {
+        "weeks": 20,
+        "days": 140,
+        "runs": 80,
+        "sessions": 18,
+        "strides": 16,
+        "finishes": 0,
+        "futureDays": 95,
+        "futureRuns": 54,
+        "protectedDays": 45,
+        "editableDays": 95,
+        "editableSessions": 12
+      },
+      "peak": 32.7,
+      "lr": 11.3,
+      "preparation": {
+        "endurance": "limited",
+        "goalStatus": "endurance-limited",
+        "peakLongRunKm": 11.3,
+        "peakWeeklyKm": 32.7,
+        "demandingDaysMax": 3,
+        "reasons": [
+          "Isporučeni vrhunac 32.7 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ],
+        "forecastBasis": "result-and-delivered-preparation"
+      },
+      "protectedChanges": [],
+      "failures": []
+    },
+    "base": {
+      "change": {
+        "from": {
+          "raceDate": "2027-02-28",
+          "raceDistM": 42195,
+          "goalSec": 14400
+        },
+        "to": {
+          "raceDate": "2027-02-28",
+          "raceDistM": 42195,
+          "goalSec": null
+        }
+      },
+      "counts": {
+        "weeks": 20,
+        "days": 140,
+        "runs": 80,
+        "sessions": 6,
+        "strides": 7,
+        "finishes": 0,
+        "futureDays": 95,
+        "futureRuns": 54,
+        "protectedDays": 45,
+        "editableDays": 95,
+        "editableSessions": 0
+      },
+      "peak": 29.8,
+      "lr": 10,
+      "preparation": {
+        "endurance": "limited",
+        "goalStatus": "endurance-limited",
+        "peakLongRunKm": 10,
+        "peakWeeklyKm": 29.8,
+        "demandingDaysMax": 0,
+        "reasons": [
+          "Najduže planirano trčanje je 10 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 29.8 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ],
+        "forecastBasis": "result-and-delivered-preparation"
+      },
+      "protectedChanges": [],
+      "failures": []
+    },
+    "unofferedExtension52w": {
+      "change": {
+        "from": {
+          "raceDate": "2027-02-28",
+          "raceDistM": 42195,
+          "goalSec": 14400
+        },
+        "to": {
+          "raceDate": "2028-02-27",
+          "raceDistM": 42195,
+          "goalSec": 14400
+        }
+      },
+      "counts": {
+        "weeks": 72,
+        "days": 504,
+        "runs": 288,
+        "sessions": 67,
+        "strides": 58,
+        "finishes": 0,
+        "futureDays": 459,
+        "futureRuns": 262,
+        "protectedDays": 45,
+        "editableDays": 459,
+        "editableSessions": 61
+      },
+      "peak": 42.2,
+      "lr": 17.7,
+      "preparation": {
+        "endurance": "limited",
+        "goalStatus": "endurance-limited",
+        "peakLongRunKm": 17.7,
+        "peakWeeklyKm": 42.2,
+        "demandingDaysMax": 3,
+        "reasons": [
+          "Najduže planirano trčanje je 17.7 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 42.2 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ],
+        "forecastBasis": "result-and-delivered-preparation"
+      },
+      "protectedChanges": [],
+      "failures": []
+    }
+  }
+}

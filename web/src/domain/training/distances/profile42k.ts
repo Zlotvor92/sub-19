@@ -12,6 +12,7 @@ import { progressionRun, type ProgressionParams } from '../sessions/progression'
 import { repetitions } from '../sessions/repetitions';
 import { continuousTempo, type TempoParams } from '../sessions/tempo';
 import type { FastFinish, SessionDay } from '../types';
+import { applyQualityDose, introductoryQuality } from './qualityDose';
 import type { DistanceProfile, LongRunCycleContext, Phase, QualityRequest } from './types';
 
 /** <33% izdržljivost, <73% prag, ostalo specifika. */
@@ -93,10 +94,11 @@ const mkMarathonPace = (dow: number, vol: number, pM: number, qualW: number): Se
       pM,
       90,
       Math.max(cd, 1),
-      'Maratonski tempo'
+      'Maratonski tempo',
+      'M'
     );
   }
-  return sessTempo(dow, wu, r1(q), pM, Math.max(cd, 1), 'Maratonski tempo');
+  return sessTempo(dow, wu, r1(q), pM, Math.max(cd, 1), 'Maratonski tempo', 'M');
 };
 
 const mkProgression = (
@@ -106,7 +108,8 @@ const mkProgression = (
   pE: number,
   share: number | null,
   atRacePace: boolean
-): SessionDay => progressionRun(PROGRESSION, dow, vol, endPace, pE, { share, atRacePace });
+): SessionDay =>
+  progressionRun(PROGRESSION, dow, vol, endPace, pE, { share, atRacePace, racePurpose: 'M' });
 
 const mkRepetitions = (dow: number, vol: number, pR: number): SessionDay =>
   repetitions({ minTotalKm: 1.0, ...H.repetitionBudget }, 200, dow, vol, pR);
@@ -120,7 +123,7 @@ function q1Family(phase: Phase, qualW: number): Family {
   return qualW % 4 === 3 ? 'I' : 'M';
 }
 
-function buildQuality42K(req: QualityRequest): SessionDay {
+function chooseQuality42K(req: QualityRequest): SessionDay {
   const { qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, isTaper1, dow, racePace } = req;
   const phase = phase42K(qualW, qualWeeks);
   const pM = racePace;
@@ -137,22 +140,29 @@ function buildQuality42K(req: QualityRequest): SessionDay {
         km,
         pM,
         r1(Math.max(tcd * 0.8, 0.8)),
-        'Maratonski tempo'
+        'Maratonski tempo',
+        'M'
       );
     }
     return mkTempo(dow, vol, pT, r1(Math.min(5, Math.max(2.5, vol * 0.07))));
   }
 
   if (effQ === 1) {
-    if (phase === 'endurance')
+    if (phase === 'endurance') {
+      if (req.readiness === 'experienced' || req.readiness === 'developing')
+        return qualW % 2 === 0 ? mkMarathonPace(dow, vol, pM, qualW) : mkCruise(dow, vol, pT);
       return qualW % 3 === 2 ? mkRepetitions(dow, vol, pR) : mkCruise(dow, vol, pT);
+    }
     if (phase === 'threshold')
       return qualW % 4 === 0 ? mkIntervals(dow, vol, pI, qualW) : mkCruise(dow, vol, pT);
     return qualW % 2 === 1 ? mkMarathonPace(dow, vol, pM, qualW) : mkTempo(dow, vol, pT);
   }
 
   if (slotRole === 'q1') {
-    const fam = q1Family(phase, qualW);
+    const fam =
+      phase === 'endurance' && (req.readiness === 'experienced' || req.readiness === 'developing')
+        ? 'M'
+        : q1Family(phase, qualW);
     if (fam === 'R') return mkRepetitions(dow, vol, pR);
     if (fam === 'I') return mkIntervals(dow, vol, pI, qualW);
     /* U fazi izdržljivosti maratonski tempo ide kao PROGRESIVNO trčanje — blaže je. */
@@ -164,6 +174,13 @@ function buildQuality42K(req: QualityRequest): SessionDay {
   /* q2: prag kroz ceo ciklus. */
   if (phase === 'endurance') return mkCruise(dow, vol, pT, share);
   return qualW % 2 === 1 ? mkTempo(dow, vol, pT, null, share) : mkCruise(dow, vol, pT, share);
+}
+
+function buildQuality42K(req: QualityRequest): SessionDay {
+  return applyQualityDose(introductoryQuality(req) ?? chooseQuality42K(req), {
+    ...req,
+    budgets: H
+  });
 }
 
 /** Poslednjih 5–12 km dugog trčanja na tempu maratona (samo u specifičnoj fazi, ne na vrhuncu ciklusa). */

@@ -1,0 +1,638 @@
+{
+  "scope": "Coverage and frozen-byte verification; independent AI review of synthetic domain payloads, not human performance validation.",
+  "userAgents": 10,
+  "userEvidenceFiles": 40,
+  "primaryCoachAgents": 4,
+  "initialScoredPlans": 80,
+  "initialReviewedPlanWeeks": 1296,
+  "eventReviewCount": 40,
+  "initialScoreHashesUnchanged": true,
+  "initialReviewHashesUnchanged": true,
+  "initialScoreFiles": [
+    {
+      "path": "coaches/5k-scores.json",
+      "sha256": "b26d0aeec0b2939e8061ce28db0ff5b1568bbc13cd9c4e51b4e8cc327e7ffaf5"
+    },
+    {
+      "path": "coaches/10k-scores.json",
+      "sha256": "d46269f19ce89d61265d2a3f229cc45edd29e8b6d626933863f69a7c20c9fcfe"
+    },
+    {
+      "path": "coaches/hm-scores.json",
+      "sha256": "5287d5103edb38b8f0c22ce11a4a5c7640545f9f3647b9283c70f6cebf267be0"
+    },
+    {
+      "path": "coaches/marathon-primary-scores.json",
+      "sha256": "cb6e47a6f87396ffe7bbd4eb13570829457652aa5f6a9dc9c521d2d365c9868e"
+    }
+  ],
+  "initialReviewHashes": {
+    "5k": "fd4975b89fbbf17e01ff32a4d5d11c9b7869ce4047f01de0cf1c612c892faf4b",
+    "10k": "dd7b1bf558d8f217103943c8af8d5c07261ddfb051c45bc5cb1be010130dd4cb",
+    "hm": "e810ed45c0491bba3dda8e9e7a821054a56d9c1e0e90e2ac9ab74bf466027770",
+    "marathon-primary": "04ca94dca4c9a56185960c32711f9dbe91b56d08d982c2e852afed4c114082c9"
+  },
+  "reviewers": [
+    {
+      "reviewer": "5k",
+      "json": "coaches/5k-events.json",
+      "markdown": "coaches/5k-events.md",
+      "sha256": "9f6942ccd25c57908bcf411cd3b8fdb38158163f72ef788d62f63030a2c9c826",
+      "reviewedProfiles": [
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06",
+        "U07",
+        "U08",
+        "U09",
+        "U10"
+      ],
+      "verdicts": [
+        {
+          "id": "U01",
+          "actualOutcome": "Obe verzije vraćaju single-miss preporuku bez regenerisanja; adjustment sadrži razlog odbijanja.",
+          "verdict": "Prihvatljivo za opisani jedan propušten trening."
+        },
+        {
+          "id": "U02",
+          "actualOutcome": "reduce, rezultat iz baze 23 km/ned; cilj i datum sačuvani.",
+          "verdict": "Smer smanjenja dobar; ispraviti tekst i individualno usloviti povratak kvaliteta."
+        },
+        {
+          "id": "U03",
+          "actualOutcome": "reduce; baza 53.1 se smanjuje na 45.1 km. U primarnom događaju nema merenja niti predloga bržeg tempa.",
+          "verdict": "Uslovno prikladno smanjenje; oporavak mora zavisiti od uzroka i nestanka visokog napora."
+        },
+        {
+          "id": "U04",
+          "actualOutcome": "Povratak iz prijavljenih 30 km na 25.5 km; prve dve kalendarske nedelje bez sesijskog kvaliteta.",
+          "verdict": "Trenažni smer prihvatljiv; tekstualna koherentnost ne prolazi."
+        },
+        {
+          "id": "U05",
+          "actualOutcome": "Obe primarne verzije menjaju želju na 40:00 bez ubrzavanja sesija; samo opis trke menja se. NEW čuva sve zasejane zaštite, OLD ih prepisuje.",
+          "verdict": "NEW prihvatljiv za promenu želje; OLD zaštitni scenario ima potvrđenu grešku očuvanja."
+        },
+        {
+          "id": "U06",
+          "actualOutcome": "Povratak iz 15 na 8.3 km; rezultat sačuvanog 10 K datuma 2027-01-31.",
+          "verdict": "Upotrebljiv povratak ka redovnosti; ne odobriti kao punu 10 K pripremu bez konkretnog alternativnog cilja."
+        },
+        {
+          "id": "U07",
+          "actualOutcome": "reduce; baza 25.7 km, sačuvan HM datum i želja.",
+          "verdict": "Uslovno prihvatljiv manje zahtevan plan; nije dovoljno opravdana puna HM priprema."
+        },
+        {
+          "id": "U08",
+          "actualOutcome": "GLAVNI zahtev odbijen:53 dana /8 kalendarskih nedelja manje od internog minimuma 10. Nema result niti izmenjenog datuma.",
+          "verdict": "Glavni zahtev ostaje nerešen, nije uspešan povratni plan. Dodatni rezultat ima koherentnosne nedostatke."
+        },
+        {
+          "id": "U09",
+          "actualOutcome": "Povratak 30→21 km; sačuvana maratonska trka 2027-02-28.",
+          "verdict": "Ne odobriti kao maratonsku pripremu; odobriti samo jasno preusmeren povratak ka redovnosti."
+        },
+        {
+          "id": "U10",
+          "actualOutcome": "Povratak 60→33 km; cilj 3:30 i datum 2027-02-28 ostaju.",
+          "verdict": "Dobar oprezan povratak; ne odobriti kao pun rezultatni maratonski ciklus."
+        }
+      ]
+    },
+    {
+      "reviewer": "10k",
+      "json": "coaches/10k-events.json",
+      "markdown": "coaches/10k-events.md",
+      "sha256": "874216b5b4529b02425f9cddfce72a9b6d3442d7f8f258248893ca78f3257d3b",
+      "reviewedProfiles": [
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06",
+        "U07",
+        "U08",
+        "U09",
+        "U10"
+      ],
+      "verdicts": [
+        {
+          "id": "U01",
+          "actualOutcome": {
+            "old": {
+              "recommendation": {
+                "kind": "single-miss",
+                "reason": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara.",
+                "actionable": false,
+                "requiresConfirmation": false,
+                "weeklyKm": 9.7,
+                "recentLongRunKm": 4.1,
+                "reasons": []
+              },
+              "error": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara.",
+              "goalChange": null
+            },
+            "new": {
+              "recommendation": {
+                "kind": "single-miss",
+                "reason": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara.",
+                "actionable": false,
+                "requiresConfirmation": false,
+                "weeklyKm": 8.8,
+                "recentLongRunKm": 3.5,
+                "reasons": []
+              },
+              "error": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara.",
+              "goalChange": null
+            }
+          },
+          "verdict": "appropriate_no_regeneration"
+        },
+        {
+          "id": "U02",
+          "actualOutcome": {
+            "recommendation": {
+              "kind": "reduce",
+              "reason": "Ponovljeni propušteni, preteški laki treninzi ili manji odrađeni obim opravdavaju pregled opterećenja.",
+              "actionable": true,
+              "requiresConfirmation": true,
+              "weeklyKm": 23,
+              "recentLongRunKm": 10.8,
+              "reasons": [
+                "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+              ]
+            },
+            "resultPresent": true,
+            "summary": "Plan prema odrađenoj bazi 23 km",
+            "executionAdjustment": {
+              "date": "2026-11-25",
+              "breakDays": 0,
+              "reportedBaseKm": 23,
+              "startingKm": 23
+            },
+            "preparation": {
+              "endurance": "developing",
+              "goalStatus": "needs-speed-improvement",
+              "peakLongRunKm": 12,
+              "peakWeeklyKm": 30.5,
+              "demandingDaysMax": 2,
+              "reasons": [
+                "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a."
+              ],
+              "forecastBasis": "result-and-delivered-preparation"
+            }
+          },
+          "verdict": "appropriate_reduction_with_text_fixes"
+        },
+        {
+          "id": "U03",
+          "actualOutcome": {
+            "recommendation": {
+              "kind": "reduce",
+              "reason": "Ponovljeni propušteni, preteški laki treninzi ili manji odrađeni obim opravdavaju pregled opterećenja.",
+              "actionable": true,
+              "requiresConfirmation": true,
+              "weeklyKm": 53.1,
+              "recentLongRunKm": 16.6,
+              "reasons": [
+                "Najmanje dva laka treninga imaju upisan napor 7–10; proveri umor pre težeg rada."
+              ]
+            },
+            "resultPresent": true,
+            "summary": "Plan prema odrađenoj bazi 45.1 km",
+            "executionAdjustment": {
+              "date": "2026-11-25",
+              "breakDays": 0,
+              "reportedBaseKm": 53.1,
+              "startingKm": 45.1
+            },
+            "preparation": {
+              "endurance": "developing",
+              "goalStatus": "needs-speed-improvement",
+              "peakLongRunKm": 16.6,
+              "peakWeeklyKm": 56.5,
+              "demandingDaysMax": 2,
+              "reasons": [
+                "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a."
+              ],
+              "forecastBasis": "result-and-delivered-preparation"
+            }
+          },
+          "verdict": "recovery_review_needed"
+        },
+        {
+          "id": "U04",
+          "actualOutcome": {
+            "recommendation": {
+              "kind": "return",
+              "reason": "Dnevnik nema novije trčanje. Potvrdi da li si pravio pauzu ili trenirao bez upisa.",
+              "actionable": false,
+              "requiresConfirmation": true,
+              "breakDays": 7,
+              "weeklyKm": 25.9,
+              "recentLongRunKm": 9.2,
+              "reasons": []
+            },
+            "resultPresent": true,
+            "summary": "Povratak posle 7 dana pauze, baza 25.5 km",
+            "executionAdjustment": {
+              "date": "2026-11-25",
+              "breakDays": 7,
+              "reportedBaseKm": 30,
+              "startingKm": 25.5
+            },
+            "preparation": {
+              "endurance": "limited",
+              "goalStatus": "needs-speed-improvement",
+              "peakLongRunKm": 10.7,
+              "peakWeeklyKm": 32.2,
+              "demandingDaysMax": 2,
+              "reasons": [
+                "Isporučeni vrhunac 32.2 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+                "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+                "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+              ],
+              "forecastBasis": "result-and-delivered-preparation"
+            }
+          },
+          "verdict": "appropriate_return_with_text_fixes"
+        },
+        {
+          "id": "U05",
+          "actualOutcome": {
+            "old": {
+              "recommendation": null,
+              "error": null,
+              "goalChange": {
+                "week": 7,
+                "from": 2520,
+                "to": 2400,
+                "changedWeeks": 10
+              }
+            },
+            "new": {
+              "recommendation": null,
+              "error": null,
+              "goalChange": {
+                "week": 7,
+                "from": 2520,
+                "to": 2400,
+                "changedWeeks": 1
+              }
+            }
+          },
+          "verdict": "new_preservation_pass_old_protected_defects"
+        },
+        {
+          "id": "U06",
+          "actualOutcome": {
+            "recommendation": {
+              "kind": "return",
+              "reason": "Dnevnik nema novije trčanje. Potvrdi da li si pravio pauzu ili trenirao bez upisa.",
+              "actionable": false,
+              "requiresConfirmation": true,
+              "breakDays": 28,
+              "reasons": [
+                "Poslednja pokrivena nedelja bez trčanja prekida oslonac na raniji veći obim.",
+                "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+              ]
+            },
+            "resultPresent": true,
+            "summary": "Povratak posle 28 dana pauze, baza 8.3 km",
+            "executionAdjustment": {
+              "date": "2026-11-25",
+              "breakDays": 28,
+              "reportedBaseKm": 15,
+              "startingKm": 8.3
+            },
+            "preparation": {
+              "endurance": "limited",
+              "goalStatus": "endurance-limited",
+              "peakLongRunKm": 4,
+              "peakWeeklyKm": 10.1,
+              "demandingDaysMax": 0,
+              "reasons": [
+                "Isporučeni vrhunac 10.1 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+                "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+                "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+              ],
+              "forecastBasis": "result-and-delivered-preparation"
+            }
+          },
+          "verdict": "return_only_not_10k_ready"
+        },
+        {
+          "id": "U07",
+          "actualOutcome": {
+            "recommendation": {
+              "kind": "reduce",
+              "reason": "Ponovljeni propušteni, preteški laki treninzi ili manji odrađeni obim opravdavaju pregled opterećenja.",
+              "actionable": true,
+              "requiresConfirmation": true,
+              "weeklyKm": 25.7,
+              "recentLongRunKm": 8.7,
+              "reasons": [
+                "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+              ]
+            },
+            "resultPresent": true,
+            "summary": "Plan prema odrađenoj bazi 25.7 km",
+            "executionAdjustment": {
+              "date": "2026-11-25",
+              "breakDays": 0,
+              "reportedBaseKm": 25.7,
+              "startingKm": 25.7
+            },
+            "preparation": {
+              "endurance": "limited",
+              "goalStatus": "needs-speed-improvement",
+              "peakLongRunKm": 11.4,
+              "peakWeeklyKm": 36,
+              "demandingDaysMax": 2,
+              "reasons": [
+                "Najduže planirano trčanje je 11.4 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+                "Isporučeni vrhunac 36 km/ned je ispod okvirne baze za pun vremenski pristup (45 km/ned).",
+                "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+                "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+              ],
+              "forecastBasis": "result-and-delivered-preparation"
+            }
+          },
+          "verdict": "appropriate_reduction_not_hm_ready"
+        },
+        {
+          "id": "U08",
+          "actualOutcome": {
+            "primary": {
+              "date": "2026-11-25",
+              "recommendation": {
+                "kind": "return",
+                "reason": "Dnevnik nema novije trčanje. Potvrdi da li si pravio pauzu ili trenirao bez upisa.",
+                "actionable": false,
+                "requiresConfirmation": true,
+                "breakDays": 14,
+                "recentLongRunKm": 13.6,
+                "reasons": [
+                  "Poslednja pokrivena nedelja bez trčanja prekida oslonac na raniji veći obim.",
+                  "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+                ]
+              },
+              "error": "Preostalo vreme ne podržava novi pun ciklus: Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća. Datum trke nije automatski pomeren.",
+              "resultPresent": false,
+              "remainingDays": 53,
+              "newCycleCalendarWeeks": 8,
+              "inputHashesEqual": true
+            },
+            "supplementalEarlier": {
+              "date": "2026-10-28",
+              "recommendation": {
+                "kind": "return",
+                "reason": "Dnevnik nema novije trčanje. Potvrdi da li si pravio pauzu ili trenirao bez upisa.",
+                "actionable": false,
+                "requiresConfirmation": true,
+                "breakDays": 14,
+                "recentLongRunKm": 9.9,
+                "reasons": [
+                  "Poslednja pokrivena nedelja bez trčanja prekida oslonac na raniji veći obim.",
+                  "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+                ]
+              },
+              "error": null,
+              "resultPresent": true,
+              "remainingDays": 81,
+              "newCycleCalendarWeeks": 12,
+              "inputHashesEqual": true
+            }
+          },
+          "verdict": "primary_rejected_supplement_return_with_text_fixes"
+        },
+        {
+          "id": "U09",
+          "actualOutcome": {
+            "recommendation": {
+              "kind": "return",
+              "reason": "Dnevnik nema novije trčanje. Potvrdi da li si pravio pauzu ili trenirao bez upisa.",
+              "actionable": false,
+              "requiresConfirmation": true,
+              "breakDays": 14,
+              "recentLongRunKm": 8.8,
+              "reasons": [
+                "Poslednja pokrivena nedelja bez trčanja prekida oslonac na raniji veći obim.",
+                "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+              ]
+            },
+            "resultPresent": true,
+            "summary": "Povratak posle 14 dana pauze, baza 21 km",
+            "executionAdjustment": {
+              "date": "2026-11-25",
+              "breakDays": 14,
+              "reportedBaseKm": 30,
+              "startingKm": 21
+            },
+            "preparation": {
+              "endurance": "limited",
+              "goalStatus": "endurance-limited",
+              "peakLongRunKm": 8.8,
+              "peakWeeklyKm": 29,
+              "demandingDaysMax": 1,
+              "reasons": [
+                "Najduže planirano trčanje je 8.8 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+                "Isporučeni vrhunac 29 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+                "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+                "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+                "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+              ],
+              "forecastBasis": "result-and-delivered-preparation"
+            }
+          },
+          "verdict": "return_only_not_marathon_ready"
+        },
+        {
+          "id": "U10",
+          "actualOutcome": {
+            "recommendation": {
+              "kind": "return",
+              "reason": "Dnevnik nema novije trčanje. Potvrdi da li si pravio pauzu ili trenirao bez upisa.",
+              "actionable": false,
+              "requiresConfirmation": true,
+              "breakDays": 28,
+              "reasons": [
+                "Poslednja pokrivena nedelja bez trčanja prekida oslonac na raniji veći obim.",
+                "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+              ]
+            },
+            "resultPresent": true,
+            "summary": "Povratak posle 28 dana pauze, baza 33 km",
+            "executionAdjustment": {
+              "date": "2026-11-25",
+              "breakDays": 28,
+              "reportedBaseKm": 60,
+              "startingKm": 33
+            },
+            "preparation": {
+              "endurance": "limited",
+              "goalStatus": "needs-speed-improvement",
+              "peakLongRunKm": 17.3,
+              "peakWeeklyKm": 47.4,
+              "demandingDaysMax": 2,
+              "reasons": [
+                "Najduže planirano trčanje je 17.3 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+                "Isporučeni vrhunac 47.4 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+                "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+                "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+                "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+              ],
+              "forecastBasis": "result-and-delivered-preparation"
+            }
+          },
+          "verdict": "return_only_not_marathon_ready"
+        }
+      ]
+    },
+    {
+      "reviewer": "hm",
+      "json": "coaches/hm-events.json",
+      "markdown": "coaches/hm-events.md",
+      "sha256": "d1b5f8663a421018bc9eb872ee25a4c1ad8dbb7e1aba511cf0083ecb850a148d",
+      "reviewedProfiles": [
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06",
+        "U07",
+        "U08",
+        "U09",
+        "U10"
+      ],
+      "verdicts": [
+        {
+          "id": "U01",
+          "actualOutcome": "Old i new: single-miss; nema novog plana. Error je očekivano odbijanje regeneracije, ne greška rada.",
+          "verdict": "prihvatljivo"
+        },
+        {
+          "id": "U02",
+          "actualOutcome": "Prepoznate dve pune nedelje na 55% distance; reduce sa potvrdom, baza 23 km/ned i LR 10.8; novi budući sadržaj počinje 2026-11-26. Ne izmišlja se pauza.",
+          "verdict": "prihvatljiv princip redukcije; doraditi koherentnost"
+        },
+        {
+          "id": "U03",
+          "actualOutcome": "Dva laka RPE8 dana pokreću reduce sa potvrdom: polazna baza53.1→45.1 km i LR 16.6→14.1. Primarno nema pace evidence; pozitivna dopunska kontrola VDOT51.2/tri dana bi predložila ubrzanje, ali recovery gate vraća null.",
+          "verdict": "prihvatljiva reakcija uz uslovnu proveru umora"
+        },
+        {
+          "id": "U04",
+          "actualOutcome": "Return zahteva potvrdu; potvrđena prijavljena baza30 km daje85%=25.5 km i LR 9.2→7.8; dve početne kalendarske povratne nedelje strukturalno bez kvaliteta.",
+          "verdict": "razumna struktura povratka; potvrđene tekstualne greške"
+        },
+        {
+          "id": "U05",
+          "actualOutcome": "Obe varijante čuvaju datum2027-01-31 i menjaju želju42→40 min. Nezavisni day diff: u obe primarne varijante menja se samo g16d7 opis trke; fizički trening/pace ostaje isti. New eksplicitno čuva referencu45 min, old automatski projicira42:13.",
+          "verdict": "new reakcija prihvatljiva; old zaštitna varijanta ima potvrđen kvar"
+        },
+        {
+          "id": "U06",
+          "actualOutcome": "Return sa potvrdom posle 28d; prijavljenih15 km→55%=8.3 km; LR 4→2.2. Četiri početne kalendarske nedelje bez session/finish/strides objekata; stari PB posebno ograničen.",
+          "verdict": "oprezan povratak; tekst doraditi i nastup10K preispitati"
+        },
+        {
+          "id": "U07",
+          "actualOutcome": "Dve pune nedelje60% km bez pauze/RPE problema: reduce sa potvrdom i odrađena baza25.7 km/LR 8.7. Cilj1:45 ostaje želja; priprema izričito ograničena.",
+          "verdict": "redukcija opravdana;HM vremenski cilj ograničen, metadata doraditi"
+        },
+        {
+          "id": "U08",
+          "actualOutcome": "PRIMARY return preporuka zahteva potvrdu, ali adjustment odbija novi pun ciklus:53 dana/8kalendarske nedelje do01-17; nema result-a i datum nije pomeren.",
+          "verdict": "PRIMARY očekivano odbijanje;EARLIER zasebna prihvatljiva struktura uz tekstualne greške"
+        },
+        {
+          "id": "U09",
+          "actualOutcome": "Return sa potvrdom;30 km→70%=21 km iLR 10→7. Tri početne kalendarske nedelje bez novog kvaliteta; datum02-28 i želja4 h sačuvani; jasna ograničena maratonska priprema.",
+          "verdict": "povratna struktura razumna;nastupmaratona nepodržan,tekst doraditi"
+        },
+        {
+          "id": "U10",
+          "actualOutcome": "Return sa potvrdom posle 28d;60 km→55%=33 km iLR 24→13.2; četiri početnekalendarske nedelje bez session/finish/strides. Iskustvo ostaje, trenutna forma nije pretpostavljena.",
+          "verdict": "oprezan povratak sa tekstualnim greškama;maratonska spremnost ograničena"
+        }
+      ]
+    },
+    {
+      "reviewer": "marathon-primary",
+      "json": "coaches/marathon-primary-events.json",
+      "markdown": "coaches/marathon-primary-events.md",
+      "sha256": "1558e36e5994296f7e2469f266e50cda6a9214b8c8560ee9ae31a1c29ebf461c",
+      "reviewedProfiles": [
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06",
+        "U07",
+        "U08",
+        "U09",
+        "U10"
+      ],
+      "verdicts": [
+        {
+          "id": "U01",
+          "actualOutcome": "Obe verzije i oskudna kontrola daju single-miss, bez regeneracije; nastavak rasporeda bez nadoknade kilometara.",
+          "verdict": "PROLAZ: događaj obrađen proporcionalno i bez nadoknade."
+        },
+        {
+          "id": "U02",
+          "actualOutcome": "Reduce uz potvrdu; actual recentWeeklyKm 23 i LR10.8; novi nominalni početak 23 km. Pauza nije zaključena iz skraćenih treninga.",
+          "verdict": "USLOVNI PROLAZ: redukcija i očuvanje su dobri; tekst rasporeda treba popraviti."
+        },
+        {
+          "id": "U03",
+          "actualOutcome": "Reduce uz potvrdu; reported 53.1→starting 45.1 km i LR16.6→14.1. Primary nema merenih novih dokaza forme. U odvojenoj pozitivnoj kontrolnoj evidenciji brži predlog je blokiran.",
+          "verdict": "USLOVNI PROLAZ: blokada ubrzanja radi; fazu oporavka posle visoke RPE treba preispitati."
+        },
+        {
+          "id": "U04",
+          "actualOutcome": "Return zahteva potvrdu; 85% eksplicitne 30-kmbaze=25.5 km, LR9.2×.85=7.8; dva početna kalendarska povratna perioda bez strukturisanog kvaliteta.",
+          "verdict": "USLOVNI PROLAZ: povratak smislen; potvrđene greške teksta odstupaju od pravila povratka."
+        },
+        {
+          "id": "U05",
+          "actualOutcome": "Obe verzije menjaju cilj 42:00→40:00. Nezavisni diff primary u obe verzije nalazi samo jedan promenjeni dan: tekst trke 31. januara; kilometri i session tempa ostaju isti.",
+          "verdict": "PROLAZ NEW: želja ne proizvodi novu formu; OLD poruka ostaje nejasna."
+        },
+        {
+          "id": "U06",
+          "actualOutcome": "Return zahteva potvrdu;15 km×55%=8.3 nominalne baze, četiri početna kalendarska perioda bez structured kvaliteta; budući vrh 10.1 km, LR4 km.",
+          "verdict": "USLOVNI PROLAZ ZA POVRATAK; NEPODRŽANA PUNA10K PRIPREMA. Popraviti tekstualne greške."
+        },
+        {
+          "id": "U07",
+          "actualOutcome": "Reduce uz potvrdu; recent 25.7 km i LR8.7. Svi termini su upisani i završeni, nema pauze, preskakanja ili izmišljenog nultog obima.",
+          "verdict": "USLOVNI PROLAZ ZA REDUKCIJU; HM SPREMNOST OSTAJE OGRANIČENA."
+        },
+        {
+          "id": "U08",
+          "actualOutcome": "PRIMARY JE ODBIJEN: error navodi manje od 10 nedelja do HM; nema result, nema pomeranja trke 17. januara. SUPPLEMENTAL28. oktobra je odvojeno dopušten i nije zamena za primary.",
+          "verdict": "PRIMARY GATE PROLAZI; PRAKTIČAN POVRATNI FALLBACK NIJE ISPORUČEN. SUPPLEMENTAL ima tekstualne greške."
+        },
+        {
+          "id": "U09",
+          "actualOutcome": "Return uz potvrdu;30-km i 10-km LR izričito prijavljene baze skalarno daju 21 km/7 km; tri početna kalendarska perioda bez structured kvaliteta. Trka 28. februara ostaje.",
+          "verdict": "DOBAR OPREZAN POVRATAK U STRUKTURI; NIJE PUNA MARATONSKA PRIPREMA. Tekst sadrži potvrđene nedoslednosti."
+        },
+        {
+          "id": "U10",
+          "actualOutcome": "Return uz potvrdu; eksplicitna 60-km/24-km baza postaje 33 km/13.2 km, četiri laka početna kalendarska perioda; originalni cilj 3:30 i datum 28. februara ostaju.",
+          "verdict": "USLOVNI PROLAZ ZA POVRATAK; NEMA DOVOLJNO PONOVLJENE MARATONSKE IZDRŽLJIVOSTI DO OSTAVLJENE TRKE."
+        }
+      ]
+    }
+  ]
+}

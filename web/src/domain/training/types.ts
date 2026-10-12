@@ -2,7 +2,7 @@
    TIPOVI GENERATORA PLANA — WIRE OBLIK.
 
    Izlaz `generatePlan` je istovremeno i PERZISTIRANI oblik (`S.genPlan` u
-   `user_state.data`, schema v11). Zato polja zadržavaju stara imena (`tag`,
+   `user_state.data`, schema v12). Zato polja zadržavaju stara imena (`tag`,
    `desc`, `km`, `session.type`, `p5k`, …) i ne smeju se preimenovati bez bump-a
    SCHEMA i unazad-kompatibilnog čitanja — v. docs/REWRITE_PLAN.md odluka B.
 
@@ -13,6 +13,53 @@
 import type { IsoDate } from '../date';
 
 export type Intensity = 'kons' | 'std' | 'agr';
+export type QualityReadiness = 'beginner' | 'returning' | 'developing' | 'experienced';
+export type QualityExperience = 'none' | 'some' | 'experienced';
+
+export interface AthleteAssessment {
+  qualityReadiness: QualityReadiness;
+  /** Current load tolerance is separate from confirmed historical continuity. */
+  currentReadiness?: 'normal' | 'returning' | 'fatigued' | 'reduced-volume';
+  weeklyBaseKm: number;
+  repeatableLongRunKm: number;
+  longRunBasis: 'reported' | 'inferred';
+  consistentWeeks: number | null;
+  breakWeeks: number;
+  resultAgeDays: number | null;
+  speedConfidence: 'recent-result' | 'undated-result' | 'stale-result' | 'returning';
+  assumptions: string[];
+}
+
+/** Koliko se istorijska referenca brzine sme koristiti za propisivanje rada. */
+export interface FormPolicy {
+  /** `effort-first`: napor vodi, ritam je samo orijentir iz starog rezultata. */
+  basis: 'confirmed' | 'effort-first';
+  reason: string;
+  /** Uslovi za uvođenje zahtevnijeg rada; prazno kad je forma potvrđena. */
+  entryConditions: string[];
+}
+
+/** Faza trčanja/hoda: koraci lestvice po nedelji i prelaz koji korisnik mora da potvrdi. */
+export interface RunWalkPhase {
+  /** Korak lestvice (1–4) za svaku nedelju faze, redom. */
+  ladder: number[];
+  /** Prva nedelja sa neprekidnim trčanjem; probna dok se tolerancija ne potvrdi. */
+  transitionWeek: number;
+  /** Effective calendar anchor after grafting into an existing plan. */
+  transitionStart?: IsoDate;
+  conditions: string[];
+}
+
+export interface PreparationAssessment {
+  endurance: 'limited' | 'developing' | 'supported';
+  goalStatus: 'needs-speed-improvement' | 'endurance-limited' | 'reference-only';
+  peakLongRunKm: number;
+  peakWeeklyKm: number;
+  demandingDaysMax: number;
+  reasons: string[];
+  /** No validated individual improvement model: the reference is not a forecast. */
+  forecastBasis: 'result-and-delivered-preparation';
+}
 export type Zone = 'I' | 'T' | 'M' | 'E' | 'LR' | 'R';
 
 /** Podržane ciljne distance u metrima. Ključ profila distance. */
@@ -39,8 +86,12 @@ export interface Strides {
 
 /* ---------- sesije (kvalitetni treninzi) ---------- */
 
+export type SessionPurpose = 'T' | 'I' | 'R' | 'RP' | 'M' | 'activation';
+
 interface SessionBase {
-  /** Naziv sesije („Intervali", „Tempo isprekidan", …) — iz njega se izvodi zona. */
+  /** Explicit prescription intent; optional for historical stored sessions. */
+  purpose?: SessionPurpose;
+  /** Display label; measured-form inference has a separate legacy map. */
   kind: string;
   wuKm: number;
   cdKm: number;
@@ -51,6 +102,8 @@ interface SessionBase {
   paceSec0?: number;
   zone?: Zone | 'RP';
   paceSource?: 'current-fitness' | 'race-specific';
+  /** `reference`: ritam iz neproverene reference (star rezultat/pauza), vodi se naporom. `measured`: prilagođen merenjem. */
+  paceBasis?: 'reference' | 'measured';
   /** Coaching instructions are not replaced when kilometres are recalculated. */
   notes?: string;
 }
@@ -177,20 +230,38 @@ export interface PredictionRow {
   q: number;
   pt: number;
   p5k: number;
+  /** Explicit prescription zone; legacy rows fall back to their kind label. */
+  zone?: Zone | 'RP';
   /** Sesija čiji je propis izveden iz cilja — ne sme se čitati kao merenje forme. */
   nemeri?: true;
 }
 
 export interface Assessment {
+  /** Absent on legacy stored projections; no schema migration needed. */
+  assessmentBasis?: 'current-fitness';
   vdot0: number;
+  /** Legacy name: new plans use current-fitness reference, not projected improvement. */
   vdotGoal: number;
+  /** Current-fitness race equivalent; not a promise of readiness or future improvement. */
   predictedSec: number;
   realno: boolean | null;
   goalVdot: number | null;
 }
 
 export interface PlanMeta extends Assessment {
-  /** New plans prescribe current fitness; vdotGoal is a projection only. */
+  /** Optional additions preserve reading of plans created before phase 2. */
+  athlete?: AthleteAssessment;
+  preparation?: PreparationAssessment;
+  formPolicy?: FormPolicy;
+  runWalk?: RunWalkPhase;
+  /** Calendar recovery guard survives subsequent goal changes and recalibration. */
+  fatigueRecovery?: {
+    start: IsoDate;
+    end: IsoDate;
+    weekCapsKm: Record<string, number>;
+    dayCapsKm?: Record<string, number>;
+  };
+  /** New plans prescribe current fitness. Older plans may retain projected vdotGoal. */
   trainingVdot?: number;
   start: IsoDate;
   weeks: number;
@@ -227,6 +298,7 @@ export const isPlanError = (r: PlanGenerationResult): r is PlanError => 'error' 
 export interface PersonalBest {
   distM: number;
   sec: number;
+  date?: string;
 }
 
 export interface PlanGenerationInput {
@@ -236,11 +308,20 @@ export interface PlanGenerationInput {
   raceDistM?: number;
   pb: PersonalBest;
   weeklyKm: number;
+  /** Recent repeatable long run, not the lifetime maximum. */
+  recentLongRunKm?: number;
+  /** Temporary readiness constraint; never replaces historical continuity. */
+  currentReadiness?: { reason: 'fatigued' | 'reduced-volume' | 'returning'; until: IsoDate };
+  /** Confirmed running continuity at assessment; retained as history during replanning. */
+  consistentWeeks?: number;
+  /** Recent break before the current base, in weeks. */
+  breakWeeks?: number;
+  qualityExperience?: QualityExperience;
   /** 2–7, podrazumevano 4. */
   runDays?: number;
   /** 1–2, podrazumevano 2. */
   quality?: number;
-  /** Tempo napretka FORME (rast VDOT-a). */
+  /** Quality dose preference; never projects fitness gains or changes training pace. */
   intensity: Intensity;
   /**
    * Tempo rasta OBIMA (nedeljni korak i vrhunac). Izostavljeno = isto kao `intensity` — tako se ponašaju svi planovi napravljeni
@@ -250,6 +331,11 @@ export interface PlanGenerationInput {
   goalSec?: number | null;
   /** Samo `false` znači „početnik"; izostavljeno = treniran. */
   trainedRecently?: boolean;
+  /**
+   * Koraci lestvice trčanje/hod (1–4) po nedelji početničke faze, npr. `[3, 3, 4]` = zadrži korak 3 dve nedelje.
+   * Izostavljeno = standardna lestvica 1→4. Samo za početnike.
+   */
+  runWalkLadder?: number[];
   /** Dan dugog trčanja 1–7 (podrazumevano 7). */
   lrDow?: number;
   qDows?: number[];

@@ -1,0 +1,2231 @@
+{
+  "reviewer": "10k",
+  "blinded": true,
+  "criteriaWeights": {
+    "fit": 20,
+    "quality": 20,
+    "progression": 15,
+    "recovery": 15,
+    "specificity": 10,
+    "taper": 10,
+    "coherence": 10
+  },
+  "plans": [
+    {
+      "profileId": "U01",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 7,
+        "progression": 7,
+        "recovery": 8,
+        "specificity": 7,
+        "taper": 7,
+        "coherence": 8
+      },
+      "total": 74.5,
+      "weeksReviewed": 12,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "7.3km; longest LR/run-walk 2.9km; formal work 0min; d1:rw 2.4km, d2:snaga, d3:rw 2km, d4:rest, d5:rest, d6:rest, d7:rw 2.9km. Gentle 1:1 run/walk respects absence of continuity; Sunday to Monday is still back-to-back."
+        },
+        {
+          "week": 2,
+          "note": "7.7km; longest LR/run-walk 3km; formal work 0min; d1:rw 2.4km, d2:snaga, d3:rw 2.3km, d4:rest, d5:rest, d6:rest, d7:rw 3km. Longer running bouts plus slight distance increase; repeat if the effort or symptoms deteriorate."
+        },
+        {
+          "week": 3,
+          "note": "8.3km; longest LR/run-walk 3.1km; formal work 0min; d1:rw 2.6km, d2:snaga, d3:rw 2.6km, d4:rest, d5:rest, d6:rest, d7:rw 3.1km. 3:1 bouts increase running fraction; total volume remains low and manageable."
+        },
+        {
+          "week": 4,
+          "note": "6.1km; longest LR/run-walk 2.3km; formal work 0min; d1:rw 1.9km, d2:snaga, d3:rw 1.9km, d4:rest, d5:rest, d6:rest, d7:rw 2.3km. Distance deload offsets move to 5:1 bouts; the focus text promises sharpness though no strides are present."
+        },
+        {
+          "week": 5,
+          "note": "9.3km; longest LR/run-walk 3.5km; formal work 0min; d1:lako 2.9km, d2:snaga, d3:lako 2.9km, d4:rest, d5:rest, d6:rest, d7:lr 3.5km. Trial of continuous running explicitly depends on conversational, pain-free prior runs; repeat 5:1 if not ready."
+        },
+        {
+          "week": 6,
+          "note": "9.6km; longest LR/run-walk 3.8km; formal work 0min; d1:lako 2.8km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 3.8km. Strides now follow a separate continuous-running trial week, a sensible ordering if that trial succeeded."
+        },
+        {
+          "week": 7,
+          "note": "11km; longest LR/run-walk 4.1km; formal work 3min; d1:lako 3km, d2:snaga, d3:int 3.9km, d4:rest, d5:rest, d6:rest, d7:lr 4.1km. Three minutes controlled fartlek is an introduction, not a large threshold stimulus; recovery is generous."
+        },
+        {
+          "week": 8,
+          "note": "8km; longest LR/run-walk 3km; formal work 0min; d1:lako 2.5km, d2:snaga, d3:lako 2.5km, d4:rest, d5:rest, d6:rest, d7:lr 3km. Lower volume and short strides are sensible consolidation; no formal quality session."
+        },
+        {
+          "week": 9,
+          "note": "11.7km; longest LR/run-walk 4.3km; formal work 3min; d1:lako 3.4km, d2:snaga, d3:int 4km, d4:rest, d5:rest, d6:rest, d7:lr 4.3km. Three minutes faster work changes speed more than dose; easy majority retained."
+        },
+        {
+          "week": 10,
+          "note": "12.4km; longest LR/run-walk 4.6km; formal work 5.25min; d1:lako 3.4km, d2:snaga, d3:int 4.4km, d4:rest, d5:rest, d6:rest, d7:lr 4.6km. Two 400s total about 5.25 minutes; modest starter dose, not evidence of goal-time fitness."
+        },
+        {
+          "week": 11,
+          "note": "8km; longest LR/run-walk 2.9km; formal work 5.6min; d1:lako 2.3km, d2:snaga, d3:int 2.8km, d4:rest, d5:rest, d6:rest, d7:lr 2.9km. Volume falls and 800m at current 5K rhythm maintains familiarity; race-pace work need not be called VO2 work."
+        },
+        {
+          "week": 12,
+          "note": "8km; longest LR/run-walk 0km; formal work 0min; d1:lako 1.5km, d2:rest, d3:lako 1.5km, d4:rest, d5:rest, d6:rest, d7:trka 5km. Two short shakeouts and several rest days; 5K exceeds prior continuous LR only modestly, but 30:00 is unverified."
+        }
+      ],
+      "strengths": [
+        "Low starting distance and run/walk fit absent continuity.",
+        "Continuous-running transition explicitly conditional on effort and pain.",
+        "Current-result reference separated from aspirational goal; endurance limitations acknowledged."
+      ],
+      "concerns": [
+        {
+          "week": 5,
+          "day": 7,
+          "claim": "Distance jumps while moving toward continuous running; readiness instruction must govern the actual day.",
+          "severity": "coaching",
+          "evidence": "6.1km run/walk week 4 to 9.3km week 5, including 3.5km continuous trial; trial repeat rule mitigates the concern."
+        },
+        {
+          "week": 12,
+          "day": 7,
+          "claim": "Goal-time readiness remains unverified; internal 30km/week threshold is not a universal 5K requirement.",
+          "severity": "coaching",
+          "evidence": "Peak 12.4km/week, longest continuous run 4.6km, recent 35:00 result and 30:00 desire; plan warns limited preparation."
+        }
+      ],
+      "verdict": "Reasonable cautious introductory 5K plan if transition gate is honored; goal performance remains unverified."
+    },
+    {
+      "profileId": "U01",
+      "side": "Y",
+      "criteria": {
+        "fit": 6.5,
+        "quality": 6,
+        "progression": 5.5,
+        "recovery": 6.5,
+        "specificity": 6.5,
+        "taper": 7,
+        "coherence": 7
+      },
+      "total": 63.5,
+      "weeksReviewed": 12,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "7.3km; longest LR/run-walk 2.9km; formal work 0min; d1:rw 2.4km, d2:snaga, d3:rw 2km, d4:rest, d5:rest, d6:rest, d7:rw 2.9km. Gentle 1:1 run/walk beginning with three runs; consecutive Sunday/Monday requires tolerance monitoring."
+        },
+        {
+          "week": 2,
+          "note": "7.7km; longest LR/run-walk 3km; formal work 0min; d1:rw 2.4km, d2:snaga, d3:rw 2.3km, d4:rest, d5:rest, d6:rest, d7:rw 3km. 2:1 running fraction increases while distance rises modestly; no individualized repeat rule in the day text."
+        },
+        {
+          "week": 3,
+          "note": "8.3km; longest LR/run-walk 3.1km; formal work 0min; d1:rw 2.6km, d2:snaga, d3:rw 2.6km, d4:rest, d5:rest, d6:rest, d7:rw 3.1km. 3:1 bouts remain short; the calendar alone does not establish that the runner has adapted."
+        },
+        {
+          "week": 4,
+          "note": "6.1km; longest LR/run-walk 2.3km; formal work 0min; d1:rw 1.9km, d2:snaga, d3:rw 1.9km, d4:rest, d5:rest, d6:rest, d7:rw 2.3km. Distance reduction helps but running fraction advances to 5:1 during the deload."
+        },
+        {
+          "week": 5,
+          "note": "9.3km; longest LR/run-walk 3.5km; formal work 0min; d1:lako 2.9km, d2:snaga, d3:lako 2.9km, d4:rest, d5:rest, d6:rest, d7:lr 3.5km. Continuous running and 6 strides start together without a transition-readiness instruction; too automatic."
+        },
+        {
+          "week": 6,
+          "note": "9.6km; longest LR/run-walk 3.8km; formal work 0min; d1:lako 2.8km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 3.8km. Continuous runs and strides repeat; useful only if week 5 was tolerated, which the static plan cannot know."
+        },
+        {
+          "week": 7,
+          "note": "11km; longest LR/run-walk 4.1km; formal work 3min; d1:lako 3km, d2:snaga, d3:int 3.9km, d4:rest, d5:rest, d6:rest, d7:lr 4.1km. Three-minute gentle fartlek is an appropriate first quality dose, conditional on prior weeks actually being completed."
+        },
+        {
+          "week": 8,
+          "note": "8km; longest LR/run-walk 3km; formal work 0min; d1:lako 2.5km, d2:snaga, d3:lako 2.5km, d4:rest, d5:rest, d6:rest, d7:lr 3km. Short strides and reduced mileage are appropriate recovery structure."
+        },
+        {
+          "week": 9,
+          "note": "11.7km; longest LR/run-walk 4.3km; formal work 3min; d1:lako 3.4km, d2:snaga, d3:int 4km, d4:rest, d5:rest, d6:rest, d7:lr 4.3km. Faster 60-second efforts total only three minutes; safe-looking dose is not a guarantee of readiness."
+        },
+        {
+          "week": 10,
+          "note": "12.4km; longest LR/run-walk 4.6km; formal work 5.25min; d1:lako 3.4km, d2:snaga, d3:int 4.4km, d4:rest, d5:rest, d6:rest, d7:lr 4.6km. Two 400s introduce longer bouts with walking recovery; suitable modest work if the base is established."
+        },
+        {
+          "week": 11,
+          "note": "8km; longest LR/run-walk 2.9km; formal work 5.6min; d1:lako 2.3km, d2:snaga, d3:int 2.8km, d4:rest, d5:rest, d6:rest, d7:lr 2.9km. Race-rhythm 400s are familiarization; 126-second recovery is ample but less continuous than necessary."
+        },
+        {
+          "week": 12,
+          "note": "8km; longest LR/run-walk 0km; formal work 0min; d1:lako 1.5km, d2:rest, d3:lako 1.5km, d4:rest, d5:rest, d6:rest, d7:trka 5km. Short shakeouts protect freshness; conservative reference and unsupported 30:00 desire are distinguished."
+        }
+      ],
+      "strengths": [
+        "Run/walk start is conservative.",
+        "Formal quality delayed and modest.",
+        "Goal/reference distinction and preparation limitations are explicit."
+      ],
+      "concerns": [
+        {
+          "week": 5,
+          "day": 1,
+          "claim": "Run/walk to continuous running plus strides is automatic without a tolerance-based transition rule.",
+          "severity": "coaching",
+          "evidence": "Week 4 uses 5min run/1min walk; week 5 prescribes 2.9km continuous + 6x20s strides, with no repeat instruction."
+        },
+        {
+          "week": 11,
+          "day": 3,
+          "claim": "Long walk recovery reduces continuity of race-rhythm familiarization.",
+          "severity": "coaching",
+          "evidence": "2x400m at 7:00/km with 126s walking, versus 168s per rep."
+        },
+        {
+          "week": 12,
+          "day": 7,
+          "claim": "Desired goal is not established by delivered low-base preparation.",
+          "severity": "coaching",
+          "evidence": "35:00 current result, 30:00 desire, 4.6km peak continuous LR; explicit limitation helps but does not supply adaptation."
+        }
+      ],
+      "verdict": "Conservative first month but continuous-running transition needs an explicit tolerance rule before use."
+    },
+    {
+      "profileId": "U02",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 7,
+        "progression": 6.5,
+        "recovery": 8,
+        "specificity": 7,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 74.75,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "31.6km; longest LR/run-walk 10km; formal work 2.5min; d1:lako 8km, d2:snaga, d3:int 6.7km, d4:rest, d5:lako 6.9km, d6:rest, d7:lr 10km. Four runs fit schedule; 2.5-minute fartlek is cautious for a runner with some quality experience."
+        },
+        {
+          "week": 2,
+          "note": "32.7km; longest LR/run-walk 10.8km; formal work 2.25min; d1:lako 8km, d2:snaga, d3:int 6.3km, d4:rest, d5:lako 7.6km, d6:rest, d7:lr 10.8km. Fartlek work drops slightly to 2.25 minutes, so mileage grows while stimulus does not."
+        },
+        {
+          "week": 3,
+          "note": "34km; longest LR/run-walk 11.6km; formal work 14.95min; d1:lako 8.6km, d2:snaga, d3:int 6.3km, d4:rest, d5:tempo 7.5km, d6:rest, d7:lr 11.6km. First two-workout week has only 3 short speed reps plus 11 minutes threshold; measured introduction."
+        },
+        {
+          "week": 4,
+          "note": "24.8km; longest LR/run-walk 8.4km; formal work 0min; d1:lako 6.2km, d2:snaga, d3:lako 5.4km, d4:rest, d5:lako 4.8km, d6:rest, d7:lr 8.4km. All-easy deload with strides reduces both distance and formal intensity."
+        },
+        {
+          "week": 5,
+          "note": "37km; longest LR/run-walk 12.5km; formal work 21.11min; d1:lako 9.9km, d2:snaga, d3:int 7.1km, d4:rest, d5:tempo 7.5km, d6:rest, d7:lr 12.5km. Two 1K reps plus 12-minute threshold builds modest aerobic quality but still few repetitions."
+        },
+        {
+          "week": 6,
+          "note": "38.5km; longest LR/run-walk 13.5km; formal work 19.55min; d1:lako 10km, d2:snaga, d3:int 7km, d4:rest, d5:tempo 8km, d6:rest, d7:lr 13.5km. Five-minute fartlek and 14.55-minute tempo vary stimulus without a clear work-duration progression."
+        },
+        {
+          "week": 7,
+          "note": "40.9km; longest LR/run-walk 14.5km; formal work 23.11min; d1:lako 10.8km, d2:snaga, d3:int 7.4km, d4:rest, d5:tempo 8.2km, d6:rest, d7:lr 14.5km. Threshold work rises to 14 minutes; interval count stays two, limiting repeated aerobic exposure."
+        },
+        {
+          "week": 8,
+          "note": "29.9km; longest LR/run-walk 10.6km; formal work 0min; d1:lako 7.3km, d2:snaga, d3:lako 6.3km, d4:rest, d5:lako 5.7km, d6:rest, d7:lr 10.6km. All-easy reduction is appropriate; continuity of four running days is preserved."
+        },
+        {
+          "week": 9,
+          "note": "43km; longest LR/run-walk 14.5km; formal work 24.47min; d1:lako 11.6km, d2:snaga, d3:int 8.4km, d4:rest, d5:tempo 8.5km, d6:rest, d7:lr 14.5km. Pyramid adds variety; work remains about 10.4 interval minutes and 14 threshold minutes."
+        },
+        {
+          "week": 10,
+          "note": "43.3km; longest LR/run-walk 14.5km; formal work 24.56min; d1:lako 11.6km, d2:snaga, d3:int 8.2km, d4:rest, d5:tempo 9km, d6:rest, d7:lr 14.5km. Seven short fast minutes plus 17.6-minute continuous tempo; best sustained threshold dose so far."
+        },
+        {
+          "week": 11,
+          "note": "42.7km; longest LR/run-walk 14.5km; formal work 24.02min; d1:lako 11.6km, d2:snaga, d3:int 8.1km, d4:rest, d5:tempo 8.5km, d6:rest, d7:lr 14.5km. Interval duration changes but two-rep design remains modest for late preparation."
+        },
+        {
+          "week": 12,
+          "note": "31.1km; longest LR/run-walk 10km; formal work 0min; d1:lako 8km, d2:snaga, d3:lako 6.9km, d4:rest, d5:lako 6.2km, d6:rest, d7:lr 10km. Third all-easy deload is generous; reasonable recovery, though little progressive stimulus over the preceding block."
+        },
+        {
+          "week": 13,
+          "note": "42km; longest LR/run-walk 14.5km; formal work 23.05min; d1:lako 11.6km, d2:snaga, d3:int 7.7km, d4:rest, d5:tempo 8.2km, d6:rest, d7:lr 14.5km. Two 1K reps with 90s walking recovery provide 5K rhythm exposure; desired 19:59 is not prescribed."
+        },
+        {
+          "week": 14,
+          "note": "42.7km; longest LR/run-walk 14.5km; formal work 24.42min; d1:lako 11.6km, d2:snaga, d3:int 8.4km, d4:rest, d5:tempo 8.2km, d6:rest, d7:lr 14.5km. Six hundred metre reps give roughly 10.9 minutes faster work; sensible sharpening, limited total dose."
+        },
+        {
+          "week": 15,
+          "note": "23.9km; longest LR/run-walk 8.7km; formal work 15.73min; d1:lako 7km, d2:snaga, d3:int 3.5km, d4:rest, d5:tempo 4.7km, d6:rest, d7:lr 8.7km. About 44% mileage reduction from prior week; short race-rhythm plus tempo preserves touch."
+        },
+        {
+          "week": 16,
+          "note": "15.5km; longest LR/run-walk 0km; formal work 2.81min; d1:lako 3km, d2:rest, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 5km. Friday activation is explicitly controlled near race rhythm; two shakeouts and race create a clear light week."
+        }
+      ],
+      "strengths": [
+        "Four running days preserved with rest between quality sessions.",
+        "Easy majority, regular deloads and sensible volume taper.",
+        "Race-week activation purpose is explicitly controlled."
+      ],
+      "concerns": [
+        {
+          "week": 7,
+          "day": 3,
+          "claim": "Late quality development is largely a two-rep plateau.",
+          "severity": "coaching",
+          "evidence": "Weeks 5/7 use 2x1000m at 4:32/km, week 11 2x1100m; much session distance is warm/cool."
+        },
+        {
+          "week": 13,
+          "day": 3,
+          "claim": "Race-specific volume is small relative to aspirational improvement.",
+          "severity": "coaching",
+          "evidence": "2km at current 5K pace; no verification workout or scheduled current-form retest to close 23:45 to 19:59 gap."
+        }
+      ],
+      "verdict": "Coherent conservative 5K build; strengthen progressive quality and schedule a form check before changing pace."
+    },
+    {
+      "profileId": "U02",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 7,
+        "progression": 6.5,
+        "recovery": 8,
+        "specificity": 6.5,
+        "taper": 7.5,
+        "coherence": 7.5
+      },
+      "total": 73.25,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "31.6km; longest LR/run-walk 10km; formal work 2.5min; d1:lako 8km, d2:snaga, d3:int 6.7km, d4:rest, d5:lako 6.9km, d6:rest, d7:lr 10km. Four runs and gentle fartlek are manageable; introductory dose is tiny relative to existing 30km base."
+        },
+        {
+          "week": 2,
+          "note": "32.7km; longest LR/run-walk 10.8km; formal work 2.25min; d1:lako 8km, d2:snaga, d3:int 6.3km, d4:rest, d5:lako 7.6km, d6:rest, d7:lr 10.8km. Work declines from 2.5 to 2.25 minutes despite modest mileage growth; conservative but not progressive."
+        },
+        {
+          "week": 3,
+          "note": "34km; longest LR/run-walk 11.6km; formal work 14.95min; d1:lako 8.6km, d2:snaga, d3:int 6.3km, d4:rest, d5:tempo 7.5km, d6:rest, d7:lr 11.6km. Two quality days begin with modest speed and threshold exposure, separated by rest."
+        },
+        {
+          "week": 4,
+          "note": "24.8km; longest LR/run-walk 8.4km; formal work 0min; d1:lako 6.2km, d2:snaga, d3:lako 5.4km, d4:rest, d5:lako 4.8km, d6:rest, d7:lr 8.4km. All-easy deload and strides are coherent recovery."
+        },
+        {
+          "week": 5,
+          "note": "37km; longest LR/run-walk 12.5km; formal work 21.11min; d1:lako 9.9km, d2:snaga, d3:int 7.1km, d4:rest, d5:tempo 7.5km, d6:rest, d7:lr 12.5km. Two 1K intervals plus two 1200m threshold bouts are useful but modest for the goal gap."
+        },
+        {
+          "week": 6,
+          "note": "38.5km; longest LR/run-walk 13.5km; formal work 19.55min; d1:lako 10km, d2:snaga, d3:int 7km, d4:rest, d5:tempo 8km, d6:rest, d7:lr 13.5km. Short fartlek limits faster stimulus; continuous tempo is the more substantial workout."
+        },
+        {
+          "week": 7,
+          "note": "40.9km; longest LR/run-walk 14.5km; formal work 23.11min; d1:lako 10.8km, d2:snaga, d3:int 7.4km, d4:rest, d5:tempo 8.2km, d6:rest, d7:lr 14.5km. Interval dose repeats while threshold grows; progression is largely aerobic mileage."
+        },
+        {
+          "week": 8,
+          "note": "29.9km; longest LR/run-walk 10.6km; formal work 0min; d1:lako 7.3km, d2:snaga, d3:lako 6.3km, d4:rest, d5:lako 5.7km, d6:rest, d7:lr 10.6km. All-easy recovery consolidates the longer long run."
+        },
+        {
+          "week": 9,
+          "note": "43km; longest LR/run-walk 14.5km; formal work 24.47min; d1:lako 11.6km, d2:snaga, d3:int 8.4km, d4:rest, d5:tempo 8.5km, d6:rest, d7:lr 14.5km. Pyramid variety does not materially increase sustained work; extensive easy warm/cool distance dominates."
+        },
+        {
+          "week": 10,
+          "note": "43.3km; longest LR/run-walk 14.5km; formal work 24.56min; d1:lako 11.6km, d2:snaga, d3:int 8.2km, d4:rest, d5:tempo 9km, d6:rest, d7:lr 14.5km. Longer tempo provides useful continuous work; seven fast minutes are primarily a small supplementary dose."
+        },
+        {
+          "week": 11,
+          "note": "42.7km; longest LR/run-walk 14.5km; formal work 24.02min; d1:lako 11.6km, d2:snaga, d3:int 8.1km, d4:rest, d5:tempo 8.5km, d6:rest, d7:lr 14.5km. Two 1100m reps still offer limited repeated aerobic work for an established runner."
+        },
+        {
+          "week": 12,
+          "note": "31.1km; longest LR/run-walk 10km; formal work 0min; d1:lako 8km, d2:snaga, d3:lako 6.9km, d4:rest, d5:lako 6.2km, d6:rest, d7:lr 10km. Another all-easy deload is recoverable but contributes to a flat late-build quality profile."
+        },
+        {
+          "week": 13,
+          "note": "42km; longest LR/run-walk 14.5km; formal work 23.05min; d1:lako 11.6km, d2:snaga, d3:int 7.7km, d4:rest, d5:tempo 8.2km, d6:rest, d7:lr 14.5km. Two race-rhythm kilometres with 214s walking recovery are too broken to rehearse sustained 5K effort well."
+        },
+        {
+          "week": 14,
+          "note": "42.7km; longest LR/run-walk 14.5km; formal work 24.42min; d1:lako 11.6km, d2:snaga, d3:int 8.4km, d4:rest, d5:tempo 8.2km, d6:rest, d7:lr 14.5km. Four 600s restore faster work, though specificity remains modest."
+        },
+        {
+          "week": 15,
+          "note": "23.9km; longest LR/run-walk 8.7km; formal work 15.73min; d1:lako 7km, d2:snaga, d3:int 3.5km, d4:rest, d5:tempo 4.7km, d6:rest, d7:lr 8.7km. Volume reduction is good; short race-rhythm efforts with 86s recovery are ample for familiarization."
+        },
+        {
+          "week": 16,
+          "note": "15.5km; longest LR/run-walk 0km; formal work 2.81min; d1:lako 3km, d2:rest, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 5km. Friday is labelled repetitions/R despite speed near current race rhythm; physically light, purpose less clear."
+        }
+      ],
+      "strengths": [
+        "Four-day schedule, easy majority and regular recovery weeks.",
+        "Workouts use current-result paces rather than aspirational sub-20 pace.",
+        "Taper reduces distance and retains modest intensity."
+      ],
+      "concerns": [
+        {
+          "week": 7,
+          "day": 3,
+          "claim": "Repeated two-rep faster work offers limited progression.",
+          "severity": "coaching",
+          "evidence": "Weeks 5/7 2x1000m and week 11 2x1100m; threshold and easy mileage do most development."
+        },
+        {
+          "week": 13,
+          "day": 3,
+          "claim": "Specific work is excessively broken for sustained 5K rehearsal.",
+          "severity": "coaching",
+          "evidence": "2x1000m at 4:45/km with 214s walking recovery."
+        },
+        {
+          "week": 16,
+          "day": 5,
+          "claim": "Session purpose classification does not match near-race-rhythm speed.",
+          "severity": "technical",
+          "evidence": "3x200m at 4:41/km versus race reference 4:45/km is labelled Repeticije, zone R/current-fitness; mild work, misleading label."
+        }
+      ],
+      "verdict": "Usable conservative build, with weak sustained specificity and imprecise race-week workout purpose."
+    },
+    {
+      "profileId": "U03",
+      "side": "X",
+      "criteria": {
+        "fit": 7,
+        "quality": 6,
+        "progression": 5.5,
+        "recovery": 8,
+        "specificity": 6,
+        "taper": 7.5,
+        "coherence": 7.5
+      },
+      "total": 67.25,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "51.5km; longest LR/run-walk 14km; formal work 21.05min; d1:lako 11.2km, d2:int 7.7km, d3:lako 9.8km, d4:snaga, d5:tempo 8.8km, d6:rest, d7:lr 14km. Existing 50km experienced runner gets only two 1K reps and 13-minute threshold; cautious but thin stimulus."
+        },
+        {
+          "week": 2,
+          "note": "53.6km; longest LR/run-walk 15.1km; formal work 23.51min; d1:lako 11.2km, d2:int 8km, d3:lako 10.5km, d4:snaga, d5:tempo 8.8km, d6:rest, d7:lr 15.1km. Three 800s modestly grow work; easy mileage and Sunday LR provide aerobic support."
+        },
+        {
+          "week": 3,
+          "note": "55.9km; longest LR/run-walk 16.3km; formal work 22.01min; d1:lako 12.1km, d2:int 7.9km, d3:lako 11.2km, d4:snaga, d5:tempo 8.4km, d6:rest, d7:lr 16.3km. Seven 300s improve economy; threshold remains only two 1600m bouts."
+        },
+        {
+          "week": 4,
+          "note": "40.3km; longest LR/run-walk 12.2km; formal work 0min; d1:lako 8.3km, d2:lako 7.2km, d3:lako 6.5km, d4:snaga, d5:lako 6.1km, d6:rest, d7:lr 12.2km. All-easy deload provides recovery after three modest weeks."
+        },
+        {
+          "week": 5,
+          "note": "51.7km; longest LR/run-walk 16.6km; formal work 23.51min; d1:lako 11.8km, d2:int 6.1km, d3:lako 10.2km, d4:snaga, d5:tempo 7km, d6:rest, d7:lr 16.6km. Two 1200s repeat about 9.5 interval minutes; dose is small for established quality experience."
+        },
+        {
+          "week": 6,
+          "note": "54.5km; longest LR/run-walk 16.6km; formal work 26.53min; d1:lako 12.2km, d2:int 7.5km, d3:lako 10.7km, d4:snaga, d5:tempo 7.5km, d6:rest, d7:lr 16.6km. Nine-minute fartlek and 17.5-minute tempo give a reasonable low-end quality week."
+        },
+        {
+          "week": 7,
+          "note": "56.5km; longest LR/run-walk 16.6km; formal work 23.51min; d1:lako 13.3km, d2:int 7.1km, d3:lako 11.5km, d4:snaga, d5:tempo 8km, d6:rest, d7:lr 16.6km. Reverts to two 1200s and two 1600s; no convincing development through the block."
+        },
+        {
+          "week": 8,
+          "note": "40.2km; longest LR/run-walk 12.4km; formal work 0min; d1:lako 8.2km, d2:lako 7.1km, d3:lako 6.4km, d4:snaga, d5:lako 6.1km, d6:rest, d7:lr 12.4km. Recovery week is coherent and still five runs."
+        },
+        {
+          "week": 9,
+          "note": "51.7km; longest LR/run-walk 16.6km; formal work 25.88min; d1:lako 11.2km, d2:int 7.1km, d3:lako 9.8km, d4:snaga, d5:tempo 7km, d6:rest, d7:lr 16.6km. Pyramid adds variety but threshold repeats 14-minute total; conservative plateau."
+        },
+        {
+          "week": 10,
+          "note": "54.5km; longest LR/run-walk 16.6km; formal work 26.97min; d1:lako 12.2km, d2:int 7.5km, d3:lako 10.6km, d4:snaga, d5:tempo 7.6km, d6:rest, d7:lr 16.6km. Tempo inches up to 4.1km while fartlek dose stays nine minutes."
+        },
+        {
+          "week": 11,
+          "note": "56.5km; longest LR/run-walk 16.6km; formal work 23.51min; d1:lako 13.3km, d2:int 7.1km, d3:lako 11.5km, d4:snaga, d5:tempo 8km, d6:rest, d7:lr 16.6km. Repeated two-by-1200 workout late in the cycle underuses the established base."
+        },
+        {
+          "week": 12,
+          "note": "40.2km; longest LR/run-walk 12.4km; formal work 0min; d1:lako 8.2km, d2:lako 7.1km, d3:lako 6.4km, d4:snaga, d5:lako 6.1km, d6:rest, d7:lr 12.4km. Another complete intensity deload; conservative but not intrinsically defective."
+        },
+        {
+          "week": 13,
+          "note": "51.7km; longest LR/run-walk 16.6km; formal work 24.19min; d1:lako 11.8km, d2:int 6.8km, d3:lako 10.3km, d4:snaga, d5:tempo 6.2km, d6:rest, d7:lr 16.6km. Three race-rhythm kilometres with 185s walks give limited sustained 5K rehearsal."
+        },
+        {
+          "week": 14,
+          "note": "54.5km; longest LR/run-walk 16.6km; formal work 26.05min; d1:lako 12.7km, d2:int 7.9km, d3:lako 11.1km, d4:snaga, d5:tempo 6.2km, d6:rest, d7:lr 16.6km. Six 600s raise interval work to 14.2 minutes, a more useful late stimulus."
+        },
+        {
+          "week": 15,
+          "note": "34.7km; longest LR/run-walk 9.9km; formal work 16.34min; d1:lako 7.9km, d2:int 4km, d3:lako 6.9km, d4:snaga, d5:tempo 6km, d6:rest, d7:lr 9.9km. Volume and long run reduce while brief RP/tempo maintain intensity."
+        },
+        {
+          "week": 16,
+          "note": "15.5km; longest LR/run-walk 0km; formal work 2.43min; d1:rest, d2:lako 3km, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 5km. Physically mild near-race-rhythm 200s are labelled R; 5K desired goal still clearly separate from reference."
+        }
+      ],
+      "strengths": [
+        "Five-day structure and modest volume growth suit established aerobic base.",
+        "Quality separated by easy/rest days and regular deloads.",
+        "Goal/reference distinction is honest."
+      ],
+      "concerns": [
+        {
+          "week": 11,
+          "day": 2,
+          "claim": "Faster-work ceiling is low and flat for an experienced 50km/week runner.",
+          "severity": "coaching",
+          "evidence": "Weeks 5/7/11 all 2x1200m at 3:57/km, roughly 9.48 work minutes; threshold commonly 14.03 minutes."
+        },
+        {
+          "week": 13,
+          "day": 2,
+          "claim": "Race-specific rehearsal has long walking breaks and modest total distance.",
+          "severity": "coaching",
+          "evidence": "3x1000m at 4:07/km with 185s walking recovery."
+        },
+        {
+          "week": 16,
+          "day": 5,
+          "claim": "Repetition label overstates speed-purpose of near-race-pace activation.",
+          "severity": "technical",
+          "evidence": "3x200m at 4:03/km versus 4:07/km race reference, zone R."
+        }
+      ],
+      "verdict": "Recoverable aerobic plan but underdeveloped quality for this experienced runner and improvement goal."
+    },
+    {
+      "profileId": "U03",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 7.5,
+        "progression": 6.5,
+        "recovery": 8,
+        "specificity": 7.5,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 76.25,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "52.8km; longest LR/run-walk 14km; formal work 25.88min; d1:lako 11.2km, d2:int 8.8km, d3:lako 9.8km, d4:snaga, d5:tempo 9km, d6:rest, d7:lr 14km. Three 1K reps plus 14-minute threshold fit established runner better; ample easy volume."
+        },
+        {
+          "week": 2,
+          "note": "53.6km; longest LR/run-walk 15.1km; formal work 29.83min; d1:lako 11.2km, d2:int 8.9km, d3:lako 10.6km, d4:snaga, d5:tempo 7.8km, d6:rest, d7:lr 15.1km. Five 800s deliver about 15.8 interval minutes; productive without large mileage increase."
+        },
+        {
+          "week": 3,
+          "note": "55.9km; longest LR/run-walk 16.3km; formal work 31.3min; d1:lako 12.1km, d2:int 7.4km, d3:lako 11.3km, d4:snaga, d5:tempo 8.8km, d6:rest, d7:lr 16.3km. Nine 300s and 21-minute broken tempo provide economy and threshold work; long recoveries keep speed controlled."
+        },
+        {
+          "week": 4,
+          "note": "40.3km; longest LR/run-walk 12.2km; formal work 0min; d1:lako 8.3km, d2:lako 7.2km, d3:lako 6.5km, d4:snaga, d5:lako 6.1km, d6:rest, d7:lr 12.2km. All-easy deload is well placed and preserves frequency."
+        },
+        {
+          "week": 5,
+          "note": "51.7km; longest LR/run-walk 16.6km; formal work 35.26min; d1:lako 10.1km, d2:int 7.4km, d3:lako 8.8km, d4:snaga, d5:tempo 8.8km, d6:rest, d7:lr 16.6km. Three 1200s plus three 1600s provide meaningful work, with easy days between quality."
+        },
+        {
+          "week": 6,
+          "note": "54.5km; longest LR/run-walk 16.6km; formal work 30.73min; d1:lako 11.5km, d2:int 8.4km, d3:lako 10km, d4:snaga, d5:tempo 8km, d6:rest, d7:lr 16.6km. Short fartlek trades sustained interval exposure for variety; nearly 20-minute tempo remains useful."
+        },
+        {
+          "week": 7,
+          "note": "56.7km; longest LR/run-walk 16.6km; formal work 35.26min; d1:lako 12.8km, d2:int 7.4km, d3:lako 11.1km, d4:snaga, d5:tempo 8.8km, d6:rest, d7:lr 16.6km. Repeated 1200/1600 pair is adequate though increasingly formulaic."
+        },
+        {
+          "week": 8,
+          "note": "40.2km; longest LR/run-walk 12.4km; formal work 0min; d1:lako 8.2km, d2:lako 7.1km, d3:lako 6.4km, d4:snaga, d5:lako 6.1km, d6:rest, d7:lr 12.4km. All-easy reduction gives good recovery."
+        },
+        {
+          "week": 9,
+          "note": "51.7km; longest LR/run-walk 16.6km; formal work 35.26min; d1:lako 9.9km, d2:int 7.7km, d3:lako 8.7km, d4:snaga, d5:tempo 8.8km, d6:rest, d7:lr 16.6km. Pyramid and three 1600s are a useful return to quality; recovery is deliberately ample."
+        },
+        {
+          "week": 10,
+          "note": "54.5km; longest LR/run-walk 16.6km; formal work 30.73min; d1:lako 11.4km, d2:int 8.4km, d3:lako 10km, d4:snaga, d5:tempo 8.1km, d6:rest, d7:lr 16.6km. Fartlek repeats rather than advances; tempo near 20 minutes remains appropriate."
+        },
+        {
+          "week": 11,
+          "note": "56.7km; longest LR/run-walk 16.6km; formal work 35.26min; d1:lako 12.8km, d2:int 7.4km, d3:lako 11.1km, d4:snaga, d5:tempo 8.8km, d6:rest, d7:lr 16.6km. Third repeat of the same substantial pair is coherent maintenance, limited new development."
+        },
+        {
+          "week": 12,
+          "note": "40.2km; longest LR/run-walk 12.4km; formal work 0min; d1:lako 8.2km, d2:lako 7.1km, d3:lako 6.4km, d4:snaga, d5:lako 6.1km, d6:rest, d7:lr 12.4km. All-easy deload reduces fatigue before race-specific preparation."
+        },
+        {
+          "week": 13,
+          "note": "51.7km; longest LR/run-walk 16.6km; formal work 29.62min; d1:lako 11km, d2:int 8km, d3:lako 9.6km, d4:snaga, d5:tempo 6.5km, d6:rest, d7:lr 16.6km. Four 1K reps at current 5K pace with 90s walks give meaningful event-rhythm exposure."
+        },
+        {
+          "week": 14,
+          "note": "54.5km; longest LR/run-walk 16.6km; formal work 29.74min; d1:lako 12.2km, d2:int 8.6km, d3:lako 10.6km, d4:snaga, d5:tempo 6.5km, d6:rest, d7:lr 16.6km. Seven 600s increase faster work moderately; accompanying tempo is reduced."
+        },
+        {
+          "week": 15,
+          "note": "34.7km; longest LR/run-walk 9.9km; formal work 16.34min; d1:lako 7.9km, d2:int 4km, d3:lako 6.9km, d4:snaga, d5:tempo 6km, d6:rest, d7:lr 9.9km. Appropriate volume cut and tiny race-rhythm work with retained threshold touch."
+        },
+        {
+          "week": 16,
+          "note": "15.5km; longest LR/run-walk 0km; formal work 2.43min; d1:rest, d2:lako 3km, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 5km. Explicit controlled activation avoids implying an R-speed workout; actual pace supports race-week freshness."
+        }
+      ],
+      "strengths": [
+        "Meaningful repeated interval and threshold doses fit experienced base.",
+        "Four kilometres at current 5K rhythm with 90s recovery improves specificity.",
+        "Regular recovery weeks and explicit light race-week activation."
+      ],
+      "concerns": [
+        {
+          "week": 11,
+          "day": 2,
+          "claim": "Repeated workout pairs are useful but increasingly formulaic.",
+          "severity": "coaching",
+          "evidence": "Weeks 5/7/11 use 3x1200m plus 3x1600m threshold with unchanged pace/recovery; little staged development after week 5."
+        },
+        {
+          "week": 2,
+          "day": 2,
+          "claim": "Walking recovery is generous and may dilute repeated aerobic work if athlete can tolerate easy jogs.",
+          "severity": "coaching",
+          "evidence": "5x800m at 3:57/km with 142s walk; not intrinsically unsafe or invalid."
+        }
+      ],
+      "verdict": "Useful established-runner plan with meaningful work doses; late blocks could develop more deliberately."
+    },
+    {
+      "profileId": "U04",
+      "side": "X",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6,
+        "progression": 6.5,
+        "recovery": 7.5,
+        "specificity": 5.5,
+        "taper": 7.5,
+        "coherence": 7
+      },
+      "total": 68.0,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "27km; longest LR/run-walk 8km; formal work 2.5min; d1:lako 6.4km, d2:snaga, d3:int 7.1km, d4:rest, d5:lako 5.5km, d6:rest, d7:lr 8km. Gentle fartlek is sensible for no quality experience; warm/cool distance dominates."
+        },
+        {
+          "week": 2,
+          "note": "28.1km; longest LR/run-walk 8.6km; formal work 3min; d1:lako 6.4km, d2:snaga, d3:int 7.2km, d4:rest, d5:lako 5.9km, d6:rest, d7:lr 8.6km. Three minutes work remains introduction; mileage and LR grow smoothly."
+        },
+        {
+          "week": 3,
+          "note": "29.5km; longest LR/run-walk 9.2km; formal work 9.48min; d1:lako 6.9km, d2:snaga, d3:tempo 6.9km, d4:rest, d5:tempo 6.5km, d6:rest, d7:lr 9.2km. Two separate tempos contain only 5.8 and 3.7 minutes work; splitting this dose is inefficient."
+        },
+        {
+          "week": 4,
+          "note": "22.2km; longest LR/run-walk 6.6km; formal work 2.11min; d1:lako 5.2km, d2:snaga, d3:tempo 5.9km, d4:rest, d5:lako 4.5km, d6:rest, d7:lr 6.6km. Only 2.1 minutes threshold survives deload; the label adds little training value."
+        },
+        {
+          "week": 5,
+          "note": "32.7km; longest LR/run-walk 9.9km; formal work 14.97min; d1:lako 7.8km, d2:snaga, d3:int 7.6km, d4:rest, d5:tempo 7.4km, d6:rest, d7:lr 9.9km. Two 800s plus short broken threshold introduce faster work with ample recovery."
+        },
+        {
+          "week": 6,
+          "note": "34.5km; longest LR/run-walk 10.6km; formal work 23.3min; d1:lako 7.9km, d2:snaga, d3:int 7.9km, d4:rest, d5:tempo 8.1km, d6:rest, d7:lr 10.6km. Tempo jumps to 15.8 minutes after only 7.4 threshold minutes; dose progression is irregular."
+        },
+        {
+          "week": 7,
+          "note": "35.9km; longest LR/run-walk 11.4km; formal work 18.13min; d1:lako 8.5km, d2:snaga, d3:int 7.8km, d4:rest, d5:tempo 8.2km, d6:rest, d7:lr 11.4km. Threshold returns to 10.5 minutes, interval work repeats; not a steady quality progression."
+        },
+        {
+          "week": 8,
+          "note": "26.5km; longest LR/run-walk 8.5km; formal work 0min; d1:lako 6.8km, d2:snaga, d3:lako 5.9km, d4:rest, d5:lako 5.3km, d6:rest, d7:lr 8.5km. All-easy deload maintains four runs and reduces long run."
+        },
+        {
+          "week": 9,
+          "note": "39km; longest LR/run-walk 12.3km; formal work 25.67min; d1:lako 9.8km, d2:snaga, d3:int 8.4km, d4:rest, d5:tempo 8.5km, d6:rest, d7:lr 12.3km. Pyramid and 14.75-minute threshold give a reasonable moderate workload."
+        },
+        {
+          "week": 10,
+          "note": "40.3km; longest LR/run-walk 13.2km; formal work 26.91min; d1:lako 9.8km, d2:snaga, d3:int 8.6km, d4:rest, d5:tempo 8.7km, d6:rest, d7:lr 13.2km. Nine fast minutes plus nearly 18-minute tempo are useful; aerobic volume continues rising."
+        },
+        {
+          "week": 11,
+          "note": "42.6km; longest LR/run-walk 14.2km; formal work 24.25min; d1:lako 10.6km, d2:snaga, d3:int 8.5km, d4:rest, d5:tempo 9.3km, d6:rest, d7:lr 14.2km. Two 1K reps repeat modest faster work; LR now supplies over 90 minutes endurance."
+        },
+        {
+          "week": 12,
+          "note": "32km; longest LR/run-walk 10.4km; formal work 0min; d1:lako 8.1km, d2:snaga, d3:lako 7.1km, d4:rest, d5:lako 6.4km, d6:rest, d7:lr 10.4km. All-easy deload is appropriate before specific block."
+        },
+        {
+          "week": 13,
+          "note": "42.2km; longest LR/run-walk 15.3km; formal work 23.01min; d1:lako 12.2km, d2:snaga, d3:int 7.5km, d4:rest, d5:tempo 7.2km, d6:rest, d7:lr 15.3km. 2km at 10K reference pace with 233s walk gives limited sustained-rhythm stimulus."
+        },
+        {
+          "week": 14,
+          "note": "43.8km; longest LR/run-walk 16.2km; formal work 30.35min; d1:lako 12.2km, d2:snaga, d3:int 7.3km, d4:rest, d5:tempo 8.1km, d6:rest, d7:lr 16.2km. 2.4km with 240s walk still weak specificity; 16.2km LR is ample for 10K but not necessary for every runner."
+        },
+        {
+          "week": 15,
+          "note": "28km; longest LR/run-walk 10.5km; formal work 18.33min; d1:lako 8.4km, d2:snaga, d3:int 3.7km, d4:rest, d5:tempo 5.4km, d6:rest, d7:lr 10.5km. Volume cut is reasonable; two 600s with long walks are low-cost familiarization."
+        },
+        {
+          "week": 16,
+          "note": "20.5km; longest LR/run-walk 0km; formal work 5.12min; d1:lako 3km, d2:rest, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 10km. Near-race-pace 200s are mislabelled repetitions/R; desired 50:00 remains explicitly unverified."
+        }
+      ],
+      "strengths": [
+        "Short controlled quality introduction for no prior quality experience.",
+        "Progressive aerobic volume and ample LR build.",
+        "Reference pace separated from 50-minute desire."
+      ],
+      "concerns": [
+        {
+          "week": 3,
+          "day": 3,
+          "claim": "Two micro-tempos are inefficient development for a novice quality runner.",
+          "severity": "coaching",
+          "evidence": "Week 3: 1.1km and 0.7km at 5:16/km, about 5.79 and 3.69 work minutes, each with 5.8km warm/cool."
+        },
+        {
+          "week": 6,
+          "day": 5,
+          "claim": "Threshold dose progression is irregular.",
+          "severity": "coaching",
+          "evidence": "Week 5 2x700m=7.37 minutes T, week 6 3km=15.8 minutes T, week 7 2x1000m=10.53 minutes T."
+        },
+        {
+          "week": 14,
+          "day": 3,
+          "claim": "Late 10K-specific work is short and overly interrupted.",
+          "severity": "coaching",
+          "evidence": "2x1200m at 5:11/km with 240s walk, only 2.4km total work."
+        },
+        {
+          "week": 16,
+          "day": 5,
+          "claim": "R-zone repetition label does not match near-10K-rhythm speed.",
+          "severity": "technical",
+          "evidence": "5x200m at 5:07/km versus reference 5:11/km, labelled Repeticije/R."
+        }
+      ],
+      "verdict": "Good aerobic build but micro-tempos and heavily broken late 10K work weaken coaching adequacy."
+    },
+    {
+      "profileId": "U04",
+      "side": "Y",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6.5,
+        "progression": 6.5,
+        "recovery": 7.5,
+        "specificity": 6.5,
+        "taper": 8,
+        "coherence": 7.5
+      },
+      "total": 71.0,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "27km; longest LR/run-walk 8km; formal work 2.5min; d1:lako 6.4km, d2:snaga, d3:int 7.1km, d4:rest, d5:lako 5.5km, d6:rest, d7:lr 8km. No prior quality: short controlled fartlek is appropriate while four-run aerobic structure grows."
+        },
+        {
+          "week": 2,
+          "note": "28.1km; longest LR/run-walk 8.6km; formal work 3min; d1:lako 6.4km, d2:snaga, d3:int 7.2km, d4:rest, d5:lako 5.9km, d6:rest, d7:lr 8.6km. Three minutes work is a modest introduction, not a substantial threshold session."
+        },
+        {
+          "week": 3,
+          "note": "29.5km; longest LR/run-walk 9.2km; formal work 9.48min; d1:lako 6.9km, d2:snaga, d3:tempo 6.9km, d4:rest, d5:tempo 6.5km, d6:rest, d7:lr 9.2km. Two tiny tempos divide 9.5 total minutes over two days; less efficient than one cohesive controlled workout."
+        },
+        {
+          "week": 4,
+          "note": "22.2km; longest LR/run-walk 6.6km; formal work 2.11min; d1:lako 5.2km, d2:snaga, d3:tempo 5.9km, d4:rest, d5:lako 4.5km, d6:rest, d7:lr 6.6km. 2.1-minute threshold in deload is a microdose with cumbersome warm/cool distance."
+        },
+        {
+          "week": 5,
+          "note": "32.7km; longest LR/run-walk 9.9km; formal work 14.97min; d1:lako 7.8km, d2:snaga, d3:int 7.6km, d4:rest, d5:tempo 7.4km, d6:rest, d7:lr 9.9km. Two 800s and broken threshold are small, recoverable first faster sessions."
+        },
+        {
+          "week": 6,
+          "note": "34.5km; longest LR/run-walk 10.6km; formal work 23.3min; d1:lako 7.9km, d2:snaga, d3:int 7.9km, d4:rest, d5:tempo 8.1km, d6:rest, d7:lr 10.6km. Continuous tempo abruptly exceeds twice prior threshold dose; monitor novice response."
+        },
+        {
+          "week": 7,
+          "note": "35.9km; longest LR/run-walk 11.4km; formal work 18.13min; d1:lako 8.5km, d2:snaga, d3:int 7.8km, d4:rest, d5:tempo 8.2km, d6:rest, d7:lr 11.4km. Threshold dose drops again, so progression relies mainly on mileage."
+        },
+        {
+          "week": 8,
+          "note": "26.5km; longest LR/run-walk 8.5km; formal work 0min; d1:lako 6.8km, d2:snaga, d3:lako 5.9km, d4:rest, d5:lako 5.3km, d6:rest, d7:lr 8.5km. All-easy deload is coherent recovery."
+        },
+        {
+          "week": 9,
+          "note": "39km; longest LR/run-walk 12.3km; formal work 25.67min; d1:lako 9.8km, d2:snaga, d3:int 8.4km, d4:rest, d5:tempo 8.5km, d6:rest, d7:lr 12.3km. Pyramid plus two 1400m threshold bouts are moderate and well separated."
+        },
+        {
+          "week": 10,
+          "note": "40.3km; longest LR/run-walk 13.2km; formal work 26.91min; d1:lako 9.8km, d2:snaga, d3:int 8.6km, d4:rest, d5:tempo 8.7km, d6:rest, d7:lr 13.2km. Tempo near 18 minutes is useful 10K aerobic support; fartlek remains a short supplementary dose."
+        },
+        {
+          "week": 11,
+          "note": "42.6km; longest LR/run-walk 14.2km; formal work 24.25min; d1:lako 10.6km, d2:snaga, d3:int 8.5km, d4:rest, d5:tempo 9.3km, d6:rest, d7:lr 14.2km. Interval work remains modest; longer LR supplies endurance rather than pace-specific adaptation."
+        },
+        {
+          "week": 12,
+          "note": "32km; longest LR/run-walk 10.4km; formal work 0min; d1:lako 8.1km, d2:snaga, d3:lako 7.1km, d4:rest, d5:lako 6.4km, d6:rest, d7:lr 10.4km. All-easy reduction before event-rhythm block is sensible."
+        },
+        {
+          "week": 13,
+          "note": "42.2km; longest LR/run-walk 15.3km; formal work 23.01min; d1:lako 12.2km, d2:snaga, d3:int 7.5km, d4:rest, d5:tempo 7.2km, d6:rest, d7:lr 15.3km. Two 1K bouts with 60s walk are more continuous and relevant, though 2km total is limited."
+        },
+        {
+          "week": 14,
+          "note": "43.8km; longest LR/run-walk 16.2km; formal work 30.35min; d1:lako 12.2km, d2:snaga, d3:int 7.3km, d4:rest, d5:tempo 8.1km, d6:rest, d7:lr 16.2km. Two 1200s with 60s recovery remain small but useful 10K rhythm; 16.2km long run is ample."
+        },
+        {
+          "week": 15,
+          "note": "28km; longest LR/run-walk 10.5km; formal work 18.33min; d1:lako 8.4km, d2:snaga, d3:int 3.7km, d4:rest, d5:tempo 5.4km, d6:rest, d7:lr 10.5km. Short 600s and reduced tempo retain intensity as mileage falls."
+        },
+        {
+          "week": 16,
+          "note": "20.5km; longest LR/run-walk 0km; formal work 5.12min; d1:lako 3km, d2:rest, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 10km. Explicit controlled activation with 120s walk clarifies intent; predicted reference and desired 50:00 are separated."
+        }
+      ],
+      "strengths": [
+        "Controlled introductory work and steady aerobic development.",
+        "Specific blocks use brief recovery appropriate to 10K rhythm.",
+        "Explicit controlled race-week activation and honest goal framing."
+      ],
+      "concerns": [
+        {
+          "week": 3,
+          "day": 3,
+          "claim": "Two tiny threshold sessions fragment a very small dose.",
+          "severity": "coaching",
+          "evidence": "1.1km and 0.7km at 5:16/km with 3.1km warmup/2.7km cooldown each; novice quality experience."
+        },
+        {
+          "week": 6,
+          "day": 5,
+          "claim": "Threshold duration more than doubles from prior training week.",
+          "severity": "coaching",
+          "evidence": "7.37 minutes T in week 5 to 15.8 in week 6, then back to 10.53 week 7; requires tolerance monitoring."
+        },
+        {
+          "week": 14,
+          "day": 3,
+          "claim": "Short recovery improves specificity but total 10K-rhythm work is still limited.",
+          "severity": "coaching",
+          "evidence": "2x1200m with 60s walks supplies 2.4km specific work; peak LR 16.2km emphasizes endurance over specific pace."
+        }
+      ],
+      "verdict": "Moderately useful novice-quality 10K build; short RP recoveries help, early dose design still needs refinement."
+    },
+    {
+      "profileId": "U05",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 8,
+        "progression": 7.5,
+        "recovery": 7.5,
+        "specificity": 8,
+        "taper": 8,
+        "coherence": 8.5
+      },
+      "total": 79.0,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "47.5km; longest LR/run-walk 14km; formal work 19.32min; d1:lako 11.2km, d2:tempo 6.9km, d3:lako 9.7km, d4:snaga, d5:tempo 5.7km, d6:rest, d7:lr 14km. Two threshold sessions are modest for experienced base, but provide a reasonable start."
+        },
+        {
+          "week": 2,
+          "note": "50.1km; longest LR/run-walk 15.1km; formal work 32.23min; d1:lako 10.9km, d2:int 6.8km, d3:lako 9.5km, d4:snaga, d5:tempo 7.8km, d6:rest, d7:lr 15.1km. Three 1Ks and 19.8-minute tempo offer a useful aerobic quality stimulus."
+        },
+        {
+          "week": 3,
+          "note": "51.8km; longest LR/run-walk 16.3km; formal work 22.08min; d1:lako 12.1km, d2:tempo 6.5km, d3:lako 11.2km, d4:snaga, d5:tempo 5.7km, d6:rest, d7:lr 16.3km. Double threshold week varies focus; total 22 minutes is lower than prior week without explanation beyond budget."
+        },
+        {
+          "week": 4,
+          "note": "38.8km; longest LR/run-walk 11.9km; formal work 0min; d1:lako 7.9km, d2:lako 6.9km, d3:lako 6.2km, d4:snaga, d5:lako 5.9km, d6:rest, d7:lr 11.9km. All-easy deload and strides consolidate load."
+        },
+        {
+          "week": 5,
+          "note": "55.8km; longest LR/run-walk 17.6km; formal work 32.42min; d1:lako 12.5km, d2:int 7.4km, d3:lako 10.8km, d4:snaga, d5:tempo 7.5km, d6:rest, d7:lr 17.6km. Three 1200s and two 1900s balance faster work and threshold; easy majority remains clear."
+        },
+        {
+          "week": 6,
+          "note": "58.9km; longest LR/run-walk 18.5km; formal work 33.74min; d1:lako 12.5km, d2:int 9.2km, d3:lako 10.8km, d4:snaga, d5:tempo 7.9km, d6:rest, d7:lr 18.5km. 13.5-minute fartlek and 20-minute tempo are productive, with LR already 18.5km."
+        },
+        {
+          "week": 7,
+          "note": "61.7km; longest LR/run-walk 18.5km; formal work 33.34min; d1:lako 14km, d2:int 8.4km, d3:lako 12.1km, d4:snaga, d5:tempo 8.7km, d6:rest, d7:lr 18.5km. Quality dose stabilizes while easy mileage grows; 18.5km LR cap helps control duration."
+        },
+        {
+          "week": 8,
+          "note": "46.2km; longest LR/run-walk 13.7km; formal work 0min; d1:lako 9.6km, d2:lako 8.3km, d3:lako 7.5km, d4:snaga, d5:lako 7.1km, d6:rest, d7:lr 13.7km. All-easy deload reduces fatigue and keeps frequency."
+        },
+        {
+          "week": 9,
+          "note": "65.5km; longest LR/run-walk 18.5km; formal work 33.34min; d1:lako 13.9km, d2:int 10.5km, d3:lako 12.1km, d4:snaga, d5:tempo 10.5km, d6:rest, d7:lr 18.5km. Pyramid and two 2K threshold bouts remain useful; large warm/cool distance inflates total sessions."
+        },
+        {
+          "week": 10,
+          "note": "68.9km; longest LR/run-walk 18.5km; formal work 39.96min; d1:lako 14km, d2:int 13.1km, d3:lako 12.1km, d4:snaga, d5:tempo 11.2km, d6:rest, d7:lr 18.5km. 16.5 interval minutes plus 23.5 tempo minutes are substantial but plausible for experienced runner."
+        },
+        {
+          "week": 11,
+          "note": "67.2km; longest LR/run-walk 18.5km; formal work 38.32min; d1:lako 14km, d2:int 11.8km, d3:lako 12.2km, d4:snaga, d5:tempo 10.7km, d6:rest, d7:lr 18.5km. Four 1200s total almost 20 interval minutes; clearer stimulus than a two-rep prescription."
+        },
+        {
+          "week": 12,
+          "note": "50.4km; longest LR/run-walk 13.6km; formal work 0min; d1:lako 10.8km, d2:lako 9.5km, d3:lako 8.5km, d4:snaga, d5:lako 8km, d6:rest, d7:lr 13.6km. All-easy reduction prepares for race-specific block."
+        },
+        {
+          "week": 13,
+          "note": "65.8km; longest LR/run-walk 18.5km; formal work 41.84min; d1:lako 13.5km, d2:int 8.8km, d3:lako 11.8km, d4:snaga, d5:tempo 13.2km, d6:rest, d7:lr 18.5km. Four 1200s at 10K rhythm with 60s recovery give useful 4.8km specific work; progressive finish complements it."
+        },
+        {
+          "week": 14,
+          "note": "67.8km; longest LR/run-walk 18.5km; formal work 44.6min; d1:lako 14km, d2:int 11.6km, d3:lako 12.2km, d4:snaga, d5:tempo 11.5km, d6:rest, d7:lr 18.5km. Three 1600s with 75s recovery sustain specific stimulus; five-kilometre tempo is also substantial."
+        },
+        {
+          "week": 15,
+          "note": "40.9km; longest LR/run-walk 12km; formal work 20.58min; d1:lako 9.6km, d2:int 4.2km, d3:lako 8.3km, d4:snaga, d5:tempo 6.8km, d6:rest, d7:lr 12km. Volume and RP dose reduce markedly, retaining modest threshold touch."
+        },
+        {
+          "week": 16,
+          "note": "20.5km; longest LR/run-walk 0km; formal work 4.43min; d1:rest, d2:lako 3km, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 10km. Controlled activation plus shakeouts protects freshness; reference 45:00 does not promise 42:00."
+        }
+      ],
+      "strengths": [
+        "Useful 15–20-minute faster work and roughly 20-minute threshold sessions.",
+        "4.8km specific blocks with 60–75s recovery build sustained 10K rhythm.",
+        "Easy predominance, recovery weeks and controlled activation."
+      ],
+      "concerns": [
+        {
+          "week": 10,
+          "day": 2,
+          "claim": "Overall volume expansion is substantial and needs tolerance evidence.",
+          "severity": "coaching",
+          "evidence": "Baseline 45km/week to peak 68.9km with two quality days and 18.5km LR; staged and deloaded, not a 10-percent-rule failure."
+        },
+        {
+          "week": 14,
+          "day": 5,
+          "claim": "Two near-threshold/race-pace sessions and long LR may be demanding if fatigue accumulates.",
+          "severity": "coaching",
+          "evidence": "4.8km at 4:30/km Tuesday, 5km at 4:36/km Friday, 18.5km Sunday; easy Monday after LR."
+        }
+      ],
+      "verdict": "Strongest 10K-specific execution here, with meaningful sustained work; individualize volume expansion and fatigue."
+    },
+    {
+      "profileId": "U05",
+      "side": "Y",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6.5,
+        "progression": 6.5,
+        "recovery": 8,
+        "specificity": 6,
+        "taper": 7.5,
+        "coherence": 7.5
+      },
+      "total": 70.75,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "47.5km; longest LR/run-walk 14km; formal work 11.96min; d1:lako 11.2km, d2:tempo 6.5km, d3:lako 9.7km, d4:snaga, d5:tempo 6.1km, d6:rest, d7:lr 14km. Two threshold-labelled sessions contain only about 6.4 and 5.5 work minutes; thin for experienced 45km base."
+        },
+        {
+          "week": 2,
+          "note": "49.2km; longest LR/run-walk 15.1km; formal work 23.02min; d1:lako 11.2km, d2:int 5.7km, d3:lako 10.5km, d4:snaga, d5:tempo 6.7km, d6:rest, d7:lr 15.1km. Two 1Ks and 14.7-minute tempo are recoverable but modest."
+        },
+        {
+          "week": 3,
+          "note": "52.1km; longest LR/run-walk 16.3km; formal work 15.64min; d1:lako 12.1km, d2:tempo 6.5km, d3:lako 11.3km, d4:snaga, d5:tempo 5.9km, d6:rest, d7:lr 16.3km. Double threshold total just 15.6 minutes offers limited new stimulus."
+        },
+        {
+          "week": 4,
+          "note": "39.1km; longest LR/run-walk 12km; formal work 0min; d1:lako 8km, d2:lako 7km, d3:lako 6.2km, d4:snaga, d5:lako 5.9km, d6:rest, d7:lr 12km. All-easy deload is well placed."
+        },
+        {
+          "week": 5,
+          "note": "55.8km; longest LR/run-walk 17.6km; formal work 24.68min; d1:lako 13.5km, d2:int 6.1km, d3:lako 11.7km, d4:snaga, d5:tempo 6.9km, d6:rest, d7:lr 17.6km. Two 1200s continue a low interval ceiling while easy mileage rises."
+        },
+        {
+          "week": 6,
+          "note": "58.9km; longest LR/run-walk 18.5km; formal work 31.2min; d1:lako 13.1km, d2:int 7.9km, d3:lako 11.4km, d4:snaga, d5:tempo 8km, d6:rest, d7:lr 18.5km. Fartlek plus roughly 21-minute tempo is a more useful sustained-work week."
+        },
+        {
+          "week": 7,
+          "note": "62.1km; longest LR/run-walk 18.5km; formal work 26.52min; d1:lako 14km, d2:int 8.1km, d3:lako 12.2km, d4:snaga, d5:tempo 9.3km, d6:rest, d7:lr 18.5km. Two 1200s again limit faster exposure; threshold increases slightly."
+        },
+        {
+          "week": 8,
+          "note": "46.6km; longest LR/run-walk 13.8km; formal work 0min; d1:lako 9.7km, d2:lako 8.4km, d3:lako 7.6km, d4:snaga, d5:lako 7.1km, d6:rest, d7:lr 13.8km. All-easy recovery preserves run frequency."
+        },
+        {
+          "week": 9,
+          "note": "65.1km; longest LR/run-walk 18.5km; formal work 29.01min; d1:lako 14km, d2:int 10.1km, d3:lako 12.2km, d4:snaga, d5:tempo 10.3km, d6:rest, d7:lr 18.5km. Pyramid offers variety; extensive warm/cool distance predominates over work."
+        },
+        {
+          "week": 10,
+          "note": "68.2km; longest LR/run-walk 18.5km; formal work 35.58min; d1:lako 14km, d2:int 12.2km, d3:lako 12.2km, d4:snaga, d5:tempo 11.3km, d6:rest, d7:lr 18.5km. 13.5 fast minutes and 22-minute tempo give reasonable quality, but volume has grown greatly from baseline."
+        },
+        {
+          "week": 11,
+          "note": "65.2km; longest LR/run-walk 18.5km; formal work 28.36min; d1:lako 14km, d2:int 9.9km, d3:lako 12.1km, d4:snaga, d5:tempo 10.7km, d6:rest, d7:lr 18.5km. Only two 1200s after prior 13.5-minute fartlek; no compelling late-build progression."
+        },
+        {
+          "week": 12,
+          "note": "48.9km; longest LR/run-walk 13.2km; formal work 0min; d1:lako 10.5km, d2:lako 9.2km, d3:lako 8.2km, d4:snaga, d5:lako 7.8km, d6:rest, d7:lr 13.2km. All-easy reduction is sensible."
+        },
+        {
+          "week": 13,
+          "note": "65.6km; longest LR/run-walk 18.5km; formal work 34.14min; d1:lako 14km, d2:int 9.2km, d3:lako 12.1km, d4:snaga, d5:tempo 11.8km, d6:rest, d7:lr 18.5km. Three 1200s at 10K rhythm with four-minute walks are excessively fragmented for specificity."
+        },
+        {
+          "week": 14,
+          "note": "65.9km; longest LR/run-walk 18.5km; formal work 36.48min; d1:lako 14km, d2:int 9.9km, d3:lako 12.2km, d4:snaga, d5:tempo 11.3km, d6:rest, d7:lr 18.5km. Two 1600s with four-minute walks contain only 3.2km specific work amid 65.9km total."
+        },
+        {
+          "week": 15,
+          "note": "40.9km; longest LR/run-walk 12km; formal work 20.58min; d1:lako 9.6km, d2:int 4.2km, d3:lako 8.3km, d4:snaga, d5:tempo 6.8km, d6:rest, d7:lr 12km. Taper mileage reduction is appropriate; tiny RP dose is familiarization rather than a test."
+        },
+        {
+          "week": 16,
+          "note": "20.5km; longest LR/run-walk 0km; formal work 4.43min; d1:rest, d2:lako 3km, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 10km. Friday repetitions label/zone implies faster work than near-race pace actually prescribed; no gross physical overload."
+        }
+      ],
+      "strengths": [
+        "Conservative work doses and established easy endurance.",
+        "Regular deloads and appropriate gross taper mileage reduction.",
+        "Current 45-minute reference clearly distinct from 42-minute aspiration."
+      ],
+      "concerns": [
+        {
+          "week": 3,
+          "day": 2,
+          "claim": "Experienced runner receives very small threshold doses.",
+          "severity": "coaching",
+          "evidence": "Week 1 two quality days total 11.96 T minutes; week 3 total 15.64 minutes at a 45km baseline."
+        },
+        {
+          "week": 11,
+          "day": 2,
+          "claim": "Late interval dose regresses to only two long repetitions.",
+          "severity": "coaching",
+          "evidence": "2x1200m at 4:09/km, 9.96 work minutes with 224s walks and 7.3km warm/cool."
+        },
+        {
+          "week": 14,
+          "day": 2,
+          "claim": "Race-rhythm work is underdosed and fragmented.",
+          "severity": "coaching",
+          "evidence": "2x1600m at 4:30/km with four-minute walking recoveries, only 3.2km work."
+        },
+        {
+          "week": 16,
+          "day": 5,
+          "claim": "Near-10K-rhythm 200s are classified as R repetitions.",
+          "severity": "technical",
+          "evidence": "5x200m at 4:26/km, reference race pace 4:30/km; purpose not explicit."
+        }
+      ],
+      "verdict": "Adequate endurance structure but experienced-runner quality is underdosed and specific recoveries too long."
+    },
+    {
+      "profileId": "U06",
+      "side": "X",
+      "criteria": {
+        "fit": 5.5,
+        "quality": 5,
+        "progression": 6,
+        "recovery": 6.5,
+        "specificity": 4,
+        "taper": 7.5,
+        "coherence": 6
+      },
+      "total": 57.25,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "10.2km; longest LR/run-walk 4km; formal work 0min; d1:lako 3.2km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 4km. Lower starting volume fits a return after eight-week break, but strides immediately qualify the supposedly easy return."
+        },
+        {
+          "week": 2,
+          "note": "10.4km; longest LR/run-walk 4.2km; formal work 0min; d1:lako 3.2km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 4.2km. Gentle mileage growth, yet fixed easy paces still derive from a year-old PB."
+        },
+        {
+          "week": 3,
+          "note": "10.8km; longest LR/run-walk 4.4km; formal work 0min; d1:lako 3.4km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 4.4km. Three easy weeks are a useful buffer; completion alone is not proof of current speed readiness."
+        },
+        {
+          "week": 4,
+          "note": "8.1km; longest LR/run-walk 3.2km; formal work 0min; d1:lako 2.5km, d2:snaga, d3:lako 2.4km, d4:rest, d5:rest, d6:rest, d7:lr 3.2km. Deload is conservative; short strides retained."
+        },
+        {
+          "week": 5,
+          "note": "12.7km; longest LR/run-walk 4.6km; formal work 3min; d1:lako 3.7km, d2:snaga, d3:int 4.4km, d4:rest, d5:rest, d6:rest, d7:lr 4.6km. Short introductory fartlek is low dose, but demanding work now arrives by calendar with limited explicit readiness checks."
+        },
+        {
+          "week": 6,
+          "note": "13.1km; longest LR/run-walk 4.8km; formal work 3min; d1:lako 3.7km, d2:snaga, d3:int 4.6km, d4:rest, d5:rest, d6:rest, d7:lr 4.8km. Three work minutes repeat; goal of 10K endurance would benefit more from base than quality rotation."
+        },
+        {
+          "week": 7,
+          "note": "13.5km; longest LR/run-walk 5km; formal work 4.5min; d1:lako 3.8km, d2:snaga, d3:int 4.7km, d4:rest, d5:rest, d6:rest, d7:lr 5km. 4.5 minutes at old faster pace need current-effort validation after detraining."
+        },
+        {
+          "week": 8,
+          "note": "10.2km; longest LR/run-walk 4km; formal work 0min; d1:lako 3.2km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 4km. All-easy deload is sensible."
+        },
+        {
+          "week": 9,
+          "note": "14.5km; longest LR/run-walk 5.3km; formal work 5.12min; d1:lako 4.2km, d2:snaga, d3:int 5km, d4:rest, d5:rest, d6:rest, d7:lr 5.3km. Two 500s are modest; stale pace requirement remains the main coaching concern."
+        },
+        {
+          "week": 10,
+          "note": "15.3km; longest LR/run-walk 5.7km; formal work 6.8min; d1:lako 4.2km, d2:snaga, d3:tempo 5.4km, d4:rest, d5:rest, d6:rest, d7:lr 5.7km. 6.8-minute tempo is more an introduction than substantial 10K threshold development."
+        },
+        {
+          "week": 11,
+          "note": "16.5km; longest LR/run-walk 6.1km; formal work 6min; d1:lako 4.6km, d2:snaga, d3:int 5.8km, d4:rest, d5:rest, d6:rest, d7:lr 6.1km. Six fast minutes are recoverable, but LR remains only 6.1km."
+        },
+        {
+          "week": 12,
+          "note": "12.3km; longest LR/run-walk 4.5km; formal work 3min; d1:lako 3.6km, d2:snaga, d3:int 4.2km, d4:rest, d5:rest, d6:rest, d7:lr 4.5km. Reduced fartlek in deload is acceptable but little endurance stimulus is accumulated."
+        },
+        {
+          "week": 13,
+          "note": "16km; longest LR/run-walk 6.4km; formal work 8.5min; d1:lako 5.1km, d2:snaga, d3:tempo 4.5km, d4:rest, d5:rest, d6:rest, d7:lr 6.4km. Progressive finish totals 8.5 threshold minutes while longest run is still well short of race distance."
+        },
+        {
+          "week": 14,
+          "note": "18.2km; longest LR/run-walk 6.7km; formal work 12min; d1:lako 5.1km, d2:snaga, d3:int 6.4km, d4:rest, d5:rest, d6:rest, d7:lr 6.7km. Only 2km specific work and a 6.7km LR; four-minute walks weaken rehearsal."
+        },
+        {
+          "week": 15,
+          "note": "10.9km; longest LR/run-walk 4.3km; formal work 7.2min; d1:lako 3.4km, d2:snaga, d3:int 3.2km, d4:rest, d5:rest, d6:rest, d7:lr 4.3km. Sensible taper cut, but taper cannot make up missing sustained preparation."
+        },
+        {
+          "week": 16,
+          "note": "14.4km; longest LR/run-walk 0km; formal work 0min; d1:lako 2.2km, d2:rest, d3:lako 2.2km, d4:rest, d5:rest, d6:rest, d7:trka 10km. 4.4km pre-race running leaves freshness; 10km race is 49% longer than peak LR and requires an individualized completion decision."
+        }
+      ],
+      "strengths": [
+        "Lower start and three introductory easy weeks recognize detraining.",
+        "Modest dose and distance increments reduce immediate loading.",
+        "Endurance and stale-reference limitations disclosed."
+      ],
+      "concerns": [
+        {
+          "week": 1,
+          "day": 1,
+          "claim": "Return phase immediately includes strides and stale easy-pace prescription.",
+          "severity": "coaching",
+          "evidence": "Eight-week break, one consistent week, PB a year old; first day 6x20s strides and ~6:47/km fixed easy pace."
+        },
+        {
+          "week": 7,
+          "day": 3,
+          "claim": "Pace-bound faster work lacks an explicit per-day effort override and logged-tolerance gate.",
+          "severity": "coaching",
+          "evidence": "3x90s at 5:07/km derived from 2025 PB despite return in 2026; general warning to check form is less concrete."
+        },
+        {
+          "week": 14,
+          "day": 7,
+          "claim": "Sustained preparation remains limited for a timed 10K.",
+          "severity": "coaching",
+          "evidence": "Peak LR 6.7km, peak 18.2km/week, 2km race-rhythm work; this is a restrained return plan requiring completion decision, not proven 60:00 readiness."
+        }
+      ],
+      "verdict": "A restrained return build with honest limits, but stale-pace and immediate-stride handling need revision before execution."
+    },
+    {
+      "profileId": "U06",
+      "side": "Y",
+      "criteria": {
+        "fit": 7,
+        "quality": 6,
+        "progression": 6.5,
+        "recovery": 8,
+        "specificity": 5.5,
+        "taper": 7.5,
+        "coherence": 7.5
+      },
+      "total": 68.25,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "10.2km; longest LR/run-walk 4km; formal work 0min; d1:lako 3.2km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 4km. No immediate strides; conversational 3–4/10 effort overrides stale pace, suitable return framework."
+        },
+        {
+          "week": 2,
+          "note": "10.4km; longest LR/run-walk 4.2km; formal work 0min; d1:lako 3.2km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 4.2km. Gentle progression with explicit permission to slow; good use of historical result as reference."
+        },
+        {
+          "week": 3,
+          "note": "10.8km; longest LR/run-walk 4.4km; formal work 0min; d1:lako 3.4km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 4.4km. Three easy return weeks preserve caution; readiness gate requires logged evidence rather than empty-calendar assumptions."
+        },
+        {
+          "week": 4,
+          "note": "8.1km; longest LR/run-walk 3.2km; formal work 0min; d1:lako 2.5km, d2:snaga, d3:lako 2.4km, d4:rest, d5:rest, d6:rest, d7:lr 3.2km. Strides now appear after return block; the pain/effort gate still needs sensible symptom interpretation."
+        },
+        {
+          "week": 5,
+          "note": "12.7km; longest LR/run-walk 4.6km; formal work 3min; d1:lako 3.7km, d2:snaga, d3:int 4.4km, d4:rest, d5:rest, d6:rest, d7:lr 4.6km. Fartlek is explicitly effort-led and conditional on recent tolerated logs; useful guardrail, arbitrary numerical gate is not universal."
+        },
+        {
+          "week": 6,
+          "note": "13.1km; longest LR/run-walk 4.8km; formal work 3min; d1:lako 3.7km, d2:snaga, d3:int 4.6km, d4:rest, d5:rest, d6:rest, d7:lr 4.8km. Three-minute dose repeats; speed still secondary to restoring sustained easy endurance."
+        },
+        {
+          "week": 7,
+          "note": "13.5km; longest LR/run-walk 5km; formal work 4.5min; d1:lako 3.8km, d2:snaga, d3:int 4.7km, d4:rest, d5:rest, d6:rest, d7:lr 5km. Faster work specifies effort and repetition reserve instead of requiring old pace; appropriate uncertainty handling."
+        },
+        {
+          "week": 8,
+          "note": "10.2km; longest LR/run-walk 4km; formal work 0min; d1:lako 3.2km, d2:snaga, d3:lako 3km, d4:rest, d5:rest, d6:rest, d7:lr 4km. All-easy consolidation protects return-to-training recovery."
+        },
+        {
+          "week": 9,
+          "note": "14.5km; longest LR/run-walk 5.3km; formal work 5.12min; d1:lako 4.2km, d2:snaga, d3:int 5km, d4:rest, d5:rest, d6:rest, d7:lr 5.3km. Two 500s are a modest introduction if the gate has been satisfied."
+        },
+        {
+          "week": 10,
+          "note": "15.3km; longest LR/run-walk 5.7km; formal work 6.8min; d1:lako 4.2km, d2:snaga, d3:tempo 5.4km, d4:rest, d5:rest, d6:rest, d7:lr 5.7km. 6.8-minute tempo remains small for 10K preparation, but effort guidance is explicit."
+        },
+        {
+          "week": 11,
+          "note": "16.5km; longest LR/run-walk 6.1km; formal work 6min; d1:lako 4.6km, d2:snaga, d3:int 5.8km, d4:rest, d5:rest, d6:rest, d7:lr 6.1km. Six-minute fartlek is recoverable; longest run only 6.1km limits specific endurance."
+        },
+        {
+          "week": 12,
+          "note": "12.3km; longest LR/run-walk 4.5km; formal work 3min; d1:lako 3.6km, d2:snaga, d3:int 4.2km, d4:rest, d5:rest, d6:rest, d7:lr 4.5km. Reduced faster dose in deload is coherent if symptoms/effort remain acceptable."
+        },
+        {
+          "week": 13,
+          "note": "16km; longest LR/run-walk 6.4km; formal work 8.5min; d1:lako 5.1km, d2:snaga, d3:tempo 4.5km, d4:rest, d5:rest, d6:rest, d7:lr 6.4km. Progressive finish provides controlled threshold touch; longer easy exposure is still insufficiently developed."
+        },
+        {
+          "week": 14,
+          "note": "18.2km; longest LR/run-walk 6.7km; formal work 12min; d1:lako 5.1km, d2:snaga, d3:int 6.4km, d4:rest, d5:rest, d6:rest, d7:lr 6.7km. 2km race-rhythm with 60s walks gives better continuity, but only 6.7km peak LR; goal remains conditional."
+        },
+        {
+          "week": 15,
+          "note": "10.9km; longest LR/run-walk 4.3km; formal work 7.2min; d1:lako 3.4km, d2:snaga, d3:int 3.2km, d4:rest, d5:rest, d6:rest, d7:lr 4.3km. Volume and work reduce sensibly; two 600s provide light familiarization."
+        },
+        {
+          "week": 16,
+          "note": "14.4km; longest LR/run-walk 0km; formal work 0min; d1:lako 2.2km, d2:rest, d3:lako 2.2km, d4:rest, d5:rest, d6:rest, d7:trka 10km. Freshness is protected and limitation warned; 10km still exceeds the longest delivered run substantially."
+        }
+      ],
+      "strengths": [
+        "Effort overrides old pace on every relevant day.",
+        "No immediate return-week strides; logged-tolerance gate before demanding work.",
+        "Preparedness limits disclosed; shorter recovery improves modest 10K-rhythm rehearsal."
+      ],
+      "concerns": [
+        {
+          "week": 5,
+          "day": 3,
+          "claim": "Readiness gate is a useful heuristic, not a validated physiological threshold.",
+          "severity": "coaching",
+          "evidence": "75% logged kilometres, pain <4/10, no more than one easy effort >=7/10, and result/test <=90 days; mild persistent pain still needs judgement."
+        },
+        {
+          "week": 14,
+          "day": 7,
+          "claim": "Low sustained exposure limits a timed 10K approach.",
+          "severity": "coaching",
+          "evidence": "Peak 6.7km LR and 18.2km/week; 10km race is 49% longer than peak LR, warnings acknowledge limits."
+        },
+        {
+          "week": 4,
+          "day": 1,
+          "claim": "Strides arrive after calendar return block with less explicit gating than formal quality.",
+          "severity": "coaching",
+          "evidence": "4x15s strides in week 4; detailed gate in later formal-session notes."
+        }
+      ],
+      "verdict": "Better conditional return framework; remains endurance-limited for timed 10K and needs individualized completion decision."
+    },
+    {
+      "profileId": "U07",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 7.5,
+        "progression": 8,
+        "recovery": 8,
+        "specificity": 8,
+        "taper": 8,
+        "coherence": 8.5
+      },
+      "total": 79.5,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.2km; longest LR/run-walk 10km; formal work 2.5min; d1:lako 8km, d2:snaga, d3:int 7.2km, d4:rest, d5:lako 7km, d6:rest, d7:lr 10km. Four-run start and tiny fartlek preserve easy predominance; good existing-base fit."
+        },
+        {
+          "week": 2,
+          "note": "33.8km; longest LR/run-walk 10.8km; formal work 2.25min; d1:lako 8km, d2:snaga, d3:int 7.5km, d4:rest, d5:lako 7.5km, d6:rest, d7:lr 10.8km. Work drops slightly despite LR growth; introductory phase remains light."
+        },
+        {
+          "week": 3,
+          "note": "36km; longest LR/run-walk 11.6km; formal work 22.3min; d1:lako 8.6km, d2:snaga, d3:tempo 8.7km, d4:rest, d5:int 7.1km, d6:rest, d7:lr 11.6km. Longer threshold bouts and small interval complement introduce two quality days conservatively."
+        },
+        {
+          "week": 4,
+          "note": "27.2km; longest LR/run-walk 8.7km; formal work 0min; d1:lako 7km, d2:snaga, d3:lako 6.1km, d4:rest, d5:lako 5.4km, d6:rest, d7:lr 8.7km. All-easy deload provides a clear recovery week."
+        },
+        {
+          "week": 5,
+          "note": "38.7km; longest LR/run-walk 12.5km; formal work 24.41min; d1:lako 10km, d2:snaga, d3:tempo 8.5km, d4:rest, d5:int 7.7km, d6:rest, d7:lr 12.5km. Threshold plus first HM-rhythm bouts begins specificity earlier; 90s jog keeps the work connected."
+        },
+        {
+          "week": 6,
+          "note": "40.3km; longest LR/run-walk 13.5km; formal work 19.69min; d1:lako 10km, d2:snaga, d3:int 8km, d4:rest, d5:int 8.8km, d6:rest, d7:lr 13.5km. Faster intervals plus 2.4km HM work are modest; ample warm/cool mileage."
+        },
+        {
+          "week": 7,
+          "note": "42.5km; longest LR/run-walk 14.5km; formal work 27.56min; d1:lako 10.8km, d2:snaga, d3:tempo 8.5km, d4:rest, d5:int 8.7km, d6:rest, d7:lr 14.5km. 2.8km HM rhythm plus threshold supports gradual specificity; LR progresses to 14.5km."
+        },
+        {
+          "week": 8,
+          "note": "32.3km; longest LR/run-walk 10.6km; formal work 0min; d1:lako 8.2km, d2:snaga, d3:lako 7.1km, d4:rest, d5:lako 6.4km, d6:rest, d7:lr 10.6km. All-easy reduction preserves frequency."
+        },
+        {
+          "week": 9,
+          "note": "45.7km; longest LR/run-walk 15.6km; formal work 17.62min; d1:lako 12.3km, d2:snaga, d3:int 7.1km, d4:rest, d5:lako 10.7km, d6:rest, d7:lr 15.6km. One HM-rhythm session allows space for growing long run and aerobic mileage."
+        },
+        {
+          "week": 10,
+          "note": "47km; longest LR/run-walk 16.8km; formal work 19.06min; d1:lako 9.3km, d2:snaga, d3:tempo 7.5km, d4:rest, d5:lako 13.4km, d6:rest, d7:lr 16.8km. One 19-minute threshold workout accompanies 16.8km LR; load distribution is restrained."
+        },
+        {
+          "week": 11,
+          "note": "49.9km; longest LR/run-walk 18.1km; formal work 21.77min; d1:lako 9.9km, d2:snaga, d3:int 7.9km, d4:rest, d5:lako 14km, d6:rest, d7:lr 18.1km. 4.2km at HM rhythm offers useful specific progression; Friday easy run is long but not quality."
+        },
+        {
+          "week": 12,
+          "note": "37.9km; longest LR/run-walk 13.2km; formal work 0min; d1:lako 9.3km, d2:snaga, d3:lako 8.1km, d4:rest, d5:lako 7.3km, d6:rest, d7:lr 13.2km. All-easy deload is well placed ahead of simulation."
+        },
+        {
+          "week": 13,
+          "note": "49.3km; longest LR/run-walk 19.5km; formal work 36.28min; d1:lako 10.3km, d2:snaga, d3:tempo 10.5km, d4:rest, d5:lako 9km, d6:rest, d7:lr 19.5km. 7km controlled HM simulation plus 19.5km LR is a demanding endurance week; Friday is explicitly easy."
+        },
+        {
+          "week": 14,
+          "note": "40km; longest LR/run-walk 16.5km; formal work 25.58min; d1:lako 9.9km, d2:snaga, d3:int 7.3km, d4:rest, d5:tempo 6.3km, d6:rest, d7:lr 16.5km. Specific work decreases as taper begins; two modest sessions need not equal two full hard workouts."
+        },
+        {
+          "week": 15,
+          "note": "33.2km; longest LR/run-walk 12.6km; formal work 17.89min; d1:lako 9.9km, d2:snaga, d3:int 5.7km, d4:rest, d5:tempo 5km, d6:rest, d7:lr 12.6km. Work falls further while frequency remains four days; good taper direction."
+        },
+        {
+          "week": 16,
+          "note": "31.6km; longest LR/run-walk 0km; formal work 6.14min; d1:lako 3km, d2:rest, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 21.0975km. Clear controlled activation, two shakeouts and rest; reference 1:49 remains separate from desired 1:45."
+        }
+      ],
+      "strengths": [
+        "Earlier HM-specific blocks with short jog recoveries.",
+        "One formal quality day in key LR-building weeks.",
+        "Controlled simulation, fueling practice and declining taper work."
+      ],
+      "concerns": [
+        {
+          "week": 10,
+          "day": 5,
+          "claim": "Easy mileage is concentrated into long individual runs for four-day availability.",
+          "severity": "coaching",
+          "evidence": "Friday 13.4km then Sunday 16.8km; week 11 Friday 14km/Sunday 18.1km, with only Monday easy in addition."
+        },
+        {
+          "week": 13,
+          "day": 3,
+          "claim": "Controlled simulation is not a current-fitness test.",
+          "severity": "coaching",
+          "evidence": "7km at HM reference pace, explicitly not maximal; no scheduled test verifies faster desired 1:45 goal."
+        }
+      ],
+      "verdict": "Coherent HM-specific aerobic build with useful controlled rehearsal and reasonable work taper."
+    },
+    {
+      "profileId": "U07",
+      "side": "Y",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6.5,
+        "progression": 6.5,
+        "recovery": 7.5,
+        "specificity": 6.5,
+        "taper": 7,
+        "coherence": 7.5
+      },
+      "total": 70.0,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.2km; longest LR/run-walk 10km; formal work 2.5min; d1:lako 8km, d2:snaga, d3:int 7.2km, d4:rest, d5:lako 7km, d6:rest, d7:lr 10km. Four-run aerobic structure and tiny fartlek fit existing 30km base."
+        },
+        {
+          "week": 2,
+          "note": "33.8km; longest LR/run-walk 10.8km; formal work 2.25min; d1:lako 8km, d2:snaga, d3:int 7.5km, d4:rest, d5:lako 7.5km, d6:rest, d7:lr 10.8km. Mileage grows while work slightly falls; not yet a substantial quality build."
+        },
+        {
+          "week": 3,
+          "note": "35.9km; longest LR/run-walk 11.6km; formal work 17.29min; d1:lako 8.6km, d2:snaga, d3:int 7.7km, d4:rest, d5:tempo 8km, d6:rest, d7:lr 11.6km. Intervals and small threshold introduce two quality days, but HM specificity has not begun."
+        },
+        {
+          "week": 4,
+          "note": "27.2km; longest LR/run-walk 8.7km; formal work 0min; d1:lako 7km, d2:snaga, d3:lako 6.1km, d4:rest, d5:lako 5.4km, d6:rest, d7:lr 8.7km. All-easy deload and strides are useful recovery."
+        },
+        {
+          "week": 5,
+          "note": "38.6km; longest LR/run-walk 12.5km; formal work 17.29min; d1:lako 10km, d2:snaga, d3:int 7.9km, d4:rest, d5:tempo 8.2km, d6:rest, d7:lr 12.5km. Intervals and threshold repeat with no meaningful dose development."
+        },
+        {
+          "week": 6,
+          "note": "40.1km; longest LR/run-walk 13.5km; formal work 23.05min; d1:lako 10km, d2:snaga, d3:int 8.2km, d4:rest, d5:tempo 8.4km, d6:rest, d7:lr 13.5km. Fartlek variation and 15-minute tempo offer useful general aerobic quality."
+        },
+        {
+          "week": 7,
+          "note": "42.6km; longest LR/run-walk 14.5km; formal work 21.3min; d1:lako 10.8km, d2:snaga, d3:int 8.1km, d4:rest, d5:tempo 9.2km, d6:rest, d7:lr 14.5km. Two 800s continue low faster dose; threshold grows modestly."
+        },
+        {
+          "week": 8,
+          "note": "32.4km; longest LR/run-walk 10.7km; formal work 0min; d1:lako 8.2km, d2:snaga, d3:lako 7.1km, d4:rest, d5:lako 6.4km, d6:rest, d7:lr 10.7km. All-easy recovery gives room for LR growth."
+        },
+        {
+          "week": 9,
+          "note": "45.7km; longest LR/run-walk 15.6km; formal work 21.3min; d1:lako 12.4km, d2:snaga, d3:int 8.3km, d4:rest, d5:tempo 9.4km, d6:rest, d7:lr 15.6km. Another interval/threshold pair leaves no race-rhythm work despite late build."
+        },
+        {
+          "week": 10,
+          "note": "47.4km; longest LR/run-walk 16.8km; formal work 31.67min; d1:lako 12.5km, d2:snaga, d3:int 9.7km, d4:rest, d5:tempo 8.4km, d6:rest, d7:lr 16.8km. First HM-rhythm work has a 326s recovery jog, undermining sustained event-effort rehearsal."
+        },
+        {
+          "week": 11,
+          "note": "50.2km; longest LR/run-walk 18.1km; formal work 35.18min; d1:lako 13.4km, d2:snaga, d3:int 9.7km, d4:rest, d5:tempo 9km, d6:rest, d7:lr 18.1km. HM dose repeats unchanged with lengthy recovery; two quality days plus growing LR increase demand."
+        },
+        {
+          "week": 12,
+          "note": "38.3km; longest LR/run-walk 13.3km; formal work 10.54min; d1:lako 10.2km, d2:snaga, d3:tempo 6km, d4:rest, d5:lako 8.8km, d6:rest, d7:lr 13.3km. Reduced tempo remains in deload; still less recovery than an all-easy week."
+        },
+        {
+          "week": 13,
+          "note": "49.3km; longest LR/run-walk 19.5km; formal work 36.28min; d1:lako 10.3km, d2:snaga, d3:tempo 10.5km, d4:rest, d5:lako 9km, d6:rest, d7:lr 19.5km. Controlled 7km simulation and 19.5km LR are useful; next two to three days are appropriately easy."
+        },
+        {
+          "week": 14,
+          "note": "41.2km; longest LR/run-walk 15.6km; formal work 31.67min; d1:lako 11.5km, d2:snaga, d3:int 7.7km, d4:rest, d5:tempo 6.4km, d6:rest, d7:lr 15.6km. RP work is unchanged while taper starts; long recovery makes stimulus less specific."
+        },
+        {
+          "week": 15,
+          "note": "34.6km; longest LR/run-walk 12.6km; formal work 28.61min; d1:lako 10.1km, d2:snaga, d3:tempo 5.9km, d4:rest, d5:tempo 6km, d6:rest, d7:lr 12.6km. 28.6 work minutes in penultimate week remains high relative to prior build weeks; less decisive work taper."
+        },
+        {
+          "week": 16,
+          "note": "31.6km; longest LR/run-walk 0km; formal work 6.14min; d1:lako 3km, d2:rest, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 21.0975km. Near-race-rhythm 200s labelled R lack explicit relaxed activation instruction; actual work is mild."
+        }
+      ],
+      "strengths": [
+        "Progressive long runs to 19.5km and controlled simulation.",
+        "No maximal test assumption; recovery guidance after simulation.",
+        "Fueling rehearsal and goal/reference distinction."
+      ],
+      "concerns": [
+        {
+          "week": 9,
+          "day": 3,
+          "claim": "General fast work persists late while specific work is delayed and thin.",
+          "severity": "coaching",
+          "evidence": "Weeks 5/7/9 repeat 2x800m faster intervals; first HM-rhythm work week 10."
+        },
+        {
+          "week": 11,
+          "day": 3,
+          "claim": "Long recovery undermines sustained HM specificity.",
+          "severity": "coaching",
+          "evidence": "2x1700m at 5:11/km with 326s easy recovery, repeated weeks 10/11/14."
+        },
+        {
+          "week": 15,
+          "day": 5,
+          "claim": "Quality work declines weakly during taper.",
+          "severity": "coaching",
+          "evidence": "28.61 work minutes week 15 versus 31.67 week 14 and 35.18 week 11; two sessions still plus 12.6km LR."
+        },
+        {
+          "week": 16,
+          "day": 5,
+          "claim": "Near-event-rhythm 200s lack clear activation intent.",
+          "severity": "technical",
+          "evidence": "6x200m at 5:07/km against 5:11/km HM reference, labelled R/Repeticije."
+        }
+      ],
+      "verdict": "General fitness build with delayed/fragmented specificity and less decisive taper; revise late quality block."
+    },
+    {
+      "profileId": "U08",
+      "side": "X",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6.5,
+        "progression": 6.5,
+        "recovery": 7,
+        "specificity": 7,
+        "taper": 6,
+        "coherence": 7
+      },
+      "total": 68.25,
+      "weeksReviewed": 14,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "53.8km; longest LR/run-walk 16km; formal work 14.9min; d1:lako 11.1km, d2:tempo 8.7km, d3:lr 9.9km, d4:snaga, d5:tempo 8.1km, d6:rest, d7:lr 16km. Two very small threshold sessions at an experienced 55km base provide little sustained stimulus."
+        },
+        {
+          "week": 2,
+          "note": "56.8km; longest LR/run-walk 17.2km; formal work 16.22min; d1:lako 12km, d2:tempo 8.7km, d3:lr 10.7km, d4:snaga, d5:tempo 8.2km, d6:rest, d7:lr 17.2km. Only 16.2 work minutes total; long warm/cool sections dominate."
+        },
+        {
+          "week": 3,
+          "note": "61.2km; longest LR/run-walk 18.5km; formal work 23.51min; d1:lako 12.2km, d2:int 9.1km, d3:lr 11.5km, d4:snaga, d5:tempo 9.9km, d6:rest, d7:lr 18.5km. Two 1200s and two 1600s are modest for the base; Wednesday medium run extends fatigue after quality."
+        },
+        {
+          "week": 4,
+          "note": "46.6km; longest LR/run-walk 13.6km; formal work 0min; d1:lako 8.9km, d2:lako 8km, d3:lr 8.5km, d4:snaga, d5:lako 7.6km, d6:rest, d7:lr 13.6km. All-easy deload is a strength."
+        },
+        {
+          "week": 5,
+          "note": "63.3km; longest LR/run-walk 19.9km; formal work 23.51min; d1:lako 12.1km, d2:int 9.1km, d3:lr 12.3km, d4:snaga, d5:tempo 9.9km, d6:rest, d7:lr 19.9km. Quality dose repeats while LR reaches nearly 20km; growing endurance carries most progression."
+        },
+        {
+          "week": 6,
+          "note": "68.9km; longest LR/run-walk 21.3km; formal work 32.6min; d1:lako 12km, d2:int 11.2km, d3:lr 13.2km, d4:snaga, d5:tempo 11.2km, d6:rest, d7:lr 21.3km. Fartlek and 20.6-minute tempo give a better aerobic quality week."
+        },
+        {
+          "week": 7,
+          "note": "67.9km; longest LR/run-walk 22km; formal work 28.77min; d1:lako 12.1km, d2:int 9.1km, d3:lr 13.6km, d4:snaga, d5:tempo 11.1km, d6:rest, d7:lr 22km. Interval dose drops back to two 1200s; 22km LR is ample endurance."
+        },
+        {
+          "week": 8,
+          "note": "51.6km; longest LR/run-walk 15.3km; formal work 0min; d1:lako 9.8km, d2:lako 8.8km, d3:lr 9.4km, d4:snaga, d5:lako 8.3km, d6:rest, d7:lr 15.3km. All-easy reduction is coherent recovery."
+        },
+        {
+          "week": 9,
+          "note": "71.1km; longest LR/run-walk 22km; formal work 47.25min; d1:lako 12.2km, d2:int 12.3km, d3:lr 13.6km, d4:snaga, d5:lako 11km, d6:rest, d7:lr 22km. HM intervals plus 5.5km fast finish create two demanding days; 284s recovery weakens interval specificity."
+        },
+        {
+          "week": 10,
+          "note": "75.3km; longest LR/run-walk 22km; formal work 45min; d1:lako 12.2km, d2:tempo 16.5km, d3:lr 13.6km, d4:snaga, d5:lako 11km, d6:rest, d7:lr 22km. 10km controlled HM simulation is useful, but the following 13.6km medium run limits recovery flexibility."
+        },
+        {
+          "week": 11,
+          "note": "71.1km; longest LR/run-walk 22km; formal work 47.25min; d1:lako 12.2km, d2:int 12.3km, d3:lr 13.6km, d4:snaga, d5:lako 11km, d6:rest, d7:lr 22km. Another 22km fast-finish week gives useful fatigued rhythm; specific interval dose and recovery merely repeat."
+        },
+        {
+          "week": 12,
+          "note": "61.7km; longest LR/run-walk 18.3km; formal work 41.79min; d1:lako 10.3km, d2:int 12.2km, d3:lr 9.8km, d4:snaga, d5:tempo 11.1km, d6:rest, d7:lr 18.3km. Taper begins yet 41.8 work minutes plus 18.3km LR are substantial; work reduction is weak."
+        },
+        {
+          "week": 13,
+          "note": "46.1km; longest LR/run-walk 14.3km; formal work 33.81min; d1:lako 10km, d2:tempo 7.1km, d3:lr 7.9km, d4:snaga, d5:tempo 6.8km, d6:rest, d7:lr 14.3km. 33.8 work minutes with 14.3km LR remain sizeable one week out; monitor fatigue."
+        },
+        {
+          "week": 14,
+          "note": "31.6km; longest LR/run-walk 0km; formal work 5.32min; d1:rest, d2:lako 3km, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 21.0975km. Race-week volume is small excluding race, but R label on near-HM-rhythm 200s obscures activation intent."
+        }
+      ],
+      "strengths": [
+        "Medium-long and repeated 22km runs build endurance.",
+        "Fast finishes and controlled 10km HM simulation offer useful specificity.",
+        "Easy recovery weeks and fueling practice."
+      ],
+      "concerns": [
+        {
+          "week": 2,
+          "day": 2,
+          "claim": "Threshold sessions are too small to be persuasive development for established base.",
+          "severity": "coaching",
+          "evidence": "2x1000m +1.7km T total 16.22 work minutes with 6.5km warm/cool each, runner 55km/week experienced."
+        },
+        {
+          "week": 10,
+          "day": 3,
+          "claim": "Medium-long run follows lengthy simulation with limited recovery adjustment.",
+          "severity": "coaching",
+          "evidence": "10km HM-rhythm in 16.5km total Tuesday followed by 13.6km Wednesday; notes say 2–3 days easy, but easy duration remains substantial."
+        },
+        {
+          "week": 12,
+          "day": 2,
+          "claim": "Taper work reduction is weak and specific recovery remains long.",
+          "severity": "coaching",
+          "evidence": "41.79 work minutes week 12, then 33.81 week 13; RP 2x2500m with 284s easy recovery."
+        },
+        {
+          "week": 14,
+          "day": 5,
+          "claim": "R-labelled work is near HM reference pace.",
+          "severity": "technical",
+          "evidence": "6x200m at 4:26/km versus 4:30/km HM reference; no explicit relaxed activation instruction."
+        }
+      ],
+      "verdict": "Substantial endurance and useful simulation, but tiny early work and weak taper-work reduction limit quality."
+    },
+    {
+      "profileId": "U08",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 8,
+        "progression": 7.5,
+        "recovery": 7.5,
+        "specificity": 8.5,
+        "taper": 8,
+        "coherence": 8.5
+      },
+      "total": 79.5,
+      "weeksReviewed": 14,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "56.2km; longest LR/run-walk 16km; formal work 30.68min; d1:lako 10.1km, d2:tempo 10.7km, d3:lr 9.9km, d4:snaga, d5:tempo 9.5km, d6:rest, d7:lr 16km. Longer threshold blocks give useful 30.7-minute total work at the experienced base."
+        },
+        {
+          "week": 2,
+          "note": "59.2km; longest LR/run-walk 17.2km; formal work 28.77min; d1:lako 11.1km, d2:tempo 11.1km, d3:lr 10.7km, d4:snaga, d5:int 9.1km, d6:rest, d7:lr 17.2km. Threshold plus small interval complements aerobic development; five days maintained."
+        },
+        {
+          "week": 3,
+          "note": "61.5km; longest LR/run-walk 18.5km; formal work 35.07min; d1:lako 10.3km, d2:tempo 11.3km, d3:lr 11.5km, d4:snaga, d5:tempo 9.9km, d6:rest, d7:lr 18.5km. Two threshold workouts deliver roughly 35 minutes; plausible controlled development."
+        },
+        {
+          "week": 4,
+          "note": "46.8km; longest LR/run-walk 13.4km; formal work 8.77min; d1:lako 8.2km, d2:tempo 9.4km, d3:lr 8.4km, d4:snaga, d5:lako 7.4km, d6:rest, d7:lr 13.4km. Volume deload with 8.8-minute tempo is reasonable maintaining touch, although warm/cool distance is large."
+        },
+        {
+          "week": 5,
+          "note": "66.5km; longest LR/run-walk 19.9km; formal work 38.99min; d1:lako 12.1km, d2:tempo 11.9km, d3:lr 12.3km, d4:snaga, d5:int 10.3km, d6:rest, d7:lr 19.9km. Threshold and first HM blocks deliver meaningful specific work with 60s jogging recoveries."
+        },
+        {
+          "week": 6,
+          "note": "67.3km; longest LR/run-walk 21.4km; formal work 33.12min; d1:lako 11.3km, d2:int 10.4km, d3:lr 13.3km, d4:snaga, d5:int 10.9km, d6:rest, d7:lr 21.4km. Intervals and longer HM work vary stimulus while LR grows only slightly from prior exposure."
+        },
+        {
+          "week": 7,
+          "note": "69.9km; longest LR/run-walk 22km; formal work 42.64min; d1:lako 11.3km, d2:tempo 11.5km, d3:lr 13.6km, d4:snaga, d5:int 11.5km, d6:rest, d7:lr 22km. Threshold plus 4.8km HM rhythm gives adequate sustained stimulus; 22km LR is sufficient endurance."
+        },
+        {
+          "week": 8,
+          "note": "53.1km; longest LR/run-walk 15.7km; formal work 0min; d1:lako 10.1km, d2:lako 9km, d3:lr 9.7km, d4:snaga, d5:lako 8.6km, d6:rest, d7:lr 15.7km. All-easy reduction consolidates before fast-finish block."
+        },
+        {
+          "week": 9,
+          "note": "70.3km; longest LR/run-walk 22km; formal work 45.79min; d1:lako 12.2km, d2:tempo 11.5km, d3:lr 13.6km, d4:snaga, d5:lako 11km, d6:rest, d7:lr 22km. Threshold and Sunday 5.5km fast finish deliver two demanding sessions without a third formal quality day."
+        },
+        {
+          "week": 10,
+          "note": "75.3km; longest LR/run-walk 22km; formal work 45min; d1:lako 11.3km, d2:tempo 16.5km, d3:lr 13.6km, d4:snaga, d5:lako 11.9km, d6:rest, d7:lr 22km. 10km controlled HM simulation is appropriate; the following 13.6km medium run still warrants fatigue monitoring."
+        },
+        {
+          "week": 11,
+          "note": "70.6km; longest LR/run-walk 22km; formal work 47.54min; d1:lako 11.3km, d2:tempo 11.9km, d3:lr 13.6km, d4:snaga, d5:lako 11.8km, d6:rest, d7:lr 22km. Threshold plus fast-finish LR provides sustained development; repeated 22km run need not grow further."
+        },
+        {
+          "week": 12,
+          "note": "61.3km; longest LR/run-walk 18.7km; formal work 33.85min; d1:lako 11.3km, d2:int 11.3km, d3:lr 10.3km, d4:snaga, d5:tempo 9.7km, d6:rest, d7:lr 18.7km. RP/threshold work is reduced in taper, though LR still near 19km two weeks out."
+        },
+        {
+          "week": 13,
+          "note": "44km; longest LR/run-walk 14.3km; formal work 20.95min; d1:lako 9.9km, d2:int 6.7km, d3:lr 7.9km, d4:snaga, d5:tempo 5.2km, d6:rest, d7:lr 14.3km. Specific work and threshold are much smaller; 14.3km LR is defensible for this base but should stay easy."
+        },
+        {
+          "week": 14,
+          "note": "31.6km; longest LR/run-walk 0km; formal work 5.32min; d1:rest, d2:lako 3km, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 21.0975km. Explicit activation near event rhythm is low cost; adequate freshness and race-rhythm clarity."
+        }
+      ],
+      "strengths": [
+        "Longer threshold blocks and short-recovery HM work match experienced base.",
+        "Two demanding days with fast-finish LR, Friday kept easy.",
+        "Clear reduction of specific/threshold work in taper, controlled activation."
+      ],
+      "concerns": [
+        {
+          "week": 10,
+          "day": 3,
+          "claim": "Recovery after controlled simulation needs duration flexibility.",
+          "severity": "coaching",
+          "evidence": "16.5km total with 10km HM rhythm Tuesday, 13.6km medium-long Wednesday, plus 22km Sunday; current athlete fatigue unavailable."
+        },
+        {
+          "week": 12,
+          "day": 7,
+          "claim": "Long runs remain sizeable during taper for HM.",
+          "severity": "coaching",
+          "evidence": "18.7km two weeks out and 14.3km one week out; defendable experienced-base choice, but contingent on freshness."
+        },
+        {
+          "week": 1,
+          "day": 2,
+          "claim": "Large warm/cool distance around every workout can crowd out recovery flexibility.",
+          "severity": "coaching",
+          "evidence": "3.5km warmup +3km cooldown repeatedly; not intrinsically wrong, but 6.5km support mileage per quality day."
+        }
+      ],
+      "verdict": "Good experienced HM preparation with meaningful sustained blocks and clearer taper; protect simulation recovery."
+    },
+    {
+      "profileId": "U09",
+      "side": "X",
+      "criteria": {
+        "fit": 3.5,
+        "quality": 5,
+        "progression": 3,
+        "recovery": 6.5,
+        "specificity": 2,
+        "taper": 7,
+        "coherence": 5.5
+      },
+      "total": 45.75,
+      "weeksReviewed": 20,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.4km; longest LR/run-walk 10km; formal work 2min; d1:lako 8km, d2:snaga, d3:int 7.5km, d4:rest, d5:lako 6.9km, d6:rest, d7:lr 10km. Aerobic structure fits four days but initial fartlek is negligible as a fitness stimulus."
+        },
+        {
+          "week": 2,
+          "note": "33.9km; longest LR/run-walk 10.8km; formal work 2.25min; d1:lako 8km, d2:snaga, d3:int 7.5km, d4:rest, d5:lako 7.6km, d6:rest, d7:lr 10.8km. LR growth is modest; useful introductory loading."
+        },
+        {
+          "week": 3,
+          "note": "32.5km; longest LR/run-walk 9.7km; formal work 9.67min; d1:lako 7.8km, d2:snaga, d3:tempo 8.2km, d4:rest, d5:lako 6.8km, d6:rest, d7:lr 9.7km. LR drops despite not being labelled deload; two short threshold bouts replace endurance development."
+        },
+        {
+          "week": 4,
+          "note": "25.4km; longest LR/run-walk 8.1km; formal work 0min; d1:lako 6.5km, d2:snaga, d3:lako 5.7km, d4:rest, d5:lako 5.1km, d6:rest, d7:lr 8.1km. All-easy reduction provides recovery."
+        },
+        {
+          "week": 5,
+          "note": "36.3km; longest LR/run-walk 11.4km; formal work 9.67min; d1:lako 8.8km, d2:snaga, d3:tempo 8.4km, d4:rest, d5:lako 7.7km, d6:rest, d7:lr 11.4km. Long run reaches 11.4km; pace-work dose repeats unchanged."
+        },
+        {
+          "week": 6,
+          "note": "34km; longest LR/run-walk 10.2km; formal work 12.5min; d1:lako 8.2km, d2:snaga, d3:int 8.5km, d4:rest, d5:lako 7.1km, d6:rest, d7:lr 10.2km. Small marathon-pace bouts and LR regression to 10.2km do little to establish marathon durability."
+        },
+        {
+          "week": 7,
+          "note": "37.6km; longest LR/run-walk 12.3km; formal work 9.67min; d1:lako 8.2km, d2:snaga, d3:tempo 8.5km, d4:rest, d5:lako 8.6km, d6:rest, d7:lr 12.3km. Threshold repeats; long run now only 12.3km after seven weeks."
+        },
+        {
+          "week": 8,
+          "note": "28.8km; longest LR/run-walk 9.2km; formal work 0min; d1:lako 7.4km, d2:snaga, d3:lako 6.4km, d4:rest, d5:lako 5.8km, d6:rest, d7:lr 9.2km. All-easy deload is recoverable, but very low endurance exposure persists."
+        },
+        {
+          "week": 9,
+          "note": "36.9km; longest LR/run-walk 11km; formal work 13.53min; d1:lako 8.8km, d2:snaga, d3:tempo 9.4km, d4:rest, d5:lako 7.7km, d6:rest, d7:lr 11km. Another LR regression; 13.5 threshold minutes cannot substitute for prolonged preparation."
+        },
+        {
+          "week": 10,
+          "note": "40.7km; longest LR/run-walk 13.2km; formal work 13.53min; d1:lako 8.8km, d2:snaga, d3:tempo 9.5km, d4:rest, d5:lako 9.2km, d6:rest, d7:lr 13.2km. LR reaches 13.2km with fueling rehearsal; still short for eventual four-hour race."
+        },
+        {
+          "week": 11,
+          "note": "44.2km; longest LR/run-walk 14.2km; formal work 13.53min; d1:lako 10.6km, d2:snaga, d3:tempo 9.5km, d4:rest, d5:lako 9.9km, d6:rest, d7:lr 14.2km. Small threshold work repeats as LR grows to 14.2km."
+        },
+        {
+          "week": 12,
+          "note": "33.2km; longest LR/run-walk 10.6km; formal work 0min; d1:lako 8.5km, d2:snaga, d3:lako 7.4km, d4:rest, d5:lako 6.7km, d6:rest, d7:lr 10.6km. All-easy deload appropriately lowers fatigue; little accumulated long-duration work exists."
+        },
+        {
+          "week": 13,
+          "note": "47.7km; longest LR/run-walk 15.3km; formal work 13.53min; d1:lako 12.2km, d2:snaga, d3:tempo 9.5km, d4:rest, d5:lako 10.7km, d6:rest, d7:lr 15.3km. 15.3km LR is an advance; no sustained marathon-pace development."
+        },
+        {
+          "week": 14,
+          "note": "47.3km; longest LR/run-walk 16.5km; formal work 27.17min; d1:lako 12.2km, d2:snaga, d3:int 9.1km, d4:rest, d5:tempo 9.5km, d6:rest, d7:lr 16.5km. Two quality days now appear, yet marathon work totals only 2.4km and LR only 16.5km."
+        },
+        {
+          "week": 15,
+          "note": "45.1km; longest LR/run-walk 14.8km; formal work 24.87min; d1:lako 11.8km, d2:snaga, d3:int 8.3km, d4:rest, d5:tempo 10.2km, d6:rest, d7:lr 14.8km. New faster intervals are of limited relevance compared with unfinished marathon endurance."
+        },
+        {
+          "week": 16,
+          "note": "35.5km; longest LR/run-walk 10.7km; formal work 10.63min; d1:lako 8.5km, d2:snaga, d3:tempo 8.8km, d4:rest, d5:lako 7.5km, d6:rest, d7:lr 10.7km. Deload retains reduced threshold; reasonable recovery but no solution to preparation gap."
+        },
+        {
+          "week": 17,
+          "note": "49.1km; longest LR/run-walk 17.7km; formal work 32.09min; d1:lako 13.8km, d2:snaga, d3:tempo 8.2km, d4:rest, d5:tempo 9.4km, d6:rest, d7:lr 17.7km. Peak LR 17.7km/105 minutes is a critical insufficiency for a standalone marathon plan; warn-and-race design needs revision."
+        },
+        {
+          "week": 18,
+          "note": "39.3km; longest LR/run-walk 13.8km; formal work 27.17min; d1:lako 10.5km, d2:snaga, d3:int 7.3km, d4:rest, d5:tempo 7.7km, d6:rest, d7:lr 13.8km. Mileage and formal work decrease, a coherent taper direction for the delivered load."
+        },
+        {
+          "week": 19,
+          "note": "31.9km; longest LR/run-walk 11.4km; formal work 14.21min; d1:lako 8.2km, d2:snaga, d3:tempo 5.1km, d4:rest, d5:lako 7.2km, d6:rest, d7:lr 11.4km. Further volume cut and small marathon-pace touch preserve familiarity."
+        },
+        {
+          "week": 20,
+          "note": "52.7km; longest LR/run-walk 0km; formal work 6.74min; d1:lako 3km, d2:rest, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 42.195km. Race day still prescribes 42.195km, 2.38 times peak LR; explicit limitation does not make this an adequate marathon preparation."
+        }
+      ],
+      "strengths": [
+        "Four-day availability respected and easy predominance maintained.",
+        "Preparation limitation is prominently stated.",
+        "Fueling rehearsal and gross taper volume reduction included."
+      ],
+      "concerns": [
+        {
+          "week": 20,
+          "day": 7,
+          "claim": "Do not approve as complete standalone marathon preparation: delivered sustained endurance is critically inadequate.",
+          "severity": "critical",
+          "evidence": "20-week plan ends with 42.195km race after maximum 17.7km/105-minute LR, no near-marathon prolonged exposures; warning explicitly admits limited preparation."
+        },
+        {
+          "week": 17,
+          "day": 3,
+          "claim": "Marathon-specific work is token compared with race demand.",
+          "severity": "coaching",
+          "evidence": "Largest regular standalone M work only 2.5km/14.21min, preceded by 2x1100/1200m broken sessions."
+        },
+        {
+          "week": 15,
+          "day": 3,
+          "claim": "Late faster work takes priority over absent prolonged endurance.",
+          "severity": "coaching",
+          "evidence": "2x800m at 4:22/km and 3.7km threshold during week with only 14.8km LR."
+        }
+      ],
+      "verdict": "Not approvable as a complete marathon plan: critical endurance-preparation gap remains despite honest warnings."
+    },
+    {
+      "profileId": "U09",
+      "side": "Y",
+      "criteria": {
+        "fit": 3.5,
+        "quality": 5,
+        "progression": 3,
+        "recovery": 6.5,
+        "specificity": 2,
+        "taper": 6.5,
+        "coherence": 5
+      },
+      "total": 44.75,
+      "weeksReviewed": 20,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.4km; longest LR/run-walk 10km; formal work 2min; d1:lako 8km, d2:snaga, d3:int 7.5km, d4:rest, d5:lako 6.9km, d6:rest, d7:lr 10km. Gentle introductory four-run structure fits base; minute-scale fartlek adds little stimulus."
+        },
+        {
+          "week": 2,
+          "note": "33.9km; longest LR/run-walk 10.8km; formal work 2.25min; d1:lako 8km, d2:snaga, d3:int 7.5km, d4:rest, d5:lako 7.6km, d6:rest, d7:lr 10.8km. LR increases slightly; aerobic loading is conservative."
+        },
+        {
+          "week": 3,
+          "note": "32.5km; longest LR/run-walk 9.7km; formal work 9.67min; d1:lako 7.8km, d2:snaga, d3:tempo 8.2km, d4:rest, d5:lako 6.8km, d6:rest, d7:lr 9.7km. Unlabelled LR reduction weakens sustained progression, though small threshold work is recoverable."
+        },
+        {
+          "week": 4,
+          "note": "25.4km; longest LR/run-walk 8.1km; formal work 0min; d1:lako 6.5km, d2:snaga, d3:lako 5.7km, d4:rest, d5:lako 5.1km, d6:rest, d7:lr 8.1km. All-easy deload supplies recovery."
+        },
+        {
+          "week": 5,
+          "note": "36.3km; longest LR/run-walk 11.4km; formal work 9.67min; d1:lako 8.8km, d2:snaga, d3:tempo 8.4km, d4:rest, d5:lako 7.7km, d6:rest, d7:lr 11.4km. Threshold dose repeats while LR grows to only 11.4km."
+        },
+        {
+          "week": 6,
+          "note": "34km; longest LR/run-walk 10.2km; formal work 12.5min; d1:lako 8.2km, d2:snaga, d3:int 8.5km, d4:rest, d5:lako 7.1km, d6:rest, d7:lr 10.2km. 2.2km marathon-rhythm work and shorter LR insufficiently develop durability."
+        },
+        {
+          "week": 7,
+          "note": "37.6km; longest LR/run-walk 12.3km; formal work 9.67min; d1:lako 8.2km, d2:snaga, d3:tempo 8.5km, d4:rest, d5:lako 8.6km, d6:rest, d7:lr 12.3km. LR resumes growth, but race-specific exposure is sparse."
+        },
+        {
+          "week": 8,
+          "note": "28.8km; longest LR/run-walk 9.2km; formal work 0min; d1:lako 7.4km, d2:snaga, d3:lako 6.4km, d4:rest, d5:lako 5.8km, d6:rest, d7:lr 9.2km. All-easy recovery preserves schedule."
+        },
+        {
+          "week": 9,
+          "note": "36.9km; longest LR/run-walk 11km; formal work 13.53min; d1:lako 8.8km, d2:snaga, d3:tempo 9.4km, d4:rest, d5:lako 7.7km, d6:rest, d7:lr 11km. Long run falls again; development is mostly short aerobic runs."
+        },
+        {
+          "week": 10,
+          "note": "40.7km; longest LR/run-walk 13.2km; formal work 13.53min; d1:lako 8.8km, d2:snaga, d3:tempo 9.5km, d4:rest, d5:lako 9.2km, d6:rest, d7:lr 13.2km. 13.2km LR adds fueling practice but not enough prolonged marathon exposure."
+        },
+        {
+          "week": 11,
+          "note": "44.2km; longest LR/run-walk 14.2km; formal work 13.53min; d1:lako 10.6km, d2:snaga, d3:tempo 9.5km, d4:rest, d5:lako 9.9km, d6:rest, d7:lr 14.2km. Threshold work remains 13.5 minutes; long-run duration still under 90 minutes."
+        },
+        {
+          "week": 12,
+          "note": "33.2km; longest LR/run-walk 10.6km; formal work 0min; d1:lako 8.5km, d2:snaga, d3:lako 7.4km, d4:rest, d5:lako 6.7km, d6:rest, d7:lr 10.6km. All-easy deload provides recovery."
+        },
+        {
+          "week": 13,
+          "note": "47.7km; longest LR/run-walk 15.3km; formal work 13.53min; d1:lako 12.2km, d2:snaga, d3:tempo 9.5km, d4:rest, d5:lako 10.7km, d6:rest, d7:lr 15.3km. 15.3km LR is progress, yet specific work remains very small."
+        },
+        {
+          "week": 14,
+          "note": "47.3km; longest LR/run-walk 16.5km; formal work 27.17min; d1:lako 12.2km, d2:snaga, d3:int 9.1km, d4:rest, d5:tempo 9.5km, d6:rest, d7:lr 16.5km. Two quality days start despite underdeveloped long endurance; only 2.4km marathon-rhythm work."
+        },
+        {
+          "week": 15,
+          "note": "45.1km; longest LR/run-walk 14.8km; formal work 24.87min; d1:lako 11.8km, d2:snaga, d3:int 8.3km, d4:rest, d5:tempo 10.2km, d6:rest, d7:lr 14.8km. Faster intervals offer little compensation for insufficient marathon preparation."
+        },
+        {
+          "week": 16,
+          "note": "35.5km; longest LR/run-walk 10.7km; formal work 10.63min; d1:lako 8.5km, d2:snaga, d3:tempo 8.8km, d4:rest, d5:lako 7.5km, d6:rest, d7:lr 10.7km. Deload is recoverable, with reduced tempo; endurance gap remains."
+        },
+        {
+          "week": 17,
+          "note": "49.1km; longest LR/run-walk 17.7km; formal work 32.09min; d1:lako 13.8km, d2:snaga, d3:tempo 8.2km, d4:rest, d5:tempo 9.4km, d6:rest, d7:lr 17.7km. 17.7km peak/105 minutes remains critical structural inadequacy for the planned marathon."
+        },
+        {
+          "week": 18,
+          "note": "39.3km; longest LR/run-walk 13.8km; formal work 27.17min; d1:lako 10.5km, d2:snaga, d3:int 7.3km, d4:rest, d5:tempo 7.7km, d6:rest, d7:lr 13.8km. Taper volume reduces; formal work remains close to late-build demand."
+        },
+        {
+          "week": 19,
+          "note": "31.9km; longest LR/run-walk 11.4km; formal work 14.21min; d1:lako 8.2km, d2:snaga, d3:tempo 5.1km, d4:rest, d5:lako 7.2km, d6:rest, d7:lr 11.4km. Smaller volume and marathon touch are suitable tapering of the delivered workload."
+        },
+        {
+          "week": 20,
+          "note": "52.7km; longest LR/run-walk 0km; formal work 6.74min; d1:lako 3km, d2:rest, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 42.195km. 42.195km race remains far beyond delivered preparation; near-race-pace Friday repetitions label is also imprecise."
+        }
+      ],
+      "strengths": [
+        "Four-day schedule and easy majority respected.",
+        "Marathon endurance limitation is stated prominently.",
+        "Recovery weeks and taper distance reduction are coherent."
+      ],
+      "concerns": [
+        {
+          "week": 20,
+          "day": 7,
+          "claim": "Do not approve as complete standalone marathon preparation: severe sustained-endurance gap persists.",
+          "severity": "critical",
+          "evidence": "42.195km planned race after 17.7km/105-minute maximum LR; repeated short LRs cannot establish marathon durability; warning does not repair plan."
+        },
+        {
+          "week": 17,
+          "day": 3,
+          "claim": "Marathon-rhythm dose is too small for meaningful sustained specificity.",
+          "severity": "coaching",
+          "evidence": "2.5km longest regular continuous M segment with prior two-bout sessions only 2.2–2.4km."
+        },
+        {
+          "week": 20,
+          "day": 5,
+          "claim": "Activation is labelled R despite near marathon-rhythm speed.",
+          "severity": "technical",
+          "evidence": "6x200m at 5:37/km versus marathon reference 5:41/km, labelled Repeticije/R."
+        }
+      ],
+      "verdict": "Not approvable as a complete marathon plan: critical endurance gap and token specific work require scope/date revision."
+    },
+    {
+      "profileId": "U10",
+      "side": "X",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 7.5,
+        "progression": 7,
+        "recovery": 6.5,
+        "specificity": 7,
+        "taper": 6.5,
+        "coherence": 7.5
+      },
+      "total": 71.25,
+      "weeksReviewed": 20,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "65.1km; longest LR/run-walk 24km; formal work 32.93min; d1:lako 11km, d2:tempo 8.4km, d3:lr 14.4km, d4:snaga, d5:tempo 7.3km, d6:rest, d7:lr 24km. Existing 24km LR and 60km base support start, though first week adds two workouts and 8.5% distance."
+        },
+        {
+          "week": 2,
+          "note": "68.9km; longest LR/run-walk 25.5km; formal work 36min; d1:lako 11.4km, d2:tempo 9km, d3:lr 15.3km, d4:snaga, d5:tempo 7.7km, d6:rest, d7:lr 25.5km. Moderate progression and 20-minute threshold fit experienced background; Wednesday medium run extends cumulative load."
+        },
+        {
+          "week": 3,
+          "note": "69.5km; longest LR/run-walk 22.9km; formal work 38.07min; d1:lako 12.3km, d2:tempo 9.7km, d3:lr 13.7km, d4:snaga, d5:tempo 10.9km, d6:rest, d7:lr 22.9km. LR backs off while threshold grows; sensible alternation of endurance and quality load."
+        },
+        {
+          "week": 4,
+          "note": "54.2km; longest LR/run-walk 18.5km; formal work 0min; d1:lako 8.9km, d2:lako 8km, d3:lr 11.2km, d4:snaga, d5:lako 7.6km, d6:rest, d7:lr 18.5km. All-easy deload lowers both weekly and LR demand."
+        },
+        {
+          "week": 5,
+          "note": "74.9km; longest LR/run-walk 27km; formal work 43.73min; d1:lako 12.2km, d2:tempo 11km, d3:lr 16.2km, d4:snaga, d5:tempo 8.5km, d6:rest, d7:lr 27km. 27km LR plus nearly 44 quality minutes is substantial but grounded in existing endurance."
+        },
+        {
+          "week": 6,
+          "note": "74.4km; longest LR/run-walk 24.3km; formal work 45.8min; d1:lako 12.1km, d2:tempo 11.7km, d3:lr 14.6km, d4:snaga, d5:tempo 11.7km, d6:rest, d7:lr 24.3km. LR regression offsets longer threshold and progression work."
+        },
+        {
+          "week": 7,
+          "note": "80.3km; longest LR/run-walk 28.5km; formal work 49.37min; d1:lako 12.1km, d2:tempo 10.6km, d3:lr 17.1km, d4:snaga, d5:tempo 12km, d6:rest, d7:lr 28.5km. 28.5km LR and 27.5-minute tempo are demanding; easy Monday immediately after Sunday needs fatigue flexibility."
+        },
+        {
+          "week": 8,
+          "note": "62.7km; longest LR/run-walk 20.8km; formal work 16.5min; d1:lako 11.4km, d2:tempo 7.8km, d3:lr 12.5km, d4:snaga, d5:lako 10.2km, d6:rest, d7:lr 20.8km. Deload preserves a 16.5-minute tempo while cutting LR; reasonable if recovery is adequate."
+        },
+        {
+          "week": 9,
+          "note": "75.3km; longest LR/run-walk 25.6km; formal work 42.35min; d1:lako 12.2km, d2:int 10.1km, d3:lr 15.4km, d4:snaga, d5:tempo 12km, d6:rest, d7:lr 25.6km. Interval/threshold pair changes speed emphasis but marathon work is absent this week."
+        },
+        {
+          "week": 10,
+          "note": "81.4km; longest LR/run-walk 29.3km; formal work 46.33min; d1:lako 12.1km, d2:int 10.7km, d3:lr 17.6km, d4:snaga, d5:tempo 11.7km, d6:rest, d7:lr 29.3km. First 29.3km LR is about three hours; only 4km broken marathon-rhythm work limits specificity."
+        },
+        {
+          "week": 11,
+          "note": "81.7km; longest LR/run-walk 29.3km; formal work 49.37min; d1:lako 12.2km, d2:tempo 10.6km, d3:lr 17.6km, d4:snaga, d5:tempo 12km, d6:rest, d7:lr 29.3km. Another three-hour LR with threshold/M pair repeats a heavy endurance week."
+        },
+        {
+          "week": 12,
+          "note": "64km; longest LR/run-walk 20.3km; formal work 16.5min; d1:lako 11.2km, d2:tempo 10.3km, d3:lr 12.1km, d4:snaga, d5:lako 10.1km, d6:rest, d7:lr 20.3km. Deload lowers LR to about two hours while retaining short tempo."
+        },
+        {
+          "week": 13,
+          "note": "81.7km; longest LR/run-walk 29.3km; formal work 49.37min; d1:lako 12.2km, d2:tempo 10.6km, d3:lr 17.6km, d4:snaga, d5:tempo 12km, d6:rest, d7:lr 29.3km. Three-hour LR repeats yet again; useful endurance, need evidence that repetition is being tolerated."
+        },
+        {
+          "week": 14,
+          "note": "81.4km; longest LR/run-walk 29.3km; formal work 46.33min; d1:lako 12.1km, d2:int 10.7km, d3:lr 17.6km, d4:snaga, d5:tempo 11.7km, d6:rest, d7:lr 29.3km. Two quality days and third heavy LR block are formulaic; avoid treating 29.3km cap as a mandatory target."
+        },
+        {
+          "week": 15,
+          "note": "75.3km; longest LR/run-walk 26.3km; formal work 63.92min; d1:lako 12.2km, d2:int 10.1km, d3:lr 15.8km, d4:snaga, d5:lako 10.9km, d6:rest, d7:lr 26.3km. Fast finish adds 9.2km at marathon pace, the clearest race-specific stimulus; Friday easy prevents third hard workout."
+        },
+        {
+          "week": 16,
+          "note": "58.7km; longest LR/run-walk 18.8km; formal work 0min; d1:lako 10.5km, d2:lako 9.3km, d3:lr 11.2km, d4:snaga, d5:lako 8.9km, d6:rest, d7:lr 18.8km. All-easy deload is valuable after the fast-finish week."
+        },
+        {
+          "week": 17,
+          "note": "81.7km; longest LR/run-walk 29.3km; formal work 49.37min; d1:lako 12.2km, d2:tempo 10.6km, d3:lr 17.6km, d4:snaga, d5:tempo 12km, d6:rest, d7:lr 29.3km. Final 29.3km LR three weeks out is plausible; repeated three-hour exposures plus two quality days warrant individualized recovery."
+        },
+        {
+          "week": 18,
+          "note": "65.3km; longest LR/run-walk 22.3km; formal work 39.07min; d1:lako 10.4km, d2:int 9.9km, d3:lr 11.6km, d4:snaga, d5:tempo 11.1km, d6:rest, d7:lr 22.3km. Taper cuts distance, but 39 work minutes and 22.3km LR retain considerable fatigue potential."
+        },
+        {
+          "week": 19,
+          "note": "53.1km; longest LR/run-walk 18.7km; formal work 36.6min; d1:lako 10.9km, d2:tempo 6.1km, d3:lr 10.1km, d4:snaga, d5:tempo 7.3km, d6:rest, d7:lr 18.7km. 18.7km LR and 19-minute tempo are sizeable in penultimate week; work reduction is modest relative to build."
+        },
+        {
+          "week": 20,
+          "note": "52.7km; longest LR/run-walk 0km; formal work 6.32min; d1:rest, d2:lako 3km, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 42.195km. Race-week pre-race mileage is only 10.5km; explicit activation is sensible, 3:30 aspiration remains distinct from 3:45 reference."
+        }
+      ],
+      "strengths": [
+        "Repeated substantial LRs and medium-long runs fit existing 24km long-run background.",
+        "Quality and fast-finish LR generally avoid three demanding sessions per week.",
+        "Fueling practice, regular deloads and controlled activation."
+      ],
+      "concerns": [
+        {
+          "week": 14,
+          "day": 7,
+          "claim": "Repeated three-hour long runs plus two weekly quality days warrant individualized recovery.",
+          "severity": "coaching",
+          "evidence": "29.3km @6:08/km weeks 10/11/13/14/17; Sunday LR followed by Monday strides/easy and Tuesday quality."
+        },
+        {
+          "week": 17,
+          "day": 2,
+          "claim": "Most regular marathon-rhythm work is short despite otherwise substantial endurance.",
+          "severity": "coaching",
+          "evidence": "Typically only 4.1km continuous or 2x2000m; single 9.2km fast finish week 15 supplies most clear fatigued-pace specificity."
+        },
+        {
+          "week": 19,
+          "day": 5,
+          "claim": "Taper retains sizeable threshold and endurance work close to race.",
+          "severity": "coaching",
+          "evidence": "3.8km/19min threshold Friday plus 18.7km/115min Sunday one week before race; 36.6 total quality minutes."
+        }
+      ],
+      "verdict": "Substantial established-marathon endurance build; improve sustained M work and individualize repeated three-hour runs/taper."
+    },
+    {
+      "profileId": "U10",
+      "side": "Y",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6.5,
+        "progression": 6.5,
+        "recovery": 7,
+        "specificity": 6,
+        "taper": 6.5,
+        "coherence": 7
+      },
+      "total": 67.75,
+      "weeksReviewed": 20,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "63km; longest LR/run-walk 24km; formal work 23.67min; d1:lako 12.3km, d2:tempo 6km, d3:lr 14.4km, d4:snaga, d5:tempo 6.3km, d6:rest, d7:lr 24km. Existing endurance supports start; short progression finish and 13-minute threshold are conservative."
+        },
+        {
+          "week": 2,
+          "note": "66.4km; longest LR/run-walk 25.5km; formal work 26.73min; d1:lako 12.2km, d2:tempo 6.7km, d3:lr 15.3km, d4:snaga, d5:tempo 6.7km, d6:rest, d7:lr 25.5km. Gradual mileage growth while 25.5km LR repeats known endurance range."
+        },
+        {
+          "week": 3,
+          "note": "66.1km; longest LR/run-walk 22.9km; formal work 29.33min; d1:lako 12.2km, d2:tempo 7.4km, d3:lr 13.7km, d4:snaga, d5:tempo 9.9km, d6:rest, d7:lr 22.9km. LR backs off; threshold grows modestly, though specificity is thin."
+        },
+        {
+          "week": 4,
+          "note": "51.6km; longest LR/run-walk 17.6km; formal work 0min; d1:lako 8.5km, d2:lako 7.7km, d3:lr 10.6km, d4:snaga, d5:lako 7.2km, d6:rest, d7:lr 17.6km. All-easy deload controls cumulative fatigue."
+        },
+        {
+          "week": 5,
+          "note": "71.9km; longest LR/run-walk 26km; formal work 34.47min; d1:lako 11.6km, d2:tempo 8.7km, d3:lr 15.4km, d4:snaga, d5:tempo 10.2km, d6:rest, d7:lr 26km. LR grows to 26km with small marathon-rhythm finish; workload is mostly easy endurance."
+        },
+        {
+          "week": 6,
+          "note": "69.9km; longest LR/run-walk 23.4km; formal work 37.53min; d1:lako 12.2km, d2:tempo 9.4km, d3:lr 14km, d4:snaga, d5:tempo 10.9km, d6:rest, d7:lr 23.4km. LR regression balances extra tempo work; reasonable variation."
+        },
+        {
+          "week": 7,
+          "note": "76km; longest LR/run-walk 27.1km; formal work 40.1min; d1:lako 11.9km, d2:tempo 9.8km, d3:lr 16.2km, d4:snaga, d5:tempo 11km, d6:rest, d7:lr 27.1km. 27.1km LR and 22.5-minute tempo are useful; only 3.3km marathon rhythm."
+        },
+        {
+          "week": 8,
+          "note": "59.4km; longest LR/run-walk 18.8km; formal work 13.5min; d1:lako 10.3km, d2:tempo 9.7km, d3:lr 11.3km, d4:snaga, d5:lako 9.3km, d6:rest, d7:lr 18.8km. Deload retains 13.5-minute tempo; ample easy recovery."
+        },
+        {
+          "week": 9,
+          "note": "71.2km; longest LR/run-walk 24.3km; formal work 32.4min; d1:lako 12.2km, d2:int 9.1km, d3:lr 14.6km, d4:snaga, d5:tempo 11km, d6:rest, d7:lr 24.3km. Two 1100s plus tempo are modest general fitness; no marathon-rhythm work."
+        },
+        {
+          "week": 10,
+          "note": "77.5km; longest LR/run-walk 28km; formal work 39.07min; d1:lako 11.8km, d2:int 9.9km, d3:lr 16.7km, d4:snaga, d5:tempo 11.1km, d6:rest, d7:lr 28km. 28km LR advances endurance, but only 3.2km broken marathon-rhythm work."
+        },
+        {
+          "week": 11,
+          "note": "79.8km; longest LR/run-walk 29.3km; formal work 40.1min; d1:lako 12.1km, d2:tempo 9.8km, d3:lr 17.6km, d4:snaga, d5:tempo 11km, d6:rest, d7:lr 29.3km. 29.3km/three-hour LR fits established endurance; marathon pace remains a small standalone segment."
+        },
+        {
+          "week": 12,
+          "note": "62.4km; longest LR/run-walk 19.9km; formal work 13.5min; d1:lako 11km, d2:tempo 9.6km, d3:lr 11.9km, d4:snaga, d5:lako 10km, d6:rest, d7:lr 19.9km. Deload recovers with roughly two-hour LR and reduced tempo."
+        },
+        {
+          "week": 13,
+          "note": "79.8km; longest LR/run-walk 29.3km; formal work 40.1min; d1:lako 12.1km, d2:tempo 9.8km, d3:lr 17.6km, d4:snaga, d5:tempo 11km, d6:rest, d7:lr 29.3km. Heavy LR and same pair of small pace workouts repeat; no sustained specific progression."
+        },
+        {
+          "week": 14,
+          "note": "80.1km; longest LR/run-walk 29.3km; formal work 39.07min; d1:lako 12.2km, d2:int 9.9km, d3:lr 17.6km, d4:snaga, d5:tempo 11.1km, d6:rest, d7:lr 29.3km. Three-hour LR repeats with brief broken marathon work; adequate endurance, limited race-effort development."
+        },
+        {
+          "week": 15,
+          "note": "74.3km; longest LR/run-walk 26.3km; formal work 58.97min; d1:lako 12.2km, d2:int 9.1km, d3:lr 15.8km, d4:snaga, d5:lako 10.9km, d6:rest, d7:lr 26.3km. Fast-finish 9.2km supplies meaningful marathon rhythm; second workout small and Friday easy."
+        },
+        {
+          "week": 16,
+          "note": "57.9km; longest LR/run-walk 18.5km; formal work 0min; d1:lako 10.3km, d2:lako 9.2km, d3:lr 11.1km, d4:snaga, d5:lako 8.8km, d6:rest, d7:lr 18.5km. All-easy deload follows demanding finish appropriately."
+        },
+        {
+          "week": 17,
+          "note": "79.8km; longest LR/run-walk 29.3km; formal work 40.1min; d1:lako 12.1km, d2:tempo 9.8km, d3:lr 17.6km, d4:snaga, d5:tempo 11km, d6:rest, d7:lr 29.3km. Final three-hour LR is defensible three weeks out, contingent on tolerance of previous heavy weeks."
+        },
+        {
+          "week": 18,
+          "note": "64.1km; longest LR/run-walk 21.8km; formal work 39.07min; d1:lako 10.1km, d2:int 9.9km, d3:lr 11.2km, d4:snaga, d5:tempo 11.1km, d6:rest, d7:lr 21.8km. Distance falls but quality dose equals preceding weeks rather than tapering clearly."
+        },
+        {
+          "week": 19,
+          "note": "52km; longest LR/run-walk 18.2km; formal work 36.6min; d1:lako 10.6km, d2:tempo 6.1km, d3:lr 9.8km, d4:snaga, d5:tempo 7.3km, d6:rest, d7:lr 18.2km. 18.2km LR plus 19-minute tempo remains substantial close to race; tailor to recovery response."
+        },
+        {
+          "week": 20,
+          "note": "52.7km; longest LR/run-walk 0km; formal work 6.32min; d1:rest, d2:lako 3km, d3:lako 3km, d4:rest, d5:int 4.5km, d6:rest, d7:trka 42.195km. Actual Friday pace is mild, but R/repetitions label lacks activation-specific intent; pre-race mileage is low."
+        }
+      ],
+      "strengths": [
+        "Substantial repeated LRs and medium-long runs develop endurance.",
+        "More conservative overall work dose and frequent deloads.",
+        "Fueling practice and honest reference/aspiration distinction."
+      ],
+      "concerns": [
+        {
+          "week": 14,
+          "day": 2,
+          "claim": "Marathon-pace progression remains short and flat.",
+          "severity": "coaching",
+          "evidence": "2x1600m or 3.3km continuous M commonly repeats; 9.2km fast finish only once."
+        },
+        {
+          "week": 14,
+          "day": 7,
+          "claim": "Repeated three-hour runs require tolerance evidence despite appropriate established base.",
+          "severity": "coaching",
+          "evidence": "29.3km @6:08/km weeks 11/13/14/17 with medium-long and quality sessions in same week."
+        },
+        {
+          "week": 18,
+          "day": 2,
+          "claim": "Taper work barely decreases.",
+          "severity": "coaching",
+          "evidence": "Work minutes 40.1 week 17, 39.07 week 18, 36.6 week 19; mileage decreases more decisively than work."
+        },
+        {
+          "week": 20,
+          "day": 5,
+          "claim": "R repetitions label does not fit near marathon-rhythm activation.",
+          "severity": "technical",
+          "evidence": "6x200m at 5:16/km versus 5:20/km marathon reference, no explicit activation purpose."
+        }
+      ],
+      "verdict": "Conservative quality plus substantial marathon endurance; specificity is thin and taper work needs clearer reduction."
+    }
+  ]
+}

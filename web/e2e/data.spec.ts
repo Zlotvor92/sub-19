@@ -41,7 +41,7 @@ test('backup: izvoz daje ispravan fajl; uvoz ga vraća; pokvaren fajl se odbija 
     };
   };
   expect(exported.app).toBe('SUB-19');
-  expect(exported.state.v).toBe(11);
+  expect(exported.state.v).toBe(12);
   expect(exported.state.genPlan).toBeTruthy();
   // tokeni integracija NIKAD ne idu u backup
   expect(exported.state).not.toHaveProperty('strava');

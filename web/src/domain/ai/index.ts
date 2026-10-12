@@ -181,7 +181,9 @@ export function goalContext(
     return `${name} — ciljno vreme ${fmtClock(goal as number)}${extra}`;
   }
   return predicted != null
-    ? `${name} — procenjeno vreme ~${fmtClock(predicted as number)} (na osnovu unetog PB-a)`
+    ? meta['assessmentBasis'] === 'current-fitness'
+      ? `${name} — referentno vreme trenutne forme ~${fmtClock(predicted as number)} (ekvivalent unetog PB-a, nije prognoza napretka ni potvrda spremnosti za distancu)`
+      : `${name} — procenjeno vreme ~${fmtClock(predicted as number)} (na osnovu unetog PB-a)`
     : name;
 }
 

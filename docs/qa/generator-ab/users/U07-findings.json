@@ -1,0 +1,401 @@
+{
+  "id": "U07",
+  "persona": "First half-marathon, limited base",
+  "scope": "Independent synthetic domain QA. No actual human training, browser, persistence, undo, import/export, or watch-integration claim. U06 owns central browser harness.",
+  "frozenInput": {
+    "id": "U07",
+    "label": "HM prvi, ograničena baza",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 30,
+      "recentLongRunKm": 10,
+      "consistentWeeks": 12,
+      "breakWeeks": 0,
+      "qualityExperience": "some",
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 6300,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "underexecution",
+      "fraction": 0.6
+    },
+    "eventToday": "2026-11-25"
+  },
+  "fixtureSha256": {
+    "old": "d88105b7f93f7ad1761e2f92876d7ead6f0f75088a0f2077fdcca4dc0d9786f7",
+    "new": "f7984082e82e2c359836187aaaef253bcde39189578aea67af89baa49bdf967d"
+  },
+  "reproduction": [
+    "node docs/probes/generator-ab-qa.mjs U07",
+    "node docs/qa/generator-ab/users/U07-probe.mjs"
+  ],
+  "preference": "new",
+  "verdict": "New is preferable for controlled quality introduction, repeated HM long runs and honest goal framing; review peak-LR/next-day recovery burden and correct adjusted-week focus.",
+  "scores": {
+    "old": {
+      "fit": 13,
+      "quality": 13,
+      "progression": 9,
+      "recovery": 11,
+      "specificity": 6,
+      "deloadTaper": 8,
+      "coherence": 7,
+      "total": 67
+    },
+    "new": {
+      "fit": 17,
+      "quality": 17,
+      "progression": 12,
+      "recovery": 11,
+      "specificity": 9,
+      "deloadTaper": 8,
+      "coherence": 9,
+      "total": 83
+    }
+  },
+  "scoreMethod": "Independent subjective use of frozen manifest weights (20/20/15/15/10/10/10), not a clinical validation score.",
+  "allWeeksInspected": {
+    "old": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "new": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "adjusted": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  "issues": [
+    {
+      "id": "U07-01",
+      "version": "old",
+      "status": "fixed-in-new",
+      "severity": "P2",
+      "category": "goal-forecast",
+      "issue": "Projected fitness gain is presented as the target assessment rather than retaining the current-result reference.",
+      "week": 16,
+      "day": 7,
+      "date": "2027-01-31",
+      "expected": {
+        "referenceBasis": "Current recorded 5 km result; separate aspirational 1:45:00 from the reference and unverified future adaptation.",
+        "vdotGoal": 40.7,
+        "currentReferenceSec": 6555
+      },
+      "actual": {
+        "oldVdot0": 40.7,
+        "oldVdotGoal": 44.2,
+        "oldPredictedSec": 6107,
+        "oldRealno": true,
+        "goalSec": 6300,
+        "newVdotGoal": 40.7,
+        "newPredictedSec": 6555,
+        "newRealno": false
+      },
+      "evidence": "raw/U07.json versions.old.plan.meta and versions.new.plan.meta",
+      "confidence": "high",
+      "interpretation": "Product truthfulness issue in the old comparison; new fixes the assumption. This is not a claim that the goal cannot be achieved."
+    },
+    {
+      "id": "U07-02",
+      "version": "new",
+      "status": "open-coaching-concern",
+      "severity": "P2",
+      "category": "recovery",
+      "issue": "The peak long run is immediately followed by a substantial easy run for a first-HM runner with a limited base.",
+      "week": 13,
+      "day": 7,
+      "date": "2027-01-10",
+      "relatedSlots": [
+        {
+          "week": 14,
+          "day": 1,
+          "date": "2027-01-11"
+        }
+      ],
+      "expected": {
+        "behavior": "Review the adjacent-day recovery burden; provide a shorter recovery day, a rest option, or a clear rationale for retaining this pair. No universal numeric cutoff asserted."
+      },
+      "actual": {
+        "peakLRKm": 19.5,
+        "peakLRDurationMinutes": 120,
+        "nextDayEasyKm": 11.5,
+        "nextDayEasyPaceSec": 362,
+        "twoDayKm": 31,
+        "originalWeeklyBaseKm": 30,
+        "oldCorrespondingTwoDayKm": 21.6,
+        "newCorrespondingTwoDayKmAsPercentOfOriginalWeeklyBase": 103.3
+      },
+      "evidence": "raw/U07.json versions.new.plan.weeks[12].days[6], weeks[13].days[0]; old same indices",
+      "confidence": "medium",
+      "interpretation": "Coaching judgment requiring review, not a proven injury outcome or violated automated invariant. Monday run is easy; Tuesday is non-running and Thursday/Saturday are rest."
+    },
+    {
+      "id": "U07-03",
+      "version": "new-adjustment",
+      "status": "open",
+      "severity": "P3",
+      "category": "coherence",
+      "issue": "After the growth guard converts all quality to easy running, week focus still names the removed quality session.",
+      "week": 8,
+      "day": 3,
+      "date": "2026-12-02",
+      "relatedSlots": [
+        {
+          "week": 9,
+          "day": 3,
+          "date": "2026-12-09"
+        }
+      ],
+      "expected": {
+        "week8Focus": "Easy base/growth focus consistent with four easy/LR runs and no quality session.",
+        "week9Focus": "Easy base/growth focus consistent with four easy/LR runs and no quality session."
+      },
+      "actual": {
+        "week8Focus": "Fartlek",
+        "week8SessionCount": 0,
+        "week8WednesdayTag": "lako",
+        "week8WednesdayKm": 5.6,
+        "week9Focus": "Tempo isprekidan",
+        "week9SessionCount": 0,
+        "week9WednesdayTag": "lako",
+        "week9WednesdayKm": 6.2
+      },
+      "evidence": "U07-event.json adjustment.result.weeks and adjustmentAudit.weeks (W8/W9); guardReturnGrowth converts session but preserves focus",
+      "confidence": "high",
+      "interpretation": "Text coherence defect. Session distance, prediction matching, descriptions, and QS are otherwise coherent."
+    }
+  ],
+  "event": {
+    "today": "2026-11-25",
+    "type": "underexecution",
+    "recentFullWeeks": [
+      {
+        "start": "2026-11-09",
+        "end": "2026-11-15",
+        "plannedKm": 38.6,
+        "actualKm": 23.2,
+        "completed": 4,
+        "missed": 0,
+        "unknown": 0,
+        "statusCoverage": 1,
+        "volumeCoverage": 1
+      },
+      {
+        "start": "2026-11-16",
+        "end": "2026-11-22",
+        "plannedKm": 40.1,
+        "actualKm": 24.1,
+        "completed": 4,
+        "missed": 0,
+        "unknown": 0,
+        "statusCoverage": 1,
+        "volumeCoverage": 1
+      }
+    ],
+    "analysis": {
+      "today": "2026-11-25",
+      "windowStart": "2026-10-29",
+      "completed": 16,
+      "missed": 0,
+      "unknown": 0,
+      "statusCoverage": 1,
+      "volumeCoverage": 1,
+      "actualKm": 105.4,
+      "plannedKm": 144.4,
+      "completeWeeks": [
+        {
+          "start": "2026-10-26",
+          "end": "2026-11-01",
+          "plannedKm": 35.9,
+          "actualKm": 35.9,
+          "completed": 4,
+          "missed": 0,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1
+        },
+        {
+          "start": "2026-11-02",
+          "end": "2026-11-08",
+          "plannedKm": 27.2,
+          "actualKm": 27.2,
+          "completed": 4,
+          "missed": 0,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1
+        },
+        {
+          "start": "2026-11-09",
+          "end": "2026-11-15",
+          "plannedKm": 38.6,
+          "actualKm": 23.2,
+          "completed": 4,
+          "missed": 0,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1
+        },
+        {
+          "start": "2026-11-16",
+          "end": "2026-11-22",
+          "plannedKm": 40.1,
+          "actualKm": 24.1,
+          "completed": 4,
+          "missed": 0,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1
+        }
+      ],
+      "recentWeeklyKm": 25.7,
+      "lastPositiveWeeklyKm": 24.1,
+      "recentLongRunKm": 8.7,
+      "lastRunDate": "2026-11-25",
+      "daysSinceLastRun": 0,
+      "explicitMisses14d": 0,
+      "easyHighRpeCount": 0,
+      "lowerVolumeWeeks": 2,
+      "reasons": [
+        "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+      ]
+    },
+    "recommendation": {
+      "kind": "reduce",
+      "reason": "Ponovljeni propušteni, preteški laki treninzi ili manji odrađeni obim opravdavaju pregled opterećenja.",
+      "actionable": true,
+      "requiresConfirmation": true,
+      "weeklyKm": 25.7,
+      "recentLongRunKm": 8.7,
+      "reasons": [
+        "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+      ]
+    },
+    "result": {
+      "startingKm": 25.7,
+      "futurePeakWeeklyKm": 36,
+      "futurePeakLongRunKm": 11.4,
+      "preparation": {
+        "endurance": "limited",
+        "goalStatus": "needs-speed-improvement",
+        "peakLongRunKm": 11.4,
+        "peakWeeklyKm": 36,
+        "demandingDaysMax": 2,
+        "reasons": [
+          "Najduže planirano trčanje je 11.4 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+          "Isporučeni vrhunac 36 km/ned je ispod okvirne baze za pun vremenski pristup (45 km/ned).",
+          "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+          "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+        ],
+        "forecastBasis": "result-and-delivered-preparation"
+      },
+      "futureChanges": {
+        "cutoff": "2026-11-25",
+        "preservedDays": 45,
+        "changedDays": 38,
+        "conflicts": []
+      }
+    },
+    "checks": {
+      "rerunOldFrozen": true,
+      "rerunNewFrozen": true,
+      "historyComplete": true,
+      "twoFullRecentWeeks60Percent": true,
+      "underexecutionDetected": true,
+      "reduceRecommended": true,
+      "inputsPure": true,
+      "generated": true,
+      "pastAndTodayStable": true,
+      "completedDaysStable": true,
+      "calendarIdentitiesStable": true,
+      "measuredRowsStable": true,
+      "protectedQsStable": true,
+      "raceDateStable": true,
+      "raceDayStable": true,
+      "goalStable": true,
+      "noProjectedFitnessGain": true
+    },
+    "protectionChecks": {
+      "generated": true,
+      "pastAndTodayStable": true,
+      "completedDaysStable": true,
+      "calendarIdentitiesStable": true,
+      "measuredRowsStable": true,
+      "protectedQsStable": true,
+      "raceDateStable": true,
+      "raceDayStable": true,
+      "goalStable": true,
+      "noProjectedFitnessGain": true,
+      "inputsPure": true,
+      "manualSessionStable": true,
+      "manualAltUnderlyingDayStable": true,
+      "manualWarningsPresent": true
+    },
+    "auditFailures": [],
+    "protectedAuditFailures": []
+  },
+  "limitations": [
+    "Domain calls do not verify UI/store/persistence/undo lifecycle.",
+    "Future preparation assessment describes prescriptions, not completed endurance adaptation.",
+    "No injury, performance, or actual human compliance outcomes were observed.",
+    "No implementation or shared fixture changes were made; mandatory generator rerun reproduced identical U07 hashes."
+  ]
+}

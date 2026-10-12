@@ -1,0 +1,4351 @@
+{
+  "reviewer": "10k",
+  "initialScoreSha256": "b16a4336525ce1127a79b2e5c20f73a47c9b1ca74556ce0ab32d28209841815b",
+  "initialReportSha256": "20569f0487be5c67d18e427fa357e6566e0b3bb0346bb6850307e8e4052f341c",
+  "versions": {
+    "old": "A f7bcbe9",
+    "new": "B 1a7571e"
+  },
+  "events": [
+    {
+      "profileId": "U01",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": "single explicit skipped workout",
+        "dayId": "g7d3",
+        "method": "Both literal frozen historical log payloads replayed unchanged on both code versions; no regeneration.",
+        "payloads": {
+          "old": {
+            "sha256": "36e461ca423953ccc860bd92a51f2865bdd48edeeffab0598cb04c591871652b",
+            "loggedActualKmWindow": 34.3,
+            "recentWeeklyKm": 9.7,
+            "secondsPresent": 0
+          },
+          "new": {
+            "sha256": "0faececce28e044f5f421ecfb256dfe4b22cf1a456bba135dc8a0d2100f0f0ae",
+            "loggedActualKmWindow": 31.1,
+            "recentWeeklyKm": 8.8,
+            "secondsPresent": 0
+          }
+        }
+      },
+      "versions": {
+        "old": {
+          "assessment": "Correct single-miss response; no regeneration or mileage repayment.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "An isolated skipped workout does not warrant remaking a beginner plan.",
+              "evidence": "Wednesday 2026-11-25 g7d3 explicitly skipped; last run 2026-11-23; both versions retain schedule and advise no catch-up."
+            },
+            {
+              "kind": "technical",
+              "claim": "Sparse logging is retained as unknown rather than invented missed training.",
+              "evidence": "Single-skip-only supplement has 0 completed, 1 missed, 11 unknown and recentWeeklyKm=null, on both versions."
+            }
+          ]
+        },
+        "new": {
+          "assessment": "Correct single-miss response on both literal payloads; no regeneration.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New run/walk consumer is useful separate capability, not evidence that the single-miss primary regenerated.",
+              "evidence": "Primary returns an error/non-actionable single-miss result on all four version/payload combinations."
+            }
+          ]
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-25",
+          "dayId": "g7d3",
+          "before": "6x30s fartlek,3.9km, explicit skip",
+          "old": "No regenerated plan; continue without catch-up.",
+          "new": "No regenerated plan; continue without catch-up."
+        }
+      ],
+      "supplemental": [
+        {
+          "scope": "Sparse single-skip log, separate data coverage test",
+          "assessment": "Both keep11unknown sessions and null recent weekly distance; no rebuild."
+        },
+        {
+          "scope": "New-only run/walk APIs, earlier2026-11-04/11-08 control",
+          "assessment": "Empty or done-without-RPE stays unknown; tolerated3runs advances, RPE6 holds, high effort/pain steps back. Hold repeats5:1, step-back repeats3:1, repeat-phase preserves1:1→2:1→3:1→5:1. Trial follows on2026-11-30 in repeat-phase. Old has no equivalent API; no substituted consumer."
+        },
+        {
+          "scope": "New-only preservation/guards",
+          "assessment": "Future-done g5d1 with1700sec, manual g5d3 4.2km, moved dates, and locked measured row preserved; guard rejects not-started, missing inputs and fewer than4weeks to race. Numeric thresholds are operational heuristics."
+        }
+      ],
+      "outcome": "acceptable",
+      "remainingConcerns": [
+        "Run/walk numeric readiness thresholds are heuristics; repeated pain or fatigue requires judgment."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    },
+    {
+      "profileId": "U02",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": {
+          "kind": "underexecution",
+          "fraction": 0.55
+        },
+        "method": "Literal frozen historical PRIMARY current/context/options/analysis replayed unchanged on both code versions.",
+        "inputSha256": "a1e906dbdc8433c142ea630ea84792e2f9a48e010ac255e41601d3a9d29ed9c7",
+        "options": {},
+        "analysis": {
+          "today": "2026-11-25",
+          "windowStart": "2026-10-29",
+          "completed": 16,
+          "missed": 0,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1,
+          "actualKm": 103.6,
+          "plannedKm": 137.6,
+          "completeWeeks": [
+            {
+              "start": "2026-10-26",
+              "end": "2026-11-01",
+              "plannedKm": 34,
+              "actualKm": 34,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-02",
+              "end": "2026-11-08",
+              "plannedKm": 24.8,
+              "actualKm": 24.8,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-09",
+              "end": "2026-11-15",
+              "plannedKm": 37,
+              "actualKm": 20.4,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-16",
+              "end": "2026-11-22",
+              "plannedKm": 38.5,
+              "actualKm": 21.2,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            }
+          ],
+          "recentWeeklyKm": 23,
+          "lastPositiveWeeklyKm": 21.2,
+          "recentLongRunKm": 10.8,
+          "lastRunDate": "2026-11-25",
+          "daysSinceLastRun": 0,
+          "explicitMisses14d": 0,
+          "easyHighRpeCount": 0,
+          "lowerVolumeWeeks": 2,
+          "reasons": [
+            "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+          ]
+        },
+        "loggedEntries": 26,
+        "secondsPresent": 0
+      },
+      "versions": {
+        "old": {
+          "assessment": "Reduces future load appropriately, but falsely erases continuity and uses return-after-break wording.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "Underexecution is not a demonstrated training break.",
+              "evidence": "Latest full weeks 2026-11-09 and 2026-11-16 record 20.4/37km and 21.2/38.5km; last run is event date, yet old consistentWeeks=0."
+            },
+            {
+              "kind": "technical",
+              "claim": "Old week focus is stale after work removal.",
+              "evidence": "Week starting 2026-11-30 labelled Fartlek but formal workMinutes=0."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [
+              {
+                "w": 8,
+                "focus": "Fartlek"
+              }
+            ],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 30.5,
+            "peakFutureLongRunKm": 12,
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "developing",
+            "weeklyBaseKm": 23,
+            "repeatableLongRunKm": 10.8,
+            "longRunBasis": "reported",
+            "consistentWeeks": 0,
+            "breakWeeks": 0,
+            "resultAgeDays": 67,
+            "speedConfidence": "recent-result",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "developing",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 12,
+            "peakWeeklyKm": 30.5,
+            "demandingDaysMax": 2,
+            "reasons": [
+              "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        },
+        "new": {
+          "assessment": "Better reduced-volume response: maintains historical continuity and creates an actual easy initial block.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New preserves 12-week historical continuity while treating current readiness as reduced-volume.",
+              "evidence": "New consistentWeeks=12, breakWeeks=0, base23km; future peak30.2km."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Concrete load reduction is recoverable and avoids mileage repayment.",
+              "evidence": "2026-11-27 tempo8.2km becomes easy5.1km; 2026-11-29 LR14.5km becomes9.2km; no quality/strides through2026-12-06."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 30.2,
+            "peakFutureLongRunKm": 12,
+            "finalization": {
+              "cutoff": "2026-11-25",
+              "initialEasyWeeks": 2,
+              "peakWeeklyKm": 30.2
+            },
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "developing",
+            "currentReadiness": "reduced-volume",
+            "weeklyBaseKm": 23,
+            "repeatableLongRunKm": 10.8,
+            "longRunBasis": "reported",
+            "consistentWeeks": 12,
+            "breakWeeks": 0,
+            "resultAgeDays": 67,
+            "speedConfidence": "recent-result",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "supported",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 12,
+            "peakWeeklyKm": 30.2,
+            "demandingDaysMax": 3,
+            "reasons": [],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-27",
+          "dayId": "g7d5",
+          "before": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "tempo",
+            "km": 8.2,
+            "description": "Tempo isprekidan — 2.9 km zagrevanje + 2×1400 m @ 5:01/km (1:30 min laganog trčanja) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Tempo isprekidan",
+              "wuKm": 2.9,
+              "reps": 2,
+              "repM": 1400,
+              "paceSec": 301,
+              "restSec": 90,
+              "cdKm": 2.3,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "T",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "lako",
+            "km": 5.1,
+            "description": "5.1 km lako (Z2) @ ~6:02/km",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "lako",
+            "km": 5.1,
+            "description": "5.1 km lako (Z2) @ ~6:02/km",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-11-29",
+          "dayId": "g7d7",
+          "before": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 14.5,
+            "description": "14.5 km LR (Z2) @ ~6:10/km — najduže trčanje te nedelje",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 9.2,
+            "description": "9.2 km LR (Z2) @ ~6:10/km — najduže trčanje te nedelje",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 9.2,
+            "description": "9.2 km LR (Z2) @ ~6:10/km",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-11-30",
+          "dayId": "g8d1",
+          "before": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 7.3,
+            "description": "7.3 km lako (Z2) @ ~6:02/km + 4×15 s ubrzanja (lagani ubrzani koraci)",
+            "session": null,
+            "strides": {
+              "reps": 4,
+              "runSec": 15,
+              "restSec": 60,
+              "paceSec": 261
+            }
+          },
+          "old": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 6.3,
+            "description": "6.3 km lako · Postepen povratak posle pauze.",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 6.2,
+            "description": "6.2 km lako (Z2) @ ~6:02/km",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-09",
+          "dayId": "g9d3",
+          "before": {
+            "date": "2026-12-09",
+            "dayId": "g9d3",
+            "tag": "int",
+            "km": 8.4,
+            "description": "Piramida — 3 km zagrevanje + 300-500-700-500-300 m @ 4:32/km (2:23 min hoda između ponavljanja) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "pyramid",
+              "kind": "Piramida",
+              "wuKm": 3,
+              "reps": [
+                300,
+                500,
+                700,
+                500,
+                300
+              ],
+              "paceSec": 272,
+              "restSec": 143,
+              "cdKm": 2.5,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "I",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2026-12-09",
+            "dayId": "g9d3",
+            "tag": "int",
+            "km": 3.9,
+            "description": "Piramida — 1.4 km zagrevanje + 100-200-300-200-100 m @ 4:32/km (61 s hoda između ponavljanja) + 1 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "pyramid",
+              "kind": "Piramida",
+              "wuKm": 1.4,
+              "reps": [
+                100,
+                200,
+                300,
+                200,
+                100
+              ],
+              "paceSec": 272,
+              "restSec": 61,
+              "cdKm": 1,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "I",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-09",
+            "dayId": "g9d3",
+            "tag": "lako",
+            "km": 3.3,
+            "description": "3.3 km lako (Z2) @ ~6:02/km",
+            "session": null,
+            "strides": null
+          }
+        }
+      ],
+      "supplemental": [
+        {
+          "scope": "protection",
+          "today": "2026-11-25",
+          "assessment": "Both preserve protected raw sessions, rows, QS and effective dates; new repairs text/focus. Manual/future measured conflicts remain for human coaching decision.",
+          "audits": {
+            "old": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [],
+              "staleFocus": [
+                {
+                  "w": 8,
+                  "focus": "Fartlek"
+                }
+              ],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-11-30 je sačuvan; proveri da li odgovara novoj bazi.",
+                "Ručno izmenjen trening 2026-12-09 je sačuvan; proveri da li odgovara novoj bazi."
+              ]
+            },
+            "new": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [],
+              "staleFocus": [],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-11-30 je sačuvan; proveri da li odgovara novoj bazi.",
+                "Ručno izmenjen trening 2026-12-09 je sačuvan; proveri da li odgovara novoj bazi."
+              ]
+            }
+          }
+        }
+      ],
+      "outcome": "acceptable-limited",
+      "remainingConcerns": [
+        "The reason for reduced execution is unknown; distance alone does not establish fatigue, injury, or current speed.",
+        "Late quality still modest: 2x500m intervals on2026-12-23, 2x600m threshold on2026-12-25."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    },
+    {
+      "profileId": "U03",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": {
+          "kind": "high-rpe"
+        },
+        "method": "Literal frozen historical PRIMARY current/context/options/analysis replayed unchanged on both code versions.",
+        "inputSha256": "ceb9fd0a6324cb89b20028b0855a133507fd1fb8859275ea88c6241b52fb0165",
+        "options": {},
+        "analysis": {
+          "today": "2026-11-25",
+          "windowStart": "2026-10-29",
+          "completed": 20,
+          "missed": 0,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1,
+          "actualKm": 203.1,
+          "plannedKm": 203.1,
+          "completeWeeks": [
+            {
+              "start": "2026-10-26",
+              "end": "2026-11-01",
+              "plannedKm": 55.9,
+              "actualKm": 55.9,
+              "completed": 5,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-02",
+              "end": "2026-11-08",
+              "plannedKm": 40.3,
+              "actualKm": 40.3,
+              "completed": 5,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-09",
+              "end": "2026-11-15",
+              "plannedKm": 51.7,
+              "actualKm": 51.7,
+              "completed": 5,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-16",
+              "end": "2026-11-22",
+              "plannedKm": 54.5,
+              "actualKm": 54.5,
+              "completed": 5,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            }
+          ],
+          "recentWeeklyKm": 53.1,
+          "lastPositiveWeeklyKm": 54.5,
+          "recentLongRunKm": 16.6,
+          "lastRunDate": "2026-11-25",
+          "daysSinceLastRun": 0,
+          "explicitMisses14d": 0,
+          "easyHighRpeCount": 2,
+          "lowerVolumeWeeks": 0,
+          "reasons": [
+            "Najmanje dva laka treninga imaju upisan napor 7–10; proveri umor pre težeg rada."
+          ]
+        },
+        "loggedEntries": 33,
+        "secondsPresent": 0
+      },
+      "versions": {
+        "old": {
+          "assessment": "Immediate Friday work becomes easy, but scheduled deload is displaced and quality returns too soon for the fatigue signal.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "Reindexed regeneration increases the intended recovery week after easy-run RPE8 reports.",
+              "evidence": "2026-11-30 easy8.2km becomes10.9km plus strides; 2026-12-01 fartlek2.25 work minutes; week8 grows40.2 to48.8km."
+            },
+            {
+              "kind": "coaching",
+              "claim": "High perceived effort is a tolerance signal, not evidence of a break.",
+              "evidence": "2026-11-23 g7d1 and2026-11-25 g7d3 RPE8, no misses; old consistentWeeks=0 despite athlete history24."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 56.5,
+            "peakFutureLongRunKm": 16.6,
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "developing",
+            "weeklyBaseKm": 45.1,
+            "repeatableLongRunKm": 14.1,
+            "longRunBasis": "reported",
+            "consistentWeeks": 0,
+            "breakWeeks": 0,
+            "resultAgeDays": 67,
+            "speedConfidence": "recent-result",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "developing",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 16.6,
+            "peakWeeklyKm": 56.5,
+            "demandingDaysMax": 2,
+            "reasons": [
+              "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        },
+        "new": {
+          "assessment": "Better immediate fatigue response: calendar recovery retained without rewriting training history.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New keeps2026-11-26–2026-12-06 free of quality and strides and caps individual distances.",
+              "evidence": "2026-11-30 stays8.2km without strides;2026-12-01 becomes easy4.9km; week8 total38km and marked deload."
+            },
+            {
+              "kind": "technical",
+              "claim": "Calendar recovery survives finalization and past records are preserved.",
+              "evidence": "FatigueRecovery end is exclusive2026-12-07; changedProtectedDays/Rows/Qs and measuredRowsChanged are empty."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 56.5,
+            "peakFutureLongRunKm": 16.6,
+            "finalization": {
+              "cutoff": "2026-11-25",
+              "initialEasyWeeks": 2,
+              "peakWeeklyKm": 56.5
+            },
+            "fatigueRecovery": {
+              "start": "2026-11-26",
+              "end": "2026-12-07",
+              "weekCapsKm": {
+                "2026-11-23": 24.6,
+                "2026-11-30": 40.199999999999996
+              },
+              "dayCapsKm": {
+                "2026-11-26": 0,
+                "2026-11-27": 8,
+                "2026-11-28": 0,
+                "2026-11-29": 16.6,
+                "2026-11-30": 8.2,
+                "2026-12-01": 7.1,
+                "2026-12-02": 6.4,
+                "2026-12-03": 0,
+                "2026-12-04": 6.1,
+                "2026-12-05": 0,
+                "2026-12-06": 12.4
+              }
+            },
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "developing",
+            "currentReadiness": "fatigued",
+            "weeklyBaseKm": 45.1,
+            "repeatableLongRunKm": 14.1,
+            "longRunBasis": "reported",
+            "consistentWeeks": 24,
+            "breakWeeks": 0,
+            "resultAgeDays": 67,
+            "speedConfidence": "recent-result",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "supported",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 16.6,
+            "peakWeeklyKm": 56.5,
+            "demandingDaysMax": 3,
+            "reasons": [
+              "Potvrđeni kontinuitet ostaje istorijska činjenica; Visok napor trenutno zahteva rasterećenje i proveru oporavka."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-30",
+          "dayId": "g8d1",
+          "before": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 8.2,
+            "description": "8.2 km lako (Z2) @ ~5:16/km + 4×15 s ubrzanja (lagani ubrzani koraci)",
+            "session": null,
+            "strides": {
+              "reps": 4,
+              "runSec": 15,
+              "restSec": 60,
+              "paceSec": 228
+            }
+          },
+          "old": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 10.9,
+            "description": "10.9 km lako (Z2) @ ~5:16/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+            "session": null,
+            "strides": {
+              "reps": 6,
+              "runSec": 20,
+              "restSec": 60,
+              "paceSec": 228
+            }
+          },
+          "new": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 8.2,
+            "description": "8.2 km lako (Z2) @ ~5:16/km",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-01",
+          "dayId": "g8d2",
+          "before": {
+            "date": "2026-12-01",
+            "dayId": "g8d2",
+            "tag": "lako",
+            "km": 7.1,
+            "description": "7.1 km lako (Z2) @ ~5:16/km",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2026-12-01",
+            "dayId": "g8d2",
+            "tag": "int",
+            "km": 4.9,
+            "description": "Fartlek — 2 km zagrevanje + 3×45 s brzo @ ~4:23/km (90 s laganog trčanja) + 1.5 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "fartlek",
+              "kind": "Fartlek",
+              "wuKm": 2,
+              "cdKm": 1.5,
+              "reps": 3,
+              "repSec": 45,
+              "restSec": 90,
+              "paceSec": 263,
+              "easyPaceSec": 316,
+              "overrides": {},
+              "zone": "T",
+              "paceSource": "current-fitness",
+              "notes": "Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-01",
+            "dayId": "g8d2",
+            "tag": "lako",
+            "km": 4.9,
+            "description": "4.9 km lako (Z2) @ ~5:16/km",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-06",
+          "dayId": "g8d7",
+          "before": {
+            "date": "2026-12-06",
+            "dayId": "g8d7",
+            "tag": "lr",
+            "km": 12.4,
+            "description": "12.4 km LR (Z2) @ ~5:24/km — najduže trčanje te nedelje",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2026-12-06",
+            "dayId": "g8d7",
+            "tag": "lr",
+            "km": 14.9,
+            "description": "14.9 km LR (Z2) @ ~5:24/km — najduže trčanje te nedelje",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-06",
+            "dayId": "g8d7",
+            "tag": "lako",
+            "km": 12.4,
+            "description": "12.4 km lako (Z2) @ ~5:16/km",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-08",
+          "dayId": "g9d2",
+          "before": {
+            "date": "2026-12-08",
+            "dayId": "g9d2",
+            "tag": "int",
+            "km": 7.1,
+            "description": "Piramida — 2 km zagrevanje + 300-700-1000-700-300 m @ 3:57/km (2:58 min hoda između ponavljanja) + 1.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "pyramid",
+              "kind": "Piramida",
+              "wuKm": 2,
+              "reps": [
+                300,
+                700,
+                1000,
+                700,
+                300
+              ],
+              "paceSec": 237,
+              "restSec": 178,
+              "cdKm": 1.5,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "I",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2026-12-08",
+            "dayId": "g9d2",
+            "tag": "int",
+            "km": 5.9,
+            "description": "Piramida — 2 km zagrevanje + 200-400-600-400-200 m @ 3:57/km (1:47 min hoda između ponavljanja) + 1.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "pyramid",
+              "kind": "Piramida",
+              "wuKm": 2,
+              "reps": [
+                200,
+                400,
+                600,
+                400,
+                200
+              ],
+              "paceSec": 237,
+              "restSec": 107,
+              "cdKm": 1.5,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "I",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-08",
+            "dayId": "g9d2",
+            "tag": "int",
+            "km": 5.2,
+            "description": "Piramida — 2 km zagrevanje + 400-600-400 m @ 3:57/km (1:47 min hoda između ponavljanja) + 1.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "pyramid",
+              "kind": "Piramida",
+              "wuKm": 2,
+              "reps": [
+                400,
+                600,
+                400
+              ],
+              "paceSec": 237,
+              "restSec": 107,
+              "cdKm": 1.5,
+              "overrides": {},
+              "purpose": "I",
+              "zone": "I",
+              "paceSource": "current-fitness",
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+            },
+            "strides": null
+          }
+        }
+      ],
+      "supplemental": [],
+      "outcome": "acceptable-limited",
+      "remainingConcerns": [
+        "Fatigue cause, pain, illness and recovery response are unavailable.",
+        "Quality reappears2026-12-08 after calendar block; actual recovery should govern that resumption, not the date alone."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    },
+    {
+      "profileId": "U04",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": {
+          "kind": "return",
+          "breakDays": 7
+        },
+        "method": "Literal frozen historical PRIMARY current/context/options/analysis replayed unchanged on both code versions.",
+        "inputSha256": "86ee8044b3a7261db34c5803fc9401d03fb12d3f94c1104e3233560c98e13543",
+        "options": {
+          "breakDays": 7,
+          "weeklyKm": 30,
+          "recentLongRunKm": 9.2
+        },
+        "analysis": {
+          "today": "2026-11-25",
+          "windowStart": "2026-10-29",
+          "completed": 12,
+          "missed": 4,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1,
+          "actualKm": 86.4,
+          "plannedKm": 121.4,
+          "completeWeeks": [
+            {
+              "start": "2026-10-26",
+              "end": "2026-11-01",
+              "plannedKm": 29.5,
+              "actualKm": 29.5,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-02",
+              "end": "2026-11-08",
+              "plannedKm": 22.2,
+              "actualKm": 22.2,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-09",
+              "end": "2026-11-15",
+              "plannedKm": 32.7,
+              "actualKm": 32.7,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-16",
+              "end": "2026-11-22",
+              "plannedKm": 34.5,
+              "actualKm": 15.7,
+              "completed": 2,
+              "missed": 2,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            }
+          ],
+          "recentWeeklyKm": 25.9,
+          "lastPositiveWeeklyKm": 15.7,
+          "recentLongRunKm": 9.2,
+          "lastRunDate": "2026-11-18",
+          "daysSinceLastRun": 7,
+          "explicitMisses14d": 4,
+          "easyHighRpeCount": 0,
+          "lowerVolumeWeeks": 1,
+          "reasons": []
+        },
+        "loggedEntries": 26,
+        "secondsPresent": 0
+      },
+      "versions": {
+        "old": {
+          "assessment": "Reduces load after explicit seven-day gap but return instructions conflict with stride text and stale focus.",
+          "findings": [
+            {
+              "kind": "technical",
+              "claim": "Stride prose remains despite removal of structured strides.",
+              "evidence": "2026-11-27 and2026-11-30 descriptions still say6x20s while audit flags staleDescriptions; week8 says Fartlek with no work."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Old fixed pace reference and erased continuity are overconfident history handling.",
+              "evidence": "Last logged run2026-11-18, four explicit skips by2026-11-25; old consistentWeeks=0."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [
+              {
+                "id": "g7d5",
+                "date": "2026-11-27",
+                "desc": "4.8 km lako (Z2) @ ~6:20/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+              },
+              {
+                "id": "g8d1",
+                "date": "2026-11-30",
+                "desc": "6.2 km lako (Z2) @ ~6:20/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+              }
+            ],
+            "staleFocus": [
+              {
+                "w": 8,
+                "focus": "Fartlek"
+              }
+            ],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 32.2,
+            "peakFutureLongRunKm": 10.7,
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "returning",
+            "weeklyBaseKm": 25.5,
+            "repeatableLongRunKm": 7.8,
+            "longRunBasis": "reported",
+            "consistentWeeks": 0,
+            "breakWeeks": 1,
+            "resultAgeDays": 67,
+            "speedConfidence": "returning",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 10.7,
+            "peakWeeklyKm": 32.2,
+            "demandingDaysMax": 2,
+            "reasons": [
+              "Isporučeni vrhunac 32.2 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+              "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+              "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        },
+        "new": {
+          "assessment": "Coherent calendar return period with effort-led pace guidance and preserved historical continuity.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New treats7-day break explicitly, lowers starting base and removes early quality/strides.",
+              "evidence": "Reported30km base becomes25.5km;2026-11-27 easy4.8km and2026-11-29 LR7.8km; protected return period through2026-12-06."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Future quality retains reference pace but effort leads.",
+              "evidence": "2026-12-09 3x45s fartlek @5:16/km explicitly RPE7 reference-not-demand; late2027-01-13 2x1K RP uses60s walking."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 32.2,
+            "peakFutureLongRunKm": 10.7,
+            "finalization": {
+              "cutoff": "2026-11-25",
+              "initialEasyWeeks": 2,
+              "peakWeeklyKm": 32.2,
+              "returnWindow": {
+                "start": "2026-11-26",
+                "end": "2026-12-07",
+                "requiredWeeks": 2
+              },
+              "returnWarning": "Povratni period 2026-11-26–2026-12-06: bez kvaliteta i ubrzanja. Finalni plan ima 2 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni."
+            },
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "returning",
+            "currentReadiness": "returning",
+            "weeklyBaseKm": 25.5,
+            "repeatableLongRunKm": 7.8,
+            "longRunBasis": "reported",
+            "consistentWeeks": 8,
+            "breakWeeks": 1,
+            "resultAgeDays": 67,
+            "speedConfidence": "returning",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 10.7,
+            "peakWeeklyKm": 32.2,
+            "demandingDaysMax": 3,
+            "reasons": [
+              "Isporučeni vrhunac 32.2 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+              "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-27",
+          "dayId": "g7d5",
+          "before": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "tempo",
+            "km": 8.2,
+            "description": "Tempo isprekidan — 3.2 km zagrevanje + 2×1000 m @ 5:16/km (1:30 min laganog trčanja) + 2.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Tempo isprekidan",
+              "wuKm": 3.2,
+              "reps": 2,
+              "repM": 1000,
+              "paceSec": 316,
+              "restSec": 90,
+              "cdKm": 2.8,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "T",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "lako",
+            "km": 4.8,
+            "description": "4.8 km lako (Z2) @ ~6:20/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "lako",
+            "km": 4.8,
+            "description": "4.8 km lako (Z2) @ ~6:20/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-11-30",
+          "dayId": "g8d1",
+          "before": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 6.8,
+            "description": "6.8 km lako (Z2) @ ~6:20/km + 4×15 s ubrzanja (lagani ubrzani koraci)",
+            "session": null,
+            "strides": {
+              "reps": 4,
+              "runSec": 15,
+              "restSec": 60,
+              "paceSec": 274
+            }
+          },
+          "old": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 6.2,
+            "description": "6.2 km lako (Z2) @ ~6:20/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 6.2,
+            "description": "6.2 km lako (Z2) @ ~6:20/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-09",
+          "dayId": "g9d3",
+          "before": {
+            "date": "2026-12-09",
+            "dayId": "g9d3",
+            "tag": "int",
+            "km": 8.4,
+            "description": "Piramida — 3 km zagrevanje + 300-500-700-500-300 m @ 4:45/km (2:30 min hoda između ponavljanja) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "pyramid",
+              "kind": "Piramida",
+              "wuKm": 3,
+              "reps": [
+                300,
+                500,
+                700,
+                500,
+                300
+              ],
+              "paceSec": 285,
+              "restSec": 150,
+              "cdKm": 2.5,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "I",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2026-12-09",
+            "dayId": "g9d3",
+            "tag": "int",
+            "km": 6.5,
+            "description": "Fartlek — 2.9 km zagrevanje + 3×45 s brzo @ ~5:16/km (90 s laganog trčanja) + 2.5 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "fartlek",
+              "kind": "Fartlek",
+              "wuKm": 2.9,
+              "cdKm": 2.5,
+              "reps": 3,
+              "repSec": 45,
+              "restSec": 90,
+              "paceSec": 316,
+              "easyPaceSec": 380,
+              "overrides": {},
+              "zone": "T",
+              "paceSource": "current-fitness",
+              "notes": "Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-09",
+            "dayId": "g9d3",
+            "tag": "int",
+            "km": 6.5,
+            "description": "Fartlek — 2.9 km zagrevanje + 3×45 s brzo @ ~5:16/km (90 s laganog trčanja) + 2.5 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 7/10 (prijatno teško, kratke rečenice). Ritam ~5:16/km je referenca iz starog rezultata, ne zahtev",
+            "session": {
+              "type": "fartlek",
+              "kind": "Fartlek",
+              "wuKm": 2.9,
+              "cdKm": 2.5,
+              "reps": 3,
+              "repSec": 45,
+              "restSec": 90,
+              "paceSec": 316,
+              "easyPaceSec": 380,
+              "overrides": {},
+              "purpose": "T",
+              "zone": "T",
+              "paceSource": "current-fitness",
+              "notes": "Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 7/10 (prijatno teško, kratke rečenice). Ritam ~5:16/km je referenca iz starog rezultata, ne zahtev",
+              "paceBasis": "reference"
+            },
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-01-13",
+          "dayId": "g14d3",
+          "before": {
+            "date": "2027-01-13",
+            "dayId": "g14d3",
+            "tag": "int",
+            "km": 7.3,
+            "description": "Trkački ritam — 2.6 km zagrevanje + 2×1200 m @ 5:11/km (4 min hoda) + 2.1 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "wuKm": 2.6,
+              "reps": 2,
+              "repM": 1200,
+              "paceSec": 311,
+              "restSec": 240,
+              "cdKm": 2.1,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2027-01-13",
+            "dayId": "g14d3",
+            "tag": "int",
+            "km": 8.1,
+            "description": "Trkački ritam — 3.2 km zagrevanje + 2×1000 m @ 5:11/km (3:53 min hoda) + 2.7 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "wuKm": 3.2,
+              "reps": 2,
+              "repM": 1000,
+              "paceSec": 311,
+              "restSec": 233,
+              "cdKm": 2.7,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2027-01-13",
+            "dayId": "g14d3",
+            "tag": "int",
+            "km": 8.1,
+            "description": "Trkački ritam — 3.2 km zagrevanje + 2×1000 m @ 5:11/km (1 min hoda) + 2.7 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 6–7/10. Ritam ~5:11/km je referenca iz starog rezultata, ne zahtev",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "purpose": "RP",
+              "wuKm": 3.2,
+              "reps": 2,
+              "repM": 1000,
+              "paceSec": 311,
+              "restSec": 60,
+              "cdKm": 2.7,
+              "overrides": {},
+              "zone": "RP",
+              "paceSource": "race-specific",
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 6–7/10. Ritam ~5:11/km je referenca iz starog rezultata, ne zahtev",
+              "paceBasis": "reference"
+            },
+            "strides": null
+          }
+        }
+      ],
+      "supplemental": [
+        {
+          "scope": "protection",
+          "today": "2026-11-25",
+          "assessment": "Both preserve protected raw sessions, rows, QS and effective dates; new repairs text/focus. Manual/future measured conflicts remain for human coaching decision.",
+          "audits": {
+            "old": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [
+                {
+                  "id": "g7d5",
+                  "date": "2026-11-27",
+                  "desc": "4.8 km lako (Z2) @ ~6:20/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                },
+                {
+                  "id": "g8d1",
+                  "date": "2026-11-30",
+                  "desc": "6.2 km lako (Z2) @ ~6:20/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                }
+              ],
+              "staleFocus": [
+                {
+                  "w": 8,
+                  "focus": "Fartlek"
+                }
+              ],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-12-09 je sačuvan; proveri da li odgovara novoj bazi."
+              ]
+            },
+            "new": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [],
+              "staleFocus": [],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-12-09 je sačuvan; proveri da li odgovara novoj bazi."
+              ]
+            }
+          }
+        }
+      ],
+      "outcome": "acceptable-limited",
+      "remainingConcerns": [
+        "Illness/injury cause and recovery response were not supplied.",
+        "Two initial calendar weeks include a partial first week; they are not14 full days after the event.",
+        "Subsequent 10K work remains small; 32.2km peak and10.7km LR do not by themselves prove50:00 readiness."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    },
+    {
+      "profileId": "U05",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": "goal42:00→40:00",
+        "method": "Literal identical frozen historical primary plan/context replayed on old and new.",
+        "inputSha256": "13a8def6ec8a5016b46fcf5d0e85b361e6837b53470062438c2739283ceb03aa",
+        "loggedEntries": 33,
+        "secondsPresent": 33,
+        "actualTotals": {
+          "done": 33,
+          "km": 336.9,
+          "sec": 106931
+        }
+      },
+      "versions": {
+        "old": {
+          "assessment": "Honest goal/reference distinction; only race-text change on frozen primary input.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "Changing desire42:00 to40:00 does not justify training at40:00 pace.",
+              "evidence": "Old trainingVDOT45.3, race reference270s/km and predicted2700s are unchanged; only2027-01-31 race description changes."
+            }
+          ],
+          "technicalAudit": {
+            "pastChanged": [],
+            "completedChanged": [],
+            "protectedChanged": [],
+            "protectedPredictionChanged": [],
+            "protectedQSChanged": [],
+            "effectiveDatesChanged": [],
+            "inputsPure": true
+          }
+        },
+        "new": {
+          "assessment": "Honest speed/reference distinction plus regenerated updated-dose future plan; no fitness gain is inferred from the goal.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New future doses are stronger and still based on current-result pace.",
+              "evidence": "2027-01-05 3x1200m/240s walk becomes4x1200m/60s at4:30/km;2027-01-12 2x1600m/240s becomes3x1600m/75s."
+            },
+            {
+              "kind": "technical",
+              "claim": "Primary preserves historical records but legitimately changes unprotected future prescriptions.",
+              "evidence": "45 past/today days and33 done records totaling336.9km/106931sec preserved;42 future-day changes, no protected mismatches."
+            }
+          ],
+          "technicalAudit": {
+            "pastChanged": [],
+            "completedChanged": [],
+            "protectedChanged": [],
+            "protectedPredictionChanged": [],
+            "protectedQSChanged": [],
+            "effectiveDatesChanged": [],
+            "inputsPure": true
+          }
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-27",
+          "dayId": "g7d5",
+          "before": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "tempo",
+            "km": 9.3,
+            "description": "Tempo isprekidan — 3 km zagrevanje + 2×1800 m @ 4:36/km (1:30 min laganog trčanja) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Tempo isprekidan",
+              "wuKm": 3,
+              "reps": 2,
+              "repM": 1800,
+              "paceSec": 276,
+              "restSec": 90,
+              "cdKm": 2.5,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "T",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "tempo",
+            "km": 9.3,
+            "description": "Tempo isprekidan — 3 km zagrevanje + 2×1800 m @ 4:36/km (1:30 min laganog trčanja) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Tempo isprekidan",
+              "wuKm": 3,
+              "reps": 2,
+              "repM": 1800,
+              "paceSec": 276,
+              "restSec": 90,
+              "cdKm": 2.5,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "T",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "tempo",
+            "km": 8.7,
+            "description": "Tempo isprekidan — 2.5 km zagrevanje + 2×2000 m @ 4:36/km (1:30 min laganog trčanja) + 2 km hlađenje",
+            "session": {
+              "type": "int",
+              "kind": "Tempo isprekidan",
+              "wuKm": 2.5,
+              "reps": 2,
+              "repM": 2000,
+              "paceSec": 276,
+              "restSec": 90,
+              "cdKm": 2,
+              "overrides": {},
+              "purpose": "T",
+              "zone": "T",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-22",
+          "dayId": "g11d2",
+          "before": {
+            "date": "2026-12-22",
+            "dayId": "g11d2",
+            "tag": "int",
+            "km": 9.9,
+            "description": "Intervali — 3.5 km zagrevanje + 2×1200 m @ 4:09/km (3:44 min hoda) + 3.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Intervali",
+              "wuKm": 3.5,
+              "reps": 2,
+              "repM": 1200,
+              "paceSec": 249,
+              "restSec": 224,
+              "cdKm": 3.8,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "I",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2026-12-22",
+            "dayId": "g11d2",
+            "tag": "int",
+            "km": 9.9,
+            "description": "Intervali — 3.5 km zagrevanje + 2×1200 m @ 4:09/km (3:44 min hoda) + 3.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Intervali",
+              "wuKm": 3.5,
+              "reps": 2,
+              "repM": 1200,
+              "paceSec": 249,
+              "restSec": 224,
+              "cdKm": 3.8,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "I",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-22",
+            "dayId": "g11d2",
+            "tag": "int",
+            "km": 11.8,
+            "description": "Intervali — 3.5 km zagrevanje + 4×1200 m @ 4:09/km (3:44 min hoda) + 3 km hlađenje",
+            "session": {
+              "type": "int",
+              "kind": "Intervali",
+              "wuKm": 3.5,
+              "reps": 4,
+              "repM": 1200,
+              "paceSec": 249,
+              "restSec": 224,
+              "cdKm": 3,
+              "overrides": {},
+              "purpose": "I",
+              "zone": "I",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-01-05",
+          "dayId": "g13d2",
+          "before": {
+            "date": "2027-01-05",
+            "dayId": "g13d2",
+            "tag": "int",
+            "km": 9.2,
+            "description": "Trkački ritam — 2.9 km zagrevanje + 3×1200 m @ 4:30/km (4 min hoda) + 2.4 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "wuKm": 2.9,
+              "reps": 3,
+              "repM": 1200,
+              "paceSec": 270,
+              "restSec": 240,
+              "cdKm": 2.4,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2027-01-05",
+            "dayId": "g13d2",
+            "tag": "int",
+            "km": 9.2,
+            "description": "Trkački ritam — 2.9 km zagrevanje + 3×1200 m @ 4:30/km (4 min hoda) + 2.4 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "wuKm": 2.9,
+              "reps": 3,
+              "repM": 1200,
+              "paceSec": 270,
+              "restSec": 240,
+              "cdKm": 2.4,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2027-01-05",
+            "dayId": "g13d2",
+            "tag": "int",
+            "km": 8.8,
+            "description": "Trkački ritam — 2 km zagrevanje + 4×1200 m @ 4:30/km (1 min hoda) + 1.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "purpose": "RP",
+              "wuKm": 2,
+              "reps": 4,
+              "repM": 1200,
+              "paceSec": 270,
+              "restSec": 60,
+              "cdKm": 1.5,
+              "overrides": {},
+              "zone": "RP",
+              "paceSource": "race-specific",
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+            },
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-01-12",
+          "dayId": "g14d2",
+          "before": {
+            "date": "2027-01-12",
+            "dayId": "g14d2",
+            "tag": "int",
+            "km": 9.9,
+            "description": "Trkački ritam — 3.5 km zagrevanje + 2×1600 m @ 4:30/km (4 min hoda) + 3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "wuKm": 3.5,
+              "reps": 2,
+              "repM": 1600,
+              "paceSec": 270,
+              "restSec": 240,
+              "cdKm": 3,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2027-01-12",
+            "dayId": "g14d2",
+            "tag": "int",
+            "km": 9.9,
+            "description": "Trkački ritam — 3.5 km zagrevanje + 2×1600 m @ 4:30/km (4 min hoda) + 3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "wuKm": 3.5,
+              "reps": 2,
+              "repM": 1600,
+              "paceSec": 270,
+              "restSec": 240,
+              "cdKm": 3,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2027-01-12",
+            "dayId": "g14d2",
+            "tag": "int",
+            "km": 11.6,
+            "description": "Trkački ritam — 3.5 km zagrevanje + 3×1600 m @ 4:30/km (75 s hoda) + 3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "purpose": "RP",
+              "wuKm": 3.5,
+              "reps": 3,
+              "repM": 1600,
+              "paceSec": 270,
+              "restSec": 75,
+              "cdKm": 3,
+              "overrides": {},
+              "zone": "RP",
+              "paceSource": "race-specific",
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+            },
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-01-31",
+          "dayId": "g16d7",
+          "before": {
+            "date": "2027-01-31",
+            "dayId": "g16d7",
+            "tag": "trka",
+            "km": 10,
+            "description": "🏁 TRKA 10 km (10K) — željeni cilj 42:00 · preporučeni ritam 4:30/km (oko 45:00, prema unetom rezultatu)",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2027-01-31",
+            "dayId": "g16d7",
+            "tag": "trka",
+            "km": 10,
+            "description": "🏁 TRKA 10 km (10K) — željeni cilj 40:00 · preporučeni ritam 4:30/km (oko 45:00, prema unetom rezultatu)",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2027-01-31",
+            "dayId": "g16d7",
+            "tag": "trka",
+            "km": 10,
+            "description": "🏁 TRKA 10 km (10K) — željeni cilj 40:00 · preporučeni ritam 4:30/km (oko 45:00, prema unetom rezultatu)",
+            "session": null,
+            "strides": null
+          }
+        }
+      ],
+      "supplemental": [
+        {
+          "scope": "Separate frozen protection case",
+          "assessment": "Both preserve manual future prescriptions, future logged completion, moves and measured locked g10_14=253sec/km;34done records346.3km/109309sec are supplemental, not primary totals."
+        },
+        {
+          "scope": "New-B-plan control, separate from frozen-primary comparison",
+          "assessment": "Regeneration on a new-B starting plan is distinct. Goal-versus-same-goal control changes only race-text42:00→40:00 in both code versions; does not establish goal-driven fitness or prescribe40-minute pace."
+        }
+      ],
+      "outcome": "acceptable-limited",
+      "remainingConcerns": [
+        "Primary upgrades cannot be attributed physiologically to the faster goal; regeneration also switches to updated generator doses.",
+        "Late workload rises: week11 work28.36→38.32min and week14 36.48→44.6min; athlete tolerance still needs review.",
+        "Synthetic elapsed times are supplied, but full-workout seconds do not independently validate faster race fitness."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    },
+    {
+      "profileId": "U06",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": {
+          "kind": "return",
+          "breakDays": 28
+        },
+        "method": "Literal frozen historical PRIMARY current/context/options/analysis replayed unchanged on both code versions.",
+        "inputSha256": "7f4e37af6056c79a4e3f91194acd7f61d550f16016c6c8551d757433add73495",
+        "options": {
+          "breakDays": 28,
+          "weeklyKm": 15,
+          "recentLongRunKm": 4
+        },
+        "analysis": {
+          "today": "2026-11-25",
+          "windowStart": "2026-10-29",
+          "completed": 0,
+          "missed": 12,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1,
+          "actualKm": 0,
+          "plannedKm": 46.8,
+          "completeWeeks": [
+            {
+              "start": "2026-10-26",
+              "end": "2026-11-01",
+              "plannedKm": 10.8,
+              "actualKm": 6.4,
+              "completed": 2,
+              "missed": 1,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-02",
+              "end": "2026-11-08",
+              "plannedKm": 8.1,
+              "actualKm": 0,
+              "completed": 0,
+              "missed": 3,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-09",
+              "end": "2026-11-15",
+              "plannedKm": 12.7,
+              "actualKm": 0,
+              "completed": 0,
+              "missed": 3,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-16",
+              "end": "2026-11-22",
+              "plannedKm": 13.1,
+              "actualKm": 0,
+              "completed": 0,
+              "missed": 3,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            }
+          ],
+          "recentWeeklyKm": 0,
+          "lastPositiveWeeklyKm": 6.4,
+          "recentLongRunKm": null,
+          "lastRunDate": "2026-10-28",
+          "daysSinceLastRun": 28,
+          "explicitMisses14d": 6,
+          "easyHighRpeCount": 0,
+          "lowerVolumeWeeks": 4,
+          "reasons": [
+            "Poslednja pokrivena nedelja bez trčanja prekida oslonac na raniji veći obim.",
+            "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+          ]
+        },
+        "loggedEntries": 20,
+        "secondsPresent": 8
+      },
+      "versions": {
+        "old": {
+          "assessment": "Conservative return mileage, but stale pace/stride prose and warning numbers are incoherent.",
+          "findings": [
+            {
+              "kind": "technical",
+              "claim": "Old instructions show strides and quality-focused labels after structured work was removed.",
+              "evidence": "2026-11-30 description6x20s;2026-12-14 4x15s; multiple all-easy weeks labelled Fartlek/Tempo."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Old pacing remains anchored to410-day-old result after another28-day interruption.",
+              "evidence": "Last run2026-10-28; no running in recent complete weeks; fixed6:47 easy pace without per-day effort override."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [
+              {
+                "id": "g8d1",
+                "date": "2026-11-30",
+                "desc": "2.2 km lako (Z2) @ ~6:47/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+              },
+              {
+                "id": "g10d1",
+                "date": "2026-12-14",
+                "desc": "2.1 km lako (Z2) @ ~6:47/km + 4×15 s ubrzanja (lagani ubrzani koraci)"
+              }
+            ],
+            "staleFocus": [
+              {
+                "w": 9,
+                "focus": "Fartlek"
+              },
+              {
+                "w": 10,
+                "focus": "DELOAD — obim dole, ostaje kratka oštrina"
+              },
+              {
+                "w": 11,
+                "focus": "Fartlek"
+              },
+              {
+                "w": 12,
+                "focus": "Fartlek"
+              },
+              {
+                "w": 13,
+                "focus": "Tempo"
+              }
+            ],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 10.1,
+            "peakFutureLongRunKm": 4,
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "returning",
+            "weeklyBaseKm": 8.3,
+            "repeatableLongRunKm": 2.2,
+            "longRunBasis": "reported",
+            "consistentWeeks": 0,
+            "breakWeeks": 4,
+            "resultAgeDays": 410,
+            "speedConfidence": "returning",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "endurance-limited",
+            "peakLongRunKm": 4,
+            "peakWeeklyKm": 10.1,
+            "demandingDaysMax": 0,
+            "reasons": [
+              "Isporučeni vrhunac 10.1 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+              "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+              "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        },
+        "new": {
+          "assessment": "Better effort-led and calendar-safe return, yet inadequate delivered10K preparation remains.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New no-work/stride return extends through2026-12-20 with conversational effort overriding historical pace.",
+              "evidence": "2026-11-29 LR5km→2.5km;2026-11-30 easy3.2km→2.2km; initialEasyWeeks8 reflects actual later dose suppression, not an eight-week requested recovery."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Delivered sustained exposure is too small to approve a timed10K preparation.",
+              "evidence": "Future peak10.1km/week and4km LR, yet2027-01-31 still10km race with60-minute desire;1/20 has only2x600m RP."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 10.1,
+            "peakFutureLongRunKm": 4,
+            "finalization": {
+              "cutoff": "2026-11-25",
+              "initialEasyWeeks": 8,
+              "peakWeeklyKm": 10.1,
+              "returnWindow": {
+                "start": "2026-11-26",
+                "end": "2026-12-21",
+                "requiredWeeks": 4
+              },
+              "returnWarning": "Povratni period 2026-11-26–2026-12-20: bez kvaliteta i ubrzanja. Finalni plan ima 8 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni."
+            },
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "returning",
+            "currentReadiness": "returning",
+            "weeklyBaseKm": 8.3,
+            "repeatableLongRunKm": 2.2,
+            "longRunBasis": "reported",
+            "consistentWeeks": 1,
+            "breakWeeks": 4,
+            "resultAgeDays": 410,
+            "speedConfidence": "returning",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "endurance-limited",
+            "peakLongRunKm": 4,
+            "peakWeeklyKm": 10.1,
+            "demandingDaysMax": 0,
+            "reasons": [
+              "Isporučeni vrhunac 10.1 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+              "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+              "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-29",
+          "dayId": "g7d7",
+          "before": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 5,
+            "description": "5 km LR (Z2) @ ~6:57/km — najduže trčanje te nedelje",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 2.5,
+            "description": "2.5 km lako-dugo (Z2) @ ~6:57/km — bazna faza, bez kvaliteta",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 2.5,
+            "description": "2.5 km LR (Z2) @ ~6:57/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-11-30",
+          "dayId": "g8d1",
+          "before": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 3.2,
+            "description": "3.2 km lako (Z2) @ ~6:47/km + 4×15 s ubrzanja (lagani ubrzani koraci)",
+            "session": null,
+            "strides": {
+              "reps": 4,
+              "runSec": 15,
+              "restSec": 60,
+              "paceSec": 295
+            }
+          },
+          "old": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 2.2,
+            "description": "2.2 km lako (Z2) @ ~6:47/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-30",
+            "dayId": "g8d1",
+            "tag": "lako",
+            "km": 2.2,
+            "description": "2.2 km lako (Z2) @ ~6:47/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-01-20",
+          "dayId": "g15d3",
+          "before": {
+            "date": "2027-01-20",
+            "dayId": "g15d3",
+            "tag": "int",
+            "km": 3.2,
+            "description": "Trkački ritam — 1 km zagrevanje + 2×600 m @ 6:00/km (2:42 min hoda) + 0.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "wuKm": 1,
+              "reps": 2,
+              "repM": 600,
+              "paceSec": 360,
+              "restSec": 162,
+              "cdKm": 0.8,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2027-01-20",
+            "dayId": "g15d3",
+            "tag": "int",
+            "km": 3.2,
+            "description": "Trkački ritam — 1 km zagrevanje + 2×600 m @ 6:00/km (2:42 min hoda) + 0.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "wuKm": 1,
+              "reps": 2,
+              "repM": 600,
+              "paceSec": 360,
+              "restSec": 162,
+              "cdKm": 0.8,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2027-01-20",
+            "dayId": "g15d3",
+            "tag": "int",
+            "km": 3.2,
+            "description": "Trkački ritam — 1 km zagrevanje + 2×600 m @ 6:00/km (75 s hoda) + 0.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 6–7/10. Ritam ~6:00/km je referenca iz starog rezultata, ne zahtev",
+            "session": {
+              "type": "int",
+              "kind": "Trkački ritam",
+              "purpose": "RP",
+              "wuKm": 1,
+              "reps": 2,
+              "repM": 600,
+              "paceSec": 360,
+              "restSec": 75,
+              "cdKm": 0.8,
+              "overrides": {},
+              "zone": "RP",
+              "paceSource": "race-specific",
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 6–7/10. Ritam ~6:00/km je referenca iz starog rezultata, ne zahtev",
+              "paceBasis": "reference"
+            },
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-01-31",
+          "dayId": "g16d7",
+          "before": {
+            "date": "2027-01-31",
+            "dayId": "g16d7",
+            "tag": "trka",
+            "km": 10,
+            "description": "🏁 TRKA 10 km (10K) — željeni cilj 1:00:00 · preporučeni ritam 6:00/km (oko 1:00:00, prema unetom rezultatu i izabranom cilju) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2027-01-31",
+            "dayId": "g16d7",
+            "tag": "trka",
+            "km": 10,
+            "description": "🏁 TRKA 10 km (10K) — željeni cilj 1:00:00 · preporučeni ritam 6:00/km (oko 1:00:00, prema unetom rezultatu i izabranom cilju) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2027-01-31",
+            "dayId": "g16d7",
+            "tag": "trka",
+            "km": 10,
+            "description": "🏁 TRKA 10 km (10K) — željeni cilj 1:00:00 · preporučeni ritam 6:00/km (oko 1:00:00, prema unetom rezultatu i izabranom cilju) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          }
+        }
+      ],
+      "supplemental": [],
+      "outcome": "concern",
+      "remainingConcerns": [
+        "A4km peak long run after repeated interruptions needs a concrete race participation/completion decision; warnings alone do not establish readiness.",
+        "Only8 historical done records contain seconds; there is no logged post-break tolerance yet."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    },
+    {
+      "profileId": "U07",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": {
+          "kind": "underexecution",
+          "fraction": 0.6
+        },
+        "method": "Literal frozen historical PRIMARY current/context/options/analysis replayed unchanged on both code versions.",
+        "inputSha256": "5a2cfc5a8c0b78d1cd4036aea86e8eece21b22d7f6a3ad51a23c05d876753cb3",
+        "options": {},
+        "analysis": {
+          "today": "2026-11-25",
+          "windowStart": "2026-10-29",
+          "completed": 16,
+          "missed": 0,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1,
+          "actualKm": 105.4,
+          "plannedKm": 144.4,
+          "completeWeeks": [
+            {
+              "start": "2026-10-26",
+              "end": "2026-11-01",
+              "plannedKm": 35.9,
+              "actualKm": 35.9,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-02",
+              "end": "2026-11-08",
+              "plannedKm": 27.2,
+              "actualKm": 27.2,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-09",
+              "end": "2026-11-15",
+              "plannedKm": 38.6,
+              "actualKm": 23.2,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-16",
+              "end": "2026-11-22",
+              "plannedKm": 40.1,
+              "actualKm": 24.1,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            }
+          ],
+          "recentWeeklyKm": 25.7,
+          "lastPositiveWeeklyKm": 24.1,
+          "recentLongRunKm": 8.7,
+          "lastRunDate": "2026-11-25",
+          "daysSinceLastRun": 0,
+          "explicitMisses14d": 0,
+          "easyHighRpeCount": 0,
+          "lowerVolumeWeeks": 2,
+          "reasons": [
+            "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+          ]
+        },
+        "loggedEntries": 26,
+        "secondsPresent": 0
+      },
+      "versions": {
+        "old": {
+          "assessment": "Reduces mileage but misclassifies underexecution as lost continuity and leaves weak HM preparation.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "Old delivered11.4km peak LR does not adequately substantiate timed HM preparation.",
+              "evidence": "Actual recent full weeks23.2/38.6 and24.1/40.1km; peak future36km and11.4km LR; race remains2027-01-31."
+            },
+            {
+              "kind": "technical",
+              "claim": "Old all-easy weeks retain quality-focused labels.",
+              "evidence": "Weeks8/9 labelled Fartlek/Tempo isprekidan with no work."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [
+              {
+                "w": 8,
+                "focus": "Fartlek"
+              },
+              {
+                "w": 9,
+                "focus": "Tempo isprekidan"
+              }
+            ],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 36,
+            "peakFutureLongRunKm": 11.4,
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "developing",
+            "weeklyBaseKm": 25.7,
+            "repeatableLongRunKm": 8.7,
+            "longRunBasis": "reported",
+            "consistentWeeks": 0,
+            "breakWeeks": 0,
+            "resultAgeDays": 67,
+            "speedConfidence": "recent-result",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 11.4,
+            "peakWeeklyKm": 36,
+            "demandingDaysMax": 2,
+            "reasons": [
+              "Najduže planirano trčanje je 11.4 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+              "Isporučeni vrhunac 36 km/ned je ispod okvirne baze za pun vremenski pristup (45 km/ned).",
+              "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+              "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        },
+        "new": {
+          "assessment": "Appropriately labels limited HM preparation and offers explicit next-step options without claiming a full cycle.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New distinguishes12-week history from reduced-volume readiness and supplies limited status.",
+              "evidence": "New peak36.1km/12.3km LR, fullPreparation=false; race date not automatically altered."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Options provide meaningful decisions rather than merely a warning.",
+              "evidence": "Extend preview2027-03-28:19.2km LR/46.2km peak;10K same date clears HM time goal; base mode removes timed-performance aim."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 36.1,
+            "peakFutureLongRunKm": 12.3,
+            "finalization": {
+              "cutoff": "2026-11-25",
+              "initialEasyWeeks": 2,
+              "peakWeeklyKm": 36.1
+            },
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": {
+            "status": "limited",
+            "fullPreparation": false,
+            "statement": "Ovo nije puna priprema za polumaraton. Isporučeno: najduže 12,3 km, vrhunac 36,1 km/ned. Pravila pune pripreme: najduže ≥ 16 km, bar dva trčanja ≥ 13,6 km i vrhunac ≥ 45 km/ned.",
+            "conditions": [
+              "Nastavak ka punoj pripremi za polumaraton: upisani treninzi treba da potvrde rast ponovljive baze i dužine; zatim ponovo pregledaj opcije u Prilagodi plan.",
+              "Za ovaj datum više nema 10 nedelja za pun ciklus; ostaju pomeranje trke, kraća distanca ili povratni režim bez vremenskog cilja."
+            ],
+            "options": [
+              {
+                "id": "extend",
+                "choice": {
+                  "kind": "extend",
+                  "raceDate": "2027-03-28"
+                },
+                "title": "Pomeri trku na 28.03.2027.",
+                "detail": "Najraniji datum, 8 ned. kasnije, na kome isporučen plan ispunjava pravila pune pripreme za polumaraton. Isti cilj i baza.",
+                "raceDate": "2027-03-28",
+                "raceDistM": 21097.5,
+                "goalSec": 6300,
+                "coverage": "full",
+                "peakLongRunKm": 19.2,
+                "peakWeeklyKm": 46.2
+              },
+              {
+                "id": "shorter-10000",
+                "choice": {
+                  "kind": "shorter",
+                  "raceDistM": 10000
+                },
+                "title": "Kraća distanca: 10K istog datuma",
+                "detail": "Dužina pokriva 10K, ali nedeljni vrhunac ne podržava vremenski cilj. Vremenski cilj polumaraton se ne prenosi.",
+                "raceDate": "2027-01-31",
+                "raceDistM": 10000,
+                "goalSec": null,
+                "coverage": "distance",
+                "peakLongRunKm": 13.5,
+                "peakWeeklyKm": 34.3
+              },
+              {
+                "id": "base",
+                "choice": {
+                  "kind": "base"
+                },
+                "title": "Povratni/bazni režim do istog datuma, bez vremenskog cilja",
+                "detail": "Samo lako trčanje i postepen rast od potvrđene baze; nije priprema za vremenski cilj na polumaraton. Uslovi nastavka su navedeni ispod.",
+                "raceDate": "2027-01-31",
+                "raceDistM": 21097.5,
+                "goalSec": null,
+                "coverage": "insufficient",
+                "peakLongRunKm": 8.7,
+                "peakWeeklyKm": 25.5
+              }
+            ],
+            "unavailable": []
+          },
+          "athlete": {
+            "qualityReadiness": "developing",
+            "currentReadiness": "reduced-volume",
+            "weeklyBaseKm": 25.7,
+            "repeatableLongRunKm": 8.7,
+            "longRunBasis": "reported",
+            "consistentWeeks": 12,
+            "breakWeeks": 0,
+            "resultAgeDays": 67,
+            "speedConfidence": "recent-result",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 12.3,
+            "peakWeeklyKm": 36.1,
+            "demandingDaysMax": 2,
+            "reasons": [
+              "Najduže planirano trčanje je 12.3 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+              "Isporučeni vrhunac 36.1 km/ned je ispod okvirne baze za pun vremenski pristup (45 km/ned).",
+              "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-29",
+          "dayId": "g7d7",
+          "before": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 14.5,
+            "description": "14.5 km LR (Z2) @ ~6:10/km — najduže trčanje te nedelje",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 8.7,
+            "description": "8.7 km LR (Z2) @ ~6:10/km — najduže trčanje te nedelje",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 8.7,
+            "description": "8.7 km LR (Z2) @ ~6:10/km",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-09",
+          "dayId": "g9d3",
+          "before": {
+            "date": "2026-12-09",
+            "dayId": "g9d3",
+            "tag": "int",
+            "km": 8.3,
+            "description": "Intervali — 3.5 km zagrevanje + 2×800 m @ 4:32/km (2:43 min hoda) + 3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Intervali",
+              "wuKm": 3.5,
+              "reps": 2,
+              "repM": 800,
+              "paceSec": 272,
+              "restSec": 163,
+              "cdKm": 3,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "I",
+              "paceSource": "current-fitness"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2026-12-09",
+            "dayId": "g9d3",
+            "tag": "lako",
+            "km": 6.2,
+            "description": "6.2 km lako · Povratak: kvalitet je odložen dok obim ne podrži celu sesiju.",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-09",
+            "dayId": "g9d3",
+            "tag": "int",
+            "km": 5,
+            "description": "Tempo trke — 1.6 km zagrevanje + 2×1000 m @ 5:11/km (1:30 min laganog trčanja) + 1.2 km hlađenje · HM ritam: blokovi na ciljnom ritmu, oporavak u laganom trčanju da ritam ostane neprekidan.",
+            "session": {
+              "type": "int",
+              "kind": "Tempo trke",
+              "purpose": "RP",
+              "wuKm": 1.6,
+              "reps": 2,
+              "repM": 1000,
+              "paceSec": 311,
+              "restSec": 90,
+              "cdKm": 1.2,
+              "overrides": {},
+              "zone": "RP",
+              "paceSource": "race-specific",
+              "notes": "HM ritam: blokovi na ciljnom ritmu, oporavak u laganom trčanju da ritam ostane neprekidan."
+            },
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-01-06",
+          "dayId": "g13d3",
+          "before": {
+            "date": "2027-01-06",
+            "dayId": "g13d3",
+            "tag": "tempo",
+            "km": 10.5,
+            "description": "Kontrolna trka — 2 km zagrevanje + 7 km @ 5:11/km + 1.5 km hlađenje · Kontrolisano na ritmu polumaratona; isprobaj opremu i gorivo. Ovo nije maksimalan test forme. Pravu trku unesi zasebno kao test. Naredna 2–3 dana lagano.",
+            "session": {
+              "type": "tempo",
+              "kind": "Kontrolna trka",
+              "zone": "RP",
+              "notes": "Kontrolisano na ritmu polumaratona; isprobaj opremu i gorivo. Ovo nije maksimalan test forme. Pravu trku unesi zasebno kao test. Naredna 2–3 dana lagano.",
+              "wuKm": 2,
+              "qKm": 7,
+              "paceSec": 311,
+              "cdKm": 1.5,
+              "overrides": {},
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2027-01-06",
+            "dayId": "g13d3",
+            "tag": "int",
+            "km": 8.6,
+            "description": "Tempo trke — 2.7 km zagrevanje + 2×1400 m @ 5:11/km (5:26 min laganog trčanja) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "int",
+              "kind": "Tempo trke",
+              "wuKm": 2.7,
+              "reps": 2,
+              "repM": 1400,
+              "paceSec": 311,
+              "restSec": 326,
+              "cdKm": 2.3,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2027-01-06",
+            "dayId": "g13d3",
+            "tag": "int",
+            "km": 7.3,
+            "description": "Tempo trke — 1.7 km zagrevanje + 2×2100 m @ 5:11/km (1:30 min laganog trčanja) + 1.2 km hlađenje · HM ritam: blokovi na ciljnom ritmu, oporavak u laganom trčanju da ritam ostane neprekidan.",
+            "session": {
+              "type": "int",
+              "kind": "Tempo trke",
+              "purpose": "RP",
+              "wuKm": 1.7,
+              "reps": 2,
+              "repM": 2100,
+              "paceSec": 311,
+              "restSec": 90,
+              "cdKm": 1.2,
+              "overrides": {},
+              "zone": "RP",
+              "paceSource": "race-specific",
+              "notes": "HM ritam: blokovi na ciljnom ritmu, oporavak u laganom trčanju da ritam ostane neprekidan."
+            },
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-01-31",
+          "dayId": "g16d7",
+          "before": {
+            "date": "2027-01-31",
+            "dayId": "g16d7",
+            "tag": "trka",
+            "km": 21.0975,
+            "description": "🏁 TRKA 21,1 km (Polumaraton) — željeni cilj 1:45:00 · preporučeni ritam 5:11/km (oko 1:49:21, prema unetom rezultatu)",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2027-01-31",
+            "dayId": "g16d7",
+            "tag": "trka",
+            "km": 21.0975,
+            "description": "🏁 TRKA 21,1 km (Polumaraton) — željeni cilj 1:45:00 · preporučeni ritam 5:11/km (oko 1:49:21, prema unetom rezultatu) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2027-01-31",
+            "dayId": "g16d7",
+            "tag": "trka",
+            "km": 21.0975,
+            "description": "🏁 TRKA 21,1 km (Polumaraton) — željeni cilj 1:45:00 · preporučeni ritam 5:11/km (oko 1:49:21, prema unetom rezultatu) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          }
+        }
+      ],
+      "supplemental": [
+        {
+          "scope": "protection",
+          "today": "2026-11-25",
+          "assessment": "Both preserve protected raw sessions, rows, QS and effective dates; new repairs text/focus. Manual/future measured conflicts remain for human coaching decision.",
+          "audits": {
+            "old": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [],
+              "staleFocus": [
+                {
+                  "w": 8,
+                  "focus": "Fartlek"
+                }
+              ],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-12-07 je sačuvan; proveri da li odgovara novoj bazi.",
+                "Ručno izmenjen trening 2026-12-09 je sačuvan; proveri da li odgovara novoj bazi."
+              ]
+            },
+            "new": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [],
+              "staleFocus": [],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-12-07 je sačuvan; proveri da li odgovara novoj bazi.",
+                "Ručno izmenjen trening 2026-12-09 je sačuvan; proveri da li odgovara novoj bazi."
+              ]
+            }
+          }
+        }
+      ],
+      "outcome": "acceptable-limited",
+      "remainingConcerns": [
+        "Preview options are not selected outcomes; no subsequent adherence or race result is evidenced.",
+        "HM full-preparation cutoffs are application rules, not universal physiological minima.",
+        "Current-date plan remains inadequate for confident1:45 HM approval."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    },
+    {
+      "profileId": "U08",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": {
+          "kind": "return",
+          "breakDays": 14
+        },
+        "method": "Literal frozen historical PRIMARY current/context/options/analysis replayed unchanged on both code versions.",
+        "inputSha256": "87889ad610cc8dc3d4e037168e44fdb7193b7745fea18f12cb23d7ab2d679451",
+        "options": {
+          "breakDays": 14,
+          "weeklyKm": 55,
+          "recentLongRunKm": 16
+        },
+        "analysis": {
+          "today": "2026-11-25",
+          "windowStart": "2026-10-29",
+          "completed": 10,
+          "missed": 10,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1,
+          "actualKm": 108.3,
+          "plannedKm": 242,
+          "completeWeeks": [
+            {
+              "start": "2026-10-26",
+              "end": "2026-11-01",
+              "plannedKm": 61.2,
+              "actualKm": 61.1,
+              "completed": 5,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-02",
+              "end": "2026-11-08",
+              "plannedKm": 46.6,
+              "actualKm": 46.5,
+              "completed": 5,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-09",
+              "end": "2026-11-15",
+              "plannedKm": 63.3,
+              "actualKm": 33.3,
+              "completed": 3,
+              "missed": 2,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-16",
+              "end": "2026-11-22",
+              "plannedKm": 68.9,
+              "actualKm": 0,
+              "completed": 0,
+              "missed": 5,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            }
+          ],
+          "recentWeeklyKm": 0,
+          "lastPositiveWeeklyKm": 33.3,
+          "recentLongRunKm": 13.6,
+          "lastRunDate": "2026-11-11",
+          "daysSinceLastRun": 14,
+          "explicitMisses14d": 10,
+          "easyHighRpeCount": 0,
+          "lowerVolumeWeeks": 2,
+          "reasons": [
+            "Poslednja pokrivena nedelja bez trčanja prekida oslonac na raniji veći obim.",
+            "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+          ]
+        },
+        "loggedEntries": 33,
+        "secondsPresent": 0
+      },
+      "versions": {
+        "old": {
+          "assessment": "Correctly rejects full-cycle rebuild at primary date but leaves future-plan interpretation underspecified.",
+          "findings": [
+            {
+              "kind": "technical",
+              "claim": "Primary rejection must not be replaced by the earlier controlled successful case.",
+              "evidence": "2026-11-25 leaves8 calendar weeks to2027-01-17; both versions return error and no result plan."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": true,
+            "error": "Preostalo vreme ne podržava novi pun ciklus: Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća. Datum trke nije automatski pomeren.",
+            "decision": null
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": null,
+          "preparation": null
+        },
+        "new": {
+          "assessment": "Correctly rejects primary rebuild and explicitly says existing future schedule is not the return recommendation.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New rejection makes next steps concrete.",
+              "evidence": "3-week easy block from2026-11-26; choices:extend to2027-02-21,10K on2027-01-17 without transferred HM time goal, or base mode."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Proposed dates are conservative application-cycle choices, not a medical rule that8 weeks can never suffice.",
+              "evidence": "History24 consistent weeks before14-day gap; current logged tolerance after gap unavailable."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": true,
+            "error": "Preostalo vreme ne podržava novi pun ciklus: Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća. Datum trke nije automatski pomeren.",
+            "decision": {
+              "status": "rejected",
+              "fullPreparation": false,
+              "statement": "Pun ciklus za polumaraton nije moguć: do trke 17.01.2027. ostaje manje od 10 nedelja. Postojeći budući raspored nije preporuka za povratak — izaberi naredni korak.",
+              "conditions": [
+                "Povratni blok: 3 nedelje lakog trčanja od 26.11.2026., bez nadoknade propuštenog.",
+                "Nastavak ka punoj pripremi za polumaraton: upisani treninzi treba da potvrde rast ponovljive baze i dužine; zatim ponovo pregledaj opcije u Prilagodi plan.",
+                "Za ovaj datum više nema 10 nedelja za pun ciklus; ostaju pomeranje trke, kraća distanca ili povratni režim bez vremenskog cilja."
+              ],
+              "options": [
+                {
+                  "id": "extend",
+                  "choice": {
+                    "kind": "extend",
+                    "raceDate": "2027-02-21"
+                  },
+                  "title": "Pomeri trku na 21.02.2027.",
+                  "detail": "Najraniji datum, 5 ned. kasnije, na kome isporučen plan ispunjava pravila pune pripreme za polumaraton. Isti cilj i baza.",
+                  "raceDate": "2027-02-21",
+                  "raceDistM": 21097.5,
+                  "goalSec": 5700,
+                  "coverage": "full",
+                  "peakLongRunKm": 16.3,
+                  "peakWeeklyKm": 51.5
+                },
+                {
+                  "id": "shorter-10000",
+                  "choice": {
+                    "kind": "shorter",
+                    "raceDistM": 10000
+                  },
+                  "title": "Kraća distanca: 10K istog datuma",
+                  "detail": "Isporučen plan ispunjava pravila pune pripreme za 10K. Vremenski cilj polumaraton se ne prenosi; novi cilj postavi posebno.",
+                  "raceDate": "2027-01-17",
+                  "raceDistM": 10000,
+                  "goalSec": null,
+                  "coverage": "full",
+                  "peakLongRunKm": 13.9,
+                  "peakWeeklyKm": 44.7
+                },
+                {
+                  "id": "base",
+                  "choice": {
+                    "kind": "base"
+                  },
+                  "title": "Povratni/bazni režim do istog datuma, bez vremenskog cilja",
+                  "detail": "Samo lako trčanje i postepen rast od potvrđene baze; nije priprema za vremenski cilj na polumaraton. Uslovi nastavka su navedeni ispod.",
+                  "raceDate": "2027-01-17",
+                  "raceDistM": 21097.5,
+                  "goalSec": null,
+                  "coverage": "distance",
+                  "peakLongRunKm": 16,
+                  "peakWeeklyKm": 54.8
+                }
+              ],
+              "unavailable": []
+            }
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": {
+            "status": "rejected",
+            "fullPreparation": false,
+            "statement": "Pun ciklus za polumaraton nije moguć: do trke 17.01.2027. ostaje manje od 10 nedelja. Postojeći budući raspored nije preporuka za povratak — izaberi naredni korak.",
+            "conditions": [
+              "Povratni blok: 3 nedelje lakog trčanja od 26.11.2026., bez nadoknade propuštenog.",
+              "Nastavak ka punoj pripremi za polumaraton: upisani treninzi treba da potvrde rast ponovljive baze i dužine; zatim ponovo pregledaj opcije u Prilagodi plan.",
+              "Za ovaj datum više nema 10 nedelja za pun ciklus; ostaju pomeranje trke, kraća distanca ili povratni režim bez vremenskog cilja."
+            ],
+            "options": [
+              {
+                "id": "extend",
+                "choice": {
+                  "kind": "extend",
+                  "raceDate": "2027-02-21"
+                },
+                "title": "Pomeri trku na 21.02.2027.",
+                "detail": "Najraniji datum, 5 ned. kasnije, na kome isporučen plan ispunjava pravila pune pripreme za polumaraton. Isti cilj i baza.",
+                "raceDate": "2027-02-21",
+                "raceDistM": 21097.5,
+                "goalSec": 5700,
+                "coverage": "full",
+                "peakLongRunKm": 16.3,
+                "peakWeeklyKm": 51.5
+              },
+              {
+                "id": "shorter-10000",
+                "choice": {
+                  "kind": "shorter",
+                  "raceDistM": 10000
+                },
+                "title": "Kraća distanca: 10K istog datuma",
+                "detail": "Isporučen plan ispunjava pravila pune pripreme za 10K. Vremenski cilj polumaraton se ne prenosi; novi cilj postavi posebno.",
+                "raceDate": "2027-01-17",
+                "raceDistM": 10000,
+                "goalSec": null,
+                "coverage": "full",
+                "peakLongRunKm": 13.9,
+                "peakWeeklyKm": 44.7
+              },
+              {
+                "id": "base",
+                "choice": {
+                  "kind": "base"
+                },
+                "title": "Povratni/bazni režim do istog datuma, bez vremenskog cilja",
+                "detail": "Samo lako trčanje i postepen rast od potvrđene baze; nije priprema za vremenski cilj na polumaraton. Uslovi nastavka su navedeni ispod.",
+                "raceDate": "2027-01-17",
+                "raceDistM": 21097.5,
+                "goalSec": null,
+                "coverage": "distance",
+                "peakLongRunKm": 16,
+                "peakWeeklyKm": 54.8
+              }
+            ],
+            "unavailable": []
+          },
+          "athlete": null,
+          "preparation": null
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-25",
+          "before": "Existing future plan has22km LR capacity from prebreak context.",
+          "old": "Rejected; no replacement plan.",
+          "new": "Rejected; no replacement plan; old future schedule explicitly not return recommendation."
+        }
+      ],
+      "supplemental": [
+        {
+          "scope": "earlierControlled",
+          "today": "2026-10-28",
+          "assessment": "Earlier2026-10-28 accepted builds are separate: new49.4km peak/15.4km LR, three-week easy window2026-10-29–11-15; old has stale stride prose/focus. They do not replace11-25 primary rejection.",
+          "audits": {
+            "old": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [
+                {
+                  "id": "g3d5",
+                  "date": "2026-10-30",
+                  "desc": "5.9 km lako (Z2) @ ~5:16/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                },
+                {
+                  "id": "g4d1",
+                  "date": "2026-11-02",
+                  "desc": "7.1 km lako (Z2) @ ~5:16/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                },
+                {
+                  "id": "g5d1",
+                  "date": "2026-11-09",
+                  "desc": "7.5 km lako (Z2) @ ~5:16/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                }
+              ],
+              "staleFocus": [
+                {
+                  "w": 4,
+                  "focus": "Fartlek"
+                },
+                {
+                  "w": 5,
+                  "focus": "Fartlek"
+                }
+              ],
+              "conflicts": []
+            },
+            "new": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [],
+              "staleFocus": [],
+              "conflicts": []
+            }
+          }
+        },
+        {
+          "scope": "U08-controls.json real preparation-choice previews",
+          "choices": [
+            {
+              "choice": "extend",
+              "raceDate": "2027-02-21",
+              "raceDistM": 21097.5,
+              "goalSec": 5700,
+              "label": {
+                "label": "Dužinska priprema ima osnovu u podacima",
+                "fullPreparation": true,
+                "mode": null,
+                "peakLongRunKm": 16.3,
+                "peakWeeklyKm": 51.5,
+                "reasons": [
+                  "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+                ]
+              },
+              "arithmeticDescriptionFailures": [],
+              "returnWindow": {
+                "start": "2026-11-26",
+                "end": "2026-12-14",
+                "requiredWeeks": 3
+              },
+              "assessment": "Editable days in2026-11-26–12-13 have no quality/finish/strides. Actual scoped build, separate from primary rejection; full label means application coverage, not achieved fitness."
+            },
+            {
+              "choice": "shorter-10000",
+              "raceDate": "2027-01-17",
+              "raceDistM": 10000,
+              "goalSec": null,
+              "label": {
+                "label": "Dužinska priprema ima osnovu u podacima",
+                "fullPreparation": true,
+                "mode": null,
+                "peakLongRunKm": 13.9,
+                "peakWeeklyKm": 44.7,
+                "reasons": [
+                  "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+                ]
+              },
+              "arithmeticDescriptionFailures": [],
+              "returnWindow": {
+                "start": "2026-11-26",
+                "end": "2026-12-14",
+                "requiredWeeks": 3
+              },
+              "assessment": "Editable days in2026-11-26–12-13 have no quality/finish/strides. Actual scoped build, separate from primary rejection; full label means application coverage, not achieved fitness."
+            },
+            {
+              "choice": "base",
+              "raceDate": "2027-01-17",
+              "raceDistM": 21097.5,
+              "goalSec": null,
+              "label": {
+                "label": "Dužinska priprema ima osnovu u podacima",
+                "fullPreparation": false,
+                "mode": "Povratni/bazni režim bez vremenskog cilja — nije puna priprema za polumaraton",
+                "peakLongRunKm": 16,
+                "peakWeeklyKm": 54.8,
+                "reasons": []
+              },
+              "arithmeticDescriptionFailures": [],
+              "returnWindow": {
+                "start": "2026-11-26",
+                "end": "2026-12-14",
+                "requiredWeeks": 3
+              },
+              "assessment": "Editable days in2026-11-26–12-13 have no quality/finish/strides. Actual scoped build, separate from primary rejection; full label means application coverage, not achieved fitness."
+            }
+          ],
+          "assessment": "Extend retains5700s goal and movesHM to2027-02-21;10K on2027-01-17 clearsgoal; base clearsgoal and explicitly makes race start conditional. Peak labels16.3/51.5,13.9/44.7,16/54.8 respectively. Base fullPreparation=false despite endurance-supported label. All89 packet assertions pass; independent coaching judgment still needed.",
+          "protectedSentinels": {
+            "manualId": "g7d5",
+            "measuredId": "g9d2",
+            "measuredRow": "g9_12",
+            "doneId": "g8d3",
+            "moveId": "g8d1",
+            "overlayId": "g8d5"
+          },
+          "protectionAssessment": "Manual hard2026-11-27 g7d5 and measured2026-12-08 g9d2 stay preserved and specifically flagged within all three return previews; future-done,moves,overlay,pred/QS protected. These are separate controls, not actual post-break adherence.",
+          "envelopeCaution": "Supplement packet flags baseline new week11 fast work2852.6sec versus2811.0096sec internal envelope;42sec heuristic exceedance alone is not a physiological critical defect."
+        }
+      ],
+      "outcome": "acceptable-limited",
+      "remainingConcerns": [
+        "Primary remains a rejection; supplemental choices require an explicit choice and subsequent response review.",
+        "Shorter-distance option clears time goal but result-derived recommended pace still requires validation after return.",
+        "Supplemental base preview builds toward54.8km and16km LR with no mid-build deload; easy pace should remain effort-led."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    },
+    {
+      "profileId": "U09",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": {
+          "kind": "return",
+          "breakDays": 14
+        },
+        "method": "Literal frozen historical PRIMARY current/context/options/analysis replayed unchanged on both code versions.",
+        "inputSha256": "662e1b055a0abb258de5497d8d4847838f7b8451a3857ca3405ecb545a9d6939",
+        "options": {
+          "breakDays": 14,
+          "weeklyKm": 30,
+          "recentLongRunKm": 10
+        },
+        "analysis": {
+          "today": "2026-11-25",
+          "windowStart": "2026-10-29",
+          "completed": 8,
+          "missed": 8,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1,
+          "actualKm": 59.1,
+          "plannedKm": 128.9,
+          "completeWeeks": [
+            {
+              "start": "2026-10-26",
+              "end": "2026-11-01",
+              "plannedKm": 32.5,
+              "actualKm": 32.5,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-02",
+              "end": "2026-11-08",
+              "plannedKm": 25.4,
+              "actualKm": 25.4,
+              "completed": 4,
+              "missed": 0,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-09",
+              "end": "2026-11-15",
+              "plannedKm": 36.3,
+              "actualKm": 17.2,
+              "completed": 2,
+              "missed": 2,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-16",
+              "end": "2026-11-22",
+              "plannedKm": 34,
+              "actualKm": 0,
+              "completed": 0,
+              "missed": 4,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            }
+          ],
+          "recentWeeklyKm": 0,
+          "lastPositiveWeeklyKm": 17.2,
+          "recentLongRunKm": 8.8,
+          "lastRunDate": "2026-11-11",
+          "daysSinceLastRun": 14,
+          "explicitMisses14d": 8,
+          "easyHighRpeCount": 0,
+          "lowerVolumeWeeks": 2,
+          "reasons": [
+            "Poslednja pokrivena nedelja bez trčanja prekida oslonac na raniji veći obim.",
+            "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+          ]
+        },
+        "loggedEntries": 26,
+        "secondsPresent": 18
+      },
+      "versions": {
+        "old": {
+          "assessment": "Return load reductions are useful, but delivered future marathon endurance is critically insufficient and prose is stale.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "Old return plan has severe marathon endurance gap.",
+              "evidence": "After14-day gap, future peak29km/week and8.8km LR yet2027-02-28 marathon remains; original17.7km maximum was already inadequate."
+            },
+            {
+              "kind": "technical",
+              "claim": "Old early descriptions still prescribe strides during nominal easy return.",
+              "evidence": "2026-11-27,11-30,12-07 stride text flagged; quality labels remain on all-easy weeks."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [
+              {
+                "id": "g7d5",
+                "date": "2026-11-27",
+                "desc": "4.1 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+              },
+              {
+                "id": "g8d1",
+                "date": "2026-11-30",
+                "desc": "5.6 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+              },
+              {
+                "id": "g9d1",
+                "date": "2026-12-07",
+                "desc": "5.3 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+              }
+            ],
+            "staleFocus": [
+              {
+                "w": 8,
+                "focus": "Fartlek"
+              },
+              {
+                "w": 9,
+                "focus": "Fartlek"
+              },
+              {
+                "w": 11,
+                "focus": "Tempo isprekidan"
+              },
+              {
+                "w": 16,
+                "focus": "Tempo isprekidan"
+              },
+              {
+                "w": 17,
+                "focus": "Tempo"
+              }
+            ],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 29,
+            "peakFutureLongRunKm": 8.8,
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "returning",
+            "weeklyBaseKm": 21,
+            "repeatableLongRunKm": 7,
+            "longRunBasis": "reported",
+            "consistentWeeks": 0,
+            "breakWeeks": 2,
+            "resultAgeDays": 67,
+            "speedConfidence": "returning",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "endurance-limited",
+            "peakLongRunKm": 8.8,
+            "peakWeeklyKm": 29,
+            "demandingDaysMax": 1,
+            "reasons": [
+              "Najduže planirano trčanje je 8.8 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+              "Isporučeni vrhunac 29 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+              "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+              "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+              "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        },
+        "new": {
+          "assessment": "More honest limited-return framing and useful alternatives, but default remaining race schedule is not approvable as marathon preparation.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New removes work/strides through2026-12-13 and explicitly denies full preparation.",
+              "evidence": "Base21km after70% reported30km; future peak29km/8.8km LR; decision.status=limited."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Default marathon race row remains a critical participation-decision issue.",
+              "evidence": "42.195km on2027-02-28 is4.79 times future8.8km peak LR; this is not corrected by limited label alone."
+            },
+            {
+              "kind": "coaching",
+              "claim": "New avoids offering a falsely sufficient date extension from unchanged base.",
+              "evidence": "No extension up to52weeks meets application preparation rules;10K or base alternatives offered without transferred marathon goal."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 29,
+            "peakFutureLongRunKm": 8.8,
+            "finalization": {
+              "cutoff": "2026-11-25",
+              "initialEasyWeeks": 3,
+              "peakWeeklyKm": 29,
+              "returnWindow": {
+                "start": "2026-11-26",
+                "end": "2026-12-14",
+                "requiredWeeks": 3
+              },
+              "returnWarning": "Povratni period 2026-11-26–2026-12-13: bez kvaliteta i ubrzanja. Finalni plan ima 3 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni."
+            },
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": {
+            "status": "limited",
+            "fullPreparation": false,
+            "statement": "Ovo nije puna priprema za maraton. Isporučeno: najduže 8,8 km, vrhunac 29 km/ned. Pravila pune pripreme: najduže ≥ 26 km, bar dva trčanja ≥ 22,1 km i vrhunac ≥ 55 km/ned.",
+            "conditions": [
+              "Povratni blok: 3 nedelje lakog trčanja od 26.11.2026., bez nadoknade propuštenog.",
+              "Nastavak ka punoj pripremi za maraton: upisani treninzi treba da potvrde rast ponovljive baze i dužine; zatim ponovo pregledaj opcije u Prilagodi plan.",
+              "Najkasniji početak punog ciklusa za ovaj datum: 06.12.2026. (minimum 12 nedelja). Do tada potvrđena baza i dužina moraju podržati punu pripremu; inače ostaju pomeranje trke, kraća distanca ili povratni režim."
+            ],
+            "options": [
+              {
+                "id": "shorter-10000",
+                "choice": {
+                  "kind": "shorter",
+                  "raceDistM": 10000
+                },
+                "title": "Kraća distanca: 10K istog datuma",
+                "detail": "Dužina pokriva 10K, ali nedeljni vrhunac ne podržava vremenski cilj. Vremenski cilj maraton se ne prenosi.",
+                "raceDate": "2027-02-28",
+                "raceDistM": 10000,
+                "goalSec": null,
+                "coverage": "distance",
+                "peakLongRunKm": 11.3,
+                "peakWeeklyKm": 32.7
+              },
+              {
+                "id": "base",
+                "choice": {
+                  "kind": "base"
+                },
+                "title": "Povratni/bazni režim do istog datuma, bez vremenskog cilja",
+                "detail": "Samo lako trčanje i postepen rast od potvrđene baze; nije priprema za vremenski cilj na maraton. Uslovi nastavka su navedeni ispod.",
+                "raceDate": "2027-02-28",
+                "raceDistM": 42195,
+                "goalSec": null,
+                "coverage": "insufficient",
+                "peakLongRunKm": 10,
+                "peakWeeklyKm": 29.8
+              }
+            ],
+            "unavailable": [
+              "Pomeranje trke do 52 nedelje kasnije ne daje punu pripremu sa trenutno potvrđenom bazom: najviše 17,7 km najduže i 42,2 km/ned. Prvo treba podići ponovljivu bazu i dužinu."
+            ]
+          },
+          "athlete": {
+            "qualityReadiness": "returning",
+            "currentReadiness": "returning",
+            "weeklyBaseKm": 21,
+            "repeatableLongRunKm": 7,
+            "longRunBasis": "reported",
+            "consistentWeeks": 12,
+            "breakWeeks": 2,
+            "resultAgeDays": 67,
+            "speedConfidence": "returning",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "endurance-limited",
+            "peakLongRunKm": 8.8,
+            "peakWeeklyKm": 29,
+            "demandingDaysMax": 2,
+            "reasons": [
+              "Najduže planirano trčanje je 8.8 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+              "Isporučeni vrhunac 29 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+              "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+              "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-27",
+          "dayId": "g7d5",
+          "before": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "lako",
+            "km": 8.6,
+            "description": "8.6 km lako (Z2) @ ~5:49/km",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "lako",
+            "km": 4.1,
+            "description": "4.1 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-27",
+            "dayId": "g7d5",
+            "tag": "lako",
+            "km": 4.1,
+            "description": "4.1 km lako (Z2) @ ~5:49/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-07",
+          "dayId": "g9d1",
+          "before": {
+            "date": "2026-12-07",
+            "dayId": "g9d1",
+            "tag": "lako",
+            "km": 8.8,
+            "description": "8.8 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+            "session": null,
+            "strides": {
+              "reps": 6,
+              "runSec": 20,
+              "restSec": 60,
+              "paceSec": 252
+            }
+          },
+          "old": {
+            "date": "2026-12-07",
+            "dayId": "g9d1",
+            "tag": "lako",
+            "km": 5.3,
+            "description": "5.3 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-07",
+            "dayId": "g9d1",
+            "tag": "lako",
+            "km": 5.3,
+            "description": "5.3 km lako (Z2) @ ~5:49/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-02-07",
+          "dayId": "g17d7",
+          "before": {
+            "date": "2027-02-07",
+            "dayId": "g17d7",
+            "tag": "lr",
+            "km": 17.7,
+            "description": "17.7 km LR (Z2) @ ~5:57/km — najduže trčanje te nedelje · 105 min — uvežbaj gorivo: 30–60 g ugljenih hidrata na sat, prvi unos oko 40. minuta",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2027-02-07",
+            "dayId": "g17d7",
+            "tag": "lr",
+            "km": 8.8,
+            "description": "8.8 km dužina · Postepen povratak posle pauze.",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2027-02-07",
+            "dayId": "g17d7",
+            "tag": "lr",
+            "km": 8.8,
+            "description": "8.8 km LR (Z2) @ ~5:57/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-02-28",
+          "dayId": "g20d7",
+          "before": {
+            "date": "2027-02-28",
+            "dayId": "g20d7",
+            "tag": "trka",
+            "km": 42.195,
+            "description": "🏁 TRKA 42,2 km (Maraton) — željeni cilj 4:00:00 · preporučeni ritam 5:41/km (oko 3:59:48, prema unetom rezultatu i izabranom cilju) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2027-02-28",
+            "dayId": "g20d7",
+            "tag": "trka",
+            "km": 42.195,
+            "description": "🏁 TRKA 42,2 km (Maraton) — željeni cilj 4:00:00 · preporučeni ritam 5:41/km (oko 3:59:48, prema unetom rezultatu i izabranom cilju) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2027-02-28",
+            "dayId": "g20d7",
+            "tag": "trka",
+            "km": 42.195,
+            "description": "🏁 TRKA 42,2 km (Maraton) — željeni cilj 4:00:00 · preporučeni ritam 5:41/km (oko 3:59:48, prema unetom rezultatu i izabranom cilju) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          }
+        }
+      ],
+      "supplemental": [
+        {
+          "scope": "protection",
+          "today": "2026-11-25",
+          "assessment": "Both preserve manual/moved/measured state; new names2026-12-09 g9d3 quality conflict inside return window. This protected workout is not an editable-primary failure.",
+          "audits": {
+            "old": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [
+                {
+                  "id": "g7d5",
+                  "date": "2026-11-27",
+                  "desc": "4.1 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                },
+                {
+                  "id": "g8d1",
+                  "date": "2026-11-30",
+                  "desc": "5.6 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                },
+                {
+                  "id": "g9d1",
+                  "date": "2026-12-07",
+                  "desc": "5.3 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                }
+              ],
+              "staleFocus": [
+                {
+                  "w": 8,
+                  "focus": "Fartlek"
+                },
+                {
+                  "w": 11,
+                  "focus": "Tempo isprekidan"
+                },
+                {
+                  "w": 16,
+                  "focus": "Tempo isprekidan"
+                },
+                {
+                  "w": 17,
+                  "focus": "Tempo"
+                }
+              ],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-12-04 je sačuvan; proveri da li odgovara novoj bazi.",
+                "Ručno izmenjen trening 2026-12-09 je sačuvan; proveri da li odgovara novoj bazi."
+              ]
+            },
+            "new": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [],
+              "staleFocus": [],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-12-04 je sačuvan; proveri da li odgovara novoj bazi.",
+                "Ručno izmenjen trening 2026-12-09 je sačuvan; proveri da li odgovara novoj bazi.",
+                "Konflikt povratne politike: sačuvan zaštićen trening g9d3 (2026-12-09) sadrži kvalitet ili ubrzanja u periodu predviđenom za lagano trčanje. Proveri i ručno odluči o izmeni; zapis nije prepisan."
+              ]
+            }
+          }
+        },
+        {
+          "scope": "U09-controls.json actual shorter/base choices and unoffered exploratory extension",
+          "choices": [
+            {
+              "scope": "shorter-10000",
+              "raceDate": "2027-02-28",
+              "raceDistM": 10000,
+              "goalSec": null,
+              "peakWeeklyKm": 32.7,
+              "peakLongRunKm": 11.3,
+              "failures": [],
+              "protectedChanges": [],
+              "assessment": "Real scoped10K preview clears marathon time goal;11.3km LR/32.7km peak supports a completion path better than marathon. Timed-performance full label remains withheld."
+            },
+            {
+              "scope": "base",
+              "raceDate": "2027-02-28",
+              "raceDistM": 42195,
+              "goalSec": null,
+              "peakWeeklyKm": 29.8,
+              "peakLongRunKm": 10,
+              "failures": [],
+              "protectedChanges": [],
+              "assessment": "All-editable-easy base preview clears time goal;10km LR/29.8km peak. Marathon start is explicitly conditional and still cannot be approved on these data."
+            },
+            {
+              "scope": "unofferedExtension52w",
+              "raceDate": "2028-02-27",
+              "raceDistM": 42195,
+              "goalSec": 14400,
+              "peakWeeklyKm": 42.2,
+              "peakLongRunKm": 17.7,
+              "failures": [],
+              "protectedChanges": [],
+              "assessment": "Exploratory unoffered52-week extension remains explicitly insufficient:17.7km LR/42.2km weekly. Not proof of athlete incapacity over a year."
+            }
+          ],
+          "assessment": "Separate controls do not replace literal14-day-return primary. Data preservation and arithmetic pass; conditional base race marker is not demonstrated marathon readiness."
+        }
+      ],
+      "outcome": "critical",
+      "remainingConcerns": [
+        "Concrete marathon decision is required before treating default future race row as executable.",
+        "Return window ends2026-12-13, later than stated latest full-cycle start2026-12-06; rebuild-by-that-date is not supported by the return evidence.",
+        "A fixed-base extension search failing is not proof an athlete cannot develop marathon endurance over a year."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    },
+    {
+      "profileId": "U10",
+      "primaryScope": {
+        "today": "2026-11-25",
+        "event": {
+          "kind": "return",
+          "breakDays": 28
+        },
+        "method": "Literal frozen historical PRIMARY current/context/options/analysis replayed unchanged on both code versions.",
+        "inputSha256": "e2468dec82d418780f269183e5facc5d0d9157139897972d167e1eca9412ff12",
+        "options": {
+          "breakDays": 28,
+          "weeklyKm": 60,
+          "recentLongRunKm": 24
+        },
+        "analysis": {
+          "today": "2026-11-25",
+          "windowStart": "2026-10-29",
+          "completed": 0,
+          "missed": 20,
+          "unknown": 0,
+          "statusCoverage": 1,
+          "volumeCoverage": 1,
+          "actualKm": 0,
+          "plannedKm": 264.1,
+          "completeWeeks": [
+            {
+              "start": "2026-10-26",
+              "end": "2026-11-01",
+              "plannedKm": 66.1,
+              "actualKm": 33.3,
+              "completed": 3,
+              "missed": 2,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-02",
+              "end": "2026-11-08",
+              "plannedKm": 51.6,
+              "actualKm": 0,
+              "completed": 0,
+              "missed": 5,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-09",
+              "end": "2026-11-15",
+              "plannedKm": 71.9,
+              "actualKm": 0,
+              "completed": 0,
+              "missed": 5,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            },
+            {
+              "start": "2026-11-16",
+              "end": "2026-11-22",
+              "plannedKm": 69.9,
+              "actualKm": 0,
+              "completed": 0,
+              "missed": 5,
+              "unknown": 0,
+              "statusCoverage": 1,
+              "volumeCoverage": 1
+            }
+          ],
+          "recentWeeklyKm": 0,
+          "lastPositiveWeeklyKm": 33.3,
+          "recentLongRunKm": null,
+          "lastRunDate": "2026-10-28",
+          "daysSinceLastRun": 28,
+          "explicitMisses14d": 10,
+          "easyHighRpeCount": 0,
+          "lowerVolumeWeeks": 4,
+          "reasons": [
+            "Poslednja pokrivena nedelja bez trčanja prekida oslonac na raniji veći obim.",
+            "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+          ]
+        },
+        "loggedEntries": 33,
+        "secondsPresent": 13
+      },
+      "versions": {
+        "old": {
+          "assessment": "Appropriate immediate load reduction after28-day gap, but stale return text and inadequate remaining marathon exposure.",
+          "findings": [
+            {
+              "kind": "technical",
+              "claim": "Old removes structured early strides but retains text.",
+              "evidence": "2026-11-30,12-02,12-07,12-14 descriptions still name strides; old recovery warning says2weeks despite adjustment requesting4."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Historical endurance alone cannot prove current tolerance after28-day break.",
+              "evidence": "No completed runs in recent window; old erases32-week continuity, future peak17.3km LR/47.4km/week."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [
+              {
+                "id": "g8d1",
+                "date": "2026-11-30",
+                "desc": "6.2 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+              },
+              {
+                "id": "g8d3",
+                "date": "2026-12-02",
+                "desc": "4.8 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+              },
+              {
+                "id": "g9d1",
+                "date": "2026-12-07",
+                "desc": "7.3 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+              },
+              {
+                "id": "g10d1",
+                "date": "2026-12-14",
+                "desc": "5.3 km lako (Z2) @ ~6:00/km + 4×15 s ubrzanja (lagani ubrzani koraci)"
+              }
+            ],
+            "staleFocus": [
+              {
+                "w": 9,
+                "focus": "Fartlek"
+              },
+              {
+                "w": 10,
+                "focus": "DELOAD — obim dole, ostaje kratka oštrina"
+              }
+            ],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 47.4,
+            "peakFutureLongRunKm": 17.3,
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": null,
+          "athlete": {
+            "qualityReadiness": "returning",
+            "weeklyBaseKm": 33,
+            "repeatableLongRunKm": 13.2,
+            "longRunBasis": "reported",
+            "consistentWeeks": 0,
+            "breakWeeks": 4,
+            "resultAgeDays": 67,
+            "speedConfidence": "returning",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 17.3,
+            "peakWeeklyKm": 47.4,
+            "demandingDaysMax": 2,
+            "reasons": [
+              "Najduže planirano trčanje je 17.3 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+              "Isporučeni vrhunac 47.4 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+              "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+              "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+              "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        },
+        "new": {
+          "assessment": "Better effort-led calendar return and explicit limited decision, but delivered default marathon preparation remains inadequate.",
+          "findings": [
+            {
+              "kind": "coaching",
+              "claim": "New retains32-week historical continuity and4-week calendar easy-return window.",
+              "evidence": "2026-11-26–2026-12-20 without editable quality/strides; first future LR2026-11-29 reduced27.1→13.2km, effort3–4/10."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Remaining default marathon plan is critically underprepared despite honest limited label.",
+              "evidence": "Future17.3km longest run, repeatable return13.2km, still42.195km race2027-02-28; no post-break tolerance evidence."
+            },
+            {
+              "kind": "coaching",
+              "claim": "Half-marathon alternative is a plausible scoped next step, not a proven race outcome.",
+              "evidence": "Preview19.3km LR/47.2km/week, goal removed; no sufficient marathon date extension under unchanged inputs."
+            }
+          ],
+          "technicalAudit": {
+            "rejected": false,
+            "changedProtectedDays": [],
+            "changedProtectedRows": [],
+            "changedProtectedQs": [],
+            "measuredRowsChanged": [],
+            "changedDates": [],
+            "staleDescriptions": [],
+            "staleFocus": [],
+            "arithmeticFailures": [],
+            "descriptionFailures": [],
+            "predictionFailures": [],
+            "peakFutureWeeklyKm": 47.4,
+            "peakFutureLongRunKm": 17.3,
+            "finalization": {
+              "cutoff": "2026-11-25",
+              "initialEasyWeeks": 4,
+              "peakWeeklyKm": 47.4,
+              "returnWindow": {
+                "start": "2026-11-26",
+                "end": "2026-12-21",
+                "requiredWeeks": 4
+              },
+              "returnWarning": "Povratni period 2026-11-26–2026-12-20: bez kvaliteta i ubrzanja. Finalni plan ima 4 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni."
+            },
+            "conflicts": []
+          },
+          "inputPure": true,
+          "analysisMatchesFrozen": true,
+          "decision": {
+            "status": "limited",
+            "fullPreparation": false,
+            "statement": "Ovo nije puna priprema za maraton. Isporučeno: najduže 17,3 km, vrhunac 47,4 km/ned. Pravila pune pripreme: najduže ≥ 26 km, bar dva trčanja ≥ 22,1 km i vrhunac ≥ 55 km/ned.",
+            "conditions": [
+              "Povratni blok: 4 nedelje lakog trčanja od 26.11.2026., bez nadoknade propuštenog.",
+              "Nastavak ka punoj pripremi za maraton: upisani treninzi treba da potvrde rast ponovljive baze i dužine; zatim ponovo pregledaj opcije u Prilagodi plan.",
+              "Najkasniji početak punog ciklusa za ovaj datum: 06.12.2026. (minimum 12 nedelja). Do tada potvrđena baza i dužina moraju podržati punu pripremu; inače ostaju pomeranje trke, kraća distanca ili povratni režim."
+            ],
+            "options": [
+              {
+                "id": "shorter-21097.5",
+                "choice": {
+                  "kind": "shorter",
+                  "raceDistM": 21097.5
+                },
+                "title": "Kraća distanca: polumaraton istog datuma",
+                "detail": "Isporučen plan ispunjava pravila pune pripreme za polumaraton. Vremenski cilj maraton se ne prenosi; novi cilj postavi posebno.",
+                "raceDate": "2027-02-28",
+                "raceDistM": 21097.5,
+                "goalSec": null,
+                "coverage": "full",
+                "peakLongRunKm": 19.3,
+                "peakWeeklyKm": 47.2
+              },
+              {
+                "id": "base",
+                "choice": {
+                  "kind": "base"
+                },
+                "title": "Povratni/bazni režim do istog datuma, bez vremenskog cilja",
+                "detail": "Samo lako trčanje i postepen rast od potvrđene baze; nije priprema za vremenski cilj na maraton. Uslovi nastavka su navedeni ispod.",
+                "raceDate": "2027-02-28",
+                "raceDistM": 42195,
+                "goalSec": null,
+                "coverage": "insufficient",
+                "peakLongRunKm": 24,
+                "peakWeeklyKm": 60
+              }
+            ],
+            "unavailable": [
+              "Pomeranje trke do 52 nedelje kasnije ne daje punu pripremu sa trenutno potvrđenom bazom: najviše 24,9 km najduže i 62,2 km/ned. Prvo treba podići ponovljivu bazu i dužinu."
+            ]
+          },
+          "athlete": {
+            "qualityReadiness": "returning",
+            "currentReadiness": "returning",
+            "weeklyBaseKm": 33,
+            "repeatableLongRunKm": 13.2,
+            "longRunBasis": "reported",
+            "consistentWeeks": 32,
+            "breakWeeks": 4,
+            "resultAgeDays": 67,
+            "speedConfidence": "returning",
+            "assumptions": []
+          },
+          "preparation": {
+            "endurance": "limited",
+            "goalStatus": "needs-speed-improvement",
+            "peakLongRunKm": 17.3,
+            "peakWeeklyKm": 47.4,
+            "demandingDaysMax": 3,
+            "reasons": [
+              "Najduže planirano trčanje je 17.3 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+              "Isporučeni vrhunac 47.4 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+              "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+              "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+            ],
+            "forecastBasis": "result-and-delivered-preparation"
+          }
+        }
+      },
+      "beforeAfter": [
+        {
+          "date": "2026-11-29",
+          "dayId": "g7d7",
+          "before": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 27.1,
+            "description": "27.1 km LR (Z2) @ ~6:08/km — najduže trčanje te nedelje · 166 min — uvežbaj gorivo: 60–90 g ugljenih hidrata na sat, prvi unos oko 40. minuta pa na svakih 20–25 min. Crevo se na to navikava nedeljama; ne improvizuj na dan trke.",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 13.2,
+            "description": "13.2 km lako-dugo (Z2) @ ~6:08/km — bazna faza, bez kvaliteta · 81 min — uvežbaj gorivo: 30–60 g ugljenih hidrata na sat, prvi unos oko 40. minuta",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-11-29",
+            "dayId": "g7d7",
+            "tag": "lr",
+            "km": 13.2,
+            "description": "13.2 km LR (Z2) @ ~6:08/km · 81 min — uvežbaj gorivo: 30–60 g ugljenih hidrata na sat, prvi unos oko 40. minuta · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-02",
+          "dayId": "g8d3",
+          "before": {
+            "date": "2026-12-02",
+            "dayId": "g8d3",
+            "tag": "lr",
+            "km": 11.3,
+            "description": "11.3 km srednje-dugo (Z2) @ ~6:08/km — drugo duže trčanje u nedelji",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2026-12-02",
+            "dayId": "g8d3",
+            "tag": "lako",
+            "km": 4.8,
+            "description": "4.8 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-02",
+            "dayId": "g8d3",
+            "tag": "lako",
+            "km": 4.8,
+            "description": "4.8 km lako (Z2) @ ~6:00/km · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2026-12-22",
+          "dayId": "g11d2",
+          "before": {
+            "date": "2026-12-22",
+            "dayId": "g11d2",
+            "tag": "tempo",
+            "km": 9.8,
+            "description": "Maratonski tempo — 3.5 km zagrevanje + 3.3 km @ 5:20/km + 3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "tempo",
+              "kind": "Maratonski tempo",
+              "wuKm": 3.5,
+              "qKm": 3.3,
+              "paceSec": 320,
+              "cdKm": 3,
+              "overrides": {},
+              "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "zone": "RP",
+              "paceSource": "race-specific"
+            },
+            "strides": null
+          },
+          "old": {
+            "date": "2026-12-22",
+            "dayId": "g11d2",
+            "tag": "int",
+            "km": 4.7,
+            "description": "Fartlek — 1.9 km zagrevanje + 3×60 s brzo @ ~5:00/km (90 s laganog trčanja) + 1.4 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+            "session": {
+              "type": "fartlek",
+              "kind": "Fartlek",
+              "wuKm": 1.9,
+              "cdKm": 1.4,
+              "reps": 3,
+              "repSec": 60,
+              "restSec": 90,
+              "paceSec": 300,
+              "easyPaceSec": 360,
+              "overrides": {},
+              "zone": "T",
+              "paceSource": "current-fitness",
+              "notes": "Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+            },
+            "strides": null
+          },
+          "new": {
+            "date": "2026-12-22",
+            "dayId": "g11d2",
+            "tag": "int",
+            "km": 4.7,
+            "description": "Fartlek — 1.9 km zagrevanje + 3×60 s brzo @ ~5:00/km (90 s laganog trčanja) + 1.4 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 7/10 (prijatno teško, kratke rečenice). Ritam ~5:00/km je referenca iz starog rezultata, ne zahtev",
+            "session": {
+              "type": "fartlek",
+              "kind": "Fartlek",
+              "wuKm": 1.9,
+              "cdKm": 1.4,
+              "reps": 3,
+              "repSec": 60,
+              "restSec": 90,
+              "paceSec": 300,
+              "easyPaceSec": 360,
+              "overrides": {},
+              "purpose": "T",
+              "zone": "T",
+              "paceSource": "current-fitness",
+              "notes": "Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Forma nije potvrđena: vodi se naporom 7/10 (prijatno teško, kratke rečenice). Ritam ~5:00/km je referenca iz starog rezultata, ne zahtev",
+              "paceBasis": "reference"
+            },
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-02-07",
+          "dayId": "g17d7",
+          "before": {
+            "date": "2027-02-07",
+            "dayId": "g17d7",
+            "tag": "lr",
+            "km": 29.3,
+            "description": "29.3 km LR (Z2) @ ~6:08/km — najduže trčanje te nedelje · 180 min — uvežbaj gorivo: 60–90 g ugljenih hidrata na sat, prvi unos oko 40. minuta pa na svakih 20–25 min. Crevo se na to navikava nedeljama; ne improvizuj na dan trke.",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2027-02-07",
+            "dayId": "g17d7",
+            "tag": "lr",
+            "km": 17.3,
+            "description": "17.3 km LR (Z2) @ ~6:08/km — najduže trčanje te nedelje · 106 min — uvežbaj gorivo: 30–60 g ugljenih hidrata na sat, prvi unos oko 40. minuta",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2027-02-07",
+            "dayId": "g17d7",
+            "tag": "lr",
+            "km": 17.3,
+            "description": "17.3 km LR (Z2) @ ~6:08/km · 106 min — uvežbaj gorivo: 30–60 g ugljenih hidrata na sat, prvi unos oko 40. minuta · napor 3–4/10 (razgovorno); ritam je gornja granica iz starog rezultata, uspori ako je napor veći",
+            "session": null,
+            "strides": null
+          }
+        },
+        {
+          "date": "2027-02-28",
+          "dayId": "g20d7",
+          "before": {
+            "date": "2027-02-28",
+            "dayId": "g20d7",
+            "tag": "trka",
+            "km": 42.195,
+            "description": "🏁 TRKA 42,2 km (Maraton) — željeni cilj 3:30:00 · preporučeni ritam 5:20/km (oko 3:45:02, prema unetom rezultatu)",
+            "session": null,
+            "strides": null
+          },
+          "old": {
+            "date": "2027-02-28",
+            "dayId": "g20d7",
+            "tag": "trka",
+            "km": 42.195,
+            "description": "🏁 TRKA 42,2 km (Maraton) — željeni cilj 3:30:00 · preporučeni ritam 5:20/km (oko 3:45:02, prema unetom rezultatu) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          },
+          "new": {
+            "date": "2027-02-28",
+            "dayId": "g20d7",
+            "tag": "trka",
+            "km": 42.195,
+            "description": "🏁 TRKA 42,2 km (Maraton) — željeni cilj 3:30:00 · preporučeni ritam 5:20/km (oko 3:45:02, prema unetom rezultatu) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+            "session": null,
+            "strides": null
+          }
+        }
+      ],
+      "supplemental": [
+        {
+          "scope": "protection",
+          "today": "2026-11-25",
+          "assessment": "Both preserve locked/manually changed sessions; new explicitly flags2026-12-01 g8d2 and2026-12-11 g9d5 conflicts with easy-return policy. Preserved does not mean coaching-cleared.",
+          "audits": {
+            "old": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [
+                {
+                  "id": "g8d1",
+                  "date": "2026-11-30",
+                  "desc": "6.2 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                },
+                {
+                  "id": "g8d3",
+                  "date": "2026-12-02",
+                  "desc": "4.8 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                },
+                {
+                  "id": "g9d1",
+                  "date": "2026-12-07",
+                  "desc": "7.3 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+                },
+                {
+                  "id": "g10d1",
+                  "date": "2026-12-14",
+                  "desc": "5.3 km lako (Z2) @ ~6:00/km + 4×15 s ubrzanja (lagani ubrzani koraci)"
+                }
+              ],
+              "staleFocus": [
+                {
+                  "w": 10,
+                  "focus": "DELOAD — obim dole, ostaje kratka oštrina"
+                }
+              ],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-12-11 je sačuvan; proveri da li odgovara novoj bazi."
+              ]
+            },
+            "new": {
+              "changedProtectedDays": [],
+              "changedProtectedRows": [],
+              "changedProtectedQs": [],
+              "measuredRowsChanged": [],
+              "changedDates": [],
+              "staleDescriptions": [],
+              "staleFocus": [],
+              "conflicts": [
+                "Ručno izmenjen trening 2026-12-11 je sačuvan; proveri da li odgovara novoj bazi.",
+                "Konflikt povratne politike: sačuvan zaštićen trening g8d2 (2026-12-01) sadrži kvalitet ili ubrzanja u periodu predviđenom za lagano trčanje. Proveri i ručno odluči o izmeni; zapis nije prepisan.",
+                "Konflikt povratne politike: sačuvan zaštićen trening g9d5 (2026-12-11) sadrži kvalitet ili ubrzanja u periodu predviđenom za lagano trčanje. Proveri i ručno odluči o izmeni; zapis nije prepisan."
+              ]
+            }
+          }
+        }
+      ],
+      "outcome": "critical",
+      "remainingConcerns": [
+        "Concrete change of race scope/date or base mode is needed before approving default marathon race.",
+        "Four-week return finishes2026-12-20 after advertised full-cycle deadline2026-12-06; condition should not invite rushed catch-up.",
+        "Supplied prebreak seconds do not prove present marathon-pace readiness."
+      ],
+      "limitations": [
+        "Synthetic domain API replay only; no real athlete, browser, device, store, cloud, or race-outcome evidence.",
+        "Elapsed timestamps (ts) are not duration seconds; unlogged execution cannot be invented."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+# Independent event review — 10K specialist
+
+This reviews exactly ten event profiles after initial scores were locked. Old is A (`f7bcbe9`), new is B (`1a7571e`). Initial scores and report remain unchanged. Primary judgments concern literal frozen historical payloads run on both versions, not newly synthesized logs from current prescriptions. I inspected day-level before/after structures, dates, instructions, recorded execution coverage, recovery windows, result/goal distinction, protected state and technical audits. Supplemental controls are identified separately throughout.
+
+The new version generally improves event handling: it keeps historical continuity separate from current tolerance, enforces calendar recovery on editable future days, repairs stale stride/focus text, and gives concrete preparation decisions. Those improvements do not establish race readiness. The returned default marathon schedules for U09 and U10 still require a concrete participation/scope decision.
+
+## Event outcomes
+
+These outcomes evaluate the new primary response against coaching adequacy and its remaining limitations, while recording the old response for comparison. “Acceptable-limited” means useful event handling with conditional recovery or preparation, not unconditional race approval.
+
+| Profile | Primary event at 2026-11-25 | Outcome | Main judgment |
+|---|---|---|---|
+| U01 | Single missed workout | acceptable | Both avoid rebuilding/catch-up; unknown logs stay unknown. |
+| U02 | Two weeks near 55% execution | acceptable-limited | New reduces load while keeping historical continuity. |
+| U03 | Two easy runs at RPE 8 | acceptable-limited | New protects the immediate calendar deload; resumption still depends on recovery. |
+| U04 | Seven-day break | acceptable-limited | New repairs instructions and gives two calendar weeks of easy return. |
+| U05 | 10K desire 42:00 → 40:00 | acceptable-limited | Current-result pace stays unchanged; regenerated doses require tolerance review. |
+| U06 | Further 28-day break | concern | New return is more coherent, but 4km peak long run remains inadequate for confident timed-10K approval. |
+| U07 | Two weeks near 60% execution | acceptable-limited | New explicitly labels limited HM preparation and offers scoped next steps. |
+| U08 | Fourteen-day break, race in eight calendar weeks | acceptable-limited | Both reject primary full-cycle rebuild; new clarifies that old future schedule is not return advice. |
+| U09 | Fourteen-day break before marathon | critical | Default remaining marathon schedule has only 8.8km peak future long run. |
+| U10 | Twenty-eight-day break before marathon | critical | Default remaining marathon schedule has only 17.3km peak future long run and no post-break tolerance evidence. |
+
+Counts: one acceptable, six acceptable-limited, one concern, two critical. Critical here means that the default delivered marathon race path is not approvable as full preparation; it does not mean the limitation notice or alternative menu is a software failure, or that injury must occur.
+
+## Data provenance and missing measurements
+
+The primary logs are synthetic QA execution records, not real athlete activity. Recorded kilometres are kept literal, including differences from today's regenerated plan. No current prescription was converted into a new “actual.” `ts` is a timestamp, not elapsed duration.
+
+| Profile | Duration seconds present in primary log |
+|---|---|
+| U01 | None in either frozen historical payload. |
+| U02 | None. |
+| U03 | None. |
+| U04 | None. |
+| U05 | 33 completed records; 336.9km and 106,931 supplied seconds preserved. |
+| U06 | Eight historical completed records; no recent post-break running. |
+| U07 | None. |
+| U08 | None. |
+| U09 | Eighteen historical completed records. |
+| U10 | Thirteen historical completed records; no running in recent analysis window. |
+
+Seconds do not independently demonstrate race fitness, especially when they are synthetic full-workout totals rather than measured work-block execution. A skipped day retains its prescription for historical reference; it is not completed distance. This matters in partial weeks: a full stored week can contain past skipped quality while its editable future window is correctly all easy. Similarly a count of initial calendar weeks may include a partial first week; it is not a claim of that many complete seven-day intervals.
+
+## Concrete primary examples
+
+U01 has an explicit skipped Wednesday fartlek, g7d3 on 2026-11-25, and a recent run on 2026-11-23. Both code versions return a non-actionable single-miss recommendation and no regenerated plan on both frozen log payloads. Old historical payload gives 34.3km in the window and 9.7km recent weekly average; the other gives 31.1km and 8.8km. Those values remain payload-dependent, rather than being rebuilt to match the newest plan. A separate single-skip-only log keeps eleven unknown sessions, null recent weekly mileage and no rebuild. This is a sensible coaching distinction between absence of records and absence of training.
+
+U02 records 20.4km of 37km planned in the week of 2026-11-09 and 21.2km of 38.5km in the next week. Last run is the event date; a training break is not established. Both reduce future loading: 2026-11-27 becomes 5.1km easy instead of 8.2km threshold, and 2026-11-29 long run falls from 14.5km to 9.2km. Old unnecessarily sets continuity to zero and retains an all-easy week labelled fartlek. New keeps twelve-week history, treats present readiness as reduced-volume, delivers an actual easy block through 2026-12-06, and reports a 30.2km future weekly peak. The reason for reduced execution is still unknown, and later small quality doses are not proof of the aspirational sub-20 5K.
+
+U03 is the clearest fatigue-recovery difference. Easy runs on 2026-11-23 and 2026-11-25 have RPE8, with no missed training. Old reduces Friday work but moves the subsequent recovery week: Monday 2026-11-30 rises from 8.2km to 10.9km with strides, Tuesday 2026-12-01 regains a fartlek, and week-eight distance rises from 40.2km to 48.8km. New keeps the 2026-11-26–2026-12-06 calendar recovery window free of quality and strides. Monday remains 8.2km without strides, Tuesday is 4.9km easy, and the following full week is a 38km deload. Preserving historical continuity is appropriate; readiness to resume quality on 2026-12-08 still requires actual recovery feedback. RPE8 is not a diagnosis of illness, injury or overtraining.
+
+U04 has a last recorded run on 2026-11-18 and four explicitly skipped runs through 2026-11-25. Starting from the reported 30km base, both reduce to 25.5km. Old descriptions still mention strides on 2026-11-27 and 2026-11-30 after structured strides were removed, and week-eight focus still says fartlek. This is a technical coherence defect with coaching implications. New gives conversational effort guidance, removes work and strides through 2026-12-06, retains historical eight-week continuity, and later uses reference paces as orientation rather than demands. On 2027-01-13 its two 1K race-rhythm bouts use 60-second walking recovery; old uses 233 seconds. Two initial calendar weeks here contain a partial first week.
+
+U05 changes the desired 10K time from 2520 to 2400 seconds without confirming a faster result. Both keep training VDOT45.3, predicted 2700 seconds and race reference 270s/km. Old frozen-primary output changes only the race-description goal. New also regenerates updated-dose future sessions: on 2027-01-05 three 1200m race-rhythm reps with four-minute walks become four with one-minute walks; on 2027-01-12 two 1600m reps become three with 75-second walks. These are better sustained-10K structures, but the larger workload is not evidence of fitness created by wishing for 40:00. Week-eleven work rises from 28.36 to 38.32 minutes; week-fourteen from 36.48 to 44.6. The same-goal control on a new-B starting plan changes only race text when compared with the faster-goal control. Therefore the frozen-primary upgrades are inseparable from regeneration using updated generator rules, rather than a physiological goal-driven adaptation.
+
+U06 records a further 28-day interruption, last run 2026-10-28, with no running in the recent analysis window and a 410-day-old result. Both deliver a very restrained return: first future long run becomes 2.5km, then weekly peak only 10.1km and peak future long run 4km. New removes stale stride/focus instructions and explicitly lets conversational effort override old paces; required no-quality/stride window is 2026-11-26–2026-12-20. Its reported eight initial easy calendar weeks describe actual suppression of later work, not an eight-week prescribed return rule. The remaining 10K on 2027-01-31 is 2.5 times the peak future long run, while race-rhythm familiarization is only two 600m reps on 2027-01-20. I cannot approve a confident 60-minute 10K path on these data. The issue is delivered sustained exposure after interruptions, not failure to reach a universal 40km/week threshold.
+
+U07 correctly responds to reduced execution rather than treating an absent log as inactivity. New keeps twelve-week history and reports 36.1km weekly peak/12.3km longest future run, expressly marking the current-date HM plan limited. It offers an extension preview to 2027-03-28, a 10K on the same date with the HM goal cleared, and base mode. The current-date long preparation remains insufficient for confident 1:45 HM approval. Old offers only generic warnings while erasing continuity and leaving stale all-easy labels. Advertised previews alone are not selected outcomes or proof of future adaptation.
+
+U08 primary remains a rejection in both versions. On 2026-11-25 the 2027-01-17 race is only eight calendar weeks away and the requested fourteen-day return triggers the application's ten-week HM-cycle rule. There is no primary replacement plan. New adds a concrete three-week easy block and states that the existing future schedule is not return advice; it offers extension to 2027-02-21, 10K on 2027-01-17 without the HM time goal, or base mode. The fixed ten-week rule is an application heuristic, not proof that an experienced runner can never prepare adequately in eight weeks.
+
+U09 and U10 both improve instruction coherence but remain critical default marathon paths. New U09 delivers an 8.8km peak future long run and 29km weekly peak, yet retains the 42.195km race on 2027-02-28. New U10 delivers 17.3km and 47.4km after a further 28-day interruption, with no post-break response evidence. Both now explicitly deny full preparation and offer shorter/base alternatives; both refuse to advertise a sufficient marathon extension when unchanged bases cannot produce one under their rules. That is useful decision framing. A default marathon race still cannot be approved on the delivered exposures. Their stated latest full-cycle start of 2026-12-06 occurs before required return blocks finish (U09 2026-12-13; U10 2026-12-20). This should prompt a scope decision now, not rushed catch-up to satisfy a deadline. An unchanged-base search failing to find a sufficient extension does not demonstrate that an athlete cannot develop endurance over a year.
+
+## Separate supplemental controls
+
+U01's new-only run/walk APIs are separate from its single-miss primary. Empty logs and completed runs without RPE remain unknown; tolerated logged runs allow an advance, borderline effort holds, and harder/pain signals step back. In the earlier 2026-11-04 repeat-phase control, the 1:1 → 2:1 → 3:1 → 5:1 ladder is preserved, followed by a conditional continuous-running trial on 2026-11-30. Future logged completion, manual distance, moved dates and a measured locked row are preserved; guard errors cover missing inputs, phase not started and insufficient time. Old has no equivalent API: no new consumer was substituted into old.
+
+Protection controls for U02, U04, U05, U07, U09 and U10 remain distinct from primary inputs. Raw protected days, measured/prediction rows, QS and effective dates are preserved in the supplied audits. Preservation is technical correctness, not a coaching clearance. New U09 explicitly identifies protected g9d3 on 2026-12-09 as quality inside its easy-return period. New U10 similarly names g8d2 on 2026-12-01 and g9d5 on 2026-12-11. These exceptions are left for explicit human decision rather than quietly overwritten. U05's 34-done/346.3km/109,309-second protection totals must not replace its primary 33-done totals.
+
+U08's successful earlier-controlled 2026-10-28 build is separate: new reports 49.4km peak/15.4km LR, with easy return 2026-10-29–2026-11-15. It does not turn the 2026-11-25 primary rejection into success.
+
+The additional U08-controls packet supplies actual new-version scoped previews after rejection. Extension retains 5700-second HM desire and moves the race to 2027-02-21, delivering 16.3km LR/51.5km peak. Shorter 10K stays on 2027-01-17, clears the goal and delivers 13.9km/44.7km. Base mode clears the goal, reaches 16km/54.8km but remains explicitly `fullPreparation=false`; race start is conditional. All editable return days through 2026-12-13 are free of quality, fast finish and strides. Protected manual hard g7d5 on 2026-11-27 and measured g9d2 on 2026-12-08 are separately retained and flagged in every choice. These controls demonstrate build/preservation behavior, not actual post-break adherence. The base mode rises through several uninterrupted easy weeks without a mid-build deload, and its easy-day pace text is less explicitly effort-led; recovery should guide progression. The packet's approximately 42-second baseline week-eleven internal fast-envelope excess is a heuristic issue, not a physiological critical finding. All 89 packet assertions pass, which does not remove these coaching judgments.
+
+The additional U09-controls packet supplies actual 10K and base choices. The 10K clears the marathon goal, stays on 2027-02-28, and delivers 11.3km LR/32.7km peak; this is a substantially more credible completion scope, with timed full-preparation label withheld. Base mode delivers 10km/29.8km, all editable training easy and goal removed, but still makes the marathon marker a conditional participation decision. The unoffered exploratory 52-week extension to 2028-02-27 remains expressly insufficient at 17.7km LR/42.2km peak. None of these controls replaces U09's literal fourteen-day-return primary or demonstrates that the marathon default is race-ready.
+
+## Coaching sources and limits
+
+I retain the public primary coaching framework used in the locked initial report: [B.A.A. 10K training](https://www.baa.org/races/boston-10k/info-for-athletes/b-a-a-10k-training/), [Higdon novice 10K](https://www.halhigdon.com/training-programs/10k-training/novice-10k/), [Higdon intermediate 10K](https://www.halhigdon.com/training-programs/10k-training/intermediate-10k/), [B.A.A. half-marathon training](https://www.baa.org/races/boston-half/info-for-athletes/boston-half-training/) and [B.A.A. marathon training](https://www.baa.org/races/boston-marathon/info-for-athletes/boston-marathon-training/). These provide level-sensitive examples of sustained event-rhythm work, progressive endurance and recovery flexibility. They are comparisons, not exact quotas. [Buist's original randomized novice trial](https://pubmed.ncbi.nlm.nih.gov/17940147/) prevents treating an arbitrary growth percentage as a validated injury rule; [Shepley's original taper study](https://pubmed.ncbi.nlm.nih.gov/1559951/) supports reducing volume while retaining some intensity in its limited studied population.
+
+No injury/illness cause, pain assessment, current post-break tolerance, work stress, surface or real device measurements were provided. Twenty-eight-day gaps and high RPE are not interchangeable events. Recorded historical continuity can remain true while current readiness falls. Calendar suppression and accurate descriptions deserve technical credit, while fixed recovery durations and preparation thresholds remain application heuristics. None of this validates UI presentation, stored state, watch/device export, cloud behavior, option selection or race results. Initial scores have not been rescored using event outcomes or disclosed version identities.

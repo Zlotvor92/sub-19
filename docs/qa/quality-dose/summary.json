@@ -1,0 +1,2568 @@
+{
+  "baseline": "38ecc0862737c06652a00eefca7295f49a4687d6",
+  "lockedQA": "f8cb2081ed4ba223fe7efe14a621144beb9bce0d",
+  "scope": "Technical before/after of weekly fast work on the ten immutable QA inputs; no new coach scoring",
+  "profiles": [
+    {
+      "id": "U01",
+      "readiness": "beginner",
+      "sha256": "c7ea630a0e19f901514f418568849894b0a50e28ddd8c060b847dc18311df2b0",
+      "previousSha256": "c7ea630a0e19f901514f418568849894b0a50e28ddd8c060b847dc18311df2b0",
+      "unchanged": true,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2.9,
+          "afterFastMin": 2.9,
+          "afterLoadMin": 2.9,
+          "before": [
+            "T Fartlek 6×30 s (2.9 min)"
+          ],
+          "after": [
+            "T Fartlek 6×30 s (2.9 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 3.3,
+          "afterFastMin": 3.3,
+          "afterLoadMin": 3.3,
+          "before": [
+            "I Fartlek 3×60 s (3.3 min)"
+          ],
+          "after": [
+            "I Fartlek 3×60 s (3.3 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 5.3,
+          "afterFastMin": 5.3,
+          "afterLoadMin": 5.3,
+          "before": [
+            "I Intervali 2×400 m / 118 s (5.3 min)"
+          ],
+          "after": [
+            "I Intervali 2×400 m / 118 s (5.3 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 5.6,
+          "afterFastMin": 5.6,
+          "afterLoadMin": 5.6,
+          "before": [
+            "RP Trkački ritam 2×400 m / 90 s (5.6 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 2×400 m / 90 s (5.6 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 12,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        }
+      ]
+    },
+    {
+      "id": "U02",
+      "readiness": "developing",
+      "sha256": "ea3ba8848f07ca32d0fefc373d3da27df06291c320d6a1537cbe5f20429a8d56",
+      "previousSha256": "ea3ba8848f07ca32d0fefc373d3da27df06291c320d6a1537cbe5f20429a8d56",
+      "unchanged": true,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2.5,
+          "afterFastMin": 2.5,
+          "afterLoadMin": 2.5,
+          "before": [
+            "T Fartlek 5×30 s (2.5 min)"
+          ],
+          "after": [
+            "T Fartlek 5×30 s (2.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2,
+          "afterFastMin": 2,
+          "afterLoadMin": 2,
+          "before": [
+            "T Fartlek 3×45 s (2 min)"
+          ],
+          "after": [
+            "T Fartlek 3×45 s (2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 15,
+          "afterFastMin": 15,
+          "afterLoadMin": 15,
+          "before": [
+            "R Repeticije 3×300 m / 196 s (3.9 min)",
+            "T Tempo isprekidan 2×1100 m / 90 s (11 min)"
+          ],
+          "after": [
+            "R Repeticije 3×300 m / 196 s (3.9 min)",
+            "T Tempo isprekidan 2×1100 m / 90 s (11 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 21.1,
+          "afterFastMin": 21.1,
+          "afterLoadMin": 21.1,
+          "before": [
+            "I Intervali 2×1000 m / 204 s (9.1 min)",
+            "T Tempo isprekidan 2×1200 m / 90 s (12 min)"
+          ],
+          "after": [
+            "I Intervali 2×1000 m / 204 s (9.1 min)",
+            "T Tempo isprekidan 2×1200 m / 90 s (12 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 19.5,
+          "afterFastMin": 19.5,
+          "afterLoadMin": 19.5,
+          "before": [
+            "I Fartlek 5×60 s (5 min)",
+            "T Tempo 2.9 km (14.5 min)"
+          ],
+          "after": [
+            "I Fartlek 5×60 s (5 min)",
+            "T Tempo 2.9 km (14.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.1,
+          "afterFastMin": 23.1,
+          "afterLoadMin": 23.1,
+          "before": [
+            "I Intervali 2×1000 m / 204 s (9.1 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 2×1000 m / 204 s (9.1 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 24.5,
+          "afterFastMin": 24.5,
+          "afterLoadMin": 24.5,
+          "before": [
+            "I Piramida 300-500-700-500-300 m (10.4 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14 min)"
+          ],
+          "after": [
+            "I Piramida 300-500-700-500-300 m (10.4 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 24.4,
+          "afterFastMin": 24.4,
+          "afterLoadMin": 24.4,
+          "before": [
+            "I Fartlek 7×60 s (6.8 min)",
+            "T Tempo 3.5 km (17.6 min)"
+          ],
+          "after": [
+            "I Fartlek 7×60 s (6.8 min)",
+            "T Tempo 3.5 km (17.6 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 24,
+          "afterFastMin": 24,
+          "afterLoadMin": 24,
+          "before": [
+            "I Intervali 2×1100 m / 224 s (10 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 2×1100 m / 224 s (10 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 12,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 13,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23,
+          "afterFastMin": 23,
+          "afterLoadMin": 23,
+          "before": [
+            "RP Trkački ritam 2×1000 m / 90 s (9.5 min)",
+            "T Tempo 2.7 km (13.5 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 2×1000 m / 90 s (9.5 min)",
+            "T Tempo 2.7 km (13.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 14,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 24.4,
+          "afterFastMin": 24.4,
+          "afterLoadMin": 24.4,
+          "before": [
+            "I Intervali 4×600 m / 122 s (10.9 min)",
+            "T Tempo 2.7 km (13.5 min)"
+          ],
+          "after": [
+            "I Intervali 4×600 m / 122 s (10.9 min)",
+            "T Tempo 2.7 km (13.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 15,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 15.7,
+          "afterFastMin": 15.7,
+          "afterLoadMin": 15.7,
+          "before": [
+            "RP Trkački ritam 3×400 m / 90 s (5.7 min)",
+            "T Tempo 2 km (10 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 3×400 m / 90 s (5.7 min)",
+            "T Tempo 2 km (10 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 16,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2.8,
+          "afterFastMin": 2.8,
+          "afterLoadMin": 2.8,
+          "before": [
+            "RP Aktivacija 3×200 m / 120 s (2.8 min)"
+          ],
+          "after": [
+            "RP Aktivacija 3×200 m / 120 s (2.8 min)"
+          ],
+          "finish": null
+        }
+      ]
+    },
+    {
+      "id": "U03",
+      "readiness": "experienced",
+      "sha256": "0a0a3f1cc90196289dc53365c3122d26fbd83544528fd703f23f1864e916d9d8",
+      "previousSha256": "fe54ce6bc843fcb1490bf150438fa89f12c3411947e1e5867c9b9559e3cc3a4c",
+      "unchanged": false,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 21.1,
+          "afterFastMin": 25.9,
+          "afterLoadMin": 25.9,
+          "before": [
+            "I Intervali 2×1000 m / 178 s (7.9 min)",
+            "T Tempo isprekidan 2×1500 m / 90 s (13.2 min)"
+          ],
+          "after": [
+            "I Intervali 3×1000 m / 178 s (11.9 min)",
+            "T Tempo isprekidan 2×1600 m / 90 s (14 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.5,
+          "afterFastMin": 29.8,
+          "afterLoadMin": 29.8,
+          "before": [
+            "I Intervali 3×800 m / 142 s (9.5 min)",
+            "T Tempo isprekidan 2×1600 m / 90 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 5×800 m / 142 s (15.8 min)",
+            "T Tempo isprekidan 2×1600 m / 90 s (14 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 22,
+          "afterFastMin": 31.3,
+          "afterLoadMin": 31.3,
+          "before": [
+            "R Repeticije 7×300 m / 171 s (8 min)",
+            "T Tempo isprekidan 2×1600 m / 90 s (14 min)"
+          ],
+          "after": [
+            "R Repeticije 9×300 m / 171 s (10.3 min)",
+            "T Tempo isprekidan 3×1600 m / 90 s (21 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.5,
+          "afterFastMin": 35.3,
+          "afterLoadMin": 35.3,
+          "before": [
+            "I Intervali 2×1200 m / 213 s (9.5 min)",
+            "T Tempo isprekidan 2×1600 m / 90 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 3×1200 m / 213 s (14.2 min)",
+            "T Tempo isprekidan 3×1600 m / 90 s (21 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 26.6,
+          "afterFastMin": 30.8,
+          "afterLoadMin": 30.8,
+          "before": [
+            "I Fartlek 9×60 s (9.1 min)",
+            "T Tempo 4 km (17.5 min)"
+          ],
+          "after": [
+            "I Fartlek 11×60 s (11.1 min)",
+            "T Tempo 4.5 km (19.7 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.5,
+          "afterFastMin": 35.3,
+          "afterLoadMin": 35.3,
+          "before": [
+            "I Intervali 2×1200 m / 213 s (9.5 min)",
+            "T Tempo isprekidan 2×1600 m / 90 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 3×1200 m / 213 s (14.2 min)",
+            "T Tempo isprekidan 3×1600 m / 90 s (21 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 25.9,
+          "afterFastMin": 35.3,
+          "afterLoadMin": 35.3,
+          "before": [
+            "I Piramida 300-700-1000-700-300 m (11.9 min)",
+            "T Tempo isprekidan 2×1600 m / 90 s (14 min)"
+          ],
+          "after": [
+            "I Piramida 400-800-1200-800-400 m (14.2 min)",
+            "T Tempo isprekidan 3×1600 m / 90 s (21 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 27.1,
+          "afterFastMin": 30.8,
+          "afterLoadMin": 30.8,
+          "before": [
+            "I Fartlek 9×60 s (9.1 min)",
+            "T Tempo 4.1 km (18 min)"
+          ],
+          "after": [
+            "I Fartlek 11×60 s (11.1 min)",
+            "T Tempo 4.5 km (19.7 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.5,
+          "afterFastMin": 35.3,
+          "afterLoadMin": 35.3,
+          "before": [
+            "I Intervali 2×1200 m / 213 s (9.5 min)",
+            "T Tempo isprekidan 2×1600 m / 90 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 3×1200 m / 213 s (14.2 min)",
+            "T Tempo isprekidan 3×1600 m / 90 s (21 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 12,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 13,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 24.2,
+          "afterFastMin": 29.6,
+          "afterLoadMin": 29.6,
+          "before": [
+            "RP Trkački ritam 3×1000 m / 90 s (12.4 min)",
+            "T Tempo 2.7 km (11.8 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 4×1000 m / 90 s (16.5 min)",
+            "T Tempo 3 km (13.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 14,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 26.1,
+          "afterFastMin": 29.7,
+          "afterLoadMin": 29.7,
+          "before": [
+            "I Intervali 6×600 m / 107 s (14.2 min)",
+            "T Tempo 2.7 km (11.8 min)"
+          ],
+          "after": [
+            "I Intervali 7×600 m / 107 s (16.6 min)",
+            "T Tempo 3 km (13.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 15,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 16.3,
+          "afterFastMin": 16.3,
+          "afterLoadMin": 16.3,
+          "before": [
+            "RP Trkački ritam 3×400 m / 90 s (4.9 min)",
+            "T Tempo 2.6 km (11.4 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 3×400 m / 90 s (4.9 min)",
+            "T Tempo 2.6 km (11.4 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 16,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2.4,
+          "afterFastMin": 2.4,
+          "afterLoadMin": 2.4,
+          "before": [
+            "RP Aktivacija 3×200 m / 120 s (2.4 min)"
+          ],
+          "after": [
+            "RP Aktivacija 3×200 m / 120 s (2.4 min)"
+          ],
+          "finish": null
+        }
+      ]
+    },
+    {
+      "id": "U04",
+      "readiness": "developing",
+      "sha256": "355c527a892318a89f3aa531fb1dcdbe89a30aa21acadb9ca4d00ee14a8dc791",
+      "previousSha256": "355c527a892318a89f3aa531fb1dcdbe89a30aa21acadb9ca4d00ee14a8dc791",
+      "unchanged": true,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2.6,
+          "afterFastMin": 2.6,
+          "afterLoadMin": 2.6,
+          "before": [
+            "T Fartlek 5×30 s (2.6 min)"
+          ],
+          "after": [
+            "T Fartlek 5×30 s (2.6 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 3.2,
+          "afterFastMin": 3.2,
+          "afterLoadMin": 3.2,
+          "before": [
+            "T Fartlek 4×45 s (3.2 min)"
+          ],
+          "after": [
+            "T Fartlek 4×45 s (3.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 9.5,
+          "afterFastMin": 9.5,
+          "afterLoadMin": 9.5,
+          "before": [
+            "T Tempo 1.1 km (5.8 min)",
+            "T Tempo 0.7 km (3.7 min)"
+          ],
+          "after": [
+            "T Tempo 1.1 km (5.8 min)",
+            "T Tempo 0.7 km (3.7 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 2.1,
+          "afterFastMin": 2.1,
+          "afterLoadMin": 2.1,
+          "before": [
+            "T Tempo 0.4 km (2.1 min)"
+          ],
+          "after": [
+            "T Tempo 0.4 km (2.1 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 15,
+          "afterFastMin": 15,
+          "afterLoadMin": 15,
+          "before": [
+            "I Intervali 2×800 m / 171 s (7.6 min)",
+            "T Tempo isprekidan 2×700 m / 90 s (7.4 min)"
+          ],
+          "after": [
+            "I Intervali 2×800 m / 171 s (7.6 min)",
+            "T Tempo isprekidan 2×700 m / 90 s (7.4 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.4,
+          "afterFastMin": 23.4,
+          "afterLoadMin": 23.4,
+          "before": [
+            "I Fartlek 5×90 s (7.6 min)",
+            "T Tempo 3 km (15.8 min)"
+          ],
+          "after": [
+            "I Fartlek 5×90 s (7.6 min)",
+            "T Tempo 3 km (15.8 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 18.1,
+          "afterFastMin": 18.1,
+          "afterLoadMin": 18.1,
+          "before": [
+            "I Intervali 2×800 m / 171 s (7.6 min)",
+            "T Tempo isprekidan 2×1000 m / 90 s (10.5 min)"
+          ],
+          "after": [
+            "I Intervali 2×800 m / 171 s (7.6 min)",
+            "T Tempo isprekidan 2×1000 m / 90 s (10.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 25.7,
+          "afterFastMin": 25.7,
+          "afterLoadMin": 25.7,
+          "before": [
+            "I Piramida 300-500-700-500-300 m (10.9 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14.7 min)"
+          ],
+          "after": [
+            "I Piramida 300-500-700-500-300 m (10.9 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14.7 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 26.9,
+          "afterFastMin": 26.9,
+          "afterLoadMin": 26.9,
+          "before": [
+            "I Fartlek 6×90 s (9 min)",
+            "T Tempo 3.4 km (17.9 min)"
+          ],
+          "after": [
+            "I Fartlek 6×90 s (9 min)",
+            "T Tempo 3.4 km (17.9 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 24.2,
+          "afterFastMin": 24.2,
+          "afterLoadMin": 24.2,
+          "before": [
+            "I Intervali 2×1000 m / 214 s (9.5 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14.7 min)"
+          ],
+          "after": [
+            "I Intervali 2×1000 m / 214 s (9.5 min)",
+            "T Tempo isprekidan 2×1400 m / 90 s (14.7 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 12,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 13,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23,
+          "afterFastMin": 23,
+          "afterLoadMin": 23,
+          "before": [
+            "RP Trkački ritam 2×1000 m / 60 s (10.4 min)",
+            "T Progresivno 7.2 km (12.6 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 2×1000 m / 60 s (10.4 min)",
+            "T Progresivno 7.2 km (12.6 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 14,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 30.3,
+          "afterFastMin": 30.3,
+          "afterLoadMin": 30.3,
+          "before": [
+            "RP Trkački ritam 2×1200 m / 60 s (12.4 min)",
+            "T Tempo 3.4 km (17.9 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 2×1200 m / 60 s (12.4 min)",
+            "T Tempo 3.4 km (17.9 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 15,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 18.3,
+          "afterFastMin": 18.3,
+          "afterLoadMin": 18.3,
+          "before": [
+            "RP Trkački ritam 2×600 m / 75 s (6.2 min)",
+            "T Tempo 2.3 km (12.1 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 2×600 m / 75 s (6.2 min)",
+            "T Tempo 2.3 km (12.1 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 16,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 5.1,
+          "afterFastMin": 5.1,
+          "afterLoadMin": 5.1,
+          "before": [
+            "RP Aktivacija 5×200 m / 120 s (5.1 min)"
+          ],
+          "after": [
+            "RP Aktivacija 5×200 m / 120 s (5.1 min)"
+          ],
+          "finish": null
+        }
+      ]
+    },
+    {
+      "id": "U05",
+      "readiness": "experienced",
+      "sha256": "8fa4efe1e3b42897b25613beb0041f1a5aa91830fb4267f098f56de1eadaaaa9",
+      "previousSha256": "033cd7fc56f8362eb6bc58b3015cf6040ffbace54d2e540a19d4a4a0fbeb4b0e",
+      "unchanged": false,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 12,
+          "afterFastMin": 19.3,
+          "afterLoadMin": 19.3,
+          "before": [
+            "T Tempo isprekidan 2×700 m / 90 s (6.4 min)",
+            "T Tempo 1.2 km (5.5 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1300 m / 90 s (12 min)",
+            "T Tempo 1.6 km (7.4 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23,
+          "afterFastMin": 32.2,
+          "afterLoadMin": 32.2,
+          "before": [
+            "I Intervali 2×1000 m / 187 s (8.3 min)",
+            "T Tempo 3.2 km (14.7 min)"
+          ],
+          "after": [
+            "I Intervali 3×1000 m / 187 s (12.5 min)",
+            "T Tempo 4.3 km (19.8 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 15.6,
+          "afterFastMin": 22.1,
+          "afterLoadMin": 22.1,
+          "before": [
+            "T Tempo isprekidan 2×1000 m / 90 s (9.2 min)",
+            "T Tempo isprekidan 2×700 m / 90 s (6.4 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1400 m / 90 s (12.9 min)",
+            "T Tempo isprekidan 2×1000 m / 90 s (9.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 24.7,
+          "afterFastMin": 32.4,
+          "afterLoadMin": 32.4,
+          "before": [
+            "I Intervali 2×1200 m / 224 s (10 min)",
+            "T Tempo isprekidan 2×1600 m / 90 s (14.7 min)"
+          ],
+          "after": [
+            "I Intervali 3×1200 m / 224 s (14.9 min)",
+            "T Tempo isprekidan 2×1900 m / 90 s (17.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 31.1,
+          "afterFastMin": 33.9,
+          "afterLoadMin": 33.9,
+          "before": [
+            "I Fartlek 7×90 s (10.4 min)",
+            "T Tempo 4.5 km (20.7 min)"
+          ],
+          "after": [
+            "I Fartlek 9×90 s (13.7 min)",
+            "T Tempo 4.4 km (20.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 26.5,
+          "afterFastMin": 33.3,
+          "afterLoadMin": 33.3,
+          "before": [
+            "I Intervali 2×1200 m / 224 s (10 min)",
+            "T Tempo isprekidan 2×1800 m / 90 s (16.6 min)"
+          ],
+          "after": [
+            "I Intervali 3×1200 m / 224 s (14.9 min)",
+            "T Tempo isprekidan 2×2000 m / 90 s (18.4 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 29,
+          "afterFastMin": 33.3,
+          "afterLoadMin": 33.3,
+          "before": [
+            "I Piramida 300-700-1000-700-300 m (12.5 min)",
+            "T Tempo isprekidan 2×1800 m / 90 s (16.6 min)"
+          ],
+          "after": [
+            "I Piramida 400-800-1200-800-400 m (14.9 min)",
+            "T Tempo isprekidan 2×2000 m / 90 s (18.4 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 35.8,
+          "afterFastMin": 40.1,
+          "afterLoadMin": 40.1,
+          "before": [
+            "I Fartlek 9×90 s (13.7 min)",
+            "T Tempo 4.8 km (22.1 min)"
+          ],
+          "after": [
+            "I Fartlek 11×90 s (16.6 min)",
+            "T Tempo 5.1 km (23.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 28.4,
+          "afterFastMin": 38.3,
+          "afterLoadMin": 38.3,
+          "before": [
+            "I Intervali 2×1200 m / 224 s (10 min)",
+            "T Tempo isprekidan 2×2000 m / 90 s (18.4 min)"
+          ],
+          "after": [
+            "I Intervali 4×1200 m / 224 s (19.9 min)",
+            "T Tempo isprekidan 2×2000 m / 90 s (18.4 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 12,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 13,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 34.1,
+          "afterFastMin": 41.8,
+          "afterLoadMin": 41.8,
+          "before": [
+            "RP Trkački ritam 3×1200 m / 60 s (16.2 min)",
+            "T Progresivno 11.8 km (17.9 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 4×1200 m / 60 s (21.6 min)",
+            "T Progresivno 13.2 km (20.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 14,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 36.5,
+          "afterFastMin": 44.6,
+          "afterLoadMin": 44.6,
+          "before": [
+            "RP Trkački ritam 2×1600 m / 75 s (14.4 min)",
+            "T Tempo 4.8 km (22.1 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 3×1600 m / 75 s (21.6 min)",
+            "T Tempo 5 km (23 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 15,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 20.6,
+          "afterFastMin": 20.6,
+          "afterLoadMin": 20.6,
+          "before": [
+            "RP Trkački ritam 2×600 m / 75 s (5.4 min)",
+            "T Tempo 3.3 km (15.2 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 2×600 m / 75 s (5.4 min)",
+            "T Tempo 3.3 km (15.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 16,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 4.4,
+          "afterFastMin": 4.4,
+          "afterLoadMin": 4.4,
+          "before": [
+            "RP Aktivacija 5×200 m / 120 s (4.4 min)"
+          ],
+          "after": [
+            "RP Aktivacija 5×200 m / 120 s (4.4 min)"
+          ],
+          "finish": null
+        }
+      ]
+    },
+    {
+      "id": "U06",
+      "readiness": "returning",
+      "sha256": "0b8b0abc7629b6a8e2c972be9385592ea55a5c96b78018a341ca2a421eaec439",
+      "previousSha256": "0b8b0abc7629b6a8e2c972be9385592ea55a5c96b78018a341ca2a421eaec439",
+      "unchanged": true,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2.8,
+          "afterFastMin": 2.8,
+          "afterLoadMin": 2.8,
+          "before": [
+            "T Fartlek 4×45 s (2.8 min)"
+          ],
+          "after": [
+            "T Fartlek 4×45 s (2.8 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2.8,
+          "afterFastMin": 2.8,
+          "afterLoadMin": 2.8,
+          "before": [
+            "T Fartlek 3×60 s (2.8 min)"
+          ],
+          "after": [
+            "T Fartlek 3×60 s (2.8 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 4.6,
+          "afterFastMin": 4.6,
+          "afterLoadMin": 4.6,
+          "before": [
+            "I Fartlek 3×90 s (4.6 min)"
+          ],
+          "after": [
+            "I Fartlek 3×90 s (4.6 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 5.1,
+          "afterFastMin": 5.1,
+          "afterLoadMin": 5.1,
+          "before": [
+            "I Intervali 2×500 m / 115 s (5.1 min)"
+          ],
+          "after": [
+            "I Intervali 2×500 m / 115 s (5.1 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 6.8,
+          "afterFastMin": 6.8,
+          "afterLoadMin": 6.8,
+          "before": [
+            "T Tempo 1.2 km (6.8 min)"
+          ],
+          "after": [
+            "T Tempo 1.2 km (6.8 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 6.1,
+          "afterFastMin": 6.1,
+          "afterLoadMin": 6.1,
+          "before": [
+            "I Fartlek 4×90 s (6.1 min)"
+          ],
+          "after": [
+            "I Fartlek 4×90 s (6.1 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 12,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 3.1,
+          "afterFastMin": 3.1,
+          "afterLoadMin": 3.1,
+          "before": [
+            "I Fartlek 2×90 s (3.1 min)"
+          ],
+          "after": [
+            "I Fartlek 2×90 s (3.1 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 13,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 8.5,
+          "afterFastMin": 8.5,
+          "afterLoadMin": 8.5,
+          "before": [
+            "T Progresivno 4.5 km (8.5 min)"
+          ],
+          "after": [
+            "T Progresivno 4.5 km (8.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 14,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 12,
+          "afterFastMin": 12,
+          "afterLoadMin": 12,
+          "before": [
+            "RP Trkački ritam 2×1000 m / 60 s (12 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 2×1000 m / 60 s (12 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 15,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 7.2,
+          "afterFastMin": 7.2,
+          "afterLoadMin": 7.2,
+          "before": [
+            "RP Trkački ritam 2×600 m / 75 s (7.2 min)"
+          ],
+          "after": [
+            "RP Trkački ritam 2×600 m / 75 s (7.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 16,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        }
+      ]
+    },
+    {
+      "id": "U07",
+      "readiness": "developing",
+      "sha256": "b5a2bef9f714818d9ffe07c599e0516d7c95d3c8f5803770058d64d9cc5b38f2",
+      "previousSha256": "b5a2bef9f714818d9ffe07c599e0516d7c95d3c8f5803770058d64d9cc5b38f2",
+      "unchanged": true,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2.5,
+          "afterFastMin": 2.5,
+          "afterLoadMin": 2.5,
+          "before": [
+            "T Fartlek 5×30 s (2.5 min)"
+          ],
+          "after": [
+            "T Fartlek 5×30 s (2.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2,
+          "afterFastMin": 2,
+          "afterLoadMin": 2,
+          "before": [
+            "T Fartlek 3×45 s (2 min)"
+          ],
+          "after": [
+            "T Fartlek 3×45 s (2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 17.3,
+          "afterFastMin": 17.3,
+          "afterLoadMin": 17.3,
+          "before": [
+            "I Intervali 2×800 m / 163 s (7.3 min)",
+            "T Tempo isprekidan 2×1000 m / 60 s (10 min)"
+          ],
+          "after": [
+            "I Intervali 2×800 m / 163 s (7.3 min)",
+            "T Tempo isprekidan 2×1000 m / 60 s (10 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 17.3,
+          "afterFastMin": 17.3,
+          "afterLoadMin": 17.3,
+          "before": [
+            "I Intervali 2×800 m / 163 s (7.3 min)",
+            "T Tempo isprekidan 2×1000 m / 60 s (10 min)"
+          ],
+          "after": [
+            "I Intervali 2×800 m / 163 s (7.3 min)",
+            "T Tempo isprekidan 2×1000 m / 60 s (10 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.2,
+          "afterFastMin": 23.2,
+          "afterLoadMin": 23.2,
+          "before": [
+            "I Fartlek 4×120 s (8.2 min)",
+            "T Tempo 3 km (15.1 min)"
+          ],
+          "after": [
+            "I Fartlek 4×120 s (8.2 min)",
+            "T Tempo 3 km (15.1 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 21.3,
+          "afterFastMin": 21.3,
+          "afterLoadMin": 21.3,
+          "before": [
+            "I Intervali 2×800 m / 163 s (7.3 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 2×800 m / 163 s (7.3 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (14 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 21.3,
+          "afterFastMin": 21.3,
+          "afterLoadMin": 21.3,
+          "before": [
+            "I Intervali 2×800 m / 163 s (7.3 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 2×800 m / 163 s (7.3 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (14 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 27.5,
+          "afterFastMin": 27.5,
+          "afterLoadMin": 27.5,
+          "before": [
+            "RP Tempo trke 2×1300 m / 326 s (13.5 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (14 min)"
+          ],
+          "after": [
+            "RP Tempo trke 2×1300 m / 326 s (13.5 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (14 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 31,
+          "afterFastMin": 31,
+          "afterLoadMin": 31,
+          "before": [
+            "RP Tempo trke 2×1300 m / 326 s (13.5 min)",
+            "T Tempo 3.5 km (17.6 min)"
+          ],
+          "after": [
+            "RP Tempo trke 2×1300 m / 326 s (13.5 min)",
+            "T Tempo 3.5 km (17.6 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 12,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 10.5,
+          "afterFastMin": 10.5,
+          "afterLoadMin": 10.5,
+          "before": [
+            "T Tempo 2.1 km (10.5 min)"
+          ],
+          "after": [
+            "T Tempo 2.1 km (10.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 13,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 36.3,
+          "afterFastMin": 36.3,
+          "afterLoadMin": 36.3,
+          "before": [
+            "RP Kontrolna trka 7 km (36.3 min)"
+          ],
+          "after": [
+            "RP Kontrolna trka 7 km (36.3 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 14,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 27.5,
+          "afterFastMin": 27.5,
+          "afterLoadMin": 27.5,
+          "before": [
+            "RP Tempo trke 2×1300 m / 326 s (13.5 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (14 min)"
+          ],
+          "after": [
+            "RP Tempo trke 2×1300 m / 326 s (13.5 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (14 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 15,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 26.5,
+          "afterFastMin": 26.5,
+          "afterLoadMin": 26.5,
+          "before": [
+            "RP Tempo trke 2.7 km (14 min)",
+            "T Tempo 2.5 km (12.5 min)"
+          ],
+          "after": [
+            "RP Tempo trke 2.7 km (14 min)",
+            "T Tempo 2.5 km (12.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 16,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 6.1,
+          "afterFastMin": 6.1,
+          "afterLoadMin": 6.1,
+          "before": [
+            "RP Aktivacija 6×200 m / 120 s (6.1 min)"
+          ],
+          "after": [
+            "RP Aktivacija 6×200 m / 120 s (6.1 min)"
+          ],
+          "finish": null
+        }
+      ]
+    },
+    {
+      "id": "U08",
+      "readiness": "experienced",
+      "sha256": "480316de8bf91a69c5bd9d5a12ec8e3ddcb7cc41a9baeaf8d1eb2ee873c25c94",
+      "previousSha256": "1cf3c271ae89bfc445a44e35f51cc3a5b1165dfde07a40840e45a70691b82c22",
+      "unchanged": false,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 14.9,
+          "afterFastMin": 22.8,
+          "afterLoadMin": 22.8,
+          "before": [
+            "T Tempo isprekidan 2×1000 m / 60 s (8.8 min)",
+            "T Tempo isprekidan 2×700 m / 60 s (6.1 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1600 m / 60 s (14 min)",
+            "T Tempo isprekidan 2×1000 m / 60 s (8.8 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 16.2,
+          "afterFastMin": 23.2,
+          "afterLoadMin": 23.2,
+          "before": [
+            "T Tempo isprekidan 2×1000 m / 60 s (8.8 min)",
+            "T Tempo 1.7 km (7.5 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1600 m / 60 s (14 min)",
+            "T Tempo 2.1 km (9.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.5,
+          "afterFastMin": 30.5,
+          "afterLoadMin": 30.5,
+          "before": [
+            "I Intervali 2×1200 m / 213 s (9.5 min)",
+            "T Tempo isprekidan 2×1600 m / 60 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 2×1200 m / 213 s (9.5 min)",
+            "T Tempo isprekidan 3×1600 m / 60 s (21 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.5,
+          "afterFastMin": 30.5,
+          "afterLoadMin": 30.5,
+          "before": [
+            "I Intervali 2×1200 m / 213 s (9.5 min)",
+            "T Tempo isprekidan 2×1600 m / 60 s (14 min)"
+          ],
+          "after": [
+            "I Intervali 2×1200 m / 213 s (9.5 min)",
+            "T Tempo isprekidan 3×1600 m / 60 s (21 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 32.5,
+          "afterFastMin": 37.7,
+          "afterLoadMin": 37.7,
+          "before": [
+            "I Fartlek 6×120 s (11.9 min)",
+            "T Tempo 4.7 km (20.6 min)"
+          ],
+          "after": [
+            "I Fartlek 6×120 s (11.9 min)",
+            "T Tempo 5.9 km (25.9 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 28.8,
+          "afterFastMin": 36.1,
+          "afterLoadMin": 36.1,
+          "before": [
+            "I Intervali 2×1200 m / 213 s (9.5 min)",
+            "T Tempo isprekidan 2×2200 m / 75 s (19.3 min)"
+          ],
+          "after": [
+            "I Intervali 3×1200 m / 213 s (14.2 min)",
+            "T Tempo isprekidan 2×2500 m / 75 s (21.9 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 42.8,
+          "afterFastMin": 41.9,
+          "afterLoadMin": 41.9,
+          "before": [
+            "RP Tempo trke 2×2000 m / 284 s (18 min)"
+          ],
+          "after": [
+            "RP Tempo trke 2×1900 m / 284 s (17.1 min)"
+          ],
+          "finish": {
+            "km": 5.5,
+            "paceSec": 270,
+            "zone": "RP"
+          }
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 45,
+          "afterFastMin": 45,
+          "afterLoadMin": 45,
+          "before": [
+            "RP Kontrolna trka 10 km (45 min)"
+          ],
+          "after": [
+            "RP Kontrolna trka 10 km (45 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 42.8,
+          "afterFastMin": 44.6,
+          "afterLoadMin": 44.6,
+          "before": [
+            "RP Tempo trke 2×2000 m / 284 s (18 min)"
+          ],
+          "after": [
+            "RP Tempo trke 2×2200 m / 284 s (19.8 min)"
+          ],
+          "finish": {
+            "km": 5.5,
+            "paceSec": 270,
+            "zone": "RP"
+          }
+        },
+        {
+          "w": 12,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 37.3,
+          "afterFastMin": 37.3,
+          "afterLoadMin": 37.3,
+          "before": [
+            "RP Tempo trke 2×2000 m / 284 s (18 min)",
+            "T Tempo isprekidan 2×2200 m / 75 s (19.3 min)"
+          ],
+          "after": [
+            "RP Tempo trke 2×2000 m / 284 s (18 min)",
+            "T Tempo isprekidan 2×2200 m / 75 s (19.3 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 13,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 32.5,
+          "afterFastMin": 32.5,
+          "afterLoadMin": 32.5,
+          "before": [
+            "RP Tempo trke 4 km (18 min)",
+            "T Tempo 3.3 km (14.5 min)"
+          ],
+          "after": [
+            "RP Tempo trke 4 km (18 min)",
+            "T Tempo 3.3 km (14.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 14,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 5.3,
+          "afterFastMin": 5.3,
+          "afterLoadMin": 5.3,
+          "before": [
+            "RP Aktivacija 6×200 m / 120 s (5.3 min)"
+          ],
+          "after": [
+            "RP Aktivacija 6×200 m / 120 s (5.3 min)"
+          ],
+          "finish": null
+        }
+      ]
+    },
+    {
+      "id": "U09",
+      "readiness": "developing",
+      "sha256": "f6818dea907652b5d46c6d3be0bdf5dbc2628a5cc6dbe82a08c57cac54953ca3",
+      "previousSha256": "f6818dea907652b5d46c6d3be0bdf5dbc2628a5cc6dbe82a08c57cac54953ca3",
+      "unchanged": true,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 1.9,
+          "afterFastMin": 1.9,
+          "afterLoadMin": 1.9,
+          "before": [
+            "T Fartlek 4×30 s (1.9 min)"
+          ],
+          "after": [
+            "T Fartlek 4×30 s (1.9 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 2.4,
+          "afterFastMin": 2.4,
+          "afterLoadMin": 2.4,
+          "before": [
+            "T Fartlek 3×45 s (2.4 min)"
+          ],
+          "after": [
+            "T Fartlek 3×45 s (2.4 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 9.7,
+          "afterFastMin": 9.7,
+          "afterLoadMin": 9.7,
+          "before": [
+            "T Tempo isprekidan 2×1000 m / 60 s (9.7 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1000 m / 60 s (9.7 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 9.7,
+          "afterFastMin": 9.7,
+          "afterLoadMin": 9.7,
+          "before": [
+            "T Tempo isprekidan 2×1000 m / 60 s (9.7 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1000 m / 60 s (9.7 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 12.5,
+          "afterFastMin": 12.5,
+          "afterLoadMin": 6.3,
+          "before": [
+            "M Maratonski tempo 2×1100 m / 90 s (12.5 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 2×1100 m / 90 s (12.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 9.7,
+          "afterFastMin": 9.7,
+          "afterLoadMin": 9.7,
+          "before": [
+            "T Tempo isprekidan 2×1000 m / 60 s (9.7 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1000 m / 60 s (9.7 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 13.5,
+          "afterFastMin": 13.5,
+          "afterLoadMin": 13.5,
+          "before": [
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 13.5,
+          "afterFastMin": 13.5,
+          "afterLoadMin": 13.5,
+          "before": [
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 13.5,
+          "afterFastMin": 13.5,
+          "afterLoadMin": 13.5,
+          "before": [
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 12,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 13,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 13.5,
+          "afterFastMin": 13.5,
+          "afterLoadMin": 13.5,
+          "before": [
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "after": [
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 14,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 27.2,
+          "afterFastMin": 27.2,
+          "afterLoadMin": 20.4,
+          "before": [
+            "M Maratonski tempo 2×1200 m / 90 s (13.6 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 2×1200 m / 90 s (13.6 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 15,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 24.9,
+          "afterFastMin": 24.9,
+          "afterLoadMin": 24.9,
+          "before": [
+            "I Intervali 2×800 m / 157 s (7 min)",
+            "T Tempo 3.7 km (17.9 min)"
+          ],
+          "after": [
+            "I Intervali 2×800 m / 157 s (7 min)",
+            "T Tempo 3.7 km (17.9 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 16,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 10.6,
+          "afterFastMin": 10.6,
+          "afterLoadMin": 10.6,
+          "before": [
+            "T Tempo 2.2 km (10.6 min)"
+          ],
+          "after": [
+            "T Tempo 2.2 km (10.6 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 17,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 32.1,
+          "afterFastMin": 32.1,
+          "afterLoadMin": 25,
+          "before": [
+            "M Maratonski tempo 2.5 km (14.2 min)",
+            "T Tempo 3.7 km (17.9 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 2.5 km (14.2 min)",
+            "T Tempo 3.7 km (17.9 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 18,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 27.2,
+          "afterFastMin": 27.2,
+          "afterLoadMin": 20.4,
+          "before": [
+            "M Maratonski tempo 2×1200 m / 90 s (13.6 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 2×1200 m / 90 s (13.6 min)",
+            "T Tempo isprekidan 2×1400 m / 60 s (13.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 19,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 14.2,
+          "afterFastMin": 14.2,
+          "afterLoadMin": 7.1,
+          "before": [
+            "M Maratonski tempo 2.5 km (14.2 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 2.5 km (14.2 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 20,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 6.7,
+          "afterFastMin": 6.7,
+          "afterLoadMin": 6.7,
+          "before": [
+            "RP Aktivacija 6×200 m / 120 s (6.7 min)"
+          ],
+          "after": [
+            "RP Aktivacija 6×200 m / 120 s (6.7 min)"
+          ],
+          "finish": null
+        }
+      ]
+    },
+    {
+      "id": "U10",
+      "readiness": "experienced",
+      "sha256": "48ce521049aacf0973de42c18b3b6ce0e4dac92a43b120b85284745339fb4380",
+      "previousSha256": "2bb45791a46b59ff6080a5252b07a73e88e09dac13638c2df107bca3c32bdeff",
+      "unchanged": false,
+      "weeks": [
+        {
+          "w": 1,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 23.7,
+          "afterFastMin": 32.9,
+          "afterLoadMin": 25.5,
+          "before": [
+            "M Progresivno (tempo trke) 6 km (10.7 min)",
+            "T Tempo isprekidan 2×1300 m / 75 s (13 min)"
+          ],
+          "after": [
+            "M Progresivno (tempo trke) 8.4 km (14.9 min)",
+            "T Tempo isprekidan 2×1800 m / 75 s (18 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 2,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 26.7,
+          "afterFastMin": 36,
+          "afterLoadMin": 28,
+          "before": [
+            "M Progresivno (tempo trke) 6.7 km (11.7 min)",
+            "T Tempo isprekidan 2×1500 m / 75 s (15 min)"
+          ],
+          "after": [
+            "M Progresivno (tempo trke) 9 km (16 min)",
+            "T Tempo isprekidan 2×2000 m / 75 s (20 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 3,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 29.3,
+          "afterFastMin": 38.1,
+          "afterLoadMin": 29.5,
+          "before": [
+            "M Progresivno (tempo trke) 7.4 km (13.3 min)",
+            "T Tempo isprekidan 2×1600 m / 75 s (16 min)"
+          ],
+          "after": [
+            "M Progresivno (tempo trke) 9.7 km (17.1 min)",
+            "T Tempo isprekidan 2×2100 m / 75 s (21 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 4,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 5,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 34.5,
+          "afterFastMin": 43.7,
+          "afterLoadMin": 33.9,
+          "before": [
+            "M Progresivno (tempo trke) 8.7 km (15.5 min)",
+            "T Tempo isprekidan 2×1900 m / 75 s (19 min)"
+          ],
+          "after": [
+            "M Progresivno (tempo trke) 11 km (19.7 min)",
+            "T Tempo isprekidan 2×2400 m / 75 s (24 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 6,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 37.5,
+          "afterFastMin": 45.8,
+          "afterLoadMin": 35.4,
+          "before": [
+            "M Progresivno (tempo trke) 9.4 km (16.5 min)",
+            "T Tempo isprekidan 2×2100 m / 75 s (21 min)"
+          ],
+          "after": [
+            "M Progresivno (tempo trke) 11.7 km (20.8 min)",
+            "T Tempo isprekidan 2×2500 m / 75 s (25 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 7,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 40.1,
+          "afterFastMin": 49.4,
+          "afterLoadMin": 38.4,
+          "before": [
+            "M Maratonski tempo 3.3 km (17.6 min)",
+            "T Tempo 4.5 km (22.5 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 4.1 km (21.9 min)",
+            "T Tempo 5.5 km (27.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 8,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 13.5,
+          "afterFastMin": 16.5,
+          "afterLoadMin": 16.5,
+          "before": [
+            "T Tempo 2.7 km (13.5 min)"
+          ],
+          "after": [
+            "T Tempo 3.3 km (16.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 9,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 32.4,
+          "afterFastMin": 42.4,
+          "afterLoadMin": 42.4,
+          "before": [
+            "I Intervali 2×1100 m / 223 s (9.9 min)",
+            "T Tempo 4.5 km (22.5 min)"
+          ],
+          "after": [
+            "I Intervali 3×1100 m / 223 s (14.9 min)",
+            "T Tempo 5.5 km (27.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 10,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 39.1,
+          "afterFastMin": 46.3,
+          "afterLoadMin": 35.7,
+          "before": [
+            "M Maratonski tempo 2×1600 m / 90 s (17.1 min)",
+            "T Tempo isprekidan 2×2200 m / 75 s (22 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 2×2000 m / 90 s (21.3 min)",
+            "T Tempo isprekidan 2×2500 m / 75 s (25 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 11,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 40.1,
+          "afterFastMin": 49.4,
+          "afterLoadMin": 38.4,
+          "before": [
+            "M Maratonski tempo 3.3 km (17.6 min)",
+            "T Tempo 4.5 km (22.5 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 4.1 km (21.9 min)",
+            "T Tempo 5.5 km (27.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 12,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 13.5,
+          "afterFastMin": 16.5,
+          "afterLoadMin": 16.5,
+          "before": [
+            "T Tempo 2.7 km (13.5 min)"
+          ],
+          "after": [
+            "T Tempo 3.3 km (16.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 13,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 40.1,
+          "afterFastMin": 49.4,
+          "afterLoadMin": 38.4,
+          "before": [
+            "M Maratonski tempo 3.3 km (17.6 min)",
+            "T Tempo 4.5 km (22.5 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 4.1 km (21.9 min)",
+            "T Tempo 5.5 km (27.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 14,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 39.1,
+          "afterFastMin": 46.3,
+          "afterLoadMin": 35.7,
+          "before": [
+            "M Maratonski tempo 2×1600 m / 90 s (17.1 min)",
+            "T Tempo isprekidan 2×2200 m / 75 s (22 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 2×2000 m / 90 s (21.3 min)",
+            "T Tempo isprekidan 2×2500 m / 75 s (25 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 15,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 59,
+          "afterFastMin": 63.9,
+          "afterLoadMin": 39.4,
+          "before": [
+            "I Intervali 2×1100 m / 223 s (9.9 min)"
+          ],
+          "after": [
+            "I Intervali 3×1100 m / 223 s (14.9 min)"
+          ],
+          "finish": {
+            "km": 9.2,
+            "paceSec": 320,
+            "zone": "M"
+          }
+        },
+        {
+          "w": 16,
+          "deload": true,
+          "taper": false,
+          "beforeFastMin": 0,
+          "afterFastMin": 0,
+          "afterLoadMin": 0,
+          "before": [],
+          "after": [],
+          "finish": null
+        },
+        {
+          "w": 17,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 40.1,
+          "afterFastMin": 49.4,
+          "afterLoadMin": 38.4,
+          "before": [
+            "M Maratonski tempo 3.3 km (17.6 min)",
+            "T Tempo 4.5 km (22.5 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 4.1 km (21.9 min)",
+            "T Tempo 5.5 km (27.5 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 18,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 39.1,
+          "afterFastMin": 39.1,
+          "afterLoadMin": 30.5,
+          "before": [
+            "M Maratonski tempo 2×1600 m / 90 s (17.1 min)",
+            "T Tempo isprekidan 2×2200 m / 75 s (22 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 2×1600 m / 90 s (17.1 min)",
+            "T Tempo isprekidan 2×2200 m / 75 s (22 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 19,
+          "deload": false,
+          "taper": true,
+          "beforeFastMin": 36.6,
+          "afterFastMin": 36.6,
+          "afterLoadMin": 27.8,
+          "before": [
+            "M Maratonski tempo 3.3 km (17.6 min)",
+            "T Tempo 3.8 km (19 min)"
+          ],
+          "after": [
+            "M Maratonski tempo 3.3 km (17.6 min)",
+            "T Tempo 3.8 km (19 min)"
+          ],
+          "finish": null
+        },
+        {
+          "w": 20,
+          "deload": false,
+          "taper": false,
+          "beforeFastMin": 6.3,
+          "afterFastMin": 6.3,
+          "afterLoadMin": 6.3,
+          "before": [
+            "RP Aktivacija 6×200 m / 120 s (6.3 min)"
+          ],
+          "after": [
+            "RP Aktivacija 6×200 m / 120 s (6.3 min)"
+          ],
+          "finish": null
+        }
+      ]
+    }
+  ],
+  "grid": {
+    "scenarios": 360,
+    "weeks": 6120,
+    "sessions": 9248,
+    "failures": 0,
+    "maxLoadToEnvelope": 1.039
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "intensityOnly": [
+    {
+      "intensity": "kons",
+      "predictedSec": 1235,
+      "vdotGoal": 48.2,
+      "weeksIdenticalToStd": true,
+      "paces": [
+        228,
+        263,
+        237,
+        247,
+        243
+      ]
+    },
+    {
+      "intensity": "std",
+      "predictedSec": 1235,
+      "vdotGoal": 48.2,
+      "weeksIdenticalToStd": true,
+      "paces": [
+        228,
+        263,
+        237,
+        247,
+        243
+      ]
+    },
+    {
+      "intensity": "agr",
+      "predictedSec": 1235,
+      "vdotGoal": 48.2,
+      "weeksIdenticalToStd": true,
+      "paces": [
+        228,
+        263,
+        237,
+        247,
+        243
+      ]
+    }
+  ],
+  "cruiseBefore": {
+    "type": "int",
+    "kind": "Tempo isprekidan",
+    "wuKm": 1.7,
+    "reps": 3,
+    "repM": 1000,
+    "paceSec": 301,
+    "restSec": 90,
+    "cdKm": 1.2,
+    "overrides": {}
+  },
+  "cruiseSurvives": true,
+  "cruiseAfter": {
+    "type": "int",
+    "kind": "Tempo isprekidan",
+    "wuKm": 1.7,
+    "reps": 3,
+    "repM": 1000,
+    "paceSec": 301,
+    "restSec": 90,
+    "cdKm": 1.2,
+    "overrides": {},
+    "zone": "T",
+    "paceSource": "current-fitness"
+  },
+  "sweep": {
+    "generated": 144,
+    "errors": 0,
+    "arithmeticFailures": 0,
+    "emptyFocus": 1,
+    "lrShareFailures": 151,
+    "lrFinalClampFailures": 0,
+    "examples": {
+      "lrShare": {
+        "raceDistM": 5000,
+        "weeklyKm": 20,
+        "runDays": 3,
+        "sec": 1235,
+        "week": 14,
+        "lr": 7.8,
+        "volume": 18.6,
+        "share": 0.4193548387096774
+      },
+      "emptyFocus": {
+        "raceDistM": 21097.5,
+        "weeklyKm": 12,
+        "runDays": 3,
+        "sec": 1235,
+        "week": 13,
+        "volume": 19.5
+      }
+    }
+  }
+}

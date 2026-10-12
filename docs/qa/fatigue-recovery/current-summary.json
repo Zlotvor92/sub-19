@@ -1,0 +1,52 @@
+[
+  {
+    "id": "U01",
+    "sha256": "93f00602b6175e3973d1259a8ff570c5b70b0424dd913bb84a6e1ef311e09490",
+    "previousWeeksAndPredUnchanged": true
+  },
+  {
+    "id": "U02",
+    "sha256": "ea3ba8848f07ca32d0fefc373d3da27df06291c320d6a1537cbe5f20429a8d56",
+    "previousWeeksAndPredUnchanged": true
+  },
+  {
+    "id": "U03",
+    "sha256": "0a0a3f1cc90196289dc53365c3122d26fbd83544528fd703f23f1864e916d9d8",
+    "previousWeeksAndPredUnchanged": true
+  },
+  {
+    "id": "U04",
+    "sha256": "355c527a892318a89f3aa531fb1dcdbe89a30aa21acadb9ca4d00ee14a8dc791",
+    "previousWeeksAndPredUnchanged": true
+  },
+  {
+    "id": "U05",
+    "sha256": "8fa4efe1e3b42897b25613beb0041f1a5aa91830fb4267f098f56de1eadaaaa9",
+    "previousWeeksAndPredUnchanged": true
+  },
+  {
+    "id": "U06",
+    "sha256": "3857db62e2722357536b5671d0a72dcb0a26706caa33adcc5143b3e37eb6493b",
+    "previousWeeksAndPredUnchanged": true
+  },
+  {
+    "id": "U07",
+    "sha256": "8a855888f6e8fdf5e412084896377084aa851a81e152c0f58b9b6ce7d3d9dd72",
+    "previousWeeksAndPredUnchanged": true
+  },
+  {
+    "id": "U08",
+    "sha256": "a91422914c1d9bffb6a2bc817385db5a72d7c02d594606ed558595fbb93eaf1b",
+    "previousWeeksAndPredUnchanged": true
+  },
+  {
+    "id": "U09",
+    "sha256": "f6818dea907652b5d46c6d3be0bdf5dbc2628a5cc6dbe82a08c57cac54953ca3",
+    "previousWeeksAndPredUnchanged": true
+  },
+  {
+    "id": "U10",
+    "sha256": "48ce521049aacf0973de42c18b3b6ce0e4dac92a43b120b85284745339fb4380",
+    "previousWeeksAndPredUnchanged": true
+  }
+]

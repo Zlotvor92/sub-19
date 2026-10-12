@@ -1,7 +1,7 @@
 /* KLJUČEVI LOKALNOG SKLADIŠTA. Isti su kao u starom kodu: novi frontend radi na ISTOM domenu, pa čita podatke koje
    je stari upisao (korisnik ne sme da izgubi stanje ni sesiju pri prelasku). Menjanje ijednog znači gubitak podataka. */
 
-/** Glavno stanje (`PersistedState`, schema v11). */
+/** Glavno stanje (`PersistedState`, schema v12). */
 export const LS_KEY = 'sub19-v1';
 /** Sirov tekst stanja koje nije moglo da se pročita — „spašeno", pre nego što ga sledeći upis pregazi. */
 export const LS_RESCUE_KEY = `${LS_KEY}-osteceno`;

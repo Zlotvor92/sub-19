@@ -1,0 +1,260 @@
+{
+  "id": "U08",
+  "reviewerRole": "Independent synthetic experienced HM high-base user, not specialist coach or human athlete",
+  "scope": "All 14 old and all 14 new baseline weeks; production execution event; separate earlier controlled event. No UI claims.",
+  "primaryEvent": {
+    "date": "2026-11-25",
+    "status": "expected minimum-cycle rejection",
+    "exactError": "Preostalo vreme ne podržava novi pun ciklus: Manje od 10 nedelja do trke (minimum za polumaraton) — puna periodizacija nije moguća. Datum trke nije automatski pomeren.",
+    "remainingCalendarWeeks": 8,
+    "inputsUnchanged": true,
+    "resultGenerated": false,
+    "appliedMutation": false
+  },
+  "supplementalEvent": {
+    "date": "2026-10-28",
+    "separateFromFrozenEvent": true,
+    "generated": true,
+    "checks": {
+      "historyComplete": true,
+      "exact14DayGap": true,
+      "returnRequiresConfirmation": true,
+      "inputsUnchanged": true,
+      "noResultWhenRejected": true,
+      "raceDateInputUnchanged": true,
+      "pastAndTodayStable": true,
+      "calendarIdentitiesStable": true,
+      "raceDateStable": true,
+      "startingKmCorrect": true,
+      "firstThreeCalendarWeeksEasy": true,
+      "measuredRowsStable": true,
+      "noInventedFitnessGain": true,
+      "easyReturnTextOmitsStrides": false,
+      "easyWeekHeadingsReflectSessions": false
+    }
+  },
+  "baselineTechnicalFailures": {
+    "old": [],
+    "new": []
+  },
+  "findings": [
+    {
+      "id": "U08-01",
+      "profile": "U08",
+      "version": "new",
+      "status": "coaching-concern",
+      "severity": "medium",
+      "critical": false,
+      "scope": "baseline",
+      "locations": [
+        {
+          "week": 1,
+          "day": 2,
+          "date": "2026-10-13"
+        },
+        {
+          "week": 1,
+          "day": 5,
+          "date": "2026-10-16"
+        },
+        {
+          "week": 2,
+          "day": 2,
+          "date": "2026-10-20"
+        },
+        {
+          "week": 2,
+          "day": 5,
+          "date": "2026-10-23"
+        }
+      ],
+      "expected": "Experienced HM runner with 55 km/week, 24 consistent weeks and current PB should receive a clearly justified useful threshold dose. No universal minimum asserted.",
+      "actual": "W1 2x1000 m + 2x700 m T = 3.4 km / 14.90 min; W2 2x1000 m + 1.7 km continuous T = 3.7 km / 16.22 min. Both weeks use two quality slots and 6.5 km warm-up/cool-down per session. Athlete is correctly classified experienced.",
+      "significance": "HM-oriented choice is improved over early R work, but two very small doses may spend recovery/calendar slots with less adaptation than one coherent threshold session. Independent user assessment; not a proven physiological failure.",
+      "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+      "evidence": "U08-event.json"
+    },
+    {
+      "id": "U08-02",
+      "profile": "U08",
+      "version": "old,new",
+      "status": "coaching-concern",
+      "severity": "low",
+      "critical": false,
+      "scope": "baseline",
+      "locations": [
+        {
+          "week": 9,
+          "day": 2,
+          "date": "2026-12-08"
+        },
+        {
+          "week": 11,
+          "day": 2,
+          "date": "2026-12-22"
+        },
+        {
+          "week": 12,
+          "day": 2,
+          "date": "2026-12-29"
+        }
+      ],
+      "expected": "Assess whether HM RP repetitions form a sustained race-specific stimulus; profile code describes short jog recoveries. Recovery length should reflect purpose.",
+      "actual": "New 2x2500 m at 4:30/km with 284 s recovery: each block 675 s, recovery 42.1% of work. Old 2x3000 m with same recovery. New W9/W11 finish adds 5.5 km at RP; this compensates partly for short standalone RP dose.",
+      "significance": "Not automatically inadequate. Experienced runner could benefit from shorter jogs or longer controlled blocks, but race-specific long-run finishes and 10 km rehearsal already supply useful continuity.",
+      "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+      "evidence": "U08-event.json"
+    },
+    {
+      "id": "U08-03",
+      "profile": "U08",
+      "version": "old",
+      "status": "confirmed",
+      "severity": "high",
+      "critical": false,
+      "scope": "baseline",
+      "locations": [
+        {
+          "week": 14,
+          "day": 7,
+          "date": "2027-01-17",
+          "field": "meta.predictedSec / meta.vdotGoal"
+        }
+      ],
+      "expected": "Distinguish measured PB equivalence from speculative future improvement; no confirmed future fitness gain exists in this input.",
+      "actual": "VDOT rises deterministically 48.2 to 51.2; predictedSec=5383 (1:29:43). New uses VDOT 48.2 unchanged and reference 5672 (1:34:32). Difference 289 seconds.",
+      "significance": "Old reference can imply a roughly five-minute fitness improvement without supporting execution/results. New assessmentBasis=current-fitness and reference-only preparation address this baseline concern.",
+      "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+      "evidence": "U08-event.json"
+    },
+    {
+      "id": "U08-04",
+      "profile": "U08",
+      "version": "old",
+      "status": "confirmed",
+      "severity": "low",
+      "critical": false,
+      "scope": "baseline",
+      "locations": [
+        {
+          "week": 8,
+          "day": 7,
+          "date": "2026-12-06"
+        },
+        {
+          "week": 12,
+          "day": 7,
+          "date": "2027-01-03"
+        }
+      ],
+      "expected": "Informational duration should track displayed distance and easy pace after volume trimming.",
+      "actual": "W8 16.1 km at displayed 5:24/km is 86.94 min (~87), text says 93 min; W12 17.2 km is 92.88 min (~93), text says 99 min. Both have no fast finish.",
+      "significance": "Small but reproducible numeric/text mismatch affects planning time and fuel guidance. New respective durations are consistent.",
+      "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+      "evidence": "U08-event.json"
+    },
+    {
+      "id": "U08-05",
+      "profile": "U08",
+      "version": "old,new",
+      "status": "confirmed",
+      "severity": "medium",
+      "critical": false,
+      "scope": "baseline",
+      "locations": [
+        {
+          "week": 14,
+          "day": 5,
+          "date": "2027-01-15"
+        }
+      ],
+      "expected": "An intentionally near-race-pace activation should have a matching kind/zone/source, or explicit distinction from current-fitness R work; changing to true R pace is not required.",
+      "actual": "6x200 m at 266 s/km (4:26), zone R, kind Repeticije, paceSource=current-fitness. Current-fitness R from VDOT 48.2 is 228 s/km (3:48); T is 263 s/km. Builder intentionally chooses racePace-4, but final description loses the activation qualifier.",
+      "significance": "Semantic classification and presented purpose conflict. Session may be reasonable activation, but should not be analyzed or communicated as actual R-pace work.",
+      "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+      "evidence": "U08-event.json"
+    },
+    {
+      "id": "U08-06",
+      "profile": "U08",
+      "version": "new",
+      "status": "confirmed",
+      "severity": "medium",
+      "critical": false,
+      "scope": "supplemental earlier return only",
+      "locations": [
+        {
+          "week": 3,
+          "day": 5,
+          "date": "2026-10-30"
+        },
+        {
+          "week": 4,
+          "day": 1,
+          "date": "2026-11-02"
+        },
+        {
+          "week": 5,
+          "day": 1,
+          "date": "2026-11-09"
+        }
+      ],
+      "expected": "Confirmed 14-day-return initial three calendar weeks without quality should remove stride instructions from both structured fields and the visible description.",
+      "actual": "strides=null and no session/finish, but all three descriptions still contain + 6x20 s ubrzanja. Example 2026-10-30: 5.9 km lako ... + 6x20 s ubrzanja.",
+      "significance": "Reproducible instruction contradiction: visible text asks for fast strides while policy/model removes them. This occurs only in separate permitted 2026-10-28 simulation; primary 2026-11-25 event returns no plan.",
+      "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+      "evidence": "U08-event.json"
+    },
+    {
+      "id": "U08-07",
+      "profile": "U08",
+      "version": "new",
+      "status": "confirmed",
+      "severity": "low",
+      "critical": false,
+      "scope": "supplemental earlier return only",
+      "locations": [
+        {
+          "week": 4,
+          "day": null,
+          "date": "2026-11-02",
+          "field": "focus"
+        },
+        {
+          "week": 5,
+          "day": null,
+          "date": "2026-11-09",
+          "field": "focus"
+        }
+      ],
+      "expected": "Recompute weekly focus after return adjustment converts every planned quality session to easy running.",
+      "actual": "W4 and W5 focus remains Fartlek, with zero sessions/finishes, zero work minutes and all future runs easy.",
+      "significance": "Heading misrepresents week purpose despite coherent day/session arithmetic.",
+      "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+      "evidence": "U08-event.json"
+    },
+    {
+      "id": "U08-08",
+      "profile": "U08",
+      "version": "new",
+      "status": "confirmed",
+      "severity": "low",
+      "critical": false,
+      "scope": "supplemental earlier return only",
+      "locations": [
+        {
+          "week": 3,
+          "day": 4,
+          "date": "2026-10-29",
+          "field": "meta.dayWarnings"
+        }
+      ],
+      "expected": "User-facing return summary and warnings should give the same number of initial easy weeks after policy is applied.",
+      "actual": "One warning says plan starts with 1 lagane povratne nedelje; adjustment note says 3 pocetne nedelje bez kvalitetnog rada. Final prescription follows the latter three calendar weeks.",
+      "significance": "Conflicting policy explanations can confuse when faster work resumes. Does not prove the actual easy-week guard failed.",
+      "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+      "evidence": "U08-event.json"
+    }
+  ],
+  "overallAssessment": "New is more credible about fitness and starts endurance from reported base, with better HM threshold emphasis. Early experienced-runner quality dose remains a coaching concern. Primary confirmed return safely refuses an undersized full cycle; permitted supplemental return retains visible text/focus/warning contradictions."
+}

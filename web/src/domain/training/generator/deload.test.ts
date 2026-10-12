@@ -1,20 +1,14 @@
-/* DELOAD ZADRŽAVA JEDNU OŠTRINU, I NEDELJA KAŽE ČEMU SLUŽI.
-
-   Plan je delovao jednolično: na generisanom 5K planu od 16 nedelja 3 nedelje BEZ IJEDNOG kvaliteta.
-   `if(isDeload) continue;` je preskakao oba kvalitetna slota, pa je nedelja rasterećenja bila četiri
-   identična laka trčanja plus dugo. Sada q1 slot dobija kratku oštrinu (4–8 × 200 m sa PUNIM
-   oporavkom); q2 ostaje lagan dan. Polje `focus` kaže čemu nedelja služi.
-
-   Zamke čuvaju invarijante, ne brojeve: deload OSTAJE rasterećenje, oštrina je MANJA od redovnog
-   kvaliteta, nedelja rasterećenja ostaje prepoznatljiva.
-
-   parity: test/deload-ostrina.test.mjs (generatorski deo). Testovi „deload ostaje prepoznatljiv
-   SVUDA gde se čita" i „ručno pisan plan" (adaptGeneratedPlan / weekPhase) prelaze sa modulom
-   `domain/plan`. */
+/* Deload repeats an already introduced stimulus at a reduced dose, or remains
+   easy when no usable quality dose has been introduced. It must not introduce
+   R pace merely because the calendar says "deload". Volume and work are
+   checked separately: extra WU/CD cannot make an increased work dose acceptable.
+   The 58–92% delivered-volume band is a product regression guard, not a
+   universal physiological threshold. */
 
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
-import type { Day, PlanGenerationInput, Week } from '../types';
+import type { Day, PlanGenerationInput, Session, Week } from '../types';
+import { ZONE_FOR_KIND } from '../vdot/zoneForKind';
 import { generatePlan } from './generatePlan';
 
 const PB: Record<number, { distM: number; sec: number }> = {
@@ -55,115 +49,165 @@ function plan(
 }
 
 const weekKm = (w: Week): number => w.days.reduce((s, d) => s + (d.km || 0), 0);
-const sharpness = (w: Week): Day[] => w.days.filter((d) => d.session?.kind === 'Oštrina');
 const quality = (w: Week): Day[] => w.days.filter((d) => d.tag === 'int' || d.tag === 'tempo');
 
-describe('Deload više nije nedelja bez ijednog stimulusa', () => {
-  for (const [name, distM, weeks, km] of DISTANCES) {
-    it(`${name}: svaka deload nedelja u kvalitetnoj fazi ima tačno jednu oštrinu`, () => {
-      /* TAČNO JEDNU: nula je stari propust, dve su prestale da budu rasterećenje. Bazne nedelje
-         se ne broje — tamo kvaliteta nema po definiciji. */
-      const deloads = plan(distM, weeks, km).filter(
-        (x) => x.deload && quality(x).length + sharpness(x).length > 0
+const established: Partial<PlanGenerationInput> = {
+  consistentWeeks: 12,
+  qualityExperience: 'experienced'
+};
+const workSeconds = (s: Session): number => {
+  switch (s.type) {
+    case 'int':
+      return (s.reps * s.repM * s.paceSec) / 1000;
+    case 'pyramid':
+      return (s.reps.reduce((sum, m) => sum + m, 0) * s.paceSec) / 1000;
+    case 'fartlek':
+      return s.reps * s.repSec;
+    case 'prog':
+      return (s.qKm * s.paceSec) / 3;
+    case 'tempo':
+      return s.qKm * s.paceSec;
+  }
+};
+const zone = (s: Session): string | undefined => s.zone ?? ZONE_FOR_KIND[s.kind];
+
+function assertReducedPreviouslyIntroducedQuality(weeks: Week[], label: string): void {
+  for (let i = 0; i < weeks.length; i++) {
+    const current = weeks[i]!;
+    if (!current.deload) continue;
+    const sessions = current.days.filter((day) => day.session);
+    expect(sessions.length, `${label} N${current.w}: at most one quality day`).toBeLessThanOrEqual(
+      1
+    );
+    const prior = weeks
+      .slice(0, i)
+      .flatMap((week) => week.days)
+      .filter((day) => day.session)
+      .at(-1)?.session;
+    if (!prior) {
+      expect(sessions, `${label} N${current.w}: no new stimulus before first quality`).toHaveLength(
+        0
+      );
+      continue;
+    }
+    for (const day of sessions) {
+      const session = day.session!;
+      expect(zone(session), `${label} N${current.w}: previously introduced zone`).toBe(zone(prior));
+      expect(session.paceSec, `${label} N${current.w}: no faster work`).toBeGreaterThanOrEqual(
+        prior.paceSec
       );
       expect(
-        deloads.length,
-        'nijedna deload nedelja u kvalitetnoj fazi — proveri postavku'
-      ).toBeGreaterThan(0);
-      for (const d of deloads) {
-        expect(sharpness(d).length, `N${d.w}: oštrina`).toBe(1);
-        expect(
-          quality(d).length,
-          `N${d.w}: deload nosi više kvalitetnih dana — više nije rasterećenje`
-        ).toBe(1);
+        workSeconds(session),
+        `${label} N${current.w}: reduced actual work`
+      ).toBeLessThanOrEqual(workSeconds(prior) * 0.6 + 1e-8);
+      expect(day.desc, `${label} N${current.w}: visible recovery purpose`).toContain(
+        'Rasterećenje'
+      );
+    }
+  }
+}
+
+describe('Deload reduces a previously introduced stimulus', () => {
+  for (const [name, distM, weeks, km] of DISTANCES) {
+    it(`${name}: experienced and missing-history runners keep at most one familiar quality dose`, () => {
+      for (const history of [established, {}]) {
+        const all = plan(distM, weeks, km, history);
+        expect(all.some((week) => week.deload)).toBe(true);
+        assertReducedPreviouslyIntroducedQuality(all, name);
       }
     });
   }
 
-  it('oštrina je MANJA od najmanjeg redovnog kvaliteta', () => {
+  it('deload still delivers less mileage than its preceding full week', () => {
     for (const [name, distM, weeks, km] of DISTANCES) {
-      const w = plan(distM, weeks, km);
-      /* TAPER SE IZUZIMA: njegove sesije su namerno najmanje u planu. Meri se prema REDOVNOM
-         kvalitetu, jer to je ono od čega deload rasterećuje. */
-      const lastWorking = w.length - 2;
-      const smallestRegular = Math.min(
-        ...w
-          .filter((x) => !x.deload && x.w <= lastWorking)
-          .flatMap((x) => quality(x).filter((d) => d.session && d.session.kind !== 'Oštrina'))
-          .map((d) => d.km || 0)
-          .filter((x) => x > 0)
-      );
-      for (const d of w.filter((x) => x.deload)) {
-        for (const o of sharpness(d)) {
-          expect(o.km as number, `${name} N${d.w}`).toBeLessThan(smallestRegular);
+      for (const history of [established, {}]) {
+        const all = plan(distM, weeks, km, history);
+        for (let i = 1; i < all.length; i++) {
+          const current = all[i]!;
+          if (!current.deload) continue;
+          expect(weekKm(current), `${name} N${current.w}`).toBeLessThan(weekKm(all[i - 1]!));
         }
       }
     }
   });
 
-  it('radni deo oštrine je simboličan, ne trening', () => {
-    for (const [name, distM, weeks, km] of DISTANCES) {
-      for (const d of plan(distM, weeks, km).filter((x) => x.deload)) {
-        for (const o of sharpness(d)) {
-          const s = o.session;
-          if (s?.type !== 'int') throw new Error('oštrina mora biti intervalna sesija');
-          expect((s.reps * s.repM) / 1000, `${name} N${d.w}: rad`).toBeLessThanOrEqual(2);
-          expect(s.restSec, `${name} N${d.w}: pauza — nije pun oporavak`).toBeGreaterThanOrEqual(
-            90
-          );
-        }
-      }
-    }
-  });
-
-  it('deload i dalje NOSI MANJE od nedelje pre sebe', () => {
-    for (const [name, distM, weeks, km] of DISTANCES) {
-      const w = plan(distM, weeks, km);
-      for (let i = 1; i < w.length; i++) {
-        const cur = w[i] as Week;
-        const prev = w[i - 1] as Week;
-        if (!cur.deload) continue;
-        expect(weekKm(cur), `${name} N${cur.w}`).toBeLessThan(weekKm(prev));
-      }
-    }
-  });
-
-  it('deload ostaje u pojasu rasterećenja, ne postaje nedelja odmora', () => {
-    /* Uhvaćeno tek MERENJEM: kad je oštrina izuzeta iz mehanizma koji produžuje zagrevanje, deload
-       je padao i do 46% prethodne nedelje — nedelja odmora. Mreža ide kroz 3 dana i 12–22 km, gde
-       propust stvarno bije (manjak nastaje tamo gde nedelja nema odakle da nadoknadi). */
+  it('the delivered recovery week stays in its intended mileage band', () => {
     for (const [name, distM, weeks] of DISTANCES) {
-      for (const days of [3, 4, 5]) {
+      for (const runDays of [3, 4, 5]) {
         for (const km of [12, 22, 45, 70]) {
-          const w = plan(distM, weeks, km, { runDays: days });
-          for (let i = 1; i < w.length; i++) {
-            const cur = w[i] as Week;
-            if (!cur.deload) continue;
-            const share = weekKm(cur) / weekKm(w[i - 1] as Week);
-            const where = `${name} ${days}d ${km}km N${cur.w}`;
-            expect(
-              share,
-              `${where}: ${(share * 100).toFixed(0)}% — odmor, ne rasterećenje`
-            ).toBeGreaterThanOrEqual(0.58);
-            expect(
-              share,
-              `${where}: ${(share * 100).toFixed(0)}% — nije rasterećenje`
-            ).toBeLessThanOrEqual(0.92);
+          for (const history of [established, {}]) {
+            const all = plan(distM, weeks, km, { runDays, ...history });
+            for (let i = 1; i < all.length; i++) {
+              const current = all[i]!;
+              if (!current.deload) continue;
+              const share = weekKm(current) / weekKm(all[i - 1]!);
+              const label = `${name} ${runDays}d ${km}km N${current.w} ${history.qualityExperience ?? 'missing history'}`;
+              expect(share, `${label}: too little recovery mileage`).toBeGreaterThanOrEqual(0.58);
+              expect(share, `${label}: insufficient unloading`).toBeLessThanOrEqual(0.92);
+            }
           }
         }
       }
     }
   });
 
-  it('oštrina se ne pojavljuje u BAZNOJ fazi', () => {
-    const w = plan(5000, 20, 25, { trainedRecently: false });
-    const base = w.filter((x) =>
-      x.days.every(
-        (d) => d.rest || d.tag === 'lako' || d.tag === 'lr' || d.tag === 'rw' || d.tag === 'snaga'
-      )
+  it('beginner W8 does not increase work or mileage after its first introductory quality', () => {
+    const all = plan(5000, 16, 8, {
+      runDays: 3,
+      quality: 1,
+      pb: { distM: 5000, sec: 2100 },
+      intensity: 'kons',
+      volIntensity: 'kons',
+      trainedRecently: false,
+      consistentWeeks: 0,
+      qualityExperience: 'none'
+    });
+    const before = all[6]!;
+    const recovery = all[7]!;
+    expect(before.days.some((day) => day.session)).toBe(true);
+    expect(recovery.deload).toBe(true);
+    expect(weekKm(recovery)).toBeLessThan(weekKm(before));
+    const beforeWork = before.days.reduce(
+      (sum, day) => sum + (day.session ? workSeconds(day.session) : 0),
+      0
     );
-    expect(base.length, 'nema baznih nedelja — proveri postavku').toBeGreaterThan(0);
-    for (const b of base) expect(sharpness(b).length, `N${b.w}`).toBe(0);
+    const recoveryWork = recovery.days.reduce(
+      (sum, day) => sum + (day.session ? workSeconds(day.session) : 0),
+      0
+    );
+    expect(recoveryWork).toBeLessThanOrEqual(beforeWork * 0.6);
+    expect(recovery.days.some((day) => day.session && zone(day.session) === 'R')).toBe(false);
+    assertReducedPreviouslyIntroducedQuality(all, 'beginner');
+  });
+
+  it('returning W4 stays easy when no quality has yet been introduced', () => {
+    const all = plan(10000, 18, 15, {
+      runDays: 3,
+      quality: 1,
+      pb: { distM: 5000, sec: 1620 },
+      volIntensity: 'kons',
+      consistentWeeks: 1,
+      breakWeeks: 8,
+      qualityExperience: 'experienced',
+      recentLongRunKm: 5
+    });
+    expect(all.slice(0, 3).every((week) => !week.days.some((day) => day.session))).toBe(true);
+    const recovery = all[3]!;
+    expect(recovery.deload).toBe(true);
+    expect(recovery.days.some((day) => day.session)).toBe(false);
+    expect(weekKm(recovery)).toBeLessThan(weekKm(all[2]!));
+    assertReducedPreviouslyIntroducedQuality(all, 'returning');
+  });
+
+  it('the beginner base does not introduce a quality session on recovery weeks', () => {
+    const all = plan(5000, 20, 25, { trainedRecently: false });
+    const base = all.slice(0, 6);
+    expect(base.length).toBe(6);
+    for (const week of base)
+      expect(
+        week.days.some((day) => day.session),
+        `N${week.w}`
+      ).toBe(false);
   });
 });
 

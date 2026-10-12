@@ -206,7 +206,10 @@ describe('planRecalibrated: idempotencija i stabilnost', () => {
     const b = ok(planRecalibrated(asPlan(a), 54, dayIn(IDX)));
     expect(b.weeks).toEqual(a.weeks);
     expect(b.pred).toEqual(a.pred);
-    expect(b.meta).toEqual(a.meta);
+    const { futureChanges: _a, ...aMeta } = a.meta;
+    const { futureChanges: _b, ...bMeta } = b.meta;
+    expect(bMeta).toEqual(aMeta);
+    expect(b.meta.futureChanges).toMatchObject({ changedDays: 0 });
     expect(b.ulaz).toEqual(a.ulaz);
   });
 

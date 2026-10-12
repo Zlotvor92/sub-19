@@ -4,6 +4,8 @@ import { adaptGeneratedPlan } from '../../plan/adapt';
 import { resolvePlan } from '../../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry, VdotRecord } from '../../state';
 import { generatePlan } from '../generator/generatePlan';
+import { sessKm, sessDesc } from '../sessions/calc';
+import type { FartlekSession } from '../types';
 import { VDOT_PROPOSAL_MIN_MEASUREMENTS, VDOT_PROPOSAL_THRESHOLD } from '../constants/heuristics';
 import {
   applyVdotProposal,
@@ -14,6 +16,7 @@ import {
   smoothVdot,
   undoVdotAdjustments,
   vdotProposal,
+  zoneForPredLabel,
   type ProposalContext,
   type StoredPredRow
 } from './index';
@@ -64,18 +67,32 @@ function ahead(
   over: Partial<ProposalContext> = {}
 ): ProposalContext {
   const early = preds(plan)
-    .filter((r) => r.w <= 4)
+    .filter(
+      (r) =>
+        r.w >= 3 &&
+        r.w <= 7 &&
+        !r.nemeri &&
+        ['T', 'I'].includes(r.zone ?? zoneForPredLabel(r.l) ?? '') &&
+        r.q * r.pt >= 360
+    )
     .slice(0, k);
-  const entries = early.map((r, i) =>
-    record(r.id, addDays(START, (r.w - 1) * 7 + i), vdot0(plan) + 10)
-  );
   const alts: Record<string, AltRecord> = {};
+  const resolved = resolvePlan(plan.weeks, { alts, moves: {} });
+  const matched = matchPlanRows(resolved.weeks, preds(plan));
+  const log: Record<string, LogEntry> = {};
+  const entries = early.map((r) => {
+    const id = [...matched].find(([, row]) => row.id === r.id)?.[0];
+    const d = id ? resolved.byId.get(id) : null;
+    if (!d) throw new Error('evidence day');
+    log[d.id] = { status: 'done', runDate: d.date, km: d.km };
+    return record(r.id, d.date, vdot0(plan) + 10);
+  });
   return {
     today: addDays(START, 7 * 7),
-    plan: resolvePlan(plan.weeks, { alts, moves: {} }),
+    plan: resolved,
     pred: preds(plan),
     meta: plan.meta as unknown as ProposalContext['meta'],
-    log: {},
+    log,
     alts,
     vdotChain: recomputeVdotChain(entries, vdot0(plan), classifier(plan)),
     ...over
@@ -232,7 +249,7 @@ describe('predlog — šta se NE sme dirati', () => {
 
   it('odrađen dan se ne menja', () => {
     const id = [...ids][0] as string;
-    const log: Record<string, LogEntry> = { [id]: { status: 'done' } };
+    const log: Record<string, LogEntry> = { ...base.log, [id]: { status: 'done' } };
     const p = vdotProposal({ ...base, log });
     expect(p?.changes.map((c) => c.id)).not.toContain(id);
   });
@@ -296,6 +313,31 @@ describe('predlog — šta se NE sme dirati', () => {
     for (const r of nemeri) expect(touched.has(r.id)).toBe(false);
   });
 
+  it('današnji trening čuva propis, a predlog počinje tek sutra', () => {
+    const change = full?.changes[0];
+    expect(change).toBeDefined();
+    const sameDay = vdotProposal({ ...base, today: change!.date });
+    expect(sameDay?.changes.map((c) => c.id)).not.toContain(change!.id);
+    for (const c of sameDay?.changes ?? []) expect(c.date > change!.date).toBe(true);
+  });
+
+  it('budući trening sa već priloženim merenjem ili zaključavanjem čuva propis', () => {
+    const change = full?.changes[0];
+    expect(change).toBeDefined();
+    const matched = matchPlanRows(base.plan.weeks, preds(plan));
+    const rowId = matched.get(change!.id)!.id;
+    const cases: Array<Partial<ProposalContext>> = [
+      { enteredPaces: { [rowId]: 1 } },
+      { predLock: { [rowId]: true } },
+      { vdotChain: [...base.vdotChain, record(rowId, change!.date, 50)] }
+    ];
+    for (const over of cases) {
+      const proposed = vdotProposal({ ...base, ...over });
+      expect(proposed).not.toBeNull();
+      expect(proposed?.changes.map((c) => c.id)).not.toContain(change!.id);
+    }
+  });
+
   it('jedan red pripada najviše jednom danu', () => {
     const matched = matchPlanRows(base.plan.weeks, preds(plan));
     const rowIds = [...matched.values()].map((r) => r.id);
@@ -303,12 +345,12 @@ describe('predlog — šta se NE sme dirati', () => {
   });
 });
 
-describe('primena predloga: VDOT menja tempo, NIKAD obim', () => {
+describe('primena predloga: novi tempo čuva dozu rada', () => {
   const plan = makePlan();
   const ctx = ahead(plan, 4);
   const prop = vdotProposal(ctx);
 
-  it('km i opis dana ostaju, tempo se menja, alts nose paceAuto', () => {
+  it('kilometraža i opis prate sesiju, alts nose paceAuto', () => {
     const res = applyVdotProposal(prop, ctx.plan, ctx.log, ctx.alts, plan);
     expect(res.applied).toBe(prop?.changes.length);
     const after = resolvePlan((res.genPlan as GenPlanState).weeks, { alts: res.alts, moves: {} });
@@ -322,7 +364,7 @@ describe('primena predloga: VDOT menja tempo, NIKAD obim', () => {
     const kmAfterGen = (res.genPlan as GenPlanState).weeks.flatMap((w) =>
       w.days.map((d) => d.km ?? null)
     );
-    // obim se NE menja zbog forme: ukupni km plana su isti do na zaokruživanje opisa sesije
+    // Isti rad i pauze pri drugačijem tempu daju mali pomak izvedene kilometraže.
     const sum = (a: Array<number | null>): number => a.reduce<number>((s, x) => s + (x ?? 0), 0);
     expect(Math.abs(sum(kmAfterGen) - sum(kmBefore))).toBeLessThan(sum(kmBefore) * 0.02);
   });
@@ -405,5 +447,103 @@ describe('ispravke naspram starog koda (docs/ENGINE_CHANGES.md, A1–A2)', () =>
     const after = resolvePlan((res.genPlan as GenPlanState).weeks, { alts: res.alts, moves: {} });
     const undo = undoVdotAdjustments(after, res.alts, res.genPlan);
     expect(Object.keys(undo.alts)).toEqual([]);
+  });
+});
+
+describe('prilagođavanje tempa treninga na vreme', () => {
+  const initial = makePlan();
+  const originalDay = initial.weeks.flatMap((w) => w.days).find((d) => d.session);
+  if (!originalDay?.id || !originalDay.session) throw new Error('session day');
+  const id = originalDay.id;
+  const session: FartlekSession = {
+    type: 'fartlek',
+    kind: 'Fartlek',
+    zone: 'T',
+    wuKm: 2,
+    cdKm: 1,
+    paceSec: 300,
+    reps: 4,
+    repSec: 180,
+    restSec: 60,
+    easyPaceSec: 400,
+    overrides: {}
+  };
+  const plan: GenPlanState = {
+    ...initial,
+    weeks: initial.weeks.map((w) => ({
+      ...w,
+      days: w.days.map((d) =>
+        d.id === id && d.session
+          ? { ...d, session, km: sessKm(session), desc: sessDesc(session) }
+          : d
+      )
+    }))
+  };
+  const change = (newPace: number) => ({
+    changes: [{ id, newPace, oldPace: 300, kind: 'Fartlek', zone: 'T' as const, date: START, w: 1 }]
+  });
+
+  it('čuva minute rada, pauze, zagrevanje i hlađenje; vidljivi km/opis prate novi tempo', () => {
+    const resolved = resolvePlan(plan.weeks, { alts: {}, moves: {} });
+    const applied = applyVdotProposal(change(240), resolved, {}, {}, plan);
+    const after = resolvePlan(applied.genPlan!.weeks, { alts: applied.alts, moves: {} });
+    const day = after.byId.get(id)!;
+    const fresh = day.session as FartlekSession;
+    expect(fresh.reps * fresh.repSec).toBe(720);
+    expect([fresh.wuKm, fresh.cdKm, fresh.restSec, fresh.easyPaceSec]).toEqual([2, 1, 60, 400]);
+    expect(day.km).toBe(sessKm(fresh));
+    expect(day.desc).toBe(sessDesc(fresh));
+    expect(day.km).toBeGreaterThan(sessKm(session));
+    expect(applied.alts[id]?.km).toBe(day.km);
+    expect(applied.alts[id]?.desc).toContain('4:00/km');
+    const undo = undoVdotAdjustments(after, applied.alts, applied.genPlan);
+    expect(undo.genPlan).toEqual(plan);
+    expect(undo.alts).toEqual({});
+  });
+
+  it('ponovljena primena ne zamrzava kilometražu prethodnog automatskog tempa', () => {
+    const first = applyVdotProposal(
+      change(270),
+      resolvePlan(plan.weeks, { alts: {}, moves: {} }),
+      {},
+      {},
+      plan
+    );
+    const firstResolved = resolvePlan(first.genPlan!.weeks, { alts: first.alts, moves: {} });
+    const second = applyVdotProposal(change(240), firstResolved, {}, first.alts, first.genPlan);
+    const final = resolvePlan(second.genPlan!.weeks, { alts: second.alts, moves: {} });
+    const day = final.byId.get(id)!;
+    expect(day.km).toBe(sessKm(day.session!));
+    expect(day.km).toBeGreaterThan(firstResolved.byId.get(id)!.km!);
+    const undo = undoVdotAdjustments(final, second.alts, second.genPlan);
+    expect(undo.genPlan).toEqual(plan);
+    expect(undo.alts).toEqual({});
+  });
+
+  it('izričito ručno zadati kilometri, opis i run/walk ostaju kroz primenu i poništavanje', () => {
+    const alts: Record<string, AltRecord> = {
+      [id]: {
+        tag: originalDay.tag,
+        km: 9,
+        desc: 'Moj trening',
+        pace: null,
+        paceAuto: false,
+        rw: { runSec: 120, walkSec: 60, label: '2 min trčanje / 1 min hod' }
+      }
+    };
+    const applied = applyVdotProposal(
+      change(240),
+      resolvePlan(plan.weeks, { alts, moves: {} }),
+      {},
+      alts,
+      plan
+    );
+    const after = resolvePlan(applied.genPlan!.weeks, { alts: applied.alts, moves: {} });
+    expect(after.byId.get(id)?.km).toBe(9);
+    expect(after.byId.get(id)?.desc).toBe('Moj trening');
+    expect(applied.alts[id]?.rw).toEqual(alts[id]?.rw);
+    const undo = undoVdotAdjustments(after, applied.alts, applied.genPlan);
+    expect(undo.genPlan).toEqual(plan);
+    expect(undo.alts).toEqual(alts);
   });
 });

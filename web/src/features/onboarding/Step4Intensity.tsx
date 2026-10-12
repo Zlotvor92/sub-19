@@ -22,7 +22,7 @@ const VOLUME_HINT: Readonly<Record<Intensity, string>> = {
   agr: 'Najveći nedeljni skokovi kilometraže — brže do vrhunca, ali veći rizik od preopterećenja.'
 };
 
-/* KORAK 4: kvalitet, tempo napretka, predviđanje na dan trke i upozorenja generatora (sve računa domen). */
+/* KORAK 4: kvalitet, rast obima, referenca trenutne forme i upozorenja. */
 
 export function Step4Intensity({
   w,
@@ -44,10 +44,10 @@ export function Step4Intensity({
   return (
     <div className="ob-step active">
       <div className="ob-eyebrow">Korak 4 od 4</div>
-      <h1 className="ob-h1">Koliko brzo da raste forma?</h1>
+      <h1 className="ob-h1">Kako da izgleda priprema?</h1>
       <div className="ob-sub">
-        Ovo određuje koliko se tempo pooštrava kroz nedelje. Koliko brzo raste obim biraš odvojeno,
-        niže.
+        Izaberi kvalitetne dane i rast obima. Tempa treninga polaze od trenutne forme; željeno vreme
+        trke ne ubrzava ih automatski.
       </div>
       <div className="ob-card">
         <div className="ob-ct">Kvalitetnih treninga nedeljno</div>
@@ -66,39 +66,17 @@ export function Step4Intensity({
         </div>
       </div>
       <div className="ob-card">
-        <div className="ob-ct">Tempo napretka</div>
-        {(
-          [
-            ['kons', 'Konzervativno', 'Postepen, oprezan rast forme.', 'Danielsova smernica'],
-            [
-              'std',
-              'Standardno',
-              'Uobičajen tempo napretka za trenirane trkače.',
-              'Danielsova smernica'
-            ],
-            [
-              'agr',
-              'Agresivno',
-              'Brz rast — realno uglavnom uz nizak trenažni staž ili paralelan gubitak telesne mase.',
-              'Kalibrisano na jedan dokumentovan slučaj'
-            ]
-          ] as ReadonlyArray<readonly [Intensity, string, string, string]>
-        ).map(([k, title, text, tag]) => (
-          <button
-            key={k}
-            type="button"
-            className={`ob-icard${w.intensity === k ? ' on' : ''}`}
-            aria-pressed={w.intensity === k}
-            onClick={() => set({ intensity: k })}
-          >
-            <div className="ob-ih">
-              <b>{title}</b>
-              <span className="ob-radio" />
-            </div>
-            <p>{text}</p>
-            <span className="ob-tag">{tag}</span>
-          </button>
-        ))}
+        <div className="ob-ct">Težina kvalitetnog rada</div>
+        <Chips
+          items={VOLUME_RAMPS}
+          value={w.intensity}
+          label="Težina kvalitetnog rada"
+          onPick={(v) => set({ intensity: v })}
+        />
+        <div className="ob-hint">
+          Menja količinu bržeg rada i zahtevne završetke dužine. Tempa ostaju ista; rast kilometraže
+          biraš odvojeno.
+        </div>
       </div>
       <div className="ob-card">
         <div className="ob-ct">Tempo rasta obima</div>
@@ -109,8 +87,8 @@ export function Step4Intensity({
           onPick={(v) => set({ volIntensity: v })}
         />
         <div className="ob-hint">
-          {VOLUME_HINT[w.volIntensity]} Ovo ne menja predviđeno vreme — samo koliko se nedeljno
-          povećava kilometraža do vrhunca plana.
+          {VOLUME_HINT[w.volIntensity]} Ovo menja koliko se nedeljno povećava kilometraža do vrhunca
+          plana.
         </div>
       </div>
       <div className="ob-card">
@@ -138,42 +116,39 @@ export function Step4Intensity({
       <div className="ob-card accent" id="ob-outlook">
         {!out ? (
           <>
-            <div className="ob-ct">Predviđanje na dan trke</div>
+            <div className="ob-ct">Referentno vreme prema trenutnoj formi</div>
             <div className="ob-hint">
-              Unesi skorašnji rezultat i datum trke da bi se predviđanje izračunalo.
+              Unesi skorašnji rezultat i datum trke da bi se referenca izračunala.
             </div>
           </>
         ) : out.short ? (
           <>
-            <div className="ob-ct">Predviđanje na dan trke</div>
+            <div className="ob-ct">Referentno vreme prema trenutnoj formi</div>
             <div className="ob-hint">
               {brojNedelja(out.weeks)} {pl3(out.weeks, 'je', 'su', 'je')} manje od minimuma za{' '}
-              {distUReceni(out.name)} (<b>{out.minWeeks}</b>) — plan se ne može napraviti, pa ni
-              predvideti.
+              {distUReceni(out.name)} (<b>{out.minWeeks}</b>) — plan se ne može napraviti.
             </div>
           </>
         ) : (
           <>
             <div className="ob-ct">
-              Predviđanje na dan trke{' '}
+              Referentno vreme prema trenutnoj formi{' '}
               <span className="ob-opt">
                 — {brojNedelja(out.weeks)}, {out.name}
               </span>
             </div>
             <div className="ob-preds">
-              {out.rows.map((r) => (
-                <div key={r.k} className={`ob-pred${r.k === w.intensity ? ' on' : ''}`}>
-                  <i>{r.label}</i>
+              {out.rows.slice(0, 1).map((r) => (
+                <div key={r.k} className="ob-pred on">
+                  <i>Trenutna forma</i>
                   <b>{fmtClock(r.sec)}</b>
-                  <s>
-                    {out.goal != null
-                      ? r.sec <= out.goal
-                        ? 'stiže cilj'
-                        : 'ne stiže'
-                      : `VDOT ${fmtNum(r.vdot, 1)}`}
-                  </s>
+                  <s>VDOT {fmtNum(r.vdot, 1)}</s>
                 </div>
               ))}
+            </div>
+            <div className="ob-hint">
+              Ovo je ekvivalent skorašnjeg rezultata, a ne prognoza napretka do trke. Za duže
+              distance potrebna je i odgovarajuća izdržljivost, koju ova brojka ne potvrđuje.
             </div>
             {verdict ? (
               <div className={`ob-verdict ${verdict.tone}`}>
@@ -182,7 +157,7 @@ export function Step4Intensity({
               </div>
             ) : (
               <div className="ob-hint">
-                Upiši ciljno vreme ispod pa ću ti reći koliko je realno.
+                Upiši ciljno vreme ispod da ga uporediš sa trenutnom formom.
               </div>
             )}
           </>
@@ -218,8 +193,8 @@ export function Step4Intensity({
           }
         />
         <div className="ob-hint">
-          Ostavi prazno i plan koristi predviđanje iz tvoje forme. Upiši vreme ako imaš konkretan
-          cilj — reći ću koliko je realan.
+          Ostavi prazno i plan koristi referencu trenutne forme. Upiši vreme ako imaš konkretan cilj
+          — on ostaje želja, a tempa treninga ostaju vezana za potvrđenu formu.
         </div>
       </div>
     </div>

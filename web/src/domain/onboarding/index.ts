@@ -7,7 +7,7 @@ import { assess } from '../training/generator/assess';
 import { profileFor } from '../training/distances';
 import { vdotFromRace } from '../training/vdot/calculateVDOT';
 import { paceForZone } from '../training/vdot/paceForZone';
-import type { Intensity, PlanGenerationInput } from '../training/types';
+import type { Intensity, PlanGenerationInput, QualityExperience } from '../training/types';
 
 export const TOTAL_STEPS = 4;
 /** Od ove distance (m) vreme se unosi i u satima (polumaraton, maraton). */
@@ -34,13 +34,18 @@ export interface WizardState {
   pbSec: string;
   weeklyKm: string;
   trainedRecently: boolean;
+  pbDate?: string;
+  recentLongRunKm?: string;
+  consistentWeeks?: string;
+  breakWeeks?: string;
+  qualityExperience?: QualityExperience | '';
   runDays: number;
   quality: number;
   runDows: number[];
   lrDow: number | null;
   lrDowManual: boolean;
   qDays: number[];
-  /** Tempo napretka FORME (rast VDOT-a). */
+  /** Quality dose, independent of pace and volume growth. */
   intensity: Intensity;
   /** Tempo rasta OBIMA (nedeljni koraci) — poseban izbor od `intensity`. */
   volIntensity: Intensity;
@@ -58,6 +63,11 @@ export const initialWizard = (): WizardState => ({
   pbSec: '',
   weeklyKm: '',
   trainedRecently: true,
+  pbDate: '',
+  recentLongRunKm: '',
+  consistentWeeks: '',
+  breakWeeks: '',
+  qualityExperience: '',
   runDays: 4,
   quality: 2,
   runDows: [],
@@ -121,10 +131,35 @@ export function weeksToRace(raceDate: string, today: string): number | null {
   return w > 0 ? w : null;
 }
 
-export function stepValid(w: WizardState, step: number): boolean {
+export function historyValidationMessage(w: WizardState): string | null {
+  for (const [value, max, label] of [
+    [w.recentLongRunKm, 100, 'Skorašnja dužina'],
+    [w.consistentWeeks, 5200, 'Kontinuitet'],
+    [w.breakWeeks, 5200, 'Pauza']
+  ] as const)
+    if (value && (!Number.isFinite(+value) || +value < 0 || +value > max))
+      return `${label} mora biti broj od 0 do ${max}.`;
+  return null;
+}
+
+export function resultDateMessage(w: WizardState, today: string): string | null {
+  if (!w.pbDate) return null;
+  const result = parseIsoDate(w.pbDate);
+  return !result || w.pbDate > today
+    ? 'Datum rezultata mora biti ispravan datum koji nije u budućnosti.'
+    : null;
+}
+
+export function stepValid(w: WizardState, step: number, today?: string): boolean {
   if (step === 1) return !!w.raceDate;
-  if (step === 2) return pbSanityOk(w);
-  if (step === 3) return w.weeklyKm !== '' && +w.weeklyKm > 0;
+  if (step === 2) return pbSanityOk(w) && !(today && resultDateMessage(w, today));
+  if (step === 3)
+    return (
+      w.weeklyKm !== '' &&
+      +w.weeklyKm > 0 &&
+      Number.isFinite(+w.weeklyKm) &&
+      !historyValidationMessage(w)
+    );
   return true;
 }
 
@@ -163,7 +198,7 @@ export type Outlook =
   | { short: true; weeks: number; minWeeks: number; name: string }
   | { short: false; rows: OutlookRow[]; weeks: number; name: string; goal: number | null };
 
-/** Predviđanje na dan trke za sva tri intenziteta — iste funkcije kao generator (`assess`), ne paralelna matematika. */
+/** Referenca trenutne forme; legacy rows stay compatible, but no assumed improvement. */
 export function outlook(w: WizardState, today: string): Outlook {
   const pbSec = pbTotalSec(w);
   const weeks = weeksToRace(w.raceDate, today);
@@ -187,42 +222,26 @@ export interface Verdict {
   rest: string;
 }
 
-/** Ocena ciljnog vremena naspram predviđanja. Isti tekstovi kao u starom kodu. */
+/** A desired target is compared with current fitness, not promised future gains. */
 export function goalVerdict(
   o: Extract<Outlook, { short: false }>,
   selected: Intensity
 ): Verdict | null {
   const goal = o.goal;
-  if (goal == null) return null;
-  const reach = o.rows.find((r) => r.sec <= goal);
-  const sel = o.rows.find((r) => r.k === selected);
-  const agr = o.rows[o.rows.length - 1];
-  if (!agr) return null;
-  if (!reach) {
-    const diff = agr.sec - goal;
+  const reference = o.rows.find((r) => r.k === selected) ?? o.rows[0];
+  if (goal == null || !reference) return null;
+  if (goal < reference.sec) {
     return {
-      tone: 'bad',
-      lead: `Cilj ${fmtClock(goal)} nije realan za ovaj plan.`,
-      rest: ` Brži je ${fmtClock(diff)} i od najagresivnijeg scenarija (${fmtClock(agr.sec)}). Realno bi tražio više nedelja ili veći nedeljni obim.`
+      tone: 'warn',
+      lead: `Cilj ${fmtClock(goal)} traži napredak u odnosu na trenutnu formu.`,
+      rest: ` Referentno vreme je ${fmtClock(reference.sec)}. Plan ne garantuje ovaj napredak; proveri formu novom trkom ili testom pre ubrzavanja.`
     };
   }
-  let lead: string;
-  let rest: string;
-  let tone: Verdict['tone'] = 'good';
-  if (reach.k === o.rows[0]?.k) {
-    lead = `Cilj ${fmtClock(goal)} je dostižan i najopreznijim pristupom`;
-    rest = ` (${fmtClock(reach.sec)}). Slobodno ciljaj brže.`;
-  } else if (reach.k === 'agr') {
-    tone = 'warn';
-    lead = `Cilj ${fmtClock(goal)} je na granici`;
-    rest = ` — dostiže ga samo Agresivno (${fmtClock(reach.sec)}), a to je realno uglavnom uz nizak trenažni staž ili paralelan gubitak telesne mase.`;
-  } else {
-    lead = `Cilj ${fmtClock(goal)} je realan`;
-    rest = ` — dostiže ga ${reach.label} (${fmtClock(reach.sec)}).`;
-  }
-  if (sel && sel.sec > goal)
-    rest += ` Trenutno je izabrano ${sel.label} (${fmtClock(sel.sec)}) — prebaci na ${reach.label}.`;
-  return { tone, lead, rest };
+  return {
+    tone: 'good',
+    lead: `Cilj ${fmtClock(goal)} je u okviru procene trenutne forme.`,
+    rest: ' Ovo je poređenje sa rezultatom, ne potvrda spremnosti za dužinu trke niti garancija ishoda.'
+  };
 }
 
 /** Pun ulaz generatora iz stanja čarobnjaka (`null` dok obavezna polja nisu popunjena). */
@@ -233,8 +252,12 @@ export function toGenerationInput(w: WizardState, today: string): PlanGeneration
     startDate: today,
     raceDate: w.raceDate,
     raceDistM: w.raceDist,
-    pb: { distM: w.pbDist, sec: pbSec },
+    pb: { distM: w.pbDist, sec: pbSec, ...(w.pbDate ? { date: w.pbDate } : {}) },
     weeklyKm: +w.weeklyKm,
+    ...(w.recentLongRunKm ? { recentLongRunKm: +w.recentLongRunKm } : {}),
+    ...(w.consistentWeeks ? { consistentWeeks: +w.consistentWeeks } : {}),
+    ...(w.breakWeeks ? { breakWeeks: +w.breakWeeks } : {}),
+    ...(w.qualityExperience ? { qualityExperience: w.qualityExperience } : {}),
     runDays: w.runDays,
     quality: w.quality,
     ...(w.lrDow != null ? { lrDow: w.lrDow } : {}),

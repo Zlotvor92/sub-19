@@ -1,0 +1,101 @@
+{
+  "scope": "Exact read-only machine packets supplied to all four event coaches after initial score lock. No user narrative reports. Archived bytes, not regenerated reconstructions. Some final user probe files have refreshed reproduction metadata after independent reruns; this archive preserves exactly what coaches read.",
+  "files": [
+    {
+      "originalName": "U01-event.json",
+      "artifact": "U01-event.json.gz",
+      "uncompressedSha256": "31abc29ca189e6a86e378c679b5645b9771b30761f066bf8474fe5640b647e8a",
+      "gzipSha256": "05d44ce35a9d0ddf4ce2db859bedd2835b0729145f79977009b3af1c7f681ebe",
+      "bytes": 399054,
+      "compressedBytes": 43821
+    },
+    {
+      "originalName": "U02-event.json",
+      "artifact": "U02-event.json.gz",
+      "uncompressedSha256": "561759dcb27a6f104b8c8ae157903b1033ca81c96f3e69c5155b1b4d063c51a2",
+      "gzipSha256": "2c48ea16862da4796ae5afbe4379a6b488c542edfe0be9f23c7d6490d0c4fc7c",
+      "bytes": 748419,
+      "compressedBytes": 51602
+    },
+    {
+      "originalName": "U03-event.json",
+      "artifact": "U03-event.json.gz",
+      "uncompressedSha256": "d29578288b23ee3c68dbbcf755d09c140ac2aa79efbb031486bc89e9dce78aca",
+      "gzipSha256": "809fab7c40bebf9c58e74bed945753380700ac89e1828561749600ac84924dd6",
+      "bytes": 389701,
+      "compressedBytes": 26522
+    },
+    {
+      "originalName": "U04-event.json",
+      "artifact": "U04-event.json.gz",
+      "uncompressedSha256": "5d970d46341dcc89e458766c7ab4723a989702820a726343ee42c189980fa30e",
+      "gzipSha256": "ae81f26835cc7ebb775d0a7ccedce8a392fb003543ac304bf66add42956c4dab",
+      "bytes": 766068,
+      "compressedBytes": 56117
+    },
+    {
+      "originalName": "U05-event.json",
+      "artifact": "U05-event.json.gz",
+      "uncompressedSha256": "e412344f73579d076d471645a15c7c52999a8c83377e40ba365e5ee0098db974",
+      "gzipSha256": "bd35bd59ad2d5620342c973ed232ab101218f6f0f7f08684d2001bc35ecfc944",
+      "bytes": 4157045,
+      "compressedBytes": 227349
+    },
+    {
+      "originalName": "U06-event.json",
+      "artifact": "U06-event.json.gz",
+      "uncompressedSha256": "cf0d91115fae406212ff582bf89f1af13bedca3c9059a0e292914d7d19fe170d",
+      "gzipSha256": "17a3d1cbcd152c27197529875e3bfcee3f0e05f96b33215c70f7390d0dab1ade",
+      "bytes": 295642,
+      "compressedBytes": 23582
+    },
+    {
+      "originalName": "U07-event.json",
+      "artifact": "U07-event.json.gz",
+      "uncompressedSha256": "952b68aec5ba5c5611980b9dce28ec03d8514ac5a13f83546fcb680298b9789b",
+      "gzipSha256": "f86c3afada1ce86598bd8d93ffeb14ef0c97c33d5a0641df1093ef489e89307d",
+      "bytes": 718763,
+      "compressedBytes": 55179
+    },
+    {
+      "originalName": "U08-controls.json",
+      "artifact": "U08-controls.json.gz",
+      "uncompressedSha256": "36551f3b8aa432f0d9785e4949fb9aab48c4f9301f1883aade8e70d1f73be0e9",
+      "gzipSha256": "85ef85742960b1b804d2e18b71501a23d2514ef92a34fb2cc7b76473709a6d55",
+      "bytes": 1251207,
+      "compressedBytes": 79322
+    },
+    {
+      "originalName": "U08-event.json",
+      "artifact": "U08-event.json.gz",
+      "uncompressedSha256": "9e156a5a519101a3d40dd207e7ec9d7d042838de391e6973252f5422c3161ece",
+      "gzipSha256": "fa774de403039cad3fbbc13cbb5ded1a64efd030ab372875f61b999f7a9e0eca",
+      "bytes": 418373,
+      "compressedBytes": 32588
+    },
+    {
+      "originalName": "U09-controls.json",
+      "artifact": "U09-controls.json.gz",
+      "uncompressedSha256": "e33eb74d8c1280936d9b69e9f517cf22a43333e15caed585e41cffbc7714475f",
+      "gzipSha256": "ba83a2398cde8684ef6849f9d354dfd313d094d94c8e082a1a84415bb1f5e5b5",
+      "bytes": 1725079,
+      "compressedBytes": 84166
+    },
+    {
+      "originalName": "U09-event.json",
+      "artifact": "U09-event.json.gz",
+      "uncompressedSha256": "96017a21de1db3a7473012f3167b4f8ff5222f6ed64c15fb0bbf2cae3c7e88fc",
+      "gzipSha256": "f4a61e3f206e02ee17a6b528269aeddc0d9185767adade5088ed0ad12eee422f",
+      "bytes": 835348,
+      "compressedBytes": 60258
+    },
+    {
+      "originalName": "U10-event.json",
+      "artifact": "U10-event.json.gz",
+      "uncompressedSha256": "ab4662aee1fc4a74df54c216e20639d74999ed5e9ceff6b084b4d325faec2d83",
+      "gzipSha256": "37e538eace4e0a14496208c6e26d04a1b2fe2e626acf79e25d08cd6f1906db1b",
+      "bytes": 979656,
+      "compressedBytes": 65177
+    }
+  ]
+}

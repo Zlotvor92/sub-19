@@ -9,23 +9,42 @@
    pokazuje — `pred`, `predLock`, `vdotLog`) ostaju kakve jesu. Ručno zaključana polja sesija se prenose
    na sveže nedelje (`mergeOverrides`) — regeneracija ne sme da pregazi korisnikovu ručnu izmenu. */
 
-import { addDays, diffDays, mondayOnOrAfter, parseIsoDate, type IsoDate } from '../date';
+import { addDays, parseIsoDate, type IsoDate } from '../date';
 import { r1 } from '../format';
 import type { GenPlanState, StoredWeek } from '../state';
-import { GROW_MAX } from '../training/constants/heuristics';
 import { generatePlan } from '../training/generator/generatePlan';
-import { derivePred, deriveQS, deriveQSById, planVdotForWeek } from '../training/prediction';
+import { derivePred, deriveQS, planVdotForWeek } from '../training/prediction';
 import { sessDesc, sessKm } from '../training/sessions/calc';
+import { KIND_FROM_GOAL, ZONE_FOR_KIND } from '../training/vdot/zoneForKind';
 import {
   isPlanError,
   type PlanGenerationInput,
   type PlanMeta,
   type PredictionRow,
   type Session,
+  type TrainingPlan,
   type Week
 } from '../training/types';
 import { raceTimeForVdot } from '../training/vdot/racePrediction';
 import { adaptGeneratedPlan } from './adapt';
+import { graftFuturePlan, type ReplanContext } from './future';
+import { guardReturnGrowth } from './returnGrowth';
+import { analyzeExecution } from '../training/execution';
+import { resolvePlan } from './resolve';
+import { assessPreparation } from '../training/generator/athleteAssessment';
+import { profileFor } from '../training/distances';
+export type { ReplanContext } from './future';
+
+function guardedGeneration(plan: TrainingPlan, baseKm: number, startDate: string): TrainingPlan {
+  const weeks = guardReturnGrowth(plan.weeks, baseKm, startDate !== plan.meta.start);
+  const pred = derivePred(weeks, plan.meta.raceDistM, plan.meta);
+  const qs = deriveQS(weeks);
+  const profile = profileFor(plan.meta.raceDistM);
+  const meta = { ...plan.meta };
+  if (profile)
+    meta.preparation = assessPreparation({ weeks, pred, qs, meta }, profile.product.minPeakKm);
+  return { ...plan, weeks, pred, qs, meta };
+}
 
 interface MergeDay {
   dow: number;
@@ -33,6 +52,14 @@ interface MergeDay {
   km?: number | null;
   desc?: string | null;
 }
+
+const prescriptionZone = (session: Session): Session['zone'] =>
+  session.zone ??
+  (session.kind === 'Oštrina'
+    ? 'R'
+    : KIND_FROM_GOAL.has(session.kind)
+      ? 'RP'
+      : ZONE_FOR_KIND[session.kind]);
 
 /**
  * Prenosi ZAKLJUČANA (ručno izmenjena) polja sesija sa starih nedelja na sveže regenerisane, po slotu
@@ -46,12 +73,17 @@ export function mergeOverrides<W extends { w: number; days: MergeDay[] }>(
   const oldByKey = new Map<string, Session>();
   for (const w of old ?? [])
     for (const d of w.days) if (d.session) oldByKey.set(`${w.w}-${d.dow}`, d.session);
-  return fresh.map((w) => ({
-    ...w,
-    days: w.days.map((d) => {
+  return fresh.map((w) => {
+    const days = w.days.map((d) => {
       if (!d.session) return d;
       const prev = oldByKey.get(`${w.w}-${d.dow}`);
-      if (!prev || prev.type !== d.session.type) return d;
+      if (
+        !prev ||
+        prev.type !== d.session.type ||
+        prev.kind !== d.session.kind ||
+        prescriptionZone(prev) !== prescriptionZone(d.session)
+      )
+        return d;
       const merged: Record<string, unknown> = { ...d.session };
       const overrides: Record<string, boolean> = { ...d.session.overrides };
       let touched = false;
@@ -64,13 +96,19 @@ export function mergeOverrides<W extends { w: number; days: MergeDay[] }>(
       if (!touched) return d;
       const session = { ...merged, overrides } as unknown as Session;
       return { ...d, session, km: sessKm(session), desc: sessDesc(session) };
-    })
-  }));
+    });
+    return {
+      ...w,
+      days,
+      ...('vol' in w ? { vol: r1(days.reduce((n, d) => n + (d.km ?? 0), 0)) } : {})
+    };
+  });
 }
 
 export type ReplanError = { error: string };
 
-export interface GoalChangeResult {
+export interface GoalChangeResult extends GenPlanState {
+  error?: never;
   weeks: StoredWeek[];
   pred: Array<PredictionRow & { id: string }>;
   qs: Record<string, number[]>;
@@ -110,7 +148,8 @@ function storedWeekOf(weeks: readonly StoredWeek[], today: string): StoredWeek |
 export function planWithNewGoal(
   plan: GenPlanState | null,
   newGoalSec: number,
-  today: IsoDate
+  today: IsoDate,
+  context: ReplanContext = {}
 ): GoalChangeResult | ReplanError {
   if (!plan) return { error: 'Promena cilja radi samo nad generisanim planom.' };
   const input = plan.ulaz;
@@ -119,7 +158,8 @@ export function planWithNewGoal(
       error:
         'Ovaj plan je napravljen pre nego što je aplikacija počela da pamti ulazne podatke, pa se ne može regenerisati bez njih. Cilj se može promeniti tek na planu napravljenom od ove verzije nadalje.'
     };
-  if (!(newGoalSec > 0)) return { error: 'Ciljno vreme nije ispravno.' };
+  if (!Number.isFinite(newGoalSec) || !(newGoalSec > 0))
+    return { error: 'Ciljno vreme nije ispravno.' };
 
   const cur = storedWeekOf(plan.weeks, today);
   const last = plan.weeks[plan.weeks.length - 1];
@@ -130,48 +170,45 @@ export function planWithNewGoal(
     };
   const idx = cur ? cur.w : 1;
 
-  const generated = generatePlan({
-    ...(input as unknown as PlanGenerationInput),
+  const goalInput = {
+    ...currentReadinessInput(input as unknown as PlanGenerationInput, today),
     goalSec: newGoalSec
-  });
-  if (isPlanError(generated)) return generated;
+  };
+  const raw = generatePlan(goalInput);
+  if (isPlanError(raw)) return raw;
+  const originalAnchor = parseIsoDate(plan.meta?.start);
+  const rebasedStart = parseIsoDate(goalInput.startDate);
+  const rebased = originalAnchor && rebasedStart && rebasedStart > addDays(originalAnchor, 6);
+  const generated = rebased ? guardedGeneration(raw, goalInput.weeklyKm, goalInput.startDate) : raw;
   const fresh = adaptGeneratedPlan(generated);
   if (!fresh) return { error: 'Neočekivana greška pri regenerisanju plana.' };
 
-  const oldWeeks = plan.weeks.filter((x) => x.w < idx);
-  const newWeeks = mergeOverrides(
-    fresh.weeks.filter((x) => x.w >= idx),
-    plan.weeks
+  const grafted = graftFuturePlan(
+    plan,
+    {
+      ...fresh,
+      meta: { ...fresh.meta!, ...carriedRecalibration(plan.meta) },
+      ulaz: goalInput
+    },
+    today,
+    context
   );
-  if (!newWeeks.length)
-    return { error: 'Nema nijedne nedelje koja tek dolazi — cilj se više ne može promeniti.' };
-
-  const freshMeta = fresh.meta as PlanMeta;
-  /* Redosled je bitan: prvo stari redovi, pa novi — redovi iz prošlosti zadržavaju indeks i ID, a uz
-     njih i sve što na taj ID pokazuje. */
-  const pred = plan.pred
-    .filter((r) => r.w < idx)
-    .concat(derivePred(newWeeks, freshMeta.raceDistM, freshMeta))
-    .map((r, i) => ({ ...r, id: `g${r.w}_${i}` }));
-  const qs: Record<string, number[]> = {};
-  for (const [k, v] of Object.entries(plan.qs ?? {})) {
-    const m = /^g(\d+)d/.exec(k);
-    if (m && +(m[1] as string) < idx) qs[k] = v;
-  }
-  Object.assign(qs, deriveQSById(newWeeks));
-
-  const oldMeta = plan.meta as { goalSec?: number | null; start?: unknown } | undefined;
+  const changedWeeks = grafted.weeks.filter(
+    (w, i) => JSON.stringify(w) !== JSON.stringify(plan.weeks[i])
+  ).length;
+  const oldMeta = plan.meta;
   return {
-    weeks: [...oldWeeks, ...newWeeks],
-    pred,
-    qs,
-    meta: { ...freshMeta, ...carriedRecalibration(plan.meta), start: oldMeta?.start as IsoDate },
-    ulaz: { ...(input as unknown as PlanGenerationInput), goalSec: newGoalSec },
+    ...grafted,
+    weeks: grafted.weeks,
+    pred: grafted.pred as Array<PredictionRow & { id: string }>,
+    qs: grafted.qs ?? {},
+    meta: grafted.meta!,
+    ulaz: grafted.ulaz as PlanGenerationInput,
     goalChange: {
       week: idx,
       from: oldMeta?.goalSec || null,
       to: newGoalSec,
-      changedWeeks: newWeeks.length
+      changedWeeks
     }
   };
 }
@@ -181,7 +218,8 @@ export const RECALIBRATION_MIN_WEEKS_LEFT = 4;
 /** Forma van ovog opsega nije verodostojna (kao `vdotPossible`): rekalibracija bi pravila besmislen plan. */
 const FORM_VDOT_RANGE = { min: 20, max: 85 } as const;
 
-export interface RecalibratedStoredPlan {
+export interface RecalibratedStoredPlan extends GenPlanState {
+  error?: never;
   weeks: StoredWeek[];
   pred: Array<PredictionRow & { id: string }>;
   qs: Record<string, number[]>;
@@ -209,7 +247,8 @@ export interface RecalibratedStoredPlan {
 export function planRecalibrated(
   plan: GenPlanState | null,
   formVdot: number,
-  today: IsoDate
+  today: IsoDate,
+  context: ReplanContext = {}
 ): RecalibratedStoredPlan | ReplanError {
   if (!plan) return { error: 'Preračunavanje radi samo nad generisanim planom.' };
   const input = plan.ulaz;
@@ -225,7 +264,7 @@ export function planRecalibrated(
   )
     return { error: 'Izmerena forma nije verodostojna — plan se ne preračunava.' };
 
-  const original = input as unknown as PlanGenerationInput;
+  const original = currentReadinessInput(input as unknown as PlanGenerationInput, today);
   const total = plan.weeks.length;
   const cur = storedWeekOf(plan.weeks, today);
   const last = plan.weeks[plan.weeks.length - 1];
@@ -245,31 +284,41 @@ export function planRecalibrated(
       ? oldMeta['predictedSecAtStart']
       : predictedBefore || null;
 
-  const regenInput = recalibrationInput(original, formVdot);
-  const generated = generatePlan(regenInput);
-  if (isPlanError(generated)) return generated;
+  const execution = analyzeExecution({
+    plan: resolvePlan(plan.weeks, { alts: context.alts ?? {}, moves: context.moves ?? {} }),
+    log: context.log ?? {},
+    today
+  });
+  const coveredWeeks = execution.completeWeeks.filter(
+    (w) => w.volumeCoverage >= 0.75 && w.statusCoverage >= 0.75 && w.actualKm > 0
+  );
+  const observedBase =
+    coveredWeeks.length >= 2 && execution.recentWeeklyKm != null && execution.recentWeeklyKm > 0;
+  const regenInput = {
+    ...recalibrationInput(original, formVdot),
+    ...(observedBase
+      ? {
+          startDate: addDays(today, 1),
+          weeklyKm: execution.recentWeeklyKm!,
+          recentLongRunKm: execution.recentLongRunKm ?? undefined,
+          consistentWeeks: original.consistentWeeks ?? Math.min(coveredWeeks.length, 4)
+        }
+      : {})
+  };
+  const raw = generatePlan(regenInput);
+  if (isPlanError(raw)) return raw;
+  const remainingStart = parseIsoDate(regenInput.startDate);
+  const originalStart = parseIsoDate(plan.meta?.start);
+  const retainedBaseGuard =
+    originalStart && remainingStart && remainingStart > addDays(originalStart, 6);
+  const generated =
+    observedBase || retainedBaseGuard
+      ? guardedGeneration(raw, regenInput.weeklyKm, regenInput.startDate)
+      : raw;
   const fresh = adaptGeneratedPlan(generated);
   if (!fresh) return { error: 'Neočekivana greška pri preračunavanju plana.' };
 
-  const oldWeeks = plan.weeks.filter((x) => x.w < idx);
-  const newWeeks = mergeOverrides(
-    fresh.weeks.filter((x) => x.w >= idx),
-    plan.weeks
-  );
-  if (!newWeeks.length) return { error: 'Nema nijedne nedelje koja tek dolazi.' };
-
   const freshMeta = fresh.meta as PlanMeta;
-  const pred = plan.pred
-    .filter((r) => r.w < idx)
-    .concat(derivePred(newWeeks, freshMeta.raceDistM, freshMeta))
-    .map((r, i) => ({ ...r, id: `g${r.w}_${i}` }));
-  const qs: Record<string, number[]> = {};
-  for (const [k, v] of Object.entries(plan.qs ?? {})) {
-    const m = /^g(\d+)d/.exec(k);
-    if (m && +(m[1] as string) < idx) qs[k] = v;
-  }
-  Object.assign(qs, deriveQSById(newWeeks));
-
   const meta: PlanMeta & Record<string, unknown> = {
     ...freshMeta,
     start: oldMeta['start'] as IsoDate,
@@ -284,19 +333,50 @@ export function planRecalibrated(
     meta.goalVdot = (oldMeta['goalVdot'] as number | null | undefined) ?? null;
     meta.realno = (oldMeta['realno'] as boolean | null | undefined) ?? null;
   }
-  meta.dayWarnings = (oldMeta['dayWarnings'] as string[] | undefined) ?? freshMeta.dayWarnings;
+  meta.dayWarnings = [
+    ...freshMeta.dayWarnings,
+    ...(!observedBase
+      ? [
+          'Nedovoljno potpunih skorašnjih nedelja za procenu stvarnog obima; koristi se prijavljena polazna baza. Pre povećanja proveri da li ona i dalje važi.'
+        ]
+      : [])
+  ];
 
+  const grafted = graftFuturePlan(
+    plan,
+    {
+      ...fresh,
+      meta,
+      ulaz: {
+        ...original,
+        pb: regenInput.pb,
+        ...(observedBase
+          ? {
+              startDate: regenInput.startDate,
+              weeklyKm: regenInput.weeklyKm,
+              recentLongRunKm: regenInput.recentLongRunKm,
+              consistentWeeks: regenInput.consistentWeeks
+            }
+          : {})
+      }
+    },
+    today,
+    context
+  );
+  const changedWeeks = grafted.weeks.filter(
+    (w, i) => JSON.stringify(w) !== JSON.stringify(plan.weeks[i])
+  ).length;
   const planBefore = planVdotForWeek(isPlainObject(plan.meta) ? plan.meta : null, idx);
   return {
-    weeks: [...oldWeeks, ...newWeeks],
-    pred,
-    qs,
-    meta,
-    /* Sačuvaj novu polaznu formu i za kasniju promenu cilja. */
-    ulaz: { ...original, pb: regenInput.pb },
+    ...grafted,
+    weeks: grafted.weeks,
+    pred: grafted.pred as Array<PredictionRow & { id: string }>,
+    qs: grafted.qs ?? {},
+    meta: grafted.meta!,
+    ulaz: grafted.ulaz as PlanGenerationInput,
     recalibration: {
       week: idx,
-      changedWeeks: newWeeks.length,
+      changedWeeks,
       form: r1(formVdot),
       planBefore: planBefore == null ? null : r1(planBefore),
       predictedBefore,
@@ -305,18 +385,19 @@ export function planRecalibrated(
   };
 }
 
-const weeksTotal = (input: PlanGenerationInput): number => {
-  const start = parseIsoDate(input.startDate);
-  const race = parseIsoDate(input.raceDate);
-  if (!start || !race) return Number.NaN;
-  return Math.round(diffDays(mondayOnOrAfter(start), race) / 7) + 1;
-};
-
 export interface RecalibrationResult {
   weeks: Week[];
   pred: PredictionRow[];
   qs: Record<string, number[]>;
   meta: PlanMeta & { vdotAtRecal: number; recalWeek: number };
+}
+
+/** A finished temporary fatigue/volume period must not become a permanent readiness downgrade. */
+function currentReadinessInput(input: PlanGenerationInput, today: IsoDate): PlanGenerationInput {
+  const readiness = input.currentReadiness;
+  return readiness && readiness.reason !== 'returning' && readiness.until <= today
+    ? { ...input, currentReadiness: undefined }
+    : input;
 }
 
 /** Sintetički PB prenosi izmerenu formu generatoru; cilj ostaje korisnikova odluka. */
@@ -384,27 +465,52 @@ export function reentryPlan(
   lastRealizedVolKm: number,
   vdotAtPause: number
 ): ReentryResult | ReplanError {
-  const total = weeksTotal(originalInput);
+  if (
+    !Number.isInteger(resumeWeekIdx) ||
+    resumeWeekIdx < 1 ||
+    !Number.isFinite(lastRealizedVolKm) ||
+    lastRealizedVolKm <= 0 ||
+    !Number.isFinite(vdotAtPause) ||
+    vdotAtPause < 20 ||
+    vdotAtPause > 85
+  )
+    return { error: 'Nedelja, stvarni obim ili referentna forma povratka nisu ispravni.' };
+  const original = generatePlan(originalInput);
+  if (isPlanError(original)) return original;
+  const total = original.weeks.length;
   const weeksLeft = total - resumeWeekIdx + 1;
-  if (weeksLeft < 4)
+  if (!Number.isFinite(total) || weeksLeft < 4)
     return {
       error:
         'Manje od 4 nedelje do trke posle pauze — pun re-entry nije moguć. Cilj treba ručno preispitati.'
     };
-  const replanned = generatePlan(recalibrationInput(originalInput, Math.max(vdotAtPause, 20)));
+  const resume = addDays(original.meta.start, (resumeWeekIdx - 1) * 7);
+  const replanned = generatePlan({
+    ...recalibrationInput(originalInput, vdotAtPause),
+    startDate: resume,
+    weeklyKm: lastRealizedVolKm,
+    recentLongRunKm: Math.min(
+      originalInput.recentLongRunKm ?? lastRealizedVolKm * 0.3,
+      lastRealizedVolKm * 0.35
+    ),
+    consistentWeeks: originalInput.consistentWeeks,
+    currentReadiness: { reason: 'returning', until: addDays(resume, 14) },
+    breakWeeks: Math.max(1, originalInput.breakWeeks ?? 1),
+    trainedRecently: false
+  });
   if (isPlanError(replanned)) return replanned;
-  const w0 = replanned.weeks[resumeWeekIdx - 1];
-  if (!w0) return { error: 'Nedelja povratka je van plana.' };
-  const scale = w0.vol > 0 ? Math.min(lastRealizedVolKm * GROW_MAX, w0.vol) / w0.vol : 1;
-  const first = {
-    ...w0,
-    vol: r1(w0.vol * scale),
-    days: w0.days.map((d) => (d.km != null ? { ...d, km: r1(d.km * scale) } : d)) as Week['days'],
-    reentry: true as const
-  };
-  return {
-    weeks: [first, ...replanned.weeks.slice(resumeWeekIdx)],
-    pred: replanned.pred.filter((p) => p.w >= resumeWeekIdx),
-    meta: replanned.meta
-  };
+  const weeks = guardReturnGrowth(replanned.weeks, lastRealizedVolKm).map((w, i) => ({
+    ...w,
+    w: resumeWeekIdx + i,
+    ...(i === 0 ? { reentry: true as const } : {})
+  }));
+  const meta = { ...replanned.meta, start: original.meta.start, weeks: total };
+  const pred = derivePred(weeks, meta.raceDistM, meta);
+  const profile = profileFor(meta.raceDistM);
+  if (profile)
+    meta.preparation = assessPreparation(
+      { weeks, pred, qs: deriveQS(weeks), meta },
+      profile.product.minPeakKm
+    );
+  return { weeks, pred, meta };
 }

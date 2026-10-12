@@ -73,6 +73,9 @@ export interface DistanceHeuristic {
   /** Uputstvo za gorivo na dugom trčanju (minuti). */
   fuelFromMin?: number;
   fuelStrongFromMin?: number;
+  /** Lak dan odmah posle zahtevne duge (≥ `demandingMin`): najviše `maxShare` duge i
+   *  `maxMin` minuta; višak ide na druge lake dane koji nisu uz dugu. */
+  easyAfterLongRun?: { demandingMin: number; maxShare: number; maxMin: number };
 }
 
 export interface DistanceProduct {
@@ -186,7 +189,10 @@ export const HEURISTIC_21K = {
   taperLongRunFactor: 0.65,
   midweekLong: { minDays: 5, minKm: 45, share: 0.62 },
   baseLongRunStart: 0.55,
-  fuelFromMin: 90
+  fuelFromMin: 90,
+  /* Interna heuristika: lak po tempu ne znači lak po trajanju (QA U07: 19,5 km LR pa
+     11,5 km sutradan). Prag 90 min je isti kao za gorivo i nedeljni omotač. */
+  easyAfterLongRun: { demandingMin: 90, maxShare: 0.6, maxMin: 60 }
 } as const satisfies DistanceHeuristic & Record<string, unknown>;
 
 /* ------------------------------------------------------------ maraton */

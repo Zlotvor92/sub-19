@@ -1,0 +1,106 @@
+{
+  "baseline": "548d1b17eb98d75f7e5ec072700d8f65707361ff",
+  "lockedQA": "f8cb2081ed4ba223fe7efe14a621144beb9bce0d",
+  "scope": "Technical before/after of HM threshold and HM-pace progression on the ten immutable QA inputs; no new coach scoring",
+  "profiles": [
+    {
+      "id": "U01",
+      "distance": 5000,
+      "readiness": "beginner",
+      "track": null,
+      "sha256": "c7ea630a0e19f901514f418568849894b0a50e28ddd8c060b847dc18311df2b0",
+      "previousSha256": "c7ea630a0e19f901514f418568849894b0a50e28ddd8c060b847dc18311df2b0",
+      "unchanged": true
+    },
+    {
+      "id": "U02",
+      "distance": 5000,
+      "readiness": "developing",
+      "track": null,
+      "sha256": "ea3ba8848f07ca32d0fefc373d3da27df06291c320d6a1537cbe5f20429a8d56",
+      "previousSha256": "ea3ba8848f07ca32d0fefc373d3da27df06291c320d6a1537cbe5f20429a8d56",
+      "unchanged": true
+    },
+    {
+      "id": "U03",
+      "distance": 5000,
+      "readiness": "experienced",
+      "track": null,
+      "sha256": "0a0a3f1cc90196289dc53365c3122d26fbd83544528fd703f23f1864e916d9d8",
+      "previousSha256": "0a0a3f1cc90196289dc53365c3122d26fbd83544528fd703f23f1864e916d9d8",
+      "unchanged": true
+    },
+    {
+      "id": "U04",
+      "distance": 10000,
+      "readiness": "developing",
+      "track": null,
+      "sha256": "355c527a892318a89f3aa531fb1dcdbe89a30aa21acadb9ca4d00ee14a8dc791",
+      "previousSha256": "355c527a892318a89f3aa531fb1dcdbe89a30aa21acadb9ca4d00ee14a8dc791",
+      "unchanged": true
+    },
+    {
+      "id": "U05",
+      "distance": 10000,
+      "readiness": "experienced",
+      "track": null,
+      "sha256": "8fa4efe1e3b42897b25613beb0041f1a5aa91830fb4267f098f56de1eadaaaa9",
+      "previousSha256": "8fa4efe1e3b42897b25613beb0041f1a5aa91830fb4267f098f56de1eadaaaa9",
+      "unchanged": true
+    },
+    {
+      "id": "U06",
+      "distance": 10000,
+      "readiness": "returning",
+      "track": null,
+      "sha256": "0b8b0abc7629b6a8e2c972be9385592ea55a5c96b78018a341ca2a421eaec439",
+      "previousSha256": "0b8b0abc7629b6a8e2c972be9385592ea55a5c96b78018a341ca2a421eaec439",
+      "unchanged": true
+    },
+    {
+      "id": "U07",
+      "distance": 21097.5,
+      "readiness": "developing",
+      "track": "first",
+      "sha256": "8a855888f6e8fdf5e412084896377084aa851a81e152c0f58b9b6ce7d3d9dd72",
+      "previousSha256": "b5a2bef9f714818d9ffe07c599e0516d7c95d3c8f5803770058d64d9cc5b38f2",
+      "unchanged": false
+    },
+    {
+      "id": "U08",
+      "distance": 21097.5,
+      "readiness": "experienced",
+      "track": "performance",
+      "sha256": "a91422914c1d9bffb6a2bc817385db5a72d7c02d594606ed558595fbb93eaf1b",
+      "previousSha256": "480316de8bf91a69c5bd9d5a12ec8e3ddcb7cc41a9baeaf8d1eb2ee873c25c94",
+      "unchanged": false
+    },
+    {
+      "id": "U09",
+      "distance": 42195,
+      "readiness": "developing",
+      "track": null,
+      "sha256": "f6818dea907652b5d46c6d3be0bdf5dbc2628a5cc6dbe82a08c57cac54953ca3",
+      "previousSha256": "f6818dea907652b5d46c6d3be0bdf5dbc2628a5cc6dbe82a08c57cac54953ca3",
+      "unchanged": true
+    },
+    {
+      "id": "U10",
+      "distance": 42195,
+      "readiness": "experienced",
+      "track": null,
+      "sha256": "48ce521049aacf0973de42c18b3b6ce0e4dac92a43b120b85284745339fb4380",
+      "previousSha256": "48ce521049aacf0973de42c18b3b6ce0e4dac92a43b120b85284745339fb4380",
+      "unchanged": true
+    }
+  ],
+  "grid": {
+    "scenarios": 240,
+    "weeks": 4080,
+    "sessions": 4842,
+    "failures": 0,
+    "maxLoadToEnvelope": 1.046,
+    "maxRpRestSec": 90,
+    "maxTRestSec": 90
+  }
+}

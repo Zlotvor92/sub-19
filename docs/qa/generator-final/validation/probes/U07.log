@@ -1,0 +1,133 @@
+{
+  "id": "U07",
+  "sourceEvidenceSha256": "98a4c2c5bf651d614675ee9b8934809e5ee89e9c70b96064e32332c2976109c4",
+  "sourceUnchanged": true,
+  "raw": {
+    "old": {
+      "weeks": 16,
+      "days": 112,
+      "runningDays": 64,
+      "sessionCount": 23,
+      "predRows": 23,
+      "qsEntries": 20,
+      "activationMeasurementDisabled": true,
+      "failures": [],
+      "afterLongRunCount": 15,
+      "afterLongRunQuality": 0,
+      "afterLongRunStrides": 13
+    },
+    "new": {
+      "weeks": 16,
+      "days": 112,
+      "runningDays": 64,
+      "sessionCount": 19,
+      "predRows": 19,
+      "qsEntries": 17,
+      "activationMeasurementDisabled": true,
+      "failures": [],
+      "afterLongRunCount": 15,
+      "afterLongRunQuality": 0,
+      "afterLongRunStrides": 13
+    }
+  },
+  "events": {
+    "primary": {
+      "old": {
+        "weeks": 16,
+        "days": 112,
+        "predRows": 16,
+        "qsEntries": 13,
+        "protectedDays": 45,
+        "editableDays": 67,
+        "editableSessions": 7,
+        "failures": [],
+        "inputPure": true,
+        "analysisMatchesFrozen": true,
+        "preservationFailures": {
+          "changedProtectedDays": [],
+          "changedProtectedRows": [],
+          "changedProtectedQs": [],
+          "measuredRowsChanged": [],
+          "changedDates": []
+        },
+        "consistentWeeks": 0,
+        "breakWeeks": 0
+      },
+      "new": {
+        "weeks": 16,
+        "days": 112,
+        "predRows": 15,
+        "qsEntries": 12,
+        "protectedDays": 45,
+        "editableDays": 67,
+        "editableSessions": 6,
+        "failures": [],
+        "inputPure": true,
+        "analysisMatchesFrozen": true,
+        "preservationFailures": {
+          "changedProtectedDays": [],
+          "changedProtectedRows": [],
+          "changedProtectedQs": [],
+          "measuredRowsChanged": [],
+          "changedDates": []
+        },
+        "consistentWeeks": 12,
+        "breakWeeks": 0
+      }
+    },
+    "protection": {
+      "old": {
+        "weeks": 16,
+        "days": 112,
+        "predRows": 18,
+        "qsEntries": 15,
+        "protectedDays": 49,
+        "editableDays": 63,
+        "editableSessions": 7,
+        "failures": [],
+        "inputPure": true,
+        "analysisMatchesFrozen": true,
+        "preservationFailures": {
+          "changedProtectedDays": [],
+          "changedProtectedRows": [],
+          "changedProtectedQs": [],
+          "measuredRowsChanged": [],
+          "changedDates": []
+        },
+        "consistentWeeks": 0,
+        "breakWeeks": 0
+      },
+      "new": {
+        "weeks": 16,
+        "days": 112,
+        "predRows": 16,
+        "qsEntries": 13,
+        "protectedDays": 49,
+        "editableDays": 63,
+        "editableSessions": 5,
+        "failures": [],
+        "inputPure": true,
+        "analysisMatchesFrozen": true,
+        "preservationFailures": {
+          "changedProtectedDays": [],
+          "changedProtectedRows": [],
+          "changedProtectedQs": [],
+          "measuredRowsChanged": [],
+          "changedDates": []
+        },
+        "consistentWeeks": 12,
+        "breakWeeks": 0
+      }
+    }
+  },
+  "findings": [
+    {
+      "id": "U07-F1",
+      "severity": "low",
+      "status": "open",
+      "topic": "Partial-week focus scope",
+      "evidence": "Both new event cases label W7 Lagano trčanje — bez kvaliteta i ubrzanja, although protected g7d1 contains strides and g7d3 contains 2×800 m. This is accurate only for the remaining future portion; the focus text does not state that scope.",
+      "impact": "Display ambiguity, not prescription or preservation failure."
+    }
+  ]
+}

@@ -1,0 +1,2160 @@
+{
+  "reviewer": "marathon",
+  "blinded": true,
+  "criteriaWeights": {
+    "fit": 20,
+    "quality": 20,
+    "progression": 15,
+    "recovery": 15,
+    "specificity": 10,
+    "taper": 10,
+    "coherence": 10
+  },
+  "plans": [
+    {
+      "profileId": "U01",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 8,
+        "progression": 8,
+        "recovery": 8.5,
+        "specificity": 7,
+        "taper": 8.5,
+        "coherence": 9
+      },
+      "total": 81.25,
+      "weeksReviewed": 12,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "7.3 km; longest non-race run 2.9 km; seven-day structure [1:rw, 2:snaga, 3:rw, 4:rest, 5:rest, 6:rest, 7:rw]. One-minute run/walk and three short runs respect the unconfirmed base; the next Monday follows Sunday without a full rest day."
+        },
+        {
+          "week": 2,
+          "note": "7.7 km; longest non-race run 3 km; seven-day structure [1:rw, 2:snaga, 3:rw, 4:rest, 5:rest, 6:rest, 7:rw]. Double the running interval at near-stable distance is a material time-on-feet change, despite modest weekly km."
+        },
+        {
+          "week": 3,
+          "note": "8.3 km; longest non-race run 3.1 km; seven-day structure [1:rw, 2:snaga, 3:rw, 4:rest, 5:rest, 6:rest, 7:rw]. Three-minute running intervals progress sensibly if tolerated; no quality needed yet."
+        },
+        {
+          "week": 4,
+          "note": "6.1 km; longest non-race run 2.3 km; seven-day structure [1:rw, 2:snaga, 3:rw, 4:rest, 5:rest, 6:rest, 7:rw]. Distance drops but run/walk interval rises to five minutes; a distance deload is not necessarily a running-time deload."
+        },
+        {
+          "week": 5,
+          "note": "9.3 km; longest non-race run 3.5 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Explicit conversational effort, pain-free condition and repeat-run/walk option make the continuous transition reviewable; strides are deferred."
+        },
+        {
+          "week": 6,
+          "note": "9.6 km; longest non-race run 3.8 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. One easy run with strides, another easy run and modest long run; strides need relaxed effort, not a pace test."
+        },
+        {
+          "week": 7,
+          "note": "11 km; longest non-race run 4.1 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Only three minutes of controlled fast work with long jog recoveries is a reasonable first quality exposure."
+        },
+        {
+          "week": 8,
+          "note": "8 km; longest non-race run 3 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. All main runs easy and strides shortened: useful recovery week."
+        },
+        {
+          "week": 9,
+          "note": "11.7 km; longest non-race run 4.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Three one-minute repetitions introduce faster effort conservatively; gradual return above prior build week."
+        },
+        {
+          "week": 10,
+          "note": "12.4 km; longest non-race run 4.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Two 400 m repetitions give about 5.3 minutes of work; modest stimulus suits this novice better than a full competitive session."
+        },
+        {
+          "week": 11,
+          "note": "8 km; longest non-race run 2.9 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Short reference-pace practice and much lower volume preserve freshness; walking recovery is acceptable for this athlete."
+        },
+        {
+          "week": 12,
+          "note": "8 km; longest non-race run 1.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:rest, 6:rest, 7:trka]. Two short shakeouts and rest precede 5 km; race text separates desired 30 minutes from historical 35 minutes and unconfirmed readiness."
+        }
+      ],
+      "strengths": [
+        "Low entry mileage and protected easy build respect beginner continuity.",
+        "Race instructions separate desire, historical reference and readiness.",
+        "Three-run schedule and cutbacks are feasible.",
+        "Continuous-running trial has pain/effort condition and repeat-run/walk fallback."
+      ],
+      "concerns": [
+        {
+          "week": 4,
+          "day": 7,
+          "claim": "Running interval rises during nominal deload; kilometre reduction alone does not show reduced running time.",
+          "severity": "coaching",
+          "evidence": "5 min run / 1 min walk after prior 3 min / 1 min; longest distance drops 3.1 to 2.3 km."
+        },
+        {
+          "week": 12,
+          "day": 7,
+          "claim": "Exact reference race pace is still only a historical estimate; effort-led finish option would improve novice race instructions.",
+          "severity": "coaching",
+          "evidence": "Race prescribes recommended 7:00/km and states readiness unconfirmed."
+        }
+      ],
+      "verdict": "Good conservative beginner block with explicit transition condition; target improvement and continuous-run tolerance still require verification."
+    },
+    {
+      "profileId": "U01",
+      "side": "Y",
+      "criteria": {
+        "fit": 7,
+        "quality": 7.5,
+        "progression": 7,
+        "recovery": 8,
+        "specificity": 7,
+        "taper": 8.5,
+        "coherence": 8
+      },
+      "total": 75.0,
+      "weeksReviewed": 12,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "7.3 km; longest non-race run 2.9 km; seven-day structure [1:rw, 2:snaga, 3:rw, 4:rest, 5:rest, 6:rest, 7:rw]. One-minute run/walk and three short runs respect the unconfirmed base; the next Monday follows Sunday without a full rest day."
+        },
+        {
+          "week": 2,
+          "note": "7.7 km; longest non-race run 3 km; seven-day structure [1:rw, 2:snaga, 3:rw, 4:rest, 5:rest, 6:rest, 7:rw]. Double the running interval at near-stable distance is a material time-on-feet change, despite modest weekly km."
+        },
+        {
+          "week": 3,
+          "note": "8.3 km; longest non-race run 3.1 km; seven-day structure [1:rw, 2:snaga, 3:rw, 4:rest, 5:rest, 6:rest, 7:rw]. Three-minute running intervals progress sensibly if tolerated; no quality needed yet."
+        },
+        {
+          "week": 4,
+          "note": "6.1 km; longest non-race run 2.3 km; seven-day structure [1:rw, 2:snaga, 3:rw, 4:rest, 5:rest, 6:rest, 7:rw]. Distance drops but run/walk interval rises to five minutes; a distance deload is not necessarily a running-time deload."
+        },
+        {
+          "week": 5,
+          "note": "9.3 km; longest non-race run 3.5 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Continuous running and six strides arrive together without a local readiness/repeat instruction; this is the main beginner-fit weakness."
+        },
+        {
+          "week": 6,
+          "note": "9.6 km; longest non-race run 3.8 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. One easy run with strides, another easy run and modest long run; strides need relaxed effort, not a pace test."
+        },
+        {
+          "week": 7,
+          "note": "11 km; longest non-race run 4.1 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Only three minutes of controlled fast work with long jog recoveries is a reasonable first quality exposure."
+        },
+        {
+          "week": 8,
+          "note": "8 km; longest non-race run 3 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. All main runs easy and strides shortened: useful recovery week."
+        },
+        {
+          "week": 9,
+          "note": "11.7 km; longest non-race run 4.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Three one-minute repetitions introduce faster effort conservatively; gradual return above prior build week."
+        },
+        {
+          "week": 10,
+          "note": "12.4 km; longest non-race run 4.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Two 400 m repetitions give about 5.3 minutes of work; modest stimulus suits this novice better than a full competitive session."
+        },
+        {
+          "week": 11,
+          "note": "8 km; longest non-race run 2.9 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Short reference-pace practice and much lower volume preserve freshness; walking recovery is acceptable for this athlete."
+        },
+        {
+          "week": 12,
+          "note": "8 km; longest non-race run 1.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:rest, 6:rest, 7:trka]. Two short shakeouts and rest precede 5 km; race text separates desired 30 minutes from historical 35 minutes and unconfirmed readiness."
+        }
+      ],
+      "strengths": [
+        "Low entry mileage and protected easy build respect beginner continuity.",
+        "Race instructions separate desire, historical reference and readiness.",
+        "Three-run schedule and cutbacks are feasible."
+      ],
+      "concerns": [
+        {
+          "week": 5,
+          "day": 1,
+          "claim": "Continuous running and strides appear without explicit tolerance gate or repeat-step fallback.",
+          "severity": "coaching",
+          "evidence": "Week 4 run/walk 5:1 becomes 2.9 km continuous plus 6 x 20 s strides; presentation omits transition condition."
+        },
+        {
+          "week": 4,
+          "day": 7,
+          "claim": "Nominal deload raises run interval, so reduced distance does not imply reduced running demand.",
+          "severity": "coaching",
+          "evidence": "5:1 run/walk replaces 3:1."
+        }
+      ],
+      "verdict": "Reasonable low-volume beginner block, but continuous transition plus strides needs an explicit tolerance condition before sign-off."
+    },
+    {
+      "profileId": "U02",
+      "side": "X",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 7.5,
+        "progression": 8,
+        "recovery": 8.5,
+        "specificity": 7.5,
+        "taper": 8.5,
+        "coherence": 9
+      },
+      "total": 81.75,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "31.6 km; longest non-race run 10 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Two-and-a-half minutes of controlled fartlek is cautious for some experience; three easy supports include a 10 km long run."
+        },
+        {
+          "week": 2,
+          "note": "32.7 km; longest non-race run 10.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Fartlek work slips to 2.25 minutes while volume grows; acceptable familiarization, not quality progression."
+        },
+        {
+          "week": 3,
+          "note": "34 km; longest non-race run 11.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Three 300 m repetitions with full walking recovery plus roughly 11 minutes threshold introduces two demanding sessions with rest between."
+        },
+        {
+          "week": 4,
+          "note": "24.8 km; longest non-race run 8.4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy-only cutback and brief strides offer genuine recovery."
+        },
+        {
+          "week": 5,
+          "note": "37 km; longest non-race run 12.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 1 km intervals supply only nine minutes with long walking rests; threshold dose is also modest for a four-day athlete."
+        },
+        {
+          "week": 6,
+          "note": "38.5 km; longest non-race run 13.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Five one-minute efforts and 14.5 minutes continuous threshold are varied but the fast stimulus remains small."
+        },
+        {
+          "week": 7,
+          "note": "40.9 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Repeats the two 1 km dose while threshold increases; aerobic long run rises smoothly."
+        },
+        {
+          "week": 8,
+          "note": "29.9 km; longest non-race run 10.6 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback retains frequency and short strides."
+        },
+        {
+          "week": 9,
+          "note": "43 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Pyramid supplies about ten minutes faster work; threshold stays 14 minutes and long run plateaus."
+        },
+        {
+          "week": 10,
+          "note": "43.3 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Seven minutes fartlek and roughly 17.6 minutes threshold; useful endurance dose but little specific 5 km development."
+        },
+        {
+          "week": 11,
+          "note": "42.7 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 1.1 km intervals remain a low dose after eleven weeks; long run stable."
+        },
+        {
+          "week": 12,
+          "note": "31.1 km; longest non-race run 10 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Large easy cutback interrupts accumulated load appropriately."
+        },
+        {
+          "week": 13,
+          "note": "42 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. 2 km at reference 5 km pace with 90 s recovery improves continuity, although dose stays small for sixteen-week performance build."
+        },
+        {
+          "week": 14,
+          "note": "42.7 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Four 600 m intervals are better distributed than two long repeats; threshold trims before taper."
+        },
+        {
+          "week": 15,
+          "note": "23.9 km; longest non-race run 8.7 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Volume almost halves; race-pace touch and short threshold keep intensity without much work."
+        },
+        {
+          "week": 16,
+          "note": "15.5 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Friday 200 m efforts are close to reference race pace, with rest Saturday; activation intent should be explicit."
+        }
+      ],
+      "strengths": [
+        "Current result rather than desired sub-20 goal sets training pace.",
+        "Quality days are separated by rest and long run follows Saturday rest.",
+        "Cutbacks and volume reduction near race are clear."
+      ],
+      "concerns": [
+        {
+          "week": 5,
+          "day": 3,
+          "claim": "Two long repeats deliver a thin aerobic-power stimulus for the established base.",
+          "severity": "coaching",
+          "evidence": "2 x 1000 m at 272 s/km = 9.07 min work, each rest 204 s."
+        },
+        {
+          "week": 13,
+          "day": 3,
+          "claim": "Race-pace rehearsal remains only 2 km after a long performance build.",
+          "severity": "coaching",
+          "evidence": "2 x 1000 m at 285 s/km with 90 s walking rest."
+        }
+      ],
+      "verdict": "Usable moderate 5 km plan; performance dose and repeated small interval sessions could be more purposeful."
+    },
+    {
+      "profileId": "U02",
+      "side": "Y",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 7,
+        "progression": 8,
+        "recovery": 8.5,
+        "specificity": 6.5,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 78.25,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "31.6 km; longest non-race run 10 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Two-and-a-half minutes of controlled fartlek is cautious for some experience; three easy supports include a 10 km long run."
+        },
+        {
+          "week": 2,
+          "note": "32.7 km; longest non-race run 10.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Fartlek work slips to 2.25 minutes while volume grows; acceptable familiarization, not quality progression."
+        },
+        {
+          "week": 3,
+          "note": "34 km; longest non-race run 11.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Three 300 m repetitions with full walking recovery plus roughly 11 minutes threshold introduces two demanding sessions with rest between."
+        },
+        {
+          "week": 4,
+          "note": "24.8 km; longest non-race run 8.4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy-only cutback and brief strides offer genuine recovery."
+        },
+        {
+          "week": 5,
+          "note": "37 km; longest non-race run 12.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 1 km intervals supply only nine minutes with long walking rests; threshold dose is also modest for a four-day athlete."
+        },
+        {
+          "week": 6,
+          "note": "38.5 km; longest non-race run 13.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Five one-minute efforts and 14.5 minutes continuous threshold are varied but the fast stimulus remains small."
+        },
+        {
+          "week": 7,
+          "note": "40.9 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Repeats the two 1 km dose while threshold increases; aerobic long run rises smoothly."
+        },
+        {
+          "week": 8,
+          "note": "29.9 km; longest non-race run 10.6 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback retains frequency and short strides."
+        },
+        {
+          "week": 9,
+          "note": "43 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Pyramid supplies about ten minutes faster work; threshold stays 14 minutes and long run plateaus."
+        },
+        {
+          "week": 10,
+          "note": "43.3 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Seven minutes fartlek and roughly 17.6 minutes threshold; useful endurance dose but little specific 5 km development."
+        },
+        {
+          "week": 11,
+          "note": "42.7 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 1.1 km intervals remain a low dose after eleven weeks; long run stable."
+        },
+        {
+          "week": 12,
+          "note": "31.1 km; longest non-race run 10 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Large easy cutback interrupts accumulated load appropriately."
+        },
+        {
+          "week": 13,
+          "note": "42 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Only 2 km at reference 5 km pace with 214 s walking recovery offers weak sustained rehearsal for a trained four-day runner."
+        },
+        {
+          "week": 14,
+          "note": "42.7 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Four 600 m intervals are better distributed than two long repeats; threshold trims before taper."
+        },
+        {
+          "week": 15,
+          "note": "23.9 km; longest non-race run 8.7 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Volume almost halves; race-pace touch and short threshold keep intensity without much work."
+        },
+        {
+          "week": 16,
+          "note": "15.5 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Friday 200 m efforts are close to reference race pace, with rest Saturday; activation intent should be explicit."
+        }
+      ],
+      "strengths": [
+        "Current result rather than desired sub-20 goal sets training pace.",
+        "Quality days are separated by rest and long run follows Saturday rest.",
+        "Cutbacks and volume reduction near race are clear."
+      ],
+      "concerns": [
+        {
+          "week": 13,
+          "day": 3,
+          "claim": "Long walking recovery disrupts already small race-specific dose.",
+          "severity": "coaching",
+          "evidence": "2 x 1000 m at 285 s/km, 214 s walking rest."
+        },
+        {
+          "week": 16,
+          "day": 5,
+          "claim": "Repetition label and current-fitness provenance conflict with race-like activation pace and intent.",
+          "severity": "technical",
+          "evidence": "200 m pace 281 s/km versus race pace 285; zone R and current-fitness source despite near-RP dose."
+        }
+      ],
+      "verdict": "Usable aerobic build, with weaker race-pace continuity and activation clarity; ambitious target remains unverified."
+    },
+    {
+      "profileId": "U03",
+      "side": "X",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6.5,
+        "progression": 7,
+        "recovery": 8.5,
+        "specificity": 6.5,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 73.75,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "51.5 km; longest non-race run 14 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Only 7.9 minutes faster interval work plus 13.2 minutes threshold is low for established 50 km runner."
+        },
+        {
+          "week": 2,
+          "note": "53.6 km; longest non-race run 15.1 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run grows sensibly; compare actual interval work duration rather than the number of named quality days."
+        },
+        {
+          "week": 3,
+          "note": "55.9 km; longest non-race run 16.3 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Full-rest repetitions offer mechanics/speed work; threshold development is the more important sustained component."
+        },
+        {
+          "week": 4,
+          "note": "40.3 km; longest non-race run 12.2 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. All main runs easy, shorter strides and reduced long run provide substantial recovery."
+        },
+        {
+          "week": 5,
+          "note": "51.7 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. 2 x 1200 m supplies 9.5 minutes work and threshold 14 minutes; repeated small doses underserve performance ambition."
+        },
+        {
+          "week": 6,
+          "note": "54.5 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. One-minute fartlek can support aerobic power but it is not interchangeable with sustained race-pace work."
+        },
+        {
+          "week": 7,
+          "note": "56.5 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Volume peaks early; repetition of identical sessions limits later overload."
+        },
+        {
+          "week": 8,
+          "note": "40.2 km; longest non-race run 12.4 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy deload protects repeatability at this athlete's established mileage."
+        },
+        {
+          "week": 9,
+          "note": "51.7 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Pyramid adds variety; long walking rests reduce continuous aerobic demand, especially after short pyramid legs."
+        },
+        {
+          "week": 10,
+          "note": "54.5 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Same fartlek pattern returns and continuous threshold is useful; long run remains stable."
+        },
+        {
+          "week": 11,
+          "note": "56.5 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Another identical long-interval week is safe but adaptation should be checked rather than presumed."
+        },
+        {
+          "week": 12,
+          "note": "40.2 km; longest non-race run 12.4 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback and strides keep a recovery rhythm."
+        },
+        {
+          "week": 13,
+          "note": "51.7 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. 3 km race-pace work with 185 s walks gives modest specificity; threshold reduced appropriately."
+        },
+        {
+          "week": 14,
+          "note": "54.5 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Shorter intervals add specificity; lower threshold supports freshness approaching taper."
+        },
+        {
+          "week": 15,
+          "note": "34.7 km; longest non-race run 9.9 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Volume reduction and tiny race-pace dose are appropriate; five-day frequency retained until race week."
+        },
+        {
+          "week": 16,
+          "note": "15.5 km; longest non-race run 4.5 km; seven-day structure [1:rest, 2:lako, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Two shakeouts, Friday 200 m touch and Saturday rest; race target is aspirational and reference pace stays unchanged."
+        }
+      ],
+      "strengths": [
+        "Established base is maintained without a large mileage escalation.",
+        "Two complementary workouts are spaced across the week.",
+        "Easy deloads and race week preserve recovery."
+      ],
+      "concerns": [
+        {
+          "week": 5,
+          "day": 2,
+          "claim": "Repeated sub-ten-minute interval sessions underserve an experienced 50 km athlete seeking 5 km improvement.",
+          "severity": "coaching",
+          "evidence": "2 x 1200 m at 237 s/km = 9.48 min; same at weeks 7 and 11."
+        },
+        {
+          "week": 13,
+          "day": 2,
+          "claim": "Limited race work and lengthy walking recovery reduce 5 km specificity.",
+          "severity": "coaching",
+          "evidence": "3 x 1000 m at 247 s/km with 185 s walking rest."
+        }
+      ],
+      "verdict": "Safe maintenance-leaning structure underserves established experience and performance specificity."
+    },
+    {
+      "profileId": "U03",
+      "side": "Y",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 8.5,
+        "progression": 8,
+        "recovery": 8,
+        "specificity": 8.5,
+        "taper": 8.5,
+        "coherence": 9
+      },
+      "total": 84.0,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "52.8 km; longest non-race run 14 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. 3 x 1 km provides 11.8 minutes work and threshold 14 minutes: useful moderate starting dose with experience."
+        },
+        {
+          "week": 2,
+          "note": "53.6 km; longest non-race run 15.1 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run grows sensibly; compare actual interval work duration rather than the number of named quality days."
+        },
+        {
+          "week": 3,
+          "note": "55.9 km; longest non-race run 16.3 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Full-rest repetitions offer mechanics/speed work; threshold development is the more important sustained component."
+        },
+        {
+          "week": 4,
+          "note": "40.3 km; longest non-race run 12.2 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. All main runs easy, shorter strides and reduced long run provide substantial recovery."
+        },
+        {
+          "week": 5,
+          "note": "51.7 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. 3 x 1200 m supplies 14.2 minutes work and 3 x 1600 m threshold supplies 21 minutes; better fit for established experience."
+        },
+        {
+          "week": 6,
+          "note": "54.5 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. One-minute fartlek can support aerobic power but it is not interchangeable with sustained race-pace work."
+        },
+        {
+          "week": 7,
+          "note": "56.7 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Volume peaks early; repetition of identical sessions limits later overload."
+        },
+        {
+          "week": 8,
+          "note": "40.2 km; longest non-race run 12.4 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy deload protects repeatability at this athlete's established mileage."
+        },
+        {
+          "week": 9,
+          "note": "51.7 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Pyramid adds variety; long walking rests reduce continuous aerobic demand, especially after short pyramid legs."
+        },
+        {
+          "week": 10,
+          "note": "54.5 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Same fartlek pattern returns and continuous threshold is useful; long run remains stable."
+        },
+        {
+          "week": 11,
+          "note": "56.7 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Another identical long-interval week is safe but adaptation should be checked rather than presumed."
+        },
+        {
+          "week": 12,
+          "note": "40.2 km; longest non-race run 12.4 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback and strides keep a recovery rhythm."
+        },
+        {
+          "week": 13,
+          "note": "51.7 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. 4 km race-pace work with 90 s walks is a more meaningful 5 km rehearsal; threshold 13.2 minutes supports it."
+        },
+        {
+          "week": 14,
+          "note": "54.5 km; longest non-race run 16.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Shorter intervals add specificity; lower threshold supports freshness approaching taper."
+        },
+        {
+          "week": 15,
+          "note": "34.7 km; longest non-race run 9.9 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Volume reduction and tiny race-pace dose are appropriate; five-day frequency retained until race week."
+        },
+        {
+          "week": 16,
+          "note": "15.5 km; longest non-race run 4.5 km; seven-day structure [1:rest, 2:lako, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Two shakeouts, Friday 200 m touch and Saturday rest; race target is aspirational and reference pace stays unchanged."
+        }
+      ],
+      "strengths": [
+        "Established base is maintained without a large mileage escalation.",
+        "Two complementary workouts are spaced across the week.",
+        "Easy deloads and race week preserve recovery.",
+        "Quality dosage and recovery provide meaningful sustained event-specific work."
+      ],
+      "concerns": [
+        {
+          "week": 9,
+          "day": 2,
+          "claim": "Fixed long pyramid recovery over-recovers short opening and closing legs; benefit depends on purpose.",
+          "severity": "coaching",
+          "evidence": "400-800-1200-800-400 m at 237 s/km, 213 s rest after every leg."
+        },
+        {
+          "week": 11,
+          "day": 2,
+          "claim": "Repeated template lacks a feedback-based progression check for the ambitious target.",
+          "severity": "coaching",
+          "evidence": "3 x 1200 m and 3 x 1600 m recur across weeks 5,7,11."
+        }
+      ],
+      "verdict": "Good performance-oriented 5 km structure for the stated base, with sensible recovery; target still needs a new fitness check."
+    },
+    {
+      "profileId": "U04",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 6.5,
+        "progression": 8,
+        "recovery": 8,
+        "specificity": 6.5,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 75.5,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "27 km; longest non-race run 8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. No quality experience: short controlled fartlek is a sensible entry despite the large warm-up/cooldown share."
+        },
+        {
+          "week": 2,
+          "note": "28.1 km; longest non-race run 8.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Three minutes faster running and gradual long run increase establish tolerance."
+        },
+        {
+          "week": 3,
+          "note": "29.5 km; longest non-race run 9.2 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:tempo, 6:rest, 7:lr]. Two tempo sessions contain only 5.8 and 3.7 minutes at threshold: easy endurance with touches, not two substantial thresholds."
+        },
+        {
+          "week": 4,
+          "note": "22.2 km; longest non-race run 6.6 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Two-minute tempo touch during cutback is harmless when controlled; recovery effect comes mostly from lower distance."
+        },
+        {
+          "week": 5,
+          "note": "32.7 km; longest non-race run 9.9 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 800 m intervals and two 700 m threshold repeats remain small; load is spaced Wednesday/Friday/Sunday."
+        },
+        {
+          "week": 6,
+          "note": "34.5 km; longest non-race run 10.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Threshold continuous work rises to about 15.8 minutes after much shorter earlier exposures; check response."
+        },
+        {
+          "week": 7,
+          "note": "35.9 km; longest non-race run 11.4 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 800 m intervals repeat while threshold lengthens; aerobic volume builds."
+        },
+        {
+          "week": 8,
+          "note": "26.5 km; longest non-race run 8.5 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy-only cutback is useful before the next block."
+        },
+        {
+          "week": 9,
+          "note": "39 km; longest non-race run 12.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Pyramid and 14.7-minute threshold are more useful doses; long run rises without a sudden step."
+        },
+        {
+          "week": 10,
+          "note": "40.3 km; longest non-race run 13.2 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Fartlek plus near-18-minute threshold is a coherent mixed week."
+        },
+        {
+          "week": 11,
+          "note": "42.6 km; longest non-race run 14.2 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 1 km intervals still provide only 9.5 minutes of faster work; long run remains easy."
+        },
+        {
+          "week": 12,
+          "note": "32 km; longest non-race run 10.4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy deload makes the return to larger long runs more manageable."
+        },
+        {
+          "week": 13,
+          "note": "42.2 km; longest non-race run 15.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Only 2 km race pace interrupted by 233 s walks; final-third threshold 2.4 km is correctly counted as about 12.6 minutes."
+        },
+        {
+          "week": 14,
+          "note": "43.8 km; longest non-race run 16.2 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. 2 x 1200 m reference race pace with four-minute walking rest is weak 10 km-specific rehearsal despite large easy long run."
+        },
+        {
+          "week": 15,
+          "note": "28 km; longest non-race run 10.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Much lower volume and shorter race-specific work reduce load; threshold still about twelve minutes."
+        },
+        {
+          "week": 16,
+          "note": "20.5 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Two shakeouts and short Friday touch; avoid interpreting the 51:53 projection from a 5 km PB as a demonstrated 10 km result."
+        }
+      ],
+      "strengths": [
+        "Short controlled initial quality is suitable for no quality experience.",
+        "Long runs and overall volume build gradually with cutbacks.",
+        "Desired goal and 5 km-derived reference are distinguished."
+      ],
+      "concerns": [
+        {
+          "week": 3,
+          "day": 5,
+          "claim": "A second threshold-labelled day has only a brief touch; label exaggerates substantive quality.",
+          "severity": "coaching",
+          "evidence": "0.7 km at 316 s/km = 3.69 min after 3.1 km warm-up and before 2.7 km cooldown."
+        },
+        {
+          "week": 14,
+          "day": 3,
+          "claim": "Long walking recovery makes short reference-pace session weak 10 km rehearsal.",
+          "severity": "coaching",
+          "evidence": "2 x 1200 m at 311 s/km with 240 s walking rest."
+        }
+      ],
+      "verdict": "Good aerobic introduction to quality, but lengthy race-pace recovery weakens 10 km-specific development."
+    },
+    {
+      "profileId": "U04",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 7,
+        "progression": 8,
+        "recovery": 8,
+        "specificity": 7.5,
+        "taper": 8.5,
+        "coherence": 8.5
+      },
+      "total": 78.5,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "27 km; longest non-race run 8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. No quality experience: short controlled fartlek is a sensible entry despite the large warm-up/cooldown share."
+        },
+        {
+          "week": 2,
+          "note": "28.1 km; longest non-race run 8.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Three minutes faster running and gradual long run increase establish tolerance."
+        },
+        {
+          "week": 3,
+          "note": "29.5 km; longest non-race run 9.2 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:tempo, 6:rest, 7:lr]. Two tempo sessions contain only 5.8 and 3.7 minutes at threshold: easy endurance with touches, not two substantial thresholds."
+        },
+        {
+          "week": 4,
+          "note": "22.2 km; longest non-race run 6.6 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Two-minute tempo touch during cutback is harmless when controlled; recovery effect comes mostly from lower distance."
+        },
+        {
+          "week": 5,
+          "note": "32.7 km; longest non-race run 9.9 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 800 m intervals and two 700 m threshold repeats remain small; load is spaced Wednesday/Friday/Sunday."
+        },
+        {
+          "week": 6,
+          "note": "34.5 km; longest non-race run 10.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Threshold continuous work rises to about 15.8 minutes after much shorter earlier exposures; check response."
+        },
+        {
+          "week": 7,
+          "note": "35.9 km; longest non-race run 11.4 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 800 m intervals repeat while threshold lengthens; aerobic volume builds."
+        },
+        {
+          "week": 8,
+          "note": "26.5 km; longest non-race run 8.5 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy-only cutback is useful before the next block."
+        },
+        {
+          "week": 9,
+          "note": "39 km; longest non-race run 12.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Pyramid and 14.7-minute threshold are more useful doses; long run rises without a sudden step."
+        },
+        {
+          "week": 10,
+          "note": "40.3 km; longest non-race run 13.2 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Fartlek plus near-18-minute threshold is a coherent mixed week."
+        },
+        {
+          "week": 11,
+          "note": "42.6 km; longest non-race run 14.2 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two 1 km intervals still provide only 9.5 minutes of faster work; long run remains easy."
+        },
+        {
+          "week": 12,
+          "note": "32 km; longest non-race run 10.4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy deload makes the return to larger long runs more manageable."
+        },
+        {
+          "week": 13,
+          "note": "42.2 km; longest non-race run 15.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. 2 km race pace with 60 s walks preserves more continuity; progressive threshold is final 2.4 km only."
+        },
+        {
+          "week": 14,
+          "note": "43.8 km; longest non-race run 16.2 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. 2 x 1200 m reference race pace with one-minute walking rest improves 10 km specificity, still a modest total dose."
+        },
+        {
+          "week": 15,
+          "note": "28 km; longest non-race run 10.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Much lower volume and shorter race-specific work reduce load; threshold still about twelve minutes."
+        },
+        {
+          "week": 16,
+          "note": "20.5 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Two shakeouts and short Friday touch; avoid interpreting the 51:53 projection from a 5 km PB as a demonstrated 10 km result."
+        }
+      ],
+      "strengths": [
+        "Short controlled initial quality is suitable for no quality experience.",
+        "Long runs and overall volume build gradually with cutbacks.",
+        "Desired goal and 5 km-derived reference are distinguished."
+      ],
+      "concerns": [
+        {
+          "week": 3,
+          "day": 5,
+          "claim": "Second threshold-labelled day is a short touch rather than meaningful threshold training.",
+          "severity": "coaching",
+          "evidence": "0.7 km work, about 3.7 min, in 6.5 km session."
+        },
+        {
+          "week": 14,
+          "day": 7,
+          "claim": "Peak long run is high relative to 10 km event and requires individualized fatigue assessment.",
+          "severity": "coaching",
+          "evidence": "16.2 km at 388 s/km, about 105 min; no fatigue history supplied."
+        }
+      ],
+      "verdict": "Usable gradual 10 km build with better race-pace continuity; some early tempo labels describe brief touches."
+    },
+    {
+      "profileId": "U05",
+      "side": "X",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 8,
+        "progression": 8,
+        "recovery": 8,
+        "specificity": 8.5,
+        "taper": 8.5,
+        "coherence": 9
+      },
+      "total": 83.0,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "47.5 km; longest non-race run 14 km; seven-day structure [1:lako, 2:tempo, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. About 12 minutes broken threshold and 7.4 minutes continuous threshold offer restrained opening doses for experience."
+        },
+        {
+          "week": 2,
+          "note": "50.1 km; longest non-race run 15.1 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Intervals and continuous threshold alternate demands with easy Wednesday and Saturday rest."
+        },
+        {
+          "week": 3,
+          "note": "51.8 km; longest non-race run 16.3 km; seven-day structure [1:lako, 2:tempo, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Two separated threshold sessions can be legitimate, but their combined duration matters more than two labels."
+        },
+        {
+          "week": 4,
+          "note": "38.8 km; longest non-race run 11.9 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. All main work easy and shorter long run reduce fatigue."
+        },
+        {
+          "week": 5,
+          "note": "55.8 km; longest non-race run 17.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long intervals plus threshold offer complementary 10 km stimulus; walking recoveries remain generous."
+        },
+        {
+          "week": 6,
+          "note": "58.9 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Fartlek and approximately twenty minutes threshold develop fitness; longest run reaches its plateau."
+        },
+        {
+          "week": 7,
+          "note": "61.7 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Volume rises while long run stays 18.5 km; quality session dose should progress rather than add only easy kilometres."
+        },
+        {
+          "week": 8,
+          "note": "46.2 km; longest non-race run 13.7 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback keeps five-run routine."
+        },
+        {
+          "week": 9,
+          "note": "65.5 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Pyramid variety does not compensate for too little total work; full rest on short legs is conservative."
+        },
+        {
+          "week": 10,
+          "note": "68.9 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Largest week has sustained threshold and faster fartlek; assess accumulated fatigue from growing easy mileage."
+        },
+        {
+          "week": 11,
+          "note": "67.2 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. 4 x 1200 m gives nearly twenty minutes faster work; threshold remains 18.4 minutes, a meaningful but manageable pair."
+        },
+        {
+          "week": 12,
+          "note": "50.4 km; longest non-race run 13.6 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback relieves the peak-volume block."
+        },
+        {
+          "week": 13,
+          "note": "65.8 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. 4 x 1200 m race pace with one-minute rests supplies 21.6 minutes work; progressive final 4.4 km threshold about 20.2 minutes."
+        },
+        {
+          "week": 14,
+          "note": "67.8 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Race-specific work plus sustained threshold is appropriate before taper when tolerated."
+        },
+        {
+          "week": 15,
+          "note": "40.9 km; longest non-race run 12 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Volume near sixty percent of peak and short race-pace stimulus support taper; threshold remains around fifteen minutes."
+        },
+        {
+          "week": 16,
+          "note": "20.5 km; longest non-race run 4.5 km; seven-day structure [1:rest, 2:lako, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Friday touch is near race pace; current 45-minute reference is distinguished from 42-minute desire."
+        }
+      ],
+      "strengths": [
+        "Consistent five-day schedule and genuine easy cutbacks.",
+        "Reference pace safeguards against unsupported 42-minute training target.",
+        "Aerobic long runs provide solid 10 km endurance support.",
+        "Quality dosage and recovery provide meaningful sustained event-specific work."
+      ],
+      "concerns": [
+        {
+          "week": 9,
+          "day": 2,
+          "claim": "Fixed long recovery on short pyramid legs softens the aerobic stimulus.",
+          "severity": "coaching",
+          "evidence": "400-800-1200-800-400 m, 224 s walking rest after each."
+        },
+        {
+          "week": 10,
+          "day": 1,
+          "claim": "Mileage rises substantially over initial base with little feedback-based modification instruction.",
+          "severity": "coaching",
+          "evidence": "68.9 km peak versus 45 km reported, across five days."
+        }
+      ],
+      "verdict": "Good 10 km development plan for experience, with meaningful race rehearsal and manageable recovery structure."
+    },
+    {
+      "profileId": "U05",
+      "side": "Y",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6.5,
+        "progression": 7.5,
+        "recovery": 8.5,
+        "specificity": 6.5,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 74.5,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "47.5 km; longest non-race run 14 km; seven-day structure [1:lako, 2:tempo, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Only 6.4 and 5.5 minutes threshold are marginal performance sessions for established 45 km runner."
+        },
+        {
+          "week": 2,
+          "note": "49.2 km; longest non-race run 15.1 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Intervals and continuous threshold alternate demands with easy Wednesday and Saturday rest."
+        },
+        {
+          "week": 3,
+          "note": "52.1 km; longest non-race run 16.3 km; seven-day structure [1:lako, 2:tempo, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Two separated threshold sessions can be legitimate, but their combined duration matters more than two labels."
+        },
+        {
+          "week": 4,
+          "note": "39.1 km; longest non-race run 12 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. All main work easy and shorter long run reduce fatigue."
+        },
+        {
+          "week": 5,
+          "note": "55.8 km; longest non-race run 17.6 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long intervals plus threshold offer complementary 10 km stimulus; walking recoveries remain generous."
+        },
+        {
+          "week": 6,
+          "note": "58.9 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Fartlek and approximately twenty minutes threshold develop fitness; longest run reaches its plateau."
+        },
+        {
+          "week": 7,
+          "note": "62.1 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Volume rises while long run stays 18.5 km; quality session dose should progress rather than add only easy kilometres."
+        },
+        {
+          "week": 8,
+          "note": "46.6 km; longest non-race run 13.8 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback keeps five-run routine."
+        },
+        {
+          "week": 9,
+          "note": "65.1 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Pyramid variety does not compensate for too little total work; full rest on short legs is conservative."
+        },
+        {
+          "week": 10,
+          "note": "68.2 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Largest week has sustained threshold and faster fartlek; assess accumulated fatigue from growing easy mileage."
+        },
+        {
+          "week": 11,
+          "note": "65.2 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Interval work falls back to 2 x 1200 m, about ten minutes, despite a 65 km week; easy volume substitutes for quality progression."
+        },
+        {
+          "week": 12,
+          "note": "48.9 km; longest non-race run 13.2 km; seven-day structure [1:lako, 2:lako, 3:lako, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback relieves the peak-volume block."
+        },
+        {
+          "week": 13,
+          "note": "65.6 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. 3 x 1200 m race pace with four-minute walks supplies 16.2 minutes work; final 3.93 km threshold about 18.1 minutes, not the full progression."
+        },
+        {
+          "week": 14,
+          "note": "65.9 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Race-specific work plus sustained threshold is appropriate before taper when tolerated."
+        },
+        {
+          "week": 15,
+          "note": "40.9 km; longest non-race run 12 km; seven-day structure [1:lako, 2:int, 3:lako, 4:snaga, 5:tempo, 6:rest, 7:lr]. Volume near sixty percent of peak and short race-pace stimulus support taper; threshold remains around fifteen minutes."
+        },
+        {
+          "week": 16,
+          "note": "20.5 km; longest non-race run 4.5 km; seven-day structure [1:rest, 2:lako, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Friday touch is near race pace; current 45-minute reference is distinguished from 42-minute desire."
+        }
+      ],
+      "strengths": [
+        "Consistent five-day schedule and genuine easy cutbacks.",
+        "Reference pace safeguards against unsupported 42-minute training target.",
+        "Aerobic long runs provide solid 10 km endurance support."
+      ],
+      "concerns": [
+        {
+          "week": 1,
+          "day": 2,
+          "claim": "Threshold dose is disproportionately small for established experience.",
+          "severity": "coaching",
+          "evidence": "2 x 700 m at 276 s/km = 6.44 min; second threshold is only 1.2 km."
+        },
+        {
+          "week": 11,
+          "day": 2,
+          "claim": "Quality dose retreats despite high weekly mileage.",
+          "severity": "coaching",
+          "evidence": "2 x 1200 m = 9.96 min faster work inside 65.2 km week."
+        },
+        {
+          "week": 14,
+          "day": 2,
+          "claim": "Short race work with four-minute walks is weak 10 km-specific rehearsal.",
+          "severity": "coaching",
+          "evidence": "2 x 1600 m at 270 s/km = 14.4 min, 240 s rest."
+        }
+      ],
+      "verdict": "Adequate endurance plan but restrained quality and prolonged race-pace recovery underserve the experienced performance goal."
+    },
+    {
+      "profileId": "U06",
+      "side": "X",
+      "criteria": {
+        "fit": 6.5,
+        "quality": 5.5,
+        "progression": 7,
+        "recovery": 8.5,
+        "specificity": 5,
+        "taper": 8.5,
+        "coherence": 6.5
+      },
+      "total": 67.25,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "10.2 km; longest non-race run 4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Three easy return runs include six strides and precise pace from year-old PB; absent local effort override weakens return control."
+        },
+        {
+          "week": 2,
+          "note": "10.4 km; longest non-race run 4.2 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Minimal volume rise supports return; precision of pace must remain subordinate to conversational effort."
+        },
+        {
+          "week": 3,
+          "note": "10.8 km; longest non-race run 4.4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Third easy return week is appropriate but does not by itself confirm readiness for intensity."
+        },
+        {
+          "week": 4,
+          "note": "8.1 km; longest non-race run 3.2 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Easy cutback before quality is reasonable; strides still require tolerance."
+        },
+        {
+          "week": 5,
+          "note": "12.7 km; longest non-race run 4.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Fartlek starts on calendar after three easy weeks, with old 5:40/km pace and only generic pre-quality fitness warning."
+        },
+        {
+          "week": 6,
+          "note": "13.1 km; longest non-race run 4.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Same total three-minute work with longer bouts is a small progression."
+        },
+        {
+          "week": 7,
+          "note": "13.5 km; longest non-race run 5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Faster 90-second bouts provide only 4.5 minutes work but historical pace may be inappropriate without validation."
+        },
+        {
+          "week": 8,
+          "note": "10.2 km; longest non-race run 4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Easy cutback helps return consistency."
+        },
+        {
+          "week": 9,
+          "note": "14.5 km; longest non-race run 5.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Two 500 m intervals are only five minutes work; no need to chase stale pace."
+        },
+        {
+          "week": 10,
+          "note": "15.3 km; longest non-race run 5.7 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:rest, 6:rest, 7:lr]. Continuous threshold is only 6.8 minutes; base rebuilding remains the main adaptation."
+        },
+        {
+          "week": 11,
+          "note": "16.5 km; longest non-race run 6.1 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Six minutes faster work and 6.1 km long run: modest exposure rather than full 10 km preparation."
+        },
+        {
+          "week": 12,
+          "note": "12.3 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Half fartlek dose during cutback; effort-led control remains essential."
+        },
+        {
+          "week": 13,
+          "note": "16 km; longest non-race run 6.4 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:rest, 6:rest, 7:lr]. Only final 1.5 km of progression is faster, around 8.5 minutes; longest run just 6.4 km."
+        },
+        {
+          "week": 14,
+          "note": "18.2 km; longest non-race run 6.7 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. 2 km at desired 60-minute race pace with four-minute walks; 6.7 km longest run and stale PB cannot validate 10 km readiness."
+        },
+        {
+          "week": 15,
+          "note": "10.9 km; longest non-race run 4.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Volume falls with brief race-pace practice; suitable freshness for cautious return block."
+        },
+        {
+          "week": 16,
+          "note": "14.4 km; longest non-race run 2.2 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:rest, 6:rest, 7:trka]. 10 km scheduled after two shakeouts; readiness caveat is essential and faster historical result cannot prove present endurance."
+        }
+      ],
+      "strengths": [
+        "Entry mileage is reduced after the eight-week break.",
+        "Quality work doses are small and recovery days ample.",
+        "Presentation acknowledges stale result and unconfirmed endurance."
+      ],
+      "concerns": [
+        {
+          "week": 1,
+          "day": 1,
+          "claim": "Year-old PB after eight weeks off is prescribed precisely without local effort override; introductory strides also assume tolerance.",
+          "severity": "coaching",
+          "evidence": "6:47/km plus 6 x 20 s strides on first return day; 2025-10-12 PB."
+        },
+        {
+          "week": 5,
+          "day": 3,
+          "claim": "Calendar introduction of quality lacks a concrete readiness condition.",
+          "severity": "coaching",
+          "evidence": "4 x 45 s at 5:40/km after generic three easy return weeks."
+        },
+        {
+          "week": 14,
+          "day": 7,
+          "claim": "Durability and current fitness remain insufficiently tested for the 10 km race.",
+          "severity": "coaching",
+          "evidence": "Longest planned run 6.7 km, peak 18.2 km/week, old PB."
+        }
+      ],
+      "verdict": "Return block has sensible volume but needs explicit effort-led pacing and readiness gates before historical-pace quality."
+    },
+    {
+      "profileId": "U06",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 7,
+        "progression": 7.5,
+        "recovery": 9,
+        "specificity": 6.5,
+        "taper": 8.5,
+        "coherence": 8.5
+      },
+      "total": 78.25,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "10.2 km; longest non-race run 4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. No initial strides; each easy run explicitly 3-4/10 conversational with historical pace an upper guide, a strong return instruction."
+        },
+        {
+          "week": 2,
+          "note": "10.4 km; longest non-race run 4.2 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Minimal volume rise supports return; precision of pace must remain subordinate to conversational effort."
+        },
+        {
+          "week": 3,
+          "note": "10.8 km; longest non-race run 4.4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Third easy return week is appropriate but does not by itself confirm readiness for intensity."
+        },
+        {
+          "week": 4,
+          "note": "8.1 km; longest non-race run 3.2 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Easy cutback before quality is reasonable; strides still require tolerance."
+        },
+        {
+          "week": 5,
+          "note": "12.7 km; longest non-race run 4.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Fartlek introduced conditionally through logged tolerance, easy-run effort and recent validation; 75%, pain and 90-day cutoffs are operational rules, not universal physiology."
+        },
+        {
+          "week": 6,
+          "note": "13.1 km; longest non-race run 4.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Same total three-minute work with longer bouts is a small progression."
+        },
+        {
+          "week": 7,
+          "note": "13.5 km; longest non-race run 5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Faster 90-second bouts provide only 4.5 minutes work but historical pace may be inappropriate without validation."
+        },
+        {
+          "week": 8,
+          "note": "10.2 km; longest non-race run 4 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:rest, 6:rest, 7:lr]. Easy cutback helps return consistency."
+        },
+        {
+          "week": 9,
+          "note": "14.5 km; longest non-race run 5.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Two 500 m intervals are only five minutes work; no need to chase stale pace."
+        },
+        {
+          "week": 10,
+          "note": "15.3 km; longest non-race run 5.7 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:rest, 6:rest, 7:lr]. Continuous threshold is only 6.8 minutes; base rebuilding remains the main adaptation."
+        },
+        {
+          "week": 11,
+          "note": "16.5 km; longest non-race run 6.1 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Six minutes faster work and 6.1 km long run: modest exposure rather than full 10 km preparation."
+        },
+        {
+          "week": 12,
+          "note": "12.3 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Half fartlek dose during cutback; effort-led control remains essential."
+        },
+        {
+          "week": 13,
+          "note": "16 km; longest non-race run 6.4 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:rest, 6:rest, 7:lr]. Only final 1.5 km of progression is faster, around 8.5 minutes; longest run just 6.4 km."
+        },
+        {
+          "week": 14,
+          "note": "18.2 km; longest non-race run 6.7 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. 2 km reference race pace with one-minute walks and 6-7/10 effort override improves coherence; long-run shortfall remains."
+        },
+        {
+          "week": 15,
+          "note": "10.9 km; longest non-race run 4.3 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:rest, 6:rest, 7:lr]. Volume falls with brief race-pace practice; suitable freshness for cautious return block."
+        },
+        {
+          "week": 16,
+          "note": "14.4 km; longest non-race run 2.2 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:rest, 6:rest, 7:trka]. 10 km scheduled after two shakeouts; readiness caveat is essential and faster historical result cannot prove present endurance."
+        }
+      ],
+      "strengths": [
+        "Entry mileage is reduced after the eight-week break.",
+        "Quality work doses are small and recovery days ample.",
+        "Presentation acknowledges stale result and unconfirmed endurance.",
+        "Easy runs are explicitly effort-led and quality introduction conditional on logged tolerance and current validation."
+      ],
+      "concerns": [
+        {
+          "week": 5,
+          "day": 3,
+          "claim": "Operational logged-mileage, pain and result-age rules may seem physiologically definitive.",
+          "severity": "coaching",
+          "evidence": "75% kilometres, pain below 4/10, two weeks and result within 90 days are internal conditions, not validated universal readiness cutoffs."
+        },
+        {
+          "week": 14,
+          "day": 7,
+          "claim": "Effort-led quality improves return control but does not supply missing event endurance.",
+          "severity": "coaching",
+          "evidence": "Longest planned run 6.7 km for 10 km race."
+        },
+        {
+          "week": 16,
+          "day": 1,
+          "claim": "Race-week shakeouts lose the local effort-led historical-pace qualifier.",
+          "severity": "technical",
+          "evidence": "Only 2.2 km shakeout @ 6:47/km is shown, unlike earlier easy days."
+        }
+      ],
+      "verdict": "Good cautious return framework with effort override; this remains limited preparation rather than confirmed 10 km readiness."
+    },
+    {
+      "profileId": "U07",
+      "side": "X",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 8,
+        "progression": 8.5,
+        "recovery": 8,
+        "specificity": 8.5,
+        "taper": 8,
+        "coherence": 9
+      },
+      "total": 83.25,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.2 km; longest non-race run 10 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Cautious familiarization and 10 km long run match reported base."
+        },
+        {
+          "week": 2,
+          "note": "33.8 km; longest non-race run 10.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Work only 2.25 minutes; long run progresses modestly."
+        },
+        {
+          "week": 3,
+          "note": "36 km; longest non-race run 11.6 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:int, 6:rest, 7:lr]. Two quality sessions begin; sustained threshold matters more than simply counting sessions."
+        },
+        {
+          "week": 4,
+          "note": "27.2 km; longest non-race run 8.7 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback retains frequency and short strides."
+        },
+        {
+          "week": 5,
+          "note": "38.7 km; longest non-race run 12.5 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:int, 6:rest, 7:lr]. Threshold 14 minutes and HM work 10.4 minutes with 90 s jog recovery begin specific sustained preparation."
+        },
+        {
+          "week": 6,
+          "note": "40.3 km; longest non-race run 13.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:int, 6:rest, 7:lr]. Complementary faster work can be retained sparingly, but HM practice should become a principal feature."
+        },
+        {
+          "week": 7,
+          "note": "42.5 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:int, 6:rest, 7:lr]. Threshold and race-specific work need meaningful duration; long run reaches 14.5 km."
+        },
+        {
+          "week": 8,
+          "note": "32.3 km; longest non-race run 10.6 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback before the endurance block."
+        },
+        {
+          "week": 9,
+          "note": "45.7 km; longest non-race run 15.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Single 17.6-minute HM session and 96-minute long run make sensible room for endurance rather than insisting on two hard days."
+        },
+        {
+          "week": 10,
+          "note": "47 km; longest non-race run 16.8 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. One 19.1-minute threshold workout leaves recovery room for 104-minute long run; Friday 13.4 km is easy support."
+        },
+        {
+          "week": 11,
+          "note": "49.9 km; longest non-race run 18.1 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Long run 18.1 km gives useful event endurance; race-pace duration should develop alongside it."
+        },
+        {
+          "week": 12,
+          "note": "37.9 km; longest non-race run 13.2 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Cutback should relieve both weekly load and hard work before rehearsal."
+        },
+        {
+          "week": 13,
+          "note": "49.3 km; longest non-race run 19.5 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Controlled 7 km HM rehearsal is explicitly not an all-out test; two following days easy/rest before 19.5 km Sunday."
+        },
+        {
+          "week": 14,
+          "note": "40 km; longest non-race run 16.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Hard work trims to roughly 25.6 minutes plus easy long run; volume drops and pace remains stable."
+        },
+        {
+          "week": 15,
+          "note": "33.2 km; longest non-race run 12.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. HM work 10.4 minutes and threshold 7.5 minutes reduce hard load materially; long run 12.6 km remains moderate."
+        },
+        {
+          "week": 16,
+          "note": "31.6 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Race week has 10.5 km before race and Friday 200 m touch; nutrition practised in long runs should carry into race instructions."
+        }
+      ],
+      "strengths": [
+        "Long runs build from 10 to 19.5 km with cutbacks.",
+        "Controlled HM rehearsal explicitly excludes all-out test interpretation.",
+        "Fuelling practice and race/reference distinction are useful.",
+        "Quality dosage and recovery provide meaningful sustained event-specific work."
+      ],
+      "concerns": [
+        {
+          "week": 5,
+          "day": 5,
+          "claim": "HM work description calls pace target rhythm although it uses slower reference projection.",
+          "severity": "coaching",
+          "evidence": "5:11/km corresponds about 1:49, while desired target is 1:45; global warning mitigates ambiguity."
+        },
+        {
+          "week": 15,
+          "day": 7,
+          "claim": "12.6 km long run and two workouts close to race need individual fatigue control.",
+          "severity": "coaching",
+          "evidence": "Pre-race week 33.2 km, about 78 min long run and 17.9 min quality."
+        }
+      ],
+      "verdict": "Good half-marathon build with sustained specific work, restrained late quality frequency and transparent rehearsal purpose."
+    },
+    {
+      "profileId": "U07",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 6.5,
+        "progression": 7.5,
+        "recovery": 7.5,
+        "specificity": 6.5,
+        "taper": 6.5,
+        "coherence": 8
+      },
+      "total": 72.5,
+      "weeksReviewed": 16,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.2 km; longest non-race run 10 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Cautious familiarization and 10 km long run match reported base."
+        },
+        {
+          "week": 2,
+          "note": "33.8 km; longest non-race run 10.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Work only 2.25 minutes; long run progresses modestly."
+        },
+        {
+          "week": 3,
+          "note": "35.9 km; longest non-race run 11.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Two quality sessions begin; sustained threshold matters more than simply counting sessions."
+        },
+        {
+          "week": 4,
+          "note": "27.2 km; longest non-race run 8.7 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback retains frequency and short strides."
+        },
+        {
+          "week": 5,
+          "note": "38.6 km; longest non-race run 12.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Intervals plus only ten minutes threshold repeat the early generic pattern; HM-specific preparation is deferred."
+        },
+        {
+          "week": 6,
+          "note": "40.1 km; longest non-race run 13.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Complementary faster work can be retained sparingly, but HM practice should become a principal feature."
+        },
+        {
+          "week": 7,
+          "note": "42.6 km; longest non-race run 14.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Threshold and race-specific work need meaningful duration; long run reaches 14.5 km."
+        },
+        {
+          "week": 8,
+          "note": "32.4 km; longest non-race run 10.7 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback before the endurance block."
+        },
+        {
+          "week": 9,
+          "note": "45.7 km; longest non-race run 15.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Another two-800 m interval session plus threshold maintains generic speed emphasis as long-run load grows."
+        },
+        {
+          "week": 10,
+          "note": "47.4 km; longest non-race run 16.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. 2 x 1700 m HM effort has 326 s jog recovery; broken continuity and second threshold session weaken event emphasis."
+        },
+        {
+          "week": 11,
+          "note": "50.2 km; longest non-race run 18.1 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Long run 18.1 km gives useful event endurance; race-pace duration should develop alongside it."
+        },
+        {
+          "week": 12,
+          "note": "38.3 km; longest non-race run 13.3 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Cutback should relieve both weekly load and hard work before rehearsal."
+        },
+        {
+          "week": 13,
+          "note": "49.3 km; longest non-race run 19.5 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Controlled 7 km HM rehearsal is explicitly not an all-out test; two following days easy/rest before 19.5 km Sunday."
+        },
+        {
+          "week": 14,
+          "note": "41.2 km; longest non-race run 15.6 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Hard work around 31.6 minutes and long HM recovery persist during taper; total volume falls but work is not convincingly reduced."
+        },
+        {
+          "week": 15,
+          "note": "34.6 km; longest non-race run 12.6 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:tempo, 6:rest, 7:lr]. Continuous HM work 16.1 minutes plus threshold 12.5 minutes is more hard work than prior low-specificity weeks; taper reduction is modest."
+        },
+        {
+          "week": 16,
+          "note": "31.6 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Race week has 10.5 km before race and Friday 200 m touch; nutrition practised in long runs should carry into race instructions."
+        }
+      ],
+      "strengths": [
+        "Long runs build from 10 to 19.5 km with cutbacks.",
+        "Controlled HM rehearsal explicitly excludes all-out test interpretation.",
+        "Fuelling practice and race/reference distinction are useful."
+      ],
+      "concerns": [
+        {
+          "week": 9,
+          "day": 3,
+          "claim": "Generic small faster sessions persist late into HM build.",
+          "severity": "coaching",
+          "evidence": "2 x 800 m at I repeats in weeks 3,5,7,9; HM practice only starts week 10."
+        },
+        {
+          "week": 10,
+          "day": 3,
+          "claim": "Long jogging recovery weakens HM rhythm continuity.",
+          "severity": "coaching",
+          "evidence": "2 x 1700 m at 311 s/km, 326 s recovery."
+        },
+        {
+          "week": 15,
+          "day": 5,
+          "claim": "Taper retains relatively high hard-work dose.",
+          "severity": "coaching",
+          "evidence": "3.1 km HM = 16.1 min plus 2.5 km threshold = 12.5 min; long run 12.6 km."
+        }
+      ],
+      "verdict": "Aerobic build is usable but late generic emphasis, long HM recoveries and higher taper work reduce coaching adequacy."
+    },
+    {
+      "profileId": "U08",
+      "side": "X",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6.5,
+        "progression": 7.5,
+        "recovery": 7.5,
+        "specificity": 7,
+        "taper": 6.5,
+        "coherence": 8
+      },
+      "total": 72.0,
+      "weeksReviewed": 14,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "53.8 km; longest non-race run 16 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Only 8.8 plus 6.1 minutes threshold with 6.5 km warmup/cooldown each is thin stimulus for experienced 55 km athlete."
+        },
+        {
+          "week": 2,
+          "note": "56.8 km; longest non-race run 17.2 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run around 93 minutes warrants fuelling practice; threshold dosage drives performance fit."
+        },
+        {
+          "week": 3,
+          "note": "61.2 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run grows to 18.5 km; avoid substituting labels for sustained threshold duration."
+        },
+        {
+          "week": 4,
+          "note": "46.6 km; longest non-race run 13.6 km; seven-day structure [1:lako, 2:lako, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Deload lowers long and medium-long distances; optional strength load should remain manageable."
+        },
+        {
+          "week": 5,
+          "note": "63.3 km; longest non-race run 19.9 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Two 1200 m faster repeats and fourteen minutes threshold still resemble short-event maintenance; no HM work yet."
+        },
+        {
+          "week": 6,
+          "note": "68.9 km; longest non-race run 21.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run crosses race distance at easy pace; demanding sessions still need spacing and monitored response."
+        },
+        {
+          "week": 7,
+          "note": "67.9 km; longest non-race run 22 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. 22 km easy long run plus medium-long day supply strong endurance; two quality sessions represent additional load."
+        },
+        {
+          "week": 8,
+          "note": "51.6 km; longest non-race run 15.3 km; seven-day structure [1:lako, 2:lako, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy-only cutback is useful before race-specific finish runs."
+        },
+        {
+          "week": 9,
+          "note": "71.1 km; longest non-race run 22 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. HM work 2 x 2500 m with 284 s jog recovery and fast-finish long run: meaningful long-run specificity, weaker midweek continuity."
+        },
+        {
+          "week": 10,
+          "note": "75.3 km; longest non-race run 22 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Controlled 10 km at HM pace is a 45-minute rehearsal; next day 13.6 km medium-long is sizeable despite easy intensity."
+        },
+        {
+          "week": 11,
+          "note": "71.1 km; longest non-race run 22 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Another 22 km fast-finish long run provides specificity but repeats a demanding endurance exposure."
+        },
+        {
+          "week": 12,
+          "note": "61.7 km; longest non-race run 18.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. 22.5 minutes HM work and 19.3 minutes threshold remain while long run is 18.3 km; hard work is substantial in taper."
+        },
+        {
+          "week": 13,
+          "note": "46.1 km; longest non-race run 14.3 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. 19.4 minutes HM plus 14.5 minutes threshold and 14.3 km long run still load the final pre-race week."
+        },
+        {
+          "week": 14,
+          "note": "31.6 km; longest non-race run 4.5 km; seven-day structure [1:rest, 2:lako, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. 6 km shakeouts plus 4.5 km Friday session precede HM; established base supports endurance, while 5 km projection remains an estimate."
+        }
+      ],
+      "strengths": [
+        "Medium-long and long runs give strong aerobic endurance for an experienced athlete.",
+        "Fast-finish long runs replace Friday quality rather than adding a third major stimulus.",
+        "Controlled rehearsal and fuelling practice are explicit."
+      ],
+      "concerns": [
+        {
+          "week": 1,
+          "day": 2,
+          "claim": "Tiny threshold portions within long warm-up/cooldown sessions underserve the experienced base.",
+          "severity": "coaching",
+          "evidence": "2 km threshold = 8.77 min, second 1.4 km = 6.14 min, each with 6.5 km warm-up/cooldown."
+        },
+        {
+          "week": 9,
+          "day": 2,
+          "claim": "Large recovery in HM repeats interrupts race-specific continuity.",
+          "severity": "coaching",
+          "evidence": "2 x 2500 m at 270 s/km, 284 s jog recovery."
+        },
+        {
+          "week": 12,
+          "day": 5,
+          "claim": "Taper hard work rises after single-workout weeks instead of clearly reducing.",
+          "severity": "coaching",
+          "evidence": "22.5 min HM and 19.3 min threshold plus 18.3 km long run."
+        }
+      ],
+      "verdict": "Strong endurance foundation, but early thin quality and retained taper hard work weaken half-marathon performance fit."
+    },
+    {
+      "profileId": "U08",
+      "side": "Y",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 8.5,
+        "progression": 8.5,
+        "recovery": 8,
+        "specificity": 9,
+        "taper": 8,
+        "coherence": 9
+      },
+      "total": 84.75,
+      "weeksReviewed": 14,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "56.2 km; longest non-race run 16 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Threshold 17.5 plus 13.2 minutes is a sensible experienced-runner starting dose with easy medium-long support."
+        },
+        {
+          "week": 2,
+          "note": "59.2 km; longest non-race run 17.2 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:int, 6:rest, 7:lr]. Long run around 93 minutes warrants fuelling practice; threshold dosage drives performance fit."
+        },
+        {
+          "week": 3,
+          "note": "61.5 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run grows to 18.5 km; avoid substituting labels for sustained threshold duration."
+        },
+        {
+          "week": 4,
+          "note": "46.8 km; longest non-race run 13.4 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Deload lowers long and medium-long distances; optional strength load should remain manageable."
+        },
+        {
+          "week": 5,
+          "note": "66.5 km; longest non-race run 19.9 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:int, 6:rest, 7:lr]. 22.8 minutes threshold plus 16.2 minutes HM work with one-minute jog rests bring event-specific development forward."
+        },
+        {
+          "week": 6,
+          "note": "67.3 km; longest non-race run 21.4 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:int, 6:rest, 7:lr]. Long run crosses race distance at easy pace; demanding sessions still need spacing and monitored response."
+        },
+        {
+          "week": 7,
+          "note": "69.9 km; longest non-race run 22 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:int, 6:rest, 7:lr]. 22 km easy long run plus medium-long day supply strong endurance; two quality sessions represent additional load."
+        },
+        {
+          "week": 8,
+          "note": "53.1 km; longest non-race run 15.7 km; seven-day structure [1:lako, 2:lako, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy-only cutback is useful before race-specific finish runs."
+        },
+        {
+          "week": 9,
+          "note": "70.3 km; longest non-race run 22 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. 21-minute threshold plus fast-finish long run offers complementary sustained stimuli; Friday remains easy."
+        },
+        {
+          "week": 10,
+          "note": "75.3 km; longest non-race run 22 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Controlled 10 km at HM pace is a 45-minute rehearsal; next day 13.6 km medium-long is sizeable despite easy intensity."
+        },
+        {
+          "week": 11,
+          "note": "70.6 km; longest non-race run 22 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Another 22 km fast-finish long run provides specificity but repeats a demanding endurance exposure."
+        },
+        {
+          "week": 12,
+          "note": "61.3 km; longest non-race run 18.7 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. HM work trims to 20.7 minutes and threshold to 13.2 minutes, with 18.7 km long run; clearer work reduction."
+        },
+        {
+          "week": 13,
+          "note": "44 km; longest non-race run 14.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. HM work 13.5 minutes and threshold 7.5 minutes reduce markedly; retained long run needs individualized fatigue check."
+        },
+        {
+          "week": 14,
+          "note": "31.6 km; longest non-race run 4.5 km; seven-day structure [1:rest, 2:lako, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. 6 km shakeouts plus 4.5 km Friday session precede HM; established base supports endurance, while 5 km projection remains an estimate."
+        }
+      ],
+      "strengths": [
+        "Medium-long and long runs give strong aerobic endurance for an experienced athlete.",
+        "Fast-finish long runs replace Friday quality rather than adding a third major stimulus.",
+        "Controlled rehearsal and fuelling practice are explicit.",
+        "Quality dosage and recovery provide meaningful sustained event-specific work."
+      ],
+      "concerns": [
+        {
+          "week": 10,
+          "day": 3,
+          "claim": "Medium-long day immediately after 45-minute HM rehearsal may need a shorter recovery alternative.",
+          "severity": "coaching",
+          "evidence": "13.6 km easy medium-long following 16.5 km session with 10 km HM work."
+        },
+        {
+          "week": 13,
+          "day": 7,
+          "claim": "Substantial long run one week out still merits fatigue-driven adjustment.",
+          "severity": "coaching",
+          "evidence": "14.3 km at 324 s/km = 77.2 min before about 95 min race."
+        }
+      ],
+      "verdict": "Good experienced half-marathon plan with more sustained threshold, early race work and clearer taper reduction."
+    },
+    {
+      "profileId": "U09",
+      "side": "X",
+      "criteria": {
+        "fit": 4.5,
+        "quality": 5,
+        "progression": 4.5,
+        "recovery": 8,
+        "specificity": 2.5,
+        "taper": 7.5,
+        "coherence": 7.5
+      },
+      "total": 55.25,
+      "weeksReviewed": 20,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.4 km; longest non-race run 10 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Gentle four-run start fits 30 km base, but opening capacity is far below final marathon demands."
+        },
+        {
+          "week": 2,
+          "note": "33.9 km; longest non-race run 10.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Long run grows to 10.8 km; total fartlek work remains introductory."
+        },
+        {
+          "week": 3,
+          "note": "32.5 km; longest non-race run 9.7 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Long run retreats before the formal deload; no meaningful endurance progression this week."
+        },
+        {
+          "week": 4,
+          "note": "25.4 km; longest non-race run 8.1 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback follows prior retreat, reducing useful endurance exposure further."
+        },
+        {
+          "week": 5,
+          "note": "36.3 km; longest non-race run 11.4 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 11.4 km long run and about ten minutes threshold: sound base week but still weak marathon specificity."
+        },
+        {
+          "week": 6,
+          "note": "34 km; longest non-race run 10.2 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Long run retreats again while MP session consists of only 2.2 km work with walks."
+        },
+        {
+          "week": 7,
+          "note": "37.6 km; longest non-race run 12.3 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 12.3 km long run restores progression; emphasis still predominantly short threshold."
+        },
+        {
+          "week": 8,
+          "note": "28.8 km; longest non-race run 9.2 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback is recoverable but repeated recovery weeks consume limited preparation time."
+        },
+        {
+          "week": 9,
+          "note": "36.9 km; longest non-race run 11 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Long run drops to 11 km; threshold rises but marathon durability does not."
+        },
+        {
+          "week": 10,
+          "note": "40.7 km; longest non-race run 13.2 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 13.2 km long run and fuelling practice are useful; duration only 79 minutes."
+        },
+        {
+          "week": 11,
+          "note": "44.2 km; longest non-race run 14.2 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 14.2 km long run remains well below the duration required by a four-hour race."
+        },
+        {
+          "week": 12,
+          "note": "33.2 km; longest non-race run 10.6 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy deload is structurally clear; lack of endurance exposure remains unresolved."
+        },
+        {
+          "week": 13,
+          "note": "47.7 km; longest non-race run 15.3 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 15.3 km long run now about 91 minutes; most other volume is easy support rather than sustained marathon work."
+        },
+        {
+          "week": 14,
+          "note": "47.3 km; longest non-race run 16.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. 16.5 km long run plus two short quality sessions; MP work only 2.4 km."
+        },
+        {
+          "week": 15,
+          "note": "45.1 km; longest non-race run 14.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Long run retreats as intervals appear; this reallocates scarce training capacity away from event durability."
+        },
+        {
+          "week": 16,
+          "note": "35.5 km; longest non-race run 10.7 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Another cutback with 10.7 km long run; readiness concern persists."
+        },
+        {
+          "week": 17,
+          "note": "49.1 km; longest non-race run 17.7 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:tempo, 6:rest, 7:lr]. Final peak long run only 17.7 km, around 105 minutes, before three-week race countdown; major preparation gap."
+        },
+        {
+          "week": 18,
+          "note": "39.3 km; longest non-race run 13.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Taper volume falls, but MP work is still only 2.4 km and Thursday/Saturday rest gives recovery."
+        },
+        {
+          "week": 19,
+          "note": "31.9 km; longest non-race run 11.4 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 11.4 km long run and short MP touch lower fatigue; taper cannot create missing endurance."
+        },
+        {
+          "week": 20,
+          "note": "52.7 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Marathon remains scheduled despite insufficient distance-specific preparation; warning and reference pace are transparent but do not establish safe readiness."
+        }
+      ],
+      "strengths": [
+        "Readiness warning clearly admits inadequate marathon long-run preparation.",
+        "No attempt to force desired time through unsafely accelerated training paces.",
+        "Spacing, easy weeks and cutbacks control local workload."
+      ],
+      "concerns": [
+        {
+          "week": 20,
+          "day": 7,
+          "claim": "As a complete marathon preparation plan, delivered endurance is materially inadequate; do not sign off readiness merely because a race is scheduled.",
+          "severity": "critical",
+          "evidence": "Peak 17.7 km/about 105 min at W17; no longer run anywhere before 42.195 km/about 240 min race. Warnings acknowledge the shortfall."
+        },
+        {
+          "week": 17,
+          "day": 3,
+          "claim": "Minimal MP work and repeated short threshold sessions fail to address event durability.",
+          "severity": "coaching",
+          "evidence": "Longest continuous MP work only 2.5 km, about 14.2 min; 49.1 km peak week."
+        },
+        {
+          "week": 18,
+          "day": 5,
+          "claim": "Taper reduces total km but threshold remains comparable to many earlier build sessions.",
+          "severity": "coaching",
+          "evidence": "2 x 1400 m threshold = 13.5 min, retained alongside MP session."
+        }
+      ],
+      "verdict": "Do not approve as complete marathon readiness preparation. Appropriate constrained base work and warnings do not remedy missing long-duration exposure; extend preparation or reassess event choice."
+    },
+    {
+      "profileId": "U09",
+      "side": "Y",
+      "criteria": {
+        "fit": 4.5,
+        "quality": 5,
+        "progression": 4.5,
+        "recovery": 8,
+        "specificity": 2.5,
+        "taper": 7,
+        "coherence": 7
+      },
+      "total": 54.25,
+      "weeksReviewed": 20,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.4 km; longest non-race run 10 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Gentle four-run start fits 30 km base, but opening capacity is far below final marathon demands."
+        },
+        {
+          "week": 2,
+          "note": "33.9 km; longest non-race run 10.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Long run grows to 10.8 km; total fartlek work remains introductory."
+        },
+        {
+          "week": 3,
+          "note": "32.5 km; longest non-race run 9.7 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Long run retreats before the formal deload; no meaningful endurance progression this week."
+        },
+        {
+          "week": 4,
+          "note": "25.4 km; longest non-race run 8.1 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback follows prior retreat, reducing useful endurance exposure further."
+        },
+        {
+          "week": 5,
+          "note": "36.3 km; longest non-race run 11.4 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 11.4 km long run and about ten minutes threshold: sound base week but still weak marathon specificity."
+        },
+        {
+          "week": 6,
+          "note": "34 km; longest non-race run 10.2 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:lako, 6:rest, 7:lr]. Long run retreats again while MP session consists of only 2.2 km work with walks."
+        },
+        {
+          "week": 7,
+          "note": "37.6 km; longest non-race run 12.3 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 12.3 km long run restores progression; emphasis still predominantly short threshold."
+        },
+        {
+          "week": 8,
+          "note": "28.8 km; longest non-race run 9.2 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy cutback is recoverable but repeated recovery weeks consume limited preparation time."
+        },
+        {
+          "week": 9,
+          "note": "36.9 km; longest non-race run 11 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Long run drops to 11 km; threshold rises but marathon durability does not."
+        },
+        {
+          "week": 10,
+          "note": "40.7 km; longest non-race run 13.2 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 13.2 km long run and fuelling practice are useful; duration only 79 minutes."
+        },
+        {
+          "week": 11,
+          "note": "44.2 km; longest non-race run 14.2 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 14.2 km long run remains well below the duration required by a four-hour race."
+        },
+        {
+          "week": 12,
+          "note": "33.2 km; longest non-race run 10.6 km; seven-day structure [1:lako, 2:snaga, 3:lako, 4:rest, 5:lako, 6:rest, 7:lr]. Easy deload is structurally clear; lack of endurance exposure remains unresolved."
+        },
+        {
+          "week": 13,
+          "note": "47.7 km; longest non-race run 15.3 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 15.3 km long run now about 91 minutes; most other volume is easy support rather than sustained marathon work."
+        },
+        {
+          "week": 14,
+          "note": "47.3 km; longest non-race run 16.5 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. 16.5 km long run plus two short quality sessions; MP work only 2.4 km."
+        },
+        {
+          "week": 15,
+          "note": "45.1 km; longest non-race run 14.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Long run retreats as intervals appear; this reallocates scarce training capacity away from event durability."
+        },
+        {
+          "week": 16,
+          "note": "35.5 km; longest non-race run 10.7 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. Another cutback with 10.7 km long run; readiness concern persists."
+        },
+        {
+          "week": 17,
+          "note": "49.1 km; longest non-race run 17.7 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:tempo, 6:rest, 7:lr]. Final peak long run only 17.7 km, around 105 minutes, before three-week race countdown; major preparation gap."
+        },
+        {
+          "week": 18,
+          "note": "39.3 km; longest non-race run 13.8 km; seven-day structure [1:lako, 2:snaga, 3:int, 4:rest, 5:tempo, 6:rest, 7:lr]. Taper volume falls, but MP work is still only 2.4 km and Thursday/Saturday rest gives recovery."
+        },
+        {
+          "week": 19,
+          "note": "31.9 km; longest non-race run 11.4 km; seven-day structure [1:lako, 2:snaga, 3:tempo, 4:rest, 5:lako, 6:rest, 7:lr]. 11.4 km long run and short MP touch lower fatigue; taper cannot create missing endurance."
+        },
+        {
+          "week": 20,
+          "note": "52.7 km; longest non-race run 4.5 km; seven-day structure [1:lako, 2:rest, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Marathon remains scheduled despite insufficient distance-specific preparation; warning and reference pace are transparent but do not establish safe readiness."
+        }
+      ],
+      "strengths": [
+        "Readiness warning clearly admits inadequate marathon long-run preparation.",
+        "No attempt to force desired time through unsafely accelerated training paces.",
+        "Spacing, easy weeks and cutbacks control local workload."
+      ],
+      "concerns": [
+        {
+          "week": 20,
+          "day": 7,
+          "claim": "As a complete marathon preparation plan, delivered endurance is materially inadequate; race scheduling cannot establish readiness.",
+          "severity": "critical",
+          "evidence": "Peak 17.7 km/about 105 min at W17; no longer run anywhere before 42.195 km/about 240 min race. Warnings acknowledge the shortfall."
+        },
+        {
+          "week": 17,
+          "day": 3,
+          "claim": "Minimal marathon work fails to bridge the event-specific preparation gap.",
+          "severity": "coaching",
+          "evidence": "Only 2.5 km continuous MP and repeated 2 x 1400 m threshold; 49.1 km peak."
+        },
+        {
+          "week": 20,
+          "day": 5,
+          "claim": "Activation provenance is inconsistent with race-like pace.",
+          "severity": "technical",
+          "evidence": "6 x 200 m at 337 s/km, marathon reference 341 s/km, marked R/current-fitness."
+        }
+      ],
+      "verdict": "Do not approve as complete marathon readiness preparation. Readiness warnings are useful, but endurance exposure remains materially insufficient; extend preparation or reassess event choice."
+    },
+    {
+      "profileId": "U10",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 7.5,
+        "progression": 7,
+        "recovery": 7,
+        "specificity": 6.5,
+        "taper": 6.5,
+        "coherence": 8.5
+      },
+      "total": 73.5,
+      "weeksReviewed": 20,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "65.1 km; longest non-race run 24 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Reported 24 km long-run base supports substantial opening week; progressive MP segment is final third only."
+        },
+        {
+          "week": 2,
+          "note": "68.9 km; longest non-race run 25.5 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run 25.5 km around 156 minutes; fuelling practice is valuable, with tolerance governing rate."
+        },
+        {
+          "week": 3,
+          "note": "69.5 km; longest non-race run 22.9 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run steps back while threshold builds; better recovery than monotonic long-run growth."
+        },
+        {
+          "week": 4,
+          "note": "54.2 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:lako, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback across run distances provides useful relief."
+        },
+        {
+          "week": 5,
+          "note": "74.9 km; longest non-race run 27 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run rises again and medium-long supports marathon endurance; MP progression still only a short final segment."
+        },
+        {
+          "week": 6,
+          "note": "74.4 km; longest non-race run 24.3 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long-run retreat and longer threshold can balance demands; monitor cumulative hours, not only kilometre changes."
+        },
+        {
+          "week": 7,
+          "note": "80.3 km; longest non-race run 28.5 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Near-three-hour long run plus medium-long and two quality days is a substantial load for five days."
+        },
+        {
+          "week": 8,
+          "note": "62.7 km; longest non-race run 20.8 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Cutback retains a smaller threshold session; reduced duration offers meaningful relief."
+        },
+        {
+          "week": 9,
+          "note": "75.3 km; longest non-race run 25.6 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Intervals add variety but are secondary to marathon endurance; long walking rests make this a modest aerobic-power dose."
+        },
+        {
+          "week": 10,
+          "note": "81.4 km; longest non-race run 29.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run approaches three hours and medium-long reaches high duration; MP session is only two short bouts."
+        },
+        {
+          "week": 11,
+          "note": "81.7 km; longest non-race run 29.3 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Three-hour long run repeats without additional long-run specificity; threshold is a sustained independent demand."
+        },
+        {
+          "week": 12,
+          "note": "64 km; longest non-race run 20.3 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Cutback reduces both long-run duration and hard work."
+        },
+        {
+          "week": 13,
+          "note": "81.7 km; longest non-race run 29.3 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Repeats the peak endurance template; strong durability exposure, but repetitive short MP dose gives limited practice."
+        },
+        {
+          "week": 14,
+          "note": "81.4 km; longest non-race run 29.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Another three-hour long run; identical MP session does not show specific progression."
+        },
+        {
+          "week": 15,
+          "note": "75.3 km; longest non-race run 26.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Fast-finish long run has 9.2 km at reference MP and Friday easy, a valuable specific session; earlier intervals are an additional load."
+        },
+        {
+          "week": 16,
+          "note": "58.7 km; longest non-race run 18.8 km; seven-day structure [1:lako, 2:lako, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback after the fast finish is sensible."
+        },
+        {
+          "week": 17,
+          "note": "81.7 km; longest non-race run 29.3 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Final peak week repeats three-hour long run and two quality sessions; assess athlete recovery before completing it."
+        },
+        {
+          "week": 18,
+          "note": "65.3 km; longest non-race run 22.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Taper lowers weekly volume to about eighty percent; 22 km-class long run and 22 minutes threshold still create substantial load."
+        },
+        {
+          "week": 19,
+          "note": "53.1 km; longest non-race run 18.7 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. About 18 km and nearly two hours long run one week out with two quality sessions: freshness remains a concern."
+        },
+        {
+          "week": 20,
+          "note": "52.7 km; longest non-race run 4.5 km; seven-day structure [1:rest, 2:lako, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Two shakeouts and restrained Friday activation precede race; 3:30 desire is separated clearly from 3:45 current-result reference."
+        }
+      ],
+      "strengths": [
+        "Repeat long runs around three hours and medium-long support provide substantial durability.",
+        "Fast-finish long run replaces Friday quality and includes 9.2 km at reference MP.",
+        "Fuelling rehearsal, optional strength and explicit desire/reference distinction."
+      ],
+      "concerns": [
+        {
+          "week": 14,
+          "day": 2,
+          "claim": "Long run endurance is strong but MP work repeatedly remains short and sometimes interrupted by walking.",
+          "severity": "coaching",
+          "evidence": "2 x 2000 m MP with 90 s walk; continuous MP 4.1 km recurs W7,11,13,17."
+        },
+        {
+          "week": 17,
+          "day": 7,
+          "claim": "Frequent three-hour long runs plus medium-long and two quality days may accumulate fatigue without explicit response check.",
+          "severity": "coaching",
+          "evidence": "29.3 km/about 180 min in W10,11,13,14,17; Wednesday 17.6 km and Friday 27.5 min threshold in W17."
+        },
+        {
+          "week": 19,
+          "day": 7,
+          "claim": "Final pre-race long run and retained quality may leave freshness suboptimal.",
+          "severity": "coaching",
+          "evidence": "18.7 km/about 115 min long run one week out; 53.1 km week with MP and threshold."
+        }
+      ],
+      "verdict": "Substantial marathon durability plan, but short repeated MP work and heavy final pre-race week need individualized refinement."
+    },
+    {
+      "profileId": "U10",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 7,
+        "progression": 7,
+        "recovery": 7.5,
+        "specificity": 6,
+        "taper": 6.5,
+        "coherence": 8
+      },
+      "total": 72.25,
+      "weeksReviewed": 20,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "63 km; longest non-race run 24 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Reported 24 km long-run base supports substantial opening week; progressive MP segment is final third only."
+        },
+        {
+          "week": 2,
+          "note": "66.4 km; longest non-race run 25.5 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run 25.5 km around 156 minutes; fuelling practice is valuable, with tolerance governing rate."
+        },
+        {
+          "week": 3,
+          "note": "66.1 km; longest non-race run 22.9 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run steps back while threshold builds; better recovery than monotonic long-run growth."
+        },
+        {
+          "week": 4,
+          "note": "51.6 km; longest non-race run 17.6 km; seven-day structure [1:lako, 2:lako, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback across run distances provides useful relief."
+        },
+        {
+          "week": 5,
+          "note": "71.9 km; longest non-race run 26 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run rises again and medium-long supports marathon endurance; MP progression still only a short final segment."
+        },
+        {
+          "week": 6,
+          "note": "69.9 km; longest non-race run 23.4 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long-run retreat and longer threshold can balance demands; monitor cumulative hours, not only kilometre changes."
+        },
+        {
+          "week": 7,
+          "note": "76 km; longest non-race run 27.1 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Near-three-hour long run plus medium-long and two quality days is a substantial load for five days."
+        },
+        {
+          "week": 8,
+          "note": "59.4 km; longest non-race run 18.8 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Cutback retains a smaller threshold session; reduced duration offers meaningful relief."
+        },
+        {
+          "week": 9,
+          "note": "71.2 km; longest non-race run 24.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Intervals add variety but are secondary to marathon endurance; long walking rests make this a modest aerobic-power dose."
+        },
+        {
+          "week": 10,
+          "note": "77.5 km; longest non-race run 28 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Long run approaches three hours and medium-long reaches high duration; MP session is only two short bouts."
+        },
+        {
+          "week": 11,
+          "note": "79.8 km; longest non-race run 29.3 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Three-hour long run repeats without additional long-run specificity; threshold is a sustained independent demand."
+        },
+        {
+          "week": 12,
+          "note": "62.4 km; longest non-race run 19.9 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Cutback reduces both long-run duration and hard work."
+        },
+        {
+          "week": 13,
+          "note": "79.8 km; longest non-race run 29.3 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Repeats the peak endurance template; strong durability exposure, but repetitive short MP dose gives limited practice."
+        },
+        {
+          "week": 14,
+          "note": "80.1 km; longest non-race run 29.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Another three-hour long run; identical MP session does not show specific progression."
+        },
+        {
+          "week": 15,
+          "note": "74.3 km; longest non-race run 26.3 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Fast-finish long run has 9.2 km at reference MP and Friday easy, a valuable specific session; earlier intervals are an additional load."
+        },
+        {
+          "week": 16,
+          "note": "57.9 km; longest non-race run 18.5 km; seven-day structure [1:lako, 2:lako, 3:lr, 4:snaga, 5:lako, 6:rest, 7:lr]. Easy cutback after the fast finish is sensible."
+        },
+        {
+          "week": 17,
+          "note": "79.8 km; longest non-race run 29.3 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Final peak week repeats three-hour long run and two quality sessions; assess athlete recovery before completing it."
+        },
+        {
+          "week": 18,
+          "note": "64.1 km; longest non-race run 21.8 km; seven-day structure [1:lako, 2:int, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. Taper lowers weekly volume to about eighty percent; 22 km-class long run and 22 minutes threshold still create substantial load."
+        },
+        {
+          "week": 19,
+          "note": "52 km; longest non-race run 18.2 km; seven-day structure [1:lako, 2:tempo, 3:lr, 4:snaga, 5:tempo, 6:rest, 7:lr]. About 18 km and nearly two hours long run one week out with two quality sessions: freshness remains a concern."
+        },
+        {
+          "week": 20,
+          "note": "52.7 km; longest non-race run 4.5 km; seven-day structure [1:rest, 2:lako, 3:lako, 4:rest, 5:int, 6:rest, 7:trka]. Two shakeouts and restrained Friday activation precede race; 3:30 desire is separated clearly from 3:45 current-result reference."
+        }
+      ],
+      "strengths": [
+        "Repeat long runs around three hours and medium-long support provide substantial durability.",
+        "Fast-finish long run replaces Friday quality and includes 9.2 km at reference MP.",
+        "Fuelling rehearsal, optional strength and explicit desire/reference distinction."
+      ],
+      "concerns": [
+        {
+          "week": 14,
+          "day": 2,
+          "claim": "MP work is short for experience and fails to progress through the specific phase.",
+          "severity": "coaching",
+          "evidence": "2 x 1600 m MP with 90 s walks; continuous MP only 3.3 km in W7,11,13,17."
+        },
+        {
+          "week": 19,
+          "day": 7,
+          "claim": "Last pre-race week remains substantial despite taper label.",
+          "severity": "coaching",
+          "evidence": "18.2 km/about 112 min long run, 52 km total and two quality sessions."
+        },
+        {
+          "week": 20,
+          "day": 5,
+          "claim": "Near-MP activation is labelled repetition work with current-fitness provenance.",
+          "severity": "technical",
+          "evidence": "316 s/km 200 m versus 320 s/km MP, zone R/current-fitness."
+        }
+      ],
+      "verdict": "Plausible marathon endurance block, with thinner specific work and a still-heavy taper; improve sustained MP development and fatigue feedback."
+    }
+  ]
+}

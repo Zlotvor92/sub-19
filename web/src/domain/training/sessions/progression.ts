@@ -17,7 +17,7 @@ export function progressionRun(
   vol: number,
   endPace: number,
   pE: number,
-  opts: { share?: number | null; atRacePace?: boolean } = {}
+  opts: { share?: number | null; atRacePace?: boolean; racePurpose?: 'RP' | 'M' } = {}
 ): SessionDay {
   const total = r1(Math.max(p.minKm, Math.min(vol * p.pct * (opts.share || 1), p.maxKm)));
   return sessProg(
@@ -25,6 +25,7 @@ export function progressionRun(
     total,
     endPace,
     pE,
-    opts.atRacePace ? 'Progresivno (tempo trke)' : 'Progresivno'
+    opts.atRacePace ? 'Progresivno (tempo trke)' : 'Progresivno',
+    opts.atRacePace ? (opts.racePurpose ?? 'M') : 'T'
   );
 }

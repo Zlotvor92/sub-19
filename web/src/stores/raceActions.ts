@@ -9,7 +9,7 @@ import {
 } from '../domain/training/constants/heuristics';
 import {
   applyVdotProposal,
-  currentVdot,
+  fitnessEvidence,
   planVdotNow,
   undoVdotAdjustments,
   vdotProposal,
@@ -21,6 +21,16 @@ import type { ResolvedPlan } from '../domain/plan';
 import { parseIsoDate } from '../domain/date';
 import { storedRows, workPaceContext } from './dayActions';
 import { activeGenPlan, useTrainingStore } from './trainingStore';
+import { useUIStore } from './uiStore';
+import { matchPlanRows } from '../domain/training/adaptation/matching';
+import { recordPlanRevision } from '../domain/plan/versions';
+import {
+  alignAutomaticAlts,
+  executionModel,
+  planStateStamp,
+  positiveAdjustmentBlock,
+  replanContext
+} from './executionActions';
 
 const ctx = () => workPaceContext({ id: '' });
 
@@ -58,30 +68,81 @@ export function currentVdotProposal(plan: ResolvedPlan, today: string): VdotProp
   const t = useTrainingStore.getState();
   const meta = activeGenPlan()?.meta;
   if (!meta) return null;
-  return vdotProposal({
+  const proposal = vdotProposal({
     today,
     plan,
     pred: storedRows(),
     meta,
     log: t.log,
     alts: t.alts,
-    vdotChain: t.vdotLog
+    vdotChain: t.vdotLog,
+    tests: t.t3k,
+    enteredPaces: t.pred,
+    predLock: t.predLock,
+    positiveAdjustmentAllowed: !positiveAdjustmentBlock(plan, today)
   });
+  if (proposal) proposalToday.set(proposal, today);
+  return proposal;
 }
 
 /** „Prilagodi tempo": menja SAMO ciljni tempo (obim ostaje), uz `paceAuto`; vraća broj prilagođenih dana. */
 export function applyProposal(plan: ResolvedPlan, proposal: VdotProposal): number {
   const t = useTrainingStore.getState();
+  const today = proposalToday.get(proposal);
+  if (!today) return 0;
+  const fresh = currentVdotProposal(plan, today);
+  if (!fresh || JSON.stringify(fresh.changes) !== JSON.stringify(proposal.changes)) return 0;
   const r = applyVdotProposal(proposal, plan, t.log, t.alts, t.genPlan);
-  if (r.applied) t.patch({ alts: r.alts, genPlan: r.genPlan });
+  if (r.applied)
+    t.patch({
+      alts: r.alts,
+      genPlan:
+        t.genPlan && r.genPlan
+          ? recordPlanRevision(t.genPlan, r.genPlan, {
+              reason: 'pace',
+              date: proposalToday.get(proposal)!,
+              summary: proposal.title
+            })
+          : r.genPlan
+    });
   return r.applied;
 }
 
 /** „Vrati planski tempo": poništava SAMO automatska prilagođavanja; ručne izmene ostaju. */
 export function undoAdjustments(plan: ResolvedPlan): number {
   const t = useTrainingStore.getState();
-  const r = undoVdotAdjustments(plan, t.alts, t.genPlan);
-  if (r.applied) t.patch({ alts: r.alts, genPlan: r.genPlan });
+  const today = useUIStore.getState().today;
+  const matched = matchPlanRows(plan.weeks, storedRows());
+  const eligible = Object.fromEntries(
+    Object.entries(t.alts).filter(([id, alt]) => {
+      const day = plan.byId.get(id);
+      const row = matched.get(id);
+      return (
+        alt.paceAuto &&
+        day &&
+        day.date > today &&
+        t.log[id]?.status !== 'done' &&
+        !(row && (t.pred[row.id] != null || t.predLock[row.id]))
+      );
+    })
+  );
+  const r = undoVdotAdjustments(plan, eligible, t.genPlan);
+  if (r.applied) {
+    const alts = { ...t.alts };
+    for (const id of Object.keys(eligible)) delete alts[id];
+    Object.assign(alts, r.alts);
+    t.patch({
+      alts,
+      genPlan:
+        t.genPlan && r.genPlan
+          ? recordPlanRevision(t.genPlan, r.genPlan, {
+              reason: 'pace',
+              date: today,
+              summary: 'Vraćen planski tempo budućih treninga'
+            })
+          : r.genPlan
+    });
+  }
   return r.applied;
 }
 
@@ -98,6 +159,12 @@ export type RecalibrationPreview =
     }
   | { ok: false; reason: string };
 
+const recalibrationPreviews = new WeakMap<
+  RecalibratedStoredPlan,
+  { stamp: string; day: string; result: RecalibratedStoredPlan }
+>();
+const proposalToday = new WeakMap<VdotProposal, string>();
+
 /**
  * Šta bi rekalibracija uradila — NIŠTA se ne upisuje. Ista kapija kao za predlog tempa (bar 3 merenja, razlika ≥ prag): preračunavanje
  * plana koji se sa formom već slaže bila bi izmena bez razloga.
@@ -106,12 +173,27 @@ export function previewRecalibration(plan: ResolvedPlan, today: string): Recalib
   const t = useTrainingStore.getState();
   const gp = t.genPlan;
   if (!gp) return { ok: false, reason: 'Preračunavanje radi samo nad generisanim planom.' };
-  const form = currentVdot(t.vdotLog);
-  const measurements = t.vdotLog.filter((e) => e && e.measured != null).length;
-  if (form == null || measurements < VDOT_PROPOSAL_MIN_MEASUREMENTS)
+  const execution = executionModel(plan, today).analysis;
+  if (execution.daysSinceLastRun !== null && execution.daysSinceLastRun >= 7)
     return {
       ok: false,
-      reason: `Za preračunavanje treba bar ${VDOT_PROPOSAL_MIN_MEASUREMENTS} izmerena rezultata forme (sada ${measurements}). Upiši tempo odrađenog treninga ili uradi test na 3 km.`
+      reason:
+        'Dnevnik nema novije trčanje. Potvrdi trenutnu bazu i pregledaj povratak posle pauze pre preračunavanja celog plana.'
+    };
+  const evidence = fitnessEvidence({
+    today,
+    plan,
+    pred: storedRows(),
+    meta: gp.meta ?? null,
+    log: t.log,
+    vdotChain: t.vdotLog,
+    tests: t.t3k
+  });
+  const { form, measurements, distinctDays } = evidence;
+  if (form == null || distinctDays < VDOT_PROPOSAL_MIN_MEASUREMENTS)
+    return {
+      ok: false,
+      reason: `Za preračunavanje treba bar ${VDOT_PROPOSAL_MIN_MEASUREMENTS} različita dana prihvatljivih merenja u poslednje 42 dana (sada ${distinctDays}, ${measurements} merenja). Kratke repeticije, neodrađeni i stari treninzi ne potvrđuju novu formu.`
     };
   const planVdot = planVdotNow({ today, plan, meta: gp.meta ?? null, pred: storedRows() });
   if (planVdot == null)
@@ -121,20 +203,40 @@ export function previewRecalibration(plan: ResolvedPlan, today: string): Recalib
       ok: false,
       reason: `Izmerena forma (VDOT ${form.toFixed(1).replace('.', ',')}) i plan (VDOT ${planVdot.toFixed(1).replace('.', ',')}) se slažu — nema šta da se preračuna.`
     };
+  if (form > planVdot) {
+    const block = positiveAdjustmentBlock(plan, today);
+    if (block) return { ok: false, reason: block };
+  }
   const day = parseIsoDate(today);
   if (!day) return { ok: false, reason: 'Neispravan datum.' };
-  const result = planRecalibrated(gp, form, day);
-  if ('error' in result) return { ok: false, reason: result.error };
+  const result = planRecalibrated(gp, form, day, replanContext());
+  if (typeof result.error === 'string') return { ok: false, reason: result.error };
+  recalibrationPreviews.set(result, {
+    stamp: planStateStamp(),
+    day,
+    result: JSON.parse(JSON.stringify(result)) as RecalibratedStoredPlan
+  });
   return { ok: true, form, planVdot, measurements, result };
 }
 
 /** Upis preračunatog plana: jedan upis. Istorija, dnevnik, izmene i lanac forme se NE diraju. */
-export function commitRecalibration(result: RecalibratedStoredPlan): void {
-  useTrainingStore.getState().setGenPlan({
-    weeks: result.weeks,
-    pred: result.pred,
-    qs: result.qs,
-    meta: result.meta,
-    ulaz: result.ulaz
+export function commitRecalibration(result: RecalibratedStoredPlan): boolean {
+  const registered = recalibrationPreviews.get(result);
+  recalibrationPreviews.delete(result);
+  const t = useTrainingStore.getState();
+  if (!registered || !t.genPlan || registered.stamp !== planStateStamp()) return false;
+  const accepted = registered.result;
+  t.patch({
+    genPlan: recordPlanRevision(
+      t.genPlan,
+      { ...t.genPlan, ...accepted },
+      {
+        reason: 'fitness',
+        date: registered.day,
+        summary: `Plan prema izmerenoj formi VDOT ${accepted.recalibration.form.toFixed(1)}`
+      }
+    ),
+    alts: alignAutomaticAlts(accepted, registered.day)
   });
+  return true;
 }

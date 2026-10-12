@@ -1,0 +1,234 @@
+{
+  "id": "U06",
+  "label": "10K povratnik sa starim PB",
+  "reviewer": "Independent AI synthetic athlete simulation; no human athlete claims",
+  "blinding": "Unblinded; raw old/new identities visible",
+  "preference": "new, conditional on correcting return descriptions and copy consistency",
+  "scores": {
+    "old": {
+      "fit": 8,
+      "quality": 9,
+      "progression": 9,
+      "recovery": 9,
+      "specificity": 6,
+      "deloadTaper": 8,
+      "coherence": 8,
+      "total": 57
+    },
+    "new": {
+      "fit": 18,
+      "quality": 15,
+      "progression": 12,
+      "recovery": 12,
+      "specificity": 6,
+      "deloadTaper": 9,
+      "coherence": 8,
+      "total": 80
+    }
+  },
+  "scoreScope": "Frozen initial cycle; return findings assessed separately",
+  "findings": [
+    {
+      "id": "U06-OLD-01",
+      "severity": "high",
+      "version": "old",
+      "phase": "assessment",
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "dows": [],
+      "basis": "observed-output",
+      "status": "improved-in-new",
+      "expected": "Dated PB is a reference, not evidence of automatic improvement.",
+      "actual": "Old VDOT rises 35→38.5 and predictedSec=3103 (51:43), despite a 365-day-old PB, one consistent week and eight break weeks. New holds 35 and current-equivalent 3365 s (56:05), with returning speed confidence and limited endurance.",
+      "evidence": "raw/U06.json old/new meta"
+    },
+    {
+      "id": "U06-OLD-02",
+      "severity": "medium",
+      "version": "old",
+      "phase": "generation/fit",
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "dows": [
+        1,
+        3,
+        7
+      ],
+      "basis": "coaching-judgment",
+      "status": "improved-in-new",
+      "expected": "Distinguish a returner from a first-time runner and respect the reported 4 km repeatable long run.",
+      "actual": "Old assigns eight beginner base weeks, first run/walk ratios 1:1, 2:1, 3:1, 5:1 and longest scheduled distances 5.9/6.5/7.1 km in W 1–3. Walking means those distances are not equivalent continuous running demands. New chooses three returning base weeks and LR 4.0/4.2/4.4 km.",
+      "evidence": "raw/U06.json weeks1–8"
+    },
+    {
+      "id": "U06-NEW-01",
+      "severity": "medium",
+      "version": "new",
+      "phase": "generation/current-pace",
+      "weeks": [
+        1,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16
+      ],
+      "dows": [
+        1,
+        3,
+        7
+      ],
+      "basis": "coaching-judgment",
+      "status": "open-review",
+      "expected": "Keep old-PB paces provisional and provide a practical form check before faster sessions.",
+      "actual": "New recognizes returning speed confidence and warns to verify form, yet supplies easy 6:47/km, T 5:40/km and I 5:07/km from the 365-day-old PB. No fresh performance is required before W 7 I fartlek. Dose is small and warnings are clear; this is a qualification concern, not a proven physiological error.",
+      "evidence": "raw/U06.json new.meta.athlete, new.weeks1/5/7, new.meta.dayWarnings"
+    },
+    {
+      "id": "U06-RETURN-01",
+      "severity": "medium",
+      "version": "new",
+      "phase": "execution-adjustment/description",
+      "weeks": [
+        8,
+        10
+      ],
+      "dows": [
+        1
+      ],
+      "basis": "observed-output",
+      "status": "open",
+      "expected": "Displayed descriptions must omit deleted strides during the four promised initial easy return calendar weeks.",
+      "actual": "Return g8d1 has no strides field but desc still says +6×20 s accelerations; g10d1 has no strides field but desc says +4×15 s accelerations. Both are inside the four easy calendar weeks through December 20. Structural quality is zero, while displayed text still instructs faster work.",
+      "evidence": "U06-event.json adjustment.result.weeks g8d1/g10d1"
+    },
+    {
+      "id": "U06-RETURN-02",
+      "severity": "low",
+      "version": "new",
+      "phase": "execution-adjustment/focus",
+      "weeks": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "dows": [
+        3
+      ],
+      "basis": "observed-output",
+      "status": "open",
+      "expected": "Week titles should describe final guarded prescriptions.",
+      "actual": "W 9/W 11/W 12 are titled Fartlek, W 13 Tempo, W 14 Progresivno, but contain zero sessions, finishes or strides. W 10 promises retained sharpness with no structural faster work. Guarded day descriptions correctly say quality is postponed; focus remains stale.",
+      "evidence": "U06-event.json returnWeeks9–14"
+    },
+    {
+      "id": "U06-RETURN-03",
+      "severity": "low",
+      "version": "new",
+      "phase": "execution-adjustment/assessment-copy",
+      "weeks": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "dows": [],
+      "basis": "observed-output",
+      "status": "open",
+      "expected": "Delivered-peak warnings must match final guarded preparation assessment.",
+      "actual": "Return dayWarnings states delivered peak 11.6 km and about 12 km, while recomputed preparation.peakWeeklyKm is 10.1 km and its reasons correctly state 10.1 km. Both lead to limited readiness, but evidence displayed to the runner is inconsistent.",
+      "evidence": "U06-event.json adjustment.result.meta.dayWarnings and preparation"
+    },
+    {
+      "id": "U06-NEW-02",
+      "severity": "low",
+      "version": "new",
+      "phase": "generation/progression",
+      "weeks": [
+        5,
+        14
+      ],
+      "dows": [
+        3
+      ],
+      "basis": "coaching-judgment",
+      "status": "open-review",
+      "expected": "Explain larger delivered weekly-load changes for a returning runner.",
+      "actual": "W 5 delivered 12.7 km is 17.6% above prior non-deload W 3 peak 10.8 km. W 14 delivered 18.2 km is 13.8% above W 13 16 km, chiefly Wednesday 4.5→6.4 km. LR increases stay 4.4→4.6 and 6.4→6.7. Absolute changes are modest; no invariant failure.",
+      "evidence": "U06-event.json review.new weeks3/5/13/14"
+    }
+  ],
+  "checks": {
+    "frozenOldReproduces": true,
+    "frozenNewReproduces": true,
+    "eventGenerated": true,
+    "pureInputs": true,
+    "lastActualRunIsOct28": true,
+    "exact28DayGap": true,
+    "noUnknownHistory": true,
+    "allConfirmedBreakRunsSkipped": true,
+    "requiresReturnConfirmation": true,
+    "unchangedPastAndToday": true,
+    "calendarIdentitiesStable": true,
+    "raceDateUnchanged": true,
+    "startBase55Percent": true,
+    "fourInitialCalendarWeeksEasy": true,
+    "noProjectedFitnessGain": true,
+    "logAndMeasuredPredUnchanged": true,
+    "historySnapshotExact": true,
+    "domainRevisionPersistsJsonRoundTrip": true,
+    "domainRestoreContextNotMutated": true,
+    "revisionSnapshotsExcludeExecutionLog": true,
+    "domainRestorePreservesCompletedCutoffDay": true,
+    "zeroAuditFailures": true
+  },
+  "browserEvidence": {
+    "spec": "web/e2e/generator-ab-users.spec.ts",
+    "profiles": 10,
+    "status": "Prepared and typechecked/scoped-linted; actual execution and evidence owned by root CI. No browser-pass claim.",
+    "backend": "Fake backend; only authentication seeded; no plan/log injection"
+  },
+  "sources": [
+    "raw/U06.json",
+    "users/U06-probe.mjs",
+    "users/U06-event.json"
+  ]
+}

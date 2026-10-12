@@ -126,13 +126,13 @@ describe('migrateState — šema stanja', () => {
     expect(s.kg[0]?.src).toBe('arhiva');
   });
 
-  it('v11 stanje se pri ponovnoj migraciji ne dira', () => {
+  it('trenutno stanje se pri ponovnoj migraciji ne dira', () => {
     const once = migrate(rich());
     expect(migrate(once)).toEqual(once);
   });
 
   it('odbija stanje iz BUDUĆE šeme umesto da ga tiho spusti', () => {
-    expect(migrateState({ log: {}, v: 12 })).toBeNull();
+    expect(migrateState({ log: {}, v: SCHEMA_VERSION + 1 })).toBeNull();
     expect(migrateState({ log: {}, v: '99' })).toBeNull();
   });
 

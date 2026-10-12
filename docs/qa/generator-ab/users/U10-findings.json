@@ -1,0 +1,294 @@
+{
+  "id": "U10",
+  "identity": "Synthetic experienced marathon runner; PB3:45 (2026-09-20); goal3:30;60km/week;repeatableLR24km;32consistentweeks;5runDays;2quality;20-weekcycle",
+  "preferred": "new-with-marathon-specific-dose-reservation",
+  "scope": "Every old/new week and day reviewed. Local production domain return and protection simulations only. Browser flows centrally owned by U06; no UI pass or real athlete claims.",
+  "criticalFindings": [],
+  "findings": [
+    {
+      "id": "U10-01",
+      "version": "old",
+      "severity": "P2",
+      "category": "reported-base-continuity",
+      "week": [
+        1,
+        11
+      ],
+      "day": [
+        7
+      ],
+      "expected": "Pri eksplicitno prijavljenih 60 km/ned, ponovljivoj dužini 24 km i 32 nedelje kontinuiteta početak treba da uvaži bazu, uz obrazloženo rasterećenje ako je potrebno. Ovo je procena korisničke prikladnosti, ne univerzalna fiziološka granica.",
+      "actual": {
+        "W1weeklyKm": 53.2,
+        "W1LRKm": 15.2,
+        "differenceFromReportedLRPercent": -36.67,
+        "maxLRThroughW11": 23.5,
+        "newW1": "63 km; LR24 km; new LR≥24 in11 weeks vs old2"
+      },
+      "status": "fixed-in-new",
+      "evidence": "raw/U10.json; U10-event.json review.old/new"
+    },
+    {
+      "id": "U10-02",
+      "version": "new",
+      "severity": "P2",
+      "category": "marathon-specific-quality-dose",
+      "week": [
+        7,
+        10,
+        11,
+        13,
+        14,
+        17,
+        18,
+        19
+      ],
+      "day": [
+        2
+      ],
+      "expected": "Iskusnom maratoncu na 60–80 km/ned smislen razvoj M rada treba da bude vidljiv kroz blok; niz kratkih M izlaganja može biti opravdan ali ovde nije objašnjen kao namerna specifična doza. Primedba je korisničko/trenersko mišljenje, nije potvrđena minimalna medicinska doza.",
+      "actual": {
+        "newW7W11W13W17": "3.3 km M/RP@5:20/km =17.6 min svaki put",
+        "newW10W14W18": "2×1600 m M/RP@5:20;17.07min rada;90s hoda",
+        "newW19": "3.3 km M =17.6min",
+        "oldW14": "8km M42.67min",
+        "oldW17": "7.9km M42.13min",
+        "mitigatingNewW15": "26.3km LR sa9.2km M završetka49.07min; zamenjuje petkov kvalitet",
+        "newTotalMKmIncludingFinish": 48,
+        "oldTotalMKmIncludingFinish": 69.6,
+        "peakWeeklyKm": 80.1
+      },
+      "status": "open-coaching-judgment",
+      "evidence": "U10-event.json review.new weeks sessions/finishes"
+    },
+    {
+      "id": "U10-03",
+      "version": "old",
+      "severity": "P2",
+      "category": "long-run-peak-progression",
+      "week": [
+        13,
+        14
+      ],
+      "day": [
+        7
+      ],
+      "expected": "Prelaz u najveću dužinu treba da bude obrazložen prethodnim izlaganjima i bazom. Procenat je signal za pregled, ne univerzalna povreda/granica.",
+      "actual": {
+        "W13LRKm": 22.8,
+        "W14LRKm": 28.2,
+        "adjacentIncreasePercent": 23.68,
+        "previousHighestLRKm": 23.5,
+        "increaseFromPreviousHighPercent": 20,
+        "newW13W14LRKm": [
+          29.3,
+          29.3
+        ],
+        "newRepeated29_3KmWeeks": [
+          11,
+          13,
+          14,
+          17
+        ]
+      },
+      "status": "improved-in-new",
+      "evidence": "U10-event.json review.old/new"
+    },
+    {
+      "id": "U10-04",
+      "version": "old",
+      "severity": "P2",
+      "category": "goal-reference-honesty",
+      "week": [
+        20
+      ],
+      "day": [
+        7
+      ],
+      "expected": "Razdvojiti željeni cilj3:30 od potvrđene reference3:45 i tempa5:20/km; ne prikazivati poboljšanje VDOT kao potvrđenu buduću formu.",
+      "actual": {
+        "raceDescription": "🏁 TRKA 42,2 km (Maraton) — cilj 3:30:00 / ritam 5:20/km",
+        "oldMeta": {
+          "vdot0": 41,
+          "vdotGoal": 45.5,
+          "predictedSec": 12381,
+          "realno": true
+        },
+        "paceFinishSec": 13502.4,
+        "newReferenceSec": 13500,
+        "newVdotGoal": 41,
+        "newRaceDescription": "🏁 TRKA 42,2 km (Maraton) — željeni cilj 3:30:00 · preporučeni ritam 5:20/km (oko 3:45:02, prema unetom rezultatu)"
+      },
+      "status": "fixed-in-new",
+      "evidence": "raw/U10.json meta and race day"
+    },
+    {
+      "id": "U10-05",
+      "version": "new-return",
+      "severity": "P2",
+      "category": "easy-return-description-coherence",
+      "week": [
+        8,
+        9,
+        10
+      ],
+      "day": [
+        1,
+        3
+      ],
+      "expected": "Potvrđeni povratak posle28d obećava4 početne nedelje bez kvaliteta; kada se strides uklone, i opis mora ukloniti nalog za ubrzanja.",
+      "actual": {
+        "structuredAllEasy": true,
+        "staleInstructions": [
+          {
+            "id": "g8d1",
+            "w": 8,
+            "dow": 1,
+            "date": "2026-11-30",
+            "desc": "6.2 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+          },
+          {
+            "id": "g8d3",
+            "w": 8,
+            "dow": 3,
+            "date": "2026-12-02",
+            "desc": "4.8 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+          },
+          {
+            "id": "g9d1",
+            "w": 9,
+            "dow": 1,
+            "date": "2026-12-07",
+            "desc": "7.3 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+          },
+          {
+            "id": "g10d1",
+            "w": 10,
+            "dow": 1,
+            "date": "2026-12-14",
+            "desc": "5.3 km lako (Z2) @ ~6:00/km + 4×15 s ubrzanja (lagani ubrzani koraci)"
+          }
+        ],
+        "meaning": "Četiri buduća dana bez strukturisanih strides i dalje tekstom traže6×20s ili4×15s ubrzanja; korisnik koji prati opis dobija drugačiji nalog od metapodataka."
+      },
+      "status": "open-confirmed",
+      "evidence": "U10-event.json event.descriptionAudit; production buildExecutionAdjustment execution"
+    },
+    {
+      "id": "U10-06",
+      "version": "new-return",
+      "severity": "P3",
+      "category": "return-focus-coherence",
+      "week": [
+        9
+      ],
+      "day": [
+        2
+      ],
+      "expected": "Nedeljni fokus mora pratiti stvarno isporučene dane nakon uklanjanja kvalitetnog rada.",
+      "actual": {
+        "w": 9,
+        "start": "2026-12-07",
+        "focus": "Fartlek",
+        "qualityDows": [],
+        "TuesdayDate": "2026-12-08",
+        "TuesdayDescription": "Lagano trčanje u razgovornom tempu; bez nadoknade propuštenih treninga.",
+        "workMinutes": 0
+      },
+      "status": "open-confirmed",
+      "evidence": "U10-event.json event.descriptionAudit"
+    },
+    {
+      "id": "U10-07",
+      "version": "new-return",
+      "severity": "P3",
+      "category": "return-policy-copy-coherence",
+      "week": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "day": [
+        1,
+        2,
+        3,
+        5,
+        7
+      ],
+      "expected": "Jedan povratni predlog treba jasno iskazati stvarno aktivnu politiku4 početne kalendarske nedelje bez kvalitetnog rada.",
+      "actual": {
+        "retainedGeneratorWarning": "Posle pauze od 4 nedelja plan počinje sa 2 lagane povratne nedelje.",
+        "activeAdjustmentWarning": "Potvrđena pauza: 28 dana. Polazni obim je 55% prijavljene baze (33 km), sa 4 početne nedelje bez kvalitetnog rada.",
+        "actualCalendarWindow": "2026-11-26 through2026-12-20; first counted week is partial;first sessionDec22"
+      },
+      "status": "open-confirmed",
+      "evidence": "U10-event.json event.adjustment.result.meta.dayWarnings"
+    }
+  ],
+  "checks": {
+    "reproduction": {
+      "old": {
+        "lockedSha256": "723c8cd501863a7220481beef67f721058501abcbbd60d0b8b3102b6b44268e1",
+        "reproducedSha256": "723c8cd501863a7220481beef67f721058501abcbbd60d0b8b3102b6b44268e1",
+        "exact": true
+      },
+      "new": {
+        "lockedSha256": "936c2f881a06f9d41ac75123511a5b32ed60efdad4b8fcd8a5b1634cd4f61bcf",
+        "reproducedSha256": "936c2f881a06f9d41ac75123511a5b32ed60efdad4b8fcd8a5b1634cd4f61bcf",
+        "exact": true
+      }
+    },
+    "baselineOldNumericFailures": [],
+    "baselineNewNumericFailures": [],
+    "returnNumericFailures": [],
+    "primary": {
+      "pureInputs": true,
+      "pastAndTodayDaysUnchanged": true,
+      "pastRowsUnchanged": true,
+      "calendarIdsStable": true,
+      "raceDateStable": true,
+      "goalUnchanged": true,
+      "startingKm33": true,
+      "lastRunOct28": true,
+      "exact28Days": true,
+      "allStatusKnown": true,
+      "recommendationNeedsConfirmation": true,
+      "fourInitialCalendarWeeksEasy": true,
+      "futureVolumeGuard": true,
+      "futureQualityAtMostTwo": true
+    },
+    "protection": {
+      "pureInputs": true,
+      "pastAndTodayDaysUnchanged": true,
+      "pastRowsUnchanged": true,
+      "calendarIdsStable": true,
+      "raceDateStable": true,
+      "goalUnchanged": true,
+      "startingKm33": true,
+      "lastRunOct28": true,
+      "exact28Days": true,
+      "allStatusKnown": true,
+      "recommendationNeedsConfirmation": true,
+      "measuredDayUnchanged": true,
+      "measuredRowUnchanged": true,
+      "manualDayUnchanged": true,
+      "manualRowAndQsUnchanged": true,
+      "measuredQsUnchanged": true,
+      "manualDateWarning": true
+    }
+  },
+  "returnPlausibility": {
+    "remainingDays": 95,
+    "returnStart": "2026-11-26",
+    "raceDate": "2027-02-28",
+    "startingKm": 33,
+    "firstPartialFutureKm": 17.5,
+    "firstFullFutureKm": 34.9,
+    "futurePeakKm": 47.4,
+    "futurePeakLRKm": 17.3,
+    "endurance": "limited",
+    "noReadyMarathonClaim": true,
+    "judgment": "Plausible conservative running return, not an adequate demonstrated full marathon/time-goal rebuild; retained goal/date are not readiness certification. Product honestly flags limited preparation and race-day readiness. Do not mistake full stored-plan historic peak80.1 for postbreak future peak47.4."
+  }
+}

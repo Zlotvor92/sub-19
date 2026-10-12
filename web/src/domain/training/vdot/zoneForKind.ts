@@ -1,6 +1,7 @@
 import type { Zone } from '../types';
 
 /**
+ * MEASURED WORKOUTS ONLY: prescribed sessions use sessions/prescription.ts.
  * Naziv sesije → Danielsova zona, za ISPRAVNO računanje VDOT-a iz ostvarenog
  * tempa kvalitetne sesije. Tempo/interval sesije se trče submaksimalno
  * (T ≈ 88% VO2max, ne trka), pa Riegel (koji pretpostavlja maksimalan napor)

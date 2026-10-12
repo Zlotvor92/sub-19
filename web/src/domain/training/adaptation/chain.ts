@@ -12,6 +12,7 @@ import { ZONE_FOR_KIND } from '../vdot/zoneForKind';
 import { vdotPossible } from '../vdot/limits';
 import { idToString } from '../../state/ids';
 import type { VdotRecord } from '../../state/types';
+import type { Session } from '../types';
 
 /** Koliko se veruje jednom merenju. */
 export function smoothVdot(
@@ -37,10 +38,11 @@ export function zoneForPredLabel(label: string | null | undefined) {
  */
 export function sessionClassFor(
   isT3k: boolean,
-  predLabel: string | null | undefined
+  predLabel: string | null | undefined,
+  explicitZone?: Session['zone']
 ): VdotSessionClass {
   if (isT3k) return 'test';
-  const z = zoneForPredLabel(predLabel);
+  const z = explicitZone ?? zoneForPredLabel(predLabel);
   if (z === 'R') return 'rep';
   if (z === 'I') return 'int';
   if (z === 'T' || z === 'M') return 'tempo';
@@ -85,7 +87,7 @@ export function recomputeVdotChain(
       if (vdotPossible(e.vdot)) current = e.vdot;
       continue;
     }
-    const prev = current as number;
+    const prev = current ?? e.measured;
     const p = smoothVdot(prev, e.measured, classify(e.id as string));
     e.prev = prev;
     e.vdot = p.vdot;

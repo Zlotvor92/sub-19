@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import { phase3ImportExpectation } from '@/test/phase3ImportOracle';
 import { addDays, type IsoDate } from '../../domain/date';
 import { resolvePlan } from '../../domain/plan';
 import { adaptGeneratedPlan } from '../../domain/plan/adapt';
@@ -362,11 +363,12 @@ describe('sinhronizacija sa intervals.icu naspram starog koda', () => {
       }
       /* Kad lista padne, legacy vraća pre ikakve izmene (stanje ostaje početno) — isto i ovde (ništa se ne upisuje). */
       const mine = res.ok || (!sc.listFails && manual) ? state : { ...state };
+      const expected = phase3ImportExpectation(plan, old);
       if (res.ok || !sc.listFails) {
-        expect(j(mine.log), `log ${i}`).toEqual(old.log);
-        expect(mine.pred, `pred ${i}`).toEqual(old.pred);
+        expect(j(mine.log), `log ${i}`).toEqual(expected.log);
+        expect(mine.pred, `pred ${i}`).toEqual(expected.pred);
         expect(mine.predLock, `lock ${i}`).toEqual(old.predLock);
-        expect(projChain(mine.vdotLog), `lanac ${i}`).toEqual(projChain(old.vdotLog));
+        expect(projChain(mine.vdotLog), `lanac ${i}`).toEqual(projChain(expected.vdotLog));
         expect(mine.moves, `moves ${i}`).toEqual(old.moves);
         expect(mine.vanPlana, `vanPlana ${i}`).toEqual(old.vanPlana);
         expect(j(mine.knee), `bol ${i}`).toEqual(old.knee);

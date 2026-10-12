@@ -1,0 +1,320 @@
+[
+  {
+    "id": "U01",
+    "label": "5K početnik",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 2100,
+        "date": "2026-09-13"
+      },
+      "weeklyKm": 8,
+      "recentLongRunKm": 3,
+      "consistentWeeks": 0,
+      "breakWeeks": 0,
+      "qualityExperience": "none",
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "kons",
+      "volIntensity": "kons",
+      "trainedRecently": false,
+      "goalSec": 1800,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "single-miss"
+    },
+    "eventToday": "2026-11-25"
+  },
+  {
+    "id": "U02",
+    "label": "5K rekreativac sub-20",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 30,
+      "recentLongRunKm": 10,
+      "consistentWeeks": 12,
+      "breakWeeks": 0,
+      "qualityExperience": "some",
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 1199,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "underexecution",
+      "fraction": 0.55
+    },
+    "eventToday": "2026-11-25"
+  },
+  {
+    "id": "U03",
+    "label": "5K iskusan ambiciozan",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 50,
+      "recentLongRunKm": 14,
+      "consistentWeeks": 24,
+      "breakWeeks": 0,
+      "qualityExperience": "experienced",
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 1139,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "high-rpe"
+    },
+    "eventToday": "2026-11-25"
+  },
+  {
+    "id": "U04",
+    "label": "10K prvi specifičan ciklus",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1500,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 25,
+      "recentLongRunKm": 8,
+      "consistentWeeks": 8,
+      "breakWeeks": 0,
+      "qualityExperience": "none",
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 3000,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "return",
+      "breakDays": 7
+    },
+    "eventToday": "2026-11-25"
+  },
+  {
+    "id": "U05",
+    "label": "10K iskusan",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 10000,
+        "sec": 2700,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 45,
+      "recentLongRunKm": 14,
+      "consistentWeeks": 24,
+      "breakWeeks": 0,
+      "qualityExperience": "experienced",
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 2520,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "goal",
+      "goalSec": 2400
+    },
+    "eventToday": "2026-11-25"
+  },
+  {
+    "id": "U06",
+    "label": "10K povratnik sa starim PB",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1620,
+        "date": "2025-10-12"
+      },
+      "weeklyKm": 15,
+      "recentLongRunKm": 4,
+      "consistentWeeks": 1,
+      "breakWeeks": 8,
+      "qualityExperience": "some",
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "std",
+      "volIntensity": "kons",
+      "trainedRecently": false,
+      "goalSec": 3600,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "return",
+      "breakDays": 28
+    },
+    "eventToday": "2026-11-25"
+  },
+  {
+    "id": "U07",
+    "label": "HM prvi, ograničena baza",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 30,
+      "recentLongRunKm": 10,
+      "consistentWeeks": 12,
+      "breakWeeks": 0,
+      "qualityExperience": "some",
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 6300,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "underexecution",
+      "fraction": 0.6
+    },
+    "eventToday": "2026-11-25"
+  },
+  {
+    "id": "U08",
+    "label": "HM iskusan na rezultat",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-17",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 55,
+      "recentLongRunKm": 16,
+      "consistentWeeks": 24,
+      "breakWeeks": 0,
+      "qualityExperience": "experienced",
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 5700,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "return",
+      "breakDays": 14
+    },
+    "eventToday": "2026-11-25"
+  },
+  {
+    "id": "U09",
+    "label": "Maraton prvi, mala baza",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-02-28",
+      "raceDistM": 42195,
+      "pb": {
+        "distM": 21097.5,
+        "sec": 6300,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 30,
+      "recentLongRunKm": 10,
+      "consistentWeeks": 12,
+      "breakWeeks": 0,
+      "qualityExperience": "some",
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 14400,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "return",
+      "breakDays": 14
+    },
+    "eventToday": "2026-11-25"
+  },
+  {
+    "id": "U10",
+    "label": "Maraton iskusan",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-02-28",
+      "raceDistM": 42195,
+      "pb": {
+        "distM": 42195,
+        "sec": 13500,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 60,
+      "recentLongRunKm": 24,
+      "consistentWeeks": 32,
+      "breakWeeks": 0,
+      "qualityExperience": "experienced",
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 12600,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "return",
+      "breakDays": 28
+    },
+    "eventToday": "2026-11-25"
+  }
+]

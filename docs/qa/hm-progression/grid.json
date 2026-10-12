@@ -1,0 +1,9 @@
+{
+  "scenarios": 240,
+  "weeks": 4080,
+  "sessions": 4842,
+  "failures": [],
+  "maxLoadToEnvelope": 1.046,
+  "maxRpRestSec": 90,
+  "maxTRestSec": 90
+}

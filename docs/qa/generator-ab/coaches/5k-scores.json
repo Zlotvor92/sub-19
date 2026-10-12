@@ -1,0 +1,666 @@
+[
+  {
+    "id": "U01",
+    "side": "A",
+    "distance": 5000,
+    "criteria": {
+      "fit": 8,
+      "quality": 7,
+      "progression": 7.5,
+      "recovery": 9,
+      "specificity": 5.5,
+      "deloadTaper": 8,
+      "coherence": 9
+    },
+    "total": 77.25,
+    "verdict": "Dobar oprezan povratak; ograničen plan pripreme za 5 km, ne za 30 minuta.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 10,
+        "day": 7,
+        "expected": "Postepeno potvrditi toleranciju približno trkačkog trajanja i jasno ponuditi run/walk strategiju ako 5 km nije potvrđeno.",
+        "actual": "Najveća dužina 4.6 km; 12.4 km/ned. Spremnost je pošteno označena ograničenom."
+      },
+      {
+        "week": 5,
+        "day": 1,
+        "expected": "Prelaz sa run/walk na kontinuirano trčanje i ubrzanja usloviti tolerancijom, ne samo brojem nedelje.",
+        "actual": "Posle W4 odnosa 5:1, W5 kontinuirano 2.9 km plus 6×20 s @6:19/km bez uslova za ponavljanje prethodne faze."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 12
+  },
+  {
+    "id": "U01",
+    "side": "B",
+    "distance": 5000,
+    "criteria": {
+      "fit": 7.5,
+      "quality": 7,
+      "progression": 6.5,
+      "recovery": 8.5,
+      "specificity": 6.5,
+      "deloadTaper": 8,
+      "coherence": 4.5
+    },
+    "total": 70.5,
+    "verdict": "Korisna osnova i dužina, ali tempo rasta i tvrdnje o ishodu zahtevaju korekciju.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 9,
+        "day": 7,
+        "expected": "Posle rasterećenja uporediti sa prethodnom punom nedeljom i dodavati dužinu uz toleranciju.",
+        "actual": "Dužina sa 4.9 km W7 na 6.1 W9 i 6.5 W10; W10 obim 15.2 prema 11.6 W7. Rast i novi kvalitet se preklapaju."
+      },
+      {
+        "week": 12,
+        "day": 7,
+        "expected": "Razdvojiti želju, referentni tempo i nepotvrđenu spremnost; ne prognozirati egzaktan napredak.",
+        "actual": "Trka navodi cilj 30:00 / ritam 7:00/km (=35:00); presentation referenceTimeSec=2004 i lastVdot=27.1 bez novog rezultata; upozorenje tvrdi da je ovo plan da se distanca istrči."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 12
+  },
+  {
+    "id": "U02",
+    "side": "A",
+    "distance": 5000,
+    "criteria": {
+      "fit": 7.5,
+      "quality": 7.5,
+      "progression": 7.5,
+      "recovery": 8.5,
+      "specificity": 6.5,
+      "deloadTaper": 8.5,
+      "coherence": 5
+    },
+    "total": 74.0,
+    "verdict": "Razuman opšti 5K ciklus; nema dokazanu putanju do sub-20.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 11,
+        "day": 3,
+        "expected": "U glavnoj fazi razvijati ponovljiv aerobni kvalitet kroz trajanje rada ili gustinu, uz razuman ukupni zamor.",
+        "actual": "2×1100 m @4:32/km sa 224 s hoda daje oko 10 min rada; W7 2×1000, W9 2.8 km piramida. Duži warmup/cooldown dominiraju; progresija rada je neujednačena."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Prikazati 23:45 kao trenutnu referencu, a sub-20 kao cilj za kasniju proveru.",
+        "actual": "Cilj 19:59 / ritam 4:45/km; presentation prognozira 22:09 i VDOT 44.2 bez merenja."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U02",
+    "side": "B",
+    "distance": 5000,
+    "criteria": {
+      "fit": 8,
+      "quality": 6.5,
+      "progression": 7,
+      "recovery": 8.5,
+      "specificity": 5.5,
+      "deloadTaper": 8.5,
+      "coherence": 8.5
+    },
+    "total": 74.75,
+    "verdict": "Bolja iskrenost i uvod u kvalitet; kasna 5K specifičnost je preslaba.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 13,
+        "day": 3,
+        "expected": "Kasno u ciklusu odabrati dozu i pauzu koje stvarno vežbaju održavanje trenutnog 5K ritma ili objasniti da je to samo lagana kontrola.",
+        "actual": "Samo 2×1000 m @4:45/km sa 214 s hoda; W14 4×600 @4:32. Skoro sav dodatni obim završava u lakim danima i dužini."
+      },
+      {
+        "week": 7,
+        "day": 7,
+        "expected": "Obim dužine opravdati njegovom svrhom uz dovoljno prostora za kvalitet i proveru forme.",
+        "actual": "14.5 km (~89 min) od W7 pa sve pune nedelje W9–W14; 43.3 km vrhunac, ali nema ugrađenog maksimalnog testa ili progresije brzine. Sama dužina nije greška."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U03",
+    "side": "A",
+    "distance": 5000,
+    "criteria": {
+      "fit": 8,
+      "quality": 6.5,
+      "progression": 6.5,
+      "recovery": 8.5,
+      "specificity": 6,
+      "deloadTaper": 8,
+      "coherence": 9
+    },
+    "total": 74.5,
+    "verdict": "Dobro kontrolisan, ali za iskusnog 5K trkača verovatno previše konzervativan kvalitet.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 5,
+        "day": 2,
+        "expected": "Za 24 nedelje kontinuiteta i 50 km/ned obezbediti jasnu progresiju aerobnog kvaliteta uz oporavak.",
+        "actual": "2×1200 m @3:57 sa 213 s hoda; isti rad W7 i W11, a W6/W10 fartlek po 9 min. T rad W5/W7/W11 samo 3.2 km; obim doseže 56.5 km."
+      },
+      {
+        "week": 13,
+        "day": 2,
+        "expected": "Specifičan rad treba da razvija održavanje ritma kroz odgovarajući zbir i gustinu rada.",
+        "actual": "3×1000 @4:07 sa 185 s hoda (~12.35 min rada); za cilj 18:59 nije prikazana provera sposobnosti, iako je upozorenje jasno."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U03",
+    "side": "B",
+    "distance": 5000,
+    "criteria": {
+      "fit": 8,
+      "quality": 8,
+      "progression": 7.5,
+      "recovery": 8,
+      "specificity": 7.5,
+      "deloadTaper": 8,
+      "coherence": 5.5
+    },
+    "total": 76.25,
+    "verdict": "Jači i koherentniji trening za iskusnog 5K trkača; prognoza i prikaz cilja nisu utemeljeni.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 2,
+        "expected": "Početne brzinske sesije mogu koristiti 300 m uz pun odmor; zatim objasniti svrhu prelaska ka dužem aerobnom radu.",
+        "actual": "8×300 @3:48 sa 171 s hoda, ponovljeno W2 i 9×300 W3. Prihvatljiva ekonomija/brzina, ali početne tri nedelje su malo raznovrsne."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Ne predstavljati neizmeren rast forme kao predviđanje sa preciznošću u sekundama.",
+        "actual": "Cilj 18:59 / ritam 4:07 (=20:35); presentation tvrdi 19:23 i da agresivni napredak dostiže cilj bez merenja."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U04",
+    "side": "A",
+    "distance": 10000,
+    "criteria": {
+      "fit": 7,
+      "quality": 7,
+      "progression": 7,
+      "recovery": 8,
+      "specificity": 7.5,
+      "deloadTaper": 8,
+      "coherence": 5.5
+    },
+    "total": 71.5,
+    "verdict": "Upotrebljiv 10K plan, sa nedovoljno postupnim početkom kvaliteta i preteranom prognozom.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 2,
+        "day": 5,
+        "expected": "Prvi specifičan ciklus bez iskustva kvaliteta treba da ima jasno tolerisan uvod i postepenu drugu sesiju.",
+        "actual": "W1 4×300 @4:34; W2 dodaje 2.8 km T @5:16 uz ponovljene R i LR 10.4 prema prijavljenih 8 km."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Uskladiti preporučeni ritam sa ciljem i izbegavati neizmerenu prognozu.",
+        "actual": "Cilj 50:00 / ritam 5:11 (=51:50); presentation referenceTimeSec=2890 uz lastVdot=41.8 i bez upozorenja."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U04",
+    "side": "B",
+    "distance": 10000,
+    "criteria": {
+      "fit": 8.5,
+      "quality": 6.5,
+      "progression": 7,
+      "recovery": 8.5,
+      "specificity": 6,
+      "deloadTaper": 8,
+      "coherence": 9
+    },
+    "total": 76.25,
+    "verdict": "Dobar uvod i iskren prikaz forme, ali slaba doza i gustina specifičnog rada.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 3,
+        "day": 5,
+        "expected": "Prag uvoditi korisnom ali tolerisanom dozom; jedan smislen kratki trening može biti bolji od dva vrlo mala.",
+        "actual": "D3 1.1 km T, D5 samo 0.7 km T; oba sa ukupno 5.8 km warmup/cooldown. W4 još 0.4 km T uz 5.5 km lako."
+      },
+      {
+        "week": 14,
+        "day": 3,
+        "expected": "Kasni 10K rad treba da vežba kontinuitet ritma uz pauzu prilagođenu svrsi.",
+        "actual": "2×1200 @5:11 sa 240 s hoda, ukupno 2.4 km; W13 2×1000 sa 233 s hoda. LR u W14 16.2 km (~105 min) dok je RP rad relativno mali."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U05",
+    "side": "A",
+    "distance": 10000,
+    "criteria": {
+      "fit": 8,
+      "quality": 6.5,
+      "progression": 7.5,
+      "recovery": 8.5,
+      "specificity": 6.5,
+      "deloadTaper": 8,
+      "coherence": 9
+    },
+    "total": 76.5,
+    "verdict": "Jak aerobni obim, ali slabiji kvalitet nego što iskustvo i cilj opravdavaju.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 5,
+        "expected": "Iskusnom trkaču od 45 km/ned ponuditi smislen prag i progresiju bez nepotrebnog forsiranja.",
+        "actual": "D2 samo 2×700 m T, D5 1.2 km T; W3 dva mala T treninga. Ukupni obim raste do 68.2, kvalitet ostaje relativno skroman."
+      },
+      {
+        "week": 13,
+        "day": 2,
+        "expected": "Pred 10K trku rad na trenutnom trkačkom ritmu treba da razvija održavanje ritma.",
+        "actual": "3×1200 @4:30 sa 240 s hoda; W14 2×1600 takođe sa 240 s hoda. Nema objašnjenja dugog odmora za RP koji je sporiji od I tempa."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U05",
+    "side": "B",
+    "distance": 10000,
+    "criteria": {
+      "fit": 8,
+      "quality": 8.5,
+      "progression": 8,
+      "recovery": 8,
+      "specificity": 8,
+      "deloadTaper": 8,
+      "coherence": 5.5
+    },
+    "total": 78.5,
+    "verdict": "Dobar rezultatno usmeren 10K ciklus, uz neosnovano preciznu prognozu.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 7,
+        "day": 5,
+        "expected": "Dozu dva kvaliteta i dužine pratiti prema zamoru, uz jasnu mogućnost smanjenja.",
+        "actual": "D2 4×1200 I, D5 3×2000 T (~27.6 min), LR 18.4 km; za iskusnog nije automatski previše, ali plan nema eksplicitan uslov povratne informacije."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Odvojiti cilj 42:00 od referentnih 45:00 i izbegavati automatski rast VDOT-a.",
+        "actual": "Trka cilj 42:00 / ritam 4:30; presentation predviđa 42:13 i moguć agresivni tempo napretka bez novog testa."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U06",
+    "side": "A",
+    "distance": 10000,
+    "criteria": {
+      "fit": 5,
+      "quality": 6,
+      "progression": 6,
+      "recovery": 7,
+      "specificity": 6.5,
+      "deloadTaper": 8,
+      "coherence": 4.5
+    },
+    "total": 60.5,
+    "verdict": "Nedovoljno uvažena pauza; velika početna dužina i neosnovana sigurnost završetka.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 7,
+        "expected": "Posle 8 nedelja pauze i samo jedne dosledne nedelje krenuti od ponovljive dužine od oko 4 km ili potvrditi veći kapacitet.",
+        "actual": "RW dužina 5.9 km W1, 6.5 W2, 7.1 W3; W5 prelazi na 7.6 km kontinuirano. Hod ublažava, ali ne uklanja trajanje i mehaničku izloženost."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Stari PB tretirati kao staru referencu i ne tvrditi da ograničen obim garantuje istrčavanje.",
+        "actual": "Cilj 60 min / ritam 6:00; presentation referenceTimeSec=3103 i lastVdot=38.5, bez posebnog upozorenja o starom PB; tekst kaže plan da distancu istrčiš."
+      }
+    ],
+    "confidence": 0.84,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U06",
+    "side": "B",
+    "distance": 10000,
+    "criteria": {
+      "fit": 8.5,
+      "quality": 7,
+      "progression": 7,
+      "recovery": 9,
+      "specificity": 4.5,
+      "deloadTaper": 8.5,
+      "coherence": 9
+    },
+    "total": 77.0,
+    "verdict": "Dobar konzervativan povratak, ali ograničena priprema za 10K ostaje nerešena.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 14,
+        "day": 7,
+        "expected": "Za 10K ili graditi tolerisanu dužinu/trajanje, ili jasno promeniti cilj u uslovan završetak sa hodom.",
+        "actual": "Najveći LR 6.7 km, obim 18.2; RP 2×1000 sa 240 s hoda. Upozorenje priznaje ograničenje, ali konkretan alternativni plan trke nije naveden."
+      },
+      {
+        "week": 7,
+        "day": 3,
+        "expected": "Zahtevniji ritam posle pauze usloviti novijom proverom ili naporom koji se može kontrolisati.",
+        "actual": "3×90 s @5:07/km zasnovano na 5K PB iz oktobra 2025. W1 već 6×20 s @4:55; presentation traži proveru, ali raspored ne uslovljava izvršenje rezultatom provere."
+      }
+    ],
+    "confidence": 0.84,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U07",
+    "side": "A",
+    "distance": 21097.5,
+    "criteria": {
+      "fit": 8.5,
+      "quality": 7,
+      "progression": 8,
+      "recovery": 8.5,
+      "specificity": 7.5,
+      "deloadTaper": 7.5,
+      "coherence": 9
+    },
+    "total": 79.75,
+    "verdict": "Dobro postepena HM izdržljivost i pošten cilj; mali RP rad sa dugim pauzama.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 10,
+        "day": 3,
+        "expected": "HM specifičan rad treba postepeno da razvija održavanje ritma, uz tolerisanu gustinu.",
+        "actual": "2×1700 @5:11 sa 326 s odmora; isto W11 i W14. Sedam km kontinuirano W13 delimično nadoknađuje ovaj nedostatak."
+      },
+      {
+        "week": 15,
+        "day": 7,
+        "expected": "Taper treba stvarno da smanji zamor uz zadržavanje kratkog korisnog kvaliteta.",
+        "actual": "W15 34.6 km (69% vrhunca), LR 12.6 km uz RP 3.1 km i T 2.5 km; prihvatljivo, ali još relativno dugo za prvog HM trkača."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U07",
+    "side": "B",
+    "distance": 21097.5,
+    "criteria": {
+      "fit": 7,
+      "quality": 8,
+      "progression": 7,
+      "recovery": 8,
+      "specificity": 7,
+      "deloadTaper": 8,
+      "coherence": 5
+    },
+    "total": 72.5,
+    "verdict": "Koristan HM kvalitet, slabija dužinska progresija i nepotvrđen ishod.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 7,
+        "expected": "Početno opterećenje dužine graditi iz prijavljenih 10 km, uz iskustvo i toleranciju.",
+        "actual": "11.6 km W1, 12.4 W2, 13.2 W3; LR potom 14 km W5–W9, vrhunac 15.3 W11, W13 14.8. Nije nužno nebezbedno, ali slabija progresija od kasnog zahteva 21.1 km."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Prikazati cilj i referentni rezultat bez automatskog zaključivanja o napretku.",
+        "actual": "Cilj 1:45 / ritam 5:11 (~1:49:21); presentation referenceTimeSec=6107 i lastVdot=44.2, bez upozorenja."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U08",
+    "side": "A",
+    "distance": 21097.5,
+    "criteria": {
+      "fit": 8,
+      "quality": 8,
+      "progression": 8,
+      "recovery": 7.5,
+      "specificity": 8.5,
+      "deloadTaper": 7,
+      "coherence": 6
+    },
+    "total": 76.75,
+    "verdict": "Dobar iskusan HM ciklus; oporavak posle simulacije i taper traže pažnju.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 10,
+        "day": 3,
+        "expected": "U skladu sa napomenom naredna 2–3 dana lagano, smanjiti dužinu ili dati opciju prema zamoru.",
+        "actual": "D2 16.5 km sa 10 km na HM ritmu; D3 13.6 km srednje-dugo; nedelja 71.9 km. D3 jeste Z2, ali ima značajno trajanje."
+      },
+      {
+        "week": 12,
+        "day": 2,
+        "expected": "Taper smanjuje opterećenje dok zadržava oštrinu; ne vraća nepotrebno dva velika kvaliteta.",
+        "actual": "W12 2×3000 RP, D5 2×2500 T, LR17.2 km; W13 5 km RP+4 km T i LR14.3. Presentation referenceTimeSec=5383 i VDOT51.2 nisu potkrepljeni novim rezultatom."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 14
+  },
+  {
+    "id": "U08",
+    "side": "B",
+    "distance": 21097.5,
+    "criteria": {
+      "fit": 8.5,
+      "quality": 7.5,
+      "progression": 8,
+      "recovery": 8,
+      "specificity": 8,
+      "deloadTaper": 7.5,
+      "coherence": 9
+    },
+    "total": 80.5,
+    "verdict": "Dobro usklađen HM obim i transparentnost; rani kvalitet i oporavak mogu biti bolji.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 5,
+        "expected": "Iskusnom trkaču dozu praga razvijati kroz jasnu svrhu i progresiju.",
+        "actual": "D2 2×1000 T, D5 2×700 T; oba imaju 6.5 km zagrevanja/hlađenja. W6 rad postaje 4.7 km T, pa početna nedelja ostaje neuobičajeno slaba."
+      },
+      {
+        "week": 10,
+        "day": 3,
+        "expected": "Posle 10 km kontrolisanog HM rada ponuditi kraći oporavak po zamoru.",
+        "actual": "D2 16.5 km sa 10 km RP; sledećeg dana 13.6 km Z2, a LR22 km i vrhunac75.3 km. Teški dani jesu razmaknuti, ali ukupni zamor nije potpuno opisan."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 14
+  },
+  {
+    "id": "U09",
+    "side": "A",
+    "distance": 42195,
+    "criteria": {
+      "fit": 5.5,
+      "quality": 6.5,
+      "progression": 5,
+      "recovery": 8,
+      "specificity": 2.5,
+      "deloadTaper": 8,
+      "coherence": 8.5
+    },
+    "total": 62.5,
+    "verdict": "Odbaciti kao punu maratonsku pripremu; dobar opis ograničenja ne rešava nedostatak dužina.",
+    "criticalIssues": [
+      "Nedovoljna specifična izdržljivost za prvi maraton: maksimalna dužina samo 17.7 km; izdavanje pune maratonske trke ostaje uslovno."
+    ],
+    "mainConcerns": [
+      {
+        "week": 17,
+        "day": 7,
+        "expected": "Priprema za prvi maraton mora postepeno razviti ponovljenu dugu izloženost, ili konkretno preusmeriti cilj/datum.",
+        "actual": "Najveći LR17.7 km (~105 min), W14 16.5; većina ranih dužina 8–14 km. Trka42.195 km ipak stoji W20."
+      },
+      {
+        "week": 17,
+        "day": 3,
+        "expected": "Maratonski rad treba da podrži specifičnu izdržljivost, bez dominacije generičkog praga.",
+        "actual": "RP samo2.5 km kontinuirano; ostali dan T3.7 km. Upozorenje priznaje ograničenu dužinsku pripremu, ali nema konkretnog alternativnog cilja."
+      }
+    ],
+    "confidence": 0.89,
+    "reviewedWeekCount": 20
+  },
+  {
+    "id": "U09",
+    "side": "B",
+    "distance": 42195,
+    "criteria": {
+      "fit": 4.5,
+      "quality": 6,
+      "progression": 4,
+      "recovery": 8,
+      "specificity": 2,
+      "deloadTaper": 8,
+      "coherence": 3
+    },
+    "total": 52.0,
+    "verdict": "Odbaciti kao punu maratonsku pripremu; slab LR i tvrdnja o istrčavanju su posebno problematični.",
+    "criticalIssues": [
+      "Prvi maraton sa najdužim LR16 km, bez dovoljne ponovljene dužinske pripreme i uz tekst koji obećava istrčavanje."
+    ],
+    "mainConcerns": [
+      {
+        "week": 17,
+        "day": 7,
+        "expected": "Razviti duge trenažne izloženosti ili jasno ograničiti cilj; broj dana sam ne može dokazati spremnost.",
+        "actual": "Maksimum16 km u W14/W17 (~95 min); W5–W11 pune nedelje skoro sve12.8 km. W20 izdaje42.195 km; warning naziva planom da distancu istrčiš."
+      },
+      {
+        "week": 20,
+        "day": 7,
+        "expected": "Ne imputirati budući napredak niti obaveznih5 dana; četvorodnevni originalni maratonski programi postoje.",
+        "actual": "Presentation lastVdot47.1/reference12021 bez novog rezultata; warning preporučuje bar5 dana i tvrdi da na4 dana LR postaje polovina nedelje, iako isporučeni LR16 km od42.1 nije polovina."
+      }
+    ],
+    "confidence": 0.89,
+    "reviewedWeekCount": 20
+  },
+  {
+    "id": "U10",
+    "side": "A",
+    "distance": 42195,
+    "criteria": {
+      "fit": 6.5,
+      "quality": 8,
+      "progression": 6,
+      "recovery": 7.5,
+      "specificity": 7,
+      "deloadTaper": 6.5,
+      "coherence": 5.5
+    },
+    "total": 68.25,
+    "verdict": "Solidan kvalitet, ali gubi postojeću dužinu pa kasno naglo vraća maratonsku izloženost.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 7,
+        "expected": "Uz prijavljenih24 km ponovljive dužine zadržati prikladnu bazu ili objasniti razlog znatnog smanjenja.",
+        "actual": "W1 LR15.2 km, W2 16, W3 16.9; tek W11 23.5. W14 skače sa22.8 W13 na28.2 km uz dva veća kvaliteta."
+      },
+      {
+        "week": 19,
+        "day": 7,
+        "expected": "Taper dozirati prema zamoru i opisati trajanje tačno.",
+        "actual": "W19 LR17.1 km7 dana pre trke uz RP6 km i T4.3; opis113 min ne odgovara17.1×6:08≈105 min. Presentation prognozira3:26:21, a trka cilj3:30 / ritam5:20 daje3:45."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 20
+  },
+  {
+    "id": "U10",
+    "side": "B",
+    "distance": 42195,
+    "criteria": {
+      "fit": 8.5,
+      "quality": 7,
+      "progression": 8,
+      "recovery": 8,
+      "specificity": 7.5,
+      "deloadTaper": 7,
+      "coherence": 9
+    },
+    "total": 78.5,
+    "verdict": "Bolje koristi postojeću maratonsku bazu; RP doza i kasni taper mogu biti jači.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 14,
+        "day": 2,
+        "expected": "Uz iskustvo i visok obim postepeno graditi specifičnu RP izdržljivost, bez nepotrebnog forsiranja.",
+        "actual": "U W10/W14/W18 samo2×1600 RP@5:20; W11/W13/W17 kontinuirano3.3 km RP. LR29.3 km se više puta ponavlja, što podržava opštu izdržljivost."
+      },
+      {
+        "week": 19,
+        "day": 7,
+        "expected": "Sedam dana pred maraton smanjiti dužinu prema zamoru i iskustvu, uz kratak kvalitet.",
+        "actual": "W19 LR18.2 km(~112 min), nedelja52 km, RP3.3 km i T3.8 km. Taper ukupno pada, ali poslednja dužina ostaje velika; ovo je trenerski sud, ne univerzalna zabrana."
+      }
+    ],
+    "confidence": 0.87,
+    "reviewedWeekCount": 20
+  }
+]

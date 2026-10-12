@@ -10,6 +10,17 @@ export interface PlanInput {
   pbMin: string;
   pbSec: string;
   weeklyKm: string;
+  pbDate?: string;
+  history?: {
+    longRunKm: string;
+    consistentWeeks: string;
+    breakWeeks: string;
+    qualityExperience: 'none' | 'some' | 'experienced';
+  };
+  preferences?: {
+    difficulty: 'Konzervativno' | 'Standardno' | 'Agresivno';
+    volume: 'Konzervativno' | 'Standardno' | 'Agresivno';
+  };
   goal?: { min: string; sec: string };
 }
 export const TEN_K: PlanInput = {
@@ -43,12 +54,32 @@ export async function runWizard(page: Page, input: PlanInput = TEN_K): Promise<v
     .click();
   await page.getByLabel('minuti').fill(input.pbMin);
   await page.getByLabel('sekunde').fill(input.pbSec);
+  if (input.pbDate) await page.getByLabel('Datum rezultata').fill(input.pbDate);
   await expect(page.getByText('Tvoja forma')).toBeVisible();
   await page.getByRole('button', { name: 'Dalje' }).click();
   // 3. obim
   await page.getByLabel('Nedeljna kilometraža').fill(input.weeklyKm);
+  if (input.history) {
+    await page.getByText('Tvoja trenutna baza — opciono').click();
+    await page.getByLabel('Skorašnja ponovljiva dužina (km)').fill(input.history.longRunKm);
+    await page
+      .getByLabel('Nedelja redovnog trčanja u kontinuitetu')
+      .fill(input.history.consistentWeeks);
+    await page.getByLabel('Skorašnja pauza (nedelja)').fill(input.history.breakWeeks);
+    await page
+      .getByLabel('Iskustvo sa intervalima i tempo treningom')
+      .selectOption(input.history.qualityExperience);
+  }
   await page.getByRole('button', { name: 'Dalje' }).click();
   // 4. cilj i izrada
+  if (input.preferences) {
+    await group(page, 'Težina kvalitetnog rada')
+      .getByRole('button', { name: input.preferences.difficulty, exact: true })
+      .click();
+    await group(page, 'Tempo rasta obima')
+      .getByRole('button', { name: input.preferences.volume, exact: true })
+      .click();
+  }
   if (input.goal) {
     await page.getByLabel('minuti').fill(input.goal.min);
     await page.getByLabel('sekunde').fill(input.goal.sec);

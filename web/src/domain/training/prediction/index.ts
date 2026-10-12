@@ -21,9 +21,10 @@ export function predRow(
   q: number,
   pt: number,
   raceDistM: number,
-  refVdot?: number | null
+  refVdot?: number | null,
+  explicitZone?: Session['zone']
 ): PredictionRow {
-  const zone = ZONE_FOR_KIND[kind];
+  const zone = explicitZone === 'RP' ? undefined : (explicitZone ?? ZONE_FOR_KIND[kind]);
   const p5k =
     refVdot != null && Number.isFinite(refVdot)
       ? Math.round(raceTimeForVdot(refVdot, raceDistM))
@@ -31,6 +32,7 @@ export function predRow(
         ? Math.round(raceTimeForVdot(vdotFromPace(pt, zone), raceDistM))
         : Math.round(riegelDist(pt * q, q * 1000, raceDistM));
   const row: PredictionRow = { w, l: `N${w} · ${kind}`, q, pt, p5k };
+  if (explicitZone) row.zone = explicitZone;
   if (KIND_FROM_GOAL.has(kind)) row.nemeri = true;
   return row;
 }
@@ -118,7 +120,8 @@ export function derivePred(
           sessQKm(d.session),
           d.session.paceSec,
           raceDistM,
-          planVdotForWeek(meta, wk.w)
+          planVdotForWeek(meta, wk.w),
+          d.session.zone
         )
       );
     })

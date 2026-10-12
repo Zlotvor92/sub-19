@@ -14,6 +14,22 @@ import { useTrainingStore } from '../../stores';
 import { discardPlan } from '../../stores/actions';
 import { commitRecalibration, previewRecalibration } from '../../stores/raceActions';
 import { useUIStore } from '../../stores/uiStore';
+import {
+  alignAutomaticAlts,
+  planStateStamp,
+  planPreviewChanges,
+  replanContext
+} from '../../stores/executionActions';
+import { recordPlanRevision } from '../../domain/plan/versions';
+
+const describeChanges = (result: GenPlanState, today: string): string =>
+  planPreviewChanges(result, today)
+    .slice(0, 4)
+    .map(
+      (week) =>
+        `N${week.week}: preostali km ${fmtNum(week.beforeKm, 1)} → ${fmtNum(week.afterKm, 1)}; kvalitet ${fmtNum(week.qualityMinutesBefore ?? 0, 1)} → ${fmtNum(week.qualityMinutesAfter ?? 0, 1)} min; zahtevni treninzi ${week.demandingDaysBefore ?? 0} → ${week.demandingDaysAfter ?? 0}`
+    )
+    .join('\n');
 
 /* RADNJE NAD PLANOM (promena cilja, preračunavanje prema formi, novi plan). Isti tokovi, ista pitanja i iste poruke kao ranije u podešavanjima — ovde su samo
    izvučeni iz prikaza, da ih mogu pozvati i Ti → Cilj i Plan → Prilagodi plan. Pitanja idu kroz `confirmAction` (ne `window.confirm`), ishod kroz `alert`. */
@@ -31,7 +47,8 @@ export async function changeGoalTime(
   }
   const day = parseIsoDate(todayStr);
   if (!day) return false;
-  const r = planWithNewGoal(genPlan, sec, day);
+  const stamp = planStateStamp();
+  const r = planWithNewGoal(genPlan, sec, day, replanContext());
   if ('error' in r) {
     window.alert(r.error);
     return false;
@@ -39,16 +56,25 @@ export async function changeGoalTime(
   /* Realnost cilja se proverava istim merilom koje čarobnjak već koristi. */
   const warn =
     r.meta.realno === false
-      ? '\n\nUPOZORENJE: ovaj cilj je po proceni aplikacije van dohvata za preostalo vreme. Plan će ga ipak ispoštovati.'
+      ? '\n\nUPOZORENJE: cilj traži bržu formu od referentnog rezultata. Ciljno vreme ne ubrzava trening iznad podržane forme.'
       : '';
   const n = r.goalChange.changedWeeks;
   const ok = await confirmAction(
-    `Promeniti ciljno vreme na ${fmtClock(sec)}?\n\n${glagolZaBroj(n, 'Menja se ', 'Menjaju se ')}${brojNedelja(n)} ${pl3(n, 'koja tek dolazi', 'koje tek dolaze', 'koje tek dolaze')} (od N${r.goalChange.week}).\nOdrađeni treninzi, uneti tempi i izmerena forma ostaju netaknuti.${warn}`
+    `Promeniti ciljno vreme na ${fmtClock(sec)}?\n\n${glagolZaBroj(n, 'Menja se ', 'Menjaju se ')}${brojNedelja(n)} ${pl3(n, 'koja tek dolazi', 'koje tek dolaze', 'koje tek dolaze')} (od N${r.goalChange.week}).\nOdrađeni treninzi, uneti tempi i izmerena forma ostaju netaknuti.\n\n${describeChanges(r, todayStr)}${warn}`
   );
   if (!ok) return false;
-  useTrainingStore
-    .getState()
-    .setGenPlan({ weeks: r.weeks, pred: r.pred, qs: r.qs, meta: r.meta, ulaz: r.ulaz });
+  if (stamp !== planStateStamp()) {
+    window.alert('Plan ili unosi su se promenili. Ponovo pregledaj promenu cilja.');
+    return false;
+  }
+  useTrainingStore.getState().patch({
+    genPlan: recordPlanRevision(
+      genPlan,
+      { ...genPlan, ...r },
+      { reason: 'goal', date: day, summary: `Cilj ${fmtClock(sec)}` }
+    ),
+    alts: alignAutomaticAlts({ ...genPlan, ...r }, day)
+  });
   window.alert(`Cilj promenjen. Izmenjeno nedelja: ${n}.`);
   return true;
 }
@@ -65,10 +91,13 @@ export async function recalibratePlan(plan: ResolvedPlan, todayStr: string): Pro
   const delta = pv.form - pv.planVdot;
   const before = r.predictedBefore ? fmtClock(r.predictedBefore) : '—';
   const ok = await confirmAction(
-    `Preračunati preostali plan prema izmerenoj formi?\n\nIzmerena forma: VDOT ${fmtNum(pv.form, 1)} · plan je očekivao: VDOT ${fmtNum(pv.planVdot, 1)} (${delta > 0 ? '+' : ''}${fmtNum(delta, 1)}).\nProjektovano vreme na dan trke: ${before} → ${fmtClock(r.predictedAfter)}.\n\n${glagolZaBroj(n, 'Menja se ', 'Menjaju se ')}${brojNedelja(n)} ${pl3(n, 'koja tek dolazi', 'koje tek dolaze', 'koje tek dolaze')} (od N${r.week}): tempi i obim sesija prema izmerenoj formi. Cilj, kalendar i raspored dana ostaju isti. Trkački treninzi ne idu brže nego što trenutna forma podržava.\nOdrađeni treninzi, uneti tempi, ručno zaključana polja i izmerena forma ostaju netaknuti.\n\nNema vraćanja — ako ti treba, prvo izvezi backup.`
+    `Preračunati preostali plan prema izmerenoj formi?\n\nIzmerena forma: VDOT ${fmtNum(pv.form, 1)} · plan je očekivao: VDOT ${fmtNum(pv.planVdot, 1)} (${delta > 0 ? '+' : ''}${fmtNum(delta, 1)}).\nReferentno vreme prema izmerenoj formi: ${before} → ${fmtClock(r.predictedAfter)}.\n\n${glagolZaBroj(n, 'Menja se ', 'Menjaju se ')}${brojNedelja(n)} ${pl3(n, 'koja tek dolazi', 'koje tek dolaze', 'koje tek dolaze')} (od N${r.week}): tempi i obim sesija prema izmerenoj formi. Cilj, kalendar i raspored dana ostaju isti. Trkački treninzi ne idu brže nego što trenutna forma podržava.\nOdrađeni treninzi, uneti tempi, ručno zaključana polja i izmerena forma ostaju netaknuti.\n\n${describeChanges(pv.result, todayStr)}\n${pv.result.meta.dayWarnings.filter((note) => note.startsWith('Nedovoljno potpunih')).join('\n')}\n\nPrethodni plan možeš pregledati i vratiti u istoriji plana.`
   );
   if (!ok) return false;
-  commitRecalibration(pv.result);
+  if (!commitRecalibration(pv.result)) {
+    window.alert('Plan ili unosi su se promenili. Ponovo pregledaj preračunavanje.');
+    return false;
+  }
   window.alert(`Plan preračunat. Izmenjeno nedelja: ${n}.`);
   return true;
 }

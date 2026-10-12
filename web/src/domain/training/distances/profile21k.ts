@@ -6,8 +6,7 @@
 import { fmtClock, r1 } from '../../format';
 import { HEURISTIC_21K as H, PRODUCT_21K } from '../constants/distances';
 import { DELOAD_EVERY } from '../constants/heuristics';
-import { sessInt, sessTempo, wuCdForVolume } from '../sessions/build';
-import { cruiseIntervals, type CruiseParams } from '../sessions/cruise';
+import { sessTempo, wuCdForVolume } from '../sessions/build';
 import {
   chooseReps,
   fartlek,
@@ -15,11 +14,29 @@ import {
   proportionalRest,
   type FartlekParams
 } from '../sessions/intervals';
-import { progressionRun, type ProgressionParams } from '../sessions/progression';
-import { repetitions } from '../sessions/repetitions';
-import { continuousTempo, type TempoParams } from '../sessions/tempo';
+import { DEMANDING_LONG_RUN_MIN } from '../generator/weeklyLoad';
 import type { FastFinish, SessionDay } from '../types';
-import type { DistanceProfile, PaceStrategy, Phase, QualityRequest } from './types';
+import {
+  HM_NOTES,
+  HM_TAPER,
+  HM_TRACKS,
+  HM_WEEKLY_FAST_SHARE,
+  hmContinuousThreshold,
+  hmCycle,
+  hmRacePaceBlocks,
+  hmTargets,
+  hmThresholdBlocks,
+  hmTrack,
+  MIN_CONTINUOUS_KM
+} from './hmProgression';
+import { applyQualityDose, introductoryQuality } from './qualityDose';
+import type {
+  DistanceProfile,
+  PaceStrategy,
+  Phase,
+  QualityRequest,
+  SingleQualityContext
+} from './types';
 
 /** <30% prag, <60% vrhunac, ostalo specifika. */
 function phase21K(qualW: number, qualWeeks: number): Phase {
@@ -37,20 +54,7 @@ export function paceStrategy21K(racePaceSec: number): PaceStrategy {
   return 'long';
 }
 
-const TEMPO: TempoParams = { floorCapKm: 5, floorShare: 0.1 };
-const CRUISE: CruiseParams = {
-  floorCapKm: 3,
-  floorShare: 0.12,
-  ladder: [
-    { fromKm: 10, repKm: 3.0 },
-    { fromKm: 6, repKm: 2.5 },
-    { fromKm: 3.5, repKm: 1.6 }
-  ],
-  minRepKm: 1.0,
-  restSec: (repKm) => (repKm >= 2.5 ? 75 : 60)
-};
 const FARTLEK: FartlekParams = { minN: 5, maxN: 10, nShare: 0.12, surgeSec: 120, restSec: 90 };
-const PROGRESSION: ProgressionParams = { minKm: 6, maxKm: 16, pct: 0.2 };
 const INTERVAL_LADDER_M = [2000, 1600, 1200, 1000, 800, 600] as const;
 
 const intervalWish = (phase: Phase, wkIdx: number): number => {
@@ -69,58 +73,6 @@ const mkIntervals = (
   const { rep, n } = chooseReps(q, intervalWish(phase, wkIdx), INTERVAL_LADDER_M, 600);
   return intervalsOf(dow, vol, n, rep, pI, proportionalRest(rep, pI));
 };
-
-/** `share` (0.6) deli nedeljni budžet praga kad se q1 ujedno računa na prag. */
-const mkCruise = (dow: number, vol: number, pT: number, share?: number | null): SessionDay =>
-  cruiseIntervals(H.tempoBudget.pct, CRUISE, dow, vol, pT, share);
-
-const mkTempo = (
-  dow: number,
-  vol: number,
-  pT: number,
-  fixKm?: number | null,
-  share?: number | null
-): SessionDay => continuousTempo(H, TEMPO, dow, vol, pT, fixKm, share);
-
-/** Blokovi na tempu trke (2–5 km) sa kratkim džogom između. */
-const mkRaceRhythm = (
-  dow: number,
-  vol: number,
-  racePace: number,
-  pE: number,
-  qualW: number
-): SessionDay => {
-  const q = Math.min(
-    Math.max(vol * H.racePaceBudget.pct, Math.min(4, vol * 0.1)),
-    H.racePaceBudget.maxKm
-  );
-  const early = (qualW || 0) % 2 === 0;
-  const repKm = q >= 12 ? (early ? 4.0 : 5.0) : q >= 7.5 ? (early ? 3.0 : 4.0) : q >= 5 ? 3.0 : 2.0;
-  const n = Math.max(2, Math.floor(q / repKm + 0.08));
-  const [wu, cd] = wuCdForVolume(vol);
-  return sessInt(
-    dow,
-    wu,
-    n,
-    Math.round(repKm * 1000),
-    racePace,
-    Math.round(pE * 0.9),
-    Math.max(cd, 1),
-    'Tempo trke'
-  );
-};
-
-const mkRepetitions = (dow: number, vol: number, pR: number): SessionDay =>
-  repetitions({ minTotalKm: 1.2, ...H.repetitionBudget }, 300, dow, vol, pR);
-
-const mkProgression = (
-  dow: number,
-  vol: number,
-  endPace: number,
-  pE: number,
-  share: number | null,
-  atRacePace: boolean
-): SessionDay => progressionRun(PROGRESSION, dow, vol, endPace, pE, { share, atRacePace });
 
 /**
  * Kontrolna trka: pravi presek forme 3–4 nedelje pred cilj — i probni dan za
@@ -143,7 +95,9 @@ const mkTimeTrial = (dow: number, vol: number, racePace: number): SessionDay => 
     session: {
       type: 'tempo',
       kind: 'Kontrolna trka',
+      purpose: 'RP',
       zone: 'RP',
+      paceSource: 'race-specific',
       notes:
         'Kontrolisano na ritmu polumaratona; isprobaj opremu i gorivo. Ovo nije maksimalan test forme. Pravu trku unesi zasebno kao test. Naredna 2–3 dana lagano.',
       wuKm: wu,
@@ -155,42 +109,80 @@ const mkTimeTrial = (dow: number, vol: number, racePace: number): SessionDay => 
   };
 };
 
-type Family = 'I' | 'R' | 'T' | 'RP';
+/** Kontinuirani rad do granice kad dva bloka ne staju; ispod 1,5 km nema smislene doze,
+ *  pa 0 km znači da nedeljni omotač/guard taj dan pretvara u lak (bez bržeg ili dužeg rada). */
+const fallbackTempo = (
+  dow: number,
+  vol: number,
+  pace: number,
+  capKm: number,
+  kind: 'Tempo' | 'Tempo trke',
+  purpose: 'T' | 'RP'
+): SessionDay => {
+  const [wu, cd] = wuCdForVolume(vol);
+  const fits = Math.floor((capKm + 1e-9) * 10) / 10;
+  const km = fits >= MIN_CONTINUOUS_KM ? fits : 0;
+  return sessTempo(dow, wu, km, pace, Math.max(cd, 1), kind, purpose);
+};
 
 /**
- * Koji sistem gađa q1 te nedelje — JEDAN izvor istine za izbor sesije I za
- * deljenje nedeljnog budžeta praga (Danielsov budžet je NEDELJNI, ne po sesiji).
+ * HM nedelja po fazi i stazi (v. `hmProgression.ts`):
+ * - prag (threshold): q1 pragovski blokovi rastu dužinom i zbirom; q2 naizmenično
+ *   kontinuirani prag i VO2 podrška (fartlek/intervali; R nije deo HM menija).
+ * - vrhunac (peak): q1 prag (svake treće nedelje intervali), q2 HM ritam u blokovima.
+ * - specifično: q1 HM ritam, q2 kontinuirani prag za održavanje. Kad duga ima brz
+ *   završetak na HM ritmu, ona JESTE HM dan: jedini drugi kvalitet je prag.
+ * - jedan kvalitet nedeljno: prag i HM ritam naizmenično.
+ * Taper: isti formati, manje rada (`HM_TAPER`), tempo ostaje.
+ * Vraća `progression: true` kada je doza već izvedena iz ciljnih minuta.
  */
-function q1Family(phase: Phase, strat: PaceStrategy, qualW: number): Family {
-  if (phase === 'threshold') return qualW % 3 === 0 ? 'I' : 'R';
-  if (phase === 'peak') return 'I'; // faza vrhunca je VO2max faza
-  if (strat === 'blocks') return 'RP';
-  if (strat === 'threshold') return qualW % 3 === 0 ? 'I' : 'T';
-  return qualW % 2 === 1 ? 'RP' : 'T'; // 'long'
-}
-
-function buildQuality21K(req: QualityRequest): SessionDay {
-  const { qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, isTaper1, dow, racePace, ctx } =
-    req;
+function chooseQuality21K(req: QualityRequest): { day: SessionDay; progression: boolean } {
+  const { qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, isTaper1, dow, racePace, ctx } = req;
   const phase = phase21K(qualW, qualWeeks);
-  const strat = paceStrategy21K(racePace);
-  /* Kad q1 ide na prag (T), deli nedeljni budžet praga sa q2: 60% / 40%. */
-  const share = effQ === 2 && q1Family(phase, strat, qualW) === 'T' ? 0.6 : 1;
+  const track = hmTrack(req.readiness);
+  const policy = HM_TRACKS[track];
+  const cycle = hmCycle(qualW, qualWeeks, ctx.taperW || H.taperWeeks, phase21K);
+  const target = hmTargets(track, cycle);
+  const x = { track, vol, intensity: req.qualityIntensity, maxWorkSec: req.maxWorkSec };
+  const single = effQ === 1 || !!req.replacesSecondQuality;
+  const rpMaxKm = H.racePaceBudget.maxKm;
+  const prog = (day: SessionDay | null, fallback: () => SessionDay) => ({
+    day: day ?? fallback(),
+    progression: true
+  });
+  const tFallback = (): SessionDay =>
+    fallbackTempo(
+      dow,
+      vol,
+      pT,
+      Math.min(vol * 0.1, (req.maxWorkSec ?? Infinity) / pT),
+      'Tempo',
+      'T'
+    );
+  const rpFallback = (): SessionDay =>
+    fallbackTempo(
+      dow,
+      vol,
+      racePace,
+      Math.min(vol * 0.2, rpMaxKm, (req.maxWorkSec ?? Infinity) / racePace),
+      'Tempo trke',
+      'RP'
+    );
+  const tBlocks = (min: number, block: number, note?: string) =>
+    prog(hmThresholdBlocks(dow, pT, min, block, x, note), tFallback);
+  const rpBlocks = (min: number, block: number, note?: string) =>
+    prog(hmRacePaceBlocks(dow, racePace, min, block, rpMaxKm, x, note), rpFallback);
 
-  if (isTaper1) {
-    const [twu, tcd] = wuCdForVolume(vol);
-    if (effQ === 1 || slotRole === 'q1') {
-      const km = r1(Math.min(5, Math.max(2, vol * 0.09)));
-      return sessTempo(
-        dow,
-        r1(Math.max(twu * 0.8, 1)),
-        km,
-        racePace,
-        r1(Math.max(tcd * 0.8, 0.8)),
-        'Tempo trke'
+  if (isTaper1 || req.taperTransition) {
+    const f = isTaper1 ? HM_TAPER.final : HM_TAPER.transition;
+    if (single || slotRole === 'q1')
+      return rpBlocks(policy.rp.endMin * f.rp, policy.rp.blockEndMin, HM_NOTES.taper);
+    if (isTaper1)
+      return prog(
+        hmContinuousThreshold(dow, pT, policy.t.endMin * f.t, H.tempoMaxSec, x, HM_NOTES.taper),
+        tFallback
       );
-    }
-    return mkTempo(dow, vol, pT, r1(Math.min(4, Math.max(2, vol * 0.07))));
+    return tBlocks(policy.t.endMin * f.t, policy.t.blockEndMin, HM_NOTES.taper);
   }
 
   /* KONTROLNA TRKA umesto q1 — cilja se 4 nedelje pre; ako je BAŠ ta nedelja deload
@@ -207,49 +199,65 @@ function buildQuality21K(req: QualityRequest): SessionDay {
     const lastWorking = ctx.weeks - 1 - (ctx.taperW || 1);
     const fourthIsDeload = w4 > 0 && w4 % DELOAD_EVERY === 0 && w4 < lastWorking;
     if (weeksToRace === 4 ? !fourthIsDeload : weeksToRace === 3 && fourthIsDeload) {
-      return mkTimeTrial(dow, vol, racePace);
+      return { day: mkTimeTrial(dow, vol, racePace), progression: true };
     }
   }
 
-  if (effQ === 1) {
-    if (phase === 'threshold')
-      return qualW % 3 === 2 ? mkRepetitions(dow, vol, pR) : mkCruise(dow, vol, pT);
-    if (phase === 'peak') {
-      const m = qualW % 3;
-      return m === 1 ? mkIntervals(dow, vol, pI, phase, qualW) : mkCruise(dow, vol, pT);
-    }
-    if (strat === 'blocks') {
-      return qualW % 2 === 1 ? mkRaceRhythm(dow, vol, racePace, pE, qualW) : mkTempo(dow, vol, pT);
-    }
-    return qualW % 2 === 1
-      ? mkCruise(dow, vol, pT)
-      : mkProgression(dow, vol, strat === 'long' ? racePace : pT, pE, null, strat === 'long');
-  }
+  const intervals = () => ({ day: mkIntervals(dow, vol, pI, phase, qualW), progression: false });
+  const maintenance = target.tMin * policy.tMaintenance;
+  const continuousT = () => {
+    const day = hmContinuousThreshold(dow, pT, maintenance, H.tempoMaxSec, x);
+    return day ? { day, progression: true } : tBlocks(maintenance, target.tBlockMin);
+  };
 
-  if (slotRole === 'q1') {
-    const fam = q1Family(phase, strat, qualW);
-    if (fam === 'R') return mkRepetitions(dow, vol, pR);
-    if (fam === 'I') {
-      return qualW % 4 === 2
-        ? fartlek(FARTLEK, dow, vol, pI, pE)
-        : mkIntervals(dow, vol, pI, phase, qualW);
-    }
-    if (fam === 'RP') {
-      return phase === 'specific' && strat === 'long'
-        ? mkProgression(dow, vol, racePace, pE, null, true)
-        : mkRaceRhythm(dow, vol, racePace, pE, qualW);
-    }
-    /* fam === 'T' */
-    return phase === 'peak'
-      ? mkProgression(dow, vol, pT, pE, share, false)
-      : mkCruise(dow, vol, pT, share);
+  if (phase === 'threshold') {
+    if (single || slotRole === 'q1')
+      return single && qualW % 3 === 0 ? intervals() : tBlocks(target.tMin, target.tBlockMin);
+    /* q2: prag je glavni motor — kontinuirani prag i VO2 podrška naizmenično (iskusni
+       počinju pragom, prvi HM fartlekom). */
+    const thresholdWeek = track === 'performance' ? qualW % 2 === 1 : qualW % 2 === 0;
+    if (thresholdWeek) return continuousT();
+    return {
+      day:
+        qualW % 4 < 2
+          ? fartlek(FARTLEK, dow, vol, pI, pE)
+          : mkIntervals(dow, vol, pI, phase, qualW),
+      progression: false
+    };
   }
+  /* Jedan kvalitet od faze vrhunca: HM ritam (neparne) i prag (parne) naizmenično. */
+  const alternate = () =>
+    qualW % 2 === 1
+      ? rpBlocks(target.rpMin, target.rpBlockMin)
+      : tBlocks(target.tMin, target.tBlockMin);
+  if (phase === 'peak') {
+    if (single) return alternate();
+    if (slotRole === 'q1')
+      return qualW % 3 === 0 ? intervals() : tBlocks(target.tMin, target.tBlockMin);
+    return rpBlocks(target.rpMin, target.rpBlockMin);
+  }
+  /* specifična faza */
+  if (req.lrFinish) return tBlocks(target.tMin, target.tBlockMin);
+  if (single) return alternate();
+  if (slotRole === 'q1') return rpBlocks(target.rpMin, target.rpBlockMin);
+  return continuousT();
+}
 
-  /* q2: prag */
-  if (phase === 'specific') {
-    return qualW % 2 === 1 ? mkTempo(dow, vol, pT, null, share) : mkCruise(dow, vol, pT, share);
-  }
-  return qualW % 2 === 1 ? mkCruise(dow, vol, pT, share) : mkTempo(dow, vol, pT, null, share);
+function buildQuality21K(req: QualityRequest): SessionDay {
+  const intro = introductoryQuality(req);
+  if (intro) return applyQualityDose(intro, { ...req, budgets: H });
+  const { day, progression } = chooseQuality21K(req);
+  // Progression sessions are already dosed from target minutes; the race rehearsal is a
+  // dated event. I/R support sessions keep the shared dose policy.
+  if (progression) return day;
+  return applyQualityDose(day, { ...req, budgets: H });
+}
+
+/** Prvi HM na najviše četiri dana: nedelja sa dugom ≥ 90 min nosi jedan kvalitet uz dugu. */
+function singleQualityWeek21K(x: SingleQualityContext): boolean {
+  return (
+    hmTrack(x.readiness) === 'first' && x.runDays <= 4 && x.longRunMin >= DEMANDING_LONG_RUN_MIN
+  );
 }
 
 /** Brz završetak dugog trčanja na tempu trke u specifičnoj fazi (češće za strategiju „dugo"). */
@@ -274,5 +282,9 @@ export const PROFILE_21K: DistanceProfile = {
   buildQuality: buildQuality21K,
   intervalPaceForWeek: (pI) => pI,
   paceStrategy: paceStrategy21K,
-  longRunFinish: longRunFinish21K
+  longRunFinish: longRunFinish21K,
+  singleQualityWeek: singleQualityWeek21K,
+  // Support (I/R) gives way first, then threshold; HM rhythm is cut last.
+  trimPriority: (day) => (day.session.zone === 'RP' ? 2 : day.session.zone === 'T' ? 1 : 0),
+  weeklyFastShare: (readiness) => HM_WEEKLY_FAST_SHARE[hmTrack(readiness)]
 };

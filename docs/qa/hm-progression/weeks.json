@@ -1,0 +1,1853 @@
+{
+  "U07": {
+    "before": [
+      {
+        "w": 1,
+        "deload": false,
+        "taper": false,
+        "vol": 32.2,
+        "tMin": 2.5,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 10,
+        "lrMin": 62,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Fartlek",
+            "zone": "T",
+            "shape": "5×30 s",
+            "restSec": 90,
+            "workMin": 2.5
+          }
+        ],
+        "hardDays": [
+          "Sre:Fartlek"
+        ],
+        "mondayEasyKm": 8
+      },
+      {
+        "w": 2,
+        "deload": false,
+        "taper": false,
+        "vol": 33.8,
+        "tMin": 2,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 10.8,
+        "lrMin": 67,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Fartlek",
+            "zone": "T",
+            "shape": "3×45 s",
+            "restSec": 90,
+            "workMin": 2
+          }
+        ],
+        "hardDays": [
+          "Sre:Fartlek"
+        ],
+        "mondayEasyKm": 8
+      },
+      {
+        "w": 3,
+        "deload": false,
+        "taper": false,
+        "vol": 35.9,
+        "tMin": 10,
+        "hmMin": 0,
+        "iMin": 7.3,
+        "activationMin": 0,
+        "lrKm": 11.6,
+        "lrMin": 72,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "2×800 m",
+            "restSec": 163,
+            "workMin": 7.3
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1000 m",
+            "restSec": 60,
+            "workMin": 10
+          }
+        ],
+        "hardDays": [
+          "Sre:Intervali",
+          "Pet:Tempo isprekidan"
+        ],
+        "mondayEasyKm": 8.6
+      },
+      {
+        "w": 4,
+        "deload": true,
+        "taper": false,
+        "vol": 27.2,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 8.7,
+        "lrMin": 54,
+        "finish": null,
+        "sessions": [],
+        "hardDays": [],
+        "mondayEasyKm": 7
+      },
+      {
+        "w": 5,
+        "deload": false,
+        "taper": false,
+        "vol": 38.6,
+        "tMin": 10,
+        "hmMin": 0,
+        "iMin": 7.3,
+        "activationMin": 0,
+        "lrKm": 12.5,
+        "lrMin": 77,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "2×800 m",
+            "restSec": 163,
+            "workMin": 7.3
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1000 m",
+            "restSec": 60,
+            "workMin": 10
+          }
+        ],
+        "hardDays": [
+          "Sre:Intervali",
+          "Pet:Tempo isprekidan"
+        ],
+        "mondayEasyKm": 10
+      },
+      {
+        "w": 6,
+        "deload": false,
+        "taper": false,
+        "vol": 40.1,
+        "tMin": 15.1,
+        "hmMin": 0,
+        "iMin": 8.2,
+        "activationMin": 0,
+        "lrKm": 13.5,
+        "lrMin": 83,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Fartlek",
+            "zone": "I",
+            "shape": "4×120 s",
+            "restSec": 90,
+            "workMin": 8.2
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "3 km",
+            "restSec": null,
+            "workMin": 15.1
+          }
+        ],
+        "hardDays": [
+          "Sre:Fartlek",
+          "Pet:Tempo"
+        ],
+        "mondayEasyKm": 10
+      },
+      {
+        "w": 7,
+        "deload": false,
+        "taper": false,
+        "vol": 42.6,
+        "tMin": 14,
+        "hmMin": 0,
+        "iMin": 7.3,
+        "activationMin": 0,
+        "lrKm": 14.5,
+        "lrMin": 89,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "2×800 m",
+            "restSec": 163,
+            "workMin": 7.3
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1400 m",
+            "restSec": 60,
+            "workMin": 14
+          }
+        ],
+        "hardDays": [
+          "Sre:Intervali",
+          "Pet:Tempo isprekidan"
+        ],
+        "mondayEasyKm": 10.8
+      },
+      {
+        "w": 8,
+        "deload": true,
+        "taper": false,
+        "vol": 32.4,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 10.7,
+        "lrMin": 66,
+        "finish": null,
+        "sessions": [],
+        "hardDays": [],
+        "mondayEasyKm": 8.2
+      },
+      {
+        "w": 9,
+        "deload": false,
+        "taper": false,
+        "vol": 45.7,
+        "tMin": 14,
+        "hmMin": 0,
+        "iMin": 7.3,
+        "activationMin": 0,
+        "lrKm": 15.6,
+        "lrMin": 96,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "2×800 m",
+            "restSec": 163,
+            "workMin": 7.3
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1400 m",
+            "restSec": 60,
+            "workMin": 14
+          }
+        ],
+        "hardDays": [
+          "Sre:Intervali",
+          "Pet:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 12.4
+      },
+      {
+        "w": 10,
+        "deload": false,
+        "taper": false,
+        "vol": 47.4,
+        "tMin": 14,
+        "hmMin": 13.5,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 16.8,
+        "lrMin": 104,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1300 m",
+            "restSec": 326,
+            "workMin": 13.5
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1400 m",
+            "restSec": 60,
+            "workMin": 14
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo trke",
+          "Pet:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 12.5
+      },
+      {
+        "w": 11,
+        "deload": false,
+        "taper": false,
+        "vol": 50.2,
+        "tMin": 17.6,
+        "hmMin": 13.5,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 18.1,
+        "lrMin": 112,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1300 m",
+            "restSec": 326,
+            "workMin": 13.5
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "3.5 km",
+            "restSec": null,
+            "workMin": 17.6
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo trke",
+          "Pet:Tempo",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 13.4
+      },
+      {
+        "w": 12,
+        "deload": true,
+        "taper": false,
+        "vol": 38.3,
+        "tMin": 10.5,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 13.3,
+        "lrMin": 82,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "2.1 km",
+            "restSec": null,
+            "workMin": 10.5
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo"
+        ],
+        "mondayEasyKm": 10.1
+      },
+      {
+        "w": 13,
+        "deload": false,
+        "taper": false,
+        "vol": 49.3,
+        "tMin": 0,
+        "hmMin": 36.3,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 19.5,
+        "lrMin": 120,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Kontrolna trka",
+            "zone": "RP",
+            "shape": "7 km",
+            "restSec": null,
+            "workMin": 36.3
+          }
+        ],
+        "hardDays": [
+          "Sre:Kontrolna trka",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 10.3
+      },
+      {
+        "w": 14,
+        "deload": false,
+        "taper": true,
+        "vol": 41.1,
+        "tMin": 14,
+        "hmMin": 13.5,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 15.6,
+        "lrMin": 96,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1300 m",
+            "restSec": 326,
+            "workMin": 13.5
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1400 m",
+            "restSec": 60,
+            "workMin": 14
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo trke",
+          "Pet:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 12.2
+      },
+      {
+        "w": 15,
+        "deload": false,
+        "taper": true,
+        "vol": 34.2,
+        "tMin": 12.5,
+        "hmMin": 14,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 12.6,
+        "lrMin": 78,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2.7 km",
+            "restSec": null,
+            "workMin": 14
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "2.5 km",
+            "restSec": null,
+            "workMin": 12.5
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo trke",
+          "Pet:Tempo"
+        ],
+        "mondayEasyKm": 10.1
+      },
+      {
+        "w": 16,
+        "deload": false,
+        "taper": false,
+        "vol": 31.6,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 6.1,
+        "lrKm": null,
+        "lrMin": null,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Pet",
+            "kind": "Aktivacija",
+            "zone": "activation",
+            "shape": "6×200 m",
+            "restSec": 120,
+            "workMin": 6.1
+          }
+        ],
+        "hardDays": [
+          "Pet:Aktivacija"
+        ],
+        "mondayEasyKm": 3
+      }
+    ],
+    "after": [
+      {
+        "w": 1,
+        "deload": false,
+        "taper": false,
+        "vol": 32.2,
+        "tMin": 2.5,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 10,
+        "lrMin": 62,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Fartlek",
+            "zone": "T",
+            "shape": "5×30 s",
+            "restSec": 90,
+            "workMin": 2.5
+          }
+        ],
+        "hardDays": [
+          "Sre:Fartlek"
+        ],
+        "mondayEasyKm": 8
+      },
+      {
+        "w": 2,
+        "deload": false,
+        "taper": false,
+        "vol": 33.8,
+        "tMin": 2,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 10.8,
+        "lrMin": 67,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Fartlek",
+            "zone": "T",
+            "shape": "3×45 s",
+            "restSec": 90,
+            "workMin": 2
+          }
+        ],
+        "hardDays": [
+          "Sre:Fartlek"
+        ],
+        "mondayEasyKm": 8
+      },
+      {
+        "w": 3,
+        "deload": false,
+        "taper": false,
+        "vol": 36,
+        "tMin": 15.1,
+        "hmMin": 0,
+        "iMin": 7.3,
+        "activationMin": 0,
+        "lrKm": 11.6,
+        "lrMin": 72,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "3×1000 m",
+            "restSec": 75,
+            "workMin": 15.1
+          },
+          {
+            "dow": "Pet",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "2×800 m",
+            "restSec": 163,
+            "workMin": 7.3
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo isprekidan",
+          "Pet:Intervali"
+        ],
+        "mondayEasyKm": 8.6
+      },
+      {
+        "w": 4,
+        "deload": true,
+        "taper": false,
+        "vol": 27.2,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 8.7,
+        "lrMin": 54,
+        "finish": null,
+        "sessions": [],
+        "hardDays": [],
+        "mondayEasyKm": 7
+      },
+      {
+        "w": 5,
+        "deload": false,
+        "taper": false,
+        "vol": 38.7,
+        "tMin": 14,
+        "hmMin": 10.4,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 12.5,
+        "lrMin": 77,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1400 m",
+            "restSec": 90,
+            "workMin": 14
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1000 m",
+            "restSec": 90,
+            "workMin": 10.4
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo isprekidan",
+          "Pet:Tempo trke"
+        ],
+        "mondayEasyKm": 10
+      },
+      {
+        "w": 6,
+        "deload": false,
+        "taper": false,
+        "vol": 40.3,
+        "tMin": 0,
+        "hmMin": 12.4,
+        "iMin": 7.3,
+        "activationMin": 0,
+        "lrKm": 13.5,
+        "lrMin": 83,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "2×800 m",
+            "restSec": 163,
+            "workMin": 7.3
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1200 m",
+            "restSec": 90,
+            "workMin": 12.4
+          }
+        ],
+        "hardDays": [
+          "Sre:Intervali",
+          "Pet:Tempo trke"
+        ],
+        "mondayEasyKm": 10
+      },
+      {
+        "w": 7,
+        "deload": false,
+        "taper": false,
+        "vol": 42.5,
+        "tMin": 13,
+        "hmMin": 14.5,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 14.5,
+        "lrMin": 89,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1300 m",
+            "restSec": 90,
+            "workMin": 13
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1400 m",
+            "restSec": 90,
+            "workMin": 14.5
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo isprekidan",
+          "Pet:Tempo trke"
+        ],
+        "mondayEasyKm": 10.8
+      },
+      {
+        "w": 8,
+        "deload": true,
+        "taper": false,
+        "vol": 32.3,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 10.6,
+        "lrMin": 65,
+        "finish": null,
+        "sessions": [],
+        "hardDays": [],
+        "mondayEasyKm": 8.2
+      },
+      {
+        "w": 9,
+        "deload": false,
+        "taper": false,
+        "vol": 45.7,
+        "tMin": 0,
+        "hmMin": 17.6,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 15.6,
+        "lrMin": 96,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1700 m",
+            "restSec": 90,
+            "workMin": 17.6
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo trke",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 12.3
+      },
+      {
+        "w": 10,
+        "deload": false,
+        "taper": false,
+        "vol": 47,
+        "tMin": 19.1,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 16.8,
+        "lrMin": 104,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1900 m",
+            "restSec": 90,
+            "workMin": 19.1
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 9.3
+      },
+      {
+        "w": 11,
+        "deload": false,
+        "taper": false,
+        "vol": 49.9,
+        "tMin": 0,
+        "hmMin": 21.8,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 18.1,
+        "lrMin": 112,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×2100 m",
+            "restSec": 90,
+            "workMin": 21.8
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo trke",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 9.9
+      },
+      {
+        "w": 12,
+        "deload": true,
+        "taper": false,
+        "vol": 37.9,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 13.2,
+        "lrMin": 81,
+        "finish": null,
+        "sessions": [],
+        "hardDays": [],
+        "mondayEasyKm": 9.3
+      },
+      {
+        "w": 13,
+        "deload": false,
+        "taper": false,
+        "vol": 49.3,
+        "tMin": 0,
+        "hmMin": 36.3,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 19.5,
+        "lrMin": 120,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Kontrolna trka",
+            "zone": "RP",
+            "shape": "7 km",
+            "restSec": null,
+            "workMin": 36.3
+          }
+        ],
+        "hardDays": [
+          "Sre:Kontrolna trka",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 10.3
+      },
+      {
+        "w": 14,
+        "deload": false,
+        "taper": true,
+        "vol": 40,
+        "tMin": 10,
+        "hmMin": 15.6,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 16.5,
+        "lrMin": 102,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1500 m",
+            "restSec": 90,
+            "workMin": 15.6
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1000 m",
+            "restSec": 75,
+            "workMin": 10
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo trke",
+          "Pet:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 9.9
+      },
+      {
+        "w": 15,
+        "deload": false,
+        "taper": true,
+        "vol": 33.2,
+        "tMin": 7.5,
+        "hmMin": 10.4,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 12.6,
+        "lrMin": 78,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Sre",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1000 m",
+            "restSec": 90,
+            "workMin": 10.4
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "1.5 km",
+            "restSec": null,
+            "workMin": 7.5
+          }
+        ],
+        "hardDays": [
+          "Sre:Tempo trke",
+          "Pet:Tempo"
+        ],
+        "mondayEasyKm": 9.9
+      },
+      {
+        "w": 16,
+        "deload": false,
+        "taper": false,
+        "vol": 31.6,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 6.1,
+        "lrKm": null,
+        "lrMin": null,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Pet",
+            "kind": "Aktivacija",
+            "zone": "activation",
+            "shape": "6×200 m",
+            "restSec": 120,
+            "workMin": 6.1
+          }
+        ],
+        "hardDays": [
+          "Pet:Aktivacija"
+        ],
+        "mondayEasyKm": 3
+      }
+    ]
+  },
+  "U08": {
+    "before": [
+      {
+        "w": 1,
+        "deload": false,
+        "taper": false,
+        "vol": 55.4,
+        "tMin": 22.8,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 16,
+        "lrMin": 86,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1600 m",
+            "restSec": 60,
+            "workMin": 14
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1000 m",
+            "restSec": 60,
+            "workMin": 8.8
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo isprekidan",
+          "Pet:Tempo isprekidan"
+        ],
+        "mondayEasyKm": 10.9
+      },
+      {
+        "w": 2,
+        "deload": false,
+        "taper": false,
+        "vol": 58.3,
+        "tMin": 23.2,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 17.2,
+        "lrMin": 93,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1600 m",
+            "restSec": 60,
+            "workMin": 14
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "2.1 km",
+            "restSec": null,
+            "workMin": 9.2
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo isprekidan",
+          "Pet:Tempo",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 11.9
+      },
+      {
+        "w": 3,
+        "deload": false,
+        "taper": false,
+        "vol": 62.5,
+        "tMin": 21,
+        "hmMin": 0,
+        "iMin": 9.5,
+        "activationMin": 0,
+        "lrKm": 18.5,
+        "lrMin": 100,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "2×1200 m",
+            "restSec": 213,
+            "workMin": 9.5
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "3×1600 m",
+            "restSec": 60,
+            "workMin": 21
+          }
+        ],
+        "hardDays": [
+          "Uto:Intervali",
+          "Pet:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 11.8
+      },
+      {
+        "w": 4,
+        "deload": true,
+        "taper": false,
+        "vol": 47.3,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 13.8,
+        "lrMin": 75,
+        "finish": null,
+        "sessions": [],
+        "hardDays": [],
+        "mondayEasyKm": 9.1
+      },
+      {
+        "w": 5,
+        "deload": false,
+        "taper": false,
+        "vol": 65,
+        "tMin": 21,
+        "hmMin": 0,
+        "iMin": 9.5,
+        "activationMin": 0,
+        "lrKm": 19.9,
+        "lrMin": 107,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "2×1200 m",
+            "restSec": 213,
+            "workMin": 9.5
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "3×1600 m",
+            "restSec": 60,
+            "workMin": 21
+          }
+        ],
+        "hardDays": [
+          "Uto:Intervali",
+          "Pet:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 12.1
+      },
+      {
+        "w": 6,
+        "deload": false,
+        "taper": false,
+        "vol": 70.6,
+        "tMin": 25.9,
+        "hmMin": 0,
+        "iMin": 11.9,
+        "activationMin": 0,
+        "lrKm": 21.4,
+        "lrMin": 116,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Fartlek",
+            "zone": "I",
+            "shape": "6×120 s",
+            "restSec": 90,
+            "workMin": 11.9
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "5.9 km",
+            "restSec": null,
+            "workMin": 25.9
+          }
+        ],
+        "hardDays": [
+          "Uto:Fartlek",
+          "Pet:Tempo",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 12.3
+      },
+      {
+        "w": 7,
+        "deload": false,
+        "taper": false,
+        "vol": 69.8,
+        "tMin": 21.9,
+        "hmMin": 0,
+        "iMin": 14.2,
+        "activationMin": 0,
+        "lrKm": 22,
+        "lrMin": 119,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "3×1200 m",
+            "restSec": 213,
+            "workMin": 14.2
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×2500 m",
+            "restSec": 75,
+            "workMin": 21.9
+          }
+        ],
+        "hardDays": [
+          "Uto:Intervali",
+          "Pet:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 12.1
+      },
+      {
+        "w": 8,
+        "deload": true,
+        "taper": false,
+        "vol": 53.1,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 15.7,
+        "lrMin": 85,
+        "finish": null,
+        "sessions": [],
+        "hardDays": [],
+        "mondayEasyKm": 10.1
+      },
+      {
+        "w": 9,
+        "deload": false,
+        "taper": false,
+        "vol": 69.8,
+        "tMin": 0,
+        "hmMin": 41.9,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 22,
+        "lrMin": 119,
+        "finish": "5.5 km @ RP",
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1900 m",
+            "restSec": 284,
+            "workMin": 17.1
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo trke",
+          "Ned:LR+HM završetak"
+        ],
+        "mondayEasyKm": 12.2
+      },
+      {
+        "w": 10,
+        "deload": false,
+        "taper": false,
+        "vol": 75.3,
+        "tMin": 0,
+        "hmMin": 45,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 22,
+        "lrMin": 119,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Kontrolna trka",
+            "zone": "RP",
+            "shape": "10 km",
+            "restSec": null,
+            "workMin": 45
+          }
+        ],
+        "hardDays": [
+          "Uto:Kontrolna trka",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 12.2
+      },
+      {
+        "w": 11,
+        "deload": false,
+        "taper": false,
+        "vol": 70.5,
+        "tMin": 0,
+        "hmMin": 44.6,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 22,
+        "lrMin": 119,
+        "finish": "5.5 km @ RP",
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×2200 m",
+            "restSec": 284,
+            "workMin": 19.8
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo trke",
+          "Ned:LR+HM završetak"
+        ],
+        "mondayEasyKm": 12.2
+      },
+      {
+        "w": 12,
+        "deload": false,
+        "taper": true,
+        "vol": 61.7,
+        "tMin": 19.3,
+        "hmMin": 18,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 18.4,
+        "lrMin": 99,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×2000 m",
+            "restSec": 284,
+            "workMin": 18
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×2200 m",
+            "restSec": 75,
+            "workMin": 19.3
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo trke",
+          "Pet:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 11
+      },
+      {
+        "w": 13,
+        "deload": false,
+        "taper": true,
+        "vol": 45.7,
+        "tMin": 14.5,
+        "hmMin": 18,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 14.3,
+        "lrMin": 77,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "4 km",
+            "restSec": null,
+            "workMin": 18
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "3.3 km",
+            "restSec": null,
+            "workMin": 14.5
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo trke",
+          "Pet:Tempo"
+        ],
+        "mondayEasyKm": 9.9
+      },
+      {
+        "w": 14,
+        "deload": false,
+        "taper": false,
+        "vol": 31.6,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 5.3,
+        "lrKm": null,
+        "lrMin": null,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Pet",
+            "kind": "Aktivacija",
+            "zone": "activation",
+            "shape": "6×200 m",
+            "restSec": 120,
+            "workMin": 5.3
+          }
+        ],
+        "hardDays": [
+          "Pet:Aktivacija"
+        ],
+        "mondayEasyKm": null
+      }
+    ],
+    "after": [
+      {
+        "w": 1,
+        "deload": false,
+        "taper": false,
+        "vol": 56.2,
+        "tMin": 30.7,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 16,
+        "lrMin": 86,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×2000 m",
+            "restSec": 75,
+            "workMin": 17.5
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "3 km",
+            "restSec": null,
+            "workMin": 13.2
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo isprekidan",
+          "Pet:Tempo"
+        ],
+        "mondayEasyKm": 10.1
+      },
+      {
+        "w": 2,
+        "deload": false,
+        "taper": false,
+        "vol": 59.2,
+        "tMin": 19.3,
+        "hmMin": 0,
+        "iMin": 9.5,
+        "activationMin": 0,
+        "lrKm": 17.2,
+        "lrMin": 93,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×2200 m",
+            "restSec": 75,
+            "workMin": 19.3
+          },
+          {
+            "dow": "Pet",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "2×1200 m",
+            "restSec": 213,
+            "workMin": 9.5
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo isprekidan",
+          "Pet:Intervali",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 11.1
+      },
+      {
+        "w": 3,
+        "deload": false,
+        "taper": false,
+        "vol": 61.5,
+        "tMin": 35.1,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 18.5,
+        "lrMin": 100,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×2300 m",
+            "restSec": 75,
+            "workMin": 20.2
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "3.4 km",
+            "restSec": null,
+            "workMin": 14.9
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo isprekidan",
+          "Pet:Tempo",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 10.3
+      },
+      {
+        "w": 4,
+        "deload": true,
+        "taper": false,
+        "vol": 46.8,
+        "tMin": 8.8,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 13.4,
+        "lrMin": 72,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "2 km",
+            "restSec": null,
+            "workMin": 8.8
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo"
+        ],
+        "mondayEasyKm": 8.2
+      },
+      {
+        "w": 5,
+        "deload": false,
+        "taper": false,
+        "vol": 66.5,
+        "tMin": 22.8,
+        "hmMin": 16.2,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 19.9,
+        "lrMin": 107,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×2600 m",
+            "restSec": 75,
+            "workMin": 22.8
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1800 m",
+            "restSec": 60,
+            "workMin": 16.2
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo isprekidan",
+          "Pet:Tempo trke",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 12.1
+      },
+      {
+        "w": 6,
+        "deload": false,
+        "taper": false,
+        "vol": 67.3,
+        "tMin": 0,
+        "hmMin": 18.9,
+        "iMin": 14.2,
+        "activationMin": 0,
+        "lrKm": 21.4,
+        "lrMin": 116,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Intervali",
+            "zone": "I",
+            "shape": "3×1200 m",
+            "restSec": 213,
+            "workMin": 14.2
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×2100 m",
+            "restSec": 60,
+            "workMin": 18.9
+          }
+        ],
+        "hardDays": [
+          "Uto:Intervali",
+          "Pet:Tempo trke",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 11.3
+      },
+      {
+        "w": 7,
+        "deload": false,
+        "taper": false,
+        "vol": 69.9,
+        "tMin": 21,
+        "hmMin": 21.6,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 22,
+        "lrMin": 119,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×2400 m",
+            "restSec": 75,
+            "workMin": 21
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×2400 m",
+            "restSec": 60,
+            "workMin": 21.6
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo isprekidan",
+          "Pet:Tempo trke",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 11.3
+      },
+      {
+        "w": 8,
+        "deload": true,
+        "taper": false,
+        "vol": 53.1,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 15.7,
+        "lrMin": 85,
+        "finish": null,
+        "sessions": [],
+        "hardDays": [],
+        "mondayEasyKm": 10.1
+      },
+      {
+        "w": 9,
+        "deload": false,
+        "taper": false,
+        "vol": 70.3,
+        "tMin": 21,
+        "hmMin": 24.8,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 22,
+        "lrMin": 119,
+        "finish": "5.5 km @ RP",
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×2400 m",
+            "restSec": 75,
+            "workMin": 21
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo isprekidan",
+          "Ned:LR+HM završetak"
+        ],
+        "mondayEasyKm": 12.2
+      },
+      {
+        "w": 10,
+        "deload": false,
+        "taper": false,
+        "vol": 75.3,
+        "tMin": 0,
+        "hmMin": 45,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 22,
+        "lrMin": 119,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Kontrolna trka",
+            "zone": "RP",
+            "shape": "10 km",
+            "restSec": null,
+            "workMin": 45
+          }
+        ],
+        "hardDays": [
+          "Uto:Kontrolna trka",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 11.3
+      },
+      {
+        "w": 11,
+        "deload": false,
+        "taper": false,
+        "vol": 70.6,
+        "tMin": 22.8,
+        "hmMin": 24.8,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 22,
+        "lrMin": 119,
+        "finish": "5.5 km @ RP",
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×2600 m",
+            "restSec": 75,
+            "workMin": 22.8
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo isprekidan",
+          "Ned:LR+HM završetak"
+        ],
+        "mondayEasyKm": 11.3
+      },
+      {
+        "w": 12,
+        "deload": false,
+        "taper": true,
+        "vol": 61.3,
+        "tMin": 13.2,
+        "hmMin": 20.7,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 18.7,
+        "lrMin": 101,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×2300 m",
+            "restSec": 60,
+            "workMin": 20.7
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo isprekidan",
+            "zone": "T",
+            "shape": "2×1500 m",
+            "restSec": 60,
+            "workMin": 13.2
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo trke",
+          "Pet:Tempo isprekidan",
+          "Ned:duga ≥90 min"
+        ],
+        "mondayEasyKm": 11.3
+      },
+      {
+        "w": 13,
+        "deload": false,
+        "taper": true,
+        "vol": 44,
+        "tMin": 7.5,
+        "hmMin": 13.5,
+        "iMin": 0,
+        "activationMin": 0,
+        "lrKm": 14.3,
+        "lrMin": 77,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Uto",
+            "kind": "Tempo trke",
+            "zone": "RP",
+            "shape": "2×1500 m",
+            "restSec": 60,
+            "workMin": 13.5
+          },
+          {
+            "dow": "Pet",
+            "kind": "Tempo",
+            "zone": "T",
+            "shape": "1.7 km",
+            "restSec": null,
+            "workMin": 7.5
+          }
+        ],
+        "hardDays": [
+          "Uto:Tempo trke",
+          "Pet:Tempo"
+        ],
+        "mondayEasyKm": 9.9
+      },
+      {
+        "w": 14,
+        "deload": false,
+        "taper": false,
+        "vol": 31.6,
+        "tMin": 0,
+        "hmMin": 0,
+        "iMin": 0,
+        "activationMin": 5.3,
+        "lrKm": null,
+        "lrMin": null,
+        "finish": null,
+        "sessions": [
+          {
+            "dow": "Pet",
+            "kind": "Aktivacija",
+            "zone": "activation",
+            "shape": "6×200 m",
+            "restSec": 120,
+            "workMin": 5.3
+          }
+        ],
+        "hardDays": [
+          "Pet:Aktivacija"
+        ],
+        "mondayEasyKm": null
+      }
+    ]
+  }
+}

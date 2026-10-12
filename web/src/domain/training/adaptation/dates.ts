@@ -38,8 +38,9 @@ export function alignVdotDates(
   if (!changed) return { vdotLog: [...vdotLog], changed: false };
   return {
     changed: true,
-    vdotLog: recomputeVdotChain(next, baselineVdot, (id) =>
-      sessionClassFor(isT3kId(id), rows.find((r) => r.id === id)?.l)
-    )
+    vdotLog: recomputeVdotChain(next, baselineVdot, (id) => {
+      const row = rows.find((r) => r.id === id);
+      return sessionClassFor(isT3kId(id), row?.l, row?.zone);
+    })
   };
 }

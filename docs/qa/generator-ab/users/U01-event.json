@@ -1,0 +1,2696 @@
+{
+  "id": "U01",
+  "scope": "Pure current production-domain consumers against both pinned generator outputs; no browser interaction",
+  "command": "node docs/qa/generator-ab/users/U01-probe.mjs",
+  "nodeVersion": "v24.19.0",
+  "today": "2026-11-25",
+  "event": {
+    "kind": "single-miss"
+  },
+  "historySource": "Synthetic QA: every scheduled run before eventToday is explicitly recorded done at its prescribed distance and RPE 3; the event-day run is explicitly skipped. Prescription alone is not claimed as actual training.",
+  "commits": {
+    "old": "aea8dc66e5e6a9940ce48d63a94daace76be1297",
+    "new": "f7bcbe99d135cd4c1e7b837d0369e8066c1b3baa"
+  },
+  "versions": {
+    "old": {
+      "sha256": "7308963c40cfe55d1f7f6af778d99f28e1f12053ed8e2e8e22df4943844b3524",
+      "missed": {
+        "id": "g7d3",
+        "w": 7,
+        "generatorDow": 3,
+        "date": "2026-11-25",
+        "km": 3.5,
+        "desc": "Tempo — 1 km zagrevanje + 1.1 km @ 7:15/km + 1.4 km hlađenje"
+      },
+      "log": {
+        "g1d1": {
+          "status": "done",
+          "km": 2.2,
+          "runDate": "2026-10-12",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g1d3": {
+          "status": "done",
+          "km": 2,
+          "runDate": "2026-10-14",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g1d7": {
+          "status": "done",
+          "km": 2.8,
+          "runDate": "2026-10-18",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g2d1": {
+          "status": "done",
+          "km": 2.6,
+          "runDate": "2026-10-19",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g2d3": {
+          "status": "done",
+          "km": 2.3,
+          "runDate": "2026-10-21",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g2d7": {
+          "status": "done",
+          "km": 3.3,
+          "runDate": "2026-10-25",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g3d1": {
+          "status": "done",
+          "km": 2.9,
+          "runDate": "2026-10-26",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g3d3": {
+          "status": "done",
+          "km": 2.6,
+          "runDate": "2026-10-28",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g3d7": {
+          "status": "done",
+          "km": 3.7,
+          "runDate": "2026-11-01",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g4d1": {
+          "status": "done",
+          "km": 2.1,
+          "runDate": "2026-11-02",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g4d3": {
+          "status": "done",
+          "km": 1.9,
+          "runDate": "2026-11-04",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g4d7": {
+          "status": "done",
+          "km": 2.7,
+          "runDate": "2026-11-08",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g5d1": {
+          "status": "done",
+          "km": 3.2,
+          "runDate": "2026-11-09",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g5d3": {
+          "status": "done",
+          "km": 2.9,
+          "runDate": "2026-11-11",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g5d7": {
+          "status": "done",
+          "km": 4.1,
+          "runDate": "2026-11-15",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g6d1": {
+          "status": "done",
+          "km": 2.9,
+          "runDate": "2026-11-16",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g6d3": {
+          "status": "done",
+          "km": 3.1,
+          "runDate": "2026-11-18",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g6d7": {
+          "status": "done",
+          "km": 4.5,
+          "runDate": "2026-11-22",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g7d1": {
+          "status": "done",
+          "km": 3.2,
+          "runDate": "2026-11-23",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g7d3": {
+          "status": "skip",
+          "runDate": "2026-11-25",
+          "src": "U01-synthetic-QA"
+        }
+      },
+      "analysis": {
+        "today": "2026-11-25",
+        "windowStart": "2026-10-29",
+        "completed": 11,
+        "missed": 1,
+        "unknown": 0,
+        "statusCoverage": 1,
+        "volumeCoverage": 1,
+        "actualKm": 34.3,
+        "plannedKm": 37.8,
+        "completeWeeks": [
+          {
+            "start": "2026-10-26",
+            "end": "2026-11-01",
+            "plannedKm": 9.2,
+            "actualKm": 9.2,
+            "completed": 3,
+            "missed": 0,
+            "unknown": 0,
+            "statusCoverage": 1,
+            "volumeCoverage": 1
+          },
+          {
+            "start": "2026-11-02",
+            "end": "2026-11-08",
+            "plannedKm": 6.7,
+            "actualKm": 6.7,
+            "completed": 3,
+            "missed": 0,
+            "unknown": 0,
+            "statusCoverage": 1,
+            "volumeCoverage": 1
+          },
+          {
+            "start": "2026-11-09",
+            "end": "2026-11-15",
+            "plannedKm": 10.2,
+            "actualKm": 10.2,
+            "completed": 3,
+            "missed": 0,
+            "unknown": 0,
+            "statusCoverage": 1,
+            "volumeCoverage": 1
+          },
+          {
+            "start": "2026-11-16",
+            "end": "2026-11-22",
+            "plannedKm": 10.5,
+            "actualKm": 10.5,
+            "completed": 3,
+            "missed": 0,
+            "unknown": 0,
+            "statusCoverage": 1,
+            "volumeCoverage": 1
+          }
+        ],
+        "recentWeeklyKm": 9.7,
+        "lastPositiveWeeklyKm": 10.5,
+        "recentLongRunKm": 4.1,
+        "lastRunDate": "2026-11-23",
+        "daysSinceLastRun": 2,
+        "explicitMisses14d": 1,
+        "easyHighRpeCount": 0,
+        "lowerVolumeWeeks": 0,
+        "reasons": []
+      },
+      "recommendation": {
+        "kind": "single-miss",
+        "reason": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara.",
+        "actionable": false,
+        "requiresConfirmation": false,
+        "weeklyKm": 9.7,
+        "recentLongRunKm": 4.1,
+        "reasons": []
+      },
+      "adjustment": {
+        "error": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara."
+      },
+      "sparseAnalysis": {
+        "today": "2026-11-25",
+        "windowStart": "2026-10-29",
+        "completed": 0,
+        "missed": 1,
+        "unknown": 11,
+        "statusCoverage": 0.08333333333333333,
+        "volumeCoverage": 0.08333333333333333,
+        "actualKm": 0,
+        "plannedKm": 37.8,
+        "completeWeeks": [
+          {
+            "start": "2026-10-26",
+            "end": "2026-11-01",
+            "plannedKm": 9.2,
+            "actualKm": 0,
+            "completed": 0,
+            "missed": 0,
+            "unknown": 3,
+            "statusCoverage": 0,
+            "volumeCoverage": 0
+          },
+          {
+            "start": "2026-11-02",
+            "end": "2026-11-08",
+            "plannedKm": 6.7,
+            "actualKm": 0,
+            "completed": 0,
+            "missed": 0,
+            "unknown": 3,
+            "statusCoverage": 0,
+            "volumeCoverage": 0
+          },
+          {
+            "start": "2026-11-09",
+            "end": "2026-11-15",
+            "plannedKm": 10.2,
+            "actualKm": 0,
+            "completed": 0,
+            "missed": 0,
+            "unknown": 3,
+            "statusCoverage": 0,
+            "volumeCoverage": 0
+          },
+          {
+            "start": "2026-11-16",
+            "end": "2026-11-22",
+            "plannedKm": 10.5,
+            "actualKm": 0,
+            "completed": 0,
+            "missed": 0,
+            "unknown": 3,
+            "statusCoverage": 0,
+            "volumeCoverage": 0
+          }
+        ],
+        "recentWeeklyKm": null,
+        "lastPositiveWeeklyKm": null,
+        "recentLongRunKm": null,
+        "lastRunDate": null,
+        "daysSinceLastRun": null,
+        "explicitMisses14d": 1,
+        "easyHighRpeCount": 0,
+        "lowerVolumeWeeks": 0,
+        "reasons": [
+          "Nedovoljno upisanih kilometara: neupisani treninzi nisu dokaz da nisi trčao."
+        ]
+      },
+      "sparseRecommendation": {
+        "kind": "single-miss",
+        "reason": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara.",
+        "actionable": false,
+        "requiresConfirmation": false,
+        "reasons": [
+          "Nedovoljno upisanih kilometara: neupisani treninzi nisu dokaz da nisi trčao."
+        ]
+      },
+      "sparseAdjustment": {
+        "error": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara."
+      },
+      "checks": {
+        "frozenHashReproduced": true,
+        "correctEventDay": true,
+        "oneExplicitMiss": true,
+        "recentRunPreventsFalseBreak": true,
+        "recommendationSingleMiss": true,
+        "noActionOrConfirmationNeeded": true,
+        "noRegeneration": true,
+        "reasonMatchesRecommendation": true,
+        "sourcePlanUnchanged": true,
+        "logsUnchanged": true,
+        "sparseUnloggedRunsStayUnknown": true,
+        "sparseNoInferredMileage": true,
+        "sparseSingleMissNoRegeneration": true,
+        "noVolumeOrSessionArithmeticFailures": true,
+        "allTwelveWeeksInspected": true
+      },
+      "weekInspection": [
+        {
+          "w": 1,
+          "km": 7,
+          "longestRunKm": 2.8,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.2,
+              "runWalk": {
+                "runSec": 60,
+                "walkSec": 60,
+                "label": "1 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.2 km — 1 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "rw",
+              "rest": false,
+              "km": 2,
+              "runWalk": {
+                "runSec": 60,
+                "walkSec": 60,
+                "label": "1 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2 km — 1 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.8,
+              "runWalk": {
+                "runSec": 60,
+                "walkSec": 60,
+                "label": "1 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.8 km — 1 min trčanje / 1 min hod, najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 2,
+          "km": 8.2,
+          "longestRunKm": 3.3,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.6,
+              "runWalk": {
+                "runSec": 120,
+                "walkSec": 60,
+                "label": "2 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.6 km — 2 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.3,
+              "runWalk": {
+                "runSec": 120,
+                "walkSec": 60,
+                "label": "2 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.3 km — 2 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "rw",
+              "rest": false,
+              "km": 3.3,
+              "runWalk": {
+                "runSec": 120,
+                "walkSec": 60,
+                "label": "2 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "3.3 km — 2 min trčanje / 1 min hod, najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 3,
+          "km": 9.2,
+          "longestRunKm": 3.7,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.9,
+              "runWalk": {
+                "runSec": 180,
+                "walkSec": 60,
+                "label": "3 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.9 km — 3 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.6,
+              "runWalk": {
+                "runSec": 180,
+                "walkSec": 60,
+                "label": "3 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.6 km — 3 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "rw",
+              "rest": false,
+              "km": 3.7,
+              "runWalk": {
+                "runSec": 180,
+                "walkSec": 60,
+                "label": "3 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "3.7 km — 3 min trčanje / 1 min hod, najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 4,
+          "km": 6.7,
+          "longestRunKm": 2.7,
+          "deload": true,
+          "taper": false,
+          "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.1,
+              "runWalk": {
+                "runSec": 300,
+                "walkSec": 60,
+                "label": "5 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.1 km — 5 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "rw",
+              "rest": false,
+              "km": 1.9,
+              "runWalk": {
+                "runSec": 300,
+                "walkSec": 60,
+                "label": "5 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "1.9 km — 5 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.7,
+              "runWalk": {
+                "runSec": 300,
+                "walkSec": 60,
+                "label": "5 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.7 km — 5 min trčanje / 1 min hod, najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 5,
+          "km": 10.2,
+          "longestRunKm": 4.1,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 3.2,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "3.2 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.9,
+              "runWalk": null,
+              "strides": null,
+              "desc": "2.9 km lako (Z2) @ ~8:38/km"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 4.1,
+              "runWalk": null,
+              "strides": null,
+              "desc": "4.1 km lako-dugo (Z2) @ ~8:49/km — bazna faza, bez kvaliteta"
+            }
+          ]
+        },
+        {
+          "w": 6,
+          "km": 10.5,
+          "longestRunKm": 4.5,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.9,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "2.9 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "lako",
+              "rest": false,
+              "km": 3.1,
+              "runWalk": null,
+              "strides": null,
+              "desc": "3.1 km lako (Z2) @ ~8:38/km"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 4.5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "4.5 km lako-dugo (Z2) @ ~8:49/km — bazna faza, bez kvaliteta"
+            }
+          ]
+        },
+        {
+          "w": 7,
+          "km": 11.6,
+          "longestRunKm": 4.9,
+          "deload": false,
+          "taper": false,
+          "focus": "Tempo",
+          "runDays": 3,
+          "workMinutes": 7.98,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 3.2,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "3.2 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "tempo",
+              "rest": false,
+              "km": 3.5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Tempo — 1 km zagrevanje + 1.1 km @ 7:15/km + 1.4 km hlađenje",
+              "session": {
+                "type": "tempo",
+                "kind": "Tempo",
+                "wuKm": 1,
+                "qKm": 1.1,
+                "paceSec": 435,
+                "cdKm": 1.4,
+                "overrides": {},
+                "zone": "T",
+                "paceSource": "current-fitness"
+              },
+              "calculatedKm": 3.5,
+              "currentFormatterDesc": "Tempo — 1 km zagrevanje + 1.1 km @ 7:15/km + 1.4 km hlađenje"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 4.9,
+              "runWalk": null,
+              "strides": null,
+              "desc": "4.9 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 8,
+          "km": 9.1,
+          "longestRunKm": 3.4,
+          "deload": true,
+          "taper": false,
+          "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+          "runDays": 3,
+          "workMinutes": 2.53,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.6,
+              "runWalk": null,
+              "strides": {
+                "reps": 4,
+                "runSec": 15,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "2.6 km lako (Z2) @ ~8:38/km + 4×15 s ubrzanja (lagani ubrzani koraci)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "int",
+              "rest": false,
+              "km": 3.1,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Oštrina — 1 km zagrevanje + 2×200 m @ 6:19/km (3:10 min hoda) + 1.5 km hlađenje",
+              "session": {
+                "type": "int",
+                "kind": "Oštrina",
+                "wuKm": 1,
+                "reps": 2,
+                "repM": 200,
+                "paceSec": 379,
+                "restSec": 190,
+                "cdKm": 1.5,
+                "overrides": {},
+                "zone": "R",
+                "paceSource": "current-fitness"
+              },
+              "calculatedKm": 3.1,
+              "currentFormatterDesc": "Oštrina — 1 km zagrevanje + 2×200 m @ 6:19/km (3:10 min hoda) + 1.5 km hlađenje"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 3.4,
+              "runWalk": null,
+              "strides": null,
+              "desc": "3.4 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 9,
+          "km": 13.3,
+          "longestRunKm": 6.1,
+          "deload": false,
+          "taper": false,
+          "focus": "Fartlek",
+          "runDays": 3,
+          "workMinutes": 6,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.4,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "2.4 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "int",
+              "rest": false,
+              "km": 4.8,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Fartlek — 1.7 km zagrevanje + 6×60 s brzo @ ~6:34/km (60 s laganog trčanja) + 1.5 km hlađenje",
+              "session": {
+                "type": "fartlek",
+                "kind": "Fartlek",
+                "wuKm": 1.7,
+                "cdKm": 1.5,
+                "reps": 6,
+                "repSec": 60,
+                "restSec": 60,
+                "paceSec": 394,
+                "easyPaceSec": 518,
+                "overrides": {},
+                "zone": "I",
+                "paceSource": "current-fitness"
+              },
+              "calculatedKm": 4.8,
+              "currentFormatterDesc": "Fartlek — 1.7 km zagrevanje + 6×60 s brzo @ ~6:34/km (60 s laganog trčanja) + 1.5 km hlađenje"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 6.1,
+              "runWalk": null,
+              "strides": null,
+              "desc": "6.1 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 10,
+          "km": 15.2,
+          "longestRunKm": 6.5,
+          "deload": false,
+          "taper": false,
+          "focus": "Intervali",
+          "runDays": 3,
+          "workMinutes": 7.88,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 3.6,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "3.6 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "int",
+              "rest": false,
+              "km": 5.1,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Intervali — 1.6 km zagrevanje + 2×600 m @ 6:34/km (2:57 min hoda) + 2.1 km hlađenje",
+              "session": {
+                "type": "int",
+                "kind": "Intervali",
+                "wuKm": 1.6,
+                "reps": 2,
+                "repM": 600,
+                "paceSec": 394,
+                "restSec": 177,
+                "cdKm": 2.1,
+                "overrides": {},
+                "zone": "I",
+                "paceSource": "current-fitness"
+              },
+              "calculatedKm": 5.1,
+              "currentFormatterDesc": "Intervali — 1.6 km zagrevanje + 2×600 m @ 6:34/km (2:57 min hoda) + 2.1 km hlađenje"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 6.5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "6.5 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 11,
+          "km": 10.7,
+          "longestRunKm": 4.1,
+          "deload": false,
+          "taper": true,
+          "focus": "Taper · Trkački ritam",
+          "runDays": 3,
+          "workMinutes": 11.2,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.7,
+              "runWalk": null,
+              "strides": null,
+              "desc": "2.7 km lako (Z2) @ ~8:38/km"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "int",
+              "rest": false,
+              "km": 3.9,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Trkački ritam — 1 km zagrevanje + 4×400 m @ 7:00/km (1:30 min hoda) + 0.8 km hlađenje",
+              "session": {
+                "type": "int",
+                "kind": "Trkački ritam",
+                "wuKm": 1,
+                "reps": 4,
+                "repM": 400,
+                "paceSec": 420,
+                "restSec": 90,
+                "cdKm": 0.8,
+                "overrides": {},
+                "zone": "RP",
+                "paceSource": "race-specific"
+              },
+              "calculatedKm": 3.9,
+              "currentFormatterDesc": "Trkački ritam — 1 km zagrevanje + 4×400 m @ 7:00/km (1:30 min hoda) + 0.8 km hlađenje"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 4.1,
+              "runWalk": null,
+              "strides": null,
+              "desc": "4.1 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 12,
+          "km": 8,
+          "longestRunKm": 5,
+          "deload": false,
+          "taper": false,
+          "focus": "TRKA",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 1.5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "1.5 km shakeout @ ~8:38/km"
+            },
+            {
+              "dow": 2,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 3,
+              "tag": "lako",
+              "rest": false,
+              "km": 1.5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "1.5 km shakeout @ ~8:38/km"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "trka",
+              "rest": false,
+              "km": 5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "🏁 TRKA 5 km (5K) — cilj 30:00 / ritam 7:00/km"
+            }
+          ]
+        }
+      ]
+    },
+    "new": {
+      "sha256": "3920bbbf588778fc23cc973447a4fae7b955d46e2aa73a3ca96f8dd07955e5c3",
+      "missed": {
+        "id": "g7d3",
+        "w": 7,
+        "generatorDow": 3,
+        "date": "2026-11-25",
+        "km": 3.9,
+        "desc": "Fartlek — 1.3 km zagrevanje + 6×30 s brzo @ ~7:15/km (90 s laganog trčanja) + 1.1 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak."
+      },
+      "log": {
+        "g1d1": {
+          "status": "done",
+          "km": 2.4,
+          "runDate": "2026-10-12",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g1d3": {
+          "status": "done",
+          "km": 2,
+          "runDate": "2026-10-14",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g1d7": {
+          "status": "done",
+          "km": 2.9,
+          "runDate": "2026-10-18",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g2d1": {
+          "status": "done",
+          "km": 2.4,
+          "runDate": "2026-10-19",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g2d3": {
+          "status": "done",
+          "km": 2.3,
+          "runDate": "2026-10-21",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g2d7": {
+          "status": "done",
+          "km": 3,
+          "runDate": "2026-10-25",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g3d1": {
+          "status": "done",
+          "km": 2.6,
+          "runDate": "2026-10-26",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g3d3": {
+          "status": "done",
+          "km": 2.6,
+          "runDate": "2026-10-28",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g3d7": {
+          "status": "done",
+          "km": 3.1,
+          "runDate": "2026-11-01",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g4d1": {
+          "status": "done",
+          "km": 1.9,
+          "runDate": "2026-11-02",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g4d3": {
+          "status": "done",
+          "km": 1.9,
+          "runDate": "2026-11-04",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g4d7": {
+          "status": "done",
+          "km": 2.3,
+          "runDate": "2026-11-08",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g5d1": {
+          "status": "done",
+          "km": 2.9,
+          "runDate": "2026-11-09",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g5d3": {
+          "status": "done",
+          "km": 2.9,
+          "runDate": "2026-11-11",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g5d7": {
+          "status": "done",
+          "km": 3.5,
+          "runDate": "2026-11-15",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g6d1": {
+          "status": "done",
+          "km": 2.8,
+          "runDate": "2026-11-16",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g6d3": {
+          "status": "done",
+          "km": 3,
+          "runDate": "2026-11-18",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g6d7": {
+          "status": "done",
+          "km": 3.8,
+          "runDate": "2026-11-22",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g7d1": {
+          "status": "done",
+          "km": 3,
+          "runDate": "2026-11-23",
+          "rpe": 3,
+          "src": "U01-synthetic-QA"
+        },
+        "g7d3": {
+          "status": "skip",
+          "runDate": "2026-11-25",
+          "src": "U01-synthetic-QA"
+        }
+      },
+      "analysis": {
+        "today": "2026-11-25",
+        "windowStart": "2026-10-29",
+        "completed": 11,
+        "missed": 1,
+        "unknown": 0,
+        "statusCoverage": 1,
+        "volumeCoverage": 1,
+        "actualKm": 31.1,
+        "plannedKm": 35,
+        "completeWeeks": [
+          {
+            "start": "2026-10-26",
+            "end": "2026-11-01",
+            "plannedKm": 8.3,
+            "actualKm": 8.3,
+            "completed": 3,
+            "missed": 0,
+            "unknown": 0,
+            "statusCoverage": 1,
+            "volumeCoverage": 1
+          },
+          {
+            "start": "2026-11-02",
+            "end": "2026-11-08",
+            "plannedKm": 6.1,
+            "actualKm": 6.1,
+            "completed": 3,
+            "missed": 0,
+            "unknown": 0,
+            "statusCoverage": 1,
+            "volumeCoverage": 1
+          },
+          {
+            "start": "2026-11-09",
+            "end": "2026-11-15",
+            "plannedKm": 9.3,
+            "actualKm": 9.3,
+            "completed": 3,
+            "missed": 0,
+            "unknown": 0,
+            "statusCoverage": 1,
+            "volumeCoverage": 1
+          },
+          {
+            "start": "2026-11-16",
+            "end": "2026-11-22",
+            "plannedKm": 9.6,
+            "actualKm": 9.6,
+            "completed": 3,
+            "missed": 0,
+            "unknown": 0,
+            "statusCoverage": 1,
+            "volumeCoverage": 1
+          }
+        ],
+        "recentWeeklyKm": 8.8,
+        "lastPositiveWeeklyKm": 9.6,
+        "recentLongRunKm": 3.5,
+        "lastRunDate": "2026-11-23",
+        "daysSinceLastRun": 2,
+        "explicitMisses14d": 1,
+        "easyHighRpeCount": 0,
+        "lowerVolumeWeeks": 0,
+        "reasons": []
+      },
+      "recommendation": {
+        "kind": "single-miss",
+        "reason": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara.",
+        "actionable": false,
+        "requiresConfirmation": false,
+        "weeklyKm": 8.8,
+        "recentLongRunKm": 3.5,
+        "reasons": []
+      },
+      "adjustment": {
+        "error": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara."
+      },
+      "sparseAnalysis": {
+        "today": "2026-11-25",
+        "windowStart": "2026-10-29",
+        "completed": 0,
+        "missed": 1,
+        "unknown": 11,
+        "statusCoverage": 0.08333333333333333,
+        "volumeCoverage": 0.08333333333333333,
+        "actualKm": 0,
+        "plannedKm": 35,
+        "completeWeeks": [
+          {
+            "start": "2026-10-26",
+            "end": "2026-11-01",
+            "plannedKm": 8.3,
+            "actualKm": 0,
+            "completed": 0,
+            "missed": 0,
+            "unknown": 3,
+            "statusCoverage": 0,
+            "volumeCoverage": 0
+          },
+          {
+            "start": "2026-11-02",
+            "end": "2026-11-08",
+            "plannedKm": 6.1,
+            "actualKm": 0,
+            "completed": 0,
+            "missed": 0,
+            "unknown": 3,
+            "statusCoverage": 0,
+            "volumeCoverage": 0
+          },
+          {
+            "start": "2026-11-09",
+            "end": "2026-11-15",
+            "plannedKm": 9.3,
+            "actualKm": 0,
+            "completed": 0,
+            "missed": 0,
+            "unknown": 3,
+            "statusCoverage": 0,
+            "volumeCoverage": 0
+          },
+          {
+            "start": "2026-11-16",
+            "end": "2026-11-22",
+            "plannedKm": 9.6,
+            "actualKm": 0,
+            "completed": 0,
+            "missed": 0,
+            "unknown": 3,
+            "statusCoverage": 0,
+            "volumeCoverage": 0
+          }
+        ],
+        "recentWeeklyKm": null,
+        "lastPositiveWeeklyKm": null,
+        "recentLongRunKm": null,
+        "lastRunDate": null,
+        "daysSinceLastRun": null,
+        "explicitMisses14d": 1,
+        "easyHighRpeCount": 0,
+        "lowerVolumeWeeks": 0,
+        "reasons": [
+          "Nedovoljno upisanih kilometara: neupisani treninzi nisu dokaz da nisi trčao."
+        ]
+      },
+      "sparseRecommendation": {
+        "kind": "single-miss",
+        "reason": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara.",
+        "actionable": false,
+        "requiresConfirmation": false,
+        "reasons": [
+          "Nedovoljno upisanih kilometara: neupisani treninzi nisu dokaz da nisi trčao."
+        ]
+      },
+      "sparseAdjustment": {
+        "error": "Jedan propušten trening ne zahteva novi plan. Nastavi raspored bez nadoknade kilometara."
+      },
+      "checks": {
+        "frozenHashReproduced": true,
+        "correctEventDay": true,
+        "oneExplicitMiss": true,
+        "recentRunPreventsFalseBreak": true,
+        "recommendationSingleMiss": true,
+        "noActionOrConfirmationNeeded": true,
+        "noRegeneration": true,
+        "reasonMatchesRecommendation": true,
+        "sourcePlanUnchanged": true,
+        "logsUnchanged": true,
+        "sparseUnloggedRunsStayUnknown": true,
+        "sparseNoInferredMileage": true,
+        "sparseSingleMissNoRegeneration": true,
+        "noVolumeOrSessionArithmeticFailures": true,
+        "allTwelveWeeksInspected": true
+      },
+      "weekInspection": [
+        {
+          "w": 1,
+          "km": 7.3,
+          "longestRunKm": 2.9,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.4,
+              "runWalk": {
+                "runSec": 60,
+                "walkSec": 60,
+                "label": "1 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.4 km — 1 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "rw",
+              "rest": false,
+              "km": 2,
+              "runWalk": {
+                "runSec": 60,
+                "walkSec": 60,
+                "label": "1 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2 km — 1 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.9,
+              "runWalk": {
+                "runSec": 60,
+                "walkSec": 60,
+                "label": "1 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.9 km — 1 min trčanje / 1 min hod, najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 2,
+          "km": 7.7,
+          "longestRunKm": 3,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.4,
+              "runWalk": {
+                "runSec": 120,
+                "walkSec": 60,
+                "label": "2 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.4 km — 2 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.3,
+              "runWalk": {
+                "runSec": 120,
+                "walkSec": 60,
+                "label": "2 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.3 km — 2 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "rw",
+              "rest": false,
+              "km": 3,
+              "runWalk": {
+                "runSec": 120,
+                "walkSec": 60,
+                "label": "2 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "3 km — 2 min trčanje / 1 min hod, najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 3,
+          "km": 8.3,
+          "longestRunKm": 3.1,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.6,
+              "runWalk": {
+                "runSec": 180,
+                "walkSec": 60,
+                "label": "3 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.6 km — 3 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.6,
+              "runWalk": {
+                "runSec": 180,
+                "walkSec": 60,
+                "label": "3 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.6 km — 3 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "rw",
+              "rest": false,
+              "km": 3.1,
+              "runWalk": {
+                "runSec": 180,
+                "walkSec": 60,
+                "label": "3 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "3.1 km — 3 min trčanje / 1 min hod, najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 4,
+          "km": 6.1,
+          "longestRunKm": 2.3,
+          "deload": true,
+          "taper": false,
+          "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "rw",
+              "rest": false,
+              "km": 1.9,
+              "runWalk": {
+                "runSec": 300,
+                "walkSec": 60,
+                "label": "5 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "1.9 km — 5 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "rw",
+              "rest": false,
+              "km": 1.9,
+              "runWalk": {
+                "runSec": 300,
+                "walkSec": 60,
+                "label": "5 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "1.9 km — 5 min trčanje / 1 min hod"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "rw",
+              "rest": false,
+              "km": 2.3,
+              "runWalk": {
+                "runSec": 300,
+                "walkSec": 60,
+                "label": "5 min trčanja / 1 min hoda"
+              },
+              "strides": null,
+              "desc": "2.3 km — 5 min trčanje / 1 min hod, najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 5,
+          "km": 9.3,
+          "longestRunKm": 3.5,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.9,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "2.9 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.9,
+              "runWalk": null,
+              "strides": null,
+              "desc": "2.9 km lako (Z2) @ ~8:38/km"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 3.5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "3.5 km lako-dugo (Z2) @ ~8:49/km — bazna faza, bez kvaliteta"
+            }
+          ]
+        },
+        {
+          "w": 6,
+          "km": 9.6,
+          "longestRunKm": 3.8,
+          "deload": false,
+          "taper": false,
+          "focus": "Baza — aerobni obim, bez kvaliteta",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.8,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "2.8 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "lako",
+              "rest": false,
+              "km": 3,
+              "runWalk": null,
+              "strides": null,
+              "desc": "3 km lako (Z2) @ ~8:38/km"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 3.8,
+              "runWalk": null,
+              "strides": null,
+              "desc": "3.8 km lako-dugo (Z2) @ ~8:49/km — bazna faza, bez kvaliteta"
+            }
+          ]
+        },
+        {
+          "w": 7,
+          "km": 11,
+          "longestRunKm": 4.1,
+          "deload": false,
+          "taper": false,
+          "focus": "Fartlek",
+          "runDays": 3,
+          "workMinutes": 3,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 3,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "3 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "int",
+              "rest": false,
+              "km": 3.9,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Fartlek — 1.3 km zagrevanje + 6×30 s brzo @ ~7:15/km (90 s laganog trčanja) + 1.1 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak.",
+              "session": {
+                "type": "fartlek",
+                "kind": "Fartlek",
+                "wuKm": 1.3,
+                "cdKm": 1.1,
+                "reps": 6,
+                "repSec": 30,
+                "restSec": 90,
+                "paceSec": 435,
+                "easyPaceSec": 518,
+                "overrides": {},
+                "zone": "T",
+                "paceSource": "current-fitness",
+                "notes": "Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak."
+              },
+              "calculatedKm": 3.9,
+              "currentFormatterDesc": "Fartlek — 1.3 km zagrevanje + 6×30 s brzo @ ~7:15/km (90 s laganog trčanja) + 1.1 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak."
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 4.1,
+              "runWalk": null,
+              "strides": null,
+              "desc": "4.1 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 8,
+          "km": 8,
+          "longestRunKm": 3,
+          "deload": true,
+          "taper": false,
+          "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.5,
+              "runWalk": null,
+              "strides": {
+                "reps": 4,
+                "runSec": 15,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "2.5 km lako (Z2) @ ~8:38/km + 4×15 s ubrzanja (lagani ubrzani koraci)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "2.5 km lako (Z2) @ ~8:38/km"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 3,
+              "runWalk": null,
+              "strides": null,
+              "desc": "3 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 9,
+          "km": 11.7,
+          "longestRunKm": 4.3,
+          "deload": false,
+          "taper": false,
+          "focus": "Fartlek",
+          "runDays": 3,
+          "workMinutes": 3,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 3.4,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "3.4 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "int",
+              "rest": false,
+              "km": 4,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Fartlek — 1.7 km zagrevanje + 3×60 s brzo @ ~6:34/km (60 s laganog trčanja) + 1.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "session": {
+                "type": "fartlek",
+                "kind": "Fartlek",
+                "wuKm": 1.7,
+                "cdKm": 1.5,
+                "reps": 3,
+                "repSec": 60,
+                "restSec": 60,
+                "paceSec": 394,
+                "easyPaceSec": 518,
+                "overrides": {},
+                "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+                "zone": "I",
+                "paceSource": "current-fitness"
+              },
+              "calculatedKm": 4,
+              "currentFormatterDesc": "Fartlek — 1.7 km zagrevanje + 3×60 s brzo @ ~6:34/km (60 s laganog trčanja) + 1.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 4.3,
+              "runWalk": null,
+              "strides": null,
+              "desc": "4.3 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 10,
+          "km": 12.4,
+          "longestRunKm": 4.6,
+          "deload": false,
+          "taper": false,
+          "focus": "Intervali",
+          "runDays": 3,
+          "workMinutes": 5.25,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 3.4,
+              "runWalk": null,
+              "strides": {
+                "reps": 6,
+                "runSec": 20,
+                "restSec": 60,
+                "paceSec": 379
+              },
+              "desc": "3.4 km lako (Z2) @ ~8:38/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "int",
+              "rest": false,
+              "km": 4.4,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Intervali — 1.7 km zagrevanje + 2×400 m @ 6:34/km (1:58 min hoda) + 1.7 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Deonice skraćene radi poštovanja budžeta rada.",
+              "session": {
+                "type": "int",
+                "kind": "Intervali",
+                "wuKm": 1.7,
+                "reps": 2,
+                "repM": 400,
+                "paceSec": 394,
+                "restSec": 118,
+                "cdKm": 1.7,
+                "overrides": {},
+                "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Deonice skraćene radi poštovanja budžeta rada.",
+                "zone": "I",
+                "paceSource": "current-fitness"
+              },
+              "calculatedKm": 4.4,
+              "currentFormatterDesc": "Intervali — 1.7 km zagrevanje + 2×400 m @ 6:34/km (1:58 min hoda) + 1.7 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju. · Deonice skraćene radi poštovanja budžeta rada."
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 4.6,
+              "runWalk": null,
+              "strides": null,
+              "desc": "4.6 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 11,
+          "km": 8,
+          "longestRunKm": 2.9,
+          "deload": false,
+          "taper": true,
+          "focus": "Taper · Trkački ritam",
+          "runDays": 3,
+          "workMinutes": 5.6,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 2.3,
+              "runWalk": null,
+              "strides": null,
+              "desc": "2.3 km lako (Z2) @ ~8:38/km"
+            },
+            {
+              "dow": 2,
+              "tag": "snaga",
+              "rest": false,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+            },
+            {
+              "dow": 3,
+              "tag": "int",
+              "rest": false,
+              "km": 2.8,
+              "runWalk": null,
+              "strides": null,
+              "desc": "Trkački ritam — 1 km zagrevanje + 2×400 m @ 7:00/km (2:06 min hoda) + 0.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "session": {
+                "type": "int",
+                "kind": "Trkački ritam",
+                "wuKm": 1,
+                "reps": 2,
+                "repM": 400,
+                "paceSec": 420,
+                "restSec": 126,
+                "cdKm": 0.8,
+                "overrides": {},
+                "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+                "zone": "RP",
+                "paceSource": "race-specific"
+              },
+              "calculatedKm": 2.8,
+              "currentFormatterDesc": "Trkački ritam — 1 km zagrevanje + 2×400 m @ 7:00/km (2:06 min hoda) + 0.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "lr",
+              "rest": false,
+              "km": 2.9,
+              "runWalk": null,
+              "strides": null,
+              "desc": "2.9 km LR (Z2) @ ~8:49/km — najduže trčanje te nedelje"
+            }
+          ]
+        },
+        {
+          "w": 12,
+          "km": 8,
+          "longestRunKm": 5,
+          "deload": false,
+          "taper": false,
+          "focus": "TRKA",
+          "runDays": 3,
+          "workMinutes": 0,
+          "days": [
+            {
+              "dow": 1,
+              "tag": "lako",
+              "rest": false,
+              "km": 1.5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "1.5 km shakeout @ ~8:38/km"
+            },
+            {
+              "dow": 2,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 3,
+              "tag": "lako",
+              "rest": false,
+              "km": 1.5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "1.5 km shakeout @ ~8:38/km"
+            },
+            {
+              "dow": 4,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 5,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 6,
+              "rest": true,
+              "km": null,
+              "runWalk": null,
+              "strides": null,
+              "desc": null
+            },
+            {
+              "dow": 7,
+              "tag": "trka",
+              "rest": false,
+              "km": 5,
+              "runWalk": null,
+              "strides": null,
+              "desc": "🏁 TRKA 5 km (5K) — željeni cilj 30:00 · preporučeni ritam 7:00/km (oko 35:00, prema unetom rezultatu) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "allChecksPass": true
+}

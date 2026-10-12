@@ -1,0 +1,1703 @@
+{
+  "scope": "57 raw user observations include duplicates, resolved OLD findings and coaching hypotheses; not57 unique open defects",
+  "records": [
+    {
+      "profile": "U01",
+      "source": "docs/qa/generator-ab/users/U01-findings.json",
+      "observation": {
+        "id": "U01-F01",
+        "severity": "medium",
+        "status": "open",
+        "versions": [
+          "old",
+          "new"
+        ],
+        "category": "beginner progression",
+        "week": 5,
+        "generatorDow": [
+          1,
+          3,
+          7
+        ],
+        "date": [
+          "2026-11-09",
+          "2026-11-11",
+          "2026-11-15"
+        ],
+        "evidence": {
+          "path": "raw/U01.json",
+          "fields": [
+            "versions.new.plan.weeks[3].days[6].runWalk",
+            "versions.new.plan.weeks[4].days[6]"
+          ],
+          "oldW4LongestKm": 2.7,
+          "oldW5ContinuousLongestKm": 4.1,
+          "newW4LongestKm": 2.3,
+          "newW4RunWalk": {
+            "runSec": 300,
+            "walkSec": 60
+          },
+          "newW5ContinuousLongestKm": 3.5,
+          "newW5PaceSec": 529,
+          "continuousMinutesApprox": 30.9,
+          "inputConsistentWeeks": 0,
+          "inputTrainedRecently": false
+        },
+        "expected": "A novice with no continuity can keep walk breaks until the longer continuous run feels manageable; instructions explain the transition or offer a readiness choice.",
+        "actual": "All three W5 runs switch automatically from 5:1 run/walk to continuous Z2 and Monday adds strides; no continuation option appears in generated descriptions.",
+        "impact": "Potential usability/load mismatch for a novice who has not adapted by W5. This is a product concern, not proof of injury or a failed arithmetic invariant.",
+        "recommendation": "Explain that walk breaks remain available and base progression on reported execution/readiness."
+      }
+    },
+    {
+      "profile": "U01",
+      "source": "docs/qa/generator-ab/users/U01-findings.json",
+      "observation": {
+        "id": "U01-F02",
+        "severity": "high",
+        "status": "resolved-in-new",
+        "versions": [
+          "old"
+        ],
+        "category": "goal honesty",
+        "week": 12,
+        "generatorDow": 7,
+        "date": "2027-01-03",
+        "evidence": {
+          "path": "raw/U01.json",
+          "fields": [
+            "versions.old.plan.meta.predictedSec",
+            "versions.old.plan.meta.dayWarnings",
+            "versions.old.plan.weeks[11].days[6].desc"
+          ],
+          "oldPredictedSec": 2004,
+          "oldRaceDesc": "🏁 TRKA 5 km (5K) — cilj 30:00 / ritam 7:00/km",
+          "newReferenceSec": 2100,
+          "newGoalSec": 1800,
+          "newRaceCaveat": "Spremnost nije potvrđena"
+        },
+        "expected": "Distinguish aspirational time, current-fitness pace and unconfirmed endurance without asserting a predicted improvement or guaranteed finish.",
+        "actual": "Old claims race-day 33:24 and says this low-volume plan is to finish the distance; race card pairs 30:00 with a 35:00 rhythm. New holds current reference at 35:00 and explicitly withholds readiness confirmation.",
+        "impact": "Old can leave a beginner believing the plan validates finishing or a faster race outcome.",
+        "recommendation": "Retain new explicit reference/aspiration/readiness language."
+      }
+    },
+    {
+      "profile": "U01",
+      "source": "docs/qa/generator-ab/users/U01-findings.json",
+      "observation": {
+        "id": "U01-F03",
+        "severity": "medium",
+        "status": "resolved-in-new",
+        "versions": [
+          "old"
+        ],
+        "category": "taper dose",
+        "week": 11,
+        "generatorDow": 3,
+        "date": "2026-12-23",
+        "evidence": {
+          "path": "raw/U01.json",
+          "fields": [
+            "versions.old.plan.weeks[9].days[2].session",
+            "versions.old.plan.weeks[10].days[2].session",
+            "versions.new.plan.weeks[10].days[2].session"
+          ],
+          "oldW10WorkMinutes": 7.88,
+          "oldW11WorkMinutes": 11.2,
+          "oldW11Session": "4×400m RP at 7:00/km, 90s walk",
+          "newW11Session": "2×400m RP at 7:00/km, 126s walk",
+          "newW11WorkMinutes": 5.6
+        },
+        "expected": "For this very low-base novice, taper retains a small familiar rhythm dose while lowering total load.",
+        "actual": "Old taper reduces weekly km but its formal work duration rises about 42% relative to W10. New halves RP work to 5.6 minutes and uses more recovery.",
+        "impact": "Old is less coherent as a novice taper. RP is slower than I, so more minutes alone is not proof that total intensity load rose.",
+        "recommendation": "Retain new reduced-dose taper; assess duration and intensity together."
+      }
+    },
+    {
+      "profile": "U01",
+      "source": "docs/qa/generator-ab/users/U01-findings.json",
+      "observation": {
+        "id": "U01-F04",
+        "severity": "low",
+        "status": "open",
+        "versions": [
+          "old",
+          "new"
+        ],
+        "category": "focus coherence",
+        "week": 4,
+        "generatorDow": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "date": [
+          "2026-11-02",
+          "2026-11-08"
+        ],
+        "evidence": {
+          "path": "raw/U01.json",
+          "fields": [
+            "versions.old.plan.weeks[3].focus",
+            "versions.new.plan.weeks[3].focus"
+          ],
+          "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+          "formalSessions": 0,
+          "strides": 0,
+          "allRuns": "5:1 run/walk"
+        },
+        "expected": "Week focus describes the delivered novice sessions.",
+        "actual": "Focus promises retained short sharpness even though W4 contains only run/walk and optional strength.",
+        "impact": "Small expectation mismatch; day instructions are otherwise coherent.",
+        "recommendation": "Use base/run-walk deload focus when no strides or session is delivered."
+      }
+    },
+    {
+      "profile": "U01",
+      "source": "docs/qa/generator-ab/users/U01-findings.json",
+      "observation": {
+        "id": "U01-F05",
+        "severity": "low",
+        "status": "open",
+        "versions": [
+          "new"
+        ],
+        "category": "novice language",
+        "week": 10,
+        "generatorDow": 3,
+        "date": "2026-12-16",
+        "evidence": {
+          "path": "raw/U01.json",
+          "fields": [
+            "versions.new.plan.weeks[9].days[2].desc",
+            "versions.new.plan.weeks[9].days[2].session.notes"
+          ],
+          "text": "Deonice skraćene radi poštovanja budžeta rada.",
+          "session": "2×400m I at 6:34/km, 118s walk; 5.25 minutes work"
+        },
+        "expected": "Explain the user purpose: short controlled repetitions as an introduction, with clear recovery instructions.",
+        "actual": "Notes expose the internal work-budget mechanism without explaining what the short dose is intended to train.",
+        "impact": "Minor comprehension issue; the prescription, current-fitness zone and arithmetic remain coherent.",
+        "recommendation": "Replace internal budgeting language with a plain purpose and effort cue."
+      }
+    },
+    {
+      "profile": "U02",
+      "source": "docs/qa/generator-ab/users/U02-findings.json",
+      "observation": {
+        "id": "U02-OLD-01",
+        "version": "old",
+        "severity": "medium",
+        "type": "unsupported-forecast",
+        "status": "resolved-in-new",
+        "location": "meta.vdotGoal / meta.predictedSec / meta.dayWarnings",
+        "expected": "Report entered 23:45 result as current reference, without treating plan completion as confirmed fitness improvement.",
+        "actual": "vdot0=40.7 but vdotGoal=44.2 and predictedSec=1329 (22:09), an unverified 96-second improvement; warning describes what the plan realistically delivers. New uses vdotGoal=vdot0=40.7 and predictedSec=1425 (23:45), and explicitly says this is not a race-day progress estimate.",
+        "evidence": "raw/U02.json versions.old.plan.meta and versions.new.plan.meta",
+        "impact": "Athlete may interpret generated forecast as a demonstrated route toward sub-20.",
+        "confidence": "high"
+      }
+    },
+    {
+      "profile": "U02",
+      "source": "docs/qa/generator-ab/users/U02-findings.json",
+      "observation": {
+        "id": "U02-NEW-01",
+        "version": "new-adjustment",
+        "severity": "medium",
+        "type": "session-purpose-mismatch",
+        "status": "open",
+        "location": "2026-12-09 / g9d3 / adjusted week9",
+        "expected": "Preserve aerobic-I session purpose after dose reduction: the implementation documents a >=60-second minimum for I repetitions; shorter legs need a different stated purpose or format.",
+        "actual": "I pyramid100-200-300-200-100m at272sec/km, with61sec walking between legs. Leg times27.2,54.4,81.6,54.4,27.2sec; four of five below60sec. Working dose0.9km/244.8sec. Label remains Piramida, zoneI; copy only states dose adapted.",
+        "evidence": "U02-event.json audit.details week9 g9d3; web/src/domain/training/sessions/constraints.ts I minimumRepM comment and interval branch, absent from pyramid branch",
+        "impact": "Data are internally coherent, but trimming changes an aerobic interval workout toward brief surges while retaining its I label. This is a policy/purpose mismatch, not a medical safety diagnosis.",
+        "confidence": "high"
+      }
+    },
+    {
+      "profile": "U02",
+      "source": "docs/qa/generator-ab/users/U02-findings.json",
+      "observation": {
+        "id": "U02-NEW-02",
+        "version": "new-adjustment",
+        "severity": "low",
+        "type": "misleading-copy",
+        "status": "open",
+        "location": "2026-11-30 / g8d1,g8d5,g8d7",
+        "expected": "Underexecution reduction without confirmed break should explain reduced load without asserting a pause.",
+        "actual": "All26 past eligible runs are explicitly done; daysSinceLastRun=0, recommendation=reduce, options={}, executionAdjustment.breakDays=0. Three future day descriptions nevertheless say Postepen povratak posle pauze.",
+        "evidence": "U02-event.json input.log, analysis, adjustment.result.meta.executionAdjustment and week8 descriptions; web/src/domain/plan/returnGrowth.ts",
+        "impact": "User can wrongly infer that the application detected a break, even though the recommendation correctly avoided it.",
+        "confidence": "high"
+      }
+    },
+    {
+      "profile": "U03",
+      "source": "docs/qa/generator-ab/users/U03-findings.json",
+      "observation": {
+        "id": "U03-F01",
+        "version": "old",
+        "severity": "medium",
+        "status": "confirmed metadata behavior; fixed in new",
+        "category": "goal honesty",
+        "week": 16,
+        "day": 7,
+        "date": "2027-01-31",
+        "expected": "Distinguish desired 18:59 from current 20:35 reference; do not turn elapsed training weeks into confirmed fitness gain.",
+        "actual": "Old vdot0=48.2, vdotGoal=51.7, predictedSec=1163 (19:23), with an unsupported claim that aggressive progression would reach 18:59. New holds vdotGoal=48.2 and referenceSec=1235 (20:35) and explicitly disclaims race-day progress prediction.",
+        "evidence": [
+          "raw/U03.json: versions.old.plan.meta",
+          "raw/U03.json: versions.new.plan.meta",
+          "users/U03-event.json: fixtureSha256"
+        ]
+      }
+    },
+    {
+      "profile": "U03",
+      "source": "docs/qa/generator-ab/users/U03-findings.json",
+      "observation": {
+        "id": "U03-F02",
+        "version": "new event adjustment",
+        "severity": "medium",
+        "status": "independent coaching concern; no promised deload-preservation invariant established",
+        "category": "recovery phase reset",
+        "week": 8,
+        "day": null,
+        "dateRange": [
+          "2026-11-30",
+          "2026-12-06"
+        ],
+        "expected": "Following two RPE-8 easy runs, review whether the already scheduled imminent recovery week should remain at or below its original dose. This is a coaching expectation, not a documented phase-preservation guarantee.",
+        "actual": "Regeneration reindexes the phase: imminent W8 changes from deload=true, 40.2 km and zero quality to deload=false, 48.8 km and 3×45s T (2.25 min), a 21.4% volume increase. Deload is moved to W10 (Dec14-20), 36.6 km and zero quality. Original W12 deload (Dec28-Jan3), 40.2 km/zero quality, becomes non-deload 54.3 km/19.59 quality min (+35.1%). Initial remaining W7 dose and upcoming hard-work dose are reduced; faster pace proposals are correctly blocked.",
+        "evidence": [
+          "users/U03-event.json: phaseResetReview.changes",
+          "users/U03-event.json: adjustedAudit.weeks[7,9,11]",
+          "users/U03-event.json: analysis.easyHighRpeCount=2",
+          "users/U03-event.json: checks.highRpeBlocksEvenWithPositiveEvidence=true",
+          "web/src/domain/plan/executionAdjustment.ts: regeneration startDate=today+1; consistentWeeks=0"
+        ]
+      }
+    },
+    {
+      "profile": "U03",
+      "source": "docs/qa/generator-ab/users/U03-findings.json",
+      "observation": {
+        "id": "U03-F03",
+        "version": "new event adjustment",
+        "severity": "low",
+        "status": "confirmed metadata behavior; interpretation/coherence concern",
+        "category": "history explanation",
+        "week": 7,
+        "day": 3,
+        "date": "2026-11-25",
+        "expected": "Explain temporary dose/readiness reduction separately from observed historical continuity.",
+        "actual": "Despite input consistentWeeks=24 and all 33 eligible runs explicitly completed, the fatigue replan sets consistentWeeks=0 and experienced qualityReadiness becomes developing. It adds “Nema potvrđenog kontinuiteta od najmanje osam nedelja”, whereas no break was inferred and breakDays=0. Conservative restart is plausible; the warning does not explain that the application reset continuity for this adjustment.",
+        "evidence": [
+          "users/U03-event.json: input.profile.input.consistentWeeks",
+          "users/U03-event.json: input.log",
+          "users/U03-event.json: adjustment.result.meta.athlete",
+          "users/U03-event.json: adjustment.result.meta.dayWarnings",
+          "users/U03-event.json: adjustment.result.meta.executionAdjustment"
+        ]
+      }
+    },
+    {
+      "profile": "U04",
+      "source": "docs/qa/generator-ab/users/U04-findings.json",
+      "observation": {
+        "id": "U04-OLD-01",
+        "version": "old",
+        "domain": "generation/load",
+        "severity": "medium",
+        "type": "coaching-judgment",
+        "weeks": [
+          1
+        ],
+        "days": [
+          7
+        ],
+        "dates": [
+          "2026-10-18"
+        ],
+        "expected": "The first long run should respect the reported repeatable 8 km long run and develop it gradually.",
+        "actual": "W1 Sunday is 9.7 km: +21.25% above reported recent LR; 36.2% of its 26.8 km week. New starts at 8 km.",
+        "status": "improved-in-new"
+      }
+    },
+    {
+      "profile": "U04",
+      "source": "docs/qa/generator-ab/users/U04-findings.json",
+      "observation": {
+        "id": "U04-OLD-02",
+        "version": "old",
+        "domain": "assessment",
+        "severity": "high",
+        "type": "unsupported-forecast",
+        "weeks": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "days": [],
+        "dates": [],
+        "expected": "Separate current-fitness reference from hoped-for adaptation; do not assert unmeasured fitness gain.",
+        "actual": "VDOT rises from 38.3 to 41.8 and predictedSec=2890 (48:10) despite only a 25:00 5K being supplied. New keeps 38.3 and current reference 3113 s (51:53), with 50:00 explicitly a goal.",
+        "status": "improved-in-new"
+      }
+    },
+    {
+      "profile": "U04",
+      "source": "docs/qa/generator-ab/users/U04-findings.json",
+      "observation": {
+        "id": "U04-NEW-01",
+        "version": "new",
+        "domain": "generation/specificity",
+        "severity": "medium",
+        "type": "coaching-judgment",
+        "weeks": [
+          13,
+          14
+        ],
+        "days": [
+          3
+        ],
+        "dates": [
+          "2027-01-06",
+          "2027-01-13"
+        ],
+        "expected": "Late-cycle race-pace work should have a clear 10K endurance purpose; if only small doses are supported, preserve a purposeful recovery or describe it as rhythm familiarization.",
+        "actual": "W13 2×1000 m @5:11/km with 233 s walking (10.37 min total work); W14 2×1200 m with 240 s walking (12.44 min work). Recovery is ~75%/~64% of one repetition; old used 3 reps with 60 s recovery. New dose is conservative but the combination of small total work and long walking weakens sustained 10K specificity.",
+        "status": "open-review"
+      }
+    },
+    {
+      "profile": "U04",
+      "source": "docs/qa/generator-ab/users/U04-findings.json",
+      "observation": {
+        "id": "U04-NEW-02",
+        "version": "new",
+        "domain": "generation/recovery",
+        "severity": "medium",
+        "type": "coaching-judgment",
+        "weeks": [
+          13,
+          14
+        ],
+        "days": [
+          7,
+          1
+        ],
+        "dates": [
+          "2027-01-10",
+          "2027-01-11"
+        ],
+        "expected": "For a runner entering the first structured cycle, preserve an easy recovery load after the longest run as weekly volume rises.",
+        "actual": "W13 Sunday LR 15.3 km is followed by W14 Monday easy 12.2 km plus 6×20 s strides. Consecutive-day distance 27.5 km, ~63% of W14 43.8 km; previous baseline old is 12.7+6.6=19.3 km. New peak LR16.2 is ~105 min at6:28/km. No adjacency between Wed/Fri quality, but the Sunday/Monday load concentrates too much novice volume for an unqualified recommendation.",
+        "status": "open-review"
+      }
+    },
+    {
+      "profile": "U04",
+      "source": "docs/qa/generator-ab/users/U04-findings.json",
+      "observation": {
+        "id": "U04-NEW-03",
+        "version": "new",
+        "domain": "generation/copy-coherence",
+        "severity": "low",
+        "type": "observed-output",
+        "weeks": [
+          8,
+          12
+        ],
+        "days": [],
+        "dates": [
+          "2026-11-30",
+          "2026-12-28"
+        ],
+        "expected": "Deload focus should describe the delivered easy sessions.",
+        "actual": "Both focus labels say “DELOAD — obim dole, ostaje kratka oštrina” while both weeks have zero sessions/finish work. Strides remain on Monday, so generic sharpness can refer to strides, but there is no dedicated short quality workout.",
+        "status": "open-copy-review"
+      }
+    },
+    {
+      "profile": "U04",
+      "source": "docs/qa/generator-ab/users/U04-findings.json",
+      "observation": {
+        "id": "U04-RETURN-01",
+        "version": "new",
+        "domain": "execution-adjustment/copy-coherence",
+        "severity": "low",
+        "type": "observed-output",
+        "weeks": [
+          8,
+          10
+        ],
+        "days": [
+          3
+        ],
+        "dates": [
+          "2026-12-02",
+          "2026-12-16"
+        ],
+        "expected": "Recompute focus after removing quality; the return preview should accurately identify easy weeks.",
+        "actual": "After confirmed return, W8 is titled Fartlek but has zero sessions, strides or finishes; W10 says short sharpness remains but has zero such work. All underlying sessions, km, descriptions, pred and QS remain coherent.",
+        "status": "open"
+      }
+    },
+    {
+      "profile": "U05",
+      "source": "docs/qa/generator-ab/users/U05-findings.json",
+      "observation": {
+        "id": "U05-01",
+        "version": "new",
+        "severity": "P2",
+        "category": "quality-dose",
+        "week": [
+          1,
+          3
+        ],
+        "day": [
+          2,
+          5
+        ],
+        "expected": "For 24 consistent weeks at45km with experienced quality history, two quality slots should each have a purposeful dose or consolidate into one substantive threshold session. This is runner/coaching judgment, not a universal physiological floor.",
+        "actual": {
+          "W1Tue": "2×700m T@276sec/km;3.22min per rep,6.44min total;90sec recovery",
+          "W1Fri": "1.2km T;5.52min work",
+          "W3Tue": "2×1000m T;9.20min total",
+          "W3Fri": "2×700m T;6.44min total",
+          "W1weeklyKm": 47.5,
+          "W3weeklyKm": 52.1,
+          "oldW1": "6×300m R7.20min +2×1600m T14.72min",
+          "oldW3": "7×300m R8.40min +2×2000m T18.40min"
+        },
+        "status": "open",
+        "scope": "Domain/provided plan only; no browser claim"
+      }
+    },
+    {
+      "profile": "U05",
+      "source": "docs/qa/generator-ab/users/U05-findings.json",
+      "observation": {
+        "id": "U05-02",
+        "version": "new",
+        "severity": "P2",
+        "category": "10K-specificity",
+        "week": [
+          13,
+          14
+        ],
+        "day": [
+          2
+        ],
+        "expected": "Late 10K rhythm work should provide enough continuous or closely connected work to rehearse sustained race effort at confirmed fitness. Keeping current4:30 pace is appropriate; recovery and dose should develop race endurance.",
+        "actual": {
+          "W13": "3×1200m@270sec/km;16.20min work;240sec walking recovery",
+          "W14": "2×1600m@270sec/km;14.40min work;240sec walking recovery",
+          "oldW13": "5×1200m@270;27min work;60sec recovery",
+          "oldW14": "3×1600m@270;21.60min work;75sec recovery"
+        },
+        "status": "open",
+        "scope": "Domain/provided plan only; no browser claim"
+      }
+    },
+    {
+      "profile": "U05",
+      "source": "docs/qa/generator-ab/users/U05-findings.json",
+      "observation": {
+        "id": "U05-03",
+        "version": "old",
+        "severity": "P1",
+        "category": "history-preservation",
+        "week": 7,
+        "day": [
+          2,
+          5,
+          7
+        ],
+        "expected": "Public goal change must retain completed prescriptions/rows and moved effective-past days exactly, including current-week history.",
+        "actual": {
+          "scope": "Separate seeded adjusted stored snapshots; pristine primary event does not fail",
+          "g7d2": "done adjusted pace251 reset249; rowg7_11 pt251→249; effective moved future2026-11-29 butdone status ignored",
+          "g7d5": "early-completed on2026-11-24 adjusted pace253 reset249",
+          "g7d7": "moved effective2026-11-24 stored LR18.8 reset18.4",
+          "new": "all3 retained exactly"
+        },
+        "status": "fixed-in-new",
+        "scope": "Domain/provided plan only; no browser claim"
+      }
+    },
+    {
+      "profile": "U05",
+      "source": "docs/qa/generator-ab/users/U05-findings.json",
+      "observation": {
+        "id": "U05-04",
+        "version": "old",
+        "severity": "P1",
+        "category": "measured-future-preservation",
+        "week": 10,
+        "day": 2,
+        "expected": "Keep a measured/locked future day and its prediction identity/body exactly when changing only aspirational goal.",
+        "actual": {
+          "scope": "Separate seeded adjusted stored snapshot",
+          "row": "g10_16 pt253→249",
+          "day": "g10d2 Fartlek adjusted pace253 reset249",
+          "context": "pred[g10_16]=253,predLock[g10_16]=true",
+          "new": "day and row retained byte-for-byte"
+        },
+        "status": "fixed-in-new",
+        "scope": "Domain/provided plan only; no browser claim"
+      }
+    },
+    {
+      "profile": "U05",
+      "source": "docs/qa/generator-ab/users/U05-findings.json",
+      "observation": {
+        "id": "U05-05",
+        "version": "old",
+        "severity": "P2",
+        "category": "manual-future-preservation",
+        "week": 9,
+        "day": 2,
+        "expected": "Keep an explicitly manual kind/type change when regenerating and warn user to review compatibility.",
+        "actual": {
+          "scope": "Separate seeded valid manual int/R Oštrina replacing original pyramid/I",
+          "before": "5×200m@240sec/km,120sec recovery;kind/reps/repM overrides",
+          "after": "original Piramida/I restored;manual session lost",
+          "new": "whole manual session retained;2026-12-08 warning",
+          "oldWarmupOnly": "g9d5 overridewuKm3.7 retained"
+        },
+        "status": "fixed-in-new",
+        "scope": "Domain/provided plan only; no browser claim"
+      }
+    },
+    {
+      "profile": "U05",
+      "source": "docs/qa/generator-ab/users/U05-findings.json",
+      "observation": {
+        "id": "U05-06",
+        "version": "old",
+        "severity": "P2",
+        "category": "target-pace-honesty",
+        "week": 16,
+        "day": 7,
+        "expected": "Race-day instruction should separate aspirational finish time from the recommended pace and its corresponding finish time.",
+        "actual": {
+          "before": "TRKA10km—cilj42:00/ritam4:30/km;4:30 implies45:00",
+          "afterGoalChange": "TRKA10km—cilj40:00/ritam4:30/km",
+          "meta": "projected2533sec42:13 andvdotGoal48.8 without evidence of improvement",
+          "new": "reference2700sec45:00;vdotGoal=vdot0=45.3;race desc explicitly željeni cilj versuspreporučeni ritam4:30(oko45:00)"
+        },
+        "status": "fixed-in-new",
+        "scope": "Domain/provided plan only; no browser claim"
+      }
+    },
+    {
+      "profile": "U05",
+      "source": "docs/qa/generator-ab/users/U05-findings.json",
+      "observation": {
+        "id": "U05-07",
+        "version": "both",
+        "severity": "P3",
+        "category": "zone-label-coherence",
+        "week": 16,
+        "day": 5,
+        "expected": "A race-week primer can be deliberately easy, but its R/repetition label and current-fitness source should match its pace or explain the reduced race-week intensity.",
+        "actual": {
+          "session": "5×200m@266sec/km(53.2sec),133sec recovery;zoneR,paceSourcecurrent-fitness",
+          "contrast": "prior R andstrides240sec/km;current10Krace270sec/km;primer only4sec/kmfaster thanrace",
+          "judgment": "Low-priority label/instruction concern; mild primer itself is not unsafe"
+        },
+        "status": "open",
+        "scope": "Domain/provided plan only; no browser claim"
+      }
+    },
+    {
+      "profile": "U06",
+      "source": "docs/qa/generator-ab/users/U06-findings.json",
+      "observation": {
+        "id": "U06-OLD-01",
+        "severity": "high",
+        "version": "old",
+        "phase": "assessment",
+        "weeks": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "dows": [],
+        "basis": "observed-output",
+        "status": "improved-in-new",
+        "expected": "Dated PB is a reference, not evidence of automatic improvement.",
+        "actual": "Old VDOT rises 35→38.5 and predictedSec=3103 (51:43), despite a 365-day-old PB, one consistent week and eight break weeks. New holds 35 and current-equivalent 3365 s (56:05), with returning speed confidence and limited endurance.",
+        "evidence": "raw/U06.json old/new meta"
+      }
+    },
+    {
+      "profile": "U06",
+      "source": "docs/qa/generator-ab/users/U06-findings.json",
+      "observation": {
+        "id": "U06-OLD-02",
+        "severity": "medium",
+        "version": "old",
+        "phase": "generation/fit",
+        "weeks": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "dows": [
+          1,
+          3,
+          7
+        ],
+        "basis": "coaching-judgment",
+        "status": "improved-in-new",
+        "expected": "Distinguish a returner from a first-time runner and respect the reported 4 km repeatable long run.",
+        "actual": "Old assigns eight beginner base weeks, first run/walk ratios 1:1, 2:1, 3:1, 5:1 and longest scheduled distances 5.9/6.5/7.1 km in W 1–3. Walking means those distances are not equivalent continuous running demands. New chooses three returning base weeks and LR 4.0/4.2/4.4 km.",
+        "evidence": "raw/U06.json weeks1–8"
+      }
+    },
+    {
+      "profile": "U06",
+      "source": "docs/qa/generator-ab/users/U06-findings.json",
+      "observation": {
+        "id": "U06-NEW-01",
+        "severity": "medium",
+        "version": "new",
+        "phase": "generation/current-pace",
+        "weeks": [
+          1,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          16
+        ],
+        "dows": [
+          1,
+          3,
+          7
+        ],
+        "basis": "coaching-judgment",
+        "status": "open-review",
+        "expected": "Keep old-PB paces provisional and provide a practical form check before faster sessions.",
+        "actual": "New recognizes returning speed confidence and warns to verify form, yet supplies easy 6:47/km, T 5:40/km and I 5:07/km from the 365-day-old PB. No fresh performance is required before W 7 I fartlek. Dose is small and warnings are clear; this is a qualification concern, not a proven physiological error.",
+        "evidence": "raw/U06.json new.meta.athlete, new.weeks1/5/7, new.meta.dayWarnings"
+      }
+    },
+    {
+      "profile": "U06",
+      "source": "docs/qa/generator-ab/users/U06-findings.json",
+      "observation": {
+        "id": "U06-RETURN-01",
+        "severity": "medium",
+        "version": "new",
+        "phase": "execution-adjustment/description",
+        "weeks": [
+          8,
+          10
+        ],
+        "dows": [
+          1
+        ],
+        "basis": "observed-output",
+        "status": "open",
+        "expected": "Displayed descriptions must omit deleted strides during the four promised initial easy return calendar weeks.",
+        "actual": "Return g8d1 has no strides field but desc still says +6×20 s accelerations; g10d1 has no strides field but desc says +4×15 s accelerations. Both are inside the four easy calendar weeks through December 20. Structural quality is zero, while displayed text still instructs faster work.",
+        "evidence": "U06-event.json adjustment.result.weeks g8d1/g10d1"
+      }
+    },
+    {
+      "profile": "U06",
+      "source": "docs/qa/generator-ab/users/U06-findings.json",
+      "observation": {
+        "id": "U06-RETURN-02",
+        "severity": "low",
+        "version": "new",
+        "phase": "execution-adjustment/focus",
+        "weeks": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "dows": [
+          3
+        ],
+        "basis": "observed-output",
+        "status": "open",
+        "expected": "Week titles should describe final guarded prescriptions.",
+        "actual": "W 9/W 11/W 12 are titled Fartlek, W 13 Tempo, W 14 Progresivno, but contain zero sessions, finishes or strides. W 10 promises retained sharpness with no structural faster work. Guarded day descriptions correctly say quality is postponed; focus remains stale.",
+        "evidence": "U06-event.json returnWeeks9–14"
+      }
+    },
+    {
+      "profile": "U06",
+      "source": "docs/qa/generator-ab/users/U06-findings.json",
+      "observation": {
+        "id": "U06-RETURN-03",
+        "severity": "low",
+        "version": "new",
+        "phase": "execution-adjustment/assessment-copy",
+        "weeks": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "dows": [],
+        "basis": "observed-output",
+        "status": "open",
+        "expected": "Delivered-peak warnings must match final guarded preparation assessment.",
+        "actual": "Return dayWarnings states delivered peak 11.6 km and about 12 km, while recomputed preparation.peakWeeklyKm is 10.1 km and its reasons correctly state 10.1 km. Both lead to limited readiness, but evidence displayed to the runner is inconsistent.",
+        "evidence": "U06-event.json adjustment.result.meta.dayWarnings and preparation"
+      }
+    },
+    {
+      "profile": "U06",
+      "source": "docs/qa/generator-ab/users/U06-findings.json",
+      "observation": {
+        "id": "U06-NEW-02",
+        "severity": "low",
+        "version": "new",
+        "phase": "generation/progression",
+        "weeks": [
+          5,
+          14
+        ],
+        "dows": [
+          3
+        ],
+        "basis": "coaching-judgment",
+        "status": "open-review",
+        "expected": "Explain larger delivered weekly-load changes for a returning runner.",
+        "actual": "W 5 delivered 12.7 km is 17.6% above prior non-deload W 3 peak 10.8 km. W 14 delivered 18.2 km is 13.8% above W 13 16 km, chiefly Wednesday 4.5→6.4 km. LR increases stay 4.4→4.6 and 6.4→6.7. Absolute changes are modest; no invariant failure.",
+        "evidence": "U06-event.json review.new weeks3/5/13/14"
+      }
+    },
+    {
+      "profile": "U07",
+      "source": "docs/qa/generator-ab/users/U07-findings.json",
+      "observation": {
+        "id": "U07-01",
+        "version": "old",
+        "status": "fixed-in-new",
+        "severity": "P2",
+        "category": "goal-forecast",
+        "issue": "Projected fitness gain is presented as the target assessment rather than retaining the current-result reference.",
+        "week": 16,
+        "day": 7,
+        "date": "2027-01-31",
+        "expected": {
+          "referenceBasis": "Current recorded 5 km result; separate aspirational 1:45:00 from the reference and unverified future adaptation.",
+          "vdotGoal": 40.7,
+          "currentReferenceSec": 6555
+        },
+        "actual": {
+          "oldVdot0": 40.7,
+          "oldVdotGoal": 44.2,
+          "oldPredictedSec": 6107,
+          "oldRealno": true,
+          "goalSec": 6300,
+          "newVdotGoal": 40.7,
+          "newPredictedSec": 6555,
+          "newRealno": false
+        },
+        "evidence": "raw/U07.json versions.old.plan.meta and versions.new.plan.meta",
+        "confidence": "high",
+        "interpretation": "Product truthfulness issue in the old comparison; new fixes the assumption. This is not a claim that the goal cannot be achieved."
+      }
+    },
+    {
+      "profile": "U07",
+      "source": "docs/qa/generator-ab/users/U07-findings.json",
+      "observation": {
+        "id": "U07-02",
+        "version": "new",
+        "status": "open-coaching-concern",
+        "severity": "P2",
+        "category": "recovery",
+        "issue": "The peak long run is immediately followed by a substantial easy run for a first-HM runner with a limited base.",
+        "week": 13,
+        "day": 7,
+        "date": "2027-01-10",
+        "relatedSlots": [
+          {
+            "week": 14,
+            "day": 1,
+            "date": "2027-01-11"
+          }
+        ],
+        "expected": {
+          "behavior": "Review the adjacent-day recovery burden; provide a shorter recovery day, a rest option, or a clear rationale for retaining this pair. No universal numeric cutoff asserted."
+        },
+        "actual": {
+          "peakLRKm": 19.5,
+          "peakLRDurationMinutes": 120,
+          "nextDayEasyKm": 11.5,
+          "nextDayEasyPaceSec": 362,
+          "twoDayKm": 31,
+          "originalWeeklyBaseKm": 30,
+          "oldCorrespondingTwoDayKm": 21.6,
+          "newCorrespondingTwoDayKmAsPercentOfOriginalWeeklyBase": 103.3
+        },
+        "evidence": "raw/U07.json versions.new.plan.weeks[12].days[6], weeks[13].days[0]; old same indices",
+        "confidence": "medium",
+        "interpretation": "Coaching judgment requiring review, not a proven injury outcome or violated automated invariant. Monday run is easy; Tuesday is non-running and Thursday/Saturday are rest."
+      }
+    },
+    {
+      "profile": "U07",
+      "source": "docs/qa/generator-ab/users/U07-findings.json",
+      "observation": {
+        "id": "U07-03",
+        "version": "new-adjustment",
+        "status": "open",
+        "severity": "P3",
+        "category": "coherence",
+        "issue": "After the growth guard converts all quality to easy running, week focus still names the removed quality session.",
+        "week": 8,
+        "day": 3,
+        "date": "2026-12-02",
+        "relatedSlots": [
+          {
+            "week": 9,
+            "day": 3,
+            "date": "2026-12-09"
+          }
+        ],
+        "expected": {
+          "week8Focus": "Easy base/growth focus consistent with four easy/LR runs and no quality session.",
+          "week9Focus": "Easy base/growth focus consistent with four easy/LR runs and no quality session."
+        },
+        "actual": {
+          "week8Focus": "Fartlek",
+          "week8SessionCount": 0,
+          "week8WednesdayTag": "lako",
+          "week8WednesdayKm": 5.6,
+          "week9Focus": "Tempo isprekidan",
+          "week9SessionCount": 0,
+          "week9WednesdayTag": "lako",
+          "week9WednesdayKm": 6.2
+        },
+        "evidence": "U07-event.json adjustment.result.weeks and adjustmentAudit.weeks (W8/W9); guardReturnGrowth converts session but preserves focus",
+        "confidence": "high",
+        "interpretation": "Text coherence defect. Session distance, prediction matching, descriptions, and QS are otherwise coherent."
+      }
+    },
+    {
+      "profile": "U08",
+      "source": "docs/qa/generator-ab/users/U08-findings.json",
+      "observation": {
+        "id": "U08-01",
+        "profile": "U08",
+        "version": "new",
+        "status": "coaching-concern",
+        "severity": "medium",
+        "critical": false,
+        "scope": "baseline",
+        "locations": [
+          {
+            "week": 1,
+            "day": 2,
+            "date": "2026-10-13"
+          },
+          {
+            "week": 1,
+            "day": 5,
+            "date": "2026-10-16"
+          },
+          {
+            "week": 2,
+            "day": 2,
+            "date": "2026-10-20"
+          },
+          {
+            "week": 2,
+            "day": 5,
+            "date": "2026-10-23"
+          }
+        ],
+        "expected": "Experienced HM runner with 55 km/week, 24 consistent weeks and current PB should receive a clearly justified useful threshold dose. No universal minimum asserted.",
+        "actual": "W1 2x1000 m + 2x700 m T = 3.4 km / 14.90 min; W2 2x1000 m + 1.7 km continuous T = 3.7 km / 16.22 min. Both weeks use two quality slots and 6.5 km warm-up/cool-down per session. Athlete is correctly classified experienced.",
+        "significance": "HM-oriented choice is improved over early R work, but two very small doses may spend recovery/calendar slots with less adaptation than one coherent threshold session. Independent user assessment; not a proven physiological failure.",
+        "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+        "evidence": "U08-event.json"
+      }
+    },
+    {
+      "profile": "U08",
+      "source": "docs/qa/generator-ab/users/U08-findings.json",
+      "observation": {
+        "id": "U08-02",
+        "profile": "U08",
+        "version": "old,new",
+        "status": "coaching-concern",
+        "severity": "low",
+        "critical": false,
+        "scope": "baseline",
+        "locations": [
+          {
+            "week": 9,
+            "day": 2,
+            "date": "2026-12-08"
+          },
+          {
+            "week": 11,
+            "day": 2,
+            "date": "2026-12-22"
+          },
+          {
+            "week": 12,
+            "day": 2,
+            "date": "2026-12-29"
+          }
+        ],
+        "expected": "Assess whether HM RP repetitions form a sustained race-specific stimulus; profile code describes short jog recoveries. Recovery length should reflect purpose.",
+        "actual": "New 2x2500 m at 4:30/km with 284 s recovery: each block 675 s, recovery 42.1% of work. Old 2x3000 m with same recovery. New W9/W11 finish adds 5.5 km at RP; this compensates partly for short standalone RP dose.",
+        "significance": "Not automatically inadequate. Experienced runner could benefit from shorter jogs or longer controlled blocks, but race-specific long-run finishes and 10 km rehearsal already supply useful continuity.",
+        "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+        "evidence": "U08-event.json"
+      }
+    },
+    {
+      "profile": "U08",
+      "source": "docs/qa/generator-ab/users/U08-findings.json",
+      "observation": {
+        "id": "U08-03",
+        "profile": "U08",
+        "version": "old",
+        "status": "confirmed",
+        "severity": "high",
+        "critical": false,
+        "scope": "baseline",
+        "locations": [
+          {
+            "week": 14,
+            "day": 7,
+            "date": "2027-01-17",
+            "field": "meta.predictedSec / meta.vdotGoal"
+          }
+        ],
+        "expected": "Distinguish measured PB equivalence from speculative future improvement; no confirmed future fitness gain exists in this input.",
+        "actual": "VDOT rises deterministically 48.2 to 51.2; predictedSec=5383 (1:29:43). New uses VDOT 48.2 unchanged and reference 5672 (1:34:32). Difference 289 seconds.",
+        "significance": "Old reference can imply a roughly five-minute fitness improvement without supporting execution/results. New assessmentBasis=current-fitness and reference-only preparation address this baseline concern.",
+        "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+        "evidence": "U08-event.json"
+      }
+    },
+    {
+      "profile": "U08",
+      "source": "docs/qa/generator-ab/users/U08-findings.json",
+      "observation": {
+        "id": "U08-04",
+        "profile": "U08",
+        "version": "old",
+        "status": "confirmed",
+        "severity": "low",
+        "critical": false,
+        "scope": "baseline",
+        "locations": [
+          {
+            "week": 8,
+            "day": 7,
+            "date": "2026-12-06"
+          },
+          {
+            "week": 12,
+            "day": 7,
+            "date": "2027-01-03"
+          }
+        ],
+        "expected": "Informational duration should track displayed distance and easy pace after volume trimming.",
+        "actual": "W8 16.1 km at displayed 5:24/km is 86.94 min (~87), text says 93 min; W12 17.2 km is 92.88 min (~93), text says 99 min. Both have no fast finish.",
+        "significance": "Small but reproducible numeric/text mismatch affects planning time and fuel guidance. New respective durations are consistent.",
+        "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+        "evidence": "U08-event.json"
+      }
+    },
+    {
+      "profile": "U08",
+      "source": "docs/qa/generator-ab/users/U08-findings.json",
+      "observation": {
+        "id": "U08-05",
+        "profile": "U08",
+        "version": "old,new",
+        "status": "confirmed",
+        "severity": "medium",
+        "critical": false,
+        "scope": "baseline",
+        "locations": [
+          {
+            "week": 14,
+            "day": 5,
+            "date": "2027-01-15"
+          }
+        ],
+        "expected": "An intentionally near-race-pace activation should have a matching kind/zone/source, or explicit distinction from current-fitness R work; changing to true R pace is not required.",
+        "actual": "6x200 m at 266 s/km (4:26), zone R, kind Repeticije, paceSource=current-fitness. Current-fitness R from VDOT 48.2 is 228 s/km (3:48); T is 263 s/km. Builder intentionally chooses racePace-4, but final description loses the activation qualifier.",
+        "significance": "Semantic classification and presented purpose conflict. Session may be reasonable activation, but should not be analyzed or communicated as actual R-pace work.",
+        "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+        "evidence": "U08-event.json"
+      }
+    },
+    {
+      "profile": "U08",
+      "source": "docs/qa/generator-ab/users/U08-findings.json",
+      "observation": {
+        "id": "U08-06",
+        "profile": "U08",
+        "version": "new",
+        "status": "confirmed",
+        "severity": "medium",
+        "critical": false,
+        "scope": "supplemental earlier return only",
+        "locations": [
+          {
+            "week": 3,
+            "day": 5,
+            "date": "2026-10-30"
+          },
+          {
+            "week": 4,
+            "day": 1,
+            "date": "2026-11-02"
+          },
+          {
+            "week": 5,
+            "day": 1,
+            "date": "2026-11-09"
+          }
+        ],
+        "expected": "Confirmed 14-day-return initial three calendar weeks without quality should remove stride instructions from both structured fields and the visible description.",
+        "actual": "strides=null and no session/finish, but all three descriptions still contain + 6x20 s ubrzanja. Example 2026-10-30: 5.9 km lako ... + 6x20 s ubrzanja.",
+        "significance": "Reproducible instruction contradiction: visible text asks for fast strides while policy/model removes them. This occurs only in separate permitted 2026-10-28 simulation; primary 2026-11-25 event returns no plan.",
+        "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+        "evidence": "U08-event.json"
+      }
+    },
+    {
+      "profile": "U08",
+      "source": "docs/qa/generator-ab/users/U08-findings.json",
+      "observation": {
+        "id": "U08-07",
+        "profile": "U08",
+        "version": "new",
+        "status": "confirmed",
+        "severity": "low",
+        "critical": false,
+        "scope": "supplemental earlier return only",
+        "locations": [
+          {
+            "week": 4,
+            "day": null,
+            "date": "2026-11-02",
+            "field": "focus"
+          },
+          {
+            "week": 5,
+            "day": null,
+            "date": "2026-11-09",
+            "field": "focus"
+          }
+        ],
+        "expected": "Recompute weekly focus after return adjustment converts every planned quality session to easy running.",
+        "actual": "W4 and W5 focus remains Fartlek, with zero sessions/finishes, zero work minutes and all future runs easy.",
+        "significance": "Heading misrepresents week purpose despite coherent day/session arithmetic.",
+        "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+        "evidence": "U08-event.json"
+      }
+    },
+    {
+      "profile": "U08",
+      "source": "docs/qa/generator-ab/users/U08-findings.json",
+      "observation": {
+        "id": "U08-08",
+        "profile": "U08",
+        "version": "new",
+        "status": "confirmed",
+        "severity": "low",
+        "critical": false,
+        "scope": "supplemental earlier return only",
+        "locations": [
+          {
+            "week": 3,
+            "day": 4,
+            "date": "2026-10-29",
+            "field": "meta.dayWarnings"
+          }
+        ],
+        "expected": "User-facing return summary and warnings should give the same number of initial easy weeks after policy is applied.",
+        "actual": "One warning says plan starts with 1 lagane povratne nedelje; adjustment note says 3 pocetne nedelje bez kvalitetnog rada. Final prescription follows the latter three calendar weeks.",
+        "significance": "Conflicting policy explanations can confuse when faster work resumes. Does not prove the actual easy-week guard failed.",
+        "reproduce": "node docs/qa/generator-ab/users/U08-probe.mjs",
+        "evidence": "U08-event.json"
+      }
+    },
+    {
+      "profile": "U09",
+      "source": "docs/qa/generator-ab/users/U09-findings.json",
+      "observation": {
+        "id": "U09-OLD-01",
+        "version": "old",
+        "domain": "assessment/forecast",
+        "severity": "high",
+        "type": "unsupported-forecast",
+        "weeks": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "days": [],
+        "dates": [],
+        "expected": "Keep unmeasured future fitness distinct from the PB reference and an aspirational marathon goal.",
+        "actual": "VDOT is scheduled from 42.6 to 47.1 and reference marathon predictedSec 12021 (3:20:21), despite only 1:45 half-marathon evidence. New keeps 42.6 and 13070 s (3:37:50), and explicitly limits endurance readiness.",
+        "status": "improved-in-new"
+      }
+    },
+    {
+      "profile": "U09",
+      "source": "docs/qa/generator-ab/users/U09-findings.json",
+      "observation": {
+        "id": "U09-BOTH-01",
+        "version": "both",
+        "domain": "generation/marathon-endurance",
+        "severity": "high",
+        "type": "coaching-judgment",
+        "weeks": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "days": [
+          7
+        ],
+        "dates": [
+          "2027-02-07",
+          "2027-02-28"
+        ],
+        "expected": "An endurance-limited first marathon should offer a credible endurance pathway or clearly require a longer horizon/higher repeatable base before a timed-marathon prescription is treated as achievable.",
+        "actual": "Old peaks 16 km (~95 min) in W 14/W17; new peaks 17.7 km (~105 min) in W 17. Across 20 weeks neither has a 2 h run; the 42.195 km race is 2.64x/2.38x the longest practice. New warns endurance-limited and avoids promising completion; old explicitly calls it a plan to finish the distance. New warning is material improvement, but the underlying endurance exposure remains inadequate to substantiate a 4 h debut.",
+        "status": "warning-improved-dose-unresolved"
+      }
+    },
+    {
+      "profile": "U09",
+      "source": "docs/qa/generator-ab/users/U09-findings.json",
+      "observation": {
+        "id": "U09-NEW-01",
+        "version": "new",
+        "domain": "generation/marathon-specificity",
+        "severity": "medium",
+        "type": "coaching-judgment",
+        "weeks": [
+          6,
+          14,
+          17,
+          18,
+          19
+        ],
+        "days": [
+          3
+        ],
+        "dates": [
+          "2026-11-18",
+          "2027-01-13",
+          "2027-02-03",
+          "2027-02-10",
+          "2027-02-17"
+        ],
+        "expected": "Give M-work a clear purpose for limited-base runners; small supported doses are rhythm familiarization and should not imply sustained marathon durability.",
+        "actual": "M doses are 2.2/2.4/2.5/2.4/2.5 km (12.5/13.64/14.21/13.64/14.21 min). W14 is 2x 1200m with 90 s walking; W17 continuous 2.5 km. Old W14/W18 used 6 km (34.1 min), but did not solve LR preparation either. New reduces risk but leaves little sustained race-specific time while retaining two quality sessions in W 14,W15,W17,W18.",
+        "status": "unresolved"
+      }
+    },
+    {
+      "profile": "U09",
+      "source": "docs/qa/generator-ab/users/U09-findings.json",
+      "observation": {
+        "id": "U09-NEW-02",
+        "version": "new",
+        "domain": "generation/recovery",
+        "severity": "medium",
+        "type": "coaching-judgment",
+        "weeks": [
+          14,
+          15,
+          17,
+          18
+        ],
+        "days": [
+          7,
+          1
+        ],
+        "dates": [
+          "2027-01-17",
+          "2027-01-18",
+          "2027-02-07",
+          "2027-02-08"
+        ],
+        "expected": "Distribute endurance volume with recovery after the longest run for a four-day first-marathon runner, especially when Wednesday and Friday already carry quality.",
+        "actual": "W 14 Sunday 16.5 km is immediately followed byW 15 Monday 11.8 km (28.3 km over consecutive days). W 17 Sunday 17.7 km is followed byW 18 Monday 10.5 km (28.2 km). Both Mondays add strides. The schedule has 48 h quality separation, but these large consecutive easy/endurance exposures deserve review rather than treating non-quality as automatically low demand.",
+        "status": "unresolved"
+      }
+    },
+    {
+      "profile": "U09",
+      "source": "docs/qa/generator-ab/users/U09-findings.json",
+      "observation": {
+        "id": "U09-BOTH-02",
+        "version": "both",
+        "domain": "generation/session-purpose",
+        "severity": "medium",
+        "type": "semantic-coherence",
+        "weeks": [
+          20
+        ],
+        "days": [
+          5
+        ],
+        "dates": [
+          "2027-02-26"
+        ],
+        "expected": "Race-week sharpness should use a clearly appropriate current-fitness stride/repetition pace and recovery; labels and prediction zones should communicate actual purpose.",
+        "actual": "Both prescribe 6x 200m at 5:37/km (337 s/km), with 169 s walking, labelled Repeticije, zone R, paceSource current-fitness. Their current-fitness repetition pace earlier is 4:12/km (252 s/km);5:37 is only 4 s/km faster than M pace 5:41 and each 200m lasts 67.4 s. Full 169 s walking is 2.51x work duration. This is easy/M rhythm presented as repetition sharpness; numeric session/description/prediction coherence passes.",
+        "status": "unresolved"
+      }
+    },
+    {
+      "profile": "U09",
+      "source": "docs/qa/generator-ab/users/U09-findings.json",
+      "observation": {
+        "id": "U09-OLD-02",
+        "version": "old",
+        "domain": "generation/taper",
+        "severity": "medium",
+        "type": "coaching-judgment",
+        "weeks": [
+          17,
+          18
+        ],
+        "days": [
+          3,
+          5
+        ],
+        "dates": [
+          "2027-02-03",
+          "2027-02-05",
+          "2027-02-10",
+          "2027-02-12"
+        ],
+        "expected": "Reduce quality dose alongside volume in the first taper week; retain useful rhythm without making the taper week a larger quality stimulus.",
+        "actual": "Old total quality increases 47.58 min in W 17 to 49.57 min in W 18 while volume falls 42.1to 34.6 km. M dose increases 4.8to 6 km. New drops 32.09to 27.17 min while 49.1to 39.3 km, then 14.21 min/31.9 km in W 19.",
+        "status": "improved-in-new"
+      }
+    },
+    {
+      "profile": "U09",
+      "source": "docs/qa/generator-ab/users/U09-findings.json",
+      "observation": {
+        "id": "U09-RETURN-01",
+        "version": "new-return",
+        "domain": "execution-adjustment/endurance",
+        "severity": "high",
+        "type": "coaching-judgment",
+        "weeks": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "days": [
+          7
+        ],
+        "dates": [
+          "2027-02-07",
+          "2027-02-28"
+        ],
+        "expected": "A conservative return should retain honest uncertainty and make the race-date/endurance mismatch actionable before the timed marathon is treated as a supported outcome.",
+        "actual": "Confirmed 14-day break resets base 30to 21 km, LR 10to 7 km and future full-week peak to 29 km. Longest future LR 8.8 km (~52 min), then race 42.195 km (~4.79x). Build succeeds, preserves 4 h goal and race date, and flags endurance-limited plus no readiness confirmation. No unsafe growth or false readiness invariant failed; delivered preparation is substantially weaker than even the limited frozen plan.",
+        "status": "review-required-not-contract-failure"
+      }
+    },
+    {
+      "profile": "U09",
+      "source": "docs/qa/generator-ab/users/U09-findings.json",
+      "observation": {
+        "id": "U09-RETURN-02",
+        "version": "new-return",
+        "domain": "execution-adjustment/presentation",
+        "severity": "low",
+        "type": "warning-coherence",
+        "weeks": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "days": [],
+        "dates": [
+          "2026-11-25"
+        ],
+        "expected": "Warnings should describe the guarded, grafted delivered plan and the effective confirmed-return easy period consistently.",
+        "actual": "Warning says 1 easy return week while explicit confirmed-return note says 3 initial weeks without quality (three generated calendar weeks include the partial Nov 23 week). Other warnings quote peakLR 9.1 km/weekly 29.9 km while final remaining preparation is 8.8 km/29 km after guard/graft. The final preparation object is correct but dayWarnings retain upstream figures.",
+        "status": "unresolved"
+      }
+    },
+    {
+      "profile": "U10",
+      "source": "docs/qa/generator-ab/users/U10-findings.json",
+      "observation": {
+        "id": "U10-01",
+        "version": "old",
+        "severity": "P2",
+        "category": "reported-base-continuity",
+        "week": [
+          1,
+          11
+        ],
+        "day": [
+          7
+        ],
+        "expected": "Pri eksplicitno prijavljenih 60 km/ned, ponovljivoj dužini 24 km i 32 nedelje kontinuiteta početak treba da uvaži bazu, uz obrazloženo rasterećenje ako je potrebno. Ovo je procena korisničke prikladnosti, ne univerzalna fiziološka granica.",
+        "actual": {
+          "W1weeklyKm": 53.2,
+          "W1LRKm": 15.2,
+          "differenceFromReportedLRPercent": -36.67,
+          "maxLRThroughW11": 23.5,
+          "newW1": "63 km; LR24 km; new LR≥24 in11 weeks vs old2"
+        },
+        "status": "fixed-in-new",
+        "evidence": "raw/U10.json; U10-event.json review.old/new"
+      }
+    },
+    {
+      "profile": "U10",
+      "source": "docs/qa/generator-ab/users/U10-findings.json",
+      "observation": {
+        "id": "U10-02",
+        "version": "new",
+        "severity": "P2",
+        "category": "marathon-specific-quality-dose",
+        "week": [
+          7,
+          10,
+          11,
+          13,
+          14,
+          17,
+          18,
+          19
+        ],
+        "day": [
+          2
+        ],
+        "expected": "Iskusnom maratoncu na 60–80 km/ned smislen razvoj M rada treba da bude vidljiv kroz blok; niz kratkih M izlaganja može biti opravdan ali ovde nije objašnjen kao namerna specifična doza. Primedba je korisničko/trenersko mišljenje, nije potvrđena minimalna medicinska doza.",
+        "actual": {
+          "newW7W11W13W17": "3.3 km M/RP@5:20/km =17.6 min svaki put",
+          "newW10W14W18": "2×1600 m M/RP@5:20;17.07min rada;90s hoda",
+          "newW19": "3.3 km M =17.6min",
+          "oldW14": "8km M42.67min",
+          "oldW17": "7.9km M42.13min",
+          "mitigatingNewW15": "26.3km LR sa9.2km M završetka49.07min; zamenjuje petkov kvalitet",
+          "newTotalMKmIncludingFinish": 48,
+          "oldTotalMKmIncludingFinish": 69.6,
+          "peakWeeklyKm": 80.1
+        },
+        "status": "open-coaching-judgment",
+        "evidence": "U10-event.json review.new weeks sessions/finishes"
+      }
+    },
+    {
+      "profile": "U10",
+      "source": "docs/qa/generator-ab/users/U10-findings.json",
+      "observation": {
+        "id": "U10-03",
+        "version": "old",
+        "severity": "P2",
+        "category": "long-run-peak-progression",
+        "week": [
+          13,
+          14
+        ],
+        "day": [
+          7
+        ],
+        "expected": "Prelaz u najveću dužinu treba da bude obrazložen prethodnim izlaganjima i bazom. Procenat je signal za pregled, ne univerzalna povreda/granica.",
+        "actual": {
+          "W13LRKm": 22.8,
+          "W14LRKm": 28.2,
+          "adjacentIncreasePercent": 23.68,
+          "previousHighestLRKm": 23.5,
+          "increaseFromPreviousHighPercent": 20,
+          "newW13W14LRKm": [
+            29.3,
+            29.3
+          ],
+          "newRepeated29_3KmWeeks": [
+            11,
+            13,
+            14,
+            17
+          ]
+        },
+        "status": "improved-in-new",
+        "evidence": "U10-event.json review.old/new"
+      }
+    },
+    {
+      "profile": "U10",
+      "source": "docs/qa/generator-ab/users/U10-findings.json",
+      "observation": {
+        "id": "U10-04",
+        "version": "old",
+        "severity": "P2",
+        "category": "goal-reference-honesty",
+        "week": [
+          20
+        ],
+        "day": [
+          7
+        ],
+        "expected": "Razdvojiti željeni cilj3:30 od potvrđene reference3:45 i tempa5:20/km; ne prikazivati poboljšanje VDOT kao potvrđenu buduću formu.",
+        "actual": {
+          "raceDescription": "🏁 TRKA 42,2 km (Maraton) — cilj 3:30:00 / ritam 5:20/km",
+          "oldMeta": {
+            "vdot0": 41,
+            "vdotGoal": 45.5,
+            "predictedSec": 12381,
+            "realno": true
+          },
+          "paceFinishSec": 13502.4,
+          "newReferenceSec": 13500,
+          "newVdotGoal": 41,
+          "newRaceDescription": "🏁 TRKA 42,2 km (Maraton) — željeni cilj 3:30:00 · preporučeni ritam 5:20/km (oko 3:45:02, prema unetom rezultatu)"
+        },
+        "status": "fixed-in-new",
+        "evidence": "raw/U10.json meta and race day"
+      }
+    },
+    {
+      "profile": "U10",
+      "source": "docs/qa/generator-ab/users/U10-findings.json",
+      "observation": {
+        "id": "U10-05",
+        "version": "new-return",
+        "severity": "P2",
+        "category": "easy-return-description-coherence",
+        "week": [
+          8,
+          9,
+          10
+        ],
+        "day": [
+          1,
+          3
+        ],
+        "expected": "Potvrđeni povratak posle28d obećava4 početne nedelje bez kvaliteta; kada se strides uklone, i opis mora ukloniti nalog za ubrzanja.",
+        "actual": {
+          "structuredAllEasy": true,
+          "staleInstructions": [
+            {
+              "id": "g8d1",
+              "w": 8,
+              "dow": 1,
+              "date": "2026-11-30",
+              "desc": "6.2 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "id": "g8d3",
+              "w": 8,
+              "dow": 3,
+              "date": "2026-12-02",
+              "desc": "4.8 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "id": "g9d1",
+              "w": 9,
+              "dow": 1,
+              "date": "2026-12-07",
+              "desc": "7.3 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+            },
+            {
+              "id": "g10d1",
+              "w": 10,
+              "dow": 1,
+              "date": "2026-12-14",
+              "desc": "5.3 km lako (Z2) @ ~6:00/km + 4×15 s ubrzanja (lagani ubrzani koraci)"
+            }
+          ],
+          "meaning": "Četiri buduća dana bez strukturisanih strides i dalje tekstom traže6×20s ili4×15s ubrzanja; korisnik koji prati opis dobija drugačiji nalog od metapodataka."
+        },
+        "status": "open-confirmed",
+        "evidence": "U10-event.json event.descriptionAudit; production buildExecutionAdjustment execution"
+      }
+    },
+    {
+      "profile": "U10",
+      "source": "docs/qa/generator-ab/users/U10-findings.json",
+      "observation": {
+        "id": "U10-06",
+        "version": "new-return",
+        "severity": "P3",
+        "category": "return-focus-coherence",
+        "week": [
+          9
+        ],
+        "day": [
+          2
+        ],
+        "expected": "Nedeljni fokus mora pratiti stvarno isporučene dane nakon uklanjanja kvalitetnog rada.",
+        "actual": {
+          "w": 9,
+          "start": "2026-12-07",
+          "focus": "Fartlek",
+          "qualityDows": [],
+          "TuesdayDate": "2026-12-08",
+          "TuesdayDescription": "Lagano trčanje u razgovornom tempu; bez nadoknade propuštenih treninga.",
+          "workMinutes": 0
+        },
+        "status": "open-confirmed",
+        "evidence": "U10-event.json event.descriptionAudit"
+      }
+    },
+    {
+      "profile": "U10",
+      "source": "docs/qa/generator-ab/users/U10-findings.json",
+      "observation": {
+        "id": "U10-07",
+        "version": "new-return",
+        "severity": "P3",
+        "category": "return-policy-copy-coherence",
+        "week": [
+          7,
+          8,
+          9,
+          10
+        ],
+        "day": [
+          1,
+          2,
+          3,
+          5,
+          7
+        ],
+        "expected": "Jedan povratni predlog treba jasno iskazati stvarno aktivnu politiku4 početne kalendarske nedelje bez kvalitetnog rada.",
+        "actual": {
+          "retainedGeneratorWarning": "Posle pauze od 4 nedelja plan počinje sa 2 lagane povratne nedelje.",
+          "activeAdjustmentWarning": "Potvrđena pauza: 28 dana. Polazni obim je 55% prijavljene baze (33 km), sa 4 početne nedelje bez kvalitetnog rada.",
+          "actualCalendarWindow": "2026-11-26 through2026-12-20; first counted week is partial;first sessionDec22"
+        },
+        "status": "open-confirmed",
+        "evidence": "U10-event.json event.adjustment.result.meta.dayWarnings"
+      }
+    }
+  ],
+  "count": 57
+}

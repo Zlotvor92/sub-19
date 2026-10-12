@@ -8,9 +8,11 @@ import type {
   ProgressionSession,
   PyramidSession,
   SessionDay,
+  SessionPurpose,
   TempoSession
 } from '../types';
 import { sessDesc, sessKm } from './calc';
+import { resolvePrescription } from './prescription';
 
 export function sessInt(
   dow: number,
@@ -20,11 +22,13 @@ export function sessInt(
   paceSec: number,
   restSec: number,
   cdKm: number,
-  kind: string
+  kind: string,
+  purpose?: SessionPurpose
 ): SessionDay {
   const session: IntervalSession = {
     type: 'int',
     kind,
+    ...(purpose ? { purpose } : {}),
     wuKm,
     reps,
     repM,
@@ -33,6 +37,7 @@ export function sessInt(
     cdKm,
     overrides: {}
   };
+  resolvePrescription(session);
   return {
     dow,
     tag: kind === 'Tempo isprekidan' ? 'tempo' : 'int',
@@ -48,9 +53,20 @@ export function sessTempo(
   qKm: number,
   paceSec: number,
   cdKm: number,
-  kind: string
+  kind: string,
+  purpose?: SessionPurpose
 ): SessionDay {
-  const session: TempoSession = { type: 'tempo', kind, wuKm, qKm, paceSec, cdKm, overrides: {} };
+  const session: TempoSession = {
+    type: 'tempo',
+    kind,
+    ...(purpose ? { purpose } : {}),
+    wuKm,
+    qKm,
+    paceSec,
+    cdKm,
+    overrides: {}
+  };
+  resolvePrescription(session);
   return { dow, tag: 'tempo', km: sessKm(session), desc: sessDesc(session), session };
 }
 
@@ -61,11 +77,13 @@ export function sessPyramid(
   paceSec: number,
   restSec: number,
   cdKm: number,
-  kind: string
+  kind: string,
+  purpose?: SessionPurpose
 ): SessionDay {
   const session: PyramidSession = {
     type: 'pyramid',
     kind,
+    ...(purpose ? { purpose } : {}),
     wuKm,
     reps,
     paceSec,
@@ -73,6 +91,7 @@ export function sessPyramid(
     cdKm,
     overrides: {}
   };
+  resolvePrescription(session);
   return { dow, tag: 'int', km: sessKm(session), desc: sessDesc(session), session };
 }
 
@@ -99,6 +118,7 @@ export function sessFartlek(
     easyPaceSec,
     overrides: {}
   };
+  resolvePrescription(session);
   return { dow, tag: 'int', km: sessKm(session), desc: sessDesc(session), session };
 }
 
@@ -109,11 +129,13 @@ export function sessProg(
   totalKm: number,
   endPaceSec: number,
   easyPaceSec: number,
-  kind: string = 'Progresivno'
+  kind: string = 'Progresivno',
+  purpose?: SessionPurpose
 ): SessionDay {
   const session: ProgressionSession = {
     type: 'prog',
     kind,
+    ...(purpose ? { purpose } : {}),
     qKm: totalKm,
     paceSec: endPaceSec,
     easyPaceSec,
@@ -121,6 +143,7 @@ export function sessProg(
     cdKm: 0,
     overrides: {}
   };
+  resolvePrescription(session);
   return { dow, tag: 'tempo', km: sessKm(session), desc: sessDesc(session), session };
 }
 

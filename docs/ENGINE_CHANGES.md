@@ -151,3 +151,68 @@ Golden master (2.304 scenarija) i diferencijalni otisak (1.500 determinističkih
 Osvežavanje otisaka: iz `web/`, `UPDATE_FINGERPRINT=1 npx vitest run --project node generator.fingerprint generator.differential`, zatim isti flag za `replan.oracle.test.ts` i `onboarding.oracle.test.ts`. Provere bez tog flag-a moraju proći pre commita.
 
 Izvori za trenerske granice: [Daniels Training Definitions](https://vdoto2.com/learn-more/training-definitions), [VO2max rad](https://news.vdoto2.com/2025/07/how-to-effectively-improve-your-vo2max/), [V.O2 FAQ](https://support.vdoto2.com/v-o2-faq/). Ograničenja dužine, kalibracija zona i veći arhitektonski refaktor ostaju odvojene odluke; nisu predstavljeni kao ispravljene programske greške u ovoj reviziji.
+## Faza 1 generatora — 11.10.2026.
+
+Namerno izmenjeno ponašanje: očuvanje smislene kvalitetne doze unutar postojećih
+limita; MLR u konačnom zbiru; zajednička završna provera sesija i LR-a; opisi iz
+konačne strukture; progresija sa odvojenim laganim WU/CD; HM podela 60/40;
+odvojeni željeni cilj i preporučeni ritam trke; referenca trenutne forme umesto
+neutemeljenog linearnog napretka. Wire imena ostaju, dodat je opcioni
+`assessmentBasis: 'current-fitness'`; stari planovi zadržavaju stari prikaz.
+
+Nezavisne provere: `phase1.regression.test.ts`, `cruise.test.ts`, `assess.test.ts`,
+session UI, postojeće strukturne i fiziološke invarijante. Onboarding oracle
+zadržava kalendar/validaciju, ali sada izričito proverava trenutnu formu umesto
+stare VDOT rampe. Osveženi generator fingerprint/differential i D6 izlazi
+onboarding/replan prate pregledane namerne promene; nisu dokaz kvaliteta plana.
+
+Obuhvat, dokazi, ograničenja i nastavak: [GENERATOR_PHASE1_CHECKPOINT.md](GENERATOR_PHASE1_CHECKPOINT.md).
+
+
+## Generator faza 2 — istorija, doza i dužinska priprema (2026-10-11)
+
+Baza: `4b2f647d4aeb4555f1370c636d761d8115df7848` (faza 1). Kriterijumi i potpuni izlazi: `GENERATOR_PHASE2_CRITERIA.md`, `GENERATOR_PHASE2_REVIEW.md`, `GENERATOR_PHASE2_CHECKPOINT.md` i `qa/generator-phase2/`.
+
+| Staro ponašanje | Problem | Novo ponašanje | Nezavisna provera |
+| --- | --- | --- | --- |
+| PB/obim određuju isti početni blok bez istorije | Brzina ne potvrđuje iskustvo; obavezni R300 potiskuje raniji T/I kod iskusnih | Opciono iskustvo, kontinuitet, pauza i datum; početni fartlek/doza po readiness-u, T/I za iskusne | `phase2.regression`, `qualityDose`, osam kompletnih planova |
+| Intensity ne menja trening posle uklanjanja proizvoljne prognoze | Preference nema aktivnu svrhu | Nezavisna težina rada i rast obima; fitness tempa se ne menjaju | `generator.volIntensity`, `assess`, Wizard UI/E2E |
+| LR proporcija i nizak trajni plafon | HM/maraton mogu ostati bez progresivne dužinske pripreme | Progresija iz ponovljive dužine i prethodnog stvarnog vrha, u postojećim granicama trajanja/udela | `longRunProgression`, `phase1.regression`, nedeljni pregled |
+| Deload uvodi novi stimulans ili veću početnu dozu | Naziv rasterećenja protivreči sadržaju | Najviše 60% poslednje uvedenog rada, ili lagana nedelja bez prve nove sesije | `deload`, konkretne W8/W4 regresije |
+| Novi 10K početni T/T dobija dva puna budžeta | Nedeljni zbir praga prelazi zamišljenu dozu | Podela 60/40 kada su oba dana prag | `qualityDose`, stroži `science.invariants` sa eksplicitnom T zonom |
+| Rast se seče pretežno sa lakog dana; ponedeljak dodatno prati kratki deload LR | Konačni LR udeo i manji volQ stvaraju ponovljeni kolaps obima | Srazmerna redukcija easy/LR; isti 80% easy plafon; nema dodatnog Monday reza posle deload-a | Regresija M70/3d i mreža 192 plana |
+| Referenca PB bez vidljive konačne pripreme | Kratak rezultat ne potvrđuje maratonsku izdržljivost | Preparation status, konačni LR/obim i lokalno ograničenje na kartici trke | `phase2.regression`, čuvanje/adaptacija i UI/E2E |
+
+Pregledani namerni baseline diff: 2.304/2.304 hash-a i nedeljna km niza se menjaju; 1.722 scenarija menja broj kvalitetnih sesija. `vdot0` i `vdotGoal` ostaju identični u svim scenarijima. Četiri zamrznuta generator/warnings/replan baseline-a osvežena su posle nezavisnih provera. To čuva stabilnost nove implementacije i ne daje trenersko odobrenje 2.304 scenarija.
+
+## Session purpose before dose (2026-10-12)
+
+Prescriptions now resolve explicit T/I/R/RP/M/activation intent at construction, before dosing or limits; actual-workout inference keeps its legacy map. The 10K RP reproduction retains builder recovery (60 s rather than erroneous I-derived 240 s). I pyramid legs must remain 60–300 s; insufficient valid legs defer the session to easy work. Near-RP race activation is explicitly activation/RP with its existing pace and 120 s recovery. HM race progression is RP, marathon progression M. New metadata and these deliberate workout changes explain refreshed generator/differential/replan fingerprints. Historical QA evidence remains frozen; separate ten-profile outputs and full rationale: `docs/qa/session-purpose/REPORT.md`.
+
+## Quality dose by experience, continuity, phase and weekly load (2026-10-12)
+
+Experienced runners (confirmed quality experience + ≥8 consistent weeks) get a separate dose policy: repetition sessions in T/I/R approach the profile's own nominal zone budget (never above the Daniels per-session limits; 60/40 share kept), ramping 85–90 % → 100 % over six quality weeks, with nearest-repetition rounding inside the ceiling; continuous, fartlek, pyramid, RP and M work keep the builder amount as reference. A weekly fast-work envelope (experienced only; 13 % of weekly running time, M counted half, −10 % with a 90+ min LR) counts LR fast finishes. Both taper weeks and the race week keep the previous dose. Beginner, returning and developing plans are byte-identical to `38ecc08`. Generator fingerprint and seeded differential are unchanged because their inputs carry no `qualityExperience`; a separate 360-scenario experienced grid covers the new policy. Rationale, sources, internal heuristics and U03/U05 before/after: `docs/qa/quality-dose/REPORT.md`.
+
+## Generator: run/walk prelaz i nepouzdana forma (2026-10-12)
+
+Baza: `f8cb2081ed4ba223fe7efe14a621144beb9bce0d` (zaključani QA commit, već sadrži popravke faza 1–3). Dokazi: [GENERATOR_RUNWALK_FORM_CHECKPOINT.md](GENERATOR_RUNWALK_FORM_CHECKPOINT.md), `qa/generator-runwalk-form/`.
+
+| Staro ponašanje | Problem | Novo ponašanje | Provera |
+| --- | --- | --- | --- |
+| Posle 4 nedelje run/walk lestvice početnik automatski prelazi na neprekidno trčanje (U01, W5) | Tolerancija nije potvrđena; nema načina da se faza ponovi ili zadrži | Prva neprekidna nedelja je probna, bez ubrzanja, sa uslovom i rezervom; `runWalkLadder` ulaz i `buildRunWalkAdjustment` zadržavaju/vraćaju/ponavljaju fazu; `assessRunWalkProgress` odlučuje iz napora (`rpe`), bola (`knee`) i preskočenih; prazan dnevnik je „nepoznato" | `runWalkAndForm.regression`, `runWalkProgress`, `runWalkAdjustment` |
+| Povratnik/star PB (U06) dobija precizne ritmove i ubrzanja kao potvrđenu formu | Istorijska referenca se predstavlja kao spremnost | `meta.formPolicy` (`effort-first`) za `returning` i `stale-result`: laki rad ima napor 3–4/10 i ritam kao gornju granicu; kvalitet nosi `paceBasis: 'reference'`, napor i uslove; bez ubrzanja u bazi; `qualityEntryGate` proverava uslove; merenje (`refreshSessionPace`) uklanja napomenu | `runWalkAndForm.regression`, `qualityGate`, `referenceNote`, `ExecutionAdjustment` |
+
+Fixture promene (namerne, samo beginner scenariji): `otisak-generatora.json` 1.152/2.304 hash-eva (nedeljni km i broj kvaliteta nepromenjeni, 0 razlika u `pregled`), `generator-differential.json`, `d6-warnings.json`, `d6-replan.json` (reentry plan je početnički). Hash-evi bez početnika su nepromenjeni.
+## Fatigue recovery: continuity is history, readiness is current (2026-10-12)
+
+Execution replanning now distinguishes a confirmed break, repeated high easy-run RPE, and reduced executed volume; goal changes retain their separate path. A reduction no longer sets `consistentWeeks` to zero. Recalibration retains existing confirmed continuity instead of replacing it with the number of covered weeks in a four-week observation window. A confirmed current break explicitly selects return readiness without deleting pre-break continuity; an old break followed by established continuity retains the existing interpretation.
+
+After at least two easy runs with RPE 7–10, the remainder of the calendar week and the next full week are an immediate recovery period (at least seven days). Unprotected prescriptions have no quality, strides or fast finish. Calendar-week load is bounded by the previous future load and 85% of the observed/reported base (prorated for a partial week), and individual dates cannot exceed their previous dose. Goal changes, recalibration and restore cannot bypass the active calendar guard. Completed/manual/measured days remain exact; conflicting protected load is surfaced for manual review. The existing positive pace gate remains, with an additional block throughout the active recovery window.
+
+Eight successful `reentry` hashes in `web/src/test/fixtures/d6-replan.json` change: absent historical continuity is now `null` in assessment rather than invented `0`; current readiness is explicitly `returning`; the corresponding unknown-continuity assumption is included in warnings. The eight plans' weeks and predictions are byte-for-byte unchanged (`docs/qa/fatigue-recovery/reentry-parity.json`). Error cases, goal/recalibration snapshots, 2,304 general generator fingerprints and 1,500 differential scenarios retain their previous expectations. Frozen legacy recordings and all original QA inputs/raw/blind plans/coaching reviews stay unchanged.
+
+Evidence and limits: `docs/qa/fatigue-recovery/README.md`. The immediate recovery rule is an explicit conservative product policy, not a validated individualized recovery duration or an assertion that fatigue equals detraining.
+
+### Integration with completed steps 4–7
+
+The fatigue change is applied on the combined #38/#39/#40 chain plus sibling #41. HM rebuilt sessions retain the reference-pace wrapper; weekly trims and the single-quality LR-finish path retain effort notes. Finalization derives trial run/walk text from a calendar anchor and retains effort-first instructions. Both preparation-decision and run/walk UI options/tests remain present. The combined generator/differential/warnings snapshots reflect previously approved HM and run/walk changes together; numerical quality envelopes are not recalibrated here. U01/U06 quality-dose protection hashes reflect step 7's trial/effort-first semantics and explicit return readiness; the untouched U04 and taper hashes still enforce their original numerical baselines. Separate ten-input outputs verify identical initial weeks/predictions against the integrated pre-fatigue base.

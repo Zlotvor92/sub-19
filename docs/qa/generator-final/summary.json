@@ -1,0 +1,391 @@
+{
+  "baselineCommit": "f7bcbe99d135cd4c1e7b837d0369e8066c1b3baa",
+  "candidateCommit": "1a7571e98de4793688a037d5a62f912cae18adf2",
+  "initialScores": 80,
+  "planWeeksReviewed": 1296,
+  "mainMean": {
+    "old": 68.205,
+    "new": 74.865
+  },
+  "allReviewerMean": {
+    "old": 69.211,
+    "new": 75.797
+  },
+  "profiles": [
+    {
+      "profileId": "U01",
+      "label": "5K po\u010detnik",
+      "distanceExpert": "5k",
+      "versions": {
+        "old": {
+          "side": "Y",
+          "scores": {
+            "5k": 72.55,
+            "10k": 63.5,
+            "hm": 75.75,
+            "marathon": 75.0
+          },
+          "primary": 72.55,
+          "range": [
+            63.5,
+            75.75
+          ]
+        },
+        "new": {
+          "side": "X",
+          "scores": {
+            "5k": 79.0,
+            "10k": 74.5,
+            "hm": 80.75,
+            "marathon": 81.25
+          },
+          "primary": 79.0,
+          "range": [
+            74.5,
+            81.25
+          ]
+        }
+      },
+      "delta": 6.45
+    },
+    {
+      "profileId": "U02",
+      "label": "5K rekreativac sub-20",
+      "distanceExpert": "5k",
+      "versions": {
+        "old": {
+          "side": "Y",
+          "scores": {
+            "5k": 71.85,
+            "10k": 73.25,
+            "hm": 76.5,
+            "marathon": 78.25
+          },
+          "primary": 71.85,
+          "range": [
+            71.85,
+            78.25
+          ]
+        },
+        "new": {
+          "side": "X",
+          "scores": {
+            "5k": 75.25,
+            "10k": 74.75,
+            "hm": 79.5,
+            "marathon": 81.75
+          },
+          "primary": 75.25,
+          "range": [
+            74.75,
+            81.75
+          ]
+        }
+      },
+      "delta": 3.4
+    },
+    {
+      "profileId": "U03",
+      "label": "5K iskusan ambiciozan",
+      "distanceExpert": "5k",
+      "versions": {
+        "old": {
+          "side": "X",
+          "scores": {
+            "5k": 68.9,
+            "10k": 67.25,
+            "hm": 73.0,
+            "marathon": 73.75
+          },
+          "primary": 68.9,
+          "range": [
+            67.25,
+            73.75
+          ]
+        },
+        "new": {
+          "side": "Y",
+          "scores": {
+            "5k": 81.65,
+            "10k": 76.25,
+            "hm": 82.0,
+            "marathon": 84.0
+          },
+          "primary": 81.65,
+          "range": [
+            76.25,
+            84.0
+          ]
+        }
+      },
+      "delta": 12.75
+    },
+    {
+      "profileId": "U04",
+      "label": "10K prvi specifi\u010dan ciklus",
+      "distanceExpert": "10k",
+      "versions": {
+        "old": {
+          "side": "X",
+          "scores": {
+            "5k": 72.9,
+            "10k": 68.0,
+            "hm": 76.25,
+            "marathon": 75.5
+          },
+          "primary": 68.0,
+          "range": [
+            68.0,
+            76.25
+          ]
+        },
+        "new": {
+          "side": "Y",
+          "scores": {
+            "5k": 75.75,
+            "10k": 71.0,
+            "hm": 78.75,
+            "marathon": 78.5
+          },
+          "primary": 71.0,
+          "range": [
+            71.0,
+            78.75
+          ]
+        }
+      },
+      "delta": 3.0
+    },
+    {
+      "profileId": "U05",
+      "label": "10K iskusan",
+      "distanceExpert": "10k",
+      "versions": {
+        "old": {
+          "side": "Y",
+          "scores": {
+            "5k": 71.05,
+            "10k": 70.75,
+            "hm": 74.25,
+            "marathon": 74.5
+          },
+          "primary": 70.75,
+          "range": [
+            70.75,
+            74.5
+          ]
+        },
+        "new": {
+          "side": "X",
+          "scores": {
+            "5k": 79.3,
+            "10k": 79.0,
+            "hm": 82.0,
+            "marathon": 83.0
+          },
+          "primary": 79.0,
+          "range": [
+            79.0,
+            83.0
+          ]
+        }
+      },
+      "delta": 8.25
+    },
+    {
+      "profileId": "U06",
+      "label": "10K povratnik sa starim PB",
+      "distanceExpert": "10k",
+      "versions": {
+        "old": {
+          "side": "X",
+          "scores": {
+            "5k": 63.55,
+            "10k": 57.25,
+            "hm": 67.0,
+            "marathon": 67.25
+          },
+          "primary": 57.25,
+          "range": [
+            57.25,
+            67.25
+          ]
+        },
+        "new": {
+          "side": "Y",
+          "scores": {
+            "5k": 72.55,
+            "10k": 68.25,
+            "hm": 76.0,
+            "marathon": 78.25
+          },
+          "primary": 68.25,
+          "range": [
+            68.25,
+            78.25
+          ]
+        }
+      },
+      "delta": 11.0
+    },
+    {
+      "profileId": "U07",
+      "label": "HM prvi, ograni\u010dena baza",
+      "distanceExpert": "hm",
+      "versions": {
+        "old": {
+          "side": "Y",
+          "scores": {
+            "5k": 70.7,
+            "10k": 70.0,
+            "hm": 73.5,
+            "marathon": 72.5
+          },
+          "primary": 73.5,
+          "range": [
+            70.0,
+            73.5
+          ]
+        },
+        "new": {
+          "side": "X",
+          "scores": {
+            "5k": 81.75,
+            "10k": 79.5,
+            "hm": 82.5,
+            "marathon": 83.25
+          },
+          "primary": 82.5,
+          "range": [
+            79.5,
+            83.25
+          ]
+        }
+      },
+      "delta": 9.0
+    },
+    {
+      "profileId": "U08",
+      "label": "HM iskusan na rezultat",
+      "distanceExpert": "hm",
+      "versions": {
+        "old": {
+          "side": "X",
+          "scores": {
+            "5k": 73.15,
+            "10k": 68.25,
+            "hm": 72.75,
+            "marathon": 72.0
+          },
+          "primary": 72.75,
+          "range": [
+            68.25,
+            73.15
+          ]
+        },
+        "new": {
+          "side": "Y",
+          "scores": {
+            "5k": 83.8,
+            "10k": 79.5,
+            "hm": 83.25,
+            "marathon": 84.75
+          },
+          "primary": 83.25,
+          "range": [
+            79.5,
+            84.75
+          ]
+        }
+      },
+      "delta": 10.5
+    },
+    {
+      "profileId": "U09",
+      "label": "Maraton prvi, mala baza",
+      "distanceExpert": "marathon",
+      "versions": {
+        "old": {
+          "side": "Y",
+          "scores": {
+            "5k": 53.65,
+            "10k": 44.75,
+            "hm": 53.5,
+            "marathon": 54.25
+          },
+          "primary": 54.25,
+          "range": [
+            44.75,
+            54.25
+          ]
+        },
+        "new": {
+          "side": "X",
+          "scores": {
+            "5k": 54.35,
+            "10k": 45.75,
+            "hm": 54.0,
+            "marathon": 55.25
+          },
+          "primary": 55.25,
+          "range": [
+            45.75,
+            55.25
+          ]
+        }
+      },
+      "delta": 1.0
+    },
+    {
+      "profileId": "U10",
+      "label": "Maraton iskusan",
+      "distanceExpert": "marathon",
+      "versions": {
+        "old": {
+          "side": "Y",
+          "scores": {
+            "5k": 68.65,
+            "10k": 67.75,
+            "hm": 73.0,
+            "marathon": 72.25
+          },
+          "primary": 72.25,
+          "range": [
+            67.75,
+            73.0
+          ]
+        },
+        "new": {
+          "side": "X",
+          "scores": {
+            "5k": 70.75,
+            "10k": 71.25,
+            "hm": 75.75,
+            "marathon": 73.5
+          },
+          "primary": 73.5,
+          "range": [
+            70.75,
+            75.75
+          ]
+        }
+      },
+      "delta": 1.25
+    }
+  ],
+  "interpretation": "AI coaching judgement, not human certification, athlete success probability or a controlled trial.",
+  "distanceMeans": {
+    "old": {
+      "5k": 71.1,
+      "10k": 65.333,
+      "hm": 73.125,
+      "marathon": 63.25
+    },
+    "new": {
+      "5k": 78.633,
+      "10k": 72.75,
+      "hm": 82.875,
+      "marathon": 64.375
+    }
+  }
+}

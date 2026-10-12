@@ -20,6 +20,7 @@ import { repetitions } from '../sessions/repetitions';
 import { continuousTempo, type TempoParams } from '../sessions/tempo';
 import type { SessionDay } from '../types';
 import type { DistanceProfile, Phase, QualityRequest } from './types';
+import { applyQualityDose, introductoryQuality } from './qualityDose';
 
 const TEMPO: TempoParams = { floorCapKm: 3, floorShare: 0.12 };
 const CRUISE: CruiseParams = {
@@ -74,7 +75,7 @@ const mkRacePace = (dow: number, vol: number, racePace: number): SessionDay => {
   const rep = q >= 3 ? 1000 : 800;
   const n = Math.max(3, Math.floor((q * 1000) / rep + 0.08));
   const [wu, cd] = wuCdForVolume(vol);
-  return sessInt(dow, wu, n, rep, racePace, 90, cd, 'Trkački ritam');
+  return sessInt(dow, wu, n, rep, racePace, 90, cd, 'Trkački ritam', 'RP');
 };
 
 const mkPyramid = (dow: number, vol: number, pI: number): SessionDay =>
@@ -101,7 +102,7 @@ const mkTempo = (dow: number, vol: number, pT: number, fixKm?: number | null): S
 const mkCruise = (dow: number, vol: number, pT: number): SessionDay =>
   cruiseIntervals(H.tempoBudget.pct, CRUISE, dow, vol, pT);
 
-function buildQuality5K(req: QualityRequest): SessionDay {
+function chooseQuality5K(req: QualityRequest): SessionDay {
   const { qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, isTaper1, dow, racePace } = req;
   const phase = phase5K(qualW, qualWeeks);
 
@@ -119,7 +120,8 @@ function buildQuality5K(req: QualityRequest): SessionDay {
         racePace,
         90,
         r1(Math.max(tcd * 0.75, 0.8)),
-        'Trkački ritam'
+        'Trkački ritam',
+        'RP'
       );
     }
     return mkTempo(dow, vol, pT, r1(Math.min(3, Math.max(1.5, vol * 0.08))));
@@ -127,6 +129,14 @@ function buildQuality5K(req: QualityRequest): SessionDay {
 
   if (effQ === 1) {
     /* Jedini kvalitet pokriva sve — rotira po nedeljama. */
+    if (
+      phase === 'economy' &&
+      (req.readiness === 'experienced' || req.readiness === 'developing')
+    ) {
+      // A runner with confirmed quality experience does not need a compulsory
+      // R-only opening block. Threshold support alternates with aerobic intervals.
+      return qualW % 2 === 1 ? mkCruise(dow, vol, pT) : mkIntervals(dow, vol, pI, phase, qualW);
+    }
     if (phase === 'economy')
       return qualW % 2 === 1 ? mkRepetitions(dow, vol, pR, phase) : mkCruise(dow, vol, pT);
     if (phase === 'sharpening')
@@ -138,6 +148,14 @@ function buildQuality5K(req: QualityRequest): SessionDay {
   }
 
   if (slotRole === 'q1') {
+    if (
+      phase === 'economy' &&
+      (req.readiness === 'experienced' || req.readiness === 'developing')
+    ) {
+      return qualW % 3 === 0
+        ? mkRepetitions(dow, vol, pR, phase)
+        : mkIntervals(dow, vol, pI, phase, qualW);
+    }
     if (phase === 'economy') return mkRepetitions(dow, vol, pR, phase);
     if (phase === 'sharpening') {
       return qualW % 2 === 1
@@ -153,6 +171,10 @@ function buildQuality5K(req: QualityRequest): SessionDay {
   if (phase === 'economy') return mkCruise(dow, vol, pT);
   if (phase === 'sharpening') return mkTempo(dow, vol, pT, 3);
   return qualW % 2 === 1 ? mkCruise(dow, vol, pT) : mkTempo(dow, vol, pT);
+}
+
+function buildQuality5K(req: QualityRequest): SessionDay {
+  return applyQualityDose(introductoryQuality(req) ?? chooseQuality5K(req), { ...req, budgets: H });
 }
 
 export const PROFILE_5K: DistanceProfile = {

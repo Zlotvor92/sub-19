@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
+import { phase3ImportExpectation } from '@/test/phase3ImportOracle';
 import { addDays, type IsoDate } from '../../domain/date';
 import { resolvePlan } from '../../domain/plan';
 import { adaptGeneratedPlan } from '../../domain/plan/adapt';
@@ -316,10 +317,11 @@ describe('sinhronizacija sa Strave naspram starog koda', () => {
       const res = await svc.run();
       expect(res.ok, `${n}`).toBe(true);
 
-      expect(volatile(state.log), `log ${n}`).toEqual(old.log);
-      expect(state.pred, `pred ${n}`).toEqual(old.pred);
+      const expected = phase3ImportExpectation(GP, old);
+      expect(volatile(state.log), `log ${n}`).toEqual(expected.log);
+      expect(state.pred, `pred ${n}`).toEqual(expected.pred);
       expect(state.predLock, `lock ${n}`).toEqual(old.predLock);
-      expect(projChain(state.vdotLog), `lanac ${n}`).toEqual(projChain(old.vdotLog));
+      expect(projChain(state.vdotLog), `lanac ${n}`).toEqual(projChain(expected.vdotLog));
       expect(state.moves, `moves ${n}`).toEqual(old.moves);
       expect(state.vanPlana, `vanPlana ${n}`).toEqual(old.vanPlana);
       expect(j(state.knee), `bol ${n}`).toEqual(old.knee);

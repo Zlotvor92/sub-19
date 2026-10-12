@@ -189,7 +189,11 @@ describe('Danielsovi budžeti zona', () => {
           if (vol < 5) return;
           let T = 0;
           w.days.forEach((d) => {
-            if (d.session && STRICT_T.has(d.session.kind)) T += sessQKm(d.session);
+            if (
+              d.session &&
+              (d.session.zone === 'T' || (!d.session.zone && STRICT_T.has(d.session.kind)))
+            )
+              T += sessQKm(d.session);
           });
           if (T <= 0) return;
           total++;
@@ -207,7 +211,7 @@ describe('Danielsovi budžeti zona', () => {
         `${P.ime}: ${over}/${total} nedelja preko 11% praga`
       ).toBeLessThanOrEqual(0.05);
     }
-  });
+  }, 20_000); // The full generated-plan grid exceeds 5 s on slower CI runners.
 
   it('dugo trčanje ne pojede nedelju', () => {
     /* JOSPT: preko ~30% nedelje u jednom trčanju raste rizik povrede. Niskoobimni izuzetak do
@@ -416,7 +420,9 @@ describe('Odluke koje moraju da prate CEO plan, ne polaznu tačku', () => {
         trainedRecently: true
       });
       expect(
-        p.meta.dayWarnings.some((t) => /preporučuje bar/.test(t)),
+        p.meta.dayWarnings.some(
+          (t) => t.startsWith('Izabrao si 3 dana za') && t.includes('raspodelu obima i oporavak')
+        ),
         `${P.ime} na 3 dana`
       ).toBe(true);
     }

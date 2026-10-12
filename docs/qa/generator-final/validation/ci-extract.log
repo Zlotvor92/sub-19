@@ -1,0 +1,21 @@
+2026-10-12T15:37:41.0382529Z [2m Test Files [22m [1m[32m146 passed[39m[22m[90m (146)[39m
+2026-10-12T15:37:41.0388434Z [2m      Tests [22m [1m[32m1519 passed[39m[22m[90m (1519)[39m
+2026-10-12T15:39:24.0189223Z   ✓  14 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U01: 5K početnik (25.7s)
+2026-10-12T15:39:44.2517577Z   ✓  13 e2e/final-preservation.spec.ts:11:1 › return apply/reload/restore/reload preserves future alt, moved date, measured lock and actuals (49.9s)
+2026-10-12T15:39:49.7689905Z   ✓  15 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U02: 5K rekreativac sub-20 (25.7s)
+2026-10-12T15:40:10.1453248Z   ✓  16 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U03: 5K iskusan ambiciozan (25.9s)
+2026-10-12T15:40:15.7193961Z   ✓  17 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U04: 10K prvi specifičan ciklus (25.9s)
+2026-10-12T15:40:36.0218703Z   ✓  18 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U05: 10K iskusan (25.9s)
+2026-10-12T15:40:41.7475652Z   ✓  19 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U06: 10K povratnik sa starim PB (26.0s)
+2026-10-12T15:41:01.2956575Z   ✓  21 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U08: HM iskusan na rezultat (19.5s)
+2026-10-12T15:41:02.4240187Z   ✓  20 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U07: HM prvi, ograničena baza (26.4s)
+2026-10-12T15:41:28.0438125Z   ✓  22 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U09: Maraton prvi, mala baza (26.7s)
+2026-10-12T15:41:28.8684204Z   ✓  23 e2e/generator-ab-users.spec.ts:109:5 › locked inputs: current purpose- and dose-aware wizard and persistence flows › U10: Maraton iskusan (26.4s)
+2026-10-12T15:43:46.6730803Z   77 passed (5.5m)
+2026-10-12T15:43:48.8733559Z SHA256 digest of uploaded artifact zip is 94cfd7587fb7253df7c90bf9d05ce28923e09c91e8e70c53ddc4f8e5d3a78cf2
+2026-10-12T15:43:49.1197403Z Artifact generator-ab-browser-evidence.zip successfully finalized. Artifact ID 11757163653
+2026-10-12T15:43:49.1198679Z Artifact generator-ab-browser-evidence has been successfully uploaded! Final size is 19312397 bytes. Artifact ID is 11757163653
+2026-10-12T15:35:14.3880165Z # tests 396
+2026-10-12T15:35:14.3880367Z # pass 396
+2026-10-12T15:35:14.3880457Z # fail 0
+

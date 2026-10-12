@@ -1,5 +1,5 @@
 /* ============================================================
-   PERZISTIRANO STANJE — schema v11 (`user_state.data`, localStorage `sub19-v1`).
+   PERZISTIRANO STANJE — schema v12 (`user_state.data`, localStorage `sub19-v1`).
 
    OVO JE DATA CONTRACT. Novi frontend čita i piše TAČNO ovaj oblik: stariji klijent na drugom
    uređaju čita isto stanje, a ne postoji migracioni alat na serveru. Polja zadržavaju stara
@@ -12,7 +12,7 @@
 
 import type { TrainingPlan, PredictionRow, RunWalk, Week } from '../training/types';
 
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 
 export type DayTag = 'lako' | 'rw' | 'tempo' | 'int' | 'lr' | 'snaga' | 'odmor' | 'trka' | 'test';
 export const DAY_TAGS: readonly DayTag[] = [

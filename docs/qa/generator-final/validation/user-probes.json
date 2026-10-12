@@ -1,0 +1,75 @@
+{
+  "atUtc": "2026-10-12T15:25:21.346876+00:00",
+  "results": [
+    {
+      "id": "U01",
+      "command": "node docs/qa/generator-final/users/U01-probe.mjs",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U01.log",
+      "outputSha256": "df715177f438bf1935837961a9c14ee8183d3e3f9cc8e64dddef041834a228ef"
+    },
+    {
+      "id": "U02",
+      "command": "python docs/qa/generator-final/users/U02-probe.py",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U02.log",
+      "outputSha256": "435ad52373d371fe154231295f2671126c93b3539c12a2435db134f85acae8dc"
+    },
+    {
+      "id": "U03",
+      "command": "node docs/qa/generator-final/users/U03-probe.mjs",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U03.log",
+      "outputSha256": "f448820852c10253f46e48800013ee01399736e98202b065d49f4a60aa7d2bd4"
+    },
+    {
+      "id": "U04",
+      "command": "node docs/qa/generator-final/users/U04-final-probe.mjs",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U04.log",
+      "outputSha256": "b7c261b57c5e607871c04aadb28cc86caa530f3fbc476bc71093105119df0f9f"
+    },
+    {
+      "id": "U05",
+      "command": "node docs/qa/generator-final/users/U05-probe.mjs",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U05.log",
+      "outputSha256": "1968f1d71f6fec907a6e20d8f412dabbdbc304bf23ab0b4731dada25250352d8"
+    },
+    {
+      "id": "U06",
+      "command": "node docs/qa/generator-final/users/U06-probe.mjs",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U06.log",
+      "outputSha256": "08d0aa9a2a3be2c82841ac3d2b1cd0ae1b72455ad6aecb293b663ec8e9b7475f"
+    },
+    {
+      "id": "U07",
+      "command": "node docs/qa/generator-final/users/U07-probe.mjs",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U07.log",
+      "outputSha256": "976a56afc3e5fded9abd45b8495ca9f18193d5aa46d2ea4a4d7058c072017780"
+    },
+    {
+      "id": "U08",
+      "command": "node docs/qa/generator-final/users/U08-probe.mjs",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U08.log",
+      "outputSha256": "deb97e92db8515ee0f9d734b6f5b0f8187ea218ce5672a22d81ca99a3bff0255"
+    },
+    {
+      "id": "U09",
+      "command": "node docs/qa/generator-final/users/U09-controls.mjs",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U09.log",
+      "outputSha256": "3a6f605cac26dcbd6be7e5c59380d7b02a8a7c327ac50c1a5c964106daf0c3b1"
+    },
+    {
+      "id": "U10",
+      "command": "python docs/probes/generator-final-U10.py",
+      "exitCode": 0,
+      "output": "docs/qa/generator-final/validation/probes/U10.log",
+      "outputSha256": "667e8c1e09ea5d5491c2037680f2b2d8dc9e9de040cab9c6f27fa3d899376ad6"
+    }
+  ]
+}

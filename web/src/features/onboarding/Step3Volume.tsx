@@ -1,5 +1,10 @@
 import { pl3 } from '../../domain/format';
-import type { WizardState, availableDays } from '../../domain/onboarding';
+import {
+  historyValidationMessage,
+  type WizardState,
+  type availableDays
+} from '../../domain/onboarding';
+import { Notice } from '../../components/ui/primitives';
 import { Chips, DaysChips } from './controls';
 
 /* KORAK 3: nedeljna kilometraža, redovnost i dani trčanja. Koji su dani dozvoljeni računa `availableDays`. */
@@ -20,7 +25,8 @@ export function Step3Volume({
       <div className="ob-eyebrow">Korak 3 od 4</div>
       <h1 className="ob-h1">Koliko trčiš nedeljno?</h1>
       <div className="ob-sub">
-        Prosek poslednjih 2–3 nedelje. Plan raste odavde — ne od nule i ne od željene kilometraže.
+        Prosek poslednjih 4–6 nedelja, uključujući lakše nedelje i pauze. Plan polazi od stvarnog
+        trčanja.
       </div>
       <div className="ob-card">
         <div className="ob-ct">Nedeljna kilometraža</div>
@@ -48,10 +54,85 @@ export function Step3Volume({
           onPick={(v) => set({ trainedRecently: v === 'yes' })}
         />
         <div className="ob-hint">
-          Ako nisi trčao redovno i obim je nizak, plan počinje sa <b>4 nedelje bazne faze</b> — samo
-          lagano trčanje, pa tek onda ubrzanja i intervali.
+          Za početnika prvo idu trčanje/hodanje i lagana baza. Ako se vraćaš posle pauze, unesi je
+          ispod: povratak dobija kraći lagani uvod.
         </div>
       </div>
+      <details className="ob-card">
+        <summary className="ob-ct">Tvoja trenutna baza — opciono</summary>
+        <div className="ob-hint">
+          Ovi podaci odvojeno određuju dužinu i dozu kvalitetnog rada. Ako ih preskočiš, plan
+          koristi oprezne pretpostavke i navodi ih.
+        </div>
+        <label className="ob-ct" htmlFor="recent-lr">
+          Skorašnja ponovljiva dužina (km)
+        </label>
+        <input
+          id="recent-lr"
+          type="number"
+          inputMode="decimal"
+          min={0}
+          max={100}
+          step={0.1}
+          placeholder="npr. 12"
+          value={w.recentLongRunKm ?? ''}
+          onChange={(e) => set({ recentLongRunKm: e.target.value })}
+        />
+        <div className="ob-hint">
+          Najduže lagano trčanje iz poslednjih nekoliko nedelja koje možeš ponoviti, uz uobičajen
+          oporavak.
+        </div>
+        <label className="ob-ct" htmlFor="consistent-weeks">
+          Nedelja redovnog trčanja u kontinuitetu
+        </label>
+        <input
+          id="consistent-weeks"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={5200}
+          placeholder="npr. 12"
+          value={w.consistentWeeks ?? ''}
+          onChange={(e) => set({ consistentWeeks: e.target.value })}
+        />
+        <label className="ob-ct" htmlFor="break-weeks">
+          Skorašnja pauza (nedelja)
+        </label>
+        <input
+          id="break-weeks"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={5200}
+          placeholder="0 ako nema pauze"
+          value={w.breakWeeks ?? ''}
+          onChange={(e) => set({ breakWeeks: e.target.value })}
+        />
+        <div className="ob-hint">
+          Pauza pre sadašnjeg kontinuiteta; kilometraža iznad već treba da predstavlja tvoj trenutni
+          prosek.
+        </div>
+        <label className="ob-ct" htmlFor="quality-experience">
+          Iskustvo sa intervalima i tempo treningom
+        </label>
+        <select
+          id="quality-experience"
+          value={w.qualityExperience ?? ''}
+          onChange={(e) =>
+            set({ qualityExperience: e.target.value as WizardState['qualityExperience'] })
+          }
+        >
+          <option value="">Nije navedeno</option>
+          <option value="none">Tek uvodim kvalitet</option>
+          <option value="some">Povremeno radim kvalitet</option>
+          <option value="experienced">Redovno radim strukturirane treninge</option>
+        </select>
+      </details>
+      {historyValidationMessage(w) ? (
+        <Notice tone="warn" role="alert" title="Proveri podatke o bazi">
+          {historyValidationMessage(w)}
+        </Notice>
+      ) : null}
       <div className="ob-card">
         <div className="ob-ct">
           Koji dani ti odgovaraju za trčanje? <span className="ob-opt">— opciono</span>

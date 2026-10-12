@@ -1,0 +1,692 @@
+{
+  "reviewDate": "2026-10-12",
+  "initialScoresSha256": "b26d0aeec0b2939e8061ce28db0ff5b1568bbc13cd9c4e51b4e8cc327e7ffaf5",
+  "initialReviewSha256": "fd4975b89fbbf17e01ff32a4d5d11c9b7869ce4047f01de0cf1c612c892faf4b",
+  "coverage": {
+    "eventFiles": 10,
+    "records": 10,
+    "primaryCases": 10,
+    "u08PrimaryRejected": true,
+    "u08SupplementalSeparate": true
+  },
+  "records": [
+    {
+      "id": "U01",
+      "event": {
+        "kind": "single-miss",
+        "date": "2026-11-25"
+      },
+      "actualOutcome": "Obe verzije vraćaju single-miss preporuku bez regenerisanja; adjustment sadrži razlog odbijanja.",
+      "preservation": {
+        "basis": "Nema rezultatnog plana za direktno poređenje; payload daje jednaku preporuku/error i sopstvene unchanged zastavice. Nije nezavisno ponovo izvršeno."
+      },
+      "trainingStructure": "Nastavak postojećeg rasporeda.",
+      "dose": "Nema nadoknade preskočenog tempa 3.5 km old / fartleka 3.9 km new.",
+      "recovery": "Primereno jednom propuštenom treningu uz poslednje trčanje 2026-11-23.",
+      "coherence": "Retki dnevnici ostaju nepoznati; sparse slučaj ne izmišlja kilometre.",
+      "verdict": "Prihvatljivo za opisani jedan propušten trening.",
+      "confirmedDefects": [],
+      "coachingConcerns": [
+        "Razlog propuštanja nije poznat; bolest, bol ili trajni umor mogli bi zahtevati drugačiji nastavak, ali nisu dati."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-11-25",
+          "sessionId": "g7d3",
+          "expected": "Ne nadoknađivati pojedinačan propušten trening.",
+          "actual": "Obe verzije odbijaju novi plan; preporuka nastaviti bez nadoknade."
+        }
+      ],
+      "supplemental": null,
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    },
+    {
+      "id": "U02",
+      "event": {
+        "kind": "underexecution",
+        "date": "2026-11-25",
+        "fraction": 0.55,
+        "period": [
+          "2026-11-09",
+          "2026-11-22"
+        ]
+      },
+      "actualOutcome": "reduce, rezultat iz baze 23 km/ned; cilj i datum sačuvani.",
+      "preservation": {
+        "directComparisons": [
+          {
+            "case": "primary",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 38,
+            "reviewedFutureWeekCount": 10
+          },
+          {
+            "case": "protected",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 33,
+            "reviewedFutureWeekCount": 10
+          }
+        ],
+        "basis": "Samostalno duboko poređenje input/result day objekata i zaključanih redova; efektivni datumi uvažavaju moves. Context nije zamena za store/backend round-trip."
+      },
+      "trainingStructure": "Dva početna buduća dana laka; W8 sav kvalitet odložen; kasnije I/T, rasterećenje W10, taper W15.",
+      "dose": "Doza je znatno manja: piramida 0.9 km, T2×500; vrhunac 30.5 km i LR12 km.",
+      "recovery": "D3/D5 razmak odgovara oporavku; nema nadoknade.",
+      "coherence": "W8 fokus Fartlek i tekst posle pauze iako sve sesije lake, a nikakva pauza nije potvrđena.",
+      "verdict": "Smer smanjenja dobar; ispraviti tekst i individualno usloviti povratak kvaliteta.",
+      "confirmedDefects": [
+        "2026-11-30–12-06 naslov Fartlek ostaje, ali nema fartlek sesije.",
+        "Tekst postepen povratak posle pauze opisuje nepostojeću pauzu u ovom potpunom dnevniku."
+      ],
+      "coachingConcerns": [
+        "Za 5 K cilj kasni rad ostaje skroman; smanjenje je opravdano, ali potrebno je kasnije proveriti stvarnu toleranciju."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-12-02",
+          "sessionId": "g8d3",
+          "expected": "Naslov nedelje i uputstva treba da opisuju isporučeno opterećenje.",
+          "actual": "3.5 km lako, kvalitet odložen; fokus Fartlek."
+        },
+        {
+          "date": "2026-12-09",
+          "sessionId": "g9d3",
+          "expected": "Progresivno vraćati svrhovit kvalitet prema izvršenju.",
+          "actual": "100–200–300–200–100 m@4:32 sa 61 s hoda:0.9 km/~4.1 min rada."
+        },
+        {
+          "date": "2027-01-13",
+          "sessionId": "g14d3",
+          "expected": "Kasni 5 K kvalitet pre taper-a prilagoditi stvarnoj toleranciji.",
+          "actual": "2×600@4:32,5.44 min rada; sledeći T2.2 km."
+        }
+      ],
+      "supplemental": null,
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    },
+    {
+      "id": "U03",
+      "event": {
+        "kind": "high-rpe",
+        "date": "2026-11-25",
+        "highEasyDates": [
+          "2026-11-23",
+          "2026-11-25"
+        ],
+        "rpe": 8
+      },
+      "actualOutcome": "reduce; baza 53.1 se smanjuje na 45.1 km. U primarnom događaju nema merenja niti predloga bržeg tempa.",
+      "preservation": {
+        "directComparisons": [
+          {
+            "case": "primary",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 37,
+            "reviewedFutureWeekCount": 10
+          }
+        ],
+        "basis": "Samostalno duboko poređenje input/result day objekata i zaključanih redova; efektivni datumi uvažavaju moves. Context nije zamena za store/backend round-trip."
+      },
+      "trainingStructure": "Preostali deo W7 lako; W8 kontrolisan T fartlek, W9 vraća dva kvaliteta.",
+      "dose": "2026-12-01 samo 3×45 s; kasnije mali I/T rad.",
+      "recovery": "Smanjenje i uklanjanje neposrednog kvaliteta korisni; LR14.1 km četiri dana posle poslednjeg visokog RPE nije uslovljen simptomima.",
+      "coherence": "Tekst ograničenja pošten; nema automatske prognoze napretka.",
+      "verdict": "Uslovno prikladno smanjenje; oporavak mora zavisiti od uzroka i nestanka visokog napora.",
+      "confirmedDefects": [],
+      "coachingConcerns": [
+        "Nejasno kada je bezbedno vratiti kvalitet i dugu sesiju ako laka trčanja ostanu veoma teška.",
+        "Kalendarski reset rasterećenja i vrlo blagi ponovni uvod možda nisu najbolji za iskusnog trkača, ali nisu potvrđene greške."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-11-29",
+          "sessionId": "g7d7",
+          "expected": "Dužinu prilagoditi tome da li se normalan laki napor vratio.",
+          "actual": "14.1 km Z2 (~76 min) posle dva laka treninga RPE8."
+        },
+        {
+          "date": "2026-12-01",
+          "sessionId": "g8d2",
+          "expected": "Vratiti kvalitet tek prema toleranciji.",
+          "actual": "3×45 s@4:23 sa 90 s lako; nema eksplicitnog uslova o simptomima."
+        }
+      ],
+      "supplemental": {
+        "measuredChallenge": "Odvojeno dodata tri merenja daju brži proposal za 11 sesija; blocked Proposal=None u dostavljenoj varijanti sa blokadom. To nije primarni dnevnik i nije potvrda nove trkačke forme."
+      },
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    },
+    {
+      "id": "U04",
+      "event": {
+        "kind": "return",
+        "date": "2026-11-25",
+        "breakDays": 7,
+        "lastRun": "2026-11-18"
+      },
+      "actualOutcome": "Povratak iz prijavljenih 30 km na 25.5 km; prve dve kalendarske nedelje bez sesijskog kvaliteta.",
+      "preservation": {
+        "directComparisons": [
+          {
+            "case": "primary",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 38,
+            "reviewedFutureWeekCount": 10
+          },
+          {
+            "case": "protected",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 35,
+            "reviewedFutureWeekCount": 10
+          }
+        ],
+        "basis": "Samostalno duboko poređenje input/result day objekata i zaključanih redova; efektivni datumi uvažavaju moves. Context nije zamena za store/backend round-trip."
+      },
+      "trainingStructure": "Postepen laki uvod, T fartlek W9, I/T kasnije, taper W15.",
+      "dose": "Vrhunac 32.2 km, LR10.7 km; skroman kasni RP2×1000 sa 233 s hoda.",
+      "recovery": "Razumno konzervativno za sedam dana prekida, ali procenat 85% i dve nedelje su heuristike.",
+      "coherence": "U dve lake sesije opis i dalje zahteva ubrzanja koja su uklonjena iz strukture; W8 fokus Fartlek iako nema kvaliteta. Upozorenje o jednoj lakoj nedelji protivreči napomeni o dve.",
+      "verdict": "Trenažni smer prihvatljiv; tekstualna koherentnost ne prolazi.",
+      "confirmedDefects": [
+        "2026-11-27 i 11-30 opis 6×20 s ubrzanja uz odsutan strides objekat tokom lakog povratka.",
+        "W8 fokus Fartlek bez sesije; poruke 1 i 2 povratne nedelje su neusklađene."
+      ],
+      "coachingConcerns": [
+        "Pauza sama ne nalaže isti procenat i trajanje svim trkačima.",
+        "Kasni RP rad je slabiji kontinuitet za 10 K, ali ne mora biti neprimeren opreznom povratku."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-11-27",
+          "sessionId": "g7d5",
+          "expected": "Laki povratak treba opisati bez uklonjenih ubrzanja.",
+          "actual": "4.8 km lako +6×20 s u tekstu; strides nema."
+        },
+        {
+          "date": "2027-01-13",
+          "sessionId": "g14d3",
+          "expected": "10K specifičnu gustinu razvijati prema toleranciji.",
+          "actual": "2×1000@5:11 sa 233 s hoda."
+        }
+      ],
+      "supplemental": null,
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    },
+    {
+      "id": "U05",
+      "event": {
+        "kind": "goal-change",
+        "date": "2026-11-25",
+        "fromSec": 2520,
+        "toSec": 2400
+      },
+      "actualOutcome": "Obe primarne verzije menjaju želju na 40:00 bez ubrzavanja sesija; samo opis trke menja se. NEW čuva sve zasejane zaštite, OLD ih prepisuje.",
+      "preservation": {
+        "directComparisons": [
+          {
+            "case": "old",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": false,
+            "changedDayCount": 1,
+            "reviewedFutureWeekCount": 10
+          },
+          {
+            "case": "old-protected",
+            "effectivePastChanged": [
+              "g7d7"
+            ],
+            "completedChanged": [
+              "g7d2",
+              "g7d5"
+            ],
+            "manualChanged": [
+              "g9d2"
+            ],
+            "lockedPredictionRowsChanged": [
+              "g10_16"
+            ],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": false,
+            "changedDayCount": 6,
+            "reviewedFutureWeekCount": 10
+          },
+          {
+            "case": "new",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": false,
+            "changedDayCount": 1,
+            "reviewedFutureWeekCount": 10
+          },
+          {
+            "case": "new-protected",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": false,
+            "changedDayCount": 1,
+            "reviewedFutureWeekCount": 10
+          }
+        ],
+        "basis": "Samostalno duboko poređenje input/result day objekata i zaključanih redova; efektivni datumi uvažavaju moves. Context nije zamena za store/backend round-trip."
+      },
+      "trainingStructure": "Struktura/dose primarno ostaju postojeći plan.",
+      "dose": "Trening na trenutnoj formi ostaje razuman uprkos želji 40 min.",
+      "recovery": "Nema dodatnog opterećenja zbog same promene cilja.",
+      "coherence": "NEW45:00 referenca je jasno odvojena od želje 40:00; OLD ostaje sa neizmerenom prognozom 42:13.",
+      "verdict": "NEW prihvatljiv za promenu želje; OLD zaštitni scenario ima potvrđenu grešku očuvanja.",
+      "confirmedDefects": [
+        "OLD zaštitni scenario menja efektivno prošli g7d7, završene g7d2/g7d5, ručni g9d2 i zaključan g10_16. Nije utvrđeno u NEW."
+      ],
+      "coachingConcerns": [
+        "Sačuvana ručna ili izmerena brža buduća sesija nije potvrda tolerancije; poruke traže proveru.",
+        "40:00 nije dokazana forma ni dokaz da preostali trening može ostvariti cilj."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-11-24",
+          "sessionId": "g7d7",
+          "expected": "Zaštititi dan pomeren u prošlost.",
+          "actual": "OLD menja 18.8→18.4 km i opis; NEW18.9 km i tekst ostaju identični."
+        },
+        {
+          "date": "2026-12-08",
+          "sessionId": "g9d2",
+          "expected": "Sačuvati ručno zadatih 5×200.",
+          "actual": "OLD prepisuje u piramidu; NEW čuva 5.1 km oštrine 5×200@4:00."
+        },
+        {
+          "date": "2026-12-15",
+          "sessionId": "g10d2",
+          "expected": "Sačuvati izmereni/zaključani dan i red.",
+          "actual": "OLD redg 10_16 promenjen; NEW redg 10_14 stabilan."
+        }
+      ],
+      "supplemental": null,
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    },
+    {
+      "id": "U06",
+      "event": {
+        "kind": "return",
+        "date": "2026-11-25",
+        "breakDays": 28,
+        "lastRun": "2026-10-28"
+      },
+      "actualOutcome": "Povratak iz 15 na 8.3 km; rezultat sačuvanog 10 K datuma 2027-01-31.",
+      "preservation": {
+        "directComparisons": [
+          {
+            "case": "primary",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 26,
+            "reviewedFutureWeekCount": 10
+          }
+        ],
+        "basis": "Samostalno duboko poređenje input/result day objekata i zaključanih redova; efektivni datumi uvažavaju moves. Context nije zamena za store/backend round-trip."
+      },
+      "trainingStructure": "Četiri početne kalendarske nedelje bez kvaliteta; potom većina planiranih kvaliteta pretvorena u lako.",
+      "dose": "Najveći budući LR4 km i 10.1 km/ned; tek 2027-01-20 ostaje RP2×600.",
+      "recovery": "Oprezno smanjenje je prikladno slaboj bazi i prekidu.",
+      "coherence": "Tekst ubrzanja zadržan 11-30/12-14; više fokus-naslova tvrdi Fartlek/Tempo/Progresivno kada su sve sesije lake.",
+      "verdict": "Upotrebljiv povratak ka redovnosti; ne odobriti kao punu 10 K pripremu bez konkretnog alternativnog cilja.",
+      "confirmedDefects": [
+        "2026-11-30 i 12-14 strides uklonjen, instrukcija ubrzanja ostala.",
+        "Naslovi W9/W11/W12 Fartlek, W13 Tempo, W14 Progresivno ne odgovaraju lakim sesijama."
+      ],
+      "coachingConcerns": [
+        "Planirani 10 K na kraju, posle maksimuma 4 km, ostaje velik raskorak; upozorenje ga priznaje ali ne rešava.",
+        "Stari PB iz 2025 nije potvrđen ritam povratka; lake sesije treba voditi naporom."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-11-30",
+          "sessionId": "g8d1",
+          "expected": "Opis uskladiti sa povratkom bez bržeg rada.",
+          "actual": "2.2 km +6×20 s u tekstu; strides odsutan."
+        },
+        {
+          "date": "2027-01-17",
+          "sessionId": "g14d7",
+          "expected": "10K cilj prilagoditi potvrđenoj izdržljivosti.",
+          "actual": "LR samo 4 km; trka 10 km ostaje 2027-01-31."
+        }
+      ],
+      "supplemental": null,
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    },
+    {
+      "id": "U07",
+      "event": {
+        "kind": "underexecution",
+        "date": "2026-11-25",
+        "fraction": 0.6,
+        "period": [
+          "2026-11-09",
+          "2026-11-25"
+        ]
+      },
+      "actualOutcome": "reduce; baza 25.7 km, sačuvan HM datum i želja.",
+      "preservation": {
+        "directComparisons": [
+          {
+            "case": "primary",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 38,
+            "reviewedFutureWeekCount": 10
+          },
+          {
+            "case": "protected",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 34,
+            "reviewedFutureWeekCount": 10
+          }
+        ],
+        "basis": "Samostalno duboko poređenje input/result day objekata i zaključanih redova; efektivni datumi uvažavaju moves. Context nije zamena za store/backend round-trip."
+      },
+      "trainingStructure": "Prve dve pune buduće nedelje lake, pa mali T rad, kontrolisanih 5 km RP, zatim dva kvaliteta i taper.",
+      "dose": "Vrhunac 36 km/ned, LR11.4 km.",
+      "recovery": "Oporavak i smanjenje dobri; nema nadoknade propuštene distance.",
+      "coherence": "Fartlek/Tempo naslovi ostaju nad lakim W8/W9; tekst pogrešno naziva događaj povratkom posle pauze.",
+      "verdict": "Uslovno prihvatljiv manje zahtevan plan; nije dovoljno opravdana puna HM priprema.",
+      "confirmedDefects": [
+        "W8 fokus Fartlek i W9 Tempo isprekidan bez takvih sesija.",
+        "Tekst posle pauze protivreči potpunom dnevniku sa svim trčanjima završenim na 60% distance."
+      ],
+      "coachingConcerns": [
+        "Samo 11.4 km najveće dužine ostavlja slabu HM izdržljivost; potrebno konkretnije preusmeriti cilj/datum.",
+        "Brza kontrola 5 km ne potvrđuje 21.1 km izdržljivosti."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-12-02",
+          "sessionId": "g8d3",
+          "expected": "Opisati lako smanjenje obima, ne fartlek/pauzu.",
+          "actual": "5.6 km lako uz fokus Fartlek."
+        },
+        {
+          "date": "2026-12-30",
+          "sessionId": "g12d3",
+          "expected": "Kontrolisani RP nije maksimalni test forme.",
+          "actual": "5 km@5:11 uz 1.7/1.2 km zagrevanja/hlađenja i poštenu napomenu."
+        },
+        {
+          "date": "2027-01-10",
+          "sessionId": "g13d7",
+          "expected": "Razviti ili ograničiti HM izdržljivost.",
+          "actual": "LR11.4 km, najveća dužina pre HM2027-01-31."
+        }
+      ],
+      "supplemental": null,
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    },
+    {
+      "id": "U08",
+      "event": {
+        "kind": "return",
+        "date": "2026-11-25",
+        "breakDays": 14,
+        "raceDate": "2027-01-17"
+      },
+      "actualOutcome": "GLAVNI zahtev odbijen:53 dana /8 kalendarskih nedelja manje od internog minimuma 10. Nema result niti izmenjenog datuma.",
+      "preservation": {
+        "primary": "Nema result; input Hash Before==input Hash After u payload-u. Glavni zahtev odbijen bez pomeranja datuma.",
+        "directComparisons": [
+          {
+            "case": "supplemental",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 54,
+            "reviewedFutureWeekCount": 12
+          }
+        ],
+        "basis": "Samostalno duboko poređenje input/result day objekata i zaključanih redova; efektivni datumi uvažavaju moves. Context nije zamena za store/backend round-trip."
+      },
+      "trainingStructure": "Glavni ishod nema novi trening koji može biti ocenjen.",
+      "dose": "Nije dozvoljeno pripisati dozu ranijeg scenarija glavnom zahtevu.",
+      "recovery": "Odbijanje ne izmišlja spremnost; ipak nema konkretnog lakog nastavka do procene/druge trke.",
+      "coherence": "Primary/supplemental jasno razdvojeni.",
+      "verdict": "Glavni zahtev ostaje nerešen, nije uspešan povratni plan. Dodatni rezultat ima koherentnosne nedostatke.",
+      "confirmedDefects": [
+        "Samo DODATNI scenario:2026-10-30,11-02,11-09 tekst 6×20 s bez strides objekta u prve 3 lake kalendarske nedelje.",
+        "Samo DODATNI scenario:W4/W5 fokus Fartlek bez fartleka."
+      ],
+      "coachingConcerns": [
+        "Minimum 10 nedelja je produktna heuristika; ne dokazuje da iskusan trkač ne može bezbedno dobiti kraći prilagođeni nastavak.",
+        "Dodatni plan LR15.3 i RP7 km može biti razuman konzervativan HM povratak, ali ne dokazuje ostvarenje 1:35."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-11-25",
+          "sessionId": null,
+          "expected": "Zabeležiti stvarni primarni ishod bez zamene drugim datumom.",
+          "actual": "Error manje od 10 nedelja; datum 2027-01-17 ostaje."
+        },
+        {
+          "date": "2026-11-02",
+          "sessionId": "g4d1",
+          "expected": "DODATNI laki povratak bez uklonjenih ubrzanja.",
+          "actual": "7.1 km lako+6×20 s tekst; strides nema."
+        }
+      ],
+      "supplemental": {
+        "date": "2026-10-28",
+        "breakDays": 14,
+        "remainingDays": 81,
+        "outcome": "Generisano iz 55 na 38.5 km, prve 3 kalendarske nedelje lako; vrhunac 49 km, LR15.3;24.11 I2×600 i 22.12 kontrolisanih 7 km RP; isti datum trke 17.01.2027. Ovaj uspeh nije primarni događaj."
+      },
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    },
+    {
+      "id": "U09",
+      "event": {
+        "kind": "return",
+        "date": "2026-11-25",
+        "breakDays": 14,
+        "lastRun": "2026-11-11"
+      },
+      "actualOutcome": "Povratak 30→21 km; sačuvana maratonska trka 2027-02-28.",
+      "preservation": {
+        "directComparisons": [
+          {
+            "case": "primary",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 53,
+            "reviewedFutureWeekCount": 14
+          },
+          {
+            "case": "protected",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 48,
+            "reviewedFutureWeekCount": 14
+          }
+        ],
+        "basis": "Samostalno duboko poređenje input/result day objekata i zaključanih redova; efektivni datumi uvažavaju moves. Context nije zamena za store/backend round-trip."
+      },
+      "trainingStructure": "Tri početne kalendarske nedelje lake; mali T/I kasnije, RP1.8 km u taper-u.",
+      "dose": "Vrhunac 29 km/ned, najveći LR8.8 km.",
+      "recovery": "Smanjenje posle prekida razumno; nema nadoknade, ali dugotrajna izdržljivost ostaje gotovo neizgrađena.",
+      "coherence": "Tri teksta ubrzanja preživljavaju uklanjanje strukture, više naslova kvaliteta nad lakim nedeljama; upozorenje priznaje ograničenje.",
+      "verdict": "Ne odobriti kao maratonsku pripremu; odobriti samo jasno preusmeren povratak ka redovnosti.",
+      "confirmedDefects": [
+        "2026-11-27,11-30,12-07 opis ubrzanja bez strides objekta.",
+        "Fartlek W8/W9 i Tempo W11/W16/W17 naslovi ostaju nad svim lakim treninzima."
+      ],
+      "coachingConcerns": [
+        "42.195 km posle budućeg maksimuma 8.8 km je ekstreman raskorak pripreme; potreban konkretan drugi cilj/datum, ne samo upozorenje."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-12-07",
+          "sessionId": "g9d1",
+          "expected": "Tekst lakog povratka uskladiti sa strukturalno uklonjenim ubrzanjima.",
+          "actual": "5.3 km +6×20 s u tekstu, strides nema."
+        },
+        {
+          "date": "2027-02-07",
+          "sessionId": "g17d7",
+          "expected": "Razviti maratonsku izdržljivost ili promeniti trku.",
+          "actual": "Najveći LR8.8 km,21 dana pre maratona."
+        }
+      ],
+      "supplemental": null,
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    },
+    {
+      "id": "U10",
+      "event": {
+        "kind": "return",
+        "date": "2026-11-25",
+        "breakDays": 28,
+        "lastRun": "2026-10-28"
+      },
+      "actualOutcome": "Povratak 60→33 km; cilj 3:30 i datum 2027-02-28 ostaju.",
+      "preservation": {
+        "directComparisons": [
+          {
+            "case": "event",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 64,
+            "reviewedFutureWeekCount": 14
+          },
+          {
+            "case": "protection",
+            "effectivePastChanged": [],
+            "completedChanged": [],
+            "manualChanged": [],
+            "lockedPredictionRowsChanged": [],
+            "calendarIdsStable": true,
+            "raceDateStable": true,
+            "goalStable": true,
+            "changedDayCount": 62,
+            "reviewedFutureWeekCount": 14
+          }
+        ],
+        "basis": "Samostalno duboko poređenje input/result day objekata i zaključanih redova; efektivni datumi uvažavaju moves. Context nije zamena za store/backend round-trip."
+      },
+      "trainingStructure": "Četiri početne kalendarske nedelje lake; od 22.12 mali T fartlek, zatim I/T/RP.",
+      "dose": "Vrhunac 47.4 km/ned, LR17.3 km; RP1.8–1.9 km pre taper-a.",
+      "recovery": "Smanjenje posle 28 dana opravdano; budući rast postepen, ne vraća brzo početni LR24 km.",
+      "coherence": "Četiri teksta ubrzanja ostaju bez strides; W9 fokus Fartlek tokom lake faze. Ograničenja forme/izdržljivosti pošteno navedena.",
+      "verdict": "Dobar oprezan povratak; ne odobriti kao pun rezultatni maratonski ciklus.",
+      "confirmedDefects": [
+        "2026-11-30,12-02,12-07,12-14 tekst ubrzanja ostaje dok strides objekat ne postoji.",
+        "W9 fokus Fartlek bez fartlek sesije."
+      ],
+      "coachingConcerns": [
+        "Najveći LR17.3 i male RP doze slabo služe cilju 3:30; istorija 25.5 km pre prekida ne nadoknađuje obnovu tolerancije.",
+        "Sačuvani izmereni/manual budući treninzi mogu biti suprotni lakoj fazi; potrebno je pregledati upozorenja, ne automatski obrisati podatke."
+      ],
+      "datedExamples": [
+        {
+          "date": "2026-12-02",
+          "sessionId": "g8d3",
+          "expected": "Laka povratna sesija bez tekstualnog bržeg rada.",
+          "actual": "4.8 km lako+6×20 s tekst; strides nema."
+        },
+        {
+          "date": "2027-02-07",
+          "sessionId": "g17d7",
+          "expected": "Maratonsku pripremu uskladiti sa konkretnom preostalom tolerancijom.",
+          "actual": "Najveći LR17.3 km;RP02-02 samo 1.9 km@5:20."
+        }
+      ],
+      "supplemental": null,
+      "confidence": 0.9,
+      "scope": "Nezavisno čitanje isporučenih sintetičkih domain payloadova; bez ponovnog izvršavanja API-ja, browser/store/watch validacije ili ljudskih ishoda."
+    }
+  ]
+}

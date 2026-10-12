@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { canonical } from '@/test/fingerprint';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { migrateState } from './migrate';
+import { SCHEMA_VERSION } from './types';
 
 /* parity: test/state.test.mjs :: migracija šeme; test/otpornost.test.mjs :: oštećen ulaz
    DIFERENCIJALNI TEST data contract-a: stari `migrate()` i novi `migrateState()` moraju dati ISTO
@@ -291,7 +292,7 @@ describe('migrateState naspram starog migrate()', () => {
     const oldOut = legacy.call('migrate', JSON.parse(JSON.stringify(base)));
     const newOut = migrateState(input);
     expect(JSON.stringify(canonical(newOut))).toBe(
-      JSON.stringify(canonical(JSON.parse(JSON.stringify(oldOut))))
+      JSON.stringify(canonical({ ...JSON.parse(JSON.stringify(oldOut)), v: SCHEMA_VERSION }))
     );
     expect(JSON.stringify(input), 'ulaz mutiran').toBe(before);
   });
@@ -309,7 +310,24 @@ describe('migrateState naspram starog migrate()', () => {
       const newOut = migrateState(input);
       compared++;
       if (oldOut === null) nulls++;
-      const a = JSON.stringify(canonical(oldOut));
+      // v12 is now readable; the immutable v11 oracle rejected precisely that future version.
+      // No data rewrite is introduced by v12, so the same input under v11 has identical sanitization.
+      const rawVersion = (input as Record<string, Json>)['v'];
+      if (
+        (typeof rawVersion === 'number' || typeof rawVersion === 'string') &&
+        Number(rawVersion) === SCHEMA_VERSION &&
+        oldOut === null
+      ) {
+        expect(newOut, `current schema boundary ${i}`).toEqual(
+          migrateState({ ...(input as Record<string, Json>), v: 11 })
+        );
+        continue;
+      }
+      const a = JSON.stringify(
+        canonical(
+          oldOut == null ? null : { ...(oldOut as Record<string, Json>), v: SCHEMA_VERSION }
+        )
+      );
       const b = JSON.stringify(canonical(newOut));
       if (a !== b)
         problems.push(

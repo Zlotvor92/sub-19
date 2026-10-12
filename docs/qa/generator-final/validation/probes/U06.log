@@ -1,0 +1,66 @@
+{
+  "coverage": {
+    "initialWeekRecords": 32,
+    "initialDayRecords": 224,
+    "eventWeekRecords": 32,
+    "eventDayRecords": 224,
+    "totalWeekRecords": 64,
+    "totalDayRecords": 448
+  },
+  "sourceExact": true,
+  "initialFailures": {
+    "old": [],
+    "new": []
+  },
+  "event": {
+    "old": {
+      "coverage": {
+        "weeks": 16,
+        "days": 112,
+        "protected": 45,
+        "future": 67,
+        "returnWindowDays": 25,
+        "returnWindowRunning": 10
+      },
+      "pastExact": true,
+      "historicalPredExact": true,
+      "returnWindowDemanding": [],
+      "staleStrideText": [
+        "g8d1",
+        "g10d1"
+      ],
+      "metadataPeaksMatch": true
+    },
+    "new": {
+      "coverage": {
+        "weeks": 16,
+        "days": 112,
+        "protected": 45,
+        "future": 67,
+        "returnWindowDays": 25,
+        "returnWindowRunning": 10
+      },
+      "pastExact": true,
+      "historicalPredExact": true,
+      "returnWindowDemanding": [],
+      "staleStrideText": [],
+      "metadataPeaksMatch": true
+    }
+  },
+  "supplementalQualityGate": {
+    "input": "Exact frozen execution analysis, no recent measured form supplied; no edits to primary input.",
+    "recentMeasuredForm": false,
+    "result": {
+      "open": false,
+      "met": [
+        "Bez bola 4/10 ili jačeg u skorije vreme",
+        "Najviše jedan lak trening sa naporom 7+/10 u poslednje dve nedelje"
+      ],
+      "unmet": [
+        "Dve poslednje pune nedelje: bar 75% planiranog obima — odrađeno je manje.",
+        "Forma potvrđena merenjem u poslednjih 90 dana — do tada napor vodi, a ritam je samo orijentir."
+      ],
+      "unknown": []
+    }
+  }
+}

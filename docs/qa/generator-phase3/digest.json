@@ -1,0 +1,54 @@
+{
+  "probeSha256": "d6cf032c0482ebe2834750da290a1aab5dc6e7f717e33e36a19bc35518cfe1c1",
+  "outputSha256": "1b5d44924cb06d4934b75e210fda5b4993ba7793d7335c2877c6889310580e92",
+  "sources": [
+    {
+      "path": "web/src/domain/training/execution.ts",
+      "sha256": "4da890e86a2176abbd678c2cbb4e5bdc121d9f7d641b9d7694ac171300106054"
+    },
+    {
+      "path": "web/src/domain/training/adaptation/evidence.ts",
+      "sha256": "b48540bf555d453cfaeea36291af02038cbccfde6c266e0c8f2115c2918d4da2"
+    },
+    {
+      "path": "web/src/domain/plan/future.ts",
+      "sha256": "2354fda9ab8ae4a0a9b0dbc9865dd8e2d080cae5d40002eeb9321d3cc703c6f0"
+    },
+    {
+      "path": "web/src/domain/plan/replan.ts",
+      "sha256": "2125b50c3f89391a47906f909b13a2a5ce1cf9fde83025ca0e48caccf074b7cb"
+    },
+    {
+      "path": "web/src/domain/plan/versions.ts",
+      "sha256": "fc7c01fba0b07e10b144a9d522b3d78ee2e5864f4320a5dd5ca9f6efad8dcad4"
+    },
+    {
+      "path": "web/src/domain/plan/executionAdjustment.ts",
+      "sha256": "24a9d8626956dbaa703890e0c44ac9da3aa949a9d1962f30437120f395052415"
+    },
+    {
+      "path": "web/src/domain/plan/returnGrowth.ts",
+      "sha256": "9f36a4de7b69a7208eaebbc88684bb73c6ddc22e9f66f5bc0f532df1f73c3c41"
+    },
+    {
+      "path": "web/src/domain/training/generator/generatePlan.ts",
+      "sha256": "15c0b25af7253e512f8af4838f35ab57c26a57872edff67632ad8b8a65925b8a"
+    },
+    {
+      "path": "web/src/domain/training/adaptation/proposal.ts",
+      "sha256": "0eceb2010a4aedfa0d3d18e43015b5db0a87ba18340dc885079459d86ef0e2fd"
+    },
+    {
+      "path": "web/src/domain/training/adaptation/evidence.test.ts",
+      "sha256": "ab69a781d5748e78315ddbc4a8b762e7a90b9fefc9f2c232b63ad5a9081c4624"
+    },
+    {
+      "path": "web/src/stores/executionActions.ts",
+      "sha256": "edaed86639e72888c716feec7e9a4c7d2e534aeeff7f7290d88017787e0c88c0"
+    },
+    {
+      "path": "web/src/stores/executionActions.test.ts",
+      "sha256": "1fb1e4883d32ec0b340928ecbd68ae73cbd527528317444e7ba7863088204d34"
+    }
+  ]
+}

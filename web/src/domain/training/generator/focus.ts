@@ -27,3 +27,27 @@ export function weekFocus(days: readonly Day[], st: WeekKind): string {
   if (st.isTaper1 || st.isTaper2) return `Taper · ${list}`;
   return list;
 }
+
+/** Final delivered focus also covers unstructured manual types and removed quality. */
+export function deliveredWeekFocus(days: readonly Day[], st: WeekKind): string {
+  if (st.isRace) return 'TRKA';
+  const kinds: string[] = [];
+  for (const d of days) {
+    if (d.rest) continue;
+    const k = d.finish
+      ? 'LR sa brzim završetkom'
+      : (d.session?.kind ??
+        (d.tag === 'tempo'
+          ? 'Tempo'
+          : d.tag === 'int'
+            ? 'Intervali'
+            : d.strides
+              ? 'Ubrzanja'
+              : undefined));
+    if (k && !kinds.includes(k)) kinds.push(k);
+  }
+  const list = kinds.length ? kinds.join(' + ') : 'Lagano trčanje — bez kvaliteta i ubrzanja';
+  if (st.isDeload) return `DELOAD · ${list}`;
+  if (st.isTaper1 || st.isTaper2) return `Taper · ${list}`;
+  return list;
+}

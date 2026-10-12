@@ -1,0 +1,62 @@
+{
+  "testedCommit": "47a753576f5d376b827cfff2e5b0a6f8ec58c555",
+  "testedTree": "19f2b014618f32dbba201749382f28f772835f58",
+  "runId": 38271301547,
+  "url": "https://github.com/Zlotvor92/sub-19/actions/runs/38271301547",
+  "allJobs": "success",
+  "web": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "format": "passed",
+    "tests": 1519,
+    "testFiles": 146,
+    "build": "passed",
+    "e2e": {
+      "passed": 77,
+      "failed": 0,
+      "retries": 0,
+      "allTenLockedProfileFlowsPassed": true,
+      "finalPreservationFlowPassed": true
+    }
+  },
+  "backend": {
+    "tests": 396,
+    "passed": 396,
+    "failed": 0
+  },
+  "database": {
+    "job": "passed"
+  },
+  "localBrowser": {
+    "status": "not-run",
+    "reason": "Chromium CDN returned truncated/non-ZIP archive; no local browser pass claimed"
+  },
+  "artifact": {
+    "id": 11757163653,
+    "size": 19312397,
+    "sha256": "94cfd7587fb7253df7c90bf9d05ce28923e09c91e8e70c53ddc4f8e5d3a78cf2",
+    "expiresAt": "2027-01-10T15:35:04Z",
+    "downloadedShaVerified": true,
+    "browserIndex": "../browser/index.json",
+    "visualSelectionsReviewed": 6,
+    "originalPngCount": 41,
+    "independentJsonCaptureChecksPassed": true
+  },
+  "previousRuns": [
+    {
+      "runId": 38269078475,
+      "commit": "1ee684004be0d864083fa85ad4db8123db4aebc2",
+      "e2ePassed": 76,
+      "e2eFailed": 1,
+      "reason": "New spec assumed a second easy slot absent in four-day/two-quality plan; valid rest-slot swap retained all protection assertions."
+    },
+    {
+      "runId": 38269640038,
+      "commit": "c66c42b2b6cb7a1ea68a2175104d814baa11ed64",
+      "e2ePassed": 76,
+      "e2eFailed": 1,
+      "reason": "New spec assumed a runnable day before plan start; completing a different future prescription early verifies done preservation independently of cutoff."
+    }
+  ],
+  "scope": "Real Chromium UI with mock backend/auth; no production-service, watch or iOS Safari claim."
+}

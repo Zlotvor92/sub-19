@@ -10,7 +10,7 @@ import {
   raceRefs,
   vdotTrendModel
 } from '../../domain/race';
-import { currentVdot, type StoredPredRow } from '../../domain/training/adaptation';
+import { fitnessEvidence, type StoredPredRow } from '../../domain/training/adaptation';
 import { predictionSummary } from '../../domain/training/prediction/summary';
 import { t3kRows, t3kSeries } from '../../domain/training/test3k';
 import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
@@ -43,14 +43,24 @@ export function useFormModel() {
     const start = plan.weeks[0]?.start ?? todayStr;
     const weekNo = (d: string): number | null =>
       plan.weeks.find((w) => d >= w.start && d <= addDays(w.start, 6))?.w ?? null;
+    const evidence = fitnessEvidence({
+      today,
+      plan,
+      pred: rows,
+      meta: genPlan.meta ?? null,
+      log,
+      vdotChain: vdotLog,
+      tests: t3k
+    });
     const summary = predictionSummary({
       pred: rows,
       paces,
-      chain: vdotLog,
+      chain: evidence.chain,
       tests: t3kRows(t3k, weekNo, start, plan.weeks.length),
-      raceDistM: refs.raceDistM
+      raceDistM: refs.raceDistM,
+      requireAcceptedEvidence: true
     });
-    const cv = currentVdot(vdotLog);
+    const cv = evidence.form;
     const bv = refs.baselineVdot;
     const goal = refs.goalVdot ?? bv;
     const runs = completedRuns(plan, log, alts);
@@ -83,13 +93,16 @@ export function useFormModel() {
       personal,
       goalText: personal ? PERSONAL.goalText : refs.goalSec != null ? fmtClock(refs.goalSec) : '—',
       starting: personal ? startingRace(log) : null,
-      measurements: vdotLog.filter((r) => r && num(r.vdot) != null).length,
-      trend: bv != null && goal != null ? vdotTrendModel(vdotLog, bv, goal) : null,
+      measurements: evidence.measurements,
+      trend: bv != null && goal != null ? vdotTrendModel(evidence.chain, bv, goal) : null,
       chart: predictionChartModel(rows, summary, refs.goalSec),
       runs,
       pace: paceChartModel(runs),
       sum: planSummary(plan, log, today),
-      projectionSec: num(genPlan.meta?.['predictedSec']),
+      projectionSec:
+        genPlan.meta?.['assessmentBasis'] === 'current-fitness'
+          ? null
+          : num(genPlan.meta?.['predictedSec']),
       tests: t3kSeries(t3k).slice().reverse()
     };
   }, [plan, genPlan, pred, vdotLog, t3k, log, alts, todayStr]);

@@ -1,0 +1,714 @@
+[
+  {
+    "scenario": "01_base",
+    "label": "Beginner 5K: 8km/week, 3 runs, detrained",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 2100
+      },
+      "weeklyKm": 8,
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "kons",
+      "volIntensity": "kons",
+      "goalSec": 1800,
+      "trainedRecently": false
+    }
+  },
+  {
+    "scenario": "01_frequency",
+    "label": "Beginner 5K: 16km/week, 4 runs, detrained",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 2100
+      },
+      "weeklyKm": 16,
+      "runDays": 4,
+      "quality": 1,
+      "intensity": "kons",
+      "volIntensity": "kons",
+      "goalSec": 1800,
+      "trainedRecently": false
+    }
+  },
+  {
+    "scenario": "01_recent",
+    "label": "Beginner 5K: 8km/week, 3 runs, trained recently",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 2100
+      },
+      "weeklyKm": 8,
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "kons",
+      "volIntensity": "kons",
+      "goalSec": 1800,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "02_base",
+    "label": "QA02 returning runner 10K baseline",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1620
+      },
+      "weeklyKm": 15,
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "std",
+      "volIntensity": "kons",
+      "goalSec": 3600,
+      "trainedRecently": false
+    }
+  },
+  {
+    "scenario": "02_recent",
+    "label": "QA02 same runner recent training",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1620
+      },
+      "weeklyKm": 15,
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "std",
+      "volIntensity": "kons",
+      "goalSec": 3600,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "02_short",
+    "label": "QA02 returning runner short 8-week preparation",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2026-12-06",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1620
+      },
+      "weeklyKm": 15,
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "std",
+      "volIntensity": "kons",
+      "goalSec": 3600,
+      "trainedRecently": false
+    }
+  },
+  {
+    "scenario": "03_base",
+    "label": "03 recreational base",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1620
+      },
+      "weeklyKm": 20,
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1500,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "03_quality2",
+    "label": "03 recreational quality2",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1620
+      },
+      "weeklyKm": 20,
+      "runDays": 3,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1500,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "03_volume12",
+    "label": "03 recreational volume12",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1620
+      },
+      "weeklyKm": 12,
+      "runDays": 3,
+      "quality": 1,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1500,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "04_base",
+    "label": "5K 23:45 PB to sub20 16wk",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1199,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "04_long24",
+    "label": "Same sub20 goal24wk",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-03-28",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1199,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "04_slowgoal",
+    "label": "Same runner goal25min",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1500,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "05_base",
+    "label": "QA05 advanced 5K sub19 base",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 50,
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1139,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "05_conservative",
+    "label": "QA05 advanced 5K sub19 conservative",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 50,
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "kons",
+      "volIntensity": "kons",
+      "goalSec": 1139,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "05_volume",
+    "label": "QA05 advanced 5K sub19 volume",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 70,
+      "runDays": 6,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 1139,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "06_base",
+    "label": "06_base",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 35,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 2880,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "06_goal55",
+    "label": "06_goal55",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 35,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 3300,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "06_highvol",
+    "label": "06_highvol",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-03",
+      "raceDistM": 10000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 50,
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 2880,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "07_base",
+    "label": "07_base",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 6300,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "07_quality1",
+    "label": "07_quality1",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 1,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 6300,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "07_short",
+    "label": "07_short",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2026-12-20",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 6300,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "07_slower",
+    "label": "07_slower",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 7200,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "08_base",
+    "label": "08 HM 1:35 base",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-17",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 40,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 5700,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "08_highvol",
+    "label": "08 HM 1:35 highvol",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-17",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 55,
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 5700,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "08_lowvol",
+    "label": "08 HM 1:35 lowvol",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-17",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 5700,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "09_30km",
+    "label": "Marathon 30km",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-02-28",
+      "raceDistM": 42195,
+      "pb": {
+        "distM": 21097.5,
+        "sec": 6300
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 14400,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "09_4days",
+    "label": "Marathon 4days",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-02-28",
+      "raceDistM": 42195,
+      "pb": {
+        "distM": 21097.5,
+        "sec": 6300
+      },
+      "weeklyKm": 50,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 14400,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "09_base",
+    "label": "Marathon base",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-02-28",
+      "raceDistM": 42195,
+      "pb": {
+        "distM": 21097.5,
+        "sec": 6300
+      },
+      "weeklyKm": 50,
+      "runDays": 5,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 14400,
+      "trainedRecently": true
+    }
+  },
+  {
+    "scenario": "10_4days",
+    "label": "HM1:35 4days",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2026-12-13",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 5700,
+      "trainedRecently": true,
+      "runDows": [
+        1,
+        3,
+        5,
+        7
+      ],
+      "lrDow": 7,
+      "qDows": [
+        3,
+        5
+      ]
+    }
+  },
+  {
+    "scenario": "10_base",
+    "label": "HM1:35 constrained3days",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2026-12-13",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 30,
+      "runDays": 3,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 5700,
+      "trainedRecently": true,
+      "runDows": [
+        2,
+        4,
+        7
+      ],
+      "lrDow": 7,
+      "qDows": [
+        2,
+        4
+      ]
+    }
+  },
+  {
+    "scenario": "10_sunday",
+    "label": "HM1:35 Sundaystart3days",
+    "input": {
+      "startDate": "2026-10-11",
+      "raceDate": "2026-12-13",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 30,
+      "runDays": 3,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 5700,
+      "trainedRecently": true,
+      "runDows": [
+        2,
+        4,
+        7
+      ],
+      "lrDow": 7,
+      "qDows": [
+        2,
+        4
+      ]
+    }
+  },
+  {
+    "scenario": "10_sunday4days",
+    "label": "HM1:35 Sundaystart4days",
+    "input": {
+      "startDate": "2026-10-11",
+      "raceDate": "2026-12-13",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 30,
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 5700,
+      "trainedRecently": true,
+      "runDows": [
+        1,
+        3,
+        5,
+        7
+      ],
+      "lrDow": 7,
+      "qDows": [
+        3,
+        5
+      ]
+    }
+  },
+  {
+    "scenario": "10_validmonday",
+    "label": "HM1:35 validMonday3days",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2026-12-20",
+      "raceDistM": 21097.5,
+      "pb": {
+        "distM": 5000,
+        "sec": 1235
+      },
+      "weeklyKm": 30,
+      "runDays": 3,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "goalSec": 5700,
+      "trainedRecently": true,
+      "runDows": [
+        2,
+        4,
+        7
+      ],
+      "lrDow": 7,
+      "qDows": [
+        2,
+        4
+      ]
+    }
+  }
+]
