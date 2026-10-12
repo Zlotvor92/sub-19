@@ -174,7 +174,7 @@ function chooseQuality5K(req: QualityRequest): SessionDay {
 }
 
 function buildQuality5K(req: QualityRequest): SessionDay {
-  return applyQualityDose(introductoryQuality(req) ?? chooseQuality5K(req), req);
+  return applyQualityDose(introductoryQuality(req) ?? chooseQuality5K(req), { ...req, budgets: H });
 }
 
 export const PROFILE_5K: DistanceProfile = {

@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "git": { "deploymentEnabled": { "fix/session-purpose": false } },
+  "git": { "deploymentEnabled": { "fix/session-purpose": false, "fix/quality-dose": false } },
   "installCommand": "npm ci --prefix web",
   "buildCommand": "npm run build --prefix web",
   "outputDirectory": "web/dist",

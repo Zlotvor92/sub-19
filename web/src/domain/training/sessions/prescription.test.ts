@@ -41,7 +41,10 @@ describe('prescription purpose precedes dose and constraints', () => {
       zone: 'RP',
       paceSec: 270,
       restSec: rest,
-      reps: 3
+      // Experienced policy: RP keeps the builder's amount as reference; the 22 min
+      // per-session cap (4.9 km @ 4:30) allows 4 × 1200 m where the legacy 0.9 × 20 min
+      // cap allowed 3. Recovery is the subject of this test and stays unchanged.
+      reps: 4
     });
     expect(constrainSession(day.session, 60, 1800)).toBe(true);
     expect(day.session).toMatchObject({

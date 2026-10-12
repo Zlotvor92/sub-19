@@ -177,7 +177,10 @@ function chooseQuality42K(req: QualityRequest): SessionDay {
 }
 
 function buildQuality42K(req: QualityRequest): SessionDay {
-  return applyQualityDose(introductoryQuality(req) ?? chooseQuality42K(req), req);
+  return applyQualityDose(introductoryQuality(req) ?? chooseQuality42K(req), {
+    ...req,
+    budgets: H
+  });
 }
 
 /** Poslednjih 5–12 km dugog trčanja na tempu maratona (samo u specifičnoj fazi, ne na vrhuncu ciklusa). */

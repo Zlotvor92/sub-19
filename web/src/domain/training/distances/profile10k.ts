@@ -108,18 +108,22 @@ const mkCruise = (dow: number, vol: number, pT: number, share?: number): Session
 const mkProgression = (dow: number, vol: number, pT: number, pE: number): SessionDay =>
   progressionRun(PROGRESSION, dow, vol, pT, pE);
 
+/** Threshold is a weekly budget. A threshold-first opening with two quality
+ *  days shares it rather than assigning the full allowance to both days. */
+function thresholdShare10K(req: QualityRequest): number {
+  const bothThreshold =
+    req.effQ === 2 &&
+    !req.isTaper1 &&
+    phase10K(req.qualW, req.qualWeeks) === 'threshold' &&
+    req.qualW % 2 === 1 &&
+    (req.readiness === 'experienced' || req.readiness === 'developing');
+  return bothThreshold ? (req.slotRole === 'q1' ? 0.6 : 0.4) : 1;
+}
+
 function chooseQuality10K(req: QualityRequest): SessionDay {
   const { qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, isTaper1, dow, racePace } = req;
   const phase = phase10K(qualW, qualWeeks);
-  // Threshold is a weekly budget. A threshold-first opening with two quality
-  // days shares it rather than assigning the full allowance to both days.
-  const bothThreshold =
-    effQ === 2 &&
-    !isTaper1 &&
-    phase === 'threshold' &&
-    qualW % 2 === 1 &&
-    (req.readiness === 'experienced' || req.readiness === 'developing');
-  const thresholdShare = bothThreshold ? (slotRole === 'q1' ? 0.6 : 0.4) : 1;
+  const thresholdShare = thresholdShare10K(req);
 
   if (isTaper1) {
     const [twu, tcd] = wuCdForVolume(vol);
@@ -190,7 +194,11 @@ function chooseQuality10K(req: QualityRequest): SessionDay {
 }
 
 function buildQuality10K(req: QualityRequest): SessionDay {
-  return applyQualityDose(introductoryQuality(req) ?? chooseQuality10K(req), req);
+  return applyQualityDose(introductoryQuality(req) ?? chooseQuality10K(req), {
+    ...req,
+    budgets: H,
+    workShare: thresholdShare10K(req)
+  });
 }
 
 export const PROFILE_10K: DistanceProfile = {

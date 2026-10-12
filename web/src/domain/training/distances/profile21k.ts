@@ -183,18 +183,25 @@ function q1Family(
   return qualW % 2 === 1 ? 'RP' : 'T'; // 'long'
 }
 
+/** Kad q1 ide na prag (T), deli nedeljni budžet praga sa q2: 60% / 40%. */
+function thresholdShare21K(req: QualityRequest): number {
+  const phase = phase21K(req.qualW, req.qualWeeks);
+  const strat = paceStrategy21K(req.racePace);
+  return req.effQ === 2 &&
+    !req.replacesSecondQuality &&
+    q1Family(phase, strat, req.qualW, req.readiness) === 'T'
+    ? req.slotRole === 'q1'
+      ? 0.6
+      : 0.4
+    : 1;
+}
+
 function chooseQuality21K(req: QualityRequest): SessionDay {
   const { qualW, qualWeeks, slotRole, effQ, vol, pI, pT, pE, pR, isTaper1, dow, racePace, ctx } =
     req;
   const phase = phase21K(qualW, qualWeeks);
   const strat = paceStrategy21K(racePace);
-  /* Kad q1 ide na prag (T), deli nedeljni budžet praga sa q2: 60% / 40%. */
-  const share =
-    effQ === 2 && !req.replacesSecondQuality && q1Family(phase, strat, qualW, req.readiness) === 'T'
-      ? slotRole === 'q1'
-        ? 0.6
-        : 0.4
-      : 1;
+  const share = thresholdShare21K(req);
 
   if (isTaper1) {
     const [twu, tcd] = wuCdForVolume(vol);
@@ -279,7 +286,7 @@ function buildQuality21K(req: QualityRequest): SessionDay {
   const day = introductoryQuality(req) ?? chooseQuality21K(req);
   // This is a dated race rehearsal, not a normal interchangeable quality dose.
   if (day.session.kind === 'Kontrolna trka') return day;
-  return applyQualityDose(day, req);
+  return applyQualityDose(day, { ...req, budgets: H, workShare: thresholdShare21K(req) });
 }
 
 /** Brz završetak dugog trčanja na tempu trke u specifičnoj fazi (češće za strategiju „dugo"). */

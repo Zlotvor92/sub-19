@@ -33,6 +33,7 @@ import { predRow, qsFor } from '../prediction';
 import { sessInt } from '../sessions/build';
 import { sessDesc, sessKm, sessQKm } from '../sessions/calc';
 import { constrainWeek } from '../sessions/constraints';
+import { finishLoadSec, sessionLoadSec, weeklyFastEnvelopeSec } from './weeklyLoad';
 import { raceTimeForVdot } from '../vdot/racePrediction';
 import type {
   Day,
@@ -855,11 +856,13 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         pE,
         pR,
         isTaper1,
+        ...(isTaper2 ? { taperTransition: true } : {}),
         dow,
         racePace,
         ctx: { weeks, w, taperW },
         readiness: athlete.qualityReadiness,
-        qualityIntensity: inp.intensity
+        qualityIntensity: inp.intensity,
+        consistentWeeks: athlete.consistentWeeks
       });
       for (let dow = 1; dow <= 7; dow++) {
         const role = slots[dow];
@@ -906,6 +909,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           independentLR
         );
       let alloc = allocFor();
+      let replacedSecond = false;
       const hasTrial = sessionList().some((d) => d.session.kind === 'Kontrolna trka');
       const finishCandidate =
         !isTaper1 &&
@@ -932,13 +936,67 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           const first = Object.keys(sessions)
             .map(Number)
             .find((dow) => slots[dow] === 'q1');
-          if (first != null && finishCandidate)
+          if (first != null && finishCandidate) {
+            replacedSecond = true;
             sessions[first] = prof.buildQuality({
               ...requestFor(first, 'q1'),
               replacesSecondQuality: true
             });
+          }
           alloc = allocFor();
         }
+      }
+
+      /* NEDELJNI OBUHVAT BRZOG RADA: brz završetak dugog trčanja i zahtevna dužina ulaze u
+         isti nedeljni zbir kao kvalitetni dani. Višak se skida prvo sa opšteg (T/I/R) rada,
+         pa tek onda sa specifičnog; sesija koja ne može da zadrži smislenu dozu postaje lak
+         dan. Taper, deload i kontrolna trka imaju svoja pravila i ostaju nepromenjeni. */
+      if (!isTaper1 && !isTaper2 && !isDeload && !hasTrial) {
+        const envelope = weeklyFastEnvelopeSec({
+          readiness: athlete.qualityReadiness,
+          // Same realistic week as session sizing, not the unconstrained target.
+          volKm: volQ,
+          easyPaceSec: pE,
+          longRunKm: alloc.lr,
+          longRunPaceSec: pLR
+        });
+        const finishSec = finishLoadSec(finishCandidate || null);
+        const specific = (d: SessionDay): number =>
+          d.session.zone === 'RP' || d.session.zone === 'M' ? 1 : 0;
+        const order = Object.keys(sessions)
+          .map(Number)
+          .sort(
+            (x, y) =>
+              specific(sessions[x] as SessionDay) - specific(sessions[y] as SessionDay) ||
+              sessionLoadSec(sessions[y] as SessionDay) - sessionLoadSec(sessions[x] as SessionDay)
+          );
+        let trimmed = false;
+        for (const dow of order) {
+          const excess = finishSec + sum(sessionList().map(sessionLoadSec)) - envelope;
+          if (excess <= 1) break;
+          const own = sessions[dow] as SessionDay;
+          const weight = own.session.zone === 'M' ? 0.5 : 1;
+          const allowedLoad = sessionLoadSec(own) - excess;
+          const role = slots[dow] === 'q2' ? 'q2' : 'q1';
+          const rebuilt =
+            allowedLoad > 0
+              ? prof.buildQuality({
+                  ...requestFor(dow, role),
+                  ...(role === 'q1' && replacedSecond ? { replacesSecondQuality: true } : {}),
+                  maxWorkSec: allowedLoad / weight
+                })
+              : null;
+          if (
+            !rebuilt ||
+            sessionLoadSec(rebuilt) > allowedLoad + 1 ||
+            sessQKm(rebuilt.session) < 0.4
+          ) {
+            delete sessions[dow];
+            easyDowsCount++;
+          } else sessions[dow] = rebuilt;
+          trimmed = true;
+        }
+        if (trimmed) alloc = allocFor();
       }
 
       /* PRODUŽENO ZAGREVANJE/SMIRIVANJE kad nedelja podbacuje ciljni obim: raspodela se stvarno

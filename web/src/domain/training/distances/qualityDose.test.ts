@@ -129,13 +129,32 @@ describe('quality dose is independent of the weekly volume preference', () => {
   const intensities: readonly Intensity[] = ['kons', 'std', 'agr'];
 
   it('different dose choices change work while volume input and paces stay identical', () => {
+    // Developing keeps the legacy strictly ordered kons < std < agr dose.
     const days = intensities.map((qualityIntensity) =>
-      applyQualityDose(prototype(), request({ qualW: 8, qualityIntensity }))
+      applyQualityDose(
+        prototype(),
+        request({ readiness: 'developing', qualW: 8, qualityIntensity })
+      )
     );
     const work = days.map((d) => sessQKm(d.session));
     expect(work[0]).toBeLessThan(work[1]!);
     expect(work[1]).toBeLessThan(work[2]!);
-    expect(work[2]).toBeLessThanOrEqual((20 * 60) / 240);
+    expect(work[2]).toBeLessThanOrEqual((16 * 60) / 240);
+    // Experienced: std is the reference dose, so agr only skips the entry ramp (here the
+    // 15 min entry time cap and 800 m rounding bind all three) and equals std once the
+    // ramp is complete;
+    // neither exceeds the 8 % I ceiling.
+    const early = intensities.map((qualityIntensity) =>
+      sessQKm(applyQualityDose(prototype(), request({ qualW: 1, qualityIntensity })).session)
+    );
+    const late = intensities.map((qualityIntensity) =>
+      sessQKm(applyQualityDose(prototype(), request({ qualW: 8, qualityIntensity })).session)
+    );
+    expect(early[0]).toBeLessThanOrEqual(early[1]!);
+    expect(early[1]).toBeLessThanOrEqual(early[2]!);
+    expect(late[0]).toBeLessThan(late[1]!);
+    expect(late[1]).toBe(late[2]);
+    for (const km of [...early, ...late]) expect(km).toBeLessThanOrEqual(60 * 0.08);
     for (const d of days) {
       expect(d.session.paceSec).toBe(240);
       expect([d.session.wuKm, d.session.cdKm]).toEqual([2, 1.5]);

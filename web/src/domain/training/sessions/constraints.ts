@@ -9,8 +9,10 @@ const appendNote = (s: Session, note: string): void => {
   if (!s.notes?.split(' · ').includes(note)) s.notes = [s.notes, note].filter(Boolean).join(' · ');
 };
 
-/** Upper limits win over repetition minimums, including after volume/taper adjustments. */
-export function constrainSession(s: Session, weeklyKm: number, tempoMaxSec: number): boolean {
+/** Per-session work ceiling for the session's purpose: I ≤ 8% of the week (max 10 km),
+ * R ≤ 5% (max 8 km), T ≤ 10%, activation 5%, other race-specific work 20%. Shared by
+ * dosing and the final guard so both read the same limit. */
+export function zoneBudgetKm(s: Session, weeklyKm: number): number {
   const purpose = resolvePrescription(s);
   const zone = s.zone;
   const pct =
@@ -23,7 +25,13 @@ export function constrainSession(s: Session, weeklyKm: number, tempoMaxSec: numb
           : zone === 'T'
             ? 0.1
             : 0.2;
-  const budget = Math.min(weeklyKm * pct, zone === 'I' ? 10 : zone === 'R' ? 8 : Infinity);
+  return Math.min(weeklyKm * pct, zone === 'I' ? 10 : zone === 'R' ? 8 : Infinity);
+}
+
+/** Upper limits win over repetition minimums, including after volume/taper adjustments. */
+export function constrainSession(s: Session, weeklyKm: number, tempoMaxSec: number): boolean {
+  const budget = zoneBudgetKm(s, weeklyKm);
+  const zone = s.zone;
   if (s.type === 'int') {
     const originalQKm = (s.reps * s.repM) / 1000;
     // Volume trimming can make the chosen cruise format impossible. Preserve
