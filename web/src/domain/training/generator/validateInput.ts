@@ -6,6 +6,7 @@
 import { MAX_PLAUSIBLE_PACE_SEC_PER_KM, MIN_PLAUSIBLE_PACE_SEC_PER_KM } from '../constants/product';
 import type { PlanGenerationInput } from '../types';
 import { diffDays, parseIsoDate } from '../../date';
+import { validRunWalkLadder } from './runWalk';
 
 const INTENSITIES: readonly string[] = ['kons', 'std', 'agr'];
 
@@ -44,6 +45,8 @@ export function validateInput(inp: PlanGenerationInput): string | null {
     !['none', 'some', 'experienced'].includes(inp.qualityExperience)
   )
     return 'Nepoznato iskustvo sa kvalitetnim treningom.';
+  if (inp.runWalkLadder !== undefined && !validRunWalkLadder(inp.runWalkLadder))
+    return 'Lestvica trčanja/hoda mora imati 1–8 koraka, svaki od 1 do 4.';
   if (inp.pb.date !== undefined) {
     const result = parseIsoDate(inp.pb.date);
     const start = parseIsoDate(inp.startDate);

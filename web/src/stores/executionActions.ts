@@ -18,6 +18,12 @@ import {
 } from '../domain/plan/preparationDecision';
 import { graftFuturePlan, type ReplanContext } from '../domain/plan/future';
 import {
+  buildRunWalkAdjustment,
+  type RunWalkAdjustmentOptions
+} from '../domain/plan/runWalkAdjustment';
+import { hasRecentMeasuredForm, qualityEntryGate } from '../domain/training/qualityGate';
+import { assessRunWalkProgress } from '../domain/training/runWalkProgress';
+import {
   getPlanRevisions,
   recordPlanRevision,
   type PlanRevisionReason
@@ -84,6 +90,43 @@ export function planStateStamp(): string {
 
 export function executionModel(plan: ResolvedPlan, today: string) {
   return model(plan, today, replanContext(), useRecoveryStore.getState().vanPlana);
+}
+
+function recentPainMax(todayStr: string, days: number): number | null {
+  const today = parseIsoDate(todayStr);
+  if (!today) return null;
+  const from = addDays(today, -(days - 1));
+  const values = useRecoveryStore
+    .getState()
+    .knee.filter((record) => {
+      const date = parseIsoDate(record.date);
+      return date && date >= from && date <= today && Number.isFinite(record.pain);
+    })
+    .map((record) => record.pain);
+  return values.length ? Math.max(...values) : null;
+}
+
+/** Tolerancija run/walk koraka iz prijavljenog izvršenja; prazan dnevnik ostaje nepoznat. */
+export function runWalkModel(plan: ResolvedPlan, today: string) {
+  return assessRunWalkProgress({
+    plan,
+    log: useTrainingStore.getState().log,
+    today,
+    recentPainMax: recentPainMax(today, 14)
+  });
+}
+
+/** Kapija za zahtevniji rad kad plan nosi nepotvrđenu formu; `null` kad je plan ne traži. */
+export function qualityGateModel(plan: ResolvedPlan, today: string) {
+  const t = useTrainingStore.getState();
+  const policy = (t.genPlan?.meta as { formPolicy?: { basis?: string } } | null | undefined)
+    ?.formPolicy;
+  if (policy?.basis !== 'effort-first') return null;
+  return qualityEntryGate({
+    analysis: executionModel(plan, today).analysis,
+    recentPainMax: recentPainMax(today, 14),
+    formConfirmed: hasRecentMeasuredForm(today, { t3k: t.t3k, vdotLog: t.vdotLog })
+  });
 }
 
 /** Conservative gate: reported pain/fatigue or an unconfirmed data gap does not justify faster work. */
@@ -294,6 +337,32 @@ export function previewPreparationChoice(
     built.notes,
     { change: built.change }
   );
+}
+
+export function previewRunWalk(
+  plan: ResolvedPlan,
+  todayStr: string,
+  options: RunWalkAdjustmentOptions
+): PlanChangePreview {
+  const t = useTrainingStore.getState();
+  const today = parseIsoDate(todayStr);
+  if (!t.genPlan || !today)
+    return { ok: false, reason: 'Za prilagođavanje treba generisan plan i ispravan datum.' };
+  const assessment = runWalkModel(plan, today);
+  const { analysis } = executionModel(plan, today);
+  const built = buildRunWalkAdjustment(
+    t.genPlan,
+    today,
+    assessment,
+    { ...options, weeklyKm: options.weeklyKm ?? analysis.recentWeeklyKm ?? undefined },
+    replanContext()
+  );
+  if ('error' in built) return { ok: false, reason: built.error };
+  const conflicts = built.result.meta?.['futureChanges'] as { conflicts?: string[] } | undefined;
+  return preview(built.result, today, 'execution', built.summary, [
+    ...built.notes,
+    ...(conflicts?.conflicts ?? [])
+  ]);
 }
 
 export function previewRestore(revisionId: string, todayStr: string): PlanChangePreview {

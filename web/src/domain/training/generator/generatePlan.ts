@@ -57,7 +57,13 @@ import { assess } from './assess';
 import { buildDaySlots, dayPreferenceWarnings, pickStrengthDay } from './daySlots';
 import { weekFocus } from './focus';
 import { validateInput } from './validateInput';
-import { runWalkForWeek, runWalkText } from './runWalk';
+import { runWalkForWeek, runWalkText, validRunWalkLadder } from './runWalk';
+import {
+  EASY_EFFORT_NOTE,
+  QUALITY_ENTRY_NOTE,
+  formPolicyFor,
+  referenceQualityNote
+} from './formPolicy';
 import { fuelText } from '../sessions/longRun';
 import { peakVolume, rampStep } from './volume';
 import { assessAthlete, assessPreparation } from './athleteAssessment';
@@ -187,13 +193,26 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const trainedRecently = inp.trainedRecently !== false;
   const isBeginner = athlete.qualityReadiness === 'beginner';
   const isReturning = athlete.qualityReadiness === 'returning';
+  /* Ponavljanje/zadržavanje koraka: eksplicitna lestvica produžuje fazu, a bar jedna bazna nedelja ostaje iza nje. */
+  const rwLadder =
+    isBeginner && validRunWalkLadder(inp.runWalkLadder) ? inp.runWalkLadder : undefined;
   const wantedBase = isBeginner
-    ? prof.product.baseWeeksBeginner
+    ? Math.max(prof.product.baseWeeksBeginner, rwLadder ? rwLadder.length + 1 : 0)
     : isReturning
       ? Math.min(3, Math.max(1, Math.ceil(athlete.breakWeeks / 2)))
       : 0;
   const baseWeeks = wantedBase ? Math.max(0, Math.min(wantedBase, weeks - 1)) : 0;
-  const rwWeeks = isBeginner ? Math.min(RUN_WALK_WEEKS, baseWeeks) : 0;
+  const rwWeeks = isBeginner ? Math.min(rwLadder ? rwLadder.length : RUN_WALK_WEEKS, baseWeeks) : 0;
+  const rwFor = (w: number): RunWalk | null => runWalkForWeek(w <= rwWeeks ? w : 0, rwLadder);
+  /* Prva nedelja bez hodanja je probna: bez potvrde tolerancije nije automatski ishod faze. */
+  const transitionW = rwWeeks > 0 && rwWeeks < weeks - 1 ? rwWeeks + 1 : 0;
+  const lastRw = rwWeeks > 0 ? runWalkForWeek(rwWeeks, rwLadder) : null;
+  const transitionNote = lastRw
+    ? ` · Prelaz na neprekidno trčanje je probni: radi ga samo ako su poslednja run/walk trčanja bila razgovorna (napor do 5/10) i bez bola. Ako nisu, ponovi korak „${lastRw.label}" i prilagodi plan u kartici „Prema odrađenim treninzima"`
+    : '';
+  const formPolicy = formPolicyFor(athlete);
+  const effortFirst = formPolicy !== null;
+  const easyNote = effortFirst ? ` · ${EASY_EFFORT_NOTE}` : '';
   dayWarnings.push(...athlete.assumptions);
   if (isReturning)
     dayWarnings.push(
@@ -202,6 +221,14 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   if (athlete.speedConfidence === 'stale-result')
     dayWarnings.push(
       'Rezultat je stariji od 90 dana. Tempa su referenca tog rezultata; ona nisu potvrda sadašnje forme niti automatska procena gubitka brzine.'
+    );
+  if (formPolicy)
+    dayWarnings.push(
+      `${formPolicy.reason} Laki rad i kvalitet vode se naporom, a ritmovi su samo orijentir. Zahtevniji rad se uvodi tek kad: ${formPolicy.entryConditions.map((c, i) => `${i + 1}) ${c}`).join('; ')}. Vremenski cilj ostaje cilj i ne potvrđuje formu.`
+    );
+  if (rwWeeks > 0)
+    dayWarnings.push(
+      `Trčanje/hod traje ${rwWeeks} ${rwWeeks === 1 ? 'nedelju' : 'nedelje'}. Prelaz na neprekidno trčanje u ${transitionW}. nedelji nije automatska potvrda tolerancije: potvrdi je naporom do 5/10 i odsustvom bola, inače ponovi poslednji korak. Prazan dnevnik ne znači ni uspeh ni neuspeh.`
     );
 
   if (qCut) {
@@ -331,7 +358,21 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     raceName: prof.product.name,
     baseWeeks,
     raceDate: inp.raceDate,
-    goalSec: inp.goalSec || null
+    goalSec: inp.goalSec || null,
+    ...(formPolicy ? { formPolicy } : {}),
+    ...(rwWeeks > 0
+      ? {
+          runWalk: {
+            ladder: Array.from({ length: rwWeeks }, (_, i) => rwLadder?.[i] ?? i + 1),
+            transitionWeek: transitionW,
+            conditions: [
+              'sva run/walk trčanja poslednjeg koraka završena uz napor do 5/10',
+              'nema zapisa bola 3/10 ili jačeg uz ta trčanja',
+              'bar tri trčanja imaju upisan napor; prazan dnevnik ostaje nepoznat podatak'
+            ]
+          }
+        }
+      : {})
   };
   const plan: TrainingPlan = { weeks: [], pred: [], qs: {}, meta };
   const strengthDow = runDays <= 5 ? pickStrengthDay(slots) : null;
@@ -360,7 +401,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const refreshLongRun = (day: LongRunDay, w: number): void => {
     const pLR = paceForZone(a.vdot0, 'LR');
     if (day.mlr) {
-      day.desc = `${day.km} km srednje-dugo (Z2) @ ~${fmtClock(pLR)}/km — drugo duže trčanje u nedelji`;
+      day.desc = `${day.km} km srednje-dugo (Z2) @ ~${fmtClock(pLR)}/km — drugo duže trčanje u nedelji${easyNote}`;
       return;
     }
     if (day.finish) {
@@ -381,7 +422,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
       else delete day.finish;
     }
     const base = w <= baseWeeks;
-    day.desc = `${day.km} km ${base ? 'lako-dugo' : 'LR'} (Z2) @ ~${fmtClock(pLR)}/km — ${base ? 'bazna faza, bez kvaliteta' : 'najduže trčanje te nedelje'}${fuelText(day.km, pLR, H)}${day.finish ? ` · poslednjih ${day.finish.km} km @ ${fmtClock(day.finish.paceSec)}/km (${day.finish.zone === 'M' ? 'maratonski' : 'tempo trke'})` : ''}`;
+    day.desc = `${day.km} km ${base ? 'lako-dugo' : 'LR'} (Z2) @ ~${fmtClock(pLR)}/km — ${base ? 'bazna faza, bez kvaliteta' : 'najduže trčanje te nedelje'}${fuelText(day.km, pLR, H)}${day.finish ? ` · poslednjih ${day.finish.km} km @ ${fmtClock(day.finish.paceSec)}/km (${day.finish.zone === 'M' ? 'maratonski' : 'tempo trke'})` : ''}${easyNote}${w === transitionW && !day.finish ? transitionNote : ''}`;
   };
 
   /** Proveri sastavljenu nedelju posle rezanja obima; LR i sesije dele konačni imenilac. */
@@ -417,6 +458,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     for (const day of days) if (day.tag === 'lr') refreshLongRun(day, w);
   };
 
+  /* Uslovi za uvođenje zahtevnijeg rada stoje uz prvi kvalitetan trening plana, ne uz svaki. */
+  let entryNoteDone = false;
   for (let w = 1; w <= weeks; w++) {
     const vdotW = a.vdot0;
     /* Specifičnost tek u POSLEDNJIH 6 nedelja pred taper — APSOLUTAN broj, ne razlomak. */
@@ -745,7 +788,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           continue;
         }
         if (role === 'lr') {
-          const rwLR = runWalkForWeek(w <= rwWeeks ? w : 0);
+          const rwLR = rwFor(w);
           if (rwLR) {
             days.push(
               D.runWalk(
@@ -760,17 +803,17 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
               D.longRun(
                 dow,
                 alloc.lr,
-                `${alloc.lr} km lako-dugo (Z2) @ ~${fmtClock(pLR)}/km — bazna faza, bez kvaliteta${fuelText(alloc.lr, pLR, H)}`
+                `${alloc.lr} km lako-dugo (Z2) @ ~${fmtClock(pLR)}/km — bazna faza, bez kvaliteta${fuelText(alloc.lr, pLR, H)}${easyNote}${w === transitionW ? transitionNote : ''}`
               )
             );
           }
           continue;
         }
-        if (role === 'mlr' && (alloc.mlr ?? 0) > 0 && !runWalkForWeek(w <= rwWeeks ? w : 0)) {
+        if (role === 'mlr' && (alloc.mlr ?? 0) > 0 && !rwFor(w)) {
           const m = D.longRun(
             dow,
             alloc.mlr as number,
-            `${alloc.mlr} km srednje-dugo (Z2) @ ~${fmtClock(pLR)}/km — drugo duže trčanje u nedelji`
+            `${alloc.mlr} km srednje-dugo (Z2) @ ~${fmtClock(pLR)}/km — drugo duže trčanje u nedelji${easyNote}`
           );
           m.mlr = true;
           days.push(m);
@@ -779,14 +822,23 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         /* strides na svakom drugom lakom danu tokom baze (Daniels: strides kroz sve faze) */
         let km = alloc.easies[ei] != null ? (alloc.easies[ei] as number) : 4;
         km = capAfterLongRun(dow, km);
-        const rw = runWalkForWeek(w <= rwWeeks ? w : 0);
+        const rw = rwFor(w);
         if (rw) {
           /* Početnik: lagani dan je run/walk; strides se NE dodaju. */
           days.push(D.runWalk(dow, km, `${km} km — ${runWalkText(rw)}`, rw));
         } else {
+          /* Neproverena forma i probni prelaz: bez ubrzanja dok se ne potvrdi da lagan rad prolazi. */
           const strides =
-            ei % 2 === 0 ? ' + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)' : '';
-          days.push(D.easy(dow, km, `${km} km lako (Z2) @ ~${fmtClock(pE)}/km${strides}`));
+            ei % 2 === 0 && !effortFirst && w !== transitionW
+              ? ' + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)'
+              : '';
+          days.push(
+            D.easy(
+              dow,
+              km,
+              `${km} km lako (Z2) @ ~${fmtClock(pE)}/km${strides}${easyNote}${w === transitionW ? transitionNote : ''}`
+            )
+          );
         }
         ei++;
       }
@@ -851,6 +903,23 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         }
       }
       return km;
+    }
+
+    /** Ritam iz neproverene reference: napor vodi, a uslovi za zahtevniji rad stoje uz prvi kvalitet. */
+    function markReferencePace(day: SessionDay): SessionDay {
+      if (!effortFirst) return day;
+      const s = day.session;
+      s.paceBasis = 'reference';
+      s.notes = [
+        s.notes,
+        s.notes?.includes(referenceQualityNote(s)) ? '' : referenceQualityNote(s),
+        entryNoteDone ? '' : QUALITY_ENTRY_NOTE
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      entryNoteDone = true;
+      day.desc = sessDesc(s);
+      return day;
     }
 
     /* -------------------------------------------------------- kvalitetna nedelja */
@@ -925,11 +994,11 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
               .filter((day): day is SessionDay => !!day.session)
               .at(-1);
             const reduced = previous ? reducedQualityForDeload(previous, dow) : null;
-            if (reduced) sessions[dow] = reduced;
+            if (reduced) sessions[dow] = markReferencePace(reduced);
           }
           continue;
         }
-        sessions[dow] = prof.buildQuality(requestFor(dow, role));
+        sessions[dow] = markReferencePace(prof.buildQuality(requestFor(dow, role)));
       }
       const sessionList = (): SessionDay[] => Object.values(sessions);
       /* MLR se broji među „lagane" dane jer se hrani iz istog ostatka. */
@@ -999,11 +1068,13 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
             .find((dow) => slots[dow] === 'q1');
           if (first != null && (finishCandidate || singleQuality)) {
             replacedSecond = true;
-            sessions[first] = prof.buildQuality({
-              ...requestFor(first, 'q1'),
-              replacesSecondQuality: true,
-              ...(finishCandidate ? { lrFinish: true } : {})
-            });
+            sessions[first] = markReferencePace(
+              prof.buildQuality({
+                ...requestFor(first, 'q1'),
+                replacesSecondQuality: true,
+                ...(finishCandidate ? { lrFinish: true } : {})
+              })
+            );
           }
           alloc = allocFor();
         }
@@ -1142,7 +1213,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           continue;
         }
         if (role === 'lr') {
-          const rwL = runWalkForWeek(w <= rwWeeks ? w : 0);
+          const rwL = rwFor(w);
           if (rwL) {
             /* Dugo trčanje MORA ostati run/walk dok je čovek na lestvici. */
             days.push(
@@ -1176,7 +1247,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
             const longDay = D.longRun(
               dow,
               alloc.lr,
-              `${alloc.lr} km LR (Z2) @ ~${fmtClock(pLR)}/km — najduže trčanje te nedelje${fuelText(alloc.lr, pLR, H)}${finish ? ` · poslednjih ${finish.km} km @ ${fmtClock(finish.paceSec)}/km (${finish.zone === 'M' ? 'maratonski' : 'tempo trke'})` : ''}`
+              `${alloc.lr} km LR (Z2) @ ~${fmtClock(pLR)}/km — najduže trčanje te nedelje${fuelText(alloc.lr, pLR, H)}${finish ? ` · poslednjih ${finish.km} km @ ${fmtClock(finish.paceSec)}/km (${finish.zone === 'M' ? 'maratonski' : 'tempo trke'})` : ''}${easyNote}${w === transitionW && !finish ? transitionNote : ''}`
             );
             if (finish) longDay.finish = finish;
             days.push(longDay);
@@ -1188,7 +1259,7 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
           const m = D.longRun(
             dow,
             alloc.mlr as number,
-            `${alloc.mlr} km srednje-dugo (Z2) @ ~${fmtClock(pLR)}/km — drugo duže trčanje u nedelji, gradi izdržljivost bez umora dugog trčanja`
+            `${alloc.mlr} km srednje-dugo (Z2) @ ~${fmtClock(pLR)}/km — drugo duže trčanje u nedelji, gradi izdržljivost bez umora dugog trčanja${easyNote}`
           );
           m.mlr = true;
           days.push(m);
@@ -1203,19 +1274,26 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
         let km = alloc.easies[ei] != null ? (alloc.easies[ei] as number) : 4;
         km = capAfterLongRun(dow, km);
         /* Strides na prvom lakom danu SVAKE kval. nedelje; izostaju u taper1; u deloadu kraći set. */
-        const rwQ = runWalkForWeek(w <= rwWeeks ? w : 0);
+        const rwQ = rwFor(w);
         if (rwQ) {
           /* Početnik i u kvalitetnoj fazi: LAGANI dani ostaju run/walk dok lestvica ne dođe do neprekidnog. */
           days.push(D.runWalk(dow, km, `${km} km — ${runWalkText(rwQ)}`, rwQ));
         } else {
-          const strides = isTaper1
-            ? ''
-            : ei === 0
-              ? isDeload
-                ? ' + 4×15 s ubrzanja (lagani ubrzani koraci)'
-                : ' + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)'
-              : '';
-          days.push(D.easy(dow, km, `${km} km lako (Z2) @ ~${fmtClock(pE)}/km${strides}`));
+          const strides =
+            isTaper1 || w === transitionW
+              ? ''
+              : ei === 0
+                ? isDeload
+                  ? ' + 4×15 s ubrzanja (lagani ubrzani koraci)'
+                  : ' + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)'
+                : '';
+          days.push(
+            D.easy(
+              dow,
+              km,
+              `${km} km lako (Z2) @ ~${fmtClock(pE)}/km${strides}${easyNote}${w === transitionW ? transitionNote : ''}`
+            )
+          );
         }
         ei++;
       }

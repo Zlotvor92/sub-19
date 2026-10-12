@@ -192,3 +192,14 @@ Prescriptions now resolve explicit T/I/R/RP/M/activation intent at construction,
 ## Quality dose by experience, continuity, phase and weekly load (2026-10-12)
 
 Experienced runners (confirmed quality experience + ≥8 consistent weeks) get a separate dose policy: repetition sessions in T/I/R approach the profile's own nominal zone budget (never above the Daniels per-session limits; 60/40 share kept), ramping 85–90 % → 100 % over six quality weeks, with nearest-repetition rounding inside the ceiling; continuous, fartlek, pyramid, RP and M work keep the builder amount as reference. A weekly fast-work envelope (experienced only; 13 % of weekly running time, M counted half, −10 % with a 90+ min LR) counts LR fast finishes. Both taper weeks and the race week keep the previous dose. Beginner, returning and developing plans are byte-identical to `38ecc08`. Generator fingerprint and seeded differential are unchanged because their inputs carry no `qualityExperience`; a separate 360-scenario experienced grid covers the new policy. Rationale, sources, internal heuristics and U03/U05 before/after: `docs/qa/quality-dose/REPORT.md`.
+
+## Generator: run/walk prelaz i nepouzdana forma (2026-10-12)
+
+Baza: `f8cb2081ed4ba223fe7efe14a621144beb9bce0d` (zaključani QA commit, već sadrži popravke faza 1–3). Dokazi: [GENERATOR_RUNWALK_FORM_CHECKPOINT.md](GENERATOR_RUNWALK_FORM_CHECKPOINT.md), `qa/generator-runwalk-form/`.
+
+| Staro ponašanje | Problem | Novo ponašanje | Provera |
+| --- | --- | --- | --- |
+| Posle 4 nedelje run/walk lestvice početnik automatski prelazi na neprekidno trčanje (U01, W5) | Tolerancija nije potvrđena; nema načina da se faza ponovi ili zadrži | Prva neprekidna nedelja je probna, bez ubrzanja, sa uslovom i rezervom; `runWalkLadder` ulaz i `buildRunWalkAdjustment` zadržavaju/vraćaju/ponavljaju fazu; `assessRunWalkProgress` odlučuje iz napora (`rpe`), bola (`knee`) i preskočenih; prazan dnevnik je „nepoznato" | `runWalkAndForm.regression`, `runWalkProgress`, `runWalkAdjustment` |
+| Povratnik/star PB (U06) dobija precizne ritmove i ubrzanja kao potvrđenu formu | Istorijska referenca se predstavlja kao spremnost | `meta.formPolicy` (`effort-first`) za `returning` i `stale-result`: laki rad ima napor 3–4/10 i ritam kao gornju granicu; kvalitet nosi `paceBasis: 'reference'`, napor i uslove; bez ubrzanja u bazi; `qualityEntryGate` proverava uslove; merenje (`refreshSessionPace`) uklanja napomenu | `runWalkAndForm.regression`, `qualityGate`, `referenceNote`, `ExecutionAdjustment` |
+
+Fixture promene (namerne, samo beginner scenariji): `otisak-generatora.json` 1.152/2.304 hash-eva (nedeljni km i broj kvaliteta nepromenjeni, 0 razlika u `pregled`), `generator-differential.json`, `d6-warnings.json`, `d6-replan.json` (reentry plan je početnički). Hash-evi bez početnika su nepromenjeni.
