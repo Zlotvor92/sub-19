@@ -81,6 +81,11 @@ export function PlanOverview() {
       <CycleRail model={cycle} daysToRace={daysToRace} />
       {preparation ? (
         <Section title="Osnova pripreme" id="pl-preparation">
+          {preparation.mode ? (
+            <p className="prop-m">
+              <b>{preparation.mode}</b>
+            </p>
+          ) : null}
           <p>
             <b>{preparation.label}</b>
           </p>
@@ -91,6 +96,12 @@ export function PlanOverview() {
           {preparation.reasons.map((reason) => (
             <p key={reason}>{reason}</p>
           ))}
+          {!preparation.fullPreparation ? (
+            <p className="note-src">
+              Pomeranje trke, kraću distancu ili povratni režim sa uslovima nastavka pregledaj u
+              Prilagodi plan. Datum i cilj menjaju se samo kada primeniš prikazan predlog.
+            </p>
+          ) : null}
           <p className="note-src">
             Procena uzima u obzir prijavljenu bazu i stvarno sastavljen plan. Ona ne potvrđuje da će
             priprema biti odrađena niti garantuje završetak ili cilj.

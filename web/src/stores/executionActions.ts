@@ -3,9 +3,19 @@ import { addDays, parseIsoDate } from '../domain/date';
 import { resolvePlan, type ResolvedPlan } from '../domain/plan';
 import {
   buildExecutionAdjustment,
+  executionBasis,
   executionModel as model,
   type ExecutionAdjustmentOptions
 } from '../domain/plan/executionAdjustment';
+import {
+  basisFromPlan,
+  buildPreparationChoice,
+  isLimitedLongPreparation,
+  preparationDecision,
+  type DecisionPoint,
+  type PreparationChoice,
+  type PreparationDecision
+} from '../domain/plan/preparationDecision';
 import { graftFuturePlan, type ReplanContext } from '../domain/plan/future';
 import {
   getPlanRevisions,
@@ -24,8 +34,12 @@ export type PlanChangePreview =
       token: string;
       day: string;
       result: GenPlanState;
-      reason: 'execution' | 'restore';
+      reason: PreviewReason;
       summary: string;
+      /** Options when the reviewed result is not a full preparation. */
+      decision?: PreparationDecision;
+      /** Explicit race date / distance / goal change of a preparation choice. */
+      change?: { from: DecisionPoint; to: DecisionPoint };
       changes: Array<{
         week: number;
         beforeKm: number;
@@ -38,7 +52,8 @@ export type PlanChangePreview =
       }>;
       notes: string[];
     }
-  | { ok: false; reason: string };
+  | { ok: false; reason: string; decision?: PreparationDecision };
+type PreviewReason = Extract<PlanRevisionReason, 'execution' | 'restore' | 'goal'>;
 
 export function replanContext(): ReplanContext & {
   alts: Record<string, AltRecord>;
@@ -169,9 +184,10 @@ export function planPreviewChanges(
 function preview(
   result: GenPlanState,
   today: string,
-  reason: 'execution' | 'restore',
+  reason: PreviewReason,
   summary: string,
-  notes: string[]
+  notes: string[],
+  extra: Pick<SuccessfulPreview, 'decision' | 'change'> = {}
 ): SuccessfulPreview {
   const changes = planPreviewChanges(result, today);
   const value: SuccessfulPreview = {
@@ -182,7 +198,8 @@ function preview(
     reason,
     summary,
     changes,
-    notes: [...notes]
+    notes: [...notes],
+    ...extra
   };
   previews.set(value, {
     stamp: planStateStamp(),
@@ -205,12 +222,78 @@ export function previewExecution(
     return { ok: false, reason: 'Za prilagođavanje treba generisan plan i ispravan datum.' };
   const { analysis } = executionModel(plan, today);
   const built = buildExecutionAdjustment(t.genPlan, today, analysis, options, replanContext());
-  if ('error' in built) return { ok: false, reason: built.error };
+  if ('error' in built)
+    return {
+      ok: false,
+      reason: built.error,
+      ...(built.decision ? { decision: built.decision } : {})
+    };
   const conflicts = built.result.meta?.['futureChanges'] as { conflicts?: string[] } | undefined;
-  return preview(built.result, today, 'execution', built.summary, [
-    ...built.notes,
-    ...(conflicts?.conflicts ?? [])
-  ]);
+  return preview(
+    built.result,
+    today,
+    'execution',
+    built.summary,
+    [...built.notes, ...(conflicts?.conflicts ?? [])],
+    built.decision ? { decision: built.decision } : {}
+  );
+}
+
+/** Options for the stored plan when it is already a limited long-distance preparation. */
+export function storedPreparationDecision(todayStr: string): PreparationDecision | null {
+  const t = useTrainingStore.getState();
+  const today = parseIsoDate(todayStr);
+  const baseMode =
+    (t.genPlan?.meta?.['cycleDecision'] as { kind?: string } | undefined)?.kind === 'base';
+  if (!t.genPlan?.meta || !today || !(baseMode || isLimitedLongPreparation(t.genPlan.meta)))
+    return null;
+  const race = parseIsoDate(t.genPlan.meta.raceDate);
+  if (!race || race <= today) return null;
+  const basis = basisFromPlan(t.genPlan, today);
+  if (!basis) return null;
+  const decision = preparationDecision(
+    t.genPlan,
+    today,
+    basis,
+    replanContext(),
+    'limited',
+    t.genPlan.meta.preparation
+  );
+  // Already in base mode: continuation means a later date or a shorter distance.
+  return baseMode
+    ? { ...decision, options: decision.options.filter((o) => o.choice.kind !== 'base') }
+    : decision;
+}
+
+/**
+ * Preview one preparation choice. With execution options the same confirmed break/base is used;
+ * without them the stored plan's own facts are reused. Nothing is written until commit.
+ */
+export function previewPreparationChoice(
+  plan: ResolvedPlan,
+  todayStr: string,
+  options: ExecutionAdjustmentOptions | null,
+  choice: PreparationChoice
+): PlanChangePreview {
+  const t = useTrainingStore.getState();
+  const today = parseIsoDate(todayStr);
+  if (!t.genPlan || !today)
+    return { ok: false, reason: 'Za odluku o pripremi treba generisan plan i ispravan datum.' };
+  const basis = options
+    ? executionBasis(t.genPlan, today, executionModel(plan, today).analysis, options)
+    : basisFromPlan(t.genPlan, today);
+  if (!basis) return { ok: false, reason: 'Plan nema sačuvane ulazne podatke.' };
+  if ('error' in basis) return { ok: false, reason: basis.error };
+  const built = buildPreparationChoice(t.genPlan, today, basis, choice, replanContext());
+  if ('error' in built) return { ok: false, reason: built.error };
+  return preview(
+    built.result,
+    today,
+    choice.kind === 'base' ? 'execution' : 'goal',
+    built.summary,
+    built.notes,
+    { change: built.change }
+  );
 }
 
 export function previewRestore(revisionId: string, todayStr: string): PlanChangePreview {

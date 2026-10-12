@@ -14,13 +14,17 @@ const actions = vi.hoisted(() => ({
   model: vi.fn(),
   preview: vi.fn(),
   restore: vi.fn(),
-  commit: vi.fn()
+  commit: vi.fn(),
+  choice: vi.fn(),
+  stored: vi.fn()
 }));
 vi.mock('../../stores/executionActions', () => ({
   executionModel: actions.model,
   previewExecution: actions.preview,
   previewRestore: actions.restore,
-  commitPlanChange: actions.commit
+  commitPlanChange: actions.commit,
+  previewPreparationChoice: actions.choice,
+  storedPreparationDecision: actions.stored
 }));
 
 const today = '2026-01-14';
@@ -59,6 +63,7 @@ beforeEach(() => {
   actions.preview.mockReturnValue(ready());
   actions.restore.mockReturnValue({ ...ready(), reason: 'restore' });
   actions.commit.mockReturnValue({ ok: true });
+  actions.stored.mockReturnValue(null);
 });
 
 describe('ExecutionAdjustment', () => {
@@ -175,6 +180,88 @@ describe('ExecutionAdjustment', () => {
       'Nedelja 2: kvalitetan rad 25,0 → 0,0 min; zahtevni treninzi 2 → 0.'
     );
     expect(screen.getByText(/Preostali km i opterećenje/)).toHaveTextContent('dane posle danas');
+    expect(actions.commit).not.toHaveBeenCalled();
+  });
+
+  it('odbijen pun ciklus nudi opcije; izbor prvo prikazuje promenu datuma i cilja, pa čeka primenu', async () => {
+    const user = userEvent.setup();
+    const option = (id: string, kind: 'extend' | 'base', title: string) => ({
+      id,
+      choice: kind === 'extend' ? { kind, raceDate: '2026-05-10' } : { kind },
+      title,
+      detail: 'Detalj opcije.',
+      raceDate: kind === 'extend' ? '2026-05-10' : '2026-04-12',
+      raceDistM: 10000,
+      goalSec: kind === 'extend' ? 2700 : null,
+      coverage: kind === 'extend' ? 'full' : 'distance',
+      peakLongRunKm: 14,
+      peakWeeklyKm: 44
+    });
+    actions.preview.mockReturnValue({
+      ok: false,
+      reason: 'Preostalo vreme ne podržava novi pun ciklus.',
+      decision: {
+        status: 'rejected',
+        fullPreparation: false,
+        statement: 'Pun ciklus za 10K nije moguć.',
+        conditions: ['Povratni blok: 3 nedelje lakog trčanja.'],
+        unavailable: [],
+        options: [
+          option('extend', 'extend', 'Pomeri trku na 10.05.2026.'),
+          option('base', 'base', 'Povratni/bazni režim do istog datuma, bez vremenskog cilja')
+        ]
+      }
+    });
+    actions.choice.mockReturnValue({
+      ...ready(),
+      reason: 'goal',
+      summary: 'Trka pomerena: 12.04.2026. → 10.05.2026.',
+      change: {
+        from: { raceDate: '2026-04-12', raceDistM: 10000, goalSec: 2700 },
+        to: { raceDate: '2026-05-10', raceDistM: 10000, goalSec: 2700 }
+      }
+    });
+    renderAdjustment();
+    await user.type(screen.getByLabelText('Trenutna odrađena baza (km/ned)'), '30');
+    await user.click(screen.getByRole('button', { name: 'Pregledaj predlog' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('ne podržava novi pun ciklus');
+    expect(screen.getByText('Pun ciklus za 10K nije moguć.')).toBeInTheDocument();
+    expect(screen.getByText(/ispunjava pravila pune pripreme/)).toBeInTheDocument();
+    expect(screen.getByText(/dužina pokrivena, vremenski cilj nije podržan/)).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: 'Pregledaj opciju: Pomeri trku na 10.05.2026.' })
+    );
+    expect(actions.choice).toHaveBeenCalledWith(
+      plan,
+      today,
+      { weeklyKm: 30 },
+      { kind: 'extend', raceDate: '2026-05-10' }
+    );
+    const change = screen.getByLabelText('Promena trke i cilja');
+    expect(change).toHaveTextContent('12.04.2026. · 10K · cilj 45:00');
+    expect(change).toHaveTextContent('10.05.2026. · 10K · cilj 45:00');
+    // Options remain visible beside the reviewed choice; nothing is written before apply.
+    expect(screen.getByText('Pun ciklus za 10K nije moguć.')).toBeInTheDocument();
+    expect(actions.commit).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Primeni prikazanu promenu' }));
+    expect(actions.commit).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Pun ciklus za 10K nije moguć.')).toBeNull();
+  });
+
+  it('sačuvan ograničen plan prikazuje opcije bez novog unosa izvršenja', async () => {
+    const user = userEvent.setup();
+    actions.stored.mockReturnValue({
+      status: 'limited',
+      fullPreparation: false,
+      statement: 'Ovo nije puna priprema za maraton.',
+      conditions: [],
+      unavailable: ['Pomeranje trke do 52 nedelje kasnije ne daje punu pripremu.'],
+      options: []
+    });
+    renderAdjustment();
+    expect(screen.getByText('Ovo nije puna priprema za maraton.')).toBeInTheDocument();
+    expect(screen.getByText(/do 52 nedelje kasnije/)).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Trenutna odrađena baza (km/ned)'), '30');
     expect(actions.commit).not.toHaveBeenCalled();
   });
 });

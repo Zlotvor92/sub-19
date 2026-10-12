@@ -181,10 +181,57 @@ test.describe('locked inputs: current purpose- and dose-aware wizard and persist
         expect(state().genPlan).toEqual(expected);
         expect(revisions()).toHaveLength(0);
         await screenshot(page, info, `${profile.id}-expected-short-cycle-block`);
-        await page.reload();
-        await openAdjust(page);
+        // The rejection carries a concrete next step: later date, shorter distance or base mode.
+        const decision = page.locator('#plan-decision');
+        await expect(decision).toContainText('nije preporuka za povratak');
+        await expect(decision.getByRole('button', { name: /^Pregledaj opciju:/ })).toHaveCount(3);
+        await expect(
+          decision.getByRole('button', { name: /^Pregledaj opciju: Pomeri trku na / })
+        ).toBeVisible();
+        await expect(
+          decision.getByRole('button', {
+            name: 'Pregledaj opciju: Kraća distanca: 10K istog datuma'
+          })
+        ).toBeVisible();
+        await decision
+          .getByRole('button', {
+            name: 'Pregledaj opciju: Povratni/bazni režim do istog datuma, bez vremenskog cilja'
+          })
+          .click();
+        await expect(preview.getByLabel('Promena trke i cilja')).toContainText(
+          '17.01.2027. · Polumaraton · bez vremenskog cilja'
+        );
         expect(state().genPlan).toEqual(expected);
         expect(revisions()).toHaveLength(0);
+        await screenshot(page, info, `${profile.id}-base-mode-preview`);
+        await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
+        await expect.poll(() => revisions().length).toBe(1);
+        expect(revisions()[0]).toMatchObject({
+          reason: 'execution',
+          summary: 'Povratni/bazni režim do 17.01.2027., bez vremenskog cilja'
+        });
+        expect(state().genPlan?.meta?.raceDate).toBe('2027-01-17');
+        expect(state().genPlan?.meta?.goalSec).toBeNull();
+        const base = copy(state().genPlan!);
+        await attachJson(info, `${profile.id}-base-mode-plan`, base);
+        await page.reload();
+        await openAdjust(page);
+        expect(state().genPlan).toEqual(base);
+        // Continuation from base mode is offered from the stored plan.
+        await expect(
+          page.locator('#plan-decision').getByRole('button', { name: /^Pregledaj opciju: Pomeri/ })
+        ).toBeVisible();
+        await page.getByRole('button', { name: /^Pregledaj vraćanje:/ }).click();
+        await page
+          .locator('#plan-change-preview')
+          .getByRole('button', { name: 'Primeni prikazanu promenu' })
+          .click();
+        await expect.poll(() => revisions().length).toBe(2);
+        const restored = state().genPlan!;
+        expect(restored.meta?.goalSec).toBe(expected.meta?.goalSec);
+        const kmByDay = (plan: GenPlanState) =>
+          plan.weeks.flatMap((w) => w.days.map((d) => [d.id, d.tag ?? null, d.km ?? null]));
+        expect(kmByDay(restored)).toEqual(kmByDay(expected));
         await attachJson(info, `${profile.id}-blocked-persisted-state`, state());
         expect(errors).toEqual([]);
         return;
@@ -196,6 +243,16 @@ test.describe('locked inputs: current purpose- and dose-aware wizard and persist
       await expect(preview.getByText(/kvalitetan rad .*→ 0,0 min/).first()).toBeVisible();
       expect(state().genPlan).toEqual(expected);
       expect(revisions()).toHaveLength(0);
+      if (profile.input.raceDistM === 42195) {
+        // A limited marathon return is labelled as a return plan, with explicit alternatives.
+        await expect(preview).toContainText('nije puna priprema za maraton');
+        await expect(page.locator('#plan-decision')).toContainText(
+          'Ovo nije puna priprema za maraton'
+        );
+        await expect(
+          page.locator('#plan-decision').getByRole('button', { name: /^Pregledaj opciju:/ })
+        ).not.toHaveCount(0);
+      }
       await screenshot(page, info, `${profile.id}-confirmed-return-preview`);
       await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
       await expect.poll(() => revisions().length).toBe(1);

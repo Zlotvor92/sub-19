@@ -1,18 +1,31 @@
 import { useMemo, useState } from 'react';
 import { Section } from '../../components/ui/primitives';
-import { fmtDayMonth } from '../../domain/format';
+import { fmtDayMonth, fmtDayMonthYear } from '../../domain/format';
 import type { ResolvedPlan } from '../../domain/plan';
 import { getPlanRevisions } from '../../domain/plan/versions';
+import {
+  describePoint,
+  type PreparationDecision,
+  type PreparationOption
+} from '../../domain/plan/preparationDecision';
+import type { ExecutionAdjustmentOptions } from '../../domain/plan/executionAdjustment';
 import { useRecoveryStore, useTrainingStore } from '../../stores';
 import {
   commitPlanChange,
   executionModel,
   previewExecution,
+  previewPreparationChoice,
   previewRestore,
+  storedPreparationDecision,
   type PlanChangePreview
 } from '../../stores/executionActions';
 
 const kmText = (km: number): string => km.toFixed(1).replace('.', ',');
+const COVERAGE: Record<PreparationOption['coverage'], string> = {
+  full: 'ispunjava pravila pune pripreme',
+  distance: 'dužina pokrivena, vremenski cilj nije podržan',
+  insufficient: 'nije puna priprema'
+};
 type ReadyPreview = Extract<PlanChangePreview, { ok: true }>;
 
 /** A proposal is a preview until the runner explicitly applies it. Missing logs never confirm a pause. */
@@ -29,15 +42,31 @@ export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today
   const [preview, setPreview] = useState<ReadyPreview | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  // Decision offered by the last reviewed execution change, with the facts it was built from.
+  const [decision, setDecision] = useState<{
+    value: PreparationDecision;
+    options: ExecutionAdjustmentOptions | null;
+  } | null>(null);
+  const stored = useMemo(
+    () => (training.genPlan ? storedPreparationDecision(today) : null),
+    [training.genPlan, today]
+  );
+  const shownDecision = decision ?? (stored ? { value: stored, options: null } : null);
 
   if (!training.genPlan?.ulaz) return null;
   const resetPreview = (): void => {
     setPreview(null);
+    setDecision(null);
     setError('');
     setMessage('');
   };
-  const showPreview = (result: PlanChangePreview): void => {
+  const showPreview = (
+    result: PlanChangePreview,
+    options: ExecutionAdjustmentOptions | null = null,
+    keepDecision = false
+  ): void => {
     setMessage('');
+    if (!keepDecision) setDecision(result.decision ? { value: result.decision, options } : null);
     if (!result.ok) {
       setPreview(null);
       setError(result.reason);
@@ -45,6 +74,14 @@ export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today
     }
     setError('');
     setPreview(result);
+  };
+  const reviewOption = (option: PreparationOption): void => {
+    if (!shownDecision) return;
+    showPreview(
+      previewPreparationChoice(plan, today, shownDecision.options, option.choice),
+      shownDecision.options,
+      true
+    );
   };
   const reviewExecution = (): void => {
     if (mode === 'return' && !pauseConfirmed) {
@@ -61,18 +98,18 @@ export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today
       setError('Dužina treba da bude pozitivna i najviše jednaka nedeljnom obimu.');
       return;
     }
-    showPreview(
-      previewExecution(plan, today, {
-        weeklyKm: base,
-        ...(lr !== undefined ? { recentLongRunKm: lr } : {}),
-        ...(mode === 'return' ? { breakDays: Number(breakDays) } : {})
-      })
-    );
+    const options: ExecutionAdjustmentOptions = {
+      weeklyKm: base,
+      ...(lr !== undefined ? { recentLongRunKm: lr } : {}),
+      ...(mode === 'return' ? { breakDays: Number(breakDays) } : {})
+    };
+    showPreview(previewExecution(plan, today, options), options);
   };
   const apply = (): void => {
     if (!preview) return;
     const result = commitPlanChange(preview);
     setPreview(null);
+    setDecision(null);
     if (!result.ok) {
       setError(result.reason);
       return;
@@ -194,6 +231,46 @@ export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today
         </div>
       </Section>
 
+      {shownDecision ? (
+        <Section title="Odluka o pripremi" id="plan-decision">
+          <p className="prop-m">{shownDecision.value.statement}</p>
+          {shownDecision.value.conditions.map((condition) => (
+            <p className="note-src" key={condition}>
+              {condition}
+            </p>
+          ))}
+          {shownDecision.value.unavailable.map((reason) => (
+            <p className="note-src" key={reason}>
+              {reason}
+            </p>
+          ))}
+          {shownDecision.value.options.map((option) => (
+            <div className="alt-block" key={option.id}>
+              <p>
+                <b>{option.title}</b>
+              </p>
+              <p className="note-src">{option.detail}</p>
+              <p className="note-src">
+                {fmtDayMonthYear(option.raceDate)} · najduže {kmText(option.peakLongRunKm)} km ·
+                vrhunac {kmText(option.peakWeeklyKm)} km/ned · {COVERAGE[option.coverage]}
+              </p>
+              <button
+                type="button"
+                className="btn ghost sm"
+                onClick={() => reviewOption(option)}
+                aria-label={`Pregledaj opciju: ${option.title}`}
+              >
+                Pregledaj opciju
+              </button>
+            </div>
+          ))}
+          <p className="note-src">
+            Svaka opcija je samo pregled. Datum trke, distanca i cilj menjaju se tek kada primeniš
+            prikazanu promenu; prethodni plan ostaje u istoriji.
+          </p>
+        </Section>
+      ) : null}
+
       {revisions.length ? (
         <Section title="Prethodne verzije plana" id="plan-revisions">
           <p className="note-src">
@@ -221,6 +298,14 @@ export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today
       {preview ? (
         <Section title="Pregled promene" id="plan-change-preview">
           <p className="prop-m">{preview.summary}</p>
+          {preview.change ? (
+            <dl className="note-src" aria-label="Promena trke i cilja">
+              <dt>Pre</dt>
+              <dd>{describePoint(preview.change.from)}</dd>
+              <dt>Posle</dt>
+              <dd>{describePoint(preview.change.to)}</dd>
+            </dl>
+          ) : null}
           <p className="note-src">
             Preostali km i opterećenje odnose se na dane posle danas; raniji i današnji plan nisu
             deo ovih zbirnih vrednosti.

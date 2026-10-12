@@ -1,24 +1,24 @@
 import { addDays, diffDays, parseIsoDate, type IsoDate } from '../date';
+import { distUReceni } from '../format';
 import type { GenPlanState } from '../state';
 import {
   analyzeExecution,
   recommendExecution,
   type ExecutionAnalysis
 } from '../training/execution';
-import { generatePlan } from '../training/generator/generatePlan';
-import { derivePred, deriveQSById } from '../training/prediction';
-import { isPlanError, type PlanGenerationInput } from '../training/types';
-import { adaptGeneratedPlan } from './adapt';
-import { graftFuturePlan, type ReplanContext } from './future';
+import type { PlanGenerationInput } from '../training/types';
+import type { ReplanContext } from './future';
+import {
+  isLimitedLongPreparation,
+  preparationDecision,
+  preparationRequirement,
+  type DecisionBasis,
+  type PreparationDecision
+} from './preparationDecision';
+import { finalWarnings, regenerateFuture, returnPolicyFor } from './regenerate';
 import type { ResolvedPlan } from './types';
-import { guardReturnGrowth } from './returnGrowth';
 
-/** Transparent product defaults, not a physiological or medical recovery model. */
-export const RETURN_POLICY = {
-  short: { days: 7, fraction: 0.85, easyWeeks: 2 },
-  medium: { days: 14, fraction: 0.7, easyWeeks: 3 },
-  long: { days: 28, fraction: 0.55, easyWeeks: 4 }
-} as const;
+export { RETURN_POLICY } from './regenerate';
 
 export interface ExecutionAdjustmentOptions {
   /** Explicitly confirmed break; undefined means adjust reported execution without assuming a break. */
@@ -38,13 +38,13 @@ export function executionModel(
   return { analysis, recommendation: recommendExecution(analysis) };
 }
 
-export function buildExecutionAdjustment(
+/** Validate confirmed execution facts and derive the regeneration input; no plan is generated. */
+export function executionBasis(
   current: GenPlanState,
   today: IsoDate,
   analysis: ExecutionAnalysis,
-  options: ExecutionAdjustmentOptions,
-  context: ReplanContext = {}
-): { result: GenPlanState; notes: string[]; summary: string } | { error: string } {
+  options: ExecutionAdjustmentOptions
+): (DecisionBasis & { returning: boolean; base: number; weeklyKm: number }) | { error: string } {
   if (!current.ulaz || typeof current.ulaz !== 'object' || Array.isArray(current.ulaz))
     return { error: 'Plan nema sačuvane ulazne podatke. Napravi plan sa trenutnom bazom.' };
   const original = current.ulaz as PlanGenerationInput;
@@ -72,13 +72,7 @@ export function buildExecutionAdjustment(
   const lr = options.recentLongRunKm ?? (returning ? undefined : analysis.recentLongRunKm);
   if (lr !== undefined && lr !== null && (!Number.isFinite(lr) || lr <= 0 || lr > base))
     return { error: 'Ponovljiva dužina mora biti pozitivna i ne veća od nedeljne baze.' };
-  const policy = returning
-    ? options.breakDays! >= RETURN_POLICY.long.days
-      ? RETURN_POLICY.long
-      : options.breakDays! >= RETURN_POLICY.medium.days
-        ? RETURN_POLICY.medium
-        : RETURN_POLICY.short
-    : null;
+  const policy = returning ? returnPolicyFor(options.breakDays) : null;
   const fraction = policy?.fraction ?? (analysis.easyHighRpeCount >= 2 ? 0.85 : 1);
   const weeklyKm = Math.round(base * fraction * 10) / 10;
   const input: PlanGenerationInput = {
@@ -94,43 +88,35 @@ export function buildExecutionAdjustment(
     volIntensity: 'kons',
     trainedRecently: !returning
   };
-  const generated = generatePlan(input);
-  if (isPlanError(generated))
-    return {
-      error: `Preostalo vreme ne podržava novi pun ciklus: ${generated.error} Datum trke nije automatski pomeren.`
-    };
-  const partialFirst = addDays(today, 1) !== generated.meta.start;
-  generated.weeks = guardReturnGrowth(generated.weeks, weeklyKm, partialFirst);
-  generated.pred = derivePred(generated.weeks, generated.meta.raceDistM, generated.meta);
-  const fresh = adaptGeneratedPlan(generated);
-  if (!fresh || !fresh.meta) return { error: 'Nije moguće napraviti predlog.' };
-  fresh.qs = deriveQSById(fresh.weeks);
-  // An explicitly confirmed break starts with easy running. Preserve the dose, remove intensity.
-  if (policy) {
-    fresh.weeks = fresh.weeks.map((week, index) =>
-      index >= policy.easyWeeks
-        ? week
-        : {
-            ...week,
-            days: week.days.map((day) => {
-              if (day.rest || day.tag === 'snaga' || day.tag === 'trka') return day;
-              const { finish: _finish, strides: _strides, ...rest } = day;
-              if (!day.session) return rest;
-              const { session: _session, ...easy } = rest;
-              return {
-                ...easy,
-                tag: 'lako' as const,
-                desc: 'Lagano trčanje u razgovornom tempu; bez nadoknade propuštenih treninga.'
-              };
-            })
-          }
-    );
-    fresh.pred = derivePred(fresh.weeks, fresh.meta.raceDistM, fresh.meta).map((row, i) => ({
-      ...row,
-      id: `g${row.w}_${i}`
-    }));
-    fresh.qs = deriveQSById(fresh.weeks);
-  }
+  return {
+    input,
+    policy,
+    guardBaseKm: weeklyKm,
+    execution: {
+      date: today,
+      breakDays: options.breakDays ?? 0,
+      reportedBaseKm: base,
+      startingKm: weeklyKm,
+      ...(lr != null ? { reportedLongRunKm: lr } : {})
+    },
+    returning,
+    base,
+    weeklyKm
+  };
+}
+
+export function buildExecutionAdjustment(
+  current: GenPlanState,
+  today: IsoDate,
+  analysis: ExecutionAnalysis,
+  options: ExecutionAdjustmentOptions,
+  context: ReplanContext = {}
+):
+  | { result: GenPlanState; notes: string[]; summary: string; decision?: PreparationDecision }
+  | { error: string; decision?: PreparationDecision } {
+  const basis = executionBasis(current, today, analysis, options);
+  if ('error' in basis) return basis;
+  const { policy, weeklyKm } = basis;
   const notes = [
     'Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.',
     'Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.',
@@ -141,41 +127,44 @@ export function buildExecutionAdjustment(
       `Potvrđena pauza: ${options.breakDays} dana. Polazni obim je ${Math.round(policy.fraction * 100)}% prijavljene baze (${weeklyKm} km). Ovo su oprezne postavke aplikacije, ne medicinska procena.`
     );
   else notes.push(`Polazni obim prati stvarno odrađenu/prijavljenu bazu: ${weeklyKm} km nedeljno.`);
-  fresh.meta = {
-    ...fresh.meta,
-    executionAdjustment: {
-      date: today,
-      breakDays: options.breakDays ?? 0,
-      reportedBaseKm: base,
-      startingKm: weeklyKm
-    },
-    dayWarnings: [...fresh.meta.dayWarnings, ...notes]
-  };
-  const result = graftFuturePlan(
+  const built = regenerateFuture(current, basis.input, today, context, {
+    policy,
+    guardBaseKm: weeklyKm,
+    execution: basis.execution!,
+    notes
+  });
+  if ('error' in built)
+    // The rejected full cycle still gets a concrete next step; nothing is written here.
+    return {
+      error: `Preostalo vreme ne podržava novi pun ciklus: ${built.error} Datum trke nije automatski pomeren.`,
+      decision: preparationDecision(current, today, basis, context, 'rejected')
+    };
+  const result = built.result;
+  notes.push(...finalWarnings(result));
+  let summary = policy
+    ? `Povratak posle ${options.breakDays} dana pauze, baza ${weeklyKm} km`
+    : `Plan prema odrađenoj bazi ${weeklyKm} km`;
+  if (!isLimitedLongPreparation(result.meta)) return { result, notes, summary };
+  // A limited long-distance result is a return plan to the existing date, not a full preparation.
+  const decision = preparationDecision(
     current,
-    { ...fresh, ulaz: input },
     today,
+    basis,
     context,
-    policy
-      ? {
-          returnWindow: {
-            start: addDays(today, 1),
-            end: addDays(generated.meta.start, policy.easyWeeks * 7),
-            requiredWeeks: policy.easyWeeks
-          }
-        }
-      : {}
+    'limited',
+    result.meta!.preparation
   );
-  notes.push(
-    ...result.meta!.dayWarnings.filter((s) =>
-      /^(Finalni preostali plan:|Povratni period |Konflikt povratne politike:)/.test(s)
-    )
-  );
+  const name = distUReceni(preparationRequirement(result.meta!.raceDistM).name);
+  summary = `${summary} — ${policy ? 'povratni plan' : 'ograničen plan'} do postojećeg datuma, nije puna priprema za ${name}`;
+  result.meta = {
+    ...result.meta!,
+    cycleDecision: { kind: 'limited', date: today, fullPreparation: false },
+    dayWarnings: [...new Set([decision.statement, ...result.meta!.dayWarnings])]
+  };
   return {
     result,
-    notes,
-    summary: policy
-      ? `Povratak posle ${options.breakDays} dana pauze, baza ${weeklyKm} km`
-      : `Plan prema odrađenoj bazi ${weeklyKm} km`
+    notes: [decision.statement, ...decision.conditions, ...notes],
+    summary,
+    decision
   };
 }
