@@ -128,9 +128,9 @@ test.describe('locked generator A/B: ten genuine wizard and persistence flows', 
       await page.goto('/');
       await lockedWizard(page, profile.input);
       await expect.poll(() => state().genPlan?.ulaz).toEqual(wizardInput);
-      expect(state().genPlan).toEqual(expected);
       await attachJson(info, `${profile.id}-wizard-input`, state().genPlan?.ulaz);
       await attachJson(info, `${profile.id}-full-browser-generated-plan`, state().genPlan);
+      expect(state().genPlan).toEqual(expected);
       await tab(page, 'Plan').click();
       await expect(
         page.getByRole('heading', { name: `Nedelja 1 od ${expected.weeks.length}` })

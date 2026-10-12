@@ -53,7 +53,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: generator-ab-browser-evidence
-          path: web/test-results/
+          path: |
+            web/playwright-report/
+            web/test-results/
           if-no-files-found: warn
 
   database:
