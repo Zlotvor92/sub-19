@@ -1,0 +1,721 @@
+{
+  "stats": {
+    "total": 77,
+    "expected": 77,
+    "unexpected": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "ok": true
+  },
+  "scope": "Downloaded SHA-verified final CI artifact. Real UI, synthetic auth/backend. Six selected original PNGs persisted, all attachment references indexed.",
+  "tests": [
+    {
+      "title": "return apply/reload/restore/reload preserves future alt, moved date, measured lock and actuals",
+      "file": "final-preservation.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "protected-before-apply",
+          "contentType": "application/json",
+          "jsonArtifact": "protected-before-apply.json"
+        },
+        {
+          "name": "protected-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/bc4f8d32cd4ed1fe1cfa3fd6b0a16ebbf975f383.png",
+          "sha256": "e80920fd97938d91f4e77a338e13531b31a3ff87fdbf835858eae251adb8be6d",
+          "bytes": 645446
+        },
+        {
+          "name": "protected-after-apply",
+          "contentType": "application/json",
+          "jsonArtifact": "protected-after-apply.json"
+        },
+        {
+          "name": "protected-after-restore",
+          "contentType": "application/json",
+          "jsonArtifact": "protected-after-restore.json"
+        },
+        {
+          "name": "protected-restored-actual",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/7660487d1c6b8d040459d98f495c1a946d3c3711.png",
+          "sha256": "e2d5f7437fdc279c285e97b54f5c175b2d6b1e103d9549d621fba4aa2111e6b0",
+          "bytes": 265903
+        }
+      ]
+    },
+    {
+      "title": "U01: 5K po\u010detnik",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U01-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U01-wizard-input.json"
+        },
+        {
+          "name": "U01-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U01-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U01-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/78631ec5793043d51f7402d6cd34c881bf3a5ad4.png",
+          "sha256": "fa75cf1f95e6202efb35f3b585468dc5b2c34462a726c31c7a06075c387b770c",
+          "bytes": 245971
+        },
+        {
+          "name": "U01-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U01-browser-event-scope.json"
+        },
+        {
+          "name": "U01-confirmed-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/04789bd5f1c0043d105e58d9b38930900f4b167a.png",
+          "sha256": "508d9807128e810b95930d31e2de84a8ab26aafde0d0d8490ced627e74f2c495",
+          "bytes": 601818
+        },
+        {
+          "name": "U01-full-return-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U01-full-return-plan.json"
+        },
+        {
+          "name": "U01-persisted-history",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/c2e10795aba82e6e0eee41565934e4f86497746d.png",
+          "sha256": "2a9f77498d34795a3708364356b255e31c6a51e582f123650e88d3e6ba4adf15",
+          "bytes": 435405
+        },
+        {
+          "name": "U01-restore-history-and-log",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/549340b8f6c153c7e3de1e017e4df0450dd57a06.png",
+          "sha256": "e72dfe48374ab7e724ad346dd1214ed6de426cc595910680ad50c739c48b662a",
+          "bytes": 460195
+        },
+        {
+          "name": "U01-full-restored-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U01-full-restored-state.json"
+        }
+      ]
+    },
+    {
+      "title": "U02: 5K rekreativac sub-20",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U02-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U02-wizard-input.json"
+        },
+        {
+          "name": "U02-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U02-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U02-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/c39a50ea8f9912acc28973096a48bfb094886695.png",
+          "sha256": "edb7f8d30759f41b25186a12e736fedb341807b2696ce85b3802d3825b53664f",
+          "bytes": 222602
+        },
+        {
+          "name": "U02-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U02-browser-event-scope.json"
+        },
+        {
+          "name": "U02-confirmed-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/1f8ad3a75353182848bdd7973f8231e19a894902.png",
+          "sha256": "38b43dd15a04418c025089fa66d103cb6d73344d1faba18ca6c7738eb4014aa3",
+          "bytes": 560091
+        },
+        {
+          "name": "U02-full-return-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U02-full-return-plan.json"
+        },
+        {
+          "name": "U02-persisted-history",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/7c85f123089cd08e43a6c128b9678312b3e0c900.png",
+          "sha256": "7f551d48ec410ca2cb2cf869b282b6c95b4c47778108f88810775b51017773a3",
+          "bytes": 401800
+        },
+        {
+          "name": "U02-restore-history-and-log",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/c28e0876587c6145f264942dcfc2de9ab8a27e3f.png",
+          "sha256": "e650f25c1b49fcc551dc6455e6ef76d7899952cb8fdd30abc5cd6684f4ea2229",
+          "bytes": 424784
+        },
+        {
+          "name": "U02-full-restored-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U02-full-restored-state.json"
+        }
+      ]
+    },
+    {
+      "title": "U03: 5K iskusan ambiciozan",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U03-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U03-wizard-input.json"
+        },
+        {
+          "name": "U03-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U03-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U03-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/05a8f1325075f8fb0de9247d9a97e8c6ce8812cb.png",
+          "sha256": "f8290a9455f8f29d659fedafcfb97448544434936ff223db9d47d60ae3ee648b",
+          "bytes": 229956
+        },
+        {
+          "name": "U03-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U03-browser-event-scope.json"
+        },
+        {
+          "name": "U03-confirmed-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/0b70dcec5f4ca5f1b90a8238396f65820b6f4dee.png",
+          "sha256": "5ea80127533e469018c46650079a2da797f2473b572df1fc3ffc34cf39ea2c60",
+          "bytes": 566152
+        },
+        {
+          "name": "U03-full-return-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U03-full-return-plan.json"
+        },
+        {
+          "name": "U03-persisted-history",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/741b5bb5b334819e17731fcb7ac9cb5bbdf45912.png",
+          "sha256": "210c7d6dcba387d6de139ffe2a006956629f15eff9ca8940fa0eec82acfb0a8b",
+          "bytes": 402176
+        },
+        {
+          "name": "U03-restore-history-and-log",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/f754d4d988a5a67d460979ea36dba8d6fffe806b.png",
+          "sha256": "933e59576c923b56f191f2e4a86b35a5640be640e94846b71e90c2a7236e1d5a",
+          "bytes": 426178
+        },
+        {
+          "name": "U03-full-restored-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U03-full-restored-state.json"
+        }
+      ]
+    },
+    {
+      "title": "U04: 10K prvi specifi\u010dan ciklus",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U04-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U04-wizard-input.json"
+        },
+        {
+          "name": "U04-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U04-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U04-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/568a0eb107debfe90eb3eb44f852d2e9bb142066.png",
+          "sha256": "077c94ae2ae9306653fcef1099670d0c9c17a75c9f10d8c25e9d1b49ec917698",
+          "bytes": 217083
+        },
+        {
+          "name": "U04-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U04-browser-event-scope.json"
+        },
+        {
+          "name": "U04-confirmed-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/0b7ad7070754aaaa61fb6bd6e840ea19fe72e4e0.png",
+          "sha256": "96a20cbb6c8f858b5479905710e6885d2fe91124de757a8c6a5eb35ea6b94cb1",
+          "bytes": 564500
+        },
+        {
+          "name": "U04-full-return-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U04-full-return-plan.json"
+        },
+        {
+          "name": "U04-persisted-history",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/92e99536560db6634ea2196eb5a953b568dd64ce.png",
+          "sha256": "ddbaa6f5eadbeaa6b50c74baf631646def0128601498f1f64ccd8c53c96f8d05",
+          "bytes": 402467
+        },
+        {
+          "name": "U04-restore-history-and-log",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/20636483afe68e51dafb216ca1a189a0eab58b3b.png",
+          "sha256": "aa5e38096e96810fb795f8ac38d9b22c31c53aa22236c47d65bf203ff2c8c40e",
+          "bytes": 426657
+        },
+        {
+          "name": "U04-full-restored-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U04-full-restored-state.json"
+        }
+      ]
+    },
+    {
+      "title": "U05: 10K iskusan",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U05-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U05-wizard-input.json"
+        },
+        {
+          "name": "U05-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U05-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U05-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/73a6cf006cf420814d1c9359145f02a2a2884724.png",
+          "sha256": "74122c3105104193a49c377386aeaf3415e51a72ad81845bb35455400396877a",
+          "bytes": 227723
+        },
+        {
+          "name": "U05-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U05-browser-event-scope.json"
+        },
+        {
+          "name": "U05-confirmed-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/4d491e558e5dc93125a81cdeee8fc2752259b2bf.png",
+          "sha256": "d03284ec647cd5bc34c70b26ea02f7e9a3a59853a173fd1fb43eb751a062ea29",
+          "bytes": 565765
+        },
+        {
+          "name": "U05-full-return-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U05-full-return-plan.json"
+        },
+        {
+          "name": "U05-persisted-history",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/b94d36ade21b324eb676bab6a86af734cb426f89.png",
+          "sha256": "184359d6e72ba4556f8976fb3cbf3902724bb81db35d778169744d03c80ecbbd",
+          "bytes": 402237
+        },
+        {
+          "name": "U05-restore-history-and-log",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/2da53c6e21acf5be7f2c1b0a74ec087a656739d1.png",
+          "sha256": "cabfc0631be8a5f1c12161ffc91972245ab6687f5ecdda6294f8d6e3ac6690b0",
+          "bytes": 426497
+        },
+        {
+          "name": "U05-full-restored-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U05-full-restored-state.json"
+        }
+      ]
+    },
+    {
+      "title": "U06: 10K povratnik sa starim PB",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U06-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U06-wizard-input.json"
+        },
+        {
+          "name": "U06-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U06-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U06-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/4dfbf98f65cdbc77f5e7db9255710bf6043cdd3d.png",
+          "sha256": "57156f1dbd035adff1af73efdbfe9d7939f406ae53c52c613013a901fc2e142e",
+          "bytes": 217313
+        },
+        {
+          "name": "U06-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U06-browser-event-scope.json"
+        },
+        {
+          "name": "U06-confirmed-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/9af77c9d54b9d24a4255f5652aeb16b2a3584f1c.png",
+          "sha256": "1a4661794a1900b1edbcede5a45641d7a3e3045afc8fcf95f098db5b7f2b163b",
+          "bytes": 614023
+        },
+        {
+          "name": "U06-full-return-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U06-full-return-plan.json"
+        },
+        {
+          "name": "U06-persisted-history",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/9a1b385244dc8a9aabe996db867adb92e05a7a2b.png",
+          "sha256": "8b91a2016e0b1a548ef9f947ca59b6f6852f3988e0fff7b8261fcecd44d15d1a",
+          "bytes": 402866
+        },
+        {
+          "name": "U06-restore-history-and-log",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/3b1c853c10c4c9ea93e45885caf4ba9a731d2203.png",
+          "sha256": "8ca94a7b8015513f91434b3787ed92036c9c57b95a3583e75dd602bcb6a55125",
+          "bytes": 427656
+        },
+        {
+          "name": "U06-full-restored-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U06-full-restored-state.json"
+        }
+      ]
+    },
+    {
+      "title": "U07: HM prvi, ograni\u010dena baza",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U07-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U07-wizard-input.json"
+        },
+        {
+          "name": "U07-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U07-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U07-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/a6e9990ba3a437c20d88bd2fd1da6932ad9c82b7.png",
+          "sha256": "716087b893e2041c69db35bb034aacd1e8050c1f14923f96f93d25ad2a9b939a",
+          "bytes": 223749
+        },
+        {
+          "name": "U07-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U07-browser-event-scope.json"
+        },
+        {
+          "name": "U07-confirmed-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/192cfd0d448de04c96deafa249b2d24a5dfdd776.png",
+          "sha256": "c75e6300ee53c16447a6639b7624d7993dac49e5ec4a39e93f16d15d1f246ee9",
+          "bytes": 957268
+        },
+        {
+          "name": "U07-full-return-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U07-full-return-plan.json"
+        },
+        {
+          "name": "U07-persisted-history",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/1eb44da12ded7a5c54a85a6eae63fefff07b181c.png",
+          "sha256": "0d439a4782a2d94c1596cbc3717d7db936e2f9570105f9e10699ede69bd0914e",
+          "bytes": 707490
+        },
+        {
+          "name": "U07-restore-history-and-log",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/5387d12f00ca5e8e31a229efb0af40793d18214d.png",
+          "sha256": "4593d48aad9b54b276c92862c766ead4158eefd34cfdd9eb256fd9c7efc55706",
+          "bytes": 451465
+        },
+        {
+          "name": "U07-full-restored-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U07-full-restored-state.json"
+        }
+      ]
+    },
+    {
+      "title": "U08: HM iskusan na rezultat",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U08-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U08-wizard-input.json"
+        },
+        {
+          "name": "U08-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U08-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U08-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/1a56e4fbcacaf9dc5a71b225697c62276870c2d8.png",
+          "sha256": "f70c6a667e92e3b4e34bb9eb7e6e97c01bd3f7279c0e06fcd03d7601c1873459",
+          "bytes": 226563
+        },
+        {
+          "name": "U08-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U08-browser-event-scope.json"
+        },
+        {
+          "name": "U08-expected-short-cycle-block",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/f1c84eb8c67d6c37cacc920316cb414f7214eab2.png",
+          "sha256": "099854b166b2e24f88d3bda32cc14251a24d4b05d62c1edce9c40950f32a11a1",
+          "bytes": 645351
+        },
+        {
+          "name": "U08-base-mode-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/a2d9b8ee87a96342d8dd6090c62ded6ba4bed113.png",
+          "sha256": "263ca39e026ebcb427938c9ba45b9592a5f7449a01aaf6be34ea52afc6676663",
+          "bytes": 904614
+        },
+        {
+          "name": "U08-base-mode-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U08-base-mode-plan.json"
+        },
+        {
+          "name": "U08-blocked-persisted-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U08-blocked-persisted-state.json"
+        }
+      ]
+    },
+    {
+      "title": "U09: Maraton prvi, mala baza",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U09-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U09-wizard-input.json"
+        },
+        {
+          "name": "U09-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U09-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U09-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/a38f73e64e128744b750ed874414880d22d91b93.png",
+          "sha256": "0adc50048433ca7faf78bb4f7b89df616da09334fea07fb7b83b056d486f8fdf",
+          "bytes": 225685
+        },
+        {
+          "name": "U09-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U09-browser-event-scope.json"
+        },
+        {
+          "name": "U09-confirmed-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/4c7fb4f8353c85c81e4bb735a18aec0b746099fe.png",
+          "sha256": "7fe5ea9167a3b65808fc9d082d6f5fea207f31ffe1fdfbe33885b4f36c9647c8",
+          "bytes": 969633
+        },
+        {
+          "name": "U09-full-return-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U09-full-return-plan.json"
+        },
+        {
+          "name": "U09-persisted-history",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/620f597543efa0bd1449d34a5a632ca8a24e9992.png",
+          "sha256": "0fd31f4f389b146a30358313ab837a91d070a0ac056777aaa5ae53015e1d63a6",
+          "bytes": 715325
+        },
+        {
+          "name": "U09-restore-history-and-log",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/7571a07dff6af09f21881337d8faa8724c402982.png",
+          "sha256": "82178996b7f9d6b9c4afc5b29a5c68c6faaf3ba3fda787d346b5bfa5f7ce0e0d",
+          "bytes": 753985
+        },
+        {
+          "name": "U09-full-restored-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U09-full-restored-state.json"
+        }
+      ]
+    },
+    {
+      "title": "U10: Maraton iskusan",
+      "file": "generator-ab-users.spec.ts",
+      "status": "passed",
+      "retry": 0,
+      "attachments": [
+        {
+          "name": "U10-wizard-input",
+          "contentType": "application/json",
+          "jsonArtifact": "U10-wizard-input.json"
+        },
+        {
+          "name": "U10-full-browser-generated-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U10-full-browser-generated-plan.json"
+        },
+        {
+          "name": "U10-initial-plan",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/eb25eb0295468ebe9a2abc00e99c9569e8e26f4e.png",
+          "sha256": "900d4f44e2de41d9cfd2140f45b9b3439b070064a6234cd075e8e7f2c91894d5",
+          "bytes": 240137
+        },
+        {
+          "name": "U10-browser-event-scope",
+          "contentType": "application/json",
+          "jsonArtifact": "U10-browser-event-scope.json"
+        },
+        {
+          "name": "U10-confirmed-return-preview",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/cc57afa219cc7904755d0a8c080d048ac125ede6.png",
+          "sha256": "53c908574a9f04b4a91bc40ca1061bac824a60842fae8a0e083620e9caaf0adc",
+          "bytes": 987649
+        },
+        {
+          "name": "U10-full-return-plan",
+          "contentType": "application/json",
+          "jsonArtifact": "U10-full-return-plan.json"
+        },
+        {
+          "name": "U10-persisted-history",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/f91552de1db7ebbef8238db191a5baea76211325.png",
+          "sha256": "487319a6298af5879055917f794ba2d612dcb754b4bfcf36e295f910cdf308c8",
+          "bytes": 718225
+        },
+        {
+          "name": "U10-restore-history-and-log",
+          "contentType": "image/png",
+          "artifactPath": "playwright-report/data/3cd64b46ed329f016c0e8df67adc94476c8f682c.png",
+          "sha256": "62c5cf859313bd740a190fd7e434ef35350c3dd5c38ebf0721d136dea408b73e",
+          "bytes": 452091
+        },
+        {
+          "name": "U10-full-restored-state",
+          "contentType": "application/json",
+          "jsonArtifact": "U10-full-restored-state.json"
+        }
+      ]
+    }
+  ],
+  "visualSelections": [
+    {
+      "name": "protected-return-preview",
+      "artifactPath": "playwright-report/data/bc4f8d32cd4ed1fe1cfa3fd6b0a16ebbf975f383.png",
+      "localArtifact": "protected-return-preview.png",
+      "sha256": "e80920fd97938d91f4e77a338e13531b31a3ff87fdbf835858eae251adb8be6d",
+      "visuallyReviewed": true,
+      "visualObservation": "Visible preserved measured-quality conflict on 2026-01-28, review/apply controls and dated return explanation."
+    },
+    {
+      "name": "protected-restored-actual",
+      "artifactPath": "playwright-report/data/7660487d1c6b8d040459d98f495c1a946d3c3711.png",
+      "localArtifact": "protected-restored-actual.png",
+      "sha256": "e2d5f7437fdc279c285e97b54f5c175b2d6b1e103d9549d621fba4aa2111e6b0",
+      "visuallyReviewed": true,
+      "visualObservation": "Visible done status on future 2026-01-16 with actual 7.1 km / 38:00 and retained easy prescription."
+    },
+    {
+      "name": "U01-initial-plan",
+      "artifactPath": "playwright-report/data/78631ec5793043d51f7402d6cd34c881bf3a5ad4.png",
+      "localArtifact": "U01-initial-plan.png",
+      "sha256": "fa75cf1f95e6202efb35f3b585468dc5b2c34462a726c31c7a06075c387b770c",
+      "visuallyReviewed": true,
+      "visualObservation": "Visible three run/walk days and 7.3 km first-week sum."
+    },
+    {
+      "name": "U06-confirmed-return-preview",
+      "artifactPath": "playwright-report/data/9af77c9d54b9d24a4255f5652aeb16b2a3584f1c.png",
+      "localArtifact": "U06-confirmed-return-preview.png",
+      "sha256": "1a4661794a1900b1edbcede5a45641d7a3e3045afc8fcf95f098db5b7f2b163b",
+      "visuallyReviewed": true,
+      "visualObservation": "Visible effort/readiness conditions and easy return preview with actual peak/easy-period message."
+    },
+    {
+      "name": "U08-base-mode-preview",
+      "artifactPath": "playwright-report/data/a2d9b8ee87a96342d8dd6090c62ded6ba4bed113.png",
+      "localArtifact": "U08-base-mode-preview.png",
+      "sha256": "263ca39e026ebcb427938c9ba45b9592a5f7449a01aaf6be34ea52afc6676663",
+      "visuallyReviewed": true,
+      "visualObservation": "Visible explicit full-cycle rejection, three alternatives, cleared time goal, all-easy preview and base-mode limits."
+    },
+    {
+      "name": "U09-initial-plan",
+      "artifactPath": "playwright-report/data/a38f73e64e128744b750ed874414880d22d91b93.png",
+      "localArtifact": "U09-initial-plan.png",
+      "sha256": "0adc50048433ca7faf78bb4f7b89df616da09334fea07fb7b83b056d486f8fdf",
+      "visuallyReviewed": true,
+      "visualObservation": "Visible initial marathon schedule and 10 km LR; limitation messages remain in collapsed warning area, reinforcing the open initial-readiness decision issue."
+    }
+  ],
+  "visualReviewLimit": "Six representative original full-page screenshots, not every week/viewport/device. Fixed navigation placement inside full-page capture is not by itself a scrolling failure.",
+  "independentJsonCaptureChecks": {
+    "beforeEqualsAfterApply": true,
+    "protectedCommonFieldsEqualAfterRestore": true,
+    "manualKm": 4.2,
+    "measuredPaceSec": 251,
+    "measuredLock": true,
+    "actualBefore": [
+      6.2,
+      2040
+    ],
+    "newActualAfterApply": [
+      7.1,
+      2280
+    ],
+    "newDoneId": "g1d5",
+    "plannedDateOfEarlyCompletedRun": "2026-01-16"
+  }
+}

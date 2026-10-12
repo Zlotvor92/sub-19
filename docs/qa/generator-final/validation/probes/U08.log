@@ -1,0 +1,401 @@
+{
+  "id": "U08",
+  "counts": {
+    "assertions": 89,
+    "baselineWeeks": 28,
+    "baselineDays": 196,
+    "baselineSessions": 41,
+    "choiceWeeks": 47,
+    "choiceDays": 329,
+    "choiceSessions": 51,
+    "protectionWeeks": 47,
+    "protectionDays": 329
+  },
+  "envelopeFailures": [
+    {
+      "w": 11,
+      "reason": "weekly-fast",
+      "used": 2852.6000000000004,
+      "cap": 2811.0096000000003
+    }
+  ],
+  "choices": {
+    "extend": {
+      "protected": 45,
+      "returnMaxKm": 12.5,
+      "date": "2027-02-21",
+      "dist": 21097.5,
+      "goal": 5700,
+      "preparation": {
+        "endurance": "supported",
+        "goalStatus": "reference-only",
+        "peakLongRunKm": 16.3,
+        "peakWeeklyKm": 51.5,
+        "demandingDaysMax": 3,
+        "reasons": [
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ],
+        "forecastBasis": "result-and-delivered-preparation"
+      },
+      "weekly": [
+        {
+          "w": 7,
+          "start": "2026-11-23",
+          "km": 51.9,
+          "futureKm": 17.1,
+          "lrKm": 11.2,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 8,
+          "start": "2026-11-30",
+          "km": 39.3,
+          "futureKm": 39.3,
+          "lrKm": 11.8,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 9,
+          "start": "2026-12-07",
+          "km": 40.9,
+          "futureKm": 40.9,
+          "lrKm": 12.5,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 10,
+          "start": "2026-12-14",
+          "km": 30.9,
+          "futureKm": 30.9,
+          "lrKm": 9.3,
+          "workMinutes": 0,
+          "deload": true,
+          "taper": false,
+          "focus": "DELOAD · Ubrzanja"
+        },
+        {
+          "w": 11,
+          "start": "2026-12-21",
+          "km": 42.9,
+          "futureKm": 42.9,
+          "lrKm": 13.2,
+          "workMinutes": 23.05,
+          "deload": false,
+          "taper": false,
+          "focus": "Ubrzanja + Tempo isprekidan + Tempo trke"
+        },
+        {
+          "w": 12,
+          "start": "2026-12-28",
+          "km": 44.1,
+          "futureKm": 44.1,
+          "lrKm": 13.9,
+          "workMinutes": 25.773,
+          "deload": false,
+          "taper": false,
+          "focus": "Ubrzanja + Tempo isprekidan + Tempo trke"
+        },
+        {
+          "w": 13,
+          "start": "2027-01-04",
+          "km": 46.2,
+          "futureKm": 46.2,
+          "lrKm": 14.7,
+          "workMinutes": 22.52,
+          "deload": false,
+          "taper": false,
+          "focus": "Ubrzanja + Intervali + Tempo trke"
+        },
+        {
+          "w": 14,
+          "start": "2027-01-11",
+          "km": 35.2,
+          "futureKm": 35.2,
+          "lrKm": 11,
+          "workMinutes": 0,
+          "deload": true,
+          "taper": false,
+          "focus": "DELOAD · Ubrzanja"
+        },
+        {
+          "w": 15,
+          "start": "2027-01-18",
+          "km": 49.2,
+          "futureKm": 49.2,
+          "lrKm": 15.4,
+          "workMinutes": 31.5,
+          "deload": false,
+          "taper": false,
+          "focus": "Ubrzanja + Kontrolna trka"
+        },
+        {
+          "w": 16,
+          "start": "2027-01-25",
+          "km": 51.5,
+          "futureKm": 51.5,
+          "lrKm": 16.3,
+          "workMinutes": 26.1,
+          "deload": false,
+          "taper": false,
+          "focus": "Ubrzanja + Tempo trke"
+        },
+        {
+          "w": 17,
+          "start": "2027-02-01",
+          "km": 41.3,
+          "futureKm": 41.3,
+          "lrKm": 13.8,
+          "workMinutes": 24.943,
+          "deload": false,
+          "taper": true,
+          "focus": "Taper · Ubrzanja + Tempo trke + Tempo isprekidan"
+        },
+        {
+          "w": 18,
+          "start": "2027-02-08",
+          "km": 34.8,
+          "futureKm": 34.8,
+          "lrKm": 10.5,
+          "workMinutes": 17.375,
+          "deload": false,
+          "taper": true,
+          "focus": "Taper · Tempo trke + Tempo"
+        },
+        {
+          "w": 19,
+          "start": "2027-02-15",
+          "km": 30.098,
+          "futureKm": 30.098,
+          "lrKm": 0,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "TRKA"
+        }
+      ]
+    },
+    "shorter-10000": {
+      "protected": 45,
+      "returnMaxKm": 12.5,
+      "date": "2027-01-17",
+      "dist": 10000,
+      "goal": null,
+      "preparation": {
+        "endurance": "supported",
+        "goalStatus": "reference-only",
+        "peakLongRunKm": 13.9,
+        "peakWeeklyKm": 44.7,
+        "demandingDaysMax": 3,
+        "reasons": [
+          "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+        ],
+        "forecastBasis": "result-and-delivered-preparation"
+      },
+      "weekly": [
+        {
+          "w": 7,
+          "start": "2026-11-23",
+          "km": 51.9,
+          "futureKm": 17.1,
+          "lrKm": 11.2,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 8,
+          "start": "2026-11-30",
+          "km": 40,
+          "futureKm": 40,
+          "lrKm": 11.8,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 9,
+          "start": "2026-12-07",
+          "km": 41.5,
+          "futureKm": 41.5,
+          "lrKm": 12.5,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 10,
+          "start": "2026-12-14",
+          "km": 31.2,
+          "futureKm": 31.2,
+          "lrKm": 9.2,
+          "workMinutes": 0,
+          "deload": true,
+          "taper": false,
+          "focus": "DELOAD · Ubrzanja"
+        },
+        {
+          "w": 11,
+          "start": "2026-12-21",
+          "km": 43.3,
+          "futureKm": 43.3,
+          "lrKm": 13.2,
+          "workMinutes": 16.315,
+          "deload": false,
+          "taper": false,
+          "focus": "Ubrzanja + Intervali + Tempo"
+        },
+        {
+          "w": 12,
+          "start": "2026-12-28",
+          "km": 44.7,
+          "futureKm": 44.7,
+          "lrKm": 13.9,
+          "workMinutes": 15.57,
+          "deload": false,
+          "taper": false,
+          "focus": "Ubrzanja + Trkački ritam + Progresivno"
+        },
+        {
+          "w": 13,
+          "start": "2027-01-04",
+          "km": 31.1,
+          "futureKm": 31.1,
+          "lrKm": 9,
+          "workMinutes": 13.448,
+          "deload": false,
+          "taper": true,
+          "focus": "Taper · Trkački ritam + Tempo"
+        },
+        {
+          "w": 14,
+          "start": "2027-01-11",
+          "km": 19,
+          "futureKm": 19,
+          "lrKm": 0,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "TRKA"
+        }
+      ]
+    },
+    "base": {
+      "protected": 45,
+      "returnMaxKm": 13.1,
+      "date": "2027-01-17",
+      "dist": 21097.5,
+      "goal": null,
+      "preparation": {
+        "endurance": "supported",
+        "goalStatus": "reference-only",
+        "peakLongRunKm": 16,
+        "peakWeeklyKm": 54.8,
+        "demandingDaysMax": 0,
+        "reasons": [],
+        "forecastBasis": "result-and-delivered-preparation"
+      },
+      "weekly": [
+        {
+          "w": 7,
+          "start": "2026-11-23",
+          "km": 50.2,
+          "futureKm": 15.4,
+          "lrKm": 11.2,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 8,
+          "start": "2026-11-30",
+          "km": 41.3,
+          "futureKm": 41.3,
+          "lrKm": 12.1,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 9,
+          "start": "2026-12-07",
+          "km": 44.7,
+          "futureKm": 44.7,
+          "lrKm": 13.1,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 10,
+          "start": "2026-12-14",
+          "km": 48.1,
+          "futureKm": 48.1,
+          "lrKm": 14.1,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 11,
+          "start": "2026-12-21",
+          "km": 52,
+          "futureKm": 52,
+          "lrKm": 15.2,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 12,
+          "start": "2026-12-28",
+          "km": 54.8,
+          "futureKm": 54.8,
+          "lrKm": 16,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 13,
+          "start": "2027-01-04",
+          "km": 54.8,
+          "futureKm": 54.8,
+          "lrKm": 16,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "Lagano trčanje — bez kvaliteta i ubrzanja"
+        },
+        {
+          "w": 14,
+          "start": "2027-01-11",
+          "km": 31.598,
+          "futureKm": 31.598,
+          "lrKm": 0,
+          "workMinutes": 0,
+          "deload": false,
+          "taper": false,
+          "focus": "TRKA"
+        }
+      ]
+    }
+  }
+}

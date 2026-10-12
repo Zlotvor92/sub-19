@@ -1,0 +1,44 @@
+{
+  "lockedAtUtc": "2026-10-12T15:14:44.237466+00:00",
+  "initialScores": 80,
+  "planWeeksReviewed": 1296,
+  "reviewers": {
+    "5k": {
+      "scoreFile": "5k-scores.json",
+      "scoreSha256": "3b7931642388980b653b9a43b289c731690ef0c3154e75237da75898d883bec1",
+      "reportFile": "5k-review.md",
+      "reportSha256": "8a898ee8e8731d053dd03af45b0797c43658db2439676d7eabbf7d5ae9343485",
+      "scoreCount": 20,
+      "weeksReviewed": 324,
+      "authoringMode": "Independent isolated agent before any event review or identity disclosure"
+    },
+    "10k": {
+      "scoreFile": "10k-scores.json",
+      "scoreSha256": "b16a4336525ce1127a79b2e5c20f73a47c9b1ca74556ce0ab32d28209841815b",
+      "reportFile": "10k-review.md",
+      "reportSha256": "20569f0487be5c67d18e427fa357e6566e0b3bb0346bb6850307e8e4052f341c",
+      "scoreCount": 20,
+      "weeksReviewed": 324,
+      "authoringMode": "Independent isolated agent before any event review or identity disclosure"
+    },
+    "hm": {
+      "scoreFile": "hm-scores.json",
+      "scoreSha256": "ce0f9d1950589c4f9a5589f1d14c6ca6369b61237529d012f80445a3bcb95c5f",
+      "reportFile": "hm-review.md",
+      "reportSha256": "4b2b181dc69301ce75acc45326549b61467628906bafd9fdcd8ab901f0ffc207",
+      "scoreCount": 20,
+      "weeksReviewed": 324,
+      "authoringMode": "Independent isolated agent before any event review or identity disclosure"
+    },
+    "marathon": {
+      "scoreFile": "marathon-scores.json",
+      "scoreSha256": "3dd843e46cb2376a1a7d5fb1d63cde32bd594fd6755ffb43dcceca7d042ef223",
+      "reportFile": "marathon-review.md",
+      "reportSha256": "3745655e5b7dccabbd6ba953cb2f4266432f1f8e289b75e8746f7103b397b21e",
+      "scoreCount": 20,
+      "weeksReviewed": 324,
+      "authoringMode": "Independent isolated agent before any event review or identity disclosure"
+    }
+  },
+  "identityDisclosureAfterThisLock": true
+}

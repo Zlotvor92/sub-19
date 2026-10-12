@@ -1,0 +1,82 @@
+{
+  "count": 40,
+  "reviewers": {
+    "5k": {
+      "events": 10,
+      "eventFile": "5k-events.json",
+      "eventSha256": "96264e6dafe0705e99295de214e5beb4d7f3fa00219266436de4cc353bee026d",
+      "reportFile": "5k-events.md",
+      "reportSha256": "f9c7faddd7491520c87aa12c1fa2d6b5cf1f15c3f2450e217c30db5edc03c0ba",
+      "outcomes": {
+        "U01": "acceptable",
+        "U02": "acceptable-limited",
+        "U03": "acceptable-limited",
+        "U04": "acceptable-limited",
+        "U05": "acceptable-limited",
+        "U06": "concern",
+        "U07": "acceptable-limited",
+        "U08": "acceptable-limited",
+        "U09": "concern",
+        "U10": "concern"
+      }
+    },
+    "10k": {
+      "events": 10,
+      "eventFile": "10k-events.json",
+      "eventSha256": "6d455ceb012e9e4d8849d08b87140b7792814bc14ddab3decdb1fefc15058a85",
+      "reportFile": "10k-events.md",
+      "reportSha256": "6d0dc402e4879f607b481dd49c173d55ba1a621c8e2b3373a843b9a93dab902c",
+      "outcomes": {
+        "U01": "acceptable",
+        "U02": "acceptable-limited",
+        "U03": "acceptable-limited",
+        "U04": "acceptable-limited",
+        "U05": "acceptable-limited",
+        "U06": "concern",
+        "U07": "acceptable-limited",
+        "U08": "acceptable-limited",
+        "U09": "critical",
+        "U10": "critical"
+      }
+    },
+    "hm": {
+      "events": 10,
+      "eventFile": "hm-events.json",
+      "eventSha256": "85a2b22da17f1b443db670e3a43856a4b494ec81d86e252a354d6164b794d550",
+      "reportFile": "hm-events.md",
+      "reportSha256": "a5d7caaaa159d8438be65f2beb20e2c33b9b766da11579dadfb5adfc78fb8aff",
+      "outcomes": {
+        "U01": "acceptable-limited",
+        "U02": "acceptable-limited",
+        "U03": "acceptable-limited",
+        "U04": "acceptable-limited",
+        "U05": "acceptable-limited",
+        "U06": "concern",
+        "U07": "acceptable-limited",
+        "U08": "acceptable-limited",
+        "U09": "critical",
+        "U10": "concern"
+      }
+    },
+    "marathon": {
+      "events": 10,
+      "eventFile": "marathon-events.json",
+      "eventSha256": "914f9f4f8b0d2118e66090c8c6de0f7d1ad673acb3c86d1e1c03507863f7cf64",
+      "reportFile": "marathon-events.md",
+      "reportSha256": "af8e8a337ffeb46e8c15f1bf865730fe6a980c20520925f1547061492525d18a",
+      "outcomes": {
+        "U01": "acceptable",
+        "U02": "acceptable-limited",
+        "U03": "acceptable-limited",
+        "U04": "acceptable-limited",
+        "U05": "acceptable-limited",
+        "U06": "concern",
+        "U07": "concern",
+        "U08": "acceptable-limited",
+        "U09": "critical",
+        "U10": "critical"
+      }
+    }
+  },
+  "initialScoresRemainLocked": true
+}

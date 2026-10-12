@@ -1,0 +1,117 @@
+{
+  "id": "U02",
+  "scope": "Independent full-day arithmetic, provenance, effective-date, protected body/QS/PRED and literal-input audit. Coaching judgement is in U02.md.",
+  "originalSha256": "070ba580e5bfc4fc0e59af99901b18284cf91a8dd7868f6712cb1772bbd06df1",
+  "raw": {
+    "old": {
+      "daysReviewed": 112,
+      "sessionsReviewed": 23,
+      "failures": [],
+      "projectedReferences": [
+        1425
+      ]
+    },
+    "new": {
+      "daysReviewed": 112,
+      "sessionsReviewed": 23,
+      "failures": [],
+      "projectedReferences": [
+        1425
+      ]
+    }
+  },
+  "cases": {
+    "primary": {
+      "literalFrozenInputMatches": true,
+      "protectedCount": 45,
+      "versions": {
+        "old": {
+          "daysReviewed": 112,
+          "sessionsReviewed": 22,
+          "failures": [],
+          "projectedReferences": [
+            1425
+          ],
+          "dateChanges": [],
+          "protectedBodyChanges": [],
+          "protectedQsChanges": [],
+          "protectedRowChanges": [],
+          "inputPure": true,
+          "recomputedAnalysisMatches": true,
+          "actualLogsMatchOriginal": true,
+          "missingActivationNemeri": []
+        },
+        "new": {
+          "daysReviewed": 112,
+          "sessionsReviewed": 21,
+          "failures": [],
+          "projectedReferences": [
+            1425
+          ],
+          "dateChanges": [],
+          "protectedBodyChanges": [],
+          "protectedQsChanges": [],
+          "protectedRowChanges": [],
+          "inputPure": true,
+          "recomputedAnalysisMatches": true,
+          "actualLogsMatchOriginal": true,
+          "missingActivationNemeri": [
+            "g16_gfnex5"
+          ]
+        }
+      }
+    },
+    "protection": {
+      "literalFrozenInputMatches": true,
+      "protectedCount": 49,
+      "versions": {
+        "old": {
+          "daysReviewed": 112,
+          "sessionsReviewed": 24,
+          "failures": [],
+          "projectedReferences": [
+            1425
+          ],
+          "dateChanges": [],
+          "protectedBodyChanges": [],
+          "protectedQsChanges": [],
+          "protectedRowChanges": [],
+          "inputPure": true,
+          "recomputedAnalysisMatches": false,
+          "actualLogsMatchOriginal": true,
+          "missingActivationNemeri": []
+        },
+        "new": {
+          "daysReviewed": 112,
+          "sessionsReviewed": 24,
+          "failures": [],
+          "projectedReferences": [
+            1425
+          ],
+          "dateChanges": [],
+          "protectedBodyChanges": [],
+          "protectedQsChanges": [],
+          "protectedRowChanges": [],
+          "inputPure": true,
+          "recomputedAnalysisMatches": false,
+          "actualLogsMatchOriginal": true,
+          "missingActivationNemeri": [
+            "g16_gfnex5"
+          ]
+        }
+      }
+    }
+  },
+  "findings": [
+    {
+      "severity": "low",
+      "scope": "event primary and supplemental",
+      "issue": "Rebuilt Aktivacija PRED loses nemeri:true compared with raw new generated row. RP zone remains and prevents use as measured fitness evidence."
+    },
+    {
+      "severity": "evidence-limit",
+      "scope": "supplemental protection only",
+      "issue": "Frozen protection analysis is the primary analysis; moves and added future-completed log intentionally change recomputed coverage/actual volume. This is a preservation injection, not a new realistic execution scenario."
+    }
+  ]
+}

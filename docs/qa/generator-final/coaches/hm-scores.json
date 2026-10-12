@@ -1,0 +1,2216 @@
+{
+  "reviewer": "hm",
+  "blinded": true,
+  "criteriaWeights": {
+    "fit": 20,
+    "quality": 20,
+    "progression": 15,
+    "recovery": 15,
+    "specificity": 10,
+    "taper": 10,
+    "coherence": 10
+  },
+  "plans": [
+    {
+      "profileId": "U01",
+      "side": "X",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 7.5,
+        "progression": 8,
+        "recovery": 8.5,
+        "specificity": 7.5,
+        "taper": 8,
+        "coherence": 8.5
+      },
+      "total": 80.75,
+      "weeksReviewed": 12,
+      "daysReviewed": 84,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "7.3 km; run days 1,3,7; longest endurance 2.9 km; formal/finish work 0.0 min (strides/race excluded). Gentle 1:1 run/walk opening below declared mileage; three runs and ample non-running days."
+        },
+        {
+          "week": 2,
+          "note": "7.7 km; run days 1,3,7; longest endurance 3 km; formal/finish work 0.0 min (strides/race excluded). 2:1 run/walk adds running exposure while distance barely rises; retain conversational effort."
+        },
+        {
+          "week": 3,
+          "note": "8.3 km; run days 1,3,7; longest endurance 3.1 km; formal/finish work 0.0 min (strides/race excluded). 3:1 run/walk and 3.1 km longest outing are reasonable small steps."
+        },
+        {
+          "week": 4,
+          "note": "6.1 km; run days 1,3,7; longest endurance 2.3 km; formal/finish work 0.0 min (strides/race excluded). Distance cutback is useful, although 5:1 running ratio still advances during recovery week."
+        },
+        {
+          "week": 5,
+          "note": "9.3 km; run days 1,3,7; longest endurance 3.5 km; formal/finish work 0.0 min (strides/race excluded). Continuous-running trial explicitly requires comfortable pain-free run/walk; fallback is actionable."
+        },
+        {
+          "week": 6,
+          "note": "9.6 km; run days 1,3,7; longest endurance 3.8 km; formal/finish work 0.0 min (strides/race excluded). First strides follow the conditional transition; 120 seconds fast running needs relaxed execution."
+        },
+        {
+          "week": 7,
+          "note": "11 km; run days 1,3,7; longest endurance 4.1 km; formal/finish work 3.0 min (strides/race excluded). Only 3 minutes controlled fartlek work; good introduction separated from Sunday long run."
+        },
+        {
+          "week": 8,
+          "note": "8 km; run days 1,3,7; longest endurance 3 km; formal/finish work 0.0 min (strides/race excluded). Cutback with just 60 seconds strides; useful recovery after first formal quality."
+        },
+        {
+          "week": 9,
+          "note": "11.7 km; run days 1,3,7; longest endurance 4.3 km; formal/finish work 3.0 min (strides/race excluded). 3 minutes faster fartlek work is small; recovery becomes shorter and pace faster together."
+        },
+        {
+          "week": 10,
+          "note": "12.4 km; run days 1,3,7; longest endurance 4.6 km; formal/finish work 5.3 min (strides/race excluded). Two 400 m repetitions give about 5.3 minutes work; long run approaches race distance."
+        },
+        {
+          "week": 11,
+          "note": "8 km; run days 1,3,7; longest endurance 2.9 km; formal/finish work 5.6 min (strides/race excluded). Reduced volume retains 800 m at reference race pace; adequate brief sharpening."
+        },
+        {
+          "week": 12,
+          "note": "8 km; run days 1,3,7; longest endurance 0 km; formal/finish work 0.0 min (strides/race excluded). Two short shakeouts and four rest days precede race; reference and wish are clearly separated."
+        }
+      ],
+      "strengths": [
+        "Run/walk start fits zero established continuity.",
+        "Explicit transition conditions and repeat-step option.",
+        "Quality remains small and race reference does not chase 30-minute wish."
+      ],
+      "concerns": [
+        {
+          "week": 4,
+          "day": 7,
+          "claim": "Run/walk ratio still progresses during nominal recovery week; repeat the ratio if tolerance is uncertain.",
+          "severity": "coaching",
+          "evidence": "Week 3 is 3:1 and week 4 5:1 despite volume reduction from 8.3 to 6.1 km."
+        },
+        {
+          "week": 9,
+          "day": 3,
+          "claim": "Faster work and shorter recoveries advance together; effort should control the progression.",
+          "severity": "coaching",
+          "evidence": "Week 7: 6x30 s at 7:15/km with 90 s jog; week 9: 3x60 s at 6:34/km with 60 s jog."
+        }
+      ],
+      "verdict": "Suitable cautious beginner 5K outline, conditional on tolerating the continuous-running trial; no evidence supports the faster goal yet."
+    },
+    {
+      "profileId": "U01",
+      "side": "Y",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 7,
+        "progression": 7,
+        "recovery": 8.5,
+        "specificity": 7.5,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 75.75,
+      "weeksReviewed": 12,
+      "daysReviewed": 84,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "7.3 km; run days 1,3,7; longest endurance 2.9 km; formal/finish work 0.0 min (strides/race excluded). Gentle 1:1 run/walk opening below declared mileage; three runs and ample non-running days."
+        },
+        {
+          "week": 2,
+          "note": "7.7 km; run days 1,3,7; longest endurance 3 km; formal/finish work 0.0 min (strides/race excluded). 2:1 run/walk adds running exposure while distance barely rises; retain conversational effort."
+        },
+        {
+          "week": 3,
+          "note": "8.3 km; run days 1,3,7; longest endurance 3.1 km; formal/finish work 0.0 min (strides/race excluded). 3:1 run/walk and 3.1 km longest outing are reasonable small steps."
+        },
+        {
+          "week": 4,
+          "note": "6.1 km; run days 1,3,7; longest endurance 2.3 km; formal/finish work 0.0 min (strides/race excluded). Distance cutback helps, but ratio advances to 5:1 without explicit tolerance check."
+        },
+        {
+          "week": 5,
+          "note": "9.3 km; run days 1,3,7; longest endurance 3.5 km; formal/finish work 0.0 min (strides/race excluded). All three outings become continuous and Monday adds strides; no repeat-step condition is shown."
+        },
+        {
+          "week": 6,
+          "note": "9.6 km; run days 1,3,7; longest endurance 3.8 km; formal/finish work 0.0 min (strides/race excluded). Continues easy running with 6 strides; delivery assumes prior transition succeeded."
+        },
+        {
+          "week": 7,
+          "note": "11 km; run days 1,3,7; longest endurance 4.1 km; formal/finish work 3.0 min (strides/race excluded). 3 minutes controlled fartlek with generous jog recoveries is a sensible formal introduction."
+        },
+        {
+          "week": 8,
+          "note": "8 km; run days 1,3,7; longest endurance 3 km; formal/finish work 0.0 min (strides/race excluded). Cutback and reduced strides restore recovery after first formal quality."
+        },
+        {
+          "week": 9,
+          "note": "11.7 km; run days 1,3,7; longest endurance 4.3 km; formal/finish work 3.0 min (strides/race excluded). 3 minutes faster fartlek work remains small; pace and recovery difficulty advance together."
+        },
+        {
+          "week": 10,
+          "note": "12.4 km; run days 1,3,7; longest endurance 4.6 km; formal/finish work 5.3 min (strides/race excluded). Two 400 m repetitions give about 5.3 minutes work; long run reaches 4.6 km."
+        },
+        {
+          "week": 11,
+          "note": "8 km; run days 1,3,7; longest endurance 2.9 km; formal/finish work 5.6 min (strides/race excluded). Reduced volume retains reference-race rhythm; long walking recovery is harmless at this dose."
+        },
+        {
+          "week": 12,
+          "note": "8 km; run days 1,3,7; longest endurance 0 km; formal/finish work 0.0 min (strides/race excluded). Two shakeouts precede race; displayed race reference correctly remains conditional."
+        }
+      ],
+      "strengths": [
+        "Low initial volume and run/walk progression.",
+        "Small later workout doses with rest days.",
+        "Goal wish remains distinct from current result."
+      ],
+      "concerns": [
+        {
+          "week": 4,
+          "day": 7,
+          "claim": "Run/walk ratio still progresses during nominal recovery week; repeat the ratio if tolerance is uncertain.",
+          "severity": "coaching",
+          "evidence": "Week 3 is 3:1 and week 4 5:1 despite volume reduction from 8.3 to 6.1 km."
+        },
+        {
+          "week": 9,
+          "day": 3,
+          "claim": "Faster work and shorter recoveries advance together; effort should control the progression.",
+          "severity": "coaching",
+          "evidence": "Week 7: 6x30 s at 7:15/km with 90 s jog; week 9: 3x60 s at 6:34/km with 60 s jog."
+        },
+        {
+          "week": 5,
+          "day": 1,
+          "claim": "Continuous running and strides are introduced without a conditional tolerance/repeat-step instruction.",
+          "severity": "coaching",
+          "evidence": "Week 4 uses 5:1 run/walk; week 5 prescribes 2.9/2.9/3.5 km continuous running and Monday 6x20 s strides; presentation lacks transition condition."
+        }
+      ],
+      "verdict": "Cautious overall 5K outline, but make run/walk transition conditional before endorsing the week-5 continuous runs and strides."
+    },
+    {
+      "profileId": "U02",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 7.5,
+        "progression": 7.5,
+        "recovery": 8.5,
+        "specificity": 7.5,
+        "taper": 8.5,
+        "coherence": 8.5
+      },
+      "total": 79.5,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "31.6 km; run days 1,3,5,7; longest endurance 10 km; formal/finish work 2.5 min (strides/race excluded). Near-baseline volume and just 2.5 minutes fartlek work suit some quality experience."
+        },
+        {
+          "week": 2,
+          "note": "32.7 km; run days 1,3,5,7; longest endurance 10.8 km; formal/finish work 2.2 min (strides/race excluded). Volume and long run increase; fartlek work actually declines to 2.25 minutes."
+        },
+        {
+          "week": 3,
+          "note": "34 km; run days 1,3,5,7; longest endurance 11.6 km; formal/finish work 15.0 min (strides/race excluded). Separated repetition and threshold sessions total about 15 minutes, reasonable introduction to two sessions."
+        },
+        {
+          "week": 4,
+          "note": "24.8 km; run days 1,3,5,7; longest endurance 8.4 km; formal/finish work 0.0 min (strides/race excluded). Large cutback removes formal quality while preserving short strides."
+        },
+        {
+          "week": 5,
+          "note": "37 km; run days 1,3,5,7; longest endurance 12.5 km; formal/finish work 21.1 min (strides/race excluded). Two 1 km intervals plus 2.4 km threshold add controlled work; large warm-up/cool-down share."
+        },
+        {
+          "week": 6,
+          "note": "38.5 km; run days 1,3,5,7; longest endurance 13.5 km; formal/finish work 19.5 min (strides/race excluded). 5 minutes fartlek plus about 14.5 minutes continuous threshold give complementary stimuli."
+        },
+        {
+          "week": 7,
+          "note": "40.9 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 23.1 min (strides/race excluded). Long run reaches 14.5 km; interval dose remains just 2 km despite higher volume."
+        },
+        {
+          "week": 8,
+          "note": "29.9 km; run days 1,3,5,7; longest endurance 10.6 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback maintains four runs and short strides."
+        },
+        {
+          "week": 9,
+          "note": "43 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 24.5 min (strides/race excluded). Pyramid varies repetition lengths; threshold dose is steady rather than progressively longer."
+        },
+        {
+          "week": 10,
+          "note": "43.3 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 24.6 min (strides/race excluded). 7 minutes fast fartlek and 3.5 km threshold form a modest peak week."
+        },
+        {
+          "week": 11,
+          "note": "42.7 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 24.0 min (strides/race excluded). Interval work advances slightly to 2.2 km; threshold repeats remain stable."
+        },
+        {
+          "week": 12,
+          "note": "31.1 km; run days 1,3,5,7; longest endurance 10 km; formal/finish work 0.0 min (strides/race excluded). Another useful easy cutback before race-specific block."
+        },
+        {
+          "week": 13,
+          "note": "42 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 23.0 min (strides/race excluded). 2 km at reference 5K pace with 90-second rests improves rhythm practice but is a small dose."
+        },
+        {
+          "week": 14,
+          "note": "42.7 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 24.4 min (strides/race excluded). 4x600 m intervals and 2.7 km threshold give modest final build."
+        },
+        {
+          "week": 15,
+          "note": "23.9 km; run days 1,3,5,7; longest endurance 8.7 km; formal/finish work 15.7 min (strides/race excluded). Sharp volume reduction with short rhythm and threshold sessions is coherent."
+        },
+        {
+          "week": 16,
+          "note": "15.5 km; run days 1,3,5,7; longest endurance 0 km; formal/finish work 2.8 min (strides/race excluded). Explicit non-sprint activation at near race rhythm, two shakeouts and rest before race."
+        }
+      ],
+      "strengths": [
+        "Paces follow 23:45 result instead of unsupported sub-20 wish.",
+        "Rest separates both quality sessions.",
+        "Volume grows moderately with recurring cutbacks."
+      ],
+      "concerns": [
+        {
+          "week": 7,
+          "day": 3,
+          "claim": "Experienced-performance ambition receives a modest interval dose that mostly maintains current capacity.",
+          "severity": "coaching",
+          "evidence": "2x1000 m at 4:32/km, about 9.1 minutes work, remains same as week 5 despite 40.9 km total."
+        },
+        {
+          "week": 2,
+          "day": 3,
+          "claim": "Introductory work duration declines without a stated rationale; weekly focus is not a dose progression.",
+          "severity": "coaching",
+          "evidence": "5x30 s in week 1 versus 3x45 s in week 2, both threshold-paced."
+        }
+      ],
+      "verdict": "Reasonable conservative 5K development plan; may need richer specific work after demonstrated tolerance, and a new test before claiming sub-20 readiness."
+    },
+    {
+      "profileId": "U02",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 7,
+        "progression": 7.5,
+        "recovery": 8.5,
+        "specificity": 6.5,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 76.5,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "31.6 km; run days 1,3,5,7; longest endurance 10 km; formal/finish work 2.5 min (strides/race excluded). Near-baseline volume and 2.5 minutes introductory fartlek are conservative."
+        },
+        {
+          "week": 2,
+          "note": "32.7 km; run days 1,3,5,7; longest endurance 10.8 km; formal/finish work 2.2 min (strides/race excluded). Long run increases; fartlek work decreases slightly, so introduction is not a steady dose ramp."
+        },
+        {
+          "week": 3,
+          "note": "34 km; run days 1,3,5,7; longest endurance 11.6 km; formal/finish work 15.0 min (strides/race excluded). Two separated sessions total about 15 minutes and include generous recovery."
+        },
+        {
+          "week": 4,
+          "note": "24.8 km; run days 1,3,5,7; longest endurance 8.4 km; formal/finish work 0.0 min (strides/race excluded). Formal quality disappears in the cutback; short strides keep coordination."
+        },
+        {
+          "week": 5,
+          "note": "37 km; run days 1,3,5,7; longest endurance 12.5 km; formal/finish work 21.1 min (strides/race excluded). 2x1 km intervals and 2x1.2 km threshold provide modest quality."
+        },
+        {
+          "week": 6,
+          "note": "38.5 km; run days 1,3,5,7; longest endurance 13.5 km; formal/finish work 19.5 min (strides/race excluded). 5 minutes fartlek and 2.9 km continuous threshold complement easy mileage."
+        },
+        {
+          "week": 7,
+          "note": "40.9 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 23.1 min (strides/race excluded). Long run reaches 14.5 km while interval work remains just 2 km."
+        },
+        {
+          "week": 8,
+          "note": "29.9 km; run days 1,3,5,7; longest endurance 10.6 km; formal/finish work 0.0 min (strides/race excluded). Four easy runs including cutback long run support recovery."
+        },
+        {
+          "week": 9,
+          "note": "43 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 24.5 min (strides/race excluded). Pyramid changes shape without much progression in total work."
+        },
+        {
+          "week": 10,
+          "note": "43.3 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 24.6 min (strides/race excluded). 7 minutes fartlek and 3.5 km threshold make a modest peak."
+        },
+        {
+          "week": 11,
+          "note": "42.7 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 24.0 min (strides/race excluded). Small interval increase; threshold dose stays stable."
+        },
+        {
+          "week": 12,
+          "note": "31.1 km; run days 1,3,5,7; longest endurance 10 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback before final specific work is reasonable."
+        },
+        {
+          "week": 13,
+          "note": "42 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 23.0 min (strides/race excluded). 2x1 km reference-race work has 3:34 walking rests; limited sustained-rhythm stimulus."
+        },
+        {
+          "week": 14,
+          "note": "42.7 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 24.4 min (strides/race excluded). 4x600 m plus short threshold is reasonable but does not validate goal improvement."
+        },
+        {
+          "week": 15,
+          "note": "23.9 km; run days 1,3,5,7; longest endurance 8.7 km; formal/finish work 15.7 min (strides/race excluded). Substantial reduction with two short sessions; walking recoveries remain generous."
+        },
+        {
+          "week": 16,
+          "note": "15.5 km; run days 1,3,5,7; longest endurance 0 km; formal/finish work 2.8 min (strides/race excluded). 200 m repeats are slower than earlier repetition pace and near race pace, but still labeled R."
+        }
+      ],
+      "strengths": [
+        "Current-result pacing protects against chasing sub-20 wish.",
+        "Easy-dominant volume with recovery weeks.",
+        "Quality sessions have non-running days between."
+      ],
+      "concerns": [
+        {
+          "week": 7,
+          "day": 3,
+          "claim": "Experienced-performance ambition receives a modest interval dose that mostly maintains current capacity.",
+          "severity": "coaching",
+          "evidence": "2x1000 m at 4:32/km, about 9.1 minutes work, remains same as week 5 despite 40.9 km total."
+        },
+        {
+          "week": 2,
+          "day": 3,
+          "claim": "Introductory work duration declines without a stated rationale; weekly focus is not a dose progression.",
+          "severity": "coaching",
+          "evidence": "5x30 s in week 1 versus 3x45 s in week 2, both threshold-paced."
+        },
+        {
+          "week": 13,
+          "day": 3,
+          "claim": "Long walking recoveries limit sustained 5K rhythm practice.",
+          "severity": "coaching",
+          "evidence": "2x1000 m at 4:45/km with 3:34 walking recovery; just 2 km accumulated race work."
+        },
+        {
+          "week": 16,
+          "day": 5,
+          "claim": "Race-week session label and zone imply repetition training although pace is near race rhythm.",
+          "severity": "technical",
+          "evidence": "R-labeled 3x200 m at 4:41/km, compared with reference race 4:45/km and earlier R pace 4:21/km."
+        }
+      ],
+      "verdict": "Reasonable aerobic and threshold outline; long race-work recoveries and labeling weaken specific-performance coaching."
+    },
+    {
+      "profileId": "U03",
+      "side": "X",
+      "criteria": {
+        "fit": 7.5,
+        "quality": 6.5,
+        "progression": 6.5,
+        "recovery": 8.5,
+        "specificity": 6.5,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 73.0,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "51.5 km; run days 1,2,3,5,7; longest endurance 14 km; formal/finish work 21.1 min (strides/race excluded). 50 km experienced athlete gets only 2 km intervals and 3 km threshold; conservative dose."
+        },
+        {
+          "week": 2,
+          "note": "53.6 km; run days 1,2,3,5,7; longest endurance 15.1 km; formal/finish work 23.5 min (strides/race excluded). Interval work grows to 2.4 km; easy volume and long run also rise moderately."
+        },
+        {
+          "week": 3,
+          "note": "55.9 km; run days 1,2,3,5,7; longest endurance 16.3 km; formal/finish work 22.0 min (strides/race excluded). 7x300 m gives 2.1 km repetition work; threshold stays at 3.2 km."
+        },
+        {
+          "week": 4,
+          "note": "40.3 km; run days 1,2,3,5,7; longest endurance 12.2 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback is clear and retains frequency."
+        },
+        {
+          "week": 5,
+          "note": "51.7 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 23.5 min (strides/race excluded). 2x1.2 km intervals barely extend the stimulus; long run is already near eventual ceiling."
+        },
+        {
+          "week": 6,
+          "note": "54.5 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 26.5 min (strides/race excluded). 9 minutes fartlek and 4 km threshold are sensible but low for the stated experienced profile."
+        },
+        {
+          "week": 7,
+          "note": "56.5 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 23.5 min (strides/race excluded). Peak volume comes mostly from easy runs; interval dose remains 2.4 km."
+        },
+        {
+          "week": 8,
+          "note": "40.2 km; run days 1,2,3,5,7; longest endurance 12.4 km; formal/finish work 0.0 min (strides/race excluded). Easy recovery week with reduced strides."
+        },
+        {
+          "week": 9,
+          "note": "51.7 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 25.9 min (strides/race excluded). Pyramid provides 3 km work; otherwise repeats earlier threshold dose."
+        },
+        {
+          "week": 10,
+          "note": "54.5 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 27.0 min (strides/race excluded). 9-minute fartlek repeats week 6; threshold only increases 0.1 km."
+        },
+        {
+          "week": 11,
+          "note": "56.5 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 23.5 min (strides/race excluded). Returns to week 7 workout structure; weak development beyond maintenance."
+        },
+        {
+          "week": 12,
+          "note": "40.2 km; run days 1,2,3,5,7; longest endurance 12.4 km; formal/finish work 0.0 min (strides/race excluded). Easy recovery week retains five runs."
+        },
+        {
+          "week": 13,
+          "note": "51.7 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 24.2 min (strides/race excluded). 3x1 km at reference 5K rhythm with 3:05 walk is limited specific preparation."
+        },
+        {
+          "week": 14,
+          "note": "54.5 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 26.1 min (strides/race excluded). 6x600 m raises interval work to 3.6 km just before taper."
+        },
+        {
+          "week": 15,
+          "note": "34.7 km; run days 1,2,3,5,7; longest endurance 9.9 km; formal/finish work 16.3 min (strides/race excluded). Lower volume and short rhythm/threshold doses preserve intensity."
+        },
+        {
+          "week": 16,
+          "note": "15.5 km; run days 2,3,5,7; longest endurance 0 km; formal/finish work 2.4 min (strides/race excluded). Short near-race-paced repeats have R label; race wish and reference are distinguished."
+        }
+      ],
+      "strengths": [
+        "Reported volume and running frequency are respected.",
+        "Regular cutbacks and separated quality.",
+        "Reference paces avoid premature goal acceleration."
+      ],
+      "concerns": [
+        {
+          "week": 7,
+          "day": 2,
+          "claim": "Experienced runner quality is persistently underdosed relative to established volume and performance aim.",
+          "severity": "coaching",
+          "evidence": "At 56.5 km/week, 2x1200 m at 3:57/km give 9.5 minutes interval work; threshold only 3.2 km."
+        },
+        {
+          "week": 13,
+          "day": 2,
+          "claim": "Limited accumulated race work and long walking recoveries weaken late specificity.",
+          "severity": "coaching",
+          "evidence": "3x1000 m reference 5K pace with 3:05 walking recovery."
+        },
+        {
+          "week": 11,
+          "day": 2,
+          "claim": "Several build weeks recycle the same doses, with little further development before race block.",
+          "severity": "coaching",
+          "evidence": "Weeks 7 and 11 retain identical interval/threshold structures; week 10 largely repeats week 6."
+        }
+      ],
+      "verdict": "Safe-looking maintenance-oriented outline, but insufficient quality development for the stated experienced performance ambition."
+    },
+    {
+      "profileId": "U03",
+      "side": "Y",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 8,
+        "progression": 7.5,
+        "recovery": 8.5,
+        "specificity": 8,
+        "taper": 8.5,
+        "coherence": 8.5
+      },
+      "total": 82.0,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "52.8 km; run days 1,2,3,5,7; longest endurance 14 km; formal/finish work 25.9 min (strides/race excluded). 3 km intervals and 3.2 km threshold are a more credible experienced-runner starting dose."
+        },
+        {
+          "week": 2,
+          "note": "53.6 km; run days 1,2,3,5,7; longest endurance 15.1 km; formal/finish work 29.8 min (strides/race excluded). 5x800 m gives about 15.8 minutes interval work without increasing total mileage sharply."
+        },
+        {
+          "week": 3,
+          "note": "55.9 km; run days 1,2,3,5,7; longest endurance 16.3 km; formal/finish work 31.3 min (strides/race excluded). 9x300 m and 3x1.6 km threshold provide a meaningful but recoverable stimulus."
+        },
+        {
+          "week": 4,
+          "note": "40.3 km; run days 1,2,3,5,7; longest endurance 12.2 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback preserves running frequency and relaxed strides."
+        },
+        {
+          "week": 5,
+          "note": "51.7 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 35.3 min (strides/race excluded). 3x1.2 km intervals plus 4.8 km threshold fit experienced background."
+        },
+        {
+          "week": 6,
+          "note": "54.5 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 30.7 min (strides/race excluded). 11 minutes fartlek and 4.5 km threshold are useful complementary sessions."
+        },
+        {
+          "week": 7,
+          "note": "56.7 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 35.3 min (strides/race excluded). Steady meaningful workout dose with modest volume peak; not every week needs more load."
+        },
+        {
+          "week": 8,
+          "note": "40.2 km; run days 1,2,3,5,7; longest endurance 12.4 km; formal/finish work 0.0 min (strides/race excluded). Easy recovery week is appropriate after three build weeks."
+        },
+        {
+          "week": 9,
+          "note": "51.7 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 35.3 min (strides/race excluded). 3.6 km pyramid and 4.8 km threshold consolidate quality."
+        },
+        {
+          "week": 10,
+          "note": "54.5 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 30.7 min (strides/race excluded). Repeats fartlek stimulus; maintenance rather than continued progression."
+        },
+        {
+          "week": 11,
+          "note": "56.7 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 35.3 min (strides/race excluded). Repeats prior interval and threshold doses; reasonable consolidation, somewhat formulaic."
+        },
+        {
+          "week": 12,
+          "note": "40.2 km; run days 1,2,3,5,7; longest endurance 12.4 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback before specific block."
+        },
+        {
+          "week": 13,
+          "note": "51.7 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 29.6 min (strides/race excluded). 4x1 km at reference 5K pace with 90-second walking recovery provides credible race rhythm."
+        },
+        {
+          "week": 14,
+          "note": "54.5 km; run days 1,2,3,5,7; longest endurance 16.6 km; formal/finish work 29.7 min (strides/race excluded). 7x600 m and 3 km threshold sharpen without goal-paced overreach."
+        },
+        {
+          "week": 15,
+          "note": "34.7 km; run days 1,2,3,5,7; longest endurance 9.9 km; formal/finish work 16.3 min (strides/race excluded). Reduced volume retains short race rhythm and threshold."
+        },
+        {
+          "week": 16,
+          "note": "15.5 km; run days 2,3,5,7; longest endurance 0 km; formal/finish work 2.4 min (strides/race excluded). Explicit relaxed activation and rest precede race; current reference remains separate from goal."
+        }
+      ],
+      "strengths": [
+        "Workout duration better reflects established quality experience.",
+        "Race rhythm has enough accumulated work and shorter recoveries.",
+        "Cutbacks and taper preserve recovery."
+      ],
+      "concerns": [
+        {
+          "week": 11,
+          "day": 2,
+          "claim": "Several build weeks recycle the same doses, with little further development before race block.",
+          "severity": "coaching",
+          "evidence": "Weeks 7 and 11 retain identical interval/threshold structures; week 10 largely repeats week 6."
+        }
+      ],
+      "verdict": "Credible experienced 5K development outline with meaningful quality and improved race-rhythm practice; target achievement remains unverified."
+    },
+    {
+      "profileId": "U04",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 7.5,
+        "progression": 7,
+        "recovery": 8.5,
+        "specificity": 6,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 76.25,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "27 km; run days 1,3,5,7; longest endurance 8 km; formal/finish work 2.5 min (strides/race excluded). Tiny fartlek introduction fits no formal quality experience despite immediate strides."
+        },
+        {
+          "week": 2,
+          "note": "28.1 km; run days 1,3,5,7; longest endurance 8.6 km; formal/finish work 3.0 min (strides/race excluded). Fartlek work rises gently to 3 minutes with long easy warm-up and cool-down."
+        },
+        {
+          "week": 3,
+          "note": "29.5 km; run days 1,3,5,7; longest endurance 9.2 km; formal/finish work 9.5 min (strides/race excluded). Two short continuous thresholds total 9.5 minutes; tolerable, but two sessions start together."
+        },
+        {
+          "week": 4,
+          "note": "22.2 km; run days 1,3,5,7; longest endurance 6.6 km; formal/finish work 2.1 min (strides/race excluded). Volume cutback and only 400 m threshold retain a tiny stimulus."
+        },
+        {
+          "week": 5,
+          "note": "32.7 km; run days 1,3,5,7; longest endurance 9.9 km; formal/finish work 15.0 min (strides/race excluded). 2x800 m intervals plus 1.4 km threshold give modest mixed work."
+        },
+        {
+          "week": 6,
+          "note": "34.5 km; run days 1,3,5,7; longest endurance 10.6 km; formal/finish work 23.3 min (strides/race excluded). Threshold grows to 3 km continuously, more than twice last threshold dose; monitor tolerance."
+        },
+        {
+          "week": 7,
+          "note": "35.9 km; run days 1,3,5,7; longest endurance 11.4 km; formal/finish work 18.1 min (strides/race excluded). Returns to 1.6 km interval work with 2 km threshold; long run grows steadily."
+        },
+        {
+          "week": 8,
+          "note": "26.5 km; run days 1,3,5,7; longest endurance 8.5 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback appropriately removes formal quality."
+        },
+        {
+          "week": 9,
+          "note": "39 km; run days 1,3,5,7; longest endurance 12.3 km; formal/finish work 25.7 min (strides/race excluded). Pyramid and 2.8 km threshold resume moderate doses."
+        },
+        {
+          "week": 10,
+          "note": "40.3 km; run days 1,3,5,7; longest endurance 13.2 km; formal/finish work 26.9 min (strides/race excluded). 9 minutes fartlek and 3.4 km threshold extend work modestly."
+        },
+        {
+          "week": 11,
+          "note": "42.6 km; run days 1,3,5,7; longest endurance 14.2 km; formal/finish work 24.2 min (strides/race excluded). 2x1 km intervals plus 2.8 km threshold consolidate progress."
+        },
+        {
+          "week": 12,
+          "note": "32 km; run days 1,3,5,7; longest endurance 10.4 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback before race-specific phase."
+        },
+        {
+          "week": 13,
+          "note": "42.2 km; run days 1,3,5,7; longest endurance 15.3 km; formal/finish work 23.0 min (strides/race excluded). 2x1 km race pace has almost 4 minutes walking rest; progression finish adds useful continuous work."
+        },
+        {
+          "week": 14,
+          "note": "43.8 km; run days 1,3,5,7; longest endurance 16.2 km; formal/finish work 30.3 min (strides/race excluded). 2x1.2 km race pace still has 4-minute rests; total race work is small."
+        },
+        {
+          "week": 15,
+          "note": "28 km; run days 1,3,5,7; longest endurance 10.5 km; formal/finish work 18.3 min (strides/race excluded). Volume drops with short rhythm and threshold sessions."
+        },
+        {
+          "week": 16,
+          "note": "20.5 km; run days 1,3,5,7; longest endurance 0 km; formal/finish work 5.1 min (strides/race excluded). 5x200 m are near 10K pace rather than true repetition speed; labeling blurs purpose."
+        }
+      ],
+      "strengths": [
+        "Gentle initial quality introduction.",
+        "Steady long-run expansion from 8 to 16.2 km.",
+        "Goal is separated from 5K-derived 10K reference."
+      ],
+      "concerns": [
+        {
+          "week": 6,
+          "day": 5,
+          "claim": "Continuous threshold dose increases substantially for a quality novice; repeat or split if tolerance is poor.",
+          "severity": "coaching",
+          "evidence": "Week 5 threshold 2x700 m = 7.4 minutes; week 6 continuous 3 km = 15.8 minutes."
+        },
+        {
+          "week": 14,
+          "day": 3,
+          "claim": "Race-specific blocks are heavily interrupted relative to short work dose.",
+          "severity": "coaching",
+          "evidence": "2x1200 m at reference 10K pace 5:11/km with 4 minutes walking recovery."
+        },
+        {
+          "week": 16,
+          "day": 5,
+          "claim": "Near-race activation is labeled repetition training instead of stating relaxed activation intent.",
+          "severity": "technical",
+          "evidence": "5x200 m at 5:07/km, reference race pace 5:11/km, earlier R reference 4:34/km."
+        }
+      ],
+      "verdict": "Plausible first structured 10K cycle with cautious introduction; late race blocks and activation labeling need improvement."
+    },
+    {
+      "profileId": "U04",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 7.5,
+        "progression": 7,
+        "recovery": 8.5,
+        "specificity": 7.5,
+        "taper": 8.5,
+        "coherence": 8.5
+      },
+      "total": 78.75,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "27 km; run days 1,3,5,7; longest endurance 8 km; formal/finish work 2.5 min (strides/race excluded). Tiny controlled fartlek fits quality novice; strides still need relaxed interpretation."
+        },
+        {
+          "week": 2,
+          "note": "28.1 km; run days 1,3,5,7; longest endurance 8.6 km; formal/finish work 3.0 min (strides/race excluded). Fartlek increases to 3 minutes; warm-up/cool-down dominate outing."
+        },
+        {
+          "week": 3,
+          "note": "29.5 km; run days 1,3,5,7; longest endurance 9.2 km; formal/finish work 9.5 min (strides/race excluded). Two short thresholds total 9.5 minutes; reasonable dose, simultaneous second-session introduction."
+        },
+        {
+          "week": 4,
+          "note": "22.2 km; run days 1,3,5,7; longest endurance 6.6 km; formal/finish work 2.1 min (strides/race excluded). 400 m threshold during cutback is minimal, useful only as familiarization."
+        },
+        {
+          "week": 5,
+          "note": "32.7 km; run days 1,3,5,7; longest endurance 9.9 km; formal/finish work 15.0 min (strides/race excluded). Short intervals and broken threshold add modest load."
+        },
+        {
+          "week": 6,
+          "note": "34.5 km; run days 1,3,5,7; longest endurance 10.6 km; formal/finish work 23.3 min (strides/race excluded). 3 km continuous threshold is a relatively large increase from 1.4 km prior threshold work."
+        },
+        {
+          "week": 7,
+          "note": "35.9 km; run days 1,3,5,7; longest endurance 11.4 km; formal/finish work 18.1 min (strides/race excluded). Moderate intervals and broken threshold support steady endurance growth."
+        },
+        {
+          "week": 8,
+          "note": "26.5 km; run days 1,3,5,7; longest endurance 8.5 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback allows recovery."
+        },
+        {
+          "week": 9,
+          "note": "39 km; run days 1,3,5,7; longest endurance 12.3 km; formal/finish work 25.7 min (strides/race excluded). Pyramid changes interval length; threshold advances to 2.8 km."
+        },
+        {
+          "week": 10,
+          "note": "40.3 km; run days 1,3,5,7; longest endurance 13.2 km; formal/finish work 26.9 min (strides/race excluded). 9 minutes fast fartlek and 3.4 km continuous threshold are plausible."
+        },
+        {
+          "week": 11,
+          "note": "42.6 km; run days 1,3,5,7; longest endurance 14.2 km; formal/finish work 24.2 min (strides/race excluded). 2x1 km interval work is modest; 14.2 km long run supports 10K endurance."
+        },
+        {
+          "week": 12,
+          "note": "32 km; run days 1,3,5,7; longest endurance 10.4 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback before final specific phase."
+        },
+        {
+          "week": 13,
+          "note": "42.2 km; run days 1,3,5,7; longest endurance 15.3 km; formal/finish work 23.0 min (strides/race excluded). 2x1 km race rhythm with 60-second recovery is more specific; continuous fast finish complements it."
+        },
+        {
+          "week": 14,
+          "note": "43.8 km; run days 1,3,5,7; longest endurance 16.2 km; formal/finish work 30.3 min (strides/race excluded). 2x1.2 km race rhythm still has modest total dose but short recoveries help continuity."
+        },
+        {
+          "week": 15,
+          "note": "28 km; run days 1,3,5,7; longest endurance 10.5 km; formal/finish work 18.3 min (strides/race excluded). Shorter sessions and lowered volume are coherent taper steps."
+        },
+        {
+          "week": 16,
+          "note": "20.5 km; run days 1,3,5,7; longest endurance 0 km; formal/finish work 5.1 min (strides/race excluded). Explicit non-sprint activation at near race rhythm gives clear purpose before race."
+        }
+      ],
+      "strengths": [
+        "Quality introduction reflects lack of experience.",
+        "Short recovery makes late race work more purposeful.",
+        "Long-run progression and cutbacks fit available four days."
+      ],
+      "concerns": [
+        {
+          "week": 6,
+          "day": 5,
+          "claim": "Continuous threshold dose increases substantially for a quality novice; repeat or split if tolerance is poor.",
+          "severity": "coaching",
+          "evidence": "Week 5 threshold 2x700 m = 7.4 minutes; week 6 continuous 3 km = 15.8 minutes."
+        }
+      ],
+      "verdict": "Plausible first structured 10K cycle; purposeful late rhythm recovery and activation instructions improve coherence, with threshold growth to monitor."
+    },
+    {
+      "profileId": "U05",
+      "side": "X",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 8,
+        "progression": 8,
+        "recovery": 8,
+        "specificity": 8,
+        "taper": 8.5,
+        "coherence": 8.5
+      },
+      "total": 82.0,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "47.5 km; run days 1,2,3,5,7; longest endurance 14 km; formal/finish work 19.3 min (strides/race excluded). Experienced runner gets 4.2 km combined threshold work across separated sessions."
+        },
+        {
+          "week": 2,
+          "note": "50.1 km; run days 1,2,3,5,7; longest endurance 15.1 km; formal/finish work 32.2 min (strides/race excluded). 3 km intervals and 4.3 km threshold make a meaningful early workload."
+        },
+        {
+          "week": 3,
+          "note": "51.8 km; run days 1,2,3,5,7; longest endurance 16.3 km; formal/finish work 22.1 min (strides/race excluded). Two broken thresholds are lower total work than week 2; useful variation rather than linear growth."
+        },
+        {
+          "week": 4,
+          "note": "38.8 km; run days 1,2,3,5,7; longest endurance 11.9 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback restores recovery."
+        },
+        {
+          "week": 5,
+          "note": "55.8 km; run days 1,2,3,5,7; longest endurance 17.6 km; formal/finish work 32.4 min (strides/race excluded). 3x1.2 km intervals and 3.8 km threshold fit established base."
+        },
+        {
+          "week": 6,
+          "note": "58.9 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 33.7 min (strides/race excluded). 13.5 minutes fartlek and 4.4 km threshold support 10K performance."
+        },
+        {
+          "week": 7,
+          "note": "61.7 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 33.3 min (strides/race excluded). Quality consolidates while easy volume rises; long run reaches 18.5 km."
+        },
+        {
+          "week": 8,
+          "note": "46.2 km; run days 1,2,3,5,7; longest endurance 13.7 km; formal/finish work 0.0 min (strides/race excluded). Clear easy cutback with retained frequency."
+        },
+        {
+          "week": 9,
+          "note": "65.5 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 33.3 min (strides/race excluded). 3.6 km pyramid and 4 km threshold are useful consolidation."
+        },
+        {
+          "week": 10,
+          "note": "68.9 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 40.0 min (strides/race excluded). 16.5 minutes fartlek and 5.1 km threshold make a credible peak."
+        },
+        {
+          "week": 11,
+          "note": "67.2 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 38.3 min (strides/race excluded). 4x1.2 km intervals provide sustained 10K-relevant aerobic work."
+        },
+        {
+          "week": 12,
+          "note": "50.4 km; run days 1,2,3,5,7; longest endurance 13.6 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback before race-specific weeks."
+        },
+        {
+          "week": 13,
+          "note": "65.8 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 41.8 min (strides/race excluded). 4x1.2 km at reference 10K pace with 60-second walks and 4.4 km threshold finish are specific."
+        },
+        {
+          "week": 14,
+          "note": "67.8 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 44.6 min (strides/race excluded). 3x1.6 km race pace with 75-second recoveries maintains accumulated race work."
+        },
+        {
+          "week": 15,
+          "note": "40.9 km; run days 1,2,3,5,7; longest endurance 12 km; formal/finish work 20.6 min (strides/race excluded). Volume reduction and small rhythm session help freshness; threshold is shortened."
+        },
+        {
+          "week": 16,
+          "note": "20.5 km; run days 2,3,5,7; longest endurance 0 km; formal/finish work 4.4 min (strides/race excluded). Clear near-race-rhythm activation with rest before race."
+        }
+      ],
+      "strengths": [
+        "Experienced quality dose is meaningful.",
+        "Late reference-race sessions use short recovery and longer repetitions.",
+        "Cutbacks and taper reduce load without forced goal paces."
+      ],
+      "concerns": [
+        {
+          "week": 10,
+          "day": 1,
+          "claim": "Sunday long run into a large Monday easy outing concentrates loading; allow shorter recovery running if needed.",
+          "severity": "coaching",
+          "evidence": "Week 9 Sunday 18.5 km followed by week 10 Monday 14 km plus strides; quality follows Tuesday."
+        }
+      ],
+      "verdict": "Credible experienced 10K progression with meaningful race work; adjust recovery mileage to actual response."
+    },
+    {
+      "profileId": "U05",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 6.5,
+        "progression": 7,
+        "recovery": 8.5,
+        "specificity": 6,
+        "taper": 8,
+        "coherence": 8
+      },
+      "total": 74.25,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "47.5 km; run days 1,2,3,5,7; longest endurance 14 km; formal/finish work 12.0 min (strides/race excluded). Only 2.6 km combined threshold for an experienced 45 km runner is conservative."
+        },
+        {
+          "week": 2,
+          "note": "49.2 km; run days 1,2,3,5,7; longest endurance 15.1 km; formal/finish work 23.0 min (strides/race excluded). 2 km intervals and 3.2 km threshold give a modest early stimulus."
+        },
+        {
+          "week": 3,
+          "note": "52.1 km; run days 1,2,3,5,7; longest endurance 16.3 km; formal/finish work 15.6 min (strides/race excluded). Broken thresholds return to lower total work despite mileage increase."
+        },
+        {
+          "week": 4,
+          "note": "39.1 km; run days 1,2,3,5,7; longest endurance 12 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback supports recovery."
+        },
+        {
+          "week": 5,
+          "note": "55.8 km; run days 1,2,3,5,7; longest endurance 17.6 km; formal/finish work 24.7 min (strides/race excluded). Only 2x1.2 km interval work; threshold remains modest."
+        },
+        {
+          "week": 6,
+          "note": "58.9 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 31.2 min (strides/race excluded). 10.5 minutes fartlek plus 4.5 km threshold improves stimulus somewhat."
+        },
+        {
+          "week": 7,
+          "note": "62.1 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 26.5 min (strides/race excluded). Interval dose stays 2.4 km as volume exceeds 60 km."
+        },
+        {
+          "week": 8,
+          "note": "46.6 km; run days 1,2,3,5,7; longest endurance 13.8 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback preserves five-day rhythm."
+        },
+        {
+          "week": 9,
+          "note": "65.1 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 29.0 min (strides/race excluded). 3 km pyramid and 3.6 km threshold supply relatively small quality share."
+        },
+        {
+          "week": 10,
+          "note": "68.2 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 35.6 min (strides/race excluded). 13.5 minutes fartlek and 4.8 km threshold form conservative peak quality."
+        },
+        {
+          "week": 11,
+          "note": "65.2 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 28.4 min (strides/race excluded). Interval dose falls to 2.4 km while warm-up/cool-down reach 7.3 km."
+        },
+        {
+          "week": 12,
+          "note": "48.9 km; run days 1,2,3,5,7; longest endurance 13.2 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback before race-specific phase."
+        },
+        {
+          "week": 13,
+          "note": "65.6 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 34.3 min (strides/race excluded). 3x1.2 km race pace with 4-minute walks gives weak sustained-rhythm practice."
+        },
+        {
+          "week": 14,
+          "note": "65.9 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 36.5 min (strides/race excluded). Only 2x1.6 km race pace and 4-minute walks; workout specificity declines."
+        },
+        {
+          "week": 15,
+          "note": "40.9 km; run days 1,2,3,5,7; longest endurance 12 km; formal/finish work 20.6 min (strides/race excluded). Good volume reduction with shortened quality."
+        },
+        {
+          "week": 16,
+          "note": "20.5 km; run days 2,3,5,7; longest endurance 0 km; formal/finish work 4.4 min (strides/race excluded). Near-race-paced 200 m work is acceptable sharpening, though R label is inaccurate in context."
+        }
+      ],
+      "strengths": [
+        "Reasonable mileage growth and repeated cutbacks.",
+        "Quality is well separated with easy-dominant volume.",
+        "Current-result reference is protected from ambitious wish."
+      ],
+      "concerns": [
+        {
+          "week": 10,
+          "day": 1,
+          "claim": "Sunday long run into a large Monday easy outing concentrates loading; allow shorter recovery running if needed.",
+          "severity": "coaching",
+          "evidence": "Week 9 Sunday 18.5 km followed by week 10 Monday 14 km plus strides; quality follows Tuesday."
+        },
+        {
+          "week": 11,
+          "day": 2,
+          "claim": "Interval stimulus is small while the outing is dominated by easy distance.",
+          "severity": "coaching",
+          "evidence": "2x1200 m = 10 minutes work, 3.5 km warm-up plus 3.8 km cool-down at 65.2 km/week."
+        },
+        {
+          "week": 14,
+          "day": 2,
+          "claim": "Race work declines and recovery remains long instead of developing sustained 10K rhythm.",
+          "severity": "coaching",
+          "evidence": "Week 13: 3x1200 m; week 14: 2x1600 m, both at 4:30/km with 4-minute walks."
+        }
+      ],
+      "verdict": "Strong aerobic outline but comparatively weak interval and late race-specific development for this experienced athlete."
+    },
+    {
+      "profileId": "U06",
+      "side": "X",
+      "criteria": {
+        "fit": 6.5,
+        "quality": 6,
+        "progression": 7.5,
+        "recovery": 7.5,
+        "specificity": 5.5,
+        "taper": 7.5,
+        "coherence": 6.5
+      },
+      "total": 67.0,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "10.2 km; run days 1,3,7; longest endurance 4 km; formal/finish work 0.0 min (strides/race excluded). Reduced return mileage is sensible; immediate old-result-paced strides undermine easy-only return message."
+        },
+        {
+          "week": 2,
+          "note": "10.4 km; run days 1,3,7; longest endurance 4.2 km; formal/finish work 0.0 min (strides/race excluded). Easy mileage stays low, but old-result-paced strides repeat without documented tolerance."
+        },
+        {
+          "week": 3,
+          "note": "10.8 km; run days 1,3,7; longest endurance 4.4 km; formal/finish work 0.0 min (strides/race excluded). Third return week remains short; paces still presented as ordinary targets."
+        },
+        {
+          "week": 4,
+          "note": "8.1 km; run days 1,3,7; longest endurance 3.2 km; formal/finish work 0.0 min (strides/race excluded). Cutback supports return, but stride pace is still derived from stale result."
+        },
+        {
+          "week": 5,
+          "note": "12.7 km; run days 1,3,7; longest endurance 4.6 km; formal/finish work 3.0 min (strides/race excluded). 3 minutes fartlek is modest, yet calendar introduces quality without an actionable readiness gate."
+        },
+        {
+          "week": 6,
+          "note": "13.1 km; run days 1,3,7; longest endurance 4.8 km; formal/finish work 3.0 min (strides/race excluded). 3 minutes fartlek stays conservative; historical pacing remains unverified."
+        },
+        {
+          "week": 7,
+          "note": "13.5 km; run days 1,3,7; longest endurance 5 km; formal/finish work 4.5 min (strides/race excluded). Faster I-paced fartlek enters despite no new fitness evidence in this static plan."
+        },
+        {
+          "week": 8,
+          "note": "10.2 km; run days 1,3,7; longest endurance 4 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback helps but does not establish tolerance or update reference."
+        },
+        {
+          "week": 9,
+          "note": "14.5 km; run days 1,3,7; longest endurance 5.3 km; formal/finish work 5.1 min (strides/race excluded). 2x500 m intervals provide only 5.1 minutes work at historical pace."
+        },
+        {
+          "week": 10,
+          "note": "15.3 km; run days 1,3,7; longest endurance 5.7 km; formal/finish work 6.8 min (strides/race excluded). 1.2 km threshold is short; long run reaches 5.7 km."
+        },
+        {
+          "week": 11,
+          "note": "16.5 km; run days 1,3,7; longest endurance 6.1 km; formal/finish work 6.0 min (strides/race excluded). 6 minutes fast fartlek increases dose cautiously."
+        },
+        {
+          "week": 12,
+          "note": "12.3 km; run days 1,3,7; longest endurance 4.5 km; formal/finish work 3.0 min (strides/race excluded). Cutback retains half prior fartlek work, a sensible dose reduction."
+        },
+        {
+          "week": 13,
+          "note": "16 km; run days 1,3,7; longest endurance 6.4 km; formal/finish work 8.5 min (strides/race excluded). Final third at threshold gives about 8.5 minutes continuous work, still historically paced."
+        },
+        {
+          "week": 14,
+          "note": "18.2 km; run days 1,3,7; longest endurance 6.7 km; formal/finish work 12.0 min (strides/race excluded). 2 km reference-race work with 4-minute walks is weak 10K rhythm preparation."
+        },
+        {
+          "week": 15,
+          "note": "10.9 km; run days 1,3,7; longest endurance 4.3 km; formal/finish work 7.2 min (strides/race excluded). Volume decreases and race work drops to 1.2 km."
+        },
+        {
+          "week": 16,
+          "note": "14.4 km; run days 1,3,7; longest endurance 0 km; formal/finish work 0.0 min (strides/race excluded). Two shakeouts precede 10K, but longest completed prescription is only 6.7 km; limitation is disclosed."
+        }
+      ],
+      "strengths": [
+        "Return mileage and formal workout doses are restrained.",
+        "Long run increases cautiously with cutbacks.",
+        "Race readiness limitation and historical PB warning are visible."
+      ],
+      "concerns": [
+        {
+          "week": 1,
+          "day": 1,
+          "claim": "Eight-week return is called easy-only but immediately includes strides paced from a year-old PB.",
+          "severity": "coaching",
+          "evidence": "6x20 s at 4:55/km in week 1; breakWeeks=8, consistentWeeks=1, PB 2025-10-12."
+        },
+        {
+          "week": 5,
+          "day": 3,
+          "claim": "Old-result pace remains executable quality target after calendar delay, without an actionable readiness condition.",
+          "severity": "coaching",
+          "evidence": "4x45 s at 5:40/km in week 5, later I work 5:07/km; presentation only says check fitness before harder work."
+        },
+        {
+          "week": 14,
+          "day": 3,
+          "claim": "Long walks and small accumulated work give little 10K sustained-rhythm preparation.",
+          "severity": "coaching",
+          "evidence": "2x1000 m at 6:00/km with 4-minute walking recovery."
+        },
+        {
+          "week": 16,
+          "day": 7,
+          "claim": "Delivered endurance supports rebuilding more than a confident time-target 10K.",
+          "severity": "coaching",
+          "evidence": "Peak long run 6.7 km and 18.2 km/week; warnings disclose limitation. This is not an absolute completion prohibition."
+        }
+      ],
+      "verdict": "Conservative rebuilding mileage, but old-result pacing and ungated return quality need revision before coach endorsement."
+    },
+    {
+      "profileId": "U06",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 7,
+        "progression": 7.5,
+        "recovery": 8.5,
+        "specificity": 6.5,
+        "taper": 7.5,
+        "coherence": 8
+      },
+      "total": 76.0,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "10.2 km; run days 1,3,7; longest endurance 4 km; formal/finish work 0.0 min (strides/race excluded). Reduced mileage, no strides and conversational effort override fit eight-week break."
+        },
+        {
+          "week": 2,
+          "note": "10.4 km; run days 1,3,7; longest endurance 4.2 km; formal/finish work 0.0 min (strides/race excluded). Easy-only return continues with effort ceiling, avoiding historical pace as requirement."
+        },
+        {
+          "week": 3,
+          "note": "10.8 km; run days 1,3,7; longest endurance 4.4 km; formal/finish work 0.0 min (strides/race excluded). Third easy week stabilizes running before quality."
+        },
+        {
+          "week": 4,
+          "note": "8.1 km; run days 1,3,7; longest endurance 3.2 km; formal/finish work 0.0 min (strides/race excluded). Cutback is useful; short strides return, needing the same relaxed effort interpretation."
+        },
+        {
+          "week": 5,
+          "note": "12.7 km; run days 1,3,7; longest endurance 4.6 km; formal/finish work 3.0 min (strides/race excluded). First quality is conditional on logged tolerance and test confirmation; 3-minute work dose is modest."
+        },
+        {
+          "week": 6,
+          "note": "13.1 km; run days 1,3,7; longest endurance 4.8 km; formal/finish work 3.0 min (strides/race excluded). Threshold-effort guidance remains attached; 3 minutes work is cautious."
+        },
+        {
+          "week": 7,
+          "note": "13.5 km; run days 1,3,7; longest endurance 5 km; formal/finish work 4.5 min (strides/race excluded). I-effort instruction includes reserve rather than requiring old PB pace."
+        },
+        {
+          "week": 8,
+          "note": "10.2 km; run days 1,3,7; longest endurance 4 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback keeps effort priority."
+        },
+        {
+          "week": 9,
+          "note": "14.5 km; run days 1,3,7; longest endurance 5.3 km; formal/finish work 5.1 min (strides/race excluded). 2x500 m intervals remain small and explicitly reference-only in pace."
+        },
+        {
+          "week": 10,
+          "note": "15.3 km; run days 1,3,7; longest endurance 5.7 km; formal/finish work 6.8 min (strides/race excluded). 1.2 km threshold and slowly longer endurance outing are plausible return work."
+        },
+        {
+          "week": 11,
+          "note": "16.5 km; run days 1,3,7; longest endurance 6.1 km; formal/finish work 6.0 min (strides/race excluded). 6 minutes faster fartlek increases workload with explicit effort reserve."
+        },
+        {
+          "week": 12,
+          "note": "12.3 km; run days 1,3,7; longest endurance 4.5 km; formal/finish work 3.0 min (strides/race excluded). Half-dose quality in recovery week avoids forced pace acceleration."
+        },
+        {
+          "week": 13,
+          "note": "16 km; run days 1,3,7; longest endurance 6.4 km; formal/finish work 8.5 min (strides/race excluded). Progression finish has threshold effort override, preserving conditional fitness status."
+        },
+        {
+          "week": 14,
+          "note": "18.2 km; run days 1,3,7; longest endurance 6.7 km; formal/finish work 12.0 min (strides/race excluded). 2x1 km reference-race work uses short recovery; effort guidance is still primary."
+        },
+        {
+          "week": 15,
+          "note": "10.9 km; run days 1,3,7; longest endurance 4.3 km; formal/finish work 7.2 min (strides/race excluded). Shortened rhythm session and lower volume taper the small accumulated load."
+        },
+        {
+          "week": 16,
+          "note": "14.4 km; run days 1,3,7; longest endurance 0 km; formal/finish work 0.0 min (strides/race excluded). Two historical-paced shakeouts lack the usual effort suffix; race readiness disclaimer still applies."
+        }
+      ],
+      "strengths": [
+        "Operational tolerance conditions and effort overrides support return after break.",
+        "First three weeks remove strides.",
+        "Race reference is explicitly unconfirmed and quality doses stay small."
+      ],
+      "concerns": [
+        {
+          "week": 5,
+          "day": 3,
+          "claim": "Operational readiness thresholds are useful screening heuristics, not validated physiological clearance.",
+          "severity": "coaching",
+          "evidence": "Instruction uses two logged weeks, 75% planned km, pain 4/10 and effort counts, plus test age <=90 days; individual response still matters."
+        },
+        {
+          "week": 16,
+          "day": 1,
+          "claim": "Effort override is absent from historical-paced shakeouts.",
+          "severity": "coaching",
+          "evidence": "Race-week shakeouts show 6:47/km without conversational 3–4/10 suffix that appears throughout earlier easy days."
+        },
+        {
+          "week": 16,
+          "day": 7,
+          "claim": "Delivered endurance supports rebuilding more than a confident time-target 10K.",
+          "severity": "coaching",
+          "evidence": "Peak long run 6.7 km and 18.2 km/week; warnings disclose limitation. This is not an absolute completion prohibition."
+        }
+      ],
+      "verdict": "Useful conditional rebuilding plan with effort-led guidance; readiness heuristics must not be treated as clearance or proof of 10K finish readiness."
+    },
+    {
+      "profileId": "U07",
+      "side": "X",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 8,
+        "progression": 8,
+        "recovery": 8,
+        "specificity": 9,
+        "taper": 8,
+        "coherence": 8.5
+      },
+      "total": 82.5,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.2 km; run days 1,3,5,7; longest endurance 10 km; formal/finish work 2.5 min (strides/race excluded). Four-day near-baseline start with tiny fartlek fits first-HM athlete."
+        },
+        {
+          "week": 2,
+          "note": "33.8 km; run days 1,3,5,7; longest endurance 10.8 km; formal/finish work 2.2 min (strides/race excluded). Long run increases to 10.8 km; introduction remains conservative."
+        },
+        {
+          "week": 3,
+          "note": "36 km; run days 1,3,5,7; longest endurance 11.6 km; formal/finish work 22.3 min (strides/race excluded). 3x1 km threshold on Wednesday plus small Friday interval dose is a useful split."
+        },
+        {
+          "week": 4,
+          "note": "27.2 km; run days 1,3,5,7; longest endurance 8.7 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback restores recovery before specific build."
+        },
+        {
+          "week": 5,
+          "note": "38.7 km; run days 1,3,5,7; longest endurance 12.5 km; formal/finish work 24.4 min (strides/race excluded). Longer threshold plus HM rhythm with 90-second jog recovery introduces specificity early."
+        },
+        {
+          "week": 6,
+          "note": "40.3 km; run days 1,3,5,7; longest endurance 13.5 km; formal/finish work 19.7 min (strides/race excluded). Small interval dose plus 2.4 km HM rhythm maintains balance."
+        },
+        {
+          "week": 7,
+          "note": "42.5 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 27.6 min (strides/race excluded). Threshold and HM rhythm develop while long run grows to 14.5 km."
+        },
+        {
+          "week": 8,
+          "note": "32.3 km; run days 1,3,5,7; longest endurance 10.6 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback removes formal quality."
+        },
+        {
+          "week": 9,
+          "note": "45.7 km; run days 1,3,5,7; longest endurance 15.6 km; formal/finish work 17.6 min (strides/race excluded). One HM session replaces second quality as long run reaches 96 minutes; sensible endurance emphasis."
+        },
+        {
+          "week": 10,
+          "note": "47 km; run days 1,3,5,7; longest endurance 16.8 km; formal/finish work 19.1 min (strides/race excluded). Long run reaches 104 minutes; Friday 13.4 km easy is sizable for four-day distribution."
+        },
+        {
+          "week": 11,
+          "note": "49.9 km; run days 1,3,5,7; longest endurance 18.1 km; formal/finish work 21.8 min (strides/race excluded). 4.2 km HM work and 18.1 km long run support race endurance; Friday easy run reaches 14 km."
+        },
+        {
+          "week": 12,
+          "note": "37.9 km; run days 1,3,5,7; longest endurance 13.2 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback precedes dress rehearsal and longest run."
+        },
+        {
+          "week": 13,
+          "note": "49.3 km; run days 1,3,5,7; longest endurance 19.5 km; formal/finish work 36.3 min (strides/race excluded). 7 km controlled HM rehearsal plus 19.5 km long run; rehearsal is explicitly not a maximal test."
+        },
+        {
+          "week": 14,
+          "note": "40 km; run days 1,3,5,7; longest endurance 16.5 km; formal/finish work 25.6 min (strides/race excluded). Quality doses shrink in taper; 16.5 km long run remains a substantial outing two weeks out."
+        },
+        {
+          "week": 15,
+          "note": "33.2 km; run days 1,3,5,7; longest endurance 12.6 km; formal/finish work 17.9 min (strides/race excluded). Further quality reduction and 12.6 km long run preserve rhythm; Monday volume stays nearly unchanged."
+        },
+        {
+          "week": 16,
+          "note": "31.6 km; run days 1,3,5,7; longest endurance 0 km; formal/finish work 6.1 min (strides/race excluded). Activation is explicitly relaxed; two shakeouts and rest precede reference-paced race."
+        }
+      ],
+      "strengths": [
+        "Early HM rhythm and threshold are distinct with short jogging recovery.",
+        "Second workout yields to endurance load in weeks 9–11.",
+        "Controlled rehearsal, long-run fueling practice and clear goal/reference distinction."
+      ],
+      "concerns": [
+        {
+          "week": 13,
+          "day": 3,
+          "claim": "Continuous HM rehearsal is a significant increase in uninterrupted race work; use controlled effort.",
+          "severity": "coaching",
+          "evidence": "7 km at 5:11/km, about 36.3 minutes; prior race sessions accumulate 3.4–4.2 km with recoveries."
+        },
+        {
+          "week": 5,
+          "day": 5,
+          "claim": "HM note says target rhythm although displayed pace follows current reference rather than desired finish.",
+          "severity": "technical",
+          "evidence": "HM block at 5:11/km, wish 1:45 requires about 4:59/km; generic note says blocks on target rhythm."
+        }
+      ],
+      "verdict": "Credible first-HM preparation with substantial endurance and specific practice; goal remains an aspiration, and large easy outings need response-based flexibility."
+    },
+    {
+      "profileId": "U07",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 7,
+        "progression": 7.5,
+        "recovery": 7.5,
+        "specificity": 6.5,
+        "taper": 7,
+        "coherence": 7.5
+      },
+      "total": 73.5,
+      "weeksReviewed": 16,
+      "daysReviewed": 112,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.2 km; run days 1,3,5,7; longest endurance 10 km; formal/finish work 2.5 min (strides/race excluded). Four-day near-baseline start with tiny fartlek is appropriate."
+        },
+        {
+          "week": 2,
+          "note": "33.8 km; run days 1,3,5,7; longest endurance 10.8 km; formal/finish work 2.2 min (strides/race excluded). Long run rises gently; formal quality remains small."
+        },
+        {
+          "week": 3,
+          "note": "35.9 km; run days 1,3,5,7; longest endurance 11.6 km; formal/finish work 17.3 min (strides/race excluded). Short intervals and short threshold offer generic aerobic work."
+        },
+        {
+          "week": 4,
+          "note": "27.2 km; run days 1,3,5,7; longest endurance 8.7 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback supports recovery."
+        },
+        {
+          "week": 5,
+          "note": "38.6 km; run days 1,3,5,7; longest endurance 12.5 km; formal/finish work 17.3 min (strides/race excluded). Continues generic intervals and threshold with no HM rhythm exposure."
+        },
+        {
+          "week": 6,
+          "note": "40.1 km; run days 1,3,5,7; longest endurance 13.5 km; formal/finish work 23.1 min (strides/race excluded). 8 minutes fartlek and 3 km threshold are plausible but less event-specific."
+        },
+        {
+          "week": 7,
+          "note": "42.6 km; run days 1,3,5,7; longest endurance 14.5 km; formal/finish work 21.3 min (strides/race excluded). Interval dose remains small and threshold develops moderately."
+        },
+        {
+          "week": 8,
+          "note": "32.4 km; run days 1,3,5,7; longest endurance 10.7 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback precedes higher mileage block."
+        },
+        {
+          "week": 9,
+          "note": "45.7 km; run days 1,3,5,7; longest endurance 15.6 km; formal/finish work 21.3 min (strides/race excluded). Still two generic quality sessions as long run exceeds 90 minutes."
+        },
+        {
+          "week": 10,
+          "note": "47.4 km; run days 1,3,5,7; longest endurance 16.8 km; formal/finish work 31.7 min (strides/race excluded). HM rhythm finally appears, but 5:26 jog between 1.7 km blocks disrupts sustained rhythm."
+        },
+        {
+          "week": 11,
+          "note": "50.2 km; run days 1,3,5,7; longest endurance 18.1 km; formal/finish work 35.2 min (strides/race excluded). Two quality sessions plus 18.1 km long run increase recovery demands."
+        },
+        {
+          "week": 12,
+          "note": "38.3 km; run days 1,3,5,7; longest endurance 13.3 km; formal/finish work 10.5 min (strides/race excluded). Cutback retains 2.1 km threshold; reasonable small stimulus."
+        },
+        {
+          "week": 13,
+          "note": "49.3 km; run days 1,3,5,7; longest endurance 19.5 km; formal/finish work 36.3 min (strides/race excluded). 7 km controlled HM rehearsal and 19.5 km long run are valuable late specificity."
+        },
+        {
+          "week": 14,
+          "note": "41.2 km; run days 1,3,5,7; longest endurance 15.6 km; formal/finish work 31.7 min (strides/race excluded). Taper retains essentially full prior rhythm/threshold doses; volume cut mostly comes from easy running."
+        },
+        {
+          "week": 15,
+          "note": "34.6 km; run days 1,3,5,7; longest endurance 12.6 km; formal/finish work 28.6 min (strides/race excluded). Continuous 3.1 km HM work plus 2.5 km threshold remains more work than necessary for sharpening."
+        },
+        {
+          "week": 16,
+          "note": "31.6 km; run days 1,3,5,7; longest endurance 0 km; formal/finish work 6.1 min (strides/race excluded). Near-race-paced 200 m repeats are usable activation, but R label obscures intended effort."
+        }
+      ],
+      "strengths": [
+        "Long run reaches 19.5 km with stepback weeks.",
+        "Controlled rehearsal practices kit and fuel.",
+        "Reference race pace does not imply achieving 1:45 wish."
+      ],
+      "concerns": [
+        {
+          "week": 13,
+          "day": 3,
+          "claim": "Continuous HM rehearsal is a significant increase in uninterrupted race work; use controlled effort.",
+          "severity": "coaching",
+          "evidence": "7 km at 5:11/km, about 36.3 minutes; prior race sessions accumulate 3.4–4.2 km with recoveries."
+        },
+        {
+          "week": 10,
+          "day": 3,
+          "claim": "HM intervals are late and over-recovered for sustained rhythm development.",
+          "severity": "coaching",
+          "evidence": "First HM rhythm week 10, 2x1700 m at 5:11/km with 5:26 jogging recovery."
+        },
+        {
+          "week": 14,
+          "day": 5,
+          "claim": "Taper restores two quality sessions and barely reduces their work dose.",
+          "severity": "coaching",
+          "evidence": "Week 11 rhythm+threshold = about 35.2 minutes; week 14 =31.7 minutes; week 13 was single 36.3-minute rehearsal."
+        },
+        {
+          "week": 15,
+          "day": 5,
+          "claim": "Penultimate-week quality reduction is limited relative to peak load.",
+          "severity": "coaching",
+          "evidence": "3.1 km HM rhythm plus 2.5 km threshold =28.6 minutes work while Sunday long run remains 12.6 km."
+        }
+      ],
+      "verdict": "Endurance progression is credible, but late HM rhythm, long recoveries and limited quality taper reduce performance-plan adequacy."
+    },
+    {
+      "profileId": "U08",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 6.5,
+        "progression": 7,
+        "recovery": 7.5,
+        "specificity": 7.5,
+        "taper": 7,
+        "coherence": 7.5
+      },
+      "total": 72.75,
+      "weeksReviewed": 14,
+      "daysReviewed": 98,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "53.8 km; run days 1,2,3,5,7; longest endurance 16 km; formal/finish work 14.9 min (strides/race excluded). Only 3.4 km combined threshold work for experienced 55 km athlete is underdeveloped."
+        },
+        {
+          "week": 2,
+          "note": "56.8 km; run days 1,2,3,5,7; longest endurance 17.2 km; formal/finish work 16.2 min (strides/race excluded). Threshold work barely increases; most distance is warm-up/cool-down and easy endurance."
+        },
+        {
+          "week": 3,
+          "note": "61.2 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 23.5 min (strides/race excluded). 2x1.2 km intervals and 3.2 km threshold remain conservative despite endurance rise."
+        },
+        {
+          "week": 4,
+          "note": "46.6 km; run days 1,2,3,5,7; longest endurance 13.6 km; formal/finish work 0.0 min (strides/race excluded). Clear easy cutback with medium-long and long runs shortened."
+        },
+        {
+          "week": 5,
+          "note": "63.3 km; run days 1,2,3,5,7; longest endurance 19.9 km; formal/finish work 23.5 min (strides/race excluded). Repeats modest interval/threshold doses; 19.9 km long run is the main progression."
+        },
+        {
+          "week": 6,
+          "note": "68.9 km; run days 1,2,3,5,7; longest endurance 21.3 km; formal/finish work 32.6 min (strides/race excluded). 12 minutes fartlek and 4.7 km threshold increase stimulus; long run exceeds race distance."
+        },
+        {
+          "week": 7,
+          "note": "67.9 km; run days 1,2,3,5,7; longest endurance 22 km; formal/finish work 28.8 min (strides/race excluded). 22 km long run and medium-long support endurance; interval dose remains 2.4 km."
+        },
+        {
+          "week": 8,
+          "note": "51.6 km; run days 1,2,3,5,7; longest endurance 15.3 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback resets fatigue before specific long finishes."
+        },
+        {
+          "week": 9,
+          "note": "71.1 km; run days 1,2,3,5,7; longest endurance 22 km; formal/finish work 47.2 min (strides/race excluded). HM blocks have nearly 5-minute jog recoveries; fast-finish long run adds 24.75 minutes HM work."
+        },
+        {
+          "week": 10,
+          "note": "75.3 km; run days 1,2,3,5,7; longest endurance 22 km; formal/finish work 45.0 min (strides/race excluded). 10 km controlled HM rehearsal is useful; next-day 13.6 km easy remains a large recovery demand."
+        },
+        {
+          "week": 11,
+          "note": "71.1 km; run days 1,2,3,5,7; longest endurance 22 km; formal/finish work 47.2 min (strides/race excluded). Repeats long finish and long-recovery HM blocks; meaningful load but little session development."
+        },
+        {
+          "week": 12,
+          "note": "61.7 km; run days 1,2,3,5,7; longest endurance 18.3 km; formal/finish work 41.8 min (strides/race excluded). Taper reintroduces second threshold session and retains full HM block dose; quality is not reduced enough."
+        },
+        {
+          "week": 13,
+          "note": "46.1 km; run days 1,2,3,5,7; longest endurance 14.3 km; formal/finish work 33.8 min (strides/race excluded). 7.6 km combined quality and 14.3 km long run retain substantial work one week before race."
+        },
+        {
+          "week": 14,
+          "note": "31.6 km; run days 2,3,5,7; longest endurance 0 km; formal/finish work 5.3 min (strides/race excluded). Race-week running shrinks substantially; 200 m work is near race rhythm but labeled R."
+        }
+      ],
+      "strengths": [
+        "Strong repeated long-run and medium-long endurance exposures.",
+        "Controlled 10 km rehearsal and two HM fast finishes.",
+        "Pace reference closely matches goal without artificial acceleration."
+      ],
+      "concerns": [
+        {
+          "week": 10,
+          "day": 3,
+          "claim": "Next-day medium-long may not provide enough recovery from a 45-minute controlled rehearsal.",
+          "severity": "coaching",
+          "evidence": "Tuesday 10 km at HM pace plus 6.5 km warm-up/cool-down; Wednesday 13.6 km at ~5:24/km despite note next 2–3 days easy. Easy intensity is compliant, duration needs discretion."
+        },
+        {
+          "week": 1,
+          "day": 5,
+          "claim": "Threshold work is too small to convincingly develop experienced HM performance.",
+          "severity": "coaching",
+          "evidence": "Week 1 combined threshold only 3.4 km; Friday 2x700 m amid 6.5 km warm-up/cool-down."
+        },
+        {
+          "week": 9,
+          "day": 2,
+          "claim": "Long jog recoveries reduce continuity in HM-rhythm blocks.",
+          "severity": "coaching",
+          "evidence": "2x2500 m at 4:30/km with 4:44 jogging recovery, repeated in weeks 11–12."
+        },
+        {
+          "week": 12,
+          "day": 5,
+          "claim": "Taper adds a second formal workout and retains full prior HM dose.",
+          "severity": "coaching",
+          "evidence": "Week 11 had 5 km HM blocks plus 5.5 km long-run finish; week 12 has 5 km HM blocks plus 4.4 km threshold with 18.3 km long run. Quality density remains substantial."
+        }
+      ],
+      "verdict": "Endurance structure is strong, but early quality development and quality taper are too weak for experienced HM performance coaching."
+    },
+    {
+      "profileId": "U08",
+      "side": "Y",
+      "criteria": {
+        "fit": 8.5,
+        "quality": 8.5,
+        "progression": 8,
+        "recovery": 7.5,
+        "specificity": 9,
+        "taper": 8.5,
+        "coherence": 8.5
+      },
+      "total": 83.25,
+      "weeksReviewed": 14,
+      "daysReviewed": 98,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "56.2 km; run days 1,2,3,5,7; longest endurance 16 km; formal/finish work 30.7 min (strides/race excluded). 4 km broken threshold plus 3 km continuous threshold fits established experience."
+        },
+        {
+          "week": 2,
+          "note": "59.2 km; run days 1,2,3,5,7; longest endurance 17.2 km; formal/finish work 28.8 min (strides/race excluded). Longer threshold blocks and one small interval session balance event-specific endurance and speed."
+        },
+        {
+          "week": 3,
+          "note": "61.5 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 35.1 min (strides/race excluded). Threshold block growth plus short maintenance threshold builds sustained controlled effort."
+        },
+        {
+          "week": 4,
+          "note": "46.8 km; run days 1,2,3,5,7; longest endurance 13.4 km; formal/finish work 8.8 min (strides/race excluded). Cutback retains just 2 km threshold with lower endurance mileage."
+        },
+        {
+          "week": 5,
+          "note": "66.5 km; run days 1,2,3,5,7; longest endurance 19.9 km; formal/finish work 39.0 min (strides/race excluded). 2x2.6 km threshold and 2x1.8 km HM rhythm with 60-second jog recovery are well targeted."
+        },
+        {
+          "week": 6,
+          "note": "67.3 km; run days 1,2,3,5,7; longest endurance 21.4 km; formal/finish work 33.1 min (strides/race excluded). Intervals complement 4.2 km HM work; long run progresses beyond race distance."
+        },
+        {
+          "week": 7,
+          "note": "69.9 km; run days 1,2,3,5,7; longest endurance 22 km; formal/finish work 42.6 min (strides/race excluded). 4.8 km threshold and 4.8 km HM rhythm are meaningful but need monitoring with 22 km long run."
+        },
+        {
+          "week": 8,
+          "note": "53.1 km; run days 1,2,3,5,7; longest endurance 15.7 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback restores recovery before fast-finish block."
+        },
+        {
+          "week": 9,
+          "note": "70.3 km; run days 1,2,3,5,7; longest endurance 22 km; formal/finish work 45.8 min (strides/race excluded). Threshold plus 5.5 km HM finish concentrate two major stimuli while Friday becomes easy."
+        },
+        {
+          "week": 10,
+          "note": "75.3 km; run days 1,2,3,5,7; longest endurance 22 km; formal/finish work 45.0 min (strides/race excluded). 10 km controlled HM rehearsal practices race conditions; 13.6 km next-day medium-long warrants flexibility."
+        },
+        {
+          "week": 11,
+          "note": "70.6 km; run days 1,2,3,5,7; longest endurance 22 km; formal/finish work 47.5 min (strides/race excluded). Threshold and second long finish consolidate specific endurance."
+        },
+        {
+          "week": 12,
+          "note": "61.3 km; run days 1,2,3,5,7; longest endurance 18.7 km; formal/finish work 33.9 min (strides/race excluded). Both quality doses shrink in taper while intensity is retained; long run still about 101 minutes."
+        },
+        {
+          "week": 13,
+          "note": "44 km; run days 1,2,3,5,7; longest endurance 14.3 km; formal/finish work 21.0 min (strides/race excluded). 3 km broken HM rhythm plus 1.7 km threshold is a clear dose reduction."
+        },
+        {
+          "week": 14,
+          "note": "31.6 km; run days 2,3,5,7; longest endurance 0 km; formal/finish work 5.3 min (strides/race excluded). Explicit non-sprint near-race activation and rest make race-week intent clear."
+        }
+      ],
+      "strengths": [
+        "Threshold and HM rhythm develop in longer blocks with short jog recoveries.",
+        "Fast-finish long runs replace second weekday quality.",
+        "Quality load decreases through taper; rehearsal is not claimed to validate fitness."
+      ],
+      "concerns": [
+        {
+          "week": 10,
+          "day": 3,
+          "claim": "Next-day medium-long may not provide enough recovery from a 45-minute controlled rehearsal.",
+          "severity": "coaching",
+          "evidence": "Tuesday 10 km at HM pace plus 6.5 km warm-up/cool-down; Wednesday 13.6 km at ~5:24/km despite note next 2–3 days easy. Easy intensity is compliant, duration needs discretion."
+        }
+      ],
+      "verdict": "Credible experienced HM preparation with purposeful threshold, rhythm and fast finishes; next-day rehearsal recovery should be flexible."
+    },
+    {
+      "profileId": "U09",
+      "side": "X",
+      "criteria": {
+        "fit": 4,
+        "quality": 5,
+        "progression": 5,
+        "recovery": 8,
+        "specificity": 2,
+        "taper": 7.5,
+        "coherence": 7
+      },
+      "total": 54.0,
+      "weeksReviewed": 20,
+      "daysReviewed": 140,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.4 km; run days 1,3,5,7; longest endurance 10 km; formal/finish work 2.0 min (strides/race excluded). Opening mileage fits baseline and avoids forcing two formal workouts."
+        },
+        {
+          "week": 2,
+          "note": "33.9 km; run days 1,3,5,7; longest endurance 10.8 km; formal/finish work 2.2 min (strides/race excluded). Small fartlek and modest long-run rise are conservative."
+        },
+        {
+          "week": 3,
+          "note": "32.5 km; run days 1,3,5,7; longest endurance 9.7 km; formal/finish work 9.7 min (strides/race excluded). Long run falls below initial 10 km despite non-deload label; race-endurance development stalls early."
+        },
+        {
+          "week": 4,
+          "note": "25.4 km; run days 1,3,5,7; longest endurance 8.1 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback is reasonable but adds another short-long-run week."
+        },
+        {
+          "week": 5,
+          "note": "36.3 km; run days 1,3,5,7; longest endurance 11.4 km; formal/finish work 9.7 min (strides/race excluded). Long run resumes to 11.4 km; threshold only 2 km."
+        },
+        {
+          "week": 6,
+          "note": "34 km; run days 1,3,5,7; longest endurance 10.2 km; formal/finish work 12.5 min (strides/race excluded). Just 2.2 km marathon rhythm with walks and long run back to 10.2 km offers little marathon specificity."
+        },
+        {
+          "week": 7,
+          "note": "37.6 km; run days 1,3,5,7; longest endurance 12.3 km; formal/finish work 9.7 min (strides/race excluded). 12.3 km long run and 2 km threshold still resemble shorter-race preparation."
+        },
+        {
+          "week": 8,
+          "note": "28.8 km; run days 1,3,5,7; longest endurance 9.2 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback gives recovery but further limits cumulative endurance."
+        },
+        {
+          "week": 9,
+          "note": "36.9 km; run days 1,3,5,7; longest endurance 11 km; formal/finish work 13.5 min (strides/race excluded). Long run falls to 11 km; 2.8 km threshold repeats become default stimulus."
+        },
+        {
+          "week": 10,
+          "note": "40.7 km; run days 1,3,5,7; longest endurance 13.2 km; formal/finish work 13.5 min (strides/race excluded). 13.2 km long run and initial fueling practice are useful but short for target event."
+        },
+        {
+          "week": 11,
+          "note": "44.2 km; run days 1,3,5,7; longest endurance 14.2 km; formal/finish work 13.5 min (strides/race excluded). 14.2 km long run grows gradually; no substantial marathon-duration rehearsal."
+        },
+        {
+          "week": 12,
+          "note": "33.2 km; run days 1,3,5,7; longest endurance 10.6 km; formal/finish work 0.0 min (strides/race excluded). Another easy cutback precedes later build."
+        },
+        {
+          "week": 13,
+          "note": "47.7 km; run days 1,3,5,7; longest endurance 15.3 km; formal/finish work 13.5 min (strides/race excluded). 15.3 km long run and same short threshold; marathon-specific stimulus remains inadequate."
+        },
+        {
+          "week": 14,
+          "note": "47.3 km; run days 1,3,5,7; longest endurance 16.5 km; formal/finish work 27.2 min (strides/race excluded). Two formal workouts enter while long run reaches 16.5 km; long-run preparation still limited."
+        },
+        {
+          "week": 15,
+          "note": "45.1 km; run days 1,3,5,7; longest endurance 14.8 km; formal/finish work 24.9 min (strides/race excluded). Intervals and threshold replace endurance emphasis; longest outing steps back."
+        },
+        {
+          "week": 16,
+          "note": "35.5 km; run days 1,3,5,7; longest endurance 10.7 km; formal/finish work 10.6 min (strides/race excluded). Cutback retains short threshold; useful recovery, insufficient accumulated distance."
+        },
+        {
+          "week": 17,
+          "note": "49.1 km; run days 1,3,5,7; longest endurance 17.7 km; formal/finish work 32.1 min (strides/race excluded). Peak long run only 17.7 km; 2.5 km marathon rhythm does not repair event-duration gap."
+        },
+        {
+          "week": 18,
+          "note": "39.3 km; run days 1,3,5,7; longest endurance 13.8 km; formal/finish work 27.2 min (strides/race excluded). Progressive taper helps freshness but cannot replace missing long endurance exposure."
+        },
+        {
+          "week": 19,
+          "note": "31.9 km; run days 1,3,5,7; longest endurance 11.4 km; formal/finish work 14.2 min (strides/race excluded). Further mileage reduction with small marathon-rhythm block is structurally coherent."
+        },
+        {
+          "week": 20,
+          "note": "52.7 km; run days 1,3,5,7; longest endurance 0 km; formal/finish work 6.7 min (strides/race excluded). 42.195 km race prescription is more than twice longest preparation outing; warning does not resolve mismatch."
+        }
+      ],
+      "strengths": [
+        "No attempt to force unsafe mileage rapidly from initial base.",
+        "Major endurance limitation is explicitly disclosed.",
+        "Four-day schedule has rest between most demanding outings."
+      ],
+      "concerns": [
+        {
+          "week": 17,
+          "day": 7,
+          "claim": "Delivered plan cannot be endorsed as adequate marathon preparation despite candid warnings.",
+          "severity": "critical",
+          "evidence": "Peak long run 17.7 km (~105 minutes), no longer exposure in 20 weeks; marathon 42.195 km and ~4-hour reference, no replacement shorter-race or deferral prescription."
+        },
+        {
+          "week": 14,
+          "day": 3,
+          "claim": "Short marathon blocks and repeated threshold work do not address the primary missing endurance requirement.",
+          "severity": "coaching",
+          "evidence": "Only 2x1200 m marathon rhythm and 2x1400 m threshold; longest run 16.5 km."
+        },
+        {
+          "week": 1,
+          "day": 7,
+          "claim": "Four available days alone do not explain inadequacy; delivered long-run development is the actual concern.",
+          "severity": "coaching",
+          "evidence": "Profile has four days and 30 km baseline; official Higdon Novice 1 also uses four runs but builds to about 32 km long runs. Different method is possible; fixed 55 km weekly threshold is not universal."
+        }
+      ],
+      "verdict": "Do not endorse as a complete marathon preparation plan. Preserve cautious building but change event/date or develop an individualized longer preparation pathway before marathon start."
+    },
+    {
+      "profileId": "U09",
+      "side": "Y",
+      "criteria": {
+        "fit": 4,
+        "quality": 5,
+        "progression": 5,
+        "recovery": 8,
+        "specificity": 2,
+        "taper": 7.5,
+        "coherence": 6.5
+      },
+      "total": 53.5,
+      "weeksReviewed": 20,
+      "daysReviewed": 140,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "32.4 km; run days 1,3,5,7; longest endurance 10 km; formal/finish work 2.0 min (strides/race excluded). Opening mileage fits baseline and tiny fartlek introduction."
+        },
+        {
+          "week": 2,
+          "note": "33.9 km; run days 1,3,5,7; longest endurance 10.8 km; formal/finish work 2.2 min (strides/race excluded). Long run increases modestly to 10.8 km."
+        },
+        {
+          "week": 3,
+          "note": "32.5 km; run days 1,3,5,7; longest endurance 9.7 km; formal/finish work 9.7 min (strides/race excluded). Non-deload week reduces long run below starting distance; development stalls."
+        },
+        {
+          "week": 4,
+          "note": "25.4 km; run days 1,3,5,7; longest endurance 8.1 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback supplies recovery but keeps endurance exposure short."
+        },
+        {
+          "week": 5,
+          "note": "36.3 km; run days 1,3,5,7; longest endurance 11.4 km; formal/finish work 9.7 min (strides/race excluded). Long run reaches 11.4 km and threshold work remains tiny."
+        },
+        {
+          "week": 6,
+          "note": "34 km; run days 1,3,5,7; longest endurance 10.2 km; formal/finish work 12.5 min (strides/race excluded). 2.2 km marathon rhythm plus 10.2 km long run offer little event-duration preparation."
+        },
+        {
+          "week": 7,
+          "note": "37.6 km; run days 1,3,5,7; longest endurance 12.3 km; formal/finish work 9.7 min (strides/race excluded). 12.3 km long run and short threshold remain far below marathon demands."
+        },
+        {
+          "week": 8,
+          "note": "28.8 km; run days 1,3,5,7; longest endurance 9.2 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback limits fatigue, but accumulated endurance remains insufficient."
+        },
+        {
+          "week": 9,
+          "note": "36.9 km; run days 1,3,5,7; longest endurance 11 km; formal/finish work 13.5 min (strides/race excluded). Long run falls to 11 km and threshold structure becomes repetitive."
+        },
+        {
+          "week": 10,
+          "note": "40.7 km; run days 1,3,5,7; longest endurance 13.2 km; formal/finish work 13.5 min (strides/race excluded). 13.2 km long run begins useful fueling practice."
+        },
+        {
+          "week": 11,
+          "note": "44.2 km; run days 1,3,5,7; longest endurance 14.2 km; formal/finish work 13.5 min (strides/race excluded). 14.2 km long run progresses but still lacks substantial marathon-duration rehearsal."
+        },
+        {
+          "week": 12,
+          "note": "33.2 km; run days 1,3,5,7; longest endurance 10.6 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback before later build."
+        },
+        {
+          "week": 13,
+          "note": "47.7 km; run days 1,3,5,7; longest endurance 15.3 km; formal/finish work 13.5 min (strides/race excluded). 15.3 km long run and short threshold provide general aerobic training."
+        },
+        {
+          "week": 14,
+          "note": "47.3 km; run days 1,3,5,7; longest endurance 16.5 km; formal/finish work 27.2 min (strides/race excluded). Two short quality sessions now accompany 16.5 km long run."
+        },
+        {
+          "week": 15,
+          "note": "45.1 km; run days 1,3,5,7; longest endurance 14.8 km; formal/finish work 24.9 min (strides/race excluded). Interval introduction does little to address the central endurance gap."
+        },
+        {
+          "week": 16,
+          "note": "35.5 km; run days 1,3,5,7; longest endurance 10.7 km; formal/finish work 10.6 min (strides/race excluded). Cutback restores recovery without correcting target-event mismatch."
+        },
+        {
+          "week": 17,
+          "note": "49.1 km; run days 1,3,5,7; longest endurance 17.7 km; formal/finish work 32.1 min (strides/race excluded). Peak 17.7 km long run and 2.5 km marathon pace are insufficient delivered marathon preparation."
+        },
+        {
+          "week": 18,
+          "note": "39.3 km; run days 1,3,5,7; longest endurance 13.8 km; formal/finish work 27.2 min (strides/race excluded). Volume taper is coherent but leaves missing endurance untouched."
+        },
+        {
+          "week": 19,
+          "note": "31.9 km; run days 1,3,5,7; longest endurance 11.4 km; formal/finish work 14.2 min (strides/race excluded). Further reduction and small marathon-rhythm block maintain freshness."
+        },
+        {
+          "week": 20,
+          "note": "52.7 km; run days 1,3,5,7; longest endurance 0 km; formal/finish work 6.7 min (strides/race excluded). 42.195 km race remains scheduled despite limited preparation; R-labeled slow repeats add purpose ambiguity."
+        }
+      ],
+      "strengths": [
+        "Conservative mileage avoids forced large jumps.",
+        "Readiness warning acknowledges delivered endurance gap.",
+        "Rest days separate formal quality and long runs."
+      ],
+      "concerns": [
+        {
+          "week": 17,
+          "day": 7,
+          "claim": "Delivered plan cannot be endorsed as adequate marathon preparation despite candid warnings.",
+          "severity": "critical",
+          "evidence": "Peak long run 17.7 km (~105 minutes), no longer exposure in 20 weeks; marathon 42.195 km and ~4-hour reference, no replacement shorter-race or deferral prescription."
+        },
+        {
+          "week": 14,
+          "day": 3,
+          "claim": "Short marathon blocks and repeated threshold work do not address the primary missing endurance requirement.",
+          "severity": "coaching",
+          "evidence": "Only 2x1200 m marathon rhythm and 2x1400 m threshold; longest run 16.5 km."
+        },
+        {
+          "week": 1,
+          "day": 7,
+          "claim": "Four available days alone do not explain inadequacy; delivered long-run development is the actual concern.",
+          "severity": "coaching",
+          "evidence": "Profile has four days and 30 km baseline; official Higdon Novice 1 also uses four runs but builds to about 32 km long runs. Different method is possible; fixed 55 km weekly threshold is not universal."
+        }
+      ],
+      "verdict": "Do not endorse as a complete marathon preparation plan. Delivered 17.7 km peak long run leaves a major event-duration gap that the warning and taper cannot resolve."
+    },
+    {
+      "profileId": "U10",
+      "side": "X",
+      "criteria": {
+        "fit": 8,
+        "quality": 7.5,
+        "progression": 7.5,
+        "recovery": 7,
+        "specificity": 7.5,
+        "taper": 7.5,
+        "coherence": 8
+      },
+      "total": 75.75,
+      "weeksReviewed": 20,
+      "daysReviewed": 140,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "65.1 km; run days 1,2,3,5,7; longest endurance 24 km; formal/finish work 32.9 min (strides/race excluded). 24 km long run and 14.4 km medium-long fit reported base; recent marathon recovery history is missing."
+        },
+        {
+          "week": 2,
+          "note": "68.9 km; run days 1,2,3,5,7; longest endurance 25.5 km; formal/finish work 36.0 min (strides/race excluded). 25.5 km long run and slightly longer progressive/threshold work advance together."
+        },
+        {
+          "week": 3,
+          "note": "69.5 km; run days 1,2,3,5,7; longest endurance 22.9 km; formal/finish work 38.2 min (strides/race excluded). Long-run stepback partly offsets higher quality volume."
+        },
+        {
+          "week": 4,
+          "note": "54.2 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback lowers both volume and endurance duration."
+        },
+        {
+          "week": 5,
+          "note": "74.9 km; run days 1,2,3,5,7; longest endurance 27 km; formal/finish work 43.6 min (strides/race excluded). 27 km long run, 16.2 km medium-long and two workouts make a substantial five-day week."
+        },
+        {
+          "week": 6,
+          "note": "74.4 km; run days 1,2,3,5,7; longest endurance 24.3 km; formal/finish work 45.8 min (strides/race excluded). Long run steps back while threshold reaches 5 km; balanced consolidation."
+        },
+        {
+          "week": 7,
+          "note": "80.3 km; run days 1,2,3,5,7; longest endurance 28.5 km; formal/finish work 49.4 min (strides/race excluded). 28.5 km long run plus 5.5 km threshold and 4.1 km marathon work create meaningful endurance load."
+        },
+        {
+          "week": 8,
+          "note": "62.7 km; run days 1,2,3,5,7; longest endurance 20.8 km; formal/finish work 16.5 min (strides/race excluded). Cutback retains 3.3 km threshold and reduces long-running duration."
+        },
+        {
+          "week": 9,
+          "note": "75.3 km; run days 1,2,3,5,7; longest endurance 25.6 km; formal/finish work 42.4 min (strides/race excluded). Intervals offer variation; long run steps back from peak trajectory."
+        },
+        {
+          "week": 10,
+          "note": "81.4 km; run days 1,2,3,5,7; longest endurance 29.3 km; formal/finish work 46.3 min (strides/race excluded). 29.3 km long run approaches 3 hours; short broken marathon work is a modest specific dose."
+        },
+        {
+          "week": 11,
+          "note": "81.7 km; run days 1,2,3,5,7; longest endurance 29.3 km; formal/finish work 49.4 min (strides/race excluded). Repeated 3-hour long run with threshold and marathon work needs fatigue monitoring."
+        },
+        {
+          "week": 12,
+          "note": "64 km; run days 1,2,3,5,7; longest endurance 20.3 km; formal/finish work 16.5 min (strides/race excluded). Cutback reduces long run to 20.3 km and retains shortened threshold."
+        },
+        {
+          "week": 13,
+          "note": "81.7 km; run days 1,2,3,5,7; longest endurance 29.3 km; formal/finish work 49.4 min (strides/race excluded). Returns to 29.3 km long run and 17.6 km medium-long; meaningful but repetitive peak structure."
+        },
+        {
+          "week": 14,
+          "note": "81.4 km; run days 1,2,3,5,7; longest endurance 29.3 km; formal/finish work 46.3 min (strides/race excluded). Another 29.3 km long run and short marathon blocks consolidate rather than develop specificity."
+        },
+        {
+          "week": 15,
+          "note": "75.3 km; run days 1,2,3,5,7; longest endurance 26.3 km; formal/finish work 63.9 min (strides/race excluded). 26.3 km long run finishes 9.2 km at marathon pace; Friday becomes easy to protect recovery."
+        },
+        {
+          "week": 16,
+          "note": "58.7 km; run days 1,2,3,5,7; longest endurance 18.8 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback follows fast-finish stimulus."
+        },
+        {
+          "week": 17,
+          "note": "81.7 km; run days 1,2,3,5,7; longest endurance 29.3 km; formal/finish work 49.4 min (strides/race excluded). Final 29.3 km long run with two workouts is a substantial return after cutback."
+        },
+        {
+          "week": 18,
+          "note": "65.3 km; run days 1,2,3,5,7; longest endurance 22.3 km; formal/finish work 39.1 min (strides/race excluded). Taper volume drops around 20%; 22.3 km long run and two quality sessions retain considerable load."
+        },
+        {
+          "week": 19,
+          "note": "53.1 km; run days 1,2,3,5,7; longest endurance 18.7 km; formal/finish work 36.6 min (strides/race excluded). 18.7 km long run lasts about 115 minutes only seven days before marathon; shortening should be available."
+        },
+        {
+          "week": 20,
+          "note": "52.7 km; run days 2,3,5,7; longest endurance 0 km; formal/finish work 6.3 min (strides/race excluded). Clear relaxed activation and reduced pre-race running precede reference-paced marathon."
+        }
+      ],
+      "strengths": [
+        "Repeated long and medium-long exposure supports endurance.",
+        "Fast finish replaces second weekday quality.",
+        "Marathon pace stays tied to current result rather than 3:30 wish."
+      ],
+      "concerns": [
+        {
+          "week": 11,
+          "day": 7,
+          "claim": "Repeated 3-hour long runs plus medium-long and two workouts need explicit fatigue-based shortening.",
+          "severity": "coaching",
+          "evidence": "Weeks 10–11,13–14,17 reach 28–29.3 km; 17.6 km midweek runs and threshold work coexist. Repetition is not automatically unsafe; no completion/recovery feedback is available."
+        },
+        {
+          "week": 19,
+          "day": 7,
+          "claim": "Substantial long-run duration only seven days before marathon may leave avoidable fatigue.",
+          "severity": "coaching",
+          "evidence": "Week 19 Sunday: 18.7 km (~115 minutes); delivered taper stays about 65% of peak weekly mileage before final race week."
+        },
+        {
+          "week": 1,
+          "day": 7,
+          "claim": "Recovery since recent marathon is unknown despite immediate 24 km opening long run.",
+          "severity": "coaching",
+          "evidence": "PB marathon 2026-09-20; plan start 2026-10-12, 22 days later. Reported 60 km/week and recent 24 km are accepted inputs, not proof of post-race recovery."
+        }
+      ],
+      "verdict": "Credible marathon endurance outline for reported base, with modest weekday specific work and recovery/taper duration requiring individual adjustment; faster goal is unverified."
+    },
+    {
+      "profileId": "U10",
+      "side": "Y",
+      "criteria": {
+        "fit": 8,
+        "quality": 6.5,
+        "progression": 7.5,
+        "recovery": 7.5,
+        "specificity": 6.5,
+        "taper": 7.5,
+        "coherence": 7.5
+      },
+      "total": 73.0,
+      "weeksReviewed": 20,
+      "daysReviewed": 140,
+      "weekNotes": [
+        {
+          "week": 1,
+          "note": "63 km; run days 1,2,3,5,7; longest endurance 24 km; formal/finish work 23.7 min (strides/race excluded). Opening fits declared endurance base; two formal workout doses are conservative."
+        },
+        {
+          "week": 2,
+          "note": "66.4 km; run days 1,2,3,5,7; longest endurance 25.5 km; formal/finish work 26.9 min (strides/race excluded). Long run grows while progressive fast portion and threshold expand modestly."
+        },
+        {
+          "week": 3,
+          "note": "66.1 km; run days 1,2,3,5,7; longest endurance 22.9 km; formal/finish work 29.2 min (strides/race excluded). Long-run stepback offsets small threshold increase."
+        },
+        {
+          "week": 4,
+          "note": "51.6 km; run days 1,2,3,5,7; longest endurance 17.6 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback reduces long and medium-long exposures."
+        },
+        {
+          "week": 5,
+          "note": "71.9 km; run days 1,2,3,5,7; longest endurance 26 km; formal/finish work 34.5 min (strides/race excluded). 26 km long run develops endurance, though progressive marathon portion remains short."
+        },
+        {
+          "week": 6,
+          "note": "69.9 km; run days 1,2,3,5,7; longest endurance 23.4 km; formal/finish work 37.7 min (strides/race excluded). Long-run stepback and threshold increase give controlled consolidation."
+        },
+        {
+          "week": 7,
+          "note": "76 km; run days 1,2,3,5,7; longest endurance 27.1 km; formal/finish work 40.1 min (strides/race excluded). 27.1 km long run with 3.3 km marathon work and 4.5 km threshold supports general endurance."
+        },
+        {
+          "week": 8,
+          "note": "59.4 km; run days 1,2,3,5,7; longest endurance 18.8 km; formal/finish work 13.5 min (strides/race excluded). Cutback retains 2.7 km threshold."
+        },
+        {
+          "week": 9,
+          "note": "71.2 km; run days 1,2,3,5,7; longest endurance 24.3 km; formal/finish work 32.4 min (strides/race excluded). Only 2x1.1 km intervals amid high easy volume; speed stimulus is modest."
+        },
+        {
+          "week": 10,
+          "note": "77.5 km; run days 1,2,3,5,7; longest endurance 28 km; formal/finish work 39.1 min (strides/race excluded). 28 km long run builds endurance; marathon work only 2x1.6 km."
+        },
+        {
+          "week": 11,
+          "note": "79.8 km; run days 1,2,3,5,7; longest endurance 29.3 km; formal/finish work 40.1 min (strides/race excluded). 29.3 km long run and medium-long provide meaningful event preparation."
+        },
+        {
+          "week": 12,
+          "note": "62.4 km; run days 1,2,3,5,7; longest endurance 19.9 km; formal/finish work 13.5 min (strides/race excluded). Cutback preserves shortened threshold and reduces long-run duration."
+        },
+        {
+          "week": 13,
+          "note": "79.8 km; run days 1,2,3,5,7; longest endurance 29.3 km; formal/finish work 40.1 min (strides/race excluded). Repeats short marathon work and 29.3 km long run; specific workload remains flat."
+        },
+        {
+          "week": 14,
+          "note": "80.1 km; run days 1,2,3,5,7; longest endurance 29.3 km; formal/finish work 39.1 min (strides/race excluded). Another 29.3 km long run with 3.2 km broken marathon work is repetitive."
+        },
+        {
+          "week": 15,
+          "note": "74.3 km; run days 1,2,3,5,7; longest endurance 26.3 km; formal/finish work 59.0 min (strides/race excluded). 9.2 km marathon finish is the strongest specific stimulus; Friday becomes easy."
+        },
+        {
+          "week": 16,
+          "note": "57.9 km; run days 1,2,3,5,7; longest endurance 18.5 km; formal/finish work 0.0 min (strides/race excluded). Easy cutback follows fast-finish long run."
+        },
+        {
+          "week": 17,
+          "note": "79.8 km; run days 1,2,3,5,7; longest endurance 29.3 km; formal/finish work 40.1 min (strides/race excluded). Final 29.3 km long run supports endurance but not the faster 3:30 wish."
+        },
+        {
+          "week": 18,
+          "note": "64.1 km; run days 1,2,3,5,7; longest endurance 21.8 km; formal/finish work 39.1 min (strides/race excluded). Taper cuts volume about 20%; formal work stays similar and long run is 21.8 km."
+        },
+        {
+          "week": 19,
+          "note": "52 km; run days 1,2,3,5,7; longest endurance 18.2 km; formal/finish work 36.6 min (strides/race excluded). 18.2 km long run about 112 minutes seven days pre-race still carries material fatigue load."
+        },
+        {
+          "week": 20,
+          "note": "52.7 km; run days 2,3,5,7; longest endurance 0 km; formal/finish work 6.3 min (strides/race excluded). Near-marathon-paced repeats are acceptable activation, but R label does not describe the actual pace."
+        }
+      ],
+      "strengths": [
+        "Repeated endurance exposures and substantial medium-long runs.",
+        "Easy Friday protects fast-finish week.",
+        "Goal remains separate from historical reference and no faster goal paces are forced."
+      ],
+      "concerns": [
+        {
+          "week": 11,
+          "day": 7,
+          "claim": "Repeated 3-hour long runs plus medium-long and two workouts need explicit fatigue-based shortening.",
+          "severity": "coaching",
+          "evidence": "Weeks 10–11,13–14,17 reach 28–29.3 km; 17.6 km midweek runs and threshold work coexist. Repetition is not automatically unsafe; no completion/recovery feedback is available."
+        },
+        {
+          "week": 19,
+          "day": 7,
+          "claim": "Substantial long-run duration only seven days before marathon may leave avoidable fatigue.",
+          "severity": "coaching",
+          "evidence": "Week 19 Sunday: 18.2 km (~112 minutes); delivered taper stays about 65% of peak weekly mileage before final race week."
+        },
+        {
+          "week": 1,
+          "day": 7,
+          "claim": "Recovery since recent marathon is unknown despite immediate 24 km opening long run.",
+          "severity": "coaching",
+          "evidence": "PB marathon 2026-09-20; plan start 2026-10-12, 22 days later. Reported 60 km/week and recent 24 km are accepted inputs, not proof of post-race recovery."
+        },
+        {
+          "week": 13,
+          "day": 2,
+          "claim": "Most marathon-specific weekday work remains only 3.2–3.3 km despite established endurance base.",
+          "severity": "coaching",
+          "evidence": "3.3 km continuous M-rhythm or 2x1600 m; fast-finish long run in week 15 supplies the one larger specific exposure."
+        },
+        {
+          "week": 20,
+          "day": 5,
+          "claim": "Activation pace is near marathon rhythm but label implies R-speed work.",
+          "severity": "technical",
+          "evidence": "6x200 m at 5:16/km, reference marathon 5:20/km, earlier R reference 4:20/km."
+        }
+      ],
+      "verdict": "Credible general marathon endurance outline; short specific work is conservative, and repeated long-duration exposure plus penultimate long run require flexibility."
+    }
+  ]
+}

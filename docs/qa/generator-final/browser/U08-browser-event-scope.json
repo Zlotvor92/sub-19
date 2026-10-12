@@ -1,0 +1,12 @@
+{
+  "specificDomainEvent": {
+    "kind": "return",
+    "breakDays": 14
+  },
+  "browserPersistenceEvent": {
+    "kind": "confirmed-return",
+    "breakDays": 14
+  },
+  "controlledCommonReturn": false,
+  "today": "2026-11-25"
+}

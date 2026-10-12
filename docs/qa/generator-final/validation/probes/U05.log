@@ -1,0 +1,405 @@
+{
+  "raw": {
+    "weeks": 16,
+    "days": 112,
+    "changedWeeks": 16,
+    "changedDays": 51,
+    "A": {
+      "km": 851.6,
+      "peakKm": 68.2,
+      "peakLR": 18.5
+    },
+    "B": {
+      "km": 857.8,
+      "peakKm": 68.9,
+      "peakLR": 18.5
+    }
+  },
+  "rawChecks": {
+    "A": {
+      "fixtureHashMatches": true,
+      "generationMatchesFixture": true,
+      "generationInputPure": true,
+      "failures": []
+    },
+    "B": {
+      "fixtureHashMatches": true,
+      "generationMatchesFixture": true,
+      "generationInputPure": true,
+      "failures": []
+    }
+  },
+  "primary": {
+    "A": {
+      "checks": {
+        "generated": true,
+        "goalChanged": true,
+        "raceDateStable": true,
+        "runDaysStable": true,
+        "pastCount": 45,
+        "pastChanged": [],
+        "completedChanged": [],
+        "protectedChanged": [],
+        "protectedPredictionChanged": [],
+        "protectedQSChanged": [],
+        "effectiveDatesChanged": [],
+        "actualTotals": {
+          "done": 33,
+          "km": 336.9,
+          "sec": 106931
+        },
+        "fitness": {
+          "vdot0": 45.3,
+          "vdotGoal": 45.3,
+          "trainingVdot": 45.3,
+          "predictedSec": 2700,
+          "racePace": 270,
+          "goalVdot": 51.9
+        },
+        "goalChange": {
+          "week": 7,
+          "from": 2520,
+          "to": 2400,
+          "changedWeeks": 1
+        },
+        "futureChanges": {
+          "cutoff": "2026-11-25",
+          "preservedDays": 45,
+          "changedDays": 1,
+          "conflicts": []
+        },
+        "inputsPure": true,
+        "repeatedResultStable": true
+      },
+      "auditFailures": [],
+      "newAuditFailures": []
+    },
+    "B": {
+      "checks": {
+        "generated": true,
+        "goalChanged": true,
+        "raceDateStable": true,
+        "runDaysStable": true,
+        "pastCount": 45,
+        "pastChanged": [],
+        "completedChanged": [],
+        "protectedChanged": [],
+        "protectedPredictionChanged": [],
+        "protectedQSChanged": [],
+        "effectiveDatesChanged": [],
+        "actualTotals": {
+          "done": 33,
+          "km": 336.9,
+          "sec": 106931
+        },
+        "fitness": {
+          "vdot0": 45.3,
+          "vdotGoal": 45.3,
+          "trainingVdot": 45.3,
+          "predictedSec": 2700,
+          "racePace": 270,
+          "goalVdot": 51.9
+        },
+        "goalChange": {
+          "week": 7,
+          "from": 2520,
+          "to": 2400,
+          "changedWeeks": 10
+        },
+        "futureChanges": {
+          "cutoff": "2026-11-25",
+          "preservedDays": 45,
+          "changedDays": 42,
+          "conflicts": []
+        },
+        "inputsPure": true,
+        "repeatedResultStable": true
+      },
+      "auditFailures": [],
+      "newAuditFailures": []
+    }
+  },
+  "protection": {
+    "A": {
+      "checks": {
+        "generated": true,
+        "goalChanged": true,
+        "raceDateStable": true,
+        "runDaysStable": true,
+        "pastCount": 45,
+        "pastChanged": [],
+        "completedChanged": [],
+        "protectedChanged": [],
+        "protectedPredictionChanged": [],
+        "protectedQSChanged": [],
+        "effectiveDatesChanged": [],
+        "actualTotals": {
+          "done": 34,
+          "km": 346.3,
+          "sec": 109309
+        },
+        "fitness": {
+          "vdot0": 45.3,
+          "vdotGoal": 45.3,
+          "trainingVdot": 45.3,
+          "predictedSec": 2700,
+          "racePace": 270,
+          "goalVdot": 51.9
+        },
+        "goalChange": {
+          "week": 7,
+          "from": 2520,
+          "to": 2400,
+          "changedWeeks": 1
+        },
+        "futureChanges": {
+          "cutoff": "2026-11-25",
+          "preservedDays": 51,
+          "changedDays": 1,
+          "conflicts": [
+            "Ručno izmenjen trening 2026-11-30 je sačuvan; proveri da li odgovara novoj bazi.",
+            "Ručno izmenjen trening 2026-12-08 je sačuvan; proveri da li odgovara novoj bazi.",
+            "Ručno izmenjen trening 2026-12-11 je sačuvan; proveri da li odgovara novoj bazi."
+          ]
+        },
+        "inputsPure": true,
+        "repeatedResultStable": true
+      },
+      "auditFailures": [],
+      "newAuditFailures": []
+    },
+    "B": {
+      "checks": {
+        "generated": true,
+        "goalChanged": true,
+        "raceDateStable": true,
+        "runDaysStable": true,
+        "pastCount": 45,
+        "pastChanged": [],
+        "completedChanged": [],
+        "protectedChanged": [],
+        "protectedPredictionChanged": [],
+        "protectedQSChanged": [],
+        "effectiveDatesChanged": [],
+        "actualTotals": {
+          "done": 34,
+          "km": 346.3,
+          "sec": 109309
+        },
+        "fitness": {
+          "vdot0": 45.3,
+          "vdotGoal": 45.3,
+          "trainingVdot": 45.3,
+          "predictedSec": 2700,
+          "racePace": 270,
+          "goalVdot": 51.9
+        },
+        "goalChange": {
+          "week": 7,
+          "from": 2520,
+          "to": 2400,
+          "changedWeeks": 10
+        },
+        "futureChanges": {
+          "cutoff": "2026-11-25",
+          "preservedDays": 51,
+          "changedDays": 36,
+          "conflicts": [
+            "Ručno izmenjen trening 2026-11-30 je sačuvan; proveri da li odgovara novoj bazi.",
+            "Ručno izmenjen trening 2026-12-08 je sačuvan; proveri da li odgovara novoj bazi.",
+            "Ručno izmenjen trening 2026-12-11 je sačuvan; proveri da li odgovara novoj bazi."
+          ]
+        },
+        "inputsPure": true,
+        "repeatedResultStable": true
+      },
+      "auditFailures": [],
+      "newAuditFailures": []
+    }
+  },
+  "supplemental": {
+    "A": {
+      "checks": {
+        "generated": true,
+        "goalChanged": true,
+        "raceDateStable": true,
+        "runDaysStable": true,
+        "pastCount": 45,
+        "pastChanged": [],
+        "completedChanged": [],
+        "protectedChanged": [],
+        "protectedPredictionChanged": [],
+        "protectedQSChanged": [],
+        "effectiveDatesChanged": [],
+        "actualTotals": {
+          "done": 33,
+          "km": 336.9,
+          "sec": 106931
+        },
+        "fitness": {
+          "vdot0": 45.3,
+          "vdotGoal": 45.3,
+          "trainingVdot": 45.3,
+          "predictedSec": 2700,
+          "racePace": 270,
+          "goalVdot": 51.9
+        },
+        "goalChange": {
+          "week": 7,
+          "from": 2520,
+          "to": 2400,
+          "changedWeeks": 10
+        },
+        "futureChanges": {
+          "cutoff": "2026-11-25",
+          "preservedDays": 45,
+          "changedDays": 30,
+          "conflicts": []
+        },
+        "inputsPure": true,
+        "repeatedResultStable": true
+      },
+      "auditFailures": [],
+      "newAuditFailures": []
+    },
+    "B": {
+      "checks": {
+        "generated": true,
+        "goalChanged": true,
+        "raceDateStable": true,
+        "runDaysStable": true,
+        "pastCount": 45,
+        "pastChanged": [],
+        "completedChanged": [],
+        "protectedChanged": [],
+        "protectedPredictionChanged": [],
+        "protectedQSChanged": [],
+        "effectiveDatesChanged": [],
+        "actualTotals": {
+          "done": 33,
+          "km": 336.9,
+          "sec": 106931
+        },
+        "fitness": {
+          "vdot0": 45.3,
+          "vdotGoal": 45.3,
+          "trainingVdot": 45.3,
+          "predictedSec": 2700,
+          "racePace": 270,
+          "goalVdot": 51.9
+        },
+        "goalChange": {
+          "week": 7,
+          "from": 2520,
+          "to": 2400,
+          "changedWeeks": 10
+        },
+        "futureChanges": {
+          "cutoff": "2026-11-25",
+          "preservedDays": 45,
+          "changedDays": 19,
+          "conflicts": []
+        },
+        "inputsPure": true,
+        "repeatedResultStable": true
+      },
+      "auditFailures": [],
+      "newAuditFailures": []
+    }
+  },
+  "supplementalSameGoal": {
+    "A": {
+      "checks": {
+        "generated": true,
+        "goalChanged": true,
+        "raceDateStable": true,
+        "runDaysStable": true,
+        "pastCount": 45,
+        "pastChanged": [],
+        "completedChanged": [],
+        "protectedChanged": [],
+        "protectedPredictionChanged": [],
+        "protectedQSChanged": [],
+        "effectiveDatesChanged": [],
+        "actualTotals": {
+          "done": 33,
+          "km": 336.9,
+          "sec": 106931
+        },
+        "fitness": {
+          "vdot0": 45.3,
+          "vdotGoal": 45.3,
+          "trainingVdot": 45.3,
+          "predictedSec": 2700,
+          "racePace": 270,
+          "goalVdot": 49.1
+        },
+        "goalChange": {
+          "week": 7,
+          "from": 2520,
+          "to": 2520,
+          "changedWeeks": 10
+        },
+        "futureChanges": {
+          "cutoff": "2026-11-25",
+          "preservedDays": 45,
+          "changedDays": 29,
+          "conflicts": []
+        },
+        "inputsPure": true,
+        "repeatedResultStable": true
+      },
+      "auditFailures": [],
+      "newAuditFailures": []
+    },
+    "B": {
+      "checks": {
+        "generated": true,
+        "goalChanged": true,
+        "raceDateStable": true,
+        "runDaysStable": true,
+        "pastCount": 45,
+        "pastChanged": [],
+        "completedChanged": [],
+        "protectedChanged": [],
+        "protectedPredictionChanged": [],
+        "protectedQSChanged": [],
+        "effectiveDatesChanged": [],
+        "actualTotals": {
+          "done": 33,
+          "km": 336.9,
+          "sec": 106931
+        },
+        "fitness": {
+          "vdot0": 45.3,
+          "vdotGoal": 45.3,
+          "trainingVdot": 45.3,
+          "predictedSec": 2700,
+          "racePace": 270,
+          "goalVdot": 49.1
+        },
+        "goalChange": {
+          "week": 7,
+          "from": 2520,
+          "to": 2520,
+          "changedWeeks": 10
+        },
+        "futureChanges": {
+          "cutoff": "2026-11-25",
+          "preservedDays": 45,
+          "changedDays": 18,
+          "conflicts": []
+        },
+        "inputsPure": true,
+        "repeatedResultStable": true
+      },
+      "auditFailures": [],
+      "newAuditFailures": []
+    }
+  },
+  "immutable": {
+    "sources": true,
+    "lockedFiles": true,
+    "frozenAPlanMatchesRawA": true
+  }
+}

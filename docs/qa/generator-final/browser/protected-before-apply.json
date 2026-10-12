@@ -1,0 +1,123 @@
+{
+  "days": {
+    "g2d1": {
+      "dow": 0,
+      "tag": "lako",
+      "km": 9.1,
+      "desc": "9.1 km lako (Z2) @ ~5:32/km + 6\u00d720 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+      "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 240
+      },
+      "id": "g2d1"
+    },
+    "g3d3": {
+      "dow": 2,
+      "tag": "tempo",
+      "km": 8.9,
+      "desc": "Tempo isprekidan \u2014 3.5 km zagrevanje + 2\u00d71100 m @ 4:36/km (1:30 min laganog tr\u010danja) + 3 km hla\u0111enje",
+      "session": {
+        "type": "int",
+        "kind": "Tempo isprekidan",
+        "wuKm": 3.5,
+        "reps": 2,
+        "repM": 1100,
+        "paceSec": 276,
+        "restSec": 90,
+        "cdKm": 3,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness"
+      },
+      "id": "g3d3"
+    },
+    "g1d3": {
+      "dow": 2,
+      "tag": "tempo",
+      "km": 8.9,
+      "desc": "Tempo isprekidan \u2014 3.5 km zagrevanje + 2\u00d71100 m @ 4:36/km (1:30 min laganog tr\u010danja) + 3 km hla\u0111enje",
+      "session": {
+        "type": "int",
+        "kind": "Tempo isprekidan",
+        "wuKm": 3.5,
+        "reps": 2,
+        "repM": 1100,
+        "paceSec": 276,
+        "restSec": 90,
+        "cdKm": 3,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness"
+      },
+      "id": "g1d3"
+    }
+  },
+  "qs": {
+    "g3d3": [
+      1100
+    ],
+    "g1d3": [
+      1100
+    ]
+  },
+  "predictionRows": {
+    "g3d3": {
+      "w": 3,
+      "l": "N3 \u00b7 Tempo isprekidan",
+      "q": 2.2,
+      "pt": 276,
+      "p5k": 2698,
+      "zone": "T",
+      "id": "g3_4"
+    },
+    "g1d3": {
+      "w": 1,
+      "l": "N1 \u00b7 Tempo isprekidan",
+      "q": 2.2,
+      "pt": 276,
+      "p5k": 2698,
+      "zone": "T",
+      "id": "g1_0"
+    }
+  },
+  "manualAlt": {
+    "tag": "lako",
+    "km": 4.2,
+    "desc": "Final QA manual 4.2 km easy",
+    "pace": null,
+    "rw": null,
+    "paceAuto": false
+  },
+  "moves": {
+    "g2d1": "2026-01-22",
+    "g2d4": "2026-01-19"
+  },
+  "measured": 251,
+  "measuredLock": true,
+  "measuredRow": {
+    "w": 3,
+    "l": "N3 \u00b7 Tempo isprekidan",
+    "q": 2.2,
+    "pt": 276,
+    "p5k": 2698,
+    "zone": "T",
+    "id": "g3_4"
+  },
+  "log": {
+    "g1d3": {
+      "status": "done",
+      "ts": "2026-01-14",
+      "km": 6.2,
+      "sec": 2040
+    }
+  },
+  "dates": {
+    "g2d1": "2026-01-22",
+    "g3d3": "2026-01-28",
+    "g1d3": "2026-01-14"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "specificDomainEvent": {
+    "kind": "high-rpe"
+  },
+  "browserPersistenceEvent": {
+    "kind": "confirmed-return",
+    "breakDays": 14
+  },
+  "controlledCommonReturn": true,
+  "today": "2026-11-25"
+}

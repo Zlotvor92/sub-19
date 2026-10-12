@@ -68,7 +68,8 @@ describe('cutover konfiguracija', () => {
         'fix/quality-dose': false,
         'fix/hm-quality-progression': false,
         'fix/fatigue-recovery': false,
-        'qa/generator-ab-final-seven': false
+        'qa/generator-ab-final-seven': false,
+        main: false
       }
     });
     const ignore = readFileSync(join(ROOT, '.vercelignore'), 'utf8')

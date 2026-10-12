@@ -1,0 +1,559 @@
+{
+  "id": "U04",
+  "scope": "Synthetic domain evidence only; no UI/store or actual elapsed-time proof.",
+  "originalSha256": "6737471a42d8b8426756f0d208210ba23178e25f9a094001cb102c6ef45bef01",
+  "raw": {
+    "old": {
+      "weeks": 16,
+      "days": 112,
+      "runs": 64,
+      "sessions": 24,
+      "predRows": 24,
+      "qsEntries": 19,
+      "failures": []
+    },
+    "new": {
+      "weeks": 16,
+      "days": 112,
+      "runs": 64,
+      "sessions": 24,
+      "predRows": 24,
+      "qsEntries": 19,
+      "failures": []
+    },
+    "weekComparison": [
+      {
+        "w": 1,
+        "kmA": 27,
+        "kmB": 27,
+        "lrA": 8,
+        "lrB": 8,
+        "focusA": "Fartlek",
+        "focusB": "Fartlek",
+        "changes": []
+      },
+      {
+        "w": 2,
+        "kmA": 28.1,
+        "kmB": 28.1,
+        "lrA": 8.6,
+        "lrB": 8.6,
+        "focusA": "Fartlek",
+        "focusB": "Fartlek",
+        "changes": []
+      },
+      {
+        "w": 3,
+        "kmA": 29.5,
+        "kmB": 29.5,
+        "lrA": 9.2,
+        "lrB": 9.2,
+        "focusA": "Tempo",
+        "focusB": "Tempo",
+        "changes": []
+      },
+      {
+        "w": 4,
+        "kmA": 22.2,
+        "kmB": 22.2,
+        "lrA": 6.6,
+        "lrB": 6.6,
+        "focusA": "DELOAD — obim dole, ostaje kratka oštrina",
+        "focusB": "DELOAD — obim dole, ostaje kratka oštrina",
+        "changes": []
+      },
+      {
+        "w": 5,
+        "kmA": 32.7,
+        "kmB": 32.7,
+        "lrA": 9.9,
+        "lrB": 9.9,
+        "focusA": "Intervali + Tempo isprekidan",
+        "focusB": "Intervali + Tempo isprekidan",
+        "changes": []
+      },
+      {
+        "w": 6,
+        "kmA": 34.5,
+        "kmB": 34.5,
+        "lrA": 10.6,
+        "lrB": 10.6,
+        "focusA": "Fartlek + Tempo",
+        "focusB": "Fartlek + Tempo",
+        "changes": []
+      },
+      {
+        "w": 7,
+        "kmA": 35.9,
+        "kmB": 35.9,
+        "lrA": 11.4,
+        "lrB": 11.4,
+        "focusA": "Intervali + Tempo isprekidan",
+        "focusB": "Intervali + Tempo isprekidan",
+        "changes": []
+      },
+      {
+        "w": 8,
+        "kmA": 26.5,
+        "kmB": 26.5,
+        "lrA": 8.5,
+        "lrB": 8.5,
+        "focusA": "DELOAD — obim dole, ostaje kratka oštrina",
+        "focusB": "DELOAD — obim dole, ostaje kratka oštrina",
+        "changes": []
+      },
+      {
+        "w": 9,
+        "kmA": 39,
+        "kmB": 39,
+        "lrA": 12.3,
+        "lrB": 12.3,
+        "focusA": "Piramida + Tempo isprekidan",
+        "focusB": "Piramida + Tempo isprekidan",
+        "changes": []
+      },
+      {
+        "w": 10,
+        "kmA": 40.3,
+        "kmB": 40.3,
+        "lrA": 13.2,
+        "lrB": 13.2,
+        "focusA": "Fartlek + Tempo",
+        "focusB": "Fartlek + Tempo",
+        "changes": []
+      },
+      {
+        "w": 11,
+        "kmA": 42.6,
+        "kmB": 42.6,
+        "lrA": 14.2,
+        "lrB": 14.2,
+        "focusA": "Intervali + Tempo isprekidan",
+        "focusB": "Intervali + Tempo isprekidan",
+        "changes": []
+      },
+      {
+        "w": 12,
+        "kmA": 32,
+        "kmB": 32,
+        "lrA": 10.4,
+        "lrB": 10.4,
+        "focusA": "DELOAD — obim dole, ostaje kratka oštrina",
+        "focusB": "DELOAD — obim dole, ostaje kratka oštrina",
+        "changes": []
+      },
+      {
+        "w": 13,
+        "kmA": 42.2,
+        "kmB": 42.2,
+        "lrA": 15.3,
+        "lrB": 15.3,
+        "focusA": "Trkački ritam + Progresivno",
+        "focusB": "Trkački ritam + Progresivno",
+        "changes": [
+          {
+            "dow": 3,
+            "before": {
+              "dow": 3,
+              "tag": "int",
+              "km": 7.5,
+              "desc": "Trkački ritam — 2.9 km zagrevanje + 2×1000 m @ 5:11/km (3:53 min hoda) + 2.4 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "session": {
+                "type": "int",
+                "kind": "Trkački ritam",
+                "wuKm": 2.9,
+                "reps": 2,
+                "repM": 1000,
+                "paceSec": 311,
+                "restSec": 233,
+                "cdKm": 2.4,
+                "overrides": {},
+                "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+                "zone": "RP",
+                "paceSource": "race-specific"
+              }
+            },
+            "after": {
+              "dow": 3,
+              "tag": "int",
+              "km": 7.5,
+              "desc": "Trkački ritam — 2.9 km zagrevanje + 2×1000 m @ 5:11/km (1 min hoda) + 2.4 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "session": {
+                "type": "int",
+                "kind": "Trkački ritam",
+                "purpose": "RP",
+                "wuKm": 2.9,
+                "reps": 2,
+                "repM": 1000,
+                "paceSec": 311,
+                "restSec": 60,
+                "cdKm": 2.4,
+                "overrides": {},
+                "zone": "RP",
+                "paceSource": "race-specific",
+                "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "w": 14,
+        "kmA": 43.8,
+        "kmB": 43.8,
+        "lrA": 16.2,
+        "lrB": 16.2,
+        "focusA": "Trkački ritam + Tempo",
+        "focusB": "Trkački ritam + Tempo",
+        "changes": [
+          {
+            "dow": 3,
+            "before": {
+              "dow": 3,
+              "tag": "int",
+              "km": 7.3,
+              "desc": "Trkački ritam — 2.6 km zagrevanje + 2×1200 m @ 5:11/km (4 min hoda) + 2.1 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "session": {
+                "type": "int",
+                "kind": "Trkački ritam",
+                "wuKm": 2.6,
+                "reps": 2,
+                "repM": 1200,
+                "paceSec": 311,
+                "restSec": 240,
+                "cdKm": 2.1,
+                "overrides": {},
+                "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+                "zone": "RP",
+                "paceSource": "race-specific"
+              }
+            },
+            "after": {
+              "dow": 3,
+              "tag": "int",
+              "km": 7.3,
+              "desc": "Trkački ritam — 2.6 km zagrevanje + 2×1200 m @ 5:11/km (1 min hoda) + 2.1 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "session": {
+                "type": "int",
+                "kind": "Trkački ritam",
+                "purpose": "RP",
+                "wuKm": 2.6,
+                "reps": 2,
+                "repM": 1200,
+                "paceSec": 311,
+                "restSec": 60,
+                "cdKm": 2.1,
+                "overrides": {},
+                "zone": "RP",
+                "paceSource": "race-specific",
+                "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "w": 15,
+        "kmA": 28,
+        "kmB": 28,
+        "lrA": 10.5,
+        "lrB": 10.5,
+        "focusA": "Taper · Trkački ritam + Tempo",
+        "focusB": "Taper · Trkački ritam + Tempo",
+        "changes": [
+          {
+            "dow": 3,
+            "before": {
+              "dow": 3,
+              "tag": "int",
+              "km": 3.7,
+              "desc": "Trkački ritam — 1.4 km zagrevanje + 2×600 m @ 5:11/km (2:20 min hoda) + 1 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "session": {
+                "type": "int",
+                "kind": "Trkački ritam",
+                "wuKm": 1.4,
+                "reps": 2,
+                "repM": 600,
+                "paceSec": 311,
+                "restSec": 140,
+                "cdKm": 1,
+                "overrides": {},
+                "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+                "zone": "RP",
+                "paceSource": "race-specific"
+              }
+            },
+            "after": {
+              "dow": 3,
+              "tag": "int",
+              "km": 3.7,
+              "desc": "Trkački ritam — 1.4 km zagrevanje + 2×600 m @ 5:11/km (75 s hoda) + 1 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+              "session": {
+                "type": "int",
+                "kind": "Trkački ritam",
+                "purpose": "RP",
+                "wuKm": 1.4,
+                "reps": 2,
+                "repM": 600,
+                "paceSec": 311,
+                "restSec": 75,
+                "cdKm": 1,
+                "overrides": {},
+                "zone": "RP",
+                "paceSource": "race-specific",
+                "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "w": 16,
+        "kmA": 20.5,
+        "kmB": 20.5,
+        "lrA": 0,
+        "lrB": 0,
+        "focusA": "TRKA",
+        "focusB": "TRKA",
+        "changes": [
+          {
+            "dow": 5,
+            "before": {
+              "dow": 5,
+              "tag": "int",
+              "km": 4.5,
+              "desc": "Repeticije — 1.5 km zagrevanje + 5×200 m @ 5:07/km (2:34 min hoda) + 1.4 km hlađenje",
+              "session": {
+                "type": "int",
+                "kind": "Repeticije",
+                "wuKm": 1.5,
+                "reps": 5,
+                "repM": 200,
+                "paceSec": 307,
+                "restSec": 154,
+                "cdKm": 1.4,
+                "overrides": {},
+                "zone": "R",
+                "paceSource": "current-fitness"
+              }
+            },
+            "after": {
+              "dow": 5,
+              "tag": "int",
+              "km": 4.5,
+              "desc": "Aktivacija — 1.5 km zagrevanje + 5×200 m @ 5:07/km (2 min hoda) + 1.4 km hlađenje · Kratka aktivacija približno na ritmu trke, bez sprinta; oporavak 120 s hoda.",
+              "session": {
+                "type": "int",
+                "kind": "Aktivacija",
+                "purpose": "activation",
+                "wuKm": 1.5,
+                "reps": 5,
+                "repM": 200,
+                "paceSec": 307,
+                "restSec": 120,
+                "cdKm": 1.4,
+                "overrides": {},
+                "zone": "RP",
+                "paceSource": "race-specific",
+                "notes": "Kratka aktivacija približno na ritmu trke, bez sprinta; oporavak 120 s hoda."
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cases": {
+    "primary": {
+      "historicalCount": 45,
+      "currentDayCount": 1,
+      "completedCount": 22,
+      "logCount": 26,
+      "loggedActualKm": 155.2,
+      "actualDurationFields": [],
+      "measuredCount": 8,
+      "versions": {
+        "old": {
+          "weeks": 16,
+          "days": 112,
+          "runs": 64,
+          "sessions": 20,
+          "predRows": 20,
+          "qsEntries": 14,
+          "failures": [],
+          "preservedCount": 45,
+          "changed": [],
+          "changedQs": [],
+          "changedMeasurements": [],
+          "changedDates": [],
+          "dateCount": 112,
+          "requestedMove": null,
+          "effectiveMovedDate": "2026-11-29",
+          "initialFutureDays": 11,
+          "initialWorkIds": [],
+          "futureEffortMissing": [
+            "g7d5",
+            "g7d7",
+            "g8d1",
+            "g8d3",
+            "g8d5",
+            "g8d7",
+            "g9d1",
+            "g9d3",
+            "g9d5",
+            "g9d7",
+            "g10d1",
+            "g10d3",
+            "g10d5",
+            "g10d7",
+            "g11d1",
+            "g11d3",
+            "g11d5",
+            "g11d7",
+            "g12d1",
+            "g12d3",
+            "g12d5",
+            "g12d7",
+            "g13d1",
+            "g13d3",
+            "g13d5",
+            "g13d7",
+            "g14d1",
+            "g14d3",
+            "g14d5",
+            "g14d7",
+            "g15d1",
+            "g15d3",
+            "g15d5",
+            "g15d7",
+            "g16d1",
+            "g16d3",
+            "g16d5"
+          ],
+          "analysisMatchesFrozen": true,
+          "analysisActualKm": 86.4,
+          "initialEasyWeeks": null,
+          "consistentWeeks": 0
+        },
+        "new": {
+          "weeks": 16,
+          "days": 112,
+          "runs": 64,
+          "sessions": 20,
+          "predRows": 20,
+          "qsEntries": 14,
+          "failures": [],
+          "preservedCount": 45,
+          "changed": [],
+          "changedQs": [],
+          "changedMeasurements": [],
+          "changedDates": [],
+          "dateCount": 112,
+          "requestedMove": null,
+          "effectiveMovedDate": "2026-11-29",
+          "initialFutureDays": 11,
+          "initialWorkIds": [],
+          "futureEffortMissing": [],
+          "analysisMatchesFrozen": true,
+          "analysisActualKm": 86.4,
+          "initialEasyWeeks": 2,
+          "consistentWeeks": 8
+        }
+      }
+    },
+    "protection": {
+      "historicalCount": 45,
+      "currentDayCount": 1,
+      "completedCount": 23,
+      "logCount": 27,
+      "loggedActualKm": 161.1,
+      "actualDurationFields": [],
+      "measuredCount": 8,
+      "versions": {
+        "old": {
+          "weeks": 16,
+          "days": 112,
+          "runs": 64,
+          "sessions": 20,
+          "predRows": 20,
+          "qsEntries": 15,
+          "failures": [],
+          "preservedCount": 48,
+          "changed": [],
+          "changedQs": [],
+          "changedMeasurements": [],
+          "changedDates": [],
+          "dateCount": 112,
+          "requestedMove": "2026-11-24",
+          "effectiveMovedDate": "2026-11-29",
+          "initialFutureDays": 11,
+          "initialWorkIds": [],
+          "futureEffortMissing": [
+            "g7d5",
+            "g8d1",
+            "g8d5",
+            "g8d7",
+            "g9d1",
+            "g9d5",
+            "g9d7",
+            "g10d1",
+            "g10d3",
+            "g10d5",
+            "g10d7",
+            "g11d1",
+            "g11d3",
+            "g11d5",
+            "g11d7",
+            "g12d1",
+            "g12d3",
+            "g12d5",
+            "g12d7",
+            "g13d1",
+            "g13d3",
+            "g13d5",
+            "g13d7",
+            "g14d1",
+            "g14d3",
+            "g14d5",
+            "g14d7",
+            "g15d1",
+            "g15d3",
+            "g15d5",
+            "g15d7",
+            "g16d1",
+            "g16d3",
+            "g16d5"
+          ],
+          "analysisMatchesFrozen": false,
+          "analysisActualKm": 92.3,
+          "initialEasyWeeks": null,
+          "consistentWeeks": 0
+        },
+        "new": {
+          "weeks": 16,
+          "days": 112,
+          "runs": 64,
+          "sessions": 20,
+          "predRows": 20,
+          "qsEntries": 15,
+          "failures": [],
+          "preservedCount": 48,
+          "changed": [],
+          "changedQs": [],
+          "changedMeasurements": [],
+          "changedDates": [],
+          "dateCount": 112,
+          "requestedMove": "2026-11-24",
+          "effectiveMovedDate": "2026-11-29",
+          "initialFutureDays": 11,
+          "initialWorkIds": [],
+          "futureEffortMissing": [],
+          "analysisMatchesFrozen": false,
+          "analysisActualKm": 92.3,
+          "initialEasyWeeks": 2,
+          "consistentWeeks": 8
+        }
+      }
+    }
+  }
+}
