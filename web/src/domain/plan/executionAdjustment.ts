@@ -138,22 +138,39 @@ export function buildExecutionAdjustment(
   ];
   if (policy)
     notes.push(
-      `Potvrđena pauza: ${options.breakDays} dana. Polazni obim je ${Math.round(policy.fraction * 100)}% prijavljene baze (${weeklyKm} km), sa ${policy.easyWeeks} početne nedelje bez kvalitetnog rada. Ovo su oprezne postavke aplikacije, ne medicinska procena.`
+      `Potvrđena pauza: ${options.breakDays} dana. Polazni obim je ${Math.round(policy.fraction * 100)}% prijavljene baze (${weeklyKm} km). Ovo su oprezne postavke aplikacije, ne medicinska procena.`
     );
   else notes.push(`Polazni obim prati stvarno odrađenu/prijavljenu bazu: ${weeklyKm} km nedeljno.`);
-  const result = graftFuturePlan(current, { ...fresh, ulaz: input }, today, context);
-  if (result.meta) {
-    result.meta = {
-      ...result.meta,
-      executionAdjustment: {
-        date: today,
-        breakDays: options.breakDays ?? 0,
-        reportedBaseKm: base,
-        startingKm: weeklyKm
-      },
-      dayWarnings: [...new Set([...result.meta.dayWarnings, ...notes])]
-    };
-  }
+  fresh.meta = {
+    ...fresh.meta,
+    executionAdjustment: {
+      date: today,
+      breakDays: options.breakDays ?? 0,
+      reportedBaseKm: base,
+      startingKm: weeklyKm
+    },
+    dayWarnings: [...fresh.meta.dayWarnings, ...notes]
+  };
+  const result = graftFuturePlan(
+    current,
+    { ...fresh, ulaz: input },
+    today,
+    context,
+    policy
+      ? {
+          returnWindow: {
+            start: addDays(today, 1),
+            end: addDays(generated.meta.start, policy.easyWeeks * 7),
+            requiredWeeks: policy.easyWeeks
+          }
+        }
+      : {}
+  );
+  notes.push(
+    ...result.meta!.dayWarnings.filter((s) =>
+      /^(Finalni preostali plan:|Povratni period |Konflikt povratne politike:)/.test(s)
+    )
+  );
   return {
     result,
     notes,

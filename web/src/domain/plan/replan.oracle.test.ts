@@ -90,7 +90,8 @@ describe('promena cilja naspram starog planSaNovimCiljem', () => {
             continue;
           }
           if ('error' in mine) throw new Error(`${where}: ${mine.error}`);
-          // D6: new workouts intentionally differ; historical weeks remain byte-for-byte intact.
+          // Finalization now regenerates future automatic descriptions/focus and delivered warnings.
+          // These 40 hashes change only derived presentation/metadata; protected days/rows remain exact.
           d6Snapshot('replan', `goal ${where}`, mine);
           expect(mine.weeks.filter((w) => w.w < week)).toEqual(
             plan.weeks.filter((w) => w.w < week)

@@ -1,3 +1,4 @@
+import { alignAutomaticOverlays } from '../domain/plan/automaticAlts';
 import { addDays, parseIsoDate } from '../domain/date';
 import { resolvePlan, type ResolvedPlan } from '../domain/plan';
 import {
@@ -108,35 +109,7 @@ const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 /** A regenerated session must not remain hidden behind an obsolete automatic pace overlay. */
 export function alignAutomaticAlts(result: GenPlanState, today: string): Record<string, AltRecord> {
   const t = useTrainingStore.getState();
-  const next = { ...t.alts };
-  const current = t.genPlan ? resolvePlan(t.genPlan.weeks, { moves: t.moves, alts: {} }) : null;
-  const future = resolvePlan(result.weeks, { moves: t.moves, alts: {} });
-  for (const [id, alt] of Object.entries(next)) {
-    const before = current?.byId.get(id);
-    const after = future.byId.get(id);
-    if (!alt.paceAuto || !before || !after || after.date <= today || t.log[id]?.status === 'done')
-      continue;
-    if (JSON.stringify(before.origin) === JSON.stringify(after.origin)) continue;
-    const auto = after.session?.paceSec0 !== undefined;
-    const replacement = {
-      ...alt,
-      km: alt.km === before.km ? (after.km ?? null) : alt.km,
-      desc: alt.desc === before.desc ? (after.desc ?? '') : alt.desc,
-      pace: auto ? after.session!.paceSec : null,
-      paceAuto: auto
-    };
-    if (
-      !auto &&
-      replacement.tag === (after.rest ? 'odmor' : after.tag) &&
-      replacement.km === (after.km ?? null) &&
-      replacement.desc === (after.desc ?? '') &&
-      !replacement.rw &&
-      !replacement.snaga
-    )
-      delete next[id];
-    else next[id] = replacement;
-  }
-  return next;
+  return alignAutomaticOverlays(t.genPlan, result, today, replanContext());
 }
 
 export function planPreviewChanges(

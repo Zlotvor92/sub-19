@@ -1,13 +1,12 @@
 /** Replace future prescriptions without reinterpreting an existing measurement. */
 import { addDays, diffDays, parseIsoDate, type IsoDate } from '../date';
-import { r1 } from '../format';
 import type { AltRecord, GenPlanState, LogEntry, StoredWeek } from '../state';
 import { matchPlanRows, type StoredPredRow } from '../training/adaptation/matching';
-import { profileFor } from '../training/distances';
-import { assessPreparation } from '../training/generator/athleteAssessment';
 import { derivePred, deriveQSById } from '../training/prediction';
-import type { PlanMeta, Week } from '../training/types';
+import type { PlanMeta } from '../training/types';
 import { resolvePlan } from './resolve';
+import { alignAutomaticOverlays } from './automaticAlts';
+import { finalizeFuturePlan, type FinalizationOptions } from './finalize';
 
 export interface ReplanContext {
   log?: Readonly<Record<string, LogEntry>>;
@@ -30,7 +29,8 @@ export function graftFuturePlan(
   plan: GenPlanState,
   fresh: GenPlanState,
   today: IsoDate,
-  ctx: ReplanContext = {}
+  ctx: ReplanContext = {},
+  options: FinalizationOptions = {}
 ): GenPlanState {
   const alts = ctx.alts ?? {};
   const moves = ctx.moves ?? {};
@@ -99,8 +99,7 @@ export function graftFuturePlan(
       })
     });
   }
-  let changedDays = 0;
-  const weeks = plan.weeks.map((old) => {
+  let weeks = plan.weeks.map((old) => {
     const next = mapped.get(old.start);
     if (!next) return old;
     const days = old.days.map((d) => {
@@ -108,7 +107,6 @@ export function graftFuturePlan(
       if (protectedDays.has(id)) return d;
       const replacement = next.days.find((x) => x.dow === d.dow);
       if (!replacement) return d;
-      if (JSON.stringify(d) !== JSON.stringify(replacement)) changedDays++;
       return replacement;
     });
     return old.days.every((d) => protectedDays.has(d.id ?? `g${old.w}d${d.dow + 1}`))
@@ -119,12 +117,26 @@ export function graftFuturePlan(
   for (const w of mapped.values()) if (!oldByStart.has(w.start)) weeks.push(w);
   weeks.sort((a, b) => a.start.localeCompare(b.start));
 
-  const meta = {
+  let meta = {
     ...plan.meta,
     ...fresh.meta,
     start: plan.meta?.start ?? fresh.meta?.start,
     weeks: weeks.length
   } as PlanMeta & Record<string, unknown>;
+  const finalized = finalizeFuturePlan(
+    { ...fresh, weeks, meta },
+    today,
+    { ...ctx, alts: alignAutomaticOverlays(plan, { ...fresh, weeks, meta }, today, ctx) },
+    protectedDays,
+    conflicts,
+    options
+  );
+  weeks = finalized.weeks;
+  meta = finalized.meta!;
+  const oldDays = new Map(plan.weeks.flatMap((w) => w.days).map((d) => [d.id, d]));
+  const changedDays = weeks
+    .flatMap((w) => w.days)
+    .filter((d) => JSON.stringify(d) !== JSON.stringify(oldDays.get(d.id))).length;
   const pred: StoredPredRow[] = [];
   const qs: Record<string, number[]> = {};
   const retained = new Set<string>();
@@ -154,37 +166,6 @@ export function graftFuturePlan(
   }
   for (const row of oldRows) if (protectedRows.has(row.id) && !retained.has(row.id)) pred.push(row);
 
-  const future = resolvePlan(weeks, { alts, moves });
-  const remainingWeeks: Week[] = weeks.map((w) => {
-    const days = w.days.filter((d) => {
-      const date = d.id ? future.byId.get(d.id)?.date : undefined;
-      return date != null && date > today;
-    });
-    return {
-      ...w,
-      days: days.map((d) => {
-        if (d.rest || !d.id) return { ...d, dow: d.dow + 1 };
-        const actual = future.byId.get(d.id);
-        if (actual?.rest) return { dow: d.dow + 1, rest: true as const, desc: actual.desc };
-        return {
-          ...d,
-          dow: d.dow + 1,
-          km: actual?.km ?? d.km,
-          ...(alts[d.id] && actual?.tag !== d.tag
-            ? { tag: actual?.tag, session: undefined, finish: undefined }
-            : {})
-        };
-      }) as Week['days'],
-      vol: r1(days.reduce((n, d) => n + (d.id ? (future.byId.get(d.id)?.km ?? 0) : (d.km ?? 0)), 0))
-    };
-  });
-  const profile = profileFor(meta.raceDistM);
-  if (profile)
-    meta.preparation = assessPreparation(
-      { weeks: remainingWeeks, pred, qs, meta },
-      profile.product.minPeakKm
-    );
-  meta.dayWarnings = [...new Set([...(fresh.meta?.dayWarnings ?? []), ...conflicts])];
   meta.futureChanges = { cutoff: today, preservedDays: protectedDays.size, changedDays, conflicts };
   return { ...plan, ...fresh, weeks, pred, qs, meta };
 }

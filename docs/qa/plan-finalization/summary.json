@@ -1,0 +1,406 @@
+[
+  {
+    "id": "U04",
+    "today": "2026-11-25",
+    "sourceEvidenceSha256": "6737471a42d8b8426756f0d208210ba23178e25f9a094001cb102c6ef45bef01",
+    "before": {
+      "staleDescriptions": [
+        {
+          "id": "g7d5",
+          "date": "2026-11-27",
+          "desc": "4.8 km lako (Z2) @ ~6:20/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        },
+        {
+          "id": "g8d1",
+          "date": "2026-11-30",
+          "desc": "6.2 km lako (Z2) @ ~6:20/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        }
+      ],
+      "staleFocus": [
+        {
+          "w": 8,
+          "focus": "Fartlek"
+        }
+      ],
+      "peakWeeklyKm": 32.2,
+      "warnings": [
+        "Ciljno vreme 50:00 je brže od reference trenutne forme (51:53). To ne procenjuje napredak do dana trke ni izdržljivost za ciljnu distancu. Tempo treninga ostaje vezan za potvrđenu formu. Cilj je sačuvan kao želja; proveri napredak novom trkom ili testom pre ubrzavanja.",
+        "Posle pauze od 1 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+        "Vrhunac plana je oko 32 km/ned, a za 10K se orijentaciono računa sa ~40 km/ned. Rast je namerno postupan (od tvojih 25.5 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+        "Isporučeni vrhunac 32.2 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 7 dana. Polazni obim je 85% prijavljene baze (25.5 km), sa 2 početne nedelje bez kvalitetnog rada. Ovo su oprezne postavke aplikacije, ne medicinska procena."
+      ],
+      "conflicts": []
+    },
+    "after": {
+      "staleDescriptions": [],
+      "staleFocus": [],
+      "peakWeeklyKm": 32.2,
+      "warnings": [
+        "Ciljno vreme 50:00 je brže od reference trenutne forme (51:53). To ne procenjuje napredak do dana trke ni izdržljivost za ciljnu distancu. Tempo treninga ostaje vezan za potvrđenu formu. Cilj je sačuvan kao želja; proveri napredak novom trkom ili testom pre ubrzavanja.",
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 7 dana. Polazni obim je 85% prijavljene baze (25.5 km). Ovo su oprezne postavke aplikacije, ne medicinska procena.",
+        "Finalni preostali plan: vrhunac 32.2 km/ned; 2 početnih kalendarskih nedelja sa trčanjem bez kvalitetnog rada i ubrzanja (prva može biti delimična).",
+        "Povratni period 2026-11-26–2026-12-06: bez kvaliteta i ubrzanja. Finalni plan ima 2 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni.",
+        "Isporučeni vrhunac 32.2 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+      ],
+      "finalization": {
+        "cutoff": "2026-11-25",
+        "initialEasyWeeks": 2,
+        "peakWeeklyKm": 32.2,
+        "returnWindow": {
+          "start": "2026-11-26",
+          "end": "2026-12-07",
+          "requiredWeeks": 2
+        },
+        "returnWarning": "Povratni period 2026-11-26–2026-12-06: bez kvaliteta i ubrzanja. Finalni plan ima 2 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni."
+      },
+      "conflicts": []
+    }
+  },
+  {
+    "id": "U06",
+    "today": "2026-11-25",
+    "sourceEvidenceSha256": "a3a95da598c2a81ed697714b67840be64a46591634d162242cbbee03b7d4fed7",
+    "before": {
+      "staleDescriptions": [
+        {
+          "id": "g8d1",
+          "date": "2026-11-30",
+          "desc": "2.2 km lako (Z2) @ ~6:47/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        },
+        {
+          "id": "g10d1",
+          "date": "2026-12-14",
+          "desc": "2.1 km lako (Z2) @ ~6:47/km + 4×15 s ubrzanja (lagani ubrzani koraci)"
+        }
+      ],
+      "staleFocus": [
+        {
+          "w": 9,
+          "focus": "Fartlek"
+        },
+        {
+          "w": 10,
+          "focus": "DELOAD — obim dole, ostaje kratka oštrina"
+        },
+        {
+          "w": 11,
+          "focus": "Fartlek"
+        },
+        {
+          "w": 12,
+          "focus": "Fartlek"
+        },
+        {
+          "w": 13,
+          "focus": "Tempo"
+        }
+      ],
+      "peakWeeklyKm": 10.1,
+      "warnings": [
+        "Posle pauze od 4 nedelja plan počinje sa 2 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+        "Tražio si 8.3 km/ned, a plan prve nedelje daje oko 7 km. Prva nedelja ima 0 kvalitetnih treninga. Početna ponovljiva dužina i raspored ograničavaju raspodelu obima. Proveri prijavljeni nedeljni obim i ponovljivu dužinu; dodatni dan može pomoći raspodeli, ali ne zamenjuje postojeću bazu.",
+        "Vrhunac plana je oko 12 km/ned, a za 10K se orijentaciono računa sa ~40 km/ned. Rast je namerno postupan (od tvojih 8.3 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+        "Isporučeni vrhunac 11.6 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 28 dana. Polazni obim je 55% prijavljene baze (8.3 km), sa 4 početne nedelje bez kvalitetnog rada. Ovo su oprezne postavke aplikacije, ne medicinska procena."
+      ],
+      "conflicts": []
+    },
+    "after": {
+      "staleDescriptions": [],
+      "staleFocus": [],
+      "peakWeeklyKm": 10.1,
+      "warnings": [
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 28 dana. Polazni obim je 55% prijavljene baze (8.3 km). Ovo su oprezne postavke aplikacije, ne medicinska procena.",
+        "Finalni preostali plan: vrhunac 10.1 km/ned; 8 početnih kalendarskih nedelja sa trčanjem bez kvalitetnog rada i ubrzanja (prva može biti delimična).",
+        "Povratni period 2026-11-26–2026-12-20: bez kvaliteta i ubrzanja. Finalni plan ima 8 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni.",
+        "Isporučeni vrhunac 10.1 km/ned je ispod okvirne baze za pun vremenski pristup (40 km/ned).",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+      ],
+      "finalization": {
+        "cutoff": "2026-11-25",
+        "initialEasyWeeks": 8,
+        "peakWeeklyKm": 10.1,
+        "returnWindow": {
+          "start": "2026-11-26",
+          "end": "2026-12-21",
+          "requiredWeeks": 4
+        },
+        "returnWarning": "Povratni period 2026-11-26–2026-12-20: bez kvaliteta i ubrzanja. Finalni plan ima 8 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni."
+      },
+      "conflicts": []
+    }
+  },
+  {
+    "id": "U08",
+    "today": "2026-10-28",
+    "sourceEvidenceSha256": "232c491c1ee143f813a2bd99757594813429e1551e8cb61435d8e89f0507840d",
+    "before": {
+      "staleDescriptions": [
+        {
+          "id": "g3d5",
+          "date": "2026-10-30",
+          "desc": "5.9 km lako (Z2) @ ~5:16/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        },
+        {
+          "id": "g4d1",
+          "date": "2026-11-02",
+          "desc": "7.1 km lako (Z2) @ ~5:16/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        },
+        {
+          "id": "g5d1",
+          "date": "2026-11-09",
+          "desc": "7.5 km lako (Z2) @ ~5:16/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        }
+      ],
+      "staleFocus": [
+        {
+          "w": 4,
+          "focus": "Fartlek"
+        },
+        {
+          "w": 5,
+          "focus": "Fartlek"
+        }
+      ],
+      "peakWeeklyKm": 49,
+      "warnings": [
+        "Posle pauze od 2 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+        "Najduže planirano trčanje je 15.3 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 14 dana. Polazni obim je 70% prijavljene baze (38.5 km), sa 3 početne nedelje bez kvalitetnog rada. Ovo su oprezne postavke aplikacije, ne medicinska procena."
+      ],
+      "conflicts": []
+    },
+    "after": {
+      "staleDescriptions": [],
+      "staleFocus": [],
+      "peakWeeklyKm": 49,
+      "warnings": [
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 14 dana. Polazni obim je 70% prijavljene baze (38.5 km). Ovo su oprezne postavke aplikacije, ne medicinska procena.",
+        "Finalni preostali plan: vrhunac 49 km/ned; 3 početnih kalendarskih nedelja sa trčanjem bez kvalitetnog rada i ubrzanja (prva može biti delimična).",
+        "Povratni period 2026-10-29–2026-11-15: bez kvaliteta i ubrzanja. Finalni plan ima 3 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni.",
+        "Najduže planirano trčanje je 15.3 km; ovaj plan ima ograničenu dužinsku pripremu za polumaraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+      ],
+      "finalization": {
+        "cutoff": "2026-10-28",
+        "initialEasyWeeks": 3,
+        "peakWeeklyKm": 49,
+        "returnWindow": {
+          "start": "2026-10-29",
+          "end": "2026-11-16",
+          "requiredWeeks": 3
+        },
+        "returnWarning": "Povratni period 2026-10-29–2026-11-15: bez kvaliteta i ubrzanja. Finalni plan ima 3 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni."
+      },
+      "conflicts": []
+    }
+  },
+  {
+    "id": "U09",
+    "today": "2026-11-25",
+    "sourceEvidenceSha256": "ac2f2d8428c259b299fa7f6d8b033fef0853c99c08a34ae6914eee3e191f0ecd",
+    "before": {
+      "staleDescriptions": [
+        {
+          "id": "g7d5",
+          "date": "2026-11-27",
+          "desc": "4.1 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        },
+        {
+          "id": "g8d1",
+          "date": "2026-11-30",
+          "desc": "5.6 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        },
+        {
+          "id": "g9d1",
+          "date": "2026-12-07",
+          "desc": "5.3 km lako (Z2) @ ~5:49/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        }
+      ],
+      "staleFocus": [
+        {
+          "w": 8,
+          "focus": "Fartlek"
+        },
+        {
+          "w": 9,
+          "focus": "Fartlek"
+        },
+        {
+          "w": 11,
+          "focus": "Tempo isprekidan"
+        },
+        {
+          "w": 16,
+          "focus": "Tempo isprekidan"
+        },
+        {
+          "w": 17,
+          "focus": "Tempo"
+        }
+      ],
+      "peakWeeklyKm": 29,
+      "warnings": [
+        "Posle pauze od 2 nedelja plan počinje sa 1 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+        "Plan daje JEDAN kvalitetan trening nedeljno umesto dva. Dva kvaliteta traže bar ~38 km/ned, a ovaj plan i na vrhuncu dostiže oko 37 km/ned — ispod toga bi oni sami bili većina nedelje, a za lagano trčanje (koje gradi bazu) ne bi ostalo mesta. Za dva kvaliteta treba ti viša polazna baza ili više nedelja do trke.",
+        "Izabrao si 4 dana za maraton. Manje dana ostavlja manje prostora za raspodelu obima i oporavak između dužine i kvaliteta. Spremnost zavisi od tvoje baze i isporučene pripreme, a ne samo od broja dana.",
+        "Vrhunac plana je oko 30 km/ned, a za maraton se orijentaciono računa sa ~55 km/ned. Rast je namerno postupan (od tvojih 21 km/ned). Ovaj obim sam po sebi ne potvrđuje spremnost da završiš distancu niti da ostvariš vremenski cilj. Za pun pristup trebalo bi ti više nedelja ili viša polazna baza.",
+        "Najduže planirano trčanje je 9.1 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+        "Isporučeni vrhunac 29.9 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+        "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu.",
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 14 dana. Polazni obim je 70% prijavljene baze (21 km), sa 3 početne nedelje bez kvalitetnog rada. Ovo su oprezne postavke aplikacije, ne medicinska procena."
+      ],
+      "conflicts": []
+    },
+    "after": {
+      "staleDescriptions": [],
+      "staleFocus": [],
+      "peakWeeklyKm": 29,
+      "warnings": [
+        "Izabrao si 4 dana za maraton. Manje dana ostavlja manje prostora za raspodelu obima i oporavak između dužine i kvaliteta. Spremnost zavisi od tvoje baze i isporučene pripreme, a ne samo od broja dana.",
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 14 dana. Polazni obim je 70% prijavljene baze (21 km). Ovo su oprezne postavke aplikacije, ne medicinska procena.",
+        "Finalni preostali plan: vrhunac 29 km/ned; 3 početnih kalendarskih nedelja sa trčanjem bez kvalitetnog rada i ubrzanja (prva može biti delimična).",
+        "Povratni period 2026-11-26–2026-12-13: bez kvaliteta i ubrzanja. Finalni plan ima 3 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni.",
+        "Najduže planirano trčanje je 8.8 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+        "Isporučeni vrhunac 29 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+        "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+      ],
+      "finalization": {
+        "cutoff": "2026-11-25",
+        "initialEasyWeeks": 3,
+        "peakWeeklyKm": 29,
+        "returnWindow": {
+          "start": "2026-11-26",
+          "end": "2026-12-14",
+          "requiredWeeks": 3
+        },
+        "returnWarning": "Povratni period 2026-11-26–2026-12-13: bez kvaliteta i ubrzanja. Finalni plan ima 3 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni."
+      },
+      "conflicts": []
+    }
+  },
+  {
+    "id": "U10",
+    "today": "2026-11-25",
+    "sourceEvidenceSha256": "fe147d40fcfe0813a1f2575f169cc7f3c43e61b07f3338e680b48153e92adc89",
+    "before": {
+      "staleDescriptions": [
+        {
+          "id": "g8d1",
+          "date": "2026-11-30",
+          "desc": "6.2 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        },
+        {
+          "id": "g8d3",
+          "date": "2026-12-02",
+          "desc": "4.8 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        },
+        {
+          "id": "g9d1",
+          "date": "2026-12-07",
+          "desc": "7.3 km lako (Z2) @ ~6:00/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)"
+        },
+        {
+          "id": "g10d1",
+          "date": "2026-12-14",
+          "desc": "5.3 km lako (Z2) @ ~6:00/km + 4×15 s ubrzanja (lagani ubrzani koraci)"
+        }
+      ],
+      "staleFocus": [
+        {
+          "w": 9,
+          "focus": "Fartlek"
+        },
+        {
+          "w": 10,
+          "focus": "DELOAD — obim dole, ostaje kratka oštrina"
+        }
+      ],
+      "peakWeeklyKm": 47.4,
+      "warnings": [
+        "Ciljno vreme 3:30:00 je brže od reference trenutne forme (3:45:00). To ne procenjuje napredak do dana trke ni izdržljivost za ciljnu distancu. Tempo treninga ostaje vezan za potvrđenu formu. Cilj je sačuvan kao želja; proveri napredak novom trkom ili testom pre ubrzavanja.",
+        "Posle pauze od 4 nedelja plan počinje sa 2 lagane povratne nedelje. Stari PB ostaje referenca; proveri formu pre zahtevnijeg rada.",
+        "Najduže planirano trčanje je 17.3 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+        "Isporučeni vrhunac 47.4 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+        "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu.",
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 28 dana. Polazni obim je 55% prijavljene baze (33 km), sa 4 početne nedelje bez kvalitetnog rada. Ovo su oprezne postavke aplikacije, ne medicinska procena."
+      ],
+      "conflicts": []
+    },
+    "after": {
+      "staleDescriptions": [],
+      "staleFocus": [],
+      "peakWeeklyKm": 47.4,
+      "warnings": [
+        "Ciljno vreme 3:30:00 je brže od reference trenutne forme (3:45:00). To ne procenjuje napredak do dana trke ni izdržljivost za ciljnu distancu. Tempo treninga ostaje vezan za potvrđenu formu. Cilj je sačuvan kao želja; proveri napredak novom trkom ili testom pre ubrzavanja.",
+        "Neupisani treninzi nisu tretirani kao preskočeni. Propuštena kilometraža se ne nadoknađuje.",
+        "Odrađeni dani, merenja i ručne izmene ostaju; zaštićen budući trening može zahtevati posebnu ručnu proveru.",
+        "Vremenski cilj ostaje cilj. Referentni PB i ovaj predlog ne potvrđuju spremnost niti tempo posle pauze.",
+        "Potvrđena pauza: 28 dana. Polazni obim je 55% prijavljene baze (33 km). Ovo su oprezne postavke aplikacije, ne medicinska procena.",
+        "Finalni preostali plan: vrhunac 47.4 km/ned; 4 početnih kalendarskih nedelja sa trčanjem bez kvalitetnog rada i ubrzanja (prva može biti delimična).",
+        "Povratni period 2026-11-26–2026-12-20: bez kvaliteta i ubrzanja. Finalni plan ima 4 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni.",
+        "Najduže planirano trčanje je 17.3 km; ovaj plan ima ograničenu dužinsku pripremu za maraton. Promeni raspoložive dane, polaznu bazu ili datum trke pre vremenskog cilja.",
+        "Isporučeni vrhunac 47.4 km/ned je ispod okvirne baze za pun vremenski pristup (55 km/ned).",
+        "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+        "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom.",
+        "Nema dovoljno ponovljenih dužih izlaganja da jedna najveća dužina potvrdi pripremu."
+      ],
+      "finalization": {
+        "cutoff": "2026-11-25",
+        "initialEasyWeeks": 4,
+        "peakWeeklyKm": 47.4,
+        "returnWindow": {
+          "start": "2026-11-26",
+          "end": "2026-12-21",
+          "requiredWeeks": 4
+        },
+        "returnWarning": "Povratni period 2026-11-26–2026-12-20: bez kvaliteta i ubrzanja. Finalni plan ima 4 početnih lakih nedelja; zaštićeni konflikti su posebno navedeni."
+      },
+      "conflicts": []
+    }
+  }
+]
