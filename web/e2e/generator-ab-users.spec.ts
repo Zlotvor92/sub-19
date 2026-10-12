@@ -118,12 +118,12 @@ test.describe('locked inputs: current purpose- and dose-aware wizard and persist
       const state = (): Persisted => backend.row?.data ?? {};
       const revisions = () =>
         (state().genPlan?.['planRevisions'] ?? []) as Array<{ reason: string; summary: string }>;
-      // Historical raw/blind plans and earlier segment outputs stay frozen. The current
-      // generator output (completed steps 4–7 plus recovery metadata) is separate evidence.
+      // Original QA and all segment outputs stay frozen. Final integrated candidate
+      // comes from this run's independently regenerated pair, not an earlier fixture.
       const current = JSON.parse(
-        readFileSync(resolve(root, `../fatigue-recovery/current/${profile.id}.json`), 'utf8')
-      ) as { plan: PlanGenerationResult };
-      const expected = adaptGeneratedPlan(current.plan)!;
+        readFileSync(resolve(root, `../generator-final/raw/${profile.id}.json`), 'utf8')
+      ) as { versions: { new: { plan: PlanGenerationResult } } };
+      const expected = adaptGeneratedPlan(current.versions.new.plan)!;
       // Empty scheduling arrays are genuine wizard serialization, absent from the locked domain input.
       const wizardInput = { ...profile.input, qDows: [], runDows: [] };
       expected.ulaz = wizardInput;
