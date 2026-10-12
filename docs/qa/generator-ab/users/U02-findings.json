@@ -1,0 +1,136 @@
+{
+  "id": "U02",
+  "reviewerRole": "Independent synthetic-user QA: recreational 5K runner, sub-20 aspiration",
+  "profile": {
+    "id": "U02",
+    "label": "5K rekreativac sub-20",
+    "historySource": "Synthetic QA scenario; not a real athlete",
+    "input": {
+      "startDate": "2026-10-12",
+      "raceDate": "2027-01-31",
+      "raceDistM": 5000,
+      "pb": {
+        "distM": 5000,
+        "sec": 1425,
+        "date": "2026-09-20"
+      },
+      "weeklyKm": 30,
+      "recentLongRunKm": 10,
+      "consistentWeeks": 12,
+      "breakWeeks": 0,
+      "qualityExperience": "some",
+      "runDays": 4,
+      "quality": 2,
+      "intensity": "std",
+      "volIntensity": "std",
+      "trainedRecently": true,
+      "goalSec": 1199,
+      "lrDow": 7
+    },
+    "event": {
+      "kind": "underexecution",
+      "fraction": 0.55
+    },
+    "eventToday": "2026-11-25"
+  },
+  "frozenCommits": {
+    "old": "aea8dc66e5e6a9940ce48d63a94daace76be1297",
+    "new": "f7bcbe99d135cd4c1e7b837d0369e8066c1b3baa"
+  },
+  "fixtureSha256": {
+    "old": "5235a23c263e1c2f235da398a1eb816a055851c83db4133ac5d9e1aebfe9c271",
+    "new": "17b3b7f0b9b96741d29d84da2aa7af857f889e987b4845a9e1ca1711bc0dac7f"
+  },
+  "reproduction": {
+    "commands": [
+      "node docs/probes/generator-ab-qa.mjs U02",
+      "node docs/qa/generator-ab/users/U02-probe.mjs"
+    ],
+    "fixtureChecks": {
+      "old": true,
+      "new": true
+    },
+    "result": "Both regenerated hashes match; both original summaries and all three session/prediction/QS audits have zero arithmetic/coherence failures."
+  },
+  "fullWeeksReviewed": {
+    "old": 16,
+    "new": 16,
+    "adjustedNew": 16
+  },
+  "mainChecks": {
+    "exactlyTwoLowFullWeeks": true,
+    "allRunsExplicitlyLogged": true,
+    "reductionOffered": true,
+    "noPauseInferred": true,
+    "generated": true,
+    "inputsPure": true,
+    "pastAndTodayStable": true,
+    "pastPredictionRowsStable": true,
+    "uniqueDayIds": true,
+    "uniquePredictionIds": true,
+    "raceDateStable": true,
+    "daysStable": true,
+    "noProjectedFitnessGain": true
+  },
+  "protectionChecks": {
+    "generated": true,
+    "inputsPure": true,
+    "pastAndTodayStable": true,
+    "futureCompletedStable": true,
+    "manualSessionStable": true,
+    "manualAltUnderlyingDayStable": true,
+    "measuredFutureDayStable": true,
+    "movedEffectivePastStable": true,
+    "movedDayReallyInPast": true,
+    "manualAltEffectiveKm": true,
+    "measuredRowStable": true,
+    "manualWarning": true
+  },
+  "issues": [
+    {
+      "id": "U02-OLD-01",
+      "version": "old",
+      "severity": "medium",
+      "type": "unsupported-forecast",
+      "status": "resolved-in-new",
+      "location": "meta.vdotGoal / meta.predictedSec / meta.dayWarnings",
+      "expected": "Report entered 23:45 result as current reference, without treating plan completion as confirmed fitness improvement.",
+      "actual": "vdot0=40.7 but vdotGoal=44.2 and predictedSec=1329 (22:09), an unverified 96-second improvement; warning describes what the plan realistically delivers. New uses vdotGoal=vdot0=40.7 and predictedSec=1425 (23:45), and explicitly says this is not a race-day progress estimate.",
+      "evidence": "raw/U02.json versions.old.plan.meta and versions.new.plan.meta",
+      "impact": "Athlete may interpret generated forecast as a demonstrated route toward sub-20.",
+      "confidence": "high"
+    },
+    {
+      "id": "U02-NEW-01",
+      "version": "new-adjustment",
+      "severity": "medium",
+      "type": "session-purpose-mismatch",
+      "status": "open",
+      "location": "2026-12-09 / g9d3 / adjusted week9",
+      "expected": "Preserve aerobic-I session purpose after dose reduction: the implementation documents a >=60-second minimum for I repetitions; shorter legs need a different stated purpose or format.",
+      "actual": "I pyramid100-200-300-200-100m at272sec/km, with61sec walking between legs. Leg times27.2,54.4,81.6,54.4,27.2sec; four of five below60sec. Working dose0.9km/244.8sec. Label remains Piramida, zoneI; copy only states dose adapted.",
+      "evidence": "U02-event.json audit.details week9 g9d3; web/src/domain/training/sessions/constraints.ts I minimumRepM comment and interval branch, absent from pyramid branch",
+      "impact": "Data are internally coherent, but trimming changes an aerobic interval workout toward brief surges while retaining its I label. This is a policy/purpose mismatch, not a medical safety diagnosis.",
+      "confidence": "high"
+    },
+    {
+      "id": "U02-NEW-02",
+      "version": "new-adjustment",
+      "severity": "low",
+      "type": "misleading-copy",
+      "status": "open",
+      "location": "2026-11-30 / g8d1,g8d5,g8d7",
+      "expected": "Underexecution reduction without confirmed break should explain reduced load without asserting a pause.",
+      "actual": "All26 past eligible runs are explicitly done; daysSinceLastRun=0, recommendation=reduce, options={}, executionAdjustment.breakDays=0. Three future day descriptions nevertheless say Postepen povratak posle pauze.",
+      "evidence": "U02-event.json input.log, analysis, adjustment.result.meta.executionAdjustment and week8 descriptions; web/src/domain/plan/returnGrowth.ts",
+      "impact": "User can wrongly infer that the application detected a break, even though the recommendation correctly avoided it.",
+      "confidence": "high"
+    }
+  ],
+  "browser": {
+    "status": "not-executed-by-this-agent",
+    "owner": "U06 centralized browser harness",
+    "scope": "Await centralized evidence; no browser/export/watch/real-user claim in this report."
+  },
+  "verdict": "Prefer new for evidence honesty, reported-base long-run fit, introductory quality and true deloads; residual adjustment purpose/copy defects need correction. No severe or high issue observed in U02 domain execution."
+}

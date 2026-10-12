@@ -1,0 +1,283 @@
+{
+  "id": "U01",
+  "role": "independent synthetic novice 5K user",
+  "preference": "new",
+  "reviewScope": "Every day, all 12 weeks of both pinned plans; production domain event only. No browser or watch claim.",
+  "blinding": "Version identities visible; not blind.",
+  "reproduce": [
+    "node docs/probes/generator-ab-qa.mjs U01",
+    "node docs/qa/generator-ab/users/U01-probe.mjs"
+  ],
+  "event": {
+    "today": "2026-11-25",
+    "dayId": "g7d3",
+    "week": 7,
+    "generatorDow": 3,
+    "kind": "single-miss",
+    "allChecksPass": true,
+    "assertionsPerVersion": 15,
+    "consumerScope": "Current production APIs consume both frozen old/new generator outputs; baseline has no executionAdjustment API.",
+    "outcome": "Both recommend single-miss without action/confirmation; direct buildExecutionAdjustment returns error, no result, no mutation. Sparse unlogged history remains unknown and does not regenerate."
+  },
+  "scores": {
+    "old": {
+      "fit": 15,
+      "quality": 12,
+      "progression": 10,
+      "recovery": 11,
+      "specificity": 6,
+      "deloadTaper": 6,
+      "coherence": 6,
+      "total": 66
+    },
+    "new": {
+      "fit": 17,
+      "quality": 16,
+      "progression": 11,
+      "recovery": 13,
+      "specificity": 9,
+      "deloadTaper": 9,
+      "coherence": 8,
+      "total": 83
+    }
+  },
+  "coverage": {
+    "oldWeeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "newWeeks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "daysPerWeek": 7,
+    "runWalkReviewed": true,
+    "baseReviewed": true,
+    "purposeDoseProgressionRecoveryReviewed": true,
+    "taperReviewed": true,
+    "goalHonestyReviewed": true,
+    "300mSessions": 0,
+    "300mDisposition": "N/A: none in either frozen output. Actual W10 I 400m and W11 RP 400m inspected separately.",
+    "arithmeticFailures": {
+      "old": [],
+      "new": []
+    }
+  },
+  "findings": [
+    {
+      "id": "U01-F01",
+      "severity": "medium",
+      "status": "open",
+      "versions": [
+        "old",
+        "new"
+      ],
+      "category": "beginner progression",
+      "week": 5,
+      "generatorDow": [
+        1,
+        3,
+        7
+      ],
+      "date": [
+        "2026-11-09",
+        "2026-11-11",
+        "2026-11-15"
+      ],
+      "evidence": {
+        "path": "raw/U01.json",
+        "fields": [
+          "versions.new.plan.weeks[3].days[6].runWalk",
+          "versions.new.plan.weeks[4].days[6]"
+        ],
+        "oldW4LongestKm": 2.7,
+        "oldW5ContinuousLongestKm": 4.1,
+        "newW4LongestKm": 2.3,
+        "newW4RunWalk": {
+          "runSec": 300,
+          "walkSec": 60
+        },
+        "newW5ContinuousLongestKm": 3.5,
+        "newW5PaceSec": 529,
+        "continuousMinutesApprox": 30.9,
+        "inputConsistentWeeks": 0,
+        "inputTrainedRecently": false
+      },
+      "expected": "A novice with no continuity can keep walk breaks until the longer continuous run feels manageable; instructions explain the transition or offer a readiness choice.",
+      "actual": "All three W5 runs switch automatically from 5:1 run/walk to continuous Z2 and Monday adds strides; no continuation option appears in generated descriptions.",
+      "impact": "Potential usability/load mismatch for a novice who has not adapted by W5. This is a product concern, not proof of injury or a failed arithmetic invariant.",
+      "recommendation": "Explain that walk breaks remain available and base progression on reported execution/readiness."
+    },
+    {
+      "id": "U01-F02",
+      "severity": "high",
+      "status": "resolved-in-new",
+      "versions": [
+        "old"
+      ],
+      "category": "goal honesty",
+      "week": 12,
+      "generatorDow": 7,
+      "date": "2027-01-03",
+      "evidence": {
+        "path": "raw/U01.json",
+        "fields": [
+          "versions.old.plan.meta.predictedSec",
+          "versions.old.plan.meta.dayWarnings",
+          "versions.old.plan.weeks[11].days[6].desc"
+        ],
+        "oldPredictedSec": 2004,
+        "oldRaceDesc": "🏁 TRKA 5 km (5K) — cilj 30:00 / ritam 7:00/km",
+        "newReferenceSec": 2100,
+        "newGoalSec": 1800,
+        "newRaceCaveat": "Spremnost nije potvrđena"
+      },
+      "expected": "Distinguish aspirational time, current-fitness pace and unconfirmed endurance without asserting a predicted improvement or guaranteed finish.",
+      "actual": "Old claims race-day 33:24 and says this low-volume plan is to finish the distance; race card pairs 30:00 with a 35:00 rhythm. New holds current reference at 35:00 and explicitly withholds readiness confirmation.",
+      "impact": "Old can leave a beginner believing the plan validates finishing or a faster race outcome.",
+      "recommendation": "Retain new explicit reference/aspiration/readiness language."
+    },
+    {
+      "id": "U01-F03",
+      "severity": "medium",
+      "status": "resolved-in-new",
+      "versions": [
+        "old"
+      ],
+      "category": "taper dose",
+      "week": 11,
+      "generatorDow": 3,
+      "date": "2026-12-23",
+      "evidence": {
+        "path": "raw/U01.json",
+        "fields": [
+          "versions.old.plan.weeks[9].days[2].session",
+          "versions.old.plan.weeks[10].days[2].session",
+          "versions.new.plan.weeks[10].days[2].session"
+        ],
+        "oldW10WorkMinutes": 7.88,
+        "oldW11WorkMinutes": 11.2,
+        "oldW11Session": "4×400m RP at 7:00/km, 90s walk",
+        "newW11Session": "2×400m RP at 7:00/km, 126s walk",
+        "newW11WorkMinutes": 5.6
+      },
+      "expected": "For this very low-base novice, taper retains a small familiar rhythm dose while lowering total load.",
+      "actual": "Old taper reduces weekly km but its formal work duration rises about 42% relative to W10. New halves RP work to 5.6 minutes and uses more recovery.",
+      "impact": "Old is less coherent as a novice taper. RP is slower than I, so more minutes alone is not proof that total intensity load rose.",
+      "recommendation": "Retain new reduced-dose taper; assess duration and intensity together."
+    },
+    {
+      "id": "U01-F04",
+      "severity": "low",
+      "status": "open",
+      "versions": [
+        "old",
+        "new"
+      ],
+      "category": "focus coherence",
+      "week": 4,
+      "generatorDow": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "date": [
+        "2026-11-02",
+        "2026-11-08"
+      ],
+      "evidence": {
+        "path": "raw/U01.json",
+        "fields": [
+          "versions.old.plan.weeks[3].focus",
+          "versions.new.plan.weeks[3].focus"
+        ],
+        "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+        "formalSessions": 0,
+        "strides": 0,
+        "allRuns": "5:1 run/walk"
+      },
+      "expected": "Week focus describes the delivered novice sessions.",
+      "actual": "Focus promises retained short sharpness even though W4 contains only run/walk and optional strength.",
+      "impact": "Small expectation mismatch; day instructions are otherwise coherent.",
+      "recommendation": "Use base/run-walk deload focus when no strides or session is delivered."
+    },
+    {
+      "id": "U01-F05",
+      "severity": "low",
+      "status": "open",
+      "versions": [
+        "new"
+      ],
+      "category": "novice language",
+      "week": 10,
+      "generatorDow": 3,
+      "date": "2026-12-16",
+      "evidence": {
+        "path": "raw/U01.json",
+        "fields": [
+          "versions.new.plan.weeks[9].days[2].desc",
+          "versions.new.plan.weeks[9].days[2].session.notes"
+        ],
+        "text": "Deonice skraćene radi poštovanja budžeta rada.",
+        "session": "2×400m I at 6:34/km, 118s walk; 5.25 minutes work"
+      },
+      "expected": "Explain the user purpose: short controlled repetitions as an introduction, with clear recovery instructions.",
+      "actual": "Notes expose the internal work-budget mechanism without explaining what the short dose is intended to train.",
+      "impact": "Minor comprehension issue; the prescription, current-fitness zone and arithmetic remain coherent.",
+      "recommendation": "Replace internal budgeting language with a plain purpose and effort cue."
+    }
+  ],
+  "positiveObservations": [
+    {
+      "week": 7,
+      "generatorDow": 3,
+      "old": "1.1km continuous T, about 8min",
+      "new": "6×30s T, 90s easy recovery, 3min work; explicitly no sprint",
+      "reason": "Gentler first formal quality introduction."
+    },
+    {
+      "week": 8,
+      "generatorDow": 3,
+      "old": "2×200m R",
+      "new": "Easy run",
+      "reason": "Recovery week removes formal fast repetition work while retaining small Monday strides."
+    },
+    {
+      "week": 10,
+      "generatorDow": 7,
+      "oldLongestKm": 6.5,
+      "newLongestKm": 4.6,
+      "reason": "Long-run progression is closer to reported 3km repeatable base."
+    },
+    {
+      "week": 12,
+      "generatorDow": 7,
+      "new": "35:00 result reference; desired 30:00 separate; readiness unconfirmed",
+      "reason": "Goal honesty improved."
+    }
+  ]
+}

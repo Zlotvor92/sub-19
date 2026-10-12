@@ -1,0 +1,50 @@
+{
+  "runId": 38206972002,
+  "url": "https://github.com/Zlotvor92/sub-19/actions/runs/38206972002",
+  "headCommit": "2dfc2eba0ca8e82352c4c20ba6bfd4741f26b5c7",
+  "unitTests": 1404,
+  "browserTests": 76,
+  "lockedProfileBrowserFlows": 10,
+  "passedProfiles": [
+    "U01",
+    "U02",
+    "U03",
+    "U04",
+    "U05",
+    "U06",
+    "U07",
+    "U08",
+    "U09",
+    "U10"
+  ],
+  "applyRestoreFlows": 9,
+  "expectedInsufficientCycleBlock": "U08",
+  "jobs": {
+    "web": "success",
+    "test": "success",
+    "database": "success"
+  },
+  "backend": "isolated fake backend; no live production backend or watch integration",
+  "artifactCapture": "success; HTML report and referenced attachments downloaded, SHA verified and ten expected profile outcomes checked",
+  "initialRunId": 38171685665,
+  "artifact": {
+    "id": 11727084564,
+    "sizeBytes": 12179300,
+    "sha256": "1b8b1c4e4c6685d1190f2142ccf18e305ca2c89f8205f811e97bbaa00f1f0ea2",
+    "expiresAt": "2027-01-10T05:12:55Z",
+    "uniquePngFiles": 34,
+    "profileScreenshotReferences": 38
+  },
+  "visualInspection": {
+    "scope": "Six representative full-page captures, not every viewport/week/state",
+    "images": [
+      "U01-initial-plan",
+      "U05-initial-plan",
+      "U09-initial-plan",
+      "U06-confirmed-return-preview",
+      "U08-expected-short-cycle-block",
+      "U10-restore-history-and-log"
+    ],
+    "finding": "The sampled captures show the expected plan summaries, confirmed-return preview, explicit short-cycle error and preserved 6.2km/history state. Fixed bottom navigation is visible at the captured viewport boundary inside full-page screenshots; this alone does not establish inaccessible content during scrolling."
+  }
+}

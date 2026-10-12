@@ -1,0 +1,607 @@
+{
+  "artifactId": 11727084564,
+  "artifactSha256": "1b8b1c4e4c6685d1190f2142ccf18e305ca2c89f8205f811e97bbaa00f1f0ea2",
+  "profiles": [
+    {
+      "profile": "U01",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 25281,
+      "attachments": [
+        {
+          "name": "U01-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U01-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U01-initial-plan",
+          "contentType": "image/png",
+          "path": "data/1a813b96732bef32f0650215f3c9e5b022652cd1.png",
+          "exists": true,
+          "sha256": "d1203c0a8f0cef34085fd549390e4921b3a315c3cdf1ea31b4259f12a372fc1d"
+        },
+        {
+          "name": "U01-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U01-confirmed-return-preview",
+          "contentType": "image/png",
+          "path": "data/68458578605bc07ecc3e8dbaf5d6dd639c1f4b46.png",
+          "exists": true,
+          "sha256": "f14892a3bf160640df49855df3614038bdbd952906e0d9dc38a7caa10dbf7666"
+        },
+        {
+          "name": "U01-full-return-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U01-persisted-history",
+          "contentType": "image/png",
+          "path": "data/57b0de6618b4c4a5e8d7e89eeaf7bec4ab0b539e.png",
+          "exists": true,
+          "sha256": "ce8a6c040e59f8938c3bb9b475be01967747368ceba0d074a37916b63db4c058"
+        },
+        {
+          "name": "U01-restore-history-and-log",
+          "contentType": "image/png",
+          "path": "data/fdfcd8e4afd0c5199d743e3bf412dc346d5d3d25.png",
+          "exists": true,
+          "sha256": "ab42ded44b4b3eaef46f7c6570a75f6b4d14f3f29fb6351d5bd07827b7af288a"
+        },
+        {
+          "name": "U01-full-restored-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    },
+    {
+      "profile": "U02",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 25277,
+      "attachments": [
+        {
+          "name": "U02-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U02-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U02-initial-plan",
+          "contentType": "image/png",
+          "path": "data/c39a50ea8f9912acc28973096a48bfb094886695.png",
+          "exists": true,
+          "sha256": "edb7f8d30759f41b25186a12e736fedb341807b2696ce85b3802d3825b53664f"
+        },
+        {
+          "name": "U02-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U02-confirmed-return-preview",
+          "contentType": "image/png",
+          "path": "data/3e94aeccee211f84e7a098c284542f149de3b00d.png",
+          "exists": true,
+          "sha256": "ef628092b4089453f91b10bc80db8b65ced792227745f82fea4661f9d98d03ab"
+        },
+        {
+          "name": "U02-full-return-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U02-persisted-history",
+          "contentType": "image/png",
+          "path": "data/7f39b9e81771895c3f74c0071d1edec6d110bbd1.png",
+          "exists": true,
+          "sha256": "09de5891c85ec31328b21f1478d05c09b47ade26c0bb0df32770795e713d7851"
+        },
+        {
+          "name": "U02-restore-history-and-log",
+          "contentType": "image/png",
+          "path": "data/c62416accee0ebe2ff921be20d2a152bdd90f6ce.png",
+          "exists": true,
+          "sha256": "7b9ef5c00b99091daa019cd4c9621b326dde940011f7124fbcb1a008eba0f9e7"
+        },
+        {
+          "name": "U02-full-restored-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    },
+    {
+      "profile": "U03",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 25226,
+      "attachments": [
+        {
+          "name": "U03-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U03-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U03-initial-plan",
+          "contentType": "image/png",
+          "path": "data/130512cca3972eae76aba8271fc5dfbf757ce6dc.png",
+          "exists": true,
+          "sha256": "cf5ca154ff6e2f3f3940ca8aabf5a79553a225c911fb441a83a16daa6b6e1946"
+        },
+        {
+          "name": "U03-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U03-confirmed-return-preview",
+          "contentType": "image/png",
+          "path": "data/af5d6c82bad0229a63311fa0b376671742ddfb0f.png",
+          "exists": true,
+          "sha256": "d46c64e3b6b1ce8304b359c911b03eca6aebf7413401183105e68dd26facb8b7"
+        },
+        {
+          "name": "U03-full-return-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U03-persisted-history",
+          "contentType": "image/png",
+          "path": "data/4538a5d4249fb54d0ac2332b6b2e184cf4562204.png",
+          "exists": true,
+          "sha256": "e56b7934a2cf1c24bf823268869db690adfa43f9dc41e55d0f52d503a1757d92"
+        },
+        {
+          "name": "U03-restore-history-and-log",
+          "contentType": "image/png",
+          "path": "data/1a76ae16a58e4b0a8765fcde7563df10d6232d8d.png",
+          "exists": true,
+          "sha256": "6598476f173125ebcd297fe22b2c0958bee680b63c5eef9b6da1dba811721e3e"
+        },
+        {
+          "name": "U03-full-restored-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    },
+    {
+      "profile": "U04",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 25266,
+      "attachments": [
+        {
+          "name": "U04-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U04-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U04-initial-plan",
+          "contentType": "image/png",
+          "path": "data/568a0eb107debfe90eb3eb44f852d2e9bb142066.png",
+          "exists": true,
+          "sha256": "077c94ae2ae9306653fcef1099670d0c9c17a75c9f10d8c25e9d1b49ec917698"
+        },
+        {
+          "name": "U04-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U04-confirmed-return-preview",
+          "contentType": "image/png",
+          "path": "data/fb085679cc185a2135503091cf8b06758af3202a.png",
+          "exists": true,
+          "sha256": "15c4eb44a785980bc244aabfdaf206fa018ce45739d580f9f3f376753f58d4c7"
+        },
+        {
+          "name": "U04-full-return-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U04-persisted-history",
+          "contentType": "image/png",
+          "path": "data/762837148da1def8410fce991e74addf0adf153b.png",
+          "exists": true,
+          "sha256": "8c565d375b75113f837e581a3f45624312337d0563cf39d869aed38ced712744"
+        },
+        {
+          "name": "U04-restore-history-and-log",
+          "contentType": "image/png",
+          "path": "data/32ea992aad73535c92c1d41d69fbc302e00e4c90.png",
+          "exists": true,
+          "sha256": "370ff540887be36abbf1df9e36ea1c5fd989c97f6e123cde79bbe3751360dfcf"
+        },
+        {
+          "name": "U04-full-restored-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    },
+    {
+      "profile": "U05",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 25273,
+      "attachments": [
+        {
+          "name": "U05-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U05-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U05-initial-plan",
+          "contentType": "image/png",
+          "path": "data/4d856a1c54fbde178175ea9ca85a3a89b41dc98c.png",
+          "exists": true,
+          "sha256": "7622c1000f9d4dd1fb1899a65a98781c79a389de1752849a8dd943ef88c10013"
+        },
+        {
+          "name": "U05-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U05-confirmed-return-preview",
+          "contentType": "image/png",
+          "path": "data/e50b20559d0a2f91406265c0d670706722596d81.png",
+          "exists": true,
+          "sha256": "3dad578bf934846062dabcb1eda0afbf12d81a4a99dbaf48ad94f469cf93618d"
+        },
+        {
+          "name": "U05-full-return-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U05-persisted-history",
+          "contentType": "image/png",
+          "path": "data/cd37ac25b1590d3cecd36747ee714756dffba48a.png",
+          "exists": true,
+          "sha256": "25e2ef224fdfcec28b289db62f7c5d2a4ca0fb545fc04039e1fa371833b962b8"
+        },
+        {
+          "name": "U05-restore-history-and-log",
+          "contentType": "image/png",
+          "path": "data/9f37e6d8b6d6d0e75da4c63af34ac215a3aa5401.png",
+          "exists": true,
+          "sha256": "506b9b9e2e5e25ba703a3784d68fd439a05968ddcebd99823e3c2d91f92b4042"
+        },
+        {
+          "name": "U05-full-restored-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    },
+    {
+      "profile": "U06",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 25209,
+      "attachments": [
+        {
+          "name": "U06-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U06-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U06-initial-plan",
+          "contentType": "image/png",
+          "path": "data/309a155ed9fe522fa02089d438ddf1940c38a3d0.png",
+          "exists": true,
+          "sha256": "4961004ef5a8fce09a3ecdcccbc7c6d9cb001695f42890af9e1b821a3e83a729"
+        },
+        {
+          "name": "U06-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U06-confirmed-return-preview",
+          "contentType": "image/png",
+          "path": "data/ce74332dac402b0a76d71daaa11d4ba7a530a5c4.png",
+          "exists": true,
+          "sha256": "f04b566592783ff6ff6ce5921130d176551e986d181ec87bc68ed129faed706a"
+        },
+        {
+          "name": "U06-full-return-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U06-persisted-history",
+          "contentType": "image/png",
+          "path": "data/7afabf2a763edf4fdec72265edbde96769d1d255.png",
+          "exists": true,
+          "sha256": "bc0dcd4437ad384bda8f7d7ab8184170747a4e0429bc8c918b4c48622229d0bb"
+        },
+        {
+          "name": "U06-restore-history-and-log",
+          "contentType": "image/png",
+          "path": "data/081562e38069369b4224d92caccd40bcb2189aa4.png",
+          "exists": true,
+          "sha256": "a1a5d58e442bfe425fa4661a2cacdbb6badd7c74a27de97af8e359b3fbe28a5c"
+        },
+        {
+          "name": "U06-full-restored-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    },
+    {
+      "profile": "U07",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 25556,
+      "attachments": [
+        {
+          "name": "U07-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U07-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U07-initial-plan",
+          "contentType": "image/png",
+          "path": "data/a6e9990ba3a437c20d88bd2fd1da6932ad9c82b7.png",
+          "exists": true,
+          "sha256": "716087b893e2041c69db35bb034aacd1e8050c1f14923f96f93d25ad2a9b939a"
+        },
+        {
+          "name": "U07-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U07-confirmed-return-preview",
+          "contentType": "image/png",
+          "path": "data/e0d6094f2bc6c7a8ac3c5e9d324e832a1960d0b3.png",
+          "exists": true,
+          "sha256": "6f1f423695e04c48bdf6d56e084e4c61c998804258f5f00c969677570d17e30f"
+        },
+        {
+          "name": "U07-full-return-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U07-persisted-history",
+          "contentType": "image/png",
+          "path": "data/7f39b9e81771895c3f74c0071d1edec6d110bbd1.png",
+          "exists": true,
+          "sha256": "09de5891c85ec31328b21f1478d05c09b47ade26c0bb0df32770795e713d7851"
+        },
+        {
+          "name": "U07-restore-history-and-log",
+          "contentType": "image/png",
+          "path": "data/c62416accee0ebe2ff921be20d2a152bdd90f6ce.png",
+          "exists": true,
+          "sha256": "7b9ef5c00b99091daa019cd4c9621b326dde940011f7124fbcb1a008eba0f9e7"
+        },
+        {
+          "name": "U07-full-restored-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    },
+    {
+      "profile": "U08",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 7962,
+      "attachments": [
+        {
+          "name": "U08-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U08-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U08-initial-plan",
+          "contentType": "image/png",
+          "path": "data/b35cf57e363903e070b8742b4dadccc095218dff.png",
+          "exists": true,
+          "sha256": "a1066fa80c3fdaf349ad650ae8669881d3983fbdc421145c4f1a4065b8135e90"
+        },
+        {
+          "name": "U08-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U08-expected-short-cycle-block",
+          "contentType": "image/png",
+          "path": "data/e40c7acea08fedc51c6b662e8d2503b04e27155b.png",
+          "exists": true,
+          "sha256": "6abf9a5a17f4f6f201986b23473d37235b43a8ea1564e52503a4a2358253ba06"
+        },
+        {
+          "name": "U08-blocked-persisted-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    },
+    {
+      "profile": "U09",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 25512,
+      "attachments": [
+        {
+          "name": "U09-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U09-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U09-initial-plan",
+          "contentType": "image/png",
+          "path": "data/a38f73e64e128744b750ed874414880d22d91b93.png",
+          "exists": true,
+          "sha256": "0adc50048433ca7faf78bb4f7b89df616da09334fea07fb7b83b056d486f8fdf"
+        },
+        {
+          "name": "U09-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U09-confirmed-return-preview",
+          "contentType": "image/png",
+          "path": "data/4efb9f8a2cf4cbe1dd6ad5b30bb405dc4a86e1e9.png",
+          "exists": true,
+          "sha256": "cdad8961ceab21bd09bf055e0869e47b990b6e11c16afe223202a56b62561213"
+        },
+        {
+          "name": "U09-full-return-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U09-persisted-history",
+          "contentType": "image/png",
+          "path": "data/7f39b9e81771895c3f74c0071d1edec6d110bbd1.png",
+          "exists": true,
+          "sha256": "09de5891c85ec31328b21f1478d05c09b47ade26c0bb0df32770795e713d7851"
+        },
+        {
+          "name": "U09-restore-history-and-log",
+          "contentType": "image/png",
+          "path": "data/c62416accee0ebe2ff921be20d2a152bdd90f6ce.png",
+          "exists": true,
+          "sha256": "7b9ef5c00b99091daa019cd4c9621b326dde940011f7124fbcb1a008eba0f9e7"
+        },
+        {
+          "name": "U09-full-restored-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    },
+    {
+      "profile": "U10",
+      "outcome": "expected",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 25701,
+      "attachments": [
+        {
+          "name": "U10-wizard-input",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U10-full-browser-generated-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U10-initial-plan",
+          "contentType": "image/png",
+          "path": "data/da295371ac275c44e267bdfd00a839603af899c6.png",
+          "exists": true,
+          "sha256": "090fe6fb192bc2bfc9232552e61a57e40ba66b2f8b9284b42e981a0bd0a9e29b"
+        },
+        {
+          "name": "U10-browser-event-scope",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U10-confirmed-return-preview",
+          "contentType": "image/png",
+          "path": "data/11364f057a6d1b73b618a9e7b4251a97751d7ddd.png",
+          "exists": true,
+          "sha256": "d826dbea80a32c319002a8c12069251b1c43b4403ddadcbd6bad52396a32c645"
+        },
+        {
+          "name": "U10-full-return-plan",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        },
+        {
+          "name": "U10-persisted-history",
+          "contentType": "image/png",
+          "path": "data/cee13e368b039ce70c11bae9df43abae428014f0.png",
+          "exists": true,
+          "sha256": "65fbaa165c7264e3096a416a45aa36986714846a3ef3a61ce02ccba586509164"
+        },
+        {
+          "name": "U10-restore-history-and-log",
+          "contentType": "image/png",
+          "path": "data/64fa283f92f244cfa9e5ae350fbcecf01d39160f.png",
+          "exists": true,
+          "sha256": "0159fb10dc995f055f8dd2630f94a5a2893b308dd8278afd9c046781d823e676"
+        },
+        {
+          "name": "U10-full-restored-state",
+          "contentType": "application/json",
+          "inlineBodyPresent": true
+        }
+      ]
+    }
+  ]
+}

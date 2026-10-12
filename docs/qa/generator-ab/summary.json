@@ -1,0 +1,546 @@
+{
+  "scoreFiles": [
+    {
+      "path": "coaches/5k-scores.json",
+      "sha256": "b26d0aeec0b2939e8061ce28db0ff5b1568bbc13cd9c4e51b4e8cc327e7ffaf5"
+    },
+    {
+      "path": "coaches/10k-scores.json",
+      "sha256": "d46269f19ce89d61265d2a3f229cc45edd29e8b6d626933863f69a7c20c9fcfe"
+    },
+    {
+      "path": "coaches/hm-scores.json",
+      "sha256": "5287d5103edb38b8f0c22ce11a4a5c7640545f9f3647b9283c70f6cebf267be0"
+    },
+    {
+      "path": "coaches/marathon-primary-scores.json",
+      "sha256": "cb6e47a6f87396ffe7bbd4eb13570829457652aa5f6a9dc9c521d2d365c9868e"
+    }
+  ],
+  "mapping": [
+    {
+      "id": "U01",
+      "A": "new",
+      "B": "old"
+    },
+    {
+      "id": "U02",
+      "A": "old",
+      "B": "new"
+    },
+    {
+      "id": "U03",
+      "A": "new",
+      "B": "old"
+    },
+    {
+      "id": "U04",
+      "A": "old",
+      "B": "new"
+    },
+    {
+      "id": "U05",
+      "A": "new",
+      "B": "old"
+    },
+    {
+      "id": "U06",
+      "A": "old",
+      "B": "new"
+    },
+    {
+      "id": "U07",
+      "A": "new",
+      "B": "old"
+    },
+    {
+      "id": "U08",
+      "A": "old",
+      "B": "new"
+    },
+    {
+      "id": "U09",
+      "A": "new",
+      "B": "old"
+    },
+    {
+      "id": "U10",
+      "A": "old",
+      "B": "new"
+    }
+  ],
+  "rows": [
+    {
+      "id": "U01",
+      "label": "5K početnik",
+      "distance": 5000,
+      "primaryCoach": "5k",
+      "ratings": {
+        "old": {
+          "side": "B",
+          "primary": 70.5,
+          "fourCoachMean": 70.38,
+          "range": [
+            67.5,
+            74
+          ],
+          "totals": {
+            "5k": 70.5,
+            "10k": 69.5,
+            "hm": 74,
+            "marathon": 67.5
+          },
+          "verdict": "Korisna osnova i dužina, ali tempo rasta i tvrdnje o ishodu zahtevaju korekciju.",
+          "criticalIssues": []
+        },
+        "new": {
+          "side": "A",
+          "primary": 77.25,
+          "fourCoachMean": 79.19,
+          "range": [
+            77.25,
+            84.5
+          ],
+          "totals": {
+            "5k": 77.25,
+            "10k": 77.5,
+            "hm": 84.5,
+            "marathon": 77.5
+          },
+          "verdict": "Dobar oprezan povratak; ograničen plan pripreme za 5 km, ne za 30 minuta.",
+          "criticalIssues": []
+        }
+      },
+      "change": 6.75
+    },
+    {
+      "id": "U02",
+      "label": "5K rekreativac sub-20",
+      "distance": 5000,
+      "primaryCoach": "5k",
+      "ratings": {
+        "old": {
+          "side": "A",
+          "primary": 74,
+          "fourCoachMean": 75.13,
+          "range": [
+            72,
+            79.75
+          ],
+          "totals": {
+            "5k": 74,
+            "10k": 72,
+            "hm": 79.75,
+            "marathon": 74.75
+          },
+          "verdict": "Razuman opšti 5K ciklus; nema dokazanu putanju do sub-20.",
+          "criticalIssues": []
+        },
+        "new": {
+          "side": "B",
+          "primary": 74.75,
+          "fourCoachMean": 78.44,
+          "range": [
+            74.75,
+            82.25
+          ],
+          "totals": {
+            "5k": 74.75,
+            "10k": 78.5,
+            "hm": 82.25,
+            "marathon": 78.25
+          },
+          "verdict": "Bolja iskrenost i uvod u kvalitet; kasna 5K specifičnost je preslaba.",
+          "criticalIssues": []
+        }
+      },
+      "change": 0.75
+    },
+    {
+      "id": "U03",
+      "label": "5K iskusan ambiciozan",
+      "distance": 5000,
+      "primaryCoach": "5k",
+      "ratings": {
+        "old": {
+          "side": "B",
+          "primary": 76.25,
+          "fourCoachMean": 77.31,
+          "range": [
+            75.5,
+            79.75
+          ],
+          "totals": {
+            "5k": 76.25,
+            "10k": 75.5,
+            "hm": 79.75,
+            "marathon": 77.75
+          },
+          "verdict": "Jači i koherentniji trening za iskusnog 5K trkača; prognoza i prikaz cilja nisu utemeljeni.",
+          "criticalIssues": []
+        },
+        "new": {
+          "side": "A",
+          "primary": 74.5,
+          "fourCoachMean": 77.31,
+          "range": [
+            74.5,
+            82
+          ],
+          "totals": {
+            "5k": 74.5,
+            "10k": 77,
+            "hm": 82,
+            "marathon": 75.75
+          },
+          "verdict": "Dobro kontrolisan, ali za iskusnog 5K trkača verovatno previše konzervativan kvalitet.",
+          "criticalIssues": []
+        }
+      },
+      "change": -1.75
+    },
+    {
+      "id": "U04",
+      "label": "10K prvi specifičan ciklus",
+      "distance": 10000,
+      "primaryCoach": "10k",
+      "ratings": {
+        "old": {
+          "side": "A",
+          "primary": 67,
+          "fourCoachMean": 68.63,
+          "range": [
+            66.75,
+            71.5
+          ],
+          "totals": {
+            "5k": 71.5,
+            "10k": 67,
+            "hm": 69.25,
+            "marathon": 66.75
+          },
+          "verdict": "revise",
+          "criticalIssues": []
+        },
+        "new": {
+          "side": "B",
+          "primary": 81.5,
+          "fourCoachMean": 79.13,
+          "range": [
+            76.25,
+            82.25
+          ],
+          "totals": {
+            "5k": 76.25,
+            "10k": 81.5,
+            "hm": 82.25,
+            "marathon": 76.5
+          },
+          "verdict": "usable_with_concerns",
+          "criticalIssues": []
+        }
+      },
+      "change": 14.5
+    },
+    {
+      "id": "U05",
+      "label": "10K iskusan",
+      "distance": 10000,
+      "primaryCoach": "10k",
+      "ratings": {
+        "old": {
+          "side": "B",
+          "primary": 78,
+          "fourCoachMean": 78.13,
+          "range": [
+            75.5,
+            80.5
+          ],
+          "totals": {
+            "5k": 78.5,
+            "10k": 78,
+            "hm": 80.5,
+            "marathon": 75.5
+          },
+          "verdict": "revise",
+          "criticalIssues": []
+        },
+        "new": {
+          "side": "A",
+          "primary": 79.5,
+          "fourCoachMean": 77.81,
+          "range": [
+            75.5,
+            79.75
+          ],
+          "totals": {
+            "5k": 76.5,
+            "10k": 79.5,
+            "hm": 79.75,
+            "marathon": 75.5
+          },
+          "verdict": "usable_with_concerns",
+          "criticalIssues": []
+        }
+      },
+      "change": 1.5
+    },
+    {
+      "id": "U06",
+      "label": "10K povratnik sa starim PB",
+      "distance": 10000,
+      "primaryCoach": "10k",
+      "ratings": {
+        "old": {
+          "side": "A",
+          "primary": 60,
+          "fourCoachMean": 61.31,
+          "range": [
+            60,
+            63.25
+          ],
+          "totals": {
+            "5k": 60.5,
+            "10k": 60,
+            "hm": 63.25,
+            "marathon": 61.5
+          },
+          "verdict": "revise",
+          "criticalIssues": [
+            {
+              "week": 1,
+              "day": 7,
+              "issue": "Povratnik počinje iznad potvrđene dužine",
+              "expected": "Posle 8 sedmica pauze početnu ukupnu i trčanu dužinu približiti 4 km i prilagoditi odgovoru",
+              "actual": "5.9 km run/walk (+47.5% ukupne distance); N2 6.5, N3 7.1; odnos run/walk se istovremeno menja"
+            }
+          ]
+        },
+        "new": {
+          "side": "B",
+          "primary": 73.5,
+          "fourCoachMean": 75.5,
+          "range": [
+            71,
+            80.5
+          ],
+          "totals": {
+            "5k": 77,
+            "10k": 73.5,
+            "hm": 80.5,
+            "marathon": 71
+          },
+          "verdict": "usable_as_return_to_running_only",
+          "criticalIssues": []
+        }
+      },
+      "change": 13.5
+    },
+    {
+      "id": "U07",
+      "label": "HM prvi, ograničena baza",
+      "distance": 21097.5,
+      "primaryCoach": "hm",
+      "ratings": {
+        "old": {
+          "side": "B",
+          "primary": 74,
+          "fourCoachMean": 70.38,
+          "range": [
+            67.5,
+            74
+          ],
+          "totals": {
+            "5k": 72.5,
+            "10k": 67.5,
+            "hm": 74,
+            "marathon": 67.5
+          },
+          "verdict": "uslovno prihvatljiv noviceHM; doraditi očekivanja",
+          "criticalIssues": []
+        },
+        "new": {
+          "side": "A",
+          "primary": 82.75,
+          "fourCoachMean": 79.5,
+          "range": [
+            76.5,
+            82.75
+          ],
+          "totals": {
+            "5k": 79.75,
+            "10k": 79,
+            "hm": 82.75,
+            "marathon": 76.5
+          },
+          "verdict": "prihvatljivHM, bolja dužinska priprema",
+          "criticalIssues": []
+        }
+      },
+      "change": 8.75
+    },
+    {
+      "id": "U08",
+      "label": "HM iskusan na rezultat",
+      "distance": 21097.5,
+      "primaryCoach": "hm",
+      "ratings": {
+        "old": {
+          "side": "A",
+          "primary": 81.75,
+          "fourCoachMean": 77.5,
+          "range": [
+            75.5,
+            81.75
+          ],
+          "totals": {
+            "5k": 76.75,
+            "10k": 76,
+            "hm": 81.75,
+            "marathon": 75.5
+          },
+          "verdict": "prihvatljiv iskusanHM uz oporavak posle probe",
+          "criticalIssues": []
+        },
+        "new": {
+          "side": "B",
+          "primary": 81,
+          "fourCoachMean": 80,
+          "range": [
+            78,
+            81
+          ],
+          "totals": {
+            "5k": 80.5,
+            "10k": 80.5,
+            "hm": 81,
+            "marathon": 78
+          },
+          "verdict": "prihvatljiv iskusanHM uz raspodelu lakih dana",
+          "criticalIssues": []
+        }
+      },
+      "change": -0.75
+    },
+    {
+      "id": "U09",
+      "label": "Maraton prvi, mala baza",
+      "distance": 42195,
+      "primaryCoach": "marathon",
+      "ratings": {
+        "old": {
+          "side": "B",
+          "primary": 50.5,
+          "fourCoachMean": 50.13,
+          "range": [
+            43.5,
+            54.5
+          ],
+          "totals": {
+            "5k": 52,
+            "10k": 43.5,
+            "hm": 54.5,
+            "marathon": 50.5
+          },
+          "verdict": "Nedovoljna maratonska priprema, uz obmanjujuću sigurnost da će distanca biti istrčana.",
+          "criticalIssues": [
+            "N1–19 d7: dužine ne prelaze 16 km (~95 min), samo dve≥90 min, bez srednje-dugih izlaganja.",
+            "Prezentacija eksplicitno naziva ovo planom da distancu ISTRČIŠ iako isporučene nedelje ne podržavaju tu sigurnost."
+          ]
+        },
+        "new": {
+          "side": "A",
+          "primary": 63.25,
+          "fourCoachMean": 63,
+          "range": [
+            62,
+            64.25
+          ],
+          "totals": {
+            "5k": 62.5,
+            "10k": 62,
+            "hm": 64.25,
+            "marathon": 63.25
+          },
+          "verdict": "Oprezan i iskren razvoj baze; nije puna maratonska priprema.",
+          "criticalIssues": [
+            "N1–19 d7: najveća dužina 17.7 km (~105 min), nijedna preko 2 sata, bez srednje-dugih ili drugih ponovljenih dugih izlaganja; trka 42.195 km ostaje ozbiljno nepodržana."
+          ]
+        }
+      },
+      "change": 12.75
+    },
+    {
+      "id": "U10",
+      "label": "Maraton iskusan",
+      "distance": 42195,
+      "primaryCoach": "marathon",
+      "ratings": {
+        "old": {
+          "side": "A",
+          "primary": 65,
+          "fourCoachMean": 67.44,
+          "range": [
+            65,
+            69
+          ],
+          "totals": {
+            "5k": 68.25,
+            "10k": 69,
+            "hm": 67.5,
+            "marathon": 65
+          },
+          "verdict": "Značajan maratonski rad, ali slabo ponavljanje dugih izlaganja i neujednačena progresija.",
+          "criticalIssues": []
+        },
+        "new": {
+          "side": "B",
+          "primary": 77.25,
+          "fourCoachMean": 79.06,
+          "range": [
+            77.25,
+            80.5
+          ],
+          "totals": {
+            "5k": 78.5,
+            "10k": 80.5,
+            "hm": 80,
+            "marathon": 77.25
+          },
+          "verdict": "Najpotpunija maratonska izdržljivost među ovim maratonskim planovima; M doza i oporavak još mogu bolje.",
+          "criticalIssues": []
+        }
+      },
+      "change": 12.25
+    }
+  ],
+  "overall": {
+    "old": 69.7,
+    "new": 76.53,
+    "method": "Equal mean of 10 profile scores from distance-specific reviewers; score0–100 is subjective rubric, not percent effectiveness."
+  },
+  "byDistance": {
+    "5k": {
+      "profiles": 3,
+      "old": 73.58,
+      "new": 75.5
+    },
+    "10k": {
+      "profiles": 3,
+      "old": 68.33,
+      "new": 78.17
+    },
+    "hm": {
+      "profiles": 2,
+      "old": 77.88,
+      "new": 81.88
+    },
+    "marathon": {
+      "profiles": 2,
+      "old": 57.75,
+      "new": 70.25
+    }
+  },
+  "initialReviewCount": 80,
+  "reviewedWeekCount": 1296
+}

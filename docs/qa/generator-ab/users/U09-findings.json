@@ -1,0 +1,429 @@
+{
+  "id": "U09",
+  "reviewer": "Independent AI synthetic first-marathon user with limited repeatable base; ambitious endurance goal",
+  "scope": "Independent synthetic user and production domain simulation; not blind, human, browser, backend, store lifecycle or watch QA. U06 owns centralized browser coverage.",
+  "fixtureSha256": {
+    "old": "be7f29018c1bc06a6b5a8096ad6f848404fa7a3ba678fb3d786c0fd2b115c38e",
+    "new": "dfb50e02d74daa319946099a6f57b495bb1b9b1e4b7fbed5cb113abefead79c5"
+  },
+  "scores": {
+    "old": {
+      "fit": 9,
+      "quality": 11,
+      "progression": 8,
+      "recovery": 9,
+      "specificity": 5,
+      "deloadTaper": 7,
+      "coherence": 7,
+      "total": 56
+    },
+    "new": {
+      "fit": 14,
+      "quality": 15,
+      "progression": 11,
+      "recovery": 10,
+      "specificity": 5,
+      "deloadTaper": 9,
+      "coherence": 9,
+      "total": 73
+    }
+  },
+  "verdict": "Prefer new conditionally for safer entry, realistic fitness and honest endurance assessment. Neither frozen version substantiates a timed first marathon; the return proposal further reduces endurance and requires an explicit endurance/horizon decision.",
+  "findings": [
+    {
+      "id": "U09-OLD-01",
+      "version": "old",
+      "domain": "assessment/forecast",
+      "severity": "high",
+      "type": "unsupported-forecast",
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "days": [],
+      "dates": [],
+      "expected": "Keep unmeasured future fitness distinct from the PB reference and an aspirational marathon goal.",
+      "actual": "VDOT is scheduled from 42.6 to 47.1 and reference marathon predictedSec 12021 (3:20:21), despite only 1:45 half-marathon evidence. New keeps 42.6 and 13070 s (3:37:50), and explicitly limits endurance readiness.",
+      "status": "improved-in-new"
+    },
+    {
+      "id": "U09-BOTH-01",
+      "version": "both",
+      "domain": "generation/marathon-endurance",
+      "severity": "high",
+      "type": "coaching-judgment",
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "days": [
+        7
+      ],
+      "dates": [
+        "2027-02-07",
+        "2027-02-28"
+      ],
+      "expected": "An endurance-limited first marathon should offer a credible endurance pathway or clearly require a longer horizon/higher repeatable base before a timed-marathon prescription is treated as achievable.",
+      "actual": "Old peaks 16 km (~95 min) in W 14/W17; new peaks 17.7 km (~105 min) in W 17. Across 20 weeks neither has a 2 h run; the 42.195 km race is 2.64x/2.38x the longest practice. New warns endurance-limited and avoids promising completion; old explicitly calls it a plan to finish the distance. New warning is material improvement, but the underlying endurance exposure remains inadequate to substantiate a 4 h debut.",
+      "status": "warning-improved-dose-unresolved"
+    },
+    {
+      "id": "U09-NEW-01",
+      "version": "new",
+      "domain": "generation/marathon-specificity",
+      "severity": "medium",
+      "type": "coaching-judgment",
+      "weeks": [
+        6,
+        14,
+        17,
+        18,
+        19
+      ],
+      "days": [
+        3
+      ],
+      "dates": [
+        "2026-11-18",
+        "2027-01-13",
+        "2027-02-03",
+        "2027-02-10",
+        "2027-02-17"
+      ],
+      "expected": "Give M-work a clear purpose for limited-base runners; small supported doses are rhythm familiarization and should not imply sustained marathon durability.",
+      "actual": "M doses are 2.2/2.4/2.5/2.4/2.5 km (12.5/13.64/14.21/13.64/14.21 min). W14 is 2x 1200m with 90 s walking; W17 continuous 2.5 km. Old W14/W18 used 6 km (34.1 min), but did not solve LR preparation either. New reduces risk but leaves little sustained race-specific time while retaining two quality sessions in W 14,W15,W17,W18.",
+      "status": "unresolved"
+    },
+    {
+      "id": "U09-NEW-02",
+      "version": "new",
+      "domain": "generation/recovery",
+      "severity": "medium",
+      "type": "coaching-judgment",
+      "weeks": [
+        14,
+        15,
+        17,
+        18
+      ],
+      "days": [
+        7,
+        1
+      ],
+      "dates": [
+        "2027-01-17",
+        "2027-01-18",
+        "2027-02-07",
+        "2027-02-08"
+      ],
+      "expected": "Distribute endurance volume with recovery after the longest run for a four-day first-marathon runner, especially when Wednesday and Friday already carry quality.",
+      "actual": "W 14 Sunday 16.5 km is immediately followed byW 15 Monday 11.8 km (28.3 km over consecutive days). W 17 Sunday 17.7 km is followed byW 18 Monday 10.5 km (28.2 km). Both Mondays add strides. The schedule has 48 h quality separation, but these large consecutive easy/endurance exposures deserve review rather than treating non-quality as automatically low demand.",
+      "status": "unresolved"
+    },
+    {
+      "id": "U09-BOTH-02",
+      "version": "both",
+      "domain": "generation/session-purpose",
+      "severity": "medium",
+      "type": "semantic-coherence",
+      "weeks": [
+        20
+      ],
+      "days": [
+        5
+      ],
+      "dates": [
+        "2027-02-26"
+      ],
+      "expected": "Race-week sharpness should use a clearly appropriate current-fitness stride/repetition pace and recovery; labels and prediction zones should communicate actual purpose.",
+      "actual": "Both prescribe 6x 200m at 5:37/km (337 s/km), with 169 s walking, labelled Repeticije, zone R, paceSource current-fitness. Their current-fitness repetition pace earlier is 4:12/km (252 s/km);5:37 is only 4 s/km faster than M pace 5:41 and each 200m lasts 67.4 s. Full 169 s walking is 2.51x work duration. This is easy/M rhythm presented as repetition sharpness; numeric session/description/prediction coherence passes.",
+      "status": "unresolved"
+    },
+    {
+      "id": "U09-OLD-02",
+      "version": "old",
+      "domain": "generation/taper",
+      "severity": "medium",
+      "type": "coaching-judgment",
+      "weeks": [
+        17,
+        18
+      ],
+      "days": [
+        3,
+        5
+      ],
+      "dates": [
+        "2027-02-03",
+        "2027-02-05",
+        "2027-02-10",
+        "2027-02-12"
+      ],
+      "expected": "Reduce quality dose alongside volume in the first taper week; retain useful rhythm without making the taper week a larger quality stimulus.",
+      "actual": "Old total quality increases 47.58 min in W 17 to 49.57 min in W 18 while volume falls 42.1to 34.6 km. M dose increases 4.8to 6 km. New drops 32.09to 27.17 min while 49.1to 39.3 km, then 14.21 min/31.9 km in W 19.",
+      "status": "improved-in-new"
+    },
+    {
+      "id": "U09-RETURN-01",
+      "version": "new-return",
+      "domain": "execution-adjustment/endurance",
+      "severity": "high",
+      "type": "coaching-judgment",
+      "weeks": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "days": [
+        7
+      ],
+      "dates": [
+        "2027-02-07",
+        "2027-02-28"
+      ],
+      "expected": "A conservative return should retain honest uncertainty and make the race-date/endurance mismatch actionable before the timed marathon is treated as a supported outcome.",
+      "actual": "Confirmed 14-day break resets base 30to 21 km, LR 10to 7 km and future full-week peak to 29 km. Longest future LR 8.8 km (~52 min), then race 42.195 km (~4.79x). Build succeeds, preserves 4 h goal and race date, and flags endurance-limited plus no readiness confirmation. No unsafe growth or false readiness invariant failed; delivered preparation is substantially weaker than even the limited frozen plan.",
+      "status": "review-required-not-contract-failure"
+    },
+    {
+      "id": "U09-RETURN-02",
+      "version": "new-return",
+      "domain": "execution-adjustment/presentation",
+      "severity": "low",
+      "type": "warning-coherence",
+      "weeks": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "days": [],
+      "dates": [
+        "2026-11-25"
+      ],
+      "expected": "Warnings should describe the guarded, grafted delivered plan and the effective confirmed-return easy period consistently.",
+      "actual": "Warning says 1 easy return week while explicit confirmed-return note says 3 initial weeks without quality (three generated calendar weeks include the partial Nov 23 week). Other warnings quote peakLR 9.1 km/weekly 29.9 km while final remaining preparation is 8.8 km/29 km after guard/graft. The final preparation object is correct but dayWarnings retain upstream figures.",
+      "status": "unresolved"
+    }
+  ],
+  "checks": {
+    "generated": true,
+    "pastAndCompletedCount": 45,
+    "pastAndCompletedChanged": [],
+    "protectedPredictionChanged": [],
+    "raceDateStable": true,
+    "goalStable": true,
+    "runDaysStable": true,
+    "startingKm21": true,
+    "unchangedFitness": true,
+    "firstThreeFreshWeeksEasy": true,
+    "futureChanges": {
+      "cutoff": "2026-11-25",
+      "preservedDays": 45,
+      "changedDays": 53,
+      "conflicts": []
+    },
+    "allHistoryThroughCutoffExplicit": true,
+    "historyRecords": 26,
+    "allDoneHaveActualKmAndDate": true,
+    "noUnknown": true,
+    "breakConfirmedAndLastRun14Days": true,
+    "returnRequiresConfirmation": true,
+    "inputsPure": true,
+    "returnGrowth": [
+      {
+        "w": 8,
+        "km": 21.8,
+        "limit": 22.68,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": false
+      },
+      {
+        "w": 9,
+        "km": 22.7,
+        "limit": 23.54,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": false
+      },
+      {
+        "w": 10,
+        "km": 17.1,
+        "limit": 24.52,
+        "withinCeiling": true,
+        "deload": true,
+        "taper": false
+      },
+      {
+        "w": 11,
+        "km": 24.3,
+        "limit": 24.52,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": false
+      },
+      {
+        "w": 12,
+        "km": 24.2,
+        "limit": 26.24,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": false
+      },
+      {
+        "w": 13,
+        "km": 26.2,
+        "limit": 26.14,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": false
+      },
+      {
+        "w": 14,
+        "km": 19.1,
+        "limit": 28.3,
+        "withinCeiling": true,
+        "deload": true,
+        "taper": false
+      },
+      {
+        "w": 15,
+        "km": 25.1,
+        "limit": 28.3,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": false
+      },
+      {
+        "w": 16,
+        "km": 27,
+        "limit": 27.11,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": false
+      },
+      {
+        "w": 17,
+        "km": 29,
+        "limit": 29.16,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": false
+      },
+      {
+        "w": 18,
+        "km": 23.9,
+        "limit": 31.32,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": true
+      },
+      {
+        "w": 19,
+        "km": 19.3,
+        "limit": 31.32,
+        "withinCeiling": true,
+        "deload": false,
+        "taper": true
+      }
+    ],
+    "returnGrowthAllWithinCeiling": true
+  },
+  "protectionChecks": {
+    "generated": true,
+    "pastAndCompletedCount": 46,
+    "pastAndCompletedChanged": [],
+    "protectedPredictionChanged": [],
+    "raceDateStable": true,
+    "goalStable": true,
+    "runDaysStable": true,
+    "startingKm21": true,
+    "unchangedFitness": true,
+    "firstThreeFreshWeeksEasy": false,
+    "futureChanges": {
+      "cutoff": "2026-11-25",
+      "preservedDays": 49,
+      "changedDays": 48,
+      "conflicts": [
+        "Ru\u010dno izmenjen trening 2026-12-04 je sa\u010duvan; proveri da li odgovara novoj bazi.",
+        "Ru\u010dno izmenjen trening 2026-12-09 je sa\u010duvan; proveri da li odgovara novoj bazi."
+      ]
+    },
+    "measuredRowStable": true,
+    "resolvedManualAltStable": true,
+    "movedPastDateStable": true,
+    "inputsPure": true
+  },
+  "auditFailures": {
+    "old": [],
+    "new": []
+  },
+  "adjustedAuditFailures": [],
+  "limitations": [
+    "Synthetic domain logs, not real athlete data or observed physiology.",
+    "Raw version identity visible; not a blinded review.",
+    "All40 frozen weeks and all20 adjusted stored weeks reviewed; UI centrally owned byU06.",
+    "Production new-domain return only; no old return API parity asserted.",
+    "Manual/measured/early-done/moved protection challenge is separately seeded; it is not primary execution history.",
+    "Time on feet estimates use prescribed LR pace357s/km, not measured run duration.",
+    "Severity and coaching scores are independent judgment; warnings and preserved conflicts are distinguished from implementation contract failures."
+  ]
+}

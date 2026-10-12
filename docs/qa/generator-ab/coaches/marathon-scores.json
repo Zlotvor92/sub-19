@@ -1,0 +1,795 @@
+[
+  {
+    "id": "U01",
+    "side": "A",
+    "distance": 5000,
+    "criteria": {
+      "fit": 8,
+      "quality": 8,
+      "progression": 8.5,
+      "recovery": 9,
+      "specificity": 6.5,
+      "deloadTaper": 8.5,
+      "coherence": 9
+    },
+    "total": 82.25,
+    "verdict": "Razuman uvodni ciklus, uz ograničen obim; cilj 30:00 nije potvrđen.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 5,
+        "day": 1,
+        "expected": "Nakon hod/trčanje faze potvrditi toleranciju kontinuiranog trčanja i ubrzanja.",
+        "actual": "Sa 5:1 u N4 prelazi na 2.9 km kontinuirano i 6×20 s u N5.",
+        "issue": "Prelaz zavisi od reakcije početnika; potreban uslov za ponavljanje prethodne faze."
+      },
+      {
+        "week": 10,
+        "day": 7,
+        "expected": "Dovoljna baza za vremenski cilj, bez nametanja univerzalnog kilometarskog minimuma.",
+        "actual": "LR 4.6 km, vrhunac 12.4 km/ned; upozorenje limited.",
+        "issue": "Prikladnije za izgradnju navike nego za obećanje 30-minutnog 5K."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 12
+  },
+  {
+    "id": "U01",
+    "side": "B",
+    "distance": 5000,
+    "criteria": {
+      "fit": 7,
+      "quality": 7,
+      "progression": 6,
+      "recovery": 8,
+      "specificity": 7,
+      "deloadTaper": 7.5,
+      "coherence": 5
+    },
+    "total": 68.5,
+    "verdict": "Upotrebljiv početni raspored uz korekciju prognoze i progresije.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 9,
+        "day": 7,
+        "expected": "Posle rasterećenja uporediti sa prethodnom punom nedeljom i postepeno povećati dužinu.",
+        "actual": "LR 4.9 u N7 → 3.4 u N8 → 6.1 u N9; 24.5% iznad N7.",
+        "issue": "Veći skok pojedinačne dužine za početnika, iako apsolutni obim ostaje mali."
+      },
+      {
+        "week": 11,
+        "day": 3,
+        "expected": "Taper smanjuje ukupno opterećenje, uz kratko održavanje ritma.",
+        "actual": "4×400 m = 1.6 km RP; više radnih minuta nego prethodne dve pune kvalitetne nedelje.",
+        "issue": "Novi vrhunac specifičnog rada tokom tapera nije neophodan."
+      },
+      {
+        "week": 12,
+        "day": 7,
+        "expected": "Jasno razdvojiti željeni cilj i referentni ritam.",
+        "actual": "Cilj 30:00 / ritam 7:00/km; upozorenje predviđa 33:24 bez novog testa.",
+        "issue": "Pace daje 35:00, a automatska prognoza nije potvrđena forma."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 12
+  },
+  {
+    "id": "U02",
+    "side": "A",
+    "distance": 5000,
+    "criteria": {
+      "fit": 7.5,
+      "quality": 7.5,
+      "progression": 7.5,
+      "recovery": 8,
+      "specificity": 7.5,
+      "deloadTaper": 8,
+      "coherence": 5
+    },
+    "total": 73.75,
+    "verdict": "Pristojan rekreativni 5K ciklus, ali prikaz cilja i prognoze traži korekciju.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 3,
+        "expected": "Kod some iskustva progresivno uvesti brzi rad.",
+        "actual": "N1–N3 isti 4×300 m @4:21/km, duge hodačke pauze.",
+        "issue": "Prihvatljiva mala doza, ali slabija uvodna gradacija i dosta šablonskog ponavljanja."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Referencu prikazati odvojeno od sub-20 želje.",
+        "actual": "Cilj 19:59 / ritam 4:45/km; presentation predviđa 22:09.",
+        "issue": "Ritam odgovara 23:45; model rasta nije dokaz ostvarenog napretka."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U02",
+    "side": "B",
+    "distance": 5000,
+    "criteria": {
+      "fit": 8,
+      "quality": 8,
+      "progression": 8,
+      "recovery": 8.5,
+      "specificity": 7,
+      "deloadTaper": 8.5,
+      "coherence": 9
+    },
+    "total": 81.25,
+    "verdict": "Dobar održiv ciklus prema trenutnoj formi; sub-20 ostaje neproveren.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 13,
+        "day": 3,
+        "expected": "Specifičnost povećavati i preko trajanja ponavljanja/oporavka kada forma dozvoli.",
+        "actual": "2×1000 m @4:45/km sa 3:34 hoda.",
+        "issue": "Vrlo puna pauza čini rad manje kontinuiranim; nije priprema za 4:00/km bez novog testa."
+      },
+      {
+        "week": 7,
+        "day": 7,
+        "expected": "Dužinu vagati prema ukupnom zamoru i cilju 5K.",
+        "actual": "14.5 km (~89 min), zatim plato do N14.",
+        "issue": "Veliki deo četiri-dnevne nedelje; prihvatljivo aerobno, ali ne univerzalni uslov za 5K."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U03",
+    "side": "A",
+    "distance": 5000,
+    "criteria": {
+      "fit": 8.5,
+      "quality": 7.5,
+      "progression": 7,
+      "recovery": 8.5,
+      "specificity": 6.5,
+      "deloadTaper": 8.5,
+      "coherence": 9
+    },
+    "total": 79.25,
+    "verdict": "Bezbedan iskusan 5K ciklus; specifični razvoj je skroman.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 5,
+        "day": 2,
+        "expected": "Iskusan trkač može imati raznovrsniju gradaciju kvaliteta uz isti kontrolisani budžet.",
+        "actual": "2×1200 m se ponavlja u N5/N7/N11; 2×1600 m T u većini blokova.",
+        "issue": "Progresija rada i specifičnosti pretežno stagnira."
+      },
+      {
+        "week": 13,
+        "day": 2,
+        "expected": "Sadržaj trkačkog ritma pratiti trenutnim testom i odgovarajućim odmorom.",
+        "actual": "3×1000 m @4:07/km, pauza 3:05 hoda.",
+        "issue": "Puna pauza smanjuje kontinuitet 5K stimulusa; želja 18:59 zahteva novi dokaz forme."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U03",
+    "side": "B",
+    "distance": 5000,
+    "criteria": {
+      "fit": 8,
+      "quality": 8.5,
+      "progression": 6.5,
+      "recovery": 8,
+      "specificity": 8,
+      "deloadTaper": 8.5,
+      "coherence": 5.5
+    },
+    "total": 76.75,
+    "verdict": "Dobro dozirani treninzi za iskustvo, ali šablon i prikaz napretka ograničavaju ocenu.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 5,
+        "day": 2,
+        "expected": "Napredak graditi kroz dosledan razvoj bloka.",
+        "actual": "LR 15.3 u N3, 14 u N5/N9/N13; isti kvalitet u N5/N7/N11.",
+        "issue": "Oscilacije i ponavljanje bez jasnog ukupnog razvoja, mada 5K ne traži veliku LR ekspanziju."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Razdvojiti rezultat, želju i neizvesnu prognozu.",
+        "actual": "Cilj 18:59 / ritam 4:07/km; automatski referenceTimeSec 1163.",
+        "issue": "Ritam daje 20:35; 19:23 projekcija nije potvrđena testom."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U04",
+    "side": "A",
+    "distance": 10000,
+    "criteria": {
+      "fit": 6.5,
+      "quality": 6,
+      "progression": 7,
+      "recovery": 7.5,
+      "specificity": 7.5,
+      "deloadTaper": 8,
+      "coherence": 5
+    },
+    "total": 67.25,
+    "verdict": "Potrebna mirnija kvalitetna inicijacija za prvi specifičan ciklus.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 3,
+        "expected": "Za qualityExperience none prvo kontrolisana mala doza i gradacija.",
+        "actual": "4×300 m @4:34/km od N1; N2 još 2.8 km @5:16/km.",
+        "issue": "Brzi R rad plus prag u drugoj nedelji je nepotrebno ubrzan uvod."
+      },
+      {
+        "week": 14,
+        "day": 3,
+        "expected": "Specifični rad primeren iskustvu i potvrđenoj formi.",
+        "actual": "3×1200 m RP i 4 km T =39.73 radnih min u nedelji.",
+        "issue": "Kasni vrhunac kvaliteta u četvorodnevnom rasporedu pre prvog ciklusa zahteva toleranciju."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Navesti 50:00 kao želju, a trenutnu referencu posebno.",
+        "actual": "Cilj 50:00 / ritam 5:11/km, bez warnings; referentna prognoza 48:10.",
+        "issue": "Ritam daje 51:50; prognoza ne potiče iz novog testa."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U04",
+    "side": "B",
+    "distance": 10000,
+    "criteria": {
+      "fit": 8,
+      "quality": 7.5,
+      "progression": 8,
+      "recovery": 8.5,
+      "specificity": 6.5,
+      "deloadTaper": 8.5,
+      "coherence": 9
+    },
+    "total": 79.75,
+    "verdict": "Dobro uveden prvi 10K ciklus uz nekoliko previše malih pragovskih doza.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 3,
+        "day": 5,
+        "expected": "Jedan jasan mali pragovski stimulus često je jednostavniji od dve vrlo kratke doze.",
+        "actual": "N3 1.1 km T u sredu i 0.7 km T u petak; N4 0.4 km T.",
+        "issue": "Budžet je kontrolisan, ali dva označena kvalitetna dana ne znače dve pune kvalitetne sesije."
+      },
+      {
+        "week": 13,
+        "day": 3,
+        "expected": "Kasni RP povezati većim kontinuitetom kad tolerancija dozvoli.",
+        "actual": "2×1000 m @5:11/km sa 3:53 hoda; N14 2×1200 m, 4 min hoda.",
+        "issue": "Veoma duge pauze umanjuju 10K specifičnost."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U05",
+    "side": "A",
+    "distance": 10000,
+    "criteria": {
+      "fit": 8,
+      "quality": 7,
+      "progression": 7.5,
+      "recovery": 8.5,
+      "specificity": 6.5,
+      "deloadTaper": 8.5,
+      "coherence": 9
+    },
+    "total": 78.0,
+    "verdict": "Održiva aerobna priprema za 10K; kvalitet je ponekad previše usitnjen.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 5,
+        "expected": "Iskusnom trkaču raspodeliti smislen pragovski rad.",
+        "actual": "1.2 km T u N1; 2×700 m T u N3 petak.",
+        "issue": "Doze su vrlo male u odnosu na iskustvo i 45 km početne baze; oporavak dobar, razvoj skromniji."
+      },
+      {
+        "week": 14,
+        "day": 2,
+        "expected": "Specifični RP uz kraći relativni odmor kada doza i forma dozvole.",
+        "actual": "2×1600 m @4:30/km, 4 min hoda.",
+        "issue": "Duga pauza i mali ukupni rad ograničavaju trkačku izdržljivost za 10K."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U05",
+    "side": "B",
+    "distance": 10000,
+    "criteria": {
+      "fit": 8,
+      "quality": 8,
+      "progression": 7.5,
+      "recovery": 8,
+      "specificity": 8,
+      "deloadTaper": 8.5,
+      "coherence": 5.5
+    },
+    "total": 77.25,
+    "verdict": "Uverljiviji 10K specifični rad, ali nepouzdano obećanje napretka.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 7,
+        "day": 2,
+        "expected": "Dva kvalitetna dana sagledati uz dugu trku, san i oporavak.",
+        "actual": "4×1200 m I, 3×2000 m T i LR18.4 km u 60.9 km.",
+        "issue": "Sadržaj odgovara iskustvu, ali predstavlja punu zahtevnu nedelju i traži povratnu informaciju."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Konzistentna poruka o želji 42:00 i potvrđenoj formi.",
+        "actual": "Cilj 42:00 / ritam4:30/km; predviđanje42:13 i tvrdnja da agresivni napredak doseže cilj.",
+        "issue": "Ritam daje45:00; automatsko uvećanje forme nije novo merenje."
+      }
+    ],
+    "confidence": 0.83,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U06",
+    "side": "A",
+    "distance": 10000,
+    "criteria": {
+      "fit": 5,
+      "quality": 5.5,
+      "progression": 5.5,
+      "recovery": 7.5,
+      "specificity": 6,
+      "deloadTaper": 8,
+      "coherence": 4
+    },
+    "total": 58.5,
+    "verdict": "Povratni plan traži korekciju početne dužine i oslonca na stari PB.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 7,
+        "expected": "Posle 8 nedelja pauze početi ponovljivom prijavljenom dužinom ili objasniti procenu.",
+        "actual": "Prijavljeno4 km; N1 5.9 km run/walk, N3 7.1 km.",
+        "issue": "Hod smanjuje intenzitet, ali 47.5% duža prva sesija nije potvrđena novom bazom."
+      },
+      {
+        "week": 9,
+        "day": 3,
+        "expected": "Potvrditi sadašnju formu pre brzih tempa zasnovanih na starom PB.",
+        "actual": "1.9 km @5:40/km iz PB-a starog godinu dana; bez return upozorenja.",
+        "issue": "Star rezultat posle pauze nije dokazana trenutna forma."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Finish cilj prikazati uz granice procene.",
+        "actual": "Vrhunac25.7 km/ned, LR11; warning kaže plan za ISTRČATI, projected reference3103 s.",
+        "issue": "Završetak i projekcija nisu potvrđeni samim obimom niti starim rezultatom."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U06",
+    "side": "B",
+    "distance": 10000,
+    "criteria": {
+      "fit": 7,
+      "quality": 7,
+      "progression": 7.5,
+      "recovery": 8.5,
+      "specificity": 4.5,
+      "deloadTaper": 8,
+      "coherence": 8.5
+    },
+    "total": 73.0,
+    "verdict": "Dobar povratak u kontinuitet; ograničena 10K priprema ostaje stvarno ograničena.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 14,
+        "day": 7,
+        "expected": "Posle povratne faze dugoročnu dužinu razvijati prema toleranciji i cilju.",
+        "actual": "LR vrhunac6.7 km, 18.2 km/ned u 16-nedeljnom ciklusu.",
+        "issue": "Odgovorno upozorenje limited ne zamenjuje nedostajuću izdržljivost za pun 10K cilj."
+      },
+      {
+        "week": 7,
+        "day": 3,
+        "expected": "Pre bržeg rada potvrditi da stari PB opisuje trenutnu formu.",
+        "actual": "3×90 s @5:07/km na old PB; tekst traži proveru, raspored ipak ima numerički tempo.",
+        "issue": "Potrebna kontrola napora; upozorenje je dobar deo plana, ali individualna verifikacija ostaje otvorena."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U07",
+    "side": "A",
+    "distance": 21097.5,
+    "criteria": {
+      "fit": 8,
+      "quality": 7,
+      "progression": 8,
+      "recovery": 8,
+      "specificity": 7,
+      "deloadTaper": 7.5,
+      "coherence": 9
+    },
+    "total": 77.5,
+    "verdict": "Dobra baza za prvi HM, uz konzervativan specifični rad.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 10,
+        "day": 3,
+        "expected": "HM ritam postepeno učiniti kontinualnijim kada trkač to podnosi.",
+        "actual": "2×1700 m @5:11/km sa5:26 hoda.",
+        "issue": "Potpun odmor ograničava trajanje kontinuiranog HM stimulusa."
+      },
+      {
+        "week": 14,
+        "day": 3,
+        "expected": "Taper održava intenzitet uz manju dozu.",
+        "actual": "31.67 min kvaliteta u N14 naspram35.18 u N11; dva kvalitetna dana.",
+        "issue": "Prvo smanjenje kvaliteta je skromno; LR i obim se ipak smanjuju."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U07",
+    "side": "B",
+    "distance": 21097.5,
+    "criteria": {
+      "fit": 6,
+      "quality": 6.5,
+      "progression": 6.5,
+      "recovery": 7.5,
+      "specificity": 5.5,
+      "deloadTaper": 7,
+      "coherence": 5
+    },
+    "total": 63.5,
+    "verdict": "HM plan sa slabijom dužinskom bazom i prejakom prognozom.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 7,
+        "expected": "Sa početnim LR10 km postepeno razvijati uz prioritet baze.",
+        "actual": "N1 LR11.6 km, R i T u istoj nedelji; LR14 km u N5–N9.",
+        "issue": "Dva kvaliteta od starta i dug plato čine prioritet izdržljivosti slabijim."
+      },
+      {
+        "week": 13,
+        "day": 7,
+        "expected": "Ponavljana dužinska izlaganja primerena prvom HM.",
+        "actual": "Vrhunac15.3 u N11; N13 LR14.8 km.",
+        "issue": "Nije nužan LR21.1 km, ali niz kratkih dužina i mala ponovljena izloženost ograničavaju vremenski cilj."
+      },
+      {
+        "week": 16,
+        "day": 7,
+        "expected": "Rezultat 5K ne potvrđuje HM izdržljivost ili napredak.",
+        "actual": "Bez warnings, predicted reference1:41:47, cilj1:45/ritam5:11.",
+        "issue": "Automatska prognoza uz ograničenu dužinsku pripremu je previše sigurna."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewedWeekCount": 16
+  },
+  {
+    "id": "U08",
+    "side": "A",
+    "distance": 21097.5,
+    "criteria": {
+      "fit": 8,
+      "quality": 7.5,
+      "progression": 7.5,
+      "recovery": 8,
+      "specificity": 8,
+      "deloadTaper": 7,
+      "coherence": 5.5
+    },
+    "total": 74.75,
+    "verdict": "Dobar HM sadržaj za iskustvo; taper i projekcija traže oprez.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 12,
+        "day": 2,
+        "expected": "Taper zadržava brzinu uz stvarno smanjen radni obim.",
+        "actual": "6 km HM RP +5 km T =48.92 min u N12; N11 ukupno51.75 min sa LR završnicom.",
+        "issue": "Tek oko5.5% manji kvalitet na početku tapera, iako se nedeljni km smanjuju."
+      },
+      {
+        "week": 14,
+        "day": 7,
+        "expected": "Prikazati referentno ekvivalentno vreme bez simuliranog potvrđenog napretka.",
+        "actual": "referenceTime5383 s, initialVdot48.2→last51.2; nema warnings.",
+        "issue": "Projekcija1:29:43 nije potvrđeno izmerena forma niti potvrda HM izdržljivosti."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewedWeekCount": 14
+  },
+  {
+    "id": "U08",
+    "side": "B",
+    "distance": 21097.5,
+    "criteria": {
+      "fit": 8,
+      "quality": 8,
+      "progression": 8,
+      "recovery": 8.5,
+      "specificity": 8,
+      "deloadTaper": 7.5,
+      "coherence": 9
+    },
+    "total": 81.25,
+    "verdict": "Dobro balansiran iskusan HM ciklus uz nešto duži i sporiji taper.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 12,
+        "day": 7,
+        "expected": "Prethodnu visoku specifičnu izloženost rasteretiti dovoljno rano.",
+        "actual": "N12 LR18.3 km, 61.7 km/ned i41.79 min kvaliteta; trka N14.",
+        "issue": "Prvi taper korak je umeren, ali naredni pad na46.1 pa10.5 predtrkačkih km daje rasterećenje."
+      },
+      {
+        "week": 10,
+        "day": 2,
+        "expected": "Kontrolna trka uključuje planiran oporavak narednog dana.",
+        "actual": "10 km HM ritam u treningu16.5 km; N10 sreda13.6 km.",
+        "issue": "Ako se kontrola trči maksimalno umesto propisanog ritma, sledeća srednje-duga sesija može biti previše; eksplicitan uslov bi pomogao."
+      }
+    ],
+    "confidence": 0.9,
+    "reviewedWeekCount": 14
+  },
+  {
+    "id": "U09",
+    "side": "A",
+    "distance": 42195,
+    "criteria": {
+      "fit": 4,
+      "quality": 6.5,
+      "progression": 5,
+      "recovery": 8,
+      "specificity": 2,
+      "deloadTaper": 7,
+      "coherence": 8.5
+    },
+    "total": 58.0,
+    "verdict": "Oprezan ograničen ciklus, ali nije puna priprema za maraton.",
+    "criticalIssues": [
+      {
+        "week": 17,
+        "day": 7,
+        "expected": "Maratonski ciklus treba ponovljena dovoljno duga izlaganja i vreme na nogama, ili jasno ograničen drugi cilj.",
+        "actual": "Najveći LR17.7 km (~105 min); nijedan LR>=20 km u20 nedelja; trka42.195 km uN20.",
+        "issue": "Nedovoljna maratonska dužinska priprema, nezavisno od dobrog upozorenja."
+      }
+    ],
+    "mainConcerns": [
+      {
+        "week": 17,
+        "day": 7,
+        "expected": "Maratonski ciklus treba ponovljena dovoljno duga izlaganja i vreme na nogama, ili jasno ograničen drugi cilj.",
+        "actual": "Najveći LR17.7 km (~105 min); nijedan LR>=20 km u20 nedelja; trka42.195 km uN20.",
+        "issue": "Nedovoljna maratonska dužinska priprema, nezavisno od dobrog upozorenja."
+      },
+      {
+        "week": 3,
+        "day": 7,
+        "expected": "Razvoj dužine ne bi trebalo više puta potiskivati kvalitetom.",
+        "actual": "LR10.8→9.7 km N2→N3;11.4→10.2 N5→N6;12.3→11 N7→N9 preko deload-a.",
+        "issue": "Dužina nazaduje u nekoliko punih nedelja; maratonski prioritet slabi."
+      },
+      {
+        "week": 17,
+        "day": 3,
+        "expected": "Za maraton prioritet je aerobna dužina i kasnije smislen RP.",
+        "actual": "Samo2.5 km MP uN17, uz3.7 km T u petak i17.7 km LR.",
+        "issue": "Kratak MP i rast praga ne nadoknađuju nedostajuće dugo trajanje."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewedWeekCount": 20
+  },
+  {
+    "id": "U09",
+    "side": "B",
+    "distance": 42195,
+    "criteria": {
+      "fit": 3,
+      "quality": 4.5,
+      "progression": 3.5,
+      "recovery": 7,
+      "specificity": 2,
+      "deloadTaper": 6,
+      "coherence": 3
+    },
+    "total": 41.75,
+    "verdict": "Nije prihvatljiva puna priprema za maraton; prikaz završetka je previše siguran.",
+    "criticalIssues": [
+      {
+        "week": 17,
+        "day": 7,
+        "expected": "Maratonska završna preporuka mora priznati nedovoljnu dužinsku pripremu.",
+        "actual": "LR plafon16 km (~95 min), samoN14 iN17; warning kaže plan da distancu ISTRČIŠ.",
+        "issue": "Završetak maratona nije podržan isporučenim ponovljenim dugim sesijama."
+      }
+    ],
+    "mainConcerns": [
+      {
+        "week": 17,
+        "day": 7,
+        "expected": "Maratonska završna preporuka mora priznati nedovoljnu dužinsku pripremu.",
+        "actual": "LR plafon16 km (~95 min), samoN14 iN17; warning kaže plan da distancu ISTRČIŠ.",
+        "issue": "Završetak maratona nije podržan isporučenim ponovljenim dugim sesijama."
+      },
+      {
+        "week": 14,
+        "day": 3,
+        "expected": "Gradacija kvaliteta i dužine treba da bude u skladu sa bazom.",
+        "actual": "15.47 min kvaliteta N13→49.57 N14; LR13.6→16 km; ponedeljak3 km.",
+        "issue": "Istovremeni skok rada i LR, pri čemu kvalitet zauzima veliki deo četvorodnevne nedelje."
+      },
+      {
+        "week": 18,
+        "day": 3,
+        "expected": "Taper zadržava intenzitet uz smanjenu dozu.",
+        "actual": "49.57 min kvaliteta N18, više od47.58 u poslednjoj punoj N17.",
+        "issue": "Nema smanjenja doze glavnog rada pri početku tapera."
+      },
+      {
+        "week": 20,
+        "day": 7,
+        "expected": "Četiri dana mogu biti legitiman maratonski raspored; problem treba vezati za isporučenu bazu.",
+        "actual": "Warning preporučuje bar5 dana i tvrdi LR postaje polovina nedelje; stvarni peak LR16/43.3=37%.",
+        "issue": "Generalizacija o danima i finish obećanje ne opisuju stvarni problem."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewedWeekCount": 20
+  },
+  {
+    "id": "U10",
+    "side": "A",
+    "distance": 42195,
+    "criteria": {
+      "fit": 7,
+      "quality": 7,
+      "progression": 6,
+      "recovery": 7.5,
+      "specificity": 7,
+      "deloadTaper": 6.5,
+      "coherence": 5
+    },
+    "total": 66.75,
+    "verdict": "Delimično uverljiv iskusan maratonski ciklus; ponovljena dužina i kvalitet zahtevaju reviziju.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 1,
+        "day": 7,
+        "expected": "Prijavljen LR24 km i32 nedelje kontinuiteta treba smisleno održati ili objasniti početno rasterećenje.",
+        "actual": "N1 LR15.2 km i53.2 km/ned naspram24 km i60 km ulaza.",
+        "issue": "Početna dugotrajna izloženost nepotrebno se izgubi; prvih13 nedelja bez LR>=24 km."
+      },
+      {
+        "week": 14,
+        "day": 7,
+        "expected": "Postepeno približavanje većoj dužini uz kontrolu ostalog rada.",
+        "actual": "N13 LR22.8→N14 28.2 km (+23.7%); iste nedelje8 km MP i7.5 km T (80.17 min).",
+        "issue": "Koncentrisan skok dužine i kvaliteta; nije automatski povreda, ali slab izbor opterećenja."
+      },
+      {
+        "week": 17,
+        "day": 7,
+        "expected": "Za ambiciozan maraton više ponovljenih dugih izlaganja i dobra raspodela.",
+        "actual": "SamoN14 28.2 iN17 26.8 km >=25; N17 i7.9 km MP+7 km T.",
+        "issue": "Nedovoljan kontinuitet dugog trajanja u odnosu na ulaznu bazu; ne postoji univerzalna32-km obaveza."
+      },
+      {
+        "week": 19,
+        "day": 2,
+        "expected": "Završni taper smanjuje kvalitetni volumen uz zadržavanje intenziteta.",
+        "actual": "N19 6 km MP +4.3 km T =53.5 min; N18 57 min.",
+        "issue": "Radni volumen se smanjuje tek6% između taperskih nedelja."
+      },
+      {
+        "week": 20,
+        "day": 7,
+        "expected": "Predviđanje iz20-nedeljnog modela ne predstavljati kao potvrđenu formu.",
+        "actual": "reference12381 s (~3:26:21), warnings[]; trka cilj3:30/ritam5:20.",
+        "issue": "Reference i cilj izgledaju dostignuto bez novog rezultata; ritam5:20 daje3:45:02."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewedWeekCount": 20
+  },
+  {
+    "id": "U10",
+    "side": "B",
+    "distance": 42195,
+    "criteria": {
+      "fit": 8.5,
+      "quality": 7.5,
+      "progression": 8.5,
+      "recovery": 8.5,
+      "specificity": 7,
+      "deloadTaper": 7,
+      "coherence": 9
+    },
+    "total": 80.5,
+    "verdict": "Najbolja maratonska struktura u paru: održana baza, ponovljene dužine i kontrolisan kvalitet.",
+    "criticalIssues": [],
+    "mainConcerns": [
+      {
+        "week": 11,
+        "day": 7,
+        "expected": "Vreme na nogama treba ograničiti i individualno pratiti zamor.",
+        "actual": "29.3 km @6:08/km ≈180 min, ponovljenoN11/N13/N14/N17; ukupno9 LR>=25 km.",
+        "issue": "Dobar kontinuitet izdržljivosti;3h više puta nije automatski bezbedno ili optimalno za svakoga."
+      },
+      {
+        "week": 14,
+        "day": 2,
+        "expected": "Specifičnost prema3:30 cilju razvijati tek kada potvrđena forma podržava brži ritam.",
+        "actual": "MP3.2–3.3 km @5:20/km; duža završnica9.2 km uN15.",
+        "issue": "Razuman sadržaj za3:45 referencu, ali ne dokaz3:30; kratke redovne MP doze ograničavaju specifičnost."
+      },
+      {
+        "week": 19,
+        "day": 7,
+        "expected": "Taper treba dovoljno smanjiti i dugu sesiju i glavni rad.",
+        "actual": "N19 LR18.2 km (~112 min),52 km/ned i36.6 min kvaliteta; N18 39.07 min.",
+        "issue": "Drugi korak kvaliteta je skroman; race-week10.5 km ipak znatno rasterećuje."
+      }
+    ],
+    "confidence": 0.95,
+    "reviewedWeekCount": 20
+  }
+]

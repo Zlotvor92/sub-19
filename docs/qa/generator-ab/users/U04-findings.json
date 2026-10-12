@@ -1,0 +1,264 @@
+{
+  "id": "U04",
+  "reviewer": "Independent AI synthetic user reviewer, first structured 10K scenario",
+  "scope": "All frozen old/new weeks plus actual new-domain return simulation; no human/browser/store lifecycle claims. Raw version identity was visible; not a blinded review.",
+  "fixtureSha256": {
+    "old": "5dfd61b20ae20e415355f53b20bd1e86c7f37d041ff6246c28a9bd18f328632a",
+    "new": "108519656252786b25a7ab128750cb2a256f262d1a4dcc0ada54c52ef7dd4644"
+  },
+  "scores": {
+    "old": {
+      "fit": 13,
+      "quality": 12,
+      "progression": 11,
+      "recovery": 11,
+      "specificity": 8,
+      "deloadTaper": 8,
+      "coherence": 8,
+      "total": 71
+    },
+    "new": {
+      "fit": 18,
+      "quality": 17,
+      "progression": 12,
+      "recovery": 11,
+      "specificity": 6,
+      "deloadTaper": 9,
+      "coherence": 8,
+      "total": 81
+    }
+  },
+  "verdict": "New materially improves novice entry, LR anchoring and honest assessment. Conditional preference for new; late-cycle specificity and Sunday/Monday volume concentration require review.",
+  "findings": [
+    {
+      "id": "U04-OLD-01",
+      "version": "old",
+      "domain": "generation/load",
+      "severity": "medium",
+      "type": "coaching-judgment",
+      "weeks": [
+        1
+      ],
+      "days": [
+        7
+      ],
+      "dates": [
+        "2026-10-18"
+      ],
+      "expected": "The first long run should respect the reported repeatable 8 km long run and develop it gradually.",
+      "actual": "W1 Sunday is 9.7 km: +21.25% above reported recent LR; 36.2% of its 26.8 km week. New starts at 8 km.",
+      "status": "improved-in-new"
+    },
+    {
+      "id": "U04-OLD-02",
+      "version": "old",
+      "domain": "assessment",
+      "severity": "high",
+      "type": "unsupported-forecast",
+      "weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "days": [],
+      "dates": [],
+      "expected": "Separate current-fitness reference from hoped-for adaptation; do not assert unmeasured fitness gain.",
+      "actual": "VDOT rises from 38.3 to 41.8 and predictedSec=2890 (48:10) despite only a 25:00 5K being supplied. New keeps 38.3 and current reference 3113 s (51:53), with 50:00 explicitly a goal.",
+      "status": "improved-in-new"
+    },
+    {
+      "id": "U04-NEW-01",
+      "version": "new",
+      "domain": "generation/specificity",
+      "severity": "medium",
+      "type": "coaching-judgment",
+      "weeks": [
+        13,
+        14
+      ],
+      "days": [
+        3
+      ],
+      "dates": [
+        "2027-01-06",
+        "2027-01-13"
+      ],
+      "expected": "Late-cycle race-pace work should have a clear 10K endurance purpose; if only small doses are supported, preserve a purposeful recovery or describe it as rhythm familiarization.",
+      "actual": "W13 2×1000 m @5:11/km with 233 s walking (10.37 min total work); W14 2×1200 m with 240 s walking (12.44 min work). Recovery is ~75%/~64% of one repetition; old used 3 reps with 60 s recovery. New dose is conservative but the combination of small total work and long walking weakens sustained 10K specificity.",
+      "status": "open-review"
+    },
+    {
+      "id": "U04-NEW-02",
+      "version": "new",
+      "domain": "generation/recovery",
+      "severity": "medium",
+      "type": "coaching-judgment",
+      "weeks": [
+        13,
+        14
+      ],
+      "days": [
+        7,
+        1
+      ],
+      "dates": [
+        "2027-01-10",
+        "2027-01-11"
+      ],
+      "expected": "For a runner entering the first structured cycle, preserve an easy recovery load after the longest run as weekly volume rises.",
+      "actual": "W13 Sunday LR 15.3 km is followed by W14 Monday easy 12.2 km plus 6×20 s strides. Consecutive-day distance 27.5 km, ~63% of W14 43.8 km; previous baseline old is 12.7+6.6=19.3 km. New peak LR16.2 is ~105 min at6:28/km. No adjacency between Wed/Fri quality, but the Sunday/Monday load concentrates too much novice volume for an unqualified recommendation.",
+      "status": "open-review"
+    },
+    {
+      "id": "U04-NEW-03",
+      "version": "new",
+      "domain": "generation/copy-coherence",
+      "severity": "low",
+      "type": "observed-output",
+      "weeks": [
+        8,
+        12
+      ],
+      "days": [],
+      "dates": [
+        "2026-11-30",
+        "2026-12-28"
+      ],
+      "expected": "Deload focus should describe the delivered easy sessions.",
+      "actual": "Both focus labels say “DELOAD — obim dole, ostaje kratka oštrina” while both weeks have zero sessions/finish work. Strides remain on Monday, so generic sharpness can refer to strides, but there is no dedicated short quality workout.",
+      "status": "open-copy-review"
+    },
+    {
+      "id": "U04-RETURN-01",
+      "version": "new",
+      "domain": "execution-adjustment/copy-coherence",
+      "severity": "low",
+      "type": "observed-output",
+      "weeks": [
+        8,
+        10
+      ],
+      "days": [
+        3
+      ],
+      "dates": [
+        "2026-12-02",
+        "2026-12-16"
+      ],
+      "expected": "Recompute focus after removing quality; the return preview should accurately identify easy weeks.",
+      "actual": "After confirmed return, W8 is titled Fartlek but has zero sessions, strides or finishes; W10 says short sharpness remains but has zero such work. All underlying sessions, km, descriptions, pred and QS remain coherent.",
+      "status": "open"
+    }
+  ],
+  "eventChecks": {
+    "historyComplete": true,
+    "confirmedGapExactlySevenDays": true,
+    "returnOffered": true,
+    "generated": true,
+    "inputsPure": true,
+    "pastAndTodayStable": true,
+    "logAndMeasurementsStable": true,
+    "calendarIdentitiesStable": true,
+    "raceDateStable": true,
+    "raceDayStable": true,
+    "reportedStartingKmCorrect": true,
+    "firstTwoCalendarWeeksEasy": true,
+    "noProjectedFitnessGain": true,
+    "measuredMatchedRowsStable": true
+  },
+  "preservationChecks": {
+    "generated": true,
+    "inputsPure": true,
+    "effectivePastStable": true,
+    "futureCompletedStable": true,
+    "manualSessionStable": true,
+    "manualConflictWarning": true
+  },
+  "eventAuditFailures": [],
+  "fullWeekCoverage": {
+    "old": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "new": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "adjusted": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ]
+  },
+  "eventSummary": {
+    "today": "2026-11-25",
+    "confirmedBreakDays": 7,
+    "reportedBaseKm": 30,
+    "reportedLongRunKm": 9.2,
+    "startingKm": 25.5,
+    "partialFutureKm": 12.6,
+    "firstFullReturnWeekKm": 26.4,
+    "firstQualityAfterReturn": "2026-12-09",
+    "raceDate": "2027-01-31"
+  },
+  "limitations": [
+    "Synthetic actual history, not evidence from an athlete.",
+    "A domain probe does not verify UI preview/apply/cancel/reload; U06 owns browser flow.",
+    "Physiological concerns are qualitative judgments without athlete-specific tolerance data.",
+    "Existing past skipped sessions are intentionally retained; their presence in historical weeks is not a reintroduced future quality session."
+  ]
+}
