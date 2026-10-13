@@ -59,7 +59,7 @@ describe('cutover konfiguracija', () => {
   });
 
   it('vercel.json u korenu JE cutover konfiguracija, a web/ više nije u .vercelignore', () => {
-    // These draft branches must not deploy automatically; production cutover stays identical.
+    // Draft branches stay disabled; main deploys the authorized production release.
     const { git, ...productionConfig } = live;
     expect(productionConfig).toEqual(cutover);
     expect(git).toEqual({
@@ -69,7 +69,7 @@ describe('cutover konfiguracija', () => {
         'fix/hm-quality-progression': false,
         'fix/fatigue-recovery': false,
         'qa/generator-ab-final-seven': false,
-        main: false
+        main: true
       }
     });
     const ignore = readFileSync(join(ROOT, '.vercelignore'), 'utf8')
