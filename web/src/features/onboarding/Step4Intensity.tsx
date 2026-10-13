@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { brojNedelja, distUReceni, fmtClock, fmtNum, pl3 } from '../../domain/format';
+import { brojNedelja, fmtClock, fmtNum } from '../../domain/format';
 import {
   trimQualityDays,
   usesHours,
@@ -119,14 +119,6 @@ export function Step4Intensity({
             <div className="ob-ct">Referentno vreme prema trenutnoj formi</div>
             <div className="ob-hint">
               Unesi skorašnji rezultat i datum trke da bi se referenca izračunala.
-            </div>
-          </>
-        ) : out.short ? (
-          <>
-            <div className="ob-ct">Referentno vreme prema trenutnoj formi</div>
-            <div className="ob-hint">
-              {brojNedelja(out.weeks)} {pl3(out.weeks, 'je', 'su', 'je')} manje od minimuma za{' '}
-              {distUReceni(out.name)} (<b>{out.minWeeks}</b>) — plan se ne može napraviti.
             </div>
           </>
         ) : (

@@ -101,20 +101,13 @@ describe('čarobnjak naspram starog koda', () => {
       } | null>(legacy.evalIn('outlookData()'));
       const mine = outlook(w, TODAY);
       if (!old) expect(mine, `predviđanje ${where}`).toBeNull();
-      else if (old.short)
-        expect(mine, where).toEqual({
-          short: true,
-          weeks: old.weeks,
-          minWeeks: old.minWeeks,
-          name: old.name
-        });
       else {
         // Phase 1 deliberately removes the old unearned VDOT ramp. Keep the
         // legacy input/calendar contract, then check current-fitness references.
         expect(
           mine && !mine.short ? { weeks: mine.weeks, name: mine.name, goal: mine.goal } : mine,
           where
-        ).toEqual({ weeks: old.weeks, name: old.name, goal: old.goal });
+        ).toEqual({ weeks: old.weeks, name: old.name, goal: goalTotalSec(w) });
         if (!mine || mine.short) throw new Error(`Missing outlook ${where}`);
         const current = formPreview(w)!;
         expect(mine.rows).toHaveLength(3);

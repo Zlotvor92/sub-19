@@ -122,9 +122,7 @@ describe('limited preparation is a return plan, not a full marathon preparation'
       raceDate: '2027-02-28'
     });
     expect(d.options[1]).toMatchObject({ coverage: 'insufficient', goalSec: null });
-    expect(d.conditions.join(' ')).toContain(
-      'Najkasniji početak punog ciklusa za ovaj datum: 06.12.2026.'
-    );
+    expect(d.conditions.join(' ')).toContain('Kraći plan za izabrani datum je dozvoljen');
     expect(serial(e)).toBe(frozen);
     expect(sha(readFileSync(url(file)))).toBe(digest);
   });
@@ -185,7 +183,7 @@ describe('limited preparation is a return plan, not a full marathon preparation'
   });
 });
 
-describe('U08: rejected full cycle gets a usable next step', () => {
+describe('U08: short cycle is allowed with advisory options', () => {
   const { e, today } = load('U08');
   const before = serial(e.input);
   const r = buildExecutionAdjustment(
@@ -203,12 +201,14 @@ describe('U08: rejected full cycle gets a usable next step', () => {
     return built;
   };
 
-  it('keeps the original rejection, adds three concrete options and mutates nothing', () => {
-    expect('error' in r && r.error).toContain('Manje od 10 nedelja do trke');
-    expect('error' in r && r.error).toContain('Datum trke nije automatski pomeren');
+  it('allows the original date and goal, adds a warning and mutates nothing', () => {
+    if ('error' in r) throw new Error(r.error);
+    expect(r.result.meta!.raceDate).toBe('2027-01-17');
+    expect(r.result.meta!.goalSec).toBe(5700);
+    expect(r.notes.join(' ')).toContain('Skraćena priprema');
+    expectPreserved(e.input.current, r.result, today, e.input.context);
     const d = r.decision!;
-    expect(d.status).toBe('rejected');
-    expect(d.statement).toContain('Postojeći budući raspored nije preporuka za povratak');
+    expect(d.status).toBe('limited');
     expect(d.options.map((o) => [o.id, o.raceDate, o.coverage])).toEqual([
       ['extend', '2027-02-21', 'full'],
       ['shorter-10000', '2027-01-17', 'full'],

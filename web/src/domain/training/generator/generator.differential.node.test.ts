@@ -132,10 +132,10 @@ describe('generatePlan: D6 zamrznuti izlazi na slučajnim ulazima', () => {
       return;
     }
     expect(problems, problems.join('\n')).toEqual([]);
-    /* test ne sme da bude prazan hod: dovoljno i grešaka (prekratak plan) i planova sa ciljem */
+    /* test ne sme da bude prazan hod: kratki rokovi su planovi, a uzorak sadrži planove sa ciljem */
     expect(errors).toBe(recorded.errors);
     expect(withGoal).toBe(recorded.withGoal);
-    expect(errors).toBeGreaterThan(5);
+    expect(errors).toBe(0);
     expect(withGoal).toBeGreaterThan(400);
   });
 });

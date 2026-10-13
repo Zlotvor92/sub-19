@@ -285,13 +285,12 @@ export function preparationDecision(
       )
     );
 
-  const deadline = race ? addDays(race, -7 * req.minWeeks) : null;
   const facts = delivered
     ? `Isporučeno: najduže ${fmtKm(delivered.peakLongRunKm)} km, vrhunac ${fmtKm(delivered.peakWeeklyKm)} km/ned.`
     : '';
   const statement =
     status === 'rejected'
-      ? `Pun ciklus za ${name} nije moguć: do trke ${race ? fmtDayMonthYear(race) : ''} ostaje manje od ${req.minWeeks} nedelja. Postojeći budući raspored nije preporuka za povratak — izaberi naredni korak.`
+      ? `Pun ciklus za ${name} nije moguć: do trke ${race ? fmtDayMonthYear(race) : ''} plan nije moguće izračunati iz unetih podataka. Proveri podatke ili izaberi drugu opciju.`
       : `Ovo nije puna priprema za ${name}. ${facts} Pravila pune pripreme: najduže ≥ ${fmtKm(req.longRunKm)} km, bar dva trčanja ≥ ${fmtKm(req.exposureKm)} km i vrhunac ≥ ${fmtKm(req.weeklyKm)} km/ned.`;
   const conditions = [
     ...(basis.policy && basis.execution
@@ -300,9 +299,7 @@ export function preparationDecision(
         ]
       : []),
     `Nastavak ka punoj pripremi za ${name}: upisani treninzi treba da potvrde rast ponovljive baze i dužine; zatim ponovo pregledaj opcije u Prilagodi plan.`,
-    deadline && deadline > today
-      ? `Najkasniji početak punog ciklusa za ovaj datum: ${fmtDayMonthYear(deadline)} (minimum ${brojNedelja(req.minWeeks)}). Do tada potvrđena baza i dužina moraju podržati punu pripremu; inače ostaju pomeranje trke, kraća distanca ili povratni režim.`
-      : `Za ovaj datum više nema ${brojNedelja(req.minWeeks)} za pun ciklus; ostaju pomeranje trke, kraća distanca ili povratni režim bez vremenskog cilja.`
+    `Za pun ciklus se preporučuje ${brojNedelja(req.minWeeks)}. Kraći plan za izabrani datum je dozvoljen uz napomenu o skraćenoj pripremi; pomeranje trke, kraća distanca i povratni režim su opcije, a ne uslov nastavka.`
   ];
   return { status, fullPreparation: false, statement, conditions, options, unavailable };
 }

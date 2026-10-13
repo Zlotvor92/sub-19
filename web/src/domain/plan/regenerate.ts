@@ -137,7 +137,7 @@ export function regenerateFuture(
 /** Final warning lines that previews must repeat verbatim. */
 export const finalWarnings = (result: GenPlanState): string[] =>
   (result.meta?.dayWarnings ?? []).filter((s) =>
-    /^(Finalni preostali plan:|Povratni period |Konflikt povratne politike:|Neposredni oporavak |Konflikt oporavka:)/.test(
+    /^(Skraćena priprema |Finalni preostali plan:|Povratni period |Konflikt povratne politike:|Neposredni oporavak |Konflikt oporavka:)/.test(
       s
     )
   );

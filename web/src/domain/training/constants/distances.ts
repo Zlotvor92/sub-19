@@ -80,7 +80,7 @@ export interface DistanceHeuristic {
 
 export interface DistanceProduct {
   name: string;
-  /** Najmanji broj nedelja do trke za punu periodizaciju. */
+  /** Preporučeni broj nedelja za pun ciklus; služi samo napomenama, nikad blokadi plana. */
   minWeeks: number;
   baseWeeksBeginner: number;
   /** Ispod ovog vrhunca obima dva kvaliteta nedeljno nemaju smisla. */

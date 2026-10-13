@@ -121,11 +121,8 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
   const start = mondayOnOrBefore(startDate);
   const daysN = diffDays(start, raceDate);
   const weeks = Math.floor(daysN / 7) + 1;
-  if (weeks < prof.product.minWeeks) {
-    return {
-      error: `Manje od ${brojNedelja(prof.product.minWeeks)} do trke (minimum za ${distUReceni(prof.product.name)}) — puna periodizacija nije moguća.`
-    };
-  }
+  if (raceDate < startDate)
+    return { error: 'Datum trke mora biti na dan početka plana ili kasnije.' };
   if (weeks > MAX_PLAN_WEEKS) {
     return {
       error: `Više od ${brojNedelja(MAX_PLAN_WEEKS)} (2 godine) — proveri datum trke, verovatno je pogrešno unet.`
@@ -165,6 +162,10 @@ export function generatePlan(inp: PlanGenerationInput): PlanGenerationResult {
     wantMLR
   );
   const dayWarnings = dayPreferenceWarnings(slots);
+  if (weeks < prof.product.minWeeks)
+    dayWarnings.push(
+      `Skraćena priprema za ${distUReceni(prof.product.name)}: plan ima ${brojNedelja(weeks)}, a za pun ciklus se preporučuje najmanje ${brojNedelja(prof.product.minWeeks)}. Plan je dozvoljen za izabrani datum, ali nema dovoljno vremena za sve faze pripreme i ne garantuje spremnost ni ostvarenje cilja. Ne nadoknađuj kraći rok naglim povećanjem obima ili intenziteta.`
+    );
   const effQ = Object.values(slots).filter((r) => r === 'q1' || r === 'q2').length;
   if (frequencyQCut)
     dayWarnings.push(

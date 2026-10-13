@@ -171,70 +171,11 @@ test.describe('locked inputs: current purpose- and dose-aware wizard and persist
       await page.getByRole('checkbox', { name: /Potvrđujem da sam pravio navedenu pauzu/ }).check();
       await page.getByRole('button', { name: 'Pregledaj predlog', exact: true }).click();
       const preview = page.locator('#plan-change-preview');
-      // The locked U08 HM race has only eight remaining calendar weeks: minimum is ten.
       if (profile.id === 'U08') {
-        await expect(page.getByRole('alert')).toContainText(
-          'Preostalo vreme ne podržava novi pun ciklus'
-        );
-        await expect(page.getByRole('alert')).toContainText('Datum trke nije automatski pomeren');
-        await expect(preview).toHaveCount(0);
+        await expect(preview).toContainText('Skraćena priprema');
+        await expect(preview).toContainText('plan ima 8 nedelja');
         expect(state().genPlan).toEqual(expected);
         expect(revisions()).toHaveLength(0);
-        await screenshot(page, info, `${profile.id}-expected-short-cycle-block`);
-        // The rejection carries a concrete next step: later date, shorter distance or base mode.
-        const decision = page.locator('#plan-decision');
-        await expect(decision).toContainText('nije preporuka za povratak');
-        await expect(decision.getByRole('button', { name: /^Pregledaj opciju:/ })).toHaveCount(3);
-        await expect(
-          decision.getByRole('button', { name: /^Pregledaj opciju: Pomeri trku na / })
-        ).toBeVisible();
-        await expect(
-          decision.getByRole('button', {
-            name: 'Pregledaj opciju: Kraća distanca: 10K istog datuma'
-          })
-        ).toBeVisible();
-        await decision
-          .getByRole('button', {
-            name: 'Pregledaj opciju: Povratni/bazni režim do istog datuma, bez vremenskog cilja'
-          })
-          .click();
-        await expect(preview.getByLabel('Promena trke i cilja')).toContainText(
-          '17.01.2027. · Polumaraton · bez vremenskog cilja'
-        );
-        expect(state().genPlan).toEqual(expected);
-        expect(revisions()).toHaveLength(0);
-        await screenshot(page, info, `${profile.id}-base-mode-preview`);
-        await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
-        await expect.poll(() => revisions().length).toBe(1);
-        expect(revisions()[0]).toMatchObject({
-          reason: 'execution',
-          summary: 'Povratni/bazni režim do 17.01.2027., bez vremenskog cilja'
-        });
-        expect(state().genPlan?.meta?.raceDate).toBe('2027-01-17');
-        expect(state().genPlan?.meta?.goalSec).toBeNull();
-        const base = copy(state().genPlan!);
-        await attachJson(info, `${profile.id}-base-mode-plan`, base);
-        await page.reload();
-        await openAdjust(page);
-        expect(state().genPlan).toEqual(base);
-        // Continuation from base mode is offered from the stored plan.
-        await expect(
-          page.locator('#plan-decision').getByRole('button', { name: /^Pregledaj opciju: Pomeri/ })
-        ).toBeVisible();
-        await page.getByRole('button', { name: /^Pregledaj vraćanje:/ }).click();
-        await page
-          .locator('#plan-change-preview')
-          .getByRole('button', { name: 'Primeni prikazanu promenu' })
-          .click();
-        await expect.poll(() => revisions().length).toBe(2);
-        const restored = state().genPlan!;
-        expect(restored.meta?.goalSec).toBe(expected.meta?.goalSec);
-        const kmByDay = (plan: GenPlanState) =>
-          plan.weeks.flatMap((w) => w.days.map((d) => [d.id, d.tag ?? null, d.km ?? null]));
-        expect(kmByDay(restored)).toEqual(kmByDay(expected));
-        await attachJson(info, `${profile.id}-blocked-persisted-state`, state());
-        expect(errors).toEqual([]);
-        return;
       }
       await expect(preview.getByRole('heading', { name: 'Pregled promene' })).toBeVisible();
       await expect(
