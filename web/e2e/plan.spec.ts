@@ -21,17 +21,15 @@ test('prijavljen korisnik bez plana odmah dobija čarobnjaka (nema ekrana iza ko
   await expect(page.getByRole('button', { name: 'Dalje' })).toBeDisabled(); // bez datuma trke
 });
 
-test('čarobnjak: pregleda korake, razlog se vidi odmah, a prekratak rok se odbija pri izradi sa porukom na prvom koraku', async ({
-  page
-}) => {
-  await installBackend(page);
+test('čarobnjak: validira rezultat, a kratak rok pravi plan sa upozorenjem', async ({ page }) => {
+  const backend = await installBackend(page);
   await page.goto('/');
   await page
     .getByRole('group', { name: 'Ciljna distanca' })
     .getByRole('button', { name: '10K', exact: true })
     .click();
-  await page.getByLabel('Datum trke').fill('2026-01-20'); // 6 dana — premalo za 10K
-  await expect(page.getByText(/traži najmanje/)).toBeVisible();
+  await page.getByLabel('Datum trke').fill('2026-01-20'); // 6 dana — skraćena priprema za 10K
+  await expect(page.getByText(/možeš napraviti plan za izabrani datum/)).toBeVisible();
   await page.getByLabel('Datum trke').fill('2026-04-12');
   await expect(page.getByText(/dovoljno za pun ciklus pripreme/)).toBeVisible();
   await page.getByRole('button', { name: 'Dalje' }).click();
@@ -51,17 +49,28 @@ test('čarobnjak: pregleda korake, razlog se vidi odmah, a prekratak rok se odbi
   await expect(page.getByRole('heading', { name: 'Koliko trčiš nedeljno?' })).toBeVisible();
   await page.getByRole('button', { name: 'Nazad' }).click();
   await expect(page.getByRole('heading', { name: 'Šta si poslednje istrčao?' })).toBeVisible();
-  // prekratak rok: generator odbija, čarobnjak se vraća na prvi korak i kaže zašto
+  // Kratak rok: plan zadržava datum, upozorenje ide i na server.
   await page.getByRole('button', { name: 'Nazad' }).click();
   await page.getByLabel('Datum trke').fill('2026-01-20');
   await page.getByRole('button', { name: 'Dalje' }).click();
   await page.getByRole('button', { name: 'Dalje' }).click();
   await page.getByLabel('Nedeljna kilometraža').fill('40');
   await page.getByRole('button', { name: 'Dalje' }).click();
+  await expect(page.getByText(/Skraćena priprema/)).toBeVisible();
   await page.getByRole('button', { name: 'Napravi plan' }).click();
-  await expect(page.getByRole('heading', { name: 'Za koju trku se spremaš?' })).toBeVisible();
-  await expect(page.locator('#ob-err-1')).not.toBeEmpty();
-  await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toHaveCount(0);
+  await expect(tab(page, 'Danas')).toHaveAttribute('aria-current', 'page');
+  await expect
+    .poll(() => (backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan != null)
+    .toBe(true);
+  const saved = backend.row?.data as {
+    genPlan: { meta: { raceDate: string; raceDistM: number; dayWarnings: string[] } };
+  };
+  expect(saved.genPlan.meta.raceDate).toBe('2026-01-20');
+  expect(saved.genPlan.meta.raceDistM).toBe(10000);
+  expect(saved.genPlan.meta.dayWarnings.join(' ')).toContain('Skraćena priprema');
+  await page.reload();
+  await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toHaveCount(0);
 });
 
 test('pravljenje plana: završava na „Danas", plan ima nedelje do trke, a stanje stiže na server', async ({

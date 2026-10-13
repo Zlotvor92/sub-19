@@ -288,7 +288,7 @@ describe('finalization preserves evidence and exposes incompatible protected pre
     expect(serial(context)).toBe(before);
   });
 
-  it('U08 primary insufficient cycle still rejects without mutating history', () => {
+  it('U08 short cycle succeeds without mutating history', () => {
     const doc = JSON.parse(
       readFileSync(
         new URL('../../../../docs/qa/generator-ab/users/U08-event.json', import.meta.url),
@@ -305,7 +305,7 @@ describe('finalization preserves evidence and exposes incompatible protected pre
         event.input.options,
         event.input.context
       )
-    ).toHaveProperty('error');
+    ).not.toHaveProperty('error');
     expect(serial(event.input)).toBe(before);
   });
 });

@@ -38,8 +38,8 @@ export function Step1Race({
           izdržljivost, polumaraton akumuliranu izdržljivost (dva duža trčanja nedeljno, taper od
           dve nedelje, uvežbavanje goriva). Ne prave se iz istog kalupa. Maraton ide još dalje: dugo
           trčanje mu je ograničeno <b>vremenom</b> (3 sata), ima sopstveni talas i uvežbavanje
-          goriva. Minimum: <b>6 nedelja</b> za 5K, <b>8</b> za 10K, <b>10</b> za polumaraton,{' '}
-          <b>12</b> za maraton.
+          goriva. Preporučeno za pun ciklus: <b>6 nedelja</b> za 5K, <b>8</b> za 10K, <b>10</b> za
+          polumaraton, <b>12</b> za maraton.
         </div>
       </div>
       <div className="ob-card">
@@ -57,13 +57,13 @@ export function Step1Race({
         <div className="ob-hint" id="ob-weeks-hint" aria-live="polite">
           {hint.kind === 'this-week' ? (
             <>
-              Trka je <b>ove nedelje</b> — previše blizu za plan.
+              Trka je <b>ove nedelje</b> — plan je dozvoljen, ali nema vremena za punu pripremu.
             </>
           ) : hint.kind === 'too-short' ? (
             <>
-              Do trke: <b>{brojNedelja(hint.weeks)}</b> — {hint.name} traži najmanje{' '}
-              <b>{hint.minWeeks}</b>, pa plan za ovaj datum ne može da se napravi. Pomeri trku ili
-              izaberi kraću distancu.
+              Do trke: <b>{brojNedelja(hint.weeks)}</b> — za pun ciklus ({hint.name}) preporučuje se
+              najmanje <b>{hint.minWeeks}</b>, ali možeš napraviti plan za izabrani datum uz
+              napomenu o skraćenoj pripremi.
             </>
           ) : hint.kind === 'enough' ? (
             <>

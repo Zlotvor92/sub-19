@@ -44,9 +44,9 @@ describe('G1–G3: datumi', () => {
     expect('error' in r).toBe(true);
   });
 
-  it('trka pre početka i dalje daje grešku o minimumu nedelja', () => {
+  it('trka pre početka daje grešku o redosledu datuma', () => {
     const r = generatePlan({ ...valid(), raceDate: addDays(START, -30) });
-    expect('error' in r && /Manje od/.test(r.error)).toBe(true);
+    expect('error' in r && /Datum trke/.test(r.error)).toBe(true);
   });
 });
 

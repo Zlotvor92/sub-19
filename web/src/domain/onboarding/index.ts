@@ -193,10 +193,13 @@ export interface OutlookRow {
   sec: number;
   vdot: number;
 }
-export type Outlook =
-  | null
-  | { short: true; weeks: number; minWeeks: number; name: string }
-  | { short: false; rows: OutlookRow[]; weeks: number; name: string; goal: number | null };
+export type Outlook = null | {
+  short: false;
+  rows: OutlookRow[];
+  weeks: number;
+  name: string;
+  goal: number | null;
+};
 
 /** Referenca trenutne forme; legacy rows stay compatible, but no assumed improvement. */
 export function outlook(w: WizardState, today: string): Outlook {
@@ -205,8 +208,6 @@ export function outlook(w: WizardState, today: string): Outlook {
   if (pbSec == null || !pbSanityOk(w) || weeks == null) return null;
   const prof = profileFor(w.raceDist);
   if (!prof) return null;
-  if (weeks < prof.product.minWeeks)
-    return { short: true, weeks, minWeeks: prof.product.minWeeks, name: prof.product.name };
   const pb = { distM: w.pbDist, sec: pbSec };
   const rows = INTENSITIES.map(([k, label]) => {
     const a = assess(pb, weeks, k, null, w.raceDist);

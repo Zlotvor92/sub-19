@@ -85,14 +85,40 @@ describe('čarobnjak', () => {
     expect(screen.getByRole('button', { name: 'Dalje' })).toBeEnabled();
   });
 
-  it('napomena pod datumom: kratko za izabranu distancu → kaže da plan ne može; dovoljno → pun ciklus', async () => {
+  it('napomena pod datumom: kratko za izabranu distancu → savet bez blokade; dovoljno → pun ciklus', async () => {
     const user = userEvent.setup();
     render(<Wizard today={TODAY} />);
     await user.type(screen.getByLabelText('Datum trke'), '2026-02-08');
-    expect(screen.getByText(/ne može da se napravi/)).toBeInTheDocument();
+    expect(screen.getByText(/možeš napraviti plan za izabrani datum/)).toBeInTheDocument();
     await user.clear(screen.getByLabelText('Datum trke'));
     await user.type(screen.getByLabelText('Datum trke'), '2026-04-12');
     expect(screen.getByText(/pun ciklus pripreme za 5K/)).toBeInTheDocument();
+  });
+
+  it.each([
+    ['5K', '2026-02-08', 5000],
+    ['10K', '2026-02-22', 10000],
+    ['Polumaraton', '2026-03-08', 21097.5],
+    ['Maraton', '2026-03-22', 42195]
+  ])('kratka priprema za %s može da se napravi i sačuva', async (name, raceDate, distance) => {
+    const user = userEvent.setup();
+    render(<Wizard today={TODAY} />);
+    await user.click(
+      within(screen.getByRole('group', { name: 'Ciljna distanca' })).getByRole('button', {
+        name: String(name)
+      })
+    );
+    await fill(user, { raceDate: String(raceDate), min: '24', sec: '30', km: '40' });
+    expect(screen.getByText('Trenutna forma')).toBeInTheDocument();
+    expect(await screen.findByText(/Skraćena priprema/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Napravi plan' }));
+    await waitFor(() => expect(collectPersisted().genPlan).not.toBeNull());
+    const saved = collectPersisted();
+    expect(saved.genPlan?.meta?.raceDate).toBe(raceDate);
+    expect(saved.genPlan?.meta?.raceDistM).toBe(distance);
+    expect(saved.genPlan?.meta?.dayWarnings.join(' ')).toContain('Skraćena priprema');
+    hydratePersisted(JSON.parse(JSON.stringify(saved)) as PersistedState);
+    expect(collectPersisted().genPlan).toEqual(saved.genPlan);
   });
 
   it('korak 2: nemoguće vreme objašnjava ZAŠTO je „Dalje" zaključano; moguće prikazuje formu (VDOT) i tempove', async () => {

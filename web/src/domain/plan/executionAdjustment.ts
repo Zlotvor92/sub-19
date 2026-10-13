@@ -155,12 +155,7 @@ export function buildExecutionAdjustment(
     execution: basis.execution!,
     notes
   });
-  if ('error' in built)
-    // The rejected full cycle still gets a concrete next step; nothing is written here.
-    return {
-      error: `Preostalo vreme ne podržava novi pun ciklus: ${built.error} Datum trke nije automatski pomeren.`,
-      decision: preparationDecision(current, today, basis, context, 'rejected')
-    };
+  if ('error' in built) return { error: built.error };
   const result = built.result;
   notes.push(...finalWarnings(result));
   let summary = policy

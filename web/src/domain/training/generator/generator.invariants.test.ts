@@ -115,7 +115,7 @@ describe('generatePlan — osnovna ispravnost', () => {
     expect(err({ pb: { distM: 0, sec: 1200 } })).toBe(true);
     expect(err({ weeklyKm: 0 })).toBe(true);
     expect(err({ raceDistM: 1234 }), 'nepodržana distanca').toBe(true);
-    expect(err({ raceDate: raceDateIn(2) }), 'prekratak rok').toBe(true);
+    expect(err({ raceDate: raceDateIn(2) }), 'kratak rok je dozvoljen').toBe(false);
     expect(err({ raceDate: raceDateIn(200) }), 'predug rok').toBe(true);
   });
 

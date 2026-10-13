@@ -58,12 +58,13 @@ describe('U08 preparation decision lifecycle', () => {
   });
   const options = () => ({ breakDays: 14, weeklyKm: 55, recentLongRunKm: 16 });
 
-  it('rejection offers options; base preview, apply, actual run and restore keep every record', () => {
+  it('short cycle offers a valid preview and optional alternatives; base preview, apply, actual run and restore keep every record', () => {
     const original = structuredClone(useTrainingStore.getState().genPlan!);
     const rejected = previewExecution(resolved(), U08_TODAY, options());
-    expect(rejected.ok).toBe(false);
-    if (rejected.ok) return;
-    expect(rejected.reason).toContain('Datum trke nije automatski pomeren');
+    expect(rejected.ok).toBe(true);
+    if (!rejected.ok) throw new Error(rejected.reason);
+    expect(rejected.result.meta!.raceDate).toBe('2027-01-17');
+    expect(rejected.result.meta!.goalSec).toBe(5700);
     expect(rejected.decision!.options.map((o) => o.id)).toEqual([
       'extend',
       'shorter-10000',
@@ -115,7 +116,7 @@ describe('U08 preparation decision lifecycle', () => {
 
   it('extend preview changes the race date only after apply; a stale preview is refused', () => {
     const rejected = previewExecution(resolved(), U08_TODAY, options());
-    if (rejected.ok) throw new Error('expected rejection');
+    if (!rejected.ok) throw new Error(rejected.reason);
     const extend = rejected.decision!.options.find((o) => o.id === 'extend')!;
     const p = previewPreparationChoice(resolved(), U08_TODAY, options(), extend.choice);
     if (!p.ok) throw new Error(p.reason);
@@ -134,7 +135,7 @@ describe('U08 preparation decision lifecycle', () => {
   it('a stored limited plan offers decisions without new execution input', () => {
     expect(storedPreparationDecision(U08_TODAY)).toBeNull();
     const p = previewExecution(resolved(), U08_TODAY, options());
-    if (p.ok) throw new Error('expected rejection');
+    if (!p.ok) throw new Error(p.reason);
     const base = previewPreparationChoice(resolved(), U08_TODAY, options(), { kind: 'base' });
     if (!base.ok) throw new Error(base.reason);
     expect(commitPlanChange(base)).toEqual({ ok: true });
