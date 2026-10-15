@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { confirmAction } from '../../app/confirm';
 import { hasGenPlanData } from '../../domain/plan';
-import { generatorForDistance } from '../../domain/generators/select';
+import { UNSUPPORTED_DISTANCE, generatorForDistance } from '../../domain/generators/select';
 import {
   TOTAL_STEPS,
   availableDays,
@@ -60,6 +60,11 @@ export function Wizard({ today }: { today: string }) {
     const input = toGenerationInput(w, today);
     if (!input) return;
     const generator = generatorForDistance(input.raceDistM);
+    if (!generator) {
+      setErr(UNSUPPORTED_DISTANCE);
+      setStep(1);
+      return;
+    }
     const gen = generator.generatePlan(input);
     if ('error' in gen) {
       setErr(gen.error);

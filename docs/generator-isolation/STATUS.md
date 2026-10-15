@@ -21,7 +21,10 @@ sadrži iste commitove do `a8a5baa`.
 | 2/5 | 10K | **urađeno** (v. „Segment 2/5 — 10K" ispod) — commit `7966766`, grana `claude/generator-isolation-5k-10k`, bez PR-a |
 | 3/5 | polumaraton | **urađeno** (v. „Segment 3/5 — polumaraton" na kraju) — commit `36403cf`, grana `claude/generator-isolation-5k-10k`, bez PR-a |
 | 4/5 | maraton | **urađeno** (v. „Segment 4/5 — maraton" na kraju) — commit `b9b3acc`, grana `claude/generator-isolation-5k-10k-hm-marathon` (od `ad464c0`), bez PR-a |
-| 5/5 | uklanjanje starog zajedničkog mehanizma | nije počet |
+| 5/5 | uklanjanje starog zajedničkog mehanizma | **urađeno uz ograde** (v. „Segment 5/5 — završetak razdvajanja" na kraju i `FINAL-REPORT.md`) — grana `claude/generator-isolation-5k-10k-hm-marathon` (commit na `348391c`), bez PR-a, nije spojeno u `main` |
+
+> **Završni dokumenti (segment 5/5):** `ARCHITECTURE.md` (granice, API, dozvoljene zavisnosti, provere, kompatibilnost,
+> komande) i `FINAL-REPORT.md` (zaključak, dokazi, preostale prepreke, poznati nedostaci po distanci).
 
 > Sekcije od „Polazna tačka" do „Stanje radnog stabla (za segment 2)" su zapis segmenta 1 (5K) i nisu prepisivane.
 > Stanje posle segmenta 2 je u sekciji **„Segment 2/5 — 10K"**; aktuelno stanje posle segmenta 3 je u sekciji
@@ -1134,3 +1137,107 @@ Predlog za segment 5: dodeliti vlasnika stavkama inventara (lični plan, plan be
 `describePoint`), zatim ukloniti `domain/training/**`/`domain/plan/**` trenerski deo, `LEGACY_*` iz `select.ts`, stari
 `preparationDecision`, `legacyApi` (reference su već snimljene i ne zavise od starog koda u vreme poređenja) i golden
 master `generator.fingerprint` (ili ga prevesti na izdvojene generatore uz svesno obrazloženje).
+
+---
+
+# Segment 5/5 — završetak razdvajanja
+
+Završni zaključak i preostale prepreke: `FINAL-REPORT.md`. Granice, API, dozvoljene zavisnosti i komande: `ARCHITECTURE.md`.
+
+## Polazna tačka (segment 5)
+
+- `origin/main` = **`05088e0440c50e866bb3bbf6246ff20fe5619f4c`** (neizmenjen; segmenti 1–4 **nisu spojeni u `main`**).
+- Segmenti 1–4 postoje samo na `origin/claude/generator-isolation-5k-10k-hm-marathon` = **`348391c6f81f8ee62b73b06379c9b563cf75394e`**
+  (linearno na `05088e0`: `515bba3` 5K, `7966766` 10K, `36403cf` HM, `b9b3acc` maraton, plus dokumentacija).
+- Sesija je dodelila granu `claude/generator-isolation-segment-5-rniscr` (bila na `05088e0`); fast-forward na `348391c`
+  (bez novog commita). `AGENTS.md` (dodat u `348391c`) traži rad na `claude/generator-isolation-5k-10k-hm-marathon`;
+  po naknadnoj izričitoj instrukciji izmene su commitovane i pushovane na tu granu.
+- Preduslovi provereni u kodu: četiri direktorijuma generatora postoje; `select.ts` šalje 5000/10000/21097.5/42195
+  izdvojenim generatorima. **Nalaz:** stari mehanizam je i dalje imao aktivnu produkcionu ulogu — `generatorForPlan(null)`
+  → `LEGACY_GENERATOR` za ugrađeni lični plan (store čuva `genPlan === null`): `executionModel`, `assessRunWalkProgress`,
+  `vdotProposal`, `applyVdotProposal`, `matchPlanRows`, `undoVdotAdjustments`; `LEGACY_PREPARATION` za 5K/10K;
+  `describePoint` iz stare odluke u ekranu; prag rekalibracije iz starih konstanti u `stores/raceActions.ts`; rezervni
+  `productFor(5000)` u čarobnjaku. Segment 5 je završio to izdvajanje; nije rađeno novo izdvajanje trenerskog koda.
+- Polazno: `npm run check` zeleno do koraka formatiranja (pao samo na prvim novim fajlovima ovog segmenta); prema
+  zapisu segmenta 4 na istom kodu: 166 fajlova / 1 629 testova.
+
+## Šta je urađeno
+
+1. **Lični plan → HM generator, uz dokaz.** Referenca tokova nad ugrađenim planom snimljena iz STAROG mehanizma
+   (`test/personal/*`, `test/fixtures/personal-reference.json.gz`, 13 782 toka: 4 polazne forme + 2 sintetičke „merljive"
+   varijante, 17 datuma, 7 konteksta dnevnika; `baselineSha` `348391c`), ponovo snimljena u čistom worktree-ju na `05088e0`
+   — **bajt-identično** (`cmp`). `domain/generators/personalPlan.node.test.ts`: HM generator = referenca, nijedno polje
+   isključeno. Činjenica: svih 16 PRED redova ličnog plana nosi `nemeri: true`, pa predlog tempa nad njim u produkciji
+   nikad ne nastaje; primena/poništavanje su upoređeni na sintetičkoj varijanti (108 tokova).
+2. **`select.ts` bez starog mehanizma**: `LEGACY_GENERATOR`/`LEGACY_PREPARATION` uklonjeni; nepodržana distanca i plan bez
+   distance → `null`; `UNSUPPORTED_DISTANCE` poruka; `preparationForPlan` → `null` za 5K/10K; ugovor `PlanGenerator` izveden
+   iz oblika HM objekta. Store-ovi biraju po aktivnom planu (`activePlanGenerator()` u `stores/executionActions.ts`,
+   `activeGenPlan()` u `stores/raceActions.ts`). Eksplicitna obrada `null` u: prilagođavanju, run/walk, vraćanju verzije,
+   odluci o pripremi, promeni cilja (`planActions.ts`), rekalibraciji, predlogu tempa, prikazu forme, čarobnjaku
+   (`Wizard.tsx`, `domain/onboarding`), ekranu „Prilagodi plan" (`AdjustPlan.tsx`).
+3. **Uklonjene skrivene trenerske odluke iz aplikacije**: kapija rekalibracije (`VDOT_PROPOSAL_*`) se čita iz izabranog
+   generatora (`recalibrationMinMeasurements`, `recalibrationThreshold`; vrednosti iste); rezervni 5K proizvod u čarobnjaku
+   uklonjen; `describePoint` je formatiranje u ekranu sa imenom distance iz `productFor`.
+4. **Zastareli izvozi**: iz `domain/plan/index.ts` uklonjeni `adaptGeneratedPlan` i izvršne funkcije `replan`
+   (ostali tipovi); iz `domain/training/adaptation/index.ts` uklonjeni `vdotProposal`, `applyVdotProposal`,
+   `undoVdotAdjustments`, `planVdotNow`, `formVsPlan`, `refreshSessionPace`, `restoreSessionPace`, `fitnessEvidence`,
+   `FITNESS_EVIDENCE_*` (ostali tipovi). 5 testova prebačeno na direktne putanje (isti kod).
+5. **Doslovna premeštanja da prikaz ne vuče stari trenerski kod**: `describePrescription` (koristi ga samo stari
+   `finalize.ts`) iz `plan/describe.ts` u novi `plan/prescriptionText.ts`; `effectivePace` iz `adaptation/proposal.ts` u
+   `adaptation/effectivePace.ts` (proposal ga re-exportuje). Posle toga produkcioni graf više ne sadrži stare profile
+   distanci, graditelje sesija, generator, predlog ni dokaz forme.
+6. **Nove automatske provere**: `architecture.node.test.ts` (9 testova; 3 nova pravila + izmenjena 2), `runtimeIsolation.node.test.ts`
+   (5), `personalPlan.node.test.ts` (3), `features/personalPlanGenerator.test.tsx` (3); kontrolni testovi u četiri
+   `*Flow.test.tsx` prevedeni na eksplicitno odbijanje nepodržane distance uz zadržanu kontrolu brojača.
+
+## Inventar starog koda (stanje posle segmenta 5)
+
+Produkcija (`main.tsx`, uključujući lenje ekrane, analiza po imenu kroz barel fajlove) dostiže **29 fajlova** starog koda —
+format, prikaz, merenje forme (popis: `ARCHITECTURE.md` §4). **47 izvršnih modula** starog koda (plus nekorišćen prikazni `plan/header.ts` i 3 fajla samo sa tipovima) nema produkcionog potrošača:
+
+| Grupa | Moduli | Prod. potrošači | Testovi koji ih direktno uvoze | Potreban za stare podatke | Bezbedno uklanjanje |
+|---|---|---|---|---|---|
+| generisanje | `training/generator/{generatePlan,assess,athleteAssessment,allocation,daySlots,focus,formPolicy,longRunProgression,validateInput,volume,weeklyLoad}` | 0 | `generatePlan` 53, `volume` 2, ostali 0–1 | ne (sačuvan plan se ne regeneriše pri učitavanju) | tehnički da; zahteva prepravku/uklanjanje testova (v. dole) |
+| profili i sesije | `training/distances/*`, `training/constants/distances`, `training/sessions/{build,constraints,cruise,deload,intervals,longRun,prescription,progression,repetitions,tempo}`, `training/prediction/index` | 0 | 0–6 po modulu | ne | isto |
+| adaptacija | `plan/{adapt,automaticAlts,executionAdjustment,fatigueRecovery,finalize,future,preparationDecision,prescriptionText,regenerate,replan,returnGrowth,runWalkAdjustment}`, `training/{execution,qualityGate,runWalkProgress}`, `training/adaptation/{proposal,evidence}` | 0 | `adapt` 51, `executionAdjustment` 8, `replan` 6, `proposal` 6, `preparationDecision` 5, ostali 0–4 | ne | isto |
+| prikaz (nekorišćen) | `plan/header` | 0 | 1 | ne | da (nije trenerski kod; ostavljen) |
+
+Potrošači su isključivo testovi: istorijski testovi starog koda (46 fajlova u `domain/training`, `domain/plan`), golden
+master `generator.fingerprint`, harnes referenci (`test/fiveK/legacyApi.ts`, svi `capture*Reference` testovi) i UI/oracle
+testovi koji starim `generatePlan`/`adaptGeneratedPlan` prave ulazne planove. Stari `plan/preparationDecision.ts` uvozi
+`generators/handoff.ts` (stari → novi smer), ali samo u testovima. **Fizičko brisanje nije urađeno** — razlog i plan u
+`FINAL-REPORT.md` §3.
+
+## Dokazi (poslednji prolaz, `TZ` sistema = UTC)
+
+| Komanda (iz `web/`) | Rezultat |
+|---|---|
+| `npm run check` | zeleno; vitest **170 fajlova / 1 644 testa** (9 min 35 s) |
+| `npx vitest run --project node generators/architecture` | 9/9 |
+| `npx vitest run --project node generators/runtimeIsolation` | 5/5 (~3,5 min) |
+| `npx vitest run --project node generators/personalPlan` | 3/3 — 13 782 toka identična starom mehanizmu |
+| 5K/10K/HM/maraton `equivalence` + `otherDistances` (u `npm run check`) | zeleno — reference nisu dirane |
+| `npx vitest run --project ui Flow.test personalPlanGenerator` | 5 fajlova / 11 testova; brojač starog mehanizma 0 |
+| `npm run build` | uspešno; upozorenje „chunk > 500 kB" postoji i na `348391c`; glavni JS (`index` + `stores`) 1 079,3 kB → 999,9 kB |
+| `node --test "**/*.test.mjs"` (iz `test/`) | 396/396 |
+| `npx playwright test` | **77/77** (6,0 min, jedan prolaz) |
+
+Osetljivost novih provera (sve vraćeno, `git diff` potvrdio): (a) direktan uvoz starog `generatePlan` u ekran → pala 3
+pravila; (b) re-export `planWithNewGoal` kroz barel + uvoz po imenu → 3; (c) uvoz tipa starog koda u `select.ts` → 1;
+(d) tihi fallback nepodržane distance na HM → 1; (e) lenji `import()` starog `replan` u `features/screens.tsx` → 2;
+(f) nova trenerska konstanta (`HEURISTIC_5K` iz starog koda) u `useEasyPace.ts` → 1 (inventar). Sam re-export u barelu bez
+uvoznika ne obara test (ispravno: nema dostižnosti). Test ličnog plana: pomak novog tempa predloga u HM kopiji (+1 s/km) →
+pao (2 toka); `VDOT_PROPOSAL_MIN_SEC_PER_KM` 3→4 i `lowVolumeRatio` 0,8→0,81 → **nisu otkriveni** (ulazi ličnog plana ne
+dodiruju te pragove) — ograničenje pokrivenosti tog testa, ne celog skupa (ekvivalencija HM ih pokriva sopstvenim ulazima).
+Runtime: promena `deloadFactor` jednog generatora menja samo njega; jedini put do drugog je eksplicitna predaja „kraća
+distanca" (maraton U10 `execution reduce` nudi HM plan) — sa predajom preusmerenom na netaknutu instancu nijedan drugi
+generator se ne menja.
+
+## Stanje radnog stabla
+
+Grana `claude/generator-isolation-5k-10k-hm-marathon`, commit segmenta 5 na `348391c`, pushovano; PR nije otvoren, nije
+spojeno u `main`. Novi fajlovi:
+`docs/generator-isolation/{ARCHITECTURE,FINAL-REPORT}.md`, `web/src/domain/generators/{personalPlan,runtimeIsolation}.node.test.ts`,
+`web/src/domain/plan/prescriptionText.ts`, `web/src/domain/training/adaptation/effectivePace.ts`,
+`web/src/features/personalPlanGenerator.test.tsx`, `web/src/test/personal/**`, `web/src/test/fixtures/personal-reference.json.gz`.
+Izmenjeni: v. `git status` (35 fajlova).

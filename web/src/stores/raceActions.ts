@@ -3,11 +3,7 @@
 
 import { recomputeChain } from '../domain/day';
 import type { RecalibratedStoredPlan } from '../domain/plan';
-import { generatorForPlan } from '../domain/generators/select';
-import {
-  VDOT_PROPOSAL_MIN_MEASUREMENTS,
-  VDOT_PROPOSAL_THRESHOLD
-} from '../domain/training/constants/heuristics';
+import { UNSUPPORTED_DISTANCE, generatorForPlan } from '../domain/generators/select';
 import type { VdotProposal } from '../domain/training/adaptation';
 import { addT3k, removeT3k, t3kVdot, upsertMeasurement } from '../domain/training/test3k';
 import { t3kPossible } from '../domain/training/vdot/limits';
@@ -59,9 +55,11 @@ export function removeTest(id: string): void {
 /** Predlog novih tempa iz forme; `null` kad ga nema. */
 export function currentVdotProposal(plan: ResolvedPlan, today: string): VdotProposal | null {
   const t = useTrainingStore.getState();
-  const meta = activeGenPlan()?.meta;
-  if (!meta) return null;
-  const proposal = generatorForPlan(t.genPlan).vdotProposal({
+  const active = activeGenPlan();
+  const meta = active?.meta;
+  const generator = generatorForPlan(active);
+  if (!meta || !generator) return null;
+  const proposal = generator.vdotProposal({
     today,
     plan,
     pred: storedRows(),
@@ -85,7 +83,9 @@ export function applyProposal(plan: ResolvedPlan, proposal: VdotProposal): numbe
   if (!today) return 0;
   const fresh = currentVdotProposal(plan, today);
   if (!fresh || JSON.stringify(fresh.changes) !== JSON.stringify(proposal.changes)) return 0;
-  const r = generatorForPlan(t.genPlan).applyVdotProposal(proposal, plan, t.log, t.alts, t.genPlan);
+  const generator = generatorForPlan(activeGenPlan());
+  if (!generator) return 0;
+  const r = generator.applyVdotProposal(proposal, plan, t.log, t.alts, t.genPlan);
   if (r.applied)
     t.patch({
       alts: r.alts,
@@ -105,7 +105,8 @@ export function applyProposal(plan: ResolvedPlan, proposal: VdotProposal): numbe
 export function undoAdjustments(plan: ResolvedPlan): number {
   const t = useTrainingStore.getState();
   const today = useUIStore.getState().today;
-  const generator = generatorForPlan(t.genPlan);
+  const generator = generatorForPlan(activeGenPlan());
+  if (!generator) return 0;
   const matched = generator.matchPlanRows(plan.weeks, storedRows());
   const eligible = Object.fromEntries(
     Object.entries(t.alts).filter(([id, alt]) => {
@@ -167,6 +168,8 @@ export function previewRecalibration(plan: ResolvedPlan, today: string): Recalib
   const t = useTrainingStore.getState();
   const gp = t.genPlan;
   if (!gp) return { ok: false, reason: 'Preračunavanje radi samo nad generisanim planom.' };
+  const generator = generatorForPlan(gp);
+  if (!generator) return { ok: false, reason: UNSUPPORTED_DISTANCE };
   const execution = executionModel(plan, today).analysis;
   if (execution.daysSinceLastRun !== null && execution.daysSinceLastRun >= 7)
     return {
@@ -174,7 +177,6 @@ export function previewRecalibration(plan: ResolvedPlan, today: string): Recalib
       reason:
         'Dnevnik nema novije trčanje. Potvrdi trenutnu bazu i pregledaj povratak posle pauze pre preračunavanja celog plana.'
     };
-  const generator = generatorForPlan(gp);
   const evidence = generator.fitnessEvidence({
     today,
     plan,
@@ -185,10 +187,12 @@ export function previewRecalibration(plan: ResolvedPlan, today: string): Recalib
     tests: t.t3k
   });
   const { form, measurements, distinctDays } = evidence;
-  if (form == null || distinctDays < VDOT_PROPOSAL_MIN_MEASUREMENTS)
+  // Kapija rekalibracije pripada generatoru distance plana (iste vrednosti kao ranije zajednička konstanta).
+  const minMeasurements = generator.recalibrationMinMeasurements;
+  if (form == null || distinctDays < minMeasurements)
     return {
       ok: false,
-      reason: `Za preračunavanje treba bar ${VDOT_PROPOSAL_MIN_MEASUREMENTS} različita dana prihvatljivih merenja u poslednje 42 dana (sada ${distinctDays}, ${measurements} merenja). Kratke repeticije, neodrađeni i stari treninzi ne potvrđuju novu formu.`
+      reason: `Za preračunavanje treba bar ${minMeasurements} različita dana prihvatljivih merenja u poslednje 42 dana (sada ${distinctDays}, ${measurements} merenja). Kratke repeticije, neodrađeni i stari treninzi ne potvrđuju novu formu.`
     };
   const planVdot = generator.planVdotNow({
     today,
@@ -198,7 +202,7 @@ export function previewRecalibration(plan: ResolvedPlan, today: string): Recalib
   });
   if (planVdot == null)
     return { ok: false, reason: 'Plan nema putanju forme sa kojom bi se izmerena forma poredila.' };
-  if (Math.abs(form - planVdot) < VDOT_PROPOSAL_THRESHOLD)
+  if (Math.abs(form - planVdot) < generator.recalibrationThreshold)
     return {
       ok: false,
       reason: `Izmerena forma (VDOT ${form.toFixed(1).replace('.', ',')}) i plan (VDOT ${planVdot.toFixed(1).replace('.', ',')}) se slažu — nema šta da se preračuna.`

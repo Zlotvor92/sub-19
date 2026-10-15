@@ -8,18 +8,16 @@ import { sessKm, sessDesc } from '../sessions/calc';
 import type { FartlekSession } from '../types';
 import { VDOT_PROPOSAL_MIN_MEASUREMENTS, VDOT_PROPOSAL_THRESHOLD } from '../constants/heuristics';
 import {
-  applyVdotProposal,
   classifyMeasurement,
   matchPlanRows,
   recomputeVdotChain,
   sessionClassFor,
   smoothVdot,
-  undoVdotAdjustments,
-  vdotProposal,
   zoneForPredLabel,
   type ProposalContext,
   type StoredPredRow
 } from './index';
+import { applyVdotProposal, undoVdotAdjustments, vdotProposal } from './proposal';
 
 /* parity: test/vdot-plan.test.mjs („Kada se predlog uopšte javlja", „Šta se NE sme dirati",
    „Generisan plan — i opis sesije prati novi tempo"), test/forma-vs-plan.test.mjs, test/revizija3.test.mjs

@@ -2,7 +2,8 @@
    polazne tačke kao pre (`planBaselineVdot`) — inače bi se prošlost lanca pomerila. */
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { adaptGeneratedPlan, planBaselineVdot, resolvePlan } from '../domain/plan';
+import { planBaselineVdot, resolvePlan } from '../domain/plan';
+import { adaptGeneratedPlan } from '../domain/plan/adapt';
 import { seedState, type PersistedState } from '../domain/state';
 import { generatePlan } from '../domain/training/generator/generatePlan';
 import type { PlanGenerationInput } from '../domain/training/types';

@@ -58,3 +58,9 @@ export { resolvePlan } from './plan/resolve';
 export { matchPlanRows } from './training/adaptation/matching';
 export { sessDesc, sessKm } from './training/sessions/calc';
 export { t3kVdot } from './training/test3k';
+/* Kapija rekalibracije (koliko merenja i kolika razlika forme i plana opravdavaju preračunavanje) pripada generatoru;
+   aplikacija je čita odavde umesto iz starog zajedničkog mehanizma. */
+export {
+  VDOT_PROPOSAL_MIN_MEASUREMENTS,
+  VDOT_PROPOSAL_THRESHOLD
+} from './training/constants/heuristics';

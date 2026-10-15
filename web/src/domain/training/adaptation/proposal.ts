@@ -12,7 +12,7 @@
 import { sessKind } from '../../plan/describe';
 import { setAlt } from '../../plan/edit';
 import { resolvePlan, weekOf } from '../../plan/resolve';
-import type { ResolvedDay, ResolvedPlan } from '../../plan/types';
+import type { ResolvedPlan } from '../../plan/types';
 import type { AltRecord, GenPlanState, LogEntry, StoredWeek, VdotRecord } from '../../state/types';
 import {
   VDOT_PROPOSAL_MIN_MEASUREMENTS,
@@ -28,6 +28,7 @@ import { isReferenceNote, referenceQualityNote } from '../generator/formPolicy';
 import { fitnessEvidence } from './evidence';
 import type { T3kRecord } from '../../state/types';
 import { dayZone, matchPlanRows, type StoredPredRow } from './matching';
+import { effectivePace } from './effectivePace';
 
 export interface ProposalContext {
   today: string;
@@ -69,15 +70,8 @@ export function planVdotNow(
   return null;
 }
 
-/** Ciljni tempo dana: ručna izmena ima prednost nad propisom iz PRED reda. */
-export function effectivePace(
-  alts: Readonly<Record<string, AltRecord>>,
-  d: Pick<ResolvedDay, 'id'>,
-  rowPace: number | null | undefined
-): number | null {
-  const a = alts[d.id];
-  return a && a.pace != null ? a.pace : (rowPace ?? null);
-}
+/* `effectivePace` je premešten doslovno u `./effectivePace.ts` (segment 5/5): prikaz ga koristi bez ostatka ovog modula. */
+export { effectivePace };
 
 export interface FormVsPlan {
   form: number;

@@ -29,6 +29,7 @@
     "src/test/fiveK/*.ts",
     "src/test/tenK/*.ts",
     "src/test/halfMarathon/*.ts",
-    "src/test/marathon/*.ts"
+    "src/test/marathon/*.ts",
+    "src/test/personal/*.ts"
   ]
 }

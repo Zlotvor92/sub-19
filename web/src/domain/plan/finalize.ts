@@ -6,7 +6,7 @@ import { profileFor } from '../training/distances';
 import { assessPreparation } from '../training/generator/athleteAssessment';
 import { deliveredWeekFocus } from '../training/generator/focus';
 import type { Day, Week } from '../training/types';
-import { describePrescription } from './describe';
+import { describePrescription } from './prescriptionText';
 import type { ReplanContext } from './future';
 import { resolvePlan } from './resolve';
 

@@ -221,7 +221,7 @@ export function adaptationBases(): GenerationCase[] {
   return [...qa, ...seeded, ...edge];
 }
 
-function buildContexts(api: Api, plan: Stored, today: string): Record<string, Ctx> {
+export function buildContexts(api: Api, plan: Stored, today: string): Record<string, Ctx> {
   const empty = (): Ctx => ({ log: {}, alts: {}, moves: {}, pred: {}, predLock: {} });
   const view = api.resolvePlan(plan.weeks, { alts: {}, moves: {} });
   const runs = view.dated.filter(

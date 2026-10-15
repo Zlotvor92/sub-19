@@ -8,7 +8,7 @@ import {
 } from '../../domain/format';
 import { parseIsoDate } from '../../domain/date';
 import type { ResolvedPlan } from '../../domain/plan';
-import { generatorForPlan } from '../../domain/generators/select';
+import { UNSUPPORTED_DISTANCE, generatorForPlan } from '../../domain/generators/select';
 import type { GenPlanState } from '../../domain/state';
 import { confirmAction } from '../../app/confirm';
 import { useTrainingStore } from '../../stores';
@@ -49,7 +49,12 @@ export async function changeGoalTime(
   const day = parseIsoDate(todayStr);
   if (!day) return false;
   const stamp = planStateStamp();
-  const r = generatorForPlan(genPlan).planWithNewGoal(genPlan, sec, day, replanContext());
+  const generator = generatorForPlan(genPlan);
+  if (!generator) {
+    window.alert(UNSUPPORTED_DISTANCE);
+    return false;
+  }
+  const r = generator.planWithNewGoal(genPlan, sec, day, replanContext());
   if ('error' in r) {
     window.alert(r.error);
     return false;

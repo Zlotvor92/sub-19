@@ -4,7 +4,8 @@
    - maraton (`marathon/plan/preparationDecision.ts`) → polumaraton ili 10K;
    - polumaraton (`halfMarathon/plan/preparationDecision.ts`) → 10K ili 5K;
    HM i maraton ovu funkciju dobijaju kao argument iz `select.ts` (generatori se međusobno ne uvoze). Stari
-   `domain/plan/preparationDecision.ts` je i dalje koristi za planove bez izdvojenog generatora (segment 5).
+   `domain/plan/preparationDecision.ts` je takođe uvozi, ali od segmenta 5/5 nema produkcionog potrošača (koriste ga
+   samo istorijski testovi i snimanje referenci; v. docs/generator-isolation/ARCHITECTURE.md).
    `null` znači da za distancu nema izdvojenog generatora (plan pravi pozivalac). */
 import { regenerateFuture as fiveKRegenerateFuture } from './fiveK';
 import { regenerateFuture as halfMarathonRegenerateFuture } from './halfMarathon';

@@ -14,12 +14,8 @@ import type { PlanGenerationInput } from '../types';
 import { isT3kId } from '../vdot/limits';
 import { ZONE_FOR_KIND } from '../vdot/zoneForKind';
 import {
-  applyVdotProposal,
   classifyMeasurement,
   currentVdot,
-  formVsPlan,
-  fitnessEvidence,
-  planVdotNow,
   matchPlanRows,
   dayZone,
   effectivePace,
@@ -27,11 +23,17 @@ import {
   type ProposalChange,
   recomputeVdotChain,
   sessionClassFor,
-  undoVdotAdjustments,
-  vdotProposal,
   type ProposalContext,
   type StoredPredRow
 } from './index';
+import {
+  applyVdotProposal,
+  formVsPlan,
+  planVdotNow,
+  undoVdotAdjustments,
+  vdotProposal
+} from './proposal';
+import { fitnessEvidence } from './evidence';
 
 /* parity: test/vdot-plan.test.mjs, test/forma-vs-plan.test.mjs, test/revizija3.test.mjs (lanac forme).
    Poredi `domain/training/adaptation` sa starim `preracunajVdotLog`, `recordVdot`, `formaVsPlan`,

@@ -10,7 +10,7 @@ import {
 } from '../../data/personalPlan';
 import { resolvePlan, weekOf } from '../plan';
 import type { LogEntry } from '../state';
-import { planVdotNow } from '../training/adaptation';
+import { planVdotNow } from '../training/adaptation/proposal';
 import {
   OLD_SEED_SIGNATURE,
   PERSONAL,

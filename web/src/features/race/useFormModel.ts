@@ -45,7 +45,9 @@ export function useFormModel() {
     const weekNo = (d: string): number | null =>
       plan.weeks.find((w) => d >= w.start && d <= addDays(w.start, 6))?.w ?? null;
     // Same evidence the plan's generator uses for recalibration and pace proposals.
-    const evidence = generatorForPlan(genPlan).fitnessEvidence({
+    const generator = generatorForPlan(genPlan);
+    if (!generator) return null;
+    const evidence = generator.fitnessEvidence({
       today,
       plan,
       pred: rows,

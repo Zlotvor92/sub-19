@@ -18,15 +18,11 @@ export {
   dayZone,
   type StoredPredRow
 } from './matching';
+/* Predlog/primena/poništavanje tempa i dokaz forme (`./proposal`, `./evidence`) su izvršne funkcije adaptacije: aplikacija
+   ih zove samo kroz generator distance plana (`domain/generators/select.ts`). Odavde se izvozi samo prikazni `effectivePace`
+   i tipovi razmene podataka. */
+export { effectivePace } from './effectivePace';
 export {
-  planVdotNow,
-  effectivePace,
-  formVsPlan,
-  vdotProposal,
-  applyVdotProposal,
-  undoVdotAdjustments,
-  refreshSessionPace,
-  restoreSessionPace,
   type ProposalContext,
   type FormVsPlan,
   type VdotProposal,
@@ -34,11 +30,4 @@ export {
   type ApplyResult
 } from './proposal';
 export { alignVdotDates } from './dates';
-export {
-  fitnessEvidence,
-  FITNESS_EVIDENCE_WINDOW_DAYS,
-  FITNESS_EVIDENCE_MIN_WORK_SEC,
-  type FitnessEvidence,
-  type FitnessEvidenceContext,
-  type EvidenceExclusion
-} from './evidence';
+export type { FitnessEvidence, FitnessEvidenceContext, EvidenceExclusion } from './evidence';

@@ -1,19 +1,21 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
+import { personalPlan } from '../personal';
 import type { GenPlanState } from '../state';
 import {
   FIVE_K_GENERATOR,
   HALF_MARATHON_GENERATOR,
   HALF_MARATHON_PREPARATION,
-  LEGACY_GENERATOR,
-  LEGACY_PREPARATION,
   MARATHON_GENERATOR,
   MARATHON_PREPARATION,
   TEN_K_GENERATOR,
+  generatorForDistance,
   generatorForPlan,
-  preparationForPlan
+  preparationForPlan,
+  productFor
 } from './select';
 
 /* ARHITEKTURA SVA ČETIRI GENERATORA (segment 4/5) — jedna provera preko 5K, 10K, HM i maratona, uz pojedinačne
@@ -23,11 +25,16 @@ import {
    2. nijedan generator ne uvozi drugi generator, aplikacioni izbor (`select.ts`/`handoff.ts`) ni stari mehanizam
       (`domain/training`, `domain/plan`), ni tipom;
    3. nijedan izvršni fajl generatora ne postoji van njegovog direktorijuma: generatori nemaju zajednički kod;
-   4. aplikacija (ekrani, store-ovi, servisi, ostali domen) ne poziva izvršne funkcije STAROG generisanja i adaptacije
-      mimo izbora generatora; tipovi su dozvoljeni. Jedini popisan izuzetak je prikazni `describePoint` (formatiranje
-      tačke odluke na ekranu, bez trenerske odluke) — inventar za segment 5;
-   5. svaka podržana distanca ide svom generatoru, uključujući odluku o pripremi; stari mehanizam ostaje samo za plan bez
-      podržane distance. */
+   4. aplikacija (ekrani, store-ovi, servisi, ostali domen, uključujući `select.ts`/`handoff.ts`) ne uvozi izvršne
+      funkcije STAROG generisanja i adaptacije; tipovi su dozvoljeni. Izuzetaka nema (segment 5/5);
+   5. svaka podržana distanca ide svom generatoru, uključujući odluku o pripremi; distanca bez generatora i plan bez
+      distance daju `null` (aplikacija to prikazuje), bez zamene drugim generatorom (segment 5/5);
+   6. (segment 5/5) iz produkcione ulazne tačke (`main.tsx`, uključujući lenje `import()` ekrane) nijedan izvršni modul
+      starog generisanja/adaptacije nije dostižan — ni kroz barel re-export (analiza po imenu);
+   7. (segment 5/5) izbor generatora (`select.ts`, `handoff.ts`) ne uvozi stari mehanizam ni tipom;
+   8. (segment 5/5) ZAMRZNUT INVENTAR: aplikacija sme iz `domain/training`/`domain/plan` da uvozi samo popisana imena
+      (format razmene, prikaz, merenje forme — `LEGACY_SHARED_ALLOWED`). Svaki novi uvoz trenerske funkcije ili konstante
+      iz starog koda u aplikaciju obara test i mora se svesno razvrstati. */
 
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const DOMAIN = join(SRC, 'domain');
@@ -121,10 +128,222 @@ const LEGACY_BARREL_NAMES: Readonly<Record<string, readonly string[]>> = {
     'fitnessEvidence'
   ]
 };
-/** Popisani prikazni izuzetak (segment 5): formatiranje tačke odluke, bez trenerske odluke. */
-const DISPLAY_EXCEPTIONS: Readonly<Record<string, readonly string[]>> = {
-  [join(SRC, 'features/plan/ExecutionAdjustment.tsx')]: ['describePoint']
+/** Prikazni izuzeci: od segmenta 5/5 nema ih (`describePoint` je prebačen u ekran, ime distance daje generator). */
+const DISPLAY_EXCEPTIONS: Readonly<Record<string, readonly string[]>> = {};
+
+/* Inventar zajedničkog koda koji aplikacija i dalje koristi iz `domain/training`/`domain/plan` (stanje segmenta 5/5,
+   v. docs/generator-isolation/ARCHITECTURE.md). Kategorije:
+   F = format razmene / tehnički upis (razrešavanje plana, ručne izmene, revizije, brisanje, provere ID-jeva);
+   P = prikaz (oznake, faze, tekst run/walk);
+   M = merenje forme i fiziološka računica (VDOT, test 3 km, lanac forme, uparivanje redova, prikazni tempo);
+   S = zajednička trenerska smernica van generatora (ISTA za sve distance) — evidentirana kao preostala prepreka. */
+const LEGACY_SHARED_ALLOWED: Readonly<Record<string, readonly string[]>> = {
+  'plan/index.ts': [
+    'resolvePlan', // F
+    'weekOf', // F
+    'swapDays', // F
+    'undoWeekMoves', // F
+    'setAlt', // F
+    'clearAlt', // F
+    'hasGenPlanData', // F
+    'purgeGenPlanData', // F
+    'ALT_HOLD_MS', // F (uređivač ručne izmene)
+    'ALT_TYPES', // F
+    'RACE_DISTANCES', // F
+    'chooseRaceKm', // F
+    'chooseType', // F
+    'holdType', // F
+    'initialAltDraft', // F
+    'paceFromDraftDesc', // F
+    'tagName', // P
+    'sessKind', // P
+    'dayLabel', // P
+    'weekPhase', // P
+    'planBaselineVdot', // M (polazna forma iz `meta`)
+    'rpeTarget' // S (ciljni napor po tipu dana)
+  ],
+  'plan/resolve.ts': ['resolvePlan', 'weekOf'], // F
+  'plan/edit.ts': ['swapDays', 'setAlt'], // F
+  'plan/versions.ts': ['getPlanRevisions', 'recordPlanRevision'], // F
+  'plan/preparation.ts': ['preparationSummary'], // P (sažetak `meta.preparation` koju je zapisao generator)
+  'plan/baseline.ts': ['planBaselineVdot'], // M
+  'plan/describe.ts': ['sessKind', 'weekPhase', 'rpeTarget'], // P, P, S
+  'training/adaptation/index.ts': [
+    'currentVdot', // M
+    'recomputeVdotChain', // M
+    'sessionClassFor', // M
+    'classifyMeasurement', // M
+    'predRowsForDay', // M
+    'matchWeekRows', // M
+    'alignVdotDates', // M
+    'effectivePace' // P (tempo dana posle ručne/automatske izmene)
+  ],
+  'training/constants/product.ts': ['T3K_DIST_M', 'T3K_SEC_MIN'], // M
+  'training/generator/runWalk.ts': ['runWalkText'], // P
+  'training/prediction/summary.ts': ['predictionSummary'], // M
+  'training/sessions/calc.ts': ['sessQKm', 'RECOVERY_JOG'], // P (zbir za pregled promene), S (izvoz na sat)
+  'training/test3k/index.ts': [
+    't3kSeries',
+    't3kVdot',
+    't3kRows',
+    'addT3k',
+    'removeT3k',
+    'upsertMeasurement'
+  ], // M
+  'training/vdot/calculateVDOT.ts': ['vdotFromRace'], // M
+  'training/vdot/limits.ts': ['isT3kId', 't3kPossible', 'vdotPossible', 't3kSlowest'], // F/M
+  'training/vdot/paceForZone.ts': ['paceForZone'], // M; S u `useEasyPace`, vremenu i izvozu na sat
+  'training/vdot/racePrediction.ts': ['raceTimeForVdot'] // M
 };
+
+/** Fajlovi starog koda koje produkcija (`main.tsx`) dostiže posle segmenta 5/5 — nijedan nije generisanje ni adaptacija. */
+const PRODUCTION_LEGACY_FILES: readonly string[] = [
+  'plan/altEditor.ts',
+  'plan/baseline.ts',
+  'plan/describe.ts',
+  'plan/edit.ts',
+  'plan/index.ts',
+  'plan/preparation.ts',
+  'plan/purge.ts',
+  'plan/resolve.ts',
+  'plan/versions.ts',
+  'training/adaptation/chain.ts',
+  'training/adaptation/dates.ts',
+  'training/adaptation/effectivePace.ts',
+  'training/adaptation/index.ts',
+  'training/adaptation/matching.ts',
+  'training/adaptation/measure.ts',
+  'training/constants/evidence.ts',
+  'training/constants/heuristics.ts',
+  'training/constants/product.ts',
+  'training/generator/runWalk.ts',
+  'training/prediction/summary.ts',
+  'training/sessions/calc.ts',
+  'training/test3k/index.ts',
+  'training/vdot/calculateVDOT.ts',
+  'training/vdot/limits.ts',
+  'training/vdot/paceForZone.ts',
+  'training/vdot/physiology.ts',
+  'training/vdot/racePrediction.ts',
+  'training/vdot/vdotFromPace.ts',
+  'training/vdot/zoneForKind.ts'
+];
+
+/* ------------------------------------------------------------------ produkcioni graf (TypeScript parser) */
+
+interface RuntimeEdge {
+  to: string | null;
+  names: string[];
+  reexport: boolean;
+  star: boolean;
+  map: Record<string, string>;
+}
+function resolveSpec(from: string, spec: string): string | null {
+  if (!spec.startsWith('.')) return null;
+  const base = resolve(dirname(from), spec);
+  for (const c of [base, `${base}.ts`, `${base}.tsx`, join(base, 'index.ts')])
+    if (existsSync(c) && statSync(c).isFile()) return c;
+  return `UNRESOLVED:${base}`;
+}
+const parsed = new Map<string, { edges: RuntimeEdge[]; barrel: boolean }>();
+/** Izvršne (ne samo tipske) veze fajla: `import`, `export … from`, dinamički `import()`. */
+function runtimeEdges(file: string): { edges: RuntimeEdge[]; barrel: boolean } {
+  const hit = parsed.get(file);
+  if (hit) return hit;
+  const sf = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+  const out: RuntimeEdge[] = [];
+  let barrel = true;
+  for (const n of sf.statements) {
+    if (ts.isImportDeclaration(n)) {
+      barrel = false;
+      const c = n.importClause;
+      if (c?.isTypeOnly) continue;
+      let names = ['*'];
+      if (c?.namedBindings && ts.isNamedImports(c.namedBindings)) {
+        names = c.namedBindings.elements
+          .filter((e) => !e.isTypeOnly)
+          .map((e) => (e.propertyName ?? e.name).text);
+        if (!names.length && !c.name) continue;
+      }
+      if (c?.name) names.push('default');
+      out.push({
+        to: resolveSpec(file, (n.moduleSpecifier as ts.StringLiteral).text),
+        names,
+        reexport: false,
+        star: false,
+        map: {}
+      });
+    } else if (ts.isExportDeclaration(n) && n.moduleSpecifier) {
+      if (n.isTypeOnly) continue;
+      const to = resolveSpec(file, (n.moduleSpecifier as ts.StringLiteral).text);
+      if (!n.exportClause) out.push({ to, names: ['*'], reexport: true, star: true, map: {} });
+      else if (ts.isNamedExports(n.exportClause)) {
+        const els = n.exportClause.elements.filter((e) => !e.isTypeOnly);
+        if (els.length)
+          out.push({
+            to,
+            names: els.map((e) => (e.propertyName ?? e.name).text),
+            reexport: true,
+            star: false,
+            map: Object.fromEntries(els.map((e) => [e.name.text, (e.propertyName ?? e.name).text]))
+          });
+      }
+    } else if (!ts.isInterfaceDeclaration(n) && !ts.isTypeAliasDeclaration(n)) barrel = false;
+  }
+  const visit = (n: ts.Node): void => {
+    if (
+      ts.isCallExpression(n) &&
+      n.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      n.arguments[0] &&
+      ts.isStringLiteral(n.arguments[0])
+    ) {
+      barrel = false;
+      out.push({
+        to: resolveSpec(file, n.arguments[0].text),
+        names: ['*'],
+        reexport: false,
+        star: false,
+        map: {}
+      });
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  const value = { edges: out, barrel };
+  parsed.set(file, value);
+  return value;
+}
+
+/** Dostižni fajlovi iz ulaza; barel fajl (samo re-export) se prati samo za tražena imena. */
+function reachable(entry: string): Map<string, Set<string>> {
+  const seen = new Map<string, Set<string>>();
+  const stack: [string, string[]][] = [[entry, ['*']]];
+  while (stack.length) {
+    const [file, names] = stack.pop()!;
+    const prev = seen.get(file);
+    const fresh = names.filter((n) => !prev?.has(n) && !prev?.has('*'));
+    if (prev && !fresh.length) continue;
+    const set = prev ?? new Set<string>();
+    fresh.forEach((n) => set.add(n));
+    seen.set(file, set);
+    const { edges: es, barrel } = runtimeEdges(file);
+    for (const e of es) {
+      if (!e.to || e.to.startsWith('UNRESOLVED')) continue;
+      if (!barrel) {
+        if (!prev) stack.push([e.to, e.names]);
+        continue;
+      }
+      if (e.star) stack.push([e.to, fresh]);
+      else {
+        const want = fresh.includes('*')
+          ? Object.values(e.map)
+          : fresh.filter((n) => e.map[n]).map((n) => e.map[n]!);
+        if (want.length) stack.push([e.to, want]);
+      }
+    }
+  }
+  return seen;
+}
 
 const files = walk(SRC);
 const inside = (f: string, root: string): boolean => f.startsWith(root + '/');
@@ -206,8 +425,8 @@ describe('arhitektura: četiri nezavisna generatora', () => {
     const out: string[] = [];
     for (const file of files.keys()) {
       if (isTest(file)) continue;
-      if (LEGACY.some((l) => inside(file, l))) continue; // stari mehanizam sam sebe (segment 5)
-      if (inside(file, join(DOMAIN, 'generators'))) continue; // select.ts: LEGACY_* za plan bez distance
+      if (LEGACY.some((l) => inside(file, l))) continue; // stari mehanizam sam sebe
+      if (GENERATORS.some((g) => inside(file, g))) continue; // generatori: pravila 2–3
       for (const e of edges(files, file)) {
         if (!e.to || e.typeOnly) continue;
         const runtime = e.names.filter((n) => !n.type).map((n) => n.name);
@@ -228,7 +447,7 @@ describe('arhitektura: četiri nezavisna generatora', () => {
     expect(out).toEqual([]);
   });
 
-  it('svaka podržana distanca ide svom generatoru (i odluka o pripremi); stari samo bez podržane distance', () => {
+  it('svaka podržana distanca ide svom generatoru (i odluka o pripremi); ostalo eksplicitno nema generator', () => {
     const plan = (raceDistM: number): GenPlanState =>
       ({ weeks: [], pred: [], meta: { raceDistM } }) as never;
     expect(generatorForPlan(plan(5000))).toBe(FIVE_K_GENERATOR);
@@ -237,8 +456,76 @@ describe('arhitektura: četiri nezavisna generatora', () => {
     expect(generatorForPlan(plan(42195))).toBe(MARATHON_GENERATOR);
     expect(preparationForPlan(plan(21097.5))).toBe(HALF_MARATHON_PREPARATION);
     expect(preparationForPlan(plan(42195))).toBe(MARATHON_PREPARATION);
-    expect(generatorForPlan(null)).toBe(LEGACY_GENERATOR);
-    expect(generatorForPlan(plan(7000))).toBe(LEGACY_GENERATOR);
-    expect(preparationForPlan(null)).toBe(LEGACY_PREPARATION);
+    // Ugrađeni lični plan (aktivni plan kad je `genPlan === null`) je polumaraton → HM generator.
+    expect(generatorForPlan(personalPlan(48))).toBe(HALF_MARATHON_GENERATOR);
+    // Nepodržano: bez zamene drugim generatorom.
+    for (const d of [7000, 3000, 21097, 42194, 50000]) {
+      expect(generatorForPlan(plan(d))).toBeNull();
+      expect(generatorForDistance(d)).toBeNull();
+      expect(productFor(d)).toBeUndefined();
+    }
+    expect(generatorForPlan(null)).toBeNull();
+    expect(preparationForPlan(null)).toBeNull();
+    expect(preparationForPlan(plan(5000))).toBeNull();
+    expect(preparationForPlan(plan(10000))).toBeNull();
+  });
+
+  it('produkcija (main.tsx, uključujući lenje ekrane) ne dostiže izvršne module starog generisanja/adaptacije', () => {
+    const seen = reachable(join(SRC, 'main.tsx'));
+    expect(seen.size).toBeGreaterThan(400);
+    // Lenji ekrani su zaista praćeni (dinamički `import()`).
+    expect(seen.has(join(SRC, 'features/plan/AdjustPlan.tsx'))).toBe(true);
+    const bad = LEGACY_EXECUTION_MODULES.filter((f) => seen.has(f)).map((f) => relative(SRC, f));
+    expect(bad).toEqual([]);
+    // Zamrznut skup: iz starog koda produkcija dostiže TAČNO ove fajlove (format, prikaz, merenje forme).
+    const legacyReached = [...seen.keys()]
+      .filter((f) => LEGACY.some((l) => inside(f, l)))
+      .map((f) => relative(DOMAIN, f))
+      .sort();
+    expect(legacyReached).toEqual([...PRODUCTION_LEGACY_FILES].sort());
+    // Ni stari profili distanci ni stari generator kroz barel `domain/plan`.
+    for (const f of [
+      'training/generator/generatePlan.ts',
+      'plan/replan.ts',
+      'plan/adapt.ts',
+      'training/distances/index.ts',
+      'training/constants/distances.ts',
+      'training/adaptation/proposal.ts',
+      'training/adaptation/evidence.ts'
+    ])
+      expect(seen.has(join(DOMAIN, f)), f).toBe(false);
+  });
+
+  it('izbor generatora (select.ts, handoff.ts) ne uvozi stari mehanizam, ni tipom', () => {
+    const out: string[] = [];
+    for (const f of ['generators/select.ts', 'generators/handoff.ts'].map((x) => join(DOMAIN, x)))
+      for (const e of edges(files, f))
+        if (e.to && LEGACY.some((l) => inside(e.to!, l)))
+          out.push(`${relative(SRC, f)} → ${relative(SRC, e.to)}`);
+    expect(out).toEqual([]);
+  });
+
+  it('zamrznut inventar: aplikacija iz starog koda uvozi samo popisana zajednička imena', () => {
+    const out: string[] = [];
+    const used = new Set<string>();
+    for (const file of files.keys()) {
+      if (isTest(file) || LEGACY.some((l) => inside(file, l))) continue;
+      if (GENERATORS.some((g) => inside(file, g))) continue;
+      for (const e of runtimeEdges(file).edges) {
+        if (!e.to || !LEGACY.some((l) => inside(e.to!, l))) continue;
+        const mod = relative(DOMAIN, e.to);
+        const allowed = LEGACY_SHARED_ALLOWED[mod] ?? [];
+        for (const n of e.names) {
+          used.add(`${mod}:${n}`);
+          if (!allowed.includes(n)) out.push(`${relative(SRC, file)}: ${n} ← ${mod}`);
+        }
+      }
+    }
+    expect(out).toEqual([]);
+    // Inventar ne sme da zastari: svaka popisana stavka se zaista koristi.
+    const stale = Object.entries(LEGACY_SHARED_ALLOWED).flatMap(([mod, names]) =>
+      names.filter((n) => !used.has(`${mod}:${n}`)).map((n) => `${mod}:${n}`)
+    );
+    expect(stale).toEqual([]);
   });
 });

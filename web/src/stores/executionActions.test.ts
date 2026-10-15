@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate } from '../domain/date';
-import { adaptGeneratedPlan, resolvePlan } from '../domain/plan';
+import { resolvePlan } from '../domain/plan';
+import { adaptGeneratedPlan } from '../domain/plan/adapt';
 import { getPlanRevisions } from '../domain/plan/versions';
 import { migrateState, seedState, type PersistedState } from '../domain/state';
 import { generatePlan } from '../domain/training/generator/generatePlan';

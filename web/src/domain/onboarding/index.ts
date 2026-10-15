@@ -172,7 +172,7 @@ export function weeksHint(w: WizardState, today: string): WeeksHint {
   if (!w.raceDate) return { kind: 'none' };
   const wks = weeksToRace(w.raceDate, today);
   if (wks == null) return { kind: 'none' };
-  const product = productFor(w.raceDist) ?? productFor(5000);
+  const product = productFor(w.raceDist);
   if (!product) return { kind: 'none' };
   if (wks < 1) return { kind: 'this-week' };
   if (wks < product.minWeeks)
@@ -205,8 +205,8 @@ export function outlook(w: WizardState, today: string): Outlook {
   const weeks = weeksToRace(w.raceDate, today);
   if (pbSec == null || !pbSanityOk(w) || weeks == null) return null;
   const product = productFor(w.raceDist);
-  if (!product) return null;
   const generator = generatorForDistance(w.raceDist);
+  if (!product || !generator) return null;
   const pb = { distM: w.pbDist, sec: pbSec };
   const rows = INTENSITIES.map(([k, label]) => {
     const a = generator.assess(pb, weeks, k, null, w.raceDist);
@@ -279,7 +279,9 @@ export function wizardWarnings(w: WizardState, today: string): string[] | null {
   const input = toGenerationInput(w, today);
   if (!input) return null;
   try {
-    const p = generatorForDistance(input.raceDistM).generatePlan(input);
+    const generator = generatorForDistance(input.raceDistM);
+    if (!generator) return null;
+    const p = generator.generatePlan(input);
     if ('error' in p) return null;
     return p.meta.dayWarnings || [];
   } catch {

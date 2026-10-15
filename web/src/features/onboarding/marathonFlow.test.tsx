@@ -21,6 +21,7 @@ import {
   storedPreparationDecision
 } from '../../stores/executionActions';
 import { useUIStore } from '../../stores/uiStore';
+import { UNSUPPORTED_DISTANCE } from '../../domain/generators/select';
 import { changeGoalTime } from '../plan/planActions';
 import PlanPage from '../plan/index';
 import { Wizard } from './Wizard';
@@ -321,7 +322,10 @@ describe('maraton: unos → generisanje → prikaz → čuvanje → učitavanje 
   );
 
   /* Kontrola: stari mehanizam ostaje samo za plan bez podržane distance (7000 m); brojač mora da ga vidi. */
-  it('plan bez podržane distance i dalje ide kroz stari mehanizam (kontrola brojača)', () => {
+  /* Segment 5/5: stari mehanizam više nije rezerva ni za plan bez podržane distance. Takav plan se EKSPLICITNO odbija
+     (poruka `UNSUPPORTED_DISTANCE`), bez poziva starog mehanizma i bez zamene drugim generatorom. Da brojač zaista radi,
+     kontrola na kraju direktno poziva obmotan stari modul. */
+  it('plan bez podržane distance se eksplicitno odbija, bez starog mehanizma (kontrola brojača)', async () => {
     const plan = m.adaptGeneratedPlan(
       m.generatePlan({
         startDate: TODAY,
@@ -344,10 +348,21 @@ describe('maraton: unos → generisanje → prikaz → čuvanje → učitavanje 
     });
     legacyCalls.length = 0;
     const t = useTrainingStore.getState();
-    executionModel(resolvePlan(t.genPlan!.weeks, replanContext()), LATER);
+    const view = resolvePlan(t.genPlan!.weeks, replanContext());
+    expect(() => executionModel(view, LATER)).toThrow(UNSUPPORTED_DISTANCE);
+    expect(previewExecution(view, LATER, {})).toEqual({ ok: false, reason: UNSUPPORTED_DISTANCE });
+    expect(legacyCalls).toEqual([]);
+    // Kontrola brojača: direktan poziv obmotanog starog modula se beleži.
+    const legacy = await import('../../domain/plan/executionAdjustment');
+    legacy.executionModel(view, LATER, replanContext());
     expect(legacyCalls).toContain('executionAdjustment.executionModel');
-    // Brojač obuhvata i staru odluku o pripremi (plan bez podržane distance je i dalje koristi).
-    storedPreparationDecision(LATER);
+    // Odluka o pripremi: plan bez podržane distance je nema (`null`), bez poziva stare odluke.
+    legacyCalls.length = 0;
+    expect(storedPreparationDecision(LATER)).toBeNull();
+    expect(legacyCalls).toEqual([]);
+    // Kontrola brojača za staru odluku: direktan poziv se beleži.
+    const legacyDecision = await import('../../domain/plan/preparationDecision');
+    legacyDecision.isLimitedLongPreparation(t.genPlan!.meta);
     expect(legacyCalls).toContain('preparationDecision.isLimitedLongPreparation');
   });
 });

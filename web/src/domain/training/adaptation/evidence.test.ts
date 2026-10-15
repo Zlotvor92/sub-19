@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { adaptGeneratedPlan, resolvePlan } from '../../plan';
+import { resolvePlan } from '../../plan';
+import { adaptGeneratedPlan } from '../../plan/adapt';
 import type { LogEntry, VdotRecord } from '../../state';
 import { generatePlan } from '../generator/generatePlan';
 import { predRow } from '../prediction';
@@ -10,12 +11,12 @@ import { t3kVdot } from '../test3k';
 import {
   classifyMeasurement,
   dayZone,
-  fitnessEvidence,
   matchPlanRows,
   sessionClassFor,
-  vdotProposal,
   type ProposalContext
 } from './index';
+import { fitnessEvidence } from './evidence';
+import { vdotProposal } from './proposal';
 import { enterWorkPace, recordAutoPace, type WorkPaceState } from '../../day/workPace';
 
 const generated = adaptGeneratedPlan(

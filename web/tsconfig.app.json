@@ -34,6 +34,7 @@
     "src/test/fiveK/**",
     "src/test/tenK/**",
     "src/test/halfMarathon/**",
-    "src/test/marathon/**"
+    "src/test/marathon/**",
+    "src/test/personal/**"
   ]
 }

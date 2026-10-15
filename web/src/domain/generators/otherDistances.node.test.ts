@@ -7,8 +7,6 @@ import {
   FIVE_K_GENERATOR,
   HALF_MARATHON_GENERATOR,
   HALF_MARATHON_PREPARATION,
-  LEGACY_GENERATOR,
-  LEGACY_PREPARATION,
   MARATHON_GENERATOR,
   MARATHON_PREPARATION,
   TEN_K_GENERATOR,
@@ -27,42 +25,41 @@ import {
    generatoru kroz `handoff.ts`. Od segmenta 4/5 i maratonski deo reference (generisanje, adaptacija, odluka o pripremi)
    proverava izdvojeni maratonski generator; referenca nije menjana. */
 
+const must = <T>(value: T | null, what: string): T => {
+  if (!value) throw new Error(`nema generatora za ${what}`);
+  return value;
+};
 const byInput = (input: unknown) =>
-  generatorForDistance((input as { raceDistM?: unknown } | null)?.raceDistM);
-const byPlan = (plan: unknown) => generatorForPlan(plan as GenPlanState);
+  must(generatorForDistance((input as { raceDistM?: unknown } | null)?.raceDistM), 'ulaz');
+const byPlan = (plan: unknown) => must(generatorForPlan(plan as GenPlanState), 'plan');
+/* Odluka o pripremi postoji samo za HM i maraton; za 5K/10K store ne nudi odluku (`preparationForPlan` → `null`), što je
+   ono što je stari mehanizam za njih uvek odlučivao (`isLimitedLongPreparation` = false). */
+const prep = (plan: unknown) => must(preparationForPlan(plan as GenPlanState), 'odluku');
 
 /** Odluka o pripremi ide kroz `preparationForPlan` (HM → HM generator, maraton → maratonski generator), kao u store-u. */
 const routedDecisions = {
   basisFromPlan: ((current: unknown, today: unknown) =>
-    preparationForPlan(current as GenPlanState).basisFromPlan(
-      current as never,
-      today as never
-    )) as never,
+    prep(current).basisFromPlan(current as never, today as never)) as never,
   preparationDecision: ((current: unknown, ...rest: unknown[]) =>
-    (
-      preparationForPlan(current as GenPlanState).preparationDecision as (
-        ...x: unknown[]
-      ) => unknown
-    )(current, ...rest)) as never,
+    (prep(current).preparationDecision as (...x: unknown[]) => unknown)(current, ...rest)) as never,
   buildPreparationChoice: ((current: unknown, ...rest: unknown[]) =>
-    (
-      preparationForPlan(current as GenPlanState).buildPreparationChoice as (
-        ...x: unknown[]
-      ) => unknown
-    )(current, ...rest)) as never,
+    (prep(current).buildPreparationChoice as (...x: unknown[]) => unknown)(
+      current,
+      ...rest
+    )) as never,
   isLimitedLongPreparation: ((meta: { raceDistM?: unknown } | undefined) =>
-    preparationForPlan({ weeks: [], pred: [], meta } as never).isLimitedLongPreparation(
+    preparationForPlan({ weeks: [], pred: [], meta } as never)?.isLimitedLongPreparation(
       meta as never
-    )) as never
+    ) ?? false) as never
 };
 
 /** Svaki poziv ide kroz `select.ts`; pomoćne funkcije harnesa koje nisu ugovor generatora ostaju stare. */
 const routed: GeneratorApi = {
   ...legacyApi,
   generatePlan: (input: unknown) => byInput(input).generatePlan(input as never),
-  assess: (...a: Parameters<GeneratorApi['assess']>) => generatorForDistance(a[4]).assess(...a),
+  assess: (...a: Parameters<GeneratorApi['assess']>) => byInput({ raceDistM: a[4] }).assess(...a),
   adaptGeneratedPlan: ((gen: { meta?: { raceDistM?: unknown } }) =>
-    generatorForDistance(gen.meta?.raceDistM).adaptGeneratedPlan(gen as never)) as never,
+    byInput(gen.meta).adaptGeneratedPlan(gen as never)) as never,
   executionModel: legacyApi.executionModel,
   buildExecutionAdjustment: ((current: unknown, ...rest: unknown[]) =>
     (byPlan(current).buildExecutionAdjustment as (...x: unknown[]) => unknown)(
@@ -118,7 +115,9 @@ describe('izbor generatora', () => {
      izbora iz segmenta 1, ne trenerski rezultat). */
   /* Segment 3/5: polumaraton je izdvojen, pa 21097.5 više ne ide starom mehanizmu (pravilo izbora, ne trenerski rezultat). */
   /* Segment 4/5: maraton je izdvojen, pa 42195 više ne ide starom mehanizmu (pravilo izbora, ne trenerski rezultat). */
-  it('5K (i ulaz bez distance), 10K, HM i maraton idu izdvojenim generatorima, ostalo starom mehanizmu', () => {
+  /* Segment 5/5: stari mehanizam više nije rezerva. Distanca bez generatora daje `null` (aplikacija to prikazuje), nema
+     plana → `null`; 5K/10K nemaju odluku o pripremi (`null`). */
+  it('5K (i ulaz bez distance), 10K, HM i maraton idu izdvojenim generatorima; ostalo nema generator', () => {
     expect(generatorIdFor(5000)).toBe('5k');
     expect(generatorIdFor(undefined)).toBe('5k');
     expect(generatorIdFor(0)).toBe('5k');
@@ -126,14 +125,18 @@ describe('izbor generatora', () => {
     expect(generatorIdFor(21097.5)).toBe('hm');
     expect(generatorIdFor(42195)).toBe('marathon');
     for (const d of [7000, 10000.5, 21097, 21098, 42194, 42195.5])
-      expect(generatorIdFor(d)).toBe('legacy');
+      expect(generatorIdFor(d)).toBeNull();
+    for (const d of [7000, 21097, 42194]) {
+      expect(generatorForDistance(d)).toBeNull();
+      expect(generatorForPlan({ weeks: [], pred: [], meta: { raceDistM: d } } as never)).toBeNull();
+    }
     expect(generatorForPlan({ weeks: [], pred: [], meta: { raceDistM: 10000 } } as never)).toBe(
       TEN_K_GENERATOR
     );
     expect(generatorForPlan({ weeks: [], pred: [], ulaz: { raceDistM: 10000 } })).toBe(
       TEN_K_GENERATOR
     );
-    expect(generatorForPlan(null)).toBe(LEGACY_GENERATOR);
+    expect(generatorForPlan(null)).toBeNull();
     expect(generatorForPlan({ weeks: [], pred: [], meta: { raceDistM: 5000 } } as never)).toBe(
       FIVE_K_GENERATOR
     );
@@ -152,7 +155,7 @@ describe('izbor generatora', () => {
     expect(generatorForPlan({ weeks: [], pred: [], ulaz: { raceDistM: 42195 } })).toBe(
       MARATHON_GENERATOR
     );
-    // Odluka o pripremi: HM plan → HM generator, maraton → maratonski; 5K/10K i lični plan → stari mehanizam (kao pre).
+    // Odluka o pripremi: HM plan → HM generator, maraton → maratonski; 5K/10K je nemaju (null).
     expect(preparationForPlan({ weeks: [], pred: [], meta: { raceDistM: 21097.5 } } as never)).toBe(
       HALF_MARATHON_PREPARATION
     );
@@ -160,10 +163,8 @@ describe('izbor generatora', () => {
       MARATHON_PREPARATION
     );
     for (const raceDistM of [10000, 5000])
-      expect(preparationForPlan({ weeks: [], pred: [], meta: { raceDistM } } as never)).toBe(
-        LEGACY_PREPARATION
-      );
-    expect(preparationForPlan(null)).toBe(LEGACY_PREPARATION);
+      expect(preparationForPlan({ weeks: [], pred: [], meta: { raceDistM } } as never)).toBeNull();
+    expect(preparationForPlan(null)).toBeNull();
   });
 });
 

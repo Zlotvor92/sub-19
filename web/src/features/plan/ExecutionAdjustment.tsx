@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Section } from '../../components/ui/primitives';
-import { fmtDayMonth, fmtDayMonthYear } from '../../domain/format';
+import { fmtClock, fmtDayMonth, fmtDayMonthYear } from '../../domain/format';
+import { productFor } from '../../domain/generators/select';
 import type { ResolvedPlan } from '../../domain/plan';
 import type { RunWalkMode } from '../../domain/plan/runWalkAdjustment';
 import { getPlanRevisions } from '../../domain/plan/versions';
-import {
-  describePoint,
-  type PreparationDecision,
-  type PreparationOption
+import type {
+  DecisionPoint,
+  PreparationDecision,
+  PreparationOption
 } from '../../domain/plan/preparationDecision';
 import type { ExecutionAdjustmentOptions } from '../../domain/plan/executionAdjustment';
 import { useRecoveryStore, useTrainingStore } from '../../stores';
@@ -31,6 +32,10 @@ const COVERAGE: Record<PreparationOption['coverage'], string> = {
   insufficient: 'nije puna priprema'
 };
 type ReadyPreview = Extract<PlanChangePreview, { ok: true }>;
+
+/** Prikaz tačke odluke (datum · distanca · cilj); ime distance daje generator te distance. Samo formatiranje. */
+const describePoint = (p: DecisionPoint): string =>
+  `${fmtDayMonthYear(p.raceDate)} · ${productFor(p.raceDistM)?.name ?? `${p.raceDistM / 1000} km`} · ${p.goalSec ? `cilj ${fmtClock(p.goalSec)}` : 'bez vremenskog cilja'}`;
 
 /** A proposal is a preview until the runner explicitly applies it. Missing logs never confirm a pause. */
 export function ExecutionAdjustment({ plan, today }: { plan: ResolvedPlan; today: string }) {

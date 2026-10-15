@@ -7,6 +7,8 @@ import { useIcuConnected, useResolvedPlan, useTrainingStore } from '../../stores
 import { useIsOwner } from '../../stores/owner';
 import { applyProposal as applyInjury } from '../../stores/recoveryActions';
 import { applyProposal as applyPace, undoAdjustments } from '../../stores/raceActions';
+import { activePlanGenerator } from '../../stores/executionActions';
+import { UNSUPPORTED_DISTANCE } from '../../domain/generators/select';
 import { useUIStore } from '../../stores/uiStore';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
 import { backToOwnPlan, recalibratePlan, startNewPlan } from './planActions';
@@ -137,7 +139,13 @@ export function AdjustPlan() {
         <p className="empty">Trenutno nema predloga za prilagođavanje plana.</p>
       ) : null}
 
-      <ExecutionAdjustment plan={plan} today={todayStr} />
+      {activePlanGenerator() ? (
+        <ExecutionAdjustment plan={plan} today={todayStr} />
+      ) : (
+        <Section title="Prilagođavanje prema izvršenju">
+          <p className="note-src">{UNSUPPORTED_DISTANCE}</p>
+        </Section>
+      )}
 
       <Section title="Plan">
         <div className="rows">
