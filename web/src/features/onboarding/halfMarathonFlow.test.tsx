@@ -317,8 +317,9 @@ describe('polumaraton: unos → generisanje → prikaz → čuvanje → učitava
   });
 
   /* Segment 2/5: 10K je izdvojen, pa je kontrola brojača prešla na polumaraton; segment 3/5: izdvojen je i polumaraton,
-     pa kontrola koristi maraton (i dalje stari mehanizam). */
-  it('maraton i dalje ide kroz stari mehanizam (kontrola brojača)', () => {
+     pa kontrola koristi maraton (i dalje stari mehanizam). Segment 4/5: izdvojen je i maraton, pa stari mehanizam ostaje
+     samo za plan bez podržane distance; kontrola zato koristi takav plan (7000 m) i dokazuje da brojač radi. */
+  it('plan bez podržane distance i dalje ide kroz stari mehanizam (kontrola brojača)', () => {
     const plan = hm.adaptGeneratedPlan(
       hm.generatePlan({
         startDate: TODAY,
@@ -331,19 +332,19 @@ describe('polumaraton: unos → generisanje → prikaz → čuvanje → učitava
         intensity: 'std'
       } as never)
     )!;
-    // Isti oblik plana, ali deklarisan kao maraton: izbor generatora mora poslati stari mehanizam.
+    // Isti oblik plana, ali deklarisan sa nepodržanom distancom: izbor generatora mora poslati stari mehanizam.
     useTrainingStore.getState().patch({
       genPlan: {
         ...plan,
-        meta: { ...plan.meta!, raceDistM: 42195 },
-        ulaz: { raceDistM: 42195 }
+        meta: { ...plan.meta!, raceDistM: 7000 },
+        ulaz: { raceDistM: 7000 }
       }
     });
     legacyCalls.length = 0;
     const t = useTrainingStore.getState();
     executionModel(resolvePlan(t.genPlan!.weeks, replanContext()), LATER);
     expect(legacyCalls).toContain('executionAdjustment.executionModel');
-    // Brojač obuhvata i staru odluku o pripremi (maraton je i dalje koristi).
+    // Brojač obuhvata i staru odluku o pripremi (plan bez podržane distance je i dalje koristi).
     storedPreparationDecision(LATER);
     expect(legacyCalls).toContain('preparationDecision.isLimitedLongPreparation');
   });

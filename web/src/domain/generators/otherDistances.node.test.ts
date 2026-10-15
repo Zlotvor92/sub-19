@@ -9,6 +9,8 @@ import {
   HALF_MARATHON_PREPARATION,
   LEGACY_GENERATOR,
   LEGACY_PREPARATION,
+  MARATHON_GENERATOR,
+  MARATHON_PREPARATION,
   TEN_K_GENERATOR,
   generatorForDistance,
   generatorForPlan,
@@ -22,13 +24,14 @@ import {
    opcije „kraća distanca: 5K" i „kraća distanca: 10K", koje sada prave izdvojeni 5K i 10K generator (`handoff.ts`); i
    njihov rezultat mora biti identičan. Od segmenta 3/5 HM deo reference (generisanje, adaptacija i odluka o pripremi —
    `preparationForPlan`) proverava izdvojeni HM generator, a maratonska opcija „kraća distanca: polumaraton" ide HM
-   generatoru kroz `handoff.ts`. */
+   generatoru kroz `handoff.ts`. Od segmenta 4/5 i maratonski deo reference (generisanje, adaptacija, odluka o pripremi)
+   proverava izdvojeni maratonski generator; referenca nije menjana. */
 
 const byInput = (input: unknown) =>
   generatorForDistance((input as { raceDistM?: unknown } | null)?.raceDistM);
 const byPlan = (plan: unknown) => generatorForPlan(plan as GenPlanState);
 
-/** Odluka o pripremi ide kroz `preparationForPlan` (HM → HM generator, maraton → stari mehanizam), kao u store-u. */
+/** Odluka o pripremi ide kroz `preparationForPlan` (HM → HM generator, maraton → maratonski generator), kao u store-u. */
 const routedDecisions = {
   basisFromPlan: ((current: unknown, today: unknown) =>
     preparationForPlan(current as GenPlanState).basisFromPlan(
@@ -114,13 +117,16 @@ describe('izbor generatora', () => {
   /* Segment 2/5: 10K je izdvojen, pa 10000 više ne ide starom mehanizmu (ranije očekivanje 'legacy' je bilo pravilo
      izbora iz segmenta 1, ne trenerski rezultat). */
   /* Segment 3/5: polumaraton je izdvojen, pa 21097.5 više ne ide starom mehanizmu (pravilo izbora, ne trenerski rezultat). */
-  it('5K (i ulaz bez distance), 10K i HM idu izdvojenim generatorima, ostalo starom mehanizmu', () => {
+  /* Segment 4/5: maraton je izdvojen, pa 42195 više ne ide starom mehanizmu (pravilo izbora, ne trenerski rezultat). */
+  it('5K (i ulaz bez distance), 10K, HM i maraton idu izdvojenim generatorima, ostalo starom mehanizmu', () => {
     expect(generatorIdFor(5000)).toBe('5k');
     expect(generatorIdFor(undefined)).toBe('5k');
     expect(generatorIdFor(0)).toBe('5k');
     expect(generatorIdFor(10000)).toBe('10k');
     expect(generatorIdFor(21097.5)).toBe('hm');
-    for (const d of [42195, 7000, 10000.5, 21097, 21098]) expect(generatorIdFor(d)).toBe('legacy');
+    expect(generatorIdFor(42195)).toBe('marathon');
+    for (const d of [7000, 10000.5, 21097, 21098, 42194, 42195.5])
+      expect(generatorIdFor(d)).toBe('legacy');
     expect(generatorForPlan({ weeks: [], pred: [], meta: { raceDistM: 10000 } } as never)).toBe(
       TEN_K_GENERATOR
     );
@@ -141,13 +147,19 @@ describe('izbor generatora', () => {
       HALF_MARATHON_GENERATOR
     );
     expect(generatorForPlan({ weeks: [], pred: [], meta: { raceDistM: 42195 } } as never)).toBe(
-      LEGACY_GENERATOR
+      MARATHON_GENERATOR
     );
-    // Odluka o pripremi: HM plan → HM generator; maraton, 5K/10K i lični plan → stari mehanizam (kao pre).
+    expect(generatorForPlan({ weeks: [], pred: [], ulaz: { raceDistM: 42195 } })).toBe(
+      MARATHON_GENERATOR
+    );
+    // Odluka o pripremi: HM plan → HM generator, maraton → maratonski; 5K/10K i lični plan → stari mehanizam (kao pre).
     expect(preparationForPlan({ weeks: [], pred: [], meta: { raceDistM: 21097.5 } } as never)).toBe(
       HALF_MARATHON_PREPARATION
     );
-    for (const raceDistM of [42195, 10000, 5000])
+    expect(preparationForPlan({ weeks: [], pred: [], meta: { raceDistM: 42195 } } as never)).toBe(
+      MARATHON_PREPARATION
+    );
+    for (const raceDistM of [10000, 5000])
       expect(preparationForPlan({ weeks: [], pred: [], meta: { raceDistM } } as never)).toBe(
         LEGACY_PREPARATION
       );
@@ -155,7 +167,7 @@ describe('izbor generatora', () => {
   });
 });
 
-describe('10K/HM/maraton nepromenjeni (polazni commit; 10K kroz izdvojeni generator)', () => {
+describe('10K/HM/maraton nepromenjeni (polazni commit; kroz izdvojene generatore)', () => {
   it('referenca postoji', () => {
     expect(reference?.baselineSha).toBe('05088e0440c50e866bb3bbf6246ff20fe5619f4c');
   });

@@ -33,6 +33,7 @@
     "src/test/d6Snapshot.ts",
     "src/test/fiveK/**",
     "src/test/tenK/**",
-    "src/test/halfMarathon/**"
+    "src/test/halfMarathon/**",
+    "src/test/marathon/**"
   ]
 }

@@ -166,7 +166,8 @@ export function isolationViolations(files: Files, root: string, domain: string):
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const DOMAIN = join(SRC, 'domain');
 const ROOT = join(DOMAIN, 'generators/halfMarathon');
-const OTHER_GENERATORS = ['fiveK', 'tenK'].map((g) => join(DOMAIN, 'generators', g));
+/* Segment 4/5: dodat i izdvojeni maratonski generator (provera međusobnog uvoza pokriva sva četiri). */
+const OTHER_GENERATORS = ['fiveK', 'tenK', 'marathon'].map((g) => join(DOMAIN, 'generators', g));
 
 function walk(dir: string, out = new Map<string, string>()): Map<string, string> {
   for (const name of readdirSync(dir)) {
