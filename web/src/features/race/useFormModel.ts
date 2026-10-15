@@ -10,7 +10,8 @@ import {
   raceRefs,
   vdotTrendModel
 } from '../../domain/race';
-import { fitnessEvidence, type StoredPredRow } from '../../domain/training/adaptation';
+import type { StoredPredRow } from '../../domain/training/adaptation';
+import { generatorForPlan } from '../../domain/generators/select';
 import { predictionSummary } from '../../domain/training/prediction/summary';
 import { t3kRows, t3kSeries } from '../../domain/training/test3k';
 import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
@@ -43,7 +44,8 @@ export function useFormModel() {
     const start = plan.weeks[0]?.start ?? todayStr;
     const weekNo = (d: string): number | null =>
       plan.weeks.find((w) => d >= w.start && d <= addDays(w.start, 6))?.w ?? null;
-    const evidence = fitnessEvidence({
+    // Same evidence the plan's generator uses for recalibration and pace proposals.
+    const evidence = generatorForPlan(genPlan).fitnessEvidence({
       today,
       plan,
       pred: rows,

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { confirmAction } from '../../app/confirm';
-import { adaptGeneratedPlan, hasGenPlanData } from '../../domain/plan';
+import { hasGenPlanData } from '../../domain/plan';
+import { generatorForDistance } from '../../domain/generators/select';
 import {
   TOTAL_STEPS,
   availableDays,
@@ -17,7 +18,6 @@ import {
   wizardWarnings,
   type WizardState
 } from '../../domain/onboarding';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { useActiveGenPlan, useTrainingStore } from '../../stores';
 import { activateNewPlan } from '../../stores/actions';
 import { useUIStore } from '../../stores/uiStore';
@@ -59,13 +59,14 @@ export function Wizard({ today }: { today: string }) {
   async function finish(): Promise<void> {
     const input = toGenerationInput(w, today);
     if (!input) return;
-    const gen = generatePlan(input);
+    const generator = generatorForDistance(input.raceDistM);
+    const gen = generator.generatePlan(input);
     if ('error' in gen) {
       setErr(gen.error);
       setStep(1);
       return;
     }
-    const adapted = adaptGeneratedPlan(gen);
+    const adapted = generator.adaptGeneratedPlan(gen);
     if (!adapted) {
       setErr('Neočekivana greška pri generisanju plana.');
       setStep(1);

@@ -1,12 +1,7 @@
-import { alignAutomaticOverlays } from '../domain/plan/automaticAlts';
 import { addDays, parseIsoDate } from '../domain/date';
 import { resolvePlan, type ResolvedPlan } from '../domain/plan';
-import {
-  buildExecutionAdjustment,
-  executionBasis,
-  executionModel as model,
-  type ExecutionAdjustmentOptions
-} from '../domain/plan/executionAdjustment';
+import type { ExecutionAdjustmentOptions } from '../domain/plan/executionAdjustment';
+import { generatorForPlan } from '../domain/generators/select';
 import {
   basisFromPlan,
   buildPreparationChoice,
@@ -16,13 +11,8 @@ import {
   type PreparationChoice,
   type PreparationDecision
 } from '../domain/plan/preparationDecision';
-import { graftFuturePlan, type ReplanContext } from '../domain/plan/future';
-import {
-  buildRunWalkAdjustment,
-  type RunWalkAdjustmentOptions
-} from '../domain/plan/runWalkAdjustment';
-import { hasRecentMeasuredForm, qualityEntryGate } from '../domain/training/qualityGate';
-import { assessRunWalkProgress } from '../domain/training/runWalkProgress';
+import type { ReplanContext } from '../domain/plan/future';
+import type { RunWalkAdjustmentOptions } from '../domain/plan/runWalkAdjustment';
 import {
   getPlanRevisions,
   recordPlanRevision,
@@ -88,8 +78,16 @@ export function planStateStamp(): string {
   ]);
 }
 
+/** Generator sačuvanog plana; adaptacija pripada generatoru njegove distance (`domain/generators/select.ts`). */
+const planGenerator = () => generatorForPlan(useTrainingStore.getState().genPlan);
+
 export function executionModel(plan: ResolvedPlan, today: string) {
-  return model(plan, today, replanContext(), useRecoveryStore.getState().vanPlana);
+  return planGenerator().executionModel(
+    plan,
+    today,
+    replanContext(),
+    useRecoveryStore.getState().vanPlana
+  );
 }
 
 function recentPainMax(todayStr: string, days: number): number | null {
@@ -108,7 +106,7 @@ function recentPainMax(todayStr: string, days: number): number | null {
 
 /** Tolerancija run/walk koraka iz prijavljenog izvršenja; prazan dnevnik ostaje nepoznat. */
 export function runWalkModel(plan: ResolvedPlan, today: string) {
-  return assessRunWalkProgress({
+  return planGenerator().assessRunWalkProgress({
     plan,
     log: useTrainingStore.getState().log,
     today,
@@ -122,10 +120,11 @@ export function qualityGateModel(plan: ResolvedPlan, today: string) {
   const policy = (t.genPlan?.meta as { formPolicy?: { basis?: string } } | null | undefined)
     ?.formPolicy;
   if (policy?.basis !== 'effort-first') return null;
-  return qualityEntryGate({
+  const generator = planGenerator();
+  return generator.qualityEntryGate({
     analysis: executionModel(plan, today).analysis,
     recentPainMax: recentPainMax(today, 14),
-    formConfirmed: hasRecentMeasuredForm(today, { t3k: t.t3k, vdotLog: t.vdotLog })
+    formConfirmed: generator.hasRecentMeasuredForm(today, { t3k: t.t3k, vdotLog: t.vdotLog })
   });
 }
 
@@ -170,7 +169,7 @@ const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 /** A regenerated session must not remain hidden behind an obsolete automatic pace overlay. */
 export function alignAutomaticAlts(result: GenPlanState, today: string): Record<string, AltRecord> {
   const t = useTrainingStore.getState();
-  return alignAutomaticOverlays(t.genPlan, result, today, replanContext());
+  return generatorForPlan(result).alignAutomaticOverlays(t.genPlan, result, today, replanContext());
 }
 
 export function planPreviewChanges(
@@ -267,7 +266,13 @@ export function previewExecution(
   if (!t.genPlan || !today)
     return { ok: false, reason: 'Za prilagođavanje treba generisan plan i ispravan datum.' };
   const { analysis } = executionModel(plan, today);
-  const built = buildExecutionAdjustment(t.genPlan, today, analysis, options, replanContext());
+  const built = generatorForPlan(t.genPlan).buildExecutionAdjustment(
+    t.genPlan,
+    today,
+    analysis,
+    options,
+    replanContext()
+  );
   if ('error' in built)
     return {
       ok: false,
@@ -326,7 +331,12 @@ export function previewPreparationChoice(
   if (!t.genPlan || !today)
     return { ok: false, reason: 'Za odluku o pripremi treba generisan plan i ispravan datum.' };
   const basis = options
-    ? executionBasis(t.genPlan, today, executionModel(plan, today).analysis, options)
+    ? generatorForPlan(t.genPlan).executionBasis(
+        t.genPlan,
+        today,
+        executionModel(plan, today).analysis,
+        options
+      )
     : basisFromPlan(t.genPlan, today);
   if (!basis) return { ok: false, reason: 'Plan nema sačuvane ulazne podatke.' };
   if ('error' in basis) return { ok: false, reason: basis.error };
@@ -353,7 +363,7 @@ export function previewRunWalk(
     return { ok: false, reason: 'Za prilagođavanje treba generisan plan i ispravan datum.' };
   const assessment = runWalkModel(plan, today);
   const { analysis } = executionModel(plan, today);
-  const built = buildRunWalkAdjustment(
+  const built = generatorForPlan(t.genPlan).buildRunWalkAdjustment(
     t.genPlan,
     today,
     assessment,
@@ -374,7 +384,13 @@ export function previewRestore(revisionId: string, todayStr: string): PlanChange
   if (!t.genPlan || !today) return { ok: false, reason: 'Nema plana za vraćanje.' };
   const revision = getPlanRevisions(t.genPlan).find((item) => item.id === revisionId);
   if (!revision) return { ok: false, reason: 'Sačuvana verzija više nije dostupna.' };
-  const result = graftFuturePlan(t.genPlan, revision.snapshot, today, replanContext());
+  // The restored version is finalized by the generator of the plan being written back.
+  const result = generatorForPlan(revision.snapshot).graftFuturePlan(
+    t.genPlan,
+    revision.snapshot,
+    today,
+    replanContext()
+  );
   const changes = result.meta?.['futureChanges'] as
     { changedDays?: number; conflicts?: string[] } | undefined;
   if (!changes?.changedDays)

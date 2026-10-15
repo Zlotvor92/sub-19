@@ -2,9 +2,7 @@
 
 import { mondayOnOrBefore, parseIsoDate, diffDays, type IsoDate } from '../date';
 import { brojNedelja, distUReceni, fmtClock, pl3 } from '../format';
-import { generatePlan } from '../training/generator/generatePlan';
-import { assess } from '../training/generator/assess';
-import { profileFor } from '../training/distances';
+import { generatorForDistance, productFor } from '../generators/select';
 import { vdotFromRace } from '../training/vdot/calculateVDOT';
 import { paceForZone } from '../training/vdot/paceForZone';
 import type { Intensity, PlanGenerationInput, QualityExperience } from '../training/types';
@@ -174,17 +172,17 @@ export function weeksHint(w: WizardState, today: string): WeeksHint {
   if (!w.raceDate) return { kind: 'none' };
   const wks = weeksToRace(w.raceDate, today);
   if (wks == null) return { kind: 'none' };
-  const prof = profileFor(w.raceDist) ?? profileFor(5000);
-  if (!prof) return { kind: 'none' };
+  const product = productFor(w.raceDist) ?? productFor(5000);
+  if (!product) return { kind: 'none' };
   if (wks < 1) return { kind: 'this-week' };
-  if (wks < prof.product.minWeeks)
+  if (wks < product.minWeeks)
     return {
       kind: 'too-short',
       weeks: wks,
-      name: prof.product.name,
-      minWeeks: prof.product.minWeeks
+      name: product.name,
+      minWeeks: product.minWeeks
     };
-  return { kind: 'enough', weeks: wks, nameInSentence: distUReceni(prof.product.name) };
+  return { kind: 'enough', weeks: wks, nameInSentence: distUReceni(product.name) };
 }
 
 export interface OutlookRow {
@@ -206,14 +204,15 @@ export function outlook(w: WizardState, today: string): Outlook {
   const pbSec = pbTotalSec(w);
   const weeks = weeksToRace(w.raceDate, today);
   if (pbSec == null || !pbSanityOk(w) || weeks == null) return null;
-  const prof = profileFor(w.raceDist);
-  if (!prof) return null;
+  const product = productFor(w.raceDist);
+  if (!product) return null;
+  const generator = generatorForDistance(w.raceDist);
   const pb = { distM: w.pbDist, sec: pbSec };
   const rows = INTENSITIES.map(([k, label]) => {
-    const a = assess(pb, weeks, k, null, w.raceDist);
+    const a = generator.assess(pb, weeks, k, null, w.raceDist);
     return { k, label, sec: a.predictedSec, vdot: a.vdotGoal };
   });
-  return { short: false, rows, weeks, name: prof.product.name, goal: goalTotalSec(w) };
+  return { short: false, rows, weeks, name: product.name, goal: goalTotalSec(w) };
 }
 
 export interface Verdict {
@@ -280,7 +279,7 @@ export function wizardWarnings(w: WizardState, today: string): string[] | null {
   const input = toGenerationInput(w, today);
   if (!input) return null;
   try {
-    const p = generatePlan(input);
+    const p = generatorForDistance(input.raceDistM).generatePlan(input);
     if ('error' in p) return null;
     return p.meta.dayWarnings || [];
   } catch {

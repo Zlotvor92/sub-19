@@ -21,6 +21,7 @@ import {
   type ReturnPolicy
 } from './regenerate';
 import { resolvePlan } from './resolve';
+import { regeneratorForDistance } from '../generators/handoff';
 
 const LONG_DISTANCE_M = 21097;
 /** Product search horizon for a later race date; not a claim that longer is always possible. */
@@ -143,7 +144,9 @@ function regenerate(
   meta: Record<string, unknown>,
   notes: string[] = []
 ): Built {
-  const built = regenerateFuture(current, input, today, context, {
+  // A shorter 5K option is planned and finalized by the isolated 5K generator.
+  const regen = regeneratorForDistance(input.raceDistM) ?? regenerateFuture;
+  const built = regen(current, input, today, context, {
     policy: basis.policy,
     ...(basis.guardBaseKm !== undefined ? { guardBaseKm: basis.guardBaseKm } : {}),
     ...(basis.execution ? { execution: basis.execution } : {}),
