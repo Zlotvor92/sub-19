@@ -4,12 +4,16 @@
 funkcija, trenerskog engine-a, baznih klasa, limitera i postprocesora. Zajednički ostaju samo UI, skladištenje, autentifikacija,
 izbor generatora i format razmene podataka.
 
+**Grana: `claude/generator-isolation-5k-10k`** — na njoj su odvojeni generatori za **5K** (segment 1) i **10K** (segment 2).
+Sledeći segmenti na isti način odvajaju **polumaraton** (segment 3) i **maraton** (segment 4); segment 5 uklanja stari
+zajednički mehanizam. Ranija grana `claude/generator-isolation-5k` sadrži iste commitove do `a8a5baa`.
+
 | Segment | Distanca | Stanje |
 |---|---|---|
-| 1/5 | 5K | **urađeno** — grana `claude/generator-isolation-5k`, bez PR-a |
-| 2/5 | 10K | **urađeno** (v. „Segment 2/5 — 10K" ispod) — commit `7966766` na grani `claude/generator-isolation-5k`, bez PR-a |
-| 3/5 | polumaraton | nije počet |
-| 4/5 | maraton | nije počet |
+| 1/5 | 5K | **urađeno** — commit `515bba3`, grana `claude/generator-isolation-5k-10k` (prvobitno `claude/generator-isolation-5k`), bez PR-a |
+| 2/5 | 10K | **urađeno** (v. „Segment 2/5 — 10K" ispod) — commit `7966766`, grana `claude/generator-isolation-5k-10k`, bez PR-a |
+| 3/5 | polumaraton | nije počet — biće odvojen kao zaseban generator |
+| 4/5 | maraton | nije počet — biće odvojen kao zaseban generator |
 | 5/5 | uklanjanje starog zajedničkog mehanizma | nije počet |
 
 > Sekcije od „Polazna tačka" do „Stanje radnog stabla (za segment 2)" su zapis segmenta 1 (5K) i nisu prepisivane.
@@ -483,7 +487,7 @@ warnings, adaptation, other]; obe vraćene.
 
 ## Stanje radnog stabla (za segment 3)
 
-Grana `claude/generator-isolation-5k`, commit `7966766` (na `f745be0`), pushovano; PR nije otvoren, nije spojeno u `main`. Novi fajlovi: `web/src/domain/generators/tenK/**`,
+Grana `claude/generator-isolation-5k-10k`, commit `7966766` (na `f745be0`), pushovano; PR nije otvoren, nije spojeno u `main`. Novi fajlovi: `web/src/domain/generators/tenK/**`,
 `web/src/test/tenK/**`, `web/src/test/fixtures/tenK-reference.json.gz`, `web/src/features/onboarding/tenKFlow.test.tsx`.
 Izmenjeni: `web/src/domain/generators/{select,handoff}.ts`, `web/src/domain/generators/otherDistances.node.test.ts`,
 `web/src/domain/plan/preparationDecision.ts` (komentar), `web/src/features/onboarding/fiveKFlow.test.tsx` (kontrola),
