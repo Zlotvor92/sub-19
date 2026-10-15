@@ -7,7 +7,7 @@ izbor generatora i format razmene podataka.
 | Segment | Distanca | Stanje |
 |---|---|---|
 | 1/5 | 5K | **urađeno** — grana `claude/generator-isolation-5k`, bez PR-a |
-| 2/5 | 10K | **urađeno** (v. „Segment 2/5 — 10K" ispod) — radna grana `claude/generator-isolation-10k`, necommitovano |
+| 2/5 | 10K | **urađeno** (v. „Segment 2/5 — 10K" ispod) — commit `7966766` na grani `claude/generator-isolation-5k`, bez PR-a |
 | 3/5 | polumaraton | nije počet |
 | 4/5 | maraton | nije počet |
 | 5/5 | uklanjanje starog zajedničkog mehanizma | nije počet |
@@ -265,8 +265,8 @@ HM/maraton „kraću distancu"; proverivač izolacije treba proširiti na sve ge
 
 - Polazni commit: **`f745be0e3f11d0382ee62879dcd24c57e9175683`** (vrh `origin/claude/generator-isolation-5k`, segment 1: `515bba3`
   + `f745be0`). Osnova grane je `05088e0` (= `origin/main`, neizmenjen od segmenta 1).
-- Radna grana: `claude/generator-isolation-10k`, napravljena od `origin/claude/generator-isolation-5k`; radno stablo čisto na
-  polasku. Izmene nisu commitovane.
+- Rad je rađen od `origin/claude/generator-isolation-5k` (radno stablo čisto na polasku); po uputstvu je dodat na istu granu
+  kao commit `7966766` (bez PR-a, nije spojeno u `main`).
 - `AGENTS.md` i dalje **ne postoji** (provereno na svim granama).
 - Provera preduslova (stvarni kod, ne dokument): `generators/fiveK/` postoji (68 izvornih fajlova); `select.ts` šalje 5K u
   `fiveK`; 5K testovi ekvivalencije i izolacije prolaze; `npm run check` na polaznom commitu: **153 fajla / 1 553 testa, zeleno**.
@@ -483,7 +483,7 @@ warnings, adaptation, other]; obe vraćene.
 
 ## Stanje radnog stabla (za segment 3)
 
-Grana `claude/generator-isolation-10k` (od `f745be0`), **necommitovano**. Novi fajlovi: `web/src/domain/generators/tenK/**`,
+Grana `claude/generator-isolation-5k`, commit `7966766` (na `f745be0`), pushovano; PR nije otvoren, nije spojeno u `main`. Novi fajlovi: `web/src/domain/generators/tenK/**`,
 `web/src/test/tenK/**`, `web/src/test/fixtures/tenK-reference.json.gz`, `web/src/features/onboarding/tenKFlow.test.tsx`.
 Izmenjeni: `web/src/domain/generators/{select,handoff}.ts`, `web/src/domain/generators/otherDistances.node.test.ts`,
 `web/src/domain/plan/preparationDecision.ts` (komentar), `web/src/features/onboarding/fiveKFlow.test.tsx` (kontrola),
