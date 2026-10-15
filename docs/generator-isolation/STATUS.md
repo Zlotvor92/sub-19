@@ -6,7 +6,7 @@ izbor generatora i format razmene podataka.
 
 | Segment | Distanca | Stanje |
 |---|---|---|
-| 1/5 | 5K | **urađeno** (ovaj dokument) — necommitovano, v. „Stanje radnog stabla" |
+| 1/5 | 5K | **urađeno** (ovaj dokument) — grana `claude/generator-isolation-5k`, bez PR-a |
 | 2/5 | 10K | nije počet |
 | 3/5 | polumaraton | nije počet |
 | 4/5 | maraton | nije počet |
@@ -244,7 +244,7 @@ provereni ovde. Činjenice zapažene usput, bez ocene: 5K zahtev pune pripreme z
 
 ## Stanje radnog stabla (za segment 2)
 
-Izmene **nisu commitovane** (nije bilo instrukcije). Novi fajlovi: `web/src/domain/generators/**`,
+Izmene su na grani `claude/generator-isolation-5k` (commit 515bba3, pushovano; PR nije otvoren, nije spojeno u `main`). Novi fajlovi: `web/src/domain/generators/**`,
 `web/src/test/fiveK/**`, `web/src/test/fixtures/{fiveK,otherDistances}-reference.json.gz`,
 `web/src/features/onboarding/fiveKFlow.test.tsx`, ovaj dokument. Izmenjeni: `web/src/domain/onboarding/index.ts`,
 `web/src/domain/plan/preparationDecision.ts`, `web/src/features/onboarding/Wizard.tsx`, `web/src/features/plan/planActions.ts`,
