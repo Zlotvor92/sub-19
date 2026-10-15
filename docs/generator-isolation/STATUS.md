@@ -6,7 +6,7 @@ izbor generatora i format razmene podataka.
 
 **Grana: `claude/generator-isolation-5k-10k`** — na njoj su odvojeni generatori za **5K** (segment 1) i **10K** (segment 2).
 **Segment 3 (polumaraton)** je na istoj grani, commit `36403cf` (na `90f2d0e`), pushovano; PR nije otvoren, nije spojeno u
-`main`. **Segment 4 (maraton)** je na grani **`claude/generator-isolation-5k-10k-hm-marathon`** (od `ad464c0`; sadrži i
+`main`. **Segment 4 (maraton)** je na grani **`claude/generator-isolation-5k-10k-hm-marathon`**, commit `b9b3acc` (od `ad464c0`; sadrži i
 segmente 1–3), pushovano; PR nije otvoren, nije spojeno u `main`. Grana `claude/generator-isolation-5k-10k` je ostala
 na `ad464c0` (segmenti 1–3). Segment 5 uklanja stari zajednički mehanizam. Ranija grana `claude/generator-isolation-5k`
 sadrži iste commitove do `a8a5baa`.
@@ -16,7 +16,7 @@ sadrži iste commitove do `a8a5baa`.
 | 1/5 | 5K | **urađeno** — commit `515bba3`, grana `claude/generator-isolation-5k-10k` (prvobitno `claude/generator-isolation-5k`), bez PR-a |
 | 2/5 | 10K | **urađeno** (v. „Segment 2/5 — 10K" ispod) — commit `7966766`, grana `claude/generator-isolation-5k-10k`, bez PR-a |
 | 3/5 | polumaraton | **urađeno** (v. „Segment 3/5 — polumaraton" na kraju) — commit `36403cf`, grana `claude/generator-isolation-5k-10k`, bez PR-a |
-| 4/5 | maraton | **urađeno** (v. „Segment 4/5 — maraton" na kraju) — grana `claude/generator-isolation-5k-10k-hm-marathon` (od `ad464c0`), bez PR-a |
+| 4/5 | maraton | **urađeno** (v. „Segment 4/5 — maraton" na kraju) — commit `b9b3acc`, grana `claude/generator-isolation-5k-10k-hm-marathon` (od `ad464c0`), bez PR-a |
 | 5/5 | uklanjanje starog zajedničkog mehanizma | nije počet |
 
 > Sekcije od „Polazna tačka" do „Stanje radnog stabla (za segment 2)" su zapis segmenta 1 (5K) i nisu prepisivane.
@@ -1118,7 +1118,7 @@ Brojevi su iz jednokratne sonde nad 1 821 planom reference (sonda nije deo repoz
 
 ## Stanje radnog stabla (za segment 5)
 
-Grana `claude/generator-isolation-5k-10k-hm-marathon` (od `ad464c0`), pushovano; PR nije otvoren, nije spojeno u `main`.
+Grana `claude/generator-isolation-5k-10k-hm-marathon`, commit `b9b3acc` (od `ad464c0`), pushovano; PR nije otvoren, nije spojeno u `main`.
 Novi fajlovi: `web/src/domain/generators/marathon/**`, `web/src/domain/generators/architecture.node.test.ts`,
 `web/src/test/marathon/**`, `web/src/test/fixtures/marathon-reference.json.gz`,
 `web/src/features/onboarding/marathonFlow.test.tsx`. Izmenjeni: `web/src/domain/generators/{select,handoff}.ts`,
