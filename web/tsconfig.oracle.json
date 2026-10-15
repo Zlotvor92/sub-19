@@ -27,6 +27,7 @@
     "src/test/fingerprint.ts",
     "src/test/d6Snapshot.ts",
     "src/test/fiveK/*.ts",
-    "src/test/tenK/*.ts"
+    "src/test/tenK/*.ts",
+    "src/test/halfMarathon/*.ts"
   ]
 }

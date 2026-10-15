@@ -7,10 +7,14 @@
    Stanje izdvajanja (docs/generator-isolation/STATUS.md):
    - 5K → `./fiveK` (izdvojen, segment 1/5);
    - 10K → `./tenK` (izdvojen, segment 2/5);
-   - polumaraton, maraton → stari zajednički mehanizam (`domain/training` + `domain/plan`) do svojih segmenata.
+   - polumaraton → `./halfMarathon` (izdvojen, segment 3/5), uključujući odluku o ograničenoj pripremi;
+   - maraton → stari zajednički mehanizam (`domain/training` + `domain/plan`) do svog segmenta.
 
    Pravilo za 5K: stari generator je distancu čitao kao `inp.raceDistM || 5000`, pa ulaz bez distance (ili sa 0) pripada 5K.
    Ugrađeni lični plan vlasnika (`genPlan === null`) je polumaraton i ostaje na starom mehanizmu.
+
+   Predaja između generatora ide SAMO ovuda: HM opciju „kraća distanca" (10K/5K) pravi generator te distance, a HM je
+   dobija kao argument (`ShorterDistanceHandoff` iz `./handoff.ts`), bez međusobnog uvoza generatora.
    ============================================================ */
 
 import type { GenPlanState } from '../state';
@@ -44,10 +48,18 @@ import {
 } from '../training/adaptation/proposal';
 import { fitnessEvidence as legacyFitnessEvidence } from '../training/adaptation/evidence';
 import { matchPlanRows as legacyMatchPlanRows } from '../training/adaptation/matching';
+import {
+  basisFromPlan as legacyBasisFromPlan,
+  buildPreparationChoice as legacyBuildPreparationChoice,
+  isLimitedLongPreparation as legacyIsLimitedLongPreparation,
+  preparationDecision as legacyPreparationDecision
+} from '../plan/preparationDecision';
 import * as fiveK from './fiveK';
+import * as halfMarathon from './halfMarathon';
+import { regeneratorForDistance } from './handoff';
 import * as tenK from './tenK';
 
-export type GeneratorId = '5k' | '10k' | 'legacy';
+export type GeneratorId = '5k' | '10k' | 'hm' | 'legacy';
 
 /** Ugovor generatora prema aplikaciji (isti oblik za svaki generator; interni modeli su njihovi). */
 export const LEGACY_GENERATOR = {
@@ -127,17 +139,58 @@ export const TEN_K_GENERATOR: PlanGenerator = {
   matchPlanRows: tenK.matchPlanRows
 };
 
+/** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
+const HM_SHORTER_HANDOFF = regeneratorForDistance as halfMarathon.ShorterDistanceHandoff;
+
+export const HALF_MARATHON_GENERATOR: PlanGenerator = {
+  id: 'hm',
+  generatePlan: halfMarathon.generatePlan,
+  adaptGeneratedPlan: halfMarathon.adaptGeneratedPlan,
+  assess: halfMarathon.assess,
+  product: (raceDistM) =>
+    raceDistM === halfMarathon.HALF_MARATHON_DISTANCE_M
+      ? halfMarathon.HALF_MARATHON_PRODUCT
+      : undefined,
+  executionModel: halfMarathon.executionModel,
+  executionBasis: halfMarathon.executionBasis,
+  buildExecutionAdjustment: (current, today, analysis, options, context) =>
+    halfMarathon.buildExecutionAdjustment(
+      current,
+      today,
+      analysis,
+      options,
+      context,
+      HM_SHORTER_HANDOFF
+    ),
+  buildRunWalkAdjustment: halfMarathon.buildRunWalkAdjustment,
+  assessRunWalkProgress: halfMarathon.assessRunWalkProgress,
+  qualityEntryGate: halfMarathon.qualityEntryGate,
+  hasRecentMeasuredForm: halfMarathon.hasRecentMeasuredForm,
+  planWithNewGoal: halfMarathon.planWithNewGoal,
+  planRecalibrated: halfMarathon.planRecalibrated,
+  graftFuturePlan: halfMarathon.graftFuturePlan,
+  alignAutomaticOverlays: halfMarathon.alignAutomaticOverlays,
+  vdotProposal: halfMarathon.vdotProposal,
+  applyVdotProposal: halfMarathon.applyVdotProposal,
+  undoVdotAdjustments: halfMarathon.undoVdotAdjustments,
+  fitnessEvidence: halfMarathon.fitnessEvidence,
+  planVdotNow: halfMarathon.planVdotNow,
+  matchPlanRows: halfMarathon.matchPlanRows
+};
+
 /** Generator za ciljnu distancu ulaza. `undefined`/0 je 5K (stari generator: `raceDistM || 5000`). */
 export function generatorIdFor(raceDistM: unknown): GeneratorId {
   const dist = (raceDistM as number) || 5000;
   if (dist === fiveK.FIVE_K_DISTANCE_M) return '5k';
   if (dist === tenK.TEN_K_DISTANCE_M) return '10k';
+  if (dist === halfMarathon.HALF_MARATHON_DISTANCE_M) return 'hm';
   return 'legacy';
 }
 
 const GENERATORS: Readonly<Record<GeneratorId, PlanGenerator>> = {
   '5k': FIVE_K_GENERATOR,
   '10k': TEN_K_GENERATOR,
+  hm: HALF_MARATHON_GENERATOR,
   legacy: LEGACY_GENERATOR
 };
 
@@ -159,3 +212,37 @@ export function generatorForPlan(plan: GenPlanState | null | undefined): PlanGen
 /** Proizvodni podaci (ime, preporučene nedelje) za napomene čarobnjaka. */
 export const productFor = (raceDistM: number): DistanceProduct | undefined =>
   generatorForDistance(raceDistM).product(raceDistM);
+
+/* ODLUKA O OGRANIČENOJ PRIPREMI (produženje, kraća distanca, povratni režim) nad sačuvanim planom. Postoji samo za
+   polumaraton i maraton (`isLimitedLongPreparation`); HM plan je obrađuje HM generator, ostali planovi stari mehanizam
+   (za 5K/10K plan ona nikad nije ograničena dugačka priprema, pa je put isti kao pre izdvajanja). */
+export const LEGACY_PREPARATION = {
+  basisFromPlan: legacyBasisFromPlan,
+  preparationDecision: legacyPreparationDecision,
+  buildPreparationChoice: legacyBuildPreparationChoice,
+  isLimitedLongPreparation: legacyIsLimitedLongPreparation
+};
+export type PreparationApi = typeof LEGACY_PREPARATION;
+
+export const HALF_MARATHON_PREPARATION: PreparationApi = {
+  basisFromPlan: halfMarathon.basisFromPlan,
+  preparationDecision: (current, today, basis, context, status, delivered) =>
+    halfMarathon.preparationDecision(
+      current,
+      today,
+      basis,
+      context,
+      status,
+      delivered,
+      HM_SHORTER_HANDOFF
+    ),
+  buildPreparationChoice: (current, today, basis, choice, context) =>
+    halfMarathon.buildPreparationChoice(current, today, basis, choice, context, HM_SHORTER_HANDOFF),
+  isLimitedLongPreparation: halfMarathon.isLimitedLongPreparation
+};
+
+export function preparationForPlan(plan: GenPlanState | null | undefined): PreparationApi {
+  return generatorForPlan(plan) === HALF_MARATHON_GENERATOR
+    ? HALF_MARATHON_PREPARATION
+    : LEGACY_PREPARATION;
+}

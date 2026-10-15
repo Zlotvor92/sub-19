@@ -5,19 +5,21 @@ funkcija, trenerskog engine-a, baznih klasa, limitera i postprocesora. Zajednič
 izbor generatora i format razmene podataka.
 
 **Grana: `claude/generator-isolation-5k-10k`** — na njoj su odvojeni generatori za **5K** (segment 1) i **10K** (segment 2).
-Sledeći segmenti na isti način odvajaju **polumaraton** (segment 3) i **maraton** (segment 4); segment 5 uklanja stari
-zajednički mehanizam. Ranija grana `claude/generator-isolation-5k` sadrži iste commitove do `a8a5baa`.
+**Segment 3 (polumaraton)** je urađen u radnom stablu lokalne grane `claude/generator-isolation-hm` (napravljena od
+`90f2d0e`, vrha grane 5K+10K) — **bez commita i bez push-a**, po uputstvu. Segment 4 odvaja **maraton**; segment 5 uklanja
+stari zajednički mehanizam. Ranija grana `claude/generator-isolation-5k` sadrži iste commitove do `a8a5baa`.
 
 | Segment | Distanca | Stanje |
 |---|---|---|
 | 1/5 | 5K | **urađeno** — commit `515bba3`, grana `claude/generator-isolation-5k-10k` (prvobitno `claude/generator-isolation-5k`), bez PR-a |
 | 2/5 | 10K | **urađeno** (v. „Segment 2/5 — 10K" ispod) — commit `7966766`, grana `claude/generator-isolation-5k-10k`, bez PR-a |
-| 3/5 | polumaraton | nije počet — biće odvojen kao zaseban generator |
+| 3/5 | polumaraton | **urađeno** (v. „Segment 3/5 — polumaraton" na kraju) — radno stablo grane `claude/generator-isolation-hm`, bez commita |
 | 4/5 | maraton | nije počet — biće odvojen kao zaseban generator |
 | 5/5 | uklanjanje starog zajedničkog mehanizma | nije počet |
 
 > Sekcije od „Polazna tačka" do „Stanje radnog stabla (za segment 2)" su zapis segmenta 1 (5K) i nisu prepisivane.
-> Aktuelno stanje posle segmenta 2 je u sekciji **„Segment 2/5 — 10K"** na kraju dokumenta.
+> Stanje posle segmenta 2 je u sekciji **„Segment 2/5 — 10K"**; aktuelno stanje posle segmenta 3 je u sekciji
+> **„Segment 3/5 — polumaraton"** na kraju dokumenta (ranije sekcije nisu prepisivane).
 
 ## Polazna tačka
 
@@ -496,3 +498,305 @@ Izmenjeni: `web/src/domain/generators/{select,handoff}.ts`, `web/src/domain/gene
 Predlog za segment 3 (polumaraton): isti postupak — referenca iz starog mehanizma pre izmena; kopija zatvorenja u
 `generators/halfMarathon/` (uključujući `preparationDecision`, jer pripada HM/M); `select.ts` i `handoff.ts` dobijaju HM granu;
 proveriti da HM opcija „kraća distanca" i dalje predaje 5K/10K izdvojenim generatorima.
+
+---
+
+# Segment 3/5 — polumaraton
+
+## Polazna tačka (segment 3)
+
+- Polazni commit: **`90f2d0e5a21524ab408ba38060347f97e9843955`** (vrh `origin/claude/generator-isolation-5k-10k`: segment 1 `515bba3`,
+  segment 2 `7966766`, dokumentacija `90f2d0e`). `origin/main` je i dalje **`05088e0`** — segmenti 1 i 2 **nisu spojeni u
+  `main`**; HM je zato rađen na lokalnoj grani `claude/generator-isolation-hm` napravljenoj od `90f2d0e`, ne od `main`.
+  Rad je u radnom stablu, **bez commita, push-a i PR-a** (po uputstvu).
+- `AGENTS.md` i dalje **ne postoji**.
+- Preduslovi provereni u kodu, ne u dokumentu: `generators/fiveK/` (68 izvornih fajlova) i `generators/tenK/` (68) postoje;
+  `select.ts` šalje 5000 → `fiveK`, 10000 → `tenK`; testovi izolacije i ekvivalencije 5K/10K postoje i prolaze.
+  Polazni `npm run check` u čistom worktree-ju na `90f2d0e`: **157 fajlova / 1 574 testa, zeleno**.
+
+## Novi modul: `web/src/domain/generators/halfMarathon/`
+
+67 izvornih fajlova, 9 155 redova (plus 2 testa). Struktura je **ogledalo izvornih putanja u `web/src/domain/`**, kao kod 5K/10K.
+**Izvor kopije je stari zajednički mehanizam**, ne 5K/10K modul: zatvorenje uvoza je izračunato od starih ulaznih tačaka
+(`generatePlan`, `assess`, `plan/adapt`, `executionAdjustment`, `regenerate`, `replan`, `future`, `automaticAlts`,
+`runWalkAdjustment`, `runWalkProgress`, `qualityGate`, `adaptation/{proposal,evidence,matching}`, `resolve`, `sessions/calc`,
+`test3k` **i `plan/preparationDecision`**), kopirano skriptom koja prepisuje samo putanje uvoza, pa su grane drugih distanci
+uklonjene ručno uz poređenje posle svakog koraka.
+
+| Oblast | Fajlovi u `halfMarathon/` |
+|---|---|
+| javni API / adapter / tipovi razmene | `index.ts`, `plan/adapt.ts`, `exchange.ts` (samo `export type`) |
+| ulazna validacija, procena trkača i spremnosti (staza `first`/`performance`) | `training/generator/{validateInput,athleteAssessment,assess,formPolicy}.ts`, `distances/hmProgression.ts` (`hmTrack`) |
+| tempo i zone | `training/vdot/*`, `training/prediction/index.ts`, `training/sessions/prescription.ts` |
+| kilometraža, progresija, periodizacija | `training/generator/{volume,weeklyLoad,longRunProgression,allocation}.ts`, `generatePlan.ts`, `distances/profile21k.ts` (`phase21K`) |
+| raspored treninga i oporavka, srednje-dugo (MLR) | `training/generator/{daySlots,focus}.ts`, `generatePlan.ts` (`limitEasyAfterLongRun`) |
+| prag, HM ritam, intervali, kontrolna trka | `distances/profile21k.ts` (`chooseQuality21K`, `mkTimeTrial`, `mkIntervals`), `distances/hmProgression.ts`, `sessions/{build,intervals}.ts` |
+| limiti i pravila kvaliteta | `distances/qualityDose.ts`, `sessions/constraints.ts`, `generator/weeklyLoad.ts` (omotač), `generatePlan.ts` (petlja skraćivanja) |
+| dužine, gorivo, brz završetak | `generator/longRunProgression.ts`, `sessions/longRun.ts` (`fuelText`), `profile21k.longRunFinish21K` |
+| rasterećenje, dvonedeljni taper, nedelja trke | `generatePlan.ts` (`isTaper1`/`isTaper2`, protokol −3/−2/−1), `sessions/deload.ts`, `hmProgression.HM_TAPER` |
+| kratka priprema, povratak, run/walk | `generatePlan.ts`, `generator/runWalk.ts`, `plan/{regenerate,returnGrowth,fatigueRecovery}.ts` |
+| adaptacija, rekalibracija, promena cilja, vraćanje verzije | `plan/{executionAdjustment,regenerate,replan,future,automaticAlts,runWalkAdjustment,finalize}.ts`, `training/{execution,runWalkProgress,qualityGate}.ts`, `training/adaptation/*`, `training/test3k` |
+| **odluka o ograničenoj pripremi** (produženje, kraća distanca, povratni režim) | `plan/preparationDecision.ts` |
+| opisi, upozorenja | `plan/{describe,finalize,resolve,edit,baseline,types}.ts`, `training/sessions/calc.ts` |
+| konstante | `training/constants/{distances,heuristics,product,evidence}.ts` (u `distances.ts` samo HM) |
+| pomoćne funkcije | `date/index.ts`, `format/index.ts`, `state/ids.ts`, `state/records.ts` (DAY_TAGS, STRENGTH_WITH, cleanRunWalk iz `domain/state`) |
+| testovi | `equivalence.node.test.ts`, `isolation.node.test.ts` |
+
+### Javni API (`halfMarathon/index.ts`)
+
+`HALF_MARATHON_DISTANCE_M`, `HALF_MARATHON_PRODUCT`, `generatePlan`, `assess`, `adaptGeneratedPlan`, `executionModel`,
+`executionBasis`, `buildExecutionAdjustment`, `regenerateFuture`, `finalWarnings`, `buildRunWalkAdjustment`,
+`assessRunWalkProgress`, `qualityEntryGate`, `hasRecentMeasuredForm`, `planWithNewGoal`, `planRecalibrated`, `recalibratedPlan`,
+`reentryPlan`, `mergeOverrides`, `RECALIBRATION_MIN_WEEKS_LEFT`, `graftFuturePlan`, `alignAutomaticOverlays`, `vdotProposal`,
+`applyVdotProposal`, `undoVdotAdjustments`, `planVdotNow`, `fitnessEvidence`; **odluka o pripremi**: `basisFromPlan`,
+`preparationDecision`, `buildPreparationChoice`, `buildReturnBase`, `isLimitedLongPreparation`, tipovi `DecisionBasis`,
+`PreparationChoice`, `PreparationDecision`, `ShorterDistanceHandoff`; za testove: `resolvePlan`, `matchPlanRows`, `sessKm`,
+`sessDesc`, `t3kVdot` (lokalne kopije).
+
+### Predaja kraće distance bez međusobnog uvoza generatora
+
+HM odluka nudi „kraća distanca: 10K/5K istog datuma". Plan te distance mora da napravi generator te distance, a HM ga ne sme
+uvesti. Rešenje: `preparationDecision`, `buildPreparationChoice` i `buildExecutionAdjustment` HM generatora imaju **obavezan**
+poslednji argument `handoff: ShorterDistanceHandoff` (funkcija distanca → `regenerateFuture` drugog generatora ili `null`).
+Vezuje ga samo aplikacioni sloj: `select.ts` (`HALF_MARATHON_GENERATOR.buildExecutionAdjustment`,
+`HALF_MARATHON_PREPARATION`) prosleđuje `handoff.regeneratorForDistance`. Za sopstvenu distancu (produženje datuma) HM uvek
+koristi svoj `regenerateFuture`. Ime ponuđene kraće distance HM čita iz plana koji je napravio drugi generator
+(`meta.raceName`), pa u HM stablu nema proizvodnih podataka 10K/5K.
+
+### Uklonjene grane (HM ih ne aktivira) i dokaz
+
+Dokaz neaktivnosti: `PROFILE_21K` je imao `intervalPaceForWeek: (pI) => pI` (identitet) i nije definisao `longRunCycle`;
+`HEURISTIC_21K` ne definiše `fuelStrongFromMin` ni `marathonPaceBudget`; HM kvalitet (`chooseQuality21K`, `introductoryQuality`,
+`fartlek`, `intervalsOf`) i brz završetak (`longRunFinish21K`, zona `RP`) nikad ne prave zonu `M`. Posle uklanjanja poređenje
+sa referencom je ostalo identično (v. Validacija).
+
+- obrisani `training/distances/profile5k.ts`, `profile10k.ts`, `profile42k.ts`; zatim nedostižni `sessions/{cruise,progression,repetitions,tempo}.ts`;
+- `constants/distances.ts`: samo `PRODUCT_21K`/`HEURISTIC_21K`, bez polja `fuelStrongFromMin`; `distances/index.ts`: samo HM profil;
+  `distances/types.ts`: `Phase` = `threshold | peak | specific`, HM strategije obavezne, bez `intervalPaceForWeek` i `longRunCycle`;
+- `generatePlan.ts`: poruka greške za drugu distancu je HM-specifična; uklonjeni ciklus dugog trčanja (`longRunCycle`),
+  `marathon:` zastavica, `intervalPaceForWeek`, M-težina u petlji omotača i „maratonski" opis završetka;
+- `longRunProgression.ts`: maratonska konsolidacija; `weeklyLoad.ts`: M-težina 0,5; `sessions/longRun.ts`: jača maratonska
+  preporuka goriva; `athleteAssessment.assessPreparation`: pravilo dužine 26 km (maraton);
+- `plan/preparationDecision.ts`: `SHORTER` samo `21097.5 → [10000, 5000]`, pravilo dužine 26 km, uvoz `generators/handoff`
+  (zamenjen argumentom).
+
+**Namerno zadržano** (čitanje podataka, ne trenerska grana druge distance): zona `M`, `mlr`, `finish` i `RaceDistanceM` sa 42195 u
+`plan/{describe,finalize,resolve}.ts`, `vdot/{paceForZone,zoneForKind}.ts`, `sessions/prescription.ts`,
+`adaptation/{chain,matching}.ts`. Razlog: maratonska odluka „kraća distanca: polumaraton" sada ide HM generatoru, a zaštićeni
+prošli dani tog plana ostaju maratonski i moraju se pročitati i sačuvati kakvi jesu.
+
+Razlika prema izvoru (bez linija uvoza): 52 fajla identična; izmenjeni su samo `date/index.ts` (tip `IsoDate` iz
+`exchange.ts`), `plan/{executionAdjustment,preparationDecision}.ts`, `training/constants/distances.ts`,
+`training/distances/{index,profile21k,types}.ts`, `training/generator/{athleteAssessment,generatePlan,longRunProgression,weeklyLoad}.ts`,
+`training/sessions/longRun.ts`; novi su `index.ts`, `exchange.ts`, `state/records.ts`.
+
+## Izbor generatora i povezane putanje
+
+- `generators/select.ts`: `HALF_MARATHON_GENERATOR`, `GeneratorId = '5k' | '10k' | 'hm' | 'legacy'`, `generatorIdFor(21097.5) → 'hm'`
+  (tačna vrednost). Sve produkcione putanje iz tabele segmenta 1 (čarobnjak, upozorenja čarobnjaka, promena cilja,
+  rekalibracija, predlog/primena/poništavanje tempa, prilagođavanje prema izvršenju, run/walk, kapija kvaliteta, vraćanje
+  verzije, poravnanje automatskih izmena, prikaz forme) već idu kroz `generatorForDistance`/`generatorForPlan`/`productFor`,
+  pa za HM plan sada idu u `halfMarathon`.
+- **Nova putanja**: odluka o ograničenoj pripremi nad sačuvanim planom (`stores/executionActions.storedPreparationDecision`,
+  `previewPreparationChoice`) je ranije direktno zvala stari `domain/plan/preparationDecision`. Sada ide kroz
+  `select.preparationForPlan(plan)`: HM plan → `HALF_MARATHON_PREPARATION`; maraton, 5K/10K i lični plan → `LEGACY_PREPARATION`
+  (isto kao pre). Odluka iz izvršenja (`buildExecutionAdjustment`) je već bila po generatoru.
+- `generators/handoff.ts`: dodat polumaraton (`21097.5 → halfMarathon.regenerateFuture`), pa i **maratonska** opcija
+  „kraća distanca: polumaraton" (stari mehanizam) sada pravi izdvojeni HM generator.
+- `domain/plan/preparationDecision.ts` (stari) nije menjan.
+
+## Zaštita podataka
+
+Bez migracije, bez promene šeme, bez automatske regeneracije sačuvanih planova: izbor generatora se primenjuje tek na
+sledeću radnju korisnika. Lokalna trenerska adaptacija (koji budući dan se menja, kako) je u HM kopiji
+`plan/{regenerate,future,finalize,returnGrowth,fatigueRecovery}.ts`; tehnička zaštita istorije pri upisu (koji dan je
+zaštićen — prošli, odrađen, ručno izmenjen, pomeren, zaključan merenjem —, prenos ID-jeva, zadržavanje `pred`/`qs`, beleženje
+konflikata) ostaje uz nju u `graftFuturePlan`, kao u izvoru i kod 5K/10K (nije razdvajana: razdvajanje nije potrebno za
+izolaciju, a doslovna kopija je dokazano identična). Pisanje u skladište, revizije (`domain/plan/versions.ts`) i
+`commitPlanChange` ostaju aplikacioni i ne donose trenerske odluke.
+
+Dokaz: (1) referentni tokovi sa zaštitom (budući odrađen dan, ručna sesija sa `overrides`, ručna izmena `alts`, merom
+zaključan red `pred`/`predLock`, pomeranja u prošlost i budućnost) identični; (2) `features/onboarding/halfMarathonFlow.test.tsx`:
+stvaran tok kroz čarobnjak (izbor „Polumaraton") → generisanje → prikaz → čuvanje/učitavanje kroz pravo skladište → povratak
+posle pauze → vraćanje verzije → promena cilja (`1:55:00`) → odluka o ograničenoj pripremi nad sačuvanim planom (identična
+direktnom HM pozivu) → „kraća distanca: 10K" (identična direktnom HM pozivu sa predajom; plan posle toga pripada 10K
+generatoru); odrađeni dani, stvarna merenja, pomeren dan, ručna izmena, zaključan red, `log/alts/moves/pred/predLock`, upozorenje
+o konfliktu i revizija ostaju; brojač poziva starog mehanizma (uključujući stari `preparationDecision`) = 0; kontrola: plan
+deklarisan kao maraton i dalje poziva stari mehanizam (i stari `preparationDecision`).
+
+## Dokazi nezavisnosti
+
+`web/src/domain/generators/halfMarathon/isolation.node.test.ts` (16 testova; proverivač dupliran iz 10K, 5K/10K testovi nisu
+menjani): paket/alias, izlaz iz `halfMarathon/` mimo `exchange.ts` (samo tipovi iz `domain/state` i `domain/date`), dinamički
+uvoz, nedeterminizam, tranzitivno zatvorenje od `index.ts`, re-export (`export {…} from`, `export *`), obrnuti smer (HM uvoze
+samo `select.ts` i `handoff.ts`), uvoz `handoff`/`select` iz HM, uvoz/re-export starog `preparationDecision`, **međusobni uvoz
+sva tri izdvojena generatora (5K, 10K, HM) u svim smerovima, i tipom**, odsustvo profila/parametara 5K/10K/maratona i
+maratonskih grana u HM stablu, HM odluka zna samo za `21097.5 → [10000, 5000]` i dobija predaju kao argument. Proverivač
+testiran na veštačkim prekršajima; na stvarnom kodu: privremeni re-export starog `preparationDecision` u
+`halfMarathon/plan/future.ts` → HM test pao; privremeni uvoz tipa iz `tenK/exchange` u HM → pala 3 testa (2 HM, 1 10K
+„obrnuto"); oba vraćena.
+
+Obrnuta nezavisnost: privremena izmena `HEURISTIC_21K.deloadFactor` 0,76→0,6 u **starom** `domain/training/constants/distances.ts`
+→ HM generisanje i dalje identično referenci (HM više ne čita stari mehanizam); vraćeno `git checkout`.
+
+## Referentni ulazi i rezultati (HM)
+
+| Šta | Gde |
+|---|---|
+| HM scenariji (generisanje, adaptacija, taper, QA događaj, odluke o pripremi) | `web/src/test/halfMarathon/scenarios.ts` |
+| referenca i snimanje | `web/src/test/halfMarathon/{reference.ts,captureReference.node.test.ts}`, `web/src/test/fixtures/halfMarathon-reference.json.gz` |
+| poređenje | `web/src/domain/generators/halfMarathon/equivalence.node.test.ts` |
+
+Generisanje — **1 826 ulaza**: HM deo matrice golden master-a (576; svi sa dva kvaliteta i bez iskustva, pa ne pokrivaju
+stazu `performance`), HM ulazi iz `docs/qa/{generator-final,generator-ab,generator-phase1,generator-phase2}/inputs.json`,
+**matrica HM politike** (512: staza `first`/`performance` × 1/2 kvaliteta × 4–24 nedelje × 3–6 dana × 28–75 km), 500
+determinističkih slučajnih (mulberry32, seme 21975; ispravne vrednosti `qualityExperience` uključujući `experienced`,
+kontinuitet 0–60 ned.) i granični/neispravni: trka +0…13 dana i 2…30 nedelja (sa 1 i 2 kvaliteta, sa i bez iskustva), svi dani
+početka, obim 0…1000 uključujući pragove 30 (drugi kvalitet) i 45 (MLR/vrhunac), dani 0…8/NaN, kvalitet 0…3, intenziteti,
+**iskustvo sa kvalitetom × kontinuitet** (odvojeni ulazi), strategije ritma (< 80, 80–110, > 110 min), dužine 4…30 km, MLR,
+PB 5K/10K/HM/M, zastareo/bez datuma, ciljevi, početnik, povratak, rasporedi, lestvice, umor/smanjen obim/povratna spremnost.
+
+Adaptacija — **27 596 tokova**: isti tokovi kao za 5K/10K (U01 propušten, U02 podizvršenje, U03 RPE 8, pauza 10/21/40 dana,
+manji obim, zaštitni izazov iz U02-probe, promena cilja, rekalibracija, run/walk, predlog/primena/poništavanje tempa,
+vraćanje verzije, poravnanje) nad 75 HM baznih ulaza (QA, slučajni, iz matrice politike i granični; `hmAdaptationBases`) na tri datuma, plus **taper i nedelja trke** (danas = trka −12 i −5 dana:
+model izvršenja, prilagođavanje, promena cilja, rekalibracija — 900 tokova) i originalni HM QA događaj **U07**
+(`docs/qa/generator-ab/users/U07-event.json`; U08 nema plan u zapisu, U09 je maraton).
+
+Odluke o pripremi — **519 zapisa** nad 83 bazna ulaza: ograničeni HM planovi (mali obim, kratka priprema, početnik, povratak, malo dana), odluka,
+svaka ponuđena opcija (produženje 31, kraća distanca 10K 38 i 5K 14 zapisa), **odluka nad sačuvanim planom u povratnom režimu**
+(61) i osnova izvršenja posle pauze (`executionBasis`).
+
+Referenca je uzeta **iz starog mehanizma pre bilo kakve izmene produkcionog koda** (na `90f2d0e`, u radnom stablu), zatim
+ponovo u čistom `git worktree`-u na `05088e0` (izvorni `main`, bez segmenata 1–2; tamo stari mehanizam sam pravi i 10K/5K
+opcije) — **bajt-identična** (`cmp`). Zapisano: `baselineSha` `90f2d0e…`, `crossCheckedSha` `05088e0…` (polje dodato posle
+`cmp`; podaci provereno isti). Test poređenja nikad ne osvežava referencu iz novog koda.
+
+Poređenje: tačan zapis celog izlaza (`fiveK/exact.ts`), **nijedno polje nije isključeno**, ništa se ne zaokružuje; proverava se
+i čistoća (ulazi nepromenjeni). Opcije 10K/5K se porede kroz stvarnu predaju (`handoff.ts`) izdvojenim 10K/5K generatorima.
+Vreme/zona/slučajnost: generisanje (edge, qa, matrica politike 7 i 14 nedelja) i adaptacija (3 bazna plana + taper) ponovljeni
+pod `TZ` Pacific/Kiritimati, America/Los_Angeles, Asia/Kolkata, UTC uz `Math.random`, `Date.now` i `new Date()` bez argumenta
+koji bacaju izuzetak — identično.
+
+Osetljivost (sve vraćeno): `HEURISTIC_21K.deloadFactor` 0,76→0,77 → generisanje palo [km, warnings]; `HM_TRACKS.performance.t.startMin`
+18→19 → palo [km, warnings, other]; `HM_TAPER.final.rp` 0,4→0,42 → palo; `RETURN_POLICY.medium.fraction` 0,7→0,71 → adaptacija
+pala [dates, km, segments, pace, rest, taper, warnings, adaptation, other]; izlaganje dužini 0,85→0,86 u HM
+`preparationDecision` → odluke pale.
+
+## Izmenjena postojeća očekivanja (i zašto to nije prilagođavanje testu)
+
+- `generators/otherDistances.node.test.ts`, test izbora: `generatorIdFor(21097.5)` je bio `'legacy'` → sada `'hm'`; dodato da
+  21097/21098 i 42195 ostaju `legacy` i provere `preparationForPlan`. Poređenje 10K/HM/M sa referencom polaznog commita sada
+  ide i kroz `preparationForPlan` (HM odluke kroz HM generator); referenca nije dirana i ostala je identična. Dodata provera da
+  postoji maratonska opcija „kraća distanca: polumaraton" (ide HM generatoru).
+- `features/onboarding/{fiveKFlow,tenKFlow}.test.tsx`, kontrola brojača: plan „deklarisan kao polumaraton" je trebalo da ide
+  starom mehanizmu; posle izdvajanja HM to više nije tačno, pa je kontrola prebačena na maraton (i dalje stari mehanizam).
+  5K/10K delovi testova nisu menjani.
+- Lint ispravke (11 suvišnih `as never`) su samo u novom HM test harnesu; referenca je snimljena pre njih, a poređenje
+  posle njih je identično.
+
+## Provere i rezultati (segment 3, poslednji prolaz)
+
+| Komanda (iz `web/`, osim gde piše) | Rezultat |
+|---|---|
+| polazno: `npm run check` na `90f2d0e` (čist worktree) | zeleno; vitest 157 fajlova / 1 574 testa |
+| `npm run typecheck`, `npm run lint`, `npm run format:check` | zeleno |
+| `npm run test` (vitest, svi projekti) | **161 fajl / 1 598 testova**, zeleno |
+| `npx vitest run --project node halfMarathon/equivalence` | 5/5 — 1 826 generisanja, 27 596 tokova adaptacije, 519 odluka, TZ/sat/slučajnost identični |
+| `npx vitest run --project node generators/` | 7 fajlova / 56 testova — 5K i 10K ekvivalencija i izolacija nepromenjene, HM 5+16, `otherDistances` 3/3 (10K/HM/M: 2 211 generisanja, 17 638 tokova, 157 odluka identični, sada kroz HM generator za HM) |
+| `npx vitest run --project ui Flow.test` | 3 fajla / 6 testova — 5K, 10K i HM stvarni tokovi; brojač starog mehanizma 0; kontrole (maraton) koriste stari |
+| `npx vitest run --project node generator.fingerprint` (u `npm run test`) | golden master nepromenjen |
+| `node --test "**/*.test.mjs"` (iz `test/`) | 396/396 |
+| `npx playwright test` | **77/77** (6,1 min, jedan prolaz); HM kroz pregledač: `generator-ab-users.spec.ts` (HM profili U07/U08 iz `docs/qa/generator-ab/inputs.json`), `race-analysis.spec.ts` |
+
+## Šta maraton još koristi iz starog mehanizma
+
+1. **Sve** generisanje i adaptacija maratona: `domain/training/**` i `domain/plan/**` (kroz `LEGACY_GENERATOR` u `select.ts`),
+   uključujući stari `domain/plan/preparationDecision.ts` (`LEGACY_PREPARATION`) i odluku iz izvršenja u starom
+   `domain/plan/executionAdjustment.ts`. Njegove opcije „kraća distanca" (polumaraton, 10K) prave izdvojeni HM i 10K
+   generator kroz `handoff.ts`. Stari mehanizam i dalje sadrži i 5K/10K/HM profile i grane (`hmProgression.ts`,
+   `profile21k.ts`…); iz aplikacije ih više niko ne poziva za 5K/10K/HM planove, ali ostaju do segmenta 5 (testovi `legacyApi`,
+   golden master `generator.fingerprint`, ugrađeni lični plan, maraton).
+2. **Ugrađeni lični plan vlasnika** (`genPlan === null`; po sadržaju polumaraton) i dalje ide starom mehanizmu, kao u
+   segmentima 1–2. Nije prebačen na HM generator: nema `meta`/`ulaz`, nije nastao iz generatora i nije pokriven referencom;
+   prebacivanje je zasebna odluka (najkasnije u segmentu 5, kada stari mehanizam nestaje).
+3. Prikazni i merni sloj (lanac forme, `currentVdot`, `effectivePace`, `predRowsForDay`, prikaz/izvoz treninga,
+   `useEasyPace`, `planPreviewChanges.sessQKm`, `formPreview`, **`describePoint`/imena opcija u `ExecutionAdjustment.tsx`**) i
+   dalje koristi deljene funkcije za sve distance, uključujući 5K/10K/HM planove — isto stanje kao posle segmenata 1–2; nisu
+   putanje generisanja ni adaptacije; vlasnik se određuje u segmentu 5.
+
+## Ispitano HM ponašanje (stanje koda, bez ocene i bez izmene)
+
+Brojevi su iz jednokratne sonde nad svih 1 826 HM ulaza reference (1 811 planova, 15 grešaka za neispravne ulaze); sonda nije
+deo repozitorijuma.
+
+| Tema | Gde i kako radi |
+|---|---|
+| izbor početničke/iskusnije putanje | `hmProgression.hmTrack`: `performance` samo za `qualityReadiness === 'experienced'`, sve ostalo `first`. `athleteAssessment.assessAthlete:32`: `experienced` = `qualityExperience === 'experienced'` **i** `consistentWeeks ≥ 8`, bez povratka, bez privremenog ograničenja, `trainedRecently !== false`. Raspodela: developing 983, beginner 386, experienced 380, returning 62. |
+| iskustvo sa kvalitetom vs iskustvo na distanci | Ulaz za iskustvo **na distanci** (prethodni HM) ne postoji. Staza `first` je opisana kao „prvi polumaraton", ali se bira isključivo iz iskustva sa kvalitetom i kontinuiteta. |
+| progresija praga i HM tempa | `hmCycle`/`hmTargets`: ciljne minute i dužina bloka linearno od `startMin` do `endMin` (`HM_TRACKS`); prag od 1. kvalitetne do poslednje radne nedelje, HM ritam od prve nedelje faze `peak` (`rpStartQualW`). Tempo se ne menja, samo doza. |
+| minuti i kilometri | Cilj je u minutima (× `kons` 0,85), pretvara se u km preko tempa; tvrde granice su u km/s: T ≤ 10 % nedelje, RP ≤ 20 % i ≤ 12 km, neprekidan prag ≤ 30 min, nedeljni omotač `maxWorkSec`; blok do +25 % duži (`fitBlocks`); < 1,5 km neprekidnog rada → nema sesije. |
+| drugi kvalitetan trening | `generatePlan`: `qCut` (vrhunac < 30 km), `frequencyQCut` (< 4 dana), `weeklyQ` (nedelja ≥ 30 km, potvrđena baza ≥ 30 km, `experienced` ili posle 2./3. kvalitetne nedelje). U 647 planova sa `quality: 2` nijedna radna nedelja nema 2 kvaliteta. |
+| uticaj dužine na broj kvaliteta | `singleQualityWeek21K`: staza `first`, ≤ 4 dana i duga ≥ 90 min → jedan kvalitet; brz završetak duge (samo `experienced`, ne `kons`, specifična faza) zamenjuje q2; kontrolna trka briše q2. |
+| kontrolni treninzi i izuzeci od limita | `chooseQuality21K:188`: „Kontrolna trka" 4 nedelje pred trku (3 ako je 4. deload), samo specifična faza, obim ≥ 30 km; 1 049 planova na −4, 148 na −3. Izuzeta je od doze (`progression: true`) i od nedeljnog omotača (`!hasTrial`). Progresivne HM sesije takođe zaobilaze `applyQualityDose`. |
+| kvalitet u rasterećenju i taperu | deload: samo q1, `reducedQualityForDeload` prethodne sesije. Taper: dve nedelje (1 789 planova; 13 kratkih ima jednu); `isTaper2` = prelaz (`HM_TAPER.transition`), `isTaper1` = završna (`HM_TAPER.final`); protokol −3/−2/−1 („Aktivacija") pada u taper nedelju po kalendaru. |
+| faze i trajanje pripreme | bazna faza samo za početnika (`baseWeeksBeginner` 10) ili povratak (1–3 ned.); `phase21K` po udelu kvalitetnih nedelja (< 0,3 prag, < 0,6 vrhunac, ostalo specifično); deload svake 4. nedelje pre poslednje radne. |
+| naknadno skraćivanje/produžavanje | `constrainWeek` (zone, neprekidan prag), petlja nedeljnog omotača (skida I/R, pa T, HM ritam poslednji — `trimPriority`), „PRODUŽENO ZAGREVANJE" do +1,5 km, plafon udela duge, taper skraćuje i dugu (85 % / 65 %) i MLR (≤ 55 % duge), `limitEasyAfterLongRun`. |
+
+## Poznati HM trenerski nedostaci (evidentirano, nije popravljano)
+
+1. **Drugi kvalitet se vraća u prelaznoj taper nedelji.** Pravila koja svode nedelju na jedan kvalitet (`singleQualityWeek`,
+   brz završetak duge, kontrolna trka) su isključena u `isTaper2` (`generatePlan.ts` uslovi `!isTaper2`), a taper format za q2
+   postoji. Posledica: u **465 od 1 811** planova poslednja radna nedelja ima jedan kvalitet, a prva taper nedelja dva (npr.
+   `fingerprint · HM · 4d · 30km · std · trenirao · 10n`: radna `Tempo trke` → taper `Tempo trke` + `Tempo isprekidan`).
+   1 120 taper nedelja ukupno ima dva kvaliteta.
+2. **Nema ulaza za iskustvo na distanci**; „prvi polumaraton" (`first`) je zapravo „bez potvrđenog iskustva sa kvalitetom ili
+   kontinuiteta < 8 nedelja". Iskusan trkač koji nikad nije trčao HM dobija `performance`, a HM-iskusan bez polja
+   `qualityExperience` dobija `first`.
+3. **Uvodni fartlek u prelaznoj taper nedelji kratkih planova**: `introductoryQuality` isključuje samo `isTaper1`, pa u kratkim
+   planovima prelazna taper nedelja može dobiti uvodni fartlek umesto HM taper formata (41 sesija u sondi).
+4. Kontrolna trka je izuzeta iz doze i nedeljnog omotača i briše q2 — po dizajnu; nije ocenjeno.
+5. U 647 planova sa traženim drugim kvalitetom on nijednom nije isporučen (pragovi iz tabele iznad); nije ocenjeno da li je
+   to poželjno.
+6. Uočeno u harnesu prethodnih segmenata (ne HM kod): 5K/10K slučajni i granični ulazi koriste `qualityExperience: 'regular'`,
+   koja nije dozvoljena vrednost (`'none' | 'some' | 'experienced'`), pa tim ulazima staza `experienced` nije pokrivena (pokriva
+   je samo nekoliko QA ulaza). Nije menjano, da se ne dira zamrznuta referenca 5K/10K.
+
+## Kriterijum završetka segmenta 3
+
+| Merilo | Stanje |
+|---|---|
+| HM samostalno generiše plan | ispunjeno |
+| HM samostalno adaptira (izvršenje, pauza, umor, run/walk, cilj, rekalibracija, predlog tempa, vraćanje verzije, poravnanje) | ispunjeno |
+| HM samostalno pravi odluku o ograničenoj pripremi (produženje, povratni režim, odluka nad sačuvanim planom) | ispunjeno; opcije 10K/5K prave izdvojeni 10K/5K generatori kroz predaju-argument |
+| maratonska opcija „kraća distanca: polumaraton" ide kroz HM generator | ispunjeno |
+| bez zabranjenih direktnih/tranzitivnih zavisnosti, bez međusobnog uvoza generatora | ispunjeno (automatski test, proveren veštačkim prekršajem) |
+| ponašanje HM očuvano | ispunjeno (tačno poređenje, bez isključenih polja) |
+| 5K, 10K, maraton nepromenjeni | ispunjeno |
+| korisnički podaci zaštićeni | ispunjeno |
+| ugrađeni lični plan (HM sadržaj) kroz HM generator | **nije urađeno** — ostaje stari mehanizam (§ „Šta maraton još koristi", 2) |
+| prikazni/merni sloj bez starog mehanizma | **nije ispunjeno** — van obima, kao u segmentima 1–2 |
+
+## Preostali rizici (segment 3)
+
+- Namerno dupliran kod se razilazi; svaka namerna trenerska izmena HM mora svesno da osveži `halfMarathon-reference.json.gz`
+  (novim snimanjem sa obrazloženjem).
+- Izbor po tačnoj vrednosti `21097.5`; plan sa `meta.raceDistM` 21097.5 i drugačijim `ulaz.raceDistM` ide HM generatoru, koji
+  za drugu distancu vraća „Nepodržana distanca" (stari mehanizam bi je regenerisao). Aplikacija takav plan ne pravi.
+- `ShorterDistanceHandoff` je obavezan argument; ako se HM API zove direktno bez njega, TypeScript to odbija. Ako bi ga neko
+  prosledio kao `() => null`, opcije 10K/5K bi nestale (HM ne zna da pravi 10K/5K) — bez pada, ali tiho.
+- Odluka o pripremi je u `PlanGenerator` ugovoru zasebna (`preparationForPlan`), jer 5K/10K je nemaju; maratonski segment
+  treba da je uključi u svoj generator na isti način.
+- Četiri velika poređenja (5K, 10K, HM, ostale distance) produžavaju `npm run test` na ~7,5 min.
+
+## Stanje radnog stabla (za segment 4)
+
+Lokalna grana `claude/generator-isolation-hm` (od `90f2d0e`), **necommitovano**. Novi fajlovi:
+`web/src/domain/generators/halfMarathon/**`, `web/src/test/halfMarathon/**`, `web/src/test/fixtures/halfMarathon-reference.json.gz`,
+`web/src/features/onboarding/halfMarathonFlow.test.tsx`. Izmenjeni: `web/src/domain/generators/{select,handoff}.ts`,
+`web/src/domain/generators/otherDistances.node.test.ts`, `web/src/stores/executionActions.ts`,
+`web/src/features/onboarding/{fiveKFlow,tenKFlow}.test.tsx` (kontrola), `web/tsconfig.{app,oracle}.json`, ovaj dokument.
+
+Predlog za segment 4 (maraton): isti postupak — referenca iz starog mehanizma pre izmena (uključujući odluke o pripremi i
+opcije polumaraton/10K kroz predaju); kopija zatvorenja u `generators/marathon/` sa sopstvenim `preparationDecision` i
+predajom-argumentom kao HM; `select.ts`, `handoff.ts` i `preparationForPlan` dobijaju maratonsku granu; kontrole brojača u UI
+testovima tada nemaju više distancu na starom mehanizmu i treba ih zameniti proverom da je stari mehanizam nedostižan.

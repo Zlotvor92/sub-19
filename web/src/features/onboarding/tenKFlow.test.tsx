@@ -249,7 +249,9 @@ describe('10K: unos → generisanje → prikaz → čuvanje → učitavanje → 
     expect(legacyCalls).toEqual([]);
   });
 
-  it('polumaraton i dalje ide kroz stari mehanizam (kontrola brojača)', () => {
+  /* Segment 2/5: 10K je izdvojen, pa je kontrola brojača prešla na polumaraton; segment 3/5: izdvojen je i polumaraton,
+     pa kontrola koristi maraton (i dalje stari mehanizam). */
+  it('maraton i dalje ide kroz stari mehanizam (kontrola brojača)', () => {
     const plan = tenK.adaptGeneratedPlan(
       tenK.generatePlan({
         startDate: TODAY,
@@ -262,12 +264,12 @@ describe('10K: unos → generisanje → prikaz → čuvanje → učitavanje → 
         intensity: 'std'
       } as never)
     )!;
-    // Isti oblik plana, ali deklarisan kao polumaraton: izbor generatora mora poslati stari mehanizam.
+    // Isti oblik plana, ali deklarisan kao maraton: izbor generatora mora poslati stari mehanizam.
     useTrainingStore.getState().patch({
       genPlan: {
         ...plan,
-        meta: { ...plan.meta!, raceDistM: 21097.5 },
-        ulaz: { raceDistM: 21097.5 }
+        meta: { ...plan.meta!, raceDistM: 42195 },
+        ulaz: { raceDistM: 42195 }
       }
     });
     legacyCalls.length = 0;

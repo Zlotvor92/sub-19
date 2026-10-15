@@ -1,15 +1,11 @@
 import { addDays, parseIsoDate } from '../domain/date';
 import { resolvePlan, type ResolvedPlan } from '../domain/plan';
 import type { ExecutionAdjustmentOptions } from '../domain/plan/executionAdjustment';
-import { generatorForPlan } from '../domain/generators/select';
-import {
-  basisFromPlan,
-  buildPreparationChoice,
-  isLimitedLongPreparation,
-  preparationDecision,
-  type DecisionPoint,
-  type PreparationChoice,
-  type PreparationDecision
+import { generatorForPlan, preparationForPlan } from '../domain/generators/select';
+import type {
+  DecisionPoint,
+  PreparationChoice,
+  PreparationDecision
 } from '../domain/plan/preparationDecision';
 import type { ReplanContext } from '../domain/plan/future';
 import type { RunWalkAdjustmentOptions } from '../domain/plan/runWalkAdjustment';
@@ -296,13 +292,19 @@ export function storedPreparationDecision(todayStr: string): PreparationDecision
   const today = parseIsoDate(todayStr);
   const baseMode =
     (t.genPlan?.meta?.['cycleDecision'] as { kind?: string } | undefined)?.kind === 'base';
-  if (!t.genPlan?.meta || !today || !(baseMode || isLimitedLongPreparation(t.genPlan.meta)))
+  // Odluka pripada generatoru distance plana (HM → HM generator; maraton → stari mehanizam).
+  const preparation = preparationForPlan(t.genPlan);
+  if (
+    !t.genPlan?.meta ||
+    !today ||
+    !(baseMode || preparation.isLimitedLongPreparation(t.genPlan.meta))
+  )
     return null;
   const race = parseIsoDate(t.genPlan.meta.raceDate);
   if (!race || race <= today) return null;
-  const basis = basisFromPlan(t.genPlan, today);
+  const basis = preparation.basisFromPlan(t.genPlan, today);
   if (!basis) return null;
-  const decision = preparationDecision(
+  const decision = preparation.preparationDecision(
     t.genPlan,
     today,
     basis,
@@ -337,10 +339,16 @@ export function previewPreparationChoice(
         executionModel(plan, today).analysis,
         options
       )
-    : basisFromPlan(t.genPlan, today);
+    : preparationForPlan(t.genPlan).basisFromPlan(t.genPlan, today);
   if (!basis) return { ok: false, reason: 'Plan nema sačuvane ulazne podatke.' };
   if ('error' in basis) return { ok: false, reason: basis.error };
-  const built = buildPreparationChoice(t.genPlan, today, basis, choice, replanContext());
+  const built = preparationForPlan(t.genPlan).buildPreparationChoice(
+    t.genPlan,
+    today,
+    basis,
+    choice,
+    replanContext()
+  );
   if ('error' in built) return { ok: false, reason: built.error };
   return preview(
     built.result,

@@ -243,8 +243,9 @@ describe('5K: unos → generisanje → prikaz → čuvanje → učitavanje → a
     expect(legacyCalls).toEqual([]);
   });
 
-  /* Segment 2/5: 10K je izdvojen, pa kontrola brojača koristi polumaraton (i dalje stari mehanizam). */
-  it('polumaraton i dalje ide kroz stari mehanizam (kontrola brojača)', () => {
+  /* Segment 2/5: 10K je izdvojen, pa je kontrola brojača prešla na polumaraton; segment 3/5: izdvojen je i polumaraton,
+     pa kontrola koristi maraton (i dalje stari mehanizam). */
+  it('maraton i dalje ide kroz stari mehanizam (kontrola brojača)', () => {
     const plan = fiveK.adaptGeneratedPlan(
       fiveK.generatePlan({
         startDate: TODAY,
@@ -257,12 +258,12 @@ describe('5K: unos → generisanje → prikaz → čuvanje → učitavanje → a
         intensity: 'std'
       } as never)
     )!;
-    // Isti oblik plana, ali deklarisan kao polumaraton: izbor generatora mora poslati stari mehanizam.
+    // Isti oblik plana, ali deklarisan kao maraton: izbor generatora mora poslati stari mehanizam.
     useTrainingStore.getState().patch({
       genPlan: {
         ...plan,
-        meta: { ...plan.meta!, raceDistM: 21097.5 },
-        ulaz: { raceDistM: 21097.5 }
+        meta: { ...plan.meta!, raceDistM: 42195 },
+        ulaz: { raceDistM: 42195 }
       }
     });
     legacyCalls.length = 0;
