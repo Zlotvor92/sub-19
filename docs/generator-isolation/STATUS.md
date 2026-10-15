@@ -11,6 +11,10 @@ segmente 1–3), pushovano; PR nije otvoren, nije spojeno u `main`. Grana `claud
 na `ad464c0` (segmenti 1–3). Segment 5 uklanja stari zajednički mehanizam. Ranija grana `claude/generator-isolation-5k`
 sadrži iste commitove do `a8a5baa`.
 
+> **Jedina radna grana od sada: `claude/generator-isolation-5k-10k-hm-marathon`.** Sve dalje izmene (uključujući segment 5)
+> rade se na njoj; nove grane se ne prave (v. `AGENTS.md`). Stare grane `claude/generator-isolation-5k` i
+> `claude/generator-isolation-5k-10k` su potpuno sadržane u njoj (0 commitova van nje) i treba ih obrisati.
+
 | Segment | Distanca | Stanje |
 |---|---|---|
 | 1/5 | 5K | **urađeno** — commit `515bba3`, grana `claude/generator-isolation-5k-10k` (prvobitno `claude/generator-isolation-5k`), bez PR-a |
