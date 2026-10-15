@@ -11,18 +11,20 @@ import {
   acuteKm,
   acwrNow,
   acwrPlan,
-  applyInjuryProposal,
   breakInfo,
   chronicKm,
   completion,
   daysWithoutRunning,
-  injuryProposal,
   largestWeeklyKm,
   painStatus,
   recordOutOfPlan,
-  returnToRunPhase,
-  type RecoveryContext
+  returnToRunPhase
 } from './index';
+import {
+  applyInjuryProposal,
+  injuryProposal,
+  type RecoveryContext
+} from '../generators/fiveK/recovery/proposal';
 
 /* parity: test/povreda.test.mjs, test/povratak-obim.test.mjs, test/opterecenje-pre-plana.test.mjs.
    Poredi `domain/recovery` sa starim `kneeStatus`, `returnToRunPhase`, `hronicniObim`, `acwrSada`,

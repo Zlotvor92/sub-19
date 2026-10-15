@@ -37,6 +37,15 @@ export const UNSUPPORTED_DISTANCE =
 export type PlanGenerator = typeof halfMarathonGenerator;
 export type DistanceProduct = typeof halfMarathon.HALF_MARATHON_PRODUCT;
 
+/* Tipovi razmene za ekrane (oblik je isti u sva četiri generatora; ekrani ne uvoze generatore direktno). */
+export type InjuryProposal = NonNullable<ReturnType<PlanGenerator['injuryProposal']>>;
+export type RecoveryContext = Parameters<PlanGenerator['injuryProposal']>[0];
+export type RpeTarget = NonNullable<ReturnType<PlanGenerator['rpeTarget']>>;
+export type WatchBatch = ReturnType<PlanGenerator['workoutsForWatch']>;
+export type WeatherCardInput = Parameters<PlanGenerator['weatherCard']>[0];
+export type WeatherCardModel = NonNullable<ReturnType<PlanGenerator['weatherCard']>>;
+export type RealignInput = Parameters<PlanGenerator['realignPlan']>[0];
+
 export const FIVE_K_GENERATOR: PlanGenerator = {
   id: '5k',
   generatePlan: fiveK.generatePlan,
@@ -62,7 +71,15 @@ export const FIVE_K_GENERATOR: PlanGenerator = {
   planVdotNow: fiveK.planVdotNow,
   matchPlanRows: fiveK.matchPlanRows,
   recalibrationMinMeasurements: fiveK.VDOT_PROPOSAL_MIN_MEASUREMENTS,
-  recalibrationThreshold: fiveK.VDOT_PROPOSAL_THRESHOLD
+  recalibrationThreshold: fiveK.VDOT_PROPOSAL_THRESHOLD,
+  injuryProposal: fiveK.injuryProposal,
+  applyInjuryProposal: fiveK.applyInjuryProposal,
+  realignPlan: fiveK.realignPlan,
+  workoutsForWatch: fiveK.workoutsForWatch,
+  thresholdPace: fiveK.thresholdPace,
+  weatherCard: fiveK.weatherCard,
+  rpeTarget: fiveK.rpeTarget,
+  paceForZone: fiveK.paceForZone
 };
 
 export const TEN_K_GENERATOR: PlanGenerator = {
@@ -89,7 +106,15 @@ export const TEN_K_GENERATOR: PlanGenerator = {
   planVdotNow: tenK.planVdotNow,
   matchPlanRows: tenK.matchPlanRows,
   recalibrationMinMeasurements: tenK.VDOT_PROPOSAL_MIN_MEASUREMENTS,
-  recalibrationThreshold: tenK.VDOT_PROPOSAL_THRESHOLD
+  recalibrationThreshold: tenK.VDOT_PROPOSAL_THRESHOLD,
+  injuryProposal: tenK.injuryProposal,
+  applyInjuryProposal: tenK.applyInjuryProposal,
+  realignPlan: tenK.realignPlan,
+  workoutsForWatch: tenK.workoutsForWatch,
+  thresholdPace: tenK.thresholdPace,
+  weatherCard: tenK.weatherCard,
+  rpeTarget: tenK.rpeTarget,
+  paceForZone: tenK.paceForZone
 };
 
 /** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
@@ -126,7 +151,15 @@ const halfMarathonGenerator = {
   planVdotNow: halfMarathon.planVdotNow,
   matchPlanRows: halfMarathon.matchPlanRows,
   recalibrationMinMeasurements: halfMarathon.VDOT_PROPOSAL_MIN_MEASUREMENTS,
-  recalibrationThreshold: halfMarathon.VDOT_PROPOSAL_THRESHOLD
+  recalibrationThreshold: halfMarathon.VDOT_PROPOSAL_THRESHOLD,
+  injuryProposal: halfMarathon.injuryProposal,
+  applyInjuryProposal: halfMarathon.applyInjuryProposal,
+  realignPlan: halfMarathon.realignPlan,
+  workoutsForWatch: halfMarathon.workoutsForWatch,
+  thresholdPace: halfMarathon.thresholdPace,
+  weatherCard: halfMarathon.weatherCard,
+  rpeTarget: halfMarathon.rpeTarget,
+  paceForZone: halfMarathon.paceForZone
 };
 export const HALF_MARATHON_GENERATOR: PlanGenerator = halfMarathonGenerator;
 
@@ -166,7 +199,15 @@ export const MARATHON_GENERATOR: PlanGenerator = {
   planVdotNow: marathon.planVdotNow,
   matchPlanRows: marathon.matchPlanRows,
   recalibrationMinMeasurements: marathon.VDOT_PROPOSAL_MIN_MEASUREMENTS,
-  recalibrationThreshold: marathon.VDOT_PROPOSAL_THRESHOLD
+  recalibrationThreshold: marathon.VDOT_PROPOSAL_THRESHOLD,
+  injuryProposal: marathon.injuryProposal,
+  applyInjuryProposal: marathon.applyInjuryProposal,
+  realignPlan: marathon.realignPlan,
+  workoutsForWatch: marathon.workoutsForWatch,
+  thresholdPace: marathon.thresholdPace,
+  weatherCard: marathon.weatherCard,
+  rpeTarget: marathon.rpeTarget,
+  paceForZone: marathon.paceForZone
 };
 
 /** Generator za ciljnu distancu ulaza; `undefined`/0 je 5K (stari ulaz: `raceDistM || 5000`); ostalo `null`. */

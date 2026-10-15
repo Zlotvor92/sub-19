@@ -6,6 +6,7 @@ export type {
   DayTag,
   GenPlanState,
   LogEntry,
+  PainRecord,
   StoredWeek,
   T3kRecord,
   VdotRecord

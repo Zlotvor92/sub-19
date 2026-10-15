@@ -1241,3 +1241,67 @@ spojeno u `main`. Novi fajlovi:
 `web/src/domain/plan/prescriptionText.ts`, `web/src/domain/training/adaptation/effectivePace.ts`,
 `web/src/features/personalPlanGenerator.test.tsx`, `web/src/test/personal/**`, `web/src/test/fixtures/personal-reference.json.gz`.
 Izmenjeni: v. `git status` (35 fajlova).
+
+---
+
+# Dopuna posle segmenta 5/5 — prenos zajedničke trenerske logike u generatore
+
+Instrukcija: „Prenosi se u sve generatore! Svaki generator radi isključivo za sebe." Polazni commit: **`ae6b43a`**
+(grana `claude/generator-isolation-5k-10k-hm-marathon`).
+
+## Šta je preneto (u svaki od četiri generatora, sopstvena kopija)
+
+| Ranije (aplikacija, jedno za sve distance) | Sada u `domain/generators/<g>/` | Aplikacija posle prenosa |
+|---|---|---|
+| `domain/recovery/proposal.ts` + pragovi predloga (`RW_BY_PAIN`, horizont, udeli obima, nedelja bez kvaliteta) i njihovo zatvorenje (`constants`, `load`, `pain`, `bodyParts`) | `recovery/*` | `useRecoveryModel`, `recoveryActions.applyProposal` → generator aktivnog plana; aplikaciona `proposal.ts` i pragovi predloga obrisani |
+| `domain/activities/realign.ts` | `activities/realign.ts` | `icuSync`/`stravaSync` → generator plana; aplikaciona kopija obrisana |
+| `domain/watch/icuWorkouts.ts` | `watch/icuWorkouts.ts` | `icuPush` dobija `generator()`; aplikacioni modul obrisan |
+| vrućina, tempo uz vrućinu, najhladniji sat, ciljni tempo dana, kartica u `domain/weather` | `weather/index.ts` (samo trenerski deo) | `WeatherCard` → generator; uklonjeno iz `domain/weather` |
+| `plan/describe.rpeTarget` | `plan/describe.ts` (već postojala kopija) | `usePlanRpe()` → `sessionView`/`sessionBreakdown` (novi argument); uklonjeno iz aplikacije |
+| `paceForZone` u `useEasyPace`, `formPreview`, vremenu, satu | `training/vdot/paceForZone.ts` (već postojala kopija) | preko generatora aktivnog plana / izabrane ciljne distance |
+
+Kopije su doslovne; prepisane su samo putanje tipova (`../state` → `../exchange`, dodat `PainRecord`). Kopija modula za
+vreme sadrži samo trenerski deo; čitanje prognoze, sat treninga, temperatura odrađenog trčanja i lokacija ostaju aplikaciji.
+Ugovor `PlanGenerator` (`select.ts`) dobio je `injuryProposal`, `applyInjuryProposal`, `realignPlan`, `workoutsForWatch`,
+`thresholdPace`, `weatherCard`, `rpeTarget`, `paceForZone`; tipovi za ekrane izvode se iz ugovora.
+
+## Dokaz očuvanja ponašanja
+
+- Referenca snimljena iz aplikacionog koda **pre** prenosa (`CAPTURE_GUIDANCE_REFERENCE=ae6b43a`, `TZ=UTC`):
+  `src/test/fixtures/guidance-reference.json.gz`, harnes `src/test/guidance/*`. 14 744 toka nad 11 planova (QA ulazi
+  svake distance generatorom te distance + lični plan) × 3 datuma: predlog zbog bola (8 profila bola × 3 dnevnika × 2
+  stanja van plana) i primena, zamena dana (11 profila trčanja), izvoz na sat (3 forme × 2 horizonta), svaki dan plana
+  (izvoz dana, opis, RPE, ciljni tempo), kartica vremena (4 temperature × 3 kombinacije sata), vrućina −5…45 °C, tempo uz
+  vrućinu, run/walk po bolu −1…11, prag tempa, zone 25…85 × 6, RPE po tipu; plus 30 pregleda forme u čarobnjaku.
+- `domain/generators/guidance.node.test.ts`: **sve četiri kopije = referenca** (tačan zapis, nijedno polje izuzeto).
+  Pregled forme u čarobnjaku identičan za sve podržane distance; jedina razlika je nepodržana ciljna distanca (7000 m),
+  koja više nema pregled (`null`) — čarobnjak je ne nudi.
+- Jedinični/oracle testovi prenetih modula (`domain/recovery/recovery*.test.ts`, `domain/activities/activities*.test.ts`,
+  `domain/watch/*.test.ts`, `domain/weather/*.test.ts`, `domain/plan/plan.test.ts`, `domain/day/day.oracle.test.ts`,
+  `pwa/static.node.test.ts`) sada testiraju 5K kopiju (izmenjeni samo uvozi i novi argument `rpeTarget`); sve četiri
+  kopije pokriva `guidance.node.test.ts`.
+
+## Nove automatske provere
+
+`architecture.node.test.ts` (10): novo pravilo — 19 imena (`injuryProposal`, `applyInjuryProposal`, `runWalkForPain`,
+`RW_BY_PAIN`, `PROPOSAL_HORIZON_DAYS`, `realignPlan`, `REALIGN_DAY_WINDOW`, `workoutsForWatch`, `thresholdPace`,
+`dayWorkoutText`, `sessionFromDescription`, `weatherCard`, `heatFor`, `heatAdvice`, `heatAdjustedPace`, `HEAT_BANDS`,
+`bestHour`, `COOLER_HOUR_DELTA`, `rpeTarget`) nije deklarisano nigde u aplikaciji, a deklarisano je u svakom od četiri
+generatora. Inventar starog koda više nema stavki „S" (`rpeTarget`, `paceForZone`, `RECOVERY_JOG`). Osetljivost:
+dodat `export function heatFor` u `domain/weather` → pao; uklonjen `export` za `runWalkForPain` u 10K kopiji → pao; vraćeno.
+
+## Provere (poslednji prolaz)
+
+| Komanda (iz `web/`) | Rezultat |
+|---|---|
+| `npm run check` | zeleno; vitest **172 fajla / 1 652 testa** (9 min 52 s) |
+| `npx vitest run --project node generators/guidance guidance/capture` | 7/7 |
+| `npm run build` | uspešno; glavni JS `index` 1 018,6 kB + `stores` 48,9 kB (kopije u četiri generatora povećavaju bundle za ~67 kB) |
+| `node --test "**/*.test.mjs"` (iz `test/`) | 396/396 |
+| `npx playwright test` | 76/77 u punom prolazu; pao `pwa.spec.ts:38` (nestabilan i na polaznom commitu, v. segment 1); ponovljen `--workers 1 --repeat-each 4` → 4/4 |
+
+## Šta je i dalje zajedničko (ne menja plan)
+
+Prikaz stanja bola, ACWR i spremnosti (`domain/recovery/{pain,load,view,charts,constants}`), čitanje prognoze
+(`domain/weather`), merni sloj (lanac forme, VDOT, test 3 km) i AI saveti. Stari engine (§ inventar segmenta 5) i dalje
+fizički postoji bez produkcione uloge.

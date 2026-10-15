@@ -17,7 +17,6 @@ import {
   importedDay,
   perKmDetail,
   perKmStale,
-  realignPlan,
   runsByDate,
   workLapsPace,
   type ActivityStreams,
@@ -30,6 +29,7 @@ import {
   type ResolvedDay,
   type ResolvedPlan
 } from '../../domain/plan';
+import { generatorForPlan } from '../../domain/generators/select';
 import { planBoundary, recordOutOfPlan } from '../../domain/recovery';
 import type {
   AltRecord,
@@ -182,7 +182,9 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
     if (van) s.vanPlana = van;
 
     /* Pomeri plan PRE glavne petlje da trčanje odmah nađe par. */
-    const realigned = realignPlan({
+    /* Zamena dana pripada generatoru distance plana; plan bez podržane distance se ne preraspoređuje automatski. */
+    const generator = generatorForPlan(genPlan);
+    const realignInput = {
       weeks: genPlan.weeks,
       alts: s.alts,
       moves: s.moves,
@@ -193,7 +195,10 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
           list.map((a) => ({ distance: a.distance ?? 0 }))
         ])
       )
-    });
+    };
+    const realigned = generator
+      ? generator.realignPlan(realignInput)
+      : { moves: { ...s.moves }, moved: 0 };
     s.moves = realigned.moves;
     plan = resolve();
 

@@ -1,3 +1,5 @@
+/* Kopija za generator `halfMarathon` (prenos zajedničke trenerske logike u generatore). Izvor: `domain/recovery/proposal.ts` u trenutku
+   prenosa (`ae6b43a`); dalje se razvija samo ovde. */
 /* PRILAGOĐAVANJE PLANA POVREDI I PREKIDU — predlog, ne tiha izmena.
 
    Predlog (ne tiha izmena) zato što kod jakog bola ispravan odgovor nije „tiho smanji obim da nastavi da
@@ -11,7 +13,7 @@ import { addDays, type IsoDate } from '../date';
 import { fmtKm } from '../format';
 import { setAlt } from '../plan/edit';
 import type { ResolvedDay, ResolvedPlan } from '../plan/types';
-import type { AltRecord, DayTag, LogEntry, PainRecord } from '../state';
+import type { AltRecord, DayTag, LogEntry, PainRecord } from '../exchange';
 import { runWalkText } from '../training/generator/runWalk';
 import { pl3 } from '../format';
 import type { RunWalk } from '../training/types';

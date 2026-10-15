@@ -3,6 +3,8 @@ import { canonical } from '@/test/fingerprint';
 import { firstDiff } from '@/test/firstDiff';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
+// Ciljni napor je smernica generatora; stari frontend je imao jednu za sve distance, ista je u svakoj kopiji.
+import { rpeTarget } from '../generators/fiveK/plan/describe';
 import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type {
@@ -138,7 +140,7 @@ describe('tekst i struktura naspram starog koda', () => {
       const resolved = resolvePlan(plan.weeks, { alts, moves: {} });
       for (const d of resolved.dated) {
         const old = j<unknown>(legacy.evalIn(`sessBreakdown(BY_ID[${JSON.stringify(d.id)}])`));
-        const mine = sessionBreakdown(d);
+        const mine = sessionBreakdown(d, rpeTarget);
         expect(firstDiff(canonical(j(mine)), canonical(old)), `${d.id} razlaganje`).toBeNull();
         expect(sessionNote(d), `${d.id} napomena`).toBe(
           legacy.evalIn(`sessNote(BY_ID[${JSON.stringify(d.id)}])`)

@@ -4,13 +4,13 @@ import {
   BODY_PARTS,
   acwrNow,
   acwrPlan,
-  injuryProposal,
   painModel,
   painStatus,
   partLevel,
   type LoadContext
 } from '../../domain/recovery';
-import { useResolvedPlan, useTrainingStore } from '../../stores';
+import { generatorForPlan } from '../../domain/generators/select';
+import { useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
 import { readinessModel } from './readiness';
@@ -19,6 +19,7 @@ import { readinessModel } from './readiness';
    iste funkcije domena kao ranije na tabu Oporavak; ništa se ne računa novo. `null` dok nema plana ili datuma. */
 export function useRecoveryModel() {
   const plan = useResolvedPlan();
+  const genPlan = useActiveGenPlan();
   const log = useTrainingStore((s) => s.log);
   const pain = useRecoveryStore((s) => s.knee);
   const wellness = useRecoveryStore((s) => s.wellness);
@@ -35,7 +36,8 @@ export function useRecoveryModel() {
       today,
       ctx,
       status,
-      proposal: injuryProposal(ctx, today),
+      // Predlog izmene plana zbog bola/prekida pravi generator distance aktivnog plana; bez generatora nema predloga.
+      proposal: generatorForPlan(genPlan)?.injuryProposal(ctx, today) ?? null,
       now,
       ahead: acwrPlan(ctx, today),
       /** Delovi tela sa bolom u poslednjih 14 dana, najjači prvi. */
@@ -46,5 +48,5 @@ export function useRecoveryModel() {
       chart: painModel(pain, today),
       ready: readinessModel({ status, load: now, wellness, today: todayStr as IsoDate })
     };
-  }, [plan, log, pain, wellness, outOfPlan, todayStr]);
+  }, [plan, genPlan, log, pain, wellness, outOfPlan, todayStr]);
 }

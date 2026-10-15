@@ -8,20 +8,17 @@ import { currentVdot, type StoredPredRow } from '../training/adaptation';
 import { predRowsForDay } from '../training/adaptation';
 import { generatePlan } from '@/test/legacyGenerator';
 import {
-  bestHour,
   geoMessage,
   roundCoord,
-  heatFor,
   hourFor,
   hourNow,
   parseForecast,
   runHour,
   runTemp,
-  targetPace,
   trainingHour,
-  weatherCard,
   type ForecastCache
 } from './index';
+import { bestHour, heatFor, targetPace, weatherCard } from '../generators/fiveK/weather';
 
 /* parity: vrucinaZa, vremeCist, vremeZaSat, vremeSada, najboljiSat, satTreninga, satTrcanja, tempTrcanja, cilJTempoDana (app.js). */
 

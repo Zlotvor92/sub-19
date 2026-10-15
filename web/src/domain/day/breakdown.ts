@@ -3,7 +3,6 @@
    regex-i. Ne menja se ništa: samo se čita. */
 
 import { fmtClock, fmtKm } from '../format';
-import { rpeTarget } from '../plan/describe';
 import type { ResolvedDay } from '../plan/types';
 import { runWalkText } from '../training/generator/runWalk';
 
@@ -14,7 +13,13 @@ const pace = (sec: number): string => fmtClock(sec);
 
 type Day = Pick<ResolvedDay, 'rest' | 'tag' | 'session' | 'desc' | 'runWalk'>;
 
-export function sessionBreakdown(d: Day | null | undefined): BreakdownRow[] | null {
+/** Ciljni napor dana — smernicu daje generator distance plana (pozivalac ga prosleđuje). */
+export type RpeFor = (d: Pick<ResolvedDay, 'rest' | 'tag'>) => { min: number; max: number } | null;
+
+export function sessionBreakdown(
+  d: Day | null | undefined,
+  rpeTarget: RpeFor
+): BreakdownRow[] | null {
   if (!d || d.rest) return null;
   const rows: BreakdownRow[] = [];
   const s = d.session;

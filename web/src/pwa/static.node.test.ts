@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { COMPARABLE_PACE_SEC, EASY_BAND_KM } from '../domain/day/compare';
 import { DECOUPLING_MIN_KM } from '../domain/activities/perkm';
-import { COOLER_HOUR_DELTA } from '../domain/weather';
+import { COOLER_HOUR_DELTA } from '../domain/generators/fiveK/weather';
 import { DRIFT_GOOD_BELOW, DRIFT_WARN_BELOW } from '../domain/zones';
 
 /* parity: test/doslednost.test.mjs — stvari koje se održavaju ručno i tiho zastare: uputstvo naspram koda, sidra, obrasci, politika privatnosti, trajanje animacija

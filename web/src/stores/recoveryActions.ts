@@ -1,7 +1,8 @@
-/* RADNJE NAD OPORAVKOM: bol, masa, prilagođavanje plana povredi. Pravila su u `domain/recovery`; ovde se čita stanje,
+/* RADNJE NAD OPORAVKOM: bol, masa, prilagođavanje plana povredi. Pravila predloga su u generatoru distance plana
+   (`domain/generators/<distanca>/recovery`), ostala u `domain/recovery`; ovde se čita stanje,
    poziva čista funkcija i upisuje rezultat jednim upisom po radnji. */
 
-import { applyInjuryProposal, type InjuryProposal } from '../domain/recovery';
+import { generatorForPlan, type InjuryProposal } from '../domain/generators/select';
 import {
   addWeight,
   deleteWeight,
@@ -12,7 +13,7 @@ import {
 import type { PainRecord } from '../domain/state';
 import type { ResolvedPlan } from '../domain/plan';
 import { useRecoveryStore } from './recoveryStore';
-import { useTrainingStore } from './trainingStore';
+import { activeGenPlan, useTrainingStore } from './trainingStore';
 
 const byDate = (a: { date: string }, b: { date: string }): number => (a.date < b.date ? -1 : 1);
 
@@ -91,7 +92,10 @@ export function removeWeightsBefore(date: string): number {
 /** „Prilagodi plan": izmene predloga idu u `alts`; vraća broj primenjenih. */
 export function applyProposal(plan: ResolvedPlan, proposal: InjuryProposal): number {
   const t = useTrainingStore.getState();
-  const { applied, alts } = applyInjuryProposal(proposal, plan, t.log, t.alts);
+  // Predlog i njegova primena pripadaju generatoru distance aktivnog plana.
+  const generator = generatorForPlan(activeGenPlan());
+  if (!generator) return 0;
+  const { applied, alts } = generator.applyInjuryProposal(proposal, plan, t.log, t.alts);
   if (applied) t.setAlts(alts);
   return applied;
 }

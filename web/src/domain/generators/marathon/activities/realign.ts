@@ -1,3 +1,5 @@
+/* Kopija za generator `marathon` (prenos zajedničke trenerske logike u generatore). Izvor: `domain/activities/realign.ts` u trenutku
+   prenosa (`ae6b43a`); dalje se razvija samo ovde. */
 /* TRČANJE BEZ DIREKTNOG POKLAPANJA DATUMA (npr. trčao utorak umesto planiranog ponedeljka): nađe najbliži
    neodrađen trkački dan ISTE nedelje sa sličnom kilometražom i pomeri plan preko POSTOJEĆE `swapDays`
    (uvek reverzibilno preko „Vrati raspored nedelje"). Konzervativni pragovi (±2 dana, razlika km ≤ 30 %) —
@@ -7,7 +9,7 @@ import type { IsoDate } from '../date';
 import { diffDays } from '../date';
 import { swapDays } from '../plan/edit';
 import { resolvePlan, weekOf } from '../plan/resolve';
-import type { AltRecord, LogEntry, StoredWeek } from '../state';
+import type { AltRecord, LogEntry, StoredWeek } from '../exchange';
 
 /** Najviše koliko dana od trčanja sme biti dan koji se pomera na njegovo mesto. */
 export const REALIGN_DAY_WINDOW = 2;

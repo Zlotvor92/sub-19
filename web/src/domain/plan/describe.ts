@@ -76,27 +76,5 @@ export function weekPhase(
   return 'VRHUNAC';
 }
 
-export interface RpeTarget {
-  min: number;
-  max: number;
-  txt: string;
-}
-
-const RPE_TARGET: Partial<Record<DayTag, RpeTarget>> = {
-  lako: { min: 3, max: 4, txt: 'Razgovorno — možeš da pričaš u punim rečenicama' },
-  rw: { min: 3, max: 4, txt: 'Razgovorno — deo za trčanje mora ostati lagan' },
-  lr: { min: 4, max: 5, txt: 'Razgovorno do postojano' },
-  tempo: { min: 7, max: 8, txt: 'Prijatno teško — kratke rečenice' },
-  int: { min: 8, max: 9, txt: 'Teško — ubrzano disanje, bez pričanja' },
-  test: { min: 9, max: 10, txt: 'Skoro maksimalno' },
-  trka: { min: 9, max: 10, txt: 'Maksimalno' }
-};
-
-/** Ciljni napor (RPE) po tipu dana; `null` za odmor i snagu. */
-export function rpeTarget(
-  d: Pick<ResolvedDay, 'rest' | 'tag'> | null | undefined
-): RpeTarget | null {
-  if (!d || d.rest) return null;
-  if (d.tag === 'snaga' || !d.tag) return null;
-  return RPE_TARGET[d.tag] ?? null;
-}
+/* Ciljni napor po tipu dana (`rpeTarget`) je trenerska smernica i od prenosa pripada generatoru distance plana
+   (`domain/generators/<distanca>/plan/describe.ts`). */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayWorkoutText, icuDuration } from './icuWorkouts';
+import { dayWorkoutText, icuDuration } from '../generators/fiveK/watch/icuWorkouts';
 import type { IntervalSession } from '../training/types';
 
 const day = {

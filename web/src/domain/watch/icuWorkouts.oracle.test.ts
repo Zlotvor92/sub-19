@@ -13,7 +13,7 @@ import {
   sessionFromDescription,
   thresholdPace,
   workoutsForWatch
-} from './index';
+} from '../generators/fiveK/watch/icuWorkouts';
 
 /* parity: icuTempo, icuTrajanje, icuRazdaljina, icuIzOpisa, icuTekstDana, icuDaniZaSlanje, icuPragTekst (app.js). */
 

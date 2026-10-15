@@ -4,6 +4,7 @@ import type { AltRecord, LogEntry } from '../../domain/state';
 import { Icon } from '../../components/ui/icons';
 import { dayOfMonth, dowLong, dowLongCap } from '../../lib/dates';
 import { sessionView } from '../session/sessionModel';
+import { usePlanRpe } from '../session/useEasyPace';
 
 export type DayRowState = 'done' | 'skip' | 'miss' | 'today' | 'next' | 'rest';
 
@@ -46,10 +47,11 @@ export function DayRow({
   easyPaceSec: number | null;
   onOpen: () => void;
 }) {
+  const rpe = usePlanRpe();
   const state = dayRowState(day, entry, today);
   const isToday = day.date === today;
   const title = day.rest ? 'Odmor' : dayLabel(day, !!alt);
-  const view = day.rest ? null : sessionView(day, { alt, easyPaceSec });
+  const view = day.rest ? null : sessionView(day, { alt, easyPaceSec, rpeTarget: rpe });
   const parts: string[] = [];
   /* Struktura sesije („6×1000 m @ 4:10/km“) je ono što čovek traži u listi nedelje; ostalo (km, stanje) ide posle nje. */
   const core = view?.rows && view.core && view.core !== title ? view.core : null;

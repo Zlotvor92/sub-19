@@ -11,7 +11,8 @@ import {
   sessionNote
 } from '../../domain/day';
 import type { BreakdownRow } from '../../domain/day';
-import { dayLabel, rpeTarget, sessKind, type ResolvedDay, type RpeTarget } from '../../domain/plan';
+import { dayLabel, sessKind, type ResolvedDay } from '../../domain/plan';
+import type { RpeTarget } from '../../domain/generators/select';
 import type { AltRecord } from '../../domain/state';
 
 export type SegKind = 'wu' | 'rep' | 'rec' | 'cd' | 'steady';
@@ -155,12 +156,17 @@ export function targetPace(
 
 export function sessionView(
   day: ResolvedDay,
-  ctx: { alt: AltRecord | undefined; easyPaceSec: number | null }
+  ctx: {
+    alt: AltRecord | undefined;
+    easyPaceSec: number | null;
+    /** Ciljni napor dana — smernica generatora distance aktivnog plana (`usePlanRpe`). */
+    rpeTarget: (d: Pick<ResolvedDay, 'rest' | 'tag'>) => RpeTarget | null;
+  }
 ): SessionView {
   const hasAlt = !!ctx.alt;
   const segments = hasAlt ? null : sessionSegments(day, ctx.easyPaceSec);
   const pace = targetPace(day, ctx.alt);
-  const rows = sessionBreakdown(day);
+  const rows = sessionBreakdown(day, ctx.rpeTarget);
   return {
     title: dayLabel(day, hasAlt),
     core: sessionCore(day),
@@ -168,7 +174,7 @@ export function sessionView(
     paceOwn: pace.own,
     km: day.km,
     minutes: estimateMinutes(day, segments, ctx.easyPaceSec),
-    rpe: rpeTarget(day),
+    rpe: ctx.rpeTarget(day),
     segments,
     rows,
     guide: day.rest ? null : sessionGuide(sessKind(day, hasAlt)),

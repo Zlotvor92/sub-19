@@ -1,15 +1,29 @@
 import { useMemo } from 'react';
-import { planBaselineVdot } from '../../domain/plan';
+import { generatorForPlan, type RpeTarget } from '../../domain/generators/select';
+import { planBaselineVdot, type ResolvedDay } from '../../domain/plan';
 import { currentVdot } from '../../domain/training/adaptation';
-import { paceForZone } from '../../domain/training/vdot/paceForZone';
 import { useActiveGenPlan, useTrainingStore } from '../../stores';
 
-/** Lagan tempo [s/km] iz tekuće forme (lanac VDOT-a, a kad ga nema polazna forma plana). `null` kad nema osnove (npr. lični plan bez forme). */
+/**
+ * Lagan tempo [s/km] iz tekuće forme (lanac VDOT-a, a kad ga nema polazna forma plana). Zonu računa generator distance
+ * aktivnog plana. `null` kad nema osnove (npr. lični plan bez forme) ili plan nema podržanu distancu.
+ */
 export function useEasyPace(): number | null {
   const chain = useTrainingStore((s) => s.vdotLog);
-  const meta = useActiveGenPlan()?.meta;
+  const genPlan = useActiveGenPlan();
   return useMemo(() => {
-    const v = currentVdot(chain) ?? planBaselineVdot(meta);
-    return v != null && Number.isFinite(v) ? paceForZone(v, 'E') : null;
-  }, [chain, meta]);
+    const generator = generatorForPlan(genPlan);
+    const v = currentVdot(chain) ?? planBaselineVdot(genPlan?.meta);
+    return generator && v != null && Number.isFinite(v) ? generator.paceForZone(v, 'E') : null;
+  }, [chain, genPlan]);
+}
+
+const NO_RPE = (): RpeTarget | null => null;
+
+/** Ciljni napor (RPE) po danu — smernica generatora distance aktivnog plana; bez generatora nema smernice. */
+export function usePlanRpe(): (
+  d: Pick<ResolvedDay, 'rest' | 'tag'> | null | undefined
+) => RpeTarget | null {
+  const genPlan = useActiveGenPlan();
+  return useMemo(() => generatorForPlan(genPlan)?.rpeTarget ?? NO_RPE, [genPlan]);
 }

@@ -7,7 +7,7 @@ import { deleteEntry, setStatus } from '../../stores/dayActions';
 import { useUIStore } from '../../stores/uiStore';
 import { useCycleModel } from '../cycle/useCycleModel';
 import { sessionView } from '../session/sessionModel';
-import { useEasyPace } from '../session/useEasyPace';
+import { useEasyPace, usePlanRpe } from '../session/useEasyPace';
 import { WorkoutFacts, WorkoutStructure, WorkoutWhy } from '../session/WorkoutParts';
 import { AiCard } from '../today/AiCard';
 import { CompareCard, MorningCard, WatchCard, ZonesCard, dataDate } from '../today/Cards';
@@ -34,6 +34,7 @@ export function DayScreen({ id }: { id: string }) {
   const clearAlt = useTrainingStore((s) => s.clearAlt);
   const cycle = useCycleModel();
   const easy = useEasyPace();
+  const rpe = usePlanRpe();
   const today = useUIStore((s) => s.today);
   const openSheet = useUIStore((s) => s.openSheet);
   const closeScreen = useUIStore((s) => s.closeScreen);
@@ -50,7 +51,7 @@ export function DayScreen({ id }: { id: string }) {
 
   const rest = day.rest;
   const edited = !!alt;
-  const view = sessionView(day, { alt, easyPaceSec: easy });
+  const view = sessionView(day, { alt, easyPaceSec: easy, rpeTarget: rpe });
   const phase = cycle?.weeks.find((w) => w.w === day.w)?.phase ?? null;
   const weekFocus = plan.weeks.find((w) => w.w === day.w)?.focus ?? '';
   const when = day.test ? 'TEST (opciono)' : `${dowShort(day.date)} ${fmtDayMonthYear(day.date)}`;

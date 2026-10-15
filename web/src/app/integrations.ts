@@ -14,6 +14,7 @@ import { createIcuSync } from '../services/icu/icuSync';
 import { createWeather, type GeoPort } from '../services/weather/weatherSync';
 import type { ForecastCache } from '../domain/weather';
 import { createWatchPush } from '../services/icu/icuPush';
+import { generatorForPlan } from '../domain/generators/select';
 import { planBaselineVdot, resolvePlan, type ResolvedPlan } from '../domain/plan';
 import { currentVdot } from '../domain/training/adaptation';
 import {
@@ -208,6 +209,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
         return null;
       }
     },
+    generator: () => generatorForPlan(activeGenPlan()),
     vdot: () => {
       const t = useTrainingStore.getState();
       return currentVdot(t.vdotLog) || planBaselineVdot(activeGenPlan()?.meta);

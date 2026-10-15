@@ -28,14 +28,6 @@ export {
   type BreakInfo,
   type LoadContext
 } from './load';
-export {
-  applyInjuryProposal,
-  injuryProposal,
-  runWalkForPain,
-  type InjuryChange,
-  type InjuryLevel,
-  type InjuryProposal,
-  type RecoveryContext
-} from './proposal';
+/* Predlog izmene plana zbog bola i prekida je u generatoru distance plana (`domain/generators/<distanca>/recovery`). */
 export * from './view';
 export * from './charts';

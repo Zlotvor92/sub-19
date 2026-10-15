@@ -21,7 +21,6 @@ import {
   perKmDetail,
   perKmStale,
   PERKM_VERSION,
-  realignPlan,
   type IcuActivity
 } from '../../domain/activities';
 import { recordAutoPace, syncSideRecords, type WorkPaceContext } from '../../domain/day';
@@ -31,6 +30,7 @@ import {
   icuConnected,
   type IcuLink
 } from '../../domain/icu';
+import { generatorForPlan } from '../../domain/generators/select';
 import { planBaselineVdot, resolvePlan, type ResolvedDay } from '../../domain/plan';
 import { planBoundary, recordOutOfPlan } from '../../domain/recovery';
 import type { LogEntry, WellnessRecord } from '../../domain/state';
@@ -198,7 +198,9 @@ export function createIcuSync(deps: IcuSyncDeps) {
     const byDate = icuRunsByDate(activities);
     const van = recordOutOfPlan(s.vanPlana, icuKmByDate(byDate), boundary as IsoDate);
     if (van) s.vanPlana = van;
-    const realigned = realignPlan({
+    /* Zamena dana pripada generatoru distance plana; plan bez podržane distance se ne preraspoređuje automatski. */
+    const generator = generatorForPlan(genPlan);
+    const realignInput = {
       weeks: genPlan.weeks,
       alts: s.alts,
       moves: s.moves,
@@ -206,7 +208,10 @@ export function createIcuSync(deps: IcuSyncDeps) {
       runsByDate: Object.fromEntries(
         Object.entries(byDate).map(([dt, l]) => [dt, l.map((a) => ({ distance: a.distance }))])
       )
-    });
+    };
+    const realigned = generator
+      ? generator.realignPlan(realignInput)
+      : { moves: { ...s.moves }, moved: 0 };
     s.moves = realigned.moves;
     plan = resolve();
 

@@ -135,8 +135,9 @@ const DISPLAY_EXCEPTIONS: Readonly<Record<string, readonly string[]>> = {};
    v. docs/generator-isolation/ARCHITECTURE.md). Kategorije:
    F = format razmene / tehnički upis (razrešavanje plana, ručne izmene, revizije, brisanje, provere ID-jeva);
    P = prikaz (oznake, faze, tekst run/walk);
-   M = merenje forme i fiziološka računica (VDOT, test 3 km, lanac forme, uparivanje redova, prikazni tempo);
-   S = zajednička trenerska smernica van generatora (ISTA za sve distance) — evidentirana kao preostala prepreka. */
+   M = merenje forme i fiziološka računica (VDOT, test 3 km, lanac forme, uparivanje redova).
+   Zajedničkih trenerskih smernica (ranije „S": `rpeTarget`, `paceForZone` u prikazu/vremenu/satu, `RECOVERY_JOG`) više
+   nema: od prenosa ih svaki generator ima sam. */
 const LEGACY_SHARED_ALLOWED: Readonly<Record<string, readonly string[]>> = {
   'plan/index.ts': [
     'resolvePlan', // F
@@ -159,15 +160,12 @@ const LEGACY_SHARED_ALLOWED: Readonly<Record<string, readonly string[]>> = {
     'sessKind', // P
     'dayLabel', // P
     'weekPhase', // P
-    'planBaselineVdot', // M (polazna forma iz `meta`)
-    'rpeTarget' // S (ciljni napor po tipu dana)
+    'planBaselineVdot' // M (polazna forma iz `meta`)
   ],
-  'plan/resolve.ts': ['resolvePlan', 'weekOf'], // F
-  'plan/edit.ts': ['swapDays', 'setAlt'], // F
   'plan/versions.ts': ['getPlanRevisions', 'recordPlanRevision'], // F
   'plan/preparation.ts': ['preparationSummary'], // P (sažetak `meta.preparation` koju je zapisao generator)
   'plan/baseline.ts': ['planBaselineVdot'], // M
-  'plan/describe.ts': ['sessKind', 'weekPhase', 'rpeTarget'], // P, P, S
+  'plan/describe.ts': ['sessKind', 'weekPhase'], // P
   'training/adaptation/index.ts': [
     'currentVdot', // M
     'recomputeVdotChain', // M
@@ -181,7 +179,7 @@ const LEGACY_SHARED_ALLOWED: Readonly<Record<string, readonly string[]>> = {
   'training/constants/product.ts': ['T3K_DIST_M', 'T3K_SEC_MIN'], // M
   'training/generator/runWalk.ts': ['runWalkText'], // P
   'training/prediction/summary.ts': ['predictionSummary'], // M
-  'training/sessions/calc.ts': ['sessQKm', 'RECOVERY_JOG'], // P (zbir za pregled promene), S (izvoz na sat)
+  'training/sessions/calc.ts': ['sessQKm'], // P (zbir za pregled promene)
   'training/test3k/index.ts': [
     't3kSeries',
     't3kVdot',
@@ -192,7 +190,6 @@ const LEGACY_SHARED_ALLOWED: Readonly<Record<string, readonly string[]>> = {
   ], // M
   'training/vdot/calculateVDOT.ts': ['vdotFromRace'], // M
   'training/vdot/limits.ts': ['isT3kId', 't3kPossible', 'vdotPossible', 't3kSlowest'], // F/M
-  'training/vdot/paceForZone.ts': ['paceForZone'], // M; S u `useEasyPace`, vremenu i izvozu na sat
   'training/vdot/racePrediction.ts': ['raceTimeForVdot'] // M
 };
 
@@ -527,5 +524,46 @@ describe('arhitektura: četiri nezavisna generatora', () => {
       names.filter((n) => !used.has(`${mod}:${n}`)).map((n) => `${mod}:${n}`)
     );
     expect(stale).toEqual([]);
+  });
+
+  /* Prenos zajedničke trenerske logike: predlog izmene plana zbog bola i prekida, automatska zamena dana, izvoz na sat,
+     vrućina/ciljni tempo/kartica vremena, ciljni napor i pragovi predloga. Deklarisani su SAMO u generatorima (svaki
+     svoju kopiju); u aplikaciji (van starog mehanizma i testova) ih nema. */
+  it('trenerska logika van plana postoji samo u generatorima, u svakom posebno', () => {
+    const NAMES = [
+      'injuryProposal',
+      'applyInjuryProposal',
+      'runWalkForPain',
+      'RW_BY_PAIN',
+      'PROPOSAL_HORIZON_DAYS',
+      'realignPlan',
+      'REALIGN_DAY_WINDOW',
+      'workoutsForWatch',
+      'thresholdPace',
+      'dayWorkoutText',
+      'sessionFromDescription',
+      'weatherCard',
+      'heatFor',
+      'heatAdvice',
+      'heatAdjustedPace',
+      'HEAT_BANDS',
+      'bestHour',
+      'COOLER_HOUR_DELTA',
+      'rpeTarget'
+    ];
+    const declares = (src: string, name: string): boolean =>
+      new RegExp(`export\\s+(?:async\\s+)?(?:function|const|let|class)\\s+${name}\\b`).test(src);
+    const app: string[] = [];
+    for (const [file, src] of files) {
+      if (isTest(file) || GENERATORS.some((g) => inside(file, g))) continue;
+      if (LEGACY.some((l) => inside(file, l))) continue; // stari mehanizam: bez produkcione uloge (pravila iznad)
+      for (const n of NAMES) if (declares(src, n)) app.push(`${relative(SRC, file)}: ${n}`);
+    }
+    expect(app).toEqual([]);
+    for (const root of GENERATORS) {
+      const own = [...files].filter(([f]) => inside(f, root) && !isTest(f));
+      const missing = NAMES.filter((n) => !own.some(([, src]) => declares(src, n)));
+      expect(missing, relative(SRC, root)).toEqual([]);
+    }
   });
 });

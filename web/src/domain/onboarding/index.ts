@@ -4,7 +4,6 @@ import { mondayOnOrBefore, parseIsoDate, diffDays, type IsoDate } from '../date'
 import { brojNedelja, distUReceni, fmtClock, pl3 } from '../format';
 import { generatorForDistance, productFor } from '../generators/select';
 import { vdotFromRace } from '../training/vdot/calculateVDOT';
-import { paceForZone } from '../training/vdot/paceForZone';
 import type { Intensity, PlanGenerationInput, QualityExperience } from '../training/types';
 
 export const TOTAL_STEPS = 4;
@@ -300,6 +299,9 @@ export interface FormPreview {
 export function formPreview(w: WizardState): FormPreview | null {
   const sec = pbTotalSec(w);
   if (sec == null || !pbSanityOk(w)) return null;
+  // Tempo po zonama daje generator izabrane ciljne distance; distanca bez generatora nema pregled.
+  const generator = generatorForDistance(w.raceDist);
+  if (!generator) return null;
   const vdot = vdotFromRace(w.pbDist, sec);
   return {
     vdot,
@@ -311,7 +313,7 @@ export function formPreview(w: WizardState): FormPreview | null {
         ['Interval', 'I'],
         ['Rep', 'R']
       ] as const
-    ).map(([label, z]) => ({ label, sec: paceForZone(vdot, z) }))
+    ).map(([label, z]) => ({ label, sec: generator.paceForZone(vdot, z) }))
   };
 }
 

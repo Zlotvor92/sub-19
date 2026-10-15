@@ -1,3 +1,5 @@
+/* Kopija za generator `tenK` (prenos zajedničke trenerske logike u generatore). Izvor: `domain/watch/icuWorkouts.ts` u trenutku
+   prenosa (`ae6b43a`); dalje se razvija samo ovde. */
 /* PLANIRANI TRENINZI ZA SAT (intervals.icu → Garmin Connect → sat). Čisto: dan plana → tekst u sintaksi intervals.icu.
 
    Zamke koje su ovde već ugrađene (učene na stvarnim greškama):

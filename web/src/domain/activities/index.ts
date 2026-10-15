@@ -26,13 +26,7 @@ export {
   type WorkLap
 } from './laps';
 export { extractPaceFromDesc, mergeDay, type MergedDay, type RawActivity } from './merge';
-export {
-  REALIGN_DAY_WINDOW,
-  REALIGN_KM_TOLERANCE,
-  realignPlan,
-  type RealignInput,
-  type RealignResult
-} from './realign';
+/* Automatska zamena dana posle uvoza je u generatoru distance plana (`domain/generators/<distanca>/activities/realign.ts`). */
 export {
   hasDetails,
   importedEntry,

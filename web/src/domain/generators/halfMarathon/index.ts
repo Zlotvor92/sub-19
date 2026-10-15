@@ -80,3 +80,34 @@ export {
   VDOT_PROPOSAL_MIN_MEASUREMENTS,
   VDOT_PROPOSAL_THRESHOLD
 } from './training/constants/heuristics';
+/* Zajednička trenerska logika preneta u generator (posle segmenta 5/5): predlog izmene plana zbog bola i prekida,
+   automatska zamena dana posle uvoza, izvoz treninga na sat, tempo uz vrućinu, ciljni napor i tempo po zoni. */
+export {
+  applyInjuryProposal,
+  injuryProposal,
+  runWalkForPain,
+  type InjuryChange,
+  type InjuryLevel,
+  type InjuryProposal,
+  type RecoveryContext
+} from './recovery/proposal';
+export { realignPlan, type RealignInput, type RealignResult } from './activities/realign';
+export {
+  dayWorkoutText,
+  sessionFromDescription,
+  thresholdPace,
+  workoutsForWatch,
+  type WatchBatch,
+  type WatchEvent
+} from './watch/icuWorkouts';
+export {
+  heatAdjustedPace,
+  heatAdvice,
+  heatFor,
+  targetPace,
+  weatherCard,
+  type WeatherCardInput,
+  type WeatherCardModel
+} from './weather';
+export { rpeTarget, type RpeTarget } from './plan/describe';
+export { paceForZone } from './training/vdot/paceForZone';

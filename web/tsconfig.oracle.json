@@ -30,6 +30,7 @@
     "src/test/tenK/*.ts",
     "src/test/halfMarathon/*.ts",
     "src/test/marathon/*.ts",
-    "src/test/personal/*.ts"
+    "src/test/personal/*.ts",
+    "src/test/guidance/*.ts"
   ]
 }

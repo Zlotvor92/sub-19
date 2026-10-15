@@ -4,9 +4,13 @@
 
 **Razdvajanje generisanja i adaptacije u četiri generatora je završeno i automatski proverljivo. Razdvajanje u
 strogom smislu konačnog cilja („nijedna zajednička trenerska politika, stari engine uklonjen") NIJE potpuno završeno**,
-zbog dve konkretne preostale prepreke (§3): (1) stari zajednički engine je bez produkcione uloge, ali fizički nije
-obrisan; (2) postoji zajednička trenerska logika van generatora (predlog izmene plana zbog bola i prekida, prikazni
-propisi tempa, ciljni RPE), koja nije bila deo starog engine-a i nije izdvajana.
+zbog preostale prepreke u §3.1: stari zajednički engine je bez produkcione uloge, ali fizički nije obrisan.
+
+**Dopuna (posle segmenta 5/5, po instrukciji „prenosi se u sve generatore"):** zajednička trenerska logika van plana —
+predlog izmene plana zbog bola i prekida, automatska zamena dana, izvoz na sat, tempo uz vrućinu, ciljni RPE i tempo po
+zoni za prikaz — preneta je u SVAKI od četiri generatora (sopstvena kopija), a aplikacija je zove samo preko izabranog
+generatora. Ponašanje je dokazano isto (14 744 toka × 4 kopije). Prepreka §3.2 time je uklonjena; ostaje samo
+zajednički PRIKAZ stanja (bol, opterećenje, spremnost) i merni sloj, koji ne menjaju plan.
 
 Izmene su commitovane i pushovane na granu `claude/generator-isolation-5k-10k-hm-marathon` (na `348391c`, po
 `AGENTS.md` i izričitoj instrukciji). PR nije otvoren; nije spojeno u `main`; nije objavljeno.
@@ -17,7 +21,7 @@ Izmene su commitovane i pushovane na granu `claude/generator-isolation-5k-10k-hm
 |---|---|---|---|
 | 1 | Svaki generator samostalno generiše i adaptira | **ispunjeno** | četiri direktorijuma sa sopstvenim kopijama; `architecture.node.test.ts` (izvršno zatvorenje svakog u svom direktorijumu); `runtimeIsolation.node.test.ts` (svež modul jednog generatora = referenca) |
 | 2 | Nema međusobnih ni zajedničkih izvršnih trenerskih zavisnosti | **ispunjeno za generatore** | statički (ni tipom, ni re-exportom, ni dinamičkim `import()`); runtime: nijedan zajednički objekat, probna promena politike jednog ne menja ostale; jedini kanal je eksplicitna predaja „kraća distanca" (argument) |
-| 3 | Nijedan aplikacioni postprocesor ne menja njihovu trenersku politiku | **delimično** | izbor je čist (`select.ts` bez starog koda i bez rezerve); prag rekalibracije prebačen u generator. ALI `domain/recovery` (bol/prekid) predlaže i posle potvrde upisuje izmene budućih dana nad planom bilo koje distance — zajednička adaptacija van generatora (§3.2) |
+| 3 | Nijedan aplikacioni postprocesor ne menja njihovu trenersku politiku | **ispunjeno (posle prenosa)** | izbor je čist (`select.ts` bez starog koda i bez rezerve); prag rekalibracije, predlog zbog bola/prekida, zamena dana, izvoz na sat, tempo uz vrućinu i RPE su u generatoru; `architecture.node.test.ts` proverava da tih 19 funkcija nema u aplikaciji, a da ih ima svaki generator |
 | 4 | Stari zajednički engine nema aktivnu produkcionu ulogu | **ispunjeno** | `main.tsx` (sa lenjim ekranima, analiza po imenu) dostiže tačno 29 fajlova starog koda, nijedan za generisanje/adaptaciju; lični plan preusmeren na HM uz dokaz; UI brojač poziva starog mehanizma = 0 |
 | 5 | Postojeći podaci kompatibilni i zaštićeni | **ispunjeno** | nema migracije ni regeneracije pri učitavanju; reference sa zaštićenim danima identične; tokovi u UI testovima čuvaju istoriju |
 | 6 | Bez neobjašnjenih regresija | **ispunjeno** | sve reference (5K, 10K, HM, maraton, polazni `main`, lični plan) identične, nijedno polje isključeno; jedine promene ponašanja su namerne i navedene u §4 |
@@ -114,7 +118,10 @@ Izvršeno (iz `web/` osim gde piše):
 | `node --test "**/*.test.mjs"` (iz `test/`) | 396/396 |
 | `npx playwright test` | 77/77, jedan prolaz (PWA testovi `pwa.spec.ts:38/:65` su u segmentu 1 zabeleženi kao nestabilni i na polaznom commitu; ovde prošli) |
 
-Nije izvršeno: ponavljanje E2E više puta; testovi na stvarnom uređaju/produkciji; deploy (zabranjen uputstvom).
+Posle prenosa logike u generatore (dopuna): `npm run check` 172 fajla / 1 652 testa; build uspešan; node 396/396;
+E2E 76/77 u punom prolazu (pao poznato nestabilni `pwa.spec.ts:38`, ponovljen 4/4 prolazi).
+
+Nije izvršeno: ponavljanje celog E2E više puta; testovi na stvarnom uređaju/produkciji; deploy (zabranjen uputstvom).
 
 ## 3. Preostale prepreke (konkretno)
 
@@ -130,19 +137,24 @@ snimanja (`legacyApi`, `capture*`) uz zapis da se reference ponovo snimaju na `3
 i nije urađena prećutno u okviru čišćenja. Rizik dok kod postoji: nizak — produkcioni uvoz bilo kog od tih modula obara
 `architecture.node.test.ts`.
 
-### 3.2 Zajednička trenerska logika van generatora
+### 3.2 Zajednička trenerska logika van generatora — UKLONJENO prenosom u generatore
 
-| Modul | Uticaj | Šta bi trebalo za potpunu izolaciju |
-|---|---|---|
-| `domain/recovery/*` + `stores/recoveryActions.ts` | predlog (pa upis posle potvrde) izmene budućih dana zbog bola/prekida, isti za sve distance: run/walk po jačini bola, ACWR 0,8/1,3, lestvica 50/70/85 %, nedelja bez kvaliteta posle 10 dana | odluka vlasnika proizvoda: preneti u generatore (svaki svoju politiku) ili formalno proglasiti aplikacionom bezbednosnom politikom iznad generatora |
-| `features/session/useEasyPace.ts`, `domain/weather`, `domain/watch/icuWorkouts.ts` | prikazani/izvezeni tempo iz trenutne forme (`paceForZone`), korekcija po vremenu, rezervni tempi na satu — nezavisno od propisa generatora | prikaz/izvoz čitati iz propisa generatora ili preko generatorskog API-ja |
-| `plan/describe.rpeTarget` | ciljni RPE po tipu dana, isti za sve distance | isto |
-| `domain/activities/realign.ts` | automatska zamena dana (±2 dana, ≤ 30 % km) | razvrstati kao tehničko usklađivanje ili preneti |
-| merni sloj (`training/adaptation/{chain,measure,matching}`, `vdot/*`, `test3k`) | lanac forme (`vdotLog`) računa aplikacija i daje ga generatorima kao ulaz; pravila prihvatanja merenja su zajednička | razvrstati kao zajednički format merenja ili preneti pravila prihvatanja u generatore |
+| Ranije (jedno za sve distance) | Sada |
+|---|---|
+| `domain/recovery/proposal.ts` (+ pragovi predloga) | `<g>/recovery/*` u svakom generatoru; aplikaciona kopija obrisana |
+| `domain/activities/realign.ts` | `<g>/activities/realign.ts`; aplikaciona kopija obrisana |
+| `domain/watch/icuWorkouts.ts` | `<g>/watch/icuWorkouts.ts`; aplikacioni modul obrisan |
+| vrućina, tempo uz vrućinu, najhladniji sat, kartica u `domain/weather` | `<g>/weather/index.ts`; uklonjeno iz aplikacije |
+| `plan/describe.rpeTarget` | `<g>/plan/describe.ts`; uklonjeno iz aplikacije |
+| `paceForZone` u lakom tempu, čarobnjaku, vremenu, satu | `<g>/training/vdot/paceForZone.ts` preko generatora |
 
-Sve stavke su popisane i zamrznute u `LEGACY_SHARED_ALLOWED` (osim `domain/recovery`, `realign`, `weather`, `ai`, koji
-ne potiču iz starog engine-a); nova zajednička trenerska zavisnost iz starog koda obara test. Odluka o vlasniku nije
-tehnička i nije doneta u ovom segmentu.
+Dokaz: `domain/generators/guidance.node.test.ts` — referenca snimljena iz aplikacionog koda pre prenosa (`ae6b43a`):
+14 744 toka (predlog zbog bola 1 584 i primena 1 264, zamena dana 363, izvoz na sat 198 + 2 428 dana, opisi 1 219,
+RPE 1 237, ciljni tempo 4 856, kartica vremena 1 320, vrućina/run-walk/prag/zone) nad planovima sve četiri distance i
+ličnim planom; **svaka od četiri kopije daje tačno isti zapis**, nijedno polje izuzeto.
+
+Ostaje zajedničko (ne menja plan): prikaz stanja bola, ACWR i spremnosti (`domain/recovery/{pain,load,view}`), čitanje
+prognoze, merni sloj (lanac forme) i AI saveti. Ako i prikaz stanja treba da bude po generatoru, to je sledeća odluka.
 
 ## 4. Namerne promene ponašanja (sve u aplikacionom sloju, nijedna trenerska)
 
@@ -151,6 +163,9 @@ tehnička i nije doneta u ovom segmentu.
 3. 5K/10K plan: odluka o pripremi se više ne poziva (ranije stari `isLimitedLongPreparation` → uvek `false`); isti rezultat
    osim za ručno sastavljen 5K/10K plan sa `cycleDecision.kind === 'base'`, koji aplikacija ne pravi.
 4. Ugovor `PlanGenerator` sadrži `recalibrationMinMeasurements`/`recalibrationThreshold` (iste vrednosti 3 i 1,5).
+5. Prenos (dopuna): za plan bez podržane distance nema predloga zbog bola, automatske zamene dana, slanja na sat
+   (eksplicitna poruka), kartice vremena, RPE ni lakog tempa; u čarobnjaku nepodržana ciljna distanca nema pregled tempa
+   (čarobnjak je ne nudi). Za sve četiri podržane distance i lični plan ponašanje je identično referenci.
 
 ## 5. Automatske provere i komande
 

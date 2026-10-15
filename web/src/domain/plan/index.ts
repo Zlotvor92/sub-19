@@ -7,9 +7,7 @@ export {
   sessKind,
   dayLabel,
   weekPhase,
-  rpeTarget,
-  type WeekPhase,
-  type RpeTarget
+  type WeekPhase
 } from './describe';
 export type { DayOrigin, ResolvedDay, ResolvedPlan, ResolvedWeek } from './types';
 /* Stare izvršne funkcije promene cilja/rekalibracije (`./replan`) se više ne izvoze odavde: aplikacija ih zove samo kroz
