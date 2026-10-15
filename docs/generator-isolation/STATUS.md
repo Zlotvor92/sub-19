@@ -5,15 +5,15 @@ funkcija, trenerskog engine-a, baznih klasa, limitera i postprocesora. Zajednič
 izbor generatora i format razmene podataka.
 
 **Grana: `claude/generator-isolation-5k-10k`** — na njoj su odvojeni generatori za **5K** (segment 1) i **10K** (segment 2).
-**Segment 3 (polumaraton)** je urađen u radnom stablu lokalne grane `claude/generator-isolation-hm` (napravljena od
-`90f2d0e`, vrha grane 5K+10K) — **bez commita i bez push-a**, po uputstvu. Segment 4 odvaja **maraton**; segment 5 uklanja
+**Segment 3 (polumaraton)** je na istoj grani, commit `36403cf` (na `90f2d0e`), pushovano; PR nije otvoren, nije spojeno u
+`main`. Segment 4 odvaja **maraton**; segment 5 uklanja
 stari zajednički mehanizam. Ranija grana `claude/generator-isolation-5k` sadrži iste commitove do `a8a5baa`.
 
 | Segment | Distanca | Stanje |
 |---|---|---|
 | 1/5 | 5K | **urađeno** — commit `515bba3`, grana `claude/generator-isolation-5k-10k` (prvobitno `claude/generator-isolation-5k`), bez PR-a |
 | 2/5 | 10K | **urađeno** (v. „Segment 2/5 — 10K" ispod) — commit `7966766`, grana `claude/generator-isolation-5k-10k`, bez PR-a |
-| 3/5 | polumaraton | **urađeno** (v. „Segment 3/5 — polumaraton" na kraju) — radno stablo grane `claude/generator-isolation-hm`, bez commita |
+| 3/5 | polumaraton | **urađeno** (v. „Segment 3/5 — polumaraton" na kraju) — commit `36403cf`, grana `claude/generator-isolation-5k-10k`, bez PR-a |
 | 4/5 | maraton | nije počet — biće odvojen kao zaseban generator |
 | 5/5 | uklanjanje starog zajedničkog mehanizma | nije počet |
 
@@ -507,8 +507,8 @@ proveriti da HM opcija „kraća distanca" i dalje predaje 5K/10K izdvojenim gen
 
 - Polazni commit: **`90f2d0e5a21524ab408ba38060347f97e9843955`** (vrh `origin/claude/generator-isolation-5k-10k`: segment 1 `515bba3`,
   segment 2 `7966766`, dokumentacija `90f2d0e`). `origin/main` je i dalje **`05088e0`** — segmenti 1 i 2 **nisu spojeni u
-  `main`**; HM je zato rađen na lokalnoj grani `claude/generator-isolation-hm` napravljenoj od `90f2d0e`, ne od `main`.
-  Rad je u radnom stablu, **bez commita, push-a i PR-a** (po uputstvu).
+  `main`**; HM je zato rađen od `90f2d0e`, ne od `main` (lokalna grana `claude/generator-isolation-hm`), i na zahtev
+  pushovan na `claude/generator-isolation-5k-10k` kao commit `36403cf` (bez PR-a).
 - `AGENTS.md` i dalje **ne postoji**.
 - Preduslovi provereni u kodu, ne u dokumentu: `generators/fiveK/` (68 izvornih fajlova) i `generators/tenK/` (68) postoje;
   `select.ts` šalje 5000 → `fiveK`, 10000 → `tenK`; testovi izolacije i ekvivalencije 5K/10K postoje i prolaze.
@@ -790,7 +790,8 @@ deo repozitorijuma.
 
 ## Stanje radnog stabla (za segment 4)
 
-Lokalna grana `claude/generator-isolation-hm` (od `90f2d0e`), **necommitovano**. Novi fajlovi:
+Grana `claude/generator-isolation-5k-10k`, commit `36403cf` (na `90f2d0e`), pushovano; PR nije otvoren, nije spojeno u
+`main`. Novi fajlovi:
 `web/src/domain/generators/halfMarathon/**`, `web/src/test/halfMarathon/**`, `web/src/test/fixtures/halfMarathon-reference.json.gz`,
 `web/src/features/onboarding/halfMarathonFlow.test.tsx`. Izmenjeni: `web/src/domain/generators/{select,handoff}.ts`,
 `web/src/domain/generators/otherDistances.node.test.ts`, `web/src/stores/executionActions.ts`,
