@@ -3,24 +3,11 @@ import type { Tone as BadgeTone } from '../../components/ui/Badge';
 import { Row, Section } from '../../components/ui/primitives';
 import type { IsoDate } from '../../domain/date';
 import { fmtDayMonth, fmtKm, fmtNum } from '../../domain/format';
-import {
-  ACWR_HIGH,
-  ACWR_MAX,
-  ACWR_RETURN,
-  ACWR_SCALE,
-  acwrBand,
-  acwrPosition,
-  acwrText,
-  seriesModel,
-  wellnessFor,
-  wellnessSeries,
-  type Acwr,
-  type Tone
-} from '../../domain/recovery';
+import { seriesModel, wellnessFor, wellnessSeries, type Tone } from '../../domain/recovery';
+import type { Acwr, StateAssessment } from '../../domain/generators/select';
 import type { WellnessRecord } from '../../domain/state';
 import { useUIStore } from '../../stores/uiStore';
 import { SeriesChart } from './charts';
-import { loadMeaning, wellnessSignals } from './readiness';
 
 /** Ton domena (boje) → ton oznake (stanja). */
 export const toBadge = (t: Tone): BadgeTone =>
@@ -33,11 +20,14 @@ export const toBadge = (t: Tone): BadgeTone =>
 export function HrvSection({
   wellness,
   connected,
-  today
+  today,
+  assess
 }: {
   wellness: Readonly<Record<string, WellnessRecord>>;
   connected: boolean;
   today: IsoDate;
+  /** Procena signala pripada generatoru distance aktivnog plana. */
+  assess: Pick<StateAssessment, 'wellnessSignals'>;
 }) {
   const [sel, setSel] = useState<number | null>(null);
   const openScreen = useUIStore((s) => s.openScreen);
@@ -63,7 +53,7 @@ export function HrvSection({
       </Section>
     );
   const model = seriesModel(series, 'hrv', 'percent');
-  const sig = wellnessSignals(wellness, today, true).signals.find((s) => s.key === 'hrv');
+  const sig = assess.wellnessSignals(wellness, today, true).signals.find((s) => s.key === 'hrv');
   return (
     <Section title="HRV" extra={fmtDayMonth(lastRec.datum)}>
       {model ? (
@@ -138,7 +128,12 @@ export function RestingHrSection({
 }
 
 /** Zone skale odnosa opterećenja; širina je udeo skale 0–2,0 (granica 1,5 mora biti UNUTAR slike, da crvena zona ima gde da se vidi). */
-const ZONES: ReadonlyArray<{ cls: string; from: number; to: number; label: string }> = [
+const zones = ({
+  ACWR_RETURN,
+  ACWR_MAX,
+  ACWR_HIGH,
+  ACWR_SCALE
+}: StateAssessment): ReadonlyArray<{ cls: string; from: number; to: number; label: string }> => [
   { cls: 'low', from: 0, to: ACWR_RETURN, label: 'nizak' },
   { cls: 'ok', from: ACWR_RETURN, to: ACWR_MAX, label: 'bezbedno' },
   { cls: 'high', from: ACWR_MAX, to: ACWR_HIGH, label: '' },
@@ -148,11 +143,25 @@ const ZONES: ReadonlyArray<{ cls: string; from: number; to: number; label: strin
 /** „Opterećenje“: akutno/hronično (ACWR) kao ograda za doziranje povratka, ne kao predviđanje povrede. */
 export function LoadSection({
   now,
-  planned
+  planned,
+  assess
 }: {
   now: Acwr;
   planned: { planned: number; ratio: number | null };
+  /** Pojasevi i tekstovi opterećenja pripadaju generatoru distance aktivnog plana. */
+  assess: StateAssessment;
 }) {
+  const {
+    ACWR_HIGH,
+    ACWR_MAX,
+    ACWR_RETURN,
+    ACWR_SCALE,
+    acwrBand,
+    acwrPosition,
+    acwrText,
+    loadMeaning
+  } = assess;
+  const ZONES = zones(assess);
   if (now.ratio == null)
     return (
       <Section title="Opterećenje" extra="poslednjih 7 dana">

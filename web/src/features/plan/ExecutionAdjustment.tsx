@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
 import { Section } from '../../components/ui/primitives';
 import { fmtClock, fmtDayMonth, fmtDayMonthYear } from '../../domain/format';
-import { productFor } from '../../domain/generators/select';
+import {
+  productFor,
+  type DecisionPoint,
+  type ExecutionAdjustmentOptions,
+  type PreparationDecision,
+  type PreparationOption,
+  type RunWalkMode
+} from '../../domain/generators/select';
 import type { ResolvedPlan } from '../../domain/plan';
-import type { RunWalkMode } from '../../domain/plan/runWalkAdjustment';
 import { getPlanRevisions } from '../../domain/plan/versions';
-import type {
-  DecisionPoint,
-  PreparationDecision,
-  PreparationOption
-} from '../../domain/plan/preparationDecision';
-import type { ExecutionAdjustmentOptions } from '../../domain/plan/executionAdjustment';
 import { useRecoveryStore, useTrainingStore } from '../../stores';
 import {
   commitPlanChange,

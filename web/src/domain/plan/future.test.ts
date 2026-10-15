@@ -1,14 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate } from '../date';
 import type { GenPlanState } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
 import { matchPlanRows } from '../training/adaptation/matching';
 import { sessKm } from '../training/sessions/calc';
-import { adaptGeneratedPlan } from './adapt';
-import { graftFuturePlan } from './future';
-import { mergeOverrides, planRecalibrated, planWithNewGoal, reentryPlan } from './replan';
 import { resolvePlan } from './resolve';
 import type { PlanGenerationInput } from '../training/types';
+import { routedEngine } from '@/test/generators';
+
+/* Stari zajednički engine je obrisan: svaka funkcija ide generatoru distance plana o kome je reč (`routedEngine`). */
+const {
+  adaptGeneratedPlan,
+  generatePlan,
+  graftFuturePlan,
+  mergeOverrides,
+  planRecalibrated,
+  planWithNewGoal,
+  reentryPlan
+} = routedEngine(5000);
 
 const start = parseIsoDate('2026-10-05')!;
 const input: PlanGenerationInput = {

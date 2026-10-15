@@ -1,8 +1,8 @@
+import { adaptGeneratedPlan } from '@/test/generators';
 import { d6Snapshot } from '@/test/d6Snapshot';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
-import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, VdotRecord } from '../state';
 import { generatePlan } from '@/test/legacyGenerator';

@@ -3,6 +3,8 @@ import type { ReferenceRow } from '@/test/fiveK/reference';
 import { formPreview, initialWizard } from '../onboarding';
 import { formPreviewFlows, guidanceFlows, type GuidanceApi } from '@/test/guidance/scenarios';
 import { loadGuidanceReference, rowsOf } from '@/test/guidance/reference';
+import { stateFlows, type StateApi } from '@/test/guidance/stateScenarios';
+import { loadStateReference } from '@/test/guidance/stateReference';
 import * as fiveK from './fiveK';
 import * as halfMarathon from './halfMarathon';
 import * as marathon from './marathon';
@@ -76,4 +78,16 @@ describe('trenerska logika van plana: svaki generator ima svoju kopiju, ponašan
     for (const n of changed)
       expect(now[n]?.full).toBe(rowsOf([{ name: n, value: null, pure: true }])[n]?.full);
   });
+
+  /* Procena stanja trkača (status bola, opterećenje i pojasevi, prekid, ostvarenost, spremnost „danas", jutarnji signali)
+     — referenca iz aplikacionog koda pre prenosa (`5f56a52`, `src/test/fixtures/state-reference.json.gz`). */
+  const state = loadStateReference();
+  it('referenca stanja postoji i uzeta je pre prenosa', () => {
+    expect(state?.baselineSha).toBe('5f56a52');
+    expect(Object.keys(state?.flows ?? {}).length).toBe(7380);
+  });
+  for (const [name, mod] of GENERATORS)
+    it(`${name}: procena stanja = referenca`, { timeout: 600_000 }, () => {
+      expect(diff(rowsOf(stateFlows(mod as unknown as StateApi)), state!.flows)).toEqual([]);
+    });
 });

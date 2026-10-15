@@ -1,11 +1,11 @@
+import { generatePlan, adaptGeneratedPlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
-import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { ResolvedPlan } from '../plan/types';
 import type { LogEntry } from '../state/types';
-import { generatePlan } from './generator/generatePlan';
-import { assessRunWalkProgress } from './runWalkProgress';
 import type { PlanGenerationInput } from './types';
+/* Plan u ovom testu je 5K: procena run/walk koraka 5K generatora. */
+import { assessRunWalkProgress } from '@/domain/generators/fiveK/training/runWalkProgress';
 
 const U01: PlanGenerationInput = {
   startDate: '2026-10-12',

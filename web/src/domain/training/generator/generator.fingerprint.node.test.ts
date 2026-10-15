@@ -1,3 +1,4 @@
+import { generatePlan } from '@/test/generators';
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
@@ -9,7 +10,6 @@ import {
 } from '@/test/fingerprint';
 import { scenariji } from '@/test/generatorScenarios';
 import type { PlanGenerationInput, TrainingPlan } from '../types';
-import { generatePlan } from './generatePlan';
 
 /* GOLDEN MASTER GENERATORA (2 304 scenarija). Fixture je uzet nad STARIM generatorom (APP_VERSION 282, commit b7afc41); novi generator mora dati isti
    SHA-256 po scenariju (kanonski zapis: sortirani ključevi, brojevi na 3 decimale; zastavica `taper` se ne računa — ENGINE_CHANGES D5).

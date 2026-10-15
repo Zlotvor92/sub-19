@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConfirmHost } from '../../components/ui/ConfirmHost';
 import * as m from '../../domain/generators/marathon';
 import { regeneratorForDistance } from '../../domain/generators/handoff';
@@ -28,44 +28,8 @@ import { Wizard } from './Wizard';
 
 /* STVARNI MARATONSKI TOK: izbor maratona u čarobnjaku → generisanje → prikaz → čuvanje → učitavanje → adaptacija
    (povratak posle pauze) → vraćanje verzije → promena cilja → odluka o ograničenoj pripremi nad sačuvanim planom →
-   „kraća distanca: polumaraton". Stari zajednički mehanizam je ovde obmotan brojačem poziva, uključujući staru odluku o
-   pripremi: za maratonski plan ne sme biti pozvan nijednom (dokaz da store-ovi i ekrani zaista idu kroz izdvojeni
-   maratonski generator, a ne samo da daju isti rezultat). Opciju polumaraton pravi izdvojeni HM generator (predaja kroz
+   „kraća distanca: polumaraton". Stari zajednički engine je obrisan; izolaciju dokazuju arhitektonski i runtime test. Opciju polumaraton pravi izdvojeni HM generator (predaja kroz
    `handoff.ts`). Isti postupak kao `fiveKFlow`, `tenKFlow` i `halfMarathonFlow.test.tsx`. */
-
-const { legacyCalls, spyModule } = vi.hoisted(() => {
-  const legacyCalls: string[] = [];
-  const spyModule =
-    (name: string) =>
-    async (
-      importOriginal: () => Promise<Record<string, unknown>>
-    ): Promise<Record<string, unknown>> => {
-      const mod = await importOriginal();
-      return Object.fromEntries(
-        Object.entries(mod).map(([k, v]) => [
-          k,
-          typeof v === 'function'
-            ? (...args: unknown[]) => {
-                legacyCalls.push(`${name}.${k}`);
-                return (v as (...a: unknown[]) => unknown)(...args);
-              }
-            : v
-        ])
-      );
-    };
-  return { legacyCalls, spyModule };
-});
-vi.mock('../../domain/training/generator/generatePlan', spyModule('generatePlan'));
-vi.mock('../../domain/training/generator/assess', spyModule('assess'));
-vi.mock('../../domain/plan/future', spyModule('future'));
-vi.mock('../../domain/plan/regenerate', spyModule('regenerate'));
-vi.mock('../../domain/plan/executionAdjustment', spyModule('executionAdjustment'));
-vi.mock('../../domain/plan/replan', spyModule('replan'));
-vi.mock('../../domain/plan/runWalkAdjustment', spyModule('runWalkAdjustment'));
-vi.mock('../../domain/training/runWalkProgress', spyModule('runWalkProgress'));
-vi.mock('../../domain/training/qualityGate', spyModule('qualityGate'));
-vi.mock('../../domain/training/adaptation/proposal', spyModule('proposal'));
-vi.mock('../../domain/plan/preparationDecision', spyModule('preparationDecision'));
 
 const handoff = regeneratorForDistance as m.ShorterDistanceHandoff;
 
@@ -74,12 +38,8 @@ const LATER = '2026-02-11';
 const blank = (): PersistedState => JSON.parse(JSON.stringify(seedState())) as PersistedState;
 
 beforeEach(() => {
-  legacyCalls.length = 0;
   hydratePersisted(blank());
   useUIStore.setState({ wizard: false, confirm: null, today: TODAY });
-});
-afterEach(() => {
-  legacyCalls.length = 0;
 });
 
 describe('maraton: unos → generisanje → prikaz → čuvanje → učitavanje → adaptacija → odluka', () => {
@@ -176,7 +136,6 @@ describe('maraton: unos → generisanje → prikaz → čuvanje → učitavanje 
         predLock: useTrainingStore.getState().predLock
       });
       const before = useTrainingStore.getState().genPlan!;
-      legacyCalls.length = 0;
 
       // Adaptacija: povratak posle potvrđene pauze, pregled pa upis.
       const resolved = resolvePlan(before.weeks, replanContext());
@@ -262,8 +221,6 @@ describe('maraton: unos → generisanje → prikaz → čuvanje → učitavanje 
       for (const d of [...past, futureDone, manual, moved, lockedDay])
         expect(JSON.stringify(goalDays.get(d.id)), d.id).toBe(JSON.stringify(oldDays.get(d.id)));
 
-      expect(legacyCalls).toEqual([]);
-
       // Odluka o ograničenoj pripremi nad sačuvanim planom (32 km/ned je ispod maratonskog vrhunca od 55 km/ned).
       const stored = useTrainingStore.getState().genPlan!;
       expect(m.isLimitedLongPreparation(stored.meta)).toBe(true);
@@ -317,15 +274,12 @@ describe('maraton: unos → generisanje → prikaz → čuvanje → učitavanje 
           predLock: useTrainingStore.getState().predLock
         })
       ).toBe(historyBefore);
-      expect(legacyCalls).toEqual([]);
     }
   );
 
-  /* Kontrola: stari mehanizam ostaje samo za plan bez podržane distance (7000 m); brojač mora da ga vidi. */
-  /* Segment 5/5: stari mehanizam više nije rezerva ni za plan bez podržane distance. Takav plan se EKSPLICITNO odbija
-     (poruka `UNSUPPORTED_DISTANCE`), bez poziva starog mehanizma i bez zamene drugim generatorom. Da brojač zaista radi,
-     kontrola na kraju direktno poziva obmotan stari modul. */
-  it('plan bez podržane distance se eksplicitno odbija, bez starog mehanizma (kontrola brojača)', async () => {
+  /* Plan bez podržane distance se EKSPLICITNO odbija (poruka `UNSUPPORTED_DISTANCE`), bez zamene drugim generatorom;
+     stari zajednički engine više ne postoji. */
+  it('plan bez podržane distance se eksplicitno odbija, bez zamene drugim generatorom', () => {
     const plan = m.adaptGeneratedPlan(
       m.generatePlan({
         startDate: TODAY,
@@ -338,7 +292,7 @@ describe('maraton: unos → generisanje → prikaz → čuvanje → učitavanje 
         intensity: 'std'
       } as never)
     )!;
-    // Isti oblik plana, ali deklarisan sa nepodržanom distancom: izbor generatora mora poslati stari mehanizam.
+    // Isti oblik plana, ali deklarisan sa nepodržanom distancom.
     useTrainingStore.getState().patch({
       genPlan: {
         ...plan,
@@ -346,23 +300,11 @@ describe('maraton: unos → generisanje → prikaz → čuvanje → učitavanje 
         ulaz: { raceDistM: 7000 }
       }
     });
-    legacyCalls.length = 0;
     const t = useTrainingStore.getState();
     const view = resolvePlan(t.genPlan!.weeks, replanContext());
     expect(() => executionModel(view, LATER)).toThrow(UNSUPPORTED_DISTANCE);
     expect(previewExecution(view, LATER, {})).toEqual({ ok: false, reason: UNSUPPORTED_DISTANCE });
-    expect(legacyCalls).toEqual([]);
-    // Kontrola brojača: direktan poziv obmotanog starog modula se beleži.
-    const legacy = await import('../../domain/plan/executionAdjustment');
-    legacy.executionModel(view, LATER, replanContext());
-    expect(legacyCalls).toContain('executionAdjustment.executionModel');
     // Odluka o pripremi: plan bez podržane distance je nema (`null`), bez poziva stare odluke.
-    legacyCalls.length = 0;
     expect(storedPreparationDecision(LATER)).toBeNull();
-    expect(legacyCalls).toEqual([]);
-    // Kontrola brojača za staru odluku: direktan poziv se beleži.
-    const legacyDecision = await import('../../domain/plan/preparationDecision');
-    legacyDecision.isLimitedLongPreparation(t.genPlan!.meta);
-    expect(legacyCalls).toContain('preparationDecision.isLimitedLongPreparation');
   });
 });

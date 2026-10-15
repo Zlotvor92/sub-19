@@ -112,3 +112,34 @@ export {
 } from './weather';
 export { rpeTarget, type RpeTarget } from './plan/describe';
 export { paceForZone } from './training/vdot/paceForZone';
+/* Procena stanja trkača (status bola, opterećenje i pojasevi, prekid, ostvarenost, spremnost „danas"). */
+export {
+  ACWR_HIGH,
+  ACWR_MAX,
+  ACWR_RETURN,
+  ACWR_SCALE,
+  acuteKm,
+  acwrBand,
+  acwrNow,
+  acwrPlan,
+  acwrPosition,
+  acwrText,
+  breakInfo,
+  chronicKm,
+  completion,
+  daysWithoutRunning,
+  largestWeeklyKm,
+  painStatus,
+  plannedKm7,
+  returnToRunPhase,
+  type Acwr,
+  type AcwrBand,
+  type PainStatus
+} from './recovery';
+export {
+  loadMeaning,
+  readinessModel,
+  wellnessSignals,
+  type Readiness,
+  type Signal
+} from './recovery/readiness';

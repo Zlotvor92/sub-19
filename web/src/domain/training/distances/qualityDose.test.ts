@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { sessInt, sessPyramid, sessProg, sessTempo } from '../sessions/build';
+import {
+  sessInt,
+  sessPyramid,
+  sessProg,
+  sessTempo
+} from '@/domain/generators/fiveK/training/sessions/build';
 import { sessKm, sessQKm } from '../sessions/calc';
-import { constrainSession } from '../sessions/constraints';
+import { constrainSession } from '@/domain/generators/fiveK/training/sessions/constraints';
 import type { Intensity, SessionDay } from '../types';
-import { PROFILE_5K } from './profile5k';
-import { PROFILE_10K } from './profile10k';
-import { applyQualityDose } from './qualityDose';
-import type { QualityRequest } from './types';
+import { PROFILE_5K } from '@/domain/generators/fiveK/training/distances/profile5k';
+import { PROFILE_10K } from '@/domain/generators/tenK/training/distances/profile10k';
+import { applyQualityDose } from '@/domain/generators/fiveK/training/distances/qualityDose';
+import type { QualityRequest } from '@/domain/generators/fiveK/training/distances/types';
+
+/* Stari zajednički engine je obrisan: 5K profil i doza dolaze iz 5K generatora, 10K profil iz 10K generatora. */
 
 const request = (extra: Partial<QualityRequest> = {}): QualityRequest => ({
   qualW: 1,

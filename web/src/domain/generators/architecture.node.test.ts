@@ -34,7 +34,9 @@ import {
    7. (segment 5/5) izbor generatora (`select.ts`, `handoff.ts`) ne uvozi stari mehanizam ni tipom;
    8. (segment 5/5) ZAMRZNUT INVENTAR: aplikacija sme iz `domain/training`/`domain/plan` da uvozi samo popisana imena
       (format razmene, prikaz, merenje forme — `LEGACY_SHARED_ALLOWED`). Svaki novi uvoz trenerske funkcije ili konstante
-      iz starog koda u aplikaciju obara test i mora se svesno razvrstati. */
+      iz starog koda u aplikaciju obara test i mora se svesno razvrstati;
+   9. (posle segmenta 5/5) stari zajednički engine je OBRISAN: nijedan njegov izvršni modul generisanja/adaptacije ne
+      postoji u stablu (`DELETED_LEGACY_ENGINE`); testovi koji su ga koristili idu kroz generatore (`src/test/generators.ts`). */
 
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const DOMAIN = join(SRC, 'domain');
@@ -90,7 +92,8 @@ function edges(files: ReadonlyMap<string, string>, file: string): Edge[] {
   return out;
 }
 
-/** Izvršne funkcije starog generisanja/adaptacije (ugovor generatora). */
+/** Izvršne funkcije starog generisanja/adaptacije (ugovor generatora). Obrisane su; pravila 4 i 6 i dalje paze da se
+    ne vrate. */
 const LEGACY_EXECUTION_MODULES = [
   'training/generator/generatePlan.ts',
   'training/generator/assess.ts',
@@ -128,6 +131,57 @@ const LEGACY_BARREL_NAMES: Readonly<Record<string, readonly string[]>> = {
     'fitnessEvidence'
   ]
 };
+/** Stari zajednički engine (generisanje, adaptacija, profili distanci, sesije) — obrisan posle segmenta 5/5. */
+const DELETED_LEGACY_ENGINE: readonly string[] = [
+  'plan/adapt.ts',
+  'plan/automaticAlts.ts',
+  'plan/executionAdjustment.ts',
+  'plan/fatigueRecovery.ts',
+  'plan/finalize.ts',
+  'plan/future.ts',
+  'plan/preparationDecision.ts',
+  'plan/prescriptionText.ts',
+  'plan/regenerate.ts',
+  'plan/replan.ts',
+  'plan/returnGrowth.ts',
+  'plan/runWalkAdjustment.ts',
+  'training/adaptation/evidence.ts',
+  'training/adaptation/proposal.ts',
+  'training/constants/distances.ts',
+  'training/distances/hmProgression.ts',
+  'training/distances/index.ts',
+  'training/distances/profile10k.ts',
+  'training/distances/profile21k.ts',
+  'training/distances/profile42k.ts',
+  'training/distances/profile5k.ts',
+  'training/distances/qualityDose.ts',
+  'training/distances/types.ts',
+  'training/execution.ts',
+  'training/generator/allocation.ts',
+  'training/generator/assess.ts',
+  'training/generator/athleteAssessment.ts',
+  'training/generator/daySlots.ts',
+  'training/generator/focus.ts',
+  'training/generator/formPolicy.ts',
+  'training/generator/generatePlan.ts',
+  'training/generator/longRunProgression.ts',
+  'training/generator/validateInput.ts',
+  'training/generator/volume.ts',
+  'training/generator/weeklyLoad.ts',
+  'training/prediction/index.ts',
+  'training/qualityGate.ts',
+  'training/runWalkProgress.ts',
+  'training/sessions/build.ts',
+  'training/sessions/constraints.ts',
+  'training/sessions/cruise.ts',
+  'training/sessions/deload.ts',
+  'training/sessions/intervals.ts',
+  'training/sessions/longRun.ts',
+  'training/sessions/prescription.ts',
+  'training/sessions/progression.ts',
+  'training/sessions/repetitions.ts',
+  'training/sessions/tempo.ts'
+];
 /** Prikazni izuzeci: od segmenta 5/5 nema ih (`describePoint` je prebačen u ekran, ime distance daje generator). */
 const DISPLAY_EXCEPTIONS: Readonly<Record<string, readonly string[]>> = {};
 
@@ -493,6 +547,18 @@ describe('arhitektura: četiri nezavisna generatora', () => {
       expect(seen.has(join(DOMAIN, f)), f).toBe(false);
   });
 
+  it('stari zajednički engine je obrisan: nijedan njegov modul ne postoji', () => {
+    const present = DELETED_LEGACY_ENGINE.filter((f) => existsSync(join(DOMAIN, f)));
+    expect(present).toEqual([]);
+    for (const f of LEGACY_EXECUTION_MODULES) expect(existsSync(f), relative(SRC, f)).toBe(false);
+    // Ni kroz barel: `domain/plan` i `domain/training/adaptation` više ne izvoze funkcije generisanja/adaptacije.
+    for (const [barrel, names] of Object.entries(LEGACY_BARREL_NAMES)) {
+      const src = stripComments(readFileSync(barrel, 'utf8'));
+      for (const n of names)
+        expect(new RegExp(`\\b${n}\\b`).test(src), `${n} u ${barrel}`).toBe(false);
+    }
+  });
+
   it('izbor generatora (select.ts, handoff.ts) ne uvozi stari mehanizam, ni tipom', () => {
     const out: string[] = [];
     for (const f of ['generators/select.ts', 'generators/handoff.ts'].map((x) => join(DOMAIN, x)))
@@ -529,7 +595,7 @@ describe('arhitektura: četiri nezavisna generatora', () => {
   /* Prenos zajedničke trenerske logike: predlog izmene plana zbog bola i prekida, automatska zamena dana, izvoz na sat,
      vrućina/ciljni tempo/kartica vremena, ciljni napor i pragovi predloga. Deklarisani su SAMO u generatorima (svaki
      svoju kopiju); u aplikaciji (van starog mehanizma i testova) ih nema. */
-  it('trenerska logika van plana postoji samo u generatorima, u svakom posebno', () => {
+  it('trenerska logika van plana i procena stanja postoje samo u generatorima, u svakom posebno', () => {
     const NAMES = [
       'injuryProposal',
       'applyInjuryProposal',
@@ -549,14 +615,37 @@ describe('arhitektura: četiri nezavisna generatora', () => {
       'HEAT_BANDS',
       'bestHour',
       'COOLER_HOUR_DELTA',
-      'rpeTarget'
+      'rpeTarget',
+      // procena stanja trkača (status bola, opterećenje, prekid, spremnost)
+      'painStatus',
+      'returnToRunPhase',
+      'PAIN_STOP',
+      'PAIN_WATCH',
+      'acwrNow',
+      'acwrPlan',
+      'acuteKm',
+      'chronicKm',
+      'breakInfo',
+      'completion',
+      'largestWeeklyKm',
+      'daysWithoutRunning',
+      'plannedKm7',
+      'acwrBand',
+      'acwrText',
+      'acwrPosition',
+      'ACWR_MAX',
+      'ACWR_RETURN',
+      'ACWR_HIGH',
+      'ACWR_SCALE',
+      'readinessModel',
+      'loadMeaning',
+      'wellnessSignals'
     ];
     const declares = (src: string, name: string): boolean =>
       new RegExp(`export\\s+(?:async\\s+)?(?:function|const|let|class)\\s+${name}\\b`).test(src);
     const app: string[] = [];
     for (const [file, src] of files) {
       if (isTest(file) || GENERATORS.some((g) => inside(file, g))) continue;
-      if (LEGACY.some((l) => inside(file, l))) continue; // stari mehanizam: bez produkcione uloge (pravila iznad)
       for (const n of NAMES) if (declares(src, n)) app.push(`${relative(SRC, file)}: ${n}`);
     }
     expect(app).toEqual([]);

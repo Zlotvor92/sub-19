@@ -8,13 +8,15 @@
 
    parity: test/generator-racunica.test.mjs — svih 3 testa. */
 
+import { generatePlan, routedEngine } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
-import { planVdotForWeek } from '../prediction';
 import { kmBetweenReps, sessDesc, sessKm } from '../sessions/calc';
 import type { IntervalSession, TrainingPlan } from '../types';
 import { paceForZone } from '../vdot/paceForZone';
-import { generatePlan } from './generatePlan';
+
+/* Stari zajednički engine je obrisan: VDOT nedelje računa generator distance plana. */
+const { planVdotForWeek } = routedEngine();
 
 const ZONE: Record<string, 'I' | 'T' | 'R'> = {
   Intervali: 'I',

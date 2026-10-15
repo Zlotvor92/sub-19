@@ -1,11 +1,10 @@
 /* Rekalibracija plana u store-ovima: posle nje se plan i izmerena forma SLAŽU (nema predloga tempa), a lanac forme kreće od iste
    polazne tačke kao pre (`planBaselineVdot`) — inače bi se prošlost lanca pomerila. */
 
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { planBaselineVdot, resolvePlan } from '../domain/plan';
-import { adaptGeneratedPlan } from '../domain/plan/adapt';
 import { seedState, type PersistedState } from '../domain/state';
-import { generatePlan } from '../domain/training/generator/generatePlan';
 import type { PlanGenerationInput } from '../domain/training/types';
 import { hydratePersisted, useTrainingStore } from './index';
 import { workPaceContext } from './dayActions';

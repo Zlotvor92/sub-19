@@ -2,18 +2,23 @@
 
 ## Zaključak
 
-**Razdvajanje generisanja i adaptacije u četiri generatora je završeno i automatski proverljivo. Razdvajanje u
-strogom smislu konačnog cilja („nijedna zajednička trenerska politika, stari engine uklonjen") NIJE potpuno završeno**,
-zbog preostale prepreke u §3.1: stari zajednički engine je bez produkcione uloge, ali fizički nije obrisan.
+**Razdvajanje četiri generatora je završeno.** Svaki generator (5K, 10K, polumaraton, maraton) sam generiše i
+adaptira plan i sam nosi svu trenersku logiku koju aplikacija koristi; aplikacija ga zove samo preko izbora generatora.
+Stari zajednički engine je **obrisan** (48 modula), a testovi koji su ga koristili prevedeni su na generatore.
 
-**Dopuna (posle segmenta 5/5, po instrukciji „prenosi se u sve generatore"):** zajednička trenerska logika van plana —
-predlog izmene plana zbog bola i prekida, automatska zamena dana, izvoz na sat, tempo uz vrućinu, ciljni RPE i tempo po
-zoni za prikaz — preneta je u SVAKI od četiri generatora (sopstvena kopija), a aplikacija je zove samo preko izabranog
-generatora. Ponašanje je dokazano isto (14 744 toka × 4 kopije). Prepreka §3.2 time je uklonjena; ostaje samo
-zajednički PRIKAZ stanja (bol, opterećenje, spremnost) i merni sloj, koji ne menjaju plan.
+Tok posle segmenta 5/5 (po instrukcijama korisnika):
+1. „Prenosi se u sve generatore": predlog izmene plana zbog bola i prekida, automatska zamena dana, izvoz na sat, tempo uz
+   vrućinu, ciljni RPE i tempo po zoni — u svakom generatoru (14 744 toka × 4 kopije = referenca).
+2. „Završi i dvojku": prikaz stanja — status bola, ACWR/opterećenje, prekid, spremnost „danas", wellness signali — u
+   svakom generatoru (7 380 tokova × 4 kopije = referenca).
+3. „Briši engine, prepravi sve potrebne testove": 48 modula obrisano; v. §3.1.
 
-Izmene su commitovane i pushovane na granu `claude/generator-isolation-5k-10k-hm-marathon` (na `348391c`, po
-`AGENTS.md` i izričitoj instrukciji). PR nije otvoren; nije spojeno u `main`; nije objavljeno.
+Zajedničko van generatora ostaje samo ono što ne odlučuje o treningu: format razmene i upis (razrešavanje plana, ručne
+izmene, revizije), prikaz (oznake, faze), merni sloj (lanac forme, VDOT, test 3 km), čitanje prognoze, zapis trčanja van
+plana, grafikoni i AI saveti.
+
+Izmene su commitovane i pushovane na granu `claude/generator-isolation-5k-10k-hm-marathon` (po `AGENTS.md` i
+izričitoj instrukciji). PR nije otvoren; nije spojeno u `main`; nije objavljeno.
 
 ## 1. Kriterijumi završetka
 
@@ -21,8 +26,8 @@ Izmene su commitovane i pushovane na granu `claude/generator-isolation-5k-10k-hm
 |---|---|---|---|
 | 1 | Svaki generator samostalno generiše i adaptira | **ispunjeno** | četiri direktorijuma sa sopstvenim kopijama; `architecture.node.test.ts` (izvršno zatvorenje svakog u svom direktorijumu); `runtimeIsolation.node.test.ts` (svež modul jednog generatora = referenca) |
 | 2 | Nema međusobnih ni zajedničkih izvršnih trenerskih zavisnosti | **ispunjeno za generatore** | statički (ni tipom, ni re-exportom, ni dinamičkim `import()`); runtime: nijedan zajednički objekat, probna promena politike jednog ne menja ostale; jedini kanal je eksplicitna predaja „kraća distanca" (argument) |
-| 3 | Nijedan aplikacioni postprocesor ne menja njihovu trenersku politiku | **ispunjeno (posle prenosa)** | izbor je čist (`select.ts` bez starog koda i bez rezerve); prag rekalibracije, predlog zbog bola/prekida, zamena dana, izvoz na sat, tempo uz vrućinu i RPE su u generatoru; `architecture.node.test.ts` proverava da tih 19 funkcija nema u aplikaciji, a da ih ima svaki generator |
-| 4 | Stari zajednički engine nema aktivnu produkcionu ulogu | **ispunjeno** | `main.tsx` (sa lenjim ekranima, analiza po imenu) dostiže tačno 29 fajlova starog koda, nijedan za generisanje/adaptaciju; lični plan preusmeren na HM uz dokaz; UI brojač poziva starog mehanizma = 0 |
+| 3 | Nijedan aplikacioni postprocesor ne menja njihovu trenersku politiku | **ispunjeno (posle prenosa)** | izbor je čist (`select.ts` bez starog koda i bez rezerve); prag rekalibracije, predlog zbog bola/prekida, zamena dana, izvoz na sat, tempo uz vrućinu, RPE i procena stanja (bol, ACWR, spremnost) su u generatoru; `architecture.node.test.ts` proverava da tih 42 imena nema u aplikaciji, a da ih ima svaki generator |
+| 4 | Stari zajednički engine nema aktivnu produkcionu ulogu | **ispunjeno — obrisan** | 48 modula obrisano, test obara vraćanje; `main.tsx` (sa lenjim ekranima, analiza po imenu) dostiže tačno 29 fajlova zajedničkog koda (format, prikaz, merenje), nijedan za generisanje/adaptaciju; lični plan preusmeren na HM uz dokaz |
 | 5 | Postojeći podaci kompatibilni i zaštićeni | **ispunjeno** | nema migracije ni regeneracije pri učitavanju; reference sa zaštićenim danima identične; tokovi u UI testovima čuvaju istoriju |
 | 6 | Bez neobjašnjenih regresija | **ispunjeno** | sve reference (5K, 10K, HM, maraton, polazni `main`, lični plan) identične, nijedno polje isključeno; jedine promene ponašanja su namerne i navedene u §4 |
 | 7 | Granice automatski proverljive | **ispunjeno** | §5; svako novo pravilo provereno veštačkim prekršajem |
@@ -49,7 +54,7 @@ generatorsku politiku mimo izbora. Nađena zajednička trenerska logika van star
 
 Inventar po modulu: `STATUS.md`, „Inventar starog koda (stanje posle segmenta 5)". Ukratko: 47 izvršnih modula starog
 generisanja/adaptacije nema produkcionog potrošača i nije potreban za čitanje sačuvanih podataka; potrošači su samo
-testovi. Uklonjeni su produkciono ožičenje i zastareli izvozi; moduli nisu obrisani (§3.1). Za stare podatke nije
+testovi. Uklonjeni su produkciono ožičenje i zastareli izvozi; moduli su naknadno obrisani (§3.1). Za stare podatke nije
 potreban adapter: učitavanje ne generiše ni ne menja plan.
 
 ### Zadatak 3 — aplikacione putanje
@@ -125,17 +130,16 @@ Nije izvršeno: ponavljanje celog E2E više puta; testovi na stvarnom uređaju/p
 
 ## 3. Preostale prepreke (konkretno)
 
-### 3.1 Stari engine fizički postoji (bez produkcione uloge)
+### 3.1 Stari engine — OBRISAN
 
-47 izvršnih modula u `web/src/domain/training/**` i `web/src/domain/plan/**`. Brisanje zahteva: (a) zamenu starog
-`generatePlan` u 53 i `adaptGeneratedPlan` u 51 testnom fajlu (uglavnom pravljenje ulaznih planova u UI/oracle testovima)
-pozivom izdvojenog generatora; (b) odluku o 46 istorijskih testova starog koda (prevesti na generator distance ili ukloniti);
-(c) prevod golden master-a `generator.fingerprint` na izbor generatora (svih 2 304 slučaja je već u referencama po
-distanci); (d) premeštanje tipova razmene (`ExecutionAdjustmentOptions`, `ReplanContext`, `RunWalkAdjustmentOptions`,
-`PreparationDecision`/`Choice`/`Option`, `DecisionPoint`, `VdotProposal`…) u modul samo sa tipovima; (e) uklanjanje harnesa
-snimanja (`legacyApi`, `capture*`) uz zapis da se reference ponovo snimaju na `348391c`. To je promena ~100 fajlova testova
-i nije urađena prećutno u okviru čišćenja. Rizik dok kod postoji: nizak — produkcioni uvoz bilo kog od tih modula obara
-`architecture.node.test.ts`.
+Obrisano 48 modula u `web/src/domain/training/**` i `web/src/domain/plan/**` (spisak: `STATUS.md`, dopuna 2;
+`DELETED_LEGACY_ENGINE` u `architecture.node.test.ts`, koji obara test ako se bilo koji vrati). Urađeno:
+(a) ulazni planovi u testovima → `src/test/generators.ts` (generator distance ulaza, isti put kao aplikacija; izlaz
+dokazano identičan starom engine-u); (b) istorijski testovi starog koda prevedeni na kopije u generatorima, očekivane
+vrednosti nepromenjene; dva koraka koja aplikacija za 5K nikad ne poziva („izbor pripreme" u lancu umora) zamenjena su
+proverom da ih 5K nema; (c) brojač poziva starog engine-a u UI tokovima uklonjen (nema šta da broji); (d) tipovi razmene
+izvedeni iz ugovora generatora u `select.ts`; (e) harnesi snimanja referenci više ne snimaju — proveravaju referencu i
+nose recept za ponovno snimanje iz worktree-a na zabeleženom commitu. Reference (`*.json.gz`) nisu dirane.
 
 ### 3.2 Zajednička trenerska logika van generatora — UKLONJENO prenosom u generatore
 
@@ -153,8 +157,9 @@ Dokaz: `domain/generators/guidance.node.test.ts` — referenca snimljena iz apli
 RPE 1 237, ciljni tempo 4 856, kartica vremena 1 320, vrućina/run-walk/prag/zone) nad planovima sve četiri distance i
 ličnim planom; **svaka od četiri kopije daje tačno isti zapis**, nijedno polje izuzeto.
 
-Ostaje zajedničko (ne menja plan): prikaz stanja bola, ACWR i spremnosti (`domain/recovery/{pain,load,view}`), čitanje
-prognoze, merni sloj (lanac forme) i AI saveti. Ako i prikaz stanja treba da bude po generatoru, to je sledeća odluka.
+Prikaz stanja (status bola, ACWR, prekid, spremnost, wellness signali) je naknadno takođe prenet u svaki generator
+(`<g>/recovery/{pain,load,constants,view,readiness}.ts`; dokaz 7 380 tokova × 4 kopije, referenca `5f56a52`).
+Zajedničko ostaje: čitanje prognoze, zapis trčanja van plana, merni sloj (lanac forme), grafikoni i AI saveti.
 
 ## 4. Namerne promene ponašanja (sve u aplikacionom sloju, nijedna trenerska)
 

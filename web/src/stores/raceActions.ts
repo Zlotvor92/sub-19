@@ -2,9 +2,12 @@
    funkcija i upisuje rezultat jednim upisom po radnji. */
 
 import { recomputeChain } from '../domain/day';
-import type { RecalibratedStoredPlan } from '../domain/plan';
-import { UNSUPPORTED_DISTANCE, generatorForPlan } from '../domain/generators/select';
-import type { VdotProposal } from '../domain/training/adaptation';
+import {
+  UNSUPPORTED_DISTANCE,
+  generatorForPlan,
+  type RecalibratedStoredPlan,
+  type VdotProposal
+} from '../domain/generators/select';
 import { addT3k, removeT3k, t3kVdot, upsertMeasurement } from '../domain/training/test3k';
 import { t3kPossible } from '../domain/training/vdot/limits';
 import type { ResolvedPlan } from '../domain/plan';

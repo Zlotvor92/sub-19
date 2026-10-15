@@ -1,12 +1,13 @@
+import { adaptGeneratedPlan } from '@/test/generators';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { canonical } from '@/test/fingerprint';
 import { firstDiff } from '@/test/firstDiff';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
-import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry, PainRecord } from '../state';
 import { generatePlan } from '@/test/legacyGenerator';
+import { recordOutOfPlan } from './index';
 import {
   acuteKm,
   acwrNow,
@@ -15,11 +16,9 @@ import {
   chronicKm,
   completion,
   daysWithoutRunning,
-  largestWeeklyKm,
-  painStatus,
-  recordOutOfPlan,
-  returnToRunPhase
-} from './index';
+  largestWeeklyKm
+} from '../generators/fiveK/recovery/load';
+import { painStatus, returnToRunPhase } from '../generators/fiveK/recovery/pain';
 import {
   applyInjuryProposal,
   injuryProposal,

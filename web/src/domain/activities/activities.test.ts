@@ -1,7 +1,6 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../date';
-import { adaptGeneratedPlan } from '../plan/adapt';
-import { generatePlan } from '../training/generator/generatePlan';
 import type { GenPlanState } from '../state';
 import {
   decouplingPerKm,

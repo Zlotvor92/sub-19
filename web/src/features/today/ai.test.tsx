@@ -1,12 +1,11 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setApp } from '../../app/appContext';
 import type { App } from '../../app/createApp';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan, type ResolvedDay } from '../../domain/plan';
 import { seedState, type LogEntry, type PersistedState } from '../../domain/state';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { ADMIN_UID } from '../../services/config';
 import { hydratePersisted, useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';

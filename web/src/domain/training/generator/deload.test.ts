@@ -5,11 +5,11 @@
    The 58–92% delivered-volume band is a product regression guard, not a
    universal physiological threshold. */
 
+import { generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
 import type { Day, PlanGenerationInput, Session, Week } from '../types';
 import { ZONE_FOR_KIND } from '../vdot/zoneForKind';
-import { generatePlan } from './generatePlan';
 
 const PB: Record<number, { distM: number; sec: number }> = {
   5000: { distM: 5000, sec: 1290 },

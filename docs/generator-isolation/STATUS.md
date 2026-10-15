@@ -1302,6 +1302,85 @@ dodat `export function heatFor` u `domain/weather` → pao; uklonjen `export` za
 
 ## Šta je i dalje zajedničko (ne menja plan)
 
-Prikaz stanja bola, ACWR i spremnosti (`domain/recovery/{pain,load,view,charts,constants}`), čitanje prognoze
-(`domain/weather`), merni sloj (lanac forme, VDOT, test 3 km) i AI saveti. Stari engine (§ inventar segmenta 5) i dalje
-fizički postoji bez produkcione uloge.
+Stanje posle ove dopune: v. sledeću dopunu (prikaz stanja je prenet, stari engine obrisan).
+
+# Dopuna 2 — prikaz stanja u generatore i brisanje starog engine-a
+
+Instrukcija: „I kad završiš to, završi i dvojku, briši engine, prepravi sve potrebne testove." Polazni commit:
+**`5f56a52`** (grana `claude/generator-isolation-5k-10k-hm-marathon`).
+
+## A. Prikaz stanja (bol, opterećenje, spremnost) — u svakom generatoru
+
+| Ranije (aplikacija, jedno za sve distance) | Sada u `domain/generators/<g>/recovery/` | Aplikacija |
+|---|---|---|
+| `domain/recovery/pain.ts` (status bola, faza povratka, `PAIN_STOP`/`PAIN_WATCH`) | `pain.ts` (kopija već postojala za predlog) | obrisano |
+| `domain/recovery/load.ts` — ACWR, akutni/hronični km, prekid, ispunjenost, najveća nedelja, dani bez trčanja, plan 7 dana | `load.ts` | ostaje samo zapis trčanja van plana i granica plana (`LoadContext`, `workoutDate`, `realKm`, `outOfPlanKm`, `recordOutOfPlan`, `planBoundary`) |
+| `domain/recovery/constants.ts` | `constants.ts` | obrisano |
+| `domain/recovery/view.ts` — ACWR skala/pojas/tekst/položaj | `view.ts` | ostaje prikaz mase/wellness/grafikoni |
+| `features/recovery/readiness.ts` — spremnost „danas", značenje opterećenja, wellness signali | `readiness.ts` | obrisano; `useRecoveryModel` i kartice zovu generator aktivnog plana (`assess`), bez generatora nema procene |
+
+Ugovor `PlanGenerator` (`select.ts`) dobio je `painStatus`, `acwrNow`, `acwrPlan`, `readinessModel`, `loadMeaning`,
+`wellnessSignals`, `acwrBand`, `acwrText`, `acwrPosition`, `ACWR_MAX/RETURN/HIGH/SCALE`.
+
+Dokaz: referenca snimljena iz aplikacionog koda **pre** prenosa (`5f56a52`, `TZ=UTC`):
+`src/test/fixtures/state-reference.json.gz`, harnes `src/test/guidance/{stateScenarios,stateReference}.ts` — **7 380 tokova**
+(status bola i faza povratka po profilima bola, ACWR sada/plan, prekid, ispunjenost, spremnost, značenje opterećenja,
+wellness signali, pojas/tekst/položaj ACWR) nad planovima sve četiri distance i ličnim planom. `guidance.node.test.ts`:
+**svaka od četiri kopije = referenca**, nijedno polje izuzeto. Arhitektonsko pravilo „samo u generatorima" prošireno je na
+23 imena procene stanja (ukupno 42).
+
+## B. Stari zajednički engine — OBRISAN
+
+Obrisano **48 modula** (`git rm`): `domain/plan/{adapt,automaticAlts,executionAdjustment,fatigueRecovery,finalize,future,
+preparationDecision,prescriptionText,regenerate,replan,returnGrowth,runWalkAdjustment}.ts`,
+`domain/training/adaptation/{evidence,proposal}.ts`, `training/constants/distances.ts`, `training/distances/*` (profili,
+doza, HM progresija, tipovi), `training/execution.ts`, `training/generator/{allocation,assess,athleteAssessment,daySlots,
+focus,formPolicy,generatePlan,longRunProgression,validateInput,volume,weeklyLoad}.ts`, `training/prediction/index.ts`,
+`training/qualityGate.ts`, `training/runWalkProgress.ts`, `training/sessions/{build,constraints,cruise,deload,intervals,
+longRun,prescription,progression,repetitions,tempo}.ts`. Barel `domain/plan/index.ts` i
+`domain/training/adaptation/index.ts` više ne izvoze funkcije generisanja/adaptacije/predloga forme.
+
+Ostaje u `domain/training`/`domain/plan` samo ono što produkcija koristi (29 fajlova, isti zamrznut skup: format razmene,
+prikaz, merni sloj), tipovi (`training/types.ts`, `plan/types.ts`) i `plan/header.ts` (prikaz zaglavlja).
+
+Tipovi razmene koje su ekrani/store-ovi uzimali iz starog koda (`ExecutionAdjustmentOptions`, `ReplanContext`,
+`RunWalkAdjustmentOptions`, `RunWalkMode`, `VdotProposal`, `RecalibratedStoredPlan`, `PreparationDecision`/`Option`/
+`Choice`, `DecisionPoint`) sada se izvode iz ugovora generatora u `select.ts`.
+
+### Testovi
+
+- `src/test/generators.ts` (novo): ulazni planovi i funkcije prilagođavanja za testove idu generatoru distance plana,
+  istim putem kao aplikacija (`generatePlan`, `adaptGeneratedPlan`, `routedGeneratorApi`, `routedEngine`,
+  `byPlanProposal`, `profileFor`/`DISTANCE_PROFILES` iz generatora te distance). Za sve četiri distance izlaz je ranije
+  dokazano identičan starom engine-u (reference ekvivalencije), pa ulazi testova nisu promenjeni.
+- Testovi koji su starim `generatePlan`/`adaptGeneratedPlan` pravili ulazne planove uvoze ih iz `@/test/generators`
+  (74 fajla posle prevoda).
+- Istorijski testovi starog koda (`domain/training/**`, `domain/plan/**`: kvalitetna kapija, izvršenje, run/walk
+  napredovanje, predlog forme, rekalibracija, odluka o pripremi, oporavak od umora, integracija, profili, doze, sesije,
+  progresija dugog trčanja, invarijante generatora) prevedeni su na kopije u generatorima: funkcija specifična za distancu
+  ide generatoru te distance, funkcija koja je ista u više kopija proverava se nad jednom (navedeno u komentaru) ili nad
+  sve četiri (`describe.each`: `qualityGate`, `execution`, `buildDaySlots`). Očekivane vrednosti nisu menjane.
+- Dva koraka koja stari engine nudi a aplikacija nikad ne poziva za 5K su izbačena iz lanca i zamenjena proverom da ih
+  5K nema: „izbor pripreme" u `fatigueRecovery.node.test.ts` i `finalIntegration.node.test.ts`
+  (`preparationForPlan(5K) === null`).
+- UI tokovi (`features/onboarding/*Flow.test.tsx`): uklonjen brojač poziva starog engine-a (`vi.mock` nad obrisanim
+  modulima) — nema šta da broji; izolaciju dokazuju arhitektonski i runtime test.
+- Harnesi snimanja referenci (`test/*/capture*.node.test.ts`, `test/fiveK/legacyApi.ts`) više ne snimaju (stari engine ne
+  postoji): proveravaju da referenca postoji i nosi zabeleženi commit; recept za ponovno snimanje (worktree na zabeleženom
+  commitu) je u komentaru svakog fajla. Reference (`*.json.gz`) nisu dirane.
+- `e2e/generator-ab-users.spec.ts`: očekivani plan adaptira `plan/adapt` generatora distance profila (kopije su
+  identične u sva četiri).
+- `architecture.node.test.ts` (11): novo pravilo — nijedan od 48 obrisanih modula ne postoji i barel fajlovi ne izvoze
+  funkcije generisanja/adaptacije; pravilo „trenerska logika samo u generatorima" više nema izuzetak za stari kod.
+- Zamrznut istorijski bundle `src/test/fixtures/legacy-generator.mjs` (stari generator u jednom fajlu, ulaz
+  `legacyGenerator.ts`) nije diran.
+
+## Provere (poslednji prolaz)
+
+| Komanda (iz `web/`) | Rezultat |
+|---|---|
+| `npm run check` | zeleno; vitest **173 fajla / 1 737 testova** (9 min 2 s) |
+| `npm run build` | uspešno; glavni JS `index` 1 047,2 kB + `stores` 48,9 kB (kopije prikaza stanja u četiri generatora) |
+| `node --test "**/*.test.mjs"` (iz `test/`) | 396/396 |
+| `npx playwright test` | 76/77 u punom prolazu; pao `pwa.spec.ts:65` (ažuriranje service worker-a, nestabilan i ranije); `pwa.spec.ts` ponovljen `--workers 1 --repeat-each 3` → 6/6; `generator-ab-users.spec.ts` 10/10 |
+| osetljivost | vraćen `domain/plan/adapt.ts` → `architecture.node.test.ts` pao („stari zajednički engine je obrisan"); uklonjeno |

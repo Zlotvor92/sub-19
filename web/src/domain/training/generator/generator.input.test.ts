@@ -6,10 +6,10 @@
 
    Nema paraleli u starim testovima: stari `generator.test` pokriva samo `minWeeks`/`maxWeeks`. */
 
+import { generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
 import type { PlanGenerationInput } from '../types';
-import { generatePlan } from './generatePlan';
 
 const START = parseIsoDate('2026-01-05') as IsoDate;
 

@@ -1,8 +1,11 @@
+import { generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { fmtClock } from '../../format';
 import type { PlanGenerationInput, TrainingPlan } from '../types';
-import { EASY_EFFORT_NOTE, QUALITY_ENTRY_NOTE } from './formPolicy';
-import { generatePlan } from './generatePlan';
+import {
+  EASY_EFFORT_NOTE,
+  QUALITY_ENTRY_NOTE
+} from '@/domain/generators/fiveK/training/generator/formPolicy'; // tekst je isti u sva četiri generatora
 
 /* Sintetički ulazi U01 (5K početnik) i U06 (10K povratnik sa godinu starim PB) iz QA ciklusa. */
 const U01: PlanGenerationInput = {

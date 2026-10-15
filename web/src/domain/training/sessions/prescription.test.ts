@@ -1,15 +1,18 @@
+import { generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
-import { applyQualityDose } from '../distances/qualityDose';
-import { PROFILE_5K } from '../distances/profile5k';
-import { PROFILE_10K } from '../distances/profile10k';
-import { PROFILE_21K } from '../distances/profile21k';
-import { PROFILE_42K } from '../distances/profile42k';
-import type { QualityRequest } from '../distances/types';
-import { generatePlan } from '../generator/generatePlan';
+import { applyQualityDose } from '@/domain/generators/halfMarathon/training/distances/qualityDose';
+import { PROFILE_5K } from '@/domain/generators/fiveK/training/distances/profile5k';
+import { PROFILE_10K } from '@/domain/generators/tenK/training/distances/profile10k';
+import { PROFILE_21K } from '@/domain/generators/halfMarathon/training/distances/profile21k';
+import { PROFILE_42K } from '@/domain/generators/marathon/training/distances/profile42k';
+import type { QualityRequest } from '@/domain/generators/halfMarathon/training/distances/types';
 import { ZONE_FOR_KIND } from '../vdot/zoneForKind';
-import { sessInt, sessPyramid } from './build';
+import { sessInt, sessPyramid } from '@/domain/generators/halfMarathon/training/sessions/build';
 import { sessDesc, sessKm } from './calc';
-import { constrainSession } from './constraints';
+import { constrainSession } from '@/domain/generators/halfMarathon/training/sessions/constraints';
+
+/* Stari zajednički engine je obrisan: svaki profil dolazi iz generatora svoje distance; gradnja i ograničenja su isti u sve
+   četiri kopije, doza u 5K/HM/maratonskoj (10K ima svoju); ovde se uzimaju iz polumaratonske. */
 
 const req: QualityRequest = {
   qualW: 10,

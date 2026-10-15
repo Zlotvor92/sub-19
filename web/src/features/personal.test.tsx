@@ -1,10 +1,9 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { act, render, renderHook, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PERSONAL, personalBaselineVdot } from '../domain/personal';
 import { seedState, type PersistedState } from '../domain/state';
-import { adaptGeneratedPlan } from '../domain/plan/adapt';
-import { generatePlan } from '../domain/training/generator/generatePlan';
 import { ADMIN_UID } from '../services/config';
 import { hydratePersisted, useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../stores';
 import { useAuthStore } from '../stores/authStore';

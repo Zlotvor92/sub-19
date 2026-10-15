@@ -1,11 +1,10 @@
+import { generatePlan, adaptGeneratedPlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../../date';
-import { adaptGeneratedPlan } from '../../plan/adapt';
 import { preparationSummary } from '../../plan/preparation';
 import { initialWizard, stepValid, toGenerationInput } from '../../onboarding';
 import { sessQKm } from '../sessions/calc';
 import type { PlanGenerationInput, TrainingPlan } from '../types';
-import { generatePlan } from './generatePlan';
 
 const start = '2026-10-12' as IsoDate;
 function input(patch: Partial<PlanGenerationInput> = {}): PlanGenerationInput {

@@ -1,23 +1,18 @@
+import type { ProposalContext } from '@/domain/generators/tenK/training/adaptation/proposal';
+import { generatePlan, adaptGeneratedPlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { resolvePlan } from '../../plan';
-import { adaptGeneratedPlan } from '../../plan/adapt';
 import type { LogEntry, VdotRecord } from '../../state';
-import { generatePlan } from '../generator/generatePlan';
-import { predRow } from '../prediction';
 import { predictionSummary } from '../prediction/summary';
 import { paceForZone } from '../vdot/paceForZone';
 import { vdotFromPace } from '../vdot/vdotFromPace';
 import { t3kVdot } from '../test3k';
-import {
-  classifyMeasurement,
-  dayZone,
-  matchPlanRows,
-  sessionClassFor,
-  type ProposalContext
-} from './index';
-import { fitnessEvidence } from './evidence';
-import { vdotProposal } from './proposal';
+import { classifyMeasurement, dayZone, matchPlanRows, sessionClassFor } from './index';
 import { enterWorkPace, recordAutoPace, type WorkPaceState } from '../../day/workPace';
+/* Plan u ovom testu je 10K: predlog tempa i dokaz forme su funkcije 10K generatora. */
+import { predRow } from '@/domain/generators/tenK/training/prediction/index';
+import { fitnessEvidence } from '@/domain/generators/tenK/training/adaptation/evidence';
+import { vdotProposal } from '@/domain/generators/tenK/training/adaptation/proposal';
 
 const generated = adaptGeneratedPlan(
   generatePlan({

@@ -1,19 +1,10 @@
 import { useMemo } from 'react';
 import { parseIsoDate, type IsoDate } from '../../domain/date';
-import {
-  BODY_PARTS,
-  acwrNow,
-  acwrPlan,
-  painModel,
-  painStatus,
-  partLevel,
-  type LoadContext
-} from '../../domain/recovery';
+import { BODY_PARTS, painModel, partLevel, type LoadContext } from '../../domain/recovery';
 import { generatorForPlan } from '../../domain/generators/select';
 import { useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
-import { readinessModel } from './readiness';
 
 /* MODEL OPORAVKA — jedan izvor za sve što o oporavku govore Danas (upozorenje), Napredak → Oporavak, Bol i Plan → Prilagodi plan. Isti ulazi i
    iste funkcije domena kao ranije na tabu Oporavak; ništa se ne računa novo. `null` dok nema plana ili datuma. */
@@ -27,26 +18,29 @@ export function useRecoveryModel() {
   const todayStr = useUIStore((s) => s.today);
   return useMemo(() => {
     const today = parseIsoDate(todayStr);
-    if (!plan || !today) return null;
+    // Procena stanja (bol, opterećenje, spremnost) i predlog pripadaju generatoru distance aktivnog plana.
+    const generator = generatorForPlan(genPlan);
+    if (!plan || !today || !generator) return null;
     const ctx: LoadContext & { pain: typeof pain } = { plan, log, outOfPlan, pain };
-    const status = painStatus(pain, today);
-    const now = acwrNow(ctx, today);
+    const status = generator.painStatus(pain, today);
+    const now = generator.acwrNow(ctx, today);
     return {
       plan,
       today,
       ctx,
       status,
       // Predlog izmene plana zbog bola/prekida pravi generator distance aktivnog plana; bez generatora nema predloga.
-      proposal: generatorForPlan(genPlan)?.injuryProposal(ctx, today) ?? null,
+      proposal: generator.injuryProposal(ctx, today),
+      assess: generator,
       now,
-      ahead: acwrPlan(ctx, today),
+      ahead: generator.acwrPlan(ctx, today),
       /** Delovi tela sa bolom u poslednjih 14 dana, najjači prvi. */
       active: Object.keys(BODY_PARTS)
         .map((p) => ({ p, lv: partLevel(pain, p, today) }))
         .filter((x): x is { p: string; lv: number } => x.lv != null && x.lv >= 1)
         .sort((a, b) => b.lv - a.lv),
       chart: painModel(pain, today),
-      ready: readinessModel({ status, load: now, wellness, today: todayStr as IsoDate })
+      ready: generator.readinessModel({ status, load: now, wellness, today: todayStr as IsoDate })
     };
   }, [plan, genPlan, log, pain, wellness, outOfPlan, todayStr]);
 }

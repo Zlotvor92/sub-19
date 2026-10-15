@@ -1,11 +1,14 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan } from '../../domain/plan';
 import { recordPlanRevision } from '../../domain/plan/versions';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
-import { analyzeExecution, recommendExecution } from '../../domain/training/execution';
+// Plan u ovom testu je 10K; model izvršenja je funkcija 10K generatora.
+import {
+  analyzeExecution,
+  recommendExecution
+} from '../../domain/generators/tenK/training/execution';
 import { hydratePersisted, useTrainingStore } from '../../stores';
 import { seedState } from '../../domain/state';
 import { ExecutionAdjustment } from './ExecutionAdjustment';

@@ -9,6 +9,7 @@ export type {
   PainRecord,
   StoredWeek,
   T3kRecord,
-  VdotRecord
+  VdotRecord,
+  WellnessRecord
 } from '../../state';
 export type { IsoDate } from '../../date';

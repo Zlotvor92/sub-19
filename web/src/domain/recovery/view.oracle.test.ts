@@ -3,7 +3,6 @@ import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import type { IsoDate } from '../date';
 import type { LogEntry, PainRecord, WeightRecord, WellnessRecord } from '../state';
 import {
-  acwrPosition,
   addWeight,
   deleteWeight,
   deleteWeightsBefore,
@@ -12,6 +11,7 @@ import {
   partLevel,
   wellnessFor
 } from './index';
+import { acwrPosition } from '../generators/fiveK/recovery/view';
 
 /* parity: oporavakZa, dodajMasu, obrisiMasu, obrisiMasuPre, partLevel, painClass, acwrPolozaj (app.js). */
 

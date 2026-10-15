@@ -1,12 +1,11 @@
+import { generatePlan, profileFor } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../../date';
 import { r1 } from '../../format';
-import { profileFor } from '../distances';
-import { PROFILE_21K } from '../distances/profile21k';
+import { PROFILE_21K } from '@/domain/generators/halfMarathon/training/distances/profile21k';
 import { sessQKm } from '../sessions/calc';
 import type { PlanGenerationInput, TrainingPlan } from '../types';
 import { paceForZone } from '../vdot/paceForZone';
-import { generatePlan } from './generatePlan';
 
 const start = '2026-10-12' as IsoDate;
 function plan(patch: Partial<PlanGenerationInput> = {}): TrainingPlan {

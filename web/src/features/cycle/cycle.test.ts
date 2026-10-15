@@ -1,8 +1,7 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import type { IsoDate } from '../../domain/date';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan } from '../../domain/plan';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { cycleCaption, cycleModel, PHASE_ORDER } from './cycle';
 import { kindOf, weekCells } from './dayCells';
 

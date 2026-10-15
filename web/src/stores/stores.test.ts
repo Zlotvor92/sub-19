@@ -1,7 +1,6 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { adaptGeneratedPlan } from '../domain/plan/adapt';
 import { migrateState, seedState, type GenPlanState, type PersistedState } from '../domain/state';
-import { generatePlan } from '../domain/training/generator/generatePlan';
 import { activateNewPlan } from './actions';
 import {
   collectPersisted,

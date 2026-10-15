@@ -1,10 +1,12 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../date';
-import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry, PainRecord } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
-import { ACWR_MAX, chronicKm, isLoadBearing, painStatus, returnToRunPhase } from './index';
+import { isLoadBearing } from './index';
+import { ACWR_MAX } from '../generators/fiveK/recovery/constants';
+import { chronicKm } from '../generators/fiveK/recovery/load';
+import { painStatus, returnToRunPhase } from '../generators/fiveK/recovery/pain';
 import { RW_BY_PAIN } from '../generators/fiveK/recovery/constants';
 import {
   applyInjuryProposal,

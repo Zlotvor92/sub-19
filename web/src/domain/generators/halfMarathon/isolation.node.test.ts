@@ -293,7 +293,13 @@ describe('HM generator je izolovan (stvarni kod)', () => {
     expect(own.length).toBeGreaterThan(60);
     // Uvoz celog modula iz aplikacije ide samo kroz javni API.
     for (const [file, src] of files) {
-      if (file.startsWith(ROOT + '/') || /\.test\./.test(file)) continue;
+      // Testna infrastruktura (`src/test/`, npr. `generators.ts`) je testni kod, kao i `*.test.*`.
+      if (
+        file.startsWith(ROOT + '/') ||
+        /\.test\./.test(file) ||
+        file.startsWith(join(SRC, 'test/'))
+      )
+        continue;
       expect(src, file).not.toMatch(/generators\/halfMarathon\/[\w/]+['"]/);
     }
   });

@@ -1,9 +1,13 @@
+import { generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
-import { generatePlan } from '../generator/generatePlan';
 import { sessQKm } from '../sessions/calc';
 import type { Day, PlanGenerationInput, SessionDay, TrainingPlan, Week } from '../types';
 import { paceForZone } from '../vdot/paceForZone';
-import { fitBlocks, HM_TRACKS, hmTrack } from './hmProgression';
+import {
+  fitBlocks,
+  HM_TRACKS,
+  hmTrack
+} from '@/domain/generators/halfMarathon/training/distances/hmProgression'; // polumaratonski generator
 
 /* QA profiles U07 (first HM, limited base) and U08 (experienced HM for a result) from
    docs/qa/generator-ab/inputs.json — the locked inputs of the ten-user QA. */

@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConfirmHost } from '../../components/ui/ConfirmHost';
 import * as tenK from '../../domain/generators/tenK';
 import { resolvePlan } from '../../domain/plan';
@@ -23,54 +23,16 @@ import PlanPage from '../plan/index';
 import { Wizard } from './Wizard';
 
 /* STVARNI 10K TOK: izbor 10K u čarobnjaku → generisanje → prikaz → čuvanje → učitavanje → adaptacija (povratak posle
-   pauze) → vraćanje verzije → promena cilja. Stari zajednički mehanizam je ovde obmotan brojačem poziva: za 10K plan ne sme
-   biti pozvan nijednom (dokaz da store-ovi i ekrani zaista idu kroz izdvojeni 10K generator, a ne samo da daju isti
-   rezultat). Isti postupak kao `fiveKFlow.test.tsx`. */
-
-const { legacyCalls, spyModule } = vi.hoisted(() => {
-  const legacyCalls: string[] = [];
-  const spyModule =
-    (name: string) =>
-    async (
-      importOriginal: () => Promise<Record<string, unknown>>
-    ): Promise<Record<string, unknown>> => {
-      const mod = await importOriginal();
-      return Object.fromEntries(
-        Object.entries(mod).map(([k, v]) => [
-          k,
-          typeof v === 'function'
-            ? (...args: unknown[]) => {
-                legacyCalls.push(`${name}.${k}`);
-                return (v as (...a: unknown[]) => unknown)(...args);
-              }
-            : v
-        ])
-      );
-    };
-  return { legacyCalls, spyModule };
-});
-vi.mock('../../domain/training/generator/generatePlan', spyModule('generatePlan'));
-vi.mock('../../domain/training/generator/assess', spyModule('assess'));
-vi.mock('../../domain/plan/future', spyModule('future'));
-vi.mock('../../domain/plan/regenerate', spyModule('regenerate'));
-vi.mock('../../domain/plan/executionAdjustment', spyModule('executionAdjustment'));
-vi.mock('../../domain/plan/replan', spyModule('replan'));
-vi.mock('../../domain/plan/runWalkAdjustment', spyModule('runWalkAdjustment'));
-vi.mock('../../domain/training/runWalkProgress', spyModule('runWalkProgress'));
-vi.mock('../../domain/training/qualityGate', spyModule('qualityGate'));
-vi.mock('../../domain/training/adaptation/proposal', spyModule('proposal'));
+   pauze) → vraćanje verzije → promena cilja. Stari zajednički engine je obrisan (v. docs/generator-isolation/STATUS.md), pa brojač njegovih poziva više nije
+   potreban: arhitektonski i runtime test izolacije dokazuju da aplikacija ide samo kroz izdvojene generatore. */
 
 const TODAY = '2026-01-07';
 const LATER = '2026-02-11';
 const blank = (): PersistedState => JSON.parse(JSON.stringify(seedState())) as PersistedState;
 
 beforeEach(() => {
-  legacyCalls.length = 0;
   hydratePersisted(blank());
   useUIStore.setState({ wizard: false, confirm: null, today: TODAY });
-});
-afterEach(() => {
-  legacyCalls.length = 0;
 });
 
 describe('10K: unos → generisanje → prikaz → čuvanje → učitavanje → adaptacija', () => {
@@ -162,7 +124,6 @@ describe('10K: unos → generisanje → prikaz → čuvanje → učitavanje → 
       predLock: useTrainingStore.getState().predLock
     });
     const before = useTrainingStore.getState().genPlan!;
-    legacyCalls.length = 0;
 
     // Adaptacija: povratak posle potvrđene pauze, pregled pa upis.
     const resolved = resolvePlan(before.weeks, replanContext());
@@ -246,17 +207,11 @@ describe('10K: unos → generisanje → prikaz → čuvanje → učitavanje → 
     const goalDays = new Map(goalPlan.weeks.flatMap((w) => w.days).map((d) => [d.id, d]));
     for (const d of [...past, futureDone, manual, moved, lockedDay])
       expect(JSON.stringify(goalDays.get(d.id)), d.id).toBe(JSON.stringify(oldDays.get(d.id)));
-
-    expect(legacyCalls).toEqual([]);
   });
 
-  /* Segment 2/5: 10K je izdvojen, pa je kontrola brojača prešla na polumaraton; segment 3/5: izdvojen je i polumaraton,
-     pa kontrola koristi maraton (i dalje stari mehanizam). Segment 4/5: izdvojen je i maraton, pa stari mehanizam ostaje
-     samo za plan bez podržane distance; kontrola zato koristi takav plan (7000 m) i dokazuje da brojač radi. */
-  /* Segment 5/5: stari mehanizam više nije rezerva ni za plan bez podržane distance. Takav plan se EKSPLICITNO odbija
-     (poruka `UNSUPPORTED_DISTANCE`), bez poziva starog mehanizma i bez zamene drugim generatorom. Da brojač zaista radi,
-     kontrola na kraju direktno poziva obmotan stari modul. */
-  it('plan bez podržane distance se eksplicitno odbija, bez starog mehanizma (kontrola brojača)', async () => {
+  /* Plan bez podržane distance se EKSPLICITNO odbija (poruka `UNSUPPORTED_DISTANCE`), bez zamene drugim generatorom;
+     stari zajednički engine više ne postoji. */
+  it('plan bez podržane distance se eksplicitno odbija, bez zamene drugim generatorom', () => {
     const plan = tenK.adaptGeneratedPlan(
       tenK.generatePlan({
         startDate: TODAY,
@@ -269,7 +224,7 @@ describe('10K: unos → generisanje → prikaz → čuvanje → učitavanje → 
         intensity: 'std'
       } as never)
     )!;
-    // Isti oblik plana, ali deklarisan sa nepodržanom distancom: izbor generatora mora poslati stari mehanizam.
+    // Isti oblik plana, ali deklarisan sa nepodržanom distancom.
     useTrainingStore.getState().patch({
       genPlan: {
         ...plan,
@@ -277,15 +232,9 @@ describe('10K: unos → generisanje → prikaz → čuvanje → učitavanje → 
         ulaz: { raceDistM: 7000 }
       }
     });
-    legacyCalls.length = 0;
     const t = useTrainingStore.getState();
     const view = resolvePlan(t.genPlan!.weeks, replanContext());
     expect(() => executionModel(view, LATER)).toThrow(UNSUPPORTED_DISTANCE);
     expect(previewExecution(view, LATER, {})).toEqual({ ok: false, reason: UNSUPPORTED_DISTANCE });
-    expect(legacyCalls).toEqual([]);
-    // Kontrola brojača: direktan poziv obmotanog starog modula se beleži.
-    const legacy = await import('../../domain/plan/executionAdjustment');
-    legacy.executionModel(view, LATER, replanContext());
-    expect(legacyCalls).toContain('executionAdjustment.executionModel');
   });
 });

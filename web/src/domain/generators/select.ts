@@ -45,6 +45,39 @@ export type WatchBatch = ReturnType<PlanGenerator['workoutsForWatch']>;
 export type WeatherCardInput = Parameters<PlanGenerator['weatherCard']>[0];
 export type WeatherCardModel = NonNullable<ReturnType<PlanGenerator['weatherCard']>>;
 export type RealignInput = Parameters<PlanGenerator['realignPlan']>[0];
+export type PainStatus = ReturnType<PlanGenerator['painStatus']>;
+export type Acwr = ReturnType<PlanGenerator['acwrNow']>;
+export type AcwrPlan = ReturnType<PlanGenerator['acwrPlan']>;
+export type AcwrBand = ReturnType<PlanGenerator['acwrBand']>;
+export type Readiness = ReturnType<PlanGenerator['readinessModel']>;
+/* Tipovi razmene za prilagođavanje, odluku o pripremi, predlog tempa i rekalibraciju (izvedeni iz ugovora generatora;
+   pre brisanja starog engine-a uvozili su se iz njega). */
+export type ExecutionAdjustmentOptions = Parameters<PlanGenerator['buildExecutionAdjustment']>[3];
+export type ReplanContext = NonNullable<Parameters<PlanGenerator['buildExecutionAdjustment']>[4]>;
+export type RunWalkAdjustmentOptions = Parameters<PlanGenerator['buildRunWalkAdjustment']>[3];
+export type RunWalkMode = RunWalkAdjustmentOptions['mode'];
+export type VdotProposal = NonNullable<ReturnType<PlanGenerator['vdotProposal']>>;
+export type RecalibratedStoredPlan = Exclude<
+  ReturnType<PlanGenerator['planRecalibrated']>,
+  { error: string }
+>;
+/** Procena stanja trkača koju ekrani oporavka dobijaju od generatora distance aktivnog plana. */
+export type StateAssessment = Pick<
+  PlanGenerator,
+  | 'painStatus'
+  | 'acwrNow'
+  | 'acwrPlan'
+  | 'readinessModel'
+  | 'loadMeaning'
+  | 'wellnessSignals'
+  | 'acwrBand'
+  | 'acwrText'
+  | 'acwrPosition'
+  | 'ACWR_MAX'
+  | 'ACWR_RETURN'
+  | 'ACWR_HIGH'
+  | 'ACWR_SCALE'
+>;
 
 export const FIVE_K_GENERATOR: PlanGenerator = {
   id: '5k',
@@ -79,7 +112,20 @@ export const FIVE_K_GENERATOR: PlanGenerator = {
   thresholdPace: fiveK.thresholdPace,
   weatherCard: fiveK.weatherCard,
   rpeTarget: fiveK.rpeTarget,
-  paceForZone: fiveK.paceForZone
+  paceForZone: fiveK.paceForZone,
+  painStatus: fiveK.painStatus,
+  acwrNow: fiveK.acwrNow,
+  acwrPlan: fiveK.acwrPlan,
+  readinessModel: fiveK.readinessModel,
+  loadMeaning: fiveK.loadMeaning,
+  wellnessSignals: fiveK.wellnessSignals,
+  acwrBand: fiveK.acwrBand,
+  acwrText: fiveK.acwrText,
+  acwrPosition: fiveK.acwrPosition,
+  ACWR_MAX: fiveK.ACWR_MAX,
+  ACWR_RETURN: fiveK.ACWR_RETURN,
+  ACWR_HIGH: fiveK.ACWR_HIGH,
+  ACWR_SCALE: fiveK.ACWR_SCALE
 };
 
 export const TEN_K_GENERATOR: PlanGenerator = {
@@ -114,7 +160,20 @@ export const TEN_K_GENERATOR: PlanGenerator = {
   thresholdPace: tenK.thresholdPace,
   weatherCard: tenK.weatherCard,
   rpeTarget: tenK.rpeTarget,
-  paceForZone: tenK.paceForZone
+  paceForZone: tenK.paceForZone,
+  painStatus: tenK.painStatus,
+  acwrNow: tenK.acwrNow,
+  acwrPlan: tenK.acwrPlan,
+  readinessModel: tenK.readinessModel,
+  loadMeaning: tenK.loadMeaning,
+  wellnessSignals: tenK.wellnessSignals,
+  acwrBand: tenK.acwrBand,
+  acwrText: tenK.acwrText,
+  acwrPosition: tenK.acwrPosition,
+  ACWR_MAX: tenK.ACWR_MAX,
+  ACWR_RETURN: tenK.ACWR_RETURN,
+  ACWR_HIGH: tenK.ACWR_HIGH,
+  ACWR_SCALE: tenK.ACWR_SCALE
 };
 
 /** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
@@ -159,7 +218,20 @@ const halfMarathonGenerator = {
   thresholdPace: halfMarathon.thresholdPace,
   weatherCard: halfMarathon.weatherCard,
   rpeTarget: halfMarathon.rpeTarget,
-  paceForZone: halfMarathon.paceForZone
+  paceForZone: halfMarathon.paceForZone,
+  painStatus: halfMarathon.painStatus,
+  acwrNow: halfMarathon.acwrNow,
+  acwrPlan: halfMarathon.acwrPlan,
+  readinessModel: halfMarathon.readinessModel,
+  loadMeaning: halfMarathon.loadMeaning,
+  wellnessSignals: halfMarathon.wellnessSignals,
+  acwrBand: halfMarathon.acwrBand,
+  acwrText: halfMarathon.acwrText,
+  acwrPosition: halfMarathon.acwrPosition,
+  ACWR_MAX: halfMarathon.ACWR_MAX,
+  ACWR_RETURN: halfMarathon.ACWR_RETURN,
+  ACWR_HIGH: halfMarathon.ACWR_HIGH,
+  ACWR_SCALE: halfMarathon.ACWR_SCALE
 };
 export const HALF_MARATHON_GENERATOR: PlanGenerator = halfMarathonGenerator;
 
@@ -207,7 +279,20 @@ export const MARATHON_GENERATOR: PlanGenerator = {
   thresholdPace: marathon.thresholdPace,
   weatherCard: marathon.weatherCard,
   rpeTarget: marathon.rpeTarget,
-  paceForZone: marathon.paceForZone
+  paceForZone: marathon.paceForZone,
+  painStatus: marathon.painStatus,
+  acwrNow: marathon.acwrNow,
+  acwrPlan: marathon.acwrPlan,
+  readinessModel: marathon.readinessModel,
+  loadMeaning: marathon.loadMeaning,
+  wellnessSignals: marathon.wellnessSignals,
+  acwrBand: marathon.acwrBand,
+  acwrText: marathon.acwrText,
+  acwrPosition: marathon.acwrPosition,
+  ACWR_MAX: marathon.ACWR_MAX,
+  ACWR_RETURN: marathon.ACWR_RETURN,
+  ACWR_HIGH: marathon.ACWR_HIGH,
+  ACWR_SCALE: marathon.ACWR_SCALE
 };
 
 /** Generator za ciljnu distancu ulaza; `undefined`/0 je 5K (stari ulaz: `raceDistM || 5000`); ostalo `null`. */
@@ -268,6 +353,14 @@ const halfMarathonPreparation = {
 export type PreparationApi = typeof halfMarathonPreparation;
 
 export const HALF_MARATHON_PREPARATION: PreparationApi = halfMarathonPreparation;
+
+export type PreparationDecision = ReturnType<PreparationApi['preparationDecision']>;
+export type PreparationOption = PreparationDecision['options'][number];
+export type PreparationChoice = Parameters<PreparationApi['buildPreparationChoice']>[3];
+export type DecisionPoint = Extract<
+  ReturnType<PreparationApi['buildPreparationChoice']>,
+  { change: unknown }
+>['change']['from'];
 
 export const MARATHON_PREPARATION: PreparationApi = {
   basisFromPlan: marathon.basisFromPlan,

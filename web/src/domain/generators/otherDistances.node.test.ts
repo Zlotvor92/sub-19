@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { legacyApi, type GeneratorApi } from '@/test/fiveK/legacyApi';
+import type { GeneratorApi } from '@/test/fiveK/legacyApi';
+import { routedGeneratorApi } from '@/test/generators';
 import { loadOtherReference, otherRows } from '@/test/fiveK/otherReference';
 import type { ReferenceRow } from '@/test/fiveK/reference';
 import type { GenPlanState } from '../state';
@@ -53,14 +54,20 @@ const routedDecisions = {
     ) ?? false) as never
 };
 
-/** Svaki poziv ide kroz `select.ts`; pomoćne funkcije harnesa koje nisu ugovor generatora ostaju stare. */
+/** Ugovor generatora ide kroz `select.ts`; pomoćne funkcije harnesa (razrešavanje, obračun sesije, model izvršenja…)
+    idu generatoru plana iz istog toka (`routedGeneratorApi`) — stari zajednički engine više ne postoji. */
+const helpers = routedGeneratorApi();
 const routed: GeneratorApi = {
-  ...legacyApi,
-  generatePlan: (input: unknown) => byInput(input).generatePlan(input as never),
+  ...helpers,
+  generatePlan: (input: unknown) => {
+    helpers.track(input ?? { raceDistM: 5000 });
+    return byInput(input).generatePlan(input as never);
+  },
   assess: (...a: Parameters<GeneratorApi['assess']>) => byInput({ raceDistM: a[4] }).assess(...a),
-  adaptGeneratedPlan: ((gen: { meta?: { raceDistM?: unknown } }) =>
-    byInput(gen.meta).adaptGeneratedPlan(gen as never)) as never,
-  executionModel: legacyApi.executionModel,
+  adaptGeneratedPlan: ((gen: { meta?: { raceDistM?: unknown } }) => {
+    helpers.track(gen);
+    return byInput(gen.meta).adaptGeneratedPlan(gen as never);
+  }) as never,
   buildExecutionAdjustment: ((current: unknown, ...rest: unknown[]) =>
     (byPlan(current).buildExecutionAdjustment as (...x: unknown[]) => unknown)(
       current,

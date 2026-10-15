@@ -1,11 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
-import { adaptGeneratedPlan } from '../src/domain/plan/adapt';
+import { adaptGeneratedPlan as fiveKAdapt } from '../src/domain/generators/fiveK/plan/adapt';
+import { adaptGeneratedPlan as hmAdapt } from '../src/domain/generators/halfMarathon/plan/adapt';
+import { adaptGeneratedPlan as marathonAdapt } from '../src/domain/generators/marathon/plan/adapt';
+import { adaptGeneratedPlan as tenKAdapt } from '../src/domain/generators/tenK/plan/adapt';
 import type { GenPlanState, LogEntry } from '../src/domain/state';
 import type { PlanGenerationInput, PlanGenerationResult } from '../src/domain/training/types';
 import { fixToday, installBackend, seedSession } from './support/backend';
 import { back, openAdjust, tab } from './support/flows';
+
+const ADAPT: Record<string, typeof fiveKAdapt> = {
+  5000: fiveKAdapt,
+  10000: tenKAdapt,
+  21097.5: hmAdapt,
+  42195: marathonAdapt
+};
 
 interface LockedProfile {
   id: string;
@@ -123,7 +133,10 @@ test.describe('locked inputs: current purpose- and dose-aware wizard and persist
       const current = JSON.parse(
         readFileSync(resolve(root, `../generator-final/raw/${profile.id}.json`), 'utf8')
       ) as { versions: { new: { plan: PlanGenerationResult } } };
-      const expected = adaptGeneratedPlan(current.versions.new.plan)!;
+      // Stari zajednički engine je obrisan: adaptaciju radi generator distance profila (kao aplikacija).
+      const adapt = ADAPT[String(profile.input.raceDistM || 5000)];
+      if (!adapt) throw new Error(`Nepodržana distanca ${profile.input.raceDistM}`);
+      const expected = adapt(current.versions.new.plan)!;
       // Empty scheduling arrays are genuine wizard serialization, absent from the locked domain input.
       const wizardInput = { ...profile.input, qDows: [], runDows: [] };
       expected.ulaz = wizardInput;

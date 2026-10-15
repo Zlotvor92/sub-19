@@ -1,58 +1,40 @@
-/* STARI ZAJEDNIČKI MEHANIZAM kao referentni API za 5K (pre izdvajanja). Koristi ga samo test: referentni rezultati se uzimaju
-   ISKLJUČIVO odavde (nikad iz novog 5K modula), pa izmena 5K koda ne može da „popravi" sopstvena očekivanja. */
-import { generatePlan } from '@/domain/training/generator/generatePlan';
-import { assess } from '@/domain/training/generator/assess';
-import { adaptGeneratedPlan } from '@/domain/plan/adapt';
-import { resolvePlan } from '@/domain/plan/resolve';
-import { buildExecutionAdjustment, executionModel } from '@/domain/plan/executionAdjustment';
-import { buildRunWalkAdjustment } from '@/domain/plan/runWalkAdjustment';
-import { assessRunWalkProgress } from '@/domain/training/runWalkProgress';
-import { hasRecentMeasuredForm, qualityEntryGate } from '@/domain/training/qualityGate';
-import {
-  planRecalibrated,
-  planWithNewGoal,
-  recalibratedPlan,
-  reentryPlan
-} from '@/domain/plan/replan';
-import { graftFuturePlan } from '@/domain/plan/future';
-import { alignAutomaticOverlays } from '@/domain/plan/automaticAlts';
-import { fitnessEvidence } from '@/domain/training/adaptation/evidence';
-import {
-  applyVdotProposal,
-  planVdotNow,
-  undoVdotAdjustments,
-  vdotProposal
-} from '@/domain/training/adaptation/proposal';
-import { matchPlanRows } from '@/domain/training/adaptation/matching';
-import { sessDesc, sessKm } from '@/domain/training/sessions/calc';
-import { t3kVdot } from '@/domain/training/test3k';
+/* API STAROG ZAJEDNIČKOG MEHANIZMA — sada samo TIP (stari engine je obrisan posle segmenta 5/5).
 
-export const legacyApi = {
-  generatePlan,
-  assess,
-  adaptGeneratedPlan,
-  resolvePlan,
-  executionModel,
-  buildExecutionAdjustment,
-  buildRunWalkAdjustment,
-  assessRunWalkProgress,
-  qualityEntryGate,
-  hasRecentMeasuredForm,
-  planWithNewGoal,
-  planRecalibrated,
-  recalibratedPlan,
-  reentryPlan,
-  graftFuturePlan,
-  alignAutomaticOverlays,
-  vdotProposal,
-  applyVdotProposal,
-  undoVdotAdjustments,
-  fitnessEvidence,
-  planVdotNow,
-  matchPlanRows,
-  sessKm,
-  sessDesc,
-  t3kVdot
-};
+   Sve reference (`src/test/fixtures/*-reference.json.gz`) su snimljene iz starog engine-a ovim API-jem na zabeleženim
+   commitima (5K i ostale distance `05088e0`, 10K `f745be0`, HM `90f2d0e`, maraton `ad464c0`, lični plan `348391c`).
+   Ponovno snimanje se radi u worktree-ju na tim commitima. Ime fajla je zadržano jer ga harnesi uvoze kao ugovor
+   (`GeneratorApi`); oblik je isti kao kod svakog generatora (ugovor polumaratona, sa predajom vezanom). */
+import type * as hm from '@/domain/generators/halfMarathon';
 
-export type GeneratorApi = typeof legacyApi;
+type HM = typeof hm;
+type WithoutHandoff<F extends (...a: never[]) => unknown> = (
+  ...a: Parameters<F> extends [...infer P, unknown] ? P : never
+) => ReturnType<F>;
+
+export type GeneratorApi = Pick<
+  HM,
+  | 'generatePlan'
+  | 'assess'
+  | 'adaptGeneratedPlan'
+  | 'resolvePlan'
+  | 'executionModel'
+  | 'buildRunWalkAdjustment'
+  | 'assessRunWalkProgress'
+  | 'qualityEntryGate'
+  | 'hasRecentMeasuredForm'
+  | 'planWithNewGoal'
+  | 'planRecalibrated'
+  | 'recalibratedPlan'
+  | 'reentryPlan'
+  | 'graftFuturePlan'
+  | 'alignAutomaticOverlays'
+  | 'vdotProposal'
+  | 'applyVdotProposal'
+  | 'undoVdotAdjustments'
+  | 'fitnessEvidence'
+  | 'planVdotNow'
+  | 'matchPlanRows'
+  | 'sessKm'
+  | 'sessDesc'
+  | 't3kVdot'
+> & { buildExecutionAdjustment: WithoutHandoff<HM['buildExecutionAdjustment']> };

@@ -1,10 +1,10 @@
+import { generatePlan } from '@/test/generators';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { canonical, shaOf } from '@/test/fingerprint';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
 import type { PlanGenerationInput } from '../types';
-import { generatePlan } from './generatePlan';
 
 /* DIFERENCIJALNI TEST (zamrznut): slučajni (seeded, ponovljivi) ulazi koje otisak NE pokriva — `goalSec`, `lrDow`, `qDows`, `runDows`, `quality:1`, početak
    usred nedelje, dan trke u bilo kom danu (otisak ima trku uvek u ponedeljak!), razni PB. Dok je stari generator postojao, ovde su se poredili izlazi

@@ -1,8 +1,7 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../../domain/date';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan, type ResolvedPlan } from '../../domain/plan';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { createIcuApi } from '../api/icuApi';
 import { createAppApi } from '../api/appApi';
 import type { IcuLink } from '../../domain/icu';

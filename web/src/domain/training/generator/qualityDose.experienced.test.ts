@@ -1,16 +1,21 @@
+import { generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
-import { applyQualityDose } from '../distances/qualityDose';
-import { PROFILE_10K } from '../distances/profile10k';
-import type { QualityRequest } from '../distances/types';
-import { sessInt } from '../sessions/build';
 import { sessQKm } from '../sessions/calc';
-import { zoneBudgetKm } from '../sessions/constraints';
-import { validIntervalLeg } from '../sessions/prescription';
+import { applyQualityDose } from '@/domain/generators/tenK/training/distances/qualityDose';
+import { PROFILE_10K } from '@/domain/generators/tenK/training/distances/profile10k';
+import type { QualityRequest } from '@/domain/generators/tenK/training/distances/types';
+import { sessInt } from '@/domain/generators/tenK/training/sessions/build';
+import { zoneBudgetKm } from '@/domain/generators/tenK/training/sessions/constraints';
+import { validIntervalLeg } from '@/domain/generators/tenK/training/sessions/prescription';
+import { HM_WEEKLY_FAST_SHARE } from '@/domain/generators/halfMarathon/training/distances/hmProgression';
+import * as hmLoad from '@/domain/generators/halfMarathon/training/generator/weeklyLoad';
+import * as marathonLoad from '@/domain/generators/marathon/training/generator/weeklyLoad';
 import type { PlanGenerationInput, TrainingPlan, Week } from '../types';
 import { paceForZone } from '../vdot/paceForZone';
-import { generatePlan } from './generatePlan';
-import { finishLoadSec, sessionLoadSec, weeklyFastEnvelopeSec } from './weeklyLoad';
-import { HM_WEEKLY_FAST_SHARE } from '../distances/hmProgression';
+
+/* Stari zajednički engine je obrisan: 10K doza ide 10K generatoru, nedeljni omotač brzog rada generatoru distance plana
+   (polumaraton/maraton). Jedinični testovi omotača (M završnica) koriste maratonsku kopiju. */
+const { finishLoadSec, weeklyFastEnvelopeSec } = marathonLoad;
 
 /* Locked generator-ab QA inputs (docs/qa/generator-ab/inputs.json, commit f8cb208). */
 const QA_BASE = {
@@ -128,7 +133,7 @@ describe('experienced dose depends on continuity, intensity and the shared budge
     racePace: 270,
     dow: 2,
     isTaper1: false,
-    ctx: { weeks: 16, w: 1, taperW: 1 },
+    // `ctx` (nedelje bloka) 10K kopija ne koristi, pa ga njen tip nema.
     readiness: 'experienced',
     qualityIntensity: 'std',
     consistentWeeks: 24,
@@ -218,7 +223,8 @@ describe('weekly envelope counts LR fast finishes and demanding long runs', () =
       for (const w of normal(p)) {
         if (w.days.some((d) => d.session?.kind === 'Kontrolna trka')) continue;
         const lr = w.days.find((d) => d.tag === 'lr' && !d.mlr);
-        const envelope = weeklyFastEnvelopeSec({
+        const load_ = inp.raceDistM === 21097.5 ? hmLoad : marathonLoad;
+        const envelope = load_.weeklyFastEnvelopeSec({
           readiness: 'experienced',
           volKm: w.vol,
           easyPaceSec: paceForZone(v, 'E'),
@@ -228,7 +234,7 @@ describe('weekly envelope counts LR fast finishes and demanding long runs', () =
           share: inp.raceDistM === 21097.5 ? HM_WEEKLY_FAST_SHARE.performance : undefined
         });
         const load = w.days.reduce(
-          (n, d) => n + (d.session ? sessionLoadSec(d) : 0) + finishLoadSec(d.finish),
+          (n, d) => n + (d.session ? load_.sessionLoadSec(d) : 0) + load_.finishLoadSec(d.finish),
           0
         );
         // The generator sizes against the allocated week; the delivered week may be up

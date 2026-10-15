@@ -1,11 +1,13 @@
+/* Kopija za generator `fiveK` (prenos procene stanja u generatore). Izvor: aplikacioni kod u trenutku prenosa
+   (`5f56a52`); dalje se razvija samo ovde. */
 /* STANJE DANAS: jedan odgovor („da li smem da treniram po planu?") sastavljen od signala koje aplikacija VEĆ računa — bol, odnos opterećenja
    (ACWR), HRV, puls u miru, san, svežina. Ovde nema novog pravila ni praga: svaki signal zadržava svoju granicu iz domena, a ukupnu
    ocenu određuje NAJLOŠIJI signal (nema „skora" koji meša nepovezane stvari). Savet „šta da radiš" postoji samo tamo gde ga aplikacija
    već nosi u svom tekstu; za ostalo se ništa ne izmišlja.
    Jutarnji zapis stariji od jednog dana ne ulazi u ocenu: jučerašnji HRV ne govori o današnjem stanju. */
 
-import { diffDays, type IsoDate } from '../../domain/date';
-import { fmtDayMonth, fmtKm, fmtNum } from '../../domain/format';
+import { diffDays, type IsoDate } from '../date';
+import { fmtDayMonth, fmtKm, fmtNum } from '../format';
 import {
   ACWR_MAX,
   ACWR_RETURN,
@@ -20,8 +22,8 @@ import {
   type AcwrBand,
   type PainStatus,
   type Tone
-} from '../../domain/recovery';
-import type { WellnessRecord } from '../../domain/state';
+} from './index';
+import type { WellnessRecord } from '../exchange';
 
 export type SignalKey = 'bol' | 'opterecenje' | 'hrv' | 'puls' | 'san' | 'svezina' | 'zapis';
 

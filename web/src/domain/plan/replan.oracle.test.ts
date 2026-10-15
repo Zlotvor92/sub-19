@@ -8,8 +8,11 @@ import type { GenPlanState } from '../state';
 import { generatePlan } from '@/test/legacyGenerator';
 import type { PlanGenerationInput, Session } from '../training/types';
 import { KIND_FROM_GOAL, ZONE_FOR_KIND } from '../training/vdot/zoneForKind';
-import { adaptGeneratedPlan } from './adapt';
-import { mergeOverrides, planWithNewGoal, recalibratedPlan, reentryPlan } from './replan';
+import { routedEngine } from '@/test/generators';
+
+/* Stari zajednički engine je obrisan: svaka funkcija ide generatoru distance plana o kome je reč (`routedEngine`). */
+const { adaptGeneratedPlan, mergeOverrides, planWithNewGoal, recalibratedPlan, reentryPlan } =
+  routedEngine(5000);
 
 /* Test names are recording keys and remain unchanged; generated outputs now use D6 snapshots.
    parity: test/ostali (planSaNovimCiljem u test/podesavanja + revizija6), test/generator (rekalibracija,

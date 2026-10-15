@@ -1,54 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { executionBasis } from '@/domain/plan/executionAdjustment';
-import {
-  basisFromPlan,
-  buildPreparationChoice,
-  isLimitedLongPreparation,
-  preparationDecision
-} from '@/domain/plan/preparationDecision';
-import { legacyApi } from '@/test/fiveK/legacyApi';
-import {
-  hmAdaptationRows,
-  hmDecisionRows,
-  hmGenerationRows,
-  loadHmReference,
-  writeHmReference
-} from './reference';
-import type { HmApi } from './scenarios';
+import { loadHmReference } from './reference';
 
-/* Snimanje HM reference je ručna, jednokratna radnja na polaznom stanju (pre izdvajanja HM):
-       CAPTURE_HM_REFERENCE=<polazni SHA> npx vitest run --project node halfMarathon/captureReference
-   Bez promenljive test samo proverava da referenca postoji i da je uzeta na zabeleženom commitu. */
-const legacyHmApi: HmApi = {
-  ...legacyApi,
-  executionBasis,
-  basisFromPlan,
-  preparationDecision,
-  buildPreparationChoice,
-  isLimitedLongPreparation
-};
-
-describe('HM referenca (stari mehanizam)', () => {
-  it('postoji i nosi polazni commit', { timeout: 1_800_000 }, () => {
-    const baseline = process.env['CAPTURE_HM_REFERENCE'];
-    if (baseline)
-      writeHmReference({
-        baselineSha: baseline,
-        ...(process.env['CROSS_CHECK_SHA']
-          ? { crossCheckedSha: process.env['CROSS_CHECK_SHA'] }
-          : {}),
-        capturedWith:
-          'legacyApi + preparationDecision (domain/training + domain/plan, pre izdvajanja HM)',
-        tz: process.env['TZ'] ?? '',
-        generation: hmGenerationRows(legacyHmApi),
-        adaptation: hmAdaptationRows(legacyHmApi),
-        decisions: hmDecisionRows(legacyHmApi)
-      });
+/* Referenca HM je snimljena iz STAROG zajedničkog engine-a na `90f2d0e` (v. docs/generator-isolation/STATUS.md).
+   Stari engine je obrisan posle segmenta 5/5, pa se snimanje više ne radi u ovom stablu. Ponovno snimanje: worktree na
+   `90f2d0e`, kopirati src/test/{fiveK,halfMarathon}/*, pa
+       CAPTURE_HM_REFERENCE=<SHA> npx vitest run --project node halfMarathon/captureReference
+   (u tom stablu ovaj fajl ima i deo za snimanje — v. istoriju fajla). Ovde se samo proverava da referenca postoji i nosi
+   zabeleženi commit; poređenje rade testovi ekvivalencije generatora. */
+describe('referenca HM (stari engine)', () => {
+  it('postoji i nosi polazni commit', () => {
     const ref = loadHmReference();
     expect(ref).not.toBeNull();
     expect(ref?.baselineSha).toBe('90f2d0e5a21524ab408ba38060347f97e9843955');
-    expect(Object.keys(ref?.generation ?? {}).length).toBeGreaterThan(1500);
-    expect(Object.keys(ref?.adaptation ?? {}).length).toBeGreaterThan(1000);
+    expect(Object.keys(ref?.generation ?? {}).length).toBeGreaterThan(50);
+    expect(Object.keys(ref?.adaptation ?? {}).length).toBeGreaterThan(50);
     expect(Object.keys(ref?.decisions ?? {}).length).toBeGreaterThan(50);
   });
 });

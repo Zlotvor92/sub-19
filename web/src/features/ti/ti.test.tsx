@@ -1,3 +1,4 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
 import { t3kVdot } from '../../domain/training/test3k';
 import { act, render, screen, waitFor } from '@testing-library/react';
@@ -5,10 +6,8 @@ import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeSupabase, type FakeSupabase } from '@/test/fakeSupabase';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import type { GeoPort } from '../../services/weather/weatherSync';
 import { seedState, type PersistedState } from '../../domain/state';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import type { PlanGenerationInput } from '../../domain/training/types';
 import { setApp } from '../../app/appContext';
 import { createApp } from '../../app/createApp';

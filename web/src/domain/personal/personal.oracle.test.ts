@@ -10,7 +10,8 @@ import {
 } from '../../data/personalPlan';
 import { resolvePlan, weekOf } from '../plan';
 import type { LogEntry } from '../state';
-import { planVdotNow } from '../training/adaptation/proposal';
+// Ugrađeni lični plan je polumaraton → HM generator (v. domain/generators/personalPlan.node.test.ts).
+import { planVdotNow } from '../generators/halfMarathon';
 import {
   OLD_SEED_SIGNATURE,
   PERSONAL,

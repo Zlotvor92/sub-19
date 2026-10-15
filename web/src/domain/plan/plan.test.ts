@@ -5,10 +5,9 @@
    test/prevlacenje (zamena dana). Oracle test (`plan.oracle.test.ts`) dokazuje da je ponašanje isto kao
    u starom kodu; ovde su pravila izražena sama za sebe. */
 
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import type { AltRecord, GenPlanState } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
-import { adaptGeneratedPlan } from './adapt';
 import { safeTag, tagName, weekPhase } from './describe';
 import { rpeTarget } from '../generators/fiveK/plan/describe';
 import { clearAlt, setAlt, swapDays, undoWeekMoves } from './edit';

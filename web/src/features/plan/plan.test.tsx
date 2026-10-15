@@ -1,12 +1,11 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { FIVE_K_GENERATOR } from '../../domain/generators/select';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan, type ResolvedDay } from '../../domain/plan';
 import { seedState, type PersistedState } from '../../domain/state';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { hydratePersisted, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';

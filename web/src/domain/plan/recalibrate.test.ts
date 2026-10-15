@@ -5,18 +5,16 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../date';
 import type { GenPlanState } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
-import { planVdotForWeek } from '../training/prediction';
 import type { PlanGenerationInput, PlanMeta, Session } from '../training/types';
 import { raceTimeForVdot } from '../training/vdot/racePrediction';
-import { adaptGeneratedPlan } from './adapt';
 import { planBaselineVdot } from './baseline';
-import {
-  planRecalibrated,
-  planWithNewGoal,
-  RECALIBRATION_MIN_WEEKS_LEFT,
-  type RecalibratedStoredPlan
-} from './replan';
+import type { RecalibratedStoredPlan } from '@/domain/generators/select';
+import { routedEngine } from '@/test/generators';
+import { RECALIBRATION_MIN_WEEKS_LEFT } from '@/domain/generators/fiveK';
+
+/* Stari zajednički engine je obrisan: svaka funkcija ide generatoru distance plana o kome je reč (`routedEngine`). */
+const { adaptGeneratedPlan, generatePlan, planRecalibrated, planVdotForWeek, planWithNewGoal } =
+  routedEngine(5000);
 
 const START = parseIsoDate('2026-10-05') as IsoDate;
 const WEEKS = 24;

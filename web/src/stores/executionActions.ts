@@ -1,18 +1,16 @@
 import { addDays, parseIsoDate } from '../domain/date';
 import { resolvePlan, type ResolvedPlan } from '../domain/plan';
-import type { ExecutionAdjustmentOptions } from '../domain/plan/executionAdjustment';
 import {
   UNSUPPORTED_DISTANCE,
   generatorForPlan,
-  preparationForPlan
+  preparationForPlan,
+  type DecisionPoint,
+  type ExecutionAdjustmentOptions,
+  type PreparationChoice,
+  type PreparationDecision,
+  type ReplanContext,
+  type RunWalkAdjustmentOptions
 } from '../domain/generators/select';
-import type {
-  DecisionPoint,
-  PreparationChoice,
-  PreparationDecision
-} from '../domain/plan/preparationDecision';
-import type { ReplanContext } from '../domain/plan/future';
-import type { RunWalkAdjustmentOptions } from '../domain/plan/runWalkAdjustment';
 import {
   getPlanRevisions,
   recordPlanRevision,

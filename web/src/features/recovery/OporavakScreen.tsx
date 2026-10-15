@@ -24,8 +24,13 @@ export function OporavakScreen() {
       {m ? (
         <>
           <ReadinessCard model={m.ready} />
-          <LoadSection now={m.now} planned={m.ahead} />
-          <HrvSection wellness={wellness} connected={icu} today={todayStr as IsoDate} />
+          <LoadSection now={m.now} planned={m.ahead} assess={m.assess} />
+          <HrvSection
+            wellness={wellness}
+            connected={icu}
+            today={todayStr as IsoDate}
+            assess={m.assess}
+          />
           <RestingHrSection wellness={wellness} />
         </>
       ) : null}

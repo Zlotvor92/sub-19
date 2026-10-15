@@ -126,12 +126,13 @@ zoneForKind}.ts`. Nijedan od njih nije generisanje ni adaptacija plana.
 | vrućina/tempo/kartica u `domain/weather` | `<g>/weather/index.ts` | `WeatherCard` zove generator; bez njega kartice nema |
 | `plan/describe.rpeTarget` | `<g>/plan/describe.ts` | `usePlanRpe()` → `sessionView`/`sessionBreakdown` |
 | `paceForZone` u `useEasyPace`, čarobnjaku, vremenu, satu | `<g>/training/vdot/paceForZone.ts` | `useEasyPace()` i `formPreview` zovu generator plana / izabrane ciljne distance |
+| `domain/recovery/{pain,constants}`, ACWR/prekid/ispunjenost iz `load`, ACWR prikaz iz `view`, `features/recovery/readiness` | `<g>/recovery/{pain,load,constants,view,readiness}.ts` | `useRecoveryModel` i kartice oporavka (`assess`) zovu generator aktivnog plana; bez njega nema procene stanja |
 
 ### Šta je i dalje zajedničko van generatora (ne menja plan)
 
 | Modul | Šta radi |
 |---|---|
-| `domain/recovery/{pain,load,view,charts,constants}` | PRIKAZ stanja: status bola (pazi/stani/fizijatar), ACWR i pojasevi, spremnost „danas", masa, wellness, grafikoni; zapis trčanja van plana |
+| `domain/recovery/{load,view,charts,bodyParts}` | zapis trčanja van plana i granica plana; prikaz mase, wellness unosa i grafikona; delovi tela |
 | `domain/weather` (ostatak) | čitanje prognoze, sat treninga, temperatura odrađenog trčanja, lokacija |
 | merni sloj (`training/adaptation/{chain,measure,matching}`, `vdot/*`, `test3k`) | lanac forme (`vdotLog`) — ulaz generatorima |
 | `domain/ai/*` | tekstualni saveti (LLM), savetodavno |
@@ -151,14 +152,14 @@ zoneForKind}.ts`. Nijedan od njih nije generisanje ni adaptacija plana.
 
 | Test (`domain/generators/…`) | Šta proverava |
 |---|---|
-| `architecture.node.test.ts` (10) | zatvorenje svakog generatora u svom direktorijumu; bez međusobnih uvoza i uvoza starog/izbora (ni tipom); bez deljenog izvršnog koda; aplikacija ne uvozi staro generisanje/adaptaciju (ni kroz barel); izbor po distanci, lični plan → HM, nepodržano → `null`; **dostižnost iz `main.tsx` (TypeScript parser, lenji `import()`, barel po imenu) = tačno 29 popisanih fajlova starog koda**; `select`/`handoff` bez starog koda; **zamrznut inventar imena** (i da nijedna stavka nije zastarela); **trenerska logika van plana (19 imena) deklarisana je samo u generatorima i u svakom od četiri** |
-| `guidance.node.test.ts` (6) | svaka od četiri kopije prenete logike = referenca aplikacionog koda pre prenosa (`ae6b43a`, 14 744 toka); pregled forme u čarobnjaku isti za podržane distance |
+| `architecture.node.test.ts` (11) | zatvorenje svakog generatora u svom direktorijumu; bez međusobnih uvoza i uvoza starog/izbora (ni tipom); bez deljenog izvršnog koda; aplikacija ne uvozi staro generisanje/adaptaciju (ni kroz barel); izbor po distanci, lični plan → HM, nepodržano → `null`; **dostižnost iz `main.tsx` (TypeScript parser, lenji `import()`, barel po imenu) = tačno 29 popisanih fajlova starog koda**; `select`/`handoff` bez starog koda; **zamrznut inventar imena** (i da nijedna stavka nije zastarela); **trenerska logika van plana i procena stanja (42 imena) deklarisana je samo u generatorima i u svakom od četiri**; **48 modula starog engine-a ne postoji, barel fajlovi ih ne izvoze** |
+| `guidance.node.test.ts` (11) | svaka od četiri kopije prenete logike = referenca aplikacionog koda pre prenosa (`ae6b43a`, 14 744 toka); prikaz stanja (bol, ACWR, spremnost) = referenca pre prenosa (`5f56a52`, 7 380 tokova); pregled forme u čarobnjaku isti za podržane distance |
 | `fiveK|tenK|halfMarathon|marathon/isolation.node.test.ts` | isto po generatoru + odsustvo profila/parametara drugih distanci |
 | `runtimeIsolation.node.test.ts` (5) | samostalno (svež modul), obrnut i isprepletan redosled, ponavljanje = referenca; nema zajedničkog objekta između generatora; izvršavanje ne menja izvezene konstante; probna promena `deloadFactor` jednog generatora menja samo njega (jedini kanal ka drugom je eksplicitna predaja, dokazano preusmeravanjem predaje na netaknutu instancu) |
 | `<generator>/equivalence.node.test.ts` | tačan zapis izlaza = zamrznuta referenca starog mehanizma (generisanje, adaptacija, odluke; TZ/sat/slučajnost) |
 | `otherDistances.node.test.ts` | referenca polaznog `main` (`05088e0`) za 10K/HM/maraton kroz aplikacioni izbor |
 | `personalPlan.node.test.ts` | ugrađeni lični plan: HM generator = stari mehanizam na 13 782 toka |
-| `features/onboarding/*Flow.test.tsx`, `features/personalPlanGenerator.test.tsx` | stvarni tok kroz store-ove/ekrane; brojač poziva starog mehanizma = 0; nepodržana distanca eksplicitno odbijena |
+| `features/onboarding/*Flow.test.tsx`, `features/personalPlanGenerator.test.tsx` | stvarni tok kroz store-ove/ekrane; nepodržana distanca eksplicitno odbijena |
 
 Osetljivost svakog novog pravila je proverena veštačkim prekršajem (v. `STATUS.md`, segment 5/5).
 
@@ -174,12 +175,14 @@ Osetljivost svakog novog pravila je proverena veštačkim prekršajem (v. `STATU
 
 ## 8. Stari zajednički mehanizam
 
-Produkciona uloga: **nema** (dokaz: §6, test dostižnosti). Fizički nije obrisan; 47 izvršnih modula starog
-generisanja/adaptacije ostaju u `domain/training`/`domain/plan` kao **zamrznut istorijski oracle**: iz njih su snimljene
-sve reference, a koriste ih istorijski testovi starog koda, golden master `generator.fingerprint`, harnesi referenci
-(`test/fiveK/legacyApi.ts`, `capture*`) i UI/oracle testovi koji njima prave ulazne planove (stari `generatePlan`
-direktno uvozi 53 testna fajla, stari `adaptGeneratedPlan` 51). Inventar po modulu i
-razlog: `FINAL-REPORT.md` §2.
+**Obrisan** (48 modula generisanja, adaptacije, profila distanci i sesija; spisak: `DELETED_LEGACY_ENGINE` u
+`architecture.node.test.ts` i `STATUS.md`, dopuna 2). U `domain/training`/`domain/plan` ostaje samo zamrznut skup od 29
+fajlova koje produkcija koristi (format razmene, prikaz, merni sloj; §4), tipovi i `plan/header.ts`.
+
+Reference ekvivalencije (`src/test/fixtures/*.json.gz`) snimljene su iz starog engine-a na zabeleženim commitima i ostaju
+nepromenjene; harnesi snimanja sada samo proveravaju da referenca postoji (recept za ponovno snimanje iz worktree-a na
+zabeleženom commitu je u komentaru svakog `capture*` fajla). Testovi koji su starim engine-om pravili ulazne planove ili
+proveravali njegove funkcije idu kroz `src/test/generators.ts` / kopije u generatorima.
 
 ## 9. Komande
 
@@ -192,7 +195,7 @@ npx vitest run --project node generators/architecture      # statičke granice i
 npx vitest run --project node generators/runtimeIsolation  # izolacija u izvršavanju
 npx vitest run --project node generators/personalPlan      # lični plan → HM
 npx vitest run --project node generators/guidance          # preneta logika van plana: 4 kopije = referenca
-npx vitest run --project ui Flow.test personalPlanGenerator # aplikacione putanje, brojač starog mehanizma
+npx vitest run --project ui Flow.test personalPlanGenerator # aplikacione putanje
 npm run build
 npx playwright test
 ```

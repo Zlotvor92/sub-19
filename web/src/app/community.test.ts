@@ -1,7 +1,6 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { adaptGeneratedPlan } from '../domain/plan/adapt';
 import { seedState, type PersistedState } from '../domain/state';
-import { generatePlan } from '../domain/training/generator/generatePlan';
 import { createCommunityApi } from '../services/community/communityApi';
 import type { SessionManager } from '../services/supabase/session';
 import { hydratePersisted } from '../stores';

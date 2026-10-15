@@ -12,16 +12,23 @@
 
    parity: test/simetrija-distanci.test.mjs — 11 testova. Matrica „koja familija postoji za koju
    distancu" (čitana regexom iz app.js) više nema smisla: familije su sada parametrizovane
-   (`sessions/{tempo,cruise,repetitions,intervals,progression}.ts`), a razlike su podaci. */
+   (`sessions/{tempo,cruise,repetitions,intervals,progression}.ts`), a razlike su podaci.
 
+   Posle izdvajanja generatora (segmenti 1–5) svaka distanca ima SVOJU kopiju profila i mašine
+   (`domain/generators/<distanca>/training`); profil se ovde uzima iz generatora te distance. Zajedničke
+   funkcije (obim, zagrevanje, ograničenja) su iste u sve četiri kopije i uzimaju se iz polumaratonske. */
+
+import { generatePlan, DISTANCE_PROFILES, profileFor } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
-import { generatePlan } from '../generator/generatePlan';
-import { longRunCap, peakVolume, rampStep } from '../generator/volume';
-import { wuCdForVolume } from '../sessions/build';
-import { constrainSession } from '../sessions/constraints';
-import { hmContinuousThreshold } from './hmProgression';
-import { DISTANCE_PROFILES, profileFor } from './index';
+import {
+  longRunCap,
+  peakVolume,
+  rampStep
+} from '@/domain/generators/halfMarathon/training/generator/volume';
+import { wuCdForVolume } from '@/domain/generators/halfMarathon/training/sessions/build';
+import { constrainSession } from '@/domain/generators/halfMarathon/training/sessions/constraints';
+import { hmContinuousThreshold } from '@/domain/generators/halfMarathon/training/distances/hmProgression';
 
 const DISTANCES = [
   { name: '5K', m: 5000 },
@@ -289,7 +296,7 @@ describe('Oblik profila je zaključan — polje dodato u tri od četiri se vidi'
           'trimPriority',
           'weeklyFastShare'
         ] as const
-      ).filter((k) => typeof p[k] === 'function');
+      ).filter((k) => typeof (p as unknown as Record<string, unknown>)[k] === 'function');
       expect({
         product: Object.keys(p.product).sort(),
         heuristic: Object.keys(p.heuristic).sort(),

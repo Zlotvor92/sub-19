@@ -1,6 +1,6 @@
 import { StatusBadge } from '../../components/ui/Badge';
 import { toBadge } from './cards';
-import type { Readiness } from './readiness';
+import type { Readiness } from '../../domain/generators/select';
 
 /* STANJE DANAS: odgovor, razlog, savet — pa svi signali sa svojom brojkom i stanjem rečima. Najlošiji signal je prvi i on odlučuje. Jedino mesto na kome
    se signali oporavka prikazuju kao brojevi; grafikoni ispod nose samo kretanje kroz vreme. */
