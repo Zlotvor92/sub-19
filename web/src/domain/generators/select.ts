@@ -6,7 +6,8 @@
 
    Stanje izdvajanja (docs/generator-isolation/STATUS.md):
    - 5K → `./fiveK` (izdvojen, segment 1/5);
-   - 10K, polumaraton, maraton → stari zajednički mehanizam (`domain/training` + `domain/plan`) do svojih segmenata.
+   - 10K → `./tenK` (izdvojen, segment 2/5);
+   - polumaraton, maraton → stari zajednički mehanizam (`domain/training` + `domain/plan`) do svojih segmenata.
 
    Pravilo za 5K: stari generator je distancu čitao kao `inp.raceDistM || 5000`, pa ulaz bez distance (ili sa 0) pripada 5K.
    Ugrađeni lični plan vlasnika (`genPlan === null`) je polumaraton i ostaje na starom mehanizmu.
@@ -44,8 +45,9 @@ import {
 import { fitnessEvidence as legacyFitnessEvidence } from '../training/adaptation/evidence';
 import { matchPlanRows as legacyMatchPlanRows } from '../training/adaptation/matching';
 import * as fiveK from './fiveK';
+import * as tenK from './tenK';
 
-export type GeneratorId = '5k' | 'legacy';
+export type GeneratorId = '5k' | '10k' | 'legacy';
 
 /** Ugovor generatora prema aplikaciji (isti oblik za svaki generator; interni modeli su njihovi). */
 export const LEGACY_GENERATOR = {
@@ -100,14 +102,47 @@ export const FIVE_K_GENERATOR: PlanGenerator = {
   matchPlanRows: fiveK.matchPlanRows
 };
 
+export const TEN_K_GENERATOR: PlanGenerator = {
+  id: '10k',
+  generatePlan: tenK.generatePlan,
+  adaptGeneratedPlan: tenK.adaptGeneratedPlan,
+  assess: tenK.assess,
+  product: (raceDistM) => (raceDistM === tenK.TEN_K_DISTANCE_M ? tenK.TEN_K_PRODUCT : undefined),
+  executionModel: tenK.executionModel,
+  executionBasis: tenK.executionBasis,
+  buildExecutionAdjustment: tenK.buildExecutionAdjustment,
+  buildRunWalkAdjustment: tenK.buildRunWalkAdjustment,
+  assessRunWalkProgress: tenK.assessRunWalkProgress,
+  qualityEntryGate: tenK.qualityEntryGate,
+  hasRecentMeasuredForm: tenK.hasRecentMeasuredForm,
+  planWithNewGoal: tenK.planWithNewGoal,
+  planRecalibrated: tenK.planRecalibrated,
+  graftFuturePlan: tenK.graftFuturePlan,
+  alignAutomaticOverlays: tenK.alignAutomaticOverlays,
+  vdotProposal: tenK.vdotProposal,
+  applyVdotProposal: tenK.applyVdotProposal,
+  undoVdotAdjustments: tenK.undoVdotAdjustments,
+  fitnessEvidence: tenK.fitnessEvidence,
+  planVdotNow: tenK.planVdotNow,
+  matchPlanRows: tenK.matchPlanRows
+};
+
 /** Generator za ciljnu distancu ulaza. `undefined`/0 je 5K (stari generator: `raceDistM || 5000`). */
 export function generatorIdFor(raceDistM: unknown): GeneratorId {
   const dist = (raceDistM as number) || 5000;
-  return dist === fiveK.FIVE_K_DISTANCE_M ? '5k' : 'legacy';
+  if (dist === fiveK.FIVE_K_DISTANCE_M) return '5k';
+  if (dist === tenK.TEN_K_DISTANCE_M) return '10k';
+  return 'legacy';
 }
 
+const GENERATORS: Readonly<Record<GeneratorId, PlanGenerator>> = {
+  '5k': FIVE_K_GENERATOR,
+  '10k': TEN_K_GENERATOR,
+  legacy: LEGACY_GENERATOR
+};
+
 export function generatorForDistance(raceDistM: unknown): PlanGenerator {
-  return generatorIdFor(raceDistM) === '5k' ? FIVE_K_GENERATOR : LEGACY_GENERATOR;
+  return GENERATORS[generatorIdFor(raceDistM)];
 }
 
 /**

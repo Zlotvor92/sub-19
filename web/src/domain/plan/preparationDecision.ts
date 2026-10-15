@@ -144,7 +144,7 @@ function regenerate(
   meta: Record<string, unknown>,
   notes: string[] = []
 ): Built {
-  // A shorter 5K option is planned and finalized by the isolated 5K generator.
+  // A shorter 5K or 10K option is planned and finalized by the isolated generator of that distance.
   const regen = regeneratorForDistance(input.raceDistM) ?? regenerateFuture;
   const built = regen(current, input, today, context, {
     policy: basis.policy,

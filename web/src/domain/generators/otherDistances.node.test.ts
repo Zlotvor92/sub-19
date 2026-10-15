@@ -12,6 +12,7 @@ import type { GenPlanState } from '../state';
 import {
   FIVE_K_GENERATOR,
   LEGACY_GENERATOR,
+  TEN_K_GENERATOR,
   generatorForDistance,
   generatorForPlan,
   generatorIdFor
@@ -19,8 +20,9 @@ import {
 
 /* 10K, POLUMARATON I MARATON POSLE IZDVAJANJA 5K. Referenca je uzeta iz starog koda na polaznom commitu, u zasebnom
    worktree-ju (`src/test/fiveK/captureOtherReference.node.test.ts`). Pozivi idu kroz aplikacioni izbor generatora — isti
-   put kao u produkciji. Odluka o pripremi uključuje opciju „kraća distanca: 5K", koju sada pravi izdvojeni 5K generator
-   (`handoff.ts`); i njen rezultat mora biti identičan. */
+   put kao u produkciji, pa 10K deo reference od segmenta 2/5 proverava izdvojeni 10K generator. Odluka o pripremi uključuje
+   opcije „kraća distanca: 5K" i „kraća distanca: 10K", koje sada prave izdvojeni 5K i 10K generator (`handoff.ts`); i
+   njihov rezultat mora biti identičan. */
 
 const byInput = (input: unknown) =>
   generatorForDistance((input as { raceDistM?: unknown } | null)?.raceDistM);
@@ -84,11 +86,20 @@ function compare(
 const reference = loadOtherReference();
 
 describe('izbor generatora', () => {
-  it('5K (i ulaz bez distance) ide izdvojenom generatoru, ostalo starom mehanizmu', () => {
+  /* Segment 2/5: 10K je izdvojen, pa 10000 više ne ide starom mehanizmu (ranije očekivanje 'legacy' je bilo pravilo
+     izbora iz segmenta 1, ne trenerski rezultat). */
+  it('5K (i ulaz bez distance) i 10K idu izdvojenim generatorima, ostalo starom mehanizmu', () => {
     expect(generatorIdFor(5000)).toBe('5k');
     expect(generatorIdFor(undefined)).toBe('5k');
     expect(generatorIdFor(0)).toBe('5k');
-    for (const d of [10000, 21097.5, 42195, 7000]) expect(generatorIdFor(d)).toBe('legacy');
+    expect(generatorIdFor(10000)).toBe('10k');
+    for (const d of [21097.5, 42195, 7000, 10000.5]) expect(generatorIdFor(d)).toBe('legacy');
+    expect(generatorForPlan({ weeks: [], pred: [], meta: { raceDistM: 10000 } } as never)).toBe(
+      TEN_K_GENERATOR
+    );
+    expect(generatorForPlan({ weeks: [], pred: [], ulaz: { raceDistM: 10000 } })).toBe(
+      TEN_K_GENERATOR
+    );
     expect(generatorForPlan(null)).toBe(LEGACY_GENERATOR);
     expect(generatorForPlan({ weeks: [], pred: [], meta: { raceDistM: 5000 } } as never)).toBe(
       FIVE_K_GENERATOR
@@ -102,7 +113,7 @@ describe('izbor generatora', () => {
   });
 });
 
-describe('10K/HM/maraton nepromenjeni (polazni commit)', () => {
+describe('10K/HM/maraton nepromenjeni (polazni commit; 10K kroz izdvojeni generator)', () => {
   it('referenca postoji', () => {
     expect(reference?.baselineSha).toBe('05088e0440c50e866bb3bbf6246ff20fe5619f4c');
   });
@@ -123,5 +134,10 @@ describe('10K/HM/maraton nepromenjeni (polazni commit)', () => {
     expect(
       Object.keys(now.decisions).some((k) => k.includes('"kind":"shorter","raceDistM":5000'))
     ).toBe(true);
+    // Predaja „kraća distanca: 10K" iz HM/maratona ide izdvojenom 10K generatoru (`handoff.ts`).
+    expect(
+      Object.keys(now.decisions).filter((k) => k.includes('"kind":"shorter","raceDistM":10000'))
+        .length
+    ).toBeGreaterThan(10);
   });
 });
