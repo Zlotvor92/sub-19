@@ -61,6 +61,7 @@ describe.each(COPIES)('%s kopija', (_copy, { analyzeExecution, recommendExecutio
           runWalk: undefined,
           snaga: false,
           session: undefined,
+          originSession: undefined,
           mlr: false,
           test: false,
           origin: {

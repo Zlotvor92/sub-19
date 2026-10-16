@@ -120,6 +120,7 @@ describe('tekst i struktura naspram starog koda', () => {
   it('sessionBreakdown / sessionNote: svi dani sva 4 plana, i sa ručno promenjenim opisom', () => {
     const r = rng(2);
     let withRows = 0;
+    let changed = 0;
     for (const plan of PLANS) {
       const alts: Record<string, AltRecord> = {};
       for (const w of plan.weeks)
@@ -142,14 +143,22 @@ describe('tekst i struktura naspram starog koda', () => {
       for (const d of resolved.dated) {
         const old = j<unknown>(legacy.evalIn(`sessBreakdown(BY_ID[${JSON.stringify(d.id)}])`));
         const mine = sessionBreakdown(d, rpeTarget);
-        expect(firstDiff(canonical(j(mine)), canonical(old)), `${d.id} razlaganje`).toBeNull();
-        expect(sessionNote(d), `${d.id} napomena`).toBe(
+        /* NAMERNA RAZLIKA (nalaz 4): stari kod je posle izmene bez strukture razlagao ORIGINALNU sesiju; stari izlaz je
+           tačno razlaganje originala, a novi čita opis izmene. */
+        const asOld = !d.session && d.originSession ? { ...d, session: d.originSession } : d;
+        if (asOld !== d && firstDiff(canonical(j(mine)), canonical(old)) !== null) changed++;
+        expect(
+          firstDiff(canonical(j(sessionBreakdown(asOld, rpeTarget))), canonical(old)),
+          `${d.id} razlaganje`
+        ).toBeNull();
+        expect(sessionNote(asOld), `${d.id} napomena`).toBe(
           legacy.evalIn(`sessNote(BY_ID[${JSON.stringify(d.id)}])`)
         );
         if (mine) withRows++;
       }
     }
     expect(withRows).toBeGreaterThan(100);
+    expect(changed).toBeGreaterThan(0);
   });
 });
 

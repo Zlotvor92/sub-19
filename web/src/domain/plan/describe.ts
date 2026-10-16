@@ -30,8 +30,8 @@ export function safeTag(t: string | undefined | null): DayTag | '' {
 }
 
 /**
- * Šta je dan — za oznaku na kartici. Ručno izmenjen dan (`hasAlt`) i dalje nosi ORIGINALNU sesiju
- * (potrebna za predikciju/lap-detekciju), ali za PRIKAZ je zastarela: piramida promenjena u obično
+ * Šta je dan — za oznaku na kartici. Ručno izmenjen dan (`hasAlt`) se imenuje po tipu izmene, čak i kad
+ * izmena zadržava strukturu (`session`); original (`originSession`) služi samo istoriji i spajanju: piramida promenjena u obično
  * lako trčanje ne sme da se prikazuje kao „Piramida".
  */
 export function sessKind(

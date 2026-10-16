@@ -14,7 +14,8 @@ import { sessKind } from '../../plan/describe';
 export type StoredPredRow = PredictionRow & { id: string };
 
 const kindMatch = (d: ResolvedDay, r: StoredPredRow): boolean | null => {
-  const k = d.session?.kind;
+  /* identitet dana: red predikcije nosi naziv ORIGINALNE sesije, i posle ručne izmene */
+  const k = d.originSession?.kind;
   if (!k) return null;
   return r.l === `N${d.w} · ${k}`;
 };

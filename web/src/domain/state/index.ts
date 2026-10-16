@@ -7,10 +7,14 @@ export type {
   LogEntry,
   PainRecord,
   PersistedState,
+  PredictionRow,
+  RunWalk,
   StoredWeek,
   T3kRecord,
+  TrainingPlan,
   UiState,
   VdotRecord,
+  Week,
   WeightRecord,
   WellnessRecord
 } from './types';

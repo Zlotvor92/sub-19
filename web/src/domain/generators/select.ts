@@ -28,27 +28,57 @@ import type {
   WellnessRecord
 } from '../state';
 import type { IsoDate } from '../date';
-import type * as Hm from './halfMarathon';
-import type * as HmTypes from './halfMarathon/training/types';
-import type * as HmPlanTypes from './halfMarathon/plan/types';
-import type { ExecutionAnalysis, ExecutionRecommendation } from './halfMarathon/training/execution';
-import type { RunWalkAssessment } from './halfMarathon/training/runWalkProgress';
-import type { QualityGateResult } from './halfMarathon/training/qualityGate';
-import type { GoalChangeResult, ReplanError } from './halfMarathon/plan/replan';
-import type { FinalizationOptions } from './halfMarathon/plan/finalize';
 import type {
+  Acwr,
+  AcwrBand,
   ApplyResult,
-  ProposalContext,
-  VdotProposal as ProposalVdot
-} from './halfMarathon/training/adaptation/proposal';
-import type {
+  Assessment,
+  ChoiceResult,
+  DecisionBasis,
+  DecisionPoint,
+  DistanceProduct,
+  ExecutionAdjustmentOptions,
+  ExecutionAnalysis,
+  ExecutionRecommendation,
+  FinalizationOptions,
   FitnessEvidence,
-  FitnessEvidenceContext
-} from './halfMarathon/training/adaptation/evidence';
-import type { StoredPredRow } from './halfMarathon/training/adaptation/matching';
-import type { LoadContext } from './halfMarathon/recovery/load';
-import type { Signal } from './halfMarathon/recovery/readiness';
-import type { ChoiceResult, DecisionBasis } from './halfMarathon/plan/preparationDecision';
+  FitnessEvidenceContext,
+  GoalChangeResult,
+  InjuryProposal,
+  Intensity,
+  LoadContext,
+  PainStatus,
+  PersonalBest,
+  PlanGenerationInput,
+  PlanGenerationResult,
+  PreparationAssessment,
+  PreparationChoice,
+  PreparationDecision,
+  ProposalContext,
+  QualityGateResult,
+  Readiness,
+  RealignInput,
+  RealignResult,
+  RecalibratedStoredPlan,
+  RecoveryContext,
+  ReplanContext,
+  ReplanError,
+  ResolvedDay,
+  ResolvedPlan,
+  ResolvedPlanView,
+  ResolvedWeek,
+  RpeTarget,
+  RunWalkAdjustmentOptions,
+  RunWalkAssessment,
+  RunWalkMode,
+  Signal,
+  StoredPredRow,
+  VdotProposal,
+  WatchBatch,
+  WeatherCardInput,
+  WeatherCardModel,
+  Zone
+} from './contract';
 import * as fiveK from './fiveK';
 import * as halfMarathon from './halfMarathon';
 import { regeneratorForDistance } from './handoff';
@@ -66,40 +96,38 @@ export const UNSUPPORTED_DISTANCE =
    sa `satisfies PlanGenerator` (i `PreparationApi` gde postoji), pa promena jednog generatora koja ne odgovara ugovoru
    pada pri prevođenju umesto da tiho promeni ugovor ostalima. Bez frameworka i baznih klasa.
 
-   Tipovi tereta (`Payload.*`): oblik formata razmene koji danas ima isti izgled u sva četiri generatora; deklarisan je na
-   JEDNOM imenovanom mestu ispod. Tamo gde postoji neutralan tip (plan, dnevnik, datumi, lanac forme) koristi se on;
-   složeni rezultati (predlozi, prilagođavanja, procena stanja) se još čitaju iz polumaratonskih deklaracija — to je
-   PREOSTALI deo A5 (zameniti ih neutralnim deklaracijama), ne izvođenje ugovora iz HM objekta.
+   Tipovi tereta: neutralni format razmene deklarisan u `./contract.ts` (perzistirani plan iz `../state`, ostalo tamo).
+   `select.ts` iz foldera distance uzima SAMO generator objekte za izbor (izvršni `import * as`), nijedan tip — proverava
+   `contract.node.test.ts`. Promena tipa unutar jednog generatora zato ne menja ugovor, već pada pri prevođenju.
    ============================================================ */
 
-/* --- tipovi tereta (jedno mesto; v. gore) --- */
-export type DistanceProduct = typeof Hm.HALF_MARATHON_PRODUCT;
-export type ResolvedPlanView = HmPlanTypes.ResolvedPlan;
-export type InjuryProposal = Hm.InjuryProposal;
-export type RecoveryContext = Hm.RecoveryContext;
-export type RpeTarget = Hm.RpeTarget;
-export type WatchBatch = Hm.WatchBatch;
-export type WeatherCardInput = Hm.WeatherCardInput;
-export type WeatherCardModel = Hm.WeatherCardModel;
-export type RealignInput = Hm.RealignInput;
-export type PainStatus = Hm.PainStatus;
-export type Acwr = Hm.Acwr;
+/* --- tipovi tereta (deklarisani u `./contract.ts`) --- */
+export type {
+  DistanceProduct,
+  ResolvedPlanView,
+  InjuryProposal,
+  RecoveryContext,
+  RpeTarget,
+  WatchBatch,
+  WeatherCardInput,
+  WeatherCardModel,
+  RealignInput,
+  PainStatus,
+  Acwr,
+  AcwrBand,
+  Readiness,
+  ExecutionAdjustmentOptions,
+  ReplanContext,
+  RunWalkAdjustmentOptions,
+  RunWalkMode,
+  VdotProposal,
+  RecalibratedStoredPlan,
+  PreparationDecision,
+  PreparationChoice,
+  DecisionPoint
+};
 export type AcwrPlan = { planned: number; chronic: number | null; ratio: number | null };
-export type AcwrBand = Hm.AcwrBand;
-export type Readiness = Hm.Readiness;
-export type ExecutionAdjustmentOptions = Hm.ExecutionAdjustmentOptions;
-export type ReplanContext = Hm.ReplanContext;
-export type RunWalkAdjustmentOptions = Hm.RunWalkAdjustmentOptions;
-export type RunWalkMode = RunWalkAdjustmentOptions['mode'];
-export type VdotProposal = ProposalVdot;
-export type RecalibratedStoredPlan = Exclude<
-  ReturnType<typeof Hm.planRecalibrated>,
-  { error: string }
->;
-export type PreparationDecision = Hm.PreparationDecision;
 export type PreparationOption = PreparationDecision['options'][number];
-export type PreparationChoice = Hm.PreparationChoice;
-export type DecisionPoint = ChoiceResult['change']['from'];
 export type WeekPhase = 'DELOAD' | 'TRKA' | 'TAPER' | 'BAZA' | 'RAZVOJ' | 'VRHUNAC' | '';
 export type PolicyStatus =
   | { status: 'current'; policyId: string; policyVersion: string }
@@ -143,10 +171,6 @@ export interface FormPolicy {
   currentVdot: (chain: readonly VdotRecord[]) => number | null;
 }
 
-type ResolvedPlan = HmPlanTypes.ResolvedPlan;
-type ResolvedWeek = HmPlanTypes.ResolvedWeek;
-type ResolvedDay = HmPlanTypes.ResolvedDay;
-
 export interface PlanGenerator extends FormPolicy {
   id: GeneratorId;
   /* politika plana i prikaz faze (A3, A7) */
@@ -163,15 +187,15 @@ export interface PlanGenerator extends FormPolicy {
     totalWeeks: number
   ) => WeekPhase;
   /* generisanje */
-  generatePlan: (input: HmTypes.PlanGenerationInput) => HmTypes.PlanGenerationResult;
-  adaptGeneratedPlan: (gen: HmTypes.PlanGenerationResult) => GenPlanState | null;
+  generatePlan: (input: PlanGenerationInput) => PlanGenerationResult;
+  adaptGeneratedPlan: (gen: PlanGenerationResult) => GenPlanState | null;
   assess: (
-    pb: HmTypes.PersonalBest,
+    pb: PersonalBest,
     weeks: number,
-    intensity: HmTypes.Intensity,
+    intensity: Intensity,
     goalSec: number | null,
     raceDistM: number
-  ) => HmTypes.Assessment;
+  ) => Assessment;
   product: (raceDistM: number) => DistanceProduct | undefined;
   /* adaptacija */
   executionModel: (
@@ -275,7 +299,7 @@ export interface PlanGenerator extends FormPolicy {
     log: Readonly<Record<string, LogEntry>>,
     alts: Readonly<Record<string, AltRecord>>
   ) => { applied: number; alts: Record<string, AltRecord> };
-  realignPlan: (input: RealignInput) => Hm.RealignResult;
+  realignPlan: (input: RealignInput) => RealignResult;
   workoutsForWatch: (
     plan: Pick<ResolvedPlan, 'weeks'>,
     today: string,
@@ -285,7 +309,7 @@ export interface PlanGenerator extends FormPolicy {
   thresholdPace: (vdot: number | null | undefined) => string | null;
   weatherCard: (input: WeatherCardInput) => WeatherCardModel | null;
   rpeTarget: (d: Pick<ResolvedDay, 'rest' | 'tag'> | null | undefined) => RpeTarget | null;
-  paceForZone: (vdot: number, zone: HmTypes.Zone) => number;
+  paceForZone: (vdot: number, zone: Zone) => number;
   /* procena stanja */
   painStatus: (pain: readonly PainRecord[] | null | undefined, today: IsoDate) => PainStatus;
   acwrNow: (ctx: LoadContext, today: IsoDate) => Acwr;
@@ -320,7 +344,7 @@ export interface PreparationApi {
     basis: DecisionBasis,
     context: ReplanContext,
     status: 'rejected' | 'limited',
-    delivered: HmTypes.PreparationAssessment | undefined
+    delivered: PreparationAssessment | undefined
   ) => PreparationDecision;
   buildPreparationChoice: (
     current: GenPlanState,

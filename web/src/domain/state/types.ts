@@ -11,6 +11,8 @@
    ============================================================ */
 
 import type { TrainingPlan, PredictionRow, RunWalk, Week } from '../training/types';
+/** Oblik generisanog plana je deo formata razmene (ugovor generatora, `generators/contract.ts`, ga čita odavde). */
+export type { TrainingPlan, PredictionRow, RunWalk, Week };
 
 export const SCHEMA_VERSION = 12;
 

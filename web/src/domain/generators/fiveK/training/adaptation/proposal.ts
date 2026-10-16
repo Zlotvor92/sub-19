@@ -172,7 +172,7 @@ export function vdotProposal(ctx: ProposalContext): VdotProposal | null {
       /* Ručno zaključan tempo se ne dira — ni u alts, ni u sesiji. */
       const a = ctx.alts[d.id];
       if (a && a.pace != null && !a.paceAuto) continue;
-      if (d.session?.overrides['paceSec']) continue;
+      if (d.originSession?.overrides['paceSec']) continue; // zaključavanje je na sačuvanoj sesiji
       const newPace = paceForZone(f.form, z.zone);
       const oldPace = effectivePace(ctx.alts, d, z.row.pt) ?? 0;
       if (!(oldPace > 0)) continue;

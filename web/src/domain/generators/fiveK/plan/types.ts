@@ -37,8 +37,11 @@ export interface ResolvedDay {
   finish?: FastFinish;
   strides?: Strides;
   snaga: boolean;
-  /** Originalna struktura sesije (i posle ručne izmene — služi predikciji i lap-detekciji). */
+  /** VAŽEĆI propis: struktura onoga što korisnik sada treba da odradi. `undefined` kad je dan ručno izmenjen tako da
+   *  izmena nema strukturu (drugi tip, km ili opis) — tada važi opis izmene. Odlučuje samo `resolvePlan`. */
   session: Session | undefined;
+  /** ORIGINALNI propis generatora, i posle ručne izmene: istorija, spajanje sa redom predikcije, ručno zaključan tempo. */
+  originSession: Session | undefined;
   mlr: boolean;
   test: boolean;
   origin: DayOrigin;

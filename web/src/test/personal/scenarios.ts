@@ -15,6 +15,29 @@ import { attempt, buildContexts, type FlowResult } from '@/test/fiveK/scenarios'
 
 type Api = GeneratorApi;
 
+type Resolved = ReturnType<Api['resolvePlan']>;
+type ResolvedDayView = Resolved['dated'][number];
+
+/** Nalaz 4: `session` je VAŽEĆI propis, a original je `originSession`. Stari mehanizam je u `session` držao original,
+ *  pa se razrešen plan beleži u starom obliku (`session` ← `originSession`); sva ostala polja ostaju kakva jesu. */
+function legacyResolved(plan: Resolved): unknown {
+  const copies = new Map<ResolvedDayView, unknown>();
+  const legacy = (d: ResolvedDayView): unknown => {
+    if (!copies.has(d)) {
+      const { originSession, ...rest } = d;
+      copies.set(d, { ...rest, session: originSession });
+    }
+    return copies.get(d);
+  };
+  return {
+    ...plan,
+    weeks: plan.weeks.map((w) => ({ ...w, days: w.days.map(legacy) })),
+    byId: new Map([...plan.byId].map(([k, d]) => [k, legacy(d)])),
+    byDate: new Map([...plan.byDate].map(([k, d]) => [k, legacy(d)])),
+    dated: plan.dated.map(legacy)
+  };
+}
+
 function addIso(iso: string, days: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
@@ -64,7 +87,7 @@ export function personalFlows(api: Api, limitTodays?: number): FlowResult[] {
           alts: ctx.alts as never,
           moves: ctx.moves
         });
-        out.push({ name: `${tag} · resolve`, value: resolved, pure: true });
+        out.push({ name: `${tag} · resolve`, value: legacyResolved(resolved), pure: true });
         const model = attempt(() =>
           api.executionModel(resolved, today, ctx as never, cname === 'gap' ? { km: 6 } : undefined)
         );

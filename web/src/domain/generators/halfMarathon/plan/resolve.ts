@@ -16,6 +16,16 @@ export interface Overlay {
 
 export class InvalidPlanError extends Error {}
 
+/** Izmena zadržava strukturu sesije kad su tip, km i opis isti kao u originalu dana. */
+function keepsStructure(alt: AltRecord, origin: DayOrigin): boolean {
+  return (
+    !origin.rest &&
+    alt.tag === origin.tag &&
+    (alt.km ?? null) === origin.km &&
+    alt.desc === (origin.desc ?? '')
+  );
+}
+
 export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): ResolvedPlan {
   const byId = new Map<string, ResolvedDay>();
   const byDate = new Map<IsoDate, ResolvedDay>();
@@ -58,6 +68,7 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         ...(d.strides ? { strides: d.strides } : {}),
         snaga: false,
         session: d.session,
+        originSession: d.session,
         mlr: 'mlr' in d && d.mlr === true,
         test: isTest,
         origin
@@ -73,6 +84,10 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         if (alt.rw) resolved.runWalk = alt.rw;
         else if (origin.runWalk !== undefined) resolved.runWalk = origin.runWalk;
         resolved.snaga = !!(alt.snaga && !resolved.rest);
+        /* VAŽEĆI PROPIS (nalaz 4): struktura sesije važi samo dok izmena ne dira tip, km i opis (menja samo tempo,
+           ritam ili snagu). Inače dan nema strukturu — prikaz, sat i merenje čitaju opis izmene; original ostaje u
+           `originSession`. */
+        if (!keepsStructure(alt, origin)) resolved.session = undefined;
       }
       byId.set(id, resolved);
       if (!isTest) {
