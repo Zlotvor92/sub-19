@@ -1,0 +1,3457 @@
+{
+ "today": "2026-10-15",
+ "tz": "UTC",
+ "node": "v22.22.0",
+ "profiles": [
+  {
+   "id": "D01",
+   "set": "dev",
+   "label": "Početnik, run/walk, sa sporim poznatim rezultatom",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "886888f609828976",
+    "stored": "33e8b4cd1ebd9900"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 6,
+    "vdot0": 23.1,
+    "predictedSec": 2280,
+    "predicted": "38:00",
+    "racePace": "7:36",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "beginner",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 3,
+    "effQ": 1,
+    "paces": {
+     "E": "9:19",
+     "LR": "9:31",
+     "T": "7:51",
+     "I": "7:06",
+     "R": "6:51"
+    },
+    "inputWeeklyKm": 6,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 7.4
+    },
+    "peakVol": 12.1,
+    "peakOverInput": 2.02,
+    "peakLr": 4.5,
+    "taper": {
+     "w": 11,
+     "vol": 8,
+     "ofPeak": 0.66,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 8,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 4.5,
+     "peakWeeklyKm": 12.1
+    },
+    "warnings": 4,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0.8,
+    "maxQualityMinWeek": 6.1,
+    "maxLrShareFullWeek": 0.4,
+    "maxGrowthFullRef": 1.13,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.13,
+   "maxLrShare": 0.4
+  },
+  {
+   "id": "D02",
+   "set": "dev",
+   "label": "Početnik koji trči neprekidno, mala baza",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "ed00cfba25095b45",
+    "stored": "8514b11ec4669cac"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 0,
+    "vdot0": 27.5,
+    "predictedSec": 1980,
+    "predicted": "33:00",
+    "racePace": "6:36",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 3,
+    "effQ": 1,
+    "paces": {
+     "E": "8:11",
+     "LR": "8:21",
+     "T": "6:51",
+     "I": "6:12",
+     "R": "5:58"
+    },
+    "inputWeeklyKm": 12,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 13.6
+    },
+    "peakVol": 17.5,
+    "peakOverInput": 1.46,
+    "peakLr": 6.8,
+    "taper": {
+     "w": 11,
+     "vol": 10.5,
+     "ofPeak": 0.6,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 10.3,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 6.8,
+     "peakWeeklyKm": 17.5
+    },
+    "warnings": 3,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.2,
+    "maxQualityMinWeek": 10.6,
+    "maxLrShareFullWeek": 0.4,
+    "maxGrowthFullRef": 1.09,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.09,
+   "maxLrShare": 0.4
+  },
+  {
+   "id": "D03",
+   "set": "dev",
+   "label": "Rekreativac 25:00",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "7e2cb5e36d8ffdde",
+    "stored": "c4430c8307a7e8f3"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 0,
+    "vdot0": 38.3,
+    "predictedSec": 1500,
+    "predicted": "25:00",
+    "racePace": "5:00",
+    "goal": "24:00",
+    "realno": false,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:20",
+     "LR": "6:28",
+     "T": "5:16",
+     "I": "4:45",
+     "R": "4:34"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 27.1
+    },
+    "peakVol": 37.7,
+    "peakOverInput": 1.51,
+    "peakLr": 12.8,
+    "taper": {
+     "w": 11,
+     "vol": 21.2,
+     "ofPeak": 0.56,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 14.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 12.8,
+     "peakWeeklyKm": 37.7
+    },
+    "warnings": 1,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.8,
+    "maxQualityMinWeek": 22.8,
+    "maxLrShareFullWeek": 0.36,
+    "maxGrowthFullRef": 1.1,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.1,
+   "maxLrShare": 0.36
+  },
+  {
+   "id": "D04",
+   "set": "dev",
+   "label": "Rekreativac 20:25, cilj sub-20, 9 nedelja",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "6c082941ec32b302",
+    "stored": "a9e54a4d3bea54f7"
+   },
+   "summary": {
+    "weeks": 9,
+    "baseWeeks": 0,
+    "vdot0": 48.6,
+    "predictedSec": 1225,
+    "predicted": "20:25",
+    "racePace": "4:05",
+    "goal": "19:59",
+    "realno": false,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "5:14",
+     "LR": "5:21",
+     "T": "4:21",
+     "I": "3:55",
+     "R": "3:46"
+    },
+    "inputWeeklyKm": 30,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 32.8
+    },
+    "peakVol": 40.8,
+    "peakOverInput": 1.36,
+    "peakLr": 14.5,
+    "taper": {
+     "w": 8,
+     "vol": 23.6,
+     "ofPeak": 0.58,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 9,
+     "vol": 15,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 14.5,
+     "peakWeeklyKm": 40.8
+    },
+    "warnings": 1,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 2,
+    "maxQualityMinWeek": 18.2,
+    "maxLrShareFullWeek": 0.37,
+    "maxGrowthFullRef": 1.08,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.08,
+   "maxLrShare": 0.37
+  },
+  {
+   "id": "D05",
+   "set": "dev",
+   "label": "Iskusan 19:00, 50 km, 5 dana, 16 nedelja",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "d76726479e965e6d",
+    "stored": "18fb6ca2cf8e5ad8"
+   },
+   "summary": {
+    "weeks": 16,
+    "baseWeeks": 0,
+    "vdot0": 52.9,
+    "predictedSec": 1140,
+    "predicted": "19:00",
+    "racePace": "3:48",
+    "goal": "18:30",
+    "realno": false,
+    "qualityReadiness": "experienced",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 5,
+    "effQ": 2,
+    "paces": {
+     "E": "4:53",
+     "LR": "5:00",
+     "T": "4:04",
+     "I": "3:40",
+     "R": "3:31"
+    },
+    "inputWeeklyKm": 50,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 53.7
+    },
+    "peakVol": 56.7,
+    "peakOverInput": 1.13,
+    "peakLr": 18,
+    "taper": {
+     "w": 15,
+     "vol": 35.8,
+     "ofPeak": 0.63,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 16,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 18,
+     "peakWeeklyKm": 56.7
+    },
+    "warnings": 1,
+    "issues": 0,
+    "deloadCount": 3,
+    "deloadsWithQuality": 0,
+    "rSessions": 1,
+    "maxIWorkKmWeek": 4.2,
+    "maxQualityMinWeek": 34.2,
+    "maxLrShareFullWeek": 0.35,
+    "maxGrowthFullRef": 1.05,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.05,
+   "maxLrShare": 0.35
+  },
+  {
+   "id": "D06",
+   "set": "dev",
+   "label": "Napredni 17:30, 70 km, 6 dana",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "ef139beb8834e99d",
+    "stored": "e0c7ec8e57c60c08"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 0,
+    "vdot0": 58.2,
+    "predictedSec": 1050,
+    "predicted": "17:30",
+    "racePace": "3:30",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "experienced",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 6,
+    "effQ": 2,
+    "paces": {
+     "E": "4:32",
+     "LR": "4:38",
+     "T": "3:46",
+     "I": "3:23",
+     "R": "3:16"
+    },
+    "inputWeeklyKm": 70,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 75.9
+    },
+    "peakVol": 79.3,
+    "peakOverInput": 1.13,
+    "peakLr": 19.4,
+    "taper": {
+     "w": 11,
+     "vol": 46.6,
+     "ofPeak": 0.59,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 19.4,
+     "peakWeeklyKm": 79.3
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 6,
+    "maxQualityMinWeek": 42.9,
+    "maxLrShareFullWeek": 0.27,
+    "maxGrowthFullRef": 1.06,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.06,
+   "maxLrShare": 0.27
+  },
+  {
+   "id": "D07",
+   "set": "dev",
+   "label": "Velika baza na malo dana (50 km / 3 dana)",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "f55d2d3af838ee44",
+    "stored": "7e314ec433f497f8"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 45.8,
+    "predictedSec": 1290,
+    "predicted": "21:30",
+    "racePace": "4:18",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 3,
+    "effQ": 1,
+    "paces": {
+     "E": "5:29",
+     "LR": "5:37",
+     "T": "4:34",
+     "I": "4:07",
+     "R": "3:57"
+    },
+    "inputWeeklyKm": 50,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 27.7
+    },
+    "peakVol": 28.5,
+    "peakOverInput": 0.57,
+    "peakLr": 12.7,
+    "taper": {
+     "w": 9,
+     "vol": 15.7,
+     "ofPeak": 0.55,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 12.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 12.7,
+     "peakWeeklyKm": 28.5
+    },
+    "warnings": 4,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 1,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.6,
+    "maxQualityMinWeek": 11.4,
+    "maxLrShareFullWeek": 0.4,
+    "maxGrowthFullRef": 1.11,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.11,
+   "maxLrShare": 0.4
+  },
+  {
+   "id": "D08",
+   "set": "dev",
+   "label": "Kratka priprema: tačno 6 nedelja",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "e9d52b6de17f7b74",
+    "stored": "f484545e3d309770"
+   },
+   "summary": {
+    "weeks": 6,
+    "baseWeeks": 0,
+    "vdot0": 42.3,
+    "predictedSec": 1380,
+    "predicted": "23:00",
+    "racePace": "4:36",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "5:51",
+     "LR": "5:59",
+     "T": "4:52",
+     "I": "4:23",
+     "R": "4:13"
+    },
+    "inputWeeklyKm": 30,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 29.8
+    },
+    "peakVol": 33.3,
+    "peakOverInput": 1.11,
+    "peakLr": 11.2,
+    "taper": {
+     "w": 5,
+     "vol": 19.2,
+     "ofPeak": 0.58,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 6,
+     "vol": 13.6,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 11.2,
+     "peakWeeklyKm": 33.3
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 0,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.6,
+    "maxQualityMinWeek": 17.7,
+    "maxLrShareFullWeek": 0.35,
+    "maxGrowthFullRef": 1.09,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.09,
+   "maxLrShare": 0.35
+  },
+  {
+   "id": "D09",
+   "set": "dev",
+   "label": "Vrlo kratka priprema: 3 nedelje",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "04be82ee081cef74",
+    "stored": "0d5f2603f4810ee9"
+   },
+   "summary": {
+    "weeks": 3,
+    "baseWeeks": 0,
+    "vdot0": 44.5,
+    "predictedSec": 1320,
+    "predicted": "22:00",
+    "racePace": "4:24",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 5,
+    "effQ": 2,
+    "paces": {
+     "E": "5:37",
+     "LR": "5:45",
+     "T": "4:40",
+     "I": "4:13",
+     "R": "4:03"
+    },
+    "inputWeeklyKm": 35,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 22.6
+    },
+    "peakVol": 0,
+    "peakOverInput": 0,
+    "peakLr": 11,
+    "taper": {
+     "w": 2,
+     "vol": 22.6,
+     "ofPeak": null,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 3,
+     "vol": 13.9,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 11,
+     "peakWeeklyKm": 16.6
+    },
+    "warnings": 2,
+    "issues": 0,
+    "deloadCount": 0,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0,
+    "maxQualityMinWeek": 5.3,
+    "maxLrShareFullWeek": 0.27,
+    "maxGrowthFullRef": 0,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": null,
+   "maxLrShare": 0.27
+  },
+  {
+   "id": "D10",
+   "set": "dev",
+   "label": "Duga priprema: 24 nedelje, 20 km",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "280dbfc3c0979c5a",
+    "stored": "bdd4d9839444a10a"
+   },
+   "summary": {
+    "weeks": 24,
+    "baseWeeks": 0,
+    "vdot0": 35,
+    "predictedSec": 1620,
+    "predicted": "27:00",
+    "racePace": "5:24",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:47",
+     "LR": "6:57",
+     "T": "5:40",
+     "I": "5:07",
+     "R": "4:55"
+    },
+    "inputWeeklyKm": 20,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 21.8
+    },
+    "peakVol": 39.6,
+    "peakOverInput": 1.98,
+    "peakLr": 12.9,
+    "taper": {
+     "w": 23,
+     "vol": 21.4,
+     "ofPeak": 0.54,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 24,
+     "vol": 14.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 12.9,
+     "peakWeeklyKm": 39.6
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 5,
+    "deloadsWithQuality": 1,
+    "rSessions": 1,
+    "maxIWorkKmWeek": 2.4,
+    "maxQualityMinWeek": 27.6,
+    "maxLrShareFullWeek": 0.4,
+    "maxGrowthFullRef": 1.08,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.08,
+   "maxLrShare": 0.4
+  },
+  {
+   "id": "D11",
+   "set": "dev",
+   "label": "Star rezultat (400 dana)",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "e5ce67a32d01b88d",
+    "stored": "400785e6348d6992"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 0,
+    "vdot0": 44.5,
+    "predictedSec": 1320,
+    "predicted": "22:00",
+    "racePace": "4:24",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "stale-result",
+    "formPolicy": "effort-first",
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "5:37",
+     "LR": "5:45",
+     "T": "4:40",
+     "I": "4:13",
+     "R": "4:03"
+    },
+    "inputWeeklyKm": 30,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 32.7
+    },
+    "peakVol": 44.7,
+    "peakOverInput": 1.49,
+    "peakLr": 15.6,
+    "taper": {
+     "w": 11,
+     "vol": 25.4,
+     "ofPeak": 0.57,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 15.6,
+     "peakWeeklyKm": 44.7
+    },
+    "warnings": 3,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 2.4,
+    "maxQualityMinWeek": 22.7,
+    "maxLrShareFullWeek": 0.37,
+    "maxGrowthFullRef": 1.08,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.08,
+   "maxLrShare": 0.37
+  },
+  {
+   "id": "D12",
+   "set": "dev",
+   "label": "Rezultat na 10K bez datuma, nepotpuna istorija",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "3fa61851985b780f",
+    "stored": "87d9262b7f0d06b3"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 0,
+    "vdot0": 44.1,
+    "predictedSec": 1331,
+    "predicted": "22:11",
+    "racePace": "4:26",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "undated-result",
+    "formPolicy": null,
+    "runDays": 5,
+    "effQ": 2,
+    "paces": {
+     "E": "5:39",
+     "LR": "5:47",
+     "T": "4:42",
+     "I": "4:15",
+     "R": "4:05"
+    },
+    "inputWeeklyKm": 35,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 32.2
+    },
+    "peakVol": 44.8,
+    "peakOverInput": 1.28,
+    "peakLr": 11.5,
+    "taper": {
+     "w": 11,
+     "vol": 25.1,
+     "ofPeak": 0.56,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Izdržljivost još nije potvrđena",
+     "peakLongRunKm": 11.5,
+     "peakWeeklyKm": 44.8
+    },
+    "warnings": 6,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 2.4,
+    "maxQualityMinWeek": 22.9,
+    "maxLrShareFullWeek": 0.27,
+    "maxGrowthFullRef": 1.09,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.09,
+   "maxLrShare": 0.27
+  },
+  {
+   "id": "D13",
+   "set": "dev",
+   "label": "Povratak posle 10 nedelja pauze",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "3ad5f3a3a4220d3c",
+    "stored": "62262ba93336ccd1"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 3,
+    "vdot0": 47,
+    "predictedSec": 1260,
+    "predicted": "21:00",
+    "racePace": "4:12",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "returning",
+    "speedConfidence": "returning",
+    "formPolicy": "effort-first",
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "5:23",
+     "LR": "5:30",
+     "T": "4:28",
+     "I": "4:02",
+     "R": "3:53"
+    },
+    "inputWeeklyKm": 15,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 16.4
+    },
+    "peakVol": 25.1,
+    "peakOverInput": 1.67,
+    "peakLr": 7.1,
+    "taper": {
+     "w": 11,
+     "vol": 13.9,
+     "ofPeak": 0.55,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 12.4,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 7.1,
+     "peakWeeklyKm": 25.1
+    },
+    "warnings": 6,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.24,
+    "maxQualityMinWeek": 17.9,
+    "maxLrShareFullWeek": 0.33,
+    "maxGrowthFullRef": 1.16,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.16,
+   "maxLrShare": 0.33
+  },
+  {
+   "id": "D14",
+   "set": "dev",
+   "label": "Rezultat sa polumaratona (1:45:00), 40 km",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "87805a0787013fd5",
+    "stored": "938714aae8e05af3"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 42.6,
+    "predictedSec": 1370,
+    "predicted": "22:50",
+    "racePace": "4:34",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "experienced",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 5,
+    "effQ": 2,
+    "paces": {
+     "E": "5:49",
+     "LR": "5:57",
+     "T": "4:50",
+     "I": "4:22",
+     "R": "4:12"
+    },
+    "inputWeeklyKm": 40,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 44.5
+    },
+    "peakVol": 55.7,
+    "peakOverInput": 1.39,
+    "peakLr": 15.1,
+    "taper": {
+     "w": 9,
+     "vol": 32.2,
+     "ofPeak": 0.58,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 15.1,
+     "peakWeeklyKm": 55.7
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 3.6,
+    "maxQualityMinWeek": 30.2,
+    "maxLrShareFullWeek": 0.34,
+    "maxGrowthFullRef": 1.07,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.07,
+   "maxLrShare": 0.34
+  },
+  {
+   "id": "D15",
+   "set": "dev",
+   "label": "Zadati dani: Ut/Če kvalitet, Sub dugo, Ned lako",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "e0795062276a4236",
+    "stored": "2c9e5b46769f032c"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 0,
+    "vdot0": 41.2,
+    "predictedSec": 1410,
+    "predicted": "23:30",
+    "racePace": "4:42",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "5:58",
+     "LR": "6:07",
+     "T": "4:58",
+     "I": "4:29",
+     "R": "4:19"
+    },
+    "inputWeeklyKm": 30,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 33.3
+    },
+    "peakVol": 43.1,
+    "peakOverInput": 1.44,
+    "peakLr": 14.7,
+    "taper": {
+     "w": 11,
+     "vol": 24.2,
+     "ofPeak": 0.56,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 12.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 14.7,
+     "peakWeeklyKm": 43.1
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 2.4,
+    "maxQualityMinWeek": 24.2,
+    "maxLrShareFullWeek": 0.36,
+    "maxGrowthFullRef": 1.06,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.06,
+   "maxLrShare": 0.36
+  },
+  {
+   "id": "D16",
+   "set": "dev",
+   "label": "Dva dana trčanja, 15 km",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "cb34f1e52948bfa9",
+    "stored": "a99f41b8fe5d668b"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 33.5,
+    "predictedSec": 1680,
+    "predicted": "28:00",
+    "racePace": "5:36",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 2,
+    "effQ": 1,
+    "paces": {
+     "E": "7:02",
+     "LR": "7:11",
+     "T": "5:52",
+     "I": "5:18",
+     "R": "5:06"
+    },
+    "inputWeeklyKm": 15,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 10.7
+    },
+    "peakVol": 10.7,
+    "peakOverInput": 0.71,
+    "peakLr": 5.6,
+    "taper": {
+     "w": 9,
+     "vol": 6.8,
+     "ofPeak": 0.64,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 8.8,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 5.6,
+     "peakWeeklyKm": 10.7
+    },
+    "warnings": 5,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 1,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0.8,
+    "maxQualityMinWeek": 6.7,
+    "maxLrShareFullWeek": 0.51,
+    "maxGrowthFullRef": 1.02,
+    "adjacentHardDays": 8
+   },
+   "issues": [],
+   "adjacency": 8,
+   "maxGrowth": 1.02,
+   "maxLrShare": 0.51
+  },
+  {
+   "id": "D17",
+   "set": "dev",
+   "label": "Sedam dana, 60 km, agresivno",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "33d49859a39af9e3",
+    "stored": "e5ba846bc8805f15"
+   },
+   "summary": {
+    "weeks": 14,
+    "baseWeeks": 0,
+    "vdot0": 55.1,
+    "predictedSec": 1100,
+    "predicted": "18:20",
+    "racePace": "3:40",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "experienced",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 7,
+    "effQ": 2,
+    "paces": {
+     "E": "4:44",
+     "LR": "4:51",
+     "T": "3:56",
+     "I": "3:33",
+     "R": "3:24"
+    },
+    "inputWeeklyKm": 60,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 65.3
+    },
+    "peakVol": 68,
+    "peakOverInput": 1.13,
+    "peakLr": 18.5,
+    "taper": {
+     "w": 13,
+     "vol": 43,
+     "ofPeak": 0.63,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 14,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 18.5,
+     "peakWeeklyKm": 68
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 1,
+    "maxIWorkKmWeek": 4.8,
+    "maxQualityMinWeek": 40.6,
+    "maxLrShareFullWeek": 0.3,
+    "maxGrowthFullRef": 1.05,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.05,
+   "maxLrShare": 0.3
+  },
+  {
+   "id": "E01",
+   "set": "edge",
+   "label": "Trka danas",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "85565e27fe837790",
+    "stored": "907fd2713183869f"
+   },
+   "summary": {
+    "weeks": 1,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": null,
+    "peakVol": 0,
+    "peakOverInput": 0,
+    "peakLr": 0,
+    "taper": null,
+    "raceWeek": {
+     "w": 1,
+     "vol": 5,
+     "days": 1
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 0,
+     "peakWeeklyKm": 0
+    },
+    "warnings": 3,
+    "issues": 0,
+    "deloadCount": 0,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0,
+    "maxQualityMinWeek": 0,
+    "maxLrShareFullWeek": 0,
+    "maxGrowthFullRef": 0,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": null,
+   "maxLrShare": null
+  },
+  {
+   "id": "E02",
+   "set": "edge",
+   "label": "Trka za 1 nedelju",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "42f5e1da8febb7a9",
+    "stored": "818f290132e75287"
+   },
+   "summary": {
+    "weeks": 2,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 12.2
+    },
+    "peakVol": 0,
+    "peakOverInput": 0,
+    "peakLr": 4.8,
+    "taper": {
+     "w": 1,
+     "vol": 8.1,
+     "ofPeak": null,
+     "quality": 0
+    },
+    "raceWeek": {
+     "w": 2,
+     "vol": 12.2,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 0,
+     "peakWeeklyKm": 0
+    },
+    "warnings": 3,
+    "issues": 0,
+    "deloadCount": 0,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0,
+    "maxQualityMinWeek": 0,
+    "maxLrShareFullWeek": 0,
+    "maxGrowthFullRef": 0,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": null,
+   "maxLrShare": null
+  },
+  {
+   "id": "E03",
+   "set": "edge",
+   "label": "Trka ove nedelje (nedelja)",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "7f557300bbca8f94",
+    "stored": "c07c32e00f3db0ad"
+   },
+   "summary": {
+    "weeks": 1,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": null,
+    "peakVol": 0,
+    "peakOverInput": 0,
+    "peakLr": 0,
+    "taper": null,
+    "raceWeek": {
+     "w": 1,
+     "vol": 8.8,
+     "days": 4
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 0,
+     "peakWeeklyKm": 0
+    },
+    "warnings": 3,
+    "issues": 0,
+    "deloadCount": 0,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0,
+    "maxQualityMinWeek": 0,
+    "maxLrShareFullWeek": 0,
+    "maxGrowthFullRef": 0,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": null,
+   "maxLrShare": null
+  },
+  {
+   "id": "E04",
+   "set": "edge",
+   "label": "Pet nedelja (minWeeks−1)",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "bd120464c527752a",
+    "stored": "6c523341078122ef"
+   },
+   "summary": {
+    "weeks": 5,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 26.8
+    },
+    "peakVol": 27.1,
+    "peakOverInput": 1.08,
+    "peakLr": 9.2,
+    "taper": {
+     "w": 4,
+     "vol": 16.5,
+     "ofPeak": 0.61,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 5,
+     "vol": 12.8,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 9.2,
+     "peakWeeklyKm": 27.1
+    },
+    "warnings": 2,
+    "issues": 0,
+    "deloadCount": 0,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0,
+    "maxQualityMinWeek": 12.4,
+    "maxLrShareFullWeek": 0.34,
+    "maxGrowthFullRef": 1.01,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.01,
+   "maxLrShare": 0.34
+  },
+  {
+   "id": "E05",
+   "set": "edge",
+   "label": "104 nedelje",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "b344872c2a6bfb3a",
+    "stored": "26eee936a4a66910"
+   },
+   "summary": {
+    "weeks": 104,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 26.8
+    },
+    "peakVol": 43.5,
+    "peakOverInput": 1.74,
+    "peakLr": 14.4,
+    "taper": {
+     "w": 103,
+     "vol": 23.7,
+     "ofPeak": 0.54,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 104,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 14.4,
+     "peakWeeklyKm": 43.5
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 25,
+    "deloadsWithQuality": 6,
+    "rSessions": 6,
+    "maxIWorkKmWeek": 3,
+    "maxQualityMinWeek": 27.5,
+    "maxLrShareFullWeek": 0.36,
+    "maxGrowthFullRef": 1.11,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.11,
+   "maxLrShare": 0.36
+  },
+  {
+   "id": "E06",
+   "set": "edge",
+   "label": "105 nedelja",
+   "wizardRejects": [],
+   "error": "Više od 104 nedelje (2 godine) — proveri datum trke, verovatno je pogrešno unet.",
+   "deterministic": null,
+   "hash": null,
+   "summary": null,
+   "issues": [],
+   "adjacency": null,
+   "maxGrowth": null,
+   "maxLrShare": null
+  },
+  {
+   "id": "E07",
+   "set": "edge",
+   "label": "Obim 1 km/ned",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "c48c91eb4a64661f",
+    "stored": "db9cc23c88f328ec"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 1,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 11.8
+    },
+    "peakVol": 17.9,
+    "peakOverInput": 17.9,
+    "peakLr": 5.3,
+    "taper": {
+     "w": 9,
+     "vol": 11.6,
+     "ofPeak": 0.65,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 11.8,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 5.3,
+     "peakWeeklyKm": 17.9
+    },
+    "warnings": 4,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 1,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.2,
+    "maxQualityMinWeek": 8.6,
+    "maxLrShareFullWeek": 0.31,
+    "maxGrowthFullRef": 1.13,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.13,
+   "maxLrShare": 0.31
+  },
+  {
+   "id": "E08",
+   "set": "edge",
+   "label": "Obim 200 km/ned",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "961d27acc2a2a81f",
+    "stored": "6330d07f1c189dc2"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 7,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 200,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 68.1
+    },
+    "peakVol": 71.4,
+    "peakOverInput": 0.36,
+    "peakLr": 14.4,
+    "taper": {
+     "w": 9,
+     "vol": 42.3,
+     "ofPeak": 0.59,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 14.4,
+     "peakWeeklyKm": 71.4
+    },
+    "warnings": 2,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 3,
+    "maxQualityMinWeek": 27.5,
+    "maxLrShareFullWeek": 0.21,
+    "maxGrowthFullRef": 1.02,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.02,
+   "maxLrShare": 0.21
+  },
+  {
+   "id": "E09",
+   "set": "edge",
+   "label": "PB 12:00 (najbrže dozvoljeno)",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "df7aad95665b4db4",
+    "stored": "36b7ecf8308de04e"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 90.1,
+    "predictedSec": 720,
+    "predicted": "12:00",
+    "racePace": "2:24",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "experienced",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 7,
+    "effQ": 2,
+    "paces": {
+     "E": "3:11",
+     "LR": "3:15",
+     "T": "2:39",
+     "I": "2:23",
+     "R": "2:18"
+    },
+    "inputWeeklyKm": 100,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 92.7
+    },
+    "peakVol": 94,
+    "peakOverInput": 0.94,
+    "peakLr": 20,
+    "taper": {
+     "w": 9,
+     "vol": 54.8,
+     "ofPeak": 0.58,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 20,
+     "peakWeeklyKm": 94
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 1,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 7.2,
+    "maxQualityMinWeek": 33.1,
+    "maxLrShareFullWeek": 0.22,
+    "maxGrowthFullRef": 1.03,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.03,
+   "maxLrShare": 0.22
+  },
+  {
+   "id": "E10",
+   "set": "edge",
+   "label": "PB 99:59 (najsporije dozvoljeno)",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "ca58ca8861f13c10",
+    "stored": "562820bed0f9ded5"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 6,
+    "vdot0": 5.6,
+    "predictedSec": 5999,
+    "predicted": "99:59",
+    "racePace": "20:00",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "beginner",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 3,
+    "effQ": 1,
+    "paces": {
+     "E": "21:57",
+     "LR": "22:14",
+     "T": "19:41",
+     "I": "18:25",
+     "R": "17:57"
+    },
+    "inputWeeklyKm": 5,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 7.9
+    },
+    "peakVol": 11.2,
+    "peakOverInput": 2.24,
+    "peakLr": 4.1,
+    "taper": {
+     "w": 9,
+     "vol": 6.9,
+     "ofPeak": 0.62,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 8,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 4.1,
+     "peakWeeklyKm": 11.2
+    },
+    "warnings": 3,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0,
+    "maxQualityMinWeek": 7.5,
+    "maxLrShareFullWeek": 0.39,
+    "maxGrowthFullRef": 1.18,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.18,
+   "maxLrShare": 0.39
+  },
+  {
+   "id": "E11",
+   "set": "edge",
+   "label": "Cilj mnogo brži od PB-a",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "35f54ecaf4973ee6",
+    "stored": "8e7682b0bb486434"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 30.8,
+    "predictedSec": 1800,
+    "predicted": "30:00",
+    "racePace": "6:00",
+    "goal": "18:00",
+    "realno": false,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "7:30",
+     "LR": "7:40",
+     "T": "6:16",
+     "I": "5:40",
+     "R": "5:27"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 27
+    },
+    "peakVol": 35.4,
+    "peakOverInput": 1.42,
+    "peakLr": 11.7,
+    "taper": {
+     "w": 9,
+     "vol": 19.8,
+     "ofPeak": 0.56,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 13.9,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 11.7,
+     "peakWeeklyKm": 35.4
+    },
+    "warnings": 1,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.8,
+    "maxQualityMinWeek": 27.1,
+    "maxLrShareFullWeek": 0.35,
+    "maxGrowthFullRef": 1.09,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.09,
+   "maxLrShare": 0.35
+  },
+  {
+   "id": "E12",
+   "set": "edge",
+   "label": "Cilj sporiji od PB-a",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "b8fe9c0565a8b0c6",
+    "stored": "28d4421b5cdb1604"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 44.5,
+    "predictedSec": 1320,
+    "predicted": "22:00",
+    "racePace": "5:00",
+    "goal": "25:00",
+    "realno": true,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "5:37",
+     "LR": "5:45",
+     "T": "4:40",
+     "I": "4:13",
+     "R": "4:03"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 27
+    },
+    "peakVol": 35.4,
+    "peakOverInput": 1.42,
+    "peakLr": 12,
+    "taper": {
+     "w": 9,
+     "vol": 20.3,
+     "ofPeak": 0.57,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 13.9,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 12,
+     "peakWeeklyKm": 35.4
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.8,
+    "maxQualityMinWeek": 20.2,
+    "maxLrShareFullWeek": 0.35,
+    "maxGrowthFullRef": 1.1,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.1,
+   "maxLrShare": 0.35
+  },
+  {
+   "id": "E13",
+   "set": "edge",
+   "label": "Početnik sa 60 km/ned",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "97b4bf6de4032ecb",
+    "stored": "ce0ccc610941ca8b"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 6,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "beginner",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 5,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 60,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 31.2
+    },
+    "peakVol": 40.5,
+    "peakOverInput": 0.68,
+    "peakLr": 11,
+    "taper": {
+     "w": 9,
+     "vol": 23.9,
+     "ofPeak": 0.59,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 14,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 11,
+     "peakWeeklyKm": 40.5
+    },
+    "warnings": 4,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0,
+    "maxQualityMinWeek": 14.4,
+    "maxLrShareFullWeek": 0.28,
+    "maxGrowthFullRef": 1.07,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.07,
+   "maxLrShare": 0.28
+  },
+  {
+   "id": "E14",
+   "set": "edge",
+   "label": "Početnik, 3 nedelje",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "0a91a551fadfc3c2",
+    "stored": "e8f542bf9e739eab"
+   },
+   "summary": {
+    "weeks": 3,
+    "baseWeeks": 2,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "beginner",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 3,
+    "effQ": 1,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 8,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 4.9
+    },
+    "peakVol": 0,
+    "peakOverInput": 0,
+    "peakLr": 3.2,
+    "taper": {
+     "w": 2,
+     "vol": 4.9,
+     "ofPeak": null,
+     "quality": 0
+    },
+    "raceWeek": {
+     "w": 3,
+     "vol": 8,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 0,
+     "peakWeeklyKm": 3.2
+    },
+    "warnings": 5,
+    "issues": 0,
+    "deloadCount": 0,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0,
+    "maxQualityMinWeek": 0,
+    "maxLrShareFullWeek": 0.39,
+    "maxGrowthFullRef": 0,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": null,
+   "maxLrShare": 0.39
+  },
+  {
+   "id": "E15",
+   "set": "edge",
+   "label": "Dužina veća od pola nedelje",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "3d47bbb27d1847a9",
+    "stored": "9e730c8d2d7cbb50"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 20,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 23.6
+    },
+    "peakVol": 30.5,
+    "peakOverInput": 1.53,
+    "peakLr": 11.8,
+    "taper": {
+     "w": 9,
+     "vol": 19.4,
+     "ofPeak": 0.64,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 12.8,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 11.8,
+     "peakWeeklyKm": 30.5
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.6,
+    "maxQualityMinWeek": 19.2,
+    "maxLrShareFullWeek": 0.39,
+    "maxGrowthFullRef": 1.1,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.1,
+   "maxLrShare": 0.39
+  },
+  {
+   "id": "E16",
+   "set": "edge",
+   "label": "Dužina 0,5 km",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "f9e57aef9c3772f4",
+    "stored": "bc6795e8fa667db2"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 14.5
+    },
+    "peakVol": 20.4,
+    "peakOverInput": 0.82,
+    "peakLr": 6,
+    "taper": {
+     "w": 9,
+     "vol": 12.7,
+     "ofPeak": 0.62,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 13.9,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 6,
+     "peakWeeklyKm": 20.4
+    },
+    "warnings": 4,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 1,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.2,
+    "maxQualityMinWeek": 9.6,
+    "maxLrShareFullWeek": 0.3,
+    "maxGrowthFullRef": 1.09,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.09,
+   "maxLrShare": 0.3
+  },
+  {
+   "id": "E17",
+   "set": "edge",
+   "label": "Iskusan bez kontinuiteta",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "86cdbd4bdd9e6436",
+    "stored": "da8ee36e3214a7e5"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 26.4
+    },
+    "peakVol": 34.1,
+    "peakOverInput": 1.36,
+    "peakLr": 11,
+    "taper": {
+     "w": 9,
+     "vol": 18.9,
+     "ofPeak": 0.55,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 13.9,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Izdržljivost još nije potvrđena",
+     "peakLongRunKm": 11,
+     "peakWeeklyKm": 34.1
+    },
+    "warnings": 1,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.8,
+    "maxQualityMinWeek": 22,
+    "maxLrShareFullWeek": 0.35,
+    "maxGrowthFullRef": 1.11,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.11,
+   "maxLrShare": 0.35
+  },
+  {
+   "id": "E18",
+   "set": "edge",
+   "label": "Pauza 52 nedelje",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "c4e674f09a855800",
+    "stored": "be6d3e28429cc77d"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 3,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "returning",
+    "speedConfidence": "returning",
+    "formPolicy": "effort-first",
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 25.9
+    },
+    "peakVol": 33.1,
+    "peakOverInput": 1.32,
+    "peakLr": 11,
+    "taper": {
+     "w": 9,
+     "vol": 18.9,
+     "ofPeak": 0.57,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 13.9,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Izdržljivost još nije potvrđena",
+     "peakLongRunKm": 11,
+     "peakWeeklyKm": 33.1
+    },
+    "warnings": 4,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.6,
+    "maxQualityMinWeek": 17.4,
+    "maxLrShareFullWeek": 0.35,
+    "maxGrowthFullRef": 1.07,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.07,
+   "maxLrShare": 0.35
+  },
+  {
+   "id": "E19",
+   "set": "edge",
+   "label": "Rezultat istog dana",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "8ee607b05d858bbe",
+    "stored": "6bfc5f695e64c65b"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 26.8
+    },
+    "peakVol": 35.4,
+    "peakOverInput": 1.42,
+    "peakLr": 12,
+    "taper": {
+     "w": 9,
+     "vol": 20.3,
+     "ofPeak": 0.57,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 13.9,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 12,
+     "peakWeeklyKm": 35.4
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.8,
+    "maxQualityMinWeek": 22,
+    "maxLrShareFullWeek": 0.35,
+    "maxGrowthFullRef": 1.1,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.1,
+   "maxLrShare": 0.35
+  },
+  {
+   "id": "E20",
+   "set": "edge",
+   "label": "Kvalitet u susednim danima + dugo odmah posle",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "b46c0e2a41e4c72d",
+    "stored": "0fceaaa95602ea5e"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 27.3
+    },
+    "peakVol": 35.9,
+    "peakOverInput": 1.44,
+    "peakLr": 12.3,
+    "taper": {
+     "w": 9,
+     "vol": 20.4,
+     "ofPeak": 0.57,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 13.9,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 12.3,
+     "peakWeeklyKm": 35.9
+    },
+    "warnings": 2,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.8,
+    "maxQualityMinWeek": 22,
+    "maxLrShareFullWeek": 0.36,
+    "maxGrowthFullRef": 1.1,
+    "adjacentHardDays": 11
+   },
+   "issues": [],
+   "adjacency": 11,
+   "maxGrowth": 1.1,
+   "maxLrShare": 0.36
+  },
+  {
+   "id": "E21",
+   "set": "edge",
+   "label": "2 dana, 2 kvaliteta",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "cc17a3f615aa9729",
+    "stored": "99300ac26e7341cd"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 2,
+    "effQ": 1,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 10.3
+    },
+    "peakVol": 11.7,
+    "peakOverInput": 0.47,
+    "peakLr": 6,
+    "taper": {
+     "w": 9,
+     "vol": 6.8,
+     "ofPeak": 0.58,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 9.1,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 6,
+     "peakWeeklyKm": 11.7
+    },
+    "warnings": 6,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0.87,
+    "maxQualityMinWeek": 5.8,
+    "maxLrShareFullWeek": 0.51,
+    "maxGrowthFullRef": 1.11,
+    "adjacentHardDays": 7
+   },
+   "issues": [],
+   "adjacency": 7,
+   "maxGrowth": 1.11,
+   "maxLrShare": 0.51
+  },
+  {
+   "id": "E22",
+   "set": "edge",
+   "label": "Start u nedelju",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "c0cfe16163e1959c",
+    "stored": "62705ba586d5d992"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 26.8
+    },
+    "peakVol": 37.7,
+    "peakOverInput": 1.51,
+    "peakLr": 12.8,
+    "taper": {
+     "w": 11,
+     "vol": 21.2,
+     "ofPeak": 0.56,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 14.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 12.8,
+     "peakWeeklyKm": 37.7
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.8,
+    "maxQualityMinWeek": 22,
+    "maxLrShareFullWeek": 0.36,
+    "maxGrowthFullRef": 1.1,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.1,
+   "maxLrShare": 0.36
+  },
+  {
+   "id": "E23",
+   "set": "edge",
+   "label": "Start u ponedeljak",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "439e0d3845673370",
+    "stored": "cd53498c1bc36053"
+   },
+   "summary": {
+    "weeks": 11,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 25,
+    "firstFullWeek": {
+     "w": 1,
+     "vol": 26.2
+    },
+    "peakVol": 35.6,
+    "peakOverInput": 1.42,
+    "peakLr": 12,
+    "taper": {
+     "w": 10,
+     "vol": 20.3,
+     "ofPeak": 0.57,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 11,
+     "vol": 14.2,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 12,
+     "peakWeeklyKm": 35.6
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 1.6,
+    "maxQualityMinWeek": 21.4,
+    "maxLrShareFullWeek": 0.35,
+    "maxGrowthFullRef": 1.1,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.1,
+   "maxLrShare": 0.35
+  },
+  {
+   "id": "E24",
+   "set": "edge",
+   "label": "Rezultat sa maratona (3:30:00)",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "9ad77c9827216b02",
+    "stored": "f76bfe04ed864db1"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 44.6,
+    "predictedSec": 1320,
+    "predicted": "22:00",
+    "racePace": "4:24",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 5,
+    "effQ": 2,
+    "paces": {
+     "E": "5:36",
+     "LR": "5:44",
+     "T": "4:40",
+     "I": "4:12",
+     "R": "4:03"
+    },
+    "inputWeeklyKm": 45,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 32.8
+    },
+    "peakVol": 45.6,
+    "peakOverInput": 1.01,
+    "peakLr": 11.9,
+    "taper": {
+     "w": 9,
+     "vol": 25.7,
+     "ofPeak": 0.56,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 11.9,
+     "peakWeeklyKm": 45.6
+    },
+    "warnings": 1,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 2.4,
+    "maxQualityMinWeek": 22.7,
+    "maxLrShareFullWeek": 0.28,
+    "maxGrowthFullRef": 1.09,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.09,
+   "maxLrShare": 0.28
+  },
+  {
+   "id": "E25",
+   "set": "edge",
+   "label": "Datum rezultata u budućnosti",
+   "wizardRejects": [
+    "korak 2 nije validan",
+    "Datum rezultata mora biti ispravan datum koji nije u budućnosti."
+   ],
+   "error": "Datum rezultata mora biti ispravan datum koji nije posle početka plana.",
+   "deterministic": null,
+   "hash": null,
+   "summary": null,
+   "issues": [],
+   "adjacency": null,
+   "maxGrowth": null,
+   "maxLrShare": null
+  },
+  {
+   "id": "E26",
+   "set": "edge",
+   "label": "Bez rezultata",
+   "wizardRejects": [
+    "korak 2 nije validan"
+   ],
+   "error": "toGenerationInput vratio null (čarobnjak ne pravi ulaz)",
+   "deterministic": null,
+   "hash": null,
+   "summary": null,
+   "issues": [],
+   "adjacency": null,
+   "maxGrowth": null,
+   "maxLrShare": null
+  },
+  {
+   "id": "E27",
+   "set": "edge",
+   "label": "Kons doza + agr rast obima",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "bd46eed6ae8a4869",
+    "stored": "0c54d68799be81c7"
+   },
+   "summary": {
+    "weeks": 10,
+    "baseWeeks": 0,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 5,
+    "effQ": 2,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 35,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 32.7
+    },
+    "peakVol": 45.3,
+    "peakOverInput": 1.29,
+    "peakLr": 12.3,
+    "taper": {
+     "w": 9,
+     "vol": 26.1,
+     "ofPeak": 0.58,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 10,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 12.3,
+     "peakWeeklyKm": 45.3
+    },
+    "warnings": 0,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 2,
+    "maxQualityMinWeek": 21.4,
+    "maxLrShareFullWeek": 0.28,
+    "maxGrowthFullRef": 1.11,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.11,
+   "maxLrShare": 0.28
+  },
+  {
+   "id": "E28",
+   "set": "edge",
+   "label": "Run/walk početnik, 8 nedelja, 2 dana",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "04b4a0757c3ad8f9",
+    "stored": "ef96691cd2937d85"
+   },
+   "summary": {
+    "weeks": 8,
+    "baseWeeks": 6,
+    "vdot0": 40.2,
+    "predictedSec": 1440,
+    "predicted": "24:00",
+    "racePace": "4:48",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "beginner",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 2,
+    "effQ": 1,
+    "paces": {
+     "E": "6:05",
+     "LR": "6:14",
+     "T": "5:04",
+     "I": "4:35",
+     "R": "4:24"
+    },
+    "inputWeeklyKm": 4,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 0.2
+    },
+    "peakVol": 0.2,
+    "peakOverInput": 0.05,
+    "peakLr": 2.9,
+    "taper": {
+     "w": 7,
+     "vol": 5.7,
+     "ofPeak": 28.5,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 8,
+     "vol": 6.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 0.1,
+     "peakWeeklyKm": 0.2
+    },
+    "warnings": 6,
+    "issues": 0,
+    "deloadCount": 1,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0,
+    "maxQualityMinWeek": 3.8,
+    "maxLrShareFullWeek": 0.51,
+    "maxGrowthFullRef": 1,
+    "adjacentHardDays": 1
+   },
+   "issues": [],
+   "adjacency": 1,
+   "maxGrowth": 1,
+   "maxLrShare": 0.51
+  },
+  {
+   "id": "E29",
+   "set": "edge",
+   "label": "Spor početnik 45:00 (VDOT ispod tablice 20)",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "04fba14792a2a820",
+    "stored": "09aa9e859d6d855c"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 6,
+    "vdot0": 18.7,
+    "predictedSec": 2700,
+    "predicted": "45:00",
+    "racePace": "9:00",
+    "goal": null,
+    "realno": null,
+    "qualityReadiness": "beginner",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 3,
+    "effQ": 1,
+    "paces": {
+     "E": "10:51",
+     "LR": "11:04",
+     "T": "9:12",
+     "I": "8:21",
+     "R": "8:03"
+    },
+    "inputWeeklyKm": 8,
+    "firstFullWeek": {
+     "w": 2,
+     "vol": 7.7
+    },
+    "peakVol": 12.1,
+    "peakOverInput": 1.51,
+    "peakLr": 4.5,
+    "taper": {
+     "w": 11,
+     "vol": 8,
+     "ofPeak": 0.66,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 8,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 4.5,
+     "peakWeeklyKm": 12.1
+    },
+    "warnings": 4,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0.8,
+    "maxQualityMinWeek": 7.2,
+    "maxLrShareFullWeek": 0.4,
+    "maxGrowthFullRef": 1.15,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.15,
+   "maxLrShare": 0.4
+  },
+  {
+   "id": "X10K",
+   "set": "other",
+   "label": "10K reprezentativan",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "2098fa3cb7bed208",
+    "stored": "f602d1d259c63ac9"
+   },
+   "summary": {
+    "weeks": 12,
+    "vols": [
+     17.9,
+     39,
+     41.1,
+     30.8,
+     43.4,
+     45.8,
+     48.3,
+     36.2,
+     51,
+     53.3,
+     38.4,
+     20.5
+    ],
+    "warnings": 0
+   },
+   "issues": [],
+   "adjacency": null,
+   "maxGrowth": null,
+   "maxLrShare": null
+  },
+  {
+   "id": "XHM",
+   "set": "other",
+   "label": "Polumaraton reprezentativan",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "b2909b84148293ff",
+    "stored": "074017bce2d41748"
+   },
+   "summary": {
+    "weeks": 14,
+    "vols": [
+     22.3,
+     46.7,
+     50.1,
+     37.8,
+     52.8,
+     55.4,
+     58.5,
+     44.5,
+     59.7,
+     64.8,
+     65.2,
+     51.8,
+     43,
+     31.6
+    ],
+    "warnings": 0
+   },
+   "issues": [],
+   "adjacency": null,
+   "maxGrowth": null,
+   "maxLrShare": null
+  },
+  {
+   "id": "XM",
+   "set": "other",
+   "label": "Maraton reprezentativan",
+   "wizardRejects": [],
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "e79cf5b4b0b07200",
+    "stored": "cbd58e575306484b"
+   },
+   "summary": {
+    "weeks": 18,
+    "vols": [
+     30,
+     65.9,
+     65.2,
+     50.8,
+     70.9,
+     69.6,
+     75.7,
+     59.1,
+     73.6,
+     80,
+     83,
+     64.9,
+     85.4,
+     84.9,
+     80.4,
+     68.3,
+     55.5,
+     52.7
+    ],
+    "warnings": 0
+   },
+   "issues": [],
+   "adjacency": null,
+   "maxGrowth": null,
+   "maxLrShare": null
+  },
+  {
+   "id": "QA-U01",
+   "set": "qa",
+   "label": "5K početnik",
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "93f00602b6175e39",
+    "stored": "f17efd9461c4df22"
+   },
+   "summary": {
+    "weeks": 12,
+    "baseWeeks": 6,
+    "vdot0": 25.6,
+    "predictedSec": 2100,
+    "predicted": "35:00",
+    "racePace": "7:00",
+    "goal": "30:00",
+    "realno": false,
+    "qualityReadiness": "beginner",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 3,
+    "effQ": 1,
+    "paces": {
+     "E": "8:38",
+     "LR": "8:49",
+     "T": "7:15",
+     "I": "6:34",
+     "R": "6:19"
+    },
+    "inputWeeklyKm": 8,
+    "firstFullWeek": {
+     "w": 1,
+     "vol": 7.3
+    },
+    "peakVol": 12.4,
+    "peakOverInput": 1.55,
+    "peakLr": 4.6,
+    "taper": {
+     "w": 11,
+     "vol": 8,
+     "ofPeak": 0.65,
+     "quality": 1
+    },
+    "raceWeek": {
+     "w": 12,
+     "vol": 8,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Ograničena dužinska priprema",
+     "peakLongRunKm": 4.6,
+     "peakWeeklyKm": 12.4
+    },
+    "warnings": 5,
+    "issues": 0,
+    "deloadCount": 2,
+    "deloadsWithQuality": 0,
+    "rSessions": 0,
+    "maxIWorkKmWeek": 0.8,
+    "maxQualityMinWeek": 5.6,
+    "maxLrShareFullWeek": 0.4,
+    "maxGrowthFullRef": 1.15,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.15,
+   "maxLrShare": 0.4
+  },
+  {
+   "id": "QA-U02",
+   "set": "qa",
+   "label": "5K rekreativac sub-20",
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "ea3ba8848f07ca32",
+    "stored": "4918e56a30113a12"
+   },
+   "summary": {
+    "weeks": 16,
+    "baseWeeks": 0,
+    "vdot0": 40.7,
+    "predictedSec": 1425,
+    "predicted": "23:45",
+    "racePace": "4:45",
+    "goal": "19:59",
+    "realno": false,
+    "qualityReadiness": "developing",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 4,
+    "effQ": 2,
+    "paces": {
+     "E": "6:02",
+     "LR": "6:10",
+     "T": "5:01",
+     "I": "4:32",
+     "R": "4:21"
+    },
+    "inputWeeklyKm": 30,
+    "firstFullWeek": {
+     "w": 1,
+     "vol": 31.6
+    },
+    "peakVol": 43.3,
+    "peakOverInput": 1.44,
+    "peakLr": 14.5,
+    "taper": {
+     "w": 15,
+     "vol": 23.9,
+     "ofPeak": 0.55,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 16,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 14.5,
+     "peakWeeklyKm": 43.3
+    },
+    "warnings": 1,
+    "issues": 0,
+    "deloadCount": 3,
+    "deloadsWithQuality": 0,
+    "rSessions": 1,
+    "maxIWorkKmWeek": 2.4,
+    "maxQualityMinWeek": 24.6,
+    "maxLrShareFullWeek": 0.36,
+    "maxGrowthFullRef": 1.09,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.09,
+   "maxLrShare": 0.36
+  },
+  {
+   "id": "QA-U03",
+   "set": "qa",
+   "label": "5K iskusan ambiciozan",
+   "error": null,
+   "deterministic": true,
+   "hash": {
+    "generated": "0a0a3f1cc9019628",
+    "stored": "340e0259dbe00560"
+   },
+   "summary": {
+    "weeks": 16,
+    "baseWeeks": 0,
+    "vdot0": 48.2,
+    "predictedSec": 1235,
+    "predicted": "20:35",
+    "racePace": "4:07",
+    "goal": "18:59",
+    "realno": false,
+    "qualityReadiness": "experienced",
+    "speedConfidence": "recent-result",
+    "formPolicy": null,
+    "runDays": 5,
+    "effQ": 2,
+    "paces": {
+     "E": "5:16",
+     "LR": "5:24",
+     "T": "4:23",
+     "I": "3:57",
+     "R": "3:48"
+    },
+    "inputWeeklyKm": 50,
+    "firstFullWeek": {
+     "w": 1,
+     "vol": 52.8
+    },
+    "peakVol": 56.7,
+    "peakOverInput": 1.13,
+    "peakLr": 16.6,
+    "taper": {
+     "w": 15,
+     "vol": 34.7,
+     "ofPeak": 0.61,
+     "quality": 2
+    },
+    "raceWeek": {
+     "w": 16,
+     "vol": 15.5,
+     "days": 7
+    },
+    "preparation": {
+     "label": "Dužinska priprema ima osnovu u podacima",
+     "peakLongRunKm": 16.6,
+     "peakWeeklyKm": 56.7
+    },
+    "warnings": 1,
+    "issues": 0,
+    "deloadCount": 3,
+    "deloadsWithQuality": 0,
+    "rSessions": 1,
+    "maxIWorkKmWeek": 4.2,
+    "maxQualityMinWeek": 35.2,
+    "maxLrShareFullWeek": 0.32,
+    "maxGrowthFullRef": 1.05,
+    "adjacentHardDays": 0
+   },
+   "issues": [],
+   "adjacency": 0,
+   "maxGrowth": 1.05,
+   "maxLrShare": 0.32
+  }
+ ]
+}

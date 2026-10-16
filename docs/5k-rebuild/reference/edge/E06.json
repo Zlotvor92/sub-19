@@ -1,0 +1,52 @@
+{
+ "id": "E06",
+ "set": "edge",
+ "label": "105 nedelja",
+ "covers": "iznad MAX_PLAN_WEEKS — očekivana greška",
+ "today": "2026-10-15",
+ "wizard": {
+  "raceDate": "2028-10-15",
+  "pbMin": "24",
+  "pbSec": "00",
+  "pbDate": "2026-09-15",
+  "weeklyKm": "25",
+  "recentLongRunKm": "8",
+  "consistentWeeks": "12",
+  "qualityExperience": "some",
+  "runDays": 4,
+  "quality": 2
+ },
+ "wizardRejects": [],
+ "weeksHint": {
+  "kind": "enough",
+  "weeks": 105,
+  "nameInSentence": "5K"
+ },
+ "input": {
+  "startDate": "2026-10-15",
+  "raceDate": "2028-10-15",
+  "raceDistM": 5000,
+  "pb": {
+   "distM": 5000,
+   "sec": 1440,
+   "date": "2026-09-15"
+  },
+  "weeklyKm": 25,
+  "recentLongRunKm": 8,
+  "consistentWeeks": 12,
+  "qualityExperience": "some",
+  "runDays": 4,
+  "quality": 2,
+  "lrDow": 7,
+  "qDows": [],
+  "runDows": [],
+  "intensity": "std",
+  "volIntensity": "std",
+  "goalSec": null,
+  "trainedRecently": true
+ },
+ "generatorId": "5k",
+ "result": {
+  "error": "Više od 104 nedelje (2 godine) — proveri datum trke, verovatno je pogrešno unet."
+ }
+}

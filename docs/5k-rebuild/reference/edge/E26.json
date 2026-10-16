@@ -1,0 +1,30 @@
+{
+ "id": "E26",
+ "set": "edge",
+ "label": "Bez rezultata",
+ "covers": "čarobnjak ne dozvoljava korak 2 bez vremena — ograničenje",
+ "today": "2026-10-15",
+ "wizard": {
+  "raceDate": "2026-12-20",
+  "pbMin": "",
+  "pbSec": "",
+  "pbDate": "2026-09-15",
+  "weeklyKm": "25",
+  "recentLongRunKm": "8",
+  "consistentWeeks": "12",
+  "qualityExperience": "some",
+  "runDays": 4,
+  "quality": 2
+ },
+ "wizardRejects": [
+  "korak 2 nije validan"
+ ],
+ "weeksHint": {
+  "kind": "enough",
+  "weeks": 10,
+  "nameInSentence": "5K"
+ },
+ "result": {
+  "notCreated": "toGenerationInput vratio null (čarobnjak ne pravi ulaz)"
+ }
+}

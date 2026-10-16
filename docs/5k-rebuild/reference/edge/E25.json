@@ -1,0 +1,55 @@
+{
+ "id": "E25",
+ "set": "edge",
+ "label": "Datum rezultata u budućnosti",
+ "covers": "čarobnjak treba da odbije (resultDateMessage)",
+ "today": "2026-10-15",
+ "wizard": {
+  "raceDate": "2026-12-20",
+  "pbMin": "24",
+  "pbSec": "00",
+  "pbDate": "2026-12-01",
+  "weeklyKm": "25",
+  "recentLongRunKm": "8",
+  "consistentWeeks": "12",
+  "qualityExperience": "some",
+  "runDays": 4,
+  "quality": 2
+ },
+ "wizardRejects": [
+  "korak 2 nije validan",
+  "Datum rezultata mora biti ispravan datum koji nije u budućnosti."
+ ],
+ "weeksHint": {
+  "kind": "enough",
+  "weeks": 10,
+  "nameInSentence": "5K"
+ },
+ "input": {
+  "startDate": "2026-10-15",
+  "raceDate": "2026-12-20",
+  "raceDistM": 5000,
+  "pb": {
+   "distM": 5000,
+   "sec": 1440,
+   "date": "2026-12-01"
+  },
+  "weeklyKm": 25,
+  "recentLongRunKm": 8,
+  "consistentWeeks": 12,
+  "qualityExperience": "some",
+  "runDays": 4,
+  "quality": 2,
+  "lrDow": 7,
+  "qDows": [],
+  "runDows": [],
+  "intensity": "std",
+  "volIntensity": "std",
+  "goalSec": null,
+  "trainedRecently": true
+ },
+ "generatorId": "5k",
+ "result": {
+  "error": "Datum rezultata mora biti ispravan datum koji nije posle početka plana."
+ }
+}
