@@ -10,6 +10,7 @@ import type { GenPlanState } from '../exchange';
 import type { PlanGenerationInput, PreparationAssessment } from '../training/types';
 import type { ReplanContext } from './future';
 import { preparationCoverage } from './preparationDecision';
+import { planPolicy } from './policy';
 import { regenerateFuture, returnPolicyFor, type ExecutionAdjustmentMeta } from './regenerate';
 
 export interface HandoffFacts {
@@ -48,5 +49,12 @@ export function handoffFuture(
     ...(facts.meta !== undefined ? { meta: facts.meta } : {})
   });
   if ('error' in built) return built;
-  return { result: built.result, coverage: handoffCoverage(built.result.meta?.preparation) };
+  // Kalemljenje nasleđuje `meta` plana izvora, uključujući njegovu oznaku politike; plan ove distance nije napisala ta
+  // politika, pa se tuđa oznaka uklanja (upis ga označava ovim generatorom, `stampPlan`).
+  const result = built.result;
+  if (result.meta && planPolicy(result).status === 'unknown') {
+    const { policyId: _id, policyVersion: _version, ...meta } = result.meta;
+    result.meta = meta;
+  }
+  return { result, coverage: handoffCoverage(result.meta?.preparation) };
 }

@@ -338,7 +338,10 @@ describe('Cilj', () => {
     await waitFor(() => expect(useTrainingStore.getState().genPlan).not.toBe(before));
     const after = useTrainingStore.getState().genPlan;
     expect((after?.meta as { goalSec?: number }).goalSec).toBe(2460);
-    expect(after?.weeks[0]).toEqual(before?.weeks[0]); // N1 je prošla (14.1. je u N2)
+    // N1 je prošla (14.1. je u N2): ista nedelja; upis dodaje samo fazu iz generatora plana (A3).
+    const { phase: phase0, ...week0 } = after!.weeks[0]!;
+    expect(week0).toEqual(before?.weeks[0]);
+    expect(typeof phase0).toBe('string');
     expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Cilj promenjen\./));
     alert.mockRestore();
   });
@@ -437,7 +440,10 @@ describe('Plan → Prilagodi plan: preračunavanje i novi plan', () => {
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(useTrainingStore.getState().genPlan).not.toEqual(before));
     const after = useTrainingStore.getState().genPlan;
-    expect(after?.weeks[0]).toEqual(before?.weeks[0]); // N1 je prošla (14.1. je u N2)
+    // N1 je prošla (14.1. je u N2): ista nedelja; upis dodaje samo fazu iz generatora plana (A3).
+    const { phase: phase0, ...week0 } = after!.weeks[0]!;
+    expect(week0).toEqual(before?.weeks[0]);
+    expect(typeof phase0).toBe('string');
     const m = after?.meta as { vdotBase?: number; recalWeek?: number; vdotAtRecal?: number };
     expect(m.vdotBase).toBe(baseVdot);
     expect(m.recalWeek).toBe(2);

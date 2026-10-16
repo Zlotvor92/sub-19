@@ -74,7 +74,9 @@ describe('polumaraton: unos → generisanje → prikaz → čuvanje → učitava
     const direct = hm.adaptGeneratedPlan(
       hm.generatePlan(JSON.parse(JSON.stringify(input)) as typeof input)
     );
-    expect(JSON.stringify({ ...direct, ulaz: input })).toBe(JSON.stringify(saved.genPlan));
+    expect(JSON.stringify(hm.stampPlan({ ...direct!, ulaz: input }))).toBe(
+      JSON.stringify(saved.genPlan)
+    ); // upis nosi fazu i oznaku politike generatora (A3/A7)
     expect(saved.genPlan!.meta!.raceName).toBe('Polumaraton');
     // Dvonedeljni HM taper je deo isporučenog plana.
     expect(saved.genPlan!.weeks.filter((w) => w.taper).length).toBe(2);
@@ -213,7 +215,10 @@ describe('polumaraton: unos → generisanje → prikaz → čuvanje → učitava
       goalChange: unknown;
       weeks: unknown;
     };
-    expect(JSON.stringify(goalPlan.weeks)).toBe(JSON.stringify(expectedPlan.weeks));
+    expect(JSON.stringify(goalPlan.weeks)).toBe(
+      // upis revizije dodaje fazu generatora plana (A3)
+      JSON.stringify(hm.stampPlan({ ...goalBase, ...(expectedPlan as object) }).weeks)
+    );
     const goalDays = new Map(goalPlan.weeks.flatMap((w) => w.days).map((d) => [d.id, d]));
     for (const d of [...past, futureDone, manual, moved, lockedDay])
       expect(JSON.stringify(goalDays.get(d.id)), d.id).toBe(JSON.stringify(oldDays.get(d.id)));

@@ -214,6 +214,15 @@ describe('A2: izmena povratne politike izvora ne menja plan ciljne distance', ()
       const storedReference = fromStored();
       expect(withPolicy(c.source, fromStored)).toBe(storedReference);
 
+      // Regresija: označen plan izvora (`stampForStorage`) ne prenosi svoju oznaku politike na plan kraće distance —
+      // taj plan ostaje upotrebljiv za generator svoje distance (ranije: tuđa oznaka → „nepoznata verzija").
+      const labeled = select.stampForStorage(stored);
+      const lb = c.preparation.basisFromPlan(labeled, today)!;
+      const handed = c.preparation.buildPreparationChoice(labeled, today, lb, choice, context);
+      if ('error' in handed) throw new Error(handed.error);
+      expect(select.generatorForPlan(handed.result)?.product(c.shorter)).toBeDefined();
+      expect(select.planPolicyOf(handed.result)?.status).toBe('legacy');
+
       // 3. Kontrola: izmena politike CILJA menja plan kraće distance (cilj odlučuje sam).
       expect(withPolicy(c.target, () => shorterPlan(basis))).not.toBe(reference);
     });
