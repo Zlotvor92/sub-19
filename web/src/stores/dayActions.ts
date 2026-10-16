@@ -7,6 +7,7 @@ import {
   applyLogField,
   clearWorkPace,
   enterWorkPace,
+  recomputeChain,
   setDayStatus,
   syncSideRecords,
   type LogField,
@@ -15,13 +16,8 @@ import {
 } from '../domain/day';
 import { parseTimeStr } from '../domain/format';
 import { PERSONAL, personalBaselineVdot } from '../domain/personal';
-import { isT3kId } from '../domain/training/vdot/limits';
-import {
-  predRowsForDay,
-  recomputeVdotChain,
-  sessionClassFor,
-  type StoredPredRow
-} from '../domain/training/adaptation';
+import { predRowsForDay, type StoredPredRow } from '../domain/training/adaptation';
+import { generatorForPlan } from '../domain/generators/select';
 import { planBaselineVdot, type ResolvedDay } from '../domain/plan';
 import { useRecoveryStore } from './recoveryStore';
 import { activeGenPlan, useTrainingStore } from './trainingStore';
@@ -46,12 +42,16 @@ export function editField(day: ResolvedDay, field: LogField, raw: string, today:
   /* UPISAN REZULTAT POLAZNOG DANA ugrađenog plana (Niš polumaraton) menja POLAZNI VDOT, pa se ceo lanac forme preračunava naspram nove polazne tačke — u istom upisu. */
   if (day.id === PERSONAL.startingDay && (field === 'km' || field === 'sec')) {
     const base = personalBaselineVdot(log);
-    const preds = storedRows();
+    /* Uglađivanje lanca pripada generatoru aktivnog plana (A1); klasa sesije se čita samo iz naziva reda, kao ranije. */
+    const rows = storedRows().map(({ zone: _zone, ...r }) => r);
     t.patch({
       log,
-      vdotLog: recomputeVdotChain(t.vdotLog, base, (id) =>
-        sessionClassFor(isT3kId(id), preds.find((p) => p.id === id)?.l)
-      )
+      vdotLog: recomputeChain(t.vdotLog, {
+        form: generatorForPlan(activeGenPlan()),
+        rows,
+        baselineVdot: base,
+        hasAlt: false
+      })
     });
     return;
   }
@@ -68,9 +68,11 @@ export function storedRows(): StoredPredRow[] {
 
 export function workPaceContext(day: Pick<ResolvedDay, 'id'>): WorkPaceContext {
   const t = useTrainingStore.getState();
+  const plan = activeGenPlan();
   return {
+    form: generatorForPlan(plan),
     rows: storedRows(),
-    baselineVdot: planBaselineVdot(activeGenPlan()?.meta),
+    baselineVdot: planBaselineVdot(plan?.meta),
     hasAlt: !!t.alts[day.id]
   };
 }

@@ -17,7 +17,6 @@ import {
   finalWarnings,
   regenerateFuture,
   returnPolicyFor,
-  type RegenerationOptions,
   type ExecutionAdjustmentMeta,
   type ReturnPolicy
 } from './regenerate';
@@ -136,7 +135,8 @@ export interface PreparationDecision {
   unavailable: string[];
 }
 
-type Built = { result: GenPlanState } | { error: string };
+/** `coverage`: ocena ciljnog generatora kad je plan napravljen predajom; inače je računa ovaj generator. */
+type Built = { result: GenPlanState; coverage?: Coverage } | { error: string };
 
 /**
  * Plan kraće distance (polumaraton, 10K) pravi i obrađuje generator te distance, ne maraton. Maraton ga ne uvozi:
@@ -151,9 +151,18 @@ export type ShorterDistanceHandoff = (
       input: PlanGenerationInput,
       today: IsoDate,
       context: ReplanContext,
-      options: RegenerationOptions
-    ) => { result: GenPlanState } | { error: string })
+      facts: HandoffFacts
+    ) => { result: GenPlanState; coverage: Coverage } | { error: string })
   | null;
+
+/** ČINJENICE koje izvor predaje ciljnom generatoru (A2): bez povratne politike i baze zaštite rasta izvora — njih cilj
+ *  izvodi sam (iz `execution.breakDays` i stvarne baze ulaza). */
+export interface HandoffFacts {
+  execution: ExecutionAdjustmentMeta | null;
+  restartFromBase: boolean;
+  notes?: string[];
+  meta?: Record<string, unknown>;
+}
 
 function regenerate(
   current: GenPlanState,
@@ -165,10 +174,19 @@ function regenerate(
   handoff: ShorterDistanceHandoff,
   notes: string[] = []
 ): Built {
-  // A shorter half-marathon or 10K option is planned and finalized by the isolated generator of that distance.
-  const regen =
-    (input.raceDistM === MARATHON_M ? null : handoff(input.raceDistM)) ?? regenerateFuture;
-  const built = regen(current, input, today, context, {
+  // A shorter option is planned, finalized and assessed by the isolated generator of that distance; it receives only
+  // facts (input, confirmed execution, restart from the actual base), never this generator's return policy or guard.
+  const target = input.raceDistM === MARATHON_M ? null : handoff(input.raceDistM);
+  if (target) {
+    const handed = target(current, input, today, context, {
+      execution: basis.execution,
+      restartFromBase: basis.guardBaseKm !== undefined,
+      notes,
+      meta
+    });
+    return 'error' in handed ? handed : { result: handed.result, coverage: handed.coverage };
+  }
+  const built = regenerateFuture(current, input, today, context, {
     policy: basis.policy,
     ...(basis.guardBaseKm !== undefined ? { guardBaseKm: basis.guardBaseKm } : {}),
     ...(basis.execution ? { execution: basis.execution } : {}),
@@ -219,7 +237,8 @@ function optionFrom(
   choice: PreparationChoice,
   title: string,
   detail: string,
-  result: GenPlanState
+  result: GenPlanState,
+  coverage?: Coverage
 ): PreparationOption {
   const meta = result.meta!;
   return {
@@ -230,7 +249,7 @@ function optionFrom(
     raceDate: meta.raceDate as IsoDate,
     raceDistM: meta.raceDistM,
     goalSec: meta.goalSec ?? null,
-    coverage: preparationCoverage(meta.preparation, meta.raceDistM),
+    coverage: coverage ?? preparationCoverage(meta.preparation, meta.raceDistM),
     peakLongRunKm: meta.preparation?.peakLongRunKm ?? 0,
     peakWeeklyKm: meta.preparation?.peakWeeklyKm ?? 0
   };
@@ -290,7 +309,7 @@ export function preparationDecision(
       handoff
     );
     if ('error' in built) continue;
-    const coverage = preparationCoverage(built.result.meta?.preparation, shorter);
+    const coverage = built.coverage ?? preparationCoverage(built.result.meta?.preparation, shorter);
     if (coverage === 'insufficient') continue;
     const sname = built.result.meta!.raceName;
     options.push(
@@ -301,7 +320,8 @@ export function preparationDecision(
         coverage === 'full'
           ? `Isporučen plan ispunjava pravila pune pripreme za ${distUReceni(sname)}. Vremenski cilj ${name} se ne prenosi; novi cilj postavi posebno.`
           : `Dužina pokriva ${distUReceni(sname)}, ali nedeljni vrhunac ne podržava vremenski cilj. Vremenski cilj ${name} se ne prenosi.`,
-        built.result
+        built.result,
+        coverage
       )
     );
     break;
@@ -536,7 +556,7 @@ export function buildPreparationChoice(
     raceDistM: meta.raceDistM,
     goalSec: meta.goalSec ?? null
   };
-  const coverage = preparationCoverage(meta.preparation, meta.raceDistM);
+  const coverage = built.coverage ?? preparationCoverage(meta.preparation, meta.raceDistM);
   const name = distUReceni(pointName(meta.raceDistM, meta.raceName));
   const notes = [
     `Odluka: ${describePoint(from)} → ${describePoint(to, meta.raceName)}.`,

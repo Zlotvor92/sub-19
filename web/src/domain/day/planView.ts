@@ -1,7 +1,6 @@
 /* IZVEDENI PRIKAZ ZA PLAN TAB: kratak opis radnog dela, faze, geometrija prstenova i grafikona nedeljne kilometraže. */
 
 import { fmtClock, fmtKm } from '../format';
-import { weekPhase } from '../plan/describe';
 import type { ResolvedDay, ResolvedPlan, ResolvedWeek } from '../plan/types';
 import type { LogEntry } from '../state/types';
 import { weekPlanKm, weekRealKm } from './stats';
@@ -47,12 +46,16 @@ export interface PhaseGroup {
   weeks: ResolvedWeek[];
 }
 
-/** Faze za grupisanje nedelja: rasterećenje ostaje u grupi kojoj pripada po redosledu, a TAPER i TRKA su jedna grupa. */
-export function planPhases(plan: Pick<ResolvedPlan, 'weeks'>): PhaseGroup[] {
+/** Faze za grupisanje nedelja: rasterećenje ostaje u grupi kojoj pripada po redosledu, a TAPER i TRKA su jedna grupa.
+ *  Fazu nedelje daje generator plana (`phaseOf`, A3); ovde nema sopstvenog pravila faze. */
+export function planPhases(
+  plan: Pick<ResolvedPlan, 'weeks'>,
+  phaseOf: (w: ResolvedWeek, totalWeeks: number) => string
+): PhaseGroup[] {
   const groups: PhaseGroup[] = [];
   let cur: PhaseGroup | null = null;
   for (const w of plan.weeks) {
-    let f: string = weekPhase(w, plan.weeks.length);
+    let f: string = phaseOf(w, plan.weeks.length);
     if (f === 'DELOAD') f = cur ? cur.name : 'BAZA';
     if (f === 'TAPER' || f === 'TRKA') f = 'TAPER I TRKA';
     if (!cur || cur.name !== f) {

@@ -5,6 +5,7 @@ import { addDays, type IsoDate } from '../date';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry } from '../state';
 import { generatePlan } from '@/test/legacyGenerator';
+import { phaseReaderFor } from '../generators/select';
 import { planPhases, ringView, sessionCore, weekChart, weekPlanKm, weekRealKm } from './index';
 
 /* parity: sessCore, planFaze, prstenSVG, chartWeeks (app.js) — Plan tab. */
@@ -106,7 +107,7 @@ describe('Plan tab naspram starog koda', () => {
     for (const plan of PLANS) {
       load(plan, {});
       const resolved = resolvePlan(plan.weeks, { alts: {}, moves: {} });
-      const mine = planPhases(resolved);
+      const mine = planPhases(resolved, phaseReaderFor(plan));
       const old = j<Array<[string, number[]]>>(
         legacy.evalIn('planFaze().map(g=>[g.ime,g.nedelje.map(w=>w.w)])')
       );

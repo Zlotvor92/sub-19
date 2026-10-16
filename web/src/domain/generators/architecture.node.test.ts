@@ -213,18 +213,16 @@ const LEGACY_SHARED_ALLOWED: Readonly<Record<string, readonly string[]>> = {
     'tagName', // P
     'sessKind', // P
     'dayLabel', // P
-    'weekPhase', // P
     'planBaselineVdot' // M (polazna forma iz `meta`)
   ],
   'plan/versions.ts': ['getPlanRevisions', 'recordPlanRevision'], // F
   'plan/preparation.ts': ['preparationSummary'], // P (sažetak `meta.preparation` koju je zapisao generator)
   'plan/baseline.ts': ['planBaselineVdot'], // M
-  'plan/describe.ts': ['sessKind', 'weekPhase'], // P
+  'plan/describe.ts': ['sessKind'], // P
+  /* Prijem merenja forme (klasifikacija/tolerancija, lanac/α, trenutna forma, klasa sesije) i faza nedelje su od A1/A3
+     politika generatora plana (`PlanGenerator.classifyMeasurement`/`recomputeVdotChain`/`currentVdot`/`sessionClassFor`/
+     `phaseOfWeek`); aplikacija ih više ne uvozi iz starog koda. */
   'training/adaptation/index.ts': [
-    'currentVdot', // M
-    'recomputeVdotChain', // M
-    'sessionClassFor', // M
-    'classifyMeasurement', // M
     'predRowsForDay', // M
     'matchWeekRows', // M
     'alignVdotDates', // M
@@ -263,7 +261,6 @@ const PRODUCTION_LEGACY_FILES: readonly string[] = [
   'training/adaptation/effectivePace.ts',
   'training/adaptation/index.ts',
   'training/adaptation/matching.ts',
-  'training/adaptation/measure.ts',
   'training/constants/evidence.ts',
   'training/constants/heuristics.ts',
   'training/constants/product.ts',

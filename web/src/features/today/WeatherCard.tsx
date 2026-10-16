@@ -4,7 +4,6 @@ import {
   useSettingsStore,
   useTrainingStore
 } from '../../stores';
-import { currentVdot } from '../../domain/training/adaptation';
 import { trainingHour, type ForecastHours } from '../../domain/weather';
 import { generatorForPlan, type WeatherCardModel } from '../../domain/generators/select';
 import type { ResolvedDay } from '../../domain/plan';
@@ -39,7 +38,7 @@ export function useWeatherModel(day: ResolvedDay, today: string): WeatherCardMod
     cache,
     hasLocation: !!geo,
     predPace: plan ? (predRowsForDay(plan, day, rows)[0]?.pt ?? null) : null,
-    vdot: currentVdot(vdotLog)
+    vdot: generator.currentVdot(vdotLog)
   });
 }
 

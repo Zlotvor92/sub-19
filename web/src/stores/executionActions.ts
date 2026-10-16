@@ -1,9 +1,10 @@
 import { addDays, parseIsoDate } from '../domain/date';
 import { resolvePlan, type ResolvedPlan } from '../domain/plan';
 import {
-  UNSUPPORTED_DISTANCE,
   generatorForPlan,
   preparationForPlan,
+  stampForStorage,
+  unsupportedPlanReason,
   type DecisionPoint,
   type ExecutionAdjustmentOptions,
   type PreparationChoice,
@@ -81,10 +82,12 @@ export function planStateStamp(): string {
  * (`domain/generators/select.ts`). `null` kad plan nema podržanu distancu — ekrani to prikazuju umesto prilagođavanja.
  */
 export const activePlanGenerator = () => generatorForPlan(activeGenPlan());
+/** Zašto aktivni plan nema generator (nepodržana distanca ili nepoznata verzija politike, A7). */
+export const activePlanUnsupportedReason = (): string => unsupportedPlanReason(activeGenPlan());
 
 function planGenerator() {
   const generator = activePlanGenerator();
-  if (!generator) throw new Error(UNSUPPORTED_DISTANCE);
+  if (!generator) throw new Error(activePlanUnsupportedReason());
   return generator;
 }
 
@@ -153,7 +156,7 @@ export function positiveAdjustmentBlock(plan: ResolvedPlan, todayStr: string): s
     );
   });
   if (pain) return 'Noviji zapis bola sprečava predlog bržeg rada. Najpre proveri oporavak.';
-  if (!activePlanGenerator()) return UNSUPPORTED_DISTANCE;
+  if (!activePlanGenerator()) return activePlanUnsupportedReason();
   const { analysis } = executionModel(plan, today);
   if (analysis.easyHighRpeCount >= 2)
     return 'Više lakih treninga ima visok prijavljeni napor; brži rad se ne predlaže.';
@@ -179,7 +182,7 @@ export function alignAutomaticAlts(result: GenPlanState, today: string): Record<
   const t = useTrainingStore.getState();
   // `result` je uvek izlaz nekog generatora; plan bez podržane distance ovde ne sme da stigne.
   const generator = generatorForPlan(result);
-  if (!generator) throw new Error(UNSUPPORTED_DISTANCE);
+  if (!generator) throw new Error(unsupportedPlanReason(result));
   return generator.alignAutomaticOverlays(t.genPlan, result, today, replanContext());
 }
 
@@ -277,7 +280,7 @@ export function previewExecution(
   if (!t.genPlan || !today)
     return { ok: false, reason: 'Za prilagođavanje treba generisan plan i ispravan datum.' };
   const generator = generatorForPlan(t.genPlan);
-  if (!generator) return { ok: false, reason: UNSUPPORTED_DISTANCE };
+  if (!generator) return { ok: false, reason: unsupportedPlanReason(t.genPlan) };
   const { analysis } = executionModel(plan, today);
   const built = generator.buildExecutionAdjustment(
     t.genPlan,
@@ -352,7 +355,7 @@ export function previewPreparationChoice(
     return { ok: false, reason: 'Za odluku o pripremi treba generisan plan i ispravan datum.' };
   const generator = generatorForPlan(t.genPlan);
   const preparation = preparationForPlan(t.genPlan);
-  if (!generator) return { ok: false, reason: UNSUPPORTED_DISTANCE };
+  if (!generator) return { ok: false, reason: unsupportedPlanReason(t.genPlan) };
   if (!preparation)
     return { ok: false, reason: 'Odluka o pripremi postoji samo za polumaraton i maraton.' };
   const basis = options
@@ -388,7 +391,7 @@ export function previewRunWalk(
   if (!t.genPlan || !today)
     return { ok: false, reason: 'Za prilagođavanje treba generisan plan i ispravan datum.' };
   const generator = generatorForPlan(t.genPlan);
-  if (!generator) return { ok: false, reason: UNSUPPORTED_DISTANCE };
+  if (!generator) return { ok: false, reason: unsupportedPlanReason(t.genPlan) };
   const assessment = runWalkModel(plan, today);
   const { analysis } = executionModel(plan, today);
   const built = generator.buildRunWalkAdjustment(
@@ -414,7 +417,7 @@ export function previewRestore(revisionId: string, todayStr: string): PlanChange
   if (!revision) return { ok: false, reason: 'Sačuvana verzija više nije dostupna.' };
   // The restored version is finalized by the generator of the plan being written back.
   const generator = generatorForPlan(revision.snapshot);
-  if (!generator) return { ok: false, reason: UNSUPPORTED_DISTANCE };
+  if (!generator) return { ok: false, reason: unsupportedPlanReason(revision.snapshot) };
   const result = generator.graftFuturePlan(t.genPlan, revision.snapshot, today, replanContext());
   const changes = result.meta?.['futureChanges'] as
     { changedDays?: number; conflicts?: string[] } | undefined;
@@ -440,7 +443,7 @@ export function commitPlanChange(
       reason: 'Plan ili unosi su se promenili. Ponovo pregledaj predlog pre primene.'
     };
   t.patch({
-    genPlan: recordPlanRevision(t.genPlan, registered.result, {
+    genPlan: recordPlanRevision(t.genPlan, stampForStorage(registered.result), {
       reason: registered.reason,
       date: registered.day,
       summary: registered.summary

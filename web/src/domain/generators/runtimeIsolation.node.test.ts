@@ -280,9 +280,9 @@ describe('izolacija generatora u izvršavanju', () => {
       };
       vi.resetModules();
       const pristine: Record<number, unknown> = {
-        5000: (await import(/* @vite-ignore */ './fiveK')).regenerateFuture,
-        10000: (await import(/* @vite-ignore */ './tenK')).regenerateFuture,
-        21097.5: (await import(/* @vite-ignore */ './halfMarathon')).regenerateFuture
+        5000: (await import(/* @vite-ignore */ './fiveK')).handoffFuture,
+        10000: (await import(/* @vite-ignore */ './tenK')).handoffFuture,
+        21097.5: (await import(/* @vite-ignore */ './halfMarathon')).handoffFuture
       };
       const pristineHandoff = ((dist: number | undefined) =>
         pristine[dist || 5000] ?? null) as unknown as Handoff;

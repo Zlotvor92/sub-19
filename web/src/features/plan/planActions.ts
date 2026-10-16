@@ -8,7 +8,11 @@ import {
 } from '../../domain/format';
 import { parseIsoDate } from '../../domain/date';
 import type { ResolvedPlan } from '../../domain/plan';
-import { UNSUPPORTED_DISTANCE, generatorForPlan } from '../../domain/generators/select';
+import {
+  generatorForPlan,
+  stampForStorage,
+  unsupportedPlanReason
+} from '../../domain/generators/select';
 import type { GenPlanState } from '../../domain/state';
 import { confirmAction } from '../../app/confirm';
 import { useTrainingStore } from '../../stores';
@@ -51,7 +55,7 @@ export async function changeGoalTime(
   const stamp = planStateStamp();
   const generator = generatorForPlan(genPlan);
   if (!generator) {
-    window.alert(UNSUPPORTED_DISTANCE);
+    window.alert(unsupportedPlanReason(genPlan));
     return false;
   }
   const r = generator.planWithNewGoal(genPlan, sec, day, replanContext());
@@ -74,11 +78,11 @@ export async function changeGoalTime(
     return false;
   }
   useTrainingStore.getState().patch({
-    genPlan: recordPlanRevision(
-      genPlan,
-      { ...genPlan, ...r },
-      { reason: 'goal', date: day, summary: `Cilj ${fmtClock(sec)}` }
-    ),
+    genPlan: recordPlanRevision(genPlan, stampForStorage({ ...genPlan, ...r }), {
+      reason: 'goal',
+      date: day,
+      summary: `Cilj ${fmtClock(sec)}`
+    }),
     alts: alignAutomaticAlts({ ...genPlan, ...r }, day)
   });
   window.alert(`Cilj promenjen. Izmenjeno nedelja: ${n}.`);

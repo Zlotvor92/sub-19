@@ -2,18 +2,20 @@
 
 import type { GenPlanState, PersistedState } from '../domain/state';
 import { planBaselineVdot, purgeGenPlanData } from '../domain/plan';
-import { recomputeVdotChain, sessionClassFor } from '../domain/training/adaptation';
-import { isT3kId } from '../domain/training/vdot/limits';
+import { recomputeChain } from '../domain/day';
+import { generatorForPlan, stampForStorage } from '../domain/generators/select';
+import type { StoredPredRow } from '../domain/training/adaptation';
 import { withoutPersist, requestPersist } from './persistence';
 import { useRecoveryStore } from './recoveryStore';
 import { useTrainingStore } from './trainingStore';
 
 /**
  * Aktivira nov generisan plan (čarobnjak): stari `g` podaci odlaze (novi plan dobija ISTE ID-jeve), lanac forme se
- * preračunava iz onoga što je ostalo (test na 3 km ostaje) naspram polazne forme NOVOG plana, pa se upisuje plan.
- * Jedan upis na kraju.
+ * preračunava iz onoga što je ostalo (test na 3 km ostaje) naspram polazne forme NOVOG plana — politikom forme generatora
+ * novog plana (A1) — pa se upisuje plan sa fazom nedelja i oznakom politike tog generatora (A3/A7). Jedan upis na kraju.
  */
-export function activateNewPlan(plan: GenPlanState): void {
+export function activateNewPlan(generated: GenPlanState): void {
+  const plan = stampForStorage(generated);
   const t = useTrainingStore.getState();
   const r = useRecoveryStore.getState();
   const purged = purgeGenPlanData({
@@ -27,10 +29,16 @@ export function activateNewPlan(plan: GenPlanState): void {
     kg: r.kg
   });
   const baseline = planBaselineVdot(plan.meta);
-  const preds = plan.pred as Array<{ id?: string; l: string }>;
-  const chain = recomputeVdotChain(purged.vdotLog, baseline, (id) =>
-    sessionClassFor(isT3kId(id), preds.find((p) => p.id === id)?.l)
-  );
+  /* Klasa sesije se čita samo iz naziva reda (bez eksplicitne zone), kao ranije. */
+  const rows = plan.pred
+    .filter((p): p is StoredPredRow => typeof p.id === 'string')
+    .map(({ zone: _zone, ...r }) => r);
+  const chain = recomputeChain(purged.vdotLog, {
+    form: generatorForPlan(plan),
+    rows,
+    baselineVdot: baseline,
+    hasAlt: false
+  });
   withoutPersist(() => {
     useTrainingStore.setState({
       log: purged.log,

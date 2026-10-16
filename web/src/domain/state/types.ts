@@ -110,6 +110,9 @@ export interface StoredWeek {
   focus: string;
   /** Taper nedelja (zastavica iz generatora; stariji planovi je nemaju). */
   taper?: true;
+  /** Faza nedelje za prikaz koju je upisao generator plana (`stampPlan`); stariji planovi je nemaju — tada fazu izvodi
+   *  generator tog plana svojom funkcijom (`weekPhase`). */
+  phase?: string;
   /** Napomena: perzistirana nedelja NEMA `vol` (ukupan km se računa iz dana). */
   days: Array<Week['days'][number] & { id?: string }>;
 }
@@ -117,6 +120,8 @@ export interface GenPlanState {
   weeks: StoredWeek[];
   pred: Array<PredictionRow & { id?: string }>;
   qs?: Record<string, number[]>;
+  /** `meta.policyId`/`meta.policyVersion`: politika generatora koja je poslednja upisala plan (`stampPlan`); plan bez
+   *  oznake je „legacy-<distanca>" i obrađuje ga postojeći generator te distance. */
   meta?: TrainingPlan['meta'] & Record<string, unknown>;
   /** Pun ulaz generatora — potreban da se cilj promeni usred pripreme. NEPOUZDAN. */
   ulaz?: unknown;

@@ -3,8 +3,9 @@
 
 import { recomputeChain } from '../domain/day';
 import {
-  UNSUPPORTED_DISTANCE,
   generatorForPlan,
+  stampForStorage,
+  unsupportedPlanReason,
   type RecalibratedStoredPlan,
   type VdotProposal
 } from '../domain/generators/select';
@@ -172,7 +173,7 @@ export function previewRecalibration(plan: ResolvedPlan, today: string): Recalib
   const gp = t.genPlan;
   if (!gp) return { ok: false, reason: 'Preračunavanje radi samo nad generisanim planom.' };
   const generator = generatorForPlan(gp);
-  if (!generator) return { ok: false, reason: UNSUPPORTED_DISTANCE };
+  if (!generator) return { ok: false, reason: unsupportedPlanReason(gp) };
   const execution = executionModel(plan, today).analysis;
   if (execution.daysSinceLastRun !== null && execution.daysSinceLastRun >= 7)
     return {
@@ -234,15 +235,11 @@ export function commitRecalibration(result: RecalibratedStoredPlan): boolean {
   if (!registered || !t.genPlan || registered.stamp !== planStateStamp()) return false;
   const accepted = registered.result;
   t.patch({
-    genPlan: recordPlanRevision(
-      t.genPlan,
-      { ...t.genPlan, ...accepted },
-      {
-        reason: 'fitness',
-        date: registered.day,
-        summary: `Plan prema izmerenoj formi VDOT ${accepted.recalibration.form.toFixed(1)}`
-      }
-    ),
+    genPlan: recordPlanRevision(t.genPlan, stampForStorage({ ...t.genPlan, ...accepted }), {
+      reason: 'fitness',
+      date: registered.day,
+      summary: `Plan prema izmerenoj formi VDOT ${accepted.recalibration.form.toFixed(1)}`
+    }),
     alts: alignAutomaticAlts(accepted, registered.day)
   });
   return true;

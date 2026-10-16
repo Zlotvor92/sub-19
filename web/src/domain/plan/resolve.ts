@@ -92,6 +92,7 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
       deload: !!wk.deload,
       focus: wk.focus,
       ...(wk.taper === true ? { taper: true as const } : {}),
+      ...(typeof wk.phase === 'string' ? { phase: wk.phase } : {}),
       days
     });
   }

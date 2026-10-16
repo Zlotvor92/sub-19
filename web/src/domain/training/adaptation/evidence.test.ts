@@ -13,6 +13,7 @@ import { enterWorkPace, recordAutoPace, type WorkPaceState } from '../../day/wor
 import { predRow } from '@/domain/generators/tenK/training/prediction/index';
 import { fitnessEvidence } from '@/domain/generators/tenK/training/adaptation/evidence';
 import { vdotProposal } from '@/domain/generators/tenK/training/adaptation/proposal';
+import { TEN_K_GENERATOR } from '@/domain/generators/select';
 
 const generated = adaptGeneratedPlan(
   generatePlan({
@@ -187,7 +188,7 @@ describe('explicit zones and replacing old pace measurements', () => {
     session: { ...originalDay.session!, kind: 'Fartlek', zone: 'T' as const }
   };
   const row = { ...originalRow, l: `N${day.w} · Fartlek`, zone: 'T' as const };
-  const context = { rows: [row], baselineVdot: 48, hasAlt: false };
+  const context = { form: TEN_K_GENERATOR, rows: [row], baselineVdot: 48, hasAlt: false };
   const state: WorkPaceState = {
     pred: {},
     predLock: {},

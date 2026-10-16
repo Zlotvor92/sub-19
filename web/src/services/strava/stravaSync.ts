@@ -22,7 +22,12 @@ import {
   type ActivityStreams,
   type StravaActivity
 } from '../../domain/activities';
-import { recordAutoPace, syncSideRecords, type WorkPaceContext } from '../../domain/day';
+import {
+  recomputeChain,
+  recordAutoPace,
+  syncSideRecords,
+  type WorkPaceContext
+} from '../../domain/day';
 import {
   planBaselineVdot,
   resolvePlan,
@@ -204,7 +209,9 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
 
     const rows = genPlan.pred.filter((r): r is StoredPredRow => typeof r.id === 'string');
     const baseline = planBaselineVdot(genPlan.meta);
+    /* Prijem automatskog merenja (tolerancija, lanac) je politika generatora plana (A1). */
     const paceCtx = (d: ResolvedDay): WorkPaceContext => ({
+      form: generator,
       rows,
       baselineVdot: baseline,
       hasAlt: !!s.alts[d.id]
@@ -338,7 +345,9 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
       }
     }
 
-    const aligned = alignVdotDates(s.vdotLog, plan, rows, s.log, baseline);
+    const aligned = alignVdotDates(s.vdotLog, plan, rows, s.log, (list) =>
+      recomputeChain(list, { form: generator, rows, baselineVdot: baseline, hasAlt: false })
+    );
     if (aligned.changed) s.vdotLog = aligned.vdotLog;
 
     if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };

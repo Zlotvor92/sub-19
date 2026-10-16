@@ -23,7 +23,12 @@ import {
   PERKM_VERSION,
   type IcuActivity
 } from '../../domain/activities';
-import { recordAutoPace, syncSideRecords, type WorkPaceContext } from '../../domain/day';
+import {
+  recomputeChain,
+  recordAutoPace,
+  syncSideRecords,
+  type WorkPaceContext
+} from '../../domain/day';
 import {
   icuCanReadActivities,
   icuCanReadSettings,
@@ -217,7 +222,9 @@ export function createIcuSync(deps: IcuSyncDeps) {
 
     const rows = genPlan.pred.filter((r): r is StoredPredRow => typeof r.id === 'string');
     const baseline = planBaselineVdot(genPlan.meta);
+    /* Prijem automatskog merenja (tolerancija, lanac) je politika generatora plana (A1). */
     const paceCtx = (d: ResolvedDay): WorkPaceContext => ({
+      form: generator,
       rows,
       baselineVdot: baseline,
       hasAlt: !!s.alts[d.id]
@@ -271,7 +278,9 @@ export function createIcuSync(deps: IcuSyncDeps) {
 
     const finish = (): void => {
       if (deps.accountKey?.() !== owner) return;
-      const aligned = alignVdotDates(s.vdotLog, plan, rows, s.log, baseline);
+      const aligned = alignVdotDates(s.vdotLog, plan, rows, s.log, (list) =>
+        recomputeChain(list, { form: generator, rows, baselineVdot: baseline, hasAlt: false })
+      );
       if (aligned.changed) s.vdotLog = aligned.vdotLog;
       ports.commit(s);
       link.set({ ...(link.get() ?? start0), trSync: deps.now() });

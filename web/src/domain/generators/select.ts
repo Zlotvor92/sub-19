@@ -18,7 +18,37 @@
    međusobnog uvoza generatora.
    ============================================================ */
 
-import type { GenPlanState } from '../state';
+import type {
+  AltRecord,
+  GenPlanState,
+  LogEntry,
+  PainRecord,
+  T3kRecord,
+  VdotRecord,
+  WellnessRecord
+} from '../state';
+import type { IsoDate } from '../date';
+import type * as Hm from './halfMarathon';
+import type * as HmTypes from './halfMarathon/training/types';
+import type * as HmPlanTypes from './halfMarathon/plan/types';
+import type { ExecutionAnalysis, ExecutionRecommendation } from './halfMarathon/training/execution';
+import type { RunWalkAssessment } from './halfMarathon/training/runWalkProgress';
+import type { QualityGateResult } from './halfMarathon/training/qualityGate';
+import type { GoalChangeResult, ReplanError } from './halfMarathon/plan/replan';
+import type { FinalizationOptions } from './halfMarathon/plan/finalize';
+import type {
+  ApplyResult,
+  ProposalContext,
+  VdotProposal as ProposalVdot
+} from './halfMarathon/training/adaptation/proposal';
+import type {
+  FitnessEvidence,
+  FitnessEvidenceContext
+} from './halfMarathon/training/adaptation/evidence';
+import type { StoredPredRow } from './halfMarathon/training/adaptation/matching';
+import type { LoadContext } from './halfMarathon/recovery/load';
+import type { Signal } from './halfMarathon/recovery/readiness';
+import type { ChoiceResult, DecisionBasis } from './halfMarathon/plan/preparationDecision';
 import * as fiveK from './fiveK';
 import * as halfMarathon from './halfMarathon';
 import { regeneratorForDistance } from './handoff';
@@ -31,36 +61,277 @@ export type GeneratorId = '5k' | '10k' | 'hm' | 'marathon';
 export const UNSUPPORTED_DISTANCE =
   'Plan nema podržanu distancu (5K, 10K, polumaraton ili maraton), pa ga nijedan generator ne može da prilagodi. Napravi novi plan.';
 
-/* Ugovor generatora prema aplikaciji: oblik objekta polumaratonskog generatora (najširi rezultat — prilagođavanje može
-   da nosi i odluku o pripremi). TypeScript proverava da se svaki od četiri generatora uklapa; tipovi su tipovi razmene
-   podataka, a interni modeli i politika pripadaju svakom generatoru posebno. */
-export type PlanGenerator = typeof halfMarathonGenerator;
-export type DistanceProduct = typeof halfMarathon.HALF_MARATHON_PRODUCT;
+/* ============================================================
+   UGOVOR GENERATORA PREMA APLIKACIJI (A5) — eksplicitan spisak članova i potpisa. Svaki od četiri generatora se proverava
+   sa `satisfies PlanGenerator` (i `PreparationApi` gde postoji), pa promena jednog generatora koja ne odgovara ugovoru
+   pada pri prevođenju umesto da tiho promeni ugovor ostalima. Bez frameworka i baznih klasa.
 
-/* Tipovi razmene za ekrane (oblik je isti u sva četiri generatora; ekrani ne uvoze generatore direktno). */
-export type InjuryProposal = NonNullable<ReturnType<PlanGenerator['injuryProposal']>>;
-export type RecoveryContext = Parameters<PlanGenerator['injuryProposal']>[0];
-export type RpeTarget = NonNullable<ReturnType<PlanGenerator['rpeTarget']>>;
-export type WatchBatch = ReturnType<PlanGenerator['workoutsForWatch']>;
-export type WeatherCardInput = Parameters<PlanGenerator['weatherCard']>[0];
-export type WeatherCardModel = NonNullable<ReturnType<PlanGenerator['weatherCard']>>;
-export type RealignInput = Parameters<PlanGenerator['realignPlan']>[0];
-export type PainStatus = ReturnType<PlanGenerator['painStatus']>;
-export type Acwr = ReturnType<PlanGenerator['acwrNow']>;
-export type AcwrPlan = ReturnType<PlanGenerator['acwrPlan']>;
-export type AcwrBand = ReturnType<PlanGenerator['acwrBand']>;
-export type Readiness = ReturnType<PlanGenerator['readinessModel']>;
-/* Tipovi razmene za prilagođavanje, odluku o pripremi, predlog tempa i rekalibraciju (izvedeni iz ugovora generatora;
-   pre brisanja starog engine-a uvozili su se iz njega). */
-export type ExecutionAdjustmentOptions = Parameters<PlanGenerator['buildExecutionAdjustment']>[3];
-export type ReplanContext = NonNullable<Parameters<PlanGenerator['buildExecutionAdjustment']>[4]>;
-export type RunWalkAdjustmentOptions = Parameters<PlanGenerator['buildRunWalkAdjustment']>[3];
+   Tipovi tereta (`Payload.*`): oblik formata razmene koji danas ima isti izgled u sva četiri generatora; deklarisan je na
+   JEDNOM imenovanom mestu ispod. Tamo gde postoji neutralan tip (plan, dnevnik, datumi, lanac forme) koristi se on;
+   složeni rezultati (predlozi, prilagođavanja, procena stanja) se još čitaju iz polumaratonskih deklaracija — to je
+   PREOSTALI deo A5 (zameniti ih neutralnim deklaracijama), ne izvođenje ugovora iz HM objekta.
+   ============================================================ */
+
+/* --- tipovi tereta (jedno mesto; v. gore) --- */
+export type DistanceProduct = typeof Hm.HALF_MARATHON_PRODUCT;
+export type ResolvedPlanView = HmPlanTypes.ResolvedPlan;
+export type InjuryProposal = Hm.InjuryProposal;
+export type RecoveryContext = Hm.RecoveryContext;
+export type RpeTarget = Hm.RpeTarget;
+export type WatchBatch = Hm.WatchBatch;
+export type WeatherCardInput = Hm.WeatherCardInput;
+export type WeatherCardModel = Hm.WeatherCardModel;
+export type RealignInput = Hm.RealignInput;
+export type PainStatus = Hm.PainStatus;
+export type Acwr = Hm.Acwr;
+export type AcwrPlan = { planned: number; chronic: number | null; ratio: number | null };
+export type AcwrBand = Hm.AcwrBand;
+export type Readiness = Hm.Readiness;
+export type ExecutionAdjustmentOptions = Hm.ExecutionAdjustmentOptions;
+export type ReplanContext = Hm.ReplanContext;
+export type RunWalkAdjustmentOptions = Hm.RunWalkAdjustmentOptions;
 export type RunWalkMode = RunWalkAdjustmentOptions['mode'];
-export type VdotProposal = NonNullable<ReturnType<PlanGenerator['vdotProposal']>>;
+export type VdotProposal = ProposalVdot;
 export type RecalibratedStoredPlan = Exclude<
-  ReturnType<PlanGenerator['planRecalibrated']>,
+  ReturnType<typeof Hm.planRecalibrated>,
   { error: string }
 >;
+export type PreparationDecision = Hm.PreparationDecision;
+export type PreparationOption = PreparationDecision['options'][number];
+export type PreparationChoice = Hm.PreparationChoice;
+export type DecisionPoint = ChoiceResult['change']['from'];
+export type WeekPhase = 'DELOAD' | 'TRKA' | 'TAPER' | 'BAZA' | 'RAZVOJ' | 'VRHUNAC' | '';
+export type PolicyStatus =
+  | { status: 'current'; policyId: string; policyVersion: string }
+  | { status: 'legacy'; policyId: string; policyVersion: null }
+  | { status: 'unknown'; policyId: string; policyVersion: string | null };
+
+/* --- prijem merenja forme (A1): neutralni tipovi razmene --- */
+export type MeasureZone = 'I' | 'T' | 'M' | 'E' | 'LR' | 'R';
+export type VdotSessionClass = 'test' | 'tempo' | 'int' | 'rep' | 'default';
+export interface MeasureInput {
+  row: Pick<GenPlanState['pred'][number], 'l' | 'q' | 'nemeri' | 'zone'> | undefined;
+  zone?: MeasureZone | 'RP';
+  paceSec: number | null | undefined;
+  kind: string | null;
+  auto: boolean;
+  retagged: boolean;
+  currentVdot: number | null;
+  baselineVdot: number | null;
+}
+export type MeasureOutcome =
+  | {
+      status: 'rejected';
+      reason: 'no-row' | 'no-pace' | 'out-of-table' | 'impossible' | 'auto-outlier';
+    }
+  | { status: 'not-measured'; measured: number; reason?: 'short-repetition' | 'race-prescription' }
+  | { status: 'accepted'; measured: number };
+/** Politika prijema merenja forme generatora aktivnog plana: klasifikacija (tolerancija automatskog merenja), uglađivanje
+ *  lanca (α po tipu sesije) i trenutna forma. Aplikacija čuva sirova merenja (`vdotLog.measured`, datum, ID izvora). */
+export interface FormPolicy {
+  classifyMeasurement: (i: MeasureInput) => MeasureOutcome;
+  recomputeVdotChain: (
+    entries: readonly VdotRecord[],
+    baseline: number | null,
+    classify: (id: string) => VdotSessionClass
+  ) => VdotRecord[];
+  sessionClassFor: (
+    isT3k: boolean,
+    predLabel: string | null | undefined,
+    explicitZone?: MeasureZone | 'RP'
+  ) => VdotSessionClass;
+  currentVdot: (chain: readonly VdotRecord[]) => number | null;
+}
+
+type ResolvedPlan = HmPlanTypes.ResolvedPlan;
+type ResolvedWeek = HmPlanTypes.ResolvedWeek;
+type ResolvedDay = HmPlanTypes.ResolvedDay;
+
+export interface PlanGenerator extends FormPolicy {
+  id: GeneratorId;
+  /* politika plana i prikaz faze (A3, A7) */
+  policyId: string;
+  policyVersion: string;
+  legacyPolicyId: string;
+  planPolicy: (plan: Pick<GenPlanState, 'meta'> | null | undefined) => PolicyStatus;
+  stampPlan: <P extends GenPlanState>(plan: P) => P;
+  phaseOfWeek: (
+    w:
+      | { w: number; deload?: boolean; focus?: string; taper?: boolean; phase?: unknown }
+      | null
+      | undefined,
+    totalWeeks: number
+  ) => WeekPhase;
+  /* generisanje */
+  generatePlan: (input: HmTypes.PlanGenerationInput) => HmTypes.PlanGenerationResult;
+  adaptGeneratedPlan: (gen: HmTypes.PlanGenerationResult) => GenPlanState | null;
+  assess: (
+    pb: HmTypes.PersonalBest,
+    weeks: number,
+    intensity: HmTypes.Intensity,
+    goalSec: number | null,
+    raceDistM: number
+  ) => HmTypes.Assessment;
+  product: (raceDistM: number) => DistanceProduct | undefined;
+  /* adaptacija */
+  executionModel: (
+    plan: ResolvedPlan,
+    today: string,
+    context: ReplanContext,
+    extras?: Record<string, number>
+  ) => { analysis: ExecutionAnalysis; recommendation: ExecutionRecommendation };
+  executionBasis: (
+    current: GenPlanState,
+    today: IsoDate,
+    analysis: ExecutionAnalysis,
+    options: ExecutionAdjustmentOptions
+  ) => (DecisionBasis & { returning: boolean; base: number; weeklyKm: number }) | { error: string };
+  buildExecutionAdjustment: (
+    current: GenPlanState,
+    today: IsoDate,
+    analysis: ExecutionAnalysis,
+    options: ExecutionAdjustmentOptions,
+    context?: ReplanContext
+  ) =>
+    | { result: GenPlanState; notes: string[]; summary: string; decision?: PreparationDecision }
+    | { error: string; decision?: PreparationDecision };
+  buildRunWalkAdjustment: (
+    current: GenPlanState,
+    today: IsoDate,
+    assessment: RunWalkAssessment,
+    options: RunWalkAdjustmentOptions,
+    context?: ReplanContext
+  ) => { result: GenPlanState; notes: string[]; summary: string } | { error: string };
+  assessRunWalkProgress: (input: {
+    plan: ResolvedPlan;
+    log: Readonly<Record<string, LogEntry>>;
+    today: string;
+    recentPainMax?: number | null;
+  }) => RunWalkAssessment;
+  qualityEntryGate: (input: {
+    analysis: ExecutionAnalysis;
+    recentPainMax?: number | null;
+    formConfirmed: boolean;
+  }) => QualityGateResult;
+  hasRecentMeasuredForm: (
+    today: string,
+    evidence: { t3k?: readonly T3kRecord[]; vdotLog?: readonly VdotRecord[] }
+  ) => boolean;
+  planWithNewGoal: (
+    plan: GenPlanState | null,
+    newGoalSec: number,
+    today: IsoDate,
+    context?: ReplanContext
+  ) => GoalChangeResult | ReplanError;
+  planRecalibrated: (
+    plan: GenPlanState | null,
+    formVdot: number,
+    today: IsoDate,
+    context?: ReplanContext
+  ) => RecalibratedStoredPlan | ReplanError;
+  graftFuturePlan: (
+    plan: GenPlanState,
+    fresh: GenPlanState,
+    today: IsoDate,
+    ctx?: ReplanContext,
+    options?: FinalizationOptions
+  ) => GenPlanState;
+  alignAutomaticOverlays: (
+    current: GenPlanState | null,
+    result: GenPlanState,
+    today: string,
+    context: ReplanContext
+  ) => Record<string, AltRecord>;
+  vdotProposal: (ctx: ProposalContext) => VdotProposal | null;
+  applyVdotProposal: (
+    proposal: Pick<VdotProposal, 'changes'> | null,
+    plan: ResolvedPlan,
+    log: Readonly<Record<string, LogEntry>>,
+    alts: Readonly<Record<string, AltRecord>>,
+    genPlan: GenPlanState | null
+  ) => ApplyResult;
+  undoVdotAdjustments: (
+    plan: ResolvedPlan,
+    alts: Readonly<Record<string, AltRecord>>,
+    genPlan: GenPlanState | null
+  ) => ApplyResult;
+  fitnessEvidence: (ctx: FitnessEvidenceContext) => FitnessEvidence;
+  planVdotNow: (
+    ctx: Pick<ProposalContext, 'today' | 'plan' | 'meta'> & {
+      pred?: readonly Pick<StoredPredRow, 'w' | 'p5k'>[];
+    }
+  ) => number | null;
+  matchPlanRows: (
+    weeks: readonly ResolvedWeek[],
+    pred: readonly StoredPredRow[]
+  ) => Map<string, StoredPredRow>;
+  recalibrationMinMeasurements: number;
+  recalibrationThreshold: number;
+  /* oporavak, sat, vreme, smernice */
+  injuryProposal: (ctx: RecoveryContext, today: IsoDate) => InjuryProposal | null;
+  applyInjuryProposal: (
+    proposal: Pick<InjuryProposal, 'changes'> | null,
+    plan: ResolvedPlan,
+    log: Readonly<Record<string, LogEntry>>,
+    alts: Readonly<Record<string, AltRecord>>
+  ) => { applied: number; alts: Record<string, AltRecord> };
+  realignPlan: (input: RealignInput) => Hm.RealignResult;
+  workoutsForWatch: (
+    plan: Pick<ResolvedPlan, 'weeks'>,
+    today: string,
+    daysAhead: number,
+    vdot: number | null
+  ) => WatchBatch;
+  thresholdPace: (vdot: number | null | undefined) => string | null;
+  weatherCard: (input: WeatherCardInput) => WeatherCardModel | null;
+  rpeTarget: (d: Pick<ResolvedDay, 'rest' | 'tag'> | null | undefined) => RpeTarget | null;
+  paceForZone: (vdot: number, zone: HmTypes.Zone) => number;
+  /* procena stanja */
+  painStatus: (pain: readonly PainRecord[] | null | undefined, today: IsoDate) => PainStatus;
+  acwrNow: (ctx: LoadContext, today: IsoDate) => Acwr;
+  acwrPlan: (ctx: LoadContext, today: IsoDate) => AcwrPlan;
+  readinessModel: (input: {
+    status: PainStatus;
+    load: Acwr;
+    wellness: Readonly<Record<string, WellnessRecord>>;
+    today: IsoDate;
+  }) => Readiness;
+  loadMeaning: (band: AcwrBand) => string;
+  wellnessSignals: (
+    wellness: Readonly<Record<string, WellnessRecord>>,
+    today: IsoDate,
+    includeStale?: boolean
+  ) => { signals: Signal[]; missing: string[] };
+  acwrBand: (ratio: number) => AcwrBand;
+  acwrText: (v: number | null | undefined) => string;
+  acwrPosition: (v: number) => number;
+  ACWR_MAX: number;
+  ACWR_RETURN: number;
+  ACWR_HIGH: number;
+  ACWR_SCALE: number;
+}
+
+/** Odluka o ograničenoj pripremi (samo HM i maraton). */
+export interface PreparationApi {
+  basisFromPlan: (current: GenPlanState, today: IsoDate) => DecisionBasis | null;
+  preparationDecision: (
+    current: GenPlanState,
+    today: IsoDate,
+    basis: DecisionBasis,
+    context: ReplanContext,
+    status: 'rejected' | 'limited',
+    delivered: HmTypes.PreparationAssessment | undefined
+  ) => PreparationDecision;
+  buildPreparationChoice: (
+    current: GenPlanState,
+    today: IsoDate,
+    basis: DecisionBasis,
+    choice: PreparationChoice,
+    context: ReplanContext
+  ) => ChoiceResult | { error: string };
+  isLimitedLongPreparation: (meta: GenPlanState['meta'] | undefined) => boolean;
+}
+
 /** Procena stanja trkača koju ekrani oporavka dobijaju od generatora distance aktivnog plana. */
 export type StateAssessment = Pick<
   PlanGenerator,
@@ -81,6 +352,16 @@ export type StateAssessment = Pick<
 
 export const FIVE_K_GENERATOR: PlanGenerator = {
   id: '5k',
+  policyId: fiveK.POLICY_ID,
+  policyVersion: fiveK.POLICY_VERSION,
+  legacyPolicyId: fiveK.LEGACY_POLICY_ID,
+  planPolicy: fiveK.planPolicy,
+  stampPlan: fiveK.stampPlan,
+  phaseOfWeek: fiveK.phaseOfWeek,
+  classifyMeasurement: fiveK.classifyMeasurement,
+  recomputeVdotChain: fiveK.recomputeVdotChain,
+  sessionClassFor: fiveK.sessionClassFor,
+  currentVdot: fiveK.currentVdot,
   generatePlan: fiveK.generatePlan,
   adaptGeneratedPlan: fiveK.adaptGeneratedPlan,
   assess: fiveK.assess,
@@ -126,10 +407,20 @@ export const FIVE_K_GENERATOR: PlanGenerator = {
   ACWR_RETURN: fiveK.ACWR_RETURN,
   ACWR_HIGH: fiveK.ACWR_HIGH,
   ACWR_SCALE: fiveK.ACWR_SCALE
-};
+} satisfies PlanGenerator;
 
 export const TEN_K_GENERATOR: PlanGenerator = {
   id: '10k',
+  policyId: tenK.POLICY_ID,
+  policyVersion: tenK.POLICY_VERSION,
+  legacyPolicyId: tenK.LEGACY_POLICY_ID,
+  planPolicy: tenK.planPolicy,
+  stampPlan: tenK.stampPlan,
+  phaseOfWeek: tenK.phaseOfWeek,
+  classifyMeasurement: tenK.classifyMeasurement,
+  recomputeVdotChain: tenK.recomputeVdotChain,
+  sessionClassFor: tenK.sessionClassFor,
+  currentVdot: tenK.currentVdot,
   generatePlan: tenK.generatePlan,
   adaptGeneratedPlan: tenK.adaptGeneratedPlan,
   assess: tenK.assess,
@@ -174,27 +465,41 @@ export const TEN_K_GENERATOR: PlanGenerator = {
   ACWR_RETURN: tenK.ACWR_RETURN,
   ACWR_HIGH: tenK.ACWR_HIGH,
   ACWR_SCALE: tenK.ACWR_SCALE
-};
+} satisfies PlanGenerator;
 
 /** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
-const HM_SHORTER_HANDOFF = regeneratorForDistance as halfMarathon.ShorterDistanceHandoff;
+const HM_SHORTER_HANDOFF = regeneratorForDistance;
 
-const halfMarathonGenerator = {
-  id: 'hm' as GeneratorId,
+export const HALF_MARATHON_GENERATOR: PlanGenerator = {
+  id: 'hm',
+  policyId: halfMarathon.POLICY_ID,
+  policyVersion: halfMarathon.POLICY_VERSION,
+  legacyPolicyId: halfMarathon.LEGACY_POLICY_ID,
+  planPolicy: halfMarathon.planPolicy,
+  stampPlan: halfMarathon.stampPlan,
+  phaseOfWeek: halfMarathon.phaseOfWeek,
+  classifyMeasurement: halfMarathon.classifyMeasurement,
+  recomputeVdotChain: halfMarathon.recomputeVdotChain,
+  sessionClassFor: halfMarathon.sessionClassFor,
+  currentVdot: halfMarathon.currentVdot,
   generatePlan: halfMarathon.generatePlan,
   adaptGeneratedPlan: halfMarathon.adaptGeneratedPlan,
   assess: halfMarathon.assess,
-  product: (raceDistM: number): typeof halfMarathon.HALF_MARATHON_PRODUCT | undefined =>
+  product: (raceDistM) =>
     raceDistM === halfMarathon.HALF_MARATHON_DISTANCE_M
       ? halfMarathon.HALF_MARATHON_PRODUCT
       : undefined,
   executionModel: halfMarathon.executionModel,
   executionBasis: halfMarathon.executionBasis,
-  buildExecutionAdjustment: (
-    ...a: Parameters<typeof halfMarathon.buildExecutionAdjustment> extends [...infer P, unknown]
-      ? P
-      : never
-  ) => halfMarathon.buildExecutionAdjustment(...a, HM_SHORTER_HANDOFF),
+  buildExecutionAdjustment: (current, today, analysis, options, context) =>
+    halfMarathon.buildExecutionAdjustment(
+      current,
+      today,
+      analysis,
+      options,
+      context,
+      HM_SHORTER_HANDOFF
+    ),
   buildRunWalkAdjustment: halfMarathon.buildRunWalkAdjustment,
   assessRunWalkProgress: halfMarathon.assessRunWalkProgress,
   qualityEntryGate: halfMarathon.qualityEntryGate,
@@ -232,14 +537,23 @@ const halfMarathonGenerator = {
   ACWR_RETURN: halfMarathon.ACWR_RETURN,
   ACWR_HIGH: halfMarathon.ACWR_HIGH,
   ACWR_SCALE: halfMarathon.ACWR_SCALE
-};
-export const HALF_MARATHON_GENERATOR: PlanGenerator = halfMarathonGenerator;
+} satisfies PlanGenerator;
 
 /** Kraća distanca iz maratonske odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
-const MARATHON_SHORTER_HANDOFF = regeneratorForDistance as marathon.ShorterDistanceHandoff;
+const MARATHON_SHORTER_HANDOFF = regeneratorForDistance;
 
 export const MARATHON_GENERATOR: PlanGenerator = {
   id: 'marathon',
+  policyId: marathon.POLICY_ID,
+  policyVersion: marathon.POLICY_VERSION,
+  legacyPolicyId: marathon.LEGACY_POLICY_ID,
+  planPolicy: marathon.planPolicy,
+  stampPlan: marathon.stampPlan,
+  phaseOfWeek: marathon.phaseOfWeek,
+  classifyMeasurement: marathon.classifyMeasurement,
+  recomputeVdotChain: marathon.recomputeVdotChain,
+  sessionClassFor: marathon.sessionClassFor,
+  currentVdot: marathon.currentVdot,
   generatePlan: marathon.generatePlan,
   adaptGeneratedPlan: marathon.adaptGeneratedPlan,
   assess: marathon.assess,
@@ -293,7 +607,7 @@ export const MARATHON_GENERATOR: PlanGenerator = {
   ACWR_RETURN: marathon.ACWR_RETURN,
   ACWR_HIGH: marathon.ACWR_HIGH,
   ACWR_SCALE: marathon.ACWR_SCALE
-};
+} satisfies PlanGenerator;
 
 /** Generator za ciljnu distancu ulaza; `undefined`/0 je 5K (stari ulaz: `raceDistM || 5000`); ostalo `null`. */
 export function generatorIdFor(raceDistM: unknown): GeneratorId | null {
@@ -321,12 +635,53 @@ export function generatorForDistance(raceDistM: unknown): PlanGenerator | null {
 /**
  * Generator koji odgovara za plan: distanca iz `meta`, pa iz sačuvanog ulaza. Za zamenu plana drugim (vraćanje verzije,
  * regeneracija na drugoj distanci) bira se po planu KOJI SE UPISUJE, jer njegova trenerska obrada pripada njemu. Za plan u
- * prikazu prosleđuje se AKTIVNI plan (uključujući ugrađeni lični plan). `null`: nema plana ili distanca nije podržana.
+ * prikazu prosleđuje se AKTIVNI plan (uključujući ugrađeni lični plan). `null`: nema plana, distanca nije podržana ili
+ * plan nosi oznaku politike koju generator te distance ne poznaje (A7: bez tihe zamene; razlog daje
+ * `unsupportedPlanReason`). Plan bez oznake (`legacy-<distanca>`) obrađuje postojeći generator te distance.
  */
 export function generatorForPlan(plan: GenPlanState | null | undefined): PlanGenerator | null {
+  const generator = generatorForDistanceOf(plan);
+  if (!generator) return null;
+  return generator.planPolicy(plan).status === 'unknown' ? null : generator;
+}
+
+function generatorForDistanceOf(plan: GenPlanState | null | undefined): PlanGenerator | null {
   if (!plan) return null;
   const ulaz = plan.ulaz as { raceDistM?: unknown } | null | undefined;
   return generatorForDistance(plan.meta?.raceDistM ?? ulaz?.raceDistM);
+}
+
+/** Poruka za plan čiju je politiku upisala verzija generatora koju ova aplikacija ne poznaje. */
+export const UNKNOWN_POLICY =
+  'Plan je napravila verzija generatora koju ova aplikacija ne poznaje, pa ga postojeći generator ne prilagođava umesto nje. Ažuriraj aplikaciju ili napravi novi plan.';
+
+/** Oznaka politike plana prema generatoru njegove distance; `null` kad distanca nije podržana. */
+export function planPolicyOf(plan: GenPlanState | null | undefined): PolicyStatus | null {
+  return generatorForDistanceOf(plan)?.planPolicy(plan) ?? null;
+}
+
+/** Zašto plan nema generator (`generatorForPlan` je `null`): nepoznata verzija politike ili nepodržana distanca. */
+export function unsupportedPlanReason(plan: GenPlanState | null | undefined): string {
+  return planPolicyOf(plan)?.status === 'unknown' ? UNKNOWN_POLICY : UNSUPPORTED_DISTANCE;
+}
+
+/**
+ * Plan za upis (novi plan, revizija posle prilagođavanja): generator plana upisuje fazu svake nedelje i oznaku svoje
+ * politike (`stampPlan`, A3/A7). Plan bez generatora se upisuje nepromenjen (pozivalac ga je već odbio ili prikazuje).
+ */
+export function stampForStorage<P extends GenPlanState>(plan: P): P {
+  return generatorForPlan(plan)?.stampPlan(plan) ?? plan;
+}
+
+/**
+ * Faza nedelje za prikaz: upisana odluka generatora plana; stari plan bez polja dobija fazu funkcijom generatora tog
+ * plana. Bez generatora (nepodržana distanca, nepoznata politika) faza je prazna — nema zajedničkog procenta.
+ */
+export function phaseReaderFor(
+  plan: GenPlanState | null | undefined
+): (w: Parameters<PlanGenerator['phaseOfWeek']>[0], totalWeeks: number) => WeekPhase {
+  const generator = generatorForPlan(plan);
+  return generator ? (w, total) => generator.phaseOfWeek(w, total) : () => '';
 }
 
 /** Proizvodni podaci (ime, preporučene nedelje) generatora te distance; `undefined` kad distanca nije podržana. */
@@ -336,31 +691,22 @@ export const productFor = (raceDistM: number): DistanceProduct | undefined =>
 /* ODLUKA O OGRANIČENOJ PRIPREMI (produženje, kraća distanca, povratni režim) nad sačuvanim planom. Postoji samo u
    polumaratonskom i maratonskom generatoru; 5K i 10K je nemaju (njihova priprema nikad nije „ograničena dugačka
    priprema"), pa za njih `preparationForPlan` vraća `null` — isto što je stari mehanizam za njih uvek odlučivao. */
-const halfMarathonPreparation = {
+export const HALF_MARATHON_PREPARATION: PreparationApi = {
   basisFromPlan: halfMarathon.basisFromPlan,
-  preparationDecision: (
-    ...a: Parameters<typeof halfMarathon.preparationDecision> extends [...infer P, unknown]
-      ? P
-      : never
-  ) => halfMarathon.preparationDecision(...a, HM_SHORTER_HANDOFF),
-  buildPreparationChoice: (
-    ...a: Parameters<typeof halfMarathon.buildPreparationChoice> extends [...infer P, unknown]
-      ? P
-      : never
-  ) => halfMarathon.buildPreparationChoice(...a, HM_SHORTER_HANDOFF),
+  preparationDecision: (current, today, basis, context, status, delivered) =>
+    halfMarathon.preparationDecision(
+      current,
+      today,
+      basis,
+      context,
+      status,
+      delivered,
+      HM_SHORTER_HANDOFF
+    ),
+  buildPreparationChoice: (current, today, basis, choice, context) =>
+    halfMarathon.buildPreparationChoice(current, today, basis, choice, context, HM_SHORTER_HANDOFF),
   isLimitedLongPreparation: halfMarathon.isLimitedLongPreparation
-};
-export type PreparationApi = typeof halfMarathonPreparation;
-
-export const HALF_MARATHON_PREPARATION: PreparationApi = halfMarathonPreparation;
-
-export type PreparationDecision = ReturnType<PreparationApi['preparationDecision']>;
-export type PreparationOption = PreparationDecision['options'][number];
-export type PreparationChoice = Parameters<PreparationApi['buildPreparationChoice']>[3];
-export type DecisionPoint = Extract<
-  ReturnType<PreparationApi['buildPreparationChoice']>,
-  { change: unknown }
->['change']['from'];
+} satisfies PreparationApi;
 
 export const MARATHON_PREPARATION: PreparationApi = {
   basisFromPlan: marathon.basisFromPlan,
@@ -384,7 +730,7 @@ export const MARATHON_PREPARATION: PreparationApi = {
       MARATHON_SHORTER_HANDOFF
     ),
   isLimitedLongPreparation: marathon.isLimitedLongPreparation
-};
+} satisfies PreparationApi;
 
 export function preparationForPlan(plan: GenPlanState | null | undefined): PreparationApi | null {
   const generator = generatorForPlan(plan);

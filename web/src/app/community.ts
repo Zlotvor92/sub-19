@@ -10,7 +10,7 @@ import {
   type CommunityRow,
   type FailReason
 } from '../domain/community';
-import { currentVdot } from '../domain/training/adaptation';
+import { generatorForPlan } from '../domain/generators/select';
 import type { CommunityApi } from '../services/community/communityApi';
 import type { SessionManager } from '../services/supabase/session';
 import { useCommunityStore } from '../stores/communityStore';
@@ -52,7 +52,8 @@ export function createCommunity(deps: CommunityDeps) {
       today,
       vdotLog: t.vdotLog,
       t3k: t.t3k,
-      currentVdot: currentVdot(t.vdotLog),
+      // Trenutna forma iz lanca je politika generatora aktivnog plana (A1); bez generatora nema forme.
+      currentVdot: generatorForPlan(activeGenPlan())?.currentVdot(t.vdotLog) ?? null,
       raceDistM: (meta?.['raceDistM'] as number | undefined) || 5000,
       raceDate: effectiveRaceDate(plan, meta?.['raceDate'])
     });

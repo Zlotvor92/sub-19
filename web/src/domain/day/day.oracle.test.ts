@@ -6,6 +6,7 @@ import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
 // Ciljni napor je smernica generatora; stari frontend je imao jednu za sve distance, ista je u svakoj kopiji.
 import { rpeTarget } from '../generators/fiveK/plan/describe';
+import { FIVE_K_GENERATOR } from '../generators/select';
 import { resolvePlan } from '../plan/resolve';
 import type {
   AltRecord,
@@ -339,7 +340,7 @@ describe('upis tempa radnog dela naspram starog recordVdot / brisanja / upisiAut
       const pace = Math.round(row.pt + (r() - 0.5) * 60);
       const mode = pick(r, ['manual', 'auto', 'clear'] as const);
       const date = addDays(START, 40);
-      const wctx = { rows: pred, baselineVdot: base, hasAlt: false };
+      const wctx = { form: FIVE_K_GENERATOR, rows: pred, baselineVdot: base, hasAlt: false };
       const state0 = { pred: {}, predLock: {}, vdotLog, log };
       ctx()['__d'] = day.id;
       let mine;

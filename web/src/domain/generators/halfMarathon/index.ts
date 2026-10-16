@@ -35,6 +35,12 @@ export {
   type ExecutionAdjustmentOptions
 } from './plan/executionAdjustment';
 export { finalWarnings, regenerateFuture, type RegenerationOptions } from './plan/regenerate';
+export {
+  handoffCoverage,
+  handoffFuture,
+  type HandoffCoverage,
+  type HandoffFacts
+} from './plan/handoffTarget';
 export { buildRunWalkAdjustment, type RunWalkAdjustmentOptions } from './plan/runWalkAdjustment';
 export { assessRunWalkProgress } from './training/runWalkProgress';
 export { hasRecentMeasuredForm, qualityEntryGate } from './training/qualityGate';
@@ -110,6 +116,26 @@ export {
   type WeatherCardModel
 } from './weather';
 export { rpeTarget, type RpeTarget } from './plan/describe';
+/* Politika plana i prikaz faze (A3, A7): oznaka politike i faza nedelje iz odluke ovog generatora. */
+export { weekPhase, type WeekPhase } from './plan/describe';
+export {
+  LEGACY_POLICY_ID,
+  POLICY_ID,
+  POLICY_VERSION,
+  phaseOfWeek,
+  planPolicy,
+  stampPlan,
+  type PolicyStatus
+} from './plan/policy';
+/* Prijem merenja forme (A1): klasifikacija (tolerancija automatskog merenja), uglađivanje lanca (α) i trenutna forma
+   pripadaju generatoru aktivnog plana; aplikacija čuva samo sirova merenja. */
+export {
+  classifyMeasurement,
+  type MeasureInput,
+  type MeasureOutcome,
+  type RejectReason
+} from './training/adaptation/measure';
+export { currentVdot, recomputeVdotChain, sessionClassFor } from './training/adaptation/chain';
 export { paceForZone } from './training/vdot/paceForZone';
 /* Procena stanja trkača (status bola, opterećenje i pojasevi, prekid, ostvarenost, spremnost „danas"). */
 export {

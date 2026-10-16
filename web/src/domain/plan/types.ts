@@ -51,6 +51,8 @@ export interface ResolvedWeek {
   focus: string;
   /** Taper nedelja (zastavica iz generatora; stariji planovi je nemaju). */
   taper?: true;
+  /** Faza nedelje koju je upisao generator plana (A3); stariji planovi je nemaju. */
+  phase?: string;
   days: ResolvedDay[];
 }
 

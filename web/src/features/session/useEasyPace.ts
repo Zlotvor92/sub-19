@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { generatorForPlan, type RpeTarget } from '../../domain/generators/select';
 import { planBaselineVdot, type ResolvedDay } from '../../domain/plan';
-import { currentVdot } from '../../domain/training/adaptation';
 import { useActiveGenPlan, useTrainingStore } from '../../stores';
 
 /**
@@ -13,7 +12,8 @@ export function useEasyPace(): number | null {
   const genPlan = useActiveGenPlan();
   return useMemo(() => {
     const generator = generatorForPlan(genPlan);
-    const v = currentVdot(chain) ?? planBaselineVdot(genPlan?.meta);
+    // Trenutna forma iz lanca je politika generatora aktivnog plana (A1).
+    const v = (generator ? generator.currentVdot(chain) : null) ?? planBaselineVdot(genPlan?.meta);
     return generator && v != null && Number.isFinite(v) ? generator.paceForZone(v, 'E') : null;
   }, [chain, genPlan]);
 }
