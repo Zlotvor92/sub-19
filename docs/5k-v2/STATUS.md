@@ -6,7 +6,7 @@ Trenutno stanje: 5K v2 jezgro (`5k-v2.0.1`) postoji u `web/src/domain/generators
 
 ## Segment 01 — 5K v2 jezgro (2026-10-16)
 
-- Commit: COMMIT_SHA | Polazni: 1f5dc4272b869653a703ed9fb6708e33161f8a1a
+- Commit: 8e407f3d37f3606d5ebcb13d9b0a7e200c32caf7 (implementacija; ovaj STATUS upisan u sledećem commitu) | Polazni: 1f5dc4272b869653a703ed9fb6708e33161f8a1a
 - Urađeno:
   - `fiveK/v2/`: policy (version + DECISIONS), input, paces (Daniels–Gilbert), periodize, volume, workouts, schedule, validate, generate, index.
   - Ulaz van opsega ili neizvodljiv → strukturisano odbijanje (sve šifre odjednom), bez fallback-a.
