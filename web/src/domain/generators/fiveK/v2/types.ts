@@ -160,6 +160,8 @@ export interface PlanWeek extends WeekFrame {
   targetKm: number;
   plannedKm: number;
   budgets: QualityBudgets;
+  /** 2.1.0: lagani dani su ograničeni na dužinu dugog, pa je plannedKm < targetKm (namerno). */
+  easyCappedAtLong: boolean;
   days: PlanDay[];
   notes: string[];
 }
@@ -190,6 +192,7 @@ export interface Violation {
 }
 
 export interface FiveKV2Plan {
+  policyId: string;
   policyVersion: string;
   input: FiveKV2Input;
   vdot: number;

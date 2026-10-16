@@ -16,6 +16,18 @@ const PHASE_QUALITY: Readonly<Record<Phase, readonly QualityType[]>> = {
 const EPS = 1e-6;
 const isBuild = (w: PlanWeek): boolean =>
   w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen';
+/** Glavni rad nedelje: I u vrhuncu, RP u oštrenju (dan q1). */
+const mainWork = (w: PlanWeek): number => {
+  const k = w.days.find((d) => d.role === 'q1')?.workout.workKm;
+  return k ? (w.phase === 'sharpen' ? k.RP : k.I) : 0;
+};
+/** Par kvaliteta nedelje (struktura blokova, bez datuma). */
+const qualityKey = (w: PlanWeek): string =>
+  JSON.stringify(
+    w.days
+      .filter((d) => d.workout.kind === 'quality')
+      .map((d) => [d.workout.qualityType, d.workout.blocks])
+  );
 
 export function validatePlan(plan: FiveKV2Plan): Violation[] {
   const out: Violation[] = [];
@@ -108,7 +120,32 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
         if (gap < P.schedule.sharpenerMinGapDays)
           err('SHARPENER_GAP', `Kvalitet ${gap} dan(a) pre trke.`, w.index, d.date);
       }
+      const eve = w.days.find((d) => daysBetween(d.date, plan.input.raceDate) === 1);
+      if (eve) {
+        const strides = eve.workout.segments.filter((x) => x.kind === 'stride');
+        if (
+          eve.workout.kind !== 'easy' ||
+          eve.workout.km > P.easy.raceEveMaxKm + EPS ||
+          strides.length !== q.strides.reps ||
+          strides.some((x) => x.sec !== q.strides.sec)
+        )
+          err(
+            'RACE_EVE',
+            `Dan pred trku mora biti lagan ≤ ${P.easy.raceEveMaxKm} km + ${q.strides.reps} × ${q.strides.sec} s ubrzanja.`,
+            w.index,
+            eve.date
+          );
+      }
     }
+    for (const d of w.days)
+      for (const x of d.workout.segments)
+        if (x.kind === 'recovery' && x.secBasis === 'exact' && x.sec % q.recovery.roundSec !== 0)
+          err(
+            'RECOVERY_ROUNDING',
+            `Oporavak ${x.sec} s nije deljiv sa ${q.recovery.roundSec} s.`,
+            w.index,
+            d.date
+          );
   }
   const hardDates = weeks
     .flatMap((w) => w.days.filter((d) => d.hard).map((d) => ({ w: w.index, date: d.date })))
@@ -135,11 +172,40 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
     if (Math.abs(planned - w.plannedKm) > tolKm)
       err('ARITHMETIC', 'Planirani km nedelje ≠ zbir dana.', w.index);
     const dev = Math.abs(w.plannedKm - w.targetKm) / w.targetKm;
-    if (dev > P.tolerance.plannedVsTarget + EPS) {
+    const long = w.days.find((d) => d.role === 'long');
+    const easy = w.days.filter((d) => d.role === 'easy');
+    // 2.1.0: planirano < cilj je dozvoljeno samo kad su SVI lagani dani tačno dužine dugog.
+    const cappedOk =
+      w.easyCappedAtLong &&
+      long !== undefined &&
+      easy.length > 0 &&
+      easy.every((d) => Math.abs(d.workout.km - long.workout.km) < tolKm) &&
+      w.plannedKm < w.targetKm;
+    if (w.easyCappedAtLong && !cappedOk)
+      err('EASY_CAP', 'Oznaka „lagan = dugi" ne odgovara danima nedelje.', w.index);
+    if (cappedOk)
+      warn(
+        'PLANNED_BELOW_TARGET',
+        `Planirano ${w.plannedKm} km < cilj ${w.targetKm} km (lagan = dugi ${long.workout.km} km).`,
+        w.index
+      );
+    else if (dev > P.tolerance.plannedVsTarget + EPS) {
       const msg = `Planirano ${w.plannedKm} km vs cilj ${w.targetKm} km.`;
       if (w.phase === 'race') warn('PLANNED_VS_TARGET', msg, w.index);
       else err('PLANNED_VS_TARGET', msg, w.index);
     }
+    // Uslov 8: degenerisan plan — nedelja ispod minimalnog smislenog obima, prazan trening.
+    const minKm = w.phase === 'race' ? P.week.minRaceWeekKm : P.week.minTrainingKm;
+    if (w.plannedKm + EPS < minKm)
+      err('WEEK_MIN_VOLUME', `Nedelja ${w.plannedKm} km < ${minKm} km.`, w.index);
+    for (const d of w.days)
+      if (
+        d.workout.segments.length === 0 ||
+        d.workout.km <= 0 ||
+        d.workout.sec <= 0 ||
+        d.workout.segments.some((x) => x.km <= 0 || x.sec <= 0)
+      )
+        err('EMPTY_WORKOUT', 'Prazan trening ili segment bez km/trajanja.', w.index, d.date);
   }
 
   // --- Obim.
@@ -191,7 +257,8 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
   for (const w of weeks) {
     if (JSON.stringify(w.budgets) !== JSON.stringify(qualityBudgets(w.targetKm)))
       err('BUDGETS', 'Budžeti kvaliteta ne odgovaraju udelima iz policy.ts.', w.index);
-    const base = w.plannedKm;
+    // 2.1.0: udeli se mere od ciljnog km (isti osnov kao budžeti); planirano < cilj samo kad je lagan = dugi.
+    const base = w.targetKm;
     const sum = { I: 0, T: 0, R: 0 };
     const bout = { I: 0, T: 0, R: 0 };
     for (const d of w.days) {
@@ -218,17 +285,33 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
       err('T_CONTINUOUS', `T blok ${bout.T} s > ${q.tContinuousMaxSec} s.`, w.index);
     if (bout.R > q.rRepMaxSec)
       err('R_REP', `R ponavljanje ${bout.R} s > ${q.rRepMaxSec} s.`, w.index);
-    if (w.phase === 'peak' && !w.deload) {
-      const main = w.days.find((d) => d.role === 'q1');
-      const work = main ? main.workout.workKm.I : 0;
-      const need = w.budgets.I * q.peakMainMinShareOfBudget;
+    if ((w.phase === 'peak' || w.phase === 'sharpen') && !w.deload) {
+      const zone = w.phase === 'peak' ? 'I' : 'RP';
+      const work = mainWork(w);
+      const need = w.budgets.I * q.mainMinShareOfBudget;
       if (work + EPS < need)
         err(
-          'PEAK_MAIN_FLOOR',
-          `Glavni I ${work} km < ${(q.peakMainMinShareOfBudget * 100).toFixed(0)}% budžeta (${need.toFixed(2)} km).`,
+          w.phase === 'peak' ? 'PEAK_MAIN_FLOOR' : 'SHARPEN_MAIN_FLOOR',
+          `Glavni ${zone} ${work} km < ${(q.mainMinShareOfBudget * 100).toFixed(0)}% budžeta (${need.toFixed(2)} km).`,
           w.index
         );
     }
+  }
+
+  // --- 2.1.0 progresija doze i ponavljanje para kvaliteta (ne-rasteretne nedelje izgradnje).
+  const steady = weeks.filter((w) => isBuild(w) && !w.deload);
+  for (let i = 1; i < steady.length; i++) {
+    const a = steady[i - 1]!;
+    const b = steady[i]!;
+    if (a.phase === b.phase && (b.phase === 'peak' || b.phase === 'sharpen'))
+      if (mainWork(b) <= mainWork(a) + EPS)
+        err(
+          'DOSE_PROGRESSION',
+          `Glavni ${b.phase === 'peak' ? 'I' : 'RP'} rad ${mainWork(b)} km nije veći od prethodne nedelje (${mainWork(a)} km).`,
+          b.index
+        );
+    if (qualityKey(a) === qualityKey(b))
+      err('QUALITY_REPEAT', `Isti par kvaliteta kao nedelja ${a.index}.`, b.index);
   }
 
   // --- Dugi, lagani, zagrevanje/hlađenje.
@@ -236,10 +319,10 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
     const long = w.days.find((d) => d.role === 'long');
     if (long) {
       const lw = long.workout;
-      if (lw.km > w.plannedKm * P.long.maxShare + EPS)
+      if (lw.km > w.targetKm * P.long.maxShare + EPS)
         err(
           'LONG_SHARE',
-          `Dugi ${lw.km} km > ${P.long.maxShare * 100}% od ${w.plannedKm} km.`,
+          `Dugi ${lw.km} km > ${P.long.maxShare * 100}% od cilja ${w.targetKm} km.`,
           w.index,
           long.date
         );
@@ -259,10 +342,11 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
         );
       for (const d of w.days)
         if (d.role === 'easy' && d.workout.km > lw.km + EPS)
-          warn(
+          err(
             'EASY_LONGER_THAN_LONG',
-            `Lagan ${d.workout.km} km duži od dugog ${lw.km} km (${d.date}).`,
-            w.index
+            `Lagan ${d.workout.km} km duži od dugog ${lw.km} km.`,
+            w.index,
+            d.date
           );
     }
     for (const d of w.days) {

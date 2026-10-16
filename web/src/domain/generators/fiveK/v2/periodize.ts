@@ -12,7 +12,7 @@ export interface PhaseCounts {
   race: number;
 }
 
-/** Raspodela nedelja po fazama. Izgradnja = ukupno − taper − trka. */
+/** Raspodela nedelja po fazama. Izgradnja = ukupno − taper − trka; vrhunac ≤ peakMaxWeeks, višak u bazu. */
 export function phaseCounts(totalWeeks: number): PhaseCounts {
   const taper = P.phases.taperWeeks;
   const race = P.phases.raceWeeks;
@@ -22,7 +22,7 @@ export function phaseCounts(totalWeeks: number): PhaseCounts {
       ? P.phases.sharpenWeeksLong
       : P.phases.sharpenWeeksShort;
   const rest = build - sharpen;
-  const peak = Math.floor(rest / 2);
+  const peak = Math.min(Math.floor(rest / 2), P.phases.peakMaxWeeks);
   const base = rest - peak;
   return { base, peak, sharpen, taper, race };
 }

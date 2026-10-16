@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "RUN_DAYS_SPACING",
+      "message": "Izabrani dani ne dozvoljavaju 3 zahtevna dana (2 kvaliteta + dugi) bez uzastopnih dana. Izaberi razmaknutije dane."
+    }
+  ],
+  "violations": []
+}

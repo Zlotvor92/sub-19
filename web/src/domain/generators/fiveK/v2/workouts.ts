@@ -180,17 +180,91 @@ export function chooseReps(
   return best;
 }
 
-export type SessionResult = { ok: true; workout: Workout } | { ok: false; message: string };
+/** Prethodni glavni kvalitet iste faze (ulaz za progresiju doze). */
+export interface PrevDose {
+  reps: number;
+  repKm: number;
+}
+
+const workOf = (c: RepChoice): number => Math.round(c.reps * c.repKm * 100) / 100;
+
+/**
+ * 2.1.0 progresija doze. Nabraja dozvoljene parove (dužina iz ponude × broj ponavljanja u
+ * [minReps, min(maxReps, ⌊budžet/dužina⌋)], trajanje ponavljanja u [minRepSec, maxRepSec]) i bira
+ * rad ≥ floorShare × budžet, strogo veći od `prev` (bez `prev`: bilo koji ≥ prag):
+ * - 'strict' (vrhunac I, oštrenje RP): najmanji takav rad (ostavlja mesta za sledeće nedelje),
+ *   pri jednakom radu ranija (duža) opcija; nema ga → null;
+ * - 'base' (baza R; strogi rast nije zahtev, zahtev je drugačiji par): prva (najduža) dužina iz
+ *   ponude sa najmanje ponavljanja čiji je rad ≥ prag i ≥ rad `prev`, a struktura ≠ `prev`; nema ga →
+ *   bez `prev` najveći rad (i ispod praga), sa `prev` najveći rad druge strukture.
+ * Jedno nabrajanje fiksne ponude — bez petlje smanjivanja/dopune.
+ */
+export function chooseProgressiveReps(
+  budgetKm: number,
+  options: readonly number[],
+  paceSecPerKm: number,
+  minReps: number,
+  maxReps: number,
+  maxRepSec: number,
+  minRepSec: number,
+  floorShare: number,
+  prev: PrevDose | null,
+  mode: 'strict' | 'base'
+): RepChoice | null {
+  const all: RepChoice[] = [];
+  for (const repKm of options) {
+    const sec = repKm * paceSecPerKm;
+    if (sec > maxRepSec || sec < minRepSec) continue;
+    const most = Math.min(maxReps, Math.floor(budgetKm / repKm + 1e-9));
+    for (let reps = minReps; reps <= most; reps++) all.push({ reps, repKm });
+  }
+  const floor = budgetKm * floorShare - 1e-9;
+  const prevWork = prev ? workOf(prev) : -Infinity;
+  const same = (c: RepChoice): boolean =>
+    prev !== null && c.reps === prev.reps && Math.abs(c.repKm - prev.repKm) < 1e-9;
+  if (mode === 'strict') {
+    // Najmanji rad strogo veći od prethodnog; pri jednakom radu ranija (duža) opcija.
+    let up: RepChoice | null = null;
+    for (const c of all)
+      if (
+        workOf(c) >= floor &&
+        workOf(c) > prevWork + 1e-9 &&
+        (!up || workOf(c) < workOf(up) - 1e-9)
+      )
+        up = c;
+    return up;
+  }
+  // `all` je poređan po ponudi (duže prvo) pa po broju ponavljanja (manje prvo).
+  const next = all.find((c) => workOf(c) >= floor && workOf(c) >= prevWork - 1e-9 && !same(c));
+  if (next) return next;
+  let hold: RepChoice | null = null;
+  for (const c of all) if (!same(c) && (!hold || workOf(c) > workOf(hold) + 1e-9)) hold = c;
+  return hold;
+}
+
+/** Oporavak zadat vremenom: zaokružen na `recovery.roundSec`, najmanje jedan korak. */
+export function roundRecoverySec(sec: number): number {
+  const step = P.quality.recovery.roundSec;
+  return Math.max(step, Math.round(sec / step) * step);
+}
+
+export type SessionResult =
+  { ok: true; workout: Workout; choice: RepChoice | null } | { ok: false; message: string };
 
 const km = (x: number): string => `${Number(x.toFixed(2))}`;
 const m = (x: number): string => `${Math.round(x * 1000)} m`;
 
 /** Kvalitetni trening zadate vrste iz budžeta (km rada). */
+/**
+ * `progression` (2.1.0): za glavni kvalitet ne-rasteretne nedelje izgradnje (R baza, I vrhunac,
+ * RP oštrenje) — prethodna doza iste faze (null u prvoj nedelji faze). Bez njega: chooseReps.
+ */
 export function qualitySession(
   type: QualityType,
   budgetKm: number,
   targetKm: number,
-  p: Paces
+  p: Paces,
+  progression?: { prev: PrevDose | null }
 ): SessionResult {
   const q = P.quality;
   const band = warmupBand(targetKm);
@@ -205,7 +279,20 @@ export function qualitySession(
     case 'R':
     case 'R_sharpen': {
       const opts = type === 'R' ? q.repOptionsKm.R : q.repOptionsKm.Rsharpen;
-      const c = chooseReps(budgetKm, opts, p.R, q.minReps.R, q.maxReps.R, q.rRepMaxSec);
+      const c = progression
+        ? chooseProgressiveReps(
+            budgetKm,
+            opts,
+            p.R,
+            q.minReps.R,
+            q.maxReps.R,
+            q.rRepMaxSec,
+            0,
+            q.mainMinShareOfBudget,
+            progression.prev,
+            'base'
+          )
+        : chooseReps(budgetKm, opts, p.R, q.minReps.R, q.maxReps.R, q.rRepMaxSec);
       if (!c) return fail('R ponavljanja');
       const blocks: BlockSpec[] = [
         wu,
@@ -226,14 +313,15 @@ export function qualitySession(
           `R: ${c.reps} × ${m(c.repKm)} (oporavak ${m(c.repKm)} lagano)`,
           blocks,
           p
-        )
+        ),
+        choice: c
       };
     }
     case 'I':
     case 'RP': {
       const isI = type === 'I';
       const pace = isI ? p.I : p.RP;
-      const c = chooseReps(
+      const args = [
         budgetKm,
         isI ? q.repOptionsKm.I : q.repOptionsKm.RP,
         pace,
@@ -241,9 +329,18 @@ export function qualitySession(
         isI ? q.maxReps.I : q.maxReps.RP,
         q.iRepMaxSec,
         isI ? q.iRepMinSec : 0
-      );
-      if (!c) return fail(isI ? 'I ponavljanja' : 'RP ponavljanja');
-      const recSec = Math.round(
+      ] as const;
+      const c = progression
+        ? chooseProgressiveReps(...args, q.mainMinShareOfBudget, progression.prev, 'strict')
+        : chooseReps(...args);
+      if (!c)
+        return progression?.prev
+          ? {
+              ok: false,
+              message: `${type}: budžet ${km(budgetKm)} km nema doze veće od prethodne nedelje (${progression.prev.reps} × ${m(progression.prev.repKm)}) u okviru ${q.mainMinShareOfBudget * 100}–100% budžeta.`
+            }
+          : fail(isI ? 'I ponavljanja' : 'RP ponavljanja');
+      const recSec = roundRecoverySec(
         c.repKm * pace * (isI ? q.recovery.iTimeRatio : q.recovery.rpTimeRatio)
       );
       const blocks: BlockSpec[] = [
@@ -259,7 +356,8 @@ export function qualitySession(
           `${type}: ${c.reps} × ${m(c.repKm)} (oporavak ${recSec} s lagano)`,
           blocks,
           p
-        )
+        ),
+        choice: c
       };
     }
     case 'T_cruise': {
@@ -291,7 +389,8 @@ export function qualitySession(
           `T cruise: ${c.reps} × ${m(c.repKm)} (oporavak ${q.recovery.tCruiseSec} s)`,
           blocks,
           p
-        )
+        ),
+        choice: c
       };
     }
     case 'T_short': {
@@ -300,7 +399,8 @@ export function qualitySession(
       const blocks: BlockSpec[] = [wu, { kind: 'continuous', zone: 'T', km: len }, cd];
       return {
         ok: true,
-        workout: buildWorkout('quality', type, `T: ${km(len)} km kontinuirano`, blocks, p)
+        workout: buildWorkout('quality', type, `T: ${km(len)} km kontinuirano`, blocks, p),
+        choice: null
       };
     }
     case 'RP_sharpener': {
@@ -314,7 +414,7 @@ export function qualitySession(
         q.iRepMaxSec
       );
       if (!c) return fail('Oštrenje RP');
-      const recSec = Math.round(c.repKm * p.RP * q.recovery.rpTimeRatio);
+      const recSec = roundRecoverySec(c.repKm * p.RP * q.recovery.rpTimeRatio);
       const blocks: BlockSpec[] = [
         wu,
         { kind: 'reps', zone: 'RP', reps: c.reps, rep: { km: c.repKm }, recovery: { sec: recSec } },
@@ -322,7 +422,14 @@ export function qualitySession(
       ];
       return {
         ok: true,
-        workout: buildWorkout('quality', type, `Oštrenje: ${c.reps} × ${m(c.repKm)} RP`, blocks, p)
+        workout: buildWorkout(
+          'quality',
+          type,
+          `Oštrenje: ${c.reps} × ${m(c.repKm)} RP (oporavak ${recSec} s lagano)`,
+          blocks,
+          p
+        ),
+        choice: c
       };
     }
   }
@@ -350,7 +457,7 @@ export function easyRun(totalKm: number, p: Paces, withStrides: boolean): Workou
   return buildWorkout(
     'easy',
     null,
-    `Lagano + ${s.reps} × ${s.sec} s ubrzanja`,
+    `Lagano ${km(totalKm)} km + ${s.reps} × ${s.sec} s ubrzanja`,
     [{ kind: 'easy', km: r2(totalKm - stridesKm) }, strides],
     p
   );

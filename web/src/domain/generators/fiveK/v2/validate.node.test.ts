@@ -206,12 +206,12 @@ describe('validate.ts prijavljuje svako pravilo i ne menja plan', () => {
     expect(rulesOf(p)).toContain(rule);
   });
 
-  it('lagan trk duži od dugog je upozorenje, ne greška', () => {
+  it('2.1.0: lagan trk duži od dugog je GREŠKA (ranije upozorenje)', () => {
     const p = base();
     const w = p.weeks[0]!;
     dayOf(w, 'easy').workout.km = dayOf(w, 'long').workout.km + 1;
     const v = validatePlan(p).filter((x) => x.rule === 'EASY_LONGER_THAN_LONG');
     expect(v.length).toBeGreaterThan(0);
-    expect(v.every((x) => x.severity === 'warning')).toBe(true);
+    expect(v.every((x) => x.severity === 'error')).toBe(true);
   });
 });
