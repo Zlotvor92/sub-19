@@ -17,68 +17,25 @@ import type {
   Phase,
   PlanDay,
   PlanWeek,
-  QualityType,
   Reason,
   WeekFrame,
   Weekday,
   Workout
 } from './types.ts';
 import { validatePlan } from './validate.ts';
-import { planVolume } from './volume.ts';
+import { longCapKm, planVolume } from './volume.ts';
 import {
   easyRun,
   longRun,
   qualityBudgets,
   qualitySession,
   raceDay,
-  type PrevDose,
-  type SessionResult
+  weekQuality,
+  type WeekDose
 } from './workouts.ts';
 
 const r2 = (x: number): number => Math.round(x * 100) / 100;
 const floor1 = (x: number): number => Math.floor(x * 10 + 1e-9) / 10;
-const floorHalf = (x: number): number => Math.floor(x * 2 + 1e-9) / 2;
-
-interface WeekSessions {
-  q1: QualityType;
-  q2: QualityType | null;
-  easyStrides: boolean;
-  scale: number;
-  note: string | null;
-}
-
-/** Koji kvalitet ide u koju nedelju (podatak faze, ne naknadna računica). */
-function sessionsFor(f: WeekFrame): WeekSessions {
-  const main: Record<'base' | 'peak' | 'sharpen', QualityType> = {
-    base: 'R',
-    peak: 'I',
-    sharpen: 'RP'
-  };
-  if (f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen') {
-    if (f.deload)
-      return {
-        q1: main[f.phase],
-        q2: null,
-        easyStrides: false,
-        scale: P.quality.deloadBudgetScale,
-        note: 'Rasterećenje: jedan kratak kvalitet.'
-      };
-    if (f.phase === 'base')
-      return { q1: 'R', q2: 'T_short', easyStrides: true, scale: 1, note: null };
-    if (f.phase === 'peak')
-      return { q1: 'I', q2: 'T_cruise', easyStrides: false, scale: 1, note: null };
-    return { q1: 'RP', q2: 'R_sharpen', easyStrides: false, scale: 1, note: null };
-  }
-  if (f.taperStep === 1)
-    return { q1: 'RP', q2: 'T_short', easyStrides: false, scale: 1, note: 'Taper 1/2.' };
-  return { q1: 'RP', q2: null, easyStrides: true, scale: 1, note: 'Taper 2/2: jedan kvalitet.' };
-}
-
-function budgetFor(type: QualityType, b: { I: number; T: number; R: number }): number {
-  if (type === 'R' || type === 'R_sharpen') return b.R;
-  if (type === 'T_short' || type === 'T_cruise') return b.T;
-  return b.I;
-}
 
 function dateOfWeekday(f: WeekFrame, w: Weekday): string {
   const offset = (((weekdayIndex(w) - weekdayIndex(weekdayOf(f.startDate))) % 7) + 7) % 7;
@@ -105,62 +62,48 @@ function splitEasy(remainder: number, n: number): number[] {
 
 type WeekResult = { ok: true; week: PlanWeek } | { ok: false; reason: Reason };
 
-/** T cruise traži ≥ minReps × najkraća cruise opcija; inače je drugi kvalitet kontinuirani T. */
-function peakSecond(tBudget: number): QualityType {
-  const shortest = Math.min(...P.quality.repOptionsKm.Tcruise);
-  return tBudget + 1e-9 >= P.quality.minReps.T * shortest ? 'T_cruise' : 'T_short';
-}
-
-/** Rezultat nedelje + doza glavnog kvaliteta (ulaz za progresiju sledeće nedelje iste faze). */
+/** Rezultat nedelje + doza (ulaz za progresiju sledeće ne-rasteretne nedelje iste faze). */
 type TrainingWeekResult =
-  { ok: true; week: PlanWeek; mainDose: PrevDose | null } | { ok: false; reason: Reason };
+  { ok: true; week: PlanWeek; dose: WeekDose | null } | { ok: false; reason: Reason };
 
 /**
- * Nedelja treninga. JEDINO mesto koje određuje dužinu dugog i laganih trkova (2.1.0, jedan prolaz):
- * dugi = min(35% cilja, 90 min sporijim E, cilj − kvalitet − n × min. lagan); lagan = (cilj − kvalitet − dugi) / broj laganih dana;
- * ako je to > dugi, lagan = dugi i plannedKm < targetKm (napomena), bez podizanja ičega drugog.
- * `prev` = doza glavnog kvaliteta prethodne ne-rasteretne nedelje ISTE faze (progresija doze).
+ * Nedelja treninga. JEDINO mesto koje određuje dužinu dugog i laganih trkova (jedan prolaz):
+ * dugi = min(longCapKm(cilj) [35%, 90 min], cilj − kvalitet − n × min. lagan); lagan = (cilj − kvalitet − dugi) / broj laganih dana.
+ * 2.2.0: cilj je već ograničen kapacitetom 4 dana (volume.ts), pa je lagan > dugi samo zaštita: tada
+ * lagan = dugi i plannedKm < targetKm (napomena + PLANNED_BELOW_TARGET).
+ * Kvalitet i doza: weekQuality (workouts.ts); `prev` = doza prethodne ne-rasteretne nedelje ISTE faze.
  */
 function buildTrainingWeek(
   f: WeekFrame,
   target: number,
   pattern: Pattern,
   p: Paces,
-  prev: PrevDose | null
+  prev: WeekDose | null
 ): TrainingWeekResult {
   const budgets = qualityBudgets(target);
-  const s = sessionsFor(f);
-  if (s.q2 === 'T_cruise') s.q2 = peakSecond(budgets.T);
-  const fail = (r: SessionResult & { ok: false }): TrainingWeekResult => ({
-    ok: false,
-    reason: {
-      code: 'QUALITY_INFEASIBLE',
-      week: f.index,
-      message: `Nedelja ${f.index}: ${r.message}`
-    }
-  });
-  const progressive =
-    !f.deload && (f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen');
-  const q1 = qualitySession(
-    s.q1,
-    r2(budgetFor(s.q1, budgets) * s.scale),
-    target,
-    p,
-    progressive ? { prev } : undefined
-  );
-  if (!q1.ok) return fail(q1);
-  const q2 = s.q2 ? qualitySession(s.q2, budgetFor(s.q2, budgets), target, p) : null;
-  if (q2 && !q2.ok) return fail(q2);
+  const s = weekQuality(f, target, p, prev);
+  if (!s.ok)
+    return {
+      ok: false,
+      reason: {
+        code: 'QUALITY_INFEASIBLE',
+        week: f.index,
+        message: `Nedelja ${f.index}: ${s.message}`
+      }
+    };
+  const q1 = s.q1;
+  const q2 = s.q2;
 
   const easyDays: { w: Weekday; role: DayRole }[] = [{ w: pattern.easy, role: 'easy' }];
   if (!q2) easyDays.push({ w: pattern.q2, role: 'easy' });
   const easyMin = f.phase === 'taper' ? P.easy.taperMinKm : P.easy.minKm;
-  const qualityKm = q1.workout.km + (q2 && q2.ok ? q2.workout.km : 0);
+  const qualityKm = q1.km + (q2 ? q2.km : 0);
   // Dugi = min(35% cilja, 90 min, prostor koji laganim danima ostavlja minimum) — jedna formula.
+  // 2.2.0: treći član na 0,1 km (ne 0,5): sa 0,5 km mala rasteretna nedelja (13 km) dobija dugi 3 km i
+  // lagane 3,2 km, tj. lagan > dugi.
   const longKm = Math.min(
-    floorHalf(target * P.long.maxShare),
-    floorHalf(P.long.maxSec / p.E.slow),
-    floorHalf(target - qualityKm - easyDays.length * easyMin)
+    longCapKm(target, p),
+    floor1(target - qualityKm - easyDays.length * easyMin)
   );
   const fixed = qualityKm + longKm;
   const split = splitEasy(r2(target - fixed), easyDays.length);
@@ -177,14 +120,14 @@ function buildTrainingWeek(
     };
 
   const days: PlanDay[] = [
-    day(f, pattern.q1, 'q1', q1.workout),
+    day(f, pattern.q1, 'q1', q1),
     day(f, pattern.long, 'long', longRun(longKm, p))
   ];
-  if (q2 && q2.ok) days.push(day(f, pattern.q2, 'q2', q2.workout));
+  if (q2) days.push(day(f, pattern.q2, 'q2', q2));
   easyDays.forEach((e, i) => days.push(day(f, e.w, e.role, easyRun(shares[i]!, p, s.easyStrides))));
   days.sort((a, b) => a.date.localeCompare(b.date));
   const plannedKm = r2(days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
-  const notes = s.note ? [s.note] : [];
+  const notes = [...s.notes];
   if (easyCappedAtLong)
     notes.push(
       `Lagan trk ograničen na dužinu dugog (${longKm} km): planirano ${plannedKm} km < cilj ${target} km.`
@@ -192,7 +135,7 @@ function buildTrainingWeek(
   return {
     ok: true,
     week: { ...f, targetKm: target, plannedKm, budgets, easyCappedAtLong, days, notes },
-    mainDose: progressive ? q1.choice : null
+    dose: s.dose
   };
 }
 
@@ -202,7 +145,8 @@ function buildRaceWeek(
   pattern: Pattern,
   runDays: readonly Weekday[],
   raceDate: string,
-  p: Paces
+  p: Paces,
+  prevLongKm: number
 ): WeekResult {
   const budgets = qualityBudgets(target);
   const gapToRace = (w: Weekday): number => daysBetween(dateOfWeekday(f, w), raceDate);
@@ -222,7 +166,7 @@ function buildRaceWeek(
         message: `Trkačka nedelja: nema zahtevnog dana šablona ≥ ${P.schedule.sharpenerMinGapDays} dana pre trke za oštrenje.`
       }
     };
-  const sharp = qualitySession('RP_sharpener', budgets.I, target, p);
+  const sharp = qualitySession('RP_sharpener', budgets.I, target, p, 'race');
   if (!sharp.ok)
     return {
       ok: false,
@@ -233,21 +177,28 @@ function buildRaceWeek(
       }
     };
 
-  // Lagani dani: ostali dani trčanja pre trke. Broj laganih dana n = min(broj, ⌊ostatak / minimum⌋)
-  // (jedan izračun). Dan pred trku (ako je dan trčanja) ostaje prvi: kratko istrčavanje
-  // min(raceEveMaxKm, jednak deo) sa ubrzanjima; ostatak se deli jednako na ostale izabrane dane
-  // (otpadaju najkasniji). Sve u jednom prolazu.
+  // Lagani dani: ostali dani trčanja pre trke. 2.2.0: svaki lagan dan ≤ easyCap = min(50 min sporijim E,
+  // 50% dugog iz prethodne nedelje); ostatak cilja preko toga se ne raspoređuje (planirano < cilj,
+  // samo u trkačkoj nedelji, uz napomenu). Broj laganih dana n = min(broj, ⌊ostatak / minimum⌋), 0 ako
+  // je easyCap < minimum. Dan pred trku (ako je dan trčanja) ostaje prvi: min(raceEveMaxKm, jednak deo,
+  // easyCap) sa ubrzanjima; ostatak se deli jednako na ostale izabrane dane, svaki ≤ easyCap.
+  const easyCap = floor1(
+    Math.min(P.easy.raceWeekMaxSec / p.E.slow, prevLongKm * P.easy.raceWeekMaxShareOfPrevLong)
+  );
   const others = runDays
     .filter((w) => w !== sharpDay && w !== raceWd && gapToRace(w) > 0)
     .sort((a, b) => gapToRace(b) - gapToRace(a));
   const eve = others.find((w) => gapToRace(w) === 1);
   const rest = others.filter((w) => w !== eve);
   const remainder = r2(target - sharp.workout.km);
-  const n = Math.min(others.length, Math.max(0, Math.floor(remainder / P.easy.taperMinKm + 1e-9)));
+  const n =
+    easyCap + 1e-9 < P.easy.taperMinKm
+      ? 0
+      : Math.min(others.length, Math.max(0, Math.floor(remainder / P.easy.taperMinKm + 1e-9)));
   const withEve = eve !== undefined && n > 0;
-  const eveKm = withEve ? Math.min(P.easy.raceEveMaxKm, floor1(remainder / n)) : 0;
+  const eveKm = withEve ? Math.min(P.easy.raceEveMaxKm, floor1(remainder / n), easyCap) : 0;
   const restN = withEve ? n - 1 : n;
-  const shares = splitEasy(r2(remainder - eveKm), restN);
+  const shares = splitEasy(r2(remainder - eveKm), restN).map((x) => Math.min(x, easyCap));
   const days: PlanDay[] = [day(f, sharpDay, 'q1', sharp.workout)];
   rest
     .slice(0, restN)
@@ -269,12 +220,17 @@ function buildRaceWeek(
       `Izostavljeno laganih dana: ${dropped} (ostatak < ${P.easy.taperMinKm} km po trku).`
     );
   if (withEve) notes.push(`Dan pred trku: lagano ${eveKm} km sa ubrzanjima.`);
+  const plannedKm = r2(days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
+  if (plannedKm < target - P.tolerance.arithmeticKm)
+    notes.push(
+      `Lagan dan ≤ ${easyCap} km (50 min, 50% prethodnog dugog); ostatak se ne raspoređuje: planirano ${plannedKm} km < cilj ${target} km.`
+    );
   return {
     ok: true,
     week: {
       ...f,
       targetKm: target,
-      plannedKm: r2(days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0)),
+      plannedKm,
       budgets,
       easyCappedAtLong: false,
       days,
@@ -296,16 +252,26 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
   const paces = pacesFromVdot(vdot);
   const totalWeeks = (daysBetween(input.startDate, input.raceDate) + 1) / 7;
   const frames = periodize(input.startDate, totalWeeks);
-  const vol = planVolume(frames, input.currentWeeklyKm);
+  const vol = planVolume(frames, input.currentWeeklyKm, paces);
 
   const weeks: PlanWeek[] = [];
   const reasons: Reason[] = [];
   // Progresija doze: doza glavnog kvaliteta poslednje ne-rasteretne nedelje, po fazi.
-  const lastDose: Partial<Record<Phase, PrevDose>> = {};
+  const lastDose: Partial<Record<Phase, WeekDose>> = {};
   frames.forEach((f, i) => {
     const target = vol.targets[i]!;
     if (f.phase === 'race') {
-      const r = buildRaceWeek(f, target, pat.pattern, input.runDays, input.raceDate, paces);
+      const prevLong =
+        weeks[weeks.length - 1]?.days.find((d) => d.role === 'long')?.workout.km ?? 0;
+      const r = buildRaceWeek(
+        f,
+        target,
+        pat.pattern,
+        input.runDays,
+        input.raceDate,
+        paces,
+        prevLong
+      );
       if (r.ok) weeks.push(r.week);
       else reasons.push(r.reason);
       return;
@@ -315,8 +281,12 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
       reasons.push(r.reason);
       return;
     }
+    if (i === 0 && vol.startCapped)
+      r.week.notes.push(
+        `Trenutni obim (${input.currentWeeklyKm} km) je veći od onoga što 4 dana nose (${vol.capacityKm} km); plan kreće od ${vol.capacityKm} km. 5 dana će biti podržano kasnije.`
+      );
     weeks.push(r.week);
-    if (r.mainDose) lastDose[f.phase] = r.mainDose;
+    if (r.dose) lastDose[f.phase] = r.dose;
   });
   if (reasons.length > 0) return { ok: false, reasons, violations: [] };
 
@@ -331,6 +301,7 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
     pattern: pat.pattern,
     startKm: vol.startKm,
     peakKm: vol.peakKm,
+    capacityKm: vol.capacityKm,
     weeks,
     warnings: []
   };

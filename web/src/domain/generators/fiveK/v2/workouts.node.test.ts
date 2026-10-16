@@ -123,7 +123,7 @@ describe('raspored i obim', () => {
 
   it('volume.ts: start, +8%, vrh ≤ 1,3×, rasterećenje, taper, trkačka nedelja', () => {
     const frames = periodize(START, 14);
-    const v = planVolume(frames, 35);
+    const v = planVolume(frames, 35, pacesFromVdot(50));
     expect(v.targets[0]).toBe(35);
     expect(v.peakKm).toBeLessThanOrEqual(35 * 1.3);
     expect(v.targets.slice(-3)).toEqual([

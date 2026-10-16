@@ -84,10 +84,17 @@ describe('datumi, faze, trkačka nedelja', () => {
       expect(c.peak).toBeGreaterThanOrEqual(1);
       expect(c.sharpen).toBeGreaterThanOrEqual(1);
       const frames = periodize(START, n);
-      // Rasterećenje samo u izgradnji, na svakoj 4. nedelji, nikad u poslednjoj nedelji izgradnje.
+      // Rasterećenje samo u izgradnji, na svakoj 4. nedelji, nikad u poslednjoj nedelji izgradnje;
+      // 2.2.0: sa početka vrhunca/oštrenja pomereno na poslednju nedelju prethodne faze.
       const lastBuild = c.base + c.peak + c.sharpen;
-      for (const f of frames)
-        expect(f.deload).toBe(f.index <= lastBuild && f.index % 4 === 0 && f.index !== lastBuild);
+      const expected = new Set<number>();
+      for (let k = 4; k <= lastBuild; k += 4) {
+        const at = frames[k - 1]!.phase !== frames[k - 2]!.phase ? k - 1 : k;
+        if (at !== lastBuild) expected.add(at);
+      }
+      expect(frames.filter((f) => f.deload).map((f) => f.index)).toEqual([...expected]);
+      for (const f of frames.filter((x) => x.deload))
+        expect(frames[f.index - 2]!.phase).toBe(f.phase);
     }
   });
 });
@@ -212,12 +219,13 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
     expect(codesOf(null)).toEqual(['INPUT_SHAPE']);
   });
 
-  it('neizvodljivo: 15 km i VDOT ~53 → I u rasteretnoj nedelji ne staje u budžet', () => {
+  it('2.2.0: 15 km i VDOT ~53 → I ne staje u rasteretnu nedelju, zamena umesto odbijanja', () => {
     const r = generateFiveKV2(inputOf({ ...PROFILES['edge_15km_8w']!, timeSec: 1110 }));
-    expect(r.ok).toBe(false);
-    if (!r.ok) {
-      expect(r.reasons[0]).toMatchObject({ code: 'QUALITY_INFEASIBLE', week: 4 });
-      expect('plan' in r).toBe(false);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      const w4 = r.plan.weeks[3]!;
+      expect(w4.deload).toBe(true);
+      expect(w4.days.find((d) => d.role === 'q1')?.workout.qualityType).not.toBe('I');
     }
   });
 });

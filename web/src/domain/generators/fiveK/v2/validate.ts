@@ -3,11 +3,12 @@
 import { daysBetween, mustDay } from './dates.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import type { FiveKV2Plan, Phase, PlanWeek, QualityType, Violation } from './types.ts';
-import { qualityBudgets, warmupBand } from './workouts.ts';
+import { fourDayCapacityKm, peakKm } from './volume.ts';
+import { baseDoseKey, qualityBudgets, tMaxSec, warmupBand } from './workouts.ts';
 
 const PHASE_ORDER: readonly Phase[] = ['base', 'peak', 'sharpen', 'taper', 'race'];
 const PHASE_QUALITY: Readonly<Record<Phase, readonly QualityType[]>> = {
-  base: ['R', 'T_short'],
+  base: ['R', 'T_short', 'T_cruise'],
   peak: ['I', 'T_cruise', 'T_short'],
   sharpen: ['RP', 'R_sharpen'],
   taper: ['RP', 'T_short'],
@@ -20,6 +21,19 @@ const isBuild = (w: PlanWeek): boolean =>
 const mainWork = (w: PlanWeek): number => {
   const k = w.days.find((d) => d.role === 'q1')?.workout.workKm;
   return k ? (w.phase === 'sharpen' ? k.RP : k.I) : 0;
+};
+/** 2.2.0: rasteretna nedelja sme zameniti glavni kvalitet kratkim T ili R (Odluka 5). */
+const DELOAD_SUBSTITUTES: readonly QualityType[] = ['T_short', 'R'];
+/** Nedeljna doza baze (R km, oblik T, T km), isti ključ kao generator. */
+const baseKey = (w: PlanWeek): string => {
+  const q = w.days.filter((d) => d.workout.kind === 'quality');
+  const r = q.reduce((a, d) => a + d.workout.workKm.R, 0);
+  const t = q.find((d) => d.workout.workKm.T > 0)?.workout;
+  return baseDoseKey(
+    r,
+    t?.qualityType === 'T_cruise' ? 'cruise' : 'continuous',
+    t ? t.workKm.T : 0
+  );
 };
 /** Par kvaliteta nedelje (struktura blokova, bez datuma). */
 const qualityKey = (w: PlanWeek): string =>
@@ -91,7 +105,11 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
       if (d.role !== 'race' && !runDays.has(d.weekday))
         err('RUN_DAYS', `Trening na dan koji nije izabran (${d.weekday}).`, w.index, d.date);
       for (const qd of [d])
-        if (qd.workout.qualityType && !PHASE_QUALITY[w.phase].includes(qd.workout.qualityType))
+        if (
+          qd.workout.qualityType &&
+          !PHASE_QUALITY[w.phase].includes(qd.workout.qualityType) &&
+          !(w.deload && DELOAD_SUBSTITUTES.includes(qd.workout.qualityType))
+        )
           err(
             'PHASE_QUALITY',
             `${qd.workout.qualityType} ne pripada fazi ${w.phase}.`,
@@ -120,6 +138,20 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
         if (gap < P.schedule.sharpenerMinGapDays)
           err('SHARPENER_GAP', `Kvalitet ${gap} dan(a) pre trke.`, w.index, d.date);
       }
+      // 2.2.0 (Odluka 6): lagan dan ≤ 50 min i ≤ 50% dugog iz prethodne nedelje.
+      const prevLong = weeks[w.index - 2]?.days.find((d) => d.role === 'long')?.workout.km ?? 0;
+      const easyCap = Math.min(
+        P.easy.raceWeekMaxSec / plan.paces.E.slow,
+        prevLong * P.easy.raceWeekMaxShareOfPrevLong
+      );
+      for (const d of w.days)
+        if (d.role === 'easy' && d.workout.km > easyCap + EPS)
+          err(
+            'RACE_WEEK_EASY',
+            `Lagan ${d.workout.km} km > min(50 min, 50% dugog ${prevLong} km).`,
+            w.index,
+            d.date
+          );
       const eve = w.days.find((d) => daysBetween(d.date, plan.input.raceDate) === 1);
       if (eve) {
         const strides = eve.workout.segments.filter((x) => x.kind === 'stride');
@@ -228,12 +260,33 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
     last = w;
   }
   const peak = Math.max(...build.map((w) => w.targetKm));
-  const peakCap = Math.min(plan.startKm * P.volume.peakCapFactor, P.volume.fourDayMaxWeekKm);
-  if (peak > peakCap + 0.05)
+  if (peak > peakKm(plan.startKm) + 0.05)
+    err('VOLUME_PEAK', `Vrh ${peak} km > peakKm(${plan.startKm}) = ${peakKm(plan.startKm)} km.`);
+  // 2.2.0 (Odluka 1): kapacitet 4 dana — svaki cilj ≤ kapaciteta; start = min(trenutni, kapacitet).
+  const capacity = fourDayCapacityKm(plan.paces);
+  if (Math.abs(plan.capacityKm - capacity) > EPS)
+    err('VOLUME_CAPACITY', `Kapacitet plana ${plan.capacityKm} km ≠ ${capacity} km iz tempa.`);
+  for (const w of weeks)
+    if (w.targetKm > capacity + EPS)
+      err('VOLUME_CAPACITY', `Cilj ${w.targetKm} km > kapacitet 4 dana ${capacity} km.`, w.index);
+  if (Math.abs(plan.startKm - Math.min(plan.input.currentWeeklyKm, capacity)) > 0.05)
     err(
-      'VOLUME_PEAK',
-      `Vrh ${peak} km > min(${P.volume.peakCapFactor} × ${plan.startKm}, ${P.volume.fourDayMaxWeekKm}) km.`
+      'VOLUME_START',
+      `Start ${plan.startKm} km ≠ min(trenutni obim, kapacitet ${capacity} km).`,
+      1
     );
+  if (plan.input.currentWeeklyKm > capacity + 0.05)
+    warn(
+      'START_ABOVE_CAPACITY',
+      `Trenutni obim ${plan.input.currentWeeklyKm} km > kapacitet 4 dana ${capacity} km; plan kreće od kapaciteta.`,
+      1
+    );
+  // 2.2.0 (Odluka 2): rasterećenje nije prva nedelja faze.
+  for (const w of weeks) {
+    const prev = weeks[w.index - 2];
+    if (w.deload && (!prev || prev.phase !== w.phase))
+      err('DELOAD_PHASE_START', `Rasterećenje u prvoj nedelji faze ${w.phase}.`, w.index);
+  }
   for (const w of weeks) {
     const prev = weeks[w.index - 2];
     if (w.deload && prev) {
@@ -281,8 +334,8 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
       err('R_SHARE', `R ${sum.R.toFixed(2)} km > ${q.rMaxShare * 100}% od ${base} km.`, w.index);
     if (bout.I > q.iRepMaxSec)
       err('I_REP', `I/RP ponavljanje ${bout.I} s > ${q.iRepMaxSec} s.`, w.index);
-    if (bout.T > q.tContinuousMaxSec)
-      err('T_CONTINUOUS', `T blok ${bout.T} s > ${q.tContinuousMaxSec} s.`, w.index);
+    if (bout.T > tMaxSec(w.phase))
+      err('T_CONTINUOUS', `T blok ${bout.T} s > ${tMaxSec(w.phase)} s (${w.phase}).`, w.index);
     if (bout.R > q.rRepMaxSec)
       err('R_REP', `R ponavljanje ${bout.R} s > ${q.rRepMaxSec} s.`, w.index);
     if ((w.phase === 'peak' || w.phase === 'sharpen') && !w.deload) {
@@ -303,15 +356,28 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
   for (let i = 1; i < steady.length; i++) {
     const a = steady[i - 1]!;
     const b = steady[i]!;
-    if (a.phase === b.phase && (b.phase === 'peak' || b.phase === 'sharpen'))
-      if (mainWork(b) <= mainWork(a) + EPS)
+    // 2.2.0: I u vrhuncu neopadajući (zadržan I uz promenu T), RP u oštrenju strogo raste.
+    const strict = b.phase === 'sharpen';
+    if (a.phase === b.phase && (b.phase === 'peak' || strict))
+      if (strict ? mainWork(b) <= mainWork(a) + EPS : mainWork(b) + EPS < mainWork(a))
         err(
           'DOSE_PROGRESSION',
-          `Glavni ${b.phase === 'peak' ? 'I' : 'RP'} rad ${mainWork(b)} km nije veći od prethodne nedelje (${mainWork(a)} km).`,
+          `Glavni ${strict ? 'RP' : 'I'} rad ${mainWork(b)} km ${strict ? 'nije veći od' : 'manji od'} prethodne nedelje (${mainWork(a)} km).`,
           b.index
         );
     if (qualityKey(a) === qualityKey(b))
       err('QUALITY_REPEAT', `Isti par kvaliteta kao nedelja ${a.index}.`, b.index);
+  }
+  // 2.2.0 (Odluka 3): nema dugog platoa u bazi — 3 uzastopne ne-rasteretne nedelje iste doze.
+  const baseSteady = steady.filter((w) => w.phase === 'base');
+  for (let i = P.quality.baseSameDoseMaxWeeks; i < baseSteady.length; i++) {
+    const run = baseSteady.slice(i - P.quality.baseSameDoseMaxWeeks, i + 1).map(baseKey);
+    if (run.every((k) => k === run[0]))
+      err(
+        'BASE_PLATEAU',
+        `${run.length} uzastopne ne-rasteretne nedelje baze iste doze (${run[0]}).`,
+        baseSteady[i]!.index
+      );
   }
 
   // --- Dugi, lagani, zagrevanje/hlađenje.

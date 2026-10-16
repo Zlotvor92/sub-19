@@ -202,6 +202,8 @@ export interface FiveKV2Plan {
   pattern: Pattern;
   startKm: number;
   peakKm: number;
+  /** 2.2.0: najveći nedeljni cilj koji 4 dana nose (volume.ts); svaki cilj ≤ ovog. */
+  capacityKm: number;
   weeks: PlanWeek[];
   warnings: Violation[];
 }

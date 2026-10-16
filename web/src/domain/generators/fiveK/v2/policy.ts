@@ -10,7 +10,7 @@ import type { Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.1.0',
+  version: '5k-v2.2.0',
 
   input: {
     /** Podržan je samo raspored sa tačno 4 dana trčanja (heuristika opsega v2, ne pravilo treninga). */
@@ -80,8 +80,14 @@ export const FIVE_K_V2_POLICY = {
     /** Trkačka nedelja ≈ udeo vrha, BEZ same trke (heuristika). */
     raceWeekFactor: 0.5,
     /** 2.0.1: gornja granica nedeljnog cilja za 4 dana (heuristika): kvalitetni dani primaju ~35–40%
-        nedelje, pa ostatak ide u dugi i jedan lagan trk. 2.1.0: zadržano (vrh se ne podiže). */
+        nedelje, pa ostatak ide u dugi i jedan lagan trk. 2.1.0: zadržano (vrh se ne podiže).
+        2.2.0: drugi član funkcije peakKm() (volume.ts); kapacitet 4 dana je posebno ograničenje. */
     fourDayMaxWeekKm: 50,
+    /** 2.2.0: kapacitet 4 dana (volume.ts) računa kvalitetne dane donjom granicom: zagrevanje +
+        hlađenje + ovaj udeo cilja (rad + oporavak oba kvaliteta zajedno). Heuristika; u mreži od 240
+        ulaza pod 2.1.0 najmanji izmereni udeo je 11,8%. Ako stvarni kvalitet ipak bude manji, ostaje
+        zaštita „lagan = dugi" (PLANNED_BELOW_TARGET). */
+    capacityQualityMinShare: 0.1,
     /** Dozvoljeno odstupanje faktora pri proveri (zaokruživanje na 0,1 km). */
     factorTolerance: 0.03
   },
@@ -90,9 +96,16 @@ export const FIVE_K_V2_POLICY = {
     /** I (uključujući RP) ≤ 8% nedeljnog obima; ponavljanje ≤ 5 min (Daniels-ova heuristika). */
     iMaxShare: 0.08,
     iRepMaxSec: 300,
-    /** T ≤ 10% nedeljnog obima; kontinuirano ≤ 20 min (heuristika). */
+    /** T ≤ 10% nedeljnog obima (heuristika). */
     tMaxShare: 0.1,
-    tContinuousMaxSec: 1200,
+    /** 2.2.0 (Uslov 2): JEDAN plafon T bloka (kontinuirano ili cruise ponavljanje) po fazi [s]
+        (heuristika): baza 15 min, vrhunac 20 min, oštrenje 15 min, taper 10 min. Trkačka nedelja nema T. */
+    tContinuousMaxSec: { base: 900, peak: 1200, sharpen: 900, taper: 600 },
+    /** 2.2.0: rast kontinuiranog T u bazi po ne-rasteretnoj nedelji [km] (heuristika). */
+    tStepKm: 0.5,
+    /** 2.2.0: ista nedeljna doza baze (R km, T km, oblik T) najviše ovoliko ne-rasteretnih nedelja
+        zaredom, pa promena strukture T (kontinuirano ↔ cruise) (heuristika). */
+    baseSameDoseMaxWeeks: 2,
     /** R ≤ 5% nedeljnog obima; ponavljanje ≤ 2 min (heuristika). */
     rMaxShare: 0.05,
     rRepMaxSec: 120,
@@ -117,9 +130,9 @@ export const FIVE_K_V2_POLICY = {
     /** Najmanji/najveći broj ponavljanja da bi sesija imala smisla (heuristika). */
     minReps: { R: 4, I: 2, RP: 2, T: 2 },
     maxReps: { R: 10, I: 6, RP: 6, T: 5 },
-    /** Kratak T: kontinuirani blok = min(udeo T budžeta, minuta T), zaokruženo naniže na 0,5 km. */
+    /** Kratak T: kontinuirani blok = min(udeo T budžeta, plafon T faze), zaokruženo naniže na 0,5 km.
+        2.2.0: plafon je tContinuousMaxSec[faza] (ukinut dvojnik shortTMaxSec). */
     shortTShareOfBudget: 0.7,
-    shortTMaxSec: 900,
     shortTMinKm: 1.0,
     /** Rasteretna nedelja: jedan kvalitet sa ovim udelom budžeta. 2.0.1: 1,0 — „kratak" dolazi od
         manjeg obima nedelje (80%) i jednog umesto dva kvaliteta (v. DECISIONS). */
@@ -153,7 +166,11 @@ export const FIVE_K_V2_POLICY = {
         trčanja dok obim pada (heuristika; v. DECISIONS). */
     taperMinKm: 2.0,
     /** 2.1.0: dan pred trku lagan ≤ 4 km (ukupno, sa ubrzanjima) + 4 × 20 s ubrzanja (heuristika). */
-    raceEveMaxKm: 4.0
+    raceEveMaxKm: 4.0,
+    /** 2.2.0: lagan dan trkačke nedelje ≤ 50 min (sporijom granicom E) i ≤ 50% dugog iz prethodne
+        nedelje; ostatak cilja se ne raspoređuje (heuristika). */
+    raceWeekMaxSec: 3000,
+    raceWeekMaxShareOfPrevLong: 0.5
   },
 
   week: {
@@ -239,5 +256,29 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'trebala su 4 rastuća nivoa I, pa je 15 km/16 ned odbijan za svaki VDOT; (11) baza R: nova ' +
       'struktura, doza ne pada, prednost dužem ponavljanju (strogi rast je davao 9 × 150 m); (12) trkačka ' +
       'nedelja: ostatak se deli jednako, dan pred trku ≤ 4 km, bez odbacivanja dana zbog istrčavanja.'
+  },
+  {
+    version: '5k-v2.2.0',
+    decision:
+      'Segment 03, preostale trenerske odluke 4-dnevnog jezgra (opseg ulaza nepromenjen). ' +
+      '(1) Pošten cilj obima: volume.ts računa kapacitet 4 dana iz tempa (q1 + q2 donjom granicom ' +
+      '2 × zagrevanje/hlađenje + 10% cilja, dugi ≤ 35% i ≤ 90 min, lagan ≤ dugi) i ograničava SVAKI cilj ' +
+      'na ulazu; start = min(trenutni obim, kapacitet), uz napomenu i upozorenje START_ABOVE_CAPACITY ' +
+      '(„5 dana će biti podržano kasnije"). „Lagan = dugi" ostaje samo zaštita. Treći član dugog ' +
+      '(prostor za min. lagan) zaokružen na 0,1 km, inače mala rasteretna nedelja daje lagan > dugi. ' +
+      '(2) Rasterećenje se ne poklapa sa prvom nedeljom vrhunca/oštrenja: pomera se na poslednju nedelju ' +
+      'prethodne faze; izostavlja se ako bi pala u poslednju nedelju izgradnje (periodize.ts). ' +
+      '(3) Baza bez platoa: R raste do budžeta (duže ili isto ponavljanje) ili se drži; T kontinuirano ' +
+      '+0,5 km/ned do min(T budžet, 15 min), na limitu prelazi u cruise (T obim raste ponavljanjima); ista ' +
+      'doza (R km, oblik T, T km) najviše 2 ne-rasteretne nedelje zaredom, pa promena strukture T; ' +
+      'validator BASE_PLATEAU. (4) Jedan T plafon po fazi (baza 900, vrhunac 1200, oštrenje 900, ' +
+      'taper 600 s); ukinut shortTMaxSec. Vrh obima: jedna funkcija peakKm() = min(1,3 × start, 50); ' +
+      'kapacitet je posebno ograničenje svakog cilja, nezavisno od 50 km. (5) Rasteretna nedelja: kad ' +
+      'glavni kvalitet ne staje, zamena kratkim T, pa R, uz ubrzanja (workouts.ts, weekQuality — jedino ' +
+      'mesto odluke o dozi). Vrhunac: I neopadajući; bez višeg nivoa I se drži, a T menja strukturu ' +
+      '(cruise ↔ kontinuirano, inače ±0,5 km). (6) Trkačka nedelja: lagan dan ≤ 50 min i ≤ 50% dugog ' +
+      'prethodne nedelje; ostatak se ne raspoređuje (planirano < cilj samo tu, uz napomenu). ' +
+      'Posle pregleda primera: T u bazi na limitu odmah prelazi u cruise (ne čeka treću istu nedelju), a R ' +
+      'se drži iste strukture dok T napreduje — inače je spor profil sa 45 km dobijao R 10 × 150 m.'
   }
 ];

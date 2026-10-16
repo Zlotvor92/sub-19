@@ -8,9 +8,11 @@ import type {
   Basis,
   BlockSpec,
   Paces,
+  Phase,
   QualityBudgets,
   QualityType,
   Segment,
+  WeekFrame,
   Workout,
   WorkoutKind,
   Zone
@@ -194,9 +196,12 @@ const workOf = (c: RepChoice): number => Math.round(c.reps * c.repKm * 100) / 10
  * rad ≥ floorShare × budžet, strogo veći od `prev` (bez `prev`: bilo koji ≥ prag):
  * - 'strict' (vrhunac I, oštrenje RP): najmanji takav rad (ostavlja mesta za sledeće nedelje),
  *   pri jednakom radu ranija (duža) opcija; nema ga → null;
- * - 'base' (baza R; strogi rast nije zahtev, zahtev je drugačiji par): prva (najduža) dužina iz
- *   ponude sa najmanje ponavljanja čiji je rad ≥ prag i ≥ rad `prev`, a struktura ≠ `prev`; nema ga →
- *   bez `prev` najveći rad (i ispod praga), sa `prev` najveći rad druge strukture.
+ * - 'base' (baza R): 2.2.0 R raste do budžeta — prva (najduža) dužina ≥ dužine `prev`, sa najmanje
+ *   ponavljanja, čiji je rad ≥ prag i STROGO veći od `prev` (bez skraćivanja ponavljanja radi rasta,
+ *   inače bi rast davao 9 × 150 m); nema ga → rad se drži: prva dužina sa radom ≥ prag i ≥ `prev`,
+ *   struktura ≠ `prev`; nema ni toga → bez `prev` najveći rad (i ispod praga), sa `prev` najveći rad
+ *   druge strukture;
+ * - 'grow': samo prvi korak iz 'base' (rast); nema ga → null.
  * Jedno nabrajanje fiksne ponude — bez petlje smanjivanja/dopune.
  */
 export function chooseProgressiveReps(
@@ -209,7 +214,7 @@ export function chooseProgressiveReps(
   minRepSec: number,
   floorShare: number,
   prev: PrevDose | null,
-  mode: 'strict' | 'base'
+  mode: 'strict' | 'base' | 'grow'
 ): RepChoice | null {
   const all: RepChoice[] = [];
   for (const repKm of options) {
@@ -235,6 +240,13 @@ export function chooseProgressiveReps(
     return up;
   }
   // `all` je poređan po ponudi (duže prvo) pa po broju ponavljanja (manje prvo).
+  const grow = all.find(
+    (c) =>
+      workOf(c) >= floor &&
+      workOf(c) > prevWork + 1e-9 &&
+      (prev === null || c.repKm + 1e-9 >= prev.repKm)
+  );
+  if (grow || mode === 'grow') return grow ?? null;
   const next = all.find((c) => workOf(c) >= floor && workOf(c) >= prevWork - 1e-9 && !same(c));
   if (next) return next;
   let hold: RepChoice | null = null;
@@ -254,8 +266,129 @@ export type SessionResult =
 const km = (x: number): string => `${Number(x.toFixed(2))}`;
 const m = (x: number): string => `${Math.round(x * 1000)} m`;
 
-/** Kvalitetni trening zadate vrste iz budžeta (km rada). */
+/** I ili RP ponavljanja iz izabranog para (oporavak vremenom, zaokružen). */
+function intervalSession(
+  type: 'I' | 'RP',
+  c: RepChoice,
+  targetKm: number,
+  p: Paces
+): SessionResult & { ok: true } {
+  const q = P.quality;
+  const pace = type === 'I' ? p.I : p.RP;
+  const band = warmupBand(targetKm);
+  const recSec = roundRecoverySec(
+    c.repKm * pace * (type === 'I' ? q.recovery.iTimeRatio : q.recovery.rpTimeRatio)
+  );
+  const blocks: BlockSpec[] = [
+    { kind: 'warmup', km: band.warmupKm },
+    { kind: 'reps', zone: type, reps: c.reps, rep: { km: c.repKm }, recovery: { sec: recSec } },
+    { kind: 'cooldown', km: band.cooldownKm }
+  ];
+  return {
+    ok: true,
+    workout: buildWorkout(
+      'quality',
+      type,
+      `${type}: ${c.reps} × ${m(c.repKm)} (oporavak ${recSec} s lagano)`,
+      blocks,
+      p
+    ),
+    choice: c
+  };
+}
+
+/** R ponavljanja iz izabranog para (oporavak ista distanca lagano). */
+function repsRSession(
+  type: 'R' | 'R_sharpen',
+  c: RepChoice,
+  targetKm: number,
+  p: Paces
+): SessionResult & { ok: true } {
+  const band = warmupBand(targetKm);
+  const blocks: BlockSpec[] = [
+    { kind: 'warmup', km: band.warmupKm },
+    {
+      kind: 'reps',
+      zone: 'R',
+      reps: c.reps,
+      rep: { km: c.repKm },
+      recovery: { km: c.repKm * P.quality.recovery.rDistanceRatio }
+    },
+    { kind: 'cooldown', km: band.cooldownKm }
+  ];
+  return {
+    ok: true,
+    workout: buildWorkout(
+      'quality',
+      type,
+      `R: ${c.reps} × ${m(c.repKm)} (oporavak ${m(c.repKm)} lagano)`,
+      blocks,
+      p
+    ),
+    choice: c
+  };
+}
+
+/** T doza: kontinuirani blok (reps = 1) ili cruise ponavljanja. */
+export interface TDose {
+  form: 'continuous' | 'cruise';
+  reps: number;
+  repKm: number;
+}
+
+/** 2.2.0 (Uslov 2): jedini plafon T bloka, po fazi. Trkačka nedelja nema T. */
+export function tMaxSec(phase: Phase): number {
+  return phase === 'race' ? 0 : P.quality.tContinuousMaxSec[phase];
+}
+
+/** Najduži dozvoljen kontinuirani T [km]: min(T budžet, plafon faze), na 0,5 km. */
+function tContinuousTop(budgetKm: number, phase: Phase, p: Paces): number {
+  return Math.min(floorHalf(budgetKm), floorHalf(tMaxSec(phase) / p.T));
+}
+
+/** Početni kontinuirani T: min(udeo budžeta, plafon faze), na 0,5 km; ispod minimuma → null. */
+export function tContinuousStart(budgetKm: number, phase: Phase, p: Paces): TDose | null {
+  const q = P.quality;
+  const len = floorHalf(Math.min(budgetKm * q.shortTShareOfBudget, tMaxSec(phase) / p.T));
+  return len + 1e-9 >= q.shortTMinKm ? { form: 'continuous', reps: 1, repKm: len } : null;
+}
+
+function tSession(t: TDose, targetKm: number, p: Paces): SessionResult & { ok: true } {
+  const band = warmupBand(targetKm);
+  const wu: BlockSpec = { kind: 'warmup', km: band.warmupKm };
+  const cd: BlockSpec = { kind: 'cooldown', km: band.cooldownKm };
+  if (t.form === 'continuous')
+    return {
+      ok: true,
+      workout: buildWorkout(
+        'quality',
+        'T_short',
+        `T: ${km(t.repKm)} km kontinuirano`,
+        [wu, { kind: 'continuous', zone: 'T', km: t.repKm }, cd],
+        p
+      ),
+      choice: null
+    };
+  const rec = P.quality.recovery.tCruiseSec;
+  return {
+    ok: true,
+    workout: buildWorkout(
+      'quality',
+      'T_cruise',
+      `T cruise: ${t.reps} × ${m(t.repKm)} (oporavak ${rec} s)`,
+      [
+        wu,
+        { kind: 'reps', zone: 'T', reps: t.reps, rep: { km: t.repKm }, recovery: { sec: rec } },
+        cd
+      ],
+      p
+    ),
+    choice: { reps: t.reps, repKm: t.repKm }
+  };
+}
+
 /**
+ * Kvalitetni trening zadate vrste iz budžeta (km rada); `phase` određuje plafon T bloka.
  * `progression` (2.1.0): za glavni kvalitet ne-rasteretne nedelje izgradnje (R baza, I vrhunac,
  * RP oštrenje) — prethodna doza iste faze (null u prvoj nedelji faze). Bez njega: chooseReps.
  */
@@ -264,6 +397,7 @@ export function qualitySession(
   budgetKm: number,
   targetKm: number,
   p: Paces,
+  phase: Phase,
   progression?: { prev: PrevDose | null }
 ): SessionResult {
   const q = P.quality;
@@ -294,37 +428,15 @@ export function qualitySession(
           )
         : chooseReps(budgetKm, opts, p.R, q.minReps.R, q.maxReps.R, q.rRepMaxSec);
       if (!c) return fail('R ponavljanja');
-      const blocks: BlockSpec[] = [
-        wu,
-        {
-          kind: 'reps',
-          zone: 'R',
-          reps: c.reps,
-          rep: { km: c.repKm },
-          recovery: { km: c.repKm * q.recovery.rDistanceRatio }
-        },
-        cd
-      ];
-      return {
-        ok: true,
-        workout: buildWorkout(
-          'quality',
-          type,
-          `R: ${c.reps} × ${m(c.repKm)} (oporavak ${m(c.repKm)} lagano)`,
-          blocks,
-          p
-        ),
-        choice: c
-      };
+      return repsRSession(type, c, targetKm, p);
     }
     case 'I':
     case 'RP': {
       const isI = type === 'I';
-      const pace = isI ? p.I : p.RP;
       const args = [
         budgetKm,
         isI ? q.repOptionsKm.I : q.repOptionsKm.RP,
-        pace,
+        isI ? p.I : p.RP,
         isI ? q.minReps.I : q.minReps.RP,
         isI ? q.maxReps.I : q.maxReps.RP,
         q.iRepMaxSec,
@@ -340,25 +452,7 @@ export function qualitySession(
               message: `${type}: budžet ${km(budgetKm)} km nema doze veće od prethodne nedelje (${progression.prev.reps} × ${m(progression.prev.repKm)}) u okviru ${q.mainMinShareOfBudget * 100}–100% budžeta.`
             }
           : fail(isI ? 'I ponavljanja' : 'RP ponavljanja');
-      const recSec = roundRecoverySec(
-        c.repKm * pace * (isI ? q.recovery.iTimeRatio : q.recovery.rpTimeRatio)
-      );
-      const blocks: BlockSpec[] = [
-        wu,
-        { kind: 'reps', zone: type, reps: c.reps, rep: { km: c.repKm }, recovery: { sec: recSec } },
-        cd
-      ];
-      return {
-        ok: true,
-        workout: buildWorkout(
-          'quality',
-          type,
-          `${type}: ${c.reps} × ${m(c.repKm)} (oporavak ${recSec} s lagano)`,
-          blocks,
-          p
-        ),
-        choice: c
-      };
+      return intervalSession(type, c, targetKm, p);
     }
     case 'T_cruise': {
       const c = chooseReps(
@@ -367,41 +461,15 @@ export function qualitySession(
         p.T,
         q.minReps.T,
         q.maxReps.T,
-        q.tContinuousMaxSec
+        tMaxSec(phase)
       );
       if (!c) return fail('T cruise');
-      const blocks: BlockSpec[] = [
-        wu,
-        {
-          kind: 'reps',
-          zone: 'T',
-          reps: c.reps,
-          rep: { km: c.repKm },
-          recovery: { sec: q.recovery.tCruiseSec }
-        },
-        cd
-      ];
-      return {
-        ok: true,
-        workout: buildWorkout(
-          'quality',
-          type,
-          `T cruise: ${c.reps} × ${m(c.repKm)} (oporavak ${q.recovery.tCruiseSec} s)`,
-          blocks,
-          p
-        ),
-        choice: c
-      };
+      return tSession({ form: 'cruise', ...c }, targetKm, p);
     }
     case 'T_short': {
-      const len = floorHalf(Math.min(budgetKm * q.shortTShareOfBudget, q.shortTMaxSec / p.T));
-      if (len < q.shortTMinKm) return fail('Kratak T');
-      const blocks: BlockSpec[] = [wu, { kind: 'continuous', zone: 'T', km: len }, cd];
-      return {
-        ok: true,
-        workout: buildWorkout('quality', type, `T: ${km(len)} km kontinuirano`, blocks, p),
-        choice: null
-      };
+      const t = tContinuousStart(budgetKm, phase, p);
+      if (!t) return fail('Kratak T');
+      return tSession(t, targetKm, p);
     }
     case 'RP_sharpener': {
       const s = q.raceWeekSharpener;
@@ -433,6 +501,279 @@ export function qualitySession(
       };
     }
   }
+}
+
+/* ---------- 2.2.0: kvalitet nedelje (jedino mesto odluke o dozi) ---------- */
+
+/** Doza poslednje ne-rasteretne nedelje iste faze (ulaz za progresiju sledeće). */
+export interface WeekDose {
+  /** Glavni kvalitet: R (baza), I (vrhunac), RP (oštrenje). */
+  main: RepChoice;
+  /** Drugi kvalitet T (baza, vrhunac); null u oštrenju. */
+  t: TDose | null;
+  /** Broj uzastopnih ne-rasteretnih nedelja faze sa ovom istom dozom (baza, Odluka 3). */
+  same: number;
+}
+
+export type WeekQuality =
+  | {
+      ok: true;
+      q1: Workout;
+      q2: Workout | null;
+      easyStrides: boolean;
+      notes: string[];
+      dose: WeekDose | null;
+    }
+  | { ok: false; message: string };
+
+const sameT = (a: TDose, b: TDose): boolean =>
+  a.form === b.form && a.reps === b.reps && Math.abs(a.repKm - b.repKm) < 1e-9;
+const tWork = (t: TDose): number => workOf(t);
+/** Nedeljna doza baze: R km, oblik T i T km (R smena 6 × 400 / 8 × 300 nije promena doze). */
+export const baseDoseKey = (rKm: number, tForm: TDose['form'], tKm: number): string =>
+  `${r2(rKm)}|${tForm}|${r2(tKm)}`;
+
+function cruiseOf(budgetKm: number, phase: Phase, p: Paces): TDose | null {
+  const q = P.quality;
+  const c = chooseReps(
+    budgetKm,
+    q.repOptionsKm.Tcruise,
+    p.T,
+    q.minReps.T,
+    q.maxReps.T,
+    tMaxSec(phase)
+  );
+  return c ? { form: 'cruise', ...c } : null;
+}
+
+/**
+ * Promena strukture T (kontinuirano ↔ cruise). Ako drugi oblik ne staje u budžet: kontinuirani blok
+ * kraći (pa duži) za tStepKm. Nijedno → null.
+ */
+function tOther(prev: TDose, budgetKm: number, phase: Phase, p: Paces): TDose | null {
+  const q = P.quality;
+  const top = tContinuousTop(budgetKm, phase, p);
+  if (prev.form === 'cruise')
+    return top + 1e-9 >= q.shortTMinKm ? { form: 'continuous', reps: 1, repKm: top } : null;
+  const cruise = cruiseOf(budgetKm, phase, p);
+  if (cruise) return cruise;
+  for (const len of [prev.repKm - q.tStepKm, prev.repKm + q.tStepKm])
+    if (len + 1e-9 >= q.shortTMinKm && len <= top + 1e-9)
+      return { form: 'continuous', reps: 1, repKm: len };
+  return null;
+}
+
+/**
+ * Baza (Odluka 3), jedan prolaz:
+ * - R raste do budžeta (chooseProgressiveReps 'grow': duže ili isto ponavljanje, veći rad); bez rasta
+ *   R se drži (isti par ako je i dalje u [70%, 100%] budžeta);
+ * - T kontinuirano raste za tStepKm do min(T budžet, plafon baze); na limitu prelazi u cruise (T obim
+ *   raste kroz ponavljanja); cruise raste ('base' mode: veći rad ili druga struktura ≥ prethodnog rada);
+ * - ako ni R ni T nisu promenjeni, R menja strukturu uz isti rad ('base' mode), jer isti par dve
+ *   nedelje zaredom nije dozvoljen (QUALITY_REPEAT);
+ * - ista doza (baseDoseKey) najviše baseSameDoseMaxWeeks nedelja zaredom, pa promena strukture T.
+ */
+function baseWeek(
+  b: QualityBudgets,
+  targetKm: number,
+  p: Paces,
+  prev: WeekDose | null
+): WeekQuality {
+  const q = P.quality;
+  const rArgs = [b.R, q.repOptionsKm.R, p.R, q.minReps.R, q.maxReps.R, q.rRepMaxSec, 0] as const;
+  const pm = prev?.main ?? null;
+  const fits = (c: RepChoice, budget: number): boolean =>
+    workOf(c) <= budget + 1e-9 && workOf(c) + 1e-9 >= budget * q.mainMinShareOfBudget;
+  let r =
+    chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, pm ? 'grow' : 'base') ??
+    (pm && fits(pm, b.R) ? pm : null) ??
+    chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, 'base');
+  if (!r) return { ok: false, message: `R ponavljanja: budžet ${km(b.R)} km nije dovoljan.` };
+  const top = tContinuousTop(b.T, 'base', p);
+  const pt = prev?.t ?? null;
+  const cont = (len: number): TDose | null =>
+    len + 1e-9 >= q.shortTMinKm ? { form: 'continuous', reps: 1, repKm: len } : null;
+  const cruise = (from: TDose | null): TDose | null => {
+    const c = chooseProgressiveReps(
+      b.T,
+      q.repOptionsKm.Tcruise,
+      p.T,
+      q.minReps.T,
+      q.maxReps.T,
+      tMaxSec('base'),
+      0,
+      q.repFillShare,
+      from && from.form === 'cruise' ? from : null,
+      'base'
+    );
+    return c ? { form: 'cruise', ...c } : null;
+  };
+  let t: TDose | null;
+  if (!pt) t = tContinuousStart(b.T, 'base', p);
+  else if (pt.form === 'continuous') {
+    const len = Math.min(pt.repKm + q.tStepKm, top);
+    t = len > pt.repKm + 1e-9 ? cont(len) : (cruise(null) ?? cont(len));
+  } else t = cruise(pt) ?? (tWork(pt) <= b.T + 1e-9 ? pt : null);
+  if (!t) return { ok: false, message: `T: budžet ${km(b.T)} km nije dovoljan.` };
+  if (pm && pt && sameT(t, pt) && r.reps === pm.reps && Math.abs(r.repKm - pm.repKm) < 1e-9)
+    r = chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, 'base') ?? r;
+  const rKm = workOf(r);
+  const prevKey = pm && pt ? baseDoseKey(workOf(pm), pt.form, tWork(pt)) : null;
+  let same = baseDoseKey(rKm, t.form, tWork(t)) === prevKey ? prev!.same + 1 : 1;
+  if (same > q.baseSameDoseMaxWeeks) {
+    const alt = tOther(t, b.T, 'base', p);
+    if (alt) {
+      t = alt;
+      same = baseDoseKey(rKm, t.form, tWork(t)) === prevKey ? prev!.same + 1 : 1;
+    }
+  }
+  return {
+    ok: true,
+    q1: repsRSession('R', r, targetKm, p).workout,
+    q2: tSession(t, targetKm, p).workout,
+    easyStrides: true,
+    notes: [],
+    dose: { main: r, t, same }
+  };
+}
+
+/**
+ * Vrhunac (Odluka 5): glavni I NEOPADAJUĆI — najmanji rad veći od prethodnog; ako ponuda nema viši
+ * nivo, I se drži (ako je i dalje u [70%, 100%] budžeta), a T menja strukturu (cruise ↔ kontinuirano)
+ * da par ne bude identičan. Drugi kvalitet: cruise kad T budžet prima ≥ minReps × najkraća opcija,
+ * inače kontinuirani T.
+ */
+function peakWeek(
+  b: QualityBudgets,
+  targetKm: number,
+  p: Paces,
+  prev: WeekDose | null
+): WeekQuality {
+  const q = P.quality;
+  const up = qualitySession('I', b.I, targetKm, p, 'peak', { prev: prev?.main ?? null });
+  let i: SessionResult & { ok: true };
+  let held = false;
+  if (up.ok) i = up;
+  else {
+    const pm = prev?.main;
+    const w = pm ? workOf(pm) : 0;
+    if (!pm || w > b.I + 1e-9 || w + 1e-9 < b.I * q.mainMinShareOfBudget)
+      return { ok: false, message: up.message };
+    i = intervalSession('I', pm, targetKm, p);
+    held = true;
+  }
+  const shortest = Math.min(...q.repOptionsKm.Tcruise);
+  let t =
+    b.T + 1e-9 >= q.minReps.T * shortest
+      ? cruiseOf(b.T, 'peak', p)
+      : tContinuousStart(b.T, 'peak', p);
+  if (held && t && prev?.t && sameT(t, prev.t)) t = tOther(prev.t, b.T, 'peak', p);
+  if (!t)
+    return {
+      ok: false,
+      message: `T: budžet ${km(b.T)} km nije dovoljan${held ? ' za promenu strukture uz zadržan I' : ''}.`
+    };
+  const notes = held
+    ? ['Vrhunac: I zadržan (ponuda nema viši nivo u budžetu); T menja strukturu.']
+    : [];
+  return {
+    ok: true,
+    q1: i.workout,
+    q2: tSession(t, targetKm, p).workout,
+    easyStrides: false,
+    notes,
+    dose: { main: i.choice!, t, same: 1 }
+  };
+}
+
+/**
+ * Kvalitet nedelje treninga (baza, vrhunac, oštrenje, taper). JEDINO mesto odluke o dozi kvaliteta.
+ * Rasterećenje (Odluka 5): jedan glavni kvalitet; ako ne staje u budžet, zamena kratkim T, pa R,
+ * uz ubrzanja na laganim danima. QUALITY_INFEASIBLE (ok: false) samo kad nijedna opcija ne staje.
+ */
+export function weekQuality(
+  f: WeekFrame,
+  targetKm: number,
+  p: Paces,
+  prev: WeekDose | null
+): WeekQuality {
+  const b = qualityBudgets(targetKm);
+  const budgetOf = (t: QualityType): number =>
+    t === 'R' || t === 'R_sharpen' ? b.R : t === 'T_short' || t === 'T_cruise' ? b.T : b.I;
+  const main: Record<'base' | 'peak' | 'sharpen', QualityType> = {
+    base: 'R',
+    peak: 'I',
+    sharpen: 'RP'
+  };
+  if (f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen') {
+    if (f.deload) {
+      const chain = [...new Set<QualityType>([main[f.phase], 'T_short', 'R'])];
+      let first: string | null = null;
+      for (const type of chain) {
+        const s = qualitySession(
+          type,
+          r2(budgetOf(type) * P.quality.deloadBudgetScale),
+          targetKm,
+          p,
+          f.phase
+        );
+        if (!s.ok) {
+          first ??= s.message;
+          continue;
+        }
+        const sub = type !== main[f.phase];
+        return {
+          ok: true,
+          q1: s.workout,
+          q2: null,
+          easyStrides: sub,
+          notes: [
+            sub
+              ? `Rasterećenje: ${main[f.phase]} ne staje u budžet — ${type === 'R' ? 'R' : 'kratak T'} umesto njega, uz ubrzanja.`
+              : 'Rasterećenje: jedan kratak kvalitet.'
+          ],
+          dose: null
+        };
+      }
+      return { ok: false, message: first ?? 'Rasterećenje bez kvaliteta.' };
+    }
+    if (f.phase === 'base') return baseWeek(b, targetKm, p, prev);
+    if (f.phase === 'peak') return peakWeek(b, targetKm, p, prev);
+    const rp = qualitySession('RP', b.I, targetKm, p, 'sharpen', { prev: prev?.main ?? null });
+    if (!rp.ok) return rp;
+    const rs = qualitySession('R_sharpen', b.R, targetKm, p, 'sharpen');
+    if (!rs.ok) return rs;
+    return {
+      ok: true,
+      q1: rp.workout,
+      q2: rs.workout,
+      easyStrides: false,
+      notes: [],
+      dose: { main: rp.choice!, t: null, same: 1 }
+    };
+  }
+  const rp = qualitySession('RP', b.I, targetKm, p, f.phase);
+  if (!rp.ok) return rp;
+  if (f.taperStep === 1) {
+    const t = qualitySession('T_short', b.T, targetKm, p, f.phase);
+    if (!t.ok) return t;
+    return {
+      ok: true,
+      q1: rp.workout,
+      q2: t.workout,
+      easyStrides: false,
+      notes: ['Taper 1/2.'],
+      dose: null
+    };
+  }
+  return {
+    ok: true,
+    q1: rp.workout,
+    q2: null,
+    easyStrides: true,
+    notes: ['Taper 2/2: jedan kvalitet.'],
+    dose: null
+  };
 }
 
 export function easyRun(totalKm: number, p: Paces, withStrides: boolean): Workout {

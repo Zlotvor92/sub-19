@@ -37,19 +37,25 @@ export function periodize(startDate: IsoDate, totalWeeks: number): WeekFrame[] {
     ...Array<Phase>(c.race).fill('race')
   ];
   const lastBuild = c.base + c.peak + c.sharpen;
+  // Rasterećenje (jedino mesto): svaka N-ta nedelja izgradnje. 2.2.0: ako bi to bila prva nedelja
+  // vrhunca ili oštrenja, pomera se na poslednju nedelju prethodne faze; izostavlja se ako bi bila
+  // poslednja nedelja izgradnje (uzastopno sa taperom, koji ionako smanjuje obim).
+  const deloads = new Set<number>();
+  for (let n = P.volume.deloadEvery; n <= lastBuild; n += P.volume.deloadEvery) {
+    const phaseStart = sequence[n - 1] !== sequence[n - 2];
+    const at = phaseStart && sequence[n - 1] !== 'base' ? n - 1 : n;
+    if (at !== lastBuild) deloads.add(at);
+  }
   let taperSeen = 0;
   return sequence.map((phase, i) => {
     const index = i + 1;
-    const isBuild = index <= lastBuild;
-    // Rasterećenje: svaka N-ta nedelja izgradnje, osim poslednje (posle nje taper ionako smanjuje obim).
-    const deload = isBuild && index % P.volume.deloadEvery === 0 && index !== lastBuild;
     const taperStep = phase === 'taper' ? (++taperSeen as 1 | 2) : null;
     return {
       index,
       startDate: addDays(startDate, i * 7),
       endDate: addDays(startDate, i * 7 + 6),
       phase,
-      deload,
+      deload: deloads.has(index),
       taperStep
     };
   });

@@ -1,4 +1,4 @@
-/* Segment 02 (5k-v2.1.0): trenerske odluke 1–4 i Uslov 8 (upotrebljivost plana). */
+/* Segment 02 (5k-v2.1.0, ažurirano za 2.2.0): trenerske odluke 1–4 i Uslov 8 (upotrebljivost plana). */
 
 import { describe, expect, it } from 'vitest';
 import { daysBetween } from './dates.ts';
@@ -9,7 +9,7 @@ import { inputOf, PROFILES, START, type Profile } from './testInputs.ts';
 import type { FiveKV2Plan, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { planVolume } from './volume.ts';
-import { chooseProgressiveReps, roundRecoverySec } from './workouts.ts';
+import { chooseProgressiveReps, easyRun, longRun, roundRecoverySec } from './workouts.ts';
 
 function planOf(p: Profile): FiveKV2Plan {
   const r = generateFiveKV2(inputOf(p));
@@ -42,7 +42,7 @@ describe('plan nosi identitet politike (Uslov 6)', () => {
   it.each(ALL)('%s', (_, p) => {
     const plan = planOf(p);
     expect(plan.policyId).toBe('5k-v2');
-    expect(plan.policyVersion).toBe('5k-v2.1.0');
+    expect(plan.policyVersion).toBe('5k-v2.2.0');
   });
 });
 
@@ -59,33 +59,32 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
     }
   });
 
-  it('kad lagan > dugi: lagan = dugi, planirano < cilj uz napomenu, vrh obima se ne podiže', () => {
+  it('2.2.0: „lagan = dugi" je samo zaštita — kapacitet 4 dana sprečava je na ulazu', () => {
     const plan = planOf(CAPPED);
-    const capped = plan.weeks.filter((w) => w.easyCappedAtLong);
-    expect(capped.length).toBeGreaterThan(0);
-    for (const w of capped) {
-      const long = roleDay(w, 'long').workout.km;
-      const easy = w.days.filter((d) => d.role === 'easy');
-      expect(easy.every((d) => Math.abs(d.workout.km - long) < 0.011)).toBe(true);
-      const quality = w.days
-        .filter((d) => d.workout.kind === 'quality')
-        .reduce((a, d) => a + d.workout.km, 0);
-      expect(w.plannedKm).toBeCloseTo(quality + long * (1 + easy.length), 1);
-      expect(w.plannedKm).toBeLessThan(w.targetKm);
-      expect(w.notes.some((n) => n.startsWith('Lagan trk ograničen na dužinu dugog'))).toBe(true);
-    }
-    // Ciljevi su i dalje odluka volume.ts (nisu podignuti niti spušteni zbog ograničenja).
+    expect(plan.weeks.filter((w) => w.easyCappedAtLong)).toEqual([]);
+    // Ciljevi su i dalje odluka volume.ts.
     expect(plan.weeks.map((w) => w.targetKm)).toEqual(
-      planVolume(periodize(START, CAPPED.weeks), CAPPED.km).targets
+      planVolume(periodize(START, CAPPED.weeks), CAPPED.km, plan.paces).targets
     );
-    const warn = plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET');
-    expect(warn.map((v) => v.week)).toEqual(capped.map((w) => w.index));
-    expect(warn.every((v) => v.severity === 'warning')).toBe(true);
+    expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET')).toEqual([]);
   });
 
-  it('validator: planirano < cilj bez „lagan = dugi" je greška; lažna oznaka je greška', () => {
+  it('validator: „lagan = dugi" uz oznaku → upozorenje; bez oznake → greška; lažna oznaka → greška', () => {
     const p = planOf(CAPPED);
-    const w = p.weeks.find((x) => x.easyCappedAtLong)!;
+    const w = p.weeks.find((x) => x.phase === 'base' && !x.deload)!;
+    // Kao da je cilj iznad kapaciteta: dugi i lagan po 6 km.
+    w.days = w.days.map((d) =>
+      d.role === 'easy'
+        ? { ...d, workout: easyRun(6, p.paces, false) }
+        : d.role === 'long'
+          ? { ...d, workout: longRun(6, p.paces) }
+          : d
+    );
+    w.plannedKm = Math.round(w.days.reduce((a, d) => a + d.workout.km, 0) * 100) / 100;
+    expect(w.plannedKm).toBeLessThan(w.targetKm * (1 - P.tolerance.plannedVsTarget));
+    w.easyCappedAtLong = true;
+    expect(errorsOf(p)).toEqual([]);
+    expect(validatePlan(p).map((v) => v.rule)).toContain('PLANNED_BELOW_TARGET');
     w.easyCappedAtLong = false;
     expect(errorsOf(p)).toContain('PLANNED_VS_TARGET');
     const q = planOf(PROFILES['vdot50_35km_14w']!);
@@ -108,7 +107,7 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
       const a = steady[i - 1]!;
       const b = steady[i]!;
       if (a.phase === b.phase && (b.phase === 'peak' || b.phase === 'sharpen'))
-        expect(mainWork(b)).toBeGreaterThan(mainWork(a));
+        expect(mainWork(b)).toBeGreaterThanOrEqual(mainWork(a));
       const key = (w: PlanWeek): string =>
         JSON.stringify(
           w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.blocks)
@@ -126,7 +125,7 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
     expect(phaseCounts(16)).toMatchObject({ base: 7, peak: 4, sharpen: 2 });
   });
 
-  it('validator: ista doza dve nedelje vrhunca → DOSE_PROGRESSION i QUALITY_REPEAT', () => {
+  it('validator: isti par dve nedelje vrhunca → QUALITY_REPEAT; manji I → DOSE_PROGRESSION', () => {
     const p = planOf(PROFILES['vdot50_35km_14w']!);
     const peak = p.weeks.filter((w) => w.phase === 'peak' && !w.deload);
     expect(peak.length).toBeGreaterThanOrEqual(2);
@@ -136,9 +135,16 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
       d.workout.kind === 'quality' ? { ...d, workout: roleDay(a, d.role).workout } : d
     );
     b.plannedKm = b.days.reduce((s, d) => s + d.workout.km, 0);
-    const rules = errorsOf(p);
-    expect(rules).toContain('DOSE_PROGRESSION');
-    expect(rules).toContain('QUALITY_REPEAT');
+    expect(errorsOf(p)).toContain('QUALITY_REPEAT');
+    // 2.2.0: I u vrhuncu je neopadajući (isti I nije greška), manji I jeste.
+    expect(errorsOf(p)).not.toContain('DOSE_PROGRESSION');
+    const q = planOf(PROFILES['vdot50_35km_14w']!);
+    const [qa, qb] = q.weeks.filter((w) => w.phase === 'peak' && !w.deload) as [PlanWeek, PlanWeek];
+    expect(mainWork(qb)).toBeGreaterThan(mainWork(qa));
+    const ia = roleDay(qa, 'q1');
+    const ib = roleDay(qb, 'q1');
+    [ia.workout, ib.workout] = [ib.workout, ia.workout];
+    expect(errorsOf(q)).toContain('DOSE_PROGRESSION');
   });
 
   it('chooseProgressiveReps: najmanji veći rad u [70%, 100%] budžeta; bez većeg → null', () => {
