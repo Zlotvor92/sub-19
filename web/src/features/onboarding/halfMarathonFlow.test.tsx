@@ -31,7 +31,7 @@ import { Wizard } from './Wizard';
    „kraća distanca: 10K". Stari zajednički engine je obrisan; izolaciju dokazuju arhitektonski i runtime test. Opciju 10K pravi izdvojeni 10K generator (predaja kroz `handoff.ts`). Isti postupak kao
    `fiveKFlow.test.tsx` i `tenKFlow.test.tsx`. */
 
-const handoff = regeneratorForDistance as hm.ShorterDistanceHandoff;
+const handoff = regeneratorForDistance;
 
 const TODAY = '2026-01-07';
 const LATER = '2026-02-11';

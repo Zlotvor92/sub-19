@@ -17,7 +17,7 @@ import * as hm from './index';
    razlika. Opciju „kraća distanca" (10K/5K) pravi izdvojeni generator te distance, predat kroz aplikacioni `handoff.ts`
    — isti put kao u produkciji (`select.ts`). */
 
-const handoff = regeneratorForDistance as hm.ShorterDistanceHandoff;
+const handoff = regeneratorForDistance;
 
 const api: HmApi = {
   generatePlan: hm.generatePlan,

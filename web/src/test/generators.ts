@@ -100,7 +100,7 @@ const MODS: Readonly<Record<number, Mod>> = {
   21097.5: halfMarathon,
   42195: marathon as unknown as Mod
 };
-const handoff = regeneratorForDistance as halfMarathon.ShorterDistanceHandoff;
+const handoff = regeneratorForDistance;
 const distOf = (x: unknown): number | undefined => {
   const o = x as {
     meta?: { raceDistM?: unknown };

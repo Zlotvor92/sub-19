@@ -31,7 +31,7 @@ import { Wizard } from './Wizard';
    „kraća distanca: polumaraton". Stari zajednički engine je obrisan; izolaciju dokazuju arhitektonski i runtime test. Opciju polumaraton pravi izdvojeni HM generator (predaja kroz
    `handoff.ts`). Isti postupak kao `fiveKFlow`, `tenKFlow` i `halfMarathonFlow.test.tsx`. */
 
-const handoff = regeneratorForDistance as m.ShorterDistanceHandoff;
+const handoff = regeneratorForDistance;
 
 const TODAY = '2026-01-07';
 const LATER = '2026-02-11';

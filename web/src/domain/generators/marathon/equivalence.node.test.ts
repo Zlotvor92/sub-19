@@ -17,7 +17,7 @@ import * as m from './index';
    razlika. Opciju „kraća distanca" (polumaraton/10K) pravi izdvojeni generator te distance, predat kroz aplikacioni `handoff.ts`
    — isti put kao u produkciji (`select.ts`). */
 
-const handoff = regeneratorForDistance as m.ShorterDistanceHandoff;
+const handoff = regeneratorForDistance;
 
 const api: MarathonApi = {
   generatePlan: m.generatePlan,

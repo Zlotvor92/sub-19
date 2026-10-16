@@ -15,7 +15,7 @@ import { HALF_MARATHON_GENERATOR, generatorForPlan } from './select';
    daju tačno isti zapis kao stari mehanizam (`src/test/fixtures/personal-reference.json.gz`, snimljeno na `348391c`,
    ponovo u čistom worktree-ju na izvornom `main` `05088e0` — bajt-identično). Nijedno polje nije izostavljeno. */
 
-const handoff = regeneratorForDistance as hm.ShorterDistanceHandoff;
+const handoff = regeneratorForDistance;
 const api: GeneratorApi = {
   generatePlan: hm.generatePlan,
   assess: hm.assess,
