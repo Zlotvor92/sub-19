@@ -1,7 +1,7 @@
 # Izolacija politike — nalazi A1, A2, A3, A5, A7, A12
 
 Grana `claude/generator-isolation-5k-10k-hm-marathon`. Polazni SHA: `e196fc95c39dbcb8301bc9ff17f562d21a002754`.
-SHA izmene koda: v. `STATUS.md` → „Trenutno stanje". `fiveK/v2/` i `docs/5k-v2/` nisu dirani. Bez PR-a, mergea, deploya.
+Commitovi koda: `d68c69a`, `aa83d7b`, `82f1043` (poslednji kod: `82f1043`). `fiveK/v2/` i `docs/5k-v2/` nisu dirani. Bez PR-a, mergea, deploya.
 
 ## Nalazi (12)
 
@@ -92,9 +92,15 @@ Izlaz generatora (generisanje, adaptacija, odluke o pripremi, predaja) nije prom
 ## Komande i rezultati (iz `web/`)
 
 - `npx tsc -p tsconfig.domain.json --noEmit` → 0 grešaka.
-- `npx vitest run --project node src/domain/generators/` → pre ispravke inventara: 18/19 fajlova, 303/304 testa; pao
-  samo `architecture` (produkcija više ne dostiže `measure.ts` — očekivano, skup sužen). Posle: v. `STATUS.md`.
-- `npm run check` (typecheck, lint, format, svi testovi): v. `STATUS.md`.
+- `npx vitest run --project node src/domain/generators/` → 19/19 fajlova, 304/304 testa, 526 s. (Prvi prolaz: pao samo
+  `architecture` jer produkcija više ne dostiže stari `measure.ts`; skup sužen.)
+- `npm run check` → typecheck, lint, format čisti; 179/179 fajlova, 1933/1933 testa, 628 s; EXIT 0.
+- Neuspesi usput i ishod: (1) lint `unbound-method` → članovi ugovora prebačeni u svojstva tipa funkcije; suvišni
+  kastovi predaje uklonjeni; (2) 6 UI testova toka (`features/onboarding/*Flow`, `features/ti/ti.test.tsx`) porede
+  sačuvan plan sa direktnim izlazom generatora — očekivanje sada uključuje `stampPlan` (namerna promena 1);
+  (3) **stvarna greška nađena testom**: `graftFuturePlan` nasleđuje `meta` izvora, pa je plan kraće distance nosio
+  `hm-v1`/`marathon-v1` i postajao „nepoznata verzija" → ciljni `handoffFuture` uklanja tuđu oznaku; regresioni
+  slučaj u `policyIsolation.node.test.ts` (pada bez ispravke).
 - Napomena okruženja: `node_modules` nije bio instaliran; urađeno `npm ci`.
 
 ## Preostali problemi

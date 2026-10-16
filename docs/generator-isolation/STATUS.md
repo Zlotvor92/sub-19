@@ -1,5 +1,17 @@
 # Izdvajanje generatora — stanje
 
+## Trenutno stanje (izolacija politike, A1/A2/A3/A5/A7/A12)
+
+- Grana `claude/generator-isolation-5k-10k-hm-marathon`; polazno `e196fc9`; kod do `82f1043`; izveštaj
+  `ARCHITECTURE-FOLLOWUP.md`. Bez PR-a/mergea/deploya.
+- Urađeno: A1 (merenje forme kroz generator plana), A2 (predaja samo činjenica, cilj odlučuje), A3 (faza iz
+  generatora, `stampPlan`/`phaseReaderFor`), A7 (`policyId/policyVersion`, legacy, `UNKNOWN_POLICY`), A12 (sužen
+  inventar, `policyIsolation.node.test.ts`), A5 delimično (eksplicitan ugovor + `satisfies`).
+- Provere: `tsc` domena 0; generatori 304/304; `npm run check` EXIT 0 (1933/1933).
+- Ostaje: A5 tipovi tereta još iz HM deklaracija (`select.ts`); test 3 km → VDOT zajednički (`training/test3k`);
+  nalazi 2b, 4, 6, 8–11 van ovog taba.
+- Sledeći korak: neutralni tipovi tereta u `select.ts`, pa povezivanje `fiveK/v2` uz odluku o `KNOWN_VERSIONS`.
+
 Živi dokument za predaju između prozora. Cilj: četiri nezavisna generatora (5K, 10K, HM, maraton), bez deljenih izvršnih
 funkcija, trenerskog engine-a, baznih klasa, limitera i postprocesora. Zajednički ostaju samo UI, skladištenje, autentifikacija,
 izbor generatora i format razmene podataka.
