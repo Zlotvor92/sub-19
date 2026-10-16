@@ -2,13 +2,14 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 jezgro (`5k-v2.4.0`) u `web/src/domain/generators/fiveK/v2/`, testirano, NIJE
+Trenutno stanje: 5K v2 jezgro (`5k-v2.4.1`) u `web/src/domain/generators/fiveK/v2/`, testirano, NIJE
 aktivirano (select.ts/UI/store ga ne koriste). Grane: sa rezultatom (3/4/5 dana, 6–16 ned), bez pouzdanog
 rezultata (plan po osećaju: E iz korisnikovog tempa ± 15 s, kvalitet RPE, test 3 km u 3./4. ned) i
-početnik (≤ 4 dana, 1 kvalitet, sa ili bez rezultata). Kapacitet iz stvarne konstrukcije nedelje: 0
-„lagan = dugi" van trke u svim mrežama; 3 dana ≈ 17 km, 4 dana VDOT ≥ 45 → 41,3 km (Segment 05,
-preostali problemi 1–2). Run/walk nije podržan (RUN_WALK_NOT_SUPPORTED_YET). Sledeće: segment 06
-(adaptacija, tempo iz testa). Stalni uslovi za sve v2 generatore: `AGENTS.md`.
+početnik (≤ 4 dana, 1 kvalitet, sa ili bez rezultata). Kapacitet = najveći izvodljiv cilj stvarne
+konstrukcije nedelje; cilj u rupi → najveći izvodljiv ≤ želje (`volume.fitTargetKm`). Kapacitet VDOT 40/50/60:
+3 d 31,5/37,5/40, 4 d 39,2/46,7/50, 5 d 55,1/64,4/65 km; vrh ≥ 7b4b574 osim 88 izuzetaka 3 dana (tamo lagan
+= dugi). 0 „lagan = dugi" van trke u svim mrežama. Run/walk nije podržan (RUN_WALK_NOT_SUPPORTED_YET).
+Sledeće: segment 06 (adaptacija, tempo iz testa). Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segment 01 — 5K v2 jezgro (2026-10-16)
 
@@ -70,3 +71,16 @@ preostali problemi 1–2). Run/walk nije podržan (RUN_WALK_NOT_SUPPORTED_YET). 
 - Provere: tsc, eslint, prettier exit 0; vitest v2 342/342; novi testovi na 7b4b574 35/35 pada;
   generators 24 fajla / 485; `npm run check` exit 0 (2114 testova; prvi put exit 2, TS6133 u testu, ispravljeno).
 - Izveštaj: `reports/SEGMENT-05-IMPLEMENTATION.md`.
+
+## Segment 05b — regresija kapaciteta, 5k-v2.4.1 (2026-10-16)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 349fd64
+- Urađeno (DECISIONS 5k-v2.4.1): (1) 3 dana dugi ≤ 45% (bilo 40%), ≤ 90 min, lagan ≤ dugi; (2) kapacitet =
+  najveći izvodljiv cilj, rupe po nedelji (`fitTargetKm`, jedno mesto u volume.ts), korak dugog 0,1 km za
+  3/4/5 dana; (3) vrh ≥ 7b4b574 (fixture 840 ulaza): 0 regresija bez izuzetka, 88 izuzetaka (3 d, lagan = dugi na 7b4b574).
+- d3-30km-v48-12w: start 30 → vrh 37,5 (2.4.0: 17,1); 4 d 45 km VDOT 50: vrh ≥ 45 (2.4.0: 41,3).
+- Fajlovi: `fiveK/v2/` (policy, volume, validate, lengths, `segment05b.node.test.ts`, `segment05b.peaks-7b4b574.json`,
+  testovi 02/04/05), `artifacts/segment-05b/` (29 primera + `peak-exceptions.md`), `reports/SEGMENT-05b-IMPLEMENTATION.md`.
+- Provere: tsc, eslint, prettier exit 0; vitest v2 356/356; novi testovi na 349fd64 6/15 pada;
+  generators 25 fajlova / 499; `npm run check` exit 0 (2128 testova; prvi put exit 2, TS6133 u testu, ispravljeno).
+- Izveštaj: `reports/SEGMENT-05b-IMPLEMENTATION.md`.

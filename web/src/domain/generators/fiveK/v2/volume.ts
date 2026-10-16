@@ -75,57 +75,78 @@ function probes(a: Athlete): { f: WeekFrame; prev: WeekDose | null }[] {
   return out;
 }
 
-const capacityCache = new Map<string, number>();
+const feasibleCache = new Map<string, { lo: number; ok: boolean[] }>();
 
 /**
- * Kapacitet [km] (2.4.0, Odluka 1): najveći cilj T ≤ apsolutnog vrha (days[n].maxWeekKm) takav da
- * STVARNA konstrukcija nedelje — weekQuality + weekLengths, iste funkcije kao generate — ni za jedan
- * cilj t ≤ T (od minimuma nedelje, korak 0,1 km) ne daje lagan > dugi (planirano < cilj). Probne nedelje:
- * probes(). Nedelja koja se uopšte ne može sastaviti (kvalitet ne staje, lagan < minimum) nije pitanje
- * kapaciteta i preskače se; isto i nedelja u kojoj je dugi sabijen minimumom laganih (donja granica
- * obima). Ograničena deterministička pretraga naviše; rezultat se pamti po (tempo,
- * trkač). Ranije (2.2.0–2.3.0): nejednačina sa procenom kvaliteta 10% cilja.
+ * 2.4.1 (Odluka 2): tabela izvodljivih ciljeva — JEDINO mesto. Cilj t (od minimuma nedelje do
+ * apsolutnog vrha, korak 0,1 km) je izvodljiv ako STVARNA konstrukcija nedelje — weekQuality +
+ * weekLengths, iste funkcije kao generate — ni u jednoj probnoj nedelji (probes()) ne daje lagan > dugi
+ * dok dugi stoji na plafonu (udeo dana ili vreme). Nedelja koja se uopšte ne može sastaviti (kvalitet ne
+ * staje, lagan < minimum) nije pitanje kapaciteta i ne obara cilj; isto i nedelja u kojoj je dugi
+ * sabijen minimumom laganih (donja granica obima). Rezultat se pamti po (tempo, trkač).
  */
-export function capacityKm(p: PaceModel, days: Athlete | RunDaysCount): number {
-  const a = asAthlete(days);
+function feasibility(p: PaceModel, a: Athlete): { lo: number; ok: boolean[] } {
   const key = JSON.stringify([p, a]);
-  const hit = capacityCache.get(key);
-  if (hit !== undefined) return hit;
+  const hit = feasibleCache.get(key);
+  if (hit) return hit;
   const r = rulesOf(a);
   const list = probes(a);
   const lo = Math.round(r.minWeekKm * 10);
   const hi = Math.round(r.maxWeekKm * 10);
-  let capacity = r.maxWeekKm;
-  search: for (let k = lo; k <= hi; k++) {
+  const ok: boolean[] = [];
+  for (let k = lo; k <= hi; k++) {
     const t = k / 10;
-    for (const { f, prev } of list) {
-      const s = weekQuality(f, t, p, prev, a);
-      if (!s.ok) continue;
-      const qualityKm = (s.q1 ? s.q1.km : 0) + (s.q2 ? s.q2.km : 0);
-      const L = weekLengths(
-        t,
-        qualityKm,
-        easyCount(a, s.q1 !== null, s.q2 !== null),
-        f.phase,
-        p,
-        a
-      );
-      if (L.shares.some((x) => x + 1e-9 < L.easyMin)) continue;
-      // Kapacitet je gornja granica: računa se samo kad dugi stoji na svom plafonu (udeo dana ili
-      // vreme). Kad je dugi sabijen minimumom laganih (dugi ≈ lagan ≈ minimum), to je donja granica
-      // obima, ne kapacitet.
-      if (L.capped && L.longKm + 1e-9 >= longCapKm(t, p, a)) {
-        capacity = (k - 1) / 10;
-        break search;
-      }
-    }
+    ok.push(
+      list.every(({ f, prev }) => {
+        const s = weekQuality(f, t, p, prev, a);
+        if (!s.ok) return true;
+        const qualityKm = (s.q1 ? s.q1.km : 0) + (s.q2 ? s.q2.km : 0);
+        const L = weekLengths(
+          t,
+          qualityKm,
+          easyCount(a, s.q1 !== null, s.q2 !== null),
+          f.phase,
+          p,
+          a
+        );
+        if (L.shares.some((x) => x + 1e-9 < L.easyMin)) return true;
+        return !(L.capped && L.longKm + 1e-9 >= longCapKm(t, p, a));
+      })
+    );
   }
-  capacityCache.set(key, capacity);
-  return capacity;
+  const out = { lo, ok };
+  feasibleCache.set(key, out);
+  return out;
 }
 
 /**
- * Start = min(trenutni obim, kapacitet). Izgradnja: +maxBuildGrowth (2.4.0 početnik 5%) od poslednje
+ * Kapacitet [km] (2.4.1, Odluka 2): najveći izvodljiv cilj ≤ apsolutnog vrha (days[n].maxWeekKm), v.
+ * feasibility(). Rupe ispod njega ne spuštaju kapacitet (2.4.0 je kapacitet „zatvarao naniže" — prvi
+ * neizvodljiv cilj − 0,1 km); nedelja čiji cilj padne u rupu dobija fitTargetKm(). Ako nijedan cilj nije
+ * izvodljiv: minimum nedelje.
+ */
+export function capacityKm(p: PaceModel, days: Athlete | RunDaysCount): number {
+  const { lo, ok } = feasibility(p, asAthlete(days));
+  const k = ok.lastIndexOf(true);
+  return (lo + Math.max(k, 0)) / 10;
+}
+
+/**
+ * 2.4.1 (Odluka 2): cilj nedelje u rupi izvodljivih → najveći izvodljiv cilj ≤ želje (deterministička
+ * pretraga naniže, korak 0,1 km). Ispod minimuma nedelje, ili kad ispod želje nema izvodljivog cilja,
+ * želja ostaje (konstrukcija/validator prijavljuju). JEDINO mesto korekcije cilja zbog rupa.
+ */
+export function fitTargetKm(wish: number, p: PaceModel, days: Athlete | RunDaysCount): number {
+  const { lo, ok } = feasibility(p, asAthlete(days));
+  const k = Math.round(wish * 10) - lo;
+  if (k < 0 || k >= ok.length || ok[k]) return wish;
+  for (let j = k - 1; j >= 0; j--) if (ok[j]) return (lo + j) / 10;
+  return wish;
+}
+
+/**
+ * Start = min(trenutni obim, kapacitet). 2.4.1: svaki cilj (start, izgradnja, rasterećenje, taper) prolazi
+ * kroz fitTargetKm (rupe izvodljivih ciljeva); rast se računa od stvarnog cilja. Izgradnja: +maxBuildGrowth (2.4.0 početnik 5%) od poslednje
  * ne-rasteretne nedelje izgradnje, do peakKm(start). Oštrenje drži obim. Rasterećenje ≈ deloadFactor ×
  * prethodna nedelja. Taper je udeo vrha (vrh = najveći cilj izgradnje); trkačka nedelja: gornja
  * granica = udeo vrha.
@@ -139,7 +160,8 @@ export function planVolume(
   const a = asAthlete(days);
   const growth = rulesOf(a).maxBuildGrowth;
   const capacity = capacityKm(p, a);
-  const startKm = Math.min(round1(currentKm), capacity);
+  const fit = (t: number): number => fitTargetKm(t, p, a);
+  const startKm = fit(Math.min(round1(currentKm), capacity));
   const cap = peakKm(startKm, capacity, a);
   const targets: number[] = [];
   let lastBuild: number | null = null;
@@ -150,13 +172,14 @@ export function planVolume(
     else if (lastBuild === null) t = startKm;
     else if (f.phase === 'sharpen') t = lastBuild;
     else t = Math.min(floor1(lastBuild * (1 + growth)), cap);
+    t = fit(t);
     if (!f.deload) lastBuild = t;
     targets.push(t);
   }
   const peak = Math.max(...targets);
   for (const f of frames) {
     if (f.phase === 'taper')
-      targets.push(round1(peak * P.volume.taperFactors[(f.taperStep ?? 1) - 1]!));
+      targets.push(fit(round1(peak * P.volume.taperFactors[(f.taperStep ?? 1) - 1]!)));
     else if (f.phase === 'race') targets.push(round1(peak * P.volume.raceWeekFactor));
   }
   return {

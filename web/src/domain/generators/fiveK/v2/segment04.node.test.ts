@@ -89,7 +89,8 @@ describe('Odluka 1: šablon po broju dana', () => {
       expect(w.days).toHaveLength(3);
       expect(quality(w).length).toBe(w.stridesOnly ? 0 : 1);
       const long = roleDay(w, 'long')!.workout;
-      expect(long.km).toBeLessThanOrEqual(w.targetKm * 0.4 + 1e-9);
+      // 2.4.1: 3 dana 45% (bilo 40%).
+      expect(long.km).toBeLessThanOrEqual(w.targetKm * P.days[3].longMaxShare + 1e-9);
       expect(long.km * plan.paces.E.slow).toBeLessThanOrEqual(P.long.maxSec);
       for (const e of w.days.filter((d) => d.role === 'easy')) {
         expect(e.workout.segments.some((s) => s.kind === 'stride')).toBe(true);
@@ -134,10 +135,10 @@ describe('Odluka 1: šablon po broju dana', () => {
     expect(errorsOf(plan)).toContain('ROLES');
   });
 
-  it('validator: dugi > 40% u 3 dana → LONG_SHARE', () => {
+  it('validator: dugi > 45% u 3 dana → LONG_SHARE', () => {
     const plan = planOf(S04['d3_15km_v38_10w']!);
     const w = plan.weeks[1]!;
-    roleDay(w, 'long')!.workout.km = Math.ceil(w.targetKm * 0.4 + 1);
+    roleDay(w, 'long')!.workout.km = Math.ceil(w.targetKm * P.days[3].longMaxShare + 1);
     expect(errorsOf(plan)).toContain('LONG_SHARE');
   });
 });

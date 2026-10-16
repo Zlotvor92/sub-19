@@ -1,0 +1,614 @@
+[
+  {
+    "id": "feel-d4-25km-e600-12w",
+    "group": "bez rezultata",
+    "note": "bez rezultata, 4 dana, 25 km, E 6:00, 12 ned, cilj 25:00",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 25,
+      "typicalEasyPaceSecPerKm": 360,
+      "goalTimeSec": 1500
+    }
+  },
+  {
+    "id": "feel-d3-15km-e700-10w",
+    "group": "bez rezultata",
+    "note": "bez rezultata, 3 dana, 15 km, E 7:00, 10 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sun"
+      ],
+      "currentWeeklyKm": 15,
+      "typicalEasyPaceSecPerKm": 420
+    }
+  },
+  {
+    "id": "old-result-20w-d4-30km",
+    "group": "bez rezultata",
+    "note": "star rezultat (5K 23:00, 20 ned), 4 dana, 30 km, E 5:45, 12 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 30,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1380,
+        "date": "2026-06-15"
+      },
+      "typicalEasyPaceSecPerKm": 345
+    }
+  },
+  {
+    "id": "beg-feel-d3-12km-e730-10w",
+    "group": "početnik",
+    "note": "početnik bez rezultata, 3 dana, 12 km, E 7:30, 10 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sun"
+      ],
+      "currentWeeklyKm": 12,
+      "typicalEasyPaceSecPerKm": 450,
+      "experience": "beginner",
+      "canRun30Min": true
+    }
+  },
+  {
+    "id": "beg-result-d4-18km-12w",
+    "group": "početnik",
+    "note": "početnik sa rezultatom 5K 30:00, 4 dana, 18 km, 12 ned, cilj 29:00",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 18,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1800,
+        "date": "2026-10-19"
+      },
+      "experience": "beginner",
+      "canRun30Min": true,
+      "goalTimeSec": 1740
+    }
+  },
+  {
+    "id": "rej-run-walk",
+    "group": "odbijeni",
+    "note": "početnik koji ne može 30 min kontinuirano (run/walk)",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sun"
+      ],
+      "currentWeeklyKm": 12,
+      "typicalEasyPaceSecPerKm": 480,
+      "experience": "beginner",
+      "canRun30Min": false
+    }
+  },
+  {
+    "id": "rej-no-easy-pace",
+    "group": "odbijeni",
+    "note": "bez rezultata i bez uobičajenog laganog tempa",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 25
+    }
+  },
+  {
+    "id": "rej-d3-11km",
+    "group": "odbijeni",
+    "note": "3 dana, 11 km (ispod 12 km)",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sun"
+      ],
+      "currentWeeklyKm": 11,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1500,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "dev-01",
+    "group": "razvojni",
+    "note": "VDOT ~32, 20 km, 10 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 20,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1745,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 1680
+    }
+  },
+  {
+    "id": "dev-02",
+    "group": "razvojni",
+    "note": "VDOT ~40, 25 km, 12 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": [
+        "mon",
+        "wed",
+        "fri",
+        "sun"
+      ],
+      "currentWeeklyKm": 25,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 3000,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 1410
+    }
+  },
+  {
+    "id": "dev-03",
+    "group": "razvojni",
+    "note": "VDOT ~48, 30 km, 9 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-03",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 30,
+      "recentResult": {
+        "distanceM": 3000,
+        "timeSec": 720,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 1230
+    }
+  },
+  {
+    "id": "dev-04",
+    "group": "razvojni",
+    "note": "VDOT ~50, 35 km, 14 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": [
+        "mon",
+        "wed",
+        "fri",
+        "sat"
+      ],
+      "currentWeeklyKm": 35,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1197,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 1170
+    }
+  },
+  {
+    "id": "dev-05",
+    "group": "razvojni",
+    "note": "VDOT ~55, 40 km, 16 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-21",
+      "runDays": [
+        "tue",
+        "wed",
+        "fri",
+        "sun"
+      ],
+      "currentWeeklyKm": 40,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2280,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "dev-06",
+    "group": "razvojni",
+    "note": "VDOT ~58, 42 km, 11 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-17",
+      "runDays": [
+        "mon",
+        "tue",
+        "thu",
+        "sat"
+      ],
+      "currentWeeklyKm": 42,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1045,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 990
+    }
+  },
+  {
+    "id": "edge-15km-8w",
+    "group": "granični",
+    "note": "najmanji obim i najkraći plan",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2026-12-27",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 15,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1800,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "edge-45km-16w",
+    "group": "granični",
+    "note": "najveći obim i najduži plan",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-21",
+      "runDays": [
+        "mon",
+        "wed",
+        "fri",
+        "sun"
+      ],
+      "currentWeeklyKm": 45,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1080,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "edge-result-12w",
+    "group": "granični",
+    "note": "rezultat star tačno 12 nedelja",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 28,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2760,
+        "date": "2026-08-10"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "edge-vdot30",
+    "group": "granični",
+    "note": "VDOT 30,0",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": [
+        "mon",
+        "wed",
+        "fri",
+        "sun"
+      ],
+      "currentWeeklyKm": 22,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1840,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "edge-slow-45km",
+    "group": "granični",
+    "note": "VDOT ~30, 45 km, 12 ned (spor, veliki obim)",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 45,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1838,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "edge-fast-15km-13w",
+    "group": "granični",
+    "note": "VDOT ~53, 15 km, 13 ned (brz, mali obim)",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-31",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 15,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1110,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "d3-15km-v38-10w",
+    "group": "razvojni",
+    "note": "3 dana, VDOT ~38, 15 km, 10 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sun"
+      ],
+      "currentWeeklyKm": 15,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1500,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "d3-30km-v48-12w",
+    "group": "razvojni",
+    "note": "3 dana, VDOT ~48, 30 km, 12 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": [
+        "mon",
+        "wed",
+        "sat"
+      ],
+      "currentWeeklyKm": 30,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1230,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 1200
+    }
+  },
+  {
+    "id": "d5-40km-v50-14w",
+    "group": "razvojni",
+    "note": "5 dana, VDOT ~50, 40 km, 14 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": [
+        "mon",
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 40,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1197,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 1155
+    }
+  },
+  {
+    "id": "d5-60km-v58-16w",
+    "group": "razvojni",
+    "note": "5 dana, VDOT ~58, 60 km, 16 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-21",
+      "runDays": [
+        "tue",
+        "wed",
+        "fri",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 60,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1045,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "short-6w-d4-30km-v49",
+    "group": "razvojni",
+    "note": "kratka priprema 6 ned, 4 dana, VDOT ~49, 30 km",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2026-12-13",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 30,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1215,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 1185
+    }
+  },
+  {
+    "id": "short-7w-d3-25km",
+    "group": "razvojni",
+    "note": "kratka priprema 7 ned, 3 dana, VDOT ~42, 25 km",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2026-12-20",
+      "runDays": [
+        "tue",
+        "thu",
+        "sun"
+      ],
+      "currentWeeklyKm": 25,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1380,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "rej-2-days",
+    "group": "odbijeni",
+    "note": "2 dana nedeljno",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "sun"
+      ],
+      "currentWeeklyKm": 20,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1500,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "rej-consecutive-days",
+    "group": "odbijeni",
+    "note": "pon–čet: nema 3 nesusedna zahtevna dana",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "mon",
+        "tue",
+        "wed",
+        "thu"
+      ],
+      "currentWeeklyKm": 25,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1500,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "rej-old-fast-long",
+    "group": "odbijeni",
+    "note": "rezultat 13 ned, VDOT > 60, 17 ned, 50 km",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-28",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 50,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 990,
+        "date": "2026-08-03"
+      },
+      "goalTimeSec": null
+    }
+  }
+]

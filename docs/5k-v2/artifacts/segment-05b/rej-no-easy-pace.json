@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "MISSING_EASY_PACE",
+      "message": "Bez pouzdanog rezultata (nema ga ili je stariji od 12 nedelja) potreban je uobičajen lagan tempo (typicalEasyPaceSecPerKm)."
+    }
+  ],
+  "violations": []
+}

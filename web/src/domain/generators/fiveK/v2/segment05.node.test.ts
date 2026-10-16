@@ -6,12 +6,10 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
-import { pacesFromVdot } from './paces.ts';
 import * as policy from './policy.ts';
 import { inputOf, START, type Profile } from './testInputs.ts';
 import type { FiveKV2Plan, Paces, PlanDay, PlanWeek, ReasonCode, Weekday } from './types.ts';
 import { validatePlan } from './validate.ts';
-import * as volume from './volume.ts';
 
 const P = policy.FIVE_K_V2_POLICY;
 const D3: Weekday[] = ['tue', 'thu', 'sun'];
@@ -89,17 +87,12 @@ const EX = {
 /* ---------- A) 3-dnevne dopune ---------- */
 
 describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
-  it('3 dana: kapacitet ≈ 17 km za svaki VDOT (prva T nedelja: WU+CD 2,5 + T 1 km ≥ 20% nedelje)', () => {
-    for (const vdot of [40, 50, 60]) expect(volume.capacityKm(pacesFromVdot(vdot), 3)).toBe(17.1);
-  });
-
-  it('3 dana, 30 km, VDOT ~48: start = kapacitet, START_ABOVE_CAPACITY, svaka nedelja planirano = cilj', () => {
+  // 2.4.1 (Segment 05b): kapacitet 3 dana ≈ 17 km i „start = kapacitet" za 3 d / 30 km ukinuti —
+  // v. segment05b.node.test.ts.
+  it('3 dana, 30 km, VDOT ~48: svaka nedelja planirano = cilj, bez „lagan = dugi"', () => {
     const plan = planOf(
       inputOf({ weeks: 12, km: 30, distanceM: 5000, timeSec: 1230, days: ['mon', 'wed', 'sat'] })
     );
-    expect(plan.startKm).toBe(plan.capacityKm);
-    expect(plan.capacityKm).toBeLessThan(30);
-    expect(plan.warnings.map((v) => v.rule)).toContain('START_ABOVE_CAPACITY');
     for (const w of plan.weeks) {
       expect(w.easyCappedAtLong).toBe(false);
       expect(w.plannedKm).toBeCloseTo(w.targetKm, 2);

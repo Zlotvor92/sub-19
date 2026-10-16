@@ -10,13 +10,14 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.4.0',
+  version: '5k-v2.4.1',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
       - qualityDays / easyDays: šablon nedelje (+ jedan dugi);
       - longMaxShare: dugi ≤ ovaj udeo ciljnog km nedelje (i ≤ long.maxSec), naniže na longStepKm
-        (3 dana 0,1 km: jedini kvalitet je ~20% nedelje, pa bi 0,5 km gurnulo lagan preko dugog);
+        (2.4.1: 0,1 km za sve brojeve dana; 3 dana 45% — heuristika: oba nekvalitetna trčanja su
+        bliske dužine, pa dugi ≤ 45% i lagan ≤ dugi traže kvalitet ≥ 10% nedelje, ne ≥ 20%);
       - maxWeekKm: apsolutni vrh obima (član peakKm());
       - minWeekKm: Uslov 8, najmanji smislen obim nedelje treninga (≈ broj dana × 2,5 km). */
   days: {
@@ -25,7 +26,7 @@ export const FIVE_K_V2_POLICY = {
       weeklyKm: { min: 12, max: 35 },
       qualityDays: 1,
       easyDays: 1,
-      longMaxShare: 0.4,
+      longMaxShare: 0.45,
       longStepKm: 0.1,
       maxWeekKm: 40,
       minWeekKm: 7.5
@@ -35,7 +36,7 @@ export const FIVE_K_V2_POLICY = {
       qualityDays: 2,
       easyDays: 1,
       longMaxShare: 0.35,
-      longStepKm: 0.5,
+      longStepKm: 0.1,
       maxWeekKm: 50,
       minWeekKm: 10
     },
@@ -44,7 +45,7 @@ export const FIVE_K_V2_POLICY = {
       qualityDays: 2,
       easyDays: 2,
       longMaxShare: 0.3,
-      longStepKm: 0.5,
+      longStepKm: 0.1,
       maxWeekKm: 65,
       minWeekKm: 12.5
     }
@@ -488,5 +489,18 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'rasterećenje svake 3. nedelje, cilj najviše „orijentir". Dopune posle mreže: trkačka nedelja lagan ' +
       'dan ≥ 2 km (taperMinKm) i kad je 50% dugog manje; rasterećenje po osećaju bez mesta za kvalitet → ' +
       'samo ubrzanja; prvi izbor po osećaju = 70% najvećeg rada koji staje (ponuda je ograničena).'
+  },
+  {
+    version: '5k-v2.4.1',
+    decision:
+      'Segment 05b, regresija kapaciteta (pod 2.4.0: 3 dana ≈ 17,1 km za svaki VDOT; 4 dana VDOT ≥ 45 ' +
+      '41,3 km zbog rupa 41,4–44,9). (1) 3 dana: dva nekvalitetna trčanja su dugi i lagan (duže = dugi); ' +
+      'ostatak posle kvaliteta: dugi ≥ lagan, dugi ≤ 45% nedelje (bilo 40%; samo 3 dana — heuristika: oba ' +
+      'preostala trčanja su bliske dužine) i ≤ 90 min. Lagan ≤ dugi ostaje, ali više ne tera kvalitet na ' +
+      '≥ 20% nedelje (sada ≥ 10%). (2) Rupe u izvodljivim ciljevima ne spuštaju kapacitet: capacityKm = ' +
+      'najveći izvodljiv cilj (bez zatvaranja naniže); cilj nedelje u rupi → najveći izvodljiv cilj ≤ želje ' +
+      '(volume.fitTargetKm, pretraga naniže 0,1 km, jedno mesto; start, izgradnja, rasterećenje, taper). ' +
+      'Korak dugog 0,1 km za 3/4/5 dana. (3) Nijedan regular plan sa rezultatom nema niži vrh nego na ' +
+      '7b4b574, osim gde je tamo vrh-nedelja imala lagan = dugi / planirano < cilj (test sa fixture).'
   }
 ];

@@ -43,8 +43,8 @@ export function easyCount(a: Athlete, hasQ1: boolean, hasQ2: boolean): number {
 /**
  * Dužine dugog i laganih (JEDINO mesto, jedan prolaz; koristi ga i kapacitet u volume.ts):
  * dugi = min(longCapKm(cilj), cilj − kvalitet − n × min. lagan na 0,1 km); lagan = (cilj − kvalitet −
- * dugi) / n. Ako je lagan > dugi: capped (lagan = dugi, planirano < cilj) — 2.4.0: kapacitet to
- * isključuje za svaki cilj ≤ kapaciteta kad dugi stoji na plafonu, pa je ovo samo zaštita.
+ * dugi) / n. Ako je lagan > dugi: capped (lagan = dugi, planirano < cilj) — 2.4.1: kapacitet i
+ * fitTargetKm (volume.ts) to isključuju za svaki cilj plana kad dugi stoji na plafonu (samo zaštita).
  */
 export function weekLengths(
   target: number,
@@ -56,7 +56,7 @@ export function weekLengths(
 ): { longKm: number; shares: number[]; capped: boolean; easyMin: number } {
   const easyMin = phase === 'taper' ? P.easy.taperMinKm : P.easy.minKm;
   // 2.2.0: treći član na 0,1 km (ne 0,5): sa 0,5 km mala rasteretna nedelja (13 km) dobija dugi 3 km i
-  // lagane 3,2 km, tj. lagan > dugi.
+  // lagane 3,2 km, tj. lagan > dugi. 2.4.1: i udeo dana (longCapKm) je na 0,1 km za sve brojeve dana.
   const longKm = Math.min(longCapKm(target, p, a), floor1(target - qualityKm - nEasy * easyMin));
   const rest = r2(target - qualityKm - longKm);
   const capped = rest > nEasy * longKm + 1e-9;

@@ -5,7 +5,7 @@ import { hasFreshResult } from './input.ts';
 import { isShortPrep, phaseCounts, testWeekOf } from './periodize.ts';
 import { isRunDaysCount, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import type { FiveKV2Plan, Phase, PlanWeek, QualityType, Violation } from './types.ts';
-import { capacityKm, peakKm } from './volume.ts';
+import { capacityKm, fitTargetKm, peakKm } from './volume.ts';
 import { baseDoseKey, qualityBudgets, tFormOf, tMaxSec, warmupBand } from './workouts.ts';
 
 const PHASE_ORDER: readonly Phase[] = ['base', 'peak', 'sharpen', 'taper', 'race'];
@@ -362,7 +362,9 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
         `Cilj ${w.targetKm} km > kapacitet ${nDays} dana ${capacity} km.`,
         w.index
       );
-  if (Math.abs(plan.startKm - Math.min(plan.input.currentWeeklyKm, capacity)) > 0.05)
+  // 2.4.1 (Odluka 2): cilj u rupi izvodljivih → fitTargetKm (start, rasterećenje, taper).
+  const fit = (t: number): number => fitTargetKm(Math.round(t * 10) / 10, plan.paces, a);
+  if (Math.abs(plan.startKm - fit(Math.min(plan.input.currentWeeklyKm, capacity))) > 0.05)
     err(
       'VOLUME_START',
       `Start ${plan.startKm} km ≠ min(trenutni obim, kapacitet ${capacity} km).`,
@@ -384,12 +386,15 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
     const prev = weeks[w.index - 2];
     if (w.deload && prev) {
       const f = w.targetKm / prev.targetKm;
-      if (Math.abs(f - P.volume.deloadFactor) > fTol)
+      const fitted = Math.abs(w.targetKm - fit(prev.targetKm * P.volume.deloadFactor)) < EPS;
+      if (Math.abs(f - P.volume.deloadFactor) > fTol && !fitted)
         err('VOLUME_DELOAD', `Rasterećenje ${f.toFixed(2)} × prethodne.`, w.index);
     }
     if (w.phase === 'taper' && w.taperStep) {
       const f = w.targetKm / peak;
-      if (Math.abs(f - P.volume.taperFactors[w.taperStep - 1]!) > fTol)
+      const factor = P.volume.taperFactors[w.taperStep - 1]!;
+      const fitted = Math.abs(w.targetKm - fit(peak * factor)) < EPS;
+      if (Math.abs(f - factor) > fTol && !fitted)
         err('VOLUME_TAPER', `Taper ${w.taperStep}: ${f.toFixed(2)} × vrh.`, w.index);
     }
     if (w.phase === 'race' && w.targetKm > raceBound + tolKm)
