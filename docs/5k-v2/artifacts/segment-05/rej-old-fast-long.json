@@ -1,0 +1,18 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "PLAN_LENGTH_OUT_OF_RANGE",
+      "message": "Plan mora trajati 6–16 nedelja; sada 17."
+    },
+    {
+      "code": "WEEKLY_KM_OUT_OF_RANGE",
+      "message": "Trenutni obim mora biti 15–45 km nedeljno za 4 dana."
+    },
+    {
+      "code": "MISSING_EASY_PACE",
+      "message": "Bez pouzdanog rezultata (nema ga ili je stariji od 12 nedelja) potreban je uobičajen lagan tempo (typicalEasyPaceSecPerKm)."
+    }
+  ],
+  "violations": []
+}

@@ -199,7 +199,8 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
     ['obim 45,1', inputOf({ ...ok, km: 45.1 }), 'WEEKLY_KM_OUT_OF_RANGE'],
     ['5 nedelja', inputOf({ ...ok, weeks: 5 }), 'PLAN_LENGTH_OUT_OF_RANGE'],
     ['17 nedelja', inputOf({ ...ok, weeks: 17 }), 'PLAN_LENGTH_OUT_OF_RANGE'],
-    ['rezultat 85 dana', inputOf({ ...ok, resultDaysBefore: 85 }), 'RESULT_TOO_OLD'],
+    // 2.4.0: star rezultat više nije odbijanje — bez laganog tempa traži se MISSING_EASY_PACE.
+    ['rezultat 85 dana', inputOf({ ...ok, resultDaysBefore: 85 }), 'MISSING_EASY_PACE'],
     ['rezultat posle starta', inputOf({ ...ok, resultDaysBefore: -1 }), 'RESULT_AFTER_START'],
     ['VDOT < 30', inputOf({ ...ok, distanceM: 5000, timeSec: 1860 }), 'VDOT_OUT_OF_RANGE'],
     ['VDOT > 60', inputOf({ ...ok, distanceM: 5000, timeSec: 1000 }), 'VDOT_OUT_OF_RANGE'],

@@ -5,12 +5,12 @@
    `DECISIONS` na dnu fajla. Jednačine Daniels–Gilbert (paces.ts) su objavljeni model, ali i
    one su model, ne merenje konkretnog trkača. */
 
-import type { Weekday } from './types.ts';
+import type { Effort, Weekday } from './types.ts';
 
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.3.0',
+  version: '5k-v2.4.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -21,7 +21,8 @@ export const FIVE_K_V2_POLICY = {
       - minWeekKm: Uslov 8, najmanji smislen obim nedelje treninga (≈ broj dana × 2,5 km). */
   days: {
     3: {
-      weeklyKm: { min: 10, max: 35 },
+      /* 2.4.0: min 12 (bilo 10): ispod 12 km 3 dana nema prostora za kvalitet (Segment 04, problem 2). */
+      weeklyKm: { min: 12, max: 35 },
       qualityDays: 1,
       easyDays: 1,
       longMaxShare: 0.4,
@@ -50,8 +51,14 @@ export const FIVE_K_V2_POLICY = {
   },
 
   input: {
-    /** Rezultat stariji od ovoga ne opisuje trenutnu formu dovoljno pouzdano (heuristika). */
+    /** Rezultat stariji od ovoga ne opisuje trenutnu formu dovoljno pouzdano (heuristika). 2.4.0: star
+        rezultat nije odbijanje — plan je po osećaju, a rezultat se samo prikazuje. */
     resultMaxAgeDays: 84,
+    /** 2.4.0: uobičajen lagan tempo korisnika [s/km] za plan bez pouzdanog rezultata (4:30–8:30). */
+    easyPaceSecPerKm: { min: 270, max: 510 },
+    /** 2.4.0: poruka kad je obim ispod donje granice 3 dana. */
+    lowVolume3DaysMessage:
+      'ispod 12 km na 3 dana nema prostora za kvalitet; počni laganim trčanjem ili izaberi 4 dana',
     /** Distance rezultata iz kojih se računa VDOT. */
     resultDistancesM: [3000, 5000, 10000] as const,
     /** Opseg VDOT-a za koji v2 pravi plan (heuristika opsega; van toga pravila nisu proverena). */
@@ -192,8 +199,75 @@ export const FIVE_K_V2_POLICY = {
         to ni kratak T (≥ shortTMinKm) ne staje, kvalitet nedelje su samo ubrzanja `stridesOnly` na
         laganom danu (heuristika). */
     deloadSubstitute: { minRKm: 1.2, stridesOnly: { reps: 6, sec: 20, recoverySec: 60 } },
+    /** 2.4.0 (Odluka 3): ista doza druge strukture bez druge ponude ponavljanja — kraći oporavak I/RP:
+        udeo vremena ponavljanja − step, ne ispod minRatio (heuristika gustine). */
+    denser: { step: 0.25, minRatio: { I: 0.5, RP: 0.25 } },
     /** Trkačka nedelja: kratko oštrenje RP-om (opcije u repOptionsKm.RPsharpener). */
     raceWeekSharpener: { maxReps: 4, minReps: 2 }
+  },
+
+  /** 2.4.0: plan po osećaju (bez pouzdanog rezultata). Trajanja, broj ponavljanja i RPE su
+      HEURISTIKE. Km kvaliteta su procena: vreme × E tempo (sredina opsega = korisnikov lagan tempo).
+      Budžeti su isti udeli kao sa rezultatom; donji prag 70% ne važi (nema tempa). */
+  feel: {
+    /** E = korisnikov lagan tempo ± ovoliko sekundi. */
+    easySpreadSec: 15,
+    /** Kratki usponi (R budžet): ponavljanje 30–45 s, oporavak lagano nazad 2 × vreme uspona. */
+    hills: { boutsSec: [45, 30], minReps: 4, maxReps: 12, recoveryRatio: 2 },
+    /** Fartlek 1–2 min „brzo ali kontrolisano" (vrhunac: I budžet; početnik: T budžet). */
+    fartlek: { boutsSec: [120, 90, 60], minReps: 3, maxReps: 10, recoveryRatio: 1 },
+    /** RP-ekvivalent po osećaju (oštrenje, taper, trkačka nedelja): kratko, oporavak pola vremena. */
+    fartlekRP: { boutsSec: [120, 90, 60, 45, 30], minReps: 3, maxReps: 10, recoveryRatio: 0.5 },
+    /** Tempo po osećaju (T budžet): kontinuirano 10 min do plafona T faze (tContinuousMaxSec), korak
+        1 min; ili 2–3 × 5–10 min (korak 30 s) sa 60 s lagano. */
+    tempo: {
+      minSec: 600,
+      stepSec: 60,
+      splitReps: [2, 3],
+      splitMinSec: 300,
+      splitMaxSec: 600,
+      splitStepSec: 30,
+      recoverySec: 60
+    },
+    /** Kontrolno trčanje: 3 km maksimalno ravnomerno u 3. nedelji, ili 4. ako je 3. rasteretna. */
+    test: { km: 3, weeks: [3, 4] as const },
+    effort: {
+      strides: { rpeMin: 8, rpeMax: 8, cue: 'brzo i opušteno, ne sprint' },
+      hills: { rpeMin: 8, rpeMax: 8, cue: 'snažno uzbrdo, kontrolisano; nazad lagano' },
+      fartlek: { rpeMin: 7, rpeMax: 8, cue: 'brzo ali kontrolisano' },
+      fartlekBeginner: { rpeMin: 6, rpeMax: 7, cue: 'brzo ali kontrolisano, bez naprezanja' },
+      fartlekRP: { rpeMin: 8, rpeMax: 8, cue: 'osećaj trkačkog napora za 5K' },
+      tempo: { rpeMin: 6, rpeMax: 7, cue: 'može da se priča u kratkim rečenicama' },
+      test: { rpeMin: 9, rpeMax: 10, cue: 'maksimalno ravnomerno' },
+      race: { rpeMin: 9, rpeMax: 10, cue: 'trka' }
+    } satisfies Record<string, Effort>,
+    note:
+      'Plan po osećaju: nema pouzdanog rezultata, pa E dolazi iz tvog uobičajenog laganog tempa (±15 s), ' +
+      'a kvalitet je zadat trajanjem i naporom (RPE), bez brojčanog tempa. Km kvaliteta su procena iz E tempa.',
+    testNote:
+      'Kontrolno trčanje 3 km u nedelji {week}: plan i dalje ostaje po osećaju do kraja; tempo iz testa ' +
+      'ulazi tek kroz adaptaciju (segment 06).',
+    forecastNote: 'Prognoza 5K: nedovoljno podataka (nema pouzdanog rezultata).',
+    oldResultNote:
+      'Rezultat {result} ({date}) je stariji od 12 nedelja: prikazan samo kao informacija, ne koristi se za tempo ni prognozu.'
+  },
+
+  /** 2.4.0: početnik (trči redovno < 6 meseci, mora 30 min kontinuirano). Heuristike konzervativnog
+      početka, ne dokazana pravila. */
+  beginner: {
+    maxRunDays: 4,
+    qualityDays: 1,
+    /** Nedelje 1–2 bez kvaliteta: samo lagano + ubrzanja. */
+    introWeeks: 2,
+    maxBuildGrowth: 0.05,
+    peakCapFactor: 1.2,
+    /** Dugi ≤ 60 min (sporijom granicom E). */
+    longMaxSec: 3600,
+    deloadEvery: 3,
+    /** Oštrenje/taper sa rezultatom: RP kratko (VDOT RP tempo). */
+    rpShort: { optionsKm: [0.4, 0.3, 0.2], minReps: 2, maxReps: 6 },
+    goalMessage:
+      'Cilj je orijentir: kod početnika napredak je teško predvideti; tempo treninga ne zavisi od cilja.'
   },
 
   long: {
@@ -257,6 +331,50 @@ export const isRunDaysCount = (n: number): n is RunDaysCount => n in FIVE_K_V2_P
 /** Red tabele `days` za broj dana trčanja (jedino mesto grananja po broju dana). */
 export const daysRule = (n: RunDaysCount): (typeof FIVE_K_V2_POLICY.days)[RunDaysCount] =>
   FIVE_K_V2_POLICY.days[n];
+
+/** 2.4.0: ko trči — broj dana, početnik, plan po osećaju (bez pouzdanog rezultata). */
+export interface Athlete {
+  days: RunDaysCount;
+  beginner: boolean;
+  feel: boolean;
+}
+
+/** 2.4.0: broj dana (stari potpis, 2.3.0) → iskusan trkač sa rezultatom. */
+export const asAthlete = (a: Athlete | RunDaysCount): Athlete =>
+  typeof a === 'number' ? { days: a, beginner: false, feel: false } : a;
+
+/** 2.4.0: pravila za trkača (jedino mesto grananja po početniku): red tabele `days` + početnik. */
+export function rulesOf(a: Athlete): {
+  weeklyKm: { min: number; max: number };
+  qualityDays: number;
+  easyDays: number;
+  longMaxShare: number;
+  longStepKm: number;
+  longMaxSec: number;
+  maxWeekKm: number;
+  minWeekKm: number;
+  maxBuildGrowth: number;
+  peakCapFactor: number;
+  deloadEvery: number;
+} {
+  const d = daysRule(a.days);
+  const b = FIVE_K_V2_POLICY.beginner;
+  const v = FIVE_K_V2_POLICY.volume;
+  const qualityDays = a.beginner ? b.qualityDays : d.qualityDays;
+  return {
+    weeklyKm: d.weeklyKm,
+    qualityDays,
+    easyDays: a.days - 1 - qualityDays,
+    longMaxShare: d.longMaxShare,
+    longStepKm: d.longStepKm,
+    longMaxSec: a.beginner ? b.longMaxSec : FIVE_K_V2_POLICY.long.maxSec,
+    maxWeekKm: d.maxWeekKm,
+    minWeekKm: d.minWeekKm,
+    maxBuildGrowth: a.beginner ? b.maxBuildGrowth : v.maxBuildGrowth,
+    peakCapFactor: a.beginner ? b.peakCapFactor : v.peakCapFactor,
+    deloadEvery: a.beginner ? b.deloadEvery : v.deloadEvery
+  };
+}
 
 /** Dnevnik odluka: svaka promena pravila posle pregleda primera. */
 export const DECISIONS: readonly { version: string; decision: string }[] = [
@@ -331,7 +449,7 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'se drži iste strukture dok T napreduje — inače je spor profil sa 45 km dobijao R 10 × 150 m.'
   },
   {
-    version: '5k-v2.3.0',
+    version: '5k-v2.4.0',
     decision:
       'Segment 04: 3 i 5 dana, kratka priprema. Opseg: 3/4/5 dana, obim 3 d 10–35, 4 d 15–45, 5 d 25–65 km, ' +
       '6–16 nedelja. (1) Šablon po broju dana iz JEDNE tabele `days`: 3 d = 1 kvalitet + dugi + lagan sa ' +
@@ -347,5 +465,28 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'je ~20% nedelje; prvi T u bazi 3 d = 1 km kad 70% budžeta ne prima minimum; RP u oštrenju ' +
       'neopadajući — bez višeg nivoa ista doza druge strukture (ranije 15 km/10 ned odbijan za sve VDOT-e); ' +
       'minimum nedelje (Uslov 8) po broju dana 7,5/10/12,5 km.'
+  },
+  {
+    version: '5k-v2.4.0',
+    decision:
+      'Segment 05: 3-dnevne dopune, plan bez pouzdanog rezultata, početnik. (1) Kapacitet iz stvarne ' +
+      'konstrukcije (volume.capacityKm): najveći cilj T ≤ apsolutnog vrha takav da weekQuality + ' +
+      'weekLengths (iste funkcije kao generate) ni za jedan cilj ≤ T ne daju lagan > dugi dok dugi stoji ' +
+      'na plafonu; probne nedelje = prva nedelja svake faze, rasterećenje, taper 1/2, smena 3 dana, uvod ' +
+      'početnika, nedelja testa; korak 0,1 km. 3 dana ≈ 17 km za svaki VDOT (prva T nedelja: WU+CD 2,5 + ' +
+      'T 1 km mora biti ≥ 20% nedelje). Lagani: zaokruživanje više ne gura poslednji lagan preko dugog. ' +
+      '(2) 3 dana 12–35 km; ispod poruka „ispod 12 km na 3 dana nema prostora za kvalitet…". (3) I u ' +
+      'vrhuncu i RP u oštrenju bez višeg nivoa: ista doza druge strukture; ako je nema, ista ponavljanja ' +
+      'sa kraćim oporavkom (quality.denser); tek onda (4/5 dana) zadržan I uz promenu T. (4) Bez rezultata ' +
+      'ili sa rezultatom starijim od 12 nedelja: plan po osećaju, E = typicalEasyPaceSecPerKm ± 15 s ' +
+      '(obavezan, 4:30–8:30), kvalitet zadat trajanjem i RPE (usponi 30–45 s, fartlek 1–2 min, tempo ' +
+      '10–20 min, RP po osećaju), km procenjeni E tempom; star rezultat samo informacija. (5) Kontrolno ' +
+      'trčanje 3 km u 3. (ili 4.) ne-rasteretnoj nedelji umesto glavnog kvaliteta; plan ostaje po osećaju. ' +
+      '(6) Prognoza i cilj: „nedovoljno podataka". (7) Isti udeli budžeta; 70% prag ne važi. ' +
+      '(8–10) Početnik (< 6 meseci, mora 30 min kontinuirano, inače RUN_WALK_NOT_SUPPORTED_YET): ≤ 4 dana, ' +
+      '1 kvalitet, nedelje 1–2 samo lagano + ubrzanja, bez I, rast ≤ 5%, dugi ≤ 60 min, vrh ≤ 1,2 × start, ' +
+      'rasterećenje svake 3. nedelje, cilj najviše „orijentir". Dopune posle mreže: trkačka nedelja lagan ' +
+      'dan ≥ 2 km (taperMinKm) i kad je 50% dugog manje; rasterećenje po osećaju bez mesta za kvalitet → ' +
+      'samo ubrzanja; prvi izbor po osećaju = 70% najvećeg rada koji staje (ponuda je ograničena).'
   }
 ];

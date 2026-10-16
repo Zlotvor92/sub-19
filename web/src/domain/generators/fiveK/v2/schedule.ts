@@ -1,6 +1,6 @@
 /* Raspored nedelje po broju dana (2.3.0, tabela `days` u policy.ts):
    3 dana: 1 kvalitet + dugi + 1 lagan; 4 dana: 2 kvaliteta + dugi + 1 lagan;
-   5 dana: 2 kvaliteta + dugi + 2 lagana.
+   5 dana: 2 kvaliteta + dugi + 2 lagana. 2.4.0: početnik 1 kvalitet (4 dana: + 2 lagana).
    Zahtevni dani (kvaliteti, dugi) moraju biti razmaknuti ≥ minHardGapDays i CIKLIČNO
    (nedelja → ponedeljak sledeće nedelje). */
 
@@ -32,9 +32,13 @@ function combinations(xs: readonly number[], k: number): number[][] {
 
 export type PatternResult = { ok: true; pattern: Pattern } | { ok: false; reason: Reason };
 
-export function choosePattern(runDays: readonly Weekday[]): PatternResult {
+/** `qualityDays`: 2.4.0 iz rulesOf (početnik 1); podrazumevano red tabele `days`. */
+export function choosePattern(
+  runDays: readonly Weekday[],
+  qualityDays: number = daysRule(runDays.length as RunDaysCount).qualityDays
+): PatternResult {
   const idx = runDays.map(weekdayIndex).sort((a, b) => a - b);
-  const rule = daysRule(idx.length as RunDaysCount);
+  const rule = { qualityDays };
   const hardCount = rule.qualityDays + 1;
   const candidates: { pattern: Pattern; longRank: number; minGap: number; order: number }[] = [];
   let order = 0;

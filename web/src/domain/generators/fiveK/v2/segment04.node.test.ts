@@ -151,23 +151,15 @@ describe('Odluka 2: kapacitet i vrh obima po broju dana', () => {
     expect(volume.peakKm(60, 44, 5)).toBe(44);
   });
 
-  it('kapacitet: ista nejednačina parametrizovana brojem dana; raste sa brojem dana', () => {
+  // 2.4.0 (Segment 05, Odluka 1): kapacitet iz stvarne konstrukcije nedelje (segment05.node.test.ts);
+  // stara nejednačina (10% kvaliteta) i rast sa brojem dana više nisu pravilo.
+  it('kapacitet ≤ apsolutnog vrha po broju dana; dugi na kapacitetu ≤ 90 min', () => {
     for (const vdot of [30, 40, 50, 60]) {
       const p = pacesFromVdot(vdot);
-      const c3 = volume.capacityKm(p, 3);
-      const c4 = volume.capacityKm(p, 4);
-      const c5 = volume.capacityKm(p, 5);
-      expect(c3).toBeLessThanOrEqual(c4);
-      expect(c4).toBeLessThanOrEqual(c5);
       for (const n of [3, 4, 5] as const) {
         const t = volume.capacityKm(p, n);
-        const rule = days.days[n]! as unknown as { qualityDays: number; easyDays: number };
-        const wc = [...P.warmup.bands].reverse().find((b) => t >= b.fromWeekKm)!;
-        const carried =
-          rule.qualityDays * (wc.warmupKm + wc.cooldownKm) +
-          P.volume.capacityQualityMinShare * t +
-          (1 + rule.easyDays) * volume.longCapKm(t, p, n);
-        expect(carried + 1e-9).toBeGreaterThanOrEqual(t);
+        expect(t).toBeLessThanOrEqual(days.days[n]!.maxWeekKm);
+        expect(volume.longCapKm(t, p, n) * p.E.slow).toBeLessThanOrEqual(P.long.maxSec);
       }
     }
   });
@@ -388,7 +380,9 @@ describe('mreža: 3/4/5 dana × 5 obima × {6, 7, 10, 16} ned × 4 rezultata × 
       expect(codes['PLAN_VIOLATES_POLICY']).toBeUndefined();
       expect({ plans, rejected }).toEqual(
         {
-          3: { plans: 126, rejected: 34 },
+          // 2.4.0 (Segment 05): 3 dana 10 km je van opsega (32 odbijanja WEEKLY_KM_OUT_OF_RANGE);
+          // kapacitet iz konstrukcije spušta 15–35 km na ~17 km, pa ti planovi prolaze.
+          3: { plans: 128, rejected: 32 },
           4: { plans: 160, rejected: 0 },
           5: { plans: 160, rejected: 0 }
         }[n]

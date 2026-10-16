@@ -70,25 +70,14 @@ describe('Odluka 1: pošten cilj obima — kapacitet 4 dana ograničava cilj na 
     }
   });
 
-  it('kapacitet: q1 + q2 (donja granica) + dugi + lagan (≤ dugi) nosi cilj, raste sa VDOT-om', () => {
-    let last = 0;
+  // 2.4.0 (Segment 05, Odluka 1): kapacitet se računa iz stvarne konstrukcije nedelje (ne iz
+  // nejednačine sa 10% kvaliteta) i više nije monoton po VDOT-u; detalji u segment05.node.test.ts.
+  it('kapacitet: dugi na kapacitetu ≤ 90 min, kapacitet ≤ apsolutnog vrha 4 dana', () => {
     for (const vdot of [30, 35, 40, 45, 50, 55, 60]) {
       const p = pacesFromVdot(vdot);
       const t = volume.capacityKm(p, 4);
-      const long = volume.longCapKm(t, p, 4);
-      expect(long * p.E.slow).toBeLessThanOrEqual(P.long.maxSec);
-      expect(t).toBeGreaterThanOrEqual(last);
-      // Najveći T: sledećih 0,1 km više ne nosi 4 dana.
-      const next = Math.round((t + 0.1) * 10) / 10;
-      const wc = (x: number): number =>
-        [...P.warmup.bands].reverse().find((b) => x >= b.fromWeekKm)!.warmupKm +
-        [...P.warmup.bands].reverse().find((b) => x >= b.fromWeekKm)!.cooldownKm;
-      const carries = (x: number): boolean =>
-        2 * wc(x) + P.volume.capacityQualityMinShare * x + 2 * volume.longCapKm(x, p, 4) + 1e-9 >=
-        x;
-      expect(carries(t)).toBe(true);
-      expect(carries(next)).toBe(false);
-      last = t;
+      expect(volume.longCapKm(t, p, 4) * p.E.slow).toBeLessThanOrEqual(P.long.maxSec);
+      expect(t).toBeLessThanOrEqual(50);
     }
   });
 
@@ -211,21 +200,19 @@ describe('Odluka 5: brz trkač sa malim obimom (15 km, VDOT ~53)', () => {
     ).toBe(true);
   });
 
-  it('11 ned: I neopadajući; zadržan I → drugi kvalitet menja strukturu', () => {
+  // 2.4.0 (Segment 05, Odluka 3): bez višeg nivoa I više nije zadržan — ista doza druge strukture
+  // (ovde kraći oporavak); identičan I dve nedelje zaredom ne postoji.
+  it('11 ned: I neopadajući; bez višeg nivoa ista doza druge strukture (ne zadržan I)', () => {
     const peak = planOf(FAST_SMALL(11)).weeks.filter((w) => w.phase === 'peak' && !w.deload);
-    let held = 0;
+    let alt = 0;
     for (let i = 1; i < peak.length; i++) {
       const a = roleDay(peak[i - 1]!, 'q1').workout;
       const b = roleDay(peak[i]!, 'q1').workout;
       expect(b.workKm.I).toBeGreaterThanOrEqual(a.workKm.I);
-      if (JSON.stringify(a.blocks) === JSON.stringify(b.blocks)) {
-        held++;
-        expect(JSON.stringify(roleDay(peak[i]!, 'q2').workout.blocks)).not.toBe(
-          JSON.stringify(roleDay(peak[i - 1]!, 'q2').workout.blocks)
-        );
-      }
+      expect(JSON.stringify(b.blocks)).not.toBe(JSON.stringify(a.blocks));
+      if (Math.abs(b.workKm.I - a.workKm.I) < 1e-9) alt++;
     }
-    expect(held).toBeGreaterThan(0);
+    expect(alt).toBeGreaterThan(0);
   });
 });
 

@@ -1,11 +1,20 @@
-/* JEDINO mesto koje određuje ciljni km nedelje (trkačka nedelja: gornja granica, v. generate.ts). */
+/* JEDINO mesto koje određuje ciljni km nedelje (trkačka nedelja: gornja granica, v. week.ts). */
 
-import { daysRule, FIVE_K_V2_POLICY as P, type RunDaysCount } from './policy.ts';
-import type { Paces, WeekFrame } from './types.ts';
-import { warmupBand } from './workouts.ts';
+import {
+  asAthlete,
+  FIVE_K_V2_POLICY as P,
+  rulesOf,
+  type Athlete,
+  type RunDaysCount
+} from './policy.ts';
+import { weekQuality } from './quality.ts';
+import type { PaceModel, Phase, WeekFrame } from './types.ts';
+import { easyCount, longCapKm, weekLengths } from './lengths.ts';
+import type { WeekDose } from './workouts.ts';
+
+export { longCapKm } from './lengths.ts';
 
 const floor1 = (x: number): number => Math.floor(x * 10 + 1e-9) / 10;
-const floorHalf = (x: number): number => Math.floor(x * 2 + 1e-9) / 2;
 const round1 = (x: number): number => Math.round(x * 10) / 10;
 
 export interface VolumePlan {
@@ -21,61 +30,117 @@ export interface VolumePlan {
 
 /**
  * Vrh obima (jedna funkcija, 2.3.0: tri člana):
- * - peakCapFactor × start: rast obima u jednom ciklusu ograničen na +30% (heuristika konzervativnog
- *   rasta, da se uz +8% nedeljno ne stigne do obima za koji telo nije pripremljeno);
- * - kapacitet izabranog broja dana iz tempa (capacityKm);
+ * - peakCapFactor × start: rast obima u jednom ciklusu ograničen na +30% (2.4.0 početnik +20%;
+ *   heuristika konzervativnog rasta);
+ * - kapacitet izabranog broja dana (capacityKm);
  * - apsolutni vrh po broju dana (days[n].maxWeekKm: 3 → 40, 4 → 50, 5 → 65; heuristika).
  */
-export function peakKm(startKm: number, capacity: number, days: RunDaysCount): number {
-  return Math.min(floor1(startKm * P.volume.peakCapFactor), capacity, daysRule(days).maxWeekKm);
+export function peakKm(startKm: number, capacity: number, a: Athlete | RunDaysCount): number {
+  const r = rulesOf(asAthlete(a));
+  return Math.min(floor1(startKm * r.peakCapFactor), capacity, r.maxWeekKm);
 }
 
-/** Dugi trk [km] za ciljni km nedelje: min(udeo dana × cilj naniže na longStepKm, 90 min sporijom granicom E na 0,5 km). */
-export function longCapKm(targetKm: number, p: Paces, days: RunDaysCount): number {
-  const { longMaxShare, longStepKm } = daysRule(days);
-  const share = Math.floor((targetKm * longMaxShare) / longStepKm + 1e-9) * longStepKm;
-  return Math.min(Math.round(share * 10) / 10, floorHalf(P.long.maxSec / p.E.slow));
-}
-
-/**
- * Kapacitet [km] za n dana (2.2.0 za 4 dana; 2.3.0 ista formula parametrizovana tabelom `days`):
- * najveći cilj T (korak 0,1 km) za koji kvaliteti + dugi + lagani (svaki ≤ dugi) ≥ T. Kvalitetni dani
- * su procenjeni donjom granicom qualityDays × (zagrevanje + hlađenje za T) + capacityQualityMinShare
- * × T; dugi = longCapKm(T). Pretraga nejednačine od njene gornje granice (najveće zagrevanje/hlađenje,
- * dugi = 90 min) naniže — deterministično, ne skraćivanje plana. Apsolutni vrh je u peakKm().
- */
-export function capacityKm(p: Paces, days: RunDaysCount): number {
-  const { qualityDays, easyDays } = daysRule(days);
-  const c = P.volume.capacityQualityMinShare;
-  const wcMax = Math.max(...P.warmup.bands.map((b) => b.warmupKm + b.cooldownKm));
-  const longMax = floorHalf(P.long.maxSec / p.E.slow);
-  const upper = (qualityDays * wcMax + (1 + easyDays) * longMax) / (1 - c);
-  for (let k = Math.floor(upper * 10); k > 0; k--) {
-    const t = k / 10;
-    const band = warmupBand(t);
-    const carried =
-      qualityDays * (band.warmupKm + band.cooldownKm) +
-      c * t +
-      (1 + easyDays) * longCapKm(t, p, days);
-    if (carried + 1e-9 >= t) return t;
+/** Probne nedelje kapaciteta: sve vrste ne-trkačkih nedelja koje generate gradi, prva nedelja faze
+    (prev = null) i, za naizmenični jedan kvalitet, druga vrsta (prev.kind). */
+function probes(a: Athlete): { f: WeekFrame; prev: WeekDose | null }[] {
+  const frame = (phase: Phase, o: Partial<WeekFrame> = {}): WeekFrame => ({
+    index: 5,
+    startDate: '2026-01-05',
+    endDate: '2026-01-11',
+    phase,
+    deload: false,
+    taperStep: null,
+    test: false,
+    ...o
+  });
+  const alt = (kind: WeekDose['kind']): WeekDose => ({
+    main: null,
+    t: null,
+    same: 1,
+    kind,
+    feel: {}
+  });
+  const prevs = [null, alt('R'), alt('HILLS'), alt('FARTLEK_T')];
+  const out: { f: WeekFrame; prev: WeekDose | null }[] = [];
+  for (const phase of ['base', 'peak', 'sharpen'] as const) {
+    for (const prev of phase === 'sharpen' ? [null] : prevs) out.push({ f: frame(phase), prev });
+    out.push({ f: frame(phase, { deload: true }), prev: null });
   }
-  return 0;
+  out.push({ f: frame('taper', { taperStep: 1 }), prev: null });
+  out.push({ f: frame('taper', { taperStep: 2 }), prev: null });
+  if (a.beginner) out.push({ f: frame('base', { index: 1 }), prev: null });
+  if (a.feel)
+    for (const phase of ['base', 'peak'] as const)
+      out.push({ f: frame(phase, { test: true }), prev: null });
+  return out;
+}
+
+const capacityCache = new Map<string, number>();
+
+/**
+ * Kapacitet [km] (2.4.0, Odluka 1): najveći cilj T ≤ apsolutnog vrha (days[n].maxWeekKm) takav da
+ * STVARNA konstrukcija nedelje — weekQuality + weekLengths, iste funkcije kao generate — ni za jedan
+ * cilj t ≤ T (od minimuma nedelje, korak 0,1 km) ne daje lagan > dugi (planirano < cilj). Probne nedelje:
+ * probes(). Nedelja koja se uopšte ne može sastaviti (kvalitet ne staje, lagan < minimum) nije pitanje
+ * kapaciteta i preskače se; isto i nedelja u kojoj je dugi sabijen minimumom laganih (donja granica
+ * obima). Ograničena deterministička pretraga naviše; rezultat se pamti po (tempo,
+ * trkač). Ranije (2.2.0–2.3.0): nejednačina sa procenom kvaliteta 10% cilja.
+ */
+export function capacityKm(p: PaceModel, days: Athlete | RunDaysCount): number {
+  const a = asAthlete(days);
+  const key = JSON.stringify([p, a]);
+  const hit = capacityCache.get(key);
+  if (hit !== undefined) return hit;
+  const r = rulesOf(a);
+  const list = probes(a);
+  const lo = Math.round(r.minWeekKm * 10);
+  const hi = Math.round(r.maxWeekKm * 10);
+  let capacity = r.maxWeekKm;
+  search: for (let k = lo; k <= hi; k++) {
+    const t = k / 10;
+    for (const { f, prev } of list) {
+      const s = weekQuality(f, t, p, prev, a);
+      if (!s.ok) continue;
+      const qualityKm = (s.q1 ? s.q1.km : 0) + (s.q2 ? s.q2.km : 0);
+      const L = weekLengths(
+        t,
+        qualityKm,
+        easyCount(a, s.q1 !== null, s.q2 !== null),
+        f.phase,
+        p,
+        a
+      );
+      if (L.shares.some((x) => x + 1e-9 < L.easyMin)) continue;
+      // Kapacitet je gornja granica: računa se samo kad dugi stoji na svom plafonu (udeo dana ili
+      // vreme). Kad je dugi sabijen minimumom laganih (dugi ≈ lagan ≈ minimum), to je donja granica
+      // obima, ne kapacitet.
+      if (L.capped && L.longKm + 1e-9 >= longCapKm(t, p, a)) {
+        capacity = (k - 1) / 10;
+        break search;
+      }
+    }
+  }
+  capacityCache.set(key, capacity);
+  return capacity;
 }
 
 /**
- * Start = min(trenutni obim, kapacitet). Izgradnja: +maxBuildGrowth od poslednje ne-rasteretne nedelje
- * izgradnje, do peakKm(start). Oštrenje drži obim. Rasterećenje ≈ deloadFactor × prethodna nedelja.
- * Taper je udeo vrha (vrh = najveći cilj izgradnje); trkačka nedelja: gornja granica = udeo vrha.
+ * Start = min(trenutni obim, kapacitet). Izgradnja: +maxBuildGrowth (2.4.0 početnik 5%) od poslednje
+ * ne-rasteretne nedelje izgradnje, do peakKm(start). Oštrenje drži obim. Rasterećenje ≈ deloadFactor ×
+ * prethodna nedelja. Taper je udeo vrha (vrh = najveći cilj izgradnje); trkačka nedelja: gornja
+ * granica = udeo vrha.
  */
 export function planVolume(
   frames: readonly WeekFrame[],
   currentKm: number,
-  p: Paces,
-  days: RunDaysCount
+  p: PaceModel,
+  days: Athlete | RunDaysCount
 ): VolumePlan {
-  const capacity = capacityKm(p, days);
+  const a = asAthlete(days);
+  const growth = rulesOf(a).maxBuildGrowth;
+  const capacity = capacityKm(p, a);
   const startKm = Math.min(round1(currentKm), capacity);
-  const cap = peakKm(startKm, capacity, days);
+  const cap = peakKm(startKm, capacity, a);
   const targets: number[] = [];
   let lastBuild: number | null = null;
   for (const f of frames) {
@@ -84,7 +149,7 @@ export function planVolume(
     if (f.deload) t = round1((targets[targets.length - 1] ?? startKm) * P.volume.deloadFactor);
     else if (lastBuild === null) t = startKm;
     else if (f.phase === 'sharpen') t = lastBuild;
-    else t = Math.min(floor1(lastBuild * (1 + P.volume.maxBuildGrowth)), cap);
+    else t = Math.min(floor1(lastBuild * (1 + growth)), cap);
     if (!f.deload) lastBuild = t;
     targets.push(t);
   }

@@ -7,7 +7,7 @@
    Jednačine su objavljeni model; udeli po zonama su heuristike iz policy.ts. */
 
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
-import type { GoalAssessment, Paces } from './types.ts';
+import type { FeelPaces, GoalAssessment, Paces } from './types.ts';
 
 const A = -4.6;
 const B = 0.182258;
@@ -82,4 +82,30 @@ export function assessGoal(vdot: number, goalTimeSec: number): GoalAssessment {
         ? 'Cilj traži napredak iznad prognoze (ambiciozan); tempo treninga ostaje prema rezultatu.'
         : 'Cilj je daleko iznad prognoze (nerealan za ovaj ciklus); tempo treninga ostaje prema rezultatu.';
   return { goalTimeSec, goalVdot, vdotGap, status, message };
+}
+
+/** 2.4.0: plan po osećaju — E = korisnikov uobičajen lagan tempo ± feel.easySpreadSec; bez VDOT-a. */
+export function feelPaces(typicalEasySecPerKm: number): FeelPaces {
+  const e = Math.round(typicalEasySecPerKm);
+  const s = P.feel.easySpreadSec;
+  return { vdot: null, E: { fast: e - s, slow: e + s } };
+}
+
+/** 2.4.0: cilj bez pouzdanog rezultata — bez broja i bez ocene izvodljivosti. */
+export function goalWithoutData(goalTimeSec: number): GoalAssessment {
+  return {
+    goalTimeSec,
+    goalVdot: null,
+    vdotGap: null,
+    status: 'insufficient_data',
+    message:
+      'Nedovoljno podataka: bez pouzdanog rezultata nema prognoze ni ocene izvodljivosti cilja.'
+  };
+}
+
+/** 2.4.0: početnik — najviše „orijentir", nikad „izvodljiv". */
+export function beginnerGoal(g: GoalAssessment): GoalAssessment {
+  return g.status === 'feasible'
+    ? { ...g, status: 'orientation', message: P.beginner.goalMessage }
+    : g;
 }

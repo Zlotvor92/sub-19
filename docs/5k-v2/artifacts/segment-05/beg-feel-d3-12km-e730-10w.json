@@ -1,0 +1,3788 @@
+{
+  "ok": true,
+  "plan": {
+    "policyId": "5k-v2",
+    "policyVersion": "5k-v2.4.0",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sun"
+      ],
+      "currentWeeklyKm": 12,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "typicalEasyPaceSecPerKm": 450,
+      "experience": "beginner",
+      "canRun30Min": true
+    },
+    "paceMode": "feel",
+    "experience": "beginner",
+    "vdot": null,
+    "paces": {
+      "vdot": null,
+      "E": {
+        "fast": 435,
+        "slow": 465
+      }
+    },
+    "predicted5kSec": null,
+    "goal": null,
+    "pattern": {
+      "long": "sun",
+      "q1": "thu",
+      "q2": null,
+      "easy": [
+        "tue"
+      ]
+    },
+    "startKm": 12,
+    "peakKm": 13.2,
+    "capacityKm": 18.6,
+    "notes": [
+      "Plan po osećaju: nema pouzdanog rezultata, pa E dolazi iz tvog uobičajenog laganog tempa (±15 s), a kvalitet je zadat trajanjem i naporom (RPE), bez brojčanog tempa. Km kvaliteta su procena iz E tempa.",
+      "Kontrolno trčanje 3 km u nedelji 4: plan i dalje ostaje po osećaju do kraja; tempo iz testa ulazi tek kroz adaptaciju (segment 06).",
+      "Prognoza 5K: nedovoljno podataka (nema pouzdanog rezultata).",
+      "Početnik: 1 kvalitet nedeljno od nedelje 3, bez I; rast obima ≤ 5%, dugi ≤ 60 min, vrh ≤ 1.2 × start, rasterećenje svake 3. nedelje."
+    ],
+    "weeks": [
+      {
+        "index": 1,
+        "startDate": "2026-11-02",
+        "endDate": "2026-11-08",
+        "phase": "base",
+        "deload": false,
+        "taperStep": null,
+        "test": false,
+        "targetKm": 12,
+        "plannedKm": 12,
+        "budgets": {
+          "I": 0.96,
+          "T": 1.2,
+          "R": 0.6
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": true,
+        "days": [
+          {
+            "date": "2026-11-03",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 3.6 km",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 3.6
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 3.6,
+                  "sec": 1620,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.6,
+              "sec": 1620,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-11-05",
+            "weekday": "thu",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 3.6 km + 6 × 20 s ubrzanja",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 2.71
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 6,
+                  "rep": {
+                    "sec": 20
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "stride": true,
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 2.71,
+                  "sec": 1220,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "km": 3.6,
+              "sec": 1640,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 20,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-11-08",
+            "weekday": "sun",
+            "role": "long",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "long",
+              "qualityType": null,
+              "title": "Dugi lagano 4.8 km",
+              "blocks": [
+                {
+                  "kind": "long",
+                  "km": 4.8
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "long",
+                  "zone": "E",
+                  "km": 4.8,
+                  "sec": 2160,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 4.8,
+              "sec": 2160,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": [
+          "Početnik: nedelja 1 bez kvaliteta — samo lagano + ubrzanja 6 × 20 s."
+        ]
+      },
+      {
+        "index": 2,
+        "startDate": "2026-11-09",
+        "endDate": "2026-11-15",
+        "phase": "base",
+        "deload": false,
+        "taperStep": null,
+        "test": false,
+        "targetKm": 12.6,
+        "plannedKm": 12.6,
+        "budgets": {
+          "I": 1,
+          "T": 1.26,
+          "R": 0.63
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": true,
+        "days": [
+          {
+            "date": "2026-11-10",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 3.8 km",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 3.8
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 3.8,
+                  "sec": 1710,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.8,
+              "sec": 1710,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-11-12",
+            "weekday": "thu",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 3.8 km + 6 × 20 s ubrzanja",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 2.91
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 6,
+                  "rep": {
+                    "sec": 20
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "stride": true,
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 2.91,
+                  "sec": 1310,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "km": 3.8,
+              "sec": 1730,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 20,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-11-15",
+            "weekday": "sun",
+            "role": "long",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "long",
+              "qualityType": null,
+              "title": "Dugi lagano 5 km",
+              "blocks": [
+                {
+                  "kind": "long",
+                  "km": 5
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "long",
+                  "zone": "E",
+                  "km": 5,
+                  "sec": 2250,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 5,
+              "sec": 2250,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": [
+          "Početnik: nedelja 2 bez kvaliteta — samo lagano + ubrzanja 6 × 20 s."
+        ]
+      },
+      {
+        "index": 3,
+        "startDate": "2026-11-16",
+        "endDate": "2026-11-22",
+        "phase": "base",
+        "deload": true,
+        "taperStep": null,
+        "test": false,
+        "targetKm": 10.1,
+        "plannedKm": 10.1,
+        "budgets": {
+          "I": 0.8,
+          "T": 1.01,
+          "R": 0.5
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": false,
+        "days": [
+          {
+            "date": "2026-11-17",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 3.03 km + 4 × 20 s ubrzanja",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 2.48
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 4,
+                  "rep": {
+                    "sec": 20
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "stride": true,
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 2.48,
+                  "sec": 1116,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "km": 3.03,
+              "sec": 1376,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 20,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-11-19",
+            "weekday": "thu",
+            "role": "q1",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "quality",
+              "qualityType": "HILLS",
+              "title": "Kratki usponi: 5 × 30 s (RPE 8, snažno uzbrdo, kontrolisano; nazad lagano 1 min)",
+              "blocks": [
+                {
+                  "kind": "warmup",
+                  "km": 1.5
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 5,
+                  "rep": {
+                    "sec": 30
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "snažno uzbrdo, kontrolisano; nazad lagano"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "km": 1
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "warmup",
+                  "zone": "E",
+                  "km": 1.5,
+                  "sec": 675,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "R",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "snažno uzbrdo, kontrolisano; nazad lagano"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "R",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "snažno uzbrdo, kontrolisano; nazad lagano"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "R",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "snažno uzbrdo, kontrolisano; nazad lagano"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "R",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "snažno uzbrdo, kontrolisano; nazad lagano"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "R",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "snažno uzbrdo, kontrolisano; nazad lagano"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "zone": "E",
+                  "km": 1,
+                  "sec": 450,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.37,
+              "sec": 1515,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0.35,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 30,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-11-22",
+            "weekday": "sun",
+            "role": "long",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "long",
+              "qualityType": null,
+              "title": "Dugi lagano 3.7 km",
+              "blocks": [
+                {
+                  "kind": "long",
+                  "km": 3.7
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "long",
+                  "zone": "E",
+                  "km": 3.7,
+                  "sec": 1665,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.7,
+              "sec": 1665,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": [
+          "Rasterećenje: jedan kratak kvalitet."
+        ]
+      },
+      {
+        "index": 4,
+        "startDate": "2026-11-23",
+        "endDate": "2026-11-29",
+        "phase": "peak",
+        "deload": false,
+        "taperStep": null,
+        "test": true,
+        "targetKm": 13.2,
+        "plannedKm": 13.2,
+        "budgets": {
+          "I": 1.05,
+          "T": 1.32,
+          "R": 0.66
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": false,
+        "days": [
+          {
+            "date": "2026-11-24",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 3 km + 4 × 20 s ubrzanja",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 2.45
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 4,
+                  "rep": {
+                    "sec": 20
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "stride": true,
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 2.45,
+                  "sec": 1103,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "km": 3,
+              "sec": 1363,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 20,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-11-26",
+            "weekday": "thu",
+            "role": "q1",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "quality",
+              "qualityType": "TEST_3K",
+              "title": "Kontrolno trčanje: 3 km maksimalno ravnomerno (RPE 9–10)",
+              "blocks": [
+                {
+                  "kind": "warmup",
+                  "km": 1.5
+                },
+                {
+                  "kind": "test",
+                  "km": 3,
+                  "effort": {
+                    "rpeMin": 9,
+                    "rpeMax": 10,
+                    "cue": "maksimalno ravnomerno"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "km": 1
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "warmup",
+                  "zone": "E",
+                  "km": 1.5,
+                  "sec": 675,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "test",
+                  "zone": "RP",
+                  "km": 3,
+                  "sec": 1350,
+                  "paceSecPerKm": null,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated",
+                  "effort": {
+                    "rpeMin": 9,
+                    "rpeMax": 10,
+                    "cue": "maksimalno ravnomerno"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "zone": "E",
+                  "km": 1,
+                  "sec": 450,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 5.5,
+              "sec": 2475,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-11-29",
+            "weekday": "sun",
+            "role": "long",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "long",
+              "qualityType": null,
+              "title": "Dugi lagano 4.7 km",
+              "blocks": [
+                {
+                  "kind": "long",
+                  "km": 4.7
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "long",
+                  "zone": "E",
+                  "km": 4.7,
+                  "sec": 2115,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 4.7,
+              "sec": 2115,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": [
+          "Kontrolno trčanje 3 km umesto glavnog kvaliteta; plan ostaje po osećaju (tempo iz testa ulazi tek kroz adaptaciju)."
+        ]
+      },
+      {
+        "index": 5,
+        "startDate": "2026-11-30",
+        "endDate": "2026-12-06",
+        "phase": "peak",
+        "deload": true,
+        "taperStep": null,
+        "test": false,
+        "targetKm": 10.6,
+        "plannedKm": 10.6,
+        "budgets": {
+          "I": 0.84,
+          "T": 1.06,
+          "R": 0.53
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": false,
+        "days": [
+          {
+            "date": "2026-12-01",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 3.07 km + 4 × 20 s ubrzanja",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 2.52
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 4,
+                  "rep": {
+                    "sec": 20
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "stride": true,
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 2.52,
+                  "sec": 1134,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "km": 3.07,
+              "sec": 1394,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 20,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-12-03",
+            "weekday": "thu",
+            "role": "q1",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "quality",
+              "qualityType": "FARTLEK",
+              "title": "Fartlek: 6 × 1 min brzo ali kontrolisano, bez naprezanja (RPE 6–7; oporavak 1 min lagano)",
+              "blocks": [
+                {
+                  "kind": "warmup",
+                  "km": 1.5
+                },
+                {
+                  "kind": "reps",
+                  "zone": "T",
+                  "reps": 6,
+                  "rep": {
+                    "sec": 60
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "effort": {
+                    "rpeMin": 6,
+                    "rpeMax": 7,
+                    "cue": "brzo ali kontrolisano, bez naprezanja"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "km": 1
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "warmup",
+                  "zone": "E",
+                  "km": 1.5,
+                  "sec": 675,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "T",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 6,
+                    "rpeMax": 7,
+                    "cue": "brzo ali kontrolisano, bez naprezanja"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "T",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 6,
+                    "rpeMax": 7,
+                    "cue": "brzo ali kontrolisano, bez naprezanja"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "T",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 6,
+                    "rpeMax": 7,
+                    "cue": "brzo ali kontrolisano, bez naprezanja"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "T",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 6,
+                    "rpeMax": 7,
+                    "cue": "brzo ali kontrolisano, bez naprezanja"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "T",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 6,
+                    "rpeMax": 7,
+                    "cue": "brzo ali kontrolisano, bez naprezanja"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "T",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 6,
+                    "rpeMax": 7,
+                    "cue": "brzo ali kontrolisano, bez naprezanja"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "zone": "E",
+                  "km": 1,
+                  "sec": 450,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.93,
+              "sec": 1785,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0.78,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 60,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-12-06",
+            "weekday": "sun",
+            "role": "long",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "long",
+              "qualityType": null,
+              "title": "Dugi lagano 3.6 km",
+              "blocks": [
+                {
+                  "kind": "long",
+                  "km": 3.6
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "long",
+                  "zone": "E",
+                  "km": 3.6,
+                  "sec": 1620,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.6,
+              "sec": 1620,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": [
+          "Rasterećenje: jedan kratak kvalitet."
+        ]
+      },
+      {
+        "index": 6,
+        "startDate": "2026-12-07",
+        "endDate": "2026-12-13",
+        "phase": "sharpen",
+        "deload": false,
+        "taperStep": null,
+        "test": false,
+        "targetKm": 13.2,
+        "plannedKm": 13.2,
+        "budgets": {
+          "I": 1.05,
+          "T": 1.32,
+          "R": 0.66
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": false,
+        "days": [
+          {
+            "date": "2026-12-08",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 4.42 km + 4 × 20 s ubrzanja",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 3.87
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 4,
+                  "rep": {
+                    "sec": 20
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "stride": true,
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 3.87,
+                  "sec": 1742,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "km": 4.42,
+              "sec": 2002,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 20,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-12-10",
+            "weekday": "thu",
+            "role": "q1",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "quality",
+              "qualityType": "FARTLEK_RP",
+              "title": "RP po osećaju: 6 × 1 min osećaj trkačkog napora za 5K (RPE 8; oporavak 30 s lagano)",
+              "blocks": [
+                {
+                  "kind": "warmup",
+                  "km": 1.5
+                },
+                {
+                  "kind": "reps",
+                  "zone": "RP",
+                  "reps": 6,
+                  "rep": {
+                    "sec": 60
+                  },
+                  "recovery": {
+                    "sec": 30
+                  },
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "km": 1
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "warmup",
+                  "zone": "E",
+                  "km": 1.5,
+                  "sec": 675,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "zone": "E",
+                  "km": 1,
+                  "sec": 450,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.58,
+              "sec": 1635,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0.78
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 60
+              }
+            }
+          },
+          {
+            "date": "2026-12-13",
+            "weekday": "sun",
+            "role": "long",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "long",
+              "qualityType": null,
+              "title": "Dugi lagano 5.2 km",
+              "blocks": [
+                {
+                  "kind": "long",
+                  "km": 5.2
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "long",
+                  "zone": "E",
+                  "km": 5.2,
+                  "sec": 2340,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 5.2,
+              "sec": 2340,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": []
+      },
+      {
+        "index": 7,
+        "startDate": "2026-12-14",
+        "endDate": "2026-12-20",
+        "phase": "sharpen",
+        "deload": false,
+        "taperStep": null,
+        "test": false,
+        "targetKm": 13.2,
+        "plannedKm": 13.2,
+        "budgets": {
+          "I": 1.05,
+          "T": 1.32,
+          "R": 0.66
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": false,
+        "days": [
+          {
+            "date": "2026-12-15",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 4.12 km + 4 × 20 s ubrzanja",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 3.57
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 4,
+                  "rep": {
+                    "sec": 20
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "stride": true,
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 3.57,
+                  "sec": 1607,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "km": 4.12,
+              "sec": 1867,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 20,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-12-17",
+            "weekday": "thu",
+            "role": "q1",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "quality",
+              "qualityType": "FARTLEK_RP",
+              "title": "RP po osećaju: 9 × 45 s osećaj trkačkog napora za 5K (RPE 8; oporavak 30 s lagano)",
+              "blocks": [
+                {
+                  "kind": "warmup",
+                  "km": 1.5
+                },
+                {
+                  "kind": "reps",
+                  "zone": "RP",
+                  "reps": 9,
+                  "rep": {
+                    "sec": 45
+                  },
+                  "recovery": {
+                    "sec": 30
+                  },
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "km": 1
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "warmup",
+                  "zone": "E",
+                  "km": 1.5,
+                  "sec": 675,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "zone": "E",
+                  "km": 1,
+                  "sec": 450,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.88,
+              "sec": 1770,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0.9
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 45
+              }
+            }
+          },
+          {
+            "date": "2026-12-20",
+            "weekday": "sun",
+            "role": "long",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "long",
+              "qualityType": null,
+              "title": "Dugi lagano 5.2 km",
+              "blocks": [
+                {
+                  "kind": "long",
+                  "km": 5.2
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "long",
+                  "zone": "E",
+                  "km": 5.2,
+                  "sec": 2340,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 5.2,
+              "sec": 2340,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": []
+      },
+      {
+        "index": 8,
+        "startDate": "2026-12-21",
+        "endDate": "2026-12-27",
+        "phase": "taper",
+        "deload": false,
+        "taperStep": 1,
+        "test": false,
+        "targetKm": 11.2,
+        "plannedKm": 11.2,
+        "budgets": {
+          "I": 0.89,
+          "T": 1.12,
+          "R": 0.56
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": false,
+        "days": [
+          {
+            "date": "2026-12-22",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 3.5 km + 4 × 20 s ubrzanja",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 2.95
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 4,
+                  "rep": {
+                    "sec": 20
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "stride": true,
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 2.95,
+                  "sec": 1328,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "km": 3.5,
+              "sec": 1588,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 20,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-12-24",
+            "weekday": "thu",
+            "role": "q1",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "quality",
+              "qualityType": "FARTLEK_RP",
+              "title": "RP po osećaju: 3 × 1:30 min osećaj trkačkog napora za 5K (RPE 8; oporavak 45 s lagano)",
+              "blocks": [
+                {
+                  "kind": "warmup",
+                  "km": 1.5
+                },
+                {
+                  "kind": "reps",
+                  "zone": "RP",
+                  "reps": 3,
+                  "rep": {
+                    "sec": 90
+                  },
+                  "recovery": {
+                    "sec": 45
+                  },
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "km": 1
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "warmup",
+                  "zone": "E",
+                  "km": 1.5,
+                  "sec": 675,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.2,
+                  "sec": 90,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.2,
+                  "sec": 90,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.1,
+                  "sec": 45,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.2,
+                  "sec": 90,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "zone": "E",
+                  "km": 1,
+                  "sec": 450,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.3,
+              "sec": 1485,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0.6
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 90
+              }
+            }
+          },
+          {
+            "date": "2026-12-27",
+            "weekday": "sun",
+            "role": "long",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "long",
+              "qualityType": null,
+              "title": "Dugi lagano 4.4 km",
+              "blocks": [
+                {
+                  "kind": "long",
+                  "km": 4.4
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "long",
+                  "zone": "E",
+                  "km": 4.4,
+                  "sec": 1980,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 4.4,
+              "sec": 1980,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": []
+      },
+      {
+        "index": 9,
+        "startDate": "2026-12-28",
+        "endDate": "2027-01-03",
+        "phase": "taper",
+        "deload": false,
+        "taperStep": 2,
+        "test": false,
+        "targetKm": 9.2,
+        "plannedKm": 9.2,
+        "budgets": {
+          "I": 0.73,
+          "T": 0.92,
+          "R": 0.46
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": false,
+        "days": [
+          {
+            "date": "2026-12-29",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 2.43 km + 4 × 20 s ubrzanja",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 1.88
+                },
+                {
+                  "kind": "reps",
+                  "zone": "R",
+                  "reps": 4,
+                  "rep": {
+                    "sec": 20
+                  },
+                  "recovery": {
+                    "sec": 60
+                  },
+                  "stride": true,
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 1.88,
+                  "sec": 846,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "stride",
+                  "zone": "R",
+                  "km": 0.04,
+                  "sec": 20,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "brzo i opušteno, ne sprint"
+                  }
+                }
+              ],
+              "km": 2.43,
+              "sec": 1106,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 20,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2026-12-31",
+            "weekday": "thu",
+            "role": "q1",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "quality",
+              "qualityType": "FARTLEK_RP",
+              "title": "RP po osećaju: 7 × 30 s osećaj trkačkog napora za 5K (RPE 8; oporavak 15 s lagano)",
+              "blocks": [
+                {
+                  "kind": "warmup",
+                  "km": 1.5
+                },
+                {
+                  "kind": "reps",
+                  "zone": "RP",
+                  "reps": 7,
+                  "rep": {
+                    "sec": 30
+                  },
+                  "recovery": {
+                    "sec": 15
+                  },
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "km": 1
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "warmup",
+                  "zone": "E",
+                  "km": 1.5,
+                  "sec": 675,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.03,
+                  "sec": 15,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.03,
+                  "sec": 15,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.03,
+                  "sec": 15,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.03,
+                  "sec": 15,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.03,
+                  "sec": 15,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.03,
+                  "sec": 15,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.07,
+                  "sec": 30,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "zone": "E",
+                  "km": 1,
+                  "sec": 450,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.17,
+              "sec": 1425,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0.49
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 30
+              }
+            }
+          },
+          {
+            "date": "2027-01-03",
+            "weekday": "sun",
+            "role": "long",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "long",
+              "qualityType": null,
+              "title": "Dugi lagano 3.6 km",
+              "blocks": [
+                {
+                  "kind": "long",
+                  "km": 3.6
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "long",
+                  "zone": "E",
+                  "km": 3.6,
+                  "sec": 1620,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.6,
+              "sec": 1620,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": []
+      },
+      {
+        "index": 10,
+        "startDate": "2027-01-04",
+        "endDate": "2027-01-10",
+        "phase": "race",
+        "deload": false,
+        "taperStep": null,
+        "test": false,
+        "targetKm": 5.01,
+        "plannedKm": 5.01,
+        "budgets": {
+          "I": 0.52,
+          "T": 0.66,
+          "R": 0.33
+        },
+        "easyCappedAtLong": false,
+        "stridesOnly": false,
+        "days": [
+          {
+            "date": "2027-01-05",
+            "weekday": "tue",
+            "role": "easy",
+            "hard": false,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "easy",
+              "qualityType": null,
+              "title": "Lagano 2 km",
+              "blocks": [
+                {
+                  "kind": "easy",
+                  "km": 2
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "easy",
+                  "zone": "E",
+                  "km": 2,
+                  "sec": 900,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 2,
+              "sec": 900,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          },
+          {
+            "date": "2027-01-07",
+            "weekday": "thu",
+            "role": "q1",
+            "hard": true,
+            "countsToWeek": true,
+            "workout": {
+              "kind": "quality",
+              "qualityType": "FARTLEK_RP",
+              "title": "RP po osećaju: 3 × 1 min osećaj trkačkog napora za 5K (RPE 8; oporavak 30 s lagano)",
+              "blocks": [
+                {
+                  "kind": "warmup",
+                  "km": 1.5
+                },
+                {
+                  "kind": "reps",
+                  "zone": "RP",
+                  "reps": 3,
+                  "rep": {
+                    "sec": 60
+                  },
+                  "recovery": {
+                    "sec": 30
+                  },
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "km": 1
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "warmup",
+                  "zone": "E",
+                  "km": 1.5,
+                  "sec": 675,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "recovery",
+                  "zone": "jog",
+                  "km": 0.06,
+                  "sec": 30,
+                  "paceSecPerKm": 465,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact"
+                },
+                {
+                  "kind": "rep",
+                  "zone": "RP",
+                  "km": 0.13,
+                  "sec": 60,
+                  "paceSecPerKm": null,
+                  "kmBasis": "estimated",
+                  "secBasis": "exact",
+                  "effort": {
+                    "rpeMin": 8,
+                    "rpeMax": 8,
+                    "cue": "osećaj trkačkog napora za 5K"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "zone": "E",
+                  "km": 1,
+                  "sec": 450,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 3.01,
+              "sec": 1365,
+              "kmBasis": "estimated",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0.39
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 60
+              }
+            }
+          },
+          {
+            "date": "2027-01-10",
+            "weekday": "sun",
+            "role": "race",
+            "hard": true,
+            "countsToWeek": false,
+            "workout": {
+              "kind": "race",
+              "qualityType": null,
+              "title": "Trka 5K",
+              "blocks": [
+                {
+                  "kind": "warmup",
+                  "km": 2
+                },
+                {
+                  "kind": "race",
+                  "km": 5,
+                  "effort": {
+                    "rpeMin": 9,
+                    "rpeMax": 10,
+                    "cue": "trka"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "km": 1.5
+                }
+              ],
+              "segments": [
+                {
+                  "kind": "warmup",
+                  "zone": "E",
+                  "km": 2,
+                  "sec": 900,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                },
+                {
+                  "kind": "race",
+                  "zone": "RP",
+                  "km": 5,
+                  "sec": 2250,
+                  "paceSecPerKm": null,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated",
+                  "effort": {
+                    "rpeMin": 9,
+                    "rpeMax": 10,
+                    "cue": "trka"
+                  }
+                },
+                {
+                  "kind": "cooldown",
+                  "zone": "E",
+                  "km": 1.5,
+                  "sec": 675,
+                  "paceSecPerKm": 450,
+                  "kmBasis": "exact",
+                  "secBasis": "estimated"
+                }
+              ],
+              "km": 8.5,
+              "sec": 3825,
+              "kmBasis": "exact",
+              "secBasis": "estimated",
+              "workKm": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              },
+              "maxBoutSec": {
+                "E": 0,
+                "T": 0,
+                "I": 0,
+                "R": 0,
+                "RP": 0
+              }
+            }
+          }
+        ],
+        "notes": [
+          "Trkačka nedelja: trka se ne računa u nedeljni obim.",
+          "Cilj trkačke nedelje = planirano 5.01 km (gornja granica 6.6 km = 50% vrha; lagan dan ≤ 2 km)."
+        ]
+      }
+    ],
+    "warnings": []
+  }
+}

@@ -1,12 +1,16 @@
 /* Konstrukcija treninga iz strukture. Km i trajanje se RAČUNAJU iz komponenti:
    - distanca zadata u km → km 'exact', vreme 'estimated' (iz tempa);
    - vreme zadato u s     → vreme 'exact', km 'estimated' (iz tempa);
-   - lagano (E) se računa sredinom E opsega; oporavak ('jog') sporijom granicom E. */
+   - lagano (E) se računa sredinom E opsega; oporavak ('jog') sporijom granicom E;
+   - 2.4.0: deo po osećaju (blok sa `effort`) nema brojčani tempo (paceSecPerKm = null); km/trajanje
+     su procenjeni sredinom E opsega (vreme × E tempo). */
 
 import { daysRule, FIVE_K_V2_POLICY as P, type RunDaysCount } from './policy.ts';
 import type {
   Basis,
   BlockSpec,
+  Effort,
+  PaceModel,
   Paces,
   Phase,
   QualityBudgets,
@@ -21,39 +25,68 @@ import type {
 const r2 = (x: number): number => Math.round(x * 100) / 100;
 const floorHalf = (x: number): number => Math.floor(x * 2 + 1e-9) / 2;
 
-function paceOf(zone: Zone | 'jog', p: Paces): number {
+/** E tempo (sredina opsega): lagano i procena km dela po osećaju. */
+export const easyPaceOf = (p: PaceModel): number => Math.round((p.E.fast + p.E.slow) / 2);
+
+function paceOf(zone: Zone | 'jog', p: PaceModel): number {
   if (zone === 'jog') return p.E.slow;
-  if (zone === 'E') return Math.round((p.E.fast + p.E.slow) / 2);
+  if (zone === 'E') return easyPaceOf(p);
+  if (p.vdot === null)
+    throw new Error(`Plan po osećaju nema tempo zone ${zone} (nedostaje effort).`);
   return p[zone];
 }
 
-function byKm(kind: Segment['kind'], zone: Zone | 'jog', km: number, p: Paces): Segment {
-  const pace = paceOf(zone, p);
+/** 2.4.0: deo sa `effort` je po osećaju — procena E tempom, bez brojčanog tempa. */
+function feelOf(
+  zone: Zone | 'jog',
+  p: PaceModel,
+  effort: Effort | undefined
+): { pace: number; shown: number | null; effort?: Effort } {
+  if (!effort || zone === 'jog') return { pace: paceOf(zone, p), shown: paceOf(zone, p) };
+  return { pace: easyPaceOf(p), shown: null, effort };
+}
+
+function byKm(
+  kind: Segment['kind'],
+  zone: Zone | 'jog',
+  km: number,
+  p: PaceModel,
+  effort?: Effort
+): Segment {
+  const f = feelOf(zone, p, effort);
   return {
     kind,
     zone,
     km: r2(km),
-    sec: Math.round(km * pace),
-    paceSecPerKm: pace,
+    sec: Math.round(km * f.pace),
+    paceSecPerKm: f.shown,
     kmBasis: 'exact',
-    secBasis: 'estimated'
+    secBasis: 'estimated',
+    ...(f.effort ? { effort: f.effort } : {})
   };
 }
 
-function bySec(kind: Segment['kind'], zone: Zone | 'jog', sec: number, p: Paces): Segment {
-  const pace = paceOf(zone, p);
+function bySec(
+  kind: Segment['kind'],
+  zone: Zone | 'jog',
+  sec: number,
+  p: PaceModel,
+  effort?: Effort
+): Segment {
+  const f = feelOf(zone, p, effort);
   return {
     kind,
     zone,
-    km: r2(sec / pace),
+    km: r2(sec / f.pace),
     sec: Math.round(sec),
-    paceSecPerKm: pace,
+    paceSecPerKm: f.shown,
     kmBasis: 'estimated',
-    secBasis: 'exact'
+    secBasis: 'exact',
+    ...(f.effort ? { effort: f.effort } : {})
   };
 }
 
-function segmentsOf(b: BlockSpec, p: Paces): Segment[] {
+function segmentsOf(b: BlockSpec, p: PaceModel): Segment[] {
   switch (b.kind) {
     case 'warmup':
     case 'cooldown':
@@ -65,13 +98,17 @@ function segmentsOf(b: BlockSpec, p: Paces): Segment[] {
     case 'progression':
       return b.steps.map((s) => byKm('progression', s.zone, s.km, p));
     case 'race':
-      return [byKm('race', 'RP', b.km, p)];
+      return [byKm('race', 'RP', b.km, p, b.effort)];
+    case 'test':
+      return [byKm('test', 'RP', b.km, p, b.effort)];
     case 'reps': {
       const out: Segment[] = [];
       const kind = b.stride ? 'stride' : 'rep';
       for (let i = 0; i < b.reps; i++) {
         out.push(
-          'km' in b.rep ? byKm(kind, b.zone, b.rep.km, p) : bySec(kind, b.zone, b.rep.sec, p)
+          'km' in b.rep
+            ? byKm(kind, b.zone, b.rep.km, p, b.effort)
+            : bySec(kind, b.zone, b.rep.sec, p, b.effort)
         );
         if (i < b.reps - 1)
           out.push(
@@ -92,7 +129,7 @@ export function buildWorkout(
   qualityType: QualityType | null,
   title: string,
   blocks: readonly BlockSpec[],
-  p: Paces
+  p: PaceModel
 ): Workout {
   const segments = blocks.flatMap((b) => segmentsOf(b, p));
   const workKm: Record<Zone, number> = { E: 0, T: 0, I: 0, R: 0, RP: 0 };
@@ -153,6 +190,8 @@ export function warmupBand(targetKm: number): { warmupKm: number; cooldownKm: nu
 export interface RepChoice {
   reps: number;
   repKm: number;
+  /** 2.4.0 (Odluka 3): udeo oporavka I/RP (vreme ponavljanja ×); bez njega recovery.iTimeRatio / rpTimeRatio. */
+  recRatio?: number;
 }
 
 /**
@@ -186,6 +225,7 @@ export function chooseReps(
 export interface PrevDose {
   reps: number;
   repKm: number;
+  recRatio?: number;
 }
 
 const workOf = (c: RepChoice): number => Math.round(c.reps * c.repKm * 100) / 100;
@@ -268,19 +308,19 @@ export type SessionResult =
 const km = (x: number): string => `${Number(x.toFixed(2))}`;
 const m = (x: number): string => `${Math.round(x * 1000)} m`;
 
+const recRatioOf = (type: 'I' | 'RP', c: RepChoice): number =>
+  c.recRatio ?? (type === 'I' ? P.quality.recovery.iTimeRatio : P.quality.recovery.rpTimeRatio);
+
 /** I ili RP ponavljanja iz izabranog para (oporavak vremenom, zaokružen). */
-function intervalSession(
+export function intervalSession(
   type: 'I' | 'RP',
   c: RepChoice,
   targetKm: number,
   p: Paces
 ): SessionResult & { ok: true } {
-  const q = P.quality;
   const pace = type === 'I' ? p.I : p.RP;
   const band = warmupBand(targetKm);
-  const recSec = roundRecoverySec(
-    c.repKm * pace * (type === 'I' ? q.recovery.iTimeRatio : q.recovery.rpTimeRatio)
-  );
+  const recSec = roundRecoverySec(c.repKm * pace * recRatioOf(type, c));
   const blocks: BlockSpec[] = [
     { kind: 'warmup', km: band.warmupKm },
     { kind: 'reps', zone: type, reps: c.reps, rep: { km: c.repKm }, recovery: { sec: recSec } },
@@ -502,6 +542,9 @@ export function qualitySession(
         choice: c
       };
     }
+    default:
+      // 2.4.0: treninzi po osećaju se grade u feel.ts.
+      return { ok: false, message: `${type}: gradi se u feel.ts.` };
   }
 }
 
@@ -515,8 +558,22 @@ export interface WeekDose {
   t: TDose | null;
   /** Broj uzastopnih ne-rasteretnih nedelja faze sa ovom istom dozom (baza, Odluka 3). */
   same: number;
-  /** 2.3.0, 3 dana u bazi: vrsta jedinog kvaliteta ove nedelje (naizmenično R/T). */
-  kind?: 'R' | 'T';
+  /** 2.3.0, 3 dana u bazi: vrsta jedinog kvaliteta ove nedelje (naizmenično R/T). 2.4.0: i vrsta po
+      osećaju (feel.ts) za naizmenične nedelje sa jednim kvalitetom. */
+  kind?: 'R' | 'T' | FeelKind;
+  /** 2.4.0: poslednja doza po vrsti treninga po osećaju u ovoj fazi (feel.ts). */
+  feel?: Partial<Record<FeelKind, FeelDose>>;
+  /** 2.4.0 (feel.ts): ključ nedeljne doze baze (baseDoseKey) za brojanje iste doze. */
+  key?: string;
+}
+
+/** 2.4.0: vrste kvaliteta bez brojčanog tempa (feel.ts); RP_SHORT = početnik sa rezultatom (VDOT RP). */
+export type FeelKind = 'HILLS' | 'TEMPO' | 'FARTLEK_I' | 'FARTLEK_T' | 'FARTLEK_RP' | 'RP_SHORT';
+
+/** 2.4.0: doza po osećaju: `reps` × `len` (s; za RP_SHORT km). */
+export interface FeelDose {
+  reps: number;
+  len: number;
 }
 
 export type WeekQuality =
@@ -535,6 +592,13 @@ export type WeekQuality =
 const sameT = (a: TDose, b: TDose): boolean =>
   a.form === b.form && a.reps === b.reps && Math.abs(a.repKm - b.repKm) < 1e-9;
 const tWork = (t: TDose): number => workOf(t);
+/** 2.4.0: oblik T bloka treninga — ponavljanja (> 1) = 'cruise', inače 'continuous'. */
+export function tFormOf(w: Workout): TDose['form'] {
+  return w.blocks.some((b) => b.kind === 'reps' && b.zone === 'T' && b.reps > 1)
+    ? 'cruise'
+    : 'continuous';
+}
+
 /** Nedeljna doza baze: R km, oblik T i T km (R smena 6 × 400 / 8 × 300 nije promena doze). */
 export const baseDoseKey = (rKm: number, tForm: TDose['form'], tKm: number): string =>
   `${r2(rKm)}|${tForm}|${r2(tKm)}`;
@@ -648,11 +712,47 @@ function baseWeek(
   };
 }
 
+const altNote = (what: string, c: RepChoice): string =>
+  `${what} bez višeg nivoa u budžetu — ista doza, ${c.recRatio !== undefined ? 'kraći oporavak' : 'druga struktura'}.`;
+
 /**
- * Vrhunac (Odluka 5): glavni I NEOPADAJUĆI — najmanji rad veći od prethodnog; ako ponuda nema viši
- * nivo, I se drži (ako je i dalje u [70%, 100%] budžeta), a T menja strukturu (cruise ↔ kontinuirano)
- * da par ne bude identičan. Drugi kvalitet: cruise kad T budžet prima ≥ minReps × najkraća opcija,
- * inače kontinuirani T.
+ * 2.4.0 (Odluka 3): ista doza druge strukture za glavni I (vrhunac) / RP (oštrenje) kad ponuda nema viši
+ * nivo u budžetu: (a) druga ponavljanja — rad ≥ prethodnog i ≥ 70% budžeta, ≤ budžet (npr. 2 × 700 →
+ * 3 × 500); (b) ako ih nema (npr. brz trkač, mali budžet, I ≥ 2 min), ista ponavljanja sa kraćim
+ * oporavkom (quality.denser: udeo − korak, ne ispod minimuma; drugačiji zaokružen oporavak). Nema ni
+ * toga → null.
+ */
+function altMain(type: 'I' | 'RP', budgetKm: number, p: Paces, prev: PrevDose): RepChoice | null {
+  const q = P.quality;
+  const isI = type === 'I';
+  const other = chooseProgressiveReps(
+    budgetKm,
+    isI ? q.repOptionsKm.I : q.repOptionsKm.RP,
+    isI ? p.I : p.RP,
+    isI ? q.minReps.I : q.minReps.RP,
+    isI ? q.maxReps.I : q.maxReps.RP,
+    q.iRepMaxSec,
+    isI ? q.iRepMinSec : 0,
+    q.mainMinShareOfBudget,
+    prev,
+    'alt'
+  );
+  if (other) return other;
+  const w = workOf(prev);
+  if (w > budgetKm + 1e-9 || w + 1e-9 < budgetKm * q.mainMinShareOfBudget) return null;
+  const ratio = recRatioOf(type, prev) - q.denser.step;
+  if (ratio + 1e-9 < q.denser.minRatio[type]) return null;
+  const pace = isI ? p.I : p.RP;
+  const sec = (r: number): number => roundRecoverySec(prev.repKm * pace * r);
+  if (sec(ratio) === sec(recRatioOf(type, prev))) return null;
+  return { reps: prev.reps, repKm: prev.repKm, recRatio: ratio };
+}
+
+/**
+ * Vrhunac (Odluka 5): glavni I NEOPADAJUĆI — najmanji rad veći od prethodnog; 2.4.0 (Odluka 3): ako
+ * ponuda nema viši nivo, ista doza druge strukture (altMain); tek ako ni nje nema, I se drži (ako je i
+ * dalje u [70%, 100%] budžeta), a T menja strukturu (cruise ↔ kontinuirano) da par ne bude identičan.
+ * Drugi kvalitet: cruise kad T budžet prima ≥ minReps × najkraća opcija, inače kontinuirani T.
  */
 function peakWeek(
   b: QualityBudgets,
@@ -664,14 +764,22 @@ function peakWeek(
   const up = qualitySession('I', b.I, targetKm, p, 'peak', { prev: prev?.main ?? null });
   let i: SessionResult & { ok: true };
   let held = false;
+  const notes: string[] = [];
+  const pm = prev?.main;
+  const alt = !up.ok && pm ? altMain('I', b.I, p, pm) : null;
   if (up.ok) i = up;
-  else {
-    const pm = prev?.main;
+  else if (alt) {
+    i = intervalSession('I', alt, targetKm, p);
+    notes.push(altNote('Vrhunac: I', alt));
+  } else {
     const w = pm ? workOf(pm) : 0;
     if (!pm || w > b.I + 1e-9 || w + 1e-9 < b.I * q.mainMinShareOfBudget)
       return { ok: false, message: up.message };
     i = intervalSession('I', pm, targetKm, p);
     held = true;
+    notes.push(
+      'Vrhunac: I zadržan (ponuda nema viši nivo ni drugu strukturu u budžetu); T menja strukturu.'
+    );
   }
   const shortest = Math.min(...q.repOptionsKm.Tcruise);
   let t =
@@ -684,9 +792,6 @@ function peakWeek(
       ok: false,
       message: `T: budžet ${km(b.T)} km nije dovoljan${held ? ' za promenu strukture uz zadržan I' : ''}.`
     };
-  const notes = held
-    ? ['Vrhunac: I zadržan (ponuda nema viši nivo u budžetu); T menja strukturu.']
-    : [];
   return {
     ok: true,
     q1: i.workout,
@@ -814,28 +919,14 @@ function peakWeekOne(
   p: Paces,
   prev: WeekDose | null
 ): WeekQuality {
-  const q = P.quality;
   const up = qualitySession('I', b.I, targetKm, p, 'peak', { prev: prev?.main ?? null });
   if (up.ok) return single(up.workout, [], { main: up.choice!, t: null, same: 1 });
   const pm = prev?.main;
-  const alt = pm
-    ? chooseProgressiveReps(
-        b.I,
-        q.repOptionsKm.I,
-        p.I,
-        q.minReps.I,
-        q.maxReps.I,
-        q.iRepMaxSec,
-        q.iRepMinSec,
-        q.mainMinShareOfBudget,
-        pm,
-        'alt'
-      )
-    : null;
+  const alt = pm ? altMain('I', b.I, p, pm) : null;
   if (!alt) return { ok: false, message: up.message };
   return single(
     intervalSession('I', alt, targetKm, p).workout,
-    ['Vrhunac (3 dana): I bez višeg nivoa u budžetu — ista doza, druga struktura.'],
+    [altNote('Vrhunac (3 dana): I', alt)],
     { main: alt, t: null, same: 1 }
   );
 }
@@ -896,12 +987,13 @@ function deloadWeek(
 }
 
 /**
- * Kvalitet nedelje treninga (baza, vrhunac, oštrenje, taper). JEDINO mesto odluke o dozi kvaliteta.
+ * Kvalitet nedelje treninga sa rezultatom (VDOT tempo, iskusan trkač); poziva ga samo weekQuality
+ * (quality.ts), jedino mesto odluke o dozi kvaliteta.
  * 2.3.0: broj kvaliteta iz tabele `days` (3 dana: jedan — baza R/T naizmenično, vrhunac I, oštrenje i
  * taper RP; 4 i 5 dana: dva, kao 2.2.0). Rasterećenje: deloadWeek. QUALITY_INFEASIBLE (ok: false)
  * samo kad nijedna opcija ne staje.
  */
-export function weekQuality(
+export function vdotWeekQuality(
   f: WeekFrame,
   targetKm: number,
   p: Paces,
@@ -931,22 +1023,10 @@ export function weekQuality(
     let rp = qualitySession('RP', b.I, targetKm, p, 'sharpen', { prev: pm });
     const notes: string[] = [];
     if (!rp.ok && pm) {
-      const q = P.quality;
-      const alt = chooseProgressiveReps(
-        b.I,
-        q.repOptionsKm.RP,
-        p.RP,
-        q.minReps.RP,
-        q.maxReps.RP,
-        q.iRepMaxSec,
-        0,
-        q.mainMinShareOfBudget,
-        pm,
-        'alt'
-      );
+      const alt = altMain('RP', b.I, p, pm);
       if (alt) {
         rp = intervalSession('RP', alt, targetKm, p);
-        notes.push('Oštrenje: RP bez višeg nivoa u budžetu — ista doza, druga struktura.');
+        notes.push(altNote('Oštrenje: RP', alt));
       }
     }
     if (!rp.ok) return rp;
@@ -995,7 +1075,7 @@ export function weekQuality(
 /** Lagan trk; `strides` = ubrzanja (podrazumevano quality.strides, 2.3.0 i stridesOnly 6 × 20 s). */
 export function easyRun(
   totalKm: number,
-  p: Paces,
+  p: PaceModel,
   withStrides: boolean,
   spec: { reps: number; sec: number; recoverySec: number } = P.quality.strides
 ): Workout {
@@ -1014,7 +1094,9 @@ export function easyRun(
     reps: s.reps,
     rep: { sec: s.sec },
     recovery: { sec: s.recoverySec },
-    stride: true
+    stride: true,
+    // 2.4.0: bez rezultata ubrzanja su po osećaju; sa rezultatom R tempo (i za početnika).
+    ...(p.vdot === null ? { effort: P.feel.effort.strides } : {})
   };
   const stridesKm = buildWorkout('easy', null, '', [strides], p).km;
   return buildWorkout(
@@ -1026,7 +1108,7 @@ export function easyRun(
   );
 }
 
-export function longRun(totalKm: number, p: Paces): Workout {
+export function longRun(totalKm: number, p: PaceModel): Workout {
   return buildWorkout(
     'long',
     null,
@@ -1036,14 +1118,19 @@ export function longRun(totalKm: number, p: Paces): Workout {
   );
 }
 
-export function raceDay(p: Paces): Workout {
+/** 2.4.0: bez rezultata trka je po osećaju (trajanje procenjeno E tempom — gornja granica). */
+export function raceDay(p: PaceModel): Workout {
   return buildWorkout(
     'race',
     null,
     'Trka 5K',
     [
       { kind: 'warmup', km: P.warmup.race.warmupKm },
-      { kind: 'race', km: P.paces.raceDistanceM / 1000 },
+      {
+        kind: 'race',
+        km: P.paces.raceDistanceM / 1000,
+        ...(p.vdot === null ? { effort: P.feel.effort.race } : {})
+      },
       { kind: 'cooldown', km: P.warmup.race.cooldownKm }
     ],
     p

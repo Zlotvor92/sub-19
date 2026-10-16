@@ -2,12 +2,13 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 jezgro (`5k-v2.3.0`: 3, 4 i 5 dana iz jedne tabele `days` u policy.ts, 6–16 nedelja
-sa kratkom pripremom 6–7, trkačka nedelja cilj = planirano, zamena u rasterećenju R ≥ 1,2 km ili samo
-ubrzanja, R u bazi ne pada) postoji u `web/src/domain/generators/fiveK/v2/`, testirano, NIJE aktivirano
-(select.ts/UI/store ga ne koriste). Mreža 480 ulaza (3/4/5 d × 5 obima × {6, 7, 10, 16} × 4 × 2):
-3 d 126/34, 4 d 160/0, 5 d 160/0 plan/odbijeno, 0 grešaka validatora. Bez početnika i bez plana bez
-rezultata (Segment 05). Stalni uslovi za sve v2 generatore: `AGENTS.md`.
+Trenutno stanje: 5K v2 jezgro (`5k-v2.4.0`) u `web/src/domain/generators/fiveK/v2/`, testirano, NIJE
+aktivirano (select.ts/UI/store ga ne koriste). Grane: sa rezultatom (3/4/5 dana, 6–16 ned), bez pouzdanog
+rezultata (plan po osećaju: E iz korisnikovog tempa ± 15 s, kvalitet RPE, test 3 km u 3./4. ned) i
+početnik (≤ 4 dana, 1 kvalitet, sa ili bez rezultata). Kapacitet iz stvarne konstrukcije nedelje: 0
+„lagan = dugi" van trke u svim mrežama; 3 dana ≈ 17 km, 4 dana VDOT ≥ 45 → 41,3 km (Segment 05,
+preostali problemi 1–2). Run/walk nije podržan (RUN_WALK_NOT_SUPPORTED_YET). Sledeće: segment 06
+(adaptacija, tempo iz testa). Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segment 01 — 5K v2 jezgro (2026-10-16)
 
@@ -54,3 +55,18 @@ rezultata (Segment 05). Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   - 3 d, 10–11 km: uvek odbijeno; realni minimum ~12–16 km.
   - Segment 05: početnici i plan bez rezultata.
 - Reprodukcija: `node docs/5k-v2/artifacts/segment-04/run.ts` (iz korena repoa, Node ≥ 22.18)
+
+## Segment 05 — 3-dnevne dopune, bez rezultata, početnik, 5k-v2.4.0 (2026-10-16)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 7b4b574
+- Urađeno (DECISIONS 5k-v2.4.0): (1) kapacitet iz konstrukcije, zatvoren naniže; (2) 3 dana 12–35 km;
+  (3) I/RP bez višeg nivoa: druga struktura, pa kraći oporavak; (4–7) plan po osećaju (`paceMode: 'feel'`,
+  `MISSING_EASY_PACE`, test 3 km, prognoza/cilj „nedovoljno podataka", bez praga 70%); (8–10) početnik
+  (`experience`, `canRun30Min`, uvod 2 ned, bez I, +5%, dugi ≤ 60 min, vrh ≤ 1,2×, rasterećenje /3, „orijentir").
+- Novi fajlovi: `feel.ts`, `quality.ts`, `week.ts`, `lengths.ts`, `segment05.node.test.ts`; primeri `artifacts/segment-05/` (29).
+- Mreža: sa rezultatom 3 d 128/32 (10 km), 4 d 160/0, 5 d 160/0; bez rezultata 120/0 po broju dana;
+  početnik bez/sa rezultatom 3–4 d 120/0, 5 d odbijeno (RUN_DAYS_COUNT); 0 grešaka validatora.
+- Regular sa rezultatom menja se samo po Odlukama 1 i 3 (512 ulaza: 274 plana promenjena, 6 odbijanja → plan, 0 promena iz drugog razloga).
+- Provere: tsc, eslint, prettier exit 0; vitest v2 342/342; novi testovi na 7b4b574 35/35 pada;
+  generators 24 fajla / 485; `npm run check` exit 0 (2114 testova; prvi put exit 2, TS6133 u testu, ispravljeno).
+- Izveštaj: `reports/SEGMENT-05-IMPLEMENTATION.md`.

@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "RUN_WALK_NOT_SUPPORTED_YET",
+      "message": "Plan traži 30 min kontinuiranog trčanja (canRun30Min: true); plan trčanje/hodanje još nije podržan."
+    }
+  ],
+  "violations": []
+}

@@ -33,7 +33,24 @@ export function phaseCounts(totalWeeks: number): PhaseCounts {
   return { base, peak, sharpen, taper, race };
 }
 
-export function periodize(startDate: IsoDate, totalWeeks: number): WeekFrame[] {
+/** 2.4.0: nedelja kontrolnog trčanja (plan po osećaju): prva od feel.test.weeks koja je ne-rasteretna
+    nedelja izgradnje; inače null. */
+export function testWeekOf(frames: readonly Omit<WeekFrame, 'test'>[]): number | null {
+  for (const n of P.feel.test.weeks) {
+    const f = frames[n - 1];
+    if (f && !f.deload && (f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen'))
+      return n;
+  }
+  return null;
+}
+
+/** `deloadEvery`: 2.4.0 početnik 3 (rulesOf); `feel`: plan po osećaju dobija nedelju kontrolnog trčanja. */
+export function periodize(
+  startDate: IsoDate,
+  totalWeeks: number,
+  deloadEvery: number = P.volume.deloadEvery,
+  feel = false
+): WeekFrame[] {
   const c = phaseCounts(totalWeeks);
   const sequence: Phase[] = [
     ...Array<Phase>(c.base).fill('base'),
@@ -48,14 +65,14 @@ export function periodize(startDate: IsoDate, totalWeeks: number): WeekFrame[] {
   // poslednja nedelja izgradnje (uzastopno sa taperom, koji ionako smanjuje obim).
   // 2.3.0: kratka priprema nema rasterećenja.
   const deloads = new Set<number>();
-  const every = isShortPrep(totalWeeks) ? Infinity : P.volume.deloadEvery;
+  const every = isShortPrep(totalWeeks) ? Infinity : deloadEvery;
   for (let n = every; n <= lastBuild; n += every) {
     const phaseStart = sequence[n - 1] !== sequence[n - 2];
     const at = phaseStart && sequence[n - 1] !== 'base' ? n - 1 : n;
     if (at !== lastBuild) deloads.add(at);
   }
   let taperSeen = 0;
-  return sequence.map((phase, i) => {
+  const frames = sequence.map((phase, i) => {
     const index = i + 1;
     const taperStep = phase === 'taper' ? (++taperSeen as 1 | 2) : null;
     return {
@@ -67,4 +84,6 @@ export function periodize(startDate: IsoDate, totalWeeks: number): WeekFrame[] {
       taperStep
     };
   });
+  const test = feel ? testWeekOf(frames) : null;
+  return frames.map((f) => ({ ...f, test: f.index === test }));
 }
