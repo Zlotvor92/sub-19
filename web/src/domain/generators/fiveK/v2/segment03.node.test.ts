@@ -55,11 +55,11 @@ for (const km of [15, 22, 30, 38, 45])
 describe('Odluka 1: pošten cilj obima — kapacitet 4 dana ograničava cilj na ulazu', () => {
   it('spor + veliki obim: start = kapacitet < trenutni obim, napomena, svaka nedelja planirano = cilj', () => {
     const plan = planOf(SLOW_BIG);
-    const capacity = volume.fourDayCapacityKm(plan.paces);
+    const capacity = volume.capacityKm(plan.paces, 4);
     expect(capacity).toBeLessThan(SLOW_BIG.km);
     expect(plan.capacityKm).toBe(capacity);
     expect(plan.startKm).toBe(capacity);
-    expect(plan.weeks[0]!.notes.some((n) => n.includes('5 dana će biti podržano kasnije'))).toBe(
+    expect(plan.weeks[0]!.notes.some((n) => n.includes('Za veći obim izaberi više dana'))).toBe(
       true
     );
     expect(plan.warnings.map((v) => v.rule)).toContain('START_ABOVE_CAPACITY');
@@ -74,8 +74,8 @@ describe('Odluka 1: pošten cilj obima — kapacitet 4 dana ograničava cilj na 
     let last = 0;
     for (const vdot of [30, 35, 40, 45, 50, 55, 60]) {
       const p = pacesFromVdot(vdot);
-      const t = volume.fourDayCapacityKm(p);
-      const long = volume.longCapKm(t, p);
+      const t = volume.capacityKm(p, 4);
+      const long = volume.longCapKm(t, p, 4);
       expect(long * p.E.slow).toBeLessThanOrEqual(P.long.maxSec);
       expect(t).toBeGreaterThanOrEqual(last);
       // Najveći T: sledećih 0,1 km više ne nosi 4 dana.
@@ -84,7 +84,8 @@ describe('Odluka 1: pošten cilj obima — kapacitet 4 dana ograničava cilj na 
         [...P.warmup.bands].reverse().find((b) => x >= b.fromWeekKm)!.warmupKm +
         [...P.warmup.bands].reverse().find((b) => x >= b.fromWeekKm)!.cooldownKm;
       const carries = (x: number): boolean =>
-        2 * wc(x) + P.volume.capacityQualityMinShare * x + 2 * volume.longCapKm(x, p) + 1e-9 >= x;
+        2 * wc(x) + P.volume.capacityQualityMinShare * x + 2 * volume.longCapKm(x, p, 4) + 1e-9 >=
+        x;
       expect(carries(t)).toBe(true);
       expect(carries(next)).toBe(false);
       last = t;
@@ -183,12 +184,13 @@ describe('Odluka 4: jedan T limit po fazi, jedan vrh obima', () => {
       for (const d of w.days)
         if (w.phase !== 'race')
           expect(d.workout.maxBoutSec.T).toBeLessThanOrEqual(P.quality.tContinuousMaxSec[w.phase]);
-    expect(plan.peakKm).toBeLessThanOrEqual(volume.peakKm(plan.startKm));
+    expect(plan.peakKm).toBeLessThanOrEqual(volume.peakKm(plan.startKm, plan.capacityKm, 4));
   });
 
-  it('peakKm = min(1,3 × start, 50)', () => {
-    expect(volume.peakKm(20)).toBe(26);
-    expect(volume.peakKm(45)).toBe(50);
+  it('peakKm = min(1,3 × start, kapacitet, 50) za 4 dana', () => {
+    expect(volume.peakKm(20, 100, 4)).toBe(26);
+    expect(volume.peakKm(45, 100, 4)).toBe(50);
+    expect(volume.peakKm(45, 47, 4)).toBe(47);
   });
 });
 
@@ -199,11 +201,11 @@ describe('Odluka 5: brz trkač sa malim obimom (15 km, VDOT ~53)', () => {
     expect(errorsOf(plan)).toEqual([]);
   });
 
-  it('8 ned: rasteretni vrhunac bez I — zamena uz ubrzanja', () => {
+  it('8 ned: rasteretni vrhunac bez I — zamena (2.3.0: samo ubrzanja, R 4 × 150 m nije zamena)', () => {
     const w = planOf(FAST_SMALL(8)).weeks.find((x) => x.phase === 'peak' && x.deload)!;
-    expect(quality(w)).toHaveLength(1);
-    expect(quality(w)[0]!.workout.qualityType).not.toBe('I');
-    expect(w.notes.some((n) => n.includes('umesto njega'))).toBe(true);
+    expect(quality(w)).toHaveLength(0);
+    expect(w.stridesOnly).toBe(true);
+    expect(w.notes.some((n) => n.includes('samo ubrzanja'))).toBe(true);
     expect(
       w.days.some((d) => d.role === 'easy' && d.workout.segments.some((s) => s.kind === 'stride'))
     ).toBe(true);

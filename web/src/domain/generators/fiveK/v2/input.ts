@@ -2,7 +2,7 @@
 
 import { dayNumber, isWeekday, weekdayIndex } from './dates.ts';
 import { vdotFromResult } from './paces.ts';
-import { FIVE_K_V2_POLICY as P } from './policy.ts';
+import { daysRule, isRunDaysCount, FIVE_K_V2_POLICY as P } from './policy.ts';
 import type { FiveKV2Input, InputCheck, Reason, Weekday } from './types.ts';
 
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
@@ -51,21 +51,29 @@ export function checkInput(raw: unknown): InputCheck {
   const runDays = r['runDays'];
   if (!Array.isArray(runDays)) add('INPUT_SHAPE', 'runDays mora biti niz dana (mon…sun).');
   else {
-    if (runDays.length !== P.input.runDaysPerWeek)
+    if (!isRunDaysCount(runDays.length))
       add(
         'RUN_DAYS_COUNT',
-        `Podržano je tačno ${P.input.runDaysPerWeek} dana trčanja nedeljno; zadato ${runDays.length}.`
+        `Podržano je ${Object.keys(P.days).join(', ')} dana trčanja nedeljno; zadato ${runDays.length}.`
       );
     if (!runDays.every(isWeekday) || new Set(runDays).size !== runDays.length)
       add('RUN_DAYS_INVALID', 'runDays sme sadržati samo različite dane mon…sun.');
   }
 
-  // Obim.
+  // Obim (2.3.0: opseg po broju dana; bez ispravnog broja dana — najširi opseg tabele).
   const km = r['currentWeeklyKm'];
-  if (!isNum(km) || km < P.input.weeklyKm.min || km > P.input.weeklyKm.max)
+  const n = Array.isArray(runDays) ? runDays.length : 0;
+  const rules = Object.values(P.days);
+  const range = isRunDaysCount(n)
+    ? daysRule(n).weeklyKm
+    : {
+        min: Math.min(...rules.map((x) => x.weeklyKm.min)),
+        max: Math.max(...rules.map((x) => x.weeklyKm.max))
+      };
+  if (!isNum(km) || km < range.min || km > range.max)
     add(
       'WEEKLY_KM_OUT_OF_RANGE',
-      `Trenutni obim mora biti ${P.input.weeklyKm.min}–${P.input.weeklyKm.max} km nedeljno.`
+      `Trenutni obim mora biti ${range.min}–${range.max} km nedeljno${isRunDaysCount(n) ? ` za ${n} dana` : ''}.`
     );
 
   // Rezultat.

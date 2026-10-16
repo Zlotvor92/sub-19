@@ -1,0 +1,22 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "PLAN_LENGTH_OUT_OF_RANGE",
+      "message": "Plan mora trajati 6–16 nedelja; sada 17."
+    },
+    {
+      "code": "WEEKLY_KM_OUT_OF_RANGE",
+      "message": "Trenutni obim mora biti 15–45 km nedeljno za 4 dana."
+    },
+    {
+      "code": "RESULT_TOO_OLD",
+      "message": "Rezultat sme biti star najviše 12 nedelja od starta."
+    },
+    {
+      "code": "VDOT_OUT_OF_RANGE",
+      "message": "VDOT rezultata (62.3) mora biti 30–60."
+    }
+  ],
+  "violations": []
+}

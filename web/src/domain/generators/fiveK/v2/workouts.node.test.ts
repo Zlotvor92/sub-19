@@ -112,18 +112,18 @@ describe('raspored i obim', () => {
   it('šablon: dugi vikendom, zahtevni dani ciklično razmaknuti', () => {
     expect(choosePattern(['tue', 'thu', 'sat', 'sun'])).toEqual({
       ok: true,
-      pattern: { long: 'sun', q1: 'tue', q2: 'thu', easy: 'sat' }
+      pattern: { long: 'sun', q1: 'tue', q2: 'thu', easy: ['sat'] }
     });
     expect(choosePattern(['mon', 'tue', 'wed', 'thu']).ok).toBe(false);
     // pon/sre/pet/ned: ned–pon su susedni ciklično → zahtevni su pon, sre, pet ili sre, pet, ned.
     const r = choosePattern(['mon', 'wed', 'fri', 'sun']);
     expect(r.ok && r.pattern.long).toBe('sun');
-    expect(r.ok && r.pattern.easy).toBe('mon');
+    expect(r.ok && r.pattern.easy).toEqual(['mon']);
   });
 
   it('volume.ts: start, +8%, vrh ≤ 1,3×, rasterećenje, taper, trkačka nedelja', () => {
     const frames = periodize(START, 14);
-    const v = planVolume(frames, 35, pacesFromVdot(50));
+    const v = planVolume(frames, 35, pacesFromVdot(50), 4);
     expect(v.targets[0]).toBe(35);
     expect(v.peakKm).toBeLessThanOrEqual(35 * 1.3);
     expect(v.targets.slice(-3)).toEqual([

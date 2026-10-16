@@ -42,7 +42,7 @@ describe('plan nosi identitet politike (Uslov 6)', () => {
   it.each(ALL)('%s', (_, p) => {
     const plan = planOf(p);
     expect(plan.policyId).toBe('5k-v2');
-    expect(plan.policyVersion).toBe('5k-v2.2.0');
+    expect(plan.policyVersion).toBe('5k-v2.3.0');
   });
 });
 
@@ -52,7 +52,7 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
     for (const w of plan.weeks) {
       const long = w.days.find((d) => d.role === 'long');
       if (!long) continue;
-      expect(long.workout.km).toBeLessThanOrEqual(w.targetKm * P.long.maxShare + 1e-9);
+      expect(long.workout.km).toBeLessThanOrEqual(w.targetKm * P.days[4].longMaxShare + 1e-9);
       expect(long.workout.km * plan.paces.E.slow).toBeLessThanOrEqual(P.long.maxSec);
       for (const d of w.days.filter((x) => x.role === 'easy'))
         expect(d.workout.km).toBeLessThanOrEqual(long.workout.km + 1e-9);
@@ -62,10 +62,10 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
   it('2.2.0: „lagan = dugi" je samo zaštita — kapacitet 4 dana sprečava je na ulazu', () => {
     const plan = planOf(CAPPED);
     expect(plan.weeks.filter((w) => w.easyCappedAtLong)).toEqual([]);
-    // Ciljevi su i dalje odluka volume.ts.
-    expect(plan.weeks.map((w) => w.targetKm)).toEqual(
-      planVolume(periodize(START, CAPPED.weeks), CAPPED.km, plan.paces).targets
-    );
+    // Ciljevi su i dalje odluka volume.ts; 2.3.0: trkačka nedelja = planirano ≤ granica iz volume.ts.
+    const targets = planVolume(periodize(START, CAPPED.weeks), CAPPED.km, plan.paces, 4).targets;
+    expect(plan.weeks.slice(0, -1).map((w) => w.targetKm)).toEqual(targets.slice(0, -1));
+    expect(plan.weeks[plan.weeks.length - 1]!.targetKm).toBeLessThanOrEqual(targets.at(-1)!);
     expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET')).toEqual([]);
   });
 
@@ -232,7 +232,7 @@ describe('Uslov 8: degenerisan plan pada', () => {
   it.each(ALL)('%s: nijedna nedelja ispod minimuma, nijedan prazan trening', (_, p) => {
     const plan = planOf(p);
     for (const w of plan.weeks) {
-      const min = w.phase === 'race' ? P.week.minRaceWeekKm : P.week.minTrainingKm;
+      const min = w.phase === 'race' ? P.week.minRaceWeekKm : P.days[4].minWeekKm;
       expect(w.plannedKm).toBeGreaterThanOrEqual(min);
       for (const d of w.days) {
         expect(d.workout.segments.length).toBeGreaterThan(0);

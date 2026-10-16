@@ -162,15 +162,18 @@ export interface PlanWeek extends WeekFrame {
   budgets: QualityBudgets;
   /** 2.1.0: lagani dani su ograničeni na dužinu dugog, pa je plannedKm < targetKm (namerno). */
   easyCappedAtLong: boolean;
+  /** 2.3.0 (Odluka 5): rasteretna nedelja čiji je kvalitet samo ubrzanja na laganom danu. */
+  stridesOnly: boolean;
   days: PlanDay[];
   notes: string[];
 }
 
+/** 2.3.0: q2 = null za 3 dana (jedan kvalitet); easy = lagani dani šablona (1 za 3–4, 2 za 5 dana). */
 export interface Pattern {
   long: Weekday;
   q1: Weekday;
-  q2: Weekday;
-  easy: Weekday;
+  q2: Weekday | null;
+  easy: readonly Weekday[];
 }
 
 export type GoalStatus = 'feasible' | 'ambitious' | 'unrealistic';
@@ -202,8 +205,10 @@ export interface FiveKV2Plan {
   pattern: Pattern;
   startKm: number;
   peakKm: number;
-  /** 2.2.0: najveći nedeljni cilj koji 4 dana nose (volume.ts); svaki cilj ≤ ovog. */
+  /** 2.2.0: najveći nedeljni cilj koji izabrani broj dana nosi (volume.ts); svaki cilj ≤ ovog. */
   capacityKm: number;
+  /** 2.3.0: napomene celog plana (npr. kratka priprema). */
+  notes: string[];
   weeks: PlanWeek[];
   warnings: Violation[];
 }

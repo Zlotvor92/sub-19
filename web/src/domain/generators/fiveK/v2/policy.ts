@@ -10,21 +10,54 @@ import type { Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.2.0',
+  version: '5k-v2.3.0',
+
+  /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
+      - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
+      - qualityDays / easyDays: šablon nedelje (+ jedan dugi);
+      - longMaxShare: dugi ≤ ovaj udeo ciljnog km nedelje (i ≤ long.maxSec), naniže na longStepKm
+        (3 dana 0,1 km: jedini kvalitet je ~20% nedelje, pa bi 0,5 km gurnulo lagan preko dugog);
+      - maxWeekKm: apsolutni vrh obima (član peakKm());
+      - minWeekKm: Uslov 8, najmanji smislen obim nedelje treninga (≈ broj dana × 2,5 km). */
+  days: {
+    3: {
+      weeklyKm: { min: 10, max: 35 },
+      qualityDays: 1,
+      easyDays: 1,
+      longMaxShare: 0.4,
+      longStepKm: 0.1,
+      maxWeekKm: 40,
+      minWeekKm: 7.5
+    },
+    4: {
+      weeklyKm: { min: 15, max: 45 },
+      qualityDays: 2,
+      easyDays: 1,
+      longMaxShare: 0.35,
+      longStepKm: 0.5,
+      maxWeekKm: 50,
+      minWeekKm: 10
+    },
+    5: {
+      weeklyKm: { min: 25, max: 65 },
+      qualityDays: 2,
+      easyDays: 2,
+      longMaxShare: 0.3,
+      longStepKm: 0.5,
+      maxWeekKm: 65,
+      minWeekKm: 12.5
+    }
+  },
 
   input: {
-    /** Podržan je samo raspored sa tačno 4 dana trčanja (heuristika opsega v2, ne pravilo treninga). */
-    runDaysPerWeek: 4,
-    /** Trenutni nedeljni obim [km]; van opsega → odbijanje (heuristika opsega, nije validirano na populaciji). */
-    weeklyKm: { min: 15, max: 45 },
     /** Rezultat stariji od ovoga ne opisuje trenutnu formu dovoljno pouzdano (heuristika). */
     resultMaxAgeDays: 84,
     /** Distance rezultata iz kojih se računa VDOT. */
     resultDistancesM: [3000, 5000, 10000] as const,
     /** Opseg VDOT-a za koji v2 pravi plan (heuristika opsega; van toga pravila nisu proverena). */
     vdot: { min: 30, max: 60 },
-    /** Trajanje plana u celim nedeljama (heuristika opsega). */
-    planWeeks: { min: 8, max: 16 },
+    /** Trajanje plana u celim nedeljama (heuristika opsega). 2.3.0: od 6 (kratka priprema). */
+    planWeeks: { min: 6, max: 16 },
     /** Cilj [s] mora da odgovara VDOT-u u ovom opsegu da bi uopšte bio procenjen (sanity granica). */
     goalVdot: { min: 25, max: 85 }
   },
@@ -63,7 +96,17 @@ export const FIVE_K_V2_POLICY = {
     /** 2.1.0: vrhunac (I) najviše 4 nedelje, višak ide u bazu (heuristika). Sa rasterećenjem na svakoj
         4. nedelji to su ≤ 3 ne-rasteretne nedelje, pa strogi rast I doze (v. DECISIONS) ostaje izvodljiv
         i kad je budžet ravan (obim na vrhu). */
-    peakMaxWeeks: 4
+    peakMaxWeeks: 4,
+    /** 2.3.0: kratka priprema (6–7 nedelja): fiksna raspodela, bez rasterećenja, jedna nedelja tapera
+        (taperStep 1). Od 8 nedelja važi phaseCounts() kao ranije (heuristika). */
+    short: {
+      6: { base: 2, peak: 2, sharpen: 0, taper: 1, race: 1 },
+      7: { base: 2, peak: 2, sharpen: 1, taper: 1, race: 1 }
+    } as Readonly<
+      Record<number, { base: number; peak: number; sharpen: number; taper: number; race: number }>
+    >,
+    /** Napomena plana kratke pripreme. */
+    shortNote: 'Kratka priprema: malo vremena za izgradnju; cilj prikazati kao orijentir.'
   },
 
   volume: {
@@ -77,16 +120,13 @@ export const FIVE_K_V2_POLICY = {
     deloadFactor: 0.8,
     /** Taper: udeo vrha po nedelji tapera (heuristika). */
     taperFactors: [0.85, 0.7] as const,
-    /** Trkačka nedelja ≈ udeo vrha, BEZ same trke (heuristika). */
+    /** Trkačka nedelja: GORNJA GRANICA = udeo vrha, BEZ same trke (heuristika). 2.3.0: cilj trkačke
+        nedelje = zbir planiranih dana (≤ ove granice). */
     raceWeekFactor: 0.5,
-    /** 2.0.1: gornja granica nedeljnog cilja za 4 dana (heuristika): kvalitetni dani primaju ~35–40%
-        nedelje, pa ostatak ide u dugi i jedan lagan trk. 2.1.0: zadržano (vrh se ne podiže).
-        2.2.0: drugi član funkcije peakKm() (volume.ts); kapacitet 4 dana je posebno ograničenje. */
-    fourDayMaxWeekKm: 50,
-    /** 2.2.0: kapacitet 4 dana (volume.ts) računa kvalitetne dane donjom granicom: zagrevanje +
-        hlađenje + ovaj udeo cilja (rad + oporavak oba kvaliteta zajedno). Heuristika; u mreži od 240
+    /** 2.2.0: kapacitet (volume.ts) računa kvalitetne dane donjom granicom: zagrevanje +
+        hlađenje + ovaj udeo cilja (rad + oporavak svih kvaliteta zajedno). Heuristika; u mreži od 240
         ulaza pod 2.1.0 najmanji izmereni udeo je 11,8%. Ako stvarni kvalitet ipak bude manji, ostaje
-        zaštita „lagan = dugi" (PLANNED_BELOW_TARGET). */
+        zaštita „lagan = dugi" (PLANNED_BELOW_TARGET). 2.3.0: ista formula za 3/4/5 dana (days). */
     capacityQualityMinShare: 0.1,
     /** Dozvoljeno odstupanje faktora pri proveri (zaokruživanje na 0,1 km). */
     factorTolerance: 0.03
@@ -148,14 +188,17 @@ export const FIVE_K_V2_POLICY = {
     },
     /** Ubrzanja na laganom danu u bazi/taperu: broj × trajanje, oporavak u s. Ne ulaze u R udeo. */
     strides: { reps: 4, sec: 20, recoverySec: 60 },
+    /** 2.3.0 (Odluka 5): zamena u rasterećenju — R samo ako je rad ≥ minRKm (≈ 6 × 200 m); ako ni
+        to ni kratak T (≥ shortTMinKm) ne staje, kvalitet nedelje su samo ubrzanja `stridesOnly` na
+        laganom danu (heuristika). */
+    deloadSubstitute: { minRKm: 1.2, stridesOnly: { reps: 6, sec: 20, recoverySec: 60 } },
     /** Trkačka nedelja: kratko oštrenje RP-om (opcije u repOptionsKm.RPsharpener). */
     raceWeekSharpener: { maxReps: 4, minReps: 2 }
   },
 
   long: {
-    /** Dugi trk ≤ 35% ciljnog km nedelje i ≤ 90 min (računato sporijom granicom E tempa), lagano
-        (heuristika). 2.1.0: 30% → 35% za 4 dana; lagan trk nikad duži od dugog (v. DECISIONS). */
-    maxShare: 0.35,
+    /** Dugi trk ≤ days[n].longMaxShare ciljnog km nedelje i ≤ 90 min (računato sporijom granicom E
+        tempa), lagano (heuristika). 2.1.0: 35% za 4 dana; 2.3.0: udeo je u tabeli `days`. */
     maxSec: 5400
   },
 
@@ -174,9 +217,8 @@ export const FIVE_K_V2_POLICY = {
   },
 
   week: {
-    /** 2.1.0 (Uslov 8): najmanji smislen obim nedelje [km]; trening nedelja ≈ 4 trka × 2,5 km,
-        trkačka nedelja bez same trke ≈ 2 kratka trka (heuristika). Ispod toga plan je degenerisan. */
-    minTrainingKm: 10,
+    /** 2.1.0 (Uslov 8): trkačka nedelja bez same trke ≈ 2 kratka trka (heuristika). Minimum nedelje
+        treninga je days[n].minWeekKm (2.3.0). Ispod toga plan je degenerisan. */
     minRaceWeekKm: 4
   },
 
@@ -208,6 +250,13 @@ export const FIVE_K_V2_POLICY = {
 } as const;
 
 export type FiveKV2Policy = typeof FIVE_K_V2_POLICY;
+
+/** 2.3.0: podržan broj dana trčanja. */
+export type RunDaysCount = keyof typeof FIVE_K_V2_POLICY.days;
+export const isRunDaysCount = (n: number): n is RunDaysCount => n in FIVE_K_V2_POLICY.days;
+/** Red tabele `days` za broj dana trčanja (jedino mesto grananja po broju dana). */
+export const daysRule = (n: RunDaysCount): (typeof FIVE_K_V2_POLICY.days)[RunDaysCount] =>
+  FIVE_K_V2_POLICY.days[n];
 
 /** Dnevnik odluka: svaka promena pravila posle pregleda primera. */
 export const DECISIONS: readonly { version: string; decision: string }[] = [
@@ -280,5 +329,23 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'prethodne nedelje; ostatak se ne raspoređuje (planirano < cilj samo tu, uz napomenu). ' +
       'Posle pregleda primera: T u bazi na limitu odmah prelazi u cruise (ne čeka treću istu nedelju), a R ' +
       'se drži iste strukture dok T napreduje — inače je spor profil sa 45 km dobijao R 10 × 150 m.'
+  },
+  {
+    version: '5k-v2.3.0',
+    decision:
+      'Segment 04: 3 i 5 dana, kratka priprema. Opseg: 3/4/5 dana, obim 3 d 10–35, 4 d 15–45, 5 d 25–65 km, ' +
+      '6–16 nedelja. (1) Šablon po broju dana iz JEDNE tabele `days`: 3 d = 1 kvalitet + dugi + lagan sa ' +
+      'ubrzanjima (baza R/T naizmenično, vrhunac I, oštrenje i taper RP), dugi ≤ 40%; 4 d kao 2.2.0; 5 d = ' +
+      '2 kvaliteta + dugi + 2 lagana, dugi ≤ 30%; dugi ≤ 90 min; zahtevni dani nisu uzastopni (ciklično). ' +
+      '(2) Kapacitet: ista nejednačina kao 4 d, parametrizovana brojem kvaliteta, laganih i udelom dugog; ' +
+      'peakKm = min(1,3 × start, kapacitet, 40/50/65). (3) 6 ned = baza 2, vrhunac 2, taper 1, trka 1; 7 ned ' +
+      '+ oštrenje 1; bez rasterećenja; jedna nedelja tapera = taper 1 (0,85 vrha); napomena plana. ' +
+      '(4) Trkačka nedelja: cilj = zbir planiranih dana, 50% vrha je gornja granica i osnov budžeta. ' +
+      '(5) Rasterećenje: zamena R samo ako je rad ≥ 1,2 km; inače samo ubrzanja 6 × 20 s na laganom ' +
+      '(stridesOnly). (6) Baza: R km ne pada između ne-rasteretnih nedelja; bez višeg nivoa R se drži, a T ' +
+      'menja strukturu. Posle mreže (odstupanja): dugi za 3 d na 0,1 km (longStepKm), jer jedini kvalitet ' +
+      'je ~20% nedelje; prvi T u bazi 3 d = 1 km kad 70% budžeta ne prima minimum; RP u oštrenju ' +
+      'neopadajući — bez višeg nivoa ista doza druge strukture (ranije 15 km/10 ned odbijan za sve VDOT-e); ' +
+      'minimum nedelje (Uslov 8) po broju dana 7,5/10/12,5 km.'
   }
 ];

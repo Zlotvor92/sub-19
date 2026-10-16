@@ -12,8 +12,14 @@ export interface PhaseCounts {
   race: number;
 }
 
-/** Raspodela nedelja po fazama. Izgradnja = ukupno − taper − trka; vrhunac ≤ peakMaxWeeks, višak u bazu. */
+/** Kratka priprema (2.3.0): 6–7 nedelja, fiksna raspodela iz policy.ts, bez rasterećenja. */
+export const isShortPrep = (totalWeeks: number): boolean => totalWeeks in P.phases.short;
+
+/** Raspodela nedelja po fazama. Izgradnja = ukupno − taper − trka; vrhunac ≤ peakMaxWeeks, višak u bazu.
+    2.3.0: 6–7 nedelja iz tabele P.phases.short. */
 export function phaseCounts(totalWeeks: number): PhaseCounts {
+  const short = P.phases.short[totalWeeks];
+  if (short) return { ...short };
   const taper = P.phases.taperWeeks;
   const race = P.phases.raceWeeks;
   const build = totalWeeks - taper - race;
@@ -40,8 +46,10 @@ export function periodize(startDate: IsoDate, totalWeeks: number): WeekFrame[] {
   // Rasterećenje (jedino mesto): svaka N-ta nedelja izgradnje. 2.2.0: ako bi to bila prva nedelja
   // vrhunca ili oštrenja, pomera se na poslednju nedelju prethodne faze; izostavlja se ako bi bila
   // poslednja nedelja izgradnje (uzastopno sa taperom, koji ionako smanjuje obim).
+  // 2.3.0: kratka priprema nema rasterećenja.
   const deloads = new Set<number>();
-  for (let n = P.volume.deloadEvery; n <= lastBuild; n += P.volume.deloadEvery) {
+  const every = isShortPrep(totalWeeks) ? Infinity : P.volume.deloadEvery;
+  for (let n = every; n <= lastBuild; n += every) {
     const phaseStart = sequence[n - 1] !== sequence[n - 2];
     const at = phaseStart && sequence[n - 1] !== 'base' ? n - 1 : n;
     if (at !== lastBuild) deloads.add(at);

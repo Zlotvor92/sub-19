@@ -76,8 +76,8 @@ describe('datumi, faze, trkačka nedelja', () => {
       expect(daysBetween(d.date, plan.input.raceDate)).toBeGreaterThanOrEqual(0);
   });
 
-  it('raspodela faza za 8–16 nedelja', () => {
-    for (let n = P.input.planWeeks.min; n <= P.input.planWeeks.max; n++) {
+  it('raspodela faza za 8–16 nedelja (6–7: segment04.node.test.ts)', () => {
+    for (let n = 8; n <= P.input.planWeeks.max; n++) {
       const c = phaseCounts(n);
       expect(c.base + c.peak + c.sharpen + c.taper + c.race).toBe(n);
       expect(c.base).toBeGreaterThanOrEqual(1);
@@ -187,13 +187,17 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
   });
 
   it.each<[string, Record<string, unknown>, ReasonCode]>([
-    ['3 dana', inputOf({ ...ok, days: ['tue', 'thu', 'sun'] }), 'RUN_DAYS_COUNT'],
-    ['5 dana', inputOf({ ...ok, days: ['mon', 'tue', 'thu', 'sat', 'sun'] }), 'RUN_DAYS_COUNT'],
+    ['2 dana', inputOf({ ...ok, days: ['tue', 'sun'] }), 'RUN_DAYS_COUNT'],
+    [
+      '6 dana',
+      inputOf({ ...ok, days: ['mon', 'tue', 'wed', 'thu', 'sat', 'sun'] }),
+      'RUN_DAYS_COUNT'
+    ],
     ['ponovljen dan', inputOf({ ...ok, days: ['mon', 'mon', 'thu', 'sat'] }), 'RUN_DAYS_INVALID'],
     ['uzastopni dani', inputOf({ ...ok, days: ['mon', 'tue', 'wed', 'thu'] }), 'RUN_DAYS_SPACING'],
     ['obim 14,9', inputOf({ ...ok, km: 14.9 }), 'WEEKLY_KM_OUT_OF_RANGE'],
     ['obim 45,1', inputOf({ ...ok, km: 45.1 }), 'WEEKLY_KM_OUT_OF_RANGE'],
-    ['7 nedelja', inputOf({ ...ok, weeks: 7 }), 'PLAN_LENGTH_OUT_OF_RANGE'],
+    ['5 nedelja', inputOf({ ...ok, weeks: 5 }), 'PLAN_LENGTH_OUT_OF_RANGE'],
     ['17 nedelja', inputOf({ ...ok, weeks: 17 }), 'PLAN_LENGTH_OUT_OF_RANGE'],
     ['rezultat 85 dana', inputOf({ ...ok, resultDaysBefore: 85 }), 'RESULT_TOO_OLD'],
     ['rezultat posle starta', inputOf({ ...ok, resultDaysBefore: -1 }), 'RESULT_AFTER_START'],
@@ -213,7 +217,7 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
   });
 
   it('svi razlozi odjednom, bez plana', () => {
-    const r = generateFiveKV2({ ...inputOf({ ...ok, km: 60, days: ['mon'] }), startDate: 'x' });
+    const r = generateFiveKV2({ ...inputOf({ ...ok, km: 70, days: ['mon'] }), startDate: 'x' });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reasons.length).toBeGreaterThanOrEqual(3);
     expect(codesOf(null)).toEqual(['INPUT_SHAPE']);

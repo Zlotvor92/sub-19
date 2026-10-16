@@ -1,0 +1,26 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "QUALITY_INFEASIBLE",
+      "week": 2,
+      "message": "Nedelja 2: Baza (3 dana): ni R (budžet 0.54 km) ni T (budžet 1.08 km) ne staje bez ponavljanja prethodne nedelje."
+    },
+    {
+      "code": "WEEK_INFEASIBLE",
+      "week": 3,
+      "message": "Nedelja 3: posle kvaliteta (0 km) i dugog (2.6 km) za lagan trk ostaje 2.6 / 2.6 km < 3 km."
+    },
+    {
+      "code": "QUALITY_INFEASIBLE",
+      "week": 4,
+      "message": "Nedelja 4: I ponavljanja: budžet 0.92 km nije dovoljan za najmanji smislen trening po pravilima."
+    },
+    {
+      "code": "QUALITY_INFEASIBLE",
+      "week": 9,
+      "message": "Nedelja 9: RP ponavljanja: budžet 0.7 km nije dovoljan za najmanji smislen trening po pravilima."
+    }
+  ],
+  "violations": []
+}

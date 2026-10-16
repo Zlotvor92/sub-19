@@ -4,8 +4,8 @@
 import { addDays, daysBetween, weekdayIndex, weekdayOf } from './dates.ts';
 import { checkInput } from './input.ts';
 import { assessGoal, pacesFromVdot, raceTimeForVdot, vdotFromResult } from './paces.ts';
-import { periodize } from './periodize.ts';
-import { FIVE_K_V2_POLICY as P } from './policy.ts';
+import { isShortPrep, periodize, phaseCounts } from './periodize.ts';
+import { FIVE_K_V2_POLICY as P, type RunDaysCount } from './policy.ts';
 import { choosePattern } from './schedule.ts';
 import type {
   DayRole,
@@ -68,20 +68,24 @@ type TrainingWeekResult =
 
 /**
  * Nedelja treninga. JEDINO mesto koje određuje dužinu dugog i laganih trkova (jedan prolaz):
- * dugi = min(longCapKm(cilj) [35%, 90 min], cilj − kvalitet − n × min. lagan); lagan = (cilj − kvalitet − dugi) / broj laganih dana.
- * 2.2.0: cilj je već ograničen kapacitetom 4 dana (volume.ts), pa je lagan > dugi samo zaštita: tada
+ * dugi = min(longCapKm(cilj) [udeo dana, 90 min], cilj − kvalitet − n × min. lagan); lagan = (cilj − kvalitet − dugi) / broj laganih dana.
+ * 2.2.0: cilj je već ograničen kapacitetom (volume.ts), pa je lagan > dugi samo zaštita: tada
  * lagan = dugi i plannedKm < targetKm (napomena + PLANNED_BELOW_TARGET).
  * Kvalitet i doza: weekQuality (workouts.ts); `prev` = doza prethodne ne-rasteretne nedelje ISTE faze.
+ * 2.3.0: lagani dani = lagani dani šablona + kvalitetni dan bez kvaliteta (q2 u rasterećenju/taperu 2;
+ * q1 u nedelji samo sa ubrzanjima, sa ubrzanjima stridesOnly).
  */
 function buildTrainingWeek(
   f: WeekFrame,
   target: number,
   pattern: Pattern,
   p: Paces,
-  prev: WeekDose | null
+  prev: WeekDose | null,
+  days: RunDaysCount,
+  taperWeeks: number
 ): TrainingWeekResult {
   const budgets = qualityBudgets(target);
-  const s = weekQuality(f, target, p, prev);
+  const s = weekQuality(f, target, p, prev, days, taperWeeks);
   if (!s.ok)
     return {
       ok: false,
@@ -94,15 +98,19 @@ function buildTrainingWeek(
   const q1 = s.q1;
   const q2 = s.q2;
 
-  const easyDays: { w: Weekday; role: DayRole }[] = [{ w: pattern.easy, role: 'easy' }];
-  if (!q2) easyDays.push({ w: pattern.q2, role: 'easy' });
+  const easyDays: { w: Weekday; stridesOnly: boolean }[] = pattern.easy.map((w) => ({
+    w,
+    stridesOnly: false
+  }));
+  if (!q1) easyDays.push({ w: pattern.q1, stridesOnly: true });
+  if (!q2 && pattern.q2) easyDays.push({ w: pattern.q2, stridesOnly: false });
   const easyMin = f.phase === 'taper' ? P.easy.taperMinKm : P.easy.minKm;
-  const qualityKm = q1.km + (q2 ? q2.km : 0);
-  // Dugi = min(35% cilja, 90 min, prostor koji laganim danima ostavlja minimum) — jedna formula.
+  const qualityKm = (q1 ? q1.km : 0) + (q2 ? q2.km : 0);
+  // Dugi = min(udeo dana × cilj, 90 min, prostor koji laganim danima ostavlja minimum) — jedna formula.
   // 2.2.0: treći član na 0,1 km (ne 0,5): sa 0,5 km mala rasteretna nedelja (13 km) dobija dugi 3 km i
   // lagane 3,2 km, tj. lagan > dugi.
   const longKm = Math.min(
-    longCapKm(target, p),
+    longCapKm(target, p, days),
     floor1(target - qualityKm - easyDays.length * easyMin)
   );
   const fixed = qualityKm + longKm;
@@ -119,14 +127,24 @@ function buildTrainingWeek(
       }
     };
 
-  const days: PlanDay[] = [
-    day(f, pattern.q1, 'q1', q1),
-    day(f, pattern.long, 'long', longRun(longKm, p))
-  ];
-  if (q2) days.push(day(f, pattern.q2, 'q2', q2));
-  easyDays.forEach((e, i) => days.push(day(f, e.w, e.role, easyRun(shares[i]!, p, s.easyStrides))));
-  days.sort((a, b) => a.date.localeCompare(b.date));
-  const plannedKm = r2(days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
+  const planDays: PlanDay[] = [day(f, pattern.long, 'long', longRun(longKm, p))];
+  if (q1) planDays.push(day(f, pattern.q1, 'q1', q1));
+  if (q2 && pattern.q2) planDays.push(day(f, pattern.q2, 'q2', q2));
+  const so = P.quality.deloadSubstitute.stridesOnly;
+  easyDays.forEach((e, i) =>
+    planDays.push(
+      day(
+        f,
+        e.w,
+        'easy',
+        e.stridesOnly
+          ? easyRun(shares[i]!, p, true, so)
+          : easyRun(shares[i]!, p, s.easyStrides && !s.stridesOnly)
+      )
+    )
+  );
+  planDays.sort((a, b) => a.date.localeCompare(b.date));
+  const plannedKm = r2(planDays.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
   const notes = [...s.notes];
   if (easyCappedAtLong)
     notes.push(
@@ -134,25 +152,38 @@ function buildTrainingWeek(
     );
   return {
     ok: true,
-    week: { ...f, targetKm: target, plannedKm, budgets, easyCappedAtLong, days, notes },
+    week: {
+      ...f,
+      targetKm: target,
+      plannedKm,
+      budgets,
+      easyCappedAtLong,
+      stridesOnly: s.stridesOnly,
+      days: planDays,
+      notes
+    },
     dose: s.dose
   };
 }
 
+/**
+ * Trkačka nedelja. 2.3.0 (Odluka 4): `bound` = udeo vrha je GORNJA GRANICA; cilj nedelje = zbir
+ * planiranih dana (budžet oštrenja se računa od granice).
+ */
 function buildRaceWeek(
   f: WeekFrame,
-  target: number,
+  bound: number,
   pattern: Pattern,
   runDays: readonly Weekday[],
   raceDate: string,
   p: Paces,
   prevLongKm: number
 ): WeekResult {
-  const budgets = qualityBudgets(target);
+  const budgets = qualityBudgets(bound);
   const gapToRace = (w: Weekday): number => daysBetween(dateOfWeekday(f, w), raceDate);
   const raceWd = weekdayOf(raceDate);
   // Oštrenje: zahtevni dan šablona ≥ sharpenerMinGapDays pre trke, najbliži trci.
-  const pref: Weekday[] = [pattern.q1, pattern.q2, pattern.long];
+  const pref: Weekday[] = [pattern.q1, ...(pattern.q2 ? [pattern.q2] : []), pattern.long];
   const cands = pref
     .filter((w) => w !== raceWd && gapToRace(w) >= P.schedule.sharpenerMinGapDays)
     .sort((a, b) => gapToRace(a) - gapToRace(b) || pref.indexOf(a) - pref.indexOf(b));
@@ -166,7 +197,7 @@ function buildRaceWeek(
         message: `Trkačka nedelja: nema zahtevnog dana šablona ≥ ${P.schedule.sharpenerMinGapDays} dana pre trke za oštrenje.`
       }
     };
-  const sharp = qualitySession('RP_sharpener', budgets.I, target, p, 'race');
+  const sharp = qualitySession('RP_sharpener', budgets.I, bound, p, 'race');
   if (!sharp.ok)
     return {
       ok: false,
@@ -190,7 +221,7 @@ function buildRaceWeek(
     .sort((a, b) => gapToRace(b) - gapToRace(a));
   const eve = others.find((w) => gapToRace(w) === 1);
   const rest = others.filter((w) => w !== eve);
-  const remainder = r2(target - sharp.workout.km);
+  const remainder = r2(bound - sharp.workout.km);
   const n =
     easyCap + 1e-9 < P.easy.taperMinKm
       ? 0
@@ -221,18 +252,18 @@ function buildRaceWeek(
     );
   if (withEve) notes.push(`Dan pred trku: lagano ${eveKm} km sa ubrzanjima.`);
   const plannedKm = r2(days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
-  if (plannedKm < target - P.tolerance.arithmeticKm)
-    notes.push(
-      `Lagan dan ≤ ${easyCap} km (50 min, 50% prethodnog dugog); ostatak se ne raspoređuje: planirano ${plannedKm} km < cilj ${target} km.`
-    );
+  notes.push(
+    `Cilj trkačke nedelje = planirano ${plannedKm} km (gornja granica ${bound} km = ${P.volume.raceWeekFactor * 100}% vrha; lagan dan ≤ ${easyCap} km).`
+  );
   return {
     ok: true,
     week: {
       ...f,
-      targetKm: target,
+      targetKm: plannedKm,
       plannedKm,
       budgets,
       easyCappedAtLong: false,
+      stridesOnly: false,
       days,
       notes
     }
@@ -252,7 +283,8 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
   const paces = pacesFromVdot(vdot);
   const totalWeeks = (daysBetween(input.startDate, input.raceDate) + 1) / 7;
   const frames = periodize(input.startDate, totalWeeks);
-  const vol = planVolume(frames, input.currentWeeklyKm, paces);
+  const nDays = input.runDays.length as RunDaysCount;
+  const vol = planVolume(frames, input.currentWeeklyKm, paces, nDays);
 
   const weeks: PlanWeek[] = [];
   const reasons: Reason[] = [];
@@ -276,14 +308,22 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
       else reasons.push(r.reason);
       return;
     }
-    const r = buildTrainingWeek(f, target, pat.pattern, paces, lastDose[f.phase] ?? null);
+    const r = buildTrainingWeek(
+      f,
+      target,
+      pat.pattern,
+      paces,
+      lastDose[f.phase] ?? null,
+      nDays,
+      phaseCounts(totalWeeks).taper
+    );
     if (!r.ok) {
       reasons.push(r.reason);
       return;
     }
     if (i === 0 && vol.startCapped)
       r.week.notes.push(
-        `Trenutni obim (${input.currentWeeklyKm} km) je veći od onoga što 4 dana nose (${vol.capacityKm} km); plan kreće od ${vol.capacityKm} km. 5 dana će biti podržano kasnije.`
+        `Trenutni obim (${input.currentWeeklyKm} km) je veći od onoga što ${nDays} dana nose (${vol.capacityKm} km); plan kreće od ${vol.capacityKm} km.${nDays < 5 ? ' Za veći obim izaberi više dana trčanja.' : ''}`
       );
     weeks.push(r.week);
     if (r.dose) lastDose[f.phase] = r.dose;
@@ -302,6 +342,7 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
     startKm: vol.startKm,
     peakKm: vol.peakKm,
     capacityKm: vol.capacityKm,
+    notes: isShortPrep(totalWeeks) ? [P.phases.shortNote] : [],
     weeks,
     warnings: []
   };
