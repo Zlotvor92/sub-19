@@ -4,11 +4,19 @@
    proseka cele sesije. REDOSLED IZVORA: icu ako je povezan i sme da čita treninge, inače Strava (`services/activitySource`). ODLUKE su u
    `domain` (`icuImportedEntry`, `mergeDay`, `realignPlan`, `icuRoundsToLaps`, `recordAutoPace`, …); ovde je samo tok poziva.
 
-   Stanje se čita jednom, menja na lokalnoj kopiji i upisuje JEDNOM na kraju (i pri prekidu — ono što je do tada izvedeno je ispravno). */
+   Stanje se čita jednom, menja na lokalnoj kopiji i upisuje JEDNOM na kraju (i pri prekidu — ono što je do tada izvedeno je ispravno).
+
+   08c, SAMO ZA PLAN 5K v2 (plan v1 se uvozi bajt-isto): trčanje koje nije upareno sa danom plana postaje zapis van plana
+   (`vanPlanaV2`), a pored `trSync` (spisak treninga preuzet — isto značenje kao ranije, pomera se i kad detalji/tokovi ne
+   uspeju) veza nosi `fullSync`: spisak ceo i prepoznat, svaki trening obrađen i svaki traženi detalj/tok preuzet. Delimičan
+   uspeh ga ne pomera; šta nije obrađeno je u `syncIssues` (sa danom). Detalji/tokovi odloženi ograničenjem po sinhronizaciji
+   (24 / 3) nisu neuspeh: ne menjaju datum, km ni trajanje. */
 
 import { addDays, type IsoDate } from '../../domain/date';
 import {
+  activityIssue,
   decouplingPerKm,
+  icuActivityIssue,
   icuImportedEntry,
   icuKmByDate,
   icuRoundsToLaps,
@@ -21,7 +29,10 @@ import {
   perKmDetail,
   perKmStale,
   PERKM_VERSION,
-  type IcuActivity
+  recordOffPlanRuns,
+  syncStatus,
+  type IcuActivity,
+  type IcuRun
 } from '../../domain/activities';
 import {
   recomputeChain,
@@ -35,10 +46,10 @@ import {
   icuConnected,
   type IcuLink
 } from '../../domain/icu';
-import { generatorForPlan } from '../../domain/generators/select';
+import { generatorForPlan, isFiveKV2Plan } from '../../domain/generators/select';
 import { planBaselineVdot, resolvePlan, type ResolvedDay } from '../../domain/plan';
 import { planBoundary, recordOutOfPlan } from '../../domain/recovery';
-import type { LogEntry, WellnessRecord } from '../../domain/state';
+import type { LogEntry, SyncIssue, WellnessRecord } from '../../domain/state';
 import {
   alignVdotDates,
   matchWeekRows,
@@ -72,6 +83,8 @@ export interface IcuSyncDeps {
 export type IcuResult<T> = ({ ok: true } & T) | { ok: false; error: string };
 
 const WEEK_MS = 7 * 864e5;
+/** Server (`api/icu.js`, režim 1) vraća najviše ovoliko treninga; pun spisak može biti skraćen. */
+const ICU_LIST_MAX = 200;
 export const NO_ACTIVITIES_SCOPE =
   'Veza sa intervals.icu nema dozvolu za treninge. Otkači pa ponovo poveži — dobićeš i treninge, ne samo jutarnja merenja.';
 export const ZONES_OLD_LINK =
@@ -194,7 +207,20 @@ export function createIcuSync(deps: IcuSyncDeps) {
     if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
     if (!list.ok) return { ok: false, error: list.error };
     const activities: IcuActivity[] = list.data.activities;
-    if (!activities.length) {
+    /* 08c: zapis van plana i `fullSync` samo za plan 5K v2 (plan v1: isti tok kao ranije). */
+    const v2 = isFiveKV2Plan(genPlan);
+    const issues: SyncIssue[] = [];
+    const skipped = list.data.skipped ?? 0;
+    if (skipped > 0)
+      issues.push(activityIssue(null, null, `${skipped} stavki spiska treninga nije prepoznato`));
+    const whole = activities.length + skipped < ICU_LIST_MAX;
+    if (!whole)
+      issues.push(activityIssue(null, null, `spisak treninga je skraćen na ${ICU_LIST_MAX}`));
+    for (const a of activities) {
+      const why = icuActivityIssue(a);
+      if (why) issues.push(activityIssue(a.datum, a.id, why));
+    }
+    if (!activities.length && !v2) {
       link.set({ ...(link.get() ?? start0), trSync: deps.now() });
       return { ok: true, n: 0, details: 0, streams: 0 };
     }
@@ -244,6 +270,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
     };
 
     let n = 0;
+    const paired = new Set<string>();
     const askDetails: Array<{ id: string; dayId: string; d: ResolvedDay }> = [];
     const askStreams: Array<{ id: string; dayId: string; d: ResolvedDay }> = [];
     for (const date of Object.keys(byDate)) {
@@ -256,6 +283,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
         current
       } = importedDay(byDate[date] ?? [], d.tag, s.log[d.id], d.km, 'icu');
       if (!a || !merged.taken.length) continue;
+      for (const x of merged.taken) paired.add(String(x.id));
       const imp = icuImportedEntry(current, date, merged, a);
       s.log[d.id] = imp.entry;
       if (imp.imported) {
@@ -282,8 +310,32 @@ export function createIcuSync(deps: IcuSyncDeps) {
         recomputeChain(list, { form: generator, rows, baselineVdot: baseline, hasAlt: false })
       );
       if (aligned.changed) s.vdotLog = aligned.vdotLog;
+      if (v2) {
+        /* Uvoz ne vidi trening bez km (`icuRunsByDate`); sa trajanjem je vremenska sesija van plana. */
+        const runs: Record<string, IcuRun[]> = Object.fromEntries(
+          Object.entries(byDate).map(([dt, l]) => [dt, [...l]])
+        );
+        for (const a of activities)
+          if (!((a.km ?? 0) > 0) && (a.sec ?? 0) > 0)
+            (runs[a.datum] ??= []).push({ ...a, distance: 0 });
+        const off = recordOffPlanRuns({
+          current: s.vanPlanaV2 ?? {},
+          src: 'icu',
+          byDate: runs,
+          paired,
+          planStart: boundary,
+          today: deps.today(),
+          window: whole && skipped === 0 ? { from: oldest, to: deps.today() } : null
+        });
+        if (off) s.vanPlanaV2 = off;
+      }
       ports.commit(s);
-      link.set({ ...(link.get() ?? start0), trSync: deps.now() });
+      const cur = link.get() ?? start0;
+      link.set({
+        ...cur,
+        trSync: deps.now(),
+        ...(v2 ? syncStatus(cur, issues, oldest, deps.now()) : {})
+      });
     };
 
     let details = 0;
@@ -294,6 +346,8 @@ export function createIcuSync(deps: IcuSyncDeps) {
         group.map((x) => x.id)
       );
       if (!r.ok) {
+        for (const x of group)
+          issues.push(activityIssue(x.d.date, x.id, `detalji nisu preuzeti (${r.error})`));
         if (manual) {
           finish();
           return { ok: false, error: r.error };
@@ -302,7 +356,10 @@ export function createIcuSync(deps: IcuSyncDeps) {
       }
       for (const x of group) {
         const det = r.data.details[x.id];
-        if (!det) continue;
+        if (!det) {
+          issues.push(activityIssue(x.d.date, x.id, 'detalji nisu preuzeti (greška izvora)'));
+          continue;
+        }
         const entry = s.log[x.dayId];
         if (!entry) continue;
         const laps = icuRoundsToLaps(det.rounds, qsFor(x.d.id));
@@ -344,6 +401,8 @@ export function createIcuSync(deps: IcuSyncDeps) {
         group.map((x) => x.id)
       );
       if (!r.ok) {
+        for (const x of group)
+          issues.push(activityIssue(x.d.date, x.id, `tokovi nisu preuzeti (${r.error})`));
         if (manual) {
           finish();
           return { ok: false, error: r.error };
@@ -351,10 +410,14 @@ export function createIcuSync(deps: IcuSyncDeps) {
       } else {
         for (const x of group) {
           const raw = r.data.streams[x.id];
-          if (!raw || (typeof raw === 'object' && 'greska' in raw)) continue;
+          if (!raw || (typeof raw === 'object' && 'greska' in raw)) {
+            issues.push(activityIssue(x.d.date, x.id, 'tokovi nisu preuzeti (greška izvora)'));
+            continue;
+          }
           const entry = s.log[x.dayId];
           if (!entry) continue;
           const st = parseStreams(raw);
+          if (!st) issues.push(activityIssue(x.d.date, x.id, 'tokovi nisu ispravni'));
           const perKm = st ? perKmDetail(st) : [];
           if (!perKm.length) continue;
           const next: LogEntry = { ...entry, perKm };

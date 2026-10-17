@@ -14,10 +14,12 @@ import type {
   DayTag,
   GenPlanState,
   LogEntry,
+  OffPlanRun,
   PainRecord,
   PredictionRow,
   RunWalk,
   StoredWeek,
+  SyncIssue,
   T3kRecord,
   TrainingPlan,
   VdotRecord,
@@ -174,8 +176,16 @@ export interface AdaptationSources {
   pain?: readonly PainRecord[];
   tests?: readonly T3kRecord[];
   outOfPlan?: Readonly<Record<string, number>>;
-  /** Povezani izvori sinhronizacije treninga i dan poslednje USPEŠNE sinhronizacije (`null` = nijedne). */
-  sync?: ReadonlyArray<{ source: 'strava' | 'icu'; lastSuccessDate: IsoDate | null }>;
+  /** 08c: uvezena trčanja koja nisu uparena sa danom plana (`vanPlanaV2`). */
+  offPlanRuns?: Readonly<Record<string, OffPlanRun>>;
+  /** Povezani izvori sinhronizacije treninga: dan poslednje POTPUNE sinhronizacije (08c: `fullSync` — sve aktivnosti
+   *  perioda preuzete i obrađene; `null` = nijedne), prvi dan njenog perioda i šta poslednja sinhronizacija nije obradila. */
+  sync?: ReadonlyArray<{
+    source: 'strava' | 'icu';
+    lastSuccessDate: IsoDate | null;
+    fromDate?: IsoDate | null;
+    issues?: readonly SyncIssue[];
+  }>;
   /** Korisnik potvrdio „zapis za proteklih N dana je potpun" (u toku prilagođavanja). */
   confirmedDays?: number | null;
   /** Eksplicitno prijavljene pauze (od–do). */

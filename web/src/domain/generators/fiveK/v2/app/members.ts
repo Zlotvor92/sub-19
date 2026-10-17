@@ -18,6 +18,7 @@ import type {
   GenPlanState,
   IsoDate,
   LogEntry,
+  OffPlanRun,
   PainRecord,
   T3kRecord,
   VdotRecord
@@ -44,6 +45,7 @@ interface Sources {
   pain?: readonly PainRecord[];
   tests?: readonly T3kRecord[];
   outOfPlan?: Readonly<Record<string, number>>;
+  offPlanRuns?: Readonly<Record<string, OffPlanRun>>;
   sync?: readonly SyncSource[];
   confirmedDays?: number | null;
   breaks?: readonly ReportedBreak[];
@@ -70,6 +72,7 @@ export function sourceOf(
     alts: ctx.alts ?? {},
     moves: ctx.moves ?? {},
     ...(f.outOfPlan ? { outOfPlan: f.outOfPlan } : {}),
+    ...(f.offPlanRuns ? { offPlanRuns: f.offPlanRuns } : {}),
     pain: f.pain ?? [],
     tests: f.tests ?? [],
     sync: f.sync ?? [],

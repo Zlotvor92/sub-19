@@ -19,11 +19,13 @@ const DAYS = ['7', '14', '21', '28'] as const;
 
 /* PRILAGOĐAVANJE PLANA 5K v2 (08b): pregled iz činjenica odmah pri otvaranju (isti pregled vodi i traka „Plan treba
    prilagoditi"), potvrda korisnika, upis kao nova revizija. Potpunost zapisa se nikad ne pretpostavlja: potvrđuje je
-   sinhronizacija (uspešna danas) ili korisnik ovde. Pauzu korisnik prijavljuje ovde (nedostatak zapisa je ne potvrđuje). */
+   sinhronizacija (08c: potpuna danas — sve aktivnosti preuzete i obrađene) ili korisnik ovde. Pauzu korisnik prijavljuje ovde (nedostatak zapisa je ne potvrđuje). */
 export function FiveKV2Adjustment({ today }: { today: string }) {
   const training = useTrainingStore();
   useRecoveryStore((s) => s.knee);
+  useRecoveryStore((s) => s.vanPlanaV2);
   useSettingsStore((s) => s.strava);
+  useSettingsStore((s) => s.icu);
   const revisions = useMemo(() => getPlanRevisions(training.genPlan), [training.genPlan]);
   const [confirmed, setConfirmed] = useState(false);
   const [days, setDays] = useState<string>('14');

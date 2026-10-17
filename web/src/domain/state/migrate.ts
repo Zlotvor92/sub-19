@@ -11,6 +11,7 @@ import {
   cleanAlts,
   cleanDated,
   cleanNumberField,
+  cleanOffPlanRuns,
   cleanOutOfPlanKm,
   cleanT3k,
   cleanVdotLog,
@@ -134,6 +135,8 @@ export function migrateState(input: unknown): PersistedState | null {
   o['t3k'] = cleanT3k(o['t3k']);
   o['wellness'] = cleanWellness(o['wellness']);
   o['vanPlana'] = cleanOutOfPlanKm(o['vanPlana']);
+  /* 08c: samo kad polje postoji — stanje bez trčanja van plana 5K v2 ostaje bajt-isto. */
+  if (o['vanPlanaV2'] !== undefined) o['vanPlanaV2'] = cleanOffPlanRuns(o['vanPlanaV2']);
   /* Zapis lanca forme čiji je `measured` nemoguć (ili, bez `measured`, `vdot`) se odbacuje. */
   o['vdotLog'] = cleanVdotLog(o['vdotLog'])
     .filter((e) => !(e.measured != null && !vdotPossible(e.measured)))

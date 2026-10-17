@@ -47,7 +47,7 @@ export const TRAINING_KEYS = [
   'alts',
   'genPlan'
 ] as const;
-export const RECOVERY_KEYS = ['knee', 'kg', 'wellness', 'vanPlana'] as const;
+export const RECOVERY_KEYS = ['knee', 'kg', 'wellness', 'vanPlana', 'vanPlanaV2'] as const;
 export const SETTINGS_KEYS = ['ui', 'vreme', 'strava', 'icu'] as const;
 export const COMMUNITY_KEYS = ['zajed'] as const;
 export const KNOWN_KEYS: readonly string[] = [

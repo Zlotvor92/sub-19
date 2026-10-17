@@ -14,6 +14,7 @@ import {
   STRENGTH_WITH,
   type AltRecord,
   type DayTag,
+  type OffPlanRun,
   type T3kRecord,
   type VdotRecord,
   type WellnessRecord
@@ -187,6 +188,35 @@ export function cleanOutOfPlanKm(m: unknown): Record<string, number> {
     if (isIsoDate(k) && typeof raw === 'number' && Number.isFinite(v) && v > 0 && v <= 300) {
       out[k] = Math.round(v * 100) / 100;
     }
+  }
+  return out;
+}
+
+/** 08c: trčanja van plana 5K v2 (`izvor:ID` → zapis). Odbacuje se zapis čiji ključ nije `izvor:ID` istog zapisa, bez
+ *  datuma, sa km van [0, 300] ili bez ičega za brojanje (ni km ni trajanje). */
+export function cleanOffPlanRuns(m: unknown): Record<string, OffPlanRun> {
+  const out: Record<string, OffPlanRun> = {};
+  if (!isPlainObject(m)) return out;
+  for (const k of Object.keys(m)) {
+    const v = m[k];
+    if (!isPlainObject(v)) continue;
+    const src = v['src'];
+    const id = v['id'];
+    const km = v['km'];
+    const sec = v['sec'];
+    if ((src !== 'strava' && src !== 'icu') || typeof id !== 'string' || k !== `${src}:${id}`)
+      continue;
+    if (
+      !isIsoDate(v['date']) ||
+      typeof km !== 'number' ||
+      !Number.isFinite(km) ||
+      km < 0 ||
+      km > 300
+    )
+      continue;
+    const s = typeof sec === 'number' && Number.isFinite(sec) && sec > 0 ? Math.round(sec) : null;
+    if (km === 0 && s === null) continue;
+    out[k] = { date: v['date'], km: Math.round(km * 100) / 100, sec: s, src, id };
   }
   return out;
 }

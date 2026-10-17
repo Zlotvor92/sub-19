@@ -5,12 +5,18 @@
    - Izvršeno (`workouts`): unos dnevnika po ID-ju dana (ručno ili uvoz — uvoz se upisuje u isti unos). `date` = stvarni dan
      trčanja (`runDate` uvoza, `ts` korisnika, pa datum dana posle pomeranja); `dayId` = datum dana u planu v2 kad je unos
      vezan za trening v2. `done` → završeno, `skip` → propušteno; unos bez statusa nije činjenica. Trčanja pre plana
-     (`vanPlana`, samo km) ulaze bez `dayId`. Bol iz zapisa bola (najveći tog dana) ide na trening tog dana; bol ≥ praga v2
-     bez treninga tog dana ide kao zaseban zapis bez trčanja.
+     (`vanPlana`, samo km) ulaze bez `dayId`. 08c: uvezena trčanja koja nisu uparena sa danom plana (`vanPlanaV2`: dan
+     odmora, van datuma plana, zagrevanje uz trku) ulaze bez `dayId` (jezgro: van plana = lagan) sa km i trajanjem, pa je
+     km prozora = upareni + van plana; zapis čiju aktivnost dnevnik već nosi (`stravaId`/`icuId`) se ne broji dvaput.
+     Bol iz zapisa bola (najveći tog dana) ide na trening tog dana; bol ≥ praga v2 bez treninga tog dana ide kao zaseban
+     zapis bez trčanja.
    - Rezultati: test 3 km (`t3k`) i trka uneta u Analizi trke (`raceAi.context`, napor „trka", 3/5/10 km).
-   - Pokrivenost: potpuna SAMO kad je (a) povezan izvor sinhronizacije čija je poslednja USPEŠNA sinhronizacija treninga
-     ≥ danas (period od početka plana), ili (b) korisnik potvrdi „zapis za proteklih N dana je potpun". Inače nepotpuna —
-     dan bez zapisa je nepoznat, ne pauza.
+   - Pokrivenost: potpuna SAMO kad je (a) povezan izvor čija je poslednja POTPUNA sinhronizacija (08c: `fullSync` — spisak
+     ceo, svaka aktivnost preuzeta i obrađena, uparena ili van plana) ≥ danas, za period od početka plana i ne pre
+     početka perioda te sinhronizacije, ili (b) korisnik potvrdi „zapis za proteklih N dana je potpun". Inače nepotpuna —
+     dan bez zapisa je nepoznat, ne pauza. 08c: aktivnost koju sinhronizacija nije obradila (greška, nepoznat tip, ni km
+     ni trajanje) čini njen dan nepoznatim: pokrivenost (jedan opseg do danas) počinje dan posle nje, a bez dana je
+     nepotpuna; razlog ide u `notes`.
    - Pauze: samo eksplicitno prijavljene (Prilagodi plan → Pauza).
    - Zaključani dani: ručna izmena ili pomeranje dana posle poslednje adaptacije (`meta.fiveKV2Edits` = izmene u trenutku
      poslednje primenjene adaptacije; bez njega — sve izmene od nastanka plana).
@@ -21,7 +27,9 @@ import type {
   GenPlanState,
   IsoDate,
   LogEntry,
+  OffPlanRun,
   PainRecord,
+  SyncIssue,
   T3kRecord
 } from '../../exchange.ts';
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
@@ -39,8 +47,12 @@ import { addDays, diffDays, isIsoDate } from './date.ts';
 /** Povezan izvor sinhronizacije treninga (stanje priprema aplikacija; datum je lokalni kalendarski dan). */
 export interface SyncSource {
   source: 'strava' | 'icu';
-  /** Dan poslednje USPEŠNE sinhronizacije treninga; `null` = još nije bilo uspešne. */
+  /** Dan poslednje POTPUNE sinhronizacije (`fullSync`: sve aktivnosti perioda preuzete i obrađene); `null` = nijedne. */
   lastSuccessDate: IsoDate | null;
+  /** Prvi dan perioda te sinhronizacije (pre njega izvor nije proveren); izostavljeno = ceo plan. */
+  fromDate?: IsoDate | null;
+  /** Šta poslednja sinhronizacija nije obradila (dan nepoznat). */
+  issues?: readonly SyncIssue[];
 }
 
 /** Eksplicitno prijavljena pauza (od–do, uključivo). */
@@ -62,6 +74,8 @@ export interface FactsSource {
   log: Readonly<Record<string, LogEntry>>;
   /** Trčanja pre plana: datum → km (`vanPlana`). */
   outOfPlan?: Readonly<Record<string, number>>;
+  /** 08c: uvezena trčanja koja nisu uparena sa danom plana (`vanPlanaV2`, ključ `izvor:ID`). */
+  offPlanRuns?: Readonly<Record<string, OffPlanRun>>;
   pain?: readonly PainRecord[];
   tests?: readonly T3kRecord[];
   /** Povezani izvori sinhronizacije treninga. */
@@ -76,6 +90,8 @@ export interface FactsSource {
 export interface CoverageInfo extends FactsCoverage {
   basis: 'sync' | 'confirmed' | 'none';
   source?: 'strava' | 'icu';
+  /** 08c: poslednji dan sa neobrađenom aktivnošću (pokrivenost počinje posle njega); `'?'` = dan nepoznat. */
+  unprocessed?: string;
 }
 
 export interface BuiltFacts {
@@ -131,19 +147,48 @@ function dayIndex(
   return out;
 }
 
-function coverageOf(src: FactsSource, start: IsoDate): CoverageInfo {
+const SOURCE: Record<SyncSource['source'], string> = { strava: 'Strava', icu: 'intervals.icu' };
+
+function coverageOf(src: FactsSource, start: IsoDate, notes: string[]): CoverageInfo {
   const today = src.today;
   const from0 = before(today, start) ? today : start;
   const synced = (src.sync ?? []).find(
     (s) => s.lastSuccessDate !== null && isIsoDate(s.lastSuccessDate) && s.lastSuccessDate >= today
   );
+  const syncFrom =
+    synced && isIsoDate(synced.fromDate) && before(from0, synced.fromDate)
+      ? synced.fromDate
+      : from0;
   const n = num(src.confirmedDays);
   const confirmedFrom = n !== null && Number.isInteger(n) && n >= 1 ? addDays(today, 1 - n) : null;
-  if (synced && (confirmedFrom === null || !before(confirmedFrom, from0)))
-    return { from: from0, to: today, complete: true, basis: 'sync', source: synced.source };
-  if (confirmedFrom !== null)
-    return { from: confirmedFrom, to: today, complete: true, basis: 'confirmed' };
-  return { from: from0, to: today, complete: false, basis: 'none' };
+  const base: CoverageInfo =
+    synced && (confirmedFrom === null || !before(confirmedFrom, syncFrom))
+      ? { from: syncFrom, to: today, complete: true, basis: 'sync', source: synced.source }
+      : confirmedFrom !== null
+        ? { from: confirmedFrom, to: today, complete: true, basis: 'confirmed' }
+        : { from: from0, to: today, complete: false, basis: 'none' };
+  // 08c: neobrađena aktivnost — njen dan (i, jer je pokrivenost jedan opseg do danas, svi pre njega) je nepoznat.
+  let last: string | null = null;
+  let undated = false;
+  const issues = (src.sync ?? []).flatMap((s) => (s.issues ?? []).map((x) => ({ s, x })));
+  for (const { s, x } of issues) {
+    const day = isIsoDate(x.date) && x.date <= today ? x.date : null;
+    if (x.date === null) undated = true;
+    else if (day !== null && (last === null || before(last, day))) last = day;
+    if (notes.length < 40)
+      notes.push(
+        `${SOURCE[s.source]}: ${x.id !== null ? `aktivnost ${x.id}` : 'spisak'}${x.date !== null ? ` (${x.date})` : ''} nije obrađena — ${x.reason}; ${x.date !== null ? `dan ${x.date} nije poznat` : 'dan nije poznat'}.`
+      );
+  }
+  if (!base.complete) return base;
+  if (undated) return { ...base, complete: false, unprocessed: '?' };
+  if (last !== null && !before(last, base.from)) {
+    const from = addDays(last as IsoDate, 1);
+    return before(today, from)
+      ? { ...base, complete: false, unprocessed: last }
+      : { ...base, from, unprocessed: last };
+  }
+  return base;
 }
 
 const RESULT_M: readonly number[] = P.input.resultDistancesM;
@@ -235,6 +280,33 @@ export function buildFacts(src: FactsSource, v2: AnyV2): BuiltFacts {
     if (valid(date) && k !== null && k > 0)
       workouts.push({ date, km: Math.round(k * 100) / 100, durationSec: 0, completed: true });
   }
+  // 08c: trčanja van plana (od prvog dana plana; pre njega važi `vanPlana`).
+  const start = v2.input.startDate as IsoDate;
+  const inLog = new Set<string>();
+  for (const e of Object.values(src.log))
+    for (const [k, srcName] of [
+      ['stravaId', 'strava'],
+      ['icuId', 'icu']
+    ] as const)
+      if (typeof e[k] === 'string' || typeof e[k] === 'number') inLog.add(`${srcName}:${e[k]}`);
+  for (const [key, r] of Object.entries(src.offPlanRuns ?? {}).sort()) {
+    const km = num(r.km);
+    const sec = num(r.sec);
+    if (!isIsoDate(r.date) || before(r.date, start)) continue;
+    if (r.date > today) {
+      notes.push(`Trčanje van plana ${key} (${r.date}) je posle danas — ne ulazi.`);
+      continue;
+    }
+    if (inLog.has(key)) {
+      notes.push(
+        `Trčanje ${key} (${r.date}) je u dnevniku dana plana — van plana se ne broji dvaput.`
+      );
+      continue;
+    }
+    const k = km !== null && km > 0 ? Math.round(km * 100) / 100 : 0;
+    const d = sec !== null && sec > 0 ? Math.round(sec) : 0;
+    if (k > 0 || d > 0) workouts.push({ date: r.date, km: k, durationSec: d, completed: true });
+  }
 
   // Bol: najveći zapis dana → trening tog dana; bez treninga samo bol ≥ praga v2 (inače bi „zapis" bez trčanja na
   // dan sesije trčanja/hodanja bio propuštena sesija).
@@ -280,8 +352,7 @@ export function buildFacts(src: FactsSource, v2: AnyV2): BuiltFacts {
     breaks.push({ kind: 'break', from: b.from, to: b.to > today ? today : b.to });
   }
 
-  const start = v2.input.startDate as IsoDate;
-  const coverage = coverageOf(src, start);
+  const coverage = coverageOf(src, start, notes);
   return {
     facts: {
       workouts,
@@ -297,9 +368,15 @@ export function buildFacts(src: FactsSource, v2: AnyV2): BuiltFacts {
 
 /** Tekst o pokrivenosti za pregled (šta jezgro sme da zaključi iz dana bez zapisa). */
 export function coverageText(c: CoverageInfo): string {
+  const gap =
+    c.unprocessed === undefined
+      ? ''
+      : c.unprocessed === '?'
+        ? ' Sinhronizacija nije obradila sve aktivnosti (dan nepoznat).'
+        : ` Sinhronizacija nije obradila aktivnost od ${c.unprocessed}: taj dan i raniji nisu poznati.`;
+  if (!c.complete)
+    return `Zapis treninga nije potvrđen kao potpun: dan bez zapisa se ne računa kao propušten ni kao pauza.${gap}`;
   if (c.basis === 'sync')
-    return `Zapis treninga je potpun od ${c.from} do ${c.to} (sinhronizacija ${c.source === 'icu' ? 'intervals.icu' : 'Strava'} uspešna danas): dan bez zapisa znači da nije bilo trčanja.`;
-  if (c.basis === 'confirmed')
-    return `Potvrdio si da je zapis za proteklih ${diffDays(c.from as IsoDate, c.to as IsoDate) + 1} dana potpun (${c.from} – ${c.to}): dan bez zapisa u tom periodu znači da nije bilo trčanja.`;
-  return 'Zapis treninga nije potvrđen kao potpun: dan bez zapisa se ne računa kao propušten ni kao pauza.';
+    return `Zapis treninga je potpun od ${c.from} do ${c.to} (sinhronizacija ${c.source === 'icu' ? 'intervals.icu' : 'Strava'} danas preuzela i obradila sve aktivnosti): dan bez zapisa znači da nije bilo trčanja.${gap}`;
+  return `Potvrdio si da je zapis za proteklih ${diffDays(c.from as IsoDate, c.to as IsoDate) + 1} dana potpun (${c.from} – ${c.to}): dan bez zapisa u tom periodu znači da nije bilo trčanja.${gap}`;
 }

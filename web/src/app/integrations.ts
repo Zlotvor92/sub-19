@@ -139,6 +139,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
         alts: t.alts,
         moves: t.moves,
         vanPlana: r.vanPlana,
+        ...(r.vanPlanaV2 ? { vanPlanaV2: r.vanPlanaV2 } : {}),
         knee: r.knee,
         kg: r.kg
       };
@@ -149,6 +150,8 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
       r.setPain(n.knee, 'soon');
       r.setWeight(n.kg, 'soon');
       r.setOutOfPlan(n.vanPlana);
+      /* 08c: puni ga samo uvoz za plan 5K v2. */
+      if (n.vanPlanaV2 && n.vanPlanaV2 !== r.vanPlanaV2) r.setOffPlanRuns(n.vanPlanaV2);
       t.patch({
         log: n.log,
         pred: n.pred,

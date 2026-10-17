@@ -94,6 +94,23 @@ export interface WellnessRecord {
   svezina: number | null;
 }
 
+/** 08c: uvezeno trčanje koje nije upareno sa danom plana (samo za aktivan plan 5K v2; `PersistedState.vanPlanaV2`,
+ *  ključ `izvor:ID`). Datum je lokalni dan početka; `km` 0 = vremenska sesija bez km; `sec` `null` = trajanje nepoznato. */
+export interface OffPlanRun {
+  date: string;
+  km: number;
+  sec: number | null;
+  src: 'strava' | 'icu';
+  id: string;
+}
+
+/** 08c: aktivnost izvora koja pri sinhronizaciji nije preuzeta ili obrađena (`date` `null` = dan nepoznat). */
+export interface SyncIssue {
+  date: string | null;
+  id: string | null;
+  reason: string;
+}
+
 /** Ručna izmena dana (tip/km/opis/tempo/run-walk/+snaga). */
 export interface AltRecord {
   tag: DayTag;
@@ -169,6 +186,8 @@ export interface PersistedState {
   wellness: Record<string, WellnessRecord>;
   icu: Record<string, unknown> | null;
   vanPlana: Record<string, number>;
+  /** 08c: trčanja van plana za plan 5K v2 (`izvor:ID` → zapis); stanje bez polja ga nema (planovi v1 ga ne pune). */
+  vanPlanaV2?: Record<string, OffPlanRun>;
   zajed: CommunityState;
   ui: UiState;
   [field: string]: unknown;

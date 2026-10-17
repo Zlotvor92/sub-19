@@ -4,14 +4,15 @@ Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
 Trenutno stanje: 5K v2 (`5k-v2.6.0`) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
-aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`: dnevnik + uvoz, bol, test 3 km, unete trke, pokrivenost samo uz
-uspešnu sinhronizaciju danas ili potvrdu korisnika, prijavljene pauze, ručne izmene posle poslednje adaptacije) →
-`adaptFiveKV2` → pregled (razlozi doslovno, nedelje) → potvrda → revizija; vraćanje revizije, traka „Plan treba
-prilagoditi" (bez upisa), promena cilja (samo ocena), Forma iz rezultata. Jezgro (`policy.ts`, konstrukcija, assess)
-nepromenjeno. Sledeće: odluka o uključivanju za korisnike (v. „Šta ostaje" u izveštaju 08b).
+aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
+promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
+(dan odmora, van datuma plana, zagrevanje uz trku) postaje zapis van plana (`vanPlanaV2`, po ID-ju aktivnosti) i ulazi u
+km; pokrivenost čita ISKLJUČIVO `fullSync` (sve aktivnosti preuzete i obrađene; delimičan uspeh ga ne pomera), a
+neobrađena aktivnost čini svoj dan nepoznatim. Uvoz za planove v1 bajt-isti. Jezgro (`policy.ts`, konstrukcija, assess)
+nepromenjeno. Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
 Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
-## Segmenti 01–05b (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
+## Segmenti 01–07 (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
 
 - 01 (8e407f3, 5k-v2.0.x): jezgro `fiveK/v2/`, strukturisano odbijanje; vitest v2 117; check exit 0.
 - 02 (a5f37c9, 5k-v2.1.0): dugi ≥ lagan, dugi ≤ 35%/90 min, strogi rast I/RP, dan pred trku ≤ 4 km, Uslov 8;
@@ -24,30 +25,10 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   početnik (uvod 2 ned, bez I, +5%, dugi ≤ 60 min); vitest v2 342; generators 485; check exit 0 (2114).
 - 05b (e008c03, 5k-v2.4.1): 3 dana dugi ≤ 45%, kapacitet = najveći izvodljiv cilj (`fitTargetKm`), vrh ≥ 7b4b574
   (fixture 840, 88 izuzetaka); vitest v2 356; generators 499; check exit 0 (2128).
-
-## Segment 06 — adaptacija, 5k-v2.5.0 (2026-10-17)
-
-- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: e008c03
-- Novi `adapt.ts`, `assess.ts`, `steps.ts`; `generate.construct` (generate bajt-isti, 282 plana); adaptiran
-  režim validatora; `adaptVolume`, `rePeriodize`, ograničenja nedelje (bol, odmor, zabrana kvaliteta).
-- Odstupanja: donja granica cilja min(original, 12/15/25 km); kvalitet koji ne staje → 1 → 0 (konstruktor).
-- Mreža 60 planova × 7 scenarija → 420/420, 0 grešaka; primeri `artifacts/segment-06/` (dev-04, po osećaju).
-- Provere: tsc, eslint, prettier exit 0 (eslint/prettier prvi put 8 / 12, ispravljeno); vitest v2 444/444;
-  novi test fajl na e008c03 pada (nema adapt.ts); generators 26 / 587; `npm run check` exit 0 (2216).
-- Izveštaj: `reports/SEGMENT-06-IMPLEMENTATION.md`.
-
-## Segment 07 — ispravke adaptacije i trčanje/hodanje, 5k-v2.6.0 (2026-10-17)
-
-- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: c9003aa
-- A: (1) povratni rast +10%/ned do nivoa pre smanjenja (pauza, bol, izvršenje), i oštrenje — `volume.adaptVolume`;
-  dev-04 pauza 20: ned 9–11 26 / 28,6 / 31,4 (bilo 25,5); (2) donja granica = minimum nedelje (izgradnja n × 3 km:
-  9/12/15, taper 7,5/10/12,5); 5 d / 30 km / pauza 35 → 15 km (bilo 25); (3) `coverage`, `breaks`.
-- B: `runWalk*.ts` — lestvica L1–L12, projekcija, napredak kroz adaptFiveKV2, trka, prelaz na početnika.
-- Mreže: adaptNetwork 60 × (7 + 2) = 540; trčanje/hodanje 16 × 6 + lanac = 192; 0 grešaka.
-- Generisanje postojećih grana bajt-isto kao c9003aa (700 ulaza / 640 planova, fixture test).
-- Provere: tsc, eslint, prettier exit 0 (prettier prvi put 9 fajlova); vitest v2 554/554; novi testovi na
-  c9003aa 106/110 pada; generators 27 / 697; `npm run check` exit 0 (2326 testova).
-- Izveštaj: `reports/SEGMENT-07-IMPLEMENTATION.md`; primeri `artifacts/segment-07/`.
+- 06 (c9003aa, 5k-v2.5.0): `adapt.ts`, `assess.ts`, `steps.ts`, `generate.construct` (generate bajt-isti); mreža
+  420/420; vitest v2 444; generators 26 / 587; check exit 0 (2216).
+- 07 (7fa61eb, 5k-v2.6.0): povratni rast do nivoa pre smanjenja, donja granica = minimum nedelje, `coverage`/`breaks`;
+  trčanje/hodanje L1–L12; mreže 540 + 192; generisanje bajt-isto; generators 27 / 697; check exit 0 (2326).
 
 ## Segment 08a — 5K v2 u aplikaciji iza prekidača (2026-10-17)
 
@@ -72,3 +53,17 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - Provere: tsc domena i `tsc -b` exit 0; generators 29 / 739; `npm run check` exit 0 (191 / 2380); E2E `fivek-v2` 3/3,
   `generator-ab-users` 10/10; ceo E2E 78/80 — `pwa` 2 (istek kad rade 2 radnika; sa 1 radnikom 2/2).
 - Izveštaj: `reports/SEGMENT-08b-IMPLEMENTATION.md`.
+
+## Segment 08c — tačnost činjenica iz uvoza (2026-10-17)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: f09a50a
+- Rizik 1: uvoz je odbacivao neupareno trčanje (`stravaSync.run`/`icuSync.syncActivities` `continue` na dan odmora,
+  `importedDay` na dan trke, `icuRunsByDate` bez km, `recordOutOfPlan` od prvog dana) → za v2 `domain/activities/
+  offPlan.ts` → `vanPlanaV2` (`izvor:ID`, dedup) → `facts.ts` (bez `dayId`; km = upareni + van plana).
+- Rizik 2: `trSync` (i Strava `lastSync`) pomeren i kad tokovi/detalji padnu → novo `fullSync`/`fullSyncFrom`/
+  `syncIssues` (samo v2); `syncSources` čita samo `fullSync`; neobrađena aktivnost → dan nepoznat + napomena.
+- Testovi: importFacts 10 + UI 1 + offPlan 4 (na f09a50a padaju; sonda: 4 scenarija → lažna PAUSE 7 dana); v1 snimak
+  12 (5K v1/10K/HM/maraton × Strava/icu) SHA-256 jednak f09a50a.
+- Provere: tsc domena i `tsc -b` exit 0; generators 30 / 749; `npm run check` exit 0 (195 / 2396);
+  E2E `fivek-v2` 3/3, `strava` 2/2, `race-analysis` 3/3, `data` 3/3.
+- Izveštaj: `reports/SEGMENT-08c-IMPLEMENTATION.md`.

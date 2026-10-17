@@ -51,3 +51,13 @@ export {
 } from './icuImport';
 
 export { importedDay, isRaceDay, raceDistanceKm, selectRaceActivity } from './raceDay';
+export {
+  activityIssue,
+  icuActivityIssue,
+  offPlanKey,
+  recordOffPlanRuns,
+  stravaActivityIssue,
+  syncStatus,
+  SYNC_ISSUES_MAX,
+  type OffPlanInput
+} from './offPlan';

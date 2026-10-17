@@ -1,0 +1,62 @@
+{
+  "5K v1 | strava": {
+    "sha256": "98c1753d1f5eedfb85632134355621a07081e2cbe5a6b10d77cd6566a7137662",
+    "bytes": 30282,
+    "commits": 1
+  },
+  "5K v1 | icu auto": {
+    "sha256": "a063de3bee27d7c3dc6be5b9b3a4da2e0e11134868c42e05eb4a99eee1667cc8",
+    "bytes": 25582,
+    "commits": 1
+  },
+  "5K v1 | icu ručno, detalji otkazali": {
+    "sha256": "62178193b0d3b133fa83b2fa23386cd0a60fadb4f7f17f0592b549e472d7388e",
+    "bytes": 22621,
+    "commits": 1
+  },
+  "10K | strava": {
+    "sha256": "5c437b2c60aef4b195a18054efd9e433ff73a15418b434bcd56334c65eced28d",
+    "bytes": 36474,
+    "commits": 1
+  },
+  "10K | icu auto": {
+    "sha256": "92800553d989d263372f3d177772e5e28c4ed3c39ab860e68b0fe6468bd9b036",
+    "bytes": 28559,
+    "commits": 1
+  },
+  "10K | icu ručno, detalji otkazali": {
+    "sha256": "5eeeb5c1c9b9890f69527f19f1a85d075dd560458146d9af5d84a478c354d261",
+    "bytes": 25469,
+    "commits": 1
+  },
+  "HM | strava": {
+    "sha256": "03de22799d998bad0d673ed8a5e2cb7a82eb85995b0fde9c11303c5ff073afeb",
+    "bytes": 42290,
+    "commits": 1
+  },
+  "HM | icu auto": {
+    "sha256": "36d0f9db44c9b6dd1f54ecdd3c5b3f45a29a64e2b0d0b5f2d353f5b369866e2a",
+    "bytes": 31704,
+    "commits": 1
+  },
+  "HM | icu ručno, detalji otkazali": {
+    "sha256": "1d19cf8efec908298d2c313a80b43746d95f9aec1aee8d8489f8b565595dc590",
+    "bytes": 29798,
+    "commits": 1
+  },
+  "maraton | strava": {
+    "sha256": "7d9980c2fe68fc0ce2465ee094c9edda69a495ec77f7dee70e37a84f903c4216",
+    "bytes": 49960,
+    "commits": 1
+  },
+  "maraton | icu auto": {
+    "sha256": "4014255c89b000efe4bc1971b2b0414da8a02eac3353ccdd4041324234a51244",
+    "bytes": 41312,
+    "commits": 1
+  },
+  "maraton | icu ručno, detalji otkazali": {
+    "sha256": "c07176d440cd5b125cf9aabd07be0536023918598239a3071d906104129457ef",
+    "bytes": 38404,
+    "commits": 1
+  }
+}

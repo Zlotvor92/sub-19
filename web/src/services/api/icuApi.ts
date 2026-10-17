@@ -112,7 +112,7 @@ export interface IcuApi {
     link: IcuLink,
     oldest: string,
     newest: string
-  ): Promise<Result<{ activities: IcuActivity[] }>>;
+  ): Promise<Result<{ activities: IcuActivity[]; skipped?: number }>>;
   /** Krugovi za do 12 treninga; ključ je ID treninga, `null` kad je server vratio `greska`. */
   details(
     link: IcuLink,
@@ -171,7 +171,9 @@ export function createIcuApi(api: AppApi): IcuApi {
         const p = Activity.safeParse(item);
         if (p.success) out.push(p.data as unknown as IcuActivity);
       }
-      return { ok: true, data: { activities: out }, status: r.status };
+      /* 08c: neprepoznata stavka je trening koji nije obrađen — broj ide pokrivenosti (`icuSync`). */
+      const skipped = r.data.treninzi.length - out.length;
+      return { ok: true, data: { activities: out, skipped }, status: r.status };
     },
     async details(link, ids) {
       const r = await api.post('/api/icu', body('activities', link, { detalji: ids }), Details);
