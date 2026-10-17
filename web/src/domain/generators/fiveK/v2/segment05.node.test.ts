@@ -109,7 +109,7 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
           for (const timeSec of [1100, 1300, 1600, 1830]) {
             const days = { 3: D3, 4: D4, 5: D5 }[n];
             const r = generateFiveKV2(inputOf({ weeks: w, km, distanceM: 5000, timeSec, days }));
-            if (!r.ok) continue;
+            if (!r.ok || r.plan.planType === 'runWalk') continue;
             for (const x of r.plan.weeks.filter((y) => y.phase !== 'race')) {
               weeks++;
               if (x.easyCappedAtLong) capped++;
@@ -321,13 +321,15 @@ describe('Odluka 7: isti procentualni budžeti, bez donjeg praga 70%', () => {
 /* ---------- C) početnik ---------- */
 
 describe('Odluka 8: početnik — ≤ 4 dana, 1 kvalitet, nedelje 1–2 bez kvaliteta, bez I', () => {
-  it('5 dana → RUN_DAYS_COUNT; bez 30 min kontinuirano → RUN_WALK_NOT_SUPPORTED_YET', () => {
+  // 2.6.0: canRun30Min = false → plan trčanje/hodanje (Segment 07); početnik mora navesti canRun30Min.
+  it('5 dana → RUN_DAYS_COUNT; početnik bez canRun30Min → INPUT_SHAPE; false → trčanje/hodanje', () => {
     expect(codesOf(raw({ ...EX.beg3, days: D5, km: 25 }))).toContain('RUN_DAYS_COUNT');
-    expect(codesOf(raw({ ...EX.beg3, can30: false }))).toEqual(['RUN_WALK_NOT_SUPPORTED_YET']);
+    const rw = generateFiveKV2(raw({ ...EX.beg3, can30: false }));
+    expect(rw.ok && rw.plan.planType).toBe('runWalk');
     const noFlag = raw(EX.beg3);
     delete noFlag['canRun30Min'];
-    expect(codesOf(noFlag)).toEqual(['RUN_WALK_NOT_SUPPORTED_YET']);
-    expect(codesOf(raw({ ...EX.feel4, can30: false }))).toEqual(['RUN_WALK_NOT_SUPPORTED_YET']);
+    expect(codesOf(noFlag)).toEqual(['INPUT_SHAPE']);
+    expect(codesOf(raw({ ...EX.feel4, can30: false }))).toEqual(['RUN_DAYS_COUNT']);
   });
 
   it.each([
@@ -504,6 +506,7 @@ describe('mreža po granama: 3/4/5 dana × 5 obima × {6, 7, 10, 16} ned × 3 va
                 continue;
               }
               plans++;
+              if (r.plan.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
               checkStanding(r.plan, n);
               expect(r.plan.paceMode).toBe(b === 'beginnerResult' ? 'vdot' : 'feel');
             }

@@ -2,7 +2,8 @@
    Tok (Uslov 4): (1) assess.ts — činjenice → ograničenja (AdaptStep); (2) isti konstruktor kao generate
    (construct) gradi ceo plan sa svim koracima; (3) spajanje — dani ≤ asOf, urađeni i zaključani dani
    ostaju bajt-isti iz prethodnog plana; završna zaštita to samo proverava; (4) validate.
-   Bez čitanja sata: asOf je ulaz. Ista vrednost ulaza → isti JSON. */
+   Bez čitanja sata: asOf je ulaz. Ista vrednost ulaza → isti JSON.
+   2.6.0: plan trčanje/hodanje ide u runWalkAdapt.ts (isti API, isti tok). */
 
 import { dayNumber, mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
@@ -10,15 +11,18 @@ import { assess, checkFacts } from './assess.ts';
 import { construct } from './generate.ts';
 import { assessGoal, beginnerGoal, goalWithoutData, raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
+import { adaptRunWalk } from './runWalkAdapt.ts';
 import { athleteAt, pacesAt, vdotAt } from './steps.ts';
 import type {
   AdaptChange,
   AdaptResult,
   FiveKV2Plan,
+  FiveKV2RunWalkPlan,
   GoalAssessment,
   PlanDay,
   PlanWeek,
-  Reason
+  Reason,
+  RunWalkAdaptResult
 } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { capacityKm } from './volume.ts';
@@ -75,7 +79,33 @@ function diff(before: FiveKV2Plan, after: FiveKV2Plan): AdaptChange[] {
   return out;
 }
 
-export function adaptFiveKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): AdaptResult {
+/** 2.6.0: plan trčanje/hodanje → runWalkAdapt.ts (isti API); kontinuirani plan → adaptContinuous. */
+export function adaptFiveKV2(
+  rawPlan: FiveKV2RunWalkPlan,
+  rawFacts: unknown,
+  asOf: unknown
+): RunWalkAdaptResult;
+export function adaptFiveKV2(rawPlan: FiveKV2Plan, rawFacts: unknown, asOf: unknown): AdaptResult;
+export function adaptFiveKV2(
+  rawPlan: unknown,
+  rawFacts: unknown,
+  asOf: unknown
+): AdaptResult | RunWalkAdaptResult;
+export function adaptFiveKV2(
+  rawPlan: unknown,
+  rawFacts: unknown,
+  asOf: unknown
+): AdaptResult | RunWalkAdaptResult {
+  const runWalk =
+    typeof rawPlan === 'object' &&
+    rawPlan !== null &&
+    (rawPlan as { planType?: unknown }).planType === 'runWalk';
+  return runWalk
+    ? adaptRunWalk(rawPlan, rawFacts, asOf, adaptContinuous)
+    : adaptContinuous(rawPlan, rawFacts, asOf);
+}
+
+function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): AdaptResult {
   const plan = checkPlan(rawPlan);
   if (!plan) return reject('ADAPT_PLAN_INVALID', 'Plan nije ispravan 5K v2 plan.');
   if (dayNumber(asOf) === null)

@@ -5,9 +5,26 @@
 import { daysBetween, mustDay } from './dates.ts';
 import { isShortPrep, periodize, phaseCounts, testWeekOf } from './periodize.ts';
 import { isRunDaysCount, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
+import { validateRunWalk } from './runWalkValidate.ts';
 import { athleteAt, baseAthlete, doseResetAt, inRange, pacesAt, vdotAt } from './steps.ts';
-import type { FiveKV2Plan, PaceModel, Phase, PlanWeek, QualityType, Violation } from './types.ts';
-import { adaptFloorKm, capacityKm, fitTargetKm, peakKm, planVolume } from './volume.ts';
+import type {
+  FiveKV2Plan,
+  FiveKV2RunWalkPlan,
+  PaceModel,
+  Phase,
+  PlanWeek,
+  QualityType,
+  Violation
+} from './types.ts';
+import {
+  adaptFloorKm,
+  capacityKm,
+  fitTargetKm,
+  painReturnKm,
+  peakKm,
+  planVolume,
+  returnLevelAt
+} from './volume.ts';
 import { baseDoseKey, qualityBudgets, tFormOf, tMaxSec, warmupBand } from './workouts.ts';
 
 const PHASE_ORDER: readonly Phase[] = ['base', 'peak', 'sharpen', 'taper', 'race'];
@@ -44,7 +61,24 @@ const qualityKey = (w: PlanWeek): string =>
       .map((d) => [d.workout.qualityType, d.workout.blocks])
   );
 
-export function validatePlan(plan: FiveKV2Plan): Violation[] {
+/** 2.6.0: plan trčanje/hodanje → runWalkValidate.ts; posle prelaza i njegov kontinuirani deo (ovde). */
+export function validatePlan(plan: FiveKV2Plan | FiveKV2RunWalkPlan): Violation[] {
+  if (plan.planType === 'runWalk') {
+    const out = validateRunWalk(plan);
+    const cont = plan.continuous;
+    if (cont)
+      for (const v of validatePlan(cont.plan))
+        out.push({
+          ...v,
+          message: `Kontinuirani deo: ${v.message}`,
+          ...(v.week !== undefined ? { week: v.week + cont.fromWeek - 1 } : {})
+        });
+    return out;
+  }
+  return validateContinuous(plan);
+}
+
+function validateContinuous(plan: FiveKV2Plan): Violation[] {
   const out: Violation[] = [];
   const err = (rule: string, message: string, week?: number, date?: string): void => {
     out.push({
@@ -184,8 +218,11 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
           );
       }
       // 2.4.0: početnik — nedelje 1–2 bez kvaliteta (samo lagano + ubrzanja). 2.5.0: uz bol/odmor
-      // ubrzanja mogu izostati.
-      if (intro(w) && (qualities.length > 0 || (!w.stridesOnly && !limited(w))))
+      // ubrzanja mogu izostati; 2.6.0: i uz zabranu kvaliteta adaptacije (quality 'none', npr. pauza).
+      if (
+        intro(w) &&
+        (qualities.length > 0 || (!w.stridesOnly && !limited(w) && lim?.quality !== 'none'))
+      )
         err('BEGINNER_INTRO', 'Nedelje 1–2 početnika moraju biti bez kvaliteta.', w.index);
     } else {
       if (qualities.length > 1)
@@ -393,18 +430,36 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
   };
   const buildMax = (from: number): number =>
     Math.max(...build.filter((w) => w.index >= from).map((w) => w.targetKm));
+  // 2.6.0 (Odluka 1): nivo povratka koji važi u nedelji i (poslednji korak koji je gradi) i sidro bola.
+  const levelAt = (i: number): number | null => {
+    let k = -1;
+    steps.forEach((st, j) => {
+      if (st.fromWeek <= i) k = j;
+    });
+    return k < 0 ? null : returnLevelAt(steps, k);
+  };
+  const anchorAt = (i: number): number | null => {
+    let share: number | null = null;
+    for (const st of steps)
+      if (st.returnFrom && st.returnFrom.week === i) share = st.returnFrom.share;
+    return share;
+  };
   const peakRefAt = (i: number): number => {
     let from = 1;
     let cap: number | null = null;
     let ref = buildMax(1);
     for (const st of steps) {
       if (st.firstWeek > i) break;
+      const back = st.returnFrom ?? null;
       if (st.startKm !== null) {
         const fw = weeks[st.fromWeek - 1];
         if (fw && isBuild(fw)) {
           from = st.fromWeek;
           cap = null;
         } else cap = Math.min(ref, st.startKm);
+      } else if (back && weeks[back.week] && isBuild(weeks[back.week]!)) {
+        from = back.week + 1;
+        cap = null;
       }
       ref = cap ?? buildMax(from);
     }
@@ -416,34 +471,36 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
       `Prva nedelja ${build[0].targetKm} km ≠ trenutni obim ${plan.startKm} km.`,
       1
     );
-  let last: PlanWeek | null = null;
+  // Rast od poslednje ne-rasteretne nedelje izgradnje (cilj koraka i kad je rasteretna); 2.6.0: posle
+  // nedelje bola od smanjenog nivoa, a dok je ispod nivoa pre smanjenja ≤ returnGrowth.
+  let lastKm: number | null = null;
+  let lastOk = true;
   for (const w of build) {
     const reset = resetKm(w.index);
     if (reset !== null) {
       if (checked(w) && w.targetKm > reset + 0.05)
         err('VOLUME_RESET', `Cilj ${w.targetKm} km > cilj adaptacije ${reset} km.`, w.index);
-      last = w;
-      continue;
+      [lastKm, lastOk] = [w.targetKm, checked(w)];
+    } else if (!w.deload) {
+      const level = levelAt(w.index);
+      const g =
+        lastKm !== null && level !== null && lastKm + EPS < level
+          ? Math.max(rule.maxBuildGrowth, P.adapt.returnGrowth)
+          : rule.maxBuildGrowth;
+      if (lastKm !== null && checked(w) && lastOk && w.targetKm > lastKm * (1 + g) + 0.05)
+        err('VOLUME_GROWTH', `Rast ${lastKm} → ${w.targetKm} km > ${g * 100}%.`, w.index);
+      [lastKm, lastOk] = [w.targetKm, checked(w)];
     }
-    if (w.deload) continue;
-    if (
-      last &&
-      checked(w) &&
-      checked(last) &&
-      w.targetKm > last.targetKm * (1 + rule.maxBuildGrowth) + 0.05
-    )
-      err(
-        'VOLUME_GROWTH',
-        `Rast ${last.targetKm} → ${w.targetKm} km > ${rule.maxBuildGrowth * 100}%.`,
-        w.index
-      );
-    last = w;
+    const share = anchorAt(w.index);
+    if (share !== null) [lastKm, lastOk] = [painReturnKm(w.targetKm, share), checked(w)];
   }
   // 2.2.0 (Odluka 1), 2.3.0: kapacitet n dana — svaki cilj ≤ kapaciteta; start = min(trenutni, kapacitet).
+  // 2.6.0: povratak sme do nivoa pre smanjenja i kad je iznad vrha novog starta.
   for (const w of build) {
     if (!checked(w)) continue;
     const peakCap = peakKm(startRef(w.index), capOf(w), aw(w));
-    if (w.targetKm > peakCap + 0.05)
+    const level = levelAt(w.index);
+    if (w.targetKm > peakCap + 0.05 && !(level !== null && w.targetKm <= level + 0.05))
       err(
         'VOLUME_PEAK',
         `Cilj ${w.targetKm} km > peakKm(${startRef(w.index)}) = ${peakCap} km.`,
@@ -491,8 +548,19 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
     : [];
   const floored = (w: PlanWeek): boolean =>
     ad !== undefined &&
-    (Math.abs(w.targetKm - fit(w, adaptFloorKm(base0[w.index - 1]!, aw(w)))) < EPS ||
+    (Math.abs(w.targetKm - fit(w, adaptFloorKm(base0[w.index - 1]!, aw(w), w.phase))) < EPS ||
       Math.abs(w.targetKm - fit(w, capOf(w))) < EPS);
+  // 2.6.0: osnov rasterećenja adaptiranog plana = poslednja ne-rasteretna nedelja izgradnje (cilj koraka
+  // i kad je rasteretna; posle nedelje bola smanjen nivo) — isto kao volume.adaptVolume.
+  const lastBuildBefore = (i: number): number | null => {
+    let x: number | null = null;
+    for (const v of weeks.slice(0, i - 1)) {
+      if (isBuild(v) && (!v.deload || resetKm(v.index) !== null)) x = v.targetKm;
+      const share = anchorAt(v.index);
+      if (share !== null && isBuild(v)) x = painReturnKm(v.targetKm, share);
+    }
+    return x;
+  };
   const raceWeek = weeks[weeks.length - 1]!;
   const raceBound = Math.round(peakRefAt(raceWeek.index) * P.volume.raceWeekFactor * 10) / 10;
   for (const w of weeks) {
@@ -504,8 +572,9 @@ export function validatePlan(plan: FiveKV2Plan): Violation[] {
         .reverse()
         .find((x) => !x.deload) ?? weeks[w.index - 2];
     if (w.deload && prev) {
-      const f = w.targetKm / prev.targetKm;
-      const fitted = Math.abs(w.targetKm - fit(w, prev.targetKm * P.volume.deloadFactor)) < EPS;
+      const prevKm = (ad ? lastBuildBefore(w.index) : null) ?? prev.targetKm;
+      const f = w.targetKm / prevKm;
+      const fitted = Math.abs(w.targetKm - fit(w, prevKm * P.volume.deloadFactor)) < EPS;
       if (
         Math.abs(f - P.volume.deloadFactor) > fTol &&
         !fitted &&

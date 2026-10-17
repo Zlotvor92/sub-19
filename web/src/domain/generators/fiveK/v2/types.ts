@@ -31,7 +31,8 @@ export interface FiveKV2Input {
   typicalEasyPaceSecPerKm?: number | null;
   /** 2.4.0: podrazumevano 'regular'. */
   experience?: Experience;
-  /** 2.4.0: može 30 min kontinuirano; početnik mora true (run/walk još nije podržan). */
+  /** 2.4.0: može 30 min kontinuirano. 2.6.0: false → plan trčanje/hodanje (runWalk.ts); početnik ga
+      mora navesti. */
   canRun30Min?: boolean;
 }
 
@@ -50,7 +51,6 @@ export type ReasonCode =
   | 'RESULT_AFTER_START'
   | 'MISSING_EASY_PACE'
   | 'EASY_PACE_OUT_OF_RANGE'
-  | 'RUN_WALK_NOT_SUPPORTED_YET'
   | 'VDOT_OUT_OF_RANGE'
   | 'GOAL_INVALID'
   | 'QUALITY_INFEASIBLE'
@@ -276,6 +276,8 @@ export interface Violation {
 export interface FiveKV2Plan {
   policyId: string;
   policyVersion: string;
+  /** 2.6.0: kontinuirani plan nema polje (razlikuje se od FiveKV2RunWalkPlan; JSON nepromenjen). */
+  planType?: never;
   input: FiveKV2Input;
   /** 2.4.0: 'feel' = bez pouzdanog rezultata (izostavljen ili stariji od 12 nedelja). */
   paceMode: 'vdot' | 'feel';
@@ -299,8 +301,10 @@ export interface FiveKV2Plan {
   adaptation?: FiveKV2Adaptation;
 }
 
+/** 2.6.0: canRun30Min = false → plan trčanje/hodanje. */
 export type GenerateResult =
-  { ok: true; plan: FiveKV2Plan } | { ok: false; reasons: Reason[]; violations: Violation[] };
+  | { ok: true; plan: FiveKV2Plan | FiveKV2RunWalkPlan }
+  | { ok: false; reasons: Reason[]; violations: Violation[] };
 
 /* ---------- 2.5.0: adaptacija ---------- */
 
@@ -324,17 +328,31 @@ export interface ResultFact {
   kind: 'test' | 'race';
 }
 
-/** Činjenice (ne odluke). Prazni nizovi = nema podataka (ne pauza). */
+export interface DateRange {
+  from: IsoDate;
+  to: IsoDate;
+}
+
+/** 2.6.0: potpunost zapisa treninga u [from, to] (izvor — sat/aplikacija ili potvrda korisnika — bira
+    aplikacija). complete = true: dan bez zapisa = bez trčanja; false: dan bez zapisa je NEPOZNAT. */
+export interface FactsCoverage extends DateRange {
+  complete: boolean;
+}
+
+/** 2.6.0: eksplicitna pauza (priznaje se bez obzira na coverage). */
+export interface BreakFact extends DateRange {
+  kind: 'break';
+}
+
+/** Činjenice (ne odluke). Prazni nizovi = nema podataka (ne pauza). 2.6.0: bez coverage nijedan dan
+    bez zapisa nije poznat (kao complete = false). */
 export interface AdaptFacts {
   workouts?: readonly WorkoutFact[];
   results?: readonly ResultFact[];
   /** Ručno zaključani dani (dayId = datum): ostaju bajt-isti. */
   lockedDayIds?: readonly string[];
-}
-
-export interface DateRange {
-  from: IsoDate;
-  to: IsoDate;
+  coverage?: FactsCoverage | null;
+  breaks?: readonly BreakFact[];
 }
 
 /**
@@ -363,6 +381,13 @@ export interface AdaptStep {
   pain: DateRange | null;
   /** Cilj → „orijentir" (nov start, < 6 nedelja do trke). */
   orientation: boolean;
+  /** 2.6.0 (Odluka 1): nivo pre smanjenja (pauza, bol, manjak izvršenja) = cilj poslednje ne-rasteretne
+      nedelje izgradnje završene pre događaja; do njega cilj raste povratnim rastom. null/izostavljeno
+      (korak iz 5k-v2.5.0) = bez povratka. */
+  levelKm?: number | null;
+  /** 2.6.0: bol — posle nedelje `week` (poslednja nedelja perioda bola) povratni rast kreće od
+      `share` × cilj te nedelje (adapt.painEasyFactor: lagani −30%). */
+  returnFrom?: { week: number; share: number } | null;
 }
 
 export interface FiveKV2Adaptation {
@@ -382,7 +407,10 @@ export type AdaptCondition =
   | 'OVER_EXECUTION'
   | 'PAUSE'
   | 'PAIN'
-  | 'FATIGUE';
+  | 'FATIGUE'
+  /* 2.6.0: trčanje/hodanje — nivo posle činjenica i prelaz na kontinuirani plan. */
+  | 'LEVEL'
+  | 'TRANSITION';
 
 /** Aktivan uslov iz činjenica; `applied` = false kad ga nadjačava viši prioritet ili ne važi. */
 export interface AdaptReason {
@@ -401,4 +429,106 @@ export interface AdaptChange {
 
 export type AdaptResult =
   | { ok: true; plan: FiveKV2Plan; changes: AdaptChange[]; reasons: AdaptReason[] }
+  | { ok: false; reasons: Reason[]; violations: Violation[] };
+
+/* ---------- 2.6.0: trčanje/hodanje (runWalk.ts) ---------- */
+
+/** Nivo lestvice (policy.runWalk.levels). Kontinuirano: walkSec 0, reps 1. */
+export interface RunWalkLevel {
+  level: number;
+  runSec: number;
+  walkSec: number;
+  reps: number;
+}
+
+/** Sesija nivoa: 5 min hoda, aktivni deo, 5 min hoda. Vremenska; bez tempa i kvaliteta. */
+export interface RunWalkSession {
+  level: number;
+  runSec: number;
+  walkSec: number;
+  reps: number;
+  continuous: boolean;
+  warmupWalkSec: number;
+  cooldownWalkSec: number;
+  /** reps × trčanje + (reps − 1) × hod [s]. */
+  activeSec: number;
+  totalSec: number;
+  runTotalSec: number;
+  /** Procena km trčanja iz typicalEasyPaceSecPerKm; null bez tempa (plan je vremenski). Hod se ne procenjuje. */
+  estRunKm: number | null;
+  effort: Effort;
+  title: string;
+}
+
+/** Trka plana trčanje/hodanje: 5 km sa odnosom poslednjeg nivoa (ili kontinuirano); cilj „završiti". */
+export interface RunWalkRace {
+  distanceKm: number;
+  runSec: number;
+  walkSec: number;
+  continuous: boolean;
+  warmupWalkSec: number;
+  cooldownWalkSec: number;
+  goal: 'finish';
+  effort: Effort;
+  title: string;
+}
+
+export type RunWalkDay =
+  | {
+      date: IsoDate;
+      weekday: Weekday;
+      role: 'session';
+      level: number;
+      /** Nivo zavisi od pretpostavljenog napretka (+1 nivo na 2 odrađene sesije), ne od činjenica. */
+      projection: boolean;
+      session: RunWalkSession;
+    }
+  | {
+      date: IsoDate;
+      weekday: Weekday;
+      role: 'race';
+      level: number;
+      projection: boolean;
+      race: RunWalkRace;
+    };
+
+export interface RunWalkWeek {
+  index: number;
+  startDate: IsoDate;
+  endDate: IsoDate;
+  phase: 'runWalk' | 'race';
+  days: RunWalkDay[];
+  notes: string[];
+}
+
+/** Korak adaptacije trčanja/hodanja: stanje posle činjenica do asOf (runWalkAssess.ts). */
+export interface RunWalkStep {
+  asOf: IsoDate;
+  level: number;
+  /** Uzastopne dobre sesije na nivou (0–1). */
+  good: number;
+  /** Poznata pauza (dana bez trčanja) koja traje do asOf; 0 = nema. */
+  pauseDays: number;
+  /** Prelaz na kontinuirani plan početnika od ove nedelje (Odluka 8); null = bez prelaza. */
+  transitionWeek: number | null;
+}
+
+export interface FiveKV2RunWalkPlan {
+  policyId: string;
+  policyVersion: string;
+  planType: 'runWalk';
+  input: FiveKV2Input;
+  experience: Experience;
+  goal: { status: 'finish'; message: string };
+  notes: string[];
+  /** Nedelje trčanja/hodanja (posle prelaza: do nedelje pre `continuous.fromWeek`). */
+  weeks: RunWalkWeek[];
+  /** Odluka 8: od nedelje fromWeek plan je kontinuirani plan početnika (isti konstruktor). */
+  continuous: { fromWeek: number; plan: FiveKV2Plan } | null;
+  warnings: Violation[];
+  adaptation?: { asOf: IsoDate; steps: RunWalkStep[]; lockedDayIds: string[] };
+}
+
+export type RunWalkAdaptResult =
+  | { ok: true; plan: FiveKV2RunWalkPlan; changes: AdaptChange[]; reasons: AdaptReason[] }
   | { ok: false; reasons: Reason[]; violations: Violation[] };

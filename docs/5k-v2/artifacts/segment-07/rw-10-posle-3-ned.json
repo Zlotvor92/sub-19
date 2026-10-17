@@ -1,0 +1,41 @@
+{
+  "asOf": "2026-11-22",
+  "reasons": [
+    {
+      "condition": "PAUSE",
+      "applied": true,
+      "message": "Pauza 10 dana: nivo L3 → L2."
+    },
+    {
+      "condition": "FATIGUE",
+      "applied": true,
+      "message": "1 sesija sa RPE ≥ 7: nivo se na njima ne povećava."
+    },
+    {
+      "condition": "LEVEL",
+      "applied": true,
+      "message": "Nivo 2026-11-22: L2 (bilo L1; +2 posle po 2 uzastopne sesije RPE ≤ 6 bez bola); ostatak projekcije od L2."
+    }
+  ],
+  "steps": [
+    {
+      "asOf": "2026-11-22",
+      "level": 2,
+      "good": 0,
+      "pauseDays": 10,
+      "transitionWeek": null
+    }
+  ],
+  "weeks": [
+    "| 1 | L1, L1, L2* | L1, L1, L2* |  |",
+    "| 2 | L2*, L3*, L3* | L2*, L3*, L3* |  |",
+    "| 3 | L4*, L4*, L5* | L4*, L4*, L5* |  |",
+    "| 4 | L5*, L6*, L6* | L2, L2, L3* | promenjeno |",
+    "| 5 | L7*, L7*, L8* | L3*, L4*, L4* | promenjeno |",
+    "| 6 | L8*, L9*, L9* | L5*, L5*, L6* | promenjeno |",
+    "| 7 | L10*, L10*, L11* | L6*, L7*, L7* | promenjeno |",
+    "| 8 | L11*, L12*, L12* | L8*, L8*, L9* | promenjeno |",
+    "| 9 | L12*, L12*, L12* | L9*, L10*, L10* | promenjeno |",
+    "| 10 | L11*, L11*, trka L12* | L10*, L10*, trka L11* | Trka 5 km — 25:00 trčanje / 1:00 hod (odnos nivoa L11); cilj: završiti |"
+  ]
+}

@@ -363,6 +363,7 @@ describe('mreža: 3/4/5 dana × 5 obima × {6, 7, 10, 16} ned × 4 rezultata × 
                 continue;
               }
               plans++;
+              if (r.plan.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
               const plan = r.plan;
               expect(validatePlan(plan).filter((v) => v.severity === 'error')).toEqual([]);
               expect([plan.policyId, plan.policyVersion]).toEqual([P.id, P.version]);

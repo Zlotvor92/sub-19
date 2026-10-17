@@ -46,8 +46,14 @@ function planOf(input: Record<string, unknown>): FiveKV2Plan {
   if (!r.ok) throw new Error(S(r.reasons));
   return JSON.parse(S(r.plan)) as FiveKV2Plan;
 }
+/** 2.6.0 (Segment 07, Odluka 3): činjenice ovih testova su potpune od istorije (START − 28) do asOf —
+    bez facts.coverage dan bez zapisa nije poznat (nije pauza ni manjak). */
+const full = (f: AdaptFacts, asOf: string): AdaptFacts =>
+  (f.workouts?.length ?? 0) > 0 && f.coverage === undefined
+    ? { ...f, coverage: { from: addDays(START, -28), to: asOf, complete: true } }
+    : f;
 function adapt(plan: FiveKV2Plan, facts: AdaptFacts, asOf: string): Ok {
-  const r = adaptFiveKV2(plan, facts, asOf);
+  const r = adaptFiveKV2(plan, full(facts, asOf), asOf);
   if (!r.ok) throw new Error(S(r.reasons) + S(r.violations.filter((v) => v.severity === 'error')));
   return JSON.parse(S(r)) as Ok;
 }
@@ -247,8 +253,9 @@ describe('Odluka 2: izvršenje < 60%', () => {
     const t6 = plan.weeks[5]!.targetKm;
     expect(r.plan.weeks[5]!.targetKm).toBeCloseTo(Math.round(0.8 * t6 * 10) / 10, 5);
     expect(r.plan.weeks[5]!.targetKm).toBeLessThanOrEqual(plan.weeks[4]!.targetKm);
+    // 5k-v2.6.0 (Segment 07, Odluka 1): povratni rast ≤ +10% do nivoa pre smanjenja.
     expect(r.plan.weeks[6]!.targetKm).toBeLessThanOrEqual(
-      Math.floor(r.plan.weeks[5]!.targetKm * 1.08 * 10 + 1e-9) / 10 + 1e-9
+      Math.floor(r.plan.weeks[5]!.targetKm * 1.1 * 10 + 1e-9) / 10 + 1e-9
     );
     expect(r.reasons.find((x) => x.condition === 'UNDER_EXECUTION')?.applied).toBe(true);
   });
@@ -285,7 +292,8 @@ describe('Odluka 3: pauza', () => {
     checkAdapted(plan, r, a);
     const [w8, w9] = [r.plan.weeks[7]!, r.plan.weeks[8]!];
     expect(w8.targetKm).toBe(r.plan.adaptation!.steps[0]!.startKm);
-    expect(w9.targetKm).toBeLessThanOrEqual(Math.floor(w8.targetKm * 1.08 * 10 + 1e-9) / 10);
+    // 5k-v2.6.0 (Segment 07, Odluka 1): povratni rast ≤ +10%.
+    expect(w9.targetKm).toBeLessThanOrEqual(Math.floor(w8.targetKm * 1.1 * 10 + 1e-9) / 10);
   });
 
   it('≥ 28 dana: nov start = min(14 dana pre pauze / 2, 50%), faze preostale izgradnje ponovo', () => {
@@ -296,8 +304,9 @@ describe('Odluka 3: pauza', () => {
     expect(step.restart).toBe(true);
     expect(r.plan.weeks[7]!.phase).toBe('base');
     expect(r.plan.weeks[7]!.targetKm).toBe(step.startKm);
-    // min(14 dana pre pauze / 2, 50% od 7 dana pre pauze), ne ispod donje granice ulaza (4 dana: 15 km).
-    expect(step.startKm).toBe(Math.max(15, Math.min(step.startKm!, 0.5 * 44)));
+    // min(14 dana pre pauze / 2, 50% od 7 dana pre pauze), ne ispod donje granice (5k-v2.6.0: 4 dana
+    // 12 km = 4 × 3 km, volume.adaptFloorKm; bilo 15 km).
+    expect(step.startKm).toBe(Math.max(12, Math.min(step.startKm!, 0.5 * 44)));
     expect(step.startKm).toBeLessThanOrEqual(22);
     expect(r.plan.goal?.status).not.toBe('orientation'); // ostaje 7 nedelja
   });
@@ -507,7 +516,7 @@ describe('Mreža: 60 planova × 7 scenarija → 0 grešaka validatora (stalni us
       }
     };
     for (const [name, facts] of Object.entries(scenarios)) {
-      const r = adaptFiveKV2(plan, facts, asOf);
+      const r = adaptFiveKV2(plan, full(facts, asOf), asOf);
       expect([name, r.ok ? 'ok' : S(r.reasons)]).toEqual([name, 'ok']);
       if (!r.ok) continue;
       checkAdapted(plan, r, asOf);

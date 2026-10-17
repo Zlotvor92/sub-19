@@ -191,21 +191,60 @@ export function planVolume(
   };
 }
 
-/** 2.5.0: donja granica cilja adaptirane nedelje = min(cilj nedelje u planu generatora, donja granica
-    ulaza za broj dana — 12/15/25 km): smanjenje (pauza, izvršenje, rasterećenje, taper od manjeg vrha)
-    ne pravi nedelju manju i od originalne i od najmanjeg podržanog obima, jer takva nedelja ne prima
-    kvalitet ni lagane dane ≥ minimuma (heuristika). Za nepromenjen cilj je bez dejstva (cilj ≥ granice). */
-export function adaptFloorKm(originalKm: number, a: Athlete): number {
-  return Math.min(originalKm, rulesOf(a).weeklyKm.min);
+/** 2.6.0 (Odluka 2): donja granica cilja adaptirane nedelje = min(cilj nedelje u planu generatora,
+    minimum nedelje po broju dana — days[n].minWeekKm 7,5/10/12,5 km; 2.5.0 je bilo 12/15/25). Nedelja
+    izgradnje mora i da se sastavi bez kvaliteta: svaki od n dana ≥ najkraćeg laganog trka (easy.minKm, Uslov
+    8), pa je tu granica max(minimum nedelje, n × 3 km) = 9/12/15 km; u taperu (lagan ≥ 2 km) ostaje
+    7,5/10/12,5. Kvalitet koji ne staje otpada u konstruktoru (generate.construct, dopuna f). Jedno mesto
+    (assess.ts i validate.ts ga koriste). Za nepromenjen cilj je bez dejstva (cilj ≥ granice). */
+export function adaptFloorKm(originalKm: number, a: Athlete, phase: Phase = 'base'): number {
+  const r = rulesOf(a);
+  const easyMin = phase === 'taper' || phase === 'race' ? P.easy.taperMinKm : P.easy.minKm;
+  return Math.min(originalKm, Math.max(r.minWeekKm, round1(a.days * easyMin)));
 }
 
-/** 2.5.0: deo koraka adaptacije koji određuje obim (AdaptStep iz types.ts). */
+/** 2.5.0: deo koraka adaptacije koji određuje obim (AdaptStep iz types.ts). 2.6.0: nivo pre smanjenja i
+    povratak posle bola (Odluka 1). */
 export interface VolumeStep {
   firstWeek: number;
   fromWeek: number;
   startKm: number | null;
   pauseRemainder: boolean;
   restart: boolean;
+  levelKm?: number | null;
+  returnFrom?: { week: number; share: number } | null;
+}
+
+/** 2.6.0: smanjen nivo posle nedelje bola (osnov povratnog rasta). Isto u adaptVolume i validatoru. */
+export const painReturnKm = (weekTargetKm: number, share: number): number =>
+  round1(weekTargetKm * share);
+
+/** 2.6.0 (Odluka 1): nivo povratka koji važi posle koraka (najveći nivo pre smanjenja svih koraka do i);
+    null = nijedan korak nije smanjio obim. Isto u adaptVolume i validatoru. */
+export function returnLevelAt(steps: readonly VolumeStep[], i: number): number | null {
+  let level: number | null = null;
+  for (const s of steps.slice(0, i + 1))
+    if (s.levelKm !== undefined && s.levelKm !== null) level = Math.max(level ?? 0, s.levelKm);
+  return level;
+}
+
+/** 2.6.0 (Odluka 1): cilj nedelje izgradnje posle `lastBuild` — JEDNO pravilo rasta adaptiranog plana:
+    redovno (oštrenje drži, inače +maxBuildGrowth do vrha `cap`; iznad vrha drži) ili, dok je lastBuild
+    ispod nivoa pre smanjenja, povratni rast +returnGrowth do nivoa u svim fazama izgradnje (veće od dva;
+    povratak ne usporava redovan rast). */
+export function nextBuildKm(
+  lastBuild: number,
+  phase: Phase,
+  growth: number,
+  cap: number,
+  level: number | null
+): number {
+  const normal =
+    phase === 'sharpen'
+      ? lastBuild
+      : Math.min(floor1(lastBuild * (1 + growth)), Math.max(cap, lastBuild));
+  if (level === null || lastBuild + 1e-9 >= level) return normal;
+  return Math.max(normal, Math.min(floor1(lastBuild * (1 + P.adapt.returnGrowth)), level));
 }
 
 const isBuildFrame = (f: WeekFrame): boolean =>
@@ -219,8 +258,11 @@ const isBuildFrame = (f: WeekFrame): boolean =>
  *   ostatak tekuće nedelje (firstWeek);
  * - nov start (restart): vrh = peakKm(startKm); inače peakKm(start plana);
  * - taper i trkačka nedelja od firstWeek: udeo vrha, gde je vrh = najveći cilj izgradnje od poslednjeg
- *   starta (startKm u izgradnji), a ako je startKm zadat u taperu: min(vrh, startKm);
+ *   starta (startKm u izgradnji; 2.6.0: i posle bola), a ako je startKm zadat u taperu: min(vrh, startKm);
  * - svaki cilj ≥ adaptFloorKm (pauza: ostatak tekuće nedelje ≤ njenog cilja).
+ * 2.6.0 (Odluka 1): rast izgradnje iz nextBuildKm — dok je cilj ispod nivoa pre smanjenja (returnLevelAt),
+ * +returnGrowth u svim fazama izgradnje (i oštrenje); bol: rast posle poslednje nedelje bola kreće od
+ * returnFrom.share × njenog cilja (smanjen nivo), a ne od cilja te nedelje; vrh tapera od tada.
  * Bez koraka (ili koraka bez promene) ciljevi su isti kao planVolume.
  */
 export function adaptVolume(
@@ -236,24 +278,37 @@ export function adaptVolume(
   let tailCap: number | null = null;
   /** Nedelje sa ciljem koraka (osnov rasta i kad su rasteretne). */
   const resets = new Set<number>();
+  /** 2.6.0: poslednja nedelja bola → udeo njenog cilja od kog kreće rast (važi i za kasnije korake). */
+  const anchors = new Map<number, number>();
+  const anchored = (i: number, lastBuild: number | null): number | null => {
+    const share = anchors.get(i + 1);
+    return share === undefined || !isBuildFrame(frames[i]!)
+      ? lastBuild
+      : painReturnKm(targets[i]!, share);
+  };
   const fitAt = (w: number, t: number): number => {
     const { p, a } = ctx(w);
-    const floor = adaptFloorKm(base.targets[w - 1]!, a);
+    const floor = adaptFloorKm(base.targets[w - 1]!, a, frames[w - 1]!.phase);
     return fitTargetKm(Math.min(Math.max(t, floor), capacityKm(p, a)), p, a);
   };
-  for (const s of steps) {
+  steps.forEach((s, k) => {
     const n = s.fromWeek;
     const { p, a } = ctx(Math.min(n, frames.length));
     if (s.restart && s.startKm !== null) startRef = s.startKm;
     const cap = peakKm(startRef, capacityKm(p, a), a);
     const growth = rulesOf(a).maxBuildGrowth;
+    const level = returnLevelAt(steps, k);
+    const back = s.returnFrom ?? null;
+    if (back) anchors.set(back.week, back.share);
     const r = s.firstWeek;
     if (s.pauseRemainder && s.startKm !== null && r < n && isBuildFrame(frames[r - 1]!))
       targets[r - 1] = fitAt(r, Math.min(s.startKm, targets[r - 1]!));
     let lastBuild: number | null = null;
-    for (let i = 0; i < n - 1 && i < frames.length; i++)
+    for (let i = 0; i < n - 1 && i < frames.length; i++) {
       if (isBuildFrame(frames[i]!) && (!frames[i]!.deload || resets.has(i + 1)))
         lastBuild = targets[i]!;
+      lastBuild = anchored(i, lastBuild);
+    }
     for (let i = n - 1; i < frames.length && isBuildFrame(frames[i]!); i++) {
       const f = frames[i]!;
       let t: number;
@@ -263,12 +318,13 @@ export function adaptVolume(
       else if (f.deload)
         t = round1((lastBuild ?? targets[i - 1] ?? startRef) * P.volume.deloadFactor);
       else if (lastBuild === null) t = startRef;
-      else if (f.phase === 'sharpen') t = lastBuild;
-      else t = Math.min(floor1(lastBuild * (1 + growth)), cap);
+      else t = nextBuildKm(lastBuild, f.phase, growth, cap, level);
       t = fitAt(i + 1, t);
       // Cilj koraka je osnov daljeg rasta i kad je nedelja rasteretna (obim pre pauze/smanjenja ne važi).
       if (!f.deload || (i === n - 1 && s.startKm !== null)) lastBuild = t;
       targets[i] = t;
+      // Bol: nedelja bola zadržava cilj (dani su ograničeni), rast posle nje kreće od smanjenog nivoa.
+      lastBuild = anchored(i, lastBuild);
     }
     if (s.startKm !== null) {
       resets.add(n);
@@ -276,6 +332,9 @@ export function adaptVolume(
         resetFrom = n;
         tailCap = null;
       } else tailCap = Math.min(peakRef, s.startKm);
+    } else if (back && back.week < frames.length && isBuildFrame(frames[back.week]!)) {
+      resetFrom = back.week + 1;
+      tailCap = null;
     }
     const build = targets.filter((_, i) => i >= resetFrom - 1 && isBuildFrame(frames[i]!));
     peakRef = tailCap ?? Math.max(...build);
@@ -285,6 +344,6 @@ export function adaptVolume(
         targets[i] = fitAt(i + 1, round1(peakRef * P.volume.taperFactors[(f.taperStep ?? 1) - 1]!));
       else if (f.phase === 'race') targets[i] = round1(peakRef * P.volume.raceWeekFactor);
     }
-  }
+  });
   return { targets, peakKm: peakRef, startRefKm: startRef };
 }

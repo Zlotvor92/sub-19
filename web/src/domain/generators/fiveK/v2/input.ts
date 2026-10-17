@@ -3,6 +3,7 @@
 import { dayNumber, daysBetween, isWeekday, weekdayIndex } from './dates.ts';
 import { vdotFromResult } from './paces.ts';
 import { daysRule, isRunDaysCount, FIVE_K_V2_POLICY as P } from './policy.ts';
+import { cyclicGap } from './schedule.ts';
 import type { FiveKV2Input, FiveKV2Result, InputCheck, Reason, Weekday } from './types.ts';
 
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
@@ -50,7 +51,7 @@ export function checkInput(raw: unknown): InputCheck {
     }
   }
 
-  // 2.4.0: iskustvo i run/walk.
+  // 2.4.0: iskustvo. 2.6.0: canRun30Min = false → plan trčanje/hodanje (početnik ili iskusan).
   const exp = r['experience'];
   if (exp !== undefined && exp !== 'beginner' && exp !== 'regular')
     add('INPUT_SHAPE', "experience mora biti 'beginner' ili 'regular'.");
@@ -58,16 +59,35 @@ export function checkInput(raw: unknown): InputCheck {
   const can30 = r['canRun30Min'];
   if (can30 !== undefined && typeof can30 !== 'boolean')
     add('INPUT_SHAPE', 'canRun30Min mora biti true/false.');
-  if ((beginner && can30 !== true) || can30 === false)
+  else if (beginner && can30 === undefined)
     add(
-      'RUN_WALK_NOT_SUPPORTED_YET',
-      'Plan traži 30 min kontinuiranog trčanja (canRun30Min: true); plan trčanje/hodanje još nije podržan.'
+      'INPUT_SHAPE',
+      'Početnik: navedi canRun30Min (true = 30 min kontinuirano, false = plan trčanje/hodanje).'
     );
+  const runWalk = can30 === false;
 
   // Dani trčanja.
   const runDays = r['runDays'];
   if (!Array.isArray(runDays)) add('INPUT_SHAPE', 'runDays mora biti niz dana (mon…sun).');
-  else {
+  else if (runWalk) {
+    // 2.6.0: trčanje/hodanje — tačno 3 nesusedna dana (ciklično, kao zahtevni dani u schedule.ts).
+    const rw = P.runWalk.days;
+    if (runDays.length !== rw)
+      add(
+        'RUN_DAYS_COUNT',
+        `Trčanje/hodanje: tačno ${rw} dana nedeljno; zadato ${runDays.length}.`
+      );
+    if (!runDays.every(isWeekday) || new Set(runDays).size !== runDays.length)
+      add('RUN_DAYS_INVALID', 'runDays sme sadržati samo različite dane mon…sun.');
+    else if (runDays.length === rw) {
+      const idx = runDays.map(weekdayIndex);
+      if (idx.some((a, i) => idx.some((b, j) => i < j && cyclicGap(a, b) < 2)))
+        add(
+          'RUN_DAYS_SPACING',
+          'Trčanje/hodanje: dani ne smeju biti uzastopni (ni nedelja–ponedeljak).'
+        );
+    }
+  } else {
     if (!isRunDaysCount(runDays.length))
       add(
         'RUN_DAYS_COUNT',
@@ -82,20 +102,23 @@ export function checkInput(raw: unknown): InputCheck {
       add('RUN_DAYS_INVALID', 'runDays sme sadržati samo različite dane mon…sun.');
   }
 
-  // Obim (2.3.0: opseg po broju dana; bez ispravnog broja dana — najširi opseg tabele).
+  // Obim (2.3.0: opseg po broju dana; bez ispravnog broja dana — najširi opseg tabele). 2.6.0:
+  // trčanje/hodanje — 0 do gornje granice 3 dana (samo informacija; plan je vremenski).
   const km = r['currentWeeklyKm'];
   const n = Array.isArray(runDays) ? runDays.length : 0;
   const rules = Object.values(P.days);
-  const range = isRunDaysCount(n)
-    ? daysRule(n).weeklyKm
-    : {
-        min: Math.min(...rules.map((x) => x.weeklyKm.min)),
-        max: Math.max(...rules.map((x) => x.weeklyKm.max))
-      };
+  const range = runWalk
+    ? { min: 0, max: daysRule(P.runWalk.days).weeklyKm.max }
+    : isRunDaysCount(n)
+      ? daysRule(n).weeklyKm
+      : {
+          min: Math.min(...rules.map((x) => x.weeklyKm.min)),
+          max: Math.max(...rules.map((x) => x.weeklyKm.max))
+        };
   if (!isNum(km) || km < range.min || km > range.max)
     add(
       'WEEKLY_KM_OUT_OF_RANGE',
-      n === 3 && isNum(km) && km < range.min
+      n === 3 && !runWalk && isNum(km) && km < range.min
         ? `Trenutni obim ${km} km: ${P.input.lowVolume3DaysMessage}.`
         : `Trenutni obim mora biti ${range.min}–${range.max} km nedeljno${isRunDaysCount(n) ? ` za ${n} dana` : ''}.`
     );
@@ -117,7 +140,8 @@ export function checkInput(raw: unknown): InputCheck {
         feelKnown = !fresh;
       }
     }
-    if (fresh && distOk && isNum(time) && time > 0) {
+    // 2.6.0: trčanje/hodanje — rezultat je samo informacija (bez opsega VDOT-a).
+    if (fresh && !runWalk && distOk && isNum(time) && time > 0) {
       const vdot = Math.round(vdotFromResult(dist as number, time) * 10) / 10;
       if (vdot < P.input.vdot.min || vdot > P.input.vdot.max)
         add(
@@ -127,11 +151,12 @@ export function checkInput(raw: unknown): InputCheck {
     }
   }
 
-  // 2.4.0: uobičajen lagan tempo — obavezan bez pouzdanog rezultata.
+  // 2.4.0: uobičajen lagan tempo — obavezan bez pouzdanog rezultata. 2.6.0: trčanje/hodanje — opcion
+  // (samo procena km i prelaz na kontinuirani plan).
   const ep = r['typicalEasyPaceSecPerKm'];
   const epRange = P.input.easyPaceSecPerKm;
   const hasEp = ep !== undefined && ep !== null;
-  if (feelKnown && !hasEp)
+  if (feelKnown && !runWalk && !hasEp)
     add(
       'MISSING_EASY_PACE',
       `Bez pouzdanog rezultata (nema ga ili je stariji od ${P.input.resultMaxAgeDays / 7} nedelja) potreban je uobičajen lagan tempo (typicalEasyPaceSecPerKm).`
@@ -142,12 +167,12 @@ export function checkInput(raw: unknown): InputCheck {
       `Uobičajen lagan tempo mora biti ${epRange.min}–${epRange.max} s/km (4:30–8:30 /km).`
     );
 
-  // Cilj (opciono).
+  // Cilj (opciono). 2.6.0: trčanje/hodanje — cilj je „završiti", vreme je samo informacija.
   const goal = r['goalTimeSec'];
   if (goal !== undefined && goal !== null) {
     const ok = isNum(goal) && goal > 0;
     const gv = ok ? vdotFromResult(P.paces.raceDistanceM, goal) : NaN;
-    if (!ok || gv < P.input.goalVdot.min || gv > P.input.goalVdot.max)
+    if (!ok || (!runWalk && (gv < P.input.goalVdot.min || gv > P.input.goalVdot.max)))
       add('GOAL_INVALID', 'Ciljno vreme 5K nije u smislenom opsegu.');
   }
 

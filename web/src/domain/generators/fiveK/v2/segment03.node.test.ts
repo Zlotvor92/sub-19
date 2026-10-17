@@ -255,11 +255,13 @@ describe('mreža 240 ulaza (segment02): Odluke 1, 2 i 5', () => {
         continue;
       }
       expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
-      for (const w of r.plan.weeks) {
+      if (r.plan.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
+      const plan = r.plan;
+      for (const w of plan.weeks) {
         if (w.phase === 'race') continue;
         if (w.easyCappedAtLong && w.plannedKm < w.targetKm) capped++;
         if (w.plannedKm < w.targetKm - 0.05) belowOutsideRace++;
-        const prev = r.plan.weeks[w.index - 2];
+        const prev = plan.weeks[w.index - 2];
         if (w.deload && prev?.phase !== w.phase) deloadAtPhaseStart++;
       }
       expect(

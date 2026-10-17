@@ -1,0 +1,61 @@
+{
+  "asOf": "2026-12-20",
+  "reasons": [
+    {
+      "condition": "PAUSE",
+      "applied": true,
+      "message": "Pauza 20 dana (obim 7 dana pre pauze 33.9 km): cilj 23.7 km; prva nedelja bez kvaliteta, druga 1 kvalitet. Povratak do 40.8 km (nivo pre smanjenja) po +10%/ned u svim fazama osim tapera i trkačke nedelje."
+    },
+    {
+      "condition": "UNDER_EXECUTION",
+      "applied": false,
+      "message": "Izvršeno 0 od 45.5 km u 7 dana (< 60%): nadjačano ili nema sledeće nedelje izgradnje."
+    }
+  ],
+  "steps": [
+    {
+      "asOf": "2026-12-20",
+      "firstWeek": 8,
+      "fromWeek": 8,
+      "result": null,
+      "vdot": null,
+      "startKm": 23.7,
+      "pauseRemainder": true,
+      "restart": false,
+      "deload": false,
+      "noQuality": [
+        {
+          "from": "2026-12-21",
+          "to": "2026-12-27"
+        }
+      ],
+      "oneQuality": [
+        {
+          "from": "2026-12-28",
+          "to": "2027-01-03"
+        }
+      ],
+      "rest": null,
+      "pain": null,
+      "orientation": false,
+      "levelKm": 40.8,
+      "returnFrom": null
+    }
+  ],
+  "weeks": [
+    "| 1 | base 35, R + T_short | base 35 / 35, R + T_short | base 35 / 35, R + T_short |",
+    "| 2 | base 37.8, R + T_short | base 37.8 / 37.8, R + T_short | base 37.8 / 37.8, R + T_short |",
+    "| 3 | base 40.8, R + T_short | base 40.8 / 40.8, R + T_short | base 40.8 / 40.8, R + T_short |",
+    "| 4 | base (r) 32.6, R | base (r) 32.6 / 32.6, R | base (r) 32.6 / 32.6, R |",
+    "| 5 | base 44, R + T_short | base 44 / 44, R + T_short | base 44 / 44, R + T_short |",
+    "| 6 | peak 45.5, I + T_cruise | peak 45.5 / 45.5, I + T_cruise | peak 45.5 / 45.5, I + T_cruise |",
+    "| 7 | peak 45.5, I + T_cruise | peak 45.5 / 45.5, I + T_cruise | peak 45.5 / 45.5, I + T_cruise |",
+    "| 8 | peak (r) 36.4, I | peak (r) 23.7 / 23.7, — | peak (r) 23.7 / 23.7, — |",
+    "| 9 | peak 45.5, I + T_cruise | peak 25.5 / 25.5, I | peak 26 / 26, I |",
+    "| 10 | sharpen 45.5, RP + R_sharpen | sharpen 25.5 / 25.5, RP + R_sharpen | sharpen 28.6 / 28.6, RP + R_sharpen |",
+    "| 11 | sharpen 45.5, RP + R_sharpen | sharpen 25.5 / 25.5, RP + R_sharpen | sharpen 31.4 / 31.4, RP + R_sharpen |",
+    "| 12 | taper 38.7, RP + T_short | taper 21.7 / 21.7, RP + T_short | taper 26.7 / 26.7, RP + T_short |",
+    "| 13 | taper 31.9, RP | taper 17.8 / 17.8, RP | taper 22 / 22, RP |",
+    "| 14 | race 19.49, RP_sharpener | race 12.73 / 12.73, RP_sharpener | race 15.36 / 15.36, RP_sharpener |"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "asOf": "2026-12-20",
+  "reasons": [],
+  "steps": [
+    {
+      "asOf": "2026-12-20",
+      "firstWeek": 8,
+      "fromWeek": 8,
+      "result": null,
+      "vdot": null,
+      "startKm": null,
+      "pauseRemainder": false,
+      "restart": false,
+      "deload": false,
+      "noQuality": [],
+      "oneQuality": [],
+      "rest": null,
+      "pain": null,
+      "orientation": false,
+      "levelKm": null,
+      "returnFrom": null
+    }
+  ],
+  "weeks": [
+    "| 1 | base 35, R + T_short | base 35 / 35, R + T_short | base 35 / 35, R + T_short |",
+    "| 2 | base 37.8, R + T_short | base 37.8 / 37.8, R + T_short | base 37.8 / 37.8, R + T_short |",
+    "| 3 | base 40.8, R + T_short | base 40.8 / 40.8, R + T_short | base 40.8 / 40.8, R + T_short |",
+    "| 4 | base (r) 32.6, R | base (r) 32.6 / 32.6, R | base (r) 32.6 / 32.6, R |",
+    "| 5 | base 44, R + T_short | base 44 / 44, R + T_short | base 44 / 44, R + T_short |",
+    "| 6 | peak 45.5, I + T_cruise | peak 45.5 / 45.5, I + T_cruise | peak 45.5 / 45.5, I + T_cruise |",
+    "| 7 | peak 45.5, I + T_cruise | peak 45.5 / 45.5, I + T_cruise | peak 45.5 / 45.5, I + T_cruise |",
+    "| 8 | peak (r) 36.4, I | peak (r) 29.1 / 29.1, I | peak (r) 36.4 / 36.4, I |",
+    "| 9 | peak 45.5, I + T_cruise | peak 31.4 / 31.4, I + T_cruise | peak 45.5 / 45.5, I + T_cruise |",
+    "| 10 | sharpen 45.5, RP + R_sharpen | sharpen 31.4 / 31.4, RP + R_sharpen | sharpen 45.5 / 45.5, RP + R_sharpen |",
+    "| 11 | sharpen 45.5, RP + R_sharpen | sharpen 31.4 / 31.4, RP + R_sharpen | sharpen 45.5 / 45.5, RP + R_sharpen |",
+    "| 12 | taper 38.7, RP + T_short | taper 26.7 / 26.7, RP + T_short | taper 38.7 / 38.7, RP + T_short |",
+    "| 13 | taper 31.9, RP | taper 22 / 22, RP | taper 31.9 / 31.9, RP |",
+    "| 14 | race 19.49, RP_sharpener | race 15.36 / 15.36, RP_sharpener | race 19.49 / 19.49, RP_sharpener |"
+  ]
+}

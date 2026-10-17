@@ -10,6 +10,7 @@ import { validatePlan } from './validate.ts';
 function planOf(p: Profile): FiveKV2Plan {
   const r = generateFiveKV2(inputOf(p));
   if (!r.ok) throw new Error(JSON.stringify(r.reasons) + JSON.stringify(r.violations));
+  if (r.plan.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
   return r.plan;
 }
 
@@ -227,7 +228,7 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
   it('2.2.0: 15 km i VDOT ~53 → I ne staje u rasteretnu nedelju, zamena umesto odbijanja', () => {
     const r = generateFiveKV2(inputOf({ ...PROFILES['edge_15km_8w']!, timeSec: 1110 }));
     expect(r.ok).toBe(true);
-    if (r.ok) {
+    if (r.ok && r.plan.planType !== 'runWalk') {
       const w4 = r.plan.weeks[3]!;
       expect(w4.deload).toBe(true);
       expect(w4.days.find((d) => d.role === 'q1')?.workout.qualityType).not.toBe('I');

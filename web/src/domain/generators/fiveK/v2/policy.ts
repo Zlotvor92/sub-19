@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.5.0',
+  version: '5k-v2.6.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -354,10 +354,69 @@ export const FIVE_K_V2_POLICY = {
     fatigueCount: 2,
     /** Odluka 6: izvršeno > overShare planiranog u 2 uzastopna prozora od windowDays → bez rasta. */
     overShare: 1.15,
+    /** 2.6.0 (Odluka 1): povratni rast posle smanjenja (pauza, bol, manjak izvršenja) do nivoa pre
+        smanjenja, u svim fazama osim tapera i trkačke nedelje (volume.adaptVolume). */
+    returnGrowth: 0.1,
     orientationMessage:
       'Cilj je orijentir: posle duge pauze ostaje manje od 6 nedelja do trke, priprema nije potpuna.',
     painMessage:
       'Bol: nedelju dana bez kvaliteta, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled.'
+  },
+
+  /** 2.6.0: plan trčanje/hodanje (canRun30Min = false; runWalk.ts, runWalkAssess.ts). Lestvica i pragovi
+      su TRENERSKE HEURISTIKE (uobičajen obrazac postepenih „trčanje/hodanje" programa), ne merenje:
+      - trajanje jednog trčanja raste ~1,5–2× po koraku (1 → 1,5 → 2 → 3 → 4 → 5 → 8 → 10 → 15 min),
+        hod se skraćuje 2:00 → 1:30 → 1:00; od L10 kontinuirano 20 → 25 → 30 min;
+      - aktivni deo (reps × trčanje + (reps − 1) × hod) 20–35 min, uz 5 min hoda pre i posle;
+      - bez kvaliteta i bez tempa: napor RPE 3–4 („razgovorno"). */
+  runWalk: {
+    days: 3,
+    levels: [
+      { level: 1, runSec: 60, walkSec: 120, reps: 8 },
+      { level: 2, runSec: 90, walkSec: 120, reps: 7 },
+      { level: 3, runSec: 120, walkSec: 120, reps: 6 },
+      { level: 4, runSec: 180, walkSec: 120, reps: 5 },
+      { level: 5, runSec: 240, walkSec: 120, reps: 5 },
+      { level: 6, runSec: 300, walkSec: 90, reps: 4 },
+      { level: 7, runSec: 480, walkSec: 90, reps: 3 },
+      { level: 8, runSec: 600, walkSec: 90, reps: 3 },
+      { level: 9, runSec: 900, walkSec: 60, reps: 2 },
+      { level: 10, runSec: 1200, walkSec: 0, reps: 1 },
+      { level: 11, runSec: 1500, walkSec: 0, reps: 1 },
+      { level: 12, runSec: 1800, walkSec: 0, reps: 1 }
+    ],
+    warmupWalkSec: 300,
+    cooldownWalkSec: 300,
+    activeSec: { min: 1200, max: 2100 },
+    effort: { rpeMin: 3, rpeMax: 4, cue: 'razgovorno — možeš da pričaš u punim rečenicama' },
+    /** Projekcija (Odluka 5): +1 nivo na svakih `sessionsPerLevel` odrađenih sesija. */
+    sessionsPerLevel: 2,
+    /** Odluka 6: sesija „dobra" ako je završena, RPE ≤ goodRpeMax i bol < adapt.painMin; RPE ≥ holdRpe →
+        isti nivo; bol ≥ adapt.painMin ili pauza adapt.pause.shortDays–midDays − 1 → −1; ≥ midDays → −2. */
+    goodRpeMax: 6,
+    holdRpe: 7,
+    /** Odluka 7: trkačka nedelja — 2 sesije (nivo − 1), pa trka; odnos trke za kontinuiran nivo < L12:
+        trčanje = trajanje nivoa, hod = raceWalkSec (najkraći hod lestvice). */
+    raceWeekSessions: 2,
+    raceWalkSec: 60,
+    raceKm: 5,
+    /** Odluka 8: prelaz na kontinuirani plan početnika kad adaptacija dostigne L12 i ostaje ≥ ovoliko
+        nedelja do trke (= najkraći plan generatora). */
+    transitionMinWeeks: 6,
+    note:
+      'Plan trčanje/hodanje: vremenski, bez tempa i bez kvaliteta; napor RPE 3–4 (razgovorno). Svaka ' +
+      'sesija: 5 min hoda, aktivni deo nivoa, 5 min hoda.',
+    projectionNote:
+      'Nivoi su projekcija: +1 nivo na svake 2 odrađene sesije. Adaptacija ih ispravlja prema stvarnim ' +
+      'sesijama (RPE, bol, pauze).',
+    kmNote: 'Km su procena trčanja iz uobičajenog laganog tempa; hod se ne procenjuje.',
+    noKmNote: 'Bez uobičajenog laganog tempa km se ne procenjuju (plan je vremenski).',
+    goalMessage: 'Cilj: završiti trku (bez ciljnog vremena).',
+    resultNote:
+      'Rezultat {result} ({date}) je samo informacija: plan trčanje/hodanje ne koristi tempo.',
+    painMessage: 'Bol: nivo −1. Ako bol traje ili se pojačava, potraži stručni pregled.',
+    transitionNote:
+      'Od nedelje {week}: kontinuirani plan početnika (po osećaju), isti konstruktor kao generator.'
   },
 
   /** Tolerancija aritmetike (km) i planirano/ciljno (udeo). */
@@ -563,5 +622,30 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '(6) > 115% planiranog u 2 uzastopna 7-dnevna prozora: sledeća nedelja bez rasta. (7) prioritet za obim ' +
       'sledeće nedelje: pauza > umor > izvršenje; bol se uvek primenjuje po datumima (najstroži); tempo iz ' +
       'rezultata uvek. Činjenice se smatraju potpunim od prvog zapisa do asOf.'
+  },
+  {
+    version: '5k-v2.6.0',
+    decision:
+      'Segment 07, ispravke adaptacije i trčanje/hodanje (heuristike). (1) Povratni rast: posle smanjenja ' +
+      '(pauza, bol, manjak izvršenja) cilj raste +10%/ned do nivoa pre smanjenja (cilj poslednje ' +
+      'ne-rasteretne nedelje izgradnje završene pre događaja) u svim fazama osim tapera i trkačke nedelje — ' +
+      'oštrenje ne drži dok je ispod nivoa; povratak ne usporava redovan rast (veće od dva); rasterećenje ' +
+      'ostaje. Bol ne menja cilj nedelje bola (dani su ograničeni); rast posle poslednje nedelje bola kreće ' +
+      'od 0,7 × njenog cilja. Jedno mesto: volume.adaptVolume / nextBuildKm. (2) Donja granica adaptiranog ' +
+      'cilja = minimum nedelje 7,5/10/12,5 km; u izgradnji nedelja mora i da se sastavi bez kvaliteta (n dana ' +
+      '× lagan ≥ 3 km), pa 9/12/15 km; kvalitet, kontrolno trčanje i oštrenje trkačke nedelje koji ne staju ' +
+      'otpadaju (dopuna f). (3) facts.coverage {from, to, complete}: dan bez zapisa je poznat (bez trčanja) ' +
+      'samo u potpunoj pokrivenosti; bez nje odluke 2, 3 i 6 se ne primenjuju; bol, umor, rezultat i ' +
+      'eksplicitna pauza facts.breaks {kind: break} uvek (pauza završena u poslednjih 7 dana, posle ' +
+      'prethodne adaptacije). Trčanje = završen zapis sa km ili trajanjem. (4) Trčanje/hodanje ' +
+      '(canRun30Min = false, početnik ili iskusan, tačno 3 nesusedna dana, 6–16 ned, rezultat samo ' +
+      'informacija): lestvica L1–L12 u runWalk.levels, aktivno 20–35 min + 5 min hoda pre i posle, RPE 3–4, ' +
+      'bez kvaliteta i tempa; km samo procena trčanja (typicalEasyPaceSecPerKm) ili null. (5) Projekcija: +1 ' +
+      'nivo na svake 2 sesije, nivo za svaki dan, oznaka projection. (6) Adaptacija: 2 uzastopne sesije ' +
+      'završene, RPE ≤ 6, bol < 4 → +1; RPE ≥ 7 ili bez RPE → isti; bol ≥ 4 ili pauza 7–13 → −1; ≥ 14 → −2; ' +
+      'ne ispod L1; ostatak projekcije od novog nivoa. (7) Trka: nivo < L12 → odnos poslednjeg nivoa ' +
+      '(kontinuiran nivo: trajanje / 1:00 hoda), cilj „završiti"; poslednja nedelja 2 sesije (nivo − 1) bez ' +
+      'dana pred trku. (8) L12 i ≥ 6 nedelja do trke → ostatak = generateFiveKV2 kao početnik po osećaju ' +
+      '(obim 3 × 30 min tipičnim tempom; bez tempa ili < 12 km — bez prelaza).'
   }
 ];

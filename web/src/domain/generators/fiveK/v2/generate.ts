@@ -13,6 +13,7 @@ import {
 } from './paces.ts';
 import { isShortPrep, periodize, phaseCounts } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
+import { buildRunWalkPlan } from './runWalk.ts';
 import { choosePattern } from './schedule.ts';
 import { athleteAt, baseAthlete, baseVdot, doseResetAt, framesFor, pacesAt } from './steps.ts';
 import type {
@@ -102,7 +103,10 @@ export function construct(
       const prevLong =
         weeks[weeks.length - 1]?.days.find((d) => d.role === 'long')?.workout.km ?? 0;
       let r = buildRaceWeek(f, target, pat.pattern, input.runDays, input.raceDate, p, prevLong);
-      if (!r.ok && adaptive) {
+      // 2.6.0: i kad oštrenje ostavlja nedelju ispod minimuma trkačke nedelje (mala granica posle
+      // smanjenja) — oštrenje otpada (pravilo f), lagani dani nose granicu.
+      const short = r.ok && r.week.plannedKm + 1e-9 < P.week.minRaceWeekKm;
+      if ((!r.ok || short) && adaptive) {
         const all = input.runDays.map((w) => dateIn(f, w));
         r = buildRaceWeek(
           { ...f, limits: { ...f.limits, noQuality: all } },
@@ -113,6 +117,10 @@ export function construct(
           p,
           prevLong
         );
+        if (short && r.ok)
+          r.week.notes.push(
+            `Adaptacija: oštrenje ne staje u granicu ${target} km (nedelja bi bila < ${P.week.minRaceWeekKm} km).`
+          );
       }
       if (r.ok) weeks.push(r.week);
       else reasons.push(r.reason);
@@ -132,10 +140,11 @@ export function construct(
     for (const q of ['one', 'none'] as const) {
       if (r.ok || !adaptive || (q === 'one' && f.limits?.quality !== undefined)) continue;
       const { swap: _swap, ...rest } = f.limits ?? {};
-      r = build({ ...f, limits: { ...(q === 'one' ? f.limits : rest), quality: q } });
+      // 2.6.0: kontrolno trčanje je glavni kvalitet nedelje — kad ne staje, otpada sa njim.
+      r = build({ ...f, test: false, limits: { ...(q === 'one' ? f.limits : rest), quality: q } });
       if (r.ok)
         r.week.notes.push(
-          `Adaptacija: kvalitet ne staje u obim ${target} km — ${q === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'}.`
+          `Adaptacija: kvalitet ne staje u obim ${target} km — ${q === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'}${f.test ? ' (bez kontrolnog trčanja)' : ''}.`
         );
     }
     if (!r.ok) {
@@ -173,6 +182,25 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
   const checked = checkInput(raw);
   if (!checked.ok) return { ok: false, reasons: checked.reasons, violations: [] };
   const input: FiveKV2Input = checked.input;
+  // 2.6.0: ne može 30 min kontinuirano → plan trčanje/hodanje (runWalk.ts).
+  if (input.canRun30Min === false) {
+    const rw = buildRunWalkPlan(input);
+    const violations = validatePlan(rw);
+    const errors = violations.filter((v) => v.severity === 'error');
+    if (errors.length > 0)
+      return {
+        ok: false,
+        reasons: [
+          {
+            code: 'PLAN_VIOLATES_POLICY',
+            message: `Konstruisan plan krši ${errors.length} pravila; plan se ne vraća.`
+          }
+        ],
+        violations
+      };
+    rw.warnings = violations;
+    return { ok: true, plan: rw };
+  }
   const built = construct(input);
   if (!built.ok) return { ok: false, reasons: built.reasons, violations: [] };
   const { athlete: a, frames, weeks, vol, pattern } = built.c;

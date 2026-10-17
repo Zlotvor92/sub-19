@@ -165,6 +165,7 @@ describe('Odluka 3 + mreža regular sa rezultatom: vrh(2.4.1) ≥ vrh(7b4b574)',
         continue;
       }
       plans++;
+      if (r.plan.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
       checkPlan(r.plan);
       for (const w of r.plan.weeks.filter(build))
         expect(volume.fitTargetKm(w.targetKm, r.plan.paces, x.days)).toBe(w.targetKm);
@@ -217,6 +218,7 @@ describe('mreža ostalih grana (bez rezultata, početnik): stalni uslovi', () =>
                 continue;
               }
               plans++;
+              if (r.plan.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
               checkPlan(r.plan);
             }
       expect(plans).toBe(b !== 'feel' && n === 5 ? 0 : 120);

@@ -1,15 +1,19 @@
 /* 2.5.0: činjenice → OGRANIČENJA adaptacije (AdaptStep). JEDINO mesto odluka 1–7 (DECISIONS 5k-v2.5.0):
    ovde se ne gradi nijedna nedelja; konstruktor (generate.construct) prima korak kao ulaz.
-   Činjenice se smatraju potpunim od prvog zapisa treninga do asOf; bez zapisa nema pravila iz treninga. */
+   2.6.0 (Odluka 3): dan bez zapisa je poznat (bez trčanja) samo u facts.coverage sa complete = true;
+   odluke 2, 3 i 6 se iz zapisa primenjuju samo na pokriven deo; bol, umor, rezultat i eksplicitna pauza
+   (facts.breaks) uvek. */
 
 import { addDays, dayNumber, mustDay } from './dates.ts';
 import { vdotFromResult } from './paces.ts';
-import { FIVE_K_V2_POLICY as P, rulesOf } from './policy.ts';
+import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { baseAthlete, vdotAt } from './steps.ts';
 import type {
   AdaptReason,
   AdaptStep,
+  BreakFact,
   DateRange,
+  FactsCoverage,
   FiveKV2Plan,
   IsoDate,
   PlanDay,
@@ -17,6 +21,7 @@ import type {
   ResultFact,
   WorkoutFact
 } from './types.ts';
+import { adaptFloorKm } from './volume.ts';
 
 const A = P.adapt;
 const round1 = (x: number): number => Math.round(x * 10) / 10;
@@ -28,6 +33,14 @@ export interface CheckedFacts {
   workouts: WorkoutFact[];
   results: ResultFact[];
   lockedDayIds: string[];
+  /** 2.6.0: null = bez pokrivenosti (nijedan dan bez zapisa nije poznat). */
+  coverage: FactsCoverage | null;
+  breaks: BreakFact[];
+}
+
+/** 2.6.0 (Odluka 3): da li su svi dani [from, to] poznati (pokriveni potpunim zapisom). */
+export function coveredDays(c: FactsCoverage | null, from: number, to: number): boolean {
+  return c !== null && c.complete && mustDay(c.from) <= from && mustDay(c.to) >= to;
 }
 
 /** Provera oblika činjenica (sve greške odjednom). `days` = datumi dana plana (dayId). */
@@ -112,9 +125,35 @@ export function checkFacts(
       add('ADAPT_DAY_UNKNOWN', `Zaključan dan ${String(id)} nije dan plana.`);
     else if (!lockedDayIds.includes(id)) lockedDayIds.push(id);
   }
+  // 2.6.0: opseg datuma (from ≤ to ≤ asOf) — pokrivenost i eksplicitne pauze.
+  const range = (o: Record<string, unknown>, what: string): DateRange | null => {
+    if (!dateOk(o['from'], `${what} (from)`) || !dateOk(o['to'], `${what} (to)`)) return null;
+    if (mustDay(o['from']) > mustDay(o['to'])) {
+      add('ADAPT_FACT_INVALID', `${what}: from mora biti ≤ to.`);
+      return null;
+    }
+    return { from: o['from'], to: o['to'] };
+  };
+  let coverage: FactsCoverage | null = null;
+  const rc = r['coverage'];
+  if (rc !== undefined && rc !== null) {
+    const o = (typeof rc === 'object' ? rc : {}) as Record<string, unknown>;
+    const d = range(o, 'coverage');
+    if (typeof o['complete'] !== 'boolean')
+      add('ADAPT_FACT_INVALID', 'coverage.complete mora biti true/false.');
+    else if (d) coverage = { ...d, complete: o['complete'] };
+  }
+  const breaks: BreakFact[] = [];
+  list('breaks').forEach((x, i) => {
+    const o = (typeof x === 'object' && x !== null ? x : {}) as Record<string, unknown>;
+    const what = `Pauza ${i + 1}`;
+    if (o['kind'] !== 'break') return add('ADAPT_FACT_INVALID', `${what}: kind mora biti 'break'.`);
+    const d = range(o, what);
+    if (d) breaks.push({ kind: 'break', ...d });
+  });
   return reasons.length > 0
     ? { ok: false, reasons }
-    : { ok: true, facts: { workouts, results, lockedDayIds } };
+    : { ok: true, facts: { workouts, results, lockedDayIds, coverage, breaks } };
 }
 
 /**
@@ -151,7 +190,8 @@ export function assess(
   };
 
   const W = facts.workouts;
-  const runs = W.filter((x) => x.completed && x.km > 0);
+  // 2.6.0: trčanje = završen zapis sa km ili trajanjem (vremenska sesija bez km je trčanje).
+  const runs = W.filter((x) => x.completed && (x.km > 0 || x.durationSec > 0));
   const sumKm = (from: number, to: number): number =>
     runs.filter((x) => day(x.date) >= from && day(x.date) <= to).reduce((s, x) => s + x.km, 0);
   const planDays: PlanDay[] = weeks.flatMap((w) => w.days);
@@ -159,8 +199,25 @@ export function assess(
     planDays
       .filter((d) => d.countsToWeek && day(d.date) >= from && day(d.date) <= to)
       .reduce((s, d) => s + d.workout.km, 0);
-  const coverage = W.length > 0 ? Math.min(...W.map((x) => day(x.date))) : null;
+  // 2.6.0 (Odluka 3): poznati su samo dani u potpunoj pokrivenosti; km iz zapisa samo tada i samo ako
+  // svako trčanje u prozoru ima km (vremenski zapis bez km = nepoznat obim).
+  const cov = facts.coverage;
+  const knownKm = (from: number, to: number): number | null =>
+    coveredDays(cov, from, to) &&
+    runs.every((x) => x.km > 0 || day(x.date) < from || day(x.date) > to)
+      ? sumKm(from, to)
+      : null;
   const t = day(asOf);
+  // 2.6.0 (Odluka 1): nivo pre smanjenja = cilj poslednje ne-rasteretne nedelje izgradnje završene pre
+  // prvog dana događaja (rasteretna nedelja nije nivo); bez nje — start plana.
+  const levelBefore = (event: number): number => {
+    let lv: number | null = null;
+    for (const w of weeks)
+      if (day(w.endDate) < event && !w.deload && build(w.index)) lv = w.targetKm;
+    return lv ?? plan.startKm;
+  };
+  const athlete = baseAthlete(plan.input);
+  const floorKm = adaptFloorKm(Infinity, athlete);
 
   // Odluka 1: novi rezultat.
   const step: AdaptStep = {
@@ -177,7 +234,9 @@ export function assess(
     oneQuality: [],
     rest: null,
     pain: null,
-    orientation: false
+    orientation: false,
+    levelKm: null,
+    returnFrom: null
   };
   const prevResult =
     [...steps].reverse().find((s) => s.result)?.result?.date ?? plan.input.recentResult?.date;
@@ -222,61 +281,82 @@ export function assess(
       reason('NEW_RESULT', false, 'Novi rezultat: nema sledeće nedelje do trke — tempo ostaje.');
   }
 
+  const target = (w: number): number | null => wk(w)?.targetKm ?? null;
+  const endOf = (w: number): IsoDate => wk(Math.min(w, N))!.endDate;
+  const growthNote = (level: number): string =>
+    ` Povratak do ${level} km (nivo pre smanjenja) po +${A.returnGrowth * 100}%/ned u svim fazama osim tapera i trkačke nedelje.`;
+
   // Odluka 4: bol (uvek, po datumima; prethodni koraci ostaju, pa ponovni bol produžava period).
+  // 2.6.0 (Odluka 1): posle poslednje nedelje bola rast kreće od painEasyFactor × njenog cilja (lagani
+  // −30%) do nivoa pre bola.
   const hurt = W.filter((x) => t - day(x.date) < A.painLookbackDays && (x.pain ?? 0) >= A.painMin);
   if (hurt.length > 0) {
     const max = Math.max(...hurt.map((x) => x.pain!));
     const restN = max >= A.painRestMin ? A.restDays : 0;
     if (restN > 0) step.rest = { from: next, to: addDays(asOf, restN) };
     step.pain = { from: addDays(asOf, restN + 1), to: addDays(asOf, restN + A.painDays) };
+    const last = weekOf(step.pain.to);
+    const back = last <= N && build(last);
+    if (back) {
+      step.returnFrom = { week: last, share: A.painEasyFactor };
+      step.levelKm = levelBefore(Math.min(...hurt.map((x) => day(x.date))));
+    }
     reason(
       'PAIN',
       true,
-      `Bol ${max}/10 u poslednja ${A.painLookbackDays} dana: ${restN > 0 ? `${restN} dana odmora, pa ` : ''}${A.painDays} dana bez kvaliteta (do ${step.pain.to}). ${A.painMessage}`
+      `Bol ${max}/10 u poslednja ${A.painLookbackDays} dana: ${restN > 0 ? `${restN} dana odmora, pa ` : ''}${A.painDays} dana bez kvaliteta (do ${step.pain.to}). ${A.painMessage}${back ? ` Posle nedelje ${last} rast kreće od ${A.painEasyFactor * 100}% njenog cilja.${growthNote(step.levelKm!)}` : ''}`
     );
   }
 
-  const rules = rulesOf(baseAthlete(plan.input));
-  const target = (w: number): number | null => wk(w)?.targetKm ?? null;
-  const endOf = (w: number): IsoDate => wk(Math.min(w, N))!.endDate;
   let volumeRule = false;
 
-  // Odluka 3: pauza (uzastopni dani bez trčanja do asOf).
-  if (coverage !== null) {
-    const lastRun = runs.length > 0 ? Math.max(...runs.map((x) => day(x.date))) : null;
-    const pause = lastRun !== null ? t - lastRun : t - coverage + 1;
-    if (pause >= A.pause.shortDays) {
-      const pre =
-        lastRun !== null
-          ? sumKm(lastRun - 6, lastRun)
-          : (target(weekOf(addDays(asOf, -pause + 1))) ?? plan.startKm);
-      const pre14 = lastRun !== null ? sumKm(lastRun - 13, lastRun) / 2 : pre;
-      const tier = pause >= A.pause.longDays ? 'long' : pause >= A.pause.midDays ? 'mid' : 'short';
-      const raw =
-        tier === 'long'
-          ? Math.min(pre14, pre * A.pause.longShare)
-          : pre * (tier === 'mid' ? A.pause.midShare : A.pause.shortShare);
-      let km = round1(Math.max(rules.weeklyKm.min, raw));
-      const tn = build(n) ? target(n) : null;
-      if (tn !== null) km = Math.min(km, tn);
-      step.startKm = km;
-      step.pauseRemainder = true;
-      step.restart = tier === 'long';
-      const first: DateRange = { from: next, to: endOf(n) };
-      if (tier === 'short') step.oneQuality.push(first);
-      else {
-        step.noQuality.push(first);
-        if (n + 1 <= N)
-          step.oneQuality.push({ from: wk(n + 1)!.startDate, to: wk(n + 1)!.endDate });
-      }
-      step.orientation = step.restart && N - n + 1 < A.restartFullPrepWeeks;
-      volumeRule = true;
-      reason(
-        'PAUSE',
-        true,
-        `Pauza ${pause} dana (obim 7 dana pre pauze ${round1(pre)} km): cilj ${km} km${km > round1(raw) ? ` (ne ispod ${rules.weeklyKm.min} km za ${plan.input.runDays.length} dana)` : ''}; ${tier === 'short' ? 'prva nedelja 1 kvalitet' : 'prva nedelja bez kvaliteta, druga 1 kvalitet'}${step.restart ? '; nov start (faze preostale izgradnje ponovo)' : ''}${step.orientation ? `; ${A.orientationMessage}` : ''}.`
-      );
+  // Odluka 3: pauza — uzastopni POZNATI dani bez trčanja do asOf (2.6.0: samo u potpunoj pokrivenosti)
+  // ili eksplicitna pauza (facts.breaks; završena u poslednjih 7 dana i posle prethodne adaptacije).
+  const lastRun = runs.length > 0 ? Math.max(...runs.map((x) => day(x.date))) : null;
+  let pause = 0;
+  let pauseStart = t + 1;
+  let explicit = false;
+  if (cov !== null && cov.complete && day(cov.to) >= t) {
+    const from = Math.max(lastRun !== null ? lastRun + 1 : -Infinity, day(cov.from));
+    if (from <= t) [pause, pauseStart] = [t - from + 1, from];
+  }
+  const prevAsOf = steps.length > 0 ? day(steps[steps.length - 1]!.asOf) : null;
+  for (const b of facts.breaks) {
+    const len = day(b.to) - day(b.from) + 1;
+    const recent = day(b.to) > t - A.windowDays && (prevAsOf === null || day(b.to) > prevAsOf);
+    if (recent && len > pause) [pause, pauseStart, explicit] = [len, day(b.from), true];
+  }
+  if (pause >= A.pause.shortDays) {
+    const ps = addDays(asOf, pauseStart - t);
+    const pre =
+      knownKm(pauseStart - A.windowDays, pauseStart - 1) ?? target(weekOf(ps)) ?? plan.startKm;
+    const k14 = knownKm(pauseStart - 2 * A.windowDays, pauseStart - 1);
+    const pre14 = k14 !== null ? k14 / 2 : pre;
+    const tier = pause >= A.pause.longDays ? 'long' : pause >= A.pause.midDays ? 'mid' : 'short';
+    const raw =
+      tier === 'long'
+        ? Math.min(pre14, pre * A.pause.longShare)
+        : pre * (tier === 'mid' ? A.pause.midShare : A.pause.shortShare);
+    let km = round1(Math.max(floorKm, raw));
+    const tn = build(n) ? target(n) : null;
+    if (tn !== null) km = Math.min(km, tn);
+    step.startKm = km;
+    step.pauseRemainder = true;
+    step.restart = tier === 'long';
+    step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(pauseStart));
+    const first: DateRange = { from: next, to: endOf(n) };
+    if (tier === 'short') step.oneQuality.push(first);
+    else {
+      step.noQuality.push(first);
+      if (n + 1 <= N) step.oneQuality.push({ from: wk(n + 1)!.startDate, to: wk(n + 1)!.endDate });
     }
+    step.orientation = step.restart && N - n + 1 < A.restartFullPrepWeeks;
+    volumeRule = true;
+    reason(
+      'PAUSE',
+      true,
+      `${explicit ? 'Pauza (prijavljena)' : 'Pauza'} ${pause} dana (obim 7 dana pre pauze ${round1(pre)} km): cilj ${km} km${km > round1(raw) ? ` (ne ispod ${floorKm} km za ${plan.input.runDays.length} dana)` : ''}; ${tier === 'short' ? 'prva nedelja 1 kvalitet' : 'prva nedelja bez kvaliteta, druga 1 kvalitet'}${step.restart ? '; nov start (faze preostale izgradnje ponovo)' : ''}${step.orientation ? `; ${A.orientationMessage}` : ''}.${growthNote(step.levelKm)}`
+    );
   }
 
   // Odluka 5: umor (lagani = lagan ili dugi dan plana; trening van plana se računa kao lagan).
@@ -302,31 +382,33 @@ export function assess(
     );
   }
 
-  // Odluke 2 i 6: izvršenje prema planu (prozori od 7 dana do asOf; samo pokriveni činjenicama).
+  // Odluke 2 i 6: izvršenje prema planu (prozori od 7 dana do asOf). 2.6.0: samo potpuno pokriveni
+  // prozori (Odluka 3); nepokriven deo nije manjak ni višak.
   const w2 = [t - A.windowDays + 1, t] as const;
   const w1 = [t - 2 * A.windowDays + 1, t - A.windowDays] as const;
-  if (coverage !== null && coverage <= w2[0]) {
+  if (coveredDays(cov, ...w2)) {
     const p2 = plannedKm(...w2);
     const a2 = sumKm(...w2);
     const tn = target(n);
     if (p2 > 0 && a2 < A.underShare * p2) {
       const ok = !volumeRule && build(n) && tn !== null;
       if (ok) {
-        // Ne ispod min(planirano, donja granica ulaza za broj dana) — kao volume.adaptFloorKm.
+        // Ne ispod min(planirano, donja granica volume.adaptFloorKm).
         step.startKm = round1(
           Math.max(
             Math.min(tn, lastBuild ?? tn, Math.max(a2, A.underFloorShare * tn)),
-            Math.min(tn, rules.weeklyKm.min)
+            Math.min(tn, floorKm)
           )
         );
+        step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(w2[0]));
         volumeRule = true;
       }
       reason(
         'UNDER_EXECUTION',
         ok,
-        `Izvršeno ${round1(a2)} od ${round1(p2)} km u 7 dana (< ${A.underShare * 100}%): ${ok ? `nedelja ${n} ne raste, cilj ${step.startKm} km` : 'nadjačano ili nema sledeće nedelje izgradnje'}.`
+        `Izvršeno ${round1(a2)} od ${round1(p2)} km u 7 dana (< ${A.underShare * 100}%): ${ok ? `nedelja ${n} ne raste, cilj ${step.startKm} km.${growthNote(step.levelKm!)}` : 'nadjačano ili nema sledeće nedelje izgradnje.'}`
       );
-    } else if (coverage <= w1[0]) {
+    } else if (coveredDays(cov, w1[0], t)) {
       const p1 = plannedKm(...w1);
       const a1 = sumKm(...w1);
       if (p1 > 0 && p2 > 0 && a1 > A.overShare * p1 && a2 > A.overShare * p2) {
@@ -343,7 +425,12 @@ export function assess(
       }
     }
   }
-  if (W.length === 0 && facts.results.length === 0 && facts.lockedDayIds.length === 0)
+  if (
+    W.length === 0 &&
+    facts.results.length === 0 &&
+    facts.lockedDayIds.length === 0 &&
+    facts.breaks.length === 0
+  )
     reason('NO_FACTS', true, 'Nema činjenica: budući deo plana ostaje isti.');
   return { ok: true, step, reasons: out };
 }
