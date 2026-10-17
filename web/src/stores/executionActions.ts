@@ -1,7 +1,9 @@
 import { addDays, parseIsoDate } from '../domain/date';
 import { resolvePlan, type ResolvedPlan } from '../domain/plan';
 import {
+  fiveKV2AdaptPreview,
   generatorForPlan,
+  isFiveKV2Plan,
   preparationForPlan,
   stampForStorage,
   unsupportedPlanReason,
@@ -18,6 +20,7 @@ import {
   type PlanRevisionReason
 } from '../domain/plan/versions';
 import type { AltRecord, GenPlanState } from '../domain/state';
+import { fiveKV2Sources } from './fiveKV2Actions';
 import { useRecoveryStore } from './recoveryStore';
 import { activeGenPlan, useTrainingStore } from './trainingStore';
 import { useUIStore } from './uiStore';
@@ -46,8 +49,21 @@ export type PlanChangePreview =
         demandingDaysAfter?: number;
       }>;
       notes: string[];
+      /** 08b: pregled prilagođavanja plana 5K v2 (razlozi v2 doslovno, promenjene nedelje, pokrivenost zapisa). */
+      fiveKV2?: FiveKV2Details;
     }
-  | { ok: false; reason: string; decision?: PreparationDecision };
+  | {
+      ok: false;
+      reason: string;
+      decision?: PreparationDecision;
+      /** 08b: odbijanje v2 — razlozi doslovno. */
+      reasons?: string[];
+    };
+type FiveKV2Outcome = ReturnType<typeof fiveKV2AdaptPreview>;
+export type FiveKV2Details = Pick<
+  Extract<FiveKV2Outcome, { ok: true }>,
+  'reasons' | 'weeks' | 'coverage' | 'needed'
+>;
 type PreviewReason = Extract<PlanRevisionReason, 'execution' | 'restore' | 'goal'>;
 
 export function replanContext(): ReplanContext & {
@@ -246,7 +262,7 @@ function preview(
   reason: PreviewReason,
   summary: string,
   notes: string[],
-  extra: Pick<SuccessfulPreview, 'decision' | 'change'> = {}
+  extra: Pick<SuccessfulPreview, 'decision' | 'change' | 'fiveKV2'> = {}
 ): SuccessfulPreview {
   const changes = planPreviewChanges(result, today);
   const value: SuccessfulPreview = {
@@ -407,6 +423,39 @@ export function previewRunWalk(
     ...built.notes,
     ...(conflicts?.conflicts ?? [])
   ]);
+}
+
+/**
+ * 08b: pregled prilagođavanja plana 5K v2 iz činjenica (dnevnik sa uvozom, bol, testovi, sinhronizacija; potvrda
+ * „zapis za proteklih N dana je potpun" i prijavljene pauze iz toka). Ne upisuje ništa; primena = `commitPlanChange`
+ * (nova revizija). Odbijanje v2 vraća razloge doslovno.
+ */
+export function previewFiveKV2(
+  todayStr: string,
+  options: {
+    confirmedDays?: number | null;
+    breaks?: ReadonlyArray<{ from: string; to: string }>;
+  } = {}
+): PlanChangePreview {
+  const t = useTrainingStore.getState();
+  const today = parseIsoDate(todayStr);
+  if (!t.genPlan || !today || !isFiveKV2Plan(t.genPlan))
+    return { ok: false, reason: 'Prilagođavanje v2 traži plan 5K v2 i ispravan datum.' };
+  const out = fiveKV2AdaptPreview(
+    t.genPlan,
+    today,
+    { ...replanContext(), facts: fiveKV2Sources(options.confirmedDays ?? null) },
+    options.breaks ?? []
+  );
+  if (!out.ok)
+    return {
+      ok: false,
+      reason: 'Plan nije prilagođen. Razlozi:',
+      reasons: [...out.reasons.map((x) => x.message), ...out.notes]
+    };
+  return preview(out.result, today, 'execution', out.summary, out.notes, {
+    fiveKV2: { reasons: out.reasons, weeks: out.weeks, coverage: out.coverage, needed: out.needed }
+  });
 }
 
 export function previewRestore(revisionId: string, todayStr: string): PlanChangePreview {

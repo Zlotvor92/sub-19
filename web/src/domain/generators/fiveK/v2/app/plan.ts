@@ -9,6 +9,7 @@
      doslovno (`goalAssessment`). Ceo izlaz v2 je u `fiveKV2` (osnova adaptacije, 08b). */
 
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
+import { baseVdot } from '../steps.ts';
 import type {
   FiveKV2Plan,
   FiveKV2RunWalkPlan,
@@ -226,11 +227,8 @@ function runWalkDay(start: IsoDate, d: RunWalkDay, easyPace: number | null): Gen
 }
 
 function runWalkWeeks(plan: FiveKV2RunWalkPlan): GeneratedWeek[] {
-  // Prelaz na kontinuirani plan (Odluka 8) nastaje samo adaptacijom (08b); generator ga ne pravi.
-  if (plan.continuous)
-    throw new Error('5K v2: plan sa prelazom na kontinuirani plan je deo adaptacije (08b).');
   const pace = plan.input.typicalEasyPaceSecPerKm ?? null;
-  return plan.weeks.map((wk) => {
+  const weeks = plan.weeks.map((wk) => {
     const start = wk.startDate as IsoDate;
     const byDate = new Map<IsoDate, GeneratedDay>(
       wk.days.map((d) => [d.date as IsoDate, runWalkDay(start, d, pace)])
@@ -238,22 +236,32 @@ function runWalkWeeks(plan: FiveKV2RunWalkPlan): GeneratedWeek[] {
     const days = fillWeek(start, byDate);
     return { w: wk.index, vol: sumKm(days), days, deload: false, focus: wk.notes.join(' ') };
   });
+  // 08b: prelaz (Odluka 8, samo iz adaptacije) — od nedelje `fromWeek` kontinuirani plan početnika; njegove nedelje
+  // se nastavljaju brojem nedelje aplikacije.
+  const cont = plan.continuous;
+  if (!cont) return weeks;
+  const offset = cont.fromWeek - 1;
+  return [...weeks, ...continuousWeeks(cont.plan).map((w) => ({ ...w, w: w.w + offset }))];
 }
 
 const isRunWalk = (p: AnyV2Plan): p is FiveKV2RunWalkPlan => p.planType === 'runWalk';
 
-function goalOf(plan: AnyV2Plan): PlanMeta['goalAssessment'] {
+export function goalOf(plan: AnyV2Plan): PlanMeta['goalAssessment'] {
   if (isRunWalk(plan))
     return { status: 'finish', label: GOAL_LABEL.finish, message: plan.goal.message };
   const g = plan.goal;
   return g ? { status: g.status, label: GOAL_LABEL[g.status], message: g.message } : undefined;
 }
 
-/** Napomene i upozorenja plana za „Na šta da paziš" (doslovno iz v2, bez ponavljanja). */
+/** Napomene i upozorenja plana za „Na šta da paziš" (doslovno iz v2, bez ponavljanja; posle prelaza i kontinuiranog
+ *  dela). */
 function planWarnings(plan: AnyV2Plan): string[] {
   const out: string[] = [];
-  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)])
-    if (t && !out.includes(t)) out.push(t);
+  const cont = isRunWalk(plan) ? plan.continuous?.plan : undefined;
+  const all = [plan, ...(cont ? [cont] : [])];
+  for (const p of all)
+    for (const t of [...p.notes, ...p.warnings.map((v) => v.message)])
+      if (t && !out.includes(t)) out.push(t);
   return out;
 }
 
@@ -271,6 +279,7 @@ export function generatedPlan(plan: AnyV2Plan): GeneratedV2Plan {
   const input = plan.input;
   const vdot = isRunWalk(plan) ? null : plan.vdot;
   const goal = goalOf(plan);
+  const cont = isRunWalk(plan) ? (plan.continuous?.plan ?? null) : null;
   const meta = {
     policyId: POLICY_ID,
     policyVersion: POLICY_VERSION,
@@ -281,11 +290,13 @@ export function generatedPlan(plan: AnyV2Plan): GeneratedV2Plan {
     raceName: '5K',
     goalSec: input.goalTimeSec ?? null,
     runDays: input.runDays.length,
-    quality: isRunWalk(plan) ? 0 : plan.pattern.q2 ? 2 : 1,
+    quality: isRunWalk(plan) ? (cont ? (cont.pattern.q2 ? 2 : 1) : 0) : plan.pattern.q2 ? 2 : 1,
     dayWarnings: planWarnings(plan),
     ...(vdot !== null && !isRunWalk(plan)
       ? {
-          vdot0: vdot,
+          // 08b: polazna forma = forma ulaza (posle novog rezultata `trainingVdot` je tekuća); bez rezultata u ulazu
+          // (plan po osećaju koji je prešao na tempo) polazna je prva izmerena.
+          vdot0: baseVdot(input) ?? vdot,
           trainingVdot: vdot,
           racePace: (plan.paces as { RP: number }).RP,
           ...(plan.goal?.goalVdot != null ? { goalVdot: plan.goal.goalVdot } : {})
@@ -343,16 +354,18 @@ export function phaseOfWeek(
   return w && typeof w.phase === 'string' && PHASES.includes(w.phase) ? (w.phase as WeekPhase) : '';
 }
 
-/** Faza nedelje iz plana v2 (`fiveKV2`); bez njega ostaje upisana. */
+/** Faza nedelje iz plana v2 (`fiveKV2`; posle prelaza i kontinuirani deo, brojem nedelje aplikacije); bez njega ostaje
+ *  upisana. */
 function phasesFrom(plan: unknown): Map<number, WeekPhase> {
   const out = new Map<number, WeekPhase>();
+  type W = ReadonlyArray<{ index: number; phase: Phase | 'runWalk'; deload?: boolean }>;
+  const put = (weeks: W, offset: number): void => {
+    for (const w of weeks) out.set(w.index + offset, w.deload ? 'DELOAD' : (PHASE[w.phase] ?? ''));
+  };
   const p = plan as Partial<AnyV2Plan> | null | undefined;
-  for (const w of (p?.weeks ?? []) as ReadonlyArray<{
-    index: number;
-    phase: Phase | 'runWalk';
-    deload?: boolean;
-  }>)
-    out.set(w.index, w.deload ? 'DELOAD' : (PHASE[w.phase] ?? ''));
+  put(p?.weeks ?? [], 0);
+  const cont = (p as Partial<FiveKV2RunWalkPlan> | null | undefined)?.continuous;
+  if (cont && Array.isArray(cont.plan?.weeks)) put(cont.plan.weeks, cont.fromWeek - 1);
   return out;
 }
 

@@ -13,12 +13,25 @@ export const statusOf = (log: Log, id: string): string => {
   return s ? s : 'pending';
 };
 
-/** Kilometri koje plan traži za nedelju (trenutni, posle izmena). */
+/** 5k-v2 (08b): dan trke sa strukturom generatora je VAN obima nedelje, kao u planu v2 (trka se prikazuje posebno).
+ *  Ručno izmenjen dan trke (bez strukture) i dani planova bez strukture računaju se kao do sada. */
+export const outsideWeekVolume = (d: Pick<ResolvedDay, 'tag' | 'structure'>): boolean =>
+  d.tag === 'trka' && d.structure != null;
+
+/** Kilometri koje plan traži za nedelju (trenutni, posle izmena; trka plana v2 van obima). */
 export const weekPlanKm = (w: Pick<ResolvedWeek, 'days'>): number =>
-  w.days.reduce((s, d) => s + (d.km || 0), 0);
+  w.days.reduce((s, d) => s + (outsideWeekVolume(d) ? 0 : d.km || 0), 0);
 
 export const weekRealKm = (w: Pick<ResolvedWeek, 'days'>, log: Log): number =>
-  w.days.reduce((s, d) => s + realKm(log, d), 0);
+  w.days.reduce((s, d) => s + (outsideWeekVolume(d) ? 0 : realKm(log, d)), 0);
+
+/** Trka van obima nedelje (plan v2): km same trke i km dana (sa zagrevanjem i hlađenjem); `null` kad je nema. */
+export function weekRace(w: Pick<ResolvedWeek, 'days'>): { raceKm: number; dayKm: number } | null {
+  const d = w.days.find(outsideWeekVolume);
+  if (!d) return null;
+  const race = d.structure?.blocks.find((b) => b.step.kind === 'race')?.step.km ?? null;
+  return { raceKm: race ?? d.km ?? 0, dayKm: d.km ?? 0 };
+}
 
 /** Dan snage na kom je upisano i trčanje broji se kao trčanje. */
 const strengthWithRun = (d: ResolvedDay, log: Log): boolean =>

@@ -2,12 +2,13 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.6.0`) je u aplikaciji IZA PREKIDAČA (segment 08a): `ui.generatorV2FiveK` (podrazumevano
-isključen) / `VITE_FIVEK_V2` → nov 5K plan iz čarobnjaka ide kroz adapter `fiveK/v2/app/`; plan nosi `5k-v2` i bira se
-po oznaci politike (postojeći 5K planovi ostaju v1). Generisanje (sa rezultatom, po osećaju, početnik, trčanje/hodanje),
-čuvanje (backup/uvoz), prikaz i sat čitaju strukturu v2 (`structure`); ocena cilja doslovno. Adaptacija i predlozi
-(izvršenje, bol, pauza, run/walk napredak, predlog tempa) su eksplicitno nepodržani u aplikaciji do 08b („stiže uskoro").
-Jezgro (`adaptFiveKV2` itd.) nepromenjeno. Sledeće: 08b — povezivanje adaptacije (izvor `coverage`, činjenice iz dnevnika).
+Trenutno stanje: 5K v2 (`5k-v2.6.0`) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
+aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`: dnevnik + uvoz, bol, test 3 km, unete trke, pokrivenost samo uz
+uspešnu sinhronizaciju danas ili potvrdu korisnika, prijavljene pauze, ručne izmene posle poslednje adaptacije) →
+`adaptFiveKV2` → pregled (razlozi doslovno, nedelje) → potvrda → revizija; vraćanje revizije, traka „Plan treba
+prilagoditi" (bez upisa), promena cilja (samo ocena), Forma iz rezultata. Jezgro (`policy.ts`, konstrukcija, assess)
+nepromenjeno. Sledeće: odluka o uključivanju za korisnike (v. „Šta ostaje" u izveštaju 08b).
 Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segmenti 01–05b (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
@@ -59,3 +60,15 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   ceo E2E 67/79 — 12 padova (generator-ab-users 10, pwa 2) isti na 7fa61eb (nisu od 08a).
 - Izveštaj: `reports/SEGMENT-08a-IMPLEMENTATION.md`.
 
+## Segment 08b — adaptacija 5K v2 u aplikaciji + popravke 08a (2026-10-17)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: ed5974e
+- Novo u `fiveK/v2/app/`: `facts.ts`, `adapt.ts` (pregled, vraćanje, cilj, traka), `members.ts` (ugovor b; zamenjuje
+  `unsupported.ts`), `form.ts`; prikaz prelaza run/walk → kontinuirani. UI: `FiveKV2Adjustment`, `FormV2`, trake, Ti → Cilj.
+- Ugovor (b): 24/26 mapirano (činjenice/rezultati ili eksplicitno „ne koristi se"); nepodržano sa razlogom:
+  `executionBasis`, `realignPlan`.
+- Popravke: prekidač (10), `generator-ab-users` dokaz razlike = samo policyId/Version i faza → 10/10 (11), km nedelje bez
+  trke (12), izmena samo tempa čuva strukturu (13); `pwa.spec` 2/2 sa 120 s, test nije diran.
+- Provere: tsc domena i `tsc -b` exit 0; generators 29 / 739; `npm run check` exit 0 (191 / 2380); E2E `fivek-v2` 3/3,
+  `generator-ab-users` 10/10; ceo E2E 78/80 — `pwa` 2 (istek kad rade 2 radnika; sa 1 radnikom 2/2).
+- Izveštaj: `reports/SEGMENT-08b-IMPLEMENTATION.md`.

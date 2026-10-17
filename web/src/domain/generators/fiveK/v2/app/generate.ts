@@ -35,7 +35,8 @@ export function alignedStart(raceDate: string, today: string): string | null {
   return weeks >= 1 ? addDays(raceDate as IsoDate, -7 * weeks + 1) : null;
 }
 
-function rejection(r: {
+/** Odbijanje v2 (razlozi + greške validatora) doslovno, u obliku razmene. */
+export function rejection(r: {
   reasons: readonly PlanRejectionReason[];
   violations: readonly { rule: string; severity: string; message: string; week?: number }[];
 }): PlanRejectionReason[] {

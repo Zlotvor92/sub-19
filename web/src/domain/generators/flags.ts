@@ -26,3 +26,11 @@ export function generatorFlags(sources: {
 }): GeneratorFlags {
   return { fiveKV2: fiveKV2Enabled(sources) };
 }
+
+/** 08b: prekidač u podešavanjima vidi samo razvoj (postavljen `VITE_FIVEK_V2`, bilo koja vrednost) ili administrator
+ *  (vlasnik naloga — postojeći mehanizam aplikacije). Ponašanje podešavanja se ne menja; sakriven prekidač samo nije
+ *  ponuđen (sačuvano `true` i dalje važi). */
+export function fiveKV2ToggleVisible(sources: { devOverride: unknown; isAdmin: boolean }): boolean {
+  const o = typeof sources.devOverride === 'string' ? sources.devOverride.trim() : '';
+  return o !== '' || sources.isAdmin === true;
+}

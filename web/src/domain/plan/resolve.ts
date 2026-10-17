@@ -5,7 +5,7 @@
 
 import { addDays, isIsoDate, parseIsoDate, type IsoDate } from '../date';
 import type { AltRecord, StoredWeek } from '../state';
-import type { Session } from '../training/types';
+import type { Session, WorkoutStructure } from '../training/types';
 import type { DayOrigin, ResolvedDay, ResolvedPlan, ResolvedWeek } from './types';
 
 export interface Overlay {
@@ -24,6 +24,29 @@ function keepsStructure(alt: AltRecord, origin: DayOrigin): boolean {
     (alt.km ?? null) === origin.km &&
     alt.desc === (origin.desc ?? '')
   );
+}
+
+/** 5k-v2 (08b): ručni tempo izmene koja menja SAMO tempo ide u korake rada strukture (zagrevanje, oporavak, ubrzanja,
+ *  hlađenje ostaju). Zadata veličina koraka ostaje, procenjena se računa iz novog tempa; zbir treninga prati razliku. */
+function withWorkPace(s: WorkoutStructure, pace: number): WorkoutStructure {
+  let dKm = 0;
+  let dSec = 0;
+  const blocks = s.blocks.map((b) => {
+    const st = b.step;
+    if (st.kind !== 'work' || st.paceSec === pace) return b;
+    const byTime = st.secBasis === 'exact' && st.sec != null;
+    const km = byTime ? Math.round((st.sec! / pace) * 100) / 100 : st.km;
+    const sec = !byTime && st.km != null ? Math.round(st.km * pace) : st.sec;
+    dKm += b.reps * ((km ?? 0) - (st.km ?? 0));
+    dSec += b.reps * ((sec ?? 0) - (st.sec ?? 0));
+    return { ...b, step: { ...st, paceSec: pace, km, sec } };
+  });
+  return {
+    ...s,
+    blocks,
+    km: s.km == null ? null : Math.round((s.km + dKm) * 100) / 100,
+    sec: s.sec == null ? null : Math.round(s.sec + dSec)
+  };
 }
 
 export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): ResolvedPlan {
@@ -91,7 +114,8 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         if (!keepsStructure(alt, origin)) {
           resolved.session = undefined;
           delete resolved.structure;
-        }
+        } else if (resolved.structure && alt.pace != null && alt.pace > 0)
+          resolved.structure = withWorkPace(resolved.structure, alt.pace);
       }
       byId.set(id, resolved);
       if (!isTest) {

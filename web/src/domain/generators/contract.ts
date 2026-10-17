@@ -165,6 +165,21 @@ export interface ReplanContext {
   moves?: Readonly<Record<string, unknown>>;
   pred?: Readonly<Record<string, unknown>>;
   predLock?: Readonly<Record<string, unknown>>;
+  /** 08b: ostale činjenice aplikacije za adaptaciju generatora koji ih čita sam (5K v2); ostali ih ne čitaju. */
+  facts?: AdaptationSources;
+}
+/** 08b: činjenice van dnevnika (bol, testovi 3 km, trčanja pre plana, sinhronizacija, potvrda zapisa, prijavljene
+ *  pauze) u formatu aplikacije; prevod u činjenice generatora radi generator (5K v2: `fiveK/v2/app/facts.ts`). */
+export interface AdaptationSources {
+  pain?: readonly PainRecord[];
+  tests?: readonly T3kRecord[];
+  outOfPlan?: Readonly<Record<string, number>>;
+  /** Povezani izvori sinhronizacije treninga i dan poslednje USPEŠNE sinhronizacije (`null` = nijedne). */
+  sync?: ReadonlyArray<{ source: 'strava' | 'icu'; lastSuccessDate: IsoDate | null }>;
+  /** Korisnik potvrdio „zapis za proteklih N dana je potpun" (u toku prilagođavanja). */
+  confirmedDays?: number | null;
+  /** Eksplicitno prijavljene pauze (od–do). */
+  breaks?: ReadonlyArray<{ from: string; to: string }>;
 }
 export interface ExecutionWeek {
   start: IsoDate;

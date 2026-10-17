@@ -13,18 +13,17 @@ import {
 } from '../../../../state';
 import { fiveKV2Enabled, generatorFlags } from '../../../flags';
 import {
-  ADAPTATION_UNSUPPORTED,
   FIVE_K_GENERATOR,
   FIVE_K_V2_GENERATOR,
   HALF_MARATHON_GENERATOR,
   MARATHON_GENERATOR,
   TEN_K_GENERATOR,
   UNKNOWN_POLICY,
-  adaptationUnsupportedFor,
   generateFiveKV2Plan,
   generatorForDistance,
   generatorForNewPlan,
   generatorForPlan,
+  isFiveKV2Plan,
   phaseReaderFor,
   stampForStorage,
   unsupportedPlanReason,
@@ -230,8 +229,9 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     const v2 = planOf(WITH_RESULT);
     expect(JSON.stringify(stampForStorage(v2))).toBe(JSON.stringify(v2));
     expect(phaseReaderFor(v2)(view(v2).weeks[2], 10)).toBe('DELOAD');
-    expect(adaptationUnsupportedFor(v2)).toBe(ADAPTATION_UNSUPPORTED);
-    expect(adaptationUnsupportedFor(v1)).toBeNull();
+    // 08b: plan v2 se prilagođava tokom v2 (činjenice → pregled → potvrda); v1 plan kao do sada.
+    expect(isFiveKV2Plan(v2)).toBe(true);
+    expect(isFiveKV2Plan(v1)).toBe(false);
   });
 });
 
@@ -341,7 +341,7 @@ describe('izvoz na sat iz strukture', () => {
   });
 });
 
-describe('ugovor: (a) v2, (b) nepodržano do 08b, (c) sopstvena kopija procene stanja', () => {
+describe('ugovor: (a) v2, (b) adaptacija v2 (08b), (c) sopstvena kopija procene stanja', () => {
   const A = [
     'id',
     'policyId',
@@ -413,23 +413,14 @@ describe('ugovor: (a) v2, (b) nepodržano do 08b, (c) sopstvena kopija procene s
     for (const k of keys) if (typeof g[k] === 'function') expect(g[k], k).not.toBe(old[k]);
   });
 
-  it('(b) adaptacija/predlog: eksplicitno odbijanje sa porukom ili „nema predloga", nikad stari generator', () => {
+  it('(b) adaptacija/predlog (08b): kroz činjenice i adaptFiveKV2 (detalji: adapt.node.test.ts), nikad stari generator', () => {
     const g: PlanGenerator = FIVE_K_V2_GENERATOR;
     const p = planOf(WITH_RESULT);
     const today = '2026-11-20' as IsoDate;
-    const err = { error: ADAPTATION_UNSUPPORTED };
-    expect(g.planWithNewGoal(p, 1400, today)).toEqual(err);
-    expect(g.planRecalibrated(p, 40, today)).toEqual(err);
-    expect(g.buildExecutionAdjustment(p, today, null as never, {})).toEqual(err);
-    expect(g.buildRunWalkAdjustment(p, today, null as never, { mode: 'hold' })).toEqual(err);
-    expect(g.executionBasis(p, today, null as never, {})).toEqual(err);
-    expect(g.executionModel(view(p), today, {}).recommendation).toMatchObject({
-      kind: null,
-      actionable: false,
-      reason: ADAPTATION_UNSUPPORTED
-    });
-    expect(g.assessRunWalkProgress({ plan: view(p), log: {}, today }).advice).toBe(
-      ADAPTATION_UNSUPPORTED
+    // Bez činjenica: pregled bez promene budućeg dela; predloga po danu (bol, tempo) nema.
+    const r = g.buildExecutionAdjustment(p, today, null as never, {});
+    expect('error' in r ? r.error : r.summary).toBe(
+      'Prilagođavanje 2026-11-20: bez novih činjenica'
     );
     expect(g.vdotProposal({} as never)).toBeNull();
     expect(g.injuryProposal({} as never, today)).toBeNull();
@@ -437,10 +428,7 @@ describe('ugovor: (a) v2, (b) nepodržano do 08b, (c) sopstvena kopija procene s
     expect(g.recalibrationMinMeasurements).toBe(Number.POSITIVE_INFINITY);
     const graft = g.graftFuturePlan(p, p, today);
     expect(graft.weeks).toEqual(p.weeks);
-    expect(graft.meta?.['futureChanges']).toEqual({
-      changedDays: 0,
-      conflicts: [ADAPTATION_UNSUPPORTED]
-    });
+    expect(graft.meta?.['futureChanges']).toEqual({ changedDays: 0, conflicts: [] });
   });
 
   it('(c) procena stanja: iste vrednosti kao fiveK (posebna kopija)', () => {

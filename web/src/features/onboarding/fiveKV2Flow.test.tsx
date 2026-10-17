@@ -114,7 +114,7 @@ describe('5K v2 iza prekidača', () => {
     expect(v.rows?.some((r) => r[0] === 'Zagrevanje')).toBe(true);
   });
 
-  it('prilagođavanje v2 plana: poruka „stiže uskoro", bez predloga starog generatora', async () => {
+  it('prilagođavanje v2 plana (08b): tok v2 sa pregledom, bez predloga starog generatora', async () => {
     hydratePersisted(state(true));
     const user = userEvent.setup();
     const { unmount } = renderWizard();
@@ -132,7 +132,9 @@ describe('5K v2 iza prekidača', () => {
     unmount();
     useUIStore.setState({ today: '2026-02-03' });
     render(<AdjustPlan />);
-    expect(screen.getByText(/Prilagođavanje plana stiže uskoro/)).toBeTruthy();
+    // 08b: tok prilagođavanja v2 (pregled iz činjenica, potvrda), ne alati v1.
+    expect(screen.getByRole('heading', { name: 'Prilagođavanje plana' })).toBeTruthy();
+    expect(document.getElementById('plan-change-preview')).not.toBeNull();
     expect(screen.queryByText('Prilagođavanje prema izvršenju')).toBeNull();
   });
 

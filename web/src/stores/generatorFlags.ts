@@ -6,9 +6,11 @@ import {
   FIVE_K_V2_ENV,
   FIVE_K_V2_SETTING,
   fiveKV2Enabled,
+  fiveKV2ToggleVisible,
   generatorFlags
 } from '../domain/generators/flags';
 import type { GeneratorFlags } from '../domain/generators/select';
+import { useIsOwner } from './owner';
 import { useSettingsStore } from './settingsStore';
 
 const env = import.meta.env as Record<string, string | undefined>;
@@ -37,3 +39,9 @@ export function useFiveKV2Setting(): { on: boolean; setting: boolean; forced: bo
 
 export const setFiveKV2Setting = (on: boolean): void =>
   useSettingsStore.getState().patchUi({ [FIVE_K_V2_SETTING]: on });
+
+/** 08b: da li se prekidač nudi u podešavanjima (razvoj ili administrator). */
+export function useFiveKV2ToggleVisible(): boolean {
+  const owner = useIsOwner();
+  return fiveKV2ToggleVisible({ devOverride: devOverride(), isAdmin: owner });
+}

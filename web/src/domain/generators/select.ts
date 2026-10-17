@@ -31,6 +31,7 @@ import type { IsoDate } from '../date';
 import type {
   Acwr,
   AcwrBand,
+  AdaptationSources,
   ApplyResult,
   Assessment,
   ChoiceResult,
@@ -105,6 +106,7 @@ export const UNSUPPORTED_DISTANCE =
 
 /* --- tipovi tereta (deklarisani u `./contract.ts`) --- */
 export type {
+  AdaptationSources,
   DistanceProduct,
   ResolvedPlanView,
   InjuryProposal,
@@ -155,6 +157,8 @@ export type MeasureOutcome =
       reason: 'no-row' | 'no-pace' | 'out-of-table' | 'impossible' | 'auto-outlier';
     }
   | { status: 'not-measured'; measured: number; reason?: 'short-repetition' | 'race-prescription' }
+  /** 08b (5K v2): plan ne uzima formu iz tempa treninga (tempo menja samo rezultat) — nije greška merenja. */
+  | { status: 'not-used'; reason: 'plan-uses-results'; message: string }
   | { status: 'accepted'; measured: number };
 /** Politika prijema merenja forme generatora aktivnog plana: klasifikacija (tolerancija automatskog merenja), uglađivanje
  *  lanca (α po tipu sesije) i trenutna forma. Aplikacija čuva sirova merenja (`vdotLog.measured`, datum, ID izvora). */
@@ -495,8 +499,8 @@ export const TEN_K_GENERATOR: PlanGenerator = {
 
 /* 5K v2 (segment 08a): sopstveni generator 5K distance, biran po oznaci politike plana (`5k-v2`) — postojeći planovi
    (`5k-v1`, `legacy-5k`) ostaju na `FIVE_K_GENERATOR` i nikad se ne prebacuju. Raspodela članova: (a) v2 sam
-   (generisanje, oznake, faza, procena, proizvod, tempo/prag/napor, sat iz strukture); (b) adaptacija i predlog —
-   eksplicitno nepodržano do 08b (`ADAPTATION_UNSUPPORTED`, bez zamene starim generatorom); (c) procena stanja i vreme —
+   (generisanje, oznake, faza, procena, proizvod, tempo/prag/napor, sat iz strukture); (b) adaptacija i predlog (08b) —
+   kroz činjenice i `adaptFiveKV2` sa pregledom pre upisa, bez zamene starim generatorom; (c) procena stanja i vreme —
    sopstvena kopija v2 sa istim vrednostima (v. `fiveK/v2/app/index.ts`). */
 const v2 = fiveK.fiveKV2;
 export const FIVE_K_V2_GENERATOR: PlanGenerator = {
@@ -522,7 +526,10 @@ export const FIVE_K_V2_GENERATOR: PlanGenerator = {
   assessRunWalkProgress: v2.assessRunWalkProgress,
   qualityEntryGate: v2.qualityEntryGate,
   hasRecentMeasuredForm: v2.hasRecentMeasuredForm,
-  planWithNewGoal: v2.planWithNewGoal,
+  // 08b: isti treninzi, nova ocena cilja. Plan v2 nema ulaz čarobnjaka v1 (`ulaz`), pa ga rezultat ne nosi; pozivalac
+  // ga spaja preko postojećeg plana (`{ ...genPlan, ...r }`) i ne čita ga.
+  planWithNewGoal: (plan, sec, today) =>
+    v2.planWithNewGoal(plan, sec, today) as unknown as GoalChangeResult | ReplanError,
   planRecalibrated: v2.planRecalibrated,
   graftFuturePlan: v2.graftFuturePlan,
   alignAutomaticOverlays: v2.alignAutomaticOverlays,
@@ -557,8 +564,24 @@ export const FIVE_K_V2_GENERATOR: PlanGenerator = {
   ACWR_SCALE: v2.ACWR_SCALE
 } satisfies PlanGenerator;
 
-/** Poruka u UI-ju umesto prilagođavanja plana 5K v2 (08b). */
-export const ADAPTATION_UNSUPPORTED: string = v2.ADAPTATION_UNSUPPORTED;
+/** 08b: pregled prilagođavanja plana 5K v2 iz činjenica (dnevnik, izmene + `ctx.facts`, dodatne prijavljene pauze).
+ *  Ne upisuje ništa: plan za upis, razlozi v2 doslovno, promenjene nedelje, pokrivenost; ili odbijanje sa razlozima. */
+export const fiveKV2AdaptPreview = (
+  plan: GenPlanState,
+  today: IsoDate,
+  ctx: ReplanContext,
+  extraBreaks: ReadonlyArray<{ from: string; to: string }> = []
+) => v2.adaptPreview(v2.sourceOf(plan, today, ctx, extraBreaks));
+/** 08b: promena cilja plana 5K v2 — isti treninzi, nova ocena cilja; ili odbijanje sa razlozima. */
+export const fiveKV2GoalChange = (plan: GenPlanState, goalSec: number, today: IsoDate) =>
+  v2.goalChange(plan, goalSec, today);
+/** 08b: Napredak → Forma za plan 5K v2 (VDOT iz rezultata, ocena cilja); `null` kad plan nije v2. */
+export const fiveKV2FormHistory = (src: {
+  plan: GenPlanState;
+  today: IsoDate;
+  tests?: readonly T3kRecord[];
+  log?: Readonly<Record<string, LogEntry>>;
+}) => v2.formHistory(src);
 
 /** Nov 5K plan generatorom v2 (čarobnjak uz uključen prekidač): plan za upis ili razlozi odbijanja v2. */
 export const generateFiveKV2Plan = (input: StructuredPlanInput): StructuredPlanResult =>
@@ -773,9 +796,9 @@ export function generatorForNewPlan(
   return generator === FIVE_K_GENERATOR && flags.fiveKV2 ? FIVE_K_V2_GENERATOR : generator;
 }
 
-/** Poruka umesto prilagođavanja kad generator plana adaptaciju još nema (5K v2 do 08b); inače `null`. */
-export function adaptationUnsupportedFor(plan: GenPlanState | null | undefined): string | null {
-  return generatorForPlan(plan) === FIVE_K_V2_GENERATOR ? ADAPTATION_UNSUPPORTED : null;
+/** 08b: plan 5K v2 (prilagođavanje kroz činjenice i pregled v2, ne kroz alate v1). */
+export function isFiveKV2Plan(plan: GenPlanState | null | undefined): boolean {
+  return generatorForPlan(plan) === FIVE_K_V2_GENERATOR && v2.isV2Plan(plan);
 }
 
 /** Poruka za plan čiju je politiku upisala verzija generatora koju ova aplikacija ne poznaje. */

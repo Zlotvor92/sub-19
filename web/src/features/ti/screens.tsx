@@ -15,9 +15,13 @@ import { useAuthStore } from '../../stores/authStore';
 import { useIsOwner } from '../../stores/owner';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
-import { adaptationUnsupportedFor } from '../../domain/generators/select';
-import { useFiveKV2Setting, setFiveKV2Setting } from '../../stores/generatorFlags';
-import { changeGoalTime } from '../plan/planActions';
+import { isFiveKV2Plan } from '../../domain/generators/select';
+import {
+  useFiveKV2Setting,
+  useFiveKV2ToggleVisible,
+  setFiveKV2Setting
+} from '../../stores/generatorFlags';
+import { changeGoalTime, changeGoalTimeV2 } from '../plan/planActions';
 import { GoalAssessmentLine } from '../plan/GoalAssessment';
 import { useFormModel } from '../race/useFormModel';
 import { AccountBody, useAccountInfo } from './accountSection';
@@ -140,9 +144,43 @@ export function GoalScreen() {
             </p>
           </Help>
         </Section>
-      ) : genPlan && adaptationUnsupportedFor(genPlan) ? (
-        <Section>
-          <p className="note-src">{adaptationUnsupportedFor(genPlan)}</p>
+      ) : genPlan && isFiveKV2Plan(genPlan) ? (
+        <Section title="Promeni ciljno vreme">
+          <div className="f-field">
+            <label htmlFor="pl-goal">Novo ciljno vreme</label>
+            <input
+              id="pl-goal"
+              inputMode="numeric"
+              placeholder={m.goalText}
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+            />
+          </div>
+          <div className="btnrow start">
+            <button
+              type="button"
+              className="btn"
+              id="pl-goal-ok"
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void changeGoalTimeV2(genPlan, goal, today)
+                  .then((ok) => {
+                    if (ok) setGoal('');
+                  })
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Promeni cilj
+            </button>
+          </div>
+          <Help summary="Šta se menja kad promeniš cilj">
+            <p>
+              U planu 5K v2 cilj se samo <b>procenjuje</b> (izvodljiv, ambiciozan, nerealan…) iz
+              trenutne forme. Treninzi, tempo i obim ostaju isti — tempo menja samo nov rezultat
+              (test 3 km ili trka), kroz Plan → Prilagodi plan.
+            </p>
+          </Help>
         </Section>
       ) : genPlan ? (
         <Section>
@@ -172,15 +210,19 @@ export function GoalScreen() {
 /* ------------------------------------------------------------- Zone i postavke treninga */
 
 export function TrainingSettingsScreen() {
+  /* 08b: prekidač 5K v2 vidi samo razvoj (VITE_FIVEK_V2) ili administrator. */
+  const toggle = useFiveKV2ToggleVisible();
   return (
     <ScreenFrame>
       <Head title="Zone i postavke treninga" />
       <Section title="Zone pulsa">
         <ZonesList />
       </Section>
-      <Section title="Generator plana">
-        <FiveKV2Toggle />
-      </Section>
+      {toggle ? (
+        <Section title="Generator plana">
+          <FiveKV2Toggle />
+        </Section>
+      ) : null}
       <Section title="Vreme i lokacija">
         <WeatherBody />
       </Section>
@@ -431,8 +473,8 @@ function FiveKV2Toggle() {
         Novi 5K plan pravi generator v2 (probno)
       </label>
       <p className="note-src">
-        Važi samo za novi 5K plan iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje v2 plana
-        stiže uskoro.
+        Važi samo za novi 5K plan iz čarobnjaka. Postojeći plan se ne menja. Plan v2 se prilagođava
+        kroz Plan → Prilagodi plan (pregled pa potvrda).
         {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
       </p>
     </>

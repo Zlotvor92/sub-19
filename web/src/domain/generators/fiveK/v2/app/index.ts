@@ -3,16 +3,19 @@
    (`satisfies PlanGenerator`) i bira ga po oznaci politike plana (`5k-v2`).
 
    Raspodela ugovora: (a) v2 implementira sam — generisanje, oznake i faza, procena za čarobnjak, proizvod, tempo po
-   zoni, prag, napor dana, izvoz na sat iz strukture; (b) adaptacija i predlog — eksplicitno nepodržano do 08b
-   (`./unsupported.ts`); (c) prikaz stanja (bol, opterećenje, spremnost, vreme) — sopstvena kopija sa istim vrednostima
-   kao fiveK (`./state/`, `./weather.ts`). */
+   zoni, prag, napor dana, izvoz na sat iz strukture; (b) adaptacija i predlog — 08b: kroz činjenice (`./facts.ts`) i
+   `adaptFiveKV2` (`./adapt.ts`, `./members.ts`), uz pregled pre upisa; (c) prikaz stanja (bol, opterećenje, spremnost,
+   vreme) — sopstvena kopija sa istim vrednostima kao fiveK (`./state/`, `./weather.ts`). */
 
+import * as adapt from './adapt.ts';
+import * as facts from './facts.ts';
+import * as form from './form.ts';
 import * as gen from './generate.ts';
 import * as plan from './plan.ts';
 import * as paces from './paces.ts';
 import * as state from './state/index.ts';
 import * as readiness from './state/readiness.ts';
-import * as no from './unsupported.ts';
+import * as b from './members.ts';
 import * as watch from './watch.ts';
 import * as weather from './weather.ts';
 
@@ -37,34 +40,39 @@ export const fiveKV2 = {
   thresholdPace: paces.thresholdPace,
   rpeTarget: gen.rpeTarget,
   workoutsForWatch: watch.workoutsForWatch,
-  /* (b) adaptacija i predlog — 08b */
-  ADAPTATION_UNSUPPORTED: no.ADAPTATION_UNSUPPORTED,
-  classifyMeasurement: no.classifyMeasurement,
-  recomputeVdotChain: no.recomputeVdotChain,
-  sessionClassFor: no.sessionClassFor,
-  currentVdot: no.currentVdot,
-  executionModel: no.executionModel,
-  executionBasis: no.executionBasis,
-  buildExecutionAdjustment: no.buildExecutionAdjustment,
-  buildRunWalkAdjustment: no.buildRunWalkAdjustment,
-  assessRunWalkProgress: no.assessRunWalkProgress,
-  qualityEntryGate: no.qualityEntryGate,
-  hasRecentMeasuredForm: no.hasRecentMeasuredForm,
-  planWithNewGoal: no.planWithNewGoal,
-  planRecalibrated: no.planRecalibrated,
-  graftFuturePlan: no.graftFuturePlan,
-  alignAutomaticOverlays: no.alignAutomaticOverlays,
-  vdotProposal: no.vdotProposal,
-  applyVdotProposal: no.applyVdotProposal,
-  undoVdotAdjustments: no.undoVdotAdjustments,
-  fitnessEvidence: no.fitnessEvidence,
-  planVdotNow: no.planVdotNow,
-  matchPlanRows: no.matchPlanRows,
-  RECALIBRATION_MIN_MEASUREMENTS: no.RECALIBRATION_MIN_MEASUREMENTS,
-  RECALIBRATION_THRESHOLD: no.RECALIBRATION_THRESHOLD,
-  injuryProposal: no.injuryProposal,
-  applyInjuryProposal: no.applyInjuryProposal,
-  realignPlan: no.realignPlan,
+  /* (b) adaptacija i predlog (08b): pregled, primena, vraćanje, cilj, forma iz rezultata */
+  adaptPreview: adapt.adaptPreview,
+  goalChange: adapt.goalChange,
+  isV2Plan: (p: Parameters<typeof adapt.v2Of>[0]): boolean => adapt.v2Of(p) !== null,
+  sourceOf: b.sourceOf,
+  coverageText: facts.coverageText,
+  formHistory: form.formHistory,
+  classifyMeasurement: b.classifyMeasurement,
+  recomputeVdotChain: b.recomputeVdotChain,
+  sessionClassFor: b.sessionClassFor,
+  currentVdot: b.currentVdot,
+  executionModel: b.executionModel,
+  executionBasis: b.executionBasis,
+  buildExecutionAdjustment: b.buildExecutionAdjustment,
+  buildRunWalkAdjustment: b.buildRunWalkAdjustment,
+  assessRunWalkProgress: b.assessRunWalkProgress,
+  qualityEntryGate: b.qualityEntryGate,
+  hasRecentMeasuredForm: b.hasRecentMeasuredForm,
+  planWithNewGoal: b.planWithNewGoal,
+  planRecalibrated: b.planRecalibrated,
+  graftFuturePlan: b.graftFuturePlan,
+  alignAutomaticOverlays: b.alignAutomaticOverlays,
+  vdotProposal: b.vdotProposal,
+  applyVdotProposal: b.applyVdotProposal,
+  undoVdotAdjustments: b.undoVdotAdjustments,
+  fitnessEvidence: b.fitnessEvidence,
+  planVdotNow: b.planVdotNow,
+  matchPlanRows: b.matchPlanRows,
+  RECALIBRATION_MIN_MEASUREMENTS: b.RECALIBRATION_MIN_MEASUREMENTS,
+  RECALIBRATION_THRESHOLD: b.RECALIBRATION_THRESHOLD,
+  injuryProposal: b.injuryProposal,
+  applyInjuryProposal: b.applyInjuryProposal,
+  realignPlan: b.realignPlan,
   /* (c) prikaz stanja — sopstvena kopija */
   weatherCard: weather.weatherCard,
   painStatus: state.painStatus,

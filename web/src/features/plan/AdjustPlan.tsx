@@ -8,12 +8,13 @@ import { useIsOwner } from '../../stores/owner';
 import { applyProposal as applyInjury } from '../../stores/recoveryActions';
 import { applyProposal as applyPace, undoAdjustments } from '../../stores/raceActions';
 import { activePlanGenerator, activePlanUnsupportedReason } from '../../stores/executionActions';
-import { adaptationUnsupportedFor } from '../../domain/generators/select';
+import { isFiveKV2Plan } from '../../domain/generators/select';
 import { useUIStore } from '../../stores/uiStore';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
 import { backToOwnPlan, recalibratePlan, startNewPlan } from './planActions';
 import { useAdjustments } from './useAdjustments';
 import { ExecutionAdjustment } from './ExecutionAdjustment';
+import { FiveKV2Adjustment } from './FiveKV2Adjustment';
 
 /* PRILAGODI PLAN: jedino mesto za sve što menja plan kao celinu — predlog zbog bola, predlog tempa prema formi, preračunavanje, novi plan. Predlozi se
    pojavljuju samo kad postoje (Danas tada nosi jedan red koji vodi ovamo). Pomeranje i izmena JEDNOG dana je u Detaljima treninga. */
@@ -28,11 +29,12 @@ export function AdjustPlan() {
   const openScreen = useUIStore((s) => s.openScreen);
   const setWizard = useUIStore((s) => s.setWizard);
   if (!plan) return null;
-  /* 5K v2: adaptacija i predlozi stižu u 08b — eksplicitna poruka umesto prilagođavanja (bez starog generatora). */
-  const unsupported = adaptationUnsupportedFor(genPlan);
+  /* 5K v2 (08b): prilagođavanje iz činjenica sa pregledom i potvrdom (FiveKV2Adjustment); predlozi v1 (bol po danu,
+     tempo iz forme) ne postoje za v2 — bol i rezultati ulaze u činjenice. */
+  const v2 = isFiveKV2Plan(genPlan);
 
-  const injury = rec?.proposal ?? null;
-  const pace = adj.proposal;
+  const injury = v2 ? null : (rec?.proposal ?? null);
+  const pace = v2 ? null : adj.proposal;
 
   const applyInjuryProposal = async (): Promise<void> => {
     if (!injury) return;
@@ -114,7 +116,7 @@ export function AdjustPlan() {
             planski tempo“.
           </p>
         </Section>
-      ) : adj.adjusted ? (
+      ) : adj.adjusted && !v2 ? (
         <Section title="Tempi su prilagođeni tvojoj formi">
           <p className="prop-m">
             Ciljni tempo preostalih kvalitetnih treninga prati izmereni VDOT, a ne polaznu
@@ -135,18 +137,14 @@ export function AdjustPlan() {
         </Section>
       ) : null}
 
-      {adj.blockedReason ? <p className="note-src">{adj.blockedReason}</p> : null}
+      {adj.blockedReason && !v2 ? <p className="note-src">{adj.blockedReason}</p> : null}
 
-      {!injury && !pace && !adj.adjusted && !unsupported ? (
+      {!injury && !pace && !adj.adjusted && !v2 ? (
         <p className="empty">Trenutno nema predloga za prilagođavanje plana.</p>
       ) : null}
 
-      {unsupported ? (
-        <Section title="Prilagođavanje plana">
-          <p className="note-src" id="v2-unsupported">
-            {unsupported}
-          </p>
-        </Section>
+      {v2 ? (
+        <FiveKV2Adjustment today={todayStr} />
       ) : activePlanGenerator() ? (
         <ExecutionAdjustment plan={plan} today={todayStr} />
       ) : (
@@ -165,7 +163,7 @@ export function AdjustPlan() {
               onClick={() => void recalibratePlan(plan, todayStr)}
             />
           ) : null}
-          {genPlan?.ulaz ? (
+          {genPlan?.ulaz || v2 ? (
             <Row
               icon="target"
               title="Promeni ciljno vreme"
