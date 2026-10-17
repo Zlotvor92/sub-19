@@ -29,3 +29,6 @@ Thumbs.db
 
 # Supabase CLI local metadata
 supabase/.temp/
+
+# Promo video (HyperFrames projekat, snimci, render) — van koda aplikacije.
+video/
