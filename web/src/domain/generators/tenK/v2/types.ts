@@ -105,9 +105,11 @@ export interface Segment {
   secBasis: Basis;
 }
 
-/** Struktura doze: kontinuirano (km) ili jednake deonice. */
+/** Struktura doze: kontinuirano (km), jednake deonice ili piramida (I, D10). */
 export type Structure =
-  { form: 'continuous'; km: number } | { form: 'reps'; reps: number; repM: number };
+  | { form: 'continuous'; km: number }
+  | { form: 'reps'; reps: number; repM: number }
+  | { form: 'pyramid'; repsM: readonly number[] };
 
 export type LadderId = 'R' | 'T_continuous' | 'T_cruise' | 'I' | 'RP';
 
@@ -118,7 +120,7 @@ export type DoseStep =
   | 'transition'
   | 'alt'
   | 'repeat'
-  /** Odstupanje: nijedan cilj nije izvodljiv uz „doza ne pada" → najviši nivo u plafonu. */
+  /** D11 ispred D12: nijedan cilj nije izvodljiv uz „doza ne pada" → najviši nivo u plafonu. */
   | 'drop'
   | 'deload'
   | 'taper'
@@ -148,6 +150,13 @@ export type BlockSpec =
       /** Oporavak posle svake deonice osim poslednje. */
       recovery: { m: number } | { sec: number };
       stride?: boolean;
+    }
+  | {
+      kind: 'pyramid';
+      zone: WorkZone;
+      repsM: readonly number[];
+      /** Oporavak posle deonice i (i < poslednje). */
+      recoveries: readonly ({ m: number } | { sec: number })[];
     }
   | { kind: 'race'; km: number };
 

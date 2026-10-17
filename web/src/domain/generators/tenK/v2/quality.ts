@@ -1,11 +1,12 @@
-/* D12 — izbor doze kvaliteta po slotu (jedino mesto); D11 plafon ograničava izbor; D5/D7 doza
-   rasterećenja i tapera. Stanje slota = izbor poslednje ne-rasteretne nedelje izgradnje. */
+/* D12 — izbor doze kvaliteta po slotu (jedino mesto); D16 početni nivo; D11 plafon ograničava izbor;
+   D5/D7 doza rasterećenja i tapera. Stanje slota = izbor poslednje ne-rasteretne nedelje izgradnje. */
 
 import { TEN_K_V2_POLICY as P } from './policy.ts';
 import type { Dose, LadderId, Paces, Phase, Structure, WorkZone } from './types.ts';
 import {
   doseOf,
   ladderLevels,
+  repsOf,
   sameStructure,
   structureKm100,
   structuresForDose,
@@ -54,7 +55,7 @@ export function otherStructure(
   p: Paces
 ): Structure | null {
   const base = structureKm100(ladder, prev, p);
-  const reps = (s: Structure): number => (s.form === 'continuous' ? 1 : s.reps);
+  const reps = (s: Structure): number => Math.max(1, repsOf(s).length);
   const opts = structuresForDose(ladder, doseM).filter((x) => !sameStructure(x, prev));
   let best: Structure | null = null;
   for (const s of opts) {
@@ -74,15 +75,26 @@ export function nextLevel(ladder: LadderId, doseM: number): Structure | null {
   return ladderLevels(ladder).find((s) => doseOf(s) > doseM) ?? null;
 }
 
+/** D16: početni nivo — najviši nivo lestvice ≤ 60 % plafona zone (D11) za cilj nedelje, najmanje prvi
+    nivo. null = ni prvi nivo ne staje u plafon. */
+export function startLevel(ladder: LadderId, targetKm: number): Structure | null {
+  const levels = ladderLevels(ladder);
+  const cap = capM(zoneOf(ladder), targetKm);
+  if (doseOf(levels[0]!) > cap) return null;
+  const limit = P.startLevel.capShare * cap + 1e-6;
+  return levels.filter((s) => doseOf(s) <= limit).pop() ?? levels[0]!;
+}
+
 /**
  * D12 za jedan slot. null = ni ista doza ne staje u plafon pri ovom cilju (cilj nije izvodljiv).
- * - prvi put: prvi nivo lestvice;
- * - prelaz faze: T cruise ≥ poslednje T kontinuirano, RP ≥ poslednje I (najmanji takav nivo; ako ne
- *   staje u plafon — ista doza druge strukture); I posle R kreće od prvog nivoa;
+ * - prvi put: početni nivo (D16);
+ * - prelaz faze: I posle R kreće od početnog nivoa (D16); T cruise ≥ poslednje T kontinuirano (ista
+ *   zona, samo D12); RP ≥ max(početni nivo D16, poslednje I) — najmanji takav nivo; ako ne staje u
+ *   plafon, ista doza druge strukture;
  * - ista lestvica: sledeći nivo ako staje u plafon, inače ista doza druge strukture (ako ne postoji —
  *   ponavljanje, D10).
  * `allowDrop` (samo kad nedelja nije izvodljiva NI PRI JEDNOM cilju uz „doza ne pada"): doza koja ne
- * staje u plafon spušta se na najviši nivo lestvice koji staje — plafon D11 ispred D12 (opreznije).
+ * staje u plafon spušta se na najviši nivo lestvice koji staje — plafon D11 ispred D12 (D12).
  */
 export function pickSlot(
   prev: SlotState | null,
@@ -93,18 +105,20 @@ export function pickSlot(
 ): Dose | null {
   const cap = capM(zoneOf(ladder), targetKm);
   const levels = ladderLevels(ladder);
-  const first = levels[0]!;
+  const start = startLevel(ladder, targetKm);
   const drop = (): Dose | null => {
     const lv = allowDrop ? levels.filter((s) => doseOf(s) <= cap).pop() : undefined;
     return lv ? pick(ladder, lv, 'drop') : null;
   };
-  if (!prev) return doseOf(first) <= cap ? pick(ladder, first, 'start') : null;
+  if (!prev) return start ? pick(ladder, start, 'start') : null;
   if (prev.ladder !== ladder) {
     const carry =
       (prev.ladder === 'T_continuous' && ladder === 'T_cruise') ||
       (prev.ladder === 'I' && ladder === 'RP');
-    if (!carry) return doseOf(first) <= cap ? pick(ladder, first, 'transition') : null;
-    const lv = levels.find((s) => doseOf(s) >= prev.doseM);
+    if (!carry) return start ? pick(ladder, start, 'transition') : null;
+    const newZone = zoneOf(prev.ladder) !== zoneOf(ladder);
+    const lo = Math.max(prev.doseM, newZone && start ? doseOf(start) : 0);
+    const lv = levels.find((s) => doseOf(s) >= lo);
     if (lv && doseOf(lv) <= cap) return pick(ladder, lv, 'transition');
     if (prev.doseM > cap) return drop();
     const s =

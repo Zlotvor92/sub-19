@@ -8,6 +8,10 @@ import type { WeekFrame } from './types.ts';
 const EPS = 1e-9;
 export const to10 = (km: number): number => Math.round(km * 10);
 
+/** D6: poruka kad je nedelja izgradnje spuštena na izvodljiv cilj (CAPACITY_LIMITED, napomena plana). */
+export const CAPACITY_MESSAGE =
+  '4 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 5–6 dana (od segmenta 02).';
+
 /** Trenutni obim = cilj nedelje 1 [0,1 km]. */
 export function startKm10(currentWeeklyKm: number): number {
   return to10(currentWeeklyKm);

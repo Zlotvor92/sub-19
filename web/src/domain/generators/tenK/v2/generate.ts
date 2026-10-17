@@ -10,6 +10,7 @@ import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import type { GenerateResult, PlanWeek, TenKV2AdaptStep, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 import {
+  CAPACITY_MESSAGE,
   fit10,
   nominal10,
   peakCap10,
@@ -18,7 +19,7 @@ import {
   type VolumeHistory
 } from './volume.ts';
 import { buildWeek, raceWeek, type WeekContext } from './week.ts';
-import { fmtKm } from './workouts.ts';
+import { fmtKm, warmupCooldown } from './workouts.ts';
 
 export function generateTenKV2(input: unknown): GenerateResult {
   return construct(input, []);
@@ -43,7 +44,13 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
         { code: 'WEEK_INFEASIBLE', message: 'Nema rasporeda rasterećenja po pravilima D5.' }
       ]
     };
-  const ctx: WeekContext = { input, paces, pattern, raceSec };
+  const ctx: WeekContext = {
+    input,
+    paces,
+    pattern,
+    raceSec,
+    wc: warmupCooldown(input.currentWeeklyKm)
+  };
   const start10 = startKm10(input.currentWeeklyKm);
   const cap10 = peakCap10(start10);
 
@@ -51,10 +58,11 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
   const vol: VolumeHistory = { lastBuild10: null, peak10: 0 };
   let lastLong10: number | null = null;
   let longest10 = 0;
+  let taperRpM = 0;
   const out: PlanWeek[] = [];
   for (const frame of frames) {
     if (frame.phase === 'race') {
-      const w = raceWeek(ctx, frame, vol.peak10);
+      const w = raceWeek(ctx, frame, taperRpM);
       const t10 = raceWeekTarget10(w.planned100);
       out.push({
         ...frame,
@@ -70,8 +78,8 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     const nominal = nominal10(frame, vol, start10, cap10);
     const make = (t10: number, allowDrop = false) =>
       buildWeek(ctx, frame, t10, quality, lastLong10, longest10, allowDrop);
-    // Odstupanje (opreznije): samo kad nijedan cilj nije izvodljiv uz „doza ne pada" (D12), doza koja
-    // ne staje u plafon (D11) sme da se spusti — ista pretraga cilja, drugi put.
+    // D11 ispred D12: samo kad nijedan cilj nije izvodljiv uz „doza ne pada", doza koja ne staje u
+    // plafon sme da se spusti — ista pretraga cilja, drugi put.
     let drop = false;
     let fit = fit10(nominal, frame, cap10, (t10) => make(t10) !== null);
     if (!fit) {
@@ -105,6 +113,8 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
       notes
     });
     if (w.long10 !== null) longest10 = Math.max(longest10, w.long10);
+    if (frame.phase === 'taper')
+      taperRpM = w.days.find((d) => d.role === 'q1')?.workout.dose?.doseM ?? 0;
     if (isBuildPhase(frame.phase) && !frame.deload) {
       vol.lastBuild10 = fit.target10;
       vol.peak10 = Math.max(vol.peak10, fit.target10);
@@ -131,7 +141,7 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
   };
   if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
     plan.notes.push(
-      `Obim je ograničen kapacitetom konstrukcije 4 dana (dugi ≤ 33 % i ≤ 105 min, dugi ≥ lagan, WU/CD fiksni): vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (D6).`
+      `${CAPACITY_MESSAGE} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (D6).`
     );
   const violations = validatePlan(plan);
   const errors = violations.filter((v) => v.severity === 'error');

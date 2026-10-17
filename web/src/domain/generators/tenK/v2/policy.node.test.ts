@@ -1,23 +1,30 @@
-/* Brojevi politike su odluke D1–D15 iz zadatka segmenta 01: test pada kad se broj promeni bez
-   izmene odluke. Svaka odluka ima red u DECISIONS sa mestom i obrazloženjem. */
+/* Brojevi politike su odluke D1–D16 iz zadataka segmenata 01 i 01b: test pada kad se broj promeni
+   bez izmene odluke. Svaka odluka ima red u DECISIONS sa mestom i obrazloženjem. */
 
 import { describe, expect, it } from 'vitest';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
 
-describe('policy 10k-v2.0.0', () => {
+describe('policy 10k-v2.1.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.0.0');
+    expect(P.version).toBe('10k-v2.1.0');
   });
 
-  it('DECISIONS: tačno D1–D15, svaka sa pravilom, mestom i obrazloženjem', () => {
-    expect(P.DECISIONS.map((d) => d.id)).toEqual(Array.from({ length: 15 }, (_, i) => `D${i + 1}`));
+  it('DECISIONS: tačno D1–D16, svaka sa pravilom, mestom i obrazloženjem', () => {
+    expect(P.DECISIONS.map((d) => d.id)).toEqual(Array.from({ length: 16 }, (_, i) => `D${i + 1}`));
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
       expect(d.place.length, d.id).toBeGreaterThan(3);
       expect(d.rationale.length, d.id).toBeGreaterThan(20);
     }
     expect(P.DECISIONS.find((d) => d.id === 'D4')!.rationale).toMatch(/Bosquet/);
+    // 01b: D11 ispred D12 je usvojena odluka (D12), ne odstupanje; D6 poruka kapaciteta.
+    const rule = (id: string): string => P.DECISIONS.find((d) => d.id === id)!.rule;
+    expect(rule('D12')).toMatch(/D11 ispred D12/);
+    expect(rule('D6')).toContain(
+      '4 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 5–6 dana (od segmenta 02)'
+    );
+    expect(rule('D16')).toMatch(/60 % plafona/);
   });
 
   it('D1 opseg', () => {
@@ -68,7 +75,6 @@ describe('policy 10k-v2.0.0', () => {
     expect(P.raceWeek).toEqual({
       maxRunDays: 4,
       sharpener: { reps: 3, repM: 1000, recoverySec: 90 },
-      sharpenerSmallPeakKm: 35,
       sharpenerSmallReps: 2,
       sharpenerMinGapDays: 3,
       eveEasySec: 1200,
@@ -89,12 +95,16 @@ describe('policy 10k-v2.0.0', () => {
     expect(km(P.ladders.T_cruise)).toEqual([2.0, 2.4, 3.0, 3.6, 4.0, 4.8, 5.0, 6.0, 6.4, 8.0]);
     expect(km(P.ladders.I)).toEqual([2.0, 2.4, 3.0, 3.6, 4.0, 4.8, 5.0, 6.0]);
     expect(km(P.ladders.RP)).toEqual([2.4, 3.0, 4.0, 4.5, 5.0, 6.0]);
-    expect(P.alternatives).toMatchObject({
+    expect(P.alternatives).toEqual({
       repsMin: 2,
       repsMax: 5,
       roundM: 100,
+      tRepMinM: 1000,
+      iRepsMax: 6,
       iRepMinM: 800,
-      iRepMaxM: 1200
+      iRepMaxM: 1200,
+      iPyramidM: [1200, 1000, 800],
+      rRepM: [200, 300]
     });
   });
 
@@ -102,12 +112,16 @@ describe('policy 10k-v2.0.0', () => {
     expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, RP: 0.1 });
   });
 
-  it('D13, D14, D15', () => {
+  it('D13, D14, D15, D16', () => {
     expect(P.lengths).toEqual({ longMaxShare: 0.33, longMaxSec: 105 * 60, easyMinKm: 3 });
+    expect(P.workout.warmupCooldown).toEqual([
+      { fromKm: 0, warmupSec: 15 * 60, cooldownSec: 10 * 60 },
+      { fromKm: 35, warmupSec: 20 * 60, cooldownSec: 15 * 60 },
+      { fromKm: 45, warmupSec: 25 * 60, cooldownSec: 15 * 60 }
+    ]);
     expect(P.workout).toMatchObject({
-      warmupSec: 900,
-      cooldownSec: 600,
       iRecoveryMaxSec: 240,
+      iRecoveryStepSec: 15,
       tCruiseRecoverySec: 60
     });
     expect(P.workout.rpRecovery).toEqual([
@@ -116,5 +130,6 @@ describe('policy 10k-v2.0.0', () => {
       { maxRepM: 3000, sec: 120 }
     ]);
     expect(P.week.minKm).toBe(12);
+    expect(P.startLevel).toEqual({ capShare: 0.6 });
   });
 });

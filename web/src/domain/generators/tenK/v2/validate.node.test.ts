@@ -148,6 +148,31 @@ describe('validator', () => {
       }
     ],
     [
+      'D14 WU 15 min pri obimu 40 km (pojas 35–44,9 km traži 20 min)',
+      'WARMUP',
+      (p) => {
+        const s = p.weeks[0]!.days.find((d) => d.role === 'q1')!.workout.segments[0]!;
+        (s as { sec: number }).sec = 900;
+      }
+    ],
+    [
+      'D16 početni nivo T nije ≤ 60 % plafona',
+      'START_LEVEL',
+      (p) => {
+        const q2 = p.weeks[0]!.days.find((d) => d.role === 'q2')!;
+        q2.workout = p.weeks[2]!.days.find((d) => d.role === 'q2')!.workout;
+      }
+    ],
+    [
+      'D8 oštrenje veće/manje od pravila RP doze tapera',
+      'RACE_SHARPENER',
+      (p) => {
+        const r = p.weeks[p.weeks.length - 1]!;
+        const st = r.days.find((d) => d.role === 'sharpener')!.workout.dose!.structure;
+        if (st.form === 'reps') st.reps = st.reps === 2 ? 3 : 2;
+      }
+    ],
+    [
       'D14 oporavak pogrešan',
       'RECOVERY',
       (p) => {
@@ -193,7 +218,7 @@ describe('validator', () => {
       expect(errors(p)).toContain(rule);
     });
 
-  it('odstupanje D11 ispred D12 (van mreže): doza se spušta samo kad nijedan cilj nije izvodljiv', () => {
+  it('D11 ispred D12 (usvojeno, D12): doza se spušta samo kad nijedan cilj nije izvodljiv', () => {
     // 14 ned, 30 km, VDOT 31: T 4,0 km staje u plafon samo od 40 km, a kapacitet specifične nedelje je
     // ispod 40 km (dugi na 105 min, RP lakši od I) → bez spuštanja nijedan cilj nije izvodljiv.
     const r = generateTenKV2(inputOf({ weeks: 14, km: 30, vdot: 31, days: SCHEDULES.A.days }));
@@ -216,6 +241,9 @@ describe('validator', () => {
     expect(rules).toContain('GOAL_UNREALISTIC');
     expect(rules).toContain('WEEK_FITTED');
     expect(rules).toContain('CAPACITY_LIMITED');
+    expect(r.plan.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toBe(
+      '4 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 5–6 dana (od segmenta 02).'
+    );
     expect(r.plan.warnings.every((w) => w.severity === 'warning')).toBe(true);
   });
 });

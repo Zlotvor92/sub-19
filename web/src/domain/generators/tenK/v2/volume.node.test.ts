@@ -11,6 +11,7 @@ import { gridInputs, inputOf, SCHEDULES } from './testInputs.ts';
 import type { TenKV2Plan } from './types.ts';
 import { fit10, nominal10, peakCap10, startKm10 } from './volume.ts';
 import { buildWeek, type BuiltWeek } from './week.ts';
+import { warmupCooldown } from './workouts.ts';
 
 /** Nezavisno pravilo D6: +6 % (min 1,0, max 3,0; korak 0,1) do min(1,4×, +15, 60). */
 const growth = (last: number): number => Math.min(3, Math.max(1, Math.round(last * 0.6) / 10));
@@ -21,7 +22,13 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
   const c = checkInput(raw);
   if (!c.ok) throw new Error('ulaz');
   const paces = pacesFromVdot(c.vdotRaw);
-  const ctx = { input: c.input, paces, pattern: c.pattern, raceSec: predicted10k(paces) };
+  const ctx = {
+    input: c.input,
+    paces,
+    pattern: c.pattern,
+    raceSec: predicted10k(paces),
+    wc: warmupCooldown(c.input.currentWeeklyKm)
+  };
   const s10 = startKm10(c.input.currentWeeklyKm);
   const c10 = peakCap10(s10);
   let q: QualityState = INITIAL_QUALITY;
@@ -109,8 +116,8 @@ describe('D6: obim', () => {
     }
   });
 
-  it('ned 1 = trenutni obim kad ga konstrukcija nosi', () => {
-    for (const km of [25, 30, 35]) {
+  it('ned 1 = trenutni obim kad ga konstrukcija nosi (01b: VDOT 50 nosi ceo opseg 25–55 km)', () => {
+    for (const km of [25, 30, 35, 40, 45, 50, 55]) {
       const r = generateTenKV2(inputOf({ weeks: 12, km, vdot: 50, days: SCHEDULES.A.days }));
       expect(r.ok && r.plan.weeks[0]!.targetKm).toBe(km);
     }
@@ -169,7 +176,9 @@ describe('D6: obim', () => {
     const easy = peakWeek.days.find((d) => d.role === 'easy')!.workout.km;
     expect(easy).toBeGreaterThanOrEqual(long - 0.1 - 1e-9);
     expect(p.warnings.some((w) => w.rule === 'CAPACITY_LIMITED')).toBe(true);
-    expect(p.notes.some((n) => n.includes('kapacitetom'))).toBe(true);
+    const msg = '4 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 5–6 dana (od segmenta 02).';
+    expect(p.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toBe(msg);
+    expect(p.notes.some((n) => n.startsWith(msg))).toBe(true);
     checkRule(p);
   });
 });

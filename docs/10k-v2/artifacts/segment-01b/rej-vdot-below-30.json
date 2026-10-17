@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "FEEL_PLAN_SEGMENT_03",
+      "message": "VDOT 26.8 je ispod 30: tempo iz modela nije pouzdan; plan po osećaju dolazi u segmentu 03."
+    }
+  ]
+}

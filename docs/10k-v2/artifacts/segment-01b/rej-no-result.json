@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "FEEL_PLAN_SEGMENT_03",
+      "message": "Bez rezultata trke nema pouzdanog tempa: plan po osećaju dolazi u segmentu 03."
+    }
+  ]
+}

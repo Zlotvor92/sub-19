@@ -20,8 +20,16 @@ import type {
   Violation,
   WorkZone
 } from './types.ts';
-import { growth10, peakCap10, startKm10 } from './volume.ts';
-import { doseOf, ladderLevels, recoveryOf, sameStructure, structuresForDose } from './workouts.ts';
+import { CAPACITY_MESSAGE, growth10, peakCap10, startKm10 } from './volume.ts';
+import {
+  doseOf,
+  ladderLevels,
+  recoveryOf,
+  repsOf,
+  sameStructure,
+  structuresForDose,
+  zoneOf
+} from './workouts.ts';
 
 const EPS = 1e-6;
 const PHASES: readonly Phase[] = ['base', 'development', 'specific', 'taper', 'race'];
@@ -288,8 +296,10 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       }
   }
 
-  // --- D10 tipovi po fazi; D14 WU/CD i oporavci.
+  // --- D10 tipovi po fazi; D14 WU/CD (pojas trenutnog obima) i oporavci.
   const mid = midEasy(p);
+  const km10 = to10(input.currentWeeklyKm);
+  const wc = P.workout.warmupCooldown.filter((b) => to10(b.fromKm) <= km10).pop()!;
   for (const w of weeks)
     for (const d of w.days) {
       const wo = d.workout;
@@ -332,28 +342,40 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       if (
         !wu ||
         wu.kind !== 'warmup' ||
-        wu.sec !== P.workout.warmupSec ||
+        wu.sec !== wc.warmupSec ||
         to100(wu.km) !== Math.round((wu.sec * 100) / mid)
       )
-        err('WARMUP', 'Zagrevanje mora biti 15 min E (km po srednjem E) (D14).', w.index, d.date);
+        err(
+          'WARMUP',
+          `Zagrevanje mora biti ${wc.warmupSec / 60} min E (km po srednjem E) (D14).`,
+          w.index,
+          d.date
+        );
       if (
         !cd ||
         cd.kind !== 'cooldown' ||
-        cd.sec !== P.workout.cooldownSec ||
+        cd.sec !== wc.cooldownSec ||
         to100(cd.km) !== Math.round((cd.sec * 100) / mid)
       )
-        err('COOLDOWN', 'Hlađenje mora biti 10 min E (km po srednjem E) (D14).', w.index, d.date);
+        err(
+          'COOLDOWN',
+          `Hlađenje mora biti ${wc.cooldownSec / 60} min E (km po srednjem E) (D14).`,
+          w.index,
+          d.date
+        );
       if (seg.filter((x) => x.kind === 'warmup' || x.kind === 'cooldown').length !== 2)
         err('WARMUP', 'Tačno jedno zagrevanje i jedno hlađenje (D14).', w.index, d.date);
       const s = dose.structure;
       const reps = seg.filter((x) => x.kind === 'rep');
       const recs = seg.filter((x) => x.kind === 'recovery');
-      if (s.form === 'reps') {
-        const rec = recoveryOf(dose.ladder, s.repM, p);
-        const okRec = recs.every((x) =>
-          'm' in rec ? to100(x.km) === Math.round(rec.m / 10) : x.sec === rec.sec
-        );
-        if (reps.length !== s.reps || recs.length !== s.reps - 1 || !okRec)
+      if (s.form !== 'continuous') {
+        const want = repsOf(s);
+        const okRec = recs.every((x, i) => {
+          const rec = recoveryOf(dose.ladder, want[i]!, p);
+          return 'm' in rec ? to100(x.km) === Math.round(rec.m / 10) : x.sec === rec.sec;
+        });
+        const okReps = reps.every((x, i) => to100(x.km) === Math.round(want[i]! / 10));
+        if (reps.length !== want.length || recs.length !== want.length - 1 || !okRec || !okReps)
           err('RECOVERY', `Oporavak deonica ne odgovara D14 (${dose.ladder}).`, w.index, d.date);
       } else if (recs.length > 0 || reps.length > 0)
         err('RECOVERY', 'Kontinuiran blok nema deonice ni oporavak.', w.index, d.date);
@@ -369,8 +391,8 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       const db = slotDose(b, role);
       if (!da || !db) continue;
       if (db.step === 'drop') {
-        // Odstupanje (D11 ispred D12): dozvoljeno samo kad prethodna doza ne staje u plafon ove nedelje,
-        // na najviši nivo lestvice koji staje, uz napomenu.
+        // D11 ispred D12: dozvoljeno samo kad prethodna doza ne staje u plafon ove nedelje, na najviši
+        // nivo lestvice koji staje, uz napomenu.
         const ladder = db.ladder as LadderId;
         const cap = capM(db.zone, b.targetKm);
         const best = ladderLevels(ladder)
@@ -442,7 +464,15 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       if (ta && tb) {
         const nl = nextLevel(ta.ladder as LadderId, ta.doseM);
         const blocked = !nl || doseOf(nl) > capM('T', b.targetKm);
-        const ok = tb.doseM > ta.doseM || (blocked && !sameStructure(ta.structure, tb.structure));
+        // Odstupanje (D10 ispred „baza bez platoa"): kad druga struktura iste doze ne postoji
+        // (T 2,5 / 3,5 km, deonice ≥ 1000 m), T se ponavlja uz napomenu — opreznije od skoka obima.
+        const noOther = !structuresForDose(ta.ladder as LadderId, ta.doseM).some(
+          (x) => !sameStructure(x, ta.structure)
+        );
+        const repeated = noOther && b.notes.some((n) => n.includes('ponovljen'));
+        const ok =
+          tb.doseM > ta.doseM ||
+          (blocked && (!sameStructure(ta.structure, tb.structure) || repeated));
         if (!ok)
           err(
             'BASE_PLATEAU',
@@ -450,6 +480,40 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
             b.index
           );
       }
+    }
+  }
+
+  // --- D16: početni nivo (prva nedelja baze; I i RP na prvoj nedelji faze; RP i dalje ≥ poslednje I).
+  const startM = (ladder: LadderId, targetKm: number): number => {
+    const cap = capM(zoneOf(ladder), targetKm);
+    const lv = ladderLevels(ladder).map(doseOf);
+    return lv.filter((m) => m <= P.startLevel.capShare * cap + EPS).pop() ?? lv[0]!;
+  };
+  for (let i = 0; i < steady.length; i++) {
+    const b = steady[i]!;
+    const a = i > 0 ? steady[i - 1]! : null;
+    if (a && a.phase === b.phase) continue;
+    for (const role of ['q1', 'q2'] as const) {
+      const db = slotDose(b, role);
+      if (!db || db.step === 'drop') continue;
+      const ladder = db.ladder as LadderId;
+      const da = a ? slotDose(a, role) : null;
+      if (da && (da.ladder === ladder || (da.ladder === 'T_continuous' && ladder === 'T_cruise')))
+        continue;
+      let want = startM(ladder, b.targetKm);
+      if (da?.ladder === 'I' && ladder === 'RP') {
+        const lv = ladderLevels('RP')
+          .map(doseOf)
+          .find((m) => m >= Math.max(want, da.doseM));
+        if (lv === undefined || lv > capM('RP', b.targetKm)) continue;
+        want = lv;
+      }
+      if (db.doseM !== want)
+        err(
+          'START_LEVEL',
+          `${role}: početni nivo ${ladder} ${db.doseM} m ≠ ${want} m (≤ 60 % plafona, D16).`,
+          b.index
+        );
     }
   }
 
@@ -563,8 +627,10 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       );
     const others = rw.days.filter((d) => d.role !== 'race');
     const sharp = others.filter((d) => d.role === 'sharpener');
-    const peak10 = to10(plan.peakKm);
-    const reps = peak10 < to10(q.sharpenerSmallPeakKm) ? q.sharpenerSmallReps : q.sharpener.reps;
+    const taperRp = weeks.find((w) => w.phase === 'taper')?.days.find((d) => d.role === 'q1');
+    const taperRpM = taperRp?.workout.dose?.doseM ?? 0;
+    const full = q.sharpener.reps * q.sharpener.repM;
+    const reps = taperRpM >= full ? q.sharpener.reps : q.sharpenerSmallReps;
     const latest = others
       .filter((d) => daysBetween(d.date, race) >= q.sharpenerMinGapDays)
       .map((d) => d.date)
@@ -584,7 +650,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     )
       err(
         'RACE_SHARPENER',
-        `Oštrenje: ${reps} × ${q.sharpener.repM} m RP (90 s) na najkasnijem danu ≥ ${q.sharpenerMinGapDays} dana pre trke (D8).`,
+        `Oštrenje: ${reps} × ${q.sharpener.repM} m RP (90 s, ≤ RP doza tapera ${taperRpM} m) na najkasnijem danu ≥ ${q.sharpenerMinGapDays} dana pre trke (D8).`,
         rw.index
       );
     for (const d of others) {
@@ -674,11 +740,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     }
   }
   if (to10(plan.peakKm) !== peak) err('VOLUME_PEAK', 'Vrh plana ≠ najveći cilj izgradnje.');
-  if (capacityCut)
-    warn(
-      'CAPACITY_LIMITED',
-      `Obim ograničen kapacitetom konstrukcije: vrh ${plan.peakKm} km (granica ${plan.peakCapKm} km).`
-    );
+  if (capacityCut) warn('CAPACITY_LIMITED', CAPACITY_MESSAGE);
 
   // --- D2 tempo, D3 cilj.
   const res = input.recentResult;

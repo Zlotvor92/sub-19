@@ -25,7 +25,8 @@ import {
   longWorkout,
   qualityWorkout,
   raceWorkout,
-  sharpenerWorkout
+  sharpenerWorkout,
+  type WarmupCooldown
 } from './workouts.ts';
 
 export interface WeekContext {
@@ -34,6 +35,8 @@ export interface WeekContext {
   pattern: Pattern;
   /** Prognoza 10K [s] (trka). */
   raceSec: number;
+  /** D14: WU/CD po pojasu trenutnog obima (workouts.ts). */
+  wc: WarmupCooldown;
 }
 
 export interface BuiltWeek {
@@ -94,7 +97,7 @@ export function buildWeek(
   if (frame.deload) {
     const t = pickDeload(quality, frame.phase, targetKm);
     if (!t || lastLong10 === null) return null;
-    const tw = qualityWorkout(t, p);
+    const tw = qualityWorkout(t, p, ctx.wc);
     const len = deloadLengths(target10, km100(tw.km), lastLong10, p);
     if (!len) return null;
     const easyDays = [pat.q1, ...pat.easy].map((wd) => dateOf(frame, wd)).sort();
@@ -111,8 +114,8 @@ export function buildWeek(
   if (frame.phase === 'taper') {
     const t = pickTaper(quality, targetKm);
     if (!t) return null;
-    const w1 = qualityWorkout(t.q1, p);
-    const w2 = qualityWorkout(t.q2, p);
+    const w1 = qualityWorkout(t.q1, p, ctx.wc);
+    const w2 = qualityWorkout(t.q2, p, ctx.wc);
     const len = taperLengths(target10, km100(w1.km) + km100(w2.km), longest10, p);
     if (!len) return null;
     return finish(
@@ -130,8 +133,8 @@ export function buildWeek(
 
   const picks = pickBuild(quality, frame.phase, targetKm, p, allowDrop);
   if (!picks) return null;
-  const w1 = qualityWorkout(picks.q1, p);
-  const w2 = qualityWorkout(picks.q2, p);
+  const w1 = qualityWorkout(picks.q1, p, ctx.wc);
+  const w2 = qualityWorkout(picks.q2, p, ctx.wc);
   const len = buildLengths(target10, km100(w1.km) + km100(w2.km), p);
   if (!len) return null;
   const notes: string[] = [];
@@ -143,7 +146,7 @@ export function buildWeek(
   ] as const)
     if (d.step === 'drop')
       notes.push(
-        `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (odstupanje: D11 ispred D12, opreznije).`
+        `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (D11 ispred D12).`
       );
   return finish(
     [
@@ -158,12 +161,18 @@ export function buildWeek(
   );
 }
 
+/** D8: oštrenje ≤ RP doza tapera — puno (3 × 1000 m) ako ga RP doza tapera nosi, inače 2 × 1000 m. */
+export function sharpenerReps(taperRpM: number): number {
+  const s = P.raceWeek.sharpener;
+  return taperRpM >= s.reps * s.repM ? s.reps : P.raceWeek.sharpenerSmallReps;
+}
+
 /**
  * D8: trkačka nedelja. Najviše 4 dana trčanja uključujući trku; trka zamenjuje dugi (kad bi bilo 5 dana,
- * otpada dan dugog). Oštrenje na najkasnijem danu ≥ 3 dana pre trke; dan pred trku 20 min E + ubrzanja;
- * ostali 35 min E. Trka (sa WU/CD) se ne računa u obim.
+ * otpada dan dugog). Oštrenje (≤ RP doza tapera) na najkasnijem danu ≥ 3 dana pre trke; dan pred trku
+ * 20 min E + ubrzanja; ostali 35 min E. Trka (sa WU/CD) se ne računa u obim.
  */
-export function raceWeek(ctx: WeekContext, frame: WeekFrame, peak10: number): BuiltWeek {
+export function raceWeek(ctx: WeekContext, frame: WeekFrame, taperRpM: number): BuiltWeek {
   const q = P.raceWeek;
   const p = ctx.paces;
   const race = ctx.input.raceDate;
@@ -176,15 +185,14 @@ export function raceWeek(ctx: WeekContext, frame: WeekFrame, peak10: number): Bu
   const sharpenDate = [...runs]
     .reverse()
     .find((d) => daysBetween(d, race) >= q.sharpenerMinGapDays)!;
-  const reps =
-    peak10 < Math.round(q.sharpenerSmallPeakKm * 10) ? q.sharpenerSmallReps : q.sharpener.reps;
+  const reps = sharpenerReps(taperRpM);
   const days: PlanDay[] = [day(race, 'race', raceWorkout(p, ctx.raceSec), false)];
   for (const d of runs) {
-    if (d === sharpenDate) days.push(day(d, 'sharpener', sharpenerWorkout(reps, p)));
+    if (d === sharpenDate) days.push(day(d, 'sharpener', sharpenerWorkout(reps, p, ctx.wc)));
     else if (daysBetween(d, race) === 1) days.push(day(d, 'eve', eveWorkout(p)));
     else days.push(day(d, 'easy', easyTimeWorkout(q.otherEasySec, p)));
   }
   return finish(days, null, null, [
-    `Trkačka nedelja: oštrenje ${reps} × ${q.sharpener.repM} m RP, trka ${q.raceKm} km se ne računa u obim (D8).`
+    `Trkačka nedelja: oštrenje ${reps} × ${q.sharpener.repM} m RP (≤ RP doza tapera ${fmtKm(taperRpM / 1000)} km), trka ${q.raceKm} km se ne računa u obim (D8).`
   ]);
 }

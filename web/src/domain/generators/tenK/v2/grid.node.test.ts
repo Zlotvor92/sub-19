@@ -1,5 +1,7 @@
 /* Mreža segmenta 01: nedelje 10–18 × obim {25..55} × VDOT {30..70} × 3 rasporeda × trka sub/ned
-   = 3024 plana: 0 grešaka validatora, 0 odbijanja, deterministički; bazna linija za segment 02. */
+   = 3024 plana: 0 grešaka validatora, 0 odbijanja, deterministički; bazna linija za segment 02.
+   Segment 01b: nedelja 1 ispod trenutnog obima samo zbog dugog na 105 min; regresija vrha prema
+   baznoj liniji 26846d7 (izuzeci sa razlogom u segment01b.regression-exceptions.json). */
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -10,10 +12,14 @@ import { gridInputs, inputOf, SCHEDULES } from './testInputs.ts';
 import type { TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 
-const BASELINE = join(dirname(fileURLToPath(import.meta.url)), 'segment01.baseline.json');
+const HERE = dirname(fileURLToPath(import.meta.url));
+const BASELINE = join(HERE, 'segment01.baseline.json');
+const BASELINE_01 = join(HERE, 'segment01.baseline-26846d7.json');
+const EXCEPTIONS = join(HERE, 'segment01b.regression-exceptions.json');
 const LETTER = { base: 'B', development: 'D', specific: 'S', taper: 'T', race: 'R' } as const;
 
 type Row = [number, number, number, number, string, number[]];
+type Baseline = { policyVersion: string; plans: Record<string, Row> };
 
 /** Vrh cilj/planirano, najduži dugi, najveća glavna doza [km], niz faza, rasteretne nedelje. */
 function summary(p: TenKV2Plan): Row {
@@ -50,9 +56,18 @@ function hash(s: string): number {
   return h;
 }
 
+/** Nedelja 1: cilj, trenutni obim, dugi i plafon dugog od 105 min sporim E (nezavisno od koda). */
+interface Week1 {
+  targetKm: number;
+  startKm: number;
+  longKm: number;
+  longTimeCapKm: number;
+}
+
 describe('mreža 3024 plana', () => {
   const grid = gridInputs();
   const rows: Record<string, Row> = {};
+  const week1: Record<string, Week1> = {};
   const hashes: number[] = [];
   let rejected: string[] = [];
   let errors: string[] = [];
@@ -69,6 +84,13 @@ describe('mreža 3024 plana', () => {
         .map((v) => `${id}: ${v.rule}`)
     );
     rows[id] = summary(r.plan);
+    const w = r.plan.weeks[0]!;
+    week1[id] = {
+      targetKm: w.targetKm,
+      startKm: r.plan.input.currentWeeklyKm,
+      longKm: w.days.find((d) => d.role === 'long')!.workout.km,
+      longTimeCapKm: Math.floor((105 * 60 * 10) / r.plan.paces.E.slow + 1e-9) / 10
+    };
   }
   rejected = rejected.slice(0, 20);
 
@@ -84,16 +106,56 @@ describe('mreža 3024 plana', () => {
     expect(again).toEqual(hashes);
   });
 
+  it('nedelja 1 < trenutni obim SAMO kad je dugi nedelje 1 na plafonu 105 min (kapacitet), nikad zbog 33 %/lestvice', () => {
+    const below = Object.entries(week1).filter(([, w]) => w.targetKm < w.startKm);
+    const notCapacity = below
+      .filter(([, w]) => w.longKm !== w.longTimeCapKm)
+      .map(
+        ([id, w]) => `${id}: ${w.targetKm} < ${w.startKm}, dugi ${w.longKm} < ${w.longTimeCapKm}`
+      );
+    expect(notCapacity.slice(0, 10)).toEqual([]);
+    // 10k-v2.1.0: 540 planova (bilo 1620), najveći pad 15,8 km (bilo 24,6).
+    expect(below.length).toBe(540);
+    expect(Math.max(...below.map(([, w]) => Math.round((w.startKm - w.targetKm) * 10)))).toBe(158);
+  });
+
   it('generisanje daje TAČNO baznu liniju segment01.baseline.json', () => {
     if (process.env['TEN_K_V2_WRITE_BASELINE'] === '1')
-      writeFileSync(BASELINE, JSON.stringify({ policyVersion: '10k-v2.0.0', plans: rows }) + '\n');
-    const base = JSON.parse(readFileSync(BASELINE, 'utf8')) as {
-      policyVersion: string;
-      plans: Record<string, Row>;
-    };
-    expect(base.policyVersion).toBe('10k-v2.0.0');
+      writeFileSync(BASELINE, JSON.stringify({ policyVersion: '10k-v2.1.0', plans: rows }) + '\n');
+    const base = JSON.parse(readFileSync(BASELINE, 'utf8')) as Baseline;
+    expect(base.policyVersion).toBe('10k-v2.1.0');
     expect(Object.keys(base.plans).length).toBe(3024);
     expect(rows).toEqual(base.plans);
+  });
+
+  it('regresija (pouka 1): vrh cilj i vrh planirano ≥ 26846d7, izuzeci samo uz razlog iz fajla', () => {
+    const old = JSON.parse(readFileSync(BASELINE_01, 'utf8')) as Baseline;
+    const ex = JSON.parse(readFileSync(EXCEPTIONS, 'utf8')) as {
+      against: string;
+      reasons: Record<string, string>;
+      plans: Record<string, string>;
+    };
+    expect(old.policyVersion).toBe('10k-v2.0.0');
+    expect(ex.against).toBe('26846d7');
+    const lower: Record<string, string> = {};
+    const bad: string[] = [];
+    for (const [id, [t, pl]] of Object.entries(rows)) {
+      const [t0, pl0] = old.plans[id]!;
+      if (t >= t0 && pl >= pl0) continue;
+      const reason = ex.plans[id];
+      lower[id] = reason ?? '';
+      if (!reason || !ex.reasons[reason]) bad.push(`${id}: ${t0}/${pl0} → ${t}/${pl} bez razloga`);
+      // Zaokruženje: isti vrh cilja, planirano u tehničkoj toleranciji (±0,1 km) od cilja.
+      else if (reason === 'PLANNED_ROUNDING' && (t !== t0 || Math.abs(pl - t) > 0.1 + 1e-9))
+        bad.push(`${id}: PLANNED_ROUNDING, a vrh cilja ${t0} → ${t}`);
+      else if (reason === 'T_REPS_1000' && !(t < t0 && id.includes('-30km-v30-')))
+        bad.push(`${id}: T_REPS_1000 van 30 km / VDOT 30`);
+    }
+    expect(bad.slice(0, 10)).toEqual([]);
+    // Fajl ne sme da nosi izuzetak koji više nije regresija.
+    expect(Object.keys(ex.plans).sort()).toEqual(Object.keys(lower).sort());
+    const count = (r: string): number => Object.values(lower).filter((x) => x === r).length;
+    expect([count('PLANNED_ROUNDING'), count('T_REPS_1000')]).toEqual([564, 36]);
   });
 
   it('van mreže (gusto: VDOT 30–40 × 25–55 km korak 1, 12/14/16/18 ned): 0 odbijanja, 0 grešaka', () => {

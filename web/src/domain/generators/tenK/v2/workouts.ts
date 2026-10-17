@@ -1,5 +1,6 @@
-/* D10 — lestvice i „ista doza druge strukture"; D14 — WU/CD i oporavci; struktura treninga (blokovi,
-   segmenti, km/trajanje). Jedino mesto sastava treninga. Km WU/CD/oporavka po srednjem E. */
+/* D10 — lestvice i „ista doza druge strukture"; D14 — WU/CD (po pojasu obima) i oporavci; struktura
+   treninga (blokovi, segmenti, km/trajanje). Jedino mesto sastava treninga. Km WU/CD/oporavka po
+   srednjem E. */
 
 import { midEasy } from './paces.ts';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
@@ -27,13 +28,20 @@ export const zoneOf = (ladder: LadderId | 'RP_sharpener'): WorkZone =>
         : 'T';
 
 export function doseOf(s: Structure): number {
-  return s.form === 'continuous' ? Math.round(s.km * 1000) : s.reps * s.repM;
+  if (s.form === 'continuous') return Math.round(s.km * 1000);
+  return s.form === 'reps' ? s.reps * s.repM : s.repsM.reduce((a, m) => a + m, 0);
 }
 
 export function sameStructure(a: Structure, b: Structure): boolean {
-  return a.form === 'continuous'
-    ? b.form === 'continuous' && doseOf(a) === doseOf(b)
-    : b.form === 'reps' && a.reps === b.reps && a.repM === b.repM;
+  if (a.form === 'continuous') return b.form === 'continuous' && doseOf(a) === doseOf(b);
+  if (a.form === 'reps') return b.form === 'reps' && a.reps === b.reps && a.repM === b.repM;
+  return b.form === 'pyramid' && a.repsM.join() === b.repsM.join();
+}
+
+/** Metraže deonica strukture redom (prazno za kontinuirano). */
+export function repsOf(s: Structure): number[] {
+  if (s.form === 'continuous') return [];
+  return s.form === 'reps' ? Array<number>(s.reps).fill(s.repM) : [...s.repsM];
 }
 
 /** Nivoi lestvice kao strukture, rastućom dozom. */
@@ -45,11 +53,16 @@ export function ladderLevels(ladder: LadderId): Structure[] {
   return reps.map((r) => ({ form: 'reps', reps: r.reps, repM: r.repM }));
 }
 
-/** Tačne podele doze na 2–5 jednakih deonica (deonica deljiva sa 100 m), rastućim brojem deonica. */
-function equalSplits(doseM: number, minRepM: number, maxRepM: number): Structure[] {
+/** Tačne podele doze na repsMin..repsMax jednakih deonica (deljivih sa 100 m), rastućim brojem deonica. */
+function equalSplits(
+  doseM: number,
+  minRepM: number,
+  maxRepM: number,
+  repsMax: number = P.alternatives.repsMax
+): Structure[] {
   const a = P.alternatives;
   const out: Structure[] = [];
-  for (let k = a.repsMin; k <= a.repsMax; k++) {
+  for (let k = a.repsMin; k <= repsMax; k++) {
     if (doseM % k !== 0) continue;
     const repM = doseM / k;
     if (repM % a.roundM === 0 && repM >= minRepM && repM <= maxRepM)
@@ -60,8 +73,9 @@ function equalSplits(doseM: number, minRepM: number, maxRepM: number): Structure
 
 /**
  * Sve strukture iste doze za lestvicu (D10): nivo lestvice sa tom dozom (ako postoji) pa strukture po
- * pravilu. T: kontinuirano ↔ 2–5 jednakih deonica; I: deonice 800–1200 m; RP: 2–5 jednakih deonica;
- * R: deonice 200 ↔ 300 m. Prihvataju se samo tačne podele (doza se ne menja).
+ * pravilu. T: kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m; I: do 6 jednakih deonica 800–1200 m ili
+ * piramida 1200 + 1000 + 800 m; RP: 2–5 jednakih deonica; R: deonice 200 ↔ 300 m. Prihvataju se samo
+ * tačne podele (doza se ne menja).
  */
 export function structuresForDose(ladder: LadderId, doseM: number): Structure[] {
   const out: Structure[] = [];
@@ -72,9 +86,11 @@ export function structuresForDose(ladder: LadderId, doseM: number): Structure[] 
   const a = P.alternatives;
   if (ladder === 'T_continuous' || ladder === 'T_cruise') {
     push({ form: 'continuous', km: doseM / 1000 });
-    for (const s of equalSplits(doseM, a.roundM, doseM)) push(s);
-  } else if (ladder === 'I') for (const s of equalSplits(doseM, a.iRepMinM, a.iRepMaxM)) push(s);
-  else if (ladder === 'RP') for (const s of equalSplits(doseM, a.roundM, doseM)) push(s);
+    for (const s of equalSplits(doseM, a.tRepMinM, doseM)) push(s);
+  } else if (ladder === 'I') {
+    for (const s of equalSplits(doseM, a.iRepMinM, a.iRepMaxM, a.iRepsMax)) push(s);
+    push({ form: 'pyramid', repsM: a.iPyramidM });
+  } else if (ladder === 'RP') for (const s of equalSplits(doseM, a.roundM, doseM)) push(s);
   else
     for (const repM of a.rRepM)
       if (doseM % repM === 0) push({ form: 'reps', reps: doseM / repM, repM });
@@ -106,7 +122,19 @@ const distEasy = (kind: 'easy' | 'long', km: number, p: Paces): Segment =>
 
 const paceOf = (zone: WorkZone, p: Paces): number => p[zone];
 
-/** D14: oporavak posle deonice (sekunde ili metri džoga). */
+/** D14: WU/CD [s] po pojasu trenutnog obima iz ulaza (0,1 km); isti za ceo plan. */
+export interface WarmupCooldown {
+  warmupSec: number;
+  cooldownSec: number;
+}
+
+export function warmupCooldown(currentWeeklyKm: number): WarmupCooldown {
+  const km10 = Math.round(currentWeeklyKm * 10);
+  const band = P.workout.warmupCooldown.filter((b) => Math.round(b.fromKm * 10) <= km10).pop()!;
+  return { warmupSec: band.warmupSec, cooldownSec: band.cooldownSec };
+}
+
+/** D14: oporavak posle deonice (sekunde ili metri džoga). I: 1:1 vreme, naniže na 15 s, max 4:00. */
 export function recoveryOf(
   ladder: LadderId | 'RP_sharpener',
   repM: number,
@@ -114,7 +142,11 @@ export function recoveryOf(
 ): { m: number } | { sec: number } {
   const w = P.workout;
   if (ladder === 'R') return { m: repM };
-  if (ladder === 'I') return { sec: Math.min(Math.round((repM / 1000) * p.I), w.iRecoveryMaxSec) };
+  if (ladder === 'I') {
+    const step = w.iRecoveryStepSec;
+    const sec = Math.floor((repM * p.I) / 1000 / step + 1e-9) * step;
+    return { sec: Math.min(sec, w.iRecoveryMaxSec) };
+  }
   if (ladder === 'RP_sharpener') return { sec: P.raceWeek.sharpener.recoverySec };
   if (ladder === 'RP') {
     const r = w.rpRecovery.find((x) => repM <= x.maxRepM) ?? w.rpRecovery[w.rpRecovery.length - 1]!;
@@ -141,8 +173,14 @@ function recoverySegment(rec: { m: number } | { sec: number }, p: Paces): Segmen
 /** Km rada + oporavka strukture [0,01 km] (bez WU/CD) — osnov izbora među strukturama iste doze. */
 export function structureKm100(ladder: LadderId, s: Structure, p: Paces): number {
   if (s.form === 'continuous') return Math.round(s.km * 100);
-  const rec = recoverySegment(recoveryOf(ladder, s.repM, p), p);
-  return (s.reps * s.repM) / 10 + (s.reps - 1) * Math.round(rec.km * 100);
+  const reps = repsOf(s);
+  return reps.reduce(
+    (a, m, i) =>
+      a +
+      m / 10 +
+      (i < reps.length - 1 ? Math.round(recoverySegment(recoveryOf(ladder, m, p), p).km * 100) : 0),
+    0
+  );
 }
 
 const ZERO = (): Record<WorkZone, number> => ({ T: 0, I: 0, R: 0, RP: 0 });
@@ -189,14 +227,16 @@ const fmtRec = (rec: { m: number } | { sec: number }): string =>
 
 /* ---------- Treninzi ---------- */
 
-/** Trening kvaliteta: WU 15 min + rad + CD 10 min (D14). */
-export function qualityWorkout(dose: Dose, p: Paces): Workout {
-  const w = P.workout;
+const repSeg = (zone: WorkZone, repM: number, pace: number): Segment =>
+  seg('rep', zone, repM / 1000, Math.round((repM / 1000) * pace), pace, 'exact', 'estimated');
+
+/** Trening kvaliteta: WU + rad + CD po pojasu obima (D14). */
+export function qualityWorkout(dose: Dose, p: Paces, wc: WarmupCooldown): Workout {
   const zone = dose.zone;
   const pace = paceOf(zone, p);
   const s = dose.structure;
-  const blocks: BlockSpec[] = [{ kind: 'warmup', sec: w.warmupSec }];
-  const segments: Segment[] = [timeEasy('warmup', w.warmupSec, p)];
+  const blocks: BlockSpec[] = [{ kind: 'warmup', sec: wc.warmupSec }];
+  const segments: Segment[] = [timeEasy('warmup', wc.warmupSec, p)];
   let main: string;
   if (s.form === 'continuous') {
     blocks.push({ kind: 'continuous', zone, km: s.km });
@@ -204,27 +244,25 @@ export function qualityWorkout(dose: Dose, p: Paces): Workout {
       seg('continuous', zone, s.km, Math.round(s.km * pace), pace, 'exact', 'estimated')
     );
     main = `${zone} ${fmtKm(s.km)} km kontinuirano`;
-  } else {
+  } else if (s.form === 'reps') {
     const rec = recoveryOf(dose.ladder, s.repM, p);
     blocks.push({ kind: 'reps', zone, reps: s.reps, rep: { m: s.repM }, recovery: rec });
     for (let i = 0; i < s.reps; i++) {
       if (i > 0) segments.push(recoverySegment(rec, p));
-      segments.push(
-        seg(
-          'rep',
-          zone,
-          s.repM / 1000,
-          Math.round((s.repM / 1000) * pace),
-          pace,
-          'exact',
-          'estimated'
-        )
-      );
+      segments.push(repSeg(zone, s.repM, pace));
     }
     main = `${zone} ${s.reps} × ${s.repM} m (oporavak ${fmtRec(rec)})`;
+  } else {
+    const recs = s.repsM.slice(0, -1).map((m) => recoveryOf(dose.ladder, m, p));
+    blocks.push({ kind: 'pyramid', zone, repsM: s.repsM, recoveries: recs });
+    s.repsM.forEach((m, i) => {
+      if (i > 0) segments.push(recoverySegment(recs[i - 1]!, p));
+      segments.push(repSeg(zone, m, pace));
+    });
+    main = `${zone} ${s.repsM.join(' + ')} m (oporavak ${recs.map(fmtRec).join(' / ')})`;
   }
-  blocks.push({ kind: 'cooldown', sec: w.cooldownSec });
-  segments.push(timeEasy('cooldown', w.cooldownSec, p));
+  blocks.push({ kind: 'cooldown', sec: wc.cooldownSec });
+  segments.push(timeEasy('cooldown', wc.cooldownSec, p));
   const qualityType: QualityType =
     dose.ladder === 'RP_sharpener'
       ? 'RP_sharpener'
@@ -233,7 +271,7 @@ export function qualityWorkout(dose: Dose, p: Paces): Workout {
           ? 'T_continuous'
           : 'T_cruise'
         : zone;
-  const title = `WU 15 min + ${main} + CD 10 min`;
+  const title = `WU ${wc.warmupSec / 60} min + ${main} + CD ${wc.cooldownSec / 60} min`;
   return assemble('quality', qualityType, title, blocks, segments, dose);
 }
 
@@ -295,8 +333,8 @@ export function eveWorkout(p: Paces): Workout {
   );
 }
 
-/** D8: oštrenje trkačke nedelje — WU + reps × 1000 m RP (90 s) + CD. */
-export function sharpenerWorkout(reps: number, p: Paces): Workout {
+/** D8: oštrenje trkačke nedelje — WU + reps × 1000 m RP (90 s) + CD (WU/CD po D14). */
+export function sharpenerWorkout(reps: number, p: Paces, wc: WarmupCooldown): Workout {
   const s = P.raceWeek.sharpener;
   return qualityWorkout(
     {
@@ -306,7 +344,8 @@ export function sharpenerWorkout(reps: number, p: Paces): Workout {
       structure: { form: 'reps', reps, repM: s.repM },
       step: 'sharpener'
     },
-    p
+    p,
+    wc
   );
 }
 

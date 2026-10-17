@@ -61,7 +61,8 @@ describe('D7: taper', () => {
 });
 
 describe('D8: trkačka nedelja', () => {
-  it('≤ 4 dana sa trkom; trka zamenjuje dugi; oštrenje; dan pred trku; 35 min E; trka van obima; cilj = planirano', () => {
+  it('≤ 4 dana sa trkom; trka zamenjuje dugi; oštrenje ≤ RP doza tapera; dan pred trku; 35 min E; trka van obima; cilj = planirano', () => {
+    const reps = [0, 0, 0, 0];
     for (const p of plans) {
       const w = p.weeks[p.weeks.length - 1]!;
       const race = p.input.raceDate;
@@ -93,8 +94,13 @@ describe('D8: trkačka nedelja', () => {
         .sort()
         .pop();
       expect(sharp[0]!.date).toBe(latest);
+      // Oštrenje ≤ RP doza tapera: 3 × 1000 m ako je RP tapera ≥ 3,0 km, inače 2 × 1000 m (01b).
+      const taperRp = p.weeks[p.weeks.length - 2]!.days.find((d) => d.role === 'q1')!.workout.dose!;
       const st = sharp[0]!.workout.dose!.structure;
-      expect(st).toEqual({ form: 'reps', reps: p.peakKm < 35 ? 2 : 3, repM: 1000 });
+      expect(st).toEqual({ form: 'reps', reps: taperRp.doseM >= 3000 ? 3 : 2, repM: 1000 });
+      expect(sharp[0]!.workout.dose!.doseM).toBeLessThanOrEqual(taperRp.doseM);
+      const k = st.form === 'reps' ? st.reps : 0;
+      reps[k] = (reps[k] ?? 0) + 1;
       expect(
         sharp[0]!.workout.segments.filter((s) => s.kind === 'recovery').every((s) => s.sec === 90)
       ).toBe(true);
@@ -118,6 +124,8 @@ describe('D8: trkačka nedelja', () => {
       expect(w.plannedKm).toBe(planned);
       expect(w.targetKm).toBe(Math.round(planned * 10) / 10);
     }
+    expect(reps[2]).toBeGreaterThan(0);
+    expect(reps[3]).toBeGreaterThan(0);
   });
 });
 
@@ -146,43 +154,67 @@ describe('D13: dužine', () => {
   });
 });
 
+/** D14 (01b): WU/CD po pojasu trenutnog obima [s]; trka ostaje 15/10 min (D8). */
+const band = (km: number): [number, number] =>
+  km < 35 ? [900, 600] : km < 45 ? [1200, 900] : [1500, 900];
+
 describe('D14: WU/CD i oporavci', () => {
-  it('WU 15 / CD 10 min E (km po srednjem E); oporavci R/I/T/RP po pravilu', () => {
+  it('WU/CD po pojasu obima (< 35: 15/10, 35–44,9: 20/15, ≥ 45: 25/15 min; trka 15/10); oporavci R/I/T/RP po pravilu; I deljiv sa 15 s', () => {
+    const seen = new Set<string>();
+    let iRecs = 0;
     for (const p of plans) {
       const m = mid(p);
       for (const w of p.weeks)
         for (const d of w.days) {
           const wo = d.workout;
           if (wo.kind !== 'quality' && wo.kind !== 'race') continue;
+          const [wu, cdSec] = wo.kind === 'race' ? [900, 600] : band(p.input.currentWeeklyKm);
+          seen.add(`${wu}/${cdSec}`);
           const s = wo.segments;
           expect([s[0]!.kind, s[0]!.sec, s[0]!.km]).toEqual([
             'warmup',
-            900,
-            Math.round(90000 / m) / 100
+            wu,
+            Math.round((wu * 100) / m) / 100
           ]);
           const cd = s[s.length - 1]!;
-          expect([cd.kind, cd.sec, cd.km]).toEqual(['cooldown', 600, Math.round(60000 / m) / 100]);
-          if (wo.kind === 'race' || !wo.dose || wo.dose.structure.form !== 'reps') continue;
-          const repM = wo.dose.structure.repM;
-          const want =
-            wo.dose.ladder === 'R'
+          expect([cd.kind, cd.sec, cd.km]).toEqual([
+            'cooldown',
+            cdSec,
+            Math.round((cdSec * 100) / m) / 100
+          ]);
+          if (wo.kind === 'quality')
+            expect(wo.title).toMatch(
+              new RegExp(`^WU ${wu / 60} min \\+ .* \\+ CD ${cdSec / 60} min$`)
+            );
+          if (wo.kind === 'race' || !wo.dose || wo.dose.structure.form === 'continuous') continue;
+          const reps = s.filter((x) => x.kind === 'rep').map((x) => Math.round(x.km * 1000));
+          const want = (repM: number): { km: number } | { sec: number } =>
+            wo.dose!.ladder === 'R'
               ? { km: repM / 1000 }
-              : wo.dose.ladder === 'I'
-                ? { sec: Math.min(Math.round((repM / 1000) * p.paces.I), 240) }
-                : wo.dose.ladder === 'RP_sharpener'
+              : wo.dose!.ladder === 'I'
+                ? { sec: Math.min(Math.floor((repM * p.paces.I) / 1000 / 15) * 15, 240) }
+                : wo.dose!.ladder === 'RP_sharpener'
                   ? { sec: 90 }
-                  : wo.dose.zone === 'RP'
+                  : wo.dose!.zone === 'RP'
                     ? { sec: repM <= 1200 ? 60 : repM <= 2000 ? 90 : 120 }
                     : { sec: 60 };
-          for (const r of s.filter((x) => x.kind === 'recovery')) {
-            if ('km' in want) expect(r.km).toBe(want.km);
+          s.filter((x) => x.kind === 'recovery').forEach((r, i) => {
+            const wnt = want(reps[i]!);
+            if ('km' in wnt) expect(r.km).toBe(wnt.km);
             else {
-              expect(r.sec).toBe(want.sec);
-              expect(r.km).toBe(Math.round((want.sec * 100) / m) / 100);
+              expect(r.sec).toBe(wnt.sec);
+              expect(r.km).toBe(Math.round((wnt.sec * 100) / m) / 100);
             }
-          }
+            if (wo.dose!.zone === 'I') {
+              iRecs++;
+              expect(r.sec % 15).toBe(0);
+              expect(r.sec).toBeLessThanOrEqual(240);
+            }
+          });
         }
     }
+    expect([...seen].sort()).toEqual(['1200/900', '1500/900', '900/600']);
+    expect(iRecs).toBeGreaterThan(0);
   });
 });
 
