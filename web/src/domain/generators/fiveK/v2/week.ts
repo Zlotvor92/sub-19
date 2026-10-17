@@ -2,7 +2,7 @@
    dugog/laganih su u lengths.ts, kvalitet u quality.ts — iste funkcije koristi kapacitet (volume.ts). */
 
 import { addDays, daysBetween, weekdayIndex, weekdayOf } from './dates.ts';
-import { splitEasy, weekLengths } from './lengths.ts';
+import { limitedEasyKm, painLongKm, splitEasy, weekLengths } from './lengths.ts';
 import { FIVE_K_V2_POLICY as P, type Athlete } from './policy.ts';
 import { raceWeekSharpener, weekQuality } from './quality.ts';
 import type {
@@ -48,17 +48,23 @@ export type TrainingWeekResult =
  * nedelje ISTE faze), dužine dugog i laganih iz weekLengths. 2.2.0: cilj je već ograničen kapacitetom
  * (volume.ts), pa je lagan > dugi samo zaštita: tada lagan = dugi i plannedKm < targetKm (napomena +
  * PLANNED_BELOW_TARGET).
+ * 2.5.0: ograničenja adaptacije (f.limits) ulaze u istu konstrukciju: kvalitet (quality.ts), zamena
+ * q1 ↔ q2 kad je dan q1 u zabrani, dani odmora se ne prave, na danima bola dugi ≤ 60 min i lagani −30%
+ * bez ubrzanja (lengths.ts); cilj nedelje ostaje cilj obima, planirano je zbir dana (napomena).
  */
 export function buildTrainingWeek(
   f: WeekFrame,
   target: number,
-  pattern: Pattern,
+  pattern0: Pattern,
   p: PaceModel,
   prev: WeekDose | null,
   a: Athlete,
   taperWeeks: number
 ): TrainingWeekResult {
   const budgets = qualityBudgets(target);
+  const L = f.limits;
+  const pattern =
+    L?.swap && pattern0.q2 ? { ...pattern0, q1: pattern0.q2, q2: pattern0.q1 } : pattern0;
   const s = weekQuality(f, target, p, prev, a, taperWeeks);
   if (!s.ok)
     return {
@@ -76,7 +82,7 @@ export function buildTrainingWeek(
     w,
     stridesOnly: false
   }));
-  if (!q1) easyDays.push({ w: pattern.q1, stridesOnly: true });
+  if (!q1) easyDays.push({ w: pattern.q1, stridesOnly: s.stridesOnly });
   if (!q2 && pattern.q2) easyDays.push({ w: pattern.q2, stridesOnly: false });
   const qualityKm = (q1 ? q1.km : 0) + (q2 ? q2.km : 0);
   const {
@@ -96,28 +102,46 @@ export function buildTrainingWeek(
       }
     };
 
-  const planDays: PlanDay[] = [day(f, pattern.long, 'long', longRun(longKm, p))];
+  const rest = new Set(L?.rest ?? []);
+  const pain = new Set(L?.pain ?? []);
+  const on = (w: Weekday, set: Set<string>): boolean => set.has(dateOfWeekday(f, w));
+  const longFinal = on(pattern.long, rest)
+    ? null
+    : on(pattern.long, pain)
+      ? painLongKm(longKm, p)
+      : longKm;
+  const planDays: PlanDay[] = [];
+  if (longFinal !== null) planDays.push(day(f, pattern.long, 'long', longRun(longFinal, p)));
   if (q1) planDays.push(day(f, pattern.q1, 'q1', q1));
   if (q2 && pattern.q2) planDays.push(day(f, pattern.q2, 'q2', q2));
   const so = P.quality.deloadSubstitute.stridesOnly;
-  easyDays.forEach((e, i) =>
+  let stridesOnly = false;
+  easyDays.forEach((e, i) => {
+    if (on(e.w, rest)) return;
+    const hurt = on(e.w, pain);
+    const km = L ? limitedEasyKm(shares[i]!, hurt, longFinal, easyMin) : shares[i]!;
+    if (e.stridesOnly && !hurt) stridesOnly = true;
     planDays.push(
       day(
         f,
         e.w,
         'easy',
-        e.stridesOnly
-          ? easyRun(shares[i]!, p, true, so)
-          : easyRun(shares[i]!, p, s.easyStrides && !s.stridesOnly)
+        e.stridesOnly && !hurt
+          ? easyRun(km, p, true, so)
+          : easyRun(km, p, s.easyStrides && !s.stridesOnly && !hurt)
       )
-    )
-  );
+    );
+  });
   planDays.sort((a, b) => a.date.localeCompare(b.date));
   const plannedKm = r2(planDays.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
   const notes = [...s.notes];
   if (easyCappedAtLong)
     notes.push(
       `Lagan trk ograničen na dužinu dugog (${longKm} km): planirano ${plannedKm} km < cilj ${target} km.`
+    );
+  if (rest.size > 0 || pain.size > 0)
+    notes.push(
+      `Adaptacija: ${rest.size > 0 ? `${rest.size} dan(a) odmora, ` : ''}${pain.size > 0 ? 'period bola (dugi ≤ 60 min, lagani −30%, bez ubrzanja), ' : ''}planirano ${plannedKm} km < cilj obima ${target} km.`
     );
   return {
     ok: true,
@@ -127,7 +151,7 @@ export function buildTrainingWeek(
       plannedKm,
       budgets,
       easyCappedAtLong,
-      stridesOnly: s.stridesOnly,
+      stridesOnly: L ? stridesOnly : s.stridesOnly,
       days: planDays,
       notes
     },
@@ -156,8 +180,13 @@ export function buildRaceWeek(
   const cands = pref
     .filter((w) => w !== raceWd && gapToRace(w) >= P.schedule.sharpenerMinGapDays)
     .sort((a, b) => gapToRace(a) - gapToRace(b) || pref.indexOf(a) - pref.indexOf(b));
-  const sharpDay = cands[0];
-  if (!sharpDay)
+  // 2.5.0: oštrenje se ne pravi na danu zabrane kvaliteta (adaptacija); dani odmora se ne prave.
+  const L = f.limits;
+  const banned = new Set(L?.noQuality ?? []);
+  const rest = new Set(L?.rest ?? []);
+  const pain = new Set(L?.pain ?? []);
+  const sharpDay = cands.find((w) => !banned.has(dateOfWeekday(f, w)));
+  if (cands.length === 0)
     return {
       ok: false,
       reason: {
@@ -166,8 +195,8 @@ export function buildRaceWeek(
         message: `Trkačka nedelja: nema zahtevnog dana šablona ≥ ${P.schedule.sharpenerMinGapDays} dana pre trke za oštrenje.`
       }
     };
-  const sharp = raceWeekSharpener(budgets.I, bound, p);
-  if (!sharp.ok)
+  const sharp = sharpDay ? raceWeekSharpener(budgets.I, bound, p) : null;
+  if (sharp && !sharp.ok)
     return {
       ok: false,
       reason: {
@@ -191,11 +220,13 @@ export function buildRaceWeek(
     )
   );
   const others = runDays
-    .filter((w) => w !== sharpDay && w !== raceWd && gapToRace(w) > 0)
+    .filter(
+      (w) => w !== sharpDay && w !== raceWd && gapToRace(w) > 0 && !rest.has(dateOfWeekday(f, w))
+    )
     .sort((a, b) => gapToRace(b) - gapToRace(a));
   const eve = others.find((w) => gapToRace(w) === 1);
-  const rest = others.filter((w) => w !== eve);
-  const remainder = r2(bound - sharp.workout.km);
+  const restDays = others.filter((w) => w !== eve);
+  const remainder = r2(bound - (sharp ? sharp.workout.km : 0));
   const n =
     easyCap + 1e-9 < P.easy.taperMinKm
       ? 0
@@ -204,11 +235,14 @@ export function buildRaceWeek(
   const eveKm = withEve ? Math.min(P.easy.raceEveMaxKm, floor1(remainder / n), easyCap) : 0;
   const restN = withEve ? n - 1 : n;
   const shares = splitEasy(r2(remainder - eveKm), restN).map((x) => Math.min(x, easyCap));
-  const days: PlanDay[] = [day(f, sharpDay, 'q1', sharp.workout)];
-  rest
+  const days: PlanDay[] = sharp && sharpDay ? [day(f, sharpDay, 'q1', sharp.workout)] : [];
+  const hurt = (w: Weekday): boolean => pain.has(dateOfWeekday(f, w));
+  const ek = (km: number, w: Weekday): number =>
+    L ? limitedEasyKm(km, hurt(w), null, P.easy.taperMinKm) : km;
+  restDays
     .slice(0, restN)
-    .forEach((w, i) => days.push(day(f, w, 'easy', easyRun(shares[i]!, p, false))));
-  if (eve && withEve) days.push(day(f, eve, 'easy', easyRun(eveKm, p, true)));
+    .forEach((w, i) => days.push(day(f, w, 'easy', easyRun(ek(shares[i]!, w), p, false))));
+  if (eve && withEve) days.push(day(f, eve, 'easy', easyRun(ek(eveKm, eve), p, !hurt(eve))));
   days.push({
     date: raceDate,
     weekday: raceWd,
@@ -219,6 +253,7 @@ export function buildRaceWeek(
   });
   days.sort((a, b) => a.date.localeCompare(b.date));
   const notes = ['Trkačka nedelja: trka se ne računa u nedeljni obim.'];
+  if (!sharp) notes.push('Adaptacija: bez oštrenja (dan oštrenja u zabrani kvaliteta).');
   const dropped = others.length - n;
   if (dropped > 0)
     notes.push(

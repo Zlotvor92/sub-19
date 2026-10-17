@@ -2,14 +2,13 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 jezgro (`5k-v2.4.1`) u `web/src/domain/generators/fiveK/v2/`, testirano, NIJE
-aktivirano (select.ts/UI/store ga ne koriste). Grane: sa rezultatom (3/4/5 dana, 6–16 ned), bez pouzdanog
-rezultata (plan po osećaju: E iz korisnikovog tempa ± 15 s, kvalitet RPE, test 3 km u 3./4. ned) i
-početnik (≤ 4 dana, 1 kvalitet, sa ili bez rezultata). Kapacitet = najveći izvodljiv cilj stvarne
-konstrukcije nedelje; cilj u rupi → najveći izvodljiv ≤ želje (`volume.fitTargetKm`). Kapacitet VDOT 40/50/60:
-3 d 31,5/37,5/40, 4 d 39,2/46,7/50, 5 d 55,1/64,4/65 km; vrh ≥ 7b4b574 osim 88 izuzetaka 3 dana (tamo lagan
-= dugi). 0 „lagan = dugi" van trke u svim mrežama. Run/walk nije podržan (RUN_WALK_NOT_SUPPORTED_YET).
-Sledeće: segment 06 (adaptacija, tempo iz testa). Stalni uslovi za sve v2 generatore: `AGENTS.md`.
+Trenutno stanje: 5K v2 jezgro (`5k-v2.5.0`) u `web/src/domain/generators/fiveK/v2/`, testirano, NIJE
+aktivirano (select.ts/UI/store ga ne koriste). Generisanje: sa rezultatom (3/4/5 dana, 6–16 ned), po osećaju
+(E ± 15 s, kvalitet RPE, test 3 km), početnik. Adaptacija (`adaptFiveKV2(plan, facts, asOf)`): assess.ts →
+ista `construct` kao generate → spajanje (prošlost/urađeno/zaključano bajt-isto) → validate; odluke 1–7
+(rezultat, izvršenje, pauza, bol, umor, više od plana, prioritet). Mreža 60 × 7 → 0 grešaka.
+Sledeće: trenerski pregled pragova adaptacije; povezivanje sa aplikacijom nije odobreno.
+Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segment 01 — 5K v2 jezgro (2026-10-16)
 
@@ -34,28 +33,10 @@ Sledeće: segment 06 (adaptacija, tempo iz testa). Stalni uslovi za sve v2 gener
 
 ## Segment 04 — 3 i 5 dana, kratka priprema, 5k-v2.3.0 (2026-10-16)
 
-- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci; `git log -1 -- docs/5k-v2/STATUS.md`) | Polazni: 3daeb32
-- Urađeno (DECISIONS 5k-v2.3.0):
-  1. Tabela `days` (3/4/5): broj kvaliteta/laganih, dugi 40/35/30%, vrh 40/50/65, obim 10–35/15–45/25–65, minimum nedelje.
-  2. `capacityKm(p, n)` i `peakKm(start, kapacitet, n)` — ista formula za sva tri šablona.
-  3. 6–7 nedelja: baza 2, vrhunac 2, (oštrenje 1), taper 1, trka 1; bez rasterećenja; `plan.notes`.
-  4. Trkačka nedelja: cilj = planirano, 50% vrha = granica.
-  5. Rasterećenje: R zamena ≥ 1,2 km, inače samo ubrzanja 6 × 20 s (`stridesOnly`).
-  6. Baza: R ne pada; bez višeg nivoa R se drži, T menja strukturu.
-  - Odstupanja: dugi 3 d na 0,1 km; prvi T 3 d = 1 km; RP u oštrenju neopadajući (druga struktura umesto odbijanja).
-- 4-dnevni planovi: 0 regresija; promene samo po odlukama 4–6 (dev-04: samo ned 14, cilj 22,8 → 19,49).
-- Fajlovi: `fiveK/v2/` (policy, input, schedule, periodize, volume, workouts, generate, validate, types, testovi + `segment04.node.test.ts`), `artifacts/segment-04/` (22 primera), `reports/SEGMENT-04-IMPLEMENTATION.md`, `STATUS.md`.
-- Nepromenjeno: aktivni 5K, 10K/HM/maraton, select.ts, UI, store, `segment-01..03/`.
-- Provere:
-  - tsc domain exit 0; eslint v2 exit 0; prettier v2 exit 0; vitest v2 → 7 fajlova / 307 testova
-  - novi testovi na 3daeb32: 57/67 pada (svaka odluka 1–6)
-  - `npx vitest run --project node src/domain/generators/` → 23 fajla / 450 testova prolazi (690 s)
-  - `npm run check` → exit 0 (typecheck, lint, format, 183 fajla / 2079 testova)
-- Otvoreno / sledeći korak:
-  - 3 d, 22–35 km: „lagan = dugi" u ~50% nedelja (manjak ≤ 4,4%) — trenerska odluka o 40%/lagan ≤ dugi.
-  - 3 d, 10–11 km: uvek odbijeno; realni minimum ~12–16 km.
-  - Segment 05: početnici i plan bez rezultata.
-- Reprodukcija: `node docs/5k-v2/artifacts/segment-04/run.ts` (iz korena repoa, Node ≥ 22.18)
+- Commit 7b4b574: tabela `days` (3/4/5), kapacitet/vrh jedna formula, 6–7 ned bez rasterećenja, trkačka
+  nedelja cilj = planirano, zamena u rasterećenju (stridesOnly), R u bazi ne pada; 22 primera.
+- Provere: vitest v2 307; generators 450; `npm run check` exit 0 (2079 testova).
+- Izveštaj: `reports/SEGMENT-04-IMPLEMENTATION.md`.
 
 ## Segment 05 — 3-dnevne dopune, bez rezultata, početnik, 5k-v2.4.0 (2026-10-16)
 
@@ -84,3 +65,14 @@ Sledeće: segment 06 (adaptacija, tempo iz testa). Stalni uslovi za sve v2 gener
 - Provere: tsc, eslint, prettier exit 0; vitest v2 356/356; novi testovi na 349fd64 6/15 pada;
   generators 25 fajlova / 499; `npm run check` exit 0 (2128 testova; prvi put exit 2, TS6133 u testu, ispravljeno).
 - Izveštaj: `reports/SEGMENT-05b-IMPLEMENTATION.md`.
+
+## Segment 06 — adaptacija, 5k-v2.5.0 (2026-10-17)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: e008c03
+- Novi `adapt.ts`, `assess.ts`, `steps.ts`; `generate.construct` (generate bajt-isti, 282 plana); adaptiran
+  režim validatora; `adaptVolume`, `rePeriodize`, ograničenja nedelje (bol, odmor, zabrana kvaliteta).
+- Odstupanja: donja granica cilja min(original, 12/15/25 km); kvalitet koji ne staje → 1 → 0 (konstruktor).
+- Mreža 60 planova × 7 scenarija → 420/420, 0 grešaka; primeri `artifacts/segment-06/` (dev-04, po osećaju).
+- Provere: tsc, eslint, prettier exit 0 (eslint/prettier prvi put 8 / 12, ispravljeno); vitest v2 444/444;
+  novi test fajl na e008c03 pada (nema adapt.ts); generators 26 / 587; `npm run check` exit 0 (2216).
+- Izveštaj: `reports/SEGMENT-06-IMPLEMENTATION.md`.

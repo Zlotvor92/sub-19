@@ -1,0 +1,67 @@
+{
+  "asOf": "2026-12-20",
+  "reasons": [
+    {
+      "condition": "PAIN",
+      "applied": true,
+      "message": "Bol 5/10 u poslednja 3 dana: 7 dana bez kvaliteta (do 2026-12-27). Bol: nedelju dana bez kvaliteta, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled."
+    }
+  ],
+  "changes": [
+    {
+      "week": 8,
+      "field": "plannedKm",
+      "before": "36.4",
+      "after": "27"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-21",
+      "field": "day",
+      "before": "q1: I: 2 × 1200 m (oporavak 285 s lagano)",
+      "after": "easy: Lagano 5.5 km"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-23",
+      "field": "day",
+      "before": "easy: Lagano 8.26 km",
+      "after": "easy: Lagano 5.5 km"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-25",
+      "field": "day",
+      "before": "easy: Lagano 8.2 km",
+      "after": "easy: Lagano 5.5 km"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-26",
+      "field": "day",
+      "before": "long: Dugi lagano 12.7 km",
+      "after": "long: Dugi lagano 10.5 km"
+    }
+  ],
+  "steps": [
+    {
+      "asOf": "2026-12-20",
+      "firstWeek": 8,
+      "fromWeek": 8,
+      "result": null,
+      "vdot": null,
+      "startKm": null,
+      "pauseRemainder": false,
+      "restart": false,
+      "deload": false,
+      "noQuality": [],
+      "oneQuality": [],
+      "rest": null,
+      "pain": {
+        "from": "2026-12-21",
+        "to": "2026-12-27"
+      },
+      "orientation": false
+    }
+  ]
+}

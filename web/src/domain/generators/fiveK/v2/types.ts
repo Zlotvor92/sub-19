@@ -55,7 +55,15 @@ export type ReasonCode =
   | 'GOAL_INVALID'
   | 'QUALITY_INFEASIBLE'
   | 'WEEK_INFEASIBLE'
-  | 'PLAN_VIOLATES_POLICY';
+  | 'PLAN_VIOLATES_POLICY'
+  /* 2.5.0: adaptacija (adapt.ts / assess.ts). */
+  | 'ADAPT_PLAN_INVALID'
+  | 'ADAPT_AS_OF_INVALID'
+  | 'ADAPT_FACT_INVALID'
+  | 'ADAPT_FACT_AFTER_AS_OF'
+  | 'ADAPT_DAY_UNKNOWN'
+  | 'ADAPT_RESULT_INVALID'
+  | 'ADAPT_PROTECTION';
 
 export interface Reason {
   code: ReasonCode;
@@ -105,6 +113,22 @@ export interface WeekFrame {
   taperStep: 1 | 2 | null;
   /** 2.4.0: kontrolno trčanje 3 km umesto glavnog kvaliteta (samo plan po osećaju). */
   test: boolean;
+  /** 2.5.0: ograničenja adaptacije za ovu nedelju (steps.ts); izostavljeno u planu generatora. */
+  limits?: WeekLimits;
+}
+
+/** 2.5.0: ograničenja nedelje izvedena iz koraka adaptacije (datumski opsezi → dani nedelje). */
+export interface WeekLimits {
+  /** 'none' = bez kvaliteta (ni ubrzanja na tim danima); 'one' = jedan kvalitet doze rasterećenja. */
+  quality?: 'none' | 'one';
+  /** Jedini kvalitet ide na dan q2 šablona (dan q1 je u zabrani). */
+  swap?: true;
+  /** Dani bez kvaliteta (zabrana po datumu; trkačka nedelja: oštrenje). */
+  noQuality?: IsoDate[];
+  /** Dani odmora (bol ≥ 7): trening se ne pravi. */
+  rest?: IsoDate[];
+  /** Dani perioda bola: dugi ≤ 60 min, lagani −30%, bez ubrzanja. */
+  pain?: IsoDate[];
 }
 
 export type Basis = 'exact' | 'estimated';
@@ -271,7 +295,110 @@ export interface FiveKV2Plan {
   notes: string[];
   weeks: PlanWeek[];
   warnings: Violation[];
+  /** 2.5.0: istorija adaptacije (adapt.ts); izostavljeno u planu generatora. */
+  adaptation?: FiveKV2Adaptation;
 }
 
 export type GenerateResult =
   { ok: true; plan: FiveKV2Plan } | { ok: false; reasons: Reason[]; violations: Violation[] };
+
+/* ---------- 2.5.0: adaptacija ---------- */
+
+/** Izvršen (ili propušten) trening. `dayId` = datum dana plana (jedan trening po datumu u v2). */
+export interface WorkoutFact {
+  date: IsoDate;
+  dayId?: string;
+  km: number;
+  durationSec: number;
+  completed: boolean;
+  /** 1–10. */
+  rpe?: number;
+  /** 0–10. */
+  pain?: number;
+}
+
+export interface ResultFact {
+  distM: number;
+  sec: number;
+  date: IsoDate;
+  kind: 'test' | 'race';
+}
+
+/** Činjenice (ne odluke). Prazni nizovi = nema podataka (ne pauza). */
+export interface AdaptFacts {
+  workouts?: readonly WorkoutFact[];
+  results?: readonly ResultFact[];
+  /** Ručno zaključani dani (dayId = datum): ostaju bajt-isti. */
+  lockedDayIds?: readonly string[];
+}
+
+export interface DateRange {
+  from: IsoDate;
+  to: IsoDate;
+}
+
+/**
+ * Jedan korak adaptacije = OGRANIČENJA izvedena iz činjenica (assess.ts, jedino mesto). Konstruktor
+ * (generate.construct) ih primenjuje redom; plan čuva sve korake (ponovna adaptacija ih ponavlja).
+ */
+export interface AdaptStep {
+  asOf: IsoDate;
+  /** Nedelja koja sadrži asOf + 1. */
+  firstWeek: number;
+  /** Prva puna nedelja posle asOf („sledeća nedelja"; broj nedelja + 1 ako je nema). */
+  fromWeek: number;
+  /** Novi rezultat i VDOT (važi od fromWeek). */
+  result: ResultFact | null;
+  vdot: number | null;
+  /** Cilj nedelje fromWeek (pauza, izvršenje, „više od plana"); pauza: i ostatak firstWeek. */
+  startKm: number | null;
+  pauseRemainder: boolean;
+  /** Pauza ≥ 28 dana: nov start (faze preostale izgradnje iz periodize, vrh iz novog starta). */
+  restart: boolean;
+  /** Umor: fromWeek je rasterećenje. */
+  deload: boolean;
+  noQuality: DateRange[];
+  oneQuality: DateRange[];
+  rest: DateRange | null;
+  pain: DateRange | null;
+  /** Cilj → „orijentir" (nov start, < 6 nedelja do trke). */
+  orientation: boolean;
+}
+
+export interface FiveKV2Adaptation {
+  asOf: IsoDate;
+  steps: AdaptStep[];
+  /** Nedelje sa danima iz prethodnog plana (prošlost/zaključano) koji se razlikuju od konstrukcije:
+      validator na njima proverava samo dane (nedeljna pravila važe za konstrukciju). */
+  mixedWeeks: number[];
+  lockedDayIds: string[];
+}
+
+export type AdaptCondition =
+  | 'NO_FACTS'
+  | 'NEW_RESULT'
+  | 'RESULT_IGNORED'
+  | 'UNDER_EXECUTION'
+  | 'OVER_EXECUTION'
+  | 'PAUSE'
+  | 'PAIN'
+  | 'FATIGUE';
+
+/** Aktivan uslov iz činjenica; `applied` = false kad ga nadjačava viši prioritet ili ne važi. */
+export interface AdaptReason {
+  condition: AdaptCondition;
+  applied: boolean;
+  message: string;
+}
+
+export interface AdaptChange {
+  week: number;
+  date?: IsoDate;
+  field: string;
+  before: string;
+  after: string;
+}
+
+export type AdaptResult =
+  | { ok: true; plan: FiveKV2Plan; changes: AdaptChange[]; reasons: AdaptReason[] }
+  | { ok: false; reasons: Reason[]; violations: Violation[] };

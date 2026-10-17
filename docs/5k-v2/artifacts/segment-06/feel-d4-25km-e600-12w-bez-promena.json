@@ -1,0 +1,23 @@
+{
+  "asOf": "2026-12-13",
+  "reasons": [],
+  "changes": [],
+  "steps": [
+    {
+      "asOf": "2026-12-13",
+      "firstWeek": 7,
+      "fromWeek": 7,
+      "result": null,
+      "vdot": null,
+      "startKm": null,
+      "pauseRemainder": false,
+      "restart": false,
+      "deload": false,
+      "noQuality": [],
+      "oneQuality": [],
+      "rest": null,
+      "pain": null,
+      "orientation": false
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.4.1',
+  version: '5k-v2.5.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -320,6 +320,46 @@ export const FIVE_K_V2_POLICY = {
     sharpenerMinGapDays: 3
   },
 
+  /** 2.5.0: adaptacija (assess.ts). Svi pragovi su TRENERSKE HEURISTIKE (v. DECISIONS 5k-v2.5.0). */
+  adapt: {
+    /** Odluka 1: rezultat (test ili trka) ne stariji od ovoga [dana] menja VDOT od sledeće nedelje. */
+    resultMaxAgeDays: 84,
+    /** Odluka 2: izvršenje poslednjih windowDays < underShare planiranog → sledeća nedelja ne raste:
+        cilj = max(izvršeno, underFloorShare × planirano za tu nedelju). */
+    windowDays: 7,
+    underShare: 0.6,
+    underFloorShare: 0.8,
+    /** Odluka 3: pauza [dana bez trčanja do asOf] → udeo obima pre pauze (7 dana pre pauze). */
+    pause: {
+      shortDays: 7,
+      midDays: 14,
+      longDays: 28,
+      shortShare: 0.8,
+      midShare: 0.7,
+      longShare: 0.5
+    },
+    /** Odluka 3: nov start i < ovoliko nedelja do trke → cilj „orijentir". */
+    restartFullPrepWeeks: 6,
+    /** Odluka 4: bol ≥ painMin u poslednjih painLookbackDays dana → painDays dana bez kvaliteta, dugi ≤
+        painLongMaxSec, lagani × painEasyFactor; bol ≥ painRestMin → najpre restDays dana odmora. */
+    painMin: 4,
+    painRestMin: 7,
+    painLookbackDays: 3,
+    painDays: 7,
+    restDays: 3,
+    painLongMaxSec: 3600,
+    painEasyFactor: 0.7,
+    /** Odluka 5: ≥ fatigueCount laganih treninga u poslednjih windowDays sa RPE ≥ fatigueRpe. */
+    fatigueRpe: 7,
+    fatigueCount: 2,
+    /** Odluka 6: izvršeno > overShare planiranog u 2 uzastopna prozora od windowDays → bez rasta. */
+    overShare: 1.15,
+    orientationMessage:
+      'Cilj je orijentir: posle duge pauze ostaje manje od 6 nedelja do trke, priprema nije potpuna.',
+    painMessage:
+      'Bol: nedelju dana bez kvaliteta, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled.'
+  },
+
   /** Tolerancija aritmetike (km) i planirano/ciljno (udeo). */
   tolerance: { arithmeticKm: 0.011, plannedVsTarget: 0.05 }
 } as const;
@@ -491,7 +531,7 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'samo ubrzanja; prvi izbor po osećaju = 70% najvećeg rada koji staje (ponuda je ograničena).'
   },
   {
-    version: '5k-v2.4.1',
+    version: '5k-v2.5.0',
     decision:
       'Segment 05b, regresija kapaciteta (pod 2.4.0: 3 dana ≈ 17,1 km za svaki VDOT; 4 dana VDOT ≥ 45 ' +
       '41,3 km zbog rupa 41,4–44,9). (1) 3 dana: dva nekvalitetna trčanja su dugi i lagan (duže = dugi); ' +
@@ -502,5 +542,26 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '(volume.fitTargetKm, pretraga naniže 0,1 km, jedno mesto; start, izgradnja, rasterećenje, taper). ' +
       'Korak dugog 0,1 km za 3/4/5 dana. (3) Nijedan regular plan sa rezultatom nema niži vrh nego na ' +
       '7b4b574, osim gde je tamo vrh-nedelja imala lagan = dugi / planirano < cilj (test sa fixture).'
+  },
+  {
+    version: '5k-v2.5.0',
+    decision:
+      'Segment 06, adaptacija (adapt.ts). Tok: assess.ts izvodi OGRANIČENJA iz činjenica (jedno mesto) → ' +
+      'isti konstruktor kao generate (periodize/volume/week, generate.construct) gradi plan sa tim ' +
+      'ograničenjima → spajanje (dani ≤ asOf, urađeni i zaključani dani bajt-isti) → validate. Datum trke, ' +
+      'taper i trkačka nedelja ne pomeraju se. Heuristike: (1) rezultat ≤ 12 ned: VDOT od sledeće nedelje, ' +
+      'po osećaju → tempo, cilj/prognoza iz novog VDOT-a; obim ne raste zbog tempa (samo kapacitet novog ' +
+      'tempa). (2) izvršenje 7 dana < 60%: cilj sledeće nedelje = min(prethodni cilj izgradnje, max(izvršeno, ' +
+      '80% planiranog)), dalje rast po pravilima. (3) pauza 7–13: 80% obima 7 dana pre pauze, prva nedelja 1 ' +
+      'kvalitet (doza rasterećenja); 14–27: 70%, prva bez kvaliteta, druga 1 kvalitet; ≥ 28: nov start = ' +
+      'min(14 dana pre pauze / 2, 50%), faze preostale izgradnje ponovo (periodize), < 6 ned → orijentir. Start ' +
+      'nikad ispod donje granice ulaza za broj dana (12/15/25 km) ni iznad planiranog. Ostatak tekuće nedelje ' +
+      'dobija ograničenja prve nedelje. (4) bol ≥ 4 u 3 dana: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, ' +
+      'lagani × 0,7 (ne ispod minimuma); ≥ 7: 3 dana odmora pa isto; poruka o stručnom pregledu; opsezi ' +
+      'prethodnih koraka ostaju (ponovni bol produžava). (5) 2+ lagana (lagan ili dugi) sa RPE ≥ 7 u 7 dana: ' +
+      'sledeća nedelja rasterećenje (ne u taperu/trci; sledeće redovno rasterećenje odmah posle se ukida). ' +
+      '(6) > 115% planiranog u 2 uzastopna 7-dnevna prozora: sledeća nedelja bez rasta. (7) prioritet za obim ' +
+      'sledeće nedelje: pauza > umor > izvršenje; bol se uvek primenjuje po datumima (najstroži); tempo iz ' +
+      'rezultata uvek. Činjenice se smatraju potpunim od prvog zapisa do asOf.'
   }
 ];

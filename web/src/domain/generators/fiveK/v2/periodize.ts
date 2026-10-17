@@ -44,6 +44,26 @@ export function testWeekOf(frames: readonly Omit<WeekFrame, 'test'>[]): number |
   return null;
 }
 
+/**
+ * Rasterećenje (jedino mesto): svaka N-ta nedelja izgradnje (redni broj u nizu `sequence`, od 1). 2.2.0: ako
+ * bi to bila prva nedelja vrhunca ili oštrenja, pomera se na poslednju nedelju prethodne faze; izostavlja
+ * se ako bi bila poslednja nedelja izgradnje (uzastopno sa taperom, koji ionako smanjuje obim), ili
+ * ako bi pomereno palo na prvu nedelju vrhunca/oštrenja (2.5.0, faza od jedne nedelje).
+ * 2.3.0: kratka priprema nema rasterećenja (every = Infinity).
+ */
+function deloadWeeks(sequence: readonly Phase[], lastBuild: number, every: number): Set<number> {
+  const deloads = new Set<number>();
+  for (let n = every; n <= lastBuild; n += every) {
+    const phaseStart = sequence[n - 1] !== sequence[n - 2];
+    const at = phaseStart && sequence[n - 1] !== 'base' ? n - 1 : n;
+    // 2.5.0: pomeranje ne sme pasti na početak druge faze (faza od 1 nedelje, rePeriodize).
+    const startsPhase =
+      at !== n && sequence[at - 1] !== sequence[at - 2] && sequence[at - 1] !== 'base';
+    if (at !== lastBuild && !startsPhase) deloads.add(at);
+  }
+  return deloads;
+}
+
 /** `deloadEvery`: 2.4.0 početnik 3 (rulesOf); `feel`: plan po osećaju dobija nedelju kontrolnog trčanja. */
 export function periodize(
   startDate: IsoDate,
@@ -60,17 +80,11 @@ export function periodize(
     ...Array<Phase>(c.race).fill('race')
   ];
   const lastBuild = c.base + c.peak + c.sharpen;
-  // Rasterećenje (jedino mesto): svaka N-ta nedelja izgradnje. 2.2.0: ako bi to bila prva nedelja
-  // vrhunca ili oštrenja, pomera se na poslednju nedelju prethodne faze; izostavlja se ako bi bila
-  // poslednja nedelja izgradnje (uzastopno sa taperom, koji ionako smanjuje obim).
-  // 2.3.0: kratka priprema nema rasterećenja.
-  const deloads = new Set<number>();
-  const every = isShortPrep(totalWeeks) ? Infinity : deloadEvery;
-  for (let n = every; n <= lastBuild; n += every) {
-    const phaseStart = sequence[n - 1] !== sequence[n - 2];
-    const at = phaseStart && sequence[n - 1] !== 'base' ? n - 1 : n;
-    if (at !== lastBuild) deloads.add(at);
-  }
+  const deloads = deloadWeeks(
+    sequence,
+    lastBuild,
+    isShortPrep(totalWeeks) ? Infinity : deloadEvery
+  );
   let taperSeen = 0;
   const frames = sequence.map((phase, i) => {
     const index = i + 1;
@@ -86,4 +100,35 @@ export function periodize(
   });
   const test = feel ? testWeekOf(frames) : null;
   return frames.map((f) => ({ ...f, test: f.index === test }));
+}
+
+/**
+ * 2.5.0 (Odluka 3, nov start): faze i rasterećenja preostale izgradnje od nedelje `from` do tapera, istim
+ * pravilima kao periodize (raspodela izgradnje iz phaseCounts: oštrenje 2 od 7 nedelja izgradnje, vrhunac
+ * ≤ peakMaxWeeks, višak u bazu; rasterećenje deloadWeeks od nedelje `from`). Taper, trkačka nedelja, datumi
+ * i nedelje pre `from` se ne menjaju. Oznaka testa ostaje (steps.ts je premešta ako treba).
+ */
+export function rePeriodize(
+  frames: readonly WeekFrame[],
+  from: number,
+  deloadEvery: number = P.volume.deloadEvery
+): WeekFrame[] {
+  const tail = frames.findIndex((f) => f.phase === 'taper' || f.phase === 'race');
+  const m = tail - (from - 1);
+  if (m <= 0) return [...frames];
+  const sharpen =
+    m >= P.phases.sharpenLongFromBuildWeeks
+      ? P.phases.sharpenWeeksLong
+      : P.phases.sharpenWeeksShort;
+  const peak = Math.min(Math.floor((m - sharpen) / 2), P.phases.peakMaxWeeks);
+  const sequence: Phase[] = [
+    ...Array<Phase>(m - sharpen - peak).fill('base'),
+    ...Array<Phase>(peak).fill('peak'),
+    ...Array<Phase>(sharpen).fill('sharpen')
+  ];
+  const deloads = deloadWeeks(sequence, m, isShortPrep(frames.length) ? Infinity : deloadEvery);
+  return frames.map((f, i) => {
+    const k = i - (from - 1);
+    return k < 0 || i >= tail ? f : { ...f, phase: sequence[k]!, deload: deloads.has(k + 1) };
+  });
 }

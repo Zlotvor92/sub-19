@@ -67,3 +67,22 @@ export function weekLengths(
     easyMin
   };
 }
+
+/**
+ * 2.5.0 (Odluka 4): dužine u periodu bola — JEDINO mesto. Dugi na danu bola ≤ adapt.painLongMaxSec
+ * sporijom granicom E (na 0,5 km); lagan na danu bola × adapt.painEasyFactor naniže na 0,1 km, ne ispod
+ * minimuma; svaki lagan ≤ dugi nedelje (`longKm` = dugi posle ograničenja, null ako dugog nema).
+ */
+export function painLongKm(longKm: number, p: PaceModel): number {
+  return Math.min(longKm, floorHalf(P.adapt.painLongMaxSec / p.E.slow));
+}
+
+export function limitedEasyKm(
+  km: number,
+  inPain: boolean,
+  longKm: number | null,
+  easyMin: number
+): number {
+  const k = inPain ? Math.max(easyMin, floor1(km * P.adapt.painEasyFactor)) : km;
+  return longKm === null ? k : Math.min(k, longKm);
+}

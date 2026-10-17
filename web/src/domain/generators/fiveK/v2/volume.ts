@@ -190,3 +190,101 @@ export function planVolume(
     targets
   };
 }
+
+/** 2.5.0: donja granica cilja adaptirane nedelje = min(cilj nedelje u planu generatora, donja granica
+    ulaza za broj dana — 12/15/25 km): smanjenje (pauza, izvršenje, rasterećenje, taper od manjeg vrha)
+    ne pravi nedelju manju i od originalne i od najmanjeg podržanog obima, jer takva nedelja ne prima
+    kvalitet ni lagane dane ≥ minimuma (heuristika). Za nepromenjen cilj je bez dejstva (cilj ≥ granice). */
+export function adaptFloorKm(originalKm: number, a: Athlete): number {
+  return Math.min(originalKm, rulesOf(a).weeklyKm.min);
+}
+
+/** 2.5.0: deo koraka adaptacije koji određuje obim (AdaptStep iz types.ts). */
+export interface VolumeStep {
+  firstWeek: number;
+  fromWeek: number;
+  startKm: number | null;
+  pauseRemainder: boolean;
+  restart: boolean;
+}
+
+const isBuildFrame = (f: WeekFrame): boolean =>
+  f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen';
+
+/**
+ * 2.5.0: ciljevi posle koraka adaptacije — JEDINO mesto odluke o obimu adaptiranog plana; isti rekurent
+ * kao planVolume (rasterećenje × deloadFactor prethodne, oštrenje drži, rast ≤ maxBuildGrowth do
+ * peakKm, fitTargetKm), samo od nedelje fromWeek i sa tempom te nedelje (`ctx`):
+ * - startKm (pauza / izvršenje / „više od plana"): cilj nedelje fromWeek, rast dalje od njega; pauza i
+ *   ostatak tekuće nedelje (firstWeek);
+ * - nov start (restart): vrh = peakKm(startKm); inače peakKm(start plana);
+ * - taper i trkačka nedelja od firstWeek: udeo vrha, gde je vrh = najveći cilj izgradnje od poslednjeg
+ *   starta (startKm u izgradnji), a ako je startKm zadat u taperu: min(vrh, startKm);
+ * - svaki cilj ≥ adaptFloorKm (pauza: ostatak tekuće nedelje ≤ njenog cilja).
+ * Bez koraka (ili koraka bez promene) ciljevi su isti kao planVolume.
+ */
+export function adaptVolume(
+  frames: readonly WeekFrame[],
+  base: VolumePlan,
+  steps: readonly VolumeStep[],
+  ctx: (week: number) => { p: PaceModel; a: Athlete }
+): { targets: number[]; peakKm: number; startRefKm: number } {
+  const targets = [...base.targets];
+  let startRef = base.startKm;
+  let peakRef = base.peakKm;
+  let resetFrom = 1;
+  let tailCap: number | null = null;
+  /** Nedelje sa ciljem koraka (osnov rasta i kad su rasteretne). */
+  const resets = new Set<number>();
+  const fitAt = (w: number, t: number): number => {
+    const { p, a } = ctx(w);
+    const floor = adaptFloorKm(base.targets[w - 1]!, a);
+    return fitTargetKm(Math.min(Math.max(t, floor), capacityKm(p, a)), p, a);
+  };
+  for (const s of steps) {
+    const n = s.fromWeek;
+    const { p, a } = ctx(Math.min(n, frames.length));
+    if (s.restart && s.startKm !== null) startRef = s.startKm;
+    const cap = peakKm(startRef, capacityKm(p, a), a);
+    const growth = rulesOf(a).maxBuildGrowth;
+    const r = s.firstWeek;
+    if (s.pauseRemainder && s.startKm !== null && r < n && isBuildFrame(frames[r - 1]!))
+      targets[r - 1] = fitAt(r, Math.min(s.startKm, targets[r - 1]!));
+    let lastBuild: number | null = null;
+    for (let i = 0; i < n - 1 && i < frames.length; i++)
+      if (isBuildFrame(frames[i]!) && (!frames[i]!.deload || resets.has(i + 1)))
+        lastBuild = targets[i]!;
+    for (let i = n - 1; i < frames.length && isBuildFrame(frames[i]!); i++) {
+      const f = frames[i]!;
+      let t: number;
+      if (i === n - 1 && s.startKm !== null) t = s.startKm;
+      // Rasterećenje: deloadFactor × poslednja ne-rasteretna nedelja (u generatoru je to uvek prethodna;
+      // prisilno rasterećenje odmah posle redovnog se ne sabija dvaput).
+      else if (f.deload)
+        t = round1((lastBuild ?? targets[i - 1] ?? startRef) * P.volume.deloadFactor);
+      else if (lastBuild === null) t = startRef;
+      else if (f.phase === 'sharpen') t = lastBuild;
+      else t = Math.min(floor1(lastBuild * (1 + growth)), cap);
+      t = fitAt(i + 1, t);
+      // Cilj koraka je osnov daljeg rasta i kad je nedelja rasteretna (obim pre pauze/smanjenja ne važi).
+      if (!f.deload || (i === n - 1 && s.startKm !== null)) lastBuild = t;
+      targets[i] = t;
+    }
+    if (s.startKm !== null) {
+      resets.add(n);
+      if (n <= frames.length && isBuildFrame(frames[n - 1]!)) {
+        resetFrom = n;
+        tailCap = null;
+      } else tailCap = Math.min(peakRef, s.startKm);
+    }
+    const build = targets.filter((_, i) => i >= resetFrom - 1 && isBuildFrame(frames[i]!));
+    peakRef = tailCap ?? Math.max(...build);
+    for (let i = r - 1; i < frames.length; i++) {
+      const f = frames[i]!;
+      if (f.phase === 'taper')
+        targets[i] = fitAt(i + 1, round1(peakRef * P.volume.taperFactors[(f.taperStep ?? 1) - 1]!));
+      else if (f.phase === 'race') targets[i] = round1(peakRef * P.volume.raceWeekFactor);
+    }
+  }
+  return { targets, peakKm: peakRef, startRefKm: startRef };
+}
