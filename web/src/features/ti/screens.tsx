@@ -15,7 +15,10 @@ import { useAuthStore } from '../../stores/authStore';
 import { useIsOwner } from '../../stores/owner';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
+import { adaptationUnsupportedFor } from '../../domain/generators/select';
+import { useFiveKV2Setting, setFiveKV2Setting } from '../../stores/generatorFlags';
 import { changeGoalTime } from '../plan/planActions';
+import { GoalAssessmentLine } from '../plan/GoalAssessment';
 import { useFormModel } from '../race/useFormModel';
 import { AccountBody, useAccountInfo } from './accountSection';
 import { AppRefresh } from './AppRefresh';
@@ -98,6 +101,7 @@ export function GoalScreen() {
         <span className="hero-v goal num">{m.goalText}</span>
       </div>
       {rows.length ? <Facts items={rows.map((r) => ({ label: r.label, value: r.value }))} /> : null}
+      <GoalAssessmentLine meta={genPlan?.meta} />
       {genPlan?.ulaz ? (
         <Section title="Promeni ciljno vreme">
           <div className="f-field">
@@ -136,6 +140,10 @@ export function GoalScreen() {
             </p>
           </Help>
         </Section>
+      ) : genPlan && adaptationUnsupportedFor(genPlan) ? (
+        <Section>
+          <p className="note-src">{adaptationUnsupportedFor(genPlan)}</p>
+        </Section>
       ) : genPlan ? (
         <Section>
           <p className="note-src">
@@ -169,6 +177,9 @@ export function TrainingSettingsScreen() {
       <Head title="Zone i postavke treninga" />
       <Section title="Zone pulsa">
         <ZonesList />
+      </Section>
+      <Section title="Generator plana">
+        <FiveKV2Toggle />
       </Section>
       <Section title="Vreme i lokacija">
         <WeatherBody />
@@ -402,5 +413,28 @@ export function OwnerScreen() {
         <UsersBody />
       </Section>
     </ScreenFrame>
+  );
+}
+
+/** Prekidač 5K v2 (podrazumevano isključen): utiče samo na NOV 5K plan; postojeći plan ostaje na svom generatoru. */
+function FiveKV2Toggle() {
+  const { on, setting, forced } = useFiveKV2Setting();
+  return (
+    <>
+      <label className="note-src" htmlFor="set-fivek-v2">
+        <input
+          type="checkbox"
+          id="set-fivek-v2"
+          checked={setting}
+          onChange={(e) => setFiveKV2Setting(e.target.checked)}
+        />{' '}
+        Novi 5K plan pravi generator v2 (probno)
+      </label>
+      <p className="note-src">
+        Važi samo za novi 5K plan iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje v2 plana
+        stiže uskoro.
+        {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
+      </p>
+    </>
   );
 }

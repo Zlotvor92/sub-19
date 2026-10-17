@@ -19,6 +19,10 @@ export const FIVE_K_DISTANCE_M = 5000;
 /** Proizvodni podaci 5K (ime, preporučeni broj nedelja…) za napomene čarobnjaka. */
 export const FIVE_K_PRODUCT = PRODUCT_5K;
 
+/* --- 5K v2 (segment 08a): adapter prema aplikaciji; `select.ts` ga bira po oznaci politike (`5k-v2`) i, uz uključen
+   prekidač, za nov 5K plan. Postojeći 5K (v1) izvozi ispod ostaju nepromenjeni. --- */
+export { fiveKV2 } from './v2/app/index.ts';
+
 /* --- generisanje i adapter prema aplikaciji --- */
 export { generatePlan } from './training/generator/generatePlan';
 export { assess } from './training/generator/assess';

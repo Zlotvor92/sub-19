@@ -8,6 +8,7 @@ export type {
   LogEntry,
   PainRecord,
   StoredWeek,
+  StructuredDay,
   T3kRecord,
   VdotRecord,
   WellnessRecord

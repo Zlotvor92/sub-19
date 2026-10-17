@@ -1,4 +1,5 @@
-/* 5K v2 — javni API. Nije povezan sa select.ts, UI-jem ni store-om. */
+/* 5K v2 — javni API jezgra. Aplikacija ga ne uvozi direktno: povezivanje (08a) ide samo kroz `./app/` (adapter), koji
+   `fiveK/index.ts` izvozi za `select.ts`. */
 
 export { generateFiveKV2 } from './generate.ts';
 export { adaptFiveKV2 } from './adapt.ts';

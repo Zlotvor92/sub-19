@@ -69,6 +69,7 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         snaga: false,
         session: d.session,
         originSession: d.session,
+        ...('structure' in d && d.structure ? { structure: d.structure } : {}),
         mlr: 'mlr' in d && d.mlr === true,
         test: isTest,
         origin
@@ -87,7 +88,10 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         /* VAŽEĆI PROPIS (nalaz 4): struktura sesije važi samo dok izmena ne dira tip, km i opis (menja samo tempo,
            ritam ili snagu). Inače dan nema strukturu — prikaz, sat i merenje čitaju opis izmene; original ostaje u
            `originSession`. */
-        if (!keepsStructure(alt, origin)) resolved.session = undefined;
+        if (!keepsStructure(alt, origin)) {
+          resolved.session = undefined;
+          delete resolved.structure;
+        }
       }
       byId.set(id, resolved);
       if (!isTest) {

@@ -10,9 +10,10 @@
    (novija verzija aplikacije ih možda koristi).
    ============================================================ */
 
-import type { TrainingPlan, PredictionRow, RunWalk, Week } from '../training/types';
-/** Oblik generisanog plana je deo formata razmene (ugovor generatora, `generators/contract.ts`, ga čita odavde). */
-export type { TrainingPlan, PredictionRow, RunWalk, Week };
+import type { TrainingPlan, PredictionRow, RunWalk, StructuredDay, Week } from '../training/types';
+/** Oblik generisanog plana je deo formata razmene (ugovor generatora, `generators/contract.ts`, ga čita odavde).
+ *  `StructuredDay` (5k-v2, 08a): dan sa strukturom treninga. */
+export type { TrainingPlan, PredictionRow, RunWalk, StructuredDay, Week };
 
 export const SCHEMA_VERSION = 12;
 
@@ -127,6 +128,9 @@ export interface GenPlanState {
   meta?: TrainingPlan['meta'] & Record<string, unknown>;
   /** Pun ulaz generatora — potreban da se cilj promeni usred pripreme. NEPOUZDAN. */
   ulaz?: unknown;
+  /** 5k-v2 (08a): izlaz generatora 5K v2 doslovno (ulaz, nedelje, koraci) — osnova za njegovu adaptaciju (08b). Oblik
+   *  poznaje samo `generators/fiveK/v2`; aplikacija ga ne čita. Plan bez polja nije v2 plan. NEPOUZDAN. */
+  fiveKV2?: unknown;
   [field: string]: unknown;
 }
 

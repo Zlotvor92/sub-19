@@ -35,17 +35,18 @@ export function safeTag(t: string | undefined | null): DayTag | '' {
  * lako trčanje ne sme da se prikazuje kao „Piramida".
  */
 export function sessKind(
-  d: Pick<ResolvedDay, 'rest' | 'tag' | 'session'>,
+  d: Pick<ResolvedDay, 'rest' | 'tag' | 'session' | 'structure'>,
   hasAlt: boolean
 ): string {
   if (d.rest) return tagName('odmor');
   if (hasAlt) return tagName(d.tag);
-  return d.session?.kind ? d.session.kind : tagName(d.tag);
+  /* 5k-v2: vrsta iz strukture dana (generator), inače ime tipa dana. */
+  return d.session?.kind ? d.session.kind : (d.structure?.kind ?? tagName(d.tag));
 }
 
 /** Oznaka dana: vrsta + „ + Snaga" kad je uz trčanje dodata snaga. */
 export function dayLabel(
-  d: Pick<ResolvedDay, 'rest' | 'tag' | 'session' | 'snaga'>,
+  d: Pick<ResolvedDay, 'rest' | 'tag' | 'session' | 'snaga' | 'structure'>,
   hasAlt: boolean
 ): string {
   return sessKind(d, hasAlt) + (d.snaga ? ' + Snaga' : '');

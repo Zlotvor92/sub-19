@@ -14,6 +14,7 @@ import { PHASE_LINE, type PhaseKey } from '../cycle/cycle';
 import { useCycleModel } from '../cycle/useCycleModel';
 import { useEasyPace } from '../session/useEasyPace';
 import { DayRow } from './DayRow';
+import { GoalAssessmentLine } from './GoalAssessment';
 
 const byDate = (a: { date: string }, b: { date: string }): number => {
   const da = a.date || '9999-99-99';
@@ -82,6 +83,7 @@ export default function PlanPage() {
                 : ''}
           </p>
         ) : null}
+        <GoalAssessmentLine meta={gen?.meta} />
       </header>
 
       <div className="weeknav">

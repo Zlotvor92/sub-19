@@ -8,7 +8,10 @@ import {
   sessionBreakdown,
   sessionCore,
   sessionGuide,
-  sessionNote
+  sessionNote,
+  structureMinutes,
+  structurePace,
+  structureSegments
 } from '../../domain/day';
 import type { BreakdownRow } from '../../domain/day';
 import { dayLabel, sessKind, type ResolvedDay } from '../../domain/plan';
@@ -51,9 +54,11 @@ export function paceFromDesc(desc: string | null | undefined): number | null {
 
 /** Segmenti strukturirane sesije; `null` za lagano/dugo/snagu i za sesiju čiji lagan tempo nije poznat. */
 export function sessionSegments(
-  day: Pick<ResolvedDay, 'session' | 'km'>,
+  day: Pick<ResolvedDay, 'session' | 'km' | 'structure'>,
   easyFallback: number | null
 ): Segment[] | null {
+  /* 5k-v2: profil iz strukture dana (deo po deo, tempo ili procena iz km i vremena). */
+  if (day.structure) return structureSegments(day.structure);
   const s = day.session;
   if (!s) return null;
   const out: Segment[] = [];
@@ -125,11 +130,12 @@ export function sessionSegments(
 
 /** Procena trajanja u minutama: iz segmenata, a za obično trčanje iz kilometara i tempa u opisu (ili laganog tempa). */
 export function estimateMinutes(
-  day: Pick<ResolvedDay, 'tag' | 'km' | 'desc' | 'rest' | 'runWalk'>,
+  day: Pick<ResolvedDay, 'tag' | 'km' | 'desc' | 'rest' | 'runWalk' | 'structure'>,
   segments: readonly Segment[] | null,
   easyFallback: number | null
 ): number | null {
   if (day.rest) return null;
+  if (day.structure) return structureMinutes(day.structure);
   if (segments && segments.length) {
     const total = segments.reduce((s, x) => s + x.sec, 0);
     return total > 0 ? Math.round(total / 60) : null;
@@ -142,7 +148,7 @@ export function estimateMinutes(
 
 /** Ciljni tempo za naslov dana: iz sesije, iz opisa, ili sopstveni cilj iz ručne izmene. */
 export function targetPace(
-  day: Pick<ResolvedDay, 'session' | 'desc' | 'tag' | 'rest'>,
+  day: Pick<ResolvedDay, 'session' | 'desc' | 'tag' | 'rest' | 'structure'>,
   alt: AltRecord | undefined
 ): { sec: number | null; own: boolean } {
   if (day.rest) return { sec: null, own: false };
@@ -151,6 +157,7 @@ export function targetPace(
     return { sec: alt.pace ?? paceFromDesc(day.desc), own };
   }
   if (day.session) return { sec: day.session.paceSec, own: false };
+  if (day.structure) return { sec: structurePace(day.structure), own: false };
   return { sec: paceFromDesc(day.desc), own: false };
 }
 

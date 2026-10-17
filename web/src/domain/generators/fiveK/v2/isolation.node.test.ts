@@ -68,8 +68,20 @@ describe('5K v2 je izolovan', () => {
     }
   });
 
-  it('ništa van v2/ ne uvozi v2 (nije aktiviran: select.ts, UI, store)', () => {
-    const outside = walk(SRC).filter((f) => !f.startsWith(V2 + '/'));
-    for (const f of outside) expect(readFileSync(f, 'utf8'), f).not.toMatch(/fiveK\/v2['/]/);
+  it('08a: van v2/ v2 uvozi SAMO fiveK/index.ts, i to samo adapter app/index.ts (select.ts → fiveK)', () => {
+    const outside = walk(SRC).filter((f) => !f.startsWith(V2 + '/') && !isTest(f));
+    const edges: string[] = [];
+    for (const f of outside) {
+      const code = strip(readFileSync(f, 'utf8'));
+      for (const m of code.matchAll(STATEMENT)) {
+        const spec = m[4]!;
+        const target = spec.startsWith('.') ? resolve(dirname(f), spec) : null;
+        if (target !== null && (target === V2 || target.startsWith(V2 + '/')))
+          edges.push(`${relative(SRC, f)} → ${relative(SRC, target)}`);
+      }
+    }
+    expect(edges).toEqual([
+      'domain/generators/fiveK/index.ts → domain/generators/fiveK/v2/app/index.ts'
+    ]);
   });
 });

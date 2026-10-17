@@ -8,6 +8,7 @@ import { useIsOwner } from '../../stores/owner';
 import { applyProposal as applyInjury } from '../../stores/recoveryActions';
 import { applyProposal as applyPace, undoAdjustments } from '../../stores/raceActions';
 import { activePlanGenerator, activePlanUnsupportedReason } from '../../stores/executionActions';
+import { adaptationUnsupportedFor } from '../../domain/generators/select';
 import { useUIStore } from '../../stores/uiStore';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
 import { backToOwnPlan, recalibratePlan, startNewPlan } from './planActions';
@@ -27,6 +28,8 @@ export function AdjustPlan() {
   const openScreen = useUIStore((s) => s.openScreen);
   const setWizard = useUIStore((s) => s.setWizard);
   if (!plan) return null;
+  /* 5K v2: adaptacija i predlozi stižu u 08b — eksplicitna poruka umesto prilagođavanja (bez starog generatora). */
+  const unsupported = adaptationUnsupportedFor(genPlan);
 
   const injury = rec?.proposal ?? null;
   const pace = adj.proposal;
@@ -134,11 +137,17 @@ export function AdjustPlan() {
 
       {adj.blockedReason ? <p className="note-src">{adj.blockedReason}</p> : null}
 
-      {!injury && !pace && !adj.adjusted ? (
+      {!injury && !pace && !adj.adjusted && !unsupported ? (
         <p className="empty">Trenutno nema predloga za prilagođavanje plana.</p>
       ) : null}
 
-      {activePlanGenerator() ? (
+      {unsupported ? (
+        <Section title="Prilagođavanje plana">
+          <p className="note-src" id="v2-unsupported">
+            {unsupported}
+          </p>
+        </Section>
+      ) : activePlanGenerator() ? (
         <ExecutionAdjustment plan={plan} today={todayStr} />
       ) : (
         <Section title="Prilagođavanje prema izvršenju">

@@ -10,6 +10,7 @@ export type {
   PredictionRow,
   RunWalk,
   StoredWeek,
+  StructuredDay,
   T3kRecord,
   TrainingPlan,
   UiState,

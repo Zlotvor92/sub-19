@@ -148,6 +148,8 @@ interface DayBase {
   dow: number;
   finish?: FastFinish;
   strides?: Strides;
+  /** 5k-v2 (08a): strukturisan trening (v. `StructuredDay`); stariji planovi ga nemaju. */
+  structure?: WorkoutStructure;
 }
 
 export interface RestDay extends DayBase {
@@ -202,6 +204,91 @@ export interface SessionDay extends DayBase {
   desc: string;
   session: Session;
   rest?: undefined;
+}
+
+/* ---------- strukturisan trening (5k-v2, segment 08a) ----------
+   Opciono proširenje formata: dan generatora koji propisuje strukturu (deo po deo: km, vreme, tempo ILI napor) nosi je
+   u `structure`; prikaz (Plan tab, dan) i sat je čitaju umesto teksta. Stariji planovi je nemaju i čitaju se kao ranije. */
+
+/** Napor dela po osećaju (RPE 1–10 i opis), kad deo nema brojčani tempo. */
+export interface StructureEffort {
+  rpeMin: number;
+  rpeMax: number;
+  cue: string;
+}
+export type StructureStepKind =
+  | 'warmup'
+  | 'cooldown'
+  | 'easy'
+  | 'long'
+  | 'work'
+  | 'recovery'
+  | 'stride'
+  | 'race'
+  | 'test'
+  | 'run'
+  | 'walk';
+/** Jedan deo treninga. `basis` kaže koja veličina je propisana ('exact'), a koja izračunata ('estimated'). */
+export interface StructureStep {
+  kind: StructureStepKind;
+  /** Zona dela generatora ('E', 'T', 'I', 'R', 'RP'; 'jog' = oporavak kaskanjem); bez zone za hod/trčanje run/walk. */
+  zone?: string;
+  /** null = nema procene km (vremenski deo bez tempa). */
+  km: number | null;
+  /** null = nema procene trajanja (distanca bez tempa, npr. trka trčanja/hodanja). */
+  sec: number | null;
+  /** null = deo po osećaju (napor u `effort`) ili hod. */
+  paceSec: number | null;
+  /** Opseg tempa (brža–sporija granica) kad ga generator propisuje kao opseg (lagano). */
+  paceRange?: { fast: number; slow: number };
+  /** Tempo kojim je generator PROCENIO km/trajanje dela kad cilj nije tempo (trčanje run/walk iz uobičajenog laganog
+   *  tempa) — podatak procene, ne propisan cilj. */
+  estimatePaceSec?: number;
+  kmBasis: 'exact' | 'estimated';
+  secBasis: 'exact' | 'estimated';
+  effort?: StructureEffort;
+}
+/** Blok: `reps` puta deo `step`, sa oporavkom `recovery` posle svakog ponavljanja osim poslednjeg. */
+export interface StructureBlock {
+  reps: number;
+  step: StructureStep;
+  recovery?: StructureStep;
+}
+export interface WorkoutStructure {
+  /** Pun naslov treninga (generator). */
+  title: string;
+  /** Kratko ime vrste za oznaku dana i uputstvo („Repeticije", „Tempo", „Trčanje/hod"…); bez njega ime tipa dana. */
+  kind?: string;
+  blocks: StructureBlock[];
+  /** Zbir km; null kad deo nema procenu km (trčanje/hodanje bez tempa). */
+  km: number | null;
+  /** Zbir trajanja [s]; null kad deo nema procenu trajanja. */
+  sec: number | null;
+  kmBasis: 'exact' | 'estimated';
+  secBasis: 'exact' | 'estimated';
+  /** Napor dana kad ga generator propisuje (plan po osećaju, trčanje/hodanje). */
+  rpe?: { min: number; max: number; txt: string };
+  /** Trčanje/hodanje: nivo lestvice i da li zavisi od pretpostavljenog napretka. */
+  level?: number;
+  projection?: true;
+  /** Cilj dana trke kad nije vreme („završiti"). */
+  goal?: 'finish';
+}
+
+/**
+ * Dan sa strukturom (5k-v2): struktura je izvor istine za prikaz i sat; `desc` je samo kratak tekst. Namerno NIJE u uniji
+ * `Day` (generatori 5K v1/10K/HM/maraton čitaju sačuvane dane svojim tipovima, koji ga ne poznaju): oblik je isti kao dan
+ * sa ručnom izmenom koji razrešen plan već podržava (tip kvaliteta bez `session`, `km` null), uz `structure`.
+ */
+export interface StructuredDay extends DayBase {
+  tag: 'lako' | 'lr' | 'int' | 'tempo' | 'trka' | 'test' | 'rw';
+  /** null kad dan nema procenu km (trčanje/hodanje bez tempa). */
+  km: number | null;
+  desc: string;
+  structure: WorkoutStructure;
+  runWalk?: RunWalk;
+  rest?: undefined;
+  session?: undefined;
 }
 
 export type Day =
@@ -263,6 +350,9 @@ export interface PlanMeta extends Assessment {
   };
   /** New plans prescribe current fitness. Older plans may retain projected vdotGoal. */
   trainingVdot?: number;
+  /** 5k-v2 (08a): ocena cilja generatora za doslovan prikaz („nedovoljno podataka", „orijentir", „završiti"); bez broja
+   *  prognoze kad ga generator nema. Stariji planovi je nemaju. */
+  goalAssessment?: { status: string; label: string; message: string };
   start: IsoDate;
   weeks: number;
   intensity: Intensity;

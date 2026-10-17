@@ -2,7 +2,7 @@ import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import type { IsoDate } from '../../domain/date';
 import { resolvePlan } from '../../domain/plan';
-import { TEN_K_GENERATOR } from '../../domain/generators/select';
+import { TEN_K_GENERATOR, generateFiveKV2Plan } from '../../domain/generators/select';
 import { cycleCaption, cycleModel, PHASE_ORDER } from './cycle';
 import { kindOf, weekCells } from './dayCells';
 
@@ -114,5 +114,36 @@ describe('weekCells', () => {
     expect(kindOf('lr')).toBe('l');
     expect(kindOf('snaga')).toBe('s');
     expect(kindOf('lako')).toBe('e');
+  });
+
+  it('5K v2: nedelja koja ne počinje ponedeljkom — ćelija je dan u nedelji datuma, ne pozicija', () => {
+    const r = generateFiveKV2Plan({
+      startDate: '2026-11-01', // nedelja; trka u subotu
+      raceDate: '2027-01-09',
+      runDays: ['tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 25,
+      recentResult: { distanceM: 5000, timeSec: 1500, date: '2026-10-20' }
+    });
+    if (!r.ok) throw new Error('plan');
+    const wk = resolvePlan(r.plan.weeks, { alts: {}, moves: {} }).weeks[0]!;
+    const cells = weekCells(wk, {}, '2026-10-30' as IsoDate);
+    expect(cells.map((c) => c.label.slice(0, 3))).toEqual([
+      'Pon',
+      'Uto',
+      'Sre',
+      'Čet',
+      'Pet',
+      'Sub',
+      'Ned'
+    ]);
+    expect(cells.map((c) => c.state === 'rest')).toEqual([
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]);
   });
 });

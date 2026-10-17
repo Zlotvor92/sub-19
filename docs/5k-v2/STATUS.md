@@ -2,14 +2,12 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 jezgro (`5k-v2.6.0`) u `web/src/domain/generators/fiveK/v2/`, testirano, NIJE
-aktivirano (select.ts/UI/store ga ne koriste). Generisanje: sa rezultatom (3/4/5 dana, 6–16 ned), po osećaju
-(E ± 15 s, kvalitet RPE, test 3 km), početnik, trčanje/hodanje (canRun30Min = false: 3 dana, lestvica L1–L12,
-vremenski, projekcija nivoa, trka „završiti"). Adaptacija (`adaptFiveKV2(plan, facts, asOf)`, isti API za oba tipa):
-činjenice → ograničenja/nivo → isti konstruktor → spajanje (prošlost/urađeno/zaključano bajt-isto) → validate;
-povratni rast +10%/ned do nivoa pre smanjenja; `facts.coverage` (dan bez zapisa poznat samo u potpunoj
-pokrivenosti) i `facts.breaks`; L12 i ≥ 6 ned → kontinuirani plan početnika. Mreže: 540 + 192 adaptacije → 0 grešaka.
-Sledeće: trenerski pregled pragova (adaptacija, lestvica); aktivacija (izvor coverage) nije odobrena.
+Trenutno stanje: 5K v2 (`5k-v2.6.0`) je u aplikaciji IZA PREKIDAČA (segment 08a): `ui.generatorV2FiveK` (podrazumevano
+isključen) / `VITE_FIVEK_V2` → nov 5K plan iz čarobnjaka ide kroz adapter `fiveK/v2/app/`; plan nosi `5k-v2` i bira se
+po oznaci politike (postojeći 5K planovi ostaju v1). Generisanje (sa rezultatom, po osećaju, početnik, trčanje/hodanje),
+čuvanje (backup/uvoz), prikaz i sat čitaju strukturu v2 (`structure`); ocena cilja doslovno. Adaptacija i predlozi
+(izvršenje, bol, pauza, run/walk napredak, predlog tempa) su eksplicitno nepodržani u aplikaciji do 08b („stiže uskoro").
+Jezgro (`adaptFiveKV2` itd.) nepromenjeno. Sledeće: 08b — povezivanje adaptacije (izvor `coverage`, činjenice iz dnevnika).
 Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segmenti 01–05b (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
@@ -49,3 +47,15 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - Provere: tsc, eslint, prettier exit 0 (prettier prvi put 9 fajlova); vitest v2 554/554; novi testovi na
   c9003aa 106/110 pada; generators 27 / 697; `npm run check` exit 0 (2326 testova).
 - Izveštaj: `reports/SEGMENT-07-IMPLEMENTATION.md`; primeri `artifacts/segment-07/`.
+
+## Segment 08a — 5K v2 u aplikaciji iza prekidača (2026-10-17)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 7fa61eb
+- Prekidač `domain/generators/flags.ts` (+ `stores/generatorFlags.ts`, Ti → Zone i postavke treninga); rutiranje po
+  `meta.policyId` (`5k-v2` → `FIVE_K_V2_GENERATOR`, `KNOWN_VERSIONS` = 5k-v2.6.0); adapter `fiveK/v2/app/`.
+- Format (opciono, bez migracije): `DayBase.structure`, `StructuredDay`, `PlanMeta.goalAssessment`, `GenPlanState.fiveKV2`,
+  `ResolvedDay.structure`, `ui.generatorV2FiveK`. Ugovor 55 članova: a 15, b 26 (08b), c 14 (kopija stanja).
+- Provere: tsc domena exit 0; generators 28 / 720; `npm run check` exit 0 (2355); E2E `fivek-v2` 2/2, plan+workouts 9/9;
+  ceo E2E 67/79 — 12 padova (generator-ab-users 10, pwa 2) isti na 7fa61eb (nisu od 08a).
+- Izveštaj: `reports/SEGMENT-08a-IMPLEMENTATION.md`.
+

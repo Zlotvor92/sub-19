@@ -4,6 +4,7 @@ import { fmtClock, fmtKm } from '../format';
 import type { ResolvedDay, ResolvedPlan, ResolvedWeek } from '../plan/types';
 import type { LogEntry } from '../state/types';
 import { weekPlanKm, weekRealKm } from './stats';
+import { structureCore } from './structure';
 
 type Log = Readonly<Record<string, LogEntry>>;
 
@@ -13,8 +14,13 @@ const text = (x: unknown): string => (typeof x === 'string' ? x : '');
  * Kratak opis SAMOG RADNOG dela (jedan red u listi, bez zagrevanja i hlađenja). Za generisan plan iz `session`, inače iz teksta opisa.
  * „smirivanje" se čita uz „hlađenje": sačuvani planovi (localStorage i server) još nose staru reč.
  */
-export function sessionCore(d: Pick<ResolvedDay, 'rest' | 'session' | 'desc'> | null): string {
+export function sessionCore(
+  d: Pick<ResolvedDay, 'rest' | 'session' | 'desc' | 'structure'> | null
+): string {
   if (!d || d.rest) return d?.desc || 'Odmor';
+  /* 5k-v2: strukturisan dan — rad iz strukture; lagan/dugi dan bez radnog dela pada na opis (naslov). */
+  const core = d.structure ? structureCore(d.structure) : '';
+  if (core) return core;
   const s = d.session;
   if (s) {
     if (s.type === 'int' && s.reps && s.repM)

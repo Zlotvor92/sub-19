@@ -73,6 +73,8 @@ import type {
   RunWalkMode,
   Signal,
   StoredPredRow,
+  StructuredPlanInput,
+  StructuredPlanResult,
   VdotProposal,
   WatchBatch,
   WeatherCardInput,
@@ -491,6 +493,80 @@ export const TEN_K_GENERATOR: PlanGenerator = {
   ACWR_SCALE: tenK.ACWR_SCALE
 } satisfies PlanGenerator;
 
+/* 5K v2 (segment 08a): sopstveni generator 5K distance, biran po oznaci politike plana (`5k-v2`) — postojeći planovi
+   (`5k-v1`, `legacy-5k`) ostaju na `FIVE_K_GENERATOR` i nikad se ne prebacuju. Raspodela članova: (a) v2 sam
+   (generisanje, oznake, faza, procena, proizvod, tempo/prag/napor, sat iz strukture); (b) adaptacija i predlog —
+   eksplicitno nepodržano do 08b (`ADAPTATION_UNSUPPORTED`, bez zamene starim generatorom); (c) procena stanja i vreme —
+   sopstvena kopija v2 sa istim vrednostima (v. `fiveK/v2/app/index.ts`). */
+const v2 = fiveK.fiveKV2;
+export const FIVE_K_V2_GENERATOR: PlanGenerator = {
+  id: '5k',
+  policyId: v2.POLICY_ID,
+  policyVersion: v2.POLICY_VERSION,
+  legacyPolicyId: v2.LEGACY_POLICY_ID,
+  planPolicy: v2.planPolicy,
+  stampPlan: v2.stampPlan,
+  phaseOfWeek: v2.phaseOfWeek,
+  classifyMeasurement: v2.classifyMeasurement,
+  recomputeVdotChain: v2.recomputeVdotChain,
+  sessionClassFor: v2.sessionClassFor,
+  currentVdot: v2.currentVdot,
+  generatePlan: v2.generatePlan,
+  adaptGeneratedPlan: v2.adaptGeneratedPlan,
+  assess: v2.assess,
+  product: v2.product,
+  executionModel: v2.executionModel,
+  executionBasis: v2.executionBasis,
+  buildExecutionAdjustment: v2.buildExecutionAdjustment,
+  buildRunWalkAdjustment: v2.buildRunWalkAdjustment,
+  assessRunWalkProgress: v2.assessRunWalkProgress,
+  qualityEntryGate: v2.qualityEntryGate,
+  hasRecentMeasuredForm: v2.hasRecentMeasuredForm,
+  planWithNewGoal: v2.planWithNewGoal,
+  planRecalibrated: v2.planRecalibrated,
+  graftFuturePlan: v2.graftFuturePlan,
+  alignAutomaticOverlays: v2.alignAutomaticOverlays,
+  vdotProposal: v2.vdotProposal,
+  applyVdotProposal: v2.applyVdotProposal,
+  undoVdotAdjustments: v2.undoVdotAdjustments,
+  fitnessEvidence: v2.fitnessEvidence,
+  planVdotNow: v2.planVdotNow,
+  matchPlanRows: v2.matchPlanRows,
+  recalibrationMinMeasurements: v2.RECALIBRATION_MIN_MEASUREMENTS,
+  recalibrationThreshold: v2.RECALIBRATION_THRESHOLD,
+  injuryProposal: v2.injuryProposal,
+  applyInjuryProposal: v2.applyInjuryProposal,
+  realignPlan: v2.realignPlan,
+  workoutsForWatch: v2.workoutsForWatch,
+  thresholdPace: v2.thresholdPace,
+  weatherCard: v2.weatherCard,
+  rpeTarget: v2.rpeTarget,
+  paceForZone: v2.paceForZone,
+  painStatus: v2.painStatus,
+  acwrNow: v2.acwrNow,
+  acwrPlan: v2.acwrPlan,
+  readinessModel: v2.readinessModel,
+  loadMeaning: v2.loadMeaning,
+  wellnessSignals: v2.wellnessSignals,
+  acwrBand: v2.acwrBand,
+  acwrText: v2.acwrText,
+  acwrPosition: v2.acwrPosition,
+  ACWR_MAX: v2.ACWR_MAX,
+  ACWR_RETURN: v2.ACWR_RETURN,
+  ACWR_HIGH: v2.ACWR_HIGH,
+  ACWR_SCALE: v2.ACWR_SCALE
+} satisfies PlanGenerator;
+
+/** Poruka u UI-ju umesto prilagođavanja plana 5K v2 (08b). */
+export const ADAPTATION_UNSUPPORTED: string = v2.ADAPTATION_UNSUPPORTED;
+
+/** Nov 5K plan generatorom v2 (čarobnjak uz uključen prekidač): plan za upis ili razlozi odbijanja v2. */
+export const generateFiveKV2Plan = (input: StructuredPlanInput): StructuredPlanResult =>
+  v2.generateStructured(input);
+/** Prvi dan plana v2: cele nedelje koje se završavaju danom trke, ne pre `today`; `null` bez ispravnih datuma. */
+export const fiveKV2Start = (raceDate: string, today: string): string | null =>
+  v2.alignedStart(raceDate, today);
+
 /** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
 const HM_SHORTER_HANDOFF = regeneratorForDistance;
 
@@ -672,7 +748,34 @@ export function generatorForPlan(plan: GenPlanState | null | undefined): PlanGen
 function generatorForDistanceOf(plan: GenPlanState | null | undefined): PlanGenerator | null {
   if (!plan) return null;
   const ulaz = plan.ulaz as { raceDistM?: unknown } | null | undefined;
-  return generatorForDistance(plan.meta?.raceDistM ?? ulaz?.raceDistM);
+  const generator = generatorForDistance(plan.meta?.raceDistM ?? ulaz?.raceDistM);
+  // 5K: oznaka politike bira generator (08a) — `5k-v2` → v2 (njegove nepoznate verzije su `unknown`), sve ostalo
+  // (`5k-v1`, `legacy-5k`, tuđa oznaka) postojeći 5K, kao do sada.
+  if (generator === FIVE_K_GENERATOR && plan.meta?.['policyId'] === v2.POLICY_ID)
+    return FIVE_K_V2_GENERATOR;
+  return generator;
+}
+
+/** Prekidači izbora generatora za NOV plan (vrednost daje `flags.ts`). */
+export interface GeneratorFlags {
+  fiveKV2: boolean;
+}
+
+/**
+ * Generator za NOV plan (čarobnjak): uz uključen prekidač 5K ide u v2, sve ostalo kao `generatorForDistance`. Isključen
+ * prekidač → isti generator kao do sada. Postojeći planovi se biraju po svojoj oznaci (`generatorForPlan`), nikad ovde.
+ */
+export function generatorForNewPlan(
+  raceDistM: unknown,
+  flags: GeneratorFlags
+): PlanGenerator | null {
+  const generator = generatorForDistance(raceDistM);
+  return generator === FIVE_K_GENERATOR && flags.fiveKV2 ? FIVE_K_V2_GENERATOR : generator;
+}
+
+/** Poruka umesto prilagođavanja kad generator plana adaptaciju još nema (5K v2 do 08b); inače `null`. */
+export function adaptationUnsupportedFor(plan: GenPlanState | null | undefined): string | null {
+  return generatorForPlan(plan) === FIVE_K_V2_GENERATOR ? ADAPTATION_UNSUPPORTED : null;
 }
 
 /** Poruka za plan čiju je politiku upisala verzija generatora koju ova aplikacija ne poznaje. */

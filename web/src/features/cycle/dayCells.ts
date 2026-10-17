@@ -1,6 +1,6 @@
 /* ĆELIJE DANA: 7 po nedelji (po–ne), vrsta treninga u tri nivoa težine + stanje. Čisto čitanje plana i dnevnika. */
 
-import type { IsoDate } from '../../domain/date';
+import { weekdayIndex, type IsoDate } from '../../domain/date';
 import { dowShort } from '../../domain/format';
 import { dayLabel, type ResolvedDay, type ResolvedWeek } from '../../domain/plan';
 import type { LogEntry } from '../../domain/state';
@@ -39,7 +39,12 @@ export function weekCells(
   today: IsoDate
 ): Cell[] {
   const byDow = new Map<number, ResolvedDay>();
-  for (const d of week.days) if (!d.test && !byDow.has(d.dow)) byDow.set(d.dow, d);
+  /* Ćelija = dan u nedelji DATUMA po planu (po–ne). Nedelja koja počinje ponedeljkom (svi planovi pre 5K v2) daje isto što
+     i `dow`; nedelja 5K v2 počinje danom posle trke nedelje ranije (cele nedelje do trke), pa `dow` nije dan u nedelji. */
+  for (const d of week.days) {
+    const i = d.dow >= 0 && d.dow <= 6 ? weekdayIndex(d.origDate) : d.dow;
+    if (!d.test && !byDow.has(i)) byDow.set(i, d);
+  }
   return DOW.map((name, i) => {
     const d = byDow.get(i);
     if (!d || d.rest) return { kind: 'e', state: 'rest', label: `${name} — odmor` };

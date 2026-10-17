@@ -1,7 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { confirmAction } from '../../app/confirm';
 import { hasGenPlanData } from '../../domain/plan';
-import { UNSUPPORTED_DISTANCE, generatorForDistance } from '../../domain/generators/select';
+import {
+  UNSUPPORTED_DISTANCE,
+  generateFiveKV2Plan,
+  generatorForDistance
+} from '../../domain/generators/select';
+import type { GenPlanState } from '../../domain/state';
+import type { PlanRejectionReason } from '../../domain/generators/contract';
+import {
+  initialFiveKV2Wizard,
+  toFiveKV2Input,
+  v2StepValid,
+  type FiveKV2Wizard
+} from '../../domain/onboarding/fiveKV2';
 import {
   TOTAL_STEPS,
   availableDays,
@@ -20,7 +32,9 @@ import {
 } from '../../domain/onboarding';
 import { useActiveGenPlan, useTrainingStore } from '../../stores';
 import { activateNewPlan } from '../../stores/actions';
+import { useGeneratorFlags } from '../../stores/generatorFlags';
 import { useUIStore } from '../../stores/uiStore';
+import { FiveKV2Days, FiveKV2Experience, FiveKV2RaceHint, FiveKV2Result } from './FiveKV2Steps';
 import { Step1Race } from './Step1Race';
 import { Step2Result } from './Step2Result';
 import { Step3Volume } from './Step3Volume';
@@ -30,6 +44,8 @@ import { Step4Intensity } from './Step4Intensity';
    crta. Dok korisnik nema plan, čarobnjak je jedini ekran i nema „✕"; kad ima, može da se otkaže. */
 
 const STEP_NAMES = ['Trka', 'Rezultat', 'Obim', 'Intenzitet'] as const;
+/** 5K v2 (prekidač uključen): isti broj koraka, druga polja (v. `FiveKV2Steps`). */
+const STEP_NAMES_V2 = ['Trka', 'Rezultat', 'Iskustvo', 'Dani'] as const;
 
 export function Wizard({ today }: { today: string }) {
   const [w, setW] = useState<WizardState>(initialWizard);
@@ -38,6 +54,15 @@ export function Wizard({ today }: { today: string }) {
   const hasPlan = !!useActiveGenPlan();
   const closeWizard = useUIStore((s) => s.setWizard);
   const set = (patch: Partial<WizardState>): void => setW((cur) => ({ ...cur, ...patch }));
+  /* 5K v2: SAMO nov 5K plan uz uključen prekidač; isključen prekidač ili druga distanca → čarobnjak kao do sada. */
+  const flags = useGeneratorFlags();
+  const isV2 = flags.fiveKV2 && w.raceDist === 5000;
+  const [v2w, setV2w] = useState<FiveKV2Wizard>(initialFiveKV2Wizard);
+  const [rejection, setRejection] = useState<PlanRejectionReason[] | null>(null);
+  const setV2 = (patch: Partial<FiveKV2Wizard>): void => {
+    setRejection(null);
+    setV2w((cur) => ({ ...cur, ...patch }));
+  };
   const setDays = (patch: Partial<WizardState>): void =>
     setW((cur) => syncRunDays({ ...cur, ...patch }));
 
@@ -53,10 +78,43 @@ export function Wizard({ today }: { today: string }) {
   const form = useMemo(() => formPreview(w), [w]);
   const pbMsg = pbSanityMessage(w) || resultDateMessage(w, today);
   const avail = availableDays(w);
-  const valid = stepValid(w, step, today);
+  const valid = isV2 ? v2StepValid(v2w, step, w.raceDate, today) : stepValid(w, step, today);
   const verdict = out && !out.short ? goalVerdict(out, w.intensity) : null;
 
+  /** Upis novog plana (posle potvrde kad postoji stari plan sa unosima). */
+  async function activate(plan: GenPlanState): Promise<void> {
+    const t = useTrainingStore.getState();
+    if (
+      hasGenPlanData({
+        log: t.log,
+        pred: t.pred,
+        alts: t.alts,
+        moves: t.moves,
+        vdotLog: t.vdotLog
+      }) &&
+      !(await confirmAction(
+        'Već postoji generisan plan. Njegovi unosi (treninzi, predikcije, VDOT) biće obrisani.\n\nNastaviti?'
+      ))
+    )
+      return;
+    activateNewPlan(plan);
+    closeWizard(false);
+  }
+
+  /** 5K v2: plan iz ulaza v2; odbijanje ostaje na koraku kao poruka sa razlozima v2. */
+  async function finishV2(): Promise<void> {
+    const input = toFiveKV2Input(v2w, w.raceDate, today);
+    if (!input) return;
+    const r = generateFiveKV2Plan(input);
+    if (!r.ok) {
+      setRejection(r.reasons);
+      return;
+    }
+    await activate(r.plan);
+  }
+
   async function finish(): Promise<void> {
+    if (isV2) return finishV2();
     const input = toGenerationInput(w, today);
     if (!input) return;
     const generator = generatorForDistance(input.raceDistM);
@@ -80,22 +138,7 @@ export function Wizard({ today }: { today: string }) {
     /* ULAZ SE PAMTI: `meta` koju generator vrati NE sadrži `pb`, `weeklyKm` ni `trainedRecently`; bez njih se plan ne može
        ponovo napraviti, pa bi svaka promena cilja usred priprema morala kroz čarobnjak, koji briše ceo dnevnik. */
     adapted.ulaz = JSON.parse(JSON.stringify(input)) as unknown;
-    const t = useTrainingStore.getState();
-    if (
-      hasGenPlanData({
-        log: t.log,
-        pred: t.pred,
-        alts: t.alts,
-        moves: t.moves,
-        vdotLog: t.vdotLog
-      }) &&
-      !(await confirmAction(
-        'Već postoji generisan plan. Njegovi unosi (treninzi, predikcije, VDOT) biće obrisani.\n\nNastaviti?'
-      ))
-    )
-      return;
-    activateNewPlan(adapted);
-    closeWizard(false);
+    await activate(adapted);
   }
 
   const next = (): void => {
@@ -131,7 +174,7 @@ export function Wizard({ today }: { today: string }) {
             id="ob-progress"
             aria-label={`Korak ${step} od ${TOTAL_STEPS}`}
           >
-            {STEP_NAMES.map((n, i) => (
+            {(isV2 ? STEP_NAMES_V2 : STEP_NAMES).map((n, i) => (
               <div
                 key={n}
                 className={`ob-seg${i + 1 < step ? ' done' : i + 1 === step ? ' on' : ''}`}
@@ -143,13 +186,30 @@ export function Wizard({ today }: { today: string }) {
           </div>
         </div>
         <div className="ob-body">
-          {step === 1 ? <Step1Race w={w} set={set} today={today} hint={hint} err={err} /> : null}
+          {step === 1 ? (
+            <Step1Race
+              w={w}
+              set={set}
+              today={today}
+              hint={isV2 ? { kind: 'none' } : hint}
+              err={err}
+              extra={isV2 ? <FiveKV2RaceHint raceDate={w.raceDate} today={today} /> : null}
+            />
+          ) : null}
 
-          {step === 2 ? <Step2Result w={w} set={set} form={form} pbMsg={pbMsg} /> : null}
+          {isV2 && step === 2 ? (
+            <FiveKV2Result v={v2w} set={setV2} raceDate={w.raceDate} today={today} />
+          ) : null}
+          {isV2 && step === 3 ? <FiveKV2Experience v={v2w} set={setV2} /> : null}
+          {isV2 && step === 4 ? <FiveKV2Days v={v2w} set={setV2} rejection={rejection} /> : null}
 
-          {step === 3 ? <Step3Volume w={w} set={set} setDays={setDays} avail={avail} /> : null}
+          {!isV2 && step === 2 ? <Step2Result w={w} set={set} form={form} pbMsg={pbMsg} /> : null}
 
-          {step === 4 ? (
+          {!isV2 && step === 3 ? (
+            <Step3Volume w={w} set={set} setDays={setDays} avail={avail} />
+          ) : null}
+
+          {!isV2 && step === 4 ? (
             <Step4Intensity
               w={w}
               set={set}

@@ -28,6 +28,8 @@ import type {
 export type PlanMeta = TrainingPlan['meta'];
 type GeneratedDay = Week['days'][number];
 export type Session = NonNullable<GeneratedDay['session']>;
+/** 5k-v2 (08a): strukturisan trening dana (iz formata stanja). */
+export type WorkoutStructure = NonNullable<GeneratedDay['structure']>;
 type FastFinish = NonNullable<GeneratedDay['finish']>;
 type Strides = NonNullable<GeneratedDay['strides']>;
 export type Zone = Exclude<NonNullable<Session['zone']>, 'RP'>;
@@ -79,6 +81,30 @@ export interface DistanceProduct {
   recommendedMinRunDays?: number;
 }
 
+/* --- 5K v2 (08a): ulaz čarobnjaka i strukturisano odbijanje (oblik razmene; pravila ulaza su generatorova) --- */
+export type WeekdayName = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+export interface StructuredPlanInput {
+  /** Prvi dan nedelje 1. */
+  startDate: string;
+  /** Dan trke = poslednji dan poslednje nedelje. */
+  raceDate: string;
+  runDays: WeekdayName[];
+  currentWeeklyKm: number;
+  recentResult?: { distanceM: 3000 | 5000 | 10000; timeSec: number; date: string } | null;
+  goalTimeSec?: number | null;
+  typicalEasyPaceSecPerKm?: number | null;
+  experience?: 'beginner' | 'regular';
+  canRun30Min?: boolean;
+}
+export interface PlanRejectionReason {
+  code: string;
+  message: string;
+  week?: number;
+}
+/** Plan za upis ili odbijanje sa razlozima (prikazuje se korisniku kao poruka, ne kao greška). */
+export type StructuredPlanResult =
+  { ok: true; plan: GenPlanState } | { ok: false; reasons: PlanRejectionReason[] };
+
 /* --- razrešen plan (plan + izmene + pomeranja) --- */
 export interface DayOrigin {
   tag: DayTag | undefined;
@@ -108,6 +134,8 @@ export interface ResolvedDay {
   session: Session | undefined;
   /** Originalni propis generatora. */
   originSession: Session | undefined;
+  /** 5k-v2 (08a): važeća struktura treninga; nema je kod planova bez strukture. */
+  structure?: WorkoutStructure;
   mlr: boolean;
   test: boolean;
   origin: DayOrigin;
