@@ -1,9 +1,9 @@
-/* D1 — opseg ulaza. Van opsega: strukturisano odbijanje (kod + poruka). Privremeni kodovi
-   (SUPPORTED_FROM_SEGMENT_02, FEEL_PLAN_SEGMENT_03) označavaju ulaze koje pokrivaju kasniji segmenti. */
+/* D1 — opseg ulaza; D17 — dani i obim po broju dana. Van opsega: strukturisano odbijanje (kod + poruka).
+   Privremeni kod FEEL_PLAN_SEGMENT_03 označava ulaze koje pokriva kasniji segment. */
 
 import { addDays, dayNumber, isWeekday, weekdayIndex } from './dates.ts';
 import { round1, vdotFromResult } from './paces.ts';
-import { TEN_K_V2_POLICY as P } from './policy.ts';
+import { dayRule, RUN_DAYS_COUNTS, TEN_K_V2_POLICY as P } from './policy.ts';
 import { patternOf, suggestSchedule } from './schedule.ts';
 import type { Pattern, Reason, TenKV2Input, TenKV2Result, Weekday } from './types.ts';
 
@@ -22,6 +22,13 @@ const daysSr = (ds: readonly Weekday[]): string => ds.map(daySr).join(', ');
 export type InputCheck =
   | { ok: true; input: TenKV2Input; weeks: number; vdotRaw: number; pattern: Pattern }
   | { ok: false; reasons: Reason[] };
+
+/** D17: brojevi dana čiji red tabele podržava obim `km` (npr. „3–5"); prazno ako nijedan. */
+function daysForKm(km: number): string {
+  const ok = RUN_DAYS_COUNTS.filter((n) => km >= P.days[n].kmMin && km <= P.days[n].kmMax);
+  if (ok.length === 0) return '';
+  return ok.length === 1 ? `${ok[0]}` : `${ok[0]}–${ok[ok.length - 1]}`;
+}
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null;
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
@@ -84,15 +91,10 @@ export function checkInput(raw: unknown): InputCheck {
       'PLAN_NOT_WHOLE_WEEKS',
       `Od starta do trke mora biti ceo broj nedelja (sada ${span} dana); start ${addDays(raceDate, -7 * Math.max(1, Math.round(weeks)) + 1)} daje ${Math.max(1, Math.round(weeks))} nedelja.`
     );
-  else if (weeks < q.weeksAbsoluteMin)
-    no(
-      'PLAN_TOO_SHORT',
-      `Plan od ${weeks} nedelja je prekratak: 10K plan traži najmanje ${q.weeksAbsoluteMin} nedelja.`
-    );
   else if (weeks < q.weeksMin)
     no(
-      'SUPPORTED_FROM_SEGMENT_02',
-      `Plan od ${weeks} nedelja biće podržan od segmenta 02 (sada ${q.weeksMin}–${q.weeksMax} nedelja).`
+      'PLAN_TOO_SHORT',
+      `Plan od ${weeks} nedelja je prekratak: 10K plan traži najmanje ${q.weeksMin} nedelja.`
     );
   else if (weeks > q.weeksMax)
     no(
@@ -111,18 +113,16 @@ export function checkInput(raw: unknown): InputCheck {
       'RUN_DAYS_INVALID',
       'Dani trčanja moraju biti različiti dani (mon, tue, wed, thu, fri, sat, sun).'
     );
-  else if (runDays.length !== q.runDays) {
-    if (q.runDaysLaterSegment.includes(runDays.length))
-      no(
-        'SUPPORTED_FROM_SEGMENT_02',
-        `${runDays.length} dana trčanja biće podržano od segmenta 02 (sada tačno ${q.runDays} dana).`
-      );
-    else
-      no(
-        'RUN_DAYS_COUNT',
-        `10K plan v2 radi sa ${q.runDays} dana trčanja (izabrano ${runDays.length}).`
-      );
-  }
+  const rule = daysOk ? dayRule(runDays.length) : null;
+  const minDays = RUN_DAYS_COUNTS[0]!;
+  const maxDays = RUN_DAYS_COUNTS[RUN_DAYS_COUNTS.length - 1]!;
+  if (daysOk && !rule)
+    no(
+      'RUN_DAYS_COUNT',
+      runDays.length > maxDays
+        ? `10K plan traži najmanje jedan dan odmora nedeljno: najviše ${maxDays} dana trčanja (izabrano ${runDays.length}).`
+        : `10K plan v2 radi sa ${minDays}–${maxDays} dana trčanja (izabrano ${runDays.length}).`
+    );
   const longRaw = raw['longRunDay'];
   let longRunDay: Weekday | null = null;
   if (longRaw !== undefined && longRaw !== null) {
@@ -131,17 +131,25 @@ export function checkInput(raw: unknown): InputCheck {
     else longRunDay = longRaw;
   }
 
-  // Obim.
+  // Obim (D17): red broja dana; bez ispravnog broja dana — opseg cele tabele.
   const km = raw['currentWeeklyKm'];
-  if (km < q.weeklyKmMin)
+  const kmLo = rule ? rule.kmMin : P.days[minDays].kmMin;
+  const kmHi = rule ? rule.kmMax : P.days[maxDays].kmMax;
+  const other = daysForKm(km);
+  const forDays = rule ? ` za ${runDays.length} dana trčanja` : '';
+  if (km < kmLo)
     no(
       'WEEKLY_KM_TOO_LOW',
-      `Trenutni obim ${km} km je ispod ${q.weeklyKmMin} km nedeljno: preporuka je 5K plan ili izgradnja osnove pre 10K plana.`
+      other
+        ? `Trenutni obim ${km} km je ispod ${kmLo} km${forDays}: za ${km} km plan podržava ${other} dana trčanja.`
+        : `Trenutni obim ${km} km je ispod ${P.days[minDays].kmMin} km nedeljno: preporuka je 5K plan ili izgradnja osnove pre 10K plana.`
     );
-  else if (km > q.weeklyKmMax)
+  else if (km > kmHi)
     no(
       'WEEKLY_KM_TOO_HIGH',
-      `Trenutni obim ${km} km je iznad ${q.weeklyKmMax} km nedeljno, van opsega ovog plana.`
+      other
+        ? `Trenutni obim ${km} km je iznad ${kmHi} km${forDays}: za ${km} km plan podržava ${other} dana trčanja.`
+        : `Trenutni obim ${km} km je iznad ${P.days[maxDays].kmMax} km nedeljno, van opsega ovog plana.`
     );
 
   // Rezultat → VDOT.
@@ -188,17 +196,13 @@ export function checkInput(raw: unknown): InputCheck {
 
   // D9: raspored (samo kad su dani ispravni).
   let pattern: Pattern | null = null;
-  if (
-    daysOk &&
-    runDays.length === q.runDays &&
-    !reasons.some((r) => r.code === 'LONG_DAY_INVALID')
-  ) {
+  if (rule && !reasons.some((r) => r.code === 'LONG_DAY_INVALID')) {
     pattern = patternOf(runDays, longRunDay);
     if (!pattern) {
       const s = suggestSchedule(runDays, longRunDay);
       no(
         'SCHEDULE_NO_RECOVERY',
-        `U danima ${daysSr(runDays)} dva kvaliteta i dugi ne mogu biti međusobno nesusedni.` +
+        `U danima ${daysSr(runDays)} ${rule.quality === 1 ? 'kvalitet i dugi ne mogu biti nesusedni' : 'dva kvaliteta i dugi ne mogu biti međusobno nesusedni'}.` +
           (s ? ` Predlog: ${daysSr(s.runDays)} (dugi ${daySr(s.long)}).` : '')
       );
     }

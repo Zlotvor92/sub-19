@@ -12,12 +12,20 @@ export interface PhaseCounts {
   race: number;
 }
 
-/** D4: N nedelja → broj nedelja po fazi. B = N − taper − trka. */
+/** D4: N nedelja → broj nedelja po fazi. B = N − taper − trka. D21 (B ≤ 7): specifično 2, razvoj =
+    ceil((B − 2)/2), baza ostatak. */
 export function phaseCounts(weeks: number): PhaseCounts {
   const q = P.phases;
   const build = weeks - q.taperWeeks - q.raceWeeks;
-  const specific = build <= q.specificShortMaxBuild ? q.specificShort : q.specificLong;
-  const base = Math.ceil((build - specific) / 2);
+  const short = build <= q.shortPrepMaxBuild;
+  const specific = short
+    ? q.shortPrepSpecific
+    : build <= q.specificShortMaxBuild
+      ? q.specificShort
+      : q.specificLong;
+  const rest = build - specific;
+  // D4: veća polovina ostatka je baza; D21 (kratka priprema): veća polovina je razvoj.
+  const base = short ? rest - Math.ceil(rest / 2) : Math.ceil(rest / 2);
   return {
     base,
     development: build - specific - base,

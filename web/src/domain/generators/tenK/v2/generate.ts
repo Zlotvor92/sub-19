@@ -5,12 +5,13 @@
 import { checkInput } from './input.ts';
 import { assessGoal, pacesFromVdot, predicted10k } from './paces.ts';
 import { periodize, isBuildPhase } from './periodize.ts';
-import { TEN_K_V2_POLICY as P } from './policy.ts';
+import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import type { GenerateResult, PlanWeek, TenKV2AdaptStep, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 import {
-  CAPACITY_MESSAGE,
+  capacityLimits,
+  capacityMessage,
   fit10,
   nominal10,
   peakCap10,
@@ -34,6 +35,7 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
   const { input, weeks, vdotRaw, pattern } = chk;
+  const rule = dayRule(input.runDays.length)!;
   const paces = pacesFromVdot(vdotRaw);
   const raceSec = predicted10k(paces);
   const frames = periodize(input.startDate, weeks);
@@ -49,10 +51,11 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     paces,
     pattern,
     raceSec,
-    wc: warmupCooldown(input.currentWeeklyKm)
+    wc: warmupCooldown(input.currentWeeklyKm),
+    rule
   };
   const start10 = startKm10(input.currentWeeklyKm);
-  const cap10 = peakCap10(start10);
+  const cap10 = peakCap10(start10, rule);
 
   let quality: QualityState = INITIAL_QUALITY;
   const vol: VolumeHistory = { lastBuild10: null, peak10: 0 };
@@ -62,7 +65,9 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
   const out: PlanWeek[] = [];
   for (const frame of frames) {
     if (frame.phase === 'race') {
-      const w = raceWeek(ctx, frame, taperRpM);
+      const prev = out[out.length - 1];
+      const prevHard = prev ? (prev.days.filter((d) => d.hard).pop()?.date ?? null) : null;
+      const w = raceWeek(ctx, frame, taperRpM, prevHard);
       const t10 = raceWeekTarget10(w.planned100);
       out.push({
         ...frame,
@@ -76,15 +81,15 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
       continue;
     }
     const nominal = nominal10(frame, vol, start10, cap10);
-    const make = (t10: number, allowDrop = false) =>
-      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, allowDrop);
-    // D11 ispred D12: samo kad nijedan cilj nije izvodljiv uz „doza ne pada", doza koja ne staje u
-    // plafon sme da se spusti — ista pretraga cilja, drugi put.
-    let drop = false;
-    let fit = fit10(nominal, frame, cap10, (t10) => make(t10) !== null);
+    const make = (t10: number, relax = false) =>
+      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, relax);
+    // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
+    // (week.ts buildWeek `relax`): D11 ispred D12 u izgradnji, rasterećenje bez kvaliteta, taper samo RP.
+    let relax = false;
+    let fit = fit10(nominal, frame, cap10, rule, (t10) => make(t10) !== null);
     if (!fit) {
-      drop = true;
-      fit = fit10(nominal, frame, cap10, (t10) => make(t10, true) !== null);
+      relax = true;
+      fit = fit10(nominal, frame, cap10, rule, (t10) => make(t10, true) !== null);
     }
     if (!fit)
       return {
@@ -92,12 +97,12 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
         reasons: [
           {
             code: 'WEEK_INFEASIBLE',
-            message: `Nedelja ${frame.index}: nijedan cilj od ${P.week.minKm} km naviše ne može da se sastavi po pravilima.`,
+            message: `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
             week: frame.index
           }
         ]
       };
-    const w = make(fit.target10, drop)!;
+    const w = make(fit.target10, relax)!;
     const notes = [...w.notes];
     if (fit.fitted)
       notes.unshift(
@@ -141,7 +146,7 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
   };
   if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
     plan.notes.push(
-      `${CAPACITY_MESSAGE} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (D6).`
+      `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, paces))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (D6).`
     );
   const violations = validatePlan(plan);
   const errors = violations.filter((v) => v.severity === 'error');

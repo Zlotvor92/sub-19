@@ -1,30 +1,35 @@
-/* D10 lestvice i strukture, D11 plafoni, D12 progresija, D16 početni nivo — nezavisne provere na
-   uzorku mreže. */
+/* D10/D22 lestvice i strukture, D11 plafoni, D12 progresija, D16 početni nivo, D18 jedan kvalitet (3 dana)
+   — nezavisne provere na uzorku mreže 02 (3/4/5/6 dana). */
 
 import { describe, expect, it } from 'vitest';
 import { generateTenKV2 } from './generate.ts';
-import { gridInputs } from './testInputs.ts';
+import { ladderFor } from './quality.ts';
+import { grid02Inputs } from './testInputs.ts';
 import type { Dose, Phase, PlanWeek, Structure, TenKV2Plan } from './types.ts';
 import { structuresForDose } from './workouts.ts';
 
-/** Uzorak mreže; odbijeni ulazi se beleže (test ispod), ostali testovi rade nad planovima. */
+/** Uzorak mreže 02 (svaki 8. ulaz po broju dana); odbijeni ulazi se beleže (test ispod). */
 const rejected: string[] = [];
-const plans: TenKV2Plan[] = gridInputs()
-  .filter((_, i) => i % 4 === 1)
-  .flatMap(({ id, input }) => {
-    const r = generateTenKV2(input);
-    if (r.ok) return [r.plan];
-    rejected.push(`${id}: ${r.reasons.map((x) => x.code).join(',')}`);
-    return [];
-  });
+const plans: TenKV2Plan[] = ([3, 4, 5, 6] as const).flatMap((n) =>
+  grid02Inputs(n)
+    .filter((_, i) => i % 8 === 1)
+    .flatMap(({ id, input }) => {
+      const r = generateTenKV2(input);
+      if (r.ok) return [r.plan];
+      rejected.push(`${id}: ${r.reasons.map((x) => x.code).join(',')}`);
+      return [];
+    })
+);
+const one = (p: TenKV2Plan): boolean => p.input.runDays.length === 3;
 
-it('uzorak mreže se generiše bez odbijanja', () => {
+it('uzorak mreže 02 se generiše bez odbijanja', () => {
   expect(rejected).toEqual([]);
-  expect(plans.length).toBeGreaterThan(500);
+  expect(plans.length).toBe(1980);
 });
 const steady = (w: PlanWeek): boolean =>
   !w.deload && (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific');
-const slot = (w: PlanWeek, r: 'q1' | 'q2'): Dose => w.days.find((d) => d.role === r)!.workout.dose!;
+const slot = (w: PlanWeek, r: 'q1' | 'q2'): Dose | undefined =>
+  w.days.find((d) => d.role === r)?.workout.dose ?? undefined;
 const same = (a: Structure, b: Structure): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /** Lestvice iz odluke D10 (m u zoni). */
@@ -53,40 +58,62 @@ const startM = (ladder: string, targetKm: number): number =>
   LADDER[ladder]![0]!;
 const PYRAMID: Structure = { form: 'pyramid', repsM: [1200, 1000, 800] };
 
-/** Nezavisno: postoji li druga struktura iste doze po pravilu D10 (T ≥ 1000 m; I do 6 ili piramida). */
+/** Nezavisno: postoji li druga struktura iste doze po pravilu D10/D22 (T ≥ 1000 m deljivo sa 100 m, a bez
+    takve podele sa 50 m; I do 6 ili piramida; RP deljivo sa 100 m; R 200/300/400 m). */
 function hasOther(ladder: string, doseM: number, s: Structure): boolean {
   const opts: Structure[] = [];
-  const splits = (lo: number, hi: number, kMax = 5): void => {
+  const splits = (lo: number, hi: number, kMax = 5, round = 100): Structure[] => {
+    const out: Structure[] = [];
     for (let k = 2; k <= kMax; k++)
-      if (doseM % k === 0 && (doseM / k) % 100 === 0 && doseM / k >= lo && doseM / k <= hi)
-        opts.push({ form: 'reps', reps: k, repM: doseM / k });
+      if (doseM % k === 0 && (doseM / k) % round === 0 && doseM / k >= lo && doseM / k <= hi)
+        out.push({ form: 'reps', reps: k, repM: doseM / k });
+    return out;
   };
   if (ladder.startsWith('T')) {
     opts.push({ form: 'continuous', km: doseM / 1000 });
-    splits(1000, doseM);
+    const s100 = splits(1000, doseM);
+    opts.push(...(s100.length > 0 ? s100 : splits(1000, doseM, 5, 50)));
   } else if (ladder === 'I') {
-    splits(800, 1200, 6);
+    opts.push(...splits(800, 1200, 6));
     if (doseM === 3000) opts.push(PYRAMID);
-  } else if (ladder === 'RP') splits(100, doseM);
+  } else if (ladder === 'RP') opts.push(...splits(100, doseM));
   else
-    for (const r of [200, 300])
+    for (const r of [200, 300, 400])
       if (doseM % r === 0) opts.push({ form: 'reps', reps: doseM / r, repM: r });
   return opts.some((o) => !same(o, s));
 }
 
-const SLOT: Record<Phase, [string, string[]]> = {
-  base: ['R', ['T_continuous', 'T_cruise']],
-  development: ['I', ['T_cruise', 'T_continuous']],
-  specific: ['RP', ['T_cruise', 'T_continuous']],
-  taper: ['', []],
-  race: ['', []]
+const SLOT: Record<Phase, [string[], string[]]> = {
+  base: [['R'], ['T_continuous', 'T_cruise']],
+  development: [['I'], ['T_cruise', 'T_continuous']],
+  specific: [['RP'], ['T_cruise', 'T_continuous']],
+  taper: [[], []],
+  race: [[], []]
+};
+/** D18: 3 dana — jedan slot. */
+const SLOT_ONE: Record<Phase, string[]> = {
+  base: ['T_continuous', 'T_cruise'],
+  development: ['T_cruise', 'T_continuous'],
+  specific: ['RP'],
+  taper: [],
+  race: []
 };
 
-describe('D10: lestvice i strukture', () => {
-  it('ista doza druge strukture po pravilu (tačne podele)', () => {
-    // T: deonice ≥ 1000 m; kad podela ne postoji, samo kontinuirano (01b).
-    expect(structuresForDose('T_continuous', 2500)).toEqual([{ form: 'continuous', km: 2.5 }]);
-    expect(structuresForDose('T_continuous', 3500)).toEqual([{ form: 'continuous', km: 3.5 }]);
+describe('D10/D22: lestvice i strukture', () => {
+  it('ista doza druge strukture po pravilu (tačne podele; T 50 m samo bez podele na 100 m; R 400 m)', () => {
+    // D22: T deonice ≥ 1000 m deljive sa 50 m kad podela na 100 m ne postoji (primeri iz odluke).
+    expect(structuresForDose('T_continuous', 2500)).toEqual([
+      { form: 'continuous', km: 2.5 },
+      { form: 'reps', reps: 2, repM: 1250 }
+    ]);
+    expect(structuresForDose('T_continuous', 3500)).toEqual([
+      { form: 'continuous', km: 3.5 },
+      { form: 'reps', reps: 2, repM: 1750 }
+    ]);
+    expect(structuresForDose('T_continuous', 4500)).toEqual([
+      { form: 'continuous', km: 4.5 },
+      { form: 'reps', reps: 3, repM: 1500 }
+    ]);
     expect(structuresForDose('T_continuous', 4000)).toEqual([
       { form: 'continuous', km: 4 },
       { form: 'reps', reps: 2, repM: 2000 },
@@ -102,7 +129,7 @@ describe('D10: lestvice i strukture', () => {
       reps: 5,
       repM: 800
     });
-    // I: do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m.
+    // I: do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m (bez 50 m).
     expect(structuresForDose('I', 2000)).toEqual([{ form: 'reps', reps: 2, repM: 1000 }]);
     expect(structuresForDose('I', 2400)).toEqual([
       { form: 'reps', reps: 3, repM: 800 },
@@ -113,27 +140,49 @@ describe('D10: lestvice i strukture', () => {
       { form: 'reps', reps: 4, repM: 1200 },
       { form: 'reps', reps: 6, repM: 800 }
     ]);
-    expect(structuresForDose('I', 6000)).toEqual([
-      { form: 'reps', reps: 5, repM: 1200 },
-      { form: 'reps', reps: 6, repM: 1000 }
-    ]);
+    // D22: R deonice 200 / 300 / 400 m.
     expect(structuresForDose('R', 1200)).toEqual([
       { form: 'reps', reps: 6, repM: 200 },
-      { form: 'reps', reps: 4, repM: 300 }
+      { form: 'reps', reps: 4, repM: 300 },
+      { form: 'reps', reps: 3, repM: 400 }
     ]);
+    expect(structuresForDose('R', 1600)).toEqual([
+      { form: 'reps', reps: 8, repM: 200 },
+      { form: 'reps', reps: 4, repM: 400 }
+    ]);
+    expect(structuresForDose('R', 2000)).toEqual([
+      { form: 'reps', reps: 10, repM: 200 },
+      { form: 'reps', reps: 5, repM: 400 }
+    ]);
+    // RP ostaje deljiv sa 100 m: 2,5 i 3,5 km imaju samo jednu strukturu (odstupanje D12 kod 3 dana).
+    expect(structuresForDose('RP', 2500)).toEqual([{ form: 'reps', reps: 5, repM: 500 }]);
+    expect(structuresForDose('RP', 3500)).toEqual([{ form: 'reps', reps: 5, repM: 700 }]);
     expect(structuresForDose('RP', 6000)).toContainEqual({ form: 'reps', reps: 2, repM: 3000 });
   });
 
-  it('svaka T deonica ≥ 1000 m; I do 6 deonica 800–1200 m ili piramida 1200 + 1000 + 800 m', () => {
+  it('svaka T deonica ≥ 1000 m (deljiva sa 50 m); I do 6 deonica 800–1200 m ili piramida; R 200/300/400 m', () => {
     let pyramids = 0;
+    let t50 = 0;
+    let r400 = 0;
     for (const p of plans)
       for (const w of p.weeks)
         for (const d of w.days) {
           const dose = d.workout.dose;
           if (!dose || dose.ladder === 'RP_sharpener') continue;
-          const reps = d.workout.segments.filter((x) => x.kind === 'rep').map((x) => x.km * 1000);
+          const reps = d.workout.segments
+            .filter((x) => x.kind === 'rep')
+            .map((x) => Math.round(x.km * 1000));
           if (dose.zone === 'T')
-            for (const m of reps) expect(m, `${w.index}`).toBeGreaterThanOrEqual(1000);
+            for (const m of reps) {
+              expect(m, `${w.index}`).toBeGreaterThanOrEqual(1000);
+              expect(m % 50).toBe(0);
+              if (m % 100 !== 0) t50++;
+            }
+          if (dose.zone === 'R')
+            for (const m of reps) {
+              expect([200, 300, 400]).toContain(m);
+              if (m === 400) r400++;
+            }
           if (dose.zone !== 'I') continue;
           if (dose.structure.form === 'pyramid') {
             pyramids++;
@@ -145,15 +194,66 @@ describe('D10: lestvice i strukture', () => {
           }
         }
     expect(pyramids).toBeGreaterThan(0);
+    expect(t50).toBeGreaterThan(0);
+    expect(r400).toBeGreaterThan(0);
   });
 
-  it('kvalitet po fazama: baza R + T kont., razvoj I + T cruise, specifično RP + T cruise', () => {
+  it('kvalitet po fazama: 4–6 dana Q1 R/I/RP + Q2 T; 3 dana (D18) jedan slot T kont. / T cruise / RP', () => {
     for (const p of plans)
       for (const w of p.weeks.filter(steady)) {
+        if (one(p)) {
+          expect(SLOT_ONE[w.phase]).toContain(slot(w, 'q1')!.ladder);
+          expect(slot(w, 'q2')).toBeUndefined();
+          continue;
+        }
         const [q1, q2] = SLOT[w.phase];
-        expect(slot(w, 'q1').ladder).toBe(q1);
-        expect(q2).toContain(slot(w, 'q2').ladder);
+        expect(q1).toContain(slot(w, 'q1')!.ladder);
+        expect(q2).toContain(slot(w, 'q2')!.ladder);
       }
+  });
+});
+
+describe('D18: 3 dana — jedan kvalitet', () => {
+  it('lestvica po fazi (baza T kont., razvoj T cruise, specifično RP)', () => {
+    expect(
+      ['base', 'development', 'specific'].map((ph) => ladderFor(ph as Phase, 'q1', 1))
+    ).toEqual(['T_continuous', 'T_cruise', 'RP']);
+  });
+
+  it('tačno 1 kvalitet u nedelji izgradnje, bez I i R ni u jednoj nedelji; taper samo RP', () => {
+    const p3 = plans.filter(one);
+    expect(p3.length).toBe(330);
+    for (const p of p3)
+      for (const w of p.weeks) {
+        const q = w.days.filter((d) => d.workout.kind === 'quality');
+        for (const d of q) expect(['I', 'R']).not.toContain(d.workout.dose!.zone);
+        if (steady(w)) expect(q.length).toBe(1);
+        if (w.phase === 'taper' && q.length > 0) {
+          expect(q.length).toBe(1);
+          expect(q[0]!.workout.dose!.zone).toBe('RP');
+        }
+      }
+  });
+
+  it('prelazi: T cruise ≥ poslednje T kontinuirano; RP ≥ max(D16, poslednje T) kad staje u plafon', () => {
+    let rp = 0;
+    for (const p of plans.filter(one)) {
+      const s = p.weeks.filter(steady);
+      for (let i = 1; i < s.length; i++) {
+        const a = s[i - 1]!;
+        const b = s[i]!;
+        if (a.phase === b.phase) continue;
+        const da = slot(a, 'q1')!;
+        const db = slot(b, 'q1')!;
+        expect(db.doseM, `${b.index}`).toBeGreaterThanOrEqual(da.doseM);
+        if (b.phase === 'specific') {
+          rp++;
+          const want = LADDER.RP!.find((m) => m >= Math.max(startM('RP', b.targetKm), da.doseM));
+          if (want !== undefined && fits('RP', want, b.targetKm)) expect(db.doseM).toBe(want);
+        }
+      }
+    }
+    expect(rp).toBeGreaterThan(0);
   });
 });
 
@@ -175,29 +275,33 @@ describe('D16: početni nivo', () => {
     let aboveFirst = 0;
     for (const p of plans) {
       const w = p.weeks[0]!;
-      expect(slot(w, 'q1').doseM).toBe(startM('R', w.targetKm));
-      expect(slot(w, 'q2').doseM).toBe(startM('T_continuous', w.targetKm));
-      if (slot(w, 'q2').doseM > LADDER.T_continuous![0]!) aboveFirst++;
+      if (one(p)) {
+        expect(slot(w, 'q1')!.doseM).toBe(startM('T_continuous', w.targetKm));
+        continue;
+      }
+      expect(slot(w, 'q1')!.doseM).toBe(startM('R', w.targetKm));
+      expect(slot(w, 'q2')!.doseM).toBe(startM('T_continuous', w.targetKm));
+      if (slot(w, 'q2')!.doseM > LADDER.T_continuous![0]!) aboveFirst++;
     }
     expect(aboveFirst).toBeGreaterThan(0);
   });
 
-  it('prelaz faze: I = početni nivo; RP = najmanji nivo ≥ max(početni nivo, poslednje I) kad staje', () => {
-    for (const p of plans) {
+  it('prelaz faze (4–6 dana): I = početni nivo; RP = najmanji nivo ≥ max(početni nivo, poslednje I) kad staje', () => {
+    for (const p of plans.filter((x) => !one(x))) {
       const s = p.weeks.filter(steady);
       for (let i = 1; i < s.length; i++) {
         const a = s[i - 1]!;
         const b = s[i]!;
         if (a.phase === b.phase) continue;
-        const q1 = slot(b, 'q1');
+        const q1 = slot(b, 'q1')!;
         if (q1.step === 'drop') continue;
         if (b.phase === 'development') expect(q1.doseM, `${b.index}`).toBe(startM('I', b.targetKm));
         if (b.phase === 'specific') {
-          const lo = Math.max(startM('RP', b.targetKm), slot(a, 'q1').doseM);
+          const lo = Math.max(startM('RP', b.targetKm), slot(a, 'q1')!.doseM);
           const want = LADDER.RP!.find((m) => m >= lo);
           if (want !== undefined && fits('RP', want, b.targetKm))
             expect(q1.doseM, `${b.index}`).toBe(want);
-          else expect(q1.doseM).toBeGreaterThanOrEqual(slot(a, 'q1').doseM);
+          else expect(q1.doseM).toBeGreaterThanOrEqual(slot(a, 'q1')!.doseM);
         }
       }
     }
@@ -216,6 +320,7 @@ describe('D12: progresija', () => {
         for (const r of ['q1', 'q2'] as const) {
           const da = slot(a, r);
           const db = slot(b, r);
+          if (!da || !db) continue;
           // D11 ispred D12: spuštanje doze (napomena, DOSE_DROPPED) proverava validator.
           if (db.step === 'drop') {
             expect(b.notes.some((n) => n.includes('spušten sa'))).toBe(true);
@@ -248,7 +353,7 @@ describe('D12: progresija', () => {
     expect(repeat).toBeGreaterThan(0);
   });
 
-  it('glavna doza (T + I + RP) ne opada; nema identičnih uzastopnih ne-rasteretnih nedelja; baza bez platoa', () => {
+  it('glavna doza (T + I + RP) ne opada; nema identičnih uzastopnih nedelja (osim ponavljanja jedinog slota); baza bez platoa (tvrdo, D22)', () => {
     const main = (w: PlanWeek): number =>
       w.days.reduce(
         (a, d) =>
@@ -259,25 +364,29 @@ describe('D12: progresija', () => {
       JSON.stringify(
         w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.blocks)
       );
+    let plateauChecks = 0;
     for (const p of plans) {
       const s = p.weeks.filter(steady);
+      const tSlot = one(p) ? 'q1' : 'q2';
       for (let i = 1; i < s.length; i++) {
         const a = s[i - 1]!;
         const b = s[i]!;
-        const dropped = slot(b, 'q1').step === 'drop' || slot(b, 'q2').step === 'drop';
+        const dropped = slot(b, 'q1')?.step === 'drop' || slot(b, 'q2')?.step === 'drop';
         if (!dropped) expect(main(b), `${b.index}`).toBeGreaterThanOrEqual(main(a));
-        expect(key(b)).not.toBe(key(a));
+        if (key(b) === key(a)) {
+          // Odstupanje D12: samo 3 dana, jedini slot bez druge strukture (napomena).
+          expect(one(p)).toBe(true);
+          expect(slot(b, 'q1')!.step).toBe('repeat');
+        }
         if (a.phase === 'base' && b.phase === 'base') {
-          const ta = slot(a, 'q2');
-          const tb = slot(b, 'q2');
-          // Odstupanje 01b: druga struktura ne postoji (T 2,5 / 3,5 km) → ponavljanje sa napomenom.
-          const repeat =
-            !hasOther(ta.ladder, ta.doseM, ta.structure) &&
-            b.notes.some((n) => n.includes('ponovljen'));
-          expect(tb.doseM > ta.doseM || !same(ta.structure, tb.structure) || repeat).toBe(true);
+          const ta = slot(a, tSlot)!;
+          const tb = slot(b, tSlot)!;
+          plateauChecks++;
+          expect(tb.doseM > ta.doseM || !same(ta.structure, tb.structure), `${b.index}`).toBe(true);
         }
       }
     }
+    expect(plateauChecks).toBeGreaterThan(1000);
   });
 
   it('posle rasterećenja lestvica se nastavlja (ne vraća se)', () => {
@@ -287,9 +396,11 @@ describe('D12: progresija', () => {
         const before = p.weeks.slice(0, i).filter(steady).pop()!;
         const after = p.weeks.slice(i + 1).find(steady);
         if (!after || after.phase !== before.phase) return;
-        for (const r of ['q1', 'q2'] as const)
-          if (slot(after, r).step !== 'drop')
-            expect(slot(after, r).doseM).toBeGreaterThanOrEqual(slot(before, r).doseM);
+        for (const r of ['q1', 'q2'] as const) {
+          const da = slot(before, r);
+          const db = slot(after, r);
+          if (da && db && db.step !== 'drop') expect(db.doseM).toBeGreaterThanOrEqual(da.doseM);
+        }
       });
   });
 });

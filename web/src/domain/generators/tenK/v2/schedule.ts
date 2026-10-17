@@ -1,8 +1,9 @@
-/* D9 — raspored nedelje: 2 kvaliteta (Q1, Q2) + 1 dugi + 1 lagan; tri teška dana međusobno nesusedna
-   (ciklično: nedelja i ponedeljak su susedni). Jedino mesto izbora dana po ulozi. */
+/* D9 — raspored nedelje po broju dana (D17): 4–6 dana Q1 + Q2 + dugi + lagani (D19), 3 dana jedan kvalitet
+   + dugi + lagan (D18); teški dani (kvaliteti i dugi) međusobno nesusedni (ciklično: nedelja i ponedeljak
+   su susedni). Jedino mesto izbora dana po ulozi. */
 
 import { WEEKDAYS, weekdayIndex } from './dates.ts';
-import { TEN_K_V2_POLICY as P } from './policy.ts';
+import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import type { Pattern, Weekday } from './types.ts';
 
 /** Broj dana od a do b unapred (0–6). */
@@ -24,26 +25,36 @@ export function longDayOf(runDays: readonly Weekday[], longRunDay?: Weekday | nu
   return ordered(runDays)[runDays.length - 1]!;
 }
 
-/** Šablon ili null kad Q1, Q2 i dugi ne mogu biti međusobno nesusedni. Više rešenja → najveći razmak
-    dugi → Q1, pa Q1 → Q2, pa raniji Q1 (tehnički, deterministički izbor). */
+/** Šablon ili null kad teški dani ne mogu biti međusobno nesusedni (ili broj dana nije u tabeli D17).
+    Više rešenja → najveći razmak dugi → Q1, pa Q1 → Q2, pa raniji Q1 (tehnički, deterministički izbor). */
 export function patternOf(
   runDays: readonly Weekday[],
   longRunDay?: Weekday | null
 ): Pattern | null {
+  const rule = dayRule(runDays.length);
+  if (!rule) return null;
   const long = longDayOf(runDays, longRunDay);
   const rest = ordered(runDays.filter((d) => d !== long));
   const options: Pattern[] = [];
-  for (const a of rest)
+  for (const a of rest) {
+    if (adjacentDays(a, long)) continue;
+    // D18: jedan kvalitet — samo nesusedan dugom; lagan bilo gde.
+    if (rule.quality === 1) {
+      options.push({ long, q1: a, q2: null, easy: rest.filter((d) => d !== a) });
+      continue;
+    }
     for (const b of rest) {
-      if (a === b || adjacentDays(a, long) || adjacentDays(b, long) || adjacentDays(a, b)) continue;
+      if (a === b || adjacentDays(b, long) || adjacentDays(a, b)) continue;
       // Q1 je prvi kvalitet posle dugog (ciklično).
       if (forwardGap(long, a) > forwardGap(long, b)) continue;
       options.push({ long, q1: a, q2: b, easy: rest.filter((d) => d !== a && d !== b) });
     }
+  }
+  const q1q2 = (p: Pattern): number => (p.q2 ? forwardGap(p.q1, p.q2) : 0);
   options.sort(
     (x, y) =>
       forwardGap(y.long, y.q1) - forwardGap(x.long, x.q1) ||
-      forwardGap(y.q1, y.q2) - forwardGap(x.q1, x.q2) ||
+      q1q2(y) - q1q2(x) ||
       weekdayIndex(x.q1) - weekdayIndex(y.q1)
   );
   return options[0] ?? null;

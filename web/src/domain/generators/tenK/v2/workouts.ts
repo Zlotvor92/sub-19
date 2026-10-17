@@ -53,19 +53,20 @@ export function ladderLevels(ladder: LadderId): Structure[] {
   return reps.map((r) => ({ form: 'reps', reps: r.reps, repM: r.repM }));
 }
 
-/** Tačne podele doze na repsMin..repsMax jednakih deonica (deljivih sa 100 m), rastućim brojem deonica. */
+/** Tačne podele doze na repsMin..repsMax jednakih deonica (deljivih sa `roundM`), rastućim brojem deonica. */
 function equalSplits(
   doseM: number,
   minRepM: number,
   maxRepM: number,
-  repsMax: number = P.alternatives.repsMax
+  repsMax: number = P.alternatives.repsMax,
+  roundM: number = P.alternatives.roundM
 ): Structure[] {
   const a = P.alternatives;
   const out: Structure[] = [];
   for (let k = a.repsMin; k <= repsMax; k++) {
     if (doseM % k !== 0) continue;
     const repM = doseM / k;
-    if (repM % a.roundM === 0 && repM >= minRepM && repM <= maxRepM)
+    if (repM % roundM === 0 && repM >= minRepM && repM <= maxRepM)
       out.push({ form: 'reps', reps: k, repM });
   }
   return out;
@@ -73,9 +74,9 @@ function equalSplits(
 
 /**
  * Sve strukture iste doze za lestvicu (D10): nivo lestvice sa tom dozom (ako postoji) pa strukture po
- * pravilu. T: kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m; I: do 6 jednakih deonica 800–1200 m ili
- * piramida 1200 + 1000 + 800 m; RP: 2–5 jednakih deonica; R: deonice 200 ↔ 300 m. Prihvataju se samo
- * tačne podele (doza se ne menja).
+ * pravilu. T: kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takvih nema sa 50 m
+ * (D22); I: do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m; RP: 2–5 jednakih deonica;
+ * R: deonice 200 / 300 / 400 m (D22). Prihvataju se samo tačne podele (doza se ne menja).
  */
 export function structuresForDose(ladder: LadderId, doseM: number): Structure[] {
   const out: Structure[] = [];
@@ -86,7 +87,9 @@ export function structuresForDose(ladder: LadderId, doseM: number): Structure[] 
   const a = P.alternatives;
   if (ladder === 'T_continuous' || ladder === 'T_cruise') {
     push({ form: 'continuous', km: doseM / 1000 });
-    for (const s of equalSplits(doseM, a.tRepMinM, doseM)) push(s);
+    const splits = equalSplits(doseM, a.tRepMinM, doseM);
+    const fallback = equalSplits(doseM, a.tRepMinM, doseM, a.repsMax, a.tRoundFallbackM);
+    for (const s of splits.length > 0 ? splits : fallback) push(s);
   } else if (ladder === 'I') {
     for (const s of equalSplits(doseM, a.iRepMinM, a.iRepMaxM, a.iRepsMax)) push(s);
     push({ form: 'pyramid', repsM: a.iPyramidM });

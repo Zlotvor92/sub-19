@@ -1,29 +1,78 @@
 /* D6 — cilj obima svake nedelje (jedini vlasnik); D5/D7/D8 faktori cilja rasterećenja, tapera i trkačke
-   nedelje. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija nedelje (week.ts), koju
-   ovaj modul dobija kao funkciju — kapacitet nije formula. */
+   nedelje; D22 poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija
+   nedelje (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula. */
 
-import { TEN_K_V2_POLICY as P } from './policy.ts';
-import type { WeekFrame } from './types.ts';
+import { longShareCap10, longTimeCap10 } from './lengths.ts';
+import { isBuildPhase } from './periodize.ts';
+import { type DayRule, RUN_DAYS_COUNTS, TEN_K_V2_POLICY as P } from './policy.ts';
+import type { Paces, PlanWeek, WeekFrame } from './types.ts';
 
 const EPS = 1e-9;
 export const to10 = (km: number): number => Math.round(km * 10);
 
-/** D6: poruka kad je nedelja izgradnje spuštena na izvodljiv cilj (CAPACITY_LIMITED, napomena plana). */
-export const CAPACITY_MESSAGE =
-  '4 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 5–6 dana (od segmenta 02).';
+/** D22: šta je seklo spuštenu nedelju izgradnje — dugi na 105 min ('time') i/ili na udelu D17 ('share'). */
+export type CapacityLimit = 'time' | 'share';
+
+/**
+ * D22: poruka CAPACITY_LIMITED — imenuje stvarno ograničenje i preporučuje više dana samo kad veći broj
+ * dana postoji u tabeli D17 (6 dana: bez preporuke).
+ */
+export function capacityMessage(
+  runDays: number,
+  rule: DayRule,
+  limits: readonly CapacityLimit[]
+): string {
+  const min = `${Math.round(P.lengths.longMaxSec / 60)} min`;
+  const share = `${Math.round(rule.longMaxShare * 100)} % nedelje`;
+  const what =
+    limits.length === 2
+      ? ` uz dugi ≤ ${min} i ≤ ${share}`
+      : limits[0] === 'time'
+        ? ` uz dugi ≤ ${min}`
+        : limits[0] === 'share'
+          ? ` uz dugi ≤ ${share}`
+          : '';
+  const more = RUN_DAYS_COUNTS.filter((n) => n > runDays);
+  const advice =
+    more.length === 0
+      ? ''
+      : `; preporuka ${more.length === 1 ? more[0] : `${more[0]}–${more[more.length - 1]}`} dana`;
+  return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
+}
+
+/** D22: ograničenja spuštenih (fitted 'down') ne-rasteretnih nedelja izgradnje: dugi = plafon 105 min
+    sporim E → 'time'; dugi = udeo cilja (D17) → 'share'. */
+export function capacityLimits(
+  weeks: readonly PlanWeek[],
+  rule: DayRule,
+  p: Paces
+): CapacityLimit[] {
+  let time = false;
+  let share = false;
+  for (const w of weeks) {
+    if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') continue;
+    const long = w.days.find((d) => d.role === 'long');
+    if (!long) continue;
+    const l10 = to10(long.workout.km);
+    if (l10 === longTimeCap10(p)) time = true;
+    if (l10 === longShareCap10(to10(w.targetKm), rule.longMaxShare)) share = true;
+  }
+  return [...(time ? ['time' as const] : []), ...(share ? ['share' as const] : [])];
+}
 
 /** Trenutni obim = cilj nedelje 1 [0,1 km]. */
 export function startKm10(currentWeeklyKm: number): number {
   return to10(currentWeeklyKm);
 }
 
-/** D6: granica izgradnje min(start × 1,4; start + 15; 60) [0,1 km]; kapacitet konstrukcije je posebno. */
-export function peakCap10(start10: number): number {
+/** D6: granica izgradnje min(start × 1,4; start + 15; max nedelje D17) [0,1 km]; kapacitet konstrukcije
+    je posebno. */
+export function peakCap10(start10: number, rule: DayRule): number {
   const v = P.volume;
   return Math.min(
     Math.floor(start10 * v.peakFactor + EPS),
     start10 + to10(v.peakAddKm),
-    to10(v.peakMaxKm)
+    to10(rule.peakMaxKm)
   );
 }
 
@@ -64,16 +113,17 @@ export function raceWeekTarget10(planned100: number): number {
 /**
  * D6: nominalni cilj ako ga konstrukcija ispunjava; inače SAMO ova nedelja na najbliži izvodljiv cilj
  * (pri jednakoj udaljenosti niži). Izgradnja sme naviše do granice izgradnje; rasterećenje i taper samo
- * naniže (smanjenje ne sme da poraste). Donja granica je najmanji smislen obim (D15).
+ * naniže (smanjenje ne sme da poraste). Donja granica je najmanji smislen obim (D15, po broju dana D17).
  */
 export function fit10(
   nominal: number,
   frame: WeekFrame,
   cap10: number,
+  rule: DayRule,
   feasible: (target10: number) => boolean
 ): { target10: number; fitted: 'down' | 'up' | null } | null {
   if (feasible(nominal)) return { target10: nominal, fitted: null };
-  const lo = to10(P.week.minKm);
+  const lo = to10(rule.weekMinKm);
   const hi = frame.deload || frame.phase === 'taper' ? nominal : cap10;
   for (let d = 1; nominal - d >= lo || nominal + d <= hi; d++) {
     if (nominal - d >= lo && feasible(nominal - d))

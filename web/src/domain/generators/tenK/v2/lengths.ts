@@ -1,6 +1,7 @@
-/* D13 — dužine dugog i laganih trčanja (jedini vlasnik). Rad u desetinkama km (korak 0,1). Dugi uzima
-   najveću dozvoljenu dužinu (≤ 33 % cilja, ≤ 105 min sporim E, i da lagan ostane ≥ 3 km); lagan dobija
-   ostatak. Dugi ≥ svaki lagan je tvrdo pravilo: kad ne može da se ispuni, nedelja nije izvodljiva (D6). */
+/* D13 — dužine dugog i laganih trčanja (jedini vlasnik); D19 — lagani dani jednaki. Rad u desetinkama km
+   (korak 0,1). Dugi uzima najveću dozvoljenu dužinu (≤ udeo cilja po broju dana D17, ≤ 105 min sporim E, i
+   da svaki lagan ostane ≥ 3 km); lagani dele ostatak na jednake delove (razlika ≤ 0,1 km). Dugi ≥ svaki
+   lagan je tvrdo pravilo: kad ne može da se ispuni, nedelja nije izvodljiva (D6). */
 
 import { TEN_K_V2_POLICY as P } from './policy.ts';
 import type { Paces } from './types.ts';
@@ -8,56 +9,85 @@ import type { Paces } from './types.ts';
 const EPS = 1e-9;
 const EASY_MIN10 = Math.round(P.lengths.easyMinKm * 10);
 
-/** D13: najduži dozvoljen dugi [0,1 km] za cilj nedelje. */
-export function longCap10(target10: number, p: Paces): number {
-  const share = Math.floor(P.lengths.longMaxShare * target10 + EPS);
-  const time = Math.floor((P.lengths.longMaxSec / p.E.slow) * 10 + EPS);
-  return Math.min(share, time);
+export interface Lengths {
+  long10: number;
+  /** Lagani dani redom (raniji dan prvi). */
+  easy10: number[];
 }
 
-/** Jedan lagan dan: dugi do `cap10`, lagan = ostatak (≥ 3 km, ≤ dugi). Ostatak u stotinkama km. */
-function oneEasy(rest100: number, cap10: number): { long10: number; easy10: number[] } | null {
-  const long10 = Math.min(cap10, Math.floor((rest100 - EASY_MIN10 * 10) / 10));
+/** D13: plafon dugog od 105 min sporim E [0,1 km]. */
+export function longTimeCap10(p: Paces): number {
+  return Math.floor((P.lengths.longMaxSec / p.E.slow) * 10 + EPS);
+}
+
+/** D13/D17: plafon dugog kao udeo cilja nedelje [0,1 km]. */
+export function longShareCap10(target10: number, longMaxShare: number): number {
+  return Math.floor(longMaxShare * target10 + EPS);
+}
+
+/** D13: najduži dozvoljen dugi [0,1 km] za cilj nedelje i udeo dugog (D17). */
+export function longCap10(target10: number, longMaxShare: number, p: Paces): number {
+  return Math.min(longShareCap10(target10, longMaxShare), longTimeCap10(p));
+}
+
+/** D19: `total10` na `n` jednakih delova u koraku 0,1 km; raniji dani dobijaju višak (razlika ≤ 0,1). */
+export function splitEasy(total10: number, n: number): number[] {
+  const each = Math.floor(total10 / n);
+  return Array.from({ length: n }, (_, i) => each + (i < total10 - each * n ? 1 : 0));
+}
+
+/** `n` laganih dana: dugi do `cap10` (svaki lagan ≥ 3 km), lagani = ostatak (≥ 3 km, ≤ dugi). Ostatak u
+    stotinkama km. */
+function withEasy(rest100: number, cap10: number, n: number): Lengths | null {
+  const long10 = Math.min(cap10, Math.floor((rest100 - n * EASY_MIN10 * 10) / 10));
   if (long10 < EASY_MIN10) return null;
-  const easy10 = Math.round((rest100 - long10 * 10) / 10);
-  if (easy10 < EASY_MIN10 || easy10 > long10) return null;
-  return { long10, easy10: [easy10] };
+  const easy10 = splitEasy(Math.round((rest100 - long10 * 10) / 10), n);
+  if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
+  return { long10, easy10 };
 }
 
-/** Nedelja izgradnje: 2 kvaliteta (zbir `quality100`) + dugi + 1 lagan. */
+/** Nedelja izgradnje: kvalitet (zbir `quality100`) + dugi + `easyDays` laganih. */
 export function buildLengths(
   target10: number,
   quality100: number,
+  easyDays: number,
+  longMaxShare: number,
   p: Paces
-): { long10: number; easy10: number[] } | null {
-  return oneEasy(target10 * 10 - quality100, longCap10(target10, p));
+): Lengths | null {
+  return withEasy(target10 * 10 - quality100, longCap10(target10, longMaxShare, p), easyDays);
 }
 
 /** D7: taper — dugi ≤ 0,75 × najduži dugi plana (i D13). */
 export function taperLengths(
   target10: number,
   quality100: number,
+  easyDays: number,
   longest10: number,
+  longMaxShare: number,
   p: Paces
-): { long10: number; easy10: number[] } | null {
-  const cap10 = Math.min(longCap10(target10, p), Math.floor(P.taper.longFactor * longest10 + EPS));
-  return oneEasy(target10 * 10 - quality100, cap10);
+): Lengths | null {
+  const cap10 = Math.min(
+    longCap10(target10, longMaxShare, p),
+    Math.floor(P.taper.longFactor * longest10 + EPS)
+  );
+  return withEasy(target10 * 10 - quality100, cap10, easyDays);
 }
 
-/** D5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ D13); ostatak na 2 lagana dana. */
+/** D5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ D13); ostatak na `easyDays`
+    jednakih laganih dana (D19). */
 export function deloadLengths(
   target10: number,
   quality100: number,
+  easyDays: number,
   lastLong10: number,
+  longMaxShare: number,
   p: Paces
-): { long10: number; easy10: number[] } | null {
+): Lengths | null {
   const long10 = Math.min(
     Math.floor(P.deload.longFactor * lastLong10 + EPS),
-    longCap10(target10, p)
+    longCap10(target10, longMaxShare, p)
   );
-  const total10 = Math.round((target10 * 10 - quality100 - long10 * 10) / 10);
-  const a = Math.ceil(total10 / 2);
-  const b = total10 - a;
-  if (b < EASY_MIN10 || a > long10) return null;
-  return { long10, easy10: [a, b] };
+  const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
+  if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
+  return { long10, easy10 };
 }

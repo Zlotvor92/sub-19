@@ -1,8 +1,9 @@
 /* Validator SAMO prijavljuje: ne menja plan, a svaku pokvarenu odluku hvata kao grešku. */
 
 import { describe, expect, it } from 'vitest';
+import { addDays } from './dates.ts';
 import { generateTenKV2 } from './generate.ts';
-import { inputOf, SCHEDULES } from './testInputs.ts';
+import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 
@@ -242,8 +243,105 @@ describe('validator', () => {
     expect(rules).toContain('WEEK_FITTED');
     expect(rules).toContain('CAPACITY_LIMITED');
     expect(r.plan.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 5–6 dana (od segmenta 02).'
+      '4 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 5–6 dana.'
     );
     expect(r.plan.warnings.every((w) => w.severity === 'warning')).toBe(true);
+  });
+
+  /** Plan za broj dana (raspored A mreže 02). */
+  const planOf = (
+    days: 3 | 4 | 5 | 6,
+    o: { weeks: number; km: number; vdot: number }
+  ): TenKV2Plan => {
+    const sc = SCHEDULES_BY_DAYS[days].A;
+    const r = generateTenKV2(inputOf({ ...o, days: sc.days, long: sc.long }));
+    if (!r.ok) throw new Error(JSON.stringify(r.reasons));
+    return r.plan;
+  };
+
+  it('D22: baza bez platoa je ponovo tvrda — ista T doza iste strukture u bazi je greška i uz napomenu „ponovljen"', () => {
+    const p = planOf(4, { weeks: 18, km: 25, vdot: 30 });
+    expect(errors(p)).toEqual([]);
+    const s = p.weeks.filter((w) => steady(w) && w.phase === 'base');
+    const i = s.findIndex(
+      (w, k) =>
+        k > 0 &&
+        w.days.find((d) => d.role === 'q2')!.workout.dose!.doseM ===
+          s[k - 1]!.days.find((d) => d.role === 'q2')!.workout.dose!.doseM
+    );
+    expect(i).toBeGreaterThan(0);
+    const b = s[i]!;
+    b.days.find((d) => d.role === 'q2')!.workout = s[i - 1]!.days.find(
+      (d) => d.role === 'q2'
+    )!.workout;
+    b.notes.push('Q2: T ponovljen — druga struktura iste doze ne postoji (D10).');
+    expect(errors(p)).toContain('BASE_PLATEAU');
+  });
+
+  it('D19: lagani dani nejednaki (razlika > 0,1 km) → EASY_UNEQUAL', () => {
+    const p = planOf(6, { weeks: 12, km: 50, vdot: 45 });
+    expect(errors(p)).toEqual([]);
+    const easy = p.weeks[0]!.days.filter((d) => d.role === 'easy');
+    easy[0]!.workout.km += 0.3;
+    easy[1]!.workout.km -= 0.3;
+    expect(errors(p)).toContain('EASY_UNEQUAL');
+  });
+
+  it('D18: 3 dana — I/R ili drugi kvalitet u nedelji izgradnje → greška', () => {
+    const p = planOf(3, { weeks: 12, km: 30, vdot: 45 });
+    expect(errors(p)).toEqual([]);
+    const four = fresh();
+    const w = p.weeks[0]!;
+    const q = w.days.find((d) => d.role === 'q1')!;
+    q.workout = four.weeks[0]!.days.find((d) => d.role === 'q1')!.workout; // R
+    expect(errors(p)).toContain('PHASE_QUALITY');
+  });
+
+  it('D20: trkačka nedelja 6 dana sa 5 dana trčanja bez trke (> min(6, 5)) → RACE_WEEK', () => {
+    const p = planOf(6, { weeks: 12, km: 50, vdot: 45 });
+    const rw = p.weeks[p.weeks.length - 1]!;
+    const taper = p.weeks[p.weeks.length - 2]!;
+    expect(rw.days.length).toBe(5);
+    // Dan šablona koji je D20 izbacio (najraniji lagan) vraća se kao 35 min E.
+    const dropped = taper.days.find(
+      (d) => d.role === 'easy' && !rw.days.some((x) => x.weekday === d.weekday)
+    )!;
+    rw.days.push({
+      ...rw.days.find((d) => d.role === 'easy')!,
+      date: addDays(dropped.date, 7),
+      weekday: dropped.weekday
+    });
+    rw.days.sort((a, b) => a.date.localeCompare(b.date));
+    expect(errors(p)).toContain('RACE_WEEK');
+  });
+
+  it('D7: taper 5 dana bez jednog dana → TAPER_DAYS', () => {
+    const p = planOf(5, { weeks: 12, km: 45, vdot: 50 });
+    const t = p.weeks[p.weeks.length - 2]!;
+    t.days = t.days.filter(
+      (d, i) => !(d.role === 'easy' && i === t.days.findIndex((x) => x.role === 'easy'))
+    );
+    expect(errors(p)).toContain('TAPER_DAYS');
+  });
+
+  it('odstupanja (opreznije) su upozorenja, ne greške: rasterećenje/taper bez kvaliteta, taper samo RP, kratka trkačka nedelja', () => {
+    const p3 = planOf(3, { weeks: 8, km: 20, vdot: 30 });
+    const rules = p3.warnings.map((w) => w.rule);
+    expect(rules).toEqual(
+      expect.arrayContaining(['DELOAD_NO_QUALITY', 'TAPER_NO_QUALITY', 'RACE_WEEK_SHORT'])
+    );
+    expect(errors(p3)).toEqual([]);
+    // Rasterećenje bez kvaliteta kad T 2,0 km STAJE u plafon → greška.
+    const p = fresh();
+    const dl = p.weeks.find((w) => w.deload)!;
+    const q = dl.days.find((d) => d.workout.kind === 'quality')!;
+    q.role = 'easy';
+    q.hard = false;
+    q.workout = dl.days.find((d) => d.role === 'easy')!.workout;
+    dl.notes.push('Rasterećenje: bez kvaliteta');
+    expect(errors(p)).toContain('DELOAD_CONTENT');
+    const p6 = planOf(6, { weeks: 8, km: 35, vdot: 70 });
+    expect(p6.warnings.map((w) => w.rule)).toContain('TAPER_RP_ONLY');
+    expect(errors(p6)).toEqual([]);
   });
 });

@@ -1,4 +1,4 @@
-/* D1 — opseg ulaza: granice prolaze, sve van opsega daje strukturisano odbijanje (kod + poruka). */
+/* D1/D17/D21 — opseg ulaza: granice prolaze, van opsega strukturisano odbijanje (kod + poruka). */
 
 import { describe, expect, it } from 'vitest';
 import { addDays } from './dates.ts';
@@ -36,37 +36,61 @@ describe('D1: opseg ulaza', () => {
     }
   });
 
-  it('3/5/6 dana i 8–9 nedelja → privremeno „podržano od segmenta 02"', () => {
-    expect(codes(base({ days: ['tue', 'thu', 'sun'] }))).toEqual(['SUPPORTED_FROM_SEGMENT_02']);
-    expect(codes(base({ days: ['mon', 'tue', 'thu', 'sat', 'sun'] }))).toEqual([
-      'SUPPORTED_FROM_SEGMENT_02'
-    ]);
-    expect(codes(base({ days: ['mon', 'tue', 'wed', 'thu', 'sat', 'sun'] }))).toEqual([
-      'SUPPORTED_FROM_SEGMENT_02'
-    ]);
-    expect(codes(base({ weeks: 8 }))).toEqual(['SUPPORTED_FROM_SEGMENT_02']);
-    expect(codes(base({ weeks: 9 }))).toEqual(['SUPPORTED_FROM_SEGMENT_02']);
-    const r = generateTenKV2(base({ weeks: 9 }));
-    expect(!r.ok && r.reasons[0]!.message).toMatch(/segmenta 02/);
+  it('D17/D21: 3/5/6 dana (obim po redu tabele) i 8–9 nedelja daju plan', () => {
+    for (const raw of [
+      base({ days: ['tue', 'thu', 'sun'], km: 20 }),
+      base({ days: ['tue', 'thu', 'sun'], km: 40 }),
+      base({ days: ['mon', 'tue', 'thu', 'sat', 'sun'], km: 30 }),
+      base({ days: ['mon', 'tue', 'thu', 'sat', 'sun'], km: 65 }),
+      base({ days: ['mon', 'tue', 'wed', 'thu', 'sat', 'sun'], km: 35 }),
+      base({ days: ['mon', 'tue', 'wed', 'thu', 'sat', 'sun'], km: 80 }),
+      base({ weeks: 8 }),
+      base({ weeks: 9 })
+    ]) {
+      const r = generateTenKV2(raw);
+      expect(r.ok, JSON.stringify(r.ok ? '' : r.reasons)).toBe(true);
+    }
   });
 
-  it('< 8 nedelja trajno; > 18 „počni plan kasnije"; ostali brojevi dana trajno', () => {
+  it('D17: obim van reda broja dana → odbijanje sa brojevima dana koji ga podržavaju', () => {
+    const r3 = generateTenKV2(base({ days: ['tue', 'thu', 'sun'], km: 45 }));
+    expect(!r3.ok && r3.reasons.map((x) => x.code)).toEqual(['WEEKLY_KM_TOO_HIGH']);
+    expect(!r3.ok && r3.reasons[0]!.message).toMatch(/iznad 40 km za 3 dana .* podržava 4–6 dana/);
+    const r6 = generateTenKV2(base({ days: ['mon', 'tue', 'wed', 'thu', 'sat', 'sun'], km: 30 }));
+    expect(!r6.ok && r6.reasons.map((x) => x.code)).toEqual(['WEEKLY_KM_TOO_LOW']);
+    expect(!r6.ok && r6.reasons[0]!.message).toMatch(/ispod 35 km za 6 dana .* podržava 3–5 dana/);
+    expect(codes(base({ days: ['mon', 'tue', 'thu', 'sat', 'sun'], km: 29.9 }))).toEqual([
+      'WEEKLY_KM_TOO_LOW'
+    ]);
+    expect(codes(base({ days: ['mon', 'tue', 'thu', 'sat', 'sun'], km: 65.1 }))).toEqual([
+      'WEEKLY_KM_TOO_HIGH'
+    ]);
+  });
+
+  it('< 8 nedelja trajno; > 18 „počni plan kasnije"; 1, 2 i 7 dana trajno (7: dan odmora)', () => {
     expect(codes(base({ weeks: 7 }))).toEqual(['PLAN_TOO_SHORT']);
     expect(codes(base({ weeks: 19 }))).toEqual(['PLAN_TOO_LONG']);
     const r = generateTenKV2(base({ weeks: 19 }));
     expect(!r.ok && r.reasons[0]!.message).toMatch(/počni plan kasnije/);
+    expect(codes(base({ days: ['sun'] }))).toEqual(['RUN_DAYS_COUNT']);
     expect(codes(base({ days: ['tue', 'sun'] }))).toEqual(['RUN_DAYS_COUNT']);
-    expect(codes(base({ days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] }))).toEqual([
-      'RUN_DAYS_COUNT'
-    ]);
+    const r2 = generateTenKV2(base({ days: ['tue', 'sun'] }));
+    expect(!r2.ok && r2.reasons[0]!.message).toMatch(/3–6 dana trčanja \(izabrano 2\)/);
+    const r7 = generateTenKV2(base({ days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] }));
+    expect(!r7.ok && r7.reasons.map((x) => x.code)).toEqual(['RUN_DAYS_COUNT']);
+    expect(!r7.ok && r7.reasons[0]!.message).toMatch(/najmanje jedan dan odmora/);
     expect(codes(base({ days: ['tue', 'tue', 'sat', 'sun'] }))).toEqual(['RUN_DAYS_INVALID']);
   });
 
-  it('obim < 25 km → preporuka 5K plana ili izgradnje osnove; > 55 km odbijen', () => {
+  it('4 dana: obim < 25 km ili > 55 km odbijen; ispod 20 km (svi redovi D17) → 5K plan ili osnova', () => {
     expect(codes(base({ km: 24.9 }))).toEqual(['WEEKLY_KM_TOO_LOW']);
-    const r = generateTenKV2(base({ km: 20 }));
+    const r24 = generateTenKV2(base({ km: 24 }));
+    expect(!r24.ok && r24.reasons[0]!.message).toMatch(/podržava 3 dana/);
+    const r = generateTenKV2(base({ km: 19 }));
     expect(!r.ok && r.reasons[0]!.message).toMatch(/5K plan ili izgradnja osnove/);
     expect(codes(base({ km: 55.1 }))).toEqual(['WEEKLY_KM_TOO_HIGH']);
+    const r81 = generateTenKV2(base({ km: 81 }));
+    expect(!r81.ok && r81.reasons[0]!.message).toMatch(/iznad 80 km nedeljno, van opsega/);
   });
 
   it('bez rezultata, rezultat stariji od 84 dana ili VDOT < 30 → plan po osećaju (segment 03)', () => {
@@ -103,7 +127,7 @@ describe('D1: opseg ulaza', () => {
   });
 
   it('svaka poruka odbijanja je na srpskom i neprazna; ulaz se ne menja', () => {
-    const raw = base({ weeks: 19, km: 20, days: ['tue', 'sun'] });
+    const raw = base({ weeks: 19, km: 15, days: ['tue', 'sun'] });
     const copy = JSON.stringify(raw);
     const r = checkInput(raw);
     expect(r.ok).toBe(false);

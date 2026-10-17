@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "RUN_DAYS_COUNT",
+      "message": "10K plan v2 radi sa 3–6 dana trčanja (izabrano 2)."
+    }
+  ]
+}

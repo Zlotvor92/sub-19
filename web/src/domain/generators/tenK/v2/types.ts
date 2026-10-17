@@ -20,7 +20,7 @@ export interface TenKV2Input {
   startDate: IsoDate;
   /** Dan trke = poslednji dan poslednje nedelje. */
   raceDate: IsoDate;
-  /** Tačno 4 različita dana (D1). */
+  /** 3–6 različitih dana (D1, D17). */
   runDays: readonly Weekday[];
   /** Dan dugog trka (D9); bez njega nedelja ako je dan trčanja, inače poslednji dan trčanja. */
   longRunDay?: Weekday | null;
@@ -39,8 +39,6 @@ export type ReasonCode =
   | 'PLAN_NOT_WHOLE_WEEKS'
   /** Trajno: 10K traži najmanje 8 nedelja. */
   | 'PLAN_TOO_SHORT'
-  /** Privremeno: 8–9 nedelja i 3/5/6 dana dolaze u segmentu 02. */
-  | 'SUPPORTED_FROM_SEGMENT_02'
   | 'PLAN_TOO_LONG'
   | 'RUN_DAYS_INVALID'
   | 'RUN_DAYS_COUNT'
@@ -207,10 +205,11 @@ export interface PlanWeek extends WeekFrame {
   notes: string[];
 }
 
+/** D9 šablon: Q1 (i Q2 kod 4–6 dana; null kod 3 dana, D18), dugi i lagani dani (rastućim danom). */
 export interface Pattern {
   long: Weekday;
   q1: Weekday;
-  q2: Weekday;
+  q2: Weekday | null;
   easy: readonly Weekday[];
 }
 
@@ -244,7 +243,7 @@ export interface TenKV2Plan {
   goal: GoalAssessment | null;
   pattern: Pattern;
   startKm: number;
-  /** D6: min(start × 1,4; start + 15; 60) — granica izgradnje pre kapaciteta konstrukcije. */
+  /** D6: min(start × 1,4; start + 15; max nedelje D17) — granica izgradnje pre kapaciteta konstrukcije. */
   peakCapKm: number;
   /** Najveći cilj izgradnje u planu (vrh). */
   peakKm: number;
