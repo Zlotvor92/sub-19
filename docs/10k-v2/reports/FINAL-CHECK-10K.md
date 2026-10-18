@@ -67,8 +67,24 @@ Koraci se ponavljaju kako su sačuvani (A14). 10K v2 je iza razvojnog prekidača
 
 Deo po RPE nema propisan tempo, pa se ne šalje (razlog u `skippedReasons`); lagani i dugi idu sa E opsegom.
 
+### N7 — ISPRAVKA (06d), dopuna posle 06c: odbijene adaptacije rano u planu po osećaju
+
+Ova provera ga nije uhvatila: nijedna mreža (04, P, R, sezona) nema asOf u nedelji 1 ni sredinom nedelje pre nedelje
+testa. Pretraga posle 06c: planovi po osećaju (svaki 7. iz F3–F6), asOf = kraj nedelje i kraj − 3 dana za svaku nedelju
+pre nedelje testa, {pauza 10, pauza 20, bol 5, bol 8, pauza 10 + bol 5, manjak} = 61 104 toka. Odbijeno: 10k-v2.4.0
+397, 10k-v2.4.1 274, 10k-v2.5.0 152 (06c smanjuje, ne uvodi). Dve klase, obe „konstruktor sastavi, validator odbije":
+
+- 142 × `VOLUME_RULE` u rasterećenju sa testom: pretraga cilja dozvoljava rast naviše (odstupanje D27) jer okvir ima
+  test, a sastavljena nedelja test izgubi (A9) — rasterećenje bez testa podignuto naviše. Npr. `f-d4-12w-25km-e270-A-sun`,
+  bol 5 u četvrtak ned 1: ned 4 cilj 20 km, pravilo 17 km, test zamenjen kvalitetom.
+- 10 × drugo pravilo, bar jedan `TAPER_LONG`: `f-d5-8w-35km-e270-A-sat`, bol 5 u sredu ned 1: dugi tapera 7,3 km >
+  0,75 × najduži 9,2 km — konstruktor i validator ne računaju isti „najduži dugi".
+
+Posledica za korisnika: „plan nije moguće prilagoditi" posle bola ili pauze na početku plana.
+
 ## 3. Sledeće
 
-1. Segment 06c (10k-v2.5.0): N1 + N2.
-2. Posle 06c: 10K v2 spreman (prekidač i dalje isključen do odluke vlasnika).
-3. 5K: isto pravilo kao N1 (poseban segment).
+1. Segment 06c (10k-v2.5.0): N1 + N2 — urađeno (`b70931f`).
+2. Segment 06d (10k-v2.5.1): N7 + trajna mreža rane i srednje adaptacije.
+3. Posle 06d: 10K v2 spreman (prekidač i dalje isključen do odluke vlasnika).
+4. 5K: isto pravilo kao N1 i ista pretraga kao N7 (poseban segment).
