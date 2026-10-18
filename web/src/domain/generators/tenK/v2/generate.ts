@@ -1,7 +1,7 @@
 /* 10K v2 — generisanje. generateTenKV2(input) = construct(input, []): potpis je spreman za korake
    adaptacije (segment 04), a do tada koraka nema. Redosled: ulaz (D1, D26, D28, D29) → tempo (D2 iz
-   rezultata ili D26 po osećaju) → raspored (D9) → faze, rasterećenja i test (D4/D5/D27) → po nedelji cilj
-   (D6) i konstrukcija → validator (samo prijavljuje). */
+   rezultata ili D26 po osećaju) → raspored (D9) → faze, rasterećenja i test (D4/D5/D27; početnik bez
+   testa, D32) → po nedelji cilj (D6) i konstrukcija → validator (samo prijavljuje). */
 
 import { checkInput } from './input.ts';
 import { assessGoal, feelPaces, pacesFromVdot, predicted10k } from './paces.ts';
@@ -41,7 +41,8 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     pace.kind === 'feel' ? feelPaces(pace.easySecPerKm).paces : pacesFromVdot(pace.vdotRaw);
   // D26: u planu po osećaju prognoza služi samo za trajanje segmenta trke (procena), plan je nema.
   const raceSec = predicted10k(paces);
-  const frames = periodize(input.startDate, weeks, feel);
+  // D27/D32: test 5 km samo u planu po osećaju koji nije početnik.
+  const frames = periodize(input.startDate, weeks, feel && rule.feelTest);
   if (!frames)
     return {
       ok: false,
@@ -126,7 +127,9 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     });
     if (w.long10 !== null) longest10 = Math.max(longest10, w.long10);
     if (frame.phase === 'taper') {
-      taperRpM = w.days.find((d) => d.role === 'q1')?.workout.dose?.doseM ?? 0;
+      // D8: oštrenje ≤ RP doza tapera (T tapera početnika, D31, nije RP).
+      const q = w.days.find((d) => d.role === 'q1')?.workout.dose;
+      taperRpM = q?.zone === 'RP' ? q.doseM : 0;
       for (const d of w.days)
         if (d.role === 'easy') taperEasy10 = Math.min(taperEasy10, Math.round(d.workout.km * 10));
     }
@@ -156,11 +159,13 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     warnings: []
   };
   if (pace.kind === 'feel') {
-    const t = out.find((w) => w.test)!;
-    const td = t.days.find((d) => d.workout.kind === 'test')!;
+    const t = out.find((w) => w.test);
+    const td = t?.days.find((d) => d.workout.kind === 'test');
     plan.notes.push(
       `Plan po osećaju (D26): ${pace.why}. E = lagan tempo ${fmtPace(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE.`,
-      `Test ${P.test.km} km: nedelja ${t.index}, ${td.date} (D27). Ocena cilja i prognoza 10K: posle testa.`
+      t && td
+        ? `Test ${P.test.km} km: nedelja ${t.index}, ${td.date} (D27). Ocena cilja i prognoza 10K: posle testa.`
+        : `Početnik bez testa ${P.test.km} km (D32): kvalitet po RPE; ocena cilja i prognoza 10K posle rezultata trke ili parkruna (adaptacija, segment 04).`
     );
   }
   if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))

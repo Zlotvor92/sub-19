@@ -1,6 +1,6 @@
-/* D10 — lestvice i „ista doza druge strukture"; D14 — WU/CD (po pojasu obima) i oporavci; struktura
-   treninga (blokovi, segmenti, km/trajanje); D26 RPE kvaliteta; D27 test 5 km. Jedino mesto sastava
-   treninga. Km WU/CD/oporavka po srednjem E. */
+/* D10 — lestvice i „ista doza druge strukture" (D31: T kontinuirano početnika od 1,5 km); D14 — WU/CD (po
+   pojasu obima) i oporavci; struktura treninga (blokovi, segmenti, km/trajanje); D26 RPE kvaliteta; D27
+   test 5 km. Jedino mesto sastava treninga. Km WU/CD/oporavka po srednjem E. */
 
 import { midEasy, raceTimeForVdot } from './paces.ts';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
@@ -45,10 +45,14 @@ export function repsOf(s: Structure): number[] {
   return s.form === 'reps' ? Array<number>(s.reps).fill(s.repM) : [...s.repsM];
 }
 
-/** Nivoi lestvice kao strukture, rastućom dozom. */
-export function ladderLevels(ladder: LadderId): Structure[] {
+/** Nivoi lestvice kao strukture, rastućom dozom. `beginner` (D31): T kontinuirano počinje od 1,5 km. */
+export function ladderLevels(ladder: LadderId, beginner = false): Structure[] {
   const l = P.ladders;
-  if (ladder === 'T_continuous') return l.T_continuous.map((km) => ({ form: 'continuous', km }));
+  if (ladder === 'T_continuous')
+    return [...(beginner ? [P.beginner.tFirstKm] : []), ...l.T_continuous].map((km) => ({
+      form: 'continuous',
+      km
+    }));
   const reps =
     ladder === 'R' ? l.R : ladder === 'T_cruise' ? l.T_cruise : ladder === 'I' ? l.I : l.RP;
   return reps.map((r) => ({ form: 'reps', reps: r.reps, repM: r.repM }));

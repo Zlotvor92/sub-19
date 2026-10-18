@@ -1,5 +1,5 @@
-/* Brojevi politike su odluke D1–D30 iz zadataka segmenata 01, 01b, 02, 02b i 03: test pada kad se broj
-   promeni bez izmene odluke. Svaka odluka ima red u DECISIONS sa mestom i obrazloženjem. */
+/* Brojevi politike su odluke D1–D32 iz zadataka segmenata 01, 01b, 02, 02b, 03 i 03b: test pada kad se
+   broj promeni bez izmene odluke. Svaka odluka ima red u DECISIONS sa mestom i obrazloženjem. */
 
 import { describe, expect, it } from 'vitest';
 import {
@@ -10,13 +10,13 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.3.0', () => {
+describe('policy 10k-v2.3.1', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.3.0');
+    expect(P.version).toBe('10k-v2.3.1');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D30 (03), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -26,7 +26,9 @@ describe('policy 10k-v2.3.0', () => {
       'D27',
       'D28',
       'D29',
-      'D30'
+      'D30',
+      'D31',
+      'D32'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -67,6 +69,24 @@ describe('policy 10k-v2.3.0', () => {
     expect(why('D27')).toMatch(/D27 ispred D5/);
     expect(why('D28')).toMatch(/D11 ispred D28/);
     expect(why('D30')).toMatch(/1224 \/ 192 \/ 144 \/ 144 → 240 \/ 48 \/ 0 \/ 0/);
+    // 03b (10k-v2.3.1).
+    expect(rule('D31')).toMatch(/lestvica T kontinuirano = \[1,5; 2,0; 2,5; …\] km/);
+    expect(rule('D31')).toMatch(/najviši nivo lestvice početnika koji staje/);
+    expect(rule('D31')).toMatch(/bez kvaliteta samo kad ni 1,5 km ne staje/);
+    expect(rule('D31')).toMatch(
+      /Rasterećenje: T ≈ 60 % poslednje T doze \(nivo naniže\), min 1,5 km/
+    );
+    expect(rule('D31')).toMatch(
+      /Taper: RP po D7; RP ne staje → T kontinuirano ≈ 60 % poslednje T doze/
+    );
+    expect(why('D31')).toMatch(/≈ 10 min praga/);
+    expect(why('D31')).toMatch(/3720 nedelja izgradnje bez kvaliteta, 378 planova/);
+    expect(why('D31')).toMatch(/izuzetak od „baza bez platoa"/);
+    expect(rule('D32')).toMatch(/Početnik nema test 5 km \(ni u planu po osećaju; izmena D27\)/);
+    expect(rule('D32')).toMatch(/TEST_DELOAD_LONG, cilj rasterećenja naviše/);
+    expect(why('D32')).toMatch(/≈ pola nedelje.*3,1 km/);
+    expect(rule('D27')).toMatch(/početnik bez testa, D32/);
+    expect(rule('D28')).toMatch(/plan po osećaju \(D26\) bez testa \(D32\)/);
   });
 
   it('D1 opseg (dani i obim: D17; početnik: D28), D29', () => {
@@ -108,7 +128,8 @@ describe('policy 10k-v2.3.0', () => {
       growthMaxKm: 2,
       peakFactor: 1.3,
       peakAddKm: 10,
-      longMaxSec: 90 * 60
+      longMaxSec: 90 * 60,
+      tFirstKm: 1.5
     });
     expect(BEGINNER_DAYS_COUNTS).toEqual([3, 4]);
     for (const n of RUN_DAYS_COUNTS)
@@ -123,6 +144,7 @@ describe('policy 10k-v2.3.0', () => {
         peakAddKm: 15,
         introWeeks: 0,
         weeksMin: 8,
+        feelTest: true,
         dayCounts: [3, 4, 5, 6]
       });
     expect(planRule(4, 'beginner')).toEqual({
@@ -142,6 +164,7 @@ describe('policy 10k-v2.3.0', () => {
       peakAddKm: 10,
       introWeeks: 2,
       weeksMin: 10,
+      feelTest: false,
       dayCounts: [3, 4]
     });
     expect(planRule(3, 'beginner')).toMatchObject({ quality: 1, easy: 1, kmMin: 15, kmMax: 30 });

@@ -89,7 +89,7 @@ describe('D4: faze', () => {
     if (!r.ok) return;
     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
     expect(r.plan.policyId).toBe('10k-v2');
-    expect(r.plan.policyVersion).toBe('10k-v2.3.0');
+    expect(r.plan.policyVersion).toBe('10k-v2.3.1');
   });
 });
 

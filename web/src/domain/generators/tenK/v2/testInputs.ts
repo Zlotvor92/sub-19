@@ -297,3 +297,9 @@ export function planHashes21(result: unknown): [number, number] {
   const warnings = r.plan.warnings.filter((w) => w.rule !== 'RACE_WEEK_SHORT');
   return [full, fnv1a(normalize21({ ...r, plan: { ...r.plan, warnings } }))];
 }
+
+/** Regresija prema 81bd351 (10k-v2.3.0): heš celog rezultata bez oznake verzije (isti kod u skripti koja
+    je upisala heševe 81bd351). */
+export function planHash81(result: unknown): number {
+  return fnv1a(JSON.stringify(result).replace(/10k-v2\.\d+\.\d+/g, 'VERSION'));
+}

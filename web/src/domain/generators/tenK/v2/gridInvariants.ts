@@ -35,6 +35,14 @@ export const isBuild = (ph: Phase): boolean =>
 export const steady = (w: PlanWeek): boolean => isBuild(w.phase) && !w.deload;
 const T_C = [2000, 2500, 3000, 3500, 4000, 4500, 5000];
 const T_CRUISE = [2000, 2400, 3000, 3600, 4000, 4800, 5000, 6000, 6400, 8000];
+const RP = [2400, 3000, 4000, 4500, 5000, 6000];
+/** D31: lestvica T kontinuirano početnika (od 1,5 km); 1,5 km = najmanja T doza početnika. */
+const T_C_BEG = [1500, ...T_C];
+/** D11: plafon zone 10 % (T, RP) cilja nedelje [m]. */
+const cap10 = (targetKm: number): number => Math.floor(0.1 * targetKm * 1000 + 1e-6);
+/** ≈ 60 % poslednje doze, nivo lestvice naniže, najmanje `min` (D5/D7/D31). */
+const reduced = (ladder: readonly number[], last: number, min: number): number =>
+  ladder.filter((m) => m <= 0.6 * last + 1e-6 && m >= min).pop() ?? min;
 
 export interface GridStats {
   plans: number;
@@ -60,6 +68,14 @@ export interface GridStats {
   /** D28: nedelje izgradnje bez kvaliteta posle uvoda; planovi sa njima. */
   buildNoQuality: number;
   buildNoQualityPlans: number;
+  /** Planovi bez ijednog kvaliteta od nedelje 3 do trke. */
+  noQualityPlans: number;
+  /** D31: nedelje izgradnje sa T kontinuirano umesto lestvice faze (razvoj, specifično); taper sa T. */
+  beginnerT: number;
+  taperT: number;
+  /** Testovi (D27) i planovi sa dugim rasterećenja < 4 km. */
+  tests: number;
+  deloadLongBelow4: number;
 }
 
 export const emptyStats = (): GridStats => ({
@@ -81,7 +97,12 @@ export const emptyStats = (): GridStats => ({
   testDeloadLong: 0,
   testDeloadUp: 0,
   buildNoQuality: 0,
-  buildNoQualityPlans: 0
+  buildNoQualityPlans: 0,
+  noQualityPlans: 0,
+  beginnerT: 0,
+  taperT: 0,
+  tests: 0,
+  deloadLongBelow4: 0
 });
 
 /** Nezavisne invarijante jednog plana (sve mreže). */
@@ -98,6 +119,8 @@ export function checkPlan(
   const beginner = p.input.experience === 'beginner';
   // Mreže: plan po osećaju tačno kad ulaz nema rezultata (ostali rezultati u mrežama su pouzdani).
   const feel = p.input.recentResult === null;
+  // D27/D32: test samo u planu po osećaju koji nije početnik.
+  const withTest = feel && !beginner;
   const oneSlot = n === 3 || beginner;
   const longMaxSec = beginner ? 5400 : 6300;
   const time10 = Math.floor((longMaxSec / p.paces.E.slow) * 10 + EPS);
@@ -116,7 +139,12 @@ export function checkPlan(
   let last: PlanWeek | null = null;
   /** Poslednja doza T slota (rasterećenje): iz poslednje nedelje izgradnje koja ga ima. */
   let lastT = 0;
+  /** D31 (početnik): poslednja doza u zoni T i poslednja doza jedinog slota. */
+  let lastTZone = 0;
+  let lastQ1 = 0;
   let noQualityWeeks = 0;
+  let qualityAfterIntro = 0;
+  let deloadBelow4 = false;
   const tests: { w: PlanWeek; role: string; weekday: string }[] = [];
   for (const w of p.weeks) {
     const tag = `ned ${w.index}`;
@@ -132,6 +160,8 @@ export function checkPlan(
       if (long === null) no('LONG', `${tag} bez dugog`);
       else {
         if (easy.some((e) => e > long)) no('LONG_GE_EASY', tag);
+        if (long < 30) no('LONG_MIN', `${tag} ${long / 10}`);
+        if (w.deload && long < 40) deloadBelow4 = true;
         if (long > shareCap10(w.targetKm) || long > time10) no('LONG_CAP', `${tag} ${long / 10}`);
       }
       // D19: lagani dani jednaki (razlika ≤ 0,1 km), svaki ≥ 3 km.
@@ -187,6 +217,8 @@ export function checkPlan(
     }
     const quality = w.days.filter((d) => d.workout.kind === 'quality');
     const hasTest = w.days.some((d) => d.workout.kind === 'test');
+    if (hasTest) st.tests++;
+    if (w.index >= 3 && quality.length > 0) qualityAfterIntro++;
     // D28: uvod bez kvaliteta i testa; početnik najviše 1 kvalitet nedeljno (i trkačka nedelja).
     if (beginner && w.index <= 2 && (quality.length > 0 || hasTest)) no('INTRO_NO_QUALITY', tag);
     if (beginner && quality.length > 1) no('BEGINNER_ONE_QUALITY', tag);
@@ -198,6 +230,25 @@ export function checkPlan(
         if (!beginner || intro || hasTest) no('BUILD_NO_QUALITY_ONLY_BEGINNER', tag);
       }
       if (quality.length !== (intro || hasTest || nq ? 0 : 1)) no('ONE_SLOT_ONE_QUALITY', tag);
+      // D31: početnik — lestvica faze (prvi nivo: baza T 1,5, razvoj T cruise 2,0, specifično RP 2,4 km)
+      // kad staje u plafon; inače T kontinuirano = najviši nivo lestvice početnika ≤ plafon; bez kvaliteta
+      // samo kad ni 1,5 km ne staje.
+      if (beginner && !intro) {
+        const cap = cap10(w.targetKm);
+        const first = w.phase === 'base' ? 1500 : w.phase === 'development' ? 2000 : 2400;
+        const phaseLadder =
+          w.phase === 'base' ? 'T_continuous' : w.phase === 'development' ? 'T_cruise' : 'RP';
+        const dose = quality[0]?.workout.dose;
+        if (nq !== cap < 1500) no('BEGINNER_NO_QUALITY', `${tag} plafon ${cap}`);
+        else if (dose && first <= cap && dose.ladder !== phaseLadder)
+          no('BEGINNER_PHASE_LADDER', `${tag} ${dose.ladder}`);
+        else if (dose && first > cap) {
+          st.beginnerT++;
+          const want = T_C_BEG.filter((m) => m <= cap).pop();
+          if (dose.ladder !== 'T_continuous' || dose.zone !== 'T' || dose.doseM !== want)
+            no('BEGINNER_T_FALLBACK', `${tag} ${dose.ladder} ${dose.doseM} ≠ T ${want}`);
+        }
+      }
     }
     if (w.notes.some((x) => x.includes('ponovljen'))) st.repeats++;
     // D5: mesto rasterećenja i niz izgradnje.
@@ -230,9 +281,10 @@ export function checkPlan(
         }
         if (easy.length !== n - 2) no('DELOAD_CONTENT', `${tag} lagani`);
       } else {
-        const ladder = w.phase === 'base' ? T_C : T_CRUISE;
-        const want = ladder.filter((m) => m <= 0.6 * lastT + 1e-6 && m >= 2000).pop() ?? 2000;
-        const cap = Math.floor(0.1 * w.targetKm * 1000 + 1e-6);
+        // D5/D18: ≈ 60 % poslednje doze T slota, min 2,0 km; D31 početnik: poslednje T doze, min 1,5 km.
+        const ladder = w.phase === 'base' ? (beginner ? T_C_BEG : T_C) : T_CRUISE;
+        const want = beginner ? reduced(ladder, lastTZone, 1500) : reduced(ladder, lastT, 2000);
+        const cap = cap10(w.targetKm);
         if (want > cap) {
           if (quality.length !== 0) no('DELOAD_CONTENT', `${tag} kvalitet uprkos plafonu`);
           st.deloadNoQuality++;
@@ -252,6 +304,18 @@ export function checkPlan(
       const q = quality.map((d) => d.workout.dose!.zone).join();
       if (q === '') st.taperNone++;
       else if (!oneSlot && q === 'RP') st.taperRpOnly++;
+      // D7 + D31: početnik — RP ≈ 60 % poslednje doze slota (min 2 × 1000 m); kad ne staje, T kontinuirano
+      // ≈ 60 % poslednje T doze (min 1,5 km); bez kvaliteta samo kad ni to ne staje.
+      if (beginner) {
+        const cap = cap10(w.targetKm);
+        const rp = reduced(RP, lastQ1, 2000);
+        const t = reduced(T_C_BEG, lastTZone, 1500);
+        const want = rp <= cap ? `RP:${rp}` : t <= cap ? `T:${t}:continuous` : '';
+        const d = quality[0]?.workout.dose;
+        const got = d ? `${d.zone}:${d.doseM}${d.zone === 'T' ? `:${d.structure.form}` : ''}` : '';
+        if (quality.length > 1 || got !== want) no('BEGINNER_TAPER', `${tag} ${got} ≠ ${want}`);
+        if (d?.zone === 'T') st.taperT++;
+      }
       if (w.days.length !== n) no('TAPER_DAYS', tag);
       if (w.fitted === 'up') no('TAPER_TARGET', `${tag} naviše`);
     }
@@ -261,18 +325,21 @@ export function checkPlan(
       last = w;
       const t = w.days.find((d) => d.role === tSlot)?.workout.dose;
       if (t) lastT = t.doseM;
+      for (const d of quality) if (d.workout.dose!.zone === 'T') lastTZone = d.workout.dose!.doseM;
+      const q1 = w.days.find((d) => d.role === 'q1')?.workout.dose;
+      if (q1) lastQ1 = q1.doseM;
     }
   }
   // D27: plan po osećaju — tačno jedan test, u poslednjoj nedelji baze, na danu Q1 (rasterećenje: na danu
-  // T slota); plan sa rezultatom nijedan. Oznaka nedelje testa samo na toj nedelji.
-  if (feel) {
+  // T slota); plan sa rezultatom i početnik (D32) nijedan. Oznaka nedelje testa samo na toj nedelji.
+  if (withTest) {
     const t = tests[0];
     const day = t && (t.w.deload ? (tSlot === 'q1' ? p.pattern.q1 : p.pattern.q2) : p.pattern.q1);
     if (tests.length !== 1 || !t || t.w.index !== lastBase || t.weekday !== day)
       no('TEST_ONE', `${tests.length} ${tests.map((x) => `${x.w.index}:${x.weekday}`).join()}`);
   } else if (tests.length > 0) no('TEST_NONE', `${tests.length}`);
   for (const w of p.weeks)
-    if ((w.test === true) !== (feel && w.index === lastBase)) no('TEST_FLAG', `ned ${w.index}`);
+    if ((w.test === true) !== (withTest && w.index === lastBase)) no('TEST_FLAG', `ned ${w.index}`);
   // D26: osnova tempa, E = lagan tempo ± 15 s, procena VDOT-a = VO2(lagan) / 0,70 (Daniels–Gilbert,
   // 0,1; 25–60), bez prognoze i ocene cilja.
   if (feel) {
@@ -364,6 +431,8 @@ export function checkPlan(
   }
   if (noQualityWeeks > 0) st.buildNoQualityPlans++;
   st.buildNoQuality += noQualityWeeks;
+  if (qualityAfterIntro === 0) st.noQualityPlans++;
+  if (deloadBelow4) st.deloadLongBelow4++;
   if (p.warnings.some((x) => x.rule === 'CAPACITY_LIMITED')) st.capacity++;
   st.peakRatio += p.peakKm / p.startKm;
   st.plans++;

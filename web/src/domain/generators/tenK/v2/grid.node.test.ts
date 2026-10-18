@@ -3,7 +3,8 @@
    deterministički, = bazna linija segment03.baseline.json (10k-v2.3.0). Invarijante nezavisno od validatora
    (gridInvariants.ts). Regresija prema 21c03f1 (10k-v2.2.1): redovi segment02b.baseline.json i heševi
    celih planova segment03.plan-hashes-21c03f1.json; promena samo od D30a (RP deonice ≥ 800 m) ili D30b
-   (Uslov 8 trkačke nedelje sa trkom). Vrh prema 49ad476 (segment02.baseline.json): niži samo u 12 planova. */
+   (Uslov 8 trkačke nedelje sa trkom). Vrh prema 49ad476 (segment02.baseline.json): niži samo u 12 planova.
+   Segment 03b (10k-v2.3.1): ceo plan bajt-isti kao 81bd351 (segment03b.plan-hashes-81bd351.json). */
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -21,7 +22,7 @@ import {
   statsRow,
   summaryRow
 } from './gridInvariants.ts';
-import { fnv1a, grid02Inputs, planHashes21 } from './testInputs.ts';
+import { fnv1a, grid02Inputs, planHash81, planHashes21 } from './testInputs.ts';
 import type { TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { repsOf } from './workouts.ts';
@@ -32,6 +33,7 @@ const BASELINE_21 = join(HERE, 'segment02b.baseline.json');
 const BASELINE_49 = join(HERE, 'segment02.baseline.json');
 const HASHES_21 = join(HERE, 'segment03.plan-hashes-21c03f1.json');
 const EXCEPTIONS = join(HERE, 'segment03.regression-exceptions.json');
+const HASHES_81 = join(HERE, 'segment03b.plan-hashes-81bd351.json');
 const EPS = 1e-9;
 
 type Baseline = { policyVersion: string; plans: Record<string, Row> };
@@ -54,6 +56,7 @@ describe('mreža 02 sa rezultatom: 15 840 planova (3/4/5/6 dana × 8–18 ned)',
   const inputs = DAYS.flatMap((n) => grid02Inputs(n));
   const rows: Record<string, Row> = {};
   const hashes: number[] = [];
+  const h81: Record<string, number> = {};
   const rejected: string[] = [];
   const errors: Record<string, number> = {};
   const bad: Record<string, string[]> = {};
@@ -67,6 +70,7 @@ describe('mreža 02 sa rezultatom: 15 840 planova (3/4/5/6 dana × 8–18 ned)',
     const n = days as Days;
     const r = generateTenKV2(input);
     hashes.push(fnv1a(JSON.stringify(r)));
+    h81[id] = planHash81(r);
     if (!r.ok) {
       rejected.push(`${id}: ${r.reasons.map((x) => x.code).join(',')}`);
       continue;
@@ -249,5 +253,16 @@ describe('mreža 02 sa rezultatom: 15 840 planova (3/4/5/6 dana × 8–18 ned)',
       'sat:race'
     ]);
     expect(weekdayOf(addDays(w.startDate, 6))).toBe('sat');
+  });
+
+  it('regresija 03b: ceo plan sa rezultatom bajt-isti kao 81bd351 (heš bez oznake verzije) za svih 15 840', () => {
+    const fx = JSON.parse(readFileSync(HASHES_81, 'utf8')) as {
+      against: string;
+      result: Record<string, number>;
+    };
+    expect(fx.against).toBe('81bd351');
+    expect(Object.keys(fx.result).sort()).toEqual(Object.keys(h81).sort());
+    expect(Object.keys(h81).length).toBe(15840);
+    expect(Object.keys(h81).filter((id) => h81[id] !== fx.result[id])).toEqual([]);
   });
 });

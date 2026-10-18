@@ -206,7 +206,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D27',
-    rule: 'Test 5 km samo u planu po osećaju: poslednja nedelja baze, na danu Q1 (3 dana: umesto jedinog kvaliteta); kad je ta nedelja rasterećenje — umesto kvaliteta rasterećenja (na njegovom danu). Struktura WU (pojas D14) + 5 km kontrolisano maksimalno + CD; računa se u obim nedelje, NE u dozu kvaliteta (bez plafona D11): progresija slota (D12) se posle testa nastavlja od stanja pre testa, a provera „glavna doza ne opada" preskače test nedelju. Plan po osećaju ima tačno jedan test, plan sa rezultatom nijedan; rezultat testa koristi adaptacija (04), do tada tempo ostaje procena.',
+    rule: 'Test 5 km samo u planu po osećaju (početnik bez testa, D32): poslednja nedelja baze, na danu Q1 (3 dana: umesto jedinog kvaliteta); kad je ta nedelja rasterećenje — umesto kvaliteta rasterećenja (na njegovom danu). Struktura WU (pojas D14) + 5 km kontrolisano maksimalno + CD; računa se u obim nedelje, NE u dozu kvaliteta (bez plafona D11): progresija slota (D12) se posle testa nastavlja od stanja pre testa, a provera „glavna doza ne opada" preskače test nedelju. Plan po osećaju ima tačno jedan test, plan sa rezultatom nijedan; rezultat testa koristi adaptacija (04), do tada tempo ostaje procena.',
     place:
       'periodize.ts (testWeek); week.ts (buildWeek); workouts.ts (testWorkout); quality.ts (advance); validate.ts (TEST)',
     rationale:
@@ -214,11 +214,11 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D28',
-    rule: 'Početnik (experience beginner; podrazumevano regular), JEDNA tabela beginner: 3–4 dana (5–6 → BEGINNER_DAYS, preporuka 3–4 dana); 10–18 nedelja (8–9 → BEGINNER_SHORT); obim start 3 dana 15–30 km, 4 dana 18–35 km (ispod → preporuka 5K plana); nedelje 1–2 uvod bez kvaliteta (dan kvaliteta = lagan); zatim jedan kvalitet nedeljno za 3 i 4 dana (lestvica D18: T kont. → T cruise → RP), bez I i R; 4 dana = 1 kvalitet + 2 lagana + dugi (D19 jednaki); D16 ne važi (start = prvi nivo lestvice); rast +5 % (min 1,0, max 2,0 km); vrh = min(start × 1,3; start + 10; max nedelje D17; kapacitet); dugi ≤ 90 min sporim E (i ≤ udeo D17); WU/CD uvek prvi pojas (15/10 min); rezultat ≤ 84 dana i VDOT ≥ 30 → tempo iz VDOT-a, inače plan po osećaju (D26) sa testom (D27). Rasterećenje, taper (1 kvalitet RP kao D18) i trkačka nedelja po D5/D7/D8/D20/D23.',
+    rule: 'Početnik (experience beginner; podrazumevano regular), JEDNA tabela beginner: 3–4 dana (5–6 → BEGINNER_DAYS, preporuka 3–4 dana); 10–18 nedelja (8–9 → BEGINNER_SHORT); obim start 3 dana 15–30 km, 4 dana 18–35 km (ispod → preporuka 5K plana); nedelje 1–2 uvod bez kvaliteta (dan kvaliteta = lagan); zatim jedan kvalitet nedeljno za 3 i 4 dana (lestvica D18: T kont. → T cruise → RP; T kontinuirano od 1,5 km i kad prvi nivo faze ne staje u plafon: D31), bez I i R; 4 dana = 1 kvalitet + 2 lagana + dugi (D19 jednaki); D16 ne važi (start = prvi nivo lestvice); rast +5 % (min 1,0, max 2,0 km); vrh = min(start × 1,3; start + 10; max nedelje D17; kapacitet); dugi ≤ 90 min sporim E (i ≤ udeo D17); WU/CD uvek prvi pojas (15/10 min); rezultat ≤ 84 dana i VDOT ≥ 30 → tempo iz VDOT-a, inače plan po osećaju (D26) bez testa (D32). Rasterećenje, taper (1 kvalitet RP kao D18) i trkačka nedelja po D5/D7/D8/D20/D23 (T rasterećenja i tapera početnika: D31).',
     place:
       'policy.ts beginner + planRule (jedina tabela); input.ts; schedule.ts (1 kvalitet); quality.ts (startLevel, pickBuild); week.ts (uvod); lengths.ts, volume.ts, workouts.ts (pravilo plana); validate.ts',
     rationale:
-      'Heuristika: cilj početnika na 10K je završiti zdravo — smanjen intenzitet (jedan kvalitet, bez I/R, start od prvog nivoa, uvod bez kvaliteta) i rast (5 %, max 2 km; vrh 1,3× / +10 km; dugi 90 min). Odstupanje (opreznije, D11 ispred D28, bez novog broja): kad ni prvi nivo lestvice faze ne staje u plafon D11 cilja nedelje, nedelja izgradnje je bez kvaliteta (napomena, upozorenje BUILD_NO_QUALITY); npr. 3 dana, 15 km: vrh 19,5 km, a T 2,0 km traži cilj ≥ 20 km — izgradnja bez kvaliteta.'
+      'Heuristika: cilj početnika na 10K je završiti zdravo — smanjen intenzitet (jedan kvalitet, bez I/R, start od prvog nivoa, uvod bez kvaliteta) i rast (5 %, max 2 km; vrh 1,3× / +10 km; dugi 90 min). Odstupanje (opreznije, D11 ispred D28): nedelja izgradnje bez kvaliteta (napomena, upozorenje BUILD_NO_QUALITY) — u 10k-v2.3.0 kad ni prvi nivo lestvice faze ne staje u plafon (3 dana 15 km: T 2,0 km traži cilj ≥ 20 km, vrh 19,5 km), od 10k-v2.3.1 samo kad ni T 1,5 km ne staje (D31).'
   },
   {
     id: 'D29',
@@ -234,12 +234,28 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts alternatives.rpRepMinM; workouts.ts (splitsOf); validate.ts (REP_MIN, RACE_WEEK_SHORT)',
     rationale:
       'Ispravke posle 02b; brojke organizatora (simulacija na 21c03f1) ponovljene mrežom 02 (15 840 planova sa rezultatom): (a) ponavljanje slota 1224 / 192 / 144 / 144 → 240 / 48 / 0 / 0 nedelja 3–6 dana (ostaju 3 dana RP 2,5 / 3,5 km sa jedinom strukturom 2 × 1250 / 2 × 1750 m i 4 dana I 2,0 km, 9 ned); vrh cilja niži od 49ad476 258 → 12 (3 dana, 30 km, VDOT 35, 17–18 ned: 35,6 → 35,2), prema 21c03f1 nijedan niži (viši u 120 / 126 planova 3 / 4 dana); (b) RACE_WEEK_SHORT 96 → 0. Promenjeni planovi prema 21c03f1: samo D30a 1134 / 576 / 432 / 126, samo D30b 6 / 0 / 0 / 72, oba 0 / 0 / 0 / 18; odbijanja, trkačka > taper, ned 1 ispod obima i DOSE_DROPPED bez promene.'
+  },
+  {
+    id: 'D31',
+    rule: 'Početnik (izmena D28): lestvica T kontinuirano = [1,5; 2,0; 2,5; …] km (nivo 1,5 km samo za početnika; redovan plan i D16 nepromenjeni). Kad prvi nivo lestvice faze (T kont. / T cruise / RP) ne staje u plafon D11 cilja nedelje, kvalitet nedelje je T kontinuirano: najviši nivo lestvice početnika koji staje (po D12: ≤ 1 nivo nedeljno, ista doza druge strukture — 2,0 km ↔ 2 × 1000 m —, inače ponavljanje uz napomenu); bez kvaliteta samo kad ni 1,5 km ne staje (BUILD_NO_QUALITY). Prelaz na lestvicu faze čim njen prvi nivo stane, po D12/D18 (T cruise ≥ poslednje T; RP ≥ poslednje T doze); T kontinuirano posle T cruise ≥ poslednje T (D12, doza ne pada). Rasterećenje: T ≈ 60 % poslednje T doze (nivo naniže), min 1,5 km; ne staje → bez kvaliteta (D5). Taper: RP po D7; RP ne staje → T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km); bez kvaliteta samo kad ni to ne staje.',
+    place:
+      'policy.ts beginner.tFirstKm; workouts.ts ladderLevels; quality.ts (pickBuild, pickSlot, carries, pickDeload, pickTaper); week.ts (napomene); generate.ts (RP doza tapera); validate.ts (PHASE_QUALITY, BUILD_NO_QUALITY, BASE_PLATEAU, DELOAD_CONTENT, TAPER_QUALITY)',
+    rationale:
+      'Heuristika: ≈ 10 min praga (1,5 km) je uobičajen početni tempo trening; plan bez ijednog kvaliteta ne ispunjava D28 (jedan kvalitet nedeljno). Na 81bd351 (mreža početnika 3402): 3720 nedelja izgradnje bez kvaliteta, 378 planova (3 dana 15 km) bez ijednog kvaliteta od nedelje 3 do trke (najmanja doza T 2,0 km > plafon 1,5–1,9 km); 4 dana 18 km bez kvaliteta u specifičnoj fazi (RP 2,4 km > plafon). „Poslednja T doza" = poslednja doza u zoni T iz ne-rasteretne nedelje izgradnje. Odstupanje (opreznije, bez novog broja): T 1,5 km nema drugu strukturu (deonice ≥ 1000 m, D10), pa kad 2,0 km ne staje slot ponavlja 1,5 km uz napomenu i u bazi — izuzetak od „baza bez platoa" (D22) samo za tu dozu; npr. početnik 3 dana, 18 ned, 15 km: baza ned 3 / 5 / 6 T 1,5 km (plafon 1,7 / 1,8 / 1,9 km); u mreži 2436 ponovljenih nedelja T 1,5 km (3 dana, 450 planova; u bazi 252). Posledice (mreža početnika prema 81bd351): nedelje izgradnje bez kvaliteta 3720 → 0, planovi bez kvaliteta od nedelje 3 do trke 378 → 0, rasterećenje bez kvaliteta 2316 → 654 nedelja, taper bez kvaliteta 1152 → 378 planova (3 dana 15 km: cilj 14,6 km, plafon 1,46 km < 1,5 km), taper T 1,5 km 810 planova (bez oštrenja, D8); početni nivo početnika je T 1,5 km (D28), pa u 12 planova sa rezultatom ograničenih kapacitetom kraći kvalitetni dan daje niži vrh (4 dana, 30–35 km, VDOT 30, 15–17 ned: do 0,6 km).'
+  },
+  {
+    id: 'D32',
+    rule: 'Početnik nema test 5 km (ni u planu po osećaju; izmena D27): tempo brzih zona je orijentir (procena, D26), kvalitet po RPE; rezultat trke ili parkruna kasnije koristi adaptacija (segment 04). Bez testa otpadaju i odstupanja D27 kod početnika (TEST_DELOAD_LONG, cilj rasterećenja naviše).',
+    place:
+      'policy.ts planRule (feelTest); generate.ts (periodize bez testa, napomena plana); validate.ts (TEST)',
+    rationale:
+      'Heuristika: kod 3 dana i 15 km test (WU + 5 km + CD ≈ 8 km) je ≈ pola nedelje, a u rasterećenju skraćuje dugi na 3,1 km (81bd351: dugi rasterećenja < 4 km u 162 plana početnika, cilj rasterećenja naviše u 144). Posledica: u 102 plana po osećaju ograničena kapacitetom vrh 81bd351 je bio u nedelji testa (dan testa duži od kvalitetnog dana), pa je vrh niži do 1,7 km (4 dana, 35 km, lagan 8:30, 10 ned: 38,5 → 36,8 km); u 36 od njih (3 dana) taper zato prelazi sa RP 2 × 1000 m na T 1,5 km (D31).'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.3.0',
+  version: '10k-v2.3.1',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
@@ -291,7 +307,10 @@ export const TEN_K_V2_POLICY = {
     growthMaxKm: 2.0,
     peakFactor: 1.3,
     peakAddKm: 10,
-    longMaxSec: 5400
+    longMaxSec: 5400,
+    /** D31: prvi nivo lestvice T kontinuirano početnika (ispred 2,0 km) = najmanja T doza rasterećenja i
+        tapera početnika [km]. */
+    tFirstKm: 1.5
   },
 
   /** D17: JEDINA tabela po broju dana trčanja. quality/easy = broj kvalitetnih i laganih dana izgradnje. */
@@ -533,7 +552,7 @@ export const BEGINNER_DAYS_COUNTS = Object.keys(TEN_K_V2_POLICY.beginner.days)
   .sort((a, b) => a - b) as readonly (keyof TenKV2Policy['beginner']['days'])[];
 
 /** Pravilo plana: red D17 (redovan) ili red D17 izmenjen tabelom početnika (D28). Jedino mesto gde se
-    brojevi rasta, vrha, dugog i uvoda biraju po iskustvu. */
+    brojevi rasta, vrha, dugog i uvoda i test plana po osećaju (D32) biraju po iskustvu. */
 export interface PlanRule extends DayRule {
   readonly beginner: boolean;
   /** D13/D28: plafon dugog sporim E [s]. */
@@ -548,6 +567,8 @@ export interface PlanRule extends DayRule {
   readonly introWeeks: number;
   /** D1/D28: najmanje nedelja. */
   readonly weeksMin: number;
+  /** D27/D32: plan po osećaju ima test 5 km (početnik nema). */
+  readonly feelTest: boolean;
   /** Brojevi dana dostupni ovom iskustvu (preporuke u porukama). */
   readonly dayCounts: readonly number[];
 }
@@ -568,6 +589,7 @@ export function planRule(count: number, experience: Experience): PlanRule | null
       peakAddKm: P.volume.peakAddKm,
       introWeeks: 0,
       weeksMin: P.input.weeksMin,
+      feelTest: true,
       dayCounts: RUN_DAYS_COUNTS
     };
   const b = P.beginner;
@@ -588,6 +610,7 @@ export function planRule(count: number, experience: Experience): PlanRule | null
     peakAddKm: b.peakAddKm,
     introWeeks: b.introWeeks,
     weeksMin: b.weeksMin,
+    feelTest: false,
     dayCounts: BEGINNER_DAYS_COUNTS
   };
 }

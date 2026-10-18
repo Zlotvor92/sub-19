@@ -1,5 +1,6 @@
 /* D28 — početnik (dani, nedelje, obim, uvod, jedan kvalitet, prvi nivo, rast, vrh, dugi 90 min, WU/CD prvi
-   pojas, odstupanje bez kvaliteta); D29 — trčanje/hodanje. Brojevi iz odluka, ne iz koda generatora. */
+   pojas); D29 — trčanje/hodanje; D31 — T kontinuirano od 1,5 km pri malom obimu (izgradnja, rasterećenje,
+   taper); D32 — početnik bez testa. Brojevi iz odluka, ne iz koda generatora. */
 
 import { describe, expect, it } from 'vitest';
 import { generateTenKV2 } from './generate.ts';
@@ -8,7 +9,7 @@ import { startLevel } from './quality.ts';
 import { inputOf, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { PlanWeek, ReasonCode, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
-import { doseOf } from './workouts.ts';
+import { doseOf, ladderLevels } from './workouts.ts';
 
 const beg = (
   days: 3 | 4 | 5 | 6,
@@ -119,11 +120,11 @@ describe('D28: početnik — plan', () => {
     }
   });
 
-  it('D16 ne važi: početni nivo = prvi nivo lestvice (prva nedelja kvaliteta T 2,0 km)', () => {
+  it('D16 ne važi: početni nivo = prvi nivo lestvice (D31: prva nedelja kvaliteta T 1,5 km)', () => {
     expect(doseOf(startLevel('T_continuous', 50)!)).toBe(3000);
-    expect(doseOf(startLevel('T_continuous', 50, true)!)).toBe(2000);
+    expect(doseOf(startLevel('T_continuous', 50, true)!)).toBe(1500);
     const p = plan(beg(4, { weeks: 14, km: 35, vdot: 40 }));
-    expect(quality(p.weeks[2]!)[0]!.workout.dose!.doseM).toBe(2000);
+    expect(quality(p.weeks[2]!)[0]!.workout.dose!.doseM).toBe(1500);
   });
 
   it('rast +5 % (min 1,0, max 2,0 km); vrh = min(1,3 × start, start + 10, max nedelje); dugi ≤ 90 min sporim E; WU/CD 15/10 min', () => {
@@ -164,26 +165,7 @@ describe('D28: početnik — plan', () => {
     const r = plan(beg(4, { weeks: 14, km: 25, vdot: 35 }));
     expect([r.paceBasis, r.weeks.some((w) => w.test)]).toEqual(['result', false]);
     const f = plan(beg(4, { weeks: 10, km: 18, easy: 480 }));
-    expect([f.paceBasis, f.weeks.filter((w) => w.test).map((w) => w.index)]).toEqual(['feel', [3]]);
-  });
-
-  it('odstupanje D11 ispred D28: 3 dana, 15 km — vrh 19,5 km < 20 km za T 2,0 km, izgradnja bez kvaliteta (BUILD_NO_QUALITY)', () => {
-    const p = plan(beg(3, { weeks: 12, km: 15, easy: 450 }));
-    const build = p.weeks.filter(steady).filter((w) => w.index > 2 && !w.test);
-    expect(build.every((w) => quality(w).length === 0)).toBe(true);
-    expect(build.every((w) => w.notes.some((n) => n.startsWith('Bez kvaliteta')))).toBe(true);
-    expect(p.warnings.filter((x) => x.rule === 'BUILD_NO_QUALITY').length).toBe(build.length);
-    // D27: rasterećenje sa testom (ned 4) — cilj 13,6 nije izvodljiv (test 8,3 km + dugi + lagan ≥ 3 km):
-    // najbliži izvodljiv naviše ispod poslednje izgradnje 17,0 km.
-    const w4 = p.weeks[3]!;
-    expect([w4.deload, w4.test, w4.nominalKm, w4.targetKm, w4.fitted]).toEqual([
-      true,
-      true,
-      13.6,
-      14.5,
-      'up'
-    ]);
-    expect(errors(p)).toEqual([]);
+    expect([f.paceBasis, f.weeks.filter((w) => w.test).map((w) => w.index)]).toEqual(['feel', []]);
   });
 
   it('validator hvata: kvalitet u uvodu, WU 20 min, dugi > 90 min, rast > 5 %, nedelja bez kvaliteta kad prvi nivo staje', () => {
@@ -219,6 +201,152 @@ describe('D28: početnik — plan', () => {
   it('pravilo plana početnika je jedno mesto (planRule): redovan red D17 bez izmene', () => {
     expect(planRule(4, 'regular')!.introWeeks).toBe(0);
     expect(planRule(4, 'beginner')!.introWeeks).toBe(2);
+  });
+});
+
+const t = (w: PlanWeek): string =>
+  quality(w)
+    .map((d) => {
+      const x = d.workout.dose!;
+      const st = x.structure;
+      return `${x.ladder}:${st.form === 'continuous' ? st.km : `${st.form === 'reps' ? st.reps : 0}x${st.form === 'reps' ? st.repM : 0}`}`;
+    })
+    .join() || '-';
+
+describe('D31: početnik — T kontinuirano od 1,5 km pri malom obimu', () => {
+  it('lestvica T kontinuirano početnika [1,5; 2,0; 2,5; …]; redovna lestvica i D16 nepromenjeni', () => {
+    const km = (b: boolean): number[] => ladderLevels('T_continuous', b).map((x) => doseOf(x));
+    expect(km(true)).toEqual([1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]);
+    expect(km(false)).toEqual([2000, 2500, 3000, 3500, 4000, 4500, 5000]);
+    expect(ladderLevels('T_cruise', true)).toEqual(ladderLevels('T_cruise'));
+    expect(startLevel('T_continuous', 14.9, true)).toBeNull();
+    expect(doseOf(startLevel('T_continuous', 15, true)!)).toBe(1500);
+    expect(startLevel('T_continuous', 19.9)).toBeNull();
+  });
+
+  it('3 dana, 15 km, 12 ned (7:30): T 1,5 km u svakoj nedelji izgradnje posle uvoda (razvoj/specifično umesto T cruise 2,0 / RP 2,4 km); rasterećenje ned 4 bez kvaliteta, ned 9 T 1,5 km; taper bez kvaliteta', () => {
+    const p = plan(beg(3, { weeks: 12, km: 15, easy: 450 }));
+    expect(p.weeks.map(t)).toEqual([
+      '-',
+      '-',
+      'T_continuous:1.5',
+      '-',
+      'T_continuous:1.5',
+      'T_continuous:1.5',
+      'T_continuous:1.5',
+      'T_continuous:1.5',
+      'T_cruise:1.5',
+      'T_continuous:1.5',
+      '-',
+      '-'
+    ]);
+    const build = p.weeks.filter(steady).filter((w) => w.index > 2);
+    expect(build.map((w) => w.targetKm)).toEqual([17, 18, 19, 19.5, 19.5, 19.5]);
+    for (const w of build.filter((x) => x.phase !== 'base'))
+      expect(
+        w.notes.some((n) => n.startsWith('T kontinuirano (D31)')),
+        `ned ${w.index}`
+      ).toBe(true);
+    // Ned 4: 0,8 × 17 = 13,6 km, plafon 1,36 km < 1,5 km; ned 9: 15,6 km, plafon 1,56 km. Taper 0,75 ×
+    // 19,5 = 14,6 km: ni RP 2,0 ni T 1,5 km ne staju.
+    expect([p.weeks[3]!.targetKm, p.weeks[8]!.targetKm, p.weeks[10]!.targetKm]).toEqual([
+      13.6, 15.6, 14.6
+    ]);
+    const w = (rule: string): number[] =>
+      p.warnings.filter((x) => x.rule === rule).map((x) => x.week!);
+    expect([w('BUILD_NO_QUALITY'), w('DELOAD_NO_QUALITY'), w('TAPER_NO_QUALITY')]).toEqual([
+      [],
+      [4],
+      [11]
+    ]);
+    expect(errors(p)).toEqual([]);
+  });
+
+  it('4 dana, 18 km, 10 ned (8:00): specifično T 2,0 km ↔ 2 × 1000 m (RP 2,4 km > plafon); rasterećenje T 1,5 km (≈ 60 % od 2,0, min 1,5); taper T 1,5 km (RP 2 × 1000 m > plafon), bez oštrenja', () => {
+    const p = plan(beg(4, { weeks: 10, km: 18, easy: 480 }));
+    expect(p.weeks.map(t)).toEqual([
+      '-',
+      '-',
+      'T_continuous:1.5',
+      'T_cruise:2x1000',
+      'T_cruise:1.5',
+      'T_continuous:2',
+      'T_continuous:2x1000',
+      'T_continuous:2',
+      'T_continuous:1.5',
+      '-'
+    ]);
+    expect(p.weeks.slice(5, 8).map((w) => w.targetKm)).toEqual([22.1, 23.2, 23.4]);
+    expect(p.weeks[8]!.notes.some((n) => n.startsWith('Taper (D31)'))).toBe(true);
+    expect(p.weeks[9]!.days.some((d) => d.role === 'sharpener')).toBe(false);
+    expect(errors(p)).toEqual([]);
+  });
+
+  it('odstupanje: T 1,5 km nema drugu strukturu — ponavljanje uz napomenu i u bazi (3 dana, 18 ned, 15 km: ned 3 / 5 / 6)', () => {
+    const p = plan(beg(3, { weeks: 18, km: 15, easy: 450 }));
+    const base = p.weeks.filter((w) => w.phase === 'base' && steady(w) && w.index > 2);
+    expect(base.map((w) => [w.index, w.targetKm, t(w)])).toEqual([
+      [3, 17, 'T_continuous:1.5'],
+      [5, 18, 'T_continuous:1.5'],
+      [6, 19, 'T_continuous:1.5']
+    ]);
+    for (const w of base.slice(1)) {
+      expect(quality(w)[0]!.workout.dose!.step).toBe('repeat');
+      expect(w.notes.some((n) => n.includes('T 1,5 km ponovljen'))).toBe(true);
+    }
+    expect(errors(p)).toEqual([]);
+    const q = plan(beg(3, { weeks: 18, km: 15, easy: 450 }));
+    q.weeks[4]!.notes = q.weeks[4]!.notes.filter((n) => !n.includes('ponovljen'));
+    expect(errors(q)).toEqual(expect.arrayContaining(['IDENTICAL_WEEKS', 'BASE_PLATEAU']));
+  });
+
+  it('validator hvata: T kontinuirano kad lestvica faze staje, lestvica faze kad ne staje, pogrešan T tapera, rasterećenje T 2,0 umesto 1,5 km', () => {
+    const fresh = (): TenKV2Plan => plan(beg(4, { weeks: 10, km: 18, easy: 480 }));
+    const a = fresh();
+    quality(a.weeks[3]!)[0]!.workout.dose!.ladder = 'T_continuous';
+    expect(errors(a)).toContain('PHASE_QUALITY');
+    const b = fresh();
+    quality(b.weeks[5]!)[0]!.workout.dose!.ladder = 'RP';
+    expect(errors(b)).toContain('PHASE_QUALITY');
+    const c = fresh();
+    quality(c.weeks[8]!)[0]!.workout.dose!.doseM = 2000;
+    expect(errors(c)).toContain('TAPER_QUALITY');
+    const d = fresh();
+    quality(d.weeks[4]!)[0]!.workout.dose!.doseM = 2000;
+    expect(errors(d)).toContain('DELOAD_CONTENT');
+  });
+});
+
+describe('D32: početnik bez testa', () => {
+  it('plan po osećaju početnika nema test; napomena plana; bez ocene cilja i prognoze; rasterećenje bez skraćenog dugog i cilja naviše', () => {
+    for (const raw of [
+      beg(3, { weeks: 12, km: 15, easy: 450 }),
+      beg(4, { weeks: 10, km: 18, easy: 480 }),
+      beg(3, { weeks: 14, km: 20, easy: 390 })
+    ]) {
+      const p = plan(raw);
+      expect(p.paceBasis).toBe('feel');
+      expect(p.weeks.some((w) => w.test || w.days.some((d) => d.role === 'test'))).toBe(false);
+      expect(p.notes.some((n) => n.startsWith('Početnik bez testa 5 km (D32)'))).toBe(true);
+      expect([p.goal, p.predicted10kSec]).toEqual([null, null]);
+      expect(p.warnings.some((x) => x.rule === 'TEST_DELOAD_LONG')).toBe(false);
+      for (const w of p.weeks.filter((x) => x.deload)) {
+        expect(w.fitted, `ned ${w.index}`).not.toBe('up');
+        const long = w.days.find((d) => d.role === 'long')!.workout.km;
+        expect(long).toBeGreaterThanOrEqual(4);
+      }
+      expect(errors(p)).toEqual([]);
+    }
+  });
+
+  it('validator hvata test u planu početnika (TEST)', () => {
+    const p = plan(beg(3, { weeks: 12, km: 15, easy: 450 }));
+    p.weeks[3]!.test = true;
+    expect(errors(p)).toContain('TEST');
+    const q = plan(beg(4, { weeks: 10, km: 18, easy: 480 }));
+    const d = quality(q.weeks[2]!)[0]!;
+    d.role = 'test';
+    expect(errors(q)).toContain('TEST');
   });
 });
 

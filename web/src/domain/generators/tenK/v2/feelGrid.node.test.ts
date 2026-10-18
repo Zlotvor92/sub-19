@@ -2,7 +2,8 @@
    450, 510} s/km × raspored A/B/C × trka sub/ned = 11 880 planova bez rezultata: 0 odbijanja, 0 grešaka
    validatora, deterministički, = bazna linija segment03-feel.baseline.json. Invarijante nezavisno od
    validatora (gridInvariants.ts): sve iz 02b + tačno 1 test u poslednjoj nedelji baze (dan Q1 ili umesto
-   kvaliteta rasterećenja), paceBasis feel, E = lagan ± 15 s, RPE, bez prognoze i ocene cilja. */
+   kvaliteta rasterećenja), paceBasis feel, E = lagan ± 15 s, RPE, bez prognoze i ocene cilja. Segment 03b
+   (10k-v2.3.1): ceo plan bajt-isti kao 81bd351 (segment03b.plan-hashes-81bd351.json). */
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -19,17 +20,19 @@ import {
   statsRow,
   summaryRow
 } from './gridInvariants.ts';
-import { feelGridInputs, fnv1a } from './testInputs.ts';
+import { feelGridInputs, fnv1a, planHash81 } from './testInputs.ts';
 import { validatePlan } from './validate.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASELINE = join(HERE, 'segment03-feel.baseline.json');
+const HASHES_81 = join(HERE, 'segment03b.plan-hashes-81bd351.json');
 type Baseline = { policyVersion: string; plans: Record<string, Row> };
 
 describe('mreža po osećaju: 11 880 planova (3–6 dana × 8–18 ned × 6 laganih tempa)', () => {
   const inputs = DAYS.flatMap((n) => feelGridInputs(n));
   const rows: Record<string, Row> = {};
   const hashes: number[] = [];
+  const h81: Record<string, number> = {};
   const rejected: string[] = [];
   const errors: Record<string, number> = {};
   const warned: Record<string, number> = {};
@@ -39,6 +42,7 @@ describe('mreža po osećaju: 11 880 planova (3–6 dana × 8–18 ned × 6 laga
   for (const { id, days, input } of inputs) {
     const r = generateTenKV2(input);
     hashes.push(fnv1a(JSON.stringify(r)));
+    h81[id] = planHash81(r);
     if (!r.ok) {
       rejected.push(`${id}: ${r.reasons.map((x) => x.code).join(',')}`);
       continue;
@@ -119,5 +123,16 @@ describe('mreža po osećaju: 11 880 planova (3–6 dana × 8–18 ned × 6 laga
     expect(base.policyVersion).toBe('10k-v2.3.0');
     expect(Object.keys(base.plans).length).toBe(11880);
     expect(rows).toEqual(base.plans);
+  });
+
+  it('regresija 03b: ceo plan po osećaju bajt-isti kao 81bd351 (heš bez oznake verzije) za svih 11 880', () => {
+    const fx = JSON.parse(readFileSync(HASHES_81, 'utf8')) as {
+      against: string;
+      feel: Record<string, number>;
+    };
+    expect(fx.against).toBe('81bd351');
+    expect(Object.keys(fx.feel).sort()).toEqual(Object.keys(h81).sort());
+    expect(Object.keys(h81).length).toBe(11880);
+    expect(Object.keys(h81).filter((id) => h81[id] !== fx.feel[id])).toEqual([]);
   });
 });
