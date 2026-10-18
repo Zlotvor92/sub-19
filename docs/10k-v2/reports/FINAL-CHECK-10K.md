@@ -17,7 +17,7 @@ ispravku (N1, segment 06c), uz jednu ispravku teksta (N2). Ostalo su svesne odlu
 | Vraćanje verzije | najstarija revizija sezone A | 23 buduća dana vraćena, 0 konflikata |
 | Promena cilja | 42:00 u sezoni A | treninzi bajt-isti, menja se samo ocena |
 | Sat (14 dana) | plan sa rezultatom / po osećaju | 8 / 4 treninga; po osećaju 2 dana kvaliteta preskočena sa razlogom (N6) |
-| Rasterećenje posle smanjenja | 189 planova × asOf ned 2…N−4 × {pauza 10 d, bol 5, manjak} = 6804 toka | **28 %** tokova: smanjena nedelja, pa odmah redovno rasterećenje (N1) |
+| Rasterećenje posle smanjenja | 252 plana (R4, svaki 12.) × asOf ned 2…N−4 × {pauza 10 d, bol 5, manjak} = 6804 toka | **28 %** tokova: smanjena nedelja, pa odmah redovno rasterećenje (N1) |
 
 Reprezentativni ulazi: R4-40-13 (10K 45:00), R6-55-16 (5K 20:00), R3-25-10 (10K 55:00), R5-45-8 (HM 1:40), F3-25-12
 (lagan 6:30), F5-40-14 (lagan 5:45), B3-15-12 (početnik, lagan 7:30), B4-25-10 (početnik, 5K 27:00), R4-35-18 (10K 50:00).
@@ -27,7 +27,7 @@ Reprezentativni ulazi: R4-40-13 (10K 45:00), R6-55-16 (5K 20:00), R3-25-10 (10K 
 ### N1 — ISPRAVKA (06c): redovno rasterećenje odmah posle smanjenja
 
 Posle pauze, manjka izvršenja ili bola sledeća nedelja je smanjena, a redovno rasterećenje (D5) ostaje u kalendaru, pa
-slede dve lake nedelje zaredom. Mereno na 189 planova mreže R4 (svaki 12.), asOf kraj ned 2…N−4: pauza 10 dana 644/2268,
+slede dve lake nedelje zaredom. Mereno na 252 plana mreže R4 (svaki 12.; ranije pogrešno navedeno 189), asOf kraj ned 2…N−4: pauza 10 dana 644/2268,
 bol 5 644/2268, manjak 644/2268. Primer `10w-25km-v30-A-sat`, asOf kraj ned 3:
 
 | Scenario | ned 4 (cilj/planirano; original 29,8) | ned 5 |
