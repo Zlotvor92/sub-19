@@ -2438,7 +2438,7 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
   });
 
   test('svaki okidač iz fajlova je na spisku', () => {
-    const o = izFajlova(/create trigger ([a-z_]+)/g);
+    const o = izFajlova(/create (?:or replace )?trigger ([a-z_]+)/g);
     assert.ok(o.length >= 6, `nađeno premalo okidača: ${o}`);
     const nema = o.filter(x => !INV.includes(`'okidač:${x}'`));
     assert.deepEqual(nema, [], `inventar.sql ih ne poznaje: ${nema}`);
@@ -2450,7 +2450,7 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
     for (const [vrsta, re] of [
       ['tabela', /create table if not exists public\.([a-z_]+)/g],
       ['funkcija', /create (?:or replace )?function public\.([a-z_]+)/g],
-      ['okidač', /create trigger ([a-z_]+)/g]
+      ['okidač', /create (?:or replace )?trigger ([a-z_]+)/g]
     ]) {
       const stvarni = new Set(izFajlova(re));
       const naSpisku = [...INV.matchAll(new RegExp(`'${vrsta}:([a-z_]+)'`, 'g'))].map(m => m[1]);
@@ -2532,7 +2532,7 @@ describe('Čišćenje ostataka ne sme da odnese ništa što se koristi', () => {
 
   /* Funkcija okidača = ona koju neki `create trigger` u folderu poziva. */
   const funkcijeOkidaca = [...new Set(
-    [...SQL.matchAll(/create trigger[\s\S]{0,200}?execute function public\.([a-z_]+)\(/g)].map(m => m[1])
+    [...SQL.matchAll(/create (?:or replace )?trigger[\s\S]{0,200}?execute function public\.([a-z_]+)\(/g)].map(m => m[1])
   )].sort();
 
   test('svaka funkcija okidača iz fajlova je na spisku izuzetaka', () => {

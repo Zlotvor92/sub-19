@@ -41,6 +41,9 @@ before(async()=>{
   assert.equal(row.kvota_uracunata,false);
  });
  await db.exec(migrations[2]);
+ // Kasnije migracije čitaju kolone auth.users koje pravi Supabase.
+ await db.exec("ALTER TABLE auth.users ADD COLUMN raw_app_meta_data jsonb, ADD COLUMN raw_user_meta_data jsonb, ADD COLUMN created_at timestamptz DEFAULT now(), ADD COLUMN last_sign_in_at timestamptz");
+ for(const m of migrations.slice(3)) await db.exec(m);
 });
 beforeEach(async()=>{
  await db.exec('TRUNCATE public.ai_posao,public.api_usage,public.endpoint_usage,public.user_state_istorija,public.user_state; DELETE FROM auth.users');
@@ -128,4 +131,44 @@ test('app_stats tolerates corrupt legacy subfields without changing its columns 
  }finally{
   await db.exec('DELETE FROM public.user_state; ALTER TABLE public.user_state ADD CONSTRAINT user_state_log_object CHECK(NOT(data ? \'log\') OR jsonb_typeof(data->\'log\')=\'object\'); ALTER TABLE public.user_state ADD CONSTRAINT user_state_vdot_log_array CHECK(NOT(data ? \'vdotLog\') OR jsonb_typeof(data->\'vdotLog\')=\'array\')');
  }
+});
+
+// Kao `role`, ali ČUVA izmene (COMMIT) — okidač i RPC pišu u tabelu koju posle čita test.
+async function committed(name,uid,fn){
+ await db.exec('BEGIN');
+ try{
+  await db.query("SELECT set_config('request.jwt.claims',$1,true)",[JSON.stringify(uid?{sub:uid,role:name}:{role:name})]);
+  await db.exec('SET LOCAL ROLE '+name);
+  const r=await fn();
+  await db.exec('COMMIT');
+  return r;
+ }catch(e){await db.exec('ROLLBACK');throw e;}
+}
+test('aktivnost: okidač beleži upis, nov plan, trening, van plana i Stravu; isti upis ne duplira',async()=>{
+ await committed('authenticated',u1,async()=>{
+  await db.query("INSERT INTO public.user_state(user_id,data,device_id,app_version) VALUES($1,$2,'d1','300')",[u1,{log:{},vdotLog:[]}]);
+  await db.query('UPDATE public.user_state SET data=$1 WHERE user_id=$2',[{log:{g1d1:{status:'done',km:6,runDate:'2026-10-10'},g1d2:{status:'pending'}},vdotLog:[],genPlan:{ulaz:{a:1},meta:{raceName:'5K',raceDate:'2026-12-01'},weeks:[]},vanPlana:{'2026-10-01':5},strava:{lastSync:1}},u1]);
+  await db.query('UPDATE public.user_state SET data=data WHERE user_id=$1',[u1]);
+ });
+ const rows=(await db.query('SELECT vrsta,count(*)::int n FROM public.korisnik_dogadjaj WHERE user_id=$1 GROUP BY vrsta ORDER BY vrsta',[u1])).rows;
+ assert.deepEqual(Object.fromEntries(rows.map(r=>[r.vrsta,r.n])),{nov_plan:1,prvi_upis:1,sinhronizacija:1,strava_povezana:1,trening:1,van_plana:1});
+ const plan=await scalar("SELECT meta FROM public.korisnik_dogadjaj WHERE vrsta='nov_plan'");
+ assert.equal(plan.meta.trka,'5K');
+});
+test('aktivnost: otvaranje samo za prijavljenog, najviše jednom u 30 minuta; tabela i pogled su zatvoreni za klijenta',async()=>{
+ await committed('authenticated',u1,async()=>{
+  await db.query("SELECT public.zabelezi_otvaranje('300','d1','android')");
+  await db.query("SELECT public.zabelezi_otvaranje('300','d1','android')");
+ });
+ await role('authenticated',u1,()=>assert.rejects(db.query('SELECT * FROM public.korisnik_dogadjaj'),/permission denied/));
+ await role('authenticated',u1,()=>assert.rejects(db.query('SELECT * FROM public.admin_aktivnost'),/permission denied/));
+ await role('anon',null,()=>assert.rejects(db.query("SELECT public.zabelezi_otvaranje('300','d1',null)"),/permission denied/));
+ assert.equal(Number((await scalar("SELECT count(*) n FROM public.korisnik_dogadjaj WHERE vrsta='otvaranje'")).n),1);
+ const r=await scalar('SELECT otvaranja,status,kandidat_za_brisanje FROM public.admin_aktivnost WHERE user_id=$1',[u1]);
+ assert.equal(Number(r.otvaranja),1);assert.equal(r.status,'nov');assert.equal(r.kandidat_za_brisanje,false);
+});
+test('aktivnost: star nalog bez treninga i bez znaka života je kandidat za brisanje',async()=>{
+ await db.query("UPDATE auth.users SET created_at=now()-interval '60 days' WHERE id=$1",[u2]);
+ const r=await scalar('SELECT status,kandidat_za_brisanje,dana_neaktivan FROM public.admin_aktivnost WHERE user_id=$1',[u2]);
+ assert.equal(r.status,'neaktivan');assert.equal(r.kandidat_za_brisanje,true);assert.equal(r.dana_neaktivan,60);
 });
