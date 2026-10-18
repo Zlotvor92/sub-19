@@ -304,6 +304,14 @@ export function planHash81(result: unknown): number {
   return fnv1a(JSON.stringify(result).replace(/10k-v2\.\d+\.\d+/g, 'VERSION'));
 }
 
+/** Regresija prema 4917959 (10k-v2.4.1) u 06c: kao planHash81 i bez polja koraka `reduced` (novo u
+    10k-v2.5.0, A17; normalizacija kao normalize21). Nad izlazom 4917959 ne menja ništa. */
+export const stripReduced = (result: unknown): string =>
+  JSON.stringify(result)
+    .replace(/10k-v2\.\d+\.\d+/g, 'VERSION')
+    .replace(/,"reduced":(true|false)/g, '');
+export const planHash06c = (result: unknown): number => fnv1a(stripReduced(result));
+
 /* ---------- Segment 04: mreža scenarija adaptacije ---------- */
 
 export interface AdaptBase {

@@ -130,7 +130,7 @@ describe('generisanje kroz adapter', () => {
       const v2 = v2Of(p);
       expect(p.meta).toMatchObject({
         policyId: '10k-v2',
-        policyVersion: '10k-v2.4.1',
+        policyVersion: '10k-v2.5.0',
         raceDistM: 10000,
         raceDate: RACE,
         start: START,
@@ -355,7 +355,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     delete legacy.meta['policyId'];
     delete legacy.meta['policyVersion'];
     expect(generatorForPlan(legacy)).toBe(TEN_K_GENERATOR);
-    for (const version of ['10k-v2.3.1', '10k-v2.5.0', undefined]) {
+    for (const version of ['10k-v2.3.1', '10k-v2.5.1', undefined]) {
       const p = withMeta({ policyVersion: version });
       expect(generatorForPlan(p), String(version)).toBeNull();
       expect(unsupportedPlanReason(p)).toBe(UNKNOWN_POLICY);

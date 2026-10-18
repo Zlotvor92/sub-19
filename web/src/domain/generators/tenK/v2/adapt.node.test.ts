@@ -3,7 +3,9 @@
    (adaptInvariants.ts) i po jedan test za svaku odluku A1–A15. Na b13ca17 fajl pada ceo (adapt.ts ne
    postoji). Regresija generate (bajt-isto kao b13ca17): grid / feelGrid / beginnerGrid. Segment 06b
    (10k-v2.4.1, A4/A16): regresija mreže prema e6540a5 — menjaju se samo tokovi sa primenjenim PAIN
-   (segment06b.adapt-hashes-e6540a5.json); mreža bola P: painGrid.node.test.ts. */
+   (segment06b.adapt-hashes-e6540a5.json); mreža bola P: painGrid.node.test.ts. Segment 06c (10k-v2.5.0,
+   A17): regresija prema 4917959 — menjaju se samo tokovi sa ukinutim rasterećenjem ili porukom N2
+   (segment06c.adapt-hashes-4917959.json; heš bez oznake verzije i polja reduced); mreža R: reliefGrid. */
 
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -24,6 +26,7 @@ import {
   feelGridInputs,
   fnv1a,
   inputOf,
+  planHash06c,
   planHash81,
   runsIn,
   SCENARIOS,
@@ -41,9 +44,34 @@ const HASHES_E65 = join(
   dirname(fileURLToPath(import.meta.url)),
   'segment06b.adapt-hashes-e6540a5.json'
 );
+const HASHES_491 = join(
+  dirname(fileURLToPath(import.meta.url)),
+  'segment06c.adapt-hashes-4917959.json'
+);
 /** 06b: promenjeni tokovi mreže 04 prema e6540a5 po scenariju (svi sa primenjenim PAIN; nepromenjeni PAIN
-    tokovi su bez povratka — r je taper: asOf u taperu i kraj ned 8 u planovima od 10 ned). */
+    tokovi su bez povratka — r je taper: asOf u taperu i kraj ned 8 u planovima od 10 ned). 06c (A17): i
+    tokovi sa ukinutim rasterećenjem (heš bez polja reduced). */
 const CHANGED_06B = { pain5: 80, pain8: 80, painPause: 80 };
+/** 06c: promenjeni tokovi mreže 04 prema 4917959 po scenariju (svi sa A17 ili porukom N2). */
+const CHANGED_06C = {
+  under50: 40,
+  pause10: 40,
+  pause20: 40,
+  pain5: 20,
+  pain8: 20,
+  chain: 60,
+  painPause: 72
+};
+/** 06c: tokovi mreže 04 koji se od 4917959 razlikuju SAMO po polju reduced, po scenariju. */
+const REDUCED_ONLY_06C = {
+  under50: 40,
+  over120: 80,
+  pause10: 80,
+  pause20: 80,
+  pause35: 120,
+  chain: 60,
+  painPause: 48
+};
 const bases = adaptBases();
 const plans = new Map(
   bases.map((b) => {
@@ -79,8 +107,26 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
   const hashes: number[] = [];
   /** 06b: heš bez oznake verzije po toku (`id/asOf/scenarij`) i tokovi sa primenjenim PAIN. */
   const h81: Record<string, number> = {};
+  /** 06c: heš bez oznake verzije i polja reduced; tokovi sa ukinutim rasterećenjem (A17) i porukom N2. */
+  const h06c: Record<string, number> = {};
+  const a17 = new Set<string>();
+  const n2 = new Set<string>();
   const painApplied = new Set<string>();
   const painBack = new Set<string>();
+  /** 06c: polje reduced svakog novog koraka prema primenjenom uslovu obima istog prilagođavanja. */
+  const reducedBad: string[] = [];
+  const reducedSeen: Record<string, number> = {};
+  const checkReduced = (key: string, r: AdaptResult): void => {
+    if (!r.ok) return;
+    const st = r.plan.adaptation!.steps.at(-1)!;
+    const on = (c: string): boolean => r.reasons.some((x) => x.condition === c && x.applied);
+    const want =
+      on('PAUSE') || on('UNDER_EXECUTION') ? true : on('OVER_EXECUTION') ? false : undefined;
+    const v = 'reduced' in st ? String(st.reduced) : 'absent';
+    reducedSeen[v] = (reducedSeen[v] ?? 0) + 1;
+    if (st.reduced !== want || (want === undefined && 'reduced' in st))
+      reducedBad.push(`${key}: reduced ${v}, uslov ${String(want)}`);
+  };
   const stats: Record<string, Record<string, number>> = {};
   const cases: { id: string; k: string; s: string; asOf: string; facts: TenKV2Facts }[] = [];
   for (const b of bases)
@@ -91,6 +137,7 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
         const facts = factsOf(p0, s, asOf) as TenKV2Facts;
         cases.push({ id: b.id, k, s, asOf, facts });
         let r = adaptTenKV2(p0, facts, asOf);
+        checkReduced(`${b.id}/${k}/${s}`, r);
         let before = p0;
         let at = asOf;
         let f = facts;
@@ -98,9 +145,14 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
           [before, at] = [r.plan, addDays(asOf, 7)];
           f = chainFacts(r.plan, at);
           r = adaptTenKV2(r.plan, f, at);
+          checkReduced(`${b.id}/${k}/${s}#2`, r);
         }
         hashes.push(fnv1a(JSON.stringify(r)));
         h81[`${b.id}/${k}/${s}`] = planHash81(r);
+        h06c[`${b.id}/${k}/${s}`] = planHash06c(r);
+        const notes = r.ok ? r.plan.notes : [];
+        if (notes.some((x) => x.includes('(A17)'))) a17.add(`${b.id}/${k}/${s}`);
+        if (notes.some((x) => x.includes('nivoa pre bola bilo bi'))) n2.add(`${b.id}/${k}/${s}`);
         if (applied(r, 'PAIN')) painApplied.add(`${b.id}/${k}/${s}`);
         if (r.ok && r.plan.adaptation!.steps.some((x) => x.returnFrom))
           painBack.add(`${b.id}/${k}/${s}`);
@@ -150,7 +202,9 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       pause10: { n: 120, PAUSE: 120, mixed: 50, TEST_MOVED: 5 },
       pause20: { n: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 },
       pause35: { n: 120, PAUSE: 120, mixed: 60, TEST_MOVED: 13 },
-      pain5: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 5 },
+      // 06c (A17): TEST_MOVED 5 → 6 — d4-f-14w w2end: rasterećenje ned 4 sa testom (D27) ukinuto; u izgradnji
+      // 27,0 km test i Q2 ne staju → jedan kvalitet doze rasterećenja, test otpada (A9/A13).
+      pain5: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 6 },
       // 06b (10k-v2.4.1): TEST_MOVED 10 → 9 — viši cilj posle sidra, test 5 km ostaje u svojoj nedelji.
       pain8: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 9 },
       fatigue: { n: 120, FATIGUE: 80, same: 40, TEST_MOVED: 4 },
@@ -159,13 +213,15 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       test5k: { n: 120, NEW_RESULT: 120, mixed: 1, TEST_MOVED: 13 },
       incomplete: { n: 120, NO_FACTS: 120, same: 120 },
       locked: { n: 120, same: 120 },
-      chain: { n: 120, UNDER_EXECUTION: 80, mixed: 50, same: 40, TEST_MOVED: 13 },
+      // 06c (A17): TEST_MOVED 13 → 8 — d6-f-14w i d3/d4/d5/d6-f-18w w2end: prvi korak (pauza) ukida rasterećenje
+      // sa testom, drugi korak (manjak) više ne uklanja test.
+      chain: { n: 120, UNDER_EXECUTION: 80, mixed: 50, same: 40, TEST_MOVED: 8 },
       // 06b (10k-v2.4.1): TEST_MOVED 13 → 9 — osnova min(0,7 × nivo, cilj pauze) umesto 0,7 × cilj pauze.
       painPause: { n: 120, PAIN: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 }
     });
   });
 
-  it('06b: regresija prema e6540a5 (heš bez oznake verzije) — menjaju se samo tokovi sa primenjenim PAIN', () => {
+  it('06b/06c: regresija prema e6540a5 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa primenjenim PAIN ili ukinutim rasterećenjem (A17)', () => {
     const ref = JSON.parse(readFileSync(HASHES_E65, 'utf8')) as {
       against: string;
       count: { grid04: number; gridP: number };
@@ -177,18 +233,57 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     const changed: Record<string, number> = {};
     const notPain: string[] = [];
     const unchangedBack: string[] = [];
-    for (const [key, h] of Object.entries(h81))
+    const byA17: Record<string, number> = {};
+    for (const [key, h] of Object.entries(h06c))
       if (ref.grid04[key] !== h) {
         const s = key.split('/')[2]!;
-        changed[s] = (changed[s] ?? 0) + 1;
-        if (!painApplied.has(key)) notPain.push(key);
+        if (painApplied.has(key)) changed[s] = (changed[s] ?? 0) + 1;
+        else if (a17.has(key)) byA17[s] = (byA17[s] ?? 0) + 1;
+        else notPain.push(key);
       } else if (painBack.has(key)) unchangedBack.push(key);
     expect(notPain).toEqual([]);
     expect(changed).toEqual(CHANGED_06B);
+    expect(byA17).toEqual({ chain: 60, pause10: 40, pause20: 40, under50: 40 });
     // Promenjen je tačno svaki tok sa povratkom posle bola (PAIN bez povratka — r taper — ostaje isti).
     expect(unchangedBack).toEqual([]);
     expect([...painBack].every((k) => painApplied.has(k))).toBe(true);
     expect(painBack.size).toBe(240);
+  });
+
+  it('06c: regresija prema 4917959 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa ukinutim rasterećenjem (A17) ili porukom N2; ostali bajt-isti', () => {
+    const ref = JSON.parse(readFileSync(HASHES_491, 'utf8')) as {
+      against: string;
+      count: { grid04: number };
+      grid04: Record<string, number>;
+    };
+    expect(ref.against).toBe('4917959');
+    expect(ref.count.grid04).toBe(2040);
+    expect(Object.keys(h06c).sort()).toEqual(Object.keys(ref.grid04).sort());
+    const changed: Record<string, number> = {};
+    const reducedOnly: Record<string, number> = {};
+    const other: string[] = [];
+    const same: string[] = [];
+    for (const [key, h] of Object.entries(h06c)) {
+      const s = key.split('/')[2]!;
+      const marked = a17.has(key) || n2.has(key);
+      if (ref.grid04[key] !== h) {
+        changed[s] = (changed[s] ?? 0) + 1;
+        if (!marked) other.push(key);
+      } else {
+        if (marked) same.push(key);
+        if (h81[key] !== h) reducedOnly[s] = (reducedOnly[s] ?? 0) + 1;
+      }
+    }
+    expect(other).toEqual([]);
+    expect(same).toEqual([]);
+    expect(changed).toEqual(CHANGED_06C);
+    expect(reducedOnly).toEqual(REDUCED_ONLY_06C);
+  });
+
+  it('06c: reduced === true tačno u koracima A2/A3 (manjak, pauza — i nov start), === false tačno u koracima A6 (višak), odsutno u svim ostalim', () => {
+    expect(reducedBad.slice(0, 10)).toEqual([]);
+    // 2040 tokova + 120 drugih koraka lanca: manjak 80 + pauza 360 + pauza i bol 120 + lanac 120 + 80 = 760.
+    expect(reducedSeen).toEqual({ true: 760, false: 80, absent: 1320 });
   });
 
   it('nevaljani ulazi → strukturisano odbijanje (plan, asOf, činjenice)', () => {

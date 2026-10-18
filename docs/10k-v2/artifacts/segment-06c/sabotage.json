@@ -1,0 +1,92 @@
+{
+ "a": {
+  "total": 287,
+  "failed": 14,
+  "names": [
+   "adapt.node.test.ts > mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 adaptacija rezultati po scenariju (primenjeni uslovi, nedelje iste kao pre, mešovite nedelje)",
+   "adapt.node.test.ts > mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 adaptacija 06b/06c: regresija prema e6540a5 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa primenjenim PAIN ili ukinutim rasterećenjem (A17)",
+   "adapt.node.test.ts > mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 adaptacija 06c: regresija prema 4917959 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa ukinutim rasterećenjem (A17) ili porukom N2; ostali bajt-isti",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova 06c: regresija prema 4917959 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa ukinutim rasterećenjem (A17); ostali bajt-isti",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova I3: bol 8 nikad ne daje veći cilj ili planirano od bola 5 istog dana — izuzeci samo po D8/D23 (trkačka) i D19 (zaokruženje dana), nabrojani",
+   "painGrid.node.test.ts > primeri A–E: 4 dana, 13 ned od 2026-10-26, 40 km, 10 km 45:00, cilj 43:00 E: asOf 2026-11-13, bol 7 → r = 3, nivo 42,4, osnova 29,7; 06c (A17): rasterećenje ned 4 ukinuto → ned 4 = 32,7 (4.1: 23,8), ned 5 = 36,0, ned 6 = 39,6",
+   "reliefGrid.node.test.ts > mreža R: 292 plana × asOf kraj ned 2…N − 4 × 7 scenarija = 18 193 toka (A17) 18 193 toka, 0 odbijanja (nekadašnji sudar 12 i 17 ned: 0)",
+   "reliefGrid.node.test.ts > mreža R: 292 plana × asOf kraj ned 2…N − 4 × 7 scenarija = 18 193 toka (A17) J5 / regresija prema 4917959 (heš bez oznake verzije i polja reduced): menjaju se samo tokovi sa ukinutim rasterećenjem (A17) ili porukom N2; svi ostali bajt-isti",
+   "reliefGrid.node.test.ts > mreža R: 292 plana × asOf kraj ned 2…N − 4 × 7 scenarija = 18 193 toka (A17) J1: posle nedelje smanjenja sledeća nedelja nikad nije redovno rasterećenje (i nijedno nije zadržano zbog > 5 izgradnji); ukinuto po scenariju",
+   "reliefGrid.node.test.ts > mreža R: 292 plana × asOf kraj ned 2…N − 4 × 7 scenarija = 18 193 toka (A17) J3: D5 sa izuzetkom A17 — od ukinutog rasterećenja ≤ 5 uzastopnih nedelja izgradnje (12 i 17 ned: tačno 5); 0 grešaka validatora",
+   "reliefGrid.node.test.ts > primeri: nalaz N1 i nekadašnji sudar 10w-25km-v30-A-sat, asOf kraj ned 3: ned 5 više nije rasterećenje (4917959: pauza 17,0, bol 5 14,9, manjak 19,0)",
+   "reliefGrid.node.test.ts > primeri: nalaz N1 i nekadašnji sudar 12 ned (smanjena ned 3) i 17 ned (smanjena ned 7): ukinuto rasterećenje, tačno 5 izgradnji do sledećeg (izuzetak A17)",
+   "reliefGrid.node.test.ts > A17: polje reduced, prinudno rasterećenje, nov start, stari korak višak + bol u istom koraku: reduced false → A17 samo preko nedelje sidra (b), nikad preko fromWeek viška",
+   "reliefGrid.node.test.ts > A17: polje reduced, prinudno rasterećenje, nov start, stari korak korak sačuvan pre 10k-v2.5.0 (bez polja reduced, A14): rezervni put startKm i levelKm → isti plan kao nov korak"
+  ],
+  "diff_before": "15796991bad13bb4",
+  "diff_sabotaged": "f41eae1fa2a922a9",
+  "diff_after": "15796991bad13bb4"
+ },
+ "b": {
+  "total": 287,
+  "failed": 2,
+  "names": [
+   "reliefGrid.node.test.ts > A17: polje reduced, prinudno rasterećenje, nov start, stari korak prinudno rasterećenje (A5) se nikad ne ukida: umor + bol u istom koraku (sreda ned 6) → ned 7 prinudno ostaje",
+   "reliefGrid.node.test.ts > A17: polje reduced, prinudno rasterećenje, nov start, stari korak framesFor: nov start bez rasporeda D5 (faze ostaju, A3) ne briše prinudno rasterećenje — kasniji bol ga ne ukida"
+  ],
+  "diff_before": "15796991bad13bb4",
+  "diff_sabotaged": "87336a2dc3c4fffe",
+  "diff_after": "15796991bad13bb4"
+ },
+ "c": {
+  "total": 287,
+  "failed": 27,
+  "names": [
+   "adapt.node.test.ts > mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 adaptacija 2040 adaptacija (+ drugi korak lanca): 0 odbijanja, 0 grešaka validatora",
+   "adapt.node.test.ts > mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 adaptacija rezultati po scenariju (primenjeni uslovi, nedelje iste kao pre, mešovite nedelje)",
+   "adapt.node.test.ts > mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 adaptacija 06b/06c: regresija prema e6540a5 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa primenjenim PAIN ili ukinutim rasterećenjem (A17)",
+   "adapt.node.test.ts > mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 adaptacija 06c: regresija prema 4917959 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa ukinutim rasterećenjem (A17) ili porukom N2; ostali bajt-isti",
+   "adapt.node.test.ts > mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 adaptacija 06c: reduced === true tačno u koracima A2/A3 (manjak, pauza — i nov start), === false tačno u koracima A6 (višak), odsutno u svim ostalim",
+   "adapt.node.test.ts > pouka 7 (a) posle pauze cilj raste +10 %/ned do nivoa pre pauze — ne ravno do trke i ne skokom; iznad nivoa D6",
+   "adapt.node.test.ts > pouka 7 (g) taper posle smanjenja = 0,75 × najveći cilj izgradnje posle smanjenja, nije veći od poslednje nedelje izgradnje",
+   "adapt.node.test.ts > odluke A1–A15 A3: pauza 7–13 → 80 % i 1 kvalitet; 14–27 → 70 %, bez kvaliteta pa 1; ≥ 28 → min(14 dana / 2, 50 %), nov start; < 8 ned → orijentir",
+   "adapt.node.test.ts > odluke A1–A15 A13: blokirana nedelja testa → prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja; posle rezultata testa nema; početnik bez testa",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova 336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.5.0",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova 06c: regresija prema 4917959 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa ukinutim rasterećenjem (A17); ostali bajt-isti",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova regresija prema e6540a5: promenjeni su samo tokovi sa povratkom posle bola (PAIN); bez povratka bajt-isto",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova korak i poruka: returnFrom.week = r (sadrži asOf + 1), samo kad je r izgradnja; „Posle nedelje r rast kreće od 70 % nivoa pre bola (osnova km)\"",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova I1: cilj nedelje r + 1 = povratni rast od osnove; ≤ max(osnova + max(10 %, 1,0 km), minimum D17) i ≤ nivo pre bola; rasterećenje r + 1 = 0,8 × osnova",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova I2: isti plan, isti nivo pre bola, isto r → cilj nedelje r + 1 isti za svaki dan u nedelji i bol 4/5/7/8",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova I3: bol 8 nikad ne daje veći cilj ili planirano od bola 5 istog dana — izuzeci samo po D8/D23 (trkačka) i D19 (zaokruženje dana), nabrojani",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova I4: od r + 1 do nivoa svaka nedelja izgradnje ≤ prethodna ne-rasteretna (prva: osnova) + max(10 %, 1,0 km)",
+   "painGrid.node.test.ts > mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova I5 (Uslov 8): km > 0, dugi ≥ lagan, nedelja ≥ minimum D17, dani bola/odmora bez kvaliteta i ubrzanja, 0 grešaka validatora, zaštita prošlosti bajt-isto",
+   "painGrid.node.test.ts > pauza + bol u istom koraku: osnova = min(0,7 × nivo koraka, cilj nedelje r) — bez skoka iznad cilja pauze asOf nedelja (r = n): cilj r = cilj pauze; r + 1 raste od min(0,7 × nivo, cilj pauze); sredina nedelje: r + 1 = cilj pauze (A3)",
+   "painGrid.node.test.ts > primeri A–E: 4 dana, 13 ned od 2026-10-26, 40 km, 10 km 45:00, cilj 43:00 E: asOf 2026-11-13, bol 7 → r = 3, nivo 42,4, osnova 29,7; 06c (A17): rasterećenje ned 4 ukinuto → ned 4 = 32,7 (4.1: 23,8), ned 5 = 36,0, ned 6 = 39,6",
+   "reliefGrid.node.test.ts > mreža R: 292 plana × asOf kraj ned 2…N − 4 × 7 scenarija = 18 193 toka (A17) 18 193 toka, 0 odbijanja (nekadašnji sudar 12 i 17 ned: 0)",
+   "reliefGrid.node.test.ts > mreža R: 292 plana × asOf kraj ned 2…N − 4 × 7 scenarija = 18 193 toka (A17) J5 / regresija prema 4917959 (heš bez oznake verzije i polja reduced): menjaju se samo tokovi sa ukinutim rasterećenjem (A17) ili porukom N2; svi ostali bajt-isti",
+   "reliefGrid.node.test.ts > mreža R: 292 plana × asOf kraj ned 2…N − 4 × 7 scenarija = 18 193 toka (A17) J1: posle nedelje smanjenja sledeća nedelja nikad nije redovno rasterećenje (i nijedno nije zadržano zbog > 5 izgradnji); ukinuto po scenariju",
+   "reliefGrid.node.test.ts > mreža R: 292 plana × asOf kraj ned 2…N − 4 × 7 scenarija = 18 193 toka (A17) J3: D5 sa izuzetkom A17 — od ukinutog rasterećenja ≤ 5 uzastopnih nedelja izgradnje (12 i 17 ned: tačno 5); 0 grešaka validatora",
+   "reliefGrid.node.test.ts > primeri: nalaz N1 i nekadašnji sudar 10w-25km-v30-A-sat, asOf kraj ned 3: ned 5 više nije rasterećenje (4917959: pauza 17,0, bol 5 14,9, manjak 19,0)",
+   "reliefGrid.node.test.ts > primeri: nalaz N1 i nekadašnji sudar 12 ned (smanjena ned 3) i 17 ned (smanjena ned 7): ukinuto rasterećenje, tačno 5 izgradnji do sledećeg (izuzetak A17)",
+   "reliefGrid.node.test.ts > A17: polje reduced, prinudno rasterećenje, nov start, stari korak korak sačuvan pre 10k-v2.5.0 (bez polja reduced, A14): rezervni put startKm i levelKm → isti plan kao nov korak"
+  ],
+  "diff_before": "15796991bad13bb4",
+  "diff_sabotaged": "8751fd5deef90d66",
+  "diff_after": "15796991bad13bb4"
+ },
+ "d": {
+  "total": 287,
+  "failed": 1,
+  "names": [
+   "reliefGrid.node.test.ts > A17: polje reduced, prinudno rasterećenje, nov start, stari korak nov start (pauza 35 dana) se ne računa: 16 ned, asOf kraj ned 10 → nov start ned 11 (faze ostaju, A3), rasterećenje ned 12 ostaje"
+  ],
+  "diff_before": "15796991bad13bb4",
+  "diff_sabotaged": "1df1e046a3729358",
+  "diff_after": "15796991bad13bb4"
+ },
+ "e": {
+  "total": 287,
+  "failed": 1,
+  "names": [
+   "reliefGrid.node.test.ts > A17: polje reduced, prinudno rasterećenje, nov start, stari korak višak + bol u istom koraku: reduced false → A17 samo preko nedelje sidra (b), nikad preko fromWeek viška"
+  ],
+  "diff_before": "15796991bad13bb4",
+  "diff_sabotaged": "05a0290f974c5ece",
+  "diff_after": "15796991bad13bb4"
+ }
+}

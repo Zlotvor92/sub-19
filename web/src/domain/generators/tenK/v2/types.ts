@@ -403,6 +403,9 @@ export interface TenKV2AdaptStep {
   /** A4/A8 (10k-v2.4.1): posle nedelje sidra `week` (sadrži asOf + 1) rast kreće od osnove min(`share` × nivo
       koraka, cilj nedelje sidra); korak bez nivoa: `share` × cilj nedelje sidra (volume.returnBase10). */
   returnFrom: { week: number; share: number } | null;
+  /** A17 (10k-v2.5.0): cilj koraka (startKm) je smanjenje — true: A2 (manjak) ili A3 (pauza); false: A6
+      (višak). Korak bez startKm i korak sačuvan pre 10k-v2.5.0: polja nema (steps.reducedWeeks). */
+  reduced?: boolean;
 }
 
 export interface TenKV2Adaptation {

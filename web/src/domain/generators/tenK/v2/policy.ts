@@ -48,8 +48,9 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D5',
-    rule: 'Najviše 3 uzastopne nedelje izgradnje (izuzetno 4 kad bi rasterećenje palo na prvu nedelju faze); nikad na prvoj nedelji faze, u ned 1–2, pred taperom, u taperu/trkačkoj. Cilj 0,8 × poslednji ne-rasteretni; 1 kvalitet T ≈ 60 % (nivo naniže, min 2,0 km; 3 dana: D18); dugi 0,8 × poslednji ne-rasteretni; ostali dani lagani.',
-    place: 'periodize.ts (gde), week.ts + quality.ts + lengths.ts (sadržaj), volume.ts (cilj)',
+    rule: 'Najviše 3 uzastopne nedelje izgradnje (izuzetno 4 kad bi rasterećenje palo na prvu nedelju faze); nikad na prvoj nedelji faze, u ned 1–2, pred taperom, u taperu/trkačkoj. Cilj 0,8 × poslednji ne-rasteretni; 1 kvalitet T ≈ 60 % (nivo naniže, min 2,0 km; 3 dana: D18); dugi 0,8 × poslednji ne-rasteretni; ostali dani lagani. Izuzetak A17 (10k-v2.5.0): od redovnog rasterećenja ukinutog posle nedelje smanjenja najviše 5 uzastopnih nedelja izgradnje (uključujući ukinutu) do sledećeg redovnog rasterećenja.',
+    place:
+      'periodize.ts (gde), week.ts + quality.ts + lengths.ts (sadržaj), volume.ts (cilj); steps.ts framesFor + validate.ts (izuzetak A17)',
     rationale:
       'Heuristika 3:1. Raspored se bira determinističkom pretragom: najmanje rasterećenja, pa izgradnja što ranije (rasterećenje što kasnije). Odstupanje (opreznije, D11 ispred D5): kad ni najmanja T doza (2,0 km) ne staje u plafon D11 cilja rasterećenja, rasterećenje je bez kvaliteta (dugi + lagani, napomena, upozorenje DELOAD_NO_QUALITY); npr. 3 dana, 12 ned, 20 km, VDOT 45, uto/čet/ned: ned 4 cilj 18,0 km, plafon T 1,8 km.'
   },
@@ -285,8 +286,9 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A5',
-    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana — bez dayId) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); prinudno rasterećenje odmah posle redovnog = 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8); redovno rasterećenje odmah posle prinudnog se ukida.',
-    place: 'assess.ts (adapt.fatigue*); steps.ts framesFor; validate.ts (D5 izuzetak prinudnog)',
+    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana — bez dayId) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); prinudno rasterećenje odmah posle redovnog = 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8); redovno rasterećenje odmah posle prinudnog se ukida. Isto posle nedelje smanjenja pauzom, manjkom ili bolom (A17, 10k-v2.5.0); prinudno rasterećenje se nikad ne ukida.',
+    place:
+      'assess.ts (adapt.fatigue*); steps.ts framesFor; validate.ts (D5 izuzetak prinudnog i A17)',
     rationale:
       'Heuristika: povišen napor na laganim treninzima je znak umora. Prinudno rasterećenje sme pasti na prvu nedelju faze ili pred taper (izuzetak D5, samo za korak umora).'
   },
@@ -363,12 +365,21 @@ const DECISIONS: readonly Decision[] = [
       'assess.ts (returnFrom.week = r, painReturnNote); volume.ts (returnAnchor, returnBase10, leaveWeek); adapt.ts (poruka PAIN); app/plan.ts KNOWN_VERSIONS',
     rationale:
       'Heuristika (odluka organizatora posle nalaza na e6540a5, bez novog broja: 0,7 = painEasyFactor, 10 % = returnGrowth). U 10k-v2.4.0 nedelja u koju period bola pređe dobija pun planirani rast, a pad dolazi nedelju kasnije; osnova zavisi i od toga da li je nedelja sidra rasteretna. Ulaz: 4 dana (uto/čet/sub/ned), start 2026-10-26, trka 2027-01-24 (13 ned), 40 km, 10 km 45:00, cilj 43:00; bol na dan iz zapisa bez trčanja. Cilj nedelje 5, e6540a5 → 10k-v2.4.1: (A) asOf 2026-11-15, bol 5 dana 2026-11-14: 27,6 → 32,7 (nivo 42,4, osnova 29,7; sidro ned 4 je rasterećenje 35,9); (B) isto, bol 8: 47,6 (pun cilj) → 32,7; (C) asOf 2026-11-18, bol 5: 47,6 sa kvalitetom → 34,5 (nivo 44,9, osnova 31,4); (D) isto, bol 8: 47,6 (planirano 37,9) → 34,5; (E) asOf 2026-11-13, bol 7: r = 3, ned 4 (rasterećenje) 35,9 → 23,8 (0,8 × 29,7), ned 5 47,6 sa dva kvaliteta → 32,7. Tumačenje: pauza u istom koraku smanjuje cilj nedelje r (A3), pa min sa ciljem nedelje r sprečava skok iznad cilja pauze (umesto 0,7 × cilj pauze iz 10k-v2.4.0). Ograničenje: korak sačuvan u 10k-v2.4.0 se ponavlja kako je sačuvan (A14), pa njegov week ostaje poslednja nedelja bola (npr. B prilagođen u 10k-v2.4.0, pa u 10k-v2.4.1 bez novih činjenica: ned 5 ostaje 47,6); izveštaj 06b.'
+  },
+  /* ---------- Segment 06c (10k-v2.5.0): rasterećenje odmah posle smanjenja otpada. ---------- */
+  {
+    id: 'A17',
+    rule: 'Rasterećenje posle smanjenja (10k-v2.5.0). Nedelja smanjenja koraka: (a) fromWeek koraka čiji je cilj smanjenje — polje reduced (assess: true za A2 manjak i A3 pauzu, false za A6 višak; korak sačuvan pre 10k-v2.5.0 bez polja: startKm i levelKm ≠ null, A14); (b) nedelja sidra r koraka bola sa povratkom; korak sa novim startom se ne računa (rePeriodize gradi raspored od novog starta). Redovno rasterećenje (raspored D5, izgradnja; nije prinudno A5, taper ni trkačka nedelja) odmah posle nedelje smanjenja se ukida: ta nedelja je izgradnja — cilj po A8 od osnove (bol: returnBase10), kvalitet po fazi uz ograničenja po datumima (A3/A4). Prinudno rasterećenje se nikad ne ukida. Raspored se ne pomera i rasterećenje se ne ubacuje; izuzetak D5: od ukinute nedelje (uključujući nju) najviše 5 uzastopnih nedelja izgradnje do sledećeg redovnog rasterećenja, inače se rasterećenje ne ukida. Poruka koraka: „Redovno rasterećenje u nedelji n + 1 otpada: nedelja n je smanjena (A17)." Poruka PAIN kad je osnova cilj nedelje r (< 0,7 × nivo): „Posle nedelje r rast kreće od osnova km (cilj nedelje r; 70 % nivoa pre bola bilo bi x km)."',
+    place:
+      'assess.ts (reduced); steps.ts targetReducedWeek, reducedWeeks, framesFor (jedino mesto odluke; izlaz dropped), A17_MAX_RUN; validate.ts (D5 iz istog podatka); adapt.ts (poruke A17 i PAIN); volume.ts bez izmene (cilj A8); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Heuristika (odluka organizatora posle nalaza N1, bez novog broja: 5 = izuzetak D5 4 + ukinuta nedelja; 0,7 = painEasyFactor). Smanjena nedelja je već oporavak; drugo rasterećenje zaredom gubi nedelju povratka — 10k-v2.4.1: 644/2268 tokova R4 (svaki 12. ulaz mreže 01, asOf kraj ned 2…N − 4) po scenariju pauze 10 dana, bola 5 i manjka. Primer 10w-25km-v30-A-sat, asOf kraj ned 3, cilj ned 5: pauza 10 dana rasterećenje 17,0 → 23,3; bol 5 14,9 → 20,5; manjak 19,0 → 26,2. Izuzetak D5: nedelje posle ukinutog rasterećenja su povratni rast ispod ranijeg obima — 17w-25km-v30-A-sat, bol 5 kraj ned 6, ned 8–12: 23,0 → 25,3 → 27,8 → 29,8 → 31,6 (original 33,5–35,0); nedelja smanjenja je služila kao oporavak; izmereno (mreža R): 0 odbijanja, J1 0, J4 0. Pet nedelja izgradnje od ukinute nedelje javlja se samo uz izuzetak D5 4 odmah posle (12 ned, smanjena ned 3; 17 ned, smanjena ned 7). Primer E iz A16 (asOf 2026-11-13, bol 7, r = 3): ned 4 rasterećenje 23,8 → izgradnja 32,7 (osnova 29,7 + 3,0). Tumačenje: polje reduced je izričita odluka assess — višak nije smanjenje ni u koraku sa bolom (A17 tada samo preko nedelje sidra); rezervni put bez polja važi samo za korake sačuvane pre 10k-v2.5.0. Sačuvan plan 10k-v2.4.0 i 10k-v2.4.1 ostaje plan 10K v2 i prilagođava se pravilima 10k-v2.5.0 (A15).'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.4.1',
+  version: '10k-v2.5.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {

@@ -105,7 +105,7 @@ test('10K v2: čarobnjak (rezultat, 4 dana) → plan v2 → Plan tab i dan pokaz
 
   // Plan v2 je sačuvan (i na serveru) sa oznakom politike v2 i izlazom v2.
   await expect.poll(() => serverPlan(backend)).toContain('"policyId":"10k-v2"');
-  expect(serverPlan(backend)).toContain('"policyVersion":"10k-v2.4.1"');
+  expect(serverPlan(backend)).toContain('"policyVersion":"10k-v2.5.0"');
   expect(serverPlan(backend)).toContain('"tenKV2":{');
 
   // Plan tab: ocena cilja doslovno iz v2 i struktura u redovima nedelje (rad sa tempom).

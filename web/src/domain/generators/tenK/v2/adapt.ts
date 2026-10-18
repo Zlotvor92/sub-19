@@ -10,6 +10,7 @@ import { dayNumber, mustDay } from './dates.ts';
 import { construct } from './generate.ts';
 import { checkInput } from './input.ts';
 import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
+import { baseFrames, framesFor, targetReducedWeek } from './steps.ts';
 import type {
   AdaptChange,
   AdaptReason,
@@ -49,6 +50,9 @@ function checkPlan(raw: unknown): TenKV2Plan | null {
     return null;
   return p;
 }
+
+/** A17: uslovi čiji je cilj koraka smanjenje (assess: reduced = true). */
+const REDUCING: readonly AdaptReason['condition'][] = ['PAUSE', 'UNDER_EXECUTION'];
 
 const dayLabel = (d: PlanDay | undefined): string => (d ? `${d.role}: ${d.workout.title}` : '—');
 
@@ -165,14 +169,38 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
       }
 
   // A4 (10k-v2.4.1): poruka PAIN — osnova povratka iz cilja nedelje sidra u konstrukciji (pauza iz istog
-  // koraka ga smanjuje, A3); računa je volume.returnBase10 (assess.painReturnNote). A13: test premešten ili
-  // uklonjen (odluka okvira, steps.framesFor) — zapis u reasons.
+  // koraka ga smanjuje, A3); računa je volume.returnBase10 (assess.painReturnNote). A17 (10k-v2.5.0):
+  // rasterećenja koja je ukinuo ovaj korak (odluka okvira, steps.framesFor — isti podatak `dropped`) —
+  // rečenica u poruci uslova koji je smanjio nedelju (cilj koraka: pauza/manjak; inače bol). A13: test
+  // premešten ili uklonjen (odluka okvira, steps.framesFor) — zapis u reasons.
   const rf = as.step.returnFrom;
-  const reasons: AdaptReason[] = as.reasons.map((x) =>
-    rf && x.condition === 'PAIN'
-      ? { ...x, message: x.message + painReturnNote(as.step, to10(c.weeks[rf.week - 1]!.targetKm)) }
-      : x
+  const dropped = new Map<number, number>();
+  const base = baseFrames(
+    chk.input.startDate,
+    chk.weeks,
+    chk.pace.kind === 'feel' && chk.rule.feelTest
   );
+  if (base)
+    framesFor(base, chk.pattern, chk.input.runDays, chk.input.raceDate, chk.pace, steps, dropped);
+  const own = [...dropped].filter(([, k]) => k === steps.length - 1).map(([w]) => w);
+  const byTarget = (w: number): boolean => targetReducedWeek(as.step) === w - 1;
+  const a17 = (x: AdaptReason): string =>
+    own
+      .filter((w) =>
+        x.condition === 'PAIN' ? !byTarget(w) : REDUCING.includes(x.condition) && byTarget(w)
+      )
+      .map(
+        (w) => ` Redovno rasterećenje u nedelji ${w} otpada: nedelja ${w - 1} je smanjena (A17).`
+      )
+      .join('');
+  const reasons: AdaptReason[] = as.reasons.map((x) => {
+    const pain =
+      rf && x.condition === 'PAIN'
+        ? painReturnNote(as.step, to10(c.weeks[rf.week - 1]!.targetKm))
+        : '';
+    const note = pain + (x.applied ? a17(x) : '');
+    return note ? { ...x, message: x.message + note } : x;
+  });
   const testOf = (p: TenKV2Plan): number | null =>
     p.weeks.find((w) => w.days.some((d) => d.role === 'test'))?.index ?? null;
   const tb = testOf(plan);

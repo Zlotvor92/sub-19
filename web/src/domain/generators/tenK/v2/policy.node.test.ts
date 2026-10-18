@@ -10,13 +10,13 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.4.1', () => {
+describe('policy 10k-v2.5.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.4.1');
+    expect(P.version).toBe('10k-v2.5.0');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04) i A16 (06b), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b) i A17 (06c), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -29,7 +29,7 @@ describe('policy 10k-v2.4.1', () => {
       'D30',
       'D31',
       'D32',
-      ...Array.from({ length: 16 }, (_, i) => `A${i + 1}`)
+      ...Array.from({ length: 17 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -100,6 +100,27 @@ describe('policy 10k-v2.4.1', () => {
     expect(why('A16')).toMatch(/\(A\) asOf 2026-11-15, bol 5 dana 2026-11-14: 27,6 → 32,7/);
     expect(why('A16')).toMatch(
       /\(E\) asOf 2026-11-13, bol 7: r = 3, ned 4 \(rasterećenje\) 35,9 → 23,8/
+    );
+    // 06c (10k-v2.5.0): redovno rasterećenje odmah posle nedelje smanjenja otpada; izuzetak D5 do 5 nedelja.
+    expect(rule('A17')).toMatch(/\(a\) fromWeek koraka čiji je cilj smanjenje — polje reduced/);
+    expect(rule('A17')).toMatch(/false za A6 višak/);
+    expect(rule('A17')).toMatch(/\(b\) nedelja sidra r koraka bola sa povratkom/);
+    expect(rule('A17')).toMatch(/korak sa novim startom se ne računa/);
+    expect(rule('A17')).toMatch(/Prinudno rasterećenje se nikad ne ukida/);
+    expect(rule('A17')).toMatch(
+      /najviše 5 uzastopnih nedelja izgradnje do sledećeg redovnog rasterećenja/
+    );
+    expect(rule('A17')).toMatch(
+      /Redovno rasterećenje u nedelji n \+ 1 otpada: nedelja n je smanjena \(A17\)/
+    );
+    expect(rule('A17')).toMatch(/70 % nivoa pre bola bilo bi x km/);
+    expect(why('A17')).toMatch(/644\/2268/);
+    expect(why('A17')).toMatch(/23,0 → 25,3 → 27,8 → 29,8 → 31,6/);
+    expect(rule('A5')).toMatch(
+      /Isto posle nedelje smanjenja pauzom, manjkom ili bolom \(A17, 10k-v2\.5\.0\)/
+    );
+    expect(rule('D5')).toMatch(
+      /Izuzetak A17 \(10k-v2\.5\.0\): .* najviše 5 uzastopnih nedelja izgradnje/
     );
   });
 

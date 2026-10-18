@@ -1,6 +1,6 @@
 /* Segment 04: činjenice → OGRANIČENJA adaptacije (TenKV2AdaptStep). JEDINO mesto odluka A1–A10 (DECISIONS
-   10k-v2.4.0; sidro bola A4/A16 10k-v2.4.1): ovde se ne gradi nijedna nedelja; konstruktor
-   (generate.construct) prima korak kao ulaz.
+   10k-v2.4.0; sidro bola A4/A16 10k-v2.4.1; oznaka smanjenja `reduced` A17 10k-v2.5.0): ovde se ne gradi
+   nijedna nedelja; konstruktor (generate.construct) prima korak kao ulaz.
    A10: dan bez zapisa je poznat (bez trčanja) samo u facts.coverage sa complete = true; A2, A3 (iz zapisa)
    i A6 samo na pokrivenom delu; bol, umor, rezultat i eksplicitna pauza (facts.breaks) uvek. */
 
@@ -37,12 +37,19 @@ const growthNote = (level: number): string =>
 /**
  * A4 (10k-v2.4.1): dopuna poruke PAIN koraka sa povratkom — osnova iz cilja nedelje sidra r U KONSTRUKCIJI
  * (`targetR10`; pauza iz istog koraka ga smanjuje, A3) i nivoa koraka (A8: najveći). Osnovu računa samo
- * volume.returnBase10 (isto što konstruktor posle nedelje r); adapt.ts poziva posle konstrukcije.
+ * volume.returnBase10 (isto što konstruktor posle nedelje r); adapt.ts poziva posle konstrukcije. N2
+ * (10k-v2.5.0): kad je osnova cilj nedelje r (< 0,7 × nivo), poruka imenuje cilj r i 70 % nivoa.
  */
 export function painReturnNote(step: TenKV2AdaptStep, targetR10: number): string {
   const rf = step.returnFrom!;
-  const base = returnBase10(returnAnchor(rf.share, step.levelKm), targetR10);
-  return ` Posle nedelje ${rf.week} rast kreće od ${rf.share * 100} % nivoa pre bola (${km(base / 10)} km).${growthNote(step.levelKm!)}`;
+  const a = returnAnchor(rf.share, step.levelKm);
+  const base = returnBase10(a, targetR10);
+  // 10k-v2.5.0 (N2): kad deluje min sa ciljem nedelje r, broj je cilj nedelje r, ne udeo nivoa.
+  const from =
+    a.base10 !== null && base < a.base10
+      ? `${km(base / 10)} km (cilj nedelje ${rf.week}; ${rf.share * 100} % nivoa pre bola bilo bi ${km(a.base10 / 10)} km)`
+      : `${rf.share * 100} % nivoa pre bola (${km(base / 10)} km)`;
+  return ` Posle nedelje ${rf.week} rast kreće od ${from}.${growthNote(step.levelKm!)}`;
 }
 
 export interface CheckedFacts {
@@ -367,6 +374,7 @@ export function assess(
     const tn = build(n) ? target(n) : null;
     if (tn !== null) k = Math.min(k, tn);
     step.startKm = k;
+    step.reduced = true;
     step.pauseRemainder = true;
     step.restart = tier === 'long';
     step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(pauseStart));
@@ -424,6 +432,7 @@ export function assess(
             Math.min(tn, weekMinKm)
           )
         );
+        step.reduced = true;
         step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(w2[0]));
         volumeRule = true;
       }
@@ -439,6 +448,7 @@ export function assess(
         const ok = !volumeRule && tn !== null && !wk(n)!.deload;
         if (ok) {
           step.startKm = round1(Math.min(tn, lastBuild ?? tn));
+          step.reduced = false;
           volumeRule = true;
         }
         reason(

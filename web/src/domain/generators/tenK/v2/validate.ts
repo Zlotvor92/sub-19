@@ -41,7 +41,15 @@ import {
   nextLevel
 } from './quality.ts';
 import { adjacentDays } from './schedule.ts';
-import { appliedRestarts, basisAt, framesFor, inRange, pacesAt, restartWeeks } from './steps.ts';
+import {
+  A17_MAX_RUN,
+  appliedRestarts,
+  basisAt,
+  framesFor,
+  inRange,
+  pacesAt,
+  restartWeeks
+} from './steps.ts';
 import type {
   DayRole,
   Dose,
@@ -181,9 +189,11 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   const feelW = (w: { index: number }): boolean =>
     pace ? basisAt(pace, steps, w.index) === 'feel' : feel;
   const base0 = pace ? periodize(input.startDate, N, pace.kind === 'feel' && rule.feelTest) : null;
+  /** A17: ukinuta redovna rasterećenja (isti podatak kao konstruktor, steps.framesFor). */
+  const dropped = new Map<number, number>();
   const frames =
     pace && base0 && base0.length === N
-      ? framesFor(base0, plan.pattern, input.runDays, input.raceDate, pace, steps)
+      ? framesFor(base0, plan.pattern, input.runDays, input.raceDate, pace, steps, dropped)
       : null;
   const restarts = pace && base0 ? appliedRestarts(base0, steps) : new Set<number>();
   /** A3: nov start počinje progresiju doze iznova i kad faze ostaju (odstupanje A3). */
@@ -250,14 +260,16 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   const phases = weeks.map((w) => w.phase);
 
   // --- D5: gde su rasterećenja. Segment 04: relativno od novog starta (A12); prinudno rasterećenje (A5)
-  // sme bilo gde u izgradnji, a niz posle njega (ukinuto redovno rasterećenje) nije ograničen.
+  // sme bilo gde u izgradnji, a niz posle njega (ukinuto redovno rasterećenje) nije ograničen. A17: niz koji
+  // počinje rasterećenjem ukinutim posle nedelje smanjenja (dropped) najviše A17_MAX_RUN nedelja.
   let run = 0;
   let afterForced = false;
+  let afterDropped = false;
   for (const w of weeks) {
     const s0 = segStart(w.index);
     const rel = phases.slice(s0 - 1);
     const k = w.index - s0 + 1;
-    if (restarts.has(w.index)) [run, afterForced] = [0, false];
+    if (restarts.has(w.index)) [run, afterForced, afterDropped] = [0, false, false];
     if (w.deload && checked(w) && !forced(w) && !deloadAllowed(rel, k)) {
       const why = !isBuildPhase(w.phase)
         ? `u fazi ${w.phase}`
@@ -269,10 +281,16 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       err('DELOAD_PLACEMENT', `Rasterećenje ${why} (D5).`, w.index);
     }
     if (!isBuildPhase(w.phase)) continue;
-    if (w.deload) [run, afterForced] = [0, forced(w)];
+    if (w.deload) [run, afterForced, afterDropped] = [0, forced(w), false];
     else {
-      if (!buildAllowed(rel, k, run) && !afterForced && checked(w))
-        err('DELOAD_RUN', `${run + 1} uzastopne nedelje izgradnje bez rasterećenja (D5).`, w.index);
+      if (dropped.has(w.index)) [run, afterDropped] = [0, true];
+      const allowed = afterDropped ? run + 1 <= A17_MAX_RUN : buildAllowed(rel, k, run);
+      if (!allowed && !afterForced && checked(w))
+        err(
+          'DELOAD_RUN',
+          `${run + 1} uzastopne nedelje izgradnje bez rasterećenja (D5${afterDropped ? ', A17' : ''}).`,
+          w.index
+        );
       run++;
     }
   }

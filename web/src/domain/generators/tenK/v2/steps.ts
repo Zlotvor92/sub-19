@@ -1,11 +1,12 @@
 /* Segment 04: koraci adaptacije (TenKV2AdaptStep, izvedeni u assess.ts) → okviri nedelja (faze,
-   rasterećenja, test, ograničenja po datumima) i tempo po nedelji. Koriste ga konstruktor
-   (generate.construct), adapt.ts i validator; bez koraka sve je kao u generatoru. */
+   rasterećenja — i A17, 10k-v2.5.0 —, test, ograničenja po datumima) i tempo po nedelji. Koriste ga
+   konstruktor (generate.construct), adapt.ts i validator; bez koraka sve je kao u generatoru. */
 
 import { addDays, mustDay, weekdayOf } from './dates.ts';
 import type { PaceInput } from './input.ts';
 import { feelPaces, pacesFromVdot } from './paces.ts';
 import { isBuildPhase, periodize, rePeriodize } from './periodize.ts';
+import { TEN_K_V2_POLICY as P } from './policy.ts';
 import { deloadSlot } from './quality.ts';
 import type {
   DateRange,
@@ -108,13 +109,40 @@ export function limitsOf(
 export const restartWeeks = (steps: readonly TenKV2AdaptStep[]): Set<number> =>
   new Set(steps.filter((s) => s.restart).map((s) => s.fromWeek));
 
+/** A17: najviše uzastopnih nedelja izgradnje od ukinutog rasterećenja (uključujući ukinutu nedelju) do
+    sledećeg redovnog rasterećenja — D5 izuzetak 4 + ukinuta nedelja. framesFor i validator (D5). */
+export const A17_MAX_RUN = P.deload.exceptionRun + 1;
+
+/** A17 (a): nedelja smanjenja iz cilja koraka — reduced (A2/A3; A6 false); korak sačuvan pre
+    10k-v2.5.0 (bez polja, A14): cilj koraka uz nivo pre smanjenja. null = korak nema cilj smanjenja. */
+export function targetReducedWeek(s: TenKV2AdaptStep): number | null {
+  if (s.restart) return null;
+  const reduced = s.reduced ?? (s.startKm !== null && s.levelKm !== null);
+  return reduced ? s.fromWeek : null;
+}
+
+/**
+ * A17: nedelje smanjenja koraka — (a) cilj koraka (targetReducedWeek) → fromWeek; (b) bol sa povratkom →
+ * nedelja sidra r; (c) nov start se ne računa (rePeriodize gradi raspored od novog starta).
+ */
+export function reducedWeeks(s: TenKV2AdaptStep): number[] {
+  if (s.restart) return [];
+  const a = targetReducedWeek(s);
+  const out = a === null ? [] : [a];
+  if (s.returnFrom !== null && !out.includes(s.returnFrom.week)) out.push(s.returnFrom.week);
+  return out;
+}
+
 /**
  * Okviri nedelja posle koraka (redom): nov start → rePeriodize od fromWeek (A12; nema rasporeda po D5 →
  * faze ostaju, odstupanje A3); umor → fromWeek je rasterećenje (samo izgradnja; redovno rasterećenje
- * odmah posle se ukida, A5); novi rezultat → nema testa posle asOf (A13); ograničenja po datumima
- * (limitsOf). A13: test posle poslednjeg asOf u nedelji sa ograničenjem kvaliteta, prinudnim
- * rasterećenjem ili van izgradnje → prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja dok je
- * plan po osećaju; nema je → bez testa. `base` = okviri generatora.
+ * odmah posle se ukida, A5); A17: redovno rasterećenje odmah posle nedelje smanjenja (reducedWeeks) se
+ * ukida — prinudno (A5) nikad, a ni kad bi od ukinute nedelje do sledećeg rasterećenja bilo više od
+ * A17_MAX_RUN nedelja izgradnje (raspored se ne pomera); novi rezultat → nema testa posle asOf (A13);
+ * ograničenja po datumima (limitsOf). A13: test posle poslednjeg asOf u nedelji sa ograničenjem kvaliteta,
+ * prinudnim rasterećenjem ili van izgradnje → prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja
+ * dok je plan po osećaju; nema je → bez testa. `base` = okviri generatora. `dropped` (izlaz, A17): ukinuta
+ * rasterećenja — nedelja → indeks koraka (isti podatak za validator D5 i poruku koraka, adapt.ts).
  */
 export function framesFor(
   base: readonly WeekFrame[],
@@ -122,18 +150,46 @@ export function framesFor(
   runDays: readonly Weekday[],
   raceDate: IsoDate,
   pace: PaceInput,
-  steps: readonly TenKV2AdaptStep[]
+  steps: readonly TenKV2AdaptStep[],
+  dropped: Map<number, number> | null = null
 ): WeekFrame[] {
   let frames: WeekFrame[] = base.map((f) => ({ ...f }));
   if (steps.length === 0) return frames;
-  for (const s of steps) {
+  const forced = new Set<number>();
+  /** Uzastopne nedelje izgradnje od nedelje i (indeks u nizu) do prvog rasterećenja ili kraja izgradnje. */
+  const runFrom = (i: number): number => {
+    let k = i + 1;
+    while (k < frames.length && isBuildPhase(frames[k]!.phase) && !frames[k]!.deload) k++;
+    return k - i;
+  };
+  for (const [k, s] of steps.entries()) {
     const n = s.fromWeek;
-    if (s.restart) frames = (rePeriodize(frames, n) ?? frames).map((f) => ({ ...f }));
+    if (s.restart) {
+      const re = rePeriodize(frames, n);
+      frames = (re ?? frames).map((f) => ({ ...f }));
+      // Nov raspored od fromWeek (A12) zamenjuje i prinudna i ukinuta rasterećenja od te nedelje.
+      if (re) for (const w of [...forced]) if (w >= n) forced.delete(w);
+      if (re && dropped) for (const w of [...dropped.keys()]) if (w >= n) dropped.delete(w);
+    }
     const fn = frames[n - 1];
     if (s.deload && fn && isBuildPhase(fn.phase) && !fn.deload) {
       fn.deload = true;
+      forced.add(n);
       const next = frames[n];
       if (next && next.deload && isBuildPhase(next.phase)) next.deload = false;
+    }
+    for (const w of reducedWeeks(s)) {
+      const next = frames[w];
+      if (
+        next &&
+        next.deload &&
+        isBuildPhase(next.phase) &&
+        !forced.has(next.index) &&
+        runFrom(w) <= A17_MAX_RUN
+      ) {
+        next.deload = false;
+        dropped?.set(next.index, k);
+      }
     }
     if (s.vdot !== null)
       frames = frames.map((f) =>

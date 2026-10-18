@@ -113,19 +113,21 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
 - Otvoreno: korak sačuvan u 4.0 zadržava staro sidro (A14) — B/C prilagođeni u 4.0 pa u 4.1 bez činjenica: ned 5 47,6;
   5K v2 isti problem (poseban segment).
 
-## Segment 06c (10k-v2.5.0, A17): ZAUSTAVLJENO — sudar A17 sa D5; generator nepromenjen (`10k-v2.4.1`)
+## Segment 06c (10k-v2.5.0, A17): rasterećenje odmah posle smanjenja otpada; tačna poruka bola
 
-- Polazni `4917959`; izveštaj `reports/SEGMENT-06c-IMPLEMENTATION.md`. Odluka A17 (redovno rasterećenje odmah posle
-  smanjenja se ukida) + poruka N2 izmerene kao prototip (`artifacts/segment-06c/a17-prototype.diff`, nije primenjen).
-- **Sudar 1 (stop po tački 3 odluke):** 12 ned (smanjena ned 3, ukinuta ned 4, sledeće rasterećenje ned 9) i 17 ned
-  (smanjena ned 7, ukinuta ned 8, sledeće ned 13) → 5 uzastopnih izgradnji od ukinute nedelje (D5 izuzetak 4 odmah
-  posle). Mreža R: 384 toka (64 × 6 scenarija smanjenja) odbijena (`DELOAD_RUN`); 04 i P: 0.
-- **Sudar 2:** J2 „≤ nivo" i A8 „nikad sporije od D6": 8 tokova mreže 04 (manjak, asOf sreda ned 6) — 28,4 > 28,1 i
-  39,8 > 39,3 (isti skok na 4917959 nedelju kasnije).
-- Prototip inače: J1 0, J4 0, J5 0 izuzetaka (promenjeno samo A17/N2: 04 292/2040, P 88/336, R 4471 + 384 odbijeno /
-  18 193); primeri iz N1 (10w-25km-v30-A-sat) ned 5: pauza 17,0 → 23,3, bol 5 14,9 → 20,5, manjak 19,0 → 26,2.
-- Commitovano: mreža R (`testInputs.ts`: `reliefGridBases` 292 plana, 7 scenarija, asOf kraj ned 2…N−4), heševi
-  4917959 (`segment06c.adapt-hashes-4917959.json`: 04 2040, P 336, R 18 193), skripte merenja. N1 „189 planova" = 252.
-  Provere: tsc/eslint/prettier exit 0; tenK/v2 21 / 267; `npm run check` exit 0 (220 fajlova, 2710 testova).
-- Čeka organizatora: izbor za sudar 1 i 2; tumačenje bol + višak u istom koraku. Potom tačka 6 (verzija, DECISIONS,
-  `KNOWN_VERSIONS`), test mreže R, sabotaže.
+- Tok: `888bf45` zaustavljeno (sudar A17/D5 kod 12 i 17 ned, J2/A8) → odluka organizatora → polazni `f2b0194`; commit
+  „10K v2 Segment 06c (10k-v2.5.0): rasterećenje odmah posle smanjenja otpada (A17); tačna poruka bola"
+  (`git log --grep "10K v2 Segment 06c"`); izveštaj `reports/SEGMENT-06c-IMPLEMENTATION.md`.
+- A17: nedelja smanjenja = (a) fromWeek koraka sa `reduced: true` (A2/A3; A6 `false`; korak pre 2.5.0 bez polja:
+  startKm i levelKm) ili (b) nedelja sidra bola; nov start ne ulazi. Redovno rasterećenje odmah posle se ukida u
+  `steps.framesFor` (jedino mesto; prinudno A5 nikad); izuzetak D5: od ukinute nedelje ≤ 5 izgradnji (`A17_MAX_RUN`),
+  inače se ne ukida (0 takvih); validator čita isti `dropped`. `volume.ts` bez izmene. Poruke A17 i N2.
+- Primer N1 (10w-25km-v30-A-sat, kraj ned 3) ned 5: pauza 17,0 → 23,3, bol 5 14,9 → 20,5, manjak 19,0 → 26,2.
+  17 ned bol 5 kraj ned 6: ned 8–12 23,0 → 31,6 (5 izgradnji).
+- Regresija prema 4917959 (heš bez oznake i polja reduced): promenjeni samo tokovi sa A17/N2 — 04 292/2040, P 88/336,
+  R 4855/18 193; samo polje reduced: 04 508, R 7019; 0 odbijanja. Generator bajt-isti (R 15 840, F 11 880, B 3402).
+- J1–J5 na mreži R (18 193): 0 prekršaja; J3 najduži niz 5. Test 5 km: otpada u 8 tokova po osećaju (ukinuto
+  rasterećenje sa testom D27, A9), ostaje/vraća se u 10.
+- Sabotaže (od 287): (a) 14, (b) 2, (c) 27, (d) 1, (e) 1. `KNOWN_VERSIONS` = 4.0, 4.1, 5.0.
+- Otvoreno: na 4917959 4 toka mreže R odbijena (`VOLUME_RULE`, rasterećenje sa testom D27 posle sidra bola,
+  f-d5-12w / f-d6-14w, kraj ned 2) — u 2.5.0 A17 ukida to rasterećenje, uzrok nije menjan; test 5 km uz A17 (gore).

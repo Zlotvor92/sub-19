@@ -2,7 +2,8 @@
    6 planova × 2 nedelje izgradnje × 7 dana — asOf = taj dan, bol na dan asOf — × bol 4/5/7/8 = 336 tokova),
    invarijante I1–I5 NEZAVISNO od volume.ts (brojevi iz policy.ts, nivo iz baznog plana), regresija prema e6540a5
    (segment06b.adapt-hashes-e6540a5.json), primeri A–E iz nalaza organizatora i pauza + bol u istom koraku (min sa
-   ciljem nedelje r). */
+   ciljem nedelje r). Segment 06c (10k-v2.5.0, A17): regresija prema 4917959 — menjaju se samo tokovi sa
+   ukinutim rasterećenjem (segment06c.adapt-hashes-4917959.json). */
 
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -19,6 +20,7 @@ import {
   painCases,
   painFacts,
   painGridBases,
+  planHash06c,
   planHash81,
   type PainCase
 } from './testInputs.ts';
@@ -31,17 +33,27 @@ const HASHES_E65 = join(
   dirname(fileURLToPath(import.meta.url)),
   'segment06b.adapt-hashes-e6540a5.json'
 );
+const HASHES_491 = join(
+  dirname(fileURLToPath(import.meta.url)),
+  'segment06c.adapt-hashes-4917959.json'
+);
 /** Promenjeni tokovi mreže P prema e6540a5 (svi PAIN; nepromenjeni = bez povratka, r je taper). */
 const CHANGED_P = 332;
+/** 06c: promenjeni tokovi mreže P prema 4917959 (svi sa ukinutim rasterećenjem, A17), po nivou bola. */
+const CHANGED_P_06C = { p4: 22, p5: 22, p7: 22, p8: 22 };
 /** I3 — sudar sa D8/D23 (izveštaj 06b): uz bol 8 taper ima 1 kvalitet i duže lagane dane (5,0 umesto 3,0 km),
     pa je trkačka nedelja (cilj = planirano) veća. */
 const I3_RACE_WEEK = [
-  'd5-f-18w/w14/2027-02-05/p8 ned 18: 18.8 → 22.8',
-  'd5-f-18w/w14/2027-02-06/p8 ned 18: 18.8 → 22.8',
+  // 06c (10k-v2.5.0, A17): d5-f-18w asOf 02-05/02-06 otpadaju (r = 14, ukinuto rasterećenje ned 15); d4-r-14w
+  // asOf 01-09 nov (r = 10, ukinuto rasterećenje ned 11; uz bol 8 ned 12 ima dan bola → 1 kvalitet, RP tapera
+  // 2000 m umesto 2400 m, lagan tapera 4,2 umesto 3,8 km → trkačka 16,4 umesto 16,0, D23/D8).
+  'd4-r-14w/w10/2027-01-09/p8 ned 14: 16 → 16.4',
   'd5-f-18w/w14/2027-02-07/p8 ned 18: 18.8 → 22.8'
 ];
-/** I3 — nedelje sa istim ciljem bez dana bola u kojima je planirano uz bol 8 veće za ≤ 0,1 km (D19). */
-const I3_ROUNDING = 16;
+/** I3 — nedelje sa istim ciljem bez dana bola u kojima je planirano uz bol 8 veće za ≤ 0,1 km (D19). 06c
+    (A17): 16 → 14 — d5-f-18w asOf 02-05/02-06 ned 17 (taper) otpadaju zajedno sa trkačkom (ukinuto
+    rasterećenje ned 15); d4-r-14w asOf 2026-11-21 ned 7 ostaje, cilj 34,7 → 37,1 (ukinuto rasterećenje ned 4). */
+const I3_ROUNDING = 14;
 
 const to10 = (km: number): number => Math.round(km * 10);
 const km1 = (x10: number): string => (x10 / 10).toFixed(1).replace('.', ',');
@@ -113,7 +125,7 @@ for (const b of bases) {
 }
 
 describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova', () => {
-  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.4.1', () => {
+  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.5.0', () => {
     expect(PAIN_GRID.length).toBe(6);
     expect(flows.length).toBe(336);
     expect(flows.filter((f) => !f.res.ok).map((f) => f.key)).toEqual([]);
@@ -123,8 +135,29 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
         f.key
       ).toBe(true);
-      expect(r.plan.policyVersion).toBe('10k-v2.4.1');
+      expect(r.plan.policyVersion).toBe('10k-v2.5.0');
     }
+  });
+
+  it('06c: regresija prema 4917959 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa ukinutim rasterećenjem (A17); ostali bajt-isti', () => {
+    const ref = JSON.parse(readFileSync(HASHES_491, 'utf8')) as {
+      against: string;
+      count: { gridP: number };
+      gridP: Record<string, number>;
+    };
+    expect(ref.against).toBe('4917959');
+    expect(ref.count.gridP).toBe(336);
+    expect(flows.map((f) => f.key).sort()).toEqual(Object.keys(ref.gridP).sort());
+    const marked = (f: Flow): boolean =>
+      ok(f.res).plan.notes.some((x) => x.includes('(A17)') || x.includes('bilo bi'));
+    const changed = flows.filter((f) => ref.gridP[f.key] !== planHash06c(f.res));
+    const by: Record<string, number> = {};
+    for (const f of changed) by[`p${f.level}`] = (by[`p${f.level}`] ?? 0) + 1;
+    expect(by).toEqual(CHANGED_P_06C);
+    expect(changed.filter((f) => !marked(f)).map((f) => f.key)).toEqual([]);
+    expect(flows.filter((f) => marked(f) && !changed.includes(f)).map((f) => f.key)).toEqual([]);
+    // Samo bol: korak bez cilja (startKm) nema polje reduced.
+    expect(flows.filter((f) => planHash81(f.res) !== planHash06c(f.res)).length).toBe(0);
   });
 
   it('regresija prema e6540a5: promenjeni su samo tokovi sa povratkom posle bola (PAIN); bez povratka bajt-isto', () => {
@@ -403,12 +436,13 @@ describe('primeri A–E: 4 dana, 13 ned od 2026-10-26, 40 km, 10 km 45:00, cilj 
     ]);
   });
 
-  it('E: asOf 2026-11-13, bol 7 → r = 3, nivo 42,4, osnova 29,7; ned 4 (rasterećenje) 23,8, ned 5 = 32,7 (e6540a5: 47,6, dva kvaliteta)', () => {
+  it('E: asOf 2026-11-13, bol 7 → r = 3, nivo 42,4, osnova 29,7; 06c (A17): rasterećenje ned 4 ukinuto → ned 4 = 32,7 (4.1: 23,8), ned 5 = 36,0, ned 6 = 39,6', () => {
     const ws = run('2026-11-13', '2026-11-13', 7);
     expect([4, 5, 6].map((i) => row(ws, i))).toEqual([
-      [23.8, 18.9, 0],
-      [32.7, 32.67, 2],
-      [36, 36, 2]
+      [32.7, 25.1, 0],
+      [36, 35.97, 2],
+      [39.6, 39.6, 2]
     ]);
+    expect(ws[3]!.deload).toBe(false);
   });
 });
