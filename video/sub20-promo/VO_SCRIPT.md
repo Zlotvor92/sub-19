@@ -17,8 +17,8 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 | Reč | Zapis u skripti | Alternativa | Zašto |
 |---|---|---|---|
 | Sub-20 | **Sab dvadeset** | Sub dvadeset | trkači govore „sab" (engl. *sub*); TTS bi pročitao „sub" sa *u* |
-| VDOT | **ve-dot** | vi-dot | Danielsova oznaka; nema ustaljenog srpskog izgovora |
-| HRV | **ha-er-ve** | Ha Er Ve | skraćenica, čita se slovo po slovo |
+| VDOT | **vi-dot** (korisnik, 2026-10-18) | ve-dot — čeka izbor po probi | engleski izgovor oznake, kako je korisnik tražio |
+| HRV | **ejč-ar-vi** (korisnik, 2026-10-18) | — | engleski izgovor slova, kako je korisnik tražio |
 
 ---
 
@@ -62,7 +62,7 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 **Time:** 19,0 – 23,0 s
 **Delivery:** malo brže, nabrajanje sa osmehom.
 
-    A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ha-er-ve.
+    A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč-ar-vi.
 
 ## Line 7 — Reveal (Frame 7)
 
@@ -83,7 +83,7 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 **Time:** 30,0 – 34,0 s
 **Delivery:** naglasak na „tvog".
 
-    Plan se pravi iz tvog ve-dot-a, iz tvog vremena.
+    Plan se pravi iz tvog vi-dot-a, iz tvog vremena.
 
 ## Line 10 — Prolazi (Frame 10)
 

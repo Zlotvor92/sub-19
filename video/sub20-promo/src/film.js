@@ -350,7 +350,7 @@
   set(dg, C(dg, 540, 1352, { opacity: 0, y: 1352 - 45 + 30 }));
   to(dg, { opacity: 1, y: 1352 - 45, duration: 0.45 }, t6 + 0.7);
   /* kartice „tabova" na reči naracije */
-  const CARDS = [['#cStrava', 230, 770, -16, 'stravu'], ['#cXlsx', 830, 830, 15, 'tabelu'], ['#cCalc', 240, 1400, 12, 'kalkulator'], ['#cHrv', 840, 1330, -14, 'ha-er-ve']];
+  const CARDS = [['#cStrava', 230, 770, -16, 'stravu'], ['#cXlsx', 830, 830, 15, 'tabelu'], ['#cCalc', 240, 1400, 12, 'kalkulator'], ['#cHrv', 840, 1330, -14, 'ejč']];
   set('#cards', { perspective: 1200 });
   CARDS.forEach(([q, x, y, ry, w], i) => {
     const el = q1(q);

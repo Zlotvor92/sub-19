@@ -15,10 +15,10 @@ export const SCENES = [
   { id: 's3', min: 3.4, lead: 0.30, tail: 0.45, vo: 'Četvrti kilometar popusti. Uzme dvanaest.' },
   { id: 's4', min: 3.4, lead: 0.30, tail: 0.40, vo: 'Plan koji nije pravljen za tebe — osam.' },
   { id: 's5', min: 3.2, lead: 0.30, tail: 0.40, vo: 'Umor koji ne vidiš — još šest.' },
-  { id: 's6', min: 3.8, lead: 0.35, tail: 0.30, vo: 'A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ha-er-ve.' },
+  { id: 's6', min: 3.8, lead: 0.35, tail: 0.30, vo: 'A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč-ar-vi.' },
   { id: 's7', min: 2.6, lead: 0.30, tail: 0.55, vo: 'Zato postoji Sab dvadeset.' },
   { id: 's8', min: 3.2, lead: 0.30, tail: 0.30, vo: 'Svaki dan znaš šta trčiš, i kojim tempom.' },
-  { id: 's9', min: 3.6, lead: 0.30, tail: 0.30, vo: 'Plan se pravi iz tvog ve-dot-a, iz tvog vremena.' },
+  { id: 's9', min: 3.6, lead: 0.30, tail: 0.30, vo: 'Plan se pravi iz tvog vi-dot-a, iz tvog vremena.' },
   { id: 's10', min: 3.6, lead: 0.30, tail: 0.30, vo: 'Posle trke vidiš svaki kilometar, i gde je vreme otišlo.' },
   { id: 's11', min: 3.8, lead: 0.45, tail: 0.30, vo: 'A oporavak ti kaže kad da stisneš, a kad da staneš.' },
   { id: 's12', min: 3.6, lead: 0.30, tail: 0.30, vo: 'Sab dvadeset ti pokazuje gde su tvoje sekunde.' }
@@ -83,13 +83,13 @@ export function events(T) {
   ev.vortex = r(st(5) + 0.7);
   ev.snap = r(Math.max(st(5) + 1.5, W(5, 'šest') - 0.1));
   ev.clock = r(st(6) + 0.26);
-  ev.cards = ['stravu', 'tabelu', 'kalkulator', 'ha-er-ve'].map((w) => r(W(6, w) - 0.1));
+  ev.cards = ['stravu', 'tabelu', 'kalkulator', 'ejč'].map((w) => r(W(6, w) - 0.1));
   ev.shrink = r(st(7) + 0.45);
   ev.reveal = r(Math.max(ev.shrink + 0.62, W(7, 'sab') - 0.15));
   ev.pan = r(st(8) - 0.32);
   ev.circle8 = r(W(8, 'tempom') - 0.2);
   ev.push9 = r(st(9) + 0.05);
-  ev.fly9 = r(Math.max(st(9) + 0.9, W(9, 've-dot-a') - 0.55));
+  ev.fly9 = r(Math.max(st(9) + 0.9, W(9, 5) - 0.55));
   ev.check9 = r(Math.max(ev.fly9 + 1.2, W(9, 'vremena') - 0.1));
   ev.rows10 = r(st(10) + 0.55);
   ev.circle10 = r(W(10, 'gde') - 0.25);
