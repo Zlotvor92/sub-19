@@ -120,6 +120,7 @@ export class Backend {
       }
     }
     if (url.includes('/rest/v1/zajednica')) return { body: [] };
+    if (url.includes('/rest/v1/rpc/zabelezi_otvaranje')) return { body: null };
     return { status: 404, body: { error: 'nepoznata adresa u lažnom backendu: ' + url } };
   }
 }

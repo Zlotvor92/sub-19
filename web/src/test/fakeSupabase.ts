@@ -138,6 +138,8 @@ export function createFakeSupabase(): FakeSupabase {
           return json(201, [{ updated_at: fake.row.updated_at }]);
         }
       }
+      if (input.includes('/rest/v1/rpc/zabelezi_otvaranje'))
+        return new Response(null, { status: 204 });
       return json(404, { error: 'nepoznata adresa u lažnom serveru: ' + input });
     }
   };
