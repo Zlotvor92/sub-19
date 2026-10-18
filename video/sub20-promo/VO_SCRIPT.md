@@ -2,6 +2,9 @@
 
 **Status: ODOBRENO (2026-10-18).** Generisanje preko ElevenLabs konektora.
 
+**Izabran glas (korisnik, 2026-10-18):** Filip – Upbeat Ad (`YSnb83dlGetP8Umttfqs`), eleven_v4, sa uputstvima u zagradama (`tools/timing.mjs` → `TTS`).
+**Ispravka (korisnik: „šta znači uzme 12?"):** redovi 3–5 sada nose jedinicu: „— dvanaest sekundi", „— još osam", „— još šest".
+
 **Voice:** ElevenLabs, model `eleven_v4` (ID modela proveravam sa `GET /v1/models` pre prvog poziva; ako ne postoji pod tim imenom, stajem i javljam). `voice_id`: `ELEVENLABS_VOICE_ID` ako je postavljen. Trenutno **nije**, kao ni `ELEVENLABS_API_KEY`. Bez njega predlažem 3 glasa iz `GET /v1/voices` i čekam izbor.
 **Voice settings:** podrazumevana.
 **Voice direction:** topao, siguran, malo razigran; kratke pauze posle tačke; brojevi jasno, bez žurbe.
@@ -17,7 +20,7 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 | Reč | Zapis u skripti | Alternativa | Zašto |
 |---|---|---|---|
 | Sub-20 | **Sab dvadeset** | Sub dvadeset | trkači govore „sab" (engl. *sub*); TTS bi pročitao „sub" sa *u* |
-| VDOT | **vi-dot** (korisnik, 2026-10-18) | ve-dot — čeka izbor po probi | engleski izgovor oznake, kako je korisnik tražio |
+| VDOT | **ve-dot** (korisnik, 2026-10-18: „ve dot, ne vi dot") | — | izbor korisnika po probi |
 | HRV | **ejč-ar-vi** (korisnik, 2026-10-18) | — | engleski izgovor slova, kako je korisnik tražio |
 
 ---
@@ -41,14 +44,14 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 **Time:** 7,0 – 11,0 s
 **Delivery:** blago podrugljivo; „Uzme dvanaest." kratko i suvo.
 
-    Četvrti kilometar popusti. Uzme dvanaest.
+    Četvrti kilometar popusti — dvanaest sekundi.
 
 ## Line 4 — Kradljivac 2 (Frame 4)
 
 **Time:** 11,0 – 15,0 s
 **Delivery:** isti ritam kao red 3; pauza pre „osam".
 
-    Plan koji nije pravljen za tebe — osam.
+    Plan koji nije pravljen za tebe — još osam.
 
 ## Line 5 — Kradljivac 3 (Frame 5)
 
@@ -83,7 +86,7 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 **Time:** 30,0 – 34,0 s
 **Delivery:** naglasak na „tvog".
 
-    Plan se pravi iz tvog vi-dot-a, iz tvog vremena.
+    Plan se pravi iz tvog ve-dot-a, iz tvog vremena.
 
 ## Line 10 — Prolazi (Frame 10)
 
