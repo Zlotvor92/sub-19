@@ -1,0 +1,51 @@
+Nazad
+Analiza trke
+
+Rezultat, prolazi po kilometru i analiza, odvojeno od analize treninga.
+
+Izaberi već odrađeno trčanje, čak i ako nije bilo trka u planu, ili unesi rezultat ručno.
+
+Trčanje
+2026-11-02 · Trčanje · 7.5 km · 40:00
+2026-11-01 · Trčanje · 9.4 km · 49:59
+2026-10-30 · Trčanje · 6.3 km · 27:31
+2026-10-28 · Trčanje · 6.4 km · 28:03
+2026-10-26 · Trčanje · 7.5 km · 39:53
+2026-10-25 · Trčanje · 6.2 km · 33:47
+2026-10-23 · Trčanje · 3.9 km · 20:25
+2026-10-21 · Trčanje · 4.4 km · 23:10
+2026-10-18 · Trčanje · 8.9 km · 48:21
+2026-10-16 · Trčanje · 6.1 km · 26:26
+2026-10-14 · Trčanje · 5 km · 26:15
+2026-10-12 · Trčanje · 6.7 km · 35:24
+2026-10-11 · Trčanje · 8.4 km · 45:30
+2026-10-09 · Trčanje · 5.8 km · 31:02
+2026-10-07 · Trčanje · 6 km · 26:00
+2026-10-05 · Trčanje · 6.4 km · 33:42
+2026-10-04 · Trčanje · 8 km · 43:12
+2026-10-02 · Trčanje · 5.6 km · 29:52
+2026-09-24 · 5K trka · 5.12 km · 20:53
+Unesi trku ručno
+Naziv trke
+Datum trke
+Zvanična distanca (km)
+Namera nastupa
+Trka za najbolji rezultat
+Kontrolna trka
+Prvi put na ovoj distanci
+Dodatno (opciono): zvanično i ciljno vreme, hrana, uslovi
+Sačuvaj kontekst trke
+Osveži kilometarske prolaze
+Prolazi po kilometru · Strava · 6 deonica
+Km	Tempo/km	Puls	Uspon/pad	Pauza
+1	4:02	161	0 m	0 s
+2	4:00	178	0 m	0 s
+3	4:02	182	0 m	0 s
+4	4:12	181	3 m	0 s
+5	4:09	185	1 m	0 s
+6 (117 m)	3:52	185	0 m	0 s
+
+GPS prolazi; završna nepotpuna deonica je posebno označena. * Tempo iz proteklog vremena kada servis nema podatke o kretanju.
+
+Analiziraj trku
+po kilometru · 6 deonica · Strava · 2 preostale

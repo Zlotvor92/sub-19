@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "preferences": {
+    "destination": {
+      "value": "reels",
+      "confirmed_in": [
+        "sub20-promo"
+      ],
+      "updated_at": "2026-10-17T22:24:59.638Z"
+    },
+    "aspect": {
+      "value": "1080x1920",
+      "confirmed_in": [
+        "sub20-promo"
+      ],
+      "updated_at": "2026-10-17T22:24:59.696Z"
+    },
+    "language": {
+      "value": "sr-Latn",
+      "confirmed_in": [
+        "sub20-promo"
+      ],
+      "updated_at": "2026-10-17T22:24:59.751Z"
+    },
+    "flow": {
+      "value": "automation",
+      "confirmed_in": [
+        "sub20-promo"
+      ],
+      "updated_at": "2026-10-17T22:24:59.804Z"
+    },
+    "storyboard": {
+      "value": "yes",
+      "confirmed_in": [
+        "sub20-promo"
+      ],
+      "updated_at": "2026-10-17T22:24:59.858Z"
+    }
+  },
+  "sightings": {}
+}
