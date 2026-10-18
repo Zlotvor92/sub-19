@@ -10,26 +10,26 @@ export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /* min = najkraće trajanje scene (s) da vizuelna radnja stane; lead = početak govora od početka scene; tail = posle govora */
 export const SCENES = [
-  { id: 's1', min: 3.6, lead: 0.55, tail: 0.35, vo: 'Sat ti kaže vreme. Ali ne kaže zašto.' },
-  { id: 's2', min: 3.0, lead: 0.15, tail: 0.35, vo: 'Do sab dvadeset fali ti dvadeset šest sekundi.' },
-  { id: 's3', min: 3.4, lead: 0.30, tail: 0.45, vo: 'Četvrti kilometar popusti — dvanaest sekundi.' },
-  { id: 's4', min: 3.4, lead: 0.30, tail: 0.40, vo: 'Plan koji nije pravljen za tebe — još osam.' },
-  { id: 's5', min: 3.2, lead: 0.30, tail: 0.40, vo: 'Umor koji ne vidiš — još šest.' },
-  { id: 's6', min: 3.8, lead: 0.35, tail: 0.30, vo: 'A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč-ar-vi.' },
-  { id: 's7', min: 2.6, lead: 0.30, tail: 0.55, vo: 'Zato postoji Sab dvadeset.' },
-  { id: 's8', min: 3.2, lead: 0.30, tail: 0.30, vo: 'Svaki dan znaš šta trčiš, i kojim tempom.' },
-  { id: 's9', min: 3.6, lead: 0.30, tail: 0.30, vo: 'Plan se pravi iz tvog ve-dot-a, iz tvog vremena.' },
-  { id: 's10', min: 3.6, lead: 0.30, tail: 0.30, vo: 'Posle trke vidiš svaki kilometar, i gde je vreme otišlo.' },
-  { id: 's11', min: 3.8, lead: 0.45, tail: 0.30, vo: 'A oporavak ti kaže kad da stisneš, a kad da staneš.' },
-  { id: 's12', min: 3.6, lead: 0.30, tail: 0.30, vo: 'Sab dvadeset ti pokazuje gde su tvoje sekunde.' }
+  { id: 's1', min: 3.6, lead: 0.55, tail: 0.14, vo: 'Sat ti kaže vreme. Ali ne kaže zašto.' },
+  { id: 's2', min: 3.0, lead: 0.12, tail: 0.14, vo: 'Do sab dvadeset fali ti dvadeset šest sekundi.' },
+  { id: 's3', min: 3.4, lead: 0.12, tail: 0.14, vo: 'Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi.' },
+  { id: 's4', min: 3.4, lead: 0.12, tail: 0.14, vo: 'Plan koji nije pravljen za tebe — još osam sekundi.' },
+  { id: 's5', min: 3.2, lead: 0.12, tail: 0.14, vo: 'Umor koji ne vidiš — još šest.' },
+  { id: 's6', min: 3.8, lead: 0.12, tail: 0.14, vo: 'A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč-ar-vi.' },
+  { id: 's7', min: 2.6, lead: 0.12, tail: 0.14, vo: 'Zato postoji Sab dvadeset.' },
+  { id: 's8', min: 3.2, lead: 0.12, tail: 0.14, vo: 'Svaki dan znaš šta trčiš, i kojim tempom.' },
+  { id: 's9', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Plan se pravi iz tvog ve-dot-a, iz tvog vremena.' },
+  { id: 's10', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Posle trke vidiš svaki kilometar, i gde je vreme otišlo.' },
+  { id: 's11', min: 3.8, lead: 0.12, tail: 0.14, vo: 'A oporavak ti kaže kad da stisneš, a kad da staneš.' },
+  { id: 's12', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Sab dvadeset ti pokazuje gde su tvoje sekunde.' }
 ];
 /* posle govora scene 12: povratak kugle se dovrši, pa 3D prolet, kartica „Napravljeno sa AI" i lockup */
 /* tekst za ElevenLabs eleven_v4 (glas Filip): isti kao vo + uputstva u zagradama, koja se ne izgovaraju */
 export const TTS = [
   '[warmly] [calmly] Sat ti kaže vreme... Ali ne kaže zašto.',
   '[warmly] Do sab dvadeset fali ti dvadeset šest sekundi.',
-  '[mischievously] Četvrti kilometar popusti — dvanaest sekundi.',
-  '[mischievously] Plan koji nije pravljen za tebe — još osam.',
+  '[mischievously] Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi.',
+  '[mischievously] Plan koji nije pravljen za tebe — još osam sekundi.',
   '[softly] [slowly] Umor koji ne vidiš — još šest.',
   '[playfully] A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč-ar-vi.',
   '[warmly] Zato postoji Sab dvadeset.',
@@ -39,7 +39,7 @@ export const TTS = [
   '[excited] A oporavak ti kaže kad da stisneš, [calmly] a kad da staneš.',
   '[warmly] Sab dvadeset ti pokazuje gde su tvoje sekunde.'
 ];
-export const OUTRO = { settle: 0.6, fly: 2.2, ai: 0.9, lockup: 2.4 };
+export const OUTRO = { settle: 0.35, fly: 1.6, ai: 0.7, lockup: 2.0 };
 
 const words = (s) => s.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w));
 const audioDur = (f) => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim());
@@ -47,15 +47,25 @@ const audioDur = (f) => Number(execFileSync('ffprobe', ['-v', 'error', '-show_en
 export function timing() {
   const wordsFile = join(ROOT, 'audio/vo/words.json');
   const real = existsSync(wordsFile) ? JSON.parse(readFileSync(wordsFile, 'utf8')) : {};
+  const trimFile = join(ROOT, 'audio/vo/trim.json');
+  const trim = existsSync(trimFile) ? JSON.parse(readFileSync(trimFile, 'utf8')) : {};
   let t = 0;
   const scenes = SCENES.map((s, i) => {
     const n = String(i + 1).padStart(2, '0');
-    const file = join(ROOT, `audio/vo/line${n}.mp3`);
+    const file = join(ROOT, `audio/vo/line${n}.wav`);
     const w = words(s.vo);
     const est = w.length / 2.4;
-    const voDur = existsSync(file) ? audioDur(file) : est;
+    /* trim.json: deo fajla sa govorom (tišina na početku/kraju se preskače preko data-media-start) */
+    const tr = trim[s.id];
+    const mediaStart = existsSync(file) && tr ? tr.start : 0;
+    const voDur = existsSync(file) ? (tr ? tr.end - tr.start : audioDur(file)) : est;
     let wt;
-    if (real[s.id]?.length === w.length) wt = real[s.id].map((x) => x.start);
+    if (real[s.id]?.length === w.length) {
+      /* Scribe kasni na prvoj reči; vremena se pomeraju tako da prva reč padne na izmereni početak govora */
+      const raw = real[s.id].map((x) => (typeof x === 'number' ? x : x.start));
+      const onset = tr ? tr.start + 0.03 : raw[0];
+      wt = raw.map((x) => Math.max(0, x - raw[0] + onset - mediaStart));
+    }
     else {
       /* procena: reč počinje srazmerno broju slova pre nje (+ pauza na interpunkciji) */
       const weight = w.map((x) => x.length + (/[.,—:]$/.test(x) ? 3 : 1));
@@ -63,8 +73,11 @@ export function timing() {
       let acc = 0;
       wt = weight.map((x) => { const v = (acc / tot) * voDur * 0.94; acc += x; return +v.toFixed(3); });
     }
-    const dur = Math.max(s.min, s.lead + voDur + s.tail) + (i === SCENES.length - 1 ? OUTRO.settle + OUTRO.fly + OUTRO.ai + OUTRO.lockup : 0);
-    const out = { id: s.id, n, start: +t.toFixed(3), dur: +dur.toFixed(3), voStart: +(t + s.lead).toFixed(3), voDur: +voDur.toFixed(3), words: w, wt: wt.map((x) => +(t + s.lead + x).toFixed(3)), audio: existsSync(file) ? `audio/vo/line${n}.mp3` : null };
+    /* prva izgovorena reč pada tačno na `lead` od početka scene (tišina na početku fajla se preskače pomeranjem fajla) */
+    const onset = Math.min(wt[0] ?? 0, s.lead);
+    const voStart = t + s.lead - onset;
+    const dur = Math.max(s.min, s.lead - onset + voDur + s.tail) + (i === SCENES.length - 1 ? OUTRO.settle + OUTRO.fly + OUTRO.ai + OUTRO.lockup : 0);
+    const out = { id: s.id, n, start: +t.toFixed(3), dur: +dur.toFixed(3), voStart: +voStart.toFixed(3), voDur: +voDur.toFixed(3), words: w, wt: wt.map((x) => +(voStart + x).toFixed(3)), audio: existsSync(file) ? `audio/vo/line${n}.wav` : null, mediaStart: +mediaStart.toFixed(3) };
     t += dur;
     return out;
   });
@@ -90,7 +103,7 @@ export function events(T) {
   ev.gap = r(W(2, 'dvadeset#1') - 0.05);
   ev.run = r(st(3) + 0.15);
   ev.gasp = r(st(3) + 1.25);
-  ev.melt = r(Math.max(ev.gasp + 0.6, W(3, 'popusti')));
+  ev.melt = r(Math.max(ev.gasp + 0.6, W(3, 'padne')));
   ev.chunkA = r(W(3, 'dvanaest') - 0.05);
   ev.hop1 = r(st(4) + 0.05 + 0.42);
   ev.hop2 = r(st(4) + 0.6 + 0.42);
@@ -99,8 +112,8 @@ export function events(T) {
   ev.snap = r(Math.max(st(5) + 1.5, W(5, 'šest') - 0.1));
   ev.clock = r(st(6) + 0.26);
   ev.cards = ['stravu', 'tabelu', 'kalkulator', 'ejč'].map((w) => r(W(6, w) - 0.1));
-  ev.shrink = r(st(7) + 0.45);
-  ev.reveal = r(Math.max(ev.shrink + 0.62, W(7, 'sab') - 0.15));
+  ev.shrink = r(st(7) + 0.3);
+  ev.reveal = r(ev.shrink + 0.6);
   ev.pan = r(st(8) - 0.32);
   ev.circle8 = r(W(8, 'tempom') - 0.2);
   ev.push9 = r(st(9) + 0.05);

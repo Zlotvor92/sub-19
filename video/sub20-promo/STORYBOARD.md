@@ -92,7 +92,7 @@ keyMessage: 26 sekundi, ne „nekako brže".
 ## Frame 3 — Kradljivac 1: četvrti kilometar
 
 - scene: Lik-sprinter sa brojem „4" na grudima jurne, zadiše se i istopi; od kugle otpadne komad, „−12 s"
-- voiceover: "Četvrti kilometar popusti. Uzme dvanaest."
+- voiceover: "Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi."
 - duration: 4s
 - transition_in: cut
 - status: outline
@@ -104,7 +104,7 @@ keyMessage: 26 sekundi, ne „nekako brže".
 - handoff_in: kugla x=360 y=1000 prečnik 420; kontura 19:59 x=780 y=1000 prečnik 300
 - handoff_out: kugla sa isečenim komadom (−12 s), ista pozicija; kontura ista
 
-Sprinter (zaobljen pravougaonik, dva oka, startni broj „4") uleti zdesna, protrči oko kugle, uspori, oči se zatvore, „zadiše se" (3 kratka squash pulsa) i istopi se kroz gooey filter u kapljice. Kapljice povuku komad kugle (gooey), komad se odvoji kao kapljica sa natpisom „−12 s" i ostane da visi gore desno (y≈700). Naslov: „Četvrti kilometar *popusti*."
+Sprinter (zaobljen pravougaonik, dva oka, startni broj „4") uleti zdesna, protrči oko kugle, uspori, oči se zatvore, „zadiše se" (3 kratka squash pulsa) i istopi se kroz gooey filter u kapljice. Kapljice povuku komad kugle (gooey), komad se odvoji kao kapljica sa natpisom „−12 s" i ostane da visi gore desno (y≈700). Naslov: „Na 4. km tempo *padne*."
 
 narrativeRole: prvi uzrok — stvaran, iz tvoje trke.
 keyMessage: tempo pukne posle trećeg kilometra.
@@ -112,7 +112,7 @@ keyMessage: tempo pukne posle trećeg kilometra.
 ## Frame 4 — Kradljivac 2: plan koji nije tvoj
 
 - scene: Zgužvani „generički plan" sa očima odgrize kuglu (ugriz kao isečak kruga), „−8 s"
-- voiceover: "Plan koji nije pravljen za tebe — osam."
+- voiceover: "Plan koji nije pravljen za tebe — još osam sekundi."
 - duration: 4s
 - transition_in: cut
 - status: outline

@@ -47,7 +47,7 @@
     ['t1a', 'Sat ti kaže vreme.', 'day'],
     ['t1b', 'Ne kaže <em>zašto</em>.', 'day'],
     ['t2', 'Do sub 20 fali <em>26 sekundi</em>.', 'day'],
-    ['t3', 'Četvrti kilometar <em>popusti</em>.', 'day'],
+    ['t3', 'Na 4. km tempo <em>padne</em>.', 'day'],
     ['t4', 'Plan koji <em>nije</em> tvoj.', 'day'],
     ['t5', 'Umor koji <em>ne vidiš</em>.', 'day'],
     ['t6', 'Četiri taba. <em>U ponoć.</em>', 'night'],
@@ -96,8 +96,11 @@
       to(w, { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.55, ease: 'back.out(2.2)' }, (tAcc ?? t) + i * 0.07);
     });
   }
+  /* izlaz počinje pre reza i završava se pre nego što sledeći naslov krene (bez preklapanja dva naslova) */
   function titleOut(id, t) {
-    qa(`#${id} .w`).forEach((w, i) => to(w, { opacity: 0, y: -46, rotation: -2, duration: 0.28, ease: 'power2.in' }, t + i * 0.025));
+    const ws = qa(`#${id} .w`);
+    const t0 = t - 0.2 - ws.length * 0.012;
+    ws.forEach((w, i) => to(w, { opacity: 0, y: -46, rotation: -2, duration: 0.18, ease: 'power2.in' }, t0 + i * 0.012));
   }
 
   /* ---------- pozadina, dekor, zvezde ---------- */
@@ -164,8 +167,8 @@
     to(d.el, { y: `+=${amp}`, duration: 1.6 + (i % 4) * 0.35, ease: 'sine.inOut', repeat: Math.floor(TOTAL / 1.6), yoyo: true }, land + 1.1 + i * 0.05);
   });
   titleIn('t1a', W(1, 'sat'));
-  titleOut('t1a', W(1, 'ali') - 0.12);
-  titleIn('t1b', W(1, 'ali') + 0.05, W(1, 'zašto'));
+  titleOut('t1a', W(1, 'ali') - 0.02);
+  titleIn('t1b', W(1, 'ali') + 0.02, W(1, 'zašto'));
 
   /* ================= SCENA 2 — kontura 19:59 ================= */
   const t2 = st(2);
@@ -240,8 +243,8 @@
   to(pA, { scale: 0.62, duration: 0.15 }, chunkA + 0.62);
   to(pA, { x: PARK.A[0] - 90, y: PARK.A[1] - 90, scale: 1, duration: 0.8, ease: 'power3.out' }, chunkA + 0.75);
   to(pA, { rotation: -8, duration: 0.8, ease: 'sine.inOut' }, chunkA + 0.75);
-  to(pA, { y: `+=12`, duration: 1.3, ease: 'sine.inOut', repeat: 7, yoyo: true }, chunkA + 1.6);
-  titleIn('t3', S(3).voStart, W(3, 'popusti'));
+  to(pA, { y: `+=12`, duration: 1.3, ease: 'sine.inOut', repeat: Math.max(0, Math.floor((st(6) - chunkA - 1.6) / 1.3) - 1), yoyo: true }, chunkA + 1.6);
+  titleIn('t3', S(3).voStart, W(3, 'padne'));
 
   /* ================= SCENA 4 — plan koji nije tvoj ================= */
   const t4 = st(4);
@@ -251,7 +254,8 @@
   set('#sprinter', { visibility: 'hidden' }, t4 + 0.5);
   to('#sprinter .drip', { attr: { r: 0 }, duration: 0.3 }, t4 + 0.1);
   const pp = q1('#paper');
-  set(pp, C(pp, -220, 1560, { rotation: -12 }));
+  set(pp, C(pp, -220, 1560));
+  set('#paper .in2', { skewX: -10, transformOrigin: '50% 100%' });
   set('#paper .in', { scaleX: 1, scaleY: 1, transformOrigin: '50% 95%' });
   set('#ppMouth', { attr: { ry: 6 } }); set('#ppTeeth', { attr: { height: 0 } });
   /* dva skoka do pozicije */
@@ -264,10 +268,11 @@
   };
   hop(t4 + 0.05, 60, 1420);
   hop(t4 + 0.6, 230, 1330);
-  to(pp, { rotation: 4, duration: 0.8, ease: 'sine.inOut' }, t4 + 0.05);
+  to('#paper .in2', { skewX: 4, duration: 0.8, ease: 'sine.inOut' }, t4 + 0.05);
   /* zagriz na „osam" */
   const bite = T.ev.bite;
-  to(pp, { x: 300 - 170, y: 1140 - 190, rotation: 14, duration: 0.25, ease: 'power3.in' }, bite - 0.25);
+  to(pp, { x: 300 - 170, y: 1140 - 190, duration: 0.25, ease: 'power3.in' }, bite - 0.25);
+  to('#paper .in2', { skewX: 12, duration: 0.25, ease: 'power3.in' }, bite - 0.25);
   to('#ppMouth', { attr: { ry: 52 }, duration: 0.18 }, bite - 0.3);
   to('#ppTeeth', { attr: { height: 14 }, duration: 0.18 }, bite - 0.3);
   to('#ppMouth', { attr: { ry: 6 }, duration: 0.1, ease: 'power4.in' }, bite);
@@ -278,11 +283,13 @@
   set(pB, C(pB, BX - 236 * BS3, BY - 76 * BS3, { scale: 0, opacity: 1 }), bite);
   to(pB, { scale: 0.7, duration: 0.12 }, bite + 0.05);
   to(pB, { x: PARK.B[0] - 90, y: PARK.B[1] - 90, scale: 1, rotation: 6, duration: 0.8, ease: 'power3.out' }, bite + 0.18);
-  to(pB, { y: `+=12`, duration: 1.4, ease: 'sine.inOut', repeat: 6, yoyo: true }, bite + 1.0);
+  to(pB, { y: `+=12`, duration: 1.4, ease: 'sine.inOut', repeat: Math.max(0, Math.floor((st(6) - bite - 1.0) / 1.4) - 1), yoyo: true }, bite + 1.0);
   /* žvaće, pa odskakuće napolje */
   to('#paper .in', { scaleY: 0.88, duration: 0.1, ease: 'sine.inOut', repeat: 5, yoyo: true }, bite + 0.12);
-  to(pp, { x: 230 - 170, y: 1330 - 190, rotation: 0, duration: 0.35, ease: 'power2.out' }, bite + 0.1);
-  to(pp, { x: -260 - 170, y: 1500 - 190, rotation: -20, duration: 0.55, ease: 'power2.in' }, end(4) + 0.1);
+  to(pp, { x: 230 - 170, y: 1330 - 190, duration: 0.35, ease: 'power2.out' }, bite + 0.1);
+  to('#paper .in2', { skewX: 0, duration: 0.35, ease: 'power2.out' }, bite + 0.1);
+  to(pp, { x: -260 - 170, y: 1500 - 190, duration: 0.55, ease: 'power2.in' }, end(4) + 0.1);
+  to('#paper .in2', { skewX: -14, duration: 0.55, ease: 'power2.in' }, end(4) + 0.1);
   titleIn('t4', S(4).voStart, W(4, 'nije'));
 
   /* ================= SCENA 5 — umor koji ne vidiš ================= */
@@ -312,7 +319,7 @@
   set(pC, C(pC, 690, 1370, { scale: 0, opacity: 1 }), snap);
   to(pC, { scale: 0.7, duration: 0.12 }, snap + 0.1);
   to(pC, { x: PARK.C[0] - 90, y: PARK.C[1] - 90, scale: 1, rotation: -5, duration: 0.85, ease: 'power3.out' }, snap + 0.2);
-  to(pC, { y: `+=12`, duration: 1.2, ease: 'sine.inOut', repeat: 3, yoyo: true }, snap + 1.05);
+  if (st(6) - snap - 1.05 > 1.2) to(pC, { y: `+=12`, duration: 1.2, ease: 'sine.inOut', repeat: Math.max(0, Math.floor((st(6) - snap - 1.05) / 1.2) - 1), yoyo: true }, snap + 1.05);
   to('#vortex', { opacity: 0, scale: 0.4, duration: 0.3 }, snap + 0.2);
   to('#cloud .lid', { scaleY: 1, duration: 0.5 }, snap + 0.3);
   to('#clMouth', { attr: { ry: 5 }, duration: 0.3 }, snap + 0.3);
@@ -350,7 +357,7 @@
   set(dg, C(dg, 540, 1352, { opacity: 0, y: 1352 - 45 + 30 }));
   to(dg, { opacity: 1, y: 1352 - 45, duration: 0.45 }, t6 + 0.7);
   /* kartice „tabova" na reči naracije */
-  const CARDS = [['#cStrava', 230, 770, -16, 'stravu'], ['#cXlsx', 830, 830, 15, 'tabelu'], ['#cCalc', 240, 1400, 12, 'kalkulator'], ['#cHrv', 840, 1330, -14, 'ha-er-ve']];
+  const CARDS = [['#cStrava', 230, 770, -16, 'stravu'], ['#cXlsx', 830, 830, 15, 'tabelu'], ['#cCalc', 240, 1400, 12, 'kalkulator'], ['#cHrv', 840, 1330, -14, 'ejč']];
   set('#cards', { perspective: 1200 });
   CARDS.forEach(([q, x, y, ry, w], i) => {
     const el = q1(q);
@@ -538,9 +545,9 @@
   /* komadi se vraćaju na svoja mesta (svaki „pop") */
   const HOME = { A: [540 + 190 * 0.7, 1080 + 185 * 0.7, '#biteA'], B: [540 - 236 * 0.7, 1080 - 76 * 0.7, '.biteB'], C: [540 + 92 * 0.7, 1080 + 250 * 0.7, '#biteC'] };
   const ret0 = T.ev.ret12;
-  [['A', pA, -40], ['B', pB, 540], ['C', pC, 1120]].forEach(([key, p, sx], i) => {
+  [['A', pA, -200, 820], ['B', pB, 1280, 700], ['C', pC, 1280, 1420]].forEach(([key, p, sx, sy], i) => {
     const [hx, hy, bq] = HOME[key];
-    set(p, { x: sx - 90, y: -260, scale: 0.8, opacity: 1, rotation: 0 }, t12);
+    set(p, { x: sx - 90, y: sy - 90, scale: 0.8, opacity: 1, rotation: 0 }, t12);
     const ti = ret0 + i * 0.32;
     to(p, { x: hx - 90, y: hy - 90, scale: 0.55, duration: 0.5, ease: 'power3.in' }, ti);
     to(p, { scale: 0, opacity: 0, duration: 0.12 }, ti + 0.5);

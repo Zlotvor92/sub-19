@@ -3,7 +3,7 @@
 **Status: ODOBRENO (2026-10-18).** Generisanje preko ElevenLabs konektora.
 
 **Izabran glas (korisnik, 2026-10-18):** Filip – Upbeat Ad (`YSnb83dlGetP8Umttfqs`), eleven_v4, sa uputstvima u zagradama (`tools/timing.mjs` → `TTS`).
-**Ispravka (korisnik: „šta znači uzme 12?"):** redovi 3–5 sada nose jedinicu: „— dvanaest sekundi", „— još osam", „— još šest".
+**Ispravka (korisnik: „šta znači uzme 12? … ja kao trkač to nisam razumeo"):** red 3 = „Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi.", red 4 = „… — još osam sekundi.", red 5 ostaje „… — još šest." (odobreno 2026-10-18).
 
 **Voice:** ElevenLabs, model `eleven_v4` (ID modela proveravam sa `GET /v1/models` pre prvog poziva; ako ne postoji pod tim imenom, stajem i javljam). `voice_id`: `ELEVENLABS_VOICE_ID` ako je postavljen. Trenutno **nije**, kao ni `ELEVENLABS_API_KEY`. Bez njega predlažem 3 glasa iz `GET /v1/voices` i čekam izbor.
 **Voice settings:** podrazumevana.
@@ -44,14 +44,14 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 **Time:** 7,0 – 11,0 s
 **Delivery:** blago podrugljivo; „Uzme dvanaest." kratko i suvo.
 
-    Četvrti kilometar popusti — dvanaest sekundi.
+    Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi.
 
 ## Line 4 — Kradljivac 2 (Frame 4)
 
 **Time:** 11,0 – 15,0 s
 **Delivery:** isti ritam kao red 3; pauza pre „osam".
 
-    Plan koji nije pravljen za tebe — još osam.
+    Plan koji nije pravljen za tebe — još osam sekundi.
 
 ## Line 5 — Kradljivac 3 (Frame 5)
 

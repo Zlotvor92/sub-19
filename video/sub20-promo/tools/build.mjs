@@ -13,7 +13,7 @@ const dur = T.total.toFixed(3);
 const audio = [];
 for (const s of T.scenes) {
   if (!s.audio) continue;
-  audio.push(`      <audio id="vo-${s.n}" src="${s.audio}" data-start="${s.voStart.toFixed(3)}" data-duration="${s.voDur.toFixed(3)}" data-track-index="10" data-volume="1"></audio>`);
+  audio.push(`      <audio id="vo-${s.n}" src="${s.audio}" data-start="${s.voStart.toFixed(3)}" data-duration="${s.voDur.toFixed(3)}" data-media-start="${s.mediaStart.toFixed(3)}" data-track-index="10" data-volume="1"></audio>`);
 }
 if (existsSync(join(ROOT, 'audio/music.wav'))) audio.push(`      <audio id="bgm" src="audio/music.wav" data-start="0" data-duration="${dur}" data-track-index="11" data-volume="1"></audio>`);
 if (existsSync(join(ROOT, 'audio/sfx.wav'))) audio.push(`      <audio id="sfx" src="audio/sfx.wav" data-start="0" data-duration="${dur}" data-track-index="12" data-volume="1"></audio>`);
