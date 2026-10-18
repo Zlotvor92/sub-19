@@ -34,8 +34,10 @@ export const POLICY_ID = P.id;
 export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `10k-v2`; plan bez oznake je 10K v1 (`legacy-10k`). */
 export const LEGACY_POLICY_ID = 'legacy-10k';
-/** Verzije koje trenutni kod ume da gradi i adaptira: samo tekuća (istorijske implementacije v2 se ne čuvaju). */
-export const KNOWN_VERSIONS: readonly string[] = [P.version];
+/** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0 i tekuća
+ *  10k-v2.4.1. Sačuvan plan 4.0 ostaje plan 10K v2; prilagođavanje ga gradi pravilima 4.1 (A15), rezultat nosi tekuću
+ *  oznaku. Svaka druga verzija je „unknown" (UNKNOWN_POLICY). */
+export const KNOWN_VERSIONS: readonly string[] = ['10k-v2.4.0', P.version];
 
 /** JEDNA mapa faze za prikaz (odluka adaptera): baza → BAZA, razvoj → RAZVOJ, specifična faza (najspecifičniji rad za
  *  tempo trke) → VRHUNAC, taper → TAPER, trkačka nedelja → TRKA; rasterećenje (bilo koje faze) → DELOAD. */
@@ -224,7 +226,7 @@ export function storedPlan(gen: GeneratedV2Plan): StoredPlan {
   });
 }
 
-/** Čija politika je upisala plan. Samo tekuća verzija `10k-v2` je „current"; sve ostalo „unknown" (nikad tihi prelaz
+/** Čija politika je upisala plan. Poznata verzija `10k-v2` (KNOWN_VERSIONS) je „current"; sve ostalo „unknown" (nikad tihi prelaz
  *  na 10K v1 — plan bez oznake ovaj generator ne dobija, `select.ts` ga daje 10K v1). */
 export function planPolicy(plan: { meta?: unknown } | null | undefined): PolicyStatus {
   const meta = (plan?.meta ?? {}) as { policyId?: unknown; policyVersion?: unknown };

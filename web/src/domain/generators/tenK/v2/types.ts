@@ -400,7 +400,8 @@ export interface TenKV2AdaptStep {
   orientation: boolean;
   /** A8: nivo pre smanjenja [km] — do njega cilj raste povratnim rastom; null = bez povratka. */
   levelKm: number | null;
-  /** A4/A8: posle nedelje `week` (poslednja nedelja bola) rast kreće od `share` × cilj te nedelje. */
+  /** A4/A8 (10k-v2.4.1): posle nedelje sidra `week` (sadrži asOf + 1) rast kreće od osnove min(`share` × nivo
+      koraka, cilj nedelje sidra); korak bez nivoa: `share` × cilj nedelje sidra (volume.returnBase10). */
   returnFrom: { week: number; share: number } | null;
 }
 

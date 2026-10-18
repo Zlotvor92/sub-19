@@ -1,0 +1,91 @@
+{
+  "input": {
+    "startDate": "2026-10-26",
+    "raceDate": "2027-01-24",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "currentWeeklyKm": 40,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 2700,
+      "date": "2026-10-10"
+    },
+    "goalTimeSec": 2580
+  },
+  "cases": [
+    {
+      "id": "A",
+      "asOf": "2026-11-15",
+      "facts": {
+        "workouts": [
+          {
+            "date": "2026-11-14",
+            "km": 0,
+            "durationSec": 0,
+            "completed": false,
+            "pain": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "B",
+      "asOf": "2026-11-15",
+      "facts": {
+        "workouts": [
+          {
+            "date": "2026-11-14",
+            "km": 0,
+            "durationSec": 0,
+            "completed": false,
+            "pain": 8
+          }
+        ]
+      }
+    },
+    {
+      "id": "C",
+      "asOf": "2026-11-18",
+      "facts": {
+        "workouts": [
+          {
+            "date": "2026-11-18",
+            "km": 0,
+            "durationSec": 0,
+            "completed": false,
+            "pain": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "D",
+      "asOf": "2026-11-18",
+      "facts": {
+        "workouts": [
+          {
+            "date": "2026-11-18",
+            "km": 0,
+            "durationSec": 0,
+            "completed": false,
+            "pain": 8
+          }
+        ]
+      }
+    },
+    {
+      "id": "E",
+      "asOf": "2026-11-13",
+      "facts": {
+        "workouts": [
+          {
+            "date": "2026-11-13",
+            "km": 0,
+            "durationSec": 0,
+            "completed": false,
+            "pain": 7
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -185,24 +185,43 @@ export interface AdaptVolume {
   remainder: Map<number, number>;
   /** A3: nov start — nedelja → start [0,1 km] (granica izgradnje D6 od nje). */
   restart: Map<number, number>;
-  /** A4: poslednja nedelja bola → udeo njenog cilja od kog kreće rast. */
-  anchors: Map<number, number>;
+  /** A4 (10k-v2.4.1): nedelja sidra r (sadrži asOf + 1) → osnova povratka pre min sa ciljem nedelje r:
+      `base10` = round(udeo × nivo pre bola) [0,1 km]; null = nivo nepoznat (stariji korak) → udeo × cilj r. */
+  anchors: Map<number, ReturnAnchor>;
   /** A8: nivo pre smanjenja koji važi u nedelji w (najveći nivo koraka sa fromWeek ≤ w) [0,1 km]. */
   levelAt: (w: number) => number | null;
 }
+
+/** A4: osnova povratka posle nedelje sidra (udeo i nivo koraka). */
+export interface ReturnAnchor {
+  share: number;
+  base10: number | null;
+}
+
+/** A4/A8: osnova povratka posle nedelje sidra sa ciljem `target10` [0,1 km] — min(round(udeo × nivo pre
+    bola), cilj nedelje sidra); nivo nepoznat → round(udeo × cilj nedelje sidra) (10k-v2.4.0). */
+export function returnBase10(a: ReturnAnchor, target10: number): number {
+  return a.base10 === null ? Math.round(a.share * target10) : Math.min(a.base10, target10);
+}
+
+/** A4: sidro koraka sa povratkom (osnova iz udela i nivoa koraka, A8: najveći nivo koraka). */
+export const returnAnchor = (share: number, levelKm: number | null): ReturnAnchor => ({
+  share,
+  base10: levelKm === null ? null : Math.round(share * to10(levelKm))
+});
 
 export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
   const reset = new Map<number, number>();
   const remainder = new Map<number, number>();
   const restart = new Map<number, number>();
-  const anchors = new Map<number, number>();
+  const anchors = new Map<number, ReturnAnchor>();
   for (const s of steps) {
     if (s.startKm !== null) {
       reset.set(s.fromWeek, to10(s.startKm));
       if (s.restart) restart.set(s.fromWeek, to10(s.startKm));
       if (s.pauseRemainder && s.firstWeek < s.fromWeek) remainder.set(s.firstWeek, to10(s.startKm));
     }
-    if (s.returnFrom) anchors.set(s.returnFrom.week, s.returnFrom.share);
+    if (s.returnFrom) anchors.set(s.returnFrom.week, returnAnchor(s.returnFrom.share, s.levelKm));
   }
   const reducedFrom = Math.min(
     ...steps
@@ -320,7 +339,8 @@ export function adaptNominal10(
 }
 
 /** Posle nedelje `frame` sa ciljem `target10`: osnov rasta (ne-rasteretna izgradnja; cilj koraka i kad
-    je rasteretna, A8), vrh, sidro bola (A4: 0,7 × cilj poslednje nedelje bola). */
+    je rasteretna, A8), vrh, sidro bola (A4, 10k-v2.4.1: osnova povratka returnBase10 — min(0,7 × nivo pre
+    bola, cilj nedelje sidra)). */
 export function leaveWeek(
   h: AdaptHistory,
   frame: WeekFrame,
@@ -335,7 +355,7 @@ export function leaveWeek(
     out.peakRef10 = Math.max(out.peakRef10, target10);
   }
   if (!frame.deload) out.peak10 = Math.max(out.peak10, target10);
-  const share = av.anchors.get(i);
-  if (share !== undefined) out.lastBuild10 = Math.round(share * target10);
+  const anchor = av.anchors.get(i);
+  if (anchor !== undefined) out.lastBuild10 = returnBase10(anchor, target10);
   return out;
 }

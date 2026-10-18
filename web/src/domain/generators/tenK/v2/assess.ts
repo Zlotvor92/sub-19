@@ -1,5 +1,6 @@
 /* Segment 04: činjenice → OGRANIČENJA adaptacije (TenKV2AdaptStep). JEDINO mesto odluka A1–A10 (DECISIONS
-   10k-v2.4.0): ovde se ne gradi nijedna nedelja; konstruktor (generate.construct) prima korak kao ulaz.
+   10k-v2.4.0; sidro bola A4/A16 10k-v2.4.1): ovde se ne gradi nijedna nedelja; konstruktor
+   (generate.construct) prima korak kao ulaz.
    A10: dan bez zapisa je poznat (bez trčanja) samo u facts.coverage sa complete = true; A2, A3 (iz zapisa)
    i A6 samo na pokrivenom delu; bol, umor, rezultat i eksplicitna pauza (facts.breaks) uvek. */
 
@@ -9,6 +10,7 @@ import { round1, vdotFromResult } from './paces.ts';
 import { isBuildPhase } from './periodize.ts';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
 import { stepVdotAt } from './steps.ts';
+import { returnAnchor, returnBase10 } from './volume.ts';
 import type {
   AdaptReason,
   BreakFact,
@@ -29,6 +31,19 @@ const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFin
 const fmt = (sec: number): string =>
   `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
 const km = (x: number): string => round1(x).toFixed(1).replace('.', ',');
+const growthNote = (level: number): string =>
+  ` Povratak do ${km(level)} km (nivo pre smanjenja) po +${A.returnGrowth * 100} %/ned (min ${km(A.returnGrowthMinKm)} km), osim tapera i trkačke nedelje (A8).`;
+
+/**
+ * A4 (10k-v2.4.1): dopuna poruke PAIN koraka sa povratkom — osnova iz cilja nedelje sidra r U KONSTRUKCIJI
+ * (`targetR10`; pauza iz istog koraka ga smanjuje, A3) i nivoa koraka (A8: najveći). Osnovu računa samo
+ * volume.returnBase10 (isto što konstruktor posle nedelje r); adapt.ts poziva posle konstrukcije.
+ */
+export function painReturnNote(step: TenKV2AdaptStep, targetR10: number): string {
+  const rf = step.returnFrom!;
+  const base = returnBase10(returnAnchor(rf.share, step.levelKm), targetR10);
+  return ` Posle nedelje ${rf.week} rast kreće od ${rf.share * 100} % nivoa pre bola (${km(base / 10)} km).${growthNote(step.levelKm!)}`;
+}
 
 export interface CheckedFacts {
   workouts: WorkoutFact[];
@@ -226,8 +241,6 @@ export function assess(
   };
   const target = (w: number): number | null => wk(w)?.targetKm ?? null;
   const endOf = (w: number): IsoDate => wk(Math.min(w, N))!.endDate;
-  const growthNote = (level: number): string =>
-    ` Povratak do ${km(level)} km (nivo pre smanjenja) po +${A.returnGrowth * 100} %/ned (min ${km(A.returnGrowthMinKm)} km), osim tapera i trkačke nedelje (A8).`;
 
   const step: TenKV2AdaptStep = {
     asOf,
@@ -300,24 +313,25 @@ export function assess(
       );
   }
 
-  // A4: bol (uvek, po datumima; prethodni koraci ostaju, pa ponovni bol produžava period).
+  // A4: bol (uvek, po datumima; prethodni koraci ostaju, pa ponovni bol produžava period). 10k-v2.4.1:
+  // sidro povratka = nedelja r (prvi dan odmora ili bola), ne poslednja nedelja bola.
   const hurt = W.filter((x) => t - day(x.date) < A.painLookbackDays && (x.pain ?? 0) >= A.painMin);
   if (hurt.length > 0) {
     const max = Math.max(...hurt.map((x) => x.pain!));
     const restN = max >= A.painRestMin ? A.restDays : 0;
     if (restN > 0) step.rest = { from: next, to: addDays(asOf, restN) };
     step.pain = { from: addDays(asOf, restN + 1), to: addDays(asOf, restN + A.painDays) };
-    const last = weekOf(step.pain.to);
-    const back = last <= N && build(last);
+    const back = r <= N && build(r);
     if (back) {
-      step.returnFrom = { week: last, share: A.painEasyFactor };
+      step.returnFrom = { week: r, share: A.painEasyFactor };
       step.levelKm = levelBefore(Math.min(...hurt.map((x) => day(x.date))));
     }
     reason(
       'PAIN',
       true,
-      `Bol ${max}/10 u poslednja ${A.painLookbackDays} dana: ${restN > 0 ? `${restN} dana odmora (do ${step.rest!.to}), pa ` : ''}${A.painDays} dana bez kvaliteta i ubrzanja (${step.pain.from} – ${step.pain.to}). ${A.painMessage}${back ? ` Posle nedelje ${last} rast kreće od ${A.painEasyFactor * 100} % njenog cilja.${growthNote(step.levelKm!)}` : ''}`
+      `Bol ${max}/10 u poslednja ${A.painLookbackDays} dana: ${restN > 0 ? `${restN} dana odmora (do ${step.rest!.to}), pa ` : ''}${A.painDays} dana bez kvaliteta i ubrzanja (${step.pain.from} – ${step.pain.to}). ${A.painMessage}`
     );
+    // Osnova povratka (cilj nedelje r posle konstrukcije, nivo konačnog koraka): painReturnNote, adapt.ts.
   }
 
   let volumeRule = false;

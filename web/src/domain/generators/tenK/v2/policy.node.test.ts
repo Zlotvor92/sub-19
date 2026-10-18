@@ -10,13 +10,13 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.4.0', () => {
+describe('policy 10k-v2.4.1', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.4.0');
+    expect(P.version).toBe('10k-v2.4.1');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b) i A1–A15 (04), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04) i A16 (06b), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -29,7 +29,7 @@ describe('policy 10k-v2.4.0', () => {
       'D30',
       'D31',
       'D32',
-      ...Array.from({ length: 15 }, (_, i) => `A${i + 1}`)
+      ...Array.from({ length: 16 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -88,6 +88,19 @@ describe('policy 10k-v2.4.0', () => {
     expect(why('D32')).toMatch(/≈ pola nedelje.*3,1 km/);
     expect(rule('D27')).toMatch(/početnik bez testa, D32/);
     expect(rule('D28')).toMatch(/plan po osećaju \(D26\) bez testa \(D32\)/);
+    // 06b (10k-v2.4.1): sidro bola = nedelja r (asOf + 1), osnova min(0,7 × nivo pre bola, cilj nedelje r).
+    expect(rule('A4')).toMatch(
+      /Sidro povratka \(10k-v2\.4\.1, A16\) = nedelja r koja sadrži asOf \+ 1/
+    );
+    expect(rule('A4')).toMatch(/osnove = min\(0,7 × nivo pre bola, cilj nedelje r\)/);
+    expect(rule('A4')).toMatch(/rasterećenje posle sidra = 0,8 × osnova/);
+    expect(rule('A4')).not.toMatch(/posle poslednje nedelje bola/);
+    expect(rule('A8')).toMatch(/osnov rasta je min\(0,7 × nivo pre bola, cilj nedelje r\)/);
+    expect(rule('A16')).toMatch(/ne poslednja nedelja perioda bola/);
+    expect(why('A16')).toMatch(/\(A\) asOf 2026-11-15, bol 5 dana 2026-11-14: 27,6 → 32,7/);
+    expect(why('A16')).toMatch(
+      /\(E\) asOf 2026-11-13, bol 7: r = 3, ned 4 \(rasterećenje\) 35,9 → 23,8/
+    );
   });
 
   it('D1 opseg (dani i obim: D17; početnik: D28), D29', () => {

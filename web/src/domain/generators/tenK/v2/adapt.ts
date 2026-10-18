@@ -5,7 +5,7 @@
    završna zaštita to samo proverava (A11); (4) validate. Bez čitanja sata: asOf je ulaz; isti ulaz → isti
    JSON (A14). */
 
-import { assess, checkFacts } from './assess.ts';
+import { assess, checkFacts, painReturnNote } from './assess.ts';
 import { dayNumber, mustDay } from './dates.ts';
 import { construct } from './generate.ts';
 import { checkInput } from './input.ts';
@@ -21,6 +21,7 @@ import type {
   TenKV2Plan
 } from './types.ts';
 import { validatePlan } from './validate.ts';
+import { to10 } from './volume.ts';
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const reject = (code: Reason['code'], message: string): AdaptResult => ({
@@ -163,8 +164,15 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
           );
       }
 
-  // A13: test premešten ili uklonjen (odluka okvira, steps.framesFor) — zapis u reasons.
-  const reasons: AdaptReason[] = [...as.reasons];
+  // A4 (10k-v2.4.1): poruka PAIN — osnova povratka iz cilja nedelje sidra u konstrukciji (pauza iz istog
+  // koraka ga smanjuje, A3); računa je volume.returnBase10 (assess.painReturnNote). A13: test premešten ili
+  // uklonjen (odluka okvira, steps.framesFor) — zapis u reasons.
+  const rf = as.step.returnFrom;
+  const reasons: AdaptReason[] = as.reasons.map((x) =>
+    rf && x.condition === 'PAIN'
+      ? { ...x, message: x.message + painReturnNote(as.step, to10(c.weeks[rf.week - 1]!.targetKm)) }
+      : x
+  );
   const testOf = (p: TenKV2Plan): number | null =>
     p.weeks.find((w) => w.days.some((d) => d.role === 'test'))?.index ?? null;
   const tb = testOf(plan);

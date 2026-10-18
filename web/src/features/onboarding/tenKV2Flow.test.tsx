@@ -114,7 +114,7 @@ describe('10K v2 iza prekidača', () => {
     const saved = collectPersisted();
     expect(saved.genPlan!.meta).toMatchObject({
       policyId: '10k-v2',
-      policyVersion: '10k-v2.4.0',
+      policyVersion: '10k-v2.4.1',
       paceBasis: 'result',
       goalSec: 2580
     });

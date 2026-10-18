@@ -277,11 +277,11 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A4',
-    rule: 'Bol ≥ 4 u poslednja 3 dana → 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min (sporim E), lagani × 0,7 (≥ 3 km, ≤ dugi); bol ≥ 7 → najpre 3 dana odmora, pa isto; poruka o stručnom pregledu; nedelja sa danom bola/odmora ima najviše 1 kvalitet doze rasterećenja; cilj nedelje bola ostaje (dani su ograničeni, planirano ≤ cilj); posle poslednje nedelje bola rast kreće od 0,7 × njenog cilja do nivoa pre bola (A8).',
+    rule: 'Bol ≥ 4 u poslednja 3 dana → 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min (sporim E), lagani × 0,7 (≥ 3 km, ≤ dugi); bol ≥ 7 → najpre 3 dana odmora, pa isto; poruka o stručnom pregledu; nedelja sa danom bola/odmora ima najviše 1 kvalitet doze rasterećenja. Sidro povratka (10k-v2.4.1, A16) = nedelja r koja sadrži asOf + 1 (prvi dan odmora ili bola, kao firstWeek koraka); cilj nedelje r ostaje (dani u periodu bola i odmora su ograničeni, planirano ≤ cilj); posle nedelje r rast kreće od osnove = min(0,7 × nivo pre bola, cilj nedelje r) [0,1 km] (nivo: A8; pauza u istom koraku: najveći nivo koraka; korak bez nivoa: 0,7 × cilj nedelje r); od nedelje r + 1 povratni rast A8 do nivoa, pa D6 — i u nedeljama sa danima bola posle r (dani ostaju ograničeni: bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani × 0,7); rasterećenje posle sidra = 0,8 × osnova. Povratak samo kad je r nedelja izgradnje (taper i trkačka nedelja nemaju povratak). Poruka: „Posle nedelje r rast kreće od 70 % nivoa pre bola (osnova km)."',
     place:
-      'assess.ts (adapt.pain*); steps.ts limitsOf; lengths.ts painLong10/limitedEasy10; week.ts; volume.ts',
+      'assess.ts (adapt.pain*; sidro r, nivo, poruka painReturnNote); steps.ts limitsOf; lengths.ts painLong10/limitedEasy10; week.ts; volume.ts (returnAnchor, returnBase10, leaveWeek — osnova); adapt.ts (osnova u poruci iz konstruisanog cilja nedelje r)',
     rationale:
-      'Heuristika opreza kod bola; dijagnoza nije deo plana (poruka). Tumačenje: „doza ne raste u nedelji sa ograničenjem" — nedelja sa danima bola/odmora dobija najviše jedan kvalitet doze rasterećenja i kad dani kvaliteta nisu u periodu bola.'
+      'Heuristika opreza kod bola; dijagnoza nije deo plana (poruka). Tumačenje: „doza ne raste u nedelji sa ograničenjem" — nedelja sa danima bola/odmora dobija najviše jedan kvalitet doze rasterećenja i kad dani kvaliteta nisu u periodu bola. Sidro i osnova (10k-v2.4.1, A16): povratak ne zavisi od dana u nedelji, nivoa bola ni od toga da li je nedelja sidra rasteretna.'
   },
   {
     id: 'A5',
@@ -304,8 +304,9 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A8',
-    rule: 'Povratni rast: posle smanjenja (pauza, bol, manjak) cilj raste +10 %/ned (min 1,0 km; nikad sporije od D6) do nivoa pre smanjenja u svim fazama osim tapera i trkačke nedelje (i iznad granice izgradnje novog starta, A3); iznad nivoa D6 (iznad granice drži). Nivo = cilj poslednje ne-rasteretne nedelje izgradnje završene pre prvog dana događaja (bez nje — start plana); više koraka → najveći nivo. Rasterećenje u povratku 0,8 × poslednja ne-rasteretna; cilj koraka je osnov rasta i kad je ta nedelja rasteretna. U povratku se cilj ne podiže iznad pravila (izvodljiv cilj samo naniže). Taper posle smanjenja = 0,75 × najveći cilj izgradnje posle poslednjeg smanjenja (nikad skok naviše); korak čija je sledeća nedelja taper: min(0,75 × vrh, cilj koraka).',
-    place: 'volume.ts (adaptNominal10, nextBuild10, returnLevel10) — konstruktor i validator',
+    rule: 'Povratni rast: posle smanjenja (pauza, bol, manjak) cilj raste +10 %/ned (min 1,0 km; nikad sporije od D6) do nivoa pre smanjenja u svim fazama osim tapera i trkačke nedelje (i iznad granice izgradnje novog starta, A3); iznad nivoa D6 (iznad granice drži). Nivo = cilj poslednje ne-rasteretne nedelje izgradnje završene pre prvog dana događaja (bez nje — start plana); više koraka → najveći nivo. Bol (A4, 10k-v2.4.1): posle nedelje sidra r (sadrži asOf + 1) osnov rasta je min(0,7 × nivo pre bola, cilj nedelje r), ne cilj poslednje nedelje bola. Rasterećenje u povratku 0,8 × poslednja ne-rasteretna (posle sidra bola 0,8 × osnova); cilj koraka je osnov rasta i kad je ta nedelja rasteretna. U povratku se cilj ne podiže iznad pravila (izvodljiv cilj samo naniže). Taper posle smanjenja = 0,75 × najveći cilj izgradnje posle poslednjeg smanjenja (nikad skok naviše); korak čija je sledeća nedelja taper: min(0,75 × vrh, cilj koraka).',
+    place:
+      'volume.ts (adaptNominal10, nextBuild10, returnBase10, leaveWeek) — konstruktor i validator',
     rationale:
       'Pouka 7 (5K v2): bez povratnog rasta cilj posle pauze ostaje ravan do trke ili skače. Tumačenje: „min 1,0 km" je donja granica koraka povratka (kao D6); gornje granice koraka nema osim nivoa.'
   },
@@ -353,12 +354,21 @@ const DECISIONS: readonly Decision[] = [
     rule: 'Plan starije verzije 10k-v2: buduće nedelje po tekućim pravilima; prošlost zaštićena (mixedWeeks); plan druge politike ili neispravan → ADAPT_PLAN_INVALID.',
     place: 'adapt.ts checkPlan',
     rationale: 'Prošlost se ne prepravlja; budućnost prati tekuću politiku.'
+  },
+  /* ---------- Segment 06b (10k-v2.4.1): bol — povratak ne zavisi od dana u nedelji. ---------- */
+  {
+    id: 'A16',
+    rule: 'Izmena A4/A8 (10k-v2.4.1): sidro povratka posle bola je nedelja r koja sadrži asOf + 1 (prvi dan odmora ili bola), ne poslednja nedelja perioda bola; osnova povratka = min(round(0,7 × nivo pre bola), cilj nedelje r) [0,1 km] umesto 0,7 × cilj poslednje nedelje bola; od nedelje r + 1 povratni rast A8. Oblik koraka isti (returnFrom { week, share }): week = r; adaptVolume mapira sidro na round(0,7 × nivo koraka), leaveWeek posle nedelje r postavlja osnovu (min sa ciljem nedelje r iz konstrukcije); korak bez nivoa (stariji korak): 0,7 × cilj nedelje r (10k-v2.4.0). Sačuvan plan 10k-v2.4.0 ostaje plan 10K v2 i prilagođava se pravilima 10k-v2.4.1 (A15); druge verzije su nepoznate.',
+    place:
+      'assess.ts (returnFrom.week = r, painReturnNote); volume.ts (returnAnchor, returnBase10, leaveWeek); adapt.ts (poruka PAIN); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Heuristika (odluka organizatora posle nalaza na e6540a5, bez novog broja: 0,7 = painEasyFactor, 10 % = returnGrowth). U 10k-v2.4.0 nedelja u koju period bola pređe dobija pun planirani rast, a pad dolazi nedelju kasnije; osnova zavisi i od toga da li je nedelja sidra rasteretna. Ulaz: 4 dana (uto/čet/sub/ned), start 2026-10-26, trka 2027-01-24 (13 ned), 40 km, 10 km 45:00, cilj 43:00; bol na dan iz zapisa bez trčanja. Cilj nedelje 5, e6540a5 → 10k-v2.4.1: (A) asOf 2026-11-15, bol 5 dana 2026-11-14: 27,6 → 32,7 (nivo 42,4, osnova 29,7; sidro ned 4 je rasterećenje 35,9); (B) isto, bol 8: 47,6 (pun cilj) → 32,7; (C) asOf 2026-11-18, bol 5: 47,6 sa kvalitetom → 34,5 (nivo 44,9, osnova 31,4); (D) isto, bol 8: 47,6 (planirano 37,9) → 34,5; (E) asOf 2026-11-13, bol 7: r = 3, ned 4 (rasterećenje) 35,9 → 23,8 (0,8 × 29,7), ned 5 47,6 sa dva kvaliteta → 32,7. Tumačenje: pauza u istom koraku smanjuje cilj nedelje r (A3), pa min sa ciljem nedelje r sprečava skok iznad cilja pauze (umesto 0,7 × cilj pauze iz 10k-v2.4.0). Ograničenje: korak sačuvan u 10k-v2.4.0 se ponavlja kako je sačuvan (A14), pa njegov week ostaje poslednja nedelja bola (npr. B prilagođen u 10k-v2.4.0, pa u 10k-v2.4.1 bez novih činjenica: ned 5 ostaje 47,6); izveštaj 06b.'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.4.0',
+  version: '10k-v2.4.1',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {

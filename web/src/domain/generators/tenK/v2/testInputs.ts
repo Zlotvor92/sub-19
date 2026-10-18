@@ -511,3 +511,60 @@ export function factsOf(plan: PlanLike, s: Scenario, asOf: string): Record<strin
       };
   }
 }
+
+/* ---------- Segment 06b: mreža bola P ---------- */
+
+/** Planovi mreže P (6 iz mreže 04 i istog recepta, adaptBases) i po dve nedelje izgradnje: sve faze
+    izgradnje (baza, razvoj, specifično), nedelja pre rasterećenja, rasterećenje, nedelja testa, nedelja pred
+    taperom. Početnik 4 dana sa rezultatom, 12 ned, nije u mreži 04 (isti recept kao beg-d4-r-*w). */
+export const PAIN_GRID: readonly { id: string; weeks: readonly [number, number] }[] = [
+  { id: 'd4-r-14w', weeks: [3, 10] },
+  { id: 'd6-r-18w', weeks: [6, 12] },
+  { id: 'd3-f-10w', weeks: [3, 7] },
+  { id: 'beg-d3-f-14w', weeks: [5, 9] },
+  { id: 'd5-f-18w', weeks: [4, 14] },
+  { id: 'beg-d4-r-12w', weeks: [7, 10] }
+];
+export const PAIN_LEVELS = [4, 5, 7, 8] as const;
+
+/** Bazni planovi mreže P (ulazi). */
+export function painGridBases(): AdaptBase[] {
+  const b4 = SCHEDULES_BY_DAYS[4].A;
+  const all = [
+    ...adaptBases(),
+    {
+      id: 'beg-d4-r-12w',
+      input: {
+        ...inputOf({ weeks: 12, km: 25, vdot: 35, days: b4.days, long: b4.long }),
+        experience: 'beginner'
+      }
+    }
+  ];
+  return PAIN_GRID.map((g) => all.find((b) => b.id === g.id)!);
+}
+
+/** Činjenica bola: bol `level` na dan asOf (zapis bez trčanja). */
+export const painFacts = (asOf: string, level: number): Record<string, unknown> => ({
+  workouts: [{ date: asOf, km: 0, durationSec: 0, completed: false, pain: level }]
+});
+
+export interface PainCase {
+  key: string;
+  id: string;
+  week: number;
+  asOf: string;
+  level: number;
+}
+
+/** Tokovi mreže P za plan: 2 nedelje × 7 dana (asOf = taj dan, bol na dan asOf) × nivo bola 4/5/7/8. */
+export function painCases(id: string, plan: PlanLike): PainCase[] {
+  const g = PAIN_GRID.find((x) => x.id === id)!;
+  const out: PainCase[] = [];
+  for (const week of g.weeks)
+    for (let i = 0; i < 7; i++) {
+      const asOf = addDays(plan.weeks[week - 1]!.startDate, i);
+      for (const level of PAIN_LEVELS)
+        out.push({ key: `${id}/w${week}/${asOf}/p${level}`, id, week, asOf, level });
+    }
+  return out;
+}

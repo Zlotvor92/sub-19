@@ -14,12 +14,18 @@ import {
   tenKV2FormHistory,
   tenKV2GoalChange,
   tenKV2Start,
+  generatorForPlan,
+  isTenKV2Plan,
+  planPolicyOf,
+  UNKNOWN_POLICY,
+  unsupportedPlanReason,
   type TenKV2AdaptOutcome
 } from '../../../select';
 import * as tenK from '../../index';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
 import type { TenKV2Plan } from '../types.ts';
 import { buildFacts, EDITS_KEY } from './facts.ts';
+import { KNOWN_VERSIONS } from './plan.ts';
 
 /* SEGMENT 06 — adaptacija 10K v2 u aplikaciji (domen): podaci aplikacije → činjenice (dnevnik i uvoz, van plana bez
    duplog brojanja, bol, test 5 km na danu testa, test 3 km, trke, pokrivenost samo iz potpune sinhronizacije ili potvrde,
@@ -488,6 +494,49 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
     expect(r.summary).toBe('Prilagođavanje 2026-11-15: pauza');
     expect(r.notes[0]).toMatch(/^Pauza \(prijavljena\) 10 dana/);
     expect(TEN_K_V2_GENERATOR.planPolicy(r.result).status).toBe('current');
+  });
+
+  it('06b (10k-v2.4.1): sačuvan plan 10k-v2.4.0 ostaje plan 10K v2 i prilagođava se pravilima 4.1 (rezultat nosi 10k-v2.4.1); druge verzije → UNKNOWN_POLICY', () => {
+    expect(KNOWN_VERSIONS).toEqual(['10k-v2.4.0', '10k-v2.4.1']);
+    const cur = planOf(WITH_RESULT);
+    const as = (p: GenPlanState, version: string): GenPlanState => ({
+      ...p,
+      meta: { ...p.meta!, policyVersion: version },
+      tenKV2: { ...v2Of(p), policyVersion: version }
+    });
+    const old = as(cur, '10k-v2.4.0');
+    expect(isTenKV2Plan(old)).toBe(true);
+    expect(generatorForPlan(old)).toBe(TEN_K_V2_GENERATOR);
+    expect(planPolicyOf(old)).toEqual({
+      status: 'current',
+      policyId: '10k-v2',
+      policyVersion: '10k-v2.4.0'
+    });
+    // Slučaj A (nalaz organizatora): asOf 2026-11-15, bol 5 dana 2026-11-14.
+    const day = '2026-11-15' as IsoDate;
+    const facts = { facts: { pain: [{ date: '2026-11-14', pain: 5 }] } };
+    const r = ok(tenKV2AdaptPreview(old, day, facts));
+    const saved = stampForStorage(r.result);
+    expect(saved.meta).toMatchObject({ policyId: '10k-v2', policyVersion: '10k-v2.4.1' });
+    expect(v2Of(saved).policyVersion).toBe('10k-v2.4.1');
+    expect(isTenKV2Plan(saved)).toBe(true);
+    // Pravila 4.1: posle nedelje sidra 4 rast od 70 % nivoa pre bola (42,4 → 29,7), ned 5 = 32,7 (4.0: 27,6).
+    expect(
+      v2Of(saved)
+        .weeks.slice(3, 5)
+        .map((w) => w.targetKm)
+    ).toEqual([35.9, 32.7]);
+    expect(r.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
+      'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,7 km).'
+    );
+    // Isto prilagođavanje kao plan 4.1 (A15: buduće nedelje po tekućim pravilima).
+    expect(v2Of(r.result)).toEqual(v2Of(ok(tenKV2AdaptPreview(cur, day, facts)).result));
+    for (const version of ['10k-v2.3.1', '10k-v2.4.2', '10k-v2.5.0']) {
+      const p = as(cur, version);
+      expect(isTenKV2Plan(p), version).toBe(false);
+      expect(generatorForPlan(p), version).toBeNull();
+      expect(unsupportedPlanReason(p), version).toBe(UNKNOWN_POLICY);
+    }
   });
 
   it('predaja HM/maraton → kraća distanca 10K ostaje 10K v1 (10K v2 kao cilj predaje tek sa HM v2)', () => {
