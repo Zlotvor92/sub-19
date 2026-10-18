@@ -16,7 +16,12 @@ import {
   type PreparationDecision,
   type ShorterDistanceHandoff
 } from './preparationDecision';
-import { finalWarnings, regenerateFuture, returnPolicyFor } from './regenerate';
+import {
+  finalWarnings,
+  regenerateFuture,
+  returnPolicyFor,
+  type ExecutionAdjustmentMeta
+} from './regenerate';
 import type { ResolvedPlan } from './types';
 
 export { RETURN_POLICY } from './regenerate';
@@ -39,7 +44,7 @@ export function executionModel(
   return { analysis, recommendation: recommendExecution(analysis) };
 }
 
-/** Validate confirmed execution facts and derive the regeneration input; no plan is generated. */
+/** Validate confirmed execution facts and derive the regeneration input (`returnInput`); no plan is generated. */
 export function executionBasis(
   current: GenPlanState,
   today: IsoDate,
@@ -73,8 +78,43 @@ export function executionBasis(
   const lr = options.recentLongRunKm ?? (returning ? undefined : analysis.recentLongRunKm);
   if (lr !== undefined && lr !== null && (!Number.isFinite(lr) || lr <= 0 || lr > base))
     return { error: 'Ponovljiva dužina mora biti pozitivna i ne veća od nedeljne baze.' };
-  const policy = returning ? returnPolicyFor(options.breakDays) : null;
-  const fatigued = analysis.easyHighRpeCount >= 2;
+  const derived = returnInput(original, today, {
+    base,
+    longRunKm: lr,
+    breakDays: options.breakDays,
+    fatigued: analysis.easyHighRpeCount >= 2
+  });
+  return { ...derived, base, weeklyKm: derived.input.weeklyKm };
+}
+
+/** Potvrđene činjenice izvršenja (sopstveno prilagođavanje ili predaja iz drugog generatora). */
+export interface ReturnFacts {
+  /** Prijavljena ponovljiva nedeljna baza [km]. */
+  base: number;
+  /** Prijavljena ponovljiva dužina [km]; bez nje dugi određuje generisanje. */
+  longRunKm?: number | null | undefined;
+  /** Potvrđena pauza [dana]; bez nje (ili 0) nema povratka posle pauze. */
+  breakDays?: number | undefined;
+  /** Visok napor na laganim treninzima bez potvrđene pauze. */
+  fatigued: boolean;
+}
+
+/** JEDINO mesto koje iz potvrđenih činjenica izvodi povratni ulaz polumaratona: početak, obim, dugi, spremnost, nedelje
+ *  pauze i oprez, povratnu politiku (`returnPolicyFor`), bazu zaštite rasta i meta izvršenja (`startingKm`). `today` je
+ *  dan potvrde činjenica; ostala polja ulaza (distanca, datum trke, cilj, dani…) ostaju iz `original`. Ne validira. */
+export function returnInput(
+  original: PlanGenerationInput,
+  today: IsoDate,
+  facts: ReturnFacts
+): DecisionBasis & {
+  guardBaseKm: number;
+  execution: ExecutionAdjustmentMeta;
+  returning: boolean;
+} {
+  const { base, fatigued } = facts;
+  const lr = facts.longRunKm;
+  const policy = returnPolicyFor(facts.breakDays);
+  const returning = policy !== null;
   const reason = returning ? 'confirmed-break' : fatigued ? 'fatigue' : 'reduced-volume';
   const recoveryStart = addDays(today, 1);
   const recoveryEnd = addDays(mondayOnOrBefore(today), 14);
@@ -91,10 +131,10 @@ export function executionBasis(
     currentReadiness: returning
       ? {
           reason: 'returning',
-          until: addDays(mondayOnOrBefore(recoveryStart), policy!.easyWeeks * 7)
+          until: addDays(mondayOnOrBefore(recoveryStart), policy.easyWeeks * 7)
         }
       : { reason: fatigued ? 'fatigued' : 'reduced-volume', until: recoveryEnd },
-    breakWeeks: returning ? Math.ceil(options.breakDays! / 7) : 0,
+    breakWeeks: returning ? Math.ceil(facts.breakDays! / 7) : 0,
     intensity: 'kons',
     volIntensity: 'kons',
     trainedRecently: !returning
@@ -106,14 +146,12 @@ export function executionBasis(
     execution: {
       date: today,
       reason,
-      breakDays: options.breakDays ?? 0,
+      breakDays: facts.breakDays ?? 0,
       reportedBaseKm: base,
       startingKm: weeklyKm,
       ...(lr != null ? { reportedLongRunKm: lr } : {})
     },
-    returning,
-    base,
-    weeklyKm
+    returning
   };
 }
 

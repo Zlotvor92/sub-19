@@ -15,7 +15,12 @@ export const RETURN_POLICY = {
   medium: { days: 14, fraction: 0.7, easyWeeks: 3 },
   long: { days: 28, fraction: 0.55, easyWeeks: 4 }
 } as const;
-export type ReturnPolicy = (typeof RETURN_POLICY)[keyof typeof RETURN_POLICY];
+/** Oblik povratne politike (neutralan, kao u ugovoru aplikacije); vrednosti su `RETURN_POLICY` ove distance. */
+export type ReturnPolicy = {
+  readonly days: number;
+  readonly fraction: number;
+  readonly easyWeeks: number;
+};
 
 export function returnPolicyFor(breakDays: number | undefined): ReturnPolicy | null {
   if (breakDays === undefined || !(breakDays > 0)) return null;

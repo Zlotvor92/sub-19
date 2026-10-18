@@ -4,15 +4,18 @@ import type { IsoDate } from '../date';
 import type { GenPlanState, VdotRecord } from '../state';
 import { recordAutoPace, type WorkPaceState } from '../day/workPace';
 import type { ResolvedDay } from '../plan/types';
+import type { ChoiceResult } from './contract';
 import * as select from './select';
+import { RETURN_POLICY as FIVE_K_RETURN_POLICY } from './fiveK/plan/regenerate';
 import { RETURN_POLICY as HM_RETURN_POLICY } from './halfMarathon/plan/regenerate';
 import { RETURN_POLICY as MARATHON_RETURN_POLICY } from './marathon/plan/regenerate';
 import { RETURN_POLICY as TEN_K_RETURN_POLICY } from './tenK/plan/regenerate';
 
 /* IZOLACIJA POLITIKE (A12): promena tolerancije automatskog merenja, α lanca forme ili povratne politike u JEDNOM
    generatoru ne menja izlaz drugog — uključujući predaju „kraća distanca", gde izmena IZVORA ne sme da promeni plan ciljne
-   distance (cilj sam određuje povratnu politiku, bazu rasta i pokrivenost, A2). Kontrola: izmena politike CILJA menja
-   taj plan (kanal je stvaran). Uz to: oznaka politike i faza nedelje (A3/A7). */
+   distance ni kroz ceo tok (osnova izvora → predaja): cilj iz činjenica sam izvodi obim, dugi, spremnost, povratnu
+   politiku, bazu rasta i pokrivenost (A2). Kontrola: izmena politike CILJA menja obim i plan (kanal je stvaran). Uz to:
+   oznaka politike i faza nedelje (A3/A7). */
 
 type Select = typeof select;
 const GENERATORS = ['5k', '10k', 'hm', 'marathon'] as const;
@@ -161,6 +164,15 @@ const cases = [
     target: TEN_K_RETURN_POLICY
   },
   {
+    name: 'HM → 5K (U08)',
+    id: 'U08' as const,
+    generator: select.HALF_MARATHON_GENERATOR,
+    preparation: select.HALF_MARATHON_PREPARATION,
+    shorter: 5000,
+    source: HM_RETURN_POLICY,
+    target: FIVE_K_RETURN_POLICY
+  },
+  {
     name: 'maraton → HM (U10)',
     id: 'U10' as const,
     generator: select.MARATHON_GENERATOR,
@@ -171,29 +183,116 @@ const cases = [
   }
 ];
 
-describe('A2: izmena povratne politike izvora ne menja plan ciljne distance', () => {
+/** Ceo tok „kraća distanca": osnova izvršenja IZVORA (`executionBasis`) → izbor kraće distance (predaja cilju). */
+function fullFlow(c: (typeof cases)[number], e: Event, today: IsoDate): ChoiceResult {
+  const { current, context, options } = e.input;
+  const basis = c.generator.executionBasis(current, today, e.analysis, options);
+  if ('error' in basis) throw new Error(basis.error);
+  expect(basis.policy, 'potvrđena pauza daje povratnu politiku izvora').not.toBeNull();
+  const choice = { kind: 'shorter' as const, raceDistM: c.shorter as 10000 };
+  const r = c.preparation.buildPreparationChoice(current, today, basis, choice, context);
+  if ('error' in r) throw new Error(r.error);
+  expect(r.result.meta!.raceDistM).toBe(c.shorter);
+  return r;
+}
+
+const json = (x: unknown): string => JSON.stringify(x);
+/** Razlike dva izbora odvojeno: ulaz cilja, propisani treninzi (dani po nedeljama) i metapodaci (sve ostalo). */
+function choiceDiff(a: ChoiceResult, b: ChoiceResult) {
+  const days = (r: ChoiceResult) => r.result.weeks.flatMap((w) => w.days);
+  const da = days(a).map(json);
+  const db = days(b).map(json);
+  let trainings = 0;
+  for (let i = 0; i < Math.max(da.length, db.length); i++) if (da[i] !== db[i]) trainings++;
+  const keys = (pre: string, x: object, y: object, skip: readonly string[] = []) => {
+    const rx = x as Record<string, unknown>;
+    const ry = y as Record<string, unknown>;
+    return [...new Set([...Object.keys(rx), ...Object.keys(ry)])]
+      .filter((k) => !skip.includes(k) && json(rx[k]) !== json(ry[k]))
+      .map((k) => pre + k);
+  };
+  return {
+    ulaz: json(a.result.ulaz) === json(b.result.ulaz),
+    weeks: json(a.result.weeks) === json(b.result.weeks),
+    weeklyKm: [a.result.ulaz, b.result.ulaz].map((u) => (u as { weeklyKm?: number }).weeklyKm),
+    trainings,
+    prescribed: days(a).filter((d) => !d.rest).length,
+    meta: [
+      ...keys('meta.', a.result.meta ?? {}, b.result.meta ?? {}),
+      ...keys('result.', a.result, b.result, ['weeks', 'ulaz', 'meta']),
+      ...keys('', a, b, ['result'])
+    ]
+  };
+}
+const describeDiff = (d: ReturnType<typeof choiceDiff>): string =>
+  `ulaz.weeklyKm ${d.weeklyKm[0]} → ${d.weeklyKm[1]}; različito ${d.trainings} od ${d.prescribed} propisanih treninga; meta [${d.meta.join(', ')}]`;
+
+describe('A2: predaja prenosi samo činjenice — cilj sam izvodi povratni ulaz', () => {
   for (const c of cases) {
-    it(c.name, { timeout: 120_000 }, () => {
+    it(
+      `T1 ceo tok: izmena politike IZVORA ne menja ulaz ni treninge cilja — ${c.name}`,
+      {
+        timeout: 120_000
+      },
+      () => {
+        const { e, today } = load(c.id);
+        const reference = fullFlow(c, e, today);
+        const changed = withPolicy(c.source, () => fullFlow(c, e, today));
+        const d = choiceDiff(reference, changed);
+        expect(d.ulaz, describeDiff(d)).toBe(true);
+        expect(d.weeks, describeDiff(d)).toBe(true);
+        expect(d.trainings, describeDiff(d)).toBe(0);
+        // Metapodaci odvojeno od treninga: posle izvođenja u cilju ni jedno polje izbora ne zavisi od politike izvora.
+        expect(d.meta, describeDiff(d)).toEqual([]);
+      }
+    );
+
+    it(
+      `T2 kontrola: izmena politike CILJA menja obim ulaza cilja — ${c.name}`,
+      {
+        timeout: 120_000
+      },
+      () => {
+        const { e, today } = load(c.id);
+        const reference = fullFlow(c, e, today);
+        const changed = withPolicy(c.target, () => fullFlow(c, e, today));
+        const d = choiceDiff(reference, changed);
+        // Cilj odlučuje o obimu (`returnInput`), ne samo o laganim nedeljama povratka.
+        expect(d.weeklyKm[1], describeDiff(d)).not.toBe(d.weeklyKm[0]);
+        expect(d.trainings, describeDiff(d)).toBeGreaterThan(0);
+      }
+    );
+
+    const choice = { kind: 'shorter' as const, raceDistM: c.shorter as 10000 };
+
+    it(
+      `cilj ne čita objekat politike izvora posle izračunate osnove — ${c.name}`,
+      {
+        timeout: 120_000
+      },
+      () => {
+        const { e, today } = load(c.id);
+        const { current, context, options } = e.input;
+        const basis = c.generator.executionBasis(current, today, e.analysis, options);
+        if ('error' in basis) throw new Error(basis.error);
+        expect(basis.policy, 'potvrđena pauza daje povratnu politiku izvora').not.toBeNull();
+        const shorterPlan = () => {
+          const r = c.preparation.buildPreparationChoice(current, today, basis, choice, context);
+          if ('error' in r) throw new Error(r.error);
+          expect(r.result.meta!.raceDistM).toBe(c.shorter);
+          return JSON.stringify(r);
+        };
+        const reference = shorterPlan();
+        // Osnova je izračunata pre izmene; izvor i dalje drži SVOJ (sada izmenjen) objekat politike u `basis.policy`.
+        expect(withPolicy(c.source, shorterPlan)).toBe(reference);
+        // Kontrola (uz T2): izmena politike CILJA menja plan kraće distance i nad istom osnovom.
+        expect(withPolicy(c.target, shorterPlan)).not.toBe(reference);
+      }
+    );
+
+    it(`osnova iz sačuvanog plana — ${c.name}`, { timeout: 120_000 }, () => {
       const { e, today } = load(c.id);
       const { current, context, options } = e.input;
-      const basis = c.generator.executionBasis(current, today, e.analysis, options);
-      if ('error' in basis) throw new Error(basis.error);
-      expect(basis.policy, 'potvrđena pauza daje povratnu politiku izvora').not.toBeNull();
-      const choice = { kind: 'shorter' as const, raceDistM: c.shorter as 10000 };
-      const shorterPlan = (
-        b: typeof basis | NonNullable<ReturnType<typeof c.preparation.basisFromPlan>>
-      ) => {
-        const r = c.preparation.buildPreparationChoice(current, today, b, choice, context);
-        if ('error' in r) throw new Error(r.error);
-        expect(r.result.meta!.raceDistM).toBe(c.shorter);
-        return JSON.stringify(r);
-      };
-      const reference = shorterPlan(basis);
-
-      // 1. Osnova izračunata pre izmene: izvor i dalje drži SVOJ (izmenjen) objekat politike u `basis.policy`.
-      expect(withPolicy(c.source, () => shorterPlan(basis))).toBe(reference);
-
-      // 2. Osnova iz sačuvanog plana posle izmene (`basisFromPlan` čita izmenjenu tablicu izvora).
       const adjusted = c.generator.buildExecutionAdjustment(
         current,
         today,
@@ -203,6 +302,7 @@ describe('A2: izmena povratne politike izvora ne menja plan ciljne distance', ()
       );
       if ('error' in adjusted) throw new Error(adjusted.error);
       const stored = adjusted.result;
+      // `basisFromPlan` posle izmene čita izmenjenu tablicu izvora; plan kraće distance ostaje isti.
       const fromStored = () => {
         const b = c.preparation.basisFromPlan(stored, today);
         if (!b) throw new Error('nema osnove');
@@ -222,9 +322,6 @@ describe('A2: izmena povratne politike izvora ne menja plan ciljne distance', ()
       if ('error' in handed) throw new Error(handed.error);
       expect(select.generatorForPlan(handed.result)?.product(c.shorter)).toBeDefined();
       expect(select.planPolicyOf(handed.result)?.status).toBe('legacy');
-
-      // 3. Kontrola: izmena politike CILJA menja plan kraće distance (cilj odlučuje sam).
-      expect(withPolicy(c.target, () => shorterPlan(basis))).not.toBe(reference);
     });
   }
 });

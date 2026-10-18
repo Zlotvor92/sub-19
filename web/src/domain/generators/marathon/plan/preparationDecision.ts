@@ -155,8 +155,10 @@ export type ShorterDistanceHandoff = (
     ) => { result: GenPlanState; coverage: Coverage } | { error: string })
   | null;
 
-/** ČINJENICE koje izvor predaje ciljnom generatoru (A2): bez povratne politike i baze zaštite rasta izvora — njih cilj
- *  izvodi sam (iz `execution.breakDays` i stvarne baze ulaza). */
+/** Šta izvor predaje ciljnom generatoru (A2): ulaz i ČINJENICE (potvrđeno izvršenje — datum, razlog, pauza, prijavljena
+ *  baza i dužina; početak od potvrđene baze), bez svoje povratne politike i baze zaštite rasta. Cilj iz činjenica sam
+ *  izvodi obim, dugi, spremnost i politiku (njegov `returnInput`) i prepisuje izvedena polja ulaza izvora kad je ulaz
+ *  izveden iz tih činjenica; bez izvršenja ulaz je stvarna baza korisnika. */
 export interface HandoffFacts {
   execution: ExecutionAdjustmentMeta | null;
   restartFromBase: boolean;
@@ -174,8 +176,9 @@ function regenerate(
   handoff: ShorterDistanceHandoff,
   notes: string[] = []
 ): Built {
-  // A shorter option is planned, finalized and assessed by the isolated generator of that distance; it receives only
-  // facts (input, confirmed execution, restart from the actual base), never this generator's return policy or guard.
+  // A shorter option is planned, finalized and assessed by the isolated generator of that distance. It receives the
+  // input and facts (confirmed execution, restart from the confirmed base), never this generator's return policy or
+  // guard; from the facts it derives volume, long run, readiness and policy itself, overwriting derived input fields.
   const target = input.raceDistM === MARATHON_M ? null : handoff(input.raceDistM);
   if (target) {
     const handed = target(current, input, today, context, {

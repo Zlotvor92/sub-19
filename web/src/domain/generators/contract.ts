@@ -309,11 +309,13 @@ export interface RecalibratedStoredPlan extends ReplannedPlan {
 }
 
 /* --- odluka o pripremi (HM, maraton) --- */
-/** Povratna politika iz odluke generatora; aplikacija je ne čita, samo vraća generatoru (osnov odluke ide u oba smera). */
-type ReturnPolicy =
-  | { readonly days: 7; readonly fraction: 0.85; readonly easyWeeks: 2 }
-  | { readonly days: 14; readonly fraction: 0.7; readonly easyWeeks: 3 }
-  | { readonly days: 28; readonly fraction: 0.55; readonly easyWeeks: 4 };
+/** Povratna politika iz odluke generatora. Aplikacija vrednost ne čita, samo je vraća generatoru (osnov odluke ide u
+ *  oba smera); oblik je neutralan, vrednosti su odluka svake distance (`RETURN_POLICY` u njenom generatoru). */
+type ReturnPolicy = {
+  readonly days: number;
+  readonly fraction: number;
+  readonly easyWeeks: number;
+};
 export interface ExecutionAdjustmentMeta {
   date: IsoDate;
   reason?: 'confirmed-break' | 'fatigue' | 'reduced-volume';

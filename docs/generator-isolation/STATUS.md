@@ -1398,3 +1398,24 @@ Tipovi razmene koje su ekrani/store-ovi uzimali iz starog koda (`ExecutionAdjust
 | `node --test "**/*.test.mjs"` (iz `test/`) | 396/396 |
 | `npx playwright test` | 76/77 u punom prolazu; pao `pwa.spec.ts:65` (ažuriranje service worker-a, nestabilan i ranije); `pwa.spec.ts` ponovljen `--workers 1 --repeat-each 3` → 6/6; `generator-ab-users.spec.ts` 10/10 |
 | osetljivost | vraćen `domain/plan/adapt.ts` → `architecture.node.test.ts` pao („stari zajednički engine je obrisan"); uklonjeno |
+
+## Predaja-1 — cilj sam izvodi povratni ulaz iz činjenica (A2 / AGENTS.md uslov 5)
+
+Polazno `bf47249`; izveštaj `HANDOFF-FACTS.md`. Bez PR-a/mergea/deploya; `fiveK/v2`, `tenK/v2`, `features/`,
+`stores/`, `select.ts` nisu dirani; `RETURN_POLICY` i udeo za umor 0,85 nepromenjeni.
+
+- `returnInput(original, today, činjenice)` u `{fiveK,tenK,halfMarathon}/plan/executionAdjustment.ts` je jedino mesto
+  izvođenja povratnog ulaza (početak, obim, dugi, spremnost, nedelje pauze, oprez), politike, baze rasta i
+  `startingKm`; sopstveni `executionBasis` ga poziva posle validacije.
+- `handoffFuture` (5K, 10K, HM): izvršenje sa `reason` i ulaz izveden iz njega (`startDate` = `execution.date` + 1)
+  → `returnInput` od `execution.date`; bez izvršenja ili nesaglasan ulaz (vraćena ranija verzija plana zadržava
+  `meta.executionAdjustment`) → predati ulaz; bez `reason` → predati ulaz + napomena (0 slučajeva u izvršavanju).
+- `ReturnPolicy` neutralan u `contract.ts` i (samo tip) u `halfMarathon`/`marathon` `plan/regenerate.ts`.
+- Dva sudara prijavljena pre commita i rešena odlukom korisnika: tip u `marathon/plan/` (putanja „samo komentari");
+  pravilo saglasnosti (`marathonFlow.test.tsx:248` je padao sa doslovnim izvođenjem).
+- Dokaz: T1 (ceo tok, politika izvora × 0,5 / +3) na `bf47249` pada (U08 `weeklyKm` 38,5 → 19,3, 35/82 propisanih
+  treninga različito; U10 33 → 16,8, 65/118); posle izmene bajt-isto, bez razlika u metapodacima. T2: politika cilja
+  menja obim. Sabotaže (a)/(b)/(c): 6/6/3 od 16 palih.
+- Regresija: sve reference bajt-iste bez izmene očekivanja; generatori 51 fajl / 1026 testova.
+- Ostaje: uzrok nesaglasnog stanja (`graftFuturePlan` spaja `meta` pri vraćanju verzije) nije diran; signal saglasnosti
+  je samo `startDate`; `generators/handoff.ts` komentar (van putanja).
