@@ -316,7 +316,7 @@ describe('validator', () => {
     expect(errors(p)).toContain('RACE_WEEK');
   });
 
-  it('D22b: RP deonica < 1000 m (5 × 500 m kao u 10k-v2.2.0) → REP_MIN', () => {
+  it('D30a: REP_MIN po zoni — RP deonica < 800 m (5 × 500 m kao u 10k-v2.2.0) i T deonica < 1000 m su greška; RP 800–999 m nije', () => {
     const p = planOf(3, { weeks: 17, km: 20, vdot: 45 });
     expect(errors(p)).toEqual([]);
     const d = p.weeks
@@ -325,6 +325,23 @@ describe('validator', () => {
     expect(d.workout.dose!.structure).toEqual({ form: 'reps', reps: 2, repM: 1250 });
     d.workout.dose!.structure = { form: 'reps', reps: 5, repM: 500 };
     expect(errors(p)).toContain('REP_MIN');
+    // RP 3 × 800 m (D30a) u planu: bez greške; ista struktura u T zoni: REP_MIN.
+    const q = planOf(4, { weeks: 16, km: 35, vdot: 35 });
+    const rp = q.weeks
+      .flatMap((w) => w.days)
+      .find(
+        (x) =>
+          x.workout.dose?.zone === 'RP' &&
+          x.workout.dose.structure.form === 'reps' &&
+          x.workout.dose.structure.repM < 1000
+      );
+    expect(rp).toBeDefined();
+    expect(errors(q)).toEqual([]);
+    const t = q.weeks
+      .flatMap((w) => w.days)
+      .find((x) => x.workout.dose?.zone === 'T' && x.workout.dose.structure.form === 'reps')!;
+    t.workout.dose!.structure = { form: 'reps', reps: 5, repM: 800 };
+    expect(errors(q)).toContain('REP_MIN');
   });
 
   it('D23: lagan trkačke nedelje 35 min E kad je lagan tapera kraći → RACE_WEEK_EASY i RACE_WEEK_OVER_TAPER', () => {
@@ -382,13 +399,22 @@ describe('validator', () => {
     expect(errors(p)).toContain('TAPER_DAYS');
   });
 
-  it('odstupanja (opreznije) su upozorenja, ne greške: rasterećenje/taper bez kvaliteta, taper samo RP, kratka trkačka nedelja', () => {
+  it('odstupanja (opreznije) su upozorenja, ne greške: rasterećenje/taper bez kvaliteta, taper samo RP; D30b: trkačka + trka ≥ minimum', () => {
     const p3 = planOf(3, { weeks: 8, km: 20, vdot: 30 });
     const rules = p3.warnings.map((w) => w.rule);
-    expect(rules).toEqual(
-      expect.arrayContaining(['DELOAD_NO_QUALITY', 'TAPER_NO_QUALITY', 'RACE_WEEK_SHORT'])
-    );
+    expect(rules).toEqual(expect.arrayContaining(['DELOAD_NO_QUALITY', 'TAPER_NO_QUALITY']));
+    // D30b: 2 × 35 min E = 8,7 km + trka 10 km ≥ 9 km (10k-v2.2.1: RACE_WEEK_SHORT).
+    const rw = p3.weeks.at(-1)!;
+    expect(rw.plannedKm).toBeLessThan(9);
+    expect(rules).not.toContain('RACE_WEEK_SHORT');
     expect(errors(p3)).toEqual([]);
+    // Planirano + trka < minimum → i dalje samo upozorenje (nedelja je zadata, D15).
+    rw.plannedKm = -1.5;
+    rw.targetKm = -1.5;
+    const v = validatePlan(p3).filter((x) => x.rule === 'RACE_WEEK_SHORT');
+    expect(v.map((x) => [x.severity, x.message])).toEqual([
+      ['warning', 'Trkačka nedelja -1.5 km + trka 10 km < 9 km (Uslov 8, D17, D30).']
+    ]);
     // Rasterećenje bez kvaliteta kad T 2,0 km STAJE u plafon → greška.
     const p = fresh();
     const dl = p.weeks.find((w) => w.deload)!;

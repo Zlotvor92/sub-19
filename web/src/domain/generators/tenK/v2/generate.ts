@@ -1,11 +1,12 @@
 /* 10K v2 — generisanje. generateTenKV2(input) = construct(input, []): potpis je spreman za korake
-   adaptacije (segment 04), a do tada koraka nema. Redosled: ulaz (D1) → tempo (D2) → raspored (D9) →
-   faze i rasterećenja (D4/D5) → po nedelji cilj (D6) i konstrukcija → validator (samo prijavljuje). */
+   adaptacije (segment 04), a do tada koraka nema. Redosled: ulaz (D1, D26, D28, D29) → tempo (D2 iz
+   rezultata ili D26 po osećaju) → raspored (D9) → faze, rasterećenja i test (D4/D5/D27) → po nedelji cilj
+   (D6) i konstrukcija → validator (samo prijavljuje). */
 
 import { checkInput } from './input.ts';
-import { assessGoal, pacesFromVdot, predicted10k } from './paces.ts';
+import { assessGoal, feelPaces, pacesFromVdot, predicted10k } from './paces.ts';
 import { periodize, isBuildPhase } from './periodize.ts';
-import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
+import { TEN_K_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import type { GenerateResult, PlanWeek, TenKV2AdaptStep, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
@@ -20,7 +21,7 @@ import {
   type VolumeHistory
 } from './volume.ts';
 import { buildWeek, raceWeek, type WeekContext } from './week.ts';
-import { fmtKm, warmupCooldown } from './workouts.ts';
+import { fmtKm, fmtSec as fmtPace, warmupCooldown } from './workouts.ts';
 
 export function generateTenKV2(input: unknown): GenerateResult {
   return construct(input, []);
@@ -34,11 +35,13 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     };
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
-  const { input, weeks, vdotRaw, pattern } = chk;
-  const rule = dayRule(input.runDays.length)!;
-  const paces = pacesFromVdot(vdotRaw);
+  const { input, weeks, pace, pattern, rule } = chk;
+  const feel = pace.kind === 'feel';
+  const paces =
+    pace.kind === 'feel' ? feelPaces(pace.easySecPerKm).paces : pacesFromVdot(pace.vdotRaw);
+  // D26: u planu po osećaju prognoza služi samo za trajanje segmenta trke (procena), plan je nema.
   const raceSec = predicted10k(paces);
-  const frames = periodize(input.startDate, weeks);
+  const frames = periodize(input.startDate, weeks, feel);
   if (!frames)
     return {
       ok: false,
@@ -51,8 +54,9 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     paces,
     pattern,
     raceSec,
-    wc: warmupCooldown(input.currentWeeklyKm),
-    rule
+    wc: warmupCooldown(input.currentWeeklyKm, rule.beginner),
+    rule,
+    feel
   };
   const start10 = startKm10(input.currentWeeklyKm);
   const cap10 = peakCap10(start10, rule);
@@ -82,16 +86,17 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
       });
       continue;
     }
-    const nominal = nominal10(frame, vol, start10, cap10);
+    const nominal = nominal10(frame, vol, start10, cap10, rule);
     const make = (t10: number, relax = false) =>
       buildWeek(ctx, frame, t10, quality, lastLong10, longest10, relax);
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
     // (week.ts buildWeek `relax`): D11 ispred D12 u izgradnji, rasterećenje bez kvaliteta, taper samo RP.
     let relax = false;
-    let fit = fit10(nominal, frame, cap10, rule, (t10) => make(t10) !== null);
+    const last = vol.lastBuild10;
+    let fit = fit10(nominal, frame, cap10, rule, (t10) => make(t10) !== null, last);
     if (!fit) {
       relax = true;
-      fit = fit10(nominal, frame, cap10, rule, (t10) => make(t10, true) !== null);
+      fit = fit10(nominal, frame, cap10, rule, (t10) => make(t10, true) !== null, last);
     }
     if (!fit)
       return {
@@ -129,7 +134,7 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
       vol.lastBuild10 = fit.target10;
       vol.peak10 = Math.max(vol.peak10, fit.target10);
       lastLong10 = w.long10;
-      quality = advance(w.picks!);
+      quality = advance(w.picks!, quality);
     }
   }
 
@@ -138,9 +143,10 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     policyVersion: P.version,
     input,
     vdot: paces.vdot,
+    paceBasis: feel ? 'feel' : 'result',
     paces,
-    predicted10kSec: raceSec,
-    goal: input.goalTimeSec ? assessGoal(paces.vdot, input.goalTimeSec, weeks) : null,
+    predicted10kSec: feel ? null : raceSec,
+    goal: input.goalTimeSec && !feel ? assessGoal(paces.vdot, input.goalTimeSec, weeks) : null,
     pattern,
     startKm: start10 / 10,
     peakCapKm: cap10 / 10,
@@ -149,6 +155,14 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     weeks: out,
     warnings: []
   };
+  if (pace.kind === 'feel') {
+    const t = out.find((w) => w.test)!;
+    const td = t.days.find((d) => d.workout.kind === 'test')!;
+    plan.notes.push(
+      `Plan po osećaju (D26): ${pace.why}. E = lagan tempo ${fmtPace(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE.`,
+      `Test ${P.test.km} km: nedelja ${t.index}, ${td.date} (D27). Ocena cilja i prognoza 10K: posle testa.`
+    );
+  }
   if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
     plan.notes.push(
       `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, paces))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (D6).`

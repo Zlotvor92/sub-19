@@ -1,21 +1,32 @@
-/* Brojevi politike su odluke D1–D25 iz zadataka segmenata 01, 01b, 02 i 02b: test pada kad se broj
+/* Brojevi politike su odluke D1–D30 iz zadataka segmenata 01, 01b, 02, 02b i 03: test pada kad se broj
    promeni bez izmene odluke. Svaka odluka ima red u DECISIONS sa mestom i obrazloženjem. */
 
 import { describe, expect, it } from 'vitest';
-import { dayRule, RUN_DAYS_COUNTS, TEN_K_V2_POLICY as P } from './policy.ts';
+import {
+  BEGINNER_DAYS_COUNTS,
+  dayRule,
+  planRule,
+  RUN_DAYS_COUNTS,
+  TEN_K_V2_POLICY as P
+} from './policy.ts';
 
-describe('policy 10k-v2.2.1', () => {
+describe('policy 10k-v2.3.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.2.1');
+    expect(P.version).toBe('10k-v2.3.0');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25 (02b), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D30 (03), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
       'D23',
-      'D25'
+      'D25',
+      'D26',
+      'D27',
+      'D28',
+      'D29',
+      'D30'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -35,24 +46,106 @@ describe('policy 10k-v2.2.1', () => {
     expect(rule('D22')).toMatch(/2,5 = 2 × 1250; 3,5 = 2 × 1750; 4,5 = 3 × 1500/);
     // 02b (10k-v2.2.1).
     expect(rule('D17')).toMatch(/dugi ≤ 45 %/);
-    expect(rule('D22b')).toMatch(/≥ 1000 m/);
+    expect(rule('D22b')).toMatch(/≥ 1000 m .*od 10k-v2\.3\.0 RP deonice ≥ 800 m, D30/);
     expect(rule('D22b')).toMatch(/2,5 = 2 × 1250; 3,5 = 2 × 1750/);
     expect(rule('D23')).toMatch(/min\(35 min E, km najkraćeg laganog dana tapera\)/);
     expect(rule('D25')).toMatch(/UPOZORENJE LONG_SHORTER_THAN_QUALITY/);
     const why = (id: string): string => P.DECISIONS.find((d) => d.id === id)!.rationale;
     expect(why('D17')).toMatch(/396 → 0, ukupno 528 → 330/);
     expect(why('D25')).toMatch(/1320 → 1830/);
+    // 03 (10k-v2.3.0).
+    expect(rule('D1')).toMatch(/inače plan po osećaju \(D26\)/);
+    expect(rule('D26')).toMatch(/E = lagan tempo ± 15 s/);
+    expect(rule('D26')).toMatch(/T 6–7, RP 7–8, I 8, R 8/);
+    expect(rule('D27')).toMatch(/poslednja nedelja baze, na danu Q1/);
+    expect(rule('D27')).toMatch(/NE u dozu kvaliteta/);
+    expect(rule('D28')).toMatch(/nedelje 1–2 uvod bez kvaliteta/);
+    expect(rule('D28')).toMatch(/rast \+5 % \(min 1,0, max 2,0 km\)/);
+    expect(rule('D29')).toMatch(/RUN_WALK_NOT_SUPPORTED/);
+    expect(rule('D30')).toMatch(/deonica ≥ 800 m \(T ostaje ≥ 1000 m\)/);
+    expect(rule('D30')).toMatch(/planirano \+ trka \(10 km\) ≥ minimum nedelje/);
+    expect(why('D27')).toMatch(/D27 ispred D5/);
+    expect(why('D28')).toMatch(/D11 ispred D28/);
+    expect(why('D30')).toMatch(/1224 \/ 192 \/ 144 \/ 144 → 240 \/ 48 \/ 0 \/ 0/);
   });
 
-  it('D1 opseg (dani i obim: D17)', () => {
+  it('D1 opseg (dani i obim: D17; početnik: D28), D29', () => {
     expect(P.input).toEqual({
       weeksMin: 8,
       weeksMax: 18,
       resultMaxAgeDays: 84,
       resultDistancesM: [3000, 5000, 10000, 21097.5],
       vdotMin: 30,
-      vdotMax: 80
+      vdotMax: 80,
+      continuousRunMin: 30
     });
+  });
+
+  it('D26 plan po osećaju i D27 test', () => {
+    expect(P.feel).toEqual({
+      easyPaceMinSec: 270,
+      easyPaceMaxSec: 510,
+      eRangeSec: 15,
+      vdotMin: 25,
+      vdotMax: 60,
+      rpe: {
+        T: { min: 6, max: 7, cue: 'udobno teško, kratke rečenice' },
+        RP: { min: 7, max: 8, cue: 'ritam trke 10K' },
+        I: { min: 8, max: 8, cue: 'teško, izdrživo 3–5 min' },
+        R: { min: 8, max: 8, cue: 'brzo, opušteno' }
+      }
+    });
+    expect(P.test).toEqual({ km: 5 });
+  });
+
+  it('D28: jedna tabela početnika; planRule — redovan = red D17 + D6/D13, početnik = red D17 izmenjen tabelom', () => {
+    expect(P.beginner).toEqual({
+      days: { 3: { kmMin: 15, kmMax: 30 }, 4: { kmMin: 18, kmMax: 35 } },
+      weeksMin: 10,
+      introWeeks: 2,
+      growth: 0.05,
+      growthMinKm: 1,
+      growthMaxKm: 2,
+      peakFactor: 1.3,
+      peakAddKm: 10,
+      longMaxSec: 90 * 60
+    });
+    expect(BEGINNER_DAYS_COUNTS).toEqual([3, 4]);
+    for (const n of RUN_DAYS_COUNTS)
+      expect(planRule(n, 'regular')).toEqual({
+        ...dayRule(n),
+        beginner: false,
+        longMaxSec: 105 * 60,
+        growth: 0.06,
+        growthMinKm: 1,
+        growthMaxKm: 3,
+        peakFactor: 1.4,
+        peakAddKm: 15,
+        introWeeks: 0,
+        weeksMin: 8,
+        dayCounts: [3, 4, 5, 6]
+      });
+    expect(planRule(4, 'beginner')).toEqual({
+      quality: 1,
+      easy: 2,
+      kmMin: 18,
+      kmMax: 35,
+      peakMaxKm: 60,
+      longMaxShare: 0.33,
+      weekMinKm: 12,
+      beginner: true,
+      longMaxSec: 90 * 60,
+      growth: 0.05,
+      growthMinKm: 1,
+      growthMaxKm: 2,
+      peakFactor: 1.3,
+      peakAddKm: 10,
+      introWeeks: 2,
+      weeksMin: 10,
+      dayCounts: [3, 4]
+    });
+    expect(planRule(3, 'beginner')).toMatchObject({ quality: 1, easy: 1, kmMin: 15, kmMax: 30 });
+    expect([5, 6, 2, 7].map((n) => planRule(n, 'beginner'))).toEqual([null, null, null, null]);
   });
 
   it('D17: jedina tabela po broju dana (02b: 3 dana udeo dugog 0,45; 4 dana bez promene od 10k-v2.1.0)', () => {
@@ -150,7 +243,7 @@ describe('policy 10k-v2.2.1', () => {
     });
   });
 
-  it('D10 lestvice (km u zoni), D22/D22b druge strukture (T i RP: ≥ 1000 m, 50 m bez podele na 100 m)', () => {
+  it('D10 lestvice (km u zoni), D22/D30 druge strukture (T ≥ 1000 m, RP ≥ 800 m, 50 m bez podele na 100 m)', () => {
     const km = (l: readonly { reps: number; repM: number }[]): number[] =>
       l.map((r) => (r.reps * r.repM) / 1000);
     expect(km(P.ladders.R)).toEqual([1.2, 1.6, 1.8, 2.0, 2.4]);
@@ -164,6 +257,7 @@ describe('policy 10k-v2.2.1', () => {
       roundM: 100,
       roundFallbackM: 50,
       repMinM: 1000,
+      rpRepMinM: 800,
       iRepsMax: 6,
       iRepMinM: 800,
       iRepMaxM: 1200,

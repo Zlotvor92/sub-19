@@ -28,9 +28,20 @@ export interface TenKV2Input {
   currentWeeklyKm: number;
   /** Rezultat ne stariji od 84 dana na dan starta (D1). */
   recentResult?: TenKV2Result | null;
-  /** Ciljno vreme 10K [s]; samo se ocenjuje (D3), ne menja tempo. */
+  /** Ciljno vreme 10K [s]; samo se ocenjuje (D3), ne menja tempo. Plan po osećaju: bez ocene (D26). */
   goalTimeSec?: number | null;
+  /** D28: iskustvo; podrazumevano 'regular'. */
+  experience?: Experience | null;
+  /** D26: lagan tempo [s/km] — obavezan za plan po osećaju (bez pouzdanog rezultata). */
+  easyPaceSecPerKm?: number | null;
+  /** D29: trčanje/hodanje — 10K ga ne podržava (odbijanje). */
+  runWalk?: boolean | null;
 }
+
+export type Experience = 'beginner' | 'regular';
+
+/** D26: osnova tempa — rezultat ili lagan tempo (plan po osećaju). */
+export type PaceBasis = 'result' | 'feel';
 
 export type ReasonCode =
   | 'INPUT_SHAPE'
@@ -45,8 +56,14 @@ export type ReasonCode =
   | 'LONG_DAY_INVALID'
   | 'WEEKLY_KM_TOO_LOW'
   | 'WEEKLY_KM_TOO_HIGH'
-  /** Privremeno: bez pouzdanog rezultata → plan po osećaju (segment 03). */
-  | 'FEEL_PLAN_SEGMENT_03'
+  /** D26: plan po osećaju bez laganog tempa (ili rezultata). */
+  | 'EASY_PACE_REQUIRED'
+  | 'EASY_PACE_OUT_OF_RANGE'
+  /** D28: početnik 5–6 dana ili 8–9 nedelja. */
+  | 'BEGINNER_DAYS'
+  | 'BEGINNER_SHORT'
+  /** D29: nema 10K plana trčanja/hodanja. */
+  | 'RUN_WALK_NOT_SUPPORTED'
   | 'RESULT_DISTANCE_UNSUPPORTED'
   | 'RESULT_TIME_INVALID'
   | 'RESULT_AFTER_START'
@@ -85,17 +102,28 @@ export interface WeekFrame {
   endDate: IsoDate;
   phase: Phase;
   deload: boolean;
+  /** D27: nedelja testa 5 km (samo plan po osećaju; inače polja nema). */
+  test?: true;
 }
 
 export type Basis = 'exact' | 'estimated';
 
 export type SegmentKind =
-  'warmup' | 'cooldown' | 'easy' | 'long' | 'rep' | 'recovery' | 'continuous' | 'stride' | 'race';
+  | 'warmup'
+  | 'cooldown'
+  | 'easy'
+  | 'long'
+  | 'rep'
+  | 'recovery'
+  | 'continuous'
+  | 'stride'
+  | 'race'
+  | 'test';
 
 export interface Segment {
   kind: SegmentKind;
-  /** 'jog' = oporavak (km po srednjem E, D14). */
-  zone: Zone | 'jog';
+  /** 'jog' = oporavak (km po srednjem E, D14); 'test' = test 5 km (D27, nije zona rada). */
+  zone: Zone | 'jog' | 'test';
   km: number;
   sec: number;
   paceSecPerKm: number;
@@ -156,9 +184,18 @@ export type BlockSpec =
       /** Oporavak posle deonice i (i < poslednje). */
       recoveries: readonly ({ m: number } | { sec: number })[];
     }
-  | { kind: 'race'; km: number };
+  | { kind: 'race'; km: number }
+  | { kind: 'test'; km: number };
 
-export type WorkoutKind = 'easy' | 'long' | 'quality' | 'race';
+/** 'test' = test 5 km (D27): računa se u obim, ne u dozu kvaliteta. */
+export type WorkoutKind = 'easy' | 'long' | 'quality' | 'race' | 'test';
+
+/** D26: subjektivni napor kvaliteta (plan po osećaju). */
+export interface Rpe {
+  min: number;
+  max: number;
+  cue: string;
+}
 
 export type QualityType = 'R' | 'T_continuous' | 'T_cruise' | 'I' | 'RP' | 'RP_sharpener';
 
@@ -176,11 +213,13 @@ export interface Workout {
   workKm: Record<WorkZone, number>;
   /** Najduža pojedinačna deonica / kontinuirani blok po zoni [s]. */
   maxBoutSec: Record<WorkZone, number>;
-  /** Izbor doze za trening kvaliteta; null za lagan, dugi i trku. */
+  /** Izbor doze za trening kvaliteta; null za lagan, dugi, test i trku. */
   dose: Dose | null;
+  /** D26: RPE kvaliteta u planu po osećaju (u planu sa rezultatom polja nema). */
+  rpe?: Rpe;
 }
 
-export type DayRole = 'q1' | 'q2' | 'long' | 'easy' | 'sharpener' | 'eve' | 'race';
+export type DayRole = 'q1' | 'q2' | 'long' | 'easy' | 'sharpener' | 'eve' | 'race' | 'test';
 
 export interface PlanDay {
   date: IsoDate;
@@ -237,13 +276,17 @@ export interface TenKV2Plan {
   policyId: string;
   policyVersion: string;
   input: TenKV2Input;
+  /** VDOT iz rezultata ili procena iz laganog tempa (D26, samo orijentir). */
   vdot: number;
+  paceBasis: PaceBasis;
   paces: Paces;
-  predicted10kSec: number;
+  /** Prognoza 10K; null u planu po osećaju (posle testa, D26). */
+  predicted10kSec: number | null;
   goal: GoalAssessment | null;
   pattern: Pattern;
   startKm: number;
-  /** D6: min(start × 1,4; start + 15; max nedelje D17) — granica izgradnje pre kapaciteta konstrukcije. */
+  /** D6/D28: min(start × 1,4; start + 15; max nedelje D17) — početnik 1,3× / +10 — granica izgradnje pre
+      kapaciteta konstrukcije. */
   peakCapKm: number;
   /** Najveći cilj izgradnje u planu (vrh). */
   peakKm: number;

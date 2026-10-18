@@ -1,19 +1,21 @@
 /* Sastav nedelje: izgradnja, rasterećenje (D5 sadržaj), taper (D7), trkačka nedelja (D8, D20, D23), za 1
-   ili 2 kvaliteta i 1–3 lagana dana (D17–D19). Doze bira quality.ts, dužine lengths.ts, treninge
-   workouts.ts; ovde se samo raspoređuju po danima šablona (D9). null = nedelja sa ovim ciljem nije
-   izvodljiva po pravilima (volume.ts traži najbliži izvodljiv cilj). */
+   ili 2 kvaliteta i 1–3 lagana dana (D17–D19); test 5 km (D27); uvod i nedelja bez kvaliteta početnika
+   (D28). Doze bira quality.ts, dužine lengths.ts, treninge workouts.ts; ovde se samo raspoređuju po danima
+   šablona (D9). null = nedelja sa ovim ciljem nije izvodljiva po pravilima (volume.ts traži najbliži
+   izvodljiv cilj). */
 
 import { addDays, daysBetween, weekdayOf } from './dates.ts';
 import { buildLengths, deloadLengths, taperLengths } from './lengths.ts';
-import { type DayRule, TEN_K_V2_POLICY as P } from './policy.ts';
+import { type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import {
   deloadSlot,
+  ladderFor,
   pickBuild,
   pickDeload,
   pickTaper,
-  type Picks,
   type QualityState,
-  type SlotState
+  type SlotState,
+  type WeekPicks
 } from './quality.ts';
 import type {
   DayRole,
@@ -35,7 +37,9 @@ import {
   qualityWorkout,
   raceWorkout,
   sharpenerWorkout,
-  type WarmupCooldown
+  testWorkout,
+  type WarmupCooldown,
+  zoneOf
 } from './workouts.ts';
 
 export interface WeekContext {
@@ -44,10 +48,12 @@ export interface WeekContext {
   pattern: Pattern;
   /** Prognoza 10K [s] (trka). */
   raceSec: number;
-  /** D14: WU/CD po pojasu trenutnog obima (workouts.ts). */
+  /** D14: WU/CD po pojasu trenutnog obima (workouts.ts; početnik prvi pojas, D28). */
   wc: WarmupCooldown;
-  /** D17: red tabele za broj dana trčanja. */
-  rule: DayRule;
+  /** D17/D28: pravilo plana (red tabele za broj dana; početnik). */
+  rule: PlanRule;
+  /** D26: plan po osećaju (RPE na kvalitetu). */
+  feel: boolean;
 }
 
 export interface BuiltWeek {
@@ -56,11 +62,11 @@ export interface BuiltWeek {
   /** Dugi nedelje [0,1 km]; null u trkačkoj nedelji. */
   long10: number | null;
   /** Izbor doza nedelje izgradnje (stanje za sledeću nedelju); null van izgradnje. */
-  picks: Picks | null;
+  picks: WeekPicks | null;
   notes: string[];
 }
 
-const HARD: readonly DayRole[] = ['q1', 'q2', 'long', 'sharpener', 'race'];
+const HARD: readonly DayRole[] = ['q1', 'q2', 'long', 'sharpener', 'race', 'test'];
 const km100 = (km: number): number => Math.round(km * 100);
 
 function day(date: string, role: DayRole, workout: Workout, countsToWeek = true): PlanDay {
@@ -85,6 +91,9 @@ const dateOf = (frame: WeekFrame, wd: Weekday): string => {
   }
   throw new Error(`Dan ${wd} nije u nedelji ${frame.index}.`);
 };
+
+/** D27: napomena nedelje testa. */
+const testNote = `Test ${P.test.km} km (D27): kontrolisano maksimalno; računa se u obim nedelje, ne u dozu kvaliteta; rezultat koristi adaptacija (segment 04), do tada tempo ostaje procena.`;
 
 /** Napomena kad slot ponavlja trening jer druga struktura iste doze ne postoji (D10). */
 const repeatNote = (slot: string, d: Dose): string =>
@@ -119,11 +128,13 @@ export function buildWeek(
   if (frame.phase === 'race') return null;
 
   if (frame.deload) {
-    // D5/D19: jedan kvalitet (T) na danu T slota, dugi, ostali dani lagani (3 dana: D18).
+    // D5/D19: jedan kvalitet (T) na danu T slota, dugi, ostali dani lagani (3 dana: D18). D27: u nedelji
+    // testa test zamenjuje kvalitet rasterećenja (na njegovom danu; nije doza, bez plafona D11).
     if (lastLong10 === null) return null;
-    const t = pickDeload(quality, frame.phase, targetKm, rule.quality);
-    if (!t && !relax) return null;
-    const tw = t ? qualityWorkout(t, p, ctx.wc) : null;
+    const test = frame.test === true;
+    const t = test ? null : pickDeload(quality, frame.phase, targetKm, rule.quality);
+    if (!t && !relax && !test) return null;
+    const tw = test ? testWorkout(p, ctx.wc) : t ? qualityWorkout(t, p, ctx.wc, ctx.feel) : null;
     const slot = deloadSlot(rule.quality);
     const qDay = slot === 'q1' ? pat.q1 : pat.q2!;
     const dates = easyDates(
@@ -135,19 +146,24 @@ export function buildWeek(
       tw ? km100(tw.km) : 0,
       dates.length,
       lastLong10,
-      rule.longMaxShare,
-      p
+      rule,
+      p,
+      test
     );
     if (!len) return null;
     const days = [
-      ...(tw ? [day(dateOf(frame, qDay), slot, tw)] : []),
+      ...(tw ? [day(dateOf(frame, qDay), test ? 'test' : slot, tw)] : []),
       day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
       ...easyDays(dates, len.easy10, p)
     ];
+    const long0 = Math.floor(P.deload.longFactor * lastLong10 + 1e-9);
     return finish(days, len.long10, null, [
-      tw
-        ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), dugi 0,8 × poslednji ne-rasteretni (D5).`
-        : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni T ${fmtKm(P.deload.tMinKm)} km ne staje u plafon ${P.caps.T * 100} % (D11 ispred D5, odstupanje); dugi 0,8 × poslednji ne-rasteretni.`
+      test
+        ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, test ${P.test.km} km umesto kvaliteta rasterećenja (D27), dugi ${len.long10 < long0 ? `${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × poslednjeg ne-rasteretnog (${fmtKm(long0 / 10)} km) da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km (D27 ispred D5, odstupanje)` : '0,8 × poslednji ne-rasteretni (D5)'}.`
+        : tw
+          ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), dugi 0,8 × poslednji ne-rasteretni (D5).`
+          : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni T ${fmtKm(P.deload.tMinKm)} km ne staje u plafon ${P.caps.T * 100} % (D11 ispred D5, odstupanje); dugi 0,8 × poslednji ne-rasteretni.`,
+      ...(test ? [testNote] : [])
     ]);
   }
 
@@ -159,8 +175,8 @@ export function buildWeek(
   if (frame.phase === 'taper') {
     const t = pickTaper(quality, targetKm, rule.quality, relax);
     if (!t) return null;
-    const w1 = t === 'none' ? null : qualityWorkout(t.q1, p, ctx.wc);
-    const w2 = t !== 'none' && t.q2 ? qualityWorkout(t.q2, p, ctx.wc) : null;
+    const w1 = t === 'none' ? null : qualityWorkout(t.q1, p, ctx.wc, ctx.feel);
+    const w2 = t !== 'none' && t.q2 ? qualityWorkout(t.q2, p, ctx.wc, ctx.feel) : null;
     const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0);
     // Dani šablona bez zadržanog kvaliteta su lagani (odstupanje D7 „samo RP" / „bez kvaliteta").
     const kept = [...(w1 ? [pat.q1] : []), ...(w2 && pat.q2 ? [pat.q2] : [])];
@@ -168,7 +184,7 @@ export function buildWeek(
       frame,
       [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !kept.includes(wd))
     );
-    const len = taperLengths(target10, q100, dates.length, longest10, rule.longMaxShare, p);
+    const len = taperLengths(target10, q100, dates.length, longest10, rule, p);
     if (!len) return null;
     const note = !w1
       ? `Taper bez kvaliteta — ni RP ${P.taper.rpMin.reps} × ${P.taper.rpMin.repM} m ne staje u plafon ${P.caps.RP * 100} % cilja (D11 ispred D7, odstupanje); dugi ≤ 0,75 × najduži.`
@@ -189,16 +205,38 @@ export function buildWeek(
     );
   }
 
-  const dates = easyDates(frame, pat.easy);
-  const picks = pickBuild(quality, frame.phase, targetKm, p, rule.quality, relax);
+  // D28: uvod bez kvaliteta; D27: test na danu Q1; početnik bez kvaliteta kad ni prvi nivo ne staje u
+  // plafon (odstupanje D28). Dan Q1 bez treninga kvaliteta (i bez testa) je lagan.
+  const intro = frame.index <= rule.introWeeks;
+  const test = frame.test === true;
+  const picks: WeekPicks | null = intro
+    ? { q1: null, q2: null }
+    : pickBuild(quality, frame.phase, targetKm, p, rule, relax, test);
   if (!picks) return null;
-  const w1 = qualityWorkout(picks.q1, p, ctx.wc);
-  const w2 = picks.q2 ? qualityWorkout(picks.q2, p, ctx.wc) : null;
-  const q100 = km100(w1.km) + (w2 ? km100(w2.km) : 0);
-  const len = buildLengths(target10, q100, dates.length, rule.longMaxShare, p);
+  const w1 = test
+    ? testWorkout(p, ctx.wc)
+    : picks.q1
+      ? qualityWorkout(picks.q1, p, ctx.wc, ctx.feel)
+      : null;
+  const w2 = picks.q2 ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
+  const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0);
+  const dates = easyDates(frame, w1 ? pat.easy : [pat.q1, ...pat.easy]);
+  const len = buildLengths(target10, q100, dates.length, rule, p);
   if (!len) return null;
   const notes: string[] = [];
-  const slots: [string, Dose, SlotState | null][] = [['Q1', picks.q1, quality.q1]];
+  if (intro)
+    notes.push(
+      `Uvod (D28): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan.`
+    );
+  else if (test) notes.push(testNote);
+  else if (!w1) {
+    const ladder = ladderFor(frame.phase, 'q1', rule.quality);
+    notes.push(
+      `Bez kvaliteta: ni prvi nivo ${ladder} ne staje u plafon ${P.caps[zoneOf(ladder)] * 100} % cilja ${fmtKm(targetKm)} km (D11 ispred D28, odstupanje).`
+    );
+  }
+  const slots: [string, Dose, SlotState | null][] = [];
+  if (picks.q1) slots.push(['Q1', picks.q1, quality.q1]);
   if (picks.q2) slots.push(['Q2', picks.q2, quality.q2]);
   for (const [slot, d] of slots) if (d.step === 'repeat') notes.push(repeatNote(slot, d));
   for (const [slot, d, prev] of slots)
@@ -208,7 +246,8 @@ export function buildWeek(
       );
   return finish(
     [
-      ...qualityDays(w1, w2),
+      ...(w1 ? [day(dateOf(frame, pat.q1), test ? 'test' : 'q1', w1)] : []),
+      ...(w2 && pat.q2 ? [day(dateOf(frame, pat.q2), 'q2', w2)] : []),
       day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
       ...easyDays(dates, len.easy10, p)
     ],
@@ -282,7 +321,8 @@ export function raceWeek(
   const days: PlanDay[] = [day(race, 'race', raceWorkout(p, ctx.raceSec), false)];
   const easy = raceEasyWorkout(taperEasy10, p);
   for (const d of runs) {
-    if (d === sharpenDate) days.push(day(d, 'sharpener', sharpenerWorkout(reps, p, ctx.wc)));
+    if (d === sharpenDate)
+      days.push(day(d, 'sharpener', sharpenerWorkout(reps, p, ctx.wc, ctx.feel)));
     else if (daysBetween(d, race) === 1) days.push(day(d, 'eve', eveWorkout(p)));
     else days.push(day(d, 'easy', easy));
   }

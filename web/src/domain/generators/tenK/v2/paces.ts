@@ -1,4 +1,4 @@
-/* D2 i D3 — VDOT, tempo po zonama i ocena cilja. Sopstvena kopija Daniels–Gilbert (1979) jednačina:
+/* D2 i D3 — VDOT, tempo po zonama i ocena cilja; D26 — tempo plana po osećaju. Sopstvena kopija Daniels–Gilbert (1979) jednačina:
 
    VO2(v)  = −4,60 + 0,182258·v + 0,000104·v²            v [m/min]
    %max(t) = 0,8 + 0,1894393·e^(−0,012778·t) + 0,2989558·e^(−0,1932605·t)   t [min]
@@ -63,6 +63,27 @@ export function pacesFromVdot(vdotRaw: number): Paces {
     I: paceAtFraction(vdot, q.iFraction),
     R: paceAtFraction(vdot, q.rFraction),
     RP: Math.round(raceTimeForVdot(vdot, q.raceDistanceM) / (q.raceDistanceM / 1000))
+  };
+}
+
+/** D26: VDOT čiji je brži kraj E (udeo eFractionFast) jednak laganom tempu [s/km] (neokrugljen):
+    VDOT = VO2(v) / eFractionFast, v = brzina laganog tempa. */
+export function vdotFromEasyPace(easySecPerKm: number): number {
+  return vo2AtSpeed(60000 / easySecPerKm) / P.paces.eFractionFast;
+}
+
+/** D26: tempo plana po osećaju. E = lagan tempo ± eRangeSec; T/I/R/RP iz procene VDOT-a (zaokružene na
+    0,1 i ograničene na feel.vdotMin–vdotMax) — samo orijentir. `capped` = procena iznad vdotMax. */
+export function feelPaces(easySecPerKm: number): { paces: Paces; capped: boolean } {
+  const q = P.feel;
+  const raw = round1(vdotFromEasyPace(easySecPerKm));
+  const base = pacesFromVdot(Math.min(q.vdotMax, Math.max(q.vdotMin, raw)));
+  return {
+    paces: {
+      ...base,
+      E: { fast: easySecPerKm - q.eRangeSec, slow: easySecPerKm + q.eRangeSec }
+    },
+    capped: raw > q.vdotMax
   };
 }
 

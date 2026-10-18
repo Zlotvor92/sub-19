@@ -1,6 +1,8 @@
 /* 10K v2 — politika: svaki trenerski broj ima JEDNO mesto (ovde) i red u DECISIONS sa obrazloženjem.
-   Kod ostalih fajlova čita samo ovaj objekat (i `dayRule`, pristup tabeli D17); nijedan od njih ne nosi
-   sopstveni trenerski broj. */
+   Kod ostalih fajlova čita samo ovaj objekat (i `dayRule` / `planRule`, pristup tabeli D17 i tabeli
+   početnika D28); nijedan od njih ne nosi sopstveni trenerski broj. */
+
+import type { Experience } from './types.ts';
 
 /** Deonica lestvice: broj × metraža. */
 interface Rep {
@@ -18,10 +20,10 @@ export interface Decision {
 const DECISIONS: readonly Decision[] = [
   {
     id: 'D1',
-    rule: '3–6 dana trčanja i obim po broju dana (D17); 8–18 celih nedelja do trke (8–9 nedelja: D21); rezultat 3/5/10 km ili polumaraton ≤ 84 dana; VDOT 30–80; cilj opcion.',
+    rule: '3–6 dana trčanja i obim po broju dana (D17; početnik D28); 8–18 celih nedelja do trke (8–9 nedelja: D21; početnik 10–18); rezultat 3/5/10 km ili polumaraton ≤ 84 dana i VDOT 30–80 → tempo iz rezultata, inače plan po osećaju (D26); trčanje/hodanje odbijeno (D29); cilj opcion.',
     place: 'input.ts',
     rationale:
-      'Opseg segmenta 02. Van opsega strukturisano odbijanje: 1, 2 i 7 dana trajno (D17), obim van reda tabele D17 trajno (poruka navodi brojeve dana koji ga podržavaju), bez pouzdanog rezultata privremeno (plan po osećaju, segment 03), < 8 ned trajno.'
+      'Opseg segmenta 03. Van opsega strukturisano odbijanje: 1, 2 i 7 dana trajno (D17), obim van reda tabele D17 trajno (poruka navodi brojeve dana koji ga podržavaju), < 8 ned trajno, VDOT > 80 trajno. Bez pouzdanog rezultata (nema ga, stariji od 84 dana, VDOT < 30) plan po osećaju (D26); privremeno odbijanje FEEL_PLAN_SEGMENT_03 iz 10k-v2.2.x je ukinuto.'
   },
   {
     id: 'D2',
@@ -81,7 +83,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D10',
-    rule: 'Baza: Q1 R, Q2 T kontinuirano; razvoj: Q1 I, Q2 T cruise; specifično: Q1 RP, Q2 T cruise (3 dana: D18); lestvice u ladders; ista doza druge strukture pravilom: T kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takve podele nema, sa 50 m (D22); I do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m (3,0 km); RP 2–5 jednakih deonica po istom pravilu kao T (D22b); R deonice 200 / 300 / 400 m (D22).',
+    rule: 'Baza: Q1 R, Q2 T kontinuirano; razvoj: Q1 I, Q2 T cruise; specifično: Q1 RP, Q2 T cruise (3 dana: D18); lestvice u ladders; ista doza druge strukture pravilom: T kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takve podele nema, sa 50 m (D22); I do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m (3,0 km); RP 2–5 jednakih deonica ≥ 800 m deljivih sa 100 m, a kad takve podele nema sa 50 m (D30; 10k-v2.2.1: ≥ 1000 m, D22b); R deonice 200 / 300 / 400 m (D22).',
     place: 'workouts.ts (lestvice, strukture), quality.ts (izbor)',
     rationale:
       'Heuristika redosleda razvoja (brzina/ekonomija → prag/VO2max → specifičnost). Pravilo prihvata samo tačne podele (bez promene doze). Kad druga struktura ne postoji, slot ponavlja trening (nedelja se razlikuje po drugom slotu). Piramida: samo primer iz odluke (800/1000/1200 m po jednom, ukupno 3,0 km), bez drugih kombinacija.'
@@ -116,10 +118,10 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D15',
-    rule: 'Uslov 8: nedelja ≥ minimum po broju dana (D17; trkačka bez trke); lagan ≥ 3 km; prazan trening, dugi < lagan, nedelja ispod minimuma = greška; takav ulaz se odbija.',
+    rule: 'Uslov 8: nedelja ≥ minimum po broju dana (D17; trkačka: planirano + trka 10 km, D30); lagan ≥ 3 km; prazan trening, dugi < lagan, nedelja ispod minimuma = greška; takav ulaz se odbija.',
     place: 'policy.ts days + validate.ts',
     rationale:
-      'Upotrebljivost, ne samo aritmetika: degenerisan plan se ne predaje. Odstupanje: trkačka nedelja je potpuno zadata (D8/D20, fiksna trajanja), pa je ispod minimuma upozorenje RACE_WEEK_SHORT, ne greška (nedelja se ne puni); npr. 3 dana, 8 ned, 20 km, VDOT 30: 2 × 35 min E = 8,7 km < 9 km.'
+      'Upotrebljivost, ne samo aritmetika: degenerisan plan se ne predaje. Trkačka nedelja je potpuno zadata (D8/D20, fiksna trajanja), pa ostaje upozorenje RACE_WEEK_SHORT, ne greška (nedelja se ne puni); od 10k-v2.3.0 (D30) trka ulazi u opterećenje nedelje, pa npr. 3 dana, 8 ned, 20 km, VDOT 30 (2 × 35 min E = 8,7 km + 10 km ≥ 9 km) više nije ispod minimuma.'
   },
   {
     id: 'D16',
@@ -174,7 +176,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D22b',
-    rule: 'RP druga struktura kao T (D22): 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takve podele nema, sa 50 m (2,5 = 2 × 1250; 3,5 = 2 × 1750); nijedna RP deonica < 1000 m.',
+    rule: 'RP druga struktura kao T (D22): 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takve podele nema, sa 50 m (2,5 = 2 × 1250; 3,5 = 2 × 1750); nijedna RP deonica < 1000 m (10k-v2.2.1; od 10k-v2.3.0 RP deonice ≥ 800 m, D30).',
     place: 'workouts.ts (structuresForDose, isti splitsOf za T i RP); validate.ts (REP_MIN)',
     rationale:
       'Heuristika: isto pravilo kao T, bez novog broja; RP deonice < 1000 m (5 × 500, 5 × 700, 3 × 800, 4 × 600, 5 × 900 m) otpadaju. Odstupanje od očekivanja (opreznije, bez novog broja i bez nove strukture): očekivano je ponavljanje kod 3 dana ≈ 0, ali RP 2,4 / 2,5 / 3,5 / 4,5 km sada imaju samo jednu strukturu (2 × 1200, 2 × 1250, 2 × 1750, 3 × 1500 m), pa slot ponavlja trening (D10/D12): ponovljenih nedelja 3 dana 216 → 1224, 4 dana 48 → 192, 5 i 6 dana 0 → 144; npr. 3 dana, 9 ned, 20 km, VDOT 30, uto/čet/ned: ned 7 RP 2 × 1200 m ponovljen (bilo 3 × 800 m). RP kontinuirano (kao T) bi uklonilo ponavljanje, ali je nova trenerska odluka — nije uvedeno. Posledica: manje oporavaka → kraći kvalitetni dan → u 258 planova ograničenih kapacitetom niži vrh cilja (do 1,1 km; npr. 4 dana, 16 ned, 35 km, VDOT 35, uto/čet/sub/ned: 48,0 → 46,9 km, ned 14 RP 3 × 1500 umesto 5 × 900 m); izuzeci sa razlogom u segment02b.regression-exceptions.json.'
@@ -193,22 +195,103 @@ const DECISIONS: readonly Decision[] = [
     place: 'validate.ts (LONG_SHORTER_THAN_QUALITY); volume.ts (fewerDaysAdvice)',
     rationale:
       'Na 49ad476 i 10k-v2.2.1: 0 / 132 / 132 / 330 planova 3–6 dana — brz trkač na najnižim obimima reda (4 dana 25 km VDOT 60–70; 5 dana 30–35 km VDOT 70; 6 dana 35–45 km VDOT 55–70): WU/CD po pojasu D14 + rad > dugi. Kraći WU/CD po vremenu nedelje bi ovo rešio, ali simulacija organizatora na 49ad476 (nije ponovljena u 02b) pokazuje regresiju kapaciteta 4 dana (ispod obima zbog udela 0 → 66, CAPACITY_LIMITED 1320 → 1830, 234 niža vrha) — zato samo upozorenje; manje dana daje dugi veći udeo (D17).'
+  },
+  {
+    id: 'D26',
+    rule: 'Plan po osećaju kad nema rezultata, rezultat je stariji od 84 dana ili je VDOT iz rezultata < 30: lagan tempo easyPaceSecPerKm obavezan (270–510 s/km; bez njega EASY_PACE_REQUIRED, van opsega EASY_PACE_OUT_OF_RANGE). E = lagan tempo ± 15 s (srednji E = lagan tempo; 105 min dugog po sporom kraju E). Procena VDOT-a = VDOT čiji je brži kraj E (eFractionFast) jednak laganom tempu, ograničena na 25–60 (iznad 60 → 60 + upozorenje VDOT_ESTIMATE_CAPPED „za ovaj tempo unesi rezultat"), SAMO za orijentir T/I/R/RP i trajanje deonica. Plan nosi paceBasis feel (inače result); svaki kvalitet nosi RPE: T 6–7, RP 7–8, I 8, R 8; bez ocene cilja i prognoze 10K (null, napomena „posle testa"); ostalo kao plan sa rezultatom (D4–D25, D16 važi).',
+    place:
+      'input.ts (put); paces.ts feelPaces; policy.ts feel (brojevi, RPE); workouts.ts (RPE kvaliteta); generate.ts; validate.ts (PACE_BASIS, PACES, RPE)',
+    rationale:
+      'Heuristika: bez rezultata je lagan tempo jedini podatak o trkaču. Izjednačavanje sa bržim krajem E daje niži VDOT nego srednji E (rekreativci lagano često trče prebrzo) — opreznija procena brzih zona. U opsegu 270–510 s/km procena je 58,6–26,1, pa granice 25/60 u mreži ne deluju (ostaju zaštita ulaza). Tempo brzih zona je orijentir; trening vodi RPE dok test (D27) i adaptacija (segment 04) ne daju rezultat.'
+  },
+  {
+    id: 'D27',
+    rule: 'Test 5 km samo u planu po osećaju: poslednja nedelja baze, na danu Q1 (3 dana: umesto jedinog kvaliteta); kad je ta nedelja rasterećenje — umesto kvaliteta rasterećenja (na njegovom danu). Struktura WU (pojas D14) + 5 km kontrolisano maksimalno + CD; računa se u obim nedelje, NE u dozu kvaliteta (bez plafona D11): progresija slota (D12) se posle testa nastavlja od stanja pre testa, a provera „glavna doza ne opada" preskače test nedelju. Plan po osećaju ima tačno jedan test, plan sa rezultatom nijedan; rezultat testa koristi adaptacija (04), do tada tempo ostaje procena.',
+    place:
+      'periodize.ts (testWeek); week.ts (buildWeek); workouts.ts (testWorkout); quality.ts (advance); validate.ts (TEST)',
+    rationale:
+      'Heuristika: test na kraju baze zamenjuje najmanje specifičan kvalitet (R; kod 3 dana T kontinuirano) pre razvoja, u kom zone I/T nose tempo. Odstupanje (opreznije, D27 ispred D5, bez novog broja): u rasterećenju sa testom dugi je ≤ 0,8 × poslednji ne-rasteretni — najduži koji ostavlja lagane ≥ 3 km (D13), jer test ne staje uz dugi 0,8 × i lagan ≥ 3 km, a cilj rasterećenja se ne podiže (D6); npr. 3 dana, 12 ned, 20 km, lagan 7:30, uto/čet/ned: ned 4 cilj 18,0 km, test 8,3 km, dugi 8,0 → 6,6 km, lagan 3,1 km (napomena, upozorenje TEST_DELOAD_LONG).'
+  },
+  {
+    id: 'D28',
+    rule: 'Početnik (experience beginner; podrazumevano regular), JEDNA tabela beginner: 3–4 dana (5–6 → BEGINNER_DAYS, preporuka 3–4 dana); 10–18 nedelja (8–9 → BEGINNER_SHORT); obim start 3 dana 15–30 km, 4 dana 18–35 km (ispod → preporuka 5K plana); nedelje 1–2 uvod bez kvaliteta (dan kvaliteta = lagan); zatim jedan kvalitet nedeljno za 3 i 4 dana (lestvica D18: T kont. → T cruise → RP), bez I i R; 4 dana = 1 kvalitet + 2 lagana + dugi (D19 jednaki); D16 ne važi (start = prvi nivo lestvice); rast +5 % (min 1,0, max 2,0 km); vrh = min(start × 1,3; start + 10; max nedelje D17; kapacitet); dugi ≤ 90 min sporim E (i ≤ udeo D17); WU/CD uvek prvi pojas (15/10 min); rezultat ≤ 84 dana i VDOT ≥ 30 → tempo iz VDOT-a, inače plan po osećaju (D26) sa testom (D27). Rasterećenje, taper (1 kvalitet RP kao D18) i trkačka nedelja po D5/D7/D8/D20/D23.',
+    place:
+      'policy.ts beginner + planRule (jedina tabela); input.ts; schedule.ts (1 kvalitet); quality.ts (startLevel, pickBuild); week.ts (uvod); lengths.ts, volume.ts, workouts.ts (pravilo plana); validate.ts',
+    rationale:
+      'Heuristika: cilj početnika na 10K je završiti zdravo — smanjen intenzitet (jedan kvalitet, bez I/R, start od prvog nivoa, uvod bez kvaliteta) i rast (5 %, max 2 km; vrh 1,3× / +10 km; dugi 90 min). Odstupanje (opreznije, D11 ispred D28, bez novog broja): kad ni prvi nivo lestvice faze ne staje u plafon D11 cilja nedelje, nedelja izgradnje je bez kvaliteta (napomena, upozorenje BUILD_NO_QUALITY); npr. 3 dana, 15 km: vrh 19,5 km, a T 2,0 km traži cilj ≥ 20 km — izgradnja bez kvaliteta.'
+  },
+  {
+    id: 'D29',
+    rule: 'Trčanje/hodanje (runWalk true) → odbijanje RUN_WALK_NOT_SUPPORTED: „10K plan traži neprekidno trčanje ≥ 30 min; preporuka: 5K plan (trčanje/hodanje)". Nema 10K run/walk plana.',
+    place: 'input.ts (broj: input.continuousRunMin)',
+    rationale:
+      'Odluka segmenta 03: 10K plan pretpostavlja neprekidno trčanje (lagan ≥ 3 km, dugi do 90–105 min); trčanje/hodanje pokriva 5K plan.'
+  },
+  {
+    id: 'D30',
+    rule: 'Ispravke iz 02b: (a) RP druga struktura — 2–5 jednakih deonica ≥ 800 m (T ostaje ≥ 1000 m), deljivih sa 100 m, a kad takve podele nema sa 50 m (rpRepMinM 800; validator REP_MIN po zoni); (b) Uslov 8 trkačke nedelje: planirano + trka (10 km) ≥ minimum nedelje (trka je opterećenje nedelje; odvajanje trke od obima je pravilo prikaza).',
+    place:
+      'policy.ts alternatives.rpRepMinM; workouts.ts (splitsOf); validate.ts (REP_MIN, RACE_WEEK_SHORT)',
+    rationale:
+      'Ispravke posle 02b; brojke organizatora (simulacija na 21c03f1) ponovljene mrežom 02 (15 840 planova sa rezultatom): (a) ponavljanje slota 1224 / 192 / 144 / 144 → 240 / 48 / 0 / 0 nedelja 3–6 dana (ostaju 3 dana RP 2,5 / 3,5 km sa jedinom strukturom 2 × 1250 / 2 × 1750 m i 4 dana I 2,0 km, 9 ned); vrh cilja niži od 49ad476 258 → 12 (3 dana, 30 km, VDOT 35, 17–18 ned: 35,6 → 35,2), prema 21c03f1 nijedan niži (viši u 120 / 126 planova 3 / 4 dana); (b) RACE_WEEK_SHORT 96 → 0. Promenjeni planovi prema 21c03f1: samo D30a 1134 / 576 / 432 / 126, samo D30b 6 / 0 / 0 / 72, oba 0 / 0 / 0 / 18; odbijanja, trkačka > taper, ned 1 ispod obima i DOSE_DROPPED bez promene.'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.2.1',
+  version: '10k-v2.3.0',
 
-  /** D1 (dani i obim: D17). */
+  /** D1 (dani i obim: D17; početnik: D28). */
   input: {
     /** < 8 nedelja: trajno odbijanje (D21 pokriva 8–9). */
     weeksMin: 8,
     weeksMax: 18,
     resultMaxAgeDays: 84,
     resultDistancesM: [3000, 5000, 10000, 21097.5] as readonly number[],
+    /** VDOT iz rezultata < vdotMin → plan po osećaju (D26). */
     vdotMin: 30,
-    vdotMax: 80
+    vdotMax: 80,
+    /** D29: 10K plan traži neprekidno trčanje ≥ continuousRunMin [min]. */
+    continuousRunMin: 30
+  },
+
+  /** D26: plan po osećaju (bez pouzdanog rezultata). */
+  feel: {
+    /** Opseg ulaza easyPaceSecPerKm [s/km]. */
+    easyPaceMinSec: 270,
+    easyPaceMaxSec: 510,
+    /** E = lagan tempo ± eRangeSec. */
+    eRangeSec: 15,
+    /** Procena VDOT-a (orijentir brzih zona) ograničena na vdotMin–vdotMax. */
+    vdotMin: 25,
+    vdotMax: 60,
+    /** RPE po zoni rada (1–10). */
+    rpe: {
+      T: { min: 6, max: 7, cue: 'udobno teško, kratke rečenice' },
+      RP: { min: 7, max: 8, cue: 'ritam trke 10K' },
+      I: { min: 8, max: 8, cue: 'teško, izdrživo 3–5 min' },
+      R: { min: 8, max: 8, cue: 'brzo, opušteno' }
+    }
+  },
+
+  /** D27: test (samo plan po osećaju). */
+  test: { km: 5 },
+
+  /** D28: JEDINA tabela početnika (udeo dugog, min i max nedelje: red D17 za isti broj dana). */
+  beginner: {
+    days: {
+      3: { kmMin: 15, kmMax: 30 },
+      4: { kmMin: 18, kmMax: 35 }
+    },
+    weeksMin: 10,
+    /** Nedelje 1..introWeeks bez kvaliteta. */
+    introWeeks: 2,
+    growth: 0.05,
+    growthMinKm: 1.0,
+    growthMaxKm: 2.0,
+    peakFactor: 1.3,
+    peakAddKm: 10,
+    longMaxSec: 5400
   },
 
   /** D17: JEDINA tabela po broju dana trčanja. quality/easy = broj kvalitetnih i laganih dana izgradnje. */
@@ -374,8 +457,10 @@ export const TEN_K_V2_POLICY = {
     roundM: 100,
     /** D22/D22b: T i RP deonice deljive sa 50 m kad podele na roundM ne postoje. */
     roundFallbackM: 50,
-    /** D10/D22b: T i RP deonice ≥ 1000 m. */
+    /** D10/D22: T deonice ≥ 1000 m. */
     repMinM: 1000,
+    /** D30: RP deonice ≥ 800 m (10k-v2.2.1: 1000 m, D22b). */
+    rpRepMinM: 800,
     iRepsMax: 6,
     iRepMinM: 800,
     iRepMaxM: 1200,
@@ -440,4 +525,69 @@ export function dayRule(count: number): DayRule | null {
   return (RUN_DAYS_COUNTS as readonly number[]).includes(count)
     ? TEN_K_V2_POLICY.days[count as RunDaysCount]
     : null;
+}
+
+/** D28: brojevi dana trčanja početnika. */
+export const BEGINNER_DAYS_COUNTS = Object.keys(TEN_K_V2_POLICY.beginner.days)
+  .map(Number)
+  .sort((a, b) => a - b) as readonly (keyof TenKV2Policy['beginner']['days'])[];
+
+/** Pravilo plana: red D17 (redovan) ili red D17 izmenjen tabelom početnika (D28). Jedino mesto gde se
+    brojevi rasta, vrha, dugog i uvoda biraju po iskustvu. */
+export interface PlanRule extends DayRule {
+  readonly beginner: boolean;
+  /** D13/D28: plafon dugog sporim E [s]. */
+  readonly longMaxSec: number;
+  /** D6/D28: rast nedelje izgradnje i granica vrha. */
+  readonly growth: number;
+  readonly growthMinKm: number;
+  readonly growthMaxKm: number;
+  readonly peakFactor: number;
+  readonly peakAddKm: number;
+  /** D28: nedelje 1..introWeeks bez kvaliteta (0 = nema uvoda). */
+  readonly introWeeks: number;
+  /** D1/D28: najmanje nedelja. */
+  readonly weeksMin: number;
+  /** Brojevi dana dostupni ovom iskustvu (preporuke u porukama). */
+  readonly dayCounts: readonly number[];
+}
+
+export function planRule(count: number, experience: Experience): PlanRule | null {
+  const d = dayRule(count);
+  if (!d) return null;
+  const P = TEN_K_V2_POLICY;
+  if (experience === 'regular')
+    return {
+      ...d,
+      beginner: false,
+      longMaxSec: P.lengths.longMaxSec,
+      growth: P.volume.growth,
+      growthMinKm: P.volume.growthMinKm,
+      growthMaxKm: P.volume.growthMaxKm,
+      peakFactor: P.volume.peakFactor,
+      peakAddKm: P.volume.peakAddKm,
+      introWeeks: 0,
+      weeksMin: P.input.weeksMin,
+      dayCounts: RUN_DAYS_COUNTS
+    };
+  const b = P.beginner;
+  if (!(BEGINNER_DAYS_COUNTS as readonly number[]).includes(count)) return null;
+  const row = b.days[count as keyof typeof b.days];
+  return {
+    ...d,
+    quality: 1,
+    easy: count - 2,
+    kmMin: row.kmMin,
+    kmMax: row.kmMax,
+    beginner: true,
+    longMaxSec: b.longMaxSec,
+    growth: b.growth,
+    growthMinKm: b.growthMinKm,
+    growthMaxKm: b.growthMaxKm,
+    peakFactor: b.peakFactor,
+    peakAddKm: b.peakAddKm,
+    introWeeks: b.introWeeks,
+    weeksMin: b.weeksMin,
+    dayCounts: BEGINNER_DAYS_COUNTS
+  };
 }

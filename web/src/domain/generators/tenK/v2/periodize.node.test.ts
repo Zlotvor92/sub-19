@@ -2,7 +2,15 @@
 
 import { describe, expect, it } from 'vitest';
 import { generateTenKV2 } from './generate.ts';
-import { buildAllowed, deloadAllowed, deloadWeeks, phaseCounts, phasesOf } from './periodize.ts';
+import {
+  buildAllowed,
+  deloadAllowed,
+  deloadWeeks,
+  periodize,
+  phaseCounts,
+  phasesOf,
+  testWeekOf
+} from './periodize.ts';
 import { GRID_02, inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { Phase, PlanWeek, TenKV2Plan } from './types.ts';
 
@@ -81,7 +89,40 @@ describe('D4: faze', () => {
     if (!r.ok) return;
     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
     expect(r.plan.policyId).toBe('10k-v2');
-    expect(r.plan.policyVersion).toBe('10k-v2.2.1');
+    expect(r.plan.policyVersion).toBe('10k-v2.3.0');
+  });
+});
+
+describe('D27: gde je test 5 km', () => {
+  it('poslednja nedelja baze za N = 8–18; oznaka samo u planu po osećaju i samo na toj nedelji', () => {
+    const want: Record<number, number> = {
+      8: 2,
+      9: 2,
+      10: 3,
+      11: 3,
+      12: 4,
+      13: 4,
+      14: 4,
+      15: 5,
+      16: 5,
+      17: 6,
+      18: 6
+    };
+    for (let N = 8; N <= 18; N++) {
+      const ph = phasesOf(N);
+      expect(testWeekOf(ph), `N=${N}`).toBe(want[N]);
+      expect(ph[want[N]! - 1]).toBe('base');
+      expect(ph[want[N]!]).toBe('development');
+      const f = periodize('2026-11-02', N, true)!;
+      expect(f.filter((w) => w.test).map((w) => w.index)).toEqual([want[N]]);
+      expect(periodize('2026-11-02', N)!.some((w) => 'test' in w)).toBe(false);
+    }
+    // Nedelja testa je rasterećenje u 12, 13 i 14 ned (D5: [4, …]) — test tada zamenjuje kvalitet
+    // rasterećenja.
+    const deloadTest = [...Array(11).keys()]
+      .map((i) => i + 8)
+      .filter((N) => deloadWeeks(phasesOf(N))!.includes(want[N]!));
+    expect(deloadTest).toEqual([12, 13, 14]);
   });
 });
 

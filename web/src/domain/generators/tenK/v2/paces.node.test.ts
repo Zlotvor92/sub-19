@@ -54,7 +54,8 @@ describe('D2: VDOT i tempo', () => {
     for (const w of p.weeks)
       for (const d of w.days)
         for (const s of d.workout.segments) {
-          if (s.kind === 'race') continue;
+          // Trka i test 5 km (D27; plan sa rezultatom ga nema) nose procenu vremena, ne tempo zone.
+          if (s.kind === 'race' || s.zone === 'test') continue;
           const want =
             s.zone === 'E' || s.zone === 'jog'
               ? (p.paces.E.fast + p.paces.E.slow) / 2

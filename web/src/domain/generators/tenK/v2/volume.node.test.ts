@@ -7,7 +7,7 @@ import { generateTenKV2 } from './generate.ts';
 import { checkInput } from './input.ts';
 import { pacesFromVdot, predicted10k } from './paces.ts';
 import { isBuildPhase, periodize } from './periodize.ts';
-import { dayRule } from './policy.ts';
+import { planRule } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import { grid02Inputs, gridInputs, inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { TenKV2Plan } from './types.ts';
@@ -25,15 +25,17 @@ const cap = (start: number, days = 4): number =>
 function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
   const c = checkInput(raw);
   if (!c.ok) throw new Error('ulaz');
-  const paces = pacesFromVdot(c.vdotRaw);
-  const rule = dayRule(c.input.runDays.length)!;
+  if (c.pace.kind !== 'result') throw new Error('ulaz bez rezultata');
+  const paces = pacesFromVdot(c.pace.vdotRaw);
+  const rule = planRule(c.input.runDays.length, 'regular')!;
   const ctx = {
     input: c.input,
     paces,
     pattern: c.pattern,
     raceSec: predicted10k(paces),
     wc: warmupCooldown(c.input.currentWeeklyKm),
-    rule
+    rule,
+    feel: false
   };
   const s10 = startKm10(c.input.currentWeeklyKm);
   const c10 = peakCap10(s10, rule);
@@ -50,11 +52,12 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
     const make = (t: number): BuiltWeek | null => buildWeek(ctx, f, t, qq, ll, lo);
     out.push((t) => make(t) !== null);
     const fit: { target10: number } = fit10(
-      nominal10(f, vol, s10, c10),
+      nominal10(f, vol, s10, c10, rule),
       f,
       c10,
       rule,
-      (t) => make(t) !== null
+      (t) => make(t) !== null,
+      vol.lastBuild10
     )!;
     const w: BuiltWeek = make(fit.target10)!;
     if (w.long10 !== null) longest = Math.max(longest, w.long10);
@@ -62,7 +65,7 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
       vol.lastBuild10 = fit.target10;
       vol.peak10 = Math.max(vol.peak10, fit.target10);
       lastLong = w.long10;
-      if (w.picks) q = advance(w.picks);
+      if (w.picks) q = advance(w.picks, q);
     }
   }
   return out;
@@ -221,8 +224,9 @@ describe('D6: obim', () => {
 
   it('D25: preporuka manje dana samo kad red D17 sa manje dana podržava trenutni obim', () => {
     // Redovi D17 (nezavisno): 3 dana 20–40, 4 dana 25–55, 5 dana 30–65 km.
+    const reg = (n: number) => planRule(n, 'regular')!;
     const advice = (n: number, km: number): string =>
-      fewerDaysAdvice(n, km).replace(/^; preporuka (.*) dana \(.*$/, '$1');
+      fewerDaysAdvice(n, km, reg(n)).replace(/^; preporuka (.*) dana \(.*$/, '$1');
     expect([
       advice(4, 25),
       advice(5, 30),
@@ -231,9 +235,13 @@ describe('D6: obim', () => {
       advice(6, 60),
       advice(5, 50)
     ]).toEqual(['3', '3–4', '3–5', '4–5', '5', '4']);
-    expect(fewerDaysAdvice(3, 20)).toBe('');
-    expect(fewerDaysAdvice(4, 45)).toBe('');
-    expect(fewerDaysAdvice(4, 25)).toBe(
+    expect(fewerDaysAdvice(3, 20, reg(3))).toBe('');
+    expect(fewerDaysAdvice(4, 45, reg(4))).toBe('');
+    // D28: početnik — samo tabela početnika (3 dana 15–30 km).
+    expect(fewerDaysAdvice(4, 25, planRule(4, 'beginner')!)).toBe(
+      '; preporuka 3 dana (red D28 sa manje dana podržava obim 25 km, dugi dobija veći udeo)'
+    );
+    expect(fewerDaysAdvice(4, 25, reg(4))).toBe(
       '; preporuka 3 dana (red D17 sa manje dana podržava obim 25 km, dugi dobija veći udeo)'
     );
   });

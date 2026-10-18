@@ -1,4 +1,5 @@
-/* D1/D17/D21 — opseg ulaza: granice prolaze, van opsega strukturisano odbijanje (kod + poruka). */
+/* D1/D17/D21 — opseg ulaza: granice prolaze, van opsega strukturisano odbijanje (kod + poruka); D26 put
+   plana po osećaju (detalji: feel.node), D28/D29 (beginner.node). */
 
 import { describe, expect, it } from 'vitest';
 import { addDays } from './dates.ts';
@@ -93,15 +94,18 @@ describe('D1: opseg ulaza', () => {
     expect(!r81.ok && r81.reasons[0]!.message).toMatch(/iznad 80 km nedeljno, van opsega/);
   });
 
-  it('bez rezultata, rezultat stariji od 84 dana ili VDOT < 30 → plan po osećaju (segment 03)', () => {
+  it('D26: bez rezultata, rezultat stariji od 84 dana ili VDOT < 30 → plan po osećaju; bez laganog tempa EASY_PACE_REQUIRED (privremeno odbijanje FEEL_PLAN_SEGMENT_03 ukinuto)', () => {
     const noRes = { ...base(), recentResult: null };
-    expect(codes(noRes)).toEqual(['FEEL_PLAN_SEGMENT_03']);
-    expect(codes(base({ resultDaysBefore: 85 }))).toEqual(['FEEL_PLAN_SEGMENT_03']);
-    expect(codes(base({ result: { distanceM: 10000, timeSec: timeForVdot(30) + 30 } }))).toEqual([
-      'FEEL_PLAN_SEGMENT_03'
-    ]);
-    const r = generateTenKV2(noRes);
-    expect(!r.ok && r.reasons[0]!.message).toMatch(/segmentu 03/);
+    const old = base({ resultDaysBefore: 85 });
+    const low = base({ result: { distanceM: 10000, timeSec: timeForVdot(30) + 30 } });
+    for (const raw of [noRes, old, low]) {
+      expect(codes(raw)).toEqual(['EASY_PACE_REQUIRED']);
+      const r = generateTenKV2({ ...raw, easyPaceSecPerKm: 360 });
+      expect(r.ok && r.plan.paceBasis).toBe('feel');
+    }
+    const r = generateTenKV2(old);
+    expect(!r.ok && r.reasons[0]!.message).toMatch(/rezultat je star 85 dana \(> 84\)/);
+    expect(codes(base({ resultDaysBefore: 84 }))).toEqual([]);
   });
 
   it('ostala odbijanja: rezultat posle starta, distanca, vreme, VDOT > 80, cilj, datumi', () => {

@@ -1,5 +1,6 @@
 /* Zajednički ulazi za testove 10K v2 (nije testni fajl, da bi ga izolacioni test video kao deo v2).
-   Mreža 01 (4 dana, 10–18 ned) i mreža 02 (3/4/5/6 dana, 8–18 ned). */
+   Mreža 01 (4 dana, 10–18 ned), mreža 02 (3/4/5/6 dana, 8–18 ned, sa rezultatom), mreža po osećaju i mreža
+   početnika (segment 03). */
 
 import { addDays } from './dates.ts';
 import { raceTimeForVdot, round1, vdotFromResult } from './paces.ts';
@@ -189,4 +190,110 @@ export function planHashes49(result: unknown): [number, number, number] {
     })
   );
   return [full, preRace, rpShort ? 1 : 0];
+}
+
+/** Segment 03: lagan tempo mreže po osećaju [s/km] (D26). */
+export const FEEL_EASY = [270, 315, 360, 405, 450, 510];
+
+export interface GridCase {
+  id: string;
+  days: number;
+  weeks: number;
+  km: number;
+  input: Record<string, unknown>;
+}
+
+/** Mreža po osećaju za jedan broj dana: nedelje 8–18 × obim po D17 × lagan tempo × raspored × trka, bez
+    rezultata; id `f-d<dana>-<ned>w-<km>km-e<tempo>-<raspored>-<trka>`. Ukupno 11 880. */
+export function feelGridInputs(days: 3 | 4 | 5 | 6): GridCase[] {
+  const out: GridCase[] = [];
+  for (const weeks of GRID_02.weeks)
+    for (const km of GRID_02.km[days])
+      for (const easy of FEEL_EASY)
+        for (const s of GRID_02.schedule)
+          for (const race of GRID_02.race) {
+            const sc = SCHEDULES_BY_DAYS[days][s];
+            out.push({
+              id: `f-d${days}-${weeks}w-${km}km-e${easy}-${s}-${race}`,
+              days,
+              weeks,
+              km,
+              input: {
+                ...inputOf({ weeks, km, days: sc.days, long: sc.long, race }),
+                recentResult: null,
+                easyPaceSecPerKm: easy
+              }
+            });
+          }
+  return out;
+}
+
+/** Mreža početnika (D28): dana 3/4 × nedelje 10–18 × obim × {po osećaju lagan 330/390/450/510, rezultat
+    VDOT 30/35/40} × raspored × trka; id `b-d<dana>-<ned>w-<km>km-<e330|v30>-<raspored>-<trka>`. */
+export const BEGINNER_GRID = {
+  days: [3, 4] as const,
+  weeks: [10, 11, 12, 13, 14, 15, 16, 17, 18],
+  km: { 3: [15, 20, 25, 30], 4: [18, 22, 26, 30, 35] } as Record<3 | 4, number[]>,
+  pace: [
+    { easy: 330 },
+    { easy: 390 },
+    { easy: 450 },
+    { easy: 510 },
+    { vdot: 30 },
+    { vdot: 35 },
+    { vdot: 40 }
+  ] as ({ easy: number } | { vdot: number })[]
+};
+
+export function beginnerGridInputs(days: 3 | 4): GridCase[] {
+  const out: GridCase[] = [];
+  for (const weeks of BEGINNER_GRID.weeks)
+    for (const km of BEGINNER_GRID.km[days])
+      for (const pace of BEGINNER_GRID.pace)
+        for (const s of GRID_02.schedule)
+          for (const race of GRID_02.race) {
+            const sc = SCHEDULES_BY_DAYS[days][s];
+            const base = inputOf({
+              weeks,
+              km,
+              ...('vdot' in pace ? { vdot: pace.vdot } : {}),
+              days: sc.days,
+              long: sc.long,
+              race
+            });
+            out.push({
+              id: `b-d${days}-${weeks}w-${km}km-${'vdot' in pace ? `v${pace.vdot}` : `e${pace.easy}`}-${s}-${race}`,
+              days,
+              weeks,
+              km,
+              input: {
+                ...base,
+                ...('easy' in pace ? { recentResult: null, easyPaceSecPerKm: pace.easy } : {}),
+                experience: 'beginner'
+              }
+            });
+          }
+  return out;
+}
+
+/** Normalizator regresije prema 21c03f1 (10k-v2.2.1): bez oznake verzije i bez novih polja 10k-v2.3.0 sa
+    podrazumevanom vrednošću (plan.paceBasis 'result'; input.experience 'regular' i
+    input.easyPaceSecPerKm null — u planu sa rezultatom uvek iste). Nad planom 21c03f1 ne menja ništa. */
+function normalize21(result: unknown): string {
+  return JSON.stringify(result)
+    .replace(/10k-v2\.\d+\.\d+/g, 'VERSION')
+    .replace(/,"paceBasis":"result"/g, '')
+    .replace(/,"experience":"regular","easyPaceSecPerKm":null/g, '');
+}
+
+/**
+ * Regresija prema 21c03f1 (isti kod u skripti koja je upisala heševe 21c03f1):
+ * [heš celog plana (normalize21); isti heš bez upozorenja RACE_WEEK_SHORT (D30b uklanja samo njega)].
+ */
+export function planHashes21(result: unknown): [number, number] {
+  const r = result as { ok: boolean; plan?: { warnings: { rule: string }[] } };
+  const full = fnv1a(normalize21(result));
+  if (!r.ok || !r.plan) return [full, full];
+  const warnings = r.plan.warnings.filter((w) => w.rule !== 'RACE_WEEK_SHORT');
+  return [full, fnv1a(normalize21({ ...r, plan: { ...r.plan, warnings } }))];
 }

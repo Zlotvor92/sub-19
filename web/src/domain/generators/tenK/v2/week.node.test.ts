@@ -297,13 +297,14 @@ describe('D14: WU/CD i oporavci', () => {
 });
 
 describe('D15: Uslov 8', () => {
-  it('svaka nedelja ≥ minimum po broju dana (trkačka: samo upozorenje RACE_WEEK_SHORT), nijedan prazan trening', () => {
+  it('svaka nedelja ≥ minimum po broju dana (trkačka: planirano + trka 10 km, D30; inače upozorenje RACE_WEEK_SHORT), nijedan prazan trening', () => {
     for (const p of plans) {
       const n = p.input.runDays.length;
       for (const w of p.weeks) {
         if (w.phase !== 'race') expect(w.plannedKm).toBeGreaterThanOrEqual(WEEK_MIN[n]!);
-        else if (w.plannedKm < WEEK_MIN[n]!)
-          expect(p.warnings.some((x) => x.rule === 'RACE_WEEK_SHORT')).toBe(true);
+        else expect(w.plannedKm + 10).toBeGreaterThanOrEqual(WEEK_MIN[n]!);
+        if (w.phase === 'race')
+          expect(p.warnings.some((x) => x.rule === 'RACE_WEEK_SHORT')).toBe(false);
         for (const d of w.days) {
           expect(d.workout.segments.length).toBeGreaterThan(0);
           expect(d.workout.km).toBeGreaterThan(0);

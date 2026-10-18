@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "RUN_WALK_NOT_SUPPORTED",
+      "message": "10K plan traži neprekidno trčanje ≥ 30 min; preporuka: 5K plan (trčanje/hodanje)."
+    }
+  ]
+}
