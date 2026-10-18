@@ -1,17 +1,22 @@
-/* Brojevi politike su odluke D1–D22 iz zadataka segmenata 01, 01b i 02: test pada kad se broj promeni
-   bez izmene odluke. Svaka odluka ima red u DECISIONS sa mestom i obrazloženjem. */
+/* Brojevi politike su odluke D1–D25 iz zadataka segmenata 01, 01b, 02 i 02b: test pada kad se broj
+   promeni bez izmene odluke. Svaka odluka ima red u DECISIONS sa mestom i obrazloženjem. */
 
 import { describe, expect, it } from 'vitest';
 import { dayRule, RUN_DAYS_COUNTS, TEN_K_V2_POLICY as P } from './policy.ts';
 
-describe('policy 10k-v2.2.0', () => {
+describe('policy 10k-v2.2.1', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.2.0');
+    expect(P.version).toBe('10k-v2.2.1');
   });
 
-  it('DECISIONS: tačno D1–D22, svaka sa pravilom, mestom i obrazloženjem', () => {
-    expect(P.DECISIONS.map((d) => d.id)).toEqual(Array.from({ length: 22 }, (_, i) => `D${i + 1}`));
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25 (02b), svaka sa pravilom, mestom i obrazloženjem', () => {
+    expect(P.DECISIONS.map((d) => d.id)).toEqual([
+      ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
+      'D22b',
+      'D23',
+      'D25'
+    ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
       expect(d.place.length, d.id).toBeGreaterThan(3);
@@ -28,6 +33,15 @@ describe('policy 10k-v2.2.0', () => {
     expect(rule('D20')).toMatch(/min\(broj dana, 5\)/);
     expect(rule('D21')).toMatch(/8 ned → 2\/2\/2\/1\/1, 9 ned → 2\/3\/2\/1\/1/);
     expect(rule('D22')).toMatch(/2,5 = 2 × 1250; 3,5 = 2 × 1750; 4,5 = 3 × 1500/);
+    // 02b (10k-v2.2.1).
+    expect(rule('D17')).toMatch(/dugi ≤ 45 %/);
+    expect(rule('D22b')).toMatch(/≥ 1000 m/);
+    expect(rule('D22b')).toMatch(/2,5 = 2 × 1250; 3,5 = 2 × 1750/);
+    expect(rule('D23')).toMatch(/min\(35 min E, km najkraćeg laganog dana tapera\)/);
+    expect(rule('D25')).toMatch(/UPOZORENJE LONG_SHORTER_THAN_QUALITY/);
+    const why = (id: string): string => P.DECISIONS.find((d) => d.id === id)!.rationale;
+    expect(why('D17')).toMatch(/396 → 0, ukupno 528 → 330/);
+    expect(why('D25')).toMatch(/1320 → 1830/);
   });
 
   it('D1 opseg (dani i obim: D17)', () => {
@@ -41,7 +55,7 @@ describe('policy 10k-v2.2.0', () => {
     });
   });
 
-  it('D17: jedina tabela po broju dana (4 dana bez promene u odnosu na 10k-v2.1.0)', () => {
+  it('D17: jedina tabela po broju dana (02b: 3 dana udeo dugog 0,45; 4 dana bez promene od 10k-v2.1.0)', () => {
     expect(P.days).toEqual({
       3: {
         quality: 1,
@@ -49,7 +63,7 @@ describe('policy 10k-v2.2.0', () => {
         kmMin: 20,
         kmMax: 40,
         peakMaxKm: 45,
-        longMaxShare: 0.4,
+        longMaxShare: 0.45,
         weekMinKm: 9
       },
       4: {
@@ -136,7 +150,7 @@ describe('policy 10k-v2.2.0', () => {
     });
   });
 
-  it('D10 lestvice (km u zoni), D22 druge strukture', () => {
+  it('D10 lestvice (km u zoni), D22/D22b druge strukture (T i RP: ≥ 1000 m, 50 m bez podele na 100 m)', () => {
     const km = (l: readonly { reps: number; repM: number }[]): number[] =>
       l.map((r) => (r.reps * r.repM) / 1000);
     expect(km(P.ladders.R)).toEqual([1.2, 1.6, 1.8, 2.0, 2.4]);
@@ -148,8 +162,8 @@ describe('policy 10k-v2.2.0', () => {
       repsMin: 2,
       repsMax: 5,
       roundM: 100,
-      tRoundFallbackM: 50,
-      tRepMinM: 1000,
+      roundFallbackM: 50,
+      repMinM: 1000,
       iRepsMax: 6,
       iRepMinM: 800,
       iRepMaxM: 1200,

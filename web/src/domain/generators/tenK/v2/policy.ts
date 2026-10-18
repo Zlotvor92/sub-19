@@ -67,7 +67,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D8',
-    rule: 'Trkačka nedelja: broj dana po D20; trka zamenjuje dugi; oštrenje WU + 3 × 1000 m RP (90 s) + CD ako je RP doza tapera ≥ 3,0 km, inače 2 × 1000 m (oštrenje ≤ RP doza tapera), na najkasnijem danu ≥ 3 dana pre trke; WU/CD oštrenja po D14; dan pred trku 20 min E + 4 × 20 s (≤ 30 min); ostali 35 min E; trka 10 km + WU 15 + CD 10 van obima; cilj = planirano.',
+    rule: 'Trkačka nedelja: broj dana po D20; trka zamenjuje dugi; oštrenje WU + 3 × 1000 m RP (90 s) + CD ako je RP doza tapera ≥ 3,0 km, inače 2 × 1000 m (oštrenje ≤ RP doza tapera), na najkasnijem danu ≥ 3 dana pre trke; WU/CD oštrenja po D14; dan pred trku 20 min E + 4 × 20 s (≤ 30 min); ostali 35 min E, ali ne duže od laganog dana tapera (D23); trka 10 km + WU 15 + CD 10 van obima; cilj = planirano.',
     place: 'week.ts (raceWeek) + workouts.ts',
     rationale:
       'Fiksna trenerska heuristika. D8 je potpuna specifikacija trkačke nedelje, pa se plafon D11 na nju ne primenjuje (oštrenje 3 km RP je > 10 % cilja od 13–20 km). Oštrenje ne sme biti veće od RP doze tapera (zamenjuje prag „vrh < 35 km" iz 10k-v2.0.0). WU/CD trke ostaju 15/10 min (D8, van obima). Oštrenje mora biti nesusedno poslednjem zahtevnom danu tapera (D9). Odstupanja (opreznije): kad nijedan dan trčanja nije ≥ 3 dana pre trke i nesusedan tom danu (samo 3 dana, npr. pet/sub/ned ili pon/pet/ned uz trku u nedelju) ili kad taper nema RP (D7 b), oštrenja nema — ostali dani po D8.'
@@ -81,7 +81,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D10',
-    rule: 'Baza: Q1 R, Q2 T kontinuirano; razvoj: Q1 I, Q2 T cruise; specifično: Q1 RP, Q2 T cruise (3 dana: D18); lestvice u ladders; ista doza druge strukture pravilom: T kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takve podele nema, sa 50 m (D22); I do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m (3,0 km); RP 2–5 jednakih deonica deljivih sa 100 m; R deonice 200 / 300 / 400 m (D22).',
+    rule: 'Baza: Q1 R, Q2 T kontinuirano; razvoj: Q1 I, Q2 T cruise; specifično: Q1 RP, Q2 T cruise (3 dana: D18); lestvice u ladders; ista doza druge strukture pravilom: T kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takve podele nema, sa 50 m (D22); I do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m (3,0 km); RP 2–5 jednakih deonica po istom pravilu kao T (D22b); R deonice 200 / 300 / 400 m (D22).',
     place: 'workouts.ts (lestvice, strukture), quality.ts (izbor)',
     rationale:
       'Heuristika redosleda razvoja (brzina/ekonomija → prag/VO2max → specifičnost). Pravilo prihvata samo tačne podele (bez promene doze). Kad druga struktura ne postoji, slot ponavlja trening (nedelja se razlikuje po drugom slotu). Piramida: samo primer iz odluke (800/1000/1200 m po jednom, ukupno 3,0 km), bez drugih kombinacija.'
@@ -98,7 +98,7 @@ const DECISIONS: readonly Decision[] = [
     rule: 'Po slotu: sledeći nivo ako staje u plafon (≤ 1 nivo/ned), inače ista doza druge strukture; doza ne pada van rasterećenja/tapera/trke; T cruise ≥ poslednje T kontinuirano; RP ≥ poslednje I (3 dana: RP ≥ poslednje T, D18); glavna doza (T + I + RP) ne opada; nema identičnih uzastopnih ne-rasteretnih nedelja; baza bez platoa (tvrdo, D22). D11 ispred D12: kad nijedan cilj nedelje nije izvodljiv uz „doza ne pada", doza van plafona ide na najviši nivo lestvice u plafonu (napomena, DOSE_DROPPED).',
     place: 'quality.ts',
     rationale:
-      'Postepena progresija bez skokova; „sledeći nivo" = najmanji nivo lestvice veći od trenutne doze; početni nivo određuje D16. Plafon zone ispred progresije: usvojena odluka posle segmenta 01 (u 10k-v2.0.0 vođeno kao odstupanje). Odstupanje „baza bez platoa" iz 10k-v2.1.0 je ukinuto (D22): T 2,5 / 3,5 km sada imaju drugu strukturu. Odstupanje (opreznije, samo 3 dana, jedan slot): kad druga struktura iste doze ne postoji (RP 2,5 / 3,5 km: samo 5 × 500 / 5 × 700 m), slot ponavlja trening uz napomenu (D10) i nedelja je ista kao prethodna; npr. 3 dana, 17 ned, 20 km, VDOT 45: ned 14–15 RP 2,5 km. Kod 3 dana prelaz T kontinuirano → T cruise koji bi ponovio isti trening ide po pravilu iste lestvice (sledeći nivo ili druga struktura).'
+      'Postepena progresija bez skokova; „sledeći nivo" = najmanji nivo lestvice veći od trenutne doze; početni nivo određuje D16. Plafon zone ispred progresije: usvojena odluka posle segmenta 01 (u 10k-v2.0.0 vođeno kao odstupanje). Odstupanje „baza bez platoa" iz 10k-v2.1.0 je ukinuto (D22): T 2,5 / 3,5 km sada imaju drugu strukturu. Odstupanje (opreznije, samo 3 dana, jedan slot): kad druga struktura iste doze ne postoji (D10, D22b: RP 2,5 / 3,5 km imaju samo 2 × 1250 / 2 × 1750 m), slot ponavlja trening uz napomenu i nedelja je ista kao prethodna; npr. 3 dana, 17 ned, 20 km, VDOT 45: ned 14–15 RP 2,5 km. Kod 3 dana prelaz T kontinuirano → T cruise koji bi ponovio isti trening ide po pravilu iste lestvice (sledeći nivo ili druga struktura).'
   },
   {
     id: 'D13',
@@ -130,11 +130,11 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D17',
-    rule: 'Tabela po broju dana (days, JEDINA): 3 dana 1 kvalitet + 1 lagan + dugi, obim 20–40 km, max nedelje 45 km, dugi ≤ 40 %, min nedelje 9 km; 4 dana 2 + 1 + dugi, 25–55, 60, 33 %, 12; 5 dana 2 + 2 + dugi, 30–65, 75, 30 %, 15; 6 dana 2 + 3 + dugi, 35–80, 90, 27 %, 18. Vrh = min(start × 1,4; start + 15; max nedelje; kapacitet); dugi ≤ 105 min sporim E za sve; 1, 2 i 7 dana → RUN_DAYS_COUNT (7: najmanje jedan dan odmora); WU/CD pojas (D14) isti za sve.',
+    rule: 'Tabela po broju dana (days, JEDINA): 3 dana 1 kvalitet + 1 lagan + dugi, obim 20–40 km, max nedelje 45 km, dugi ≤ 45 % (10k-v2.2.1; bilo 40 %), min nedelje 9 km; 4 dana 2 + 1 + dugi, 25–55, 60, 33 %, 12; 5 dana 2 + 2 + dugi, 30–65, 75, 30 %, 15; 6 dana 2 + 3 + dugi, 35–80, 90, 27 %, 18. Vrh = min(start × 1,4; start + 15; max nedelje; kapacitet); dugi ≤ 105 min sporim E za sve; 1, 2 i 7 dana → RUN_DAYS_COUNT (7: najmanje jedan dan odmora); WU/CD pojas (D14) isti za sve.',
     place:
       'policy.ts days (dayRule); čitaju input.ts, schedule.ts, quality.ts, lengths.ts, volume.ts, week.ts, validate.ts',
     rationale:
-      'Heuristika zadata za segment 02 (zamenjuje pojedinačne brojeve 4 dana bez promene). Odstupanje (opreznije, bez novog broja): sa 3 dana udeo 40 % nosi nedelju samo dok je kvalitet ≥ 20 % cilja (lagan ≤ dugi), pa nedelja 1 može biti ispod trenutnog obima i kad dugi nije na 105 min — D6 bira najbliži izvodljiv cilj; npr. 3 dana, 30 km, VDOT 35, uto/čet/ned: ned 1 = 27,5 km (dugi 11,0 km = 40 %).'
+      'Heuristika zadata za segment 02 (zamenjuje pojedinačne brojeve 4 dana bez promene). Izmena 10k-v2.2.1 (3 dana 0,40 → 0,45): sa 1 kvalitetom kvalitetni dan je < 20 % nedelje, pa dugi i lagan nose > 80 %; uz 40 % lagan bi bio > dugi i nedelja 1 je padala ispod trenutnog obima i kad dugi nije na 105 min. Simulacija organizatora na 49ad476, ponovljena (samo D17): ned 1 ispod obima zbog udela 396 → 0, ukupno 528 → 330 (svi sa dugim na 105 min), nijedan vrh cilja niži (12 planova: planirano niže ≤ 0,06 km, zaokruženje), 4–6 dana bez promene.'
   },
   {
     id: 'D18',
@@ -171,12 +171,34 @@ const DECISIONS: readonly Decision[] = [
       'workouts.ts (structuresForDose); validate.ts (BASE_PLATEAU); volume.ts (capacityMessage)',
     rationale:
       'Ukida ponavljanje slota u bazi i odstupanje iz 01b. Tumačenje primera: 50 m samo kad podele na 100 m nema — 4,5 km zadržava 3 × 1500 m (2 × 2250 m bi se pojavilo da 50 m važi uvek, a primer ga ne navodi).'
+  },
+  {
+    id: 'D22b',
+    rule: 'RP druga struktura kao T (D22): 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takve podele nema, sa 50 m (2,5 = 2 × 1250; 3,5 = 2 × 1750); nijedna RP deonica < 1000 m.',
+    place: 'workouts.ts (structuresForDose, isti splitsOf za T i RP); validate.ts (REP_MIN)',
+    rationale:
+      'Heuristika: isto pravilo kao T, bez novog broja; RP deonice < 1000 m (5 × 500, 5 × 700, 3 × 800, 4 × 600, 5 × 900 m) otpadaju. Odstupanje od očekivanja (opreznije, bez novog broja i bez nove strukture): očekivano je ponavljanje kod 3 dana ≈ 0, ali RP 2,4 / 2,5 / 3,5 / 4,5 km sada imaju samo jednu strukturu (2 × 1200, 2 × 1250, 2 × 1750, 3 × 1500 m), pa slot ponavlja trening (D10/D12): ponovljenih nedelja 3 dana 216 → 1224, 4 dana 48 → 192, 5 i 6 dana 0 → 144; npr. 3 dana, 9 ned, 20 km, VDOT 30, uto/čet/ned: ned 7 RP 2 × 1200 m ponovljen (bilo 3 × 800 m). RP kontinuirano (kao T) bi uklonilo ponavljanje, ali je nova trenerska odluka — nije uvedeno. Posledica: manje oporavaka → kraći kvalitetni dan → u 258 planova ograničenih kapacitetom niži vrh cilja (do 1,1 km; npr. 4 dana, 16 ned, 35 km, VDOT 35, uto/čet/sub/ned: 48,0 → 46,9 km, ned 14 RP 3 × 1500 umesto 5 × 900 m); izuzeci sa razlogom u segment02b.regression-exceptions.json.'
+  },
+  {
+    id: 'D23',
+    rule: 'Trkačka nedelja ≤ taper: lagan dan trkačke nedelje = min(35 min E, km najkraćeg laganog dana tapera); kad je lagan tapera kraći, dan se zadaje u km. Invarijanta: planirano trkačke nedelje (bez trke) ≤ planirano tapera.',
+    place:
+      'week.ts (raceWeek, raceEasyWorkout); generate.ts (lagan tapera); validate.ts (RACE_WEEK_EASY, RACE_WEEK_OVER_TAPER)',
+    rationale:
+      'Smanjenje obima se ne sme poništiti u trkačkoj nedelji (D4/D7). Na 49ad476 trkačka > taper u 8 / 57 / 9 planova 4 / 5 / 6 dana: brz trkač malog obima, 35 min E (npr. 8,8 km pri VDOT 70) > lagan tapera. Najkraći lagan tapera (lagani se razlikuju ≤ 0,1 km, D19) je opreznija strana. Oštrenje i dan pred trku ostaju po D8. Posledica: lagan u km u 636 / 1428 / 2004 / 2538 planova 3–6 dana; trkačka ispod minimuma nedelje (RACE_WEEK_SHORT, upozorenje D15) 6 dana 0 → 90 (35 km, VDOT 30–50).'
+  },
+  {
+    id: 'D25',
+    rule: 'UPOZORENJE LONG_SHORTER_THAN_QUALITY (ne greška, plan se ne menja): u ne-rasteretnoj nedelji izgradnje najduži kvalitetni dan je po trajanju duži od dugog. Poruka preporučuje manje dana trčanja kad red tabele D17 sa manje dana podržava trenutni obim.',
+    place: 'validate.ts (LONG_SHORTER_THAN_QUALITY); volume.ts (fewerDaysAdvice)',
+    rationale:
+      'Na 49ad476 i 10k-v2.2.1: 0 / 132 / 132 / 330 planova 3–6 dana — brz trkač na najnižim obimima reda (4 dana 25 km VDOT 60–70; 5 dana 30–35 km VDOT 70; 6 dana 35–45 km VDOT 55–70): WU/CD po pojasu D14 + rad > dugi. Kraći WU/CD po vremenu nedelje bi ovo rešio, ali simulacija organizatora na 49ad476 (nije ponovljena u 02b) pokazuje regresiju kapaciteta 4 dana (ispod obima zbog udela 0 → 66, CAPACITY_LIMITED 1320 → 1830, 234 niža vrha) — zato samo upozorenje; manje dana daje dugi veći udeo (D17).'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.2.0',
+  version: '10k-v2.2.1',
 
   /** D1 (dani i obim: D17). */
   input: {
@@ -197,7 +219,7 @@ export const TEN_K_V2_POLICY = {
       kmMin: 20,
       kmMax: 40,
       peakMaxKm: 45,
-      longMaxShare: 0.4,
+      longMaxShare: 0.45,
       weekMinKm: 9
     },
     4: {
@@ -345,14 +367,15 @@ export const TEN_K_V2_POLICY = {
     ] as readonly Rep[]
   },
 
-  /** D10 + D22: „ista doza druge strukture". */
+  /** D10 + D22 + D22b: „ista doza druge strukture". */
   alternatives: {
     repsMin: 2,
     repsMax: 5,
     roundM: 100,
-    /** D22: T deonice deljive sa 50 m kad podele na roundM ne postoje. */
-    tRoundFallbackM: 50,
-    tRepMinM: 1000,
+    /** D22/D22b: T i RP deonice deljive sa 50 m kad podele na roundM ne postoje. */
+    roundFallbackM: 50,
+    /** D10/D22b: T i RP deonice ≥ 1000 m. */
+    repMinM: 1000,
     iRepsMax: 6,
     iRepMinM: 800,
     iRepMaxM: 1200,

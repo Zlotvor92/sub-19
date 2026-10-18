@@ -6,6 +6,7 @@ import { generateTenKV2 } from './generate.ts';
 import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
+import { easyTimeWorkout } from './workouts.ts';
 
 const fresh = (): TenKV2Plan => {
   const r = generateTenKV2(
@@ -251,7 +252,7 @@ describe('validator', () => {
   /** Plan za broj dana (raspored A mreže 02). */
   const planOf = (
     days: 3 | 4 | 5 | 6,
-    o: { weeks: number; km: number; vdot: number }
+    o: { weeks: number; km: number; vdot: number; race?: 'sat' | 'sun' }
   ): TenKV2Plan => {
     const sc = SCHEDULES_BY_DAYS[days].A;
     const r = generateTenKV2(inputOf({ ...o, days: sc.days, long: sc.long }));
@@ -313,6 +314,63 @@ describe('validator', () => {
     });
     rw.days.sort((a, b) => a.date.localeCompare(b.date));
     expect(errors(p)).toContain('RACE_WEEK');
+  });
+
+  it('D22b: RP deonica < 1000 m (5 × 500 m kao u 10k-v2.2.0) → REP_MIN', () => {
+    const p = planOf(3, { weeks: 17, km: 20, vdot: 45 });
+    expect(errors(p)).toEqual([]);
+    const d = p.weeks
+      .flatMap((w) => w.days)
+      .find((x) => x.workout.dose?.zone === 'RP' && x.workout.dose.doseM === 2500)!;
+    expect(d.workout.dose!.structure).toEqual({ form: 'reps', reps: 2, repM: 1250 });
+    d.workout.dose!.structure = { form: 'reps', reps: 5, repM: 500 };
+    expect(errors(p)).toContain('REP_MIN');
+  });
+
+  it('D23: lagan trkačke nedelje 35 min E kad je lagan tapera kraći → RACE_WEEK_EASY i RACE_WEEK_OVER_TAPER', () => {
+    // 5 dana, 10 ned, 30 km, VDOT 70, trka subota: u 10k-v2.2.0 trkačka 31,27 km > taper (35 min E = 8,8 km).
+    const p = planOf(5, { weeks: 10, km: 30, vdot: 70, race: 'sat' });
+    expect(errors(p)).toEqual([]);
+    const rw = p.weeks[p.weeks.length - 1]!;
+    const taper = p.weeks[p.weeks.length - 2]!;
+    const easy = rw.days.filter((d) => d.role === 'easy');
+    expect(easy.length).toBeGreaterThan(0);
+    expect(easy.every((d) => d.workout.blocks[0]!.kind === 'easy')).toBe(true);
+    expect(rw.plannedKm).toBeLessThanOrEqual(taper.plannedKm);
+    for (const d of easy) d.workout = easyTimeWorkout(2100, p.paces);
+    rw.plannedKm =
+      rw.days.reduce((a, d) => a + (d.countsToWeek ? Math.round(d.workout.km * 100) : 0), 0) / 100;
+    rw.targetKm = Math.round(rw.plannedKm * 10) / 10;
+    expect(errors(p)).toEqual(expect.arrayContaining(['RACE_WEEK_EASY', 'RACE_WEEK_OVER_TAPER']));
+  });
+
+  it('D25: kvalitetni dan duži od dugog po trajanju → upozorenje LONG_SHORTER_THAN_QUALITY (ne greška) sa preporukom manje dana', () => {
+    const warns = (p: TenKV2Plan) =>
+      p.warnings.filter((w) => w.rule === 'LONG_SHORTER_THAN_QUALITY');
+    // 4 dana, 25 km, VDOT 70: WU/CD 15/10 min + rad > dugi 5,6 km; red 3 dana (20–40 km) podržava 25 km.
+    const p4 = planOf(4, { weeks: 10, km: 25, vdot: 70 });
+    expect(errors(p4)).toEqual([]);
+    expect(warns(p4).map((w) => [w.severity, w.week, w.message])).toEqual([
+      [
+        'warning',
+        1,
+        'Kvalitetni dan duži od dugog po trajanju u 3 od 7 nedelja izgradnje (ned 1: 32 > 23 min; D25); preporuka 3 dana (red D17 sa manje dana podržava obim 25 km, dugi dobija veći udeo).'
+      ]
+    ]);
+    // 6 dana, 35 km, VDOT 70: preporuka 3–5 dana; 3 dana nema manji red — bez preporuke (i bez upozorenja).
+    const p6 = planOf(6, { weeks: 12, km: 35, vdot: 70 });
+    expect(warns(p6)[0]!.message).toMatch(/; preporuka 3–5 dana \(red D17/);
+    expect(warns(planOf(3, { weeks: 12, km: 20, vdot: 70 }))).toEqual([]);
+    // Plan se ne menja: upozorenje nastaje samo iz validatora.
+    const before = JSON.stringify(p4.weeks);
+    validatePlan(p4);
+    expect(JSON.stringify(p4.weeks)).toBe(before);
+    // Isti plan sa dugim dužim od svakog kvaliteta → bez upozorenja.
+    for (const w of p4.weeks.filter(steady)) {
+      const long = w.days.find((d) => d.role === 'long')!.workout;
+      (long as { sec: number }).sec = 99999;
+    }
+    expect(validatePlan(p4).some((v) => v.rule === 'LONG_SHORTER_THAN_QUALITY')).toBe(false);
   });
 
   it('D7: taper 5 dana bez jednog dana → TAPER_DAYS', () => {

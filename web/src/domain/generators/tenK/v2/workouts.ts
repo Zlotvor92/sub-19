@@ -72,11 +72,21 @@ function equalSplits(
   return out;
 }
 
+/** D22/D22b (T i RP): 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takvih nema sa 50 m. */
+function splitsOf(doseM: number): Structure[] {
+  const a = P.alternatives;
+  const splits = equalSplits(doseM, a.repMinM, doseM);
+  return splits.length > 0
+    ? splits
+    : equalSplits(doseM, a.repMinM, doseM, a.repsMax, a.roundFallbackM);
+}
+
 /**
  * Sve strukture iste doze za lestvicu (D10): nivo lestvice sa tom dozom (ako postoji) pa strukture po
  * pravilu. T: kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m deljivih sa 100 m, a kad takvih nema sa 50 m
- * (D22); I: do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m; RP: 2–5 jednakih deonica;
- * R: deonice 200 / 300 / 400 m (D22). Prihvataju se samo tačne podele (doza se ne menja).
+ * (D22); RP: iste deonice kao T, bez kontinuiranog (D22b); I: do 6 jednakih deonica 800–1200 m ili
+ * piramida 1200 + 1000 + 800 m; R: deonice 200 / 300 / 400 m (D22). Prihvataju se samo tačne podele (doza
+ * se ne menja).
  */
 export function structuresForDose(ladder: LadderId, doseM: number): Structure[] {
   const out: Structure[] = [];
@@ -87,13 +97,11 @@ export function structuresForDose(ladder: LadderId, doseM: number): Structure[] 
   const a = P.alternatives;
   if (ladder === 'T_continuous' || ladder === 'T_cruise') {
     push({ form: 'continuous', km: doseM / 1000 });
-    const splits = equalSplits(doseM, a.tRepMinM, doseM);
-    const fallback = equalSplits(doseM, a.tRepMinM, doseM, a.repsMax, a.tRoundFallbackM);
-    for (const s of splits.length > 0 ? splits : fallback) push(s);
+    for (const s of splitsOf(doseM)) push(s);
   } else if (ladder === 'I') {
     for (const s of equalSplits(doseM, a.iRepMinM, a.iRepMaxM, a.iRepsMax)) push(s);
     push({ form: 'pyramid', repsM: a.iPyramidM });
-  } else if (ladder === 'RP') for (const s of equalSplits(doseM, a.roundM, doseM)) push(s);
+  } else if (ladder === 'RP') for (const s of splitsOf(doseM)) push(s);
   else
     for (const repM of a.rRepM)
       if (doseM % repM === 0) push({ form: 'reps', reps: doseM / repM, repM });

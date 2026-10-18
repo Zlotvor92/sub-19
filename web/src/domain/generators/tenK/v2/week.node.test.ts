@@ -1,4 +1,4 @@
-/* D7 taper, D8 + D20 trkačka nedelja, D13 dužine, D19 lagani dani, D14 WU/CD i oporavci, D15 Uslov 8 —
+/* D7 taper, D8 + D20 + D23 trkačka nedelja, D13 dužine, D19 lagani dani, D14 WU/CD i oporavci, D15 Uslov 8 —
    nezavisne provere na uzorku mreže 02 (3/4/5/6 dana; brojevi iz odluka, ne iz koda generatora). */
 
 import { describe, expect, it } from 'vitest';
@@ -28,8 +28,8 @@ const steady = (w: PlanWeek): boolean =>
   !w.deload && (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific');
 const mid = (p: TenKV2Plan): number => (p.paces.E.fast + p.paces.E.slow) / 2;
 const floor10 = (x: number): number => Math.floor(x * 10 + 1e-9) / 10;
-/** D17 nezavisno: udeo dugog i minimum nedelje po broju dana. */
-const SHARE: Record<number, number> = { 3: 0.4, 4: 0.33, 5: 0.3, 6: 0.27 };
+/** D17 nezavisno: udeo dugog (02b: 3 dana 0,45) i minimum nedelje po broju dana. */
+const SHARE: Record<number, number> = { 3: 0.45, 4: 0.33, 5: 0.3, 6: 0.27 };
 const WEEK_MIN: Record<number, number> = { 3: 9, 4: 12, 5: 15, 6: 18 };
 const RP_LADDER = [2400, 3000, 4000, 4500, 5000, 6000];
 const T_CRUISE = [2000, 2400, 3000, 3600, 4000, 4800, 5000, 6000, 6400, 8000];
@@ -85,10 +85,11 @@ describe('D7: taper', () => {
   });
 });
 
-describe('D8 + D20: trkačka nedelja', () => {
-  it('dana sa trkom = min(broj dana, 5): otpada dugi, pa najraniji lagan dan; oštrenje ≤ RP doza tapera; dan pred trku; 35 min E; trka van obima', () => {
+describe('D8 + D20 + D23: trkačka nedelja', () => {
+  it('dana sa trkom = min(broj dana, 5): otpada dugi, pa najraniji lagan dan; oštrenje ≤ RP doza tapera; dan pred trku; lagan = min(35 min E, najkraći lagan tapera); trka van obima; trkačka ≤ taper', () => {
     const reps: Record<number, number> = { 0: 0, 2: 0, 3: 0 };
     let droppedEasy = 0;
+    const easyKind = { time: 0, km: 0 };
     for (const p of plans) {
       const n = p.input.runDays.length;
       const w = p.weeks[p.weeks.length - 1]!;
@@ -151,17 +152,33 @@ describe('D8 + D20: trkačka nedelja', () => {
             20, 20, 20, 20
           ]);
         } else {
+          // D23: min(35 min E, najkraći lagan tapera); kad je lagan tapera kraći — zadat u km.
           expect(d.role).toBe('easy');
-          expect(d.workout.segments.map((s) => [s.zone, s.sec])).toEqual([['E', 2100]]);
+          const taperEasy = Math.min(
+            ...taper.days.filter((x) => x.role === 'easy').map((x) => x.workout.km)
+          );
+          if (Math.round(taperEasy * 100) < Math.round((2100 * 100) / mid(p))) {
+            expect(d.workout.segments.map((s) => [s.zone, s.kind, s.km])).toEqual([
+              ['E', 'easy', taperEasy]
+            ]);
+            easyKind.km++;
+          } else {
+            expect(d.workout.segments.map((s) => [s.zone, s.sec])).toEqual([['E', 2100]]);
+            easyKind.time++;
+          }
         }
       }
       const planned = days.reduce((a, d) => a + Math.round(d.workout.km * 100), 0) / 100;
       expect(w.plannedKm).toBe(planned);
       expect(w.targetKm).toBe(Math.round(planned * 10) / 10);
+      // D23 invarijanta: planirano trkačke nedelje (bez trke) ≤ planirano tapera.
+      expect(w.plannedKm, p.input.raceDate).toBeLessThanOrEqual(taper.plannedKm);
     }
     expect(reps[2]).toBeGreaterThan(0);
     expect(reps[3]).toBeGreaterThan(0);
     expect(droppedEasy).toBeGreaterThan(0);
+    expect(easyKind.km).toBeGreaterThan(0);
+    expect(easyKind.time).toBeGreaterThan(0);
   });
 });
 

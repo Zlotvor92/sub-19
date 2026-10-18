@@ -1,0 +1,178 @@
+{
+  "against": "49ad476",
+  "cases": {
+    "d3-20km-v35-12w": {
+      "ok": true,
+      "week1": 20,
+      "week1Long": 8,
+      "peak": 28,
+      "race": 10.63,
+      "taper": 21.05,
+      "warnings": {
+        "DELOAD_NO_QUALITY": 1
+      }
+    },
+    "d3-35km-v45-10w": {
+      "ok": true,
+      "week1": 35,
+      "week1Long": 14,
+      "peak": 45,
+      "race": 14.22,
+      "taper": 33.85,
+      "warnings": {
+        "WEEK_FITTED": 2,
+        "CAPACITY_LIMITED": 1
+      }
+    },
+    "d5-35km-v40-12w": {
+      "ok": true,
+      "week1": 35,
+      "week1Long": 10.5,
+      "peak": 49,
+      "race": 22.24,
+      "taper": 36.8,
+      "warnings": {}
+    },
+    "d5-60km-v55-16w": {
+      "ok": true,
+      "week1": 60,
+      "week1Long": 18,
+      "peak": 75,
+      "race": 30.45,
+      "taper": 56.3,
+      "warnings": {}
+    },
+    "d6-45km-v45-14w": {
+      "ok": true,
+      "week1": 45,
+      "week1Long": 12.1,
+      "peak": 60,
+      "race": 26.29,
+      "taper": 45.04,
+      "warnings": {}
+    },
+    "d6-80km-v65-18w": {
+      "ok": true,
+      "week1": 80,
+      "week1Long": 21.6,
+      "peak": 90,
+      "race": 37.03,
+      "taper": 67.52,
+      "warnings": {}
+    },
+    "short-8w-d4-35km-v45": {
+      "ok": true,
+      "week1": 35,
+      "week1Long": 11.5,
+      "peak": 44.2,
+      "race": 18.2,
+      "taper": 33.2,
+      "warnings": {}
+    },
+    "short-9w-d5-45km-v50": {
+      "ok": true,
+      "week1": 45,
+      "week1Long": 13.5,
+      "peak": 59.6,
+      "race": 27.09,
+      "taper": 44.66,
+      "warnings": {}
+    },
+    "short-8w-d3-25km-v38": {
+      "ok": true,
+      "week1": 25,
+      "week1Long": 10,
+      "peak": 31.6,
+      "race": 11.2,
+      "taper": 23.69,
+      "warnings": {}
+    },
+    "d3-35km-v40-12w": {
+      "ok": true,
+      "week1": 35,
+      "week1Long": 14,
+      "peak": 41.1,
+      "race": 13.12,
+      "taper": 30.8,
+      "warnings": {
+        "WEEK_FITTED": 5,
+        "CAPACITY_LIMITED": 1
+      }
+    },
+    "d5-30km-v70-10w": {
+      "ok": true,
+      "week1": 30,
+      "week1Long": 7.6,
+      "peak": 42,
+      "race": 34.09,
+      "taper": 31.48,
+      "warnings": {}
+    },
+    "d4-25km-v70-10w": {
+      "ok": true,
+      "week1": 25,
+      "week1Long": 5.6,
+      "peak": 35,
+      "race": 22.73,
+      "taper": 26.28,
+      "warnings": {}
+    },
+    "edge-d6-80km-v30": {
+      "ok": true,
+      "week1": 67.8,
+      "week1Long": 12.5,
+      "peak": 72.2,
+      "race": 20.02,
+      "taper": 54.16,
+      "warnings": {
+        "WEEK_FITTED": 9,
+        "CAPACITY_LIMITED": 1
+      }
+    },
+    "rej-2-days": {
+      "ok": false,
+      "week1": null,
+      "week1Long": null,
+      "peak": null,
+      "race": null,
+      "taper": null,
+      "warnings": {}
+    },
+    "rej-7-days": {
+      "ok": false,
+      "week1": null,
+      "week1Long": null,
+      "peak": null,
+      "race": null,
+      "taper": null,
+      "warnings": {}
+    },
+    "rej-3-days-45km": {
+      "ok": false,
+      "week1": null,
+      "week1Long": null,
+      "peak": null,
+      "race": null,
+      "taper": null,
+      "warnings": {}
+    },
+    "rej-6-days-30km": {
+      "ok": false,
+      "week1": null,
+      "week1Long": null,
+      "peak": null,
+      "race": null,
+      "taper": null,
+      "warnings": {}
+    },
+    "rej-7-weeks": {
+      "ok": false,
+      "week1": null,
+      "week1Long": null,
+      "peak": null,
+      "race": null,
+      "taper": null,
+      "warnings": {}
+    }
+  }
+}

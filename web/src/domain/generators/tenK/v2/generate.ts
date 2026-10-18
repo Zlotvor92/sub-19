@@ -62,12 +62,14 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
   let lastLong10: number | null = null;
   let longest10 = 0;
   let taperRpM = 0;
+  /** D23: najkraći lagan dan tapera [0,1 km] (gornja granica laganog dana trkačke nedelje). */
+  let taperEasy10 = Infinity;
   const out: PlanWeek[] = [];
   for (const frame of frames) {
     if (frame.phase === 'race') {
       const prev = out[out.length - 1];
       const prevHard = prev ? (prev.days.filter((d) => d.hard).pop()?.date ?? null) : null;
-      const w = raceWeek(ctx, frame, taperRpM, prevHard);
+      const w = raceWeek(ctx, frame, taperRpM, prevHard, taperEasy10);
       const t10 = raceWeekTarget10(w.planned100);
       out.push({
         ...frame,
@@ -118,8 +120,11 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
       notes
     });
     if (w.long10 !== null) longest10 = Math.max(longest10, w.long10);
-    if (frame.phase === 'taper')
+    if (frame.phase === 'taper') {
       taperRpM = w.days.find((d) => d.role === 'q1')?.workout.dose?.doseM ?? 0;
+      for (const d of w.days)
+        if (d.role === 'easy') taperEasy10 = Math.min(taperEasy10, Math.round(d.workout.km * 10));
+    }
     if (isBuildPhase(frame.phase) && !frame.deload) {
       vol.lastBuild10 = fit.target10;
       vol.peak10 = Math.max(vol.peak10, fit.target10);

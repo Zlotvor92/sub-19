@@ -40,6 +40,20 @@ export function capacityMessage(
   return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
 }
 
+/**
+ * D25: preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele D17 podržava trenutni obim
+ * (kmMin ≤ obim ≤ kmMax); prazno kad ih nema.
+ */
+export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number): string {
+  const km10 = to10(currentWeeklyKm);
+  const fewer = RUN_DAYS_COUNTS.filter(
+    (n) => n < runDays && to10(P.days[n].kmMin) <= km10 && km10 <= to10(P.days[n].kmMax)
+  );
+  if (fewer.length === 0) return '';
+  const days = fewer.length === 1 ? `${fewer[0]}` : `${fewer[0]}–${fewer[fewer.length - 1]}`;
+  return `; preporuka ${days} dana (red D17 sa manje dana podržava obim ${currentWeeklyKm} km, dugi dobija veći udeo)`;
+}
+
 /** D22: ograničenja spuštenih (fitted 'down') ne-rasteretnih nedelja izgradnje: dugi = plafon 105 min
     sporim E → 'time'; dugi = udeo cilja (D17) → 'share'. */
 export function capacityLimits(

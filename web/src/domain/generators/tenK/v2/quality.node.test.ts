@@ -1,4 +1,4 @@
-/* D10/D22 lestvice i strukture, D11 plafoni, D12 progresija, D16 početni nivo, D18 jedan kvalitet (3 dana)
+/* D10/D22/D22b lestvice i strukture, D11 plafoni, D12 progresija, D16 početni nivo, D18 jedan kvalitet (3 dana)
    — nezavisne provere na uzorku mreže 02 (3/4/5/6 dana). */
 
 import { describe, expect, it } from 'vitest';
@@ -58,8 +58,8 @@ const startM = (ladder: string, targetKm: number): number =>
   LADDER[ladder]![0]!;
 const PYRAMID: Structure = { form: 'pyramid', repsM: [1200, 1000, 800] };
 
-/** Nezavisno: postoji li druga struktura iste doze po pravilu D10/D22 (T ≥ 1000 m deljivo sa 100 m, a bez
-    takve podele sa 50 m; I do 6 ili piramida; RP deljivo sa 100 m; R 200/300/400 m). */
+/** Nezavisno: postoji li druga struktura iste doze po pravilu D10/D22/D22b (T i RP ≥ 1000 m deljivo sa
+    100 m, a bez takve podele sa 50 m — T i kontinuirano; I do 6 ili piramida; R 200/300/400 m). */
 function hasOther(ladder: string, doseM: number, s: Structure): boolean {
   const opts: Structure[] = [];
   const splits = (lo: number, hi: number, kMax = 5, round = 100): Structure[] => {
@@ -69,15 +69,14 @@ function hasOther(ladder: string, doseM: number, s: Structure): boolean {
         out.push({ form: 'reps', reps: k, repM: doseM / k });
     return out;
   };
-  if (ladder.startsWith('T')) {
-    opts.push({ form: 'continuous', km: doseM / 1000 });
+  if (ladder.startsWith('T') || ladder === 'RP') {
+    if (ladder !== 'RP') opts.push({ form: 'continuous', km: doseM / 1000 });
     const s100 = splits(1000, doseM);
     opts.push(...(s100.length > 0 ? s100 : splits(1000, doseM, 5, 50)));
   } else if (ladder === 'I') {
     opts.push(...splits(800, 1200, 6));
     if (doseM === 3000) opts.push(PYRAMID);
-  } else if (ladder === 'RP') opts.push(...splits(100, doseM));
-  else
+  } else
     for (const r of [200, 300, 400])
       if (doseM % r === 0) opts.push({ form: 'reps', reps: doseM / r, repM: r });
   return opts.some((o) => !same(o, s));
@@ -99,7 +98,7 @@ const SLOT_ONE: Record<Phase, string[]> = {
   race: []
 };
 
-describe('D10/D22: lestvice i strukture', () => {
+describe('D10/D22/D22b: lestvice i strukture', () => {
   it('ista doza druge strukture po pravilu (tačne podele; T 50 m samo bez podele na 100 m; R 400 m)', () => {
     // D22: T deonice ≥ 1000 m deljive sa 50 m kad podela na 100 m ne postoji (primeri iz odluke).
     expect(structuresForDose('T_continuous', 2500)).toEqual([
@@ -154,15 +153,28 @@ describe('D10/D22: lestvice i strukture', () => {
       { form: 'reps', reps: 10, repM: 200 },
       { form: 'reps', reps: 5, repM: 400 }
     ]);
-    // RP ostaje deljiv sa 100 m: 2,5 i 3,5 km imaju samo jednu strukturu (odstupanje D12 kod 3 dana).
-    expect(structuresForDose('RP', 2500)).toEqual([{ form: 'reps', reps: 5, repM: 500 }]);
-    expect(structuresForDose('RP', 3500)).toEqual([{ form: 'reps', reps: 5, repM: 700 }]);
+    // D22b: RP kao T — deonice ≥ 1000 m, 50 m kad podele na 100 m nema (bez kontinuiranog). 10k-v2.2.0:
+    // 2,5 km = 5 × 500 m, 3,5 km = 5 × 700 m, 2,4 km i 3 × 800 / 4 × 600 m.
+    expect(structuresForDose('RP', 2500)).toEqual([{ form: 'reps', reps: 2, repM: 1250 }]);
+    expect(structuresForDose('RP', 3500)).toEqual([{ form: 'reps', reps: 2, repM: 1750 }]);
+    expect(structuresForDose('RP', 2400)).toEqual([{ form: 'reps', reps: 2, repM: 1200 }]);
+    expect(structuresForDose('RP', 3000)).toEqual([
+      { form: 'reps', reps: 3, repM: 1000 },
+      { form: 'reps', reps: 2, repM: 1500 }
+    ]);
+    expect(structuresForDose('RP', 4500)).toEqual([{ form: 'reps', reps: 3, repM: 1500 }]);
     expect(structuresForDose('RP', 6000)).toContainEqual({ form: 'reps', reps: 2, repM: 3000 });
+    for (const m of [2000, 2400, 2500, 3000, 3500, 3600, 4000, 4500, 4800, 5000, 6000])
+      for (const s of structuresForDose('RP', m)) {
+        expect(s.form, `${m}`).toBe('reps');
+        if (s.form === 'reps') expect(s.repM, `${m}`).toBeGreaterThanOrEqual(1000);
+      }
   });
 
-  it('svaka T deonica ≥ 1000 m (deljiva sa 50 m); I do 6 deonica 800–1200 m ili piramida; R 200/300/400 m', () => {
+  it('svaka T i RP deonica ≥ 1000 m (deljiva sa 50 m, D22b); I do 6 deonica 800–1200 m ili piramida; R 200/300/400 m', () => {
     let pyramids = 0;
     let t50 = 0;
+    let rp50 = 0;
     let r400 = 0;
     for (const p of plans)
       for (const w of p.weeks)
@@ -172,11 +184,12 @@ describe('D10/D22: lestvice i strukture', () => {
           const reps = d.workout.segments
             .filter((x) => x.kind === 'rep')
             .map((x) => Math.round(x.km * 1000));
-          if (dose.zone === 'T')
+          if (dose.zone === 'T' || dose.zone === 'RP')
             for (const m of reps) {
-              expect(m, `${w.index}`).toBeGreaterThanOrEqual(1000);
+              expect(m, `${w.index} ${dose.zone}`).toBeGreaterThanOrEqual(1000);
               expect(m % 50).toBe(0);
-              if (m % 100 !== 0) t50++;
+              if (m % 100 !== 0 && dose.zone === 'T') t50++;
+              if (m % 100 !== 0 && dose.zone === 'RP') rp50++;
             }
           if (dose.zone === 'R')
             for (const m of reps) {
@@ -195,6 +208,7 @@ describe('D10/D22: lestvice i strukture', () => {
         }
     expect(pyramids).toBeGreaterThan(0);
     expect(t50).toBeGreaterThan(0);
+    expect(rp50).toBeGreaterThan(0);
     expect(r400).toBeGreaterThan(0);
   });
 

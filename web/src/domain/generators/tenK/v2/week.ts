@@ -1,7 +1,7 @@
-/* Sastav nedelje: izgradnja, rasterećenje (D5 sadržaj), taper (D7), trkačka nedelja (D8, D20), za 1 ili 2
-   kvaliteta i 1–3 lagana dana (D17–D19). Doze bira quality.ts, dužine lengths.ts, treninge workouts.ts;
-   ovde se samo raspoređuju po danima šablona (D9). null = nedelja sa ovim ciljem nije izvodljiva po
-   pravilima (volume.ts traži najbliži izvodljiv cilj). */
+/* Sastav nedelje: izgradnja, rasterećenje (D5 sadržaj), taper (D7), trkačka nedelja (D8, D20, D23), za 1
+   ili 2 kvaliteta i 1–3 lagana dana (D17–D19). Doze bira quality.ts, dužine lengths.ts, treninge
+   workouts.ts; ovde se samo raspoređuju po danima šablona (D9). null = nedelja sa ovim ciljem nije
+   izvodljiva po pravilima (volume.ts traži najbliži izvodljiv cilj). */
 
 import { addDays, daysBetween, weekdayOf } from './dates.ts';
 import { buildLengths, deloadLengths, taperLengths } from './lengths.ts';
@@ -244,17 +244,25 @@ export function raceWeekRuns(
   return runs.filter((d) => !drop.includes(d));
 }
 
+/** D23: lagan dan trkačke nedelje = min(35 min E, najkraći lagan tapera `taperEasy10` [0,1 km]); kad je
+    lagan tapera kraći, dan se zadaje u km. */
+export function raceEasyWorkout(taperEasy10: number, p: Paces): Workout {
+  const timed = easyTimeWorkout(P.raceWeek.otherEasySec, p);
+  return taperEasy10 * 10 < km100(timed.km) ? easyWorkout(taperEasy10 / 10, p) : timed;
+}
+
 /**
  * D8 + D20: trkačka nedelja. Dani po D20; trka zamenjuje dugi. Oštrenje (≤ RP doza tapera) na najkasnijem
  * danu ≥ 3 dana pre trke koji nije susedan poslednjem zahtevnom danu tapera `prevHard` (D9); nema takvog
- * dana → bez oštrenja (odstupanje D8). Dan pred trku 20 min E + ubrzanja; ostali 35 min E. Trka (sa
- * WU/CD) se ne računa u obim.
+ * dana → bez oštrenja (odstupanje D8). Dan pred trku 20 min E + ubrzanja; ostali 35 min E, ali ne duže od
+ * najkraćeg laganog dana tapera `taperEasy10` (D23). Trka (sa WU/CD) se ne računa u obim.
  */
 export function raceWeek(
   ctx: WeekContext,
   frame: WeekFrame,
   taperRpM: number,
-  prevHard: string | null
+  prevHard: string | null,
+  taperEasy10: number
 ): BuiltWeek {
   const q = P.raceWeek;
   const p = ctx.paces;
@@ -272,16 +280,24 @@ export function raceWeek(
               (prevHard === null || daysBetween(prevHard, d) >= 2)
           ) ?? null);
   const days: PlanDay[] = [day(race, 'race', raceWorkout(p, ctx.raceSec), false)];
+  const easy = raceEasyWorkout(taperEasy10, p);
   for (const d of runs) {
     if (d === sharpenDate) days.push(day(d, 'sharpener', sharpenerWorkout(reps, p, ctx.wc)));
     else if (daysBetween(d, race) === 1) days.push(day(d, 'eve', eveWorkout(p)));
-    else days.push(day(d, 'easy', easyTimeWorkout(q.otherEasySec, p)));
+    else days.push(day(d, 'easy', easy));
   }
+  const shortened =
+    easy.blocks[0]?.kind === 'easy' && days.some((d) => d.role === 'easy')
+      ? [
+          `Trkačka nedelja: lagan ${fmtKm(easy.km)} km = najkraći lagan tapera (kraći od ${Math.round(q.otherEasySec / 60)} min E; trkačka ≤ taper, D23).`
+        ]
+      : [];
   return finish(days, null, null, [
     sharpenDate
       ? `Trkačka nedelja: oštrenje ${reps} × ${q.sharpener.repM} m RP (≤ RP doza tapera ${fmtKm(taperRpM / 1000)} km), trka ${q.raceKm} km se ne računa u obim (D8).`
       : reps === 0
         ? `Trkačka nedelja: taper bez RP — bez oštrenja (oštrenje ≤ RP doza tapera, D8); trka ${q.raceKm} km se ne računa u obim (D20).`
-        : `Trkačka nedelja: nijedan dan trčanja nije ≥ ${q.sharpenerMinGapDays} dana pre trke i nesusedan poslednjem zahtevnom danu tapera — bez oštrenja (D8, odstupanje); trka ${q.raceKm} km se ne računa u obim (D20).`
+        : `Trkačka nedelja: nijedan dan trčanja nije ≥ ${q.sharpenerMinGapDays} dana pre trke i nesusedan poslednjem zahtevnom danu tapera — bez oštrenja (D8, odstupanje); trka ${q.raceKm} km se ne računa u obim (D20).`,
+    ...shortened
   ]);
 }

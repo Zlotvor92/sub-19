@@ -1,4 +1,4 @@
-/* Provera plana prema policy.ts (D1–D22). SAMO prijavljuje prekršaje; plan se nikad ne menja i nema
+/* Provera plana prema policy.ts (D1–D25). SAMO prijavljuje prekršaje; plan se nikad ne menja i nema
    petlji skraćivanja. Greške obaraju plan (generate.ts → PLAN_VIOLATES_POLICY); upozorenja idu u plan. */
 
 import { addDays as isoAdd, daysBetween, mustDay, weekdayOf } from './dates.ts';
@@ -20,7 +20,14 @@ import type {
   Violation,
   WorkZone
 } from './types.ts';
-import { capacityLimits, capacityMessage, growth10, peakCap10, startKm10 } from './volume.ts';
+import {
+  capacityLimits,
+  capacityMessage,
+  fewerDaysAdvice,
+  growth10,
+  peakCap10,
+  startKm10
+} from './volume.ts';
 import {
   doseOf,
   ladderLevels,
@@ -310,6 +317,25 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       }
   }
 
+  // --- D25: upozorenje — kvalitetni dan duži od dugog po trajanju u ne-rasteretnoj nedelji izgradnje.
+  const longer = weeks.flatMap((w) => {
+    const long = w.days.find((d) => d.role === 'long');
+    if (!isSteady(w) || !long) return [];
+    const q = Math.max(
+      0,
+      ...w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.sec)
+    );
+    return q > long.workout.sec ? [{ w: w.index, q, long: long.workout.sec }] : [];
+  });
+  if (longer.length > 0) {
+    const f = longer[0]!;
+    warn(
+      'LONG_SHORTER_THAN_QUALITY',
+      `Kvalitetni dan duži od dugog po trajanju u ${longer.length} od ${weeks.filter(isSteady).length} nedelja izgradnje (ned ${f.w}: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min; D25)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm)}.`,
+      f.w
+    );
+  }
+
   // --- D11: jedan plafon po zoni, po treningu (trkačka nedelja: D8).
   for (const w of weeks) {
     if (w.phase === 'race') continue;
@@ -399,6 +425,17 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       const s = dose.structure;
       const reps = seg.filter((x) => x.kind === 'rep');
       const recs = seg.filter((x) => x.kind === 'recovery');
+      // D10/D22/D22b: T i RP deonice ≥ 1000 m (oštrenje: D8, 1000 m).
+      if (
+        (dose.zone === 'T' || dose.zone === 'RP') &&
+        repsOf(s).some((m) => m < P.alternatives.repMinM)
+      )
+        err(
+          'REP_MIN',
+          `${dose.zone} deonica < ${P.alternatives.repMinM} m (D10, D22b).`,
+          w.index,
+          d.date
+        );
       if (s.form !== 'continuous') {
         const want = repsOf(s);
         const okRec = recs.every((x, i) => {
@@ -759,6 +796,13 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         `Oštrenje: ${reps} × ${q.sharpener.repM} m RP (90 s, ≤ RP doza tapera ${taperRpM} m) na najkasnijem danu ≥ ${q.sharpenerMinGapDays} dana pre trke (D8).`,
         rw.index
       );
+    // D23: lagan = min(35 min E, najkraći lagan tapera); kraći se zadaje u km.
+    const taperWeek = weeks.find((w) => w.phase === 'taper');
+    const taperEasy = (taperWeek?.days ?? [])
+      .filter((d) => d.role === 'easy')
+      .map((d) => to10(d.workout.km));
+    const easyCap10 = taperEasy.length > 0 ? Math.min(...taperEasy) : Infinity;
+    const easyByKm = easyCap10 * 10 < Math.round((q.otherEasySec * 100) / mid);
     for (const d of others) {
       if (d.role === 'sharpener') continue;
       const gap = daysBetween(d.date, race);
@@ -779,10 +823,24 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         d.role !== 'easy' ||
         segs.length !== 1 ||
         segs[0]!.zone !== 'E' ||
-        segs[0]!.sec !== q.otherEasySec
+        (easyByKm ? to100(segs[0]!.km) !== easyCap10 * 10 : segs[0]!.sec !== q.otherEasySec)
       )
-        err('RACE_WEEK_EASY', 'Ostali dani trkačke nedelje: 35 min E (D8).', rw.index, d.date);
+        err(
+          'RACE_WEEK_EASY',
+          easyByKm
+            ? `Ostali dani trkačke nedelje: ${easyCap10 / 10} km E = najkraći lagan tapera (D23).`
+            : 'Ostali dani trkačke nedelje: 35 min E (D8, D23).',
+          rw.index,
+          d.date
+        );
     }
+    // D23: trkačka nedelja (bez trke) ≤ taper.
+    if (taperWeek && to100(rw.plannedKm) > to100(taperWeek.plannedKm))
+      err(
+        'RACE_WEEK_OVER_TAPER',
+        `Trkačka nedelja ${rw.plannedKm} km > taper ${taperWeek.plannedKm} km (D23).`,
+        rw.index
+      );
     if (to10(rw.targetKm) !== Math.round(to100(rw.plannedKm) / 10))
       err('RACE_WEEK', 'Cilj trkačke nedelje = planirano (D8).', rw.index);
   }

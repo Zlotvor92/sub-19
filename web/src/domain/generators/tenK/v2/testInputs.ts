@@ -3,7 +3,8 @@
 
 import { addDays } from './dates.ts';
 import { raceTimeForVdot, round1, vdotFromResult } from './paces.ts';
-import type { Weekday } from './types.ts';
+import type { Structure, Weekday } from './types.ts';
+import { repsOf } from './workouts.ts';
 
 /** Ponedeljak; trka nedelja = START + 7N − 1. Trka subota: start nedelja (dan ranije). */
 export const START = '2026-11-02';
@@ -160,4 +161,32 @@ export function planHash(result: unknown): number {
       .replace(/10k-v2\.\d+\.\d+/g, 'VERSION')
       .replace(/\d dana ne nose ovaj obim[^."]*\./g, 'CAPACITY.')
   );
+}
+
+interface HashedResult {
+  ok: boolean;
+  plan?: {
+    warnings: { rule: string }[];
+    weeks: { days: { workout: { dose: { zone: string; structure: Structure } | null } }[] }[];
+  };
+}
+
+/**
+ * Regresija prema 49ad476 (10k-v2.2.0), isti normalizator u skripti koja je upisala heševe 49ad476:
+ * [heš kao planHash bez upozorenja LONG_SHORTER_THAN_QUALITY (D25, plan se ne menja); heš nedelja bez
+ * trkačke (uzrok D23 menja samo trkačku nedelju); 1 ako plan ima RP deonicu < 1000 m (D22b je zabranjuje)].
+ */
+export function planHashes49(result: unknown): [number, number, number] {
+  const r = result as HashedResult;
+  if (!r.ok || !r.plan) return [planHash(result), 0, 0];
+  const warnings = r.plan.warnings.filter((w) => w.rule !== 'LONG_SHORTER_THAN_QUALITY');
+  const full = planHash({ ...r, plan: { ...r.plan, warnings } });
+  const preRace = fnv1a(JSON.stringify(r.plan.weeks.slice(0, -1)));
+  const rpShort = r.plan.weeks.some((w) =>
+    w.days.some((d) => {
+      const s = d.workout.dose?.zone === 'RP' ? d.workout.dose.structure : null;
+      return !!s && repsOf(s).some((m) => m < 1000);
+    })
+  );
+  return [full, preRace, rpShort ? 1 : 0];
 }

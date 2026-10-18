@@ -1,7 +1,8 @@
 /* Mreža segmenta 02: dana 3/4/5/6 × nedelje 8–18 × obim po broju dana (D17, korak 5 km) × VDOT {30..70} ×
    3 rasporeda × trka sub/ned = 15 840 planova: 0 odbijanja, 0 grešaka validatora, deterministički, = bazna
-   linija segment02.baseline.json. Invarijante se proveravaju nezavisno od validatora (brojevi iz odluka).
-   Regresija (pouka 1): 4 dana × 10–18 ned prema 53da370 (segment01.baseline.json i heševi planova). */
+   linija segment02b.baseline.json (10k-v2.2.1). Invarijante se proveravaju nezavisno od validatora (brojevi
+   iz odluka). Regresija (pouka 1) prema 49ad476 (10k-v2.2.0): redovi segment02.baseline.json i heševi celih
+   planova segment02b.plan-hashes-49ad476.json; promena samo od D17 (3 dana), D22b ili D23. */
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -9,22 +10,28 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { addDays, daysBetween, weekdayOf } from './dates.ts';
 import { generateTenKV2 } from './generate.ts';
-import { fnv1a, grid02Inputs, planHash } from './testInputs.ts';
+import { fnv1a, grid02Inputs, planHashes49 } from './testInputs.ts';
 import type { Phase, PlanWeek, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const BASELINE = join(HERE, 'segment02.baseline.json');
-const BASELINE_53 = join(HERE, 'segment01.baseline.json');
-const HASHES_53 = join(HERE, 'segment02.plan-hashes-53da370.json');
-const EXCEPTIONS = join(HERE, 'segment02.regression-exceptions.json');
+const BASELINE = join(HERE, 'segment02b.baseline.json');
+const BASELINE_49 = join(HERE, 'segment02.baseline.json');
+const HASHES_49 = join(HERE, 'segment02b.plan-hashes-49ad476.json');
+const EXCEPTIONS = join(HERE, 'segment02b.regression-exceptions.json');
 const LETTER = { base: 'B', development: 'D', specific: 'S', taper: 'T', race: 'R' } as const;
 const DAYS = [3, 4, 5, 6] as const;
 type Days = (typeof DAYS)[number];
 
-/** D17 nezavisno (brojevi iz odluke). */
-const SHARE: Record<Days, number> = { 3: 0.4, 4: 0.33, 5: 0.3, 6: 0.27 };
+/** D17 nezavisno (brojevi iz odluke; 02b: 3 dana udeo 0,45). */
+const SHARE: Record<Days, number> = { 3: 0.45, 4: 0.33, 5: 0.3, 6: 0.27 };
 const WEEK_MIN: Record<Days, number> = { 3: 9, 4: 12, 5: 15, 6: 18 };
+const KM_RANGE: Record<Days, [number, number]> = {
+  3: [20, 40],
+  4: [25, 55],
+  5: [30, 65],
+  6: [35, 80]
+};
 /** D14: WU/CD po pojasu trenutnog obima, isti za sve brojeve dana. */
 const band = (km: number): [number, number] =>
   km < 35 ? [900, 600] : km < 45 ? [1200, 900] : [1500, 900];
@@ -67,8 +74,9 @@ function summary(p: TenKV2Plan): Row {
 interface Stats {
   plans: number;
   belowTime: number;
-  belowShare: number;
   capacity: number;
+  raceKmEasy: number;
+  longShorter: number;
   doseDropped: number;
   repeats: number;
   peakRatio: number;
@@ -126,9 +134,10 @@ function check(id: string, n: Days, p: TenKV2Plan, bad: Record<string, string[]>
         s.at(-1)!.sec !== cd
       )
         no('WU_CD_BAND', `${tag} ${d.date}`);
-      if (wo.dose!.zone === 'T')
+      // D10/D22/D22b: T i RP deonice ≥ 1000 m.
+      if (wo.dose!.zone === 'T' || wo.dose!.zone === 'RP')
         for (const x of s)
-          if (x.kind === 'rep' && Math.round(x.km * 1000) < 1000) no('T_REP_1000', tag);
+          if (x.kind === 'rep' && Math.round(x.km * 1000) < 1000) no('T_RP_REP_1000', tag);
       // D18: 3 dana bez I i R.
       if (n === 3 && (wo.dose!.zone === 'I' || wo.dose!.zone === 'R')) no('THREE_NO_I_R', tag);
     }
@@ -178,16 +187,49 @@ function check(id: string, n: Days, p: TenKV2Plan, bad: Record<string, string[]>
     if (w.phase === 'race' && w.days.length !== Math.min(n, 5)) no('RACE_DAYS', tag);
     if (steady(w)) last = w;
   }
+  // D23: trkačka nedelja (bez trke) ≤ taper; lagan = min(35 min E, najkraći lagan tapera).
+  const taper = p.weeks[p.weeks.length - 2]!;
+  const race = p.weeks[p.weeks.length - 1]!;
+  if (race.plannedKm > taper.plannedKm + EPS)
+    no('RACE_LE_TAPER', `${race.plannedKm} > ${taper.plannedKm}`);
+  const taperEasy = Math.min(
+    ...taper.days.filter((d) => d.role === 'easy').map((d) => to10(d.workout.km))
+  );
+  const byKm = taperEasy * 10 < Math.round((2100 * 100) / ((p.paces.E.fast + p.paces.E.slow) / 2));
+  const raceEasy = race.days.filter((d) => d.role === 'easy');
+  for (const d of raceEasy)
+    if (
+      byKm ? Math.round(d.workout.km * 100) !== taperEasy * 10 : d.workout.segments[0]!.sec !== 2100
+    )
+      no('RACE_EASY_D23', `${d.date}`);
+  if (byKm && raceEasy.length > 0) st.raceKmEasy++;
+  // D25: upozorenje TAČNO kad je u ne-rasteretnoj nedelji izgradnje kvalitetni dan duži od dugog po
+  // trajanju; preporuka manje dana tačno kad red D17 sa manje dana podržava trenutni obim.
+  const longer = p.weeks.some((w) => {
+    const l = w.days.find((d) => d.role === 'long');
+    return (
+      steady(w) &&
+      !!l &&
+      w.days.some((d) => d.workout.kind === 'quality' && d.workout.sec > l.workout.sec)
+    );
+  });
+  const d25 = p.warnings.filter((x) => x.rule === 'LONG_SHORTER_THAN_QUALITY');
+  if (longer !== (d25.length === 1) || d25.length > 1 || d25.some((x) => x.severity !== 'warning'))
+    no('D25_EXACT', `${longer} ${d25.length}`);
+  const km = p.input.currentWeeklyKm;
+  const fewer = DAYS.filter((k) => k < n && KM_RANGE[k][0] <= km && km <= KM_RANGE[k][1]);
+  if (d25.length === 1 && d25[0]!.message.includes('preporuka') !== fewer.length > 0)
+    no('D25_ADVICE', d25[0]!.message);
+  if (longer) st.longShorter++;
   // D9: zahtevni dani nikad uzastopni (i preko granice nedelje).
   const hard = p.weeks.flatMap((w) => w.days.filter((d) => d.hard).map((d) => d.date)).sort();
   for (let i = 1; i < hard.length; i++)
     if (daysBetween(hard[i - 1]!, hard[i]!) < 2) no('HARD_ADJACENT', `${hard[i - 1]} ${hard[i]}`);
-  // Nedelja 1 < trenutni obim SAMO kad je dugi nedelje 1 na 105 min (3 dana: ili na udelu 40 %, D17).
+  // Nedelja 1 < trenutni obim SAMO kad je dugi nedelje 1 na 105 min (02b: i za 3 dana, udeo 45 %, D17).
   const w1 = p.weeks[0]!;
   if (w1.targetKm < p.input.currentWeeklyKm) {
     const l1 = longOf(w1)!;
     if (l1 === time10) st.belowTime++;
-    else if (n === 3 && l1 === shareCap10(w1.targetKm)) st.belowShare++;
     else no('WEEK1_BELOW', `${w1.targetKm} < ${p.input.currentWeeklyKm}, dugi ${l1 / 10}`);
   }
   // DOSE_DROPPED SAMO u planovima ograničenim kapacitetom: nedelja izgradnje spuštena sa dugim na 105 min.
@@ -201,19 +243,26 @@ function check(id: string, n: Days, p: TenKV2Plan, bad: Record<string, string[]>
   st.plans++;
 }
 
-/** D22 element: T deonica deljiva sa 50, a ne sa 100 m, ili R deonica 400 m. */
-function d22(p: TenKV2Plan): { t50: boolean; r400: boolean } {
-  let t50 = false;
-  let r400 = false;
-  for (const w of p.weeks)
-    for (const d of w.days) {
-      const s = d.workout.dose?.structure;
-      if (!s || s.form !== 'reps') continue;
-      if (d.workout.dose!.zone === 'T' && s.repM % 100 !== 0) t50 = true;
-      if (d.workout.dose!.zone === 'R' && s.repM === 400) r400 = true;
-    }
-  return { t50, r400 };
+/** Uzrok promene prema 49ad476 (markeri u NOVOM planu): RP deonica sa 50 m (D22b) i lagan trkačke
+    nedelje zadat u km (D23). Stari plan sa RP deonicom < 1000 m nosi oznaku iz fixture-a. */
+function markers(p: TenKV2Plan): { rp50: boolean; raceKm: boolean } {
+  const rp50 = p.weeks.some((w) =>
+    w.days.some((d) => {
+      const s = d.workout.dose?.zone === 'RP' ? d.workout.dose.structure : null;
+      return s?.form === 'reps' && s.repM % 100 !== 0;
+    })
+  );
+  const raceKm = p.weeks
+    .at(-1)!
+    .days.some((d) => d.role === 'easy' && d.workout.blocks[0]!.kind === 'easy');
+  return { rp50, raceKm };
 }
+
+type Exceptions = {
+  against: string;
+  reasons: Record<string, string>;
+  plans: Record<string, string>;
+};
 
 describe('mreža 02: 15 840 planova (3/4/5/6 dana × 8–18 ned)', () => {
   const inputs = DAYS.flatMap((n) => grid02Inputs(n));
@@ -227,8 +276,9 @@ describe('mreža 02: 15 840 planova (3/4/5/6 dana × 8–18 ned)', () => {
     stats[n] = {
       plans: 0,
       belowTime: 0,
-      belowShare: 0,
       capacity: 0,
+      raceKmEasy: 0,
+      longShorter: 0,
       doseDropped: 0,
       repeats: 0,
       peakRatio: 0,
@@ -237,10 +287,12 @@ describe('mreža 02: 15 840 planova (3/4/5/6 dana × 8–18 ned)', () => {
       taperNone: 0,
       raceShort: 0
     };
-  /** 4 dana × 10–18 ned: heš plana (regresija) i D22 elementi. */
-  const reg: Record<string, { hash: number; t50: boolean; r400: boolean }> = {};
-  let repeats4 = 0;
-  for (const { id, days, weeks, input } of inputs) {
+  /** Regresija prema 49ad476: heševi (planHashes49), markeri uzroka, CAPACITY_LIMITED. */
+  const reg: Record<
+    string,
+    { days: Days; h: [number, number, number]; rp50: boolean; raceKm: boolean; capacity: boolean }
+  > = {};
+  for (const { id, days, input } of inputs) {
     const n = days as Days;
     const r = generateTenKV2(input);
     hashes.push(fnv1a(JSON.stringify(r)));
@@ -252,10 +304,12 @@ describe('mreža 02: 15 840 planova (3/4/5/6 dana × 8–18 ned)', () => {
       if (v.severity === 'error') errors[v.rule] = (errors[v.rule] ?? 0) + 1;
     rows[id] = summary(r.plan);
     check(id, n, r.plan, bad, stats[n]);
-    if (n === 4 && weeks >= 10) {
-      reg[id] = { hash: planHash(r), ...d22(r.plan) };
-      repeats4 += r.plan.weeks.filter((w) => w.notes.some((x) => x.includes('ponovljen'))).length;
-    }
+    reg[id] = {
+      days: n,
+      h: planHashes49(r),
+      ...markers(r.plan),
+      capacity: r.plan.warnings.some((x) => x.rule === 'CAPACITY_LIMITED')
+    };
   }
 
   it('15 840 ulaza, 0 odbijanja, 0 grešaka validatora (BASE_PLATEAU 0)', () => {
@@ -272,20 +326,23 @@ describe('mreža 02: 15 840 planova (3/4/5/6 dana × 8–18 ned)', () => {
     expect(again).toEqual(hashes);
   });
 
-  it('invarijante (nezavisno od validatora): planirano = cilj, dugi ≥ lagan, dugi ≤ udeo i ≤ 105 min, teški dani nesusedni, WU/CD po pojasu, T ≥ 1000 m, rasterećenje po D5, D19, D20, Uslov 8, 3 dana jedan kvalitet bez I/R', () => {
+  it('invarijante (nezavisno od validatora): planirano = cilj, dugi ≥ lagan, dugi ≤ udeo i ≤ 105 min, teški dani nesusedni, WU/CD po pojasu, T i RP ≥ 1000 m (D22b), rasterećenje po D5, D19, D20, trkačka ≤ taper (D23), D25 tačno, Uslov 8, 3 dana jedan kvalitet bez I/R', () => {
     const summaryBad = Object.fromEntries(
       Object.entries(bad).map(([k, v]) => [k, `${v.length}: ${v.slice(0, 3).join(' | ')}`])
     );
     expect(summaryBad).toEqual({});
   });
 
-  it('nedelja 1 < trenutni obim SAMO uz dugi ned 1 na 105 min (4–6 dana); 3 dana i na udelu 40 % (odstupanje D17)', () => {
-    expect(DAYS.map((n) => [stats[n].belowTime, stats[n].belowShare])).toEqual([
-      [132, 396],
-      [660, 0],
-      [264, 0],
-      [264, 0]
-    ]);
+  it('nedelja 1 < trenutni obim SAMO uz dugi ned 1 na 105 min — i za 3 dana (D17 udeo 45 %; 10k-v2.2.0: 132 + 396 na udelu 40 %)', () => {
+    expect(DAYS.map((n) => stats[n].belowTime)).toEqual([330, 660, 264, 264]);
+  });
+
+  it('D23: trkačka ≤ taper u svakom planu; lagan u km kad je lagan tapera kraći od 35 min E (10k-v2.2.0: trkačka > taper 0 / 8 / 57 / 9)', () => {
+    expect(DAYS.map((n) => stats[n].raceKmEasy)).toEqual([636, 1428, 2004, 2538]);
+  });
+
+  it('D25: LONG_SHORTER_THAN_QUALITY tačno u planovima sa kvalitetnim danom dužim od dugog (nezavisno): 0 / 132 / 132 / 330', () => {
+    expect(DAYS.map((n) => stats[n].longShorter)).toEqual([0, 132, 132, 330]);
   });
 
   it('DOSE_DROPPED samo u planovima ograničenim kapacitetom (nedelja spuštena uz dugi na 105 min)', () => {
@@ -306,14 +363,14 @@ describe('mreža 02: 15 840 planova (3/4/5/6 dana × 8–18 ned)', () => {
         s.raceShort
       ];
     });
+    // 10k-v2.2.0: [2640, 888, 216, 1.257, 528, 0, 48, 6], [3696, 1320, 48, …], [4224, 810, 0, …],
+    // [5280, 732, 0, 1.25, 0, 6, 0, 0]. Ponavljanja rastu zbog D22b (odstupanje u DECISIONS).
     expect(t).toEqual([
-      [2640, 888, 216, 1.257, 528, 0, 48, 6],
-      [3696, 1320, 48, 1.25, 0, 0, 0, 0],
-      [4224, 810, 0, 1.279, 0, 0, 0, 0],
-      [5280, 732, 0, 1.25, 0, 6, 0, 0]
+      [2640, 828, 1224, 1.258, 528, 0, 48, 6],
+      [3696, 1320, 192, 1.25, 0, 0, 0, 0],
+      [4224, 810, 144, 1.279, 0, 0, 0, 0],
+      [5280, 732, 144, 1.25, 0, 6, 0, 90]
     ]);
-    // Ponavljanje slota u mreži 4 dana × 10–18 ned: 1068 (10k-v2.1.0) → 0 posle D22.
-    expect(repeats4).toBe(0);
   });
 
   it('kratka priprema (D21): 8 ned BBDDSSTR, 9 ned BBDDDSSTR, tačno jedno rasterećenje (ned 4)', () => {
@@ -323,58 +380,105 @@ describe('mreža 02: 15 840 planova (3/4/5/6 dana × 8–18 ned)', () => {
     }
   });
 
-  it('generisanje daje TAČNO baznu liniju segment02.baseline.json', () => {
+  it('generisanje daje TAČNO baznu liniju segment02b.baseline.json', () => {
     if (process.env['TEN_K_V2_WRITE_BASELINE'] === '1')
-      writeFileSync(BASELINE, JSON.stringify({ policyVersion: '10k-v2.2.0', plans: rows }) + '\n');
+      writeFileSync(BASELINE, JSON.stringify({ policyVersion: '10k-v2.2.1', plans: rows }) + '\n');
     const base = JSON.parse(readFileSync(BASELINE, 'utf8')) as Baseline;
-    expect(base.policyVersion).toBe('10k-v2.2.0');
+    expect(base.policyVersion).toBe('10k-v2.2.1');
     expect(Object.keys(base.plans).length).toBe(15840);
     expect(rows).toEqual(base.plans);
   });
 
-  it('regresija (pouka 1): 4 dana × 10–18 ned — vrh cilj i vrh planirano ≥ 53da370; izuzeci samo uz razlog iz fajla', () => {
-    const old = JSON.parse(readFileSync(BASELINE_53, 'utf8')) as Baseline;
-    const ex = JSON.parse(readFileSync(EXCEPTIONS, 'utf8')) as {
-      against: string;
-      reasons: Record<string, string>;
-      plans: Record<string, string>;
+  it('regresija (pouka 1): vrh cilj i vrh planirano ≥ 49ad476 za svih 15 840; niži samo uz razlog iz fajla, koji se proverava', () => {
+    const old = JSON.parse(readFileSync(BASELINE_49, 'utf8')) as Baseline;
+    const fx = JSON.parse(readFileSync(HASHES_49, 'utf8')) as {
+      plans: Record<string, [number, number, number]>;
     };
-    expect(old.policyVersion).toBe('10k-v2.1.0');
-    expect(ex.against).toBe('53da370');
-    expect(Object.keys(old.plans).length).toBe(3024);
-    const lower: string[] = [];
-    const bad: string[] = [];
-    let changedRows = 0;
-    for (const [id0, r0] of Object.entries(old.plans)) {
-      const id = `d4-${id0}`;
+    expect(old.policyVersion).toBe('10k-v2.2.0');
+    expect(Object.keys(old.plans).length).toBe(15840);
+    const lower: Record<string, string> = {};
+    for (const [id, r0] of Object.entries(old.plans)) {
       const r = rows[id]!;
-      if (JSON.stringify(r) !== JSON.stringify(r0)) changedRows++;
       if (r[0] >= r0[0] && r[1] >= r0[1]) continue;
-      lower.push(id);
-      if (!ex.reasons[ex.plans[id] ?? '']) bad.push(`${id}: ${r0[0]}/${r0[1]} → ${r[0]}/${r[1]}`);
+      // D22b: kapacitet — vrh cilja niži samo u planu sa CAPACITY_LIMITED čiji je 49ad476 plan imao RP
+      // deonicu < 1000 m; ROUNDING: isti vrh cilja, planirano niže u okviru tolerancije 0,1 km.
+      lower[id] = r[0] < r0[0] ? 'D22b_CAPACITY' : 'ROUNDING';
     }
-    expect(bad).toEqual([]);
-    expect(Object.keys(ex.plans).sort()).toEqual(lower.sort());
-    // Redovi bazne linije (vrh, najduži dugi, glavna doza, faze, rasterećenja) se ne menjaju.
-    expect(changedRows).toBe(0);
+    if (process.env['TEN_K_V2_WRITE_BASELINE'] === '1') {
+      const ex = JSON.parse(readFileSync(EXCEPTIONS, 'utf8')) as Exceptions;
+      writeFileSync(EXCEPTIONS, JSON.stringify({ ...ex, plans: lower }) + '\n');
+    }
+    const ex = JSON.parse(readFileSync(EXCEPTIONS, 'utf8')) as Exceptions;
+    expect(ex.against).toBe('49ad476');
+    expect(Object.keys(ex.reasons).sort()).toEqual(['D22b_CAPACITY', 'ROUNDING']);
+    expect(ex.plans).toEqual(lower);
+    const why: string[] = [];
+    for (const [id, reason] of Object.entries(lower)) {
+      const [r0, r] = [old.plans[id]!, rows[id]!];
+      if (reason === 'D22b_CAPACITY' && (fx.plans[id]![2] !== 1 || !reg[id]!.capacity))
+        why.push(id);
+      if (reason === 'ROUNDING' && (r[0] !== r0[0] || r0[1] - r[1] > 0.1 + EPS)) why.push(id);
+    }
+    expect(why).toEqual([]);
+    const count = (reason: string, n: Days): number =>
+      Object.entries(lower).filter(([id, x]) => x === reason && reg[id]!.days === n).length;
+    expect(DAYS.map((n) => [count('D22b_CAPACITY', n), count('ROUNDING', n)])).toEqual([
+      [132, 36],
+      [126, 0],
+      [0, 0],
+      [0, 0]
+    ]);
   });
 
-  it('regresija: svaki plan 4 dana × 10–18 ned je isti kao 53da370 (bez oznake verzije i teksta CAPACITY_LIMITED) ili sadrži D22 strukturu (T 50 m / R 400 m)', () => {
-    const old = JSON.parse(readFileSync(HASHES_53, 'utf8')) as {
+  it('regresija: ceo plan isti kao 49ad476 (bez oznake verzije, teksta CAPACITY_LIMITED i upozorenja D25) ili promenjen SAMO od D17 (3 dana), D22b ili D23', () => {
+    const fx = JSON.parse(readFileSync(HASHES_49, 'utf8')) as {
       against: string;
-      hashes: Record<string, number>;
+      plans: Record<string, [number, number, number]>;
     };
-    expect(old.against).toBe('53da370');
-    expect(Object.keys(old.hashes).sort()).toEqual(Object.keys(reg).sort());
-    const cause = { same: 0, t50r400: 0, t50: 0, r400: 0, other: [] as string[] };
+    expect(fx.against).toBe('49ad476');
+    expect(Object.keys(fx.plans).sort()).toEqual(Object.keys(reg).sort());
+    const zero = (): Record<string, number> => ({
+      same: 0,
+      D17: 0,
+      D22b: 0,
+      D23: 0,
+      'D22b+D23': 0
+    });
+    const cause: Record<Days, Record<string, number>> = {
+      3: zero(),
+      4: zero(),
+      5: zero(),
+      6: zero()
+    };
+    const three = { alone: 0, D22b: 0, D23: 0, both: 0 };
+    const other: string[] = [];
     for (const [id, x] of Object.entries(reg)) {
-      if (x.hash === old.hashes[id]) cause.same++;
-      else if (x.t50 && x.r400) cause.t50r400++;
-      else if (x.t50) cause.t50++;
-      else if (x.r400) cause.r400++;
-      else cause.other.push(id);
+      const [h0, pre0, rp0] = fx.plans[id]!;
+      const c = cause[x.days];
+      if (x.h[0] === h0) {
+        c['same']!++;
+        continue;
+      }
+      // D22b menja plan samo ako je stari imao RP < 1000 m ili novi ima RP 50 m; D23 menja samo trkačku
+      // nedelju (nedelje pre trkačke iste) i daje lagan u km.
+      const d22b = rp0 === 1 || x.rp50;
+      const d23 = x.raceKm;
+      if (x.days === 3) {
+        c['D17']!++;
+        three[d22b && d23 ? 'both' : d22b ? 'D22b' : d23 ? 'D23' : 'alone']++;
+      } else if (d22b && d23) c['D22b+D23']!++;
+      else if (d22b) c['D22b']!++;
+      else if (d23 && x.h[1] === pre0) c['D23']!++;
+      else other.push(id);
     }
-    expect(cause).toEqual({ same: 2184, t50r400: 528, t50: 0, r400: 312, other: [] });
+    expect(other).toEqual([]);
+    expect(cause).toEqual({
+      3: { same: 132, D17: 2508, D22b: 0, D23: 0, 'D22b+D23': 0 },
+      4: { same: 1854, D17: 0, D22b: 414, D23: 1266, 'D22b+D23': 162 },
+      5: { same: 2112, D17: 0, D22b: 108, D23: 1680, 'D22b+D23': 324 },
+      6: { same: 2724, D17: 0, D22b: 18, D23: 2412, 'D22b+D23': 126 }
+    });
+    expect(three).toEqual({ alone: 972, D22b: 900, D23: 234, both: 402 });
   });
 
   it('D20 trkačka nedelja (6 dana): otpada dugi, pa najraniji lagan dan', () => {

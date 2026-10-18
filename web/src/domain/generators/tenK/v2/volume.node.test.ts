@@ -11,7 +11,7 @@ import { dayRule } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import { grid02Inputs, gridInputs, inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { TenKV2Plan } from './types.ts';
-import { fit10, nominal10, peakCap10, startKm10 } from './volume.ts';
+import { fewerDaysAdvice, fit10, nominal10, peakCap10, startKm10 } from './volume.ts';
 import { buildWeek, type BuiltWeek } from './week.ts';
 import { warmupCooldown } from './workouts.ts';
 
@@ -207,14 +207,34 @@ describe('D6: obim', () => {
     expect(msgOf({ weeks: 12, km: 25, vdot: 30, days: d[4].A.days, long: 'sun' })).toBe(
       '4 dana ne nose ovaj obim uz dugi ≤ 33 % nedelje; preporuka 5–6 dana.'
     );
+    // 02b (D17 udeo 3 dana 0,45): isti ulaz je u 10k-v2.2.0 sekao i udeo 40 %; sada samo 105 min.
     expect(msgOf({ weeks: 17, km: 30, vdot: 35, days: d[3].A.days, long: 'sun' })).toBe(
-      '3 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 40 % nedelje; preporuka 4–6 dana.'
+      '3 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 4–6 dana.'
     );
     expect(msgOf({ weeks: 12, km: 65, vdot: 30, days: d[5].A.days, long: 'sun' })).toBe(
       '5 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 6 dana.'
     );
     expect(msgOf({ weeks: 12, km: 80, vdot: 30, days: d[6].A.days, long: 'sun' })).toBe(
       '6 dana ne nose ovaj obim uz dugi ≤ 105 min.'
+    );
+  });
+
+  it('D25: preporuka manje dana samo kad red D17 sa manje dana podržava trenutni obim', () => {
+    // Redovi D17 (nezavisno): 3 dana 20–40, 4 dana 25–55, 5 dana 30–65 km.
+    const advice = (n: number, km: number): string =>
+      fewerDaysAdvice(n, km).replace(/^; preporuka (.*) dana \(.*$/, '$1');
+    expect([
+      advice(4, 25),
+      advice(5, 30),
+      advice(6, 35),
+      advice(6, 45),
+      advice(6, 60),
+      advice(5, 50)
+    ]).toEqual(['3', '3–4', '3–5', '4–5', '5', '4']);
+    expect(fewerDaysAdvice(3, 20)).toBe('');
+    expect(fewerDaysAdvice(4, 45)).toBe('');
+    expect(fewerDaysAdvice(4, 25)).toBe(
+      '; preporuka 3 dana (red D17 sa manje dana podržava obim 25 km, dugi dobija veći udeo)'
     );
   });
 });
