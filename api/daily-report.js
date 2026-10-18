@@ -105,7 +105,7 @@ async function fetchStats(url, key) {
    sme da obori citanje cele strane. */
 const PRAZNA_AKTIVNOST = {
   lastWorkoutDate: null, weekKm: 0, lastStravaSync: null,
-  stravaConnected: false, stravaAthlete: null, lastAiDay: null, upisDan: null
+  stravaConnected: false, stravaAthlete: null, lastAiDay: null, upisDan: null, dani30: []
 };
 
 async function fetchRawUserState(url, key, todayStr) {
@@ -172,6 +172,36 @@ const fetchAiUsageDays  = (url, key) => fetchPoslednjiDan(url, key, 'api_usage',
 /* `endpoint_usage` čuva 30 dana (v. `check_and_bump_endpoint`) — tačno koliko
    najširi prozor u izveštaju i traži. */
 const fetchEndpointDays = (url, key) => fetchPoslednjiDan(url, key, 'endpoint_usage', 'dan', 'broj=gt.0');
+
+/* SVE STRANE JEDNOG UPITA. Isti razlog kao gore: bez `Range` PostgREST staje
+   na `max-rows` bez greške. */
+async function fetchSveStrane(url, key, putanja, PER = 1000, MAX_PAGES = 50) {
+  const out = [];
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const od = page * PER;
+    const r = await fetchRok(url.replace(/\/+$/, '') + '/rest/v1/' + putanja, {
+      headers: { apikey: key, Authorization: 'Bearer ' + key, Range: od + '-' + (od + PER - 1), 'Range-Unit': 'items' }
+    });
+    if (!r.ok && r.status !== 206) throw new Error(putanja.split('?')[0] + ' upit nije uspeo (' + r.status + ')');
+    const j = await r.json();
+    const rows = Array.isArray(j) ? j : [];
+    out.push(...rows);
+    if (rows.length < PER) break;
+  }
+  return out;
+}
+
+/* Jedan red po nalogu sa statusom i kandidatom za brisanje (v.
+   supabase/migrations/…_korisnik_aktivnost.sql). Pravila „ko trenira" i „ko je
+   kandidat" žive u bazi, na jednom mestu — izveštaj ih samo prikazuje. */
+const fetchAktivnost = (url, key) =>
+  fetchSveStrane(url, key, 'admin_aktivnost?select=*&order=registrovan.asc,user_id.asc');
+
+/* Otvaranja i sinhronizacije u poslednjih 30 dana — za „aktivnih po danu". */
+const fetchDogadjaji = (url, key, odIso) =>
+  fetchSveStrane(url, key, 'korisnik_dogadjaj?select=user_id,vrsta,napravljeno'
+    + '&vrsta=in.(otvaranje,sinhronizacija,nov_plan)'
+    + '&napravljeno=gte.' + encodeURIComponent(odIso) + '&order=napravljeno.asc,id.asc');
 
 /* Admin API vraca najvise per_page po strani. Ranije se citala SAMO prva strana
    (per_page=200) — preko toga su korisnici tiho ispadali iz izvestaja, bez
@@ -342,13 +372,32 @@ function deriveActivity(data, todayStr) {
   const stravaConnected = !!(data && data.strava);
   const stravaAthlete = (data && data.strava && data.strava.athlete) || null;
 
+  /* DANI TRENINGA U POSLEDNJIH 30 DANA — za grafikon „treninga po danu".
+     Jedan unos po treningu (dva treninga istog dana su dva unosa). Izvori su
+     isti kao u pogledu `admin_aktivnost`: odrađen dan iz plana i trčanje van
+     plana. Granica pre registracije se primenjuje tek u izveštaju, jer se ovde
+     ne zna kad je nalog otvoren. */
+  const od30 = danMinus(todayStr, 29);
+  const dani30 = [];
+  for (const e of entries) {
+    const d = danTreninga(e);
+    if (d && d >= od30 && d <= todayStr) dani30.push(d);
+  }
+  const van = data && data.vanPlana;
+  if (van && typeof van === 'object' && !Array.isArray(van)) {
+    for (const [d, km] of Object.entries(van)) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d) && d >= od30 && d <= todayStr && typeof km === 'number' && km > 0) dani30.push(d);
+    }
+  }
+
   return {
     lastWorkoutDate: lastWorkout ? lastWorkout.date : null,
     weekKm: Math.round(weekKm * 10) / 10,
     lastStravaSync,
     stravaConnected,
     stravaAthlete,
-    lastAiDay
+    lastAiDay,
+    dani30: dani30.slice(0, 200)
   };
 }
 
@@ -380,8 +429,10 @@ function mergeRows(users, sazetaStanja, aiDays, todayStr) {
   return (users || []).map(u => {
     const act = stanja[u.id] || PRAZNA_AKTIVNOST;
     return {
+      id: u.id,
       email: u.email,
       created: u.created,
+      dani30: act.dani30 || [],
       lastSignIn: u.lastSignIn,
       lastWorkoutDate: act.lastWorkoutDate,
       weekKm: act.weekKm,
@@ -398,82 +449,365 @@ function mergeRows(users, sazetaStanja, aiDays, todayStr) {
   });
 }
 
-function buildHtml(stats, rows, errors, brisanja, aktivni) {
+/* ============================================================
+   IZGLED MEJLA — DNEVNI PREGLED KAO DASHBOARD
+
+   Mejl klijenti (Gmail pre svih) izbacuju <style>, SVG i JavaScript. Zato je
+   sve tabela sa inline stilom: trake su ćelije zadate širinom u procentima,
+   stubići su <div> zadate visine u ćeliji poravnatoj na dno. Svaki grafikon
+   nosi i brojeve kao tekst: boja nikad ne nosi značenje sama, a jedan ton
+   palete (zeleni) ima kontrast ispod 3:1 prema podlozi.
+
+   Paleta je proverena na daltonizam (prva tri kategorijska tona, susedni
+   parovi ΔE ≥ 9). Neaktivni su neutralno sivi, ne četvrti ton.
+   ============================================================ */
+const B = {
+  pozadina: '#F3F3F1', karta: '#FFFFFF', tekst: '#0B0B0B', sekundarno: '#52514E',
+  priguseno: '#8A8984', mreza: '#E6E5E1', brend: '#FA2E55',
+  s1: '#2A78D6', s2: '#EB6834', s3: '#1BAF7A', neutral: '#B9B8B2', kriticno: '#D03B3B'
+};
+const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+/* Redosled je i redosled u složenoj traci i u legendi. */
+const STATUSI = [
+  { k: 'trci',                naziv: 'Trenira (trening u 14 dana)', boja: B.s1 },
+  { k: 'otvara_ne_trci',      naziv: 'Otvara aplikaciju, ne trenira', boja: B.s2 },
+  { k: 'nov',                 naziv: 'Nov nalog (mlađi od 7 dana)', boja: B.s3 },
+  { k: 'neaktivan',           naziv: 'Neaktivan (14+ dana bez traga)', boja: B.neutral },
+  { k: 'oznacen_za_brisanje', naziv: 'Označen za brisanje', boja: B.kriticno }
+];
+const STATUS_PO_KLJUCU = Object.fromEntries(STATUSI.map(s => [s.k, s]));
+
+const procenat = (a, b) => (b > 0 && isFinite(a)) ? Math.round(a * 100 / b) : 0;
+const ceo = v => (typeof v === 'number' && isFinite(v)) ? v : (Number.isFinite(+v) ? +v : 0);
+const kratakDan = ymd => (typeof ymd === 'string' && /^\d{4}-\d{2}-\d{2}/.test(ymd))
+  ? ymd.slice(8, 10) + '.' + ymd.slice(5, 7) + '.' : '';
+const danIz = v => (typeof v === 'string' && v) ? danBeograd(Date.parse(v)) : null;
+
+function poslednjihDana(todayStr, n) {
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) out.push(danMinus(todayStr, i));
+  return out;
+}
+
+function karta(naslov, podnaslov, telo) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${B.karta};border-radius:14px;border:1px solid ${B.mreza};margin:0 0 16px">
+    <tr><td style="padding:20px 22px">
+      <div style="font-size:15px;font-weight:700;color:${B.tekst}">${esc(naslov)}</div>
+      ${podnaslov ? `<div style="font-size:12px;color:${B.priguseno};margin-top:3px">${esc(podnaslov)}</div>` : ''}
+      <div style="margin-top:16px">${telo}</div>
+    </td></tr></table>`;
+}
+
+const napomena = t => `<div style="font-size:12px;color:${B.priguseno};line-height:1.5">${esc(t)}</div>`;
+
+function kpiPlocice(plocice) {
+  const td = p => `<td width="50%" valign="top" style="padding:5px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${B.karta};border:1px solid ${B.mreza};border-radius:14px">
+      <tr><td style="padding:16px 14px">
+        <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:${B.priguseno}">${esc(p.naziv)}</div>
+        <div style="font-size:30px;font-weight:800;color:${B.tekst};margin-top:6px;line-height:1">${esc(p.vrednost)}</div>
+        <div style="font-size:12px;color:${p.boja || B.sekundarno};margin-top:6px">${esc(p.napomena || '')}</div>
+      </td></tr></table></td>`;
+  const redovi = [];
+  for (let i = 0; i < plocice.length; i += 2) redovi.push(`<tr>${plocice.slice(i, i + 2).map(td).join('')}</tr>`);
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 11px;table-layout:fixed">
+    ${redovi.join('')}</table>`;
+}
+
+/* Složena traka do 100%: jedan red ćelija, razmak od 2px između delova. */
+function slozenaTraka(delovi) {
+  const ukupno = delovi.reduce((s, d) => s + d.vrednost, 0);
+  if (!ukupno) return napomena('Nema podataka.');
+  const vidljivi = delovi.filter(d => d.vrednost > 0);
+  const traka = vidljivi.map((d, i) =>
+    `<td width="${Math.max(2, (d.vrednost * 100 / ukupno)).toFixed(2)}%" style="background:${d.boja};height:22px;${i ? 'border-left:2px solid ' + B.karta + ';' : ''}${i === 0 ? 'border-radius:6px 0 0 6px;' : ''}${i === vidljivi.length - 1 ? 'border-radius:0 6px 6px 0;' : ''}${vidljivi.length === 1 ? 'border-radius:6px;' : ''}font-size:0;line-height:0">&nbsp;</td>`).join('');
+  const legenda = delovi.map(d => `<tr>
+      <td width="16" style="padding:5px 0"><div style="width:10px;height:10px;border-radius:3px;background:${d.boja}"></div></td>
+      <td style="padding:5px 0;font-size:13px;color:${B.tekst}">${esc(d.naziv)}</td>
+      <td align="right" style="padding:5px 0;font-size:13px;font-weight:700;color:${B.tekst};white-space:nowrap">${d.vrednost}</td>
+      <td align="right" width="52" style="padding:5px 0;font-size:13px;color:${B.sekundarno};white-space:nowrap">${procenat(d.vrednost, ukupno)}%</td>
+    </tr>`).join('');
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="table-layout:fixed"><tr>${traka}</tr></table>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px">${legenda}</table>`;
+}
+
+/* Vodoravne trake; `max` je zajednička skala svih redova. */
+function trake(redovi, max, boja) {
+  const m = max || Math.max(1, ...redovi.map(r => r.vrednost));
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${redovi.map(r => {
+    const w = m ? Math.min(100, r.vrednost * 100 / m) : 0;
+    return `<tr>
+      <td width="36%" style="padding:6px 10px 6px 0;font-size:13px;color:${B.tekst};vertical-align:middle">${esc(r.naziv)}</td>
+      <td style="padding:6px 0;vertical-align:middle">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${B.pozadina};border-radius:6px"><tr>
+          ${w > 0 ? `<td width="${Math.max(1.5, w).toFixed(2)}%" style="background:${r.boja || boja};height:14px;border-radius:6px;font-size:0;line-height:0">&nbsp;</td>` : ''}
+          <td style="height:14px;font-size:0;line-height:0">&nbsp;</td>
+        </tr></table>
+      </td>
+      <td width="92" align="right" style="padding:6px 0 6px 10px;font-size:13px;white-space:nowrap;vertical-align:middle"><b style="color:${B.tekst}">${esc(r.oznaka != null ? r.oznaka : r.vrednost)}</b>${r.dodatak ? ` <span style="color:${B.priguseno}">${esc(r.dodatak)}</span>` : ''}</td>
+    </tr>`;
+  }).join('')}</table>`;
+}
+
+/* Stubići kroz vreme. Brojevi stoje iznad najvišeg i poslednjeg stuba —
+   ne nad svakim, da grafikon ostane čitljiv. */
+function stubici(tacke, boja, visina) {
+  const H = visina || 90;
+  const max = Math.max(0, ...tacke.map(t => t.vrednost));
+  if (!max) return napomena('Nijedan zapis u ovom periodu.');
+  const iMax = tacke.findIndex(t => t.vrednost === max);
+  const poslednji = tacke.length - 1;
+  const kolone = tacke.map((t, i) => {
+    const h = t.vrednost ? Math.max(3, Math.round(t.vrednost * H / max)) : 0;
+    const broj = (i === iMax || i === poslednji) && t.vrednost
+      ? `<div style="font-size:10px;font-weight:700;color:${B.tekst};text-align:center;padding-bottom:2px">${t.vrednost}</div>` : '';
+    return `<td valign="bottom" align="center" style="padding:0 1px;height:${H + 16}px">${broj}${h ? `<div style="height:${h}px;background:${boja};border-radius:3px 3px 0 0;font-size:0;line-height:0">&nbsp;</div>` : ''}</td>`;
+  }).join('');
+  const oznake = tacke.map(t =>
+    `<td align="center" style="padding-top:5px;font-size:9px;color:${B.priguseno};white-space:nowrap;border-top:1px solid ${B.mreza}">${esc(t.oznaka || '')}</td>`).join('');
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="table-layout:fixed">
+    <tr>${kolone}</tr><tr>${oznake}</tr></table>`;
+}
+
+function buildHtml(stats, rows, errors, brisanja, aktivni, dodatno) {
+  const d = dodatno || {};
+  const todayStr = d.todayStr || danBeograd(Date.now());
   const row = (label, val) =>
-    `<tr><td style="padding:6px 14px;color:#7A7A86;font-size:13px">${esc(label)}</td>` +
-    `<td style="padding:6px 14px;font-weight:700;font-size:15px">${esc(val)}</td></tr>`;
+    `<tr><td style="padding:8px 0;color:${B.sekundarno};font-size:13px;border-bottom:1px solid ${B.mreza}">${esc(label)}</td>` +
+    `<td align="right" style="padding:8px 0;font-weight:700;font-size:14px;color:${B.tekst};border-bottom:1px solid ${B.mreza}">${esc(val)}</td></tr>`;
 
   /* NULA KOJA ZNAČI „NISAM DOBIO BROJ" MORA DA SE RAZLIKUJE OD NULE.
      Bez ovoga bi izostanak jednog upita prikazao nule kao činjenicu — a to je
      gore od greške, jer izgleda kao da je aplikaciju preko noći napustio svako.
-     Ranije je ceo blok padao u crveni okvir čim `app_stats` ne odgovori; sada
-     otkazuje POLJE PO POLJE, jer brojevi više ne dolaze iz jednog izvora. */
+     Otkazuje POLJE PO POLJE, jer brojevi ne dolaze iz jednog izvora. */
   const broj = (v, palo) => (palo || v == null) ? '—' : v;
   /* „Aktivnih" se računa iz tri izvora (v. agregatAktivnosti); ako ijedan nije
      stigao, broj je poznato manji od stvarnog i ne sme se prikazati kao tačan. */
   const aktivnoPalo = !!(errors.rawState || errors.endpointUsage || errors.aiUsage);
   const a = aktivni || { danas: null, d7: null, d30: null };
 
-  let usersHtml;
-  if (errors.users) {
-    usersHtml = `<p style="color:#7A7A86;font-size:13px">Lista korisnika nije uspela: ${esc(errors.users)}. Brojevi gore su i dalje tačni.</p>`;
-  } else if (!rows.length) {
-    usersHtml = `<p style="color:#7A7A86;font-size:13px">Nema registrovanih korisnika.</p>`;
-  } else {
-    const th = t => `<th style="padding:6px 10px;white-space:nowrap">${t}</th>`;
-    const td = t => `<td style="padding:5px 10px;white-space:nowrap">${t}</td>`;
-    const stravaCell = u => u.stravaConnected
-      ? esc(u.stravaAthlete || '(bez imena)') + '<br><span style="color:#7A7A86;font-size:11px">sync ' + esc(fmtDate(u.lastStravaSync)) + '</span>'
-      : '<span style="color:#7A7A86">nije povezano</span>';
-    usersHtml = `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:12px">
-      <tr style="text-align:left;color:#7A7A86">${th('Email')}${th('Poslednji trening')}${th('Km ove nedelje')}${th('Strava')}${th('AI analiza')}${th('Prijava')}</tr>
-      ${rows.map(u => `<tr>
-        ${td(esc(u.email))}
-        ${td(esc(fmtDateOnly(u.lastWorkoutDate)))}
-        ${td(esc(u.weekKm) + ' km')}
-        ${td(stravaCell(u))}
-        ${td(esc(fmtDateOnly(u.lastAiDay)))}
-        ${td(esc(fmtDate(u.lastSignIn)))}
-      </tr>`).join('')}
-      </table></div>
-      ${errors.rawState ? `<p style="color:#7A7A86;font-size:12px;margin-top:8px">Napomena: podaci o treningu nisu uspeli da se učitaju (${esc(errors.rawState)}) — kolone treninga mogu biti prazne.</p>` : ''}
-      ${errors.aiUsage ? `<p style="color:#7A7A86;font-size:12px;margin-top:4px">Napomena: AI korišćenje nije uspelo da se učita (${esc(errors.aiUsage)}).</p>` : ''}
-      ${errors.endpointUsage ? `<p style="color:#7A7A86;font-size:12px;margin-top:4px">Napomena: zapis o pozivima nije uspeo da se učita (${esc(errors.endpointUsage)}) — brojevi „Aktivnih" su zato prazni.</p>` : ''}`;
-  }
+  const akt = Array.isArray(d.aktivnost) ? d.aktivnost : [];
+  const aktOk = !errors.aktivnost && akt.length > 0;
+  const poId = new Map(akt.map(x => [x.user_id, x]));
+  const N = aktOk ? akt.length : (rows.length || ceo(stats.korisnika));
 
-  /* Odložena brisanja se prijavljuju SAMO kad ih ima — prazan red svakog jutra
-     je šum koji se posle nedelju dana ne čita. */
-  const b = brisanja || { obrisano: [], greske: [] };
-  const brisanjaHtml = (b.obrisano.length || b.greske.length)
-    ? `<div style="margin-top:22px;padding:12px 14px;background:#16161D;border-radius:12px">
-         <div style="font-weight:700;font-size:13px;margin-bottom:6px">Odložena brisanja</div>
-         ${b.obrisano.length ? `<div style="color:#7A7A86;font-size:12px">Izvršeno: ${esc(b.obrisano.join(', '))}</div>` : ''}
-         ${b.greske.length ? `<div style="color:#FA2E55;font-size:12px">NIJE uspelo: ${esc(b.greske.join(' · '))}</div>` : ''}
-       </div>`
+  const poStatusu = {};
+  for (const s of STATUSI) poStatusu[s.k] = 0;
+  for (const x of akt) if (x.status in poStatusu) poStatusu[x.status]++;
+  const kandidati = akt.filter(x => x.kandidat_za_brisanje === true)
+    .sort((p, q) => ceo(q.dana_neaktivan) - ceo(p.dana_neaktivan));
+
+  const novih7 = rows.filter(u => { const dd = danIz(u.created); return dd && dd >= danMinus(todayStr, 6); }).length;
+
+  /* ---------- 1. KLJUČNI BROJEVI ---------- */
+  const plocice = kpiPlocice([
+    { naziv: 'Registrovanih', vrednost: N, napomena: '+' + novih7 + ' u 7 dana' },
+    { naziv: 'Trenira', vrednost: aktOk ? poStatusu.trci : '—', napomena: aktOk ? procenat(poStatusu.trci, N) + '% registrovanih' : 'nije učitano', boja: B.s1 },
+    { naziv: 'Aktivno 7 dana', vrednost: broj(a.d7, aktivnoPalo), napomena: aktivnoPalo ? 'nepotpuno' : procenat(ceo(a.d7), N) + '% registrovanih' },
+    { naziv: 'Za brisanje', vrednost: aktOk ? kandidati.length : '—', napomena: 'kandidata', boja: kandidati.length ? B.kriticno : B.sekundarno }
+  ]);
+
+  /* ---------- 2. ZAKLJUČCI (samo izračunate činjenice) ---------- */
+  const sPlanom = akt.filter(x => x.ima_plan === true || ceo(x.planova_napravljeno) > 0).length;
+  const saTreningom = akt.filter(x => ceo(x.treninga) > 0).length;
+  const levak = [
+    { naziv: 'Registrovani', vrednost: N },
+    { naziv: 'Napravili plan', vrednost: sPlanom },
+    { naziv: 'Bar jedan trening', vrednost: saTreningom },
+    { naziv: 'Trenira (14 dana)', vrednost: poStatusu.trci }
+  ];
+  let najveciPad = null;
+  for (let i = 1; i < levak.length; i++) {
+    const pad = levak[i - 1].vrednost - levak[i].vrednost;
+    if (!najveciPad || pad > najveciPad.pad) najveciPad = { pad, od: levak[i - 1], do: levak[i] };
+  }
+  const zakljucci = aktOk ? [
+    `${poStatusu.trci} od ${N} registrovanih (${procenat(poStatusu.trci, N)}%) trenira — trening zabeležen u poslednjih 14 dana.`,
+    `${N - poStatusu.trci} (${procenat(N - poStatusu.trci, N)}%) ne trenira: ${poStatusu.otvara_ne_trci} otvara aplikaciju bez treninga, ${poStatusu.nov} su novi nalozi, ${poStatusu.neaktivan} su neaktivni.`,
+    najveciPad && najveciPad.pad > 0
+      ? `Najveći gubitak je između koraka „${najveciPad.od.naziv}" i „${najveciPad.do.naziv}": ${najveciPad.od.vrednost} → ${najveciPad.do.vrednost} (−${procenat(najveciPad.pad, najveciPad.od.vrednost)}%).`
+      : null,
+    `${kandidati.length} ${kandidati.length === 1 ? 'nalog ispunjava' : 'naloga ispunjava'} pravilo za brisanje (stariji od 14 dana, bez treninga 30 dana, bez traga 14 dana).`
+  ].filter(Boolean) : [];
+  const zakljucciHtml = zakljucci.length
+    ? karta('Zaključci', 'Izračunato iz podataka iznad, bez procene', `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${zakljucci.map(t =>
+        `<tr><td width="14" valign="top" style="padding:4px 0;color:${B.brend};font-weight:800">•</td><td style="padding:4px 0;font-size:13px;line-height:1.5;color:${B.tekst}">${esc(t)}</td></tr>`).join('')}</table>`)
     : '';
 
-  return `<div style="font-family:-apple-system,sans-serif;max-width:640px;margin:0 auto;padding:20px;background:#0A0A0F;color:#F5F5F7">
-    <div style="font-weight:800;font-size:18px;margin-bottom:4px">SUB<span style="color:#FA2E55">-20</span> — dnevni izveštaj</div>
-    <div style="color:#7A7A86;font-size:12px;margin-bottom:18px">${esc(new Date().toLocaleDateString('sr-RS', { day: '2-digit', month: 'long', year: 'numeric' }))}</div>
-    ${errors.stats
-      ? `<div style="background:#2A1116;border:1px solid #FA2E55;border-radius:12px;padding:12px;margin-bottom:22px;font-size:13px">
-           <b style="color:#FA2E55">Deo statistike nije učitan</b><br>
-           <span style="color:#7A7A86">${esc(errors.stats)}</span><br>
-           <span style="color:#7A7A86">Ako pogled <code>app_stats</code> ne postoji: Supabase → SQL Editor → <code>supabase/app-stats.sql</code>. Ostali brojevi su i dalje tačni.</span>
-         </div>`
-      : ''}
-    <table style="border-collapse:collapse;width:100%;background:#16161D;border-radius:12px;overflow:hidden;margin-bottom:22px">
+  /* ---------- 3. KO TRENIRA, A KO NE ---------- */
+  const udeoHtml = aktOk
+    ? karta('Ko trenira, a ko ne', `Svih ${N} naloga po statusu`, slozenaTraka(STATUSI.map(s => ({ naziv: s.naziv, vrednost: poStatusu[s.k], boja: s.boja }))))
+    : karta('Ko trenira, a ko ne', '', napomena('Pogled admin_aktivnost nije učitan' + (errors.aktivnost ? ': ' + errors.aktivnost : '') + '.'));
+
+  /* ---------- 4. LEVAK ---------- */
+  const levakHtml = aktOk
+    ? karta('Put korisnika', 'Koliko registrovanih stigne do svakog koraka', trake(levak.map((k, i) => ({
+        naziv: k.naziv, vrednost: k.vrednost, oznaka: k.vrednost,
+        dodatak: i ? procenat(k.vrednost, N) + '%' : '100%'
+      })), N, B.s1))
+    : '';
+
+  /* ---------- 5. AKTIVNOST KROZ VREME ---------- */
+  const dani = poslednjihDana(todayStr, 30);
+  const oznakaDana = (dd, i) => (i === 0 || i === dani.length - 1 || (dani.length - 1 - i) % 7 === 0) ? kratakDan(dd) : '';
+  let aktivniPoDanuHtml;
+  if (errors.dogadjaji) {
+    aktivniPoDanuHtml = napomena('Zapis o otvaranjima nije učitan: ' + errors.dogadjaji);
+  } else {
+    const poDanu = new Map(dani.map(x => [x, new Set()]));
+    for (const e of (d.dogadjaji || [])) {
+      if (e.vrsta !== 'otvaranje' && e.vrsta !== 'sinhronizacija') continue;
+      const dd = danIz(e.napravljeno);
+      if (dd && poDanu.has(dd)) poDanu.get(dd).add(e.user_id);
+    }
+    aktivniPoDanuHtml = stubici(dani.map((x, i) => ({ vrednost: poDanu.get(x).size, oznaka: oznakaDana(x, i) })), B.s1);
+  }
+  const treningPoDanu = new Map(dani.map(x => [x, 0]));
+  for (const u of rows) {
+    const reg = danIz(u.created) || '0000-00-00';
+    for (const dd of (u.dani30 || [])) if (dd >= reg && treningPoDanu.has(dd)) treningPoDanu.set(dd, treningPoDanu.get(dd) + 1);
+  }
+  const ukupnoTreninga30 = [...treningPoDanu.values()].reduce((s, v) => s + v, 0);
+  const vremeHtml =
+    karta('Aktivnih korisnika po danu', 'Različiti korisnici koji su otvorili ili sinhronizovali aplikaciju · poslednjih 30 dana', aktivniPoDanuHtml) +
+    karta('Treninga po danu', `Odrađeni treninzi svih korisnika · poslednjih 30 dana · ukupno ${ukupnoTreninga30}`,
+      errors.rawState ? napomena('Stanja korisnika nisu učitana: ' + errors.rawState)
+        : stubici(dani.map((x, i) => ({ vrednost: treningPoDanu.get(x), oznaka: oznakaDana(x, i) })), B.s3));
+
+  /* ---------- 6. NOVI NALOZI PO NEDELJI ---------- */
+  const ponedeljak = mondayOfWeekUTC(todayStr);
+  const nedelje = [];
+  for (let i = 7; i >= 0; i--) nedelje.push(danMinus(ponedeljak, i * 7));
+  const poNedelji = new Map(nedelje.map(x => [x, 0]));
+  for (const u of rows) {
+    const dd = danIz(u.created);
+    if (!dd) continue;
+    const pon = mondayOfWeekUTC(dd);
+    if (poNedelji.has(pon)) poNedelji.set(pon, poNedelji.get(pon) + 1);
+  }
+  const noviHtml = errors.users ? '' : karta('Novi nalozi po nedelji', 'Poslednjih 8 nedelja · nedelja počinje ponedeljkom',
+    stubici(nedelje.map(x => ({ vrednost: poNedelji.get(x), oznaka: kratakDan(x) })), B.s2, 80));
+
+  /* ---------- 7. FUNKCIJE ---------- */
+  const funkcijeHtml = aktOk ? karta('Šta koriste', `Udeo od ${N} registrovanih`, trake([
+    { naziv: 'Napravili plan',        vrednost: sPlanom },
+    { naziv: 'Povezali Stravu',       vrednost: akt.filter(x => x.strava === true).length },
+    { naziv: 'Povezali intervals.icu', vrednost: akt.filter(x => x.icu === true).length },
+    { naziv: 'Pokrenuli AI analizu',  vrednost: akt.filter(x => ceo(x.ai_analiza) > 0).length },
+    { naziv: 'Uključili obaveštenja', vrednost: akt.filter(x => ceo(x.push_uredjaja) > 0).length },
+    { naziv: 'Profil u zajednici',    vrednost: akt.filter(x => x.profil_zajednice === true).length }
+  ].map(r => ({ ...r, oznaka: r.vrednost, dodatak: procenat(r.vrednost, N) + '%' })), N, B.s1)) : '';
+
+  /* ---------- 8. PLANOVI PO DISTANCI ---------- */
+  const distance = {};
+  for (const x of akt) if (x.ima_plan === true) { const k = x.plan_trka || 'Ostalo'; distance[k] = (distance[k] || 0) + 1; }
+  const REDOSLED = ['5K', '10K', 'Polumaraton', 'Maraton'];
+  const distRedovi = Object.entries(distance)
+    .sort((p, q) => (REDOSLED.indexOf(p[0]) + 1 || 99) - (REDOSLED.indexOf(q[0]) + 1 || 99))
+    .map(([naziv, v]) => ({ naziv, vrednost: v, oznaka: v, dodatak: procenat(v, sPlanom) + '%' }));
+  const planoviHtml = aktOk && distRedovi.length
+    ? karta('Aktivni planovi po distanci', `${sPlanom} korisnika ima plan`, trake(distRedovi, null, B.s2)) : '';
+
+  /* ---------- 9. KANDIDATI ZA BRISANJE ---------- */
+  const thS = `padding:6px 4px;font-size:10px;text-transform:uppercase;color:${B.priguseno};text-align:left;border-bottom:1px solid ${B.mreza}`;
+  const tdS = `padding:7px 4px;font-size:12px;color:${B.tekst};border-bottom:1px solid ${B.mreza};vertical-align:top;word-break:break-word`;
+  const kandidatiHtml = aktOk ? karta('Kandidati za brisanje', kandidati.length
+      ? 'Stariji od 14 dana, bez treninga 30 dana i bez ikakvog traga 14 dana'
+      : 'Nijedan nalog trenutno ne ispunjava pravilo',
+    kandidati.length ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr><th style="${thS}">Korisnik</th><th style="${thS}">Reg.</th><th style="${thS};text-align:right">Neaktivan</th><th style="${thS};text-align:right">Tren.</th></tr>
+      ${kandidati.map(x => `<tr>
+        <td style="${tdS}"><b>${esc(x.ime || '—')}</b><br><span style="color:${B.priguseno};word-break:break-all">${esc(x.email || '')}</span></td>
+        <td style="${tdS};white-space:nowrap">${esc(fmtDateOnly(danIz(x.registrovan)))}</td>
+        <td style="${tdS};text-align:right;white-space:nowrap;color:${B.kriticno};font-weight:700">${ceo(x.dana_neaktivan)} d</td>
+        <td style="${tdS};text-align:right">${ceo(x.treninga)}</td>
+      </tr>`).join('')}</table>` : '') : '';
+
+  /* ---------- 10. KLJUČNI BROJEVI (tabela) ---------- */
+  const brojeviHtml = karta('Ključni brojevi', '', `${errors.stats
+      ? `<div style="background:#FDECEE;border:1px solid ${B.brend};border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px"><b style="color:${B.kriticno}">Deo statistike nije učitan</b><br><span style="color:${B.sekundarno}">${esc(errors.stats)} — ako pogled <code>app_stats</code> ne postoji: Supabase → SQL Editor → <code>supabase/app-stats.sql</code>. Ostali brojevi su i dalje tačni.</span></div>`
+      : ''}<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       ${row('Korisnika ukupno', broj(stats.korisnika, errors.stats))}
       ${row('Aktivnih (danas)', broj(a.danas, aktivnoPalo))}
       ${row('Aktivnih (7 dana)', broj(a.d7, aktivnoPalo))}
       ${row('Aktivnih (30 dana)', broj(a.d30, aktivnoPalo))}
       ${row('Novih (7 dana)', broj(stats.novih_7d, errors.stats))}
       ${row('Sa generisanim planom', broj(stats.sa_generisanim_planom, errors.stats))}
-    </table>
-    <div style="font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#7A7A86;margin-bottom:8px">Aktivnost po korisniku</div>
-    ${usersHtml}
-    ${brisanjaHtml}
-  </div>`;
+      ${aktOk ? row('Treninga u 30 dana', ukupnoTreninga30) : ''}
+    </table>`);
+
+  /* ---------- 11. SVI KORISNICI ---------- */
+  let usersHtml;
+  if (errors.users) {
+    usersHtml = napomena(`Lista korisnika nije uspela: ${errors.users}. Brojevi gore su i dalje tačni.`);
+  } else if (!rows.length) {
+    usersHtml = napomena('Nema registrovanih korisnika.');
+  } else {
+    const red = STATUSI.map(s => s.k);
+    const sortirani = rows.slice().sort((p, q) => {
+      const sp = poId.get(p.id), sq = poId.get(q.id);
+      const ip = sp ? red.indexOf(sp.status) : 99, iq = sq ? red.indexOf(sq.status) : 99;
+      return (ip - iq) || String(p.email).localeCompare(String(q.email));
+    });
+    const status = x => {
+      const s = x && STATUS_PO_KLJUCU[x.status];
+      return s ? `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.boja};margin-right:5px"></span>${esc(s.naziv.split(' (')[0])}` : '—';
+    };
+    usersHtml = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr><th style="${thS}">Korisnik</th><th style="${thS}">Status</th><th style="${thS}">Poslednji trening</th><th style="${thS}">Strava · AI</th></tr>
+      ${sortirani.map(u => {
+        const x = poId.get(u.id);
+        return `<tr>
+        <td style="${tdS}">${x && x.ime ? `<b>${esc(x.ime)}</b><br>` : ''}<span style="color:${x && x.ime ? B.priguseno : B.tekst};word-break:break-all">${esc(u.email)}</span></td>
+        <td style="${tdS}">${status(x)}</td>
+        <td style="${tdS}">${esc(fmtDateOnly(u.lastWorkoutDate))}${u.weekKm ? `<br><span style="color:${B.priguseno}">${esc(u.weekKm)} km ove ned.</span>` : ''}</td>
+        <td style="${tdS}">${u.stravaConnected ? 'Strava' : `<span style="color:${B.priguseno}">bez Strave</span>`}<br><span style="color:${B.priguseno}">AI ${esc(fmtDateOnly(u.lastAiDay))}</span></td>
+      </tr>`;
+      }).join('')}</table>
+      ${errors.rawState ? napomena(`Napomena: podaci o treningu nisu uspeli da se učitaju (${errors.rawState}) — kolone treninga mogu biti prazne.`) : ''}
+      ${errors.aiUsage ? napomena(`Napomena: AI korišćenje nije uspelo da se učita (${errors.aiUsage}).`) : ''}
+      ${errors.endpointUsage ? napomena(`Napomena: zapis o pozivima nije uspeo da se učita (${errors.endpointUsage}) — brojevi „Aktivnih" su zato prazni.`) : ''}`;
+  }
+
+  /* Odložena brisanja se prijavljuju SAMO kad ih ima — prazan red svakog jutra
+     je šum koji se posle nedelju dana ne čita. */
+  const b = brisanja || { obrisano: [], greske: [] };
+  const brisanjaHtml = (b.obrisano.length || b.greske.length)
+    ? karta('Odložena brisanja', '', `${b.obrisano.length ? `<div style="color:${B.sekundarno};font-size:12px">Izvršeno: ${esc(b.obrisano.join(', '))}</div>` : ''}
+         ${b.greske.length ? `<div style="color:${B.kriticno};font-size:12px">NIJE uspelo: ${esc(b.greske.join(' · '))}</div>` : ''}`)
+    : '';
+
+  const datum = new Date().toLocaleDateString('sr-Latn-RS', { timeZone: 'Europe/Belgrade', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return `<div style="margin:0;padding:0;background:${B.pozadina}">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${B.pozadina};font-family:${FONT}">
+  <tr><td align="center" style="padding:24px 12px">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px">
+    <tr><td style="padding:0 4px 18px">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td><div style="font-size:20px;font-weight:800;color:${B.tekst}">SUB<span style="color:${B.brend}">-20</span> <span style="font-weight:600;color:${B.sekundarno}">· dnevni izveštaj</span></div>
+          <div style="font-size:12px;color:${B.priguseno};margin-top:4px">${esc(datum)} · stanje u ${esc(new Date().toLocaleTimeString('sr-Latn-RS', { timeZone: 'Europe/Belgrade', hour: '2-digit', minute: '2-digit' }))}</div></td>
+      </tr></table>
+    </td></tr>
+    <tr><td>
+      ${plocice}
+      ${zakljucciHtml}
+      ${udeoHtml}
+      ${levakHtml}
+      ${vremeHtml}
+      ${noviHtml}
+      ${funkcijeHtml}
+      ${planoviHtml}
+      ${kandidatiHtml}
+      ${brojeviHtml}
+      ${karta('Svi korisnici', 'Po statusu, pa po adresi', usersHtml)}
+      ${brisanjaHtml}
+      <div style="font-size:11px;color:${B.priguseno};text-align:center;padding:8px 0 4px;line-height:1.6">
+        „Trenira" = trening zabeležen kroz aplikaciju u poslednjih 14 dana. Trčanja uvezena sa Strave pre registracije se ne računaju.<br>
+        Pravila statusa i kandidata žive u pogledu <code>admin_aktivnost</code> u bazi.
+      </div>
+    </td></tr>
+  </table></td></tr></table></div>`;
 }
 
 
@@ -538,6 +872,22 @@ async function izvrsiOdlozenaBrisanja(url, key) {
   return nalaz;
 }
 
+/* Naslov ne sme da tvrdi „0 korisnika" kad brojač nije ni odgovorio. Kad je
+   pregled aktivnosti stigao, naslov nosi glavni broj: koliko ih trenira. */
+function naslovMejla(stats, errors, aktivnost, todayStr) {
+  const dan = kratakDan(todayStr);
+  if (!errors.aktivnost && Array.isArray(aktivnost) && aktivnost.length) {
+    const n = aktivnost.length;
+    const trci = aktivnost.filter(x => x.status === 'trci').length;
+    const kand = aktivnost.filter(x => x.kandidat_za_brisanje === true).length;
+    return 'SUB-20 dnevni izveštaj ' + dan + ' — ' + n + ' korisnika, trenira ' + trci + ' (' + procenat(trci, n) + '%)'
+      + (kand ? ', za brisanje ' + kand : '');
+  }
+  return errors.stats
+    ? 'SUB-20 dnevni izveštaj — statistika nije učitana'
+    : 'SUB-20 dnevni izveštaj — ' + (stats.korisnika ?? 0) + ' korisnika';
+}
+
 export default async function handler(req, res) {
   if (!checkCron(req)) return res.status(401).json({ error: 'Neautorizovano.' });
 
@@ -587,13 +937,23 @@ export default async function handler(req, res) {
   try { endpointDays = await fetchEndpointDays(url, svcKey); }
   catch (e) { errors.endpointUsage = e.message; }
 
+  /* Pregled po korisniku (status, kandidat) i događaji za grafikone. Oba su
+     dodatak: kad ne stignu, mejl ide sa ostalim delovima i javlja šta fali. */
+  let aktivnost = [];
+  try { aktivnost = await fetchAktivnost(url, svcKey); }
+  catch (e) { errors.aktivnost = e.message; }
+
+  let dogadjaji = [];
+  try { dogadjaji = await fetchDogadjaji(url, svcKey, new Date(Date.now() - 31 * 86400000).toISOString()); }
+  catch (e) { errors.dogadjaji = e.message; }
+
   /* Rok za odložena brisanja se naplaćuje PRE sastavljanja mejla, da bi nalaz
      mogao da uđe u njega. */
   const brisanja = await izvrsiOdlozenaBrisanja(url, svcKey);
 
   const rows = mergeRows(users, rawStates, aiDays, todayStr);
   const aktivni = agregatAktivnosti(rawStates, endpointDays, aiDays, todayStr);
-  const html = buildHtml(stats, rows, errors, brisanja, aktivni);
+  const html = buildHtml(stats, rows, errors, brisanja, aktivni, { todayStr, aktivnost, dogadjaji });
 
   try {
     const r = await fetchRok('https://api.resend.com/emails', {
@@ -602,9 +962,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         from, to,
         /* Naslov ne sme da tvrdi „0 korisnika" kad brojac nije ni odgovorio. */
-        subject: errors.stats
-          ? 'SUB-20 dnevni izveštaj — statistika nije učitana'
-          : 'SUB-20 dnevni izveštaj — ' + (stats.korisnika ?? 0) + ' korisnika',
+        subject: naslovMejla(stats, errors, aktivnost, todayStr),
         html
       })
     });
