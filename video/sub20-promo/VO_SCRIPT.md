@@ -20,7 +20,7 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 | Reč | Zapis u skripti | Alternativa | Zašto |
 |---|---|---|---|
 | Sub-20 | **Sab dvadeset** | Sub dvadeset | trkači govore „sab" (engl. *sub*); TTS bi pročitao „sub" sa *u* |
-| VDOT | **vi dota** (korisnik, 2026-10-18, druga odluka; prva je bila „ve dot") | — | izbor korisnika |
+| VDOT | **vidota**, jedna reč (korisnik, 2026-10-18; pre toga „ve dot", pa „vi dota" — pauza zvučala neprirodno) | — | izbor korisnika |
 | HRV | **ejč ar vi** — tri odvojene reči (korisnik, 2026-10-18) | — | engleski izgovor slova, kako je korisnik tražio |
 | sat (red 1) | TTS: IPA `/saːt/` | — | korisnik: „sat" sa skraćenim a; IPA produžava samoglasnik (eleven_v4 prima IPA između kosih crta) |
 | sekundi (red 3) | TTS: IPA `/sɛˈkundi/` | — | korisnik: pogrešan naglasak u redu 3 |
@@ -46,7 +46,7 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 **Time:** 7,0 – 11,0 s
 **Delivery:** blago podrugljivo; „Uzme dvanaest." kratko i suvo.
 
-    Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi.
+    Na četvrtom kilometru tempo pada — izgubiš dvanaest sekundi.
 
 ## Line 4 — Kradljivac 2 (Frame 4)
 
@@ -81,14 +81,14 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 **Time:** 26,0 – 30,0 s
 **Delivery:** lagano, jasno.
 
-    Svaki dan znaš šta trčiš, i kojim tempom.
+    Svaki dan znaš šta ti je u planu za trčanje, i kojim tempom.
 
 ## Line 9 — Plan (Frame 9)
 
 **Time:** 30,0 – 34,0 s
 **Delivery:** naglasak na „tvog".
 
-    Plan se pravi iz tvog vi dota, iz tvog vremena.
+    Plan se pravi iz tvog vidota, iz tvog vremena.
 
 ## Line 10 — Prolazi (Frame 10)
 

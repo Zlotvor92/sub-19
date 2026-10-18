@@ -47,12 +47,12 @@
     ['t1a', 'Sat ti kaže vreme.', 'day'],
     ['t1b', 'Ne kaže <em>zašto</em>.', 'day'],
     ['t2', 'Do sub 20 fali <em>26 sekundi</em>.', 'day'],
-    ['t3', 'Na 4. km tempo <em>padne</em>.', 'day'],
+    ['t3', 'Na 4. km tempo <em>pada</em>.', 'day'],
     ['t4', 'Plan koji <em>nije</em> tvoj.', 'day'],
     ['t5', 'Umor koji <em>ne vidiš</em>.', 'day'],
     ['t6', 'Četiri taba. <em>U ponoć.</em>', 'night'],
     ['t7', 'Zato postoji <em>Sub-20</em>.', 'day'],
-    ['t8', 'Svaki dan znaš <em>šta</em> trčiš.', 'day'],
+    ['t8', 'Svaki dan znaš <em>šta</em> je u planu.', 'day'],
     ['t9', 'Plan iz <em>tvog</em> VDOT-a.', 'day'],
     ['t10', 'Vidiš <em>gde</em> je otišlo.', 'day'],
     ['t11', 'Kad da stisneš. <em>Kad da staneš.</em>', 'night'],
@@ -244,7 +244,7 @@
   to(pA, { x: PARK.A[0] - 90, y: PARK.A[1] - 90, scale: 1, duration: 0.8, ease: 'power3.out' }, chunkA + 0.75);
   to(pA, { rotation: -8, duration: 0.8, ease: 'sine.inOut' }, chunkA + 0.75);
   to(pA, { y: `+=12`, duration: 1.3, ease: 'sine.inOut', repeat: Math.max(0, Math.floor((st(6) - chunkA - 1.6) / 1.3) - 1), yoyo: true }, chunkA + 1.6);
-  titleIn('t3', S(3).voStart, W(3, 'padne'));
+  titleIn('t3', S(3).voStart, W(3, 'pada'));
 
   /* ================= SCENA 4 — plan koji nije tvoj ================= */
   const t4 = st(4);

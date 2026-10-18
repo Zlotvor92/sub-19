@@ -92,7 +92,7 @@ keyMessage: 26 sekundi, ne „nekako brže".
 ## Frame 3 — Kradljivac 1: četvrti kilometar
 
 - scene: Lik-sprinter sa brojem „4" na grudima jurne, zadiše se i istopi; od kugle otpadne komad, „−12 s"
-- voiceover: "Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi."
+- voiceover: "Na četvrtom kilometru tempo pada — izgubiš dvanaest sekundi."
 - duration: 4s
 - transition_in: cut
 - status: outline
@@ -104,7 +104,7 @@ keyMessage: 26 sekundi, ne „nekako brže".
 - handoff_in: kugla x=360 y=1000 prečnik 420; kontura 19:59 x=780 y=1000 prečnik 300
 - handoff_out: kugla sa isečenim komadom (−12 s), ista pozicija; kontura ista
 
-Sprinter (zaobljen pravougaonik, dva oka, startni broj „4") uleti zdesna, protrči oko kugle, uspori, oči se zatvore, „zadiše se" (3 kratka squash pulsa) i istopi se kroz gooey filter u kapljice. Kapljice povuku komad kugle (gooey), komad se odvoji kao kapljica sa natpisom „−12 s" i ostane da visi gore desno (y≈700). Naslov: „Na 4. km tempo *padne*."
+Sprinter (zaobljen pravougaonik, dva oka, startni broj „4") uleti zdesna, protrči oko kugle, uspori, oči se zatvore, „zadiše se" (3 kratka squash pulsa) i istopi se kroz gooey filter u kapljice. Kapljice povuku komad kugle (gooey), komad se odvoji kao kapljica sa natpisom „−12 s" i ostane da visi gore desno (y≈700). Naslov: „Na 4. km tempo *pada*."
 
 narrativeRole: prvi uzrok — stvaran, iz tvoje trke.
 keyMessage: tempo pukne posle trećeg kilometra.
@@ -194,7 +194,7 @@ keyMessage: Sub-20 je odgovor na „zašto".
 ## Frame 8 — Danas
 
 - scene: Telefon sa pravim ekranom Danas; ručno nacrtan krug oko „3:55 /km"
-- voiceover: "Svaki dan znaš šta trčiš, i kojim tempom."
+- voiceover: "Svaki dan znaš šta ti je u planu za trčanje, i kojim tempom."
 - duration: 4s
 - transition_in: cut
 - status: outline
@@ -207,7 +207,7 @@ keyMessage: Sub-20 je odgovor na „zašto".
 - handoff_in: telefon ulazi zdesna, blur 24 → 0, scale 0,78
 - handoff_out: telefon x=540 y=1000 scale 0,78, ekran klizi nagore (scroll) u Plan
 
-Telefon (zaobljen okvir, meka senka) nosi `ui-danas.png`. Kamera blago gura (scale 0,78 → 0,84). Na reč „tempom" ručno nacrtan zeleni krug (stroke-dashoffset, 0,5 s, blago nepravilan) oko reda „3:55 /km · oko 32 min". Naslov gore: „Svaki dan znaš *šta* trčiš." Sitno: „demo podaci".
+Telefon (zaobljen okvir, meka senka) nosi `ui-danas.png`. Kamera blago gura (scale 0,78 → 0,84). Na reč „tempom" ručno nacrtan zeleni krug (stroke-dashoffset, 0,5 s, blago nepravilan) oko reda „3:55 /km · oko 32 min". Naslov gore: „Svaki dan znaš *šta* je u planu." Sitno: „demo podaci".
 
 Funkcija: tab Danas — `web/src/features/today/TodayHero.tsx`, `web/src/features/today/index.tsx`.
 
@@ -217,7 +217,7 @@ keyMessage: tačan trening i tempo, bez tabele.
 ## Frame 9 — Plan iz tvog VDOT-a
 
 - scene: Plan po nedeljama; VDOT 48,6 kao kugla-broj koji se uklopi na mesto u „Polazni VDOT"
-- voiceover: "Plan se pravi iz tvog ve-dot-a, iz tvog vremena."
+- voiceover: "Plan se pravi iz tvog vidota, iz tvog vremena."
 - duration: 4s
 - transition_in: cut
 - status: outline

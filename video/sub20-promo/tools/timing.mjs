@@ -12,29 +12,29 @@ export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const SCENES = [
   { id: 's1', min: 3.6, lead: 0.55, tail: 0.14, vo: 'Sat ti kaže vreme. Ali ne kaže zašto.' },
   { id: 's2', min: 3.0, lead: 0.12, tail: 0.14, vo: 'Do sab dvadeset fali ti dvadeset šest sekundi.' },
-  { id: 's3', min: 3.4, lead: 0.12, tail: 0.14, vo: 'Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi.' },
+  { id: 's3', min: 3.4, lead: 0.12, tail: 0.14, vo: 'Na četvrtom kilometru tempo pada — izgubiš dvanaest sekundi.' },
   { id: 's4', min: 3.4, lead: 0.12, tail: 0.14, vo: 'Plan koji nije pravljen za tebe — još osam sekundi.' },
   { id: 's5', min: 3.2, lead: 0.12, tail: 0.14, vo: 'Umor koji ne vidiš — još šest.' },
   { id: 's6', min: 3.8, lead: 0.12, tail: 0.14, vo: 'A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč ar vi.' },
   { id: 's7', min: 2.6, lead: 0.12, tail: 0.14, vo: 'Zato postoji Sab dvadeset.' },
-  { id: 's8', min: 3.2, lead: 0.12, tail: 0.14, vo: 'Svaki dan znaš šta trčiš, i kojim tempom.' },
-  { id: 's9', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Plan se pravi iz tvog vi dota, iz tvog vremena.' },
+  { id: 's8', min: 3.2, lead: 0.12, tail: 0.14, vo: 'Svaki dan znaš šta ti je u planu za trčanje, i kojim tempom.' },
+  { id: 's9', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Plan se pravi iz tvog vidota, iz tvog vremena.' },
   { id: 's10', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Posle trke vidiš svaki kilometar, i gde je vreme otišlo.' },
   { id: 's11', min: 3.8, lead: 0.12, tail: 0.14, vo: 'A oporavak ti kaže kad da stisneš, a kad da staneš.' },
   { id: 's12', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Sab dvadeset ti pokazuje gde su tvoje sekunde.' }
 ];
-/* posle govora scene 12: povratak kugle se dovrši, pa 3D prolet, kartica „Napravljeno sa AI" i lockup */
-/* tekst za ElevenLabs eleven_v4 (glas Filip): isti kao vo + uputstva u zagradama, koja se ne izgovaraju; /IPA/ = izgovor reči (korisnik: „sat" sa dugim a, „sekundi" u redu 3) */
+/* posle govora scene 12: povratak kugle se dovrši, pa 3D prolet i lockup */
+/* tekst za ElevenLabs eleven_v4 (glas Filip): isti kao vo + uputstva u zagradama, koja se ne izgovaraju; /IPA/ = izgovor reči (korisnik: „sat" sa dugim a, „sekundi" u redu 3; „padne" je uvek izlazilo kao „padnje", pa je red 3 „pada") */
 export const TTS = [
   '[warmly] [calmly] /saːt/ ti kaže vreme... Ali ne kaže zašto.',
   '[warmly] Do sab dvadeset fali ti dvadeset šest sekundi.',
-  '[mischievously] Na četvrtom kilometru tempo padne — izgubiš dvanaest /sɛˈkundi/.',
+  '[mischievously] Na četvrtom kilometru tempo pada — izgubiš dvanaest /sɛˈkundi/.',
   '[mischievously] Plan koji nije pravljen za tebe — još osam sekundi.',
   '[softly] [slowly] Umor koji ne vidiš — još šest.',
   '[playfully] A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč ar vi.',
   '[warmly] Zato postoji Sab dvadeset.',
-  '[warmly] Svaki dan znaš šta trčiš, i kojim tempom.',
-  '[confidently] Plan se pravi iz tvog vi dota, iz tvog vremena.',
+  '[warmly] Svaki dan znaš šta ti je u planu za trčanje, i kojim tempom.',
+  '[confidently] Plan se pravi iz tvog vidota, iz tvog vremena.',
   '[warmly] Posle trke vidiš svaki kilometar, i gde je vreme otišlo.',
   '[excited] A oporavak ti kaže kad da stisneš, [calmly] a kad da staneš.',
   '[warmly] Sab dvadeset ti pokazuje gde su tvoje sekunde.'
@@ -103,7 +103,7 @@ export function events(T) {
   ev.gap = r(W(2, 'dvadeset#1') - 0.05);
   ev.run = r(st(3) + 0.15);
   ev.gasp = r(st(3) + 1.25);
-  ev.melt = r(Math.max(ev.gasp + 0.6, W(3, 'padne')));
+  ev.melt = r(Math.max(ev.gasp + 0.6, W(3, 'pada')));
   ev.chunkA = r(W(3, 'dvanaest') - 0.05);
   ev.hop1 = r(st(4) + 0.05 + 0.42);
   ev.hop2 = r(st(4) + 0.6 + 0.42);
