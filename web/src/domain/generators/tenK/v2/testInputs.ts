@@ -568,3 +568,81 @@ export function painCases(id: string, plan: PlanLike): PainCase[] {
     }
   return out;
 }
+
+/* ---------- Segment 06c: mreža R (rasterećenje posle smanjenja, A17) ---------- */
+
+/** `n` ravnomerno izabranih elemenata (indeks ⌊i · dužina / n⌋). */
+const spread = <T>(xs: readonly T[], n: number): T[] =>
+  Array.from({ length: n }, (_, i) => xs[Math.floor((i * xs.length) / n)]!);
+
+/** Planovi mreže R: svaki 12. ulaz mreže 01 (gridInputs, 252 plana) i po 20 ravnomerno izabranih iz mreže po
+    osećaju (F, 3–6 dana) i mreže početnika (B, 3–4 dana). */
+export function reliefGridBases(): AdaptBase[] {
+  const r = gridInputs().filter((_, i) => i % 12 === 0);
+  const f = spread(
+    ([3, 4, 5, 6] as const).flatMap((d) => feelGridInputs(d)),
+    20
+  );
+  const b = spread(
+    ([3, 4] as const).flatMap((d) => beginnerGridInputs(d)),
+    20
+  );
+  return [...r, ...f, ...b].map((x) => ({ id: x.id, input: x.input }));
+}
+
+export const RELIEF_SCENARIOS = [
+  'pause10',
+  'pause20',
+  'pain5',
+  'pain8',
+  'under',
+  'fatigue',
+  'pause10pain5'
+] as const;
+export type ReliefScenario = (typeof RELIEF_SCENARIOS)[number];
+
+/** asOf mreže R: kraj svake nedelje 2…N − 4. */
+export function reliefAsOfs(plan: PlanLike): { week: number; asOf: string }[] {
+  return plan.weeks
+    .filter((w) => w.index >= 2 && w.index <= plan.weeks.length - 4)
+    .map((w) => ({ week: w.index, asOf: w.endDate }));
+}
+
+/** Činjenice mreže R (asOf = kraj nedelje): pauza 10/20 dana (breaks), bol 5/8 na dan asOf, manjak (potpuna
+    pokrivenost nedelje asOf, odrađen samo prvi dan plana te nedelje), umor (2 lagana van plana sa RPE 8),
+    pauza 10 + bol 5 u istom koraku. */
+export function reliefFacts(
+  plan: PlanLike,
+  s: ReliefScenario,
+  asOf: string
+): Record<string, unknown> {
+  const back = (n: number): string => addDays(asOf, -n);
+  const pause = (days: number) => [{ kind: 'break', from: back(days - 1), to: asOf }];
+  switch (s) {
+    case 'pause10':
+      return { breaks: pause(10) };
+    case 'pause20':
+      return { breaks: pause(20) };
+    case 'pain5':
+    case 'pain8':
+      return painFacts(asOf, s === 'pain5' ? 5 : 8);
+    case 'under': {
+      const first = plan.weeks
+        .find((w) => w.endDate === asOf)!
+        .days.find((d) => d.countsToWeek)!.date;
+      return {
+        workouts: runsIn(plan, first, first),
+        coverage: { from: back(6), to: asOf, complete: true }
+      };
+    }
+    case 'fatigue':
+      return {
+        workouts: [
+          { date: back(1), km: 6, durationSec: 2400, completed: true, rpe: 8 },
+          { date: back(3), km: 6, durationSec: 2400, completed: true, rpe: 8 }
+        ]
+      };
+    case 'pause10pain5':
+      return { breaks: pause(10), ...painFacts(asOf, 5) };
+  }
+}

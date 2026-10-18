@@ -112,3 +112,20 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
 - Sabotaže (od 267): (a) 10, (b) 12, (c) 1, (d) 12. tenK/v2: 21 fajl / 267 testova.
 - Otvoreno: korak sačuvan u 4.0 zadržava staro sidro (A14) — B/C prilagođeni u 4.0 pa u 4.1 bez činjenica: ned 5 47,6;
   5K v2 isti problem (poseban segment).
+
+## Segment 06c (10k-v2.5.0, A17): ZAUSTAVLJENO — sudar A17 sa D5; generator nepromenjen (`10k-v2.4.1`)
+
+- Polazni `4917959`; izveštaj `reports/SEGMENT-06c-IMPLEMENTATION.md`. Odluka A17 (redovno rasterećenje odmah posle
+  smanjenja se ukida) + poruka N2 izmerene kao prototip (`artifacts/segment-06c/a17-prototype.diff`, nije primenjen).
+- **Sudar 1 (stop po tački 3 odluke):** 12 ned (smanjena ned 3, ukinuta ned 4, sledeće rasterećenje ned 9) i 17 ned
+  (smanjena ned 7, ukinuta ned 8, sledeće ned 13) → 5 uzastopnih izgradnji od ukinute nedelje (D5 izuzetak 4 odmah
+  posle). Mreža R: 384 toka (64 × 6 scenarija smanjenja) odbijena (`DELOAD_RUN`); 04 i P: 0.
+- **Sudar 2:** J2 „≤ nivo" i A8 „nikad sporije od D6": 8 tokova mreže 04 (manjak, asOf sreda ned 6) — 28,4 > 28,1 i
+  39,8 > 39,3 (isti skok na 4917959 nedelju kasnije).
+- Prototip inače: J1 0, J4 0, J5 0 izuzetaka (promenjeno samo A17/N2: 04 292/2040, P 88/336, R 4471 + 384 odbijeno /
+  18 193); primeri iz N1 (10w-25km-v30-A-sat) ned 5: pauza 17,0 → 23,3, bol 5 14,9 → 20,5, manjak 19,0 → 26,2.
+- Commitovano: mreža R (`testInputs.ts`: `reliefGridBases` 292 plana, 7 scenarija, asOf kraj ned 2…N−4), heševi
+  4917959 (`segment06c.adapt-hashes-4917959.json`: 04 2040, P 336, R 18 193), skripte merenja. N1 „189 planova" = 252.
+  Provere: tsc/eslint/prettier exit 0; tenK/v2 21 / 267; `npm run check` exit 0 (220 fajlova, 2710 testova).
+- Čeka organizatora: izbor za sudar 1 i 2; tumačenje bol + višak u istom koraku. Potom tačka 6 (verzija, DECISIONS,
+  `KNOWN_VERSIONS`), test mreže R, sabotaže.
