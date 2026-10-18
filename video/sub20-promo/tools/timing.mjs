@@ -18,7 +18,7 @@ export const SCENES = [
   { id: 's6', min: 3.8, lead: 0.12, tail: 0.14, vo: 'A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč ar vi.' },
   { id: 's7', min: 2.6, lead: 0.12, tail: 0.14, vo: 'Zato postoji Sab dvadeset.' },
   { id: 's8', min: 3.2, lead: 0.12, tail: 0.14, vo: 'Svaki dan znaš šta ti je u planu za trčanje, i kojim tempom.' },
-  { id: 's9', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Plan se pravi iz tvog vidota, iz tvog vremena.' },
+  { id: 's9', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Plan se pravi iz tvog vi dota, iz tvog vremena.' },
   { id: 's10', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Posle trke vidiš svaki kilometar, i gde je vreme otišlo.' },
   { id: 's11', min: 3.8, lead: 0.12, tail: 0.14, vo: 'A oporavak ti kaže kad da stisneš, a kad da staneš.' },
   { id: 's12', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Sab dvadeset ti pokazuje gde su tvoje sekunde.' }
@@ -34,7 +34,7 @@ export const TTS = [
   '[playfully] A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč ar vi.',
   '[warmly] Zato postoji Sab dvadeset.',
   '[warmly] Svaki dan znaš šta ti je u planu za trčanje, i kojim tempom.',
-  '[confidently] Plan se pravi iz tvog vidota, iz tvog vremena.',
+  '[confidently] Plan se pravi iz tvog Vi Dota, iz tvog vremena.',
   '[warmly] Posle trke vidiš svaki kilometar, i gde je vreme otišlo.',
   '[excited] A oporavak ti kaže kad da stisneš, [calmly] a kad da staneš.',
   '[warmly] Sab dvadeset ti pokazuje gde su tvoje sekunde.'
