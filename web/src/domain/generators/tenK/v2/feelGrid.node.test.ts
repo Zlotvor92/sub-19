@@ -26,6 +26,7 @@ import { validatePlan } from './validate.ts';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASELINE = join(HERE, 'segment03-feel.baseline.json');
 const HASHES_81 = join(HERE, 'segment03b.plan-hashes-81bd351.json');
+const HASHES_B13 = join(HERE, 'segment04.plan-hashes-b13ca17.json');
 type Baseline = { policyVersion: string; plans: Record<string, Row> };
 
 describe('mreža po osećaju: 11 880 planova (3–6 dana × 8–18 ned × 6 laganih tempa)', () => {
@@ -131,6 +132,16 @@ describe('mreža po osećaju: 11 880 planova (3–6 dana × 8–18 ned × 6 laga
       feel: Record<string, number>;
     };
     expect(fx.against).toBe('81bd351');
+    expect(Object.keys(fx.feel).sort()).toEqual(Object.keys(h81).sort());
+    expect(Object.keys(h81).length).toBe(11880);
+    expect(Object.keys(h81).filter((id) => h81[id] !== fx.feel[id])).toEqual([]);
+  });
+  it('regresija 04: generate = construct(input, []) — ceo plan po osećaju bajt-isti kao b13ca17 (heš bez oznake verzije) za svih 11880', () => {
+    const fx = JSON.parse(readFileSync(HASHES_B13, 'utf8')) as {
+      against: string;
+      feel: Record<string, number>;
+    };
+    expect(fx.against).toBe('b13ca17');
     expect(Object.keys(fx.feel).sort()).toEqual(Object.keys(h81).sort());
     expect(Object.keys(h81).length).toBe(11880);
     expect(Object.keys(h81).filter((id) => h81[id] !== fx.feel[id])).toEqual([]);

@@ -250,12 +250,115 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts planRule (feelTest); generate.ts (periodize bez testa, napomena plana); validate.ts (TEST)',
     rationale:
       'Heuristika: kod 3 dana i 15 km test (WU + 5 km + CD ≈ 8 km) je ≈ pola nedelje, a u rasterećenju skraćuje dugi na 3,1 km (81bd351: dugi rasterećenja < 4 km u 162 plana početnika, cilj rasterećenja naviše u 144). Posledica: u 102 plana po osećaju ograničena kapacitetom vrh 81bd351 je bio u nedelji testa (dan testa duži od kvalitetnog dana), pa je vrh niži do 1,7 km (4 dana, 35 km, lagan 8:30, 10 ned: 38,5 → 36,8 km); u 36 od njih (3 dana) taper zato prelazi sa RP 2 × 1000 m na T 1,5 km (D31).'
+  },
+  /* ---------- Segment 04 (10k-v2.4.0): adaptacija. Heuristike zadate za segment, bez trenerske provere. ---------- */
+  {
+    id: 'A1',
+    rule: 'Rezultat (test ili trka 3/5/10 km, polumaraton) ≤ 84 dana i noviji od rezultata u upotrebi → VDOT od sledeće nedelje (prva puna nedelja posle asOf); plan po osećaju prelazi na paceBasis result od te nedelje (RPE samo u nedeljama po osećaju); pravilo cilja obima (D6) se ne menja zbog tempa; doza se nastavlja (metraža); ocena cilja (D3, nedelje od sledeće do trke) i prognoza iz novog VDOT-a. VDOT van 30–80 → RESULT_IGNORED (razlog); nema sledeće nedelje → ne primenjuje se (razlog).',
+    place:
+      'assess.ts (odluka); steps.ts pacesAt/basisAt (tempo nedelje); generate.ts construct; adapt.ts (nivo plana); validate.ts (PACES, PACE_BASIS, RPE po nedelji)',
+    rationale:
+      'Heuristika: tempo prati najnoviji pouzdan rezultat (isti prag starosti kao D1). Tumačenje (bez novog broja): „obim ne raste zbog tempa" = nominalni cilj (D6) ne zavisi od tempa; kapacitet je i dalje stvarna konstrukcija nedelje sa tempom te nedelje (D6), pa nedelja ograničena kapacitetom (dugi 105 min) sme dobiti drugi izvodljiv cilj. VDOT van 30–80 se ne odbija (za razliku od ulaza): plan ostaje na postojećem tempu.'
+  },
+  {
+    id: 'A2',
+    rule: 'Manjak izvršenja: potpuno pokriven 7-dnevni prozor do asOf (A10), izvršeno < 60 % planiranog → cilj sledeće nedelje (izgradnja) = min(prethodni cilj izgradnje, max(izvršeno, 0,8 × cilj te nedelje)), ne ispod donje granice (A9); dalje povratni rast (A8).',
+    place: 'assess.ts (adapt.underShare, underFloorShare, windowDays)',
+    rationale:
+      'Heuristika: nedelja ispod 60 % nije osnov za rast; 80 % planiranog čuva kontinuitet. Primenjuje se samo kad je sledeća nedelja izgradnje (taper i trkačka nedelja se ne menjaju, A12).'
+  },
+  {
+    id: 'A3',
+    rule: 'Pauza (uzastopni poznati dani bez trčanja do asOf u potpunoj pokrivenosti, ili eksplicitna pauza): 7–13 dana → 80 % obima 7 dana pre pauze, prva nedelja 1 kvalitet; 14–27 → 70 %, prva nedelja bez kvaliteta, druga 1 kvalitet; ≥ 28 → min(obim 14 dana pre pauze / 2, 50 % obima 7 dana pre), nov start (rePeriodize preostale izgradnje, D5; vrh od novog starta; progresija doze iznova, D16); nov start i < 8 nedelja do trke → cilj „orijentir" (poruka). Obim pre pauze iz zapisa samo ako je prozor pokriven i svako trčanje ima km; inače cilj plana te nedelje. Cilj ≤ cilj sledeće nedelje u planu; ostatak tekuće nedelje dobija ograničenja i (izgradnja) cilj pauze.',
+    place:
+      'assess.ts (adapt.pause); periodize.ts rePeriodize; steps.ts framesFor; volume.ts adaptNominal10',
+    rationale:
+      'Heuristika gubitka forme po trajanju pauze. Tumačenje: „vrh od novog starta" = granica izgradnje D6 (1,4× / +15 / max) od cilja novog starta važi za redovan rast; povratni rast (A8) ide do nivoa pre pauze i iznad te granice (kao 5K v2 2.6.0), a iznad nivoa cilj drži granicu (ne pada). Uz granicu novog starta i za povratak cilj bi ostao ravan do trke (4 dana, 18 ned, VDOT 45, 35 km, asOf kraj ned 2, pauza 35: 24,6 km od ned 8 do 16) — upravo ono što pouka 7 zabranjuje. Odstupanje (opreznije, bez novog broja): kad za preostalu izgradnju ne postoji raspored rasterećenja po D5 (4 nedelje izgradnje: baza, razvoj, specifično 2 — rasterećenje bi palo na prvu nedelju faze ili pred taper), faze i rasterećenja ostaju iz plana (nov start samo obima i doze); npr. 4 dana, 14 ned, asOf kraj ned 8, pauza 35 dana. Nov start sa ≤ 2 nedelje izgradnje: sve specifično.'
+  },
+  {
+    id: 'A4',
+    rule: 'Bol ≥ 4 u poslednja 3 dana → 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min (sporim E), lagani × 0,7 (≥ 3 km, ≤ dugi); bol ≥ 7 → najpre 3 dana odmora, pa isto; poruka o stručnom pregledu; nedelja sa danom bola/odmora ima najviše 1 kvalitet doze rasterećenja; cilj nedelje bola ostaje (dani su ograničeni, planirano ≤ cilj); posle poslednje nedelje bola rast kreće od 0,7 × njenog cilja do nivoa pre bola (A8).',
+    place:
+      'assess.ts (adapt.pain*); steps.ts limitsOf; lengths.ts painLong10/limitedEasy10; week.ts; volume.ts',
+    rationale:
+      'Heuristika opreza kod bola; dijagnoza nije deo plana (poruka). Tumačenje: „doza ne raste u nedelji sa ograničenjem" — nedelja sa danima bola/odmora dobija najviše jedan kvalitet doze rasterećenja i kad dani kvaliteta nisu u periodu bola.'
+  },
+  {
+    id: 'A5',
+    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana — bez dayId) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); prinudno rasterećenje odmah posle redovnog = 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8); redovno rasterećenje odmah posle prinudnog se ukida.',
+    place: 'assess.ts (adapt.fatigue*); steps.ts framesFor; validate.ts (D5 izuzetak prinudnog)',
+    rationale:
+      'Heuristika: povišen napor na laganim treninzima je znak umora. Prinudno rasterećenje sme pasti na prvu nedelju faze ili pred taper (izuzetak D5, samo za korak umora).'
+  },
+  {
+    id: 'A6',
+    rule: 'Višak: > 115 % planiranog u dva uzastopna potpuno pokrivena 7-dnevna prozora → sledeća nedelja bez rasta (cilj = min(cilj, prethodni cilj izgradnje)); ne primenjuje se kad sledeća nedelja nije izgradnja ili je rasteretna.',
+    place: 'assess.ts (adapt.overShare)',
+    rationale: 'Heuristika: više od plana povećava rizik; plan se ne povećava za višak.'
+  },
+  {
+    id: 'A7',
+    rule: 'Prioritet: bol uvek (po datumima, najstroži); za obim samo najviše aktivno od pauza > umor > izvršenje (manjak/višak); tempo (A1) uvek; svi aktivni uslovi u reasons sa applied true/false i porukom.',
+    place: 'assess.ts',
+    rationale: 'Jedno pravilo obima po koraku: bez sabiranja smanjenja.'
+  },
+  {
+    id: 'A8',
+    rule: 'Povratni rast: posle smanjenja (pauza, bol, manjak) cilj raste +10 %/ned (min 1,0 km; nikad sporije od D6) do nivoa pre smanjenja u svim fazama osim tapera i trkačke nedelje (i iznad granice izgradnje novog starta, A3); iznad nivoa D6 (iznad granice drži). Nivo = cilj poslednje ne-rasteretne nedelje izgradnje završene pre prvog dana događaja (bez nje — start plana); više koraka → najveći nivo. Rasterećenje u povratku 0,8 × poslednja ne-rasteretna; cilj koraka je osnov rasta i kad je ta nedelja rasteretna. U povratku se cilj ne podiže iznad pravila (izvodljiv cilj samo naniže). Taper posle smanjenja = 0,75 × najveći cilj izgradnje posle poslednjeg smanjenja (nikad skok naviše); korak čija je sledeća nedelja taper: min(0,75 × vrh, cilj koraka).',
+    place: 'volume.ts (adaptNominal10, nextBuild10, returnLevel10) — konstruktor i validator',
+    rationale:
+      'Pouka 7 (5K v2): bez povratnog rasta cilj posle pauze ostaje ravan do trke ili skače. Tumačenje: „min 1,0 km" je donja granica koraka povratka (kao D6); gornje granice koraka nema osim nivoa.'
+  },
+  {
+    id: 'A9',
+    rule: 'Donja granica adaptiranog cilja = minimum nedelje broja dana (D17 weekMinKm; početnik isto). Kvalitet koji u adaptiranoj nedelji ne staje → 1 kvalitet doze rasterećenja → bez kvaliteta (odluka konstruktora, ista pretraga cilja: prolazi pravilo, popuštanje, 1 kvalitet, bez kvaliteta; cilj adaptacije se zadržava — najpre svi prolazi na njemu, pa niži izvodljiv cilj); test 5 km koji ne staje (dugi bi bio kraći od 5 km) otpada sa kvalitetom; oštrenje otpada kad trkačka nedelja sa njim ne bi bila ≤ taper (D23/D30).',
+    place:
+      'volume.ts (adaptNominal10); generate.ts construct (prolazi); week.ts (buildWeek test, raceWeek); lengths.ts deloadLengths; validate.ts (ONE_QUALITY, TARGET_FLOOR, MAIN_DOSE_DECREASE)',
+    rationale:
+      'Uslov 8: adaptirana nedelja ne pada ispod najmanjeg smislenog obima i ne postaje degenerisana. Tumačenja (bez novog broja): D30b (planirano + trka ≥ minimum) oštrenje ne popravlja, pa oštrenje otpada kad bi trkačka nedelja bila veća od tapera (D23) — mali taper posle smanjenja (zaštita konstruktora; u mreži 04 se ne javlja, D8 + D23 već drže trkačku ≤ taper); uz manji cilj adaptirane nedelje od nedelje poređenja glavna doza sme da padne (plafon D11 ispred D12). Bez zadržavanja cilja pretraga D6 je nalazila izvodljiv cilj daleko ispod pravila (početnik 4 dana, 14 ned, VDOT 35, manjak 50 % na kraju ned 8: 26,0 → 14,9 km, nedelja bez kvaliteta jer ni T 1,5 km ne staje). Odstupanja (opreznije, D13 ispred D5/D27; samo od prve nedelje posle smanjenja obima — inače bi adaptacija bez činjenica menjala 30 planova po osećaju čiji generator ima dugi < 5 km u nedelji testa): u adaptiranoj nedelji dugi rasterećenja ≤ 0,8 × poslednji — najduži koji ostavlja lagane ≥ 3 km i ne ispod 3 km (isto pravilo kao test D27); test u adaptiranoj nedelji samo kad dugi ostaje ≥ 5 km. Ulaz: 3 dana, 10 ned, po osećaju 6:00, 25 km, asOf kraj ned 2, pauza 35 — test premešten u ned 5 (15,2 km) davao je dugi 3,0 km, pa rasterećenje ned 6 (0,8 × 3,0 = 2,4 km < 3 km) nije imalo nijedan izvodljiv cilj; 3 dana, 10 ned, VDOT 45, 25 km, asOf kraj ned 2, pauza 21 dan + bol 6: rasterećenje 10,7 km sa dugim 4,8 km ostavljalo je lagane 2,9 km.'
+  },
+  {
+    id: 'A10',
+    rule: 'Pokrivenost: dan bez zapisa je poznat (bez trčanja) SAMO u facts.coverage sa complete = true; A2, A3 (iz zapisa) i A6 samo na pokrivenom delu; bol, umor, rezultat i eksplicitna pauza uvek. Bez coverage nijedan dan bez zapisa nije poznat (nepotpun zapis ≠ pauza). Eksplicitna pauza važi ako je završena u poslednjih 7 dana i posle prethodne adaptacije. Trčanje = completed i (km > 0 ili durationSec > 0).',
+    place: 'assess.ts (coveredDays, knownKm)',
+    rationale: 'Nepotpun unos (sat nije sinhronizovan) ne sme izgledati kao pauza ili manjak.'
+  },
+  {
+    id: 'A11',
+    rule: 'Zaštita: dani ≤ asOf, urađeni (completed, po dayId ili datumu) i zaključani (lockedDayIds) ostaju bajt-isti iz prethodnog plana; završna zaštita samo proverava (ADAPT_PROTECTION = odbijanje, plan se ne vraća); nedelje sa zadržanim danima koji se razlikuju od konstrukcije → adaptation.mixedWeeks. asOf ≥ dan trke ili pre prethodne adaptacije → ADAPT_AS_OF_INVALID.',
+    place: 'adapt.ts',
+    rationale: 'Uslov 4: završna zaštita štiti urađeno, datume i zaključane treninge, ne odlučuje.'
+  },
+  {
+    id: 'A12',
+    rule: 'Datum trke, taper i trkačka nedelja se ne pomeraju; rePeriodize menja samo preostalu izgradnju (od sledeće nedelje) istim pravilima D4/D21 i D5 (rasterećenje nikad na prvoj nedelji faze, uključujući fazu od 1 nedelje, ni u prve 2 nedelje novog starta, ni pred taperom).',
+    place: 'periodize.ts rePeriodize',
+    rationale: 'Datum trke je fiksan; nov start je kraća priprema istim pravilima.'
+  },
+  {
+    id: 'A13',
+    rule: 'Test 5 km (plan po osećaju): nedelja testa posle asOf koja je blokirana (ograničenje kvaliteta, prinudno rasterećenje, van izgradnje) → test na prvu sledeću ne-rasteretnu nedelju izgradnje bez ograničenja dok je plan po osećaju; nema je → bez testa. Posle primljenog rezultata (A1) testa nema. Početnik nema test (D32).',
+    place: 'steps.ts framesFor',
+    rationale:
+      'Test zamenjuje kvalitet i ne sme pasti u nedelju zabrane. Tumačenja: redovno rasterećenje sa testom iz D27 nije blokada (inače bi plan bez činjenica bio promenjen); test koji u novoj nedelji ne staje otpada (A9), ne premešta se dalje (bez petlje).'
+  },
+  {
+    id: 'A14',
+    rule: 'Lančana adaptacija: koraci se čuvaju u plan.adaptation.steps i ponavljaju redom; isti ulaz + isti koraci → isti plan (bez čitanja sata; asOf je ulaz).',
+    place: 'adapt.ts, generate.ts construct',
+    rationale: 'Determinizam i ponovljivost.'
+  },
+  {
+    id: 'A15',
+    rule: 'Plan starije verzije 10k-v2: buduće nedelje po tekućim pravilima; prošlost zaštićena (mixedWeeks); plan druge politike ili neispravan → ADAPT_PLAN_INVALID.',
+    place: 'adapt.ts checkPlan',
+    rationale: 'Prošlost se ne prepravlja; budućnost prati tekuću politiku.'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.3.1',
+  version: '10k-v2.4.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
@@ -517,6 +620,48 @@ export const TEN_K_V2_POLICY = {
 
   /** Tehnička tolerancija: planirano vs cilj (zaokruženje dana na 0,1 km). */
   tolerance: { plannedKm: 0.1 },
+
+  /** Segment 04: adaptacija (A1–A15). Rezultat: starost i VDOT kao ulaz (input.resultMaxAgeDays, vdotMin,
+      vdotMax); donja granica cilja: weekMinKm (D17, A9); lagan ≥ lengths.easyMinKm. */
+  adapt: {
+    /** A2/A5/A6: prozor [dana]. */
+    windowDays: 7,
+    /** A2: izvršeno < underShare planiranog → cilj max(izvršeno, underFloorShare × cilj nedelje). */
+    underShare: 0.6,
+    underFloorShare: 0.8,
+    /** A3: pauza [dana bez trčanja] → udeo obima 7 dana pre pauze. */
+    pause: {
+      shortDays: 7,
+      midDays: 14,
+      longDays: 28,
+      shortShare: 0.8,
+      midShare: 0.7,
+      longShare: 0.5
+    },
+    /** A3: nov start i < ovoliko nedelja do trke → cilj „orijentir". */
+    restartFullPrepWeeks: 8,
+    /** A4: bol ≥ painMin u poslednjih painLookbackDays dana → painDays dana bez kvaliteta i ubrzanja, dugi ≤
+        painLongMaxSec, lagani × painEasyFactor; bol ≥ painRestMin → najpre restDays dana odmora. */
+    painMin: 4,
+    painRestMin: 7,
+    painLookbackDays: 3,
+    painDays: 7,
+    restDays: 3,
+    painLongMaxSec: 3600,
+    painEasyFactor: 0.7,
+    /** A5: ≥ fatigueCount laganih treninga u windowDays sa RPE ≥ fatigueRpe. */
+    fatigueRpe: 7,
+    fatigueCount: 2,
+    /** A6: izvršeno > overShare planiranog u 2 uzastopna prozora. */
+    overShare: 1.15,
+    /** A8: povratni rast +returnGrowth (min returnGrowthMinKm) do nivoa pre smanjenja. */
+    returnGrowth: 0.1,
+    returnGrowthMinKm: 1.0,
+    orientationMessage:
+      'Cilj je orijentir: posle duge pauze do trke ostaje manje od 8 nedelja, priprema nije potpuna (A3).',
+    painMessage:
+      'Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4).'
+  },
 
   DECISIONS
 } as const;

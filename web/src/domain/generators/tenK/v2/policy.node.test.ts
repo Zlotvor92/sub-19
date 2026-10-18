@@ -10,13 +10,13 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.3.1', () => {
+describe('policy 10k-v2.4.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.3.1');
+    expect(P.version).toBe('10k-v2.4.0');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b) i A1–A15 (04), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -28,7 +28,8 @@ describe('policy 10k-v2.3.1', () => {
       'D29',
       'D30',
       'D31',
-      'D32'
+      'D32',
+      ...Array.from({ length: 15 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

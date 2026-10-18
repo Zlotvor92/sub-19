@@ -1,0 +1,148 @@
+/* Segment 04: invarijante adaptiranih planova — sopstvena provera, NEZAVISNO od validatora (testovi
+   adapt.node.test.ts). Nije testni fajl, da bi ga izolacioni test video kao deo v2; uvozi samo dates.ts,
+   policy.ts i types.ts. */
+
+import { daysBetween, mustDay } from './dates.ts';
+import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
+import type { PlanDay, PlanWeek, TenKV2Facts, TenKV2Plan } from './types.ts';
+
+const EPS = 1e-6;
+const isBuild = (w: PlanWeek): boolean =>
+  w.phase === 'base' || w.phase === 'development' || w.phase === 'specific';
+const reduced = (w: PlanWeek): boolean =>
+  w.limits?.quality !== undefined || w.notes.some((n) => n.includes('(A9)'));
+const qualityOf = (w: PlanWeek): PlanDay[] => w.days.filter((d) => d.workout.kind === 'quality');
+
+/**
+ * Prekršaji invarijanti (prazno = sve važi): zaštita prošlosti/urađenog/zaključanog (bajt-isto); planirano
+ * = cilj (osim mešovitih; uz dane bola/odmora planirano ≤ cilj); dugi ≥ lagan; teški dani nesusedni;
+ * trkačka ≤ taper; D30b (trkačka + trka ≥ minimum); rasterećenje po D5 (izgradnja, ne prva nedelja faze ni
+ * pred taperom osim prinudnog, A5); doza ne raste u nedelji sa ograničenjem; cilj ≥ minimum nedelje (A9);
+ * Uslov 8; datum trke, taper i trkačka nedelja se ne pomeraju (A12); taper posle smanjenja ≤ poslednja
+ * nedelja izgradnje (A8).
+ */
+export function adaptInvariants(
+  before: TenKV2Plan,
+  after: TenKV2Plan,
+  asOf: string,
+  facts: TenKV2Facts
+): string[] {
+  const bad: string[] = [];
+  const t = mustDay(asOf);
+  const ad = after.adaptation;
+  if (!ad) return ['bez plan.adaptation'];
+  const mixed = new Set(ad.mixedWeeks);
+  const steps = ad.steps;
+  const min = dayRule(after.input.runDays.length)!.weekMinKm;
+  const first = Math.min(...steps.map((s) => s.firstWeek));
+  // A11: zaštita.
+  const done = new Set(
+    (facts.workouts ?? []).filter((x) => x.completed).map((x) => x.dayId ?? x.date)
+  );
+  const locked = new Set(facts.lockedDayIds ?? []);
+  const afterDays = new Map(after.weeks.flatMap((w) => w.days.map((d) => [d.date, d] as const)));
+  for (const w of before.weeks)
+    for (const d of w.days)
+      if (mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date))
+        if (JSON.stringify(afterDays.get(d.date)) !== JSON.stringify(d))
+          bad.push(`zaštita ${d.date}`);
+  // A12.
+  const n = after.weeks.length;
+  if (
+    n !== before.weeks.length ||
+    after.weeks.some(
+      (w, i) =>
+        w.startDate !== before.weeks[i]!.startDate ||
+        (w.phase === 'taper' || w.phase === 'race') !==
+          (before.weeks[i]!.phase === 'taper' || before.weeks[i]!.phase === 'race')
+    ) ||
+    after.weeks[n - 1]!.days.find((d) => d.role === 'race')?.date !== after.input.raceDate
+  )
+    bad.push('datum trke / taper / trkačka nedelja pomereni');
+  // Teški dani nesusedni (ceo plan).
+  const hard = after.weeks.flatMap((w) => w.days.filter((d) => d.hard)).map((d) => d.date);
+  hard.sort();
+  for (let i = 1; i < hard.length; i++)
+    if (daysBetween(hard[i - 1]!, hard[i]!) < 2) bad.push(`teški susedni ${hard[i]}`);
+  const taper = after.weeks.find((w) => w.phase === 'taper')!;
+  const race = after.weeks[n - 1]!;
+  let lastBuild: PlanWeek | null = null;
+  let maxDose: Record<string, number> = {};
+  for (const w of after.weeks) {
+    if (steps.some((s) => s.restart && s.fromWeek === w.index)) maxDose = {};
+    const m = mixed.has(w.index);
+    const long = w.days.find((d) => d.role === 'long');
+    // Dugi ≥ lagan (mešovita: među danima posle asOf).
+    for (const d of w.days)
+      if (
+        long &&
+        d.role === 'easy' &&
+        d.workout.km > long.workout.km + EPS &&
+        (!m || (mustDay(d.date) > t && mustDay(long.date) > t))
+      )
+        bad.push(`dugi < lagan ned ${w.index}`);
+    for (const d of w.days)
+      if (d.workout.km <= 0 || d.workout.segments.length === 0)
+        bad.push(`prazan trening ${d.date}`);
+    if (m) continue;
+    const limited = (w.limits?.pain?.length ?? 0) > 0 || (w.limits?.rest?.length ?? 0) > 0;
+    // Planirano = cilj.
+    if (
+      w.phase !== 'race' &&
+      (limited
+        ? w.plannedKm > w.targetKm + P.tolerance.plannedKm + EPS
+        : Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
+    )
+      bad.push(`planirano ≠ cilj ned ${w.index}`);
+    // Uslov 8 i A9.
+    if (w.phase !== 'race' && w.plannedKm + EPS < min && !(w.limits?.rest?.length ?? 0))
+      bad.push(`nedelja < minimum ned ${w.index}`);
+    if (w.phase !== 'race' && w.index >= first && w.targetKm + EPS < min)
+      bad.push(`cilj < minimum ned ${w.index}`);
+    // D5 (A5: prinudno rasterećenje sme bilo gde u izgradnji).
+    if (w.deload) {
+      const forced = steps.some((s) => s.deload && s.fromWeek === w.index);
+      const prev = after.weeks[w.index - 2];
+      const next = after.weeks[w.index];
+      if (!isBuild(w)) bad.push(`rasterećenje van izgradnje ned ${w.index}`);
+      else if (
+        !forced &&
+        (w.index < P.deload.firstAllowedWeek ||
+          !prev ||
+          prev.phase !== w.phase ||
+          !next ||
+          !isBuild(next))
+      )
+        bad.push(`rasterećenje D5 ned ${w.index}`);
+    }
+    // Doza ne raste u nedelji sa ograničenjem (najviše 1 kvalitet, doza ≤ dosadašnje u zoni).
+    if (isBuild(w) && !w.deload && reduced(w)) {
+      const qs = qualityOf(w);
+      if (qs.length > 1) bad.push(`ograničenje: ${qs.length} kvaliteta ned ${w.index}`);
+      for (const d of qs) {
+        const z = d.workout.dose!.zone;
+        if (maxDose[z] !== undefined && d.workout.dose!.doseM > maxDose[z])
+          bad.push(`ograničenje: doza raste ned ${w.index}`);
+      }
+    } else if (isBuild(w) && !w.deload)
+      for (const d of qualityOf(w)) {
+        const z = d.workout.dose!.zone;
+        maxDose[z] = Math.max(maxDose[z] ?? 0, d.workout.dose!.doseM);
+      }
+    if (isBuild(w) && !w.deload) lastBuild = w;
+  }
+  // Trkačka ≤ taper; D30b.
+  if (!mixed.has(taper.index) && !mixed.has(race.index)) {
+    if (race.plannedKm > taper.plannedKm + EPS) bad.push('trkačka > taper');
+    if (race.plannedKm + P.raceWeek.raceKm + EPS < min) bad.push('trkačka + trka < minimum');
+  }
+  // A8: taper posle smanjenja ≤ poslednja nedelja izgradnje.
+  if (
+    steps.some((s) => s.startKm !== null || s.returnFrom) &&
+    lastBuild &&
+    !mixed.has(taper.index) &&
+    taper.targetKm > lastBuild.targetKm + EPS
+  )
+    bad.push('taper > poslednja izgradnja');
+  return bad;
+}

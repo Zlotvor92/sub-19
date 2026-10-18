@@ -34,6 +34,7 @@ const BASELINE_49 = join(HERE, 'segment02.baseline.json');
 const HASHES_21 = join(HERE, 'segment03.plan-hashes-21c03f1.json');
 const EXCEPTIONS = join(HERE, 'segment03.regression-exceptions.json');
 const HASHES_81 = join(HERE, 'segment03b.plan-hashes-81bd351.json');
+const HASHES_B13 = join(HERE, 'segment04.plan-hashes-b13ca17.json');
 const EPS = 1e-9;
 
 type Baseline = { policyVersion: string; plans: Record<string, Row> };
@@ -261,6 +262,16 @@ describe('mreža 02 sa rezultatom: 15 840 planova (3/4/5/6 dana × 8–18 ned)',
       result: Record<string, number>;
     };
     expect(fx.against).toBe('81bd351');
+    expect(Object.keys(fx.result).sort()).toEqual(Object.keys(h81).sort());
+    expect(Object.keys(h81).length).toBe(15840);
+    expect(Object.keys(h81).filter((id) => h81[id] !== fx.result[id])).toEqual([]);
+  });
+  it('regresija 04: generate = construct(input, []) — ceo plan sa rezultatom bajt-isti kao b13ca17 (heš bez oznake verzije) za svih 15840', () => {
+    const fx = JSON.parse(readFileSync(HASHES_B13, 'utf8')) as {
+      against: string;
+      result: Record<string, number>;
+    };
+    expect(fx.against).toBe('b13ca17');
     expect(Object.keys(fx.result).sort()).toEqual(Object.keys(h81).sort());
     expect(Object.keys(h81).length).toBe(15840);
     expect(Object.keys(h81).filter((id) => h81[id] !== fx.result[id])).toEqual([]);

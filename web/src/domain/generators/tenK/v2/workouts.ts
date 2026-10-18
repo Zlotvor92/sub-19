@@ -365,9 +365,19 @@ export function easyTimeWorkout(sec: number, p: Paces): Workout {
   );
 }
 
-/** D8: dan pred trku — 20 min E + 4 × 20 s ubrzanja (R tempo; oporavak isti metraž džogom, D14 R). */
-export function eveWorkout(p: Paces): Workout {
+/** D8: dan pred trku — 20 min E + 4 × 20 s ubrzanja (R tempo; oporavak isti metraž džogom, D14 R). A4:
+    u periodu bola bez ubrzanja (`strides` false). */
+export function eveWorkout(p: Paces, strides = true): Workout {
   const q = P.raceWeek;
+  if (!strides)
+    return assemble(
+      'easy',
+      null,
+      `Lagano ${Math.round(q.eveEasySec / 60)} min`,
+      [{ kind: 'easy_time', sec: q.eveEasySec }],
+      [timeEasy('easy', q.eveEasySec, p)],
+      null
+    );
   const st = q.eveStrides;
   const strideKm = fromSec(st.sec, p.R);
   const rec = { m: Math.round(strideKm * 1000) };

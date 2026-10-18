@@ -131,7 +131,7 @@ export function raceWeekTarget10(planned100: number): number {
  * (pri jednakoj udaljenosti niži). Izgradnja sme naviše do granice izgradnje; rasterećenje i taper samo
  * naniže (smanjenje ne sme da poraste) — osim rasterećenja sa testom (D27, odstupanje): naviše najviše do
  * ispod poslednjeg cilja izgradnje `lastBuild10` (i dalje smanjenje). Donja granica je najmanji smislen
- * obim (D15, po broju dana D17).
+ * obim (D15, po broju dana D17). A8 (`downOnly`): cilj adaptacije i povratni rast samo naniže.
  */
 export function fit10(
   nominal: number,
@@ -139,12 +139,14 @@ export function fit10(
   cap10: number,
   rule: PlanRule,
   feasible: (target10: number) => boolean,
-  lastBuild10: number | null = null
+  lastBuild10: number | null = null,
+  downOnly = false
 ): { target10: number; fitted: 'down' | 'up' | null } | null {
   if (feasible(nominal)) return { target10: nominal, fitted: null };
   const lo = to10(rule.weekMinKm);
-  const hi =
-    frame.deload && frame.test && lastBuild10 !== null
+  const hi = downOnly
+    ? nominal
+    : frame.deload && frame.test && lastBuild10 !== null
       ? lastBuild10 - 1
       : frame.deload || frame.phase === 'taper'
         ? nominal
@@ -155,4 +157,185 @@ export function fit10(
     if (nominal + d <= hi && feasible(nominal + d)) return { target10: nominal + d, fitted: 'up' };
   }
   return null;
+}
+
+/* ---------- Segment 04: obim adaptiranog plana (A2, A3, A4, A8, A9) — jedino mesto ---------- */
+
+/** Deo koraka adaptacije koji određuje obim (TenKV2AdaptStep iz types.ts). */
+export interface VolumeStep {
+  firstWeek: number;
+  fromWeek: number;
+  startKm: number | null;
+  pauseRemainder: boolean;
+  restart: boolean;
+  levelKm: number | null;
+  returnFrom: { week: number; share: number } | null;
+}
+
+/** Pravila obima iz koraka po nedelji (konstruktor i validator čitaju isto). */
+export interface AdaptVolume {
+  /** Prva nedelja pod koracima: od nje važi donja granica A9. */
+  first: number;
+  /** Prva nedelja posle smanjenja obima (cilj koraka; pauza: ostatak tekuće nedelje; sidro bola): od nje
+      važe odstupanja A9 za mali obim (test koji ne staje, dugi rasterećenja); Infinity = bez smanjenja. */
+  reducedFrom: number;
+  /** Cilj koraka u nedelji fromWeek [0,1 km] (poslednji korak za tu nedelju). */
+  reset: Map<number, number>;
+  /** A3: ostatak tekuće nedelje posle pauze — firstWeek → granica [0,1 km]. */
+  remainder: Map<number, number>;
+  /** A3: nov start — nedelja → start [0,1 km] (granica izgradnje D6 od nje). */
+  restart: Map<number, number>;
+  /** A4: poslednja nedelja bola → udeo njenog cilja od kog kreće rast. */
+  anchors: Map<number, number>;
+  /** A8: nivo pre smanjenja koji važi u nedelji w (najveći nivo koraka sa fromWeek ≤ w) [0,1 km]. */
+  levelAt: (w: number) => number | null;
+}
+
+export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
+  const reset = new Map<number, number>();
+  const remainder = new Map<number, number>();
+  const restart = new Map<number, number>();
+  const anchors = new Map<number, number>();
+  for (const s of steps) {
+    if (s.startKm !== null) {
+      reset.set(s.fromWeek, to10(s.startKm));
+      if (s.restart) restart.set(s.fromWeek, to10(s.startKm));
+      if (s.pauseRemainder && s.firstWeek < s.fromWeek) remainder.set(s.firstWeek, to10(s.startKm));
+    }
+    if (s.returnFrom) anchors.set(s.returnFrom.week, s.returnFrom.share);
+  }
+  const reducedFrom = Math.min(
+    ...steps
+      .filter((s) => s.startKm !== null || s.returnFrom !== null)
+      .map((s) => (s.pauseRemainder ? s.firstWeek : s.fromWeek))
+  );
+  return {
+    first: Math.min(...steps.map((s) => s.firstWeek)),
+    reducedFrom,
+    reset,
+    remainder,
+    restart,
+    anchors,
+    levelAt: (w) => {
+      let level: number | null = null;
+      for (const s of steps)
+        if (s.fromWeek <= w && s.levelKm !== null) level = Math.max(level ?? 0, to10(s.levelKm));
+      return level;
+    }
+  };
+}
+
+/** A8: korak povratnog rasta +10 % (min 1,0 km) [0,1 km]. */
+export function returnGrowth10(last10: number): number {
+  const a = P.adapt;
+  return Math.max(to10(a.returnGrowthMinKm), Math.round(last10 * a.returnGrowth));
+}
+
+/** A8: cilj nedelje izgradnje posle `last10` — redovno D6 (do granice `cap10`; iznad granice drži) ili,
+    dok je ispod nivoa pre smanjenja, povratni rast do nivoa (i iznad granice novog starta, A3) — veće od
+    dva (povratak ne usporava D6). */
+export function nextBuild10(
+  last10: number,
+  cap10: number,
+  rule: PlanRule,
+  level10: number | null
+): number {
+  const normal = Math.min(last10 + growth10(last10, rule), Math.max(cap10, last10));
+  if (level10 === null || last10 >= level10) return normal;
+  return Math.max(normal, Math.min(last10 + returnGrowth10(last10), level10));
+}
+
+/** Stanje obima adaptiranog plana kroz nedelje (konstruktor i validator ga vode istim redom). */
+export interface AdaptHistory extends VolumeHistory {
+  /** Granica izgradnje (D6; od novog starta, A3). */
+  cap10: number;
+  /** A8: najveći cilj izgradnje posle poslednjeg smanjenja (osnov tapera). */
+  peakRef10: number;
+  /** Korak čija je sledeća nedelja taper: taper ≤ cilj koraka. */
+  tailCap10: number | null;
+}
+
+export const initialAdaptHistory = (cap10: number): AdaptHistory => ({
+  lastBuild10: null,
+  peak10: 0,
+  cap10,
+  peakRef10: 0,
+  tailCap10: null
+});
+
+/** Pre nedelje `frame`: nov start (granica izgradnje), početak nove osnove vrha (smanjenje u izgradnji). */
+export function enterWeek(
+  h: AdaptHistory,
+  frame: WeekFrame,
+  av: AdaptVolume,
+  rule: PlanRule
+): AdaptHistory {
+  const i = frame.index;
+  const out = { ...h };
+  const r = av.restart.get(i);
+  if (r !== undefined) out.cap10 = peakCap10(r, rule);
+  const reset = av.reset.get(i);
+  if (reset !== undefined) {
+    if (isBuildPhase(frame.phase)) [out.peakRef10, out.tailCap10] = [0, null];
+    else if (frame.phase === 'taper') out.tailCap10 = reset;
+  } else if (av.anchors.has(i - 1) && isBuildPhase(frame.phase))
+    [out.peakRef10, out.tailCap10] = [0, null];
+  return out;
+}
+
+/**
+ * A8/A9: cilj po pravilu adaptirane nedelje — isti rekurent kao nominal10 (D6) uz korake: cilj koraka u
+ * nedelji fromWeek (i kad je rasteretna), ostatak tekuće nedelje ≤ cilj pauze, rast nextBuild10,
+ * rasterećenje 0,8 × poslednja ne-rasteretna, taper 0,75 × vrh posle poslednjeg smanjenja (≤ cilj
+ * koraka u taperu); od prve nedelje pod koracima ne ispod minimuma nedelje (D17). `downOnly` = izvodljiv
+ * cilj samo naniže (cilj koraka, ostatak, povratak, donja granica). Bez dejstva koraka = nominal10.
+ */
+export function adaptNominal10(
+  frame: WeekFrame,
+  h: AdaptHistory,
+  start10: number,
+  rule: PlanRule,
+  av: AdaptVolume
+): { nominal: number; downOnly: boolean } {
+  const i = frame.index;
+  let t: number;
+  let downOnly = false;
+  const reset = av.reset.get(i);
+  if (frame.phase === 'taper') {
+    t = Math.round(P.taper.factor * h.peakRef10);
+    if (h.tailCap10 !== null && h.tailCap10 < t) [t, downOnly] = [h.tailCap10, true];
+  } else if (reset !== undefined) [t, downOnly] = [reset, true];
+  else if (h.lastBuild10 === null) t = start10;
+  else if (frame.deload) t = Math.round(P.deload.factor * h.lastBuild10);
+  else {
+    const level = av.levelAt(i);
+    t = nextBuild10(h.lastBuild10, h.cap10, rule, level);
+    downOnly = level !== null && h.lastBuild10 < level;
+  }
+  const rem = av.remainder.get(i);
+  if (rem !== undefined && rem < t) [t, downOnly] = [rem, true];
+  const floor = to10(rule.weekMinKm);
+  if (i >= av.first && t < floor) [t, downOnly] = [floor, true];
+  return { nominal: t, downOnly };
+}
+
+/** Posle nedelje `frame` sa ciljem `target10`: osnov rasta (ne-rasteretna izgradnja; cilj koraka i kad
+    je rasteretna, A8), vrh, sidro bola (A4: 0,7 × cilj poslednje nedelje bola). */
+export function leaveWeek(
+  h: AdaptHistory,
+  frame: WeekFrame,
+  target10: number,
+  av: AdaptVolume
+): AdaptHistory {
+  const out = { ...h };
+  if (!isBuildPhase(frame.phase)) return out;
+  const i = frame.index;
+  if (!frame.deload || av.reset.has(i)) {
+    out.lastBuild10 = target10;
+    out.peakRef10 = Math.max(out.peakRef10, target10);
+  }
+  if (!frame.deload) out.peak10 = Math.max(out.peak10, target10);
+  const share = av.anchors.get(i);
+  if (share !== undefined) out.lastBuild10 = Math.round(share * target10);
+  return out;
 }

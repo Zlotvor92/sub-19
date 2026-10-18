@@ -1,0 +1,460 @@
+[
+  {
+    "id": "d4-rezultat-14w-pauza20",
+    "step": 1,
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "longRunDay": "sun",
+      "currentWeeklyKm": 35,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    },
+    "asOf": "2026-12-20",
+    "facts": {
+      "breaks": [
+        {
+          "kind": "break",
+          "from": "2026-12-01",
+          "to": "2026-12-20"
+        }
+      ]
+    }
+  },
+  {
+    "id": "d5-rezultat-16w-manjak-lanac",
+    "step": 1,
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-21",
+      "runDays": ["mon", "tue", "thu", "sat", "sun"],
+      "longRunDay": "sun",
+      "currentWeeklyKm": 45,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    },
+    "asOf": "2026-12-06",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-11-23",
+          "dayId": "2026-11-23",
+          "km": 6.6,
+          "durationSec": 2317,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-24",
+          "dayId": "2026-11-24",
+          "km": 6.6,
+          "durationSec": 2317,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-26",
+          "dayId": "2026-11-26",
+          "km": 8.83,
+          "durationSec": 2956,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-28",
+          "dayId": "2026-11-28",
+          "km": 6.5,
+          "durationSec": 2282,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-29",
+          "dayId": "2026-11-29",
+          "km": 12,
+          "durationSec": 4212,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-30",
+          "dayId": "2026-11-30",
+          "km": 4.05,
+          "durationSec": 1422,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-01",
+          "dayId": "2026-12-01",
+          "km": 5.32,
+          "durationSec": 1755,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-03",
+          "dayId": "2026-12-03",
+          "km": 5.42,
+          "durationSec": 1756,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-05",
+          "dayId": "2026-12-05",
+          "km": 4,
+          "durationSec": 1404,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-06",
+          "dayId": "2026-12-06",
+          "km": 8,
+          "durationSec": 2808,
+          "completed": true,
+          "rpe": 5
+        }
+      ],
+      "coverage": {
+        "from": "2026-11-23",
+        "to": "2026-12-06",
+        "complete": true
+      }
+    }
+  },
+  {
+    "id": "d5-rezultat-16w-manjak-lanac",
+    "step": 2,
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-21",
+      "runDays": ["mon", "tue", "thu", "sat", "sun"],
+      "longRunDay": "sun",
+      "currentWeeklyKm": 45,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    },
+    "asOf": "2026-12-13",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-11-30",
+          "dayId": "2026-11-30",
+          "km": 8.1,
+          "durationSec": 2843,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-01",
+          "dayId": "2026-12-01",
+          "km": 10.63,
+          "durationSec": 3510,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-03",
+          "dayId": "2026-12-03",
+          "km": 10.83,
+          "durationSec": 3512,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-05",
+          "dayId": "2026-12-05",
+          "km": 8,
+          "durationSec": 2808,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-06",
+          "dayId": "2026-12-06",
+          "km": 16,
+          "durationSec": 5616,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-07",
+          "dayId": "2026-12-07",
+          "km": 2.75,
+          "durationSec": 966,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-08",
+          "dayId": "2026-12-08",
+          "km": 4.76,
+          "durationSec": 1576,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-10",
+          "dayId": "2026-12-10",
+          "km": 5.67,
+          "durationSec": 1846,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-12",
+          "dayId": "2026-12-12",
+          "km": 2.75,
+          "durationSec": 966,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-13",
+          "dayId": "2026-12-13",
+          "km": 6.75,
+          "durationSec": 2370,
+          "completed": true,
+          "rpe": 5
+        }
+      ],
+      "coverage": {
+        "from": "2026-11-30",
+        "to": "2026-12-13",
+        "complete": true
+      }
+    }
+  },
+  {
+    "id": "d3-osecaj-12w-test5km",
+    "step": 1,
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sun"],
+      "longRunDay": "sun",
+      "currentWeeklyKm": 25,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 360
+    },
+    "asOf": "2026-11-29",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-11-26",
+          "dayId": "2026-11-26",
+          "km": 9.17,
+          "durationSec": 2916,
+          "completed": true,
+          "rpe": 5
+        }
+      ],
+      "results": [
+        {
+          "distM": 5000,
+          "sec": 1470,
+          "date": "2026-11-26",
+          "kind": "test"
+        }
+      ]
+    }
+  },
+  {
+    "id": "d6-rezultat-18w-bol8",
+    "step": 1,
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-03-07",
+      "runDays": ["mon", "tue", "wed", "thu", "sat", "sun"],
+      "longRunDay": "sun",
+      "currentWeeklyKm": 55,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    },
+    "asOf": "2026-12-30",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-12-28",
+          "dayId": "2026-12-28",
+          "km": 9.3,
+          "durationSec": 3264,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-29",
+          "dayId": "2026-12-29",
+          "km": 11.79,
+          "durationSec": 3801,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-30",
+          "dayId": "2026-12-30",
+          "km": 9.3,
+          "durationSec": 3264,
+          "completed": true,
+          "rpe": 5,
+          "pain": 8
+        }
+      ]
+    }
+  },
+  {
+    "id": "pocetnik-d4-12w-pauza35",
+    "step": 1,
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "longRunDay": "sun",
+      "currentWeeklyKm": 25,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 3365,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 3600,
+      "experience": "beginner"
+    },
+    "asOf": "2026-12-06",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-10-20",
+          "km": 6.3,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-10-22",
+          "km": 6.3,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-10-24",
+          "km": 6.3,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-10-25",
+          "km": 6.3,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-10-27",
+          "km": 6.3,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-10-29",
+          "km": 6.3,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-10-31",
+          "km": 6.3,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-01",
+          "km": 6.3,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        }
+      ],
+      "coverage": {
+        "from": "2026-10-19",
+        "to": "2026-12-06",
+        "complete": true
+      }
+    }
+  },
+  {
+    "id": "d4-nepotpuna-pokrivenost",
+    "step": 1,
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "longRunDay": "sun",
+      "currentWeeklyKm": 35,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    },
+    "asOf": "2026-12-13",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-12-01",
+          "dayId": "2026-12-01",
+          "km": 8.66,
+          "durationSec": 2852,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-03",
+          "dayId": "2026-12-03",
+          "km": 9.32,
+          "durationSec": 3054,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-05",
+          "dayId": "2026-12-05",
+          "km": 10,
+          "durationSec": 3510,
+          "completed": true,
+          "rpe": 5
+        }
+      ],
+      "coverage": {
+        "from": "2026-11-30",
+        "to": "2026-12-13",
+        "complete": false
+      }
+    }
+  }
+]

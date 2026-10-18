@@ -2,7 +2,7 @@
    Mreža 01 (4 dana, 10–18 ned), mreža 02 (3/4/5/6 dana, 8–18 ned, sa rezultatom), mreža po osećaju i mreža
    početnika (segment 03). */
 
-import { addDays } from './dates.ts';
+import { addDays, mustDay, weekdayOf } from './dates.ts';
 import { raceTimeForVdot, round1, vdotFromResult } from './paces.ts';
 import type { Structure, Weekday } from './types.ts';
 import { repsOf } from './workouts.ts';
@@ -302,4 +302,212 @@ export function planHashes21(result: unknown): [number, number] {
     je upisala heševe 81bd351). */
 export function planHash81(result: unknown): number {
   return fnv1a(JSON.stringify(result).replace(/10k-v2\.\d+\.\d+/g, 'VERSION'));
+}
+
+/* ---------- Segment 04: mreža scenarija adaptacije ---------- */
+
+export interface AdaptBase {
+  id: string;
+  input: Record<string, unknown>;
+}
+
+/** Bazni planovi mreže adaptacije: 3/4/5/6 dana × sa rezultatom (VDOT 45) i po osećaju (lagan 6:00) ×
+    10/14/18 ned, + početnik 3 dana po osećaju (7:30) i 4 dana sa rezultatom (VDOT 35) × 10/14/18 ned =
+    30 planova. */
+export function adaptBases(): AdaptBase[] {
+  const km: Record<3 | 4 | 5 | 6, number> = { 3: 25, 4: 35, 5: 45, 6: 55 };
+  const out: AdaptBase[] = [];
+  for (const weeks of [10, 14, 18])
+    for (const days of [3, 4, 5, 6] as const) {
+      const sc = SCHEDULES_BY_DAYS[days].A;
+      const base = inputOf({ weeks, km: km[days], vdot: 45, days: sc.days, long: sc.long });
+      out.push({ id: `d${days}-r-${weeks}w`, input: { ...base, goalTimeSec: 2700 } });
+      out.push({
+        id: `d${days}-f-${weeks}w`,
+        input: { ...base, recentResult: null, easyPaceSecPerKm: 360 }
+      });
+    }
+  for (const weeks of [10, 14, 18]) {
+    const b3 = SCHEDULES_BY_DAYS[3].A;
+    const b4 = SCHEDULES_BY_DAYS[4].A;
+    out.push({
+      id: `beg-d3-f-${weeks}w`,
+      input: {
+        ...inputOf({ weeks, km: 20, days: b3.days, long: b3.long }),
+        recentResult: null,
+        easyPaceSecPerKm: 450,
+        experience: 'beginner'
+      }
+    });
+    out.push({
+      id: `beg-d4-r-${weeks}w`,
+      input: {
+        ...inputOf({ weeks, km: 25, vdot: 35, days: b4.days, long: b4.long }),
+        experience: 'beginner'
+      }
+    });
+  }
+  return out;
+}
+
+/** asOf mreže: kraj ned 2, sreda ned 6, kraj ned 8, sreda nedelje tapera. */
+export const AS_OF_KINDS = ['w2end', 'w6wed', 'w8end', 'taperWed'] as const;
+export type AsOfKind = (typeof AS_OF_KINDS)[number];
+
+interface PlanLike {
+  input: { startDate: string; runDays: readonly string[]; currentWeeklyKm: number };
+  vdot: number;
+  weeks: readonly {
+    index: number;
+    phase: string;
+    startDate: string;
+    endDate: string;
+    days: readonly {
+      date: string;
+      countsToWeek: boolean;
+      role: string;
+      workout: { km: number; sec: number; kind: string };
+    }[];
+  }[];
+}
+
+export function asOfOf(plan: PlanLike, kind: AsOfKind): string {
+  const w = (i: number) => plan.weeks[i - 1]!;
+  if (kind === 'w2end') return w(2).endDate;
+  if (kind === 'w6wed') return addDays(w(6).startDate, 2);
+  if (kind === 'w8end') return w(8).endDate;
+  return addDays(plan.weeks.find((x) => x.phase === 'taper')!.startDate, 2);
+}
+
+export const SCENARIOS = [
+  'none',
+  'done100',
+  'under50',
+  'over120',
+  'pause10',
+  'pause20',
+  'pause35',
+  'pain5',
+  'pain8',
+  'fatigue',
+  'faster',
+  'slower',
+  'test5k',
+  'incomplete',
+  'locked',
+  'chain',
+  'painPause'
+] as const;
+export type Scenario = (typeof SCENARIOS)[number];
+
+const dayIdx = mustDay;
+
+/** Odrađeni treninzi u [from, to]: dan plana (sa dayId, planirani km × `share`) ili, pre starta plana, trčanje
+    van plana na dan trčanja (obim ulaza / broj dana). */
+export function runsIn(
+  plan: PlanLike,
+  from: string,
+  to: string,
+  share = 1,
+  extra: Record<string, unknown> = {}
+): Record<string, unknown>[] {
+  const out: Record<string, unknown>[] = [];
+  const byDate = new Map(plan.weeks.flatMap((w) => w.days.map((d) => [d.date, d] as const)));
+  for (let d = from; dayIdx(d) <= dayIdx(to); d = addDays(d, 1)) {
+    const pd = byDate.get(d);
+    if (pd && pd.countsToWeek)
+      out.push({
+        date: d,
+        dayId: d,
+        km: Math.round(pd.workout.km * share * 100) / 100,
+        durationSec: Math.round(pd.workout.sec * share),
+        completed: true,
+        rpe: 5,
+        ...extra
+      });
+    else if (
+      !pd &&
+      dayIdx(d) < dayIdx(plan.input.startDate) &&
+      plan.input.runDays.includes(weekdayOf(d))
+    )
+      out.push({
+        date: d,
+        km: Math.round((plan.input.currentWeeklyKm / plan.input.runDays.length) * share * 10) / 10,
+        durationSec: 2400,
+        completed: true,
+        rpe: 5,
+        ...extra
+      });
+  }
+  return out;
+}
+
+/** Činjenice scenarija (asOf = dan adaptacije). 'chain' = prvi korak (pauza 10); drugi korak gradi test. */
+export function factsOf(plan: PlanLike, s: Scenario, asOf: string): Record<string, unknown> {
+  const back = (n: number): string => addDays(asOf, -n);
+  const cov = (from: string, complete = true) => ({ from, to: asOf, complete });
+  const resultFor = (vdot: number, kind: 'race' | 'test') => ({
+    distM: 5000,
+    sec: timeForVdot(vdot, 5000),
+    date: asOf,
+    kind
+  });
+  switch (s) {
+    case 'none':
+      return {};
+    case 'done100':
+      return { workouts: runsIn(plan, back(13), asOf), coverage: cov(back(13)) };
+    case 'under50':
+      return {
+        workouts: [...runsIn(plan, back(13), back(7)), ...runsIn(plan, back(6), asOf, 0.5)],
+        coverage: cov(back(13))
+      };
+    case 'over120':
+      return { workouts: runsIn(plan, back(13), asOf, 1.2), coverage: cov(back(13)) };
+    case 'pause10':
+    case 'chain':
+      return { workouts: runsIn(plan, back(23), back(10)), coverage: cov(back(23)) };
+    case 'pause20':
+      return { breaks: [{ kind: 'break', from: back(19), to: asOf }] };
+    case 'pause35':
+      return { workouts: runsIn(plan, back(48), back(35)), coverage: cov(back(48)) };
+    case 'pain5':
+    case 'pain8':
+      return {
+        workouts: [
+          { date: asOf, km: 5, durationSec: 1800, completed: true, pain: s === 'pain5' ? 5 : 8 }
+        ]
+      };
+    case 'fatigue':
+      return {
+        workouts: [
+          { date: back(1), km: 6, durationSec: 2400, completed: true, rpe: 8 },
+          { date: back(3), km: 6, durationSec: 2400, completed: true, rpe: 7 }
+        ]
+      };
+    case 'faster':
+      return { results: [resultFor(Math.round((plan.vdot + 2) * 10) / 10, 'race')] };
+    case 'slower':
+      return { results: [resultFor(Math.round((plan.vdot - 2) * 10) / 10, 'race')] };
+    case 'test5k':
+      return { results: [{ distM: 5000, sec: 1470, date: asOf, kind: 'test' }] };
+    case 'incomplete':
+      return { coverage: cov(back(13), false) };
+    case 'locked': {
+      const future = plan.weeks
+        .flatMap((w) => w.days)
+        .filter((d) => dayIdx(d.date) > dayIdx(asOf) && d.role !== 'race')
+        .slice(0, 3)
+        .map((d) => d.date);
+      return { workouts: runsIn(plan, back(1), asOf), lockedDayIds: future };
+    }
+    case 'painPause':
+      return {
+        workouts: [
+          ...runsIn(plan, back(33), back(20)),
+          { date: asOf, km: 0, durationSec: 0, completed: false, pain: 6 }
+        ],
+        coverage: cov(back(33))
+      };
+  }
 }

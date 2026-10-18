@@ -20,11 +20,12 @@ import {
   statsRow,
   summaryRow
 } from './gridInvariants.ts';
-import { beginnerGridInputs, fnv1a } from './testInputs.ts';
+import { beginnerGridInputs, fnv1a, planHash81 } from './testInputs.ts';
 import { validatePlan } from './validate.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BASELINE = join(HERE, 'segment03b-beginner.baseline.json');
+const HASHES_B13 = join(HERE, 'segment04.plan-hashes-b13ca17.json');
 const DAYS = [3, 4] as const;
 type Baseline = { policyVersion: string; plans: Record<string, Row> };
 
@@ -32,6 +33,7 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
   const inputs = DAYS.flatMap((n) => beginnerGridInputs(n));
   const rows: Record<string, Row> = {};
   const hashes: number[] = [];
+  const h81: Record<string, number> = {};
   const rejected: string[] = [];
   const errors: Record<string, number> = {};
   const warned: Record<string, number> = {};
@@ -43,6 +45,7 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
   for (const { id, days, input } of inputs) {
     const r = generateTenKV2(input);
     hashes.push(fnv1a(JSON.stringify(r)));
+    h81[id] = planHash81(r);
     if (!r.ok) {
       rejected.push(`${id}: ${r.reasons.map((x) => x.code).join(',')}`);
       continue;
@@ -144,5 +147,15 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
     expect(base.policyVersion).toBe('10k-v2.3.1');
     expect(Object.keys(base.plans).length).toBe(3402);
     expect(rows).toEqual(base.plans);
+  });
+  it('regresija 04: generate = construct(input, []) — ceo plan početnika bajt-isti kao b13ca17 (heš bez oznake verzije) za svih 3402', () => {
+    const fx = JSON.parse(readFileSync(HASHES_B13, 'utf8')) as {
+      against: string;
+      beginner: Record<string, number>;
+    };
+    expect(fx.against).toBe('b13ca17');
+    expect(Object.keys(fx.beginner).sort()).toEqual(Object.keys(h81).sort());
+    expect(Object.keys(h81).length).toBe(3402);
+    expect(Object.keys(h81).filter((id) => h81[id] !== fx.beginner[id])).toEqual([]);
   });
 });

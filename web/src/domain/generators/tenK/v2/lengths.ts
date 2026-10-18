@@ -79,9 +79,25 @@ export function taperLengths(
   return withEasy(target10 * 10 - quality100, cap10, easyDays);
 }
 
+/** A4: dugi na danu bola ≤ 60 min sporim E (korak 0,1 km). */
+export function painLong10(long10: number, p: Paces): number {
+  return Math.min(long10, longTimeCap10(p, P.adapt.painLongMaxSec));
+}
+
+/** A4: lagan na danu bola × 0,7 naniže na 0,1 km, ne ispod 3 km; svaki lagan ≤ dugi nedelje (D13;
+    `long10` = dugi posle ograničenja, null ako dugog nema). */
+export function limitedEasy10(easy10: number, inPain: boolean, long10: number | null): number {
+  const k = inPain
+    ? Math.max(EASY_MIN10, Math.floor(easy10 * P.adapt.painEasyFactor + EPS))
+    : easy10;
+  return long10 === null ? k : Math.min(k, long10);
+}
+
 /** D5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ D13); ostatak na `easyDays`
     jednakih laganih dana (D19). `test` (D27 ispred D5, odstupanje): dugi ≤ 0,8 × — najduži koji ostavlja
-    lagane ≥ 3 km (isto pravilo kao izgradnja i taper). */
+    lagane ≥ 3 km (isto pravilo kao izgradnja i taper). `adapted` (segment 04, odstupanje A9: D13 ispred D5):
+    isto pravilo kao test — dugi ≤ 0,8 × poslednji, najduži koji ostavlja lagane ≥ 3 km — i ne ispod 3 km
+    (dugi ≥ lagan ≥ 3 km). Kad je 0,8 × pravilo izvodljivo, rezultat je isti. */
 export function deloadLengths(
   target10: number,
   quality100: number,
@@ -89,13 +105,14 @@ export function deloadLengths(
   lastLong10: number,
   rule: LongRule,
   p: Paces,
-  test = false
+  test = false,
+  adapted = false
 ): Lengths | null {
-  const long10 = Math.min(
-    Math.floor(P.deload.longFactor * lastLong10 + EPS),
-    longCap10(target10, rule, p)
+  const long10 = Math.max(
+    adapted ? EASY_MIN10 : 0,
+    Math.min(Math.floor(P.deload.longFactor * lastLong10 + EPS), longCap10(target10, rule, p))
   );
-  if (test) return withEasy(target10 * 10 - quality100, long10, easyDays);
+  if (test || adapted) return withEasy(target10 * 10 - quality100, long10, easyDays);
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
   if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
   return { long10, easy10 };
