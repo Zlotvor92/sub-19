@@ -1,8 +1,8 @@
 # 10K v2 — STATUS
 
 Novi 10K generator sa jednim vlasnikom svake odluke (D1–D22, D22b, D23, D25–D32) i adaptacijom (A1–A15),
-izolovan u `web/src/domain/generators/tenK/v2/`. 10K v1 (`tenK/` van `v2/`) je nepromenjen i jedini je u
-aplikaciji; v2 se iz `tenK/index.ts` ne izvozi do segmenta 05.
+izolovan u `web/src/domain/generators/tenK/v2/`. 10K v1 (`tenK/` van `v2/`) je nepromenjen i podrazumevan; od
+segmenta 05 v2 je u aplikaciji iza prekidača (`ui.generatorV2TenK` / `VITE_TENK_V2`), samo kroz adapter `v2/app/`.
 
 ## Kako se koristi
 
@@ -33,9 +33,8 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
 - Bazne linije: `segment03.baseline.json` (R 15 840), `segment03-feel.baseline.json` (F 11 880),
   `segment03b-beginner.baseline.json` (B 3402); osvežavanje `TEN_K_V2_WRITE_BASELINE=1 npx vitest run
 --project node src/domain/generators/tenK/v2/<grid|feelGrid|beginnerGrid>.node.test.ts`, pa prettier.
-- Regresija prema b13ca17: `segment04.plan-hashes-b13ca17.json` — ceo plan R, F i B bajt-isti (heš bez
-  oznake verzije); piše ga `docs/10k-v2/artifacts/segment-04/regression-b13ca17.ts` iz checkouta b13ca17.
-  Starije: 81bd351, 21c03f1, 49ad476 (fixture-i u `tenK/v2/`).
+- Regresija prema b13ca17: `segment04.plan-hashes-b13ca17.json` (R, F, B bajt-isti; heš bez oznake verzije; piše ga
+  `artifacts/segment-04/regression-b13ca17.ts` iz checkouta b13ca17). Starije: 81bd351, 21c03f1, 49ad476 (`tenK/v2/`).
 
 ## Trenutno stanje
 
@@ -46,8 +45,7 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
   do nivoa pre smanjenja; zaštita prošlosti/urađenog/zaključanog; lančani koraci; plan starije verzije.
 - Poznata ograničenja: T 1,5 km ponovljen kod početnika 3 d 15 km; ponavljanje RP 2,5 / 3,5 i I 2,0 km; D25;
   posle smanjenja WU/CD po pojasu ulaza (dugi < kvalitetni dan); mešovite nedelje se proveravaju po danu.
-- Izveštaji: `docs/10k-v2/reports/SEGMENT-01-…` … `SEGMENT-04-IMPLEMENTATION.md` (sledeći prozori čitaju
-  „Odluke" i „Preostali problemi" iz 04).
+- Izveštaji: `reports/SEGMENT-01-…` … `SEGMENT-05-IMPLEMENTATION.md` (dalje: „Odluke" i „Preostali problemi" iz 05).
 
 ## Segmenti 01–03b (10k-v2.0.0 … 2.3.1)
 
@@ -61,11 +59,22 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
   → validate" (`git log --grep "10K v2 Segment 04"`).
 - Tok: `assess.ts` (A1–A10 → korak) → `construct(input, koraci)` (`steps.framesFor`, `volume.adaptNominal10`,
   `pacesAt`, režim kvaliteta) → spajanje i zaštita (`adapt.ts`, samo provera) → `validatePlan` (adaptiran režim).
-- Odstupanja (DECISIONS sa ulazom): povratak do nivoa i iznad granice novog starta; 4 ned izgradnje posle
-  pauze ≥ 28 → faze ostaju; cilj adaptacije se drži pre nižeg cilja; dugi rasterećenja ≥ 3 km uz lagane ≥ 3
-  km; test otpada kad bi dugi bio < 5 km; glavna doza sme da padne sa manjim ciljem.
+- Odstupanja (DECISIONS sa ulazom): povratak do nivoa i iznad granice novog starta; 4 ned izgradnje posle pauze ≥ 28 →
+  faze ostaju; cilj adaptacije pre nižeg; dugi rasterećenja ≥ 3 km; test otpada kad dugi < 5 km; doza pada sa ciljem.
 - Regresija: R 15 840, F 11 880, B 3402 bajt-isti kao b13ca17. Mreža adaptacije 2040 (30 planova × 4 asOf ×
   17 scenarija): 0 odbijanja, 0 grešaka, zaštita bajt-isto, invarijante 0, deterministička.
 - Testovi tenK/v2: 16 fajlova, 205 testova; radni skup 18 / 230. Na b13ca17 `adapt.node` pada ceo (31), +3;
   sabotaže A3 11, A8 5, A9 4, A10 2, A11 3 od 31.
 - Provere pre commita: tsc domain/oracle, eslint, prettier exit 0; `npm run check` exit 0 (211 fajlova, 2601 testova).
+
+## Segment 05 (aplikacija iza prekidača; jezgro `10k-v2.4.0` nepromenjeno)
+
+- Polazni `068410b`; commit „10K v2 Segment 05: 10K v2 u aplikaciji iza prekidača — generisanje, čuvanje, prikaz,
+  čarobnjak, sat" (`git log --grep "10K v2 Segment 05"`); izveštaj `reports/SEGMENT-05-IMPLEMENTATION.md`.
+- Prekidač `flags.tenKV2Enabled` (podrazumevano isključen; vidljiv admin/`VITE_TENK_V2`); `select.ts`: `10k-v2` → v2
+  (`10k-v2.4.0`, ostalo `UNKNOWN_POLICY`). Adapter `tenK/v2/app/` bez uvoza van `tenK/v2/` (lokalni tipovi).
+- (b) adaptacija: nepodržano do 06 sa razlogom (nijedan član ne poziva v1). Uvoz u plan v2: zapisi van plana, `fullSync`
+  (08c). Sat: delovi po osećaju (procena tempa) se ne šalju, `skippedReasons`. Format: `GenPlanState.tenKV2`.
+- Bajt-isto: `tenK/v2/app/byteSame.node.test.ts` (140 heševa sa 068410b) + `importV1Snapshot`. `npm run check` 216 / 2642;
+  E2E `tenk-v2` 3/3, ceo 81 + 2 pada `pwa` (isti na 068410b).
+- Sledeće (06): činjenice → `adaptTenKV2` sa pregledom, revizije, cilj, Forma, predaja HM/maraton → 10K v2.

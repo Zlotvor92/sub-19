@@ -15,11 +15,14 @@ import { useAuthStore } from '../../stores/authStore';
 import { useIsOwner } from '../../stores/owner';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
-import { isFiveKV2Plan } from '../../domain/generators/select';
+import { adaptationUnsupportedFor, isFiveKV2Plan } from '../../domain/generators/select';
 import {
   useFiveKV2Setting,
   useFiveKV2ToggleVisible,
-  setFiveKV2Setting
+  setFiveKV2Setting,
+  useTenKV2Setting,
+  useTenKV2ToggleVisible,
+  setTenKV2Setting
 } from '../../stores/generatorFlags';
 import { changeGoalTime, changeGoalTimeV2 } from '../plan/planActions';
 import { GoalAssessmentLine } from '../plan/GoalAssessment';
@@ -182,6 +185,12 @@ export function GoalScreen() {
             </p>
           </Help>
         </Section>
+      ) : genPlan && adaptationUnsupportedFor(genPlan) ? (
+        <Section>
+          <p className="note-src" id="v2-unsupported-goal">
+            {adaptationUnsupportedFor(genPlan)}
+          </p>
+        </Section>
       ) : genPlan ? (
         <Section>
           <p className="note-src">
@@ -210,17 +219,19 @@ export function GoalScreen() {
 /* ------------------------------------------------------------- Zone i postavke treninga */
 
 export function TrainingSettingsScreen() {
-  /* 08b: prekidač 5K v2 vidi samo razvoj (VITE_FIVEK_V2) ili administrator. */
+  /* 08b: prekidač 5K v2 vidi samo razvoj (VITE_FIVEK_V2) ili administrator; 10K v2 (segment 05) isto (VITE_TENK_V2). */
   const toggle = useFiveKV2ToggleVisible();
+  const tenK = useTenKV2ToggleVisible();
   return (
     <ScreenFrame>
       <Head title="Zone i postavke treninga" />
       <Section title="Zone pulsa">
         <ZonesList />
       </Section>
-      {toggle ? (
+      {toggle || tenK ? (
         <Section title="Generator plana">
-          <FiveKV2Toggle />
+          {toggle ? <FiveKV2Toggle /> : null}
+          {tenK ? <TenKV2Toggle /> : null}
         </Section>
       ) : null}
       <Section title="Vreme i lokacija">
@@ -475,6 +486,29 @@ function FiveKV2Toggle() {
       <p className="note-src">
         Važi samo za novi 5K plan iz čarobnjaka. Postojeći plan se ne menja. Plan v2 se prilagođava
         kroz Plan → Prilagodi plan (pregled pa potvrda).
+        {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
+      </p>
+    </>
+  );
+}
+
+/** Prekidač 10K v2 (podrazumevano isključen): utiče samo na NOV 10K plan; postojeći plan ostaje na svom generatoru. */
+function TenKV2Toggle() {
+  const { on, setting, forced } = useTenKV2Setting();
+  return (
+    <>
+      <label className="note-src" htmlFor="set-tenk-v2">
+        <input
+          type="checkbox"
+          id="set-tenk-v2"
+          checked={setting}
+          onChange={(e) => setTenKV2Setting(e.target.checked)}
+        />{' '}
+        Novi 10K plan pravi generator v2 (probno)
+      </label>
+      <p className="note-src">
+        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje 10K v2
+        plana stiže uskoro.
         {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
       </p>
     </>

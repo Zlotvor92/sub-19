@@ -76,6 +76,7 @@ import type {
   StoredPredRow,
   StructuredPlanInput,
   StructuredPlanResult,
+  TenKV2PlanInput,
   VdotProposal,
   WatchBatch,
   WeatherCardInput,
@@ -590,6 +591,82 @@ export const generateFiveKV2Plan = (input: StructuredPlanInput): StructuredPlanR
 export const fiveKV2Start = (raceDate: string, today: string): string | null =>
   v2.alignedStart(raceDate, today);
 
+/* 10K v2 (segment 05): sopstveni generator 10K distance, biran po oznaci politike plana (`10k-v2`) — postojeći planovi
+   (`10k-v1`, `legacy-10k`) ostaju na `TEN_K_GENERATOR` i nikad se ne prebacuju. Raspodela članova: (a) v2 sam
+   (generisanje, oznake, faza, procena, proizvod, tempo/prag/napor, sat iz strukture); (b) adaptacija i predlog —
+   eksplicitno nepodržano do segmenta 06, sa razlogom po članu, bez zamene 10K v1 generatorom; (c) procena stanja i vreme
+   — sopstvena kopija v2 sa istim vrednostima kao tenK (v. `tenK/v2/app/index.ts`).
+
+   GRANICA FORMATA: adapter `tenK/v2/app/` ne uvozi ni tipove formata (strogi test izolacije 10K v2, bez izuzetka), pa
+   plan koji PRAVI (dan sa strukturom van unije `Day`, `meta` sa poljima koja v2 zna) ovde dobija tip formata razmene —
+   samo `generatePlan` i `adaptGeneratedPlan` (i `generateTenKV2Plan` ispod). Svi ostali članovi prolaze `satisfies`
+   bez kasta (parametri adaptera su širi, plan/izmene/lanac prolaze generički). */
+const t2 = tenK.tenKV2;
+export const TEN_K_V2_GENERATOR: PlanGenerator = {
+  id: '10k',
+  policyId: t2.POLICY_ID,
+  policyVersion: t2.POLICY_VERSION,
+  legacyPolicyId: t2.LEGACY_POLICY_ID,
+  planPolicy: t2.planPolicy,
+  stampPlan: t2.stampPlan,
+  phaseOfWeek: t2.phaseOfWeek,
+  classifyMeasurement: t2.classifyMeasurement,
+  recomputeVdotChain: t2.recomputeVdotChain,
+  sessionClassFor: t2.sessionClassFor,
+  currentVdot: t2.currentVdot,
+  generatePlan: (input) => t2.generatePlan(input) as unknown as PlanGenerationResult,
+  adaptGeneratedPlan: (gen) => t2.adaptGeneratedPlan(gen) as unknown as GenPlanState | null,
+  assess: t2.assess,
+  product: t2.product,
+  executionModel: t2.executionModel,
+  executionBasis: t2.executionBasis,
+  buildExecutionAdjustment: t2.buildExecutionAdjustment,
+  buildRunWalkAdjustment: t2.buildRunWalkAdjustment,
+  assessRunWalkProgress: t2.assessRunWalkProgress,
+  qualityEntryGate: t2.qualityEntryGate,
+  hasRecentMeasuredForm: t2.hasRecentMeasuredForm,
+  planWithNewGoal: t2.planWithNewGoal,
+  planRecalibrated: t2.planRecalibrated,
+  graftFuturePlan: t2.graftFuturePlan,
+  alignAutomaticOverlays: t2.alignAutomaticOverlays,
+  vdotProposal: t2.vdotProposal,
+  applyVdotProposal: t2.applyVdotProposal,
+  undoVdotAdjustments: t2.undoVdotAdjustments,
+  fitnessEvidence: t2.fitnessEvidence,
+  planVdotNow: t2.planVdotNow,
+  matchPlanRows: t2.matchPlanRows,
+  recalibrationMinMeasurements: t2.RECALIBRATION_MIN_MEASUREMENTS,
+  recalibrationThreshold: t2.RECALIBRATION_THRESHOLD,
+  injuryProposal: t2.injuryProposal,
+  applyInjuryProposal: t2.applyInjuryProposal,
+  realignPlan: t2.realignPlan,
+  workoutsForWatch: t2.workoutsForWatch,
+  thresholdPace: t2.thresholdPace,
+  weatherCard: t2.weatherCard,
+  rpeTarget: t2.rpeTarget,
+  paceForZone: t2.paceForZone,
+  painStatus: t2.painStatus,
+  acwrNow: t2.acwrNow,
+  acwrPlan: t2.acwrPlan,
+  readinessModel: t2.readinessModel,
+  loadMeaning: t2.loadMeaning,
+  wellnessSignals: t2.wellnessSignals,
+  acwrBand: t2.acwrBand,
+  acwrText: t2.acwrText,
+  acwrPosition: t2.acwrPosition,
+  ACWR_MAX: t2.ACWR_MAX,
+  ACWR_RETURN: t2.ACWR_RETURN,
+  ACWR_HIGH: t2.ACWR_HIGH,
+  ACWR_SCALE: t2.ACWR_SCALE
+} satisfies PlanGenerator;
+
+/** Nov 10K plan generatorom v2 (čarobnjak uz uključen prekidač): plan za upis ili razlozi odbijanja v2. */
+export const generateTenKV2Plan = (input: TenKV2PlanInput): StructuredPlanResult =>
+  t2.generateStructured(input) as unknown as StructuredPlanResult;
+/** Prvi dan plana 10K v2: cele nedelje koje se završavaju danom trke, ne pre `today`; `null` bez ispravnih datuma. */
+export const tenKV2Start = (raceDate: string, today: string): string | null =>
+  t2.alignedStart(raceDate, today);
+
 /** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
 const HM_SHORTER_HANDOFF = regeneratorForDistance;
 
@@ -776,29 +853,52 @@ function generatorForDistanceOf(plan: GenPlanState | null | undefined): PlanGene
   // (`5k-v1`, `legacy-5k`, tuđa oznaka) postojeći 5K, kao do sada.
   if (generator === FIVE_K_GENERATOR && plan.meta?.['policyId'] === v2.POLICY_ID)
     return FIVE_K_V2_GENERATOR;
+  // 10K (segment 05): isto — `10k-v2` → v2 (njegove nepoznate verzije su `unknown` → `UNKNOWN_POLICY`, nikad 10K v1);
+  // `10k-v1`, `legacy-10k` i tuđa oznaka postojeći 10K, kao do sada.
+  if (generator === TEN_K_GENERATOR && plan.meta?.['policyId'] === t2.POLICY_ID)
+    return TEN_K_V2_GENERATOR;
   return generator;
 }
 
 /** Prekidači izbora generatora za NOV plan (vrednost daje `flags.ts`). */
 export interface GeneratorFlags {
   fiveKV2: boolean;
+  /** 10K v2 (segment 05); izostavljeno = isključeno. */
+  tenKV2?: boolean;
 }
 
 /**
- * Generator za NOV plan (čarobnjak): uz uključen prekidač 5K ide u v2, sve ostalo kao `generatorForDistance`. Isključen
- * prekidač → isti generator kao do sada. Postojeći planovi se biraju po svojoj oznaci (`generatorForPlan`), nikad ovde.
+ * Generator za NOV plan (čarobnjak): uz uključen prekidač distance 5K/10K ide u v2, sve ostalo kao `generatorForDistance`.
+ * Isključen prekidač → isti generator kao do sada. Postojeći planovi se biraju po svojoj oznaci (`generatorForPlan`),
+ * nikad ovde. HM/maraton „kraća distanca" ne ide ovuda (`handoff.ts` → 10K v1).
  */
 export function generatorForNewPlan(
   raceDistM: unknown,
   flags: GeneratorFlags
 ): PlanGenerator | null {
   const generator = generatorForDistance(raceDistM);
+  if (generator === TEN_K_GENERATOR && flags.tenKV2 === true) return TEN_K_V2_GENERATOR;
   return generator === FIVE_K_GENERATOR && flags.fiveKV2 ? FIVE_K_V2_GENERATOR : generator;
 }
 
 /** 08b: plan 5K v2 (prilagođavanje kroz činjenice i pregled v2, ne kroz alate v1). */
 export function isFiveKV2Plan(plan: GenPlanState | null | undefined): boolean {
   return generatorForPlan(plan) === FIVE_K_V2_GENERATOR && v2.isV2Plan(plan);
+}
+
+/** Segment 05: plan 10K v2 (nosi izlaz v2 i tekuću oznaku `10k-v2`). */
+export function isTenKV2Plan(plan: GenPlanState | null | undefined): boolean {
+  return generatorForPlan(plan) === TEN_K_V2_GENERATOR && t2.isV2Plan(plan);
+}
+
+/** Plan čija se adaptacija i predlozi još ne nude (10K v2 do segmenta 06): poruka umesto alata; inače `null`. */
+export function adaptationUnsupportedFor(plan: GenPlanState | null | undefined): string | null {
+  return isTenKV2Plan(plan) ? t2.ADAPTATION_UNSUPPORTED : null;
+}
+
+/** Uvoz (Strava/icu): plan v2 čiji uvoz beleži trčanja van plana i potpunu sinhronizaciju (5K v2 08c, 10K v2). */
+export function tracksOffPlanRuns(plan: GenPlanState | null | undefined): boolean {
+  return isFiveKV2Plan(plan) || isTenKV2Plan(plan);
 }
 
 /** Poruka za plan čiju je politiku upisala verzija generatora koju ova aplikacija ne poznaje. */

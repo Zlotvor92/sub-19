@@ -8,7 +8,7 @@ import { useIsOwner } from '../../stores/owner';
 import { applyProposal as applyInjury } from '../../stores/recoveryActions';
 import { applyProposal as applyPace, undoAdjustments } from '../../stores/raceActions';
 import { activePlanGenerator, activePlanUnsupportedReason } from '../../stores/executionActions';
-import { isFiveKV2Plan } from '../../domain/generators/select';
+import { adaptationUnsupportedFor, isFiveKV2Plan } from '../../domain/generators/select';
 import { useUIStore } from '../../stores/uiStore';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
 import { backToOwnPlan, recalibratePlan, startNewPlan } from './planActions';
@@ -32,6 +32,8 @@ export function AdjustPlan() {
   /* 5K v2 (08b): prilagođavanje iz činjenica sa pregledom i potvrdom (FiveKV2Adjustment); predlozi v1 (bol po danu,
      tempo iz forme) ne postoje za v2 — bol i rezultati ulaze u činjenice. */
   const v2 = isFiveKV2Plan(genPlan);
+  /* 10K v2 (segment 05): adaptacija i predlozi stižu u segmentu 06 — eksplicitna poruka umesto alata (bez 10K v1). */
+  const unsupported = adaptationUnsupportedFor(genPlan);
 
   const injury = v2 ? null : (rec?.proposal ?? null);
   const pace = v2 ? null : adj.proposal;
@@ -137,14 +139,22 @@ export function AdjustPlan() {
         </Section>
       ) : null}
 
-      {adj.blockedReason && !v2 ? <p className="note-src">{adj.blockedReason}</p> : null}
+      {adj.blockedReason && !v2 && !unsupported ? (
+        <p className="note-src">{adj.blockedReason}</p>
+      ) : null}
 
-      {!injury && !pace && !adj.adjusted && !v2 ? (
+      {!injury && !pace && !adj.adjusted && !v2 && !unsupported ? (
         <p className="empty">Trenutno nema predloga za prilagođavanje plana.</p>
       ) : null}
 
       {v2 ? (
         <FiveKV2Adjustment today={todayStr} />
+      ) : unsupported ? (
+        <Section title="Prilagođavanje plana">
+          <p className="note-src" id="v2-unsupported">
+            {unsupported}
+          </p>
+        </Section>
       ) : activePlanGenerator() ? (
         <ExecutionAdjustment plan={plan} today={todayStr} />
       ) : (

@@ -26,12 +26,18 @@ function measureText(s: StructureStep): string {
   return s.sec != null ? durationText(s.sec) : '';
 }
 
-/** Cilj dela: tempo (ili opseg), napor po osećaju, ili ništa (hod). */
+/** Cilj dela: tempo (ili opseg), napor po osećaju, ili ništa (hod). 10K v2: tempo koji je generator samo procenio (plan po
+ *  osećaju, test) piše se kao „orijentir (procena)", uz napor kad ga deo ima; deo trčanja run/walk ga ne dobija ovde. */
 function targetText(s: StructureStep): string {
   if (s.paceRange) return ` @ ${fmtClock(s.paceRange.fast)}–${fmtClock(s.paceRange.slow)}/km`;
   if (s.paceSec != null) return ` @ ${fmtClock(s.paceSec)}/km`;
-  if (s.effort) return ` po osećaju (RPE ${rpeText(s.effort.rpeMin, s.effort.rpeMax)})`;
-  return '';
+  const est =
+    s.kind !== 'run' && s.estimatePaceSec != null
+      ? `orijentir (procena) ${fmtClock(s.estimatePaceSec)}/km`
+      : '';
+  if (s.effort)
+    return ` po osećaju (RPE ${rpeText(s.effort.rpeMin, s.effort.rpeMax)})${est ? `, ${est}` : ''}`;
+  return est ? ` — ${est}` : '';
 }
 
 const rpeText = (a: number, b: number): string => (a === b ? `${a}` : `${a}–${b}`);
@@ -79,6 +85,12 @@ export function structureRows(s: WorkoutStructure, runWalkText: string | null): 
   const rest = blocks.find((b) => MAIN.has(b.step.kind) && b.recovery)?.recovery;
   if (rest)
     rows.push(['Odmor', `${measureText(rest)} ${rest.kind === 'walk' ? 'hod' : 'kaskanje'}`]);
+  else {
+    // 10K v2 piramida: deonice različite dužine, svaki oporavak je svoj blok (redom).
+    const own = blocks.filter((b) => b.reps === 1 && b.step.kind === 'recovery');
+    if (own.length)
+      rows.push(['Odmor', `${own.map((b) => measureText(b.step)).join(' / ')} kaskanje`]);
+  }
   if (last && last !== first && last.step.kind === 'walk')
     rows.push(['Hlađenje', `${durationText(last.step.sec ?? 0)} hod`]);
   // Zagrevanje/hlađenje trčanjem su u redovima iznad; premeštaju se na mesta koja prikaz očekuje (pre/posle rada).

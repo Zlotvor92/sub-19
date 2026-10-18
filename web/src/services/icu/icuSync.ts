@@ -6,7 +6,8 @@
 
    Stanje se čita jednom, menja na lokalnoj kopiji i upisuje JEDNOM na kraju (i pri prekidu — ono što je do tada izvedeno je ispravno).
 
-   08c, SAMO ZA PLAN 5K v2 (plan v1 se uvozi bajt-isto): trčanje koje nije upareno sa danom plana postaje zapis van plana
+   08c, SAMO ZA PLAN v2 — 5K v2, a od segmenta 05 i 10K v2 (plan v1 se uvozi bajt-isto): trčanje koje nije upareno sa
+   danom plana postaje zapis van plana
    (`vanPlanaV2`), a pored `trSync` (spisak treninga preuzet — isto značenje kao ranije, pomera se i kad detalji/tokovi ne
    uspeju) veza nosi `fullSync`: spisak ceo i prepoznat, svaki trening obrađen i svaki traženi detalj/tok preuzet. Delimičan
    uspeh ga ne pomera; šta nije obrađeno je u `syncIssues` (sa danom). Detalji/tokovi odloženi ograničenjem po sinhronizaciji
@@ -46,7 +47,7 @@ import {
   icuConnected,
   type IcuLink
 } from '../../domain/icu';
-import { generatorForPlan, isFiveKV2Plan } from '../../domain/generators/select';
+import { generatorForPlan, tracksOffPlanRuns } from '../../domain/generators/select';
 import { planBaselineVdot, resolvePlan, type ResolvedDay } from '../../domain/plan';
 import { planBoundary, recordOutOfPlan } from '../../domain/recovery';
 import type { LogEntry, SyncIssue, WellnessRecord } from '../../domain/state';
@@ -207,8 +208,8 @@ export function createIcuSync(deps: IcuSyncDeps) {
     if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
     if (!list.ok) return { ok: false, error: list.error };
     const activities: IcuActivity[] = list.data.activities;
-    /* 08c: zapis van plana i `fullSync` samo za plan 5K v2 (plan v1: isti tok kao ranije). */
-    const v2 = isFiveKV2Plan(genPlan);
+    /* 08c: zapis van plana i `fullSync` samo za plan v2 (5K v2; 10K v2 od segmenta 05); plan v1: isti tok kao ranije. */
+    const v2 = tracksOffPlanRuns(genPlan);
     const issues: SyncIssue[] = [];
     const skipped = list.data.skipped ?? 0;
     if (skipped > 0)

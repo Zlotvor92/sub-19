@@ -20,6 +20,10 @@ export const TEN_K_DISTANCE_M = 10000;
 /** Proizvodni podaci 10K (ime, preporučeni broj nedelja…) za napomene čarobnjaka. */
 export const TEN_K_PRODUCT = PRODUCT_10K;
 
+/* --- 10K v2 (segment 05): adapter prema aplikaciji; `select.ts` ga bira po oznaci politike (`10k-v2`) i, uz uključen
+   prekidač, za nov 10K plan. Postojeći 10K (v1) izvozi ispod ostaju nepromenjeni. --- */
+export { tenKV2 } from './v2/app/index.ts';
+
 /* --- generisanje i adapter prema aplikaciji --- */
 export { generatePlan } from './training/generator/generatePlan';
 export { assess } from './training/generator/assess';

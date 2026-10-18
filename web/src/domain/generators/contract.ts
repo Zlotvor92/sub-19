@@ -98,6 +98,24 @@ export interface StructuredPlanInput {
   experience?: 'beginner' | 'regular';
   canRun30Min?: boolean;
 }
+/** 10K v2 (segment 05): ulaz čarobnjaka (oblik razmene; pravila ulaza su generatorova — D1, D17, D26, D28, D29). */
+export interface TenKV2PlanInput {
+  /** Prvi dan nedelje 1. */
+  startDate: string;
+  /** Dan trke = poslednji dan poslednje nedelje. */
+  raceDate: string;
+  runDays: WeekdayName[];
+  /** Dan dugog trčanja (jedan od dana trčanja); bez njega bira generator. */
+  longRunDay?: WeekdayName | null;
+  currentWeeklyKm: number;
+  recentResult?: { distanceM: 3000 | 5000 | 10000 | 21097.5; timeSec: number; date: string } | null;
+  goalTimeSec?: number | null;
+  /** Uobičajen lagan tempo [s/km] — plan po osećaju (bez skorijeg rezultata). */
+  easyPaceSecPerKm?: number | null;
+  experience?: 'beginner' | 'regular';
+  /** Trčanje/hodanje (10K ga ne podržava: odbijanje sa preporukom 5K plana). */
+  runWalk?: boolean;
+}
 export interface PlanRejectionReason {
   code: string;
   message: string;
@@ -497,6 +515,8 @@ export interface RpeTarget {
 export interface WatchBatch {
   events: Array<{ date: string; externalId: string; name: string; description: string }>;
   skipped: number;
+  /** 10K v2 (segment 05): zašto je svaki preskočen dan preskočen; generatori bez polja ga ne pišu. */
+  skippedReasons?: string[];
 }
 interface ForecastHour {
   temp: number | null;

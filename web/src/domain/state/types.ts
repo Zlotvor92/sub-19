@@ -148,6 +148,9 @@ export interface GenPlanState {
   /** 5k-v2 (08a): izlaz generatora 5K v2 doslovno (ulaz, nedelje, koraci) — osnova za njegovu adaptaciju (08b). Oblik
    *  poznaje samo `generators/fiveK/v2`; aplikacija ga ne čita. Plan bez polja nije v2 plan. NEPOUZDAN. */
   fiveKV2?: unknown;
+  /** 10k-v2 (segment 05): izlaz generatora 10K v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije (06). Oblik
+   *  poznaje samo `generators/tenK/v2`; aplikacija ga ne čita. Plan bez polja nije 10K v2 plan. NEPOUZDAN. */
+  tenKV2?: unknown;
   [field: string]: unknown;
 }
 
