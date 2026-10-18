@@ -1,0 +1,152 @@
+/* Sub-20 promo — stil. Fontovi lokalno (latin + latin-ext zbog č ć š ž đ). */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 300 900;
+  src: url('assets/fonts/figtree-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 300 900;
+  src: url('assets/fonts/figtree-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  src: url('assets/fonts/instrument-serif-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  src: url('assets/fonts/instrument-serif-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --paper: #f4f2ee;
+  --ink: #19251e;
+  --ink-2: #46554b;
+  --green: #335e35;
+  --green-night: #8cc79a;
+  --orange: #ff5a1f;
+  --night: #0b0b12;
+  --navy: #1b1f5e;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); font-family: 'Figtree', sans-serif; color: var(--ink); }
+#film { position: absolute; inset: 0; }
+.layer { position: absolute; inset: 0; }
+.abs { position: absolute; left: 0; top: 0; }
+
+/* pozadine */
+#bg-day { background: var(--paper); }
+.blob { position: absolute; left: 0; top: 0; width: 1100px; height: 1100px; border-radius: 50%; }
+#blob1 { background: radial-gradient(circle at 50% 50%, rgba(255, 196, 160, 0.95) 0%, rgba(255, 210, 186, 0.5) 38%, rgba(244, 242, 238, 0) 70%); }
+#blob2 { background: radial-gradient(circle at 50% 50%, rgba(248, 186, 206, 0.85) 0%, rgba(248, 201, 212, 0.45) 38%, rgba(244, 242, 238, 0) 70%); }
+#blob3 { background: radial-gradient(circle at 50% 50%, rgba(206, 196, 248, 0.9) 0%, rgba(217, 210, 245, 0.45) 38%, rgba(244, 242, 238, 0) 70%); }
+#bg-night { background: radial-gradient(ellipse at 50% 40%, #171728 0%, var(--night) 70%); opacity: 0; }
+#bg-navy { background: radial-gradient(ellipse at 60% 25%, #2b3180 0%, var(--navy) 55%, #11143f 100%); opacity: 0; }
+.star { position: absolute; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+#moon { position: absolute; left: 820px; top: 150px; width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fffdf2 0%, #f3ecd2 55%, #d8cfae 100%);
+  box-shadow: 0 0 60px 18px rgba(255, 246, 210, 0.28); opacity: 0; }
+
+/* sjajne kuglice (dekor) */
+.deco { position: absolute; left: 0; top: 0; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #fff3e6 0%, #ffb27a 22%, #ff7a33 58%, #d9480f 100%);
+  box-shadow: 0 10px 22px rgba(201, 58, 12, 0.18); }
+.deco.peach { background: radial-gradient(circle at 34% 30%, #fff 0%, #ffd9c2 35%, #f7a98a 100%); box-shadow: none; }
+
+/* objekti sa unutrašnjim SVG-om: pozicija se zadaje GSAP x/y, centar = (x + w/2, y + h/2) */
+.obj { position: absolute; left: 0; top: 0; }
+.obj > .in, .obj > .in > .in2 { position: absolute; inset: 0; }
+.obj svg { position: absolute; inset: 0; overflow: visible; }
+#ball { width: 600px; height: 600px; }
+#ball .in { transform-origin: 50% 50%; }
+#ball .in2 { transform-origin: 50% 93%; }
+#shadow { width: 520px; height: 70px; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, rgba(80, 40, 20, 0.28) 0%, rgba(80, 40, 20, 0) 70%); }
+#contour { width: 600px; height: 600px; }
+.piece { width: 180px; height: 180px; }
+#dots { width: 10px; height: 160px; background: repeating-linear-gradient(to bottom, var(--green) 0 10px, transparent 10px 24px); border-radius: 5px; transform-origin: 50% 0; }
+#gap { font-weight: 800; font-size: 120px; letter-spacing: -0.04em; color: var(--green); white-space: nowrap; }
+#gap small { font-size: 0.5em; letter-spacing: 0; margin-left: 6px; }
+#sprinter { width: 320px; height: 380px; }
+#paper { width: 340px; height: 380px; }
+#cloud { width: 460px; height: 320px; }
+#clock { width: 600px; height: 600px; }
+#digital { width: 600px; text-align: center; font-weight: 800; font-size: 72px; letter-spacing: 0.02em; color: #f4f2ee; }
+
+/* kartice „tabova" u ponoć */
+.card { position: absolute; left: 0; top: 0; width: 380px; height: 250px; border-radius: 26px;
+  background: linear-gradient(160deg, rgba(48, 50, 72, 0.92), rgba(26, 27, 40, 0.92));
+  border: 2px solid rgba(255, 255, 255, 0.14); box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45); color: #e9ecf5; overflow: hidden; }
+.card .bar { height: 54px; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: rgba(255, 255, 255, 0.06); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.card .dot { width: 13px; height: 13px; border-radius: 50%; background: rgba(255, 255, 255, 0.28); }
+.card .tab { margin-left: 8px; font-weight: 700; font-size: 30px; letter-spacing: -0.01em; color: #fff; }
+.card .body { padding: 18px 22px; }
+.card .ln { height: 14px; border-radius: 7px; background: rgba(255, 255, 255, 0.16); margin: 12px 0; }
+.card .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.card .grid i { display: block; height: 30px; border-radius: 5px; background: rgba(255, 255, 255, 0.12); }
+.card .calc { font-weight: 700; font-size: 34px; color: #fff; line-height: 1.2; margin: 4px 0 14px; }
+.card .calc b { color: #ffb27a; font-weight: 800; }
+
+/* svet: logo + telefon (brzi pan) */
+#world { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+#logo { position: absolute; left: 260px; top: 740px; width: 560px; height: 560px; border-radius: 124px; overflow: hidden; box-shadow: 0 40px 80px rgba(30, 60, 32, 0.28); }
+#logo img, #lockLogo img { width: 100%; height: 100%; display: block; }
+#phone { position: absolute; left: 1490px; top: 540px; width: 700px; height: 1520px; border-radius: 92px; background: #121614; padding: 16px;
+  box-shadow: 0 60px 110px rgba(25, 37, 30, 0.35), inset 0 0 0 3px #2a302c; }
+#screen { position: relative; width: 668px; height: 1446px; border-radius: 76px; overflow: hidden; background: #f6f7f5; }
+#screen img.ui { position: absolute; left: 0; top: 0; width: 668px; height: 1446px; }
+#screen svg.ann { position: absolute; left: 0; top: 0; width: 668px; height: 1446px; overflow: visible; }
+
+/* isečci UI-ja ispred telefona */
+#vdot { position: absolute; left: 160px; top: 1183px; width: 760px; height: 235px; border-radius: 28px; overflow: hidden; background: #f6f7f5; box-shadow: 0 34px 70px rgba(25, 37, 30, 0.28); }
+#vdot img, #tbl img { width: 100%; height: 100%; display: block; }
+#tblWrap { position: absolute; left: 90px; top: 619px; width: 900px; height: 962px; }
+#tbl { position: absolute; inset: 0; border-radius: 30px; overflow: hidden; background: #f6f7f5; box-shadow: 0 40px 90px rgba(25, 37, 30, 0.3); }
+#tblWrap svg, #vdotAnn { position: absolute; left: 0; top: 0; overflow: visible; }
+#mini { width: 200px; height: 200px; }
+.orb { width: 200px; height: 200px; }
+
+/* pečat */
+.stamp { position: absolute; left: 0; top: 0; padding: 10px 26px 12px; border: 9px solid var(--green); border-radius: 20px; color: var(--green);
+  font-weight: 900; font-size: 74px; letter-spacing: 0.08em; line-height: 1; white-space: nowrap; background: rgba(244, 242, 238, 0.35); }
+
+/* naslovi */
+#titles { position: absolute; left: 80px; top: 300px; width: 920px; height: 360px; }
+.title { position: absolute; left: 0; top: 0; width: 920px; text-align: center; font-weight: 800; font-size: 94px; line-height: 1.04; letter-spacing: -0.03em; color: var(--ink); }
+.title.night { color: #f4f2ee; }
+.title .w { display: inline-block; white-space: pre; }
+.title .w .p { font-family: 'Figtree', sans-serif; font-style: normal; font-weight: 800; font-size: 0.862em; letter-spacing: -0.03em; color: var(--ink); }
+.title.night .w .p { color: #f4f2ee; }
+.title .acc { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 1.16em; letter-spacing: -0.01em; color: var(--green); }
+.title.night .acc { color: var(--green-night); }
+#note { position: absolute; left: 80px; top: 236px; width: 920px; text-align: center; font-weight: 600; font-size: 28px; color: #5c6b61; letter-spacing: 0.01em; }
+#note span { position: absolute; left: 0; top: 0; width: 920px; opacity: 0; }
+#note span.night { color: #b3bbe8; }
+
+/* 3D prolet */
+#fly { position: absolute; inset: 0; perspective: 1100px; perspective-origin: 50% 46%; opacity: 0; }
+#flyCam { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-style: preserve-3d; }
+.thumb { position: absolute; left: 360px; top: 640px; width: 360px; height: 640px; border-radius: 34px; overflow: hidden; box-shadow: 0 30px 70px rgba(25, 37, 30, 0.3); background: #fff; }
+.thumb img { width: 100%; height: 100%; display: block; }
+#ai { position: absolute; left: 290px; top: 905px; width: 500px; height: 110px; border-radius: 55px; background: #fff; border: 3px solid rgba(25, 37, 30, 0.12);
+  display: flex; align-items: center; justify-content: center; gap: 16px; font-weight: 700; font-size: 44px; letter-spacing: -0.01em; color: var(--ink); box-shadow: 0 24px 50px rgba(25, 37, 30, 0.14); }
+#ai svg { width: 40px; height: 40px; }
+
+/* lockup */
+#lockLogo { position: absolute; left: 360px; top: 700px; width: 360px; height: 360px; border-radius: 80px; overflow: hidden; box-shadow: 0 34px 70px rgba(30, 60, 32, 0.28); }
+#word { position: absolute; left: 0; top: 1110px; width: 1080px; text-align: center; font-weight: 800; font-size: 128px; letter-spacing: -0.04em; color: var(--ink); }
+#url { position: absolute; left: 0; top: 1278px; width: 1080px; text-align: center; font-weight: 700; font-size: 58px; letter-spacing: -0.01em; color: var(--green); }

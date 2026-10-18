@@ -1,55 +1,402 @@
 <!doctype html>
-<html lang="en">
+<html lang="sr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1920, height=1080" />
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Sub-20 promo</title>
+    <script src="assets/vendor/gsap.min.js"></script>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      html,
-      body {
-        margin: 0;
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
-        background: #0a0a0a;
-      }
-      #root {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-      }
-      #title {
-        color: #f4f4f5;
-        font-size: 72px;
-        font-weight: 600;
-        letter-spacing: -0.03em;
-      }
+/* Sub-20 promo — stil. Fontovi lokalno (latin + latin-ext zbog č ć š ž đ). */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 300 900;
+  src: url('assets/fonts/figtree-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 300 900;
+  src: url('assets/fonts/figtree-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  src: url('assets/fonts/instrument-serif-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  src: url('assets/fonts/instrument-serif-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --paper: #f4f2ee;
+  --ink: #19251e;
+  --ink-2: #46554b;
+  --green: #335e35;
+  --green-night: #8cc79a;
+  --orange: #ff5a1f;
+  --night: #0b0b12;
+  --navy: #1b1f5e;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); font-family: 'Figtree', sans-serif; color: var(--ink); }
+#film { position: absolute; inset: 0; }
+.layer { position: absolute; inset: 0; }
+.abs { position: absolute; left: 0; top: 0; }
+
+/* pozadine */
+#bg-day { background: var(--paper); }
+.blob { position: absolute; left: 0; top: 0; width: 1100px; height: 1100px; border-radius: 50%; }
+#blob1 { background: radial-gradient(circle at 50% 50%, rgba(255, 196, 160, 0.95) 0%, rgba(255, 210, 186, 0.5) 38%, rgba(244, 242, 238, 0) 70%); }
+#blob2 { background: radial-gradient(circle at 50% 50%, rgba(248, 186, 206, 0.85) 0%, rgba(248, 201, 212, 0.45) 38%, rgba(244, 242, 238, 0) 70%); }
+#blob3 { background: radial-gradient(circle at 50% 50%, rgba(206, 196, 248, 0.9) 0%, rgba(217, 210, 245, 0.45) 38%, rgba(244, 242, 238, 0) 70%); }
+#bg-night { background: radial-gradient(ellipse at 50% 40%, #171728 0%, var(--night) 70%); opacity: 0; }
+#bg-navy { background: radial-gradient(ellipse at 60% 25%, #2b3180 0%, var(--navy) 55%, #11143f 100%); opacity: 0; }
+.star { position: absolute; left: 0; top: 0; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+#moon { position: absolute; left: 820px; top: 150px; width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fffdf2 0%, #f3ecd2 55%, #d8cfae 100%);
+  box-shadow: 0 0 60px 18px rgba(255, 246, 210, 0.28); opacity: 0; }
+
+/* sjajne kuglice (dekor) */
+.deco { position: absolute; left: 0; top: 0; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #fff3e6 0%, #ffb27a 22%, #ff7a33 58%, #d9480f 100%);
+  box-shadow: 0 10px 22px rgba(201, 58, 12, 0.18); }
+.deco.peach { background: radial-gradient(circle at 34% 30%, #fff 0%, #ffd9c2 35%, #f7a98a 100%); box-shadow: none; }
+
+/* objekti sa unutrašnjim SVG-om: pozicija se zadaje GSAP x/y, centar = (x + w/2, y + h/2) */
+.obj { position: absolute; left: 0; top: 0; }
+.obj > .in, .obj > .in > .in2 { position: absolute; inset: 0; }
+.obj svg { position: absolute; inset: 0; overflow: visible; }
+#ball { width: 600px; height: 600px; }
+#ball .in { transform-origin: 50% 50%; }
+#ball .in2 { transform-origin: 50% 93%; }
+#shadow { width: 520px; height: 70px; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, rgba(80, 40, 20, 0.28) 0%, rgba(80, 40, 20, 0) 70%); }
+#contour { width: 600px; height: 600px; }
+.piece { width: 180px; height: 180px; }
+#dots { width: 10px; height: 160px; background: repeating-linear-gradient(to bottom, var(--green) 0 10px, transparent 10px 24px); border-radius: 5px; transform-origin: 50% 0; }
+#gap { font-weight: 800; font-size: 120px; letter-spacing: -0.04em; color: var(--green); white-space: nowrap; }
+#gap small { font-size: 0.5em; letter-spacing: 0; margin-left: 6px; }
+#sprinter { width: 320px; height: 380px; }
+#paper { width: 340px; height: 380px; }
+#cloud { width: 460px; height: 320px; }
+#clock { width: 600px; height: 600px; }
+#digital { width: 600px; text-align: center; font-weight: 800; font-size: 72px; letter-spacing: 0.02em; color: #f4f2ee; }
+
+/* kartice „tabova" u ponoć */
+.card { position: absolute; left: 0; top: 0; width: 380px; height: 250px; border-radius: 26px;
+  background: linear-gradient(160deg, rgba(48, 50, 72, 0.92), rgba(26, 27, 40, 0.92));
+  border: 2px solid rgba(255, 255, 255, 0.14); box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45); color: #e9ecf5; overflow: hidden; }
+.card .bar { height: 54px; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: rgba(255, 255, 255, 0.06); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.card .dot { width: 13px; height: 13px; border-radius: 50%; background: rgba(255, 255, 255, 0.28); }
+.card .tab { margin-left: 8px; font-weight: 700; font-size: 30px; letter-spacing: -0.01em; color: #fff; }
+.card .body { padding: 18px 22px; }
+.card .ln { height: 14px; border-radius: 7px; background: rgba(255, 255, 255, 0.16); margin: 12px 0; }
+.card .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.card .grid i { display: block; height: 30px; border-radius: 5px; background: rgba(255, 255, 255, 0.12); }
+.card .calc { font-weight: 700; font-size: 34px; color: #fff; line-height: 1.2; margin: 4px 0 14px; }
+.card .calc b { color: #ffb27a; font-weight: 800; }
+
+/* svet: logo + telefon (brzi pan) */
+#world { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+#logo { position: absolute; left: 260px; top: 740px; width: 560px; height: 560px; border-radius: 124px; overflow: hidden; box-shadow: 0 40px 80px rgba(30, 60, 32, 0.28); }
+#logo img, #lockLogo img { width: 100%; height: 100%; display: block; }
+#phone { position: absolute; left: 1490px; top: 540px; width: 700px; height: 1520px; border-radius: 92px; background: #121614; padding: 16px;
+  box-shadow: 0 60px 110px rgba(25, 37, 30, 0.35), inset 0 0 0 3px #2a302c; }
+#screen { position: relative; width: 668px; height: 1446px; border-radius: 76px; overflow: hidden; background: #f6f7f5; }
+#screen img.ui { position: absolute; left: 0; top: 0; width: 668px; height: 1446px; }
+#screen svg.ann { position: absolute; left: 0; top: 0; width: 668px; height: 1446px; overflow: visible; }
+
+/* isečci UI-ja ispred telefona */
+#vdot { position: absolute; left: 160px; top: 1183px; width: 760px; height: 235px; border-radius: 28px; overflow: hidden; background: #f6f7f5; box-shadow: 0 34px 70px rgba(25, 37, 30, 0.28); }
+#vdot img, #tbl img { width: 100%; height: 100%; display: block; }
+#tblWrap { position: absolute; left: 90px; top: 619px; width: 900px; height: 962px; }
+#tbl { position: absolute; inset: 0; border-radius: 30px; overflow: hidden; background: #f6f7f5; box-shadow: 0 40px 90px rgba(25, 37, 30, 0.3); }
+#tblWrap svg, #vdotAnn { position: absolute; left: 0; top: 0; overflow: visible; }
+#mini { width: 200px; height: 200px; }
+.orb { width: 200px; height: 200px; }
+
+/* pečat */
+.stamp { position: absolute; left: 0; top: 0; padding: 10px 26px 12px; border: 9px solid var(--green); border-radius: 20px; color: var(--green);
+  font-weight: 900; font-size: 74px; letter-spacing: 0.08em; line-height: 1; white-space: nowrap; background: rgba(244, 242, 238, 0.35); }
+
+/* naslovi */
+#titles { position: absolute; left: 80px; top: 300px; width: 920px; height: 360px; }
+.title { position: absolute; left: 0; top: 0; width: 920px; text-align: center; font-weight: 800; font-size: 94px; line-height: 1.04; letter-spacing: -0.03em; color: var(--ink); }
+.title.night { color: #f4f2ee; }
+.title .w { display: inline-block; white-space: pre; }
+.title .w .p { font-family: 'Figtree', sans-serif; font-style: normal; font-weight: 800; font-size: 0.862em; letter-spacing: -0.03em; color: var(--ink); }
+.title.night .w .p { color: #f4f2ee; }
+.title .acc { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; font-size: 1.16em; letter-spacing: -0.01em; color: var(--green); }
+.title.night .acc { color: var(--green-night); }
+#note { position: absolute; left: 80px; top: 236px; width: 920px; text-align: center; font-weight: 600; font-size: 28px; color: #5c6b61; letter-spacing: 0.01em; }
+#note span { position: absolute; left: 0; top: 0; width: 920px; opacity: 0; }
+#note span.night { color: #b3bbe8; }
+
+/* 3D prolet */
+#fly { position: absolute; inset: 0; perspective: 1100px; perspective-origin: 50% 46%; opacity: 0; }
+#flyCam { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-style: preserve-3d; }
+.thumb { position: absolute; left: 360px; top: 640px; width: 360px; height: 640px; border-radius: 34px; overflow: hidden; box-shadow: 0 30px 70px rgba(25, 37, 30, 0.3); background: #fff; }
+.thumb img { width: 100%; height: 100%; display: block; }
+#ai { position: absolute; left: 290px; top: 905px; width: 500px; height: 110px; border-radius: 55px; background: #fff; border: 3px solid rgba(25, 37, 30, 0.12);
+  display: flex; align-items: center; justify-content: center; gap: 16px; font-weight: 700; font-size: 44px; letter-spacing: -0.01em; color: var(--ink); box-shadow: 0 24px 50px rgba(25, 37, 30, 0.14); }
+#ai svg { width: 40px; height: 40px; }
+
+/* lockup */
+#lockLogo { position: absolute; left: 360px; top: 700px; width: 360px; height: 360px; border-radius: 80px; overflow: hidden; box-shadow: 0 34px 70px rgba(30, 60, 32, 0.28); }
+#word { position: absolute; left: 0; top: 1110px; width: 1080px; text-align: center; font-weight: 800; font-size: 128px; letter-spacing: -0.04em; color: var(--ink); }
+#url { position: absolute; left: 0; top: 1278px; width: 1080px; text-align: center; font-weight: 700; font-size: 58px; letter-spacing: -0.01em; color: var(--green); }
+
     </style>
   </head>
   <body>
-    <div
-      id="root"
-      data-composition-id="main"
-      data-start="0"
-      data-duration="10"
-      data-width="1920"
-      data-height="1080"
-    >
-      <h1 id="title" class="clip" data-start="0" data-duration="10" data-track-index="0">Title</h1>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="54.950">
+      <div id="film">
+        <!-- globalni SVG defs: gooey, hrapavost pečata, gradijenti -->
+        <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+          <defs>
+            <filter id="goo" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="b" />
+              <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -11" result="g" />
+              <feComposite in="SourceGraphic" in2="g" operator="atop" />
+            </filter>
+            <filter id="rough" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n" />
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="5" />
+            </filter>
+            <radialGradient id="gBall" cx="0.36" cy="0.3" r="0.78">
+              <stop offset="0" stop-color="#ffb98a" />
+              <stop offset="0.16" stop-color="#ff7d3c" />
+              <stop offset="0.42" stop-color="#ec4a12" />
+              <stop offset="1" stop-color="#b3320a" />
+            </radialGradient>
+            <radialGradient id="gGreen" cx="0.36" cy="0.3" r="0.78">
+              <stop offset="0" stop-color="#cfe8d4" />
+              <stop offset="0.3" stop-color="#6fa477" />
+              <stop offset="0.7" stop-color="#335e35" />
+              <stop offset="1" stop-color="#1f3d22" />
+            </radialGradient>
+            <radialGradient id="gOrb" cx="0.36" cy="0.3" r="0.8">
+              <stop offset="0" stop-color="#ffffff" />
+              <stop offset="0.25" stop-color="#c9cff9" />
+              <stop offset="0.7" stop-color="#7b86e6" />
+              <stop offset="1" stop-color="#3b4398" />
+            </radialGradient>
+            <radialGradient id="gCloud" cx="0.4" cy="0.3" r="0.8">
+              <stop offset="0" stop-color="#e6e9ef" />
+              <stop offset="0.6" stop-color="#b8bfcb" />
+              <stop offset="1" stop-color="#8f97a6" />
+            </radialGradient>
+            <mask id="bites" maskUnits="userSpaceOnUse" x="-320" y="-320" width="640" height="640">
+              <rect x="-320" y="-320" width="640" height="640" fill="#fff" />
+              <circle id="biteA" cx="190" cy="185" r="0" fill="#000" />
+              <circle class="biteB" cx="-238" cy="-70" r="0" fill="#000" />
+              <circle class="biteB" cx="-206" cy="-150" r="0" fill="#000" />
+              <circle class="biteB" cx="-252" cy="12" r="0" fill="#000" />
+              <circle id="biteC" cx="92" cy="250" r="0" fill="#000" />
+            </mask>
+          </defs>
+        </svg>
+
+        <!-- POZADINE -->
+        <div id="bg-day" class="layer">
+          <div id="blob1" class="blob" data-layout-allow-overflow></div>
+          <div id="blob2" class="blob" data-layout-allow-overflow></div>
+          <div id="blob3" class="blob" data-layout-allow-overflow></div>
+        </div>
+        <div id="bg-night" class="layer"></div>
+        <div id="bg-navy" class="layer"><div id="moon"></div></div>
+        <div id="stars" class="layer"></div>
+
+        <!-- KAMERA -->
+        <div id="cam" class="layer">
+          <div id="deco" class="layer"></div>
+
+          <div id="stage" data-layout-allow-overflow class="layer">
+            <div id="shadow" data-layout-allow-overflow class="obj"></div>
+            <div id="contour" data-layout-allow-overflow class="obj"><svg viewBox="-300 -300 600 600" width="600" height="600">
+              <circle id="contourC" r="260" fill="none" stroke="#335e35" stroke-width="7" stroke-linecap="round" stroke-dasharray="20 16" />
+              <text x="0" y="40" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="118" fill="#335e35" letter-spacing="-4">19:59</text>
+            </svg></div>
+            <div id="dots" data-layout-allow-overflow class="obj"></div>
+            <div id="gap" data-layout-allow-overflow class="obj"><span id="gapN">26</span><small>s</small></div>
+
+            <div id="ball" data-layout-allow-overflow class="obj"><div class="in"><div class="in2"><svg viewBox="-300 -300 600 600" width="600" height="600">
+              <g filter="url(#goo)">
+                <circle r="260" fill="url(#gBall)" mask="url(#bites)" />
+                <circle id="dripA" cx="190" cy="185" r="0" fill="#e8501a" />
+              </g>
+              <circle id="ballWhite" r="260" fill="#ffffff" mask="url(#bites)" opacity="0" />
+              <ellipse class="hl" cx="-96" cy="-122" rx="80" ry="46" fill="#ffffff" opacity="0.5" transform="rotate(-32 -96 -122)" />
+              <ellipse class="hl" cx="-168" cy="-28" rx="13" ry="24" fill="#ffffff" opacity="0.28" />
+              <text id="ballTxt" x="0" y="52" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="150" fill="#ffffff" letter-spacing="-5">20:25</text>
+            </svg></div></div></div>
+
+            <div id="pieceA" data-layout-allow-overflow class="obj piece"><svg viewBox="-90 -90 180 180" width="180" height="180"><circle r="70" fill="url(#gBall)" /><ellipse cx="-24" cy="-32" rx="22" ry="13" fill="#fff" opacity="0.5" transform="rotate(-32 -24 -32)" /><text x="0" y="14" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="40" fill="#fff">−12 s</text></svg></div>
+            <div id="pieceB" data-layout-allow-overflow class="obj piece"><svg viewBox="-90 -90 180 180" width="180" height="180"><circle r="70" fill="url(#gBall)" /><ellipse cx="-24" cy="-32" rx="22" ry="13" fill="#fff" opacity="0.5" transform="rotate(-32 -24 -32)" /><text x="0" y="14" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="40" fill="#fff">−8 s</text></svg></div>
+            <div id="pieceC" data-layout-allow-overflow class="obj piece"><svg viewBox="-90 -90 180 180" width="180" height="180"><circle r="70" fill="url(#gBall)" /><ellipse cx="-24" cy="-32" rx="22" ry="13" fill="#fff" opacity="0.5" transform="rotate(-32 -24 -32)" /><text x="0" y="14" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="40" fill="#fff">−6 s</text></svg></div>
+
+            <!-- kradljivac 1: sprinter „4" -->
+            <div id="sprinter" data-layout-allow-overflow class="obj"><div class="in"><svg viewBox="-160 -190 320 380" width="320" height="380">
+              <ellipse id="puddle" cx="0" cy="168" rx="0" ry="0" fill="#4f6bff" opacity="0.9" />
+              <g id="legs"><rect id="legL" x="-46" y="70" width="30" height="96" rx="15" fill="#3047c9" /><rect id="legR" x="16" y="70" width="30" height="96" rx="15" fill="#3047c9" /></g>
+              <g id="spBody" filter="url(#goo)">
+                <rect x="-78" y="-120" width="156" height="210" rx="70" fill="#4f6bff" />
+                <circle class="drip" cx="-40" cy="80" r="0" fill="#4f6bff" />
+                <circle class="drip" cx="10" cy="86" r="0" fill="#4f6bff" />
+                <circle class="drip" cx="50" cy="78" r="0" fill="#4f6bff" />
+              </g>
+              <g id="spFace">
+                <rect x="-36" y="8" width="72" height="64" rx="12" fill="#ffffff" />
+                <text x="0" y="60" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="56" fill="#19251e">4</text>
+                <g class="eyes">
+                  <ellipse cx="-28" cy="-52" rx="20" ry="24" fill="#fff" /><ellipse cx="28" cy="-52" rx="20" ry="24" fill="#fff" />
+                  <circle class="pupil" cx="-22" cy="-48" r="9" fill="#19251e" /><circle class="pupil" cx="34" cy="-48" r="9" fill="#19251e" />
+                  <rect class="lid" x="-50" y="-78" width="44" height="52" rx="20" fill="#4f6bff" /><rect class="lid" x="6" y="-78" width="44" height="52" rx="20" fill="#4f6bff" />
+                </g>
+                <ellipse id="spMouth" cx="0" cy="-14" rx="14" ry="4" fill="#19251e" />
+              </g>
+              <g id="sweat" opacity="0"><path d="M92 -112 q10 16 0 24 q-10 -8 0 -24z" fill="#9fd6ff" /><path d="M-96 -96 q9 14 0 21 q-9 -7 0 -21z" fill="#9fd6ff" /></g>
+            </svg></div></div>
+
+            <!-- kradljivac 2: zgužvani plan -->
+            <div id="paper" data-layout-allow-overflow class="obj"><div class="in"><svg viewBox="-170 -190 340 380" width="340" height="380">
+              <path d="M-128 -150 L-40 -168 L36 -146 L118 -160 L136 -60 L124 26 L144 118 L60 152 L-28 140 L-118 160 L-142 64 L-126 -26 L-150 -96 Z" fill="#fffdf6" stroke="#19251e" stroke-width="6" stroke-linejoin="round" />
+              <path d="M-40 -168 L-22 -40 L-126 -26 M36 -146 L-22 -40 L124 26 M-22 -40 L-28 140" fill="none" stroke="#c9c3b3" stroke-width="4" />
+              <text x="0" y="-96" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="34" fill="#19251e" letter-spacing="1">PLAN</text>
+              <text x="0" y="-60" text-anchor="middle" font-family="Figtree" font-weight="700" font-size="26" fill="#46554b" letter-spacing="1">ZA SVE</text>
+              <g class="eyes">
+                <ellipse cx="-40" cy="10" rx="22" ry="26" fill="#fff" stroke="#19251e" stroke-width="4" /><ellipse cx="40" cy="10" rx="22" ry="26" fill="#fff" stroke="#19251e" stroke-width="4" />
+                <circle class="pupil" cx="-48" cy="14" r="9" fill="#19251e" /><circle class="pupil" cx="32" cy="14" r="9" fill="#19251e" />
+              </g>
+              <ellipse id="ppMouth" cx="0" cy="80" rx="44" ry="6" fill="#19251e" />
+              <rect id="ppTeeth" x="-26" y="74" width="52" height="0" fill="#fff" />
+            </svg></div></div>
+
+            <!-- kradljivac 3: pospani oblak -->
+            <div id="cloud" data-layout-allow-overflow class="obj"><div class="in"><svg viewBox="-230 -160 460 320" width="460" height="320">
+              <g filter="url(#goo)">
+                <circle cx="-110" cy="30" r="78" fill="url(#gCloud)" /><circle cx="-20" cy="-30" r="104" fill="url(#gCloud)" />
+                <circle cx="96" cy="-6" r="86" fill="url(#gCloud)" /><circle cx="150" cy="56" r="58" fill="url(#gCloud)" />
+                <rect x="-170" y="30" width="350" height="90" rx="45" fill="url(#gCloud)" />
+              </g>
+              <g class="eyes">
+                <ellipse cx="-56" cy="10" rx="20" ry="16" fill="#fff" /><ellipse cx="22" cy="10" rx="20" ry="16" fill="#fff" />
+                <circle class="pupil" cx="-56" cy="16" r="8" fill="#19251e" /><circle class="pupil" cx="22" cy="16" r="8" fill="#19251e" />
+                <rect class="lid" x="-80" y="-8" width="48" height="26" fill="#b8bfcb" /><rect class="lid" x="-2" y="-8" width="48" height="26" fill="#b8bfcb" />
+              </g>
+              <ellipse id="clMouth" cx="-18" cy="62" rx="16" ry="6" fill="#4a505c" />
+              <g id="vortex" transform="translate(-140 70)"><path d="M0 0 m-6 0 a6 6 0 1 1 12 0 a12 12 0 1 1 -24 0 a20 20 0 1 1 40 0 a30 30 0 1 1 -60 0" fill="none" stroke="#6f7787" stroke-width="5" stroke-linecap="round" /></g>
+            </svg></div></div>
+
+            <!-- sat u ponoć -->
+            <div id="clock" data-layout-allow-overflow class="obj"><div class="in"><svg viewBox="-300 -300 600 600" width="600" height="600">
+              <circle r="260" fill="#fff8ef" stroke="#f4f2ee" stroke-width="18" />
+              <g id="ticks" stroke="#19251e" stroke-width="10" stroke-linecap="round"></g>
+              <rect id="hHour" x="-9" y="-150" width="18" height="160" rx="9" fill="#19251e" />
+              <rect id="hMin" x="-6" y="-220" width="12" height="230" rx="6" fill="#ff5a1f" />
+              <circle r="18" fill="#19251e" />
+            </svg></div></div>
+            <div id="digital" data-layout-allow-overflow class="obj">23:47</div>
+          </div>
+
+          <svg id="fx" class="layer" viewBox="0 0 1080 1920" width="1080" height="1920" style="overflow:visible">
+            <path id="stream" d="M612 1262 C 640 1330, 700 1400, 760 1440" fill="none" stroke="#ff6a2a" stroke-width="30" stroke-linecap="round" />
+          </svg>
+
+          <div id="cards" class="layer">
+            <div class="card" id="cStrava" data-layout-allow-overflow><div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="tab">Strava</span></div><div class="body"><div class="ln" style="width:82%"></div><div class="ln" style="width:64%"></div><div class="ln" style="width:74%"></div><div class="ln" style="width:48%"></div></div></div>
+            <div class="card" id="cXlsx" data-layout-allow-overflow><div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="tab">plan.xlsx</span></div><div class="body"><div class="grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+            <div class="card" id="cCalc" data-layout-allow-overflow><div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="tab">kalkulator tempa</span></div><div class="body"><div class="calc">5 km · <b>19:59</b></div><div class="calc">= <b>4:00</b> /km ?</div></div></div>
+            <div class="card" id="cHrv" data-layout-allow-overflow><div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="tab">HRV</span></div><div class="body"><svg width="336" height="150" viewBox="0 0 336 150"><path d="M0 80 L40 70 L80 92 L120 60 L160 74 L200 50 L240 98 L280 112 L336 128" fill="none" stroke="#9fb0ff" stroke-width="6" stroke-linejoin="round" stroke-linecap="round" /><path d="M0 76 L336 76" stroke="rgba(255,255,255,.25)" stroke-width="3" stroke-dasharray="10 10" /></svg></div></div>
+          </div>
+
+          <div id="pan" data-layout-allow-overflow class="layer">
+            <div id="world">
+              <div id="logo" data-layout-allow-overflow><img src="assets/brand/logo-640.png" alt="" /></div>
+              <div id="phone" data-layout-allow-overflow><div id="screen">
+                <img id="uiDanas" class="ui" src="assets/ui/ui-danas.jpg" alt="" />
+                <img id="uiPlan" class="ui" src="assets/ui/ui-plan.jpg" alt="" />
+                <img id="uiOpor" class="ui" src="assets/ui/ui-oporavak.jpg" alt="" />
+                <svg class="ann" viewBox="0 0 668 1446" width="668" height="1446">
+                  <path id="annDanas" fill="none" stroke="#335e35" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+                  <path id="annOpor" fill="none" stroke="#335e35" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div id="stampOpor" data-layout-allow-overflow class="stamp">OLAKŠAJ</div>
+              </div></div>
+            </div>
+          </div>
+
+          <div id="vdot" data-layout-allow-overflow><img src="assets/ui/ui-napredak-vdot.jpg" alt="" /></div>
+          <svg id="vdotAnn" width="1080" height="1920" viewBox="0 0 1080 1920" style="position:absolute;left:0;top:0;overflow:visible"><path id="annCheck" d="" fill="none" stroke="#335e35" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          <div id="tblWrap" data-layout-allow-overflow><div id="tbl"><img src="assets/ui/ui-trka-prolazi.jpg" alt="" /></div>
+            <svg width="900" height="962" viewBox="0 0 900 962"><path id="annRow" fill="none" stroke="#335e35" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </div>
+          <div id="peek" data-layout-allow-overflow class="obj" style="width:320px;height:380px"><svg viewBox="-160 -190 320 380" width="320" height="380">
+            <rect x="-78" y="-120" width="156" height="210" rx="70" fill="#4f6bff" />
+            <ellipse cx="-28" cy="-52" rx="20" ry="24" fill="#fff" /><ellipse cx="28" cy="-52" rx="20" ry="24" fill="#fff" />
+            <circle cx="-38" cy="-50" r="9" fill="#19251e" /><circle cx="18" cy="-50" r="9" fill="#19251e" />
+            <ellipse cx="0" cy="-10" rx="12" ry="5" fill="#19251e" />
+            <rect x="-36" y="8" width="72" height="64" rx="12" fill="#fff" /><text x="0" y="60" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="56" fill="#19251e">4</text>
+          </svg></div>
+
+          <div id="mini" data-layout-allow-overflow class="obj"><svg viewBox="-100 -100 200 200" width="200" height="200">
+            <circle r="80" fill="url(#gBall)" /><circle id="miniG" r="80" fill="url(#gGreen)" opacity="0" />
+            <ellipse cx="-28" cy="-36" rx="26" ry="15" fill="#fff" opacity="0.5" transform="rotate(-32 -28 -36)" />
+            <text id="miniT1" x="0" y="17" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="50" fill="#fff" letter-spacing="-1">20:25</text>
+            <text id="miniT2" x="0" y="17" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="56" fill="#fff" opacity="0">48,6</text>
+          </svg></div>
+
+          <div id="orbs" class="layer">
+            <div class="obj orb" id="orb1" data-layout-allow-overflow><svg viewBox="-100 -100 200 200" width="200" height="200"><circle r="74" fill="url(#gOrb)" /><ellipse cx="-26" cy="-34" rx="24" ry="14" fill="#fff" opacity="0.55" transform="rotate(-32 -26 -34)" /><text x="0" y="6" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="44" fill="#fff">49</text><text x="0" y="40" text-anchor="middle" font-family="Figtree" font-weight="700" font-size="22" fill="#eef0ff">HRV</text></svg></div>
+            <div class="obj orb" id="orb2" data-layout-allow-overflow><svg viewBox="-100 -100 200 200" width="200" height="200"><circle r="74" fill="url(#gOrb)" /><ellipse cx="-26" cy="-34" rx="24" ry="14" fill="#fff" opacity="0.55" transform="rotate(-32 -26 -34)" /><text x="0" y="6" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="38" fill="#fff">5,6 h</text><text x="0" y="40" text-anchor="middle" font-family="Figtree" font-weight="700" font-size="22" fill="#eef0ff">san</text></svg></div>
+            <div class="obj orb" id="orb3" data-layout-allow-overflow><svg viewBox="-100 -100 200 200" width="200" height="200"><circle r="74" fill="url(#gOrb)" /><ellipse cx="-26" cy="-34" rx="24" ry="14" fill="#fff" opacity="0.55" transform="rotate(-32 -26 -34)" /><text x="0" y="6" text-anchor="middle" font-family="Figtree" font-weight="800" font-size="44" fill="#fff">−13</text><text x="0" y="40" text-anchor="middle" font-family="Figtree" font-weight="700" font-size="22" fill="#eef0ff">svežina</text></svg></div>
+          </div>
+
+          <div id="stampCilj" data-layout-allow-overflow class="stamp">CILJ</div>
+        </div>
+
+        <!-- 3D PROLET -->
+        <div id="fly"><div id="flyCam"><div class="thumb"><img src="assets/thumbs/s1.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s2.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s3.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s4.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s5.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s6.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s7.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s8.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s9.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s10.jpg" alt="" /></div><div class="thumb"><img src="assets/thumbs/s11.jpg" alt="" /></div></div></div>
+        <div id="ai" data-layout-allow-overflow><svg viewBox="-20 -20 40 40"><path d="M0 -18 C 2 -6, 6 -2, 18 0 C 6 2, 2 6, 0 18 C -2 6, -6 2, -18 0 C -6 -2, -2 -6, 0 -18 Z" fill="#ff5a1f" /></svg><span>Napravljeno sa AI</span></div>
+
+        <!-- LOCKUP -->
+        <div id="lock" class="layer">
+          <div id="lockLogo" data-layout-allow-overflow><img src="assets/brand/logo-640-lockup.png" alt="" /></div>
+          <div id="word">sub20</div>
+          <div id="url">sub-19.vercel.app</div>
+        </div>
+        <div id="ball2" data-layout-allow-overflow class="obj" style="width:200px;height:200px"><svg viewBox="-100 -100 200 200" width="200" height="200"><circle r="80" fill="url(#gBall)" /><circle id="ball2W" r="80" fill="#fff" opacity="0" /><ellipse cx="-28" cy="-36" rx="26" ry="15" fill="#fff" opacity="0.5" transform="rotate(-32 -28 -36)" /></svg></div>
+
+        <!-- NASLOVI I NAPOMENE (van kamere) -->
+        <div id="titles"></div>
+        <div id="note">
+          <span id="noteDemo">ekrani: demo podaci</span>
+          <span id="noteTrka">prolazi: stvarna trka · Strava</span>
+          <span id="noteOpor" class="night">HRV, san i svežina: intervals.icu · demo podaci</span>
+        </div>
+      </div>
+      <audio id="bgm" src="audio/music.wav" data-start="0" data-duration="54.950" data-track-index="11" data-volume="1"></audio>
+      <audio id="sfx" src="audio/sfx.wav" data-start="0" data-duration="54.950" data-track-index="12" data-volume="1"></audio>
     </div>
     <script>
-      const tl = gsap.timeline({ paused: true });
-      // Example: tl.fromTo("#title", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6 }, 0);
-      window.__timelines["main"] = tl;
-      tl.seek(0);
+      window.__SUB20_T = {"total":54.95,"scenes":[{"id":"s1","n":"01","start":0,"dur":4.233,"voStart":0.55,"voDur":3.333,"words":["Sat","ti","kaže","vreme.","Ali","ne","kaže","zašto."],"wt":[0.55,0.848,1.072,1.445,2.117,2.415,2.639,3.012],"audio":null},{"id":"s2","n":"02","start":4.233,"dur":3.833,"voStart":4.383,"voDur":3.333,"words":["Do","sab","dvadeset","fali","ti","dvadeset","šest","sekundi."],"wt":[4.383,4.575,4.831,5.406,5.726,5.918,6.493,6.813],"audio":null},{"id":"s3","n":"03","start":8.067,"dur":3.4,"voStart":8.367,"voDur":2.083,"words":["Četvrti","kilometar","popusti.","Uzme","dvanaest."],"wt":[8.367,8.708,9.133,9.602,9.814],"audio":null},{"id":"s4","n":"04","start":11.467,"dur":3.617,"voStart":11.767,"voDur":2.917,"words":["Plan","koji","nije","pravljen","za","tebe","osam."],"wt":[11.767,12.11,12.452,12.795,13.412,13.618,13.96],"audio":null},{"id":"s5","n":"05","start":15.083,"dur":3.2,"voStart":15.383,"voDur":2.5,"words":["Umor","koji","ne","vidiš","još","šest."],"wt":[15.383,15.762,16.141,16.368,16.823,17.127],"audio":null},{"id":"s6","n":"06","start":18.283,"dur":5.65,"voStart":18.633,"voDur":5,"words":["A","ti","u","ponoć","držiš","otvorene","Stravu,","tabelu,","kalkulator","tempa","i","ha-er-ve."],"wt":[18.633,18.752,18.93,19.049,19.406,19.763,20.299,20.894,21.489,22.143,22.5,22.619],"audio":null},{"id":"s7","n":"07","start":23.933,"dur":2.6,"voStart":24.233,"voDur":1.667,"words":["Zato","postoji","Sab","dvadeset."],"wt":[24.233,24.503,24.935,25.151],"audio":null},{"id":"s8","n":"08","start":26.533,"dur":3.933,"voStart":26.833,"voDur":3.333,"words":["Svaki","dan","znaš","šta","trčiš,","i","kojim","tempom."],"wt":[26.833,27.242,27.514,27.855,28.127,28.74,28.876,29.285],"audio":null},{"id":"s9","n":"09","start":30.467,"dur":4.35,"voStart":30.767,"voDur":3.75,"words":["Plan","se","pravi","iz","tvog","ve-dot-a,","iz","tvog","vremena."],"wt":[30.767,31.1,31.299,31.698,31.898,32.23,33.028,33.228,33.56],"audio":null},{"id":"s10","n":"10","start":34.817,"dur":4.767,"voStart":35.117,"voDur":4.167,"words":["Posle","trke","vidiš","svaki","kilometar,","i","gde","je","vreme","otišlo."],"wt":[35.117,35.502,35.823,36.209,36.594,37.428,37.557,37.814,38.006,38.392],"audio":null},{"id":"s11","n":"11","start":39.583,"dur":5.333,"voStart":40.033,"voDur":4.583,"words":["A","oporavak","ti","kaže","kad","da","stisneš,","a","kad","da","staneš."],"wt":[40.033,40.187,40.879,41.11,41.495,41.802,42.033,42.88,43.033,43.341,43.572],"audio":null},{"id":"s12","n":"12","start":44.917,"dur":10.033,"voStart":45.217,"voDur":3.333,"words":["Sab","dvadeset","ti","pokazuje","gde","su","tvoje","sekunde."],"wt":[45.217,45.473,46.048,46.24,46.816,47.071,47.263,47.647],"audio":null}],"outro":{"settle":48.75,"fly":49.35,"ai":51.55,"lockup":52.45},"ev":{"land":0.5,"land2":1.04,"gap":5.868,"run":8.217,"gasp":9.317,"melt":9.917,"chunkA":9.552,"hop1":11.937,"hop2":12.487,"bite":13.61,"vortex":15.783,"snap":17.027,"clock":18.543,"cards":[20.199,20.794,21.389,22.519],"shrink":24.383,"reveal":25.003,"pan":26.213,"circle8":29.085,"push9":30.517,"fly9":31.68,"check9":33.46,"rows10":35.367,"circle10":37.307,"peek10":37.957,"zoom11":39.583,"stop11":43.572,"stamp11":43.872,"ret12":45.717,"grow12":47.027,"stamp12":47.927,"fly":49.35,"lockup":52.45}};
+    </script>
+    <script src="assets/film.js"></script>
+    <script>
+      window.__timelines["main"] = window.__SUB20_TL;
     </script>
   </body>
 </html>

@@ -74,14 +74,41 @@ async function shoot(page, name, crops = {}) {
   console.log('✓', name);
 }
 
+/* položaji (CSS px; ×3 = px slike) najmanjeg elementa sa tačnim tekstom — za anotacije u videu.
+   rel = selektor isečka: koordinate u odnosu na njega; bez rel: u odnosu na prozor (snimak celog ekrana, skrol 0). */
+const BOXES = {};
+async function boxes(page, name, texts, rel) {
+  await page.evaluate(() => window.scrollTo(0, 0));
+  if (rel) await page.locator(`.page.active ${rel}`).first().scrollIntoViewIfNeeded();
+  BOXES[name] = await page.evaluate(([texts, rel]) => {
+    const root = document.querySelector('.page.active');
+    const base = rel ? root.querySelector(rel).getBoundingClientRect() : { left: 0, top: 0 };
+    const out = {};
+    for (const t of texts) {
+      let best = null;
+      for (const el of root.querySelectorAll('*')) {
+        if (el.children.length > 3) continue;
+        const txt = (el.innerText || '').replace(/\s+/g, ' ').trim();
+        if (txt !== t) continue;
+        const r = el.getBoundingClientRect();
+        if (!best || r.width * r.height < best.w * best.h) best = { x: r.left - base.left, y: r.top - base.top, w: r.width, h: r.height };
+      }
+      out[t] = best;
+    }
+    return out;
+  }, [texts, rel ?? null]);
+}
+
 const browser = await chromium.launch({ executablePath: process.env.SUB20_CHROMIUM ?? '/opt/pw-browsers/chromium' });
 try {
   /* 1) odmoran dan: Danas i Plan bez upozorenja oporavka */
   {
     const { ctx, page } = await boot(browser, { tired: false });
     await shoot(page, 'danas-odmoran', { kartica: '#tcard', nedelja: '.week-line' });
+    await boxes(page, 'danas-odmoran', ['3:55 /km · oko 32 min', '6,5', 'Fartlek']);
     await tab(page, 'plan');
     await shoot(page, 'plan-odmoran', { nedelja: '.rows[aria-labelledby="week-h"]', km: '.weekkm' });
+    await boxes(page, 'plan-odmoran', ['Tvoj plan', 'Nedelja 6 od 12', '31,1']);
     await ctx.close();
   }
   /* 2) jutros HRV pada i san je kratak */
@@ -103,18 +130,22 @@ try {
 
   await tab(page, 'napredak');
   await shoot(page, 'napredak', { vdot: 'button.duo' });
+  await boxes(page, 'napredak--vdot', ['48,6', '20:25', 'Polazni VDOT'], 'button.duo');
   await openRow(page, 'Forma i predikcija');
   await shoot(page, 'forma', { odgovor: 'section.verdict', distance: 'ul.rtimes' });
   await back(page);
   await openRow(page, 'Oporavak');
   await shoot(page, 'oporavak', { stanje: 'section.ready', acwr: '.acwr' });
+  await boxes(page, 'oporavak', ['Olakšaj', 'HRV', 'San', 'Svežina']);
   await back(page);
   await openRow(page, 'Analiza trke');
   const sum = page.locator('.page.active .race-data details summary').first();
   if (await sum.count()) { await sum.click(); await page.waitForTimeout(400); }
   await shoot(page, 'trka', { prolazi: '.race-data details', tabela: '.race-data table' });
+  await boxes(page, 'trka--prolazi', ['4:12', '4:02', '4:09', 'Km'], '.race-data details');
   await back(page);
   await ctx.close();
+  writeFileSync(join(OUT, 'boxes.json'), JSON.stringify(BOXES, null, 1));
 } finally {
   await browser.close();
 }
