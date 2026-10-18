@@ -23,7 +23,7 @@ import { TrainingSettingsScreen } from '../ti/screens';
 import { Wizard } from './Wizard';
 
 /* SEGMENT 05 — čarobnjak 10K v2 iza prekidača: polja v2 (rezultat ili lagan tempo, iskustvo, trčanje/hodanje, dani i dan
-   dugog, cilj), plan v2 u skladištu, prikaz strukture (orijentir + RPE, test 5 km), prilagođavanje „stiže uskoro",
+   dugog, cilj), plan v2 u skladištu, prikaz strukture (orijentir + RPE, test 5 km), prilagođavanje v2 (segment 06),
    odbijanje kao poruka sa razlozima v2 doslovno. Prekidač isključen → čarobnjak i plan kao do sada; uključen ne dira
    ostale distance. */
 
@@ -152,16 +152,19 @@ describe('10K v2 iza prekidača', () => {
     expect(v.rows?.some((r) => r[0] === 'Zagrevanje')).toBe(true);
     expect(days.find((d) => d.tag === 'lr')!.date.endsWith('-17')).toBe(true); // subota
 
-    // Prilagođavanje: „stiže uskoro" umesto alata (10K v1 se ne poziva).
-    render(<AdjustPlan />);
-    expect(document.getElementById('v2-unsupported')!.textContent).toContain(
-      'Prilagođavanje plana stiže uskoro'
+    // Prilagođavanje (segment 06): tok v2 iz činjenica sa pregledom (10K v1 se ne poziva).
+    const adj = render(<AdjustPlan />);
+    expect(document.getElementById('v2-adapt')).not.toBeNull();
+    expect(document.getElementById('plan-change-preview')!.textContent).toContain(
+      'bez novih činjenica'
     );
     expect(screen.queryByText('Prilagođavanje prema izvršenju')).toBeNull();
     expect(screen.queryByText('Trenutno nema predloga za prilagođavanje plana.')).toBeNull();
-    // Napredak → Forma: polazni VDOT iz rezultata v2, bez lanca forme (nepodržano do 06); bez greške.
+    adj.unmount();
+    // Napredak → Forma: VDOT iz rezultata v2 (forma 10K v2), bez lanca forme v1.
     render(<FormScreen />);
-    expect(document.body.textContent).toContain('Forma');
+    expect(document.getElementById('v2-form')!.textContent).toContain('VDOT plana');
+    expect(screen.queryByText('Da li napredujem?')).toBeNull();
   });
 
   it('po osećaju (bez rezultata): RPE i tempo „orijentir (procena)", test 5 km u planu', async () => {

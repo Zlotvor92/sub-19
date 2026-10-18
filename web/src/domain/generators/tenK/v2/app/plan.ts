@@ -10,8 +10,10 @@
      su izostavljena — čitaoci aplikacije ih proveravaju (`raceRefs`, `planBaselineVdot`). Ceo izlaz v2 je u `tenKV2`.
    Jedine odluke adaptera (mapa faze, ime vrste, tip dana, oblik dana) imaju po jedno mesto: ovaj fajl. */
 
+import { checkInput } from '../input.ts';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
-import type { GoalAssessment, Phase, PlanDay, TenKV2Plan } from '../types.ts';
+import { basisAt, pacesAt } from '../steps.ts';
+import type { GoalAssessment, Paces, Phase, PlanDay, TenKV2Plan } from '../types.ts';
 import { addDays, diffDays } from './date.ts';
 import { workoutStructure } from './structure.ts';
 import type {
@@ -108,12 +110,24 @@ export interface GeneratedWeek {
 
 const rest = (dow: number): RestDay => ({ dow, rest: true, desc: null });
 
+/** Tempo i osnova nedelje za strukturu (E opseg, šta je procena): u adaptiranom planu po nedelji (A1 — plan po osećaju
+ *  prelazi na rezultat od nedelje rezultata, pa nedelje pre nje ostaju po osećaju); bez adaptacije ceo plan. */
+function weekPaces(plan: TenKV2Plan): (w: number) => { paces: Paces; feel: boolean } {
+  const whole = { paces: plan.paces, feel: plan.paceBasis === 'feel' };
+  const steps = plan.adaptation?.steps ?? [];
+  const chk = steps.length > 0 ? checkInput(plan.input) : null;
+  if (!chk?.ok) return () => whole;
+  const pace = chk.pace;
+  return (w) => ({ paces: pacesAt(pace, steps, w), feel: basisAt(pace, steps, w) === 'feel' });
+}
+
 function weeksOf(plan: TenKV2Plan): GeneratedWeek[] {
-  const feel = plan.paceBasis === 'feel';
+  const pacesOf = weekPaces(plan);
   return plan.weeks.map((wk) => {
     const byDate = new Map<string, GeneratedDay>();
+    const { paces, feel } = pacesOf(wk.index);
     for (const d of wk.days) {
-      const structure = { ...workoutStructure(d.workout, plan.paces, feel), kind: kindOf(d) };
+      const structure = { ...workoutStructure(d.workout, paces, feel), kind: kindOf(d) };
       byDate.set(d.date, {
         dow: diffDays(wk.startDate, d.date) + 1,
         tag: tagOf(d),

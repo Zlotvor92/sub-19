@@ -593,14 +593,15 @@ export const fiveKV2Start = (raceDate: string, today: string): string | null =>
 
 /* 10K v2 (segment 05): sopstveni generator 10K distance, biran po oznaci politike plana (`10k-v2`) — postojeći planovi
    (`10k-v1`, `legacy-10k`) ostaju na `TEN_K_GENERATOR` i nikad se ne prebacuju. Raspodela članova: (a) v2 sam
-   (generisanje, oznake, faza, procena, proizvod, tempo/prag/napor, sat iz strukture); (b) adaptacija i predlog —
-   eksplicitno nepodržano do segmenta 06, sa razlogom po članu, bez zamene 10K v1 generatorom; (c) procena stanja i vreme
-   — sopstvena kopija v2 sa istim vrednostima kao tenK (v. `tenK/v2/app/index.ts`).
+   (generisanje, oznake, faza, procena, proizvod, tempo/prag/napor, sat iz strukture); (b) adaptacija i predlog
+   (segment 06) — kroz činjenice i `adaptTenKV2` sa pregledom pre upisa, bez zamene 10K v1 generatorom; (c) procena stanja
+   i vreme — sopstvena kopija v2 sa istim vrednostima kao tenK (v. `tenK/v2/app/index.ts`).
 
    GRANICA FORMATA: adapter `tenK/v2/app/` ne uvozi ni tipove formata (strogi test izolacije 10K v2, bez izuzetka), pa
    plan koji PRAVI (dan sa strukturom van unije `Day`, `meta` sa poljima koja v2 zna) ovde dobija tip formata razmene —
-   samo `generatePlan` i `adaptGeneratedPlan` (i `generateTenKV2Plan` ispod). Svi ostali članovi prolaze `satisfies`
-   bez kasta (parametri adaptera su širi, plan/izmene/lanac prolaze generički). */
+   samo članovi koji prave plan: `generatePlan`, `adaptGeneratedPlan`, (06) `buildExecutionAdjustment`, `planWithNewGoal`,
+   `graftFuturePlan` (i `generateTenKV2Plan`, `tenKV2AdaptPreview`, `tenKV2GoalChange` ispod). Svi ostali članovi prolaze
+   `satisfies` bez kasta (parametri adaptera su širi, plan/izmene/lanac prolaze generički). */
 const t2 = tenK.tenKV2;
 export const TEN_K_V2_GENERATOR: PlanGenerator = {
   id: '10k',
@@ -620,14 +621,21 @@ export const TEN_K_V2_GENERATOR: PlanGenerator = {
   product: t2.product,
   executionModel: t2.executionModel,
   executionBasis: t2.executionBasis,
-  buildExecutionAdjustment: t2.buildExecutionAdjustment,
+  // 06: plan za upis pravi adapter (granica formata, v. gore).
+  buildExecutionAdjustment: (current, today, analysis, options, context) =>
+    t2.buildExecutionAdjustment(current, today, analysis, options, context) as unknown as
+      { result: GenPlanState; notes: string[]; summary: string } | { error: string },
   buildRunWalkAdjustment: t2.buildRunWalkAdjustment,
   assessRunWalkProgress: t2.assessRunWalkProgress,
   qualityEntryGate: t2.qualityEntryGate,
   hasRecentMeasuredForm: t2.hasRecentMeasuredForm,
-  planWithNewGoal: t2.planWithNewGoal,
+  // 06: isti treninzi, nova ocena cilja. Plan v2 nema ulaz čarobnjaka v1 (`ulaz`), pa ga rezultat ne nosi; pozivalac
+  // ga spaja preko postojećeg plana (`{ ...genPlan, ...r }`) i ne čita ga.
+  planWithNewGoal: (plan, sec, today) =>
+    t2.planWithNewGoal(plan, sec, today) as unknown as GoalChangeResult | ReplanError,
   planRecalibrated: t2.planRecalibrated,
-  graftFuturePlan: t2.graftFuturePlan,
+  graftFuturePlan: (plan, fresh, today, ctx) =>
+    t2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState,
   alignAutomaticOverlays: t2.alignAutomaticOverlays,
   vdotProposal: t2.vdotProposal,
   applyVdotProposal: t2.applyVdotProposal,
@@ -666,6 +674,42 @@ export const generateTenKV2Plan = (input: TenKV2PlanInput): StructuredPlanResult
 /** Prvi dan plana 10K v2: cele nedelje koje se završavaju danom trke, ne pre `today`; `null` bez ispravnih datuma. */
 export const tenKV2Start = (raceDate: string, today: string): string | null =>
   t2.alignedStart(raceDate, today);
+
+type TenKV2Preview = ReturnType<typeof t2.adaptPreview>;
+/** Pregled prilagođavanja 10K v2 u tipu formata: plan za upis je `GenPlanState` (granica formata). */
+export type TenKV2AdaptOutcome =
+  | (Omit<Extract<TenKV2Preview, { ok: true }>, 'result'> & { result: GenPlanState })
+  | Extract<TenKV2Preview, { ok: false }>;
+/** 06: pregled prilagođavanja plana 10K v2 iz činjenica (dnevnik, izmene + `ctx.facts`, dodatne prijavljene pauze).
+ *  Ne upisuje ništa: plan za upis, razlozi v2 doslovno, promenjene nedelje, pokrivenost; ili odbijanje sa razlozima. */
+export const tenKV2AdaptPreview = (
+  plan: GenPlanState,
+  today: IsoDate,
+  ctx: ReplanContext,
+  extraBreaks: ReadonlyArray<{ from: string; to: string }> = []
+): TenKV2AdaptOutcome =>
+  t2.adaptPreview(t2.sourceOf(plan, today, ctx, extraBreaks)) as unknown as TenKV2AdaptOutcome;
+type TenKV2Goal = ReturnType<typeof t2.goalChange>;
+/** 06: promena cilja plana 10K v2 — isti treninzi, nova ocena cilja; ili odbijanje sa razlozima. */
+export const tenKV2GoalChange = (
+  plan: GenPlanState,
+  goalSec: number,
+  today: IsoDate
+):
+  | (Omit<Extract<TenKV2Goal, { ok: true }>, 'result'> & { result: GenPlanState })
+  | Extract<TenKV2Goal, { ok: false }> =>
+  t2.goalChange(plan, goalSec, today) as unknown as
+    | (Omit<Extract<TenKV2Goal, { ok: true }>, 'result'> & { result: GenPlanState })
+    | Extract<TenKV2Goal, { ok: false }>;
+/** 06: Napredak → Forma za plan 10K v2 (VDOT iz rezultata, ocena cilja); `null` kad plan nije v2. */
+export const tenKV2FormHistory = (src: {
+  plan: GenPlanState;
+  today: IsoDate;
+  tests?: readonly T3kRecord[];
+  log?: Readonly<Record<string, LogEntry>>;
+}) => t2.formHistory(src);
+/** 06: polje unosa dana testa 10K v2 sa vremenom 5 km [s] (činjenica rezultata za adaptaciju). */
+export const TEN_K_V2_TEST_FIELD = t2.TEST_FIELD;
 
 /** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
 const HM_SHORTER_HANDOFF = regeneratorForDistance;
@@ -889,11 +933,6 @@ export function isFiveKV2Plan(plan: GenPlanState | null | undefined): boolean {
 /** Segment 05: plan 10K v2 (nosi izlaz v2 i tekuću oznaku `10k-v2`). */
 export function isTenKV2Plan(plan: GenPlanState | null | undefined): boolean {
   return generatorForPlan(plan) === TEN_K_V2_GENERATOR && t2.isV2Plan(plan);
-}
-
-/** Plan čija se adaptacija i predlozi još ne nude (10K v2 do segmenta 06): poruka umesto alata; inače `null`. */
-export function adaptationUnsupportedFor(plan: GenPlanState | null | undefined): string | null {
-  return isTenKV2Plan(plan) ? t2.ADAPTATION_UNSUPPORTED : null;
 }
 
 /** Uvoz (Strava/icu): plan v2 čiji uvoz beleži trčanja van plana i potpunu sinhronizaciju (5K v2 08c, 10K v2). */

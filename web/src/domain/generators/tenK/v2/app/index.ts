@@ -3,10 +3,13 @@
    `select.ts` od ovoga sastavlja `TEN_K_V2_GENERATOR` (`satisfies PlanGenerator`) i bira ga po oznaci politike (`10k-v2`).
 
    Raspodela ugovora: (a) v2 implementira sam — generisanje, oznake i faza, procena za čarobnjak, proizvod, tempo po zoni,
-   prag, napor dana, izvoz na sat iz strukture; (b) adaptacija i predlog — eksplicitno nepodržano do segmenta 06, sa
-   razlogom po članu (`./members.ts`); (c) prikaz stanja (bol, opterećenje, spremnost, vreme) — sopstvena kopija sa istim
-   vrednostima kao tenK (`./state/`, `./weather.ts`). */
+   prag, napor dana, izvoz na sat iz strukture; (b) adaptacija i predlog — segment 06: kroz činjenice (`./facts.ts`) i
+   `adaptTenKV2` (`./adapt.ts`, `./members.ts`), uz pregled pre upisa; (c) prikaz stanja (bol, opterećenje, spremnost,
+   vreme) — sopstvena kopija sa istim vrednostima kao tenK (`./state/`, `./weather.ts`). */
 
+import * as adapt from './adapt.ts';
+import * as facts from './facts.ts';
+import * as form from './form.ts';
 import * as gen from './generate.ts';
 import * as b from './members.ts';
 import * as plan from './plan.ts';
@@ -39,10 +42,15 @@ export const tenKV2 = {
   workoutsForWatch: watch.workoutsForWatch,
   /** Plan 10K v2 (nosi izlaz v2 i tekuću oznaku politike). */
   isV2Plan: (p: { meta?: unknown; tenKV2?: unknown } | null | undefined): boolean =>
-    !!p && p.tenKV2 != null && plan.planPolicy(p).status === 'current',
-  /* (b) adaptacija i predlog — nepodržano do 06 (razlog po članu: `UNSUPPORTED`) */
-  ADAPTATION_UNSUPPORTED: b.ADAPTATION_UNSUPPORTED,
-  UNSUPPORTED: b.UNSUPPORTED,
+    !!p && adapt.v2Of(p) !== null && plan.planPolicy(p).status === 'current',
+  /* (b) adaptacija i predlog (06): pregled, primena, vraćanje, cilj, forma iz rezultata */
+  adaptPreview: adapt.adaptPreview,
+  goalChange: adapt.goalChange,
+  sourceOf: b.sourceOf,
+  coverageText: facts.coverageText,
+  formHistory: form.formHistory,
+  TEST_FIELD: facts.TEST_FIELD,
+  ADAPTATION_V2: b.ADAPTATION_V2,
   classifyMeasurement: b.classifyMeasurement,
   recomputeVdotChain: b.recomputeVdotChain,
   sessionClassFor: b.sessionClassFor,

@@ -10,6 +10,7 @@ import { Notice, Row } from '../../components/ui/primitives';
 import { dayOfMonth, dowInitial } from '../../lib/dates';
 import { useActiveGenPlan, useIcuConnected, useResolvedPlan, useTrainingStore } from '../../stores';
 import { useFiveKV2Needed } from '../../stores/fiveKV2Actions';
+import { useTenKV2Needed } from '../../stores/tenKV2Actions';
 import { useUIStore } from '../../stores/uiStore';
 import { PHASE_LINE, type PhaseKey } from '../cycle/cycle';
 import { useCycleModel } from '../cycle/useCycleModel';
@@ -36,7 +37,9 @@ export default function PlanPage() {
   const openSheet = useUIStore((s) => s.openSheet);
   const cycle = useCycleModel();
   const easy = useEasyPace();
-  const needed = useFiveKV2Needed();
+  const needed5k = useFiveKV2Needed();
+  const needed10k = useTenKV2Needed();
+  const needed = needed5k.length ? needed5k : needed10k;
   const [picked, setPicked] = useState<number | null>(null);
   const today = parseIsoDate(todayStr);
 

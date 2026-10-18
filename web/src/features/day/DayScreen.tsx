@@ -14,6 +14,8 @@ import { CompareCard, MorningCard, WatchCard, ZonesCard, dataDate } from '../tod
 import { Description } from '../today/DayCard';
 import { DayEntry } from '../today/DayEntry';
 import { WeatherSection } from '../today/WeatherCard';
+import { isTenKV2Plan } from '../../domain/generators/select';
+import { TenKV2TestResult } from './TenKV2TestResult';
 
 type Status = 'pending' | 'done' | 'skip';
 const STATUSES: ReadonlyArray<readonly [Status, string]> = [
@@ -38,6 +40,7 @@ export function DayScreen({ id }: { id: string }) {
   const today = useUIStore((s) => s.today);
   const openSheet = useUIStore((s) => s.openSheet);
   const closeScreen = useUIStore((s) => s.closeScreen);
+  const tenKV2 = useTrainingStore((s) => isTenKV2Plan(s.genPlan));
 
   if (!plan || !day)
     return (
@@ -158,6 +161,7 @@ export function DayScreen({ id }: { id: string }) {
         </>
       )}
       {!pending ? adjust : null}
+      {tenKV2 && day.tag === 'test' && !rest ? <TenKV2TestResult dayId={id} /> : null}
       {day.test ? (
         <Section title="Rezultat testa">
           <div className="rows">

@@ -2,7 +2,8 @@
 
 Novi 10K generator sa jednim vlasnikom svake odluke (D1–D22, D22b, D23, D25–D32) i adaptacijom (A1–A15),
 izolovan u `web/src/domain/generators/tenK/v2/`. 10K v1 (`tenK/` van `v2/`) je nepromenjen i podrazumevan; od
-segmenta 05 v2 je u aplikaciji iza prekidača (`ui.generatorV2TenK` / `VITE_TENK_V2`), samo kroz adapter `v2/app/`.
+segmenta 05 v2 je u aplikaciji iza prekidača (`ui.generatorV2TenK` / `VITE_TENK_V2`), samo kroz adapter `v2/app/`;
+od segmenta 06 i prilagođavanje (činjenice → pregled → potvrda → revizija), vraćanje verzije, cilj i Forma.
 
 ## Kako se koristi
 
@@ -45,7 +46,7 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
   do nivoa pre smanjenja; zaštita prošlosti/urađenog/zaključanog; lančani koraci; plan starije verzije.
 - Poznata ograničenja: T 1,5 km ponovljen kod početnika 3 d 15 km; ponavljanje RP 2,5 / 3,5 i I 2,0 km; D25;
   posle smanjenja WU/CD po pojasu ulaza (dugi < kvalitetni dan); mešovite nedelje se proveravaju po danu.
-- Izveštaji: `reports/SEGMENT-01-…` … `SEGMENT-05-IMPLEMENTATION.md` (dalje: „Odluke" i „Preostali problemi" iz 05).
+- Izveštaji: `reports/SEGMENT-01-…` … `SEGMENT-06-IMPLEMENTATION.md` (dalje: „Nalaz trenera" iz 06).
 
 ## Segmenti 01–03b (10k-v2.0.0 … 2.3.1)
 
@@ -78,3 +79,15 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
 - Bajt-isto: `tenK/v2/app/byteSame.node.test.ts` (140 heševa sa 068410b) + `importV1Snapshot`. `npm run check` 216 / 2642;
   E2E `tenk-v2` 3/3, ceo 81 + 2 pada `pwa` (isti na 068410b).
 - Sledeće (06): činjenice → `adaptTenKV2` sa pregledom, revizije, cilj, Forma, predaja HM/maraton → 10K v2.
+
+## Segment 06 (adaptacija u aplikaciji; jezgro `10k-v2.4.0` nepromenjeno)
+
+- Polazni `2d8a594`; commit „10K v2 Segment 06: adaptacija 10K v2 u aplikaciji — činjenice, pregled, revizija, cilj,
+  Forma" (`git log --grep "10K v2 Segment 06"`); izveštaj `reports/SEGMENT-06-IMPLEMENTATION.md`.
+- Adapter: `facts.ts` (dnevnik/uvoz, van plana, bol, test 5 km `test5kSec`, test 3 km, trke, pokrivenost samo `fullSync`
+  ili potvrda, pauze, zaključani dani `meta.tenKV2Edits`), `adapt.ts` (pregled, traka, `restoreMerge`, `goalChange`),
+  `form.ts`, `members.ts` (b kroz isti tok; nijedan član ne poziva v1). `plan.ts`: tempo/osnova strukture po nedelji.
+- UI: Plan → Prilagodi plan (`TenKV2Adjustment`), traka u Planu i Danas, Ti → Cilj, Napredak → Forma (`FormTenKV2`),
+  Detalji treninga dana testa (vreme 5 km). Predaja HM/maraton → 10K ostaje 10K v1 (test).
+- Nalaz za sledeći korak (jezgro): A4/A8 — nedelja sa krajem perioda bola zadržava pun cilj (i kod 5K v2); v. izveštaj.
+

@@ -32,7 +32,6 @@ import {
   TEN_K_GENERATOR,
   TEN_K_V2_GENERATOR,
   UNKNOWN_POLICY,
-  adaptationUnsupportedFor,
   generateTenKV2Plan,
   generatorForNewPlan,
   generatorForPlan,
@@ -50,14 +49,20 @@ import { midEasy, pacesFromVdot } from '../paces.ts';
 import { TEN_K_V2_POLICY } from '../policy.ts';
 import type { TenKV2Plan } from '../types.ts';
 import { qualityWorkout, warmupCooldown } from '../workouts.ts';
-import { ADAPTATION_UNSUPPORTED, UNSUPPORTED } from './members.ts';
+import {
+  ADAPTATION_V2,
+  NO_PREPARATION_DECISION,
+  NO_RUN_WALK,
+  RECALIBRATION_NOT_USED
+} from './members.ts';
 import { workoutStructure } from './structure.ts';
 import { SKIP_FEEL, SKIP_NO_STRUCTURE } from './watch.ts';
 
 /* SEGMENT 05 — 10K v2 u aplikaciji: prekidač, rutiranje po oznaci politike, generisanje kroz adapter (nedelja 7 dana,
    struktura na svakom treningu, faza iz v2, trka van obima, odbijanje sa razlozima), čuvanje (backup/uvoz i vraćanje
    verzije), prikaz iz strukture (orijentir + RPE, test 5 km), izmena samo tempa, sat (preskočeno sa razlogom), kopija
-   procene stanja (iste vrednosti kao tenK) i raspodela ugovora (a/b/c; (b) nepodržano do 06, nikad 10K v1). */
+   procene stanja (iste vrednosti kao tenK) i raspodela ugovora (a/b/c; (b) od segmenta 06 kroz činjenice i adaptaciju v2
+   — `adaptFlow.node.test.ts`; nikad 10K v1). */
 
 const TODAY = '2026-10-26';
 const RACE = '2027-01-24'; // nedelja; od 2026-10-26: 13 celih nedelja
@@ -374,9 +379,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     );
     expect(generatorForPlan(v1)).toBe(TEN_K_GENERATOR);
     expect(isTenKV2Plan(v1)).toBe(false);
-    expect(adaptationUnsupportedFor(v1)).toBeNull();
     expect(tracksOffPlanRuns(v1)).toBe(false);
-    expect(adaptationUnsupportedFor(v2)).toBe(ADAPTATION_UNSUPPORTED);
     expect(tracksOffPlanRuns(v2)).toBe(true);
   });
 
@@ -558,7 +561,7 @@ describe('izvoz na sat iz strukture', () => {
   });
 });
 
-describe('ugovor: (a) v2, (b) nepodržano do 06 (nikad 10K v1), (c) sopstvena kopija procene stanja', () => {
+describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad 10K v1), (c) sopstvena kopija procene stanja', () => {
   const A = [
     'id',
     'policyId',
@@ -576,7 +579,35 @@ describe('ugovor: (a) v2, (b) nepodržano do 06 (nikad 10K v1), (c) sopstvena ko
     'rpeTarget',
     'paceForZone'
   ];
-  const B = Object.keys(UNSUPPORTED);
+  /** (b) — segment 06: adaptacija i predlog (kroz činjenice i `adaptTenKV2`, ili „ne koristi se" sa razlogom). */
+  const B = [
+    'classifyMeasurement',
+    'recomputeVdotChain',
+    'sessionClassFor',
+    'currentVdot',
+    'executionModel',
+    'executionBasis',
+    'buildExecutionAdjustment',
+    'buildRunWalkAdjustment',
+    'assessRunWalkProgress',
+    'qualityEntryGate',
+    'hasRecentMeasuredForm',
+    'planWithNewGoal',
+    'planRecalibrated',
+    'graftFuturePlan',
+    'alignAutomaticOverlays',
+    'vdotProposal',
+    'applyVdotProposal',
+    'undoVdotAdjustments',
+    'fitnessEvidence',
+    'planVdotNow',
+    'matchPlanRows',
+    'recalibrationMinMeasurements',
+    'recalibrationThreshold',
+    'injuryProposal',
+    'applyInjuryProposal',
+    'realignPlan'
+  ];
   const C = [
     'weatherCard',
     'painStatus',
@@ -608,36 +639,44 @@ describe('ugovor: (a) v2, (b) nepodržano do 06 (nikad 10K v1), (c) sopstvena ko
         expect(g[k], k).not.toBe(old[k]);
         expect(v1.has(g[k]), k).toBe(false);
       }
-    for (const k of B)
-      expect(UNSUPPORTED[k as keyof typeof UNSUPPORTED].length, k).toBeGreaterThan(10);
   });
 
-  it('(b) adapter članova (b) ne uvozi ništa (ni v1, ni v2 jezgro): ne može da pozove 10K v1', () => {
-    const src = readFileSync(fileURLToPath(new URL('./members.ts', import.meta.url)), 'utf8');
-    expect(src).not.toMatch(/^\s*import\s/m);
+  it('(b) adapter članova (b) uvozi samo iz 10K v2 (jezgro i adapter): ne može da pozove 10K v1', () => {
+    for (const f of ['./members.ts', './adapt.ts', './facts.ts', './form.ts']) {
+      const src = readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
+      const from = [...src.matchAll(/from\s+'([^']+)'/g)].map((m) => m[1]!);
+      expect(from.length, f).toBeGreaterThan(0);
+      for (const x of from) expect(x, `${f}: ${x}`).toMatch(/^\.\.?\/[A-Za-z]+\.ts$/);
+    }
   });
 
-  it('(b) svaki član: odbijanje sa porukom, „nema predloga" ili nepromenjen ulaz', () => {
+  it('(b) „ne koristi se" sa razlogom, „nema predloga" ili nepromenjen ulaz — bez 10K v1', () => {
     const g: PlanGenerator = TEN_K_V2_GENERATOR;
     const p = planOf(WITH_RESULT);
     const plan = view(p);
     const today = '2026-11-20' as IsoDate;
-    const refused = { error: ADAPTATION_UNSUPPORTED };
-    expect(g.buildExecutionAdjustment(p, today, null as never, {})).toEqual(refused);
-    expect(g.buildRunWalkAdjustment(p, today, null as never, { mode: 'hold' })).toEqual(refused);
-    expect(g.executionBasis(p, today, null as never, {})).toEqual(refused);
-    expect(g.planWithNewGoal(p, 2500, today)).toEqual(refused);
-    expect(g.planRecalibrated(p, 50, today)).toEqual(refused);
+    expect(g.buildRunWalkAdjustment(p, today, null as never, { mode: 'hold' })).toEqual({
+      error: NO_RUN_WALK
+    });
+    expect(g.executionBasis(p, today, null as never, {})).toEqual({
+      error: NO_PREPARATION_DECISION
+    });
+    expect(g.planRecalibrated(p, 50, today)).toEqual({ error: RECALIBRATION_NOT_USED });
     const ex = g.executionModel(plan, today, {});
     expect(ex.analysis.today).toBe(today);
+    expect(ex.analysis.reasons).toEqual([ADAPTATION_V2]);
     expect(ex.recommendation).toMatchObject({ kind: null, actionable: false });
     expect(g.assessRunWalkProgress({ plan, log: {}, today })).toMatchObject({
       decision: 'not-applicable'
     });
     expect(g.qualityEntryGate({ analysis: ex.analysis, formConfirmed: true }).open).toBe(false);
+    // Svež test 3 km je rezultat (forma iz rezultata), star nije.
     expect(g.hasRecentMeasuredForm(today, { t3k: [{ id: 'x', date: today, sec: 700 }] })).toBe(
-      false
+      true
     );
+    expect(
+      g.hasRecentMeasuredForm(today, { t3k: [{ id: 'x', date: '2026-07-01', sec: 700 }] })
+    ).toBe(false);
     expect(g.classifyMeasurement({} as never)).toMatchObject({ status: 'not-used' });
     const chain = [{ id: 'a', ts: today, vdot: 50, prev: null, delta: null, measured: 50 }];
     expect(g.recomputeVdotChain(chain, 50, () => 'default')).toEqual(chain);
@@ -657,17 +696,21 @@ describe('ugovor: (a) v2, (b) nepodržano do 06 (nikad 10K v1), (c) sopstvena ko
       moves: { a: 1 },
       moved: 0
     });
-    expect(g.fitnessEvidence({ vdotChain: chain } as never)).toMatchObject({ form: null, chain });
-    expect(g.planVdotNow({} as never)).toBeNull();
+    const ev = g.fitnessEvidence({
+      today,
+      tests: [{ id: 't', date: today, sec: 700 }],
+      vdotChain: chain
+    } as never);
+    expect(ev).toMatchObject({ measurements: 1, trainingMeasurements: 0, chain: [] });
+    expect(ev.form).toBeGreaterThan(40);
+    expect(g.planVdotNow({ meta: p.meta } as never)).toBe(v2Of(p).vdot);
+    expect(g.planVdotNow({ meta: planOf(FEEL).meta } as never)).toBeNull();
     expect(g.matchPlanRows([], []).size).toBe(0);
     expect(g.recalibrationMinMeasurements).toBe(Number.POSITIVE_INFINITY);
     expect(g.recalibrationThreshold).toBe(Number.POSITIVE_INFINITY);
+    // Vraćanje iste verzije: nema dana za vraćanje.
     const graft = g.graftFuturePlan(p, p, today);
-    expect(graft.weeks).toEqual(p.weeks);
-    expect(graft.meta?.['futureChanges']).toEqual({
-      changedDays: 0,
-      conflicts: [ADAPTATION_UNSUPPORTED]
-    });
+    expect(graft.meta?.['futureChanges']).toEqual({ changedDays: 0, conflicts: [] });
   });
 
   it('(c) procena stanja: iste vrednosti kao tenK (posebna kopija)', () => {

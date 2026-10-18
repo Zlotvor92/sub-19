@@ -2,10 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { fixToday, installBackend, seedSession } from './support/backend';
 import { back, tab } from './support/flows';
 
-/* 10K v2 SEGMENT 05 — 10K v2 iza prekidača kroz pravi interfejs: podešavanje `ui.generatorV2TenK` je uključeno u lokalnom
+/* 10K v2 SEGMENT 05/06 — 10K v2 iza prekidača kroz pravi interfejs: podešavanje `ui.generatorV2TenK` je uključeno u lokalnom
    stanju naloga pre pokretanja (novi korisnik bez plana vidi samo čarobnjaka; prekidač u Podešavanjima vidi samo
    administrator ili razvoj). Tokovi: (1) čarobnjak sa rezultatom → plan `10k-v2` na serveru → Plan tab i dan iz strukture
-   → Prilagodi plan „stiže uskoro"; (2) čarobnjak po osećaju → RPE i tempo „orijentir (procena)", test 5 km u planu;
+   → Prilagodi plan: pregled iz činjenica, prijavljena pauza → primena → revizija (segment 06); (2) čarobnjak po osećaju → RPE i tempo „orijentir (procena)", test 5 km u planu;
    (3) trčanje/hodanje → odbijanje v2 doslovno sa preporukom 5K, plan se ne pravi. */
 
 const STATE_KEY = 'sub19-v1:account:u-e2e';
@@ -125,15 +125,31 @@ test('10K v2: čarobnjak (rezultat, 4 dana) → plan v2 → Plan tab i dan pokaz
   await expect(structure).toContainText(/Pre\s*[\d,]+ km @ \d:\d\d–\d:\d\d\/km\s*zagrevanje/);
   await expect(structure).toContainText(/\d:\d\d\/km/);
 
-  // Prilagođavanje: „stiže uskoro" (segment 06), bez alata 10K v1.
+  // Prilagođavanje (segment 06): pregled iz činjenica, bez alata 10K v1; prijavljena pauza → pregled → primena → revizija.
   await back(page).click();
   await tab(page, 'Plan').click();
   await page
     .locator('.page.active')
     .getByRole('button', { name: /^Prilagodi plan/ })
     .click();
-  await expect(page.locator('#v2-unsupported')).toContainText('Prilagođavanje plana stiže uskoro');
+  const preview = page.locator('#plan-change-preview');
+  await expect(preview).toContainText('bez novih činjenica');
+  await expect(preview).toContainText('Budući deo plana se ne menja.');
   await expect(page.getByText('Prilagođavanje prema izvršenju')).toHaveCount(0);
+  const before = serverPlan(backend);
+  await page.getByLabel('Pauza od').fill('2026-01-05');
+  await page.getByLabel('Pauza do').fill('2026-01-14');
+  await page.getByRole('button', { name: 'Dodaj pauzu' }).click();
+  await expect(preview.getByRole('list', { name: 'Razlozi prilagođavanja' })).toContainText(
+    'Pauza (prijavljena) 10 dana'
+  );
+  await expect(preview.getByRole('table', { name: 'Promenjene nedelje' })).toBeVisible();
+  expect(serverPlan(backend)).toBe(before); // pregled ne upisuje
+  await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Plan je prilagođen' })).toBeVisible();
+  await expect.poll(() => serverPlan(backend)).toContain('Prilagođavanje 2026-01-14: pauza');
+  expect(serverPlan(backend)).toContain('"policyId":"10k-v2"');
+  expect(serverPlan(backend)).toContain('"asOf":"2026-01-14"');
 });
 
 test('10K v2 po osećaju: RPE i tempo „orijentir (procena)", test 5 km u planu', async ({

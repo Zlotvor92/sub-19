@@ -193,6 +193,36 @@ export interface PainRecord {
   note?: string;
   [field: string]: unknown;
 }
+/** Test 3 km (oblik `T3kRecord`). */
+export interface T3kRecord {
+  id: string;
+  date: string;
+  sec: number;
+}
+/** Uvezeno trčanje koje nije upareno sa danom plana (oblik `OffPlanRun`, `vanPlanaV2`). */
+export interface OffPlanRunRecord {
+  date: string;
+  km: number;
+  sec: number | null;
+  src: 'strava' | 'icu';
+  id: string;
+}
+/** Aktivnost koju sinhronizacija nije obradila (oblik `SyncIssue`; `date` `null` = dan nepoznat). */
+export interface SyncIssue {
+  date: string | null;
+  id: string | null;
+  reason: string;
+}
+/** Plan formata koji adapter čita za činjenice i spajanje (nedelje sa početkom, dani sa ID-jem, `meta`, izlaz v2). */
+export interface AppPlan {
+  weeks: ReadonlyArray<{
+    w: number;
+    start: string;
+    days: ReadonlyArray<{ id?: string; dow: number }>;
+  }>;
+  meta?: unknown;
+  tenKV2?: unknown;
+}
 export interface WellnessRecord {
   datum: string;
   hrv: number | null;

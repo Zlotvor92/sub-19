@@ -15,7 +15,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useIsOwner } from '../../stores/owner';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
-import { adaptationUnsupportedFor, isFiveKV2Plan } from '../../domain/generators/select';
+import { isFiveKV2Plan, isTenKV2Plan } from '../../domain/generators/select';
 import {
   useFiveKV2Setting,
   useFiveKV2ToggleVisible,
@@ -24,7 +24,7 @@ import {
   useTenKV2ToggleVisible,
   setTenKV2Setting
 } from '../../stores/generatorFlags';
-import { changeGoalTime, changeGoalTimeV2 } from '../plan/planActions';
+import { changeGoalTime, changeGoalTimeTenKV2, changeGoalTimeV2 } from '../plan/planActions';
 import { GoalAssessmentLine } from '../plan/GoalAssessment';
 import { useFormModel } from '../race/useFormModel';
 import { AccountBody, useAccountInfo } from './accountSection';
@@ -185,11 +185,44 @@ export function GoalScreen() {
             </p>
           </Help>
         </Section>
-      ) : genPlan && adaptationUnsupportedFor(genPlan) ? (
-        <Section>
-          <p className="note-src" id="v2-unsupported-goal">
-            {adaptationUnsupportedFor(genPlan)}
-          </p>
+      ) : genPlan && isTenKV2Plan(genPlan) ? (
+        <Section title="Promeni ciljno vreme">
+          <div className="f-field">
+            <label htmlFor="pl-goal">Novo ciljno vreme</label>
+            <input
+              id="pl-goal"
+              inputMode="numeric"
+              placeholder={m.goalText}
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+            />
+          </div>
+          <div className="btnrow start">
+            <button
+              type="button"
+              className="btn"
+              id="pl-goal-ok"
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void changeGoalTimeTenKV2(genPlan, goal, today)
+                  .then((ok) => {
+                    if (ok) setGoal('');
+                  })
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Promeni cilj
+            </button>
+          </div>
+          <Help summary="Šta se menja kad promeniš cilj">
+            <p>
+              U planu 10K v2 cilj se samo <b>procenjuje</b> (realističan, ambiciozan, nerealan) iz
+              trenutne forme; plan po osećaju ocenu dobija posle rezultata. Treninzi, tempo i obim
+              ostaju isti — tempo menja samo nov rezultat (test 5 km, test 3 km ili trka), kroz Plan
+              → Prilagodi plan.
+            </p>
+          </Help>
         </Section>
       ) : genPlan ? (
         <Section>
