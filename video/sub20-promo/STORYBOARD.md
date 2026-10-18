@@ -312,7 +312,7 @@ keyMessage: sekunde nisu izgubljene, samo nisu bile viđene.
 
 ## 3D prolet (odobreno)
 
-- Između povratka kugle u 19:59 (Frame 12) i lockupa: 3D prolet kroz minijature svih kadrova (kartice u dubini, kamera leti kroz njih, ~2 s), pa kartica „Napravljeno sa AI" (~0,8 s). Da ukupno ostane ≤ 50 s, scene 6 i 11 se skraćuju za po 1 s ako stvarna naracija to dozvoli.
+- Između povratka kugle u 19:59 (Frame 12) i lockupa: 3D prolet kroz minijature svih kadrova (kartice u dubini, kamera leti kroz njih, 1,6 s). Kartica „Napravljeno sa AI" je **uklonjena** (korisnik, 2026-10-18). Da ukupno ostane ≤ 50 s, scene 6 i 11 se skraćuju za po 1 s ako stvarna naracija to dozvoli.
 
 ## Zvuk (Faza 5)
 

@@ -39,7 +39,7 @@ export const TTS = [
   '[excited] A oporavak ti kaže kad da stisneš, [calmly] a kad da staneš.',
   '[warmly] Sab dvadeset ti pokazuje gde su tvoje sekunde.'
 ];
-export const OUTRO = { settle: 0.35, fly: 1.6, ai: 0.7, lockup: 2.0 };
+export const OUTRO = { settle: 0.35, fly: 1.6, ai: 0, lockup: 2.0 }; /* kartica Napravljeno sa AI uklonjena (korisnik, 2026-10-18) */
 
 const words = (s) => s.split(/\s+/).filter((w) => /[\p{L}\d]/u.test(w));
 const audioDur = (f) => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim());

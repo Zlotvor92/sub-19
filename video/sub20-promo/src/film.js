@@ -349,6 +349,8 @@
   set('#hHour', { rotation: -60, svgOrigin: '0 0', scaleY: 0 }); set('#hMin', { rotation: -60, svgOrigin: '0 0', scaleY: 0 });
   to('#ball .in2', { scaleX: 1.12, scaleY: 0.88, duration: 0.12 }, t6 + 0.1);
   to(ball, { opacity: 0, scale: 0.6, duration: 0.18, ease: 'power2.in' }, t6 + 0.22);
+  /* broj na kugli se ne vraća pre scene 12 (kugla u sceni 7 postaje glava trkača) */
+  set('#ballTxt', { opacity: 0 }, t6 + 0.42);
   to(ck, { opacity: 1, scale: 0.7, rotation: 0, duration: 0.55, ease: 'back.out(1.8)' }, t6 + 0.26);
   to('#hHour', { scaleY: 1, rotation: 353.5 - 360, duration: 0.6, ease: 'back.out(1.6)' }, t6 + 0.45);
   to('#hMin', { scaleY: 1, rotation: 282, duration: 0.7, ease: 'back.out(1.4)' }, t6 + 0.5);
@@ -373,7 +375,7 @@
   titleOut('t6', t7 - 0.05);
   CARDS.forEach(([q, x, y], i) => to(q, { x: (x < 540 ? -700 : 1500), y: `-=${120 + i * 30}`, rotation: x < 540 ? -20 : 20, opacity: 0, duration: 0.45, ease: 'power2.in' }, t7 + i * 0.04));
   to(dg, { opacity: 0, y: '+=30', duration: 0.3, ease: 'power2.in' }, t7);
-  to('#bg-night', { opacity: 0, duration: 0.7, ease: 'power2.inOut' }, t7 + 0.15);
+  to('#bg-night', { opacity: 0, duration: 0.45, ease: 'power2.inOut' }, t7);
   to('#stars', { opacity: 0, duration: 0.5 }, t7 + 0.1);
   to(DECO.map((d) => d.el), { opacity: 1, duration: 0.6 }, t7 + 0.3);
   to(ck, { scale: 0.62, opacity: 0, rotation: 20, duration: 0.22, ease: 'power2.in' }, t7 + 0.12);
@@ -395,7 +397,7 @@
   to('#logo', { clipPath: 'circle(140% at 52.7% 27.9%)', duration: 0.65, ease: 'power3.in' }, reveal);
   to('#logo', { scale: 1, duration: 0.9, ease: 'power3.out' }, reveal + 0.3);
   set(ball, { opacity: 0 }, reveal + 0.3);
-  titleIn('t7', S(7).voStart, W(7, 'sab'));
+  titleIn('t7', Math.max(S(7).voStart, t7 + 0.45), W(7, 'sab'));
   /* brzi pan sa motion blurom u telefon */
   const pan = T.ev.pan;
   titleOut('t7', pan - 0.05);
@@ -586,10 +588,6 @@
   });
   to('#fly', { opacity: 0, duration: 0.2 }, T.outro.ai - 0.05);
 
-  /* ---------- „Napravljeno sa AI" ---------- */
-  set('#ai', { opacity: 0, scale: 0.6, y: 30 });
-  to('#ai', { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'back.out(2)' }, T.outro.ai);
-  to('#ai', { opacity: 0, scale: 0.8, y: -30, duration: 0.25, ease: 'power2.in' }, T.outro.lockup - 0.15);
 
   /* ---------- lockup: kugla padne u glavu trkača, logo se otvori iz te tačke ---------- */
   const lk = T.outro.lockup;
