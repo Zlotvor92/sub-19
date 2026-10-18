@@ -15,26 +15,26 @@ export const SCENES = [
   { id: 's3', min: 3.4, lead: 0.12, tail: 0.14, vo: 'Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi.' },
   { id: 's4', min: 3.4, lead: 0.12, tail: 0.14, vo: 'Plan koji nije pravljen za tebe — još osam sekundi.' },
   { id: 's5', min: 3.2, lead: 0.12, tail: 0.14, vo: 'Umor koji ne vidiš — još šest.' },
-  { id: 's6', min: 3.8, lead: 0.12, tail: 0.14, vo: 'A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč-ar-vi.' },
+  { id: 's6', min: 3.8, lead: 0.12, tail: 0.14, vo: 'A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč ar vi.' },
   { id: 's7', min: 2.6, lead: 0.12, tail: 0.14, vo: 'Zato postoji Sab dvadeset.' },
   { id: 's8', min: 3.2, lead: 0.12, tail: 0.14, vo: 'Svaki dan znaš šta trčiš, i kojim tempom.' },
-  { id: 's9', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Plan se pravi iz tvog ve-dot-a, iz tvog vremena.' },
+  { id: 's9', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Plan se pravi iz tvog vi dota, iz tvog vremena.' },
   { id: 's10', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Posle trke vidiš svaki kilometar, i gde je vreme otišlo.' },
   { id: 's11', min: 3.8, lead: 0.12, tail: 0.14, vo: 'A oporavak ti kaže kad da stisneš, a kad da staneš.' },
   { id: 's12', min: 3.6, lead: 0.12, tail: 0.14, vo: 'Sab dvadeset ti pokazuje gde su tvoje sekunde.' }
 ];
 /* posle govora scene 12: povratak kugle se dovrši, pa 3D prolet, kartica „Napravljeno sa AI" i lockup */
-/* tekst za ElevenLabs eleven_v4 (glas Filip): isti kao vo + uputstva u zagradama, koja se ne izgovaraju */
+/* tekst za ElevenLabs eleven_v4 (glas Filip): isti kao vo + uputstva u zagradama, koja se ne izgovaraju; /IPA/ = izgovor reči (korisnik: „sat" sa dugim a, „sekundi" u redu 3) */
 export const TTS = [
-  '[warmly] [calmly] Sat ti kaže vreme... Ali ne kaže zašto.',
+  '[warmly] [calmly] /saːt/ ti kaže vreme... Ali ne kaže zašto.',
   '[warmly] Do sab dvadeset fali ti dvadeset šest sekundi.',
-  '[mischievously] Na četvrtom kilometru tempo padne — izgubiš dvanaest sekundi.',
+  '[mischievously] Na četvrtom kilometru tempo padne — izgubiš dvanaest /sɛˈkundi/.',
   '[mischievously] Plan koji nije pravljen za tebe — još osam sekundi.',
   '[softly] [slowly] Umor koji ne vidiš — još šest.',
-  '[playfully] A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč-ar-vi.',
+  '[playfully] A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč ar vi.',
   '[warmly] Zato postoji Sab dvadeset.',
   '[warmly] Svaki dan znaš šta trčiš, i kojim tempom.',
-  '[confidently] Plan se pravi iz tvog ve-dot-a, iz tvog vremena.',
+  '[confidently] Plan se pravi iz tvog vi dota, iz tvog vremena.',
   '[warmly] Posle trke vidiš svaki kilometar, i gde je vreme otišlo.',
   '[excited] A oporavak ti kaže kad da stisneš, [calmly] a kad da staneš.',
   '[warmly] Sab dvadeset ti pokazuje gde su tvoje sekunde.'
