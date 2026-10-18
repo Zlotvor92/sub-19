@@ -36,7 +36,8 @@ malo razigran. Naracija na srpskom (latinica), glas ElevenLabs Eleven v4.
 ## Notes
 
 - Checkpoint posle storyboarda + skripte: bez ElevenLabs poziva pre odobrenja.
-- TTS direktno preko ElevenLabs API-ja (`eleven_v4`), ne preko HeyGen/Kokoro pipeline-a.
+- TTS preko ElevenLabs konektora (`eleven_v4`), ne preko HeyGen/Kokoro pipeline-a (korisnik, 2026-10-18).
+- Odobreno 2026-10-18: narandžasta kugla, Figtree, kradljivac 1 = četvrti kilometar, 3D prolet ulazi.
 - Muzika: DA (korisnik, 2026-10-17: „Dodaj muziku sam imaš tu opciju"). HeyGen biblioteka nije dostupna (nije prijavljen). Izvor: originalna numera sintetizovana u kodu (kao `docs/reel/audio.mjs`), bez ElevenLabs kredita i bez tuđeg materijala (korisnik: „imaš opciju da sam generišeš muziku, već si to radio nekoliko puta"). Lagana, razigrana, spuštena ispod naracije (ducking). Zvučni efekti (pop, gulp, kapljica, whoosh) takođe sintetizovani u kodu.
 - Samo funkcije koje postoje u kodu, svaka sa putanjom. Bez obećanja rezultata, bez izmišljenih korisničkih brojeva, bez emotikona, bez stock fotografija ljudi.
 - Bez tajni i ličnih podataka u kadru (tokeni, emailovi, Strava ID-jevi).

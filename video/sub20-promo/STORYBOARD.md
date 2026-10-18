@@ -14,7 +14,7 @@ gap_to_goal: "26 s (20:25 → 19:59)"
 
 # STORYBOARD — Sub-20 promo (v2, priča sa likom)
 
-**Status: PREDLOG, čeka odobrenje.** Ništa nije građeno; ElevenLabs nije pozvan.
+**Status: ODOBRENO (2026-10-18).** Odluke: narandžasta kugla, Figtree za naslove, kradljivac 1 = četvrti kilometar, 3D prolet ulazi u video. Naracija preko ElevenLabs konektora.
 
 ## Spec
 
@@ -310,9 +310,9 @@ keyMessage: sekunde nisu izgubljene, samo nisu bile viđene.
 
 ---
 
-## Opciono (nije u trajanju od 48 s)
+## 3D prolet (odobreno)
 
-- **3D prolet kroz sve kadrove + kartica „Napravljeno sa AI"** (kao u referenci): +2,5 s → ~51 s, izlazi iz opsega 42–50 s. Predlog: izostaviti, ili skratiti scenu 6 za 1 s i scenu 11 za 1 s i ubaciti prolet od 2 s pre lockupa.
+- Između povratka kugle u 19:59 (Frame 12) i lockupa: 3D prolet kroz minijature svih kadrova (kartice u dubini, kamera leti kroz njih, ~2 s), pa kartica „Napravljeno sa AI" (~0,8 s). Da ukupno ostane ≤ 50 s, scene 6 i 11 se skraćuju za po 1 s ako stvarna naracija to dozvoli.
 
 ## Zvuk (Faza 5)
 

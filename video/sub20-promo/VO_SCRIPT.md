@@ -1,6 +1,6 @@
 # VO_SCRIPT — Sub-20 promo (v2)
 
-**Status: PREDLOG, čeka odobrenje.** Ništa nije generisano.
+**Status: ODOBRENO (2026-10-18).** Generisanje preko ElevenLabs konektora.
 
 **Voice:** ElevenLabs, model `eleven_v4` (ID modela proveravam sa `GET /v1/models` pre prvog poziva; ako ne postoji pod tim imenom, stajem i javljam). `voice_id`: `ELEVENLABS_VOICE_ID` ako je postavljen. Trenutno **nije**, kao ni `ELEVENLABS_API_KEY`. Bez njega predlažem 3 glasa iz `GET /v1/voices` i čekam izbor.
 **Voice settings:** podrazumevana.
