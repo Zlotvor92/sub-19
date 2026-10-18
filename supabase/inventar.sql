@@ -25,10 +25,10 @@ with ocekivano as (
     -- tabele (v. istoimene fajlove u supabase/)
     'tabela:ai_posao','tabela:api_usage','tabela:bug_report_usage',
     'tabela:endpoint_usage','tabela:nalog_za_brisanje','tabela:push_pretplata',
-    'tabela:user_state','tabela:user_state_istorija',
+    'tabela:korisnik_dogadjaj','tabela:user_state','tabela:user_state_istorija',
     'tabela:zajednica_izazov','tabela:zajednica_profil',
-    -- pogledi (v. app-stats.sql)
-    'pogled:app_stats',
+    -- pogledi (v. app-stats.sql i migrations/)
+    'pogled:admin_aktivnost','pogled:admin_korisnici','pogled:app_stats',
     -- funkcije
     'funkcija:ai_posao_kvota_zastiti','funkcija:ai_posao_otvori',
     'funkcija:ai_posao_dodirni','funkcija:ai_posao_nov','funkcija:ai_posao_prelaz',
@@ -37,10 +37,12 @@ with ocekivano as (
     'funkcija:push_pretplata_dodirni','funkcija:user_state_touch',
     'funkcija:user_state_zapamti','funkcija:zajednica_profil_dodirni',
     'funkcija:zajednica_vidljiv_ja',
+    'funkcija:korisnik_dogadjaj_iz_stanja','funkcija:zabelezi_otvaranje',
     -- okidači
     'okidač:ai_posao_kvota_zastiti_trg','okidač:ai_posao_dodirni_trg','okidač:ai_posao_nov_trg','okidač:ai_posao_prelaz_trg',
     'okidač:push_pretplata_dodirni_trg','okidač:user_state_touch_trg',
-    'okidač:user_state_zapamti_trg','okidač:zajednica_profil_dodirni_trg'
+    'okidač:user_state_zapamti_trg','okidač:zajednica_profil_dodirni_trg',
+    'okidač:korisnik_dogadjaj_trg'
   ] ) as kljuc
 ),
 stvarno as (
