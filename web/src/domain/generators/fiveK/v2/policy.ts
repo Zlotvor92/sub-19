@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.6.0',
+  version: '5k-v2.6.1',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -647,5 +647,39 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '(kontinuiran nivo: trajanje / 1:00 hoda), cilj „završiti"; poslednja nedelja 2 sesije (nivo − 1) bez ' +
       'dana pred trku. (8) L12 i ≥ 6 nedelja do trke → ostatak = generateFiveKV2 kao početnik po osećaju ' +
       '(obim 3 × 30 min tipičnim tempom; bez tempa ili < 12 km — bez prelaza).'
+  },
+  {
+    version: '5k-v2.6.1',
+    decision:
+      'Segment 08d, Odluka 1 dopuna (odluka organizatora, heuristika; ista kao 10K A16; bez novog broja: 0,7 = ' +
+      'adapt.painEasyFactor, +10% = adapt.returnGrowth, 0,8 = volume.deloadFactor). Povratak posle bola ne ' +
+      'zavisi od dana u nedelji. (1) Sidro = nedelja r koja sadrži asOf + 1 (prvi dan odmora ili bola, = ' +
+      'firstWeek koraka), ne poslednja nedelja perioda bola; cilj nedelje r ostaje, njeni dani u periodu bola ' +
+      'i odmora su ograničeni kao do sada. (2) Posle nedelje r rast kreće od osnove = min(round1(0,7 × nivo ' +
+      'koraka), cilj nedelje r); nivo = levelBefore prvog dana bola (pauza u istom koraku: najveći nivo ' +
+      'koraka); korak bez nivoa (stariji): 0,7 × cilj nedelje r (2.6.0). (3) Od nedelje r + 1 povratni rast ' +
+      '(nextBuildKm, +10% do nivoa), pa redovan; rasterećenje posle sidra = 0,8 × osnova; nedelje sa danima ' +
+      'bola posle r dobijaju taj cilj, dani ostaju ograničeni. (4) Povratak samo kad je r nedelja izgradnje. ' +
+      '(5) Poruka PAIN: „Posle nedelje r rast kreće od 70% nivoa pre bola (osnova km)." + napomena o ' +
+      'povratku; kad min deluje: „… rast kreće od osnova km (cilj nedelje r; 70% nivoa pre bola bilo bi x ' +
+      'km)." (6) Jedno mesto: volume.returnBaseKm (adaptVolume, validator, poruka); oblik koraka isti ' +
+      '(returnFrom { week, share }), week = r. Obrazloženje: u 2.6.0 nedelja u koju period bola pređe dobija ' +
+      'pun planirani rast, a pad dolazi nedelju kasnije; osnova zavisi i od toga da li je nedelja sidra ' +
+      'rasteretna. Primeri (4 dana uto/čet/sub/ned, start 2026-10-26, trka 2027-01-24, 40 km, 5 km 21:00, cilj ' +
+      '20:00; bol iz zapisa bez trčanja; cilj/planirano, 2.6.0 → 2.6.1): A asOf 2026-11-15, bol 5 na ' +
+      '2026-11-14 (r = 4 rasterećenje 36,5, nivo 43,2, osnova 30,2): ned 5 28,0 → 33,2, ned 6 30,8 → 36,5; B ' +
+      'isto, bol 8: ned 5 45,6/42,5 → 33,2/30,95, ned 6 35,0 → 36,5; C asOf 2026-11-18, bol 5 (nivo 45,6, ' +
+      'osnova 31,9): ned 5 45,6/42,5 → 35,0/32,55, ned 6 35,0 → 38,5; D isto, bol 8: ned 5 45,6/36,3 → ' +
+      '35,0/28,1, ned 6 35,0 → 38,5; E asOf 2026-11-13, bol 7 (r = 3, nivo 43,2, osnova 30,2): ned 4 ' +
+      '(rasterećenje) 36,5/26,6 → 24,2/19,3 = 0,8 × osnova, ned 5 45,6 sa 2 kvaliteta → 33,2, ned 6 35,0 → ' +
+      '36,5. Sačuvan plan 5k-v2.6.0 ostaje plan 5K v2 i prilagođava se pravilima 2.6.1 (app/plan.ts ' +
+      'KNOWN_VERSIONS); njegov sačuvan korak se ponavlja kako je sačuvan (week = poslednja nedelja bola). ' +
+      '(7) Odluka organizatora o sudaru 08d: korak bola sa povratkom počinje novu progresiju doze od nedelje ' +
+      'r + 1, ako je ona nedelja izgradnje (steps.doseResetAt; isti mehanizam kao korak koji menja cilj nedelje, ' +
+      'konstruktor i validator čitaju istu funkciju; korak sa pauzom zadržava svoj start); BASE_R_DECREASE se ' +
+      'ne menja i poredi od novog starta doze. Obrazloženje: posle bola sledi nedelja bez kvaliteta i niži obim ' +
+      'povratka; doza kvaliteta kreće iznova, kao posle pauze. Na bf47249 22 toka bola u bazi (v45-d4-22km-14w, ' +
+      'bol u ned 3) su odbijana (R ned 5 < R ned 2/3), što je greška upotrebljivosti (korisnik sa bolom dobija ' +
+      '„plan nije prilagođen"); sada su prihvaćeni (ned 5 = 18,2 km, R 0,80 + T 1,00).'
   }
 ];

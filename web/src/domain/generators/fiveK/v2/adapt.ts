@@ -7,7 +7,7 @@
 
 import { dayNumber, mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
-import { assess, checkFacts } from './assess.ts';
+import { assess, checkFacts, painReturnNote } from './assess.ts';
 import { construct } from './generate.ts';
 import { assessGoal, beginnerGoal, goalWithoutData, raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
@@ -15,6 +15,7 @@ import { adaptRunWalk } from './runWalkAdapt.ts';
 import { athleteAt, pacesAt, vdotAt } from './steps.ts';
 import type {
   AdaptChange,
+  AdaptReason,
   AdaptResult,
   FiveKV2Plan,
   FiveKV2RunWalkPlan,
@@ -133,6 +134,14 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
   const built = construct(plan.input, steps);
   if (!built.ok) return { ok: false, reasons: built.reasons, violations: [] };
   const c = built.c;
+  // 2.6.1 (Odluka 1 dopuna): poruka PAIN — osnova povratka iz cilja nedelje sidra r u konstrukciji
+  // (assess.painReturnNote → volume.returnBaseKm).
+  const rf = as.step.returnFrom;
+  const reasons: AdaptReason[] = as.reasons.map((x) =>
+    rf && x.condition === 'PAIN'
+      ? { ...x, message: x.message + painReturnNote(as.step, c.weeks[rf.week - 1]!.targetKm) }
+      : x
+  );
 
   // (3) Spajanje: dani ≤ asOf, urađeni i zaključani dani iz prethodnog plana.
   const done = new Set(facts.workouts.filter((x) => x.completed).map((x) => x.dayId ?? x.date));
@@ -193,7 +202,7 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
   const orientation = steps.some((s) => s.orientation);
   if (goal && orientation && vdot !== null)
     goal = { ...goal, status: 'orientation', message: P.adapt.orientationMessage };
-  const applied = as.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');
+  const applied = reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');
   const notes = [
     ...plan.notes.filter((x) => a.feel || x !== P.feel.forecastNote),
     ...applied.map((x) => `Adaptacija ${at}: ${x.message}`),
@@ -241,5 +250,5 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
   out.warnings = violations;
   if (out.goal && out.goal.status !== 'feasible')
     out.warnings.push({ rule: 'GOAL_STATUS', severity: 'warning', message: out.goal.message });
-  return { ok: true, plan: out, changes: diff(plan, out), reasons: as.reasons };
+  return { ok: true, plan: out, changes: diff(plan, out), reasons };
 }

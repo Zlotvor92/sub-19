@@ -18,7 +18,7 @@ import type {
   Weekday
 } from './types.ts';
 
-const isBuild = (f: WeekFrame): boolean =>
+const isBuild = (f: Pick<WeekFrame, 'phase'>): boolean =>
   f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen';
 
 export const inRange = (d: IsoDate, r: DateRange | null): boolean =>
@@ -145,8 +145,17 @@ export function framesFor(
 }
 
 /** Nedelja od koje korak počinje novu progresiju doze (nov cilj obima ili nov start; pauza: već ostatak
-    tekuće nedelje); null = korak ne menja progresiju. Isto u konstruktoru i validatoru. */
-export function doseResetAt(s: AdaptStep): number | null {
-  if (!s.restart && s.startKm === null) return null;
-  return s.pauseRemainder && s.firstWeek < s.fromWeek ? s.firstWeek : s.fromWeek;
+    tekuće nedelje); null = korak ne menja progresiju. Isto u konstruktoru i validatoru.
+    2.6.1 (Odluka 1 dopuna, sudar 08d): korak bola sa povratkom (returnFrom, bez cilja koraka) → nedelja posle
+    sidra (week + 1), ako je nedelja izgradnje u `weeks` (okviri konstruktora ili nedelje plana); inače bez
+    novog starta doze. Korak sa ciljem (pauza + bol) zadržava svoj start (≤ r + 1). */
+export function doseResetAt(
+  s: AdaptStep,
+  weeks: readonly Pick<WeekFrame, 'phase'>[]
+): number | null {
+  if (s.restart || s.startKm !== null)
+    return s.pauseRemainder && s.firstWeek < s.fromWeek ? s.firstWeek : s.fromWeek;
+  const back = s.returnFrom ?? null;
+  const next = back !== null ? weeks[back.week] : undefined;
+  return back !== null && next !== undefined && isBuild(next) ? back.week + 1 : null;
 }

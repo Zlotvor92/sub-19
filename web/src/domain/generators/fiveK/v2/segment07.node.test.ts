@@ -173,7 +173,9 @@ describe('Odluka 1: povratni rast do nivoa pre smanjenja (+10%/ned, i oštrenje)
     expect([t[9], t[10]]).toEqual([43.2, 43.2]); // iznad nivoa oštrenje drži
   });
 
-  it('bol: nedelja bola zadržava cilj, rast posle nje kreće od 70% njenog cilja do nivoa', () => {
+  // 5k-v2.6.1 (Segment 08d, Odluka 1 dopuna): osnova = min(0,7 × nivo pre bola 40,8, cilj nedelje sidra
+  // 44) = 28,6 (bilo 0,7 × 44 = 30,8): t[5] 33,8 → 31,4, t[8] 40,8 → 37,9 (nivo se dostiže u ned 10).
+  it('bol: nedelja sidra zadržava cilj, rast posle nje kreće od 70% nivoa pre bola do nivoa', () => {
     const asOf = endOfWeek(4);
     const w = done(plan, asOf).map((x) => (x.date === addDays(asOf, -1) ? { ...x, pain: 5 } : x));
     const r = adapt(plan, { workouts: w, coverage: full(asOf) }, asOf);
@@ -181,8 +183,8 @@ describe('Odluka 1: povratni rast do nivoa pre smanjenja (+10%/ned, i oštrenje)
     const t = targets(r.plan);
     expect(t[4]).toBe(44);
     expect(r.plan.weeks[4]!.plannedKm).toBeLessThan(44);
-    expect(t[5]).toBe(floor1(round1(0.7 * 44) * 1.1));
-    expect(t[8]).toBe(40.8);
+    expect(t[5]).toBe(floor1(round1(0.7 * 40.8) * 1.1));
+    expect(t[8]).toBe(37.9);
     expect([t[9], t[10]]).toEqual([40.8, 40.8]);
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 5, share: 0.7 });
   });

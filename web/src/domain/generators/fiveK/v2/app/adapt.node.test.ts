@@ -21,11 +21,13 @@ import {
   fiveKV2FormHistory,
   fiveKV2GoalChange,
   generateFiveKV2Plan,
+  generatorForPlan,
   isFiveKV2Plan,
   stampForStorage
 } from '../../../select';
 import { v2Of } from './adapt';
 import { buildFacts, EDITS_KEY } from './facts';
+import { KNOWN_VERSIONS, planPolicy } from './plan';
 
 /* SEGMENT 08b — adaptacija 5K v2 u aplikaciji: činjenice (1–5), tok pregled → potvrda → revizija → vraćanje (6), traka
    (7), ugovor (b) (8), forma iz rezultata (9), prekidač (10), km nedelje (12), izmena samo tempa (13). */
@@ -582,5 +584,38 @@ describe('13. ručna izmena v2 dana: samo tempo zadržava strukturu, tip je bri�
     const t = setAlt(before, {}, {}, 'g4d2', { tag: 'lako', km: 6, desc: '6 km lako' });
     if (!t.ok) throw new Error(t.err);
     expect(view(plan, t.alts).byId.get('g4d2')!.structure).toBeUndefined();
+  });
+});
+
+describe('08d (5k-v2.6.1): sačuvan plan 5k-v2.6.0', () => {
+  it('ostaje plan 5K v2 (current) i prilagođava se pravilima 2.6.1 — rezultat nosi 5k-v2.6.1; druge verzije unknown', () => {
+    expect(KNOWN_VERSIONS).toEqual(['5k-v2.6.0', '5k-v2.6.1']);
+    const plan = planOf(WITH_RESULT);
+    const old = JSON.parse(JSON.stringify(plan)) as GenPlanState;
+    old.meta = { ...old.meta, policyVersion: '5k-v2.6.0' } as GenPlanState['meta'];
+    (old['fiveKV2'] as { policyVersion: string }).policyVersion = '5k-v2.6.0';
+    expect(planPolicy(old)).toEqual({
+      status: 'current',
+      policyId: '5k-v2',
+      policyVersion: '5k-v2.6.0'
+    });
+    expect(generatorForPlan(old)).toBe(FIVE_K_V2_GENERATOR);
+    expect(planPolicy(plan).status).toBe('current');
+    for (const version of ['5k-v2.5.0', '5k-v2.6.2', '5k-v2.7.0']) {
+      const p = { ...old, meta: { ...old.meta, policyVersion: version } } as GenPlanState;
+      expect(planPolicy(p).status).toBe('unknown');
+      expect(generatorForPlan(p)).toBeNull();
+    }
+    // Bol 5 u sredu 11. 11., asOf četvrtak 12. 11.: sidro r = ned 2 (sadrži 13. 11.), ne ned 3 (kraj bola 19. 11.).
+    const pain = { facts: { pain: [{ date: '2026-11-11', pain: 5 }] } };
+    const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-12'), pain));
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.6.1' });
+    const v2 = v2Of(pr.result)!;
+    if (v2.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
+    expect(v2.policyVersion).toBe('5k-v2.6.1');
+    expect(v2.adaptation!.steps[0]!.returnFrom).toEqual({ week: 2, share: 0.7 });
+    expect(pr.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
+      'Posle nedelje 2 rast kreće od 70% nivoa pre bola (17.5 km).'
+    );
   });
 });

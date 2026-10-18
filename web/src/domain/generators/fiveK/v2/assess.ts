@@ -2,7 +2,8 @@
    ovde se ne gradi nijedna nedelja; konstruktor (generate.construct) prima korak kao ulaz.
    2.6.0 (Odluka 3): dan bez zapisa je poznat (bez trčanja) samo u facts.coverage sa complete = true;
    odluke 2, 3 i 6 se iz zapisa primenjuju samo na pokriven deo; bol, umor, rezultat i eksplicitna pauza
-   (facts.breaks) uvek. */
+   (facts.breaks) uvek. 2.6.1 (Odluka 1 dopuna): bol — ovde se određuju samo sidro povratka (nedelja r) i
+   nivo pre bola; osnovu računa volume.returnBaseKm. */
 
 import { addDays, dayNumber, mustDay } from './dates.ts';
 import { vdotFromResult } from './paces.ts';
@@ -21,13 +22,34 @@ import type {
   ResultFact,
   WorkoutFact
 } from './types.ts';
-import { adaptFloorKm } from './volume.ts';
+import { adaptFloorKm, returnBaseKm, returnShareKm } from './volume.ts';
 
 const A = P.adapt;
 const round1 = (x: number): number => Math.round(x * 10) / 10;
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 const fmt = (sec: number): string =>
   `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
+const growthNote = (level: number): string =>
+  ` Povratak do ${level} km (nivo pre smanjenja) po +${A.returnGrowth * 100}%/ned u svim fazama osim tapera i trkačke nedelje.`;
+
+/**
+ * 2.6.1 (Odluka 1 dopuna, tačka 5): dopuna poruke PAIN koraka sa povratkom. Osnova iz cilja nedelje sidra r
+ * U KONSTRUKCIJI (`targetRKm`; pauza iz istog koraka ga smanjuje) i nivoa koraka (najveći nivo koraka);
+ * računa je samo volume.returnBaseKm. Kad deluje min sa ciljem nedelje r, poruka to kaže. adapt.ts poziva
+ * posle konstrukcije.
+ */
+export function painReturnNote(step: AdaptStep, targetRKm: number): string {
+  const rf = step.returnFrom!;
+  const level = step.levelKm!;
+  const base = returnBaseKm(rf.share, level, targetRKm);
+  const shareKm = returnShareKm(rf.share, level);
+  const pct = `${rf.share * 100}%`;
+  return `${
+    base < shareKm
+      ? ` Posle nedelje ${rf.week} rast kreće od ${base} km (cilj nedelje ${rf.week}; ${pct} nivoa pre bola bilo bi ${shareKm} km).`
+      : ` Posle nedelje ${rf.week} rast kreće od ${pct} nivoa pre bola (${base} km).`
+  }${growthNote(level)}`;
+}
 
 export interface CheckedFacts {
   workouts: WorkoutFact[];
@@ -283,28 +305,25 @@ export function assess(
 
   const target = (w: number): number | null => wk(w)?.targetKm ?? null;
   const endOf = (w: number): IsoDate => wk(Math.min(w, N))!.endDate;
-  const growthNote = (level: number): string =>
-    ` Povratak do ${level} km (nivo pre smanjenja) po +${A.returnGrowth * 100}%/ned u svim fazama osim tapera i trkačke nedelje.`;
 
   // Odluka 4: bol (uvek, po datumima; prethodni koraci ostaju, pa ponovni bol produžava period).
-  // 2.6.0 (Odluka 1): posle poslednje nedelje bola rast kreće od painEasyFactor × njenog cilja (lagani
-  // −30%) do nivoa pre bola.
+  // 2.6.1 (Odluka 1 dopuna): sidro povratka = nedelja r (sadrži asOf + 1: prvi dan odmora ili bola), ne
+  // poslednja nedelja bola; samo kad je r nedelja izgradnje. Nivo pre bola: levelBefore prvog dana bola.
+  // Osnova (cilj nedelje r posle konstrukcije, nivo konačnog koraka): painReturnNote u adapt.ts.
   const hurt = W.filter((x) => t - day(x.date) < A.painLookbackDays && (x.pain ?? 0) >= A.painMin);
   if (hurt.length > 0) {
     const max = Math.max(...hurt.map((x) => x.pain!));
     const restN = max >= A.painRestMin ? A.restDays : 0;
     if (restN > 0) step.rest = { from: next, to: addDays(asOf, restN) };
     step.pain = { from: addDays(asOf, restN + 1), to: addDays(asOf, restN + A.painDays) };
-    const last = weekOf(step.pain.to);
-    const back = last <= N && build(last);
-    if (back) {
-      step.returnFrom = { week: last, share: A.painEasyFactor };
+    if (r <= N && build(r)) {
+      step.returnFrom = { week: r, share: A.painEasyFactor };
       step.levelKm = levelBefore(Math.min(...hurt.map((x) => day(x.date))));
     }
     reason(
       'PAIN',
       true,
-      `Bol ${max}/10 u poslednja ${A.painLookbackDays} dana: ${restN > 0 ? `${restN} dana odmora, pa ` : ''}${A.painDays} dana bez kvaliteta (do ${step.pain.to}). ${A.painMessage}${back ? ` Posle nedelje ${last} rast kreće od ${A.painEasyFactor * 100}% njenog cilja.${growthNote(step.levelKm!)}` : ''}`
+      `Bol ${max}/10 u poslednja ${A.painLookbackDays} dana: ${restN > 0 ? `${restN} dana odmora, pa ` : ''}${A.painDays} dana bez kvaliteta (do ${step.pain.to}). ${A.painMessage}`
     );
   }
 

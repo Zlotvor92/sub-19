@@ -86,13 +86,14 @@ export function construct(
   const reasons: Reason[] = [];
   // Progresija doze: doza glavnog kvaliteta poslednje ne-rasteretne nedelje, po fazi. 2.5.0: korak sa
   // novim ciljem obima (pauza, izvršenje; nov start) i promena načina tempa (po osećaju → VDOT) počinju
-  // progresiju iznova (manji obim → doza sme da padne; isti segment kao u validate.ts).
+  // progresiju iznova (manji obim → doza sme da padne; isti segment kao u validate.ts). 2.6.1: i korak bola
+  // sa povratkom, od nedelje posle sidra (steps.doseResetAt).
   let lastDose: Partial<Record<Phase, WeekDose>> = {};
   frames.forEach((f, i) => {
     const target = adapted.targets[i]!;
     const { p, a: aw } = ctx(f.index);
     if (
-      steps.some((s) => doseResetAt(s) === f.index) ||
+      steps.some((s) => doseResetAt(s, frames) === f.index) ||
       (i > 0 && ctx(f.index - 1).a.feel !== aw.feel)
     )
       lastDose = {};

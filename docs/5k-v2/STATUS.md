@@ -2,14 +2,16 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.6.0`) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.6.1`, 08d) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
 (dan odmora, van datuma plana, zagrevanje uz trku) postaje zapis van plana (`vanPlanaV2`, po ID-ju aktivnosti) i ulazi u
 km; pokrivenost čita ISKLJUČIVO `fullSync` (sve aktivnosti preuzete i obrađene; delimičan uspeh ga ne pomera), a
 neobrađena aktivnost čini svoj dan nepoznatim. Uvoz za planove v1 bajt-isti. Jezgro (`policy.ts`, konstrukcija, assess)
-nepromenjeno. Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
+nepromenjeno. 08d (5k-v2.6.1): bol — sidro povratka = nedelja koja sadrži asOf + 1, osnova min(0,7 × nivo pre bola,
+cilj te nedelje); posle bola doza kvaliteta počinje iznova od sledeće nedelje izgradnje. Sledeće: odluka o uključivanju
+za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
 Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segmenti 01–07 (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
@@ -67,3 +69,21 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - Provere: tsc domena i `tsc -b` exit 0; generators 30 / 749; `npm run check` exit 0 (195 / 2396);
   E2E `fivek-v2` 3/3, `strava` 2/2, `race-analysis` 3/3, `data` 3/3.
 - Izveštaj: `reports/SEGMENT-08c-IMPLEMENTATION.md`.
+
+## Segment 08d — bol: povratak ne zavisi od dana u nedelji (5k-v2.6.1, 2026-10-18)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: bf47249
+- Odluka 1 dopuna (organizator, = 10K A16): sidro = nedelja r koja sadrži asOf + 1 (ne poslednja nedelja bola); posle r
+  rast od osnove min(round1(0,7 × nivo koraka), cilj r); r + 1 povratni rast (+10% do nivoa), rasterećenje 0,8 × osnova;
+  poruka PAIN kaže osnovu (i kad min deluje). Jedno mesto: `volume.returnBaseKm` (adaptVolume, validator, poruka);
+  `KNOWN_VERSIONS` = 5k-v2.6.0 + 5k-v2.6.1.
+- Sudari rešeni odlukom organizatora: (1) korak bola sa povratkom počinje novu progresiju doze od r + 1
+  (`steps.doseResetAt`; BASE_R_DECREASE nepromenjen) → 0 odbijenih tokova bola (bf47249: 44 u mreži P); (2) u
+  `tenK/v2/app/byteSame.068410b.json` ponovo snimljeni samo ključevi „5K v2" (19/41 promenjeno, samo oznaka).
+- A–E (cilj ned 5, bf47249 → 08d): A 28,0 → 33,2; B 45,6 → 33,2; C 45,6 → 35,0; D 45,6 → 35,0; E ned 4 36,5 → 24,2, ned 5
+  45,6 → 33,2.
+- Regresija prema bf47249 (`segment08d.adapt-hashes-bf47249.json`): postojeće mreže 732 — promenjeno samo s06/pain5 60/60
+  (svi PAIN sa povratkom; doza promenjena u 14); mreža bola P 392 — promenjeno 380 (svi sa povratkom), 12 bez povratka
+  bajt-isto; generator bajt-isti osim oznake. I1–I5 bez odstupanja na 392 toka; sabotaže (a)–(e): 14/17/1/37/7 palih.
+- Provere: tsc/eslint/prettier exit 0; vitest fiveK/v2 15 / 627; `npm run check` exit 0 (220 / 2700); E2E `fivek-v2` 3/3.
+- Izveštaj: `reports/SEGMENT-08d-IMPLEMENTATION.md`.

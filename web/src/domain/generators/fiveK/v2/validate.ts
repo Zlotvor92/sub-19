@@ -20,9 +20,9 @@ import {
   adaptFloorKm,
   capacityKm,
   fitTargetKm,
-  painReturnKm,
   peakKm,
   planVolume,
+  returnBaseKm,
   returnLevelAt
 } from './volume.ts';
 import { baseDoseKey, qualityBudgets, tFormOf, tMaxSec, warmupBand } from './workouts.ts';
@@ -438,11 +438,13 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     });
     return k < 0 ? null : returnLevelAt(steps, k);
   };
-  const anchorAt = (i: number): number | null => {
-    let share: number | null = null;
+  // 2.6.1: osnova povratka posle nedelje sidra i (cilj `km`) — volume.returnBaseKm, kao adaptVolume.
+  const anchorAt = (i: number, km: number): number | null => {
+    let base: number | null = null;
     for (const st of steps)
-      if (st.returnFrom && st.returnFrom.week === i) share = st.returnFrom.share;
-    return share;
+      if (st.returnFrom && st.returnFrom.week === i)
+        base = returnBaseKm(st.returnFrom.share, st.levelKm, km);
+    return base;
   };
   const peakRefAt = (i: number): number => {
     let from = 1;
@@ -471,8 +473,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       `Prva nedelja ${build[0].targetKm} km ≠ trenutni obim ${plan.startKm} km.`,
       1
     );
-  // Rast od poslednje ne-rasteretne nedelje izgradnje (cilj koraka i kad je rasteretna); 2.6.0: posle
-  // nedelje bola od smanjenog nivoa, a dok je ispod nivoa pre smanjenja ≤ returnGrowth.
+  // Rast od poslednje ne-rasteretne nedelje izgradnje (cilj koraka i kad je rasteretna); 2.6.1: posle
+  // nedelje sidra bola od osnove povratka, a dok je ispod nivoa pre smanjenja ≤ returnGrowth.
   let lastKm: number | null = null;
   let lastOk = true;
   for (const w of build) {
@@ -491,8 +493,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
         err('VOLUME_GROWTH', `Rast ${lastKm} → ${w.targetKm} km > ${g * 100}%.`, w.index);
       [lastKm, lastOk] = [w.targetKm, checked(w)];
     }
-    const share = anchorAt(w.index);
-    if (share !== null) [lastKm, lastOk] = [painReturnKm(w.targetKm, share), checked(w)];
+    const base = anchorAt(w.index, w.targetKm);
+    if (base !== null) [lastKm, lastOk] = [base, checked(w)];
   }
   // 2.2.0 (Odluka 1), 2.3.0: kapacitet n dana — svaki cilj ≤ kapaciteta; start = min(trenutni, kapacitet).
   // 2.6.0: povratak sme do nivoa pre smanjenja i kad je iznad vrha novog starta.
@@ -551,13 +553,13 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     (Math.abs(w.targetKm - fit(w, adaptFloorKm(base0[w.index - 1]!, aw(w), w.phase))) < EPS ||
       Math.abs(w.targetKm - fit(w, capOf(w))) < EPS);
   // 2.6.0: osnov rasterećenja adaptiranog plana = poslednja ne-rasteretna nedelja izgradnje (cilj koraka
-  // i kad je rasteretna; posle nedelje bola smanjen nivo) — isto kao volume.adaptVolume.
+  // i kad je rasteretna; 2.6.1: posle nedelje sidra bola osnova povratka) — isto kao volume.adaptVolume.
   const lastBuildBefore = (i: number): number | null => {
     let x: number | null = null;
     for (const v of weeks.slice(0, i - 1)) {
       if (isBuild(v) && (!v.deload || resetKm(v.index) !== null)) x = v.targetKm;
-      const share = anchorAt(v.index);
-      if (share !== null && isBuild(v)) x = painReturnKm(v.targetKm, share);
+      const base = anchorAt(v.index, v.targetKm);
+      if (base !== null && isBuild(v)) x = base;
     }
     return x;
   };
@@ -672,10 +674,11 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   // --- 2.1.0 progresija doze i ponavljanje para kvaliteta (ne-rasteretne nedelje izgradnje).
   // 2.4.0: bez nedelje testa i nedelja početnika bez kvaliteta.
   // 2.5.0: bez nedelja sa ograničenjem kvaliteta i mešovitih; nov start, smanjen cilj koraka (startKm)
-  // i prelaz po osećaju → VDOT počinju novi segment progresije (doza sme da padne sa obimom).
+  // i prelaz po osećaju → VDOT počinju novi segment progresije (doza sme da padne sa obimom); 2.6.1: i
+  // korak bola sa povratkom od nedelje posle sidra (steps.doseResetAt, isto kao konstruktor).
   const feel0 = aw(weeks[0]!).feel;
   const seg = (w: PlanWeek): number =>
-    steps.filter((st) => (doseResetAt(st) ?? Infinity) <= w.index).length +
+    steps.filter((st) => (doseResetAt(st, weeks) ?? Infinity) <= w.index).length +
     (aw(w).feel !== feel0 ? 1 : 0);
   const steady = weeks.filter(
     (w) => isBuild(w) && !w.deload && !w.test && !w.stridesOnly && !w.limits?.quality && checked(w)

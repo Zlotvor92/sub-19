@@ -385,8 +385,9 @@ export interface AdaptStep {
       nedelje izgradnje završene pre događaja; do njega cilj raste povratnim rastom. null/izostavljeno
       (korak iz 5k-v2.5.0) = bez povratka. */
   levelKm?: number | null;
-  /** 2.6.0: bol — posle nedelje `week` (poslednja nedelja perioda bola) povratni rast kreće od
-      `share` × cilj te nedelje (adapt.painEasyFactor: lagani −30%). */
+  /** 2.6.0: bol — povratni rast posle nedelje `week`. 2.6.1 (Odluka 1 dopuna): `week` = nedelja sidra r
+      (sadrži asOf + 1, = firstWeek); rast kreće od osnove min(`share` × nivo koraka, cilj nedelje r);
+      korak bez nivoa: `share` × cilj nedelje r (volume.returnBaseKm). share = adapt.painEasyFactor. */
   returnFrom?: { week: number; share: number } | null;
 }
 

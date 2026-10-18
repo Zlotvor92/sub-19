@@ -215,9 +215,21 @@ export interface VolumeStep {
   returnFrom?: { week: number; share: number } | null;
 }
 
-/** 2.6.0: smanjen nivo posle nedelje bola (osnov povratnog rasta). Isto u adaptVolume i validatoru. */
-export const painReturnKm = (weekTargetKm: number, share: number): number =>
-  round1(weekTargetKm * share);
+/** 2.6.1: udeo nivoa pre bola (deo osnove povratka; i u poruci PAIN kad min sa ciljem nedelje r deluje). */
+export const returnShareKm = (share: number, levelKm: number): number => round1(share * levelKm);
+
+/** 2.6.1 (Odluka 1 dopuna): osnova povratka posle nedelje sidra r (sadrži asOf + 1) — JEDINO mesto pravila
+    (adaptVolume, validator, poruka PAIN): min(round1(udeo × nivo koraka), cilj nedelje r); nivo nepoznat
+    (stariji korak) → round1(udeo × cilj nedelje r), ponašanje 2.6.0. udeo = adapt.painEasyFactor. */
+export function returnBaseKm(
+  share: number,
+  levelKm: number | null | undefined,
+  targetRKm: number
+): number {
+  return levelKm === null || levelKm === undefined
+    ? round1(targetRKm * share)
+    : Math.min(returnShareKm(share, levelKm), targetRKm);
+}
 
 /** 2.6.0 (Odluka 1): nivo povratka koji važi posle koraka (najveći nivo pre smanjenja svih koraka do i);
     null = nijedan korak nije smanjio obim. Isto u adaptVolume i validatoru. */
@@ -261,8 +273,10 @@ const isBuildFrame = (f: WeekFrame): boolean =>
  *   starta (startKm u izgradnji; 2.6.0: i posle bola), a ako je startKm zadat u taperu: min(vrh, startKm);
  * - svaki cilj ≥ adaptFloorKm (pauza: ostatak tekuće nedelje ≤ njenog cilja).
  * 2.6.0 (Odluka 1): rast izgradnje iz nextBuildKm — dok je cilj ispod nivoa pre smanjenja (returnLevelAt),
- * +returnGrowth u svim fazama izgradnje (i oštrenje); bol: rast posle poslednje nedelje bola kreće od
- * returnFrom.share × njenog cilja (smanjen nivo), a ne od cilja te nedelje; vrh tapera od tada.
+ * +returnGrowth u svim fazama izgradnje (i oštrenje); posle bola vrh tapera = najveći cilj izgradnje od
+ * nedelje posle sidra.
+ * 2.6.1 (Odluka 1 dopuna): bol — nedelja sidra r (returnFrom.week, sadrži asOf + 1) zadržava cilj; rast
+ * posle nje kreće od osnove returnBaseKm (min(udeo × nivo koraka, cilj nedelje r)), ne od cilja te nedelje.
  * Bez koraka (ili koraka bez promene) ciljevi su isti kao planVolume.
  */
 export function adaptVolume(
@@ -278,13 +292,14 @@ export function adaptVolume(
   let tailCap: number | null = null;
   /** Nedelje sa ciljem koraka (osnov rasta i kad su rasteretne). */
   const resets = new Set<number>();
-  /** 2.6.0: poslednja nedelja bola → udeo njenog cilja od kog kreće rast (važi i za kasnije korake). */
-  const anchors = new Map<number, number>();
+  /** 2.6.1: nedelja sidra bola r → udeo i nivo koraka; posle nje rast kreće od osnove returnBaseKm (važi i
+      za kasnije korake). */
+  const anchors = new Map<number, { share: number; levelKm: number | null }>();
   const anchored = (i: number, lastBuild: number | null): number | null => {
-    const share = anchors.get(i + 1);
-    return share === undefined || !isBuildFrame(frames[i]!)
+    const back = anchors.get(i + 1);
+    return back === undefined || !isBuildFrame(frames[i]!)
       ? lastBuild
-      : painReturnKm(targets[i]!, share);
+      : returnBaseKm(back.share, back.levelKm, targets[i]!);
   };
   const fitAt = (w: number, t: number): number => {
     const { p, a } = ctx(w);
@@ -299,7 +314,7 @@ export function adaptVolume(
     const growth = rulesOf(a).maxBuildGrowth;
     const level = returnLevelAt(steps, k);
     const back = s.returnFrom ?? null;
-    if (back) anchors.set(back.week, back.share);
+    if (back) anchors.set(back.week, { share: back.share, levelKm: s.levelKm ?? null });
     const r = s.firstWeek;
     if (s.pauseRemainder && s.startKm !== null && r < n && isBuildFrame(frames[r - 1]!))
       targets[r - 1] = fitAt(r, Math.min(s.startKm, targets[r - 1]!));
@@ -323,7 +338,7 @@ export function adaptVolume(
       // Cilj koraka je osnov daljeg rasta i kad je nedelja rasteretna (obim pre pauze/smanjenja ne važi).
       if (!f.deload || (i === n - 1 && s.startKm !== null)) lastBuild = t;
       targets[i] = t;
-      // Bol: nedelja bola zadržava cilj (dani su ograničeni), rast posle nje kreće od smanjenog nivoa.
+      // Bol: nedelja sidra zadržava cilj (dani su ograničeni), rast posle nje kreće od osnove povratka.
       lastBuild = anchored(i, lastBuild);
     }
     if (s.startKm !== null) {
