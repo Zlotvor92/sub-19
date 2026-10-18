@@ -34,7 +34,7 @@ export const TTS = [
   '[playfully] A ti u ponoć držiš otvorene Stravu, tabelu, kalkulator tempa i ejč ar vi.',
   '[warmly] Zato postoji Sab dvadeset.',
   '[warmly] Svaki dan znaš šta ti je u planu za trčanje, i kojim tempom.',
-  '[confidently] Plan se pravi iz tvog Vi Dota, iz tvog vremena.',
+  '[confidently] Plan se pravi iz tvog vi dota, iz tvog vremena.',
   '[warmly] Posle trke vidiš svaki kilometar, i gde je vreme otišlo.',
   '[excited] A oporavak ti kaže kad da stisneš, [calmly] a kad da staneš.',
   '[warmly] Sab dvadeset ti pokazuje gde su tvoje sekunde.'

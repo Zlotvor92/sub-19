@@ -20,7 +20,7 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 | Reč | Zapis u skripti | Alternativa | Zašto |
 |---|---|---|---|
 | Sub-20 | **Sab dvadeset** | Sub dvadeset | trkači govore „sab" (engl. *sub*); TTS bi pročitao „sub" sa *u* |
-| VDOT | **vidota**, jedna reč (korisnik, 2026-10-18; pre toga „ve dot", pa „vi dota" — pauza zvučala neprirodno) | — | izbor korisnika |
+| VDOT | **vi dota** (korisnik, 2026-10-18: posle proba sa „ve dot", „vi — dota", „vidota" i „Vi Dota" izabran snimak 3 iz prve runde) | — | izbor korisnika po sluhu |
 | HRV | **ejč ar vi** — tri odvojene reči (korisnik, 2026-10-18) | — | engleski izgovor slova, kako je korisnik tražio |
 | sat (red 1) | TTS: IPA `/saːt/` | — | korisnik: „sat" sa skraćenim a; IPA produžava samoglasnik (eleven_v4 prima IPA između kosih crta) |
 | sekundi (red 3) | TTS: IPA `/sɛˈkundi/` | — | korisnik: pogrešan naglasak u redu 3 |
@@ -88,7 +88,7 @@ Probna rečenica: „Sab dvadeset, ve-dot, ha-er-ve."
 **Time:** 30,0 – 34,0 s
 **Delivery:** naglasak na „tvog".
 
-    Plan se pravi iz tvog vidota, iz tvog vremena.
+    Plan se pravi iz tvog vi dota, iz tvog vremena.
 
 ## Line 10 — Prolazi (Frame 10)
 

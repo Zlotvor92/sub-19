@@ -217,7 +217,7 @@ keyMessage: tačan trening i tempo, bez tabele.
 ## Frame 9 — Plan iz tvog VDOT-a
 
 - scene: Plan po nedeljama; VDOT 48,6 kao kugla-broj koji se uklopi na mesto u „Polazni VDOT"
-- voiceover: "Plan se pravi iz tvog vidota, iz tvog vremena."
+- voiceover: "Plan se pravi iz tvog vi dota, iz tvog vremena."
 - duration: 4s
 - transition_in: cut
 - status: outline

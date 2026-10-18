@@ -239,10 +239,14 @@
   const pA = q1('#pieceA'), pB = q1('#pieceB'), pC = q1('#pieceC');
   const PARK = { A: [330, 720], B: [540, 680], C: [750, 720] };
   for (const p of [pA, pB, pC]) set(p, C(p, 540, 1080, { scale: 0, opacity: 0 }));
-  set(pA, C(pA, BX + 236 * BS3, BY + 320 * BS3, { scale: 0, opacity: 1 }));
+  /* natpis na komadu se pojavi tek kad se komad odvoji od kugle (dok izlazi, beli tekst preko narandžaste/papira nema kontrast) */
+  set('.piece text', { opacity: 0 });
+  /* postavlja se u trenutku otkidanja (kao B i C): stanje postavljeno samo u 0 HyperFrames gubi pri premotavanju, pa se komad ne vidi */
+  set(pA, C(pA, BX + 236 * BS3, BY + 320 * BS3, { scale: 0, opacity: 1 }), chunkA + 0.6);
   to(pA, { scale: 0.62, duration: 0.15 }, chunkA + 0.62);
   to(pA, { x: PARK.A[0] - 90, y: PARK.A[1] - 90, scale: 1, duration: 0.8, ease: 'power3.out' }, chunkA + 0.75);
   to(pA, { rotation: -8, duration: 0.8, ease: 'sine.inOut' }, chunkA + 0.75);
+  to('#pieceA text', { opacity: 1, duration: 0.2 }, chunkA + 0.85);
   to(pA, { y: `+=12`, duration: 1.3, ease: 'sine.inOut', repeat: Math.max(0, Math.floor((st(6) - chunkA - 1.6) / 1.3) - 1), yoyo: true }, chunkA + 1.6);
   titleIn('t3', S(3).voStart, W(3, 'pada'));
 
@@ -283,6 +287,7 @@
   set(pB, C(pB, BX - 236 * BS3, BY - 76 * BS3, { scale: 0, opacity: 1 }), bite);
   to(pB, { scale: 0.7, duration: 0.12 }, bite + 0.05);
   to(pB, { x: PARK.B[0] - 90, y: PARK.B[1] - 90, scale: 1, rotation: 6, duration: 0.8, ease: 'power3.out' }, bite + 0.18);
+  to('#pieceB text', { opacity: 1, duration: 0.2 }, bite + 0.28);
   to(pB, { y: `+=12`, duration: 1.4, ease: 'sine.inOut', repeat: Math.max(0, Math.floor((st(6) - bite - 1.0) / 1.4) - 1), yoyo: true }, bite + 1.0);
   /* žvaće, pa odskakuće napolje */
   to('#paper .in', { scaleY: 0.88, duration: 0.1, ease: 'sine.inOut', repeat: 5, yoyo: true }, bite + 0.12);
@@ -319,6 +324,7 @@
   set(pC, C(pC, 690, 1370, { scale: 0, opacity: 1 }), snap);
   to(pC, { scale: 0.7, duration: 0.12 }, snap + 0.1);
   to(pC, { x: PARK.C[0] - 90, y: PARK.C[1] - 90, scale: 1, rotation: -5, duration: 0.85, ease: 'power3.out' }, snap + 0.2);
+  to('#pieceC text', { opacity: 1, duration: 0.2 }, snap + 0.3);
   if (st(6) - snap - 1.05 > 1.2) to(pC, { y: `+=12`, duration: 1.2, ease: 'sine.inOut', repeat: Math.max(0, Math.floor((st(6) - snap - 1.05) / 1.2) - 1), yoyo: true }, snap + 1.05);
   to('#vortex', { opacity: 0, scale: 0.4, duration: 0.3 }, snap + 0.2);
   to('#cloud .lid', { scaleY: 1, duration: 0.5 }, snap + 0.3);
