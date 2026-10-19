@@ -2,7 +2,8 @@
 
 Stanje: grana `claude/generator-isolation-5k-10k-hm-marathon`, vrh `a3913f8` (hm-v2.3.0 + HM-05 aplikacija;
 marathon-v2.3.1; 10K v2 `10k-v2.5.x`; 5K v2 `5k-v2.7.x`). Samo čitanje koda i merne skripte; kod generatora i
-aplikacije nije menjan. Skripte i JSON: ovaj folder (komande u § 4). Čitanje koda (zadaci 4–5): tri agenta za
+aplikacije nije menjan. Posle merenja na granu su stigli HM-06 i MAR-05/06 (`9443676`, `b4acb68`, `df90f52`):
+maraton `adapt.ts`/`steps.ts` menja samo traku (pouka 20); konstrukcija plana nije dirana. Skripte i JSON: ovaj folder (komande u § 4). Čitanje koda (zadaci 4–5): tri agenta za
 čitanje + moja provera navedenih linija; svaka tvrdnja ispod sa brojem je iz pokrenute skripte.
 
 **Zaključak:** generatori HM v2 i maraton v2 su u svim pretragama bez odbijanja (rana i srednja adaptacija: HM
@@ -101,7 +102,7 @@ ekvivalentno (isti brojevi u policy); rizik je pri sledećoj izmeni jedne kopije
 | 28 RECENT_LONG_TOO_SHORT | samo generator, bez provere uzroka `generate.ts:248` | i adaptacija, samo kad bez r ne zastaje `generate.ts:248–257` |
 | 28/34 dugi reference u L | ne ulazi (`rollingLongCap10`) | ulazi kao nedelja 0 (`steps.ts:53` `jumpRecentKm`) |
 | 33 skraćen dugi rasterećenja | svi planovi (`lengths.ts:169–188`) | samo test/početnik/adaptacija (`week.ts:492`) |
-| 20 traka | samo nova ograničenja (`steps.ts:248`) | i rezultat, manjak/višak (`adapt.ts:236–271`) |
+| 20 traka | samo nova ograničenja (`steps.ts:248`) | na `a3913f8` i rezultat, manjak/višak; **usklađeno u MAR-06 (`df90f52`, posle ovog merenja)** — `steps.newLimits` |
 | 14 preporuka manje dana | da (`validate.ts:695–700`) | ne (`validate.ts:643–648`) |
 | 27 piramida | `stepPyramid` (isti broj deonica) | `pyramidOf` (≥ 3 deonice, I 2000 → nema) |
 | 23 trajna rana mreža pre starta | 7 scenarija, bez rezultata | 5 scenarija (`PRE_START_SCENARIOS`) |
