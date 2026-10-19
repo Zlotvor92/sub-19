@@ -18,6 +18,7 @@ import type {
   WeekLimits,
   Weekday
 } from './types.ts';
+import type { Written } from './written.ts';
 
 const isBuild = (f: Pick<WeekFrame, 'phase'>): boolean =>
   f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen';
@@ -156,12 +157,18 @@ export function framesFor(
   steps: readonly AdaptStep[],
   pattern: Pattern,
   totalWeeks: number,
-  dropped: Map<number, number> | null = null
+  dropped: Map<number, number> | null = null,
+  prior: Written | null = null
 ): WeekFrame[] {
   const a = baseAthlete(input);
   const every = rulesOf(a).deloadEvery;
   let frames = periodize(input.startDate, totalWeeks, every, a.feel);
   if (steps.length === 0) return frames;
+  // 2.8.0 (pouka 29, N2a): kontrolno trčanje iz prethodnog (upisanog) plana — test u zaštićenom danu je urađen
+  // (ostaje u svojoj nedelji, ne premešta se); inače nedelja testa prethodnog plana (premeštanje iz ranijeg
+  // koraka se ne gubi). Bez prethodnog plana: raspored periodize.
+  const written = prior ? writtenTest(prior) : null;
+  if (written) frames = frames.map((f) => ({ ...f, test: f.index === written.week }));
   const forced = new Set<number>();
   const maxRun = reliefMaxRun(every);
   /** Uzastopne nedelje izgradnje od nedelje w + 1 do prvog rasterećenja ili kraja izgradnje. */
@@ -203,7 +210,7 @@ export function framesFor(
   const t = frames.find((f) => f.test);
   const blocked = (f: WeekFrame): boolean =>
     !isBuild(f) || f.deload || f.limits?.quality !== undefined;
-  if (t && blocked(t) && mustDay(dateOf(t, pattern.q1)) > mustDay(last)) {
+  if (t && !written?.done && blocked(t) && mustDay(dateOf(t, pattern.q1)) > mustDay(last)) {
     t.test = false;
     const next = frames.find(
       (f) => f.index > t.index && !blocked(f) && vdotAt(input, steps, f.index) === null
@@ -211,6 +218,15 @@ export function framesFor(
     if (next) next.test = true;
   }
   return frames;
+}
+
+/** 2.8.0 (pouka 29): kontrolno trčanje prethodnog plana — nedelja i da li je u zaštićenom (upisanom) danu.
+    Nedelja = dan TEST_3K, inače oznaka testa; null nedelja = plan nema test. */
+export function writtenTest(prior: Written): { week: number | null; done: boolean } {
+  for (const w of prior.weeks)
+    for (const d of w.days)
+      if (d.workout.qualityType === 'TEST_3K') return { week: w.index, done: prior.keep(d) };
+  return { week: prior.weeks.find((w) => w.test)?.index ?? null, done: false };
 }
 
 /** Nedelja od koje korak počinje novu progresiju doze (nov cilj obima ili nov start; pauza: već ostatak
@@ -227,4 +243,18 @@ export function doseResetAt(
   const back = s.returnFrom ?? null;
   const next = back !== null ? weeks[back.week] : undefined;
   return back !== null && next !== undefined && isBuild(next) ? back.week + 1 : null;
+}
+
+/** 2.8.0 (pouka 29, N4): DATUM od kog korak počinje novu progresiju doze — početak nedelje doseResetAt, ali ne pre
+    asOf + 1 (pauza usred nedelje: upisani dani do asOf pripadaju prethodnom segmentu). null = bez novog starta
+    doze (ili nedelja van plana). Isto u konstruktoru i validatoru. */
+export function doseResetDate(
+  s: AdaptStep,
+  weeks: readonly Pick<WeekFrame, 'phase' | 'startDate'>[]
+): IsoDate | null {
+  const r = doseResetAt(s, weeks);
+  const start = r === null ? undefined : weeks[r - 1]?.startDate;
+  if (start === undefined) return null;
+  const next = addDays(s.asOf, 1);
+  return mustDay(start) > mustDay(next) ? start : next;
 }
