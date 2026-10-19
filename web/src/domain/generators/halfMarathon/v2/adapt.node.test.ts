@@ -546,6 +546,10 @@ describe('pouka 34: umor pre starta', () => {
         const [a1, a2] = [r.plan.weeks[0]!, r.plan.weeks[1]!];
         expect([a1.deload, a1.nominalKm]).toEqual([true, round1(P.deload.factor * w1.targetKm)]);
         expect(a2.targetKm, `${id} ${at}`).toBe(w1.targetKm);
+        // Dopuna N7: doza nedelje 2 = doza planirane nedelje 1 (ponavljanje, bez rasta).
+        const doses = (w: typeof w1) =>
+          w.days.filter((x) => x.workout.dose).map((x) => [x.role, x.workout.dose!.doseM]);
+        expect(doses(a2), `${id} ${at}`).toEqual(doses(w1));
         expect(r.reasons[0]!.message).toContain('pouka 34');
         if (id.startsWith('beg')) expect(quality(a1)).toBe(0);
       }
@@ -563,13 +567,15 @@ describe('pouka 34: umor pre starta', () => {
 });
 
 describe('A18: rasterećenje posle smanjenja obima — dugi ≥ 4 km', () => {
-  it('4 dana, 14 ned, pauza 35 do srede ned 1: povratak sa dugim 4 km, rasterećenje ned 5 ima dugi 4 km (0,8 × = 3,2 km ispod minimuma laganog)', () => {
-    const p = plan('d4-r-14w');
-    const at = wed(p, 1);
+  // hm-v2.4.0: pouka 35 (drugi dan kvaliteta lagan) podiže dugi posle novog starta, pa primer 4 dana / 14 ned (dugi
+  // 4 km pre rasterećenja) više ne postoji; početnik 4 d / 12 ned (jedan kvalitet) i dalje ima dugi 4,5 km.
+  it('početnik 4 dana, 12 ned, pauza 35 do srede ned 6: dugi 4,5 km, rasterećenje ned 9 ima dugi 4 km (0,8 × = 3,6 km ispod minimuma laganog)', () => {
+    const p = plan('beg-d4-r-12w');
+    const at = wed(p, 6);
     const r = adapt(p, factsOf(p, 'pause35', at), at);
-    const w = r.plan.weeks[4]!;
+    const w = r.plan.weeks[8]!;
     expect(w.deload).toBe(true);
-    expect(r.plan.weeks[3]!.days.find((d) => d.role === 'long')!.workout.km).toBe(4);
+    expect(r.plan.weeks[7]!.days.find((d) => d.role === 'long')!.workout.km).toBe(4.5);
     expect(w.days.find((d) => d.role === 'long')!.workout.km).toBe(4);
   });
 });

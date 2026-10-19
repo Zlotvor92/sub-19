@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FULL } from '@/test/level';
 import { generateHmV2 } from './generate.ts';
-import { OVER_LONG } from './grid.harness.node.test.ts';
+import { mayChange } from './grid.harness.node.test.ts';
 import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
 import { type Grid03Input, planHash } from './testInputs.ts';
 
@@ -107,11 +107,11 @@ export function describeGrid03(
         return;
       }
       const base = JSON.parse(readFileSync(baseline, 'utf8')) as Record<string, BaselineRow>;
-      // HM-04 A: menja se samo plan sa kvalitetnim danom dužim od dugog na 5e09a02 (OVER_LONG); vrh ne pada.
+      // HM-04 A (OVER_LONG) i HM-07 (CHANGED_07): menjaju se samo planovi sa spiska izuzetaka; vrh ne pada.
       const changed = inputs.filter(
         (g) => JSON.stringify(res.rows[g.id]) !== JSON.stringify(base[g.id])
       );
-      expect(changed.filter((g) => !OVER_LONG.has(g.id)).map((g) => g.id)).toEqual([]);
+      expect(changed.filter((g) => !mayChange(g.id)).map((g) => g.id)).toEqual([]);
       expect(changed.filter((g) => res.rows[g.id]![0] < base[g.id]![0]).map((g) => g.id)).toEqual(
         []
       );

@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
-import { OVER_LONG } from './grid.harness.node.test.ts';
+import { mayChange } from './grid.harness.node.test.ts';
 import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
 import { DAY_COUNTS, inputOf, KM_BY_DAYS, resultHash, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { HmV2Plan } from './types.ts';
@@ -83,8 +83,8 @@ export function describeRecent(
         );
         const same = resultHash(res) === HM02[g.id];
         const ex = EXCEPTIONS[g.id];
-        // HM-04 A (pouka 32): plan sa kvalitetnim danom dužim od dugog na 5e09a02 sme da se promeni.
-        const over = OVER_LONG.has(`r-${g.id}`);
+        // HM-04 A (pouka 32): plan sa kvalitetnim danom dužim od dugog na 5e09a02 sme da se promeni; HM-07 (CHANGED_07).
+        const over = mayChange(`r-${g.id}`);
         if (ex && res.ok && !same) excepted[g.id] = rowOf(res.plan, ex.week);
         else if ((!same && !over) || ex) regression.push(g.id);
         if (res.ok) checkPlan(g.id, res.plan, bad, st);

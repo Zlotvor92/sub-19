@@ -1,0 +1,90 @@
+{
+ "input": "/home/user/sub-19/docs/10k-v2/artifacts/segment-06f/sabotage-06f.json",
+ "head": "7ba9717",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 45.5,
+ "hashBefore": "f05f4b19fc597cac253242f1694b6f16d5734f925364579791004a40eb457473",
+ "hashAfter": "f05f4b19fc597cac253242f1694b6f16d5734f925364579791004a40eb457473",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "06f-a umor vezan za asOf (rasterećenje već u planu se ne čita, pouka 36)",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+    "test": "pouka 36: umor vezan za zapise, ne za dan adaptacije > umor kraj ned 2 → prinudno ned 3; isti zapisi sutra (preko granice nedelje) → isti plan, bez trake",
+    "message": "AssertionError: expected [ { index: 1, …(10) }, …(13) ] to deeply equal [ { index: 1, …(10) }, …(13) ]"
+   },
+   "failedCount": 2,
+   "hashBefore": "f05f4b19fc597cac253242f1694b6f16d5734f925364579791004a40eb457473",
+   "hashSabotaged": "d924bc961909aaa8fc4118174960a37e54c29da185e39adc0cd9ce0ee9b95203",
+   "hashAfter": "f05f4b19fc597cac253242f1694b6f16d5734f925364579791004a40eb457473",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 32.9
+  },
+  {
+   "index": 2,
+   "name": "06f-b traka u aplikaciji (bez domenskog adaptBanner: svaki primenjen uslov)",
+   "files": [
+    "src/domain/generators/tenK/v2/app/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts",
+    "test": "pregled prilagođavanja (adaptPreview) > bol, pauza: traka; zaštita urađenog i ručno izmenjenog dana; posle primene istog dana bez trake",
+    "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "f05f4b19fc597cac253242f1694b6f16d5734f925364579791004a40eb457473",
+   "hashSabotaged": "38a5bbe37756fc1f6f80c0c2fd59e1a2505d261df240af2e8a476634196de7c6",
+   "hashAfter": "f05f4b19fc597cac253242f1694b6f16d5734f925364579791004a40eb457473",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.2
+  },
+  {
+   "index": 3,
+   "name": "06f-c tekst prekidača 10K v2 vraćen („Prilagođavanje … stiže uskoro.\")",
+   "files": [
+    "src/features/ti/screens.tsx"
+   ],
+   "tests": [
+    "src/features/onboarding/tenKV2Flow.test.tsx"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/features/onboarding/tenKV2Flow.test.tsx",
+    "test": "Prekidač 10K v2: vidljiv samo uz VITE_TENK_V2 ili administratoru > 06f: tekst prekidača bez „prilagođavanje stiže uskoro\" (prilagođavanje 10K v2 postoji od segmenta 06)",
+    "message": "AssertionError: expected 'Važi samo za novi 10K plan iz čarobnj…' not to match /stiže uskoro/"
+   },
+   "failedCount": 1,
+   "hashBefore": "f05f4b19fc597cac253242f1694b6f16d5734f925364579791004a40eb457473",
+   "hashSabotaged": "5dee1266f1d318b27bf2ebcfc72fbc608b5d65ae439e2326c6553763b15d8fd7",
+   "hashAfter": "f05f4b19fc597cac253242f1694b6f16d5734f925364579791004a40eb457473",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 8.1
+  }
+ ]
+}

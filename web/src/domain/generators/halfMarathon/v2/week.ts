@@ -237,6 +237,39 @@ export function buildDayLimit(
   };
 }
 
+/**
+ * Pouka 35 (Faza 4a N5) — JEDINO mesto odluke o broju dana kvaliteta nedelje izgradnje: nedelja sa dva dana
+ * kvaliteta (`w1` Q1 ili test, `w2` Q2) čiji bi neki dan kvaliteta (i najniži nivo, izuzet od drugog člana pouke 32)
+ * trajao duže od dugog iste nedelje (`easyDays` lagani uz oba dana) → drugi dan kvaliteta je lagan, prvi ostaje;
+ * vraća dužine nedelje sa jednim danom kvaliteta (oslobođen obim: dugi raste, vlasnik dužina buildLengths). null =
+ * dva dana ostaju (dugi je najduži, ili nedelja sa jednim danom nije izvodljiva — upozorenje pouke 14). Validator
+ * čita istu funkciju.
+ */
+export function secondQualityEasy(
+  c: DayLimitContext,
+  target10: number,
+  easyDays: number,
+  roll10: number,
+  w1: Workout,
+  w2: Workout
+): Lengths | null {
+  const two = buildLengths(
+    target10,
+    km100(w1.km) + km100(w2.km),
+    easyDays,
+    c.rule,
+    c.paces,
+    roll10
+  );
+  if (!two) return null;
+  const long = longWorkout(two.long10 / 10, c.paces).sec;
+  if (w1.sec <= long && w2.sec <= long) return null;
+  return buildLengths(target10, km100(w1.km), easyDays + 1, c.rule, c.paces, roll10);
+}
+
+/** Pouka 35: napomena nedelje u kojoj je drugi dan kvaliteta lagan (validator je čita kao oznaku). */
+export const SECOND_EASY_NOTE = 'drugi dan kvaliteta je lagan (pouka 35)';
+
 /** Pouka 32 u rasterećenju: jedini kvalitet (T) ≤ dugi rasterećenja (deloadLengths sa tim danom). */
 export function deloadDayLimit(
   c: DayLimitContext,
@@ -659,8 +692,16 @@ export function buildWeek(
     : picks?.q1
       ? qualityWorkout(picks.q1, p, ctx.wc, ctx.feel)
       : null;
-  const w2 = picks?.q2 ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
+  let w2 = picks?.q2 ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
   const wo = one ? qualityWorkout(one.dose, p, ctx.wc, ctx.feel) : null;
+  // Pouka 35: sa dva dana kvaliteta dugi mora ostati najduži — inače je drugi dan lagan (prvi ostaje).
+  const easy2 =
+    w1 && w2
+      ? secondQualityEasy({ paces: p, wc: ctx.wc, rule }, target10, pat.easy.length, roll10, w1, w2)
+      : null;
+  const second = easy2 && w2 && picks?.q2 ? { w: w2, dose: picks.q2 } : null;
+  if (easy2) w2 = null;
+  const picksW: WeekPicks | null = easy2 && picks ? { q1: picks.q1, q2: null } : picks;
   const busy = [
     ...(w1 ? [pat.q1] : []),
     ...(w2 && pat.q2 ? [pat.q2] : []),
@@ -671,11 +712,15 @@ export function buildWeek(
     [...qDays, ...pat.easy].filter((wd) => !busy.includes(wd))
   );
   const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0) + (wo ? km100(wo.km) : 0);
-  const len = buildLengths(target10, q100, dates.length, rule, p, roll10);
+  const len = easy2 ?? buildLengths(target10, q100, dates.length, rule, p, roll10);
   if (!len) return null;
   // A9/A13: u nedelji posle smanjenja obima test koji ne staje (dugi < 5 km) otpada.
   if (test && ctx.adapted && len.long10 < km10(P.test.km)) return null;
   const notes: string[] = [];
+  if (second)
+    notes.push(
+      `Q2: ${SECOND_EASY_NOTE} — sa ${second.dose.zone} ${fmtKm(second.dose.doseM / 1000)} km (${Math.round(second.w.sec / 60)} min) dugi ne bi bio najduži trening nedelje; oslobođen obim ide u dugi (${fmtKm(len.long10 / 10)} km) i lagane.`
+    );
   if (intro)
     notes.push(
       `Uvod (H17): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan.`
@@ -695,8 +740,8 @@ export function buildWeek(
     );
   }
   const slots: [string, Dose, SlotState | null][] = [];
-  if (picks?.q1) slots.push(['Q1', picks.q1, quality.q1]);
-  if (picks?.q2) slots.push(['Q2', picks.q2, quality.q2]);
+  if (picksW?.q1) slots.push(['Q1', picksW.q1, quality.q1]);
+  if (picksW?.q2) slots.push(['Q2', picksW.q2, quality.q2]);
   for (const [slot, d] of slots) if (d.step === 'repeat') notes.push(repeatNote(slot, d));
   for (const [slot, d, prev] of slots)
     if (d.step === 'drop')
@@ -714,7 +759,7 @@ export function buildWeek(
       ...easyDays(dates, len.easy10, p)
     ],
     len.long10,
-    picks,
+    picksW,
     notes
   );
 }

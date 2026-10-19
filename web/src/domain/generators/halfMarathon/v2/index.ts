@@ -1,7 +1,7 @@
 /* HM v2 — javni API jezgra. Aplikacija ga ne uvozi: od segmenta HM-05 put iz aplikacije je samo adapter `./app/index.ts`
    (izvozi ga `halfMarathon/index.ts` kao `hmV2`, bira `select.ts`). */
 
-export { adaptHmV2 } from './adapt.ts';
+export { adaptBanner, adaptHmV2 } from './adapt.ts';
 export { generateHmV2 } from './generate.ts';
 export { validatePlan } from './validate.ts';
 export { HM_V2_POLICY } from './policy.ts';

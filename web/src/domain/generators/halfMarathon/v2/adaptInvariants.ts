@@ -281,7 +281,8 @@ function extra(
       if (!low && sec > long.workout.sec) bad.push(`dan kvaliteta > dugi ned ${w.index}`);
     }
   }
-  // Pouka 28: dugi ≤ max(1,1 × L, L + 1), L = najduži dugi prethodne 4 nedelje (u ned 1–4 i skorašnji).
+  // Pouka 28: dugi ≤ max(1,1 × L, L + 1), L = najduži dugi prethodne 4 nedelje (u ned 1–4 i skorašnji i dugi
+  // reference umora pre starta).
   const longs = W.map((w) => {
     const l = w.days.find((d) => d.role === 'long');
     return l ? Math.round(l.workout.km * 10) : null;
@@ -292,6 +293,9 @@ function extra(
     if (l == null || mustDay(w.endDate) <= t) return;
     const prev = longs.slice(Math.max(0, i - 4), i).filter((x): x is number => x !== null);
     if (r != null && i < 4) prev.push(Math.round(r * 10));
+    // Pouka 34 (Faza 4a N10.3): posle umora pre starta dugi reference (ned 1 generatora) je „nedelja 0".
+    const ref = [...steps].reverse().find((s) => s.preStart)?.preStart?.longKm;
+    if (ref != null && i < 4) prev.push(Math.round(ref * 10));
     if (prev.length === 0) return;
     const L = Math.max(...prev);
     if (l > Math.max(Math.floor(1.1 * L + 1e-9), L + 10))
