@@ -1,4 +1,5 @@
-/* M4 — faze; M5 — GDE su rasteretne nedelje (sadržaj: week.ts). Jedino mesto ovih odluka. */
+/* M4 — faze; M5 — GDE su rasteretne nedelje (sadržaj: week.ts); M16 — nedelja testa 5 km. Jedino mesto ovih
+   odluka. */
 
 import { addDays } from './dates.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
@@ -105,16 +106,24 @@ export function deloadWeeks(phases: readonly Phase[]): number[] | null {
   return out;
 }
 
-/** Okviri nedelja: datumi, faza, rasterećenje. null kad M5 nema rešenja. */
-export function periodize(startDate: IsoDate, weeks: number): WeekFrame[] | null {
+/** M16: nedelja testa 5 km = poslednja nedelja baze (1-indeks). */
+export function testWeekOf(phases: readonly Phase[]): number {
+  return phases.lastIndexOf('base') + 1;
+}
+
+/** Okviri nedelja: datumi, faza, rasterećenje; `test` (plan po osećaju koji nije početnik, M16) označava
+    nedelju testa. null kad M5 nema rešenja. */
+export function periodize(startDate: IsoDate, weeks: number, test = false): WeekFrame[] | null {
   const phases = phasesOf(weeks);
   const deloads = deloadWeeks(phases);
   if (!deloads) return null;
+  const tw = test ? testWeekOf(phases) : 0;
   return phases.map((phase, i) => ({
     index: i + 1,
     startDate: addDays(startDate, 7 * i),
     endDate: addDays(startDate, 7 * i + 6),
     phase,
-    deload: deloads.includes(i + 1)
+    deload: deloads.includes(i + 1),
+    ...(i + 1 === tw ? { test: true as const } : {})
   }));
 }

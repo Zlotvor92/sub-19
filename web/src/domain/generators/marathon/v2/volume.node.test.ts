@@ -7,14 +7,14 @@ import {
   recentLongNote,
   recentLongThreshold10
 } from './lengths.ts';
-import { dayRule } from './policy.ts';
+import { planRule } from './policy.ts';
 import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { WeekFrame } from './types.ts';
 import { capacityMessage, fit10, growth10, nominal10, peakCap10 } from './volume.ts';
 
 /* M6 obim (jedini vlasnik cilja; pouke 1 i 9), M5/M7 ciljevi rasterećenja i tapera. */
 
-const rule = dayRule(4)!;
+const rule = planRule(4)!;
 const frame = (over: Partial<WeekFrame> = {}): WeekFrame => ({
   index: 5,
   startDate: '2026-11-30',
@@ -26,10 +26,10 @@ const frame = (over: Partial<WeekFrame> = {}): WeekFrame => ({
 
 describe('M6 pravilo obima', () => {
   it('rast +6 % (min 1,0, max 5,0 km, korak 0,1)', () => {
-    expect(growth10(100)).toBe(10); // 10 km → +1,0 (min)
-    expect(growth10(450)).toBe(27); // 45 km → +2,7
-    expect(growth10(800)).toBe(48);
-    expect(growth10(900)).toBe(50); // max 5,0
+    expect(growth10(100, rule)).toBe(10); // 10 km → +1,0 (min)
+    expect(growth10(450, rule)).toBe(27); // 45 km → +2,7
+    expect(growth10(800, rule)).toBe(48);
+    expect(growth10(900, rule)).toBe(50); // max 5,0
   });
 
   it('granica izgradnje = min(start × 1,5; start + 30; 80 km)', () => {
@@ -40,12 +40,12 @@ describe('M6 pravilo obima', () => {
 
   it('cilj po pravilu: ned 1 start; izgradnja rast do granice; rasterećenje 0,8 ×; taper 0,8 / 0,6 × vrh', () => {
     const h = { lastBuild10: 500, peak10: 600 };
-    expect(nominal10(frame(), { lastBuild10: null, peak10: 0 }, 450, 675, null)).toBe(450);
-    expect(nominal10(frame(), h, 450, 675, null)).toBe(530);
-    expect(nominal10(frame(), { lastBuild10: 660, peak10: 660 }, 450, 675, null)).toBe(675);
-    expect(nominal10(frame({ deload: true }), h, 450, 675, null)).toBe(400);
-    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 0)).toBe(480);
-    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 1)).toBe(360);
+    expect(nominal10(frame(), { lastBuild10: null, peak10: 0 }, 450, 675, null, rule)).toBe(450);
+    expect(nominal10(frame(), h, 450, 675, null, rule)).toBe(530);
+    expect(nominal10(frame(), { lastBuild10: 660, peak10: 660 }, 450, 675, null, rule)).toBe(675);
+    expect(nominal10(frame({ deload: true }), h, 450, 675, null, rule)).toBe(400);
+    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 0, rule)).toBe(480);
+    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 1, rule)).toBe(360);
   });
 
   it('pouka 1: neizvodljiv cilj → najbliži izvodljiv (pri jednakoj udaljenosti niži); ned 1, rasterećenje i taper samo naniže', () => {
@@ -74,13 +74,13 @@ describe('M6 pravilo obima', () => {
     expect(capacityMessage(4, rule, ['time', 'share'])).toBe(
       '4 dana ne nose ovaj obim uz dugi ≤ 150 min i ≤ 40 % nedelje; preporuka 5–6 dana.'
     );
-    expect(capacityMessage(3, dayRule(3)!, ['share'])).toBe(
+    expect(capacityMessage(3, planRule(3)!, ['share'])).toBe(
       '3 dana ne nose ovaj obim uz dugi ≤ 50 % nedelje; preporuka 4–6 dana.'
     );
-    expect(capacityMessage(5, dayRule(5)!, ['time'])).toBe(
+    expect(capacityMessage(5, planRule(5)!, ['time'])).toBe(
       '5 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 6 dana.'
     );
-    expect(capacityMessage(6, dayRule(6)!, ['time'])).toBe(
+    expect(capacityMessage(6, planRule(6)!, ['time'])).toBe(
       '6 dana ne nose ovaj obim uz dugi ≤ 150 min.'
     );
   });
@@ -109,7 +109,9 @@ describe('M6 u planu (pouke 1 i 9)', () => {
     );
     for (let i = 1; i < steady.length; i++) {
       const last = Math.round(steady[i - 1]!.targetKm * 10);
-      expect(Math.round(steady[i]!.nominalKm * 10)).toBe(Math.min(last + growth10(last), 800));
+      expect(Math.round(steady[i]!.nominalKm * 10)).toBe(
+        Math.min(last + growth10(last, rule), 800)
+      );
     }
     expect(steady.some((w) => w.fitted === 'down')).toBe(true);
   });

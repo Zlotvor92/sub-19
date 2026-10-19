@@ -1,0 +1,78 @@
+{
+  "feel-d4-16w-45km-e360": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-21",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 45,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 360
+  },
+  "feel-d3-12w-30km-e450": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-24",
+    "runDays": ["tue", "thu", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 30,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 450
+  },
+  "feel-d3-14w-30km-e270": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-07",
+    "runDays": ["tue", "thu", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 30,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 270
+  },
+  "feel-d6-20w-90km-e315": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-21",
+    "runDays": ["mon", "tue", "wed", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 90,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 315
+  },
+  "beg-d4-18w-35km-v35": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 35,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 7461,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null,
+    "experience": "beginner"
+  },
+  "beg-d4-16w-25km-e450": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-21",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 25,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 450,
+    "experience": "beginner"
+  },
+  "beg-d5-20w-45km-e420": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-21",
+    "runDays": ["tue", "wed", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 45,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 420,
+    "experience": "beginner"
+  }
+}

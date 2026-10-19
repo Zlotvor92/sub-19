@@ -26,13 +26,24 @@ export interface MarathonV2Input {
   longRunDay?: Weekday | null;
   /** Prosek poslednje 4 nedelje [km]. */
   currentWeeklyKm: number;
-  /** Rezultat ne stariji od 84 dana na dan starta (M1); u segmentu 01 obavezan. */
+  /** Rezultat ne stariji od 84 dana na dan starta (M1); bez pouzdanog rezultata plan po osećaju (M16). */
   recentResult?: MarathonV2Result | null;
-  /** Ciljno vreme maratona [s]; samo se ocenjuje (M3), ne menja tempo. */
+  /** Ciljno vreme maratona [s]; samo se ocenjuje (M3), ne menja tempo. Plan po osećaju: bez ocene (M16). */
   goalTimeSec?: number | null;
   /** M13a (pouka 28): skorašnji najduži trk [km], 5–42; ulazi u plafon skoka dugog nedelja 1–4. */
   recentLongRunKm?: number | null;
+  /** M17: iskustvo; podrazumevano 'regular'. */
+  experience?: Experience | null;
+  /** M16: lagan tempo [s/km] — obavezan za plan po osećaju (bez pouzdanog rezultata). */
+  easyPaceSecPerKm?: number | null;
+  /** M17: trčanje/hodanje — maraton ga ne podržava (odbijanje). */
+  runWalk?: boolean | null;
 }
+
+export type Experience = 'beginner' | 'regular';
+
+/** M16: osnova tempa — rezultat ili lagan tempo (plan po osećaju). */
+export type PaceBasis = 'result' | 'feel';
 
 export type ReasonCode =
   | 'INPUT_SHAPE'
@@ -48,15 +59,19 @@ export type ReasonCode =
   | 'LONG_DAY_INVALID'
   | 'WEEKLY_KM_TOO_LOW'
   | 'WEEKLY_KM_TOO_HIGH'
-  /** Segment 01: rezultat je obavezan (plan po osećaju i početnik: segment 03). */
-  | 'RESULT_REQUIRED'
+  /** M16: bez pouzdanog rezultata lagan tempo je obavezan. */
+  | 'EASY_PACE_REQUIRED'
+  | 'EASY_PACE_OUT_OF_RANGE'
   | 'RESULT_TOO_OLD'
   | 'RESULT_DISTANCE_UNSUPPORTED'
   | 'RESULT_TIME_INVALID'
   | 'RESULT_AFTER_START'
   | 'VDOT_TOO_LOW'
   | 'VDOT_TOO_HIGH'
-  | 'BEGINNER_SEGMENT_03'
+  /** M17: početnik 4–5 dana. */
+  | 'BEGINNER_DAYS'
+  /** M17: početnik najmanje 16 nedelja. */
+  | 'BEGINNER_SHORT'
   | 'RUN_WALK_NOT_SUPPORTED'
   | 'GOAL_INVALID'
   /** M13a: skorašnji najduži trk van 5–42 km. */
@@ -98,17 +113,28 @@ export interface WeekFrame {
   endDate: IsoDate;
   phase: Phase;
   deload: boolean;
+  /** M16: nedelja testa 5 km (samo plan po osećaju koji nije početnik). */
+  test?: true;
 }
 
 export type Basis = 'exact' | 'estimated';
 
 export type SegmentKind =
-  'warmup' | 'cooldown' | 'easy' | 'long' | 'rep' | 'recovery' | 'continuous' | 'stride' | 'race';
+  | 'warmup'
+  | 'cooldown'
+  | 'easy'
+  | 'long'
+  | 'rep'
+  | 'recovery'
+  | 'continuous'
+  | 'stride'
+  | 'race'
+  | 'test';
 
 export interface Segment {
   kind: SegmentKind;
-  /** 'jog' = oporavak (km po srednjem E, M14). */
-  zone: Zone | 'jog';
+  /** 'jog' = oporavak (km po srednjem E, M14); 'test' = test 5 km (M16, nije zona rada). */
+  zone: Zone | 'jog' | 'test';
   km: number;
   sec: number;
   paceSecPerKm: number;
@@ -169,9 +195,18 @@ export type BlockSpec =
       /** Oporavak posle deonice i (i < poslednje). */
       recoveries: readonly ({ m: number } | { sec: number })[];
     }
-  | { kind: 'race'; km: number };
+  | { kind: 'race'; km: number }
+  | { kind: 'test'; km: number };
 
-export type WorkoutKind = 'easy' | 'long' | 'quality' | 'race';
+/** 'test' = test 5 km (M16): računa se u obim, ne u dozu kvaliteta. */
+export type WorkoutKind = 'easy' | 'long' | 'quality' | 'race' | 'test';
+
+/** M16: RPE (1–10) kvaliteta u planu po osećaju. */
+export interface Rpe {
+  min: number;
+  max: number;
+  cue: string;
+}
 
 export type QualityType = 'R' | 'T_continuous' | 'T_cruise' | 'I' | 'MP' | 'MP_sharpener';
 
@@ -187,11 +222,13 @@ export interface Workout {
   secBasis: Basis;
   /** Km rada po zoni (deonice, kontinuirano). Ubrzanja i oporavak nisu rad. */
   workKm: Record<WorkZone, number>;
-  /** Izbor doze za trening kvaliteta; null za lagan, dugi i trku. */
+  /** Izbor doze za trening kvaliteta; null za lagan, dugi, test i trku. */
   dose: Dose | null;
+  /** M16: RPE kvaliteta u planu po osećaju (u planu sa rezultatom polja nema). */
+  rpe?: Rpe;
 }
 
-export type DayRole = 'q1' | 'q2' | 'long' | 'easy' | 'sharpener' | 'eve' | 'race';
+export type DayRole = 'q1' | 'q2' | 'long' | 'easy' | 'sharpener' | 'eve' | 'race' | 'test';
 
 export interface PlanDay {
   date: IsoDate;
@@ -248,14 +285,17 @@ export interface MarathonV2Plan {
   policyId: string;
   policyVersion: string;
   input: MarathonV2Input;
+  /** VDOT iz rezultata ili procena iz laganog tempa (M16, samo orijentir). */
   vdot: number;
+  paceBasis: PaceBasis;
   paces: Paces;
-  /** Prognoza maratona [s] iz maratonskog VDOT-a (M2). */
-  predictedMarathonSec: number;
+  /** Prognoza maratona [s] iz maratonskog VDOT-a (M2); null u planu po osećaju (posle testa, M16). */
+  predictedMarathonSec: number | null;
   goal: GoalAssessment | null;
   pattern: Pattern;
   startKm: number;
-  /** M6: min(start × 1,5; start + 30; max nedelje M15) — granica izgradnje pre kapaciteta konstrukcije. */
+  /** M6: min(start × 1,5; start + 30; max nedelje M15) — početnik min(1,5×; +25; max, M17) — granica
+      izgradnje pre kapaciteta konstrukcije. */
   peakCapKm: number;
   /** Najveći cilj izgradnje u planu (vrh). */
   peakKm: number;
