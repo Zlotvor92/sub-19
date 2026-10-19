@@ -4,7 +4,14 @@
    po pravilima (volume.ts traži najbliži izvodljiv cilj). */
 
 import { addDays, daysBetween, weekdayOf } from './dates.ts';
-import { buildLengths, deloadLengths, longCap10, taperLengths } from './lengths.ts';
+import {
+  buildLengths,
+  deloadLengths,
+  limitedEasy10,
+  longCap10,
+  painLong10,
+  taperLengths
+} from './lengths.ts';
 import { MARATHON_V2_POLICY as P, type PlanRule } from './policy.ts';
 import {
   capM,
@@ -57,11 +64,14 @@ export interface WeekContext {
   rule: PlanRule;
   /** M16: plan po osećaju (kvalitet nosi RPE). */
   feel: boolean;
+  /** Segment 04: nedelja posle smanjenja obima (A9, pouka 33: dugi rasterećenja sme da se skrati). */
+  adapted?: boolean;
 }
 
 /** Režim kvaliteta nedelje: 'rule' po pravilu; 'relax' druga pretraga (M11 ispred M12 u izgradnji; u
-    taperu T koji ne staje u plafon otpada, M11 ispred M7). */
-export type QualityMode = 'rule' | 'relax';
+    taperu T koji ne staje u plafon otpada, M11 ispred M7); segment 04 (A4/A9): 'one' jedan kvalitet doze
+    rasterećenja (taper: samo MP; početnik N−1: samo T), 'none' bez kvaliteta. */
+export type QualityMode = 'rule' | 'relax' | 'one' | 'none';
 
 export interface BuiltWeek {
   days: PlanDay[];
@@ -116,6 +126,66 @@ const easyDates = (frame: WeekFrame, days: readonly Weekday[]): string[] =>
 const easyDays = (dates: readonly string[], easy10: readonly number[], p: Paces): PlanDay[] =>
   dates.map((d, i) => day(d, 'easy', easyWorkout(easy10[i]! / 10, p)));
 
+/** A4: dani odmora se ne prave; na danima bola dugi ≤ 60 min, lagani × 0,7 (≥ 5 km, ne duži od planiranog),
+    dan pred trku bez ubrzanja; svaki lagan ≤ dugi (pouka 2). Bez dana bola/odmora dani ostaju isti. Vraća i
+    dugi posle ograničenja [0,1 km]. */
+function limitDays(
+  frame: WeekFrame,
+  days: PlanDay[],
+  long10: number | null,
+  p: Paces
+): { days: PlanDay[]; long10: number | null; notes: string[] } {
+  const L = frame.limits;
+  if (!L || (!L.rest && !L.pain)) return { days, long10, notes: [] };
+  const rest = new Set(L.rest ?? []);
+  const pain = new Set(L.pain ?? []);
+  const long = days.find((d) => d.role === 'long');
+  const l10 =
+    !long || rest.has(long.date)
+      ? null
+      : pain.has(long.date)
+        ? painLong10(Math.round(long.workout.km * 10), p)
+        : Math.round(long.workout.km * 10);
+  const out = days
+    .filter((d) => !rest.has(d.date))
+    .map((d) => {
+      const km10 = Math.round(d.workout.km * 10);
+      if (d.role === 'long')
+        return l10 === km10 ? d : day(d.date, 'long', longWorkout(l10! / 10, p));
+      if (d.role === 'easy') {
+        const e10 = limitedEasy10(km10, pain.has(d.date), l10);
+        return e10 === km10 && !pain.has(d.date)
+          ? d
+          : day(d.date, 'easy', easyWorkout(e10 / 10, p));
+      }
+      if (d.role === 'eve' && pain.has(d.date)) return day(d.date, 'eve', eveWorkout(p, false));
+      return d;
+    });
+  return {
+    days: out,
+    long10: l10,
+    notes: [
+      `Adaptacija: ${rest.size > 0 ? `${rest.size} dan(a) odmora, ` : ''}${pain.size > 0 ? 'period bola (dugi ≤ 60 min, lagani × 0,7 ≥ 5 km, bez ubrzanja), ' : ''}planirano ≤ cilj obima (A4).`
+    ]
+  };
+}
+
+/** A4/A9: dan jedinog kvaliteta — željeni dan šablona, a kad je u zabrani kvaliteta drugi dan kvaliteta. */
+function oneQualityDay(frame: WeekFrame, pat: Pattern, pref: Weekday): Weekday | null {
+  const banned = new Set(frame.limits?.noQuality ?? []);
+  const order = [pref, ...[pat.q1, pat.q2].filter((x): x is Weekday => !!x && x !== pref)];
+  return order.find((wd) => !banned.has(dateOf(frame, wd))) ?? null;
+}
+
+const limitNote = (mode: QualityMode, frame: WeekFrame, targetKm: number): string[] =>
+  mode === 'one' || mode === 'none'
+    ? [
+        frame.limits?.quality === mode
+          ? `Adaptacija: ${mode === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'} (ograničenje koraka, A3/A4).`
+          : `Adaptacija: kvalitet ne staje u obim ${fmtKm(targetKm)} km — ${mode === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'} (A9).`
+      ]
+    : [];
+
 /**
  * Izgradnja, rasterećenje ili taper sa ciljem `target10` [0,1 km]. `taper` = redni broj nedelje tapera (M7)
  * ili null. `mode` 'relax' = druga pretraga cilja, samo kad nijedan cilj nije izvodljiv po pravilu
@@ -137,37 +207,69 @@ export function buildWeek(
   const pat = ctx.pattern;
   const rule = ctx.rule;
   const targetKm = target10 / 10;
+  const reduced = mode === 'one' || mode === 'none';
   if (frame.phase === 'race') return null;
+  // A4: dani odmora/bola (limitDays) i napomena režima posle sastava; dugi na plafonu skoka samo dok ga dan bola
+  // ne skrati.
+  const done = (
+    days: PlanDay[],
+    long10: number | null,
+    picks: Picks | null,
+    notes: string[],
+    jumpBound = false
+  ): BuiltWeek => {
+    const lim = limitDays(frame, days, long10, p);
+    return finish(
+      lim.days,
+      lim.long10,
+      picks,
+      [...notes, ...limitNote(mode, frame, targetKm), ...lim.notes],
+      jumpBound && lim.long10 === long10
+    );
+  };
 
   if (frame.deload) {
     // M5: jedan kvalitet (T) na danu Q2 (3 dana i početnik: Q1), dugi, ostali dani lagani. M16: u nedelji
-    // testa test zamenjuje kvalitet rasterećenja (na njegovom danu; nije doza, bez plafona M11).
+    // testa test zamenjuje kvalitet rasterećenja (na njegovom danu; nije doza, bez plafona M11). Segment 04:
+    // 'one' — T na dozvoljenom danu kvaliteta; 'none' — bez kvaliteta; A5/pouka 31: prinudno rasterećenje u
+    // uvodu početnika ima sadržaj uvoda (bez kvaliteta).
     if (lastLong10 === null) return null;
-    const test = frame.test === true;
-    const t = test ? null : pickDeload(quality, frame.phase, targetKm, rule.beginner);
-    if (!test && !t) return null;
-    const tw = t ? qualityWorkout(t, p, ctx.wc, ctx.feel) : testWorkout(p, ctx.wc);
+    const test = frame.test === true && (mode === 'rule' || mode === 'relax');
     const slot = deloadSlot(rule.quality);
-    const tDay = slot === 'q1' ? pat.q1 : pat.q2!;
-    const dates = easyDates(frame, [...(slot === 'q1' ? [] : [pat.q1]), ...pat.easy]);
+    const pref = slot === 'q1' ? pat.q1 : pat.q2!;
+    const intro = frame.index <= rule.introWeeks;
+    const qDay = intro || mode === 'none' ? null : test ? pref : oneQualityDay(frame, pat, pref);
+    const t = test || !qDay ? null : pickDeload(quality, frame.phase, targetKm, rule.beginner);
+    if (!test && !t && !intro && mode !== 'none') return null;
+    const tw = test ? testWorkout(p, ctx.wc) : t ? qualityWorkout(t, p, ctx.wc, ctx.feel) : null;
+    const dates = easyDates(
+      frame,
+      [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !tw || wd !== qDay)
+    );
     const len = deloadLengths(
       target10,
-      km100(tw.km),
+      tw ? km100(tw.km) : 0,
       dates.length,
       lastLong10,
       rule,
       p,
       jump10,
-      test || rule.beginner
+      test || rule.beginner || ctx.adapted === true,
+      ctx.adapted === true
     );
     if (!len) return null;
     const long0 = Math.min(Math.floor(P.deload.longFactor * lastLong10 + 1e-9), jump10 ?? Infinity);
+    const why = test ? 'M16' : rule.beginner ? 'M17' : 'A9, pouka 33';
     const longText = len.shortened
-      ? `dugi ${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × poslednjeg ne-rasteretnog (${fmtKm(long0 / 10)} km) da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km (${test ? 'M16' : 'M17'} ispred M5, odstupanje)`
-      : 'dugi 0,8 × poslednji ne-rasteretni (M5)';
-    return finish(
+      ? `dugi ${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × poslednjeg ne-rasteretnog (${fmtKm(long0 / 10)} km) da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km (${why} ispred M5, odstupanje)`
+      : len.raised
+        ? `dugi ${fmtKm(len.long10 / 10)} km — 0,8 × poslednjeg ne-rasteretnog (${fmtKm(long0 / 10)} km) je kraći od najmanjeg laganog (A9: dugi ≥ lagan ≥ ${fmtKm(P.lengths.easyMinKm)} km, odstupanje)`
+        : 'dugi 0,8 × poslednji ne-rasteretni (M5)';
+    return done(
       [
-        day(dateOf(frame, tDay), test ? 'test' : slot, tw),
+        ...(tw && qDay
+          ? [day(dateOf(frame, qDay), test ? 'test' : qDay === pat.q1 ? 'q1' : 'q2', tw)]
+          : []),
         day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
         ...easyDays(dates, len.easy10, p)
       ],
@@ -178,44 +280,85 @@ export function buildWeek(
             `Rasterećenje: cilj ${fmtKm(targetKm)} km, test ${P.test.km} km umesto kvaliteta rasterećenja (M16), ${longText}.`,
             testNote
           ]
-        : [`Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), ${longText}.`],
+        : intro
+          ? [
+              `Uvod (M17): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan; prinudno rasterećenje (A5): cilj ${fmtKm(targetKm)} km, nedelja bez kvaliteta, ${longText}.`
+            ]
+          : tw
+            ? [`Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), ${longText}.`]
+            : [`Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija), ${longText}.`],
       len.jumpBound
     );
   }
 
   if (taper !== null) {
     // M7: MP doza tapera uvek (plafon M11 se na nju ne primenjuje, M7a); T u N−2 kad staje u plafon.
-    // M17: početnik u N−1 bez MP — jedini kvalitet T kontinuirano na danu Q1.
-    const t = pickTaper(quality, taper, targetKm, rule.quality, mode === 'relax', rule.beginner);
-    if (!t) return null;
-    const q1Dose = t.mp ?? t.t!;
-    const w1 = qualityWorkout(q1Dose, p, ctx.wc, ctx.feel);
-    const w2 = t.mp && t.t ? qualityWorkout(t.t, p, ctx.wc, ctx.feel) : null;
-    const q100 = km100(w1.km) + (w2 ? km100(w2.km) : 0);
-    // Dani šablona bez zadržanog kvaliteta su lagani (N−1 bez T; odstupanje M11 ispred M7 za T).
-    const dates = easyDates(frame, [...(w2 || !pat.q2 ? [] : [pat.q2]), ...pat.easy]);
-    const len = taperLengths(target10, q100, dates.length, longest10, taper, rule, p, jump10);
+    // M17: početnik u N−1 bez MP — jedini kvalitet T kontinuirano na danu Q1. Segment 04: 'one' — samo glavni
+    // kvalitet (MP; početnik N−1: T) na dozvoljenom danu kvaliteta; 'none' — bez kvaliteta.
+    const t =
+      mode === 'none'
+        ? null
+        : pickTaper(
+            quality,
+            taper,
+            targetKm,
+            rule.quality,
+            mode === 'relax' || mode === 'one',
+            rule.beginner
+          );
+    if (mode !== 'none' && !t) return null;
+    const q1Dose = t ? (t.mp ?? t.t) : null;
+    const d1 = !q1Dose ? null : mode === 'one' ? oneQualityDay(frame, pat, pat.q1) : pat.q1;
+    if (q1Dose && !d1) return null;
+    const w1 = q1Dose ? qualityWorkout(q1Dose, p, ctx.wc, ctx.feel) : null;
+    const w2 = t && mode !== 'one' && t.mp && t.t ? qualityWorkout(t.t, p, ctx.wc, ctx.feel) : null;
+    const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0);
+    // Dani šablona bez zadržanog kvaliteta su lagani (N−1 bez T; odstupanje M11 ispred M7 za T; adaptacija).
+    const kept = [...(w1 && d1 ? [d1] : []), ...(w2 && pat.q2 ? [pat.q2] : [])];
+    const dates = easyDates(
+      frame,
+      [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !kept.includes(wd))
+    );
+    const len = taperLengths(
+      target10,
+      q100,
+      dates.length,
+      longest10,
+      taper,
+      rule,
+      p,
+      jump10,
+      ctx.adapted === true
+    );
     if (!len) return null;
     const tw = P.taper.weeks[taper]!;
-    const lf = `dugi ≤ ${fmtKm(tw.longFactor)} × najduži`;
-    const note = !t.mp
-      ? `Taper (N−1, početnik M17): cilj ${fmtKm(tw.factor)} × vrh, jedan kvalitet T kontinuirano ≈ 60 % poslednje T doze (min ${fmtKm(P.beginner.tFirstKm)} km), bez MP — trkačka nedelja bez oštrenja (cilj: završiti); ${lf} (M7).`
-      : rule.quality === 1
-        ? `Taper (N−${2 - taper}): cilj ${fmtKm(tw.factor)} × vrh, jedan kvalitet MP ≈ ${Math.round(tw.mpShare * 100)} % poslednje doze (${rule.beginner ? 'početnik' : '3 dana'}), ${lf} (M7).`
-        : tw.tShare !== null && !w2
-          ? `Taper (N−${2 - taper}): T ${fmtKm(P.taper.tMinKm)} km po pravilu ne staje u plafon zone (M11 ispred M7, odstupanje) — dan je lagan; ${lf} (M7).`
-          : taper === 0
-            ? `Taper (N−2): cilj ${fmtKm(tw.factor)} × vrh, MP i T ≈ 60 % poslednje doze, ${lf} (M7).`
-            : `Taper (N−1): cilj ${fmtKm(tw.factor)} × vrh, MP ≈ 50 % poslednje doze, bez T, ${lf} (M7).`;
+    const lf = len.raised
+      ? `dugi ${fmtKm(len.long10 / 10)} km > ${fmtKm(tw.longFactor)} × najduži — najmanji lagan (A9: dugi ≥ lagan ≥ ${fmtKm(P.lengths.easyMinKm)} km, odstupanje)`
+      : `dugi ≤ ${fmtKm(tw.longFactor)} × najduži`;
+    const note =
+      mode === 'none'
+        ? `Taper (N−${2 - taper}) bez kvaliteta (adaptacija); ${lf} (M7).`
+        : mode === 'one'
+          ? `Taper (N−${2 - taper}): samo ${t!.mp ? 'MP' : 'T'} ≈ ${Math.round((t!.mp ? tw.mpShare : P.deload.tShare) * 100)} % poslednje doze (adaptacija); ${lf} (M7).`
+          : !t!.mp
+            ? `Taper (N−1, početnik M17): cilj ${fmtKm(tw.factor)} × vrh, jedan kvalitet T kontinuirano ≈ 60 % poslednje T doze (min ${fmtKm(P.beginner.tFirstKm)} km), bez MP — trkačka nedelja bez oštrenja (cilj: završiti); ${lf} (M7).`
+            : rule.quality === 1
+              ? `Taper (N−${2 - taper}): cilj ${fmtKm(tw.factor)} × vrh, jedan kvalitet MP ≈ ${Math.round(tw.mpShare * 100)} % poslednje doze (${rule.beginner ? 'početnik' : '3 dana'}), ${lf} (M7).`
+              : tw.tShare !== null && !w2
+                ? `Taper (N−${2 - taper}): T ${fmtKm(P.taper.tMinKm)} km po pravilu ne staje u plafon zone (M11 ispred M7, odstupanje) — dan je lagan; ${lf} (M7).`
+                : taper === 0
+                  ? `Taper (N−2): cilj ${fmtKm(tw.factor)} × vrh, MP i T ≈ 60 % poslednje doze, ${lf} (M7).`
+                  : `Taper (N−1): cilj ${fmtKm(tw.factor)} × vrh, MP ≈ 50 % poslednje doze, bez T, ${lf} (M7).`;
+    const mp = t?.mp ?? null;
     const overCap =
-      t.mp && t.mp.doseM > capM('MP', targetKm)
+      mp && w1 && mp.doseM > capM('MP', targetKm)
         ? [
-            `Taper (N−${2 - taper}): MP ${fmtKm(t.mp.doseM / 1000)} km je ${fmtKm((100 * t.mp.doseM) / 1000 / targetKm)} % cilja — minimum MP tapera (M7) ispred plafona 20 % (M11), samo u taperu (M7a).`
+            `Taper (N−${2 - taper}): MP ${fmtKm(mp.doseM / 1000)} km je ${fmtKm((100 * mp.doseM) / 1000 / targetKm)} % cilja — minimum MP tapera (M7) ispred plafona 20 % (M11), samo u taperu (M7a).`
           ]
         : [];
-    return finish(
+    return done(
       [
-        day(dateOf(frame, pat.q1), 'q1', w1),
+        ...(w1 && d1 ? [day(dateOf(frame, d1), d1 === pat.q1 ? 'q1' : 'q2', w1)] : []),
         ...(w2 ? [day(dateOf(frame, pat.q2!), 'q2', w2)] : []),
         day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
         ...easyDays(dates, len.easy10, p)
@@ -229,24 +372,46 @@ export function buildWeek(
 
   // M17: uvod bez kvaliteta; M16: test na danu Q1; početnik: T kontinuirano kad prvi nivo lestvice faze ne
   // staje u plafon, bez kvaliteta kad ni 1,5 km ne staje (odstupanje M17). Dan Q1 bez treninga kvaliteta (i
-  // bez testa) je lagan.
+  // bez testa) je lagan. Segment 04: 'one' — jedan kvalitet doze rasterećenja na danu T slota (u zabrani: drugi
+  // dan kvaliteta), bez testa; 'none' — bez kvaliteta i bez testa; stanje doze se tada ne menja (picks null).
   const intro = frame.index <= rule.introWeeks;
-  const test = frame.test === true;
-  const picks: Picks | null = intro
-    ? { q1: null, q2: null }
-    : pickBuild(quality, frame.phase, targetKm, p, rule, mode === 'relax', test, {
-        long10: Math.min(longCap10(target10, rule, p), jump10 ?? Infinity),
-        wc: ctx.wc
-      });
-  if (!picks) return null;
+  const test = frame.test === true && (mode === 'rule' || mode === 'relax');
+  let picks: Picks | null;
+  let one: { dose: Dose; day: Weekday } | null = null;
+  if (intro) picks = { q1: null, q2: null };
+  else if (reduced) {
+    picks = null;
+    if (mode === 'one') {
+      const slot = deloadSlot(rule.quality);
+      const wd = oneQualityDay(frame, pat, slot === 'q1' ? pat.q1 : pat.q2!);
+      const d = wd ? pickDeload(quality, frame.phase, targetKm, rule.beginner) : null;
+      if (!d || !wd) return null;
+      one = { dose: d, day: wd };
+    }
+  } else {
+    picks = pickBuild(quality, frame.phase, targetKm, p, rule, mode === 'relax', test, {
+      long10: Math.min(longCap10(target10, rule, p), jump10 ?? Infinity),
+      wc: ctx.wc
+    });
+    if (!picks) return null;
+  }
   const w1 = test
     ? testWorkout(p, ctx.wc)
-    : picks.q1
+    : picks?.q1
       ? qualityWorkout(picks.q1, p, ctx.wc, ctx.feel)
       : null;
-  const w2 = picks.q2 ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
-  const dates = easyDates(frame, [...(w1 ? [] : [pat.q1]), ...pat.easy]);
-  const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0);
+  const w2 = picks?.q2 ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
+  const wo = one ? qualityWorkout(one.dose, p, ctx.wc, ctx.feel) : null;
+  const busy = [
+    ...(w1 ? [pat.q1] : []),
+    ...(w2 && pat.q2 ? [pat.q2] : []),
+    ...(one ? [one.day] : [])
+  ];
+  const dates = easyDates(
+    frame,
+    [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !busy.includes(wd))
+  );
+  const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0) + (wo ? km100(wo.km) : 0);
   const len = buildLengths(target10, q100, dates.length, rule, p, jump10);
   if (!len) return null;
   // Pouka 14: MP dan nikad duži od dugog (plafon MP računat prema najdužem dozvoljenom dugom; kad su lagani
@@ -263,11 +428,13 @@ export function buildWeek(
       `Uvod (M17): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan.`
     );
   else if (test) notes.push(testNote);
-  else if (!w1)
+  else if (reduced) {
+    // Napomena režima (limitNote).
+  } else if (!w1)
     notes.push(
       `Bez kvaliteta: ni T ${fmtKm(P.beginner.tFirstKm)} km kontinuirano ne staje u plafon ${P.caps.T * 100} % cilja ${fmtKm(targetKm)} km (M11 ispred M17, odstupanje).`
     );
-  else if (picks.q1 && picks.q1.ladder !== ladderFor(frame.phase, 'q1', rule.quality)) {
+  else if (picks?.q1 && picks.q1.ladder !== ladderFor(frame.phase, 'q1', rule.quality)) {
     const phaseLadder = ladderFor(frame.phase, 'q1', rule.quality);
     const first = doseOf(ladderLevels(phaseLadder)[0]!) / 1000;
     notes.push(
@@ -275,8 +442,8 @@ export function buildWeek(
     );
   }
   const slots: [string, Dose, SlotState | null][] = [];
-  if (picks.q1) slots.push(['Q1', picks.q1, quality.q1]);
-  if (picks.q2) slots.push(['Q2', picks.q2, quality.q2]);
+  if (picks?.q1) slots.push(['Q1', picks.q1, quality.q1]);
+  if (picks?.q2) slots.push(['Q2', picks.q2, quality.q2]);
   for (const [slot, d] of slots) if (d.step === 'repeat') notes.push(repeatNote(slot, d));
   for (const [slot, d, prev] of slots)
     if (d.step === 'drop')
@@ -285,10 +452,11 @@ export function buildWeek(
           ? `${slot}: MP spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — kvalitetni dan bi trajao duže od dugog (plafon MP, pouka 14).`
           : `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (M11 ispred M12).`
       );
-  return finish(
+  return done(
     [
       ...(w1 ? [day(dateOf(frame, pat.q1), test ? 'test' : 'q1', w1)] : []),
       ...(w2 ? [day(dateOf(frame, pat.q2!), 'q2', w2)] : []),
+      ...(one && wo ? [day(dateOf(frame, one.day), one.day === pat.q1 ? 'q1' : 'q2', wo)] : []),
       day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
       ...easyDays(dates, len.easy10, p)
     ],
@@ -331,23 +499,82 @@ export function raceEasyWorkout(taperEasy10: number, p: Paces): Workout {
 }
 
 /**
+ * Pouka 30 (jedino mesto): datumi trkačke nedelje koji postaju odmor kad trkačka nedelja bez trke ne bi bila ≤
+ * planirano poslednje nedelje tapera `cap100` [0,01 km] (taper skraćen danima odmora/bola) — prvo dani bola, pa
+ * najraniji lagani, najmanje koliko treba; dan pred trku i trka nikad. `runs` = dani trčanja bez trke (M8, bez
+ * dana odmora koraka), bez oštrenja (A9 ga ukida pre ovoga). Konstrukcija (raceWeek) ga primenjuje, validator ga
+ * čita (isti podatak). Prazno kad staje.
+ */
+export function raceWeekRest(
+  runs: readonly string[],
+  race: string,
+  pain: ReadonlySet<string>,
+  taperEasy10: number,
+  p: Paces,
+  cap100: number
+): string[] {
+  // Isti dani kao raceWeek + limitDays: lagan min(30 min E, lagan N−1), na danu bola × 0,7 (A4).
+  const easyKm = raceEasyWorkout(taperEasy10, p).km;
+  const km = new Map(
+    runs.map((d) => [
+      d,
+      daysBetween(d, race) === 1
+        ? km100(eveWorkout(p, !pain.has(d)).km)
+        : pain.has(d)
+          ? limitedEasy10(Math.round(easyKm * 10), true, null) * 10
+          : km100(easyKm)
+    ])
+  );
+  let total = [...km.values()].reduce((a, x) => a + x, 0);
+  const order = [
+    ...runs.filter((d) => pain.has(d) && daysBetween(d, race) !== 1),
+    ...runs.filter((d) => !pain.has(d) && daysBetween(d, race) !== 1)
+  ];
+  const out: string[] = [];
+  for (const d of order) {
+    if (total <= cap100) break;
+    out.push(d);
+    total -= km.get(d)!;
+  }
+  return total <= cap100 ? out.sort() : [];
+}
+
+/**
  * M8: trkačka nedelja. Trka zamenjuje dugi. Oštrenje (≤ MP doza N−1) na najkasnijem danu ≥ 3 dana pre trke
  * koji nije susedan poslednjem zahtevnom danu tapera `prevHard` (M9); nema takvog dana → bez oštrenja
  * (odstupanje). Dan pred trku 20 min E + ubrzanja; ostali min(30 min E, najkraći lagan N−1). Trka (sa WU) se
- * ne računa u obim.
+ * ne računa u obim. Segment 04: oštrenje ne pada na dan zabrane kvaliteta i otpada kad trkačka sa njim ne bi
+ * bila ≤ taper (`noSharpener`, A9); `cap100` (pouka 30): višak laganih dana postaje odmor (raceWeekRest);
+ * dani odmora/bola koraka (limitDays).
  */
 export function raceWeek(
   ctx: WeekContext,
   frame: WeekFrame,
   taperMpM: number,
   prevHard: string | null,
-  taperEasy10: number
+  taperEasy10: number,
+  noSharpener = false,
+  cap100: number | null = null
 ): BuiltWeek {
   const q = P.raceWeek;
   const p = ctx.paces;
   const race = ctx.input.raceDate;
-  const runs = raceWeekRuns(ctx.input.runDays, ctx.pattern, frame, race);
+  const runs0 = raceWeekRuns(ctx.input.runDays, ctx.pattern, frame, race);
+  const restK = new Set(frame.limits?.rest ?? []);
+  const rested =
+    cap100 === null
+      ? []
+      : raceWeekRest(
+          runs0.filter((d) => !restK.has(d)),
+          race,
+          new Set(frame.limits?.pain ?? []),
+          taperEasy10,
+          p,
+          cap100
+        );
+  const runs = runs0.filter((d) => !rested.includes(d));
   const sharpen = hasSharpener(taperMpM);
+  const banned = new Set(frame.limits?.noQuality ?? []);
   const cands = sharpen
     ? [...runs]
         .reverse()
@@ -357,7 +584,7 @@ export function raceWeek(
             (prevHard === null || daysBetween(prevHard, d) >= 2)
         )
     : [];
-  const sharpenDate = cands[0] ?? null;
+  const sharpenDate = noSharpener ? null : (cands.find((d) => !banned.has(d)) ?? null);
   const days: PlanDay[] = [day(race, 'race', raceWorkout(p, ctx.raceSec), false)];
   const easy = raceEasyWorkout(taperEasy10, p);
   for (const d of runs) {
@@ -372,12 +599,21 @@ export function raceWeek(
           `Trkačka nedelja: lagan ${fmtKm(easy.km)} km = najkraći lagan tapera (kraći od ${Math.round(q.otherEasySec / 60)} min E; trkačka ≤ taper, M8).`
         ]
       : [];
-  return finish(days, null, null, [
+  const lim = limitDays(frame, days, null, p);
+  return finish(lim.days, null, null, [
     sharpenDate
       ? `Trkačka nedelja: oštrenje ${s.reps} × ${s.repM} m MP (≤ MP doza poslednje nedelje tapera ${fmtKm(taperMpM / 1000)} km); maraton ${fmtKm(q.raceKm)} km se ne računa u obim (M8).`
       : !sharpen
         ? `Trkačka nedelja: poslednja nedelja tapera bez MP — bez oštrenja (oštrenje ≤ MP doza tapera, M8); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`
-        : `Trkačka nedelja: nijedan dan trčanja nije ≥ ${q.sharpenerMinGapDays} dana pre trke i nesusedan poslednjem zahtevnom danu tapera — bez oštrenja (M8, odstupanje); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`,
-    ...shortened
+        : cands.length > 0
+          ? noSharpener
+            ? `Trkačka nedelja: bez oštrenja — sa njim bi trkačka nedelja bila veća od poslednje nedelje tapera (A9, M8); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`
+            : `Trkačka nedelja: bez oštrenja — dan oštrenja je u zabrani kvaliteta (adaptacija); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`
+          : `Trkačka nedelja: nijedan dan trčanja nije ≥ ${q.sharpenerMinGapDays} dana pre trke i nesusedan poslednjem zahtevnom danu tapera — bez oštrenja (M8, odstupanje); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`,
+    ...shortened,
+    ...(rested.length > 0
+      ? ['Trkačka nedelja skraćena: taper je imao dane odmora/bola (pouka 30).']
+      : []),
+    ...lim.notes
   ]);
 }

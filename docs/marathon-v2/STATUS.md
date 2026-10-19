@@ -19,8 +19,10 @@ const r = generateMarathonV2({
   recentLongRunKm: 18, // opciono, 5–42 km: skok dugog ≤ 10 % (M13a)
   // bez rezultata: easyPaceSecPerKm: 360 (po osećaju, M16); experience: 'beginner' (M17)
 });
-// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.2.0', paceBasis, faza nedelje, upozorenja)
+// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.3.0', paceBasis, faza nedelje, upozorenja)
 // !r.ok → r.reasons (kod + poruka sa preporukom: npr. PLAN_TOO_SHORT → polumaraton)
+const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → { ok, plan, changes, reasons } ili odbijanje
+// adaptBanner(r.plan, a, facts, asOf) → poruke trake (pouka 20, samo novo ograničenje)
 ```
 
 - Jedan konstruktor (`generate.ts`), validator samo prijavljuje (`validate.ts`; greške → `PLAN_VIOLATES_POLICY`).
@@ -35,7 +37,12 @@ const r = generateMarathonV2({
   `segment01.baseline.json` + `segment02.regression-01.json`.
 - Sabotaže: `node scripts/sabotage.mjs ../docs/marathon-v2/artifacts/segment-03/sabotage.json`.
 
-## Trenutno stanje (marathon-v2.2.0)
+## Trenutno stanje (marathon-v2.3.0)
+
+- M18 adaptacija (MAR-04): assess → isti konstruktor (construct) → spajanje upisanih dana (written.ts) → validate;
+  A1–A15, A17 (kopija 10K v2 sa brojevima maratona). Bez činjenica: plan bajt-isti (mreže 02/03, bazne linije).
+- Mreža 04 (6236 tokova), trajna mreža rane adaptacije (45 101) i široka pretraga: 0 odbijanja, 0 prekršaja
+  adaptInvariants. Sabotaže `artifacts/segment-04/sabotage.json`.
 
 - 3/4/5/6 dana (M15), 12–24 nedelje, obim po redu, rezultat 10K/HM/maraton (5K uz RESULT_5K) ≤ 84 dana, VDOT 30–80.
   3 dana: jedan kvalitet T kont. → T cruise → MP (bez I/R), rasterećenje T na Q1, taper samo MP. 5/6 dana: lagani
@@ -48,32 +55,18 @@ const r = generateMarathonV2({
   dana, VDOT > 80, trčanje/hodanje (svi); početnik 3/6 dana, < 16 ned, obim van 25–45 / 30–50. „Počni kasnije": > 24 ned.
 - Mreže 02, 03 (8190 + 1890) i gusta ned 1: 0 odbijanja, 0 grešaka; M13a 942 (= MAR-02).
 
-## Segment 01 (marathon-v2.0.0)
+## Segmenti 01–03
 
-- Polazni SHA `3fec5c5`; izveštaj `reports/SEGMENT-01-IMPLEMENTATION.md`. STANI (M7 ↔ M11) → M7a.
-- Testovi: brz 11 / 122, pun 13 / 132; sabotaže 9/9 PAO; `npm run check` exit 0 (232 fajla, 2857 testova).
+- 01 (`marathon-v2.0.0`, od `3fec5c5`): jezgro 4 dana; STANI M7 ↔ M11 → M7a. 02 (`marathon-v2.1.0`, od `8ae290a`): 3/5/6
+  dana, M13a. 03 (`marathon-v2.2.0`, od `bfb82c9`): po osećaju + test, početnik, plafon MP sa trajanjem. Detalji u
+  `reports/SEGMENT-01…03-IMPLEMENTATION.md`.
 
-## Segment 02 (marathon-v2.1.0)
+## Segment 04 (marathon-v2.3.0)
 
-- Polazni SHA `8ae290a`; commit „Maraton v2 Segment 02 (marathon-v2.1.0): …"; izveštaj
-  `reports/SEGMENT-02-IMPLEMENTATION.md`.
-- STANI (pouka 28 samo za ned 1: 1611 / 35 910 neizvodljivih pri r ≤ 10 km, skok ned 1 → 2 do ×2,39) → odluka
-  organizatora: kotrljajuće pravilo skoka dugog (M13a) + RECENT_LONG_TOO_SHORT.
-- Mreža 02 (21 840) i gusta ned 1 (157 954): 0 odbijanja, 0 grešaka; mreža M13a (35 910): 942 odbijanja, sva
-  RECENT_LONG_TOO_SHORT (r ≤ 8 km). Regresija 4 dana: tekst 4014, piramida 276, plafon skoka 78, drugo 0.
-- Testovi: brz 13 fajlova / 153 testa (27 s), pun 27 / 201 (240 s); sabotaže 9/9 PAO (9,2 s).
-
-## Segment 03 (marathon-v2.2.0)
-
-- Polazni SHA `bfb82c9`; commit „Maraton v2 Segment 03 (marathon-v2.2.0): …"; izveštaj
-  `reports/SEGMENT-03-IMPLEMENTATION.md`.
-- STANI 1 (udeo 5/6 d ne rešava kval. > dugi; veći udeo K1 ≠ 0) → udeo ostaje + plafon MP sa trajanjem; STANI 2 (S2
-  rasterećenje, S3 N−1 početnika) → skraćen dugi, N−1 T kont.; STANI 3 (plafon MP × M13a, +570 odbijanja) → najniži
-  nivo MP izuzet; 58 (gusta, T) upozorenje.
-- Regresija prema MAR-02: menja se tačno 912 planova (5 d 126, 6 d 786; VDOT 30, MP 16 → 14 km); ostalo bajt-isto.
-- Testovi: brz 17 fajlova / 192 testa (48,9 s), pun 33 / 255 (6 min 18 s); sabotaže 13/13 PAO (101,4 s);
-  `npm run check` exit 0 (252 fajla, 3060 testova).
+- Polazni SHA `5547285`; izveštaj `reports/SEGMENT-04-IMPLEMENTATION.md`; bez STANI.
+- Testovi: brz 20 fajlova / 233 testa (50,3 s), pun 40 / 302 (10 min 43 s); sabotaže 14/14 PALO; `npm run check` exit 0
+  (260 fajlova, 3155 testova). Skripte `artifacts/segment-04/` (grid04, wide, metrics).
 
 ## Sledeće
 
-- MAR-04: adaptacija (M18, pouke 7, 16–25); rezultat testa 5 km → MP po M2 od sledeće nedelje.
+- Faza 2: MAR-05 (prekidač, adapter, aplikacija) posle HM-05/06.

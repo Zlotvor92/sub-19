@@ -1,0 +1,51 @@
+{
+  "n": 50,
+  "parts": [
+    {
+      "part": "1/4",
+      "plans": 412,
+      "skipped": 6,
+      "flows": 84560,
+      "rejected": 0,
+      "byClass": {},
+      "badClass": {},
+      "sec": 1257.693
+    },
+    {
+      "part": "2/4",
+      "plans": 410,
+      "skipped": 8,
+      "flows": 84098,
+      "rejected": 0,
+      "byClass": {},
+      "badClass": {},
+      "sec": 1215.13
+    },
+    {
+      "part": "3/4",
+      "plans": 411,
+      "skipped": 7,
+      "flows": 84224,
+      "rejected": 0,
+      "byClass": {},
+      "badClass": {},
+      "sec": 1225.878
+    },
+    {
+      "part": "4/4",
+      "plans": 413,
+      "skipped": 5,
+      "flows": 84742,
+      "rejected": 0,
+      "byClass": {},
+      "badClass": {},
+      "sec": 1219.613
+    }
+  ],
+  "total": {
+    "plans": 1646,
+    "skipped": 26,
+    "flows": 337624,
+    "rejected": 0
+  }
+}

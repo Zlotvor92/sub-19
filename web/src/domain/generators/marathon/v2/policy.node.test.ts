@@ -15,14 +15,15 @@ import { doseOf } from './workouts.ts';
 describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('marathon-v2');
-    expect(P.version).toBe('marathon-v2.2.0');
+    expect(P.version).toBe('marathon-v2.3.0');
   });
 
-  it('DECISIONS: M1–M17, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: M1–M18, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), A1–A15 i A17 (adaptacija, M18), svaka sa pravilom, mestom i obrazloženjem', () => {
     const ids = Array.from({ length: 17 }, (_, i) => `M${i + 1}`);
     ids.splice(13, 0, 'M13a');
     ids.splice(10, 0, 'M10a');
     ids.splice(7, 0, 'M7a');
+    ids.push('M18', ...Array.from({ length: 15 }, (_, i) => `A${i + 1}`), 'A17');
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(40);

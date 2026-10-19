@@ -1,0 +1,152 @@
+{
+  "total": {
+    "flows": 6236,
+    "NO_FACTS": 488,
+    "UNDER_EXECUTION": 278,
+    "A17 ukinuto rasterećenje": 636,
+    "A9 manje kvaliteta": 451,
+    "w:DELOAD_LONG_SHORTENED": 821,
+    "OVER_EXECUTION": 64,
+    "PAUSE": 976,
+    "TEST_MOVED": 456,
+    "A9 dugi 5 km": 19,
+    "K6 T/I/R dan > dugi (tokova)": 116,
+    "K6 MP 2×3000 dan > dugi (tokova)": 43,
+    "w:LONG_SHORTER_THAN_QUALITY": 78,
+    "orijentir": 64,
+    "PAIN": 2820,
+    "w:PLANNED_BELOW_TARGET_LIMITS": 3357,
+    "w:WEEK_MIN_LIMITS": 436,
+    "FATIGUE": 124,
+    "NEW_RESULT": 732,
+    "w:CAPACITY_LIMITED": 37
+  },
+  "perScenario": {
+    "none": {
+      "flows": 244,
+      "NO_FACTS": 244
+    },
+    "done100": {
+      "flows": 244
+    },
+    "under50": {
+      "flows": 244,
+      "UNDER_EXECUTION": 124,
+      "A17 ukinuto rasterećenje": 30,
+      "A9 manje kvaliteta": 5,
+      "w:DELOAD_LONG_SHORTENED": 21
+    },
+    "over120": {
+      "flows": 244,
+      "OVER_EXECUTION": 64,
+      "w:DELOAD_LONG_SHORTENED": 3
+    },
+    "pause10": {
+      "flows": 244,
+      "PAUSE": 244,
+      "A9 manje kvaliteta": 17,
+      "w:DELOAD_LONG_SHORTENED": 40,
+      "A17 ukinuto rasterećenje": 30,
+      "TEST_MOVED": 12
+    },
+    "pause20": {
+      "flows": 244,
+      "PAUSE": 244,
+      "A9 manje kvaliteta": 15,
+      "w:DELOAD_LONG_SHORTENED": 63,
+      "A17 ukinuto rasterećenje": 30,
+      "TEST_MOVED": 24,
+      "A9 dugi 5 km": 3,
+      "K6 T/I/R dan > dugi (tokova)": 1,
+      "K6 MP 2×3000 dan > dugi (tokova)": 1,
+      "w:LONG_SHORTER_THAN_QUALITY": 1
+    },
+    "pause35": {
+      "flows": 244,
+      "PAUSE": 244,
+      "A9 manje kvaliteta": 132,
+      "orijentir": 64,
+      "w:DELOAD_LONG_SHORTENED": 130,
+      "TEST_MOVED": 31,
+      "A9 dugi 5 km": 13,
+      "K6 T/I/R dan > dugi (tokova)": 79,
+      "K6 MP 2×3000 dan > dugi (tokova)": 34,
+      "w:LONG_SHORTER_THAN_QUALITY": 60
+    },
+    "pain5": {
+      "flows": 1288,
+      "PAIN": 1288,
+      "A9 manje kvaliteta": 112,
+      "w:PLANNED_BELOW_TARGET_LIMITS": 1300,
+      "w:DELOAD_LONG_SHORTENED": 233,
+      "A17 ukinuto rasterećenje": 210,
+      "TEST_MOVED": 84
+    },
+    "pain8": {
+      "flows": 1288,
+      "PAIN": 1288,
+      "A9 manje kvaliteta": 110,
+      "w:PLANNED_BELOW_TARGET_LIMITS": 1831,
+      "w:WEEK_MIN_LIMITS": 436,
+      "w:DELOAD_LONG_SHORTENED": 193,
+      "A17 ukinuto rasterećenje": 210,
+      "TEST_MOVED": 115,
+      "K6 T/I/R dan > dugi (tokova)": 23
+    },
+    "fatigue": {
+      "flows": 244,
+      "FATIGUE": 124,
+      "TEST_MOVED": 8,
+      "w:DELOAD_LONG_SHORTENED": 21
+    },
+    "faster": {
+      "flows": 244,
+      "NEW_RESULT": 244,
+      "TEST_MOVED": 48,
+      "w:DELOAD_LONG_SHORTENED": 12
+    },
+    "slower": {
+      "flows": 244,
+      "NEW_RESULT": 244,
+      "TEST_MOVED": 48,
+      "w:CAPACITY_LIMITED": 16
+    },
+    "test5k": {
+      "flows": 244,
+      "NEW_RESULT": 244,
+      "TEST_MOVED": 48,
+      "w:CAPACITY_LIMITED": 21,
+      "w:DELOAD_LONG_SHORTENED": 12
+    },
+    "incomplete": {
+      "flows": 244,
+      "NO_FACTS": 244
+    },
+    "locked": {
+      "flows": 244
+    },
+    "chain": {
+      "flows": 244,
+      "UNDER_EXECUTION": 154,
+      "A9 manje kvaliteta": 39,
+      "w:DELOAD_LONG_SHORTENED": 43,
+      "A17 ukinuto rasterećenje": 96,
+      "TEST_MOVED": 14,
+      "K6 T/I/R dan > dugi (tokova)": 12,
+      "K6 MP 2×3000 dan > dugi (tokova)": 8,
+      "w:LONG_SHORTER_THAN_QUALITY": 17
+    },
+    "painPause": {
+      "flows": 244,
+      "PAIN": 244,
+      "PAUSE": 244,
+      "w:PLANNED_BELOW_TARGET_LIMITS": 226,
+      "A9 manje kvaliteta": 21,
+      "w:DELOAD_LONG_SHORTENED": 50,
+      "A17 ukinuto rasterećenje": 30,
+      "TEST_MOVED": 24,
+      "A9 dugi 5 km": 3,
+      "K6 T/I/R dan > dugi (tokova)": 1
+    }
+  }
+}
