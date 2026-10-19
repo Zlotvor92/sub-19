@@ -31,7 +31,15 @@ const app = createApp({
   online: () => navigator.onLine,
   notify: (message) => window.alert(message),
   geo: browserGeo(),
-  pwa: browserPwa()
+  pwa: browserPwa(),
+  platform: () => {
+    try {
+      if (document.referrer.startsWith('android-app://')) return 'android';
+      return window.matchMedia('(display-mode: standalone)').matches ? 'instalirana' : 'pregledac';
+    } catch {
+      return null;
+    }
+  }
 });
 setApp(app);
 /* Tema je već postavljena skriptom `tema.js` (pre prvog iscrtavanja); ovde se samo usklađuje boja trake pregledača. */

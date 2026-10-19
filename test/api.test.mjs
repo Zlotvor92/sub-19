@@ -592,6 +592,88 @@ describe('/api/daily-report — paginacija', () => {
       'korisnik sa druge strane je ispao iz brojanja');
   });
 
+  test('pregled aktivnosti: udeo trenira/ne trenira, kandidati i naslov sa brojem', async () => {
+    const { default: handler } = await import('../api/daily-report.js?t=' + Math.random());
+    let mejl = null;
+    const aktivnost = [
+      { user_id: 'u1', email: 'a@t.rs', ime: 'Ana', status: 'trci', kandidat_za_brisanje: false, ima_plan: true, treninga: 5, strava: true, registrovan: '2026-08-01T10:00:00Z', dana_neaktivan: 0 },
+      { user_id: 'u2', email: 'b@t.rs', ime: 'Boban', status: 'neaktivan', kandidat_za_brisanje: true, ima_plan: true, treninga: 0, registrovan: '2026-07-01T10:00:00Z', dana_neaktivan: 70 },
+      { user_id: 'u3', email: 'c@t.rs', ime: 'Ceca', status: 'nov', kandidat_za_brisanje: false, ima_plan: false, treninga: 0, registrovan: new Date().toISOString(), dana_neaktivan: 0 }
+    ];
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), h = (opt && opt.headers) || {};
+      const strana = () => +String(h.Range || '0-').split('-')[0];
+      if (u.includes('app_stats')) return jsonRes([{ korisnika: 3 }]);
+      if (u.includes('/auth/v1/admin/users')) {
+        return jsonRes(/[?&]page=1\b/.test(u) ? aktivnost.map(x => ({ id: x.user_id, email: x.email, created_at: x.registrovan })) : []);
+      }
+      if (u.includes('admin_aktivnost')) return jsonRes(strana() > 0 ? [] : aktivnost);
+      if (u.includes('korisnik_dogadjaj')) return jsonRes(strana() > 0 ? [] : [{ user_id: 'u1', vrsta: 'otvaranje', napravljeno: new Date().toISOString() }]);
+      if (u.includes('user_state') || u.includes('endpoint_usage') || u.includes('api_usage') || u.includes('nalog_za_brisanje')) return jsonRes([]);
+      if (u.includes('api.resend.com')) { mejl = JSON.parse(opt.body); return jsonRes({ id: 'm' }); }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    const res = makeRes();
+    await handler({ method: 'GET', headers: { authorization: 'Bearer tajna' } }, res);
+    assert.equal(res.code, 200, JSON.stringify(res.body));
+    assert.match(mejl.subject, /3 korisnika, trenira 1 \(33%\), za brisanje 1/);
+    assert.match(mejl.html, /Ko trenira, a ko ne/);
+    assert.match(mejl.html, /1 od 3 registrovanih \(33%\) trenira/);
+    const kandidati = mejl.html.slice(mejl.html.indexOf('Kandidati za brisanje'), mejl.html.indexOf('Ključni brojevi'));
+    assert.ok(kandidati.includes('b@t.rs') && !kandidati.includes('a@t.rs'), 'pogrešan spisak kandidata');
+    assert.ok(!/NaN|undefined/.test(mejl.html), 'u mejl je procurela neizračunata vrednost');
+  });
+
+  test('do 60 korisnika mejl ostaje ispod 102 KB — preko toga ga Gmail seče', async () => {
+    /* Gmail iseče poruku veću od 102 KB i ostatak sakrije iza „View entire
+       message". Izveštaj je ceo HTML sa inline stilom (Gmail izbacuje <style>),
+       pa je veličina stvarna granica dizajna, ne detalj. */
+    const { default: handler } = await import('../api/daily-report.js?t=' + Math.random());
+    const danas = new Date();
+    const dan = n => new Date(danas.getTime() - n * 86400000).toISOString();
+    const ljudi = Array.from({ length: 60 }, (_, i) => ({
+      user_id: 'u' + i, email: 'korisnik.sa.dugom.adresom' + i + '@primer-domena.rs', ime: 'Ime Prezimenović ' + i,
+      status: ['trci', 'otvara_ne_trci', 'nov', 'neaktivan'][i % 4], kandidat_za_brisanje: i % 7 === 0,
+      ima_plan: true, plan_trka: ['5K', '10K', 'Polumaraton', 'Maraton'][i % 4], plan_datum_trke: dan(-20 - i).slice(0, 10),
+      treninga: i % 3, strava: i % 2 === 0, ai_analiza: i % 5, verzija_aplikacije: '28' + (i % 4),
+      registrovan: dan(i), dana_neaktivan: i % 40
+    }));
+    const stanje = i => ({ log: Object.fromEntries(Array.from({ length: 12 }, (_, k) =>
+      ['d' + k, { status: 'done', runDate: dan(k * 2).slice(0, 10), km: 5 + k }])), strava: i % 2 ? null : { lastSync: dan(1) } });
+    let mejl = null;
+    globalThis.fetch = async (url, opt) => {
+      const u = String(url), h = (opt && opt.headers) || {};
+      const strana = () => +String(h.Range || '0-').split('-')[0];
+      if (u.includes('app_stats')) return jsonRes([{ korisnika: 60 }]);
+      if (u.includes('/auth/v1/admin/users')) {
+        return jsonRes(/[?&]page=1\b/.test(u) ? ljudi.map(x => ({ id: x.user_id, email: x.email, created_at: x.registrovan })) : []);
+      }
+      if (u.includes('admin_aktivnost')) return jsonRes(strana() > 0 ? [] : ljudi);
+      if (u.includes('korisnik_dogadjaj')) return jsonRes(strana() > 0 ? [] : ljudi.flatMap((x, i) =>
+        Array.from({ length: 10 }, (_, k) => ({ user_id: x.user_id, vrsta: 'otvaranje', napravljeno: dan((i + k * 3) % 40), meta: { platforma: 'android' } }))));
+      if (u.includes('user_state')) return jsonRes(strana() > 0 ? [] : ljudi.map((x, i) => ({ user_id: x.user_id, updated_at: dan(i % 9), data: stanje(i) })));
+      if (u.includes('endpoint_usage') || u.includes('api_usage') || u.includes('nalog_za_brisanje')) return jsonRes([]);
+      if (u.includes('api.resend.com')) { mejl = JSON.parse(opt.body); return jsonRes({ id: 'm' }); }
+      throw new Error('neočekivan poziv: ' + u);
+    };
+    const res = makeRes();
+    await handler({ method: 'GET', headers: { authorization: 'Bearer tajna' } }, res);
+    assert.equal(res.code, 200, JSON.stringify(res.body));
+    const kb = Buffer.byteLength(mejl.html, 'utf8') / 1024;
+    assert.ok(kb < 102, `mejl ima ${kb.toFixed(1)} KB — Gmail ga seče iznad 102 KB`);
+    for (const deo of ['Put korisnika', 'Aktivnost', 'Kilometri po danu', 'Nedeljna kilometraža', 'Kohorte', 'Šta koriste', 'Ciljevi', 'Verzije aplikacije', 'Kandidati za brisanje']) {
+      assert.ok(mejl.html.includes(deo), 'nedostaje odeljak: ' + deo);
+    }
+    assert.ok(!/<style/i.test(mejl.html), 'Gmail izbacuje <style> — stilovi moraju biti inline');
+    assert.ok(!/NaN|undefined|Invalid/.test(mejl.html), 'u mejl je procurela neizračunata vrednost');
+  });
+
+  test('kad pregled aktivnosti ne stigne, mejl ipak ide i kaže šta fali', async () => {
+    const html = await izvestajZa({ log: {} }, []);
+    assert.match(html, /admin_aktivnost nije učitan/);
+    assert.match(html, /Aktivnih \(7 dana\)/, 'stari ključni brojevi su nestali');
+  });
+
   test('pokvaren aiAt ne obara kolonu', async () => {
     /* `data` je u potpunosti pod kontrolom korisnika (uvezen backup, ručna
         izmena). Neupotrebljiva vrednost mora da da prazno polje, ne grešku. */
@@ -2438,7 +2520,7 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
   });
 
   test('svaki okidač iz fajlova je na spisku', () => {
-    const o = izFajlova(/create trigger ([a-z_]+)/g);
+    const o = izFajlova(/create (?:or replace )?trigger ([a-z_]+)/g);
     assert.ok(o.length >= 6, `nađeno premalo okidača: ${o}`);
     const nema = o.filter(x => !INV.includes(`'okidač:${x}'`));
     assert.deepEqual(nema, [], `inventar.sql ih ne poznaje: ${nema}`);
@@ -2450,7 +2532,7 @@ describe('inventar.sql poznaje sve što supabase/ pravi', () => {
     for (const [vrsta, re] of [
       ['tabela', /create table if not exists public\.([a-z_]+)/g],
       ['funkcija', /create (?:or replace )?function public\.([a-z_]+)/g],
-      ['okidač', /create trigger ([a-z_]+)/g]
+      ['okidač', /create (?:or replace )?trigger ([a-z_]+)/g]
     ]) {
       const stvarni = new Set(izFajlova(re));
       const naSpisku = [...INV.matchAll(new RegExp(`'${vrsta}:([a-z_]+)'`, 'g'))].map(m => m[1]);
@@ -2532,7 +2614,7 @@ describe('Čišćenje ostataka ne sme da odnese ništa što se koristi', () => {
 
   /* Funkcija okidača = ona koju neki `create trigger` u folderu poziva. */
   const funkcijeOkidaca = [...new Set(
-    [...SQL.matchAll(/create trigger[\s\S]{0,200}?execute function public\.([a-z_]+)\(/g)].map(m => m[1])
+    [...SQL.matchAll(/create (?:or replace )?trigger[\s\S]{0,200}?execute function public\.([a-z_]+)\(/g)].map(m => m[1])
   )].sort();
 
   test('svaka funkcija okidača iz fajlova je na spisku izuzetaka', () => {

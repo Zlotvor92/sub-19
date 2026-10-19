@@ -1,0 +1,478 @@
+{
+  "feel": {
+    "d3": {
+      "plans": 1170,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0,
+        "codes": {}
+      },
+      "K2": {
+        "week1BelowStart": 195,
+        "withoutLongOnCap": 0
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 582,
+        "peakOverStart": 1.342,
+        "doseDropped": 0,
+        "marathonLongShort": 864,
+        "taperMpOverCap": 672,
+        "longestLongMedianKm": 21.4
+      },
+      "M16": {
+        "testInDeload": 360,
+        "testOnQ1": 810,
+        "deloadLongShortened": 36,
+        "testLongerThanLong": 0,
+        "vdotMin": 26.1,
+        "vdotMax": 58.6
+      },
+      "M17": {
+        "tContinuousFallbackWeeks": 0,
+        "buildNoQualityWeeks": 0,
+        "taperMpWithoutMpInBuild": 0,
+        "noSharpener": 0
+      }
+    },
+    "d4": {
+      "plans": 1638,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0,
+        "codes": {}
+      },
+      "K2": {
+        "week1BelowStart": 390,
+        "withoutLongOnCap": 0
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 840,
+        "peakOverStart": 1.352,
+        "doseDropped": 93,
+        "marathonLongShort": 1254,
+        "taperMpOverCap": 18,
+        "longestLongMedianKm": 21.4
+      },
+      "M16": {
+        "testInDeload": 504,
+        "testOnQ1": 1134,
+        "deloadLongShortened": 27,
+        "testLongerThanLong": 0,
+        "vdotMin": 26.1,
+        "vdotMax": 58.6
+      },
+      "M17": {
+        "tContinuousFallbackWeeks": 0,
+        "buildNoQualityWeeks": 0,
+        "taperMpWithoutMpInBuild": 0,
+        "noSharpener": 0
+      }
+    },
+    "d5": {
+      "plans": 2340,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0,
+        "codes": {}
+      },
+      "K2": {
+        "week1BelowStart": 234,
+        "withoutLongOnCap": 0
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 759,
+        "peakOverStart": 1.381,
+        "doseDropped": 27,
+        "marathonLongShort": 1722,
+        "taperMpOverCap": 0,
+        "longestLongMedianKm": 21.4
+      },
+      "M16": {
+        "testInDeload": 720,
+        "testOnQ1": 1620,
+        "deloadLongShortened": 36,
+        "testLongerThanLong": 9,
+        "vdotMin": 26.1,
+        "vdotMax": 58.6
+      },
+      "M17": {
+        "tContinuousFallbackWeeks": 0,
+        "buildNoQualityWeeks": 0,
+        "taperMpWithoutMpInBuild": 0,
+        "noSharpener": 0
+      }
+    },
+    "d6": {
+      "plans": 3042,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0,
+        "codes": {}
+      },
+      "K2": {
+        "week1BelowStart": 351,
+        "withoutLongOnCap": 0
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 828,
+        "peakOverStart": 1.324,
+        "doseDropped": 54,
+        "marathonLongShort": 2112,
+        "taperMpOverCap": 0,
+        "longestLongMedianKm": 22.6
+      },
+      "M16": {
+        "testInDeload": 936,
+        "testOnQ1": 2106,
+        "deloadLongShortened": 27,
+        "testLongerThanLong": 9,
+        "vdotMin": 26.1,
+        "vdotMax": 58.6
+      },
+      "M17": {
+        "tContinuousFallbackWeeks": 0,
+        "buildNoQualityWeeks": 0,
+        "taperMpWithoutMpInBuild": 0,
+        "noSharpener": 0
+      }
+    }
+  },
+  "beginner": {
+    "d4-feel": {
+      "plans": 540,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0,
+        "codes": {}
+      },
+      "K2": {
+        "week1BelowStart": 0,
+        "withoutLongOnCap": 0
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 36,
+        "peakOverStart": 1.499,
+        "doseDropped": 0,
+        "marathonLongShort": 486,
+        "taperMpOverCap": 0,
+        "longestLongMedianKm": 18
+      },
+      "M16": {
+        "testInDeload": 0,
+        "testOnQ1": 0,
+        "deloadLongShortened": 129,
+        "testLongerThanLong": 0,
+        "vdotMin": 26.1,
+        "vdotMax": 45.7
+      },
+      "M17": {
+        "tContinuousFallbackWeeks": 0,
+        "buildNoQualityWeeks": 0,
+        "taperMpWithoutMpInBuild": 0,
+        "noSharpener": 540
+      }
+    },
+    "d4-result": {
+      "plans": 405,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0,
+        "codes": {}
+      },
+      "K2": {
+        "week1BelowStart": 0,
+        "withoutLongOnCap": 0
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 24,
+        "peakOverStart": 1.5,
+        "doseDropped": 0,
+        "marathonLongShort": 405,
+        "taperMpOverCap": 0,
+        "longestLongMedianKm": 18
+      },
+      "M16": {
+        "testInDeload": 0,
+        "testOnQ1": 0,
+        "deloadLongShortened": 81,
+        "testLongerThanLong": 0,
+        "vdotMin": 99,
+        "vdotMax": 0
+      },
+      "M17": {
+        "tContinuousFallbackWeeks": 0,
+        "buildNoQualityWeeks": 0,
+        "taperMpWithoutMpInBuild": 0,
+        "noSharpener": 405
+      }
+    },
+    "d5-feel": {
+      "plans": 540,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0,
+        "codes": {}
+      },
+      "K2": {
+        "week1BelowStart": 0,
+        "withoutLongOnCap": 0
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 0,
+        "peakOverStart": 1.499,
+        "doseDropped": 0,
+        "marathonLongShort": 513,
+        "taperMpOverCap": 0,
+        "longestLongMedianKm": 18.3
+      },
+      "M16": {
+        "testInDeload": 0,
+        "testOnQ1": 0,
+        "deloadLongShortened": 204,
+        "testLongerThanLong": 0,
+        "vdotMin": 26.1,
+        "vdotMax": 45.7
+      },
+      "M17": {
+        "tContinuousFallbackWeeks": 0,
+        "buildNoQualityWeeks": 0,
+        "taperMpWithoutMpInBuild": 0,
+        "noSharpener": 540
+      }
+    },
+    "d5-result": {
+      "plans": 405,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0,
+        "codes": {}
+      },
+      "K2": {
+        "week1BelowStart": 0,
+        "withoutLongOnCap": 0
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 0,
+        "peakOverStart": 1.499,
+        "doseDropped": 0,
+        "marathonLongShort": 405,
+        "taperMpOverCap": 0,
+        "longestLongMedianKm": 18.3
+      },
+      "M16": {
+        "testInDeload": 0,
+        "testOnQ1": 0,
+        "deloadLongShortened": 150,
+        "testLongerThanLong": 0,
+        "vdotMin": 99,
+        "vdotMax": 0
+      },
+      "M17": {
+        "tContinuousFallbackWeeks": 0,
+        "buildNoQualityWeeks": 0,
+        "taperMpWithoutMpInBuild": 0,
+        "noSharpener": 405
+      }
+    }
+  },
+  "regression02": {
+    "d3": {
+      "same": 3120,
+      "changed": 0,
+      "ids": []
+    },
+    "d4": {
+      "same": 4368,
+      "changed": 0,
+      "ids": []
+    },
+    "d5": {
+      "same": 6114,
+      "changed": 126,
+      "ids": [
+        "d5-21w-55km-v30-A-sat",
+        "d5-21w-55km-v30-A-sun",
+        "d5-21w-55km-v30-B-sat",
+        "d5-21w-55km-v30-B-sun",
+        "d5-21w-55km-v30-C-sat"
+      ]
+    },
+    "d6": {
+      "same": 7326,
+      "changed": 786,
+      "ids": [
+        "d6-12w-85km-v30-A-sat",
+        "d6-12w-85km-v30-A-sun",
+        "d6-12w-85km-v30-B-sat",
+        "d6-12w-85km-v30-B-sun",
+        "d6-12w-85km-v30-C-sat"
+      ]
+    }
+  },
+  "recent": {
+    "total": 35910,
+    "rejected": 942,
+    "rejectedByR": {
+      "5": 489,
+      "6": 309,
+      "7": 105,
+      "8": 39
+    },
+    "otherRejections": 0,
+    "longerPlans": 2145,
+    "longerByR": {
+      "5": 456,
+      "6": 444,
+      "7": 348,
+      "8": 312,
+      "9": 234,
+      "10": 171,
+      "11": 117,
+      "12": 63
+    },
+    "longerByVdot": {
+      "30": 126,
+      "45": 549,
+      "70": 1470
+    },
+    "longerByDays": {
+      "3": 21,
+      "4": 240,
+      "5": 651,
+      "6": 1233
+    },
+    "mpLongerPlans": 570,
+    "mpLongerByR": {
+      "5": 114,
+      "6": 189,
+      "7": 153,
+      "8": 75,
+      "9": 39
+    },
+    "mpLongerByVdot": {
+      "45": 129,
+      "70": 441
+    },
+    "mpLongerByDays": {
+      "4": 48,
+      "5": 180,
+      "6": 342
+    },
+    "mpMaxDiffMin": 16.8,
+    "mpMaxDiffExample": "recent-d5-12w-70km-v70-A-r6 ned 6: WU 25 min + MP 2 × 3000 m (oporavak 1:30 džog) + CD 15 min 62 min, dugi 11 km 45 min"
+  },
+  "dense": {
+    "d3": {
+      "plans": 20301,
+      "rejected": 0,
+      "longer": 0,
+      "example": ""
+    },
+    "d4": {
+      "plans": 30401,
+      "rejected": 0,
+      "longer": 0,
+      "example": ""
+    },
+    "d5": {
+      "plans": 45551,
+      "rejected": 0,
+      "longer": 0,
+      "example": ""
+    },
+    "d6": {
+      "plans": 60701,
+      "rejected": 0,
+      "longer": 58,
+      "example": "dense-d6-50km-v76: Kvalitetni dan duži od dugog po trajanju u 1 od 7 nedelja izgradnje (ned 1: 44 > 44 min; pouka 14)."
+    }
+  }
+}

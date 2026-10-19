@@ -50,6 +50,19 @@ const HASHES_491 = join(
   dirname(fileURLToPath(import.meta.url)),
   'segment06c.adapt-hashes-4917959.json'
 );
+/** 06d (10k-v2.5.1, prošlost = upisani dani): heševi mreže 04 na 51a924f i tokovi porodice 1 — promenjeni jer je
+    zaštićen prošli dan (taper: RP ili lagan) upisan drugačije nego što ga je konstruktor sastavljao
+    (docs/10k-v2/artifacts/segment-06d/family1-grid04.json). Starije regresije (e6540a5, 4917959) za njih
+    porede stanje 51a924f; tačno ti tokovi se menjaju (test 06d). */
+const H51 = JSON.parse(
+  readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), 'segment06d.adapt-hashes-51a924f.json'),
+    'utf8'
+  )
+) as { against: string; family1: string[]; grid04: Record<string, number> };
+const FAMILY1 = new Set(H51.family1);
+/** Heš toka za starije regresije: porodica 1 → stanje 51a924f. */
+const asOf51 = (key: string, h: number): number => (FAMILY1.has(key) ? H51.grid04[key]! : h);
 /** 06b: promenjeni tokovi mreže 04 prema e6540a5 po scenariju (svi sa primenjenim PAIN; nepromenjeni PAIN
     tokovi su bez povratka — r je taper: asOf u taperu i kraj ned 8 u planovima od 10 ned). 06c (A17): i
     tokovi sa ukinutim rasterećenjem (heš bez polja reduced). */
@@ -145,7 +158,15 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
           const asOf = asOfOf(p0, k);
           all.push({ id: b.id, k, s, asOf, facts: factsOf(p0, s, asOf) });
         }
-    cases = FULL ? all : sample(all, K, (c) => c.s);
+    // 06d: tokovi porodice 1 su uvek u uzorku (dokaz u brzom nivou).
+    cases = FULL
+      ? all
+      : sample(
+          all,
+          K,
+          (c) => c.s,
+          (c) => FAMILY1.has(`${c.id}/${c.k}/${c.s}`)
+        );
     for (const { id, k, s, asOf, facts } of cases) {
       const p0 = plan(id);
       let r = adaptTenKV2(p0, facts, asOf);
@@ -265,13 +286,15 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     const notPain: string[] = [];
     const unchangedBack: string[] = [];
     const byA17: Record<string, number> = {};
-    for (const [key, h] of Object.entries(h06c))
+    for (const [key, h0] of Object.entries(h06c)) {
+      const h = asOf51(key, h0);
       if (ref.grid04[key] !== h) {
         const s = key.split('/')[2]!;
         if (painApplied.has(key)) changed[s] = (changed[s] ?? 0) + 1;
         else if (a17.has(key)) byA17[s] = (byA17[s] ?? 0) + 1;
         else notPain.push(key);
       } else if (painBack.has(key)) unchangedBack.push(key);
+    }
     expect(notPain).toEqual([]);
     expectCounts(changed, CHANGED_06B);
     expectCounts(byA17, { chain: 60, pause10: 40, pause20: 40, under50: 40 });
@@ -296,7 +319,8 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     const reducedOnly: Record<string, number> = {};
     const other: string[] = [];
     const same: string[] = [];
-    for (const [key, h] of Object.entries(h06c)) {
+    for (const [key, h0] of Object.entries(h06c)) {
+      const h = asOf51(key, h0);
       const s = key.split('/')[2]!;
       const marked = a17.has(key) || n2.has(key);
       if (ref.grid04[key] !== h) {
@@ -304,13 +328,25 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
         if (!marked) other.push(key);
       } else {
         if (marked) same.push(key);
-        if (h81[key] !== h) reducedOnly[s] = (reducedOnly[s] ?? 0) + 1;
+        // Polje reduced je isto u 51a924f i sada (isti koraci): poredi se par novog koda.
+        if (h81[key] !== h0) reducedOnly[s] = (reducedOnly[s] ?? 0) + 1;
       }
     }
     expect(other).toEqual([]);
     expect(same).toEqual([]);
     expectCounts(changed, CHANGED_06C);
     expectCounts(reducedOnly, REDUCED_ONLY_06C);
+  });
+
+  it('06d: regresija prema 51a924f (heš bez oznake verzije) — menja se tačno 18 tokova porodice 1 (prošlost = upisani dani), ostali bajt-isti', () => {
+    expect(H51.against).toBe('51a924f');
+    expect(Object.keys(H51.grid04).sort()).toEqual(all.map((c) => `${c.id}/${c.k}/${c.s}`).sort());
+    expect(FAMILY1.size).toBe(18);
+    logCompared('tenK.v2.51a924f.grid04', Object.keys(h06c));
+    const changed = Object.keys(h06c).filter((k) => H51.grid04[k] !== h06c[k]);
+    const sampled = Object.keys(h06c).filter((k) => FAMILY1.has(k));
+    expect(changed.filter((k) => !FAMILY1.has(k))).toEqual([]);
+    expect(changed.filter((k) => FAMILY1.has(k)).sort()).toEqual(sampled.sort());
   });
 
   it('06c: reduced === true tačno u koracima A2/A3 (manjak, pauza — i nov start), === false tačno u koracima A6 (višak), odsutno u svim ostalim', () => {

@@ -1,19 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { dayRule, MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
+import {
+  BEGINNER_DAYS_COUNTS,
+  dayRule,
+  MARATHON_V2_POLICY as P,
+  planRule,
+  RUN_DAYS_COUNTS
+} from './policy.ts';
 import type { Structure } from './types.ts';
 import { doseOf } from './workouts.ts';
 
-/* Brojevi M1–M15 (MASTER-HM-MARATHON.md § 5) i pouke 27–28 zakucani: izmena broja mora da obori test i ide kroz
+/* Brojevi M1–M17 (MASTER-HM-MARATHON.md § 5) i pouke 27–28 zakucani: izmena broja mora da obori test i ide kroz
    DECISIONS. */
 
-describe('politika maraton v2 (M1–M15, M7a, M10a, M13a)', () => {
+describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('marathon-v2');
-    expect(P.version).toBe('marathon-v2.1.0');
+    expect(P.version).toBe('marathon-v2.2.0');
   });
 
-  it('DECISIONS: M1–M15, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), svaka sa pravilom, mestom i obrazloženjem', () => {
-    const ids = Array.from({ length: 15 }, (_, i) => `M${i + 1}`);
+  it('DECISIONS: M1–M17, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), svaka sa pravilom, mestom i obrazloženjem', () => {
+    const ids = Array.from({ length: 17 }, (_, i) => `M${i + 1}`);
     ids.splice(13, 0, 'M13a');
     ids.splice(10, 0, 'M10a');
     ids.splice(7, 0, 'M7a');
@@ -173,6 +179,88 @@ describe('politika maraton v2 (M1–M15, M7a, M10a, M13a)', () => {
       tCruiseRecovery: { shortMaxM: 1600, shortSec: 60, longSec: 90 },
       mpRecovery: { shortMaxM: 4000, shortSec: 90, longSec: 120 }
     });
+  });
+
+  it('M16 po osećaju (lagan 270–510 s/km, E ± 15 s, procena VDOT 25–60, RPE T 6–7 / I 8 / R 8 / MP 5–6) i test 5 km', () => {
+    expect(P.feel).toEqual({
+      easyPaceMinSec: 270,
+      easyPaceMaxSec: 510,
+      eRangeSec: 15,
+      vdotMin: 25,
+      vdotMax: 60,
+      rpe: {
+        T: { min: 6, max: 7, cue: 'udobno teško, kratke rečenice' },
+        I: { min: 8, max: 8, cue: 'teško, izdrživo 3–5 min' },
+        R: { min: 8, max: 8, cue: 'brzo, opušteno' },
+        MP: { min: 5, max: 6, cue: 'ritam maratona' }
+      }
+    });
+    expect(P.test).toEqual({ km: 5 });
+  });
+
+  it('M17 početnik: jedina tabela (4–5 dana, 16 ned, obim 25–45 / 30–50, uvod 2, +5 % 1,0–2,5, vrh 1,5× / +25, T 1,5, prag 24 km, WU/CD 15/10) i planRule', () => {
+    expect(P.beginner).toEqual({
+      days: { 4: { kmMin: 25, kmMax: 45 }, 5: { kmMin: 30, kmMax: 50 } },
+      weeksMin: 16,
+      introWeeks: 2,
+      growth: 0.05,
+      growthMinKm: 1,
+      growthMaxKm: 2.5,
+      peakFactor: 1.5,
+      peakAddKm: 25,
+      tFirstKm: 1.5,
+      longShortKm: 24,
+      warmupSec: 900,
+      cooldownSec: 600
+    });
+    expect(BEGINNER_DAYS_COUNTS).toEqual([4, 5]);
+    for (const n of [3, 6]) expect(planRule(n, 'beginner')).toBeNull();
+    const b4 = planRule(4, 'beginner')!;
+    expect({ ...b4 }).toMatchObject({
+      quality: 1,
+      easy: 2,
+      kmMin: 25,
+      kmMax: 45,
+      peakMaxKm: 80,
+      longMaxShare: P.days[4].longMaxShare,
+      weekMinKm: 20,
+      beginner: true,
+      introWeeks: 2,
+      weeksMin: 16,
+      feelTest: false,
+      longShortKm: 24,
+      fixedWarmupCooldown: { warmupSec: 900, cooldownSec: 600 }
+    });
+    expect(planRule(5, 'beginner')).toMatchObject({ quality: 1, easy: 3, kmMin: 30, kmMax: 50 });
+    // Redovno pravilo = red M15 + brojevi M6/M13 (bez uvoda, test po osećaju, WU/CD po pojasu).
+    for (const n of RUN_DAYS_COUNTS)
+      expect(planRule(n)).toEqual({
+        ...dayRule(n)!,
+        beginner: false,
+        growth: 0.06,
+        growthMinKm: 1,
+        growthMaxKm: 5,
+        peakFactor: 1.5,
+        peakAddKm: 30,
+        introWeeks: 0,
+        weeksMin: 12,
+        feelTest: true,
+        longShortKm: 26,
+        fixedWarmupCooldown: null
+      });
+  });
+
+  it('pouka 10 (M17): T kont. 1,5 km i T cruise staju u plafon pri najmanjem obimu početnika (i 1,5 km u rasterećenju); MP 2 × 3000 m tek od 30 km (T kont. umesto MP)', () => {
+    const cap = (z: keyof typeof P.caps, km: number): number => Math.floor(P.caps[z] * km * 1000);
+    for (const n of BEGINNER_DAYS_COUNTS) {
+      const r = planRule(n, 'beginner')!;
+      expect(P.beginner.tFirstKm * 1000, `${n}`).toBeLessThanOrEqual(
+        cap('T', P.deload.factor * r.kmMin)
+      );
+      expect(doseOf(P.ladders.T_cruise[0]!), `${n}`).toBeLessThanOrEqual(cap('T', r.kmMin));
+    }
+    expect(doseOf(P.ladders.MP[0]!)).toBeGreaterThan(cap('MP', 25));
+    expect(doseOf(P.ladders.MP[0]!)).toBeLessThanOrEqual(cap('MP', 30));
   });
 
   it('pouka 10: najniži nivo svake lestvice staje u plafon pri najmanjem obimu svakog reda (izgradnja i rasterećenje)', () => {

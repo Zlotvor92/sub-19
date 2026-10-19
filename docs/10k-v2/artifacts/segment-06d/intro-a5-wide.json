@@ -1,0 +1,856 @@
+{
+ "flows": 576,
+ "explained": 0,
+ "dist": {
+  "taperLong": {
+   "isti": 576
+  },
+  "taperDose": {
+   "isti": 576
+  },
+  "deloadDose": {
+   "isti": 576
+  },
+  "deloadLong": {
+   "isti": 504,
+   "viši": 72
+  },
+  "buildDose": {
+   "isti": 576
+  }
+ },
+ "invBad": [],
+ "byGridFamilyScenario": {
+  "S B fatigue": 576
+ },
+ "examples": [
+  {
+   "key": "S/b-d3-10w-15km-e330-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-10w-15km-e450-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-10w-15km-v35-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-10w-20km-e330-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [
+    "ned 2 (base): easy:4.1 easy:4.1 long:6.7 → easy:4.4 easy:4.4 long:7.2"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-11w-15km-e450-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-11w-15km-v30-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-11w-20km-e330-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [
+    "ned 2 (base): long:6.7 easy:4.1 easy:4.1 → long:7.2 easy:4.4 easy:4.4"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-12w-15km-e390-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-12w-15km-v30-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-12w-15km-v40-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-13w-15km-e390-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-13w-15km-e510-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-13w-15km-v40-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-14w-15km-e330-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-14w-15km-e510-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-14w-15km-v35-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-15w-15km-e330-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-15w-15km-e450-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-15w-15km-v35-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-15w-20km-e330-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [
+    "ned 2 (base): easy:4.1 easy:4.1 long:6.7 → easy:4.4 easy:4.4 long:7.2"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-16w-15km-e450-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-16w-15km-v30-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-16w-20km-e330-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [
+    "ned 2 (base): long:6.7 easy:4.1 easy:4.1 → long:7.2 easy:4.4 easy:4.4"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-17w-15km-e390-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-17w-15km-v30-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-17w-15km-v40-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-18w-15km-e390-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-18w-15km-e510-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-18w-15km-v40-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-10w-18km-e330-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-10w-18km-e510-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-10w-18km-v35-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-11w-18km-e330-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-11w-18km-e450-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-11w-18km-v35-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-11w-22km-e330-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [
+    "ned 2 (base): easy:3.4 easy:3.3 easy:3.3 long:4.9 → easy:4 easy:4 easy:3.9 long:5.7"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-12w-18km-e450-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-12w-18km-v30-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-12w-22km-e330-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [
+    "ned 2 (base): long:4.9 easy:3.4 easy:3.3 easy:3.3 → long:5.7 easy:4 easy:4 easy:3.9"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-13w-18km-e390-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-13w-18km-v30-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-13w-18km-v40-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-14w-18km-e390-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-14w-18km-e510-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-14w-18km-v40-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-15w-18km-e330-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-15w-18km-e510-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-15w-18km-v35-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-16w-18km-e330-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-16w-18km-e450-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-16w-18km-v35-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-16w-22km-e330-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [
+    "ned 2 (base): easy:3.4 easy:3.3 easy:3.3 long:4.9 → easy:4 easy:4 easy:3.9 long:5.7"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-17w-18km-e450-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-17w-18km-v30-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-17w-22km-e330-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [
+    "ned 2 (base): long:4.9 easy:3.4 easy:3.3 easy:3.3 → long:5.7 easy:4 easy:4 easy:3.9"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-18w-18km-e390-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-18w-18km-v30-A-sat/w1end/fatigue",
+   "asOf": "2026-11-07",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-18w-18km-v40-B-sun/w1end/fatigue",
+   "asOf": "2026-11-08",
+   "pastDiff": [],
+   "changed": [],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  }
+ ]
+}

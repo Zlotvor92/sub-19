@@ -6,7 +6,7 @@
 import { addDays } from './dates.ts';
 import { raceTimeForVdot, round1, vdotFromResult } from './paces.ts';
 import { MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS, type RunDaysCount } from './policy.ts';
-import type { MarathonV2Plan, Weekday } from './types.ts';
+import type { Experience, MarathonV2Plan, Weekday } from './types.ts';
 
 /** Ponedeljak; trka nedelja = START + 7N − 1. Trka subota: start nedelja (dan ranije). */
 export const START = '2026-11-02';
@@ -58,9 +58,14 @@ export interface Profile {
   resultDaysBefore?: number;
   goalTimeSec?: number | null;
   recentLongRunKm?: number | null;
+  /** M16: plan po osećaju — lagan tempo [s/km], bez rezultata. */
+  easyPace?: number;
+  /** M17. */
+  experience?: Experience;
 }
 
-/** Ulaz iz profila; podrazumevani rezultat je polumaraton sa tačnim VDOT-om. */
+/** Ulaz iz profila; podrazumevani rezultat je polumaraton sa tačnim VDOT-om; `easyPace` = po osećaju (bez
+    rezultata). */
 export function inputOf(p: Profile): Record<string, unknown> {
   const start = p.race === 'sat' ? addDays(START, -1) : START;
   const res = p.result ?? { distanceM: 21097.5, timeSec: timeForVdot(p.vdot ?? 45) };
@@ -70,9 +75,14 @@ export function inputOf(p: Profile): Record<string, unknown> {
     runDays: p.days,
     longRunDay: p.long ?? null,
     currentWeeklyKm: p.km,
-    recentResult: { ...res, date: addDays(start, -(p.resultDaysBefore ?? 14)) },
+    recentResult:
+      p.easyPace !== undefined
+        ? null
+        : { ...res, date: addDays(start, -(p.resultDaysBefore ?? 14)) },
     goalTimeSec: p.goalTimeSec ?? null,
-    ...(p.recentLongRunKm != null ? { recentLongRunKm: p.recentLongRunKm } : {})
+    ...(p.recentLongRunKm != null ? { recentLongRunKm: p.recentLongRunKm } : {}),
+    ...(p.easyPace !== undefined ? { easyPaceSecPerKm: p.easyPace } : {}),
+    ...(p.experience ? { experience: p.experience } : {})
   };
 }
 
@@ -132,6 +142,68 @@ export function gridInputs(days?: RunDaysCount): GridInput[] {
   return out;
 }
 
+/** Mreža 03 po osećaju (M16): lagan tempo {270,315,360,405,450,510} × 3–6 dana × obim po redu M15 (korak 5) ×
+    12–24 ned × rasporedi A/B/C, trka nedelja = 6 × 35 × 13 × 3 = 8190 ulaza. */
+export const FEEL_PACES = [270, 315, 360, 405, 450, 510];
+export function feelInputs(): GridInput[] {
+  const out: GridInput[] = [];
+  for (const days of RUN_DAYS_COUNTS)
+    for (const weeks of GRID.weeks)
+      for (const km of gridKm(days))
+        for (const pace of FEEL_PACES)
+          for (const schedule of GRID.schedule) {
+            const S = SCHEDULES_BY_DAYS[days][schedule];
+            out.push({
+              id: `feel-d${days}-${weeks}w-${km}km-e${pace}-${schedule}`,
+              days,
+              weeks,
+              km,
+              vdot: 0,
+              schedule,
+              race: 'sun',
+              input: inputOf({ weeks, km, easyPace: pace, days: S.days, long: S.long })
+            });
+          }
+  return out;
+}
+
+/** Mreža 03 početnika (M17): po osećaju {330,390,450,510} i VDOT {30,35,40} × 4–5 dana × obim početnika
+    (korak 5) × 16–24 ned × rasporedi A/B/C, trka nedelja = 7 × 10 × 9 × 3 = 1890 ulaza. */
+export const BEGINNER_PACES = [330, 390, 450, 510];
+export const BEGINNER_VDOTS = [30, 35, 40];
+export function beginnerInputs(): GridInput[] {
+  const out: GridInput[] = [];
+  const b = P.beginner;
+  for (const days of [4, 5] as const)
+    for (const weeks of GRID.weeks.filter((w) => w >= b.weeksMin))
+      for (let km = b.days[days].kmMin; km <= b.days[days].kmMax; km += 5)
+        for (const basis of [
+          ...BEGINNER_PACES.map((e) => ({ id: `e${e}`, easyPace: e })),
+          ...BEGINNER_VDOTS.map((v) => ({ id: `v${v}`, vdot: v }))
+        ])
+          for (const schedule of GRID.schedule) {
+            const S = SCHEDULES_BY_DAYS[days][schedule];
+            out.push({
+              id: `beg-d${days}-${weeks}w-${km}km-${basis.id}-${schedule}`,
+              days,
+              weeks,
+              km,
+              vdot: 'vdot' in basis ? basis.vdot : 0,
+              schedule,
+              race: 'sun',
+              input: inputOf({
+                weeks,
+                km,
+                ...basis,
+                days: S.days,
+                long: S.long,
+                experience: 'beginner'
+              })
+            });
+          }
+  return out;
+}
+
 /* ---------- Heševi za regresiju (mreže i artifacts/segment-02/regression-01.ts) ---------- */
 
 function fnv(s: string): string {
@@ -145,14 +217,29 @@ export function planHash(p: MarathonV2Plan): string {
   return fnv(JSON.stringify({ ...p, policyVersion: '' }));
 }
 
+/** Heš plana u obliku marathon-v2.1.0 (MAR-02): bez oznake verzije i bez polja MAR-03 sa podrazumevanom
+    vrednošću (`paceBasis: 'result'`) — za plan sa rezultatom jednak `planHash` iz segment02.baseline.json kad
+    se plan nije promenio. */
+export function planHash02(p: MarathonV2Plan): string {
+  const { paceBasis, ...rest } = p;
+  return fnv(
+    JSON.stringify(
+      paceBasis === 'result' ? { ...rest, policyVersion: '' } : { ...p, policyVersion: '' }
+    )
+  );
+}
+
 /** Pravila upozorenja čiji se TEKST menja sa tabelom 3–6 dana (preporuka broja dana), ne sadržaj plana. */
 const TEXT_RULES = ['MARATHON_LONG_SHORT', 'CAPACITY_LIMITED'];
 
 /** Heš normalizovanog plana za regresiju prema MAR-01: bez oznake verzije, napomene ned 1 M13a (pouka 28),
     teksta TEXT_RULES i napomene kapaciteta. Isti kod normalizuje i plan MAR-01 (regression-01.ts). */
 export function normalizedHash(p: MarathonV2Plan): string {
-  const q = JSON.parse(JSON.stringify(p)) as MarathonV2Plan;
+  const q = JSON.parse(JSON.stringify(p)) as Omit<MarathonV2Plan, 'paceBasis'> & {
+    paceBasis?: MarathonV2Plan['paceBasis'];
+  };
   q.policyVersion = '';
+  if (q.paceBasis === 'result') delete q.paceBasis;
   q.weeks[0]!.notes = q.weeks[0]!.notes.filter((n) => !n.includes('(M13a)'));
   for (const w of q.warnings) if (TEXT_RULES.includes(w.rule)) w.message = '';
   q.notes = q.notes.map((n) => (n.includes('ne nose ovaj obim') ? 'CAP' : n));

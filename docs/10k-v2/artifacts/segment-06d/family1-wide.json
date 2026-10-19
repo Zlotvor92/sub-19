@@ -1,0 +1,1251 @@
+{
+ "flows": 16840,
+ "explained": 16840,
+ "dist": {
+  "taperLong": {
+   "isti": 15761,
+   "viši": 887,
+   "niži": 192
+  },
+  "taperDose": {
+   "isti": 15382,
+   "viši": 1343,
+   "niži": 115
+  },
+  "deloadDose": {
+   "isti": 12170,
+   "viši": 2814,
+   "niži": 14,
+   "nema": 1842
+  },
+  "deloadLong": {
+   "isti": 7544,
+   "viši": 7303,
+   "niži": 151,
+   "nema": 1842
+  },
+  "buildDose": {
+   "isti": 12201,
+   "viši": 4148,
+   "niži": 491
+  }
+ },
+ "invBad": [],
+ "byGridFamilyScenario": {
+  "N7 F pause10": 1038,
+  "N7 F under": 599,
+  "N7 F pause20": 1255,
+  "N7 F pause10pain5": 2,
+  "S R pause35": 115,
+  "S R pause20": 660,
+  "S R pause10": 653,
+  "S R pause10pain5": 22,
+  "S B pause35": 255,
+  "S B pause10": 2329,
+  "S B pause20": 2233,
+  "S B under": 874,
+  "S B pause10pain5": 79,
+  "S F pause10": 2450,
+  "S F pause20": 2363,
+  "S F pause35": 228,
+  "S F under": 1643,
+  "S F pause10pain5": 42
+ },
+ "examples": [
+  {
+   "key": "N7/f-d3-10w-25km-e270-B-sun/w2end-3/pause10",
+   "asOf": "2026-11-12",
+   "pastDiff": [
+    "ned 2 2026-11-09: upisano easy:6.6 / sastavljeno easy:3.2",
+    "ned 2 2026-11-11: upisano q1:8.05[T2500] / sastavljeno q1:7.77[T2000]"
+   ],
+   "changed": [
+    "ned 6 (specific): easy:5.2 q1:8.17[RP2400] long:10.8 → easy:5.2 q1:8.17[RP2400] long:10.8"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d3-15w-40km-e510-A-sun/w2end-3/under",
+   "asOf": "2026-11-12",
+   "pastDiff": [
+    "ned 2 2026-11-10: upisano easy:12 / sastavljeno easy:7.1",
+    "ned 2 2026-11-12: upisano q1:6.61[T2500] / sastavljeno q1:6.23[T2000]"
+   ],
+   "changed": [
+    "ned 4 (base): easy:8 q1:6.61[T2500] long:11.9 → easy:7.9 q1:6.73[T2500] long:11.9"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d4-10w-45km-e450-A-sun/w1end-3/pause20",
+   "asOf": "2026-11-05",
+   "pastDiff": [
+    "ned 1 2026-11-05: upisano q2:7.83[T2500] / sastavljeno q2:7.33[T2000]"
+   ],
+   "changed": [
+    "ned 4 (development): test:10.33 q2:7.46[T2000] easy:6.4 long:11.8 → test:10.33 q2:8.59[T3000] easy:5.3 long:11.8",
+    "ned 6 (specific): q1:7.86[RP2400] q2:7.86[T2400] easy:10.9 long:13 → q1:7.86[RP2400] q2:9.19[T3600] easy:9.6 long:13",
+    "ned 7 (specific): q1:8.59[RP3000] q2:8.59[T3000] easy:12.9 long:13.5 → q1:8.59[RP3000] q2:9.72[T4000] easy:11.8 long:13.5"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "viši",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d4-16w-45km-e315-C-sun/w1end-3/pause10",
+   "asOf": "2026-11-05",
+   "pastDiff": [
+    "ned 1 2026-11-02: upisano easy:10.3 / sastavljeno easy:4.8",
+    "ned 1 2026-11-05: upisano q2:10.12[T2500] / sastavljeno q2:9.62[T2000]"
+   ],
+   "changed": [
+    "ned 3 (base): easy:5.9 q1:10.62[R1600] q2:10.12[T2500] long:13 → easy:5.4 q1:10.62[R1600] q2:10.62[T3000] long:13",
+    "ned 5 (base): easy:6.1 test:12.62 q2:10.62[T3000] long:14.3 → easy:5.6 test:12.62 q2:11.12[T3500] long:14.3",
+    "ned 6 (development): easy:9.6 q1:10.38[I2000] q2:11[T3000] long:15.2 → easy:9 q1:10.38[I2000] q2:11.6[T3600] long:15.2"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "viši",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d5-10w-50km-e315-B-sun/w1end-3/pause10",
+   "asOf": "2026-11-05",
+   "pastDiff": [
+    "ned 1 2026-11-04: upisano easy:7.3 / sastavljeno easy:4.3",
+    "ned 1 2026-11-05: upisano q2:10.62[T3000] / sastavljeno q2:9.62[T2000]"
+   ],
+   "changed": [
+    "ned 3 (base): test:12.62 easy:4.1 q2:10.12[T2500] easy:4 long:13.2 → test:12.62 easy:3.6 q2:11.12[T3500] easy:3.5 long:13.2",
+    "ned 4 (development): q1:10.38[I2000] easy:6.3 q2:11[T3000] easy:6.2 long:14.5 → q1:10.38[I2000] easy:6 q2:11.6[T3600] easy:5.9 long:14.5",
+    "ned 6 (specific): q1:11[RP3000] easy:6.7 q2:11.6[T3600] easy:6.7 long:15.3 → q1:11[RP3000] easy:6.4 q2:12.19[T4000] easy:6.4 long:15.3"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "viši",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d5-13w-65km-e510-A-sun/w3end-3/pause20",
+   "asOf": "2026-11-19",
+   "pastDiff": [
+    "ned 3 2026-11-16: upisano easy:12 / sastavljeno easy:4.5",
+    "ned 3 2026-11-17: upisano q1:8[R1800] / sastavljeno q1:7.5[R1600]",
+    "ned 3 2026-11-19: upisano q2:8.7[T4000] / sastavljeno q2:8.32[T3500]"
+   ],
+   "changed": [
+    "ned 5 (development): easy:6.9 easy:6.8 q2:6.82[T2000] easy:6.8 long:11.6 → easy:6.7 easy:6.7 q2:7.22[T2400] easy:6.7 long:11.6",
+    "ned 6 (development): easy:6.3 test:9.7 q2:8.54[T3600] easy:6.3 long:12 → easy:6 test:9.7 q2:9.06[T4000] easy:6 long:12",
+    "ned 7 (development): easy:9.5 q1:7.17[I2000] q2:9.06[T4000] easy:9.4 long:12 → easy:9.6 q1:7.17[I2000] q2:8.82[T4000] easy:9.5 long:12"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d5-16w-50km-e510-A-sun/w1end-3/pause20",
+   "asOf": "2026-11-05",
+   "pastDiff": [
+    "ned 1 2026-11-02: upisano easy:11.7 / sastavljeno easy:5.5",
+    "ned 1 2026-11-05: upisano q2:7.7[T3000] / sastavljeno q2:6.7[T2000]"
+   ],
+   "changed": [
+    "ned 5 (base): easy:6.8 test:9.7 q2:7.2[T2500] easy:6.7 long:12 → easy:6.3 test:9.7 q2:8.2[T3500] easy:6.2 long:12",
+    "ned 6 (development): easy:9.8 q1:7.17[I2000] q2:7.94[T3000] easy:9.7 long:12 → easy:9.5 q1:7.17[I2000] q2:8.54[T3600] easy:9.4 long:12",
+    "ned 7 (development): easy:10.7 q1:8.04[I2400] q2:8.54[T3600] easy:10.7 long:12 → easy:10.5 q1:8.04[I2400] q2:9.06[T4000] easy:10.4 long:12"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "viši",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d5-18w-40km-e510-A-sun/w2end-3/pause20",
+   "asOf": "2026-11-12",
+   "pastDiff": [
+    "ned 2 2026-11-09: upisano easy:8.4 / sastavljeno easy:3.4",
+    "ned 2 2026-11-10: upisano q1:7.11[R1600] / sastavljeno q1:6.21[R1200]"
+   ],
+   "changed": [
+    "ned 5 (base): easy:4.8 q1:7.11[R1600] q2:7.11[T3000] easy:4.8 long:10.1 → easy:4.9 q1:6.91[R1600] q2:7.11[T3000] easy:4.9 long:10.1"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d6-11w-70km-e405-C-sun/w1end-3/pause20",
+   "asOf": "2026-11-05",
+   "pastDiff": [
+    "ned 1 2026-11-02: upisano easy:11.8 / sastavljeno easy:6.5",
+    "ned 1 2026-11-03: upisano q1:9.72[R2000] / sastavljeno q1:8.12[R1200]",
+    "ned 1 2026-11-04: upisano easy:11.8 / sastavljeno easy:6.4",
+    "ned 1 2026-11-05: upisano q2:9.92[T4000] / sastavljeno q2:8.42[T2500]"
+   ],
+   "changed": [
+    "ned 4 (development): easy:8.1 test:10.92 easy:8.1 q2:9.22[T3000] easy:8 long:15 → easy:7.7 test:10.92 easy:7.7 q2:10.37[T4000] easy:7.6 long:15",
+    "ned 5 (development): easy:6.9 easy:6.8 easy:6.8 q2:8.07[T2000] easy:6.8 long:12 → easy:6.8 easy:6.7 easy:6.7 q2:8.47[T2400] easy:6.7 long:12",
+    "ned 6 (development): easy:10.1 q1:10.1[I3000] easy:10.1 q2:9.82[T3600] easy:10.1 long:15 → easy:9.7 q1:10.1[I3000] easy:9.7 q2:11.02[T4800] easy:9.7 long:15"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "viši",
+    "deloadDose": "viši",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d6-15w-70km-e450-A-sun/w1end-3/under",
+   "asOf": "2026-11-05",
+   "pastDiff": [
+    "ned 1 2026-11-02: upisano easy:12.7 / sastavljeno easy:8.6",
+    "ned 1 2026-11-03: upisano q1:9.13[R2000] / sastavljeno q1:8.33[R1600]",
+    "ned 1 2026-11-04: upisano easy:12.7 / sastavljeno easy:8.6",
+    "ned 1 2026-11-05: upisano q2:9.33[T4000] / sastavljeno q2:8.33[T3000]"
+   ],
+   "changed": [
+    "ned 3 (base): easy:10.2 q1:8.63[R1800] easy:10.2 q2:8.83[T3500] easy:10.2 long:13.5 → easy:9.5 q1:9.83[R2400] easy:9.5 q2:9.83[T4500] easy:9.4 long:13.5",
+    "ned 4 (base): easy:7.8 easy:7.8 easy:7.8 q2:7.33[T2000] easy:7.8 long:10.8 → easy:7.7 easy:7.7 easy:7.7 q2:7.83[T2500] easy:7.6 long:10.8",
+    "ned 5 (base): easy:11.6 test:10.33 easy:11.5 q2:9.33[T4000] easy:11.5 long:13.5 → easy:11.2 test:10.33 easy:11.2 q2:10.33[T5000] easy:11.2 long:13.5"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "viši",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "N7/f-d6-18w-70km-e405-C-sun/w5end-3/pause10",
+   "asOf": "2026-12-03",
+   "pastDiff": [
+    "ned 5 2026-11-30: upisano easy:14.2 / sastavljeno easy:4.9",
+    "ned 5 2026-12-02: upisano easy:14.2 / sastavljeno easy:4.9",
+    "ned 5 2026-12-03: upisano q2:11.07[T5000] / sastavljeno q2:10.42[T4500]"
+   ],
+   "changed": [
+    "ned 6 (base): easy:6.8 easy:6.8 easy:6.8 q2:8.42[T2500] easy:6.7 long:13.1 → easy:6.7 easy:6.7 easy:6.6 q2:8.92[T3000] easy:6.6 long:13.1",
+    "ned 7 (development): easy:5.8 test:10.92 easy:5.7 q2:11.02[T4800] easy:5.7 long:14.4 → easy:5.6 test:10.92 easy:5.6 q2:11.52[T5000] easy:5.5 long:14.4",
+    "ned 8 (development): easy:5.7 easy:5.7 easy:5.7 q2:8.47[T2400] easy:5.7 long:11.5 → easy:5.6 easy:5.5 easy:5.5 q2:9.22[T3000] easy:5.5 long:11.5"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "viši",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/11w-45km-v50-A-sat/w4wed/pause20",
+   "asOf": "2026-11-25",
+   "pastDiff": [
+    "ned 4 2026-11-22: upisano long:17.6 / sastavljeno long:10.3",
+    "ned 4 2026-11-24: upisano q1:10.96[I2400] / sastavljeno q1:9.63[T2000]"
+   ],
+   "changed": [
+    "ned 5 (development): long:8.2 easy:7.8 easy:7.8 easy:7.7 → long:10.3 easy:7.1 easy:7.1 easy:7"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/13w-50km-v50-A-sat/w3wed/pause20",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:18.4 / sastavljeno long:11.5",
+    "ned 3 2026-11-17: upisano q1:10.74[R1800] / sastavljeno q1:9.44[T2000]"
+   ],
+   "changed": [
+    "ned 4 (base): long:9.2 easy:8.6 easy:8.6 easy:8.6 → long:11.5 easy:7.9 easy:7.8 easy:7.8"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/15w-35km-v60-A-sat/w3wed/pause10",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:12.9 / sastavljeno long:9.8",
+    "ned 3 2026-11-17: upisano q1:10.84[R1800] / sastavljeno easy:5.2"
+   ],
+   "changed": [
+    "ned 4 (base): long:7.8 easy:6.2 q2:9.54[T2000] easy:6.2 → long:9.8 easy:5.2 q2:9.54[T2000] easy:5.2"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/16w-55km-v60-A-sat/w3wed/pause20",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:19.8 / sastavljeno long:12.7",
+    "ned 3 2026-11-17: upisano q1:12.42[R2000] / sastavljeno q1:10.62[T2000]"
+   ],
+   "changed": [
+    "ned 4 (base): long:10.1 easy:9.5 easy:9.5 easy:9.4 → long:12.7 easy:8.6 easy:8.6 easy:8.6"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/18w-40km-v30-A-sat/w11wed/pause20",
+   "asOf": "2027-01-13",
+   "pastDiff": [
+    "ned 11 2027-01-10: upisano long:12.5 / sastavljeno long:7.5",
+    "ned 11 2027-01-12: upisano q1:8.36[I3000] / sastavljeno easy:5.1"
+   ],
+   "changed": [
+    "ned 12 (development): long:6 easy:5.6 easy:5.6 easy:5.6 → long:7.5 easy:5.1 easy:5.1 easy:5.1"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-10w-25km-v30-A-sat/w4wed/pause35",
+   "asOf": "2026-11-25",
+   "pastDiff": [
+    "ned 4 2026-11-22: upisano long:10.7 / sastavljeno long:5.6",
+    "ned 4 2026-11-24: upisano easy:10.7 / sastavljeno easy:3.5"
+   ],
+   "changed": [
+    "ned 5 (development): long:4.4 easy:4.1 easy:4 → long:5.6 easy:3.5 easy:3.4"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-11w-30km-e390-A-sat/w1wed/pause35",
+   "asOf": "2026-11-04",
+   "pastDiff": [
+    "ned 1 2026-11-01: upisano long:13.3 / sastavljeno long:6.7",
+    "ned 1 2026-11-03: upisano easy:8.4 / sastavljeno easy:4.2"
+   ],
+   "changed": [
+    "ned 10 (taper): long:8.9 easy:5.1 q1:6[RP2000] → long:9 easy:5 q1:6[RP2000]",
+    "ned 11 (race): sharpener:6.08[RP2000] easy:5.1 race:13.85 → sharpener:6.08[RP2000] easy:5 race:13.85"
+   ],
+   "dir": {
+    "taperLong": "viši",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-12w-25km-v35-A-sat/w8wed/pause20",
+   "asOf": "2026-12-23",
+   "pastDiff": [
+    "ned 8 2026-12-20: upisano long:12 / sastavljeno long:9.1",
+    "ned 8 2026-12-22: upisano easy:12 / sastavljeno easy:5.6"
+   ],
+   "changed": [
+    "ned 9 (specific): long:7.2 easy:6.6 easy:6.5 → long:9.1 easy:5.6 easy:5.6"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-13w-25km-e330-B-sun/w6wed/pause10",
+   "asOf": "2026-12-09",
+   "pastDiff": [
+    "ned 6 2026-12-07: upisano easy:9.7 / sastavljeno easy:6.3",
+    "ned 6 2026-12-09: upisano q1:7.13[T2400] / sastavljeno q1:6.55[T2000]"
+   ],
+   "changed": [
+    "ned 8 (development): easy:7 q1:7.13[T2400] long:11.4 → easy:7.2 q1:6.95[T2400] long:11.4"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "nema",
+    "deloadLong": "nema",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-14w-20km-e390-A-sat/w3wed/pause10",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:9.9 / sastavljeno long:7.5",
+    "ned 3 2026-11-17: upisano easy:6.9 / sastavljeno easy:4"
+   ],
+   "changed": [
+    "ned 4 (base): long:6 easy:5.5 q1:5.35[T1500] → long:7.5 easy:4 q1:5.35[T1500]"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-14w-30km-e450-A-sat/w10wed/pause20",
+   "asOf": "2027-01-06",
+   "pastDiff": [
+    "ned 10 2027-01-03: upisano long:11.6 / sastavljeno long:9",
+    "ned 10 2027-01-05: upisano easy:11.6 / sastavljeno easy:5.6"
+   ],
+   "changed": [
+    "ned 11 (specific): long:7.2 easy:6.5 easy:6.5 → long:9 easy:5.6 easy:5.6"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-15w-20km-v35-B-sun/w3wed/pause20",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-16: upisano easy:7.2 / sastavljeno easy:3.9",
+    "ned 3 2026-11-18: upisano q1:5.01[T1500] / sastavljeno easy:3.8"
+   ],
+   "changed": [
+    "ned 6 (development): easy:4.3 q1:5.01[T1500] long:7.6 → easy:4.3 q1:5.01[T1500] long:7.6"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-15w-30km-v40-B-sun/w11wed/pause10",
+   "asOf": "2027-01-13",
+   "pastDiff": [
+    "ned 11 2027-01-11: upisano easy:13.3 / sastavljeno easy:8.3",
+    "ned 11 2027-01-13: upisano q1:7.12[RP3000] / sastavljeno q1:6.45[RP2400]"
+   ],
+   "changed": [
+    "ned 13 (specific): easy:9.6 q1:6.61[RP2400] long:13.1 → easy:9.8 q1:6.45[RP2400] long:13.1"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-16w-25km-e390-B-sun/w5wed/under",
+   "asOf": "2026-12-02",
+   "pastDiff": [
+    "ned 5 2026-11-30: upisano easy:10.2 / sastavljeno easy:4.5",
+    "ned 5 2026-12-02: upisano q1:5.85[T2000] / sastavljeno q1:5.35[T1500]"
+   ],
+   "changed": [
+    "ned 7 (development): easy:5.5 q1:5.35[T1500] long:8.7 → easy:5.5 q1:5.35[T1500] long:8.7"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-17w-15km-v35-A-sat/w7wed/pause10",
+   "asOf": "2026-12-16",
+   "pastDiff": [
+    "ned 7 2026-12-13: upisano long:8.7 / sastavljeno long:6.8",
+    "ned 7 2026-12-15: upisano easy:5.8 / sastavljeno easy:3.4"
+   ],
+   "changed": [
+    "ned 8 (development): long:5.4 easy:4.8 q1:5.01[T1500] → long:6.8 easy:3.4 q1:5.01[T1500]"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-17w-25km-e450-B-sun/w9wed/under",
+   "asOf": "2026-12-30",
+   "pastDiff": [
+    "ned 9 2026-12-28: upisano easy:11.6 / sastavljeno easy:5.5",
+    "ned 9 2026-12-30: upisano q1:5.83[T2500] / sastavljeno q1:4.83[T1500]"
+   ],
+   "changed": [
+    "ned 11 (development): easy:5.8 q1:5.46[T2000] long:9.2 → easy:5.8 q1:5.46[T2000] long:9.2"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-18w-15km-e390-A-sat/w1wed/pause35",
+   "asOf": "2026-11-04",
+   "pastDiff": [
+    "ned 1 2026-11-01: upisano long:6.7 / sastavljeno long:3",
+    "ned 1 2026-11-03: upisano easy:4.2 / sastavljeno easy:3"
+   ],
+   "changed": [
+    "ned 17 (taper): long:4.9 easy:3.2 easy:3.2 → long:5 easy:3.2 easy:3.1",
+    "ned 18 (race): easy:3.2 easy:3.2 race:13.85 → easy:3.1 easy:3.1 race:13.85"
+   ],
+   "dir": {
+    "taperLong": "viši",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-18w-25km-e330-A-sat/w11wed/pause10",
+   "asOf": "2027-01-13",
+   "pastDiff": [
+    "ned 11 2027-01-10: upisano long:14.6 / sastavljeno long:11.7",
+    "ned 11 2027-01-12: upisano easy:10.2 / sastavljeno easy:8.3"
+   ],
+   "changed": [
+    "ned 12 (development): long:9.3 easy:8.4 easy:8.3 → long:11.6 easy:8.4 q1:6.05[T1500]"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "viši",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d3-18w-30km-e450-B-sun/w7wed/under",
+   "asOf": "2026-12-16",
+   "pastDiff": [
+    "ned 7 2026-12-14: upisano easy:11.6 / sastavljeno easy:7.3",
+    "ned 7 2026-12-16: upisano q1:5.96[T2500] / sastavljeno q1:5.46[T2000]"
+   ],
+   "changed": [
+    "ned 9 (development): easy:8.2 q1:5.86[T2400] long:11.4 → easy:8.3 q1:5.83[T2500] long:11.4",
+    "ned 10 (development): easy:10.8 q1:5.73[T2400] long:11.6 → easy:10.5 q1:5.96[T2500] long:11.6",
+    "ned 13 (specific): easy:11.6 q1:5.86[RP2400] long:11.6 → easy:11.6 q1:6.03[RP2500] long:11.6"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-11w-18km-v40-A-sat/w7wed/pause10",
+   "asOf": "2026-12-16",
+   "pastDiff": [
+    "ned 7 2026-12-13: upisano long:7.6 / sastavljeno long:5.8",
+    "ned 7 2026-12-15: upisano easy:4.8 / sastavljeno easy:3.3"
+   ],
+   "changed": [
+    "ned 8 (specific): long:4.6 easy:3.9 q1:5.39[T1500] easy:3.8 → long:5.8 easy:3.3 q1:5.39[T1500] easy:3.2"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-12w-35km-e510-A-sat/w3wed/pause10",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:10.2 / sastavljeno long:9.2",
+    "ned 3 2026-11-17: upisano easy:10.2 / sastavljeno easy:7.2"
+   ],
+   "changed": [
+    "ned 4 (base): long:7.3 easy:6.9 easy:6.9 easy:6.9 → long:8.1 easy:7.8 q1:4.44[T1500] easy:7.7"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "viši",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-14w-22km-e510-A-sat/w3wed/pause10",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:8 / sastavljeno long:6.1",
+    "ned 3 2026-11-17: upisano easy:6 / sastavljeno easy:4"
+   ],
+   "changed": [
+    "ned 4 (base): long:4.8 easy:4.7 q1:4.44[T1500] easy:4.6 → long:6.1 easy:4 q1:4.44[T1500] easy:4"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-15w-26km-v35-A-sat/w3wed/pause20",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:9.4 / sastavljeno long:6",
+    "ned 3 2026-11-17: upisano easy:7.2 / sastavljeno easy:4.1"
+   ],
+   "changed": [
+    "ned 4 (base): long:4.8 easy:4.5 easy:4.5 easy:4.4 → long:6 easy:4.1 easy:4.1 easy:4"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-16w-30km-v35-A-sat/w11wed/pause20",
+   "asOf": "2027-01-13",
+   "pastDiff": [
+    "ned 11 2027-01-10: upisano long:12 / sastavljeno long:7",
+    "ned 11 2027-01-12: upisano easy:9.9 / sastavljeno easy:4.8"
+   ],
+   "changed": [
+    "ned 12 (specific): long:5.6 easy:5.3 easy:5.3 easy:5.2 → long:7 easy:4.8 easy:4.8 easy:4.8"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/b-d4-18w-18km-e390-A-sat/w11wed/pause10",
+   "asOf": "2027-01-13",
+   "pastDiff": [
+    "ned 11 2027-01-10: upisano long:7.7 / sastavljeno long:6.1",
+    "ned 11 2027-01-12: upisano easy:4.9 / sastavljeno easy:3.7"
+   ],
+   "changed": [
+    "ned 12 (development): long:4.8 easy:4.3 q1:5.35[T1500] easy:4.3 → long:6.1 easy:3.7 q1:5.35[T1500] easy:3.6"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d3-10w-20km-e405-A-sat/w4wed/pause35",
+   "asOf": "2026-11-25",
+   "pastDiff": [
+    "ned 4 2026-11-22: upisano long:10.7 / sastavljeno long:4",
+    "ned 4 2026-11-24: upisano easy:7.5 / sastavljeno easy:3"
+   ],
+   "changed": [
+    "ned 5 (development): long:3.2 easy:3.2 easy:3.2 → long:4 easy:3 easy:3",
+    "ned 6 (specific): long:4.6 easy:3 easy:3 → long:4.9 easy:3.1 easy:3",
+    "ned 7 (specific): long:5.2 easy:3.3 easy:3.2 → long:5.4 easy:3.4 easy:3.3"
+   ],
+   "dir": {
+    "taperLong": "viši",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d3-12w-25km-e510-C-sun/w2wed/under",
+   "asOf": "2026-11-11",
+   "pastDiff": [
+    "ned 2 2026-11-09: upisano easy:9.2 / sastavljeno easy:5.9",
+    "ned 2 2026-11-11: upisano q1:5.44[T2500] / sastavljeno q1:5.06[T2000]"
+   ],
+   "changed": [
+    "ned 5 (development): easy:7.9 q1:5.46[T2400] long:10.8 → easy:7.9 q1:5.46[T2400] long:10.8"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d3-13w-35km-e405-B-sun/w6wed/under",
+   "asOf": "2026-12-09",
+   "pastDiff": [
+    "ned 6 2026-12-07: upisano easy:15 / sastavljeno easy:8.7",
+    "ned 6 2026-12-09: upisano q1:9.08[T3600] / sastavljeno q1:8.33[T3000]"
+   ],
+   "changed": [
+    "ned 8 (development): easy:10.7 q1:8.18[T3000] long:15 → easy:10.4 q1:8.48[T3000] long:15"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "nema",
+    "deloadLong": "nema",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d3-14w-40km-e360-B-sun/w6wed/under",
+   "asOf": "2026-12-09",
+   "pastDiff": [
+    "ned 6 2026-12-07: upisano easy:16.8 / sastavljeno easy:9.9",
+    "ned 6 2026-12-09: upisano q1:9.77[T3600] / sastavljeno q1:9[T3000]"
+   ],
+   "changed": [
+    "ned 8 (development): easy:11 q1:9.77[T3600] long:16.8 → easy:11.2 q1:9.6[T3600] long:16.8"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d3-16w-25km-e360-B-sun/w10wed/pause10",
+   "asOf": "2027-01-06",
+   "pastDiff": [
+    "ned 10 2027-01-04: upisano easy:12 / sastavljeno easy:8.7",
+    "ned 10 2027-01-06: upisano q1:7.34[T3000] / sastavljeno q1:6.74[T2400]"
+   ],
+   "changed": [
+    "ned 12 (specific): easy:10.3 q1:6.74[RP2400] long:13.8 → easy:9.5 q1:7.51[RP3000] long:13.8",
+    "ned 13 (specific): easy:11 q1:7.51[RP3000] long:15 → easy:11.1 q1:7.42[RP3000] long:15",
+    "ned 14 (specific): easy:11.9 q1:7.42[RP3000] long:15.7 → easy:11.8 q1:7.51[RP3000] long:15.7"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "nema",
+    "deloadLong": "nema",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d3-17w-25km-e315-C-sat/w9wed/pause20",
+   "asOf": "2026-12-30",
+   "pastDiff": [
+    "ned 9 2026-12-28: upisano easy:11.4 / sastavljeno easy:5.3",
+    "ned 9 2026-12-30: upisano q1:7.95[T3000] / sastavljeno q1:6.95[T2000]"
+   ],
+   "changed": [
+    "ned 12 (specific): easy:7.4 q1:7.35[RP2400] long:12 → easy:7.4 q1:7.35[RP2400] long:12"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d3-17w-40km-e450-C-sat/w10wed/pause10",
+   "asOf": "2027-01-06",
+   "pastDiff": [
+    "ned 10 2027-01-04: upisano easy:13.5 / sastavljeno easy:8.4",
+    "ned 10 2027-01-06: upisano q1:8.3[T3500] / sastavljeno q1:7.2[T2400]"
+   ],
+   "changed": [
+    "ned 12 (specific): easy:10.3 q1:7.2[RP2400] long:13.5 → easy:9.6 q1:7.93[RP3000] long:13.5",
+    "ned 14 (specific): easy:12.7 q1:7.93[RP3000] long:13.5 → easy:12.7 q1:7.87[RP3000] long:13.5"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d3-18w-40km-e270-B-sat/w11wed/pause10",
+   "asOf": "2027-01-13",
+   "pastDiff": [
+    "ned 11 2027-01-11: upisano easy:13 / sastavljeno easy:8",
+    "ned 11 2027-01-13: upisano q1:11.77[T4000] / sastavljeno q1:11.81[T3600]"
+   ],
+   "changed": [
+    "ned 12 (development): easy:11.6 easy:11.5 long:12.9 → easy:12.7 q1:10.39[T2400] long:12.9",
+    "ned 13 (specific): easy:10.1 q1:11.7[RP3600] long:17.8 → easy:10.6 q1:11.21[RP3000] long:17.8"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "viši",
+    "deloadLong": "isti",
+    "buildDose": "niži"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d4-12w-40km-e450-B-sat/w3wed/under",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:13.5 / sastavljeno long:11",
+    "ned 3 2026-11-16: upisano easy:13.5 / sastavljeno easy:7.9",
+    "ned 3 2026-11-18: upisano q1:7.97[R1800] / sastavljeno easy:7.8"
+   ],
+   "changed": [
+    "ned 4 (base): long:8.8 easy:8.2 easy:8.2 easy:8.2 → long:10.8 easy:8 easy:7.9 q2:6.67[T2000]"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "viši",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d4-15w-55km-e270-B-sat/w3wed/pause20",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:19.8 / sastavljeno long:12.7",
+    "ned 3 2026-11-16: upisano easy:14.6 / sastavljeno easy:7.5",
+    "ned 3 2026-11-18: upisano q1:12.69[R2000] / sastavljeno q1:10.89[T2000]"
+   ],
+   "changed": [
+    "ned 4 (base): long:10.1 easy:9.5 easy:9.5 easy:9.4 → long:12.7 easy:8.6 easy:8.6 easy:8.6"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d4-18w-45km-e510-B-sat/w11wed/under",
+   "asOf": "2027-01-13",
+   "pastDiff": [
+    "ned 11 2027-01-10: upisano long:12 / sastavljeno long:10.8",
+    "ned 11 2027-01-11: upisano easy:12 / sastavljeno easy:7.5",
+    "ned 11 2027-01-13: upisano q1:8.64[I3000] / sastavljeno easy:7.5"
+   ],
+   "changed": [
+    "ned 12 (development): long:8.6 easy:8.6 easy:8.6 q2:7.22[T2400] → long:9.6 easy:8.1 easy:8.1 q2:7.22[T2400]"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-10w-65km-e510-C-sat/w1wed/pause10",
+   "asOf": "2026-11-04",
+   "pastDiff": [
+    "ned 1 2026-11-03: upisano easy:12 / sastavljeno easy:7.5",
+    "ned 1 2026-11-04: upisano q2:7.7[T3000] / sastavljeno q2:6.7[T2000]"
+   ],
+   "changed": [
+    "ned 3 (base): test:9.7 easy:7.9 q2:7.2[T2500] easy:7.8 long:12 → test:9.7 easy:7.4 q2:8.2[T3500] easy:7.3 long:12",
+    "ned 4 (development): q1:7.17[I2000] easy:11 q2:7.94[T3000] easy:11 long:12 → q1:7.17[I2000] easy:10.7 q2:8.54[T3600] easy:10.7 long:12",
+    "ned 8 (specific): q1:7.94[RP3000] easy:12 q2:8.54[T3600] easy:12 long:12 → q1:7.94[RP3000] easy:12 q2:9.06[T4000] easy:12 long:12"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "viši",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-12w-45km-e315-B-sat/w3wed/pause10",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:15.1 / sastavljeno long:11.4",
+    "ned 3 2026-11-17: upisano q1:10.92[R1800] / sastavljeno easy:5.8",
+    "ned 3 2026-11-18: upisano easy:6.8 / sastavljeno easy:5.7"
+   ],
+   "changed": [
+    "ned 4 (base): long:9.1 easy:6.5 easy:6.5 q2:9.62[T2000] easy:6.5 → long:11.4 easy:5.8 easy:5.7 q2:9.62[T2000] easy:5.7"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-13w-45km-e450-C-sat/w3wed/pause20",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-16: upisano q1:8.63[R1800] / sastavljeno q1:7.53[R1200]",
+    "ned 3 2026-11-17: upisano easy:9.8 / sastavljeno easy:3.1",
+    "ned 3 2026-11-18: upisano q2:8.83[T3500] / sastavljeno q2:8.46[T3000]"
+   ],
+   "changed": [
+    "ned 6 (development): test:10.33 easy:4 q2:8.59[T3000] easy:3.9 long:11.4 → test:10.33 easy:3.7 q2:9.19[T3600] easy:3.6 long:11.4",
+    "ned 7 (development): q1:7.86[I2000] easy:6.2 q2:9.19[T3600] easy:6.2 long:12.6 → q1:7.86[I2000] easy:5.9 q2:9.72[T4000] easy:5.9 long:12.6",
+    "ned 8 (development): easy:5.4 easy:5.4 q2:7.46[T2000] easy:5.3 long:10 → easy:5.3 easy:5.2 q2:7.86[T2400] easy:5.2 long:10"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "viši",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-14w-45km-e405-B-sat/w7wed/pause20",
+   "asOf": "2026-12-16",
+   "pastDiff": [
+    "ned 7 2026-12-13: upisano long:15 / sastavljeno long:8.5",
+    "ned 7 2026-12-15: upisano q1:10.7[I3600] / sastavljeno q1:8.47[T2400]",
+    "ned 7 2026-12-16: upisano easy:11.5 / sastavljeno easy:3.8"
+   ],
+   "changed": [
+    "ned 8 (development): long:6.8 easy:5.4 easy:5.4 easy:5.4 easy:5.4 → long:8.5 easy:5 easy:5 easy:5 easy:4.9"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-15w-40km-e315-A-sat/w3wed/pause20",
+   "asOf": "2026-11-18",
+   "pastDiff": [
+    "ned 3 2026-11-15: upisano long:13.4 / sastavljeno long:8.4",
+    "ned 3 2026-11-16: upisano easy:6 / sastavljeno easy:3.7",
+    "ned 3 2026-11-17: upisano q1:9.97[R1800] / sastavljeno q1:8.67[T2000]"
+   ],
+   "changed": [
+    "ned 4 (base): long:6.7 easy:5.4 easy:5.3 easy:5.3 easy:5.3 → long:8.4 easy:4.9 easy:4.9 easy:4.9 easy:4.9"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-16w-30km-e450-C-sat/w10wed/pause20",
+   "asOf": "2027-01-06",
+   "pastDiff": [
+    "ned 10 2027-01-04: upisano q1:7.39[I3000] / sastavljeno q1:5.86[I2000]",
+    "ned 10 2027-01-05: upisano easy:7.4 / sastavljeno easy:4",
+    "ned 10 2027-01-06: upisano q2:7.33[T4000] / sastavljeno q2:5.86[T2400]"
+   ],
+   "changed": [
+    "ned 12 (specific): easy:5.4 easy:5.4 q2:5.46[T2000] easy:5.4 long:9.2 → easy:5.3 easy:5.3 q2:5.86[T2400] easy:5.2 long:9.2",
+    "ned 13 (specific): q1:5.86[RP2400] easy:5.7 q2:6.59[T3000] easy:5.7 long:10.2 → q1:6.59[RP3000] easy:5.3 q2:6.59[T3000] easy:5.3 long:10.2",
+    "ned 14 (specific): q1:6.59[RP3000] easy:6.2 q2:7.19[T3600] easy:6.2 long:11.2 → q1:6.53[RP3000] easy:6.3 q2:7.19[T3600] easy:6.2 long:11.2"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "nema",
+    "deloadLong": "nema",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-16w-60km-e405-C-sat/w11wed/pause20",
+   "asOf": "2027-01-13",
+   "pastDiff": [
+    "ned 11 2027-01-11: upisano q1:11.52[RP5000] / sastavljeno q1:9.22[RP3000]",
+    "ned 11 2027-01-12: upisano easy:15 / sastavljeno easy:3.9",
+    "ned 11 2027-01-13: upisano q2:12.32[T6400] / sastavljeno q2:9.82[T3600]"
+   ],
+   "changed": [
+    "ned 13 (specific): easy:7.1 easy:7.1 q2:8.07[T2000] easy:7.1 long:12.6 → easy:6.6 easy:6.5 q2:9.82[T3600] easy:6.5 long:12.6",
+    "ned 14 (specific): q1:10.37[RP4000] easy:5.9 q2:10.37[T4000] easy:5.8 long:13.8 → q1:10.86[RP4500] easy:5.6 q2:10.37[T4000] easy:5.6 long:13.8"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-17w-45km-e360-C-sun/w6wed/pause10",
+   "asOf": "2026-12-09",
+   "pastDiff": [
+    "ned 6 2026-12-08: upisano easy:8.5 / sastavljeno easy:3.8",
+    "ned 6 2026-12-09: upisano q2:11.17[T4500] / sastavljeno q2:10.84[T4000]"
+   ],
+   "changed": [
+    "ned 8 (development): q1:9.34[I2000] easy:6.3 q2:11.18[T4000] easy:6.3 long:14.1 → q1:9.34[I2000] easy:6.2 q2:11.51[T4500] easy:6.1 long:14.1"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-18w-30km-e450-B-sat/w7wed/pause20",
+   "asOf": "2026-12-16",
+   "pastDiff": [
+    "ned 7 2026-12-13: upisano long:12 / sastavljeno long:5.6",
+    "ned 7 2026-12-15: upisano q1:5.86[I2000] / sastavljeno easy:3.4",
+    "ned 7 2026-12-16: upisano easy:7.6 / sastavljeno easy:3.3"
+   ],
+   "changed": [
+    "ned 8 (development): long:4.4 easy:3.7 easy:3.6 easy:3.6 easy:3.6 → long:5.6 easy:3.4 easy:3.3 easy:3.3 easy:3.3"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-18w-55km-e450-C-sat/w13wed/under",
+   "asOf": "2027-01-27",
+   "pastDiff": [
+    "ned 13 2027-01-26: upisano easy:13.5 / sastavljeno easy:4.4",
+    "ned 13 2027-01-27: upisano q2:11.33[T6000] / sastavljeno q2:9.72[T4000]"
+   ],
+   "changed": [
+    "ned 14 (specific): easy:6.8 easy:6.8 q2:7.86[T2400] easy:6.7 long:12 → easy:6.4 easy:6.3 q2:9.19[T3600] easy:6.3 long:12",
+    "ned 15 (specific): q1:9.85[RP4000] easy:5.9 q2:9.46[T4000] easy:5.8 long:13.2 → q1:9.85[RP4000] easy:5.7 q2:9.72[T4000] easy:5.7 long:13.2"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "nema",
+    "deloadLong": "nema",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d5-9w-50km-e360-C-sun/w1wed/pause20",
+   "asOf": "2026-11-04",
+   "pastDiff": [
+    "ned 1 2026-11-03: upisano easy:8.3 / sastavljeno easy:3.5",
+    "ned 1 2026-11-04: upisano q2:9.67[T3000] / sastavljeno q2:8.67[T2000]"
+   ],
+   "changed": [
+    "ned 5 (development): test:11.67 easy:4.6 q2:8.84[T2000] easy:4.6 long:12.7 → test:11.67 easy:4 q2:10.01[T3000] easy:4 long:12.7",
+    "ned 6 (specific): q1:9.24[RP2400] easy:7.1 q2:9.24[T2400] easy:7.1 long:13.9 → q1:9.24[RP2400] easy:6.5 q2:10.61[T3600] easy:6.4 long:13.9",
+    "ned 7 (specific): q1:10.01[RP3000] easy:7.5 q2:10.01[T3000] easy:7.5 long:15 → q1:10.01[RP3000] easy:6.9 q2:11.18[T4000] easy:6.9 long:15"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "viši",
+    "deloadDose": "isti",
+    "deloadLong": "isti",
+    "buildDose": "viši"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d6-13w-65km-e510-B-sat/w7wed/pause20",
+   "asOf": "2026-12-16",
+   "pastDiff": [
+    "ned 7 2026-12-13: upisano long:12 / sastavljeno long:10",
+    "ned 7 2026-12-14: upisano easy:12 / sastavljeno easy:4.9",
+    "ned 7 2026-12-15: upisano easy:12 / sastavljeno easy:4.8",
+    "ned 7 2026-12-16: upisano q1:10.11[I4000] / sastavljeno q1:7.94[T3000]"
+   ],
+   "changed": [
+    "ned 8 (development): long:8 easy:5.9 easy:5.9 easy:5.8 easy:5.8 easy:5.8 → long:9.6 easy:5.6 easy:5.5 easy:5.5 easy:5.5 easy:5.5"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  },
+  {
+   "key": "S/f-d6-17w-40km-e405-A-sat/w12wed/pause20",
+   "asOf": "2027-01-20",
+   "pastDiff": [
+    "ned 12 2027-01-17: upisano long:14.8 / sastavljeno long:10.3",
+    "ned 12 2027-01-18: upisano easy:6.8 / sastavljeno easy:5",
+    "ned 12 2027-01-19: upisano q1:9.63[RP4000] / sastavljeno q1:8.48[T3000]",
+    "ned 12 2027-01-20: upisano easy:6.8 / sastavljeno easy:4.9"
+   ],
+   "changed": [
+    "ned 13 (specific): long:8.2 easy:6.1 easy:6.1 easy:6.1 easy:6 easy:6 → long:10.3 easy:5.7 easy:5.7 easy:5.6 easy:5.6 easy:5.6"
+   ],
+   "dir": {
+    "taperLong": "isti",
+    "taperDose": "isti",
+    "deloadDose": "isti",
+    "deloadLong": "viši",
+    "buildDose": "isti"
+   },
+   "inv": []
+  }
+ ]
+}

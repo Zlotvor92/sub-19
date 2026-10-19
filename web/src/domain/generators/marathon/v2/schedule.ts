@@ -1,4 +1,5 @@
-/* M9 — raspored nedelje (M15): Q1 + Q2 + dugi + lagani (4–6 dana) ili Q1 + dugi + lagan (3 dana); teški dani
+/* M9 — raspored nedelje (M15): Q1 + Q2 + dugi + lagani (4–6 dana) ili Q1 + dugi + lagani (3 dana, početnik
+   M17); teški dani
    (kvaliteti i dugi) međusobno nesusedni (ciklično: nedelja i ponedeljak su susedni). Jedino mesto izbora dana
    po ulozi. */
 
@@ -26,20 +27,23 @@ export function longDayOf(runDays: readonly Weekday[], longRunDay?: Weekday | nu
 }
 
 /** Šablon ili null kad teški dani ne mogu biti međusobno nesusedni (ili broj dana nije u tabeli M15).
-    Više rešenja → najveći razmak dugi → Q1, pa Q1 → Q2, pa raniji Q1 (tehnički, deterministički izbor). */
+    `quality` = broj kvaliteta (podrazumevano red M15; početnik 1, M17). Više rešenja → najveći razmak dugi →
+    Q1, pa Q1 → Q2, pa raniji Q1 (tehnički, deterministički izbor). */
 export function patternOf(
   runDays: readonly Weekday[],
-  longRunDay?: Weekday | null
+  longRunDay?: Weekday | null,
+  quality?: 1 | 2
 ): Pattern | null {
   const rule = dayRule(runDays.length);
   if (!rule) return null;
+  const nQuality = quality ?? rule.quality;
   const long = longDayOf(runDays, longRunDay);
   const rest = ordered(runDays.filter((d) => d !== long));
   const options: Pattern[] = [];
   for (const a of rest) {
     if (adjacentDays(a, long)) continue;
-    // M15: 3 dana — jedan kvalitet, samo nesusedan dugom; lagan bilo gde.
-    if (rule.quality === 1) {
+    // M15/M17: 3 dana i početnik — jedan kvalitet, samo nesusedan dugom; lagani bilo gde.
+    if (nQuality === 1) {
       options.push({ long, q1: a, q2: null, easy: rest.filter((d) => d !== a) });
       continue;
     }
@@ -63,17 +67,19 @@ export function patternOf(
 /** Predlog za SCHEDULE_NO_RECOVERY: drugi dan dugog među izabranim danima, pa zamena jednog dana. */
 export function suggestSchedule(
   runDays: readonly Weekday[],
-  longRunDay?: Weekday | null
+  longRunDay?: Weekday | null,
+  quality?: 1 | 2
 ): { runDays: Weekday[]; long: Weekday } | null {
   if (longRunDay)
     for (const l of ordered(runDays))
-      if (l !== longRunDay && patternOf(runDays, l)) return { runDays: ordered(runDays), long: l };
+      if (l !== longRunDay && patternOf(runDays, l, quality))
+        return { runDays: ordered(runDays), long: l };
   for (const out of ordered(runDays))
     for (const add of WEEKDAYS) {
       if (runDays.includes(add)) continue;
       const days = ordered([...runDays.filter((d) => d !== out), add]);
       const keep = longRunDay && days.includes(longRunDay) ? longRunDay : null;
-      const p = patternOf(days, keep);
+      const p = patternOf(days, keep, quality);
       if (p) return { runDays: days, long: p.long };
     }
   return null;

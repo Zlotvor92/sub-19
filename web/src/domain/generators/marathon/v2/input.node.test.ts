@@ -133,16 +133,23 @@ describe('M1 ulaz', () => {
     ).toEqual(['RESULT_DISTANCE_UNSUPPORTED']);
   });
 
-  it('rezultat: bez rezultata, stariji od 84 dana, VDOT < 30 → odbijanje (plan po osećaju: segment 03); VDOT > 80 trajno', () => {
-    expect(codes(base({ recentResult: null }))).toEqual(['RESULT_REQUIRED']);
+  it('rezultat: bez rezultata, stariji od 84 dana, VDOT < 30 → plan po osećaju (M16: lagan tempo obavezan); VDOT > 80 trajno', () => {
+    expect(codes(base({ recentResult: null }))).toEqual(['EASY_PACE_REQUIRED']);
     const res = (vdot: number, daysBefore: number) => ({
       distanceM: 21097.5,
       timeSec: timeForVdot(vdot),
       date: addDays(START, -daysBefore)
     });
     expect(codes(base({ recentResult: res(45, 84) }))).toEqual([]);
-    expect(codes(base({ recentResult: res(45, 85) }))).toEqual(['RESULT_TOO_OLD']);
-    expect(codes(base({ recentResult: res(29.9, 7) }))).toEqual(['VDOT_TOO_LOW']);
+    expect(codes(base({ recentResult: res(45, 85) }))).toEqual(['EASY_PACE_REQUIRED']);
+    expect(message(base({ recentResult: res(45, 85) }), 'EASY_PACE_REQUIRED')).toMatch(
+      /star 85 dana/
+    );
+    expect(codes(base({ recentResult: res(29.9, 7) }))).toEqual(['EASY_PACE_REQUIRED']);
+    for (const r of [null, res(45, 85), res(29.9, 7)]) {
+      const c = checkInput(base({ recentResult: r, easyPaceSecPerKm: 360 }));
+      expect(c.ok && c.pace.kind).toBe('feel');
+    }
     expect(codes(base({ recentResult: res(30, 7) }))).toEqual([]);
     expect(codes(base({ recentResult: res(80, 7) }))).toEqual([]);
     expect(codes(base({ recentResult: res(80.1, 7) }))).toEqual(['VDOT_TOO_HIGH']);
@@ -154,13 +161,14 @@ describe('M1 ulaz', () => {
     ]);
   });
 
-  it('oblik, datumi, cilj, trčanje/hodanje (M17) i početnik (segment 03)', () => {
+  it('oblik, datumi, cilj, trčanje/hodanje (M17)', () => {
     expect(codes({})).toEqual(['INPUT_SHAPE']);
     expect(codes(base({ startDate: '2026-02-30' }))).toEqual(['DATE_INVALID']);
     expect(codes(base({ raceDate: START }))).toEqual(['RACE_NOT_AFTER_START']);
     expect(codes(base({ goalTimeSec: -1 }))).toEqual(['GOAL_INVALID']);
     expect(codes(base({ runWalk: true }))).toEqual(['RUN_WALK_NOT_SUPPORTED']);
-    expect(codes(base({ experience: 'beginner' }))).toEqual(['BEGINNER_SEGMENT_03']);
+    expect(codes(base({ experience: 'pro' }))).toEqual(['INPUT_SHAPE']);
+    expect(codes(base({ easyPaceSecPerKm: '6:00' }))).toEqual(['INPUT_SHAPE']);
   });
 
   it('pouka 6: odbijen ulaz ne daje plan (generate vraća razloge)', () => {

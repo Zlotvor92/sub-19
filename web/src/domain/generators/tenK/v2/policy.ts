@@ -63,8 +63,9 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D7',
-    rule: 'Taper: cilj 0,75 × vrh; RP i T, svaki ≈ 60 % poslednje doze zone (naniže; min 2 × 1000 m RP, 2,0 km T; 3 dana samo RP, D18); dugi ≤ 0,75 × najduži; svi dani trčanja zadržani.',
-    place: 'week.ts + quality.ts + lengths.ts; cilj volume.ts',
+    rule: 'Taper: cilj 0,75 × vrh; RP i T, svaki ≈ 60 % poslednje doze zone (naniže; min 2 × 1000 m RP, 2,0 km T; 3 dana samo RP, D18); dugi ≤ 0,75 × najduži; svi dani trčanja zadržani. Najduži dugi (10k-v2.5.1) ima jednu definiciju za konstruktor i validator (lengths.longestLong10): najduži dugi nedelja pre tapera kakve se upisuju — posle adaptacije zaštićeni dani prethodnog plana (≤ asOf, urađeni, zaključani) kakvi jesu i sastavljena budućnost (written.ts, A11).',
+    place:
+      'week.ts + quality.ts + lengths.ts (longestLong10); written.ts (upisani dani, A11); cilj volume.ts',
     rationale:
       'Smanjen obim uz zadržan intenzitet i učestalost (Bosquet i sar. 2007, isti ograničeni dokaz kao D4): učestalost = broj dana iz ulaza (4 dana → 4, kao u 10k-v2.1.0). Odstupanja (opreznije, samo kad nijedan cilj ≤ 0,75 × vrh nije izvodljiv po pravilu): (a) 4–6 dana — taper samo sa RP, ostali dani lagani (TAPER_RP_ONLY); npr. 6 dana, 8 ned, 35 km, VDOT 70: cilj 33,2 km, dva kvaliteta ≈ 22 km (WU/CD 35 min), lagani bi bili < 3 km; (b) kad ni RP 2 × 1000 m ne staje u plafon D11 — taper bez kvaliteta (D11 ispred D7, TAPER_NO_QUALITY); npr. 3 dana, 8 ned, 20 km: cilj 19,0 km, plafon RP 1,9 km.'
   },
@@ -184,9 +185,9 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D23',
-    rule: 'Trkačka nedelja ≤ taper: lagan dan trkačke nedelje = min(35 min E, km najkraćeg laganog dana tapera); kad je lagan tapera kraći, dan se zadaje u km. Invarijanta: planirano trkačke nedelje (bez trke) ≤ planirano tapera.',
+    rule: 'Trkačka nedelja ≤ taper: lagan dan trkačke nedelje = min(35 min E, km najkraćeg laganog dana tapera); kad je lagan tapera kraći, dan se zadaje u km. Invarijanta: planirano trkačke nedelje (bez trke) ≤ planirano tapera. Dopuna (10k-v2.5.1): kad ni bez oštrenja (A9) trkačka nije ≤ taper (taper skraćen danima odmora/bola adaptacije), višak laganih dana trkačke nedelje postaje odmor — prvo dani bola, pa najraniji lagani, najmanje koliko treba; dan pred trku i trka ostaju; napomena „Trkačka nedelja skraćena: taper je imao dane odmora/bola (D23)." Jedno mesto week.raceWeekRest; validator D20 čita isti podatak. D23 i ograničenja bola imaju prednost pred D30b: tako skraćena trkačka nedelja sme biti ispod minimuma (upozorenje RACE_WEEK_SHORT); npr. 6 dana, 9 ned, 35 km, bol 8 kraj ned 7: taper 10,6 km, trkačka 7,94 + trka 10 < 18 km.',
     place:
-      'week.ts (raceWeek, raceEasyWorkout); generate.ts (lagan tapera); validate.ts (RACE_WEEK_EASY, RACE_WEEK_OVER_TAPER)',
+      'week.ts (raceWeek, raceEasyWorkout, raceWeekRest); generate.ts (lagan tapera); validate.ts (RACE_WEEK_EASY, RACE_WEEK_OVER_TAPER; D20 čita raceWeekRest)',
     rationale:
       'Smanjenje obima se ne sme poništiti u trkačkoj nedelji (D4/D7). Na 49ad476 trkačka > taper u 8 / 57 / 9 planova 4 / 5 / 6 dana: brz trkač malog obima, 35 min E (npr. 8,8 km pri VDOT 70) > lagan tapera. Najkraći lagan tapera (lagani se razlikuju ≤ 0,1 km, D19) je opreznija strana. Oštrenje i dan pred trku ostaju po D8. Posledica: lagan u km u 636 / 1428 / 2004 / 2538 planova 3–6 dana; trkačka ispod minimuma nedelje (RACE_WEEK_SHORT, upozorenje D15) 6 dana 0 → 90 (35 km, VDOT 30–50).'
   },
@@ -211,7 +212,7 @@ const DECISIONS: readonly Decision[] = [
     place:
       'periodize.ts (testWeek); week.ts (buildWeek); workouts.ts (testWorkout); quality.ts (advance); validate.ts (TEST)',
     rationale:
-      'Heuristika: test na kraju baze zamenjuje najmanje specifičan kvalitet (R; kod 3 dana T kontinuirano) pre razvoja, u kom zone I/T nose tempo. Odstupanje (opreznije, D27 ispred D5, bez novog broja): u rasterećenju sa testom dugi je ≤ 0,8 × poslednji ne-rasteretni — najduži koji ostavlja lagane ≥ 3 km (D13), jer test ne staje uz dugi 0,8 × i lagan ≥ 3 km, a cilj rasterećenja se ne podiže (D6); npr. 3 dana, 12 ned, 20 km, lagan 7:30, uto/čet/ned: ned 4 cilj 18,0 km, test 8,3 km, dugi 8,0 → 6,6 km, lagan 3,1 km (napomena, upozorenje TEST_DELOAD_LONG).'
+      'Heuristika: test na kraju baze zamenjuje najmanje specifičan kvalitet (R; kod 3 dana T kontinuirano) pre razvoja, u kom zone I/T nose tempo. Odstupanje (opreznije, D27 ispred D5, bez novog broja): u rasterećenju sa testom dugi je ≤ 0,8 × poslednji ne-rasteretni — najduži koji ostavlja lagane ≥ 3 km (D13), jer test ne staje uz dugi 0,8 × i lagan ≥ 3 km, a cilj rasterećenja se ne podiže (D6); npr. 3 dana, 12 ned, 20 km, lagan 7:30, uto/čet/ned: ned 4 cilj 18,0 km, test 8,3 km, dugi 8,0 → 6,6 km, lagan 3,1 km (napomena, upozorenje TEST_DELOAD_LONG). Dopuna (10k-v2.5.1, odluka organizatora posle nalaza N7): za rasterećenje sa testom cilj iznad pravila (fit10: naviše do ispod poslednje izgradnje) samo ako sastavljena nedelja ima test; inače cilj ≤ pravilu (samo naniže), a test otpada (A9) kad ga sastavljena nedelja nema — jedno mesto, generate.ts (uslov izvodljivosti cilja), bez petlje. Na 10k-v2.5.0 pretraga je puštala cilj naviše jer okvir ima test, a sastavljena nedelja ga je gubila (A9): rasterećenje bez testa podignuto naviše, validator odbija (VOLUME_RULE) — npr. 4 dana, 12 ned, 25 km, lagan 4:30, bol 5 u četvrtak ned 1: ned 4 cilj 20 km umesto 17 km; sada 17 km bez testa.'
   },
   {
     id: 'D28',
@@ -286,7 +287,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A5',
-    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana — bez dayId) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); prinudno rasterećenje odmah posle redovnog = 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8); redovno rasterećenje odmah posle prinudnog se ukida. Isto posle nedelje smanjenja pauzom, manjkom ili bolom (A17, 10k-v2.5.0); prinudno rasterećenje se nikad ne ukida.',
+    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana — bez dayId) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); prinudno rasterećenje odmah posle redovnog = 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8); redovno rasterećenje odmah posle prinudnog se ukida. Isto posle nedelje smanjenja pauzom, manjkom ili bolom (A17, 10k-v2.5.0); prinudno rasterećenje se nikad ne ukida. Dopuna (10k-v2.5.1): prinudno rasterećenje u uvodu početnika (D28, nedelje 1–2) — obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost, nedelja se ne pomera.',
     place:
       'assess.ts (adapt.fatigue*); steps.ts framesFor; validate.ts (D5 izuzetak prinudnog i A17)',
     rationale:
@@ -328,8 +329,8 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A11',
-    rule: 'Zaštita: dani ≤ asOf, urađeni (completed, po dayId ili datumu) i zaključani (lockedDayIds) ostaju bajt-isti iz prethodnog plana; završna zaštita samo proverava (ADAPT_PROTECTION = odbijanje, plan se ne vraća); nedelje sa zadržanim danima koji se razlikuju od konstrukcije → adaptation.mixedWeeks. asOf ≥ dan trke ili pre prethodne adaptacije → ADAPT_AS_OF_INVALID.',
-    place: 'adapt.ts',
+    rule: 'Zaštita: dani ≤ asOf, urađeni (completed, po dayId ili datumu) i zaključani (lockedDayIds) ostaju bajt-isti iz prethodnog plana; završna zaštita samo proverava (ADAPT_PROTECTION = odbijanje, plan se ne vraća); nedelje sa zadržanim danima koji se razlikuju od konstrukcije → adaptation.mixedWeeks. asOf ≥ dan trke ili pre prethodne adaptacije → ADAPT_AS_OF_INVALID. Prošlost = upisani dani (10k-v2.5.1): plan kakav se upisuje (spajanje written.ts) je jedini vlasnik prošlosti — konstruktor iz njega vodi svako stanje koje zavisi od prošlosti (najduži dugi D7, poslednji dugi D5, stanje doze D5/D7/D12/D31, taper za trkačku nedelju D8/D23), a validacija u construct vidi isti upisani plan; npr. trkač je u ned 10 istrčao T 3600 m — rasterećenje se računa od 3600, ne od sastavljenih 3000 koje nije trčao.',
+    place: 'adapt.ts; written.ts (spajanje, jedino mesto); generate.ts construct (prior)',
     rationale: 'Uslov 4: završna zaštita štiti urađeno, datume i zaključane treninge, ne odlučuje.'
   },
   {
@@ -379,7 +380,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.5.0',
+  version: '10k-v2.5.1',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
