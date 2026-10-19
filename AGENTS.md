@@ -33,3 +33,11 @@ Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
    proverava test, bez novih izuzetaka.
 8. Upotrebljivost, ne samo aritmetika: test obara degenerisan plan
    (nedelja ispod minimalnog smislenog obima, prazan trening, dugi < lagan).
+
+## Testovi i sabotaže
+
+- `npm run check` (brz nivo, iz `web/`) za svaki segment i proveru; `npm run check:full` kad segment dira v1,
+  zajednički kod, reference ili test infrastrukturu, i pre mergea u main; CI uvek pun (`npm test`).
+  Nivoi, uzorci i merenja: `docs/testing/TEST-SPEED.md`.
+- Sabotaže samo kroz `web/scripts/sabotage.mjs`, na fajlovima koji treba da ih uhvate, sa `--bail=1`; nikad ceo
+  skup. Uputstvo: `docs/testing/SABOTAGE.md`.

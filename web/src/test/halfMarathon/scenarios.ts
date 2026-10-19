@@ -430,10 +430,14 @@ export function hmDecisionBases(): GenerationCase[] {
 }
 
 /** Odluka o pripremi nad ograničenim HM planovima, svaka ponuđena opcija, i odluka nad sačuvanim planom u povratnom
- *  režimu (isti put kao `storedPreparationDecision` u aplikaciji). */
-export function hmDecisionFlows(api: HmApi): FlowResult[] {
+ *  režimu (isti put kao `storedPreparationDecision` u aplikaciji). `bases`: podskup baznih planova (uzorak ili deo nivoa
+ *  testa, `src/test/level.ts`); tokovi svakog baznog plana ne zavise od ostalih. */
+export function hmDecisionFlows(
+  api: HmApi,
+  bases: GenerationCase[] = hmDecisionBases()
+): FlowResult[] {
   const out: FlowResult[] = [];
-  for (const base of hmDecisionBases()) {
+  for (const base of bases) {
     const stored = storedOf(api, base.input);
     if ('error' in stored) continue;
     const meta = stored.meta!;

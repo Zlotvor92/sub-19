@@ -46,10 +46,15 @@ export function otherAdaptationBases(): GenerationCase[] {
 
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
 
-/** Odluka o pripremi nad ograničenim HM/M planovima (i svaka ponuđena opcija). */
-export function decisionFlows(api: GeneratorApi, d: DecisionApi): FlowResult[] {
+/** Odluka o pripremi nad ograničenim HM/M planovima (i svaka ponuđena opcija). `bases`: podskup baznih planova
+    (podrazumevano svi, `otherAdaptationBases`); imena tokova počinju imenom baznog plana. */
+export function decisionFlows(
+  api: GeneratorApi,
+  d: DecisionApi,
+  bases: GenerationCase[] = otherAdaptationBases()
+): FlowResult[] {
   const out: FlowResult[] = [];
-  for (const base of otherAdaptationBases()) {
+  for (const base of bases) {
     const gen = api.generatePlan(clone(base.input) as never);
     if ('error' in gen) continue;
     const stored0 = api.adaptGeneratedPlan(gen);
@@ -92,6 +97,10 @@ export function decisionFlows(api: GeneratorApi, d: DecisionApi): FlowResult[] {
   return out;
 }
 
-export function otherAdaptationFlows(api: GeneratorApi): FlowResult[] {
-  return adaptationFlows(api, undefined, otherAdaptationBases());
+/** Tokovi adaptacije; `bases`: podskup baznih planova (podrazumevano svi). Imena tokova počinju imenom baznog plana. */
+export function otherAdaptationFlows(
+  api: GeneratorApi,
+  bases: GenerationCase[] = otherAdaptationBases()
+): FlowResult[] {
+  return adaptationFlows(api, undefined, bases);
 }

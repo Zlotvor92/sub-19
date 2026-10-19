@@ -86,8 +86,8 @@ function categoryOf(path: readonly string[]): Category {
   return 'other';
 }
 
-/** SHA po kategoriji + ukupan SHA. */
-export function digest(x: unknown): { full: string; parts: Record<Category, string> } {
+/** SHA po kategoriji (bez ukupnog). */
+function partsOf(x: unknown): Record<Category, string> {
   const lists: Record<Category, string[]> = Object.fromEntries(
     CATEGORIES.map((c) => [c, [] as string[]])
   ) as Record<Category, string[]>;
@@ -101,9 +101,44 @@ export function digest(x: unknown): { full: string; parts: Record<Category, stri
     lists[categoryOf(path)].push(`${path.join('.')}=${exact(v)}`);
   };
   walk(x, []);
-  const parts = Object.fromEntries(CATEGORIES.map((c) => [c, sha(lists[c].join('\n'))])) as Record<
+  return Object.fromEntries(CATEGORIES.map((c) => [c, sha(lists[c].join('\n'))])) as Record<
     Category,
     string
   >;
-  return { full: sha(exact(x)), parts };
+}
+
+/** SHA po kategoriji + ukupan SHA. */
+export function digest(x: unknown): { full: string; parts: Record<Category, string> } {
+  return { full: sha(exact(x)), parts: partsOf(x) };
+}
+
+/** Red reference: ukupan SHA i SHA po kategoriji, skraćeni na 20 znakova (oblik `ReferenceRow`). */
+export interface DigestRow {
+  full: string;
+  parts: Partial<Record<Category, string>>;
+  pure: boolean;
+}
+
+const short = (s: string): string => s.slice(0, 20);
+
+/**
+ * Red reference za vrednost (isto što su `row()` u `src/test/<distanca>/reference.ts` računali). Kad je dat očekivani red
+ * `expected` sa ISTIM ukupnim SHA, kategorije se preuzimaju iz njega umesto da se ponovo obilazi stablo: isti tačan zapis
+ * (`exact`) znači isto stablo vrednosti, a kategorije su funkcija tog stabla; testovi ih gledaju samo kad se ukupni SHA
+ * razlikuje — tada se računaju kao i ranije. Ishod svakog poređenja je isti kao bez `expected`
+ * (docs/testing/TEST-SPEED.md, „čist višak"). `EXACT_VERIFY_PARTS=1`: kategorije se ipak računaju i porede sa
+ * preuzetim (provera ove tvrdnje).
+ */
+export function referenceRow(value: unknown, pure: boolean, expected?: DigestRow): DigestRow {
+  const full = short(sha(exact(value)));
+  const same = expected !== undefined && expected.full === full;
+  if (same && process.env['EXACT_VERIFY_PARTS'] !== '1')
+    return { full, parts: expected.parts, pure };
+  const all = partsOf(value);
+  const parts = Object.fromEntries(CATEGORIES.map((c) => [c, short(all[c])]));
+  if (same)
+    for (const c of Object.keys(expected.parts) as Category[])
+      if (parts[c] !== expected.parts[c])
+        throw new Error(`EXACT_VERIFY_PARTS: kategorija ${c} ≠ referenca uz isti ukupni SHA`);
+  return { full, parts, pure };
 }

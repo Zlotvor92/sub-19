@@ -1,66 +1,27 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { GeneratorApi } from '@/test/fiveK/legacyApi';
-import type { ReferenceRow } from '@/test/fiveK/reference';
+import {
+  categoryOfName,
+  compareRows as compare,
+  generatorApi,
+  pickRows
+} from '@/test/fiveK/reference';
+import { FULL, logCompared, part, sample } from '@/test/level';
+import { tenKAdaptationPart } from '@/test/tenK/equivalence';
 import { loadTenKReference, tenKAdaptationRows, tenKGenerationRows } from '@/test/tenK/reference';
+import { tenKAdaptationBases, tenKGenerationCases } from '@/test/tenK/scenarios';
 import * as tenK from './index';
 
 /* 10K PRE/POSLE IZDVAJANJA. Referenca je uzeta iz STAROG zajedničkog mehanizma pre izdvajanja 10K
    (`src/test/fixtures/tenK-reference.json.gz`, v. `src/test/tenK/captureReference.node.test.ts`; ponovo snimljena u čistom
    worktree-ju na izvornom `main` — bajt-identična). Poredi se tačan zapis celog izlaza (`src/test/fiveK/exact.ts`): nijedno
-   polje nije izostavljeno i ništa se ne zaokružuje. Kategorije samo imenuju gde je razlika. */
+   polje nije izostavljeno i ništa se ne zaokružuje. Kategorije samo imenuju gde je razlika.
 
-const api: GeneratorApi = {
-  generatePlan: tenK.generatePlan,
-  assess: tenK.assess,
-  adaptGeneratedPlan: tenK.adaptGeneratedPlan,
-  resolvePlan: tenK.resolvePlan,
-  executionModel: tenK.executionModel,
-  buildExecutionAdjustment: tenK.buildExecutionAdjustment,
-  buildRunWalkAdjustment: tenK.buildRunWalkAdjustment,
-  assessRunWalkProgress: tenK.assessRunWalkProgress,
-  qualityEntryGate: tenK.qualityEntryGate,
-  hasRecentMeasuredForm: tenK.hasRecentMeasuredForm,
-  planWithNewGoal: tenK.planWithNewGoal,
-  planRecalibrated: tenK.planRecalibrated,
-  recalibratedPlan: tenK.recalibratedPlan,
-  reentryPlan: tenK.reentryPlan,
-  graftFuturePlan: tenK.graftFuturePlan,
-  alignAutomaticOverlays: tenK.alignAutomaticOverlays,
-  vdotProposal: tenK.vdotProposal,
-  applyVdotProposal: tenK.applyVdotProposal,
-  undoVdotAdjustments: tenK.undoVdotAdjustments,
-  fitnessEvidence: tenK.fitnessEvidence,
-  planVdotNow: tenK.planVdotNow,
-  matchPlanRows: tenK.matchPlanRows,
-  sessKm: tenK.sessKm,
-  sessDesc: tenK.sessDesc,
-  t3kVdot: tenK.t3kVdot
-};
+   NIVOI (src/test/level.ts): brz poredi deterministički uzorak (generisanje: svaki 5. unutar kategorije, qa i edge10k
+   svi; adaptacija: v. `src/test/tenK/equivalence.ts`; vremenska zona: sve 4 zone, svaka svoj deo skupa). Pun
+   (`TEST_FULL=1`) poredi sve: ovde generisanje, vremensku zonu i deo 1 adaptacije, a ostale delove
+   `equivalence.adapt<N>.full.node.test.ts`. */
 
-function compare(
-  actual: Record<string, ReferenceRow>,
-  expected: Record<string, ReferenceRow>
-): string[] {
-  const out: string[] = [];
-  for (const [name, ref] of Object.entries(expected)) {
-    const got = actual[name];
-    if (!got) {
-      out.push(`NEDOSTAJE: ${name}`);
-      continue;
-    }
-    if (got.pure !== ref.pure)
-      out.push(`${name}: čistoća ${String(got.pure)} ≠ ${String(ref.pure)}`);
-    if (got.full !== ref.full) {
-      const parts = Object.keys(ref.parts).filter(
-        (k) => got.parts[k as keyof typeof got.parts] !== ref.parts[k as keyof typeof ref.parts]
-      );
-      out.push(`${name}: razlika u [${parts.join(', ') || 'redosled/oblik'}]`);
-    }
-  }
-  for (const name of Object.keys(actual)) if (!expected[name]) out.push(`NOVO: ${name}`);
-  return out;
-}
-
+const api = generatorApi(tenK);
 const reference = loadTenKReference();
 
 describe('10K izdvojen generator = stari mehanizam (polazno stanje)', () => {
@@ -70,15 +31,28 @@ describe('10K izdvojen generator = stari mehanizam (polazno stanje)', () => {
   });
 
   it('generisanje: svi 10K ulazi daju identičan izlaz', () => {
-    const diff = compare(tenKGenerationRows(api), reference!.generation);
+    const all = tenKGenerationCases().map((c) => c.name);
+    // Svaki red reference ima svoj ulaz (bez ovoga brz nivo ne bi video ulaz koji nedostaje).
+    const inputs = new Set(all);
+    expect(Object.keys(reference!.generation).filter((n) => !inputs.has(n))).toEqual([]);
+    const names = sample(all, 5, categoryOfName, (n) => /^(qa|edge10k) /.test(n));
+    const picked = new Set(names);
+    const expected = pickRows(reference!.generation, names);
+    logCompared('tenK.generation', Object.keys(expected));
+    const diff = compare(
+      tenKGenerationRows(api, (n) => picked.has(n), reference!.generation),
+      expected
+    );
     expect(diff.length, diff.slice(0, 20).join('\n')).toBe(0);
     expect(Object.keys(reference!.generation).length).toBeGreaterThan(1000);
   });
 
   it('adaptacija: svi tokovi daju identičan izlaz i ne menjaju ulaze', { timeout: 600_000 }, () => {
-    const rows = tenKAdaptationRows(api);
+    const { rows, expected, orphans, events } = tenKAdaptationPart(api, reference!.adaptation, 1);
+    expect(orphans).toEqual([]);
+    expect(events).toBe(true);
     expect(Object.keys(rows).filter((k) => k.startsWith('event · ')).length).toBe(9);
-    const diff = compare(rows, reference!.adaptation);
+    const diff = compare(rows, expected);
     expect(diff.length, diff.slice(0, 20).join('\n')).toBe(0);
     expect(Object.values(rows).every((r) => r.pure)).toBe(true);
   });
@@ -86,6 +60,12 @@ describe('10K izdvojen generator = stari mehanizam (polazno stanje)', () => {
   it('vremenska zona, sat i slučajnost ne utiču na rezultat', { timeout: 600_000 }, () => {
     const tz = process.env['TZ'];
     const RealDate = Date;
+    /* Pun nivo: u svakoj zoni isti skup (qa, edge10k i otisak od 8 nedelja; prva 3 bazna plana adaptacije). Brz: zona i
+       poredi i-ti od 4 dela istog skupa ulaza generisanja i i-ti (mod 3) od ista 3 bazna plana. */
+    const genNames = tenKGenerationCases()
+      .map((c) => c.name)
+      .filter((n) => /^(edge10k|qa) /.test(n) || /· 8n$/.test(n));
+    const firstBases = tenKAdaptationBases().slice(0, 3);
     try {
       // Domen ne sme da čita sat ni slučajnost: svaki takav poziv bi ovde pao.
       vi.spyOn(Math, 'random').mockImplementation(() => {
@@ -100,12 +80,21 @@ describe('10K izdvojen generator = stari mehanizam (polazno stanje)', () => {
           throw new Error('Date.now u 10K generatoru');
         }
       }
-      for (const zone of ['Pacific/Kiritimati', 'America/Los_Angeles', 'Asia/Kolkata', 'UTC']) {
+      const zones = ['Pacific/Kiritimati', 'America/Los_Angeles', 'Asia/Kolkata', 'UTC'];
+      for (const [i, zone] of zones.entries()) {
+        const picked = new Set(FULL ? genNames : part(genNames, i + 1, zones.length));
         process.env['TZ'] = zone;
         globalThis.Date = NoClockDate as DateConstructor;
-        const gen = tenKGenerationRows(api, (n) => /^(edge10k|qa) /.test(n) || /· 8n$/.test(n));
-        const adapt = tenKAdaptationRows(api, 3);
+        const gen = tenKGenerationRows(api, (n) => picked.has(n), reference!.generation);
+        const adapt = FULL
+          ? tenKAdaptationRows(api, 3, reference!.adaptation)
+          : tenKAdaptationRows(api, undefined, reference!.adaptation, {
+              bases: [firstBases[i % firstBases.length]!],
+              events: false
+            });
         globalThis.Date = RealDate;
+        logCompared('tenK.tz.generation', Object.keys(gen));
+        logCompared('tenK.tz.adaptation', Object.keys(adapt));
         const diff = [
           ...compare(
             gen,
@@ -117,8 +106,9 @@ describe('10K izdvojen generator = stari mehanizam (polazno stanje)', () => {
           )
         ];
         expect(diff, zone).toEqual([]);
-        expect(Object.keys(gen).length).toBeGreaterThan(100);
-        expect(Object.keys(adapt).length).toBeGreaterThan(500);
+        // Brz nivo: četvrtina skupa generisanja i jedan bazni plan po zoni (v. gore), pa su i pragovi manji.
+        expect(Object.keys(gen).length).toBeGreaterThan(FULL ? 100 : 50);
+        expect(Object.keys(adapt).length).toBeGreaterThan(FULL ? 500 : 300);
       }
     } finally {
       globalThis.Date = RealDate;

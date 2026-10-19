@@ -10,7 +10,9 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { FULL, logCompared, sample } from '@/test/level';
+import { countViolations, expectCounts, GRID_TIMEOUT } from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
 import { addDays, mustDay } from './dates.ts';
@@ -72,6 +74,9 @@ const REDUCED_ONLY_06C = {
   chain: 60,
   painPause: 48
 };
+/** Brz nivo: unutar scenarija svaki K-ti tok (redosled plan, pa asOf; 5 je uzajamno prost sa 4 asOf-a → svi asOf-ovi,
+    24 od 30 baznih planova po scenariju); brojke celog skupa kvalitativno (level.harness.node.test.ts › expectCounts). */
+const K = 5;
 const bases = adaptBases();
 const plans = new Map(
   bases.map((b) => {
@@ -128,51 +133,59 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       reducedBad.push(`${key}: reduced ${v}, uslov ${String(want)}`);
   };
   const stats: Record<string, Record<string, number>> = {};
-  const cases: { id: string; k: string; s: string; asOf: string; facts: TenKV2Facts }[] = [];
-  for (const b of bases)
-    for (const k of AS_OF_KINDS)
-      for (const s of SCENARIOS) {
-        const p0 = plan(b.id);
-        const asOf = asOfOf(p0, k);
-        const facts = factsOf(p0, s, asOf) as TenKV2Facts;
-        cases.push({ id: b.id, k, s, asOf, facts });
-        let r = adaptTenKV2(p0, facts, asOf);
-        checkReduced(`${b.id}/${k}/${s}`, r);
-        let before = p0;
-        let at = asOf;
-        let f = facts;
-        if (r.ok && s === 'chain') {
-          [before, at] = [r.plan, addDays(asOf, 7)];
-          f = chainFacts(r.plan, at);
-          r = adaptTenKV2(r.plan, f, at);
-          checkReduced(`${b.id}/${k}/${s}#2`, r);
+  type Case = { id: string; k: string; s: string; asOf: string; facts: TenKV2Facts };
+  /** Svi tokovi mreže (jeftino) i izračunati (brz: uzorak; pun: svi). */
+  const all: Case[] = [];
+  let cases: Case[] = [];
+  beforeAll(() => {
+    for (const b of bases)
+      for (const k of AS_OF_KINDS)
+        for (const s of SCENARIOS) {
+          const p0 = plan(b.id);
+          const asOf = asOfOf(p0, k);
+          all.push({ id: b.id, k, s, asOf, facts: factsOf(p0, s, asOf) });
         }
-        hashes.push(fnv1a(JSON.stringify(r)));
-        h81[`${b.id}/${k}/${s}`] = planHash81(r);
-        h06c[`${b.id}/${k}/${s}`] = planHash06c(r);
-        const notes = r.ok ? r.plan.notes : [];
-        if (notes.some((x) => x.includes('(A17)'))) a17.add(`${b.id}/${k}/${s}`);
-        if (notes.some((x) => x.includes('nivoa pre bola bilo bi'))) n2.add(`${b.id}/${k}/${s}`);
-        if (applied(r, 'PAIN')) painApplied.add(`${b.id}/${k}/${s}`);
-        if (r.ok && r.plan.adaptation!.steps.some((x) => x.returnFrom))
-          painBack.add(`${b.id}/${k}/${s}`);
-        const st = (stats[s] ??= { n: 0 });
-        st['n']!++;
-        if (!r.ok) {
-          rejected.push(`${b.id}/${k}/${s}: ${r.reasons.map((x) => x.code).join(',')}`);
-          continue;
-        }
-        for (const x of r.reasons) if (x.applied) st[x.condition] = (st[x.condition] ?? 0) + 1;
-        if (sameWeeks(before, r.plan)) st['same'] = (st['same'] ?? 0) + 1;
-        if (r.plan.adaptation!.mixedWeeks.length > 0) st['mixed'] = (st['mixed'] ?? 0) + 1;
-        for (const v of validatePlan(r.plan))
-          if (v.severity === 'error') errors[v.rule] = (errors[v.rule] ?? 0) + 1;
-        for (const v of adaptInvariants(before, r.plan, at, f)) bad.push(`${b.id}/${k}/${s}: ${v}`);
+    cases = FULL ? all : sample(all, K, (c) => c.s);
+    for (const { id, k, s, asOf, facts } of cases) {
+      const p0 = plan(id);
+      let r = adaptTenKV2(p0, facts, asOf);
+      checkReduced(`${id}/${k}/${s}`, r);
+      let before = p0;
+      let at = asOf;
+      let f = facts;
+      if (r.ok && s === 'chain') {
+        [before, at] = [r.plan, addDays(asOf, 7)];
+        f = chainFacts(r.plan, at);
+        r = adaptTenKV2(r.plan, f, at);
+        checkReduced(`${id}/${k}/${s}#2`, r);
       }
+      hashes.push(fnv1a(JSON.stringify(r)));
+      h81[`${id}/${k}/${s}`] = planHash81(r);
+      h06c[`${id}/${k}/${s}`] = planHash06c(r);
+      const notes = r.ok ? r.plan.notes : [];
+      if (notes.some((x) => x.includes('(A17)'))) a17.add(`${id}/${k}/${s}`);
+      if (notes.some((x) => x.includes('nivoa pre bola bilo bi'))) n2.add(`${id}/${k}/${s}`);
+      if (applied(r, 'PAIN')) painApplied.add(`${id}/${k}/${s}`);
+      if (r.ok && r.plan.adaptation!.steps.some((x) => x.returnFrom))
+        painBack.add(`${id}/${k}/${s}`);
+      const st = (stats[s] ??= { n: 0 });
+      st['n']!++;
+      if (!r.ok) {
+        rejected.push(`${id}/${k}/${s}: ${r.reasons.map((x) => x.code).join(',')}`);
+        continue;
+      }
+      for (const x of r.reasons) if (x.applied) st[x.condition] = (st[x.condition] ?? 0) + 1;
+      if (sameWeeks(before, r.plan)) st['same'] = (st['same'] ?? 0) + 1;
+      if (r.plan.adaptation!.mixedWeeks.length > 0) st['mixed'] = (st['mixed'] ?? 0) + 1;
+      for (const v of validatePlan(r.plan))
+        if (v.severity === 'error') errors[v.rule] = (errors[v.rule] ?? 0) + 1;
+      for (const v of adaptInvariants(before, r.plan, at, f)) bad.push(`${id}/${k}/${s}: ${v}`);
+    }
+  }, GRID_TIMEOUT);
 
   it('2040 adaptacija (+ drugi korak lanca): 0 odbijanja, 0 grešaka validatora', () => {
     expect(bases.length).toBe(30);
-    expect(cases.length).toBe(2040);
+    expect(all.length).toBe(2040);
     expect(rejected.slice(0, 10)).toEqual([]);
     expect(errors).toEqual({});
   });
@@ -194,7 +207,7 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
   });
 
   it('rezultati po scenariju (primenjeni uslovi, nedelje iste kao pre, mešovite nedelje)', () => {
-    expect(stats).toEqual({
+    expectStats(stats, {
       none: { n: 120, NO_FACTS: 120, same: 120 },
       done100: { n: 120, same: 120 },
       under50: { n: 120, UNDER_EXECUTION: 80, same: 40 },
@@ -220,6 +233,22 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       painPause: { n: 120, PAIN: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 }
     });
   });
+  /** Pun: tačno. Brz: svaki scenario u uzorku, po scenariju expectCounts uz n = broj tokova scenarija (120). */
+  function expectStats(
+    got: Record<string, Record<string, number>>,
+    full: Record<string, Record<string, number>>
+  ): void {
+    if (FULL) {
+      expect(got).toEqual(full);
+      return;
+    }
+    expect(Object.keys(got).sort()).toEqual(Object.keys(full).sort());
+    expect(
+      Object.keys(full).flatMap((s) =>
+        countViolations(got[s], full[s], { got: got[s]!['n']!, full: full[s]!['n']! }, s)
+      )
+    ).toEqual([]);
+  }
 
   it('06b/06c: regresija prema e6540a5 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa primenjenim PAIN ili ukinutim rasterećenjem (A17)', () => {
     const ref = JSON.parse(readFileSync(HASHES_E65, 'utf8')) as {
@@ -229,7 +258,9 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     };
     expect(ref.against).toBe('e6540a5');
     expect(ref.count.grid04).toBe(2040);
-    expect(Object.keys(h81).sort()).toEqual(Object.keys(ref.grid04).sort());
+    expect(all.map((c) => `${c.id}/${c.k}/${c.s}`).sort()).toEqual(Object.keys(ref.grid04).sort());
+    expect(Object.keys(h81)).toEqual(cases.map((c) => `${c.id}/${c.k}/${c.s}`));
+    logCompared('tenK.v2.e6540a5.grid04', Object.keys(h06c));
     const changed: Record<string, number> = {};
     const notPain: string[] = [];
     const unchangedBack: string[] = [];
@@ -242,12 +273,12 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
         else notPain.push(key);
       } else if (painBack.has(key)) unchangedBack.push(key);
     expect(notPain).toEqual([]);
-    expect(changed).toEqual(CHANGED_06B);
-    expect(byA17).toEqual({ chain: 60, pause10: 40, pause20: 40, under50: 40 });
+    expectCounts(changed, CHANGED_06B);
+    expectCounts(byA17, { chain: 60, pause10: 40, pause20: 40, under50: 40 });
     // Promenjen je tačno svaki tok sa povratkom posle bola (PAIN bez povratka — r taper — ostaje isti).
     expect(unchangedBack).toEqual([]);
     expect([...painBack].every((k) => painApplied.has(k))).toBe(true);
-    expect(painBack.size).toBe(240);
+    expectCounts(painBack.size, 240);
   });
 
   it('06c: regresija prema 4917959 (heš bez oznake verzije i polja reduced) — menjaju se samo tokovi sa ukinutim rasterećenjem (A17) ili porukom N2; ostali bajt-isti', () => {
@@ -258,7 +289,9 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     };
     expect(ref.against).toBe('4917959');
     expect(ref.count.grid04).toBe(2040);
-    expect(Object.keys(h06c).sort()).toEqual(Object.keys(ref.grid04).sort());
+    expect(all.map((c) => `${c.id}/${c.k}/${c.s}`).sort()).toEqual(Object.keys(ref.grid04).sort());
+    expect(Object.keys(h06c)).toEqual(cases.map((c) => `${c.id}/${c.k}/${c.s}`));
+    logCompared('tenK.v2.4917959.grid04', Object.keys(h06c));
     const changed: Record<string, number> = {};
     const reducedOnly: Record<string, number> = {};
     const other: string[] = [];
@@ -276,14 +309,14 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     }
     expect(other).toEqual([]);
     expect(same).toEqual([]);
-    expect(changed).toEqual(CHANGED_06C);
-    expect(reducedOnly).toEqual(REDUCED_ONLY_06C);
+    expectCounts(changed, CHANGED_06C);
+    expectCounts(reducedOnly, REDUCED_ONLY_06C);
   });
 
   it('06c: reduced === true tačno u koracima A2/A3 (manjak, pauza — i nov start), === false tačno u koracima A6 (višak), odsutno u svim ostalim', () => {
     expect(reducedBad.slice(0, 10)).toEqual([]);
     // 2040 tokova + 120 drugih koraka lanca: manjak 80 + pauza 360 + pauza i bol 120 + lanac 120 + 80 = 760.
-    expect(reducedSeen).toEqual({ true: 760, false: 80, absent: 1320 });
+    expectCounts(reducedSeen, { true: 760, false: 80, absent: 1320 });
   });
 
   it('nevaljani ulazi → strukturisano odbijanje (plan, asOf, činjenice)', () => {

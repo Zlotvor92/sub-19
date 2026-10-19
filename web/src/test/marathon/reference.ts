@@ -4,7 +4,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync, gzipSync } from 'node:zlib';
-import { CATEGORIES, digest } from '@/test/fiveK/exact';
+import { referenceRow } from '@/test/fiveK/exact';
 import type { ReferenceRow } from '@/test/fiveK/reference';
 import type { FlowResult } from '@/test/fiveK/scenarios';
 import {
@@ -30,28 +30,25 @@ export interface MarathonReferenceFile {
   decisions: Record<string, ReferenceRow>;
 }
 
-const short = (s: string): string => s.slice(0, 20);
-function row(value: unknown, pure: boolean): ReferenceRow {
-  const d = digest(value);
-  return {
-    full: short(d.full),
-    parts: Object.fromEntries(CATEGORIES.map((c) => [c, short(d.parts[c])])),
-    pure
-  };
-}
-function rows(flows: FlowResult[]): Record<string, ReferenceRow> {
-  const out: Record<string, ReferenceRow> = {};
+type Rows = Record<string, ReferenceRow>;
+/** Red reference (`exact.ts` › `referenceRow`). `expected` (očekivani red istog imena) samo štedi ponovni obilazak
+    stabla kad je ukupni SHA isti; ishod poređenja je isti. */
+const row = (value: unknown, pure: boolean, expected?: ReferenceRow): ReferenceRow =>
+  referenceRow(value, pure, expected);
+function rows(flows: FlowResult[], expected?: Rows): Rows {
+  const out: Rows = {};
   for (const f of flows) {
     if (out[f.name]) throw new Error(`dupli tok ${f.name}`);
-    out[f.name] = row(f.value, f.pure);
+    out[f.name] = row(f.value, f.pure, expected?.[f.name]);
   }
   return out;
 }
 
 export function marathonGenerationRows(
   api: Pick<MarathonApi, 'generatePlan'>,
-  pick: (name: string) => boolean = () => true
-): Record<string, ReferenceRow> {
+  pick: (name: string) => boolean = () => true,
+  expected?: Rows
+): Rows {
   const out: Record<string, ReferenceRow> = {};
   for (const c of marathonGenerationCases().filter((x) => pick(x.name))) {
     const input = JSON.parse(JSON.stringify(c.input)) as Record<string, unknown>;
@@ -64,18 +61,19 @@ export function marathonGenerationRows(
       value = { thrown: e instanceof Error ? e.message : String(e) };
     }
     if (out[c.name]) throw new Error(`dupli scenario ${c.name}`);
-    out[c.name] = row(value, true);
+    out[c.name] = row(value, true, expected?.[c.name]);
   }
   return out;
 }
 
 export const marathonAdaptationRows = (
   api: MarathonApi,
-  limitBases?: number
-): Record<string, ReferenceRow> => rows(marathonAdaptationFlows(api, limitBases));
+  limitBases?: number,
+  expected?: Rows
+): Rows => rows(marathonAdaptationFlows(api, limitBases), expected);
 
-export const marathonDecisionRows = (api: MarathonApi): Record<string, ReferenceRow> =>
-  rows(marathonDecisionFlows(api));
+export const marathonDecisionRows = (api: MarathonApi, expected?: Rows): Rows =>
+  rows(marathonDecisionFlows(api), expected);
 
 export function loadMarathonReference(): MarathonReferenceFile | null {
   if (!existsSync(MARATHON_REFERENCE_FILE)) return null;

@@ -224,9 +224,13 @@ export function tenKEventFlows(api: GeneratorApi): FlowResult[] {
   return out;
 }
 
-export function tenKAdaptationFlows(api: GeneratorApi, limitBases?: number): FlowResult[] {
-  return [
-    ...adaptationFlows(api, limitBases, tenKAdaptationBases()),
-    ...(limitBases === undefined ? tenKEventFlows(api) : [])
-  ];
+/** Tokovi adaptacije nad `bases` (podrazumevano svi bazni planovi; brz nivo i delovi punog nivoa daju podskup, v.
+    `src/test/tenK/equivalence.ts`) i, ako je `events`, originalni QA događaji. */
+export function tenKAdaptationFlows(
+  api: GeneratorApi,
+  limitBases?: number,
+  bases: GenerationCase[] = tenKAdaptationBases(),
+  events = limitBases === undefined
+): FlowResult[] {
+  return [...adaptationFlows(api, limitBases, bases), ...(events ? tenKEventFlows(api) : [])];
 }

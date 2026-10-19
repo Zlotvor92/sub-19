@@ -184,6 +184,97 @@ export function routedGeneratorApi(): GeneratorApi & { track: (planOrInput: unkn
   };
 }
 
+/* ------------------------------------------------------------------ aplikacioni izbor (select.ts) za harnese referenci */
+
+const mustSelect = <T>(value: T | null, what: string): T => {
+  if (!value) throw new Error(`nema generatora za ${what}`);
+  return value;
+};
+const selectByInput = (input: unknown): PlanGenerator =>
+  mustSelect(generatorForDistance((input as { raceDistM?: unknown } | null)?.raceDistM), 'ulaz');
+const selectByPlan = (plan: unknown): PlanGenerator =>
+  mustSelect(generatorForPlan(plan as GenPlanState), 'plan');
+/* Odluka o pripremi postoji samo za HM i maraton; za 5K/10K store ne nudi odluku (`preparationForPlan` → `null`), što je
+   ono što je stari mehanizam za njih uvek odlučivao (`isLimitedLongPreparation` = false). */
+const selectPrep = (plan: unknown): PreparationApi =>
+  mustSelect(preparationForPlan(plan as GenPlanState), 'odluku');
+
+/** Odluka o pripremi ide kroz `preparationForPlan` (HM → HM generator, maraton → maratonski generator), kao u store-u. */
+export function selectRoutedDecisions() {
+  return {
+    basisFromPlan: ((current: unknown, today: unknown) =>
+      selectPrep(current).basisFromPlan(current as never, today as never)) as never,
+    preparationDecision: ((current: unknown, ...rest: unknown[]) =>
+      (selectPrep(current).preparationDecision as (...x: unknown[]) => unknown)(
+        current,
+        ...rest
+      )) as never,
+    buildPreparationChoice: ((current: unknown, ...rest: unknown[]) =>
+      (selectPrep(current).buildPreparationChoice as (...x: unknown[]) => unknown)(
+        current,
+        ...rest
+      )) as never,
+    isLimitedLongPreparation: ((meta: { raceDistM?: unknown } | undefined) =>
+      preparationForPlan({ weeks: [], pred: [], meta } as never)?.isLimitedLongPreparation(
+        meta as never
+      ) ?? false) as never
+  };
+}
+
+/**
+ * Ugovor generatora ide kroz `select.ts` (aplikacioni izbor, isti put kao u produkciji); pomoćne funkcije harnesa
+ * (razrešavanje, obračun sesije, model izvršenja…) idu generatoru plana iz istog toka (`routedGeneratorApi`) — stari
+ * zajednički engine više ne postoji.
+ */
+export function selectRoutedApi(): GeneratorApi {
+  const helpers = routedGeneratorApi();
+  return {
+    ...helpers,
+    generatePlan: (input: unknown) => {
+      helpers.track(input ?? { raceDistM: 5000 });
+      return selectByInput(input).generatePlan(input as never);
+    },
+    assess: (...a: Parameters<GeneratorApi['assess']>) =>
+      selectByInput({ raceDistM: a[4] }).assess(...a),
+    adaptGeneratedPlan: ((gen: { meta?: { raceDistM?: unknown } }) => {
+      helpers.track(gen);
+      return selectByInput(gen.meta).adaptGeneratedPlan(gen as never);
+    }) as never,
+    buildExecutionAdjustment: ((current: unknown, ...rest: unknown[]) =>
+      (selectByPlan(current).buildExecutionAdjustment as (...x: unknown[]) => unknown)(
+        current,
+        ...rest
+      )) as never,
+    buildRunWalkAdjustment: ((current: unknown, ...rest: unknown[]) =>
+      (selectByPlan(current).buildRunWalkAdjustment as (...x: unknown[]) => unknown)(
+        current,
+        ...rest
+      )) as never,
+    planWithNewGoal: ((current: unknown, ...rest: unknown[]) =>
+      (selectByPlan(current).planWithNewGoal as (...x: unknown[]) => unknown)(
+        current,
+        ...rest
+      )) as never,
+    planRecalibrated: ((current: unknown, ...rest: unknown[]) =>
+      (selectByPlan(current).planRecalibrated as (...x: unknown[]) => unknown)(
+        current,
+        ...rest
+      )) as never,
+    graftFuturePlan: ((current: unknown, fresh: unknown, ...rest: unknown[]) =>
+      (selectByPlan(fresh).graftFuturePlan as (...x: unknown[]) => unknown)(
+        current,
+        fresh,
+        ...rest
+      )) as never,
+    alignAutomaticOverlays: ((current: unknown, result: unknown, ...rest: unknown[]) =>
+      (selectByPlan(result).alignAutomaticOverlays as (...x: unknown[]) => unknown)(
+        current,
+        result,
+        ...rest
+      )) as never
+  };
+}
+
 /* ------------------------------------------------------------------ predlog tempa i dokaz forme po distanci plana */
 
 type Proposal = typeof hmProposal & typeof hmEvidence;

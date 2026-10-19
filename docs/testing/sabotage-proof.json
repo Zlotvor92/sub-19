@@ -1,0 +1,56 @@
+[
+ {
+  "name": "a maraton v1: faktor umora u prilagođavanju izvršenja (0,85 → 0,8; menja 227/25 764 tokova)",
+  "file": "src/domain/generators/marathon/plan/executionAdjustment.ts",
+  "find": "fatigued ? 0.85 : 1",
+  "replace": "fatigued ? 0.8 : 1",
+  "tests": [
+   "src/domain/generators/marathon/equivalence.node.test.ts"
+  ]
+ },
+ {
+  "name": "b HM v1: udeo srednje pauze u regeneraciji (0,7 → 0,75; menja 945/27 596 tokova)",
+  "file": "src/domain/generators/halfMarathon/plan/regenerate.ts",
+  "find": "medium: { days: 14, fraction: 0.7, easyWeeks: 3 }",
+  "replace": "medium: { days: 14, fraction: 0.75, easyWeeks: 3 }",
+  "tests": [
+   "src/domain/generators/halfMarathon/equivalence.node.test.ts"
+  ]
+ },
+ {
+  "name": "c 10K v1: prozor napretka trčanja/hodanja (21 → 14 dana; menja 28/14 267 tokova)",
+  "file": "src/domain/generators/tenK/training/runWalkProgress.ts",
+  "find": "  windowDays: 21,",
+  "replace": "  windowDays: 14,",
+  "tests": [
+   "src/domain/generators/tenK/equivalence.node.test.ts"
+  ]
+ },
+ {
+  "name": "c' 5K v1: prag predloga VDOT (1,5 → 2,5; menja 180/14 942 tokova)",
+  "file": "src/domain/generators/fiveK/training/constants/heuristics.ts",
+  "find": "export const VDOT_PROPOSAL_THRESHOLD = 1.5;",
+  "replace": "export const VDOT_PROPOSAL_THRESHOLD = 2.5;",
+  "tests": [
+   "src/domain/generators/fiveK/equivalence.node.test.ts"
+  ]
+ },
+ {
+  "name": "d zajednički promenljiv objekat: 10K izvozi 5K objekat proizvoda",
+  "file": "src/domain/generators/tenK/index.ts",
+  "find": "export const TEN_K_PRODUCT = PRODUCT_10K;",
+  "replace": "export const TEN_K_PRODUCT = PRODUCT_10K;\nexport { FIVE_K_PRODUCT as SHARED_FIVE_K_PRODUCT } from '../fiveK';",
+  "tests": [
+   "src/domain/generators/runtimeIsolation.node.test.ts"
+  ]
+ },
+ {
+  "name": "e nedeterminizam u 10K v2: Date.now u napomeni plana",
+  "file": "src/domain/generators/tenK/v2/generate.ts",
+  "find": "trening vodi RPE.`,",
+  "replace": "trening vodi RPE. ${Date.now()}`,",
+  "tests": [
+   "src/domain/generators/tenK/v2/feelGrid.node.test.ts"
+  ]
+ }
+]

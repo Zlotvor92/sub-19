@@ -8,7 +8,9 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { logCompared } from '@/test/level';
+import { GRID_TIMEOUT } from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
 import { addDays, mustDay } from './dates.ts';
@@ -116,15 +118,19 @@ interface Flow extends PainCase {
   res: AdaptResult;
 }
 const flows: Flow[] = [];
-for (const b of bases) {
-  const p0 = plans.get(b.id)!;
-  for (const c of painCases(b.id, p0)) {
-    const facts = painFacts(c.asOf, c.level) as unknown as TenKV2Facts;
-    flows.push({ ...c, p0, facts, res: adaptTenKV2(p0, facts, c.asOf) });
-  }
-}
 
 describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 tokova', () => {
+  // Mreža se računa u beforeAll (ne u telu describe), v. level.harness.node.test.ts. Nije uzorkovana (336 tokova).
+  beforeAll(() => {
+    for (const b of bases) {
+      const p0 = plans.get(b.id)!;
+      for (const c of painCases(b.id, p0)) {
+        const facts = painFacts(c.asOf, c.level) as unknown as TenKV2Facts;
+        flows.push({ ...c, p0, facts, res: adaptTenKV2(p0, facts, c.asOf) });
+      }
+    }
+  }, GRID_TIMEOUT);
+
   it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.5.0', () => {
     expect(PAIN_GRID.length).toBe(6);
     expect(flows.length).toBe(336);
@@ -148,6 +154,10 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
     expect(ref.against).toBe('4917959');
     expect(ref.count.gridP).toBe(336);
     expect(flows.map((f) => f.key).sort()).toEqual(Object.keys(ref.gridP).sort());
+    logCompared(
+      'tenK.v2.4917959.gridP',
+      flows.map((f) => f.key)
+    );
     const marked = (f: Flow): boolean =>
       ok(f.res).plan.notes.some((x) => x.includes('(A17)') || x.includes('bilo bi'));
     const changed = flows.filter((f) => ref.gridP[f.key] !== planHash06c(f.res));
@@ -169,6 +179,10 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
     expect(ref.against).toBe('e6540a5');
     expect(ref.count.gridP).toBe(336);
     expect(flows.map((f) => f.key).sort()).toEqual(Object.keys(ref.gridP).sort());
+    logCompared(
+      'tenK.v2.e6540a5.gridP',
+      flows.map((f) => f.key)
+    );
     const changed = flows.filter((f) => ref.gridP[f.key] !== planHash81(f.res));
     const back = (f: Flow): boolean => ok(f.res).plan.adaptation!.steps[0]!.returnFrom !== null;
     expect(changed.length).toBe(CHANGED_P);

@@ -1,9 +1,14 @@
 import { fileURLToPath, URL } from 'node:url';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 // Recorded local-time fixtures were captured in UTC.
 process.env['TZ'] = 'UTC';
+
+/* Nivo testova (src/test/level.ts, docs/testing/TEST-SPEED.md): brz je podrazumevan; pun (`TEST_FULL=1` — `npm test`,
+   `npm run check:full`, CI) poredi sve redove i uključuje delove velikih testova `*.full.node.test.ts`. */
+const FULL = process.env['TEST_FULL'] === '1';
+const FULL_ONLY = FULL ? [] : ['**/*.full.node.test.ts'];
 
 const alias = { '@': fileURLToPath(new URL('./src', import.meta.url)) };
 
@@ -49,6 +54,9 @@ export default defineConfig({
             'scripts/**/*.node.test.ts',
             'deploy/**/*.node.test.ts'
           ],
+          /* `*.harness.node.test.ts`: zajednički kod glavnog fajla i delova punog nivoa (bez testova); ime *.test.ts ga
+             čini test kodom za proveru izolacije i tsconfig. */
+          exclude: [...configDefaults.exclude, '**/*.harness.node.test.ts', ...FULL_ONLY],
           testTimeout: 120_000
         }
       },

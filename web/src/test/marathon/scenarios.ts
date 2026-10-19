@@ -472,10 +472,14 @@ export function marathonDecisionBases(): GenerationCase[] {
 }
 
 /** Odluka o pripremi nad ograničenim maratonskim planovima, svaka ponuđena opcija (produženje, polumaraton i 10K kroz
- *  predaju), i odluka nad sačuvanim planom u povratnom režimu (isti put kao `storedPreparationDecision`). */
-export function marathonDecisionFlows(api: MarathonApi): FlowResult[] {
+ *  predaju), i odluka nad sačuvanim planom u povratnom režimu (isti put kao `storedPreparationDecision`). `bases`: podskup
+ *  baznih planova (uzorak ili deo nivoa testa, `src/test/level.ts`); tokovi svakog baznog plana ne zavise od ostalih. */
+export function marathonDecisionFlows(
+  api: MarathonApi,
+  bases: GenerationCase[] = marathonDecisionBases()
+): FlowResult[] {
   const out: FlowResult[] = [];
-  for (const base of marathonDecisionBases()) {
+  for (const base of bases) {
     const stored = storedOf(api, base.input);
     if ('error' in stored) continue;
     const meta = stored.meta!;

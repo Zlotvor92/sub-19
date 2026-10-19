@@ -9,6 +9,7 @@ import {
   type FingerprintRow
 } from '@/test/fingerprint';
 import { scenariji } from '@/test/generatorScenarios';
+import { logCompared } from '@/test/level';
 import type { PlanGenerationInput, TrainingPlan } from '../types';
 
 /* GOLDEN MASTER GENERATORA (2 304 scenarija). Fixture je uzet nad STARIM generatorom (APP_VERSION 282, commit b7afc41); novi generator mora dati isti
@@ -54,13 +55,15 @@ describe('golden master generatora (2 304 scenarija)', () => {
   it('novi generator daje isti SHA-256 po scenariju kao upisani otisak', () => {
     const scenarios = scenariji();
     expect(scenarios.length).toBe(2304);
+    const update = process.env['UPDATE_FINGERPRINT'] === '1';
     const rows: Record<string, FingerprintRow> = {};
     for (const s of scenarios) {
       const plan = planFor(s.inp);
-      rows[s.ime] = { sha: shaOf(plan), pregled: preview(plan) };
+      // `pregled` se upisuje samo pri osvežavanju otiska; poređenje gleda samo `sha`.
+      rows[s.ime] = { sha: shaOf(plan), pregled: update ? preview(plan) : null };
     }
 
-    if (process.env['UPDATE_FINGERPRINT'] === '1') {
+    if (update) {
       const ukupno = createHash('sha256')
         .update(
           Object.keys(rows)
@@ -82,6 +85,7 @@ describe('golden master generatora (2 304 scenarija)', () => {
     const fixture = loadFingerprintFile();
     expect(fixture, 'fixture postoji').not.toBeNull();
     expect(fixture?.scenarija).toBe(2304);
+    logCompared('fingerprint.redovi', Object.keys(fixture?.redovi ?? {}));
     const mismatches: string[] = [];
     for (const s of scenarios) {
       const sha = (rows[s.ime] as FingerprintRow).sha;

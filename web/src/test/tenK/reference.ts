@@ -3,9 +3,10 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync, gzipSync } from 'node:zlib';
-import { CATEGORIES, digest } from '@/test/fiveK/exact';
+import { referenceRow } from '@/test/fiveK/exact';
 import type { GeneratorApi } from '@/test/fiveK/legacyApi';
 import type { ReferenceRow } from '@/test/fiveK/reference';
+import type { GenerationCase } from '@/test/fiveK/scenarios';
 import { tenKAdaptationFlows, tenKGenerationCases } from './scenarios';
 
 export const TEN_K_REFERENCE_FILE = fileURLToPath(
@@ -23,20 +24,17 @@ export interface TenKReferenceFile {
   adaptation: Record<string, ReferenceRow>;
 }
 
-const short = (s: string): string => s.slice(0, 20);
-function row(value: unknown, pure: boolean): ReferenceRow {
-  const d = digest(value);
-  return {
-    full: short(d.full),
-    parts: Object.fromEntries(CATEGORIES.map((c) => [c, short(d.parts[c])])),
-    pure
-  };
-}
+type Rows = Record<string, ReferenceRow>;
+/** Red reference (`exact.ts` › `referenceRow`). `expected` (očekivani red istog imena) samo štedi ponovni obilazak
+    stabla kad je ukupni SHA isti; ishod poređenja je isti. */
+const row = (value: unknown, pure: boolean, expected?: ReferenceRow): ReferenceRow =>
+  referenceRow(value, pure, expected);
 
 export function tenKGenerationRows(
   api: GeneratorApi,
-  pick: (name: string) => boolean = () => true
-): Record<string, ReferenceRow> {
+  pick: (name: string) => boolean = () => true,
+  expected?: Rows
+): Rows {
   const out: Record<string, ReferenceRow> = {};
   for (const c of tenKGenerationCases().filter((x) => pick(x.name))) {
     const input = JSON.parse(JSON.stringify(c.input)) as Record<string, unknown>;
@@ -49,19 +47,23 @@ export function tenKGenerationRows(
       value = { thrown: e instanceof Error ? e.message : String(e) };
     }
     if (out[c.name]) throw new Error(`dupli scenario ${c.name}`);
-    out[c.name] = row(value, true);
+    out[c.name] = row(value, true, expected?.[c.name]);
   }
   return out;
 }
 
+/** `select`: podskup baznih planova i da li idu i QA događaji (brz nivo i delovi punog nivoa, v. `./equivalence.ts`);
+    bez njega — kao ranije (svi bazni planovi, događaji samo bez `limitBases`). */
 export function tenKAdaptationRows(
   api: GeneratorApi,
-  limitBases?: number
-): Record<string, ReferenceRow> {
-  const out: Record<string, ReferenceRow> = {};
-  for (const f of tenKAdaptationFlows(api, limitBases)) {
+  limitBases?: number,
+  expected?: Rows,
+  select?: { bases?: GenerationCase[]; events?: boolean }
+): Rows {
+  const out: Rows = {};
+  for (const f of tenKAdaptationFlows(api, limitBases, select?.bases, select?.events)) {
     if (out[f.name]) throw new Error(`dupli tok ${f.name}`);
-    out[f.name] = row(f.value, f.pure);
+    out[f.name] = row(f.value, f.pure, expected?.[f.name]);
   }
   return out;
 }

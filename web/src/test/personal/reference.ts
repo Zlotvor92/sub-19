@@ -4,7 +4,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync, gzipSync } from 'node:zlib';
-import { CATEGORIES, digest } from '@/test/fiveK/exact';
+import { referenceRow } from '@/test/fiveK/exact';
 import type { GeneratorApi } from '@/test/fiveK/legacyApi';
 import type { ReferenceRow } from '@/test/fiveK/reference';
 import { personalFlows } from './scenarios';
@@ -21,21 +21,17 @@ export interface PersonalReferenceFile {
   flows: Record<string, ReferenceRow>;
 }
 
-const short = (s: string): string => s.slice(0, 20);
-
+/** Red reference (`exact.ts` › `referenceRow`, isto što je ranije računato preko `digest`). `expected` (očekivani redovi,
+    npr. `reference.flows`) samo štedi ponovni obilazak stabla kad je ukupni SHA isti; ishod poređenja je isti. */
 export function personalRows(
   api: GeneratorApi,
-  limitTodays?: number
+  limitTodays?: number,
+  expected?: Record<string, ReferenceRow>
 ): Record<string, ReferenceRow> {
   const out: Record<string, ReferenceRow> = {};
   for (const f of personalFlows(api, limitTodays)) {
     if (out[f.name]) throw new Error(`dupli tok ${f.name}`);
-    const d = digest(f.value);
-    out[f.name] = {
-      full: short(d.full),
-      parts: Object.fromEntries(CATEGORIES.map((c) => [c, short(d.parts[c])])),
-      pure: f.pure
-    };
+    out[f.name] = referenceRow(f.value, f.pure, expected?.[f.name]);
   }
   return out;
 }

@@ -1,0 +1,60 @@
+[
+ {
+  "name": "06c-a A17 isključen (petlja A17 u framesFor prazna)",
+  "file": "src/domain/generators/tenK/v2/steps.ts",
+  "find": "for (const w of reducedWeeks(s)) {",
+  "replace": "for (const w of [] as number[]) {",
+  "tests": [
+   "src/domain/generators/tenK/v2/reliefGrid.node.test.ts",
+   "src/domain/generators/tenK/v2/painGrid.node.test.ts",
+   "src/domain/generators/tenK/v2/adapt.node.test.ts"
+  ]
+ },
+ {
+  "name": "06c-b A17 ukida i prinudno rasterećenje",
+  "file": "src/domain/generators/tenK/v2/steps.ts",
+  "find": "        !forced.has(next.index) &&\n",
+  "replace": "",
+  "tests": [
+   "src/domain/generators/tenK/v2/reliefGrid.node.test.ts"
+  ]
+ },
+ {
+  "name": "06c-c validator bez izuzetka A17 (samo buildAllowed)",
+  "file": "src/domain/generators/tenK/v2/validate.ts",
+  "find": "const allowed = afterDropped ? run + 1 <= A17_MAX_RUN : buildAllowed(rel, k, run);",
+  "replace": "const allowed = buildAllowed(rel, k, run);",
+  "tests": [
+   "src/domain/generators/tenK/v2/reliefGrid.node.test.ts",
+   "src/domain/generators/tenK/v2/painGrid.node.test.ts",
+   "src/domain/generators/tenK/v2/adapt.node.test.ts"
+  ]
+ },
+ {
+  "name": "06c-d koraci sa novim startom ulaze u A17",
+  "edits": [
+   {
+    "file": "src/domain/generators/tenK/v2/steps.ts",
+    "find": "  if (s.restart) return null;\n",
+    "replace": ""
+   },
+   {
+    "file": "src/domain/generators/tenK/v2/steps.ts",
+    "find": "  if (s.restart) return [];\n",
+    "replace": ""
+   }
+  ],
+  "tests": [
+   "src/domain/generators/tenK/v2/reliefGrid.node.test.ts"
+  ]
+ },
+ {
+  "name": "06c-e reduced se ne čita (staro tumačenje: startKm i levelKm)",
+  "file": "src/domain/generators/tenK/v2/steps.ts",
+  "find": "const reduced = s.reduced ?? (s.startKm !== null && s.levelKm !== null);",
+  "replace": "const reduced = s.startKm !== null && s.levelKm !== null;",
+  "tests": [
+   "src/domain/generators/tenK/v2/reliefGrid.node.test.ts"
+  ]
+ }
+]

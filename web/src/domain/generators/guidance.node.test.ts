@@ -5,6 +5,7 @@ import { formPreviewFlows, guidanceFlows, type GuidanceApi } from '@/test/guidan
 import { loadGuidanceReference, rowsOf } from '@/test/guidance/reference';
 import { stateFlows, type StateApi } from '@/test/guidance/stateScenarios';
 import { loadStateReference } from '@/test/guidance/stateReference';
+import { logCompared } from '@/test/level';
 import * as fiveK from './fiveK';
 import * as halfMarathon from './halfMarathon';
 import * as marathon from './marathon';
@@ -66,13 +67,20 @@ describe('trenerska logika van plana: svaki generator ima svoju kopiju, ponašan
 
   for (const [name, mod] of GENERATORS)
     it(`${name}: tačan zapis = referenca`, { timeout: 600_000 }, () => {
-      expect(diff(rowsOf(guidanceFlows(apiOf(mod))), reference!.flows)).toEqual([]);
+      logCompared('guidance.flows', Object.keys(reference!.flows));
+      expect(diff(rowsOf(guidanceFlows(apiOf(mod)), reference!.flows), reference!.flows)).toEqual(
+        []
+      );
     });
 
   /* Pregled forme u čarobnjaku sada računa tempo generatora izabrane ciljne distance. Jedina namerna razlika: ciljna
      distanca bez generatora (7000 m) više nema tempo po zonama (`null`) — čarobnjak takvu distancu ne nudi. */
   it('pregled forme u čarobnjaku: isto za sve podržane distance; nepodržana nema generator', () => {
-    const now = rowsOf(formPreviewFlows(formPreview, initialWizard as never));
+    const now = rowsOf(
+      formPreviewFlows(formPreview, initialWizard as never),
+      reference!.formPreview
+    );
+    logCompared('guidance.formPreview', Object.keys(reference!.formPreview));
     const changed = diff(now, reference!.formPreview);
     expect(changed.every((n) => n.startsWith('forma 7000 '))).toBe(true);
     for (const n of changed)
@@ -88,6 +96,9 @@ describe('trenerska logika van plana: svaki generator ima svoju kopiju, ponašan
   });
   for (const [name, mod] of GENERATORS)
     it(`${name}: procena stanja = referenca`, { timeout: 600_000 }, () => {
-      expect(diff(rowsOf(stateFlows(mod as unknown as StateApi)), state!.flows)).toEqual([]);
+      logCompared('guidance.state', Object.keys(state!.flows));
+      expect(
+        diff(rowsOf(stateFlows(mod as unknown as StateApi), state!.flows), state!.flows)
+      ).toEqual([]);
     });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { personalPlan } from '../personal';
 import type { ReferenceRow } from '@/test/fiveK/reference';
 import type { GeneratorApi } from '@/test/fiveK/legacyApi';
+import { logCompared } from '@/test/level';
 import { loadPersonalReference, personalRows } from '@/test/personal/reference';
 import { regeneratorForDistance } from './handoff';
 import * as hm from './halfMarathon';
@@ -73,16 +74,20 @@ describe('ugrađeni lični plan ide HM generatoru bez promene ponašanja', () =>
     expect(generatorForPlan(personalPlan(48))).toBe(HALF_MARATHON_GENERATOR);
   });
 
+  // Referenca se učitava jednom (ranije u svakom `it` posebno; isti fajl, isti sadržaj).
+  const reference = loadPersonalReference();
+
   it('referenca postoji i uzeta je iz starog mehanizma', () => {
-    const ref = loadPersonalReference();
+    const ref = reference;
     expect(ref?.baselineSha).toBe('348391c6f81f8ee62b73b06379c9b563cf75394e');
     expect(ref?.crossCheckedSha).toBe('05088e0440c50e866bb3bbf6246ff20fe5619f4c');
     expect(Object.keys(ref?.flows ?? {}).length).toBe(13782);
   });
 
   it('HM generator nad ličnim planom = stari mehanizam (tačan zapis)', { timeout: 600_000 }, () => {
-    const ref = loadPersonalReference()!;
-    const actual = personalRows(api);
+    const ref = reference!;
+    const actual = personalRows(api, undefined, ref.flows);
+    logCompared('personal.flows', Object.keys(ref.flows));
     expect(compare(actual, ref.flows)).toEqual([]);
     // Primena/poništavanje predloga je zaista pokrivena (sintetička „merljiva" varijanta).
     expect(Object.keys(actual).filter((n) => n.endsWith('· apply')).length).toBeGreaterThan(50);

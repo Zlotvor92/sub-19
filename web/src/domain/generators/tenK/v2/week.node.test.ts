@@ -1,7 +1,8 @@
 /* D7 taper, D8 + D20 + D23 trkačka nedelja, D13 dužine, D19 lagani dani, D14 WU/CD i oporavci, D15 Uslov 8 —
    nezavisne provere na uzorku mreže 02 (3/4/5/6 dana; brojevi iz odluka, ne iz koda generatora). */
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { GRID_TIMEOUT } from './level.harness.node.test.ts';
 import { addDays, daysBetween, weekdayOf } from './dates.ts';
 import { generateTenKV2 } from './generate.ts';
 import { grid02Inputs } from './testInputs.ts';
@@ -9,16 +10,16 @@ import type { PlanWeek, TenKV2Plan } from './types.ts';
 
 /** Uzorak mreže 02 (svaki 10. ulaz po broju dana); odbijeni ulazi se beleže (test ispod). */
 const rejected: string[] = [];
-const plans: TenKV2Plan[] = ([3, 4, 5, 6] as const).flatMap((n) =>
-  grid02Inputs(n)
-    .filter((_, i) => i % 10 === 0)
-    .flatMap(({ id, input }) => {
+const plans: TenKV2Plan[] = [];
+// Uzorak se generiše u beforeAll (ne pri učitavanju fajla), v. level.harness.node.test.ts.
+beforeAll(() => {
+  for (const n of [3, 4, 5, 6] as const)
+    for (const { id, input } of grid02Inputs(n).filter((_, i) => i % 10 === 0)) {
       const r = generateTenKV2(input);
-      if (r.ok) return [r.plan];
-      rejected.push(`${id}: ${r.reasons.map((x) => x.code).join(',')}`);
-      return [];
-    })
-);
+      if (r.ok) plans.push(r.plan);
+      else rejected.push(`${id}: ${r.reasons.map((x) => x.code).join(',')}`);
+    }
+}, GRID_TIMEOUT);
 
 it('uzorak mreže 02 se generiše bez odbijanja', () => {
   expect(rejected).toEqual([]);

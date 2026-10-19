@@ -1,9 +1,17 @@
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import type { GeneratorApi } from '@/test/fiveK/legacyApi';
-import { routedGeneratorApi } from '@/test/generators';
-import { loadOtherReference, otherRows } from '@/test/fiveK/otherReference';
-import type { ReferenceRow } from '@/test/fiveK/reference';
-import type { GenPlanState } from '../state';
+import { selectRoutedApi, selectRoutedDecisions } from '@/test/generators';
+import { FULL } from '@/test/level';
+import { otherAdaptationBases } from '@/test/fiveK/otherScenarios';
+import {
+  compareOtherSelection,
+  loadOtherReference,
+  OTHER_FULL_PARTS,
+  otherFastSelection,
+  otherFullPart,
+  rowsWithoutSingleBase
+} from '@/test/fiveK/otherReference';
 import {
   FIVE_K_GENERATOR,
   HALF_MARATHON_GENERATOR,
@@ -24,96 +32,11 @@ import {
    njihov rezultat mora biti identičan. Od segmenta 3/5 HM deo reference (generisanje, adaptacija i odluka o pripremi —
    `preparationForPlan`) proverava izdvojeni HM generator, a maratonska opcija „kraća distanca: polumaraton" ide HM
    generatoru kroz `handoff.ts`. Od segmenta 4/5 i maratonski deo reference (generisanje, adaptacija, odluka o pripremi)
-   proverava izdvojeni maratonski generator; referenca nije menjana. */
+   proverava izdvojeni maratonski generator; referenca nije menjana.
 
-const must = <T>(value: T | null, what: string): T => {
-  if (!value) throw new Error(`nema generatora za ${what}`);
-  return value;
-};
-const byInput = (input: unknown) =>
-  must(generatorForDistance((input as { raceDistM?: unknown } | null)?.raceDistM), 'ulaz');
-const byPlan = (plan: unknown) => must(generatorForPlan(plan as GenPlanState), 'plan');
-/* Odluka o pripremi postoji samo za HM i maraton; za 5K/10K store ne nudi odluku (`preparationForPlan` → `null`), što je
-   ono što je stari mehanizam za njih uvek odlučivao (`isLimitedLongPreparation` = false). */
-const prep = (plan: unknown) => must(preparationForPlan(plan as GenPlanState), 'odluku');
-
-/** Odluka o pripremi ide kroz `preparationForPlan` (HM → HM generator, maraton → maratonski generator), kao u store-u. */
-const routedDecisions = {
-  basisFromPlan: ((current: unknown, today: unknown) =>
-    prep(current).basisFromPlan(current as never, today as never)) as never,
-  preparationDecision: ((current: unknown, ...rest: unknown[]) =>
-    (prep(current).preparationDecision as (...x: unknown[]) => unknown)(current, ...rest)) as never,
-  buildPreparationChoice: ((current: unknown, ...rest: unknown[]) =>
-    (prep(current).buildPreparationChoice as (...x: unknown[]) => unknown)(
-      current,
-      ...rest
-    )) as never,
-  isLimitedLongPreparation: ((meta: { raceDistM?: unknown } | undefined) =>
-    preparationForPlan({ weeks: [], pred: [], meta } as never)?.isLimitedLongPreparation(
-      meta as never
-    ) ?? false) as never
-};
-
-/** Ugovor generatora ide kroz `select.ts`; pomoćne funkcije harnesa (razrešavanje, obračun sesije, model izvršenja…)
-    idu generatoru plana iz istog toka (`routedGeneratorApi`) — stari zajednički engine više ne postoji. */
-const helpers = routedGeneratorApi();
-const routed: GeneratorApi = {
-  ...helpers,
-  generatePlan: (input: unknown) => {
-    helpers.track(input ?? { raceDistM: 5000 });
-    return byInput(input).generatePlan(input as never);
-  },
-  assess: (...a: Parameters<GeneratorApi['assess']>) => byInput({ raceDistM: a[4] }).assess(...a),
-  adaptGeneratedPlan: ((gen: { meta?: { raceDistM?: unknown } }) => {
-    helpers.track(gen);
-    return byInput(gen.meta).adaptGeneratedPlan(gen as never);
-  }) as never,
-  buildExecutionAdjustment: ((current: unknown, ...rest: unknown[]) =>
-    (byPlan(current).buildExecutionAdjustment as (...x: unknown[]) => unknown)(
-      current,
-      ...rest
-    )) as never,
-  buildRunWalkAdjustment: ((current: unknown, ...rest: unknown[]) =>
-    (byPlan(current).buildRunWalkAdjustment as (...x: unknown[]) => unknown)(
-      current,
-      ...rest
-    )) as never,
-  planWithNewGoal: ((current: unknown, ...rest: unknown[]) =>
-    (byPlan(current).planWithNewGoal as (...x: unknown[]) => unknown)(current, ...rest)) as never,
-  planRecalibrated: ((current: unknown, ...rest: unknown[]) =>
-    (byPlan(current).planRecalibrated as (...x: unknown[]) => unknown)(current, ...rest)) as never,
-  graftFuturePlan: ((current: unknown, fresh: unknown, ...rest: unknown[]) =>
-    (byPlan(fresh).graftFuturePlan as (...x: unknown[]) => unknown)(
-      current,
-      fresh,
-      ...rest
-    )) as never,
-  alignAutomaticOverlays: ((current: unknown, result: unknown, ...rest: unknown[]) =>
-    (byPlan(result).alignAutomaticOverlays as (...x: unknown[]) => unknown)(
-      current,
-      result,
-      ...rest
-    )) as never
-};
-
-function compare(
-  actual: Record<string, ReferenceRow>,
-  expected: Record<string, ReferenceRow>
-): string[] {
-  const out: string[] = [];
-  for (const [name, ref] of Object.entries(expected)) {
-    const got = actual[name];
-    if (!got) out.push(`NEDOSTAJE: ${name}`);
-    else if (got.full !== ref.full || got.pure !== ref.pure) {
-      const parts = Object.keys(ref.parts).filter(
-        (k) => got.parts[k as keyof typeof got.parts] !== ref.parts[k as keyof typeof ref.parts]
-      );
-      out.push(`${name}: razlika u [${parts.join(', ')}]`);
-    }
-  }
-  for (const name of Object.keys(actual)) if (!expected[name]) out.push(`NOVO: ${name}`);
-  return out;
-}
+   NIVOI (`src/test/fiveK/otherReference.ts`): brz poredi uzorak po distanci i vrsti ulaza (sve odluke o pripremi); pun
+   poredi sve redove — ovde generisanje, sve odluke i deo 1 adaptacije, ostali delovi adaptacije su u
+   `otherDistances.adapt<n>.full.node.test.ts`. Ugovor generatora ide kroz `select.ts` (`selectRoutedApi`). */
 
 const reference = loadOtherReference();
 
@@ -181,12 +104,22 @@ describe('10K/HM/maraton nepromenjeni (polazni commit; kroz izdvojene generatore
   });
 
   it('generisanje, adaptacija i odluke o pripremi su identični', { timeout: 900_000 }, () => {
-    const now = otherRows(routed, routedDecisions);
-    const diff = [
-      ...compare(now.generation, reference!.generation),
-      ...compare(now.adaptation, reference!.adaptation),
-      ...compare(now.decisions, reference!.decisions)
-    ];
+    // Delovi po baznim planovima su particija reference: svaki red adaptacije i odluke pripada tačno jednom baznom planu.
+    const bases = otherAdaptationBases();
+    expect(rowsWithoutSingleBase(reference!.adaptation, bases)).toEqual([]);
+    expect(rowsWithoutSingleBase(reference!.decisions, bases)).toEqual([]);
+    // Pun nivo: delovi 2…n adaptacije su zasebni fajlovi (unija delova = svi bazni planovi).
+    const missing = Array.from(
+      { length: OTHER_FULL_PARTS - 1 },
+      (_, i) => `./otherDistances.adapt${i + 2}.full.node.test.ts`
+    ).filter((f) => !existsSync(fileURLToPath(new URL(f, import.meta.url))));
+    expect(missing).toEqual([]);
+    const { now, diff } = compareOtherSelection(
+      selectRoutedApi(),
+      selectRoutedDecisions(),
+      reference!,
+      FULL ? otherFullPart(1) : otherFastSelection()
+    );
     expect(diff.length, diff.slice(0, 20).join('\n')).toBe(0);
     expect(
       Object.keys(now.decisions).some((k) => k.includes('"kind":"shorter","raceDistM":5000'))
