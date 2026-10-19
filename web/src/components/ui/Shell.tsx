@@ -1,4 +1,5 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { InstallSteps } from '../../features/install/InstallSheet';
 import { navBack } from '../../app/navHistory';
 import { TABS, type Tab, useUIStore } from '../../stores/uiStore';
 import { Icon, TabIcon, TAB_LABELS } from './icons';
@@ -70,6 +71,7 @@ export function Tabbar({ onSelect }: { onSelect?: (tab: Tab) => void }) {
 }
 
 export function AuthGate({ message, onLogin }: { message: string; onLogin: () => void }) {
+  const [steps, setSteps] = useState<'ios' | 'android' | null>(null);
   return (
     <div
       id="sb-gate"
@@ -80,7 +82,15 @@ export function AuthGate({ message, onLogin }: { message: string; onLogin: () =>
       aria-label="Prijava"
     >
       <div className="gate-in">
-        <img className="gate-logo" src="./icon-192.png" alt="" width="72" height="72" />
+        <div className="gate-top">
+          <img className="gate-logo" src="./icon-192.png" alt="" width="72" height="72" />
+          <InstallButton onSteps={(k) => setSteps((s) => (s ? null : k))} />
+        </div>
+        {steps ? (
+          <div className="gate-steps">
+            <InstallSteps kind={steps} />
+          </div>
+        ) : null}
         <div className="gate-brand">sub20</div>
         <h1 className="gate-h1">Prijavi se da nastaviš</h1>
         <div className="gate-sub">

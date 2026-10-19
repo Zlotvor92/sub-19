@@ -1085,6 +1085,25 @@
   padding: var(--pad);
   background: var(--bg);
 }
+/* Koraci za instalaciju ume da budu viši od ekrana: ekran se tada skroluje, a `margin-block: auto` centrira samo kad ima mesta. */
+.gate {
+  overflow-y: auto;
+  align-items: flex-start;
+}
+.gate-in {
+  margin-block: auto;
+}
+.gate-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+.gate-steps {
+  padding: var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+}
 .gate-in {
   display: flex;
   flex-direction: column;

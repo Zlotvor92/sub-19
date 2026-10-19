@@ -4,8 +4,8 @@ import { useUIStore } from '../../stores/uiStore';
 
 /* DUGME „INSTALIRAJ" u gornjem redu taba — stoji dok god je aplikacija otvorena u pregledaču. Kad pregledač ponudi instalaciju
    (`beforeinstallprompt`), jedan dodir otvara sistemski dijalog; inače (iPhone, Android bez događaja) otvara list sa koracima. U instaliranoj
-   aplikaciji i na računaru bez događaja ne postoji. */
-export function InstallButton() {
+   aplikaciji i na računaru bez događaja ne postoji. `onSteps` zamenjuje list tamo gde se on ne vidi (ekran za prijavu stoji iznad njega). */
+export function InstallButton({ onSteps }: { onSteps?: (kind: 'ios' | 'android') => void } = {}) {
   const prompt = useInstallStore((s) => s.prompt);
   const [busy, setBusy] = useState(false);
   const kind = installKind({
@@ -18,7 +18,9 @@ export function InstallButton() {
 
   const onClick = async (): Promise<void> => {
     if (!prompt) {
-      useUIStore.getState().openSheet({ kind: 'install', props: { kind } });
+      if (kind === 'prompt') return;
+      if (onSteps) onSteps(kind);
+      else useUIStore.getState().openSheet({ kind: 'install', props: { kind } });
       return;
     }
     setBusy(true);
