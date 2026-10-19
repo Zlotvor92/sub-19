@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  controllerChangeReload,
   refreshApp,
   swState,
   watchUpdates,
@@ -259,5 +260,36 @@ describe('ručno osvežavanje', () => {
     expect(await refreshApp(env({ reg: base(), version: '282' }).environment)).toEqual({
       kind: 'not-arrived'
     });
+  });
+});
+
+describe('promena kontrolera (controllerchange)', () => {
+  const run = (initiallyControlled: boolean, events: number, requested = false): number => {
+    let reloads = 0;
+    const on = controllerChangeReload(
+      initiallyControlled,
+      () => reloads++,
+      () => requested
+    );
+    for (let i = 0; i < events; i++) on();
+    return reloads;
+  };
+
+  it('prva instalacija (stranica bez kontrolera): bez učitavanja — novi korisnik ne gubi unos u čarobnjaku', () => {
+    expect(run(false, 1)).toBe(0);
+  });
+
+  it('posle prve instalacije nova verzija učitava jednom', () => {
+    expect(run(false, 2)).toBe(1);
+    expect(run(false, 3)).toBe(1);
+  });
+
+  it('stranica sa kontrolerom: nova verzija učitava jednom', () => {
+    expect(run(true, 1)).toBe(1);
+    expect(run(true, 2)).toBe(1);
+  });
+
+  it('korisnik je tražio osvežavanje: učitava i kad stranica nije imala kontroler', () => {
+    expect(run(false, 1, true)).toBe(1);
   });
 });

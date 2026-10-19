@@ -48,6 +48,27 @@ export function watchUpdates(
   }
 }
 
+/**
+ * Slušalac `controllerchange`: nova verzija preuzela stranicu → jedno ponovno učitavanje. PRVO preuzimanje kontrole stranice koja do tada nije
+ * imala kontroler (prva instalacija: `clients.claim()` u activate) nije nova verzija — bez učitavanja, jer bi novi korisnik usred čarobnjaka izgubio
+ * unos. Izuzetak: korisnik je sam tražio osvežavanje (`requested`, npr. stranica otvorena bez kontrolera posle tvrdog osvežavanja, pa „Osveži").
+ */
+export function controllerChangeReload(
+  initiallyControlled: boolean,
+  reload: () => void,
+  requested: () => boolean = () => false
+): () => void {
+  let controlled = initiallyControlled;
+  let reloading = false;
+  return () => {
+    const first = !controlled;
+    controlled = true;
+    if (reloading || (first && !requested())) return;
+    reloading = true;
+    reload();
+  };
+}
+
 export interface SwState {
   supported: boolean;
   /** Verzija koju service worker ZAISTA nosi (ne ona iz paketa koji ide network-first: taj skoči čim deploy prođe, i kad keš još stoji na staroj). */

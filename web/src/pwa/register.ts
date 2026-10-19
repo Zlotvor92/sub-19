@@ -6,6 +6,7 @@
 
 import { useUpdateStore } from './updateStore';
 import {
+  controllerChangeReload,
   swState,
   refreshApp,
   watchUpdates,
@@ -37,10 +38,14 @@ function swEnv(): SwStateEnv {
 
 export const readSwState = (): Promise<SwState> => swState(swEnv());
 
+/** Korisnik je tražio osvežavanje („Osveži"): sledeća promena kontrolera učitava stranicu i kad je bila bez kontrolera. */
+let refreshRequested = false;
+
 export function refreshFromUi(
   appVersion: string,
   label?: (text: string) => void
 ): Promise<RefreshOutcome> {
+  refreshRequested = true;
   return refreshApp({
     ...swEnv(),
     reloadPage: () => window.location.reload(),
@@ -59,12 +64,15 @@ export function startServiceWorker(opts: RegisterOptions): void {
   if (!('serviceWorker' in navigator)) return;
   /* Isti uslov kao u sw-reg.js: service worker radi samo na https ili localhost. */
   if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
-  let reloading = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloading) return;
-    reloading = true;
-    location.reload();
-  });
+  /* Prva instalacija (stranica bez kontrolera) ne učitava ponovo: novi korisnik bi usred čarobnjaka izgubio unos (updates.ts). */
+  navigator.serviceWorker.addEventListener(
+    'controllerchange',
+    controllerChangeReload(
+      !!navigator.serviceWorker.controller,
+      () => location.reload(),
+      () => refreshRequested
+    )
+  );
   void navigator.serviceWorker
     .register('./sw.js')
     .then((registration) => {
