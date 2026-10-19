@@ -13,7 +13,16 @@ const bases = d.all().filter((b) => {
   const i = (seen[b.family] = (seen[b.family] ?? -1) + 1);
   return i % every[b.family]! === 0;
 });
-const out = { flows: 0, rejected: 0, weeks: 0, twoQOver: 0, plansTwoQOver: 0, easy35: 0, oneQOver: 0, ex: [] as string[] };
+const out = {
+  flows: 0,
+  rejected: 0,
+  weeks: 0,
+  twoQOver: 0,
+  plansTwoQOver: 0,
+  easy35: 0,
+  oneQOver: 0,
+  ex: [] as string[],
+};
 for (const b of bases) {
   const g = d.generate(b.input);
   if (!g.ok) continue;
@@ -29,7 +38,8 @@ for (const b of bases) {
     }
     let two = false;
     for (const w of r.plan.weeks.filter((x) => x.startDate > at)) {
-      if (!["base", "development", "specific"].includes(w.phase) || w.deload) continue;
+      if (!["base", "development", "specific"].includes(w.phase) || w.deload)
+        continue;
       const L = w.days.find((x) => x.role === "long");
       if (!L) continue;
       out.weeks++;
@@ -39,7 +49,10 @@ for (const b of bases) {
       if (over && qs.length === 2) {
         out.twoQOver++;
         two = true;
-        if (out.ex.length < 4) out.ex.push(`${b.id}/w${i}end ned ${w.index}: dugi ${L.workout.km} km ${Math.round(L.workout.sec / 60)} min < ${qs.map((x) => Math.round(x.workout.sec / 60)).join("/")} min`);
+        if (out.ex.length < 4)
+          out.ex.push(
+            `${b.id}/w${i}end ned ${w.index}: dugi ${L.workout.km} km ${Math.round(L.workout.sec / 60)} min < ${qs.map((x) => Math.round(x.workout.sec / 60)).join("/")} min`,
+          );
       } else if (over) out.oneQOver++;
     }
     if (two) out.plansTwoQOver++;

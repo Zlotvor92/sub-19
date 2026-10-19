@@ -30,3 +30,5 @@ tokovi/planovi pogođeni nalazom.
 | testovi | Brz nivo maratona ≤ 60 s; CI pun nivo: deljenje (shard) — odluka posle segmenata. | MAR-07, organizator |
 | umor (MAR-06 p. 2) | Nova pouka 36: umor vezan za zapise (sidro = nedelja posle poslednjeg RPE zapisa umora), isti zapisi = isti plan; skripta `fatigue-repeat.ts` (asOf kraj nedelje → sledeći dan): 5K 58/117, 10K 903/963, HM 708/777, maraton 943/990 drugo rasterećenje → cilj 0. | 5K-08g, 10K-06f, HM-07, MAR-07 |
 | MAR-06 p. 1, 3 | Test 3 km samo napomena (kao HM-06) — prihvaćeno. 10K tekst prekidača „stiže uskoro" — 10K-06f. | — / 10K-06f |
+| zaštićeni dani (MAR-07 p. 1) | Provere po danu preskaču zaštićene dane (≤ asOf, zaključani, urađeni) — validator ne sudi činjenicama. Organizator (`locked-result.ts`, nov rezultat + zaključan Q1 sledeće nedelje): 10K 1645/1960, HM 1677/1916, 5K 20/108 odbijeno; maraton posle MAR-07b 0/3078. | MAR-07b ✓, HM-07b, 10K-06f, 5K-08h |
+| pouka 36 ponedeljak | Rasterećenje = nedelja posle nedelje zapisa (`fatigue-monday.ts`: maraton tekuća, HM/10K/5K sledeća → uskladiti). | HM-07b, 10K-06f, 5K-08h |

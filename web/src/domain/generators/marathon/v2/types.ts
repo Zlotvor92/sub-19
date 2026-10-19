@@ -439,6 +439,9 @@ export interface MarathonV2Adaptation {
       konstrukcije: validator na njima proverava samo dane (nedeljna pravila važe za konstrukciju). */
   mixedWeeks: number[];
   lockedDayIds: string[];
+  /** MAR-07b: urađeni dani posle asOf (dayId činjenice; npr. trening odrađen dan ranije) — zaštićeni kao zaključani;
+      polje samo kad nije prazno. */
+  doneDayIds?: string[];
 }
 
 export type AdaptCondition =

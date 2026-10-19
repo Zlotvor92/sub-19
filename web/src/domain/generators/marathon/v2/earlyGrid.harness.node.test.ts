@@ -5,7 +5,9 @@
    bol 5/8, pauza 10 + bol 5, manjak, umor; MAR-04b (pouke 23 i 34): asOf PRE STARTA (start − 1/−3/−6) × umor, bol
    5/8, pauza 10, rezultat. MAR-07 (Faza 4a): N10.7 — asOf pre starta × svih 17 scenarija mreže 04 (lanac: drugi
    korak nedelju kasnije); N1 — bol 7 i 8 na svaki dan nedelja N − 2 i N − 1 (3–4 dana); pouka 36 — isti zapisi umora
-   ponovo asOf + 1 … + 7 (asOf: kraj nedelja iz earlyAsOfs i start − 1) → 0 novih rasterećenja, traka prazna. Po
+   ponovo asOf + 1 … + 7 (asOf: kraj nedelja iz earlyAsOfs i start − 1) → 0 novih rasterećenja, traka prazna. MAR-07b
+   (pouka 4): novi rezultat (brži, sporiji, test 5 km) × zaključan ili urađen Q1/Q2 sledeće nedelje (asOf: kraj
+   nedelja iz earlyAsOfs) → 0 odbijanja, zaštićen dan bajt-isti (adaptInvariants). Po
    toku: prihvaćen (K1 = 0) i adaptInvariants prazno (nezavisno od validatora). */
 
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -39,7 +41,9 @@ export interface EarlyFlow {
   asOf: string;
   /** 'early' — earlyFacts (s: EarlyScenario); 's17' — factsOf mreže 04 (s: Scenario, N10.7); 'pain' — bol `level`
       na dan asOf (N1); 'fatigue' — isti zapisi umora ponovo asOf + 1 … + 7 (pouka 36). */
-  kind: 'early' | 's17' | 'pain' | 'fatigue';
+  kind: 'early' | 's17' | 'pain' | 'fatigue' | 'protected';
+  /** MAR-07b: zaštićen dan kvaliteta sledeće nedelje i način zaštite. */
+  day?: { date: string; how: 'locked' | 'done' };
   s: EarlyScenario | Scenario;
   level?: number;
   /** asOf pre starta (pouka 34). */
@@ -116,6 +120,21 @@ export function earlyFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
       { tag: 's-1', asOf: addDays(p.input.startDate, -1) },
       ...earlyAsOfs(p).filter((a) => a.tag.endsWith('end'))
     ];
+    for (const a of earlyAsOfs(p).filter((x) => x.tag.endsWith('end'))) {
+      const next = p.weeks.find((w) => w.startDate > a.asOf);
+      for (const d of next?.days.filter((x) => x.role === 'q1' || x.role === 'q2') ?? [])
+        for (const s of ['faster', 'slower', 'test5k'] as const)
+          for (const how of ['locked', 'done'] as const)
+            out.push({
+              key: `${base.id}/${a.tag}/${s}+${how}-${d.role}`,
+              base,
+              asOf: a.asOf,
+              kind: 'protected',
+              s,
+              day: { date: d.date, how },
+              pre: false
+            });
+    }
     for (const a of ends)
       out.push({
         key: `${base.id}/${a.tag}/fatigue+7`,
@@ -167,12 +186,33 @@ function fatigueRepeat(f: EarlyFlow, p: MarathonV2Plan): string | null {
 export function runFlow(f: EarlyFlow): string | null {
   const p = planOf(f.base);
   if (f.kind === 'fatigue') return fatigueRepeat(f, p);
+  const day =
+    f.kind === 'protected'
+      ? p.weeks.flatMap((w) => w.days).find((d) => d.date === f.day!.date)!
+      : null;
   const facts =
-    f.kind === 'early'
-      ? earlyFacts(p, f.s as EarlyScenario, f.asOf)
-      : f.kind === 's17'
-        ? factsOf(p, f.s as Scenario, f.asOf)
-        : painFacts(f.asOf, f.level!);
+    f.kind === 'protected'
+      ? {
+          ...factsOf(p, f.s as Scenario, f.asOf),
+          ...(f.day!.how === 'locked'
+            ? { lockedDayIds: [day!.date] }
+            : {
+                workouts: [
+                  {
+                    date: f.asOf,
+                    dayId: day!.date,
+                    km: day!.workout.km,
+                    durationSec: day!.workout.sec,
+                    completed: true
+                  }
+                ]
+              })
+        }
+      : f.kind === 'early'
+        ? earlyFacts(p, f.s as EarlyScenario, f.asOf)
+        : f.kind === 's17'
+          ? factsOf(p, f.s as Scenario, f.asOf)
+          : painFacts(f.asOf, f.level!);
   let r = adaptMarathonV2(p, facts, f.asOf);
   let before = p;
   let at = f.asOf;

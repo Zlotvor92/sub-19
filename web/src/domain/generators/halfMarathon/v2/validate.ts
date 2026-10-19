@@ -67,6 +67,7 @@ import {
   A17_MAX_RUN,
   appliedRestarts,
   basisAt,
+  deloadWeekOf,
   framesFor,
   initialState,
   inRange,
@@ -235,6 +236,13 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const steps = ad?.steps ?? [];
   const mixed = new Set(ad?.mixedWeeks ?? []);
   const checked = (w: { index: number }): boolean => !mixed.has(w.index);
+  /** Pouka 4 / stalni uslov 4 (HM-07b): zaštićen dan je činjenica, ne odluka generatora — zaključan (A11) ili upisan
+      (datum ≤ poslednji asOf: urađen, propušten, ručno izmenjen; pouka 29). Provere po danu ga preskaču kao LIMITS
+      (npr. zaključan dan kvaliteta posle novog rezultata nosi stari tempo, A1). */
+  const locked = new Set(ad?.lockedDayIds ?? []);
+  const lastAsOf = steps.length > 0 ? mustDay(steps[steps.length - 1]!.asOf) : null;
+  const guarded = (d: { date: string }): boolean =>
+    locked.has(d.date) || (lastAsOf !== null && mustDay(d.date) <= lastAsOf);
   const chk = ad ? checkInput(input) : null;
   const pace = chk?.ok ? chk.pace : null;
   if (ad && !pace) {
@@ -259,7 +267,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const reducedFrom = steps.length > 0 ? adaptVolume(steps).reducedFrom : Infinity;
   const adaptedW = (w: { index: number }): boolean => w.index >= reducedFrom;
   const forced = (w: { index: number }): boolean =>
-    steps.some((x) => x.deload && x.fromWeek === w.index);
+    steps.some((x) => x.deload && deloadWeekOf(x) === w.index);
   /** A12: početak segmenta izgradnje (nov start sa rePeriodize) za nedelju i. */
   const segStart = (i: number): number => Math.max(1, ...[...restarts].filter((r) => r <= i));
   /** A4/A9: nedelja sa manje kvaliteta — ograničenje koraka ili napomena A9 konstruktora. */
@@ -716,6 +724,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     if (w.phase === 'race' || !checked(w)) continue;
     for (const d of w.days)
       for (const z of ZONES) {
+        if (guarded(d)) continue;
         const m = Math.round(d.workout.workKm[z] * 1000);
         if (m > capM(z, w.targetKm))
           err(
@@ -731,6 +740,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const wc = warmupCooldown(input.currentWeeklyKm, rule.beginner);
   for (const w of weeks)
     for (const d of w.days) {
+      if (guarded(d)) continue;
       // Segment 04: tempo i osnova tempa nedelje (A1, pouka 16).
       const pk = pw(w);
       const mid = midEasy(pk);
@@ -1800,7 +1810,6 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // --- Segment 04 (A3, A4): ograničenja koraka po datumima (i u mešovitim nedeljama; zaključan dan i trka
   // izuzeti) — dan odmora bez treninga; zabrana kvaliteta / bol / odmor → bez kvaliteta, testa i oštrenja;
   // bol → bez ubrzanja.
-  const locked = new Set(ad?.lockedDayIds ?? []);
   for (const w of weeks)
     for (const d of w.days) {
       if (steps.length === 0 || locked.has(d.date) || d.role === 'race') continue;

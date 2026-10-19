@@ -1,10 +1,18 @@
 /* MAR-07 N1 (merenje organizatora): svaki 7. plan gridInputs sa 3 dana, bol 7 i 8 poslednji dan nedelje N − 1 →
    odbijanja. Iz korena repoa: node docs/marathon-v2/artifacts/segment-07/n1.ts [koren] → JSON. */
-const root = process.argv[2] ?? new URL("../../../../", import.meta.url).pathname;
+const root =
+  process.argv[2] ?? new URL("../../../../", import.meta.url).pathname;
 const G = `${root}/web/src/domain/generators/marathon/v2`;
 const { generateMarathonV2, adaptMarathonV2 } = await import(`${G}/index.ts`);
-const T = await import(new URL("../../../../web/src/domain/generators/marathon/v2/testInputs.ts", import.meta.url).href);
-let flows = 0, rejected = 0, raceOnly = 0;
+const T = await import(
+  new URL(
+    "../../../../web/src/domain/generators/marathon/v2/testInputs.ts",
+    import.meta.url,
+  ).href
+);
+let flows = 0,
+  rejected = 0,
+  raceOnly = 0;
 const cls: Record<string, number> = {};
 for (const [i, c] of T.gridInputs().entries()) {
   if (i % 7 !== 0 || c.days !== 3) continue;

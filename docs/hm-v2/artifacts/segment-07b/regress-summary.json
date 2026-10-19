@@ -1,0 +1,27 @@
+{
+  "gen": {
+    "total": 25122,
+    "after:aT": 1371,
+    "rejected_pre": 0,
+    "rejected_post": 0
+  },
+  "early": {
+    "total": 114012,
+    "after:aT": 6020,
+    "rejected_pre": 0,
+    "rejected_post": 0
+  },
+  "targeted": {
+    "total": 16275,
+    "after:aT": 1676,
+    "rejected_pre": 0,
+    "rejected_post": 0
+  },
+  "fatigue-repeat": {
+    "pre.wed": "HM { tokova: 777, drugo_rasterecenje: 0, odbijeno_drugi: 0 }",
+    "pre.end": "HM { tokova: 777, drugo_rasterecenje: 0, odbijeno_drugi: 0 }",
+    "post.wed": "HM { tokova: 777, drugo_rasterecenje: 0, odbijeno_drugi: 0 }",
+    "post.end": "HM { tokova: 777, drugo_rasterecenje: 0, odbijeno_drugi: 0 }"
+  },
+  "note": "regress.ts/compare.ts iz artifacts/segment-07 (heš bez oznake verzije); pre = worktree 16b8906, posle = radno stablo HM-07b. Ključevi samo total/after:* = 0 promena sadržaja i napomena."
+}

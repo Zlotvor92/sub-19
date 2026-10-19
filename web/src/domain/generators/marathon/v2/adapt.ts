@@ -125,12 +125,18 @@ export function adaptMarathonV2(rawPlan: unknown, rawFacts: unknown, asOf: unkno
   const locked = new Set(facts.lockedDayIds);
   const keep = (d: PlanDay): boolean =>
     mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
+  // MAR-07b: urađeni dani posle asOf ulaze u plan (adaptation.doneDayIds) — validator ih, kao zaključane, ne sudi.
+  const doneAfter = plan.weeks
+    .flatMap((w) => w.days)
+    .filter((d) => mustDay(d.date) > t && done.has(d.date))
+    .map((d) => d.date);
   const prior: Written = {
     weeks: plan.weeks,
     keep,
     asOf: t,
     at,
-    lockedDayIds: facts.lockedDayIds
+    lockedDayIds: facts.lockedDayIds,
+    doneDayIds: doneAfter
   };
 
   // (2) Isti konstruktor kao generate.
@@ -210,7 +216,13 @@ export function adaptMarathonV2(rawPlan: unknown, rawFacts: unknown, asOf: unkno
       ...applied.map((x) => `Adaptacija ${at}: ${x.message}`)
     ],
     warnings: [],
-    adaptation: { asOf: at, steps, mixedWeeks: mixed, lockedDayIds: facts.lockedDayIds }
+    adaptation: {
+      asOf: at,
+      steps,
+      mixedWeeks: mixed,
+      lockedDayIds: facts.lockedDayIds,
+      ...(doneAfter.length > 0 ? { doneDayIds: doneAfter } : {})
+    }
   };
 
   // (4) Validacija.

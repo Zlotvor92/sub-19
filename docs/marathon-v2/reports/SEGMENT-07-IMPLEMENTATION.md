@@ -31,15 +31,17 @@ ne ukida" je zato prebačen na asOf utorak (ista namera).
 
 ## Merenje pre (7ba9717, worktree) → posle
 
-| merenje                                                                             | pre                   | posle                                      |
-| ----------------------------------------------------------------------------------- | --------------------- | ------------------------------------------ |
-| N1 organizatora (svaki 7. gridInputs, 3 d, bol 7/8 kraj N−1; `segment-07/n1.ts`)    | 148/892 odbijeno      | 0 (148 trkačkih samo sa trkom)             |
-| final-check targeted.ts MAR (a) bol 7/8 svaki dan N−2/N−1                           | 40/7560               | 0/7560                                     |
-| targeted (c) pauza 35: dugi kraći od kvaliteta (sve nedelje izgradnje)              | 4675 (2171 planova)   | 2517 (1652) — samo nedelje sa 1 kvalitetom |
-| pauza 35, nedelje izgradnje sa 2 kvaliteta i danom > dugi (`segment-07/pause35.ts`) | 3166 (1552 planova)   | **0**; 2488 nedelja Q2 lagan               |
-| targeted (c) dugi < 10 km u izgradnji                                               | 12 981 (4179 planova) | 11 360 (3851)                              |
-| fatigue-repeat.ts MAR end / sredom                                                  | 943/990 / 0/990       | **0/990** / 0/990                          |
-| targeted (d) planova sa tehničkom napomenom                                         | 332/736 (prikazana)   | 332/736 (ne prikazuje se)                  |
+| merenje                                                                             | pre                   | posle                                                  |
+| ----------------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------ |
+| N1 organizatora (svaki 7. gridInputs, 3 d, bol 7/8 kraj N−1; `segment-07/n1.ts`)    | 148/892 odbijeno      | 0 (148 trkačkih samo sa trkom)                         |
+| final-check targeted.ts MAR (a) bol 7/8 svaki dan N−2/N−1                           | 40/7560               | 0/7560                                                 |
+| targeted (c) pauza 35: dugi kraći od kvaliteta (sve nedelje izgradnje)              | 4675 (2171 planova)   | 2517 (1652) — samo nedelje sa 1 kvalitetom             |
+| pauza 35, nedelje izgradnje sa 2 kvaliteta i danom > dugi (`segment-07/pause35.ts`) | 3166 (1552 planova)   | **0**; 2488 nedelja Q2 lagan                           |
+| targeted (c) dugi < 10 km u izgradnji                                               | 12 981 (4179 planova) | 11 360 (3851)                                          |
+| fatigue-repeat.ts MAR end / sredom                                                  | 943/990 / 0/990       | **0/990** / 0/990                                      |
+| final-check early.ts MAR 193 97 29 (253 plana, 164 394 toka)                        | 0 odbijanja           | 0 odbijanja, 0 common/inv, 'none' = generator (1572 s) |
+| final-check warnings.ts MAR 1 (MARATHON_LONG_SHORT R/F/B/M13a %)                    | 59,0/72,7/95,7/76,4   | 12,0/9,0/44,3/19,6 (redovi kao tabela ispod)           |
+| targeted (d) planova sa tehničkom napomenom                                         | 332/736 (prikazana)   | 332/736 (ne prikazuje se)                              |
 
 Pouka 35 na M13a mreži (dopuna HM-07: 1 kvalitet neizvodljiv → 2 kvaliteta + LONG_SHORTER_THAN_QUALITY), nedelje
 pre → posle: 4 d 630 → 558, 5 d 1812 → 1347, 6 d 3165 → 1785 (3 d: 0); preostale po r (4/5/6 d): r5 204/372/444,
