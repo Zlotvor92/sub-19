@@ -41,7 +41,7 @@ isključen. Plan politike nepromenjen: verzija ostaje `marathon-v2.3.1` (v. Trak
   neprazan, plan se menja posle asOf — traka ne; nov zapis → traka; ista pauza sutra → ne).
 - **Merenje (plan bajt-isti):** `artifacts/segment-04b/measure.ts` (heš `planHash` adaptiranog plana bez oznake verzije;
   `newLimits` je polje rezultata, ne plana) na čistom `8beef45` (worktree) i posle izmene, `cmp` JSON redova:
-  mreža 04 6236/6236, trajna rana 45 101/45 101, rana pre starta 4050/4050, široka WIDE_RES — **0 promenjenih**.
+  mreža 04 6236/6236, trajna rana 45 101/45 101, rana pre starta 4050/4050, široka 267 927/267 927 (4 dela) — **0 promenjenih** (redovi bajt-isti, uklj. odbijanja).
   Verzija ostaje `marathon-v2.3.1`; DECISIONS M18 dopunjen (pravilo, mesto, merenje). `KNOWN_VERSIONS` =
   `['marathon-v2.3.1'] ∪ tekuća` (= `['marathon-v2.3.1']`).
 
@@ -99,7 +99,8 @@ posle pregleda bajt-isti (`adaptFlow`).
 `e2e/marathon-v2.spec.ts` tok 1 dopunjen: … → Cilj (v2) → sat → (danas 2026-02-04) Prilagodi plan „bez novih činjenica" →
 prijavljena pauza 26. 1.–4. 2. → razlozi + tabela, server nepromenjen → primena → revizija na serveru (`asOf`
 2026-02-04, `marathon-v2`) → „Pregledaj vraćanje" (server nepromenjen) → primena → „Vraćanje plana: …" → nedelja trke.
-E2E_RES
+`marathon-v2 + hm-v2 + tenk-v2 + fivek-v2`: **12/12 (1,3 min)**. Dopuna organizatora (34ae4d0): svaki `expect.poll` na
+serverski plan (4: čarobnjak, po osećaju, adaptacija, vraćanje) sa `SYNC = { timeout: 15_000 }`, komentar iz hm-v2.
 
 ## Sabotaže (`web/scripts/sabotage.mjs`, `--bail=1`, brz nivo) — 8/8 palo, 59,4 s, `src` vraćen (heš cc25270657b1bd7a)
 
@@ -111,7 +112,19 @@ kao potpuna (5,7 s); (h) aplikacija sama računa traku umesto domena (10,7 s).
 
 ## Komande i rezultati (iz `web/`)
 
-CMD_RES
+- `npx tsc -b --noEmit` 0; `eslint` (promenjeni fajlovi) 0; `prettier --check` 0.
+- `npm run check`: exit 0 — 280 fajlova / 3384 testa (15 min 46 s zida, uz paralelno merenje heševa).
+- Namenski `TEST_FULL=1 npx vitest run --changed 8beef45`: 184 fajla / 1504 testa (uklj. 45 fajlova `marathon/v2`, od
+  toga 20 delova punog nivoa), 2 pada: `training/generator/audit.test.ts` i `generator.input.test.ts` — „Test timed out
+  in 5000ms" pod opterećenjem (paralelno merenje, opterećenje ≈ 6,7 na 4 jezgra); kod koji MAR-06 ne dira; sami 35/35.
+- `marathon/v2` brz nivo: 26 fajlova / 317 testova, 65,9 s; isti nivo na čistom 8beef45 (worktree, ista mašina) 25 /
+  298, 65,9 s — novi testovi u brzom nivou bez merljivog dodatka zida (adaptFlow ≈ 6 s ide paralelno sa težim fajlovima).
+- Pun nivo `TEST_FULL=1 npx vitest run --project node src/domain/generators/marathon/v2`: 46 fajlova / 387
+  testova, prošlo (13 min 56 s; MAR-05: 45 / 368).
+- `v2/app/` 4 fajla / 49 (adaptFlow 17, app 27, byteSame 2, importV2 3); `adapt.node` 36; UI `marathonV2Adapt` 6,
+  `marathonV2Flow` + `marathonV2Watch` 10.
+- Sabotaže 8/8 (gore); merenje heševa: `artifacts/segment-04b/measure.ts` × {a04, early, pre, wide 1–4/4} × {8beef45,
+  posle}, `cmp`.
 
 ## Stalni uslovi (AGENTS.md)
 
