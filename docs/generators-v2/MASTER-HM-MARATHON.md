@@ -129,7 +129,10 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     Važi u generatoru i adaptaciji; jedno mesto odluke (broj dana kvaliteta nedelje), validator čita istu funkciju.
     Kad ni sa jednim danom kvaliteta dugi nije najduži — upozorenje po pouci 14. Nađeno posle novog starta (pauza ≥ 28):
     HM 34 %, maraton 24 % tokova sa dugim kraćim od kvaliteta, dugi i 4–5 km uz I 48 min i T 47 min. (Odbačeno: WU/CD
-    po cilju nedelje — WU/CD su trenerski deo treninga, uslov 3.) Pouka 30 važi i za 5K (Faza 4a N3).
+    po cilju nedelje — WU/CD su trenerski deo treninga, uslov 3.) Važi u izgradnji (baza, razvoj, specifična) i u
+    rasterećenju sa dva kvaliteta; taper i trkačka nedelja su izuzeti (H7/M7: dugi tapera namerno ≤ 0,6 × najduži,
+    intenzitet se zadržava — HM-07: RP dan duži od dugog u taperu 1371/25 122 planova, medijana 6 min, ostaje).
+    Pouka 30 važi i za 5K (Faza 4a N3).
 
 ## 3. Tok jednog segmenta i provera
 
