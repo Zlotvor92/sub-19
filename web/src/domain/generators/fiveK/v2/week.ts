@@ -160,6 +160,40 @@ export function buildTrainingWeek(
 }
 
 /**
+ * 2.8.0 (pouka 30, JEDINO mesto): datumi laganih dana trkačke nedelje koji postaju odmor kad trkačka nedelja
+ * (bez trke) ne bi bila ≤ planirano tapera `capKm` (taper skraćen danima odmora/bola) — prvo dani bola, pa
+ * najraniji lagani, najmanje koliko treba; dan pred trku, oštrenje i trka nikad. `fixed(date)` = dan prethodnog
+ * plana na zaštićenom datumu (undefined = nije zaštićen, null = zaštićen bez treninga): ulazi u zbir i ne
+ * postaje odmor (prošlost = upisani dani). Prazno kad staje ili kad ni bez svih laganih ne staje.
+ */
+export function raceWeekRest(
+  days: readonly PlanDay[],
+  raceDate: string,
+  pain: ReadonlySet<string>,
+  capKm: number,
+  fixed: (date: string) => PlanDay | null | undefined = () => undefined
+): string[] {
+  const dates = [...new Set(days.map((d) => d.date))];
+  const kmOf = (date: string): number => {
+    const f = fixed(date);
+    const d = f === undefined ? days.find((x) => x.date === date) : f;
+    return d && d.countsToWeek ? d.workout.km : 0;
+  };
+  let total = r2(dates.reduce((a, d) => a + kmOf(d), 0));
+  const free = days.filter(
+    (d) => d.role === 'easy' && daysBetween(d.date, raceDate) > 1 && fixed(d.date) === undefined
+  );
+  const order = [...free.filter((d) => pain.has(d.date)), ...free.filter((d) => !pain.has(d.date))];
+  const out: string[] = [];
+  for (const d of order) {
+    if (total <= capKm + 1e-9) break;
+    out.push(d.date);
+    total = r2(total - d.workout.km);
+  }
+  return total <= capKm + 1e-9 ? out.sort() : [];
+}
+
+/**
  * Trkačka nedelja. 2.3.0 (Odluka 4): `bound` = udeo vrha je GORNJA GRANICA; cilj nedelje = zbir
  * planiranih dana (budžet oštrenja se računa od granice).
  */
@@ -170,7 +204,8 @@ export function buildRaceWeek(
   runDays: readonly Weekday[],
   raceDate: string,
   p: PaceModel,
-  prevLongKm: number
+  prevLongKm: number,
+  cap: { km: number; fixed?: (date: string) => PlanDay | null | undefined } | null = null
 ): WeekResult {
   const budgets = qualityBudgets(bound);
   const gapToRace = (w: Weekday): number => daysBetween(dateOfWeekday(f, w), raceDate);
@@ -252,6 +287,10 @@ export function buildRaceWeek(
     workout: raceDay(p)
   });
   days.sort((a, b) => a.date.localeCompare(b.date));
+  // 2.8.0 (pouka 30): trkačka nedelja ≤ planirano tapera — višak laganih dana postaje odmor (raceWeekRest).
+  const raceRest = cap ? raceWeekRest(days, raceDate, pain, cap.km, cap.fixed) : [];
+  if (raceRest.length > 0)
+    days.splice(0, days.length, ...days.filter((d) => !raceRest.includes(d.date)));
   const notes = ['Trkačka nedelja: trka se ne računa u nedeljni obim.'];
   if (!sharp) notes.push('Adaptacija: bez oštrenja (dan oštrenja u zabrani kvaliteta).');
   const dropped = others.length - n;
@@ -260,6 +299,10 @@ export function buildRaceWeek(
       `Izostavljeno laganih dana: ${dropped} (ostatak < ${P.easy.taperMinKm} km po trku).`
     );
   if (withEve) notes.push(`Dan pred trku: lagano ${eveKm} km sa ubrzanjima.`);
+  if (raceRest.length > 0)
+    notes.push(
+      `Trkačka nedelja skraćena: taper je imao dane odmora/bola — trkačka nedelja ≤ planirano tapera ${cap!.km} km (odmor: ${raceRest.join(', ')}; pouka 30).`
+    );
   const plannedKm = r2(days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
   notes.push(
     `Cilj trkačke nedelje = planirano ${plannedKm} km (gornja granica ${bound} km = ${P.volume.raceWeekFactor * 100}% vrha; lagan dan ≤ ${easyCap} km).`
@@ -274,7 +317,8 @@ export function buildRaceWeek(
       easyCappedAtLong: false,
       stridesOnly: false,
       days,
-      notes
+      notes,
+      ...(raceRest.length > 0 ? { raceRest } : {})
     }
   };
 }

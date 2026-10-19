@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.7.0`, 08e) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.8.0`, 08g) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -13,7 +13,9 @@ nepromenjeno. 08d (5k-v2.6.1): bol — sidro povratka = nedelja koja sadrži asO
 cilj te nedelje); posle bola doza kvaliteta počinje iznova od sledeće nedelje izgradnje. 08e (5k-v2.7.0): redovno
 rasterećenje odmah posle nedelje smanjenja (pauza, manjak, sidro bola; ne nov start) otpada (Odluka 9, `steps.framesFor`);
 adaptacija koju konstruktor sastavi više ne odbija validator (rast uz donju granicu, minimum za cilj uz dane bola, ostatak
-pauze u nedelji rasterećenja). Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
+pauze u nedelji rasterećenja). 08g (5k-v2.8.0): prošlost = upisani dani (`written.ts`, pouka 29), trkačka ≤ taper
+(pouka 30), test iz upisanog plana, provere progresije u jedinici doze + DOSE_DROPPED, umor vezan za zapise (pouka 36);
+trajna rana mreža 104 800 tokova, 0 odbijanja. Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
 Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segmenti 01–07 (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
@@ -105,3 +107,17 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   oznaka; dozvola organizatora). KNOWN_VERSIONS = 2.6.0, 2.6.1, 2.7.0.
 - Sabotaže (a)–(f3) 8/8 PAO (42 s, `--parallel 2`); vitest fiveK/v2 16 / 655 (brz); pun 08e 27/27; `npm run check` exit 0 (222 / 2763); `npm run check:full` exit 0 (271 / 2914).
 - Izveštaj: `reports/SEGMENT-08e-IMPLEMENTATION.md`.
+
+## Segment 08g — Faza 4a N2–N4 + pouka 36 (5k-v2.8.0, 2026-10-19)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: f4b257d
+- N2a: test iz upisanog plana (`steps.writtenTest`); N2b (odluka D): jedinica doze (m/s) u BASE_R_DECREASE,
+  DOSE_PROGRESSION, BASE_PLATEAU; R pada samo kad je plafon R < prethodne → napomena + DOSE_DROPPED; N3: `week.raceWeekRest`
+  → `raceRest`, RACE_WEEK_TAPER / RACE_WEEK_SHORT; N4: `written.ts`, stanje iz upisanih dana, validator ne preskače mešovitu
+  nedelju (`steps.doseResetDate`); pouka 36: sidro umora iz zapisa.
+- Merenje: 4a 29/19/11 odbijeno 92 → 0, trkačka > taper 34 → 0; 7/7/7 209 → 0, 94 → 0; fatigue-repeat 58/117 → 0;
+  generator bajt-isti (3816). Trajna mreža 104 800: promenjeno 4067 (R 399, F 2960, N4 673, N3 34, C 1), bez razloga 0.
+- byteSame: samo redovi „5K v2" (10K 19, HM 13, maraton 13). KNOWN_VERSIONS = 2.6.0, 2.6.1, 2.7.0, 2.8.0.
+- Provere: tsc/eslint/prettier exit 0; `npm run check` exit 0 (282 / 3401); `--changed f4b257d` pun 174 / 1807; pun fiveK/v2
+  22 / 675; E2E `fivek-v2` 3/3; sabotaže 8/8 PALO (51 s).
+- Izveštaj: `reports/SEGMENT-08g-IMPLEMENTATION.md`.

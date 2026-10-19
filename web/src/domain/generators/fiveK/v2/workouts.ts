@@ -707,9 +707,19 @@ function baseWeek(
     q2: tSession(t, targetKm, p).workout,
     easyStrides: true,
     stridesOnly: false,
-    notes: [],
+    notes: rDropNotes(b.R, pm, r),
     dose: { main: r, t, same }
   };
+}
+
+/** 2.8.0 (N2b, MASTER pouke 12/32): plafon R nedelje (budžet R = udeo × cilj) je ispod prethodne R doze — R pada na
+    najveću strukturu koja staje; napomena (validator: upozorenje DOSE_DROPPED, isti plafon qualityBudgets). */
+function rDropNotes(budgetR: number, pm: RepChoice | null, r: RepChoice): string[] {
+  return pm && workOf(r) + 1e-9 < workOf(pm) && budgetR + 1e-9 < workOf(pm)
+    ? [
+        `R doza pala: plafon R ${km(budgetR)} km < prethodne ${km(workOf(pm))} km — najveća struktura koja staje (DOSE_DROPPED).`
+      ]
+    : [];
 }
 
 const altNote = (what: string, c: RepChoice): string =>
@@ -886,12 +896,16 @@ function baseWeekOne(
     if (kind === 'R') {
       const r = pickR();
       if (r)
-        return single(repsRSession('R', r, targetKm, p).workout, notes, {
-          main: r,
-          t: pt,
-          same: 1,
-          kind: 'R'
-        });
+        return single(
+          repsRSession('R', r, targetKm, p).workout,
+          [...notes, ...rDropNotes(b.R, pm, r)],
+          {
+            main: r,
+            t: pt,
+            same: 1,
+            kind: 'R'
+          }
+        );
     } else {
       const t = pickT();
       if (t)

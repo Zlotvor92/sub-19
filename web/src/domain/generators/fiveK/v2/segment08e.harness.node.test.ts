@@ -23,6 +23,7 @@ import { isShortPrep, periodize } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import {
   canonResult08e,
+  family08g,
   RELIEF_NARROW,
   RELIEF_WIDE,
   reliefBases,
@@ -160,10 +161,25 @@ export function usability(f: GridFlow): string[] {
 /** Brojke celog skupa (pun nivo) po pretrazi: tokova, ukinuto, zadržano granicom, promenjeno prema 51a924f. */
 export const TOTALS: Record<
   Search,
-  { flows: number; dropped: number; kept: number; changed: number; formerlyRejected: number }
+  {
+    flows: number;
+    dropped: number;
+    kept: number;
+    changed: number;
+    formerlyRejected: number;
+    /** 08g: promenjeni tokovi porodice N3/N4/F (testInputs.family08g; šira: 7 N3/N4 + 54 F, pouka 36). */
+    family08g: number;
+  }
 > = {
-  narrow: { flows: 5952, dropped: 988, kept: 0, changed: 1019, formerlyRejected: 31 },
-  wide: { flows: 10852, dropped: 978, kept: 0, changed: 1007, formerlyRejected: 29 }
+  narrow: {
+    flows: 5952,
+    dropped: 988,
+    kept: 0,
+    changed: 1094,
+    formerlyRejected: 31,
+    family08g: 75
+  },
+  wide: { flows: 10852, dropped: 978, kept: 0, changed: 1068, formerlyRejected: 29, family08g: 61 }
 };
 
 export function describeReliefGrid(title: string, search: Search): void {
@@ -230,6 +246,7 @@ export function describeReliefGrid(title: string, search: Search): void {
       const bad: string[] = [];
       let changed = 0;
       let formerly = 0;
+      let later = 0;
       for (const f of flows) {
         const was = ref.hashes[f.c.key];
         if (was === undefined) {
@@ -241,14 +258,19 @@ export function describeReliefGrid(title: string, search: Search): void {
         const rejected = ref.rejected[f.c.key] !== undefined;
         if (!same) changed++;
         if (!same && !noted && rejected) formerly++;
-        if (!same && !noted && !rejected) bad.push(`${f.c.key}: promenjen bez Odluke 9`);
+        // 08g (5k-v2.8.0): promena iz porodice N3/N4 (testInputs.family08g) — pouka 30 / pouka 29.
+        const fam =
+          !same && !noted && !rejected ? family08g(f.b.plan, f.c.facts, f.c.asOf, f.res) : null;
+        if (fam) later++;
+        if (!same && !noted && !rejected && !fam) bad.push(`${f.c.key}: promenjen bez Odluke 9`);
         if (same && noted) bad.push(`${f.c.key}: rečenica bez promene`);
       }
       expect(bad.slice(0, 10)).toEqual([]);
       if (FULL)
-        expect([changed, formerly]).toEqual([
+        expect([changed, formerly, later]).toEqual([
           TOTALS[search].changed,
-          TOTALS[search].formerlyRejected
+          TOTALS[search].formerlyRejected,
+          TOTALS[search].family08g
         ]);
     });
 
