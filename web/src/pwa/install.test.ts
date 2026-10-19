@@ -98,7 +98,12 @@ describe('InstallButton', () => {
 describe('InstallSheet', () => {
   it('iPhone: koraci za Podeli i razlog (obaveštenja)', () => {
     render(createElement(InstallSheet, { kind: 'ios' }));
-    expect(screen.getByText('Dodaj na početni ekran')).toBeTruthy();
+    expect(screen.getByText('Add to Home Screen')).toBeTruthy();
+    const imgs = [...document.querySelectorAll<HTMLImageElement>('.sh-steps img')];
+    expect(imgs).toHaveLength(4);
+    /* Da fajlovi postoje u public/, drži `install-images.node.test.ts`. */
+    for (const img of imgs)
+      expect(img.getAttribute('src')).toMatch(/^\.\/instaliraj\/ios-\d-.+\.webp$/);
     expect(screen.getByText(/podsetnici za trening/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'U redu' })).toBeTruthy();
   });
