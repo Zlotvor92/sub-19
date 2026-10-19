@@ -368,6 +368,7 @@ interface PlanLike {
   weeks: readonly {
     index: number;
     phase: string;
+    test?: boolean;
     startDate: string;
     endDate: string;
     days: readonly {
@@ -653,4 +654,140 @@ export function reliefFacts(
     case 'pause10pain5':
       return { breaks: pause(10), ...painFacts(asOf, 5) };
   }
+}
+
+/* ---------- Segment 06d: mreža E (rana adaptacija i pred nedeljom testa, N7) ---------- */
+
+export const EARLY_SCENARIOS = [
+  'pause10',
+  'pause20',
+  'pain5',
+  'pain8',
+  'pause10pain5',
+  'under',
+  'fatigue'
+] as const;
+export type EarlyScenario = (typeof EARLY_SCENARIOS)[number];
+
+/** Činjenice mreže E (asOf = dan adaptacije): pauza 10/20 dana (breaks do asOf), bol 5/8 na dan asOf, pauza 10 +
+    bol 5, manjak (odrađen samo dan asOf − 6 po planu, pokrivenost asOf − 6 … asOf), umor (reliefFacts). */
+export function earlyFacts(
+  plan: PlanLike,
+  s: EarlyScenario,
+  asOf: string
+): Record<string, unknown> {
+  const back = (n: number): string => addDays(asOf, -n);
+  const pause = (days: number) => [{ kind: 'break', from: back(days - 1), to: asOf }];
+  switch (s) {
+    case 'pause10':
+      return { breaks: pause(10) };
+    case 'pause20':
+      return { breaks: pause(20) };
+    case 'pain5':
+      return painFacts(asOf, 5);
+    case 'pain8':
+      return painFacts(asOf, 8);
+    case 'pause10pain5':
+      return { breaks: pause(10), ...painFacts(asOf, 5) };
+    case 'under':
+      return {
+        workouts: runsIn(plan, back(6), back(6)),
+        coverage: { from: back(6), to: asOf, complete: true }
+      };
+    case 'fatigue':
+      return reliefFacts(plan, 'fatigue', asOf);
+  }
+}
+
+export interface EarlyBase extends AdaptBase {
+  family: 'R' | 'F' | 'B';
+}
+
+/** Planovi mreže E (redosled R, F, B): svaki 12. ulaz mreže 01, svaki 7. mreže po osećaju (3–6 dana), svaki 3.
+    mreže početnika (3–4 dana) — 252 + 1698 + 1134 = 3084. */
+export function earlyGridBases(): EarlyBase[] {
+  const every = <X>(xs: readonly X[], n: number): X[] => xs.filter((_, i) => i % n === 0);
+  return [
+    ...every(gridInputs(), 12).map((c) => ({ id: c.id, family: 'R' as const, input: c.input })),
+    ...every(
+      ([3, 4, 5, 6] as const).flatMap((d) => feelGridInputs(d)),
+      7
+    ).map((c) => ({ id: c.id, family: 'F' as const, input: c.input })),
+    ...every(
+      ([3, 4] as const).flatMap((d) => beginnerGridInputs(d)),
+      3
+    ).map((c) => ({ id: c.id, family: 'B' as const, input: c.input }))
+  ];
+}
+
+/** asOf mreže E po planu, svaki sa svojim scenarijima: sreda i kraj nedelje 1 i (u planu sa testom) nedelje pre
+    nedelje testa kad je ≥ 2 — svih 7 scenarija; kraj nedelje N − 2 — bol 8 (taper skraćen danima odmora/bola, D23).
+    Oznaka `w<i>wed` / `w<i>end`. */
+export function earlyAsOfs(
+  plan: PlanLike
+): { tag: string; asOf: string; scenarios: readonly EarlyScenario[] }[] {
+  const N = plan.weeks.length;
+  const tw = plan.weeks.find((w) => w.test)?.index;
+  const weeks = [1, ...(tw !== undefined && tw - 1 >= 2 ? [tw - 1] : [])];
+  const wedOf = (i: number): string => {
+    let d = plan.weeks[i - 1]!.startDate;
+    while (weekdayOf(d) !== 'wed') d = addDays(d, 1);
+    return d;
+  };
+  return [
+    ...weeks.flatMap((i) => [
+      { tag: `w${i}wed`, asOf: wedOf(i), scenarios: EARLY_SCENARIOS },
+      { tag: `w${i}end`, asOf: plan.weeks[i - 1]!.endDate, scenarios: EARLY_SCENARIOS }
+    ]),
+    {
+      tag: `w${N - 2}end`,
+      asOf: plan.weeks[N - 3]!.endDate,
+      scenarios: weeks.includes(N - 2) ? [] : (['pain8'] as const)
+    }
+  ];
+}
+
+/** Imenovani tokovi mreže E van pravila asOf (sreda nedelje 10–11 početnika, dan Q1 zaštićen: stanje doze iz
+    upisanih dana, N-c/N-d iz 06d): `<plan>/<w#wed>/<scenario>`. */
+export const EARLY_NAMED = [
+  'b-d3-17w-30km-e330-B-sun/w10wed/pause10',
+  'b-d3-17w-30km-e330-B-sun/w10wed/under',
+  'b-d3-18w-30km-e330-B-sun/w10wed/pause20',
+  'b-d3-18w-30km-e330-B-sun/w11wed/pause10',
+  'b-d3-18w-30km-e330-B-sun/w11wed/pause20',
+  'b-d3-18w-30km-e330-B-sun/w11wed/under',
+  'b-d3-16w-30km-e330-B-sun/w11wed/pause20'
+] as const;
+
+export interface EarlyFlow {
+  /** Redni broj u celom skupu (redosled heševa segment06d.early-hashes-51a924f.json). */
+  n: number;
+  key: string;
+  base: EarlyBase;
+  asOf: string;
+  s: EarlyScenario;
+}
+
+/** Svi tokovi mreže E (redosled: plan, asOf, scenario; imenovani na kraju svog plana); `planOf` = generisan plan. */
+export function earlyFlows(planOf: (b: EarlyBase) => PlanLike): EarlyFlow[] {
+  const out: EarlyFlow[] = [];
+  for (const base of earlyGridBases()) {
+    const p = planOf(base);
+    const seen = new Set<string>();
+    const add = (tag: string, asOf: string, s: EarlyScenario): void => {
+      const key = `${base.id}/${tag}/${s}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ n: out.length, key, base, asOf, s });
+    };
+    for (const a of earlyAsOfs(p)) for (const s of a.scenarios) add(a.tag, a.asOf, s);
+    for (const k of EARLY_NAMED) {
+      const [id, tag, s] = k.split('/') as [string, string, EarlyScenario];
+      if (id !== base.id) continue;
+      let wed = p.weeks[Number(tag.slice(1, -3)) - 1]!.startDate;
+      while (weekdayOf(wed) !== 'wed') wed = addDays(wed, 1);
+      add(tag, wed, s);
+    }
+  }
+  return out;
 }

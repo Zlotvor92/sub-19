@@ -1,0 +1,42 @@
+{
+ "tokova": 908496,
+ "sameKeys": true,
+ "prihvacenoPre": 905147,
+ "prihvacenPromenjen": 17416,
+ "noviOdbijeni": 0,
+ "ispravljeno": {
+  "X:K1": 314,
+  "X:K2": 28,
+  "X:novo:RACE_WEEK_OVER_TAPER": 1308,
+  "X:novo:ROLES": 1692,
+  "X:novo:TAPER_QUALITY": 1,
+  "X:novo:DELOAD_CONTENT": 6
+ },
+ "idaljeOdbijeno": 0,
+ "primeri": {
+  "prihvacenPromenjen": [
+   "N7/f-d3-10w-25km-e270-B-sun/w2end-3/pause10",
+   "N7/f-d3-10w-25km-e270-B-sun/w2end-3/under",
+   "N7/f-d3-10w-25km-e315-C-sat/w2end-3/pause10",
+   "N7/f-d3-10w-25km-e315-C-sat/w2end-3/under",
+   "N7/f-d3-10w-25km-e360-C-sun/w2end-3/pause10",
+   "N7/f-d3-10w-25km-e510-A-sun/w2end-3/pause10",
+   "N7/f-d3-10w-25km-e510-A-sun/w2end-3/under",
+   "N7/f-d3-10w-30km-e270-B-sat/w2end-3/pause10",
+   "N7/f-d3-10w-30km-e270-B-sat/w2end-3/pause20",
+   "N7/f-d3-10w-30km-e270-B-sat/w2end-3/under",
+   "N7/f-d3-10w-30km-e315-B-sun/w2end-3/pause10",
+   "N7/f-d3-10w-30km-e315-B-sun/w2end-3/pause20",
+   "N7/f-d3-10w-30km-e315-B-sun/w2end-3/under",
+   "N7/f-d3-10w-30km-e360-C-sat/w2end-3/pause10",
+   "N7/f-d3-10w-30km-e360-C-sat/w2end-3/pause20",
+   "N7/f-d3-10w-30km-e360-C-sat/w2end-3/under",
+   "N7/f-d3-10w-30km-e405-C-sun/w2end-3/pause10",
+   "N7/f-d3-10w-30km-e405-C-sun/w2end-3/pause20",
+   "N7/f-d3-10w-35km-e270-A-sun/w2end-3/pause20",
+   "N7/f-d3-10w-35km-e315-B-sat/w2end-3/pause20"
+  ],
+  "noviOdbijeni": [],
+  "idaljeOdbijeno": []
+ }
+}

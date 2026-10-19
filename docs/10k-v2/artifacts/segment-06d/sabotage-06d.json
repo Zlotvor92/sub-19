@@ -1,0 +1,74 @@
+[
+  {
+    "name": "06d-1a K2 stara definicija: najduži dugi iz sastavljenih dana",
+    "file": "src/domain/generators/tenK/v2/generate.ts",
+    "find": "    written.push({ days: wd });",
+    "replace": "    written.push({ days: w.days });",
+    "tests": [
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06d-1b validacija u construct nad sastavljenim planom",
+    "file": "src/domain/generators/tenK/v2/generate.ts",
+    "find": "  const merged = prior && plan.adaptation ? writtenWeeks(out, prior) : null;",
+    "replace": "  const merged = null as ReturnType<typeof writtenWeeks> | null;",
+    "tests": [
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06d-1c stanje doze iz sastavljenih dana",
+    "file": "src/domain/generators/tenK/v2/generate.ts",
+    "find": "          JSON.stringify(wd) === JSON.stringify(w.days) ? w.picks : writtenPicks(wd),",
+    "replace": "          w.picks,",
+    "tests": [
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06d-2a validator ne čita raceWeekRest",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "    const wantDays = runsR.filter((d) => !restD23.includes(d));",
+    "replace": "    const wantDays = runsR.filter((d) => restD23 !== null);",
+    "tests": [
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06d-2b raceWeekRest vraća prazno",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "  return total <= cap100 ? out.sort() : [];",
+    "replace": "  return total <= cap100 && cap100 < 0 ? out.sort() : [];",
+    "tests": [
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06d-3 prinudno rasterećenje u uvodu sa kvalitetom",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "    // (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost.\n    const intro = frame.index <= rule.introWeeks;",
+    "replace": "    // (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost.\n    const intro = frame.index < 0;",
+    "tests": [
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06d-4a K1 bez uslova „nedelja ima test\"",
+    "file": "src/domain/generators/tenK/v2/generate.ts",
+    "find": "t10 <= nominal || b.days.some((d) => d.role === 'test')",
+    "replace": "t10 <= nominal || b.days.length > 0",
+    "tests": [
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06d-5 izuzetak D30b bez uslova raceWeekRest",
+    "file": "src/domain/generators/tenK/v2/adaptInvariants.ts",
+    "find": "      runs < d20 &&\n      race.notes.includes('Trkačka nedelja skraćena: taper je imao dane odmora/bola (D23).') &&\n",
+    "replace": "      runs >= 0 &&\n",
+    "tests": [
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  }
+]

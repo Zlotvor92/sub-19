@@ -34,10 +34,15 @@ export const POLICY_ID = P.id;
 export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `10k-v2`; plan bez oznake je 10K v1 (`legacy-10k`). */
 export const LEGACY_POLICY_ID = 'legacy-10k';
-/** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0, 10k-v2.4.1 i
- *  tekuća 10k-v2.5.0. Sačuvan plan 4.0 ili 4.1 ostaje plan 10K v2; prilagođavanje ga gradi pravilima 5.0 (A15),
+/** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0 i
+ *  tekuća 10k-v2.5.1. Sačuvan plan 4.0, 4.1 ili 5.0 ostaje plan 10K v2; prilagođavanje ga gradi pravilima 5.1 (A15),
  *  rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown" (UNKNOWN_POLICY). */
-export const KNOWN_VERSIONS: readonly string[] = ['10k-v2.4.0', '10k-v2.4.1', P.version];
+export const KNOWN_VERSIONS: readonly string[] = [
+  '10k-v2.4.0',
+  '10k-v2.4.1',
+  '10k-v2.5.0',
+  P.version
+];
 
 /** JEDNA mapa faze za prikaz (odluka adaptera): baza → BAZA, razvoj → RAZVOJ, specifična faza (najspecifičniji rad za
  *  tempo trke) → VRHUNAC, taper → TAPER, trkačka nedelja → TRKA; rasterećenje (bilo koje faze) → DELOAD. */

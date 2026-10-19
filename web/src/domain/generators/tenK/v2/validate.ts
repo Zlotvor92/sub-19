@@ -10,7 +10,7 @@
 
 import { addDays as isoAdd, daysBetween, mustDay, weekdayOf } from './dates.ts';
 import { checkInput } from './input.ts';
-import { longCap10 } from './lengths.ts';
+import { longCap10, longestLong10 } from './lengths.ts';
 import {
   assessGoal,
   feelPaces,
@@ -41,6 +41,7 @@ import {
   nextLevel
 } from './quality.ts';
 import { adjacentDays } from './schedule.ts';
+import { raceWeekRest } from './week.ts';
 import {
   A17_MAX_RUN,
   appliedRestarts,
@@ -963,7 +964,6 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   let lastLong10: number | null = null;
   let longKnown = true;
   const tFirstM = Math.round(P.beginner.tFirstKm * 1000);
-  let longest10 = 0;
   const noneQ = (w: PlanWeek): boolean =>
     w.limits?.quality === 'none' || w.notes.some((n) => n.includes('nedelja bez kvaliteta'));
   const otherSlot = (r: 'q1' | 'q2'): 'q1' | 'q2' => (r === 'q1' ? 'q2' : 'q1');
@@ -1135,6 +1135,8 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
             : `Taper: RP ${wantRp} m i T ${wantT} m (≈ 60 % poslednje doze) (D7).`,
           w.index
         );
+      // D7: najduži dugi nedelja pre tapera — ista definicija kao konstruktor (lengths.longestLong10).
+      const longest10 = longestLong10(weeks.slice(0, w.index - 1));
       if (long && to10(long.workout.km) > Math.floor(t7.longFactor * longest10 + 1e-9))
         err(
           'TAPER_LONG',
@@ -1174,12 +1176,18 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
           w.index
         );
     }
-    if (long) longest10 = Math.max(longest10, to10(long.workout.km));
     if (isSteady(w)) {
       seenSteady = true;
       if (long) [lastLong10, longKnown] = [to10(long.workout.km), checked(w)];
-      if (!checked(w) && !reducedQ(w)) slotKnown = false;
-      else if (!reducedQ(w)) {
+      if (!checked(w) && !reducedQ(w)) {
+        slotKnown = false;
+        // Prošlost = upisani dani (10k-v2.5.1, A11): poslednja T doza (D31) iz upisanih dana mešovite nedelje,
+        // isto kao konstruktor.
+        for (const r of ['q1', 'q2'] as const) {
+          const d = slotDose(w, r);
+          if (d?.zone === 'T') lastTDose = d.doseM;
+        }
+      } else if (!reducedQ(w)) {
         slotKnown = true;
         for (const r of ['q1', 'q2'] as const) {
           const d = slotDose(w, r);
@@ -1236,8 +1244,26 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     );
     const dropped = dropOrder.slice(0, Math.max(0, runs.length - keep));
     const restR = restOf(rw);
-    const wantDays = runs.filter((d) => !dropped.includes(d) && !restR.has(d));
+    const runsR = runs.filter((d) => !dropped.includes(d) && !restR.has(d));
     const others = rw.days.filter((d) => d.role !== 'race');
+    // D23 (10k-v2.5.1): taper skraćen danima odmora/bola — dani koji postaju odmor (isti podatak kao
+    // konstrukcija, week.raceWeekRest; bez oštrenja, A9 ga ukida pre toga).
+    const taperW0 = weeks.find((w) => w.phase === 'taper');
+    const taperEasy0 = (taperW0?.days ?? [])
+      .filter((d) => d.role === 'easy')
+      .map((d) => to10(d.workout.km));
+    const restD23 =
+      steps.length > 0 && taperW0 && taperOk && !others.some((d) => d.role === 'sharpener')
+        ? raceWeekRest(
+            runsR,
+            race,
+            painOf(rw),
+            taperEasy0.length > 0 ? Math.min(...taperEasy0) : Infinity,
+            pw(rw),
+            to100(taperW0.plannedKm)
+          )
+        : [];
+    const wantDays = runsR.filter((d) => !restD23.includes(d));
     if (JSON.stringify(others.map((d) => d.date).sort()) !== JSON.stringify(wantDays))
       err(
         'RACE_WEEK',
