@@ -106,6 +106,11 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     bi drugi član u nedelji 1 sudario pouku 9 (nedelja 1 < trenutni obim bez dugog na plafonu → odbijanje), ostaje
     upozorenje po pouci 14 (MAR-03: 58 planova, 6 d, ned 1, T dan duži od dugog ≤ 1 min; maraton zato drugi član samo za
     MP).
+33. (MAR-03 S2, HM-03) Rasterećenje koje nije izvodljivo zbog minimuma laganog (najmanji obim, test ili T u nedelji):
+    dugi se skraćuje na najduži koji ostavlja lagane ≥ minimum uz dugi ≥ lagan; cilj nedelje ostaje (samo naniže, bez
+    cilja naviše osim pouke 23); kvalitet/test ostaje, a kvalitet otpada samo kad ni sa skraćenim dugim ne staje;
+    napomena + upozorenje. Jedno mesto odluke, validator čita istu funkciju. (Odbačeno: cilj naviše, nov minimum obima,
+    ispuštanje dana.)
 
 ## 3. Tok jednog segmenta i provera
 
