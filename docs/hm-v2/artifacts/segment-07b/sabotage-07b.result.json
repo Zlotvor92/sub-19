@@ -1,0 +1,83 @@
+{
+  "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-07b/sabotage-07b.json",
+  "head": "46a3e22",
+  "level": "brz",
+  "bail": true,
+  "parallel": 1,
+  "vitestArgs": [],
+  "durationS": 8.9,
+  "hashBefore": "da10baede32af4b9946845027f4b9164aaffd4feee7d81c5a40afc15f7e7f49f",
+  "hashAfter": "da10baede32af4b9946845027f4b9164aaffd4feee7d81c5a40afc15f7e7f49f",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "07b-a sidro umora iz asOf (pouka 36)",
+      "files": ["src/domain/generators/halfMarathon/v2/assess.ts"],
+      "tests": [
+        "src/domain/generators/halfMarathon/v2/segment07b.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/segment07b.node.test.ts",
+        "test": "HM-07b trajna mreža: umor u nedelji k − 1, rezultat + zaštićen dan (deo 1/2) > rasterećenje = nedelja k, isti plan kraj k − 1 / početak k, 0 odbijanja sa zaštićenim danima",
+        "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "da10baede32af4b9946845027f4b9164aaffd4feee7d81c5a40afc15f7e7f49f",
+      "hashSabotaged": "68fdd4f4c07df3b36fd4c6ff02bbb24c26c3752c9f80b69764949ae23b043951",
+      "hashAfter": "da10baede32af4b9946845027f4b9164aaffd4feee7d81c5a40afc15f7e7f49f",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 3.1
+    },
+    {
+      "index": 2,
+      "name": "07b-b provera po danu bez preskakanja zaštićenih dana",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": [
+        "src/domain/generators/halfMarathon/v2/segment07b.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/segment07b.node.test.ts",
+        "test": "HM-07b trajna mreža: umor u nedelji k − 1, rezultat + zaštićen dan (deo 1/2) > rasterećenje = nedelja k, isti plan kraj k − 1 / početak k, 0 odbijanja sa zaštićenim danima",
+        "message": "AssertionError: expected 4 to be greater than 5"
+      },
+      "failedCount": 1,
+      "hashBefore": "da10baede32af4b9946845027f4b9164aaffd4feee7d81c5a40afc15f7e7f49f",
+      "hashSabotaged": "9f87dd3e3e83329d7341d7a1b070fc75ea063e6e502f18811587cc0fa428ee0f",
+      "hashAfter": "da10baede32af4b9946845027f4b9164aaffd4feee7d81c5a40afc15f7e7f49f",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2.9
+    },
+    {
+      "index": 3,
+      "name": "07b-c validator čita fromWeek umesto deloadWeekOf",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": [
+        "src/domain/generators/halfMarathon/v2/segment07b.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/segment07b.node.test.ts",
+        "test": "HM-07b trajna mreža: umor u nedelji k − 1, rezultat + zaštićen dan (deo 1/2) > rasterećenje = nedelja k, isti plan kraj k − 1 / početak k, 0 odbijanja sa zaštićenim danima",
+        "message": "AssertionError: expected 91 to be greater than 100"
+      },
+      "failedCount": 1,
+      "hashBefore": "da10baede32af4b9946845027f4b9164aaffd4feee7d81c5a40afc15f7e7f49f",
+      "hashSabotaged": "cbcd1c49753da22c5d2085cfa04e4f91b0fbb9b4e0914217552242fd5359c908",
+      "hashAfter": "da10baede32af4b9946845027f4b9164aaffd4feee7d81c5a40afc15f7e7f49f",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2.7
+    }
+  ]
+}

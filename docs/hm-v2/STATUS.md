@@ -20,7 +20,7 @@ const r = generateHmV2({
   // experience: "beginner" (H17: uvod 2 ned, jedan kvalitet, bez testa); runWalk: true → odbijanje
   goalTimeSec: 6000, // opciono (ocena H3; po osećaju posle testa)
 });
-// r.ok → r.plan (policyId 'hm-v2', policyVersion 'hm-v2.4.0', faza nedelje, paceBasis 'feel' po osećaju,
+// r.ok → r.plan (policyId 'hm-v2', policyVersion 'hm-v2.4.1', faza nedelje, paceBasis 'feel' po osećaju,
 // upozorenja); !r.ok → r.reasons
 const a = adaptHmV2(
   plan,
@@ -75,3 +75,11 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
   napomena van korisničkih (`volume.userWeekNotes`). Traka: `adaptBanner` u domenu. Pouka 36: umor vezan za zapise.
 - Nove trajne mreže: `preStartGrid` (17 scenarija pre starta), `fatigueRepeat` (isti umor + 1 … + 7). Izveštaj
   `reports/SEGMENT-07-IMPLEMENTATION.md`, artefakti `artifacts/segment-07/` (regress.ts, compare.ts, sabotaže).
+
+## Segment HM-07b (hm-v2.4.1): pouka 36 precizno, zaštićeni dani u validatoru
+
+- Pouka 36: prinudno rasterećenje = prva nedelja koja počinje posle poslednjeg zapisa umora (`assess.fatigueWeek`);
+  asOf u njoj → njen ostatak; korak `deloadWeek`, čitanje `steps.deloadWeekOf`. Validator: provere po danu (H10/H14,
+  ZONE_CAP) preskaču zaštićene dane (`validate.guarded`: zaključan ili upisan). `KNOWN_VERSIONS` ∪ hm-v2.4.0.
+- Trajna mreža `segment07b` (umor u nedelji k − 1 × asOf do kraja k; rezultat + zaključani Q1/Q2 + urađen Q1).
+  Izveštaj `reports/SEGMENT-07b-IMPLEMENTATION.md`, artefakti `artifacts/segment-07b/`.

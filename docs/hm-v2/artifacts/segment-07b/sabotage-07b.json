@@ -1,0 +1,23 @@
+[
+  {
+    "name": "07b-a sidro umora iz asOf (pouka 36)",
+    "file": "src/domain/generators/halfMarathon/v2/assess.ts",
+    "find": "    const f = fatigueWeek(weeks, Math.max(...easyHard.map((x) => day(x.date))));",
+    "replace": "    const f = fatigueWeek(weeks, t);",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment07b.node.test.ts"]
+  },
+  {
+    "name": "07b-b provera po danu bez preskakanja zaštićenih dana",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "  const guarded = (d: { date: string }): boolean =>\n    locked.has(d.date) || (lastAsOf !== null && mustDay(d.date) <= lastAsOf);",
+    "replace": "  const guarded = (d: { date: string }): boolean => d.date === '' && locked.has(d.date) && lastAsOf !== null;",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment07b.node.test.ts"]
+  },
+  {
+    "name": "07b-c validator čita fromWeek umesto deloadWeekOf",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "steps.some((x) => x.deload && deloadWeekOf(x) === w.index);",
+    "replace": "steps.some((x) => x.deload && x.fromWeek === w.index);",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment07b.node.test.ts"]
+  }
+]

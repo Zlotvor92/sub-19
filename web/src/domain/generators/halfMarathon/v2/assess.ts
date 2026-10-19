@@ -185,6 +185,19 @@ export function checkFacts(
     : { ok: true, facts: { workouts, results, lockedDayIds, coverage, breaks } };
 }
 
+/** Pouka 36 (jedino mesto): nedelja prinudnog rasterećenja iz zapisa umora — prva nedelja koja počinje posle
+    poslednjeg RPE zapisa umora `last` (broj dana): nedelja koja sadrži `last` + 1 ako tog dana počinje, inače
+    sledeća (pre starta: nedelja 1). Isto pravilo kao n iz asOf (assess), sa zapisom umesto dana adaptacije. */
+export function fatigueWeek(
+  weeks: readonly { startDate: IsoDate; endDate: IsoDate }[],
+  last: number
+): number {
+  const d = last + 1;
+  const i = weeks.findIndex((w) => d >= mustDay(w.startDate) && d <= mustDay(w.endDate));
+  if (i < 0) return d < mustDay(weeks[0]!.startDate) ? 1 : weeks.length + 1;
+  return mustDay(weeks[i]!.startDate) < d ? i + 2 : i + 1;
+}
+
 /**
  * Ograničenja iz činjenica (A1–A10). Nedelja r sadrži asOf + 1; n = prva puna nedelja posle asOf
  * („sledeća nedelja"). Obim (A7): samo najviše aktivno od pauza > umor > izvršenje; bol uvek, po
@@ -406,32 +419,23 @@ export function assess(
     );
   });
   if (easyHard.length >= A.fatigueCount) {
-    // Pouka 36 (jedno mesto): umor je vezan za ZAPISE — sidro je nedelja koja sadrži (poslednji zapis umora) + 1,
-    // rasterećenje prva puna nedelja od nje (isto kao n iz asOf). Kad je ta nedelja već rasterećenje (umor čije je
-    // rasterećenje već u planu, npr. isti zapisi ponovo sutradan preko granice nedelje), novo se ne pravi; inače
-    // prva puna nedelja posle asOf (prošlost se ne menja).
-    const last = addDays(
-      easyHard
-        .map((x) => x.date)
-        .sort()
-        .pop()!,
-      1
-    );
-    const rF = weekOf(last);
-    const nF = rF <= N && day(weeks[rF - 1]!.startDate) < day(last) ? rF + 1 : rF;
-    const already = nF < n && wk(nF)?.deload === true;
-    const ok = !already && !volumeRule && build(n) && !wk(n)!.deload;
-    // Pouka 34: asOf pre starta (nedelja 1 je sledeća) — referenca je nedelja 1 generatora bez činjenica.
-    const ref = ok && n === 1 && t < day(weeks[0]!.startDate) ? week1Ref() : null;
+    // Pouka 36 (jedno mesto, fatigueWeek): umor je vezan za ZAPISE — rasterećenje je prva nedelja koja počinje posle
+    // poslednjeg zapisa umora; kad asOf već pada u nju, važi za njen ostatak (prošli dani su upisani). Isti zapisi →
+    // ista nedelja bez obzira na dan adaptacije; kad je ona već rasterećenje (i od istog umora), novog nema.
+    const f = fatigueWeek(weeks, Math.max(...easyHard.map((x) => day(x.date))));
+    const ok = !volumeRule && build(f) && !wk(f)!.deload;
+    // Pouka 34: rasterećenje u nedelji 1 (umor pre starta) — referenca je nedelja 1 generatora bez činjenica.
+    const ref = ok && f === 1 ? week1Ref() : null;
     if (ok) {
       step.deload = true;
+      if (f !== n) step.deloadWeek = f;
       volumeRule = true;
       if (ref) step.preStart = ref;
     }
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)${ref ? `; pre starta: 0,8 × planirana nedelja 1 (${km(ref.targetKm)} km), nedelja 2 = ${km(ref.targetKm)} km bez rasta (pouka 34)` : ''}` : volumeRule ? 'nadjačano pauzom (A7)' : already ? `rasterećenje za ove zapise je već u planu (nedelja ${nF}, pouka 36)` : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${f} je rasterećenje (A5${f < n ? ', od sutra' : ''})${ref ? `; pre starta: 0,8 × planirana nedelja 1 (${km(ref.targetKm)} km), nedelja 2 = ${km(ref.targetKm)} km bez rasta (pouka 34)` : ''}` : volumeRule ? 'nadjačano pauzom (A7)' : `nedelja ${f} je već rasterećenje, taper ili trka (A5, pouka 36)`}.`
     );
   }
 
