@@ -107,7 +107,9 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     bi drugi član u nedelji 1 sudario pouku 9 (nedelja 1 < trenutni obim bez dugog na plafonu → odbijanje), ostaje
     upozorenje po pouci 14 (MAR-03: 58 planova, 6 d, ned 1, T dan duži od dugog ≤ 1 min; maraton zato drugi član samo za
     MP). Najniži nivo zone (maraton: MP 2 × 3000 m) je izuzet od drugog člana — kad je dugi na plafonu skoka (pouka 28),
-    upozorenje umesto odbijanja (MAR-03: inače +570 RECENT_LONG_TOO_SHORT na mreži M13a).
+    upozorenje umesto odbijanja (MAR-03: inače +570 RECENT_LONG_TOO_SHORT na mreži M13a). Ponavljanje najnižeg nivoa
+    zone je upozorenje (ne greška pouke 3) samo kad: doza je najniži nivo, druga struktura ne postoji i sledeći nivo ne
+    staje u plafon zone (oba člana) — MAR-04b: početnik T 1,5 km u adaptaciji (69 tokova).
 33. (MAR-03 S2, HM-03) Rasterećenje koje nije izvodljivo zbog minimuma laganog (najmanji obim, test ili T u nedelji):
     dugi se skraćuje na najduži koji ostavlja lagane ≥ minimum uz dugi ≥ lagan; cilj nedelje ostaje (samo naniže, bez
     cilja naviše osim pouke 23); kvalitet/test ostaje, a kvalitet otpada samo kad ni sa skraćenim dugim ne staje;
