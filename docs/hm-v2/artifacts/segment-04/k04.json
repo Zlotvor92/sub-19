@@ -1,0 +1,22 @@
+{
+  "flows": 3995,
+  "K1": 0,
+  "K3_buildNoQualityUnexplained": 0,
+  "K5": {
+    "raceOverTaper": 0,
+    "adjacentHard": 0,
+    "longUnderEasy": 0
+  },
+  "K6": {
+    "slotRepeat": 0,
+    "qualityOverLong": 0,
+    "longShorterThanQuality": 232,
+    "capacityLimited": 0,
+    "doseDropped": 158
+  },
+  "warnings": {
+    "plannedBelowTargetLimits": 667,
+    "raceWeekShort": 0
+  },
+  "peakOverStartMax": 1.4
+}

@@ -18,6 +18,7 @@ import type {
   FactsCoverage,
   IsoDate,
   PlanDay,
+  PreStartRef,
   Reason,
   ResultDistanceM,
   ResultFact,
@@ -194,7 +195,8 @@ export function assess(
   facts: CheckedFacts,
   asOf: IsoDate,
   pace: PaceInput,
-  weekMinKm: number
+  weekMinKm: number,
+  preStartRef: () => PreStartRef | null = () => null
 ): { step: TenKV2AdaptStep; reasons: AdaptReason[] } {
   const weeks = plan.weeks;
   const N = weeks.length;
@@ -405,14 +407,18 @@ export function assess(
   });
   if (easyHard.length >= A.fatigueCount) {
     const ok = !volumeRule && build(n) && !wk(n)!.deload;
+    // 10k-v2.5.2 (pouka 34): asOf pre starta (n = 1, nema prethodne izgradnje) — referenca rasterećenja je
+    // nedelja 1 generatora bez činjenica.
+    const ref = ok && n === 1 ? preStartRef() : null;
     if (ok) {
       step.deload = true;
+      if (ref) step.preStart = ref;
       volumeRule = true;
     }
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)${ref ? ` — pre starta: 0,8 × planirana nedelja 1 (${km(ref.buildKm)} km, plan bez činjenica); nedelja 2 = cilj planirane nedelje 1, bez rasta` : ''}` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
     );
   }
 

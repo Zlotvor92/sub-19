@@ -80,7 +80,15 @@ export type ReasonCode =
   | 'RECENT_LONG_TOO_SHORT'
   | 'SCHEDULE_NO_RECOVERY'
   | 'WEEK_INFEASIBLE'
-  | 'PLAN_VIOLATES_POLICY';
+  | 'PLAN_VIOLATES_POLICY'
+  /* Segment 04 (adaptacija, adapt.ts). */
+  | 'ADAPT_PLAN_INVALID'
+  | 'ADAPT_AS_OF_INVALID'
+  | 'ADAPT_FACT_INVALID'
+  | 'ADAPT_FACT_AFTER_AS_OF'
+  | 'ADAPT_DAY_UNKNOWN'
+  | 'ADAPT_RESULT_INVALID'
+  | 'ADAPT_PROTECTION';
 
 export interface Reason {
   code: ReasonCode;
@@ -112,6 +120,20 @@ export interface WeekFrame {
   deload: boolean;
   /** H16: nedelja testa 5 km (plan po osećaju; poslednja nedelja baze). */
   test?: true;
+  /** Segment 04: ograničenja adaptacije za ovu nedelju (steps.ts); u planu generatora polja nema. */
+  limits?: WeekLimits;
+}
+
+/** Segment 04: ograničenja nedelje iz koraka adaptacije (datumski opsezi → dani nedelje, steps.ts). */
+export interface WeekLimits {
+  /** 'none' = bez kvaliteta; 'one' = jedan kvalitet doze rasterećenja (H18: A3, A4, A9). */
+  quality?: 'none' | 'one';
+  /** Dani bez kvaliteta i ubrzanja (zabrana po datumu; trkačka nedelja: oštrenje). */
+  noQuality?: IsoDate[];
+  /** Dani odmora (bol ≥ 7, A4): trening se ne pravi. */
+  rest?: IsoDate[];
+  /** Dani perioda bola (A4): dugi ≤ 60 min, lagani × 0,7 (≥ 4 km), bez ubrzanja. */
+  pain?: IsoDate[];
 }
 
 export type Basis = 'exact' | 'estimated';
@@ -260,7 +282,8 @@ export interface Pattern {
   easy: readonly Weekday[];
 }
 
-export type GoalStatus = 'realistic' | 'ambitious' | 'unrealistic';
+/** 'orientation' (segment 04, H18): nov start i < 10 nedelja do trke — cilj je samo orijentir. */
+export type GoalStatus = 'realistic' | 'ambitious' | 'unrealistic' | 'orientation';
 
 export interface GoalAssessment {
   goalTimeSec: number;
@@ -302,6 +325,151 @@ export interface HmV2Plan {
   notes: string[];
   weeks: PlanWeek[];
   warnings: Violation[];
+  /** Segment 04: istorija adaptacije (adapt.ts); u planu generatora polja nema. */
+  adaptation?: HmV2Adaptation;
 }
 
 export type GenerateResult = { ok: true; plan: HmV2Plan } | { ok: false; reasons: Reason[] };
+
+/* ---------- Segment 04: adaptacija (H18; oblik činjenica kao 10K v2, sopstvena kopija) ---------- */
+
+/** Izvršen (ili propušten) trening. `dayId` = datum dana plana (jedan trening po datumu); bez dayId =
+    zapis van plana. */
+export interface WorkoutFact {
+  date: IsoDate;
+  dayId?: string;
+  km: number;
+  durationSec: number;
+  completed: boolean;
+  /** 1–10. */
+  rpe?: number;
+  /** 0–10. */
+  pain?: number;
+}
+
+export interface ResultFact {
+  distM: ResultDistanceM;
+  sec: number;
+  date: IsoDate;
+  /** 'test' = test plana (5 km, H16) ili test 5 km; 'race' = trka. */
+  kind: 'test' | 'race';
+}
+
+export interface DateRange {
+  from: IsoDate;
+  to: IsoDate;
+}
+
+/** Potpunost zapisa u [from, to] (A10): complete = true → dan bez zapisa = bez trčanja; false ili bez
+    coverage → dan bez zapisa je NEPOZNAT. */
+export interface FactsCoverage extends DateRange {
+  complete: boolean;
+}
+
+/** Eksplicitna pauza (A3, A10: priznaje se bez obzira na coverage). */
+export interface BreakFact extends DateRange {
+  kind: 'break';
+}
+
+/** Činjenice (ne odluke). Prazni nizovi = nema podataka (ne pauza). */
+export interface HmV2Facts {
+  workouts?: readonly WorkoutFact[];
+  results?: readonly ResultFact[];
+  /** Ručno zaključani dani (dayId = datum): ostaju bajt-isti (A11). */
+  lockedDayIds?: readonly string[];
+  coverage?: FactsCoverage | null;
+  breaks?: readonly BreakFact[];
+}
+
+/**
+ * Korak adaptacije = OGRANIČENJA izvedena iz činjenica (assess.ts, jedino mesto odluka A1–A10).
+ * Konstruktor (generate.construct) ih primenjuje redom; plan čuva sve korake (A14).
+ */
+export interface HmV2AdaptStep {
+  asOf: IsoDate;
+  /** Nedelja koja sadrži asOf + 1. */
+  firstWeek: number;
+  /** Prva puna nedelja posle asOf („sledeća nedelja"; broj nedelja + 1 ako je nema). */
+  fromWeek: number;
+  /** A1: novi rezultat i VDOT (važi od fromWeek). */
+  result: ResultFact | null;
+  vdot: number | null;
+  /** A2/A3/A6: cilj nedelje fromWeek [km]; pauza: i ostatak firstWeek (pauseRemainder). */
+  startKm: number | null;
+  pauseRemainder: boolean;
+  /** A3: pauza ≥ 28 dana — nov start (faze preostale izgradnje ponovo, vrh od novog starta). */
+  restart: boolean;
+  /** A5: umor — fromWeek je rasterećenje. */
+  deload: boolean;
+  noQuality: DateRange[];
+  oneQuality: DateRange[];
+  rest: DateRange | null;
+  pain: DateRange | null;
+  /** H18: nov start i < 10 nedelja do trke → cilj „orijentir". */
+  orientation: boolean;
+  /** A8: nivo pre smanjenja [km] — do njega cilj raste povratnim rastom; null = bez povratka. */
+  levelKm: number | null;
+  /** Pouka 18 (A4/A16): posle nedelje sidra `week` (sadrži asOf + 1) rast kreće od osnove min(`share` × nivo
+      koraka, cilj nedelje sidra); korak bez nivoa: `share` × cilj nedelje sidra (volume.returnBase10). */
+  returnFrom: { week: number; share: number } | null;
+  /** Pouka 22 (A17): cilj koraka (startKm) je smanjenje — true: A2 (manjak) ili A3 (pauza); false: A6
+      (višak). Korak bez startKm: polja nema (steps.reducedWeeks). */
+  reduced?: boolean;
+  /** Pouka 34: umor sa asOf pre starta — referenca „poslednja izgradnja / poslednji dugi / doza" = nedelja 1
+      generatora bez činjenica (nema prethodne izgradnje). */
+  preStart?: PreStartRef;
+}
+
+/** Pouka 34: nedelja 1 generatora bez činjenica — cilj, dugi i doze slotova. */
+export interface PreStartRef {
+  targetKm: number;
+  longKm: number | null;
+  q1: Dose | null;
+  q2: Dose | null;
+}
+
+export interface HmV2Adaptation {
+  asOf: IsoDate;
+  steps: HmV2AdaptStep[];
+  /** Nedelje sa danima iz prethodnog plana (prošlost/urađeno/zaključano) koji se razlikuju od
+      konstrukcije: validator na njima proverava samo dane (nedeljna pravila važe za konstrukciju). */
+  mixedWeeks: number[];
+  lockedDayIds: string[];
+}
+
+export type AdaptCondition =
+  | 'NO_FACTS'
+  | 'NEW_RESULT'
+  | 'RESULT_IGNORED'
+  | 'UNDER_EXECUTION'
+  | 'OVER_EXECUTION'
+  | 'PAUSE'
+  | 'PAIN'
+  | 'FATIGUE'
+  | 'TEST_MOVED';
+
+/** Aktivan uslov iz činjenica; `applied` = false kad ga nadjačava viši prioritet ili ne važi (A7). */
+export interface AdaptReason {
+  condition: AdaptCondition;
+  applied: boolean;
+  message: string;
+}
+
+export interface AdaptChange {
+  week: number;
+  date?: IsoDate;
+  field: string;
+  before: string;
+  after: string;
+}
+
+export type AdaptResult =
+  | {
+      ok: true;
+      plan: HmV2Plan;
+      changes: AdaptChange[];
+      reasons: AdaptReason[];
+      /** Pouka 20: nova ograničenja poslednjeg koraka (steps.newLimits) — prazno = bez trake. */
+      newLimits: string[];
+    }
+  | { ok: false; reasons: Reason[]; violations: Violation[] };

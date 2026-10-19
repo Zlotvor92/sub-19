@@ -243,18 +243,24 @@ function reduced(
   return lv[lv.length - 1] ?? floor;
 }
 
+/** D5/D31: poslednja doza koju rasterećenje smanjuje — slot rasterećenja; početnik: poslednja T doza [m]. */
+export const deloadLastM = (state: QualityState, rule: PlanRule): number =>
+  rule.beginner ? state.t : (state[deloadSlot(rule.quality)]?.doseM ?? 0);
+
 /** D5: jedini kvalitet rasterećenja — T ≈ 60 % poslednje doze T slota (3 dana: jedinog slota, D18;
     lestvica faze), min 2,0 km. D31 početnik: ≈ 60 % poslednje T doze, min 1,5 km (u razvoju i specifičnoj
-    fazi 1,5 km kontinuirano — T cruise nema taj nivo, D10). */
+    fazi 1,5 km kontinuirano — T cruise nema taj nivo, D10). `refM` (A5, 10k-v2.5.2): poslednja doza iz
+    reference umora pre starta (PreStartRef.tDoseM) umesto stanja. */
 export function pickDeload(
   state: QualityState,
   phase: Phase,
   targetKm: number,
-  rule: PlanRule
+  rule: PlanRule,
+  refM: number | null = null
 ): Dose | null {
   const ladder = deloadLadder(phase);
   const b = rule.beginner;
-  const lastM = b ? state.t : (state[deloadSlot(rule.quality)]?.doseM ?? 0);
+  const lastM = refM ?? deloadLastM(state, rule);
   const minM = Math.round((b ? P.beginner.tFirstKm : P.deload.tMinKm) * 1000);
   const floor =
     ladderLevels(ladder, b).find((s) => doseOf(s) === minM) ?? structuresForDose(ladder, minM)[0]!;

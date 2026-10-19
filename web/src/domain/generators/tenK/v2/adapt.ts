@@ -7,7 +7,7 @@
 
 import { assess, checkFacts, painReturnNote } from './assess.ts';
 import { dayNumber, mustDay } from './dates.ts';
-import { construct } from './generate.ts';
+import { construct, preStartRef } from './generate.ts';
 import { checkInput } from './input.ts';
 import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import { baseFrames, framesFor, targetReducedWeek } from './steps.ts';
@@ -116,7 +116,9 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
   if (!chk.ok) return reject('ADAPT_PLAN_INVALID', 'Ulaz plana nije ispravan (A15).');
 
   // (1) Činjenice → ograničenja.
-  const as = assess(plan, facts, at, chk.pace, dayRule(chk.input.runDays.length)!.weekMinKm);
+  const as = assess(plan, facts, at, chk.pace, dayRule(chk.input.runDays.length)!.weekMinKm, () =>
+    preStartRef(plan.input)
+  );
   const steps = [...prevSteps, as.step];
 
   // Zaštita (A11): dani ≤ asOf, urađeni (po dayId ili datumu) i zaključani iz prethodnog plana — konstruktor

@@ -149,3 +149,13 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
   napomena); P i R bez promene. Generator bez činjenica bajt-isti.
 - Trajna mreža E (`earlyGrid*`, 65 699 tokova; brz nivo 20,4 s). Sabotaže 8/8 (alat). `KNOWN_VERSIONS` = 4.0, 4.1, 5.0, 5.1.
 - Otvoreno: 5K v2 — isto merenje i ista porodica (poseban segment).
+
+## Segment 06e (10k-v2.5.2, pouka 34): umor sa asOf pre starta plana; asOf pre starta u trajnoj mreži E
+
+- Commit „10K v2 Segment 06e (10k-v2.5.2): umor pre starta plana …" (`git log --grep "10K v2 Segment 06e"`); izveštaj
+  `reports/SEGMENT-06e-IMPLEMENTATION.md`, artefakti `artifacts/segment-06e/`.
+- Umor sa asOf < start: ned 1 prinudno rasterećenje 0,8 × planirana ned 1 (D5 sadržaj; početnik uvod); referenca = ned 1
+  generatora bez činjenica (`generate.preStartRef`), u koraku `preStart` (odluka `assess`); ned 2 = cilj planirane ned 1.
+  Konstruktor (`volume.adaptNominal10`, `week.buildWeek`) i validator čitaju korak.
+- Merenje (496 planova × 3 asOf × 9 scenarija): 1488 → 0 odbijanja; prihvaćeni bajt-isti; mreže 04/P/R/E bajt-iste.
+- Mreža E + 37 008 tokova pre starta (102 707). Sabotaže 3/3. `KNOWN_VERSIONS` = 4.0, 4.1, 5.0, 5.1, 5.2.

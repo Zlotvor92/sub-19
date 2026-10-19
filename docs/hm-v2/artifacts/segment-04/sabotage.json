@@ -1,0 +1,121 @@
+[
+  {
+    "name": "B1 ukidanje rasterećenja (A17) ukida i prinudno",
+    "file": "src/domain/generators/halfMarathon/v2/steps.ts",
+    "find": "        !forced.has(next.index) &&\n",
+    "replace": "",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B2 reduced se ne čita (A6 postaje smanjenje)",
+    "file": "src/domain/generators/halfMarathon/v2/steps.ts",
+    "find": "  return s.reduced === true ? s.fromWeek : null;",
+    "replace": "  return s.startKm !== null ? s.fromWeek : null;",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B3 sidro bola = poslednja nedelja bola (pouka 18)",
+    "file": "src/domain/generators/halfMarathon/v2/assess.ts",
+    "find": "  const r = weekOf(next);",
+    "replace": "  const r = weekOf(addDays(asOf, A.painDays));",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B4 validator vidi sastavljen, a ne upisan plan (pouka 29)",
+    "file": "src/domain/generators/halfMarathon/v2/generate.ts",
+    "find": "  const merged = prior && plan.adaptation ? writtenWeeks(out, prior) : null;",
+    "replace": "  const merged = null as ReturnType<typeof writtenWeeks> | null;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "B5 trkačka nedelja bez pravila pouke 30",
+    "file": "src/domain/generators/halfMarathon/v2/generate.ts",
+    "find": "      if (av && prev?.phase === 'taper' && w.planned100 > prev100)\n        w = raceWeek(ctx, frame, taperRpM, prevHard, taperEasy10, noSharpener, prev100);\n",
+    "replace": "",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B6 uvod početnika: prinudno rasterećenje sa kvalitetom (pouka 31)",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "    const fits = !intro && !test && mode !== 'none'",
+    "replace": "    const fits = !test && mode !== 'none'",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B7 bez dana zabrane kvaliteta",
+    "file": "src/domain/generators/halfMarathon/v2/steps.ts",
+    "find": "  if (noQuality.length > 0) out.noQuality = noQuality;",
+    "replace": "",
+    "tests": ["src/domain/generators/halfMarathon/v2/grid04.node.test.ts"]
+  },
+  {
+    "name": "B8 konstruktor: najduži dugi iz sastavljenih, ne upisanih nedelja",
+    "file": "src/domain/generators/halfMarathon/v2/generate.ts",
+    "find": "    const longest10 = longestLong10(written);",
+    "replace": "    const longest10 = longestLong10(out);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/grid04.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "B9 rasterećenje posle smanjenja bez dugog ≥ 4 km (A18)",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  return Math.max(adapted ? EASY_MIN10 : 0, Math.floor(P.deload.longFactor * lastLong10 + EPS));",
+    "replace": "  return Math.max(0, Math.floor(P.deload.longFactor * lastLong10 + EPS));",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B10 validator: posle mešovite nedelje stanje doze nepoznato (ne iz upisanih dana)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "        lastOf[role] = slotDose(c.state, role) ?? lastOf[role];",
+    "replace": "        lastOf[role] = null;",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B11 validator: pouka 30 samo uz proveren (ne mešovit) taper",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "      steps.length > 0 && taperW && !others.some((d) => d.role === 'sharpener')",
+    "replace": "      steps.length > 0 && taperW && taperOk && !others.some((d) => d.role === 'sharpener')",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B12 validator: trkačka nedelja samo sa trkom (dani odmora) je prazna",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "    if (w.days.filter((d) => d.countsToWeek).length === 0 && !raceOnly)",
+    "replace": "    if (w.days.filter((d) => d.countsToWeek).length === 0)",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B13 taper „samo RP\": drugi član za nedelju sa dva dana kvaliteta",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "    const nqKept: 1 | 2 = mode === 'rule' ? nq : 1;",
+    "replace": "    const nqKept: 1 | 2 = nq;",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B14 validator: nedelja 1 tempom plana posle novog rezultata",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "  const abs1 = week1LongCap10(pw(w1), input.recentLongRunKm, rule.longMaxSec);",
+    "replace": "  const abs1 = week1LongCap10(p, input.recentLongRunKm, rule.longMaxSec);",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B15 umor pre starta bez reference (početno stanje prazno)",
+    "file": "src/domain/generators/halfMarathon/v2/steps.ts",
+    "find": "  if (!ref) return { quality: INITIAL_QUALITY, lastLong10: null, lastBuild10: null };",
+    "replace": "  if (ref || !ref) return { quality: INITIAL_QUALITY, lastLong10: null, lastBuild10: null };",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "B16 umor pre starta: ned 2 raste (bez pouke 34)",
+    "file": "src/domain/generators/halfMarathon/v2/volume.ts",
+    "find": "  else if (i === 2 && av.preStart10 !== null) [t, downOnly] = [av.preStart10, true];\n",
+    "replace": "",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  }
+]

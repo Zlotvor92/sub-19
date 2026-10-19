@@ -973,9 +973,12 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const long = w.days.find((d) => d.role === 'long');
     const pk = pw(w);
     const rest = restOf(w);
-    if (w.deload && seenSteady && checked(w)) {
+    // A5 (10k-v2.5.2, pouka 34): umor pre starta — referenca prinudnog rasterećenja (dugi, doza) je nedelja 1
+    // generatora bez činjenica, iz koraka (isto što čita konstruktor).
+    const ref = steps.find((x) => x.preStart && x.fromWeek === w.index)?.preStart;
+    if (w.deload && (seenSteady || ref) && checked(w)) {
       // D5/D18: poslednja doza T slota, min 2,0 km; D31 početnik: poslednja T doza, min 1,5 km.
-      const lastT = rule.beginner ? lastTDose : (lastSlot[tSlot]?.doseM ?? 0);
+      const lastT = ref ? ref.tDoseM : rule.beginner ? lastTDose : (lastSlot[tSlot]?.doseM ?? 0);
       const t =
         slotDose(w, tSlot) ??
         (reducedQ(w) && rule.quality === 2 ? slotDose(w, otherSlot(tSlot)) : null);
@@ -1022,12 +1025,13 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
           w.index
         );
       const hurt = long !== undefined && painOf(w).has(long.date);
-      if (long && lastLong10 !== null && longKnown && !hurt) {
+      const refLong10 = ref ? to10(ref.longKm) : lastLong10;
+      if (long && refLong10 !== null && (ref || longKnown) && !hurt) {
         // Odstupanje A9 (D13 ispred D5): posle smanjenja obima dugi ≥ 3 km.
         const want10 = Math.max(
           w.index >= reducedFrom ? to10(P.lengths.easyMinKm) : 0,
           Math.min(
-            Math.floor(P.deload.longFactor * lastLong10 + 1e-9),
+            Math.floor(P.deload.longFactor * refLong10 + 1e-9),
             longCap10(to10(w.targetKm), rule, pk)
           )
         );

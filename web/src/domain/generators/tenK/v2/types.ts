@@ -406,6 +406,18 @@ export interface TenKV2AdaptStep {
   /** A17 (10k-v2.5.0): cilj koraka (startKm) je smanjenje — true: A2 (manjak) ili A3 (pauza); false: A6
       (višak). Korak bez startKm i korak sačuvan pre 10k-v2.5.0: polja nema (steps.reducedWeeks). */
   reduced?: boolean;
+  /** A5 (10k-v2.5.2, pouka 34): umor sa asOf pre starta plana — referenca prinudnog rasterećenja nedelje 1 =
+      nedelja 1 generatora bez činjenica (nema prethodne izgradnje). Samo na takvom koraku (assess). */
+  preStart?: PreStartRef;
+}
+
+/** A5 (10k-v2.5.2): nedelja 1 generatora bez činjenica — poslednja izgradnja (cilj), poslednji dugi i doza
+    slota rasterećenja (D5; početnik: poslednja T doza, D31) [m]. generate.preStartRef; čitaju je konstruktor
+    (volume.adaptNominal10, week.buildWeek) i validator. */
+export interface PreStartRef {
+  buildKm: number;
+  longKm: number;
+  tDoseM: number;
 }
 
 export interface TenKV2Adaptation {

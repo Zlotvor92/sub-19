@@ -1,0 +1,80 @@
+{
+  "flows": 5154,
+  "rejected": {},
+  "examples": {},
+  "invariants": {},
+  "invExamples": {},
+  "applied": {
+    "none": {
+      "NO_FACTS": 235
+    },
+    "pause10": {
+      "PAUSE": 235,
+      "TEST_MOVED": 12
+    },
+    "pause20": {
+      "PAUSE": 235,
+      "TEST_MOVED": 24
+    },
+    "pause35": {
+      "PAUSE": 235,
+      "TEST_MOVED": 39
+    },
+    "pain5": {
+      "PAIN": 235,
+      "TEST_MOVED": 12
+    },
+    "pain8": {
+      "PAIN": 235,
+      "TEST_MOVED": 20
+    },
+    "fatigue": {
+      "FATIGUE": 128,
+      "TEST_MOVED": 8
+    },
+    "faster": {
+      "NEW_RESULT": 235,
+      "TEST_MOVED": 48
+    },
+    "slower": {
+      "NEW_RESULT": 235,
+      "TEST_MOVED": 48
+    },
+    "test5k": {
+      "NEW_RESULT": 235,
+      "TEST_MOVED": 48
+    },
+    "incomplete": {
+      "NO_FACTS": 235
+    },
+    "chain": {
+      "PAUSE": 235,
+      "TEST_MOVED": 12
+    },
+    "painPause": {
+      "PAIN": 235,
+      "PAUSE": 235,
+      "TEST_MOVED": 24
+    },
+    "under50": {
+      "UNDER_EXECUTION": 136
+    },
+    "over120": {
+      "OVER_EXECUTION": 62
+    },
+    "chain2": {
+      "UNDER_EXECUTION": 42,
+      "TEST_MOVED": 12
+    },
+    "painDay5": {
+      "PAIN": 462,
+      "TEST_MOVED": 26
+    },
+    "painDay8": {
+      "PAIN": 462,
+      "TEST_MOVED": 38
+    }
+  },
+  "mixed": 1249,
+  "seconds": 51.522
+}

@@ -148,6 +148,23 @@ export function adaptInvariants(
     if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest)
       bad.push('trkačka + trka < minimum');
   }
+  // A5 (10k-v2.5.2, pouka 34): umor pre starta — nedelja 1 rasterećenje ≤ 0,8 × planirana nedelja 1 (ne ispod
+  // minimuma), najviše 1 kvalitet (uvod početnika: bez kvaliteta); nedelja 2 bez rasta (≤ planirana nedelja 1).
+  // Referenca: nedelja 1 prethodnog plana kad je on plan generatora (bez adaptacije).
+  const g1 = before.weeks[0]!;
+  if (steps.some((s) => s.deload && s.fromWeek === 1) && !before.adaptation) {
+    const [w1, w2] = after.weeks;
+    if (!w1!.deload) bad.push('umor pre starta: ned 1 nije rasterećenje');
+    else if (!mixed.has(1)) {
+      const want = Math.max(min, Math.round(P.deload.factor * g1.targetKm * 10) / 10);
+      if (w1!.targetKm > want + EPS) bad.push('umor pre starta: ned 1 > 0,8 × planirana ned 1');
+      const intro = after.input.experience === 'beginner';
+      if (qualityOf(w1!).length > (intro ? 0 : 1))
+        bad.push('umor pre starta: kvalitet ned 1 (uvod bez kvaliteta, inače najviše 1)');
+    }
+    if (w2 && isBuild(w2) && !w2.deload && !mixed.has(2) && w2.targetKm > g1.targetKm + EPS)
+      bad.push('umor pre starta: ned 2 raste preko planirane ned 1');
+  }
   // A8: taper posle smanjenja ≤ poslednja nedelja izgradnje.
   if (
     steps.some((s) => s.startKm !== null || s.returnFrom) &&

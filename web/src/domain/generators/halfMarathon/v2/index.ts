@@ -1,11 +1,14 @@
 /* HM v2 — javni API jezgra. Aplikacija ga ne uvozi do faze 2 (halfMarathon/index.ts je nepromenjen). */
 
+export { adaptHmV2 } from './adapt.ts';
 export { generateHmV2 } from './generate.ts';
 export { validatePlan } from './validate.ts';
 export { HM_V2_POLICY } from './policy.ts';
 export type {
+  AdaptResult,
   GenerateResult,
   GoalAssessment,
+  HmV2Facts,
   HmV2Input,
   HmV2Plan,
   HmV2Result,
