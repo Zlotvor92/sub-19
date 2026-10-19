@@ -90,9 +90,10 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
 26. Merenje vremena testova uključuje collect/import (JSON reporter ga ne vidi); sabotaže alatom, ne celim skupom.
 27. (MAR-01) Kad jednake deonice nemaju drugu strukturu iste doze, druga struktura je piramida u opsegu zone sa korakom
     200 m i istim zbirom (npr. I 5000 = 800-1000-1200-1200-800), naizmenično sa jednakim deonicama (pouka 3).
-28. (MAR-01) Opcioni ulaz `recentLongRunKm` (skorašnji najduži trk, 5–42 km): dugi nedelje 1 ≤ max(1,1 × recentLongRunKm,
-    recentLongRunKm + 1,0); nedelja 1 sme ispod trenutnog obima i kad je dugi ograničen ovim (dopuna pouke 9). Bez ulaza:
-    napomena nedelje 1 sa pragom. Važi za HM od HM-02 i za maraton od MAR-02.
+28. (MAR-01/02) Dugi SVAKE nedelje ≤ max(1,1 × L, L + 1,0), L = najduži dugi u prethodne 4 nedelje plana; u nedeljama 1–4
+    u L ulazi i opcioni `recentLongRunKm` (skorašnji najduži trk, 5–42 km) kad je dat. Jedna funkcija za konstruktor i
+    validator. Kad konstrukcija sa datim recentLongRunKm nije izvodljiva → odbijanje RECENT_LONG_TOO_SHORT sa porukom i
+    preporukom (pouka 6). (Prva verzija — ograničenje samo nedelje 1 — pomerala je skok dugog na nedelju 2, do ×2,4.)
 29. (10K 06d) Prošlost ima JEDNOG vlasnika — upisane (zaštićene) dane. Sve stanje koje zavisi od prošlosti (najduži dugi,
     stanje doze kvaliteta, poslednji dugi, poslednja doza zone) konstruktor računa iz upisanih dana, a validator i u
     konstrukciji i posle spajanja vidi isti upisani plan. Mreža adaptacije sa asOf usred nedelje to proverava.
