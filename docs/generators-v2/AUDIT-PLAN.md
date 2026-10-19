@@ -1,10 +1,9 @@
 # Dubinska provera generatora v2 (5K, 10K, HM, maraton) — plan
 
-Pokreće organizator posle nedeljnog reseta (četvrtak 22. 10. 2026, 08:00 UTC), kad su domenski segmenti svih distanci
-završeni i provereni. Cilj: naći ono što dosadašnje mreže i pretrage nisu pokrile, pre faze 2 (aplikacija za HM i
-maraton) i pre mergea u main. Svaki nalaz = broj, ulaz koji ga reprodukuje, uzrok; ispravke tek posle odluke
-organizatora, u jednoj sesiji po distanci (5K/10K su zamrznuti — otvaraju se samo za stvarno odbijanje ili neispravan
-plan).
+Pokreće organizator kad su sve distance kompletno završene (domen, aplikacija, predaja, kompletna provera) i
+spojene u main — po odluci korisnika — i posle nedeljnog reseta (četvrtak 08:00 UTC). Cilj: naći ono što dosadašnje
+mreže i pretrage nisu pokrile. Svaki nalaz = broj, ulaz koji ga reprodukuje, uzrok; ispravke tek posle odluke
+organizatora, u jednoj sesiji po distanci.
 
 ## Uglovi (svaki = jedna radna sesija ili agent, samo čitanje + merne skripte, bez izmene jezgra)
 
@@ -28,6 +27,4 @@ plan).
 ## Izlaz
 
 `docs/generators-v2/AUDIT-REPORT.md`: tabela nalaza (ugao, distanca, broj, ulaz, uzrok, predlog), odluke organizatora,
-plan ispravki po distanci. Posle ispravki: faza 2 (HM-05 → HM-06 → MAR-05 → MAR-06), faza 3 (predaja), faza 4
-(kompletna provera + `npm run check:full` + ceo E2E). Merge u main i uključivanje za korisnike — samo na izričitu odluku
-korisnika.
+plan ispravki po distanci. Ispravke idu na radnu granu, pa ponovo u main samo na izričitu odluku korisnika.
