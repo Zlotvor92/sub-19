@@ -318,7 +318,8 @@ describe('Odluka 6: R u bazi ne pada između ne-rasteretnih nedelja', () => {
     const plan = planOf(PROFILES['edge_45km_16w']!);
     const base = plan.weeks.filter((w) => w.phase === 'base' && !w.deload);
     const q = roleDay(base[1]!, 'q1')!.workout;
-    q.workKm = { ...q.workKm, R: 0.1 };
+    // 2.8.0 (N2b): doza = zadata ponavljanja (jedinica doze), ne km procenjen tempom.
+    q.blocks = q.blocks.map((b) => (b.kind === 'reps' && b.zone === 'R' ? { ...b, reps: 1 } : b));
     expect(errorsOf(plan)).toContain('BASE_R_DECREASE');
   });
 });
