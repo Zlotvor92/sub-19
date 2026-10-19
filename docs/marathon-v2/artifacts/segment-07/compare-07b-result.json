@@ -1,0 +1,209 @@
+{
+  "grid": {
+    "n": 21840,
+    "rejected": [0, 0],
+    "changed": 0,
+    "categories": {},
+    "warningRuleDiff": {},
+    "plansTwoQualityDayLongerThanLong": [0, 0],
+    "marathonLongShortPct": [12, 12],
+    "shownLines": [
+      {
+        "median": 1,
+        "p90": 2,
+        "max": 3
+      },
+      {
+        "median": 1,
+        "p90": 2,
+        "max": 3
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  },
+  "recent": {
+    "n": 35910,
+    "rejected": [930, 930],
+    "changed": 0,
+    "categories": {},
+    "warningRuleDiff": {},
+    "plansTwoQualityDayLongerThanLong": [1746, 1746],
+    "marathonLongShortPct": [19.6, 19.6],
+    "shownLines": [
+      {
+        "median": 1,
+        "p90": 2,
+        "max": 4
+      },
+      {
+        "median": 1,
+        "p90": 2,
+        "max": 4
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  },
+  "dense": {
+    "n": 0,
+    "rejected": [0, 0],
+    "changed": 0,
+    "categories": {},
+    "warningRuleDiff": {},
+    "plansTwoQualityDayLongerThanLong": [0, 0],
+    "marathonLongShortPct": [18, 0],
+    "shownLines": [
+      {
+        "median": 1,
+        "p90": 2,
+        "max": 3
+      },
+      {
+        "median": 0,
+        "p90": 0,
+        "max": 0
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  },
+  "feel": {
+    "n": 8190,
+    "rejected": [0, 0],
+    "changed": 0,
+    "categories": {},
+    "warningRuleDiff": {},
+    "plansTwoQualityDayLongerThanLong": [0, 0],
+    "marathonLongShortPct": [9, 9],
+    "shownLines": [
+      {
+        "median": 3,
+        "p90": 4,
+        "max": 6
+      },
+      {
+        "median": 3,
+        "p90": 4,
+        "max": 6
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  },
+  "beg": {
+    "n": 1890,
+    "rejected": [0, 0],
+    "changed": 0,
+    "categories": {},
+    "warningRuleDiff": {},
+    "plansTwoQualityDayLongerThanLong": [0, 0],
+    "marathonLongShortPct": [44.3, 44.3],
+    "shownLines": [
+      {
+        "median": 4,
+        "p90": 5,
+        "max": 6
+      },
+      {
+        "median": 4,
+        "p90": 5,
+        "max": 6
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  },
+  "a04": {
+    "n": 6236,
+    "rejected": [0, 0],
+    "changed": 0,
+    "categories": {},
+    "warningRuleDiff": {},
+    "plansTwoQualityDayLongerThanLong": [165, 165],
+    "marathonLongShortPct": [41.8, 41.8],
+    "shownLines": [
+      {
+        "median": 4,
+        "p90": 6,
+        "max": 11
+      },
+      {
+        "median": 4,
+        "p90": 6,
+        "max": 11
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  },
+  "early": {
+    "n": 45101,
+    "rejected": [0, 0],
+    "changed": 0,
+    "categories": {},
+    "warningRuleDiff": {},
+    "plansTwoQualityDayLongerThanLong": [87, 87],
+    "marathonLongShortPct": [31.2, 31.2],
+    "shownLines": [
+      {
+        "median": 4,
+        "p90": 7,
+        "max": 11
+      },
+      {
+        "median": 4,
+        "p90": 7,
+        "max": 11
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  },
+  "pre": {
+    "n": 4050,
+    "rejected": [0, 0],
+    "changed": 0,
+    "categories": {},
+    "warningRuleDiff": {},
+    "plansTwoQualityDayLongerThanLong": [0, 0],
+    "marathonLongShortPct": [34.5, 34.5],
+    "shownLines": [
+      {
+        "median": 4,
+        "p90": 7,
+        "max": 9
+      },
+      {
+        "median": 4,
+        "p90": 7,
+        "max": 9
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  },
+  "wide": {
+    "n": 267927,
+    "rejected": [0, 0],
+    "changed": 0,
+    "categories": {},
+    "warningRuleDiff": {},
+    "plansTwoQualityDayLongerThanLong": [7636, 7636],
+    "marathonLongShortPct": [25.2, 25.2],
+    "shownLines": [
+      {
+        "median": 3,
+        "p90": 6,
+        "max": 11
+      },
+      {
+        "median": 3,
+        "p90": 6,
+        "max": 11
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  }
+}

@@ -356,6 +356,13 @@ const DECISIONS: readonly Decision[] = [
     place: 'lengths.ts, volume.ts, generate.ts (napomena), validate.ts; app/plan.ts (prikaz)',
     rationale:
       'Faza 4a N11 (šum upozorenja). Merenje MAR-07 (cele mreže): MARATHON_LONG_SHORT 59,0 → 12,0 % planova (02), 72,7 → 9,0 (po osećaju), 95,7 → 44,3 (početnik), 76,4 → 19,6 (M13a); redova „Na šta da paziš” (medijana/p90/max) 02 1/3/4 → 1/2/3, po osećaju 3/5/7 → 3/4/6, početnik 4/5/7 → 4/5/6, M13a 1/3/4 → 1/2/4. Tehnička napomena: 332/736 planova uzorka ima je u planu, nijedna nedelja je ne prikazuje.'
+  },
+  {
+    id: 'A11b',
+    rule: 'Pouka 4 i stalni uslov 4 (MAR-07b): provere koje sude jednom danu po tempu ili strukturi (M10/M14: doza, RPE, WU/CD, oporavci, strukture; M13 lagan ≥ 5 km; pouka 32 dan ≤ dugi; test M16) preskaču zaštićene dane — ≤ asOf adaptacije, zaključane (ručne izmene) i urađene (plan.adaptation.doneDayIds kad je urađen dan posle asOf); kao LIMITS. Validator ne sudi činjenicama; nedeljna pravila važe za konstrukciju.',
+    place: 'validate.ts protectedDay; adapt.ts / generate.ts / written.ts (doneDayIds)',
+    rationale:
+      'Organizator (MAR-07b): zaštićen dan posle novog rezultata nosi stari tempo, a provera WU/CD ga je merila tempom nove nedelje → adaptacija odbijena. Merenje: rezultat (brži, sporiji, test 5 km) × zaključan ili urađen Q1/Q2 sledeće nedelje na trajnoj ranoj mreži 12 196/12 432 odbijeno → 0. Verzija marathon-v2.4.1: plan sa urađenim danom posle asOf nosi doneDayIds.'
   }
 ];
 
@@ -366,7 +373,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.4.0',
+  version: 'marathon-v2.4.1',
 
   /** M1 (dani i obim: M15). */
   input: {

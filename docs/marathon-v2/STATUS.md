@@ -22,7 +22,7 @@ const r = generateMarathonV2({
   recentLongRunKm: 18, // opciono, 5–42 km: skok dugog ≤ 10 % (M13a)
   // bez rezultata: easyPaceSecPerKm: 360 (po osećaju, M16); experience: 'beginner' (M17)
 });
-// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.4.0', paceBasis, faza nedelje, upozorenja)
+// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.4.1', paceBasis, faza nedelje, upozorenja)
 // !r.ok → r.reasons (kod + poruka sa preporukom: npr. PLAN_TOO_SHORT → polumaraton)
 const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → { ok, plan, changes, reasons } ili odbijanje
 // a.ok → a.newLimits (pouka 20: nova ograničenja poslednjeg koraka, steps.newLimits)
@@ -70,11 +70,10 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
 | MAR-05  | 2.3.1       | `9443676`                       | aplikacija iza prekidača `generatorV2Marathon`, adapter `v2/app/`, byteSame 223 heša                 |
 | MAR-06  | 2.3.1       | `8beef45`                       | adaptacija u aplikaciji (facts, pregled → potvrda → revizija, vraćanje, Forma, cilj), traka u domenu |
 
-## Segment MAR-07 (marathon-v2.4.0, Faza 4a)
+## Segment MAR-07 (marathon-v2.4.0) i MAR-07b (2.4.1), Faza 4a
 
-- Polazni SHA `7ba9717`; izveštaj `reports/SEGMENT-07-IMPLEMENTATION.md`; merenje i sabotaže `artifacts/segment-07/`.
-- KNOWN_VERSIONS = 2.3.1 ∪ 2.4.0. Regresija 0 neobjašnjenih (široka 267 927); brz nivo 43 s; sabotaže 6/6.
+- Polazni SHA `7ba9717`; izveštaj `reports/SEGMENT-07-IMPLEMENTATION.md`.
+- MAR-07b (`marathon-v2.4.1`, `reports/SEGMENT-07b-IMPLEMENTATION.md`): validator ne sudi zaštićenim danima (A11b).
+  KNOWN_VERSIONS = 2.3.1, 2.4.0, 2.4.1; regresija 0 neobjašnjenih; sabotaže 6/6 + 2/2.
 
-## Sledeće
-
-- Predaja maraton v2 ↔ HM/10K (faza 3); otvorena pitanja MAR-06 (izveštaj).
+## Sledeće: predaja maraton v2 ↔ HM/10K (faza 3).
