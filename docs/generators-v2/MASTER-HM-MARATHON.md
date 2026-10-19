@@ -80,7 +80,7 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     ulazi. Prinudno rasterećenje (umor) se nikad ne ukida; niz izgradnje od ukinute nedelje ≤ (pravilo niza) + 1, inače
     ostaje; jedno mesto odluke (okviri nedelja), validator čita isti podatak.
 23. Konstruktor nikad ne sastavlja ono što validator odbija (10K N7): pretraga RANE i SREDNJE adaptacije na svim mrežama —
-    asOf u nedelji 1 (sreda i kraj), sredinom nedelje i pre svake posebne nedelje (test, rasterećenje, taper), svi
+    asOf PRE STARTA (start − 1, − 3, − 6), u nedelji 1 (sreda i kraj), sredinom nedelje i pre svake posebne nedelje (test, rasterećenje, taper), svi
     scenariji — mora dati 0 odbijanja. Odstupanje od pravila (npr. cilj naviše da test stane) prihvata se samo ako
     sastavljena nedelja ima svojstvo zbog kog odstupanje postoji.
 24. Veličina koju koriste i konstruktor i validator (najduži dugi, poslednja izgradnja, minimum nedelje, osnova povratka)
@@ -113,6 +113,11 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     cilja naviše osim pouke 23); kvalitet/test ostaje, a kvalitet otpada samo kad ni sa skraćenim dugim ne staje;
     napomena + upozorenje. Jedno mesto odluke, validator čita istu funkciju. (Odbačeno: cilj naviše, nov minimum obima,
     ispuštanje dana.)
+34. (organizator, posle MAR-04; presedan 5K) Umor sa asOf PRE STARTA plana: nedelja 1 je prinudno rasterećenje =
+    0,8 × planirana nedelja 1 (sadržaj rasterećenja; početnik: sadržaj uvoda, pouka 31); referenca „poslednja
+    izgradnja / poslednji dugi / doza" je nedelja 1 generatora bez činjenica (nema prethodne izgradnje); nedelja 2 =
+    cilj planirane nedelje 1 (bez rasta), dalje po rasporedu. Pouka 4 važi za redovna rasterećenja. Nađeno: 10K v2 i
+    maraton v2 su za umor pre starta odbijali 100 % tokova (WEEK_INFEASIBLE), 5K ga rešava ovako.
 
 ## 3. Tok jednog segmenta i provera
 
