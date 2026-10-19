@@ -9,6 +9,7 @@ import { applyTheme, readTheme } from './lib/theme';
 import { browserGeo } from './lib/geo';
 import { browserPwa } from './pwa/browser';
 import { startServiceWorker } from './pwa/register';
+import { captureInstallPrompt } from './pwa/install';
 import { useUIStore } from './stores/uiStore';
 import './styles/tokens.css';
 import './styles/base.css';
@@ -17,6 +18,9 @@ import './styles/shell.css';
 import './styles/screens.css';
 import './styles/charts.css';
 import './styles/wizard.css';
+
+/* Pre svega ostalog: `beforeinstallprompt` stiže jednom i ne čeka React. */
+captureInstallPrompt(window);
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Nedostaje #root u index.html');

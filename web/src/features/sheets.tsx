@@ -6,6 +6,7 @@ import { T3kSheet } from './race/T3kSheet';
 import { BugSheet, DeleteAccountSheet, HistorySheet } from './ti/AccountSheets';
 import { UsersSheet } from './ti/UsersSheet';
 import { KneeSheet } from './recovery/KneeSheet';
+import { InstallSheet } from './install/InstallSheet';
 
 /* REGISTAR LISTOVA: `kind` → sadržaj. Mali listovi odozdo za kratke izmene (izmena treninga, pomeranje, test na 3 km, unos bola, istorija verzija…).
    Veći sadržaj ima svoj ekran (`features/screens`). Svojstva (`props`) dolaze iz `openSheet` i proveravaju se OVDE, na granici — komponenta dobija samo
@@ -15,6 +16,10 @@ const SHEETS: Record<string, (props: Record<string, unknown>) => ReactNode> = {
   bug: () => <BugSheet />,
   history: () => <HistorySheet />,
   users: () => <UsersSheet />,
+  install: (p) =>
+    p['kind'] === 'prompt' || p['kind'] === 'ios' || p['kind'] === 'android' ? (
+      <InstallSheet kind={p['kind']} />
+    ) : null,
   alt: (p) => (typeof p['id'] === 'string' ? <AltSheet id={p['id']} /> : null),
   swap: (p) =>
     typeof p['w'] === 'number' ? (

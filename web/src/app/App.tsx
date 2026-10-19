@@ -17,6 +17,7 @@ import { confirmAction } from './confirm';
 import { dayFromSearch, rememberTab } from './tabs';
 import { navBack, startNavHistory } from './navHistory';
 import { useSwipeNav } from './useSwipeNav';
+import { useInstallOffer } from './useInstallOffer';
 import { useToday } from './useToday';
 import { BANNER, useSystemBanners } from './useSystemBanners';
 import { SheetHost } from '../features/sheets';
@@ -42,6 +43,7 @@ export function App() {
   const peek = useUIStore((s) => s.peek);
   const sheet = useUIStore((s) => s.sheet);
   const screens = useUIStore((s) => s.screens);
+  const confirm = useUIStore((s) => s.confirm);
   const closeSheet = useUIStore((s) => s.closeSheet);
   const openScreen = useUIStore((s) => s.openScreen);
   const today = useToday();
@@ -199,6 +201,7 @@ export function App() {
   );
 
   useSwipeNav(ready && gate === null && !wizard && hasPlan && !sheet && screens.length === 0);
+  useInstallOffer(ready && gate === null && !wizard && hasPlan && !sheet && !confirm);
 
   if (!ready) return null;
 

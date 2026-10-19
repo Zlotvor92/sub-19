@@ -163,6 +163,7 @@ export async function seedSession(
       if (sessionStorage.getItem('__e2e_seeded')) return;
       sessionStorage.setItem('__e2e_seeded', '1');
       sessionStorage.setItem('sub20-uvod', '1'); // toplo pokretanje: uvodni ekran se preskače (njegov tok ima svoj test)
+      sessionStorage.setItem('sub20-instaliraj', '1'); // list „Instaliraj" bi posle 6 s zaključao pozadinu (njegov tok ima svoj test)
       localStorage.setItem('sub19_sb', JSON.stringify(s));
     } catch {
       /* bez skladišta nema ni testa */
