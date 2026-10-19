@@ -19,7 +19,7 @@ organizatora, u jednoj sesiji po distanci.
 4. **Jedan vlasnik (čitanje koda)** — za svaku veličinu koju koriste konstruktor i validator (najduži dugi, poslednja
    izgradnja, minimum nedelje, plafon zone, osnova povratka, okviri nedelja): da li postoji JEDNA funkcija; dve
    definicije iste stvari = nalaz (pouka 24).
-5. **Doslednost distanci** — ista pouka iz MASTER (1–34) i isto pravilo 10K/5K: da li je primenjena u svim distancama
+5. **Doslednost distanci** — ista pouka iz MASTER (1–35) i isto pravilo 10K/5K: da li je primenjena u svim distancama
    isto (npr. pouka 32, 33, 34, 30); razlike bez obrazloženja = nalaz.
 6. **Aplikacija 5K/10K (iza prekidača)** — E2E tokovi: kreiranje plana, uvoz, prilagođavanje (pregled → potvrda →
    revizija), vraćanje verzije, promena cilja; v1 i lični plan bajt-isti.

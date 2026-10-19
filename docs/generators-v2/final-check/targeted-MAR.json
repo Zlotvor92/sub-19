@@ -1,0 +1,48 @@
+{
+ "dist": "MAR",
+ "plans": 736,
+ "a": {
+  "flows": 7560,
+  "rejected": {
+   "PLAN_VIOLATES_POLICY": 40
+  },
+  "ex": [
+   "d3-13w-35km-v40-C-sun/w12d6/pain7: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).",
+   "d3-13w-35km-v40-C-sun/w12d6/pain8: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).",
+   "d3-14w-45km-v70-C-sun/w13d6/pain7: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).",
+   "d3-14w-45km-v70-C-sun/w13d6/pain8: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).",
+   "d3-16w-35km-v50-C-sun/w15d6/pain7: EMPTY_WEEK: Nedelja bez treninga (Uslov 8)."
+  ]
+ },
+ "b": {
+  "flows": 18126,
+  "longShortWarn": 0,
+  "falsePositive": 0,
+  "ex": []
+ },
+ "c": {
+  "flows": 9063,
+  "rejected": 0,
+  "weeks": 52569,
+  "longUnder10": 12981,
+  "plansLongUnder10": 4179,
+  "longShorterThanQ": 4675,
+  "plansLongShorterThanQ": 2171,
+  "rpBelowLowest": 0,
+  "taperNoQ": 7275,
+  "minLong": 5,
+  "ex": [
+   "d3-20w-35km-v70-B-sun/w7end/pause35 ned 9: cilj 20.5, dugi 7.4 km 30 min < 31 min",
+   "d3-20w-35km-v70-B-sun/w13end/pause35 ned 15: cilj 20.7, dugi 7.6 km 31 min < 31 min",
+   "d3-23w-30km-v70-B-sat/w3end/pause35 ned 8: cilj 20, dugi 6.9 km 28 min < 31 min",
+   "d3-23w-30km-v70-B-sat/w4end/pause35 ned 9: cilj 20, dugi 6.9 km 28 min < 31 min",
+   "d3-23w-30km-v70-B-sat/w5end/pause35 ned 10: cilj 20, dugi 6.9 km 28 min < 31 min",
+   "d3-23w-30km-v70-B-sat/w6end/pause35 ned 11: cilj 20, dugi 6.9 km 28 min < 31 min"
+  ]
+ },
+ "d": {
+  "plans": 736,
+  "withNote": 332,
+  "ex": "d3-12w-30km-v30-A-sat: Cilj po pravilu 34,0 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 32,3 km (M6)."
+ }
+}

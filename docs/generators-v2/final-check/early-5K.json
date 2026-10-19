@@ -1,0 +1,53 @@
+{
+ "dist": "5K",
+ "step": {
+  "R": 29,
+  "F": 19,
+  "B": 11
+ },
+ "sampled": 194,
+ "excludedPermanent": 0,
+ "plans": 194,
+ "generatorRejected": 0,
+ "flows": 75456,
+ "rejectedFlows": 92,
+ "rejected": {
+  "VALIDATOR:BASE_R_DECREASE": 16,
+  "VALIDATOR:TEST_WEEK": 76
+ },
+ "rejectedEx": {
+  "VALIDATOR:BASE_R_DECREASE": [
+   "r-d5-14w-60km-v32-1/w3wed/slower: R u bazi 2.10 km < prethodne 2.40 km.",
+   "r-d5-14w-60km-v32-1/w3end/slower: R u bazi 2.10 km < prethodne 2.40 km.",
+   "r-d5-14w-60km-v32-1/w4wed/slower: R u bazi 2.10 km < prethodne 2.40 km."
+  ],
+  "VALIDATOR:TEST_WEEK": [
+   "f-d3-6w-25km-e300-1/w2wed/chain/2: Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju.",
+   "f-d4-6w-15km-e480-1/w2wed/chain/2: Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju.",
+   "f-d4-6w-30km-e420-0/w2wed/chain/2: Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju."
+  ]
+ },
+ "common": {
+  "TRKACKA>TAPER": 34
+ },
+ "commonEx": {
+  "TRKACKA>TAPER": [
+   "r-d3-7w-20km-v52-1/w5end/pain8",
+   "r-d3-9w-20km-v45-1/w7end/pain8",
+   "r-d3-11w-20km-v38-1/w9end/pain8"
+  ]
+ },
+ "noneMismatch": 0,
+ "noneEx": [],
+ "inv": {},
+ "invEx": {},
+ "byScenario": {
+  "slower": 16,
+  "chain2": 76
+ },
+ "byAsOf": {
+  "w#wed": 84,
+  "w#end": 8
+ },
+ "seconds": 213.853
+}

@@ -1,0 +1,44 @@
+{
+ "dist": "HM",
+ "plans": 594,
+ "a": {
+  "flows": 6636,
+  "rejected": {},
+  "ex": []
+ },
+ "b": {
+  "flows": 10850,
+  "longShortWarn": 2928,
+  "falsePositive": 5,
+  "ex": [
+   "d4-11w-35km-v50-B-sat/w4/pain5: najduži dugi 16.6 km ≥ 16, upozorenje LONG_RUN_SHORT",
+   "d4-13w-30km-v40-A-sat/w7/pain5: najduži dugi 16 km ≥ 16, upozorenje LONG_RUN_SHORT",
+   "d4-14w-30km-v70-A-sat/w9/pain5: najduži dugi 16.2 km ≥ 16, upozorenje LONG_RUN_SHORT"
+  ]
+ },
+ "c": {
+  "flows": 5425,
+  "rejected": 0,
+  "weeks": 29414,
+  "longUnder10": 14551,
+  "plansLongUnder10": 3714,
+  "longShorterThanQ": 3993,
+  "plansLongShorterThanQ": 1867,
+  "rpBelowLowest": 31,
+  "taperNoQ": 2683,
+  "minLong": 4,
+  "ex": [
+   "d3-10w-40km-v60-B-sun/w3end/pause35 ned 5: cilj 22, dugi 8.2 km 38 min < 43 min",
+   "d3-10w-40km-v60-B-sun/w4end/pause35 ned 6: cilj 22, dugi 8.2 km 38 min < 43 min",
+   "d3-10w-40km-v60-B-sun/w5end/pause35 ned 7: cilj 22, dugi 8.2 km 38 min < 43 min",
+   "d3-10w-40km-v60-B-sun/w6end/pause35 ned 8: cilj 22, dugi 8.2 km 38 min < 43 min",
+   "d3-11w-40km-v70-A-sun/w3end/pause35 ned 5: cilj 22, dugi 7.4 km 30 min < 41 min",
+   "d3-11w-40km-v70-A-sun/w3end/pause35 ned 6: cilj 24.2, dugi 9 km 37 min < 44 min"
+  ]
+ },
+ "d": {
+  "plans": 594,
+  "withNote": 89,
+  "ex": "d3-13w-45km-v30-B-sun: Cilj po pravilu 45,0 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 42,5 km (H6)."
+ }
+}
