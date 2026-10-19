@@ -742,9 +742,12 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'upisanih dana dugi prethodne nedelje za trkačku, taper, test i stanje doze (doza nedelje važi samo kad su ' +
       'upisani dani kvaliteta isti kao sastavljeni); validator ne preskače mešovitu nedelju u proverama zavisnim od ' +
       'prošlosti — segment doze se čita po DATUMU upisanog dana kvaliteta (steps.doseResetDate: pauza usred nedelje ' +
-      'počinje novi segment od asOf + 1; nedelja sa danima u dva segmenta nema jednu dozu). (Pouka 36) Umor je vezan ' +
-      'za zapise: sidro = prva puna nedelja posle poslednjeg zapisa umora; rasterećenje od sidra do sledeće nedelje ' +
-      'je rasterećenje tih zapisa — novo se ne pravi (fatigue-repeat.ts 5K end: 58/117 → 0). Merenje (Faza 4a ' +
+      'počinje novi segment od asOf + 1; nedelja sa danima u dva segmenta nema jednu dozu); zaključan budući dan je ' +
+      'činjenica — lanac doze i oznaka testa ga ne porede, kao LIMITS (MAR-07 nalaz: novi rezultat kraj ned k + ' +
+      'zaključan Q1 ned k + 1, f4b257d 47/5184 odbijeno → 0). (Pouka 36, precizno) Prinudno rasterećenje = nedelja ' +
+      'POSLE nedelje poslednjeg zapisa umora; ako je asOf već u njoj, važi za njen ostatak (korak deloadWeek, prošli ' +
+      'dani zaštićeni); ako je ona već rasterećenje — novo se ne pravi; isti zapisi u nedelju i u ponedeljak = isti ' +
+      'plan (fatigue-repeat.ts 5K end: 58/117 → 0). Merenje (Faza 4a ' +
       'early.ts 5K 29 19 11, 75 456 tokova): odbijeno 92 → 0, trkačka > taper 34 → 0; generator bez činjenica ' +
       'bajt-isti (3816 planova). Sačuvan plan 5k-v2.6.0/2.6.1/2.7.0 se prilagođava po 2.8.0 (KNOWN_VERSIONS).'
   }

@@ -285,3 +285,59 @@ describe('08g N4 — validator ne preskače mešovitu nedelju (pouka 29)', () =>
     expect(errRules(t)).toContain('TEST_WEEK');
   });
 });
+
+describe('08g pouka 36 (precizno) — rasterećenje = nedelja posle nedelje poslednjeg zapisa umora', () => {
+  const p = planOf('r-d4-10w-30km-v45-0');
+  const w1 = p.weeks[0]!;
+  const easy = w1.days.filter((d) => d.role === 'easy' || d.role === 'long').slice(-2);
+  const facts = {
+    workouts: easy.map((d) => ({
+      date: d.date,
+      dayId: d.date,
+      km: d.workout.km,
+      durationSec: d.workout.sec,
+      completed: true,
+      rpe: 8
+    }))
+  };
+  const sun = w1.endDate;
+  const mon = addDays(sun, 1);
+  const rs = adaptFiveKV2(p, facts, sun);
+  const rm = adaptFiveKV2(p, facts, mon);
+  it('zapisi iz ned 1, asOf ponedeljak ned 2 → rasterećenje tekuće nedelje 2 (ostatak)', () => {
+    expect(errors(rm)).toEqual([]);
+    if (!rm.ok) return;
+    expect(rm.plan.weeks[1]!.deload).toBe(true);
+    expect(rm.plan.adaptation!.steps[0]!.deloadWeek).toBe(2);
+  });
+  it('isti zapisi u nedelju i u ponedeljak → isto rasterećenje i isti ciljevi, isti dani posle ponedeljka', () => {
+    expect(errors(rs)).toEqual([]);
+    if (!rs.ok || !rm.ok) return;
+    expect(rm.plan.weeks.map((w) => [w.deload, w.targetKm])).toEqual(
+      rs.plan.weeks.map((w) => [w.deload, w.targetKm])
+    );
+    const after = (x: FiveKV2Plan) => x.weeks.flatMap((w) => w.days.filter((d) => d.date > mon));
+    expect(S(after(rm.plan))).toBe(S(after(rs.plan)));
+  });
+});
+
+describe('08g MAR-07 nalaz u 5K — zaključan dan kvaliteta u nedelji posle novog rezultata', () => {
+  // f4b257d: 47 / 5184 odbijeno (QUALITY_REPEAT 42, BASE_R_DECREASE 5); zaključan budući dan je činjenica —
+  // lanac doze i oznaka testa ga ne porede (kao LIMITS).
+  for (const [id, k, s] of [
+    ['r-d3-12w-16km-v38-0', 1, 'faster'],
+    ['f-d3-6w-16km-e360-0', 2, 'test5k']
+  ] as const)
+    it(`${id}, ${s} kraj ned ${k} + zaključan Q1 ned ${k + 1} → prihvaćen, dan zadržan`, () => {
+      const p = planOf(id);
+      const at = p.weeks[k - 1]!.endDate;
+      const q1 = p.weeks[k]!.days.find((d) => d.workout.kind === 'quality')!;
+      const r = adaptFiveKV2(
+        p,
+        { ...earlyFacts(p as unknown as EarlyPlan, s, at), lockedDayIds: [q1.date] },
+        at
+      );
+      expect(errors(r)).toEqual([]);
+      if (r.ok) expect(S(r.plan.weeks[k]!.days.find((d) => d.date === q1.date))).toBe(S(q1));
+    });
+});

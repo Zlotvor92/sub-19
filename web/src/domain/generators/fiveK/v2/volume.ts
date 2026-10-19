@@ -209,6 +209,9 @@ export interface VolumeStep {
   firstWeek: number;
   fromWeek: number;
   startKm: number | null;
+  /** 2.8.0 (pouka 36): umor — prinudno rasterećenje; nedelja kad nije fromWeek. */
+  deload?: boolean;
+  deloadWeek?: number;
   pauseRemainder: boolean;
   restart: boolean;
   levelKm?: number | null;
@@ -335,6 +338,16 @@ export function adaptVolume(
       if (isBuildFrame(frames[i]!) && (!frames[i]!.deload || resets.has(i + 1)))
         lastBuild = targets[i]!;
       lastBuild = anchored(i, lastBuild);
+    }
+    // 2.8.0 (pouka 36): prinudno rasterećenje tekuće nedelje (r < n) — deloadFactor × poslednja izgradnja pre nje.
+    const dw = s.deload ? (s.deloadWeek ?? n) : n;
+    if (dw < n && frames[dw - 1]?.deload) {
+      let lb: number | null = null;
+      for (let i = 0; i < dw - 1; i++) {
+        if (isBuildFrame(frames[i]!) && (!frames[i]!.deload || resets.has(i + 1))) lb = targets[i]!;
+        lb = anchored(i, lb);
+      }
+      targets[dw - 1] = fitAt(dw, round1((lb ?? startRef) * P.volume.deloadFactor));
     }
     for (let i = n - 1; i < frames.length && isBuildFrame(frames[i]!); i++) {
       const f = frames[i]!;

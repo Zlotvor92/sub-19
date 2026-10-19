@@ -167,7 +167,7 @@ export const TOTALS: Record<
     kept: number;
     changed: number;
     formerlyRejected: number;
-    /** 08g: promenjeni tokovi porodice N3/N4/F (testInputs.family08g; šira: 7 N3/N4 + 54 F, pouka 36). */
+    /** 08g: promenjeni tokovi porodice N3/N4/F (testInputs.family08g; šira: 7 N3/N4 + 270 F, pouka 36). */
     family08g: number;
   }
 > = {
@@ -179,7 +179,7 @@ export const TOTALS: Record<
     formerlyRejected: 31,
     family08g: 75
   },
-  wide: { flows: 10852, dropped: 978, kept: 0, changed: 1068, formerlyRejected: 29, family08g: 61 }
+  wide: { flows: 10852, dropped: 978, kept: 0, changed: 1284, formerlyRejected: 29, family08g: 277 }
 };
 
 export function describeReliefGrid(title: string, search: Search): void {

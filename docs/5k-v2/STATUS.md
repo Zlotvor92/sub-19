@@ -114,10 +114,11 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - N2a: test iz upisanog plana (`steps.writtenTest`); N2b (odluka D): jedinica doze (m/s) u BASE_R_DECREASE,
   DOSE_PROGRESSION, BASE_PLATEAU; R pada samo kad je plafon R < prethodne → napomena + DOSE_DROPPED; N3: `week.raceWeekRest`
   → `raceRest`, RACE_WEEK_TAPER / RACE_WEEK_SHORT; N4: `written.ts`, stanje iz upisanih dana, validator ne preskače mešovitu
-  nedelju (`steps.doseResetDate`); pouka 36: sidro umora iz zapisa.
+  nedelju (`steps.doseResetDate`); pouka 36 (precizno): rasterećenje = nedelja posle nedelje poslednjeg zapisa umora,
+  asOf u njoj → ostatak (`deloadWeek`); MAR-07 nalaz: zaključan budući dan kvaliteta prekida lanac doze (47/5184 → 0).
 - Merenje: 4a 29/19/11 odbijeno 92 → 0, trkačka > taper 34 → 0; 7/7/7 209 → 0, 94 → 0; fatigue-repeat 58/117 → 0;
-  generator bajt-isti (3816). Trajna mreža 104 800: promenjeno 4067 (R 399, F 2960, N4 673, N3 34, C 1), bez razloga 0.
+  generator bajt-isti (3816). Trajna mreža 104 800: promenjeno 4367 (R 399, F 3260, N4 673, N3 34, C 1), bez razloga 0.
 - byteSame: samo redovi „5K v2" (10K 19, HM 13, maraton 13). KNOWN_VERSIONS = 2.6.0, 2.6.1, 2.7.0, 2.8.0.
-- Provere: tsc/eslint/prettier exit 0; `npm run check` exit 0 (282 / 3401); `--changed f4b257d` pun 174 / 1807; pun fiveK/v2
-  22 / 675; E2E `fivek-v2` 3/3; sabotaže 8/8 PALO (51 s).
+- Provere: tsc/eslint/prettier exit 0; `npm run check` exit 0 (286 / 3433); `--changed f4b257d` pun 261 / 2516; pun fiveK/v2
+  22 / 679; E2E `fivek-v2` 3/3; sabotaže 10/10 PALO (79 s).
 - Izveštaj: `reports/SEGMENT-08g-IMPLEMENTATION.md`.
