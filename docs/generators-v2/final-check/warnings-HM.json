@@ -1,0 +1,185 @@
+{
+ "dist": "HM",
+ "k": 1,
+ "R": {
+  "plans": 16896,
+  "rejected": 0,
+  "rej": {},
+  "rules": {
+   "WEEK_FITTED": {
+    "plansPct": 13.5,
+    "plans": 2286,
+    "perPlan": 6.4
+   },
+   "CAPACITY_LIMITED": {
+    "plansPct": 11.2,
+    "plans": 1890,
+    "perPlan": 1
+   },
+   "LONG_RUN_SHORT": {
+    "plansPct": 6.6,
+    "plans": 1122,
+    "perPlan": 1
+   },
+   "TAPER_NO_QUALITY": {
+    "plansPct": 3.1,
+    "plans": 528,
+    "perPlan": 1
+   },
+   "DELOAD_NO_QUALITY": {
+    "plansPct": 2.6,
+    "plans": 432,
+    "perPlan": 1
+   },
+   "DOSE_DROPPED": {
+    "plansPct": 0.9,
+    "plans": 150,
+    "perPlan": 1.1
+   },
+   "LONG_SHORTER_THAN_QUALITY": {
+    "plansPct": 0.8,
+    "plans": 132,
+    "perPlan": 1
+   },
+   "TAPER_RP_ONLY": {
+    "plansPct": 0.4,
+    "plans": 66,
+    "perPlan": 1
+   }
+  },
+  "shownLines": {
+   "median": 0,
+   "p90": 4,
+   "max": 18
+  },
+  "examples": {
+   "LONG_RUN_SHORT": "d3-10w-25km-v30-A-sat (ned -): Najduži dugi 15.7 km < 16 km (H13): preporuka više dana ili obima.",
+   "TAPER_NO_QUALITY": "d3-10w-25km-v30-A-sat (ned 9): Taper bez kvaliteta: RP 4000 m.",
+   "WEEK_FITTED": "d3-10w-30km-v30-A-sat (ned 9): Nedelja spuštena na izvodljiv cilj 28.5 km (pravilo 29.4 km).",
+   "CAPACITY_LIMITED": "d3-10w-35km-v30-A-sat (ned -): 3 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 4–6 dana.",
+   "DELOAD_NO_QUALITY": "d3-12w-25km-v30-A-sat (ned 9): Rasterećenje bez kvaliteta: T 3000 m.",
+   "DOSE_DROPPED": "d4-15w-55km-v35-A-sat (ned 6): q2: doza spuštena 6000 → 4800 m (plafon, nijedan cilj nije izvodljiv bez toga).",
+   "LONG_SHORTER_THAN_QUALITY": "d6-10w-40km-v60-A-sat (ned 1): Kvalitetni dan duži od dugog po trajanju u 2 od 8 nedelja izgradnje i rasterećenja (ned 1: 43 > 40 min; najniži nivo zone ili test, pouka 32; HI3); preporuka 3–5 dana (red sa manje dana podržava obim 40 km, dugi dobija veći udeo).",
+   "TAPER_RP_ONLY": "d6-10w-40km-v70-A-sat (ned 9): Taper samo sa RP: sa RP i T nijedan cilj nije izvodljiv."
+  }
+ },
+ "F": {
+  "plans": 6336,
+  "rejected": 0,
+  "rej": {},
+  "rules": {
+   "WEEK_FITTED": {
+    "plansPct": 22.3,
+    "plans": 1410,
+    "perPlan": 6.9
+   },
+   "CAPACITY_LIMITED": {
+    "plansPct": 17.4,
+    "plans": 1101,
+    "perPlan": 1
+   },
+   "LONG_RUN_SHORT": {
+    "plansPct": 6.3,
+    "plans": 402,
+    "perPlan": 1
+   },
+   "TAPER_NO_QUALITY": {
+    "plansPct": 3.1,
+    "plans": 198,
+    "perPlan": 1
+   },
+   "DELOAD_NO_QUALITY": {
+    "plansPct": 2.5,
+    "plans": 156,
+    "perPlan": 1
+   },
+   "TEST_DELOAD_LONG": {
+    "plansPct": 1.6,
+    "plans": 102,
+    "perPlan": 1
+   },
+   "LONG_SHORTER_THAN_QUALITY": {
+    "plansPct": 1.1,
+    "plans": 69,
+    "perPlan": 1
+   },
+   "DOSE_DROPPED": {
+    "plansPct": 0.9,
+    "plans": 54,
+    "perPlan": 1
+   },
+   "TAPER_RP_ONLY": {
+    "plansPct": 0,
+    "plans": 3,
+    "perPlan": 1
+   }
+  },
+  "shownLines": {
+   "median": 2,
+   "p90": 12,
+   "max": 21
+  },
+  "examples": {
+   "LONG_RUN_SHORT": "f-d3-10w-25km-e270-A (ned -): Najduži dugi 15.7 km < 16 km (H13): preporuka više dana ili obima.",
+   "TAPER_NO_QUALITY": "f-d3-10w-25km-e270-A (ned 9): Taper bez kvaliteta: RP 4000 m.",
+   "DELOAD_NO_QUALITY": "f-d3-12w-25km-e270-A (ned 9): Rasterećenje bez kvaliteta: T 3000 m.",
+   "LONG_SHORTER_THAN_QUALITY": "f-d3-13w-25km-e270-A (ned 4): Kvalitetni dan duži od dugog po trajanju u 1 od 11 nedelja izgradnje i rasterećenja (ned 4: 42 > 36 min; najniži nivo zone ili test, pouka 32; HI3).",
+   "TEST_DELOAD_LONG": "f-d3-13w-25km-e270-A (ned 4): Rasterećenje sa testom: dugi 7.9 km < 0,8 × poslednji (10 km) da lagani ostanu ≥ 4 km (H16 ispred H5, HI11).",
+   "WEEK_FITTED": "f-d3-10w-35km-e405-A (ned 9): Nedelja spuštena na izvodljiv cilj 33.5 km (pravilo 34.3 km).",
+   "CAPACITY_LIMITED": "f-d3-10w-40km-e405-A (ned -): 3 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 4–6 dana.",
+   "DOSE_DROPPED": "f-d4-15w-60km-e450-A (ned 6): q2: doza spuštena 6000 → 4800 m (plafon, nijedan cilj nije izvodljiv bez toga).",
+   "TAPER_RP_ONLY": "f-d6-20w-40km-e270-A (ned 19): Taper samo sa RP: sa RP i T nijedan cilj nije izvodljiv."
+  }
+ },
+ "B": {
+  "plans": 1890,
+  "rejected": 0,
+  "rej": {},
+  "rules": {
+   "LONG_RUN_SHORT": {
+    "plansPct": 30,
+    "plans": 567,
+    "perPlan": 1
+   },
+   "DELOAD_LONG_SHORTENED": {
+    "plansPct": 22.5,
+    "plans": 426,
+    "perPlan": 1.4
+   },
+   "LONG_SHORTER_THAN_QUALITY": {
+    "plansPct": 6.7,
+    "plans": 126,
+    "perPlan": 1
+   },
+   "WEEK_FITTED": {
+    "plansPct": 2.9,
+    "plans": 54,
+    "perPlan": 2.8
+   },
+   "DELOAD_NO_QUALITY": {
+    "plansPct": 2.5,
+    "plans": 48,
+    "perPlan": 1
+   },
+   "CAPACITY_LIMITED": {
+    "plansPct": 1,
+    "plans": 18,
+    "perPlan": 1
+   }
+  },
+  "shownLines": {
+   "median": 3,
+   "p90": 5,
+   "max": 13
+  },
+  "examples": {
+   "LONG_RUN_SHORT": "b-d4-12w-20km-e330-A (ned -): Najduži dugi 11.2 km < 14 km (H17): preporuka više dana ili obima.",
+   "LONG_SHORTER_THAN_QUALITY": "b-d4-12w-20km-e330-A (ned 5): Kvalitetni dan duži od dugog po trajanju u 1 od 10 nedelja izgradnje i rasterećenja (ned 5: 32 > 25 min; najniži nivo zone ili test, pouka 32; HI3).",
+   "DELOAD_LONG_SHORTENED": "b-d4-12w-20km-e330-A (ned 5): Rasterećenje: dugi 4.5 km < 0,8 × poslednji (6.8 km) da lagani ostanu ≥ 4 km (najmanji obim, HI14).",
+   "DELOAD_NO_QUALITY": "b-d4-13w-20km-e330-A (ned 4): Rasterećenje bez kvaliteta: ni uz skraćen dugi T 1500 m ne ostavlja lagane ≥ 4 km (HI14).",
+   "WEEK_FITTED": "b-d4-12w-40km-e510-A (ned 9): Nedelja spuštena na izvodljiv cilj 41.3 km (pravilo 41.6 km).",
+   "CAPACITY_LIMITED": "b-d4-15w-40km-e510-A (ned -): 4 dana ne nose ovaj obim uz dugi ≤ 135 min; preporuka 5 dana."
+  }
+ },
+ "seconds": 73.099
+}
