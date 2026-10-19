@@ -2,8 +2,8 @@
    punog nivoa earlyGrid.<k>.full.node.test.ts); bez testova (vitest ga ne skuplja, v. vitest.config.ts). Planovi:
    svaki 182. ulaz mreže 02, svaki 78. po osećaju, svaki 42. početnika; asOf: sreda i kraj ned 1, sreda svake
    nedelje 2 … N − 1, kraj nedelje pre svake posebne nedelje (test, rasterećenje, N−2, N−1); scenariji pauza 10/20,
-   bol 5/8, pauza 10 + bol 5, manjak, umor. Po toku: prihvaćen (K1 = 0) i adaptInvariants prazno (nezavisno od
-   validatora). */
+   bol 5/8, pauza 10 + bol 5, manjak, umor; MAR-04b (pouke 23 i 34): asOf PRE STARTA (start − 1/−3/−6) × umor, bol
+   5/8, pauza 10, rezultat. Po toku: prihvaćen (K1 = 0) i adaptInvariants prazno (nezavisno od validatora). */
 
 import { beforeAll, describe, expect, it } from 'vitest';
 import { adaptMarathonV2 } from './adapt.ts';
@@ -15,7 +15,9 @@ import {
   earlyAsOfs,
   earlyFacts,
   earlyGridBases,
-  type EarlyScenario
+  earlyPreAsOfs,
+  type EarlyScenario,
+  PRE_START_SCENARIOS
 } from './testInputs.ts';
 import type { MarathonV2Plan } from './types.ts';
 
@@ -27,6 +29,8 @@ export interface EarlyFlow {
   base: AdaptBase;
   asOf: string;
   s: EarlyScenario;
+  /** asOf pre starta (pouka 34). */
+  pre: boolean;
 }
 
 const plans = new Map<string, MarathonV2Plan>();
@@ -43,13 +47,17 @@ export const planOf = (b: AdaptBase): MarathonV2Plan => {
 
 export const EARLY_BASES: readonly AdaptBase[] = earlyGridBases(182, 78, 42);
 
-/** Tokovi mreže za date planove (redosled: plan, asOf, scenario). */
+/** Tokovi mreže za date planove (redosled: plan, asOf pre starta × PRE_START_SCENARIOS, asOf × scenario). */
 export function earlyFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
   const out: EarlyFlow[] = [];
-  for (const base of bases)
+  for (const base of bases) {
+    for (const a of earlyPreAsOfs(planOf(base)))
+      for (const s of PRE_START_SCENARIOS)
+        out.push({ key: `${base.id}/${a.tag}/${s}`, base, asOf: a.asOf, s, pre: true });
     for (const a of earlyAsOfs(planOf(base)))
       for (const s of EARLY_SCENARIOS)
-        out.push({ key: `${base.id}/${a.tag}/${s}`, base, asOf: a.asOf, s });
+        out.push({ key: `${base.id}/${a.tag}/${s}`, base, asOf: a.asOf, s, pre: false });
+  }
   return out;
 }
 

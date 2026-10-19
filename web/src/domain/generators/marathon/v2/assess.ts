@@ -5,6 +5,7 @@
    i A6 samo na pokrivenom delu; bol, umor, rezultat i eksplicitna pauza (facts.breaks) uvek. */
 
 import { addDays, dayNumber, mustDay } from './dates.ts';
+import { generateMarathonV2 } from './generate.ts';
 import type { PaceInput } from './input.ts';
 import { round1, vdotFromResult } from './paces.ts';
 import { isBuildPhase } from './periodize.ts';
@@ -22,7 +23,9 @@ import type {
   ResultDistanceM,
   ResultFact,
   MarathonV2AdaptStep,
+  MarathonV2Input,
   MarathonV2Plan,
+  PreStartRef,
   WorkoutFact
 } from './types.ts';
 
@@ -50,6 +53,21 @@ export function painReturnNote(step: MarathonV2AdaptStep, targetR10: number): st
       ? `${km(base / 10)} km (cilj nedelje ${rf.week}; ${rf.share * 100} % nivoa pre bola bilo bi ${km(a.base10 / 10)} km)`
       : `${rf.share * 100} % nivoa pre bola (${km(base / 10)} km)`;
   return ` Posle nedelje ${rf.week} rast kreće od ${from}.${growthNote(step.levelKm!)}`;
+}
+
+/** Pouka 34: referenca umora pre starta = nedelja 1 generatora bez činjenica (cilj, dugi, poslednja T doza; nema
+    prethodne izgradnje). Jedino mesto odluke; konstruktor, obim i validator je čitaju iz koraka (steps.preStartOf). */
+export function preStartRef(input: MarathonV2Input): PreStartRef | null {
+  const g = generateMarathonV2(input);
+  if (!g.ok) return null;
+  const w1 = g.plan.weeks[0]!;
+  const long = w1.days.find((d) => d.role === 'long');
+  const t = w1.days
+    .filter((d) => d.role === 'q1' || d.role === 'q2')
+    .map((d) => d.workout.dose)
+    .filter((d) => d?.zone === 'T')
+    .pop();
+  return long ? { targetKm: w1.targetKm, longKm: long.workout.km, tM: t?.doseM ?? 0 } : null;
 }
 
 export interface CheckedFacts {
@@ -405,14 +423,17 @@ export function assess(
   });
   if (easyHard.length >= A.fatigueCount) {
     const ok = !volumeRule && build(n) && !wk(n)!.deload;
+    // Pouka 34: asOf pre starta — nema prethodne izgradnje; referenca je nedelja 1 generatora bez činjenica.
+    const pre = ok && t < day(weeks[0]!.startDate) ? preStartRef(plan.input) : null;
     if (ok) {
       step.deload = true;
       volumeRule = true;
+      if (pre) step.preStart = pre;
     }
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? (pre ? `nedelja 1 je rasterećenje (A5; umor pre starta: 0,8 × planirane nedelje 1 od ${km(pre.targetKm)} km, nedelja 2 = ${km(pre.targetKm)} km bez rasta, pouka 34)` : `nedelja ${n} je rasterećenje (A5)`) : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
     );
   }
 

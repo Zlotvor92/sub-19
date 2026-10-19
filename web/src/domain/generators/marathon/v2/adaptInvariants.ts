@@ -139,11 +139,13 @@ export function adaptInvariants(
     for (const d of w.days)
       if (d.workout.km <= 0 || d.workout.segments.length === 0)
         bad.push(`prazan trening ${d.date}`);
-    // Pouka 28: dugi ≤ max(1,1 × L; L + 1,0), L = najduži dugi prethodne 4 nedelje (+ skorašnji za ned 1–4).
+    // Pouka 28: dugi ≤ max(1,1 × L; L + 1,0), L = najduži dugi prethodne 4 nedelje (+ skorašnji za ned 1–4; pouka
+    // 34: posle umora pre starta i dugi reference — nedelja 1 generatora, iz koraka).
     const l10 = longs10[w.index - 1];
     if (l10 !== null && l10 !== undefined && long && !locked.has(long.date)) {
       const prev = [
         ...(w.index <= 4 && recent != null ? [k10(recent)] : []),
+        ...(w.index <= 4 ? steps.flatMap((x) => (x.preStart ? [k10(x.preStart.longKm)] : [])) : []),
         ...longs10.slice(Math.max(0, w.index - 5), w.index - 1)
       ].filter((x): x is number => x !== null);
       if (prev.length > 0) {

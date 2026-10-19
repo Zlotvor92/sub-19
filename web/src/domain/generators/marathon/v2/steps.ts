@@ -16,6 +16,7 @@ import type {
   PaceBasis,
   Paces,
   Pattern,
+  PreStartRef,
   WeekFrame,
   WeekLimits,
   Weekday
@@ -38,6 +39,25 @@ export const basePaces = (pace: PaceInput, currentWeeklyKm: number): Paces =>
   pace.kind === 'feel'
     ? feelPaces(pace.easySecPerKm, currentWeeklyKm).paces
     : pacesFromVdot(pace.vdotRaw, currentWeeklyKm);
+
+/** Pouka 34 (MAR-04b): referenca umora pre starta (poslednji korak koji je nosi) ili null. JEDNO mesto čitanja za
+    konstruktor (stanje pre nedelje 1), obim (volume.adaptVolume) i validator. */
+export function preStartOf(steps: readonly { preStart?: PreStartRef }[]): PreStartRef | null {
+  let r: PreStartRef | null = null;
+  for (const s of steps) if (s.preStart) r = s.preStart;
+  return r;
+}
+
+/** M13a (pouka 34): skorašnji najduži trk kao dugi „nedelje 0" — iz ulaza, a posle umora pre starta i dugi
+    reference (najveći); konstruktor i validator (plafon skoka). Napomene nedelje 1 (M13a) čitaju samo ulaz. */
+export function jumpRecentKm(
+  recentLongRunKm: number | null | undefined,
+  steps: readonly { preStart?: PreStartRef }[]
+): number | null {
+  const r = recentLongRunKm ?? null;
+  const pre = preStartOf(steps);
+  return pre === null ? r : Math.max(r ?? 0, pre.longKm);
+}
 
 /** A1: VDOT poslednjeg koraka sa rezultatom čiji je fromWeek ≤ w; null = tempo iz ulaza. */
 export function stepVdotAt(steps: readonly MarathonV2AdaptStep[], w: number): number | null {

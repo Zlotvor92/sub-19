@@ -168,13 +168,55 @@ export function taperLengths(
   jump10: number | null = null,
   adapted = false
 ): Lengths | null {
-  const rule10 = Math.min(
-    longCap10(target10, rule, p),
-    Math.floor(P.taper.weeks[step]!.longFactor * longest10 + EPS)
-  );
+  const rule10 = taperRule10(target10, longest10, step, rule, p);
   const cap10 = adapted ? Math.max(EASY_MIN10, rule10) : rule10;
   const len = withEasy(target10 * 10 - quality100, cap10, easyDays, jump10);
   return len && len.long10 > rule10 ? { ...len, raised: true } : len;
+}
+
+/** M7: dugi tapera po pravilu [0,1 km] — ≤ udeo × najduži dugi plana i ≤ M13. */
+function taperRule10(
+  target10: number,
+  longest10: number,
+  step: number,
+  rule: DayRule,
+  p: Paces
+): number {
+  return Math.min(
+    longCap10(target10, rule, p),
+    Math.floor(P.taper.weeks[step]!.longFactor * longest10 + EPS)
+  );
+}
+
+/** Pouka 32: najduži dozvoljen dugi nedelje tapera [0,1 km] (taperLengths bez laganih) — poređenje drugog člana
+    plafona zone kad nedelja sa tim danom nema izvodljive dužine. */
+export function taperTop10(
+  target10: number,
+  longest10: number,
+  step: number,
+  rule: DayRule,
+  p: Paces,
+  jump10: number | null,
+  adapted: boolean
+): number {
+  const rule10 = taperRule10(target10, longest10, step, rule, p);
+  return Math.min(adapted ? Math.max(EASY_MIN10, rule10) : rule10, jump10 ?? Infinity);
+}
+
+/** Pouka 32: najduži dozvoljen dugi nedelje rasterećenja [0,1 km] (deloadLengths bez laganih). */
+export function deloadTop10(
+  target10: number,
+  lastLong10: number,
+  rule: DayRule,
+  p: Paces,
+  jump10: number | null,
+  adapted: boolean
+): number {
+  const rule10 = Math.min(
+    Math.floor(P.deload.longFactor * lastLong10 + EPS),
+    longCap10(target10, rule, p)
+  );
+  return Math.min(adapted ? Math.max(EASY_MIN10, rule10) : rule10, jump10 ?? Infinity);
 }
 
 /** M5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ M13); ostatak na `easyDays` jednakih

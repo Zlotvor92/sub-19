@@ -593,7 +593,9 @@ export const EARLY_SCENARIOS = [
   'under',
   'fatigue'
 ] as const;
-export type EarlyScenario = (typeof EARLY_SCENARIOS)[number];
+/** Scenariji rane adaptacije sa asOf PRE STARTA (pouke 23 i 34, MAR-04b): umor, bol 5/8, pauza 10, rezultat. */
+export const PRE_START_SCENARIOS = ['fatigue', 'pain5', 'pain8', 'pause10', 'result'] as const;
+export type EarlyScenario = (typeof EARLY_SCENARIOS)[number] | 'result';
 
 /** Činjenice mreže E (asOf = dan adaptacije): pauza 10/20 (breaks do asOf), bol 5/8 na dan asOf, pauza 10 + bol 5,
     manjak (odrađen samo dan asOf − 6 po planu, pokrivenost asOf − 6 … asOf), umor (2 lagana van plana, RPE 8). */
@@ -627,7 +629,23 @@ export function earlyFacts(
           { date: back(3), km: 8, durationSec: 3000, completed: true, rpe: 8 }
         ]
       };
+    case 'result':
+      return {
+        results: [
+          {
+            distM: 10000,
+            sec: timeForVdot(Math.min(80, Math.round((plan.vdot + 2) * 10) / 10), 10000),
+            date: asOf,
+            kind: 'race'
+          }
+        ]
+      };
   }
+}
+
+/** asOf mreže E PRE STARTA (pouke 23 i 34): start − 1, − 3, − 6. Oznaka `s-<n>`. */
+export function earlyPreAsOfs(p: PlanLike): { tag: string; asOf: string }[] {
+  return [1, 3, 6].map((n) => ({ tag: `s-${n}`, asOf: addDays(p.input.startDate, -n) }));
 }
 
 /** asOf mreže E po planu: sreda i kraj nedelje 1, sreda svake nedelje 2 … N − 1 i kraj nedelje pre svake posebne

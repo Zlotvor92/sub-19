@@ -415,6 +415,18 @@ export interface MarathonV2AdaptStep {
   /** A17 (pouka 22): cilj koraka (startKm) je smanjenje — true: A2 (manjak) ili A3 (pauza); false: A6
       (višak). Korak bez startKm: polja nema. */
   reduced?: boolean;
+  /** A5 (pouka 34, MAR-04b): umor sa asOf pre starta — referenca prinudnog rasterećenja nedelje 1 = nedelja 1
+      generatora bez činjenica (cilj [km], dugi [km], poslednja T doza [m]; nema prethodne izgradnje). Ned 1 =
+      0,8 × cilj reference, ned 2 = cilj reference (bez rasta), dalje po rasporedu; dugi reference ulazi u L
+      (M13a) kao nedelja 0. Korak bez umora pre starta: polja nema. */
+  preStart?: PreStartRef;
+}
+
+/** Pouka 34: referenca umora pre starta (nedelja 1 generatora bez činjenica). */
+export interface PreStartRef {
+  targetKm: number;
+  longKm: number;
+  tM: number;
 }
 
 export interface MarathonV2Adaptation {

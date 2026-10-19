@@ -12,6 +12,8 @@ import { generateMarathonV2 } from './generate.ts';
 import { longTimeCap10 } from './lengths.ts';
 import { raceTimeForVdot, vdotFromResult } from './paces.ts';
 import { MARATHON_V2_POLICY as P, planRule } from './policy.ts';
+import type { PlanDay } from './types.ts';
+import { doseOf, ladderLevels } from './workouts.ts';
 import {
   gridInputs,
   type GridInput,
@@ -32,6 +34,12 @@ export const BASELINE_02 = join(HERE, 'segment02.baseline.json');
     menja piramida M10a (artifacts/segment-02/regression-01.ts). */
 export const REGRESSION_01 = join(HERE, 'segment02.regression-01.json');
 export const BASELINE_01 = join(HERE, 'segment01.baseline.json');
+/** MAR-04b (pouka 32 za sve zone, marathon-v2.3.1): planovi mreža 02, 03 po osećaju i 03 početnika BEZ ijednog dana
+    kvaliteta dužeg od dugog na bd07eec (marathon-v2.3.0; docs/marathon-v2/artifacts/segment-04b/measure.ts) —
+    bajt-isti prema baznim linijama; ostali (dan kvaliteta duži od dugog na bd07eec) jedini smeju da se promene. */
+export const STABLE = new Set(
+  JSON.parse(readFileSync(join(HERE, 'segment04b.stable-bd07eec.json'), 'utf8')) as string[]
+);
 
 export const ALL: readonly GridInput[] = gridInputs();
 
@@ -218,7 +226,46 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
   const races = W.flatMap((w) => w.days.filter((d) => d.role === 'race'));
   if (races.length !== 1 || races[0]!.date !== p.input.raceDate || races[0]!.countsToWeek)
     no('trka');
+  // Pouka 32 (MAR-04b): dan kvaliteta iznad najniže doze zone nikad duži od dugog iste nedelje.
+  for (const x of overLong(p).above) no(`pouka 32: ${x}`);
   return bad;
+}
+
+/** Pouka 32 (MAR-04b), nezavisno od konstruktora: najmanja doza zone u kontekstu — izgradnja: prvi nivo lestvice
+    (početnik T kont. 1,5 km); rasterećenje i taper: najmanja doza (T 2,0 km, početnik 1,5 km; MP 2 × 3000 m). */
+function lowestM(d: NonNullable<PlanDay['workout']['dose']>, beginner: boolean): number {
+  if (d.step === 'deload' || d.step === 'taper')
+    return d.zone === 'MP'
+      ? doseOf(P.taper.mpMin)
+      : Math.round((beginner ? P.beginner.tFirstKm : P.deload.tMinKm) * 1000);
+  return doseOf(ladderLevels(d.ladder as never, beginner)[0]!);
+}
+
+/** Pouka 32: dani kvaliteta duži od dugog iste nedelje — iznad najniže doze zone (mora biti 0) i najniži
+    (izuzetak, upozorenje). Trajanje dana: segmenti plana, džog zadat metrima sporim E. */
+export function overLong(p: MarathonV2Plan): { above: string[]; lowest: string[] } {
+  const beginner = p.input.experience === 'beginner';
+  const out = { above: [] as string[], lowest: [] as string[] };
+  for (const w of p.weeks) {
+    const long = w.days.find((d) => d.role === 'long');
+    if (w.phase === 'race' || !long) continue;
+    for (const d of w.days) {
+      const dz = d.workout.dose;
+      if (d.workout.kind !== 'quality' || !dz) continue;
+      const sec = d.workout.segments.reduce(
+        (a, g) =>
+          a +
+          (g.kind === 'recovery' && g.kmBasis === 'exact'
+            ? Math.round(g.km * p.paces.E.slow)
+            : g.sec),
+        0
+      );
+      if (sec <= long.workout.sec) continue;
+      const tag = `ned ${w.index} ${dz.zone} ${dz.doseM} m ${Math.round(sec / 60)} > ${Math.round(long.workout.sec / 60)} min`;
+      (dz.doseM <= lowestM(dz, beginner) ? out.lowest : out.above).push(tag);
+    }
+  }
+  return out;
 }
 
 const EASY_FRACTION_FAST = 0.7;
@@ -376,8 +423,13 @@ export function describeGrid(
       }
       const base = JSON.parse(readFileSync(baseline, 'utf8')) as Record<string, string>;
       expect(Object.keys(base)).toHaveLength(all.length);
-      const diff = Object.entries(rows).filter(([id, row]) => base[id] !== row);
+      // MAR-04b: menja se samo plan sa danom kvaliteta dužim od dugog na bd07eec (STABLE = ostali); vrh ne pada.
+      const diff = Object.entries(rows).filter(([id, row]) => base[id] !== row && STABLE.has(id));
       expect(diff.slice(0, 10)).toEqual([]);
+      const lower = Object.entries(rows).filter(
+        ([id, row]) => Number(row.split('|')[0]) < Number(base[id]!.split('|')[0])
+      );
+      expect(lower.slice(0, 10)).toEqual([]);
     });
 
     if (withResult)
@@ -389,6 +441,8 @@ export function describeGrid(
           const row = base[id]!;
           const longer = row.split('|')[8]!.split('.').includes('LONG_SHORTER_THAN_QUALITY');
           const same = planHash02(p) === row.split('|').pop() && fields(rowOf(p)) === fields(row);
+          // MAR-04b: plan sa danom kvaliteta dužim od dugog na bd07eec (van STABLE) sme da se promeni.
+          if (!STABLE.has(id)) continue;
           if (same === longer) bad.push(id);
           if (p.warnings.some((w) => w.rule === 'LONG_SHORTER_THAN_QUALITY'))
             bad.push(`kval > dugi ${id}`);
@@ -409,7 +463,8 @@ export function describeGrid(
         const bad: string[] = [];
         const fields = (row: string): string => row.split('|').slice(0, -1).join('|');
         for (const [id, p] of run.plans) {
-          if (!id.startsWith('d4-')) continue;
+          // MAR-04b: plan sa danom kvaliteta dužim od dugog na bd07eec (van STABLE) sme da se promeni.
+          if (!id.startsWith('d4-') || !STABLE.has(id)) continue;
           const old = id.slice(3);
           const why = pyr.has(old) || jump.has(old);
           const bound = p.weeks.some((w) => w.notes.some((n) => n.includes('plafon skoka')));

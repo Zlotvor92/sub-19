@@ -1,0 +1,203 @@
+{
+  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-04b/sabotage.json",
+  "head": "bd07eec",
+  "level": "brz",
+  "bail": true,
+  "parallel": 2,
+  "vitestArgs": [],
+  "durationS": 19.1,
+  "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+  "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "B1 drugi član samo za MP (T/I/R bez trajanja dana)",
+      "files": ["src/domain/generators/marathon/v2/week.ts"],
+      "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/dayCap.node.test.ts",
+        "test": "pouka 32 za sve zone (MAR-04b): dan iznad najnižeg nivoa nikad duži od dugog > dense-d6-50km-v77.5",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "hashSabotaged": "47cf1a9035f4860fe7618c4376f96fed5efd07980fa686e88e132f6126ba0c2b",
+      "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 3.1
+    },
+    {
+      "index": 2,
+      "name": "B2 najniži nivo zone nije izuzet od drugog člana",
+      "files": ["src/domain/generators/marathon/v2/week.ts"],
+      "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/dayCap.node.test.ts",
+        "test": "pouka 32 za sve zone (MAR-04b): dan iznad najnižeg nivoa nikad duži od dugog > recent-d4-16w-35km-v70-B-r6",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "hashSabotaged": "caab04a57cefe53ba8e762411854e6fe2f06d00360073b2e41d5c961a2cce4d4",
+      "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 3.1
+    },
+    {
+      "index": 3,
+      "name": "B3 validator bez iste funkcije (plafon slota samo M11)",
+      "files": ["src/domain/generators/marathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/dayCap.node.test.ts",
+        "test": "pouka 32 za sve zone (MAR-04b): dan iznad najnižeg nivoa nikad duži od dugog > dense-d6-50km-v77.5",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "hashSabotaged": "8ab9f8d3ec3da75d9366066759b8d235e8889cedda5a661d8dcd40d7f1a4cf02",
+      "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2.4
+    },
+    {
+      "index": 4,
+      "name": "B4 validator rasterećenja bez drugog člana",
+      "files": ["src/domain/generators/marathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/dayCap.node.test.ts",
+        "test": "pouka 32 za sve zone (MAR-04b): dan iznad najnižeg nivoa nikad duži od dugog > recent-d5-16w-50km-v70-C-r10",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "hashSabotaged": "8c35aef213c95542b39e656c87299f5e0175d943679966940dd5fc0dba90ba3f",
+      "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 3.3
+    },
+    {
+      "index": 5,
+      "name": "N1a umor pre starta bez reference generatora",
+      "files": ["src/domain/generators/marathon/v2/assess.ts"],
+      "tests": ["src/domain/generators/marathon/v2/preStart.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/preStart.node.test.ts",
+        "test": "N1: umor pre starta (pouka 34) > d3-12w-30km-v30-A-sat, asOf start − 1",
+        "message": "Error: [{\"code\":\"WEEK_INFEASIBLE\",\"message\":\"Nedelja 1: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.\",\"week\":1}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "hashSabotaged": "6ea7cd5958e3dc2d84cfca8315b356f429fbea17d17754a0198296074fd563d2",
+      "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2.6
+    },
+    {
+      "index": 6,
+      "name": "N1b nedelja 2 posle umora pre starta raste (bez cilja reference)",
+      "files": ["src/domain/generators/marathon/v2/volume.ts"],
+      "tests": ["src/domain/generators/marathon/v2/preStart.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/preStart.node.test.ts",
+        "test": "N1: umor pre starta (pouka 34) > d3-12w-30km-v30-A-sat, asOf start − 1",
+        "message": "AssertionError: expected [ 31.8, false ] to deeply equal [ 30, false ]"
+      },
+      "failedCount": 1,
+      "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "hashSabotaged": "b0dad7dd9474af53ce4e2812e945d4e6d5094be919ada0e676ea703ba7383336",
+      "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2.3
+    },
+    {
+      "index": 7,
+      "name": "N2 BASE_PLATEAU preskače T slot nedelje testa",
+      "files": ["src/domain/generators/marathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/marathon/v2/preStart.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/preStart.node.test.ts",
+        "test": "N2: BASE_PLATEAU posle nedelje testa (pouka 23) > feel-d4-24w-45km-e270-B, pauza 35 sreda ned 2 (nov start): prihvaćen; T slot preko nedelje testa menja strukturu",
+        "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"BASE_PLATEAU: Baza: T doza 3000 m bez rasta ili druge strukture (M12).\",\"week\":9}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "hashSabotaged": "48e9103b67806e2e840e3470353862e6ddbd594148c38013bb84304fb4d06aa0",
+      "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 3.7
+    },
+    {
+      "index": 8,
+      "name": "B5 izuzetak IDENTICAL_WEEKS bez uslova (3) (sledeći nivo staje)",
+      "files": ["src/domain/generators/marathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/dayCap.node.test.ts",
+        "test": "IDENTICAL_WEEKS uz pouku 32 (odluka organizatora MAR-04b, sudar 1) > negativno: kad sledeći nivo staje (veći cilj nedelje → duži dugi iste nedelje), isto ponavljanje je greška",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "hashSabotaged": "b85262103303b79fe8d3334dcde0d6ff348b641129d5f6dd94ab86858b4b4ddb",
+      "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.5
+    },
+    {
+      "index": 9,
+      "name": "B6 izuzetak IDENTICAL_WEEKS bez uslova (2') (druga struktura staje)",
+      "files": ["src/domain/generators/marathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/dayCap.node.test.ts",
+        "test": "IDENTICAL_WEEKS uz pouku 32 (odluka organizatora MAR-04b, sudar 1) > T 2,0 km (nije najniži): 2 × 1000 m duže od dugog, 3,0 km iznad M11 → upozorenje; kad druga struktura staje → greška (uslov 2')",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "hashSabotaged": "b05c233f56a2868c8f27720287adeccb28b02acfe4100cbdf85ada7311762152",
+      "hashAfter": "9a953b0d6f71da0eaa64b745377f033d5fd50649dc167634d0dace60e7c70086",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 5.5
+    }
+  ]
+}

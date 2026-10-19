@@ -18,7 +18,16 @@ import { assessGoal, predictedMarathon } from './paces.ts';
 import { isBuildPhase, periodize, taperStep } from './periodize.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type Picks, type QualityState } from './quality.ts';
-import { basePaces, basisAt, framesFor, pacesAt, restartWeeks, stepVdotAt } from './steps.ts';
+import {
+  basePaces,
+  basisAt,
+  framesFor,
+  jumpRecentKm,
+  pacesAt,
+  preStartOf,
+  restartWeeks,
+  stepVdotAt
+} from './steps.ts';
 import type {
   GenerateResult,
   MarathonV2AdaptStep,
@@ -126,6 +135,9 @@ export function construct(
     feel
   };
   const recent = input.recentLongRunKm ?? null;
+  // Pouka 34: posle umora pre starta dugi reference (ned 1 generatora) je i „nedelja 0" plafona skoka M13a.
+  const recentJ = jumpRecentKm(recent, steps);
+  const pre = preStartOf(steps);
   const start10 = startKm10(km);
   const cap10 = peakCap10(start10, rule);
   const av = adapted ? adaptVolume(steps) : null;
@@ -140,9 +152,11 @@ export function construct(
   };
   const restarts = restartWeeks(steps);
 
-  let quality: QualityState = INITIAL_QUALITY;
+  // Pouka 34: umor pre starta — prinudno rasterećenje nedelje 1 iz reference (ned 1 generatora bez činjenica):
+  // poslednji dugi i poslednja T doza (M5); progresija doze od ned 2 kreće od početnog nivoa (kao planirana ned 1).
+  let quality: QualityState = pre ? { ...INITIAL_QUALITY, t: pre.tM } : INITIAL_QUALITY;
   let h = initialAdaptHistory(cap10);
-  let lastLong10: number | null = null;
+  let lastLong10: number | null = pre ? Math.round(pre.longKm * 10) : null;
   /** Prošlost = upisani dani (pouka 29): dani nedelja kakvi se upisuju — iz njih najduži dugi (M7), dugi
       prethodnih nedelja (M13a), poslednji dugi (M5), stanje doze i N−1 za trkačku nedelju (M8). */
   const written: { days: readonly PlanDay[] }[] = [];
@@ -191,7 +205,7 @@ export function construct(
       : { nominal: nominal10(frame, h, start10, cap10, taper, rule), downOnly: false };
     const longest10 = longestLong10(written);
     const longs10 = longsOf(written);
-    const jump10 = longJumpCap10(longs10, frame.index, recent);
+    const jump10 = longJumpCap10(longs10, frame.index, recentJ);
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(ctx, frame, t10, quality, lastLong10, longest10, taper, mode, jump10);
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
@@ -231,8 +245,17 @@ export function construct(
         break;
       }
     }
-    if (!fit && recent !== null)
-      return recentTooShort(recent, km, input.runDays.length, weeks, frame.index);
+    // M13a (pouka 6): RECENT_LONG_TOO_SHORT samo kad je uzrok zaista skok dugog iz ulaza — isti plan bez
+    // skorašnjeg najdužeg trka ne zastaje na ovoj ni ranijoj nedelji; inače WEEK_INFEASIBLE (MAR-04b: umor pre
+    // starta je odbijan sa ovom porukom, a uzrok je bio nedostatak reference rasterećenja).
+    if (!fit && recent !== null) {
+      const { recentLongRunKm: _r, ...noRecent } = input;
+      const alt = construct(noRecent, steps, prior);
+      const stuck =
+        !alt.ok &&
+        alt.reasons.some((x) => x.code === 'WEEK_INFEASIBLE' && (x.week ?? 0) <= frame.index);
+      if (!stuck) return recentTooShort(recent, km, input.runDays.length, weeks, frame.index);
+    }
     if (!fit)
       return infeasible(
         `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
@@ -246,9 +269,10 @@ export function construct(
       );
     // M13a: dugi na plafonu skoka; bez skorašnjeg najdužeg trka — napomena nedelje 1 sa pragom.
     if (w.jumpBound && w.long10 !== null)
-      notes.push(longJumpNote(w.long10, jumpBase10(longs10, frame.index, recent)!));
+      notes.push(longJumpNote(w.long10, jumpBase10(longs10, frame.index, recentJ)!));
+    // Pouka 34: posle umora pre starta prag čita dugi reference (planirana ned 1), ne dugi rasterećenja.
     if (frame.index === 1 && recent === null && w.long10 !== null)
-      notes.push(recentLongNote(w.long10));
+      notes.push(recentLongNote(Math.max(w.long10, pre ? Math.round(pre.longKm * 10) : 0)));
     // A9/A13: test koji ne staje otpada sa kvalitetom (oznaka nedelje ⇔ dan testa).
     const { test: _test, ...noTest } = frame;
     out.push({
@@ -333,9 +357,9 @@ export function construct(
     plan.notes.push(
       `Rezultat 5 km: maratonska prognoza iz kratke trke je nesigurnija; MP iz VDOT ${fmtKm(paces.mpVdot)} (M1, M2).`
     );
-  if (capacityWeeks(seen, rule, pN, recent).length > 0)
+  if (capacityWeeks(seen, rule, pN, recentJ).length > 0)
     plan.notes.push(
-      `${capacityMessage(input.runDays.length, rule, capacityLimits(seen, rule, pN, recent))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (M6).`
+      `${capacityMessage(input.runDays.length, rule, capacityLimits(seen, rule, pN, recentJ))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (M6).`
     );
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)

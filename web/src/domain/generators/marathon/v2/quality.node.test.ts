@@ -7,8 +7,9 @@ import {
   carries,
   deloadSlot,
   ladderFor,
+  type DayFits,
+  fitsDay,
   otherStructure,
-  mpFitsLong,
   pickBuild,
   pickDeload,
   pickSlot,
@@ -18,7 +19,16 @@ import {
   type QualityState
 } from './quality.ts';
 import type { Structure } from './types.ts';
-import { doseOf, pyramidOf, recoveryOf, structuresForDose, warmupCooldown } from './workouts.ts';
+import {
+  doseOf,
+  longWorkout,
+  pyramidOf,
+  qualityDaySec,
+  recoveryOf,
+  structuresForDose,
+  warmupCooldown,
+  zoneOf
+} from './workouts.ts';
 
 /* M10 lestvice i druga struktura, M11 plafon, M12 progresija, M5/M7 doza rasterećenja i tapera, M14. */
 
@@ -288,32 +298,79 @@ describe('M5 rasterećenje i M7 taper', () => {
   });
 });
 
-describe('M11 plafon MP, drugi član (pouka 14, odluka organizatora MAR-03)', () => {
+describe('M11 plafon zone, drugi član (pouka 32; MAR-03 za MP, MAR-04b za sve zone)', () => {
   const slow = pacesFromVdot(30, 55);
   const wc = warmupCooldown(55);
-  it('mpFitsLong: MP dan (WU + MP + oporavci + CD) ≤ trajanje dugog', () => {
+  /** Predikat drugog člana prema dugom `long10` [0,1 km] (week.ts gradi isti iz nedelje). */
+  const fitsLong =
+    (long10: number): DayFits =>
+    (ladder, s, exempt) =>
+      exempt ||
+      qualityDaySec(
+        { ladder, zone: zoneOf(ladder), doseM: doseOf(s), structure: s, step: 'next' },
+        slow,
+        wc
+      ) <= longWorkout(long10 / 10, slow).sec;
+  it('fitsDay: dan (WU + rad + oporavci + CD) ≤ trajanje dugog; najniži nivo zone izuzet', () => {
     // VDOT 30, dugi na 150 min sporim E: 16 km MP kontinuirano ne staje, 2 × 7000 m staje.
     const long10 = Math.floor((9000 / slow.E.slow) * 10);
-    expect(mpFitsLong({ form: 'continuous', km: 16 }, long10, slow, wc)).toBe(false);
-    expect(mpFitsLong(reps(2, 7000), long10, slow, wc)).toBe(true);
-    // Najniži nivo MP (2 × 3000 m) izuzet od drugog člana (odluka MAR-03, M13a); 2 × 4000 m nije.
-    expect(mpFitsLong(reps(2, 3000), 60, slow, wc)).toBe(true);
-    expect(mpFitsLong({ form: 'continuous', km: 6 }, 60, slow, wc)).toBe(true);
-    expect(mpFitsLong(reps(2, 4000), 60, slow, wc)).toBe(false);
+    expect(fitsDay('MP', { form: 'continuous', km: 16 }, false, fitsLong(long10))).toBe(false);
+    expect(fitsDay('MP', reps(2, 7000), false, fitsLong(long10))).toBe(true);
+    // Najniži nivo (MP 2 × 3000 m; T kont. 2,0 km; početnik 1,5 km; R 6 × 200 m) izuzet; prvi viši nivo nije.
+    expect(fitsDay('MP', reps(2, 3000), false, fitsLong(60))).toBe(true);
+    expect(fitsDay('MP', { form: 'continuous', km: 6 }, false, fitsLong(60))).toBe(true);
+    expect(fitsDay('MP', reps(2, 4000), false, fitsLong(60))).toBe(false);
+    expect(fitsDay('T_continuous', cont(2), false, fitsLong(40))).toBe(true);
+    expect(fitsDay('T_continuous', cont(3), false, fitsLong(40))).toBe(false);
+    expect(fitsDay('T_continuous', cont(1.5), true, fitsLong(30))).toBe(true);
+    expect(fitsDay('T_continuous', cont(2), true, fitsLong(30))).toBe(false);
+    expect(fitsDay('R', reps(6, 200), false, fitsLong(30))).toBe(true);
+    expect(fitsDay('R', reps(8, 200), false, fitsLong(30))).toBe(false);
+    // Bez predikata član ne postoji.
+    expect(fitsDay('T_continuous', cont(8), false)).toBe(true);
   });
 
-  it('pickSlot: sledeći nivo koji ne staje u trajanje dugog se ne uzima (ista doza druge strukture); bez strukture koja staje — najviši nivo koji staje (drop)', () => {
+  it('pickSlot: sledeći nivo koji ne staje u trajanje dugog se ne uzima (ista doza druge strukture); bez strukture koja staje — najviši nivo koji staje (drop); ista pravila za T/I/R', () => {
     const long10 = Math.floor((9000 / slow.E.slow) * 10);
-    const fits = (s: Structure): boolean => mpFitsLong(s, long10, slow, wc);
     const prev = slot('MP', reps(2, 7000));
-    const d = pickSlot(prev, 'MP', 90, slow, false, false, false, fits)!;
+    const d = pickSlot(prev, 'MP', 90, slow, false, false, false, fitsLong(long10))!;
     expect([d.doseM, d.step]).toEqual([14000, 'alt']);
     const d2 = pickSlot(prev, 'MP', 90, slow, false, false, false, () => false);
     expect(d2).toBeNull();
-    const tight = (s: Structure): boolean => doseOf(s) <= 10000;
+    const tight: DayFits = (_l, s) => doseOf(s) <= 10000;
     const d3 = pickSlot(prev, 'MP', 90, slow, false, false, false, tight)!;
     expect([d3.doseM, d3.step]).toEqual([10000, 'drop']);
     // Bez drugog člana: 16 km (isto kao marathon-v2.1.0).
     expect(pickSlot(prev, 'MP', 90, slow)!.doseM).toBe(16000);
+    // T kontinuirano: 4,0 → sledeći nivo 5,0 km i ista doza 4,0 km duži od dugog 7,0 km → najviši nivo koji staje (pad).
+    const t = pickSlot(
+      slot('T_continuous', cont(4)),
+      'T_continuous',
+      80,
+      slow,
+      false,
+      false,
+      false,
+      fitsLong(70)
+    )!;
+    expect(t.step).toBe('drop');
+    expect(fitsDay('T_continuous', t.structure, false, fitsLong(70))).toBe(true);
+    expect(pickSlot(slot('T_continuous', cont(4)), 'T_continuous', 80, slow)!.doseM).toBe(5000);
+  });
+
+  it('pickDeload i taperDoses: doza duža od dugog spušta se po lestvici, najmanja doza izuzeta (M7a: MP 2 × 3000 m)', () => {
+    const st: QualityState = {
+      q1: slot('MP', reps(2, 7000)),
+      q2: slot('T_cruise', reps(5, 1600)),
+      t: 8000
+    };
+    const rule = pickDeload(st, 'specific', 80)!;
+    const low = pickDeload(st, 'specific', 80, false, fitsLong(40))!;
+    expect(low.doseM).toBeLessThan(rule.doseM);
+    expect(pickDeload(st, 'specific', 80, false, () => false)!.doseM).toBe(2000);
+    const t0 = taperDoses(st, 0, 2);
+    const t1 = taperDoses(st, 0, 2, false, { q1: () => false, q2: () => () => false });
+    expect(doseOf(t0.mp!)).toBeGreaterThan(6000);
+    expect([doseOf(t1.mp!), doseOf(t1.t!)]).toEqual([6000, 2000]);
   });
 });

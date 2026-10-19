@@ -64,7 +64,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'M7a',
-    rule: 'M7 ispred M11 samo u taperu: MP doza tapera je doza iz M7 (≈ 60 % / 50 % poslednje doze, minimum 2 × 3000 m) i plafon MP 20 % (M11) se na nju ne primenjuje; jedini izuzetak od M11 u izgradnji/taperu. Napomena nedelje + upozorenje TAPER_MP_OVER_CAP. Ne važi za početnika u N−1 (M17: bez MP).',
+    rule: 'M7 ispred M11 samo u taperu: MP doza tapera je doza iz M7 (≈ 60 % / 50 % poslednje doze, minimum 2 × 3000 m) i plafon MP 20 % (M11) se na nju ne primenjuje; jedini izuzetak od M11 u izgradnji/taperu. Napomena nedelje + upozorenje TAPER_MP_OVER_CAP. Ne važi za početnika u N−1 (M17: bez MP). Drugi član plafona zone (pouka 32, MAR-04b) važi i u taperu: MP čiji bi dan bio duži od dugog tapera spušta se po lestvici, ne ispod 2 × 3000 m (izuzet).',
     place:
       'quality.ts (taperDoses — jedina funkcija doze tapera, čitaju je pickTaper i validate.ts; pouka 24); validate.ts (ZONE_CAP bez MP u taperu, TAPER_QUALITY)',
     rationale:
@@ -100,18 +100,18 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'M11',
-    rule: 'Jedan plafon po zoni, po treningu, % ciljnog obima nedelje: R 5 %, I 8 %, T 10 %, MP 20 %. Plafon MP u izgradnji je JEDNA funkcija sa dva člana (odluka organizatora MAR-03, pouka 14): min(20 % cilja; najveća MP doza čiji kvalitetni dan — WU + MP + oporavci + CD, WU/CD srednjim E — ne traje duže od najdužeg dozvoljenog dugog iste nedelje: udeo M15, 150 min M13, skok M13a). MP doza = najviši nivo (ili druga struktura iste doze) u tom plafonu; pad doze zbog drugog člana dozvoljen kao kod kapaciteta (pouka 12, napomena „plafon MP, pouka 14", DOSE_DROPPED); nedelja čiji je dugi kraći od najdužeg dozvoljenog (lagani ≥ 5 km) pa bi MP dan bio duži nije izvodljiva (najbliži izvodljiv cilj, M6). Najniži nivo MP (2 × 3000 m) je izuzet od drugog člana (kao minimum M7a; prvi član važi): kad je dugi na plafonu skoka M13a, MP dan sme biti duži uz upozorenje LONG_SHORTER_THAN_QUALITY. Ostale zone nemaju drugi član, samo upozorenje (pouka 14): za njih bi sudario pouku 9 u ned 1 (VOLUME_START, 58 planova guste ned 1). U taperu M7a.',
+    rule: 'Jedan plafon po zoni, po treningu, % ciljnog obima nedelje: R 5 %, I 8 %, T 10 %, MP 20 %. Plafon zone (R, I, T kont., T cruise, MP) je JEDNA funkcija sa dva člana (pouka 32; MAR-03 za MP, MAR-04b za sve zone, odluka organizatora): min(udeo cilja; najveća doza čiji dan kvaliteta — WU + rad + oporavci + CD, džog zadat metrima sporim E — ne traje duže od dugog iste nedelje). Dugi iste nedelje = dužina dugog nedelje sa tim danom (i drugim danom kvaliteta; A4: posle ograničenja dana bola); kad nedelja sa tim danom nema izvodljive dužine, najduži dozvoljen dugi nedelje (udeo M15, 150 min M13, skok M13a; izvodljivost odlučuje pretraga cilja M6). Izgradnja: Q1 uz Q2 najnižeg nivoa (struktura sa najviše km), Q2 uz izabran Q1 (ili test M16). Rasterećenje i jedan kvalitet doze rasterećenja (A4/A9): T ≈ 60 % spušta se po lestvici. Taper (kao HM-03b): MP uz T na najmanjoj dozi, pa T uz izabran MP, spuštanje po lestvici; minimum MP tapera 2 × 3000 m ostaje (M7a). M11 odlučuje izvodljivost na dozi po pravilu (kao pre); pad doze zbog drugog člana je izuzetak „doza ne opada" (pouka 12): drop + napomena („plafon zone, pouka 32"; MP: „plafon MP, pouka 14") + DOSE_DROPPED; rasterećenje/taper: napomena „… umesto … (pouka 32, plafon zone)". Najniži nivo zone (izgradnja: prvi nivo lestvice, početnik T 1,5 km; rasterećenje/taper: najmanja doza) je izuzet — sme biti duži od dugog uz upozorenje LONG_SHORTER_THAN_QUALITY (izgradnja i rasterećenje). Validator čita istu funkciju (DOSE_DROP, DOSE_STALL, SLOT_REPEAT, START_LEVEL, BASE_PLATEAU, DELOAD_CONTENT, ONE_QUALITY, TAPER_QUALITY) i prijavljuje QUALITY_OVER_LONG (dan iznad najnižeg nivoa duži od dugog).',
     place:
-      'policy.ts caps; quality.ts capM, mpFitsLong (drugi član; čitaju pickSlot/pickBuild i validate.ts, pouka 24); week.ts (provera dana); validate.ts',
+      'policy.ts caps; quality.ts capM, fitsDay, pickSlot, pickBuild, reduced, pickDeload, taperDoses, pickTaper (dva člana); week.ts dayLimitContext, buildDayLimit, oneDayLimit, deloadDayLimit, taperDayLimit, taperWeekLimit (drugi član, isti predikat čita validator); workouts.ts qualityDaySec; lengths.ts deloadTop10, taperTop10; validate.ts',
     rationale:
-      'R/I/T prema Danielsu (sekundarni izvor, ne dokaz); MP 20 % (Daniels: M ≤ 20 % nedelje, sekundarni izvor). Nema drugih limita za iste zone. Ne važi za trkačku nedelju (M8). Drugi član MP (heuristika, trenerski: dugi ostaje najduži trening nedelje): spori trkač (VDOT 30) sa dugim na 150 min ima MP 16 km kontinuirano + WU/CD duže od dugog (MAR-02: 126 planova 5 d, 786 planova 6 d).'
+      'R/I/T prema Danielsu (sekundarni izvor, ne dokaz); MP 20 % (Daniels: M ≤ 20 % nedelje, sekundarni izvor). Nema drugih limita za iste zone. Ne važi za trkačku nedelju (M8). Drugi član (heuristika, trenerski: dugi ostaje najduži trening nedelje): spori trkač (VDOT 30) sa dugim na 150 min ima MP 16 km kontinuirano + WU/CD duže od dugog (MAR-02: 126 planova 5 d, 786 planova 6 d). MAR-03 je drugi član primenio samo na MP jer bi za ostale zone, PRE izuzetka najnižeg nivoa, sudario pouku 9 (58 planova guste ned 1); sa izuzetkom (HM-03b: 0 odbijanja) MAR-04b ga primenjuje na sve zone — jedno pravilo za obe distance. Merenje MAR-04b (artifacts/segment-04b, pre bd07eec → posle): dani iznad najnižeg nivoa duži od dugog — mreža 02 9618 → 0 (taper MP), M13a 30 912 → 0, gusta ned 1 35 336 → 0, po osećaju 3156 → 0; adaptacija (budući dani) 0 na mrežama 04, ranoj, pre starta i širokoj; K1 bez promene u generatoru; menjaju se samo planovi koji su na bd07eec imali dan kvaliteta duži od dugog (+ spisak izuzetaka adaptacije, odluka organizatora); K4: M13a 708 planova (≤ 4,6 km) i ned 1 niža u 972 (dugi na plafonu skoka) — kao HM-03b.'
   },
   {
     id: 'M12',
-    rule: 'Po slotu: sledeći nivo ako staje u plafon (≤ 1 nivo/ned), inače ista doza druge strukture; doza ne pada van rasterećenja/tapera/trke; početni nivo = najviši nivo ≤ 60 % plafona zone (najmanje prvi nivo); T cruise ≥ poslednje T kontinuirano; MP ≥ max(početni nivo, poslednje I; 3 dana: poslednje T); 3 dana: prelaz T kont. → T cruise koji bi dao isti trening ide pravilom iste lestvice (sledeći nivo / druga struktura); glavna doza (T + I + MP) ne opada; nema identičnih uzastopnih ne-rasteretnih nedelja; baza bez platoa. M11 ispred M12: kad nijedan cilj nedelje nije izvodljiv uz „doza ne pada", doza van plafona ide na najviši nivo u plafonu (napomena, DOSE_DROPPED).',
-    place: 'quality.ts',
+    rule: 'Po slotu: sledeći nivo ako staje u plafon (≤ 1 nivo/ned), inače ista doza druge strukture; doza ne pada van rasterećenja/tapera/trke; početni nivo = najviši nivo ≤ 60 % plafona zone (najmanje prvi nivo); T cruise ≥ poslednje T kontinuirano; MP ≥ max(početni nivo, poslednje I; 3 dana: poslednje T); 3 dana: prelaz T kont. → T cruise koji bi dao isti trening ide pravilom iste lestvice (sledeći nivo / druga struktura); glavna doza (T + I + MP) ne opada; nema identičnih uzastopnih ne-rasteretnih nedelja (izuzetak, odluka organizatora MAR-04b: upozorenje IDENTICAL_WEEKS uz napomenu ponavljanja kad za svaki slot nijedna druga struktura iste doze ne staje u plafon zone i sledeći nivo ne staje u plafon zone — oba člana, ista funkcija; npr. T 1,5 km početnika u adaptiranoj nedelji malog obima, T 2,0 km kad je 2 × 1000 m duže od dugog); baza bez platoa — T slot raste ili menja strukturu prema poslednjoj nedelji sa T slotom, i preko nedelje testa (test M16 zamenjuje samo Q1). M11 ispred M12: kad nijedan cilj nedelje nije izvodljiv uz „doza ne pada", doza van plafona ide na najviši nivo u plafonu (napomena, DOSE_DROPPED).',
+    place: 'quality.ts; validate.ts (BASE_PLATEAU, prevT)',
     rationale:
-      'Postepena progresija (MASTER H12/M12; pouke 3 i 12). 60 % plafona je heuristika (10K v2 D16). Spuštanje doze samo u nedelji ograničenoj kapacitetom (pouka 12).'
+      'Postepena progresija (MASTER H12/M12; pouke 3 i 12). 60 % plafona je heuristika (10K v2 D16). Spuštanje doze samo u nedelji ograničenoj kapacitetom (pouka 12). MAR-04b (N2, pouka 23): validator je BASE_PLATEAU poredio preko nedelje testa (koju preskače kao nedelju bez doze), a konstruktor T slot nedelje testa napreduje — posle novog starta (pauza 35, A3/A13 test u bazi) odbijao je plan koji menja strukturu iz nedelje u nedelju (2 toka široke pretrage organizatora: feel-d4-24w-45km-e270-B, asOf 2026-11-11). Ispravljena strana koja odstupa: validator.'
   },
   {
     id: 'M13',
@@ -202,11 +202,11 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A5',
-    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna); redovno rasterećenje odmah posle prinudnog se ukida; prinudno se nikad ne ukida. Prinudno rasterećenje u uvodu početnika (M17, ned 1–2, pouka 31): obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta).',
+    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna); redovno rasterećenje odmah posle prinudnog se ukida; prinudno se nikad ne ukida. Prinudno rasterećenje u uvodu početnika (M17, ned 1–2, pouka 31): obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta). Pouka 34 (MAR-04b): umor sa asOf PRE STARTA — nedelja 1 je prinudno rasterećenje = 0,8 × planirana nedelja 1 (sadržaj rasterećenja; početnik: sadržaj uvoda); referenca (poslednja izgradnja, poslednji dugi, poslednja T doza, L za M13a kao nedelja 0) = nedelja 1 generatora bez činjenica (korak.preStart); nedelja 2 = cilj planirane nedelje 1 (bez rasta), progresija doze od početnog nivoa (= planirana nedelja 1), dalje po rasporedu. RECENT_LONG_TOO_SHORT samo kad isti plan bez skorašnjeg najdužeg trka ne zastaje na toj ni ranijoj nedelji (inače WEEK_INFEASIBLE).',
     place:
-      'assess.ts (adapt.fatigue*); steps.ts framesFor; week.ts (uvod); validate.ts (M5 izuzetak prinudnog)',
+      'assess.ts (adapt.fatigue*, preStartRef — jedino mesto odluke); steps.ts framesFor, preStartOf, jumpRecentKm; volume.ts adaptVolume/enterWeek (ned 1 = 0,8 × ref, ned 2 = ref); generate.ts (stanje pre ned 1, poruka M13a); week.ts (uvod); validate.ts (M5 izuzetak prinudnog; isto stanje pre ned 1); adaptInvariants.ts (L M13a)',
     rationale:
-      'Kao 10K A5 (heuristika). Prinudno rasterećenje sme na prvu nedelju faze ili pred taper.'
+      'Kao 10K A5 (heuristika). Prinudno rasterećenje sme na prvu nedelju faze ili pred taper. Pouka 34 (presedan 5K): bez prethodne izgradnje umor pre starta je odbijan u 100 % tokova (WEEK_INFEASIBLE; uz skorašnji najduži pogrešno RECENT_LONG_TOO_SHORT). Tumačenje (opreznije): „doza" reference čita samo rasterećenje (T ≈ 60 % T doze ned 1 generatora); ned 2 ponavlja planiranu ned 1 i u dozi (atleta je ned 1 odradio kao rasterećenje). Merenje MAR-04b: rana mreža pre starta (270 planova × start − 1/−3/−6 × umor, bol 5/8, pauza 10, rezultat) 810 → 0 odbijanja; široka pretraga (17 scenarija + pre starta) umor pre starta 0 odbijanja.'
   },
   {
     id: 'A6',
@@ -294,7 +294,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.3.0',
+  version: 'marathon-v2.3.1',
 
   /** M1 (dani i obim: M15). */
   input: {

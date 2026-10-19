@@ -11,7 +11,8 @@ import {
   type PlanRule,
   RUN_DAYS_COUNTS
 } from './policy.ts';
-import type { Paces, PlanWeek, WeekFrame } from './types.ts';
+import { preStartOf } from './steps.ts';
+import type { Paces, PlanWeek, PreStartRef, WeekFrame } from './types.ts';
 
 const EPS = 1e-9;
 export const to10 = (km: number): number => Math.round(km * 10);
@@ -168,6 +169,8 @@ export function fit10(
 
 /** Deo koraka adaptacije koji određuje obim (MarathonV2AdaptStep iz types.ts). */
 export interface VolumeStep {
+  /** Pouka 34: referenca umora pre starta (steps.preStartOf). */
+  preStart?: PreStartRef;
   firstWeek: number;
   /** A5: prinudno rasterećenje u nedelji fromWeek (smanjenje obima za odstupanja A9). */
   deload: boolean;
@@ -201,6 +204,9 @@ export interface AdaptVolume {
   restart: Map<number, number>;
   /** A4 (pouka 18): nedelja sidra r → osnova povratka pre min sa ciljem nedelje r. */
   anchors: Map<number, ReturnAnchor>;
+  /** Pouka 34: cilj reference umora pre starta [0,1 km] — poslednja izgradnja pre nedelje 1 (ned 1 = 0,8 ×);
+      null bez umora pre starta. */
+  pre10: number | null;
   /** A8: nivo pre smanjenja koji važi u nedelji w (najveći nivo koraka sa fromWeek ≤ w) [0,1 km]. */
   levelAt: (w: number) => number | null;
 }
@@ -219,7 +225,11 @@ export const returnAnchor = (share: number, levelKm: number | null): ReturnAncho
 });
 
 export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
+  const pre = preStartOf(steps);
+  const pre10 = pre === null ? null : to10(pre.targetKm);
   const reset = new Map<number, number>();
+  // Pouka 34: posle prinudnog rasterećenja nedelje 1 (umor pre starta) nedelja 2 = cilj reference, bez rasta.
+  if (pre10 !== null) reset.set(2, pre10);
   const remainder = new Map<number, number>();
   const restart = new Map<number, number>();
   const anchors = new Map<number, ReturnAnchor>();
@@ -243,6 +253,7 @@ export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
     remainder,
     restart,
     anchors,
+    pre10,
     levelAt: (w) => {
       let level: number | null = null;
       for (const s of steps)
@@ -298,6 +309,8 @@ export function enterWeek(
 ): AdaptHistory {
   const i = frame.index;
   const out = { ...h };
+  // Pouka 34: umor pre starta — poslednja izgradnja pre nedelje 1 = cilj reference (ned 1 generatora).
+  if (i === 1 && av.pre10 !== null) out.lastBuild10 = av.pre10;
   const r = av.restart.get(i);
   if (r !== undefined) out.cap10 = peakCap10(r, rule);
   const reset = av.reset.get(i);
