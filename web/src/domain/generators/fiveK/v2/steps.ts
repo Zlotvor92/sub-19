@@ -186,11 +186,12 @@ export function framesFor(
       if (dropped) for (const w of [...dropped.keys()]) if (w >= n) dropped.delete(w);
     }
     frames = frames.map((f) => ({ ...f }));
-    const fn = frames[n - 1];
+    const dw = s.deloadWeek ?? n;
+    const fn = frames[dw - 1];
     if (s.deload && fn && isBuild(fn)) {
       fn.deload = true;
-      forced.add(n);
-      const next = frames[n];
+      forced.add(dw);
+      const next = frames[dw];
       if (next && next.deload && isBuild(next)) next.deload = false;
     }
     for (const w of reducedWeeks(s)) {

@@ -391,23 +391,24 @@ export function assess(
     );
   });
   if (easyHard.length >= A.fatigueCount) {
-    // 2.8.0 (MASTER pouka 36): umor je vezan za ZAPISE — sidro = prva puna nedelja posle poslednjeg zapisa
-    // umora (nedelja koja sadrži zapis + 1, kao n za asOf). Kad je ta nedelja već počela (isti zapisi poslati
-    // kasnije), rasterećenje u nedeljama od sidra do n je rasterećenje ovih zapisa — ne pravi se novo; inače n.
+    // 2.8.0 (MASTER pouka 36): umor je vezan za ZAPISE — prinudno rasterećenje je nedelja POSLE nedelje poslednjeg
+    // zapisa umora (prva nedelja koja počinje posle zapisa). Ako je asOf već u njoj (r < n), rasterećenje važi za
+    // njen ostatak (prošli dani zaštićeni); ako je ona već rasterećenje (redovno ili od istih zapisa), novo se ne
+    // pravi. Isti zapisi prijavljeni u nedelju i u ponedeljak daju isti plan.
     const last = Math.max(...easyHard.map((x) => day(x.date)));
     const after = addDays(asOf, last + 1 - t);
     const ra = weekOf(after);
-    const anchor = ra <= N && day(weeks[ra - 1]!.startDate) < day(after) ? ra + 1 : ra;
-    const done = weeks.find((w) => w.index >= anchor && w.index < n && w.deload);
-    const ok = !volumeRule && !done && build(n) && !wk(n)!.deload;
+    const dw = Math.max(r, ra <= N && day(weeks[ra - 1]!.startDate) < day(after) ? ra + 1 : ra);
+    const ok = !volumeRule && build(dw) && !wk(dw)!.deload;
     if (ok) {
       step.deload = true;
+      if (dw !== n) step.deloadWeek = dw;
       volumeRule = true;
     }
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje` : volumeRule ? 'nadjačano pauzom' : done && build(n) && !wk(n)!.deload ? `rasterećenje za ove zapise je već u planu (nedelja ${done.index})` : 'sledeća nedelja je već rasterećenje, taper ili trka'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${dw} je rasterećenje${dw < n ? ` (ostatak od ${next})` : ''}` : volumeRule ? 'nadjačano pauzom' : dw < n && build(dw) ? `rasterećenje za ove zapise je već u planu (nedelja ${dw})` : 'sledeća nedelja je već rasterećenje, taper ili trka'}.`
     );
   }
 

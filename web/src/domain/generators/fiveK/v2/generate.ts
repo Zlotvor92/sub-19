@@ -206,7 +206,7 @@ export function construct(
     }
     // 2.8.0 (pouka 29, N2a): kontrolno trčanje u zaštićenom (upisanom) danu je urađeno — nedelja ga nosi i kad
     // sastavljeni ostatak nedelje nema test (ne staje u smanjen obim).
-    if (testDone === f.index && !r.week.test) r.week = { ...r.week, test: true };
+    if (testDone === f.index && f.test && !r.week.test) r.week = { ...r.week, test: true };
     if (i === 0 && vol.startCapped)
       r.week.notes.push(
         `Trenutni obim (${input.currentWeeklyKm} km) je veći od onoga što ${a.days} dana nose (${vol.capacityKm} km); plan kreće od ${vol.capacityKm} km.${a.days < (a.beginner ? P.beginner.maxRunDays : 5) ? ' Za veći obim izaberi više dana trčanja.' : ''}`

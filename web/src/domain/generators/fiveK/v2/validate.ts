@@ -158,11 +158,13 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   const steps = ad?.steps ?? [];
   const mixed = new Set(ad?.mixedWeeks ?? []);
   const lockedIds = new Set(ad?.lockedDayIds ?? []);
+  const lockedFuture = (d: PlanDay): boolean =>
+    ad !== undefined && lockedIds.has(d.date) && mustDay(d.date) > mustDay(ad.asOf);
   const checked = (w: PlanWeek): boolean => !mixed.has(w.index);
   const pw = (w: PlanWeek): PaceModel => (ad ? pacesAt(plan.input, steps, w.index) : plan.paces);
   const aw = (w: PlanWeek): Athlete => (ad ? athleteAt(plan.input, steps, w.index) : a);
   const forcedDeload = (w: PlanWeek): boolean =>
-    steps.some((s) => s.deload && s.fromWeek === w.index);
+    steps.some((s) => s.deload && (s.deloadWeek ?? s.fromWeek) === w.index);
   const restartAt = (i: number): boolean => steps.some((s) => s.restart && s.fromWeek === i);
   const limited = (w: PlanWeek): boolean =>
     (w.limits?.rest?.length ?? 0) > 0 || (w.limits?.pain?.length ?? 0) > 0;
@@ -364,7 +366,12 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
               d.date
             );
     }
-  const testWeeks = weeks.filter((w) => w.days.some((d) => d.workout.qualityType === 'TEST_3K'));
+  const testWeeks = weeks.filter((w) =>
+    w.days.some((d) => d.workout.qualityType === 'TEST_3K' && !lockedFuture(d))
+  );
+  // 2.8.0: zaključan budući dan kontrolnog trčanja je činjenica — oznaka te nedelje se ne poredi sa treningom.
+  const lockedTest = (w: PlanWeek): boolean =>
+    w.days.some((d) => d.workout.qualityType === 'TEST_3K' && lockedFuture(d));
   const expectTest = a.feel ? testWeekOf(weeks) : null;
   // 2.5.0: posle adaptacije test najviše jednom, samo u nedelji po osećaju, oznaka ⇔ trening.
   if (ad) {
@@ -373,7 +380,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       flagged.length > 1 ||
       testWeeks.length > 1 ||
       flagged.some((w) => !aw(w).feel) ||
-      weeks.some((w) => w.test !== testWeeks.includes(w))
+      weeks.some((w) => !lockedTest(w) && w.test !== testWeeks.includes(w))
     )
       err('TEST_WEEK', 'Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju.');
   } else if (
@@ -779,6 +786,9 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   const resets = steps.map((st) => doseResetDate(st, weeks)).filter((x): x is string => x !== null);
   const segOf = (w: PlanWeek): number | null => {
     const qd = w.days.filter((d) => d.workout.kind === 'quality');
+    // 2.8.0 (MAR-07 nalaz): zaključan budući dan kvaliteta je činjenica, ne odluka konstruktora — nedelja prekida
+    // lanac doze (sopstven segment: ne poredi se ni sa prethodnom ni sa sledećom; kao LIMITS).
+    if (qd.some(lockedFuture)) return -w.index;
     const ks = new Set(
       (qd.length > 0 ? qd.map((d) => d.date) : [w.startDate]).map(
         (x) => resets.filter((r) => mustDay(r) <= mustDay(x)).length
@@ -803,7 +813,10 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     // 2.2.0: I u vrhuncu neopadajući (zadržan I uz promenu T). 2.3.0: i RP u oštrenju neopadajući
     // (bez višeg nivoa druga struktura; identičan par ostaje QUALITY_REPEAT).
     if (a.phase === b.phase && (b.phase === 'peak' || b.phase === 'sharpen'))
-      if (lessDose(mainDose(b), mainDose(a)))
+      if (
+        [a, b].every((w) => w.days.some((d) => d.role === 'q1')) &&
+        lessDose(mainDose(b), mainDose(a))
+      )
         err(
           'DOSE_PROGRESSION',
           `Glavni ${b.phase === 'sharpen' ? 'RP' : 'I'} rad ${fmtDose(mainDose(b))} manji od prethodne nedelje (${fmtDose(mainDose(a))}).`,

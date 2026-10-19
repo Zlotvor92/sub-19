@@ -72,8 +72,28 @@
   {
     "name": "08g-6 umor vezan za asOf (pouka 36)",
     "file": "src/domain/generators/fiveK/v2/assess.ts",
-    "find": "    const done = weeks.find((w) => w.index >= anchor && w.index < n && w.deload);",
-    "replace": "    const done = weeks.find((w) => w.index >= anchor && w.index < n && w.deload && false);",
+    "find": "    const dw = Math.max(r, ra <= N && day(weeks[ra - 1]!.startDate) < day(after) ? ra + 1 : ra);",
+    "replace": "    const dw = ra > 0 ? n : n;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-7 zaključan budući dan ulazi u lanac doze (MAR-07 nalaz)",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "    if (qd.some(lockedFuture)) return -w.index;",
+    "replace": "    if (qd.some(lockedFuture) && false) return -w.index;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-8 umor: rasterećenje uvek sledeće nedelje (pouka 36, ponedeljak)",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "      if (dw !== n) step.deloadWeek = dw;",
+    "replace": "      if (dw !== n && false) step.deloadWeek = dw;",
     "tests": [
       "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
       "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
