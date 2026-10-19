@@ -100,6 +100,9 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
 30. (10K 06d) Trkačka nedelja (bez trke) ≤ planirano tapera i kad taper ima dane odmora/bola: višak laganih dana trkačke
     nedelje postaje odmor (prvo dani bola, pa najraniji lagani); dan pred trku i trka ostaju.
 31. (10K 06d) Prinudno rasterećenje (umor) u uvodnoj nedelji početnika: obim rasterećenja, sadržaj uvoda (bez kvaliteta).
+32. (MAR-03) Dugi ostaje najduži trening nedelje: plafon zone je jedna funkcija sa dva člana — min(udeo nedelje po zoni,
+    najveća doza za koju je trajanje kvalitetnog dana (WU + rad + oporavci + CD) ≤ trajanje dugog iste nedelje). Pad doze
+    zbog toga je dozvoljen kao kod kapaciteta (pouka 12). Maraton od MAR-03 (MP), HM od HM-04 (sve zone).
 
 ## 3. Tok jednog segmenta i provera
 
