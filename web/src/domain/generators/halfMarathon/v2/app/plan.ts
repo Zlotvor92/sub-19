@@ -14,6 +14,7 @@ import { checkInput } from '../input.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import { basisAt, pacesAt } from '../steps.ts';
 import type { GoalAssessment, HmV2Plan, Paces, Phase, PlanDay } from '../types.ts';
+import { userWeekNotes } from '../volume.ts';
 import { addDays, diffDays } from './date.ts';
 import { workoutStructure } from './structure.ts';
 import type {
@@ -35,7 +36,7 @@ export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `hm-v2`; plan bez oznake je HM v1 (`legacy-hm`). */
 export const LEGACY_POLICY_ID = 'legacy-hm';
 /** Verzije koje trenutni kod ume da prikaže i adaptira (istorijske implementacije v2 se ne čuvaju): sve koje su mogle
- *  biti sačuvane posle HM-05 (aplikacija je od HM-05 pisala samo `hm-v2.3.0`) i tekuća. Sačuvan stariji plan ostaje plan
+ *  biti sačuvane posle HM-05 (aplikacija je od HM-05 do HM-06 pisala samo `hm-v2.3.0`; od HM-07 `hm-v2.4.0`) i tekuća. Sačuvan stariji plan ostaje plan
  *  HM v2; prilagođavanje ga gradi tekućim pravilima, a rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown"
  *  (UNKNOWN_POLICY). */
 export const KNOWN_VERSIONS: readonly string[] = [...new Set(['hm-v2.3.0', P.version])];
@@ -148,7 +149,8 @@ function weeksOf(plan: HmV2Plan): GeneratedWeek[] {
         (_, i) => byDate.get(addDays(wk.startDate, i)) ?? rest(i + 1)
       ),
       deload: wk.deload,
-      focus: [wk.deload ? 'Rasterećenje.' : '', ...wk.notes].filter(Boolean).join(' '),
+      // Faza 4a N11: napomene za korisnika bira domen (tehnička napomena izvodljivog cilja ne ide korisniku).
+      focus: [wk.deload ? 'Rasterećenje.' : '', ...userWeekNotes(wk)].filter(Boolean).join(' '),
       ...(wk.phase === 'taper' ? { taper: true as const } : {})
     };
   });

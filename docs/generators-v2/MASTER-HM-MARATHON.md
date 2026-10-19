@@ -132,6 +132,9 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     po cilju nedelje — WU/CD su trenerski deo treninga, uslov 3.) Važi u izgradnji (baza, razvoj, specifična) i u
     rasterećenju sa dva kvaliteta; taper i trkačka nedelja su izuzeti (H7/M7: dugi tapera namerno ≤ 0,6 × najduži,
     intenzitet se zadržava — HM-07: RP dan duži od dugog u taperu 1371/25 122 planova, medijana 6 min, ostaje).
+    Kad nedelja sa jednim kvalitetom nije izvodljiva (dugi na granici pouke 28, lagani bi bili duži od dugog — pouka 2),
+    ostaju dva kvaliteta uz upozorenje po pouci 14; cilj nedelje se ne menja (HM-07: 597/10 944 na mreži pouke 28,
+    kratak skorašnji dugi). Uslov izvodljivosti računa ista funkcija pouke 35.
     Pouka 30 važi i za 5K (Faza 4a N3).
 36. (organizator, MAR-06 pitanje 2) Umor je vezan za ZAPISE, ne za dan adaptacije (kao bol, pouka 18): sidro
     prinudnog rasterećenja = nedelja koja sadrži (datum poslednjeg RPE zapisa koji čini umor) + 1; isti zapisi daju

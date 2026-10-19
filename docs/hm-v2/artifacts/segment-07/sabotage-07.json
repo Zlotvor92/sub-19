@@ -1,0 +1,56 @@
+[
+  {
+    "name": "07-a pouka 35 samo u generatoru (validator ne čita funkciju)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "      if (q2d && decide(q2d))",
+    "replace": "      if (false && q2d && decide(q2d))",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment07.node.test.ts"]
+  },
+  {
+    "name": "07-b RP bez poda (N6)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "  if (prev.doseM < floorM(ladder, beginner)) return null;\n",
+    "replace": "",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment07.node.test.ts"]
+  },
+  {
+    "name": "07-c ned 2 sa dozom planirane ned 2 (pouka 34 dopuna N7)",
+    "file": "src/domain/generators/halfMarathon/v2/steps.ts",
+    "find": "      ...(s.preStart ? [2] : [])",
+    "replace": "      ...(s.preStart ? [] : [])",
+    "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "07-d LONG_RUN_SHORT preko proverenih nedelja (N9)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "  const longestAll10 = longestLong10(weeks);",
+    "replace": "  const longestAll10 = longestLong10(weeks.filter(checked));",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment07.node.test.ts"]
+  },
+  {
+    "name": "07-e traka u aplikaciji umesto domena (pouka 20)",
+    "file": "src/domain/generators/halfMarathon/v2/app/adapt.ts",
+    "find": "    needed: adaptBanner(v2, r, built.facts, src.today)",
+    "replace": "    needed: r.newLimits.length > 0 ? r.reasons.filter((x) => x.applied).map((x) => x.message) : []",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment07.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-f WEEK_FITTED po nedelji (N11)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "      else fittedW.push({ w: w.index, dir: w.fitted, gap10: Math.abs(t10 - nominal) });",
+    "replace": "      else {\n        warn('WEEK_FITTED', `Nedelja na izvodljivom cilju ${w.targetKm} km.`, w.index);\n        fittedW.push({ w: w.index, dir: w.fitted, gap10: Math.abs(t10 - nominal) });\n      }",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment07.node.test.ts"]
+  },
+  {
+    "name": "07-g umor vezan za asOf (pouka 36)",
+    "file": "src/domain/generators/halfMarathon/v2/assess.ts",
+    "find": "    const already = nF < n && wk(nF)?.deload === true;",
+    "replace": "    const already = nF < n && false;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/fatigueRepeat.node.test.ts"
+    ]
+  }
+]

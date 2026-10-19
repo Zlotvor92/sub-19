@@ -4,6 +4,8 @@
    - Rana i srednja adaptacija (pouka 23, earlyGrid.node.test.ts): svaki 400. plan mreže 02, svaki 80. po osećaju,
      svaki 40. početnika × asOf (pre starta − 1, − 3, − 6; sreda i kraj ned 1, sreda svake nedelje 2…N − 1, kraj
      nedelje pre svake posebne nedelje) × pauza 10/20, bol 5/8, pauza 10 + bol 5, manjak, umor.
+   - Rana mreža pre starta (Faza 4a N10.7, preStartGrid.node.test.ts): isti planovi × asOf start − 1/− 3/− 6 × svih
+     17 scenarija mreže 04 (+ drugi korak lanca).
    Po toku: prihvaćen (0 odbijanja, validator bez greške na upisanom planu), adaptInvariants prazno (Uslov 8).
    BRZ nivo: deterministički uzorak (svaki K-ti tok unutar scenarija); PUN: delovi po indeksu baznog plana. */
 
@@ -106,6 +108,29 @@ export function earlyFlows(bases: readonly AdaptBase[] = earlyGridBases()): Flow
           asOf: a.asOf,
           facts: (q) => earlyFacts(q, s, a.asOf)
         });
+  }
+  return out;
+}
+
+/** Faza 4a N10.7: trajna rana mreža PRE STARTA — planovi rane mreže × asOf start − 1/− 3/− 6 × svih 17 scenarija
+    mreže 04 (kao 4a lib SCENARIOS; svi su primenljivi pre starta — činjenice pre starta su trčanja van plana)
+    + drugi korak lanca. */
+export function preStartFlows(bases: readonly AdaptBase[] = earlyGridBases()): Flow[] {
+  const out: Flow[] = [];
+  for (const base of bases) {
+    const p = basePlan(base);
+    for (const d of [1, 3, 6]) {
+      const at = addDays(p.input.startDate, -d);
+      for (const s of SCENARIOS)
+        out.push({
+          key: `${base.id}/pre${d}/${s}`,
+          base,
+          cat: s,
+          asOf: at,
+          facts: (q) => factsOf(q, s, at),
+          chain: s === 'chain'
+        });
+    }
   }
   return out;
 }

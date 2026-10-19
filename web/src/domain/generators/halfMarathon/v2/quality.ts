@@ -192,11 +192,21 @@ export function pickSlot(
     return repeats(lv) ? progress() : pick(ladder, lv, 'transition');
   }
   if (prev.doseM > cap) return drop();
+  // Faza 4a N6 (kao maraton MP): RP nikad ispod najnižeg nivoa (2 × 2000 m, H10) — prelaz sa niže T doze koji
+  // ne staje u najniži nivo nije izvodljiv pri ovom cilju (adaptacija: A9 — jedan kvalitet doze rasterećenja
+  // ili bez kvaliteta).
+  if (prev.doseM < floorM(ladder, beginner)) return null;
   const all = structuresForDose(ladder, prev.doseM);
   if (all.length === 0) return null;
   const s = otherStructure(ladder, prev.doseM, prev.structure, p, dur) ?? all.filter(dur)[0];
   if (!s) return durDrop(prev.doseM);
   return repeats(s) ? progress() : pick(ladder, s, 'transition');
+}
+
+/** Faza 4a N6: pod doze lestvice [m] — RP najniži nivo (2 × 2000 m), ostale lestvice bez poda (0). Jedna funkcija
+    za konstruktor (pickSlot) i validator (RP_FLOOR). */
+export function floorM(ladder: LadderId, beginner = false): number {
+  return ladder === 'RP' ? doseOf(ladderLevels(ladder, beginner)[0]!) : 0;
 }
 
 /** Pouka 32: drugi član plafona zone za strukturu `s` — sopstveni dan najnižeg nivoa lestvice (`beginner`:

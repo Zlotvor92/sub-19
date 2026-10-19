@@ -105,13 +105,15 @@ export function limitsOf(
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
-/** Nedelje u kojima progresija doze kreće iznova (stanje doze se briše): A3 nov start (fromWeek) i pouka 18 —
-    posle sidra bola r (nedelja r + 1). Jedna funkcija za konstruktor i validator. */
+/** Nedelje u kojima progresija doze kreće iznova (stanje doze se briše): A3 nov start (fromWeek), pouka 18 —
+    posle sidra bola r (nedelja r + 1) i pouka 34 (dopuna N7) — posle umora pre starta nedelja 2 (doza = doza
+    planirane nedelje 1: ponavljanje, bez rasta; referenca ostaje stanje samo za rasterećenje nedelje 1). Jedna funkcija za konstruktor i validator. */
 export const restartWeeks = (steps: readonly HmV2AdaptStep[]): Set<number> =>
   new Set(
     steps.flatMap((s) => [
       ...(s.restart ? [s.fromWeek] : []),
-      ...(s.returnFrom ? [s.returnFrom.week + 1] : [])
+      ...(s.returnFrom ? [s.returnFrom.week + 1] : []),
+      ...(s.preStart ? [2] : [])
     ])
   );
 
@@ -273,6 +275,26 @@ export function newLimits(steps: readonly HmV2AdaptStep[]): string[] {
   return out;
 }
 
+/** Pouka 34 (pouka 24): referenca umora pre starta (poslednji korak koji je nosi) ili null — JEDNO mesto čitanja
+    za konstruktor (initialState), obim (volume.adaptVolume) i validator. */
+export function preStartOf<T>(steps: readonly { preStart?: T }[]): T | null {
+  let r: T | null = null;
+  for (const s of steps) if (s.preStart) r = s.preStart;
+  return r;
+}
+
+/** Pouka 28/34 (Faza 4a N10.3, oblik maratona): skorašnji najduži trk kao dugi „nedelje 0" kotrljajuće granice —
+    iz ulaza, a posle umora pre starta i dugi reference (najveći). Konstruktor i validator (LONG_ROLLING); napomena i
+    pouka 9 nedelje 1 (week1LongCap10, recentLongNote) čitaju samo ulaz. */
+export function jumpRecentKm(
+  recentLongRunKm: number | null | undefined,
+  steps: readonly { preStart?: { longKm: number | null } }[]
+): number | null {
+  const r = recentLongRunKm ?? null;
+  const ref = preStartOf(steps)?.longKm ?? null;
+  return ref === null ? r : Math.max(r ?? 0, ref);
+}
+
 /** Pouka 34: početno stanje konstrukcije — bez umora pre starta prazno; sa njim referenca (nedelja 1 generatora):
     stanje doze, poslednji dugi i poslednja izgradnja [0,1 km]. Jedna funkcija za konstruktor i validator. */
 export function initialState(steps: readonly HmV2AdaptStep[]): {
@@ -280,7 +302,7 @@ export function initialState(steps: readonly HmV2AdaptStep[]): {
   lastLong10: number | null;
   lastBuild10: number | null;
 } {
-  const ref = [...steps].reverse().find((s) => s.preStart)?.preStart;
+  const ref = preStartOf(steps);
   if (!ref) return { quality: INITIAL_QUALITY, lastLong10: null, lastBuild10: null };
   return {
     quality: advance({ q1: ref.q1, q2: ref.q2 }, INITIAL_QUALITY),

@@ -406,7 +406,21 @@ export function assess(
     );
   });
   if (easyHard.length >= A.fatigueCount) {
-    const ok = !volumeRule && build(n) && !wk(n)!.deload;
+    // Pouka 36 (jedno mesto): umor je vezan za ZAPISE — sidro je nedelja koja sadrži (poslednji zapis umora) + 1,
+    // rasterećenje prva puna nedelja od nje (isto kao n iz asOf). Kad je ta nedelja već rasterećenje (umor čije je
+    // rasterećenje već u planu, npr. isti zapisi ponovo sutradan preko granice nedelje), novo se ne pravi; inače
+    // prva puna nedelja posle asOf (prošlost se ne menja).
+    const last = addDays(
+      easyHard
+        .map((x) => x.date)
+        .sort()
+        .pop()!,
+      1
+    );
+    const rF = weekOf(last);
+    const nF = rF <= N && day(weeks[rF - 1]!.startDate) < day(last) ? rF + 1 : rF;
+    const already = nF < n && wk(nF)?.deload === true;
+    const ok = !already && !volumeRule && build(n) && !wk(n)!.deload;
     // Pouka 34: asOf pre starta (nedelja 1 je sledeća) — referenca je nedelja 1 generatora bez činjenica.
     const ref = ok && n === 1 && t < day(weeks[0]!.startDate) ? week1Ref() : null;
     if (ok) {
@@ -417,7 +431,7 @@ export function assess(
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)${ref ? `; pre starta: 0,8 × planirana nedelja 1 (${km(ref.targetKm)} km), nedelja 2 = ${km(ref.targetKm)} km bez rasta (pouka 34)` : ''}` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)${ref ? `; pre starta: 0,8 × planirana nedelja 1 (${km(ref.targetKm)} km), nedelja 2 = ${km(ref.targetKm)} km bez rasta (pouka 34)` : ''}` : volumeRule ? 'nadjačano pauzom (A7)' : already ? `rasterećenje za ove zapise je već u planu (nedelja ${nF}, pouka 36)` : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
     );
   }
 
