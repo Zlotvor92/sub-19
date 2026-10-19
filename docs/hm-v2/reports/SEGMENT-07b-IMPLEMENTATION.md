@@ -26,9 +26,12 @@ u nedelju 1 (zapisi pre starta, asOf prvi dan).
 | probe rezultat + zaštićen dan: (a) zaključani Q1+Q2, (b) samo Q1 nedelje k + 1, (c) lanac (a) + urađen Q1 — odbijanja | 2978 / 3336 (c nedostupan)            | 0 / 4617                              |
 | fatigue-repeat.ts HM (sredom) / HM end — drugo rasterećenje / odbijeno drugi                                          | 0 / 0 · 0 / 0 (777)                   | 0 / 0 · 0 / 0 (777)                   |
 | early.ts HM 193 97 29: planova / tokova / odbijanja / zajedničke / invarijante / 'none' ≠ gen                         | 212 / 114 012 / 0 / 0 / 0 / 0 (HM-07) | 212 / 114 012 / 0 / 0 / 0 / 0 (779 s) |
+| fatigue-monday.ts HM (organizator; zapisi pet/ned, asOf prvi dan nedelje): tekuća+0 / tekuća+1 / bez novog (240)      | 0 / 120 / 120                         | 206 / 0 / 34 (**)                     |
+| locked-result.ts HM (organizator; rezultat kraj k + zaključan Q1 k + 1): odbijeno / tokova                            | 1677 / 1916                           | 0 / 1916                              |
 
 (*) Svih 15 su parovi gde rasterećenje menja prvi dan nedelje k (u adaptaciji tog dana upisan stari dan, npr. dugi
 12,1 umesto 8,6 km → kasniji dugi po pouci 28 iz upisanog); takvih parova 1815, sa istim prvim danom razlika 0.
+(**) Svih 34: tekuća nedelja je već redovno rasterećenje (A5).
 Pre: primer `segment07b` (zapisi pretposlednji/poslednji dan k − 1, asOf prvi dan k, k + 1 redovno rasterećenje) —
 umor se GUBIO (`deload: false`).
 
