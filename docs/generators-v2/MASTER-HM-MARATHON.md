@@ -120,7 +120,16 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     0,8 × planirana nedelja 1 (sadržaj rasterećenja; početnik: sadržaj uvoda, pouka 31); referenca „poslednja
     izgradnja / poslednji dugi / doza" je nedelja 1 generatora bez činjenica (nema prethodne izgradnje); nedelja 2 =
     cilj planirane nedelje 1 (bez rasta), dalje po rasporedu. Pouka 4 važi za redovna rasterećenja. Nađeno: 10K v2 i
-    maraton v2 su za umor pre starta odbijali 100 % tokova (WEEK_INFEASIBLE), 5K ga rešava ovako.
+    maraton v2 su za umor pre starta odbijali 100 % tokova (WEEK_INFEASIBLE), 5K ga rešava ovako. Dopuna (Faza 4a
+    N7/N10.3): doza nedelje 2 = doza planirane nedelje 1 (ponavljanje, bez rasta), a dugi reference ulazi u L pouke 28
+    kao nedelja 0 — oblik maratona; HM je uzimao dozu planirane nedelje 2 i nije računao dugi reference.
+35. (organizator, Faza 4a N5) Dva dana kvaliteta samo kad dugi ostaje najduži: kad bi u nedelji sa dva dana kvaliteta
+    neki dan kvaliteta (i najniži nivo, izuzet od drugog člana pouke 32) trajao duže od dugog iste nedelje, drugi dan
+    kvaliteta postaje lagan dan (napomena), prvi ostaje; oslobođeni obim raspoređuje vlasnik obima (dugi raste).
+    Važi u generatoru i adaptaciji; jedno mesto odluke (broj dana kvaliteta nedelje), validator čita istu funkciju.
+    Kad ni sa jednim danom kvaliteta dugi nije najduži — upozorenje po pouci 14. Nađeno posle novog starta (pauza ≥ 28):
+    HM 34 %, maraton 24 % tokova sa dugim kraćim od kvaliteta, dugi i 4–5 km uz I 48 min i T 47 min. (Odbačeno: WU/CD
+    po cilju nedelje — WU/CD su trenerski deo treninga, uslov 3.) Pouka 30 važi i za 5K (Faza 4a N3).
 
 ## 3. Tok jednog segmenta i provera
 
