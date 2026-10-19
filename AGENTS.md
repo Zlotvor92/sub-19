@@ -36,8 +36,11 @@ Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
 
 ## Testovi i sabotaže
 
-- `npm run check` (brz nivo, iz `web/`) za svaki segment i proveru; `npm run check:full` kad segment dira v1,
-  zajednički kod, reference ili test infrastrukturu, i pre mergea u main; CI uvek pun (`npm test`).
+- Segment: `npm run check` (brz nivo, iz `web/`) + NAMENSKI testovi onoga što je menjano (pun nivo SAMO foldera koji
+  je menjan: `TEST_FULL=1 npx vitest run --project node <folder>`; UI testovi dirane funkcije; E2E dirane distance).
+  `npm run check:full` se lokalno NE pokreće po segmentu (traje 45–75 min) — CI uvek pokreće pun nivo (`npm test`) na
+  svaki push, a organizator proverava CI. `check:full` lokalno samo pre mergea u main ili kad se menja test
+  infrastruktura.
   Nivoi, uzorci i merenja: `docs/testing/TEST-SPEED.md`.
 - Sabotaže samo kroz `web/scripts/sabotage.mjs`, na fajlovima koji treba da ih uhvate, sa `--bail=1`; nikad ceo
   skup. Uputstvo: `docs/testing/SABOTAGE.md`.
