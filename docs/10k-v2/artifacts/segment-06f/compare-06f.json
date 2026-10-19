@@ -1,0 +1,42 @@
+{
+ "flows": 269760,
+ "rejectedBefore": 1057,
+ "rejectedAfter": 1,
+ "changed": {
+  "ponovljen umor heš traka": 2916,
+  "ponovljen umor heš traka (manje rasterećenja)": 5484,
+  "ponovljen umor heš": 792
+ },
+ "examples": {
+  "ponovljen umor heš traka": [
+   "d3-8w-30km-v30-A-sat/pre1/fatigue/+1: rasterećenja undefined → 2, traka undefined → 0",
+   "d3-8w-30km-v30-A-sat/pre1/fatigue/+2: rasterećenja undefined → 2, traka undefined → 0",
+   "d3-8w-30km-v30-A-sat/pre1/fatigue/+3: rasterećenja undefined → 2, traka undefined → 0"
+  ],
+  "ponovljen umor heš traka (manje rasterećenja)": [
+   "d3-8w-30km-v30-A-sat/w2end/fatigue/+1: rasterećenja 2 → 1, traka 1 → 0",
+   "d3-8w-30km-v30-A-sat/w2end/fatigue/+2: rasterećenja 2 → 1, traka 1 → 0",
+   "d3-8w-30km-v30-A-sat/w2end/fatigue/+3: rasterećenja 2 → 1, traka 1 → 0"
+  ],
+  "ponovljen umor heš": [
+   "d3-8w-30km-v30-A-sat/w5end/fatigue/+1: rasterećenja 2 → 2, traka 0 → 0",
+   "d3-8w-30km-v30-A-sat/w5end/fatigue/+2: rasterećenja 2 → 2, traka 0 → 0",
+   "d3-8w-30km-v30-A-sat/w5end/fatigue/+3: rasterećenja 2 → 2, traka 0 → 0"
+  ]
+ },
+ "repeatedFatigueMoreDeloads": {
+  "before": 5484,
+  "after": 0
+ },
+ "bannerNewVsOldSameCode": 0,
+ "bannerEx": [],
+ "p35": {
+  "genPlans": 1,
+  "adaptFlows": 7137,
+  "adaptFlowsBefore": 7136
+ },
+ "p25": {
+  "before": 0,
+  "after": 0
+ }
+}
