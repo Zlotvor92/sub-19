@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { navBack } from '../../app/navHistory';
 import { TABS, type Tab, useUIStore } from '../../stores/uiStore';
 import { Icon, TabIcon, TAB_LABELS } from './icons';
+import { InstallButton } from './InstallButton';
 
 /* LJUSKA: gornji red taba, ekran iznad taba („Nazad“), traka tabova, kapija za prijavu, stranica jednog taba. */
 
@@ -13,6 +14,7 @@ export function AppBar({ right, tag }: { right?: ReactNode; tag?: boolean }) {
         sub20
       </span>
       {right ? <div className={`appbar-r${tag ? ' tag' : ''}`}>{right}</div> : null}
+      <InstallButton />
     </div>
   );
 }

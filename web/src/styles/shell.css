@@ -35,6 +35,13 @@ main {
   font-size: var(--fs-small);
   color: var(--text-2);
 }
+/* Znak levo uzima slobodan prostor: datum/faza i dugme „Instaliraj" stoje zajedno uz desnu ivicu. */
+.appbar .wordmark {
+  margin-right: auto;
+}
+.install-btn {
+  flex: none;
+}
 .appbar-r.tag {
   font-size: var(--fs-label);
   font-weight: var(--w-strong);
