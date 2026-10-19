@@ -174,3 +174,10 @@ export async function seedSession(
 export async function fixToday(page: Page, iso = '2026-01-14T09:00:00'): Promise<void> {
   await page.clock.setFixedTime(new Date(iso));
 }
+
+/** Stranica se ponaša kao aplikacija sa početnog ekrana: tamo se korisnik prijavljuje (u pregledaču na telefonu kapija prvo traži instalaciju). */
+export async function asInstalledApp(target: Page | BrowserContext): Promise<void> {
+  await target.addInitScript(() => {
+    Object.defineProperty(navigator, 'standalone', { value: true, configurable: true });
+  });
+}

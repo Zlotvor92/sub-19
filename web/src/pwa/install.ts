@@ -31,11 +31,14 @@ export function installKind(env: {
 
 interface InstallState {
   prompt: InstallPromptEvent | null;
+  /** Pregledač je javio `appinstalled`: aplikacija je na početnom ekranu, ali ova kartica je i dalje pregledač. */
+  installed: boolean;
   set: (prompt: InstallPromptEvent | null) => void;
 }
 
 export const useInstallStore = create<InstallState>()((set) => ({
   prompt: null,
+  installed: false,
   set: (prompt) => set({ prompt })
 }));
 
@@ -45,7 +48,9 @@ export function captureInstallPrompt(w: Window): void {
     e.preventDefault();
     useInstallStore.getState().set(e as InstallPromptEvent);
   });
-  w.addEventListener('appinstalled', () => useInstallStore.getState().set(null));
+  w.addEventListener('appinstalled', () =>
+    useInstallStore.setState({ prompt: null, installed: true })
+  );
 }
 
 /** Da li aplikacija već radi instalirana (PWA ili Android paket — TWA se predstavlja preko `android-app://` referera). */

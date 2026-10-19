@@ -9,6 +9,7 @@ import {
   type InstallPromptEvent
 } from './install';
 import { InstallButton } from '../components/ui/InstallButton';
+import { AuthGate } from '../components/ui/Shell';
 import { InstallSheet } from '../features/install/InstallSheet';
 import { useUIStore } from '../stores/uiStore';
 
@@ -19,7 +20,7 @@ const DESKTOP = 'Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefo
 
 afterEach(() => {
   vi.restoreAllMocks();
-  useInstallStore.getState().set(null);
+  useInstallStore.setState({ prompt: null, installed: false });
   useUIStore.getState().closeSheet();
 });
 
@@ -98,8 +99,43 @@ describe('InstallButton', () => {
 describe('InstallSheet', () => {
   it('iPhone: koraci za Podeli i razlog (obaveštenja)', () => {
     render(createElement(InstallSheet, { kind: 'ios' }));
-    expect(screen.getByText('Dodaj na početni ekran')).toBeTruthy();
+    expect(screen.getByText('Add to Home Screen')).toBeTruthy();
+    const imgs = [...document.querySelectorAll<HTMLImageElement>('.sh-steps img')];
+    expect(imgs).toHaveLength(4);
+    /* Da fajlovi postoje u public/, drži `install-images.node.test.ts`. */
+    for (const img of imgs)
+      expect(img.getAttribute('src')).toMatch(/^\.\/instaliraj\/ios-\d-.+\.webp$/);
     expect(screen.getByText(/podsetnici za trening/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'U redu' })).toBeTruthy();
+  });
+});
+
+describe('AuthGate', () => {
+  const ua = (s: string) => vi.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(s);
+
+  it('iPhone u Safariju: prvo instalacija sa koracima; prijava u pregledaču je sporedni izlaz', async () => {
+    ua(IPHONE);
+    const onLogin = vi.fn();
+    render(createElement(AuthGate, { message: '', onLogin }));
+    expect(screen.getByRole('heading', { name: 'Prvo instaliraj sub20' })).toBeTruthy();
+    expect(screen.getByText('Add to Home Screen')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Prijavi se Google nalogom' })).toBeNull();
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Ne mogu da instaliram — prijavi me u pregledaču' })
+    );
+    expect(onLogin).toHaveBeenCalledOnce();
+  });
+
+  it('posle instalacije iz Chrome-a: upućuje na aplikaciju sa početnog ekrana', () => {
+    ua(ANDROID);
+    useInstallStore.setState({ installed: true });
+    render(createElement(AuthGate, { message: '', onLogin: vi.fn() }));
+    expect(screen.getByRole('status').textContent).toMatch(/Otvori sub20 sa početnog ekrana/);
+  });
+
+  it('računar: obična prijava', () => {
+    ua(DESKTOP);
+    render(createElement(AuthGate, { message: '', onLogin: vi.fn() }));
+    expect(screen.getByRole('heading', { name: 'Prijavi se da nastaviš' })).toBeTruthy();
   });
 });
