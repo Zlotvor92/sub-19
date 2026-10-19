@@ -98,7 +98,8 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     stanje doze kvaliteta, poslednji dugi, poslednja doza zone) konstruktor računa iz upisanih dana, a validator i u
     konstrukciji i posle spajanja vidi isti upisani plan. Mreža adaptacije sa asOf usred nedelje to proverava.
 30. (10K 06d) Trkačka nedelja (bez trke) ≤ planirano tapera i kad taper ima dane odmora/bola: višak laganih dana trkačke
-    nedelje postaje odmor (prvo dani bola, pa najraniji lagani); dan pred trku i trka ostaju.
+    nedelje postaje odmor (prvo dani bola, pa najraniji lagani); dan pred trku i trka ostaju. Tako skraćena trkačka
+    nedelja sme biti ispod minimuma trkačke + trka — upozorenje RACE_WEEK_SHORT, ne odbijanje (10K 06d: 2/1308).
 31. (10K 06d) Prinudno rasterećenje (umor) u uvodnoj nedelji početnika: obim rasterećenja, sadržaj uvoda (bez kvaliteta).
 32. (MAR-03) Dugi ostaje najduži trening nedelje: plafon zone je jedna funkcija sa dva člana — min(udeo nedelje po zoni,
     najveća doza za koju je trajanje kvalitetnog dana (WU + rad + oporavci + CD) ≤ trajanje dugog iste nedelje). Pad doze
