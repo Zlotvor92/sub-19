@@ -92,22 +92,68 @@ describe('HI7 (pouka 28) skorašnji najduži trk', () => {
     return r.plan;
   };
 
-  it('dugi nedelje 1 ≤ max(1,1 × r, r + 1,0); nedelja 1 sme ispod obima kad je dugi na toj granici', () => {
+  it('dugi SVAKE nedelje ≤ max(1,1 × L, L + 1,0), L = najduži prethodne 4 nedelje (ned 1–4 i r); ned 1 sme ispod obima na granici', () => {
     const free = gen({});
     expect(km(free.weeks[0]!, 'long')[0]).toBe(16); // 40 % od 40 km
     const p8 = gen({ recentLongRunKm: 8 }); // max(8,8; 9,0) = 9,0
-    expect(km(p8.weeks[0]!, 'long')[0]).toBe(9);
+    const l = p8.weeks.map((w) => km(w, 'long')[0] ?? 0);
+    expect(l[0]).toBe(9);
     expect(p8.weeks[0]!.targetKm).toBeLessThan(40);
     expect(p8.weeks[0]!.notes.join()).toContain('— na granici');
-    expect(p8.notes.join()).toContain('granica skorašnjeg najdužeg trka');
+    expect(p8.notes.join()).toContain('prethodne 4 nedelje (pouka 28)');
+    // Kotrljanje: 9,0 → 10,0 → 11,0 → 12,1 (max(1,1 × L, L + 1)); skok ned 1 → 2 ≤ 1 km ili 10 %.
+    expect(l.slice(0, 4)).toEqual([9, 10, 11, 12.1]);
+    for (let i = 1; i < l.length; i++) {
+      const L = Math.max(...l.slice(Math.max(0, i - 4), i), i < 4 ? 8 : 0);
+      if (l[i]! > 0)
+        expect(l[i]!, `ned ${i + 1}`).toBeLessThanOrEqual(
+          Math.max(Math.floor(1.1 * L * 10 + 1e-9), L * 10 + 10) / 10
+        );
+    }
     const p20 = gen({ recentLongRunKm: 14.5, km: 50 }); // max(15,95→15,9; 15,5) = 15,9
     expect(km(p20.weeks[0]!, 'long')[0]).toBe(15.9);
-    // Granica važi samo za nedelju 1.
-    expect(km(p8.weeks[1]!, 'long')[0]).toBeGreaterThan(9);
-    // Granica viša od dugog po udelu: plan isti kao bez ulaza (osim ulaza i napomene nedelje 1).
+    // Granica viša od dugih bez ulaza: plan isti kao bez ulaza (osim ulaza i napomene nedelje 1).
     const p30 = gen({ recentLongRunKm: 30 });
     expect(p30.weeks.slice(1)).toEqual(free.weeks.slice(1));
     expect(p30.weeks[0]!.days).toEqual(free.weeks[0]!.days);
+  });
+
+  it('u nedeljama 2–4 skorašnji najduži ulazi u L (brz trkač 30 km: ned 1 dugi 11,0; ned 2 12,1 bez r, 12,4 uz r = 12)', () => {
+    const at = (r?: number) =>
+      gen({ km: 30, vdot: 60, ...(r !== undefined ? { recentLongRunKm: r } : {}) }).weeks.map(
+        (w) => km(w, 'long')[0]
+      );
+    expect(at().slice(0, 2)).toEqual([11, 12.1]); // max(1,1 × 11,0; 12,0) = 12,1
+    expect(at(12).slice(0, 2)).toEqual([11, 12.4]); // L = max(11,0; 12) → 13,2; dugi po udelu 12,4
+  });
+
+  it('P1: neizvodljiva nedelja uz dati r → RECENT_LONG_TOO_SHORT sa pragom i preporukom', () => {
+    const r = generateHmV2(
+      inputOf({
+        weeks: 12,
+        km: 35,
+        vdot: 40,
+        days: SCHEDULES_BY_DAYS[3].A.days,
+        recentLongRunKm: 6
+      })
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.reasons.map((x) => [x.code, x.week])).toEqual([['RECENT_LONG_TOO_SHORT', 1]]);
+    const m = /izvodljiv od (\d+),(\d) km/.exec(r.reasons[0]!.message)!;
+    const thr = Number(`${m[1]}.${m[2]}`);
+    expect(r.reasons[0]!.message).toContain('10K plan');
+    const at = (x: number) =>
+      generateHmV2(
+        inputOf({
+          weeks: 12,
+          km: 35,
+          vdot: 40,
+          days: SCHEDULES_BY_DAYS[3].A.days,
+          recentLongRunKm: x
+        })
+      ).ok;
+    expect([at(thr - 0.5), at(thr)]).toEqual([false, true]);
   });
 
   it('bez ulaza: napomena nedelje 1 sa pragom (najmanji r za koji je dugi u granici)', () => {

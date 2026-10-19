@@ -99,7 +99,7 @@ describe('H1 opseg ulaza', () => {
     expect(codes(base({ longRunDay: 'mon' }))).toEqual(['LONG_DAY_INVALID']);
   });
 
-  it('rezultat: 5/10 km, HM, maraton; bez rezultata, stariji od 84 dana ili VDOT < 30 → RESULT_REQUIRED (segment 03)', () => {
+  it('rezultat: 5/10 km, HM, maraton; bez rezultata, stariji od 84 dana ili VDOT < 30 → plan po osećaju (H16: lagan tempo obavezan)', () => {
     for (const d of [5000, 10000, 21097.5, 42195])
       expect(
         codes(base({ recentResult: { distanceM: d, timeSec: timeForVdot(45, d), date: START } }))
@@ -107,13 +107,17 @@ describe('H1 opseg ulaza', () => {
     expect(codes(base({ recentResult: { distanceM: 3000, timeSec: 700, date: START } }))).toEqual([
       'RESULT_DISTANCE_UNSUPPORTED'
     ]);
-    expect(codes(base({ recentResult: null }))).toEqual(['RESULT_REQUIRED']);
-    expect(message(base({ recentResult: null }))).toContain('segmentu 03');
+    expect(codes(base({ recentResult: null }))).toEqual(['EASY_PACE_REQUIRED']);
+    expect(message(base({ recentResult: null }))).toContain('bez rezultata trke');
+    expect(codes(base({ recentResult: null, easyPaceSecPerKm: 360 }))).toEqual([]);
     const old = { distanceM: 10000, timeSec: 2700, date: addDays(START, -85) };
-    expect(codes(base({ recentResult: old }))).toEqual(['RESULT_REQUIRED']);
+    expect(codes(base({ recentResult: old }))).toEqual(['EASY_PACE_REQUIRED']);
+    expect(message(base({ recentResult: old }))).toContain('star 85 dana');
+    expect(codes(base({ recentResult: old, easyPaceSecPerKm: 360 }))).toEqual([]);
     expect(codes(base({ recentResult: { ...old, date: addDays(START, -84) } }))).toEqual([]);
     const slow = { distanceM: 10000, timeSec: timeForVdot(29.9), date: START };
-    expect(codes(base({ recentResult: slow }))).toEqual(['RESULT_REQUIRED']);
+    expect(codes(base({ recentResult: slow }))).toEqual(['EASY_PACE_REQUIRED']);
+    expect(codes(base({ recentResult: slow, easyPaceSecPerKm: 450 }))).toEqual([]);
     const fast = { distanceM: 10000, timeSec: timeForVdot(80.1), date: START };
     expect(codes(base({ recentResult: fast }))).toEqual(['VDOT_TOO_HIGH']);
     expect(
@@ -124,16 +128,61 @@ describe('H1 opseg ulaza', () => {
     ]);
   });
 
-  it('H17 trčanje/hodanje i početnik (segment 03); oblik ulaza; cilj', () => {
+  it('H16: lagan tempo 270–510 s/km (granice uključene); uz pouzdan rezultat se ne traži', () => {
+    const feel = (e: unknown) => base({ recentResult: null, easyPaceSecPerKm: e });
+    expect(codes(feel(270))).toEqual([]);
+    expect(codes(feel(510))).toEqual([]);
+    expect(codes(feel(269))).toEqual(['EASY_PACE_OUT_OF_RANGE']);
+    expect(codes(feel(511))).toEqual(['EASY_PACE_OUT_OF_RANGE']);
+    expect(message(feel(511))).toContain('4:30–8:30/km');
+    expect(codes(feel('6:00'))).toEqual(['INPUT_SHAPE']);
+    // Uz pouzdan rezultat lagan tempo van opsega ne smeta (ne koristi se).
+    expect(codes(base({ easyPaceSecPerKm: 900 }))).toEqual([]);
+  });
+
+  it('H17 trčanje/hodanje (sa preporukom 5K) pre svega ostalog; oblik ulaza; cilj', () => {
     expect(codes(base({ runWalk: true }))).toEqual(['RUN_WALK_NOT_SUPPORTED']);
     expect(message(base({ runWalk: true }))).toContain('5K plan trčanja/hodanja');
-    expect(codes(base({ experience: 'beginner' }))).toEqual(['BEGINNER_NOT_SUPPORTED']);
+    expect(codes(base({ runWalk: true, experience: 'beginner', runDays: ['sun'] }))).toEqual([
+      'RUN_WALK_NOT_SUPPORTED'
+    ]);
     expect(codes(base({ experience: 'regular', runWalk: false }))).toEqual([]);
     expect(codes(null)).toEqual(['INPUT_SHAPE']);
     expect(codes(base({ currentWeeklyKm: '40' }))).toEqual(['INPUT_SHAPE']);
+    expect(codes(base({ experience: 'pro' }))).toEqual(['INPUT_SHAPE']);
     expect(codes(base({ goalTimeSec: -1 }))).toEqual(['GOAL_INVALID']);
     expect(codes(base({ startDate: '2026-02-30' }))).toEqual(['DATE_INVALID']);
     expect(codes(base({ raceDate: START }))).toEqual(['RACE_NOT_AFTER_START']);
+  });
+
+  it('H17 početnik: 4–5 dana, 12–20 nedelja, obim 4 d 20–40 / 5 d 25–45 km (ispod → 10K, iznad → bez oznake)', () => {
+    const b = (o: Record<string, unknown>) => base({ experience: 'beginner', ...o });
+    expect(codes(b({ currentWeeklyKm: 30 }))).toEqual([]);
+    expect(codes(b({ currentWeeklyKm: 20 }))).toEqual([]);
+    expect(codes(b({ currentWeeklyKm: 40 }))).toEqual([]);
+    expect(codes(b({ currentWeeklyKm: 19.9 }))).toEqual(['WEEKLY_KM_TOO_LOW']);
+    expect(message(b({ currentWeeklyKm: 19.9 }))).toContain('10K plan');
+    expect(codes(b({ currentWeeklyKm: 40.1 }))).toEqual(['WEEKLY_KM_TOO_HIGH']);
+    expect(message(b({ currentWeeklyKm: 40.1 }))).toContain('bez oznake početnika');
+    const five = ['mon', 'tue', 'thu', 'sat', 'sun'];
+    expect(codes(b({ runDays: five, currentWeeklyKm: 25 }))).toEqual([]);
+    expect(codes(b({ runDays: five, currentWeeklyKm: 45 }))).toEqual([]);
+    expect(codes(b({ runDays: five, currentWeeklyKm: 24.9 }))).toEqual(['WEEKLY_KM_TOO_LOW']);
+    expect(codes(b({ runDays: five, currentWeeklyKm: 45.1 }))).toEqual(['WEEKLY_KM_TOO_HIGH']);
+    for (const days of [
+      ['tue', 'thu', 'sun'],
+      ['mon', 'tue', 'wed', 'thu', 'sat', 'sun']
+    ]) {
+      expect(codes(b({ runDays: days }))).toEqual(['BEGINNER_DAYS']);
+      expect(message(b({ runDays: days }))).toContain('preporuka 4–5 dana');
+    }
+    expect(codes(b({ raceDate: addDays(START, 7 * 11 - 1) }))).toEqual(['BEGINNER_SHORT']);
+    expect(codes(b({ raceDate: addDays(START, 7 * 12 - 1) }))).toEqual([]);
+    expect(codes(b({ raceDate: addDays(START, 7 * 9 - 1) }))).toEqual(['PLAN_TOO_SHORT']);
+    expect(codes(b({ raceDate: addDays(START, 7 * 21 - 1) }))).toEqual(['PLAN_TOO_LONG']);
+    // Početnik po osećaju: lagan tempo obavezan kao i za redovan plan.
+    expect(codes(b({ recentResult: null }))).toEqual(['EASY_PACE_REQUIRED']);
+    expect(codes(b({ recentResult: null, easyPaceSecPerKm: 450 }))).toEqual([]);
   });
 
   it('H9: raspored bez nesusednih teških dana → SCHEDULE_NO_RECOVERY sa predlogom', () => {

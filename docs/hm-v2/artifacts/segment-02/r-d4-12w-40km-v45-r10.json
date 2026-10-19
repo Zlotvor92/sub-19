@@ -31,7 +31,7 @@
   "peakCapKm": 56,
   "peakKm": 56,
   "notes": [
-    "4 dana ne nose ovaj obim uz dugi ≤ granica skorašnjeg najdužeg trka (nedelja 1); preporuka 5–6 dana. Vrh 56,0 km umesto do 56,0 km (H6)."
+    "4 dana ne nose ovaj obim uz dugi ≤ max(1,1 × najduži, najduži + 1 km) prethodne 4 nedelje (pouka 28); preporuka 5–6 dana. Vrh 56,0 km umesto do 56,0 km (H6)."
   ],
   "weeks": [
     {
@@ -597,21 +597,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 6,8 km",
-            "blocks": [{ "kind": "easy", "km": 6.8 }],
+            "title": "Lagano 10,9 km",
+            "blocks": [{ "kind": "easy", "km": 10.9 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 6.8,
-                "sec": 2387,
+                "km": 10.9,
+                "sec": 3826,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 6.8,
-            "sec": 2387,
+            "km": 10.9,
+            "sec": 3826,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -628,21 +628,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 16,2 km lagano",
-            "blocks": [{ "kind": "long", "km": 16.2 }],
+            "title": "Dugi 12,1 km lagano",
+            "blocks": [{ "kind": "long", "km": 12.1 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 16.2,
-                "sec": 5686,
+                "km": 12.1,
+                "sec": 4247,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 16.2,
-            "sec": 5686,
+            "km": 12.1,
+            "sec": 4247,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -887,21 +887,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 7,5 km",
-            "blocks": [{ "kind": "easy", "km": 7.5 }],
+            "title": "Lagano 11,3 km",
+            "blocks": [{ "kind": "easy", "km": 11.3 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 7.5,
-                "sec": 2633,
+                "km": 11.3,
+                "sec": 3966,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 7.5,
-            "sec": 2633,
+            "km": 11.3,
+            "sec": 3966,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -918,21 +918,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 17,1 km lagano",
-            "blocks": [{ "kind": "long", "km": 17.1 }],
+            "title": "Dugi 13,3 km lagano",
+            "blocks": [{ "kind": "long", "km": 13.3 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 17.1,
-                "sec": 6002,
+                "km": 13.3,
+                "sec": 4668,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 17.1,
-            "sec": 6002,
+            "km": 13.3,
+            "sec": 4668,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -1147,21 +1147,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 9,3 km",
-            "blocks": [{ "kind": "easy", "km": 9.3 }],
+            "title": "Lagano 12,9 km",
+            "blocks": [{ "kind": "easy", "km": 12.9 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 9.3,
-                "sec": 3264,
+                "km": 12.9,
+                "sec": 4528,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 9.3,
-            "sec": 3264,
+            "km": 12.9,
+            "sec": 4528,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -1178,21 +1178,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 18,2 km lagano",
-            "blocks": [{ "kind": "long", "km": 18.2 }],
+            "title": "Dugi 14,6 km lagano",
+            "blocks": [{ "kind": "long", "km": 14.6 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 18.2,
-                "sec": 6388,
+                "km": 14.6,
+                "sec": 5125,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 18.2,
-            "sec": 6388,
+            "km": 14.6,
+            "sec": 5125,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -1223,21 +1223,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 6,9 km",
-            "blocks": [{ "kind": "easy", "km": 6.9 }],
+            "title": "Lagano 8,4 km",
+            "blocks": [{ "kind": "easy", "km": 8.4 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 6.9,
-                "sec": 2422,
+                "km": 8.4,
+                "sec": 2948,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 6.9,
-            "sec": 2422,
+            "km": 8.4,
+            "sec": 2948,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -1337,21 +1337,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 6,9 km",
-            "blocks": [{ "kind": "easy", "km": 6.9 }],
+            "title": "Lagano 8,3 km",
+            "blocks": [{ "kind": "easy", "km": 8.3 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 6.9,
-                "sec": 2422,
+                "km": 8.3,
+                "sec": 2913,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 6.9,
-            "sec": 2422,
+            "km": 8.3,
+            "sec": 2913,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -1368,21 +1368,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 14,5 km lagano",
-            "blocks": [{ "kind": "long", "km": 14.5 }],
+            "title": "Dugi 11,6 km lagano",
+            "blocks": [{ "kind": "long", "km": 11.6 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 14.5,
-                "sec": 5090,
+                "km": 11.6,
+                "sec": 4072,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 14.5,
-            "sec": 5090,
+            "km": 11.6,
+            "sec": 4072,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -1599,21 +1599,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 10,2 km",
-            "blocks": [{ "kind": "easy", "km": 10.2 }],
+            "title": "Lagano 13,4 km",
+            "blocks": [{ "kind": "easy", "km": 13.4 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 10.2,
-                "sec": 3580,
+                "km": 13.4,
+                "sec": 4703,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 10.2,
-            "sec": 3580,
+            "km": 13.4,
+            "sec": 4703,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -1630,21 +1630,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 19,2 km lagano",
-            "blocks": [{ "kind": "long", "km": 19.2 }],
+            "title": "Dugi 16,0 km lagano",
+            "blocks": [{ "kind": "long", "km": 16 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 19.2,
-                "sec": 6739,
+                "km": 16,
+                "sec": 5616,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 19.2,
-            "sec": 6739,
+            "km": 16,
+            "sec": 5616,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -1877,21 +1877,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 10,0 km",
-            "blocks": [{ "kind": "easy", "km": 10 }],
+            "title": "Lagano 12,8 km",
+            "blocks": [{ "kind": "easy", "km": 12.8 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 10,
-                "sec": 3510,
+                "km": 12.8,
+                "sec": 4493,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 10,
-            "sec": 3510,
+            "km": 12.8,
+            "sec": 4493,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -1908,21 +1908,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 20,4 km lagano",
-            "blocks": [{ "kind": "long", "km": 20.4 }],
+            "title": "Dugi 17,6 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.6 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 20.4,
-                "sec": 7160,
+                "km": 17.6,
+                "sec": 6178,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 20.4,
-            "sec": 7160,
+            "km": 17.6,
+            "sec": 6178,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -2137,21 +2137,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 10,2 km",
-            "blocks": [{ "kind": "easy", "km": 10.2 }],
+            "title": "Lagano 12,5 km",
+            "blocks": [{ "kind": "easy", "km": 12.5 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 10.2,
-                "sec": 3580,
+                "km": 12.5,
+                "sec": 4388,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 10.2,
-            "sec": 3580,
+            "km": 12.5,
+            "sec": 4388,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -2168,21 +2168,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 21,6 km lagano",
-            "blocks": [{ "kind": "long", "km": 21.6 }],
+            "title": "Dugi 19,3 km lagano",
+            "blocks": [{ "kind": "long", "km": 19.3 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 21.6,
-                "sec": 7582,
+                "km": 19.3,
+                "sec": 6774,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 21.6,
-            "sec": 7582,
+            "km": 19.3,
+            "sec": 6774,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -2213,21 +2213,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 8,9 km",
-            "blocks": [{ "kind": "easy", "km": 8.9 }],
+            "title": "Lagano 9,8 km",
+            "blocks": [{ "kind": "easy", "km": 9.8 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 8.9,
-                "sec": 3124,
+                "km": 9.8,
+                "sec": 3440,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 8.9,
-            "sec": 3124,
+            "km": 9.8,
+            "sec": 3440,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -2327,21 +2327,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 8,8 km",
-            "blocks": [{ "kind": "easy", "km": 8.8 }],
+            "title": "Lagano 9,7 km",
+            "blocks": [{ "kind": "easy", "km": 9.7 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 8.8,
-                "sec": 3089,
+                "km": 9.7,
+                "sec": 3405,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 8.8,
-            "sec": 3089,
+            "km": 9.7,
+            "sec": 3405,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -2358,21 +2358,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 17,2 km lagano",
-            "blocks": [{ "kind": "long", "km": 17.2 }],
+            "title": "Dugi 15,4 km lagano",
+            "blocks": [{ "kind": "long", "km": 15.4 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 17.2,
-                "sec": 6037,
+                "km": 15.4,
+                "sec": 5405,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 17.2,
-            "sec": 6037,
+            "km": 15.4,
+            "sec": 5405,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -2571,21 +2571,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 10,3 km",
-            "blocks": [{ "kind": "easy", "km": 10.3 }],
+            "title": "Lagano 11,5 km",
+            "blocks": [{ "kind": "easy", "km": 11.5 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 10.3,
-                "sec": 3615,
+                "km": 11.5,
+                "sec": 4037,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 10.3,
-            "sec": 3615,
+            "km": 11.5,
+            "sec": 4037,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -2602,21 +2602,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 22,4 km lagano",
-            "blocks": [{ "kind": "long", "km": 22.4 }],
+            "title": "Dugi 21,2 km lagano",
+            "blocks": [{ "kind": "long", "km": 21.2 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 22.4,
-                "sec": 7862,
+                "km": 21.2,
+                "sec": 7441,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 22.4,
-            "sec": 7862,
+            "km": 21.2,
+            "sec": 7441,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -2813,21 +2813,21 @@
           "workout": {
             "kind": "easy",
             "qualityType": null,
-            "title": "Lagano 7,0 km",
-            "blocks": [{ "kind": "easy", "km": 7 }],
+            "title": "Lagano 7,7 km",
+            "blocks": [{ "kind": "easy", "km": 7.7 }],
             "segments": [
               {
                 "kind": "easy",
                 "zone": "E",
-                "km": 7,
-                "sec": 2457,
+                "km": 7.7,
+                "sec": 2703,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 7,
-            "sec": 2457,
+            "km": 7.7,
+            "sec": 2703,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -2844,21 +2844,21 @@
           "workout": {
             "kind": "long",
             "qualityType": null,
-            "title": "Dugi 13,4 km lagano",
-            "blocks": [{ "kind": "long", "km": 13.4 }],
+            "title": "Dugi 12,7 km lagano",
+            "blocks": [{ "kind": "long", "km": 12.7 }],
             "segments": [
               {
                 "kind": "long",
                 "zone": "E",
-                "km": 13.4,
-                "sec": 4703,
+                "km": 12.7,
+                "sec": 4458,
                 "paceSecPerKm": 351,
                 "kmBasis": "exact",
                 "secBasis": "estimated"
               }
             ],
-            "km": 13.4,
-            "sec": 4703,
+            "km": 12.7,
+            "sec": 4458,
             "kmBasis": "exact",
             "secBasis": "estimated",
             "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
@@ -3169,7 +3169,7 @@
     {
       "rule": "CAPACITY_LIMITED",
       "severity": "warning",
-      "message": "4 dana ne nose ovaj obim uz dugi ≤ granica skorašnjeg najdužeg trka (nedelja 1); preporuka 5–6 dana."
+      "message": "4 dana ne nose ovaj obim uz dugi ≤ max(1,1 × najduži, najduži + 1 km) prethodne 4 nedelje (pouka 28); preporuka 5–6 dana."
     }
   ]
 }

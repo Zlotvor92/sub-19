@@ -32,13 +32,18 @@ export interface HmV2Input {
   goalTimeSec?: number | null;
   /** Pouka 28 (HI7): skorašnji najduži trk [km], 5–42; opcion — u planu samo kad je dat. */
   recentLongRunKm?: number | null;
-  /** Segment 03 (početnik): u segmentu 01 privremeno odbijanje. */
+  /** H17: početnik (4–5 dana, 12–20 nedelja); podrazumevano regular. U planu samo kad je 'beginner'. */
   experience?: Experience | null;
+  /** H16: lagan tempo [s/km], 270–510 — obavezan kad nema pouzdanog rezultata (plan po osećaju). */
+  easyPaceSecPerKm?: number | null;
   /** H17: trčanje/hodanje — polumaraton ga ne podržava (odbijanje). */
   runWalk?: boolean | null;
 }
 
 export type Experience = 'beginner' | 'regular';
+
+/** H16: osnova tempa — rezultat ili lagan tempo (plan po osećaju). */
+export type PaceBasis = 'result' | 'feel';
 
 export type ReasonCode =
   | 'INPUT_SHAPE'
@@ -55,10 +60,13 @@ export type ReasonCode =
   | 'LONG_DAY_INVALID'
   | 'WEEKLY_KM_TOO_LOW'
   | 'WEEKLY_KM_TOO_HIGH'
-  /** Segment 01: bez pouzdanog rezultata (plan po osećaju: segment 03). */
-  | 'RESULT_REQUIRED'
-  /** Segment 01: početnik (segment 03). */
-  | 'BEGINNER_NOT_SUPPORTED'
+  /** H16: bez pouzdanog rezultata plan po osećaju traži lagan tempo. */
+  | 'EASY_PACE_REQUIRED'
+  | 'EASY_PACE_OUT_OF_RANGE'
+  /** H17: početnik radi sa 4–5 dana trčanja. */
+  | 'BEGINNER_DAYS'
+  /** H17: početnik traži najmanje 12 nedelja. */
+  | 'BEGINNER_SHORT'
   /** H17: nema plana polumaratona trčanja/hodanja. */
   | 'RUN_WALK_NOT_SUPPORTED'
   | 'RESULT_DISTANCE_UNSUPPORTED'
@@ -68,6 +76,8 @@ export type ReasonCode =
   | 'GOAL_INVALID'
   /** Pouka 28: skorašnji najduži trk van 5–42 km. */
   | 'RECENT_LONG_INVALID'
+  /** Pouka 28 (HI7): sa datim skorašnjim najdužim trkom nedelja nije izvodljiva (prag u poruci). */
+  | 'RECENT_LONG_TOO_SHORT'
   | 'SCHEDULE_NO_RECOVERY'
   | 'WEEK_INFEASIBLE'
   | 'PLAN_VIOLATES_POLICY';
@@ -100,17 +110,28 @@ export interface WeekFrame {
   endDate: IsoDate;
   phase: Phase;
   deload: boolean;
+  /** H16: nedelja testa 5 km (plan po osećaju; poslednja nedelja baze). */
+  test?: true;
 }
 
 export type Basis = 'exact' | 'estimated';
 
 export type SegmentKind =
-  'warmup' | 'cooldown' | 'easy' | 'long' | 'rep' | 'recovery' | 'continuous' | 'stride' | 'race';
+  | 'warmup'
+  | 'cooldown'
+  | 'easy'
+  | 'long'
+  | 'rep'
+  | 'recovery'
+  | 'continuous'
+  | 'stride'
+  | 'race'
+  | 'test';
 
 export interface Segment {
   kind: SegmentKind;
-  /** 'jog' = oporavak (km po srednjem E, H14). */
-  zone: Zone | 'jog';
+  /** 'jog' = oporavak (km po srednjem E, H14); 'test' = test 5 km (H16, nije zona rada). */
+  zone: Zone | 'jog' | 'test';
   km: number;
   sec: number;
   paceSecPerKm: number;
@@ -171,9 +192,18 @@ export type BlockSpec =
       /** Oporavak posle deonice i (i < poslednje). */
       recoveries: readonly ({ m: number } | { sec: number })[];
     }
-  | { kind: 'race'; km: number };
+  | { kind: 'race'; km: number }
+  | { kind: 'test'; km: number };
 
-export type WorkoutKind = 'easy' | 'long' | 'quality' | 'race';
+/** 'test' = test 5 km (H16): računa se u obim, ne u dozu kvaliteta. */
+export type WorkoutKind = 'easy' | 'long' | 'quality' | 'race' | 'test';
+
+/** H16: RPE kvaliteta u planu po osećaju (1–10) i opis. */
+export interface Rpe {
+  min: number;
+  max: number;
+  cue: string;
+}
 
 export type QualityType = 'R' | 'T_continuous' | 'T_cruise' | 'I' | 'RP' | 'RP_sharpener';
 
@@ -191,11 +221,13 @@ export interface Workout {
   workKm: Record<WorkZone, number>;
   /** Najduža pojedinačna deonica / kontinuirani blok po zoni [s]. */
   maxBoutSec: Record<WorkZone, number>;
-  /** Izbor doze za trening kvaliteta; null za lagan, dugi i trku. */
+  /** Izbor doze za trening kvaliteta; null za lagan, dugi, test i trku. */
   dose: Dose | null;
+  /** H16: RPE kvaliteta u planu po osećaju (u planu sa rezultatom polja nema). */
+  rpe?: Rpe;
 }
 
-export type DayRole = 'q1' | 'q2' | 'long' | 'easy' | 'sharpener' | 'eve' | 'race';
+export type DayRole = 'q1' | 'q2' | 'long' | 'easy' | 'sharpener' | 'eve' | 'race' | 'test';
 
 export interface PlanDay {
   date: IsoDate;
@@ -252,14 +284,18 @@ export interface HmV2Plan {
   policyId: string;
   policyVersion: string;
   input: HmV2Input;
+  /** VDOT iz rezultata ili procena iz laganog tempa (H16, samo orijentir). */
   vdot: number;
+  /** H16: 'feel' u planu po osećaju; u planu sa rezultatom polja nema (osnova = rezultat). */
+  paceBasis?: PaceBasis;
   paces: Paces;
-  /** H2: prognoza polumaratona iz trenutnog VDOT-a [s]. */
-  predictedHmSec: number;
+  /** H2: prognoza polumaratona iz trenutnog VDOT-a [s]; null u planu po osećaju (posle testa, H16). */
+  predictedHmSec: number | null;
   goal: GoalAssessment | null;
   pattern: Pattern;
   startKm: number;
-  /** H6: min(start × 1,4; start + 20; max nedelje) — granica izgradnje pre kapaciteta konstrukcije. */
+  /** H6: min(start × 1,4; start + 20; max nedelje) — početnik min(1,4×; +15; max), H17 — granica izgradnje
+      pre kapaciteta konstrukcije. */
   peakCapKm: number;
   /** Najveći cilj izgradnje u planu (vrh). */
   peakKm: number;

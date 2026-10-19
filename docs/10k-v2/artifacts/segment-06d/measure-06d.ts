@@ -13,21 +13,19 @@
    oznake" u rasterećenju sa testom osnovnog plana; K2: TAPER_LONG; inače „novo:<pravila>") + primer. Izlaz: zbir po
    mreži/scenariju/klasi, primeri, heševi po toku (za regresiju, compare-06d.ts). */
 
-import { fork } from "node:child_process";
-import { writeFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fork } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const SHARDS = 4;
 const [outArg, rootArg, shardArg] = process.argv.slice(2);
-const ROOT = resolve(
-  rootArg ?? fileURLToPath(new URL("../../../../", import.meta.url)),
-);
+const ROOT = resolve(rootArg ?? fileURLToPath(new URL('../../../../', import.meta.url)));
 const V = `${ROOT}/web/src/domain/generators/tenK/v2/`;
 
 type Flow = {
   key: string;
-  grid: "N7" | "S";
+  grid: 'N7' | 'S';
   scen: string;
   ok: boolean;
   hash?: number;
@@ -36,14 +34,12 @@ type Flow = {
 };
 
 async function runShard(shard: number): Promise<Flow[]> {
-  const { generateTenKV2 } = await import(V + "generate.ts");
-  const { adaptTenKV2 } = await import(V + "adapt.ts");
-  const { addDays, weekdayOf } = await import(V + "dates.ts");
-  const T = await import(V + "testInputs.ts");
+  const { generateTenKV2 } = await import(V + 'generate.ts');
+  const { adaptTenKV2 } = await import(V + 'adapt.ts');
+  const { addDays, weekdayOf } = await import(V + 'dates.ts');
+  const T = await import(V + 'testInputs.ts');
   const back = (a: string, n: number): string => addDays(a, -n);
-  const brk = (a: string, n: number) => [
-    { kind: "break", from: back(a, n - 1), to: a },
-  ];
+  const brk = (a: string, n: number) => [{ kind: 'break', from: back(a, n - 1), to: a }];
   const scen: Record<string, (p: any, a: string) => unknown> = {
     pause10: (_p, a) => ({ breaks: brk(a, 10) }),
     pause20: (_p, a) => ({ breaks: brk(a, 20) }),
@@ -53,48 +49,43 @@ async function runShard(shard: number): Promise<Flow[]> {
     pause10pain5: (_p, a) => ({ breaks: brk(a, 10), ...T.painFacts(a, 5) }),
     under: (p, a) => ({
       workouts: T.runsIn(p, back(a, 6), back(a, 6)),
-      coverage: { from: back(a, 6), to: a, complete: true },
+      coverage: { from: back(a, 6), to: a, complete: true }
     }),
     over: (p, a) => ({
       workouts: T.runsIn(p, back(a, 6), a, 1.2),
-      coverage: { from: back(a, 6), to: a, complete: true },
+      coverage: { from: back(a, 6), to: a, complete: true }
     }),
-    fatigue: (p, a) => T.reliefFacts(p, "fatigue", a),
-    test5k: (p, a) => T.factsOf(p, "test5k", a),
-    faster: (p, a) => T.factsOf(p, "faster", a),
-    slower: (p, a) => T.factsOf(p, "slower", a),
+    fatigue: (p, a) => T.reliefFacts(p, 'fatigue', a),
+    test5k: (p, a) => T.factsOf(p, 'test5k', a),
+    faster: (p, a) => T.factsOf(p, 'faster', a),
+    slower: (p, a) => T.factsOf(p, 'slower', a)
   };
-  const N7_SCEN = [
-    "pause10",
-    "pause20",
-    "pain5",
-    "pain8",
-    "pause10pain5",
-    "under",
-  ];
-  const every = <X>(xs: X[], n: number): X[] =>
-    xs.filter((_, i) => i % n === 0);
+  const N7_SCEN = ['pause10', 'pause20', 'pain5', 'pain8', 'pause10pain5', 'under'];
+  const every = <X>(xs: X[], n: number): X[] => xs.filter((_, i) => i % n === 0);
   const feel = every(
     ([3, 4, 5, 6] as const).flatMap((d) => T.feelGridInputs(d)),
-    7,
+    7
   );
   const plans: { id: string; input: unknown; n7: boolean }[] = [
     ...every(T.gridInputs(), 12).map((c: any) => ({
       id: c.id,
       input: c.input,
-      n7: false,
+      n7: false
     })),
     ...feel.map((c: any) => ({ id: c.id, input: c.input, n7: true })),
     ...every(
       ([3, 4] as const).flatMap((d) => T.beginnerGridInputs(d)),
-      3,
-    ).map((c: any) => ({ id: c.id, input: c.input, n7: false })),
+      3
+    ).map((c: any) => ({ id: c.id, input: c.input, n7: false }))
   ];
+  // MEASURE_FAMILY=R|F|B: samo planovi te porodice (ponovljeno merenje dela mreže posle izmene koja dira samo nju).
+  const fam = process.env['MEASURE_FAMILY'];
+  const famOf = (id: string): string =>
+    id.startsWith('f-') ? 'F' : id.startsWith('b-') ? 'B' : 'R';
   const out: Flow[] = [];
   const classify = (p0: any, r: any): { cls: string; ex: string } => {
-    const errs: { rule: string; message: string; week?: number }[] = r
-      .violations?.length
-      ? r.violations.filter((v: any) => v.severity === "error")
+    const errs: { rule: string; message: string; week?: number }[] = r.violations?.length
+      ? r.violations.filter((v: any) => v.severity === 'error')
       : r.reasons.map((x: any) => {
           const m = /^([A-Z_0-9]+): (.*)$/.exec(x.message);
           return m
@@ -102,43 +93,29 @@ async function runShard(shard: number): Promise<Flow[]> {
             : { rule: x.code, message: x.message, week: x.week };
         });
     const k1 = (e: any) =>
-      e.rule === "VOLUME_RULE" &&
+      e.rule === 'VOLUME_RULE' &&
       /bez oznake/.test(e.message) &&
       p0.weeks[e.week - 1]?.deload &&
       p0.weeks[e.week - 1]?.test;
     const rules = [
-      ...new Set(
-        errs.map((e) =>
-          k1(e) ? "K1" : e.rule === "TAPER_LONG" ? "K2" : e.rule,
-        ),
-      ),
+      ...new Set(errs.map((e) => (k1(e) ? 'K1' : e.rule === 'TAPER_LONG' ? 'K2' : e.rule)))
     ].sort();
-    const cls = rules.every((x) => x === "K1" || x === "K2")
-      ? rules.join("+")
-      : `novo:${rules.join("+")}`;
+    const cls = rules.every((x) => x === 'K1' || x === 'K2')
+      ? rules.join('+')
+      : `novo:${rules.join('+')}`;
     return {
       cls,
-      ex: errs
-        .map((e) => `ned ${e.week ?? "—"} ${e.rule}: ${e.message}`)
-        .join(" | "),
+      ex: errs.map((e) => `ned ${e.week ?? '—'} ${e.rule}: ${e.message}`).join(' | ')
     };
   };
-  const run = (
-    grid: "N7" | "S",
-    id: string,
-    p0: any,
-    s: string,
-    a: string,
-    tag: string,
-  ): void => {
+  const run = (grid: 'N7' | 'S', id: string, p0: any, s: string, a: string, tag: string): void => {
     const r = adaptTenKV2(p0, scen[s]!(p0, a), a);
     const key = `${grid}/${id}/${tag}/${s}`;
-    if (r.ok)
-      out.push({ key, grid, scen: s, ok: true, hash: T.planHash06c(r) });
+    if (r.ok) out.push({ key, grid, scen: s, ok: true, hash: T.planHash06c(r) });
     else out.push({ key, grid, scen: s, ok: false, ...classify(p0, r) });
   };
   plans.forEach((c, i) => {
-    if (i % SHARDS !== shard) return;
+    if (i % SHARDS !== shard || (fam && famOf(c.id) !== fam)) return;
     const g = generateTenKV2(c.input);
     if (!g.ok) throw new Error(`generate ${c.id}`);
     const p0 = g.plan;
@@ -150,20 +127,20 @@ async function runShard(shard: number): Promise<Flow[]> {
           const end = p0.weeks[w - 1].endDate;
           for (const [tag, a] of [
             [`w${w}end`, end],
-            [`w${w}end-3`, back(end, 3)],
+            [`w${w}end-3`, back(end, 3)]
           ] as const)
-            for (const s of N7_SCEN) run("N7", c.id, p0, s, a, tag);
+            for (const s of N7_SCEN) run('N7', c.id, p0, s, a, tag);
         }
     }
     for (let w = 1; w <= N - 2; w++) {
       const wk = p0.weeks[w - 1];
       let wed = wk.startDate;
-      while (weekdayOf(wed) !== "wed") wed = addDays(wed, 1);
+      while (weekdayOf(wed) !== 'wed') wed = addDays(wed, 1);
       for (const [tag, a] of [
         [`w${w}wed`, wed],
-        [`w${w}end`, wk.endDate],
+        [`w${w}end`, wk.endDate]
       ] as const)
-        for (const s of Object.keys(scen)) run("S", c.id, p0, s, a, tag);
+        for (const s of Object.keys(scen)) run('S', c.id, p0, s, a, tag);
     }
   });
   return out;
@@ -180,16 +157,13 @@ if (shardArg !== undefined) {
       { length: SHARDS },
       (_, i) =>
         new Promise<Flow[]>((res, rej) => {
-          const ch = fork(self, [outArg ?? "-", ROOT, String(i)], {
-            serialization: "advanced",
+          const ch = fork(self, [outArg ?? '-', ROOT, String(i)], {
+            serialization: 'advanced'
           });
-          ch.on("message", (m) => res(m as Flow[]));
-          ch.on(
-            "exit",
-            (code) => code !== 0 && rej(new Error(`deo ${i}: izlaz ${code}`)),
-          );
-        }),
-    ),
+          ch.on('message', (m) => res(m as Flow[]));
+          ch.on('exit', (code) => code !== 0 && rej(new Error(`deo ${i}: izlaz ${code}`)));
+        })
+    )
   );
   const flows = parts.flat().sort((a, b) => (a.key < b.key ? -1 : 1));
   const stat: Record<string, Record<string, number>> = {};
@@ -207,13 +181,11 @@ if (shardArg !== undefined) {
     const e = (examples[`${f.grid}/${f.cls}`] ??= []);
     if (e.length < 6) e.push(`${f.key}: ${f.ex}`);
   }
-  const hashes = Object.fromEntries(
-    flows.map((f) => [f.key, f.ok ? f.hash : `X:${f.cls}`]),
-  );
+  const hashes = Object.fromEntries(flows.map((f) => [f.key, f.ok ? f.hash : `X:${f.cls}`]));
   const sec = Math.round((Date.now() - t0) / 1000);
   writeFileSync(
     resolve(outArg!),
-    JSON.stringify({ root: ROOT, sec, stat, examples, hashes }) + "\n",
+    JSON.stringify({ root: ROOT, sec, stat, examples, hashes }) + '\n'
   );
   console.log(JSON.stringify({ sec, stat, examples }, null, 1));
 }

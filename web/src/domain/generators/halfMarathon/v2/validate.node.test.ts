@@ -216,7 +216,7 @@ describe('validator', () => {
     expect(errors(b)).toContain('EMPTY_WORKOUT');
   });
 
-  it('H13: dugi > 24 km (odluka HM-01 → 02); HI7: dugi nedelje 1 > granica skorašnjeg najdužeg', () => {
+  it('H13: dugi > 24 km (odluka HM-01 → 02); HI7: dugi > kotrljajuća granica (skorašnji najduži, prethodne 4 ned)', () => {
     const a = clone(base('16w-60km-v60-A-sun'));
     const w = week(a, 2);
     setKm(a, w, 'long', 24.1);
@@ -224,7 +224,15 @@ describe('validator', () => {
     expect(errors(a)).toContain('LONG_KM');
     const b = clone(base());
     b.input = { ...b.input, recentLongRunKm: 8 }; // granica 9,0 < dugi 16,0
-    expect(errors(b)).toEqual(expect.arrayContaining(['LONG_RECENT']));
+    expect(errors(b)).toEqual(expect.arrayContaining(['LONG_ROLLING']));
+    // Bez ulaza: dugi nedelje 3 > max(1,1 × L, L + 1), L = najduži nedelja 1–2.
+    const c = clone(base());
+    const w3 = week(c, 3);
+    const l2 = Math.max(dayOf(week(c, 1), 'long').workout.km, dayOf(week(c, 2), 'long').workout.km);
+    const over = Math.floor(Math.max(1.1 * l2, l2 + 1) * 10 + 1e-9) / 10 + 0.1;
+    setKm(c, w3, 'long', over);
+    w3.targetKm = Math.round(w3.plannedKm * 10) / 10;
+    expect(errors(c)).toContain('LONG_ROLLING');
   });
 
   it('HI8 (pouka 9): nedelja 1 ispod obima ispravna uz dugi na granici skorašnjeg najdužeg, ne bez nje', () => {

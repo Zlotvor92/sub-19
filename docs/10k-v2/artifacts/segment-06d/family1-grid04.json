@@ -1,0 +1,172 @@
+{
+ "flows": 18,
+ "explained": 18,
+ "res": [
+  {
+   "key": "04/d4-r-10w/taperWed/pause35",
+   "asOf": "2026-12-30",
+   "pastDiff": [
+    "ned 9 2026-12-29: upisano q1:8.55[RP2400] / sastavljeno easy:4.4"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/d4-f-10w/taperWed/pause35",
+   "asOf": "2026-12-30",
+   "pastDiff": [
+    "ned 9 2026-12-29: upisano q1:8.4[RP2400] / sastavljeno easy:4.2"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/d4-r-14w/taperWed/pause35",
+   "asOf": "2027-01-27",
+   "pastDiff": [
+    "ned 13 2027-01-26: upisano q1:8.55[RP2400] / sastavljeno easy:5.1"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/d4-f-14w/taperWed/pause35",
+   "asOf": "2027-01-27",
+   "pastDiff": [
+    "ned 13 2027-01-26: upisano q1:8.4[RP2400] / sastavljeno easy:5.1"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/d5-r-14w/taperWed/pause20",
+   "asOf": "2027-01-27",
+   "pastDiff": [
+    "ned 13 2027-01-25: upisano easy:5.7 / sastavljeno easy:6.4"
+   ],
+   "changed": [
+    "ned 14 (race): easy:5.98 easy:5.98 easy:5.98 eve:3.98 race:14.27 → easy:5.7 easy:5.7 easy:5.7 eve:3.98 race:14.27"
+   ]
+  },
+  {
+   "key": "04/d5-r-14w/taperWed/pause35",
+   "asOf": "2027-01-27",
+   "pastDiff": [
+    "ned 13 2027-01-25: upisano easy:5.7 / sastavljeno easy:4.8",
+    "ned 13 2027-01-26: upisano q1:10.17[RP3000] / sastavljeno easy:4.8"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/d5-r-14w/taperWed/pain8",
+   "asOf": "2027-01-27",
+   "pastDiff": [
+    "ned 13 2027-01-25: upisano easy:5.7 / sastavljeno easy:7.4"
+   ],
+   "changed": [
+    "ned 14 (race): easy:4.2 easy:4.2 easy:4.2 eve:3.42 race:14.27 → easy:3.9 easy:3.9 easy:3.9 eve:3.42 race:14.27"
+   ]
+  },
+  {
+   "key": "04/d5-f-14w/taperWed/pause35",
+   "asOf": "2027-01-27",
+   "pastDiff": [
+    "ned 13 2027-01-25: upisano easy:5.9 / sastavljeno easy:4.9",
+    "ned 13 2027-01-26: upisano q1:10.01[RP3000] / sastavljeno easy:4.9"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/d4-r-18w/taperWed/pause35",
+   "asOf": "2027-02-24",
+   "pastDiff": [
+    "ned 17 2027-02-23: upisano q1:8.55[RP2400] / sastavljeno easy:5.3"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/d4-f-18w/taperWed/pause35",
+   "asOf": "2027-02-24",
+   "pastDiff": [
+    "ned 17 2027-02-23: upisano q1:8.4[RP2400] / sastavljeno easy:5.3"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/d5-r-18w/taperWed/pause20",
+   "asOf": "2027-02-24",
+   "pastDiff": [
+    "ned 17 2027-02-22: upisano easy:5.7 / sastavljeno easy:6.4"
+   ],
+   "changed": [
+    "ned 18 (race): easy:5.98 easy:5.98 easy:5.98 eve:3.98 race:14.27 → easy:5.7 easy:5.7 easy:5.7 eve:3.98 race:14.27"
+   ]
+  },
+  {
+   "key": "04/d5-r-18w/taperWed/pause35",
+   "asOf": "2027-02-24",
+   "pastDiff": [
+    "ned 17 2027-02-22: upisano easy:5.7 / sastavljeno easy:4.8",
+    "ned 17 2027-02-23: upisano q1:10.17[RP3000] / sastavljeno easy:4.8"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/d5-r-18w/taperWed/pain8",
+   "asOf": "2027-02-24",
+   "pastDiff": [
+    "ned 17 2027-02-22: upisano easy:5.7 / sastavljeno easy:7.4"
+   ],
+   "changed": [
+    "ned 18 (race): easy:4.2 easy:4.2 easy:4.2 eve:3.42 race:14.27 → easy:3.9 easy:3.9 easy:3.9 eve:3.42 race:14.27"
+   ]
+  },
+  {
+   "key": "04/d5-f-18w/taperWed/pause35",
+   "asOf": "2027-02-24",
+   "pastDiff": [
+    "ned 17 2027-02-22: upisano easy:5.9 / sastavljeno easy:4.8",
+    "ned 17 2027-02-23: upisano q1:10.01[RP3000] / sastavljeno easy:4.8"
+   ],
+   "changed": []
+  },
+  {
+   "key": "04/beg-d3-f-14w/taperWed/pause10",
+   "asOf": "2027-01-27",
+   "pastDiff": [
+    "ned 13 2027-01-26: upisano easy:6 / sastavljeno easy:4.4"
+   ],
+   "changed": [
+    "ned 14 (race): easy:4.4 easy:4.4 race:13.33 → easy:4.67 easy:4.67 race:13.33"
+   ]
+  },
+  {
+   "key": "04/beg-d3-f-14w/taperWed/chain",
+   "asOf": "2027-02-03",
+   "pastDiff": [
+    "ned 13 2027-01-26: upisano easy:6 / sastavljeno easy:4.4",
+    "ned 14 2027-02-02: upisano easy:4.67 / sastavljeno easy:4.4"
+   ],
+   "changed": [
+    "ned 14 (race): easy:4.4 easy:4.4 race:13.33 → easy:4.67 easy:4.67 race:13.33"
+   ]
+  },
+  {
+   "key": "04/beg-d3-f-18w/taperWed/pause10",
+   "asOf": "2027-02-24",
+   "pastDiff": [
+    "ned 17 2027-02-23: upisano easy:6 / sastavljeno easy:4.4"
+   ],
+   "changed": [
+    "ned 18 (race): easy:4.4 easy:4.4 race:13.33 → easy:4.67 easy:4.67 race:13.33"
+   ]
+  },
+  {
+   "key": "04/beg-d3-f-18w/taperWed/chain",
+   "asOf": "2027-03-03",
+   "pastDiff": [
+    "ned 17 2027-02-23: upisano easy:6 / sastavljeno easy:4.4",
+    "ned 18 2027-03-02: upisano easy:4.67 / sastavljeno easy:4.4"
+   ],
+   "changed": [
+    "ned 18 (race): easy:4.4 easy:4.4 race:13.33 → easy:4.67 easy:4.67 race:13.33"
+   ]
+  }
+ ]
+}

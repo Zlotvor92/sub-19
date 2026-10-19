@@ -98,8 +98,21 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     stanje doze kvaliteta, poslednji dugi, poslednja doza zone) konstruktor računa iz upisanih dana, a validator i u
     konstrukciji i posle spajanja vidi isti upisani plan. Mreža adaptacije sa asOf usred nedelje to proverava.
 30. (10K 06d) Trkačka nedelja (bez trke) ≤ planirano tapera i kad taper ima dane odmora/bola: višak laganih dana trkačke
-    nedelje postaje odmor (prvo dani bola, pa najraniji lagani); dan pred trku i trka ostaju.
+    nedelje postaje odmor (prvo dani bola, pa najraniji lagani); dan pred trku i trka ostaju. Tako skraćena trkačka
+    nedelja sme biti ispod minimuma trkačke + trka — upozorenje RACE_WEEK_SHORT, ne odbijanje (10K 06d: 2/1308).
 31. (10K 06d) Prinudno rasterećenje (umor) u uvodnoj nedelji početnika: obim rasterećenja, sadržaj uvoda (bez kvaliteta).
+32. (MAR-03) Dugi ostaje najduži trening nedelje: plafon zone je jedna funkcija sa dva člana — min(udeo nedelje po zoni,
+    najveća doza za koju je trajanje kvalitetnog dana (WU + rad + oporavci + CD) ≤ trajanje dugog iste nedelje). Pad doze
+    zbog toga je dozvoljen kao kod kapaciteta (pouka 12). Maraton od MAR-03 (MP), HM od HM-04 (sve zone). Izuzetak: kad
+    bi drugi član u nedelji 1 sudario pouku 9 (nedelja 1 < trenutni obim bez dugog na plafonu → odbijanje), ostaje
+    upozorenje po pouci 14 (MAR-03: 58 planova, 6 d, ned 1, T dan duži od dugog ≤ 1 min; maraton zato drugi član samo za
+    MP). Najniži nivo zone (maraton: MP 2 × 3000 m) je izuzet od drugog člana — kad je dugi na plafonu skoka (pouka 28),
+    upozorenje umesto odbijanja (MAR-03: inače +570 RECENT_LONG_TOO_SHORT na mreži M13a).
+33. (MAR-03 S2, HM-03) Rasterećenje koje nije izvodljivo zbog minimuma laganog (najmanji obim, test ili T u nedelji):
+    dugi se skraćuje na najduži koji ostavlja lagane ≥ minimum uz dugi ≥ lagan; cilj nedelje ostaje (samo naniže, bez
+    cilja naviše osim pouke 23); kvalitet/test ostaje, a kvalitet otpada samo kad ni sa skraćenim dugim ne staje;
+    napomena + upozorenje. Jedno mesto odluke, validator čita istu funkciju. (Odbačeno: cilj naviše, nov minimum obima,
+    ispuštanje dana.)
 
 ## 3. Tok jednog segmenta i provera
 

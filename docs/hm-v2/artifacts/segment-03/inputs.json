@@ -1,0 +1,79 @@
+{
+  "f-d4-12w-40km-e360-A": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-24",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 40,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 360
+  },
+  "f-d3-13w-25km-e270-A": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-31",
+    "runDays": ["tue", "thu", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 25,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 270
+  },
+  "f-d6-20w-90km-e270-A": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-21",
+    "runDays": ["mon", "tue", "wed", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 90,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 270
+  },
+  "b-d4-16w-30km-e450-A": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-21",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 30,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 450,
+    "experience": "beginner"
+  },
+  "b-d4-12w-25km-e330-A": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-24",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 25,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 330,
+    "experience": "beginner"
+  },
+  "b-d4-13w-20km-e330-A": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-31",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 20,
+    "recentResult": null,
+    "goalTimeSec": null,
+    "easyPaceSecPerKm": 330,
+    "experience": "beginner"
+  },
+  "b-d5-20w-45km-v40-B": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-21",
+    "runDays": ["mon", "wed", "thu", "fri", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 45,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 3003,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null,
+    "experience": "beginner"
+  }
+}

@@ -1,0 +1,214 @@
+{
+ "input": "/home/user/sub-19/docs/10k-v2/artifacts/segment-06d/sabotage-06d.json",
+ "head": "70652e4",
+ "level": "brz",
+ "bail": true,
+ "parallel": 2,
+ "vitestArgs": [],
+ "durationS": 87.3,
+ "hashBefore": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+ "hashAfter": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "06d-1a K2 stara definicija: najduži dugi iz sastavljenih dana",
+   "files": [
+    "src/domain/generators/tenK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected 2 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "hashSabotaged": "6f7b52d8bef556392e44271256d1b06ab3361e98d9cf93f7928e1b084a474cdc",
+   "hashAfter": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 21.1
+  },
+  {
+   "index": 2,
+   "name": "06d-1b validacija u construct nad sastavljenim planom",
+   "files": [
+    "src/domain/generators/tenK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected 16 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "hashSabotaged": "f5ce11b6bd0828a9a0a8affd274d7913fed93c6b2fc53d72dbcb67dd8f19cece",
+   "hashAfter": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 20.9
+  },
+  {
+   "index": 3,
+   "name": "06d-1c stanje doze iz sastavljenih dana",
+   "files": [
+    "src/domain/generators/tenK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected 7 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "hashSabotaged": "2f2fe237ae9e17181595cf2f7a828605b2cfb8fe39ebf05ed99606fb470b268c",
+   "hashAfter": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 19.3
+  },
+  {
+   "index": 4,
+   "name": "06d-2a validator ne čita raceWeekRest",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected 1 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "hashSabotaged": "292a4cf3470ebac345e39ba3af356bd1c59060f8cb4c6c57818197f912b038d5",
+   "hashAfter": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 21.3
+  },
+  {
+   "index": 5,
+   "name": "06d-2b raceWeekRest vraća prazno",
+   "files": [
+    "src/domain/generators/tenK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected 1 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "hashSabotaged": "7a888c59c259634dc76c24c261af5003a245d80d2434178f1dd0003bae10ce1f",
+   "hashAfter": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 20.7
+  },
+  {
+   "index": 6,
+   "name": "06d-3 prinudno rasterećenje u uvodu sa kvalitetom",
+   "files": [
+    "src/domain/generators/tenK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected 31 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "hashSabotaged": "e27e01e397e4fb35f627fff8b76dce4018d2b0eb1dd9624e935a6e74a971cb5a",
+   "hashAfter": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 20.6
+  },
+  {
+   "index": 7,
+   "name": "06d-4a K1 bez uslova „nedelja ima test\"",
+   "files": [
+    "src/domain/generators/tenK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected 2 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "hashSabotaged": "f84162a21fd210117afc2f3d4757fd02a6ebf932a680bd90280cd8fbe8bc295e",
+   "hashAfter": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 20.3
+  },
+  {
+   "index": 8,
+   "name": "06d-5 izuzetak D30b bez uslova raceWeekRest",
+   "files": [
+    "src/domain/generators/tenK/v2/adaptInvariants.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "N-a × D30b (odluka organizatora): izuzetak invarijante samo za trkačku nedelju skraćenu po D23 > f-d6-9w-35km-e315-B-sat, bol 8 kraj ned N − 2: trkačka 7.94 + 10 < 18 km — prihvaćeno (D23, RACE_WEEK_SHORT); bez napomene D23 invarijanta pada",
+    "message": "AssertionError: expected [] to include 'trkačka + trka < minimum'"
+   },
+   "failedCount": 1,
+   "hashBefore": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "hashSabotaged": "fd6e1fb2b8853cdad764095296dcc6d24df80b97e88ead8aaa1523a929d21028",
+   "hashAfter": "a2e90d517792b37e36a65dba548ba05019a15de94e82fffe2da318b2ef4e0cb4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 20.4
+  }
+ ]
+}

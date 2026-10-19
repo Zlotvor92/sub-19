@@ -9,9 +9,10 @@ import { checkInput } from './input.ts';
 import { assessGoal, predicted10k } from './paces.ts';
 import { periodize, isBuildPhase } from './periodize.ts';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
-import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
+import { advance, INITIAL_QUALITY, type QualityState, type WeekPicks } from './quality.ts';
+import { longestLong10 } from './lengths.ts';
 import { basePaces, basisAt, framesFor, pacesAt, restartWeeks, stepVdotAt } from './steps.ts';
-import type { GenerateResult, PlanWeek, TenKV2AdaptStep, TenKV2Plan } from './types.ts';
+import type { GenerateResult, PlanDay, PlanWeek, TenKV2AdaptStep, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 import {
   adaptNominal10,
@@ -27,12 +28,23 @@ import {
   raceWeekTarget10,
   startKm10
 } from './volume.ts';
-import { buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
+import { type BuiltWeek, buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
 import { fmtKm, fmtSec as fmtPace, warmupCooldown } from './workouts.ts';
+import { type Written, writtenDays, writtenWeeks } from './written.ts';
 
 export function generateTenKV2(input: unknown): GenerateResult {
   return construct(input, []);
 }
+
+/** Planirano nedelje iz dana [0,01 km] (dani koji se računaju u obim). */
+const planned100Of = (days: readonly PlanDay[]): number =>
+  days.reduce((a, d) => a + (d.countsToWeek ? Math.round(d.workout.km * 100) : 0), 0);
+
+/** Prošlost = upisani dani: izbor doze nedelje (stanje D12/D31) iz upisanih dana kvaliteta. */
+const writtenPicks = (days: readonly PlanDay[]): WeekPicks => ({
+  q1: days.find((d) => d.role === 'q1')?.workout.dose ?? null,
+  q2: days.find((d) => d.role === 'q2')?.workout.dose ?? null
+});
 
 const infeasible = (message: string, week?: number): GenerateResult => ({
   ok: false,
@@ -46,9 +58,14 @@ const infeasible = (message: string, week?: number): GenerateResult => ({
  * (A2/A3/A4/A8/A9), nov start → nova progresija doze (A3, D16); od prve nedelje pod koracima pretraga
  * cilja ima još dva prolaza (A9: jedan kvalitet doze rasterećenja, pa bez kvaliteta), a ograničenje
  * kvaliteta nedelje (A3/A4) određuje prvi prolaz. Trkačka nedelja: oštrenje otpada kad bi nedelja bila
- * veća od tapera (A9, D23).
+ * veća od tapera (A9, D23). `prior` (adaptacija): prethodni plan i zaštita dana (A11) — najduži dugi D7 se
+ * računa iz dana kakvi se upisuju (written.ts, lengths.longestLong10; 10k-v2.5.1).
  */
-export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): GenerateResult {
+export function construct(
+  raw: unknown,
+  steps: readonly TenKV2AdaptStep[],
+  prior?: Written
+): GenerateResult {
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
   const { input, weeks, pace, pattern, rule } = chk;
@@ -89,7 +106,9 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
   let quality: QualityState = INITIAL_QUALITY;
   let h = initialAdaptHistory(cap10);
   let lastLong10: number | null = null;
-  let longest10 = 0;
+  /** Prošlost = upisani dani (10k-v2.5.1, written.ts): dani nedelja kakvi se upisuju — iz njih stanje koje
+      zavisi od prošlosti (najduži dugi D7, poslednji dugi D5, stanje doze, taper za trkačku nedelju). */
+  const written: { days: readonly PlanDay[] }[] = [];
   let taperRpM = 0;
   /** D23: najkraći lagan dan tapera [0,1 km] (gornja granica laganog dana trkačke nedelje). */
   let taperEasy10 = Infinity;
@@ -99,16 +118,23 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     if (restarts.has(frame.index)) quality = INITIAL_QUALITY;
     if (frame.phase === 'race') {
       const prev = out[out.length - 1];
-      const prevHard = prev ? (prev.days.filter((d) => d.hard).pop()?.date ?? null) : null;
+      const prevDays = written[written.length - 1]?.days ?? [];
+      const prevHard = prevDays.filter((d) => d.hard).pop()?.date ?? null;
+      const prev100 = planned100Of(prevDays);
       let w = raceWeek(ctx, frame, taperRpM, prevHard, taperEasy10);
+      let noSharpener = false;
       // A9: oštrenje otpada kad bi trkačka nedelja bila veća od tapera (D23).
       if (
         av &&
         prev?.phase === 'taper' &&
         w.days.some((d) => d.role === 'sharpener') &&
-        w.planned100 > Math.round(prev.plannedKm * 100)
+        w.planned100 > prev100
       )
-        w = raceWeek(ctx, frame, taperRpM, prevHard, taperEasy10, true);
+        [w, noSharpener] = [raceWeek(ctx, frame, taperRpM, prevHard, taperEasy10, true), true];
+      // D23 (10k-v2.5.1): i bez oštrenja veća od tapera (taper skraćen danima odmora/bola) — višak laganih dana
+      // postaje odmor (week.raceWeekRest).
+      if (av && prev?.phase === 'taper' && w.planned100 > prev100)
+        w = raceWeek(ctx, frame, taperRpM, prevHard, taperEasy10, noSharpener, prev100);
       const t10 = raceWeekTarget10(w.planned100);
       out.push({
         ...frame,
@@ -125,7 +151,8 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
     const { nominal, downOnly } = av
       ? adaptNominal10(frame, h, start10, rule, av)
       : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
-    const make = (t10: number, mode: QualityMode) =>
+    const longest10 = longestLong10(written);
+    const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(ctx, frame, t10, quality, lastLong10, longest10, mode);
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
     // (week.ts buildWeek 'relax'): D11 ispred D12 u izgradnji, rasterećenje bez kvaliteta, taper samo RP.
@@ -140,13 +167,21 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
           : lq === 'one'
             ? ['one', 'none']
             : ['rule', 'relax', 'one', 'none'];
+    // D27 (10k-v2.5.1): u rasterećenju sa testom cilj iznad pravila (odstupanje D27, naviše do ispod
+    // poslednje izgradnje) samo kad sastavljena nedelja ima test; inače cilj ≤ pravilu (samo naniže), a test
+    // otpada (A9) kad ga sastavljena nedelja nema.
+    const testDeload = frame.deload && frame.test === true;
+    const can = (t10: number, m: QualityMode): boolean => {
+      const b = make(t10, m);
+      return b !== null && (!testDeload || t10 <= nominal || b.days.some((d) => d.role === 'test'));
+    };
     let fit: ReturnType<typeof fit10> = null;
     let mode: QualityMode = 'rule';
     // A9: cilj adaptacije (cilj koraka, povratak, donja granica) se zadržava — najpre svi prolazi kvaliteta
     // na tom cilju, tek onda (ista pretraga D6) niži izvodljiv cilj.
     if (downOnly)
       for (const m of modes)
-        if (make(nominal, m)) {
+        if (can(nominal, m)) {
           [fit, mode] = [{ target10: nominal, fitted: null }, m];
           break;
         }
@@ -156,7 +191,7 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
         frame,
         av ? h.cap10 : cap10,
         rule,
-        (t10) => make(t10, m) !== null,
+        (t10) => can(t10, m),
         h.lastBuild10,
         downOnly
       );
@@ -187,12 +222,13 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
       days: w.days,
       notes
     });
-    if (w.long10 !== null) longest10 = Math.max(longest10, w.long10);
+    const wd = prior ? writtenDays(prior.weeks[frame.index - 1]!, w.days, prior) : w.days;
+    written.push({ days: wd });
     if (frame.phase === 'taper') {
       // D8: oštrenje ≤ RP doza tapera (T tapera početnika, D31, nije RP).
-      const q = w.days.map((d) => d.workout.dose).find((d) => d?.zone === 'RP');
+      const q = wd.map((d) => d.workout.dose).find((d) => d?.zone === 'RP');
       taperRpM = q ? q.doseM : 0;
-      for (const d of w.days)
+      for (const d of wd)
         if (d.role === 'easy') taperEasy10 = Math.min(taperEasy10, Math.round(d.workout.km * 10));
     }
     if (isBuildPhase(frame.phase) && !frame.deload) {
@@ -200,8 +236,13 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
         h.lastBuild10 = fit.target10;
         h.peak10 = Math.max(h.peak10, fit.target10);
       }
-      if (w.long10 !== null) lastLong10 = w.long10;
-      if (w.picks) quality = advance(w.picks, quality);
+      const long = wd.find((d) => d.role === 'long');
+      if (long) lastLong10 = Math.round(long.workout.km * 10);
+      if (w.picks)
+        quality = advance(
+          JSON.stringify(wd) === JSON.stringify(w.days) ? w.picks : writtenPicks(wd),
+          quality
+        );
     }
     if (av) h = leaveWeek(h, frame, fit.target10, av);
   }
@@ -259,7 +300,22 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
       mixedWeeks: [],
       lockedDayIds: []
     };
-  const violations = validatePlan(plan);
+  // Prošlost = upisani dani (10k-v2.5.1): validacija adaptiranog plana vidi plan kakav se upisuje (isto
+  // spajanje kao adapt.ts, written.ts), ne sastavljenu prošlost.
+  const merged = prior && plan.adaptation ? writtenWeeks(out, prior) : null;
+  const violations = validatePlan(
+    merged
+      ? {
+          ...plan,
+          weeks: merged.weeks,
+          adaptation: {
+            ...plan.adaptation!,
+            mixedWeeks: merged.mixed,
+            lockedDayIds: [...prior!.lockedDayIds]
+          }
+        }
+      : plan
+  );
   const errors = violations.filter((v) => v.severity === 'error');
   if (errors.length > 0)
     return {

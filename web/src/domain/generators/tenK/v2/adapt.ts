@@ -16,13 +16,13 @@ import type {
   AdaptReason,
   AdaptResult,
   PlanDay,
-  PlanWeek,
   Reason,
   TenKV2AdaptStep,
   TenKV2Plan
 } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { to10 } from './volume.ts';
+import { type Written, writtenWeeks } from './written.ts';
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const reject = (code: Reason['code'], message: string): AdaptResult => ({
@@ -119,42 +119,27 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
   const as = assess(plan, facts, at, chk.pace, dayRule(chk.input.runDays.length)!.weekMinKm);
   const steps = [...prevSteps, as.step];
 
-  // (2) Isti konstruktor kao generate.
-  const built = construct(plan.input, steps);
-  if (!built.ok) return { ok: false, reasons: built.reasons, violations: [] };
-  const c = built.plan;
-
-  // (3) Spajanje (A11): dani ≤ asOf, urađeni (po dayId ili datumu) i zaključani iz prethodnog plana.
+  // Zaštita (A11): dani ≤ asOf, urađeni (po dayId ili datumu) i zaključani iz prethodnog plana — konstruktor
+  // je zna unapred: prošlost = upisani dani (written.ts, 10k-v2.5.1).
   const done = new Set(facts.workouts.filter((x) => x.completed).map((x) => x.dayId ?? x.date));
   const locked = new Set(facts.lockedDayIds);
   const keep = (d: PlanDay): boolean =>
     mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
-  const mixed: number[] = [];
-  const weeks: PlanWeek[] = c.weeks.map((b, i) => {
-    const s = plan.weeks[i]!;
-    if (mustDay(s.endDate) <= t) {
-      if (!same(s, b)) mixed.push(s.index);
-      return s;
-    }
-    const days = [
-      ...s.days.filter(keep),
-      ...b.days.filter((d) => !s.days.some((x) => x.date === d.date && keep(x)))
-    ].sort((x, y) => x.date.localeCompare(y.date));
-    if (same(days, b.days)) return same(s, b) ? s : b;
-    mixed.push(s.index);
-    const kept = s.days.filter((d) => keep(d) && mustDay(d.date) > t).map((d) => d.date);
-    const past = mustDay(s.startDate) <= t;
-    return {
-      ...b,
-      days,
-      plannedKm:
-        days.reduce((a, d) => a + (d.countsToWeek ? Math.round(d.workout.km * 100) : 0), 0) / 100,
-      notes: [
-        ...b.notes,
-        `Adaptacija ${at}: ${past ? `dani do ${at} nepromenjeni` : ''}${kept.length > 0 ? `${past ? '; ' : ''}zaključano/urađeno zadržano: ${kept.join(', ')}` : ''}.`
-      ]
-    };
-  });
+  const prior: Written = {
+    weeks: plan.weeks,
+    keep,
+    asOf: t,
+    at,
+    lockedDayIds: facts.lockedDayIds
+  };
+
+  // (2) Isti konstruktor kao generate.
+  const built = construct(plan.input, steps, prior);
+  if (!built.ok) return { ok: false, reasons: built.reasons, violations: [] };
+  const c = built.plan;
+
+  // (3) Spajanje (A11, written.ts — isto koje vidi validacija u construct).
+  const { weeks, mixed } = writtenWeeks(c.weeks, prior);
 
   // Završna zaštita (A11): samo proverava, ne menja plan.
   for (const s of plan.weeks)

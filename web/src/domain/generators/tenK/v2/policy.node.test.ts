@@ -10,10 +10,10 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.5.0', () => {
+describe('policy 10k-v2.5.1', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.5.0');
+    expect(P.version).toBe('10k-v2.5.1');
   });
 
   it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b) i A17 (06c), svaka sa pravilom, mestom i obrazloženjem', () => {
@@ -121,6 +121,18 @@ describe('policy 10k-v2.5.0', () => {
     );
     expect(rule('D5')).toMatch(
       /Izuzetak A17 \(10k-v2\.5\.0\): .* najviše 5 uzastopnih nedelja izgradnje/
+    );
+    // 06d (10k-v2.5.1, N7): jedna definicija najdužeg dugog (D7); D27 naviše samo kad nedelja ima test.
+    expect(rule('D7')).toMatch(
+      /Najduži dugi \(10k-v2\.5\.1\) ima jednu definiciju .*longestLong10/
+    );
+    expect(rule('A11')).toMatch(/Prošlost = upisani dani \(10k-v2\.5\.1\)/);
+    expect(rule('D23')).toMatch(
+      /višak laganih dana trkačke nedelje postaje odmor — prvo dani bola/
+    );
+    expect(rule('A5')).toMatch(/prinudno rasterećenje u uvodu početnika \(D28, nedelje 1–2\)/);
+    expect(why('D27')).toMatch(
+      /Dopuna \(10k-v2\.5\.1.*cilj iznad pravila .* samo ako sastavljena nedelja ima test; inače cilj ≤ pravilu \(samo naniže\), a test otpada \(A9\)/
     );
   });
 

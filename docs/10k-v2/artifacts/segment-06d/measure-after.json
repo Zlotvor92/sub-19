@@ -1,0 +1,86 @@
+{
+ "code": "10k-v2.5.1 (ovaj commit)",
+ "sec": "S 1862 s + ponovljen deo B 479 s",
+ "stat": {
+  "N7/pain5": {
+   "tokova": 10184,
+   "odbijeno": 0
+  },
+  "N7/UKUPNO": {
+   "tokova": 61104,
+   "odbijeno": 0
+  },
+  "N7/pain8": {
+   "tokova": 10184,
+   "odbijeno": 0
+  },
+  "N7/pause10": {
+   "tokova": 10184,
+   "odbijeno": 0
+  },
+  "N7/pause10pain5": {
+   "tokova": 10184,
+   "odbijeno": 0
+  },
+  "N7/pause20": {
+   "tokova": 10184,
+   "odbijeno": 0
+  },
+  "N7/under": {
+   "tokova": 10184,
+   "odbijeno": 0
+  },
+  "S/faster": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/UKUPNO": {
+   "tokova": 847392,
+   "odbijeno": 0
+  },
+  "S/fatigue": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/over": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/pain5": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/pain8": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/pause10": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/pause10pain5": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/pause20": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/pause35": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/slower": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/test5k": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/under": {
+   "tokova": 70616,
+   "odbijeno": 0
+  }
+ }
+}

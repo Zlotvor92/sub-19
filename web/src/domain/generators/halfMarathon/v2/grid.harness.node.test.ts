@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FULL } from '@/test/level';
 import { generateHmV2 } from './generate.ts';
-import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
+import { checkPlan, emptyStats, type GridStats, rollingBinds } from './gridInvariants.ts';
 import { type GridInput, planHash, planHashNorm } from './testInputs.ts';
 
 const DIR = dirname(fileURLToPath(import.meta.url));
@@ -29,6 +29,8 @@ interface Result {
   st: Record<number, GridStats>;
   rows: Record<string, BaselineRow>;
   norm: Record<string, string>;
+  /** Pouka 28 seče dugi u planu (nezavisna provera). */
+  rolling: Set<string>;
   nondeterministic: string[];
 }
 
@@ -43,6 +45,7 @@ function run(
     st: {},
     rows: {},
     norm: {},
+    rolling: new Set(),
     nondeterministic: []
   };
   inputs.forEach((g, i) => {
@@ -62,6 +65,7 @@ function run(
     );
     out.rows[g.id] = [r.plan.peakKm, longest, hash];
     if (g.days === 4) out.norm[g.id] = planHashNorm(r.plan);
+    if (rollingBinds(r.plan)) out.rolling.add(g.id);
     if (determinism(g, i)) {
       const again = generateHmV2(g.input);
       if (
@@ -108,7 +112,7 @@ export function describeGrid(name: string, inputs: readonly GridInput[], extra?:
       expect(res.nondeterministic).toEqual([]);
     });
 
-    it('regresija 4 dana prema HM-01 (3979237): menja se samo plan čiji je dugi bio > 24 km; vrh ne pada (K4 0)', () => {
+    it('regresija 4 dana prema HM-01 (3979237): menja se samo plan sa dugim > 24 km ili gde pouka 28 seče dugi; vrh ne pada (K4 0)', () => {
       const base = JSON.parse(readFileSync(BASELINE_01, 'utf8')) as Record<string, BaselineRow>;
       const norm = JSON.parse(readFileSync(NORM_01, 'utf8')) as Record<string, string>;
       const other: string[] = [];
@@ -121,13 +125,17 @@ export function describeGrid(name: string, inputs: readonly GridInput[], extra?:
         if (now[0] < old[0]) lower.push(`${g.id}: ${old[0]} → ${now[0]}`);
         if (res.norm[g.id] === norm[id]) continue;
         changed++;
-        // Jedini dozvoljen uzrok promene (prompt HM-02, tačka 2): dugi > 24 km u HM-01, sada na 24 km.
-        if (!(old[1] > 24 && now[1] === 24)) other.push(`${g.id}: ${old[1]} → ${now[1]}`);
+        // Dozvoljeni uzroci promene: dugi > 24 km u HM-01, sada na 24 km (prompt HM-02, tačka 2); kotrljajuća
+        // granica pouke 28 seče dugi (odluka organizatora posle MAR-02).
+        if (!((old[1] > 24 && now[1] === 24) || res.rolling.has(g.id)))
+          other.push(`${g.id}: ${old[1]} → ${now[1]}`);
       }
       expect(other).toEqual([]);
       expect(lower).toEqual([]);
       expect(changed).toBe(
-        inputs.filter((x) => x.days === 4 && base[x.id.slice(3)]![1] > 24).length
+        inputs.filter(
+          (x) => x.days === 4 && (base[x.id.slice(3)]![1] > 24 || res.rolling.has(x.id))
+        ).length
       );
     });
 

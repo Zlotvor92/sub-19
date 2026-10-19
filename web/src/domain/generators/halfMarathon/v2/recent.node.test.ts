@@ -1,92 +1,120 @@
-/* Pouka 28 (HI7, HI8): mreža skorašnjeg najdužeg trka — svaki broj dana × obim reda H15 (korak 5) × VDOT {30, 35,
-   40, 45, 50, 55, 60, 70} × recentLongRunKm {5, 6, 8, 10, 12, 14, 16, 18, 20, 24, 30, 42} × 12 nedelja, raspored
-   A = 3072 plana: K1 = 0, nezavisne invarijante (dugi nedelje 1 ≤ max(1,1 × r, r + 1,0)), nedelja 1 ispod obima
-   samo uz dugi na apsolutnom plafonu; sa ulazom ≥ dugi nedelje 1 bez ulaza plan ostaje isti (osim ulaza i
-   napomene nedelje 1). Brz nivo: svaki 4. unutar dana × obima; pun: sve. */
+/* Pouka 28 (HI7, HI8, P1): mreža skorašnjeg najdužeg trka — recentLongRunKm 5–42 (korak 1) × svaki broj dana ×
+   obim reda H15 (korak 5) × VDOT {30, 45, 70} × nedelje {10, 14, 20}, raspored A = 10 944 plana: jedina odbijanja
+   su RECENT_LONG_TOO_SHORT (sa pragom; izmereno: samo nedelja 1, r ≤ 6 km, 3–4 dana); nezavisne invarijante
+   (dugi svake nedelje ≤ max(1,1 × L, L + 1,0)); nedelja 1 ispod obima samo uz dugi na apsolutnom plafonu; skok
+   dugog nedelja 1 → 2 ≤ max(10 %, 1 km). Brz nivo: svaki 8. unutar dana × r; pun: sve. */
 
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { sample } from '@/test/level';
+import { FULL, sample } from '@/test/level';
 import { generateHmV2 } from './generate.ts';
 import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
-import {
-  DAY_COUNTS,
-  GRID,
-  inputOf,
-  KM_BY_DAYS,
-  planHashNorm,
-  SCHEDULES_BY_DAYS
-} from './testInputs.ts';
+import { DAY_COUNTS, inputOf, KM_BY_DAYS, resultHash, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { HmV2Plan } from './types.ts';
 
-const RECENT = [5, 6, 8, 10, 12, 14, 16, 18, 20, 24, 30, 42];
+const DIR = dirname(fileURLToPath(import.meta.url));
+/** HM-02 (2285fc7): heš rezultata svakog ulaza mreže (regression-hm02.ts). */
+const HM02 = JSON.parse(
+  readFileSync(join(DIR, 'segment02.recent-hashes-2285fc7.json'), 'utf8')
+) as Record<string, string>;
+interface WeekRow {
+  targetKm: number;
+  fitted: string | null;
+  longKm: number;
+  easyKm: number[];
+  quality: number;
+}
+/** Izuzeci regresije sa razlogom (odluka organizatora HM-03, A: HI14 / pouka 33). */
+const EXCEPTIONS = JSON.parse(
+  readFileSync(join(DIR, 'segment03.regression-exceptions.json'), 'utf8')
+) as Record<string, { reason: string; week: number; before: WeekRow; after: WeekRow }>;
+const rowOf = (p: HmV2Plan, week: number): WeekRow => {
+  const w = p.weeks[week - 1]!;
+  return {
+    targetKm: w.targetKm,
+    fitted: w.fitted,
+    longKm: w.days.find((d) => d.role === 'long')!.workout.km,
+    easyKm: w.days.filter((d) => d.role === 'easy').map((d) => d.workout.km),
+    quality: w.days.filter((d) => d.workout.kind === 'quality').length
+  };
+};
+
 const ALL = DAY_COUNTS.flatMap((days) => {
-  const out: { id: string; days: number; km: number; vdot: number; r: number }[] = [];
-  for (let km = KM_BY_DAYS[days].min; km <= KM_BY_DAYS[days].max; km += 5)
-    for (const vdot of GRID.vdot)
-      for (const r of RECENT)
-        out.push({ id: `d${days}-${km}km-v${vdot}-r${r}`, days, km, vdot, r });
+  const out: { id: string; days: number; km: number; vdot: number; weeks: number; r: number }[] =
+    [];
+  for (let r = 5; r <= 42; r++)
+    for (let km = KM_BY_DAYS[days].min; km <= KM_BY_DAYS[days].max; km += 5)
+      for (const vdot of [30, 45, 70])
+        for (const weeks of [10, 14, 20])
+          out.push({ id: `d${days}-${weeks}w-${km}km-v${vdot}-r${r}`, days, km, vdot, weeks, r });
   return out;
 });
-const input = (g: (typeof ALL)[number], r?: number) =>
-  inputOf({
-    weeks: 12,
-    km: g.km,
-    vdot: g.vdot,
-    days: SCHEDULES_BY_DAYS[g.days as 3 | 4 | 5 | 6].A.days,
-    ...(r !== undefined ? { recentLongRunKm: r } : {})
-  });
-const long1 = (p: HmV2Plan): number => p.weeks[0]!.days.find((d) => d.role === 'long')!.workout.km;
 
-describe('pouka 28: mreža skorašnjeg najdužeg trka (3072 plana)', () => {
-  const inputs = sample(ALL, 4, (g) => `${g.days}/${g.km}`);
-  const rejected: string[] = [];
+describe('pouka 28: mreža skorašnjeg najdužeg trka (10 944 plana)', () => {
+  const inputs = sample(
+    ALL,
+    8,
+    (g) => `${g.days}/${g.r}`,
+    (g) => g.id in EXCEPTIONS
+  );
+  const regression: string[] = [];
+  const excepted: Record<string, WeekRow> = {};
+  const tooShort: { id: string; r: number; days: number; week?: number; message: string }[] = [];
+  const other: string[] = [];
   const bad: Record<string, string[]> = {};
   let st: GridStats = emptyStats();
-  const sameAsFree: string[] = [];
-  let capped = 0;
   beforeAll(() => {
     st = emptyStats();
-    const free = new Map<string, HmV2Plan>();
     for (const g of inputs) {
-      const r = generateHmV2(input(g, g.r));
-      if (!r.ok) {
-        rejected.push(`${g.id}: ${r.reasons.map((x) => x.message).join(' | ')}`);
-        continue;
-      }
-      checkPlan(g.id, r.plan, bad, st);
-      const key = `${g.days}/${g.km}/${g.vdot}`;
-      if (!free.has(key)) {
-        const f = generateHmV2(input(g));
-        if (f.ok) free.set(key, f.plan);
-      }
-      const f = free.get(key)!;
-      // Granica ≥ dugi nedelje 1 bez ulaza → isti plan (normalizovan heš: bez ulaza i napomene nedelje 1).
-      const cap10 = Math.max(Math.floor(1.1 * g.r * 10 + 1e-9), g.r * 10 + 10);
-      if (cap10 >= Math.round(long1(f) * 10)) {
-        const withFreeInput: HmV2Plan = { ...r.plan, input: f.input };
-        if (planHashNorm(withFreeInput) !== planHashNorm(f)) sameAsFree.push(g.id);
-      } else capped++;
+      const res = generateHmV2(
+        inputOf({
+          weeks: g.weeks,
+          km: g.km,
+          vdot: g.vdot,
+          days: SCHEDULES_BY_DAYS[g.days as 3 | 4 | 5 | 6].A.days,
+          recentLongRunKm: g.r
+        })
+      );
+      const same = resultHash(res) === HM02[g.id];
+      const ex = EXCEPTIONS[g.id];
+      if (ex && res.ok && !same) excepted[g.id] = rowOf(res.plan, ex.week);
+      else if (!same || ex) regression.push(g.id);
+      if (res.ok) checkPlan(g.id, res.plan, bad, st);
+      else if (res.reasons.length === 1 && res.reasons[0]!.code === 'RECENT_LONG_TOO_SHORT')
+        tooShort.push({ id: g.id, r: g.r, days: g.days, ...res.reasons[0]! });
+      else other.push(`${g.id}: ${res.reasons.map((x) => `${x.code} ${x.message}`).join(' | ')}`);
     }
   }, 120_000);
 
-  it('K1: odbijanja samo sudar pouke 28 (ned 1, r ≤ 6 km, 3–4 dana; čeka odluku organizatora, SEGMENT-02-STOP.md); invarijante 0; K2 samo uz dugi na apsolutnom plafonu', () => {
+  it('K1: jedino odbijanje je RECENT_LONG_TOO_SHORT sa pragom (izmereno: ned 1, r ≤ 6 km, 3–4 dana)', () => {
     expect(inputs.length).toBeGreaterThan(0);
-    // STANI (HM-02): granica dugog ned 1 × lagan ≤ dugi × plafon H11 × minimum nedelje.
-    const other = rejected.filter(
-      (x) => !/^d[34]-\d+km-v\d+-r[56]: Nedelja 1: nijedan cilj/.test(x)
-    );
     expect(other).toEqual([]);
+    expect(
+      tooShort.filter(
+        (x) => x.week !== 1 || x.r > 6 || x.days > 4 || !/izvodljiv od \d+,\d km/.test(x.message)
+      )
+    ).toEqual([]);
+  });
+
+  it('invarijante 0 (LONG_ROLLING); K2 samo uz dugi na apsolutnom plafonu; skok ned 1 → 2 ≤ max(10 %, 1 km)', () => {
     expect(bad).toEqual({});
     expect(st.week1BelowNotTime).toBe(0);
     expect(st.week1BelowAt.recent).toBeGreaterThan(0);
-    expect(capped).toBeGreaterThan(0);
+    // Najveći odnos uz pravilo „+1 km": 6 → 7 km (× 1,167).
+    expect(st.longJump12Max).toBeLessThanOrEqual(7 / 6 + 1e-9);
   });
 
-  it('granica iznad dugog nedelje 1 ne menja plan (osim ulaza i napomene nedelje 1)', () => {
-    expect(sameAsFree).toEqual([]);
+  it('regresija prema HM-02: bajt-isto osim spiska izuzetaka (HI14 / pouka 33: samo prva rasteretna nedelja)', () => {
+    expect(regression).toEqual([]);
+    const ids = inputs.map((g) => g.id).filter((id) => id in EXCEPTIONS);
+    expect(Object.keys(excepted)).toEqual(ids);
+    for (const id of ids) expect(excepted[id]).toEqual(EXCEPTIONS[id]!.after);
+    if (FULL) expect(ids).toHaveLength(6);
   });
 
-  it('mreža ima 3072 ulaza', () => {
-    expect(ALL).toHaveLength(3072);
+  it('mreža ima 10 944 ulaza', () => {
+    expect(ALL).toHaveLength(10944);
   });
 });

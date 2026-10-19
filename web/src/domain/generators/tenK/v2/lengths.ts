@@ -4,7 +4,7 @@
    ≤ 0,1 km). Dugi ≥ svaki lagan je tvrdo pravilo: kad ne može da se ispuni, nedelja nije izvodljiva (D6). */
 
 import { TEN_K_V2_POLICY as P } from './policy.ts';
-import type { Paces } from './types.ts';
+import type { Paces, PlanDay } from './types.ts';
 
 /** Plafoni dugog iz pravila plana (policy.ts planRule): udeo cilja (D17) i trajanje (D13/D28). */
 export interface LongRule {
@@ -63,7 +63,17 @@ export function buildLengths(
   return withEasy(target10 * 10 - quality100, longCap10(target10, rule, p), easyDays);
 }
 
-/** D7: taper — dugi ≤ 0,75 × najduži dugi plana (i D13). */
+/** D7: najduži dugi plana [0,1 km] — JEDNA definicija (10k-v2.5.1) za konstruktor i validator: dani uloge
+    'long' nedelja `weeks` kakve se upisuju (adaptacija: zaštićeni dani iz prethodnog plana, written.ts); 0 bez
+    dugog. */
+export function longestLong10(weeks: readonly { days: readonly PlanDay[] }[]): number {
+  let m = 0;
+  for (const w of weeks)
+    for (const d of w.days) if (d.role === 'long') m = Math.max(m, Math.round(d.workout.km * 10));
+  return m;
+}
+
+/** D7: taper — dugi ≤ 0,75 × najduži dugi plana (longestLong10; i D13). */
 export function taperLengths(
   target10: number,
   quality100: number,

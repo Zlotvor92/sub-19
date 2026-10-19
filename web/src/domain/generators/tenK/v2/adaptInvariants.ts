@@ -134,7 +134,19 @@ export function adaptInvariants(
   // Trkačka ≤ taper; D30b.
   if (!mixed.has(taper.index) && !mixed.has(race.index)) {
     if (race.plannedKm > taper.plannedKm + EPS) bad.push('trkačka > taper');
-    if (race.plannedKm + P.raceWeek.raceKm + EPS < min) bad.push('trkačka + trka < minimum');
+    // Izuzetak D30b (10k-v2.5.1, uzak): trkačka nedelja skraćena po D23 (dani pretvoreni u odmor — manje dana
+    // trčanja od D20 bez dana odmora koraka — uz napomenu D23) i plan nosi upozorenje RACE_WEEK_SHORT.
+    const runs = race.days.filter((d) => d.role !== 'race').length;
+    const d20 =
+      Math.min(after.input.runDays.length, P.raceWeek.maxRunDays) -
+      1 -
+      (race.limits?.rest ?? []).length;
+    const d23Rest =
+      runs < d20 &&
+      race.notes.includes('Trkačka nedelja skraćena: taper je imao dane odmora/bola (D23).') &&
+      after.warnings.some((w) => w.rule === 'RACE_WEEK_SHORT' && w.week === race.index);
+    if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest)
+      bad.push('trkačka + trka < minimum');
   }
   // A8: taper posle smanjenja ≤ poslednja nedelja izgradnje.
   if (

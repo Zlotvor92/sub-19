@@ -132,12 +132,20 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
 - Otvoreno: na 4917959 4 toka mreže R odbijena (`VOLUME_RULE`, rasterećenje sa testom D27 posle sidra bola,
   f-d5-12w / f-d6-14w, kraj ned 2) — u 2.5.0 A17 ukida to rasterećenje, uzrok nije menjan; test 5 km uz A17 (gore).
 
-## Segment 06d (10k-v2.5.1, N7): STANI posle koraka 1 — kod nije menjan
+## Segment 06d (10k-v2.5.1, N7): prošlost = upisani dani; K1; trkačka posle skraćenog tapera; umor u uvodu
 
-- Izveštaj `reports/SEGMENT-06d-STOP.md`; artefakti `artifacts/segment-06d/` (merne skripte, merenje pre `51a924f`,
-  prototip K1/K2 kao `k1k2-prototype.diff` + njegovo merenje i poređenje).
-- N7 ponovljen: 61 104 toka, 142 K1 + 10 K2. Šira mreža (847 392 toka): nove klase RACE_WEEK_OVER_TAPER 1308 (bol 8,
-  kraj ned N − 2), ROLES 1692 (umor, početnik, ned 1: A5 u uvodu D28), DELOAD_CONTENT 6 + TAPER_QUALITY 1 (stanje doze
-  iz sastavljene, a ne upisane nedelje — porodica K2).
-- Prototip: K1 → 0 (bez promene prihvaćenih); K2 po odluci 2 → 668 novih TAPER_LONG iz validatora u `construct`
-  (sastavljen plan) i 11 promenjenih prihvaćenih tokova. Čeka odluku organizatora (pitanja u § 5 izveštaja).
+- Tok: `fc40faa` zaustavljeno (nove klase u široj mreži, K2 ruši validator u construct; `reports/SEGMENT-06d-STOP.md`)
+  → odluke organizatora → commit „10K v2 Segment 06d (10k-v2.5.1): …" (`git log --grep "10K v2 Segment 06d"`);
+  izveštaj `reports/SEGMENT-06d-IMPLEMENTATION.md`, artefakti `artifacts/segment-06d/`.
+- Prošlost = upisani dani (A11): `written.ts` je jedino spajanje; konstruktor iz upisanih dana vodi najduži dugi
+  (`lengths.longestLong10`, D7), poslednji dugi, stanje doze, taper za trkačku nedelju; validacija u construct vidi upisani
+  plan; validator i u mešovitoj nedelji uzima poslednju T dozu (D31) iz upisanih dana.
+- K1 (D27): cilj rasterećenja sa testom iznad pravila samo ako nedelja ima test (faza (b) uklonjena, nedostižna).
+- N-a (D23): `week.raceWeekRest` — višak laganih dana trkačke nedelje postaje odmor (prvo dani bola); validator D20 ga
+  čita; 2/1308 ispod minimuma (D30b, RACE_WEEK_SHORT; uzak izuzetak u adaptInvariants). N-b (A5): prinudno rasterećenje u
+  uvodu početnika bez kvaliteta, 0,8 ×.
+- Merenje: N7 61 104 — 152 → 0 odbijanja; šira mreža S 847 392 — 3197 → 0. Promenjeni prihvaćeni: porodica 1 16 840 (S +
+  N7) i 18 (mreža 04), svi sa razlikom upisanog i sastavljenog zaštićenog dana, 0 prekršaja Uslova 8; N-b 576 (72 obim, 504
+  napomena); P i R bez promene. Generator bez činjenica bajt-isti.
+- Trajna mreža E (`earlyGrid*`, 65 699 tokova; brz nivo 20,4 s). Sabotaže 8/8 (alat). `KNOWN_VERSIONS` = 4.0, 4.1, 5.0, 5.1.
+- Otvoreno: 5K v2 — isto merenje i ista porodica (poseban segment).
