@@ -386,9 +386,11 @@ export function easyTimeWorkout(sec: number, p: Paces): Workout {
   );
 }
 
-/** M8: dan pred trku — 20 min E + 4 × 20 s ubrzanja (R tempo; oporavak isti metraž džogom, M14 R). */
-export function eveWorkout(p: Paces): Workout {
+/** M8: dan pred trku — 20 min E + 4 × 20 s ubrzanja (R tempo; oporavak isti metraž džogom, M14 R). A4: u
+    periodu bola bez ubrzanja (`strides` false). */
+export function eveWorkout(p: Paces, strides = true): Workout {
   const q = P.raceWeek;
+  if (!strides) return easyTimeWorkout(q.eveEasySec, p);
   const st = q.eveStrides;
   const strideKm = fromSec(st.sec, p.R);
   const rec = { m: Math.round(strideKm * 1000) };

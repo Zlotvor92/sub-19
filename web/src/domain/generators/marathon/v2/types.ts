@@ -80,7 +80,15 @@ export type ReasonCode =
   | 'RECENT_LONG_TOO_SHORT'
   | 'SCHEDULE_NO_RECOVERY'
   | 'WEEK_INFEASIBLE'
-  | 'PLAN_VIOLATES_POLICY';
+  | 'PLAN_VIOLATES_POLICY'
+  /* Segment 04 (adaptacija, adapt.ts). */
+  | 'ADAPT_PLAN_INVALID'
+  | 'ADAPT_AS_OF_INVALID'
+  | 'ADAPT_FACT_INVALID'
+  | 'ADAPT_FACT_AFTER_AS_OF'
+  | 'ADAPT_DAY_UNKNOWN'
+  | 'ADAPT_RESULT_INVALID'
+  | 'ADAPT_PROTECTION';
 
 export interface Reason {
   code: ReasonCode;
@@ -115,6 +123,20 @@ export interface WeekFrame {
   deload: boolean;
   /** M16: nedelja testa 5 km (samo plan po osećaju koji nije početnik). */
   test?: true;
+  /** Segment 04: ograničenja adaptacije za ovu nedelju (steps.ts); u planu generatora polja nema. */
+  limits?: WeekLimits;
+}
+
+/** Segment 04: ograničenja nedelje iz koraka adaptacije (datumski opsezi → dani nedelje, steps.ts). */
+export interface WeekLimits {
+  /** 'none' = bez kvaliteta; 'one' = jedan kvalitet doze rasterećenja (taper: samo MP) (A3, A4, A9). */
+  quality?: 'none' | 'one';
+  /** Dani bez kvaliteta i ubrzanja (zabrana po datumu; trkačka nedelja: oštrenje). */
+  noQuality?: IsoDate[];
+  /** Dani odmora (bol ≥ 7, A4): trening se ne pravi. */
+  rest?: IsoDate[];
+  /** Dani perioda bola (A4): dugi ≤ 60 min, lagani × 0,7 (≥ 5 km), bez ubrzanja. */
+  pain?: IsoDate[];
 }
 
 export type Basis = 'exact' | 'estimated';
@@ -261,7 +283,8 @@ export interface Pattern {
   easy: readonly Weekday[];
 }
 
-export type GoalStatus = 'realistic' | 'ambitious' | 'unrealistic';
+/** 'orientation' (segment 04, A3): nov start i < 12 nedelja do trke — cilj je samo orijentir (M18). */
+export type GoalStatus = 'realistic' | 'ambitious' | 'unrealistic' | 'orientation';
 
 export interface GoalAssessment {
   goalTimeSec: number;
@@ -302,6 +325,133 @@ export interface MarathonV2Plan {
   notes: string[];
   weeks: PlanWeek[];
   warnings: Violation[];
+  /** Segment 04: istorija adaptacije (adapt.ts); u planu generatora polja nema. */
+  adaptation?: MarathonV2Adaptation;
 }
 
 export type GenerateResult = { ok: true; plan: MarathonV2Plan } | { ok: false; reasons: Reason[] };
+
+/* ---------- Segment 04: adaptacija (oblik činjenica kao 10K v2, sopstvena kopija) ---------- */
+
+/** Izvršen (ili propušten) trening. `dayId` = datum dana plana (jedan trening po datumu); bez dayId =
+    zapis van plana. */
+export interface WorkoutFact {
+  date: IsoDate;
+  dayId?: string;
+  km: number;
+  durationSec: number;
+  completed: boolean;
+  /** 1–10. */
+  rpe?: number;
+  /** 0–10. */
+  pain?: number;
+}
+
+/** Rezultat: test plana (5 km) ili trka 5 km, 10 km, polumaraton, maraton (M18). */
+export interface ResultFact {
+  distM: ResultDistanceM;
+  sec: number;
+  date: IsoDate;
+  kind: 'test' | 'race';
+}
+
+export interface DateRange {
+  from: IsoDate;
+  to: IsoDate;
+}
+
+/** Potpunost zapisa u [from, to] (A10): complete = true → dan bez zapisa = bez trčanja; false ili bez
+    coverage → dan bez zapisa je NEPOZNAT. */
+export interface FactsCoverage extends DateRange {
+  complete: boolean;
+}
+
+/** Eksplicitna pauza (A3, A10: priznaje se bez obzira na coverage). */
+export interface BreakFact extends DateRange {
+  kind: 'break';
+}
+
+/** Činjenice (ne odluke). Prazni nizovi = nema podataka (ne pauza). */
+export interface MarathonV2Facts {
+  workouts?: readonly WorkoutFact[];
+  results?: readonly ResultFact[];
+  /** Ručno zaključani dani (dayId = datum): ostaju bajt-isti (A11). */
+  lockedDayIds?: readonly string[];
+  coverage?: FactsCoverage | null;
+  breaks?: readonly BreakFact[];
+}
+
+/**
+ * Korak adaptacije = OGRANIČENJA izvedena iz činjenica (assess.ts, jedino mesto odluka A1–A10, A17).
+ * Konstruktor (generate.construct) ih primenjuje redom; plan čuva sve korake (A14).
+ */
+export interface MarathonV2AdaptStep {
+  asOf: IsoDate;
+  /** Nedelja koja sadrži asOf + 1 (sidro bola r). */
+  firstWeek: number;
+  /** Prva puna nedelja posle asOf („sledeća nedelja"; broj nedelja + 1 ako je nema). */
+  fromWeek: number;
+  /** A1: novi rezultat i VDOT (važi od fromWeek). */
+  result: ResultFact | null;
+  vdot: number | null;
+  /** A2/A3/A6: cilj nedelje fromWeek [km]; pauza: i ostatak firstWeek (pauseRemainder). */
+  startKm: number | null;
+  pauseRemainder: boolean;
+  /** A3: pauza ≥ 28 dana — nov start (faze preostale izgradnje ponovo, vrh od novog starta). */
+  restart: boolean;
+  /** A5: umor — fromWeek je rasterećenje. */
+  deload: boolean;
+  noQuality: DateRange[];
+  oneQuality: DateRange[];
+  rest: DateRange | null;
+  pain: DateRange | null;
+  /** A3 (M18): nov start i < 12 nedelja do trke → cilj „orijentir". */
+  orientation: boolean;
+  /** A8: nivo pre smanjenja [km] — do njega cilj raste povratnim rastom; null = bez povratka. */
+  levelKm: number | null;
+  /** A4/A8 (pouka 18): posle nedelje sidra `week` (sadrži asOf + 1) rast kreće od osnove min(`share` × nivo
+      koraka, cilj nedelje sidra) (volume.returnBase10). */
+  returnFrom: { week: number; share: number } | null;
+  /** A17 (pouka 22): cilj koraka (startKm) je smanjenje — true: A2 (manjak) ili A3 (pauza); false: A6
+      (višak). Korak bez startKm: polja nema. */
+  reduced?: boolean;
+}
+
+export interface MarathonV2Adaptation {
+  asOf: IsoDate;
+  steps: MarathonV2AdaptStep[];
+  /** Nedelje sa danima iz prethodnog plana (prošlost/urađeno/zaključano) koji se razlikuju od
+      konstrukcije: validator na njima proverava samo dane (nedeljna pravila važe za konstrukciju). */
+  mixedWeeks: number[];
+  lockedDayIds: string[];
+}
+
+export type AdaptCondition =
+  | 'NO_FACTS'
+  | 'NEW_RESULT'
+  | 'RESULT_IGNORED'
+  | 'UNDER_EXECUTION'
+  | 'OVER_EXECUTION'
+  | 'PAUSE'
+  | 'PAIN'
+  | 'FATIGUE'
+  | 'TEST_MOVED';
+
+/** Aktivan uslov iz činjenica; `applied` = false kad ga nadjačava viši prioritet ili ne važi (A7). */
+export interface AdaptReason {
+  condition: AdaptCondition;
+  applied: boolean;
+  message: string;
+}
+
+export interface AdaptChange {
+  week: number;
+  date?: IsoDate;
+  field: string;
+  before: string;
+  after: string;
+}
+
+export type AdaptResult =
+  | { ok: true; plan: MarathonV2Plan; changes: AdaptChange[]; reasons: AdaptReason[] }
+  | { ok: false; reasons: Reason[]; violations: Violation[] };

@@ -3,7 +3,7 @@
    rasporeda po broju dana × trka sub/ned = 3120 + 4368 + 6240 + 8112 = 21 840 ulaza. Red 4 dana = mreža 01
    (isti ulazi, id bez prefiksa `d4-` = id mreže 01). */
 
-import { addDays } from './dates.ts';
+import { addDays, mustDay, weekdayOf } from './dates.ts';
 import { raceTimeForVdot, round1, vdotFromResult } from './paces.ts';
 import { MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS, type RunDaysCount } from './policy.ts';
 import type { Experience, MarathonV2Plan, Weekday } from './types.ts';
@@ -303,4 +303,355 @@ export function recentInputs(): GridInput[] {
               });
             }
   return out;
+}
+
+/* ---------- Segment 04 (M18): mreže adaptacije ---------- */
+
+export interface AdaptBase {
+  id: string;
+  family: 'R' | 'F' | 'B';
+  input: Record<string, unknown>;
+}
+
+/** Bazni planovi mreže 04 (MASTER § 3): 3/4/5/6 dana × rezultat (VDOT 45, cilj 3:30:00) i po osećaju (lagan
+    6:00) × 12/16/20 ned + početnik 4 dana po osećaju (7:30, 30 km) i 5 dana sa rezultatom (VDOT 35, 35 km) ×
+    16/20/24 ned = 30 planova. Obim po broju dana 35 / 45 / 55 / 70 km. */
+export function adaptBases(): AdaptBase[] {
+  const km: Record<RunDaysCount, number> = { 3: 35, 4: 45, 5: 55, 6: 70 };
+  const out: AdaptBase[] = [];
+  for (const weeks of [12, 16, 20])
+    for (const days of RUN_DAYS_COUNTS) {
+      const sc = SCHEDULES_BY_DAYS[days].A;
+      const base = inputOf({ weeks, km: km[days], vdot: 45, days: sc.days, long: sc.long });
+      out.push({ id: `d${days}-r-${weeks}w`, family: 'R', input: { ...base, goalTimeSec: 12600 } });
+      out.push({
+        id: `d${days}-f-${weeks}w`,
+        family: 'F',
+        input: inputOf({ weeks, km: km[days], easyPace: 360, days: sc.days, long: sc.long })
+      });
+    }
+  for (const weeks of [16, 20, 24]) {
+    const b4 = SCHEDULES_BY_DAYS[4].A;
+    const b5 = SCHEDULES_BY_DAYS[5].A;
+    out.push({
+      id: `beg-d4-f-${weeks}w`,
+      family: 'B',
+      input: inputOf({
+        weeks,
+        km: 30,
+        easyPace: 450,
+        days: b4.days,
+        long: b4.long,
+        experience: 'beginner'
+      })
+    });
+    out.push({
+      id: `beg-d5-r-${weeks}w`,
+      family: 'B',
+      input: inputOf({
+        weeks,
+        km: 35,
+        vdot: 35,
+        days: b5.days,
+        long: b5.long,
+        experience: 'beginner'
+      })
+    });
+  }
+  return out;
+}
+
+/** Deo plana koji testovi čitaju (bez uvoza tipova plana u ulaze). */
+export interface PlanLike {
+  input: { startDate: string; runDays: readonly string[]; currentWeeklyKm: number };
+  vdot: number;
+  weeks: readonly {
+    index: number;
+    phase: string;
+    deload: boolean;
+    test?: boolean;
+    startDate: string;
+    endDate: string;
+    days: readonly {
+      date: string;
+      countsToWeek: boolean;
+      role: string;
+      workout: { km: number; sec: number; kind: string };
+    }[];
+  }[];
+}
+
+const wedOf = (p: PlanLike, i: number): string => {
+  let d = p.weeks[i - 1]!.startDate;
+  while (weekdayOf(d) !== 'wed') d = addDays(d, 1);
+  return d;
+};
+
+/** asOf mreže 04 (MASTER § 3): ned 1 sreda i kraj, kraj ned 2, sredina plana (kraj ned ⌊N/2⌋), kraj nedelje pre
+    nedelje testa (po osećaju), pre prvog rasterećenja, pre N−2 i pre N−1 (obe nedelje tapera), sreda N−2. */
+export function adaptAsOfs(p: PlanLike): { tag: string; asOf: string }[] {
+  const N = p.weeks.length;
+  const end = (i: number) => p.weeks[i - 1]!.endDate;
+  const tw = p.weeks.find((w) => w.test)?.index;
+  const dw = p.weeks.find((w) => w.deload)!.index;
+  const out = [
+    { tag: 'w1wed', asOf: wedOf(p, 1) },
+    { tag: 'w1end', asOf: end(1) },
+    { tag: 'w2end', asOf: end(2) },
+    { tag: 'mid', asOf: end(Math.floor(N / 2)) },
+    ...(tw !== undefined && tw > 1 ? [{ tag: 'preTest', asOf: end(tw - 1) }] : []),
+    { tag: 'preDeload', asOf: end(dw - 1) },
+    { tag: 'preTaper2', asOf: end(N - 3) },
+    { tag: 'preTaper1', asOf: end(N - 2) },
+    { tag: 'taperWed', asOf: wedOf(p, N - 2) }
+  ];
+  const seen = new Set<string>();
+  return out.filter((x) => (seen.has(x.asOf) ? false : (seen.add(x.asOf), true)));
+}
+
+export const SCENARIOS = [
+  'none',
+  'done100',
+  'under50',
+  'over120',
+  'pause10',
+  'pause20',
+  'pause35',
+  'pain5',
+  'pain8',
+  'fatigue',
+  'faster',
+  'slower',
+  'test5k',
+  'incomplete',
+  'locked',
+  'chain',
+  'painPause'
+] as const;
+export type Scenario = (typeof SCENARIOS)[number];
+
+/** Odrađeni treninzi u [from, to]: dan plana (sa dayId, planirani km × `share`) ili, pre starta plana, trčanje van
+    plana na dan trčanja (obim ulaza / broj dana). */
+export function runsIn(
+  plan: PlanLike,
+  from: string,
+  to: string,
+  share = 1,
+  extra: Record<string, unknown> = {}
+): Record<string, unknown>[] {
+  const out: Record<string, unknown>[] = [];
+  const byDate = new Map(plan.weeks.flatMap((w) => w.days.map((d) => [d.date, d] as const)));
+  for (let d = from; mustDay(d) <= mustDay(to); d = addDays(d, 1)) {
+    const pd = byDate.get(d);
+    if (pd && pd.countsToWeek)
+      out.push({
+        date: d,
+        dayId: d,
+        km: Math.round(pd.workout.km * share * 100) / 100,
+        durationSec: Math.round(pd.workout.sec * share),
+        completed: true,
+        rpe: 5,
+        ...extra
+      });
+    else if (
+      !pd &&
+      mustDay(d) < mustDay(plan.input.startDate) &&
+      plan.input.runDays.includes(weekdayOf(d))
+    )
+      out.push({
+        date: d,
+        km: Math.round((plan.input.currentWeeklyKm / plan.input.runDays.length) * share * 10) / 10,
+        durationSec: 3000,
+        completed: true,
+        rpe: 5,
+        ...extra
+      });
+  }
+  return out;
+}
+
+/** Činjenica bola: bol `level` na dan asOf (zapis bez trčanja). */
+export const painFacts = (asOf: string, level: number): Record<string, unknown> => ({
+  workouts: [{ date: asOf, km: 0, durationSec: 0, completed: false, pain: level }]
+});
+
+/** Činjenice scenarija mreže 04 (asOf = dan adaptacije). 'chain' = prvi korak (pauza 10); drugi korak: manjak 50 %
+    nedelju kasnije (chainFacts). Rezultat ±2 VDOT: trka 10 km. */
+export function factsOf(plan: PlanLike, s: Scenario, asOf: string): Record<string, unknown> {
+  const back = (n: number): string => addDays(asOf, -n);
+  const cov = (from: string, complete = true) => ({ from, to: asOf, complete });
+  const race10 = (vdot: number) => ({
+    distM: 10000,
+    sec: timeForVdot(vdot, 10000),
+    date: asOf,
+    kind: 'race'
+  });
+  switch (s) {
+    case 'none':
+      return {};
+    case 'done100':
+      return { workouts: runsIn(plan, back(13), asOf), coverage: cov(back(13)) };
+    case 'under50':
+      return {
+        workouts: [...runsIn(plan, back(13), back(7)), ...runsIn(plan, back(6), asOf, 0.5)],
+        coverage: cov(back(13))
+      };
+    case 'over120':
+      return { workouts: runsIn(plan, back(13), asOf, 1.2), coverage: cov(back(13)) };
+    case 'pause10':
+    case 'chain':
+      return { workouts: runsIn(plan, back(23), back(10)), coverage: cov(back(23)) };
+    case 'pause20':
+      return { breaks: [{ kind: 'break', from: back(19), to: asOf }] };
+    case 'pause35':
+      return { workouts: runsIn(plan, back(48), back(35)), coverage: cov(back(48)) };
+    case 'pain5':
+      return painFacts(asOf, 5);
+    case 'pain8':
+      return painFacts(asOf, 8);
+    case 'fatigue':
+      return {
+        workouts: [
+          { date: back(1), km: 8, durationSec: 3000, completed: true, rpe: 8 },
+          { date: back(3), km: 8, durationSec: 3000, completed: true, rpe: 7 }
+        ]
+      };
+    case 'faster':
+      return { results: [race10(Math.min(80, Math.round((plan.vdot + 2) * 10) / 10))] };
+    case 'slower':
+      return { results: [race10(Math.max(30, Math.round((plan.vdot - 2) * 10) / 10))] };
+    case 'test5k':
+      return { results: [{ distM: 5000, sec: 1470, date: asOf, kind: 'test' }] };
+    case 'incomplete':
+      return { coverage: cov(back(13), false) };
+    case 'locked': {
+      const future = plan.weeks
+        .flatMap((w) => w.days)
+        .filter((d) => mustDay(d.date) > mustDay(asOf) && d.role !== 'race')
+        .slice(0, 3)
+        .map((d) => d.date);
+      return { workouts: runsIn(plan, back(1), asOf), lockedDayIds: future };
+    }
+    case 'painPause':
+      return {
+        workouts: [
+          ...runsIn(plan, back(33), back(20)),
+          { date: asOf, km: 0, durationSec: 0, completed: false, pain: 6 }
+        ],
+        coverage: cov(back(33))
+      };
+  }
+}
+
+/** Drugi korak lanca: manjak 50 % u 7 dana do `a2` (posle pauze 10). */
+export const chainFacts = (p: PlanLike, a2: string): Record<string, unknown> => ({
+  workouts: [
+    ...runsIn(p, addDays(a2, -13), addDays(a2, -7)),
+    ...runsIn(p, addDays(a2, -6), a2, 0.5)
+  ],
+  coverage: { from: addDays(a2, -13), to: a2, complete: true }
+});
+
+export interface AdaptCase {
+  key: string;
+  id: string;
+  tag: string;
+  asOf: string;
+  s: Scenario;
+}
+
+/** Tokovi mreže 04 za plan: svaki asOf × scenariji; bol 5 i bol 8 u SVAKOM danu nedelje koja sadrži asOf (asOf =
+    taj dan, pouka 18). Ključ `<id>/<tag>/<scenario>[/d<i>]`; duplikati (isti asOf) jednom. */
+export function adaptCases(id: string, p: PlanLike): AdaptCase[] {
+  const out: AdaptCase[] = [];
+  const seen = new Set<string>();
+  const add = (tag: string, asOf: string, s: Scenario, key: string): void => {
+    const k = `${s}@${asOf}`;
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push({ key, id, tag, asOf, s });
+  };
+  for (const a of adaptAsOfs(p))
+    for (const s of SCENARIOS) {
+      if (s === 'pain5' || s === 'pain8') {
+        const w = p.weeks.find((x) => x.startDate <= a.asOf && a.asOf <= x.endDate)!;
+        for (let i = 0; i < 7; i++)
+          add(a.tag, addDays(w.startDate, i), s, `${id}/${a.tag}/${s}/d${i}`);
+      } else add(a.tag, a.asOf, s, `${id}/${a.tag}/${s}`);
+    }
+  return out;
+}
+
+/* ---------- Trajna mreža rane i srednje adaptacije (pouka 23, kao 10K E/N7) ---------- */
+
+export const EARLY_SCENARIOS = [
+  'pause10',
+  'pause20',
+  'pain5',
+  'pain8',
+  'pause10pain5',
+  'under',
+  'fatigue'
+] as const;
+export type EarlyScenario = (typeof EARLY_SCENARIOS)[number];
+
+/** Činjenice mreže E (asOf = dan adaptacije): pauza 10/20 (breaks do asOf), bol 5/8 na dan asOf, pauza 10 + bol 5,
+    manjak (odrađen samo dan asOf − 6 po planu, pokrivenost asOf − 6 … asOf), umor (2 lagana van plana, RPE 8). */
+export function earlyFacts(
+  plan: PlanLike,
+  s: EarlyScenario,
+  asOf: string
+): Record<string, unknown> {
+  const back = (n: number): string => addDays(asOf, -n);
+  const pause = (days: number) => [{ kind: 'break', from: back(days - 1), to: asOf }];
+  switch (s) {
+    case 'pause10':
+      return { breaks: pause(10) };
+    case 'pause20':
+      return { breaks: pause(20) };
+    case 'pain5':
+      return painFacts(asOf, 5);
+    case 'pain8':
+      return painFacts(asOf, 8);
+    case 'pause10pain5':
+      return { breaks: pause(10), ...painFacts(asOf, 5) };
+    case 'under':
+      return {
+        workouts: runsIn(plan, back(6), back(6)),
+        coverage: { from: back(6), to: asOf, complete: true }
+      };
+    case 'fatigue':
+      return {
+        workouts: [
+          { date: back(1), km: 8, durationSec: 3000, completed: true, rpe: 8 },
+          { date: back(3), km: 8, durationSec: 3000, completed: true, rpe: 8 }
+        ]
+      };
+  }
+}
+
+/** asOf mreže E po planu: sreda i kraj nedelje 1, sreda svake nedelje 2 … N − 1 i kraj nedelje pre svake posebne
+    nedelje (test, rasterećenje, N−2, N−1). Oznaka `w<i>wed` / `w<i>end`. */
+export function earlyAsOfs(p: PlanLike): { tag: string; asOf: string }[] {
+  const N = p.weeks.length;
+  const special = p.weeks
+    .filter((w) => w.test || w.deload || w.index === N - 2 || w.index === N - 1)
+    .map((w) => w.index - 1)
+    .filter((i) => i >= 1);
+  const out = [{ tag: 'w1end', asOf: p.weeks[0]!.endDate }];
+  for (let i = 1; i <= N - 1; i++) out.push({ tag: `w${i}wed`, asOf: wedOf(p, i) });
+  for (const i of special) out.push({ tag: `w${i}end`, asOf: p.weeks[i - 1]!.endDate });
+  const seen = new Set<string>();
+  return out.filter((x) => (seen.has(x.tag) ? false : (seen.add(x.tag), true)));
+}
+
+/** Planovi mreže E (redosled R, F, B): svaki `rk`-ti ulaz mreže 02, svaki `fk`-ti po osećaju, svaki `bk`-ti
+    početnika. */
+export function earlyGridBases(rk = 91, fk = 39, bk = 21): AdaptBase[] {
+  const every = <X>(xs: readonly X[], n: number): X[] => xs.filter((_, i) => i % n === 0);
+  return [
+    ...every(gridInputs(), rk).map((c) => ({ id: c.id, family: 'R' as const, input: c.input })),
+    ...every(feelInputs(), fk).map((c) => ({ id: c.id, family: 'F' as const, input: c.input })),
+    ...every(beginnerInputs(), bk).map((c) => ({ id: c.id, family: 'B' as const, input: c.input }))
+  ];
 }

@@ -4,7 +4,7 @@
    lagan je tvrdo pravilo (pouka 2): kad ne može da se ispuni, nedelja nije izvodljiva (M6). */
 
 import { type DayRule, MARATHON_V2_POLICY as P } from './policy.ts';
-import type { Paces } from './types.ts';
+import type { Paces, PlanDay } from './types.ts';
 import { fmtKm } from './workouts.ts';
 
 const EPS = 1e-9;
@@ -18,6 +18,8 @@ export interface Lengths {
   jumpBound: boolean;
   /** Rasterećenje (M16/M17 ispred M5, odstupanje): dugi kraći od 0,8 × poslednjeg da lagani ostanu ≥ 5 km. */
   shortened?: true;
+  /** Rasterećenje posle smanjenja (A9, odstupanje): 0,8 × poslednji < 5 km → dugi 5 km (dugi ≥ lagan ≥ 5 km). */
+  raised?: true;
 }
 
 /** M13: plafon dugog od 150 min sporim E [0,1 km]. */
@@ -119,7 +121,42 @@ export function buildLengths(
   return withEasy(target10 * 10 - quality100, longCap10(target10, rule, p), easyDays, jump10);
 }
 
-/** M7: nedelja tapera `step` (0 = N−2, 1 = N−1) — dugi ≤ udeo × najduži dugi plana (0,65 / 0,45) i ≤ M13. */
+/** M7: najduži dugi plana [0,1 km] — JEDNA definicija (pouke 24 i 29) za konstruktor i validator: dani uloge 'long'
+    nedelja `weeks` kakve se upisuju (adaptacija: zaštićeni dani iz prethodnog plana, written.ts); 0 bez dugog. */
+export function longestLong10(weeks: readonly { days: readonly PlanDay[] }[]): number {
+  let m = 0;
+  for (const w of weeks)
+    for (const d of w.days) if (d.role === 'long') m = Math.max(m, Math.round(d.workout.km * 10));
+  return m;
+}
+
+/** M13a (pouka 29): dugi svake nedelje [0,1 km] iz upisanih dana (null bez dugog — trkačka nedelja ili dugi na
+    dan odmora). Ulaz za jumpBase10/longJumpCap10 u konstruktoru i validatoru. */
+export function longsOf(weeks: readonly { days: readonly PlanDay[] }[]): (number | null)[] {
+  return weeks.map((w) => {
+    const l = w.days.find((d) => d.role === 'long');
+    return l ? Math.round(l.workout.km * 10) : null;
+  });
+}
+
+/** A4 (M18): dugi na danu bola ≤ 60 min sporim E (korak 0,1 km). */
+export function painLong10(long10: number, p: Paces): number {
+  return Math.min(long10, Math.floor((P.adapt.painLongMaxSec / p.E.slow) * 10 + EPS));
+}
+
+/** A4 (M18): lagan na danu bola × 0,7 naniže na 0,1 km, ne ispod 5 km i nikad duži od planiranog (trkačka
+    nedelja: lagan kraći od 5 km, M8, ostaje); svaki lagan ≤ dugi nedelje (pouka 2; `long10` = dugi posle
+    ograničenja, null ako dugog nema). */
+export function limitedEasy10(easy10: number, inPain: boolean, long10: number | null): number {
+  const k = inPain
+    ? Math.min(easy10, Math.max(EASY_MIN10, Math.floor(easy10 * P.adapt.painEasyFactor + EPS)))
+    : easy10;
+  return long10 === null ? k : Math.min(k, long10);
+}
+
+/** M7: nedelja tapera `step` (0 = N−2, 1 = N−1) — dugi ≤ udeo × najduži dugi plana (0,65 / 0,45) i ≤ M13.
+    `adapted` (A9, odstupanje kao rasterećenje): dugi ne ispod 5 km (dugi ≥ lagan ≥ 5 km) kad je najduži dugi
+    posle smanjenja kratak. */
 export function taperLengths(
   target10: number,
   quality100: number,
@@ -128,18 +165,21 @@ export function taperLengths(
   step: number,
   rule: DayRule,
   p: Paces,
-  jump10: number | null = null
+  jump10: number | null = null,
+  adapted = false
 ): Lengths | null {
-  const cap10 = Math.min(
+  const rule10 = Math.min(
     longCap10(target10, rule, p),
     Math.floor(P.taper.weeks[step]!.longFactor * longest10 + EPS)
   );
-  return withEasy(target10 * 10 - quality100, cap10, easyDays, jump10);
+  const cap10 = adapted ? Math.max(EASY_MIN10, rule10) : rule10;
+  const len = withEasy(target10 * 10 - quality100, cap10, easyDays, jump10);
+  return len && len.long10 > rule10 ? { ...len, raised: true } : len;
 }
 
 /** M5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ M13); ostatak na `easyDays` jednakih
-    laganih dana. `shorten` (samo nedelja testa M16 i početnik M17): kad lagani ne bi bili ≥ 5 km, dugi se
-    skraćuje (odstupanje). */
+    laganih dana. `shorten` (nedelja testa M16, početnik M17 i — pouka 33, A9 — adaptirana nedelja posle smanjenja
+    obima): kad lagani ne bi bili ≥ 5 km, dugi se skraćuje (odstupanje). `adapted` (A9): dugi ne ispod 5 km. */
 export function deloadLengths(
   target10: number,
   quality100: number,
@@ -148,16 +188,20 @@ export function deloadLengths(
   rule: DayRule,
   p: Paces,
   jump10: number | null = null,
-  shorten = false
+  shorten = false,
+  adapted = false
 ): Lengths | null {
-  const cap10 = Math.min(
+  const rule10 = Math.min(
     Math.floor(P.deload.longFactor * lastLong10 + EPS),
     longCap10(target10, rule, p)
   );
+  // A9 (odstupanje, kao 10K: adaptirana nedelja posle smanjenja): dugi ne ispod 5 km (dugi ≥ lagan ≥ 5 km).
+  const cap10 = adapted ? Math.max(EASY_MIN10, rule10) : rule10;
   const long10 = Math.min(cap10, jump10 ?? Infinity);
+  const raised = long10 > rule10 ? { raised: true as const } : {};
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
   if (easy10.every((e) => e >= EASY_MIN10 && e <= long10))
-    return { long10, easy10, jumpBound: jump10 !== null && jump10 < cap10 };
+    return { long10, easy10, jumpBound: jump10 !== null && jump10 < cap10, ...raised };
   // Odstupanje (M16 test u rasterećenju; M17 mali obim početnika): lagani ispod 5 km → dugi se skraćuje na
   // najduži koji ostavlja lagane ≥ 5 km (i dugi ≥ lagan); cilj i kvalitet ostaju.
   if (!shorten) return null;

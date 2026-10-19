@@ -1,0 +1,113 @@
+[
+  {
+    "name": "S1 A17 ukida i prinudno rasterećenje",
+    "file": "src/domain/generators/marathon/v2/steps.ts",
+    "find": "        isBuildPhase(next.phase) &&\n        !forced.has(next.index) &&\n",
+    "replace": "        isBuildPhase(next.phase) &&\n",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S2 reduced se ne čita (višak = smanjenje)",
+    "file": "src/domain/generators/marathon/v2/steps.ts",
+    "find": "return s.reduced === true ? s.fromWeek : null;",
+    "replace": "return s.startKm !== null ? s.fromWeek : null;",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S3 sidro bola = sledeća puna nedelja umesto r",
+    "file": "src/domain/generators/marathon/v2/assess.ts",
+    "find": "step.returnFrom = { week: r, share: A.painEasyFactor };",
+    "replace": "step.returnFrom = { week: n, share: A.painEasyFactor };",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S4 validacija u construct nad sastavljenim planom",
+    "file": "src/domain/generators/marathon/v2/generate.ts",
+    "find": "  const violations = validatePlan(\n    merged\n",
+    "replace": "  const violations = validatePlan(\n    merged && !merged\n",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S5 trkačka bez pouke 30 (višak laganih ne postaje odmor)",
+    "file": "src/domain/generators/marathon/v2/week.ts",
+    "find": "  return total <= cap100 ? out.sort() : [];",
+    "replace": "  return [];",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S6 uvod početnika sa kvalitetom pri umoru (pouka 31)",
+    "file": "src/domain/generators/marathon/v2/week.ts",
+    "find": "    const qDay = intro || mode === 'none' ? null",
+    "replace": "    const qDay = mode === 'none' ? null",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S7 dani bola nisu dani bez kvaliteta",
+    "file": "src/domain/generators/marathon/v2/steps.ts",
+    "find": "const banned = (d: IsoDate): boolean => any(d, (s) => [...s.noQuality, s.pain, s.rest]);",
+    "replace": "const banned = (d: IsoDate): boolean => any(d, (s) => [...s.noQuality, s.rest]);",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S8 konstruktor: najduži dugi iz sastavljenih nedelja",
+    "file": "src/domain/generators/marathon/v2/generate.ts",
+    "find": "    const longest10 = longestLong10(written);",
+    "replace": "    const longest10 = longestLong10(out);",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S9 M13a iz sastavljenih dugih (pouka 28 bez upisanih dana)",
+    "file": "src/domain/generators/marathon/v2/generate.ts",
+    "find": "    const longs10 = longsOf(written);",
+    "replace": "    const longs10 = longsOf(out);",
+    "tests": [
+      "src/domain/generators/marathon/v2/adapt.node.test.ts",
+      "src/domain/generators/marathon/v2/adaptGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S10 povratni rast bez gornje granice nivoa",
+    "file": "src/domain/generators/marathon/v2/volume.ts",
+    "find": "  return Math.max(normal, Math.min(last10 + returnGrowth10(last10), level10));",
+    "replace": "  return Math.max(normal, last10 + returnGrowth10(last10));",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S11 stanje doze iz sastavljenih dana (pouka 29)",
+    "file": "src/domain/generators/marathon/v2/generate.ts",
+    "find": "advance(same(wd, w.days) ? w.picks : writtenPicks(wd), quality)",
+    "replace": "advance(w.picks, quality)",
+    "tests": [
+      "src/domain/generators/marathon/v2/adapt.node.test.ts",
+      "src/domain/generators/marathon/v2/adaptGrid.node.test.ts",
+      "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S12 donja granica cilja (A9) isključena",
+    "file": "src/domain/generators/marathon/v2/volume.ts",
+    "find": "  if (i >= av.first && t < floor) [t, downOnly] = [floor, true];",
+    "replace": "  if (i >= av.first && t < floor - 1000) [t, downOnly] = [floor, true];",
+    "tests": [
+      "src/domain/generators/marathon/v2/adapt.node.test.ts",
+      "src/domain/generators/marathon/v2/adaptGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S13 MP ispod najnižeg nivoa dozvoljen u adaptaciji",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "  const floorM = ladder === 'MP' ? doseOf(levels[0]!) : 0;",
+    "replace": "  const floorM = 0;",
+    "tests": ["src/domain/generators/marathon/v2/adapt.node.test.ts"]
+  },
+  {
+    "name": "S14 nepotpun zapis = pauza (A10)",
+    "file": "src/domain/generators/marathon/v2/assess.ts",
+    "find": "  return c !== null && c.complete && mustDay(c.from) <= from && mustDay(c.to) >= to;",
+    "replace": "  return c !== null && mustDay(c.from) <= from && mustDay(c.to) >= to;",
+    "tests": [
+      "src/domain/generators/marathon/v2/adapt.node.test.ts",
+      "src/domain/generators/marathon/v2/adaptGrid.node.test.ts"
+    ]
+  }
+]

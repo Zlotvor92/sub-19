@@ -154,9 +154,13 @@ export function pickSlot(
   fits?: (s: Structure) => boolean
 ): Dose | null {
   const cap = capM(zoneOf(ladder), targetKm);
-  // Plafon slota: M11 (doza ≤ udeo cilja) i, za MP u izgradnji, trajanje ≤ dugi (pouka 14, `fits`).
-  const ok = (s: Structure): boolean => doseOf(s) <= cap && (fits ? fits(s) : true);
   const levels = ladderLevels(ladder, beginner);
+  // Plafon slota: M11 (doza ≤ udeo cilja) i, za MP u izgradnji, trajanje ≤ dugi (pouka 14, `fits`). MP nikad
+  // ispod najnižeg nivoa (2 × 3000 m, najmanja smislena MP doza — M7a, MAR-03): prelaz sa niže T doze (M12) koji
+  // ne staje u najniži nivo nije izvodljiv (adaptacija: A9 — jedan kvalitet doze rasterećenja ili bez kvaliteta).
+  const floorM = ladder === 'MP' ? doseOf(levels[0]!) : 0;
+  const ok = (s: Structure): boolean =>
+    doseOf(s) >= floorM && doseOf(s) <= cap && (fits ? fits(s) : true);
   const start0 = startLevel(ladder, targetKm, beginner);
   const start =
     start0 && !ok(start0)

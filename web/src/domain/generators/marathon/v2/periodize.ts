@@ -17,25 +17,33 @@ export interface PhaseCounts {
     ceil((B − spec)/2); razvoj ostatak. */
 export function phaseCounts(weeks: number): PhaseCounts {
   const q = P.phases;
-  const build = weeks - q.taperWeeks - q.raceWeeks;
-  const specific = Math.min(build, q.specific.filter((r) => r.fromBuild <= build).pop()!.weeks);
-  const base = Math.ceil((build - specific) / 2);
   return {
-    base,
-    development: build - specific - base,
-    specific,
+    ...buildCounts(weeks - q.taperWeeks - q.raceWeeks),
     taper: q.taperWeeks,
     race: q.raceWeeks
   };
 }
 
+/** M4: raspodela `build` nedelja izgradnje na bazu, razvoj i specifičnu fazu (i za nov start, A3/A12; ≤ 4
+    nedelje izgradnje → sve specifično). */
+function buildCounts(build: number): Omit<PhaseCounts, 'taper' | 'race'> {
+  const q = P.phases;
+  const specific = Math.min(build, q.specific.filter((r) => r.fromBuild <= build).pop()!.weeks);
+  const base = Math.ceil((build - specific) / 2);
+  return { base, development: build - specific - base, specific };
+}
+
+const buildSequence = (c: Omit<PhaseCounts, 'taper' | 'race'>): Phase[] => [
+  ...Array<Phase>(c.base).fill('base'),
+  ...Array<Phase>(c.development).fill('development'),
+  ...Array<Phase>(c.specific).fill('specific')
+];
+
 /** Faza svake nedelje (1-indeks u nizu na mestu i − 1). */
 export function phasesOf(weeks: number): Phase[] {
   const c = phaseCounts(weeks);
   return [
-    ...Array<Phase>(c.base).fill('base'),
-    ...Array<Phase>(c.development).fill('development'),
-    ...Array<Phase>(c.specific).fill('specific'),
+    ...buildSequence(c),
     ...Array<Phase>(c.taper).fill('taper'),
     ...Array<Phase>(c.race).fill('race')
   ];
@@ -109,6 +117,25 @@ export function deloadWeeks(phases: readonly Phase[]): number[] | null {
 /** M16: nedelja testa 5 km = poslednja nedelja baze (1-indeks). */
 export function testWeekOf(phases: readonly Phase[]): number {
   return phases.lastIndexOf('base') + 1;
+}
+
+/**
+ * A3/A12 (nov start): faze i rasterećenja preostale izgradnje od nedelje `from` do tapera istim pravilima kao
+ * periodize — raspodela M4 za m = broj preostalih nedelja izgradnje, rasterećenja iz iste pretrage M5 relativno od
+ * `from` (ne u prve 2 nedelje novog starta, ne na prvoj nedelji faze, ne pred taperom). Taper, trkačka nedelja,
+ * datumi, oznaka testa i nedelje pre `from` se ne menjaju. null = M5 nema raspored (odstupanje A3: faze ostaju).
+ */
+export function rePeriodize(frames: readonly WeekFrame[], from: number): WeekFrame[] | null {
+  const tail = frames.findIndex((f) => !isBuildPhase(f.phase));
+  const m = tail - (from - 1);
+  if (m <= 0) return [...frames];
+  const seq = buildSequence(buildCounts(m));
+  const deloads = deloadWeeks(seq);
+  if (!deloads) return null;
+  return frames.map((f, i) => {
+    const k = i - (from - 1);
+    return k < 0 || i >= tail ? f : { ...f, phase: seq[k]!, deload: deloads.includes(k + 1) };
+  });
 }
 
 /** Okviri nedelja: datumi, faza, rasterećenje; `test` (plan po osećaju koji nije početnik, M16) označava
