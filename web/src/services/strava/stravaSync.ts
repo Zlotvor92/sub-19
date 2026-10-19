@@ -5,7 +5,7 @@
    Stanje se čita jednom, menja na lokalnoj kopiji, i upisuje JEDNOM na kraju — neuspeh usred posla ne ostavlja polovično stanje
    (stari kod je mutirao globalno stanje u hodu). Greška pojedinačnog dana (streamovi) ne obara ceo uvoz; greška spiska aktivnosti da.
 
-   08c, SAMO ZA PLAN v2 — 5K v2, a od segmenta 05 i 10K v2 (plan v1 se uvozi bajt-isto): trčanje koje nije upareno sa
+   08c, SAMO ZA PLAN v2 — 5K v2, od segmenta 05 10K v2, od HM-05 HM v2 (plan v1 se uvozi bajt-isto): trčanje koje nije upareno sa
    danom plana postaje zapis van plana
    (`vanPlanaV2`, `recordOffPlanRuns`), a pored `lastSync` (spisak preuzet i upisan — isto značenje kao ranije) veza nosi
    `fullSync` (sve aktivnosti perioda preuzete i obrađene: spisak ceo, svaka stavka prepoznata, svaki traženi tok/krug
@@ -183,7 +183,7 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
       moves: { ...start.moves }
     };
     const genPlan = start.genPlan;
-    /* 08c: zapis van plana i `fullSync` samo za plan v2 (5K v2; 10K v2 od segmenta 05 — ista infrastruktura). */
+    /* 08c: zapis van plana i `fullSync` samo za plan v2 (5K v2; 10K v2 od 05, HM v2 od HM-05 — ista infrastruktura). */
     const v2 = tracksOffPlanRuns(genPlan);
     const issues: SyncIssue[] = [];
     const resolve = (): ResolvedPlan =>

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /* AGENTS.md Uslov 7 (MASTER § 1): HM v2 ne uvozi NIŠTA van halfMarathon/v2/ (ni HM v1, ni 10K/5K/maraton, ni
-   domain/*, ni type-only); niko van halfMarathon/v2/ ga ne uvozi do faze 2 (halfMarathon/index.ts bajt-isti).
+   domain/*, ni type-only); van halfMarathon/v2/ ga od segmenta HM-05 uvozi samo halfMarathon/index.ts (adapter app/).
    Proverivač je namerno sopstvena kopija (obrazac tenK/v2/isolation.node.test.ts), ne uvozi se. */
 
 const V2 = dirname(fileURLToPath(import.meta.url));
@@ -69,7 +69,7 @@ describe('HM v2 je izolovan (Uslov 7)', () => {
     }
   });
 
-  it('faza 1: niko van halfMarathon/v2/ ne uvozi HM v2 (halfMarathon/index.ts nepromenjen)', () => {
+  it('segment HM-05: van halfMarathon/v2/ v2 uvozi SAMO halfMarathon/index.ts, i to samo adapter app/index.ts (select.ts → halfMarathon)', () => {
     const outside = walk(SRC).filter((f) => !f.startsWith(V2 + '/') && !isTest(f));
     const edges: string[] = [];
     for (const f of outside) {
@@ -82,6 +82,8 @@ describe('HM v2 je izolovan (Uslov 7)', () => {
       }
       if (/generators\/halfMarathon\/v2/.test(code)) edges.push(`${relative(SRC, f)} → alias v2`);
     }
-    expect(edges).toEqual([]);
+    expect(edges).toEqual([
+      'domain/generators/halfMarathon/index.ts → domain/generators/halfMarathon/v2/app/index.ts'
+    ]);
   });
 });

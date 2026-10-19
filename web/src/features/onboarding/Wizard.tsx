@@ -4,6 +4,7 @@ import { hasGenPlanData } from '../../domain/plan';
 import {
   UNSUPPORTED_DISTANCE,
   generateFiveKV2Plan,
+  generateHmV2Plan,
   generateTenKV2Plan,
   generatorForDistance
 } from '../../domain/generators/select';
@@ -21,6 +22,12 @@ import {
   toTenKV2Input,
   type TenKV2Wizard
 } from '../../domain/onboarding/tenKV2';
+import {
+  hmV2StepValid,
+  initialHmV2Wizard,
+  toHmV2Input,
+  type HmV2Wizard
+} from '../../domain/onboarding/hmV2';
 import {
   TOTAL_STEPS,
   availableDays,
@@ -43,6 +50,7 @@ import { useGeneratorFlags } from '../../stores/generatorFlags';
 import { useUIStore } from '../../stores/uiStore';
 import { FiveKV2Days, FiveKV2Experience, FiveKV2RaceHint, FiveKV2Result } from './FiveKV2Steps';
 import { TenKV2Days, TenKV2Experience, TenKV2RaceHint, TenKV2Result } from './TenKV2Steps';
+import { HmV2Days, HmV2Experience, HmV2RaceHint, HmV2Result } from './HmV2Steps';
 import { Step1Race } from './Step1Race';
 import { Step2Result } from './Step2Result';
 import { Step3Volume } from './Step3Volume';
@@ -52,7 +60,8 @@ import { Step4Intensity } from './Step4Intensity';
    crta. Dok korisnik nema plan, čarobnjak je jedini ekran i nema „✕"; kad ima, može da se otkaže. */
 
 const STEP_NAMES = ['Trka', 'Rezultat', 'Obim', 'Intenzitet'] as const;
-/** 5K v2 / 10K v2 (prekidač uključen): isti broj koraka, druga polja (v. `FiveKV2Steps`, `TenKV2Steps`). */
+/** 5K v2 / 10K v2 / HM v2 (prekidač uključen): isti broj koraka, druga polja (v. `FiveKV2Steps`, `TenKV2Steps`,
+ *  `HmV2Steps`). */
 const STEP_NAMES_V2 = ['Trka', 'Rezultat', 'Iskustvo', 'Dani'] as const;
 
 export function Wizard({ today }: { today: string }) {
@@ -85,6 +94,22 @@ export function Wizard({ today }: { today: string }) {
     const r = input ? generateTenKV2Plan(input) : null;
     return r && !r.ok ? r.reasons : null;
   }, [isTenKV2, t2w, w.raceDate, today]);
+  /* HM v2 (segment HM-05): SAMO nov plan polumaratona uz uključen prekidač HM v2; inače čarobnjak kao do sada. */
+  const isHmV2 = flags.hmV2 === true && w.raceDist === 21097.5;
+  const [hmw, setHmw] = useState<HmV2Wizard>(initialHmV2Wizard);
+  const setHm = (patch: Partial<HmV2Wizard>): void => {
+    setRejection(null);
+    setHmw((cur) => ({ ...cur, ...patch }));
+  };
+  /* Trčanje/hodanje: odbijanje v2 (H17) doslovno čim se izabere — plan se ne pravi. */
+  const hmRunWalkRejection = useMemo(() => {
+    if (!isHmV2 || hmw.canRun30 !== false) return null;
+    const input = toHmV2Input(hmw, w.raceDate, today);
+    const r = input ? generateHmV2Plan(input) : null;
+    return r && !r.ok ? r.reasons : null;
+  }, [isHmV2, hmw, w.raceDate, today]);
+  /** Čarobnjak v2 bilo koje distance (isti koraci, druga polja). */
+  const anyV2 = isV2 || isTenKV2 || isHmV2;
   const setDays = (patch: Partial<WizardState>): void =>
     setW((cur) => syncRunDays({ ...cur, ...patch }));
 
@@ -104,7 +129,9 @@ export function Wizard({ today }: { today: string }) {
     ? v2StepValid(v2w, step, w.raceDate, today)
     : isTenKV2
       ? tenKV2StepValid(t2w, step, w.raceDate, today)
-      : stepValid(w, step, today);
+      : isHmV2
+        ? hmV2StepValid(hmw, step, w.raceDate, today)
+        : stepValid(w, step, today);
   const verdict = out && !out.short ? goalVerdict(out, w.intensity) : null;
 
   /** Upis novog plana (posle potvrde kad postoji stari plan sa unosima). */
@@ -151,9 +178,22 @@ export function Wizard({ today }: { today: string }) {
     await activate(r.plan);
   }
 
+  /** HM v2: plan iz ulaza v2; odbijanje ostaje na koraku kao poruka sa razlozima v2. */
+  async function finishHmV2(): Promise<void> {
+    const input = toHmV2Input(hmw, w.raceDate, today);
+    if (!input) return;
+    const r = generateHmV2Plan(input);
+    if (!r.ok) {
+      setRejection(r.reasons);
+      return;
+    }
+    await activate(r.plan);
+  }
+
   async function finish(): Promise<void> {
     if (isV2) return finishV2();
     if (isTenKV2) return finishTenKV2();
+    if (isHmV2) return finishHmV2();
     const input = toGenerationInput(w, today);
     if (!input) return;
     const generator = generatorForDistance(input.raceDistM);
@@ -213,7 +253,7 @@ export function Wizard({ today }: { today: string }) {
             id="ob-progress"
             aria-label={`Korak ${step} od ${TOTAL_STEPS}`}
           >
-            {(isV2 || isTenKV2 ? STEP_NAMES_V2 : STEP_NAMES).map((n, i) => (
+            {(anyV2 ? STEP_NAMES_V2 : STEP_NAMES).map((n, i) => (
               <div
                 key={n}
                 className={`ob-seg${i + 1 < step ? ' done' : i + 1 === step ? ' on' : ''}`}
@@ -230,13 +270,15 @@ export function Wizard({ today }: { today: string }) {
               w={w}
               set={set}
               today={today}
-              hint={isV2 || isTenKV2 ? { kind: 'none' } : hint}
+              hint={anyV2 ? { kind: 'none' } : hint}
               err={err}
               extra={
                 isV2 ? (
                   <FiveKV2RaceHint raceDate={w.raceDate} today={today} />
                 ) : isTenKV2 ? (
                   <TenKV2RaceHint raceDate={w.raceDate} today={today} />
+                ) : isHmV2 ? (
+                  <HmV2RaceHint raceDate={w.raceDate} today={today} />
                 ) : null
               }
             />
@@ -256,15 +298,21 @@ export function Wizard({ today }: { today: string }) {
           ) : null}
           {isTenKV2 && step === 4 ? <TenKV2Days v={t2w} set={setT2} rejection={rejection} /> : null}
 
-          {!isV2 && !isTenKV2 && step === 2 ? (
-            <Step2Result w={w} set={set} form={form} pbMsg={pbMsg} />
+          {isHmV2 && step === 2 ? (
+            <HmV2Result v={hmw} set={setHm} raceDate={w.raceDate} today={today} />
           ) : null}
+          {isHmV2 && step === 3 ? (
+            <HmV2Experience v={hmw} set={setHm} runWalkRejection={hmRunWalkRejection} />
+          ) : null}
+          {isHmV2 && step === 4 ? <HmV2Days v={hmw} set={setHm} rejection={rejection} /> : null}
 
-          {!isV2 && !isTenKV2 && step === 3 ? (
+          {!anyV2 && step === 2 ? <Step2Result w={w} set={set} form={form} pbMsg={pbMsg} /> : null}
+
+          {!anyV2 && step === 3 ? (
             <Step3Volume w={w} set={set} setDays={setDays} avail={avail} />
           ) : null}
 
-          {!isV2 && !isTenKV2 && step === 4 ? (
+          {!anyV2 && step === 4 ? (
             <Step4Intensity
               w={w}
               set={set}

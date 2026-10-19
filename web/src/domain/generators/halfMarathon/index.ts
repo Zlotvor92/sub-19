@@ -22,6 +22,10 @@ export const HALF_MARATHON_DISTANCE_M = 21097.5;
 /** Proizvodni podaci HM (ime, preporučeni broj nedelja…) za napomene čarobnjaka. */
 export const HALF_MARATHON_PRODUCT = PRODUCT_21K;
 
+/* --- HM v2 (segment HM-05): adapter prema aplikaciji; `select.ts` ga bira po oznaci politike (`hm-v2`) i, uz uključen
+   prekidač, za nov plan polumaratona. Postojeći HM (v1) izvozi ispod ostaju nepromenjeni. --- */
+export { hmV2 } from './v2/app/index.ts';
+
 /* --- generisanje i adapter prema aplikaciji --- */
 export { generatePlan } from './training/generator/generatePlan';
 export { assess } from './training/generator/assess';

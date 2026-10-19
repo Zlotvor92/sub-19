@@ -6,7 +6,7 @@
 
    Stanje se čita jednom, menja na lokalnoj kopiji i upisuje JEDNOM na kraju (i pri prekidu — ono što je do tada izvedeno je ispravno).
 
-   08c, SAMO ZA PLAN v2 — 5K v2, a od segmenta 05 i 10K v2 (plan v1 se uvozi bajt-isto): trčanje koje nije upareno sa
+   08c, SAMO ZA PLAN v2 — 5K v2, od segmenta 05 10K v2, od HM-05 HM v2 (plan v1 se uvozi bajt-isto): trčanje koje nije upareno sa
    danom plana postaje zapis van plana
    (`vanPlanaV2`), a pored `trSync` (spisak treninga preuzet — isto značenje kao ranije, pomera se i kad detalji/tokovi ne
    uspeju) veza nosi `fullSync`: spisak ceo i prepoznat, svaki trening obrađen i svaki traženi detalj/tok preuzet. Delimičan
@@ -208,7 +208,7 @@ export function createIcuSync(deps: IcuSyncDeps) {
     if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
     if (!list.ok) return { ok: false, error: list.error };
     const activities: IcuActivity[] = list.data.activities;
-    /* 08c: zapis van plana i `fullSync` samo za plan v2 (5K v2; 10K v2 od segmenta 05); plan v1: isti tok kao ranije. */
+    /* 08c: zapis van plana i `fullSync` samo za plan v2 (5K v2; 10K v2 od 05, HM v2 od HM-05); plan v1: isti tok kao ranije. */
     const v2 = tracksOffPlanRuns(genPlan);
     const issues: SyncIssue[] = [];
     const skipped = list.data.skipped ?? 0;

@@ -151,6 +151,9 @@ export interface GenPlanState {
   /** 10k-v2 (segment 05): izlaz generatora 10K v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije (06). Oblik
    *  poznaje samo `generators/tenK/v2`; aplikacija ga ne čita. Plan bez polja nije 10K v2 plan. NEPOUZDAN. */
   tenKV2?: unknown;
+  /** hm-v2 (segment HM-05): izlaz generatora HM v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije (HM-06).
+   *  Oblik poznaje samo `generators/halfMarathon/v2`; aplikacija ga ne čita. Plan bez polja nije HM v2 plan. NEPOUZDAN. */
+  hmV2?: unknown;
   [field: string]: unknown;
 }
 

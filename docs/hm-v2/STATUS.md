@@ -2,7 +2,8 @@
 
 Novi generator polumaratona (policyId `hm-v2`) sa jednim vlasnikom svake odluke (H1–H15 iz
 `docs/generators-v2/MASTER-HM-MARATHON.md` § 4), izolovan u `web/src/domain/generators/halfMarathon/v2/`. HM v1 je
-nepromenjen i jedini u aplikaciji; `halfMarathon/index.ts` ne izvozi v2 do faze 2.
+nepromenjen i podrazumevan; od segmenta HM-05 v2 je u aplikaciji iza prekidača (`ui.generatorV2HalfMarathon` /
+`VITE_HM_V2`), samo kroz adapter `v2/app/` (`halfMarathon/index.ts` izvozi `hmV2`, bira `select.ts` po `hm-v2`).
 
 ## Kako se koristi
 
@@ -61,3 +62,16 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 - Mreža 04 5154 toka, rana adaptacija 27 062 (i asOf pre starta), široka pretraga 204 519 (401 plan): 0 odbijanja, 0
   prekršaja invarijanti; umor pre starta po pouci 34; generator bez koraka bajt-isti; sabotaže 16/16.
 - Otvoreno: trkačka nedelja samo sa trkom posle dana odmora A4 (potvrda). K4 mreže r iz koraka A: prihvaćeno.
+
+## Segment HM-05 (faza 2): polumaraton v2 u aplikaciji iza prekidača
+
+- Prekidač `generatorV2HalfMarathon` (podrazumevano isključen, vidljiv samo administratoru ili uz `VITE_HM_V2`); nov plan
+  polumaratona uz uključen prekidač → `HALF_MARATHON_V2_GENERATOR`; postojeći planovi po oznaci (`hm-v2` → v2, nepoznata
+  verzija → `UNKNOWN_POLICY`, nikad HM v1; `hm-v1`/`legacy-hm`/lični plan → HM v1).
+- Adapter `v2/app/` (lokalni tipovi, bez uvoza van v2): plan (7 dana, jedna mapa faze, trka 21,1 km van obima),
+  struktura, čarobnjak, sat, (b) „nepodržano do HM-06" sa razlogom, kopija procene stanja HM v1. Format
+  `GenPlanState.hmV2`, `PLAN_FIELDS` + `hmV2`. Čarobnjak `HmV2Steps`, uvoz čuva trčanja van plana.
+- Bajt-isto: 150 heševa (5K/10K v1, HM v1, maraton, 5K v2, lični plan) prema 28da6af; 10K v2 isto (merenje); E2E
+  `e2e/hm-v2.spec.ts` 3/3; sabotaže 10/10. Izveštaj `reports/SEGMENT-05-IMPLEMENTATION.md`, artefakti
+  `artifacts/segment-05/`.
+- Sledeće: HM-06 (činjenice → `adaptHmV2` sa pregledom, potvrda, revizija, vraćanje verzije, traka, cilj, Forma).

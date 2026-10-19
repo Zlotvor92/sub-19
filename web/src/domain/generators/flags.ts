@@ -1,6 +1,7 @@
-/* PREKIDAČI v2 GENERATORA (5K: segment 08a; 10K: segment 05) — JEDINO mesto odluke. Domen ne čita skladište ni
-   okruženje: aplikacija prosleđuje vrednost podešavanja korisnika (`ui.generatorV2FiveK`, `ui.generatorV2TenK`) i razvojni
-   override (`VITE_FIVEK_V2`, `VITE_TENK_V2`), a ovde se odlučuje. Isto pravilo za oba prekidača:
+/* PREKIDAČI v2 GENERATORA (5K: segment 08a; 10K: segment 05; HM: segment HM-05) — JEDINO mesto odluke. Domen ne čita
+   skladište ni okruženje: aplikacija prosleđuje vrednost podešavanja korisnika (`ui.generatorV2FiveK`, `ui.generatorV2TenK`,
+   `ui.generatorV2HalfMarathon`) i razvojni override (`VITE_FIVEK_V2`, `VITE_TENK_V2`, `VITE_HM_V2`), a ovde se odlučuje.
+   Isto pravilo za sve prekidače:
 
    - podrazumevano isključeno: podešavanje mora biti tačno `true`;
    - override: `1`/`true` uključuje, `0`/`false` isključuje bez obzira na podešavanje; ostalo se ne računa;
@@ -16,6 +17,9 @@ export const FIVE_K_V2_ENV = 'VITE_FIVEK_V2';
 /** 10K v2 (segment 05): ključ podešavanja i razvojni override. */
 export const TEN_K_V2_SETTING = 'generatorV2TenK';
 export const TEN_K_V2_ENV = 'VITE_TENK_V2';
+/** HM v2 (segment HM-05): ključ podešavanja i razvojni override. */
+export const HM_V2_SETTING = 'generatorV2HalfMarathon';
+export const HM_V2_ENV = 'VITE_HM_V2';
 
 type Sources = { setting: unknown; devOverride: unknown };
 
@@ -36,10 +40,15 @@ function toggleVisible(sources: { devOverride: unknown; isAdmin: boolean }): boo
 
 export const fiveKV2Enabled = (sources: Sources): boolean => switchOn(sources);
 export const tenKV2Enabled = (sources: Sources): boolean => switchOn(sources);
+export const hmV2Enabled = (sources: Sources): boolean => switchOn(sources);
 
-/** Prekidači za nov plan. Bez izvora 10K prekidača (`tenK` izostavljen) 10K v2 je isključen (polje izostaje). */
-export function generatorFlags(fiveK: Sources, tenK?: Sources): GeneratorFlags {
-  return { fiveKV2: fiveKV2Enabled(fiveK), ...(tenK ? { tenKV2: tenKV2Enabled(tenK) } : {}) };
+/** Prekidači za nov plan. Bez izvora 10K/HM prekidača (`tenK`/`hm` izostavljen) taj v2 je isključen (polje izostaje). */
+export function generatorFlags(fiveK: Sources, tenK?: Sources, hm?: Sources): GeneratorFlags {
+  return {
+    fiveKV2: fiveKV2Enabled(fiveK),
+    ...(tenK ? { tenKV2: tenKV2Enabled(tenK) } : {}),
+    ...(hm ? { hmV2: hmV2Enabled(hm) } : {})
+  };
 }
 
 /** 08b: vidljivost prekidača 5K v2 (razvoj ili administrator). */
@@ -49,4 +58,7 @@ export const fiveKV2ToggleVisible = (sources: {
 }): boolean => toggleVisible(sources);
 /** 10K v2 (segment 05): vidljivost prekidača 10K v2 — isto pravilo kao 5K posle 08b. */
 export const tenKV2ToggleVisible = (sources: { devOverride: unknown; isAdmin: boolean }): boolean =>
+  toggleVisible(sources);
+/** HM v2 (segment HM-05): vidljivost prekidača HM v2 — isto pravilo kao 5K/10K (razvoj ili administrator). */
+export const hmV2ToggleVisible = (sources: { devOverride: unknown; isAdmin: boolean }): boolean =>
   toggleVisible(sources);

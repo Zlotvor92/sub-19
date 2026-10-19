@@ -45,6 +45,7 @@ import type {
   FitnessEvidence,
   FitnessEvidenceContext,
   GoalChangeResult,
+  HmV2PlanInput,
   InjuryProposal,
   Intensity,
   LoadContext,
@@ -714,6 +715,83 @@ export const TEN_K_V2_TEST_FIELD = t2.TEST_FIELD;
 /** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
 const HM_SHORTER_HANDOFF = regeneratorForDistance;
 
+/* HM v2 (segment HM-05): sopstveni generator polumaratona, biran po oznaci politike plana (`hm-v2`) — postojeći planovi
+   (`hm-v1`, `legacy-hm`, ugrađeni lični plan vlasnika) ostaju na `HALF_MARATHON_GENERATOR` i nikad se ne prebacuju.
+   Raspodela članova: (a) v2 sam (generisanje, oznake, faza, procena, proizvod, tempo/prag/napor, sat iz strukture);
+   (b) adaptacija i predlog — eksplicitno nepodržano do segmenta HM-06, sa razlogom po članu, bez zamene HM v1 generatorom;
+   (c) procena stanja i vreme — sopstvena kopija v2 sa istim vrednostima kao HM v1 (v. `halfMarathon/v2/app/index.ts`).
+   Odluka o ograničenoj pripremi (`preparationForPlan`) i predaja „kraća distanca" ostaju samo HM v1 (faza 3).
+
+   GRANICA FORMATA (kao 10K v2): adapter `halfMarathon/v2/app/` ne uvozi ni tipove formata (strogi test izolacije HM v2,
+   bez izuzetka), pa plan koji PRAVI (dan sa strukturom van unije `Day`, `meta` sa poljima koja v2 zna) ovde dobija tip
+   formata razmene — samo `generatePlan` i `adaptGeneratedPlan` (i `generateHmV2Plan` ispod). Svi ostali članovi
+   prolaze `satisfies` bez kasta. */
+const h2 = halfMarathon.hmV2;
+export const HALF_MARATHON_V2_GENERATOR: PlanGenerator = {
+  id: 'hm',
+  policyId: h2.POLICY_ID,
+  policyVersion: h2.POLICY_VERSION,
+  legacyPolicyId: h2.LEGACY_POLICY_ID,
+  planPolicy: h2.planPolicy,
+  stampPlan: h2.stampPlan,
+  phaseOfWeek: h2.phaseOfWeek,
+  classifyMeasurement: h2.classifyMeasurement,
+  recomputeVdotChain: h2.recomputeVdotChain,
+  sessionClassFor: h2.sessionClassFor,
+  currentVdot: h2.currentVdot,
+  generatePlan: (input) => h2.generatePlan(input) as unknown as PlanGenerationResult,
+  adaptGeneratedPlan: (gen) => h2.adaptGeneratedPlan(gen) as unknown as GenPlanState | null,
+  assess: h2.assess,
+  product: h2.product,
+  executionModel: h2.executionModel,
+  executionBasis: h2.executionBasis,
+  buildExecutionAdjustment: h2.buildExecutionAdjustment,
+  buildRunWalkAdjustment: h2.buildRunWalkAdjustment,
+  assessRunWalkProgress: h2.assessRunWalkProgress,
+  qualityEntryGate: h2.qualityEntryGate,
+  hasRecentMeasuredForm: h2.hasRecentMeasuredForm,
+  planWithNewGoal: h2.planWithNewGoal,
+  planRecalibrated: h2.planRecalibrated,
+  graftFuturePlan: h2.graftFuturePlan,
+  alignAutomaticOverlays: h2.alignAutomaticOverlays,
+  vdotProposal: h2.vdotProposal,
+  applyVdotProposal: h2.applyVdotProposal,
+  undoVdotAdjustments: h2.undoVdotAdjustments,
+  fitnessEvidence: h2.fitnessEvidence,
+  planVdotNow: h2.planVdotNow,
+  matchPlanRows: h2.matchPlanRows,
+  recalibrationMinMeasurements: h2.RECALIBRATION_MIN_MEASUREMENTS,
+  recalibrationThreshold: h2.RECALIBRATION_THRESHOLD,
+  injuryProposal: h2.injuryProposal,
+  applyInjuryProposal: h2.applyInjuryProposal,
+  realignPlan: h2.realignPlan,
+  workoutsForWatch: h2.workoutsForWatch,
+  thresholdPace: h2.thresholdPace,
+  weatherCard: h2.weatherCard,
+  rpeTarget: h2.rpeTarget,
+  paceForZone: h2.paceForZone,
+  painStatus: h2.painStatus,
+  acwrNow: h2.acwrNow,
+  acwrPlan: h2.acwrPlan,
+  readinessModel: h2.readinessModel,
+  loadMeaning: h2.loadMeaning,
+  wellnessSignals: h2.wellnessSignals,
+  acwrBand: h2.acwrBand,
+  acwrText: h2.acwrText,
+  acwrPosition: h2.acwrPosition,
+  ACWR_MAX: h2.ACWR_MAX,
+  ACWR_RETURN: h2.ACWR_RETURN,
+  ACWR_HIGH: h2.ACWR_HIGH,
+  ACWR_SCALE: h2.ACWR_SCALE
+} satisfies PlanGenerator;
+
+/** Nov plan polumaratona generatorom v2 (čarobnjak uz uključen prekidač): plan za upis ili razlozi odbijanja v2. */
+export const generateHmV2Plan = (input: HmV2PlanInput): StructuredPlanResult =>
+  h2.generateStructured(input) as unknown as StructuredPlanResult;
+/** Prvi dan plana HM v2: cele nedelje koje se završavaju danom trke, ne pre `today`; `null` bez ispravnih datuma. */
+export const hmV2Start = (raceDate: string, today: string): string | null =>
+  h2.alignedStart(raceDate, today);
+
 export const HALF_MARATHON_GENERATOR: PlanGenerator = {
   id: 'hm',
   policyId: halfMarathon.POLICY_ID,
@@ -901,6 +979,10 @@ function generatorForDistanceOf(plan: GenPlanState | null | undefined): PlanGene
   // `10k-v1`, `legacy-10k` i tuđa oznaka postojeći 10K, kao do sada.
   if (generator === TEN_K_GENERATOR && plan.meta?.['policyId'] === t2.POLICY_ID)
     return TEN_K_V2_GENERATOR;
+  // HM (segment HM-05): isto — `hm-v2` → v2 (njegove nepoznate verzije su `unknown` → `UNKNOWN_POLICY`, nikad HM v1);
+  // `hm-v1`, `legacy-hm`, lični plan vlasnika i tuđa oznaka postojeći HM, kao do sada.
+  if (generator === HALF_MARATHON_GENERATOR && plan.meta?.['policyId'] === h2.POLICY_ID)
+    return HALF_MARATHON_V2_GENERATOR;
   return generator;
 }
 
@@ -909,12 +991,14 @@ export interface GeneratorFlags {
   fiveKV2: boolean;
   /** 10K v2 (segment 05); izostavljeno = isključeno. */
   tenKV2?: boolean;
+  /** HM v2 (segment HM-05); izostavljeno = isključeno. */
+  hmV2?: boolean;
 }
 
 /**
- * Generator za NOV plan (čarobnjak): uz uključen prekidač distance 5K/10K ide u v2, sve ostalo kao `generatorForDistance`.
- * Isključen prekidač → isti generator kao do sada. Postojeći planovi se biraju po svojoj oznaci (`generatorForPlan`),
- * nikad ovde. HM/maraton „kraća distanca" ne ide ovuda (`handoff.ts` → 10K v1).
+ * Generator za NOV plan (čarobnjak): uz uključen prekidač distance 5K/10K/HM ide u v2, sve ostalo kao
+ * `generatorForDistance`. Isključen prekidač → isti generator kao do sada. Postojeći planovi se biraju po svojoj oznaci
+ * (`generatorForPlan`), nikad ovde. HM/maraton „kraća distanca" ne ide ovuda (`handoff.ts` → v1).
  */
 export function generatorForNewPlan(
   raceDistM: unknown,
@@ -922,6 +1006,8 @@ export function generatorForNewPlan(
 ): PlanGenerator | null {
   const generator = generatorForDistance(raceDistM);
   if (generator === TEN_K_GENERATOR && flags.tenKV2 === true) return TEN_K_V2_GENERATOR;
+  if (generator === HALF_MARATHON_GENERATOR && flags.hmV2 === true)
+    return HALF_MARATHON_V2_GENERATOR;
   return generator === FIVE_K_GENERATOR && flags.fiveKV2 ? FIVE_K_V2_GENERATOR : generator;
 }
 
@@ -935,9 +1021,19 @@ export function isTenKV2Plan(plan: GenPlanState | null | undefined): boolean {
   return generatorForPlan(plan) === TEN_K_V2_GENERATOR && t2.isV2Plan(plan);
 }
 
-/** Uvoz (Strava/icu): plan v2 čiji uvoz beleži trčanja van plana i potpunu sinhronizaciju (5K v2 08c, 10K v2). */
+/** Segment HM-05: plan HM v2 (nosi izlaz v2 i tekuću oznaku `hm-v2`). */
+export function isHmV2Plan(plan: GenPlanState | null | undefined): boolean {
+  return generatorForPlan(plan) === HALF_MARATHON_V2_GENERATOR && h2.isV2Plan(plan);
+}
+
+/** Plan čija se adaptacija i predlozi još ne nude (HM v2 do segmenta HM-06): poruka umesto alata; inače `null`. */
+export function adaptationUnsupportedFor(plan: GenPlanState | null | undefined): string | null {
+  return isHmV2Plan(plan) ? h2.ADAPTATION_UNSUPPORTED : null;
+}
+
+/** Uvoz (Strava/icu): plan v2 čiji uvoz beleži trčanja van plana i potpunu sinhronizaciju (5K v2 08c, 10K v2, HM v2). */
 export function tracksOffPlanRuns(plan: GenPlanState | null | undefined): boolean {
-  return isFiveKV2Plan(plan) || isTenKV2Plan(plan);
+  return isFiveKV2Plan(plan) || isTenKV2Plan(plan) || isHmV2Plan(plan);
 }
 
 /** Poruka za plan čiju je politiku upisala verzija generatora koju ova aplikacija ne poznaje. */

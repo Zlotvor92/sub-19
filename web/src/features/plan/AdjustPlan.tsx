@@ -8,7 +8,11 @@ import { useIsOwner } from '../../stores/owner';
 import { applyProposal as applyInjury } from '../../stores/recoveryActions';
 import { applyProposal as applyPace, undoAdjustments } from '../../stores/raceActions';
 import { activePlanGenerator, activePlanUnsupportedReason } from '../../stores/executionActions';
-import { isFiveKV2Plan, isTenKV2Plan } from '../../domain/generators/select';
+import {
+  adaptationUnsupportedFor,
+  isFiveKV2Plan,
+  isTenKV2Plan
+} from '../../domain/generators/select';
 import { useUIStore } from '../../stores/uiStore';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
 import { backToOwnPlan, recalibratePlan, startNewPlan } from './planActions';
@@ -34,9 +38,11 @@ export function AdjustPlan() {
      TenKV2Adjustment); predlozi v1 (bol po danu, tempo iz forme) ne postoje za v2 — bol i rezultati ulaze u činjenice. */
   const tenV2 = isTenKV2Plan(genPlan);
   const v2 = isFiveKV2Plan(genPlan) || tenV2;
+  /* HM v2 (segment HM-05): adaptacija i predlozi stižu u segmentu HM-06 — eksplicitna poruka umesto alata (bez HM v1). */
+  const unsupported = adaptationUnsupportedFor(genPlan);
 
-  const injury = v2 ? null : (rec?.proposal ?? null);
-  const pace = v2 ? null : adj.proposal;
+  const injury = v2 || unsupported ? null : (rec?.proposal ?? null);
+  const pace = v2 || unsupported ? null : adj.proposal;
 
   const applyInjuryProposal = async (): Promise<void> => {
     if (!injury) return;
@@ -118,7 +124,7 @@ export function AdjustPlan() {
             planski tempo“.
           </p>
         </Section>
-      ) : adj.adjusted && !v2 ? (
+      ) : adj.adjusted && !v2 && !unsupported ? (
         <Section title="Tempi su prilagođeni tvojoj formi">
           <p className="prop-m">
             Ciljni tempo preostalih kvalitetnih treninga prati izmereni VDOT, a ne polaznu
@@ -139,9 +145,11 @@ export function AdjustPlan() {
         </Section>
       ) : null}
 
-      {adj.blockedReason && !v2 ? <p className="note-src">{adj.blockedReason}</p> : null}
+      {adj.blockedReason && !v2 && !unsupported ? (
+        <p className="note-src">{adj.blockedReason}</p>
+      ) : null}
 
-      {!injury && !pace && !adj.adjusted && !v2 ? (
+      {!injury && !pace && !adj.adjusted && !v2 && !unsupported ? (
         <p className="empty">Trenutno nema predloga za prilagođavanje plana.</p>
       ) : null}
 
@@ -149,6 +157,12 @@ export function AdjustPlan() {
         <TenKV2Adjustment today={todayStr} />
       ) : v2 ? (
         <FiveKV2Adjustment today={todayStr} />
+      ) : unsupported ? (
+        <Section title="Prilagođavanje plana">
+          <p className="note-src" id="v2-unsupported">
+            {unsupported}
+          </p>
+        </Section>
       ) : activePlanGenerator() ? (
         <ExecutionAdjustment plan={plan} today={todayStr} />
       ) : (

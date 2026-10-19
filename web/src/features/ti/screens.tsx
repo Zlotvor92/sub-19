@@ -15,13 +15,20 @@ import { useAuthStore } from '../../stores/authStore';
 import { useIsOwner } from '../../stores/owner';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
-import { isFiveKV2Plan, isTenKV2Plan } from '../../domain/generators/select';
+import {
+  adaptationUnsupportedFor,
+  isFiveKV2Plan,
+  isTenKV2Plan
+} from '../../domain/generators/select';
 import {
   useFiveKV2Setting,
   useFiveKV2ToggleVisible,
   setFiveKV2Setting,
   useTenKV2Setting,
   useTenKV2ToggleVisible,
+  useHmV2Setting,
+  useHmV2ToggleVisible,
+  setHmV2Setting,
   setTenKV2Setting
 } from '../../stores/generatorFlags';
 import { changeGoalTime, changeGoalTimeTenKV2, changeGoalTimeV2 } from '../plan/planActions';
@@ -224,6 +231,12 @@ export function GoalScreen() {
             </p>
           </Help>
         </Section>
+      ) : genPlan && adaptationUnsupportedFor(genPlan) ? (
+        <Section>
+          <p className="note-src" id="v2-unsupported-goal">
+            {adaptationUnsupportedFor(genPlan)}
+          </p>
+        </Section>
       ) : genPlan ? (
         <Section>
           <p className="note-src">
@@ -252,19 +265,22 @@ export function GoalScreen() {
 /* ------------------------------------------------------------- Zone i postavke treninga */
 
 export function TrainingSettingsScreen() {
-  /* 08b: prekidač 5K v2 vidi samo razvoj (VITE_FIVEK_V2) ili administrator; 10K v2 (segment 05) isto (VITE_TENK_V2). */
+  /* 08b: prekidač 5K v2 vidi samo razvoj (VITE_FIVEK_V2) ili administrator; 10K v2 (segment 05) isto (VITE_TENK_V2),
+     HM v2 (segment HM-05) isto (VITE_HM_V2). */
   const toggle = useFiveKV2ToggleVisible();
   const tenK = useTenKV2ToggleVisible();
+  const hm = useHmV2ToggleVisible();
   return (
     <ScreenFrame>
       <Head title="Zone i postavke treninga" />
       <Section title="Zone pulsa">
         <ZonesList />
       </Section>
-      {toggle || tenK ? (
+      {toggle || tenK || hm ? (
         <Section title="Generator plana">
           {toggle ? <FiveKV2Toggle /> : null}
           {tenK ? <TenKV2Toggle /> : null}
+          {hm ? <HmV2Toggle /> : null}
         </Section>
       ) : null}
       <Section title="Vreme i lokacija">
@@ -542,6 +558,30 @@ function TenKV2Toggle() {
       <p className="note-src">
         Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje 10K v2
         plana stiže uskoro.
+        {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
+      </p>
+    </>
+  );
+}
+
+/** Prekidač HM v2 (podrazumevano isključen): utiče samo na NOV plan polumaratona; postojeći plan ostaje na svom
+ *  generatoru. */
+function HmV2Toggle() {
+  const { on, setting, forced } = useHmV2Setting();
+  return (
+    <>
+      <label className="note-src" htmlFor="set-hm-v2">
+        <input
+          type="checkbox"
+          id="set-hm-v2"
+          checked={setting}
+          onChange={(e) => setHmV2Setting(e.target.checked)}
+        />{' '}
+        Novi plan polumaratona pravi generator v2 (probno)
+      </label>
+      <p className="note-src">
+        Važi samo za novi plan polumaratona iz čarobnjaka. Postojeći plan se ne menja.
+        Prilagođavanje plana polumaratona v2 stiže uskoro.
         {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
       </p>
     </>

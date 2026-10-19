@@ -1,0 +1,264 @@
+{
+ "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-05/sabotage-05.json",
+ "head": "28da6af",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 67,
+ "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+ "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "05-a prekidač HM v2 podrazumevano uključen",
+   "files": [
+    "src/domain/generators/flags.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/app.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/app.node.test.ts",
+    "test": "prekidač i rutiranje po oznaci politike > flags: podrazumevano isključen; override 1/true i 0/false nadjačavaju podešavanje; vidljivost",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "6188a0e0f081add71f240c6de906b5a5277935bc93ce6c2e30b5bcd263d6f25a",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.9
+  },
+  {
+   "index": 2,
+   "name": "05-b nepoznata verzija hm-v2 → tihi fallback na HM v1",
+   "files": [
+    "src/domain/generators/select.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/app.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/app.node.test.ts",
+    "test": "prekidač i rutiranje po oznaci politike > postojeći planovi: hm-v1, legacy-hm i lični plan ostaju na HM v1; hm-v2 → v2; nepoznata/bez verzije → UNKNOWN_POLICY; tuđa distanca → null",
+    "message": "AssertionError: hm-v2.0.0: expected { id: 'hm', policyId: 'hm-v1', …(53) } to be null"
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "ea6180099557994a78a830e05d0a20b506e62a46b899343480bc986be3cf33a5",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6
+  },
+  {
+   "index": 3,
+   "name": "05-c adapter uvozi van halfMarathon/v2 (type-only)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/date.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/isolation.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/isolation.node.test.ts",
+    "test": "HM v2 je izolovan (Uslov 7) > halfMarathon/v2 ne uvozi NIŠTA van halfMarathon/v2/ (ni HM v1, ni tenK/fiveK/marathon, ni type-only)",
+    "message": "AssertionError: expected [ 'app/date.ts → ../../../../date' ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "1d2e3739f7998527dcaa71c9c90e4a0f34b2974298ed6f4287d182725638850b",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1
+  },
+  {
+   "index": 4,
+   "name": "05-d lični plan vlasnika ide u HM v2 (rutiranje bez oznake hm-v2)",
+   "files": [
+    "src/domain/generators/select.ts"
+   ],
+   "tests": [
+    "src/domain/generators/personalPlan.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/personalPlan.node.test.ts",
+    "test": "ugrađeni lični plan ide HM generatoru bez promene ponašanja > aktivni lični plan bira HM generator",
+    "message": "AssertionError: expected null to be { id: 'hm', policyId: 'hm-v1', …(53) } // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "b5110add810e7911cb00a542e0934c9feedb90115cc79d8236b6cc7f14c14e58",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.8
+  },
+  {
+   "index": 5,
+   "name": "05-e mapa faze: specifična → RAZVOJ",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/plan.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/app.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/app.node.test.ts",
+    "test": "generisanje kroz adapter > sa rezultatom 4 d: oznaka v2, nedelja 7 dana, struktura na svakom treningu, faza iz v2, trka van obima",
+    "message": "AssertionError: expected 'RAZVOJ' to be 'VRHUNAC' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "95a12f8b05b81df223583a2c963b2b2f9122ffad4196317d66214a99d270b864",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.5
+  },
+  {
+   "index": 6,
+   "name": "05-f trka kao lagan dan (u obimu nedelje)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/plan.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/app.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/app.node.test.ts",
+    "test": "generisanje kroz adapter > sa rezultatom 4 d: oznaka v2, nedelja 7 dana, struktura na svakom treningu, faza iz v2, trka van obima",
+    "message": "AssertionError: expected 44.92 to be close to 20.38, received difference is 24.540000000000003, but expected 0.05"
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "be44b6691526650c5ef7180d4c4fb5095897c653618dc2f686c99927943c247b",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.3
+  },
+  {
+   "index": 7,
+   "name": "05-g sat šalje procenu tempa po osećaju",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/structure.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/app.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/app.node.test.ts",
+    "test": "generisanje kroz adapter > plan po osećaju: rad kvaliteta nosi RPE i tempo kao procenu; test 5 km; sa rezultatom tempo je propisan",
+    "message": "AssertionError: expected 325 to be null"
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "ce6102588ed443feb401cc715f081bb8323ca3b0b15da7f175df4acda626d2d8",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.7
+  },
+  {
+   "index": 8,
+   "name": "05-h uvoz plana HM v2 bez zapisa van plana",
+   "files": [
+    "src/domain/generators/select.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/importV2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/importV2.node.test.ts",
+    "test": "uvoz u plan HM v2: ništa se ne gubi (infrastruktura 08c) > Strava: trčanja na dane plana u dnevnik, na dane odmora → zapisi van plana; fullSync",
+    "message": "AssertionError: expected [] to deeply equal [ [ '2026-11-09', 'strava', 8 ], …(2) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "896aef019c2792763dca4a6732baec63e836d1c8c5b62e1626996f8a404216fa",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.6
+  },
+  {
+   "index": 9,
+   "name": "05-i čarobnjak HM v2 ne čita prekidač",
+   "files": [
+    "src/features/onboarding/Wizard.tsx"
+   ],
+   "tests": [
+    "src/features/onboarding/hmV2Flow.test.tsx"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/features/onboarding/hmV2Flow.test.tsx",
+    "test": "HM v2 iza prekidača > isključen: čarobnjak polumaratona je stari (rezultat je obavezan, bez polja v2), plan HM v1",
+    "message": "TestingLibraryElementError: Unable to find an element with the text: Šta si poslednje istrčao?. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "4be12b2c5db2627d0c324eb12f5c3d341f736837563fb2b1c7ea2c1e46eb0b2a",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 12.4
+  },
+  {
+   "index": 10,
+   "name": "05-j dugi kraći od laganog (blokovi dugog bez km)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/plan.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/app.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/app.node.test.ts",
+    "test": "generisanje kroz adapter > sa rezultatom 4 d: oznaka v2, nedelja 7 dana, struktura na svakom treningu, faza iz v2, trka van obima",
+    "message": "AssertionError: expected 16 to be 1 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "hashSabotaged": "b6ea1af2053814dc5dc384cbb84873e787162916b1eeb1eff7f1ce3b23a1d80f",
+   "hashAfter": "8caf949b9949bceab2a8565d68b79622b9528696acd56f665ad85a443fb73dcf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.9
+  }
+ ]
+}
