@@ -95,9 +95,10 @@ export function taperLongCap10(longest10: number): number {
   return Math.floor(P.taper.longFactor * longest10 + EPS);
 }
 
-/** H5: dugi rasterećenja — 0,8 × poslednji ne-rasteretni dugi [0,1 km]. */
-export function deloadLong10(lastLong10: number): number {
-  return Math.floor(P.deload.longFactor * lastLong10 + EPS);
+/** H5: dugi rasterećenja — 0,8 × poslednji ne-rasteretni dugi [0,1 km]. A18 (adaptirana nedelja, kao 10K
+    deloadLengths): najmanje 4 km — posle povratka sa dugim 4 km 0,8 × bi bio kraći od laganog minimuma. */
+export function deloadLong10(lastLong10: number, adapted = false): number {
+  return Math.max(adapted ? EASY_MIN10 : 0, Math.floor(P.deload.longFactor * lastLong10 + EPS));
 }
 
 /** `total10` na `n` jednakih delova u koraku 0,1 km; raniji dani dobijaju višak (razlika ≤ 0,1). */
@@ -152,9 +153,10 @@ export function deloadEasyShort(
   lastLong10: number,
   rule: LongRule,
   p: Paces,
-  roll10 = Infinity
+  roll10 = Infinity,
+  adapted = false
 ): boolean {
-  const long10 = Math.min(deloadLong10(lastLong10), longCap10(target10, rule, p, roll10));
+  const long10 = Math.min(deloadLong10(lastLong10, adapted), longCap10(target10, rule, p, roll10));
   return target10 * 10 - quality100 - long10 * 10 < easyDays * EASY_MIN10 * 10;
 }
 
@@ -172,10 +174,11 @@ export function deloadLengths(
   rule: LongRule,
   p: Paces,
   roll10 = Infinity,
-  minLong10 = 0
+  minLong10 = 0,
+  adapted = false
 ): Lengths | null {
   const cap10 = longCap10(target10, rule, p, roll10);
-  const base10 = Math.min(deloadLong10(lastLong10), cap10);
+  const base10 = Math.min(deloadLong10(lastLong10, adapted), cap10);
   const long10 = Math.max(base10, Math.min(minLong10, cap10));
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
   if (long10 >= EASY_MIN10 && easy10.every((e) => e >= EASY_MIN10 && e <= long10))
@@ -190,4 +193,29 @@ export function longFor10(sec: number, p: Paces): number {
   let k = Math.max(0, Math.floor((sec / mid) * 10) - 1);
   while (Math.round((k / 10) * mid) < sec) k++;
   return k;
+}
+
+/** H7 / pouka 29: najduži dugi plana — jedna definicija za konstruktor (iz upisanih dana, written.ts) i
+    validator (dani nedelja pre tapera). */
+export function longestLong10(
+  weeks: readonly { days: readonly { role: string; workout: { km: number } }[] }[]
+): number {
+  let m = 0;
+  for (const w of weeks)
+    for (const d of w.days) if (d.role === 'long') m = Math.max(m, Math.round(d.workout.km * 10));
+  return m;
+}
+
+/** A4 (H18): dugi na danu bola ≤ 60 min sporim E [0,1 km]. */
+export function painLong10(long10: number, p: Paces): number {
+  return Math.min(long10, longTimeCap10(p, P.adapt.painLongMaxSec));
+}
+
+/** A4 (H18): lagan na danu bola × 0,7 naniže na 0,1 km, ne ispod 4 km; svaki lagan ≤ dugi nedelje (H13;
+    `long10` = dugi posle ograničenja, null ako dugog nema). */
+export function limitedEasy10(easy10: number, inPain: boolean, long10: number | null): number {
+  const k = inPain
+    ? Math.max(EASY_MIN10, Math.floor(easy10 * P.adapt.painEasyFactor + EPS))
+    : easy10;
+  return long10 === null ? k : Math.min(k, long10);
 }
