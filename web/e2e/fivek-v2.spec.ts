@@ -50,6 +50,9 @@ async function enableFiveKV2(page: Page): Promise<void> {
 }
 
 const group = (page: Page, name: string) => page.getByRole('group', { name, exact: true });
+/** Upis na server ide tek PUSH_DEBOUNCE_MS (4 s) posle poslednje izmene; podrazumevanih 5 s za `expect.poll` je na
+ *  opterećenom CI-ju premalo (hm-v2 „pauza → revizija" pao 1× na c7ee38a: server još bez revizije posle 5 s). */
+const SYNC = { timeout: 15_000 };
 
 async function raceStep(page: Page): Promise<void> {
   const wizard = page.getByRole('dialog', { name: 'Pravljenje plana' });
@@ -98,8 +101,10 @@ test('5K v2: čarobnjak (4 dana, rezultat) → plan v2 → Plan tab i dan pokazu
 
   // Plan v2 je sačuvan (i na serveru) sa oznakom politike v2.
   await expect
-    .poll(() =>
-      JSON.stringify((backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan ?? null)
+    .poll(
+      () =>
+        JSON.stringify((backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan ?? null),
+      SYNC
     )
     .toContain('"policyId":"5k-v2"');
 
@@ -151,8 +156,10 @@ async function createV2Plan(page: Page, backend: Awaited<ReturnType<typeof insta
   await page.getByRole('button', { name: 'Napravi plan' }).click();
   await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toBeHidden();
   await expect
-    .poll(() =>
-      JSON.stringify((backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan ?? null)
+    .poll(
+      () =>
+        JSON.stringify((backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan ?? null),
+      SYNC
     )
     .toContain('"policyId":"5k-v2"');
 }
@@ -205,7 +212,7 @@ test('5K v2 (08b): propuštena nedelja → pregled → potvrda → nova revizija
       const g = (backend.row?.data as { genPlan?: Record<string, unknown> } | undefined)?.genPlan;
       const v2 = g?.['fiveKV2'] as { adaptation?: { asOf: string } } | undefined;
       return [((g?.['planRevisions'] as unknown[]) ?? []).length, v2?.adaptation?.asOf ?? null];
-    })
+    }, SYNC)
     .toEqual([1, '2026-02-01']);
   await expect(page.locator('#plan-revisions')).toContainText('Prilagođavanje 2026-02-01: pauza');
 });
