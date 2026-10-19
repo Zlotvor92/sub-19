@@ -79,7 +79,7 @@ describe('generisanje kroz adapter', () => {
     const p = planOf(WITH_RESULT);
     expect(p.meta).toMatchObject({
       policyId: '5k-v2',
-      policyVersion: '5k-v2.6.1',
+      policyVersion: '5k-v2.7.0',
       raceDistM: 5000
     });
     expect(p.weeks).toHaveLength(10);
@@ -107,7 +107,7 @@ describe('generisanje kroz adapter', () => {
     expect(p.weeks[2]!.phase).toBe('DELOAD');
     expect(p.weeks[9]!.phase).toBe('TRKA');
     // Ceo izlaz v2 doslovno (osnova adaptacije, 08b); `pred` prazan (v2 nema redove predikcije).
-    expect((p['fiveKV2'] as { policyVersion: string }).policyVersion).toBe('5k-v2.6.1');
+    expect((p['fiveKV2'] as { policyVersion: string }).policyVersion).toBe('5k-v2.7.0');
     expect(p.pred).toEqual([]);
     expect(p.ulaz).toBeUndefined();
   });
@@ -202,7 +202,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     expect(generatorForPlan(plan({ policyId: '5k-v2', policyVersion: '5k-v2.6.0' }))).toBe(
       FIVE_K_V2_GENERATOR
     );
-    for (const version of ['5k-v2.5.0', '5k-v2.7.0', null]) {
+    for (const version of ['5k-v2.5.0', '5k-v2.7.1', null]) {
       const p = plan({ policyId: '5k-v2', policyVersion: version });
       expect(generatorForPlan(p)).toBeNull();
       expect(unsupportedPlanReason(p)).toBe(UNKNOWN_POLICY);

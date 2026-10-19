@@ -1,0 +1,92 @@
+[
+  {
+    "name": "S1 udeo dugog 3 dana 0,45 → 0,40 (H15)",
+    "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+    "find": "      longMaxShare: 0.45,",
+    "replace": "      longMaxShare: 0.4,",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/dense.node.test.ts"
+    ]
+  },
+  {
+    "name": "S2 udeo dugog 5 dana 0,32 → 0,35 (H15; nezavisne invarijante)",
+    "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+    "find": "      longMaxShare: 0.32,",
+    "replace": "      longMaxShare: 0.35,",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/dense.node.test.ts"
+    ]
+  },
+  {
+    "name": "S3 udeo dugog 6 dana 0,30 → 0,32 (H15; nezavisne invarijante)",
+    "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+    "find": "      longMaxShare: 0.3,",
+    "replace": "      longMaxShare: 0.32,",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/dense.node.test.ts"
+    ]
+  },
+  {
+    "name": "S4 3 dana: razvoj I umesto T cruise (H10/H15 bez I/R)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "    return phase === 'base' ? 'T_continuous' : phase === 'development' ? 'T_cruise' : 'RP';",
+    "replace": "    return phase === 'base' ? 'T_continuous' : phase === 'development' ? 'I' : 'RP';",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/week.node.test.ts"
+    ]
+  },
+  {
+    "name": "S5 granica dugog 24 → 26 km (H13; validator deli funkciju — nezavisne invarijante)",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "export const longKmCap10 = (): number => Math.round(P.lengths.longMaxKm * 10);",
+    "replace": "export const longKmCap10 = (): number => Math.round(26 * 10);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/week.node.test.ts"
+    ]
+  },
+  {
+    "name": "S6 granica skorašnjeg najdužeg r + 2,0 umesto r + 1,0 (pouka 28; deljena funkcija)",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  return Math.max(Math.floor(q.factor * r10 + EPS), r10 + Math.round(q.addKm * 10));",
+    "replace": "  return Math.max(Math.floor(q.factor * r10 + EPS), r10 + 20);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/week.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/recent.node.test.ts"
+    ]
+  },
+  {
+    "name": "S7 lagani 5/6 dana nejednaki: ceo višak na prvi lagan dan (H15)",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  return Array.from({ length: n }, (_, i) => each + (i < total10 - each * n ? 1 : 0));",
+    "replace": "  return Array.from({ length: n }, (_, i) => each + (i === 0 ? total10 - each * n : 0));",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/week.node.test.ts"
+    ]
+  },
+  {
+    "name": "S8 3 dana taper sa T (HI6: samo RP)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "  if (quality === 1) return { q1: pick('RP', rp, 'taper'), q2: null };",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/quality.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S9 3 dana: prelaz T kont. → T cruise ponavlja istu strukturu (HI6, H12 identične nedelje)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "    oneSlot && !newZone && sameStructure(s, prev.structure);",
+    "replace": "    false && oneSlot && !newZone && sameStructure(s, prev.structure);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/quality.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts"
+    ]
+  }
+]

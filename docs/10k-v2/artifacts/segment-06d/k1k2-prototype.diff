@@ -1,0 +1,903 @@
+diff --git a/web/e2e/tenk-v2.spec.ts b/web/e2e/tenk-v2.spec.ts
+index 8da2428..620c99b 100644
+--- a/web/e2e/tenk-v2.spec.ts
++++ b/web/e2e/tenk-v2.spec.ts
+@@ -105,7 +105,7 @@ test('10K v2: čarobnjak (rezultat, 4 dana) → plan v2 → Plan tab i dan pokaz
+ 
+   // Plan v2 je sačuvan (i na serveru) sa oznakom politike v2 i izlazom v2.
+   await expect.poll(() => serverPlan(backend)).toContain('"policyId":"10k-v2"');
+-  expect(serverPlan(backend)).toContain('"policyVersion":"10k-v2.5.0"');
++  expect(serverPlan(backend)).toContain('"policyVersion":"10k-v2.5.1"');
+   expect(serverPlan(backend)).toContain('"tenKV2":{');
+ 
+   // Plan tab: ocena cilja doslovno iz v2 i struktura u redovima nedelje (rad sa tempom).
+diff --git a/web/src/domain/generators/tenK/v2/adapt.ts b/web/src/domain/generators/tenK/v2/adapt.ts
+index 105dbdc..e19f19e 100644
+--- a/web/src/domain/generators/tenK/v2/adapt.ts
++++ b/web/src/domain/generators/tenK/v2/adapt.ts
+@@ -23,6 +23,7 @@ import type {
+ } from './types.ts';
+ import { validatePlan } from './validate.ts';
+ import { to10 } from './volume.ts';
++import { type Written, writtenDays } from './written.ts';
+ 
+ const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+ const reject = (code: Reason['code'], message: string): AdaptResult => ({
+@@ -119,16 +120,20 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
+   const as = assess(plan, facts, at, chk.pace, dayRule(chk.input.runDays.length)!.weekMinKm);
+   const steps = [...prevSteps, as.step];
+ 
+-  // (2) Isti konstruktor kao generate.
+-  const built = construct(plan.input, steps);
+-  if (!built.ok) return { ok: false, reasons: built.reasons, violations: [] };
+-  const c = built.plan;
+-
+-  // (3) Spajanje (A11): dani ≤ asOf, urađeni (po dayId ili datumu) i zaključani iz prethodnog plana.
++  // Zaštita (A11): dani ≤ asOf, urađeni (po dayId ili datumu) i zaključani iz prethodnog plana — konstruktor
++  // je zna unapred (najduži dugi D7 iz upisanih dana, written.ts).
+   const done = new Set(facts.workouts.filter((x) => x.completed).map((x) => x.dayId ?? x.date));
+   const locked = new Set(facts.lockedDayIds);
+   const keep = (d: PlanDay): boolean =>
+     mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
++  const prior: Written = { weeks: plan.weeks, keep, asOf: t };
++
++  // (2) Isti konstruktor kao generate.
++  const built = construct(plan.input, steps, prior);
++  if (!built.ok) return { ok: false, reasons: built.reasons, violations: [] };
++  const c = built.plan;
++
++  // (3) Spajanje (A11, written.ts).
+   const mixed: number[] = [];
+   const weeks: PlanWeek[] = c.weeks.map((b, i) => {
+     const s = plan.weeks[i]!;
+@@ -136,10 +141,7 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
+       if (!same(s, b)) mixed.push(s.index);
+       return s;
+     }
+-    const days = [
+-      ...s.days.filter(keep),
+-      ...b.days.filter((d) => !s.days.some((x) => x.date === d.date && keep(x)))
+-    ].sort((x, y) => x.date.localeCompare(y.date));
++    const days = [...writtenDays(s, b.days, prior)];
+     if (same(days, b.days)) return same(s, b) ? s : b;
+     mixed.push(s.index);
+     const kept = s.days.filter((d) => keep(d) && mustDay(d.date) > t).map((d) => d.date);
+diff --git a/web/src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts b/web/src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts
+index 7346212..e9070d0 100644
+--- a/web/src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts
+@@ -496,8 +496,8 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
+     expect(TEN_K_V2_GENERATOR.planPolicy(r.result).status).toBe('current');
+   });
+ 
+-  it('06c (10k-v2.5.0): sačuvan plan 10k-v2.4.0 i 10k-v2.4.1 ostaje plan 10K v2 i prilagođava se pravilima 5.0 (rezultat nosi 10k-v2.5.0); druge verzije → UNKNOWN_POLICY', () => {
+-    expect(KNOWN_VERSIONS).toEqual(['10k-v2.4.0', '10k-v2.4.1', '10k-v2.5.0']);
++  it('06d (10k-v2.5.1): sačuvan plan 10k-v2.4.0, 10k-v2.4.1 i 10k-v2.5.0 ostaje plan 10K v2 i prilagođava se pravilima 5.1 (rezultat nosi 10k-v2.5.1); druge verzije → UNKNOWN_POLICY', () => {
++    expect(KNOWN_VERSIONS).toEqual(['10k-v2.4.0', '10k-v2.4.1', '10k-v2.5.0', '10k-v2.5.1']);
+     const cur = planOf(WITH_RESULT);
+     const as = (p: GenPlanState, version: string): GenPlanState => ({
+       ...p,
+@@ -508,7 +508,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
+     const day = '2026-11-15' as IsoDate;
+     const facts = { facts: { pain: [{ date: '2026-11-14', pain: 5 }] } };
+     const fresh = ok(tenKV2AdaptPreview(cur, day, facts));
+-    for (const version of ['10k-v2.4.0', '10k-v2.4.1']) {
++    for (const version of ['10k-v2.4.0', '10k-v2.4.1', '10k-v2.5.0']) {
+       const old = as(cur, version);
+       expect(isTenKV2Plan(old), version).toBe(true);
+       expect(generatorForPlan(old), version).toBe(TEN_K_V2_GENERATOR);
+@@ -521,9 +521,9 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
+       const saved = stampForStorage(r.result);
+       expect(saved.meta, version).toMatchObject({
+         policyId: '10k-v2',
+-        policyVersion: '10k-v2.5.0'
++        policyVersion: '10k-v2.5.1'
+       });
+-      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.5.0');
++      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.5.1');
+       expect(isTenKV2Plan(saved), version).toBe(true);
+       // Posle nedelje sidra 4 rast od 70 % nivoa pre bola (42,4 → 29,7), ned 5 = 32,7 (4.0: 27,6); ned 5 je
+       // izgradnja (A17 bez dejstva: ned 4 je rasterećenje).
+@@ -536,10 +536,10 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
+       expect(r.reasons.find((x) => x.condition === 'PAIN')!.message, version).toContain(
+         'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,7 km).'
+       );
+-      // Isto prilagođavanje kao plan 5.0 (A15: buduće nedelje po tekućim pravilima).
++      // Isto prilagođavanje kao plan 5.1 (A15: buduće nedelje po tekućim pravilima).
+       expect(v2Of(r.result), version).toEqual(v2Of(fresh.result));
+     }
+-    for (const version of ['10k-v2.3.1', '10k-v2.4.2', '10k-v2.5.1']) {
++    for (const version of ['10k-v2.3.1', '10k-v2.4.2', '10k-v2.5.2']) {
+       const p = as(cur, version);
+       expect(isTenKV2Plan(p), version).toBe(false);
+       expect(generatorForPlan(p), version).toBeNull();
+diff --git a/web/src/domain/generators/tenK/v2/app/app.node.test.ts b/web/src/domain/generators/tenK/v2/app/app.node.test.ts
+index b30722c..021b88d 100644
+--- a/web/src/domain/generators/tenK/v2/app/app.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/app/app.node.test.ts
+@@ -130,7 +130,7 @@ describe('generisanje kroz adapter', () => {
+       const v2 = v2Of(p);
+       expect(p.meta).toMatchObject({
+         policyId: '10k-v2',
+-        policyVersion: '10k-v2.5.0',
++        policyVersion: '10k-v2.5.1',
+         raceDistM: 10000,
+         raceDate: RACE,
+         start: START,
+@@ -355,7 +355,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
+     delete legacy.meta['policyId'];
+     delete legacy.meta['policyVersion'];
+     expect(generatorForPlan(legacy)).toBe(TEN_K_GENERATOR);
+-    for (const version of ['10k-v2.3.1', '10k-v2.5.1', undefined]) {
++    for (const version of ['10k-v2.3.1', '10k-v2.5.2', undefined]) {
+       const p = withMeta({ policyVersion: version });
+       expect(generatorForPlan(p), String(version)).toBeNull();
+       expect(unsupportedPlanReason(p)).toBe(UNKNOWN_POLICY);
+diff --git a/web/src/domain/generators/tenK/v2/app/plan.ts b/web/src/domain/generators/tenK/v2/app/plan.ts
+index 7225311..47d3edd 100644
+--- a/web/src/domain/generators/tenK/v2/app/plan.ts
++++ b/web/src/domain/generators/tenK/v2/app/plan.ts
+@@ -34,10 +34,10 @@ export const POLICY_ID = P.id;
+ export const POLICY_VERSION = P.version;
+ /** v2 nema plan pre oznake politike: svaki v2 plan nosi `10k-v2`; plan bez oznake je 10K v1 (`legacy-10k`). */
+ export const LEGACY_POLICY_ID = 'legacy-10k';
+-/** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0, 10k-v2.4.1 i
+- *  tekuća 10k-v2.5.0. Sačuvan plan 4.0 ili 4.1 ostaje plan 10K v2; prilagođavanje ga gradi pravilima 5.0 (A15),
++/** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0 i
++ *  tekuća 10k-v2.5.1. Sačuvan plan 4.0, 4.1 ili 5.0 ostaje plan 10K v2; prilagođavanje ga gradi pravilima 5.1 (A15),
+  *  rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown" (UNKNOWN_POLICY). */
+-export const KNOWN_VERSIONS: readonly string[] = ['10k-v2.4.0', '10k-v2.4.1', P.version];
++export const KNOWN_VERSIONS: readonly string[] = ['10k-v2.4.0', '10k-v2.4.1', '10k-v2.5.0', P.version];
+ 
+ /** JEDNA mapa faze za prikaz (odluka adaptera): baza → BAZA, razvoj → RAZVOJ, specifična faza (najspecifičniji rad za
+  *  tempo trke) → VRHUNAC, taper → TAPER, trkačka nedelja → TRKA; rasterećenje (bilo koje faze) → DELOAD. */
+diff --git a/web/src/domain/generators/tenK/v2/earlyGrid.2.full.node.test.ts b/web/src/domain/generators/tenK/v2/earlyGrid.2.full.node.test.ts
+new file mode 100644
+index 0000000..5fb2921
+--- /dev/null
++++ b/web/src/domain/generators/tenK/v2/earlyGrid.2.full.node.test.ts
+@@ -0,0 +1,6 @@
++/* Pun nivo (TEST_FULL=1) mreže E iz earlyGrid.node.test.ts: deo 2/4 — planovi part(earlyGridBases(), 2, 4)
++   (earlyGrid.harness.node.test.ts). */
++
++import { describeEarlyGrid } from './earlyGrid.harness.node.test.ts';
++
++describeEarlyGrid('mreža E: rana adaptacija i pred nedeljom testa (N7) — deo 2/4', 2);
+diff --git a/web/src/domain/generators/tenK/v2/earlyGrid.3.full.node.test.ts b/web/src/domain/generators/tenK/v2/earlyGrid.3.full.node.test.ts
+new file mode 100644
+index 0000000..8551240
+--- /dev/null
++++ b/web/src/domain/generators/tenK/v2/earlyGrid.3.full.node.test.ts
+@@ -0,0 +1,6 @@
++/* Pun nivo (TEST_FULL=1) mreže E iz earlyGrid.node.test.ts: deo 3/4 — planovi part(earlyGridBases(), 3, 4)
++   (earlyGrid.harness.node.test.ts). */
++
++import { describeEarlyGrid } from './earlyGrid.harness.node.test.ts';
++
++describeEarlyGrid('mreža E: rana adaptacija i pred nedeljom testa (N7) — deo 3/4', 3);
+diff --git a/web/src/domain/generators/tenK/v2/earlyGrid.4.full.node.test.ts b/web/src/domain/generators/tenK/v2/earlyGrid.4.full.node.test.ts
+new file mode 100644
+index 0000000..4a8fe67
+--- /dev/null
++++ b/web/src/domain/generators/tenK/v2/earlyGrid.4.full.node.test.ts
+@@ -0,0 +1,6 @@
++/* Pun nivo (TEST_FULL=1) mreže E iz earlyGrid.node.test.ts: deo 4/4 — planovi part(earlyGridBases(), 4, 4)
++   (earlyGrid.harness.node.test.ts). */
++
++import { describeEarlyGrid } from './earlyGrid.harness.node.test.ts';
++
++describeEarlyGrid('mreža E: rana adaptacija i pred nedeljom testa (N7) — deo 4/4', 4);
+diff --git a/web/src/domain/generators/tenK/v2/earlyGrid.harness.node.test.ts b/web/src/domain/generators/tenK/v2/earlyGrid.harness.node.test.ts
+new file mode 100644
+index 0000000..30f2260
+--- /dev/null
++++ b/web/src/domain/generators/tenK/v2/earlyGrid.harness.node.test.ts
+@@ -0,0 +1,148 @@
++/* Mreža E 10K v2 (segment 06d, 10k-v2.5.1, N7): rana adaptacija i adaptacija pred nedeljom testa — zajednički kod za
++   earlyGrid.node.test.ts i earlyGrid.<k>.full.node.test.ts.
++
++   Planovi: svaki 12. ulaz mreže 01 (gridInputs), svaki 7. mreže po osećaju (feelGridInputs 3–6), svaki 3. mreže
++   početnika (beginnerGridInputs 3–4). asOf: sreda i kraj nedelje 1; u planu sa testom i sreda i kraj nedelje pre
++   nedelje testa (kad je to nedelja ≥ 2). Scenariji pretrage N7: pauza 10 i 20 dana (breaks do asOf), bol 5 i 8
++   (painFacts), pauza 10 + bol 5, manjak (odrađen samo dan asOf − 6 po planu, pokrivenost asOf − 6 … asOf).
++   Po toku: prihvaćen (0 odbijanja), adaptInvariants prazno (Uslov 8: nijedan prazan trening, dugi ≥ lagan, nedelja ≥
++   minimum), regresija: tok prihvaćen na 51a924f (10k-v2.5.0) bajt-isti (heš bez oznake verzije,
++   segment06d.early-hashes-51a924f.json; ranije odbijen tok tamo je 0).
++
++   - BRZ nivo: deterministički uzorak (svaki K_FAST. tok unutar porodice × scenario) + imenovani primeri K1/K2.
++   - PUN nivo: delovi po indeksu plana (`part`, EARLY_PARTS); glavni fajl = deo 1. */
++
++import { readFileSync } from 'node:fs';
++import { fileURLToPath } from 'node:url';
++import { beforeAll, describe, expect, it } from 'vitest';
++import { FULL, part, sample } from '@/test/level';
++import { adaptTenKV2 } from './adapt.ts';
++import { adaptInvariants } from './adaptInvariants.ts';
++import { generateTenKV2 } from './generate.ts';
++import { GRID_TIMEOUT, missingParts } from './level.harness.node.test.ts';
++import {
++  EARLY_SCENARIOS,
++  type EarlyScenario,
++  earlyAsOfs,
++  earlyFacts,
++  earlyGridBases,
++  planHash06c
++} from './testInputs.ts';
++import type { TenKV2Facts, TenKV2Plan } from './types.ts';
++
++export const EARLY_PARTS = 4;
++const K_FAST = 45;
++const HERE = fileURLToPath(new URL('./', import.meta.url));
++export const EARLY_HASHES = `${HERE}segment06d.early-hashes-51a924f.json`;
++
++export interface EarlyPlan {
++  id: string;
++  family: 'R' | 'F' | 'B';
++  input: Record<string, unknown>;
++}
++export const earlyPlans = (): EarlyPlan[] => earlyGridBases();
++
++const plans = new Map<string, TenKV2Plan>();
++export function earlyPlan(p: EarlyPlan): TenKV2Plan {
++  let x = plans.get(p.id);
++  if (!x) {
++    const r = generateTenKV2(p.input);
++    if (!r.ok) throw new Error(`${p.id}: ${JSON.stringify(r.reasons)}`);
++    plans.set(p.id, (x = r.plan));
++  }
++  return x;
++}
++
++export interface EarlyFlow {
++  /** Redni broj u celom skupu (redosled heševa u EARLY_HASHES). */
++  n: number;
++  key: string;
++  plan: EarlyPlan;
++  asOf: string;
++  s: EarlyScenario;
++}
++
++let allFlows: EarlyFlow[] | null = null;
++/** Svi tokovi mreže E (redosled: plan, asOf, scenario). */
++export function earlyAll(): EarlyFlow[] {
++  if (allFlows) return allFlows;
++  const out: EarlyFlow[] = [];
++  for (const plan of earlyPlans())
++    for (const a of earlyAsOfs(earlyPlan(plan)))
++      for (const s of EARLY_SCENARIOS)
++        out.push({ n: out.length, key: `${plan.id}/${a.tag}/${s}`, plan, asOf: a.asOf, s });
++  return (allFlows = out);
++}
++
++/** Imenovani primeri N7 u mreži (uvek u uzorku brzog nivoa): K1 pauza 20 kraj ned 1, K2 bol 5 sreda ned 1. Primer K1
++    bol 5 u četvrtak ned 1 nije asOf mreže — poseban test u earlyGrid.node.test.ts. */
++export const NAMED_EARLY = [
++  'f-d5-12w-30km-e270-C-sat/w1end/pause20',
++  'f-d5-8w-35km-e270-A-sat/w1wed/pain5',
++  'f-d5-8w-35km-e270-A-sat/w1wed/pain8'
++];
++
++/** Tokovi brzog nivoa (uzorak) ili dela punog (planovi `part`). */
++export function earlyCases(partIndex: number): EarlyFlow[] {
++  const flows = earlyAll();
++  if (FULL) {
++    const ids = new Set(part(earlyPlans(), partIndex, EARLY_PARTS).map((p) => p.id));
++    return flows.filter((f) => ids.has(f.plan.id));
++  }
++  return sample(
++    flows,
++    K_FAST,
++    (f) => `${f.plan.family}/${f.s}`,
++    (f) => NAMED_EARLY.includes(f.key)
++  );
++}
++
++export function runEarly(f: EarlyFlow): { ok: boolean; bad: string[]; hash: number } {
++  const p0 = earlyPlan(f.plan);
++  const facts = earlyFacts(p0, f.s, f.asOf);
++  const r = adaptTenKV2(p0, facts, f.asOf);
++  if (!r.ok) return { ok: false, bad: [`${f.key}: ${JSON.stringify(r).slice(0, 400)}`], hash: 0 };
++  const bad = adaptInvariants(p0, r.plan, f.asOf, facts as unknown as TenKV2Facts).map(
++    (v) => `${f.key}: ${v}`
++  );
++  return { ok: true, bad, hash: planHash06c(r) };
++}
++
++/** Heševi prihvaćenih tokova na 51a924f (0 = odbijen) po rednom broju toka. */
++export const earlyHashes = (): number[] =>
++  (JSON.parse(readFileSync(EARLY_HASHES, 'utf8')) as { hashes: number[] }).hashes;
++
++/** Describe mreže E (brz: uzorak; pun: deo `partIndex`). */
++export function describeEarlyGrid(title: string, partIndex: number): void {
++  describe(title, () => {
++    let flows: EarlyFlow[] = [];
++    let res: ReturnType<typeof runEarly>[] = [];
++    beforeAll(() => {
++      flows = earlyCases(partIndex);
++      res = flows.map(runEarly);
++    }, GRID_TIMEOUT);
++
++    it('ceo skup: planovi i tokovi; pun nivo — svi delovi postoje', () => {
++      const all = earlyAll();
++      expect(new Set(all.map((f) => f.plan.id)).size).toBe(3084);
++      expect(all.length).toBe(EARLY_TOTAL);
++      expect(earlyHashes().length).toBe(all.length);
++      if (FULL) expect(missingParts(HERE, 'earlyGrid', EARLY_PARTS)).toEqual([]);
++      else expect(flows.length).toBeGreaterThan(1000);
++    });
++
++    it('0 odbijanja i adaptInvariants prazno (Uslov 8)', () => {
++      expect(res.flatMap((r) => r.bad)).toEqual([]);
++      expect(res.filter((r) => !r.ok).length).toBe(0);
++    });
++
++    it('regresija: tok prihvaćen na 51a924f bajt-isti (heš bez oznake verzije)', () => {
++      const h = earlyHashes();
++      const changed = flows.filter((f, i) => h[f.n] !== 0 && h[f.n] !== res[i]!.hash);
++      expect(changed.map((f) => f.key)).toEqual([]);
++    });
++  });
++}
++
++/** Broj tokova celog skupa. */
++export const EARLY_TOTAL = 0;
+diff --git a/web/src/domain/generators/tenK/v2/earlyGrid.node.test.ts b/web/src/domain/generators/tenK/v2/earlyGrid.node.test.ts
+new file mode 100644
+index 0000000..c55d16c
+--- /dev/null
++++ b/web/src/domain/generators/tenK/v2/earlyGrid.node.test.ts
+@@ -0,0 +1,75 @@
++/* Segment 06d (10k-v2.5.1, N7): adaptacija koju konstruktor sastavi a validator odbije — trajna mreža rane adaptacije
++   (Uslov 8). Mreža E (earlyGrid.harness.node.test.ts): 0 odbijanja, adaptInvariants, regresija prema 51a924f. Primeri
++   iz nalaza N7: K1 (rasterećenje sa testom podignuto naviše bez testa, VOLUME_RULE) i K2 (najduži dugi D7 — konstruktor
++   je brojao sastavljen, a ne upisan dugi prošle nedelje, TAPER_LONG). */
++
++import { describe, expect, it } from 'vitest';
++import { describeEarlyGrid } from './earlyGrid.harness.node.test.ts';
++import { adaptTenKV2 } from './adapt.ts';
++import { generateTenKV2 } from './generate.ts';
++import { longestLong10 } from './lengths.ts';
++import { TEN_K_V2_POLICY as P } from './policy.ts';
++import { earlyFacts, type EarlyScenario, feelGridInputs } from './testInputs.ts';
++import type { AdaptResult, TenKV2Plan } from './types.ts';
++import { validatePlan } from './validate.ts';
++
++/* Brz nivo — uzorak; pun — deo 1, delovi 2…4: earlyGrid.<k>.full.node.test.ts. */
++describeEarlyGrid('mreža E: rana adaptacija i pred nedeljom testa (N7)', 1);
++
++const feel = ([3, 4, 5, 6] as const).flatMap((d) => feelGridInputs(d));
++const plan = (id: string): TenKV2Plan => {
++  const r = generateTenKV2(feel.find((x) => x.id === id)!.input);
++  if (!r.ok) throw new Error(id);
++  return r.plan;
++};
++const adapt = (id: string, s: EarlyScenario, asOf: string) => {
++  const p0 = plan(id);
++  const r: AdaptResult = adaptTenKV2(p0, earlyFacts(p0, s, asOf), asOf);
++  if (!r.ok) throw new Error(JSON.stringify(r).slice(0, 1500));
++  expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
++  return { p0, p: r.plan };
++};
++
++describe('primeri N7 (10k-v2.5.0 odbijeno)', () => {
++  it('K1: 4 dana, 12 ned, 25 km, lagan 4:30, bol 5 u četvrtak ned 1 — ned 4 obično rasterećenje 17 km bez testa (bilo 20 km, VOLUME_RULE)', () => {
++    const { p0, p } = adapt('f-d4-12w-25km-e270-A-sun', 'pain5', '2026-11-05');
++    expect(p0.weeks[3]!).toMatchObject({ deload: true, test: true });
++    const w = p.weeks[3]!;
++    expect([w.deload, w.test ?? false, w.nominalKm, w.targetKm, w.fitted]).toEqual([
++      true,
++      false,
++      17,
++      17,
++      null
++    ]);
++    expect(w.days.some((d) => d.role === 'test')).toBe(false);
++  });
++
++  it('K1: 5 dana, 12 ned, 30 km, pauza 20 dana do kraja ned 1 — ned 4 18,5 km bez testa (bilo 20 km)', () => {
++    const { p } = adapt('f-d5-12w-30km-e270-C-sat', 'pause20', '2026-11-07');
++    const w = p.weeks[3]!;
++    expect([w.deload, w.test ?? false, w.nominalKm, w.targetKm, w.fitted]).toEqual([
++      true,
++      false,
++      18.5,
++      18.5,
++      null
++    ]);
++  });
++
++  it('K2: 5 dana, 8 ned, 35 km, bol 5 u sredu ned 1 — dugi tapera ≤ 0,75 × najduži UPISAN dugi (9,2 km ned 1, ne sastavljenih 10,5)', () => {
++    const { p0, p } = adapt('f-d5-8w-35km-e270-A-sat', 'pain5', '2026-11-04');
++    // Dugi ned 1 (nedelja 11-01, pre asOf) je zaštićen: ostaje 9,2 km iz prethodnog plana.
++    expect(p.weeks[0]!.days.find((d) => d.role === 'long')).toEqual(
++      p0.weeks[0]!.days.find((d) => d.role === 'long')
++    );
++    const taper = p.weeks.find((w) => w.phase === 'taper')!;
++    const longest = longestLong10(p.weeks.slice(0, taper.index - 1));
++    expect(longest).toBe(92);
++    const long = taper.days.find((d) => d.role === 'long')!;
++    expect(Math.round(long.workout.km * 10)).toBeLessThanOrEqual(
++      Math.floor(P.taper.longFactor * longest + 1e-9)
++    );
++    expect(long.workout.km).toBe(6.9);
++  });
++});
+diff --git a/web/src/domain/generators/tenK/v2/generate.ts b/web/src/domain/generators/tenK/v2/generate.ts
+index 67abaf5..69f0e14 100644
+--- a/web/src/domain/generators/tenK/v2/generate.ts
++++ b/web/src/domain/generators/tenK/v2/generate.ts
+@@ -10,8 +10,16 @@ import { assessGoal, predicted10k } from './paces.ts';
+ import { periodize, isBuildPhase } from './periodize.ts';
+ import { TEN_K_V2_POLICY as P } from './policy.ts';
+ import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
++import { longestLong10 } from './lengths.ts';
+ import { basePaces, basisAt, framesFor, pacesAt, restartWeeks, stepVdotAt } from './steps.ts';
+-import type { GenerateResult, PlanWeek, TenKV2AdaptStep, TenKV2Plan } from './types.ts';
++import type {
++  GenerateResult,
++  PlanDay,
++  PlanWeek,
++  TenKV2AdaptStep,
++  TenKV2Plan,
++  WeekFrame
++} from './types.ts';
+ import { validatePlan } from './validate.ts';
+ import {
+   adaptNominal10,
+@@ -27,8 +35,9 @@ import {
+   raceWeekTarget10,
+   startKm10
+ } from './volume.ts';
+-import { buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
++import { type BuiltWeek, buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
+ import { fmtKm, fmtSec as fmtPace, warmupCooldown } from './workouts.ts';
++import { type Written, writtenDays } from './written.ts';
+ 
+ export function generateTenKV2(input: unknown): GenerateResult {
+   return construct(input, []);
+@@ -46,9 +55,14 @@ const infeasible = (message: string, week?: number): GenerateResult => ({
+  * (A2/A3/A4/A8/A9), nov start → nova progresija doze (A3, D16); od prve nedelje pod koracima pretraga
+  * cilja ima još dva prolaza (A9: jedan kvalitet doze rasterećenja, pa bez kvaliteta), a ograničenje
+  * kvaliteta nedelje (A3/A4) određuje prvi prolaz. Trkačka nedelja: oštrenje otpada kad bi nedelja bila
+- * veća od tapera (A9, D23).
++ * veća od tapera (A9, D23). `prior` (adaptacija): prethodni plan i zaštita dana (A11) — najduži dugi D7 se
++ * računa iz dana kakvi se upisuju (written.ts, lengths.longestLong10; 10k-v2.5.1).
+  */
+-export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): GenerateResult {
++export function construct(
++  raw: unknown,
++  steps: readonly TenKV2AdaptStep[],
++  prior?: Written
++): GenerateResult {
+   const chk = checkInput(raw);
+   if (!chk.ok) return chk;
+   const { input, weeks, pace, pattern, rule } = chk;
+@@ -89,7 +103,8 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
+   let quality: QualityState = INITIAL_QUALITY;
+   let h = initialAdaptHistory(cap10);
+   let lastLong10: number | null = null;
+-  let longest10 = 0;
++  /** D7: dani nedelja kakvi se upisuju (najduži dugi, lengths.longestLong10). */
++  const written: { days: readonly PlanDay[] }[] = [];
+   let taperRpM = 0;
+   /** D23: najkraći lagan dan tapera [0,1 km] (gornja granica laganog dana trkačke nedelje). */
+   let taperEasy10 = Infinity;
+@@ -125,8 +140,9 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
+     const { nominal, downOnly } = av
+       ? adaptNominal10(frame, h, start10, rule, av)
+       : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
+-    const make = (t10: number, mode: QualityMode) =>
+-      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, mode);
++    const longest10 = longestLong10(written);
++    const make = (t10: number, mode: QualityMode, f: WeekFrame = frame): BuiltWeek | null =>
++      buildWeek(ctx, f, t10, quality, lastLong10, longest10, mode);
+     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
+     // (week.ts buildWeek 'relax'): D11 ispred D12 u izgradnji, rasterećenje bez kvaliteta, taper samo RP.
+     // Segment 04 (A9): pa jedan kvalitet doze rasterećenja, pa bez kvaliteta; ograničenje kvaliteta
+@@ -140,46 +156,59 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
+           : lq === 'one'
+             ? ['one', 'none']
+             : ['rule', 'relax', 'one', 'none'];
+-    let fit: ReturnType<typeof fit10> = null;
+-    let mode: QualityMode = 'rule';
+-    // A9: cilj adaptacije (cilj koraka, povratak, donja granica) se zadržava — najpre svi prolazi kvaliteta
+-    // na tom cilju, tek onda (ista pretraga D6) niži izvodljiv cilj.
+-    if (downOnly)
+-      for (const m of modes)
+-        if (make(nominal, m)) {
+-          [fit, mode] = [{ target10: nominal, fitted: null }, m];
+-          break;
+-        }
+-    for (const m of fit ? [] : modes) {
+-      fit = fit10(
+-        nominal,
+-        frame,
+-        av ? h.cap10 : cap10,
+-        rule,
+-        (t10) => make(t10, m) !== null,
+-        h.lastBuild10,
+-        downOnly
+-      );
+-      if (fit) {
+-        mode = m;
+-        break;
++    // D27 (10k-v2.5.1): rasterećenje sa testom se odlučuje ovde, u dve faze bez petlje. (a) Ista pretraga
++    // cilja; cilj iznad pravila (odstupanje D27, naviše do ispod poslednje izgradnje) samo kad sastavljena
++    // nedelja ima test. (b) Kad nijedan cilj nije izvodljiv: test otpada (A9) i nedelja je obično
++    // rasterećenje (0,8 × poslednja izgradnja, samo naniže, D6/D17).
++    const testDeload = frame.deload && frame.test === true;
++    const search = (
++      f: WeekFrame,
++      ok: (t10: number, b: BuiltWeek) => boolean
++    ): { fit: NonNullable<ReturnType<typeof fit10>>; mode: QualityMode; f: WeekFrame } | null => {
++      const can = (t10: number, m: QualityMode): boolean => {
++        const b = make(t10, m, f);
++        return b !== null && ok(t10, b);
++      };
++      // A9: cilj adaptacije (cilj koraka, povratak, donja granica) se zadržava — najpre svi prolazi
++      // kvaliteta na tom cilju, tek onda (ista pretraga D6) niži izvodljiv cilj.
++      if (downOnly)
++        for (const m of modes)
++          if (can(nominal, m)) return { fit: { target10: nominal, fitted: null }, mode: m, f };
++      for (const m of modes) {
++        const fit = fit10(
++          nominal,
++          f,
++          av ? h.cap10 : cap10,
++          rule,
++          (t10) => can(t10, m),
++          h.lastBuild10,
++          downOnly
++        );
++        if (fit) return { fit, mode: m, f };
+       }
+-    }
+-    if (!fit)
++      return null;
++    };
++    const { test: _test, ...noTest } = frame;
++    const found =
++      search(
++        frame,
++        (t10, b) => !testDeload || t10 <= nominal || b.days.some((d) => d.role === 'test')
++      ) ?? (testDeload ? search(noTest, () => true) : null);
++    if (!found)
+       return infeasible(
+         `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
+         frame.index
+       );
+-    const w = make(fit.target10, mode)!;
++    const { fit, mode, f } = found;
++    const w = make(fit.target10, mode, f)!;
+     const notes = [...w.notes];
+     if (fit.fitted)
+       notes.unshift(
+         `Cilj po pravilu ${fmtKm(nominal / 10)} km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj ${fmtKm(fit.target10 / 10)} km (D6).`
+       );
+     // A9: test koji ne staje otpada sa kvalitetom (oznaka nedelje ⇔ dan testa).
+-    const { test: _test, ...noTest } = frame;
+     out.push({
+-      ...(frame.test && !w.days.some((d) => d.role === 'test') ? noTest : frame),
++      ...(f.test && !w.days.some((d) => d.role === 'test') ? noTest : f),
+       targetKm: fit.target10 / 10,
+       plannedKm: w.planned100 / 100,
+       nominalKm: nominal / 10,
+@@ -187,7 +216,9 @@ export function construct(raw: unknown, steps: readonly TenKV2AdaptStep[]): Gene
+       days: w.days,
+       notes
+     });
+-    if (w.long10 !== null) longest10 = Math.max(longest10, w.long10);
++    written.push({
++      days: prior ? writtenDays(prior.weeks[frame.index - 1]!, w.days, prior) : w.days
++    });
+     if (frame.phase === 'taper') {
+       // D8: oštrenje ≤ RP doza tapera (T tapera početnika, D31, nije RP).
+       const q = w.days.map((d) => d.workout.dose).find((d) => d?.zone === 'RP');
+diff --git a/web/src/domain/generators/tenK/v2/lengths.ts b/web/src/domain/generators/tenK/v2/lengths.ts
+index 5f9c1c3..8204cb3 100644
+--- a/web/src/domain/generators/tenK/v2/lengths.ts
++++ b/web/src/domain/generators/tenK/v2/lengths.ts
+@@ -4,7 +4,7 @@
+    ≤ 0,1 km). Dugi ≥ svaki lagan je tvrdo pravilo: kad ne može da se ispuni, nedelja nije izvodljiva (D6). */
+ 
+ import { TEN_K_V2_POLICY as P } from './policy.ts';
+-import type { Paces } from './types.ts';
++import type { Paces, PlanDay } from './types.ts';
+ 
+ /** Plafoni dugog iz pravila plana (policy.ts planRule): udeo cilja (D17) i trajanje (D13/D28). */
+ export interface LongRule {
+@@ -63,7 +63,17 @@ export function buildLengths(
+   return withEasy(target10 * 10 - quality100, longCap10(target10, rule, p), easyDays);
+ }
+ 
+-/** D7: taper — dugi ≤ 0,75 × najduži dugi plana (i D13). */
++/** D7: najduži dugi plana [0,1 km] — JEDNA definicija (10k-v2.5.1) za konstruktor i validator: dani uloge
++    'long' nedelja `weeks` kakve se upisuju (adaptacija: zaštićeni dani iz prethodnog plana, written.ts); 0 bez
++    dugog. */
++export function longestLong10(weeks: readonly { days: readonly PlanDay[] }[]): number {
++  let m = 0;
++  for (const w of weeks)
++    for (const d of w.days) if (d.role === 'long') m = Math.max(m, Math.round(d.workout.km * 10));
++  return m;
++}
++
++/** D7: taper — dugi ≤ 0,75 × najduži dugi plana (longestLong10; i D13). */
+ export function taperLengths(
+   target10: number,
+   quality100: number,
+diff --git a/web/src/domain/generators/tenK/v2/painGrid.node.test.ts b/web/src/domain/generators/tenK/v2/painGrid.node.test.ts
+index b94c00f..0613750 100644
+--- a/web/src/domain/generators/tenK/v2/painGrid.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/painGrid.node.test.ts
+@@ -131,7 +131,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
+     }
+   }, GRID_TIMEOUT);
+ 
+-  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.5.0', () => {
++  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.5.1', () => {
+     expect(PAIN_GRID.length).toBe(6);
+     expect(flows.length).toBe(336);
+     expect(flows.filter((f) => !f.res.ok).map((f) => f.key)).toEqual([]);
+@@ -141,7 +141,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
+         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
+         f.key
+       ).toBe(true);
+-      expect(r.plan.policyVersion).toBe('10k-v2.5.0');
++      expect(r.plan.policyVersion).toBe('10k-v2.5.1');
+     }
+   });
+ 
+diff --git a/web/src/domain/generators/tenK/v2/periodize.node.test.ts b/web/src/domain/generators/tenK/v2/periodize.node.test.ts
+index b507319..eca9e60 100644
+--- a/web/src/domain/generators/tenK/v2/periodize.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/periodize.node.test.ts
+@@ -89,7 +89,7 @@ describe('D4: faze', () => {
+     if (!r.ok) return;
+     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
+     expect(r.plan.policyId).toBe('10k-v2');
+-    expect(r.plan.policyVersion).toBe('10k-v2.5.0');
++    expect(r.plan.policyVersion).toBe('10k-v2.5.1');
+   });
+ });
+ 
+diff --git a/web/src/domain/generators/tenK/v2/policy.node.test.ts b/web/src/domain/generators/tenK/v2/policy.node.test.ts
+index c30f23d..c287a73 100644
+--- a/web/src/domain/generators/tenK/v2/policy.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/policy.node.test.ts
+@@ -10,10 +10,10 @@ import {
+   TEN_K_V2_POLICY as P
+ } from './policy.ts';
+ 
+-describe('policy 10k-v2.5.0', () => {
++describe('policy 10k-v2.5.1', () => {
+   it('oznaka politike', () => {
+     expect(P.id).toBe('10k-v2');
+-    expect(P.version).toBe('10k-v2.5.0');
++    expect(P.version).toBe('10k-v2.5.1');
+   });
+ 
+   it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b) i A17 (06c), svaka sa pravilom, mestom i obrazloženjem', () => {
+@@ -122,6 +122,11 @@ describe('policy 10k-v2.5.0', () => {
+     expect(rule('D5')).toMatch(
+       /Izuzetak A17 \(10k-v2\.5\.0\): .* najviše 5 uzastopnih nedelja izgradnje/
+     );
++    // 06d (10k-v2.5.1, N7): jedna definicija najdužeg dugog (D7); D27 naviše samo kad nedelja ima test.
++    expect(rule('D7')).toMatch(/Najduži dugi \(10k-v2\.5\.1\) ima jednu definiciju .* longestLong10/);
++    expect(why('D27')).toMatch(
++      /Dopuna \(10k-v2\.5\.1.*samo kad sastavljena nedelja ima test; kad nijedan cilj nije izvodljiv, test otpada \(A9\)/
++    );
+   });
+ 
+   it('D1 opseg (dani i obim: D17; početnik: D28), D29', () => {
+diff --git a/web/src/domain/generators/tenK/v2/policy.ts b/web/src/domain/generators/tenK/v2/policy.ts
+index 9a9909f..82050b3 100644
+--- a/web/src/domain/generators/tenK/v2/policy.ts
++++ b/web/src/domain/generators/tenK/v2/policy.ts
+@@ -63,8 +63,8 @@ const DECISIONS: readonly Decision[] = [
+   },
+   {
+     id: 'D7',
+-    rule: 'Taper: cilj 0,75 × vrh; RP i T, svaki ≈ 60 % poslednje doze zone (naniže; min 2 × 1000 m RP, 2,0 km T; 3 dana samo RP, D18); dugi ≤ 0,75 × najduži; svi dani trčanja zadržani.',
+-    place: 'week.ts + quality.ts + lengths.ts; cilj volume.ts',
++    rule: 'Taper: cilj 0,75 × vrh; RP i T, svaki ≈ 60 % poslednje doze zone (naniže; min 2 × 1000 m RP, 2,0 km T; 3 dana samo RP, D18); dugi ≤ 0,75 × najduži; svi dani trčanja zadržani. Najduži dugi (10k-v2.5.1) ima jednu definiciju za konstruktor i validator (lengths.longestLong10): najduži dugi nedelja pre tapera kakve se upisuju — posle adaptacije zaštićeni dani prethodnog plana (≤ asOf, urađeni, zaključani) kakvi jesu i sastavljena budućnost (written.ts).',
++    place: 'week.ts + quality.ts + lengths.ts (longestLong10); written.ts (upisani dani); cilj volume.ts',
+     rationale:
+       'Smanjen obim uz zadržan intenzitet i učestalost (Bosquet i sar. 2007, isti ograničeni dokaz kao D4): učestalost = broj dana iz ulaza (4 dana → 4, kao u 10k-v2.1.0). Odstupanja (opreznije, samo kad nijedan cilj ≤ 0,75 × vrh nije izvodljiv po pravilu): (a) 4–6 dana — taper samo sa RP, ostali dani lagani (TAPER_RP_ONLY); npr. 6 dana, 8 ned, 35 km, VDOT 70: cilj 33,2 km, dva kvaliteta ≈ 22 km (WU/CD 35 min), lagani bi bili < 3 km; (b) kad ni RP 2 × 1000 m ne staje u plafon D11 — taper bez kvaliteta (D11 ispred D7, TAPER_NO_QUALITY); npr. 3 dana, 8 ned, 20 km: cilj 19,0 km, plafon RP 1,9 km.'
+   },
+@@ -211,7 +211,7 @@ const DECISIONS: readonly Decision[] = [
+     place:
+       'periodize.ts (testWeek); week.ts (buildWeek); workouts.ts (testWorkout); quality.ts (advance); validate.ts (TEST)',
+     rationale:
+-      'Heuristika: test na kraju baze zamenjuje najmanje specifičan kvalitet (R; kod 3 dana T kontinuirano) pre razvoja, u kom zone I/T nose tempo. Odstupanje (opreznije, D27 ispred D5, bez novog broja): u rasterećenju sa testom dugi je ≤ 0,8 × poslednji ne-rasteretni — najduži koji ostavlja lagane ≥ 3 km (D13), jer test ne staje uz dugi 0,8 × i lagan ≥ 3 km, a cilj rasterećenja se ne podiže (D6); npr. 3 dana, 12 ned, 20 km, lagan 7:30, uto/čet/ned: ned 4 cilj 18,0 km, test 8,3 km, dugi 8,0 → 6,6 km, lagan 3,1 km (napomena, upozorenje TEST_DELOAD_LONG).'
++      'Heuristika: test na kraju baze zamenjuje najmanje specifičan kvalitet (R; kod 3 dana T kontinuirano) pre razvoja, u kom zone I/T nose tempo. Odstupanje (opreznije, D27 ispred D5, bez novog broja): u rasterećenju sa testom dugi je ≤ 0,8 × poslednji ne-rasteretni — najduži koji ostavlja lagane ≥ 3 km (D13), jer test ne staje uz dugi 0,8 × i lagan ≥ 3 km, a cilj rasterećenja se ne podiže (D6); npr. 3 dana, 12 ned, 20 km, lagan 7:30, uto/čet/ned: ned 4 cilj 18,0 km, test 8,3 km, dugi 8,0 → 6,6 km, lagan 3,1 km (napomena, upozorenje TEST_DELOAD_LONG). Dopuna (10k-v2.5.1, odluka organizatora posle nalaza N7): cilj rasterećenja sa testom iznad pravila (fit10: naviše do ispod poslednje izgradnje) prihvata se samo kad sastavljena nedelja ima test; kad nijedan cilj nije izvodljiv, test otpada (A9) i nedelja je obično rasterećenje (0,8 × poslednja izgradnja, samo naniže, D6/D17) — jedno mesto, generate.ts, dve faze bez petlje. Na 10k-v2.5.0 pretraga je puštala cilj naviše jer okvir ima test, a sastavljena nedelja ga je gubila (A9): rasterećenje bez testa podignuto naviše, validator odbija (VOLUME_RULE) — npr. 4 dana, 12 ned, 25 km, lagan 4:30, bol 5 u četvrtak ned 1: ned 4 cilj 20 km umesto 17 km; sada 17 km bez testa.'
+   },
+   {
+     id: 'D28',
+@@ -379,7 +379,7 @@ const DECISIONS: readonly Decision[] = [
+ 
+ export const TEN_K_V2_POLICY = {
+   id: '10k-v2',
+-  version: '10k-v2.5.0',
++  version: '10k-v2.5.1',
+ 
+   /** D1 (dani i obim: D17; početnik: D28). */
+   input: {
+diff --git a/web/src/domain/generators/tenK/v2/testInputs.ts b/web/src/domain/generators/tenK/v2/testInputs.ts
+index 66d7c24..3e97515 100644
+--- a/web/src/domain/generators/tenK/v2/testInputs.ts
++++ b/web/src/domain/generators/tenK/v2/testInputs.ts
+@@ -368,6 +368,7 @@ interface PlanLike {
+   weeks: readonly {
+     index: number;
+     phase: string;
++    test?: boolean;
+     startDate: string;
+     endDate: string;
+     days: readonly {
+@@ -654,3 +655,80 @@ export function reliefFacts(
+       return { breaks: pause(10), ...painFacts(asOf, 5) };
+   }
+ }
++
++/* ---------- Segment 06d: mreža E (rana adaptacija i pred nedeljom testa, N7) ---------- */
++
++export const EARLY_SCENARIOS = [
++  'pause10',
++  'pause20',
++  'pain5',
++  'pain8',
++  'pause10pain5',
++  'under'
++] as const;
++export type EarlyScenario = (typeof EARLY_SCENARIOS)[number];
++
++/** Činjenice mreže E (asOf = dan adaptacije): pauza 10/20 dana (breaks do asOf), bol 5/8 na dan asOf, pauza 10 +
++    bol 5, manjak (odrađen samo dan asOf − 6 po planu, pokrivenost asOf − 6 … asOf). */
++export function earlyFacts(
++  plan: PlanLike,
++  s: EarlyScenario,
++  asOf: string
++): Record<string, unknown> {
++  const back = (n: number): string => addDays(asOf, -n);
++  const pause = (days: number) => [{ kind: 'break', from: back(days - 1), to: asOf }];
++  switch (s) {
++    case 'pause10':
++      return { breaks: pause(10) };
++    case 'pause20':
++      return { breaks: pause(20) };
++    case 'pain5':
++      return painFacts(asOf, 5);
++    case 'pain8':
++      return painFacts(asOf, 8);
++    case 'pause10pain5':
++      return { breaks: pause(10), ...painFacts(asOf, 5) };
++    case 'under':
++      return {
++        workouts: runsIn(plan, back(6), back(6)),
++        coverage: { from: back(6), to: asOf, complete: true }
++      };
++  }
++}
++
++export interface EarlyBase extends AdaptBase {
++  family: 'R' | 'F' | 'B';
++}
++
++/** Planovi mreže E (redosled R, F, B): svaki 12. ulaz mreže 01, svaki 7. mreže po osećaju (3–6 dana), svaki 3.
++    mreže početnika (3–4 dana) — 252 + 1698 + 1134 = 3084. */
++export function earlyGridBases(): EarlyBase[] {
++  const every = <X>(xs: readonly X[], n: number): X[] => xs.filter((_, i) => i % n === 0);
++  return [
++    ...every(gridInputs(), 12).map((c) => ({ id: c.id, family: 'R' as const, input: c.input })),
++    ...every(
++      ([3, 4, 5, 6] as const).flatMap((d) => feelGridInputs(d)),
++      7
++    ).map((c) => ({ id: c.id, family: 'F' as const, input: c.input })),
++    ...every(
++      ([3, 4] as const).flatMap((d) => beginnerGridInputs(d)),
++      3
++    ).map((c) => ({ id: c.id, family: 'B' as const, input: c.input }))
++  ];
++}
++
++/** asOf mreže E: sreda i kraj nedelje 1; u planu sa testom i nedelje pre nedelje testa (kad je ≥ 2). Oznaka
++    `w<i>wed` / `w<i>end`. */
++export function earlyAsOfs(plan: PlanLike): { tag: string; asOf: string }[] {
++  const tw = plan.weeks.find((w) => w.test)?.index;
++  const weeks = [1, ...(tw !== undefined && tw - 1 >= 2 ? [tw - 1] : [])];
++  return weeks.flatMap((i) => {
++    const w = plan.weeks[i - 1]!;
++    let wed = w.startDate;
++    while (weekdayOf(wed) !== 'wed') wed = addDays(wed, 1);
++    return [
++      { tag: `w${i}wed`, asOf: wed },
++      { tag: `w${i}end`, asOf: w.endDate }
++    ];
++  });
++}
+diff --git a/web/src/domain/generators/tenK/v2/validate.ts b/web/src/domain/generators/tenK/v2/validate.ts
+index e0055b7..1a10919 100644
+--- a/web/src/domain/generators/tenK/v2/validate.ts
++++ b/web/src/domain/generators/tenK/v2/validate.ts
+@@ -10,7 +10,7 @@
+ 
+ import { addDays as isoAdd, daysBetween, mustDay, weekdayOf } from './dates.ts';
+ import { checkInput } from './input.ts';
+-import { longCap10 } from './lengths.ts';
++import { longCap10, longestLong10 } from './lengths.ts';
+ import {
+   assessGoal,
+   feelPaces,
+@@ -963,7 +963,6 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
+   let lastLong10: number | null = null;
+   let longKnown = true;
+   const tFirstM = Math.round(P.beginner.tFirstKm * 1000);
+-  let longest10 = 0;
+   const noneQ = (w: PlanWeek): boolean =>
+     w.limits?.quality === 'none' || w.notes.some((n) => n.includes('nedelja bez kvaliteta'));
+   const otherSlot = (r: 'q1' | 'q2'): 'q1' | 'q2' => (r === 'q1' ? 'q2' : 'q1');
+@@ -1135,6 +1134,8 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
+             : `Taper: RP ${wantRp} m i T ${wantT} m (≈ 60 % poslednje doze) (D7).`,
+           w.index
+         );
++      // D7: najduži dugi nedelja pre tapera — ista definicija kao konstruktor (lengths.longestLong10).
++      const longest10 = longestLong10(weeks.slice(0, w.index - 1));
+       if (long && to10(long.workout.km) > Math.floor(t7.longFactor * longest10 + 1e-9))
+         err(
+           'TAPER_LONG',
+@@ -1174,7 +1175,6 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
+           w.index
+         );
+     }
+-    if (long) longest10 = Math.max(longest10, to10(long.workout.km));
+     if (isSteady(w)) {
+       seenSteady = true;
+       if (long) [lastLong10, longKnown] = [to10(long.workout.km), checked(w)];
+diff --git a/web/src/domain/generators/tenK/v2/written.ts b/web/src/domain/generators/tenK/v2/written.ts
+new file mode 100644
+index 0000000..8982a67
+--- /dev/null
++++ b/web/src/domain/generators/tenK/v2/written.ts
+@@ -0,0 +1,29 @@
++/* A11 — dani plana kakvi se upisuju posle adaptacije (jedino mesto): nedelja koja je cela ≤ asOf ostaje iz
++   prethodnog plana; u ostalim nedeljama zaštićeni dani (≤ asOf, urađeni, zaključani) iz prethodnog plana i
++   sastavljeni dani na ostalim datumima. Čitaju ga spajanje (adapt.ts) i konstruktor (generate.ts: najduži dugi
++   D7 iz upisanih dana, 10k-v2.5.1). */
++
++import { mustDay } from './dates.ts';
++import type { PlanDay, PlanWeek } from './types.ts';
++
++/** Prethodni plan i zaštita dana (A11) za koje konstruktor računa upisane dane. */
++export interface Written {
++  weeks: readonly PlanWeek[];
++  /** Zaštićen dan: ≤ asOf, urađen ili zaključan. */
++  keep: (d: PlanDay) => boolean;
++  /** asOf (broj dana). */
++  asOf: number;
++}
++
++/** Dani nedelje kakvi se upisuju: `prev` = ista nedelja prethodnog plana, `built` = sastavljeni dani. */
++export function writtenDays(
++  prev: PlanWeek,
++  built: readonly PlanDay[],
++  w: Written
++): readonly PlanDay[] {
++  if (mustDay(prev.endDate) <= w.asOf) return prev.days;
++  return [
++    ...prev.days.filter(w.keep),
++    ...built.filter((d) => !prev.days.some((x) => x.date === d.date && w.keep(x)))
++  ].sort((x, y) => x.date.localeCompare(y.date));
++}
+diff --git a/web/src/features/onboarding/tenKV2Flow.test.tsx b/web/src/features/onboarding/tenKV2Flow.test.tsx
+index db2b1f3..a756662 100644
+--- a/web/src/features/onboarding/tenKV2Flow.test.tsx
++++ b/web/src/features/onboarding/tenKV2Flow.test.tsx
+@@ -114,7 +114,7 @@ describe('10K v2 iza prekidača', () => {
+     const saved = collectPersisted();
+     expect(saved.genPlan!.meta).toMatchObject({
+       policyId: '10k-v2',
+-      policyVersion: '10k-v2.5.0',
++      policyVersion: '10k-v2.5.1',
+       paceBasis: 'result',
+       goalSec: 2580
+     });

@@ -2,7 +2,7 @@
    trkačke nedelje; poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija
    nedelje (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
-import { longShareCap10, longTimeCap10 } from './lengths.ts';
+import { longKmCap10, longShareCap10, longTimeCap10, recentLongCap10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
 import { type DayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
@@ -10,27 +10,24 @@ import type { Paces, PlanWeek, WeekFrame } from './types.ts';
 const EPS = 1e-9;
 export const to10 = (km: number): number => Math.round(km * 10);
 
-/** Šta je seklo spuštenu nedelju izgradnje — dugi na 150 min ('time') i/ili na udelu H15 ('share'). */
-export type CapacityLimit = 'time' | 'share';
+/** Šta je seklo spuštenu nedelju izgradnje — dugi na 150 min ('time'), na udelu H15 ('share'), na 24 km
+    ('km'; HI8) i/ili u nedelji 1 na granici skorašnjeg najdužeg ('recent'; HI7). */
+export type CapacityLimit = 'time' | 'share' | 'km' | 'recent';
 
-/** H6: poruka CAPACITY_LIMITED — imenuje stvarno ograničenje; preporučuje više dana samo kad veći broj
-    dana postoji u tabeli H15 (segment 01: samo 4 dana → preporuka obima ili dana iz segmenta 02 nije
-    dostupna, poruka imenuje samo ograničenje). */
+/** H6/HI8: poruka CAPACITY_LIMITED — imenuje stvarna ograničenja; preporučuje više dana samo kad veći broj
+    dana postoji u tabeli H15 (HI9 a: 4 dana → 5–6 dana). */
 export function capacityMessage(
   runDays: number,
   rule: DayRule,
   limits: readonly CapacityLimit[]
 ): string {
-  const min = `${Math.round(P.lengths.longMaxSec / 60)} min`;
-  const share = `${Math.round(rule.longMaxShare * 100)} % nedelje`;
-  const what =
-    limits.length === 2
-      ? ` uz dugi ≤ ${min} i ≤ ${share}`
-      : limits[0] === 'time'
-        ? ` uz dugi ≤ ${min}`
-        : limits[0] === 'share'
-          ? ` uz dugi ≤ ${share}`
-          : '';
+  const text: Record<CapacityLimit, string> = {
+    time: `${Math.round(P.lengths.longMaxSec / 60)} min`,
+    share: `${Math.round(rule.longMaxShare * 100)} % nedelje`,
+    km: `${P.lengths.longMaxKm} km`,
+    recent: 'granica skorašnjeg najdužeg trka (nedelja 1)'
+  };
+  const what = limits.length > 0 ? ` uz dugi ≤ ${limits.map((l) => text[l]).join(' i ≤ ')}` : '';
   const more = RUN_DAYS_COUNTS.filter((n) => n > runDays);
   const advice =
     more.length === 0
@@ -40,7 +37,7 @@ export function capacityMessage(
 }
 
 /** HI3 (pouka 14): preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele H15 podržava
-    trenutni obim; prazno kad ih nema (segment 01: uvek prazno). */
+    trenutni obim; prazno kad ih nema. */
 export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number): string {
   const km10 = to10(currentWeeklyKm);
   const fewer = RUN_DAYS_COUNTS.filter(
@@ -51,24 +48,27 @@ export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number): strin
   return `; preporuka ${days} dana (red sa manje dana podržava obim ${currentWeeklyKm} km, dugi dobija veći udeo)`;
 }
 
-/** H6: ograničenja spuštenih (fitted 'down') ne-rasteretnih nedelja izgradnje: dugi = plafon 150 min
-    sporim E → 'time'; dugi = udeo cilja (H15) → 'share'. */
+/** H6/HI8: ograničenja spuštenih (fitted 'down') ne-rasteretnih nedelja izgradnje: dugi = plafon 150 min
+    sporim E → 'time'; = udeo cilja (H15) → 'share'; = 24 km → 'km'; nedelja 1 = granica skorašnjeg
+    najdužeg (`recentKm`) → 'recent'. Redosled: time, share, km, recent. */
 export function capacityLimits(
   weeks: readonly PlanWeek[],
   rule: DayRule,
-  p: Paces
+  p: Paces,
+  recentKm: number | null = null
 ): CapacityLimit[] {
-  let time = false;
-  let share = false;
+  const hit = new Set<CapacityLimit>();
   for (const w of weeks) {
     if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') continue;
     const long = w.days.find((d) => d.role === 'long');
     if (!long) continue;
     const l10 = to10(long.workout.km);
-    if (l10 === longTimeCap10(p)) time = true;
-    if (l10 === longShareCap10(to10(w.targetKm), rule)) share = true;
+    if (l10 === longTimeCap10(p)) hit.add('time');
+    if (l10 === longShareCap10(to10(w.targetKm), rule)) hit.add('share');
+    if (l10 === longKmCap10()) hit.add('km');
+    if (w.index === 1 && recentKm !== null && l10 === recentLongCap10(recentKm)) hit.add('recent');
   }
-  return [...(time ? ['time' as const] : []), ...(share ? ['share' as const] : [])];
+  return (['time', 'share', 'km', 'recent'] as const).filter((l) => hit.has(l));
 }
 
 /** Trenutni obim = cilj nedelje 1 [0,1 km]. */

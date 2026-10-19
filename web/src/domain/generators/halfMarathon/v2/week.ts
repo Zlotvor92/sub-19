@@ -8,6 +8,7 @@ import { type DayRule, HM_V2_POLICY as P } from './policy.ts';
 import {
   capM,
   deloadDose,
+  deloadSlot,
   pickBuild,
   type Picks,
   type QualityState,
@@ -47,6 +48,8 @@ export interface WeekContext {
   wc: WarmupCooldown;
   /** H15: red tabele za broj dana. */
   rule: DayRule;
+  /** Pouka 28 (HI7): granica dugog nedelje 1 iz skorašnjeg najdužeg [0,1 km]; null bez ulaza. */
+  recentCap10: number | null;
 }
 
 /** Režim kvaliteta nedelje: 'rule' po pravilu; 'relax' druga pretraga (HI2: H11 ispred H12, rasterećenje
@@ -129,22 +132,25 @@ export function buildWeek(
   const relax = mode === 'relax';
   if (frame.phase === 'race') return null;
 
+  const qDays = [pat.q1, ...(pat.q2 ? [pat.q2] : [])];
   if (frame.deload) {
-    // H5: jedan kvalitet (T) na danu T slota (Q2), dugi 0,8 ×, ostali dani lagani.
+    // H5: jedan kvalitet (T) na danu T slota (Q2; 3 dana Q1, HI6), dugi 0,8 ×, ostali dani lagani.
     if (lastLong10 === null) return null;
-    const d = deloadDose(quality, frame.phase);
+    const d = deloadDose(quality, frame.phase, rule.quality);
     const fits = d.doseM <= capM('T', targetKm);
     if (!fits && !relax) return null;
     const tw = fits ? qualityWorkout(d, p, ctx.wc) : null;
+    const slot = deloadSlot(rule.quality);
+    const tDay = slot === 'q1' ? pat.q1 : pat.q2!;
     const dates = easyDates(
       frame,
-      [pat.q1, pat.q2, ...pat.easy].filter((wd) => !tw || wd !== pat.q2)
+      [...qDays, ...pat.easy].filter((wd) => !tw || wd !== tDay)
     );
     const len = deloadLengths(target10, tw ? km100(tw.km) : 0, dates.length, lastLong10, rule, p);
     if (!len) return null;
     return finish(
       [
-        ...(tw ? [day(dateOf(frame, pat.q2), 'q2', tw)] : []),
+        ...(tw ? [day(dateOf(frame, tDay), slot, tw)] : []),
         day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
         ...easyDays(dates, len.easy10, p)
       ],
@@ -159,31 +165,34 @@ export function buildWeek(
   }
 
   if (frame.phase === 'taper') {
-    // H7: RP (Q1) i T (Q2) ≈ 60 % poslednje doze; druga pretraga: samo RP, pa bez kvaliteta.
-    const t = taperDoses(quality);
+    // H7: RP (Q1) i T (Q2) ≈ 60 % poslednje doze (3 dana samo RP, HI6); druga pretraga: samo RP, pa bez
+    // kvaliteta.
+    const t = taperDoses(quality, rule.quality);
     const rpFits = t.q1.doseM <= capM('RP', targetKm);
-    const tFits = t.q2.doseM <= capM('T', targetKm);
-    if (!relax && (!rpFits || !tFits)) return null;
+    const tFits = t.q2 !== null && t.q2.doseM <= capM('T', targetKm);
+    if (!relax && (!rpFits || (t.q2 !== null && !tFits))) return null;
     const w1 = rpFits ? qualityWorkout(t.q1, p, ctx.wc) : null;
-    const w2 = !relax && tFits ? qualityWorkout(t.q2, p, ctx.wc) : null;
+    const w2 = !relax && t.q2 && tFits ? qualityWorkout(t.q2, p, ctx.wc) : null;
     const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0);
-    const kept = [...(w1 ? [pat.q1] : []), ...(w2 ? [pat.q2] : [])];
+    const kept = [...(w1 ? [pat.q1] : []), ...(w2 && pat.q2 ? [pat.q2] : [])];
     const dates = easyDates(
       frame,
-      [pat.q1, pat.q2, ...pat.easy].filter((wd) => !kept.includes(wd))
+      [...qDays, ...pat.easy].filter((wd) => !kept.includes(wd))
     );
     const len = taperLengths(target10, q100, dates.length, longest10, rule, p);
     if (!len) return null;
     const rpMin = `RP ${P.taper.rpMin.reps} × ${P.taper.rpMin.repM} m`;
     const note = !w1
       ? `Taper bez kvaliteta — ni ${rpMin} ne staje u plafon ${P.caps.RP * 100} % cilja (H11 ispred H7, odstupanje); dugi ≤ 0,6 × najduži.`
-      : !w2
-        ? 'Taper: samo RP ≈ 60 % poslednje doze — sa RP i T nijedan cilj ≤ 0,7 × vrh nije izvodljiv (H7, odstupanje); dugi ≤ 0,6 × najduži.'
-        : 'Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,6 × najduži (H7).';
+      : t.q2 === null
+        ? 'Taper: RP ≈ 60 % poslednje doze (jedan kvalitetni dan, HI6), dugi ≤ 0,6 × najduži (H7).'
+        : !w2
+          ? 'Taper: samo RP ≈ 60 % poslednje doze — sa RP i T nijedan cilj ≤ 0,7 × vrh nije izvodljiv (H7, odstupanje); dugi ≤ 0,6 × najduži.'
+          : 'Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,6 × najduži (H7).';
     return finish(
       [
         ...(w1 ? [day(dateOf(frame, pat.q1), 'q1', w1)] : []),
-        ...(w2 ? [day(dateOf(frame, pat.q2), 'q2', w2)] : []),
+        ...(w2 && pat.q2 ? [day(dateOf(frame, pat.q2), 'q2', w2)] : []),
         day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
         ...easyDays(dates, len.easy10, p)
       ],
@@ -193,18 +202,21 @@ export function buildWeek(
     );
   }
 
-  // Izgradnja (H10, H12): Q1 i Q2 po fazi, dugi i lagani (H13).
-  const picks = pickBuild(quality, frame.phase, targetKm, p, relax);
+  // Izgradnja (H10, H12): Q1 i Q2 po fazi (3 dana samo Q1), dugi i lagani (H13; nedelja 1: granica
+  // skorašnjeg najdužeg, HI7).
+  const picks = pickBuild(quality, frame.phase, targetKm, p, relax, rule.quality);
   if (!picks) return null;
   const w1 = qualityWorkout(picks.q1, p, ctx.wc);
-  const w2 = qualityWorkout(picks.q2, p, ctx.wc);
+  const w2 = picks.q2 ? qualityWorkout(picks.q2, p, ctx.wc) : null;
   const dates = easyDates(frame, pat.easy);
-  const len = buildLengths(target10, km100(w1.km) + km100(w2.km), dates.length, rule, p);
+  const recent10 = frame.index === 1 ? ctx.recentCap10 : null;
+  const q100 = km100(w1.km) + (w2 ? km100(w2.km) : 0);
+  const len = buildLengths(target10, q100, dates.length, rule, p, recent10);
   if (!len) return null;
   const notes: string[] = [];
   const slots: [string, Dose, SlotState | null][] = [
     ['Q1', picks.q1, quality.q1],
-    ['Q2', picks.q2, quality.q2]
+    ...(picks.q2 ? [['Q2', picks.q2, quality.q2] as [string, Dose, SlotState | null]] : [])
   ];
   for (const [slot, d] of slots) if (d.step === 'repeat') notes.push(repeatNote(slot, d));
   for (const [slot, d, prev] of slots)
@@ -215,7 +227,7 @@ export function buildWeek(
   return finish(
     [
       day(dateOf(frame, pat.q1), 'q1', w1),
-      day(dateOf(frame, pat.q2), 'q2', w2),
+      ...(w2 && pat.q2 ? [day(dateOf(frame, pat.q2), 'q2', w2)] : []),
       day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
       ...easyDays(dates, len.easy10, p)
     ],

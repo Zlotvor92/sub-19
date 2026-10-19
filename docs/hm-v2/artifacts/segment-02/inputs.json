@@ -1,0 +1,81 @@
+{
+  "d3-12w-30km-v45-A-sun": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-24",
+    "runDays": ["tue", "thu", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 30,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 2716,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "d3-16w-45km-v30-C-sun": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-21",
+    "runDays": ["wed", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 45,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 3834,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "d4-18w-60km-v55-B-sun": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": ["mon", "wed", "fri", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 60,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 2287,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "d5-14w-55km-v50-A-sun": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-07",
+    "runDays": ["mon", "tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 55,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 2481,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "d6-18w-90km-v60-B-sun": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": ["tue", "wed", "thu", "fri", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 90,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 2123,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "r-d4-12w-40km-v45-r10": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-24",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": null,
+    "currentWeeklyKm": 40,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 2716,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null,
+    "recentLongRunKm": 10
+  }
+}

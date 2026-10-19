@@ -1,0 +1,82 @@
+[
+  {
+    "name": "S1 rasterećenje na prvoj nedelji faze (H5, pouka 4)",
+    "file": "src/domain/generators/halfMarathon/v2/periodize.ts",
+    "find": "    !firstOfPhase(phases, week)\n",
+    "replace": "    true\n",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/periodize.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S2 plafon zone se ne proverava pri sledećem nivou (H11)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "    if (next && doseOf(next) <= cap) return pick(ladder, next, 'next');",
+    "replace": "    if (next) return pick(ladder, next, 'next');",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/quality.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S3 lagan sme biti duži od dugog (H13, pouka 2)",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;\n  return { long10, easy10 };\n}\n\n/** Nedelja izgradnje",
+    "replace": "  if (easy10.some((e) => e < EASY_MIN10)) return null;\n  return { long10, easy10 };\n}\n\n/** Nedelja izgradnje",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/week.node.test.ts"
+    ]
+  },
+  {
+    "name": "S4 taper: cilj 0,8 × vrh umesto 0,7 (H7; validator deli funkciju — hvataju nezavisne invarijante)",
+    "file": "src/domain/generators/halfMarathon/v2/volume.ts",
+    "find": "  if (frame.phase === 'taper') return Math.round(P.taper.factor * hist.peak10);",
+    "replace": "  if (frame.phase === 'taper') return Math.round(0.8 * hist.peak10);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/week.node.test.ts"
+    ]
+  },
+  {
+    "name": "S5 taper: RP doza 100 % umesto ≈ 60 % (H7; deljena funkcija — invarijante)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "  const rp = reducedStructure('RP', state.q1?.doseM ?? 0, t.doseShare, rpFloor);",
+    "replace": "  const rp = reducedStructure('RP', state.q1?.doseM ?? 0, 1, rpFloor);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/quality.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S6 trkačka: oštrenje 2 dana pre trke (H8, pouka 5)",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "          daysBetween(d, race) >= P.raceWeek.sharpenerMinGapDays &&",
+    "replace": "          daysBetween(d, race) >= 2 &&",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/week.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S7 trkačka: lagan uvek 35 min E (trkačka ≤ taper, H8, pouka 5)",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "  return taperEasy10 * 10 < km100(timed.km) ? easyWorkout(taperEasy10 / 10, p) : timed;",
+    "replace": "  return taperEasy10 * 10 < 0 ? easyWorkout(taperEasy10 / 10, p) : timed;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/week.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S8 udeo dugog nazad 0,35 (H15, pouka 9 — odluka posle zaustavljanja)",
+    "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+    "find": "      longMaxShare: 0.4,",
+    "replace": "      longMaxShare: 0.35,",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/grid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/dense.node.test.ts"
+    ]
+  }
+]

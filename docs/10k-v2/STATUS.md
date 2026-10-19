@@ -131,3 +131,13 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
 - Sabotaže (od 287): (a) 14, (b) 2, (c) 27, (d) 1, (e) 1. `KNOWN_VERSIONS` = 4.0, 4.1, 5.0.
 - Otvoreno: na 4917959 4 toka mreže R odbijena (`VOLUME_RULE`, rasterećenje sa testom D27 posle sidra bola,
   f-d5-12w / f-d6-14w, kraj ned 2) — u 2.5.0 A17 ukida to rasterećenje, uzrok nije menjan; test 5 km uz A17 (gore).
+
+## Segment 06d (10k-v2.5.1, N7): STANI posle koraka 1 — kod nije menjan
+
+- Izveštaj `reports/SEGMENT-06d-STOP.md`; artefakti `artifacts/segment-06d/` (merne skripte, merenje pre `51a924f`,
+  prototip K1/K2 kao `k1k2-prototype.diff` + njegovo merenje i poređenje).
+- N7 ponovljen: 61 104 toka, 142 K1 + 10 K2. Šira mreža (847 392 toka): nove klase RACE_WEEK_OVER_TAPER 1308 (bol 8,
+  kraj ned N − 2), ROLES 1692 (umor, početnik, ned 1: A5 u uvodu D28), DELOAD_CONTENT 6 + TAPER_QUALITY 1 (stanje doze
+  iz sastavljene, a ne upisane nedelje — porodica K2).
+- Prototip: K1 → 0 (bez promene prihvaćenih); K2 po odluci 2 → 668 novih TAPER_LONG iz validatora u `construct`
+  (sastavljen plan) i 11 promenjenih prihvaćenih tokova. Čeka odluku organizatora (pitanja u § 5 izveštaja).

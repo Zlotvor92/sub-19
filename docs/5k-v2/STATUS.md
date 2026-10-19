@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.6.1`, 08d) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.7.0`, 08e) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -10,8 +10,10 @@ promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v
 km; pokrivenost čita ISKLJUČIVO `fullSync` (sve aktivnosti preuzete i obrađene; delimičan uspeh ga ne pomera), a
 neobrađena aktivnost čini svoj dan nepoznatim. Uvoz za planove v1 bajt-isti. Jezgro (`policy.ts`, konstrukcija, assess)
 nepromenjeno. 08d (5k-v2.6.1): bol — sidro povratka = nedelja koja sadrži asOf + 1, osnova min(0,7 × nivo pre bola,
-cilj te nedelje); posle bola doza kvaliteta počinje iznova od sledeće nedelje izgradnje. Sledeće: odluka o uključivanju
-za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
+cilj te nedelje); posle bola doza kvaliteta počinje iznova od sledeće nedelje izgradnje. 08e (5k-v2.7.0): redovno
+rasterećenje odmah posle nedelje smanjenja (pauza, manjak, sidro bola; ne nov start) otpada (Odluka 9, `steps.framesFor`);
+adaptacija koju konstruktor sastavi više ne odbija validator (rast uz donju granicu, minimum za cilj uz dane bola, ostatak
+pauze u nedelji rasterećenja). Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
 Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segmenti 01–07 (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
@@ -87,3 +89,19 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   bajt-isto; generator bajt-isti osim oznake. I1–I5 bez odstupanja na 392 toka; sabotaže (a)–(e): 14/17/1/37/7 palih.
 - Provere: tsc/eslint/prettier exit 0; vitest fiveK/v2 15 / 627; `npm run check` exit 0 (220 / 2700); E2E `fivek-v2` 3/3.
 - Izveštaj: `reports/SEGMENT-08d-IMPLEMENTATION.md`.
+
+## Segment 08e — rasterećenje posle smanjenja otpada; P2 (5k-v2.7.0, 2026-10-19)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 51a924f
+- Odluka 9 (organizator, = 10K A17): redovno rasterećenje odmah posle nedelje smanjenja ((a) pauza/manjak → fromWeek,
+  oznaka koraka `reduced`; (b) bol sa povratkom → r; nov start ne) otpada; prinudno (umor) nikad; granica niza = najduži
+  niz izgradnje bez rasterećenja koji generator pravi (izmereno 5, početnik 3) + 1 = 6 / 4 (`steps.reliefMaxRun`); jedno
+  mesto `steps.framesFor` (`dropped` → konstrukcija i poruka „… otpada: nedelja n je smanjena (Odluka 9).").
+- P2: VOLUME_GROWTH (validator čita `adaptFloorKm`), WEEK_MIN_VOLUME (dani bola: minimum za cilj), VOLUME_DELOAD (nova
+  klasa, STANI → `volume.pauseRemainderKm`). Pretraga organizatora 5952 toka: P1 975 → 0 (0 zadržano), odbijeno 44 → 0;
+  šira 10 852: P1 965 → 0, odbijeno 42 → 0 (+104 VDOT_OUT_OF_RANGE po dizajnu).
+- Regresija prema 51a924f (`segment08e.adapt-hashes-51a924f.json`): svaki promenjen tok ima rečenicu Odluke 9 ili je
+  ranije bio odbijen (0 drugih); generator bajt-isti osim oznake; `byteSame` 5K v2 ključevi ponovo snimljeni (19, samo
+  oznaka; dozvola organizatora). KNOWN_VERSIONS = 2.6.0, 2.6.1, 2.7.0.
+- Sabotaže (a)–(f3) 8/8 PAO (42 s, `--parallel 2`); vitest fiveK/v2 16 / 655 (brz); pun 08e 27/27; `npm run check` exit 0 (222 / 2763); `npm run check:full` exit 0 (271 / 2914).
+- Izveštaj: `reports/SEGMENT-08e-IMPLEMENTATION.md`.
