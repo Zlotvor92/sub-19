@@ -159,3 +159,13 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
   Konstruktor (`volume.adaptNominal10`, `week.buildWeek`) i validator čitaju korak.
 - Merenje (496 planova × 3 asOf × 9 scenarija): 1488 → 0 odbijanja; prihvaćeni bajt-isti; mreže 04/P/R/E bajt-iste.
 - Mreža E + 37 008 tokova pre starta (102 707). Sabotaže 3/3. `KNOWN_VERSIONS` = 4.0, 4.1, 5.0, 5.1, 5.2.
+
+## Segment 06f — STANI posle merenja (kod nije u commitu; jezgro ostaje `10k-v2.5.2`)
+
+- Izveštaj `reports/SEGMENT-06f-STOP.md`; prototip t. 1–4 i 6 (pouka 36, traka u domenu, tekst prekidača, pouka 25,
+  `10k-v2.6.0`) kao `artifacts/segment-06f/06f-prototype.diff` (`git apply` na `7ba9717`), proveren (check, pun nivo
+  tenK/v2, `--changed` pun, E2E 3/3, sabotaže 3/3).
+- Merenje: `fatigue-repeat.ts 10K end` 903/963 → 0; promenjeni samo tokovi ponovljenog umora (9192/269 760), traka
+  bajt-ista. Otvoreno organizatoru: (1) prva adaptacija umora ponedeljkom u nedelji redovnog rasterećenja (620/2712:
+  bez drugog rasterećenja zaredom); (2) pouka 35 > 0 — generator 858/31 122 planova (2022 nedelje), adaptacija
+  3602/121 392 toka; opcije A/B/C, preporuka B.

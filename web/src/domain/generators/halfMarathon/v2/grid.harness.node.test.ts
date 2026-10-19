@@ -25,6 +25,20 @@ export const OVER_LONG = new Set(
   JSON.parse(readFileSync(join(DIR, 'segment03b.over-long-5e09a02.json'), 'utf8')) as string[]
 );
 
+/** HM-07 (hm-v2.4.0, Faza 4a): planovi čiji se rezultat menja prema f4b257d, sa klasom — a pouka 35, b pod RP (N6),
+    d samo napomene/upozorenja (N9, N10.1, N11); mreže 02, 03 i pouke 28 (`r-`). Izvor:
+    docs/hm-v2/artifacts/segment-07/regress.ts, compare.ts, changed07.ts. */
+export const CHANGED_07 = new Map(
+  Object.entries(
+    JSON.parse(readFileSync(join(DIR, 'segment07.changed-f4b257d.json'), 'utf8')) as Record<
+      string,
+      string
+    >
+  )
+);
+/** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32) ili HM-07. */
+export const mayChange = (id: string): boolean => OVER_LONG.has(id) || CHANGED_07.has(id);
+
 /** Red bazne linije: vrh cilja, najduži dugi, heš celog plana bez oznake verzije (regresija sledećeg segmenta). */
 export type BaselineRow = [peakKm: number, longestKm: number, hash: string];
 
@@ -134,7 +148,7 @@ export function describeGrid(name: string, inputs: readonly GridInput[], extra?:
         // Dozvoljeni uzroci promene: dugi > 24 km u HM-01, sada na 24 km (prompt HM-02, tačka 2); kotrljajuća
         // granica pouke 28 seče dugi (odluka organizatora posle MAR-02); HM-04 A: plan je imao kvalitetni dan
         // duži od dugog (pouka 32).
-        if (!((old[1] > 24 && now[1] === 24) || res.rolling.has(g.id) || OVER_LONG.has(g.id)))
+        if (!((old[1] > 24 && now[1] === 24) || res.rolling.has(g.id) || mayChange(g.id)))
           other.push(`${g.id}: ${old[1]} → ${now[1]}`);
       }
       expect(other).toEqual([]);
@@ -145,7 +159,7 @@ export function describeGrid(name: string, inputs: readonly GridInput[], extra?:
         inputs.filter(
           (x) =>
             x.days === 4 &&
-            !OVER_LONG.has(x.id) &&
+            !mayChange(x.id) &&
             (base[x.id.slice(3)]![1] > 24 || res.rolling.has(x.id)) &&
             res.norm[x.id] === norm[x.id.slice(3)]
         )
@@ -158,11 +172,12 @@ export function describeGrid(name: string, inputs: readonly GridInput[], extra?:
         return;
       }
       const base = JSON.parse(readFileSync(BASELINE, 'utf8')) as Record<string, BaselineRow>;
-      // HM-04 A: menja se samo plan sa kvalitetnim danom dužim od dugog na 5e09a02 (OVER_LONG); vrh ne pada.
+      // HM-04 A: menja se samo plan sa kvalitetnim danom dužim od dugog na 5e09a02 (OVER_LONG); HM-07: plan iz
+      // CHANGED_07 (pouka 35, N6, upozorenja); vrh ne pada.
       const changed = inputs.filter(
         (g) => JSON.stringify(res.rows[g.id]) !== JSON.stringify(base[g.id])
       );
-      expect(changed.filter((g) => !OVER_LONG.has(g.id)).map((g) => g.id)).toEqual([]);
+      expect(changed.filter((g) => !mayChange(g.id)).map((g) => g.id)).toEqual([]);
       expect(changed.filter((g) => res.rows[g.id]![0] < base[g.id]![0]).map((g) => g.id)).toEqual(
         []
       );

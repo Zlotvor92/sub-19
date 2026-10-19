@@ -7,9 +7,9 @@
    - vraćanju revizije (`restoreMerge`): budući nezaštićeni dani iz sačuvane verzije, prošlost/urađeno/ručno izmenjeno iz
      trenutnog plana — spajanje na nivou plana v2, pa iz njega plan za upis;
    - promeni cilja (`goalChange`): isti ulaz sa novim ciljem, svi budući dani zaključani → menja se samo ocena cilja;
-   - traci „Plan treba prilagoditi" (`needed`): aktivno ograničenje iz činjenica koje menja budući deo plana. */
+   - traci „Plan treba prilagoditi" (`needed`): pravilo je SAMO u domenu (`../adapt.ts` `adaptBanner`, pouka 20). */
 
-import { adaptHmV2 } from '../adapt.ts';
+import { adaptBanner, adaptHmV2 } from '../adapt.ts';
 import { checkInput } from '../input.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import type { AdaptChange, AdaptReason, AdaptResult, PlanWeek, HmV2Plan } from '../types.ts';
@@ -116,43 +116,6 @@ export type AdaptOutcome =
   | AdaptPreview
   | { ok: false; reasons: PlanRejectionReason[]; coverage: CoverageInfo | null; notes: string[] };
 
-/** Uslovi ograničenja (pouka 20): traka samo kad jezgro prijavi NOVO ograničenje (`newLimits` — dani bez kvaliteta /
- *  sa jednim kvalitetom / odmora / bola, prinudno rasterećenje ili nov start kojih nije bilo pre poslednjeg koraka). */
-const LIMIT: ReadonlySet<AdaptReason['condition']> = new Set(['PAIN', 'PAUSE', 'FATIGUE']);
-/** Uslovi koji menjaju cilj obima ili tempo (nov rezultat je nov po definiciji — jezgro primenjuje samo rezultat noviji
- *  od rezultata u upotrebi). Premeštanje testa nije razlog trake: posledica je drugog uslova. */
-const CHANGE: ReadonlySet<AdaptReason['condition']> = new Set([
-  'NEW_RESULT',
-  'UNDER_EXECUTION',
-  'OVER_EXECUTION'
-]);
-
-/** Traka „Plan treba prilagoditi" (pouka 20): primenjen uslov, a plan se zaista menja posle danas; ograničenje (bol,
- *  pauza, umor) samo kad ga domen prijavi kao NOVO (`newLimits` iz `adaptHmV2`), a bol uz to samo kad je zapis bola
- *  noviji od poslednje adaptacije — period bola je vezan za asOf (A4: asOf + 1 … + 7), pa isti stari zapis sutradan
- *  pomera kraj perioda za dan i domen taj dan vidi kao nov; to nije nova činjenica (isto pravilo kao 10K v2 06 i
- *  maraton v2 `adaptBanner`). Isti dan posle primene — ništa. */
-export function adaptBanner(
-  before: HmV2Plan,
-  reasons: readonly AdaptReason[],
-  newLimits: readonly string[],
-  painDates: readonly string[],
-  today: IsoDate,
-  weeks: readonly WeekChange[]
-): string[] {
-  const last = before.adaptation?.asOf ?? null;
-  if ((last !== null && last >= today) || weeks.length === 0) return [];
-  const newPain = painDates.some((d) => last === null || d > last);
-  return reasons
-    .filter(
-      (r) =>
-        r.applied &&
-        (CHANGE.has(r.condition) ||
-          (LIMIT.has(r.condition) && newLimits.length > 0 && (r.condition !== 'PAIN' || newPain)))
-    )
-    .map((r) => r.message);
-}
-
 /** Plan za upis iz plana v2 (+ snimak ručnih izmena u trenutku adaptacije, ako ga ima). */
 function stored(v2: HmV2Plan, edits: unknown): StoredPlan {
   const s = storedPlan(generatedPlan(v2));
@@ -183,9 +146,6 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
   const weeks = changedWeeks(v2, after, r.changes, src.today);
   const applied = r.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');
   const summary = `Prilagođavanje ${src.today}: ${applied.length ? [...new Set(applied.map((x) => CONDITION[x.condition]))].join(', ') : CONDITION.NO_FACTS}`;
-  const painDates = built.facts.workouts
-    .filter((w) => (w.pain ?? 0) >= P.adapt.painMin)
-    .map((w) => w.date);
   return {
     ok: true,
     result,
@@ -194,7 +154,8 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     weeks,
     notes,
     coverage: built.coverage,
-    needed: adaptBanner(v2, r.reasons, r.newLimits, painDates, src.today, weeks)
+    // Pouka 20: pravilo trake živi samo u domenu (`adaptBanner`); aplikacija ga samo zove.
+    needed: adaptBanner(v2, r, built.facts, src.today)
   };
 }
 

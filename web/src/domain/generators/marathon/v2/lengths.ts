@@ -71,6 +71,29 @@ export function recentLongThreshold10(long10: number): number {
   return Math.ceil(Math.min(long10 / q.factor, long10 - q.addKm * 10) - EPS);
 }
 
+/** M13 (N11): najduži dugi plana [km] kad je ispod praga MARATHON_LONG_SHORT (`rule.longShortKm`; početnik M17) i
+    da li ga ograničava trajanje (najduži dugi = plafon 150 min sporim E tempa plana `p`); null kad prag nije
+    problem. JEDNA odluka za konstruktor (napomena plana kad je trajanje — namerna granica M13) i validator
+    (upozorenje samo kad trajanje NIJE uzrok: tada je savet „više dana/obima" stvaran). */
+export function longShortOf(
+  weeks: readonly { days: readonly PlanDay[] }[],
+  longShortKm: number,
+  p: Paces
+): { longestKm: number; timeCapped: boolean } | null {
+  const longs = weeks.flatMap((w) => w.days.filter((d) => d.role === 'long'));
+  const longestKm = Math.max(0, ...longs.map((d) => d.workout.km));
+  if (longestKm + 1e-6 >= longShortKm) return null;
+  const timeCapped = longs.some(
+    (d) => d.workout.km === longestKm && Math.round(d.workout.km * 10) === longTimeCap10(p)
+  );
+  return { longestKm, timeCapped };
+}
+
+/** N11: rečenica u opisu plana (plan.notes) kad najduži dugi ograničava trajanje (M13: ≤ 150 min) — ne upozorenje. */
+export function longTimeCapNote(longestKm: number, longShortKm: number, beginner: boolean): string {
+  return `Najduži dugi trk je ${fmtKm(longestKm)} km: ograničava ga trajanje (≤ ${P.lengths.longMaxSec / 60} min laganim tempom, ${beginner ? 'M17' : 'M13'}) — namerna granica opterećenja umesto preporučenih ${fmtKm(longShortKm)} km; ostatak obima nose ostali dani${beginner ? ', cilj je završiti maraton' : ''}.`;
+}
+
 /** M13a: napomena nedelje čiji je dugi na plafonu skoka (`L` = jumpBase10). */
 export function longJumpNote(long10: number, L10: number): string {
   return `Dugi ${fmtKm(long10 / 10)} km = plafon skoka max(1,1 × L; L + 1,0 km), L = ${fmtKm(L10 / 10)} km (najduži dugi prethodne 4 nedelje ili skorašnji najduži trk) (M13a).`;
@@ -169,9 +192,21 @@ export function taperLengths(
   adapted = false
 ): Lengths | null {
   const rule10 = taperRule10(target10, longest10, step, rule, p);
-  const cap10 = adapted ? Math.max(EASY_MIN10, rule10) : rule10;
+  const cap10 = adaptedLongCap10(rule10, adapted);
   const len = withEasy(target10 * 10 - quality100, cap10, easyDays, jump10);
   return len && len.long10 > rule10 ? { ...len, raised: true } : len;
+}
+
+/** M7: plafon dugog nedelje tapera `step` iz najdužeg dugog plana [0,1 km] = udeo × najduži (0,65 / 0,45),
+    naniže. JEDNA definicija (pouka 24) za konstruktor (taperLengths, taperTop10) i validator (TAPER_LONG). */
+export function taperLongFactor10(longest10: number, step: number): number {
+  return Math.floor(P.taper.weeks[step]!.longFactor * longest10 + EPS);
+}
+
+/** A9 (odstupanje posle smanjenja obima, `adapted`): plafon dugog rasterećenja/tapera ne ispod 5 km (dugi ≥ lagan ≥
+    5 km). JEDNA definicija za konstruktor (deloadLengths, deloadTop10, taperLengths, taperTop10) i validator. */
+export function adaptedLongCap10(cap10: number, adapted: boolean): number {
+  return adapted ? Math.max(EASY_MIN10, cap10) : cap10;
 }
 
 /** M7: dugi tapera po pravilu [0,1 km] — ≤ udeo × najduži dugi plana i ≤ M13. */
@@ -182,10 +217,7 @@ function taperRule10(
   rule: DayRule,
   p: Paces
 ): number {
-  return Math.min(
-    longCap10(target10, rule, p),
-    Math.floor(P.taper.weeks[step]!.longFactor * longest10 + EPS)
-  );
+  return Math.min(longCap10(target10, rule, p), taperLongFactor10(longest10, step));
 }
 
 /** Pouka 32: najduži dozvoljen dugi nedelje tapera [0,1 km] (taperLengths bez laganih) — poređenje drugog člana
@@ -200,7 +232,7 @@ export function taperTop10(
   adapted: boolean
 ): number {
   const rule10 = taperRule10(target10, longest10, step, rule, p);
-  return Math.min(adapted ? Math.max(EASY_MIN10, rule10) : rule10, jump10 ?? Infinity);
+  return Math.min(adaptedLongCap10(rule10, adapted), jump10 ?? Infinity);
 }
 
 /** Pouka 32: najduži dozvoljen dugi nedelje rasterećenja [0,1 km] (deloadLengths bez laganih). */
@@ -216,7 +248,7 @@ export function deloadTop10(
     Math.floor(P.deload.longFactor * lastLong10 + EPS),
     longCap10(target10, rule, p)
   );
-  return Math.min(adapted ? Math.max(EASY_MIN10, rule10) : rule10, jump10 ?? Infinity);
+  return Math.min(adaptedLongCap10(rule10, adapted), jump10 ?? Infinity);
 }
 
 /** M5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ M13); ostatak na `easyDays` jednakih
@@ -238,7 +270,7 @@ export function deloadLengths(
     longCap10(target10, rule, p)
   );
   // A9 (odstupanje, kao 10K: adaptirana nedelja posle smanjenja): dugi ne ispod 5 km (dugi ≥ lagan ≥ 5 km).
-  const cap10 = adapted ? Math.max(EASY_MIN10, rule10) : rule10;
+  const cap10 = adaptedLongCap10(rule10, adapted);
   const long10 = Math.min(cap10, jump10 ?? Infinity);
   const raised = long10 > rule10 ? { raised: true as const } : {};
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);

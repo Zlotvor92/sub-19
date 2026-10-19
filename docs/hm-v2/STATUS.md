@@ -20,7 +20,7 @@ const r = generateHmV2({
   // experience: "beginner" (H17: uvod 2 ned, jedan kvalitet, bez testa); runWalk: true → odbijanje
   goalTimeSec: 6000, // opciono (ocena H3; po osećaju posle testa)
 });
-// r.ok → r.plan (policyId 'hm-v2', policyVersion 'hm-v2.3.0', faza nedelje, paceBasis 'feel' po osećaju,
+// r.ok → r.plan (policyId 'hm-v2', policyVersion 'hm-v2.4.0', faza nedelje, paceBasis 'feel' po osećaju,
 // upozorenja); !r.ok → r.reasons
 const a = adaptHmV2(
   plan,
@@ -33,7 +33,7 @@ const a = adaptHmV2(
 - Testovi: iz `web/` `npx vitest run --project node src/domain/generators/halfMarathon/v2` (brz, 21 fajl, ≈ 46 s);
   `TEST_FULL=1 …` (pun, ≈ 8,5 min: mreže 02/gusta/03 u delovima, mreža 04 u 2, rana adaptacija u 4 dela).
 - Bazne linije generatora: `segment01/02/03-*.json`; od hm-v2.2.1 menjaju se samo planovi iz
-  `segment03b.over-long-5e09a02.json`; osvežavanje `TEST_FULL=1 HM_V2_WRITE_BASELINE=1 … <grid | feelGrid |
+  `segment03b.over-long-5e09a02.json` i (hm-v2.4.0) `segment07.changed-f4b257d.json` (klasa a/b/d); osvežavanje `TEST_FULL=1 HM_V2_WRITE_BASELINE=1 … <grid | feelGrid |
 beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan generatora.
 - Primeri, K1–K6, merenja, široka pretraga i sabotaže: `docs/hm-v2/artifacts/segment-0N/`.
 
@@ -58,22 +58,20 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
   prekršaja invarijanti; umor pre starta po pouci 34; generator bez koraka bajt-isti; sabotaže 16/16.
 - Otvoreno: trkačka nedelja samo sa trkom posle dana odmora A4 (potvrda). K4 mreže r iz koraka A: prihvaćeno.
 
-## Segment HM-05 (faza 2): polumaraton v2 u aplikaciji iza prekidača
+## Segmenti HM-05 i HM-06 (faza 2): HM v2 u aplikaciji iza prekidača, adaptacija u aplikaciji
 
-- Prekidač `generatorV2HalfMarathon` (podrazumevano isključen, vidljiv samo administratoru ili uz `VITE_HM_V2`); nov plan
-  polumaratona uz uključen prekidač → `HALF_MARATHON_V2_GENERATOR`; postojeći planovi po oznaci (`hm-v2` → v2, nepoznata
-  verzija → `UNKNOWN_POLICY`, nikad HM v1; `hm-v1`/`legacy-hm`/lični plan → HM v1).
-- Adapter `v2/app/` (lokalni tipovi, bez uvoza van v2): plan (7 dana, jedna mapa faze, trka 21,1 km van obima),
-  struktura, čarobnjak, sat, (b) „nepodržano do HM-06" sa razlogom, kopija procene stanja HM v1. Format
-  `GenPlanState.hmV2`, `PLAN_FIELDS` + `hmV2`. Čarobnjak `HmV2Steps`, uvoz čuva trčanja van plana.
-- Bajt-isto: 150 heševa prema 28da6af; E2E 3/3; sabotaže 10/10. `reports/SEGMENT-05-IMPLEMENTATION.md`.
+- Prekidač `generatorV2HalfMarathon` (podrazumevano isključen); adapter `v2/app/` (plan, struktura, čarobnjak, sat,
+  činjenice `facts.ts` → `adaptHmV2` → pregled → potvrda → revizija, vraćanje, promena cilja, Forma, test 5 km).
+- Izveštaji `reports/SEGMENT-05-IMPLEMENTATION.md`, `reports/SEGMENT-06-IMPLEMENTATION.md`; otvoreno: test 3 km nije
+  rezultat (A1). Traka od HM-07 u domenu (`adaptBanner`).
 
-## Segment HM-06 (faza 2): adaptacija polumaratona v2 u aplikaciji
+## Segment HM-07 (hm-v2.4.0): Faza 4a — pouke 35, 36, pod RP, dopuna pouke 34, jedna definicija, upozorenja, traka
 
-- `v2/app/facts.ts` (jedino mesto prevoda: dnevnik, van plana, bol, test 5 km i trke 5/10/HM/M, pokrivenost samo
-  `fullSync`/potvrda, prijavljene pauze, zaključani dani) → `adaptHmV2` → pregled (`adapt.ts`) → potvrda → revizija;
-  vraćanje verzije spajanjem, promena cilja (treninzi bajt-isti), traka (pouka 20, `newLimits` + nov zapis bola), Forma,
-  unos testa 5 km, struktura po nedelji (pouka 16). Članovi (b): `MEMBERS` (v2 ili „ne koristi se" sa razlogom).
-- Test 3 km nije rezultat HM v2 (A1) → napomena (otvoreno). Mreža `recent` u 4 dela punog nivoa (≈ 21 s svaki).
-- E2E 9/9 (hm/10k/5k v2), sabotaže 7/7. Izveštaj `reports/SEGMENT-06-IMPLEMENTATION.md`, `artifacts/segment-06/`.
-- Sledeće: MAR-05/06, pa predaja (faza 3).
+- Pouka 35: nedelja izgradnje sa dva kvaliteta i danom dužim od dugog → drugi dan lagan (`week.secondQualityEasy`,
+  validator SECOND_QUALITY); taper/trkačka izuzeti; neizvodljiva sa jednim kvalitetom (dugi na granici pouke 28) →
+  dva kvaliteta + LONG_SHORTER_THAN_QUALITY. N6: RP ≥ 2 × 2000 m (`quality.floorM`, RP_FLOOR). Pouka 34: doza ned 2 =
+  planirana ned 1, dugi reference u L. N9: jedna funkcija po veličini; LONG_RUN_SHORT preko svih nedelja. N10.1:
+  IDENTICAL_WEEKS upozorenje. N11: WEEK_FITTED / CAPACITY_LIMITED / DELOAD_LONG_SHORTENED jednom po planu, tehnička
+  napomena van korisničkih (`volume.userWeekNotes`). Traka: `adaptBanner` u domenu. Pouka 36: umor vezan za zapise.
+- Nove trajne mreže: `preStartGrid` (17 scenarija pre starta), `fatigueRepeat` (isti umor + 1 … + 7). Izveštaj
+  `reports/SEGMENT-07-IMPLEMENTATION.md`, artefakti `artifacts/segment-07/` (regress.ts, compare.ts, sabotaže).

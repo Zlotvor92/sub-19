@@ -195,6 +195,17 @@ export function longFor10(sec: number, p: Paces): number {
   return k;
 }
 
+/** Pouka 28 (pouka 24): dugi svake nedelje [0,1 km] (null bez dugog) — osnov kotrljajuće granice; jedna
+    definicija za konstruktor (upisani dani, written.ts) i validator (dani plana). */
+export function longsOf10(
+  weeks: readonly { days: readonly { role: string; workout: { km: number } }[] }[]
+): (number | null)[] {
+  return weeks.map((w) => {
+    const l = w.days.find((d) => d.role === 'long');
+    return l ? Math.round(l.workout.km * 10) : null;
+  });
+}
+
 /** H7 / pouka 29: najduži dugi plana — jedna definicija za konstruktor (iz upisanih dana, written.ts) i
     validator (dani nedelja pre tapera). */
 export function longestLong10(

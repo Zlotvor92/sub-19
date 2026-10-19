@@ -55,6 +55,19 @@ export function painReturnNote(step: MarathonV2AdaptStep, targetR10: number): st
   return ` Posle nedelje ${rf.week} rast kreće od ${from}.${growthNote(step.levelKm!)}`;
 }
 
+/** Pouka 36 (jedino mesto): nedelja prinudnog rasterećenja iz zapisa umora — prva puna nedelja posle poslednjeg RPE
+    zapisa umora `last` (broj dana): nedelja koja sadrži `last` + 1 ako tog dana počinje, inače sledeća (pre starta:
+    nedelja 1). Isto pravilo kao n iz asOf (assess), sa zapisom umesto dana adaptacije. */
+export function fatigueWeek(
+  weeks: readonly { startDate: IsoDate; endDate: IsoDate }[],
+  last: number
+): number {
+  const d = last + 1;
+  const i = weeks.findIndex((w) => d >= mustDay(w.startDate) && d <= mustDay(w.endDate));
+  if (i < 0) return d < mustDay(weeks[0]!.startDate) ? 1 : weeks.length + 1;
+  return mustDay(weeks[i]!.startDate) < d ? i + 2 : i + 1;
+}
+
 /** Pouka 34: referenca umora pre starta = nedelja 1 generatora bez činjenica (cilj, dugi, poslednja T doza; nema
     prethodne izgradnje). Jedino mesto odluke; konstruktor, obim i validator je čitaju iz koraka (steps.preStartOf). */
 export function preStartRef(input: MarathonV2Input): PreStartRef | null {
@@ -422,18 +435,23 @@ export function assess(
     );
   });
   if (easyHard.length >= A.fatigueCount) {
-    const ok = !volumeRule && build(n) && !wk(n)!.deload;
-    // Pouka 34: asOf pre starta — nema prethodne izgradnje; referenca je nedelja 1 generatora bez činjenica.
-    const pre = ok && t < day(weeks[0]!.startDate) ? preStartRef(plan.input) : null;
+    // Pouka 36: umor je vezan za ZAPISE, ne za dan adaptacije (kao bol, pouka 18) — sidro = nedelja koja sadrži
+    // (poslednji RPE zapis umora) + 1, rasterećenje = prva puna nedelja posle tog zapisa (isto pravilo kao n, iz
+    // zapisa umesto asOf). Isti zapisi → ista nedelja; kad je ona već rasterećenje (i od istog umora), novog nema.
+    const f = fatigueWeek(weeks, Math.max(...easyHard.map((x) => day(x.date))));
+    const ok = !volumeRule && build(f) && !wk(f)!.deload;
+    // Pouka 34: umor pre starta — nema prethodne izgradnje; referenca je nedelja 1 generatora bez činjenica.
+    const pre = ok && f === 1 ? preStartRef(plan.input) : null;
     if (ok) {
       step.deload = true;
+      if (f !== n) step.deloadWeek = f;
       volumeRule = true;
       if (pre) step.preStart = pre;
     }
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? (pre ? `nedelja 1 je rasterećenje (A5; umor pre starta: 0,8 × planirane nedelje 1 od ${km(pre.targetKm)} km, nedelja 2 = ${km(pre.targetKm)} km bez rasta, pouka 34)` : `nedelja ${n} je rasterećenje (A5)`) : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? (pre ? `nedelja 1 je rasterećenje (A5; umor pre starta: 0,8 × planirane nedelje 1 od ${km(pre.targetKm)} km, nedelja 2 = ${km(pre.targetKm)} km bez rasta, pouka 34)` : `nedelja ${f} je rasterećenje (A5)`) : volumeRule ? 'nadjačano pauzom (A7)' : `nedelja ${f} je već rasterećenje, taper ili trka (A5, pouka 36)`}.`
     );
   }
 

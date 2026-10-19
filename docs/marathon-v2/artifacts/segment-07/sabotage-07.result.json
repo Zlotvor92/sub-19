@@ -1,0 +1,166 @@
+{
+ "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-07/sabotage-07.json",
+ "head": "5af0538",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 41,
+ "hashBefore": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+ "hashAfter": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "07-a bez raceOnly (trkačka samo sa trkom → EMPTY_WEEK)",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment07.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment07.node.test.ts",
+    "test": "N1 (pouka 30): trkačka nedelja samo sa trkom — RACE_WEEK_SHORT, ne EMPTY_WEEK > d3-13w-35km-v40-C-sun, bol 7 u nedelju N − 1: plan se vraća, trkačka ima samo trku",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EMPTY_WEEK: Nedelja bez treninga (Uslov 8).\",\"week\":13}],\"violations\":[]}"
+   },
+   "failedCount": 1,
+   "hashBefore": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "hashSabotaged": "3da3cf1bb73c6b3b33dd9ac4d7029245e63f97b4e63918718aabaf9a43bb1809",
+   "hashAfter": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.3
+  },
+  {
+   "index": 2,
+   "name": "07-b pouka 35 samo u generatoru (adaptirana nedelja zadržava dva kvaliteta)",
+   "files": [
+    "src/domain/generators/marathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment07.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment07.node.test.ts",
+    "test": "pouka 35: dva dana kvaliteta samo kad dugi ostaje najduži > adaptacija (pauza 35, nov start): nedelja izgradnje sa dva kvaliteta nema dan kvaliteta duži od dugog kad jedan kvalitet staje",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_DAYS: Dan kvaliteta duži od dugog uz dva kvaliteta, a nedelja sa jednim je izvodljiva — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":8}],\"violations\":[]}"
+   },
+   "failedCount": 1,
+   "hashBefore": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "hashSabotaged": "f967356a14e888d30146086eaa9aacac925b2c1a9842f84725cf7a67dd75da0a",
+   "hashAfter": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2
+  },
+  {
+   "index": 3,
+   "name": "07-c umor vezan za asOf umesto zapisa (pouka 36)",
+   "files": [
+    "src/domain/generators/marathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment07.node.test.ts",
+    "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment07.node.test.ts",
+    "test": "pouka 36: umor vezan za zapise (isti zapisi = isti plan) > isti zapisi umora ponovo asOf + 1 … + 7: nema novog rasterećenja, traka ga ne vidi kao novo",
+    "message": "AssertionError: expected [ 3, 4, 8 ] to deeply equal [ 3, 5, 8 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "hashSabotaged": "197d553fdc889e63ccaaece5d7d1014fd92b3427b6dbf1edb2fb273f41f3d5b4",
+   "hashAfter": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 28.4
+  },
+  {
+   "index": 4,
+   "name": "07-d validator 'unknown' posle mešovite nedelje (stanje slota se ne čita, N8)",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment07.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment07.node.test.ts",
+    "test": "N8 (pouka 29): validator čita stanje upisane mešovite nedelje > d4-r-16w, manjak kraj ned 6 + zaključan Q1 ned 7 (mešovita): skok doze u ned 8 → DOSE_JUMP (ranije preskočeno)",
+    "message": "AssertionError: expected [ 'DOSE@8', 'RECOVERY@8', …(1) ] to include 'DOSE_JUMP@8'"
+   },
+   "failedCount": 1,
+   "hashBefore": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "hashSabotaged": "170b5045581d1cbec8802186a9a09d2b8dfeb76975bef9b40f75b0044e9af5ea",
+   "hashAfter": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.1
+  },
+  {
+   "index": 5,
+   "name": "07-e MARATHON_LONG_SHORT i kad je dugi na 150 min (N11)",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment07.node.test.ts",
+    "src/domain/generators/marathon/v2/validate.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/validate.node.test.ts",
+    "test": "upozorenja (plan ostaje ispravan) > MARATHON_LONG_SHORT, RESULT_5K, GOAL_UNREALISTIC",
+    "message": "AssertionError: expected [ 'MARATHON_LONG_SHORT' ] to not include 'MARATHON_LONG_SHORT'"
+   },
+   "failedCount": 1,
+   "hashBefore": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "hashSabotaged": "ddaa31d12899056938ae8e24e73848d7eb98d330484effe45127c62fb3fe9a2e",
+   "hashAfter": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.3
+  },
+  {
+   "index": 6,
+   "name": "07-f dve definicije minimuma nedelje (validator poredi u km, N9)",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment07.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment07.node.test.ts",
+    "test": "N9 (pouka 24): jedna definicija po veličini — validator ne nosi kopiju > nominalni cilj, minimum nedelje, dugi tapera, pod T, doza rasterećenja i WU/CD samo iz funkcija konstruktora",
+    "message": "AssertionError: expected '/* Provera plana prema policy.ts (M1–…' not to match /rule\\.weekMinKm\\s*[<>)]|[<>]\\s*(to10\\…/"
+   },
+   "failedCount": 1,
+   "hashBefore": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "hashSabotaged": "9652695f4f537779eb52e262be38af3f08feefeb6156d3788c24ee06b4147c03",
+   "hashAfter": "90dce589a9b3cf4afc78c2377c0dcf64856e54a9c57a223fe0330532e61fdb03",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.8
+  }
+ ]
+}

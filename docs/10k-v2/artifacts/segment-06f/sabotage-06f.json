@@ -1,0 +1,26 @@
+[
+  {
+    "name": "06f-a umor vezan za asOf (rasterećenje već u planu se ne čita, pouka 36)",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "    const covered = weeks.find((w) => w.index >= na && w.index < n && w.deload);",
+    "replace": "    const covered = weeks.find(() => na < 0);",
+    "tests": [
+      "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06f-b traka u aplikaciji (bez domenskog adaptBanner: svaki primenjen uslov)",
+    "file": "src/domain/generators/tenK/v2/app/adapt.ts",
+    "find": "    needed: adaptBanner(v2, r, built.facts, src.today)",
+    "replace": "    needed: (void adaptBanner, r.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS').map((x) => x.message))",
+    "tests": ["src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts"]
+  },
+  {
+    "name": "06f-c tekst prekidača 10K v2 vraćen („Prilagođavanje … stiže uskoro.\")",
+    "file": "src/features/ti/screens.tsx",
+    "find": "        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja.\n",
+    "replace": "        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje 10K v2\n        plana stiže uskoro.\n",
+    "tests": ["src/features/onboarding/tenKV2Flow.test.tsx"]
+  }
+]

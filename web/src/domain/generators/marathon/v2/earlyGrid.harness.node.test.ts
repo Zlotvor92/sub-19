@@ -3,21 +3,30 @@
    svaki 182. ulaz mreže 02, svaki 78. po osećaju, svaki 42. početnika; asOf: sreda i kraj ned 1, sreda svake
    nedelje 2 … N − 1, kraj nedelje pre svake posebne nedelje (test, rasterećenje, N−2, N−1); scenariji pauza 10/20,
    bol 5/8, pauza 10 + bol 5, manjak, umor; MAR-04b (pouke 23 i 34): asOf PRE STARTA (start − 1/−3/−6) × umor, bol
-   5/8, pauza 10, rezultat. Po toku: prihvaćen (K1 = 0) i adaptInvariants prazno (nezavisno od validatora). */
+   5/8, pauza 10, rezultat. MAR-07 (Faza 4a): N10.7 — asOf pre starta × svih 17 scenarija mreže 04 (lanac: drugi
+   korak nedelju kasnije); N1 — bol 7 i 8 na svaki dan nedelja N − 2 i N − 1 (3–4 dana); pouka 36 — isti zapisi umora
+   ponovo asOf + 1 … + 7 (asOf: kraj nedelja iz earlyAsOfs i start − 1) → 0 novih rasterećenja, traka prazna. Po
+   toku: prihvaćen (K1 = 0) i adaptInvariants prazno (nezavisno od validatora). */
 
 import { beforeAll, describe, expect, it } from 'vitest';
-import { adaptMarathonV2 } from './adapt.ts';
+import { adaptBanner, adaptMarathonV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
+import { addDays } from './dates.ts';
 import { generateMarathonV2 } from './generate.ts';
 import {
   type AdaptBase,
+  chainFacts,
   EARLY_SCENARIOS,
   earlyAsOfs,
   earlyFacts,
   earlyGridBases,
   earlyPreAsOfs,
   type EarlyScenario,
-  PRE_START_SCENARIOS
+  factsOf,
+  painFacts,
+  PRE_START_SCENARIOS,
+  type Scenario,
+  SCENARIOS
 } from './testInputs.ts';
 import type { MarathonV2Plan } from './types.ts';
 
@@ -28,7 +37,11 @@ export interface EarlyFlow {
   key: string;
   base: AdaptBase;
   asOf: string;
-  s: EarlyScenario;
+  /** 'early' — earlyFacts (s: EarlyScenario); 's17' — factsOf mreže 04 (s: Scenario, N10.7); 'pain' — bol `level`
+      na dan asOf (N1); 'fatigue' — isti zapisi umora ponovo asOf + 1 … + 7 (pouka 36). */
+  kind: 'early' | 's17' | 'pain' | 'fatigue';
+  s: EarlyScenario | Scenario;
+  level?: number;
   /** asOf pre starta (pouka 34). */
   pre: boolean;
 }
@@ -47,31 +60,135 @@ export const planOf = (b: AdaptBase): MarathonV2Plan => {
 
 export const EARLY_BASES: readonly AdaptBase[] = earlyGridBases(182, 78, 42);
 
-/** Tokovi mreže za date planove (redosled: plan, asOf pre starta × PRE_START_SCENARIOS, asOf × scenario). */
+/** Tokovi mreže za date planove (redosled: plan, asOf pre starta × PRE_START_SCENARIOS i × 17 scenarija, asOf ×
+    scenario, bol 7/8 ned N − 2 i N − 1 (3–4 dana), ponovljen umor). */
 export function earlyFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
   const out: EarlyFlow[] = [];
   for (const base of bases) {
-    for (const a of earlyPreAsOfs(planOf(base)))
+    const p = planOf(base);
+    const N = p.weeks.length;
+    for (const a of earlyPreAsOfs(p)) {
       for (const s of PRE_START_SCENARIOS)
-        out.push({ key: `${base.id}/${a.tag}/${s}`, base, asOf: a.asOf, s, pre: true });
-    for (const a of earlyAsOfs(planOf(base)))
+        out.push({
+          key: `${base.id}/${a.tag}/${s}`,
+          base,
+          asOf: a.asOf,
+          kind: 'early',
+          s,
+          pre: true
+        });
+      for (const s of SCENARIOS)
+        out.push({
+          key: `${base.id}/${a.tag}/s17-${s}`,
+          base,
+          asOf: a.asOf,
+          kind: 's17',
+          s,
+          pre: true
+        });
+    }
+    for (const a of earlyAsOfs(p))
       for (const s of EARLY_SCENARIOS)
-        out.push({ key: `${base.id}/${a.tag}/${s}`, base, asOf: a.asOf, s, pre: false });
+        out.push({
+          key: `${base.id}/${a.tag}/${s}`,
+          base,
+          asOf: a.asOf,
+          kind: 'early',
+          s,
+          pre: false
+        });
+    if (p.input.runDays.length <= 4)
+      for (const w of [N - 2, N - 1])
+        for (let i = 0; i < 7; i++)
+          for (const level of [7, 8]) {
+            const asOf = addDays(p.weeks[w - 1]!.startDate, i);
+            out.push({
+              key: `${base.id}/w${w}d${i}/pain${level}`,
+              base,
+              asOf,
+              kind: 'pain',
+              s: 'pain8',
+              level,
+              pre: false
+            });
+          }
+    const ends = [
+      { tag: 's-1', asOf: addDays(p.input.startDate, -1) },
+      ...earlyAsOfs(p).filter((a) => a.tag.endsWith('end'))
+    ];
+    for (const a of ends)
+      out.push({
+        key: `${base.id}/${a.tag}/fatigue+7`,
+        base,
+        asOf: a.asOf,
+        kind: 'fatigue',
+        s: 'fatigue',
+        pre: a.tag === 's-1'
+      });
   }
   return out;
+}
+
+const deloads = (p: MarathonV2Plan): string =>
+  p.weeks
+    .filter((w) => w.deload)
+    .map((w) => w.index)
+    .join(',');
+
+/** Pouka 36: isti zapisi umora ponovo asOf + 1 … + 7 → bez novog rasterećenja i bez trake; null = važi. */
+function fatigueRepeat(f: EarlyFlow, p: MarathonV2Plan): string | null {
+  const facts = factsOf(p, 'fatigue', f.asOf);
+  const a1 = adaptMarathonV2(p, facts, f.asOf);
+  if (!a1.ok)
+    return `${f.key}: odbijeno ${a1.reasons
+      .map((x) => x.message)
+      .join(' | ')
+      .slice(0, 300)}`;
+  for (let k = 1; k <= 7; k++) {
+    const at = addDays(f.asOf, k);
+    if (at >= p.input.raceDate) break;
+    const r = adaptMarathonV2(a1.plan, facts, at);
+    if (!r.ok)
+      return `${f.key}+${k}: odbijeno ${r.reasons
+        .map((x) => x.message)
+        .join(' | ')
+        .slice(0, 300)}`;
+    if (deloads(r.plan) !== deloads(a1.plan))
+      return `${f.key}+${k}: rasterećenja ${deloads(a1.plan)} → ${deloads(r.plan)} (pouka 36)`;
+    if (adaptBanner(a1.plan, r, facts, at).length > 0)
+      return `${f.key}+${k}: traka za isti umor (pouke 20 i 36)`;
+    const bad = adaptInvariants(a1.plan, r.plan, at, facts);
+    if (bad.length > 0) return `${f.key}+${k}: ${bad.join('; ')}`;
+  }
+  return null;
 }
 
 /** Jedan tok: null = prihvaćen i invarijante važe; inače opis. */
 export function runFlow(f: EarlyFlow): string | null {
   const p = planOf(f.base);
-  const facts = earlyFacts(p, f.s, f.asOf);
-  const r = adaptMarathonV2(p, facts, f.asOf);
+  if (f.kind === 'fatigue') return fatigueRepeat(f, p);
+  const facts =
+    f.kind === 'early'
+      ? earlyFacts(p, f.s as EarlyScenario, f.asOf)
+      : f.kind === 's17'
+        ? factsOf(p, f.s as Scenario, f.asOf)
+        : painFacts(f.asOf, f.level!);
+  let r = adaptMarathonV2(p, facts, f.asOf);
+  let before = p;
+  let at = f.asOf;
+  let used = facts;
+  // N10.7: lanac — drugi korak (manjak 50 %) nedelju kasnije.
+  if (r.ok && f.kind === 's17' && f.s === 'chain') {
+    [before, at] = [r.plan, addDays(f.asOf, 7)];
+    used = chainFacts(r.plan, at);
+    r = adaptMarathonV2(before, used, at);
+  }
   if (!r.ok)
     return `${f.key}: odbijeno ${r.reasons
       .map((x) => x.message)
       .join(' | ')
       .slice(0, 300)}`;
-  const bad = adaptInvariants(p, r.plan, f.asOf, facts);
+  const bad = adaptInvariants(before, r.plan, at, used);
   return bad.length > 0 ? `${f.key}: ${bad.join('; ')}` : null;
 }
 

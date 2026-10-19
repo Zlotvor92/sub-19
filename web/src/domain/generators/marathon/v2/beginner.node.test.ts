@@ -176,9 +176,12 @@ describe('M17 plan', () => {
     );
     expect(longest).toBeLessThan(24);
     expect(longest).toBeGreaterThanOrEqual(20);
-    const w = B4.warnings.find((x) => x.rule === 'MARATHON_LONG_SHORT')!;
-    expect(w.message).toMatch(/bar 24 km \(M17\)/);
-    expect(w.message).toMatch(/cilj je završiti/);
+    // N11 (MAR-07): najduži dugi početnika na 150 min → rečenica u opisu plana, ne upozorenje.
+    expect(B4.warnings.some((x) => x.rule === 'MARATHON_LONG_SHORT')).toBe(false);
+    const w = B4.notes.find((n) => n.startsWith('Najduži dugi trk je'))!;
+    expect(w).toMatch(/preporučenih 24,0 km/);
+    expect(w).toMatch(/M17/);
+    expect(w).toMatch(/cilj je završiti maraton/);
     expect(B4.notes.some((n) => n.startsWith('Početnik (M17)'))).toBe(true);
   });
 });

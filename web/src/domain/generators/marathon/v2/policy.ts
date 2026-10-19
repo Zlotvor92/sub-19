@@ -202,7 +202,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A5',
-    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna); redovno rasterećenje odmah posle prinudnog se ukida; prinudno se nikad ne ukida. Prinudno rasterećenje u uvodu početnika (M17, ned 1–2, pouka 31): obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta). Pouka 34 (MAR-04b): umor sa asOf PRE STARTA — nedelja 1 je prinudno rasterećenje = 0,8 × planirana nedelja 1 (sadržaj rasterećenja; početnik: sadržaj uvoda); referenca (poslednja izgradnja, poslednji dugi, poslednja T doza, L za M13a kao nedelja 0) = nedelja 1 generatora bez činjenica (korak.preStart); nedelja 2 = cilj planirane nedelje 1 (bez rasta), progresija doze od početnog nivoa (= planirana nedelja 1), dalje po rasporedu. RECENT_LONG_TOO_SHORT samo kad isti plan bez skorašnjeg najdužeg trka ne zastaje na toj ni ranijoj nedelji (inače WEEK_INFEASIBLE).',
+    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna); redovno rasterećenje odmah posle prinudnog se ukida; prinudno se nikad ne ukida. Prinudno rasterećenje u uvodu početnika (M17, ned 1–2, pouka 31): obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta). Pouka 36 (MAR-07): nedelja prinudnog rasterećenja = prva puna nedelja posle poslednjeg RPE zapisa umora (P36), ne posle asOf. Pouka 34 (MAR-04b): umor sa asOf PRE STARTA — nedelja 1 je prinudno rasterećenje = 0,8 × planirana nedelja 1 (sadržaj rasterećenja; početnik: sadržaj uvoda); referenca (poslednja izgradnja, poslednji dugi, poslednja T doza, L za M13a kao nedelja 0) = nedelja 1 generatora bez činjenica (korak.preStart); nedelja 2 = cilj planirane nedelje 1 (bez rasta), progresija doze od početnog nivoa (= planirana nedelja 1), dalje po rasporedu. RECENT_LONG_TOO_SHORT samo kad isti plan bez skorašnjeg najdužeg trka ne zastaje na toj ni ranijoj nedelji (inače WEEK_INFEASIBLE).',
     place:
       'assess.ts (adapt.fatigue*, preStartRef — jedino mesto odluke); steps.ts framesFor, preStartOf, jumpRecentKm; volume.ts adaptVolume/enterWeek (ned 1 = 0,8 × ref, ned 2 = ref); generate.ts (stanje pre ned 1, poruka M13a); week.ts (uvod); validate.ts (M5 izuzetak prinudnog; isto stanje pre ned 1); adaptInvariants.ts (L M13a)',
     rationale:
@@ -284,6 +284,78 @@ const DECISIONS: readonly Decision[] = [
     place:
       'assess.ts (reduced); steps.ts framesFor, A17_MAX_RUN; validate.ts (M5); adapt.ts (poruka)',
     rationale: 'Kao 10K A17 (odluka organizatora 10K N1): smanjena nedelja je već oporavak.'
+  },
+  {
+    id: 'N1',
+    rule: 'Pouka 30 (Faza 4a N1, kao HM-04 t. 4): trkačka nedelja čiji su svi dani trčanja pre trke dani odmora koraka (bol, A4) ima samo trku — upozorenje RACE_WEEK_SHORT, ne EMPTY_WEEK; svaka druga nedelja bez treninga ostaje greška.',
+    place:
+      'week.ts raceOnlyWeek (jedino mesto izuzetka); validate.ts (EMPTY_WEEK / RACE_WEEK_SHORT)',
+    rationale:
+      'Organizator (19. 10.): 3 dana, bol 7/8 poslednji dan ned N − 1 → 3 dana odmora pokrivaju sve dane pre trke; plan se nije vraćao. Merenje MAR-07: svaki 7. plan gridInputs sa 3 dana, bol 7/8 kraj ned N − 1: 148/892 odbijeno (EMPTY_WEEK) → 0 (148 trkačkih nedelja samo sa trkom); ciljana pretraga final-check (a) 40/7560 → 0.'
+  },
+  {
+    id: 'N5',
+    rule: 'Pouka 35: u nedelji izgradnje (baza, razvoj, specifična) sa dva dana kvaliteta — kad bi neki dan kvaliteta (i najniži nivo, izuzet od drugog člana pouke 32) trajao duže od dugog iste nedelje, drugi dan kvaliteta (Q2) postaje lagan (napomena), prvi ostaje; oslobođeni obim raspoređuje vlasnik dužina (buildLengths: dugi raste do plafona, ostatak lagani); stanje slota Q2 se ne menja. Kad nedelja sa jednim kvalitetom nije izvodljiva (dugi na plafonu skoka M13a / udela, lagani bi bili duži od dugog — pouka 2) ostaju dva kvaliteta uz upozorenje pouke 14. Generator i adaptacija (isti konstruktor). Taper i trkačka nedelja izuzeti (M7); rasterećenje maratona ima jedan kvalitet (M5) — pravilo se tu ne javlja; nedelja testa (M16) ima jedan dan kvaliteta.',
+    place:
+      'week.ts secondQualityEasy (jedino mesto odluke o broju dana kvaliteta), buildWeek; validate.ts QUALITY_DAYS, ROLES, MAIN_DOSE (ista funkcija)',
+    rationale:
+      'Organizator (Faza 4a N5): posle novog starta dugi i 5 km uz dva kvaliteta po 45–50 min — dugi od 6 km za maraton nema svrhu; trener skraćuje broj kvalitetnih dana. Odbačeno: WU/CD po cilju nedelje (WU/CD su trenerski deo treninga, uslov 3). Trajanje = trajanje treninga (isto kao LONG_SHORTER_THAN_QUALITY). Merenje MAR-07 (pauza 35 kraj ned 3 … N − 4, uzorak final-check/targeted (c), 9063 toka): nedelje izgradnje sa dva kvaliteta i danom kvaliteta dužim od dugog 3166 → 0 (planova 1552 → 0); 2488 nedelja sa lakim drugim danom; nedelje sa jednim kvalitetom dužim od dugog (upozorenje pouke 14) 1509 → 2517. Generator: mreže 02, po osećaju i početnika bez promene sadržaja; mreža M13a 5607 → 3690 nedelja sa dva kvaliteta (jedan kvalitet neizvodljiv: r ≤ 10 km, 4–6 dana; odluka organizatora HM-07), 0 odbijanja.'
+  },
+  {
+    id: 'P36',
+    rule: 'Pouka 36: umor je vezan za ZAPISE, ne za dan adaptacije — sidro = nedelja koja sadrži (datum poslednjeg RPE zapisa koji čini umor) + 1; prinudno rasterećenje = prva puna nedelja posle tog zapisa (isto pravilo kao n iz asOf, A5; pre starta nedelja 1 uz referencu pouke 34). Isti zapisi → ista nedelja; kad je ona već rasterećenje (od istog umora ili redovno), novog nema i traka ga ne vidi kao novo (newLimits).',
+    place:
+      'assess.ts fatigueWeek (jedino mesto), korak.deloadWeek (samo kad ≠ fromWeek); steps.ts deloadWeekOf (framesFor, newLimits); volume.ts adaptVolume; validate.ts (M5 prinudno)',
+    rationale:
+      'Organizator (MAR-06 pitanje 2): isti zapisi umora poslati sledeći dan preko granice nedelje davali su drugo rasterećenje. Rešenje je sidro (kao bol, pouka 18), ne „samo noviji zapisi". Tumačenje: „nedelja koja sadrži zapis + 1" je sidro; rasterećenje je prva PUNA nedelja od sidra (kad zapis + 1 nije ponedeljak, sledeća) — isto kao n kad je asOf = dan zapisa, da prošli dani nedelje ne postanu „rasterećenje". Merenje MAR-07 (final-check/fatigue-repeat.ts MAR end: isti zapisi sledeći dan preko granice nedelje): drugo rasterećenje 943/990 → 0; sredom 0 → 0. Trajna mreža: isti umor ponovo asOf + 1 … + 7 → 0 novih rasterećenja, traka prazna.'
+  },
+  {
+    id: 'N8',
+    rule: 'Pouka 29: validator čita stanje doze iz upisanih dana mešovite nedelje (kao HM-04 t. 2 i konstruktor generate.writtenPicks) — bez stanja „nepoznato": DOSE/IDENTICAL/START i sadržaj rasterećenja/tapera posle mešovite nedelje se proveravaju; poređenja SA mešovitom nedeljom (glavna doza, isti kvalitet, plato baze) se preskaču.',
+    place: 'validate.ts (lanac { state }, stanje rasterećenja/tapera)',
+    rationale:
+      'Faza 4a N8: slabija provera, ne odbijanje. Merenje MAR-07: 0 novih odbijanja na mreži 04, ranoj, ranoj pre starta i širokoj pretrazi (izveštaj).'
+  },
+  {
+    id: 'N9',
+    rule: 'Pouka 24: jedna funkcija po veličini koju koriste konstruktor i validator — nominalni cilj (volume.nominal10), minimum nedelje (volume.weekMin10, poređenje u 0,1 km; planirano u 0,01 km), dugi tapera (lengths.taperLongFactor10, adaptedLongCap10), pod T rasterećenja (quality.deloadMinM), doza rasterećenja (quality.reduced), WU/CD (workouts.warmupCooldown).',
+    place: 'volume.ts, lengths.ts, quality.ts, workouts.ts; validate.ts ih samo poziva',
+    rationale:
+      'Faza 4a N9: kopije su danas davale iste brojeve, rizik je pri sledećoj izmeni jedne kopije. Refaktor bajt-isti (merenje u izveštaju MAR-07); statički test (segment07) obara ponovnu kopiju.'
+  },
+  {
+    id: 'N10.4',
+    rule: 'Pouka 33 je funkcija izvodljivosti: skraćen dugi rasterećenja (lengths.deloadLengths, `shorten`) primenjuje se gde je rasterećenje neizvodljivo — nedelja testa (M16), početnik (M17), adaptacija posle smanjenja (A9).',
+    place: 'lengths.ts deloadLengths; week.ts (shorten)',
+    rationale:
+      'Faza 4a N10.4 (merenje, bez izmene): rasterećenja van testa, početnika i adaptacije spuštena ispod cilja po pravilu (fitted) — mreža 02 3768, po osećaju 2235, M13a 8382, gusta 10 702 — sva su neizvodljiva jer bi LAGANI bili duži od dugog (pouka 2), nijedno zbog minimuma laganog (pouka 33): 0/0/0/0 (artifacts/segment-07/deload-feasible.ts). Pouka 33 van tih slučajeva ne nastaje; bez izmene.'
+  },
+  {
+    id: 'N10.5',
+    rule: 'Pouka 14: upozorenje LONG_SHORTER_THAN_QUALITY nosi preporuku manje dana kad red tabele M15 (početnik: M17) sa manje dana podržava trenutni obim („dugi dobija veći udeo").',
+    place: 'volume.ts fewerDaysAdvice; validate.ts',
+    rationale: 'Faza 4a N10.5: kao HM (HI3); ranije maraton nije davao preporuku.'
+  },
+  {
+    id: 'N10.6',
+    rule: 'Piramida (pouka 27): maraton gradi piramidu samo za I dozu bez druge podele na jednake deonice (M10a, ≥ 3 deonice u opsegu 800–1200 m); I 2000 m nema piramidu (dve deonice) — svesna razlika prema HM (stepPyramid sa istim brojem deonica).',
+    place: 'workouts.ts pyramidOf, structuresForDose',
+    rationale:
+      'Faza 4a N10.6 (svesna odluka, bez izmene): lestvica I maratona (2 × 1000 … 5 × 1200) ima drugu strukturu za sve doze osim 5000 m; piramida od dve deonice nije piramida.'
+  },
+  {
+    id: 'N10.7',
+    rule: 'Trajna mreža rane adaptacije pre starta (start − 1/−3/−6) sa svih 17 scenarija mreže 04 (lanac: drugi korak nedelju kasnije), uz 5 scenarija MAR-04b; bol 7 i 8 na svaki dan ned N − 2 i N − 1 (3–4 dana, N1); isti umor ponovo asOf + 1 … + 7 (pouka 36).',
+    place: 'earlyGrid.harness.node.test.ts (brz nivo: uzorak; pun nivo: 4 dela)',
+    rationale:
+      'Faza 4a N10.7, N1, pouka 36: 0 odbijanja, 0 novih rasterećenja. Pun nivo MAR-07: 67 794 toka (49 151 ranije + 13 770 pre starta × 17 scenarija + 2828 bol 7/8 ned N − 2/N − 1 + 2045 ponovljenih umora × 7 dana) — 0 odbijanja, adaptInvariants prazno, 0 novih rasterećenja, traka prazna.'
+  },
+  {
+    id: 'N11',
+    rule: 'Upozorenja: MARATHON_LONG_SHORT samo kad najduži dugi NIJE ograničen sa 150 min (M13) — tada jedna rečenica u opisu plana (lengths.longShortOf, longTimeCapNote; bez nje LONG_SHORT_NOTE); napomena nedelje „Cilj po pravilu … nije izvodljiv u konstrukciji nedelje" je tehnička (volume.technicalNote: ostaje u planu za validator, aplikacija je ne prikazuje); CAPACITY_LIMITED jednom po planu sa tekstom napomene plana; DELOAD_LONG_SHORTENED jednom po planu (spisak nedelja). Domen odlučuje, aplikacija prikazuje.',
+    place: 'lengths.ts, volume.ts, generate.ts (napomena), validate.ts; app/plan.ts (prikaz)',
+    rationale:
+      'Faza 4a N11 (šum upozorenja). Merenje MAR-07 (cele mreže): MARATHON_LONG_SHORT 59,0 → 12,0 % planova (02), 72,7 → 9,0 (po osećaju), 95,7 → 44,3 (početnik), 76,4 → 19,6 (M13a); redova „Na šta da paziš” (medijana/p90/max) 02 1/3/4 → 1/2/3, po osećaju 3/5/7 → 3/4/6, početnik 4/5/7 → 4/5/6, M13a 1/3/4 → 1/2/4. Tehnička napomena: 332/736 planova uzorka ima je u planu, nijedna nedelja je ne prikazuje.'
   }
 ];
 
@@ -294,7 +366,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.3.1',
+  version: 'marathon-v2.4.0',
 
   /** M1 (dani i obim: M15). */
   input: {

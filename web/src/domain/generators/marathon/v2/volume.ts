@@ -11,8 +11,9 @@ import {
   type PlanRule,
   RUN_DAYS_COUNTS
 } from './policy.ts';
-import { preStartOf } from './steps.ts';
+import { deloadWeekOf, preStartOf } from './steps.ts';
 import type { Paces, PlanWeek, PreStartRef, WeekFrame } from './types.ts';
+import { fmtKm } from './workouts.ts';
 
 const EPS = 1e-9;
 export const to10 = (km: number): number => Math.round(km * 10);
@@ -45,6 +46,32 @@ export function capacityMessage(
       : `; preporuka ${more.length === 1 ? more[0] : `${more[0]}–${more[more.length - 1]}`} dana`;
   return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
 }
+
+/** Pouka 14 (N10.5, kao HM HI3): preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele M15
+    (početnik: tabela M17) podržava trenutni obim; prazno kad ih nema. */
+export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number, rule: PlanRule): string {
+  const km10 = to10(currentWeeklyKm);
+  const row = (n: number): { kmMin: number; kmMax: number } =>
+    rule.beginner
+      ? P.beginner.days[n as keyof typeof P.beginner.days]
+      : P.days[n as keyof typeof P.days];
+  const fewer = (rule.beginner ? BEGINNER_DAYS_COUNTS : RUN_DAYS_COUNTS).filter(
+    (n) => n < runDays && to10(row(n).kmMin) <= km10 && km10 <= to10(row(n).kmMax)
+  );
+  if (fewer.length === 0) return '';
+  const days = fewer.length === 1 ? `${fewer[0]}` : `${fewer[0]}–${fewer[fewer.length - 1]}`;
+  return `; preporuka ${days} dana (red sa manje dana podržava obim ${currentWeeklyKm} km, dugi dobija veći udeo)`;
+}
+
+/** M6 (N11): napomena nedelje „Cilj po pravilu … nije izvodljiv u konstrukciji nedelje" je tehnička (validator je
+    čita uz oznaku `fitted`), ne ide korisniku. Domen odlučuje, aplikacija samo prikazuje (app/plan.ts). */
+export function fittedNote(nominal10: number, target10: number): string {
+  return `Cilj po pravilu ${fmtKm(nominal10 / 10)} km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj ${fmtKm(target10 / 10)} km (M6).`;
+}
+
+/** N11: napomena nedelje koja ne ide korisniku (tehnička; fittedNote). */
+export const technicalNote = (note: string): boolean =>
+  note.startsWith('Cilj po pravilu ') && note.includes('nije izvodljiv u konstrukciji nedelje');
 
 /** Spuštene (fitted 'down') ne-rasteretne nedelje izgradnje koje seče kapacitet broja dana. Nedelja čiji je
     dugi na plafonu skoka M13a (niži od plafona M13) nije ograničenje kapaciteta (pouka 28). Jedna funkcija za
@@ -85,6 +112,12 @@ export function capacityLimits(
     if (l10 === longShareCap10(to10(w.targetKm), rule)) share = true;
   }
   return [...(time ? ['time' as const] : []), ...(share ? ['share' as const] : [])];
+}
+
+/** M15 (Uslov 8, pouka 24): minimum nedelje [0,1 km] — JEDNA definicija za pretragu cilja (fit10), donju granicu
+    adaptacije (adaptNominal10, A9) i validator (TARGET_FLOOR, WEEK_MIN_VOLUME); poređenje uvek u 0,1 km. */
+export function weekMin10(rule: DayRule): number {
+  return to10(rule.weekMinKm);
 }
 
 /** Trenutni obim = cilj nedelje 1 [0,1 km]. */
@@ -152,7 +185,7 @@ export function fit10(
   downOnly = false
 ): { target10: number; fitted: 'down' | 'up' | null } | null {
   if (feasible(nominal)) return { target10: nominal, fitted: null };
-  const lo = to10(rule.weekMinKm);
+  const lo = weekMin10(rule);
   // Ned 1 = trenutni obim (samo naniže, pouka 9); rasterećenje i taper samo naniže; A8 (`downOnly`): cilj
   // adaptacije i povratni rast samo naniže.
   const hi =
@@ -172,8 +205,10 @@ export interface VolumeStep {
   /** Pouka 34: referenca umora pre starta (steps.preStartOf). */
   preStart?: PreStartRef;
   firstWeek: number;
-  /** A5: prinudno rasterećenje u nedelji fromWeek (smanjenje obima za odstupanja A9). */
+  /** A5: prinudno rasterećenje u nedelji steps.deloadWeekOf (smanjenje obima za odstupanja A9). */
   deload: boolean;
+  /** Pouka 36: nedelja prinudnog rasterećenja iz zapisa umora (bez polja = fromWeek). */
+  deloadWeek?: number;
   fromWeek: number;
   startKm: number | null;
   pauseRemainder: boolean;
@@ -244,7 +279,9 @@ export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
   const reducedFrom = Math.min(
     ...steps
       .filter((s) => s.startKm !== null || s.returnFrom !== null || s.deload)
-      .map((s) => (s.pauseRemainder ? s.firstWeek : s.fromWeek))
+      .map((s) =>
+        Math.min(s.pauseRemainder ? s.firstWeek : s.fromWeek, s.deload ? deloadWeekOf(s) : Infinity)
+      )
   );
   return {
     first: Math.min(...steps.map((s) => s.firstWeek)),
@@ -354,7 +391,7 @@ export function adaptNominal10(
   }
   const rem = av.remainder.get(i);
   if (rem !== undefined && rem < t) [t, downOnly] = [rem, true];
-  const floor = to10(rule.weekMinKm);
+  const floor = weekMin10(rule);
   if (i >= av.first && t < floor) [t, downOnly] = [floor, true];
   return { nominal: t, downOnly };
 }

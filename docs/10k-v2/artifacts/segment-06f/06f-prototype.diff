@@ -1,0 +1,790 @@
+diff --git a/web/e2e/tenk-v2.spec.ts b/web/e2e/tenk-v2.spec.ts
+index dbffdef..fa0a9e9 100644
+--- a/web/e2e/tenk-v2.spec.ts
++++ b/web/e2e/tenk-v2.spec.ts
+@@ -108,7 +108,7 @@ test('10K v2: čarobnjak (rezultat, 4 dana) → plan v2 → Plan tab i dan pokaz
+ 
+   // Plan v2 je sačuvan (i na serveru) sa oznakom politike v2 i izlazom v2.
+   await expect.poll(() => serverPlan(backend), SYNC).toContain('"policyId":"10k-v2"');
+-  expect(serverPlan(backend)).toContain('"policyVersion":"10k-v2.5.2"');
++  expect(serverPlan(backend)).toContain('"policyVersion":"10k-v2.6.0"');
+   expect(serverPlan(backend)).toContain('"tenKV2":{');
+ 
+   // Plan tab: ocena cilja doslovno iz v2 i struktura u redovima nedelje (rad sa tempom).
+diff --git a/web/src/domain/generators/marathon/v2/app/byteSame.9443676.json b/web/src/domain/generators/marathon/v2/app/byteSame.9443676.json
+index cbd34a5..4efe69b 100644
+--- a/web/src/domain/generators/marathon/v2/app/byteSame.9443676.json
++++ b/web/src/domain/generators/marathon/v2/app/byteSame.9443676.json
+@@ -151,35 +151,35 @@
+   "5K v2 #1 · bol": "b9d9c1011902194577f66601027c2291686404a6b6398ed7f453535685f9f1e7",
+   "5K v2 #1 · opterećenje": "31813b13e88969feabced1e723559002a30fb9dafe82eac9fd489c0af4771435",
+   "5K v2 #1 · adaptacija": "df13f628f3ce5329e574c2f0b8b5c9b6fd2b5fb2d89cc37082e7aee4f43f4119",
+-  "10K v2 #0 · generisanje": "cebca52c0c032e19f4bd5fb705e5175ca83b089b48408abe853577a63b4776aa",
+-  "10K v2 #0 · plan": "4146b80005f2b24494ed21a3a55472c34fd9c5bbc7b02ab977921261bd61d39d",
+-  "10K v2 #0 · generator": "42d5d5f2b6635e50b6b8704f246a1cfa17830b1c1ddd3927925357aea6b2e35e",
+-  "10K v2 #0 · policy": "d5e954d7a51e369b7f7d0df5f5d380f5d063444330bb26b7613253db799c48f8",
++  "10K v2 #0 · generisanje": "4873d8d5bbb61526684712ad36671f9a3cd2ea0257dc5deb8090d8b905f759e1",
++  "10K v2 #0 · plan": "2e4295a4e2516adbdfcd9632b1106460a5d8f19374ab83402556c35dd0515c85",
++  "10K v2 #0 · generator": "1101f30283e113c77e9742d7f449de81a68f80a9b9604b477e822a77ce47304e",
++  "10K v2 #0 · policy": "8048d2d1cb9e5e386f92dcd63c6e62bbd75651f331dcb999ef36291a60729bb3",
+   "10K v2 #0 · faze": "081c1e9af1004036c62b88bf571f8a275fe353f07376c8eb87cbeb134044500b",
+   "10K v2 #0 · sat": "4f079bca52a34fb5d694d019b3c3154428f88554313e43e8e1483663decce8e8",
+   "10K v2 #0 · napor": "f0763f1c2a730fbc0d72b98d3a30e37694d3307bc60d60d619fc7c595c70d3d1",
+   "10K v2 #0 · prag": "16a4b9ecb9e8733e485d4fda224c9dea10da21c71a9c52d7bc45b08014ffbaac",
+-  "10K v2 #0 · cilj": "dc4b7bfba6c3624c6b97d64cbfc2fee4589ee0e2db8f733c058f9d6be29237e6",
++  "10K v2 #0 · cilj": "7a9fc6b620c7ef2723519dbf408c088cfaff045965545367a53c54d81a884a4a",
+   "10K v2 #0 · izvršenje": "76711fb72000cad691f327a05660e9b206cca4b17c81fef3e8b81cf5ddcab8fa",
+-  "10K v2 #0 · prilagođavanje": "2aa53e1730bec4618f7a4b24d2e138defe6dffb4a1320816bf75f7bdbd96546f",
++  "10K v2 #0 · prilagođavanje": "47ca0d1ab2fbe6d5800e09b7f6c905a2638223c28a73fc396028a5c972e2311c",
+   "10K v2 #0 · priprema": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+   "10K v2 #0 · bol": "b9d9c1011902194577f66601027c2291686404a6b6398ed7f453535685f9f1e7",
+   "10K v2 #0 · opterećenje": "a09b1479cc733a229c29bad359b8b70b50f16f609f7f54186271cbb39e304e17",
+-  "10K v2 #0 · adaptacija": "526a2ec492b16ee2b2733f8088af5fae5b6f6f3615f3af199a80ea8697698d9a",
+-  "10K v2 #1 · generisanje": "2633de115a3ea723c4a1d8727e7180d0e385f2b1d7b352015daeedc34b002304",
+-  "10K v2 #1 · plan": "c29a1f5c20148a3df960307a36658093a093d252838ec6e9ed74e9f58de4ae16",
+-  "10K v2 #1 · generator": "42d5d5f2b6635e50b6b8704f246a1cfa17830b1c1ddd3927925357aea6b2e35e",
+-  "10K v2 #1 · policy": "d5e954d7a51e369b7f7d0df5f5d380f5d063444330bb26b7613253db799c48f8",
++  "10K v2 #0 · adaptacija": "d2bbd5d0f96c9dca664bb50139eb422134ad6c9718a482935181503d5a79fb47",
++  "10K v2 #1 · generisanje": "ec19bf68cf961a47f0ae2943d5be375fdb3cd3734df84640aa900e70c6f5a38c",
++  "10K v2 #1 · plan": "8a9565ac806c370d220801385af0a08d06f3f4432d9c40ea26abcf3983f6b5cd",
++  "10K v2 #1 · generator": "1101f30283e113c77e9742d7f449de81a68f80a9b9604b477e822a77ce47304e",
++  "10K v2 #1 · policy": "8048d2d1cb9e5e386f92dcd63c6e62bbd75651f331dcb999ef36291a60729bb3",
+   "10K v2 #1 · faze": "081c1e9af1004036c62b88bf571f8a275fe353f07376c8eb87cbeb134044500b",
+   "10K v2 #1 · sat": "97fdbac4ff7bf8b2000a473557f8463765baeb7f80b5cb522b51e5fe34efc674",
+   "10K v2 #1 · napor": "8182d899e8f536fc637b7684a337c5e8855b143506b45b767358802d1fe4d0d3",
+   "10K v2 #1 · prag": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+   "10K v2 #1 · izvršenje": "0d5d34f91902da5df3a5c7f89f6bb099d0fc9de037370b000f43f30a90ed7979",
+-  "10K v2 #1 · prilagođavanje": "013bb53ea7f70587498321ea1a98811e2d66bc2a145e56225d975802a5c4fd3e",
++  "10K v2 #1 · prilagođavanje": "481196b5f4ea5470c8d3a45da709943487205e96a37ffed87057e593904a3bfd",
+   "10K v2 #1 · priprema": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+   "10K v2 #1 · bol": "b9d9c1011902194577f66601027c2291686404a6b6398ed7f453535685f9f1e7",
+   "10K v2 #1 · opterećenje": "135dcc8f7a22ad1405eac4cc8c802bc1b024de628d34d5ca50ecae251f76c8b5",
+-  "10K v2 #1 · adaptacija": "fdb3af3821957af96baf1effa5fe13add27c0019885ed8a171875f78091fc47e",
++  "10K v2 #1 · adaptacija": "97d7e96447df47324619b844b2602bb112a34e7f47b3ad7022eeac1fe854d716",
+   "HM v2 #0 · generisanje": "3a7456df88d8c9459cad0032e92be4af863c18a97c01696a165bb9dd386b7419",
+   "HM v2 #0 · plan": "ec989c5f86411e8a09353278ce80774ddf576aaed290a3d7ecf3dab21ae91002",
+   "HM v2 #0 · generator": "a92b3d29bf52a00ab5785cc0ff868d634adbff519ebfab736e118b6db7a998ba",
+diff --git a/web/src/domain/generators/tenK/v2/adapt.node.test.ts b/web/src/domain/generators/tenK/v2/adapt.node.test.ts
+index a185479..f95c8b3 100644
+--- a/web/src/domain/generators/tenK/v2/adapt.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/adapt.node.test.ts
+@@ -729,15 +729,20 @@ describe('odluke A1–A15', () => {
+     const ws = r6.plan.weeks;
+     expect([ws[6]!.deload, ws[7]!.deload]).toEqual([true, false]);
+     expect(ws[6]!.nominalKm).toBe(Math.round(P.deload.factor * ws[5]!.targetKm * 10) / 10);
+-    // Prinudno odmah posle redovnog: 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8).
++    // Prinudno odmah posle redovnog: 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8). 06f (pouka 36): zapisi umora
++    // u nedelji redovnog rasterećenja (sreda: zapisi pon, uto) — zapisi pre nje (asOf = ponedeljak) pokriva ono samo.
+     const q = plan('d4-r-18w');
+     const d = q.weeks.find((w) => w.deload)!;
+-    const r = ok(adaptTenKV2(q, factsOf(q, 'fatigue', d.startDate), d.startDate));
++    const wed = addDays(d.startDate, 2);
++    const r = ok(adaptTenKV2(q, factsOf(q, 'fatigue', wed), wed));
+     const f = r.plan.weeks[d.index]!;
+     expect(f.deload).toBe(true);
+     expect(f.nominalKm).toBe(
+       Math.round(P.deload.factor * q.weeks[d.index - 2]!.targetKm * 10) / 10
+     );
++    const mon = ok(adaptTenKV2(q, factsOf(q, 'fatigue', d.startDate), d.startDate));
++    expect(applied(mon, 'FATIGUE')).toBe(false);
++    expect(mon.plan.weeks[d.index]!.deload).toBe(false);
+   });
+ 
+   it('A6: višak > 115 % u dva pokrivena prozora → sledeća nedelja bez rasta; ne kad je sledeća rasteretna', () => {
+diff --git a/web/src/domain/generators/tenK/v2/adapt.ts b/web/src/domain/generators/tenK/v2/adapt.ts
+index c4c3013..e7e15fd 100644
+--- a/web/src/domain/generators/tenK/v2/adapt.ts
++++ b/web/src/domain/generators/tenK/v2/adapt.ts
+@@ -10,7 +10,7 @@ import { dayNumber, mustDay } from './dates.ts';
+ import { construct, preStartRef } from './generate.ts';
+ import { checkInput } from './input.ts';
+ import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
+-import { baseFrames, framesFor, targetReducedWeek } from './steps.ts';
++import { baseFrames, framesFor, newLimits, targetReducedWeek } from './steps.ts';
+ import type {
+   AdaptChange,
+   AdaptReason,
+@@ -232,3 +232,50 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
+   out.warnings = violations;
+   return { ok: true, plan: out, changes: diff(plan, out), reasons };
+ }
++
++/** Pouka 20: ograničenja (bol, pauza, umor) — traka samo kad korak donese NOVO ograničenje (steps.newLimits). */
++const LIMIT: ReadonlySet<AdaptReason['condition']> = new Set(['PAIN', 'PAUSE', 'FATIGUE']);
++/** Pouka 20: promene cilja obima ili tempa (nov rezultat je nov po definiciji — assess primenjuje samo rezultat noviji
++    od rezultata u upotrebi). Premeštanje testa (TEST_MOVED) i neprimenjen rezultat nisu razlog: posledica su drugog
++    uslova. */
++const CHANGE: ReadonlySet<AdaptReason['condition']> = new Set([
++  'NEW_RESULT',
++  'UNDER_EXECUTION',
++  'OVER_EXECUTION'
++]);
++
++/**
++ * Pouka 20 (10K 06f) — JEDINO pravilo trake „Plan treba prilagoditi" (aplikacija samo zove ovu funkciju): `asOf` je
++ * posle poslednje adaptacije plana `before` (isti dan posle primene — prazno) i plan `r` se menja u nedelji koja se
++ * završava posle `asOf`. Promena (nov rezultat, manjak, višak): kad je primenjena. Ograničenje (bol, pauza, umor):
++ * primenjeno i korak donosi NOVO ograničenje (steps.newLimits poslednjeg koraka neprazan); bol uz to samo uz zapis
++ * bola noviji od poslednje adaptacije. Umor čije je rasterećenje već u planu nije primenjen (assess, pouka 36).
++ * Oblik maraton v2 (MAR-06), sopstvena kopija.
++ */
++export function adaptBanner(
++  before: TenKV2Plan,
++  r: AdaptResult,
++  facts: { workouts?: readonly { date: string; pain?: number }[] },
++  asOf: string
++): string[] {
++  if (!r.ok) return [];
++  const last = before.adaptation?.asOf ?? null;
++  const t = mustDay(asOf);
++  if (last !== null && mustDay(last) >= t) return [];
++  const future = r.changes.some(
++    (c) => c.week > 0 && mustDay(r.plan.weeks[c.week - 1]!.endDate) > t
++  );
++  if (!future) return [];
++  const fresh = newLimits(r.plan.adaptation?.steps ?? []).length > 0;
++  const newPain = (facts.workouts ?? []).some(
++    (w) => (w.pain ?? 0) >= P.adapt.painMin && (last === null || mustDay(w.date) > mustDay(last))
++  );
++  return r.reasons
++    .filter(
++      (x) =>
++        x.applied &&
++        (CHANGE.has(x.condition) ||
++          (LIMIT.has(x.condition) && fresh && (x.condition !== 'PAIN' || newPain)))
++    )
++    .map((x) => x.message);
++}
+diff --git a/web/src/domain/generators/tenK/v2/app/adapt.ts b/web/src/domain/generators/tenK/v2/app/adapt.ts
+index bda5d53..6156620 100644
+--- a/web/src/domain/generators/tenK/v2/app/adapt.ts
++++ b/web/src/domain/generators/tenK/v2/app/adapt.ts
+@@ -7,9 +7,9 @@
+    - vraćanju revizije (`restoreMerge`): budući nezaštićeni dani iz sačuvane verzije, prošlost/urađeno/ručno izmenjeno iz
+      trenutnog plana — spajanje na nivou plana v2, pa iz njega plan za upis;
+    - promeni cilja (`goalChange`): isti ulaz sa novim ciljem, svi budući dani zaključani → menja se samo ocena cilja;
+-   - traci „Plan treba prilagoditi" (`needed`): aktivno ograničenje iz činjenica koje menja budući deo plana. */
++   - traci „Plan treba prilagoditi" (`needed`): pravilo je SAMO u domenu (`../adapt.ts` `adaptBanner`, pouka 20). */
+ 
+-import { adaptTenKV2 } from '../adapt.ts';
++import { adaptBanner, adaptTenKV2 } from '../adapt.ts';
+ import { checkInput } from '../input.ts';
+ import { TEN_K_V2_POLICY as P } from '../policy.ts';
+ import type { AdaptChange, AdaptReason, AdaptResult, PlanWeek, TenKV2Plan } from '../types.ts';
+@@ -116,33 +116,6 @@ export type AdaptOutcome =
+   | AdaptPreview
+   | { ok: false; reasons: PlanRejectionReason[]; coverage: CoverageInfo | null; notes: string[] };
+ 
+-/** Uslovi za traku. Premeštanje testa nije sam po sebi razlog: posledica je bola, pauze ili umora (njihova poruka ide). */
+-const BANNER: ReadonlySet<AdaptReason['condition']> = new Set([
+-  'PAIN',
+-  'PAUSE',
+-  'FATIGUE',
+-  'NEW_RESULT',
+-  'UNDER_EXECUTION',
+-  'OVER_EXECUTION'
+-]);
+-
+-/** Ograničenja za traku: primenjena, nova posle poslednje adaptacije (bol: zapis posle nje), a plan se zaista menja posle
+- *  danas. Isti dan posle primene — ništa (bez ponovnog nuđenja). */
+-function neededOf(
+-  before: TenKV2Plan,
+-  reasons: readonly AdaptReason[],
+-  painDates: readonly string[],
+-  today: IsoDate,
+-  weeks: readonly WeekChange[]
+-): string[] {
+-  const last = before.adaptation?.asOf ?? null;
+-  if ((last !== null && last >= today) || weeks.length === 0) return [];
+-  const newPain = painDates.some((d) => last === null || d > last);
+-  return reasons
+-    .filter((r) => r.applied && BANNER.has(r.condition) && (r.condition !== 'PAIN' || newPain))
+-    .map((r) => r.message);
+-}
+-
+ /** Plan za upis iz plana v2 (+ snimak ručnih izmena u trenutku adaptacije, ako ga ima). */
+ function stored(v2: TenKV2Plan, edits: unknown): StoredPlan {
+   const s = storedPlan(generatedPlan(v2));
+@@ -173,9 +146,6 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
+   const weeks = changedWeeks(v2, after, r.changes, src.today);
+   const applied = r.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');
+   const summary = `Prilagođavanje ${src.today}: ${applied.length ? [...new Set(applied.map((x) => CONDITION[x.condition]))].join(', ') : CONDITION.NO_FACTS}`;
+-  const painDates = built.facts.workouts
+-    .filter((w) => (w.pain ?? 0) >= P.adapt.painMin)
+-    .map((w) => w.date);
+   return {
+     ok: true,
+     result,
+@@ -184,7 +154,8 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
+     weeks,
+     notes,
+     coverage: built.coverage,
+-    needed: neededOf(v2, r.reasons, painDates, src.today, weeks)
++    // Pouka 20: pravilo trake živi samo u domenu (`adaptBanner`); aplikacija ga samo zove.
++    needed: adaptBanner(v2, r, built.facts, src.today)
+   };
+ }
+ 
+diff --git a/web/src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts b/web/src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts
+index ea538e0..ddcc220 100644
+--- a/web/src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts
+@@ -496,13 +496,14 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
+     expect(TEN_K_V2_GENERATOR.planPolicy(r.result).status).toBe('current');
+   });
+ 
+-  it('06e (10k-v2.5.2): sačuvan plan 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0 i 10k-v2.5.1 ostaje plan 10K v2 i prilagođava se pravilima 5.2 (rezultat nosi 10k-v2.5.2); druge verzije → UNKNOWN_POLICY', () => {
++  it('06f (10k-v2.6.0): sačuvan plan 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0, 10k-v2.5.1 i 10k-v2.5.2 ostaje plan 10K v2 i prilagođava se pravilima 6.0 (rezultat nosi 10k-v2.6.0); druge verzije → UNKNOWN_POLICY', () => {
+     expect(KNOWN_VERSIONS).toEqual([
+       '10k-v2.4.0',
+       '10k-v2.4.1',
+       '10k-v2.5.0',
+       '10k-v2.5.1',
+-      '10k-v2.5.2'
++      '10k-v2.5.2',
++      '10k-v2.6.0'
+     ]);
+     const cur = planOf(WITH_RESULT);
+     const as = (p: GenPlanState, version: string): GenPlanState => ({
+@@ -514,7 +515,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
+     const day = '2026-11-15' as IsoDate;
+     const facts = { facts: { pain: [{ date: '2026-11-14', pain: 5 }] } };
+     const fresh = ok(tenKV2AdaptPreview(cur, day, facts));
+-    for (const version of ['10k-v2.4.0', '10k-v2.4.1', '10k-v2.5.0', '10k-v2.5.1']) {
++    for (const version of ['10k-v2.4.0', '10k-v2.4.1', '10k-v2.5.0', '10k-v2.5.1', '10k-v2.5.2']) {
+       const old = as(cur, version);
+       expect(isTenKV2Plan(old), version).toBe(true);
+       expect(generatorForPlan(old), version).toBe(TEN_K_V2_GENERATOR);
+@@ -527,9 +528,9 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
+       const saved = stampForStorage(r.result);
+       expect(saved.meta, version).toMatchObject({
+         policyId: '10k-v2',
+-        policyVersion: '10k-v2.5.2'
++        policyVersion: '10k-v2.6.0'
+       });
+-      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.5.2');
++      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.6.0');
+       expect(isTenKV2Plan(saved), version).toBe(true);
+       // Posle nedelje sidra 4 rast od 70 % nivoa pre bola (42,4 → 29,7), ned 5 = 32,7 (4.0: 27,6); ned 5 je
+       // izgradnja (A17 bez dejstva: ned 4 je rasterećenje).
+@@ -542,7 +543,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
+       expect(r.reasons.find((x) => x.condition === 'PAIN')!.message, version).toContain(
+         'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,7 km).'
+       );
+-      // Isto prilagođavanje kao plan 5.1 (A15: buduće nedelje po tekućim pravilima).
++      // Isto prilagođavanje kao plan tekuće verzije (A15: buduće nedelje po tekućim pravilima).
+       expect(v2Of(r.result), version).toEqual(v2Of(fresh.result));
+     }
+     for (const version of ['10k-v2.3.1', '10k-v2.4.2', '10k-v2.5.3']) {
+diff --git a/web/src/domain/generators/tenK/v2/app/app.node.test.ts b/web/src/domain/generators/tenK/v2/app/app.node.test.ts
+index a8dabea..9a7e828 100644
+--- a/web/src/domain/generators/tenK/v2/app/app.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/app/app.node.test.ts
+@@ -130,7 +130,7 @@ describe('generisanje kroz adapter', () => {
+       const v2 = v2Of(p);
+       expect(p.meta).toMatchObject({
+         policyId: '10k-v2',
+-        policyVersion: '10k-v2.5.2',
++        policyVersion: '10k-v2.6.0',
+         raceDistM: 10000,
+         raceDate: RACE,
+         start: START,
+diff --git a/web/src/domain/generators/tenK/v2/app/plan.ts b/web/src/domain/generators/tenK/v2/app/plan.ts
+index fb7f856..109cc0b 100644
+--- a/web/src/domain/generators/tenK/v2/app/plan.ts
++++ b/web/src/domain/generators/tenK/v2/app/plan.ts
+@@ -35,13 +35,14 @@ export const POLICY_VERSION = P.version;
+ /** v2 nema plan pre oznake politike: svaki v2 plan nosi `10k-v2`; plan bez oznake je 10K v1 (`legacy-10k`). */
+ export const LEGACY_POLICY_ID = 'legacy-10k';
+ /** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0,
+- *  10k-v2.5.1 i tekuća 10k-v2.5.2. Sačuvan plan 4.0, 4.1, 5.0 ili 5.1 ostaje plan 10K v2; prilagođavanje ga gradi pravilima 5.2 (A15),
++ *  10k-v2.5.1, 10k-v2.5.2 i tekuća 10k-v2.6.0. Sačuvan plan 4.0, 4.1, 5.0, 5.1 ili 5.2 ostaje plan 10K v2; prilagođavanje ga gradi pravilima 6.0 (A15),
+  *  rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown" (UNKNOWN_POLICY). */
+ export const KNOWN_VERSIONS: readonly string[] = [
+   '10k-v2.4.0',
+   '10k-v2.4.1',
+   '10k-v2.5.0',
+   '10k-v2.5.1',
++  '10k-v2.5.2',
+   P.version
+ ];
+ 
+diff --git a/web/src/domain/generators/tenK/v2/assess.ts b/web/src/domain/generators/tenK/v2/assess.ts
+index 716817a..d35aa2d 100644
+--- a/web/src/domain/generators/tenK/v2/assess.ts
++++ b/web/src/domain/generators/tenK/v2/assess.ts
+@@ -406,7 +406,14 @@ export function assess(
+     );
+   });
+   if (easyHard.length >= A.fatigueCount) {
+-    const ok = !volumeRule && build(n) && !wk(n)!.deload;
++    // 10k-v2.6.0 (pouka 36): umor je vezan za ZAPISE, ne za asOf — sidro = prva puna nedelja posle
++    // (poslednji zapis + 1). Rasterećenje (redovno ili prinudno) od sidra do pre nedelje n već je u planu i
++    // pokriva ove zapise → isti zapisi ne prave novo rasterećenje kad se adaptacija ponovi kasnije.
++    const anchor = addDays(asOf, Math.max(...easyHard.map((x) => day(x.date))) - t + 1);
++    const ra = weekOf(anchor);
++    const na = ra <= N && day(weeks[ra - 1]!.startDate) < day(anchor) ? ra + 1 : ra;
++    const covered = weeks.find((w) => w.index >= na && w.index < n && w.deload);
++    const ok = !covered && !volumeRule && build(n) && !wk(n)!.deload;
+     // 10k-v2.5.2 (pouka 34): asOf pre starta (n = 1, nema prethodne izgradnje) — referenca rasterećenja je
+     // nedelja 1 generatora bez činjenica.
+     const ref = ok && n === 1 ? preStartRef() : null;
+@@ -418,7 +425,7 @@ export function assess(
+     reason(
+       'FATIGUE',
+       ok,
+-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)${ref ? ` — pre starta: 0,8 × planirana nedelja 1 (${km(ref.buildKm)} km, plan bez činjenica); nedelja 2 = cilj planirane nedelje 1, bez rasta` : ''}` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
++      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)${ref ? ` — pre starta: 0,8 × planirana nedelja 1 (${km(ref.buildKm)} km, plan bez činjenica); nedelja 2 = cilj planirane nedelje 1, bez rasta` : ''}` : covered ? `rasterećenje posle ovih zapisa je već u planu (nedelja ${covered.index}, A5)` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
+     );
+   }
+ 
+diff --git a/web/src/domain/generators/tenK/v2/earlyGrid.harness.node.test.ts b/web/src/domain/generators/tenK/v2/earlyGrid.harness.node.test.ts
+index 74f642f..e267593 100644
+--- a/web/src/domain/generators/tenK/v2/earlyGrid.harness.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/earlyGrid.harness.node.test.ts
+@@ -11,6 +11,8 @@
+    06e (10k-v2.5.2, pouka 34): isti planovi sa asOf PRE STARTA (start − 1, − 3, − 6) — umor, bol 5, pauza 10, rezultat
+    (testInputs.EARLY_PRE_SCENARIOS), posle svih tokova 06d; regresija prema bd07eec
+    (segment06e.prestart-hashes-bd07eec.json: prihvaćeni bajt-isti; umor tamo odbijen, 0).
++   06f (10k-v2.6.0, pouka 36): tok umora ponovo sa ISTIM činjenicama na asOf + 1 … + 7 (pre trke) — 0 novih
++   rasterećenja, traka (adaptBanner) bez umora (brz: tokovi umora uzorka; pun: svaki 4. tok umora dela).
+ 
+    - BRZ nivo: deterministički uzorak (svaki K_FAST. tok 06d i svaki K_PRE. tok pre starta unutar porodice × scenario)
+      + imenovani primeri N7/06d/06e.
+@@ -20,8 +22,9 @@ import { readFileSync } from 'node:fs';
+ import { fileURLToPath } from 'node:url';
+ import { beforeAll, describe, expect, it } from 'vitest';
+ import { FULL, part, sample } from '@/test/level';
+-import { adaptTenKV2 } from './adapt.ts';
++import { adaptBanner, adaptTenKV2 } from './adapt.ts';
+ import { adaptInvariants } from './adaptInvariants.ts';
++import { addDays } from './dates.ts';
+ import { generateTenKV2 } from './generate.ts';
+ import { GRID_TIMEOUT, missingParts } from './level.harness.node.test.ts';
+ import {
+@@ -161,6 +164,37 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
+       expect(res.flatMap((r) => r.bad)).toEqual([]);
+     });
+ 
++    it(
++      'pouka 36: isti umor ponovo asOf + 1 … + 7 → 0 novih rasterećenja, traka bez umora',
++      () => {
++        const dl = (p: TenKV2Plan): number => p.weeks.filter((w) => w.deload).length;
++        const bad: string[] = [];
++        let n = 0;
++        // Pun nivo: svaki 4. tok umora dela (× 7 ponavljanja; ceo skup ≈ 120 000 adaptacija bi trajao > 13 min).
++        const fat = flows.filter((x) => x.s === 'fatigue');
++        for (const f of FULL ? fat.filter((_, i) => i % 4 === 0) : fat) {
++          const p0 = earlyPlan(f.base);
++          const facts = earlyFacts(p0, f.s, f.asOf);
++          const r1 = adaptTenKV2(p0, facts, f.asOf);
++          if (!r1.ok) continue;
++          for (let d = 1; d <= 7; d++) {
++            const at = addDays(f.asOf, d);
++            if (at >= p0.input.raceDate) break;
++            const r2 = adaptTenKV2(r1.plan, facts, at);
++            n++;
++            if (!r2.ok) bad.push(`${f.key}/+${d}: odbijeno`);
++            else if (dl(r2.plan) > dl(r1.plan))
++              bad.push(`${f.key}/+${d}: rasterećenja ${dl(r1.plan)} → ${dl(r2.plan)}`);
++            else if (adaptBanner(r1.plan, r2, facts, at).some((m) => m.includes('RPE')))
++              bad.push(`${f.key}/+${d}: traka umora`);
++          }
++        }
++        expect(n).toBeGreaterThan(FULL ? 5000 : 100);
++        expect(bad.slice(0, 20)).toEqual([]);
++      },
++      GRID_TIMEOUT
++    );
++
+     it('regresija: tok prihvaćen na 51a924f (pre starta: bd07eec) bajt-isti (heš bez oznake verzije), osim porodice 1 i A5 u uvodu (ti se menjaju)', () => {
+       const h = earlyHashes();
+       const fam = new Set([...h.family1, ...h.introA5]);
+diff --git a/web/src/domain/generators/tenK/v2/index.ts b/web/src/domain/generators/tenK/v2/index.ts
+index d0a4e02..2641a5d 100644
+--- a/web/src/domain/generators/tenK/v2/index.ts
++++ b/web/src/domain/generators/tenK/v2/index.ts
+@@ -1,7 +1,7 @@
+ /* 10K v2 — javni API jezgra. Aplikacija ga ne uvozi: od segmenta 05 put iz aplikacije je samo adapter `./app/index.ts`
+    (izvozi ga `tenK/index.ts` kao `tenKV2`, bira `select.ts`). */
+ 
+-export { adaptTenKV2 } from './adapt.ts';
++export { adaptBanner, adaptTenKV2 } from './adapt.ts';
+ export { construct, generateTenKV2 } from './generate.ts';
+ export { validatePlan } from './validate.ts';
+ export { TEN_K_V2_POLICY } from './policy.ts';
+diff --git a/web/src/domain/generators/tenK/v2/painGrid.node.test.ts b/web/src/domain/generators/tenK/v2/painGrid.node.test.ts
+index e0b1e43..e4e880e 100644
+--- a/web/src/domain/generators/tenK/v2/painGrid.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/painGrid.node.test.ts
+@@ -131,7 +131,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
+     }
+   }, GRID_TIMEOUT);
+ 
+-  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.5.2', () => {
++  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.6.0', () => {
+     expect(PAIN_GRID.length).toBe(6);
+     expect(flows.length).toBe(336);
+     expect(flows.filter((f) => !f.res.ok).map((f) => f.key)).toEqual([]);
+@@ -141,7 +141,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
+         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
+         f.key
+       ).toBe(true);
+-      expect(r.plan.policyVersion).toBe('10k-v2.5.2');
++      expect(r.plan.policyVersion).toBe('10k-v2.6.0');
+     }
+   });
+ 
+diff --git a/web/src/domain/generators/tenK/v2/periodize.node.test.ts b/web/src/domain/generators/tenK/v2/periodize.node.test.ts
+index b6c00c8..243fd95 100644
+--- a/web/src/domain/generators/tenK/v2/periodize.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/periodize.node.test.ts
+@@ -89,7 +89,7 @@ describe('D4: faze', () => {
+     if (!r.ok) return;
+     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
+     expect(r.plan.policyId).toBe('10k-v2');
+-    expect(r.plan.policyVersion).toBe('10k-v2.5.2');
++    expect(r.plan.policyVersion).toBe('10k-v2.6.0');
+   });
+ });
+ 
+diff --git a/web/src/domain/generators/tenK/v2/policy.node.test.ts b/web/src/domain/generators/tenK/v2/policy.node.test.ts
+index f3afc03..6b3b4ec 100644
+--- a/web/src/domain/generators/tenK/v2/policy.node.test.ts
++++ b/web/src/domain/generators/tenK/v2/policy.node.test.ts
+@@ -10,13 +10,13 @@ import {
+   TEN_K_V2_POLICY as P
+ } from './policy.ts';
+ 
+-describe('policy 10k-v2.5.2', () => {
++describe('policy 10k-v2.6.0', () => {
+   it('oznaka politike', () => {
+     expect(P.id).toBe('10k-v2');
+-    expect(P.version).toBe('10k-v2.5.2');
++    expect(P.version).toBe('10k-v2.6.0');
+   });
+ 
+-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b) i A17 (06c), svaka sa pravilom, mestom i obrazloženjem', () => {
++  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c) i A18 (06f), svaka sa pravilom, mestom i obrazloženjem', () => {
+     expect(P.DECISIONS.map((d) => d.id)).toEqual([
+       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
+       'D22b',
+@@ -29,7 +29,7 @@ describe('policy 10k-v2.5.2', () => {
+       'D30',
+       'D31',
+       'D32',
+-      ...Array.from({ length: 17 }, (_, i) => `A${i + 1}`)
++      ...Array.from({ length: 18 }, (_, i) => `A${i + 1}`)
+     ]);
+     for (const d of P.DECISIONS) {
+       expect(d.rule.length, d.id).toBeGreaterThan(20);
+@@ -116,6 +116,13 @@ describe('policy 10k-v2.5.2', () => {
+     expect(rule('A17')).toMatch(/70 % nivoa pre bola bilo bi x km/);
+     expect(why('A17')).toMatch(/644\/2268/);
+     expect(why('A17')).toMatch(/23,0 → 25,3 → 27,8 → 29,8 → 31,6/);
++    // 06f (10k-v2.6.0): pouka 36 (umor vezan za zapise), pouka 20 (traka u domenu), pouka 25, pouka 35 izmerena.
++    expect(rule('A18')).toMatch(/sidro = prva puna nedelja posle \(datum poslednjeg RPE zapisa/);
++    expect(rule('A18')).toMatch(/samo u domenu \(adapt\.adaptBanner; aplikacija ga samo zove\)/);
++    expect(rule('A18')).toMatch(/upozorenje WEEK_MIN_REST, ne WEEK_MIN_VOLUME/);
++    expect(why('A18')).toMatch(/903\/963/);
++    expect(why('A18')).toMatch(/2022 nedelje u 858\/31 122 planova/);
++    expect(rule('A5')).toMatch(/Dopuna \(10k-v2\.6\.0, pouka 36, A18\)/);
+     expect(rule('A5')).toMatch(
+       /Isto posle nedelje smanjenja pauzom, manjkom ili bolom \(A17, 10k-v2\.5\.0\)/
+     );
+diff --git a/web/src/domain/generators/tenK/v2/policy.ts b/web/src/domain/generators/tenK/v2/policy.ts
+index a30e11b..8900d6d 100644
+--- a/web/src/domain/generators/tenK/v2/policy.ts
++++ b/web/src/domain/generators/tenK/v2/policy.ts
+@@ -287,7 +287,7 @@ const DECISIONS: readonly Decision[] = [
+   },
+   {
+     id: 'A5',
+-    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana — bez dayId) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); prinudno rasterećenje odmah posle redovnog = 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8); redovno rasterećenje odmah posle prinudnog se ukida. Isto posle nedelje smanjenja pauzom, manjkom ili bolom (A17, 10k-v2.5.0); prinudno rasterećenje se nikad ne ukida. Dopuna (10k-v2.5.1): prinudno rasterećenje u uvodu početnika (D28, nedelje 1–2) — obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost, nedelja se ne pomera. Dopuna (10k-v2.5.2, pouka 34): umor sa asOf pre starta plana (nedelja 1, nema prethodne izgradnje) → nedelja 1 je prinudno rasterećenje = 0,8 × planirana nedelja 1 (sadržaj rasterećenja D5: 1 kvalitet T ≈ 60 %, dugi 0,8 ×; početnik: sadržaj uvoda); referenca (poslednja izgradnja, poslednji dugi, doza slota rasterećenja) = nedelja 1 generatora bez činjenica (generate.preStartRef), upisana u korak (preStart) — konstruktor i validator je čitaju iz koraka; nedelja 2 = cilj planirane nedelje 1 (bez rasta), dalje po rasporedu (faze i rasterećenja ostaju). Pouka 4 (bez rasterećenja u nedeljama 1–2) važi za redovna rasterećenja. Npr. 10 ned, 25 km, VDOT 30, 4 dana, umor 2026-11-01 (start − 1): ned 1 = 20,0 km (0,8 × 25), ned 2 = 25,0 km; na 10k-v2.5.1 odbijeno (WEEK_INFEASIBLE).',
++    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana — bez dayId) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); prinudno rasterećenje odmah posle redovnog = 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8); redovno rasterećenje odmah posle prinudnog se ukida. Isto posle nedelje smanjenja pauzom, manjkom ili bolom (A17, 10k-v2.5.0); prinudno rasterećenje se nikad ne ukida. Dopuna (10k-v2.5.1): prinudno rasterećenje u uvodu početnika (D28, nedelje 1–2) — obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost, nedelja se ne pomera. Dopuna (10k-v2.5.2, pouka 34): umor sa asOf pre starta plana (nedelja 1, nema prethodne izgradnje) → nedelja 1 je prinudno rasterećenje = 0,8 × planirana nedelja 1 (sadržaj rasterećenja D5: 1 kvalitet T ≈ 60 %, dugi 0,8 ×; početnik: sadržaj uvoda); referenca (poslednja izgradnja, poslednji dugi, doza slota rasterećenja) = nedelja 1 generatora bez činjenica (generate.preStartRef), upisana u korak (preStart) — konstruktor i validator je čitaju iz koraka; nedelja 2 = cilj planirane nedelje 1 (bez rasta), dalje po rasporedu (faze i rasterećenja ostaju). Pouka 4 (bez rasterećenja u nedeljama 1–2) važi za redovna rasterećenja. Npr. 10 ned, 25 km, VDOT 30, 4 dana, umor 2026-11-01 (start − 1): ned 1 = 20,0 km (0,8 × 25), ned 2 = 25,0 km; na 10k-v2.5.1 odbijeno (WEEK_INFEASIBLE). Dopuna (10k-v2.6.0, pouka 36, A18): umor je vezan za zapise — rasterećenje već u planu od sidra (prva puna nedelja posle poslednjeg RPE zapisa umora) pokriva iste zapise.',
+     place:
+       'assess.ts (adapt.fatigue*; preStart iz generate.preStartRef); steps.ts framesFor; volume.ts adaptNominal10 (0,8 × referenca, nedelja 2 = referenca); week.ts buildWeek (ctx.preStart); validate.ts (D5 izuzetak prinudnog i A17; sadržaj rasterećenja iz koraka.preStart)',
+     rationale:
+@@ -375,12 +375,21 @@ const DECISIONS: readonly Decision[] = [
+       'assess.ts (reduced); steps.ts targetReducedWeek, reducedWeeks, framesFor (jedino mesto odluke; izlaz dropped), A17_MAX_RUN; validate.ts (D5 iz istog podatka); adapt.ts (poruke A17 i PAIN); volume.ts bez izmene (cilj A8); app/plan.ts KNOWN_VERSIONS',
+     rationale:
+       'Heuristika (odluka organizatora posle nalaza N1, bez novog broja: 5 = izuzetak D5 4 + ukinuta nedelja; 0,7 = painEasyFactor). Smanjena nedelja je već oporavak; drugo rasterećenje zaredom gubi nedelju povratka — 10k-v2.4.1: 644/2268 tokova R4 (svaki 12. ulaz mreže 01, asOf kraj ned 2…N − 4) po scenariju pauze 10 dana, bola 5 i manjka. Primer 10w-25km-v30-A-sat, asOf kraj ned 3, cilj ned 5: pauza 10 dana rasterećenje 17,0 → 23,3; bol 5 14,9 → 20,5; manjak 19,0 → 26,2. Izuzetak D5: nedelje posle ukinutog rasterećenja su povratni rast ispod ranijeg obima — 17w-25km-v30-A-sat, bol 5 kraj ned 6, ned 8–12: 23,0 → 25,3 → 27,8 → 29,8 → 31,6 (original 33,5–35,0); nedelja smanjenja je služila kao oporavak; izmereno (mreža R): 0 odbijanja, J1 0, J4 0. Pet nedelja izgradnje od ukinute nedelje javlja se samo uz izuzetak D5 4 odmah posle (12 ned, smanjena ned 3; 17 ned, smanjena ned 7). Primer E iz A16 (asOf 2026-11-13, bol 7, r = 3): ned 4 rasterećenje 23,8 → izgradnja 32,7 (osnova 29,7 + 3,0). Tumačenje: polje reduced je izričita odluka assess — višak nije smanjenje ni u koraku sa bolom (A17 tada samo preko nedelje sidra); rezervni put bez polja važi samo za korake sačuvane pre 10k-v2.5.0. Sačuvan plan 10k-v2.4.0 i 10k-v2.4.1 ostaje plan 10K v2 i prilagođava se pravilima 10k-v2.5.0 (A15).'
++  },
++  /* ---------- Segment 06f (10k-v2.6.0): umor vezan za zapise, traka u domenu, minimum nedelje za cilj. ---------- */
++  {
++    id: 'A18',
++    rule: 'Pouka 36: umor (A5) je vezan za ZAPISE, ne za dan adaptacije — sidro = prva puna nedelja posle (datum poslednjeg RPE zapisa koji čini umor + 1), isto pravilo kao nedelja n iz asOf. Kad je nedelja od sidra do pre nedelje n (prve pune posle asOf) već rasterećenje u planu (redovno ili prinudno iz prethodnog koraka), umor nije primenjen („rasterećenje posle ovih zapisa je već u planu"); inače prinudno rasterećenje nedelje n kao do sada. Isti zapisi poslati ponovo (asOf + 1 … + 7) ne prave novo rasterećenje. Pouka 20: traka „Plan treba prilagoditi" — JEDNO pravilo, samo u domenu (adapt.adaptBanner; aplikacija ga samo zove): asOf posle poslednje adaptacije, plan se menja u nedelji koja se završava posle asOf; promena (nov rezultat, manjak, višak) kad je primenjena; ograničenje (bol, pauza, umor) kad je primenjeno i korak donosi novo ograničenje (steps.newLimits poslednjeg koraka — datumi bez kvaliteta / jedan kvalitet / odmor / bol kojih nema u prethodnim koracima, novo prinudno rasterećenje, nov start), bol još i samo uz zapis bola noviji od poslednje adaptacije. Pouka 25: minimum nedelje (D17) važi za CILJ (TARGET_FLOOR, A9); nedelja sa danima odmora, ili bola van trkačke, planirano ispod minimuma → upozorenje WEEK_MIN_REST, ne WEEK_MIN_VOLUME.',
++    place:
++      'assess.ts (A5: sidro, pokriveno rasterećenje); steps.ts newLimits; adapt.ts adaptBanner; app/adapt.ts (samo poziv); validate.ts (WEEK_MIN_REST i uz dane bola); app/plan.ts KNOWN_VERSIONS',
++    rationale:
++      'Odluka organizatora (MAR-06 pitanje 2, Faza 4a N12/traka). Merenje (fatigue-repeat.ts 10K, isti zapisi umora sledeći dan): asOf kraj nedelje 903/963 tokova dobija drugo rasterećenje na 10k-v2.5.2, sada 0; asOf sreda 0 → 0. Traka: oblik maraton v2 (MAR-06); newLimits se računa iz koraka plana u adaptBanner (nije novo polje rezultata adaptacije — heševi rezultata ostaju). Pouka 25: u merenim mrežama (Faza 4a 121 392 toka, 06f) 0 slučajeva. Pouka 35 (2 dana kvaliteta, dan kvaliteta duži od dugog, izgradnja bez tapera/trkačke) izmerena, nije primenjena (06f, otvoreno pitanje organizatoru): generator 2022 nedelje u 858/31 122 planova (sve ned 1 tih planova, 4–6 dana, nizak obim / brz tempo; R ili I u q1 i T u q2 duži od dugog za medijanu 5,6 min, najviše 23,2 min); u 92 % tih nedelja i prvi dan kvaliteta je duži od dugog (WU/CD 25 min), pa prelazak drugog na lagan ne vraća dugi na prvo mesto — upozorenje D25 (LONG_SHORTER_THAN_QUALITY) već postoji u svakom tom planu.'
+   }
+ ];
+ 
+ export const TEN_K_V2_POLICY = {
+   id: '10k-v2',
+-  version: '10k-v2.5.2',
++  version: '10k-v2.6.0',
+ 
+   /** D1 (dani i obim: D17; početnik: D28). */
+   input: {
+diff --git a/web/src/domain/generators/tenK/v2/steps.ts b/web/src/domain/generators/tenK/v2/steps.ts
+index d839d6f..49af5db 100644
+--- a/web/src/domain/generators/tenK/v2/steps.ts
++++ b/web/src/domain/generators/tenK/v2/steps.ts
+@@ -233,3 +233,38 @@ export function appliedRestarts(
+ /** Okviri generatora (periodize) — ulaz za framesFor i validator. */
+ export const baseFrames = (startDate: IsoDate, weeks: number, test: boolean): WeekFrame[] | null =>
+   periodize(startDate, weeks, test);
++
++/**
++ * Pouka 20 (10K 06f): traka „Plan treba prilagoditi" samo za NOVO ograničenje — datumi poslednjeg koraka sa
++ * ograničenjem (zabrana kvaliteta, jedan kvalitet, odmor, bol) kojih nema u ograničenjima prethodnih koraka, i
++ * prinudno rasterećenje / nov start koga ranije nije bilo. Posledica drugog uslova (premeštanje testa, ukinuto
++ * rasterećenje) nije ograničenje. Čita ga adaptBanner (adapt.ts); prazno = bez trake. Kopija maraton v2
++ * steps.newLimits (ne uvoz, Uslov 7).
++ */
++export function newLimits(steps: readonly TenKV2AdaptStep[]): string[] {
++  const last = steps[steps.length - 1];
++  if (!last) return [];
++  const prev = steps.slice(0, -1);
++  const days = (s: TenKV2AdaptStep, pick: (x: TenKV2AdaptStep) => readonly (DateRange | null)[]) =>
++    pick(s).flatMap((r) => {
++      if (!r) return [];
++      const out: string[] = [];
++      for (let d = r.from; mustDay(d) <= mustDay(r.to); d = addDays(d, 1)) out.push(d);
++      return out;
++    });
++  const kinds: [string, (x: TenKV2AdaptStep) => readonly (DateRange | null)[]][] = [
++    ['noQuality', (x) => x.noQuality],
++    ['oneQuality', (x) => x.oneQuality],
++    ['rest', (x) => [x.rest]],
++    ['pain', (x) => [x.pain]]
++  ];
++  const out: string[] = [];
++  for (const [k, pick] of kinds) {
++    const old = new Set(prev.flatMap((s) => days(s, pick)));
++    for (const d of days(last, pick)) if (!old.has(d)) out.push(`${k}:${d}`);
++  }
++  if (last.deload && !prev.some((s) => s.deload && s.fromWeek === last.fromWeek))
++    out.push(`deload:${last.fromWeek}`);
++  if (last.restart) out.push(`restart:${last.fromWeek}`);
++  return out;
++}
+diff --git a/web/src/domain/generators/tenK/v2/validate.ts b/web/src/domain/generators/tenK/v2/validate.ts
+index 412cce2..9cd9abd 100644
+--- a/web/src/domain/generators/tenK/v2/validate.ts
++++ b/web/src/domain/generators/tenK/v2/validate.ts
+@@ -424,13 +424,19 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
+         w.index
+       );
+     // D30: trkačka nedelja — planirano + trka (10 km) ≥ minimum (trka je opterećenje nedelje). Nedelja je
+-    // potpuno zadata (D8/D20), pa je ispod minimuma upozorenje (D15), nedelja se ne puni. A4: nedelja sa
+-    // danima odmora sme ispod minimuma (upozorenje).
++    // potpuno zadata (D8/D20), pa je ispod minimuma upozorenje (D15), nedelja se ne puni. A4 (pouka 25,
++    // 10k-v2.6.0): minimum važi za CILJ (TARGET_FLOOR) — nedelja sa danima odmora, ili bola van trkačke
++    // (ona ima RACE_WEEK_SHORT), sme planirano ispod minimuma (upozorenje).
+     const load = w.plannedKm + (w.phase === 'race' ? P.raceWeek.raceKm : 0);
+-    if (load + EPS < rule.weekMinKm && restOf(w).size > 0)
++    if (
++      load + EPS < rule.weekMinKm &&
++      (restOf(w).size > 0 || (painOf(w).size > 0 && w.phase !== 'race'))
++    )
+       warn(
+         'WEEK_MIN_REST',
+-        `Nedelja ${w.plannedKm} km < ${rule.weekMinKm} km — dani odmora (bol, A4).`,
++        restOf(w).size > 0
++          ? `Nedelja ${w.plannedKm} km < ${rule.weekMinKm} km — dani odmora (bol, A4).`
++          : `Nedelja ${w.plannedKm} km < ${rule.weekMinKm} km — dani bola (A4, pouka 25).`,
+         w.index
+       );
+     else if (load + EPS < rule.weekMinKm) {
+diff --git a/web/src/features/onboarding/tenKV2Flow.test.tsx b/web/src/features/onboarding/tenKV2Flow.test.tsx
+index debb5c4..f30efd5 100644
+--- a/web/src/features/onboarding/tenKV2Flow.test.tsx
++++ b/web/src/features/onboarding/tenKV2Flow.test.tsx
+@@ -114,7 +114,7 @@ describe('10K v2 iza prekidača', () => {
+     const saved = collectPersisted();
+     expect(saved.genPlan!.meta).toMatchObject({
+       policyId: '10k-v2',
+-      policyVersion: '10k-v2.5.2',
++      policyVersion: '10k-v2.6.0',
+       paceBasis: 'result',
+       goalSec: 2580
+     });
+@@ -314,4 +314,13 @@ describe('Prekidač 10K v2: vidljiv samo uz VITE_TENK_V2 ili administratoru', ()
+     await user.click(box);
+     expect(collectPersisted().ui['generatorV2TenK']).toBe(true);
+   });
++
++  it('06f: tekst prekidača bez „prilagođavanje stiže uskoro" (prilagođavanje 10K v2 postoji od segmenta 06)', () => {
++    hydratePersisted(state());
++    vi.stubEnv('VITE_TENK_V2', '1');
++    render(<TrainingSettingsScreen />);
++    const note = screen.getByText(/Važi samo za novi 10K plan iz čarobnjaka\./);
++    expect(note.textContent).toContain('Postojeći plan se ne menja.');
++    expect(note.textContent).not.toMatch(/stiže uskoro/);
++  });
+ });
+diff --git a/web/src/features/ti/screens.tsx b/web/src/features/ti/screens.tsx
+index c6242f0..a161462 100644
+--- a/web/src/features/ti/screens.tsx
++++ b/web/src/features/ti/screens.tsx
+@@ -640,8 +640,7 @@ function TenKV2Toggle() {
+         Novi 10K plan pravi generator v2 (probno)
+       </label>
+       <p className="note-src">
+-        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje 10K v2
+-        plana stiže uskoro.
++        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja.
+         {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
+       </p>
+     </>
+diff --git a/web/src/domain/generators/tenK/v2/fatigue.node.test.ts b/web/src/domain/generators/tenK/v2/fatigue.node.test.ts
+new file mode 100644
+index 0000000..4bf3743
+--- /dev/null
++++ b/web/src/domain/generators/tenK/v2/fatigue.node.test.ts
+@@ -0,0 +1,142 @@
++/* Segment 06f (10k-v2.6.0): pouka 36 — umor vezan za ZAPISE (sidro = prva puna nedelja posle poslednjeg RPE zapisa
++   umora; rasterećenje koje je već u planu pokriva iste zapise), pouka 20 — traka „Plan treba prilagoditi" samo u domenu
++   (adaptBanner + steps.newLimits, oblik maraton v2 MAR-06), pouka 25 — minimum nedelje važi za cilj (dani bola bez
++   odmora: upozorenje). Trajna mreža ponovljenog umora (asOf + 1 … + 7): earlyGrid.harness.node.test.ts. */
++
++import { describe, expect, it } from 'vitest';
++import { adaptBanner, adaptTenKV2 } from './adapt.ts';
++import { addDays } from './dates.ts';
++import { generateTenKV2 } from './generate.ts';
++import { dayRule } from './policy.ts';
++import { newLimits } from './steps.ts';
++import { adaptBases, factsOf, painFacts } from './testInputs.ts';
++import type { AdaptResult, TenKV2Plan } from './types.ts';
++import { validatePlan } from './validate.ts';
++
++const plan = (id: string): TenKV2Plan => {
++  const r = generateTenKV2(adaptBases().find((b) => b.id === id)!.input);
++  if (!r.ok) throw new Error(id);
++  return r.plan;
++};
++const ok = (r: AdaptResult) => {
++  if (!r.ok) throw new Error(JSON.stringify(r).slice(0, 800));
++  return r;
++};
++const deloads = (p: TenKV2Plan): number[] => p.weeks.filter((w) => w.deload).map((w) => w.index);
++
++describe('pouka 36: umor vezan za zapise, ne za dan adaptacije', () => {
++  // d4-r-14w: redovna rasterećenja 4, 8, 11.
++  const p = plan('d4-r-14w');
++
++  it('umor kraj ned 2 → prinudno ned 3; isti zapisi sutra (preko granice nedelje) → isti plan, bez trake', () => {
++    expect(deloads(p)).toEqual([4, 8, 11]);
++    const at = p.weeks[1]!.endDate;
++    const f = factsOf(p, 'fatigue', at);
++    const a1 = ok(adaptTenKV2(p, f, at));
++    expect(deloads(a1.plan)).toEqual([3, 8, 11]);
++    expect(adaptBanner(p, a1, f, at)).toHaveLength(1);
++    for (let d = 1; d <= 6; d++) {
++      const a2 = ok(adaptTenKV2(a1.plan, f, addDays(at, d)));
++      expect(a2.plan.weeks).toEqual(a1.plan.weeks);
++      // Zapisi (asOf − 1, − 3) su umor do asOf + 3 (7 dana); posle toga umora nema.
++      const fat = a2.reasons.find((x) => x.condition === 'FATIGUE');
++      expect(fat !== undefined).toBe(d <= 3);
++      if (fat)
++        expect([fat.applied, fat.message.includes('već u planu (nedelja 3, A5)')]).toEqual([
++          false,
++          true
++        ]);
++      expect(adaptBanner(a1.plan, a2, f, addDays(at, d))).toEqual([]);
++    }
++  });
++
++  it('umor kraj ned 3 (ned 4 redovno rasterećenje) → bez prinudnog; isti zapisi u ned 4 → i dalje bez novog (na 7ba9717: ned 5)', () => {
++    const at = p.weeks[2]!.endDate;
++    const f = factsOf(p, 'fatigue', at);
++    const a1 = ok(adaptTenKV2(p, f, at));
++    expect(deloads(a1.plan)).toEqual([4, 8, 11]);
++    const a2 = ok(adaptTenKV2(a1.plan, f, addDays(at, 1)));
++    expect(deloads(a2.plan)).toEqual([4, 8, 11]);
++    expect(a2.reasons.find((x) => x.condition === 'FATIGUE')!.applied).toBe(false);
++  });
++
++  it('nov zapis umora posle rasterećenja (sidro posle njega) → novo rasterećenje i traka', () => {
++    const at = p.weeks[1]!.endDate;
++    const a1 = ok(adaptTenKV2(p, factsOf(p, 'fatigue', at), at));
++    const at2 = p.weeks[5]!.endDate;
++    const f2 = factsOf(p, 'fatigue', at2);
++    const a2 = ok(adaptTenKV2(a1.plan, f2, at2));
++    expect(deloads(a2.plan)).toContain(7);
++    expect(adaptBanner(a1.plan, a2, f2, at2)).toHaveLength(1);
++  });
++});
++
++describe('pouka 20: traka u domenu (adaptBanner, steps.newLimits)', () => {
++  const p = plan('d4-r-14w');
++  const at = p.weeks[4]!.endDate;
++
++  it('newLimits = novi datumi ograničenja poslednjeg koraka; sutra bez činjenica → prazno, bez trake', () => {
++    const r1 = ok(adaptTenKV2(p, painFacts(at, 5), at));
++    const steps = r1.plan.adaptation!.steps;
++    expect(newLimits(steps).some((x) => x.startsWith('pain:'))).toBe(true);
++    const r2 = ok(adaptTenKV2(r1.plan, {}, addDays(at, 1)));
++    expect(newLimits(r2.plan.adaptation!.steps)).toEqual([]);
++    expect(adaptBanner(r1.plan, r2, {}, addDays(at, 1))).toEqual([]);
++  });
++
++  it('bol → traka; isti dan posle primene → ništa; isti stari zapis bola kasnije → ništa', () => {
++    const f = painFacts(at, 5);
++    const r1 = ok(adaptTenKV2(p, f, at));
++    expect(adaptBanner(p, r1, f, at)).toHaveLength(1);
++    expect(adaptBanner(r1.plan, ok(adaptTenKV2(r1.plan, f, at)), f, at)).toEqual([]);
++    const b = addDays(at, 2);
++    expect(adaptBanner(r1.plan, ok(adaptTenKV2(r1.plan, f, b)), f, b)).toEqual([]);
++  });
++
++  it('odbijena adaptacija ili rezultat stariji od 84 dana → bez trake', () => {
++    const old = { results: [{ distM: 10000, sec: 2700, date: '2026-01-01', kind: 'race' }] };
++    expect(adaptBanner(p, ok(adaptTenKV2(p, old, at)), {}, at)).toEqual([]);
++    const bad = adaptTenKV2(p, {}, p.input.raceDate);
++    expect(bad.ok).toBe(false);
++    expect(adaptBanner(p, bad, {}, p.input.raceDate)).toEqual([]);
++  });
++});
++
++describe('pouka 25: minimum nedelje važi za cilj; planirano ispod zbog dana bola = upozorenje', () => {
++  it('nedelja sa danima bola (bez odmora) planirano < minimum → WEEK_MIN_REST (upozorenje), ne WEEK_MIN_VOLUME', () => {
++    const p = plan('d4-r-14w');
++    const at = p.weeks[4]!.endDate;
++    const r = ok(adaptTenKV2(p, painFacts(at, 5), at));
++    const w = r.plan.weeks.find((x) => (x.limits?.pain ?? []).length > 0 && !x.limits?.rest)!;
++    expect(w).toBeDefined();
++    const min = dayRule(p.input.runDays.length)!.weekMinKm;
++    // Isti plan sa nedeljom bola skraćenom ispod minimuma (lagani i dugi 1 km): cilj ostaje ≥ minimum.
++    const cut = {
++      ...r.plan,
++      weeks: r.plan.weeks.map((x) => {
++        if (x !== w) return x;
++        const days = x.days.map((d) =>
++          d.role === 'easy' || d.role === 'long'
++            ? {
++                ...d,
++                workout: {
++                  ...d.workout,
++                  km: 1,
++                  segments: d.workout.segments.map((s) => ({ ...s, km: 1 }))
++                }
++              }
++            : d
++        );
++        const planned = days.reduce((s, d) => s + (d.countsToWeek ? d.workout.km : 0), 0);
++        return { ...x, days, plannedKm: Math.round(planned * 100) / 100 };
++      })
++    };
++    const cw = cut.weeks[w.index - 1]!;
++    expect(cw.plannedKm).toBeLessThan(min);
++    expect(cw.targetKm).toBeGreaterThanOrEqual(min);
++    const v = validatePlan(cut).filter((x) => x.week === w.index);
++    expect(v.some((x) => x.rule === 'WEEK_MIN_VOLUME')).toBe(false);
++    expect(v.find((x) => x.rule === 'WEEK_MIN_REST')).toMatchObject({ severity: 'warning' });
++    expect(v.find((x) => x.rule === 'WEEK_MIN_REST')!.message).toContain('dani bola');
++  });
++});

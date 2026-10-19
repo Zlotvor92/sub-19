@@ -185,8 +185,12 @@ describe('M8 trkačka nedelja', () => {
 
 describe('M13 upozorenje MARATHON_LONG_SHORT', () => {
   it('najduži dugi < 26 km → upozorenje; ≥ 26 km → bez upozorenja', () => {
-    const short = plan({ km: 40, vdot: 40 });
+    // N11 (MAR-07): upozorenje samo kad dugi NIJE na 150 min (VDOT 40: 150 min → napomena plana; VDOT 70: udeo).
+    const short = plan({ km: 40, vdot: 70 });
     expect(short.warnings.map((w) => w.rule)).toContain('MARATHON_LONG_SHORT');
+    const capped = plan({ km: 40, vdot: 40 });
+    expect(capped.warnings.map((w) => w.rule)).not.toContain('MARATHON_LONG_SHORT');
+    expect(capped.notes.some((n) => n.startsWith('Najduži dugi trk je'))).toBe(true);
     const long = plan({ weeks: 20, km: 65, vdot: 60 });
     const longest = Math.max(
       ...long.weeks.flatMap((w) => role(w, 'long').map((d) => d.workout.km))
