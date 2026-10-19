@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
-import { dayRule } from './policy.ts';
+import { planRule } from './policy.ts';
 import { gridInputs } from './testInputs.ts';
 import type { WeekFrame } from './types.ts';
 import {
@@ -18,7 +18,8 @@ import {
   weekMin10
 } from './volume.ts';
 
-const rule = dayRule(4)!;
+const rule = planRule(4, 'regular')!;
+const dayRule = (n: number) => planRule(n, 'regular');
 const frame = (o: Partial<WeekFrame>): WeekFrame => ({
   index: 2,
   startDate: '2026-11-09',
@@ -30,10 +31,10 @@ const frame = (o: Partial<WeekFrame>): WeekFrame => ({
 
 describe('H6 pravilo obima', () => {
   it('rast +6 % (min 1,0, max 4,0 km)', () => {
-    expect(growth10(300)).toBe(18);
-    expect(growth10(100)).toBe(10);
-    expect(growth10(700)).toBe(40);
-    expect(growth10(500)).toBe(30);
+    expect(growth10(300, rule)).toBe(18);
+    expect(growth10(100, rule)).toBe(10);
+    expect(growth10(700, rule)).toBe(40);
+    expect(growth10(500, rule)).toBe(30);
   });
 
   it('granica vrha = min(start × 1,4; start + 20; 70 km)', () => {
@@ -45,14 +46,14 @@ describe('H6 pravilo obima', () => {
 
   it('nedelja 1 = trenutni; izgradnja od cilja koji je nedelja stvarno dobila; rasterećenje 0,8 ×; taper 0,7 × vrh', () => {
     let h = INITIAL_VOLUME;
-    expect(nominal10(frame({ index: 1 }), h, 400, 560)).toBe(400);
+    expect(nominal10(frame({ index: 1 }), h, 400, 560, rule)).toBe(400);
     h = leaveWeek(h, frame({ index: 1 }), 395); // spuštena nedelja: rast od 39,5
-    expect(nominal10(frame({}), h, 400, 560)).toBe(395 + 24);
-    expect(nominal10(frame({ deload: true }), h, 400, 560)).toBe(316);
+    expect(nominal10(frame({}), h, 400, 560, rule)).toBe(395 + 24);
+    expect(nominal10(frame({ deload: true }), h, 400, 560, rule)).toBe(316);
     h = leaveWeek(h, frame({ deload: true }), 316); // rasterećenje ne menja osnov ni vrh
     expect(h).toEqual({ lastBuild10: 395, peak10: 395 });
-    expect(nominal10(frame({ phase: 'taper' }), h, 400, 560)).toBe(Math.round(0.7 * 395));
-    expect(nominal10(frame({}), { lastBuild10: 550, peak10: 550 }, 400, 560)).toBe(560);
+    expect(nominal10(frame({ phase: 'taper' }), h, 400, 560, rule)).toBe(Math.round(0.7 * 395));
+    expect(nominal10(frame({}), { lastBuild10: 550, peak10: 550 }, 400, 560, rule)).toBe(560);
   });
 
   it('najbliži izvodljiv cilj: izgradnja naviše do granice; rasterećenje i taper samo naniže; ne ispod 16 km', () => {
@@ -95,10 +96,10 @@ describe('H6 pravilo obima', () => {
   });
 
   it('HI3: preporuka manje dana samo kad red sa manje dana podržava obim', () => {
-    expect(fewerDaysAdvice(4, 30)).toContain('preporuka 3 dana');
-    expect(fewerDaysAdvice(6, 40)).toContain('preporuka 3–5 dana');
-    expect(fewerDaysAdvice(6, 80)).toBe('');
-    expect(fewerDaysAdvice(3, 30)).toBe('');
+    expect(fewerDaysAdvice(4, 30, rule)).toContain('preporuka 3 dana');
+    expect(fewerDaysAdvice(6, 40, dayRule(6)!)).toContain('preporuka 3–5 dana');
+    expect(fewerDaysAdvice(6, 80, dayRule(6)!)).toBe('');
+    expect(fewerDaysAdvice(3, 30, dayRule(3)!)).toBe('');
   });
 });
 

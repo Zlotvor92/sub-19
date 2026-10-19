@@ -19,10 +19,10 @@ export interface Decision {
 const DECISIONS: readonly Decision[] = [
   {
     id: 'H1',
-    rule: 'Opseg (segment 02): 3, 4, 5 ili 6 dana trčanja; 10–20 celih nedelja do trke; trenutni obim po redu H15 (3 d 25–45, 4 d 30–60, 5 d 35–75, 6 d 40–90 km); rezultat 5 km, 10 km, polumaraton ili maraton ne stariji od 84 dana, VDOT 30–80. < 10 nedelja trajno odbijanje (preporuka 10K); > 20 nedelja „počni kasnije" (datum); obim van reda: preporuka brojeva dana čiji red podržava obim, a ispod najmanjeg reda (25 km) 10K ili izgradnja osnove; 1, 2 i 7 dana trajno; bez pouzdanog rezultata (nema ga, stariji od 84 dana, VDOT < 30) privremeno odbijanje RESULT_REQUIRED (plan po osećaju: segment 03); početnik privremeno (segment 03); trčanje/hodanje trajno (H17); VDOT > 80 trajno.',
-    place: 'input.ts (brojevi: input, days)',
+    rule: 'Opseg (segment 03): 3, 4, 5 ili 6 dana trčanja (početnik 4–5, H17); 10–20 celih nedelja do trke (početnik 12–20); trenutni obim po redu H15 (3 d 25–45, 4 d 30–60, 5 d 35–75, 6 d 40–90 km; početnik H17); rezultat 5 km, 10 km, polumaraton ili maraton ne stariji od 84 dana i VDOT 30–80 → tempo iz rezultata; bez pouzdanog rezultata (nema ga, stariji od 84 dana, VDOT < 30) plan po osećaju (H16). < 10 nedelja trajno odbijanje (preporuka 10K); > 20 nedelja „počni kasnije" (datum); obim van reda: preporuka brojeva dana čiji red podržava obim, a ispod najmanjeg reda (25 km) 10K ili izgradnja osnove; 1, 2 i 7 dana trajno; trčanje/hodanje trajno (H17); VDOT > 80 trajno.',
+    place: 'input.ts (brojevi: input, days, beginner)',
     rationale:
-      'Zadato u MASTER § 4 H1 i H15 (02). Max nedelje reda (H15) ostaje granica vrha (H6). Odbijanje je strukturisano (kod + poruka sa preporukom), nikad degenerisan plan (pouka 6).'
+      'Zadato u MASTER § 4 H1, H15 (02), H16 i H17 (03). Max nedelje reda (H15) ostaje granica vrha (H6). Odbijanje je strukturisano (kod + poruka sa preporukom), nikad degenerisan plan (pouka 6). Privremena odbijanja RESULT_REQUIRED i BEGINNER_NOT_SUPPORTED iz hm-v2.0/2.1 su ukinuta.'
   },
   {
     id: 'H2',
@@ -126,10 +126,20 @@ const DECISIONS: readonly Decision[] = [
       'Zadato u MASTER H15 (red 4 dana), osim udela dugog. Udeo 35 % se nije mogao ispuniti zajedno sa H6/pouka 9 (nedelja 1 = trenutni obim; ispod samo uz dugi na 150 min), lagan ≤ dugi, WU/CD H14 i početnim nivoima H12: kapacitet nedelje ≈ (Q1 + Q2)/(1 − 2 × udeo), pa spor trkač nije mogao da nosi trenutni obim (zaustavljanje faf8807: mreža 01 396 / 3696 odbijeno, VDOT 30 pri 35/45–60 km, VDOT 35 pri 55 km; gusta provera nedelje 1, 30 401 ulaz, 2870 ispod obima bez 150 min, pad do 15,3 km). Uz 40 %: mreža 01 0 odbijanja, gusto 0, upozorenje „najduži dugi < 16 km" 528 → 6 (docs/hm-v2/reports/SEGMENT-01-STOP.md). Minimum nedelje = broj dana × lagan 4 km (isti obrazac kao 10K v2: dani × 3 km). Redovi 3/5/6 dana: MASTER H15 (02) doslovno.'
   },
   {
+    id: 'H16',
+    rule: 'Plan po osećaju kad nema pouzdanog rezultata (nema ga, stariji od 84 dana, VDOT iz rezultata < 30): lagan tempo easyPaceSecPerKm obavezan (270–510 s/km; bez njega EASY_PACE_REQUIRED, van opsega EASY_PACE_OUT_OF_RANGE). E = lagan tempo ± 15 s (srednji E = lagan tempo; 150 min dugog po sporom kraju E). Procena VDOT-a = VDOT čiji je brži kraj E (eFractionFast 0,70) jednak laganom tempu, ograničena na 25–60, SAMO za orijentir T/I/R/RP i trajanje deonica i testa. Plan nosi paceBasis feel (plan sa rezultatom polja nema); svaki kvalitet (i oštrenje) nosi RPE: T 6–7, RP 6–7, I 8, R 8; bez prognoze polumaratona i ocene cilja do testa (predictedHmSec null, goal null, napomena) — RP po RPE. Test 5 km (plan po osećaju koji nije početnik): poslednja nedelja baze, na danu Q1 (3 dana: umesto jedinog kvaliteta); kad je ta nedelja rasterećenje — umesto kvaliteta rasterećenja (na njegovom danu, H5); WU/CD po H14 + 5 km kontrolisano maksimalno; računa se u obim nedelje, NE u dozu (bez plafona H11): progresija slota (H12) se posle testa nastavlja od stanja pre testa, a „glavna doza ne opada" preskače nedelju testa. Plan po osećaju ima tačno jedan test, plan sa rezultatom i početnik nijedan.',
+    place:
+      'input.ts (put); paces.ts feelPaces; policy.ts feel, test; periodize.ts testWeekOf; week.ts (test); workouts.ts (testWorkout, rpeOf); quality.ts advance; generate.ts; validate.ts (PACE_BASIS, PACES, RPE, TEST)',
+    rationale:
+      'Zadato u MASTER H16 (kao 10K v2 D26/D27, RP 6–7 umesto 7–8 — polumaratonski ritam je bliži pragu). Bez rezultata je lagan tempo jedini podatak o trkaču; izjednačavanje sa bržim krajem E daje niži VDOT nego srednji E — opreznija procena brzih zona. U opsegu 270–510 s/km procena je 58,6–26,1, pa granice 25/60 u mreži ne deluju (zaštita ulaza). Test na kraju baze zamenjuje najmanje specifičan kvalitet (R; kod 3 dana T kontinuirano) pre razvoja. Odstupanje (opreznije, H16 ispred H5, bez novog broja; HI11): u rasterećenju sa testom dugi ≤ 0,8 × poslednji — najduži koji ostavlja lagane ≥ 4 km (TEST_DELOAD_LONG); cilj rasterećenja se ne podiže (pouka 23).'
+  },
+  {
     id: 'H17',
-    rule: 'Trčanje/hodanje (runWalk true) → RUN_WALK_NOT_SUPPORTED: plan polumaratona traži neprekidno trčanje; preporuka 5K plan trčanja/hodanja.',
-    place: 'input.ts',
-    rationale: 'Zadato u MASTER H17; nema plana polumaratona trčanja/hodanja.'
+    rule: 'Početnik (experience beginner; podrazumevano regular), JEDNA tabela beginner + planRule: 4–5 dana (3/6 → BEGINNER_DAYS, preporuka 4–5); 12–20 nedelja (10–11 → BEGINNER_SHORT); obim 4 d 20–40, 5 d 25–45 km (ispod → preporuka 10K plana; iznad → plan bez oznake početnika); udeo dugog, minimum i max nedelje iz reda H15; nedelje 1–2 uvod bez kvaliteta (dan kvaliteta lagan); zatim jedan kvalitet nedeljno (lestvica T kont. → T cruise → RP kao 3 dana, HI6), bez I i R (4 d: 1 Q + 2 lagana + dugi; 5 d: 1 Q + 3 lagana + dugi, lagani jednaki); lestvica T kontinuirano početnika [1,5; 2,0; …] i T kontinuirano kad prvi nivo lestvice faze ne staje u plafon (HI10); rast +5 % (min 1,0, max 2,0 km); vrh = min(start × 1,4; start + 15; max nedelje H15; kapacitet); dugi ≤ 135 min sporim E (i ≤ udeo, ≤ 24 km, kotrljajuća granica HI7); WU/CD uvek 15/10 min (prvi pojas H14); bez testa (i po osećaju); upozorenje LONG_RUN_SHORT kad je najduži dugi < 14 km. Rezultat ≤ 84 dana i VDOT ≥ 30 → tempo iz VDOT-a, inače po osećaju (H16) bez testa. Trčanje/hodanje (runWalk true) → RUN_WALK_NOT_SUPPORTED (preporuka 5K plan trčanja/hodanja), za sve.',
+    place:
+      'policy.ts beginner + planRule (jedina tabela); input.ts; schedule.ts (1 kvalitet); quality.ts (startLevel, buildLadder, pickBuild); week.ts (uvod); lengths.ts, volume.ts, workouts.ts (pravilo plana); validate.ts',
+    rationale:
+      'Zadato u MASTER H17 (kao 10K v2 D28/D29/D31/D32). Cilj početnika je završiti zdravo: smanjen intenzitet (jedan kvalitet, bez I/R, uvod bez kvaliteta) i rast (5 %, max 2 km; vrh 1,4× / +15 km; dugi 135 min). Test 5 km bi kod malog obima bio ≈ trećina nedelje (pouka 13); rezultat trke kasnije koristi adaptacija (04). Najduži dugi < 14 km je kratak i za početnika (upozorenje, preporuka više dana ili obima).'
   },
   {
     id: 'HI1',
@@ -196,12 +206,42 @@ const DECISIONS: readonly Decision[] = [
       'volume.ts capacityMessage (a); workouts.ts structuresForDose (b); paces.ts (c); lengths.ts (d)',
     rationale:
       'Odluka organizatora posle HM-01 (prompt HM-02, tačka 4); (c) proverava paces.node (RP i T su nezavisni udeli VDOT-a, bez poređenja).'
+  },
+  {
+    id: 'HI10',
+    rule: 'Tumačenje H17 (kao 10K v2 D28/D31, bez novog broja osim 1,5 km iz H17): početni nivo početnika = prvi nivo lestvice (H12 „≤ 60 % plafona" ne važi; T kontinuirano 1,5 km). Kad prvi nivo lestvice faze (T kont. / T cruise / RP) ne staje u plafon H11 cilja nedelje, kvalitet je T kontinuirano: najviši nivo lestvice početnika po H12 (≤ 1 nivo nedeljno, ista doza druge strukture, inače ponavljanje uz napomenu); prelaz na lestvicu faze čim njen prvi nivo stane (T cruise ≥ poslednje T, RP ≥ max(prvi nivo, poslednje T)); T kontinuirano posle T cruise ≥ poslednje T (doza ne pada). Bez kvaliteta samo kad ni 1,5 km ne staje (BUILD_NO_QUALITY). Rasterećenje početnika: T ≈ 60 % poslednje T doze (nivo naniže), min 1,5 km (H5 min 2,0 km važi za redovan plan). Taper početnika: RP ≈ 60 % poslednje RP doze (min 2 × 2000 m, H7); RP ne staje → T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km); bez kvaliteta samo kad ni to ne staje (druga pretraga). Baza bez platoa (H12): doza bez druge strukture (T 1,5 km — deonice ≥ 1000 m) sme da se ponovi kad sledeći nivo ne staje (napomena).',
+    place:
+      'policy.ts beginner.tFirstKm; workouts.ts ladderLevels; quality.ts (startLevel, buildLadder, pickSlot, carries, deloadDose, beginnerTaperT); week.ts (napomene); validate.ts (PHASE_QUALITY, BUILD_NO_QUALITY, BASE_PLATEAU, DELOAD_CONTENT, TAPER_QUALITY, START_LEVEL)',
+    rationale:
+      'Opreznija opcija gde H17 ne kaže (start, rasterećenje, taper početnika); isto rešenje kao 10K v2 03b (D31), gde je bez T 1,5 km 3720 nedelja izgradnje početnika ostalo bez kvaliteta. ≈ 10 min praga (1,5 km) je uobičajen početni tempo trening. Brojke mreže početnika: docs/hm-v2/reports/SEGMENT-03-IMPLEMENTATION.md.'
+  },
+  {
+    id: 'HI11',
+    rule: 'Tumačenja H16 (bez novog broja): (a) u rasterećenju test stoji na danu kvaliteta rasterećenja (T slot Q2; 3 dana Q1); (b) dugi rasterećenja sa testom ≤ 0,8 × poslednji ne-rasteretni — najduži koji ostavlja lagane ≥ 4 km i ≤ dugi (upozorenje TEST_DELOAD_LONG kad je skraćen); cilj rasterećenja sa testom se ne podiže (pouka 23: naviše bi smelo samo ako nedelja zaista ima test — ovde ga ima, ali podizanje nije potrebno: mreža 03 0 odbijanja); (c) prognoza polumaratona iz procene VDOT-a služi samo za trajanje segmenta trke (procena); (d) test nema RPE broj („kontrolisano maksimalno"); (e) trajanje testa = procena vremena 5 km iz procene VDOT-a.',
+    place:
+      'week.ts (deload sa testom); lengths.ts deloadLengths; workouts.ts testWorkout; validate.ts (TEST, DELOAD_LONG)',
+    rationale:
+      'Isto kao 10K v2 D27 tumačenja; test ne sme da „pojede" nedelju (pouka 13): lagani ≥ 4 km, dugi ≥ lagan i u nedelji testa.'
+  },
+  {
+    id: 'HI12',
+    rule: 'Odluke organizatora o otvorenim pitanjima HM-02 (bez promene koda): (a) 594 plana koje kotrljajuće pravilo pouke 28 menja bez ulaza recentLongRunKm — prihvaćeno; (b) 3 dana / 25 km: taper i rasterećenje bez kvaliteta (HI2 odstupanje) — prihvaćeno (mali obim); (c) 6 dana mali obim + brz trkač: kvalitetni dan duži od dugog (132 plana) — upozorenje LONG_SHORTER_THAN_QUALITY (pouka 14) je dovoljno.',
+    place:
+      'lengths.ts rollingLongCap10 (a); week.ts relax (b); validate.ts LONG_SHORTER_THAN_QUALITY (c)',
+    rationale: 'Prompt HM-03, tačka 3.'
+  },
+  {
+    id: 'HI13',
+    rule: 'Pouka 31 (struktura uvoda): nedelja uvoda početnika (1–2) nema kvaliteta ni kad je rasteretna (prinudno rasterećenje u adaptaciji, segment 04): obim rasterećenja (H5), sadržaj uvoda — dan T slota je lagan, dugi 0,8 × poslednji. Jedno mesto: week.ts (intro ispred rasterećenja); validator: nedelja uvoda bez kvaliteta.',
+    place: 'week.ts buildWeek; validate.ts (INTRO)',
+    rationale:
+      'Pouka 31 (10K 06d). U generatoru rasterećenje ne pada u nedelje 1–2 (H5), pa se pravilo u planu bez adaptacije ne javlja; struktura je pripremljena za segment 04 i proverena testom nedelje.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.1.0',
+  version: 'hm-v2.2.0',
 
   /** H1 (dani i obim: H15). */
   input: {
@@ -253,6 +293,50 @@ export const HM_V2_POLICY = {
       longMaxShare: 0.3,
       weekMinKm: 24
     }
+  },
+
+  /** H16: plan po osećaju (bez pouzdanog rezultata). */
+  feel: {
+    /** Opseg ulaza easyPaceSecPerKm [s/km]. */
+    easyPaceMinSec: 270,
+    easyPaceMaxSec: 510,
+    /** E = lagan tempo ± eRangeSec. */
+    eRangeSec: 15,
+    /** Procena VDOT-a (orijentir brzih zona) ograničena na vdotMin–vdotMax. */
+    vdotMin: 25,
+    vdotMax: 60,
+    /** RPE po zoni rada (1–10). */
+    rpe: {
+      T: { min: 6, max: 7, cue: 'udobno teško, kratke rečenice' },
+      RP: { min: 6, max: 7, cue: 'ritam polumaratona' },
+      I: { min: 8, max: 8, cue: 'teško, izdrživo 3–5 min' },
+      R: { min: 8, max: 8, cue: 'brzo, opušteno' }
+    }
+  },
+
+  /** H16: test (samo plan po osećaju koji nije početnik). */
+  test: { km: 5 },
+
+  /** H17: JEDINA tabela početnika (udeo dugog, minimum i max nedelje: red H15 za isti broj dana). */
+  beginner: {
+    days: {
+      4: { kmMin: 20, kmMax: 40 },
+      5: { kmMin: 25, kmMax: 45 }
+    },
+    weeksMin: 12,
+    /** Nedelje 1..introWeeks bez kvaliteta. */
+    introWeeks: 2,
+    growth: 0.05,
+    growthMinKm: 1.0,
+    growthMaxKm: 2.0,
+    peakFactor: 1.4,
+    peakAddKm: 15,
+    /** Dugi ≤ 135 min sporim E. */
+    longMaxSec: 8100,
+    /** Upozorenje LONG_RUN_SHORT kad je najduži dugi < longWarnKm. */
+    longWarnKm: 14,
+    /** HI10: prvi nivo lestvice T kontinuirano početnika = najmanja T doza rasterećenja i tapera [km]. */
+    tFirstKm: 1.5
   },
 
   /** H2: udeli VDOT-a po zonama. */
@@ -458,4 +542,77 @@ export function dayRule(count: number): DayRule | null {
   return (RUN_DAYS_COUNTS as readonly number[]).includes(count)
     ? HM_V2_POLICY.days[count as RunDaysCount]
     : null;
+}
+
+/** H17: brojevi dana trčanja početnika. */
+export const BEGINNER_DAYS_COUNTS = Object.keys(HM_V2_POLICY.beginner.days)
+  .map(Number)
+  .sort((a, b) => a - b) as readonly (keyof HmV2Policy['beginner']['days'])[];
+
+/** Pravilo plana: red H15 (redovan) ili red H15 izmenjen tabelom početnika (H17). Jedino mesto gde se
+    brojevi rasta, vrha, dugog, uvoda i testa biraju po iskustvu. */
+export interface PlanRule extends DayRule {
+  readonly beginner: boolean;
+  /** H13/H17: plafon dugog sporim E [s]. */
+  readonly longMaxSec: number;
+  /** H13/H17: upozorenje kad je najduži dugi plana < longWarnKm. */
+  readonly longWarnKm: number;
+  /** H6/H17: rast nedelje izgradnje i granica vrha. */
+  readonly growth: number;
+  readonly growthMinKm: number;
+  readonly growthMaxKm: number;
+  readonly peakFactor: number;
+  readonly peakAddKm: number;
+  /** H17: nedelje 1..introWeeks bez kvaliteta (0 = nema uvoda). */
+  readonly introWeeks: number;
+  /** H1/H17: najmanje nedelja. */
+  readonly weeksMin: number;
+  /** H16/H17: plan po osećaju ima test 5 km (početnik nema). */
+  readonly feelTest: boolean;
+  /** Brojevi dana dostupni ovom iskustvu (preporuke u porukama). */
+  readonly dayCounts: readonly number[];
+}
+
+export function planRule(count: number, experience: 'beginner' | 'regular'): PlanRule | null {
+  const d = dayRule(count);
+  if (!d) return null;
+  const P = HM_V2_POLICY;
+  if (experience === 'regular')
+    return {
+      ...d,
+      beginner: false,
+      longMaxSec: P.lengths.longMaxSec,
+      longWarnKm: P.lengths.longWarnKm,
+      growth: P.volume.growth,
+      growthMinKm: P.volume.growthMinKm,
+      growthMaxKm: P.volume.growthMaxKm,
+      peakFactor: P.volume.peakFactor,
+      peakAddKm: P.volume.peakAddKm,
+      introWeeks: 0,
+      weeksMin: P.input.weeksMin,
+      feelTest: true,
+      dayCounts: RUN_DAYS_COUNTS
+    };
+  const b = P.beginner;
+  if (!(BEGINNER_DAYS_COUNTS as readonly number[]).includes(count)) return null;
+  const row = b.days[count as keyof typeof b.days];
+  return {
+    ...d,
+    quality: 1,
+    easy: count - 2,
+    kmMin: row.kmMin,
+    kmMax: row.kmMax,
+    beginner: true,
+    longMaxSec: b.longMaxSec,
+    longWarnKm: b.longWarnKm,
+    growth: b.growth,
+    growthMinKm: b.growthMinKm,
+    growthMaxKm: b.growthMaxKm,
+    peakFactor: b.peakFactor,
+    peakAddKm: b.peakAddKm,
+    introWeeks: b.introWeeks,
+    weeksMin: b.weeksMin,
+    feelTest: false,
+    dayCounts: BEGINNER_DAYS_COUNTS
+  };
 }

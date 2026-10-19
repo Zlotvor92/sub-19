@@ -1,7 +1,8 @@
-/* HM v2 — generisanje. Redosled: ulaz (H1, H15, H17) → tempo (H2) → raspored (H9) → faze i rasterećenja
-   (H4/H5) → po nedelji cilj (H6, volume.ts) i konstrukcija (week.ts) → validator (samo prijavljuje; greška
-   = odbijanje PLAN_VIOLATES_POLICY, nikad degenerisan plan). Nema koraka koji posle konstrukcije menja
-   nedelju. Adaptacija (segment 04) dodaje korake u isti konstruktor. */
+/* HM v2 — generisanje. Redosled: ulaz (H1, H15, H16, H17) → tempo (H2; po osećaju H16) → raspored (H9) →
+   faze, rasterećenja i test (H4/H5/H16; početnik bez testa) → po nedelji cilj (H6, volume.ts) i konstrukcija
+   (week.ts) → validator (samo prijavljuje; greška = odbijanje PLAN_VIOLATES_POLICY, nikad degenerisan
+   plan). Nema koraka koji posle konstrukcije menja nedelju. Adaptacija (segment 04) dodaje korake u isti
+   konstruktor. */
 
 import { checkInput } from './input.ts';
 import {
@@ -10,7 +11,7 @@ import {
   rollingLongCap10,
   week1LongCap10
 } from './lengths.ts';
-import { assessGoal, pacesFromVdot, predictedHm } from './paces.ts';
+import { assessGoal, feelPaces, pacesFromVdot, predictedHm } from './paces.ts';
 import { isBuildPhase, periodize } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
@@ -28,7 +29,7 @@ import {
   startKm10
 } from './volume.ts';
 import { buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
-import { fmtKm, warmupCooldown } from './workouts.ts';
+import { fmtKm, fmtSec, warmupCooldown } from './workouts.ts';
 
 /** HI7 (pouka 28): napomena nedelje 1 — bez ulaza prag skorašnjeg najdužeg trka; sa ulazom granica (i da li
     je dugi na njoj). Počinje sa „Dugi nedelje 1" (testInputs.RECENT_LONG_NOTE). */
@@ -38,7 +39,7 @@ function recentLongNote(long10: number, ctx: WeekContext): string {
   if (r == null)
     return `Dugi nedelje 1 ${km} km pretpostavlja skorašnji najduži trk od bar ${fmtKm(recentLongNeeded10(long10) / 10)} km; ako je bio kraći, unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).`;
   const cap10 = recentLongCap10(r);
-  const at = long10 === cap10 && long10 === week1LongCap10(ctx.paces, r);
+  const at = long10 === cap10 && long10 === week1LongCap10(ctx.paces, r, ctx.rule.longMaxSec);
   return `Dugi nedelje 1 ${km} km ≤ ${fmtKm(cap10 / 10)} km (skorašnji najduži ${fmtKm(r)} km, pouka 28)${at ? ' — na granici' : ''}.`;
 }
 
@@ -83,17 +84,21 @@ function recentTooShort(
 function generate(raw: unknown, searchThreshold: boolean): GenerateResult {
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
-  const { input, weeks, vdotRaw, pattern, rule } = chk;
-  const paces = pacesFromVdot(vdotRaw);
-  const frames = periodize(input.startDate, weeks);
+  const { input, weeks, pace, pattern, rule } = chk;
+  const feel = pace.kind === 'feel';
+  const paces = feel ? feelPaces(pace.easySecPerKm) : pacesFromVdot(pace.vdotRaw);
+  // H16: test 5 km samo u planu po osećaju koji nije početnik (H17).
+  const frames = periodize(input.startDate, weeks, feel && rule.feelTest);
   if (!frames) return infeasible('Nema rasporeda rasterećenja po pravilima H5.');
   const ctx: WeekContext = {
     input,
     paces,
     pattern,
+    // HI11 c: u planu po osećaju prognoza služi samo za trajanje segmenta trke (procena); plan je nema.
     raceSec: predictedHm(paces),
-    wc: warmupCooldown(input.currentWeeklyKm),
-    rule
+    wc: warmupCooldown(input.currentWeeklyKm, rule.beginner),
+    rule,
+    feel
   };
   const start10 = startKm10(input.currentWeeklyKm);
   const cap10 = peakCap10(start10, rule);
@@ -127,7 +132,7 @@ function generate(raw: unknown, searchThreshold: boolean): GenerateResult {
       continue;
     }
     const roll10 = rollingLongCap10(frame.index, longs10, input.recentLongRunKm);
-    const nominal = nominal10(frame, h, start10, cap10);
+    const nominal = nominal10(frame, h, start10, cap10, rule);
     const make = (t10: number, mode: QualityMode) =>
       buildWeek(ctx, frame, t10, quality, lastLong10, longest10, mode, roll10);
     // HI2: druga pretraga ('relax') samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja.
@@ -173,7 +178,7 @@ function generate(raw: unknown, searchThreshold: boolean): GenerateResult {
     }
     if (isBuildPhase(frame.phase) && !frame.deload) {
       if (w.long10 !== null) lastLong10 = w.long10;
-      if (w.picks) quality = advance(w.picks);
+      if (w.picks) quality = advance(w.picks, quality);
     }
     h = leaveWeek(h, frame, fit.target10);
   }
@@ -183,9 +188,11 @@ function generate(raw: unknown, searchThreshold: boolean): GenerateResult {
     policyVersion: P.version,
     input,
     vdot: paces.vdot,
+    // Plan sa rezultatom je bajt-isti kao u hm-v2.1.0 (bez polja paceBasis).
+    ...(feel ? { paceBasis: 'feel' as const } : {}),
     paces,
-    predictedHmSec: predictedHm(paces),
-    goal: input.goalTimeSec ? assessGoal(paces.vdot, input.goalTimeSec, weeks) : null,
+    predictedHmSec: feel ? null : predictedHm(paces),
+    goal: !feel && input.goalTimeSec ? assessGoal(paces.vdot, input.goalTimeSec, weeks) : null,
     pattern,
     startKm: start10 / 10,
     peakCapKm: cap10 / 10,
@@ -194,6 +201,21 @@ function generate(raw: unknown, searchThreshold: boolean): GenerateResult {
     weeks: out,
     warnings: []
   };
+  if (pace.kind === 'feel') {
+    const t = out.find((w) => w.test);
+    const td = t?.days.find((d) => d.workout.kind === 'test');
+    const goal = input.goalTimeSec ? ' Ciljno vreme se ocenjuje posle rezultata (H3).' : '';
+    plan.notes.push(
+      `Plan po osećaju (H16): ${pace.why}. E = lagan tempo ${fmtSec(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE.`,
+      t && td
+        ? `Test ${P.test.km} km: nedelja ${t.index}, ${td.date} (H16). Prognoza polumaratona i ocena cilja: posle testa; do tada RP po RPE.${goal}`
+        : `Početnik bez testa ${P.test.km} km (H17): kvalitet po RPE; prognoza polumaratona i ocena cilja posle rezultata trke (adaptacija, segment 04).${goal}`
+    );
+  }
+  if (rule.beginner)
+    plan.notes.push(
+      `Početnik (H17): nedelje 1–${rule.introWeeks} uvod bez kvaliteta, zatim jedan kvalitet nedeljno (T → T cruise → RP, bez I i R), rast ${Math.round(rule.growth * 100)} % (${fmtKm(rule.growthMinKm)}–${fmtKm(rule.growthMaxKm)} km), dugi ≤ ${Math.round(rule.longMaxSec / 60)} min, bez testa.`
+    );
   if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
     plan.notes.push(
       `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, paces, input.recentLongRunKm))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (H6).`

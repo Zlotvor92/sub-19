@@ -2,7 +2,10 @@
    Mreža 01 (MASTER § 3): 4 dana × nedelje 10–20 × obim 30–60 km (korak 5) × VDOT {30, 35, 40, 45, 50, 55,
    60, 70} × 3 rasporeda × trka sub/ned = 11 × 7 × 8 × 3 × 2 = 3696 ulaza (id bez prefiksa dana).
    Mreža 02: svaki broj dana (3–6) × nedelje 10–20 × obim reda H15 korak 5 × isti VDOT × 3 rasporeda po broju
-   dana × trka sub/ned = 2640 + 3696 + 4752 + 5808 = 16 896 ulaza (id `d<n>-…`; 4 dana = mreža 01). */
+   dana × trka sub/ned = 2640 + 3696 + 4752 + 5808 = 16 896 ulaza (id `d<n>-…`; 4 dana = mreža 01).
+   Mreža 03 (HM-03): po osećaju — lagan {270, 315, 360, 405, 450, 510} × 3–6 dana × obim reda korak 5 × nedelje
+   10–20 × 3 rasporeda (trka nedelja) = 6336 ulaza (id `f-d<n>-…`); početnik — po osećaju {330, 390, 450, 510} i
+   VDOT {30, 35, 40} × 4–5 dana × obim H17 korak 5 × nedelje 12–20 × 3 rasporeda = 1890 ulaza (id `b-d<n>-…`). */
 
 import { addDays } from './dates.ts';
 import { raceTimeForVdot, round1, vdotFromResult } from './paces.ts';
@@ -68,6 +71,10 @@ export interface Profile {
   resultDaysBefore?: number;
   goalTimeSec?: number | null;
   recentLongRunKm?: number;
+  /** H16: bez rezultata, lagan tempo [s/km]. */
+  easyPaceSecPerKm?: number;
+  /** H17. */
+  beginner?: boolean;
 }
 
 export function inputOf(p: Profile): Record<string, unknown> {
@@ -79,10 +86,105 @@ export function inputOf(p: Profile): Record<string, unknown> {
     runDays: p.days,
     longRunDay: p.long ?? null,
     currentWeeklyKm: p.km,
-    recentResult: { ...res, date: addDays(start, -(p.resultDaysBefore ?? 14)) },
+    recentResult:
+      p.easyPaceSecPerKm !== undefined
+        ? null
+        : { ...res, date: addDays(start, -(p.resultDaysBefore ?? 14)) },
     goalTimeSec: p.goalTimeSec ?? null,
-    ...(p.recentLongRunKm !== undefined ? { recentLongRunKm: p.recentLongRunKm } : {})
+    ...(p.recentLongRunKm !== undefined ? { recentLongRunKm: p.recentLongRunKm } : {}),
+    ...(p.easyPaceSecPerKm !== undefined ? { easyPaceSecPerKm: p.easyPaceSecPerKm } : {}),
+    ...(p.beginner ? { experience: 'beginner' } : {})
   };
+}
+
+/** Mreža 03 (H16): lagan tempo plana po osećaju [s/km]. */
+export const FEEL_PACES = [270, 315, 360, 405, 450, 510] as const;
+
+export interface Grid03Input {
+  id: string;
+  days: DayCount;
+  weeks: number;
+  km: number;
+  /** Lagan tempo (po osećaju) ili null (rezultat sa VDOT-om `vdot`). */
+  easy: number | null;
+  vdot: number | null;
+  schedule: 'A' | 'B' | 'C';
+  input: Record<string, unknown>;
+}
+
+/** Mreža 03 po osećaju (H16): id `f-d<n>-<ned>w-<km>km-e<lagan>-<raspored>`; 6336 ulaza. */
+export function feelInputs(): Grid03Input[] {
+  const out: Grid03Input[] = [];
+  for (const days of DAY_COUNTS) {
+    const k = KM_BY_DAYS[days];
+    for (const easy of FEEL_PACES)
+      for (const weeks of GRID.weeks)
+        for (let km = k.min; km <= k.max; km += 5)
+          for (const schedule of GRID.schedule) {
+            const sc = SCHEDULES_BY_DAYS[days][schedule];
+            out.push({
+              id: `f-d${days}-${weeks}w-${km}km-e${easy}-${schedule}`,
+              days,
+              weeks,
+              km,
+              easy,
+              vdot: null,
+              schedule,
+              input: inputOf({ weeks, km, days: sc.days, long: sc.long, easyPaceSecPerKm: easy })
+            });
+          }
+  }
+  return out;
+}
+
+/** H17: obim početnika po broju dana (korak 5). */
+export const BEGINNER_KM: Record<4 | 5, { min: number; max: number }> = {
+  4: { min: 20, max: 40 },
+  5: { min: 25, max: 45 }
+};
+/** Mreža 03 početnik: po osećaju (lagan tempo) i sa rezultatom (VDOT). */
+export const BEGINNER_PACES = [
+  { easy: 330 },
+  { easy: 390 },
+  { easy: 450 },
+  { easy: 510 },
+  { vdot: 30 },
+  { vdot: 35 },
+  { vdot: 40 }
+] as const;
+
+/** Mreža 03 početnik (H17): id `b-d<n>-<ned>w-<km>km-<e…|v…>-<raspored>`; 1890 ulaza. */
+export function beginnerInputs(): Grid03Input[] {
+  const out: Grid03Input[] = [];
+  for (const days of [4, 5] as const) {
+    const k = BEGINNER_KM[days];
+    for (const pace of BEGINNER_PACES)
+      for (let weeks = 12; weeks <= 20; weeks++)
+        for (let km = k.min; km <= k.max; km += 5)
+          for (const schedule of GRID.schedule) {
+            const sc = SCHEDULES_BY_DAYS[days][schedule];
+            const easy = 'easy' in pace ? pace.easy : null;
+            const vdot = 'vdot' in pace ? pace.vdot : null;
+            out.push({
+              id: `b-d${days}-${weeks}w-${km}km-${easy !== null ? `e${easy}` : `v${vdot}`}-${schedule}`,
+              days,
+              weeks,
+              km,
+              easy,
+              vdot,
+              schedule,
+              input: inputOf({
+                weeks,
+                km,
+                days: sc.days,
+                long: sc.long,
+                beginner: true,
+                ...(easy !== null ? { easyPaceSecPerKm: easy } : { vdot: vdot! })
+              })
+            });
+          }
+  }
+  return out;
 }
 
 export const GRID = {

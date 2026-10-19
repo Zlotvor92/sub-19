@@ -4,11 +4,18 @@
    1–4 skorašnji najduži trk) i da svaki lagan ostane ≥ 4 km); lagani dele ostatak na jednake delove (razlika ≤ 0,1 km). Dugi ≥ svaki lagan je tvrdo pravilo
    (pouka 2): kad ne može da se ispuni, nedelja nije izvodljiva (H6). */
 
-import { type DayRule, HM_V2_POLICY as P } from './policy.ts';
+import { HM_V2_POLICY as P } from './policy.ts';
 import type { Paces } from './types.ts';
 
 const EPS = 1e-9;
 export const EASY_MIN10 = Math.round(P.lengths.easyMinKm * 10);
+
+/** Pravilo dugog iz pravila plana (policy.planRule): udeo reda H15 i plafon trajanja (H13; početnik 135 min,
+    H17). */
+export interface LongRule {
+  readonly longMaxShare: number;
+  readonly longMaxSec: number;
+}
 
 export interface Lengths {
   long10: number;
@@ -16,9 +23,9 @@ export interface Lengths {
   easy10: number[];
 }
 
-/** H13: plafon dugog od 150 min sporim E [0,1 km]. */
-export function longTimeCap10(p: Paces): number {
-  return Math.floor((P.lengths.longMaxSec / p.E.slow) * 10 + EPS);
+/** H13: plafon dugog od 150 min (početnik 135 min, H17) sporim E [0,1 km]. */
+export function longTimeCap10(p: Paces, longMaxSec: number): number {
+  return Math.floor((longMaxSec / p.E.slow) * 10 + EPS);
 }
 
 /** H13 (odluka HM-01 → 02): plafon dugog u km [0,1 km]. */
@@ -56,21 +63,31 @@ export function recentLongNeeded10(long10: number): number {
   return r10;
 }
 
-/** HI8: apsolutni plafon dugog nedelje 1 — min(150 min, 24 km, kotrljajuća granica nedelje 1 = granica
-    skorašnjeg najdužeg ako je dat) [0,1 km]. Jedna funkcija za konstruktor, poruku i validator (pouka 9, 24). */
-export function week1LongCap10(p: Paces, recentKm: number | null | undefined): number {
-  return Math.min(longTimeCap10(p), longKmCap10(), rollingLongCap10(1, [], recentKm));
+/** HI8: apsolutni plafon dugog nedelje 1 — min(150 min (početnik 135), 24 km, kotrljajuća granica nedelje 1 =
+    granica skorašnjeg najdužeg ako je dat) [0,1 km]. Jedna funkcija za konstruktor, poruku i validator
+    (pouka 9, 24). */
+export function week1LongCap10(
+  p: Paces,
+  recentKm: number | null | undefined,
+  longMaxSec: number
+): number {
+  return Math.min(longTimeCap10(p, longMaxSec), longKmCap10(), rollingLongCap10(1, [], recentKm));
 }
 
 /** H13/H15: plafon dugog kao udeo cilja nedelje [0,1 km]. */
-export function longShareCap10(target10: number, rule: DayRule): number {
+export function longShareCap10(target10: number, rule: { longMaxShare: number }): number {
   return Math.floor(rule.longMaxShare * target10 + EPS);
 }
 
 /** H13: najduži dozvoljen dugi [0,1 km] za cilj nedelje (udeo H15, trajanje, 24 km; `roll10` — kotrljajuća
     granica pouke 28, HI7). */
-export function longCap10(target10: number, rule: DayRule, p: Paces, roll10 = Infinity): number {
-  return Math.min(longShareCap10(target10, rule), longTimeCap10(p), longKmCap10(), roll10);
+export function longCap10(target10: number, rule: LongRule, p: Paces, roll10 = Infinity): number {
+  return Math.min(
+    longShareCap10(target10, rule),
+    longTimeCap10(p, rule.longMaxSec),
+    longKmCap10(),
+    roll10
+  );
 }
 
 /** H7: plafon dugog tapera — 0,6 × najduži dugi plana [0,1 km]. */
@@ -104,7 +121,7 @@ export function buildLengths(
   target10: number,
   quality100: number,
   easyDays: number,
-  rule: DayRule,
+  rule: LongRule,
   p: Paces,
   roll10 = Infinity
 ): Lengths | null {
@@ -117,7 +134,7 @@ export function taperLengths(
   quality100: number,
   easyDays: number,
   longest10: number,
-  rule: DayRule,
+  rule: LongRule,
   p: Paces,
   roll10 = Infinity
 ): Lengths | null {
@@ -126,17 +143,20 @@ export function taperLengths(
 }
 
 /** H5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ H13); ostatak na `easyDays` jednakih
-    laganih dana (≥ 4 km, ≤ dugi). */
+    laganih dana (≥ 4 km, ≤ dugi). `test` (H16, HI11 b): dugi ≤ 0,8 × poslednji — najduži koji ostavlja lagane
+    ≥ 4 km i ≤ dugi (odstupanje, opreznije). */
 export function deloadLengths(
   target10: number,
   quality100: number,
   easyDays: number,
   lastLong10: number,
-  rule: DayRule,
+  rule: LongRule,
   p: Paces,
-  roll10 = Infinity
+  roll10 = Infinity,
+  test = false
 ): Lengths | null {
   const long10 = Math.min(deloadLong10(lastLong10), longCap10(target10, rule, p, roll10));
+  if (test) return withEasy(target10 * 10 - quality100, long10, easyDays);
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
   if (long10 < EASY_MIN10 || easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
   return { long10, easy10 };

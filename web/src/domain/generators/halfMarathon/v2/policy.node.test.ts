@@ -1,4 +1,4 @@
-/* H1–H15, HI*: svi brojevi politike zakucani (izmena broja = svesna izmena testa i DECISIONS). */
+/* H1–H17, HI*: svi brojevi politike zakucani (izmena broja = svesna izmena testa i DECISIONS). */
 
 import { describe, expect, it } from 'vitest';
 import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
@@ -6,7 +6,7 @@ import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 describe('HM v2 politika (MASTER § 4)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('hm-v2');
-    expect(P.version).toBe('hm-v2.1.0');
+    expect(P.version).toBe('hm-v2.2.0');
   });
 
   it('H1 opseg ulaza', () => {
@@ -176,6 +176,23 @@ describe('HM v2 politika (MASTER § 4)', () => {
     ]);
   });
 
+  it('H16 po osećaju: lagan 270–510 s/km, E ± 15 s, procena VDOT 25–60, RPE T/RP 6–7, I/R 8; test 5 km', () => {
+    expect(P.feel).toEqual({
+      easyPaceMinSec: 270,
+      easyPaceMaxSec: 510,
+      eRangeSec: 15,
+      vdotMin: 25,
+      vdotMax: 60,
+      rpe: {
+        T: { min: 6, max: 7, cue: 'udobno teško, kratke rečenice' },
+        RP: { min: 6, max: 7, cue: 'ritam polumaratona' },
+        I: { min: 8, max: 8, cue: 'teško, izdrživo 3–5 min' },
+        R: { min: 8, max: 8, cue: 'brzo, opušteno' }
+      }
+    });
+    expect(P.test).toEqual({ km: 5 });
+  });
+
   it('DECISIONS: svaka odluka ima pravilo, mesto i obrazloženje; jedinstveni id', () => {
     const ids = P.DECISIONS.map((d) => d.id);
     expect(ids).toEqual([
@@ -194,6 +211,7 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'H13',
       'H14',
       'H15',
+      'H16',
       'H17',
       'HI1',
       'HI4',
@@ -203,7 +221,11 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'HI6',
       'HI7',
       'HI8',
-      'HI9'
+      'HI9',
+      'HI10',
+      'HI11',
+      'HI12',
+      'HI13'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

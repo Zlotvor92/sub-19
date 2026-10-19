@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { pacesFromVdot } from './paces.ts';
-import { HM_V2_POLICY as P } from './policy.ts';
+import { HM_V2_POLICY as P, planRule } from './policy.ts';
 import {
   capM,
   carries,
@@ -20,6 +20,8 @@ import type { LadderId, Structure } from './types.ts';
 import { doseOf, ladderLevels, recoveryOf, structuresForDose, zoneOf } from './workouts.ts';
 
 const p45 = pacesFromVdot(45);
+const R3 = planRule(3, 'regular')!;
+const R4 = planRule(4, 'regular')!;
 const fmt = (s: Structure): string =>
   s.form === 'continuous'
     ? `${s.km} kont`
@@ -48,8 +50,8 @@ describe('H10 lestvice po fazi i druga struktura (pouka 11)', () => {
       'T_cruise',
       'RP'
     ]);
-    const w = pickBuild(INITIAL_QUALITY, 'base', 30, p45, false, 1)!;
-    expect([fmt(w.q1.structure), w.q2]).toEqual(['2 kont', null]);
+    const w = pickBuild(INITIAL_QUALITY, 'base', 30, p45, R3)!;
+    expect([fmt(w.q1!.structure), w.q2]).toEqual(['2 kont', null]);
     expect(deloadSlot(1)).toBe('q1');
     expect(deloadSlot(2)).toBe('q2');
   });
@@ -196,8 +198,8 @@ describe('H12 progresija', () => {
   });
 
   it('prva nedelja izgradnje: oba slota na početnom nivou', () => {
-    const w = pickBuild(INITIAL_QUALITY, 'base', 40, p45)!;
-    expect([fmt(w.q1.structure), fmt(w.q2!.structure)]).toEqual(['6x200', '2 kont']);
+    const w = pickBuild(INITIAL_QUALITY, 'base', 40, p45, R4)!;
+    expect([fmt(w.q1!.structure), fmt(w.q2!.structure)]).toEqual(['6x200', '2 kont']);
   });
 });
 
@@ -205,23 +207,25 @@ describe('H5/H7 doza rasterećenja i tapera (HI4)', () => {
   it('rasterećenje: T ≈ 60 % poslednje T doze, nivo naniže, min 2,0 km (baza kontinuirano, inače 2 × 1000 m)', () => {
     const s = (ladder: LadderId, doseM: number, structure: Structure) => ({
       q1: null,
-      q2: { ladder, doseM, structure }
+      q2: { ladder, doseM, structure },
+      t: 0
     });
     expect(
-      fmt(deloadDose(s('T_continuous', 3000, { form: 'continuous', km: 3 }), 'base').structure)
+      fmt(deloadDose(s('T_continuous', 3000, { form: 'continuous', km: 3 }), 'base', R4).structure)
     ).toBe('2 kont');
     expect(
-      fmt(deloadDose(s('T_continuous', 5000, { form: 'continuous', km: 5 }), 'base').structure)
+      fmt(deloadDose(s('T_continuous', 5000, { form: 'continuous', km: 5 }), 'base', R4).structure)
     ).toBe('3 kont');
     expect(
       fmt(
-        deloadDose(s('T_cruise', 3200, { form: 'reps', reps: 2, repM: 1600 }), 'development')
+        deloadDose(s('T_cruise', 3200, { form: 'reps', reps: 2, repM: 1600 }), 'development', R4)
           .structure
       )
     ).toBe('2x1000');
     expect(
       fmt(
-        deloadDose(s('T_cruise', 8000, { form: 'reps', reps: 5, repM: 1600 }), 'specific').structure
+        deloadDose(s('T_cruise', 8000, { form: 'reps', reps: 5, repM: 1600 }), 'specific', R4)
+          .structure
       )
     ).toBe('3x1600');
   });
@@ -229,12 +233,14 @@ describe('H5/H7 doza rasterećenja i tapera (HI4)', () => {
   it('taper: RP i T ≈ 60 % poslednje doze (min 2 × 2000 m, 2,0 km)', () => {
     const t = taperDoses({
       q1: { ladder: 'RP', doseM: 10000, structure: { form: 'reps', reps: 2, repM: 5000 } },
-      q2: { ladder: 'T_cruise', doseM: 6400, structure: { form: 'reps', reps: 4, repM: 1600 } }
+      q2: { ladder: 'T_cruise', doseM: 6400, structure: { form: 'reps', reps: 4, repM: 1600 } },
+      t: 6400
     });
     expect([t.q1.doseM, fmt(t.q2!.structure)]).toEqual([6000, '2x1600']); // 0,6 × 6400 = 3840 → 3200
     const lo = taperDoses({
       q1: { ladder: 'RP', doseM: 5000, structure: { form: 'reps', reps: 2, repM: 2500 } },
-      q2: { ladder: 'T_cruise', doseM: 3000, structure: { form: 'reps', reps: 3, repM: 1000 } }
+      q2: { ladder: 'T_cruise', doseM: 3000, structure: { form: 'reps', reps: 3, repM: 1000 } },
+      t: 3000
     });
     expect([fmt(lo.q1.structure), fmt(lo.q2!.structure)]).toEqual(['2x2000', '2x1000']);
   });
@@ -246,10 +252,11 @@ describe('H5/H7 doza rasterećenja i tapera (HI4)', () => {
         doseM: 8000,
         structure: { form: 'reps', reps: 2, repM: 4000 } as Structure
       },
-      q2: null
+      q2: null,
+      t: 0
     };
     // 0,6 × 8000 = 4800 → T cruise 3 × 1600 (specifično).
-    expect(fmt(deloadDose(rp, 'specific', 1).structure)).toBe('3x1600');
+    expect(fmt(deloadDose(rp, 'specific', R3).structure)).toBe('3x1600');
     const t = taperDoses(rp, 1);
     expect([t.q1.doseM, t.q2]).toEqual([4000, null]);
   });

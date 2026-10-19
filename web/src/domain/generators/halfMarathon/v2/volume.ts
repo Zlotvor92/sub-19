@@ -4,7 +4,7 @@
 
 import { longKmCap10, longShareCap10, longTimeCap10, rollingLongCap10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
-import { type DayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
+import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
 
 const EPS = 1e-9;
@@ -15,20 +15,20 @@ export const to10 = (km: number): number => Math.round(km * 10);
 export type CapacityLimit = 'time' | 'share' | 'km' | 'rolling';
 
 /** H6/HI8: poruka CAPACITY_LIMITED — imenuje stvarna ograničenja; preporučuje više dana samo kad veći broj
-    dana postoji u tabeli H15 (HI9 a: 4 dana → 5–6 dana). */
+    dana postoji u tabeli H15 (HI9 a: 4 dana → 5–6 dana; početnik samo 4 → 5, H17). */
 export function capacityMessage(
   runDays: number,
-  rule: DayRule,
+  rule: PlanRule,
   limits: readonly CapacityLimit[]
 ): string {
   const text: Record<CapacityLimit, string> = {
-    time: `${Math.round(P.lengths.longMaxSec / 60)} min`,
+    time: `${Math.round(rule.longMaxSec / 60)} min`,
     share: `${Math.round(rule.longMaxShare * 100)} % nedelje`,
     km: `${P.lengths.longMaxKm} km`,
     rolling: 'max(1,1 × najduži, najduži + 1 km) prethodne 4 nedelje (pouka 28)'
   };
   const what = limits.length > 0 ? ` uz dugi ≤ ${limits.map((l) => text[l]).join(' i ≤ ')}` : '';
-  const more = RUN_DAYS_COUNTS.filter((n) => n > runDays);
+  const more = rule.dayCounts.filter((n) => n > runDays);
   const advice =
     more.length === 0
       ? ''
@@ -36,12 +36,16 @@ export function capacityMessage(
   return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
 }
 
-/** HI3 (pouka 14): preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele H15 podržava
-    trenutni obim; prazno kad ih nema. */
-export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number): string {
+/** HI3 (pouka 14): preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele H15 (početnik:
+    tabela H17) podržava trenutni obim; prazno kad ih nema. */
+export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number, rule: PlanRule): string {
   const km10 = to10(currentWeeklyKm);
-  const fewer = RUN_DAYS_COUNTS.filter(
-    (n) => n < runDays && to10(P.days[n].kmMin) <= km10 && km10 <= to10(P.days[n].kmMax)
+  const row = (n: number): { kmMin: number; kmMax: number } =>
+    rule.beginner
+      ? P.beginner.days[n as keyof typeof P.beginner.days]
+      : P.days[n as keyof typeof P.days];
+  const fewer = rule.dayCounts.filter(
+    (n) => n < runDays && to10(row(n).kmMin) <= km10 && km10 <= to10(row(n).kmMax)
   );
   if (fewer.length === 0) return '';
   const days = fewer.length === 1 ? `${fewer[0]}` : `${fewer[0]}–${fewer[fewer.length - 1]}`;
@@ -53,7 +57,7 @@ export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number): strin
     (skorašnji najduži `recentKm` u nedeljama 1–4) → 'rolling'. Redosled: time, share, km, rolling. */
 export function capacityLimits(
   weeks: readonly PlanWeek[],
-  rule: DayRule,
+  rule: PlanRule,
   p: Paces,
   recentKm: number | null | undefined = null
 ): CapacityLimit[] {
@@ -67,7 +71,7 @@ export function capacityLimits(
     const long = w.days.find((d) => d.role === 'long');
     if (!long) continue;
     const l10 = to10(long.workout.km);
-    if (l10 === longTimeCap10(p)) hit.add('time');
+    if (l10 === longTimeCap10(p, rule.longMaxSec)) hit.add('time');
     if (l10 === longShareCap10(to10(w.targetKm), rule)) hit.add('share');
     if (l10 === longKmCap10()) hit.add('km');
     if (l10 === rollingLongCap10(w.index, longs10, recentKm)) hit.add('rolling');
@@ -80,23 +84,22 @@ export function startKm10(currentWeeklyKm: number): number {
   return to10(currentWeeklyKm);
 }
 
-/** H6: granica izgradnje min(start × 1,4; start + 20; max nedelje H15) [0,1 km]; kapacitet konstrukcije je
-    posebno. */
-export function peakCap10(start10: number, rule: DayRule): number {
-  const v = P.volume;
+/** H6: granica izgradnje min(start × 1,4; start + 20; max nedelje H15) [0,1 km]; početnik min(1,4×; +15;
+    max), H17. Kapacitet konstrukcije je posebno. */
+export function peakCap10(start10: number, rule: PlanRule): number {
   return Math.min(
-    Math.floor(start10 * v.peakFactor + EPS),
-    start10 + to10(v.peakAddKm),
+    Math.floor(start10 * rule.peakFactor + EPS),
+    start10 + to10(rule.peakAddKm),
     to10(rule.peakMaxKm)
   );
 }
 
-/** H6: +6 % poslednjeg ne-rasteretnog cilja (min 1,0, max 4,0 km; korak 0,1). */
-export function growth10(last10: number): number {
-  const v = P.volume;
+/** H6: +6 % poslednjeg ne-rasteretnog cilja (min 1,0, max 4,0 km; korak 0,1); početnik +5 % (1,0–2,0 km),
+    H17. */
+export function growth10(last10: number, rule: PlanRule): number {
   return Math.min(
-    to10(v.growthMaxKm),
-    Math.max(to10(v.growthMinKm), Math.round(last10 * v.growth))
+    to10(rule.growthMaxKm),
+    Math.max(to10(rule.growthMinKm), Math.round(last10 * rule.growth))
   );
 }
 
@@ -115,12 +118,13 @@ export function nominal10(
   frame: WeekFrame,
   hist: VolumeHistory,
   start10: number,
-  cap10: number
+  cap10: number,
+  rule: PlanRule
 ): number {
   if (frame.phase === 'taper') return Math.round(P.taper.factor * hist.peak10);
   if (hist.lastBuild10 === null) return start10;
   if (frame.deload) return Math.round(P.deload.factor * hist.lastBuild10);
-  return Math.min(hist.lastBuild10 + growth10(hist.lastBuild10), cap10);
+  return Math.min(hist.lastBuild10 + growth10(hist.lastBuild10, rule), cap10);
 }
 
 /** Posle nedelje sa ciljem `target10`: osnov rasta i vrh menja samo ne-rasteretna izgradnja. */
@@ -135,7 +139,7 @@ export function raceWeekTarget10(planned100: number): number {
 }
 
 /** H15/Uslov 8: minimum nedelje [0,1 km] — donja granica pretrage cilja i provera validatora (pouka 24). */
-export const weekMin10 = (rule: DayRule): number => to10(rule.weekMinKm);
+export const weekMin10 = (rule: { weekMinKm: number }): number => to10(rule.weekMinKm);
 
 /**
  * H6: nominalni cilj ako ga konstrukcija ispunjava; inače SAMO ova nedelja na najbliži izvodljiv cilj
@@ -146,7 +150,7 @@ export function fit10(
   nominal: number,
   frame: WeekFrame,
   cap10: number,
-  rule: DayRule,
+  rule: { weekMinKm: number },
   feasible: (target10: number) => boolean
 ): { target10: number; fitted: 'down' | 'up' | null } | null {
   if (feasible(nominal)) return { target10: nominal, fitted: null };
