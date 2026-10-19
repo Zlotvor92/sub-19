@@ -27,8 +27,8 @@ describe('M9 raspored', () => {
           continue;
         }
         found++;
-        expect(adjacentDays(p.q1, p.long) || adjacentDays(p.q2, p.long)).toBe(false);
-        expect(adjacentDays(p.q1, p.q2)).toBe(false);
+        expect(adjacentDays(p.q1, p.long) || adjacentDays(p.q2!, p.long)).toBe(false);
+        expect(adjacentDays(p.q1, p.q2!)).toBe(false);
         expect([p.long, p.q1, p.q2, ...p.easy].sort()).toEqual([...days].sort());
         expect(p.easy).toHaveLength(1);
       }
@@ -61,5 +61,43 @@ describe('M9 raspored', () => {
     expect(patternOf(days)).toBeNull();
     const s = suggestSchedule(days)!;
     expect(patternOf(s.runDays, s.long)).not.toBeNull();
+  });
+});
+
+describe('M9 za 3/5/6 dana (M15)', () => {
+  it('3 dana: jedan kvalitet nesusedan dugom, lagan bilo gde; svaka kombinacija', () => {
+    let some = 0;
+    for (const days of combos(3)) {
+      const p = patternOf(days);
+      if (!p) continue;
+      some++;
+      expect(p.q2).toBeNull();
+      expect(adjacentDays(p.q1, p.long)).toBe(false);
+      expect(p.easy).toHaveLength(1);
+      expect([p.q1, p.long, ...p.easy].sort()).toEqual([...days].sort());
+    }
+    expect(some).toBeGreaterThan(0);
+    expect(patternOf(['tue', 'thu', 'sun'])).toEqual({
+      long: 'sun',
+      q1: 'thu',
+      q2: null,
+      easy: ['tue']
+    });
+  });
+
+  it('5/6 dana: Q1, Q2, dugi međusobno nesusedni; 2 / 3 lagana', () => {
+    for (const k of [5, 6]) {
+      let some = 0;
+      for (const days of combos(k)) {
+        const p = patternOf(days);
+        if (!p) continue;
+        some++;
+        expect(adjacentDays(p.q1, p.long) || adjacentDays(p.q2!, p.long)).toBe(false);
+        expect(adjacentDays(p.q1, p.q2!)).toBe(false);
+        expect(p.easy).toHaveLength(k - 3);
+      }
+      expect(some, `${k}`).toBeGreaterThan(0);
+    }
+    for (const n of [1, 2, 7]) expect(patternOf(WEEKDAYS.slice(0, n))).toBeNull();
   });
 });

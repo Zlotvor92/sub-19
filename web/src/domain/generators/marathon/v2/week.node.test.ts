@@ -4,7 +4,7 @@ import { generateMarathonV2 } from './generate.ts';
 import { longTimeCap10 } from './lengths.ts';
 import { midEasy } from './paces.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
-import { inputOf, SCHEDULES, type Profile } from './testInputs.ts';
+import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS, type Profile } from './testInputs.ts';
 import type { MarathonV2Plan, PlanWeek } from './types.ts';
 
 /* Sastav nedelje: izgradnja (M10, M13, M14), rasterećenje (M5), taper (M7), trkačka nedelja (M8). */
@@ -193,5 +193,71 @@ describe('M13 upozorenje MARATHON_LONG_SHORT', () => {
     );
     expect(longest).toBeGreaterThanOrEqual(26);
     expect(long.warnings.map((w) => w.rule)).not.toContain('MARATHON_LONG_SHORT');
+  });
+});
+
+describe('3/5/6 dana (M15)', () => {
+  const at = (n: 3 | 5 | 6, over: Partial<Profile> = {}) =>
+    plan({
+      days: SCHEDULES_BY_DAYS[n].A.days,
+      long: SCHEDULES_BY_DAYS[n].A.long,
+      km: n === 6 ? 70 : 45,
+      ...over
+    });
+
+  it('3 dana: jedan kvalitet T kont. → T cruise → MP; rasterećenje T na Q1; taper samo MP; dugi ≤ 50 %', () => {
+    const p = at(3);
+    const type = (ph: string) =>
+      new Set(
+        p.weeks
+          .filter((w) => w.phase === ph && !w.deload)
+          .flatMap((w) => role(w, 'q1').map((d) => d.workout.qualityType))
+      );
+    expect([...type('base')].every((t) => t === 'T_continuous' || t === 'T_cruise')).toBe(true);
+    expect([...type('development')].every((t) => t === 'T_cruise' || t === 'T_continuous')).toBe(
+      true
+    );
+    expect([...type('specific')]).toEqual(['MP']);
+    for (const w of p.weeks.filter((x) => x.phase === 'taper')) {
+      const q = w.days.filter((d) => d.workout.kind === 'quality');
+      expect(q.map((d) => d.workout.dose!.zone)).toEqual(['MP']);
+      expect(w.days).toHaveLength(3);
+    }
+    for (const w of p.weeks.filter((x) => x.deload))
+      expect(role(w, 'q1')[0]!.workout.dose!.zone).toBe('T');
+    const w1 = p.weeks[0]!;
+    expect(to10(role(w1, 'long')[0]!.workout.km)).toBeLessThanOrEqual(
+      Math.floor(0.5 * to10(w1.targetKm))
+    );
+  });
+
+  it('5/6 dana: lagani jednaki (razlika ≤ 0,1 km, raniji dan dobija višak) i ≤ dugi; dugi ≤ 35 / 32 %', () => {
+    for (const [n, share] of [
+      [5, 0.35],
+      [6, 0.32]
+    ] as const) {
+      const p = at(n);
+      for (const w of p.weeks.filter((x) => x.phase !== 'race')) {
+        const e = role(w, 'easy').map((d) => to10(d.workout.km));
+        expect(Math.max(...e) - Math.min(...e), `${n} ned ${w.index}`).toBeLessThanOrEqual(1);
+        expect(e).toEqual([...e].sort((a, b) => b - a));
+        const l = to10(role(w, 'long')[0]!.workout.km);
+        expect(Math.max(...e)).toBeLessThanOrEqual(l);
+        expect(l).toBeLessThanOrEqual(Math.floor(share * to10(w.targetKm) + 1e-9));
+      }
+    }
+  });
+
+  it('M8 6 dana: dana sa trkom = 5 (otpada dugi, pa najraniji lagan); 3 dana: 3 dana sa trkom', () => {
+    const six = at(6);
+    expect(six.weeks.at(-1)!.days).toHaveLength(5);
+    const three = at(3);
+    expect(three.weeks.at(-1)!.days).toHaveLength(3);
+    expect(three.weeks.at(-1)!.days.some((d) => d.role === 'race')).toBe(true);
+  });
+
+  it('M14 pojas ≥ 70 km: WU/CD 25/15 (6 dana, 70 km)', () => {
+    const q = role(at(6).weeks[0]!, 'q1')[0]!.workout.segments;
+    expect([q[0]!.sec, q.at(-1)!.sec]).toEqual([1500, 900]);
   });
 });

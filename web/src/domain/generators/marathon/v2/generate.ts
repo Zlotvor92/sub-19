@@ -4,6 +4,7 @@
    koji posle konstrukcije menja nedelju. */
 
 import { checkInput } from './input.ts';
+import { jumpBase10, longJumpCap10, longJumpNote, recentLongNote } from './lengths.ts';
 import { assessGoal, pacesFromVdot, predictedMarathon } from './paces.ts';
 import { isBuildPhase, periodize, taperStep } from './periodize.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
@@ -13,6 +14,7 @@ import { validatePlan } from './validate.ts';
 import {
   capacityLimits,
   capacityMessage,
+  capacityWeeks,
   fit10,
   nominal10,
   peakCap10,
@@ -26,6 +28,24 @@ import { fmtKm, warmupCooldown } from './workouts.ts';
 const infeasible = (message: string, week?: number): GenerateResult => ({
   ok: false,
   reasons: [{ code: 'WEEK_INFEASIBLE', message, ...(week !== undefined ? { week } : {}) }]
+});
+
+/** M13a (pouka 6): sa skorašnjim najdužim trkom nedelja ne može da se sastavi → odbijanje sa preporukom. */
+const recentTooShort = (
+  r: number,
+  km: number,
+  days: number,
+  weeks: number,
+  week: number
+): GenerateResult => ({
+  ok: false,
+  reasons: [
+    {
+      code: 'RECENT_LONG_TOO_SHORT',
+      message: `Skorašnji najduži trk (${fmtKm(r)} km) je prekratak za ${fmtKm(km)} km nedeljno sa ${days} dana i ${weeks} nedelja do trke (nedelja ${week} ne može da se sastavi uz skok dugog ≤ 10 %, M13a); preporuka: duža priprema, manji početni obim ili više dana, ili polumaraton.`,
+      week
+    }
+  ]
 });
 
 /** Konstruktor plana (jedan; adaptacija u segmentu 04 dodaje korake kao ulaz, ne posle konstrukcije). */
@@ -45,6 +65,7 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
     wc: warmupCooldown(input.currentWeeklyKm),
     rule
   };
+  const recent = input.recentLongRunKm ?? null;
   const start10 = startKm10(input.currentWeeklyKm);
   const cap10 = peakCap10(start10, rule);
 
@@ -55,6 +76,8 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
   /** M8: MP doza i najkraći lagan poslednje nedelje tapera (N−1). */
   let taperMpM = 0;
   let taperEasy10 = Infinity;
+  /** M13a: dugi svake nedelje [0,1 km] (null u trkačkoj). */
+  const longs10: (number | null)[] = [];
   const out: PlanWeek[] = [];
   for (const frame of frames) {
     if (frame.phase === 'race') {
@@ -71,12 +94,14 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
         days: w.days,
         notes: w.notes
       });
+      longs10.push(null);
       continue;
     }
     const taper = taperStep(phases, frame.index);
     const nominal = nominal10(frame, h, start10, cap10, taper);
+    const jump10 = longJumpCap10(longs10, frame.index, recent);
     const make = (t10: number, mode: QualityMode) =>
-      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, taper, mode);
+      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, taper, mode, jump10);
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
     // (week.ts 'relax'): M11 ispred M12 u izgradnji, zona tapera koja ne staje u plafon otpada.
     let fit: ReturnType<typeof fit10> = null;
@@ -88,6 +113,14 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
         break;
       }
     }
+    if (!fit && recent !== null)
+      return recentTooShort(
+        recent,
+        input.currentWeeklyKm,
+        input.runDays.length,
+        weeks,
+        frame.index
+      );
     if (!fit)
       return infeasible(
         `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
@@ -99,6 +132,12 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
       notes.unshift(
         `Cilj po pravilu ${fmtKm(nominal / 10)} km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj ${fmtKm(fit.target10 / 10)} km (M6).`
       );
+    // M13a: dugi na plafonu skoka; bez skorašnjeg najdužeg trka — napomena nedelje 1 sa pragom.
+    if (w.jumpBound && w.long10 !== null)
+      notes.push(longJumpNote(w.long10, jumpBase10(longs10, frame.index, recent)!));
+    if (frame.index === 1 && recent === null && w.long10 !== null)
+      notes.push(recentLongNote(w.long10));
+    longs10.push(w.long10);
     out.push({
       ...frame,
       targetKm: fit.target10 / 10,
@@ -118,7 +157,7 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
       h.lastBuild10 = fit.target10;
       h.peak10 = Math.max(h.peak10, fit.target10);
       if (w.long10 !== null) lastLong10 = w.long10;
-      if (w.picks) quality = advance(w.picks);
+      if (w.picks) quality = advance(w.picks, quality);
     }
   }
 
@@ -142,9 +181,9 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
     plan.notes.push(
       `Rezultat 5 km: maratonska prognoza iz kratke trke je nesigurnija; MP iz VDOT ${fmtKm(paces.mpVdot)} (M1, M2).`
     );
-  if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
+  if (capacityWeeks(out, rule, paces, recent).length > 0)
     plan.notes.push(
-      `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, paces))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (M6).`
+      `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, paces, recent))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (M6).`
     );
   const violations = validatePlan(plan);
   const errors = violations.filter((v) => v.severity === 'error');

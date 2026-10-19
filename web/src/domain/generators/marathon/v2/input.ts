@@ -1,5 +1,5 @@
-/* M1 — opseg ulaza; M15 — dani i obim (segment 01: red 4). Van opsega: strukturisano odbijanje (kod + poruka
-   sa preporukom). */
+/* M1 — opseg ulaza; M15 — dani i obim po redu tabele; M13a — skorašnji najduži trk. Van opsega:
+   strukturisano odbijanje (kod + poruka sa preporukom). */
 
 import { addDays, dayNumber, isWeekday, weekdayIndex } from './dates.ts';
 import { round1, vdotFromResult } from './paces.ts';
@@ -53,6 +53,7 @@ export function checkInput(raw: unknown): InputCheck {
     !isNum(raw['currentWeeklyKm']) ||
     !optional(raw['longRunDay'], (v) => typeof v === 'string') ||
     !optional(raw['goalTimeSec'], (v) => typeof v === 'number') ||
+    !optional(raw['recentLongRunKm'], (v) => typeof v === 'number') ||
     !optional(
       raw['recentResult'],
       (v) =>
@@ -68,7 +69,7 @@ export function checkInput(raw: unknown): InputCheck {
         {
           code: 'INPUT_SHAPE',
           message:
-            'Ulaz mora imati startDate, raceDate (YYYY-MM-DD), runDays (niz dana), currentWeeklyKm (broj) i recentResult ({ distanceM, timeSec, date }); goalTimeSec i longRunDay su opcioni.'
+            'Ulaz mora imati startDate, raceDate (YYYY-MM-DD), runDays (niz dana), currentWeeklyKm (broj) i recentResult ({ distanceM, timeSec, date }); goalTimeSec, longRunDay i recentLongRunKm su opcioni.'
         }
       ]
     };
@@ -142,15 +143,14 @@ export function checkInput(raw: unknown): InputCheck {
       'Dani trčanja moraju biti različiti dani (mon, tue, wed, thu, fri, sat, sun).'
     );
   const rule = daysOk ? dayRule(runDays.length) : null;
-  const supported = RUN_DAYS_COUNTS.join(', ');
   if (daysOk && !rule)
     no(
       'RUN_DAYS_COUNT',
       runDays.length === 7
         ? 'Maratonski plan traži najmanje jedan dan odmora nedeljno (izabrano 7 dana trčanja).'
         : PERMANENT_DAYS.includes(runDays.length)
-          ? `Maratonski plan traži najmanje 3 dana trčanja (izabrano ${runDays.length}).`
-          : `Maraton v2 trenutno radi sa ${supported} dana trčanja (izabrano ${runDays.length}); 3, 5 i 6 dana dolaze u segmentu 02.`
+          ? `Maratonski plan traži najmanje ${RUN_DAYS_COUNTS[0]} dana trčanja (izabrano ${runDays.length}).`
+          : `Maraton v2 radi sa ${RUN_DAYS_COUNTS.join(', ')} dana trčanja (izabrano ${runDays.length}).`
     );
   const longRaw = raw['longRunDay'];
   let longRunDay: Weekday | null = null;
@@ -160,28 +160,50 @@ export function checkInput(raw: unknown): InputCheck {
     else longRunDay = longRaw;
   }
 
-  // Obim (M15): red broja dana; bez ispravnog broja dana — red 4.
+  // Obim (M15): red broja dana; bez ispravnog broja dana — red 4. Preporuka: brojevi dana čiji red nosi obim.
   const km = raw['currentWeeklyKm'];
   const row = rule ?? P.days[4];
+  const fits = RUN_DAYS_COUNTS.filter((n) => km >= P.days[n].kmMin && km <= P.days[n].kmMax);
+  const daysAdvice = (): string =>
+    fits.length === 0
+      ? ''
+      : ` Obim ${km} km nosi ${fits.length === 1 ? fits[0] : `${fits[0]}–${fits[fits.length - 1]}`} dana trčanja.`;
+  const n = rule ? runDays.length : 4;
   if (km < row.kmMin)
     no(
       'WEEKLY_KM_TOO_LOW',
-      `Trenutni obim ${km} km je ispod ${row.kmMin} km nedeljno: preporuka je polumaraton ili izgradnja osnove pre maratonskog plana.`
+      `Trenutni obim ${km} km je ispod ${row.kmMin} km nedeljno za ${n} dana trčanja.` +
+        (fits.length > 0
+          ? daysAdvice()
+          : ' Preporuka: polumaraton ili izgradnja osnove pre maratonskog plana.')
     );
   else if (km > row.kmMax)
     no(
       'WEEKLY_KM_TOO_HIGH',
-      `Trenutni obim ${km} km je iznad ${row.kmMax} km za 4 dana trčanja; 5 i 6 dana (do 110 km) dolaze u segmentu 02.`
+      `Trenutni obim ${km} km je iznad ${row.kmMax} km za ${n} dana trčanja.` +
+        (fits.length > 0 ? daysAdvice() : ' Obim je van opsega plana.')
     );
 
-  // Rezultat → VDOT (segment 01: obavezan).
+  // M13a: skorašnji najduži trk (opcion).
+  const recent = raw['recentLongRunKm'] as number | null | undefined;
+  if (
+    recent !== undefined &&
+    recent !== null &&
+    !(isNum(recent) && recent >= q.recentLongMinKm && recent <= q.recentLongMaxKm)
+  )
+    no(
+      'RECENT_LONG_INVALID',
+      `Skorašnji najduži trk mora biti ${q.recentLongMinKm}–${q.recentLongMaxKm} km (unet ${String(recent)}).`
+    );
+
+  // Rezultat → VDOT (do segmenta 03 obavezan).
   const res = raw['recentResult'] as MarathonV2Result | null | undefined;
   let vdotRaw = NaN;
   let shortResult = false;
   if (!res)
     no(
       'RESULT_REQUIRED',
-      `Maraton v2 (segment 01) traži rezultat 10 km, polumaratona ili maratona ne stariji od ${q.resultMaxAgeDays} dana; plan po osećaju dolazi u segmentu 03.`
+      `Maraton v2 traži rezultat 10 km, polumaratona ili maratona ne stariji od ${q.resultMaxAgeDays} dana; plan po osećaju dolazi u segmentu 03.`
     );
   else {
     const rDay = dayNumber(res.date);
@@ -226,7 +248,7 @@ export function checkInput(raw: unknown): InputCheck {
       const s = suggestSchedule(runDays, longRunDay);
       no(
         'SCHEDULE_NO_RECOVERY',
-        `U danima ${daysSr(runDays)} dva kvaliteta i dugi ne mogu biti međusobno nesusedni.` +
+        `U danima ${daysSr(runDays)} ${rule.quality === 1 ? 'kvalitet i dugi ne mogu biti nesusedni' : 'dva kvaliteta i dugi ne mogu biti međusobno nesusedni'}.` +
           (s ? ` Predlog: ${daysSr(s.runDays)} (dugi ${daySr(s.long)}).` : '')
       );
     }
@@ -240,7 +262,8 @@ export function checkInput(raw: unknown): InputCheck {
     longRunDay,
     currentWeeklyKm: km,
     recentResult: res,
-    goalTimeSec: (goal as number | null | undefined) ?? null
+    goalTimeSec: (goal as number | null | undefined) ?? null,
+    ...(recent !== undefined && recent !== null ? { recentLongRunKm: recent } : {})
   };
   return { ok: true, input, weeks, vdotRaw, pattern, rule, shortResult };
 }

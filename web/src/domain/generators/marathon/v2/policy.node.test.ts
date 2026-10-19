@@ -3,16 +3,19 @@ import { dayRule, MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 import type { Structure } from './types.ts';
 import { doseOf } from './workouts.ts';
 
-/* Brojevi M1–M15 (MASTER-HM-MARATHON.md § 5) zakucani: izmena broja mora da obori test i ide kroz DECISIONS. */
+/* Brojevi M1–M15 (MASTER-HM-MARATHON.md § 5) i pouke 27–28 zakucani: izmena broja mora da obori test i ide kroz
+   DECISIONS. */
 
-describe('politika maraton v2 (M1–M15)', () => {
+describe('politika maraton v2 (M1–M15, M7a, M10a, M13a)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('marathon-v2');
-    expect(P.version).toBe('marathon-v2.0.0');
+    expect(P.version).toBe('marathon-v2.1.0');
   });
 
-  it('DECISIONS: M1–M15 i M7a (M7 ispred M11 samo u taperu), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: M1–M15, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), svaka sa pravilom, mestom i obrazloženjem', () => {
     const ids = Array.from({ length: 15 }, (_, i) => `M${i + 1}`);
+    ids.splice(13, 0, 'M13a');
+    ids.splice(10, 0, 'M10a');
     ids.splice(7, 0, 'M7a');
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -22,7 +25,7 @@ describe('politika maraton v2 (M1–M15)', () => {
     }
   });
 
-  it('M1 opseg ulaza i M15 red 4 dana', () => {
+  it('M1 opseg ulaza i M15 tabela 3/4/5/6 dana; 1/2/7 dana van tabele', () => {
     expect(P.input).toEqual({
       weeksMin: 12,
       weeksMax: 24,
@@ -30,19 +33,27 @@ describe('politika maraton v2 (M1–M15)', () => {
       resultDistancesM: [5000, 10000, 21097.5, 42195],
       shortResultM: 5000,
       vdotMin: 30,
-      vdotMax: 80
+      vdotMax: 80,
+      recentLongMinKm: 5,
+      recentLongMaxKm: 42
     });
-    expect(RUN_DAYS_COUNTS).toEqual([4]);
-    expect(dayRule(4)).toEqual({
-      quality: 2,
-      easy: 1,
-      kmMin: 35,
-      kmMax: 65,
-      peakMaxKm: 80,
-      longMaxShare: 0.4,
-      weekMinKm: 20
-    });
-    for (const n of [1, 2, 3, 5, 6, 7]) expect(dayRule(n)).toBeNull();
+    expect(RUN_DAYS_COUNTS).toEqual([3, 4, 5, 6]);
+    const row = (
+      quality: number,
+      easy: number,
+      kmMin: number,
+      kmMax: number,
+      peakMaxKm: number,
+      longMaxShare: number,
+      weekMinKm: number
+    ) => ({ quality, easy, kmMin, kmMax, peakMaxKm, longMaxShare, weekMinKm });
+    expect(dayRule(3)).toEqual(row(1, 1, 30, 50, 60, 0.5, 15));
+    expect(dayRule(4)).toEqual(row(2, 1, 35, 65, 80, 0.4, 20));
+    expect(dayRule(5)).toEqual(row(2, 2, 40, 85, 100, 0.35, 25));
+    expect(dayRule(6)).toEqual(row(2, 3, 50, 110, 120, 0.32, 30));
+    for (const n of [0, 1, 2, 7]) expect(dayRule(n)).toBeNull();
+    // Broj dana = kvaliteti + lagani + dugi.
+    for (const n of RUN_DAYS_COUNTS) expect(P.days[n].quality + P.days[n].easy + 1).toBe(n);
   });
 
   it('M2 zone i korekcija obima za MP; M3 pragovi cilja', () => {
@@ -141,6 +152,7 @@ describe('politika maraton v2 (M1–M15)', () => {
       iRepMinM: 800,
       iRepMaxM: 1200,
       iPyramidM: [1200, 1000, 800],
+      pyramidStepM: 200,
       rRepM: [200, 300, 400]
     });
   });
@@ -149,6 +161,7 @@ describe('politika maraton v2 (M1–M15)', () => {
     expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, MP: 0.2 });
     expect(P.startLevel).toEqual({ capShare: 0.6 });
     expect(P.lengths).toEqual({ longMaxSec: 9000, easyMinKm: 5, longShortKm: 26 });
+    expect(P.longJump).toEqual({ factor: 1.1, addKm: 1, windowWeeks: 4 });
     expect(P.workout).toEqual({
       warmupCooldown: [
         { fromKm: 0, warmupSec: 900, cooldownSec: 600 },
@@ -162,16 +175,22 @@ describe('politika maraton v2 (M1–M15)', () => {
     });
   });
 
-  it('pouka 10: najniži nivo svake lestvice staje u plafon pri najmanjem obimu reda (izgradnja i rasterećenje)', () => {
-    const r = dayRule(4)!;
+  it('pouka 10: najniži nivo svake lestvice staje u plafon pri najmanjem obimu svakog reda (izgradnja i rasterećenje)', () => {
     const first = (xs: readonly Structure[]): number => doseOf(xs[0]!);
     const cap = (z: keyof typeof P.caps, km: number): number => Math.floor(P.caps[z] * km * 1000);
-    expect(first(P.ladders.R)).toBeLessThanOrEqual(cap('R', r.kmMin));
-    expect(first(P.ladders.T_continuous)).toBeLessThanOrEqual(cap('T', r.kmMin));
-    expect(first(P.ladders.T_cruise)).toBeLessThanOrEqual(cap('T', r.kmMin));
-    expect(first(P.ladders.I)).toBeLessThanOrEqual(cap('I', r.kmMin));
-    expect(first(P.ladders.MP)).toBeLessThanOrEqual(cap('MP', r.kmMin));
-    // Rasterećenje: T 2,0 km pri 0,8 × najmanji obim.
-    expect(P.deload.tMinKm * 1000).toBeLessThanOrEqual(cap('T', P.deload.factor * r.kmMin));
+    for (const n of RUN_DAYS_COUNTS) {
+      const r = dayRule(n)!;
+      if (r.quality === 2) {
+        expect(first(P.ladders.R), `${n}`).toBeLessThanOrEqual(cap('R', r.kmMin));
+        expect(first(P.ladders.I), `${n}`).toBeLessThanOrEqual(cap('I', r.kmMin));
+      }
+      expect(first(P.ladders.T_continuous), `${n}`).toBeLessThanOrEqual(cap('T', r.kmMin));
+      expect(first(P.ladders.T_cruise), `${n}`).toBeLessThanOrEqual(cap('T', r.kmMin));
+      expect(first(P.ladders.MP), `${n}`).toBeLessThanOrEqual(cap('MP', r.kmMin));
+      // Rasterećenje: T 2,0 km pri 0,8 × najmanji obim.
+      expect(P.deload.tMinKm * 1000, `${n}`).toBeLessThanOrEqual(
+        cap('T', P.deload.factor * r.kmMin)
+      );
+    }
   });
 });
