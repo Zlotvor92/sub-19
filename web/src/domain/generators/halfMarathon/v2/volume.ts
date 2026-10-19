@@ -5,6 +5,7 @@
 import { longKmCap10, longShareCap10, longTimeCap10, rollingLongCap10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
 import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
+import { preStartOf } from './steps.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
 
 const EPS = 1e-9;
@@ -35,6 +36,17 @@ export function capacityMessage(
       : `; preporuka ${more.length === 1 ? more[0] : `${more[0]}–${more[more.length - 1]}`} dana`;
   return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
 }
+
+/** H6: napomena nedelje spuštene/podignute na izvodljiv cilj — tehnička (validator je čita kao oznaku VOLUME_RULE);
+    korisniku ide zbir WEEK_FITTED jednom po planu (Faza 4a N11). */
+export const fittedNote = (nominal10: number, target10: number): string =>
+  `Cilj po pravilu ${fmt(nominal10)} km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj ${fmt(target10)} km (H6).`;
+const fmt = (k10: number): string => (k10 / 10).toFixed(1).replace('.', ',');
+
+/** Faza 4a N11 (jedan vlasnik — domen): napomene nedelje za korisnika — bez tehničke napomene izvodljivog cilja
+    (fittedNote). Aplikacija samo prikazuje ovo. */
+export const userWeekNotes = (w: { notes: readonly string[] }): string[] =>
+  w.notes.filter((n) => !n.includes('nije izvodljiv u konstrukciji nedelje'));
 
 /** HI3 (pouka 14): preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele H15 (početnik:
     tabela H17) podržava trenutni obim; prazno kad ih nema. */
@@ -245,7 +257,7 @@ export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
     restart,
     anchors,
     preStart10: (() => {
-      const ps = [...steps].reverse().find((s) => s.preStart)?.preStart;
+      const ps = preStartOf(steps);
       return ps ? to10(ps.targetKm) : null;
     })(),
     levelAt: (w) => {

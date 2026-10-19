@@ -245,3 +245,49 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
   // Pouka 20: traka samo za NOVO ograničenje (steps.newLimits; aplikacija čita ovo polje).
   return { ok: true, plan: out, changes: diff(plan, out), reasons, newLimits: newLimits(steps) };
 }
+
+/** Pouka 20: ograničenja (bol, pauza, umor) — traka samo kad korak donese NOVO ograničenje (`newLimits`). */
+const LIMIT: ReadonlySet<AdaptReason['condition']> = new Set(['PAIN', 'PAUSE', 'FATIGUE']);
+/** Pouka 20: promene cilja obima ili tempa (nov rezultat je nov po definiciji — assess primenjuje samo rezultat
+    noviji od rezultata u upotrebi). Premeštanje testa (TEST_MOVED) i neprimenjen rezultat nisu razlog: posledica su
+    drugog uslova. */
+const CHANGE: ReadonlySet<AdaptReason['condition']> = new Set([
+  'NEW_RESULT',
+  'UNDER_EXECUTION',
+  'OVER_EXECUTION'
+]);
+
+/**
+ * Pouka 20 — JEDINO pravilo trake „Plan treba prilagoditi" (Faza 4a, oblik maratona posle MAR-06; aplikacija samo zove
+ * ovu funkciju): `asOf` je posle poslednje adaptacije plana `before` (isti dan posle primene — prazno) i plan `r` se
+ * menja u nedelji koja se završava posle `asOf`; primenjen uslov — promena (nov rezultat, manjak, višak) uvek,
+ * ograničenje (bol, pauza, umor) samo kad korak donese NOVO ograničenje (`r.newLimits`), a bol uz to samo uz zapis bola
+ * noviji od poslednje adaptacije (period bola je vezan za asOf, A4: isti stari zapis sutradan pomera kraj perioda i
+ * newLimits taj dan vidi kao nov — to nije nova činjenica).
+ */
+export function adaptBanner(
+  before: HmV2Plan,
+  r: AdaptResult,
+  facts: { workouts?: readonly { date: string; pain?: number }[] },
+  asOf: string
+): string[] {
+  if (!r.ok) return [];
+  const last = before.adaptation?.asOf ?? null;
+  const t = mustDay(asOf);
+  if (last !== null && mustDay(last) >= t) return [];
+  const future = r.changes.some(
+    (c) => c.week > 0 && mustDay(r.plan.weeks[c.week - 1]!.endDate) > t
+  );
+  if (!future) return [];
+  const newPain = (facts.workouts ?? []).some(
+    (w) => (w.pain ?? 0) >= P.adapt.painMin && (last === null || mustDay(w.date) > mustDay(last))
+  );
+  return r.reasons
+    .filter(
+      (x) =>
+        x.applied &&
+        (CHANGE.has(x.condition) ||
+          (LIMIT.has(x.condition) && r.newLimits.length > 0 && (x.condition !== 'PAIN' || newPain)))
+    )
+    .map((x) => x.message);
+}

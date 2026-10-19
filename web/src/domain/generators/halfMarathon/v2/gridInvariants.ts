@@ -103,6 +103,10 @@ export interface GridStats {
   lowestOverLongWeek1: number;
   lowestOverLongPlans: number;
   durationDropWeeks: number;
+  /** Pouka 35: nedelje izgradnje u kojima je drugi dan kvaliteta lagan. */
+  secondEasyWeeks: number;
+  /** Pouka 35: dva kvaliteta ostaju jer je dugi na plafonu (nedelja sa jednim kvalitetom neizvodljiva). */
+  secondKeptAtCapWeeks: number;
   reducedDeloadTaper: number;
 }
 
@@ -144,6 +148,8 @@ export const emptyStats = (): GridStats => ({
   lowestOverLongWeek1: 0,
   lowestOverLongPlans: 0,
   durationDropWeeks: 0,
+  secondEasyWeeks: 0,
+  secondKeptAtCapWeeks: 0,
   reducedDeloadTaper: 0
 });
 
@@ -422,7 +428,28 @@ export function checkPlan(
       // K3: kvaliteti reda (test zamenjuje Q1; uvod bez kvaliteta); H6: rast ≤ +6 % (1,0–4,0 km), početnik
       // +5 % (1,0–2,0 km), ≤ granica; nedelja 1 = trenutni (pouka 9).
       const nq = w.days.filter((d) => d.workout.kind === 'quality').length;
-      if (!intro(w) && nq !== row.q - (w.test ? 1 : 0)) st.buildNoQuality++;
+      // Pouka 35 (Faza 4a N5): drugi dan kvaliteta lagan (napomena) — dan Q2 šablona je lagan.
+      const second =
+        row.q === 2 && w.notes.some((n) => n.includes('(pouka 35)')) && p.pattern.q2 !== null
+          ? w.days.find((d) => d.weekday === p.pattern.q2)?.role === 'easy'
+          : false;
+      if (second) st.secondEasyWeeks++;
+      if (!intro(w) && nq !== row.q - (w.test ? 1 : 0) - (second ? 1 : 0)) st.buildNoQuality++;
+      // Pouka 35: u nedelji sa dva dana kvaliteta (ili testa) nijedan nije duži od dugog.
+      const lw2 = w.days.find((d) => d.role === 'long');
+      const hard2 = w.days.filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test');
+      // Izuzetak: dugi na svom plafonu (udeo, 150 min, 24 km, pouka 28) — nedelja sa jednim kvalitetom bi imala
+      // lagane duže od dugog (pouka 2), pa ostaju dva kvaliteta (upozorenje pouke 14).
+      const cap2 = Math.min(
+        Math.floor(SHARE * to10(w.targetKm) + EPS),
+        time10,
+        LONG_MAX10,
+        roll10(w.index)
+      );
+      if (lw2 && hard2.length === 2 && hard2.some((d) => d.workout.sec > lw2.workout.sec)) {
+        if (to10(lw2.workout.km) < cap2) no('POUKA35', tag);
+        else st.secondKeptAtCapWeeks++;
+      }
       const t10 = to10(w.targetKm);
       if (lastBuild !== null) {
         const g = beg
@@ -451,7 +478,8 @@ export function checkPlan(
         // T slot (Q2) nosi dozu kroz sve faze; Q1 u istoj fazi i na prelazu I → RP (3 dana: jedini slot
         // kroz sve faze T kont. → T cruise → RP, HI6).
         const q1Carries = one || w.phase === prevSteady.phase || w.phase === 'specific';
-        if (q2 < lastQ2 || (q1Carries && q1 < lastQ1)) no('DOSE_DECREASE', tag);
+        // Pouka 35: nedelja bez drugog dana kvaliteta ne poredi Q2 ni glavnu dozu (stanje Q2 ostaje).
+        if ((!second && q2 < lastQ2) || (q1Carries && q1 < lastQ1)) no('DOSE_DECREASE', tag);
         const main = (x: PlanWeek): number =>
           x.days.reduce(
             (a, d) =>
@@ -461,7 +489,7 @@ export function checkPlan(
                 : 0),
             0
           );
-        if (main(w) + 1e-6 < main(prevSteady)) no('MAIN_DOSE_DECREASE', tag);
+        if (!second && main(w) + 1e-6 < main(prevSteady)) no('MAIN_DOSE_DECREASE', tag);
         const key = (x: PlanWeek): string =>
           JSON.stringify(
             x.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.blocks)
@@ -488,7 +516,7 @@ export function checkPlan(
       if (q2 > 0) lastQ2 = q2;
       const tz = w.days.filter((d) => d.workout.dose?.zone === 'T').pop();
       if (tz) lastT = tz.workout.dose!.doseM;
-      if (counted) prevSteady = w;
+      if (counted && !second) prevSteady = w;
     }
     if (w.phase === 'taper') {
       // H7: cilj ≤ 0,7 × vrh; RP i T ≈ 60 % (min 2 × 2000 m, 2,0 km); dugi ≤ 0,6 × najduži.

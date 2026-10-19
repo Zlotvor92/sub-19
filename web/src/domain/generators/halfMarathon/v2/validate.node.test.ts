@@ -292,11 +292,12 @@ describe('validator', () => {
     );
     if (!p.ok) throw new Error('plan');
     expect(errors(p.plan)).toEqual([]);
-    // Ned 8: Q2 T 2 × 1600 m staje; spuštanje na 2 × 1200 m (najniži) sa napomenom nije najviši nivo.
+    // Ned 8: Q2 T iznad najnižeg nivoa staje (hm-v2.3.0: 2 × 1600 m; hm-v2.4.0, pouka 35 u ranijim nedeljama: duži
+    // dugi → viši nivo); spuštanje na 2 × 1200 m (najniži) sa napomenom nije najviši nivo.
     const a = clone(p.plan);
     const w = week(a, 8);
     const q2 = dayOf(w, 'q2');
-    expect(q2.workout.dose!.doseM).toBe(3200);
+    expect(q2.workout.dose!.doseM).toBeGreaterThan(2400);
     q2.workout.dose = {
       ...q2.workout.dose!,
       doseM: 2400,

@@ -8,6 +8,7 @@
 import { checkInput } from './input.ts';
 import {
   longestLong10,
+  longsOf10,
   recentLongCap10,
   recentLongNeeded10,
   rollingLongCap10,
@@ -22,6 +23,7 @@ import {
   basisAt,
   framesFor,
   initialState,
+  jumpRecentKm,
   pacesAt,
   restartWeeks,
   stepVdotAt
@@ -38,10 +40,9 @@ import { validatePlan } from './validate.ts';
 import {
   adaptNominal10,
   adaptVolume,
-  capacityLimits,
-  capacityMessage,
   enterWeek,
   fit10,
+  fittedNote,
   initialAdaptHistory,
   leaveAdaptWeek,
   leaveWeek,
@@ -178,12 +179,8 @@ export function construct(
   const out: PlanWeek[] = [];
   /** Pouka 29: dani nedelja kakvi se upisuju — iz njih stanje koje zavisi od prošlosti. */
   const written: { days: readonly PlanDay[] }[] = [];
-  /** Pouka 28: dugi svake nedelje (null bez dugog) iz upisanih dana — osnov kotrljajuće granice. */
-  const longs10 = (): (number | null)[] =>
-    written.map((w) => {
-      const l = w.days.find((d) => d.role === 'long');
-      return l ? Math.round(l.workout.km * 10) : null;
-    });
+  // Pouka 28/34: „nedelja 0" kotrljajuće granice — skorašnji najduži, posle umora pre starta i dugi reference.
+  const recentJ = jumpRecentKm(input.recentLongRunKm, steps);
   for (const frame of frames) {
     const ctx = ctxAt(frame.index);
     if (restarts.has(frame.index)) quality = INITIAL_QUALITY;
@@ -224,7 +221,7 @@ export function construct(
       ? adaptNominal10(frame, h, start10, rule, av)
       : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
     const longest10 = longestLong10(written);
-    const roll10 = rollingLongCap10(frame.index, longs10(), input.recentLongRunKm);
+    const roll10 = rollingLongCap10(frame.index, longsOf10(written), recentJ);
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(ctx, frame, t10, quality, lastLong10, longest10, mode, roll10);
     // HI2: druga pretraga ('relax') samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja.
@@ -268,10 +265,7 @@ export function construct(
     const w = make(fit.target10, mode)!;
     const notes = [...w.notes];
     if (frame.index === 1 && w.long10 !== null) notes.push(recentLongNote(w.long10, ctx));
-    if (fit.fitted)
-      notes.unshift(
-        `Cilj po pravilu ${fmtKm(nominal / 10)} km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj ${fmtKm(fit.target10 / 10)} km (H6).`
-      );
+    if (fit.fitted) notes.unshift(fittedNote(nominal, fit.target10));
     // A9: test koji ne staje otpada sa kvalitetom (oznaka nedelje ⇔ dan testa).
     const { test: _test, ...noTest } = frame;
     out.push({
@@ -353,10 +347,7 @@ export function construct(
     plan.notes.push(
       `Početnik (H17): nedelje 1–${rule.introWeeks} uvod bez kvaliteta, zatim jedan kvalitet nedeljno (T → T cruise → RP, bez I i R), rast ${Math.round(rule.growth * 100)} % (${fmtKm(rule.growthMinKm)}–${fmtKm(rule.growthMaxKm)} km), dugi ≤ ${Math.round(rule.longMaxSec / 60)} min, bez testa.`
     );
-  if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
-    plan.notes.push(
-      `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, pN, input.recentLongRunKm))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (H6).`
-    );
+  // Faza 4a N11: kapacitet (H6/HI8) ide korisniku jednom — upozorenje CAPACITY_LIMITED (validator, sa vrhom).
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)
     plan.adaptation = {
