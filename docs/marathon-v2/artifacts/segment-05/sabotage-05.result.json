@@ -1,0 +1,224 @@
+{
+  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-05/sabotage-05.json",
+  "head": "9443676",
+  "level": "brz",
+  "bail": true,
+  "parallel": 1,
+  "vitestArgs": [],
+  "durationS": 85,
+  "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+  "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "05-a prekidač maratona v2 podrazumevano uključen",
+      "files": ["src/domain/generators/flags.ts"],
+      "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/app/app.node.test.ts",
+        "test": "prekidač i rutiranje po oznaci politike > flags: podrazumevano isključen; override 1/true i 0/false nadjačavaju podešavanje; vidljivost",
+        "message": "AssertionError: expected true to be false // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "49598cfc3ec0c83387dc020a352ef5a7ee9203945330e77f2aa2d17356aca725",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 9.3
+    },
+    {
+      "index": 2,
+      "name": "05-b nepoznata verzija marathon-v2 → tihi fallback na maraton v1",
+      "files": ["src/domain/generators/select.ts"],
+      "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/app/app.node.test.ts",
+        "test": "prekidač i rutiranje po oznaci politike > postojeći planovi: marathon-v1 i legacy-marathon ostaju na maraton v1; marathon-v2 → v2; nepoznata/bez verzije → UNKNOWN_POLICY; tuđa distanca → null",
+        "message": "AssertionError: marathon-v2.0.0: expected { id: 'marathon', …(54) } to be null"
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "4e7c7eb97081a0cc5b8c0ee8d9b67ed7f1a342833747753c42d2eda0251e633c",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 9.1
+    },
+    {
+      "index": 3,
+      "name": "05-c adapter uvozi van marathon/v2 (type-only)",
+      "files": ["src/domain/generators/marathon/v2/app/date.ts"],
+      "tests": ["src/domain/generators/marathon/v2/isolation.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/isolation.node.test.ts",
+        "test": "maraton v2 je izolovan (Uslov 7) > marathon/v2 ne uvozi NIŠTA van marathon/v2/ (ni drugi v2, ni maraton v1, ni domain/*, ni type-only)",
+        "message": "AssertionError: expected [ 'app/date.ts → ../../../../date' ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "e6d410bfd635f78fc06e5c2823ff34f028b4f3ebf0aea412427549602bc03d90",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1
+    },
+    {
+      "index": 4,
+      "name": "05-d lični plan vlasnika ide u maraton v2 (rutiranje bez oznake i distance)",
+      "files": ["src/domain/generators/select.ts"],
+      "tests": ["src/domain/generators/personalPlan.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/personalPlan.node.test.ts",
+        "test": "ugrađeni lični plan ide HM generatoru bez promene ponašanja > aktivni lični plan bira HM generator",
+        "message": "AssertionError: expected null to be { id: 'hm', policyId: 'hm-v1', …(53) } // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "0a8a314a378fe09ee9ad0a11f61b5ec81d9b4e7986d2776cbb04b78ac401c84a",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 8.3
+    },
+    {
+      "index": 5,
+      "name": "05-e trka kao lagan dan (u obimu nedelje)",
+      "files": ["src/domain/generators/marathon/v2/app/plan.ts"],
+      "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/app/app.node.test.ts",
+        "test": "generisanje kroz adapter > sa rezultatom 4 d: oznaka v2, nedelja 7 dana, struktura na svakom treningu, faza iz v2, trka van obima",
+        "message": "AssertionError: expected 60.86 to be close to 17.8, received difference is 43.06, but expected 0.05"
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "04152c41fe4bd9c7415be4a3f39c98449f594040731fd5e6efa106473bff8e36",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 8.3
+    },
+    {
+      "index": 6,
+      "name": "05-f čarobnjak maratona v2 ne čita prekidač",
+      "files": ["src/features/onboarding/Wizard.tsx"],
+      "tests": ["src/features/onboarding/marathonV2Flow.test.tsx"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/features/onboarding/marathonV2Flow.test.tsx",
+        "test": "maraton v2 iza prekidača > isključen: čarobnjak maratona je stari (rezultat je obavezan, bez polja v2)",
+        "message": "TestingLibraryElementError: Unable to find an element with the text: Šta si poslednje istrčao?. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "1310a5db47944384f9b640b105fbb7204d30fcd1805d081bc2bdf6cbf7fb0fec",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 13.8
+    },
+    {
+      "index": 7,
+      "name": "05-g mapa faze: taper → VRHUNAC",
+      "files": ["src/domain/generators/marathon/v2/app/plan.ts"],
+      "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/app/app.node.test.ts",
+        "test": "generisanje kroz adapter > sa rezultatom 4 d: oznaka v2, nedelja 7 dana, struktura na svakom treningu, faza iz v2, trka van obima",
+        "message": "AssertionError: expected 'VRHUNAC' to be 'TAPER' // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "7b6833ed25abb650d8216d34fd4bb20c021c9d80ddede3c7fded176422a05fd0",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 7.6
+    },
+    {
+      "index": 8,
+      "name": "05-h uvoz plana maratona v2 bez zapisa van plana",
+      "files": ["src/domain/generators/select.ts"],
+      "tests": ["src/domain/generators/marathon/v2/app/importV2.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/app/importV2.node.test.ts",
+        "test": "uvoz u plan maratona v2: ništa se ne gubi (infrastruktura 08c) > Strava: trčanja na dane plana u dnevnik, na dane odmora → zapisi van plana; fullSync",
+        "message": "AssertionError: expected [] to deeply equal [ [ '2026-11-09', 'strava', 8 ], …(2) ]"
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "4f326b3218193818150b8f1da7cf8edd5dddb3726f60f4f1d6785e4432021382",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 8.2
+    },
+    {
+      "index": 9,
+      "name": "05-i uključen prekidač maratona menja nov polumaraton (HM v1 nije bajt-isti)",
+      "files": ["src/domain/generators/select.ts"],
+      "tests": ["src/domain/generators/marathon/v2/app/byteSame.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/app/byteSame.node.test.ts",
+        "test": "bajt-isto prema 9443676 (prekidač maratona v2 isključen) > uključen prekidač maratona v2 ne menja 5K, 10K, HM (v1 i v2) ni lični plan (menja se samo nov maraton)",
+        "message": "Error: HM 5d: Plan od 22 nedelja je predug (najviše 20): počni plan kasnije, najranije 2026-11-16. Nema pouzdanog rezultata (bez rezultata trke): za plan po osećaju unesi lagan tempo (easyPaceSecPerKm, 4:30–8:30/km) ili rezultat 5 km, 10 km, polumaratona ili maratona ne stariji od 84 dana."
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "50e7e22601ec9c04eb27b3fe91cc6bf48ec8946c6a3b8c9d31cd8facde2b45e9",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 10.4
+    },
+    {
+      "index": 10,
+      "name": "05-j sat šalje procenu tempa po osećaju",
+      "files": ["src/domain/generators/marathon/v2/app/structure.ts"],
+      "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/app/app.node.test.ts",
+        "test": "generisanje kroz adapter > plan po osećaju: rad kvaliteta nosi RPE i tempo kao procenu; test 5 km; sa rezultatom tempo je propisan",
+        "message": "AssertionError: expected 325 to be null"
+      },
+      "failedCount": 1,
+      "hashBefore": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "hashSabotaged": "139e4d7d89db61afbabf1ac50d53145ab6de8066de5106f196f72118c6e3b92c",
+      "hashAfter": "901ad4fc99af7a103c5034398e13b90836df684d6eb97d4804acd79eb82f009c",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 7.9
+    }
+  ]
+}

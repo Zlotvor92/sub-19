@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /* Uslov 7 (AGENTS.md): maraton v2 ne uvozi NIŠTA van marathon/v2/ (ni 10K/5K/HM v2, ni maraton v1, ni
-   domain/*, ni type-only); do faze 2 niko van marathon/v2/ ne uvozi v2. Obrazac tenK/v2/isolation.node.test.ts
-   (kopija, ne uvoz). */
+   domain/*, ni type-only); van marathon/v2/ ga od segmenta MAR-05 uvozi samo marathon/index.ts (adapter app/).
+   Obrazac tenK/v2/isolation.node.test.ts (kopija, ne uvoz). */
 
 const V2 = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(V2, '../../../..');
@@ -72,7 +72,7 @@ describe('maraton v2 je izolovan (Uslov 7)', () => {
     }
   });
 
-  it('do faze 2 niko van marathon/v2/ ne uvozi v2 (marathon/index.ts nepromenjen)', () => {
+  it('segment MAR-05: van marathon/v2/ v2 uvozi SAMO marathon/index.ts, i to samo adapter app/index.ts (select.ts → marathon)', () => {
     const outside = walk(SRC).filter((f) => !f.startsWith(V2 + '/') && !isTest(f));
     const edges: string[] = [];
     for (const f of outside) {
@@ -83,7 +83,10 @@ describe('maraton v2 je izolovan (Uslov 7)', () => {
         if (target !== null && (target === V2 || target.startsWith(V2 + '/')))
           edges.push(`${relative(SRC, f)} → ${relative(SRC, target)}`);
       }
+      if (/generators\/marathon\/v2/.test(code)) edges.push(`${relative(SRC, f)} → alias v2`);
     }
-    expect(edges).toEqual([]);
+    expect(edges).toEqual([
+      'domain/generators/marathon/index.ts → domain/generators/marathon/v2/app/index.ts'
+    ]);
   });
 });

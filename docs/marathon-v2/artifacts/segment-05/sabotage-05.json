@@ -1,0 +1,72 @@
+[
+  {
+    "name": "05-a prekidač maratona v2 podrazumevano uključen",
+    "file": "src/domain/generators/flags.ts",
+    "find": "export const marathonV2Enabled = (sources: Sources): boolean => switchOn(sources);",
+    "replace": "export const marathonV2Enabled = (sources: Sources): boolean =>\n  switchOn(sources) || sources.setting === undefined;",
+    "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"]
+  },
+  {
+    "name": "05-b nepoznata verzija marathon-v2 → tihi fallback na maraton v1",
+    "file": "src/domain/generators/select.ts",
+    "find": "  return generator.planPolicy(plan).status === 'unknown' ? null : generator;",
+    "replace": "  if (generator === MARATHON_V2_GENERATOR && generator.planPolicy(plan).status === 'unknown')\n    return MARATHON_GENERATOR;\n  return generator.planPolicy(plan).status === 'unknown' ? null : generator;",
+    "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"]
+  },
+  {
+    "name": "05-c adapter uvozi van marathon/v2 (type-only)",
+    "file": "src/domain/generators/marathon/v2/app/date.ts",
+    "find": "import type { IsoDate } from './types.ts';",
+    "replace": "import type { IsoDate } from './types.ts';\nimport type { IsoDate as AppIsoDate } from '../../../../date';\nexport type { AppIsoDate };",
+    "tests": ["src/domain/generators/marathon/v2/isolation.node.test.ts"]
+  },
+  {
+    "name": "05-d lični plan vlasnika ide u maraton v2 (rutiranje bez oznake i distance)",
+    "file": "src/domain/generators/select.ts",
+    "find": "  if (generator === MARATHON_GENERATOR && plan.meta?.['policyId'] === m2.POLICY_ID)",
+    "replace": "  if (plan.meta?.['policyId'] === m2.POLICY_ID || plan.meta?.['policyId'] === undefined)",
+    "tests": ["src/domain/generators/personalPlan.node.test.ts"]
+  },
+  {
+    "name": "05-e trka kao lagan dan (u obimu nedelje)",
+    "file": "src/domain/generators/marathon/v2/app/plan.ts",
+    "find": "    case 'race':\n      return 'trka';",
+    "replace": "    case 'race':\n      return 'lako';",
+    "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"]
+  },
+  {
+    "name": "05-f čarobnjak maratona v2 ne čita prekidač",
+    "file": "src/features/onboarding/Wizard.tsx",
+    "find": "  const isMarathonV2 = flags.marathonV2 === true && w.raceDist === 42195;",
+    "replace": "  const isMarathonV2 = w.raceDist === 42195;",
+    "tests": ["src/features/onboarding/marathonV2Flow.test.tsx"]
+  },
+  {
+    "name": "05-g mapa faze: taper → VRHUNAC",
+    "file": "src/domain/generators/marathon/v2/app/plan.ts",
+    "find": "  taper: 'TAPER',",
+    "replace": "  taper: 'VRHUNAC',",
+    "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"]
+  },
+  {
+    "name": "05-h uvoz plana maratona v2 bez zapisa van plana",
+    "file": "src/domain/generators/select.ts",
+    "find": "  return isFiveKV2Plan(plan) || isTenKV2Plan(plan) || isHmV2Plan(plan) || isMarathonV2Plan(plan);",
+    "replace": "  return isFiveKV2Plan(plan) || isTenKV2Plan(plan) || isHmV2Plan(plan);",
+    "tests": ["src/domain/generators/marathon/v2/app/importV2.node.test.ts"]
+  },
+  {
+    "name": "05-i uključen prekidač maratona menja nov polumaraton (HM v1 nije bajt-isti)",
+    "file": "src/domain/generators/select.ts",
+    "find": "  if (generator === MARATHON_GENERATOR && flags.marathonV2 === true) return MARATHON_V2_GENERATOR;",
+    "replace": "  if (generator === MARATHON_GENERATOR && flags.marathonV2 === true) return MARATHON_V2_GENERATOR;\n  if (generator === HALF_MARATHON_GENERATOR && flags.marathonV2 === true)\n    return HALF_MARATHON_V2_GENERATOR;",
+    "tests": ["src/domain/generators/marathon/v2/app/byteSame.node.test.ts"]
+  },
+  {
+    "name": "05-j sat šalje procenu tempa po osećaju",
+    "file": "src/domain/generators/marathon/v2/app/structure.ts",
+    "find": "    paceSec: estimate ? null : s.paceSecPerKm,",
+    "replace": "    paceSec: s.paceSecPerKm,",
+    "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"]
+  }
+]

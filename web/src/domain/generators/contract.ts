@@ -140,6 +140,30 @@ export interface HmV2PlanInput {
   /** Trčanje/hodanje (polumaraton ga ne podržava: odbijanje sa preporukom 5K plana, H17). */
   runWalk?: boolean;
 }
+/** Maraton v2 (segment MAR-05): ulaz čarobnjaka (oblik razmene; pravila ulaza su generatorova — M1, M13a, M15–M17). */
+export interface MarathonV2PlanInput {
+  /** Prvi dan nedelje 1. */
+  startDate: string;
+  /** Dan trke = poslednji dan poslednje nedelje. */
+  raceDate: string;
+  runDays: WeekdayName[];
+  /** Dan dugog trčanja (jedan od dana trčanja); bez njega bira generator. */
+  longRunDay?: WeekdayName | null;
+  currentWeeklyKm: number;
+  recentResult?: {
+    distanceM: 5000 | 10000 | 21097.5 | 42195;
+    timeSec: number;
+    date: string;
+  } | null;
+  goalTimeSec?: number | null;
+  /** Uobičajen lagan tempo [s/km] — plan po osećaju (bez skorijeg rezultata, M16). */
+  easyPaceSecPerKm?: number | null;
+  /** Skorašnji najduži trk [km] (M13a, pouka 28, opciono). */
+  recentLongRunKm?: number | null;
+  experience?: 'beginner' | 'regular';
+  /** Trčanje/hodanje (maraton ga ne podržava: odbijanje sa preporukom kraće distance, M17). */
+  runWalk?: boolean;
+}
 export interface PlanRejectionReason {
   code: string;
   message: string;

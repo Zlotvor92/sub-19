@@ -154,6 +154,10 @@ export interface GenPlanState {
   /** hm-v2 (segment HM-05): izlaz generatora HM v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije (HM-06).
    *  Oblik poznaje samo `generators/halfMarathon/v2`; aplikacija ga ne čita. Plan bez polja nije HM v2 plan. NEPOUZDAN. */
   hmV2?: unknown;
+  /** marathon-v2 (segment MAR-05): izlaz generatora maratona v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije
+   *  (MAR-06). Oblik poznaje samo `generators/marathon/v2`; aplikacija ga ne čita. Plan bez polja nije plan maratona v2.
+   *  NEPOUZDAN. */
+  marathonV2?: unknown;
   [field: string]: unknown;
 }
 
