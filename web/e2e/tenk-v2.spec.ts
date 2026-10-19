@@ -50,6 +50,9 @@ async function enableTenKV2(page: Page): Promise<void> {
 }
 
 const group = (page: Page, name: string) => page.getByRole('group', { name, exact: true });
+/** Upis na server ide tek PUSH_DEBOUNCE_MS (4 s) posle poslednje izmene; podrazumevanih 5 s za `expect.poll` je na
+ *  opterećenom CI-ju premalo (hm-v2 „pauza → revizija" pao 1× na c7ee38a: server još bez revizije posle 5 s). */
+const SYNC = { timeout: 15_000 };
 const serverPlan = (backend: Awaited<ReturnType<typeof installBackend>>): string =>
   JSON.stringify((backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan ?? null);
 
@@ -104,7 +107,7 @@ test('10K v2: čarobnjak (rezultat, 4 dana) → plan v2 → Plan tab i dan pokaz
   await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
 
   // Plan v2 je sačuvan (i na serveru) sa oznakom politike v2 i izlazom v2.
-  await expect.poll(() => serverPlan(backend)).toContain('"policyId":"10k-v2"');
+  await expect.poll(() => serverPlan(backend), SYNC).toContain('"policyId":"10k-v2"');
   expect(serverPlan(backend)).toContain('"policyVersion":"10k-v2.5.2"');
   expect(serverPlan(backend)).toContain('"tenKV2":{');
 
@@ -147,7 +150,7 @@ test('10K v2: čarobnjak (rezultat, 4 dana) → plan v2 → Plan tab i dan pokaz
   expect(serverPlan(backend)).toBe(before); // pregled ne upisuje
   await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Plan je prilagođen' })).toBeVisible();
-  await expect.poll(() => serverPlan(backend)).toContain('Prilagođavanje 2026-01-14: pauza');
+  await expect.poll(() => serverPlan(backend), SYNC).toContain('Prilagođavanje 2026-01-14: pauza');
   expect(serverPlan(backend)).toContain('"policyId":"10k-v2"');
   expect(serverPlan(backend)).toContain('"asOf":"2026-01-14"');
 });
@@ -169,7 +172,7 @@ test('10K v2 po osećaju: RPE i tempo „orijentir (procena)", test 5 km u planu
   await pickDays(page, ['Uto', 'Čet', 'Ned']);
   await page.getByRole('button', { name: 'Napravi plan' }).click();
   await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toBeHidden();
-  await expect.poll(() => serverPlan(backend)).toContain('"paceBasis":"feel"');
+  await expect.poll(() => serverPlan(backend), SYNC).toContain('"paceBasis":"feel"');
   expect(serverPlan(backend)).toContain('"tag":"test"');
 
   // Dan kvaliteta: napor (RPE) i tempo samo kao procena.
