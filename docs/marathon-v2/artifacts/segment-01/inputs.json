@@ -1,0 +1,54 @@
+{
+  "mali-obim-16w-35km-v45": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-21",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 35,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 6019,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "veliki-obim-20w-65km-v55": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-21",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 65,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 5060,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "spor-18w-45km-v30": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": ["mon", "wed", "fri", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 45,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 8488,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "brz-18w-45km-v70": {
+    "startDate": "2026-11-01",
+    "raceDate": "2027-03-06",
+    "runDays": ["mon", "tue", "thu", "sat"],
+    "longRunDay": "sat",
+    "currentWeeklyKm": 45,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 4105,
+      "date": "2026-10-18"
+    },
+    "goalTimeSec": null
+  }
+}
