@@ -16,6 +16,8 @@ export interface Lengths {
   easy10: number[];
   /** M13a: dugi je na plafonu skoka (plafon skoka niži od ostalih plafona nedelje). */
   jumpBound: boolean;
+  /** Rasterećenje (M16/M17 ispred M5, odstupanje): dugi kraći od 0,8 × poslednjeg da lagani ostanu ≥ 5 km. */
+  shortened?: true;
 }
 
 /** M13: plafon dugog od 150 min sporim E [0,1 km]. */
@@ -136,7 +138,8 @@ export function taperLengths(
 }
 
 /** M5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ M13); ostatak na `easyDays` jednakih
-    laganih dana. */
+    laganih dana. `shorten` (samo nedelja testa M16 i početnik M17): kad lagani ne bi bili ≥ 5 km, dugi se
+    skraćuje (odstupanje). */
 export function deloadLengths(
   target10: number,
   quality100: number,
@@ -144,7 +147,8 @@ export function deloadLengths(
   lastLong10: number,
   rule: DayRule,
   p: Paces,
-  jump10: number | null = null
+  jump10: number | null = null,
+  shorten = false
 ): Lengths | null {
   const cap10 = Math.min(
     Math.floor(P.deload.longFactor * lastLong10 + EPS),
@@ -152,6 +156,11 @@ export function deloadLengths(
   );
   const long10 = Math.min(cap10, jump10 ?? Infinity);
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
-  if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
-  return { long10, easy10, jumpBound: jump10 !== null && jump10 < cap10 };
+  if (easy10.every((e) => e >= EASY_MIN10 && e <= long10))
+    return { long10, easy10, jumpBound: jump10 !== null && jump10 < cap10 };
+  // Odstupanje (M16 test u rasterećenju; M17 mali obim početnika): lagani ispod 5 km → dugi se skraćuje na
+  // najduži koji ostavlja lagane ≥ 5 km (i dugi ≥ lagan); cilj i kvalitet ostaju.
+  if (!shorten) return null;
+  const short = withEasy(target10 * 10 - quality100, long10, easyDays, null);
+  return short && short.long10 < long10 ? { ...short, jumpBound: false, shortened: true } : null;
 }

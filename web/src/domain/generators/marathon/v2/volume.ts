@@ -4,7 +4,13 @@
 
 import { longCap10, longJumpCap10, longShareCap10, longTimeCap10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
-import { type DayRule, MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
+import {
+  BEGINNER_DAYS_COUNTS,
+  type DayRule,
+  MARATHON_V2_POLICY as P,
+  type PlanRule,
+  RUN_DAYS_COUNTS
+} from './policy.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
 
 const EPS = 1e-9;
@@ -14,10 +20,11 @@ export const to10 = (km: number): number => Math.round(km * 10);
 export type CapacityLimit = 'time' | 'share';
 
 /** M6: poruka CAPACITY_LIMITED — imenuje stvarno ograničenje; preporučuje više dana samo kad veći broj
-    dana postoji u tabeli M15 (6 dana → bez preporuke dana; preporuka kraće distance nije deo ove poruke). */
+    dana postoji u tabeli M15 (početnik: M17) (6 dana, početnik 5 → bez preporuke dana; preporuka kraće
+    distance nije deo ove poruke). */
 export function capacityMessage(
   runDays: number,
-  rule: DayRule,
+  rule: PlanRule,
   limits: readonly CapacityLimit[]
 ): string {
   const min = `${Math.round(P.lengths.longMaxSec / 60)} min`;
@@ -30,7 +37,7 @@ export function capacityMessage(
         : limits[0] === 'share'
           ? ` uz dugi ≤ ${share}`
           : '';
-  const more = RUN_DAYS_COUNTS.filter((n) => n > runDays);
+  const more = (rule.beginner ? BEGINNER_DAYS_COUNTS : RUN_DAYS_COUNTS).filter((n) => n > runDays);
   const advice =
     more.length === 0
       ? ''
@@ -84,22 +91,21 @@ export function startKm10(currentWeeklyKm: number): number {
   return to10(currentWeeklyKm);
 }
 
-/** M6: granica izgradnje min(start × 1,5; start + 30; max nedelje M15) [0,1 km]; kapacitet je posebno. */
-export function peakCap10(start10: number, rule: DayRule): number {
-  const v = P.volume;
+/** M6: granica izgradnje min(start × 1,5; start + 30; max nedelje M15) [0,1 km] (početnik M17: 1,5× / +25);
+    kapacitet je posebno. */
+export function peakCap10(start10: number, rule: PlanRule): number {
   return Math.min(
-    Math.floor(start10 * v.peakFactor + EPS),
-    start10 + to10(v.peakAddKm),
+    Math.floor(start10 * rule.peakFactor + EPS),
+    start10 + to10(rule.peakAddKm),
     to10(rule.peakMaxKm)
   );
 }
 
-/** M6: +6 % poslednjeg ne-rasteretnog cilja (min 1,0, max 5,0 km; korak 0,1). */
-export function growth10(last10: number): number {
-  const v = P.volume;
+/** M6: +6 % poslednjeg ne-rasteretnog cilja (min 1,0, max 5,0 km; korak 0,1); početnik M17: +5 % (1,0–2,5). */
+export function growth10(last10: number, rule: PlanRule): number {
   return Math.min(
-    to10(v.growthMaxKm),
-    Math.max(to10(v.growthMinKm), Math.round(last10 * v.growth))
+    to10(rule.growthMaxKm),
+    Math.max(to10(rule.growthMinKm), Math.round(last10 * rule.growth))
   );
 }
 
@@ -117,12 +123,13 @@ export function nominal10(
   hist: VolumeHistory,
   start10: number,
   cap10: number,
-  taper: number | null
+  taper: number | null,
+  rule: PlanRule
 ): number {
   if (taper !== null) return Math.round(P.taper.weeks[taper]!.factor * hist.peak10);
   if (hist.lastBuild10 === null) return start10;
   if (frame.deload) return Math.round(P.deload.factor * hist.lastBuild10);
-  return Math.min(hist.lastBuild10 + growth10(hist.lastBuild10), cap10);
+  return Math.min(hist.lastBuild10 + growth10(hist.lastBuild10, rule), cap10);
 }
 
 /** M8: cilj trkačke nedelje = planirano (trka se ne računa). */

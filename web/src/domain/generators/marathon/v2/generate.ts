@@ -1,11 +1,12 @@
-/* Maraton v2 — generisanje. generateMarathonV2(input) = construct(input). Redosled: ulaz (M1) → tempo (M2) →
-   raspored (M9) → faze i rasterećenja (M4/M5) → po nedelji cilj (M6/M5/M7) i konstrukcija → trkačka nedelja
-   (M8) → validator (samo prijavljuje). Adaptacija (segment 04) koristiće isti konstruktor; ovde nema koraka
-   koji posle konstrukcije menja nedelju. */
+/* Maraton v2 — generisanje. generateMarathonV2(input) = construct(input). Redosled: ulaz (M1, M16, M17) →
+   tempo (M2 iz rezultata ili M16 po osećaju) → raspored (M9) → faze, rasterećenja i nedelja testa (M4/M5/M16;
+   početnik bez testa, M17) → po nedelji cilj (M6/M5/M7) i konstrukcija → trkačka nedelja (M8) → validator
+   (samo prijavljuje). Adaptacija (segment 04) koristiće isti konstruktor; ovde nema koraka koji posle
+   konstrukcije menja nedelju. */
 
 import { checkInput } from './input.ts';
 import { jumpBase10, longJumpCap10, longJumpNote, recentLongNote } from './lengths.ts';
-import { assessGoal, pacesFromVdot, predictedMarathon } from './paces.ts';
+import { assessGoal, feelPaces, pacesFromVdot, predictedMarathon } from './paces.ts';
 import { isBuildPhase, periodize, taperStep } from './periodize.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
@@ -23,7 +24,7 @@ import {
   type VolumeHistory
 } from './volume.ts';
 import { buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
-import { fmtKm, warmupCooldown } from './workouts.ts';
+import { fmtKm, fmtSec, warmupCooldown } from './workouts.ts';
 
 const infeasible = (message: string, week?: number): GenerateResult => ({
   ok: false,
@@ -52,9 +53,15 @@ const recentTooShort = (
 export function generateMarathonV2(raw: unknown): GenerateResult {
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
-  const { input, weeks, vdotRaw, pattern, rule, shortResult } = chk;
-  const paces = pacesFromVdot(vdotRaw, input.currentWeeklyKm);
-  const frames = periodize(input.startDate, weeks);
+  const { input, weeks, pace, pattern, rule, shortResult } = chk;
+  const feel = pace.kind === 'feel';
+  // M16: po osećaju E = lagan tempo ± 15 s, brze zone i MP iz procene VDOT-a (orijentir).
+  const paces =
+    pace.kind === 'result'
+      ? pacesFromVdot(pace.vdotRaw, input.currentWeeklyKm)
+      : feelPaces(pace.easySecPerKm, input.currentWeeklyKm).paces;
+  // M16/M17: test 5 km samo u planu po osećaju koji nije početnik.
+  const frames = periodize(input.startDate, weeks, feel && rule.feelTest);
   if (!frames) return infeasible('Nema rasporeda rasterećenja po pravilima M5.');
   const phases = frames.map((f) => f.phase);
   const ctx: WeekContext = {
@@ -62,8 +69,9 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
     paces,
     pattern,
     raceSec: predictedMarathon(paces),
-    wc: warmupCooldown(input.currentWeeklyKm),
-    rule
+    wc: warmupCooldown(input.currentWeeklyKm, rule),
+    rule,
+    feel
   };
   const recent = input.recentLongRunKm ?? null;
   const start10 = startKm10(input.currentWeeklyKm);
@@ -98,7 +106,7 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
       continue;
     }
     const taper = taperStep(phases, frame.index);
-    const nominal = nominal10(frame, h, start10, cap10, taper);
+    const nominal = nominal10(frame, h, start10, cap10, taper, rule);
     const jump10 = longJumpCap10(longs10, frame.index, recent);
     const make = (t10: number, mode: QualityMode) =>
       buildWeek(ctx, frame, t10, quality, lastLong10, longest10, taper, mode, jump10);
@@ -166,9 +174,11 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
     policyVersion: P.version,
     input,
     vdot: paces.vdot,
+    paceBasis: feel ? 'feel' : 'result',
     paces,
-    predictedMarathonSec: predictedMarathon(paces),
-    goal: input.goalTimeSec ? assessGoal(paces.mpVdot, input.goalTimeSec, weeks) : null,
+    // M16: po osećaju bez prognoze i ocene cilja (posle testa).
+    predictedMarathonSec: feel ? null : predictedMarathon(paces),
+    goal: input.goalTimeSec && !feel ? assessGoal(paces.mpVdot, input.goalTimeSec, weeks) : null,
     pattern,
     startKm: start10 / 10,
     peakCapKm: cap10 / 10,
@@ -177,6 +187,20 @@ export function generateMarathonV2(raw: unknown): GenerateResult {
     weeks: out,
     warnings: []
   };
+  if (pace.kind === 'feel') {
+    const t = out.find((w) => w.test);
+    const td = t?.days.find((d) => d.role === 'test');
+    plan.notes.push(
+      `Plan po osećaju (M16): ${pace.why}. E = lagan tempo ${fmtSec(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R i MP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE (MP ${P.feel.rpe.MP.min}–${P.feel.rpe.MP.max} „${P.feel.rpe.MP.cue}").`,
+      t && td
+        ? `Test ${P.test.km} km: nedelja ${t.index}, ${td.date} (M16). Ocena cilja, prognoza maratona i MP tempo: posle testa (adaptacija, segment 04).`
+        : `Početnik bez testa ${P.test.km} km (M17): kvalitet po RPE; ocena cilja i prognoza maratona posle rezultata trke (adaptacija, segment 04).`
+    );
+  }
+  if (rule.beginner)
+    plan.notes.push(
+      `Početnik (M17): uvod ${rule.introWeeks} nedelje bez kvaliteta, zatim jedan kvalitet nedeljno (T kontinuirano → T cruise → MP), bez I i R; WU/CD ${ctx.wc.warmupSec / 60}/${ctx.wc.cooldownSec / 60} min.`
+    );
   if (shortResult)
     plan.notes.push(
       `Rezultat 5 km: maratonska prognoza iz kratke trke je nesigurnija; MP iz VDOT ${fmtKm(paces.mpVdot)} (M1, M2).`

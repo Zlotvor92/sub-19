@@ -75,6 +75,28 @@ export function pacesFromVdot(vdotRaw: number, currentWeeklyKm: number): Paces {
   };
 }
 
+/** M16: procena VDOT-a iz laganog tempa — VDOT čiji je brži kraj E (eFractionFast) jednak laganom tempu
+    (neokrugljen). */
+export function vdotFromEasyPace(easySecPerKm: number): number {
+  return vo2AtSpeed(60000 / easySecPerKm) / P.paces.eFractionFast;
+}
+
+/** M16: tempo plana po osećaju. E = lagan tempo ± eRangeSec; T/I/R i MP (korekcija obima, M2) iz procene
+    VDOT-a (zaokružene na 0,1 i ograničene na feel.vdotMin–vdotMax) — samo orijentir. `capped` = procena
+    iznad vdotMax. */
+export function feelPaces(
+  easySecPerKm: number,
+  currentWeeklyKm: number
+): { paces: Paces; capped: boolean } {
+  const q = P.feel;
+  const raw = round1(vdotFromEasyPace(easySecPerKm));
+  const base = pacesFromVdot(Math.min(q.vdotMax, Math.max(q.vdotMin, raw)), currentWeeklyKm);
+  return {
+    paces: { ...base, E: { fast: easySecPerKm - q.eRangeSec, slow: easySecPerKm + q.eRangeSec } },
+    capped: raw > q.vdotMax
+  };
+}
+
 /** M14: srednji E [s/km] — osnov km zagrevanja, hlađenja i oporavka. */
 export function midEasy(p: Paces): number {
   return (p.E.fast + p.E.slow) / 2;
