@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateMarathonV2 } from './generate.ts';
-import { inputOf, SCHEDULES, timeForVdot, type Profile } from './testInputs.ts';
+import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS, timeForVdot, type Profile } from './testInputs.ts';
 import type { MarathonV2Plan, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 
@@ -274,10 +274,121 @@ describe('svaka odluka ima proveru (mutacija → greška)', () => {
       (p) => (dayOf(p.weeks[N - 1]!, 'eve').workout.segments[0]!.sec = 1500)
     ],
     ['M8 lagan ≤ N−1', 'RACE_WEEK_EASY', (p) => (dayOf(p.weeks[N - 1]!, 'easy').workout.km = 9)],
-    ['M8 trkačka ≤ taper', 'RACE_WEEK_OVER_TAPER', (p) => (p.weeks[N - 1]!.plannedKm = 99)]
+    ['M8 trkačka ≤ taper', 'RACE_WEEK_OVER_TAPER', (p) => (p.weeks[N - 1]!.plannedKm = 99)],
+    [
+      'M13a napomena ned 1',
+      'RECENT_LONG',
+      (p) => (p.weeks[0]!.notes = p.weeks[0]!.notes.filter((n) => !n.includes('(M13a)')))
+    ],
+    [
+      'M10a piramida u opsegu zone',
+      'REP_MIN',
+      (p) => {
+        const d = dayOf(
+          steady(p).find((w) => w.phase === 'development')!,
+          'q1'
+        ).workout.dose!;
+        d.structure = { form: 'pyramid', repsM: [600, 1000, 1400] };
+      }
+    ]
   ];
   for (const [decision, rule, fn] of cases)
     it(`${decision}: ${rule}`, () => expect(mutate(fn)).toContain(rule));
+});
+
+describe('3/5/6 dana (M15) i M13a: mutacija → greška', () => {
+  const at = (n: 3 | 5 | 6, over: Partial<Profile> = {}) =>
+    plan({
+      days: SCHEDULES_BY_DAYS[n].A.days,
+      long: SCHEDULES_BY_DAYS[n].A.long,
+      km: n === 6 ? 70 : 45,
+      ...over
+    });
+  const D3 = at(3);
+  const D5 = at(5);
+  const D6 = at(6);
+
+  it('ispravni planovi 3/5/6 dana: 0 grešaka; 3 dana jedan kvalitet bez I/R, 5/6 dana lagani jednaki', () => {
+    for (const p of [D3, D5, D6]) expect(errors(p)).toEqual([]);
+    for (const w of steady(D3))
+      expect(w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.role)).toEqual(['q1']);
+    expect(
+      D3.weeks.some((w) => w.days.some((d) => d.workout.workKm.I + d.workout.workKm.R > 0))
+    ).toBe(false);
+    expect(D3.pattern.q2).toBeNull();
+  });
+
+  it('3 dana: I/R u izgradnji → PHASE_QUALITY; drugi kvalitet → ROLES; doza tapera ≠ MP M7 → TAPER_QUALITY', () => {
+    const dev = steady(D3).find((w) => w.phase === 'development')!.index;
+    expect(mutate((p) => (dayOf(p.weeks[dev - 1]!, 'q1').workout.qualityType = 'I'), D3)).toContain(
+      'PHASE_QUALITY'
+    );
+    expect(
+      mutate((p) => {
+        const e = dayOf(p.weeks[0]!, 'easy');
+        e.role = 'q2';
+        e.hard = true;
+      }, D3)
+    ).toContain('ROLES');
+    expect(mutate((p) => (dayOf(p.weeks.at(-3)!, 'q1').workout.dose!.doseM = 4000), D3)).toContain(
+      'TAPER_QUALITY'
+    );
+  });
+
+  it('3 dana: rasterećenje na danu Q1 (T); udeo dugog 50 %', () => {
+    const dl = D3.weeks.find((w) => w.deload)!;
+    expect(dayOf(dl, 'q1').workout.dose!.zone).toBe('T');
+    expect(mutate((p) => (dayOf(p.weeks[dl.index - 1]!, 'q1').role = 'q2'), D3)).toContain(
+      'PHASE_QUALITY'
+    );
+    expect(
+      mutate((p) => {
+        const l = dayOf(p.weeks[0]!, 'long').workout;
+        l.km += 3;
+        l.segments[0]!.km += 3;
+      }, D3)
+    ).toContain('LONG_SHARE');
+  });
+
+  it('5/6 dana: nejednaki lagani → EASY_UNEQUAL', () => {
+    for (const p of [D5, D6])
+      expect(
+        mutate((q) => {
+          const e = q.weeks[0]!.days.filter((d) => d.role === 'easy');
+          e[0]!.workout.km += 0.3;
+          e[0]!.workout.segments[0]!.km += 0.3;
+          e[1]!.workout.km -= 0.3;
+          e[1]!.workout.segments[0]!.km -= 0.3;
+        }, p)
+      ).toContain('EASY_UNEQUAL');
+  });
+
+  it('M13a: dugi iznad plafona skoka → LONG_JUMP; ned 1 ispod obima bez dugog na plafonu → VOLUME_START', () => {
+    const p = plan({ recentLongRunKm: 12 });
+    expect(errors(p)).toEqual([]);
+    expect(Math.round(dayOf(p.weeks[0]!, 'long').workout.km * 10)).toBe(132);
+    expect(
+      mutate((q) => {
+        const l = dayOf(q.weeks[0]!, 'long').workout;
+        l.km += 0.5;
+        l.segments[0]!.km += 0.5;
+      }, p)
+    ).toContain('LONG_JUMP');
+    expect(
+      mutate((q) => {
+        const l = dayOf(q.weeks[2]!, 'long').workout;
+        l.km += 1.5;
+        l.segments[0]!.km += 1.5;
+      })
+    ).toContain('LONG_JUMP');
+    expect(
+      mutate(
+        (q) => (q.weeks[1]!.notes = q.weeks[1]!.notes.filter((n) => !n.includes('plafon skoka'))),
+        p
+      )
+    ).toContain('LONG_JUMP');
+    expect(mutate((q) => (q.input.recentLongRunKm = 20), p)).toContain('VOLUME_START');
+  });
 });
 
 describe('upozorenja (plan ostaje ispravan)', () => {
@@ -327,7 +438,12 @@ describe('upozorenja (plan ostaje ispravan)', () => {
     expect(m1).toMatch(/150 min laganim tempom/);
     const fast = plan({ weeks: 16, km: 35, vdot: 70 });
     const m2 = fast.warnings.find((w) => w.rule === 'MARATHON_LONG_SHORT')!.message;
-    expect(m2).toMatch(/40 % nedelje sa 4 dana\): veći nedeljni obim ili više dana trčanja/);
+    expect(m2).toMatch(
+      /40 % nedelje sa 4 dana\): veći nedeljni obim \(više dana trčanja nose veći obim\)/
+    );
+    const six = plan({ weeks: 16, km: 50, vdot: 70, days: SCHEDULES_BY_DAYS[6].A.days });
+    const m3 = six.warnings.find((w) => w.rule === 'MARATHON_LONG_SHORT')?.message ?? '';
+    expect(m3).not.toMatch(/više dana/);
   });
 
   it('LONG_SHORTER_THAN_QUALITY (pouka 14): kvalitetni dan duži od dugog po trajanju', () => {

@@ -4,7 +4,14 @@
 
 import { addDays as isoAdd, daysBetween, mustDay, weekdayOf } from './dates.ts';
 import { checkInput } from './input.ts';
-import { longCap10, longTimeCap10 } from './lengths.ts';
+import {
+  jumpBase10,
+  longCap10,
+  longJumpCap10,
+  longJumpNote,
+  longTimeCap10,
+  recentLongNote
+} from './lengths.ts';
 import { assessGoal, midEasy, pacesFromVdot, predictedMarathon } from './paces.ts';
 import {
   buildAllowed,
@@ -14,8 +21,16 @@ import {
   phasesOf,
   taperStep
 } from './periodize.ts';
-import { dayRule, MARATHON_V2_POLICY as P } from './policy.ts';
-import { capM, carries, deloadLadder, nextLevel, type SlotState, taperDoses } from './quality.ts';
+import { dayRule, MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
+import {
+  capM,
+  carries,
+  deloadLadder,
+  deloadSlot,
+  nextLevel,
+  type SlotState,
+  taperDoses
+} from './quality.ts';
 import { adjacentDays } from './schedule.ts';
 import type {
   DayRole,
@@ -27,7 +42,14 @@ import type {
   QualityType,
   WorkZone
 } from './types.ts';
-import { capacityLimits, capacityMessage, growth10, peakCap10, startKm10 } from './volume.ts';
+import {
+  capacityLimits,
+  capacityMessage,
+  capacityWeeks,
+  growth10,
+  peakCap10,
+  startKm10
+} from './volume.ts';
 import {
   doseOf,
   ladderLevels,
@@ -39,6 +61,7 @@ import {
 } from './workouts.ts';
 
 const EPS = 1e-6;
+const RUN_DAYS_MAX = RUN_DAYS_COUNTS[RUN_DAYS_COUNTS.length - 1]!;
 const PHASES: readonly Phase[] = ['base', 'development', 'specific', 'taper', 'race'];
 const HARD: readonly DayRole[] = ['q1', 'q2', 'long', 'sharpener', 'race'];
 const ZONES: readonly WorkZone[] = ['R', 'I', 'T', 'MP'];
@@ -53,6 +76,16 @@ const SLOT_TYPES: Readonly<
   development: { q1: ['I'], q2: ['T_cruise', 'T_continuous'] },
   specific: { q1: ['MP'], q2: ['T_cruise', 'T_continuous'] },
   taper: { q1: ['MP'], q2: ['T_cruise', 'T_continuous'] },
+  race: { q1: [], q2: [] }
+};
+/** M15 3 dana: jedan kvalitet — baza T kont. (↔ deonice), razvoj T cruise (↔ kont.), specifično MP; bez I i R. */
+const SLOT_TYPES_ONE: Readonly<
+  Record<Phase, { q1: readonly QualityType[]; q2: readonly QualityType[] }>
+> = {
+  base: { q1: ['T_continuous', 'T_cruise'], q2: [] },
+  development: { q1: ['T_cruise', 'T_continuous'], q2: [] },
+  specific: { q1: ['MP'], q2: [] },
+  taper: { q1: ['MP'], q2: [] },
   race: { q1: [], q2: [] }
 };
 
@@ -197,21 +230,24 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
 
   // --- M9: uloge dana po šablonu; M5/M7 broj kvaliteta (ostali dani lagani).
   const pat = plan.pattern;
+  if ((pat.q2 === null ? 1 : 2) !== rule.quality)
+    err('ROLES', `Šablon ima ${pat.q2 === null ? 1 : 2} kvaliteta, M15 traži ${rule.quality}.`);
   if (
     adjacentDays(pat.q1, pat.long) ||
-    adjacentDays(pat.q1, pat.q2) ||
-    adjacentDays(pat.q2, pat.long)
+    (pat.q2 !== null && (adjacentDays(pat.q1, pat.q2) || adjacentDays(pat.q2, pat.long)))
   )
     err('HARD_ADJACENT', 'Šablon ima susedne zahtevne dane (M9).');
+  const tSlot = deloadSlot(rule.quality);
   for (const w of weeks) {
     if (w.phase === 'race') continue;
     const has = (r: DayRole): boolean => w.days.some((d) => d.role === r);
-    // Rasterećenje: samo Q2 (T); taper: Q1 (MP) i Q2 (T, samo N−2) kad postoje (M7, odstupanje M11 ispred M7).
+    // Rasterećenje: samo T slot (Q2; 3 dana Q1); taper: Q1 (MP) i Q2 (T, samo N−2) kad postoje (M7, odstupanje
+    // M11 ispred M7).
     const roleOf = (r: 'q1' | 'q2'): DayRole =>
-      w.deload ? (r === 'q2' ? 'q2' : 'easy') : w.phase === 'taper' && !has(r) ? 'easy' : r;
+      w.deload ? (r === tSlot ? r : 'easy') : w.phase === 'taper' && !has(r) ? 'easy' : r;
     const exp = [
       `${roleOf('q1')}@${pat.q1}`,
-      `${roleOf('q2')}@${pat.q2}`,
+      ...(pat.q2 !== null ? [`${roleOf('q2')}@${pat.q2}`] : []),
       `long@${pat.long}`,
       ...pat.easy.map((wd) => `easy@${wd}`)
     ].sort();
@@ -342,7 +378,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       `Najduži dugi trk u planu je ${String(longestKm).replace('.', ',')} km; za maraton se preporučuje bar ${P.lengths.longShortKm} km (M13). ` +
         (timeCapped
           ? `Ograničava ga trajanje (≤ ${P.lengths.longMaxSec / 60} min laganim tempom) — namerna granica opterećenja; ostatak obima nose ostali dani.`
-          : `Ograničava ga udeo dugog (≤ ${Math.round(rule.longMaxShare * 100)} % nedelje sa ${input.runDays.length} dana): veći nedeljni obim ili više dana trčanja (od segmenta 02) daju duži dugi trk.`)
+          : `Ograničava ga udeo dugog (≤ ${Math.round(rule.longMaxShare * 100)} % nedelje sa ${input.runDays.length} dana): veći nedeljni obim${input.runDays.length < RUN_DAYS_MAX ? ' (više dana trčanja nose veći obim)' : ''} daje duži dugi trk.`)
     );
   }
   // Pouka 14: kvalitetni dan duži od dugog po trajanju u ne-rasteretnoj nedelji izgradnje (upozorenje).
@@ -403,16 +439,17 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           err('PHASE_QUALITY', 'Trkačka nedelja ima samo oštrenje (M8).', w.index, d.date);
       } else if (w.deload) {
         const lad = deloadLadder(w.phase);
-        if (d.role !== 'q2' || dose.ladder !== lad)
+        if (d.role !== tSlot || dose.ladder !== lad)
           err(
             'PHASE_QUALITY',
-            `Rasterećenje: jedini kvalitet je T (${lad}) na danu Q2 (M5).`,
+            `Rasterećenje: jedini kvalitet je T (${lad}) na danu ${tSlot.toUpperCase()} (M5).`,
             w.index,
             d.date
           );
       } else {
         const role = d.role === 'q1' || d.role === 'q2' ? d.role : null;
-        if (!role || !wo.qualityType || !SLOT_TYPES[w.phase][role].includes(wo.qualityType))
+        const types = rule.quality === 1 ? SLOT_TYPES_ONE : SLOT_TYPES;
+        if (!role || !wo.qualityType || !types[w.phase][role].includes(wo.qualityType))
           err(
             'PHASE_QUALITY',
             `${wo.qualityType} ne pripada fazi ${w.phase} (${d.role}) (M10).`,
@@ -457,7 +494,10 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
               : dose.zone === 'I'
                 ? s.form === 'continuous' ||
                   (s.form === 'reps' &&
-                    (s.repM < a.iRepMinM || s.repM > a.iRepMaxM || s.reps > a.iRepsMax))
+                    (s.repM < a.iRepMinM || s.repM > a.iRepMaxM || s.reps > a.iRepsMax)) ||
+                  (s.form === 'pyramid' &&
+                    (s.repsM.length > a.iRepsMax ||
+                      s.repsM.some((m) => m < a.iRepMinM || m > a.iRepMaxM)))
                 : s.form !== 'reps' || !a.rRepM.includes(s.repM);
       if (bad) err('REP_MIN', `${dose.zone}: struktura van pravila M10.`, w.index, d.date);
       const reps = seg.filter((x) => x.kind === 'rep');
@@ -549,8 +589,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       err('IDENTICAL_WEEKS', `Isti kvalitet kao nedelja ${prevW.index} (M12).`, b.index);
     // Baza bez platoa (pouka 3): T slot raste ili, kad sledeći nivo ne staje, menja strukturu.
     if (prevW && prevW.phase === 'base' && b.phase === 'base' && !dropped) {
-      const ta = slotDose(prevW, 'q2');
-      const tb = slotDose(b, 'q2');
+      const ta = slotDose(prevW, tSlot);
+      const tb = slotDose(b, tSlot);
       if (ta && tb) {
         const nl = nextLevel(ta.ladder as LadderId, ta.doseM);
         const blocked = !nl || doseOf(nl) > capM('T', b.targetKm);
@@ -598,6 +638,36 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           b.index
         );
     }
+
+  // --- M13a (pouka 28): dugi svake nedelje ≤ max(1,1 × L; L + 1,0), L = najduži dugi prethodne 4 nedelje
+  // (skorašnji najduži = nedelja 0); bez ulaza napomena nedelje 1 sa pragom.
+  const recent = input.recentLongRunKm ?? null;
+  const longs10 = weeks.map((w) => {
+    const l = w.days.find((d) => d.role === 'long');
+    return l ? to10(l.workout.km) : null;
+  });
+  weeks.forEach((w, i) => {
+    const l10 = longs10[i];
+    if (l10 === null || l10 === undefined) return;
+    const jump = longJumpCap10(longs10.slice(0, i), w.index, recent);
+    if (jump !== null && l10 > jump)
+      err(
+        'LONG_JUMP',
+        `Dugi ${l10 / 10} km > max(1,1 × L; L + 1,0) = ${jump / 10} km (M13a).`,
+        w.index
+      );
+    const bound =
+      jump !== null && l10 === jump && isSteady(w) && jump < longCap10(to10(w.targetKm), rule, p);
+    const note =
+      jump !== null &&
+      w.notes.includes(longJumpNote(l10, jumpBase10(longs10.slice(0, i), w.index, recent)!));
+    if (bound && !note) err('LONG_JUMP', 'Dugi na plafonu skoka bez napomene (M13a).', w.index);
+  });
+  const w1 = weeks[0]!;
+  const long1 = w1.days.find((d) => d.role === 'long');
+  const jump1 = longJumpCap10([], 1, recent);
+  if (long1 && recent === null && !w1.notes.includes(recentLongNote(to10(long1.workout.km))))
+    err('RECENT_LONG', 'Ned 1 bez napomene praga skorašnjeg najdužeg trka (M13a).', 1);
 
   // --- M6: obim. Ned 1 = trenutni obim (ispod samo uz dugi na 150 min, pouka 9); izgradnja po pravilu ili
   // najbliži izvodljiv cilj (napomena); rasterećenje 0,8 ×, taper 0,8 / 0,6 × vrh samo naniže; vrh.
@@ -648,10 +718,11 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       );
     if (w.index === 1 && t10 < start10) {
       const long = w.days.find((d) => d.role === 'long');
-      if (!long || to10(long.workout.km) !== longTimeCap10(p))
+      const l10 = long ? to10(long.workout.km) : null;
+      if (l10 === null || (l10 !== longTimeCap10(p) && l10 !== jump1))
         err(
           'VOLUME_START',
-          `Ned 1 ${w.targetKm} km < trenutni obim bez dugog na ${P.lengths.longMaxSec / 60} min (M6, pouka 9).`,
+          `Ned 1 ${w.targetKm} km < trenutni obim bez dugog na ${P.lengths.longMaxSec / 60} min ili na pragu skorašnjeg najdužeg (M6, pouke 9 i 28).`,
           1
         );
     }
@@ -666,9 +737,9 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     to10(plan.startKm) !== start10
   )
     err('VOLUME_PEAK', 'Vrh, granica izgradnje ili start ≠ M6.');
-  const limited = weeks.some((w) => isSteady(w) && w.fitted === 'down');
+  const limited = capacityWeeks(weeks, rule, p, recent).length > 0;
   if (limited) {
-    const msg = capacityMessage(input.runDays.length, rule, capacityLimits(weeks, rule, p));
+    const msg = capacityMessage(input.runDays.length, rule, capacityLimits(weeks, rule, p, recent));
     if (!plan.notes.some((n) => n.startsWith(msg)))
       err('CAPACITY_NOTE', 'Spuštena nedelja izgradnje bez napomene kapaciteta (M6).');
     warn('CAPACITY_LIMITED', msg);
@@ -676,23 +747,25 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
 
   // --- M5 sadržaj rasterećenja, M7 taper (doze iz poslednje ne-rasteretne nedelje izgradnje).
   let last: Record<'q1' | 'q2', Dose | null> = { q1: null, q2: null };
+  /** M5: poslednja doza u zoni T iz ne-rasteretne nedelje izgradnje. */
+  let lastT = 0;
   let lastLong10: number | null = null;
   let longest10 = 0;
   for (const w of weeks) {
     const long = w.days.find((d) => d.role === 'long');
     const nQuality = w.days.filter((d) => d.workout.kind === 'quality').length;
     if (w.deload) {
-      const t = slotDose(w, 'q2');
+      const t = slotDose(w, tSlot);
       const wantT = expectedReduced(
         deloadLadder(w.phase),
-        last.q2?.doseM ?? 0,
+        lastT,
         P.deload.tShare,
         Math.round(P.deload.tMinKm * 1000)
       );
       if (nQuality !== 1 || !t || t.zone !== 'T' || t.doseM !== wantT)
         err(
           'DELOAD_CONTENT',
-          `Rasterećenje: 1 kvalitet T ${wantT} m (≈ 60 % od ${last.q2?.doseM ?? 0} m, min 2,0 km) (M5).`,
+          `Rasterećenje: 1 kvalitet T ${wantT} m (≈ 60 % od ${lastT} m, min 2,0 km) (M5).`,
           w.index
         );
       if (long && lastLong10 !== null) {
@@ -714,7 +787,11 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       const mp = slotDose(w, 'q1');
       const t = slotDose(w, 'q2');
       // Doza tapera iz JEDINE funkcije (quality.taperDoses, pouka 24) nad poslednjim dozama izgradnje.
-      const want = taperDoses({ q1: slotOf(last.q1), q2: slotOf(last.q2) }, step);
+      const want = taperDoses(
+        { q1: slotOf(last.q1), q2: slotOf(last.q2), t: lastT },
+        step,
+        rule.quality
+      );
       const wantMp = doseOf(want.mp);
       const wantT = want.t === null ? null : doseOf(want.t);
       const tFits = wantT !== null && wantT <= capM('T', w.targetKm);
@@ -760,6 +837,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     if (long) longest10 = Math.max(longest10, to10(long.workout.km));
     if (isSteady(w)) {
       last = { q1: slotDose(w, 'q1') ?? last.q1, q2: slotDose(w, 'q2') ?? last.q2 };
+      const t = [slotDose(w, 'q1'), slotDose(w, 'q2')].filter((d) => d?.zone === 'T').pop();
+      if (t) lastT = t.doseM;
       if (long) lastLong10 = to10(long.workout.km);
     }
   }

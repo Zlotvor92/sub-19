@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { generateMarathonV2 } from './generate.ts';
-import { longTimeCap10 } from './lengths.ts';
+import {
+  jumpBase10,
+  longJumpCap10,
+  longTimeCap10,
+  recentLongNote,
+  recentLongThreshold10
+} from './lengths.ts';
 import { dayRule } from './policy.ts';
-import { inputOf, SCHEDULES } from './testInputs.ts';
+import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { WeekFrame } from './types.ts';
 import { capacityMessage, fit10, growth10, nominal10, peakCap10 } from './volume.ts';
 
@@ -58,13 +64,24 @@ describe('M6 pravilo obima', () => {
     expect(fit10(500, frame(), 600, rule, (t) => t < 200)).toBeNull(); // ispod minimuma nedelje (20 km)
   });
 
-  it('poruka kapaciteta imenuje ograničenje; 4 dana su najveći broj u segmentu 01 (bez preporuke dana)', () => {
-    expect(capacityMessage(4, rule, ['time'])).toBe('4 dana ne nose ovaj obim uz dugi ≤ 150 min.');
+  it('poruka kapaciteta imenuje ograničenje; preporuka više dana samo kad veći broj dana postoji u M15 (6 dana bez)', () => {
+    expect(capacityMessage(4, rule, ['time'])).toBe(
+      '4 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 5–6 dana.'
+    );
     expect(capacityMessage(4, rule, ['share'])).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 40 % nedelje.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 40 % nedelje; preporuka 5–6 dana.'
     );
     expect(capacityMessage(4, rule, ['time', 'share'])).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 150 min i ≤ 40 % nedelje.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 150 min i ≤ 40 % nedelje; preporuka 5–6 dana.'
+    );
+    expect(capacityMessage(3, dayRule(3)!, ['share'])).toBe(
+      '3 dana ne nose ovaj obim uz dugi ≤ 50 % nedelje; preporuka 4–6 dana.'
+    );
+    expect(capacityMessage(5, dayRule(5)!, ['time'])).toBe(
+      '5 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 6 dana.'
+    );
+    expect(capacityMessage(6, dayRule(6)!, ['time'])).toBe(
+      '6 dana ne nose ovaj obim uz dugi ≤ 150 min.'
     );
   });
 });
@@ -95,5 +112,93 @@ describe('M6 u planu (pouke 1 i 9)', () => {
       expect(Math.round(steady[i]!.nominalKm * 10)).toBe(Math.min(last + growth10(last), 800));
     }
     expect(steady.some((w) => w.fitted === 'down')).toBe(true);
+  });
+});
+
+describe('M13a (pouka 28): skok dugog ≤ max(1,1 × L; L + 1,0), L = najduži dugi prethodne 4 nedelje (skorašnji = ned 0)', () => {
+  const at = (recentLongRunKm: number | null, km = 45, days = SCHEDULES.A.days, weeks = 16) => {
+    const r = generateMarathonV2(inputOf({ weeks, km, vdot: 45, days, recentLongRunKm }));
+    if (!r.ok) throw new Error(JSON.stringify(r.reasons));
+    return r.plan;
+  };
+  const longs = (p: ReturnType<typeof at>): number[] =>
+    p.weeks.map((w) => w.days.find((d) => d.role === 'long')?.workout.km ?? 0);
+
+  it('plafon: L iz prethodne 4 nedelje i skorašnjeg (ned 0 → ulazi za ned 1–4); max(1,1 L; L + 1), naniže', () => {
+    expect(longJumpCap10([], 1, 10)).toBe(110);
+    expect(longJumpCap10([], 1, 8)).toBe(90);
+    expect(longJumpCap10([], 1, 12.3)).toBe(135);
+    expect(longJumpCap10([], 1, null)).toBeNull();
+    // r ulazi za nedelje 1–4, ne za 5.
+    expect(jumpBase10([100, 100, 100], 4, 20)).toBe(200);
+    expect(jumpBase10([100, 100, 100, 100], 5, 20)).toBe(100);
+    // Prozor 4 nedelje; trkačka (null) se preskače.
+    expect(jumpBase10([200, 120, 120, 120, 120], 6, null)).toBe(120);
+    expect(jumpBase10([200, 120, 120, 120], 5, null)).toBe(200);
+    expect(longJumpCap10([140, 150], 3, null)).toBe(165);
+    // Prag napomene: X/1,1 naviše na 0,1 (X ≥ 11 km), X − 1 za X < 11 km.
+    expect([140, 180, 100].map(recentLongThreshold10)).toEqual([128, 164, 90]);
+    expect(recentLongNote(180)).toBe(
+      'Dugi 18,0 km: ako ti je skorašnji najduži trk kraći od 16,4 km, unesi ga — plan počinje od njega (M13a).'
+    );
+  });
+
+  it('kratak skorašnji dugi: dugi raste ≤ 10 % (ili + 1,0 km) svake nedelje; ned 1 ispod obima, bez CAPACITY_LIMITED', () => {
+    const p = at(10);
+    const l = longs(p);
+    expect(l[0]).toBe(11);
+    expect(p.weeks[0]!.targetKm).toBeLessThan(45);
+    expect(p.warnings.map((w) => w.rule)).not.toContain('CAPACITY_LIMITED');
+    const all = [10, ...l];
+    for (let i = 1; i < all.length; i++) {
+      if (all[i] === 0) continue;
+      const m = Math.max(...all.slice(Math.max(0, i - 4), i));
+      expect(all[i]!, `ned ${i}`).toBeLessThanOrEqual(Math.max(1.1 * m, m + 1) + 1e-9);
+    }
+    expect(
+      p.weeks.filter((w) => w.notes.some((n) => n.includes('plafon skoka'))).length
+    ).toBeGreaterThan(2);
+  });
+
+  it('r + 1,0 za kratke (r = 8 → 9,0 km)', () => {
+    expect(longs(at(8))[0]).toBe(9);
+  });
+
+  it('RECENT_LONG_TOO_SHORT (pouka 6): neizvodljiva konstrukcija sa datim r → odbijanje sa preporukom', () => {
+    const r = generateMarathonV2(
+      inputOf({ weeks: 12, km: 35, vdot: 30, days: SCHEDULES.A.days, recentLongRunKm: 5 })
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.reasons[0]!.code).toBe('RECENT_LONG_TOO_SHORT');
+    expect(r.reasons[0]!.message).toMatch(
+      /Skorašnji najduži trk \(5,0 km\) je prekratak za 35,0 km nedeljno sa 4 dana i 12 nedelja do trke.*preporuka: duža priprema, manji početni obim ili više dana, ili polumaraton/
+    );
+  });
+
+  it('plafon iznad dugog po pravilu: plan isti kao bez ulaza (osim napomene ned 1 i ključa ulaza)', () => {
+    const a = at(null);
+    const b = at(30);
+    const strip = (x: ReturnType<typeof at>) =>
+      JSON.stringify({
+        ...x,
+        input: { ...x.input, recentLongRunKm: undefined },
+        weeks: x.weeks.map((w) => ({
+          ...w,
+          notes: w.notes.filter((n) => !n.includes('(M13a)'))
+        }))
+      });
+    expect(strip(b)).toBe(strip(a));
+    expect(a.weeks[0]!.notes).toContain(recentLongNote(Math.round(longs(a)[0]! * 10)));
+    expect(b.weeks[0]!.notes.some((n) => n.includes('(M13a)'))).toBe(false);
+  });
+
+  it('svaki broj dana: dugi ned 1 ≤ plafon, ned 1 ≤ obim', () => {
+    for (const n of [3, 4, 5, 6] as const) {
+      const km = n === 6 ? 60 : 45;
+      const p = at(12, km, SCHEDULES_BY_DAYS[n].A.days);
+      expect(Math.round(longs(p)[0]! * 10), `${n}`).toBeLessThanOrEqual(longJumpCap10([], 1, 12)!);
+      expect(p.weeks[0]!.targetKm, `${n}`).toBeLessThanOrEqual(km);
+    }
   });
 });

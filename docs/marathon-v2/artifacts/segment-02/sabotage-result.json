@@ -1,0 +1,232 @@
+{
+  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-02/sabotage.json",
+  "head": "8ae290a",
+  "level": "brz",
+  "bail": true,
+  "parallel": 2,
+  "vitestArgs": [],
+  "durationS": 9.2,
+  "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+  "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "S1 udeo dugog 5 dana 40 % umesto 35 % (M15)",
+      "files": ["src/domain/generators/marathon/v2/policy.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/policy.node.test.ts",
+        "src/domain/generators/marathon/v2/week.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/policy.node.test.ts",
+        "test": "politika maraton v2 (M1–M15, M7a, M10a, M13a) > M1 opseg ulaza i M15 tabela 3/4/5/6 dana; 1/2/7 dana van tabele",
+        "message": "AssertionError: expected { Object (quality, easy, ...) } to deeply equal { Object (quality, easy, ...) }"
+      },
+      "failedCount": 1,
+      "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "hashSabotaged": "e3a89813a9dd00f2a632909e670f0311612c7ecf54ca1a2a99e8cc823f296678",
+      "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.3
+    },
+    {
+      "index": 2,
+      "name": "S2 3 dana: I umesto T cruise u razvoju (M15 bez I/R)",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "src/domain/generators/marathon/v2/week.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "test": "M10 lestvice po fazi i druga struktura (pouka 11) > M15 3 dana: jedan kvalitet T kont. → T cruise → MP, bez I i R; rasterećenje na danu Q1",
+        "message": "AssertionError: expected [ 'T_continuous', 'I', 'MP' ] to deeply equal [ 'T_continuous', 'T_cruise', 'MP' ]"
+      },
+      "failedCount": 1,
+      "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "hashSabotaged": "bdc3303968b8f1e6bb5aa81557db9a35da8c0f20675b63875dd74b29ea9e351a",
+      "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.3
+    },
+    {
+      "index": 3,
+      "name": "S3 piramida M10a isključena (I 5000 bez druge strukture)",
+      "files": ["src/domain/generators/marathon/v2/workouts.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "test": "M10 lestvice po fazi i druga struktura (pouka 11) > M10a (pouka 27): I 5000 = 800-1000-1200-1200-800 (bez druge strukture jednakih deonica); naizmenično sa 5 × 1000",
+        "message": "AssertionError: expected [ { form: 'reps', reps: 5, …(1) } ] to deeply equal [ …(2) ]"
+      },
+      "failedCount": 1,
+      "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "hashSabotaged": "a22680aff14a46c7ebe21ed4b5fe177a4ab1614bec43f4bd282cafa8996578ed",
+      "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.4
+    },
+    {
+      "index": 4,
+      "name": "S4 granica recentLongRunKm: 5 km odbijen (M13a)",
+      "files": ["src/domain/generators/marathon/v2/input.ts"],
+      "tests": ["src/domain/generators/marathon/v2/input.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/input.node.test.ts",
+        "test": "M1 ulaz > M13a: recentLongRunKm opcion, 5–42 km; van opsega odbijanje",
+        "message": "AssertionError: expected [ 'RECENT_LONG_INVALID' ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "hashSabotaged": "aea04aaeb0e3953008f3d4e434ec4a7a6e23dbd16bf41d00e3eb0eba7aafa15c",
+      "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.2
+    },
+    {
+      "index": 5,
+      "name": "S5 skok dugog 20 % umesto 10 % (M13a)",
+      "files": ["src/domain/generators/marathon/v2/lengths.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/volume.node.test.ts",
+        "src/domain/generators/marathon/v2/recent.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/volume.node.test.ts",
+        "test": "M13a (pouka 28): skok dugog ≤ max(1,1 × L; L + 1,0), L = najduži dugi prethodne 4 nedelje (skorašnji = ned 0) > plafon: L iz prethodne 4 nedelje i skorašnjeg (ned 0 → ulazi za ned 1–4); max(1,1 L; L + 1), naniže",
+        "message": "AssertionError: expected 120 to be 110 // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "hashSabotaged": "4995906ff2df3b740adf195ed6a367c51c9bb928ebc33cedd49f1f28837b122b",
+      "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.7
+    },
+    {
+      "index": 6,
+      "name": "S6 lagani nejednaki 5/6 dana (ceo višak na prvi lagan)",
+      "files": ["src/domain/generators/marathon/v2/lengths.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/week.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/week.node.test.ts",
+        "test": "3/5/6 dana (M15) > 5/6 dana: lagani jednaki (razlika ≤ 0,1 km, raniji dan dobija višak) i ≤ dugi; dugi ≤ 35 / 32 %",
+        "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_UNEQUAL: Lagani dani 6.6 / 6.4 / 6.4 km nisu jednaki.\",\"week\":15}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "hashSabotaged": "b9cd3e19a250ded2227ce073cc60ce9ac36c7426c781af0d80fa0a0735cc5608",
+      "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.3
+    },
+    {
+      "index": 7,
+      "name": "S7 kotrljajuće pravilo isključeno (plafon skoka samo ned 1)",
+      "files": ["src/domain/generators/marathon/v2/generate.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/volume.node.test.ts",
+        "src/domain/generators/marathon/v2/recent.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/volume.node.test.ts",
+        "test": "M13a (pouka 28): skok dugog ≤ max(1,1 × L; L + 1,0), L = najduži dugi prethodne 4 nedelje (skorašnji = ned 0) > kratak skorašnji dugi: dugi raste ≤ 10 % (ili + 1,0 km) svake nedelje; ned 1 ispod obima, bez CAPACITY_LIMITED",
+        "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_JUMP: Dugi 14.7 km > max(1,1 × L; L + 1,0) = 12.1 km (M13a).\",\"week\":2}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "hashSabotaged": "02bb697df5350610185d232216adc70bacad50f16d9e5512ca01b715d24a94ed",
+      "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.6
+    },
+    {
+      "index": 8,
+      "name": "S8 odbijanje RECENT_LONG_TOO_SHORT isključeno (pouka 6)",
+      "files": ["src/domain/generators/marathon/v2/generate.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/volume.node.test.ts",
+        "src/domain/generators/marathon/v2/recent.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/volume.node.test.ts",
+        "test": "M13a (pouka 28): skok dugog ≤ max(1,1 × L; L + 1,0), L = najduži dugi prethodne 4 nedelje (skorašnji = ned 0) > RECENT_LONG_TOO_SHORT (pouka 6): neizvodljiva konstrukcija sa datim r → odbijanje sa preporukom",
+        "message": "AssertionError: expected 'WEEK_INFEASIBLE' to be 'RECENT_LONG_TOO_SHORT' // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "hashSabotaged": "43587673004657dc1a03c9224fc7eb6a38130d53b44e5996aec10f54e3d406f0",
+      "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.6
+    },
+    {
+      "index": 9,
+      "name": "S9 3 dana: T u taperu N−2 (jedan kvalitet, M7/M15)",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "src/domain/generators/marathon/v2/week.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "test": "M5 rasterećenje i M7 taper > taper N−2: MP i T ≈ 60 %; N−1: MP ≈ 50 %, bez T; min MP 2 × 3000 m, T 2,0 km",
+        "message": "AssertionError: expected { mp: { form: 'reps', …(2) }, …(1) } to deeply equal { mp: { form: 'reps', …(2) }, t: null }"
+      },
+      "failedCount": 1,
+      "hashBefore": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "hashSabotaged": "a001eccdeae38760eef51612af04f35cf8efa0877bea348567bf8e9fdff650b1",
+      "hashAfter": "28ba3defe453d485f44aed9c4c143be8e39d26ba7f824e2d066f8de22483ebc5",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.6
+    }
+  ]
+}

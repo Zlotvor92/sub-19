@@ -1,0 +1,81 @@
+{
+  "d3-mali-16w-30km-v40": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-21",
+    "runDays": ["tue", "thu", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 30,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 6661,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "d3-veliki-20w-50km-v55": {
+    "startDate": "2026-11-01",
+    "raceDate": "2027-03-20",
+    "runDays": ["mon", "wed", "sat"],
+    "longRunDay": "sat",
+    "currentWeeklyKm": 50,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 5060,
+      "date": "2026-10-18"
+    },
+    "goalTimeSec": null
+  },
+  "d4-piramida-18w-50km-v40": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 50,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 6661,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "d4-skorasnji-16w-45km-v45-r10": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-21",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 45,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 6019,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null,
+    "recentLongRunKm": 10
+  },
+  "d5-spor-18w-60km-v30": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": ["mon", "tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 60,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 8488,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "d6-brz-20w-90km-v60": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-21",
+    "runDays": ["mon", "tue", "wed", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 90,
+    "recentResult": {
+      "distanceM": 21097.5,
+      "timeSec": 4691,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  }
+}

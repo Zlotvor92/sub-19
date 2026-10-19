@@ -1,5 +1,6 @@
-/* M9 — raspored nedelje (M15 red 4): Q1 + Q2 + dugi + lagani; teški dani (kvaliteti i dugi) međusobno
-   nesusedni (ciklično: nedelja i ponedeljak su susedni). Jedino mesto izbora dana po ulozi. */
+/* M9 — raspored nedelje (M15): Q1 + Q2 + dugi + lagani (4–6 dana) ili Q1 + dugi + lagan (3 dana); teški dani
+   (kvaliteti i dugi) međusobno nesusedni (ciklično: nedelja i ponedeljak su susedni). Jedino mesto izbora dana
+   po ulozi. */
 
 import { WEEKDAYS, weekdayIndex } from './dates.ts';
 import { dayRule, MARATHON_V2_POLICY as P } from './policy.ts';
@@ -30,12 +31,18 @@ export function patternOf(
   runDays: readonly Weekday[],
   longRunDay?: Weekday | null
 ): Pattern | null {
-  if (!dayRule(runDays.length)) return null;
+  const rule = dayRule(runDays.length);
+  if (!rule) return null;
   const long = longDayOf(runDays, longRunDay);
   const rest = ordered(runDays.filter((d) => d !== long));
   const options: Pattern[] = [];
   for (const a of rest) {
     if (adjacentDays(a, long)) continue;
+    // M15: 3 dana — jedan kvalitet, samo nesusedan dugom; lagan bilo gde.
+    if (rule.quality === 1) {
+      options.push({ long, q1: a, q2: null, easy: rest.filter((d) => d !== a) });
+      continue;
+    }
     for (const b of rest) {
       if (a === b || adjacentDays(b, long) || adjacentDays(a, b)) continue;
       // Q1 je prvi kvalitet posle dugog (ciklično).
@@ -43,10 +50,11 @@ export function patternOf(
       options.push({ long, q1: a, q2: b, easy: rest.filter((d) => d !== a && d !== b) });
     }
   }
+  const q1q2 = (x: Pattern): number => (x.q2 ? forwardGap(x.q1, x.q2) : 0);
   options.sort(
     (x, y) =>
       forwardGap(y.long, y.q1) - forwardGap(x.long, x.q1) ||
-      forwardGap(y.q1, y.q2) - forwardGap(x.q1, x.q2) ||
+      q1q2(y) - q1q2(x) ||
       weekdayIndex(x.q1) - weekdayIndex(y.q1)
   );
   return options[0] ?? null;

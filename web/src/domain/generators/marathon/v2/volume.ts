@@ -2,7 +2,7 @@
    nedelje; poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija nedelje
    (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
-import { longShareCap10, longTimeCap10 } from './lengths.ts';
+import { longCap10, longJumpCap10, longShareCap10, longTimeCap10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
 import { type DayRule, MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
@@ -14,8 +14,7 @@ export const to10 = (km: number): number => Math.round(km * 10);
 export type CapacityLimit = 'time' | 'share';
 
 /** M6: poruka CAPACITY_LIMITED — imenuje stvarno ograničenje; preporučuje više dana samo kad veći broj
-    dana postoji u tabeli M15 (segment 01: samo 4 dana → bez preporuke dana, preporuka kraće distance nije
-    deo ove poruke). */
+    dana postoji u tabeli M15 (6 dana → bez preporuke dana; preporuka kraće distance nije deo ove poruke). */
 export function capacityMessage(
   runDays: number,
   rule: DayRule,
@@ -39,17 +38,38 @@ export function capacityMessage(
   return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
 }
 
-/** Ograničenja spuštenih (fitted 'down') ne-rasteretnih nedelja izgradnje: dugi = plafon 150 min sporim E
-    → 'time'; dugi = udeo cilja (M15) → 'share'. */
+/** Spuštene (fitted 'down') ne-rasteretne nedelje izgradnje koje seče kapacitet broja dana. Nedelja čiji je
+    dugi na plafonu skoka M13a (niži od plafona M13) nije ograničenje kapaciteta (pouka 28). Jedna funkcija za
+    konstruktor i validator (pouka 24). */
+export function capacityWeeks(
+  weeks: readonly PlanWeek[],
+  rule: DayRule,
+  p: Paces,
+  recentLongRunKm: number | null | undefined
+): PlanWeek[] {
+  const longs10 = weeks.map((w) => {
+    const l = w.days.find((d) => d.role === 'long');
+    return l ? to10(l.workout.km) : null;
+  });
+  return weeks.filter((w, i) => {
+    if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') return false;
+    const jump = longJumpCap10(longs10.slice(0, i), w.index, recentLongRunKm);
+    const l = longs10[i];
+    return !(jump !== null && l === jump && jump < longCap10(to10(w.targetKm), rule, p));
+  });
+}
+
+/** Ograničenja nedelja kapaciteta (capacityWeeks): dugi = plafon 150 min sporim E → 'time'; dugi = udeo
+    cilja (M15) → 'share'. */
 export function capacityLimits(
   weeks: readonly PlanWeek[],
   rule: DayRule,
-  p: Paces
+  p: Paces,
+  recentLongRunKm: number | null | undefined
 ): CapacityLimit[] {
   let time = false;
   let share = false;
-  for (const w of weeks) {
-    if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') continue;
+  for (const w of capacityWeeks(weeks, rule, p, recentLongRunKm)) {
     const long = w.days.find((d) => d.role === 'long');
     if (!long) continue;
     const l10 = to10(long.workout.km);
@@ -113,7 +133,7 @@ export function raceWeekTarget10(planned100: number): number {
 /**
  * M6: nominalni cilj ako ga konstrukcija ispunjava; inače SAMO ova nedelja na najbliži izvodljiv cilj (pri
  * jednakoj udaljenosti niži). Izgradnja sme naviše do granice izgradnje; ned 1, rasterećenje i taper samo
- * naniže (ned 1 = trenutni obim; smanjenje ne sme da poraste). Donja granica je najmanji smislen obim (M15, Uslov 8).
+ * naniže (ned 1 = trenutni obim, ispod samo uz dugi na plafonu: 150 min ili M13a; smanjenje ne sme da poraste). Donja granica je najmanji smislen obim (M15, Uslov 8).
  */
 export function fit10(
   nominal: number,
