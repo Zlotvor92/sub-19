@@ -133,6 +133,12 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     rasterećenju sa dva kvaliteta; taper i trkačka nedelja su izuzeti (H7/M7: dugi tapera namerno ≤ 0,6 × najduži,
     intenzitet se zadržava — HM-07: RP dan duži od dugog u taperu 1371/25 122 planova, medijana 6 min, ostaje).
     Pouka 30 važi i za 5K (Faza 4a N3).
+36. (organizator, MAR-06 pitanje 2) Umor je vezan za ZAPISE, ne za dan adaptacije (kao bol, pouka 18): sidro
+    prinudnog rasterećenja = nedelja koja sadrži (datum poslednjeg RPE zapisa koji čini umor) + 1; isti zapisi daju
+    isti plan bez obzira na dan adaptacije, a umor čije je rasterećenje već u planu ne pravi novo. Nađeno (organizator,
+    isti zapisi umora ponovo sledećeg dana preko granice nedelje): drugo rasterećenje u 5K 58/117, 10K 903/963,
+    HM 708/777, maraton 943/990 tokova; sredom → četvrtak 0. Važi za sve 4 distance; trajna mreža: isti umor
+    ponovo asOf + 1 … + 7 → 0 novih rasterećenja; traka (pouka 20) ga ne vidi kao novo.
 
 ## 3. Tok jednog segmenta i provera
 

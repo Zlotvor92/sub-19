@@ -28,3 +28,5 @@ tokovi/planovi pogođeni nalazom.
 | N12 | Poznato/svesno (dugi ≤ 150 min, platoi, lagan = dugi u taperu, HM 3 d 25 km bez RP na kraju, 10K pouka 25 tekst) — bez izmene; 10K tekst uz sledeću 10K izmenu. | — |
 | traka | Pravilo trake (pouka 20) u domenu svake distance (maraton urađen u MAR-06); HM `adaptBanner` iz `app/adapt.ts` u domen. 10K: sledeća 10K izmena. | HM-07 |
 | testovi | Brz nivo maratona ≤ 60 s; CI pun nivo: deljenje (shard) — odluka posle segmenata. | MAR-07, organizator |
+| umor (MAR-06 p. 2) | Nova pouka 36: umor vezan za zapise (sidro = nedelja posle poslednjeg RPE zapisa umora), isti zapisi = isti plan; skripta `fatigue-repeat.ts` (asOf kraj nedelje → sledeći dan): 5K 58/117, 10K 903/963, HM 708/777, maraton 943/990 drugo rasterećenje → cilj 0. | 5K-08g, 10K-06f, HM-07, MAR-07 |
+| MAR-06 p. 1, 3 | Test 3 km samo napomena (kao HM-06) — prihvaćeno. 10K tekst prekidača „stiže uskoro" — 10K-06f. | — / 10K-06f |
