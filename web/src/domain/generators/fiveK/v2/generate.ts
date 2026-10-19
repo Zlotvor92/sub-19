@@ -48,6 +48,9 @@ export interface Constructed {
   /** Vrh za taper/trkačku nedelju i start za vrh posle koraka (bez koraka = vol.peakKm / vol.startKm). */
   peakRefKm: number;
   startRefKm: number;
+  /** 2.7.0 (Odluka 9): rasterećenja ukinuta posle nedelje smanjenja (steps.framesFor) — nedelja → indeks
+      koraka; prazno bez koraka. */
+  dropped: Map<number, number>;
 }
 
 /**
@@ -72,7 +75,9 @@ export function construct(
   const totalWeeks = (daysBetween(input.startDate, input.raceDate) + 1) / 7;
   const frames0 = periodize(input.startDate, totalWeeks, rules.deloadEvery, a.feel);
   const vol = planVolume(frames0, input.currentWeeklyKm, paces, a);
-  const frames = steps.length > 0 ? framesFor(input, steps, pat.pattern, totalWeeks) : frames0;
+  const dropped = new Map<number, number>();
+  const frames =
+    steps.length > 0 ? framesFor(input, steps, pat.pattern, totalWeeks, dropped) : frames0;
   const ctx = (w: number): { p: PaceModel; a: Athlete } =>
     steps.length > 0
       ? { p: pacesAt(input, steps, w), a: athleteAt(input, steps, w) }
@@ -169,7 +174,8 @@ export function construct(
       weeks,
       vol,
       peakRefKm: adapted.peakKm,
-      startRefKm: adapted.startRefKm
+      startRefKm: adapted.startRefKm,
+      dropped
     }
   };
 }

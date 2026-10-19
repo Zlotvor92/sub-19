@@ -259,8 +259,20 @@ export function nextBuildKm(
   return Math.max(normal, Math.min(floor1(lastBuild * (1 + P.adapt.returnGrowth)), level));
 }
 
-const isBuildFrame = (f: WeekFrame): boolean =>
+const isBuildFrame = (f: Pick<WeekFrame, 'phase'>): boolean =>
   f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen';
+
+/** 2.5.0 (Odluka 3): cilj ostatka tekuće nedelje pauze (firstWeek < fromWeek, nedelja izgradnje — i rasteretna) =
+    min(cilj pauze, cilj nedelje `targetKm`); null = korak nema ostatak pauze. 2.7.0 (P2, VOLUME_DELOAD): JEDINO
+    mesto pravila — adaptVolume i validator (rasterećenje u kom počinje pauza sme ispod 0,8 × prethodne). */
+export function pauseRemainderKm(
+  s: VolumeStep,
+  frame: Pick<WeekFrame, 'phase'> | undefined,
+  targetKm: number
+): number | null {
+  if (!s.pauseRemainder || s.startKm === null || s.firstWeek >= s.fromWeek) return null;
+  return frame !== undefined && isBuildFrame(frame) ? Math.min(s.startKm, targetKm) : null;
+}
 
 /**
  * 2.5.0: ciljevi posle koraka adaptacije — JEDINO mesto odluke o obimu adaptiranog plana; isti rekurent
@@ -316,8 +328,8 @@ export function adaptVolume(
     const back = s.returnFrom ?? null;
     if (back) anchors.set(back.week, { share: back.share, levelKm: s.levelKm ?? null });
     const r = s.firstWeek;
-    if (s.pauseRemainder && s.startKm !== null && r < n && isBuildFrame(frames[r - 1]!))
-      targets[r - 1] = fitAt(r, Math.min(s.startKm, targets[r - 1]!));
+    const remainder = pauseRemainderKm(s, frames[r - 1], targets[r - 1]!);
+    if (remainder !== null) targets[r - 1] = fitAt(r, remainder);
     let lastBuild: number | null = null;
     for (let i = 0; i < n - 1 && i < frames.length; i++) {
       if (isBuildFrame(frames[i]!) && (!frames[i]!.deload || resets.has(i + 1)))
