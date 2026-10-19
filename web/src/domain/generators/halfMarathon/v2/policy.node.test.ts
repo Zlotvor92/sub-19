@@ -6,7 +6,7 @@ import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 describe('HM v2 politika (MASTER § 4)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('hm-v2');
-    expect(P.version).toBe('hm-v2.2.1');
+    expect(P.version).toBe('hm-v2.3.0');
   });
 
   it('H1 opseg ulaza', () => {
@@ -227,7 +227,24 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'HI11',
       'HI12',
       'HI15',
-      'HI13'
+      'HI13',
+      'A1',
+      'A2',
+      'A3',
+      'A4',
+      'A5',
+      'A6',
+      'A7',
+      'A8',
+      'A9',
+      'A10',
+      'A11',
+      'A12',
+      'A13',
+      'A14',
+      'A15',
+      'A17',
+      'A18'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -241,5 +258,12 @@ describe('HM v2 politika (MASTER § 4)', () => {
     const hi15 = P.DECISIONS.find((d) => d.id === 'HI15')!.rule;
     expect(hi15).toContain('izuzetak od „doza ne opada"');
     expect(hi15).toContain('Najniži nivo zone');
+    // H18: orijentir < 10 nedelja, bol dugi ≤ 60 min i lagani × 0,7 ≥ 4 km, taper posle smanjenja 0,7 ×.
+    expect(P.adapt.restartFullPrepWeeks).toBe(10);
+    expect([P.adapt.painLongMaxSec, P.adapt.painEasyFactor, P.lengths.easyMinKm]).toEqual([
+      3600, 0.7, 4
+    ]);
+    expect(P.taper.factor).toBe(0.7);
+    expect(P.DECISIONS.find((d) => d.id === 'A4')!.rule).toContain('Pouka 18');
   });
 });

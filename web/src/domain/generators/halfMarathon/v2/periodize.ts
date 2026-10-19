@@ -17,17 +17,27 @@ export interface PhaseCounts {
     (B ≥ 14); baza = ceil((B − spec)/2); razvoj = ostatak. */
 export function phaseCounts(weeks: number): PhaseCounts {
   const q = P.phases;
-  const build = weeks - q.taperWeeks - q.raceWeeks;
-  const specific = Math.min(build, q.specific.find((r) => build <= r.maxBuild)!.weeks);
-  const base = Math.ceil((build - specific) / 2);
   return {
-    base,
-    development: build - specific - base,
-    specific,
+    ...buildCounts(weeks - q.taperWeeks - q.raceWeeks),
     taper: q.taperWeeks,
     race: q.raceWeeks
   };
 }
+
+/** H4: raspodela `build` nedelja izgradnje na bazu, razvoj i specifičnu fazu (i za nov start, A12: m ≤ 3
+    nedelje — sve specifično). */
+function buildCounts(build: number): Omit<PhaseCounts, 'taper' | 'race'> {
+  const q = P.phases;
+  const specific = Math.min(build, q.specific.find((r) => build <= r.maxBuild)!.weeks);
+  const base = Math.ceil((build - specific) / 2);
+  return { base, development: build - specific - base, specific };
+}
+
+const buildSequence = (c: Omit<PhaseCounts, 'taper' | 'race'>): Phase[] => [
+  ...Array<Phase>(c.base).fill('base'),
+  ...Array<Phase>(c.development).fill('development'),
+  ...Array<Phase>(c.specific).fill('specific')
+];
 
 /** Faza svake nedelje (1-indeks u nizu na mestu i − 1). */
 export function phasesOf(weeks: number): Phase[] {
@@ -120,4 +130,24 @@ export function periodize(startDate: IsoDate, weeks: number, test = false): Week
     deload: deloads.includes(i + 1),
     ...(i + 1 === tw ? { test: true as const } : {})
   }));
+}
+
+/**
+ * A3/A12 (nov start, H18): faze i rasterećenja preostale izgradnje od nedelje `from` do tapera istim pravilima
+ * kao periodize — raspodela H4 za m = broj preostalih nedelja izgradnje, rasterećenja iz iste pretrage H5
+ * relativno od `from` (ne u prve 2 nedelje novog starta, ne na prvoj nedelji faze, ne pred taperom). Taper,
+ * trkačka nedelja, datumi, oznaka testa i nedelje pre `from` se ne menjaju. null = H5 nema raspored za
+ * preostalu izgradnju (odstupanje A3: faze ostaju).
+ */
+export function rePeriodize(frames: readonly WeekFrame[], from: number): WeekFrame[] | null {
+  const tail = frames.findIndex((f) => !isBuildPhase(f.phase));
+  const m = tail - (from - 1);
+  if (m <= 0) return [...frames];
+  const seq = buildSequence(buildCounts(m));
+  const deloads = deloadWeeks(seq);
+  if (!deloads) return null;
+  return frames.map((f, i) => {
+    const k = i - (from - 1);
+    return k < 0 || i >= tail ? f : { ...f, phase: seq[k]!, deload: deloads.includes(k + 1) };
+  });
 }
