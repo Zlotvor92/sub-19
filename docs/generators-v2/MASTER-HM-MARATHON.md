@@ -141,7 +141,11 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     isti plan bez obzira na dan adaptacije, a umor čije je rasterećenje već u planu ne pravi novo. Nađeno (organizator,
     isti zapisi umora ponovo sledećeg dana preko granice nedelje): drugo rasterećenje u 5K 58/117, 10K 903/963,
     HM 708/777, maraton 943/990 tokova; sredom → četvrtak 0. Važi za sve 4 distance; trajna mreža: isti umor
-    ponovo asOf + 1 … + 7 → 0 novih rasterećenja; traka (pouka 20) ga ne vidi kao novo.
+    ponovo asOf + 1 … + 7 → 0 novih rasterećenja; traka (pouka 20) ga ne vidi kao novo. Precizno (MAR-07, organizator):
+    prinudno rasterećenje = nedelja POSLE nedelje poslednjeg zapisa umora (prva nedelja koja počinje posle zapisa);
+    ako asOf već pada u nju, rasterećenje važi za njen ostatak (prošli dani zaštićeni). Tako ista prijava u nedelju i u
+    ponedeljak daje isti plan (zapisi pet/ned, asOf ponedeljak: maraton tekuća nedelja; HM/10K/5K su davali sledeću —
+    to krši „isti zapisi = isti plan" i odlaže oporavak za nedelju).
 
 ## 3. Tok jednog segmenta i provera
 
