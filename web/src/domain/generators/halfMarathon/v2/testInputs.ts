@@ -93,3 +93,37 @@ export function gridInputs(): GridInput[] {
             });
   return out;
 }
+
+/** Gusta mreža nedelje 1 (K1 = 0, pouka 9): obim 30,0–60,0 km korak 0,1 × VDOT 30–80 korak 0,5, 10 nedelja,
+    raspored A, trka nedelja = 301 × 101 = 30 401 ulaz. Nedelja 1 ne zavisi od broja nedelja ni rasporeda. */
+export function denseWeek1Inputs(): {
+  id: string;
+  km: number;
+  vdot: number;
+  input: Record<string, unknown>;
+}[] {
+  const out: { id: string; km: number; vdot: number; input: Record<string, unknown> }[] = [];
+  for (let km10 = 300; km10 <= 600; km10++)
+    for (let v2 = 60; v2 <= 160; v2++) {
+      const km = km10 / 10;
+      const vdot = v2 / 2;
+      out.push({
+        id: `d10w-${km}km-v${vdot}-A-sun`,
+        km,
+        vdot,
+        input: inputOf({ weeks: 10, km, vdot, days: SCHEDULES.A.days, long: SCHEDULES.A.long })
+      });
+    }
+  return out;
+}
+
+/** FNV-1a (32 bit) nad JSON-om plana bez oznake verzije — regresija prema prethodnom segmentu (pouka 1). */
+export function planHash(plan: { policyVersion: string }): string {
+  const s = JSON.stringify({ ...plan, policyVersion: '' });
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}

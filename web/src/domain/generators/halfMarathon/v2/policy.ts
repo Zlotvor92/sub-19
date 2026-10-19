@@ -55,7 +55,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'H6',
-    rule: 'Nedelja 1 = trenutni obim; izgradnja +6 % poslednjeg ne-rasteretnog cilja (min 1,0, max 4,0 km, korak 0,1); vrh = min(start × 1,4; start + 20; max nedelje H15 (70 km); kapacitet). Kapacitet = STVARNA konstrukcija nedelje (week.ts); neizvodljiv cilj → samo ta nedelja na najbliži izvodljiv cilj (napomena, upozorenje WEEK_FITTED); granica izgradnje se nikad ne spušta; sledeći rast od cilja koji je nedelja stvarno dobila. Spuštena nedelja izgradnje → CAPACITY_LIMITED (imenuje ograničenje: dugi 150 min i/ili udeo 35 %).',
+    rule: 'Nedelja 1 = trenutni obim; izgradnja +6 % poslednjeg ne-rasteretnog cilja (min 1,0, max 4,0 km, korak 0,1); vrh = min(start × 1,4; start + 20; max nedelje H15 (70 km); kapacitet). Kapacitet = STVARNA konstrukcija nedelje (week.ts); neizvodljiv cilj → samo ta nedelja na najbliži izvodljiv cilj (napomena, upozorenje WEEK_FITTED); granica izgradnje se nikad ne spušta; sledeći rast od cilja koji je nedelja stvarno dobila. Spuštena nedelja izgradnje → CAPACITY_LIMITED (imenuje ograničenje: dugi 150 min i/ili udeo 40 %).',
     place: 'volume.ts (jedini vlasnik cilja i poruke); generate.ts + validate.ts prijavljuju',
     rationale:
       'Heuristika umerenog rasta (pouke 1 i 9). Kapacitet nije formula: udeo dugog × (lagan ≤ dugi) × fiksni WU/CD određuju najveći obim nedelje, a proverava ga konstrukcija. Nedelja 1 < trenutni obim sme samo kad je dugi nedelje 1 na vremenskom plafonu (150 min).'
@@ -105,10 +105,10 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'H13',
-    rule: 'Dugi ≤ udeo cilja po broju dana (4 dana: 35 %) i ≤ 150 min sporim E; korak 0,1 km; dugi ≥ svaki lagan (tvrdo, pouka 2); lagan ≥ 4 km; dugi uzima najveću dozvoljenu dužinu, lagan ostatak. Upozorenje LONG_RUN_SHORT kad je najduži dugi plana < 16 km (preporuka: više dana ili obima).',
+    rule: 'Dugi ≤ udeo cilja po broju dana (4 dana: 40 %, odluka organizatora posle zaustavljanja faf8807) i ≤ 150 min sporim E; korak 0,1 km; dugi ≥ svaki lagan (tvrdo, pouka 2); lagan ≥ 4 km; dugi uzima najveću dozvoljenu dužinu, lagan ostatak. Upozorenje LONG_RUN_SHORT kad je najduži dugi plana < 16 km (preporuka: više dana ili obima).',
     place: 'lengths.ts (jedini vlasnik dužina); validate.ts (LONG_*, EASY_MIN, LONG_RUN_SHORT)',
     rationale:
-      'Udeo i 150 min: heuristika (Daniels: dugi ≤ 25–30 % nedelje i ≤ 150 min, sekundarni izvor; 35 % pri 4 dana jer dugi mora biti ≥ lagan i ostaviti mesta za dva kvaliteta). Dugi < 16 km je kratak za polumaraton (heuristika) — upozorenje, ne odbijanje.'
+      '150 min: heuristika (Daniels, sekundarni izvor). Udeo 40 % pri 4 dana (heuristika, odluka organizatora): plan sa 4 dana nosi dugi kao najveći deo nedelje; Danielsovih 25–30 % važi za 5–7 dana; niz udela po broju dana ostaje opadajući (3 d 45 %, 4 d 40 %, 5 d 32 %, 6 d 30 %); dugi i dalje ≤ 150 min i lagan ≤ dugi. Dugi < 16 km je kratak za polumaraton (heuristika) — upozorenje, ne odbijanje.'
   },
   {
     id: 'H14',
@@ -119,17 +119,38 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'H15',
-    rule: 'Tabela dana (days, JEDINA; segment 01 samo red 4 dana): 4 dana = 2 kvaliteta + 1 lagan + dugi, obim 30–60 km, max nedelje 70 km, dugi ≤ 35 %, minimum nedelje 16 km (Uslov 8: nedelja ispod minimuma = greška; trkačka: planirano + 21,1 km).',
+    rule: 'Tabela dana (days, JEDINA; segment 01 samo red 4 dana): 4 dana = 2 kvaliteta + 1 lagan + dugi, obim 30–60 km, max nedelje 70 km, dugi ≤ 40 % (MASTER H15: 35 %; izmena posle zaustavljanja faf8807), minimum nedelje 16 km (Uslov 8: nedelja ispod minimuma = greška; trkačka: planirano + 21,1 km).',
     place:
       'policy.ts days (dayRule); čitaju input.ts, schedule.ts, lengths.ts, volume.ts, week.ts, validate.ts',
     rationale:
-      'Zadato u MASTER H15 (red 4 dana). Minimum nedelje 16 km = 4 dana × lagan 4 km (isti obrazac kao 10K v2: 4 × 3 km). Redovi 3/5/6 dana dolaze u segmentu 02 (ista tabela).'
+      'Zadato u MASTER H15 (red 4 dana), osim udela dugog. Udeo 35 % se nije mogao ispuniti zajedno sa H6/pouka 9 (nedelja 1 = trenutni obim; ispod samo uz dugi na 150 min), lagan ≤ dugi, WU/CD H14 i početnim nivoima H12: kapacitet nedelje ≈ (Q1 + Q2)/(1 − 2 × udeo), pa spor trkač nije mogao da nosi trenutni obim (zaustavljanje faf8807: mreža 01 396 / 3696 odbijeno, VDOT 30 pri 35/45–60 km, VDOT 35 pri 55 km; gusta provera nedelje 1, 30 401 ulaz, 2870 ispod obima bez 150 min, pad do 15,3 km). Uz 40 %: mreža 01 0 odbijanja, gusto 0, upozorenje „najduži dugi < 16 km" 528 → 6 (docs/hm-v2/reports/SEGMENT-01-STOP.md). Minimum nedelje 16 km = 4 dana × lagan 4 km (isti obrazac kao 10K v2: 4 × 3 km). Redovi 3/5/6 dana dolaze u segmentu 02 (ista tabela).'
   },
   {
     id: 'H17',
     rule: 'Trčanje/hodanje (runWalk true) → RUN_WALK_NOT_SUPPORTED: plan polumaratona traži neprekidno trčanje; preporuka 5K plan trčanja/hodanja.',
     place: 'input.ts',
     rationale: 'Zadato u MASTER H17; nema plana polumaratona trčanja/hodanja.'
+  },
+  {
+    id: 'HI1',
+    rule: 'Tumačenje H10 (prihvaćeno, organizator): druga struktura iste doze ima 2–5 jednakih deonica (I do 6), deljivih sa 100 m, a kad takve podele nema sa 50 m (pouka 11); najmanja deonica po zoni iz H10 (T 1000 m, RP 2000 m, I 800 m).',
+    place: 'policy.ts alternatives; workouts.ts structuresForDose',
+    rationale:
+      'Isto kao 10K v2 D10/D22 (pouka 11); MASTER H10 navodi samo najmanju deonicu po zoni.'
+  },
+  {
+    id: 'HI4',
+    rule: 'Tumačenje H5/H7 (prihvaćeno, organizator): najmanja T doza rasterećenja i tapera 2,0 km je struktura lestvice faze — baza (T kontinuirano) 2,0 km kontinuirano; razvoj, specifično i taper (T cruise, nema nivo 2,0 km) prva podela na deonice ≥ 1000 m = 2 × 1000 m. Jedno pravilo: tFloorStructure.',
+    place: 'workouts.ts tFloorStructure; quality.ts tMinStructure, deloadDose, taperDoses',
+    rationale:
+      'T cruise je zadat deonicama; 2 × 1000 m je ista doza druge strukture po H10 (T ≥ 1000 m) i ostaje u lestvici faze (validator: lestvica rasterećenja po fazi).'
+  },
+  {
+    id: 'HI5',
+    rule: 'Pouka 27 (MASTER § 2, MAR-01): kad jednake deonice I nemaju drugu strukturu iste doze, druga struktura je piramida u opsegu zone (800–1200 m) sa korakom 200 m i istim zbirom, isti broj deonica; naizmenično sa jednakim deonicama (pouka 3). Pravilo: simetrična piramida od 800 m, razlika do zbira po 200 m na deonice najbliže vrhu (pri istoj dužini kasnija): I 2000 → 800-1200, I 5000 → 800-1000-1200-1200-800.',
+    place: 'workouts.ts stepPyramid, structuresForDose; quality.ts otherStructure (naizmenično)',
+    rationale:
+      'Bez toga slot I 2,0 / 5,0 km bez sledećeg nivoa u plafonu ponavlja isti trening (pouka 3). U mreži 01 i gustoj mreži nedelje 1 ponavljanje se ne javlja ni bez pravila (0 nedelja); pravilo važi za ulaze van mreže. Tumačenje rasporeda razlike (najbliže vrhu) je tehničko, bez novog trenerskog broja osim koraka 200 m iz pouke 27.'
   },
   {
     id: 'HI2',
@@ -171,7 +192,7 @@ export const HM_V2_POLICY = {
       kmMin: 30,
       kmMax: 60,
       peakMaxKm: 70,
-      longMaxShare: 0.35,
+      longMaxShare: 0.4,
       weekMinKm: 16
     }
   },
@@ -304,6 +325,8 @@ export const HM_V2_POLICY = {
     iRepMinM: 800,
     iRepMaxM: 1200,
     iPyramidM: [1200, 1000, 800] as readonly number[],
+    /** Pouka 27 (HI5): korak piramide kad jednake deonice nemaju drugu strukturu. */
+    pyramidStepM: 200,
     rRepM: [200, 300, 400] as readonly number[]
   },
 

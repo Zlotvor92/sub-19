@@ -81,6 +81,38 @@ function splitsOf(doseM: number, minRepM: number): Structure[] {
 }
 
 /**
+ * Pouka 27 (HI5): piramida od `n` deonica u opsegu zone [minM, maxM] sa korakom `stepM` i zbirom `doseM`.
+ * Polazi od simetrične piramide (min, min + korak, … vrh … , min), pa razliku do zbira raspoređuje po korak na
+ * deonice najbliže vrhu (pri istoj dužini kasnija), u opsegu zone. null = nema takve piramide (ili su sve
+ * deonice jednake). Npr. I 5000 m, 5 deonica → 800-1000-1200-1200-800; I 2000 m, 2 → 800-1200.
+ */
+export function stepPyramid(
+  doseM: number,
+  n: number,
+  minM: number,
+  maxM: number,
+  stepM: number
+): number[] | null {
+  const reps = Array.from({ length: n }, (_, i) =>
+    Math.min(maxM, minM + stepM * Math.min(i, n - 1 - i))
+  );
+  let diff = doseM - reps.reduce((x, m) => x + m, 0);
+  if (diff % stepM !== 0) return null;
+  while (diff !== 0) {
+    const up = diff > 0;
+    let k = -1;
+    reps.forEach((m, i) => {
+      if (up ? m + stepM > maxM : m - stepM < minM) return;
+      if (k < 0 || (up ? m >= reps[k]! : m <= reps[k]!)) k = i;
+    });
+    if (k < 0) return null;
+    reps[k] = reps[k]! + (up ? stepM : -stepM);
+    diff += up ? -stepM : stepM;
+  }
+  return reps.every((m) => m === reps[0]) ? null : reps;
+}
+
+/**
  * Sve strukture iste doze za lestvicu (H10): nivo lestvice sa tom dozom (ako postoji) pa strukture po
  * pravilu. T: kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m; RP: 2–5 jednakih deonica ≥ 2000 m ili
  * kontinuirano do 10 km; I: do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m; R: deonice
@@ -99,6 +131,11 @@ export function structuresForDose(ladder: LadderId, doseM: number): Structure[] 
   } else if (ladder === 'I') {
     for (const s of equalSplits(doseM, a.iRepMinM, a.iRepMaxM, a.iRepsMax, a.roundM)) push(s);
     push({ form: 'pyramid', repsM: a.iPyramidM });
+    // Pouka 27 (HI5): jednake deonice bez druge strukture iste doze → piramida (korak 200 m, isti zbir).
+    if (out.length === 1 && out[0]!.form === 'reps') {
+      const pyr = stepPyramid(doseM, out[0]!.reps, a.iRepMinM, a.iRepMaxM, a.pyramidStepM);
+      if (pyr) push({ form: 'pyramid', repsM: pyr });
+    }
   } else if (ladder === 'RP') {
     for (const s of splitsOf(doseM, a.rpRepMinM)) push(s);
     if (doseM <= a.rpContinuousMaxKm * 1000) push({ form: 'continuous', km: doseM / 1000 });

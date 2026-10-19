@@ -186,8 +186,8 @@ export function reducedStructure(
 export const tMinStructure = (ladder: 'T_continuous' | 'T_cruise', minKm: number): Structure =>
   tFloorStructure(ladder, Math.round(minKm * 1000));
 
-/** H5: jedini kvalitet rasterećenja — T ≈ 60 % poslednje doze T slota (Q2), lestvica faze, min 2,0 km.
-    null = ne staje u plafon H11 (izgradnja: nije izvodljivo; druga pretraga: bez kvaliteta). */
+/** H5: jedini kvalitet rasterećenja — T ≈ 60 % poslednje doze T slota (Q2), lestvica faze, min 2,0 km
+    (HI4). Plafon H11 proverava week.ts (ne staje: po pravilu neizvodljivo; druga pretraga: bez kvaliteta). */
 export function deloadDose(state: QualityState, phase: Phase): Dose {
   const ladder = deloadLadder(phase);
   const s = reducedStructure(
