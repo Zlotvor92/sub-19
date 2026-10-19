@@ -1,5 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
-import { fixToday, installBackend, seedSession, type Backend } from './support/backend';
+import {
+  asInstalledApp,
+  fixToday,
+  installBackend,
+  seedSession,
+  type Backend
+} from './support/backend';
 import { back, createPlan, logToday, openTi, tab } from './support/flows';
 
 /* Kritični tokovi podataka (nisu među 14, ali ih zahteva definicija završenosti): izvoz/uvoz backupa i brisanje naloga. */
@@ -7,6 +13,7 @@ import { back, createPlan, logToday, openTi, tab } from './support/flows';
 let backend: Backend;
 test.beforeEach(async ({ page }) => {
   await fixToday(page);
+  await asInstalledApp(page);
   await seedSession(page);
   backend = await installBackend(page);
   await createPlan(page);

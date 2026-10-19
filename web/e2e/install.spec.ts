@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { fixToday, installBackend, seedSession } from './support/backend';
+import { asInstalledApp, fixToday, installBackend, seedSession } from './support/backend';
 import { createPlan } from './support/flows';
 
 /* Dugme „Instaliraj" u pregledaču. Service worker je ovde blokiran, pa pregledač ne šalje `beforeinstallprompt` — Pixel 7 posle dodira
@@ -26,14 +26,26 @@ test.describe('u aplikaciji', () => {
   });
 });
 
-test('ekran za prijavu (prvo što novi korisnik vidi): dugme stoji i pre prijave, koraci se otvaraju na samom ekranu', async ({
+test('telefon u pregledaču: prvi ekran traži instalaciju, a prijava je sporedni izlaz', async ({
   page
 }) => {
   await installBackend(page);
   await page.goto('/');
   const gate = page.getByRole('dialog', { name: 'Prijava' });
-  await expect(gate.getByRole('heading', { name: 'Prijavi se da nastaviš' })).toBeVisible();
-  await gate.getByRole('button', { name: 'Instaliraj' }).click();
+  await expect(gate.getByRole('heading', { name: 'Prvo instaliraj sub20' })).toBeVisible();
+  // koraci se vide odmah, bez ikakvog klika
   await expect(gate.getByText('Instaliraj aplikaciju')).toBeVisible();
-  await expect(gate.getByRole('button', { name: 'Prijavi se Google nalogom' })).toBeVisible();
+  await expect(gate.getByRole('button', { name: 'Prijavi se Google nalogom' })).toHaveCount(0);
+  await expect(
+    gate.getByRole('button', { name: 'Ne mogu da instaliram — prijavi me u pregledaču' })
+  ).toBeVisible();
+});
+
+test('instalirana aplikacija: kapija je obična prijava, bez instalacije', async ({ page }) => {
+  await asInstalledApp(page);
+  await installBackend(page);
+  await page.goto('/');
+  const gate = page.getByRole('dialog', { name: 'Prijava' });
+  await expect(gate.getByRole('heading', { name: 'Prijavi se da nastaviš' })).toBeVisible();
+  await expect(gate.getByRole('button', { name: 'Instaliraj' })).toHaveCount(0);
 });

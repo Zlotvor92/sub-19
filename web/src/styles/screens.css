@@ -1093,12 +1093,6 @@
 .gate-in {
   margin-block: auto;
 }
-.gate-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-4);
-}
 .gate-steps {
   padding: var(--s-4);
   border: 1px solid var(--line);
