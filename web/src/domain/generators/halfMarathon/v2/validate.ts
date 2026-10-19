@@ -11,6 +11,7 @@ import {
   deloadLong10,
   EASY_MIN10,
   longCap10,
+  longFor10,
   longKmCap10,
   longShareCap10,
   rollingLongCap10,
@@ -44,6 +45,9 @@ import {
   deloadDose,
   deloadLadder,
   deloadSlot,
+  type BuildLimit,
+  type DayFits,
+  fitsDay,
   INITIAL_QUALITY,
   ladderFor,
   nextLevel,
@@ -57,6 +61,7 @@ import type {
   Dose,
   HmV2Plan,
   LadderId,
+  Structure,
   Phase,
   PlanWeek,
   QualityType,
@@ -74,10 +79,21 @@ import {
   startKm10,
   weekMin10
 } from './volume.ts';
-import { HARD_ROLES, raceWeekRuns, sharpenerAllowed, sharpenerDate } from './week.ts';
+import {
+  buildDayLimit,
+  type DayLimitContext,
+  deloadDayLimit,
+  HARD_ROLES,
+  lowestBuild,
+  raceWeekRuns,
+  sharpenerAllowed,
+  sharpenerDate,
+  taperDayLimit
+} from './week.ts';
 import {
   doseOf,
   ladderLevels,
+  qualityDaySec,
   qualityWorkout,
   recoveryOf,
   repsOf,
@@ -169,6 +185,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   }
   const pat = plan.pattern;
   const nq = rule.quality;
+  const B0 = rule.beginner;
   const slotTypes = rule.beginner ? SLOT_TYPES_BEGINNER : nq === 1 ? SLOT_TYPES_ONE : SLOT_TYPES;
   const intro = (w: { index: number }): boolean => w.index <= rule.introWeeks;
   // H16: osnova tempa iz ulaza (nezavisno od plana) — pouzdan rezultat ≤ 84 dana i VDOT ≥ 30, inače osećaj.
@@ -453,10 +470,39 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       `Najduži dugi ${longestAll10 / 10} km < ${rule.longWarnKm} km (${rule.beginner ? 'H17' : 'H13'}): preporuka više dana ili obima.`
     );
 
-  // --- HI3 (pouka 14): upozorenje — kvalitetni dan duži od dugog po trajanju u ne-rasteretnoj izgradnji.
+  // --- Pouka 32: plafon zone, drugi član — dan kvaliteta iznad najnižeg nivoa zone traje ≤ dugi iste
+  // nedelje (trajanje sporim krajem tempa zone, workouts.qualityDaySec). Izuzeci (upozorenje dole): najniži
+  // nivo zone (izgradnja: prvi nivo lestvice; rasterećenje/taper: najmanja doza) i dan testa.
+  const wcQ = warmupCooldown(input.currentWeeklyKm, rule.beginner);
+  const tFloorM = Math.round((B0 ? P.beginner.tFirstKm : P.deload.tMinKm) * 1000);
+  const rpMinM = P.taper.rpMin.reps * P.taper.rpMin.repM;
+  const lowestOf = (w: PlanWeek, d: Dose): boolean =>
+    w.deload || w.phase === 'taper'
+      ? d.doseM <= (d.zone === 'RP' ? rpMinM : tFloorM)
+      : lowestBuild(d, B0);
+  for (const w of weeks) {
+    const long = w.days.find((d) => d.role === 'long');
+    if (w.phase === 'race' || !long) continue;
+    for (const d of w.days) {
+      const dose = d.workout.dose;
+      if (d.workout.kind !== 'quality' || !dose || lowestOf(w, dose)) continue;
+      const sec = qualityDaySec(dose, p, wcQ);
+      if (sec > long.workout.sec)
+        err(
+          'QUALITY_OVER_LONG',
+          `${dose.zone} ${dose.doseM} m: dan ${Math.round(sec / 60)} min > dugi ${Math.round(long.workout.sec / 60)} min (pouka 32, plafon zone).`,
+          w.index,
+          d.date
+        );
+    }
+  }
+
+  // --- HI3 (pouka 14): upozorenje — kvalitetni dan (ili dan testa) duži od dugog po trajanju; posle pouke 32
+  // samo najniži nivo zone i test, u izgradnji i rasterećenju. Taper (H7: dugi ≤ 0,6 × najduži, RP ≥ 2 × 2000 m)
+  // nema upozorenje — preporuka manje dana ne menja taj odnos (HI15).
   const longer = weeks.flatMap((w) => {
     const long = w.days.find((d) => d.role === 'long');
-    if (!isSteady(w) || !long) return [];
+    if (!isBuildPhase(w.phase) || !long) return [];
     const q = Math.max(
       0,
       // Odluka HM-03: dan testa se računa kao kvalitetni dan (ista provera, isti kod).
@@ -470,7 +516,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     const f = longer[0]!;
     warn(
       'LONG_SHORTER_THAN_QUALITY',
-      `Kvalitetni dan duži od dugog po trajanju u ${longer.length} od ${weeks.filter(isSteady).length} nedelja izgradnje (ned ${f.w}: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min; HI3)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
+      `Kvalitetni dan duži od dugog po trajanju u ${longer.length} od ${weeks.filter((w) => isBuildPhase(w.phase)).length} nedelja izgradnje i rasterećenja (ned ${f.w}: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min; najniži nivo zone ili test, pouka 32; HI3)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
       f.w
     );
   }
@@ -657,32 +703,73 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const lastOf: Record<'q1' | 'q2', Dose | null> = { q1: null, q2: null };
   let prevMain: PlanWeek | null = null;
   let prevW: PlanWeek | null = null;
+  // Pouka 32: drugi član plafona zone po slotu — isti predikat kao konstruktor (week.buildDayLimit).
+  const dl: DayLimitContext = { paces: p, wc: wcQ, rule };
+  const limitOf = (b: PlanWeek): BuildLimit =>
+    buildDayLimit(
+      dl,
+      to10(b.targetKm),
+      pat.easy.length,
+      rollingLongCap10(b.index, longsAll10, input.recentLongRunKm),
+      nq === 2 ? ladderFor(b.phase, 'q2') : null,
+      b.days.find((d) => d.workout.kind === 'test')?.workout ?? null
+    );
+  const slotFits = (b: PlanWeek, role: 'q1' | 'q2'): DayFits =>
+    role === 'q1' ? limitOf(b).q1 : limitOf(b).q2(slotDose(b, 'q1'));
+  const fit = (b: PlanWeek, role: 'q1' | 'q2', ladder: LadderId, s: Structure) =>
+    fitsDay(ladder, s, role === 'q1' && B, slotFits(b, role));
   for (const b of steady) {
     let dropped = false;
     for (const role of ['q1', 'q2'] as const) {
       const da = lastOf[role];
       const db = slotDose(b, role);
       if (db) lastOf[role] = db;
-      if (!da || !db) continue;
+      if (!db) continue;
       if (db.step === 'drop') {
-        // Pouka 12: H11 ispred H12 samo u nedelji ograničenoj kapacitetom — prethodna doza ne staje u
-        // plafon ove nedelje, najviši nivo lestvice u plafonu, uz napomenu.
         dropped = true;
         const ladder = db.ladder as LadderId;
         const cap = capM(db.zone, b.targetKm);
-        const best = structuresOfLadder(ladder, B)
-          .filter((m) => m <= cap)
-          .pop();
-        if (da.doseM <= cap || db.doseM !== best || !b.notes.some((n) => n.includes('spušten sa')))
-          err('DOSE_DROP', `${role}: spuštanje doze bez razloga iz plafona (H11/H12).`, b.index);
+        if (da && da.doseM > cap) {
+          // Pouka 12: H11 ispred H12 samo u nedelji ograničenoj kapacitetom — prethodna doza ne staje u
+          // plafon ove nedelje, najviši nivo lestvice u plafonu, uz napomenu.
+          // Pouka 32: najviši nivo u oba člana plafona zone.
+          const best = ladderLevels(ladder, role === 'q1' && B)
+            .filter((x) => doseOf(x) <= cap && fit(b, role, ladder, x) === 'fits')
+            .map(doseOf)
+            .pop();
+          if (db.doseM !== best || !b.notes.some((n) => n.includes('spušten sa')))
+            err('DOSE_DROP', `${role}: spuštanje doze bez razloga iz plafona (H11/H12).`, b.index);
+          else
+            warn(
+              'DOSE_DROPPED',
+              `${role}: doza spuštena ${da.doseM} → ${db.doseM} m (plafon, nijedan cilj nije izvodljiv bez toga).`,
+              b.index
+            );
+          continue;
+        }
+        // Pouka 32: pad doze kao kapacitet — doza staje u oba člana plafona zone, a sledeći nivo lestvice ne
+        // staje (najviši takav nivo), uz napomenu.
+        const nl = nextLevel(ladder, db.doseM, role === 'q1' && B);
+        if (
+          db.doseM > cap ||
+          fit(b, role, ladder, db.structure) !== 'fits' ||
+          (nl !== null && doseOf(nl) <= cap && fit(b, role, ladder, nl) === 'fits') ||
+          !b.notes.some((n) => n.includes('pouka 32, plafon zone'))
+        )
+          err(
+            'DOSE_DROP',
+            `${role}: spuštanje doze bez razloga iz plafona zone (pouka 32: najviši nivo čiji dan nije duži od dugog).`,
+            b.index
+          );
         else
           warn(
             'DOSE_DROPPED',
-            `${role}: doza spuštena ${da.doseM} → ${db.doseM} m (plafon, nijedan cilj nije izvodljiv bez toga).`,
+            `${role}: doza ${db.doseM} m${da ? ` (bilo ${da.doseM} m)` : ''} — viša bi dan kvaliteta učinila dužim od dugog (pouka 32).`,
             b.index
           );
         continue;
       }
+      if (!da) continue;
       if (da.ladder === db.ladder) {
         const ladder = db.ladder as LadderId;
         const nl = nextLevel(ladder, da.doseM, B);
@@ -695,14 +782,15 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
             b.index
           );
         else if (db.doseM === da.doseM) {
-          if (nl && doseOf(nl) <= capM(db.zone, b.targetKm))
+          if (nl && doseOf(nl) <= capM(db.zone, b.targetKm) && fit(b, role, ladder, nl) !== 'over')
             err(
               'DOSE_STALL',
               `${role}: sledeći nivo ${doseOf(nl)} m staje u plafon, a nije uzet (H12).`,
               b.index
             );
+          // Pouka 32: druga struktura koja ne staje u trajanje dugog se ne računa.
           const others = structuresForDose(ladder, da.doseM).some(
-            (x) => !sameStructure(x, da.structure)
+            (x) => !sameStructure(x, da.structure) && fit(b, role, ladder, x) !== 'over'
           );
           if (sameStructure(da.structure, db.structure) && others)
             err(
@@ -741,10 +829,15 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         const ta = slotDose(prevW, dSlot);
         const tb = slotDose(b, dSlot);
         if (ta && tb) {
-          const nl = nextLevel(ta.ladder as LadderId, ta.doseM, B);
-          const blocked = !nl || doseOf(nl) > capM('T', b.targetKm);
-          // HI10: doza bez druge strukture (T 1,5 km) sme da se ponovi kad sledeći nivo ne staje.
-          const only = structuresForDose(ta.ladder as LadderId, ta.doseM).length === 1;
+          const tl = ta.ladder as LadderId;
+          const nl = nextLevel(tl, ta.doseM, B);
+          const blocked =
+            !nl || doseOf(nl) > capM('T', b.targetKm) || fit(b, dSlot, tl, nl) === 'over';
+          // HI10: doza bez druge strukture (T 1,5 km) sme da se ponovi kad sledeći nivo ne staje; pouka 32:
+          // druga struktura koja ne staje u trajanje dugog se ne računa.
+          const only = !structuresForDose(tl, ta.doseM).some(
+            (x) => !sameStructure(x, ta.structure) && fit(b, dSlot, tl, x) !== 'over'
+          );
           if (!(
             tb.doseM > ta.doseM ||
             (blocked && (!sameStructure(ta.structure, tb.structure) || only))
@@ -799,10 +892,20 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   for (const w of weeks) {
     const long = w.days.find((d) => d.role === 'long');
     if (w.deload && lastLong10 !== null) {
-      const want = deloadDose(state, w.phase, rule);
+      const roll10 = rollingLongCap10(w.index, longsAll10, input.recentLongRunKm);
+      // H11 na dozi po pravilu; drugi član plafona zone (pouka 32) — ista funkcija kao konstruktor.
+      const want0 = deloadDose(state, w.phase, rule);
+      const want =
+        !w.test && !intro(w) && want0.doseM <= capM('T', w.targetKm)
+          ? deloadDose(
+              state,
+              w.phase,
+              rule,
+              deloadDayLimit(dl, to10(w.targetKm), input.runDays.length - 2, lastLong10, roll10)
+            )
+          : want0;
       const t = slotDose(w, dSlot);
       const nQuality = w.days.filter((d) => d.workout.kind === 'quality').length;
-      const roll10 = rollingLongCap10(w.index, longsAll10, input.recentLongRunKm);
       const want10 = Math.min(
         deloadLong10(lastLong10),
         longCap10(to10(w.targetKm), rule, p, roll10)
@@ -811,9 +914,11 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       // ≥ 4 km); kvalitet otpada samo kad ni uz skraćen dugi ne staje.
       const nRuns = w.days.length - 1;
       const last10 = lastLong10;
-      const lenWith = (km: number, nEasy: number) =>
-        deloadLengths(to10(w.targetKm), to100(km), nEasy, last10, rule, p, roll10);
       const testDay = w.days.find((d) => d.workout.kind === 'test');
+      // Pouka 32: u nedelji testa dugi naviše do trajanja dana testa (ista funkcija dužina).
+      const minLong10 = testDay ? longFor10(testDay.workout.sec, p) : 0;
+      const lenWith = (km: number, nEasy: number) =>
+        deloadLengths(to10(w.targetKm), to100(km), nEasy, last10, rule, p, roll10, minLong10);
       const tFits = want.doseM <= capM('T', w.targetKm);
       if (w.test || intro(w)) {
         if (nQuality !== 0)
@@ -873,7 +978,14 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
             `Dugi rasterećenja ${long.workout.km} km ≠ ${exp10 / 10} km (0,8 × poslednji, H5; skraćen samo da lagani ostanu ≥ 4 km, HI14).`,
             w.index
           );
-        else if (exp10 < want10) {
+        else if (exp10 > want10) {
+          if (!w.notes.some((n) => n.includes('podignut')))
+            err(
+              'DELOAD_LONG',
+              'Podignut dugi rasterećenja sa testom bez napomene (pouka 32).',
+              w.index
+            );
+        } else if (exp10 < want10) {
           if (!w.notes.some((n) => n.includes('kraćen')))
             err('DELOAD_LONG', 'Skraćen dugi rasterećenja bez napomene (HI14).', w.index);
           warn(
@@ -887,13 +999,24 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       }
     }
     if (w.phase === 'taper') {
-      const want = taperDoses(state, nq);
+      // H11 na dozama po pravilu; drugi član plafona zone (pouka 32) — ista funkcija kao konstruktor.
+      const tl = taperDayLimit(
+        dl,
+        to10(w.targetKm),
+        pat.easy.length,
+        longest10,
+        rollingLongCap10(w.index, longsAll10, input.recentLongRunKm),
+        nq
+      );
+      const want0 = taperDoses(state, nq);
+      const want = taperDoses(state, nq, tl);
       const rp = slotDose(w, 'q1');
       const t = slotDose(w, 'q2');
-      const rpFits = want.q1.doseM <= capM('RP', w.targetKm);
+      const rpFits = want0.q1.doseM <= capM('RP', w.targetKm);
       // HI10: početnik — RP ne staje → T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km).
-      const bt = B && !rpFits ? beginnerTaperT(state) : null;
-      if (bt && bt.doseM <= capM('T', w.targetKm)) {
+      const bt0 = B && !rpFits ? beginnerTaperT(state) : null;
+      const bt = bt0 && bt0.doseM <= capM('T', w.targetKm) ? beginnerTaperT(state, tl.q1) : null;
+      if (bt) {
         if (!same(rp, bt) || t)
           err(
             'TAPER_QUALITY',
@@ -904,10 +1027,10 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         if (rp || t || !w.notes.some((n) => n.includes('bez kvaliteta')))
           err(
             'TAPER_QUALITY',
-            `Taper: RP ${want.q1.doseM} m > plafon → bez kvaliteta, uz napomenu (H11 ispred H7).`,
+            `Taper: RP ${want0.q1.doseM} m > plafon → bez kvaliteta, uz napomenu (H11 ispred H7).`,
             w.index
           );
-        else warn('TAPER_NO_QUALITY', `Taper bez kvaliteta: RP ${want.q1.doseM} m.`, w.index);
+        else warn('TAPER_NO_QUALITY', `Taper bez kvaliteta: RP ${want0.q1.doseM} m.`, w.index);
       } else if (!same(rp, want.q1))
         err('TAPER_QUALITY', `Taper: RP ${want.q1.doseM} m (≈ 60 % poslednje doze) (H7).`, w.index);
       else if (want.q2 === null) {

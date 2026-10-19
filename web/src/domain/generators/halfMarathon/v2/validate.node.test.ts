@@ -4,7 +4,14 @@
 import { describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
 import type { HmV2Plan, PlanDay, PlanWeek } from './types.ts';
-import { grid02Inputs, gridInputs, inputOf, SCHEDULES, timeForVdot } from './testInputs.ts';
+import {
+  grid02Inputs,
+  gridInputs,
+  inputOf,
+  SCHEDULES,
+  SCHEDULES_BY_DAYS,
+  timeForVdot
+} from './testInputs.ts';
 import { validatePlan } from './validate.ts';
 import {
   easyWorkout,
@@ -15,6 +22,7 @@ import {
 } from './workouts.ts';
 
 const GRID = [...gridInputs(), ...grid02Inputs()];
+const SIX = SCHEDULES_BY_DAYS[6].A;
 const base = (id = '12w-40km-v45-A-sun'): HmV2Plan => {
   const r = generateHmV2(GRID.find((g) => g.id === id)!.input);
   if (!r.ok) throw new Error(id);
@@ -276,6 +284,33 @@ describe('validator', () => {
     e[0]!.workout = easyWorkout(e[0]!.workout.km + 0.5, a.paces);
     e[1]!.workout = easyWorkout(e[1]!.workout.km - 0.5, a.paces);
     expect(errors(a)).toEqual(['EASY_UNEQUAL']);
+  });
+
+  it('pouka 32 (HI15): dan iznad najnižeg nivoa duži od dugog i pad doze ispod najvišeg nivoa koji staje', () => {
+    const p = generateHmV2(
+      inputOf({ weeks: 13, km: 40, vdot: 70, days: SIX.days, long: SIX.long, race: 'sat' })
+    );
+    if (!p.ok) throw new Error('plan');
+    expect(errors(p.plan)).toEqual([]);
+    // Ned 8: Q2 T 2 × 1600 m staje; spuštanje na 2 × 1200 m (najniži) sa napomenom nije najviši nivo.
+    const a = clone(p.plan);
+    const w = week(a, 8);
+    const q2 = dayOf(w, 'q2');
+    expect(q2.workout.dose!.doseM).toBe(3200);
+    q2.workout.dose = {
+      ...q2.workout.dose!,
+      doseM: 2400,
+      structure: { form: 'reps', reps: 2, repM: 1200 },
+      step: 'drop'
+    };
+    w.notes.push(
+      'Q2: T 2,4 km — viša doza bi dan kvaliteta učinila dužim od dugog (pouka 32, plafon zone).'
+    );
+    expect(errors(a)).toContain('DOSE_DROP');
+    // Dan iznad najnižeg nivoa duži od dugog: dugi ned 8 skraćen na 8 km.
+    const b = clone(p.plan);
+    dayOf(week(b, 8), 'long').workout = longWorkout(8, b.paces);
+    expect(errors(b)).toContain('QUALITY_OVER_LONG');
   });
 
   it('H2/H3: tempo iz rezultata, prognoza, ocena cilja', () => {

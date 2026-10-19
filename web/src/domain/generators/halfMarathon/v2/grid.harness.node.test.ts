@@ -18,6 +18,12 @@ const BASELINE_01 = join(DIR, 'segment01.baseline.json');
 const NORM_01 = join(DIR, 'segment01.norm-hashes-3979237.json');
 export const WRITE = process.env['HM_V2_WRITE_BASELINE'] === '1';
 export const GRID_PARTS = 4;
+/** HM-04 A (pouka 32, hm-v2.2.1): planovi mreža 02, r (`r-…`), 03 po osećaju i početnik koji su na 5e09a02
+    imali bar jednu nedelju sa kvalitetnim danom (ili danom testa) dužim od dugog — JEDINI koji smeju da se
+    promene prema baznim linijama (docs/hm-v2/artifacts/segment-03b/measure-32.ts i compare-32.ts). */
+export const OVER_LONG = new Set(
+  JSON.parse(readFileSync(join(DIR, 'segment03b.over-long-5e09a02.json'), 'utf8')) as string[]
+);
 
 /** Red bazne linije: vrh cilja, najduži dugi, heš celog plana bez oznake verzije (regresija sledećeg segmenta). */
 export type BaselineRow = [peakKm: number, longestKm: number, hash: string];
@@ -126,17 +132,24 @@ export function describeGrid(name: string, inputs: readonly GridInput[], extra?:
         if (res.norm[g.id] === norm[id]) continue;
         changed++;
         // Dozvoljeni uzroci promene: dugi > 24 km u HM-01, sada na 24 km (prompt HM-02, tačka 2); kotrljajuća
-        // granica pouke 28 seče dugi (odluka organizatora posle MAR-02).
-        if (!((old[1] > 24 && now[1] === 24) || res.rolling.has(g.id)))
+        // granica pouke 28 seče dugi (odluka organizatora posle MAR-02); HM-04 A: plan je imao kvalitetni dan
+        // duži od dugog (pouka 32).
+        if (!((old[1] > 24 && now[1] === 24) || res.rolling.has(g.id) || OVER_LONG.has(g.id)))
           other.push(`${g.id}: ${old[1]} → ${now[1]}`);
       }
       expect(other).toEqual([]);
       expect(lower).toEqual([]);
-      expect(changed).toBe(
+      expect(changed).toBeGreaterThan(0);
+      // Svaki plan sa dugim > 24 km ili pouke 28 (van pouke 32) i dalje promenjen kao u HM-02.
+      expect(
         inputs.filter(
-          (x) => x.days === 4 && (base[x.id.slice(3)]![1] > 24 || res.rolling.has(x.id))
-        ).length
-      );
+          (x) =>
+            x.days === 4 &&
+            !OVER_LONG.has(x.id) &&
+            (base[x.id.slice(3)]![1] > 24 || res.rolling.has(x.id)) &&
+            res.norm[x.id] === norm[x.id.slice(3)]
+        )
+      ).toEqual([]);
     });
 
     it('= bazna linija segment02.baseline.json (vrh, najduži dugi, heš plana)', () => {
@@ -145,8 +158,14 @@ export function describeGrid(name: string, inputs: readonly GridInput[], extra?:
         return;
       }
       const base = JSON.parse(readFileSync(BASELINE, 'utf8')) as Record<string, BaselineRow>;
-      const want = Object.fromEntries(inputs.map((g) => [g.id, base[g.id]]));
-      expect(res.rows).toEqual(want);
+      // HM-04 A: menja se samo plan sa kvalitetnim danom dužim od dugog na 5e09a02 (OVER_LONG); vrh ne pada.
+      const changed = inputs.filter(
+        (g) => JSON.stringify(res.rows[g.id]) !== JSON.stringify(base[g.id])
+      );
+      expect(changed.filter((g) => !OVER_LONG.has(g.id)).map((g) => g.id)).toEqual([]);
+      expect(changed.filter((g) => res.rows[g.id]![0] < base[g.id]![0]).map((g) => g.id)).toEqual(
+        []
+      );
     });
 
     extra?.();

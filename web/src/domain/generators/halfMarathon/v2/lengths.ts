@@ -160,8 +160,10 @@ export function deloadEasyShort(
 
 /** H5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ H13); ostatak na `easyDays` jednakih
     laganih dana (≥ 4 km, ≤ dugi). HI14 (i HI11 b za test): SAMO kad tako nije izvodljivo, dugi je najduži koji
-    ostavlja lagane ≥ 4 km i ≤ dugi (skraćen, nikad duži od 0,8 ×; cilj nedelje ostaje). Jedna funkcija za
-    konstruktor i validator. */
+    ostavlja lagane ≥ 4 km i ≤ dugi (skraćen, nikad duži od 0,8 ×; cilj nedelje ostaje). Pouka 32 (nedelja
+    testa, `minLong10`): dugi naviše do `minLong10` (trajanje dana testa) u granicama udela, vremena, 24 km i
+    pouke 28 (`longCap10`) i laganih ≥ 4 km — gde nije izvodljivo, najduži mogući (upozorenje validatora).
+    Jedna funkcija za konstruktor i validator. */
 export function deloadLengths(
   target10: number,
   quality100: number,
@@ -169,11 +171,23 @@ export function deloadLengths(
   lastLong10: number,
   rule: LongRule,
   p: Paces,
-  roll10 = Infinity
+  roll10 = Infinity,
+  minLong10 = 0
 ): Lengths | null {
-  const long10 = Math.min(deloadLong10(lastLong10), longCap10(target10, rule, p, roll10));
+  const cap10 = longCap10(target10, rule, p, roll10);
+  const base10 = Math.min(deloadLong10(lastLong10), cap10);
+  const long10 = Math.max(base10, Math.min(minLong10, cap10));
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
   if (long10 >= EASY_MIN10 && easy10.every((e) => e >= EASY_MIN10 && e <= long10))
     return { long10, easy10 };
+  // Podignut dugi (pouka 32) skraćuje samo lagane: izvodljiva nedelja bez podizanja ostaje izvodljiva.
   return withEasy(target10 * 10 - quality100, long10, easyDays);
+}
+
+/** Pouka 32: najkraći dugi [0,1 km] čije trajanje (srednjim E, kao longWorkout) nije kraće od `sec`. */
+export function longFor10(sec: number, p: Paces): number {
+  const mid = (p.E.fast + p.E.slow) / 2;
+  let k = Math.max(0, Math.floor((sec / mid) * 10) - 1);
+  while (Math.round((k / 10) * mid) < sec) k++;
+  return k;
 }

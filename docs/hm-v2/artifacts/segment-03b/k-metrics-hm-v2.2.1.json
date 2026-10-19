@@ -1,0 +1,221 @@
+{
+  "02": {
+    "plans": 16896,
+    "K1": {
+      "rejected": {},
+      "validatorErrors": {}
+    },
+    "K2": {
+      "week1Below": 396,
+      "notAtAbsCap": 0
+    },
+    "K3": 0,
+    "K5": [0, 0, 0, 0],
+    "K6": {
+      "slotRepeatWeeks": 0,
+      "qualityLongerThanLongBuildPlans": 132,
+      "capacityLimitedPlans": 1890,
+      "peakOverStart": 1.32
+    },
+    "pouka32": {
+      "overLong": {
+        "build": {
+          "above": 0,
+          "lowest": 678,
+          "test": 0
+        },
+        "deload": {
+          "above": 0,
+          "lowest": 192,
+          "test": 0
+        },
+        "taper": {
+          "above": 0,
+          "lowest": 1668,
+          "test": 0
+        }
+      },
+      "lowestOverLongPlans": 1206,
+      "lowestOverLongWeek1": 264,
+      "durationDropWeeks": 66,
+      "reducedDeloadTaper": 1590,
+      "longJump12MaxL": 1.149
+    },
+    "warningPlans": {
+      "LONG_RUN_SHORT": 1122,
+      "TAPER_NO_QUALITY": 528,
+      "WEEK_FITTED": 2286,
+      "CAPACITY_LIMITED": 1890,
+      "DELOAD_NO_QUALITY": 432,
+      "DOSE_DROPPED": 150,
+      "LONG_SHORTER_THAN_QUALITY": 132,
+      "TAPER_RP_ONLY": 66
+    },
+    "invariantViolations": {}
+  },
+  "r": {
+    "plans": 10905,
+    "K1": {
+      "rejected": {
+        "RECENT_LONG_TOO_SHORT ned 1": 39
+      },
+      "validatorErrors": {}
+    },
+    "K2": {
+      "week1Below": 2289,
+      "notAtAbsCap": 0
+    },
+    "K3": 0,
+    "K5": [0, 0, 0, 0],
+    "K6": {
+      "slotRepeatWeeks": 0,
+      "qualityLongerThanLongBuildPlans": 834,
+      "capacityLimitedPlans": 3194,
+      "peakOverStart": 1.292
+    },
+    "pouka32": {
+      "overLong": {
+        "build": {
+          "above": 0,
+          "lowest": 4056,
+          "test": 0
+        },
+        "deload": {
+          "above": 0,
+          "lowest": 811,
+          "test": 0
+        },
+        "taper": {
+          "above": 0,
+          "lowest": 1968,
+          "test": 0
+        }
+      },
+      "lowestOverLongPlans": 1616,
+      "lowestOverLongWeek1": 1563,
+      "durationDropWeeks": 742,
+      "reducedDeloadTaper": 2028,
+      "longJump12MaxL": 1.167
+    },
+    "warningPlans": {
+      "LONG_RUN_SHORT": 1113,
+      "LONG_SHORTER_THAN_QUALITY": 834,
+      "DELOAD_NO_QUALITY": 414,
+      "TAPER_NO_QUALITY": 412,
+      "WEEK_FITTED": 3589,
+      "CAPACITY_LIMITED": 3194,
+      "DELOAD_LONG_SHORTENED": 6,
+      "DOSE_DROPPED": 512,
+      "TAPER_RP_ONLY": 114
+    },
+    "invariantViolations": {}
+  },
+  "feel": {
+    "plans": 6336,
+    "K1": {
+      "rejected": {},
+      "validatorErrors": {}
+    },
+    "K2": {
+      "week1Below": 297,
+      "notAtAbsCap": 0
+    },
+    "K3": 0,
+    "K5": [0, 0, 0, 0],
+    "K6": {
+      "slotRepeatWeeks": 3,
+      "qualityLongerThanLongBuildPlans": 33,
+      "capacityLimitedPlans": 1101,
+      "peakOverStart": 1.312
+    },
+    "pouka32": {
+      "overLong": {
+        "build": {
+          "above": 0,
+          "lowest": 132,
+          "test": 18
+        },
+        "deload": {
+          "above": 0,
+          "lowest": 27,
+          "test": 42
+        },
+        "taper": {
+          "above": 0,
+          "lowest": 336,
+          "test": 0
+        }
+      },
+      "lowestOverLongPlans": 240,
+      "lowestOverLongWeek1": 66,
+      "durationDropWeeks": 0,
+      "reducedDeloadTaper": 231,
+      "longJump12MaxL": 1.122
+    },
+    "warningPlans": {
+      "LONG_RUN_SHORT": 402,
+      "TAPER_NO_QUALITY": 198,
+      "DELOAD_NO_QUALITY": 156,
+      "LONG_SHORTER_THAN_QUALITY": 69,
+      "TEST_DELOAD_LONG": 102,
+      "WEEK_FITTED": 1410,
+      "CAPACITY_LIMITED": 1101,
+      "DOSE_DROPPED": 54,
+      "TAPER_RP_ONLY": 3
+    },
+    "invariantViolations": {}
+  },
+  "beginner": {
+    "plans": 1890,
+    "K1": {
+      "rejected": {},
+      "validatorErrors": {}
+    },
+    "K2": {
+      "week1Below": 0,
+      "notAtAbsCap": 0
+    },
+    "K3": 0,
+    "K5": [0, 0, 0, 0],
+    "K6": {
+      "slotRepeatWeeks": 0,
+      "qualityLongerThanLongBuildPlans": 0,
+      "capacityLimitedPlans": 18,
+      "peakOverStart": 1.387
+    },
+    "pouka32": {
+      "overLong": {
+        "build": {
+          "above": 0,
+          "lowest": 0,
+          "test": 0
+        },
+        "deload": {
+          "above": 0,
+          "lowest": 126,
+          "test": 0
+        },
+        "taper": {
+          "above": 0,
+          "lowest": 54,
+          "test": 0
+        }
+      },
+      "lowestOverLongPlans": 177,
+      "lowestOverLongWeek1": 0,
+      "durationDropWeeks": 0,
+      "reducedDeloadTaper": 0,
+      "longJump12MaxL": 1.05
+    },
+    "warningPlans": {
+      "LONG_RUN_SHORT": 567,
+      "LONG_SHORTER_THAN_QUALITY": 126,
+      "DELOAD_LONG_SHORTENED": 426,
+      "DELOAD_NO_QUALITY": 48,
+      "WEEK_FITTED": 54,
+      "CAPACITY_LIMITED": 18
+    },
+    "invariantViolations": {}
+  },
+  "seconds": 112.7
+}

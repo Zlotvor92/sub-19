@@ -46,6 +46,16 @@ const feelVdot = (easy: number): number => {
 const reduced = (ladder: readonly number[], last: number, min: number): number =>
   ladder.filter((m) => m <= 0.6 * last + 1e-6 && m >= min).pop() ?? min;
 
+/** Pouka 32: najniži nivo zone [m] — izgradnja: prvi nivo lestvice (R 6 × 200, I 2 × 1000, T kont. 2,0 (početnik
+    1,5), T cruise 2 × 1200, RP 2 × 2000); rasterećenje i taper: T 2,0 km (početnik 1,5), RP 2 × 2000 m. */
+const LOWEST: Record<string, number> = {
+  R: 1200,
+  I: 2000,
+  T_continuous: 2000,
+  T_cruise: 2400,
+  RP: 4000
+};
+
 export interface GridStats {
   plans: number;
   /** K2: nedelja 1 ispod trenutnog obima — ukupno / dugi nije na apsolutnom plafonu (150 min, 24 km,
@@ -53,8 +63,10 @@ export interface GridStats {
   week1Below: number;
   week1BelowNotTime: number;
   week1BelowAt: { time: number; km: number; recent: number };
-  /** Pouka 28: najveći skok dugog nedelja 1 → 2 (odnos) i nedelja izgradnje sa dugim na kotrljajućoj granici. */
+  /** Pouka 28: najveći skok dugog nedelja 1 → 2 (odnos; `longJump12MaxL` prema max(dugi ned 1, skorašnji
+      najduži)) i nedelja izgradnje sa dugim na kotrljajućoj granici. */
   longJump12Max: number;
+  longJump12MaxL: number;
   rollingCappedWeeks: number;
   /** K3: ne-rasteretne nedelje izgradnje sa manje kvaliteta od reda H15 (3 dana 1, inače 2). */
   buildNoQuality: number;
@@ -85,6 +97,13 @@ export interface GridStats {
   beginnerTFallbackWeeks: number;
   beginnerTaperT: number;
   beginnerLongShort: number;
+  /** Pouka 32 (HM-04 A): dani duži od dugog po vrsti nedelje — iznad najnižeg nivoa zone (mora biti 0),
+      najniži nivo zone (izuzetak), test; nedelje sa padom doze zbog trajanja; spuštene doze rasterećenja/tapera. */
+  overLong: Record<'build' | 'deload' | 'taper', { above: number; lowest: number; test: number }>;
+  lowestOverLongWeek1: number;
+  lowestOverLongPlans: number;
+  durationDropWeeks: number;
+  reducedDeloadTaper: number;
 }
 
 export const emptyStats = (): GridStats => ({
@@ -93,6 +112,7 @@ export const emptyStats = (): GridStats => ({
   week1BelowNotTime: 0,
   week1BelowAt: { time: 0, km: 0, recent: 0 },
   longJump12Max: 0,
+  longJump12MaxL: 0,
   rollingCappedWeeks: 0,
   buildNoQuality: 0,
   raceOverTaper: 0,
@@ -115,7 +135,16 @@ export const emptyStats = (): GridStats => ({
   testLongerThanLong: 0,
   beginnerTFallbackWeeks: 0,
   beginnerTaperT: 0,
-  beginnerLongShort: 0
+  beginnerLongShort: 0,
+  overLong: {
+    build: { above: 0, lowest: 0, test: 0 },
+    deload: { above: 0, lowest: 0, test: 0 },
+    taper: { above: 0, lowest: 0, test: 0 }
+  },
+  lowestOverLongWeek1: 0,
+  lowestOverLongPlans: 0,
+  durationDropWeeks: 0,
+  reducedDeloadTaper: 0
 });
 
 /** Nezavisne invarijante jednog plana. */
@@ -251,7 +280,18 @@ export function checkPlan(
   let prevSteady: PlanWeek | null = null;
   let dropped = false;
   let longer = false;
+  let lowestOver = false;
   let fitted = false;
+  /** Pouka 32: doza ispod pravila (≈ 60 %) samo uz napomenu „pouka 32" i ≥ najmanje doze. */
+  const lowered = (w: PlanWeek, got: number, rule: number, min: number, what: string): boolean => {
+    if (got > rule || got < min) return false;
+    if (got < rule) {
+      st.reducedDeloadTaper++;
+      if (!w.notes.some((n) => n.includes('pouka 32')))
+        no('POUKA32_NOTE', `ned ${w.index} ${what}`);
+    }
+    return true;
+  };
   for (const w of p.weeks) {
     const tag = `ned ${w.index}`;
     // Pouka 1 / Uslov 8: planirano = cilj (0,1 km); nedelja ≥ minimum (trkačka + 21,1 km).
@@ -292,6 +332,41 @@ export function checkPlan(
         for (const z of ['R', 'I', 'T', 'RP'] as const)
           if (d.workout.workKm[z] * 1000 > Math.floor(CAPS[z] * w.targetKm * 1000 + 1e-6) + 1e-6)
             no('ZONE_CAP', `${tag} ${z}`);
+    }
+    // Pouka 32: dan kvaliteta iznad najnižeg nivoa zone ≤ dugi po trajanju (WU + rad + oporavci + CD; džog
+    // zadat metrima sporim E); najniži nivo i test se samo broje.
+    const lw0 = w.days.find((d) => d.role === 'long');
+    if (w.phase !== 'race' && lw0) {
+      const kind = w.deload ? 'deload' : w.phase === 'taper' ? 'taper' : 'build';
+      for (const d of w.days) {
+        if (d.workout.kind === 'test') {
+          if (d.workout.sec > lw0.workout.sec) st.overLong[kind].test++;
+          continue;
+        }
+        const dose = d.workout.dose;
+        if (d.workout.kind !== 'quality' || !dose) continue;
+        const sec = d.workout.segments.reduce(
+          (a, x) =>
+            a +
+            (x.kind === 'recovery' && x.kmBasis === 'exact'
+              ? Math.round(x.km * p.paces.E.slow)
+              : x.sec),
+          0
+        );
+        if (sec <= lw0.workout.sec) continue;
+        const low =
+          kind === 'build'
+            ? dose.doseM <= (beg && dose.ladder === 'T_continuous' ? 1500 : LOWEST[dose.ladder]!)
+            : dose.doseM <= (dose.zone === 'RP' ? 4000 : beg ? 1500 : 2000);
+        if (low) {
+          st.overLong[kind].lowest++;
+          lowestOver = true;
+          if (w.index === 1) st.lowestOverLongWeek1++;
+        } else {
+          st.overLong[kind].above++;
+          no('POUKA32_OVER_LONG', `${tag} ${dose.zone} ${dose.doseM}`);
+        }
+      }
     }
     // H17: uvod bez kvaliteta; početnik ≤ 1 kvalitet nedeljno.
     const nQ = w.days.filter((d) => d.workout.kind === 'quality').length;
@@ -334,8 +409,9 @@ export function checkPlan(
         : reduced(ladder, one ? lastQ1 : lastQ2, 2000);
       if (
         qs.length > 1 ||
-        (qs.length === 1 && (qs[0]!.role !== tSlot || doseOf(w, tSlot) !== tWant)) ||
-        (qs.length === 1 && qs[0]!.workout.workKm.T * 1000 < tWant - 1e-6)
+        (qs.length === 1 &&
+          (qs[0]!.role !== tSlot ||
+            !lowered(w, doseOf(w, tSlot), tWant, beg ? 1500 : 2000, 'T rasterećenja')))
       )
         no('DELOAD_QUALITY', `${tag} T ${doseOf(w, tSlot)} ≠ ${tWant}`);
     } else if (isBuild(w.phase)) {
@@ -362,9 +438,12 @@ export function checkPlan(
       const q1 = doseOf(w, 'q1');
       const q2 = doseOf(w, 'q2');
       const drop = w.days.some((d) => d.workout.dose?.step === 'drop');
+      // Pouka 32: pad doze zbog trajanja dana je kapacitet (napomena „pouka 32, plafon zone").
+      const durationDrop = w.notes.some((n) => n.includes('pouka 32, plafon zone'));
       if (drop) {
         dropped = true;
-        if (w.fitted !== 'down') st.dropOutsideCapacity++;
+        if (durationDrop) st.durationDropWeeks++;
+        else if (w.fitted !== 'down') st.dropOutsideCapacity++;
       }
       // H16/H17: nedelja testa i uvoda nema Q1 (stanje slota i glavna doza se ne porede).
       const counted = !w.test && !intro(w);
@@ -421,13 +500,16 @@ export function checkPlan(
       const t = doseOf(w, 'q2');
       if (q1d && q1d.zone === 'T') {
         st.beginnerTaperT++;
-        if (!beg || q1d.doseM !== reduced(T_C_BEG, lastT, 1500)) no('TAPER_T', `${tag} početnik`);
+        if (!beg || !lowered(w, q1d.doseM, reduced(T_C_BEG, lastT, 1500), 1500, 'T tapera'))
+          no('TAPER_T', `${tag} početnik`);
         if (4000 <= Math.floor(0.15 * w.targetKm * 1000 + 1e-6)) no('TAPER_T', `${tag} RP staje`);
       } else if (rp === 0 || (!one && t === 0)) st.taperRelaxed++;
-      if (rp !== 0 && rp !== reduced(RP, lastQ1, 4000)) no('TAPER_RP', `${tag} ${rp}`);
+      if (rp !== 0 && !lowered(w, rp, reduced(RP, lastQ1, 4000), 4000, 'RP tapera'))
+        no('TAPER_RP', `${tag} ${rp}`);
       // 3 dana: taper samo RP (HI6).
       if (one && t !== 0) no('TAPER_T', `${tag} 3 dana T ${t}`);
-      if (t !== 0 && t !== reduced(T_CRUISE, lastQ2, 2000)) no('TAPER_T', `${tag} ${t}`);
+      if (t !== 0 && !lowered(w, t, reduced(T_CRUISE, lastQ2, 2000), 2000, 'T tapera'))
+        no('TAPER_T', `${tag} ${t}`);
     }
     if (long !== null) longest = Math.max(longest, long);
   }
@@ -503,10 +585,14 @@ export function checkPlan(
   if (fitted) st.capacityPlans++;
   if (dropped) st.doseDroppedPlans++;
   if (longer) st.longerQualityPlans++;
+  if (lowestOver) st.lowestOverLongPlans++;
   if (longest < 160) st.longShortPlans++;
   if (longest === LONG_MAX10) st.longAt24Plans++;
   const [l1, l2] = longsByWeek;
-  if (l1 && l2) st.longJump12Max = Math.max(st.longJump12Max, l2 / l1);
+  if (l1 && l2) {
+    st.longJump12Max = Math.max(st.longJump12Max, l2 / l1);
+    st.longJump12MaxL = Math.max(st.longJump12MaxL, l2 / Math.max(l1, r10 ?? 0));
+  }
   for (const w of p.weeks)
     if (steady(w) && longsByWeek[w.index - 1] === roll10(w.index)) st.rollingCappedWeeks++;
   st.peakRatioSum += p.peakKm / p.startKm;

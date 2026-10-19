@@ -1,0 +1,42 @@
+{
+  "02": {
+    "inputs": 16896,
+    "overBefore": 1932,
+    "changed": 1932,
+    "changedNotOver": [0],
+    "overUnchanged": 0,
+    "rejectedAfter": 0
+  },
+  "r": {
+    "inputs": 10944,
+    "overBefore": 2518,
+    "changed": 2518,
+    "changedNotOver": [0],
+    "overUnchanged": 0,
+    "rejectedAfter": 0
+  },
+  "dense": {
+    "inputs": 141804,
+    "overBefore": 21102,
+    "changed": 21102,
+    "changedNotOver": [0],
+    "overUnchanged": 0,
+    "rejectedAfter": 0
+  },
+  "feel": {
+    "inputs": 6336,
+    "overBefore": 291,
+    "changed": 291,
+    "changedNotOver": [0],
+    "overUnchanged": 0,
+    "rejectedAfter": 0
+  },
+  "beginner": {
+    "inputs": 1890,
+    "overBefore": 177,
+    "changed": 177,
+    "changedNotOver": [0],
+    "overUnchanged": 0,
+    "rejectedAfter": 0
+  }
+}
