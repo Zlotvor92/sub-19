@@ -718,14 +718,16 @@ const HM_SHORTER_HANDOFF = regeneratorForDistance;
 /* HM v2 (segment HM-05): sopstveni generator polumaratona, biran po oznaci politike plana (`hm-v2`) — postojeći planovi
    (`hm-v1`, `legacy-hm`, ugrađeni lični plan vlasnika) ostaju na `HALF_MARATHON_GENERATOR` i nikad se ne prebacuju.
    Raspodela članova: (a) v2 sam (generisanje, oznake, faza, procena, proizvod, tempo/prag/napor, sat iz strukture);
-   (b) adaptacija i predlog — eksplicitno nepodržano do segmenta HM-06, sa razlogom po članu, bez zamene HM v1 generatorom;
+   (b) adaptacija i predlog (segment HM-06) — kroz činjenice i `adaptHmV2` sa pregledom pre upisa, ili „ne koristi se" sa
+   razlogom (`MEMBERS`), bez zamene HM v1 generatorom;
    (c) procena stanja i vreme — sopstvena kopija v2 sa istim vrednostima kao HM v1 (v. `halfMarathon/v2/app/index.ts`).
    Odluka o ograničenoj pripremi (`preparationForPlan`) i predaja „kraća distanca" ostaju samo HM v1 (faza 3).
 
    GRANICA FORMATA (kao 10K v2): adapter `halfMarathon/v2/app/` ne uvozi ni tipove formata (strogi test izolacije HM v2,
    bez izuzetka), pa plan koji PRAVI (dan sa strukturom van unije `Day`, `meta` sa poljima koja v2 zna) ovde dobija tip
-   formata razmene — samo `generatePlan` i `adaptGeneratedPlan` (i `generateHmV2Plan` ispod). Svi ostali članovi
-   prolaze `satisfies` bez kasta. */
+   formata razmene — samo članovi koji prave plan: `generatePlan`, `adaptGeneratedPlan`, (HM-06)
+   `buildExecutionAdjustment`, `planWithNewGoal`, `graftFuturePlan` (i `generateHmV2Plan`, `hmV2AdaptPreview`,
+   `hmV2GoalChange` ispod). Svi ostali članovi prolaze `satisfies` bez kasta. */
 const h2 = halfMarathon.hmV2;
 export const HALF_MARATHON_V2_GENERATOR: PlanGenerator = {
   id: 'hm',
@@ -745,14 +747,21 @@ export const HALF_MARATHON_V2_GENERATOR: PlanGenerator = {
   product: h2.product,
   executionModel: h2.executionModel,
   executionBasis: h2.executionBasis,
-  buildExecutionAdjustment: h2.buildExecutionAdjustment,
+  // HM-06: plan za upis pravi adapter (granica formata, v. gore).
+  buildExecutionAdjustment: (current, today, analysis, options, context) =>
+    h2.buildExecutionAdjustment(current, today, analysis, options, context) as unknown as
+      { result: GenPlanState; notes: string[]; summary: string } | { error: string },
   buildRunWalkAdjustment: h2.buildRunWalkAdjustment,
   assessRunWalkProgress: h2.assessRunWalkProgress,
   qualityEntryGate: h2.qualityEntryGate,
   hasRecentMeasuredForm: h2.hasRecentMeasuredForm,
-  planWithNewGoal: h2.planWithNewGoal,
+  // HM-06: isti treninzi, nova ocena cilja. Plan v2 nema ulaz čarobnjaka v1 (`ulaz`), pa ga rezultat ne nosi; pozivalac
+  // ga spaja preko postojećeg plana (`{ ...genPlan, ...r }`) i ne čita ga.
+  planWithNewGoal: (plan, sec, today) =>
+    h2.planWithNewGoal(plan, sec, today) as unknown as GoalChangeResult | ReplanError,
   planRecalibrated: h2.planRecalibrated,
-  graftFuturePlan: h2.graftFuturePlan,
+  graftFuturePlan: (plan, fresh, today, ctx) =>
+    h2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState,
   alignAutomaticOverlays: h2.alignAutomaticOverlays,
   vdotProposal: h2.vdotProposal,
   applyVdotProposal: h2.applyVdotProposal,
@@ -791,6 +800,39 @@ export const generateHmV2Plan = (input: HmV2PlanInput): StructuredPlanResult =>
 /** Prvi dan plana HM v2: cele nedelje koje se završavaju danom trke, ne pre `today`; `null` bez ispravnih datuma. */
 export const hmV2Start = (raceDate: string, today: string): string | null =>
   h2.alignedStart(raceDate, today);
+
+type HmV2Preview = ReturnType<typeof h2.adaptPreview>;
+/** Pregled prilagođavanja HM v2 u tipu formata: plan za upis je `GenPlanState` (granica formata). */
+export type HmV2AdaptOutcome =
+  | (Omit<Extract<HmV2Preview, { ok: true }>, 'result'> & { result: GenPlanState })
+  | Extract<HmV2Preview, { ok: false }>;
+/** HM-06: pregled prilagođavanja plana HM v2 iz činjenica (dnevnik, izmene + `ctx.facts`, dodatne prijavljene pauze).
+ *  Ne upisuje ništa: plan za upis, razlozi v2 doslovno, promenjene nedelje, pokrivenost, traka; ili odbijanje. */
+export const hmV2AdaptPreview = (
+  plan: GenPlanState,
+  today: IsoDate,
+  ctx: ReplanContext,
+  extraBreaks: ReadonlyArray<{ from: string; to: string }> = []
+): HmV2AdaptOutcome =>
+  h2.adaptPreview(h2.sourceOf(plan, today, ctx, extraBreaks)) as unknown as HmV2AdaptOutcome;
+type HmV2Goal = ReturnType<typeof h2.goalChange>;
+type HmV2GoalOutcome =
+  | (Omit<Extract<HmV2Goal, { ok: true }>, 'result'> & { result: GenPlanState })
+  | Extract<HmV2Goal, { ok: false }>;
+/** HM-06: promena cilja plana HM v2 — isti treninzi, nova ocena cilja; ili odbijanje sa razlozima. */
+export const hmV2GoalChange = (
+  plan: GenPlanState,
+  goalSec: number,
+  today: IsoDate
+): HmV2GoalOutcome => h2.goalChange(plan, goalSec, today) as unknown as HmV2GoalOutcome;
+/** HM-06: Napredak → Forma za plan HM v2 (VDOT iz rezultata, ocena cilja); `null` kad plan nije v2. */
+export const hmV2FormHistory = (src: {
+  plan: GenPlanState;
+  today: IsoDate;
+  log?: Readonly<Record<string, LogEntry>>;
+}) => h2.formHistory(src);
+/** HM-06: polje unosa dana testa HM v2 sa vremenom 5 km [s] (činjenica rezultata za adaptaciju). */
+export const HM_V2_TEST_FIELD = h2.TEST_FIELD;
 
 export const HALF_MARATHON_GENERATOR: PlanGenerator = {
   id: 'hm',
@@ -1024,11 +1066,6 @@ export function isTenKV2Plan(plan: GenPlanState | null | undefined): boolean {
 /** Segment HM-05: plan HM v2 (nosi izlaz v2 i tekuću oznaku `hm-v2`). */
 export function isHmV2Plan(plan: GenPlanState | null | undefined): boolean {
   return generatorForPlan(plan) === HALF_MARATHON_V2_GENERATOR && h2.isV2Plan(plan);
-}
-
-/** Plan čija se adaptacija i predlozi još ne nude (HM v2 do segmenta HM-06): poruka umesto alata; inače `null`. */
-export function adaptationUnsupportedFor(plan: GenPlanState | null | undefined): string | null {
-  return isHmV2Plan(plan) ? h2.ADAPTATION_UNSUPPORTED : null;
 }
 
 /** Uvoz (Strava/icu): plan v2 čiji uvoz beleži trčanja van plana i potpunu sinhronizaciju (5K v2 08c, 10K v2, HM v2). */

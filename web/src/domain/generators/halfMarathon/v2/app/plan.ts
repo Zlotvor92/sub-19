@@ -10,8 +10,10 @@
      su izostavljena — čitaoci aplikacije ih proveravaju (`raceRefs`, `planBaselineVdot`). Ceo izlaz v2 je u `hmV2`.
    Jedine odluke adaptera (mapa faze, ime vrste, tip dana, oblik dana) imaju po jedno mesto: ovaj fajl. */
 
+import { checkInput } from '../input.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
-import type { GoalAssessment, HmV2Plan, Phase, PlanDay } from '../types.ts';
+import { basisAt, pacesAt } from '../steps.ts';
+import type { GoalAssessment, HmV2Plan, Paces, Phase, PlanDay } from '../types.ts';
 import { addDays, diffDays } from './date.ts';
 import { workoutStructure } from './structure.ts';
 import type {
@@ -32,9 +34,11 @@ export const POLICY_ID = P.id;
 export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `hm-v2`; plan bez oznake je HM v1 (`legacy-hm`). */
 export const LEGACY_POLICY_ID = 'legacy-hm';
-/** Verzije koje trenutni kod ume da gradi i prikazuje: samo tekuća iz politike (istorijske implementacije v2 se ne
- *  čuvaju; nova verzija politike je automatski jedina poznata). */
-export const KNOWN_VERSIONS: readonly string[] = [P.version];
+/** Verzije koje trenutni kod ume da prikaže i adaptira (istorijske implementacije v2 se ne čuvaju): sve koje su mogle
+ *  biti sačuvane posle HM-05 (aplikacija je od HM-05 pisala samo `hm-v2.3.0`) i tekuća. Sačuvan stariji plan ostaje plan
+ *  HM v2; prilagođavanje ga gradi tekućim pravilima, a rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown"
+ *  (UNKNOWN_POLICY). */
+export const KNOWN_VERSIONS: readonly string[] = [...new Set(['hm-v2.3.0', P.version])];
 
 /** JEDNA mapa faze za prikaz (odluka adaptera): baza → BAZA, razvoj → RAZVOJ, specifična faza (najspecifičniji rad za
  *  tempo trke) → VRHUNAC, taper → TAPER, trkačka nedelja → TRKA; rasterećenje (bilo koje faze) → DELOAD. */
@@ -109,12 +113,25 @@ export interface GeneratedWeek {
 
 const rest = (dow: number): RestDay => ({ dow, rest: true, desc: null });
 
+/** Tempo i osnova nedelje za strukturu (E opseg, tempo zona, šta je procena) — pouka 16: u adaptiranom planu po
+ *  NEDELJI (A1 — plan po osećaju prelazi na rezultat od nedelje rezultata, pa nedelje pre nje ostaju po osećaju, a tempo
+ *  posle rezultata važi tek od sledeće nedelje); bez koraka adaptacije ceo plan (bajt-isto kao generator). */
+function weekPaces(plan: HmV2Plan): (w: number) => { paces: Paces; feel: boolean } {
+  const whole = { paces: plan.paces, feel: plan.paceBasis === 'feel' };
+  const steps = plan.adaptation?.steps ?? [];
+  const chk = steps.length > 0 ? checkInput(plan.input) : null;
+  if (!chk?.ok) return () => whole;
+  const pace = chk.pace;
+  return (w) => ({ paces: pacesAt(pace, steps, w), feel: basisAt(pace, steps, w) === 'feel' });
+}
+
 function weeksOf(plan: HmV2Plan): GeneratedWeek[] {
-  const feel = plan.paceBasis === 'feel';
+  const pacesOf = weekPaces(plan);
   return plan.weeks.map((wk) => {
     const byDate = new Map<string, GeneratedDay>();
+    const { paces, feel } = pacesOf(wk.index);
     for (const d of wk.days) {
-      const structure = { ...workoutStructure(d.workout, plan.paces, feel), kind: kindOf(d) };
+      const structure = { ...workoutStructure(d.workout, paces, feel), kind: kindOf(d) };
       byDate.set(d.date, {
         dow: diffDays(wk.startDate, d.date) + 1,
         tag: tagOf(d),

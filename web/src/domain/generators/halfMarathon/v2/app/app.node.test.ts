@@ -34,7 +34,6 @@ import {
   TEN_K_GENERATOR,
   TEN_K_V2_GENERATOR,
   UNKNOWN_POLICY,
-  adaptationUnsupportedFor,
   generateHmV2Plan,
   generatorForNewPlan,
   generatorForPlan,
@@ -54,14 +53,22 @@ import { midEasy, pacesFromVdot } from '../paces.ts';
 import { HM_V2_POLICY } from '../policy.ts';
 import type { HmV2Plan } from '../types.ts';
 import { qualityWorkout, warmupCooldown } from '../workouts.ts';
-import { ADAPTATION_UNSUPPORTED, UNSUPPORTED } from './members.ts';
+import {
+  ADAPTATION_V2,
+  MEMBERS,
+  NO_PREPARATION_DECISION,
+  NO_RUN_WALK,
+  RECALIBRATION_NOT_USED,
+  T3K_NOT_USED
+} from './members.ts';
 import { workoutStructure } from './structure.ts';
 import { SKIP_FEEL, SKIP_NO_STRUCTURE } from './watch.ts';
 
 /* SEGMENT HM-05 — polumaraton v2 u aplikaciji: prekidač, rutiranje po oznaci politike, generisanje kroz adapter (nedelja
    7 dana, struktura na svakom treningu, faza iz v2, trka 21,1 km van obima, odbijanje sa razlozima), čuvanje (backup/uvoz
    i vraćanje verzije), prikaz iz strukture (orijentir + RPE, test 5 km), izmena samo tempa, sat (preskočeno sa razlogom),
-   kopija procene stanja (iste vrednosti kao HM v1) i raspodela ugovora (a/b/c; (b) nepodržano do HM-06, nikad HM v1). */
+   kopija procene stanja (iste vrednosti kao HM v1) i raspodela ugovora (a/b/c; (b) posle HM-06 kroz činjenice i
+   adaptaciju v2 ili „ne koristi se" sa razlogom, nikad HM v1). */
 
 const VERSION = HM_V2_POLICY.version;
 const TODAY = '2026-10-26';
@@ -413,15 +420,13 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     for (const p of [v1, personalPlan(48)]) {
       expect(generatorForPlan(p)).toBe(HALF_MARATHON_GENERATOR);
       expect(isHmV2Plan(p)).toBe(false);
-      expect(adaptationUnsupportedFor(p)).toBeNull();
       expect(tracksOffPlanRuns(p)).toBe(false);
     }
-    expect(adaptationUnsupportedFor(v2)).toBe(ADAPTATION_UNSUPPORTED);
     expect(tracksOffPlanRuns(v2)).toBe(true);
   });
 
-  it('KNOWN_VERSIONS = tekuća verzija politike HM v2', () => {
-    expect(hm.hmV2.KNOWN_VERSIONS).toEqual([VERSION]);
+  it('KNOWN_VERSIONS = sve verzije sačuvane posle HM-05 (hm-v2.3.0) i tekuća', () => {
+    expect(hm.hmV2.KNOWN_VERSIONS).toEqual([...new Set(['hm-v2.3.0', VERSION])]);
     expect(HALF_MARATHON_V2_GENERATOR.policyVersion).toBe(VERSION);
     expect(HALF_MARATHON_V2_GENERATOR.legacyPolicyId).toBe('legacy-hm');
   });
@@ -608,7 +613,7 @@ describe('izvoz na sat iz strukture', () => {
   });
 });
 
-describe('ugovor: (a) v2, (b) nepodržano do HM-06 (nikad HM v1), (c) sopstvena kopija procene stanja', () => {
+describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad HM v1), (c) sopstvena kopija procene stanja', () => {
   const A = [
     'id',
     'policyId',
@@ -626,7 +631,7 @@ describe('ugovor: (a) v2, (b) nepodržano do HM-06 (nikad HM v1), (c) sopstvena 
     'rpeTarget',
     'paceForZone'
   ];
-  const B = Object.keys(UNSUPPORTED);
+  const B = Object.keys(MEMBERS);
   const C = [
     'weatherCard',
     'painStatus',
@@ -658,36 +663,43 @@ describe('ugovor: (a) v2, (b) nepodržano do HM-06 (nikad HM v1), (c) sopstvena 
         expect(g[k], k).not.toBe(old[k]);
         expect(v1.has(g[k]), k).toBe(false);
       }
-    for (const k of B)
-      expect(UNSUPPORTED[k as keyof typeof UNSUPPORTED].length, k).toBeGreaterThan(10);
+    for (const k of B) expect(MEMBERS[k]!.reason.length, k).toBeGreaterThan(10);
   });
 
-  it('(b) adapter članova (b) ne uvozi ništa (ni v1, ni v2 jezgro): ne može da pozove HM v1', () => {
-    const src = readFileSync(fileURLToPath(new URL('./members.ts', import.meta.url)), 'utf8');
-    expect(src).not.toMatch(/^\s*import\s/m);
+  it('(b) adapter članova (b) uvozi samo iz HM v2 (jezgro i adapter): ne može da pozove HM v1', () => {
+    for (const f of ['./members.ts', './adapt.ts', './facts.ts', './form.ts']) {
+      const src = readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
+      const from = [...src.matchAll(/from\s+'([^']+)'/g)].map((m) => m[1]!);
+      expect(from.length, f).toBeGreaterThan(0);
+      for (const x of from) expect(x, `${f}: ${x}`).toMatch(/^\.\.?\/[A-Za-z]+\.ts$/);
+    }
   });
 
-  it('(b) svaki član: odbijanje sa porukom, „nema predloga" ili nepromenjen ulaz', () => {
+  it('(b) „ne koristi se" sa razlogom, „nema predloga" ili nepromenjen ulaz — bez HM v1', () => {
     const g: PlanGenerator = HALF_MARATHON_V2_GENERATOR;
     const p = planOf(WITH_RESULT);
     const plan = view(p);
     const today = '2026-11-20' as IsoDate;
-    const refused = { error: ADAPTATION_UNSUPPORTED };
-    expect(g.buildExecutionAdjustment(p, today, null as never, {})).toEqual(refused);
-    expect(g.buildRunWalkAdjustment(p, today, null as never, { mode: 'hold' })).toEqual(refused);
-    expect(g.executionBasis(p, today, null as never, {})).toEqual(refused);
-    expect(g.planWithNewGoal(p, 5800, today)).toEqual(refused);
-    expect(g.planRecalibrated(p, 50, today)).toEqual(refused);
+    expect(g.buildRunWalkAdjustment(p, today, null as never, { mode: 'hold' })).toEqual({
+      error: NO_RUN_WALK
+    });
+    expect(g.executionBasis(p, today, null as never, {})).toEqual({
+      error: NO_PREPARATION_DECISION
+    });
+    expect(g.planRecalibrated(p, 50, today)).toEqual({ error: RECALIBRATION_NOT_USED });
     const ex = g.executionModel(plan, today, {});
     expect(ex.analysis.today).toBe(today);
+    expect(ex.analysis.reasons).toEqual([ADAPTATION_V2]);
     expect(ex.recommendation).toMatchObject({ kind: null, actionable: false });
     expect(g.assessRunWalkProgress({ plan, log: {}, today })).toMatchObject({
       decision: 'not-applicable'
     });
     expect(g.qualityEntryGate({ analysis: ex.analysis, formConfirmed: true }).open).toBe(false);
+    // Test 3 km nije rezultat HM v2 (A1): ni svež ne čini formu.
     expect(g.hasRecentMeasuredForm(today, { t3k: [{ id: 'x', date: today, sec: 700 }] })).toBe(
       false
     );
+    expect(MEMBERS['hasRecentMeasuredForm']!.reason).toBe(T3K_NOT_USED);
     expect(g.classifyMeasurement({} as never)).toMatchObject({ status: 'not-used' });
     const chain = [{ id: 'a', ts: today, vdot: 50, prev: null, delta: null, measured: 50 }];
     expect(g.recomputeVdotChain(chain, 50, () => 'default')).toEqual(chain);
@@ -707,17 +719,20 @@ describe('ugovor: (a) v2, (b) nepodržano do HM-06 (nikad HM v1), (c) sopstvena 
       moves: { a: 1 },
       moved: 0
     });
-    expect(g.fitnessEvidence({ vdotChain: chain } as never)).toMatchObject({ form: null, chain });
-    expect(g.planVdotNow({} as never)).toBeNull();
+    const ev = g.fitnessEvidence({
+      today,
+      tests: [{ id: 't', date: today, sec: 700 }],
+      vdotChain: chain
+    } as never);
+    expect(ev).toMatchObject({ form: null, measurements: 0, trainingMeasurements: 0, chain: [] });
+    expect(g.planVdotNow({ meta: p.meta } as never)).toBe(v2Of(p).vdot);
+    expect(g.planVdotNow({ meta: planOf(FEEL).meta } as never)).toBeNull();
     expect(g.matchPlanRows([], []).size).toBe(0);
     expect(g.recalibrationMinMeasurements).toBe(Number.POSITIVE_INFINITY);
     expect(g.recalibrationThreshold).toBe(Number.POSITIVE_INFINITY);
+    // Vraćanje iste verzije: nema dana za vraćanje.
     const graft = g.graftFuturePlan(p, p, today);
-    expect(graft.weeks).toEqual(p.weeks);
-    expect(graft.meta?.['futureChanges']).toEqual({
-      changedDays: 0,
-      conflicts: [ADAPTATION_UNSUPPORTED]
-    });
+    expect(graft.meta?.['futureChanges']).toEqual({ changedDays: 0, conflicts: [] });
   });
 
   it('(c) procena stanja: iste vrednosti kao HM v1 (posebna kopija)', () => {

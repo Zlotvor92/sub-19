@@ -2,11 +2,12 @@ import { expect, test, type Page } from '@playwright/test';
 import { fixToday, installBackend, seedSession } from './support/backend';
 import { back, openTi, tab } from './support/flows';
 
-/* HM v2 SEGMENT HM-05 — polumaraton v2 iza prekidača kroz pravi interfejs: podešavanje `ui.generatorV2HalfMarathon` je
+/* HM v2 SEGMENT HM-05 / HM-06 — polumaraton v2 iza prekidača kroz pravi interfejs: podešavanje `ui.generatorV2HalfMarathon` je
    uključeno u lokalnom stanju naloga pre pokretanja (novi korisnik bez plana vidi samo čarobnjaka; prekidač u
    Podešavanjima vidi samo administrator ili razvoj), uz povezan intervals.icu (da bi „Slanje na sat" bilo ponuđeno).
-   Tokovi: (1) čarobnjak sa rezultatom → plan `hm-v2` na serveru → Plan tab i dan iz strukture → Prilagodi plan „stiže
-   uskoro" → sat: pregled slanja bez preskočenih dana; (2) čarobnjak po osećaju → RPE i tempo „orijentir (procena)", test
+   Tokovi: (1) čarobnjak sa rezultatom → plan `hm-v2` na serveru → Plan tab i dan iz strukture → sat: pregled slanja bez
+   preskočenih dana → Prilagodi plan (HM-06): pregled iz činjenica, prijavljena pauza → pregled → primena → revizija na
+   serveru → vraćanje te revizije (pregled → primena → druga revizija); (2) čarobnjak po osećaju → RPE i tempo „orijentir (procena)", test
    5 km u planu → sat: dani po osećaju preskočeni sa razlogom; (3) trčanje/hodanje → odbijanje v2 doslovno sa preporukom
    5K, plan se ne pravi. */
 
@@ -93,7 +94,7 @@ test.beforeEach(async ({ page }) => {
   await enableHmV2(page);
 });
 
-test('HM v2: čarobnjak (rezultat, 4 dana, cilj 1:40:00) → plan v2 → Plan tab i dan → „stiže uskoro" → sat', async ({
+test('HM v2: čarobnjak (rezultat, 4 dana, cilj 1:40:00) → plan v2 → Plan tab i dan → sat → pauza → pregled → revizija → vraćanje', async ({
   page
 }) => {
   const backend = await installBackend(page);
@@ -144,15 +145,6 @@ test('HM v2: čarobnjak (rezultat, 4 dana, cilj 1:40:00) → plan v2 → Plan ta
   await expect(structure).toContainText(/Pre\s*[\d,]+ km @ \d:\d\d–\d:\d\d\/km\s*zagrevanje/);
   await expect(structure).toContainText(/\d:\d\d\/km/);
 
-  // Prilagođavanje: „stiže uskoro" umesto alata HM v1 (HM-06).
-  await back(page).click();
-  await tab(page, 'Plan').click();
-  await page
-    .locator('.page.active')
-    .getByRole('button', { name: /^Prilagodi plan/ })
-    .click();
-  await expect(page.locator('#v2-unsupported')).toContainText('Prilagođavanje plana stiže uskoro');
-  await expect(page.getByText('Prilagođavanje prema izvršenju')).toHaveCount(0);
   await back(page).click();
 
   // Sat: pregled slanja iz strukture; plan sa rezultatom nema preskočenih dana.
@@ -160,6 +152,44 @@ test('HM v2: čarobnjak (rezultat, 4 dana, cilj 1:40:00) → plan v2 → Plan ta
   await expect(page.locator('#icu-pregled')).toContainText(/Pace/);
   await expect(page.locator('#icu-skipped')).toHaveCount(0);
   await expect(page.getByText(/Preskočeno dana trčanja/)).toHaveCount(0);
+
+  // Prilagođavanje (HM-06): pregled iz činjenica → prijavljena pauza → pregled → primena → revizija → vraćanje.
+  await page.goto('/');
+  await tab(page, 'Plan').click();
+  await page
+    .locator('.page.active')
+    .getByRole('button', { name: /^Prilagodi plan/ })
+    .click();
+  const preview = page.locator('#plan-change-preview');
+  await expect(preview).toContainText('bez novih činjenica');
+  await expect(preview).toContainText('Budući deo plana se ne menja.');
+  await expect(page.getByText('Prilagođavanje prema izvršenju')).toHaveCount(0);
+  const before = serverPlan(backend);
+  await page.getByLabel('Pauza od').fill('2026-01-05');
+  await page.getByLabel('Pauza do').fill('2026-01-14');
+  await page.getByRole('button', { name: 'Dodaj pauzu' }).click();
+  await expect(preview.getByRole('list', { name: 'Razlozi prilagođavanja' })).toContainText(
+    'Pauza (prijavljena) 10 dana'
+  );
+  await expect(preview.getByRole('table', { name: 'Promenjene nedelje' })).toBeVisible();
+  expect(serverPlan(backend)).toBe(before); // pregled ne upisuje
+  await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Plan je prilagođen' })).toBeVisible();
+  await expect.poll(() => serverPlan(backend)).toContain('Prilagođavanje 2026-01-14: pauza');
+  expect(serverPlan(backend)).toContain('"policyId":"hm-v2"');
+  expect(serverPlan(backend)).toContain('"asOf":"2026-01-14"');
+  // Vraćanje te revizije: pregled (ništa se ne upisuje) → primena → druga revizija; plan ostaje HM v2.
+  const adapted = serverPlan(backend);
+  await page
+    .getByRole('button', { name: 'Pregledaj vraćanje: Prilagođavanje 2026-01-14: pauza' })
+    .click();
+  await expect(preview).toContainText('Vraćanje plana: Prilagođavanje 2026-01-14: pauza');
+  expect(serverPlan(backend)).toBe(adapted);
+  await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
+  await expect
+    .poll(() => serverPlan(backend))
+    .toContain('Vraćanje plana: Prilagođavanje 2026-01-14: pauza');
+  expect(serverPlan(backend)).toContain('"policyId":"hm-v2"');
 });
 
 test('HM v2 po osećaju: RPE i tempo „orijentir (procena)", test 5 km u planu, sat preskače dane po osećaju', async ({

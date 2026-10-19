@@ -8,6 +8,7 @@ import { useSettingsStore, useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
 import { useIsOwner } from '../../stores/owner';
 import { useFiveKV2Needed } from '../../stores/fiveKV2Actions';
+import { useHmV2Needed } from '../../stores/hmV2Actions';
 import { useTenKV2Needed } from '../../stores/tenKV2Actions';
 import { useUIStore } from '../../stores/uiStore';
 import { useAdjustments } from '../plan/useAdjustments';
@@ -38,7 +39,8 @@ export function Advisories({ today }: { today: string }) {
   const adj = useAdjustments();
   const needed5k = useFiveKV2Needed();
   const needed10k = useTenKV2Needed();
-  const needed = needed5k.length ? needed5k : needed10k;
+  const neededHm = useHmV2Needed();
+  const needed = needed5k.length ? needed5k : needed10k.length ? needed10k : neededHm;
 
   const foreign = foreignPlanWithEntries({ hasGenPlan, isOwner: owner, log });
   const injury = rec?.proposal ?? null;

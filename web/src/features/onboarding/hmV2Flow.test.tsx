@@ -24,7 +24,7 @@ import { Wizard } from './Wizard';
 
 /* SEGMENT HM-05 — čarobnjak polumaratona v2 iza prekidača: polja v2 (rezultat ili lagan tempo, iskustvo, trčanje/hodanje,
    skorašnji najduži trk, dani i dan dugog, cilj sa satima), plan v2 u skladištu, prikaz strukture (orijentir + RPE, test
-   5 km, trka 21,1 km van obima), prilagođavanje i promena cilja „stiže uskoro", odbijanje kao poruka sa razlozima v2
+   5 km, trka 21,1 km van obima), prilagođavanje (HM-06: pregled v2) i promena cilja (v2), odbijanje kao poruka sa razlozima v2
    doslovno. Prekidač isključen → čarobnjak i plan kao do sada; uključen ne dira ostale distance. */
 
 const TODAY = '2026-01-07';
@@ -166,17 +166,17 @@ describe('HM v2 iza prekidača', () => {
     expect(v.rows?.some((r) => r[0] === 'Zagrevanje')).toBe(true);
     expect(days.find((d) => d.tag === 'lr')!.date.endsWith('-17')).toBe(true); // subota
 
-    // Prilagođavanje i cilj: „stiže uskoro" umesto alata (HM v1 se ne poziva).
+    // Prilagođavanje i cilj (HM-06): tok v2 (pregled iz činjenica, promena cilja v2) umesto alata HM v1.
     useUIStore.setState({ today: '2026-02-03' });
     const adjust = render(<AdjustPlan />);
-    expect(document.getElementById('v2-unsupported')!.textContent).toContain(
-      'Prilagođavanje plana stiže uskoro'
-    );
+    expect(document.getElementById('v2-adapt')).not.toBeNull();
+    expect(document.getElementById('plan-change-preview')).not.toBeNull();
     expect(screen.queryByText('Prilagođavanje prema izvršenju')).toBeNull();
     expect(screen.queryByText('Trenutno nema predloga za prilagođavanje plana.')).toBeNull();
     adjust.unmount();
     const goal = render(<GoalScreen />);
-    expect(document.getElementById('v2-unsupported-goal')!.textContent).toContain('stiže uskoro');
+    expect(screen.getByRole('button', { name: 'Promeni cilj' })).toBeTruthy();
+    expect(document.body.textContent).toContain('U planu polumaratona v2 cilj se samo');
     goal.unmount();
     // Napredak → Forma: bez greške.
     render(<FormScreen />);

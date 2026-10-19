@@ -10,6 +10,7 @@ import { Notice, Row } from '../../components/ui/primitives';
 import { dayOfMonth, dowInitial } from '../../lib/dates';
 import { useActiveGenPlan, useIcuConnected, useResolvedPlan, useTrainingStore } from '../../stores';
 import { useFiveKV2Needed } from '../../stores/fiveKV2Actions';
+import { useHmV2Needed } from '../../stores/hmV2Actions';
 import { useTenKV2Needed } from '../../stores/tenKV2Actions';
 import { useUIStore } from '../../stores/uiStore';
 import { PHASE_LINE, type PhaseKey } from '../cycle/cycle';
@@ -39,7 +40,8 @@ export default function PlanPage() {
   const easy = useEasyPace();
   const needed5k = useFiveKV2Needed();
   const needed10k = useTenKV2Needed();
-  const needed = needed5k.length ? needed5k : needed10k;
+  const neededHm = useHmV2Needed();
+  const needed = needed5k.length ? needed5k : needed10k.length ? needed10k : neededHm;
   const [picked, setPicked] = useState<number | null>(null);
   const today = parseIsoDate(todayStr);
 

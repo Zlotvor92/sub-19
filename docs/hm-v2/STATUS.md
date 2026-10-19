@@ -3,7 +3,7 @@
 Novi generator polumaratona (policyId `hm-v2`) sa jednim vlasnikom svake odluke (H1–H15 iz
 `docs/generators-v2/MASTER-HM-MARATHON.md` § 4), izolovan u `web/src/domain/generators/halfMarathon/v2/`. HM v1 je
 nepromenjen i podrazumevan; od segmenta HM-05 v2 je u aplikaciji iza prekidača (`ui.generatorV2HalfMarathon` /
-`VITE_HM_V2`), samo kroz adapter `v2/app/` (`halfMarathon/index.ts` izvozi `hmV2`, bira `select.ts` po `hm-v2`).
+`VITE_HM_V2`), samo kroz adapter `v2/app/` (`halfMarathon/index.ts` izvozi `hmV2`, bira `select.ts` po `hm-v2`); od HM-06 i prilagođavanje (pregled → potvrda).
 
 ## Kako se koristi
 
@@ -45,13 +45,8 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 
 ## Segment 03b (hm-v2.2.1): pouka 32 za sve zone (HM-04 korak A)
 
-- Plafon zone = H11 udeo i trajanje dana ≤ dugi iste nedelje (izgradnja, rasterećenje, taper); pad doze kao kapacitet;
-  najniži nivo zone izuzet (upozorenje pouke 14 u izgradnji/rasterećenju); dugi rasterećenja sa testom naviše u
-  granicama (DECISIONS HI15). Izveštaj `reports/SEGMENT-03b-IMPLEMENTATION.md`, merenja `artifacts/segment-03b/`.
-- Iznad najnižeg nivoa dan duži od dugog: 0 na svim mrežama (bilo 02 2604, r 8997, gusta 37 643, osećaj 390 nedelja);
-  menjaju se tačno planovi koji su imali takvu nedelju, 0 novih odbijanja; K4 mreža r: vrh niži u 259 / 10 944
-  (≤ 3,8 km; pouka 28 drži dugi kratkim — otvoreno pitanje).
-- Sledeće: HM-04 korak B (adaptacija, hm-v2.3.0).
+- Plafon zone = H11 udeo i trajanje dana ≤ dugi; iznad najnižeg nivoa dan duži od dugog 0 na svim mrežama; menjaju se
+  samo takvi planovi, 0 novih odbijanja. Izveštaj `reports/SEGMENT-03b-IMPLEMENTATION.md`, `artifacts/segment-03b/`.
 
 ## Segment 04 (hm-v2.3.0): adaptacija (HM-04 korak B)
 
@@ -71,7 +66,14 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 - Adapter `v2/app/` (lokalni tipovi, bez uvoza van v2): plan (7 dana, jedna mapa faze, trka 21,1 km van obima),
   struktura, čarobnjak, sat, (b) „nepodržano do HM-06" sa razlogom, kopija procene stanja HM v1. Format
   `GenPlanState.hmV2`, `PLAN_FIELDS` + `hmV2`. Čarobnjak `HmV2Steps`, uvoz čuva trčanja van plana.
-- Bajt-isto: 150 heševa (5K/10K v1, HM v1, maraton, 5K v2, lični plan) prema 28da6af; 10K v2 isto (merenje); E2E
-  `e2e/hm-v2.spec.ts` 3/3; sabotaže 10/10. Izveštaj `reports/SEGMENT-05-IMPLEMENTATION.md`, artefakti
-  `artifacts/segment-05/`.
-- Sledeće: HM-06 (činjenice → `adaptHmV2` sa pregledom, potvrda, revizija, vraćanje verzije, traka, cilj, Forma).
+- Bajt-isto: 150 heševa prema 28da6af; E2E 3/3; sabotaže 10/10. `reports/SEGMENT-05-IMPLEMENTATION.md`.
+
+## Segment HM-06 (faza 2): adaptacija polumaratona v2 u aplikaciji
+
+- `v2/app/facts.ts` (jedino mesto prevoda: dnevnik, van plana, bol, test 5 km i trke 5/10/HM/M, pokrivenost samo
+  `fullSync`/potvrda, prijavljene pauze, zaključani dani) → `adaptHmV2` → pregled (`adapt.ts`) → potvrda → revizija;
+  vraćanje verzije spajanjem, promena cilja (treninzi bajt-isti), traka (pouka 20, `newLimits` + nov zapis bola), Forma,
+  unos testa 5 km, struktura po nedelji (pouka 16). Članovi (b): `MEMBERS` (v2 ili „ne koristi se" sa razlogom).
+- Test 3 km nije rezultat HM v2 (A1) → napomena (otvoreno). Mreža `recent` u 4 dela punog nivoa (≈ 21 s svaki).
+- E2E 9/9 (hm/10k/5k v2), sabotaže 7/7. Izveštaj `reports/SEGMENT-06-IMPLEMENTATION.md`, `artifacts/segment-06/`.
+- Sledeće: MAR-05/06, pa predaja (faza 3).

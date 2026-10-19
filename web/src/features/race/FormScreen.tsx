@@ -7,9 +7,10 @@ import { fmtClock, fmtDayLong, fmtNum } from '../../domain/format';
 import { T3K_DIST_M } from '../../domain/training/constants/product';
 import { t3kVdot } from '../../domain/training/test3k';
 import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
-import { isFiveKV2Plan, isTenKV2Plan } from '../../domain/generators/select';
+import { isFiveKV2Plan, isHmV2Plan, isTenKV2Plan } from '../../domain/generators/select';
 import { useActiveGenPlan } from '../../stores';
 import { useUIStore } from '../../stores/uiStore';
+import { FormHmV2 } from './FormHmV2';
 import { FormTenKV2 } from './FormTenKV2';
 import { FormV2 } from './FormV2';
 import { Journey } from './Journey';
@@ -33,7 +34,8 @@ const secWord = (s: number): string =>
    Čitanje: odgovor → procena po distancama → trend → predikcija kroz plan → test na 3 km. Predlog za prilagođavanje tempa je u Plan → Prilagodi plan. */
 export function FormScreen() {
   const plan = useActiveGenPlan();
-  /* 5K v2 (08b), 10K v2 (06): forma samo iz rezultata, bez lanca forme v1. */
+  /* 5K v2 (08b), 10K v2 (06), HM v2 (HM-06): forma samo iz rezultata, bez lanca forme v1. */
+  if (plan && isHmV2Plan(plan)) return <FormHmV2 plan={plan} />;
   if (plan && isTenKV2Plan(plan)) return <FormTenKV2 plan={plan} />;
   return plan && isFiveKV2Plan(plan) ? <FormV2 plan={plan} /> : <FormV1 />;
 }
