@@ -47,15 +47,15 @@ isključen. Plan politike nepromenjen: verzija ostaje `marathon-v2.3.1` (v. Trak
 
 ## Članovi ugovora (b) — `members.ts` `MEMBERS` (26; svaki `v2` ili `not-used` sa razlogom; nijedan ne poziva maraton v1)
 
-| član                                                                                           | ponašanje                                                                                       |
-| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `buildExecutionAdjustment`                                                                     | v2: pregled adaptacije (`breakDays` → prijavljena pauza do danas)                               |
-| `planWithNewGoal`, `graftFuturePlan`                                                           | v2: `goalChange` (`changedWeeks: 0`), `restoreMerge`                                            |
-| `planVdotNow`, `executionModel`, `injuryProposal`                                              | v2: `trainingVdot`/`vdot0` (po osećaju `null`); opis 28 dana bez odluke; bol kroz činjenice     |
+| član                                                                                           | ponašanje                                                                                      |
+| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `buildExecutionAdjustment`                                                                     | v2: pregled adaptacije (`breakDays` → prijavljena pauza do danas)                              |
+| `planWithNewGoal`, `graftFuturePlan`                                                           | v2: `goalChange` (`changedWeeks: 0`), `restoreMerge`                                           |
+| `planVdotNow`, `executionModel`, `injuryProposal`                                              | v2: `trainingVdot`/`vdot0` (po osećaju `null`); opis 28 dana bez odluke; bol kroz činjenice    |
 | `executionBasis`                                                                               | ne koristi se: odluka o ograničenoj pripremi je maraton v1; v2 smanjenje/povratak = adaptacija |
-| `fitnessEvidence`, `hasRecentMeasuredForm`                                                     | ne koristi se: ugovor nosi samo test 3 km, a on nije rezultat maratona v2 (A1)                  |
-| `buildRunWalkAdjustment`, `assessRunWalkProgress`                                              | ne koristi se: maraton v2 nema trčanje/hodanje (odbija ga pri izradi)                           |
-| ostalih 14 (merenje forme, lanac, rekalibracija, predlog tempa/bola, `realignPlan`, pragovi ∞) | ne koristi se, razlog po članu                                                                  |
+| `fitnessEvidence`, `hasRecentMeasuredForm`                                                     | ne koristi se: ugovor nosi samo test 3 km, a on nije rezultat maratona v2 (A1)                 |
+| `buildRunWalkAdjustment`, `assessRunWalkProgress`                                              | ne koristi se: maraton v2 nema trčanje/hodanje (odbija ga pri izradi)                          |
+| ostalih 14 (merenje forme, lanac, rekalibracija, predlog tempa/bola, `realignPlan`, pragovi ∞) | ne koristi se, razlog po članu                                                                 |
 
 Granica formata (`select.ts`): `buildExecutionAdjustment`, `planWithNewGoal`, `graftFuturePlan`,
 `marathonV2AdaptPreview`, `marathonV2GoalChange` kastom (adapter ne uvozi tipove formata); `adaptationUnsupportedFor`
