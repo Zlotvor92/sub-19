@@ -93,6 +93,12 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
 28. (MAR-01) Opcioni ulaz `recentLongRunKm` (skorašnji najduži trk, 5–42 km): dugi nedelje 1 ≤ max(1,1 × recentLongRunKm,
     recentLongRunKm + 1,0); nedelja 1 sme ispod trenutnog obima i kad je dugi ograničen ovim (dopuna pouke 9). Bez ulaza:
     napomena nedelje 1 sa pragom. Važi za HM od HM-02 i za maraton od MAR-02.
+29. (10K 06d) Prošlost ima JEDNOG vlasnika — upisane (zaštićene) dane. Sve stanje koje zavisi od prošlosti (najduži dugi,
+    stanje doze kvaliteta, poslednji dugi, poslednja doza zone) konstruktor računa iz upisanih dana, a validator i u
+    konstrukciji i posle spajanja vidi isti upisani plan. Mreža adaptacije sa asOf usred nedelje to proverava.
+30. (10K 06d) Trkačka nedelja (bez trke) ≤ planirano tapera i kad taper ima dane odmora/bola: višak laganih dana trkačke
+    nedelje postaje odmor (prvo dani bola, pa najraniji lagani); dan pred trku i trka ostaju.
+31. (10K 06d) Prinudno rasterećenje (umor) u uvodnoj nedelji početnika: obim rasterećenja, sadržaj uvoda (bez kvaliteta).
 
 ## 3. Tok jednog segmenta i provera
 

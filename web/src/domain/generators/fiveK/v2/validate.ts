@@ -20,6 +20,7 @@ import {
   adaptFloorKm,
   capacityKm,
   fitTargetKm,
+  pauseRemainderKm,
   peakKm,
   planVolume,
   returnBaseKm,
@@ -402,10 +403,13 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     else if (w.phase !== 'race' && dev > P.tolerance.plannedVsTarget + EPS)
       err('PLANNED_VS_TARGET', `Planirano ${w.plannedKm} km vs cilj ${w.targetKm} km.`, w.index);
     // Uslov 8: degenerisan plan — nedelja ispod minimalnog smislenog obima, prazan trening.
-    // 2.5.0: nedelja sa danima odmora (bol ≥ 7) je namerno manja.
+    // 2.5.0: nedelja sa danima odmora (bol ≥ 7) je namerno manja. 2.7.0 (P2, odluka 2): u nedelji sa danima
+    // bola minimum važi za CILJ nedelje; planirano ispod cilja zbog dana bola je upozorenje
+    // (PLANNED_BELOW_TARGET_LIMITS), cilj ispod minimuma je greška konstruktora.
     const minKm = w.phase === 'race' ? P.week.minRaceWeekKm : rule.minWeekKm;
-    if (w.plannedKm + EPS < minKm && !(w.limits?.rest?.length ?? 0))
-      err('WEEK_MIN_VOLUME', `Nedelja ${w.plannedKm} km < ${minKm} km.`, w.index);
+    const weekKm = (w.limits?.pain?.length ?? 0) > 0 ? w.targetKm : w.plannedKm;
+    if (weekKm + EPS < minKm && !(w.limits?.rest?.length ?? 0))
+      err('WEEK_MIN_VOLUME', `Nedelja ${weekKm} km < ${minKm} km.`, w.index);
   }
 
   // --- Obim. 2.5.0: posle adaptacije rast se meri od cilja koraka (startKm u nedelji fromWeek), vrh od
@@ -428,6 +432,13 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     for (const st of steps) if (st.startKm !== null && st.fromWeek === i) x = st.startKm;
     return x;
   };
+  // 2.7.0 (P2, VOLUME_DELOAD): ostatak tekuće nedelje pauze (nedelja firstWeek) — cilj iz volume.pauseRemainderKm,
+  // isto kao adaptVolume (kao resetKm za fromWeek).
+  const remainderOk = (w: PlanWeek): boolean =>
+    steps.some((st) => {
+      const km = st.firstWeek === w.index ? pauseRemainderKm(st, w, w.targetKm) : null;
+      return km !== null && Math.abs(w.targetKm - fit(w, km)) < EPS;
+    });
   const buildMax = (from: number): number =>
     Math.max(...build.filter((w) => w.index >= from).map((w) => w.targetKm));
   // 2.6.0 (Odluka 1): nivo povratka koji važi u nedelji i (poslednji korak koji je gradi) i sidro bola.
@@ -467,6 +478,22 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     }
     return ref;
   };
+  // 2.5.0: donja granica adaptiranog cilja (volume.adaptFloorKm) od cilja nedelje u planu generatora.
+  const a0 = baseAthlete(plan.input);
+  const base0 = ad
+    ? planVolume(
+        periodize(plan.input.startDate, weeks.length, rulesOf(a0).deloadEvery, a0.feel),
+        plan.input.currentWeeklyKm,
+        pacesAt(plan.input, [], 1),
+        a0
+      ).targets
+    : [];
+  // 2.7.0 (P2, odluka 2): i provera rasta čita istu granicu — cilj podignut na donju granicu (ili kapacitet)
+  // nije rast iznad pravila (konstruktor: volume.adaptVolume → fitAt).
+  const floored = (w: PlanWeek): boolean =>
+    ad !== undefined &&
+    (Math.abs(w.targetKm - fit(w, adaptFloorKm(base0[w.index - 1]!, aw(w), w.phase))) < EPS ||
+      Math.abs(w.targetKm - fit(w, capOf(w))) < EPS);
   if (!ad && build[0] && Math.abs(build[0].targetKm - plan.startKm) > 0.05)
     err(
       'VOLUME_START',
@@ -489,7 +516,13 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
         lastKm !== null && level !== null && lastKm + EPS < level
           ? Math.max(rule.maxBuildGrowth, P.adapt.returnGrowth)
           : rule.maxBuildGrowth;
-      if (lastKm !== null && checked(w) && lastOk && w.targetKm > lastKm * (1 + g) + 0.05)
+      if (
+        lastKm !== null &&
+        checked(w) &&
+        lastOk &&
+        w.targetKm > lastKm * (1 + g) + 0.05 &&
+        !floored(w)
+      )
         err('VOLUME_GROWTH', `Rast ${lastKm} → ${w.targetKm} km > ${g * 100}%.`, w.index);
       [lastKm, lastOk] = [w.targetKm, checked(w)];
     }
@@ -538,20 +571,6 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     if (checked(w) && w.deload && !forcedDeload(w) && (!prev || prev.phase !== w.phase))
       err('DELOAD_PHASE_START', `Rasterećenje u prvoj nedelji faze ${w.phase}.`, w.index);
   }
-  // 2.5.0: donja granica adaptiranog cilja (volume.adaptFloorKm) od cilja nedelje u planu generatora.
-  const a0 = baseAthlete(plan.input);
-  const base0 = ad
-    ? planVolume(
-        periodize(plan.input.startDate, weeks.length, rulesOf(a0).deloadEvery, a0.feel),
-        plan.input.currentWeeklyKm,
-        pacesAt(plan.input, [], 1),
-        a0
-      ).targets
-    : [];
-  const floored = (w: PlanWeek): boolean =>
-    ad !== undefined &&
-    (Math.abs(w.targetKm - fit(w, adaptFloorKm(base0[w.index - 1]!, aw(w), w.phase))) < EPS ||
-      Math.abs(w.targetKm - fit(w, capOf(w))) < EPS);
   // 2.6.0: osnov rasterećenja adaptiranog plana = poslednja ne-rasteretna nedelja izgradnje (cilj koraka
   // i kad je rasteretna; 2.6.1: posle nedelje sidra bola osnova povratka) — isto kao volume.adaptVolume.
   const lastBuildBefore = (i: number): number | null => {
@@ -581,7 +600,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
         Math.abs(f - P.volume.deloadFactor) > fTol &&
         !fitted &&
         !floored(w) &&
-        resetKm(w.index) === null
+        resetKm(w.index) === null &&
+        !remainderOk(w)
       )
         err('VOLUME_DELOAD', `Rasterećenje ${f.toFixed(2)} × prethodne.`, w.index);
     }

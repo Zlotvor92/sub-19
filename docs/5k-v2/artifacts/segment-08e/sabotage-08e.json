@@ -1,0 +1,68 @@
+[
+  {
+    "name": "08e-a Odluka 9 isključena",
+    "file": "src/domain/generators/fiveK/v2/steps.ts",
+    "find": "    for (const w of reducedWeeks(s)) {",
+    "replace": "    for (const w of [] as number[]) {",
+    "tests": ["src/domain/generators/fiveK/v2/segment08e.node.test.ts"]
+  },
+  {
+    "name": "08e-b ukida i prinudno rasterećenje",
+    "file": "src/domain/generators/fiveK/v2/steps.ts",
+    "find": "next.deload && isBuild(next) && !forced.has(next.index) && runFrom(w)",
+    "replace": "next.deload && isBuild(next) && runFrom(w)",
+    "tests": ["src/domain/generators/fiveK/v2/segment08e.node.test.ts"]
+  },
+  {
+    "name": "08e-c ukinuta nedelja dobija cilj rasterećenja (0,8×)",
+    "opis": "Zamena za sabotažu validator bez izuzetka (odluka organizatora 6): nijedno pravilo validatora ne zavisi od rasporeda rasterećenja.",
+    "file": "src/domain/generators/fiveK/v2/volume.ts",
+    "find": "      else if (f.deload)\n",
+    "replace": "      else if (f.deload || (i > 0 && base.targets[i]! < base.targets[i - 1]!))\n",
+    "tests": ["src/domain/generators/fiveK/v2/segment08e.node.test.ts"]
+  },
+  {
+    "name": "08e-d nov start ulazi u Odluku 9",
+    "edits": [
+      {
+        "file": "src/domain/generators/fiveK/v2/steps.ts",
+        "find": "  if (s.restart) return null;\n",
+        "replace": ""
+      },
+      {
+        "file": "src/domain/generators/fiveK/v2/steps.ts",
+        "find": "  if (s.restart) return [];\n",
+        "replace": ""
+      }
+    ],
+    "tests": ["src/domain/generators/fiveK/v2/segment08e.node.test.ts"]
+  },
+  {
+    "name": "08e-e reduced se ne čita",
+    "file": "src/domain/generators/fiveK/v2/steps.ts",
+    "find": "const reduced = s.reduced ?? (s.startKm !== null && (s.levelKm ?? null) !== null);",
+    "replace": "const reduced = s.startKm !== null && (s.levelKm ?? null) !== null;",
+    "tests": ["src/domain/generators/fiveK/v2/segment08e.node.test.ts"]
+  },
+  {
+    "name": "08e-f1 P2 VOLUME_GROWTH vraćeno (rast bez donje granice)",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "        w.targetKm > lastKm * (1 + g) + 0.05 &&\n        !floored(w)\n",
+    "replace": "        w.targetKm > lastKm * (1 + g) + 0.05\n",
+    "tests": ["src/domain/generators/fiveK/v2/segment08e.node.test.ts"]
+  },
+  {
+    "name": "08e-f2 P2 WEEK_MIN_VOLUME vraćeno (minimum za planirano i uz dane bola)",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "const weekKm = (w.limits?.pain?.length ?? 0) > 0 ? w.targetKm : w.plannedKm;",
+    "replace": "const weekKm = w.plannedKm;",
+    "tests": ["src/domain/generators/fiveK/v2/segment08e.node.test.ts"]
+  },
+  {
+    "name": "08e-f3 P2 VOLUME_DELOAD vraćeno (validator bez ostatka pauze)",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "        resetKm(w.index) === null &&\n        !remainderOk(w)\n",
+    "replace": "        resetKm(w.index) === null\n",
+    "tests": ["src/domain/generators/fiveK/v2/segment08e.node.test.ts"]
+  }
+]

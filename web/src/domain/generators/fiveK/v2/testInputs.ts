@@ -494,3 +494,293 @@ export function painCases(b: PainBase): PainCase[] {
     }
   return out;
 }
+
+/* ---------- Segment 08e (5k-v2.7.0): rasterećenje posle smanjenja i rana adaptacija ---------- */
+
+/** Pretraga organizatora (08e): pauza 10/20 (breaks do asOf), bol 5/8, pauza 10 + bol 5, manjak. */
+export const RELIEF_NARROW = [
+  'pause10',
+  'pause20',
+  'pain5',
+  'pain8',
+  'pause10pain5',
+  'missed'
+] as const;
+/** Šira pretraga: + pauza 35 (nov start), višak, umor, rezultat brži/sporiji. */
+export const RELIEF_WIDE = [
+  ...RELIEF_NARROW,
+  'pause35',
+  'over',
+  'fatigue',
+  'faster',
+  'slower'
+] as const;
+export type ReliefScenario = (typeof RELIEF_WIDE)[number];
+
+export interface ReliefBase {
+  id: string;
+  /** Plan koji se adaptira (trčanje/hodanje: plan posle prelaza na kraju nedelje 8). */
+  plan: unknown;
+  /** Prva nedelja čiji kraj sme biti asOf (posle prethodne adaptacije). */
+  firstWeek: number;
+}
+export interface ReliefCase {
+  key: string;
+  id: string;
+  week: number;
+  asOf: string;
+  scenario: ReliefScenario;
+  facts: Record<string, unknown>;
+}
+
+/** Bazni planovi: adaptNetwork (60) i, uz `runWalk`, rw-16w-pocetnik-e420 posle prelaza (kao mreža P). */
+export function reliefBases(api: AdaptApi, runWalk = false): ReliefBase[] {
+  const out: ReliefBase[] = adaptNetwork().map(({ id, input }) => ({
+    id,
+    plan: planFrom(api, input),
+    firstWeek: 1
+  }));
+  if (runWalk) {
+    const b = painGridBases(api).find((x) => x.id === 'rw-16w-pocetnik-e420')!;
+    out.push({ id: b.id, plan: b.plan, firstWeek: 9 });
+  }
+  return out;
+}
+
+const breakFacts = (asOf: string, n: number) => [
+  { kind: 'break', from: addDays(asOf, -(n - 1)), to: asOf }
+];
+
+/** Činjenice scenarija na dan asOf; null = scenario nema smisla za plan (npr. < 2 lagana dana za umor). */
+export function reliefFacts(
+  plan: unknown,
+  scenario: ReliefScenario,
+  asOf: string,
+  raceTimeForVdot: (vdot: number, distM: number) => number
+): Record<string, unknown> | null {
+  const p = plan as FlowPlan & { planType?: string };
+  const days = p.continuous ? flowDays(p.continuous.plan) : flowDays(p);
+  const within = (d: FlowDay, from: string): boolean =>
+    d.countsToWeek && d.date >= from && d.date <= asOf;
+  const v = p.vdot ?? (p.experience === 'beginner' ? 33 : 40);
+  const result = (dv: number) => [
+    { distM: 3000, sec: raceTimeForVdot(v + dv, 3000), date: addDays(asOf, -1), kind: 'test' }
+  ];
+  switch (scenario) {
+    case 'pause10':
+      return { workouts: [], breaks: breakFacts(asOf, 10) };
+    case 'pause20':
+      return { workouts: [], breaks: breakFacts(asOf, 20) };
+    case 'pause35':
+      return { workouts: [], breaks: breakFacts(asOf, 35) };
+    case 'pain5':
+      return painFacts(asOf, 5);
+    case 'pain8':
+      return painFacts(asOf, 8);
+    case 'pause10pain5':
+      return { ...painFacts(asOf, 5), breaks: breakFacts(asOf, 10) };
+    case 'missed':
+      return {
+        workouts: [{ date: addDays(asOf, -6), km: 3, durationSec: 1080, completed: true }],
+        coverage: { from: addDays(asOf, -6), to: asOf, complete: true }
+      };
+    case 'over': {
+      if (p.continuous) return null;
+      const from = addDays(asOf, -13);
+      return {
+        workouts: days
+          .filter((d) => within(d, from))
+          .map((d) => ({
+            date: d.date,
+            dayId: d.date,
+            km: Math.round(d.workout.km * 1.25 * 10) / 10,
+            durationSec: Math.round(d.workout.sec * 1.25),
+            completed: true
+          })),
+        coverage: { from, to: asOf, complete: true }
+      };
+    }
+    case 'fatigue': {
+      if (p.continuous) return null;
+      const easy = days
+        .filter((d) => within(d, addDays(asOf, -6)) && (d.role === 'easy' || d.role === 'long'))
+        .slice(0, 2);
+      if (easy.length < 2) return null;
+      return {
+        workouts: easy.map((d) => ({
+          date: d.date,
+          dayId: d.date,
+          km: d.workout.km,
+          durationSec: d.workout.sec,
+          completed: true,
+          rpe: 7
+        }))
+      };
+    }
+    case 'faster':
+      return { workouts: [], results: result(2) };
+    case 'slower':
+      return { workouts: [], results: result(-2) };
+  }
+}
+
+/** Tokovi baznog plana: asOf = kraj nedelje w i kraj − 3 (`narrow`) ili sreda i kraj nedelje (`wide`),
+    w = firstWeek … N − 2, × scenariji. Ključ `plan/asOf/scenario`. */
+export function reliefCases(
+  b: ReliefBase,
+  points: 'narrow' | 'wide',
+  scenarios: readonly ReliefScenario[],
+  raceTimeForVdot: (vdot: number, distM: number) => number
+): ReliefCase[] {
+  const n = (b.plan as FlowPlan).weeks.length;
+  const out: ReliefCase[] = [];
+  for (let week = b.firstWeek; week <= n - 2; week++)
+    for (const back of points === 'narrow' ? [0, 3] : [4, 0]) {
+      const asOf = addDays(endOfWeek(week), -back);
+      for (const scenario of scenarios) {
+        const facts = reliefFacts(b.plan, scenario, asOf, raceTimeForVdot);
+        if (facts)
+          out.push({ key: `${b.id}/${asOf}/${scenario}`, id: b.id, week, asOf, scenario, facts });
+      }
+    }
+  return out;
+}
+
+interface CheckStep {
+  fromWeek: number;
+  firstWeek: number;
+  startKm: number | null;
+  restart: boolean;
+  deload: boolean;
+  reduced?: boolean;
+  returnFrom?: { week: number } | null;
+}
+interface CheckWeek {
+  index: number;
+  phase: string;
+  deload: boolean;
+  test?: boolean;
+  targetKm: number;
+}
+interface CheckPlan {
+  experience: string;
+  weeks: CheckWeek[];
+  adaptation?: { steps: CheckStep[] };
+  continuous?: { fromWeek: number; plan: CheckPlan } | null;
+  planType?: string;
+}
+interface CheckResult {
+  ok: boolean;
+  plan?: CheckPlan;
+  reasons: { condition?: string; applied?: boolean; code?: string; message: string }[];
+  violations?: { rule: string; severity: string; week?: number }[];
+}
+
+export interface ReliefCheck {
+  ok: boolean;
+  /** Odbijanje: kod razloga i pravila grešaka validatora (jedinstvena, sortirana). */
+  rejected: { code: string; rules: string[] } | null;
+  /** Primenjeni uslovi poslednjeg koraka (reasons, applied). */
+  applied: string[];
+  /** Nedelje smanjenja (Odluka 9, iz uslova koraka — nezavisno od steps.ts): (a) pauza/manjak → fromWeek,
+      (b) bol sa povratkom → returnFrom.week; nov start ne ulazi. Nedelje kontinuiranog plana. */
+  reducedWeeks: number[];
+  /** n + 1 je redovno rasterećenje (nije prinudno) u fazi izgradnje, niz od n + 1 ≤ granice (J1 kršenje). */
+  p1: number[];
+  /** n + 1 je redovno rasterećenje, ali bi niz od n + 1 bio > granice (zadržano). */
+  keptByBound: number[];
+  /** Ukinuta rasterećenja: n + 1 posle nedelje smanjenja, rasteretna u planu pre adaptacije (`before`), sada
+      nedelja izgradnje — nedelja i niz izgradnje od nje do sledećeg rasterećenja ili kraja izgradnje (J2). */
+  dropped: { week: number; run: number }[];
+  /** Granica niza (Odluka 9) za trkača plana. */
+  limit: number;
+  /** Nedelje iz rečenice „Redovno rasterećenje u nedelji {w} otpada …" u razlozima koraka. */
+  noted: number[];
+  /** Polje reduced poslednjeg koraka (undefined = nema polja) i očekivano po uslovu. */
+  reduced: { got: boolean | undefined; want: boolean | undefined } | null;
+  /** Nedelja kontrolnog trčanja (null = nema). */
+  testWeek: number | null;
+}
+
+const isBuildPhase = (p: string): boolean => p === 'base' || p === 'peak' || p === 'sharpen';
+
+/** Ocena toka (J1–J2 i polje reduced) iz rezultata adaptacije; `bound(beginner)` = granica niza. */
+export function reliefCheck(
+  r: unknown,
+  bound: (beginner: boolean) => number,
+  before: unknown
+): ReliefCheck {
+  const res = r as CheckResult;
+  if (!res.ok) {
+    const rules = [
+      ...new Set((res.violations ?? []).filter((v) => v.severity === 'error').map((v) => v.rule))
+    ].sort();
+    return {
+      ok: false,
+      rejected: { code: res.reasons[0]?.code ?? '?', rules },
+      applied: [],
+      reducedWeeks: [],
+      p1: [],
+      keptByBound: [],
+      dropped: [],
+      limit: 0,
+      noted: [],
+      reduced: null,
+      testWeek: null
+    };
+  }
+  const top = res.plan!;
+  const plan = top.continuous ? top.continuous.plan : top;
+  const steps = plan.adaptation?.steps ?? [];
+  const step = steps[steps.length - 1]!;
+  const applied = res.reasons.filter((x) => x.applied).map((x) => x.condition!);
+  const reducedWeeks: number[] = [];
+  if (!step.restart) {
+    if (applied.includes('PAUSE') || applied.includes('UNDER_EXECUTION'))
+      reducedWeeks.push(step.fromWeek);
+    const rf = step.returnFrom;
+    if (rf && !reducedWeeks.includes(rf.week)) reducedWeeks.push(rf.week);
+  }
+  const weeks = plan.weeks;
+  const forced = (i: number): boolean => steps.some((s) => s.deload && s.fromWeek === i);
+  const limit = bound(plan.experience === 'beginner');
+  const p1: number[] = [];
+  const keptByBound: number[] = [];
+  const dropped: { week: number; run: number }[] = [];
+  const b0 = before as CheckPlan;
+  const was = (b0.continuous ? b0.continuous.plan : b0).weeks;
+  for (const n of reducedWeeks) {
+    const next = weeks[n];
+    if (!next || !isBuildPhase(next.phase)) continue;
+    let k = n + 1;
+    while (k < weeks.length && isBuildPhase(weeks[k]!.phase) && !weeks[k]!.deload) k++;
+    const run = k - n;
+    if (next.deload && !forced(next.index)) (run <= limit ? p1 : keptByBound).push(next.index);
+    else if (!next.deload && was[n]?.deload) dropped.push({ week: next.index, run });
+  }
+  const pauseOrUnder = applied.includes('PAUSE') || applied.includes('UNDER_EXECUTION');
+  const want = pauseOrUnder ? true : applied.includes('OVER_EXECUTION') ? false : undefined;
+  return {
+    ok: true,
+    rejected: null,
+    applied,
+    reducedWeeks,
+    p1,
+    keptByBound,
+    dropped,
+    limit,
+    noted: res.reasons.flatMap((x) =>
+      [...x.message.matchAll(/Redovno rasterećenje u nedelji (\d+) otpada/g)].map((m) =>
+        Number(m[1])
+      )
+    ),
+    reduced: { got: step.reduced, want },
+    testWeek: weeks.find((w) => w.test)?.index ?? null
+  };
+}
+
+/** JSON rezultata bez oznake verzije i bez polja reduced (heš regresije 08e). */
+export const canonResult08e = (r: unknown): string =>
+  JSON.stringify(r, (k, v: unknown) =>
+    k === 'policyVersion' ? '-' : k === 'reduced' ? undefined : v
+  );

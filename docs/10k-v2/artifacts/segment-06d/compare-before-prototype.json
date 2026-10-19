@@ -1,0 +1,71 @@
+{
+ "tokova": 908496,
+ "sameKeys": true,
+ "prihvacenoPre": 905147,
+ "prihvacenPromenjen": 11,
+ "noviOdbijeni": 668,
+ "ispravljeno": {
+  "X:K1": 314,
+  "X:K2": 28
+ },
+ "idaljeOdbijeno": 3007,
+ "primeri": {
+  "prihvacenPromenjen": [
+   "S/10w-35km-v50-A-sat/w8wed/pause10pain5",
+   "S/b-d4-10w-26km-v35-A-sat/w8wed/pause10pain5",
+   "S/b-d4-10w-35km-e330-A-sat/w8wed/pause10pain5",
+   "S/f-d3-9w-20km-e510-A-sat/w7wed/pause10pain5",
+   "S/f-d4-10w-35km-e315-A-sat/w8wed/pause10pain5",
+   "S/f-d4-8w-35km-e405-B-sat/w6wed/pause10pain5",
+   "S/f-d4-9w-35km-e405-B-sat/w7wed/pause10pain5",
+   "S/f-d4-9w-40km-e360-A-sat/w7wed/pause10pain5",
+   "S/f-d5-8w-40km-e405-B-sat/w6wed/pause10pain5",
+   "S/f-d6-10w-35km-e450-B-sat/w8wed/pause10pain5",
+   "S/f-d6-9w-65km-e270-B-sat/w7wed/pause10pain5"
+  ],
+  "noviOdbijeni": [
+   "N7/f-d3-12w-35km-e360-A-sat/w3end-3/pause20: X:K2",
+   "N7/f-d3-8w-20km-e270-A-sat/w1end-3/pause20: X:K2",
+   "N7/f-d3-8w-30km-e360-A-sat/w1end-3/pause20: X:K2",
+   "N7/f-d4-10w-25km-e315-B-sat/w2end-3/pause20: X:K2",
+   "N7/f-d4-10w-55km-e270-B-sat/w2end-3/pause20: X:K2",
+   "N7/f-d4-11w-25km-e315-B-sat/w2end-3/pause20: X:K2",
+   "N7/f-d4-11w-55km-e270-B-sat/w2end-3/pause20: X:K2",
+   "N7/f-d4-8w-25km-e315-B-sat/w1end-3/pause10: X:K2",
+   "N7/f-d4-8w-25km-e315-B-sat/w1end-3/pause10pain5: X:K2",
+   "N7/f-d4-8w-25km-e315-B-sat/w1end-3/under: X:K2",
+   "N7/f-d4-8w-30km-e270-A-sat/w1end-3/pause20: X:K2",
+   "N7/f-d4-8w-50km-e450-A-sat/w1end-3/pause20: X:K2",
+   "N7/f-d4-8w-55km-e270-B-sat/w1end-3/pause20: X:K2",
+   "N7/f-d4-9w-25km-e315-B-sat/w1end-3/pause20: X:K2",
+   "N7/f-d5-13w-35km-e270-B-sat/w3end-3/pause20: X:K2",
+   "N7/f-d5-8w-50km-e405-A-sat/w1end-3/pause20: X:K2",
+   "N7/f-d5-8w-65km-e315-B-sat/w1end-3/pause20: X:K2",
+   "N7/f-d5-9w-30km-e270-A-sat/w1end-3/pause10: X:K2",
+   "N7/f-d5-9w-30km-e270-A-sat/w1end-3/pause10pain5: X:K2",
+   "N7/f-d5-9w-35km-e315-A-sat/w1end-3/pause20: X:K2"
+  ],
+  "idaljeOdbijeno": [
+   "S/10w-25km-v30-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-25km-v40-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-25km-v50-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-25km-v60-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-30km-v30-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-30km-v40-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-30km-v50-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-30km-v60-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-35km-v30-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-35km-v40-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-35km-v50-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-35km-v60-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-40km-v30-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-40km-v40-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-40km-v50-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-40km-v60-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-45km-v50-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-45km-v60-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-50km-v50-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER",
+   "S/10w-50km-v60-A-sat/w8end/pain8: X:novo:RACE_WEEK_OVER_TAPER → X:novo:RACE_WEEK_OVER_TAPER"
+  ]
+ }
+}

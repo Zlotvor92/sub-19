@@ -389,6 +389,10 @@ export interface AdaptStep {
       (sadrži asOf + 1, = firstWeek); rast kreće od osnove min(`share` × nivo koraka, cilj nedelje r);
       korak bez nivoa: `share` × cilj nedelje r (volume.returnBaseKm). share = adapt.painEasyFactor. */
   returnFrom?: { week: number; share: number } | null;
+  /** 2.7.0 (Odluka 9): cilj koraka (startKm) je smanjenje — true: pauza (i sa novim startom) ili manjak
+      izvršenja; false: „više od plana"; izostavljeno: korak bez cilja ili korak sačuvan pre 5k-v2.7.0
+      (steps.targetReducedWeek: rezervni put). */
+  reduced?: boolean;
 }
 
 export interface FiveKV2Adaptation {
