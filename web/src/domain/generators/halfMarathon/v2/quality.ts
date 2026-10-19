@@ -1,7 +1,9 @@
 /* H12 — izbor doze kvaliteta po slotu (jedino mesto); početni nivo; H11 plafon ograničava izbor; H5/H7 doza
-   rasterećenja i tapera. Stanje slota = poslednji izbor slota u ne-rasteretnoj nedelji izgradnje. */
+   rasterećenja i tapera; H17/HI10 početnik — prvi nivo, T kontinuirano od 1,5 km i umesto lestvice faze čiji
+   prvi nivo ne staje u plafon. Stanje slota = poslednji izbor slota u ne-rasteretnoj nedelji izgradnje (test
+   H16 i nedelja bez kvaliteta ga ne menjaju). */
 
-import { HM_V2_POLICY as P } from './policy.ts';
+import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
 import type { Dose, LadderId, Paces, Phase, Structure, WorkZone } from './types.ts';
 import {
   doseOf,
@@ -23,12 +25,18 @@ export interface SlotState {
 export interface QualityState {
   q1: SlotState | null;
   q2: SlotState | null;
+  /** HI10: poslednja doza u zoni T iz ne-rasteretne nedelje izgradnje [m] (0 = nema); čita je samo
+      rasterećenje i taper početnika. */
+  t: number;
 }
 
-export const INITIAL_QUALITY: QualityState = { q1: null, q2: null };
+export const INITIAL_QUALITY: QualityState = { q1: null, q2: null, t: 0 };
 
-/** H10: lestvica slota po fazi izgradnje. */
-export function ladderFor(phase: Phase, slot: 'q1' | 'q2'): LadderId {
+/** H10: lestvica slota po fazi izgradnje (4–6 dana); 3 dana (`quality` 1): jedan kvalitet — baza T
+    kontinuirano, razvoj T cruise, specifično RP (bez I i R). */
+export function ladderFor(phase: Phase, slot: 'q1' | 'q2', quality: 1 | 2 = 2): LadderId {
+  if (quality === 1)
+    return phase === 'base' ? 'T_continuous' : phase === 'development' ? 'T_cruise' : 'RP';
   if (phase === 'base') return slot === 'q1' ? 'R' : 'T_continuous';
   if (phase === 'development') return slot === 'q1' ? 'I' : 'T_cruise';
   return slot === 'q1' ? 'RP' : 'T_cruise';
@@ -38,9 +46,18 @@ export function ladderFor(phase: Phase, slot: 'q1' | 'q2'): LadderId {
 export const deloadLadder = (phase: Phase): 'T_continuous' | 'T_cruise' =>
   phase === 'base' ? 'T_continuous' : 'T_cruise';
 
-/** H12: prelaz faze koji nosi dozu — T cruise ≥ poslednje T kontinuirano; RP ≥ poslednje I. */
+/** H5/HI6: slot čiju poslednju dozu rasterećenje smanjuje i na čijem je danu — T slot Q2; 3 dana jedini
+    slot Q1. */
+export const deloadSlot = (quality: 1 | 2): 'q1' | 'q2' => (quality === 1 ? 'q1' : 'q2');
+
+/** H12: prelaz faze koji nosi dozu — T cruise ≥ poslednje T kontinuirano; RP ≥ poslednje I (4–6 dana) ili
+    poslednje T (3 dana, HI6); HI10: T kontinuirano početnika posle T cruise ≥ poslednje T (ista zona). */
 export function carries(from: LadderId, to: LadderId): boolean {
-  return (from === 'T_continuous' && to === 'T_cruise') || (from === 'I' && to === 'RP');
+  return (
+    (from === 'T_continuous' && to === 'T_cruise') ||
+    (from === 'T_cruise' && to === 'T_continuous') ||
+    (to === 'RP' && (from === 'I' || from === 'T_continuous' || from === 'T_cruise'))
+  );
 }
 
 /** H11: plafon zone za trening, u metrima, za ciljni obim nedelje. */
@@ -81,16 +98,17 @@ export function otherStructure(
 }
 
 /** Najmanji nivo lestvice čija je doza > doseM (sledeći nivo; najviše 1 nivo nedeljno). */
-export function nextLevel(ladder: LadderId, doseM: number): Structure | null {
-  return ladderLevels(ladder).find((s) => doseOf(s) > doseM) ?? null;
+export function nextLevel(ladder: LadderId, doseM: number, beginner = false): Structure | null {
+  return ladderLevels(ladder, beginner).find((s) => doseOf(s) > doseM) ?? null;
 }
 
-/** H12: početni nivo — najviši nivo lestvice ≤ 60 % plafona zone (H11) za cilj nedelje, najmanje prvi nivo.
-    null = ni prvi nivo ne staje u plafon. */
-export function startLevel(ladder: LadderId, targetKm: number): Structure | null {
-  const levels = ladderLevels(ladder);
+/** H12: početni nivo — najviši nivo lestvice ≤ 60 % plafona zone (H11) za cilj nedelje, najmanje prvi nivo;
+    početnik (`beginner`, HI10): prvi nivo (T kontinuirano 1,5 km). null = ni prvi nivo ne staje u plafon. */
+export function startLevel(ladder: LadderId, targetKm: number, beginner = false): Structure | null {
+  const levels = ladderLevels(ladder, beginner);
   const cap = capM(zoneOf(ladder), targetKm);
   if (doseOf(levels[0]!) > cap) return null;
+  if (beginner) return levels[0]!;
   const limit = P.startLevel.capShare * cap + 1e-6;
   return levels.filter((s) => doseOf(s) <= limit).pop() ?? levels[0]!;
 }
@@ -105,68 +123,109 @@ export function startLevel(ladder: LadderId, targetKm: number): Structure | null
  *   ponavljanje, H10).
  * `allowDrop` (samo kad nedelja nije izvodljiva NI PRI JEDNOM cilju uz „doza ne pada"): doza koja ne
  * staje u plafon spušta se na najviši nivo lestvice koji staje — plafon H11 ispred H12 (pouka 12).
+ * `oneSlot` (3 dana, HI6): prelaz T kontinuirano → T cruise koji bi ponovio istu strukturu ide pravilom iste
+ * lestvice (sledeći nivo ili druga struktura) — inače bi nedelja bila identična prethodnoj (H12).
+ * `beginner` (H17, HI10): lestvica početnika (T kontinuirano od 1,5 km), početni nivo = prvi nivo.
  */
 export function pickSlot(
   prev: SlotState | null,
   ladder: LadderId,
   targetKm: number,
   p: Paces,
-  allowDrop = false
+  allowDrop = false,
+  oneSlot = false,
+  beginner = false
 ): Dose | null {
   const cap = capM(zoneOf(ladder), targetKm);
-  const levels = ladderLevels(ladder);
-  const start = startLevel(ladder, targetKm);
+  const levels = ladderLevels(ladder, beginner);
+  const start = startLevel(ladder, targetKm, beginner);
   const drop = (): Dose | null => {
     const lv = allowDrop ? levels.filter((s) => doseOf(s) <= cap).pop() : undefined;
     return lv ? pick(ladder, lv, 'drop') : null;
   };
   if (!prev) return start ? pick(ladder, start, 'start') : null;
-  if (prev.ladder === ladder) {
-    const next = nextLevel(ladder, prev.doseM);
+  // Ista lestvica: sledeći nivo ako staje u plafon, inače ista doza druge strukture (nema je — ponavljanje).
+  const progress = (): Dose | null => {
+    const next = nextLevel(ladder, prev.doseM, beginner);
     if (next && doseOf(next) <= cap) return pick(ladder, next, 'next');
     if (prev.doseM > cap) return drop();
     const alt = otherStructure(ladder, prev.doseM, prev.structure, p);
     return alt ? pick(ladder, alt, 'alt') : pick(ladder, prev.structure, 'repeat');
-  }
+  };
+  if (prev.ladder === ladder) return progress();
   if (!carries(prev.ladder, ladder)) return start ? pick(ladder, start, 'transition') : null;
   const newZone = zoneOf(prev.ladder) !== zoneOf(ladder);
+  const repeats = (s: Structure): boolean =>
+    oneSlot && !newZone && sameStructure(s, prev.structure);
   const lo = Math.max(prev.doseM, newZone && start ? doseOf(start) : 0);
   const lv = levels.find((s) => doseOf(s) >= lo);
-  if (lv && doseOf(lv) <= cap) return pick(ladder, lv, 'transition');
+  if (lv && doseOf(lv) <= cap) return repeats(lv) ? progress() : pick(ladder, lv, 'transition');
   if (prev.doseM > cap) return drop();
   const s =
     otherStructure(ladder, prev.doseM, prev.structure, p) ??
     structuresForDose(ladder, prev.doseM)[0];
-  return s ? pick(ladder, s, 'transition') : null;
+  if (!s) return null;
+  return repeats(s) ? progress() : pick(ladder, s, 'transition');
 }
 
 export interface Picks {
   q1: Dose;
-  q2: Dose;
+  /** null: 3 dana i početnik (jedan kvalitet, H15/H17). */
+  q2: Dose | null;
 }
 
-/** Slotovi nedelje izgradnje. null = nedelja nije izvodljiva pri ovom cilju. */
+/** Izbor nedelje izgradnje: slot null = nedelja ga nema (test H16 na danu Q1, uvod ili nedelja bez kvaliteta
+    početnika H17, jedan kvalitet bez Q2). */
+export interface WeekPicks {
+  q1: Dose | null;
+  q2: Dose | null;
+}
+
+/** Prvi nivo lestvice ne staje u plafon zone (H11) cilja nedelje; `beginner`: lestvica početnika (HI10). */
+export function firstLevelOverCap(ladder: LadderId, targetKm: number, beginner = false): boolean {
+  return doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm);
+}
+
+/** Lestvica Q1 nedelje izgradnje: po fazi (H10, HI6); početnik (HI10) — T kontinuirano (od 1,5 km) kad prvi
+    nivo lestvice faze ne staje u plafon; null = ni 1,5 km ne staje (bez kvaliteta, odstupanje H17). Jedna
+    funkcija za konstruktor i validator (pouka 24). */
+export function buildLadder(phase: Phase, targetKm: number, rule: PlanRule): LadderId | null {
+  const l = ladderFor(phase, 'q1', rule.quality);
+  if (!rule.beginner || !firstLevelOverCap(l, targetKm, true)) return l;
+  return firstLevelOverCap('T_continuous', targetKm, true) ? null : 'T_continuous';
+}
+
+/** Slotovi nedelje izgradnje: Q1 i Q2 (4–6 dana) ili samo Q1 (3 dana i početnik). `skipQ1` = test na danu Q1
+    (H16). Početnik: lestvica Q1 po HI10; kad ni 1,5 km ne staje u plafon, Q1 = null (nedelja bez kvaliteta).
+    null = nedelja nije izvodljiva pri ovom cilju. */
 export function pickBuild(
   state: QualityState,
   phase: Phase,
   targetKm: number,
   p: Paces,
-  allowDrop = false
-): Picks | null {
-  const q1 = pickSlot(state.q1, ladderFor(phase, 'q1'), targetKm, p, allowDrop);
-  if (!q1) return null;
+  rule: PlanRule,
+  allowDrop = false,
+  skipQ1 = false
+): WeekPicks | null {
+  const quality = rule.quality;
+  const l1 = buildLadder(phase, targetKm, rule);
+  let q1: Dose | null = null;
+  if (!skipQ1 && l1) {
+    q1 = pickSlot(state.q1, l1, targetKm, p, allowDrop, quality === 1, rule.beginner);
+    if (!q1) return null;
+  }
+  if (quality === 1) return { q1, q2: null };
   const q2 = pickSlot(state.q2, ladderFor(phase, 'q2'), targetKm, p, allowDrop);
   return q2 ? { q1, q2 } : null;
 }
 
-/** Stanje posle nedelje izgradnje. */
-export function advance(picks: Picks): QualityState {
-  const slot = (d: Dose): SlotState => ({
-    ladder: d.ladder as LadderId,
-    doseM: d.doseM,
-    structure: d.structure
-  });
-  return { q1: slot(picks.q1), q2: slot(picks.q2) };
+/** Stanje posle nedelje izgradnje: slot bez izbora zadržava stanje pre nedelje (H16: progresija se posle
+    testa nastavlja od stanja pre testa); `t` = poslednja doza u zoni T (HI10). */
+export function advance(picks: WeekPicks, prev: QualityState): QualityState {
+  const slot = (d: Dose | null, before: SlotState | null): SlotState | null =>
+    d ? { ladder: d.ladder as LadderId, doseM: d.doseM, structure: d.structure } : before;
+  const t = [picks.q1, picks.q2].filter((d) => d?.zone === 'T').pop();
+  return { q1: slot(picks.q1, prev.q1), q2: slot(picks.q2, prev.q2), t: t ? t.doseM : prev.t };
 }
 
 /** H5/H7: ≈ share × poslednja doza — najviši nivo lestvice ≤ share × poslednja i ≥ najmanja doza; ispod
@@ -175,10 +234,13 @@ export function reducedStructure(
   ladder: LadderId,
   lastM: number,
   share: number,
-  floor: Structure
+  floor: Structure,
+  beginner = false
 ): Structure {
   const limit = share * lastM + 1e-6;
-  const lv = ladderLevels(ladder).filter((s) => doseOf(s) <= limit && doseOf(s) >= doseOf(floor));
+  const lv = ladderLevels(ladder, beginner).filter(
+    (s) => doseOf(s) <= limit && doseOf(s) >= doseOf(floor)
+  );
   return lv[lv.length - 1] ?? floor;
 }
 
@@ -186,24 +248,46 @@ export function reducedStructure(
 export const tMinStructure = (ladder: 'T_continuous' | 'T_cruise', minKm: number): Structure =>
   tFloorStructure(ladder, Math.round(minKm * 1000));
 
-/** H5: jedini kvalitet rasterećenja — T ≈ 60 % poslednje doze T slota (Q2), lestvica faze, min 2,0 km.
-    null = ne staje u plafon H11 (izgradnja: nije izvodljivo; druga pretraga: bez kvaliteta). */
-export function deloadDose(state: QualityState, phase: Phase): Dose {
+/** H5: jedini kvalitet rasterećenja — T ≈ 60 % poslednje doze T slota (Q2; 3 dana jedinog slota Q1,
+    HI6), lestvica faze, min 2,0 km (HI4). Početnik (HI10): ≈ 60 % poslednje T doze, min 1,5 km (u razvoju i
+    specifičnoj fazi 1,5 km kontinuirano — T cruise nema taj nivo, H10). Plafon H11 proverava week.ts (ne
+    staje: po pravilu neizvodljivo; druga pretraga: bez kvaliteta). Jedna funkcija za konstruktor i validator. */
+export function deloadDose(state: QualityState, phase: Phase, rule: PlanRule): Dose {
   const ladder = deloadLadder(phase);
-  const s = reducedStructure(
-    ladder,
-    state.q2?.doseM ?? 0,
-    P.deload.tShare,
-    tMinStructure(ladder, P.deload.tMinKm)
-  );
-  return pick(ladder, s, 'deload');
+  if (!rule.beginner) {
+    const s = reducedStructure(
+      ladder,
+      state[deloadSlot(rule.quality)]?.doseM ?? 0,
+      P.deload.tShare,
+      tMinStructure(ladder, P.deload.tMinKm)
+    );
+    return pick(ladder, s, 'deload');
+  }
+  const minM = Math.round(P.beginner.tFirstKm * 1000);
+  const floor =
+    ladderLevels(ladder, true).find((s) => doseOf(s) === minM) ??
+    structuresForDose(ladder, minM)[0]!;
+  return pick(ladder, reducedStructure(ladder, state.t, P.deload.tShare, floor, true), 'deload');
 }
 
-/** H7: taper — RP i T (cruise), svaki ≈ 60 % poslednje doze zone (naniže; min 2 × 2000 m RP, 2,0 km T). */
-export function taperDoses(state: QualityState): Picks {
+/** HI10: taper početnika kad RP ne staje u plafon — T kontinuirano ≈ 60 % poslednje T doze (lestvica
+    početnika, min 1,5 km). */
+export function beginnerTaperT(state: QualityState): Dose {
+  const floor = ladderLevels('T_continuous', true)[0]!;
+  return pick(
+    'T_continuous',
+    reducedStructure('T_continuous', state.t, P.taper.doseShare, floor, true),
+    'taper'
+  );
+}
+
+/** H7: taper — RP i T (cruise), svaki ≈ 60 % poslednje doze zone (naniže; min 2 × 2000 m RP, 2,0 km T);
+    3 dana i početnik samo RP (HI6, H17). */
+export function taperDoses(state: QualityState, quality: 1 | 2 = 2): Picks {
   const t = P.taper;
   const rpFloor: Structure = { form: 'reps', reps: t.rpMin.reps, repM: t.rpMin.repM };
   const rp = reducedStructure('RP', state.q1?.doseM ?? 0, t.doseShare, rpFloor);
+  if (quality === 1) return { q1: pick('RP', rp, 'taper'), q2: null };
   const tt = reducedStructure(
     'T_cruise',
     state.q2?.doseM ?? 0,

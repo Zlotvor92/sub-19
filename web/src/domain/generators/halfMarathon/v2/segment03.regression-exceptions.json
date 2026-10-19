@@ -1,0 +1,110 @@
+{
+  "d3-10w-40km-v70-r5": {
+    "reason": "HI14 / pouka 33: rasterećenje pri minimumu laganog — dugi skraćen, cilj po pravilu, kvalitet ostaje (odluka organizatora HM-03, A)",
+    "week": 5,
+    "before": {
+      "targetKm": 19.9,
+      "fitted": "down",
+      "longKm": 7.2,
+      "easyKm": [6.4, 6.3],
+      "quality": 0
+    },
+    "after": {
+      "targetKm": 21.4,
+      "fitted": null,
+      "longKm": 6.6,
+      "easyKm": [4.0],
+      "quality": 1
+    }
+  },
+  "d3-14w-40km-v70-r5": {
+    "reason": "HI14 / pouka 33: rasterećenje pri minimumu laganog — dugi skraćen, cilj po pravilu, kvalitet ostaje (odluka organizatora HM-03, A)",
+    "week": 4,
+    "before": {
+      "targetKm": 19.2,
+      "fitted": "down",
+      "longKm": 6.4,
+      "easyKm": [6.4, 6.4],
+      "quality": 0
+    },
+    "after": {
+      "targetKm": 20.2,
+      "fitted": null,
+      "longKm": 5.6,
+      "easyKm": [4.1],
+      "quality": 1
+    }
+  },
+  "d3-20w-40km-v70-r5": {
+    "reason": "HI14 / pouka 33: rasterećenje pri minimumu laganog — dugi skraćen, cilj po pravilu, kvalitet ostaje (odluka organizatora HM-03, A)",
+    "week": 4,
+    "before": {
+      "targetKm": 19.2,
+      "fitted": "down",
+      "longKm": 6.4,
+      "easyKm": [6.4, 6.4],
+      "quality": 0
+    },
+    "after": {
+      "targetKm": 20.2,
+      "fitted": null,
+      "longKm": 5.6,
+      "easyKm": [4.1],
+      "quality": 1
+    }
+  },
+  "d3-10w-45km-v70-r5": {
+    "reason": "HI14 / pouka 33: rasterećenje pri minimumu laganog — dugi skraćen, cilj po pravilu, kvalitet ostaje (odluka organizatora HM-03, A)",
+    "week": 5,
+    "before": {
+      "targetKm": 19.9,
+      "fitted": "down",
+      "longKm": 7.2,
+      "easyKm": [6.4, 6.3],
+      "quality": 0
+    },
+    "after": {
+      "targetKm": 21.4,
+      "fitted": null,
+      "longKm": 6.6,
+      "easyKm": [4.0],
+      "quality": 1
+    }
+  },
+  "d3-14w-45km-v70-r5": {
+    "reason": "HI14 / pouka 33: rasterećenje pri minimumu laganog — dugi skraćen, cilj po pravilu, kvalitet ostaje (odluka organizatora HM-03, A)",
+    "week": 4,
+    "before": {
+      "targetKm": 19.2,
+      "fitted": "down",
+      "longKm": 6.4,
+      "easyKm": [6.4, 6.4],
+      "quality": 0
+    },
+    "after": {
+      "targetKm": 20.2,
+      "fitted": null,
+      "longKm": 5.6,
+      "easyKm": [4.1],
+      "quality": 1
+    }
+  },
+  "d3-20w-45km-v70-r5": {
+    "reason": "HI14 / pouka 33: rasterećenje pri minimumu laganog — dugi skraćen, cilj po pravilu, kvalitet ostaje (odluka organizatora HM-03, A)",
+    "week": 4,
+    "before": {
+      "targetKm": 19.2,
+      "fitted": "down",
+      "longKm": 6.4,
+      "easyKm": [6.4, 6.4],
+      "quality": 0
+    },
+    "after": {
+      "targetKm": 20.2,
+      "fitted": null,
+      "longKm": 5.6,
+      "easyKm": [4.1],
+      "quality": 1
+    }
+  }
+}

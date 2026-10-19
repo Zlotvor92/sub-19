@@ -23,24 +23,36 @@ export interface SlotState {
 export interface QualityState {
   q1: SlotState | null;
   q2: SlotState | null;
+  /** M5: poslednja doza u zoni T iz ne-rasteretne nedelje izgradnje [m] (0 = nema). */
+  t: number;
 }
 
-export const INITIAL_QUALITY: QualityState = { q1: null, q2: null };
+export const INITIAL_QUALITY: QualityState = { q1: null, q2: null, t: 0 };
 
-/** M10: lestvica slota po fazi izgradnje. */
-export function ladderFor(phase: Phase, slot: 'q1' | 'q2'): LadderId {
+/** M10: lestvica slota po fazi izgradnje; M15 3 dana (`quality` 1): jedan kvalitet — baza T kontinuirano,
+    razvoj T cruise, specifično MP (bez I i R). */
+export function ladderFor(phase: Phase, slot: 'q1' | 'q2', quality: 1 | 2 = 2): LadderId {
+  if (quality === 1)
+    return phase === 'base' ? 'T_continuous' : phase === 'development' ? 'T_cruise' : 'MP';
   if (phase === 'base') return slot === 'q1' ? 'R' : 'T_continuous';
   if (phase === 'development') return slot === 'q1' ? 'I' : 'T_cruise';
   return slot === 'q1' ? 'MP' : 'T_cruise';
 }
 
-/** M5: lestvica jedinog kvaliteta rasterećenja (T, dan Q2): baza T kontinuirano, inače T cruise. */
+/** M5: lestvica jedinog kvaliteta rasterećenja (T; dan Q2, 3 dana dan Q1): baza T kontinuirano, inače T cruise. */
 export const deloadLadder = (phase: Phase): LadderId =>
   phase === 'base' ? 'T_continuous' : 'T_cruise';
 
-/** M12: prelaz faze koji nosi dozu — T cruise ≥ poslednje T kontinuirano; MP ≥ poslednje I. */
+/** M5/M15: dan jedinog kvaliteta rasterećenja — Q2 (T slot), 3 dana Q1 (jedini slot). */
+export const deloadSlot = (quality: 1 | 2): 'q1' | 'q2' => (quality === 1 ? 'q1' : 'q2');
+
+/** M12: prelaz faze koji nosi dozu — T cruise ≥ poslednje T kontinuirano; MP ≥ poslednje I (3 dana:
+    poslednje T). */
 export function carries(from: LadderId, to: LadderId): boolean {
-  return (from === 'T_continuous' && to === 'T_cruise') || (from === 'I' && to === 'MP');
+  return (
+    (from === 'T_continuous' && to === 'T_cruise') ||
+    (to === 'MP' && (from === 'I' || from === 'T_cruise' || from === 'T_continuous'))
+  );
 }
 
 /** M11: plafon zone za trening, u metrima, za ciljni obim nedelje. */
@@ -105,13 +117,16 @@ export function startLevel(ladder: LadderId, targetKm: number): Structure | null
  *   ponavljanje, M10).
  * `allowDrop` (samo kad nedelja nije izvodljiva NI PRI JEDNOM cilju uz „doza ne pada"): doza koja ne staje u
  * plafon spušta se na najviši nivo lestvice koji staje — plafon M11 ispred M12.
+ * `oneSlot` (3 dana, M15): prelaz iste zone (T kont. → T cruise) koji bi dao isti trening ide pravilom iste
+ * lestvice (sledeći nivo / druga struktura) — nema identičnih nedelja (M12).
  */
 export function pickSlot(
   prev: SlotState | null,
   ladder: LadderId,
   targetKm: number,
   p: Paces,
-  allowDrop = false
+  allowDrop = false,
+  oneSlot = false
 ): Dose | null {
   const cap = capM(zoneOf(ladder), targetKm);
   const levels = ladderLevels(ladder);
@@ -121,52 +136,59 @@ export function pickSlot(
     return lv ? pick(ladder, lv, 'drop') : null;
   };
   if (!prev) return start ? pick(ladder, start, 'start') : null;
-  if (prev.ladder === ladder) {
+  const progress = (): Dose | null => {
     const next = nextLevel(ladder, prev.doseM);
     if (next && doseOf(next) <= cap) return pick(ladder, next, 'next');
     if (prev.doseM > cap) return drop();
     const alt = otherStructure(ladder, prev.doseM, prev.structure, p);
     return alt ? pick(ladder, alt, 'alt') : pick(ladder, prev.structure, 'repeat');
-  }
+  };
+  if (prev.ladder === ladder) return progress();
   if (!carries(prev.ladder, ladder)) return start ? pick(ladder, start, 'transition') : null;
   const newZone = zoneOf(prev.ladder) !== zoneOf(ladder);
+  const repeats = (s: Structure): boolean =>
+    oneSlot && !newZone && sameStructure(s, prev.structure);
   const lo = Math.max(prev.doseM, newZone && start ? doseOf(start) : 0);
   const lv = levels.find((s) => doseOf(s) >= lo);
-  if (lv && doseOf(lv) <= cap) return pick(ladder, lv, 'transition');
+  if (lv && doseOf(lv) <= cap) return repeats(lv) ? progress() : pick(ladder, lv, 'transition');
   if (prev.doseM > cap) return drop();
   const s =
     otherStructure(ladder, prev.doseM, prev.structure, p) ??
     structuresForDose(ladder, prev.doseM)[0];
-  return s ? pick(ladder, s, 'transition') : null;
+  if (!s) return null;
+  return repeats(s) ? progress() : pick(ladder, s, 'transition');
 }
 
 export interface Picks {
   q1: Dose;
-  q2: Dose;
+  /** null kod 3 dana (jedan kvalitet, M15). */
+  q2: Dose | null;
 }
 
-/** Slotovi nedelje izgradnje. null = nedelja nije izvodljiva pri ovom cilju. */
+/** Slotovi nedelje izgradnje: Q1 i Q2 (4–6 dana) ili samo Q1 (3 dana, `quality` 1). null = nedelja nije
+    izvodljiva pri ovom cilju. */
 export function pickBuild(
   state: QualityState,
   phase: Phase,
   targetKm: number,
   p: Paces,
+  quality: 1 | 2,
   allowDrop = false
 ): Picks | null {
-  const q1 = pickSlot(state.q1, ladderFor(phase, 'q1'), targetKm, p, allowDrop);
+  const one = quality === 1;
+  const q1 = pickSlot(state.q1, ladderFor(phase, 'q1', quality), targetKm, p, allowDrop, one);
   if (!q1) return null;
-  const q2 = pickSlot(state.q2, ladderFor(phase, 'q2'), targetKm, p, allowDrop);
+  if (one) return { q1, q2: null };
+  const q2 = pickSlot(state.q2, ladderFor(phase, 'q2', quality), targetKm, p, allowDrop);
   return q2 ? { q1, q2 } : null;
 }
 
-/** Stanje posle nedelje izgradnje. */
-export function advance(picks: Picks): QualityState {
-  const slot = (d: Dose): SlotState => ({
-    ladder: d.ladder as LadderId,
-    doseM: d.doseM,
-    structure: d.structure
-  });
-  return { q1: slot(picks.q1), q2: slot(picks.q2) };
+/** Stanje posle nedelje izgradnje; `t` = poslednja doza u zoni T (M5). */
+export function advance(picks: Picks, prev: QualityState): QualityState {
+  const slot = (d: Dose | null): SlotState | null =>
+    d ? { ladder: d.ladder as LadderId, doseM: d.doseM, structure: d.structure } : null;
+  const t = [picks.q1, picks.q2].filter((d) => d?.zone === 'T').pop();
+  return { q1: slot(picks.q1), q2: slot(picks.q2), t: t ? t.doseM : prev.t };
 }
 
 /** Struktura doze `minM` u lestvici: nivo sa tom dozom, inače prva struktura iste doze (M10). */
@@ -188,12 +210,12 @@ export function reduced(
   return lv[lv.length - 1] ?? floor;
 }
 
-/** M5: jedini kvalitet rasterećenja — T ≈ 60 % poslednje doze T slota (lestvica faze), min 2,0 km.
-    null = ne staje u plafon M11. */
+/** M5: jedini kvalitet rasterećenja — T ≈ 60 % poslednje T doze (4–6 dana: slot Q2; 3 dana: poslednje T
+    iz izgradnje), lestvica faze, min 2,0 km. null = ne staje u plafon M11. */
 export function pickDeload(state: QualityState, phase: Phase, targetKm: number): Dose | null {
   const ladder = deloadLadder(phase);
   const floor = floorOf(ladder, Math.round(P.deload.tMinKm * 1000));
-  const s = reduced(ladder, state.q2?.doseM ?? 0, P.deload.tShare, floor);
+  const s = reduced(ladder, state.t, P.deload.tShare, floor);
   return doseOf(s) <= capM('T', targetKm) ? pick(ladder, s, 'deload') : null;
 }
 
@@ -203,16 +225,17 @@ export interface TaperPicks {
 }
 
 /** M7: doza nedelje tapera `step` po pravilu — MP ≈ share × poslednja MP doza (naniže, min 2 × 3000 m);
-    N−2 i T ≈ 60 % poslednje T doze (min 2,0 km). JEDINA funkcija doze tapera — čitaju je konstruktor
-    (pickTaper) i validator (pouka 24). Plafon M11 se ovde ne proverava. */
+    N−2 i T ≈ 60 % poslednje T doze (min 2,0 km); 3 dana (`quality` 1) samo MP. JEDINA funkcija doze tapera —
+    čitaju je konstruktor (pickTaper) i validator (pouka 24). Plafon M11 se ovde ne proverava. */
 export function taperDoses(
   state: QualityState,
-  step: number
+  step: number,
+  quality: 1 | 2
 ): { mp: Structure; t: Structure | null } {
   const w = P.taper.weeks[step]!;
   const mp = reduced('MP', state.q1?.doseM ?? 0, w.mpShare, P.taper.mpMin);
   const t =
-    w.tShare === null
+    w.tShare === null || quality === 1
       ? null
       : reduced(
           'T_cruise',
@@ -231,9 +254,10 @@ export function pickTaper(
   state: QualityState,
   step: number,
   targetKm: number,
+  quality: 1 | 2,
   relax = false
 ): TaperPicks | null {
-  const d = taperDoses(state, step);
+  const d = taperDoses(state, step, quality);
   const t = d.t && doseOf(d.t) <= capM('T', targetKm) ? pick('T_cruise', d.t, 'taper') : null;
   if (!relax && d.t !== null && !t) return null;
   return { mp: pick('MP', d.mp, 'taper'), t };

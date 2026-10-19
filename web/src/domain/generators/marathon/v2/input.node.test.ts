@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { addDays } from './dates.ts';
 import { generateMarathonV2 } from './generate.ts';
 import { checkInput } from './input.ts';
-import { inputOf, SCHEDULES, START, timeForVdot } from './testInputs.ts';
+import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS, START, timeForVdot } from './testInputs.ts';
 
 /* M1: opseg ulaza i strukturisano odbijanje sa preporukom. */
 
@@ -41,17 +41,58 @@ describe('M1 ulaz', () => {
     expect(codes(base({ raceDate: addDays(START, 16 * 7) }))).toEqual(['PLAN_NOT_WHOLE_WEEKS']);
   });
 
-  it('obim: < 35 km preporuka polumaraton ili osnova; > 65 km za 4 dana; 35 i 65 prolaze', () => {
-    expect(codes(base({ currentWeeklyKm: 34.9 }))).toEqual(['WEEKLY_KM_TOO_LOW']);
-    expect(message(base({ currentWeeklyKm: 30 }), 'WEEKLY_KM_TOO_LOW')).toMatch(
-      /polumaraton ili izgradnja osnove/
-    );
-    expect(codes(base({ currentWeeklyKm: 65.1 }))).toEqual(['WEEKLY_KM_TOO_HIGH']);
-    expect(codes(base({ currentWeeklyKm: 35 }))).toEqual([]);
-    expect(codes(base({ currentWeeklyKm: 65 }))).toEqual([]);
+  it('obim po redu M15 (3 d 30–50, 4 d 35–65, 5 d 40–85, 6 d 50–110); van reda preporuka broja dana koji nosi obim; < 30 km polumaraton ili osnova', () => {
+    const at = (n: 3 | 4 | 5 | 6, km: number) =>
+      base({ runDays: SCHEDULES_BY_DAYS[n].A.days, currentWeeklyKm: km });
+    for (const [n, lo, hi] of [
+      [3, 30, 50],
+      [4, 35, 65],
+      [5, 40, 85],
+      [6, 50, 110]
+    ] as const) {
+      expect(codes(at(n, lo)), `${n}`).toEqual([]);
+      expect(codes(at(n, hi)), `${n}`).toEqual([]);
+      expect(codes(at(n, lo - 0.1)), `${n}`).toEqual(['WEEKLY_KM_TOO_LOW']);
+      expect(codes(at(n, hi + 0.1)), `${n}`).toEqual(['WEEKLY_KM_TOO_HIGH']);
+    }
+    expect(message(at(4, 34.9), 'WEEKLY_KM_TOO_LOW')).toMatch(/nosi 3 dana/);
+    expect(message(at(4, 65.1), 'WEEKLY_KM_TOO_HIGH')).toMatch(/nosi 5–6 dana/);
+    expect(message(at(6, 45), 'WEEKLY_KM_TOO_LOW')).toMatch(/nosi 3–5 dana/);
+    expect(message(at(3, 29.9), 'WEEKLY_KM_TOO_LOW')).toMatch(/polumaraton ili izgradnja osnove/);
+    expect(message(at(6, 110.1), 'WEEKLY_KM_TOO_HIGH')).toMatch(/van opsega plana/);
   });
 
-  it('dani: 1, 2, 7 trajno; 3, 5, 6 segment 02; dupli/nepostojeći dani; dan dugog van dana', () => {
+  it('M13a: recentLongRunKm opcion, 5–42 km; van opsega odbijanje', () => {
+    expect(codes(base({ recentLongRunKm: 5 }))).toEqual([]);
+    expect(codes(base({ recentLongRunKm: 42 }))).toEqual([]);
+    expect(codes(base({ recentLongRunKm: 4.9 }))).toEqual(['RECENT_LONG_INVALID']);
+    expect(codes(base({ recentLongRunKm: 42.1 }))).toEqual(['RECENT_LONG_INVALID']);
+    expect(codes(base({ recentLongRunKm: '12' }))).toEqual(['INPUT_SHAPE']);
+    const r = checkInput(base({ recentLongRunKm: 12 }));
+    expect(r.ok && r.input.recentLongRunKm).toBe(12);
+    // Bez ulaza ključ ne postoji u normalizovanom ulazu (plan bez pouke 28 ostaje isti).
+    const n = checkInput(base());
+    expect(n.ok && 'recentLongRunKm' in n.input).toBe(false);
+  });
+
+  it('dani: 3, 4, 5, 6 prolaze (M15); 1, 2, 7 trajno; dupli/nepostojeći dani; dan dugog van dana', () => {
+    for (const n of [3, 5, 6] as const) {
+      const r = checkInput(
+        base({
+          runDays: SCHEDULES_BY_DAYS[n].A.days,
+          currentWeeklyKm: n === 6 ? 60 : 45
+        })
+      );
+      expect(r.ok, `${n}`).toBe(true);
+    }
+    const three = checkInput(base({ runDays: ['tue', 'thu', 'sun'] }));
+    expect(three.ok && three.pattern).toEqual({
+      long: 'sun',
+      q1: 'thu',
+      q2: null,
+      easy: ['tue']
+    });
+    expect(message(base({ runDays: ['mon', 'thu'] }), 'RUN_DAYS_COUNT')).toMatch(/najmanje 3 dana/);
     expect(codes(base({ runDays: ['mon', 'thu'] }))).toEqual(['RUN_DAYS_COUNT']);
     expect(
       message(
@@ -59,17 +100,17 @@ describe('M1 ulaz', () => {
         'RUN_DAYS_COUNT'
       )
     ).toMatch(/dan odmora/);
-    expect(message(base({ runDays: ['tue', 'thu', 'sun'] }), 'RUN_DAYS_COUNT')).toMatch(
-      /segmentu 02/
-    );
     expect(codes(base({ runDays: ['mon', 'mon', 'thu', 'sat'] }))).toEqual(['RUN_DAYS_INVALID']);
     expect(codes(base({ longRunDay: 'mon' }))).toEqual(['LONG_DAY_INVALID']);
   });
 
-  it('M9: raspored bez dana oporavka → SCHEDULE_NO_RECOVERY sa predlogom', () => {
+  it('M9: raspored bez dana oporavka → SCHEDULE_NO_RECOVERY sa predlogom (4 i 3 dana)', () => {
     const raw = base({ runDays: ['thu', 'fri', 'sat', 'sun'] });
     expect(codes(raw)).toEqual(['SCHEDULE_NO_RECOVERY']);
     expect(message(raw, 'SCHEDULE_NO_RECOVERY')).toMatch(/Predlog:/);
+    const three = base({ runDays: ['sat', 'sun', 'mon'], longRunDay: 'sun' });
+    expect(codes(three)).toEqual(['SCHEDULE_NO_RECOVERY']);
+    expect(message(three, 'SCHEDULE_NO_RECOVERY')).toMatch(/kvalitet i dugi.*Predlog:/);
   });
 
   it('rezultat: 10 km, HM, maraton prolaze; 5 km uz upozorenje; 3 km nije podržan', () => {

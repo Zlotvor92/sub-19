@@ -79,6 +79,37 @@ function splitsOf(doseM: number, minRepM: number): Structure[] {
 }
 
 /**
+ * M10a (pouka 27): piramida u opsegu zone [minM, maxM], korak `stepM`, zbir = doza — uspon od najkraće do
+ * najduže deonice (dok staje u dozu), pa ostatak silazno: svaka sledeća je najduža ≤ prethodne koja ostavlja
+ * ostatak 0 ili ≥ najkraće (I 5000 = 800-1000-1200-1200-800). null = nema takve piramide (bar 3 deonice, ne sve
+ * jednake, najviše `repsMax`).
+ */
+export function pyramidOf(
+  doseM: number,
+  minM: number,
+  maxM: number,
+  stepM: number,
+  repsMax: number
+): Structure | null {
+  const out: number[] = [];
+  let sum = 0;
+  for (let m = minM; m <= maxM && sum + m <= doseM; m += stepM) {
+    out.push(m);
+    sum += m;
+  }
+  let rem = doseM - sum;
+  while (rem > 0 && out.length > 0) {
+    let v = Math.min(maxM, out[out.length - 1]!);
+    while (v >= minM && !(rem - v === 0 || rem - v >= minM)) v -= stepM;
+    if (v < minM) return null;
+    out.push(v);
+    rem -= v;
+  }
+  if (rem !== 0 || out.length < 3 || out.length > repsMax || new Set(out).size < 2) return null;
+  return { form: 'pyramid', repsM: out };
+}
+
+/**
  * Sve strukture iste doze za lestvicu (M10): nivo lestvice sa tom dozom (ako postoji) pa strukture po
  * pravilu. T: kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m (100 m, pa 50 m); MP: deonice ≥ 3000 m (100 m,
  * pa 50 m) ili kontinuirano do 16 km; I: do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m;
@@ -100,6 +131,11 @@ export function structuresForDose(ladder: LadderId, doseM: number): Structure[] 
   } else if (ladder === 'I') {
     for (const s of equalSplits(doseM, a.iRepMinM, a.iRepMaxM, a.iRepsMax)) push(s);
     push({ form: 'pyramid', repsM: a.iPyramidM });
+    // M10a: bez druge strukture — piramida u opsegu zone, korak 200 m, isti zbir.
+    if (out.length === 1) {
+      const pyr = pyramidOf(doseM, a.iRepMinM, a.iRepMaxM, a.pyramidStepM, a.iRepsMax);
+      if (pyr) push(pyr);
+    }
   } else
     for (const repM of a.rRepM)
       if (doseM % repM === 0) push({ form: 'reps', reps: doseM / repM, repM });

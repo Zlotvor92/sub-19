@@ -1,0 +1,54 @@
+{
+  "10w-30km-v45-A-sun": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-10",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 30,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 2716,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "18w-60km-v55-B-sun": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": ["mon", "wed", "fri", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 60,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 2287,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  },
+  "16w-50km-v30-C-sat": {
+    "startDate": "2026-11-01",
+    "raceDate": "2027-02-20",
+    "runDays": ["mon", "tue", "thu", "sat"],
+    "longRunDay": "sat",
+    "currentWeeklyKm": 50,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 3834,
+      "date": "2026-10-18"
+    },
+    "goalTimeSec": null
+  },
+  "12w-30km-v70-A-sun": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-24",
+    "runDays": ["tue", "thu", "sat", "sun"],
+    "longRunDay": "sun",
+    "currentWeeklyKm": 30,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 1862,
+      "date": "2026-10-19"
+    },
+    "goalTimeSec": null
+  }
+}

@@ -1,7 +1,8 @@
 /* H10 — lestvice i „ista doza druge strukture"; H14 — WU/CD (po pojasu obima) i oporavci; struktura treninga
-   (blokovi, segmenti, km/trajanje). Jedino mesto sastava treninga. Km WU/CD/oporavka po srednjem E. */
+   (blokovi, segmenti, km/trajanje); H16 — RPE kvaliteta i test 5 km. Jedino mesto sastava treninga. Km
+   WU/CD/oporavka po srednjem E. */
 
-import { midEasy } from './paces.ts';
+import { midEasy, raceTimeForVdot } from './paces.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import type {
   BlockSpec,
@@ -9,6 +10,7 @@ import type {
   LadderId,
   Paces,
   QualityType,
+  Rpe,
   Segment,
   Structure,
   Workout,
@@ -43,10 +45,14 @@ export function repsOf(s: Structure): number[] {
   return s.form === 'reps' ? Array<number>(s.reps).fill(s.repM) : [...s.repsM];
 }
 
-/** Nivoi lestvice kao strukture, rastućom dozom. */
-export function ladderLevels(ladder: LadderId): Structure[] {
+/** Nivoi lestvice kao strukture, rastućom dozom. `beginner` (H17, HI10): T kontinuirano počinje od 1,5 km. */
+export function ladderLevels(ladder: LadderId, beginner = false): Structure[] {
   const l = P.ladders;
-  if (ladder === 'T_continuous') return l.T_continuous.map((km) => ({ form: 'continuous', km }));
+  if (ladder === 'T_continuous')
+    return [...(beginner ? [P.beginner.tFirstKm] : []), ...l.T_continuous].map((km) => ({
+      form: 'continuous',
+      km
+    }));
   const reps =
     ladder === 'R' ? l.R : ladder === 'T_cruise' ? l.T_cruise : ladder === 'I' ? l.I : l.RP;
   return reps.map((r) => ({ form: 'reps', reps: r.reps, repM: r.repM }));
@@ -81,6 +87,38 @@ function splitsOf(doseM: number, minRepM: number): Structure[] {
 }
 
 /**
+ * Pouka 27 (HI5): piramida od `n` deonica u opsegu zone [minM, maxM] sa korakom `stepM` i zbirom `doseM`.
+ * Polazi od simetrične piramide (min, min + korak, … vrh … , min), pa razliku do zbira raspoređuje po korak na
+ * deonice najbliže vrhu (pri istoj dužini kasnija), u opsegu zone. null = nema takve piramide (ili su sve
+ * deonice jednake). Npr. I 5000 m, 5 deonica → 800-1000-1200-1200-800; I 2000 m, 2 → 800-1200.
+ */
+export function stepPyramid(
+  doseM: number,
+  n: number,
+  minM: number,
+  maxM: number,
+  stepM: number
+): number[] | null {
+  const reps = Array.from({ length: n }, (_, i) =>
+    Math.min(maxM, minM + stepM * Math.min(i, n - 1 - i))
+  );
+  let diff = doseM - reps.reduce((x, m) => x + m, 0);
+  if (diff % stepM !== 0) return null;
+  while (diff !== 0) {
+    const up = diff > 0;
+    let k = -1;
+    reps.forEach((m, i) => {
+      if (up ? m + stepM > maxM : m - stepM < minM) return;
+      if (k < 0 || (up ? m >= reps[k]! : m <= reps[k]!)) k = i;
+    });
+    if (k < 0) return null;
+    reps[k] = reps[k]! + (up ? stepM : -stepM);
+    diff += up ? -stepM : stepM;
+  }
+  return reps.every((m) => m === reps[0]) ? null : reps;
+}
+
+/**
  * Sve strukture iste doze za lestvicu (H10): nivo lestvice sa tom dozom (ako postoji) pa strukture po
  * pravilu. T: kontinuirano ↔ 2–5 jednakih deonica ≥ 1000 m; RP: 2–5 jednakih deonica ≥ 2000 m ili
  * kontinuirano do 10 km; I: do 6 jednakih deonica 800–1200 m ili piramida 1200 + 1000 + 800 m; R: deonice
@@ -99,6 +137,11 @@ export function structuresForDose(ladder: LadderId, doseM: number): Structure[] 
   } else if (ladder === 'I') {
     for (const s of equalSplits(doseM, a.iRepMinM, a.iRepMaxM, a.iRepsMax, a.roundM)) push(s);
     push({ form: 'pyramid', repsM: a.iPyramidM });
+    // Pouka 27 (HI5): jednake deonice bez druge strukture iste doze → piramida (korak 200 m, isti zbir).
+    if (out.length === 1 && out[0]!.form === 'reps') {
+      const pyr = stepPyramid(doseM, out[0]!.reps, a.iRepMinM, a.iRepMaxM, a.pyramidStepM);
+      if (pyr) push({ form: 'pyramid', repsM: pyr });
+    }
   } else if (ladder === 'RP') {
     for (const s of splitsOf(doseM, a.rpRepMinM)) push(s);
     if (doseM <= a.rpContinuousMaxKm * 1000) push({ form: 'continuous', km: doseM / 1000 });
@@ -144,10 +187,18 @@ export interface WarmupCooldown {
   cooldownSec: number;
 }
 
-export function warmupCooldown(currentWeeklyKm: number): WarmupCooldown {
+/** `beginner` (H17): uvek prvi pojas (15/10 min). */
+export function warmupCooldown(currentWeeklyKm: number, beginner = false): WarmupCooldown {
   const km10 = Math.round(currentWeeklyKm * 10);
-  const band = P.workout.warmupCooldown.filter((b) => Math.round(b.fromKm * 10) <= km10).pop()!;
+  const bands = P.workout.warmupCooldown;
+  const band = beginner ? bands[0]! : bands.filter((b) => Math.round(b.fromKm * 10) <= km10).pop()!;
   return { warmupSec: band.warmupSec, cooldownSec: band.cooldownSec };
+}
+
+/** H16: RPE zone rada (plan po osećaju). */
+export function rpeOf(zone: WorkZone): Rpe {
+  const r = P.feel.rpe[zone];
+  return { min: r.min, max: r.max, cue: r.cue };
 }
 
 /** H14: oporavak posle deonice (sekunde ili metri džoga). I: 1:1 vreme, naniže na 15 s, max 4:00; T cruise
@@ -210,7 +261,12 @@ function assemble(
   const workKm = ZERO();
   const maxBoutSec = ZERO();
   for (const s of segments)
-    if ((s.kind === 'rep' || s.kind === 'continuous') && s.zone !== 'E' && s.zone !== 'jog') {
+    if (
+      (s.kind === 'rep' || s.kind === 'continuous') &&
+      s.zone !== 'E' &&
+      s.zone !== 'jog' &&
+      s.zone !== 'test'
+    ) {
       workKm[s.zone] = km100(workKm[s.zone] + s.km) / 100;
       maxBoutSec[s.zone] = Math.max(maxBoutSec[s.zone], s.sec);
     }
@@ -244,8 +300,8 @@ const fmtRec = (rec: { m: number } | { sec: number }): string =>
 const repSeg = (zone: WorkZone, repM: number, pace: number): Segment =>
   seg('rep', zone, repM / 1000, Math.round((repM / 1000) * pace), pace, 'exact', 'estimated');
 
-/** Trening kvaliteta: WU + rad + CD po pojasu obima (H14). */
-export function qualityWorkout(dose: Dose, p: Paces, wc: WarmupCooldown): Workout {
+/** Trening kvaliteta: WU + rad + CD po pojasu obima (H14); `feel` → RPE zone (H16). */
+export function qualityWorkout(dose: Dose, p: Paces, wc: WarmupCooldown, feel = false): Workout {
   const zone = dose.zone;
   const pace = p[zone];
   const s = dose.structure;
@@ -286,7 +342,31 @@ export function qualityWorkout(dose: Dose, p: Paces, wc: WarmupCooldown): Workou
           : 'T_cruise'
         : zone;
   const title = `WU ${wc.warmupSec / 60} min + ${main} + CD ${wc.cooldownSec / 60} min`;
-  return assemble('quality', qualityType, title, blocks, segments, dose);
+  const w = assemble('quality', qualityType, title, blocks, segments, dose);
+  return feel ? { ...w, rpe: rpeOf(zone) } : w;
+}
+
+/** H16: test 5 km — WU + 5 km kontrolisano maksimalno + CD (H14). Trajanje testa = procena vremena 5 km iz
+    (procenjenog) VDOT-a (HI11). Računa se u obim nedelje, nije doza kvaliteta. */
+export function testWorkout(p: Paces, wc: WarmupCooldown): Workout {
+  const km = P.test.km;
+  const sec = raceTimeForVdot(p.vdot, km * 1000);
+  return assemble(
+    'test',
+    null,
+    `WU ${wc.warmupSec / 60} min + test ${km} km kontrolisano maksimalno + CD ${wc.cooldownSec / 60} min`,
+    [
+      { kind: 'warmup', sec: wc.warmupSec },
+      { kind: 'test', km },
+      { kind: 'cooldown', sec: wc.cooldownSec }
+    ],
+    [
+      timeEasy('warmup', wc.warmupSec, p),
+      seg('test', 'test', km, sec, Math.round(sec / km), 'exact', 'estimated'),
+      timeEasy('cooldown', wc.cooldownSec, p)
+    ],
+    null
+  );
 }
 
 export function easyWorkout(km: number, p: Paces): Workout {
@@ -348,7 +428,7 @@ export function eveWorkout(p: Paces): Workout {
 }
 
 /** H8: oštrenje trkačke nedelje — WU + 2 × 2000 m RP (2:00) + CD (WU/CD po H14). */
-export function sharpenerWorkout(p: Paces, wc: WarmupCooldown): Workout {
+export function sharpenerWorkout(p: Paces, wc: WarmupCooldown, feel = false): Workout {
   const s = P.raceWeek.sharpener;
   return qualityWorkout(
     {
@@ -359,7 +439,8 @@ export function sharpenerWorkout(p: Paces, wc: WarmupCooldown): Workout {
       step: 'sharpener'
     },
     p,
-    wc
+    wc,
+    feel
   );
 }
 

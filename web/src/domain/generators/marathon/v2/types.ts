@@ -20,7 +20,7 @@ export interface MarathonV2Input {
   startDate: IsoDate;
   /** Dan trke = poslednji dan poslednje nedelje. */
   raceDate: IsoDate;
-  /** 4 različita dana (M1, M15 red 4). */
+  /** 3–6 različitih dana (M1, M15). */
   runDays: readonly Weekday[];
   /** Dan dugog trka (M9); bez njega nedelja ako je dan trčanja, inače poslednji dan trčanja. */
   longRunDay?: Weekday | null;
@@ -30,6 +30,8 @@ export interface MarathonV2Input {
   recentResult?: MarathonV2Result | null;
   /** Ciljno vreme maratona [s]; samo se ocenjuje (M3), ne menja tempo. */
   goalTimeSec?: number | null;
+  /** M13a (pouka 28): skorašnji najduži trk [km], 5–42; ulazi u plafon skoka dugog nedelja 1–4. */
+  recentLongRunKm?: number | null;
 }
 
 export type ReasonCode =
@@ -41,7 +43,7 @@ export type ReasonCode =
   | 'PLAN_TOO_SHORT'
   | 'PLAN_TOO_LONG'
   | 'RUN_DAYS_INVALID'
-  /** 1, 2, 7 dana trajno; 3, 5, 6 dana od segmenta 02. */
+  /** 1, 2, 7 dana trajno (M15). */
   | 'RUN_DAYS_COUNT'
   | 'LONG_DAY_INVALID'
   | 'WEEKLY_KM_TOO_LOW'
@@ -57,6 +59,10 @@ export type ReasonCode =
   | 'BEGINNER_SEGMENT_03'
   | 'RUN_WALK_NOT_SUPPORTED'
   | 'GOAL_INVALID'
+  /** M13a: skorašnji najduži trk van 5–42 km. */
+  | 'RECENT_LONG_INVALID'
+  /** M13a: sa skorašnjim najdužim trkom plan ne može da se sastavi (pouka 6). */
+  | 'RECENT_LONG_TOO_SHORT'
   | 'SCHEDULE_NO_RECOVERY'
   | 'WEEK_INFEASIBLE'
   | 'PLAN_VIOLATES_POLICY';
@@ -210,11 +216,11 @@ export interface PlanWeek extends WeekFrame {
   notes: string[];
 }
 
-/** M9 šablon: Q1, Q2, dugi i lagani dani (rastućim danom). */
+/** M9 šablon: Q1, Q2 (3 dana: null, M15), dugi i lagani dani (rastućim danom). */
 export interface Pattern {
   long: Weekday;
   q1: Weekday;
-  q2: Weekday;
+  q2: Weekday | null;
   easy: readonly Weekday[];
 }
 

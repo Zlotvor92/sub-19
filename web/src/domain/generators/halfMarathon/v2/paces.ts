@@ -4,7 +4,8 @@
    %max(t) = 0,8 + 0,1894393·e^(−0,012778·t) + 0,2989558·e^(−0,1932605·t)   t [min]
    VDOT    = VO2(d/t) / %max(t)
 
-   Jednačine su objavljeni model; udeli po zonama i pragovi cilja su odluke iz policy.ts. */
+   Jednačine su objavljeni model; udeli po zonama, pragovi cilja i plan po osećaju (H16) su odluke iz
+   policy.ts. */
 
 import { HM_V2_POLICY as P } from './policy.ts';
 import type { GoalAssessment, Paces } from './types.ts';
@@ -63,6 +64,22 @@ export function pacesFromVdot(vdotRaw: number): Paces {
     I: paceAtFraction(vdot, q.iFraction),
     R: paceAtFraction(vdot, q.rFraction),
     RP: Math.round(raceTimeForVdot(vdot, q.raceDistanceM) / (q.raceDistanceM / 1000))
+  };
+}
+
+/** H16: VDOT čiji je brži kraj E (eFractionFast) jednak laganom tempu [s/km] (neokrugljen). */
+export function vdotFromEasyPace(easySecPerKm: number): number {
+  return vo2AtSpeed(60000 / easySecPerKm) / P.paces.eFractionFast;
+}
+
+/** H16: tempo plana po osećaju — E = lagan ± 15 s; T/I/R/RP iz procene VDOT-a (zaokružene na 0,1 i
+    ograničene na feel.vdotMin–vdotMax) — samo orijentir. */
+export function feelPaces(easySecPerKm: number): Paces {
+  const q = P.feel;
+  const v = Math.min(q.vdotMax, Math.max(q.vdotMin, round1(vdotFromEasyPace(easySecPerKm))));
+  return {
+    ...pacesFromVdot(v),
+    E: { fast: easySecPerKm - q.eRangeSec, slow: easySecPerKm + q.eRangeSec }
   };
 }
 

@@ -1,0 +1,181 @@
+{
+  "byDays": {
+    "3": {
+      "plans": 3120,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0
+      },
+      "K2": {
+        "week1BelowStart": 234,
+        "withoutLongOnCap": 0,
+        "maxDropKm": 8
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "pyramidWeeks": 0,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 1044,
+        "peakOverStart": 1.369,
+        "doseDropped": 0,
+        "marathonLongShort": 1896,
+        "taperMpOverCap": 1512,
+        "longJumpBoundWeeks": 0,
+        "longJumpPlans": 0,
+        "longestLongMedianKm": 24.4
+      }
+    },
+    "4": {
+      "plans": 4368,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0
+      },
+      "K2": {
+        "week1BelowStart": 546,
+        "withoutLongOnCap": 0,
+        "maxDropKm": 16.5
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "pyramidWeeks": 336,
+        "qualityLongerThanLong": 0,
+        "capacityLimited": 1656,
+        "peakOverStart": 1.382,
+        "doseDropped": 318,
+        "marathonLongShort": 2832,
+        "taperMpOverCap": 48,
+        "longJumpBoundWeeks": 78,
+        "longJumpPlans": 78,
+        "longestLongMedianKm": 24
+      }
+    },
+    "5": {
+      "plans": 6240,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0
+      },
+      "K2": {
+        "week1BelowStart": 390,
+        "withoutLongOnCap": 0,
+        "maxDropKm": 13.8
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "pyramidWeeks": 192,
+        "qualityLongerThanLong": 126,
+        "capacityLimited": 1302,
+        "peakOverStart": 1.397,
+        "doseDropped": 24,
+        "marathonLongShort": 3768,
+        "taperMpOverCap": 0,
+        "longJumpBoundWeeks": 0,
+        "longJumpPlans": 0,
+        "longestLongMedianKm": 24.4
+      }
+    },
+    "6": {
+      "plans": 8112,
+      "K1": {
+        "rejected": 0,
+        "validatorErrors": 0
+      },
+      "K2": {
+        "week1BelowStart": 468,
+        "withoutLongOnCap": 0,
+        "maxDropKm": 19.3
+      },
+      "K3": {
+        "buildWeeksWithoutQuality": 0
+      },
+      "K5": {
+        "raceOverTaper": 0,
+        "doseDropOutsideCapacity": 0,
+        "adjacentHardDays": 0,
+        "longShorterThanEasy": 0
+      },
+      "K6": {
+        "slotRepeatWeeks": 0,
+        "pyramidWeeks": 0,
+        "qualityLongerThanLong": 786,
+        "capacityLimited": 1482,
+        "peakOverStart": 1.339,
+        "doseDropped": 0,
+        "marathonLongShort": 4392,
+        "taperMpOverCap": 0,
+        "longJumpBoundWeeks": 618,
+        "longJumpPlans": 234,
+        "longestLongMedianKm": 24.4
+      }
+    }
+  },
+  "K4": {
+    "lowerPeak": 0,
+    "maxDropKm": 0,
+    "ids": []
+  },
+  "recent": {
+    "total": 35910,
+    "rejected": 942,
+    "codes": {
+      "RECENT_LONG_TOO_SHORT": 942
+    },
+    "byR": {
+      "5": 489,
+      "6": 309,
+      "7": 105,
+      "8": 39
+    },
+    "byDays": {
+      "3": 369,
+      "4": 243,
+      "5": 174,
+      "6": 156
+    },
+    "byWeeks": {
+      "12": 636,
+      "16": 153,
+      "24": 153
+    },
+    "byPlanWeek": {
+      "1": 144,
+      "4": 210,
+      "5": 54,
+      "11": 534
+    },
+    "jumpViolations": 0,
+    "maxJump1to2": {
+      "ratio": 1.167,
+      "id": "recent-d4-16w-35km-v70-A-r5: 6 → 7"
+    },
+    "week1BelowStart": 10587
+  }
+}
