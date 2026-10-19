@@ -3,7 +3,8 @@
    2.6.0 (Odluka 3): dan bez zapisa je poznat (bez trčanja) samo u facts.coverage sa complete = true;
    odluke 2, 3 i 6 se iz zapisa primenjuju samo na pokriven deo; bol, umor, rezultat i eksplicitna pauza
    (facts.breaks) uvek. 2.6.1 (Odluka 1 dopuna): bol — ovde se određuju samo sidro povratka (nedelja r) i
-   nivo pre bola; osnovu računa volume.returnBaseKm. */
+   nivo pre bola; osnovu računa volume.returnBaseKm. 2.7.0 (Odluka 9): oznaka `reduced` (cilj koraka je
+   smanjenje: pauza, manjak — da; višak — ne); rasterećenja ukida steps.framesFor. */
 
 import { addDays, dayNumber, mustDay } from './dates.ts';
 import { vdotFromResult } from './paces.ts';
@@ -360,6 +361,7 @@ export function assess(
     const tn = build(n) ? target(n) : null;
     if (tn !== null) km = Math.min(km, tn);
     step.startKm = km;
+    step.reduced = true;
     step.pauseRemainder = true;
     step.restart = tier === 'long';
     step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(pauseStart));
@@ -419,6 +421,7 @@ export function assess(
             Math.min(tn, floorKm)
           )
         );
+        step.reduced = true;
         step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(w2[0]));
         volumeRule = true;
       }
@@ -434,6 +437,7 @@ export function assess(
         const ok = !volumeRule && build(n) && tn !== null && !wk(n)!.deload;
         if (ok) {
           step.startKm = round1(Math.min(tn, lastBuild ?? tn));
+          step.reduced = false;
           volumeRule = true;
         }
         reason(

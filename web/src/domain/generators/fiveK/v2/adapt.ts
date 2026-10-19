@@ -12,7 +12,7 @@ import { construct } from './generate.ts';
 import { assessGoal, beginnerGoal, goalWithoutData, raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { adaptRunWalk } from './runWalkAdapt.ts';
-import { athleteAt, pacesAt, vdotAt } from './steps.ts';
+import { athleteAt, pacesAt, targetReducedWeek, vdotAt } from './steps.ts';
 import type {
   AdaptChange,
   AdaptReason,
@@ -136,12 +136,31 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
   const c = built.c;
   // 2.6.1 (Odluka 1 dopuna): poruka PAIN — osnova povratka iz cilja nedelje sidra r u konstrukciji
   // (assess.painReturnNote → volume.returnBaseKm).
+  // 2.7.0 (Odluka 9): rasterećenja koja je ukinuo ovaj korak (odluka okvira, steps.framesFor — isti podatak
+  // `dropped` iz konstrukcije): rečenica uz uslov koji je smanjio nedelju — (a) pauza/manjak, (b) bol;
+  // pauza i bol iste nedelje: jedna rečenica, uz pauzu.
   const rf = as.step.returnFrom;
-  const reasons: AdaptReason[] = as.reasons.map((x) =>
-    rf && x.condition === 'PAIN'
-      ? { ...x, message: x.message + painReturnNote(as.step, c.weeks[rf.week - 1]!.targetKm) }
-      : x
-  );
+  const own = [...c.dropped]
+    .filter(([, k]) => k === steps.length - 1)
+    .map(([w]) => w)
+    .sort((x, y) => x - y);
+  const tw = targetReducedWeek(as.step);
+  const relief = (cond: AdaptReason['condition']): string =>
+    own
+      .filter((w) =>
+        w - 1 === tw ? cond === 'PAUSE' || cond === 'UNDER_EXECUTION' : cond === 'PAIN'
+      )
+      .map(
+        (w) =>
+          ` Redovno rasterećenje u nedelji ${w} otpada: nedelja ${w - 1} je smanjena (Odluka 9).`
+      )
+      .join('');
+  const reasons: AdaptReason[] = as.reasons.map((x) => {
+    const pain =
+      rf && x.condition === 'PAIN' ? painReturnNote(as.step, c.weeks[rf.week - 1]!.targetKm) : '';
+    const more = pain + (x.applied ? relief(x.condition) : '');
+    return more ? { ...x, message: x.message + more } : x;
+  });
 
   // (3) Spajanje: dani ≤ asOf, urađeni i zaključani dani iz prethodnog plana.
   const done = new Set(facts.workouts.filter((x) => x.completed).map((x) => x.dayId ?? x.date));

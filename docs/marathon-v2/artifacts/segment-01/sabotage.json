@@ -1,0 +1,101 @@
+[
+  {
+    "name": "S1 rasterećenje sme na prvu nedelju faze (M5, pouka 4)",
+    "file": "src/domain/generators/marathon/v2/periodize.ts",
+    "find": "    !firstOfPhase(phases, week)\n  );",
+    "replace": "    week > 0\n  );",
+    "tests": [
+      "src/domain/generators/marathon/v2/periodize.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S2 plafon MP 25 % umesto 20 % u izboru doze (M11)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "return Math.floor(P.caps[zone] * targetKm * 1000 + 1e-6);",
+    "replace": "return Math.floor((zone === 'MP' ? 0.25 : P.caps[zone]) * targetKm * 1000 + 1e-6);",
+    "tests": [
+      "src/domain/generators/marathon/v2/quality.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S3 lagan sme biti duži od dugog (M13, pouka 2)",
+    "file": "src/domain/generators/marathon/v2/lengths.ts",
+    "find": "n);\n  if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;",
+    "replace": "n);\n  if (easy10.some((e) => e < EASY_MIN10)) return null;",
+    "tests": [
+      "src/domain/generators/marathon/v2/week.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S4 taper 1 nedelja umesto 2 (M4, M7)",
+    "edits": [
+      {
+        "file": "src/domain/generators/marathon/v2/periodize.ts",
+        "find": "const build = weeks - q.taperWeeks - q.raceWeeks;",
+        "replace": "const build = weeks - 1 - q.raceWeeks;"
+      },
+      {
+        "file": "src/domain/generators/marathon/v2/periodize.ts",
+        "find": "    taper: q.taperWeeks,",
+        "replace": "    taper: 1,"
+      }
+    ],
+    "tests": [
+      "src/domain/generators/marathon/v2/periodize.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S5 oštrenje 2 dana pre trke (M8)",
+    "file": "src/domain/generators/marathon/v2/week.ts",
+    "find": "daysBetween(d, race) >= q.sharpenerMinGapDays &&",
+    "replace": "daysBetween(d, race) >= q.sharpenerMinGapDays - 1 &&",
+    "tests": [
+      "src/domain/generators/marathon/v2/week.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S6 lagan trkačke nedelje uvek 30 min E (M8: trkačka ≤ taper)",
+    "file": "src/domain/generators/marathon/v2/week.ts",
+    "find": "return taperEasy10 * 10 < km100(timed.km) ? easyWorkout(taperEasy10 / 10, p) : timed;",
+    "replace": "return taperEasy10 < 0 ? easyWorkout(taperEasy10 / 10, p) : timed;",
+    "tests": [
+      "src/domain/generators/marathon/v2/week.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S7 početni nivo do 100 % plafona umesto 60 % (M12)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "const limit = P.startLevel.capShare * cap + 1e-6;",
+    "replace": "const limit = cap + 1e-6;",
+    "tests": [
+      "src/domain/generators/marathon/v2/quality.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S8 cilj rasterećenja 0,9 × umesto 0,8 × (M5)",
+    "file": "src/domain/generators/marathon/v2/volume.ts",
+    "find": "if (frame.deload) return Math.round(P.deload.factor * hist.lastBuild10);",
+    "replace": "if (frame.deload) return Math.round(0.9 * hist.lastBuild10);",
+    "tests": [
+      "src/domain/generators/marathon/v2/week.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S9 plafon MP vraćen u taper (M7a)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "  return { mp: pick('MP', d.mp, 'taper'), t };",
+    "replace": "  if (doseOf(d.mp) > capM('MP', targetKm)) return null;\n  return { mp: pick('MP', d.mp, 'taper'), t };",
+    "tests": [
+      "src/domain/generators/marathon/v2/validate.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  }
+]

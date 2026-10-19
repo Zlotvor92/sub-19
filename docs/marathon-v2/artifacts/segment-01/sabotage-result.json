@@ -1,0 +1,230 @@
+{
+  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-01/sabotage.json",
+  "head": "3fec5c5",
+  "level": "brz",
+  "bail": true,
+  "parallel": 2,
+  "vitestArgs": [],
+  "durationS": 14.6,
+  "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+  "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "S1 rasterećenje sme na prvu nedelju faze (M5, pouka 4)",
+      "files": ["src/domain/generators/marathon/v2/periodize.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/periodize.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/periodize.node.test.ts",
+        "test": "M5 rasterećenje (pouka 4) > deloadAllowed: ned 1–2, prva nedelja faze, poslednja pred taperom i taper/trka su zabranjeni",
+        "message": "AssertionError: expected true to be false // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "hashSabotaged": "422ce669cfe083a663866e0670e19e501c3cf5bfe2b5c0947ab0171b13802af6",
+      "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.3
+    },
+    {
+      "index": 2,
+      "name": "S2 plafon MP 25 % umesto 20 % u izboru doze (M11)",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "test": "M11 plafon i M12 progresija > plafon po treningu: R 5 %, I 8 %, T 10 %, MP 20 % ciljnog obima",
+        "message": "AssertionError: expected 10000 to be 8000 // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "hashSabotaged": "795c8c610ce70e47ed0766189e60989da0eb8b158ed1ea01e2491be69b53d197",
+      "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.1
+    },
+    {
+      "index": 3,
+      "name": "S3 lagan sme biti duži od dugog (M13, pouka 2)",
+      "files": ["src/domain/generators/marathon/v2/lengths.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/week.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/week.node.test.ts",
+        "test": "M7 taper (2 nedelje) > N−2: cilj ≤ 0,8 × vrh, MP i T, dugi ≤ 0,65 × najduži; N−1: cilj ≤ 0,6 × vrh, MP bez T, dugi ≤ 0,45 × najduži",
+        "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_SHORTER_THAN_EASY: Dugi 15.8 km < lagan 20.1 km (M13, pouka 2).\",\"week\":14}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "hashSabotaged": "7fcad347d11164c28e8d1a0f135f92cef052a7cb08b35e7797b6169165ace748",
+      "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.1
+    },
+    {
+      "index": 4,
+      "name": "S4 taper 1 nedelja umesto 2 (M4, M7)",
+      "files": ["src/domain/generators/marathon/v2/periodize.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/periodize.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/periodize.node.test.ts",
+        "test": "M4 faze > B = N − 3: specifično 4 (B ≤ 12) / 5 (13–16) / 6 (≥ 17); baza = ceil((B − spec)/2); taper 2, trka 1",
+        "message": "AssertionError: expected [ 3, 3, 4, 1, 1 ] to deeply equal [ 3, 2, 4, 2, 1 ]"
+      },
+      "failedCount": 1,
+      "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "hashSabotaged": "be6a0722ce64369c285d56e0a16a61fd732f16a4edcac42693688edce0099a9b",
+      "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.2
+    },
+    {
+      "index": 5,
+      "name": "S5 oštrenje 2 dana pre trke (M8)",
+      "files": ["src/domain/generators/marathon/v2/week.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/week.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/grid.node.test.ts",
+        "test": "mreža 01: 4368 planova (4 dana × 12–24 ned) — uzorak > K1: 0 odbijanja i 0 grešaka validatora za ulaze u opsegu",
+        "message": "AssertionError: expected [ …(729) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "hashSabotaged": "ae40baa6e5e36638dde953bcd0b4e6dd07cbacf2ba2f2311b5f753ea4d7512d8",
+      "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.4
+    },
+    {
+      "index": 6,
+      "name": "S6 lagan trkačke nedelje uvek 30 min E (M8: trkačka ≤ taper)",
+      "files": ["src/domain/generators/marathon/v2/week.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/week.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/week.node.test.ts",
+        "test": "M8 trkačka nedelja > lagan = min(30 min E, najkraći lagan N−1); trkačka (bez trke) ≤ N−1; oštrenje ≤ MP doza N−1",
+        "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RACE_WEEK_EASY: Lagan trkačke nedelje 7.32 km ≠ min(30 min E, lagan N−1) (M8).\",\"week\":16}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "hashSabotaged": "7a261a7c204379cfc17140750e687431f41664e4bb6145b986d7c95ba8499b93",
+      "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.7
+    },
+    {
+      "index": 7,
+      "name": "S7 početni nivo do 100 % plafona umesto 60 % (M12)",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "test": "M11 plafon i M12 progresija > početni nivo = najviši nivo ≤ 60 % plafona (najmanje prvi nivo)",
+        "message": "AssertionError: expected { form: 'continuous', km: 6 } to deeply equal { form: 'continuous', km: 3 }"
+      },
+      "failedCount": 1,
+      "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "hashSabotaged": "fd263a16d3e7308f5957054d346d888ae4b16a84f248d2074dedee1776db8197",
+      "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 0.9
+    },
+    {
+      "index": 8,
+      "name": "S8 cilj rasterećenja 0,9 × umesto 0,8 × (M5)",
+      "files": ["src/domain/generators/marathon/v2/volume.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/week.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/week.node.test.ts",
+        "test": "M7 taper (2 nedelje) > N−2: cilj ≤ 0,8 × vrh, MP i T, dugi ≤ 0,65 × najduži; N−1: cilj ≤ 0,6 × vrh, MP bez T, dugi ≤ 0,45 × najduži",
+        "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_RULE: Cilj po pravilu 45.5 km ≠ 40.5 km (M5, M6, M7).\",\"week\":4},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_FIT: Cilj 45.5 km ≠ pravilo 40.5 km bez oznake i napomene (M6).\",\"week\":4},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_FIT: Cilj 45.5 km > 40.5 km (smanjenje ne raste, M5/M7; ned 1 = obim, M6).\",\"week\":4},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_RULE: Cilj po pravilu 54.2 km ≠ 48.2 km (M5, M6, M7).\",\"week\":8},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_FIT: Cilj 54.2 km ≠ pravilo 48.2 km bez oznake i napomene (M6).\",\"week\":8},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_FIT: Cilj 54.2 km > 48.2 km (smanjenje ne raste, M5/M7; ned 1 = obim, M6).\",\"week\":8},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_RULE: Cilj po pravilu 60.8 km ≠ 54 km (M5, M6, M7).\",\"week\":12},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_FIT: Cilj 60.8 km ≠ pravilo 54 km bez oznake i napomene (M6).\",\"week\":12},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"VOLUME_FIT: Cilj 60.8 km > 54 km (smanjenje ne raste, M5/M7; ned 1 = obim, M6).\",\"week\":12}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "hashSabotaged": "9a2fb682a48e57a9b902d099da335ec7791f69775881099cd7f36999d150cf2f",
+      "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1
+    },
+    {
+      "index": 9,
+      "name": "S9 plafon MP vraćen u taper (M7a)",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/validate.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/validate.node.test.ts",
+        "test": "upozorenja (plan ostaje ispravan) > M7a: 12 ned / 35 km — MP N−1 6,0 km iznad plafona 20 % (5,96 km): TAPER_MP_OVER_CAP, MP u N−1 i oštrenje 2 × 2000 m",
+        "message": "Error: [{\"code\":\"WEEK_INFEASIBLE\",\"message\":\"Nedelja 11: nijedan cilj od 20 km naviše ne može da se sastavi po pravilima.\",\"week\":11}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "hashSabotaged": "72d3dabd4a3e04a0bca5ec11269121832b51cf3bf2a585a78d04b98d3bc4fdcf",
+      "hashAfter": "a9e7921bf371066e9d2151de627c61963fb878ed32946261b2f717e6167b47ee",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+ "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-08e/sabotage-08e.json",
+ "head": "51a924f",
+ "level": "brz",
+ "bail": true,
+ "parallel": 2,
+ "vitestArgs": [],
+ "durationS": 42.3,
+ "hashBefore": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+ "hashAfter": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08e-a Odluka 9 isključena",
+   "files": [
+    "src/domain/generators/fiveK/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08e.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08e.node.test.ts",
+    "test": "mreža „rasterećenje posle smanjenja\" (uska pretraga: 60 planova × asOf kraj ned i kraj − 3, w = 1 … N − 2 × 6 scenarija = 5952 toka) > J1, J2: posle nedelje smanjenja nikad redovno rasterećenje; niz od ukinute nedelje ≤ granice; 0 zadržanih granicom",
+    "message": "AssertionError: expected [ …(178) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "hashSabotaged": "d14bd75f0849bf64e72e014276db57ad56e29adb6eff1cf4935aadb9d29df66d",
+   "hashAfter": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6
+  },
+  {
+   "index": 2,
+   "name": "08e-b ukida i prinudno rasterećenje",
+   "files": [
+    "src/domain/generators/fiveK/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08e.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08e.node.test.ts",
+    "test": "Odluka 9: šta se ne ukida > prinudno rasterećenje (umor) se nikad ne ukida: umor + bol u istom koraku (asOf sreda ned 2) — ned 3 prinudna ostaje",
+    "message": "AssertionError: expected [ false, false ] to deeply equal [ true, false ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "hashSabotaged": "934a18b9c1369b3c2cb2439c1d4ff7b467bfbdc988660f0c9d6008f8d3da1c05",
+   "hashAfter": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 12
+  },
+  {
+   "index": 3,
+   "name": "08e-c ukinuta nedelja dobija cilj rasterećenja (0,8×)",
+   "files": [
+    "src/domain/generators/fiveK/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08e.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08e.node.test.ts",
+    "test": "mreža „rasterećenje posle smanjenja\" (uska pretraga: 60 planova × asOf kraj ned i kraj − 3, w = 1 … N − 2 × 6 scenarija = 5952 toka) > J3: 0 odbijanja od validatora (dozvoljeno samo VDOT_OUT_OF_RANGE: rezultat van opsega ulaza)",
+    "message": "AssertionError: expected [ …(4) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "hashSabotaged": "022cd841e86bd39bac8c49fefc021ffbab034c8172866be6166c1f46560e73a9",
+   "hashAfter": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6
+  },
+  {
+   "index": 4,
+   "name": "08e-d nov start ulazi u Odluku 9",
+   "files": [
+    "src/domain/generators/fiveK/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08e.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08e.node.test.ts",
+    "test": "mreža „rana adaptacija\" (šira pretraga, brz nivo: nedelje 1–3, asOf sreda i kraj ned × 11 scenarija) > rečenica Odluke 9 tačno za ukinute nedelje; polje reduced: pauza/manjak true, višak false, inače bez polja",
+    "message": "AssertionError: expected [ …(6) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "hashSabotaged": "776e7e35dcaa562456018e6f26a6277e8b71bee4a151ec9f615fe534492f250f",
+   "hashAfter": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 10.7
+  },
+  {
+   "index": 5,
+   "name": "08e-e reduced se ne čita",
+   "files": [
+    "src/domain/generators/fiveK/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08e.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08e.node.test.ts",
+    "test": "Odluka 9: šta se ne ukida > višak + bol u istom koraku (asOf sreda ned 2): reduced = false — ned 4 ostaje rasterećenje (cilj viška nije smanjenje)",
+    "message": "AssertionError: expected [ 3, 2 ] to deeply equal [ 2 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "hashSabotaged": "6fa5f6d8c096315ce0f7165ce8e3b5b40bc6cefade05dda7e96e492667f72bbf",
+   "hashAfter": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 11.7
+  },
+  {
+   "index": 6,
+   "name": "08e-f1 P2 VOLUME_GROWTH vraćeno (rast bez donje granice)",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08e.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08e.node.test.ts",
+    "test": "mreža „rasterećenje posle smanjenja\" (uska pretraga: 60 planova × asOf kraj ned i kraj − 3, w = 1 … N − 2 × 6 scenarija = 5952 toka) > J3: 0 odbijanja od validatora (dozvoljeno samo VDOT_OUT_OF_RANGE: rezultat van opsega ulaza)",
+    "message": "AssertionError: expected [ …(6) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "hashSabotaged": "599c3c52eff05a389bc92145f2aee79f16a5aafb8e96f57c1c3b9c354c80491e",
+   "hashAfter": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.4
+  },
+  {
+   "index": 7,
+   "name": "08e-f2 P2 WEEK_MIN_VOLUME vraćeno (minimum za planirano i uz dane bola)",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08e.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08e.node.test.ts",
+    "test": "mreža „rasterećenje posle smanjenja\" (uska pretraga: 60 planova × asOf kraj ned i kraj − 3, w = 1 … N − 2 × 6 scenarija = 5952 toka) > J3: 0 odbijanja od validatora (dozvoljeno samo VDOT_OUT_OF_RANGE: rezultat van opsega ulaza)",
+    "message": "AssertionError: expected [ …(4) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "hashSabotaged": "64b5ae024e8eb1b99163e854416bd608ee438b7e212be3d8e538da57719a0f4a",
+   "hashAfter": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.4
+  },
+  {
+   "index": 8,
+   "name": "08e-f3 P2 VOLUME_DELOAD vraćeno (validator bez ostatka pauze)",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08e.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08e.node.test.ts",
+    "test": "P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije > VOLUME_DELOAD: pauza 20, asOf sreda nedelje rasterećenja — ostatak nedelje = cilj pauze (volume.pauseRemainderKm) < 0,8 × prethodne: prihvaćeno (3 toka)",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"Adaptiran plan krši 1 pravila; plan se ne vraća.\"}],\"violations\":[{\"rule\":\"VOLUME_DELOAD\",\"severity\":\"error\",\"message\":\"Rasterećenje 0.70 × prethodne.\",\"week\":3}]}"
+   },
+   "failedCount": 1,
+   "hashBefore": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "hashSabotaged": "1c783db9833fcdaac0307ffa9eb66b2d0114f8e9a263ee4919cd6ff60659b67f",
+   "hashAfter": "41375fe5c107e18f9cf9ccbb3fbe611c53538420fb5488e54593355bcd82fae6",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 11.1
+  }
+ ]
+}

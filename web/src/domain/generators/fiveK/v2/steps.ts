@@ -1,11 +1,12 @@
 /* 2.5.0: koraci adaptacije (AdaptStep, izvedeni u assess.ts) → okviri nedelja i tempo po nedelji.
-   Koriste ga konstruktor (generate.construct) i validator; bez koraka sve je kao u generatoru. */
+   Koriste ga konstruktor (generate.construct) i validator; bez koraka sve je kao u generatoru.
+   2.7.0 (Odluka 9): ukidanje redovnog rasterećenja odmah posle nedelje smanjenja (framesFor). */
 
 import { addDays, mustDay, weekdayIndex, weekdayOf } from './dates.ts';
 import { hasFreshResult } from './input.ts';
 import { feelPaces, pacesFromVdot, vdotFromResult } from './paces.ts';
-import { periodize, rePeriodize } from './periodize.ts';
-import { rulesOf, type Athlete, type RunDaysCount } from './policy.ts';
+import { isShortPrep, periodize, rePeriodize } from './periodize.ts';
+import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete, type RunDaysCount } from './policy.ts';
 import type {
   AdaptStep,
   DateRange,
@@ -97,32 +98,100 @@ export function limitsOf(
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
+/** 2.7.0 (Odluka 9): najviše uzastopnih nedelja izgradnje od ukinutog rasterećenja (uključujući ukinutu
+    nedelju) do sledećeg rasterećenja ili kraja izgradnje = najduži niz izgradnje bez rasterećenja koji generator
+    sam pravi u osnovnom rasporedu (periodize, svi planovi sa rasterećenjem: input.planWeeks bez kratke pripreme;
+    deloadEvery 4: 5 nedelja, plan od 11; početnik 3: 3) + 1. Izvedeno iz periodize — bez novog broja. */
+const maxRuns = new Map<number, number>();
+export function reliefMaxRun(deloadEvery: number): number {
+  const known = maxRuns.get(deloadEvery);
+  if (known !== undefined) return known;
+  let longest = 0;
+  for (let n = P.input.planWeeks.min; n <= P.input.planWeeks.max; n++) {
+    if (isShortPrep(n)) continue;
+    let run = 0;
+    // Datum ne utiče na raspored (periodize: faze i rasterećenja zavise samo od broja nedelja).
+    for (const f of periodize('2026-01-05', n, deloadEvery)) {
+      run = isBuild(f) && !f.deload ? run + 1 : 0;
+      longest = Math.max(longest, run);
+    }
+  }
+  maxRuns.set(deloadEvery, longest + 1);
+  return longest + 1;
+}
+
+/** Odluka 9 (a): nedelja smanjenja iz cilja koraka — reduced (pauza, manjak; višak false); korak sačuvan
+    pre 5k-v2.7.0 (bez polja): cilj koraka uz nivo pre smanjenja (pauza i manjak ga postavljaju; višak bez
+    bola ne). Nov start se ne računa. null = korak nema cilj smanjenja. */
+export function targetReducedWeek(s: AdaptStep): number | null {
+  if (s.restart) return null;
+  const reduced = s.reduced ?? (s.startKm !== null && (s.levelKm ?? null) !== null);
+  return reduced ? s.fromWeek : null;
+}
+
+/** Odluka 9: nedelje smanjenja koraka — (a) cilj koraka (targetReducedWeek) → fromWeek; (b) bol sa
+    povratkom → nedelja sidra r (returnFrom.week); (c) nov start se ne računa (rePeriodize gradi raspored). */
+export function reducedWeeks(s: AdaptStep): number[] {
+  if (s.restart) return [];
+  const a = targetReducedWeek(s);
+  const out = a === null ? [] : [a];
+  const back = s.returnFrom ?? null;
+  if (back !== null && !out.includes(back.week)) out.push(back.week);
+  return out;
+}
+
 /**
  * Okviri nedelja posle koraka (redom): nov start → rePeriodize od fromWeek; umor → fromWeek je
- * rasterećenje (samo izgradnja; redovno rasterećenje odmah posle se ukida); novi rezultat → nema testa
- * od fromWeek; ograničenja po datumima (limitsOf). Kontrolno trčanje (po osećaju) u nedelji sa
- * ograničenjem kvaliteta, rasterećenjem ili van izgradnje, a posle asOf, premešta se na prvu sledeću
- * ne-rasteretnu nedelju izgradnje bez ograničenja; ako je nema — bez testa.
+ * rasterećenje (samo izgradnja; redovno rasterećenje odmah posle se ukida); 2.7.0 (Odluka 9): redovno
+ * rasterećenje odmah posle nedelje smanjenja (reducedWeeks) se ukida — prinudno (umor) nikad, a ni kad bi
+ * od ukinute nedelje do sledećeg rasterećenja ili kraja izgradnje bilo više od reliefMaxRun nedelja
+ * (raspored se ne pomera, ništa se ne ubacuje); novi rezultat → nema testa od fromWeek; ograničenja po
+ * datumima (limitsOf). Kontrolno trčanje (po osećaju) u nedelji sa ograničenjem kvaliteta, rasterećenjem
+ * ili van izgradnje, a posle asOf, premešta se na prvu sledeću ne-rasteretnu nedelju izgradnje bez
+ * ograničenja; ako je nema — bez testa. `dropped` (izlaz, Odluka 9): ukinuta rasterećenja — nedelja →
+ * indeks koraka (JEDINO mesto odluke; isti podatak čitaju validator i poruka koraka u adapt.ts).
  */
 export function framesFor(
   input: FiveKV2Input,
   steps: readonly AdaptStep[],
   pattern: Pattern,
-  totalWeeks: number
+  totalWeeks: number,
+  dropped: Map<number, number> | null = null
 ): WeekFrame[] {
   const a = baseAthlete(input);
   const every = rulesOf(a).deloadEvery;
   let frames = periodize(input.startDate, totalWeeks, every, a.feel);
   if (steps.length === 0) return frames;
-  for (const s of steps) {
+  const forced = new Set<number>();
+  const maxRun = reliefMaxRun(every);
+  /** Uzastopne nedelje izgradnje od nedelje w + 1 do prvog rasterećenja ili kraja izgradnje. */
+  const runFrom = (w: number): number => {
+    let k = w + 1;
+    while (k < frames.length && isBuild(frames[k]!) && !frames[k]!.deload) k++;
+    return k - w;
+  };
+  for (const [k, s] of steps.entries()) {
     const n = s.fromWeek;
-    if (s.restart) frames = rePeriodize(frames, n, every);
+    if (s.restart) {
+      frames = rePeriodize(frames, n, every);
+      // Nov raspored od fromWeek zamenjuje i prinudna i ukinuta rasterećenja od te nedelje.
+      for (const w of [...forced]) if (w >= n) forced.delete(w);
+      if (dropped) for (const w of [...dropped.keys()]) if (w >= n) dropped.delete(w);
+    }
     frames = frames.map((f) => ({ ...f }));
     const fn = frames[n - 1];
     if (s.deload && fn && isBuild(fn)) {
       fn.deload = true;
+      forced.add(n);
       const next = frames[n];
       if (next && next.deload && isBuild(next)) next.deload = false;
+    }
+    for (const w of reducedWeeks(s)) {
+      const next = frames[w];
+      if (next && next.deload && isBuild(next) && !forced.has(next.index) && runFrom(w) <= maxRun) {
+        next.deload = false;
+        dropped?.set(next.index, k);
+      }
     }
     if (s.vdot !== null) for (const f of frames) if (f.index >= n) f.test = false;
   }

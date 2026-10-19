@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.6.1',
+  version: '5k-v2.7.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -681,5 +681,43 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'povratka; doza kvaliteta kreće iznova, kao posle pauze. Na bf47249 22 toka bola u bazi (v45-d4-22km-14w, ' +
       'bol u ned 3) su odbijana (R ned 5 < R ned 2/3), što je greška upotrebljivosti (korisnik sa bolom dobija ' +
       '„plan nije prilagođen"); sada su prihvaćeni (ned 5 = 18,2 km, R 0,80 + T 1,00).'
+  },
+  {
+    version: '5k-v2.7.0',
+    decision:
+      'Segment 08e, Odluka 9 (odluka organizatora, heuristika; ista kao 10K A17; bez novog broja). Redovno ' +
+      'rasterećenje odmah posle nedelje smanjenja otpada. (1) Nedelja smanjenja: (a) korak sa ciljem koraka koji ' +
+      'je smanjenje — pauza i manjak izvršenja (višak nije; oznaka koraka reduced) → fromWeek; (b) korak bola sa ' +
+      'povratkom → nedelja sidra r; (c) korak sa novim startom (pauza ≥ 28) se ne računa. Korak sačuvan pre ' +
+      '5k-v2.7.0 (bez reduced): cilj koraka uz nivo pre smanjenja. (2) Ukida se samo redovno rasterećenje iz ' +
+      'osnovnog rasporeda u fazi izgradnje; prinudno (umor) nikad; taper i trkačka nedelja nisu rasterećenja. ' +
+      '(3) Granica: od ukinute nedelje (uključujući nju) do sledećeg rasterećenja ili kraja izgradnje najviše ' +
+      'najduži niz izgradnje bez rasterećenja koji generator sam pravi u osnovnom rasporedu (periodize, planovi ' +
+      'sa rasterećenjem 8–16 ned; izmereno: 5 — plan od 11 ned; početnik 3) + 1 = 6, početnik 4 ' +
+      '(steps.reliefMaxRun, izvedeno iz periodize); duži niz → rasterećenje ostaje. Raspored se ne pomera, ništa ' +
+      'se ne ubacuje. (4) Ukinuta nedelja dobija cilj po postojećem pravilu povratka (volume.adaptVolume: ' +
+      'nextBuildKm od osnove; kod bola od returnBaseKm). (5) Jedno mesto: steps.framesFor (izlaz dropped; ' +
+      'konstrukcija, poruka koraka); nijedno pravilo validatora ne zavisi od rasporeda rasterećenja (VOLUME_DELOAD ' +
+      'meri samo nedelje koje su u planu rasteretne; donja granica čita cilj generatora isto kao konstruktor), ' +
+      'pa validator nema izuzetak. (6) Poruka koraka: „Redovno rasterećenje u nedelji n + 1 otpada: nedelja n je ' +
+      'smanjena (Odluka 9)." (pauza i bol iste nedelje: jedna rečenica, uz pauzu). Obrazloženje: smanjena ' +
+      'nedelja je već oporavak; drugo rasterećenje zaredom gubi nedelju povratka. Primeri (cilj km, 5k-v2.6.1 → ' +
+      '5k-v2.7.0): v45-d4-22km-14w, asOf kraj ned 2 — pauza 10 dana: ned 4 rasterećenje 14,1 → 19,3, ned 5 19,3 → ' +
+      '21,2, ned 8 rasterećenje 18,2 → 19,7; bol 5: ned 4 12,3 → 16,9; manjak: ned 4 16,3 → 22,0; v45-d3-15km-10w, ' +
+      'kraj ned 1, pauza 10: ned 3 rasterećenje 9,6 → 13,2 (niz 3–7 = 5). Pretraga (adaptNetwork, asOf kraj ned i ' +
+      'kraj − 3, w = 1 … N − 2; pauza 10/20, bol 5/8, pauza 10 + bol 5, manjak; 5952 toka): pre 975 tokova sa ' +
+      'redovnim rasterećenjem odmah posle smanjenja, posle 0 (0 zadržano granicom). Kontrolno trčanje: postojeće ' +
+      'premeštanje; u 90 tokova test ranije (u ukinutu nedelju) ili dodat, nijedan uklonjen. (7) Konstruktor ne ' +
+      'sme sastaviti ono što validator odbije (P2; ista pretraga 44 odbijena → 0, šira 42 → 0): VOLUME_GROWTH — ' +
+      'validator rasta nije znao donju granicu adaptiranog cilja (2.6.0 Odluka 2, volume.adaptFloorKm), sada je ' +
+      'čita (npr. beg-feel-d4-15km-10w, bol 5 kraj ned 1: osnova 10,5, cilj 12 = granica 4 × 3 km); ' +
+      'WEEK_MIN_VOLUME — u nedelji sa danima bola minimum nedelje važi za cilj, planirano ispod cilja zbog dana ' +
+      'bola je upozorenje (PLANNED_BELOW_TARGET_LIMITS); cilj ispod minimuma ostaje greška (npr. ' +
+      'beg-feel-d3-12km-10w, pauza 10 + bol 5 kraj ned 8: ned 9 cilj 7,5, planirano 7,3); VOLUME_DELOAD — cilj ' +
+      'ostatka tekuće nedelje pauze (2.5.0 Odluka 3: min(cilj pauze, cilj)) validator nije znao; jedna funkcija ' +
+      'volume.pauseRemainderKm (adaptVolume i validator; rasterećenje u kom počinje pauza sme ispod 0,8 × ' +
+      'prethodne — pauza je jači razlog za smanjenje; npr. v38-d4-38km-10w, pauza 20, asOf sreda ned 3: ' +
+      'rasterećenje 29,9 → 26,2 = 0,70 × 37,4). Sačuvan plan 5k-v2.6.0 i 5k-v2.6.1 ostaje plan 5K v2 i ' +
+      'prilagođava se po 2.7.0 (app/plan.ts KNOWN_VERSIONS).'
   }
 ];

@@ -7,7 +7,10 @@
    bol u istom koraku (min sa ciljem nedelje r deluje) i primeri A–E iz nalaza organizatora. Odluka organizatora o
    sudarima 08d: (1) korak bola sa povratkom počinje novu progresiju doze od r + 1 (steps.doseResetAt) — nijedan tok
    bola sa povratkom nije odbijen; (2) 5K v2 ključevi osveženi u 5K 08d (oznaka 5k-v2.6.1); ostali ključevi su sa
-   068410b (tenK/v2/app/byteSame.068410b.json). */
+   068410b (tenK/v2/app/byteSame.068410b.json).
+   08e (5k-v2.7.0, Odluka 9): heš bez polja koraka `reduced` (canonResult08e; bf47249 ga nema, pa su heševi isti kao
+   pre); redovno rasterećenje odmah posle nedelje sidra otpada — izmenjena očekivanja: nekadašnji BASE_R_DECREASE
+   (ned 4 više nije rasterećenje), I1 (broj rasterećenja r + 1), primer E. */
 
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -19,7 +22,7 @@ import { raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import {
   adaptNetworkFlows,
-  canonResult,
+  canonResult08e,
   doneFacts,
   historyFacts,
   PAIN_GRID,
@@ -48,7 +51,7 @@ const round1 = (x: number): number => Math.round(x * 10) / 10;
 const floor1 = (x: number): number => Math.floor(x * 10 + 1e-9) / 10;
 const S = JSON.stringify;
 const hash = (r: unknown): string =>
-  createHash('sha256').update(canonResult(r)).digest('hex').slice(0, 16);
+  createHash('sha256').update(canonResult08e(r)).digest('hex').slice(0, 16);
 const REF = JSON.parse(
   readFileSync(new URL('./segment08d.adapt-hashes-bf47249.json', import.meta.url), 'utf8')
 ) as {
@@ -248,11 +251,15 @@ describe('sudar 1 (odluka organizatora): korak bola sa povratkom počinje novu p
     ).toBe(5);
   });
 
-  it('nekadašnji BASE_R_DECREASE: ned 5 (baza, 18,2 km) počinje doza iznova — R 0,80 + T 1,00 (bez novog starta: R 0,90 < 1,00, odbijeno)', () => {
+  it('nekadašnji BASE_R_DECREASE: doza počinje iznova od r + 1 — ned 5 (baza) R 0,80 + T 1,00 (bez novog starta: R 0,90 < 1,00, odbijeno); 08e: ned 4 nije rasterećenje (Odluka 9), 18,2 → ned 5 20,0 km', () => {
     for (const k of FORMERLY_REJECTED) {
       const p = contOf((at.get(k)!.res as Extract<Res, { ok: true }>).plan);
-      const w5 = p.weeks[4]!;
-      expect(w5.targetKm, k).toBe(18.2);
+      // asOf pon–sub: r = 3; 5k-v2.6.1: ned 4 rasterećenje 13,3, ned 5 = 18,2; 5k-v2.7.0: ned 4 = 18,2 (povratni
+      // rast od osnove 16,6), ned 5 = 20,0. asOf nedelja (2026-11-22): r = 4 je rasterećenje — bez promene.
+      const sunday = k.includes('/2026-11-22/');
+      expect([p.weeks[3]!.deload, p.weeks[3]!.targetKm, p.weeks[4]!.targetKm], k).toEqual(
+        sunday ? [true, 20.4, 18.2] : [false, 18.2, 20]
+      );
       expect(validatePlan(p).filter((v) => v.severity === 'error')).toEqual([]);
     }
     const p = contOf(
@@ -272,15 +279,15 @@ describe('sudar 1 (odluka organizatora): korak bola sa povratkom počinje novu p
 });
 
 describe('mreža bola P: korak, poruka, I1–I5', () => {
-  it('svaki tok je prihvaćen i primenjuje PAIN; plan nosi 5k-v2.6.1; determinizam', () => {
+  it('svaki tok je prihvaćen i primenjuje PAIN; plan nosi tekuću oznaku; determinizam', () => {
     expect(okFlows.length).toBe(392);
     for (const f of okFlows) {
       expect(
         f.res.reasons.some((x) => x.condition === 'PAIN' && x.applied),
         f.key
       ).toBe(true);
-      expect(f.res.plan.policyVersion).toBe('5k-v2.6.1');
-      expect(contOf(f.res.plan).policyVersion).toBe('5k-v2.6.1');
+      expect(f.res.plan.policyVersion).toBe(P.version);
+      expect(contOf(f.res.plan).policyVersion).toBe(P.version);
     }
     for (const f of flows.filter((_, i) => i % 9 === 0))
       expect(S(adaptFiveKV2(f.b.plan as Any, f.facts, f.asOf))).toBe(S(f.res));
@@ -334,7 +341,8 @@ describe('mreža bola P: korak, poruka, I1–I5', () => {
     }
     expect(bad.slice(0, 10)).toEqual([]);
     expect(n).toBe(292);
-    expect(deloads).toBe(124);
+    // 5k-v2.6.1: 124; 5k-v2.7.0 (Odluka 9): svako redovno rasterećenje odmah posle sidra otpada.
+    expect(deloads).toBe(0);
     // Donja granica nedelje (Uslov 8; volume.adaptFloorKm) iznad osnova + 10%: nijednom u mreži P.
     expect(floorAbove).toBe(0);
   });
@@ -579,14 +587,15 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     ]);
   });
 
-  it('E: asOf 2026-11-13 (pet), bol 7 → r = 3, nivo 43,2, osnova 30,2; ned 4 (rasterećenje) 24,2 = 0,8 × osnova, ned 5 = 33,2 (bf47249: 45,6, dva kvaliteta)', () => {
+  it('E: asOf 2026-11-13 (pet), bol 7 → r = 3, nivo 43,2, osnova 30,2; 08e (Odluka 9): ned 4 nije rasterećenje — 33,2 = osnova + 10% (5k-v2.6.1: rasterećenje 24,2 = 0,8 × osnova; bf47249: ned 5 45,6, dva kvaliteta)', () => {
     const r = run('2026-11-13', '2026-11-13', 7);
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 3, share: 0.7 });
     expect(r.plan.weeks[2]!.targetKm).toBe(45.6);
+    expect(r.plan.weeks[3]!.deload).toBe(false);
     expect(rows(r.plan.weeks)).toEqual([
-      [24.2, 19.3, 0],
-      [33.2, 33.2, 2],
-      [36.5, 36.5, 2]
+      [33.2, 25, 0],
+      [36.5, 36.5, 2],
+      [40.1, 40.1, 2]
     ]);
   });
 });
