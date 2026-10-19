@@ -35,7 +35,8 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
 - Testovi (AGENTS.md, `docs/testing/TEST-SPEED.md`): mreže kroz `src/test/level.ts` (`sample` u brzom nivou, `part` za
   delove punog nivoa `*.full.node.test.ts`), mreže u `beforeAll`; nijedan fajl brzog nivoa > 60 s (zid sa collect, ne samo
   „tests"); ceo node skup distance u brzom nivou ≤ 60 s. Pre predaje: `npm run check` i pun nivo svoje distance
-  (`TEST_FULL=1 npx vitest run --project node <folder>`); `npm run check:full` kad diraš zajednički kod.
+  (`TEST_FULL=1 npx vitest run --project node <folder>`) + namenski testovi dirane aplikacije i E2E distance;
+  `npm run check:full` se lokalno ne pokreće (CI ga pokreće na svaki push; AGENTS.md).
 - Sabotaže SAMO kroz `web/scripts/sabotage.mjs` (`docs/testing/SABOTAGE.md`), samo fajlovi koji treba da uhvate, `--bail=1`.
 - Agenti (Agent tool) u sesiji samo za čitanje koda, merne skripte i izveštaje — ne za izmene jezgra. Dele 4 jezgra sa
   tobom: testove i merenja pokreći jedan po jedan.
