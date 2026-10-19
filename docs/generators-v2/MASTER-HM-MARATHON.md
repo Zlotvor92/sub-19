@@ -40,7 +40,7 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
 - Agenti (Agent tool) u sesiji samo za čitanje koda, merne skripte i izveštaje — ne za izmene jezgra. Dele 4 jezgra sa
   tobom: testove i merenja pokreći jedan po jedan.
 
-## 2. Pouke iz 5K i 10K (obavezne od prvog segmenta; svaku pokrij testom)
+## 2. Pouke iz 5K, 10K i HM/maraton (obavezne; svaku pokrij testom)
 
 1. Cilj nedelje iz STVARNE konstrukcije; rupa izvodljivosti → samo ta nedelja na najbliži izvodljiv cilj; globalni vrh se
    nikad ne spušta; regresija vrhova prema prethodnom segmentu (fixture + izuzeci sa razlogom).
@@ -88,6 +88,11 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
 25. Minimum nedelje važi za CILJ; planirano ispod cilja zbog dana bola/odmora je upozorenje (10K A4
     PLANNED_BELOW_TARGET_LIMITS), ne greška.
 26. Merenje vremena testova uključuje collect/import (JSON reporter ga ne vidi); sabotaže alatom, ne celim skupom.
+27. (MAR-01) Kad jednake deonice nemaju drugu strukturu iste doze, druga struktura je piramida u opsegu zone sa korakom
+    200 m i istim zbirom (npr. I 5000 = 800-1000-1200-1200-800), naizmenično sa jednakim deonicama (pouka 3).
+28. (MAR-01) Opcioni ulaz `recentLongRunKm` (skorašnji najduži trk, 5–42 km): dugi nedelje 1 ≤ max(1,1 × recentLongRunKm,
+    recentLongRunKm + 1,0); nedelja 1 sme ispod trenutnog obima i kad je dugi ograničen ovim (dopuna pouke 9). Bez ulaza:
+    napomena nedelje 1 sa pragom. Važi za HM od HM-02 i za maraton od MAR-02.
 
 ## 3. Tok jednog segmenta i provera
 
