@@ -5,6 +5,7 @@ import {
   UNSUPPORTED_DISTANCE,
   generateFiveKV2Plan,
   generateHmV2Plan,
+  generateMarathonV2Plan,
   generateTenKV2Plan,
   generatorForDistance
 } from '../../domain/generators/select';
@@ -29,6 +30,12 @@ import {
   type HmV2Wizard
 } from '../../domain/onboarding/hmV2';
 import {
+  initialMarathonV2Wizard,
+  marathonV2StepValid,
+  toMarathonV2Input,
+  type MarathonV2Wizard
+} from '../../domain/onboarding/marathonV2';
+import {
   TOTAL_STEPS,
   availableDays,
   formPreview,
@@ -51,6 +58,12 @@ import { useUIStore } from '../../stores/uiStore';
 import { FiveKV2Days, FiveKV2Experience, FiveKV2RaceHint, FiveKV2Result } from './FiveKV2Steps';
 import { TenKV2Days, TenKV2Experience, TenKV2RaceHint, TenKV2Result } from './TenKV2Steps';
 import { HmV2Days, HmV2Experience, HmV2RaceHint, HmV2Result } from './HmV2Steps';
+import {
+  MarathonV2Days,
+  MarathonV2Experience,
+  MarathonV2RaceHint,
+  MarathonV2Result
+} from './MarathonV2Steps';
 import { Step1Race } from './Step1Race';
 import { Step2Result } from './Step2Result';
 import { Step3Volume } from './Step3Volume';
@@ -60,8 +73,8 @@ import { Step4Intensity } from './Step4Intensity';
    crta. Dok korisnik nema plan, čarobnjak je jedini ekran i nema „✕"; kad ima, može da se otkaže. */
 
 const STEP_NAMES = ['Trka', 'Rezultat', 'Obim', 'Intenzitet'] as const;
-/** 5K v2 / 10K v2 / HM v2 (prekidač uključen): isti broj koraka, druga polja (v. `FiveKV2Steps`, `TenKV2Steps`,
- *  `HmV2Steps`). */
+/** 5K v2 / 10K v2 / HM v2 / maraton v2 (prekidač uključen): isti broj koraka, druga polja (v. `FiveKV2Steps`,
+ *  `TenKV2Steps`, `HmV2Steps`, `MarathonV2Steps`). */
 const STEP_NAMES_V2 = ['Trka', 'Rezultat', 'Iskustvo', 'Dani'] as const;
 
 export function Wizard({ today }: { today: string }) {
@@ -108,8 +121,22 @@ export function Wizard({ today }: { today: string }) {
     const r = input ? generateHmV2Plan(input) : null;
     return r && !r.ok ? r.reasons : null;
   }, [isHmV2, hmw, w.raceDate, today]);
+  /* Maraton v2 (segment MAR-05): SAMO nov plan maratona uz uključen prekidač maratona v2; inače čarobnjak kao do sada. */
+  const isMarathonV2 = flags.marathonV2 === true && w.raceDist === 42195;
+  const [mw, setMw] = useState<MarathonV2Wizard>(initialMarathonV2Wizard);
+  const setMar = (patch: Partial<MarathonV2Wizard>): void => {
+    setRejection(null);
+    setMw((cur) => ({ ...cur, ...patch }));
+  };
+  /* Trčanje/hodanje: odbijanje v2 (M17) doslovno čim se izabere — plan se ne pravi. */
+  const marRunWalkRejection = useMemo(() => {
+    if (!isMarathonV2 || mw.canRun30 !== false) return null;
+    const input = toMarathonV2Input(mw, w.raceDate, today);
+    const r = input ? generateMarathonV2Plan(input) : null;
+    return r && !r.ok ? r.reasons : null;
+  }, [isMarathonV2, mw, w.raceDate, today]);
   /** Čarobnjak v2 bilo koje distance (isti koraci, druga polja). */
-  const anyV2 = isV2 || isTenKV2 || isHmV2;
+  const anyV2 = isV2 || isTenKV2 || isHmV2 || isMarathonV2;
   const setDays = (patch: Partial<WizardState>): void =>
     setW((cur) => syncRunDays({ ...cur, ...patch }));
 
@@ -131,7 +158,9 @@ export function Wizard({ today }: { today: string }) {
       ? tenKV2StepValid(t2w, step, w.raceDate, today)
       : isHmV2
         ? hmV2StepValid(hmw, step, w.raceDate, today)
-        : stepValid(w, step, today);
+        : isMarathonV2
+          ? marathonV2StepValid(mw, step, w.raceDate, today)
+          : stepValid(w, step, today);
   const verdict = out && !out.short ? goalVerdict(out, w.intensity) : null;
 
   /** Upis novog plana (posle potvrde kad postoji stari plan sa unosima). */
@@ -190,10 +219,23 @@ export function Wizard({ today }: { today: string }) {
     await activate(r.plan);
   }
 
+  /** Maraton v2: plan iz ulaza v2; odbijanje ostaje na koraku kao poruka sa razlozima v2. */
+  async function finishMarathonV2(): Promise<void> {
+    const input = toMarathonV2Input(mw, w.raceDate, today);
+    if (!input) return;
+    const r = generateMarathonV2Plan(input);
+    if (!r.ok) {
+      setRejection(r.reasons);
+      return;
+    }
+    await activate(r.plan);
+  }
+
   async function finish(): Promise<void> {
     if (isV2) return finishV2();
     if (isTenKV2) return finishTenKV2();
     if (isHmV2) return finishHmV2();
+    if (isMarathonV2) return finishMarathonV2();
     const input = toGenerationInput(w, today);
     if (!input) return;
     const generator = generatorForDistance(input.raceDistM);
@@ -279,6 +321,8 @@ export function Wizard({ today }: { today: string }) {
                   <TenKV2RaceHint raceDate={w.raceDate} today={today} />
                 ) : isHmV2 ? (
                   <HmV2RaceHint raceDate={w.raceDate} today={today} />
+                ) : isMarathonV2 ? (
+                  <MarathonV2RaceHint raceDate={w.raceDate} today={today} />
                 ) : null
               }
             />
@@ -305,6 +349,16 @@ export function Wizard({ today }: { today: string }) {
             <HmV2Experience v={hmw} set={setHm} runWalkRejection={hmRunWalkRejection} />
           ) : null}
           {isHmV2 && step === 4 ? <HmV2Days v={hmw} set={setHm} rejection={rejection} /> : null}
+
+          {isMarathonV2 && step === 2 ? (
+            <MarathonV2Result v={mw} set={setMar} raceDate={w.raceDate} today={today} />
+          ) : null}
+          {isMarathonV2 && step === 3 ? (
+            <MarathonV2Experience v={mw} set={setMar} runWalkRejection={marRunWalkRejection} />
+          ) : null}
+          {isMarathonV2 && step === 4 ? (
+            <MarathonV2Days v={mw} set={setMar} rejection={rejection} />
+          ) : null}
 
           {!anyV2 && step === 2 ? <Step2Result w={w} set={set} form={form} pbMsg={pbMsg} /> : null}
 

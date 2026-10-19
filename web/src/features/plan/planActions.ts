@@ -12,6 +12,8 @@ import {
   fiveKV2GoalChange,
   generatorForPlan,
   tenKV2GoalChange,
+  hmV2GoalChange,
+  marathonV2GoalChange,
   stampForStorage,
   unsupportedPlanReason
 } from '../../domain/generators/select';
@@ -148,6 +150,90 @@ export async function changeGoalTimeTenKV2(
   if (!day) return false;
   const stamp = planStateStamp();
   const r = tenKV2GoalChange(genPlan, sec, day);
+  if (!r.ok) {
+    window.alert(`Cilj nije promenjen:\n${r.reasons.map((x) => x.message).join('\n')}`);
+    return false;
+  }
+  const line = (g: typeof r.before): string =>
+    g ? `${g.label} — ${g.message}` : 'bez ocene (plan po osećaju: ocena posle rezultata)';
+  const ok = await confirmAction(
+    `Promeniti ciljno vreme na ${fmtClock(sec)}?\n\nTreninzi, tempo i obim ostaju isti; menja se samo ocena cilja.\nSada: ${line(r.before)}\nPosle: ${line(r.after)}`
+  );
+  if (!ok) return false;
+  if (stamp !== planStateStamp()) {
+    window.alert('Plan ili unosi su se promenili. Ponovo pregledaj promenu cilja.');
+    return false;
+  }
+  useTrainingStore.getState().patch({
+    genPlan: recordPlanRevision(genPlan, stampForStorage(r.result), {
+      reason: 'goal',
+      date: day,
+      summary: `Cilj ${fmtClock(sec)}`
+    })
+  });
+  window.alert(`Cilj promenjen. Ocena: ${line(r.after)}`);
+  return true;
+}
+
+/** Segment HM-06: promena cilja plana polumaratona v2 — isti treninzi, tempo i obim; menja se samo ocena cilja (v2 je računa iz iste
+ *  forme; plan po osećaju je nema do rezultata). Pitanje prikazuje ocenu pre i posle; upis je nova revizija. Vraća
+ *  `true` kad je plan promenjen. */
+export async function changeGoalTimeHmV2(
+  genPlan: GenPlanState,
+  raw: string,
+  todayStr: string
+): Promise<boolean> {
+  const sec = parseTimeStr(raw.trim());
+  if (!sec || !(sec > 0)) {
+    window.alert('Unesi ciljno vreme, npr. 1:39:30.');
+    return false;
+  }
+  const day = parseIsoDate(todayStr);
+  if (!day) return false;
+  const stamp = planStateStamp();
+  const r = hmV2GoalChange(genPlan, sec, day);
+  if (!r.ok) {
+    window.alert(`Cilj nije promenjen:\n${r.reasons.map((x) => x.message).join('\n')}`);
+    return false;
+  }
+  const line = (g: typeof r.before): string =>
+    g ? `${g.label} — ${g.message}` : 'bez ocene (plan po osećaju: ocena posle rezultata)';
+  const ok = await confirmAction(
+    `Promeniti ciljno vreme na ${fmtClock(sec)}?\n\nTreninzi, tempo i obim ostaju isti; menja se samo ocena cilja.\nSada: ${line(r.before)}\nPosle: ${line(r.after)}`
+  );
+  if (!ok) return false;
+  if (stamp !== planStateStamp()) {
+    window.alert('Plan ili unosi su se promenili. Ponovo pregledaj promenu cilja.');
+    return false;
+  }
+  useTrainingStore.getState().patch({
+    genPlan: recordPlanRevision(genPlan, stampForStorage(r.result), {
+      reason: 'goal',
+      date: day,
+      summary: `Cilj ${fmtClock(sec)}`
+    })
+  });
+  window.alert(`Cilj promenjen. Ocena: ${line(r.after)}`);
+  return true;
+}
+
+/** Segment MAR-06: promena cilja plana maratona v2 (kopija HM v2) — isti treninzi, tempo i obim; menja se samo ocena cilja (v2 je računa iz iste
+ *  forme; plan po osećaju je nema do rezultata). Pitanje prikazuje ocenu pre i posle; upis je nova revizija. Vraća
+ *  `true` kad je plan promenjen. */
+export async function changeGoalTimeMarathonV2(
+  genPlan: GenPlanState,
+  raw: string,
+  todayStr: string
+): Promise<boolean> {
+  const sec = parseTimeStr(raw.trim());
+  if (!sec || !(sec > 0)) {
+    window.alert('Unesi ciljno vreme, npr. 3:29:00.');
+    return false;
+  }
+  const day = parseIsoDate(todayStr);
+  if (!day) return false;
+  const stamp = planStateStamp();
+  const r = marathonV2GoalChange(genPlan, sec, day);
   if (!r.ok) {
     window.alert(`Cilj nije promenjen:\n${r.reasons.map((x) => x.message).join('\n')}`);
     return false;

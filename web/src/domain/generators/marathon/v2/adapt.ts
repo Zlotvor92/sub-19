@@ -10,7 +10,7 @@ import { dayNumber, mustDay } from './dates.ts';
 import { construct } from './generate.ts';
 import { checkInput } from './input.ts';
 import { dayRule, MARATHON_V2_POLICY as P } from './policy.ts';
-import { baseFrames, framesFor, targetReducedWeek } from './steps.ts';
+import { baseFrames, framesFor, newLimits, targetReducedWeek } from './steps.ts';
 import type {
   AdaptChange,
   AdaptReason,
@@ -228,24 +228,28 @@ export function adaptMarathonV2(rawPlan: unknown, rawFacts: unknown, asOf: unkno
       violations
     };
   out.warnings = violations;
-  return { ok: true, plan: out, changes: diff(plan, out), reasons };
+  // Pouka 20: traka samo za NOVO ograničenje (steps.newLimits; čita ga adaptBanner).
+  return { ok: true, plan: out, changes: diff(plan, out), reasons, newLimits: newLimits(steps) };
 }
 
-/** Pouka 20: uslovi za traku „Plan treba prilagoditi". Premeštanje testa (TEST_MOVED) i neprimenjen rezultat nisu
-    razlog: posledica su drugog uslova. */
-const BANNER: ReadonlySet<AdaptReason['condition']> = new Set([
-  'PAIN',
-  'PAUSE',
-  'FATIGUE',
+/** Pouka 20: ograničenja (bol, pauza, umor) — traka samo kad korak donese NOVO ograničenje (`newLimits`). */
+const LIMIT: ReadonlySet<AdaptReason['condition']> = new Set(['PAIN', 'PAUSE', 'FATIGUE']);
+/** Pouka 20: promene cilja obima ili tempa (nov rezultat je nov po definiciji — assess primenjuje samo rezultat noviji
+    od rezultata u upotrebi). Premeštanje testa (TEST_MOVED) i neprimenjen rezultat nisu razlog: posledica su drugog
+    uslova. */
+const CHANGE: ReadonlySet<AdaptReason['condition']> = new Set([
   'NEW_RESULT',
   'UNDER_EXECUTION',
   'OVER_EXECUTION'
 ]);
 
 /**
- * Pouka 20 (domen; aplikacija čita u fazi 2): poruke za traku — samo NOVO ograničenje posle poslednje adaptacije
- * plana `before`: primenjen uslov iz BANNER (bol: zapis bola posle poslednje adaptacije), a plan `r` se zaista
- * menja posle `asOf`. Isti dan posle primene (asOf ≤ poslednje adaptacije) — prazno.
+ * Pouka 20 — JEDINO pravilo trake „Plan treba prilagoditi" (aplikacija samo zove ovu funkciju): primenjen uslov, a
+ * plan `r` se zaista menja posle `asOf`, i `asOf` je posle poslednje adaptacije plana `before` (isti dan posle primene
+ * — prazno). Promena (nov rezultat, manjak, višak): kad je primenjena. Ograničenje (bol, pauza, umor): samo kad korak
+ * donese NOVO ograničenje (`r.newLimits` neprazan), a bol uz to samo uz zapis bola noviji od poslednje adaptacije —
+ * period bola je vezan za asOf (A4), pa isti stari zapis sutradan pomera kraj perioda za dan i newLimits taj dan vidi
+ * kao nov; to nije nova činjenica.
  */
 export function adaptBanner(
   before: MarathonV2Plan,
@@ -267,6 +271,11 @@ export function adaptBanner(
     (w) => (w.pain ?? 0) >= P.adapt.painMin && (last === null || mustDay(w.date) > mustDay(last))
   );
   return r.reasons
-    .filter((x) => x.applied && BANNER.has(x.condition) && (x.condition !== 'PAIN' || newPain))
+    .filter(
+      (x) =>
+        x.applied &&
+        (CHANGE.has(x.condition) ||
+          (LIMIT.has(x.condition) && r.newLimits.length > 0 && (x.condition !== 'PAIN' || newPain)))
+    )
     .map((x) => x.message);
 }

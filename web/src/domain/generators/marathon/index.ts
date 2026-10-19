@@ -23,6 +23,10 @@ export const MARATHON_DISTANCE_M = 42195;
 /** Proizvodni podaci maratona (ime, preporučeni broj nedelja…) za napomene čarobnjaka. */
 export const MARATHON_PRODUCT = PRODUCT_42K;
 
+/* --- Maraton v2 (segment MAR-05): adapter prema aplikaciji; `select.ts` ga bira po oznaci politike (`marathon-v2`) i,
+   uz uključen prekidač, za nov plan maratona. Postojeći maraton (v1) izvozi ispod ostaju nepromenjeni. --- */
+export { marathonV2 } from './v2/app/index.ts';
+
 /* --- generisanje i adapter prema aplikaciji --- */
 export { generatePlan } from './training/generator/generatePlan';
 export { assess } from './training/generator/assess';

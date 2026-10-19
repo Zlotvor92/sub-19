@@ -1,5 +1,5 @@
-/* Maraton v2 — javni API jezgra. Aplikacija ga ne uvozi do faze 2 (MAR-05: adapter `./app/`, izbor u
-   `select.ts`); `marathon/index.ts` se do tada ne menja. */
+/* Maraton v2 — javni API jezgra. Aplikacija ga ne uvozi: od segmenta MAR-05 put iz aplikacije je samo adapter
+   `./app/index.ts` (izvozi ga `marathon/index.ts` kao `marathonV2`, bira `select.ts`). */
 
 export { adaptBanner, adaptMarathonV2 } from './adapt.ts';
 export { generateMarathonV2 } from './generate.ts';

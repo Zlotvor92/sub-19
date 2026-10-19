@@ -1,0 +1,66 @@
+[
+  {
+    "name": "06-a činjenice prevedene na dva mesta (forma sama čita Analizu trke)",
+    "file": "src/domain/generators/halfMarathon/v2/app/form.ts",
+    "find": "  const facts = buildFacts({ today: src.today, plan: src.plan, log: src.log ?? {} }, v2).facts\n    .results;",
+    "replace": "  void buildFacts;\n  const facts = Object.values(src.log ?? {}).flatMap((e) => {\n    const c = (e['raceAi'] as { context?: { date: string; distanceM: 5000; officialSec: number } } | undefined)\n      ?.context;\n    return c ? [{ distM: c.distanceM, sec: c.officialSec, date: c.date as IsoDate, kind: 'race' as const }] : [];\n  });",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+    ]
+  },
+  {
+    "name": "06-b traka za staro ograničenje (bol bez novog zapisa)",
+    "file": "src/domain/generators/halfMarathon/v2/app/adapt.ts",
+    "find": "          (LIMIT.has(r.condition) && newLimits.length > 0 && (r.condition !== 'PAIN' || newPain)))",
+    "replace": "          LIMIT.has(r.condition))",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts",
+      "src/features/plan/hmV2Adapt.test.tsx"
+    ]
+  },
+  {
+    "name": "06-c promena cilja menja treninge (plan iznova, bez koraka i zaključanih dana)",
+    "file": "src/domain/generators/halfMarathon/v2/app/adapt.ts",
+    "find": "  const r = adaptHmV2({ ...v2, input: c.input }, { lockedDayIds: locked }, today);",
+    "replace": "  void locked;\n  const r = adaptHmV2({ ...v2, input: c.input, adaptation: undefined }, {}, today);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+    ]
+  },
+  {
+    "name": "06-d vraćanje verzije prepisuje urađene dane",
+    "file": "src/domain/generators/halfMarathon/v2/app/adapt.ts",
+    "find": "      .filter(([, e]) => e?.status === 'done')",
+    "replace": "      .filter(() => false)",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+    ]
+  },
+  {
+    "name": "06-e član (b) poziva HM v1 (executionBasis)",
+    "file": "src/domain/generators/select.ts",
+    "find": "  executionBasis: h2.executionBasis,",
+    "replace": "  executionBasis: halfMarathon.executionBasis,",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/app.node.test.ts"
+    ]
+  },
+  {
+    "name": "06-f struktura iz celog plana umesto nedelje (pouka 16)",
+    "file": "src/domain/generators/halfMarathon/v2/app/plan.ts",
+    "find": "  const chk = steps.length > 0 ? checkInput(plan.input) : null;",
+    "replace": "  const chk = steps.length < 0 ? checkInput(plan.input) : null;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+    ]
+  },
+  {
+    "name": "06-g zastarela sinhronizacija kao potpuna pokrivenost",
+    "file": "src/domain/generators/halfMarathon/v2/app/facts.ts",
+    "find": "    (s) => s.lastSuccessDate !== null && isIsoDate(s.lastSuccessDate) && s.lastSuccessDate >= today",
+    "replace": "    (s) => s.lastSuccessDate !== null && isIsoDate(s.lastSuccessDate)",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+    ]
+  }
+]

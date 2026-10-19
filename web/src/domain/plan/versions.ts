@@ -22,9 +22,19 @@ const HISTORY = 'planRevisions';
 const COUNTER = 'planRevisionCounter';
 const REASONS: readonly string[] = ['goal', 'fitness', 'execution', 'pace', 'restore'];
 /** 08b: `fiveKV2` (plan 5K v2 doslovno) je deo definicije plana v2 — bez njega se sačuvana verzija ne može vratiti.
- *  Isto `tenKV2` (10K v2, segment 05) i `hmV2` (HM v2, segment HM-05). Planovi bez polja (svi ostali) se kopiraju kao
- *  ranije. */
-const PLAN_FIELDS = ['weeks', 'pred', 'qs', 'meta', 'ulaz', 'fiveKV2', 'tenKV2', 'hmV2'] as const;
+ *  Isto `tenKV2` (10K v2, segment 05), `hmV2` (HM v2, segment HM-05) i `marathonV2` (maraton v2, MAR-05). Planovi bez
+ *  polja (svi ostali) se kopiraju kao ranije. */
+const PLAN_FIELDS = [
+  'weeks',
+  'pred',
+  'qs',
+  'meta',
+  'ulaz',
+  'fiveKV2',
+  'tenKV2',
+  'hmV2',
+  'marathonV2'
+] as const;
 const MAX_COUNTER = 1_000_000_000;
 
 const object = (value: unknown): value is Record<string, unknown> =>

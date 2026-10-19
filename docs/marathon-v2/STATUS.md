@@ -2,7 +2,10 @@
 
 Novi generator maratona sa jednim vlasnikom svake odluke (M1–M17 + M7a, M10a, M13a iz
 `docs/generators-v2/MASTER-HM-MARATHON.md` § 5), izolovan u `web/src/domain/generators/marathon/v2/`. Maraton v1
-(`marathon/` van `v2/`) je nepromenjen i jedini u aplikaciji; `marathon/index.ts` se ne menja do faze 2 (MAR-05).
+(`marathon/` van `v2/`) je nepromenjen i podrazumevan; od segmenta MAR-05 v2 je u aplikaciji iza prekidača
+(`ui.generatorV2Marathon` / `VITE_MARATHON_V2`), samo kroz adapter `v2/app/` (`marathon/index.ts` izvozi `marathonV2`,
+bira `select.ts` po `marathon-v2`). Prilagođavanje plana v2 u aplikaciji (MAR-06): činjenice → pregled → potvrda →
+revizija, vraćanje verzije, traka, Forma, promena cilja.
 
 ## Kako se koristi
 
@@ -22,7 +25,8 @@ const r = generateMarathonV2({
 // r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.3.1', paceBasis, faza nedelje, upozorenja)
 // !r.ok → r.reasons (kod + poruka sa preporukom: npr. PLAN_TOO_SHORT → polumaraton)
 const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → { ok, plan, changes, reasons } ili odbijanje
-// adaptBanner(r.plan, a, facts, asOf) → poruke trake (pouka 20, samo novo ograničenje)
+// a.ok → a.newLimits (pouka 20: nova ograničenja poslednjeg koraka, steps.newLimits)
+// adaptBanner(r.plan, a, facts, asOf) → poruke trake (pouka 20; JEDINO pravilo trake, aplikacija ga samo zove)
 ```
 
 - Jedan konstruktor (`generate.ts`), validator samo prijavljuje (`validate.ts`; greške → `PLAN_VIOLATES_POLICY`).
@@ -75,6 +79,24 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
 - Merenje i regresija: `artifacts/segment-04b/` (measure.ts, compare.ts, compare-result.json, regression-exceptions.json);
   fikstura `segment04b.stable-bd07eec.json`. Sabotaže `artifacts/segment-04b/sabotage.json`.
 
+## Segment MAR-05 (aplikacija iza prekidača, jezgro nepromenjeno)
+
+- Polazni SHA `9443676`; izveštaj `reports/SEGMENT-05-IMPLEMENTATION.md`; bez STANI.
+- Prekidač `generatorV2Marathon` (podrazumevano isključen), rutiranje po `marathon-v2` (KNOWN_VERSIONS = tekuća;
+  ostalo UNKNOWN_POLICY), adapter `v2/app/` (bez uvoza van `marathon/v2`), čarobnjak, prikaz (trka 42,2 km van obima),
+  sat, uvoz (`vanPlanaV2`, `fullSync`), format `GenPlanState.marathonV2`. Članovi (b) „nepodržano do MAR-06".
+- Testovi: `v2/app/` app.node 27, byteSame.node 2 (223 heša sa 9443676), importV2.node 3; UI marathonV2Flow 8,
+  marathonV2Watch 2; E2E `e2e/marathon-v2.spec.ts` 3. Sabotaže `artifacts/segment-05/sabotage-05.json` 10/10.
+
+## Segment MAR-06 (adaptacija u aplikaciji; plan politike nepromenjen, `marathon-v2.3.1`)
+
+- Polazni SHA `8beef45`; izveštaj `reports/SEGMENT-06-IMPLEMENTATION.md`; bez STANI.
+- `v2/app/facts.ts` (jedino mesto prevoda), `adapt.ts` (pregled, vraćanje, cilj), `form.ts`, `members.ts` (26 članova
+  (b): v2 ili „ne koristi se" sa razlogom); domen: `steps.newLimits`, `adaptMarathonV2` → `newLimits`, `adaptBanner`
+  po pravilu HM-06 (jedno pravilo trake, samo u domenu). KNOWN_VERSIONS = 2.3.1 ∪ tekuća.
+- UI: MarathonV2Adjustment, trake (Plan, Danas), FormMarathonV2, unos testa 5 km, Ti → Cilj.
+- Sabotaže `artifacts/segment-06/sabotage-06.json` 8/8.
+
 ## Sledeće
 
-- Faza 2: MAR-05 (prekidač, adapter, aplikacija) posle HM-05/06.
+- Predaja maraton v2 ↔ HM/10K (faza 3); otvorena pitanja MAR-06 (izveštaj).
