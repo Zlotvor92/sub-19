@@ -1,0 +1,114 @@
+{
+  "plans": 4368,
+  "K1": {
+    "rejected": 0,
+    "validatorErrors": 0
+  },
+  "K2": {
+    "week1BelowStart": 546,
+    "withoutLongOnCap": 0,
+    "maxDropKm": 16.5
+  },
+  "K3": {
+    "buildWeeksWithoutQuality": 0
+  },
+  "K4": "n/p (prvi segment; bazna linija segment01.baseline.json za MAR-02)",
+  "K5": {
+    "raceOverTaper": 0,
+    "doseDropOutsideCapacity": 0,
+    "adjacentHardDays": 0,
+    "longShorterThanEasy": 0
+  },
+  "K6": {
+    "slotRepeatWeeks": 456,
+    "qualityLongerThanLong": 0,
+    "capacityLimited": 1656,
+    "peakOverStart": 1.382,
+    "doseDropped": 318,
+    "marathonLongShort": 2832,
+    "taperMpOverCap": 48,
+    "buildWeeksFittedDown": 13398,
+    "buildWeeksFittedUp": 78
+  },
+  "taper": {
+    "n2FittedDown": 2388,
+    "n1FittedDown": 1548,
+    "byKm": {
+      "35": {
+        "n2": {
+          "min": 0.722,
+          "median": 0.8
+        },
+        "n1": {
+          "min": 0.6,
+          "median": 0.6
+        }
+      },
+      "40": {
+        "n2": {
+          "min": 0.664,
+          "median": 0.8
+        },
+        "n1": {
+          "min": 0.583,
+          "median": 0.6
+        }
+      },
+      "45": {
+        "n2": {
+          "min": 0.647,
+          "median": 0.78
+        },
+        "n1": {
+          "min": 0.559,
+          "median": 0.6
+        }
+      },
+      "50": {
+        "n2": {
+          "min": 0.658,
+          "median": 0.755
+        },
+        "n1": {
+          "min": 0.539,
+          "median": 0.6
+        }
+      },
+      "55": {
+        "n2": {
+          "min": 0.658,
+          "median": 0.722
+        },
+        "n1": {
+          "min": 0.539,
+          "median": 0.593
+        }
+      },
+      "60": {
+        "n2": {
+          "min": 0.658,
+          "median": 0.724
+        },
+        "n1": {
+          "min": 0.539,
+          "median": 0.593
+        }
+      },
+      "65": {
+        "n2": {
+          "min": 0.658,
+          "median": 0.724
+        },
+        "n1": {
+          "min": 0.539,
+          "median": 0.593
+        }
+      }
+    }
+  },
+  "raceWeek": {
+    "easyInKm": 330,
+    "easyBelow5Km": 1638,
+    "noSharpener": 0
+  }
+}
