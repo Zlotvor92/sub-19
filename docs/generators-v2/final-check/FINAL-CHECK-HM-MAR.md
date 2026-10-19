@@ -157,8 +157,10 @@ Upozorenja generatora (% planova sa pravilom; poruka po planu):
 
 - Maraton brz nivo je na granici (≈ 58–66 s; MAR-04b 57 s) → ŠUM/rizik: smanjiti uzorak mreže 04/rane u brzom
   nivou maratona (npr. k × 1,3) ili podeliti najduži fajl.
-- CI: lokalno 37,5 min sa 3 radnika vitesta. Broj jezgara CI runnera ne znam (nije mereno na CI); na runneru sa
-  manje jezgara zid raste približno obrnuto srazmerno broju radnika, pa je > 45 min verovatno. Predlog (TEST-SPEED
+- CI (GitHub Actions „Testovi", ceo posao sa E2E): run 597 (push, `8beef45`) 18:24:29 → 19:25:56 = **61,5 min**;
+  run 598 (pull_request, isti SHA, uporedo) 18:24:34 → 19:21:38 = **57,1 min**, oba uspešna. Pun nivo lokalno
+  pokrenut pre nego što je stigla izmena organizatora (meri se samo brz nivo); brojke ostaju kao merenje.
+- CI: lokalno 37,5 min sa 3 radnika vitesta; CI > 45 min potvrđeno (57–61 min). Broj jezgara CI runnera ne znam. Predlog (TEST-SPEED
   § 3 tačka 3): `vitest run --shard=i/n` u GitHub matrici (zid ≈ ukupno / n po poslu, ista pokrivenost); bez
   shardinga: pune adaptacione mreže 10K/HM/maraton (533 + 489 + 706 s po distanci) su najveći deo — njihove delove
   `*.full.node.test.ts` pokretati u posebnom (noćnom) poslu, ne na svaki push. Ne skraćivati pokrivenost.
