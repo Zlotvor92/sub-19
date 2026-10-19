@@ -176,6 +176,7 @@ export interface VolumeStep {
   pauseRemainder: boolean;
   restart: boolean;
   levelKm: number | null;
+  preStart?: { targetKm: number };
   returnFrom: { week: number; share: number } | null;
 }
 
@@ -195,6 +196,8 @@ export interface AdaptVolume {
   anchors: Map<number, ReturnAnchor>;
   /** A8: nivo pre smanjenja koji važi u nedelji w (najveći nivo koraka sa fromWeek ≤ w) [0,1 km]. */
   levelAt: (w: number) => number | null;
+  /** Pouka 34: umor pre starta — nedelja 2 = cilj planirane nedelje 1 bez rasta [0,1 km]. */
+  preStart10: number | null;
 }
 
 /** Pouka 18: osnova povratka posle nedelje sidra (udeo i nivo koraka). */
@@ -241,6 +244,10 @@ export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
     remainder,
     restart,
     anchors,
+    preStart10: (() => {
+      const ps = [...steps].reverse().find((s) => s.preStart)?.preStart;
+      return ps ? to10(ps.targetKm) : null;
+    })(),
     levelAt: (w) => {
       let level: number | null = null;
       for (const s of steps)
@@ -279,8 +286,11 @@ export interface AdaptHistory extends VolumeHistory {
   tailCap10: number | null;
 }
 
-export const initialAdaptHistory = (cap10: number): AdaptHistory => ({
-  lastBuild10: null,
+export const initialAdaptHistory = (
+  cap10: number,
+  lastBuild10: number | null = null
+): AdaptHistory => ({
+  lastBuild10,
   peak10: 0,
   cap10,
   peakRef10: 0,
@@ -331,6 +341,7 @@ export function adaptNominal10(
   } else if (reset !== undefined) [t, downOnly] = [reset, true];
   else if (h.lastBuild10 === null) t = start10;
   else if (frame.deload) t = Math.round(P.deload.factor * h.lastBuild10);
+  else if (i === 2 && av.preStart10 !== null) [t, downOnly] = [av.preStart10, true];
   else {
     const level = av.levelAt(i);
     t = nextBuild10(h.lastBuild10, h.cap10, rule, level);

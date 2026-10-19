@@ -6,17 +6,18 @@ netaknuti. Adaptacija je kopija 10K v2 (A1–A17, pouke 7, 16–25, 28–33) sa 
 
 ## Odluka | mesto | test (DECISIONS A1–A15, A17, A18)
 
-| odluka (H18)                                                                                                | mesto (jedno)                                                              | test                               |
-| ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| Činjenice → korak (rezultat 5000/10000/21097,5/42195 m, test, pauza, bol, umor, izvršenje, coverage) A1–A10 | `assess.ts` (jedino mesto odluka koraka)                                   | `adapt.node` A1–A10, pouka 7 (a–e) |
-| Cilj nedelje, smanjen/ukinut, prinudno rasterećenje, sidro bola r i osnova povratka (pouka 18)              | `steps.ts` framesFor/reducedWeeks, `volume.ts` adaptNominal10/returnBase10 | A2–A5, A8, A17, pouka 18, 22       |
-| Nov start (≥ 28 dana), rePeriodize; „orijentir" kad do trke < 10 ned                                        | `steps.ts`, `periodize.ts` rePeriodize, `generate.ts` (goal)               | A3, A12                            |
-| Bol: dugi ≤ 60 min, lagani × 0,7 (≥ 4 km), bez kvaliteta/ubrzanja; bol ≥ 7: 3 dana odmora                   | `week.ts` limitDays, `lengths.ts` painLong10/limitedEasy10                 | A4, mreža 04 (bol 5/8 svakog dana) |
-| Taper posle smanjenja = 0,7 × najveći cilj izgradnje posle poslednjeg smanjenja; pod = minimum nedelje      | `volume.ts` adaptNominal10 (downOnly), fit10                               | pouka 7 (b, g)                     |
-| Prošlost = upisani dani (stanje doze, najduži/poslednji dugi, taper, pouka 28); validator vidi upisan plan  | `written.ts`, `generate.ts` construct, `validate.ts` ({ state })           | pouka 29 (2 testa)                 |
-| Pouka 30 (trkačka ≤ taper, višak laganog = odmor), 31 (prinudno u uvodu), 20 (newLimits), 23, 25            | `week.ts` raceWeekRest/raceWeek, `steps.ts` newLimits                      | pouke 30, 31, 20, 23               |
-| A18: rasterećenje posle smanjenja — dugi ≥ 4 km (kao 10K deloadLengths `adapted`)                           | `lengths.ts` deloadLong10                                                  | A18                                |
-| Bez koraka = generator hm-v2.2.1 (pouka 16/17); bez činjenica nedelje bajt-iste                             | `generate.ts` construct(raw, [])                                           | pouka 16/17, bazne linije 02/03    |
+| odluka (H18)                                                                                                                                     | mesto (jedno)                                                               | test                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | ---------------------------------- |
+| Činjenice → korak (rezultat 5000/10000/21097,5/42195 m, test, pauza, bol, umor, izvršenje, coverage) A1–A10                                      | `assess.ts` (jedino mesto odluka koraka)                                    | `adapt.node` A1–A10, pouka 7 (a–e) |
+| Cilj nedelje, smanjen/ukinut, prinudno rasterećenje, sidro bola r i osnova povratka (pouka 18)                                                   | `steps.ts` framesFor/reducedWeeks, `volume.ts` adaptNominal10/returnBase10  | A2–A5, A8, A17, pouka 18, 22       |
+| Nov start (≥ 28 dana), rePeriodize; „orijentir" kad do trke < 10 ned                                                                             | `steps.ts`, `periodize.ts` rePeriodize, `generate.ts` (goal)                | A3, A12                            |
+| Bol: dugi ≤ 60 min, lagani × 0,7 (≥ 4 km), bez kvaliteta/ubrzanja; bol ≥ 7: 3 dana odmora                                                        | `week.ts` limitDays, `lengths.ts` painLong10/limitedEasy10                  | A4, mreža 04 (bol 5/8 svakog dana) |
+| Taper posle smanjenja = 0,7 × najveći cilj izgradnje posle poslednjeg smanjenja; pod = minimum nedelje                                           | `volume.ts` adaptNominal10 (downOnly), fit10                                | pouka 7 (b, g)                     |
+| Prošlost = upisani dani (stanje doze, najduži/poslednji dugi, taper, pouka 28); validator vidi upisan plan                                       | `written.ts`, `generate.ts` construct, `validate.ts` ({ state })            | pouka 29 (2 testa)                 |
+| Pouka 30 (trkačka ≤ taper, višak laganog = odmor), 31 (prinudno u uvodu), 20 (newLimits), 23, 25                                                 | `week.ts` raceWeekRest/raceWeek, `steps.ts` newLimits                       | pouke 30, 31, 20, 23               |
+| A18: rasterećenje posle smanjenja — dugi ≥ 4 km (kao 10K deloadLengths `adapted`)                                                                | `lengths.ts` deloadLong10                                                   | A18                                |
+| Pouka 34: umor pre starta — ned 1 = 0,8 × planirana ned 1, ned 2 = planirana ned 1; referenca (dugi, doza) = ned 1 generatora, zapisana u koraku | `assess.ts` (preStart), `steps.ts` initialState, `volume.ts` adaptNominal10 | pouka 34 (2 testa)                 |
+| Bez koraka = generator hm-v2.2.1 (pouka 16/17); bez činjenica nedelje bajt-iste                                                                  | `generate.ts` construct(raw, [])                                            | pouka 16/17, bazne linije 02/03    |
 
 ## Odstupanja i ispravke nađene mrežama (sve u jednom mestu odluke, validator čita istu funkciju)
 
@@ -31,19 +32,24 @@ netaknuti. Adaptacija je kopija 10K v2 (A1–A17, pouke 7, 16–25, 28–33) sa 
    (klasa po primeru; posle ispravki 5 i 6 široka pretraga 0).
 6. **Taper „samo RP" (druga pretraga)**: drugi član plafona (pouka 32) za nedelju sa jednim danom kvaliteta (T dan je
    lagan, dugi kraći) — QUALITY_OVER_LONG 8 tokova. Konstruktor i validator; 0 planova generatora promenjeno.
-7. Invarijante (test kod): niz izgradnje broji od ukinutog rasterećenja osnovne periodizacije (lanac), povratni rast
+7. **Pouka 34 (dopuna organizatora, MASTER bd07eec)**: umor sa asOf pre starta bio je odbijen u 99/99 tokova
+   (WEEK_INFEASIBLE, pa START_LEVEL); referenca je činjenica koraka (`preStart`), validator je čita kao stanje pre ned 1.
+   Bol 5/8, pauza 10 i rezultat pre starta prolazili su i pre (0 / 990).
+8. Invarijante (test kod): niz izgradnje broji od ukinutog rasterećenja osnovne periodizacije (lanac), povratni rast
    poredi cilj po pravilu kad je nedelja `fitted` (H6), džog oporavka tempom nedelje.
 
 ## Mreže (K1 = 0 odbijanja i grešaka validatora, adaptInvariants prazno)
 
-| mreža                                                                                                                            | tokova  | odbijanja | invarijante |
-| -------------------------------------------------------------------------------------------------------------------------------- | ------- | --------- | ----------- |
-| 04 (33 plana × asOf § 3 × 17 scenarija + lanac + bol 5/8 svaki dan ned 2 i sredine)                                              | 5154    | 0         | 0           |
-| rana i srednja (171 plan: 02/400, osećaj/80, početnik/40; asOf pouke 23; 7 scenarija)                                            | 23 471  | 0         | 0           |
-| široka (`wide04.ts`: 401 plan 02/150, osećaj/60, početnik/25, gusta/4000, r 8/15 km/500 × sreda i kraj ned 1…N − 2 × 17 + lanac) | 184 068 | 0         | 0           |
+| mreža                                                                                                                                                    | tokova  | odbijanja | invarijante |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | --------- | ----------- |
+| 04 (33 plana × asOf § 3 × 17 scenarija + lanac + bol 5/8 svaki dan ned 2 i sredine)                                                                      | 5154    | 0         | 0           |
+| rana i srednja (171 plan: 02/400, osećaj/80, početnik/40; asOf pouke 23 i pre starta − 1/− 3/− 6; 7 scenarija)                                           | 27 062  | 0         | 0           |
+| široka (`wide04.ts`: 401 plan 02/150, osećaj/60, početnik/25, gusta/4000, r 8/15 km/500 × pre starta − 1/− 3/− 6, sreda i kraj ned 1…N − 2 × 17 + lanac) | 204 519 | 0         | 0           |
 
 Klase nađene usput (pre ispravki 1–6): WEEK_INFEASIBLE 18, DOSE_DROP 134, RACE_WEEK 42, EMPTY_WEEK 8, WEEK1_BELOW_START
-350, QUALITY_OVER_LONG 8; invarijante 47 + 41 + 3 (artefakti invarijanti, tačka 7). Nerazjašnjenih klasa: 0.
+350, QUALITY_OVER_LONG 8; umor pre starta 99/99 (tačka 7); invarijante 47 + 41 + 3 (artefakti invarijanti, tačka 8 — 3 iz široke pretrage su
+„dan kvaliteta > dugi" zbog tempa posle rezultata u invarijanti, ne ponavljanje najnižeg nivoa iz MAR-04b; u HM
+mrežama nema greške ponavljanja najnižeg nivoa). Nerazjašnjenih klasa: 0.
 Dodatno: bol 5/8 svakog dana nedelje N − 2 i tapera (330 planova, 9240 tokova): 0 / 0.
 
 ## K1–K6 (adaptirani planovi mreže 04, `k04.json`; generator = HM-03b, nepromenjen)
@@ -61,20 +67,21 @@ Bez koraka plan = generator hm-v2.2.1: `construct(input, []) = generateHmV2(inpu
 činjenica: sve nedelje bajt-iste. Odluka A1–A15 iz 10K preneta; razlike: H18 brojevi (lagan bola ≥ 4 km, taper 0,7,
 orijentir < 10 ned, rezultati 4 distance).
 
-## Sabotaže (`node scripts/sabotage.mjs ../docs/hm-v2/artifacts/segment-04/sabotage.json --parallel 2`): 14/14, 69 s
+## Sabotaže (`node scripts/sabotage.mjs ../docs/hm-v2/artifacts/segment-04/sabotage.json --parallel 2`): 16/16, 77 s
 
 B1 ukidanje (A17) ukida i prinudno (4,8 s) · B2 reduced se ne čita (5,1) · B3 sidro bola = poslednja nedelja bola (2,0)
 · B4 validator vidi sastavljen umesto upisanog plana (16,9) · B5 trkačka bez pouke 30 (11,0) · B6 uvod početnika sa
 kvalitetom pri umoru (11,7) · B7 bez dana zabrane kvaliteta (7,3, mreža 04) · B8 konstruktor: najduži dugi iz
 sastavljenih nedelja (20,3) · B9 bez dugog ≥ 4 km (A18) (5,7) · B10 stanje doze posle mešovite nedelje nepoznato (7,8)
 · B11 pouka 30 samo uz nemešovit taper (11,6) · B12 trkačka samo sa trkom = prazna (11,7) · B13 taper „samo RP" sa
-dva dana u drugom članu (4,8) · B14 nedelja 1 tempom plana (4,6). Prvi pali testovi: `sabotage-result.json`.
+dva dana u drugom članu (5,5) · B14 nedelja 1 tempom plana (5,5) · B15 umor pre starta bez reference (4,4) · B16 ned 2
+raste posle umora pre starta (4,7). Prvi pali testovi: `sabotage-result.json`.
 
 ## Komande (iz `web/`)
 
 `tsc -p tsconfig.domain.json` 0, `tsconfig.oracle.json` 0, `eslint src/domain/generators/halfMarathon/v2` 0, prettier 0.
-HM v2 brz: 21 fajl, 204 testa, 46 s (mreža 04: svaki 12. tok po scenariju; rana: svaki 25.). Pun (`TEST_FULL=1`): 37 fajlova, 263 testa, 8 min 52 s.
-`npm run check`: exit 0 — 261 test fajl, 3173 testa (6 min 33 s).
+HM v2 brz: 21 fajl, 206 testova, 50 s (mreža 04: svaki 12. tok po scenariju; rana: svaki 25.). Pun (`TEST_FULL=1`): 37 fajlova, 265 testova, 9 min 27 s.
+`npm run check`: exit 0 — 264 test fajla, 3216 testova (6 min 48 s).
 
 ## Stalni uslovi 1–8
 
@@ -105,6 +112,6 @@ kvaliteta pa 1 kvalitet, redovno rasterećenje ned 8 ukinuto (A17).
 ## Preostali problemi / pitanja za organizatora
 
 1. Tačka 4 (trkačka nedelja samo sa trkom posle 3 dana odmora A4): prihvaćeno kao produžetak pouke 30 — potvrda.
-2. K4 mreže r iz koraka A (259 / 10 944 planova sa nižim vrhom ≤ 3,8 km) — i dalje otvoreno.
-3. Pun nivo HM v2 traje ≈ 8,5 min (rana mreža 23 471 tok u 4 dela); brz nivo 46 s.
+2. K4 mreže r iz koraka A (259 / 10 944 planova sa nižim vrhom ≤ 3,8 km): prihvaćeno (organizator).
+3. Pun nivo HM v2 traje ≈ 9–10 min (rana mreža 27 062 toka u 4 dela); brz nivo ≈ 50 s.
 4. Klase 2, 3, 5 i 6 su u kodu prenetom iz 10K v2; 10K verovatno ima iste latentne slučajeve (nije provereno, van opsega).

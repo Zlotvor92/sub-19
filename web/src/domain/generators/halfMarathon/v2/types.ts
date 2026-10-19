@@ -415,6 +415,17 @@ export interface HmV2AdaptStep {
   /** Pouka 22 (A17): cilj koraka (startKm) je smanjenje — true: A2 (manjak) ili A3 (pauza); false: A6
       (višak). Korak bez startKm: polja nema (steps.reducedWeeks). */
   reduced?: boolean;
+  /** Pouka 34: umor sa asOf pre starta — referenca „poslednja izgradnja / poslednji dugi / doza" = nedelja 1
+      generatora bez činjenica (nema prethodne izgradnje). */
+  preStart?: PreStartRef;
+}
+
+/** Pouka 34: nedelja 1 generatora bez činjenica — cilj, dugi i doze slotova. */
+export interface PreStartRef {
+  targetKm: number;
+  longKm: number | null;
+  q1: Dose | null;
+  q2: Dose | null;
 }
 
 export interface HmV2Adaptation {

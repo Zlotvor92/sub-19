@@ -299,7 +299,7 @@ export function earlyFacts(
   }
 }
 
-/** asOf rane i srednje adaptacije (pouka 23): nedelja 1 sreda i kraj; sreda svake nedelje 2 … N − 1; kraj
+/** asOf rane i srednje adaptacije (pouka 23): pre starta (start − 1, − 3, − 6); nedelja 1 sreda i kraj; sreda svake nedelje 2 … N − 1; kraj
     nedelje pre svake posebne nedelje (test, rasterećenje, taper). Oznaka `w<i>wed` / `w<i>end`. */
 export function earlyAsOfs(plan: PlanLike): { tag: string; asOf: string }[] {
   const N = plan.weeks.length;
@@ -307,7 +307,9 @@ export function earlyAsOfs(plan: PlanLike): { tag: string; asOf: string }[] {
     .filter((w) => w.test || w.deload || w.phase === 'taper')
     .map((w) => w.index)
     .filter((i) => i > 1);
+  // Pouka 23/34: i asOf pre starta (start − 1, − 3, − 6).
   const xs = [
+    ...[1, 3, 6].map((d) => ({ tag: `pre${d}`, asOf: addDays(plan.input.startDate, -d) })),
     { tag: 'w1wed', asOf: wedOf(plan, 1) },
     { tag: 'w1end', asOf: plan.weeks[0]!.endDate },
     ...Array.from({ length: Math.max(0, N - 2) }, (_, k) => ({

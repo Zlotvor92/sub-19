@@ -17,7 +17,15 @@ import { assessGoal, predictedHm } from './paces.ts';
 import { isBuildPhase, periodize } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState, type WeekPicks } from './quality.ts';
-import { basePaces, basisAt, framesFor, pacesAt, restartWeeks, stepVdotAt } from './steps.ts';
+import {
+  basePaces,
+  basisAt,
+  framesFor,
+  initialState,
+  pacesAt,
+  restartWeeks,
+  stepVdotAt
+} from './steps.ts';
 import type {
   GenerateResult,
   HmV2AdaptStep,
@@ -159,9 +167,11 @@ export function construct(
   };
   const restarts = restartWeeks(steps);
 
-  let quality: QualityState = INITIAL_QUALITY;
-  let h = initialAdaptHistory(cap10);
-  let lastLong10: number | null = null;
+  // Pouka 34: umor pre starta — početno stanje iz reference (nedelja 1 generatora), inače prazno.
+  const init = initialState(steps);
+  let quality: QualityState = init.quality;
+  let h = initialAdaptHistory(cap10, init.lastBuild10);
+  let lastLong10: number | null = init.lastLong10;
   let taperRpM = 0;
   /** H8: najkraći lagan dan tapera [0,1 km] (gornja granica laganog dana trkačke nedelje). */
   let taperEasy10 = Infinity;

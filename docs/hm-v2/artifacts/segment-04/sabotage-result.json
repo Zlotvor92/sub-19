@@ -1,13 +1,13 @@
 {
   "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-04/sabotage.json",
-  "head": "1146abc",
+  "head": "8de8525",
   "level": "brz",
   "bail": true,
   "parallel": 2,
   "vitestArgs": [],
-  "durationS": 69.3,
-  "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-  "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+  "durationS": 76.6,
+  "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+  "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
   "ok": true,
   "results": [
     {
@@ -23,9 +23,9 @@
         "message": "AssertionError: expected false to be true // Object.is equality"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "d508e47edfbdc3e30d3afbf7d3a1b62a226969120ab04196691a95004ef7e3ea",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "da8f355108a322aaf8062bade1af4237b61a27eb89eeafac38b7a3c1d2b4c407",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
@@ -44,9 +44,9 @@
         "message": "AssertionError: expected false to be true // Object.is equality"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "c5702e02e90139b0c17fd7edb913671b5d808c7f311bb9e703c0398928bc68b4",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "b1954258d19c75739e2034b9de2250513cfd2f19602f3248d95a8db328c0eedc",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
@@ -65,13 +65,13 @@
         "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"PHASE_QUALITY: Rasterećenje: jedini kvalitet je T (T_continuous) na danu Q2 (H5).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ONE_QUALITY: Nedelja sa ograničenjem: najviše 1 kvalitet doze rasterećenja T 2000 m (A4, A9).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ONE_QUALITY: Nedelja sa ograničenjem: najviše 1 kvalitet doze rasterećenja T 2400 m (A4, A9).\",\"week\":8},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4).\",\"week\":6}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "208d47aa82cc8c40fbaff0f85b0cda6678b32521d30324ad901086ed50e944b9",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "b654a844b365fd8838a0c5540cd76a6a880bf7395bdaa1c65bc5967d06ddd90c",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 2
+      "durationS": 1.6
     },
     {
       "index": 4,
@@ -89,13 +89,13 @@
         "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DOSE_DROP: q1: spuštanje doze bez razloga iz plafona zone (pouka 32: najviši nivo čiji dan nije duži od dugog).\",\"week\":5}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "702c3c4f745c76c61f861389d5494500cab42fdcfa382cd9783d7afb4e76e345",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "cf520197dd0d3f219473b1b59a37e89f541a1cf126f460149cbf7be338134197",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 16.9
+      "durationS": 20.3
     },
     {
       "index": 5,
@@ -110,13 +110,13 @@
         "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RACE_WEEK: Trkačka nedelja: dani tue, thu, sat ≠ H8 (thu, sat).\",\"week\":12},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RACE_WEEK_OVER_TAPER: Trkačka nedelja 11.08 km > taper 10.75 km (H8, pouka 5).\",\"week\":12}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "3af7434630aad27b429ad1e0f743b8c94d9e1469e9f6d84d2b84b2c93c9bccbd",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "a5ada185a5a3a44eb090a8970dc95742e2159840317843fa13875e6732353327",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 11
+      "durationS": 11.5
     },
     {
       "index": 6,
@@ -127,17 +127,17 @@
       "pao": true,
       "firstFailed": {
         "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
-        "test": "pouka 31: prinudno rasterećenje u uvodu početnika > umor početnika na kraju ned 1 → ned 2 rasterećenje 0,8 ×, bez kvaliteta, sadržaj uvoda",
-        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ROLES: Dani easy@sat, easy@tue, long@sun, q1@thu ≠ šablon easy@sat, easy@thu, easy@tue, long@sun (H9).\",\"week\":2},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"INTRO: Nedelja uvoda 2 ima kvalitet (H17, HI13).\",\"week\":2},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DELOAD_CONTENT: Rasterećenje u uvodu: bez kvaliteta (HI13).\",\"week\":2}],\"violations\":[]}"
+        "test": "pouka 34: umor pre starta > asOf start − 1/− 3/− 6: ned 1 prinudno rasterećenje 0,8 × planirana ned 1, ned 2 = planirana ned 1 bez rasta; referenca = ned 1 generatora",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ROLES: Dani easy@sat, easy@tue, long@sun, q1@thu ≠ šablon easy@sat, easy@thu, easy@tue, long@sun (H9).\",\"week\":1},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"INTRO: Nedelja uvoda 1 ima kvalitet (H17, HI13).\",\"week\":1},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DELOAD_CONTENT: Rasterećenje u uvodu: bez kvaliteta (HI13).\",\"week\":1}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "da8be1ca49579ae5c5b7e704ba4b94406d07daee8f20b61a2740212714840ddd",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "1232aa3a1a76cb4d0e6f99896b2c925e91a537dfe92175d405ecf8249c0be3a8",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 11.7
+      "durationS": 5.6
     },
     {
       "index": 7,
@@ -152,13 +152,13 @@
         "message": "AssertionError: expected [ …(27) ] to deeply equal []"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "36293dc242bb585e25ce239d8df53a789a9e7cfffeed32130b0585e7d6557f5a",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "0e10417c9651faf6d3d3d2404d7042369b6fd677c3ca1981837e6f3c7bfc22d4",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 7.3
+      "durationS": 11.7
     },
     {
       "index": 8,
@@ -177,13 +177,13 @@
         "message": "AssertionError: expected 9 to be 9.4 // Object.is equality"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "c47fca47cb3b9db51019ab0fe061214f23f528b601c368f8cbac9d874473652a",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "7ce9623506beeaf5d83396d7e1125570adbbdf468ecaf6a52a958766cde19642",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 20.3
+      "durationS": 25.1
     },
     {
       "index": 9,
@@ -198,13 +198,13 @@
         "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"WEEK_INFEASIBLE\",\"message\":\"Nedelja 11: nijedan cilj od 16 km naviše ne može da se sastavi po pravilima.\",\"week\":11}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "2f85b2c07f8fb9013ee9df5b87fcdb547e3bace178cbaddb680c130b11cc4787",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "5a5e944e26ee74301869c6b3651c99bf5756bbfa5f187e6df2a5fd344fbde04b",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 5.7
+      "durationS": 3.8
     },
     {
       "index": 10,
@@ -219,13 +219,13 @@
         "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DOSE_DROP: q1: spuštanje doze bez razloga iz plafona zone (pouka 32: najviši nivo čiji dan nije duži od dugog).\",\"week\":5}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "24112b426b4c36c336399856acade7a713b2e88b5333e9358e8803a79b9a47d0",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "6b297d1109d3c9ba9db00f2958fb2cef867a4f9890d516c25f484af3a90f081d",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 7.8
+      "durationS": 8.1
     },
     {
       "index": 11,
@@ -240,13 +240,13 @@
         "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RACE_WEEK: Trkačka nedelja: dani thu, sat ≠ H8 (tue, thu, sat).\",\"week\":20}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "91908d0c42e392fb4905595696d32c6ac9e585a4da71aff212635ba5f14bbd73",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "7b4120ff0b2fbb23a66bc5af39e0392719e6956a9a87ad438b16802350303279",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 11.6
+      "durationS": 13
     },
     {
       "index": 12,
@@ -261,13 +261,13 @@
         "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EMPTY_WEEK: Nedelja bez treninga (Uslov 8).\",\"week\":12}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "23cb26924c22e7b93681611a13a49b6d62819214e100bf59e991c800478e6331",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "c5ace3b9135d30bc59f6cb7441e363578f9afa9228c2606bddaf4f36fe2859b7",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 11.7
+      "durationS": 12.5
     },
     {
       "index": 13,
@@ -282,13 +282,13 @@
         "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: RP 5000 m: dan 55 min > dugi 41 min (pouka 32, plafon zone).\",\"week\":19},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TAPER_QUALITY: Taper: RP 4000 m (≈ 60 % poslednje doze) (H7).\",\"week\":19}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "5ee8b7c704528c886f654e03ce23304fa7e46ac144da40a1a3b71af3bbdf5b8a",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "929f666da4f03029ec4995166f29c48ee13f1f0d8637869bfa87745dc4a0a271",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 4.8
+      "durationS": 5.5
     },
     {
       "index": 14,
@@ -303,13 +303,55 @@
         "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"WEEK1_BELOW_START: Nedelja 1 50.8 km < trenutni obim 60 km, a dugi nije na 18.7 km (150 min, 24 km, skorašnji najduži; H6, pouka 9, HI8).\",\"week\":1}],\"violations\":[]}"
       },
       "failedCount": 1,
-      "hashBefore": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
-      "hashSabotaged": "0fe1bef1b3d210e54474e113d7160fb129242c8aa38fb38d8ee8531c36557016",
-      "hashAfter": "428bb5cb4ed5456048b5f096b822494413d1f5476a5c5a307dde6cee675b8909",
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "341c8d7bf59bc665689ff07cd3b60ae52955a124220095ff783f296fa54f8df8",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
       "restored": true,
       "error": null,
       "vitestExit": 1,
-      "durationS": 4.6
+      "durationS": 5.5
+    },
+    {
+      "index": 15,
+      "name": "B15 umor pre starta bez reference (početno stanje prazno)",
+      "files": ["src/domain/generators/halfMarathon/v2/steps.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 34: umor pre starta > asOf start − 1/− 3/− 6: ned 1 prinudno rasterećenje 0,8 × planirana ned 1, ned 2 = planirana ned 1 bez rasta; referenca = ned 1 generatora",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"WEEK_INFEASIBLE\",\"message\":\"Nedelja 1: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.\",\"week\":1}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "df12608b4db525644057b74ed135547b7310a2c7af0526e3adb33ef94faf9469",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.4
+    },
+    {
+      "index": 16,
+      "name": "B16 umor pre starta: ned 2 raste (bez pouke 34)",
+      "files": ["src/domain/generators/halfMarathon/v2/volume.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 34: umor pre starta > asOf start − 1/− 3/− 6: ned 1 prinudno rasterećenje 0,8 × planirana ned 1, ned 2 = planirana ned 1 bez rasta; referenca = ned 1 generatora",
+        "message": "AssertionError: d3-r-10w 2026-11-01: expected 30.4 to be 30 // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "823bf58f6396076461b7c6640aee448ae8eebd2c034adae133d24ae059485462",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.7
     }
   ]
 }

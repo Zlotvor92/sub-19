@@ -1,5 +1,6 @@
 /* HM v2 Segment 04 — ŠIROKA PRETRAGA pre predaje (MASTER § 3): svaki n-ti plan svih mreža (02, 03 po osećaju,
-   početnik, gusta nedelja 1 po broju dana, skorašnji najduži trk) × asOf sreda i kraj svake nedelje 1…N − 2 ×
+   početnik, gusta nedelja 1 po broju dana, skorašnji najduži trk) × asOf pre starta (− 1, − 3, − 6) i sreda i kraj
+   svake nedelje 1…N − 2 ×
    svih 17 scenarija mreže 04 (+ drugi korak lanca). Broji tokove, odbijanja po klasi i prekršaje adaptInvariants.
    Pokretanje iz korena repoa (delovi paralelno, pa spajanje):
      node docs/hm-v2/artifacts/segment-04/wide04.ts <deo 0…K−1> <K> > /tmp/wide.<deo>.json
@@ -118,6 +119,12 @@ function run(partIndex: number, K: number): Out {
       out.plans++;
       const plan = g.plan;
       const N = plan.weeks.length;
+      // Pouka 23/34: asOf pre starta (start − 1, − 3, − 6).
+      for (const d of [1, 3, 6]) {
+        const at = addDays(plan.input.startDate, -d);
+        for (const s of SCENARIOS)
+          flow(plan, factsOf(plan, s, at), at, `${b.id}/pre${d}/${s}`);
+      }
       for (let i = 1; i <= N - 2; i++) {
         const w = plan.weeks[i - 1]!;
         let wed = w.startDate;

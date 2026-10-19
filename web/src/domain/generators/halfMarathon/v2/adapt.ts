@@ -16,6 +16,7 @@ import type {
   AdaptReason,
   AdaptResult,
   PlanDay,
+  PreStartRef,
   Reason,
   HmV2AdaptStep,
   HmV2Plan
@@ -116,7 +117,20 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
   if (!chk.ok) return reject('ADAPT_PLAN_INVALID', 'Ulaz plana nije ispravan (A15).');
 
   // (1) Činjenice → ograničenja.
-  const as = assess(plan, facts, at, chk.pace, chk.rule.weekMinKm);
+  // Pouka 34: referenca umora pre starta — nedelja 1 generatora bez činjenica (isti konstruktor).
+  const week1Ref = (): PreStartRef | null => {
+    const g = construct(plan.input, []);
+    if (!g.ok) return null;
+    const w = g.plan.weeks[0]!;
+    const dose = (role: string) => w.days.find((d) => d.role === role)?.workout.dose ?? null;
+    return {
+      targetKm: w.targetKm,
+      longKm: w.days.find((d) => d.role === 'long')?.workout.km ?? null,
+      q1: dose('q1'),
+      q2: dose('q2')
+    };
+  };
+  const as = assess(plan, facts, at, chk.pace, chk.rule.weekMinKm, week1Ref);
   const steps = [...prevSteps, as.step];
 
   // Zaštita (A11): dani ≤ asOf, urađeni (po dayId ili datumu) i zaključani iz prethodnog plana — konstruktor

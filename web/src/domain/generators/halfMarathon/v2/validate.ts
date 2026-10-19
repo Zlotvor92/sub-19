@@ -63,6 +63,7 @@ import {
   appliedRestarts,
   basisAt,
   framesFor,
+  initialState,
   inRange,
   pacesAt,
   restartWeeks
@@ -76,6 +77,7 @@ import type {
   Paces,
   Structure,
   Phase,
+  PlanDay,
   PlanWeek,
   QualityType,
   Violation,
@@ -886,6 +888,19 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // ('restart'); mešovita nedelja se ne proverava, a stanje doze daje iz upisanih dana ({ state }) — isto
   // kao konstruktor (pouka 29: generate.writtenPicks); poređenja sa njom (glavna doza, cilj) se preskaču.
   const chain: (PlanWeek | 'restart' | { state: PlanWeek })[] = [];
+  // Pouka 34: umor pre starta — referenca (nedelja 1 generatora) je stanje doze pre nedelje 1.
+  const ref = [...steps].reverse().find((x) => x.preStart)?.preStart;
+  if (ref) {
+    const refDay = (role: 'q1' | 'q2', dose: Dose | null): PlanDay[] =>
+      dose ? [{ role, workout: { dose } } as unknown as PlanDay] : [];
+    chain.push({
+      state: {
+        ...weeks[0]!,
+        index: 0,
+        days: [...refDay('q1', ref.q1), ...refDay('q2', ref.q2)]
+      }
+    });
+  }
   for (const w of weeks) {
     if (doseRestarts.has(w.index)) chain.push('restart');
     if (!isSteady(w) || reducedQ(w)) continue;
@@ -1117,8 +1132,10 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // isto kao konstruktor); nov start i nedelja posle sidra bola ga brišu; ograničenje 'none' → bez kvaliteta,
   // 'one' → jedan kvalitet (rasterećenje: T doza H5, i na drugom danu kvaliteta kad je dan slota u zabrani;
   // taper: samo RP); izgradnja sa ograničenjem: najviše 1 kvalitet doze rasterećenja (ONE_QUALITY).
-  let state: QualityState = INITIAL_QUALITY;
-  let lastLong10: number | null = null;
+  // Pouka 34: početno stanje (umor pre starta: nedelja 1 generatora) — ista funkcija kao konstruktor.
+  const init = initialState(steps);
+  let state: QualityState = init.quality;
+  let lastLong10: number | null = init.lastLong10;
   let longest10 = 0;
   const same = (x: Dose | null, y: Dose): boolean =>
     !!x && x.doseM === y.doseM && sameStructure(x.structure, y.structure);
@@ -1558,7 +1575,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // novog starta, taper od vrha posle poslednjeg smanjenja, donja granica); izvodljiv cilj adaptacije samo
   // naniže. Posle mešovite nedelje čiji cilj nije po pravilu provera čeka sledeći cilj koraka.
   const av = steps.length > 0 ? adaptVolume(steps) : null;
-  let h = initialAdaptHistory(cap10);
+  let h = initialAdaptHistory(cap10, initialState(steps).lastBuild10);
   let capacityCut = false;
   let known = true;
   for (const w of weeks) {

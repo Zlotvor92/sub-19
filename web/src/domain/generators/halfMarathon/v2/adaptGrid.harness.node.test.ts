@@ -2,8 +2,8 @@
    - Mreža 04 (MASTER § 3, grid04.node.test.ts): 33 bazna plana (adaptInputs.adaptBases) × asOf mreže 04 × 17
      scenarija (+ drugi korak lanca) + bol 5 i 8 na svaki dan nedelje 2 i nedelje sredine plana.
    - Rana i srednja adaptacija (pouka 23, earlyGrid.node.test.ts): svaki 400. plan mreže 02, svaki 80. po osećaju,
-     svaki 40. početnika × asOf (sreda i kraj ned 1, sreda svake nedelje 2…N − 1, kraj nedelje pre svake posebne
-     nedelje) × pauza 10/20, bol 5/8, pauza 10 + bol 5, manjak, umor.
+     svaki 40. početnika × asOf (pre starta − 1, − 3, − 6; sreda i kraj ned 1, sreda svake nedelje 2…N − 1, kraj
+     nedelje pre svake posebne nedelje) × pauza 10/20, bol 5/8, pauza 10 + bol 5, manjak, umor.
    Po toku: prihvaćen (0 odbijanja, validator bez greške na upisanom planu), adaptInvariants prazno (Uslov 8).
    BRZ nivo: deterministički uzorak (svaki K-ti tok unutar scenarija); PUN: delovi po indeksu baznog plana. */
 

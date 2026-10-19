@@ -528,6 +528,40 @@ describe('A17 / pouka 22: redovno rasterećenje posle smanjene nedelje otpada; p
   });
 });
 
+describe('pouka 34: umor pre starta', () => {
+  it('asOf start − 1/− 3/− 6: ned 1 prinudno rasterećenje 0,8 × planirana ned 1, ned 2 = planirana ned 1 bez rasta; referenca = ned 1 generatora', () => {
+    for (const id of ['d3-r-10w', 'd4-r-14w', 'd6-f-18w', 'beg-d4-f-12w', 'beg-d5-f-20w'])
+      for (const d of [1, 3, 6]) {
+        const p = plan(id);
+        const at = addDays(p.input.startDate, -d);
+        const r = adapt(p, factsOf(p, 'fatigue', at), at);
+        const st = r.plan.adaptation!.steps[0]!;
+        const w1 = p.weeks[0]!;
+        expect(st.preStart, `${id} ${at}`).toEqual({
+          targetKm: w1.targetKm,
+          longKm: w1.days.find((x) => x.role === 'long')!.workout.km,
+          q1: w1.days.find((x) => x.role === 'q1')?.workout.dose ?? null,
+          q2: w1.days.find((x) => x.role === 'q2')?.workout.dose ?? null
+        });
+        const [a1, a2] = [r.plan.weeks[0]!, r.plan.weeks[1]!];
+        expect([a1.deload, a1.nominalKm]).toEqual([true, round1(P.deload.factor * w1.targetKm)]);
+        expect(a2.targetKm, `${id} ${at}`).toBe(w1.targetKm);
+        expect(r.reasons[0]!.message).toContain('pouka 34');
+        if (id.startsWith('beg')) expect(quality(a1)).toBe(0);
+      }
+  });
+
+  it('pre starta i bol 5/8, pauza 10, rezultat: prihvaćeno, bez reference', () => {
+    const p = plan('d4-r-14w');
+    const at = addDays(p.input.startDate, -3);
+    for (const s of ['pain5', 'pain8', 'pause10', 'faster', 'test5k'] as const)
+      expect(
+        adapt(p, factsOf(p, s, at), at).plan.adaptation!.steps[0]!.preStart,
+        s
+      ).toBeUndefined();
+  });
+});
+
 describe('A18: rasterećenje posle smanjenja obima — dugi ≥ 4 km', () => {
   it('4 dana, 14 ned, pauza 35 do srede ned 1: povratak sa dugim 4 km, rasterećenje ned 5 ima dugi 4 km (0,8 × = 3,2 km ispod minimuma laganog)', () => {
     const p = plan('d4-r-14w');

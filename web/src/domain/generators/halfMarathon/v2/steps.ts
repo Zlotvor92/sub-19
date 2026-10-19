@@ -7,7 +7,7 @@ import type { PaceInput } from './input.ts';
 import { feelPaces, pacesFromVdot } from './paces.ts';
 import { isBuildPhase, periodize, rePeriodize } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
-import { deloadSlot } from './quality.ts';
+import { advance, deloadSlot, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import type {
   DateRange,
   IsoDate,
@@ -271,4 +271,20 @@ export function newLimits(steps: readonly HmV2AdaptStep[]): string[] {
     out.push(`deload:${last.fromWeek}`);
   if (last.restart) out.push(`restart:${last.fromWeek}`);
   return out;
+}
+
+/** Pouka 34: početno stanje konstrukcije — bez umora pre starta prazno; sa njim referenca (nedelja 1 generatora):
+    stanje doze, poslednji dugi i poslednja izgradnja [0,1 km]. Jedna funkcija za konstruktor i validator. */
+export function initialState(steps: readonly HmV2AdaptStep[]): {
+  quality: QualityState;
+  lastLong10: number | null;
+  lastBuild10: number | null;
+} {
+  const ref = [...steps].reverse().find((s) => s.preStart)?.preStart;
+  if (!ref) return { quality: INITIAL_QUALITY, lastLong10: null, lastBuild10: null };
+  return {
+    quality: advance({ q1: ref.q1, q2: ref.q2 }, INITIAL_QUALITY),
+    lastLong10: ref.longKm === null ? null : Math.round(ref.longKm * 10),
+    lastBuild10: Math.round(ref.targetKm * 10)
+  };
 }

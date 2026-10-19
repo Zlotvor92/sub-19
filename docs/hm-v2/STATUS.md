@@ -58,6 +58,6 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
   10K v2 A1–A17 sa brojevima H18 (lagan bola ≥ 4 km, taper 0,7, orijentir < 10 ned, rezultati 5/10 km, HM, maraton),
   A18 (pouke 20, 28, 30–33 u adaptiranom planu; dugi rasterećenja posle smanjenja ≥ 4 km). Izveštaj
   `reports/SEGMENT-04-IMPLEMENTATION.md`, artefakti `artifacts/segment-04/` (grid04, k04, wide04, sabotage).
-- Mreža 04 5154 toka, rana adaptacija 23 471, široka pretraga 184 068 (401 plan): 0 odbijanja, 0 prekršaja
-  invarijanti; generator bez koraka bajt-isti (bazne linije); sabotaže 14/14.
-- Otvoreno: trkačka nedelja samo sa trkom posle dana odmora A4 (potvrda); K4 mreže r iz koraka A.
+- Mreža 04 5154 toka, rana adaptacija 27 062 (i asOf pre starta), široka pretraga 204 519 (401 plan): 0 odbijanja, 0
+  prekršaja invarijanti; umor pre starta po pouci 34; generator bez koraka bajt-isti; sabotaže 16/16.
+- Otvoreno: trkačka nedelja samo sa trkom posle dana odmora A4 (potvrda). K4 mreže r iz koraka A: prihvaćeno.
