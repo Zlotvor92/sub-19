@@ -667,7 +667,11 @@ export const EARLY_SCENARIOS = [
   'under',
   'fatigue'
 ] as const;
-export type EarlyScenario = (typeof EARLY_SCENARIOS)[number];
+/** 06e (10k-v2.5.2, pouka 34): asOf PRE STARTA plana (start − 1, − 3, − 6) — umor, bol 5, pauza 10, rezultat
+    (trka 5 km, VDOT + 2). */
+export const EARLY_PRE_SCENARIOS = ['fatigue', 'pain5', 'pause10', 'faster'] as const;
+export const EARLY_PRE_BACK = [1, 3, 6] as const;
+export type EarlyScenario = (typeof EARLY_SCENARIOS)[number] | (typeof EARLY_PRE_SCENARIOS)[number];
 
 /** Činjenice mreže E (asOf = dan adaptacije): pauza 10/20 dana (breaks do asOf), bol 5/8 na dan asOf, pauza 10 +
     bol 5, manjak (odrađen samo dan asOf − 6 po planu, pokrivenost asOf − 6 … asOf), umor (reliefFacts). */
@@ -696,6 +700,8 @@ export function earlyFacts(
       };
     case 'fatigue':
       return reliefFacts(plan, 'fatigue', asOf);
+    case 'faster':
+      return factsOf(plan, 'faster', asOf);
   }
 }
 
@@ -768,10 +774,17 @@ export interface EarlyFlow {
   s: EarlyScenario;
 }
 
-/** Svi tokovi mreže E (redosled: plan, asOf, scenario; imenovani na kraju svog plana); `planOf` = generisan plan. */
+/** Broj tokova mreže E iz 06d (redni brojevi 0 … EARLY_06D − 1, heševi segment06d.early-hashes-51a924f.json);
+    tokovi asOf pre starta (06e) slede posle njih. */
+export const EARLY_06D = 65699;
+
+/** Svi tokovi mreže E (redosled: plan, asOf, scenario; imenovani na kraju svog plana); posle svih tokova 06d —
+    asOf pre starta (06e: plan, start − 1/− 3/− 6, EARLY_PRE_SCENARIOS; oznaka `start-<d>`). `planOf` = generisan
+    plan. */
 export function earlyFlows(planOf: (b: EarlyBase) => PlanLike): EarlyFlow[] {
   const out: EarlyFlow[] = [];
-  for (const base of earlyGridBases()) {
+  const bases = earlyGridBases();
+  for (const base of bases) {
     const p = planOf(base);
     const seen = new Set<string>();
     const add = (tag: string, asOf: string, s: EarlyScenario): void => {
@@ -788,6 +801,18 @@ export function earlyFlows(planOf: (b: EarlyBase) => PlanLike): EarlyFlow[] {
       while (weekdayOf(wed) !== 'wed') wed = addDays(wed, 1);
       add(tag, wed, s);
     }
+  }
+  for (const base of bases) {
+    const start = planOf(base).input.startDate;
+    for (const d of EARLY_PRE_BACK)
+      for (const s of EARLY_PRE_SCENARIOS)
+        out.push({
+          n: out.length,
+          key: `${base.id}/start-${d}/${s}`,
+          base,
+          asOf: addDays(start, -d),
+          s
+        });
   }
   return out;
 }

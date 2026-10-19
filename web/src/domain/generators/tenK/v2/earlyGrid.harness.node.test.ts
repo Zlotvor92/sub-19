@@ -8,8 +8,12 @@
    odbijanja), adaptInvariants prazno (Uslov 8: nijedan prazan trening, dugi ≥ lagan, nedelja ≥ minimum), regresija:
    tok prihvaćen na 51a924f bajt-isti (heš bez oznake verzije, segment06d.early-hashes-51a924f.json; 0 = tamo
    odbijen) osim tokova porodice 1 (prošlost = upisani dani; spisak u istom fajlu).
+   06e (10k-v2.5.2, pouka 34): isti planovi sa asOf PRE STARTA (start − 1, − 3, − 6) — umor, bol 5, pauza 10, rezultat
+   (testInputs.EARLY_PRE_SCENARIOS), posle svih tokova 06d; regresija prema bd07eec
+   (segment06e.prestart-hashes-bd07eec.json: prihvaćeni bajt-isti; umor tamo odbijen, 0).
 
-   - BRZ nivo: deterministički uzorak (svaki K_FAST. tok unutar porodice × scenario) + imenovani primeri N7/06d.
+   - BRZ nivo: deterministički uzorak (svaki K_FAST. tok 06d i svaki K_PRE. tok pre starta unutar porodice × scenario)
+     + imenovani primeri N7/06d/06e.
    - PUN nivo: delovi po indeksu plana (`part`, EARLY_PARTS); glavni fajl = deo 1. */
 
 import { readFileSync } from 'node:fs';
@@ -27,17 +31,20 @@ import {
   earlyFacts,
   earlyFlows,
   earlyGridBases,
+  EARLY_06D,
   planHash06c
 } from './testInputs.ts';
 import type { TenKV2Facts, TenKV2Plan } from './types.ts';
 
 export const EARLY_PARTS = 4;
 const K_FAST = 60;
+const K_PRE = 240;
 const HERE = fileURLToPath(new URL('./', import.meta.url));
 export const EARLY_HASHES = `${HERE}segment06d.early-hashes-51a924f.json`;
-/** Broj planova i tokova celog skupa. */
+export const PRE_HASHES = `${HERE}segment06e.prestart-hashes-bd07eec.json`;
+/** Broj planova i tokova celog skupa (06d + asOf pre starta 3084 × 3 × 4). */
 export const EARLY_PLANS = 3084;
-export const EARLY_TOTAL = 65699;
+export const EARLY_TOTAL = EARLY_06D + 37008;
 
 /** Primeri nalaza (uvek u uzorku brzog nivoa): K1 pauza 20 kraj ned 1; K2 bol 5/8 sreda ned 1; N-a bol 8 kraj ned
     N − 2; N-b umor početnika kraj ned 1; N-c/N-d (EARLY_NAMED). Primer K1 bol 5 u četvrtak ned 1 nije asOf mreže
@@ -48,7 +55,11 @@ export const NAMED_FLOWS: readonly string[] = [
   'f-d5-8w-35km-e270-A-sat/w1wed/pain8',
   '10w-25km-v30-A-sat/w8end/pain8',
   'b-d3-10w-20km-e390-A-sat/w1end/fatigue',
-  ...EARLY_NAMED
+  ...EARLY_NAMED,
+  // 06e: umor pre starta — 4 dana (T 60 %), početnik (sadržaj uvoda), 3 dana 20 km (T ne staje u plafon, D11).
+  '10w-25km-v30-A-sat/start-1/fatigue',
+  'b-d4-10w-18km-e330-A-sat/start-1/fatigue',
+  'f-d3-8w-20km-e270-A-sat/start-3/fatigue'
 ];
 
 const plans = new Map<string, TenKV2Plan>();
@@ -72,12 +83,12 @@ export function earlyCases(partIndex: number): EarlyFlow[] {
     const ids = new Set(part(earlyGridBases(), partIndex, EARLY_PARTS).map((p) => p.id));
     return flows.filter((f) => ids.has(f.base.id));
   }
-  return sample(
-    flows,
-    K_FAST,
-    (f) => `${f.base.family}/${f.s}`,
-    (f) => NAMED_FLOWS.includes(f.key)
-  );
+  const named = (f: EarlyFlow): boolean => NAMED_FLOWS.includes(f.key);
+  const cat = (f: EarlyFlow): string => `${f.base.family}/${f.s}`;
+  return [
+    ...sample(flows.slice(0, EARLY_06D), K_FAST, cat, named),
+    ...sample(flows.slice(EARLY_06D), K_PRE, cat, named)
+  ];
 }
 
 export interface EarlyRun {
@@ -110,6 +121,16 @@ interface EarlyHashes {
 let hashes: EarlyHashes | null = null;
 export const earlyHashes = (): EarlyHashes =>
   (hashes ??= JSON.parse(readFileSync(EARLY_HASHES, 'utf8')) as EarlyHashes);
+/** 06e: heševi tokova pre starta na bd07eec (redni broj − EARLY_06D; 0 = odbijen). */
+let preHashes: { against: string; hashes: number[] } | null = null;
+export const earlyPreHashes = (): { against: string; hashes: number[] } =>
+  (preHashes ??= JSON.parse(readFileSync(PRE_HASHES, 'utf8')) as {
+    against: string;
+    hashes: number[];
+  });
+/** Heš toka u referenci (06d: 51a924f; pre starta: bd07eec); 0 = tamo odbijen. */
+const refHash = (f: EarlyFlow): number =>
+  f.n < EARLY_06D ? earlyHashes().hashes[f.n]! : earlyPreHashes().hashes[f.n - EARLY_06D]!;
 
 /** Describe mreže E (brz: uzorak; pun: deo `partIndex`). */
 export function describeEarlyGrid(title: string, partIndex: number): void {
@@ -126,7 +147,9 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
       expect(new Set(all.map((f) => f.base.id)).size).toBe(EARLY_PLANS);
       expect(all.length).toBe(EARLY_TOTAL);
       expect(earlyHashes().against).toBe('51a924f');
-      expect(earlyHashes().hashes.length).toBe(all.length);
+      expect(earlyHashes().hashes.length).toBe(EARLY_06D);
+      expect(earlyPreHashes().against).toBe('bd07eec');
+      expect(earlyPreHashes().hashes.length).toBe(all.length - EARLY_06D);
       const keys = new Set(all.map((f) => f.key));
       expect(NAMED_FLOWS.filter((k) => !keys.has(k))).toEqual([]);
       if (FULL) expect(missingParts(HERE, 'earlyGrid', EARLY_PARTS)).toEqual([]);
@@ -138,13 +161,11 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
       expect(res.flatMap((r) => r.bad)).toEqual([]);
     });
 
-    it('regresija: tok prihvaćen na 51a924f bajt-isti (heš bez oznake verzije), osim porodice 1 i A5 u uvodu (ti se menjaju)', () => {
+    it('regresija: tok prihvaćen na 51a924f (pre starta: bd07eec) bajt-isti (heš bez oznake verzije), osim porodice 1 i A5 u uvodu (ti se menjaju)', () => {
       const h = earlyHashes();
       const fam = new Set([...h.family1, ...h.introA5]);
-      const accepted = flows
-        .map((f, i) => [f, res[i]!] as const)
-        .filter(([f]) => h.hashes[f.n] !== 0);
-      const changed = accepted.filter(([f, r]) => h.hashes[f.n] !== r.hash).map(([f]) => f.key);
+      const accepted = flows.map((f, i) => [f, res[i]!] as const).filter(([f]) => refHash(f) !== 0);
+      const changed = accepted.filter(([f, r]) => refHash(f) !== r.hash).map(([f]) => f.key);
       expect(changed.filter((k) => !fam.has(k))).toEqual([]);
       expect(changed.filter((k) => fam.has(k)).sort()).toEqual(
         accepted

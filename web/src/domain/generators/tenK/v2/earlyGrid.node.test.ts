@@ -167,3 +167,58 @@ describe('N-a × D30b (odluka organizatora): izuzetak invarijante samo za trkač
       expect(adaptInvariants(p0, noWarn, asOf, facts)).toContain('trkačka + trka < minimum');
     });
 });
+
+describe('06e (10k-v2.5.2, pouka 34): umor sa asOf pre starta — 10k-v2.5.1 odbijao 100 % (WEEK_INFEASIBLE)', () => {
+  const kinds = (w: { days: { role: string }[] }) => w.days.map((d) => d.role);
+  it('10 ned, 25 km, VDOT 30, 4 dana, umor 2026-11-01 (start − 1): ned 1 = 0,8 × 25 = 20 km (T 2000 m ≈ 60 %, dugi 0,8 × 8,2 = 6,5 km), ned 2 = 25 km bez rasta', () => {
+    const { p0, p } = adapt('10w-25km-v30-B-sun', 'fatigue', '2026-11-01');
+    const step = p.adaptation!.steps[0]!;
+    expect([step.fromWeek, step.deload, step.preStart]).toEqual([
+      1,
+      true,
+      { buildKm: 25, longKm: 8.2, tDoseM: 2000 }
+    ]);
+    expect(p0.weeks[0]!.days.find((d) => d.role === 'long')!.workout.km).toBe(8.2);
+    const [w1, w2] = p.weeks;
+    expect([w1!.deload, w1!.nominalKm, w1!.targetKm, w1!.fitted]).toEqual([true, 20, 20, null]);
+    const q = w1!.days.filter((d) => d.workout.kind === 'quality');
+    expect(q.map((d) => d.workout.dose)).toMatchObject([{ zone: 'T', doseM: 2000 }]);
+    expect(w1!.days.find((d) => d.role === 'long')!.workout.km).toBe(6.5);
+    expect([w2!.deload, w2!.nominalKm, w2!.targetKm, w2!.fitted]).toEqual([false, 25, 25, null]);
+    expect(w2!.targetKm).toBe(p0.weeks[0]!.targetKm);
+    // Dalje po rasporedu: ned 3 raste od ned 2 (D6), faze ostaju.
+    expect(p.weeks[2]!.targetKm).toBe(p0.weeks[1]!.targetKm);
+    expect(p.weeks.map((w) => w.phase)).toEqual(p0.weeks.map((w) => w.phase));
+  });
+
+  it('početnik 4 dana, 18 km, umor 2026-11-01: ned 1 = 14,4 km sadržaj uvoda (bez kvaliteta, dugi + 3 lagana), ned 2 = 18 km (uvod)', () => {
+    const { p0, p } = adapt('b-d4-10w-18km-e330-A-sun', 'fatigue', '2026-11-01');
+    const [w1, w2] = p.weeks;
+    expect([w1!.deload, w1!.targetKm]).toEqual([true, 14.4]);
+    expect(w1!.days.some((d) => d.workout.kind === 'quality')).toBe(false);
+    expect(kinds(w1!).sort()).toEqual(kinds(p0.weeks[0]!).sort());
+    expect(w1!.notes.some((n) => n.includes('Uvod (D28)'))).toBe(true);
+    expect([w2!.deload, w2!.targetKm]).toEqual([false, p0.weeks[0]!.targetKm]);
+    expect(w2!.days.some((d) => d.workout.kind === 'quality')).toBe(false);
+  });
+
+  it('adaptInvariants obara ned 2 sa rastom i ned 1 iznad 0,8 × planirane ned 1', () => {
+    const p0 = plan('10w-25km-v30-B-sun');
+    const asOf = '2026-11-01';
+    const facts = earlyFacts(p0, 'fatigue', asOf);
+    const r = adaptTenKV2(p0, facts, asOf);
+    if (!r.ok) throw new Error('odbijeno');
+    const f = facts as unknown as TenKV2Facts;
+    expect(adaptInvariants(p0, r.plan, asOf, f)).toEqual([]);
+    const up = (i: number, km: number) => ({
+      ...r.plan,
+      weeks: r.plan.weeks.map((w, k) => (k === i ? { ...w, targetKm: km } : w))
+    });
+    expect(adaptInvariants(p0, up(1, 26.5), asOf, f)).toContain(
+      'umor pre starta: ned 2 raste preko planirane ned 1'
+    );
+    expect(adaptInvariants(p0, up(0, 21), asOf, f)).toContain(
+      'umor pre starta: ned 1 > 0,8 × planirana ned 1'
+    );
+  });
+});

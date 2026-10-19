@@ -9,10 +9,23 @@ import { checkInput } from './input.ts';
 import { assessGoal, predicted10k } from './paces.ts';
 import { periodize, isBuildPhase } from './periodize.ts';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
-import { advance, INITIAL_QUALITY, type QualityState, type WeekPicks } from './quality.ts';
+import {
+  advance,
+  deloadLastM,
+  INITIAL_QUALITY,
+  type QualityState,
+  type WeekPicks
+} from './quality.ts';
 import { longestLong10 } from './lengths.ts';
 import { basePaces, basisAt, framesFor, pacesAt, restartWeeks, stepVdotAt } from './steps.ts';
-import type { GenerateResult, PlanDay, PlanWeek, TenKV2AdaptStep, TenKV2Plan } from './types.ts';
+import type {
+  GenerateResult,
+  PlanDay,
+  PlanWeek,
+  PreStartRef,
+  TenKV2AdaptStep,
+  TenKV2Plan
+} from './types.ts';
 import { validatePlan } from './validate.ts';
 import {
   adaptNominal10,
@@ -45,6 +58,24 @@ const writtenPicks = (days: readonly PlanDay[]): WeekPicks => ({
   q1: days.find((d) => d.role === 'q1')?.workout.dose ?? null,
   q2: days.find((d) => d.role === 'q2')?.workout.dose ?? null
 });
+
+/**
+ * A5 (10k-v2.5.2, pouka 34): referenca prinudnog rasterećenja pri umoru sa asOf pre starta — nedelja 1
+ * generatora bez činjenica (cilj, dugi, doza slota rasterećenja posle nje: quality.deloadLastM). Jedino mesto;
+ * assess je upisuje u korak (preStart), konstruktor i validator je čitaju iz koraka. null = ulaz nije ispravan.
+ */
+export function preStartRef(input: unknown): PreStartRef | null {
+  const chk = checkInput(input);
+  const g = chk.ok ? construct(input, []) : null;
+  if (!chk.ok || !g?.ok) return null;
+  const w = g.plan.weeks[0]!;
+  const long = w.days.find((d) => d.role === 'long');
+  return {
+    buildKm: w.targetKm,
+    longKm: long ? long.workout.km : 0,
+    tDoseM: deloadLastM(advance(writtenPicks(w.days), INITIAL_QUALITY), chk.rule)
+  };
+}
 
 const infeasible = (message: string, week?: number): GenerateResult => ({
   ok: false,
@@ -96,10 +127,15 @@ export function construct(
   // samo posle smanjenja obima.
   const ctxAt = (w: number): WeekContext => {
     if (!av) return ctx0;
-    const reduced = w >= av.reducedFrom ? { adapted: true } : {};
-    if (stepVdotAt(steps, w) === null) return { ...ctx0, ...reduced };
+    // A5 (10k-v2.5.2): umor pre starta — referenca prinudnog rasterećenja iz koraka (assess, preStartRef).
+    const ps = steps.find((s) => s.preStart && s.fromWeek === w)?.preStart;
+    const extra = {
+      ...(w >= av.reducedFrom ? { adapted: true } : {}),
+      ...(ps ? { preStart: ps } : {})
+    };
+    if (stepVdotAt(steps, w) === null) return { ...ctx0, ...extra };
     const p = pacesAt(pace, steps, w);
-    return { ...ctx0, paces: p, raceSec: predicted10k(p), feel: false, ...reduced };
+    return { ...ctx0, paces: p, raceSec: predicted10k(p), feel: false, ...extra };
   };
   const restarts = restartWeeks(steps);
 

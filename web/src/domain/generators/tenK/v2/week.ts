@@ -30,6 +30,7 @@ import type {
   Paces,
   Pattern,
   PlanDay,
+  PreStartRef,
   TenKV2Input,
   WeekFrame,
   Weekday,
@@ -65,6 +66,9 @@ export interface WeekContext {
   feel: boolean;
   /** Segment 04: nedelja posle smanjenja obima (A9/A13: test i dugi rasterećenja, v. buildWeek). */
   adapted?: boolean;
+  /** A5 (10k-v2.5.2, pouka 34): prinudno rasterećenje nedelje 1 pri umoru pre starta — referenca (dugi, doza)
+      = nedelja 1 generatora bez činjenica (korak.preStart). */
+  preStart?: PreStartRef;
 }
 
 /** Režim kvaliteta nedelje: 'rule' po pravilu; 'relax' druga pretraga (D11 ispred D12, rasterećenje bez
@@ -223,12 +227,18 @@ export function buildWeek(
   if (frame.deload) {
     // D5/D19: jedan kvalitet (T) na danu T slota, dugi, ostali dani lagani (3 dana: D18). D27: u nedelji
     // testa test zamenjuje kvalitet rasterećenja (na njegovom danu; nije doza, bez plafona D11).
-    if (lastLong10 === null) return null;
+    // A5 (10k-v2.5.2, pouka 34): umor pre starta — poslednji dugi i doza iz nedelje 1 generatora (ctx.preStart).
+    const ref = ctx.preStart;
+    const lastLong = ref ? Math.round(ref.longKm * 10) : lastLong10;
+    if (lastLong === null) return null;
     const test = frame.test === true && (mode === 'rule' || mode === 'relax');
     const slot = deloadSlot(rule.quality);
     const pref = slot === 'q1' ? pat.q1 : pat.q2!;
     const qDay0 = mode === 'none' ? null : test ? pref : oneQualityDay(frame, pat, pref);
-    const t0 = test || !qDay0 ? null : pickDeload(quality, frame.phase, targetKm, rule);
+    const t0 =
+      test || !qDay0
+        ? null
+        : pickDeload(quality, frame.phase, targetKm, rule, ref ? ref.tDoseM : null);
     // A5 (10k-v2.5.1): prinudno rasterećenje u uvodu početnika (D28) — obim rasterećenja, sadržaj uvoda
     // (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost.
     const intro = frame.index <= rule.introWeeks;
@@ -243,7 +253,7 @@ export function buildWeek(
       target10,
       tw ? km100(tw.km) : 0,
       dates.length,
-      lastLong10,
+      lastLong,
       rule,
       p,
       test,
@@ -259,7 +269,7 @@ export function buildWeek(
       day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
       ...easyDays(dates, len.easy10, p)
     ];
-    const long0 = Math.floor(P.deload.longFactor * lastLong10 + 1e-9);
+    const long0 = Math.floor(P.deload.longFactor * lastLong + 1e-9);
     return done(days, len.long10, null, [
       test
         ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, test ${P.test.km} km umesto kvaliteta rasterećenja (D27), dugi ${len.long10 < long0 ? `${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × poslednjeg ne-rasteretnog (${fmtKm(long0 / 10)} km) da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km (D27 ispred D5, odstupanje)` : '0,8 × poslednji ne-rasteretni (D5)'}.`
@@ -273,7 +283,12 @@ export function buildWeek(
               : mode === 'none'
                 ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija); dugi 0,8 × poslednji ne-rasteretni.`
                 : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni T ${fmtKm(rule.beginner ? P.beginner.tFirstKm : P.deload.tMinKm)} km ne staje u plafon ${P.caps.T * 100} % (D11 ispred D5, odstupanje); dugi 0,8 × poslednji ne-rasteretni.`,
-      ...(test ? [testNote] : [])
+      ...(test ? [testNote] : []),
+      ...(ref
+        ? [
+            `Umor pre starta (A5): referenca rasterećenja je nedelja 1 plana bez činjenica — cilj ${fmtKm(ref.buildKm)} km, dugi ${fmtKm(ref.longKm)} km${ref.tDoseM > 0 ? `, T ${ref.tDoseM} m` : ''}.`
+          ]
+        : [])
     ]);
   }
 
