@@ -170,6 +170,8 @@ export interface VolumeStep {
   restart: boolean;
   levelKm: number | null;
   returnFrom: { week: number; share: number } | null;
+  /** A5 (10k-v2.5.2): umor pre starta — referenca prinudnog rasterećenja nedelje fromWeek (= 1). */
+  preStart?: { buildKm: number };
 }
 
 /** Pravila obima iz koraka po nedelji (konstruktor i validator čitaju isto). */
@@ -190,6 +192,9 @@ export interface AdaptVolume {
   anchors: Map<number, ReturnAnchor>;
   /** A8: nivo pre smanjenja koji važi u nedelji w (najveći nivo koraka sa fromWeek ≤ w) [0,1 km]. */
   levelAt: (w: number) => number | null;
+  /** A5 (10k-v2.5.2, pouka 34): umor pre starta — nedelja prinudnog rasterećenja → cilj nedelje 1 generatora
+      bez činjenica [0,1 km] (poslednja izgradnja; nema prethodne u planu). */
+  preStart: Map<number, number>;
 }
 
 /** A4: osnova povratka posle nedelje sidra (udeo i nivo koraka). */
@@ -215,7 +220,9 @@ export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
   const remainder = new Map<number, number>();
   const restart = new Map<number, number>();
   const anchors = new Map<number, ReturnAnchor>();
+  const preStart = new Map<number, number>();
   for (const s of steps) {
+    if (s.preStart) preStart.set(s.fromWeek, to10(s.preStart.buildKm));
     if (s.startKm !== null) {
       reset.set(s.fromWeek, to10(s.startKm));
       if (s.restart) restart.set(s.fromWeek, to10(s.startKm));
@@ -235,6 +242,7 @@ export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
     remainder,
     restart,
     anchors,
+    preStart,
     levelAt: (w) => {
       let level: number | null = null;
       for (const s of steps)
@@ -305,7 +313,8 @@ export function enterWeek(
 /**
  * A8/A9: cilj po pravilu adaptirane nedelje — isti rekurent kao nominal10 (D6) uz korake: cilj koraka u
  * nedelji fromWeek (i kad je rasteretna), ostatak tekuće nedelje ≤ cilj pauze, rast nextBuild10,
- * rasterećenje 0,8 × poslednja ne-rasteretna, taper 0,75 × vrh posle poslednjeg smanjenja (≤ cilj
+ * rasterećenje 0,8 × poslednja ne-rasteretna (umor pre starta, A5 10k-v2.5.2: 0,8 × cilj nedelje 1 generatora;
+ * sledeća nedelja bez prethodne izgradnje = start, tj. cilj planirane nedelje 1 bez rasta), taper 0,75 × vrh posle poslednjeg smanjenja (≤ cilj
  * koraka u taperu); od prve nedelje pod koracima ne ispod minimuma nedelje (D17). `downOnly` = izvodljiv
  * cilj samo naniže (cilj koraka, ostatak, povratak, donja granica). Bez dejstva koraka = nominal10.
  */
@@ -324,7 +333,10 @@ export function adaptNominal10(
     t = Math.round(P.taper.factor * h.peakRef10);
     if (h.tailCap10 !== null && h.tailCap10 < t) [t, downOnly] = [h.tailCap10, true];
   } else if (reset !== undefined) [t, downOnly] = [reset, true];
-  else if (h.lastBuild10 === null) t = start10;
+  else if (frame.deload && h.lastBuild10 === null && av.preStart.has(i))
+    t = Math.round(P.deload.factor * av.preStart.get(i)!);
+  // A5 (10k-v2.5.2): posle prinudnog rasterećenja pre starta — cilj planirane nedelje 1 (bez rasta).
+  else if (h.lastBuild10 === null) t = av.preStart.get(i - 1) ?? start10;
   else if (frame.deload) t = Math.round(P.deload.factor * h.lastBuild10);
   else {
     const level = av.levelAt(i);

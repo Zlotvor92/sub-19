@@ -496,8 +496,14 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
     expect(TEN_K_V2_GENERATOR.planPolicy(r.result).status).toBe('current');
   });
 
-  it('06d (10k-v2.5.1): sačuvan plan 10k-v2.4.0, 10k-v2.4.1 i 10k-v2.5.0 ostaje plan 10K v2 i prilagođava se pravilima 5.1 (rezultat nosi 10k-v2.5.1); druge verzije → UNKNOWN_POLICY', () => {
-    expect(KNOWN_VERSIONS).toEqual(['10k-v2.4.0', '10k-v2.4.1', '10k-v2.5.0', '10k-v2.5.1']);
+  it('06e (10k-v2.5.2): sačuvan plan 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0 i 10k-v2.5.1 ostaje plan 10K v2 i prilagođava se pravilima 5.2 (rezultat nosi 10k-v2.5.2); druge verzije → UNKNOWN_POLICY', () => {
+    expect(KNOWN_VERSIONS).toEqual([
+      '10k-v2.4.0',
+      '10k-v2.4.1',
+      '10k-v2.5.0',
+      '10k-v2.5.1',
+      '10k-v2.5.2'
+    ]);
     const cur = planOf(WITH_RESULT);
     const as = (p: GenPlanState, version: string): GenPlanState => ({
       ...p,
@@ -508,7 +514,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
     const day = '2026-11-15' as IsoDate;
     const facts = { facts: { pain: [{ date: '2026-11-14', pain: 5 }] } };
     const fresh = ok(tenKV2AdaptPreview(cur, day, facts));
-    for (const version of ['10k-v2.4.0', '10k-v2.4.1', '10k-v2.5.0']) {
+    for (const version of ['10k-v2.4.0', '10k-v2.4.1', '10k-v2.5.0', '10k-v2.5.1']) {
       const old = as(cur, version);
       expect(isTenKV2Plan(old), version).toBe(true);
       expect(generatorForPlan(old), version).toBe(TEN_K_V2_GENERATOR);
@@ -521,9 +527,9 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       const saved = stampForStorage(r.result);
       expect(saved.meta, version).toMatchObject({
         policyId: '10k-v2',
-        policyVersion: '10k-v2.5.1'
+        policyVersion: '10k-v2.5.2'
       });
-      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.5.1');
+      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.5.2');
       expect(isTenKV2Plan(saved), version).toBe(true);
       // Posle nedelje sidra 4 rast od 70 % nivoa pre bola (42,4 → 29,7), ned 5 = 32,7 (4.0: 27,6); ned 5 je
       // izgradnja (A17 bez dejstva: ned 4 je rasterećenje).
@@ -539,7 +545,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       // Isto prilagođavanje kao plan 5.1 (A15: buduće nedelje po tekućim pravilima).
       expect(v2Of(r.result), version).toEqual(v2Of(fresh.result));
     }
-    for (const version of ['10k-v2.3.1', '10k-v2.4.2', '10k-v2.5.2']) {
+    for (const version of ['10k-v2.3.1', '10k-v2.4.2', '10k-v2.5.3']) {
       const p = as(cur, version);
       expect(isTenKV2Plan(p), version).toBe(false);
       expect(generatorForPlan(p), version).toBeNull();

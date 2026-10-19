@@ -1,0 +1,26 @@
+[
+  {
+    "name": "06e-a umor pre starta bez reference generatora",
+    "opis": "assess ne upisuje preStart: konstruktor nema poslednju izgradnju/dugi/dozu za rasterećenje ned 1 (WEEK_INFEASIBLE, kao 10k-v2.5.1).",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "      if (ref) step.preStart = ref;\n",
+    "replace": "",
+    "tests": ["src/domain/generators/tenK/v2/earlyGrid.node.test.ts"]
+  },
+  {
+    "name": "06e-b ned 2 posle prinudnog sa rastom",
+    "opis": "Posle prinudnog rasterećenja pre starta ned 2 raste od reference (D6) umesto cilja planirane ned 1; validator čita isti adaptNominal10 — hvata ga primer i nezavisna adaptInvariants.",
+    "file": "src/domain/generators/tenK/v2/volume.ts",
+    "find": "  else if (h.lastBuild10 === null) t = av.preStart.get(i - 1) ?? start10;",
+    "replace": "  else if (h.lastBuild10 === null)\n    t = av.preStart.has(i - 1)\n      ? nextBuild10(av.preStart.get(i - 1)!, h.cap10, rule, null)\n      : start10;",
+    "tests": ["src/domain/generators/tenK/v2/earlyGrid.node.test.ts"]
+  },
+  {
+    "name": "06e-c početnik pri umoru pre starta sa kvalitetom",
+    "opis": "Prinudno rasterećenje pre starta u uvodu početnika dobija kvalitet (sadržaj rasterećenja umesto uvoda).",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "    const intro = frame.index <= rule.introWeeks;\n    const [qDay, t] = intro ? [null, null] : [qDay0, t0];",
+    "replace": "    const intro = frame.index <= rule.introWeeks && !ref;\n    const [qDay, t] = intro ? [null, null] : [qDay0, t0];",
+    "tests": ["src/domain/generators/tenK/v2/earlyGrid.node.test.ts"]
+  }
+]

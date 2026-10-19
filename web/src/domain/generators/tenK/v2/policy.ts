@@ -287,9 +287,9 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A5',
-    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana — bez dayId) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); prinudno rasterećenje odmah posle redovnog = 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8); redovno rasterećenje odmah posle prinudnog se ukida. Isto posle nedelje smanjenja pauzom, manjkom ili bolom (A17, 10k-v2.5.0); prinudno rasterećenje se nikad ne ukida. Dopuna (10k-v2.5.1): prinudno rasterećenje u uvodu početnika (D28, nedelje 1–2) — obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost, nedelja se ne pomera.',
+    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana — bez dayId) sa RPE ≥ 7 u 7 dana → sledeća nedelja rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); prinudno rasterećenje odmah posle redovnog = 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8); redovno rasterećenje odmah posle prinudnog se ukida. Isto posle nedelje smanjenja pauzom, manjkom ili bolom (A17, 10k-v2.5.0); prinudno rasterećenje se nikad ne ukida. Dopuna (10k-v2.5.1): prinudno rasterećenje u uvodu početnika (D28, nedelje 1–2) — obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost, nedelja se ne pomera. Dopuna (10k-v2.5.2, pouka 34): umor sa asOf pre starta plana (nedelja 1, nema prethodne izgradnje) → nedelja 1 je prinudno rasterećenje = 0,8 × planirana nedelja 1 (sadržaj rasterećenja D5: 1 kvalitet T ≈ 60 %, dugi 0,8 ×; početnik: sadržaj uvoda); referenca (poslednja izgradnja, poslednji dugi, doza slota rasterećenja) = nedelja 1 generatora bez činjenica (generate.preStartRef), upisana u korak (preStart) — konstruktor i validator je čitaju iz koraka; nedelja 2 = cilj planirane nedelje 1 (bez rasta), dalje po rasporedu (faze i rasterećenja ostaju). Pouka 4 (bez rasterećenja u nedeljama 1–2) važi za redovna rasterećenja. Npr. 10 ned, 25 km, VDOT 30, 4 dana, umor 2026-11-01 (start − 1): ned 1 = 20,0 km (0,8 × 25), ned 2 = 25,0 km; na 10k-v2.5.1 odbijeno (WEEK_INFEASIBLE).',
     place:
-      'assess.ts (adapt.fatigue*); steps.ts framesFor; validate.ts (D5 izuzetak prinudnog i A17)',
+      'assess.ts (adapt.fatigue*; preStart iz generate.preStartRef); steps.ts framesFor; volume.ts adaptNominal10 (0,8 × referenca, nedelja 2 = referenca); week.ts buildWeek (ctx.preStart); validate.ts (D5 izuzetak prinudnog i A17; sadržaj rasterećenja iz koraka.preStart)',
     rationale:
       'Heuristika: povišen napor na laganim treninzima je znak umora. Prinudno rasterećenje sme pasti na prvu nedelju faze ili pred taper (izuzetak D5, samo za korak umora).'
   },
@@ -380,7 +380,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.5.1',
+  version: '10k-v2.5.2',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
