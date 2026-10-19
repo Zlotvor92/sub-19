@@ -39,7 +39,9 @@ export const LEGACY_POLICY_ID = 'legacy-marathon';
  *  biti sačuvane posle MAR-05 (aplikacija je od MAR-05 pisala samo `marathon-v2.3.1`) i tekuća. Sačuvan stariji plan
  *  ostaje plan maratona v2; prilagođavanje ga gradi tekućim pravilima, a rezultat nosi tekuću oznaku. Svaka druga
  *  verzija je „unknown" (UNKNOWN_POLICY). */
-export const KNOWN_VERSIONS: readonly string[] = [...new Set(['marathon-v2.3.1', P.version])];
+export const KNOWN_VERSIONS: readonly string[] = [
+  ...new Set(['marathon-v2.3.1', 'marathon-v2.4.0', P.version])
+];
 
 /** JEDNA mapa faze za prikaz (odluka adaptera): baza → BAZA, razvoj → RAZVOJ, specifična faza (najspecifičniji rad za
  *  tempo trke) → VRHUNAC, taper → TAPER, trkačka nedelja → TRKA; rasterećenje (bilo koje faze) → DELOAD. */

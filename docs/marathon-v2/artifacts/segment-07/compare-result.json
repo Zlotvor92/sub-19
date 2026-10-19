@@ -1,347 +1,266 @@
 {
- "grid": {
-  "n": 21840,
-  "rejected": [
-   0,
-   0
-  ],
-  "changed": 10380,
-  "categories": {
-   "e_samo_napomene_upozorenja": 10380
+  "grid": {
+    "n": 21840,
+    "rejected": [0, 0],
+    "changed": 10380,
+    "categories": {
+      "e_samo_napomene_upozorenja": 10380
+    },
+    "warningRuleDiff": {
+      "MARATHON_LONG_SHORT manje": 10278,
+      "isto pravilo, drugi tekst/napomena": 102
+    },
+    "plansTwoQualityDayLongerThanLong": [0, 0],
+    "marathonLongShortPct": [59, 12],
+    "shownLines": [
+      {
+        "median": 1,
+        "p90": 3,
+        "max": 4
+      },
+      {
+        "median": 1,
+        "p90": 2,
+        "max": 3
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
   },
-  "warningRuleDiff": {
-   "MARATHON_LONG_SHORT manje": 10278,
-   "isto pravilo, drugi tekst/napomena": 102
+  "recent": {
+    "n": 35910,
+    "rejected": [930, 930],
+    "changed": 21075,
+    "categories": {
+      "e_samo_napomene_upozorenja": 20175,
+      "b_pouka35": 900
+    },
+    "warningRuleDiff": {
+      "MARATHON_LONG_SHORT manje": 19815,
+      "isto pravilo, drugi tekst/napomena": 360
+    },
+    "plansTwoQualityDayLongerThanLong": [1809, 1746],
+    "marathonLongShortPct": [76.4, 19.6],
+    "shownLines": [
+      {
+        "median": 1,
+        "p90": 3,
+        "max": 4
+      },
+      {
+        "median": 1,
+        "p90": 2,
+        "max": 4
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
   },
-  "plansTwoQualityDayLongerThanLong": [
-   0,
-   0
-  ],
-  "marathonLongShortPct": [
-   59,
-   12
-  ],
-  "shownLines": [
-   {
-    "median": 1,
-    "p90": 3,
-    "max": 4
-   },
-   {
-    "median": 1,
-    "p90": 2,
-    "max": 3
-   }
-  ],
-  "newRejections": [],
-  "unexplained": []
- },
- "recent": {
-  "n": 35910,
-  "rejected": [
-   930,
-   930
-  ],
-  "changed": 21075,
-  "categories": {
-   "e_samo_napomene_upozorenja": 20175,
-   "b_pouka35": 900
+  "dense": {
+    "n": 156954,
+    "rejected": [0, 0],
+    "changed": 54407,
+    "categories": {
+      "e_samo_napomene_upozorenja": 54407
+    },
+    "warningRuleDiff": {
+      "MARATHON_LONG_SHORT manje": 54392,
+      "isto pravilo, drugi tekst/napomena": 15
+    },
+    "plansTwoQualityDayLongerThanLong": [0, 0],
+    "marathonLongShortPct": [52.6, 18],
+    "shownLines": [
+      {
+        "median": 1,
+        "p90": 3,
+        "max": 4
+      },
+      {
+        "median": 1,
+        "p90": 2,
+        "max": 3
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
   },
-  "warningRuleDiff": {
-   "MARATHON_LONG_SHORT manje": 19815,
-   "isto pravilo, drugi tekst/napomena": 360
+  "feel": {
+    "n": 8190,
+    "rejected": [0, 0],
+    "changed": 5340,
+    "categories": {
+      "e_samo_napomene_upozorenja": 5340
+    },
+    "warningRuleDiff": {
+      "MARATHON_LONG_SHORT manje": 5217,
+      "isto pravilo, drugi tekst/napomena": 123
+    },
+    "plansTwoQualityDayLongerThanLong": [0, 0],
+    "marathonLongShortPct": [72.7, 9],
+    "shownLines": [
+      {
+        "median": 3,
+        "p90": 5,
+        "max": 7
+      },
+      {
+        "median": 3,
+        "p90": 4,
+        "max": 6
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
   },
-  "plansTwoQualityDayLongerThanLong": [
-   1809,
-   1746
-  ],
-  "marathonLongShortPct": [
-   76.4,
-   19.6
-  ],
-  "shownLines": [
-   {
-    "median": 1,
-    "p90": 3,
-    "max": 4
-   },
-   {
-    "median": 1,
-    "p90": 2,
-    "max": 4
-   }
-  ],
-  "newRejections": [],
-  "unexplained": []
- },
- "dense": {
-  "n": 156954,
-  "rejected": [
-   0,
-   0
-  ],
-  "changed": 54407,
-  "categories": {
-   "e_samo_napomene_upozorenja": 54407
+  "beg": {
+    "n": 1890,
+    "rejected": [0, 0],
+    "changed": 1431,
+    "categories": {
+      "e_samo_napomene_upozorenja": 1431
+    },
+    "warningRuleDiff": {
+      "DELOAD_LONG_SHORTENED manje": 105,
+      "isto pravilo, drugi tekst/napomena": 354,
+      "MARATHON_LONG_SHORT manje": 972
+    },
+    "plansTwoQualityDayLongerThanLong": [0, 0],
+    "marathonLongShortPct": [95.7, 44.3],
+    "shownLines": [
+      {
+        "median": 4,
+        "p90": 5,
+        "max": 7
+      },
+      {
+        "median": 4,
+        "p90": 5,
+        "max": 6
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
   },
-  "warningRuleDiff": {
-   "MARATHON_LONG_SHORT manje": 54392,
-   "isto pravilo, drugi tekst/napomena": 15
+  "a04": {
+    "n": 6236,
+    "rejected": [0, 0],
+    "changed": 4235,
+    "categories": {
+      "e_samo_napomene_upozorenja": 4184,
+      "b_pouka35": 51
+    },
+    "warningRuleDiff": {
+      "MARATHON_LONG_SHORT manje": 3621,
+      "isto pravilo, drugi tekst/napomena": 413,
+      "DELOAD_LONG_SHORTENED manje": 150
+    },
+    "plansTwoQualityDayLongerThanLong": [216, 165],
+    "marathonLongShortPct": [100, 41.8],
+    "shownLines": [
+      {
+        "median": 4,
+        "p90": 7,
+        "max": 11
+      },
+      {
+        "median": 4,
+        "p90": 6,
+        "max": 11
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
   },
-  "plansTwoQualityDayLongerThanLong": [
-   0,
-   0
-  ],
-  "marathonLongShortPct": [
-   52.6,
-   18
-  ],
-  "shownLines": [
-   {
-    "median": 1,
-    "p90": 3,
-    "max": 4
-   },
-   {
-    "median": 1,
-    "p90": 2,
-    "max": 3
-   }
-  ],
-  "newRejections": [],
-  "unexplained": []
- },
- "feel": {
-  "n": 8190,
-  "rejected": [
-   0,
-   0
-  ],
-  "changed": 5340,
-  "categories": {
-   "e_samo_napomene_upozorenja": 5340
+  "early": {
+    "n": 45101,
+    "rejected": [0, 0],
+    "changed": 25173,
+    "categories": {
+      "e_samo_napomene_upozorenja": 24357,
+      "b_pouka35": 816
+    },
+    "warningRuleDiff": {
+      "MARATHON_LONG_SHORT manje": 19620,
+      "isto pravilo, drugi tekst/napomena": 2961,
+      "DOSE_DROPPED više": 158,
+      "DELOAD_LONG_SHORTENED manje": 1703
+    },
+    "plansTwoQualityDayLongerThanLong": [869, 87],
+    "marathonLongShortPct": [74.7, 31.2],
+    "shownLines": [
+      {
+        "median": 5,
+        "p90": 7,
+        "max": 12
+      },
+      {
+        "median": 4,
+        "p90": 7,
+        "max": 11
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
   },
-  "warningRuleDiff": {
-   "MARATHON_LONG_SHORT manje": 5217,
-   "isto pravilo, drugi tekst/napomena": 123
+  "pre": {
+    "n": 4050,
+    "rejected": [0, 0],
+    "changed": 2371,
+    "categories": {
+      "e_samo_napomene_upozorenja": 2211,
+      "b_pouka35": 160
+    },
+    "warningRuleDiff": {
+      "MARATHON_LONG_SHORT manje": 1631,
+      "isto pravilo, drugi tekst/napomena": 367,
+      "DELOAD_LONG_SHORTENED manje": 216
+    },
+    "plansTwoQualityDayLongerThanLong": [160, 0],
+    "marathonLongShortPct": [74.8, 34.5],
+    "shownLines": [
+      {
+        "median": 4,
+        "p90": 7,
+        "max": 11
+      },
+      {
+        "median": 4,
+        "p90": 7,
+        "max": 9
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
   },
-  "plansTwoQualityDayLongerThanLong": [
-   0,
-   0
-  ],
-  "marathonLongShortPct": [
-   72.7,
-   9
-  ],
-  "shownLines": [
-   {
-    "median": 3,
-    "p90": 5,
-    "max": 7
-   },
-   {
-    "median": 3,
-    "p90": 4,
-    "max": 6
-   }
-  ],
-  "newRejections": [],
-  "unexplained": []
- },
- "beg": {
-  "n": 1890,
-  "rejected": [
-   0,
-   0
-  ],
-  "changed": 1431,
-  "categories": {
-   "e_samo_napomene_upozorenja": 1431
-  },
-  "warningRuleDiff": {
-   "DELOAD_LONG_SHORTENED manje": 105,
-   "isto pravilo, drugi tekst/napomena": 354,
-   "MARATHON_LONG_SHORT manje": 972
-  },
-  "plansTwoQualityDayLongerThanLong": [
-   0,
-   0
-  ],
-  "marathonLongShortPct": [
-   95.7,
-   44.3
-  ],
-  "shownLines": [
-   {
-    "median": 4,
-    "p90": 5,
-    "max": 7
-   },
-   {
-    "median": 4,
-    "p90": 5,
-    "max": 6
-   }
-  ],
-  "newRejections": [],
-  "unexplained": []
- },
- "a04": {
-  "n": 6236,
-  "rejected": [
-   0,
-   0
-  ],
-  "changed": 4235,
-  "categories": {
-   "e_samo_napomene_upozorenja": 4184,
-   "b_pouka35": 51
-  },
-  "warningRuleDiff": {
-   "MARATHON_LONG_SHORT manje": 3621,
-   "isto pravilo, drugi tekst/napomena": 413,
-   "DELOAD_LONG_SHORTENED manje": 150
-  },
-  "plansTwoQualityDayLongerThanLong": [
-   216,
-   165
-  ],
-  "marathonLongShortPct": [
-   100,
-   41.8
-  ],
-  "shownLines": [
-   {
-    "median": 4,
-    "p90": 7,
-    "max": 11
-   },
-   {
-    "median": 4,
-    "p90": 6,
-    "max": 11
-   }
-  ],
-  "newRejections": [],
-  "unexplained": []
- },
- "early": {
-  "n": 45101,
-  "rejected": [
-   0,
-   0
-  ],
-  "changed": 25173,
-  "categories": {
-   "e_samo_napomene_upozorenja": 24357,
-   "b_pouka35": 816
-  },
-  "warningRuleDiff": {
-   "MARATHON_LONG_SHORT manje": 19620,
-   "isto pravilo, drugi tekst/napomena": 2961,
-   "DOSE_DROPPED više": 158,
-   "DELOAD_LONG_SHORTENED manje": 1703
-  },
-  "plansTwoQualityDayLongerThanLong": [
-   869,
-   87
-  ],
-  "marathonLongShortPct": [
-   74.7,
-   31.2
-  ],
-  "shownLines": [
-   {
-    "median": 5,
-    "p90": 7,
-    "max": 12
-   },
-   {
-    "median": 4,
-    "p90": 7,
-    "max": 11
-   }
-  ],
-  "newRejections": [],
-  "unexplained": []
- },
- "pre": {
-  "n": 4050,
-  "rejected": [
-   0,
-   0
-  ],
-  "changed": 2371,
-  "categories": {
-   "e_samo_napomene_upozorenja": 2211,
-   "b_pouka35": 160
-  },
-  "warningRuleDiff": {
-   "MARATHON_LONG_SHORT manje": 1631,
-   "isto pravilo, drugi tekst/napomena": 367,
-   "DELOAD_LONG_SHORTENED manje": 216
-  },
-  "plansTwoQualityDayLongerThanLong": [
-   160,
-   0
-  ],
-  "marathonLongShortPct": [
-   74.8,
-   34.5
-  ],
-  "shownLines": [
-   {
-    "median": 4,
-    "p90": 7,
-    "max": 11
-   },
-   {
-    "median": 4,
-    "p90": 7,
-    "max": 9
-   }
-  ],
-  "newRejections": [],
-  "unexplained": []
- },
- "wide": {
-  "n": 267927,
-  "rejected": [
-   0,
-   0
-  ],
-  "changed": 162970,
-  "categories": {
-   "e_samo_napomene_upozorenja": 153415,
-   "b_pouka35": 9555
-  },
-  "warningRuleDiff": {
-   "MARATHON_LONG_SHORT manje": 131557,
-   "isto pravilo, drugi tekst/napomena": 18333,
-   "DELOAD_LONG_SHORTENED manje": 3350,
-   "DOSE_DROPPED više": 443
-  },
-  "plansTwoQualityDayLongerThanLong": [
-   13921,
-   7636
-  ],
-  "marathonLongShortPct": [
-   74.8,
-   25.2
-  ],
-  "shownLines": [
-   {
-    "median": 3,
-    "p90": 6,
-    "max": 12
-   },
-   {
-    "median": 3,
-    "p90": 6,
-    "max": 11
-   }
-  ],
-  "newRejections": [],
-  "unexplained": []
- }
+  "wide": {
+    "n": 267927,
+    "rejected": [0, 0],
+    "changed": 162970,
+    "categories": {
+      "e_samo_napomene_upozorenja": 153415,
+      "b_pouka35": 9555
+    },
+    "warningRuleDiff": {
+      "MARATHON_LONG_SHORT manje": 131557,
+      "isto pravilo, drugi tekst/napomena": 18333,
+      "DELOAD_LONG_SHORTENED manje": 3350,
+      "DOSE_DROPPED više": 443
+    },
+    "plansTwoQualityDayLongerThanLong": [13921, 7636],
+    "marathonLongShortPct": [74.8, 25.2],
+    "shownLines": [
+      {
+        "median": 3,
+        "p90": 6,
+        "max": 12
+      },
+      {
+        "median": 3,
+        "p90": 6,
+        "max": 11
+      }
+    ],
+    "newRejections": [],
+    "unexplained": []
+  }
 }

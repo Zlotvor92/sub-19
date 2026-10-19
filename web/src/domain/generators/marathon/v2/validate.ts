@@ -216,6 +216,12 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   const steps = ad?.steps ?? [];
   const mixed = new Set(ad?.mixedWeeks ?? []);
   const checked = (w: PlanWeek): boolean => !mixed.has(w.index);
+  /** MAR-07b (pouka 4, stalni uslov 4): zaštićen dan — ≤ asOf adaptacije, zaključan (ručna izmena) ili urađen. Završna
+      zaštita samo štiti: provere koje sude jednom danu po tempu ili strukturi ga preskaču (kao LIMITS) — validator
+      ne sudi činjenicama. */
+  const lockedIds = new Set([...(ad?.lockedDayIds ?? []), ...(ad?.doneDayIds ?? [])]);
+  const protectedDay = (d: { date: string }): boolean =>
+    lockedIds.has(d.date) || (ad !== undefined && mustDay(d.date) <= mustDay(ad.asOf));
   const pw = (w: { index: number }): Paces => pacesAt(pace, steps, w.index, km);
   const feelW = (w: { index: number }): boolean => basisAt(pace, steps, w.index) === 'feel';
   const base0 = steps.length > 0 ? periodize(input.startDate, N, feel && rule.feelTest) : null;
@@ -503,7 +509,12 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       if (s.reduce((a, x) => a + x.sec, 0) !== d.workout.sec)
         err('ARITHMETIC', 'Trajanje dana ≠ zbir segmenata.', w.index, d.date);
       // M13: lagan ≥ 5 km van trkačke nedelje (trkačku nedelju potpuno zadaje M8).
-      if (d.role === 'easy' && w.phase !== 'race' && d.workout.km + EPS < P.lengths.easyMinKm)
+      if (
+        d.role === 'easy' &&
+        w.phase !== 'race' &&
+        !protectedDay(d) &&
+        d.workout.km + EPS < P.lengths.easyMinKm
+      )
         err(
           'EASY_MIN',
           `Lagan ${d.workout.km} km < ${P.lengths.easyMinKm} km (M13).`,
@@ -677,6 +688,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   const wc = warmupCooldown(input.currentWeeklyKm, rule);
   for (const w of weeks)
     for (const d of w.days) {
+      // MAR-07b: zaštićen dan nosi tempo i strukturu iz kojih je upisan — ne sudi se po tempu nedelje.
+      if (protectedDay(d)) continue;
       // Segment 04: tempo i osnova tempa nedelje (A1).
       const pk = pw(w);
       const mid = midEasy(pk);
@@ -862,7 +875,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     if (w.phase === 'race' || !long || !checked(w)) continue;
     for (const d of w.days) {
       const dz = d.workout.dose;
-      if (d.workout.kind !== 'quality' || !dz || lowestOf(dz)) continue;
+      if (d.workout.kind !== 'quality' || !dz || lowestOf(dz) || protectedDay(d)) continue;
       const sec = qualityDaySec(dz, pw(w), wc);
       if (sec > long.workout.sec)
         err(
@@ -1123,7 +1136,6 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   // Pouka 29: dugi prethodnih nedelja iz plana kakav se upisuje (isto kao konstruktor, lengths.longsOf); zaključan
   // dan (A11) se ne proverava.
   const longs10 = longsOf(weeks);
-  const lockedIds = new Set(ad?.lockedDayIds ?? []);
   weeks.forEach((w, i) => {
     const l10 = longs10[i];
     if (l10 === null || l10 === undefined) return;
@@ -1532,7 +1544,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         'TEST',
         `Test ${P.test.km} km tačno jednom, u poslednjoj nedelji baze (${testWeek}) (M16).`
       );
-    for (const { w, d } of tests) {
+    for (const { w, d } of tests.filter((x) => !protectedDay(x.d))) {
       const wd = w.deload && tSlot === 'q2' ? pat.q2 : pat.q1;
       const k = d.workout.segments;
       const ts = k.find((x) => x.kind === 'test');

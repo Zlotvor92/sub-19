@@ -256,3 +256,41 @@ describe('N11: upozorenja i napomene', () => {
     expect(seen).toBeGreaterThan(0);
   });
 });
+
+describe('MAR-07b (pouka 4, stalni uslov 4): provere po danu preskaču zaštićene dane — validator ne sudi činjenicama', () => {
+  // Zaštićen dan (zaključan / urađen) iz nedelje posle novog rezultata nosi stari tempo; na 46a3e22 odbijano (WARMUP).
+  it.each([5, 6])(
+    'd4-r-16w: brži rezultat kraj ned %i + zaključan Q1 sledeće nedelje → plan se vraća, dan bajt-isti',
+    (k) => {
+      const p = planOf(base('d4-r-16w'));
+      const at = p.weeks[k - 1]!.endDate;
+      const q1 = p.weeks[k]!.days.find((d) => d.role === 'q1')!;
+      const f = { ...factsOf(p, 'faster', at), lockedDayIds: [q1.date] };
+      const r = ok(adaptMarathonV2(p, f, at));
+      expect(r.plan.weeks[k]!.days.find((d) => d.date === q1.date)).toEqual(q1);
+      expect(adaptInvariants(p, r.plan, at, f as MarathonV2Facts)).toEqual([]);
+    }
+  );
+
+  it('urađen Q2 sledeće nedelje (dayId, trčan dan ranije) + brži rezultat → plan se vraća, dan bajt-isti', () => {
+    const p = planOf(base('d4-r-16w'));
+    const at = p.weeks[4]!.endDate;
+    const q2 = p.weeks[5]!.days.find((d) => d.role === 'q2')!;
+    const f = factsOf(p, 'faster', at) as { results: unknown[] };
+    const facts = {
+      ...f,
+      workouts: [
+        {
+          date: at,
+          dayId: q2.date,
+          km: q2.workout.km,
+          durationSec: q2.workout.sec,
+          completed: true
+        }
+      ]
+    };
+    const r = ok(adaptMarathonV2(p, facts, at));
+    expect(r.plan.weeks[5]!.days.find((d) => d.date === q2.date)).toEqual(q2);
+    expect(r.plan.adaptation!.doneDayIds).toEqual([q2.date]);
+  });
+});

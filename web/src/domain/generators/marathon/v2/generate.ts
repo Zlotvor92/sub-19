@@ -381,7 +381,8 @@ export function construct(
           adaptation: {
             ...plan.adaptation!,
             mixedWeeks: merged.mixed,
-            lockedDayIds: [...prior!.lockedDayIds]
+            lockedDayIds: [...prior!.lockedDayIds],
+            ...(prior!.doneDayIds.length > 0 ? { doneDayIds: [...prior!.doneDayIds] } : {})
           }
         }
       : plan
