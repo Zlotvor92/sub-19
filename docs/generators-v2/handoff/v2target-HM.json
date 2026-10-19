@@ -1,0 +1,56 @@
+{
+ "dist": "HM",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sources": 212,
+ "10K": {
+  "calls": 4240,
+  "generated": 1840,
+  "genRejected": {
+   "PLAN_TOO_SHORT: Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja.": 1485,
+   "WEEKLY_KM_TOO_HIGH: Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava #–# da": 160,
+   "EASY_PACE_REQUIRED: Nema pouzdanog rezultata (rezultat je star # dana (> #)): za plan po osećaju une": 335,
+   "WEEKLY_KM_TOO_HIGH: Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava # dana": 160,
+   "WEEKLY_KM_TOO_HIGH: Trenutni obim # km je iznad # km nedeljno, van opsega ovog plana.": 200,
+   "WEEKLY_KM_TOO_HIGH: Početnik sa # dana trčanja: trenutni obim # km je iznad # km (opseg početnika #–": 180,
+   "BEGINNER_SHORT: Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #": 145,
+   "BEGINNER_DAYS: Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana.": 600,
+   "WEEKLY_KM_TOO_HIGH: Početnik: trenutni obim # km je iznad # km (opseg početnika #–# km); uz ovaj obi": 260
+  },
+  "adaptOk": 1840,
+  "adaptRejected": {},
+  "common": {},
+  "byWeeksLeft": {
+   "10-11": "400/560 ok",
+   "8-9": "325/530 ok",
+   "<8": "0/1485 ok",
+   "≥12": "1115/1665 ok"
+  }
+ },
+ "5K": {
+  "calls": 4240,
+  "generated": 1385,
+  "genRejected": {
+   "PLAN_LENGTH_OUT_OF_RANGE: Plan mora trajati #–# nedelja; sada #.": 1115,
+   "WEEKLY_KM_OUT_OF_RANGE: Trenutni obim mora biti #–# km nedeljno za # dana.": 600,
+   "MISSING_EASY_PACE: Bez pouzdanog rezultata (nema ga ili je stariji od # nedelja) potreban je uobiča": 335,
+   "VDOT_OUT_OF_RANGE: VDOT rezultata (#) mora biti #–#.": 100,
+   "RUN_DAYS_COUNT: Podržano je #, #, # dana trčanja nedeljno; zadato #.": 1040,
+   "WEEKLY_KM_OUT_OF_RANGE: Trenutni obim mora biti #–# km nedeljno.": 520,
+   "RUN_DAYS_COUNT: Početnik: najviše # dana trčanja nedeljno; zadato #.": 600
+  },
+  "adaptOk": 1385,
+  "adaptRejected": {},
+  "common": {},
+  "byWeeksLeft": {
+   "10-11": "250/560 ok",
+   "8-9": "230/530 ok",
+   "<8": "170/1485 ok",
+   "≥12": "735/1665 ok"
+  }
+ },
+ "seconds": 23.871
+}

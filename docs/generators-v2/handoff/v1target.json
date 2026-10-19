@@ -1,0 +1,89 @@
+{
+ "HM v2 (rezultat) → 10K/5K v1": {
+  "sources": 174,
+  "sourceRejected": 0,
+  "calls": 2088,
+  "ok": 2088,
+  "error": 0,
+  "errors": {},
+  "leakedMetaKeys": {
+   "paceBasis": 2088,
+   "trainingVdot": 2088,
+   "racePace": 2088,
+   "predictedHmSec": 2088
+  },
+  "v2KeyKept": 2088,
+  "v2DaysKept": 1740,
+  "selectedAs": {
+   "10000→10K v1": 1044,
+   "5000→5K v1": 1044
+  },
+  "ex": [
+   "d3-10w-30km-v30-A-sat 10000 2026-10-31",
+   "d3-10w-30km-v30-A-sat 10000 2026-10-31",
+   "d3-10w-30km-v30-A-sat 10000 2026-11-14"
+  ]
+ },
+ "HM v2 (po osećaju) → 10K/5K v1": {
+  "sources": 204,
+  "sourceRejected": 0,
+  "calls": 2448,
+  "ok": 0,
+  "error": 2448,
+  "errors": {
+   "10000/bez: Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).": 612,
+   "10000/pauza: Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).": 612,
+   "5000/bez: Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).": 612,
+   "5000/pauza: Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).": 612
+  },
+  "leakedMetaKeys": {},
+  "v2KeyKept": 0,
+  "v2DaysKept": 0,
+  "selectedAs": {},
+  "ex": []
+ },
+ "maraton v2 (rezultat) → HM/10K v1": {
+  "sources": 225,
+  "sourceRejected": 0,
+  "calls": 2700,
+  "ok": 2700,
+  "error": 0,
+  "errors": {},
+  "leakedMetaKeys": {
+   "paceBasis": 2700,
+   "trainingVdot": 2700,
+   "racePace": 2700,
+   "mpVdot": 2700,
+   "predictedMarathonSec": 2700
+  },
+  "v2KeyKept": 2700,
+  "v2DaysKept": 2252,
+  "selectedAs": {
+   "21097.5→HM v1": 1350,
+   "10000→10K v1": 1350
+  },
+  "ex": [
+   "d3-12w-35km-v30-A-sat 21097.5 2026-10-31",
+   "d3-12w-35km-v30-A-sat 21097.5 2026-10-31",
+   "d3-12w-35km-v30-A-sat 21097.5 2026-11-14"
+  ]
+ },
+ "maraton v2 (po osećaju) → HM/10K v1": {
+  "sources": 264,
+  "sourceRejected": 0,
+  "calls": 3168,
+  "ok": 0,
+  "error": 3168,
+  "errors": {
+   "21097.5/bez: Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).": 792,
+   "21097.5/pauza: Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).": 792,
+   "10000/bez: Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).": 792,
+   "10000/pauza: Neispravan skorašnji rezultat (distanca i vreme moraju biti veći od nule).": 792
+  },
+  "leakedMetaKeys": {},
+  "v2KeyKept": 0,
+  "v2DaysKept": 0,
+  "selectedAs": {},
+  "ex": []
+ }
+}

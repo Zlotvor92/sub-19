@@ -1,0 +1,56 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sources": 253,
+ "HM": {
+  "calls": 5060,
+  "generated": 2265,
+  "genRejected": {
+   "PLAN_TOO_SHORT: Plan od # nedelja je prekratak: polumaraton traži najmanje # nedelja; preporuka:": 1870,
+   "WEEKLY_KM_TOO_HIGH: Trenutni obim # km je iznad # km za # dana trčanja. Obim podržava #–# dana trčan": 200,
+   "EASY_PACE_REQUIRED: Nema pouzdanog rezultata (rezultat je star # dana (> #)): za plan po osećaju une": 740,
+   "WEEKLY_KM_TOO_HIGH: Trenutni obim # km je iznad # km za # dana trčanja. Obim podržava # dana trčanja": 240,
+   "WEEKLY_KM_TOO_HIGH: Trenutni obim # km je iznad # km za # dana trčanja. HM v# podržava najviše # km ": 420,
+   "WEEKLY_KM_TOO_HIGH: Početnik sa # dana trčanja: trenutni obim # km je iznad # km (opseg početnika #–": 240,
+   "BEGINNER_SHORT: Početnik: plan polumaratona traži najmanje # nedelja (izabrano #); počni plan na": 130
+  },
+  "adaptOk": 2265,
+  "adaptRejected": {},
+  "common": {},
+  "byWeeksLeft": {
+   "≥12": "1955/2610 ok",
+   "10-11": "310/580 ok",
+   "<8": "0/1480 ok",
+   "8-9": "0/390 ok"
+  }
+ },
+ "10K": {
+  "calls": 5060,
+  "generated": 1755,
+  "genRejected": {
+   "PLAN_TOO_SHORT: Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja.": 1480,
+   "WEEKLY_KM_TOO_HIGH: Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava #–# da": 440,
+   "EASY_PACE_REQUIRED: Nema pouzdanog rezultata (rezultat je star # dana (> #)): za plan po osećaju une": 740,
+   "WEEKLY_KM_TOO_HIGH: Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava # dana": 300,
+   "WEEKLY_KM_TOO_HIGH: Trenutni obim # km je iznad # km nedeljno, van opsega ovog plana.": 840,
+   "BEGINNER_SHORT: Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #": 95,
+   "WEEKLY_KM_TOO_HIGH: Početnik sa # dana trčanja: trenutni obim # km je iznad # km (opseg početnika #–": 240,
+   "BEGINNER_DAYS: Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana.": 580,
+   "WEEKLY_KM_TOO_HIGH: Početnik: trenutni obim # km je iznad # km (opseg početnika #–# km); uz ovaj obi": 320
+  },
+  "adaptOk": 1755,
+  "adaptRejected": {},
+  "common": {},
+  "byWeeksLeft": {
+   "≥12": "1295/2610 ok",
+   "10-11": "295/580 ok",
+   "<8": "0/1480 ok",
+   "8-9": "165/390 ok"
+  }
+ },
+ "seconds": 45.206
+}
