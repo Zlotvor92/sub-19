@@ -149,7 +149,7 @@ pokrivenost, zaključani + urađeni, lanac, bol + pauza) + pouke 7, 18, 22, 23 k
 - H14 WU/CD po trenutnom obimu: < 40 km 15/10; 40–59,9 20/15; ≥ 60 25/15. Oporavci: R isti metraž; I 1:1 (max 4:00,
   15 s); T cruise 60 s (≤ 1600 m) / 90 s; RP 90 s (≤ 3000 m) / 120 s.
 - H15 Tabela dana (02): 3 d: 1 Q + lagan + dugi, 25–45 km, max 55, dugi 45 %, min 12 | 4 d: 2 Q + 1 lagan, 30–60,
-  max 70, 35 %, min 16 | 5 d: 2 Q + 2 lagana, 35–75, max 85, 32 %, min 20 | 6 d: 2 Q + 3 lagana, 40–90, max 100, 30 %,
+  max 70, 40 % (odluka HM-01; bilo 35 %), min 16 | 5 d: 2 Q + 2 lagana, 35–75, max 85, 32 %, min 20 | 6 d: 2 Q + 3 lagana, 40–90, max 100, 30 %,
   min 24. 3 dana: jedan kvalitet T kont. → T cruise → RP, bez I/R. 5/6 dana: lagani jednaki. 1/2/7 dana odbijanje.
 - H16 Po osećaju (03): easyPaceSecPerKm 270–510 obavezan; E = lagan ± 15 s; procena VDOT-a = VDOT čiji je brži kraj E =
   lagan (25–60) samo za orijentir; RPE T 6–7, RP 6–7, I 8, R 8; test 5 km u poslednjoj nedelji baze (Q1 ili kvalitet
