@@ -19,23 +19,8 @@ export const FEEL_PARTS = 3;
 /** Red bazne linije: vrh cilja, najduži dugi, heš celog plana bez oznake verzije. */
 export type BaselineRow = [peakKm: number, longestKm: number, hash: string];
 
-/**
- * ZAUSTAVLJENO (docs/hm-v2/reports/SEGMENT-03-STOP.md): početnik pri najmanjem obimu — prvo rasterećenje
- * (0,8 × cilja) ne nosi dugi 0,8 × poslednjeg + lagane ≥ 4 km (H5 × H13 × H17). Izmereno na mreži početnika:
- * 426 / 1890 odbijanja WEEK_INFEASIBLE u prvoj rasteretnoj nedelji — 4 dana 20 km i 5 dana 25 km (svi tempi),
- * 4 dana 25 km uz lagan 5:30 i VDOT 40 (13–20 ned). Test do odluke organizatora dozvoljava TAČNO ova odbijanja.
- */
-export function stopRejection(g: Grid03Input): boolean {
-  return (
-    (g.days === 4 && g.km === 20) ||
-    (g.days === 5 && g.km === 25) ||
-    (g.days === 4 && g.km === 25 && g.weeks > 12 && (g.easy === 330 || g.vdot === 40))
-  );
-}
-
 interface Result {
   rejected: string[];
-  stopRejected: string[];
   errors: string[];
   bad: Record<string, string[]>;
   st: Record<number, GridStats>;
@@ -43,14 +28,9 @@ interface Result {
   nondeterministic: string[];
 }
 
-function run(
-  inputs: readonly Grid03Input[],
-  determinism: (i: number) => boolean,
-  stop: (g: Grid03Input) => boolean
-): Result {
+function run(inputs: readonly Grid03Input[], determinism: (i: number) => boolean): Result {
   const out: Result = {
     rejected: [],
-    stopRejected: [],
     errors: [],
     bad: {},
     st: {},
@@ -60,9 +40,7 @@ function run(
   inputs.forEach((g, i) => {
     const r = generateHmV2(g.input);
     if (!r.ok) {
-      const first = r.reasons[0]!;
-      if (stop(g) && first.code === 'WEEK_INFEASIBLE') out.stopRejected.push(g.id);
-      else out.rejected.push(`${g.id}: ${r.reasons.map((x) => x.message).join(' | ')}`);
+      out.rejected.push(`${g.id}: ${r.reasons.map((x) => x.message).join(' | ')}`);
       return;
     }
     for (const v of r.plan.warnings)
@@ -84,8 +62,7 @@ function run(
   return out;
 }
 
-/** Mreža 03 nad `inputs` (uzorak brzog nivoa ili deo punog). `kind` bira baznu liniju i dozvoljena
-    odbijanja (početnik: samo sudar iz stopRejection). */
+/** Mreža 03 nad `inputs` (uzorak brzog nivoa ili deo punog). `kind` bira baznu liniju. */
 export function describeGrid03(
   name: string,
   kind: 'feel' | 'beginner',
@@ -93,19 +70,16 @@ export function describeGrid03(
   extra?: () => void
 ): void {
   const baseline = join(DIR, `segment03-${kind}.baseline.json`);
-  const stop = kind === 'beginner' ? stopRejection : () => false;
   describe(name, () => {
     let res: Result;
     beforeAll(() => {
-      res = run(inputs, (i) => FULL || i % 4 === 0, stop);
+      res = run(inputs, (i) => FULL || i % 4 === 0);
     }, 120_000);
 
-    it('K1: 0 odbijanja van sudara i 0 grešaka validatora', () => {
+    it('K1: 0 odbijanja i 0 grešaka validatora', () => {
       expect(inputs.length).toBeGreaterThan(0);
       expect(res.rejected).toEqual([]);
       expect(res.errors).toEqual([]);
-      // Sudar (početnik): odbijeni su TAČNO ulazi iz stopRejection, nijedan drugi.
-      expect(res.stopRejected).toEqual(inputs.filter(stop).map((g) => g.id));
     });
 
     it('nezavisne invarijante (H16 po osećaju i test, H17 početnik, Uslov 8, pouke 1–5, 9, 12, 28): 0 prekršaja', () => {
@@ -132,9 +106,7 @@ export function describeGrid03(
         return;
       }
       const base = JSON.parse(readFileSync(baseline, 'utf8')) as Record<string, BaselineRow>;
-      const want = Object.fromEntries(
-        inputs.filter((g) => !stop(g)).map((g) => [g.id, base[g.id]])
-      );
+      const want = Object.fromEntries(inputs.map((g) => [g.id, base[g.id]]));
       expect(res.rows).toEqual(want);
     });
 

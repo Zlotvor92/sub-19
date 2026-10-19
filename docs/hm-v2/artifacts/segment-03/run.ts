@@ -47,6 +47,11 @@ const CASES: { id: string; label: string }[] = [
     label: "početnik po osećaju, 4 dana, 25 km, lagan 5:30 (taper T 1,5 km)",
   },
   {
+    id: "b-d4-13w-20km-e330-A",
+    label:
+      "početnik po osećaju, 4 dana, 20 km (najmanji obim): rasterećenje HI14",
+  },
+  {
     id: "b-d5-20w-45km-v40-B",
     label: "početnik sa rezultatom (VDOT 40), 5 dana, 45 km, 20 ned",
   },

@@ -313,6 +313,14 @@ export function planHash(plan: { policyVersion: string }): string {
   return fnv(JSON.stringify({ ...plan, policyVersion: '' }));
 }
 
+/** Heš celog rezultata generatora: plan bez oznake verzije ili razlozi odbijanja (regresija prema HM-02, isto kao
+    docs/hm-v2/artifacts/segment-03/regression-hm02.ts). */
+export function resultHash(
+  r: { ok: true; plan: { policyVersion: string } } | { ok: false; reasons: unknown[] }
+): string {
+  return r.ok ? planHash(r.plan) : `odbijen:${fnv(JSON.stringify(r.reasons))}`;
+}
+
 /** Napomena nedelje 1 bez ulaza `recentLongRunKm` (pouka 28, HM-02) — počinje ovim tekstom. */
 export const RECENT_LONG_NOTE = 'Dugi nedelje 1';
 

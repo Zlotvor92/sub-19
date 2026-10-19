@@ -110,6 +110,26 @@ Po osećaju: E 5:15–5:45/km, procena VDOT 45,7 (orijentir T 4:34, RP 4:41/km),
 | 11  | taper  | 24,5 / 24,6    | T 1,5 km kontinuirano (RPE 6–7)  | —   | 8,4  | 5,1 + 5,0       |                            |
 | 12  | trka   | 14,2 / 14,2    | —                                | —   | —    | 5,0 + 5,0       | oštrenje —; trka van obima |
 
+## b-d4-13w-20km-e330-A — početnik po osećaju, 4 dana, 20 km (najmanji obim): rasterećenje HI14
+
+Po osećaju: E 5:15–5:45/km, procena VDOT 45,7 (orijentir T 4:34, RP 4:41/km), bez prognoze do testa; vrh 28,0 km (granica 28,0); upozorenja: LONG_RUN_SHORT, DELOAD_NO_QUALITY, DELOAD_LONG_SHORTENED.
+
+| ned | faza   | cilj / plan km | Q1 / test                        | Q2  | dugi | lagani          | napomena                   |
+| --- | ------ | -------------- | -------------------------------- | --- | ---- | --------------- | -------------------------- |
+| 1   | baza   | 20,0 / 20,0    | —                                | —   | 8,0  | 4,0 + 4,0 + 4,0 | uvod                       |
+| 2   | baza   | 21,0 / 21,0    | —                                | —   | 8,4  | 4,2 + 4,2 + 4,2 | uvod                       |
+| 3   | baza   | 22,1 / 22,1    | T 1,5 km kontinuirano (RPE 6–7)  | —   | 8,0  | 4,1 + 4,0       |                            |
+| 4   | baza   | 17,7 / 17,7    | —                                | —   | 5,7  | 4,0 + 4,0 + 4,0 | rasterećenje               |
+| 5   | razvoj | 23,2 / 23,3    | T 2,0 km kontinuirano (RPE 6–7)  | —   | 8,6  | 4,1 + 4,0       |                            |
+| 6   | razvoj | 24,4 / 24,4    | T 2 × 1200 m (RPE 6–7)           | —   | 9,2  | 4,1 + 4,0       |                            |
+| 7   | razvoj | 25,6 / 25,6    | T 2,4 km kontinuirano (RPE 6–7)  | —   | 10,2 | 4,3 + 4,2       |                            |
+| 8   | spec.  | 26,9 / 26,9    | RP 2 × 2000 m (RPE 6–7)          | —   | 10,0 | 4,1 + 4,0       |                            |
+| 9   | spec.  | 21,5 / 21,6    | T 1,5 km kontinuirano (RPE 6–7)  | —   | 7,4  | 4,1 + 4,0       | rasterećenje               |
+| 10  | spec.  | 28,0 / 28,1    | RP 4,0 km kontinuirano (RPE 6–7) | —   | 11,2 | 4,2 + 4,1       |                            |
+| 11  | spec.  | 28,0 / 28,0    | RP 2 × 2000 m (RPE 6–7)          | —   | 11,1 | 4,1 + 4,0       |                            |
+| 12  | taper  | 19,6 / 19,6    | T 1,5 km kontinuirano (RPE 6–7)  | —   | 5,5  | 4,1 + 4,0       |                            |
+| 13  | trka   | 12,2 / 12,2    | —                                | —   | —    | 4,0 + 4,0       | oštrenje —; trka van obima |
+
 ## b-d5-20w-45km-v40-B — početnik sa rezultatom (VDOT 40), 5 dana, 45 km, 20 ned
 
 VDOT 40,0, RP 5:15/km; vrh 60,0 km (granica 60,0); upozorenja: —.

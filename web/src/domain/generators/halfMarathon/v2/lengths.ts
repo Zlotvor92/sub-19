@@ -142,9 +142,26 @@ export function taperLengths(
   return withEasy(target10 * 10 - quality100, cap10, easyDays);
 }
 
+/** HI14: rasterećenje sa danom od `quality100` [0,01 km] uz pun dugi (0,8 × poslednji, H13) ostavlja lagane
+    ispod 4 km — jedini slučaj u kom kvalitet rasterećenja sme da otpadne (kad ni uz skraćen dugi ne staje).
+    Jedna funkcija za konstruktor i validator. */
+export function deloadEasyShort(
+  target10: number,
+  quality100: number,
+  easyDays: number,
+  lastLong10: number,
+  rule: LongRule,
+  p: Paces,
+  roll10 = Infinity
+): boolean {
+  const long10 = Math.min(deloadLong10(lastLong10), longCap10(target10, rule, p, roll10));
+  return target10 * 10 - quality100 - long10 * 10 < easyDays * EASY_MIN10 * 10;
+}
+
 /** H5: rasterećenje — dugi = 0,8 × poslednji ne-rasteretni dugi (i ≤ H13); ostatak na `easyDays` jednakih
-    laganih dana (≥ 4 km, ≤ dugi). `test` (H16, HI11 b): dugi ≤ 0,8 × poslednji — najduži koji ostavlja lagane
-    ≥ 4 km i ≤ dugi (odstupanje, opreznije). */
+    laganih dana (≥ 4 km, ≤ dugi). HI14 (i HI11 b za test): SAMO kad tako nije izvodljivo, dugi je najduži koji
+    ostavlja lagane ≥ 4 km i ≤ dugi (skraćen, nikad duži od 0,8 ×; cilj nedelje ostaje). Jedna funkcija za
+    konstruktor i validator. */
 export function deloadLengths(
   target10: number,
   quality100: number,
@@ -152,12 +169,11 @@ export function deloadLengths(
   lastLong10: number,
   rule: LongRule,
   p: Paces,
-  roll10 = Infinity,
-  test = false
+  roll10 = Infinity
 ): Lengths | null {
   const long10 = Math.min(deloadLong10(lastLong10), longCap10(target10, rule, p, roll10));
-  if (test) return withEasy(target10 * 10 - quality100, long10, easyDays);
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
-  if (long10 < EASY_MIN10 || easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
-  return { long10, easy10 };
+  if (long10 >= EASY_MIN10 && easy10.every((e) => e >= EASY_MIN10 && e <= long10))
+    return { long10, easy10 };
+  return withEasy(target10 * 10 - quality100, long10, easyDays);
 }

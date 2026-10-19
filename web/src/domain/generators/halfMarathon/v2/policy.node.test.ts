@@ -223,6 +223,7 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'HI8',
       'HI9',
       'HI10',
+      'HI14',
       'HI11',
       'HI12',
       'HI13'

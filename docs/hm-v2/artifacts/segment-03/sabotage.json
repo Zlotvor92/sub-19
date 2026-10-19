@@ -90,27 +90,51 @@
     ]
   },
   {
-    "name": "S10 rasterećenje sa testom bez skraćenja dugog (HI11 b)",
-    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
-    "find": "  if (test) return withEasy(target10 * 10 - quality100, long10, easyDays);",
-    "replace": "  if (test && long10 < 0) return withEasy(target10 * 10 - quality100, long10, easyDays);",
-    "tests": [
-      "src/domain/generators/halfMarathon/v2/feel.node.test.ts",
-      "src/domain/generators/halfMarathon/v2/feelGrid.node.test.ts"
-    ]
-  },
-  {
-    "name": "S11 HI13: rasterećenje u uvodu sa kvalitetom (pouka 31)",
+    "name": "S10 HI13: rasterećenje u uvodu sa kvalitetom (pouka 31)",
     "file": "src/domain/generators/halfMarathon/v2/week.ts",
     "find": "    const fits = !intro && !test && d.doseM <= capM('T', targetKm);",
     "replace": "    const fits = !test && d.doseM <= capM('T', targetKm);",
     "tests": ["src/domain/generators/halfMarathon/v2/beginner.node.test.ts"]
   },
   {
-    "name": "S12 plan sa rezultatom dobija paceBasis (regresija bajt-isto prema HM-02)",
+    "name": "S11 plan sa rezultatom dobija paceBasis (regresija bajt-isto prema HM-02)",
     "file": "src/domain/generators/halfMarathon/v2/generate.ts",
     "find": "    ...(feel ? { paceBasis: 'feel' as const } : {}),",
     "replace": "    ...(feel ? { paceBasis: 'feel' as const } : { paceBasis: 'result' as const }),",
     "tests": ["src/domain/generators/halfMarathon/v2/grid.node.test.ts"]
+  },
+  {
+    "name": "S12 HI14 skraćivanje dugog rasterećenja isključeno",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  return withEasy(target10 * 10 - quality100, long10, easyDays);\n}",
+    "replace": "  return null;\n}",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/beginnerGrid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/beginner.node.test.ts"
+    ]
+  },
+  {
+    "name": "S13 HI14 validator bez iste funkcije (očekuje uvek 0,8 × poslednji)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "        const exp10 = len ? len.long10 : want10;",
+    "replace": "        const exp10 = want10;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/beginnerGrid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/beginner.node.test.ts"
+    ]
+  },
+  {
+    "name": "S14 HI14 kvalitet otpada i kad lagani nisu ispod minimuma (regresija 3 d)",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "      fits &&\n      deloadEasyShort(target10, km100(c.w!.km), c.dates.length, lastLong10, rule, p, roll10);",
+    "replace": "      fits;",
+    "tests": ["src/domain/generators/halfMarathon/v2/grid.node.test.ts"]
+  },
+  {
+    "name": "S15 dan testa nije kvalitetni dan za pouku 14 (odluka HM-03)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "        .filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test')",
+    "replace": "        .filter((d) => d.workout.kind === 'quality')",
+    "tests": ["src/domain/generators/halfMarathon/v2/feel.node.test.ts"]
   }
 ]

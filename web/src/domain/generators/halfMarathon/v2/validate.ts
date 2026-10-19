@@ -6,6 +6,7 @@
 
 import { daysBetween, mustDay, weekdayOf } from './dates.ts';
 import {
+  deloadEasyShort,
   deloadLengths,
   deloadLong10,
   EASY_MIN10,
@@ -77,6 +78,7 @@ import { HARD_ROLES, raceWeekRuns, sharpenerAllowed, sharpenerDate } from './wee
 import {
   doseOf,
   ladderLevels,
+  qualityWorkout,
   recoveryOf,
   repsOf,
   rpeOf,
@@ -457,7 +459,10 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     if (!isSteady(w) || !long) return [];
     const q = Math.max(
       0,
-      ...w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.sec)
+      // Odluka HM-03: dan testa se računa kao kvalitetni dan (ista provera, isti kod).
+      ...w.days
+        .filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test')
+        .map((d) => d.workout.sec)
     );
     return q > long.workout.sec ? [{ w: w.index, q, long: long.workout.sec }] : [];
   });
@@ -802,7 +807,14 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         deloadLong10(lastLong10),
         longCap10(to10(w.targetKm), rule, p, roll10)
       );
+      // HI14: dužine rasterećenja — ista funkcija kao konstruktor (dugi ≤ 0,8 ×, skraćen kad lagani ne bi bili
+      // ≥ 4 km); kvalitet otpada samo kad ni uz skraćen dugi ne staje.
+      const nRuns = w.days.length - 1;
+      const last10 = lastLong10;
+      const lenWith = (km: number, nEasy: number) =>
+        deloadLengths(to10(w.targetKm), to100(km), nEasy, last10, rule, p, roll10);
       const testDay = w.days.find((d) => d.workout.kind === 'test');
+      const tFits = want.doseM <= capM('T', w.targetKm);
       if (w.test || intro(w)) {
         if (nQuality !== 0)
           err(
@@ -812,7 +824,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
               : 'Rasterećenje u uvodu: bez kvaliteta (HI13).',
             w.index
           );
-      } else if (want.doseM > capM('T', w.targetKm)) {
+      } else if (!tFits) {
         if (nQuality !== 0 || !w.notes.some((n) => n.includes('bez kvaliteta')))
           err(
             'DELOAD_CONTENT',
@@ -820,6 +832,27 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
             w.index
           );
         else warn('DELOAD_NO_QUALITY', `Rasterećenje bez kvaliteta: T ${want.doseM} m.`, w.index);
+      } else if (
+        nQuality === 0 &&
+        lenWith(qualityWorkout(want, p, wc, feel).km, nRuns - 1) === null &&
+        deloadEasyShort(
+          to10(w.targetKm),
+          to100(qualityWorkout(want, p, wc, feel).km),
+          nRuns - 1,
+          last10,
+          rule,
+          p,
+          roll10
+        )
+      ) {
+        if (!w.notes.some((n) => n.includes('ni uz skraćen dugi')))
+          err('DELOAD_CONTENT', 'Rasterećenje bez kvaliteta (HI14) bez napomene.', w.index);
+        else
+          warn(
+            'DELOAD_NO_QUALITY',
+            `Rasterećenje bez kvaliteta: ni uz skraćen dugi T ${want.doseM} m ne ostavlja lagane ≥ ${P.lengths.easyMinKm} km (HI14).`,
+            w.index
+          );
       } else if (nQuality !== 1 || !same(t, want))
         err(
           'DELOAD_CONTENT',
@@ -827,34 +860,30 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           w.index
         );
       if (long) {
-        // HI11 b: sa testom dugi ≤ 0,8 × poslednji — najduži koji ostavlja lagane ≥ 4 km (ista funkcija).
-        const easyN = w.days.filter((d) => d.role === 'easy').length;
-        const len =
-          w.test && testDay
-            ? deloadLengths(
-                to10(w.targetKm),
-                to100(testDay.workout.km),
-                easyN,
-                lastLong10,
-                rule,
-                p,
-                roll10,
-                true
-              )
-            : null;
+        const dayKm = testDay
+          ? testDay.workout.km
+          : w.days
+              .filter((d) => d.workout.kind === 'quality')
+              .reduce((a, d) => a + d.workout.km, 0);
+        const len = lenWith(dayKm, w.days.filter((d) => d.role === 'easy').length);
         const exp10 = len ? len.long10 : want10;
         if (to10(long.workout.km) !== exp10)
           err(
             'DELOAD_LONG',
-            `Dugi rasterećenja ${long.workout.km} km ≠ ${exp10 / 10} km (0,8 × poslednji, H5${w.test ? '; sa testom lagani ≥ 4 km, HI11' : ''}).`,
+            `Dugi rasterećenja ${long.workout.km} km ≠ ${exp10 / 10} km (0,8 × poslednji, H5; skraćen samo da lagani ostanu ≥ 4 km, HI14).`,
             w.index
           );
-        else if (exp10 < want10)
+        else if (exp10 < want10) {
+          if (!w.notes.some((n) => n.includes('kraćen')))
+            err('DELOAD_LONG', 'Skraćen dugi rasterećenja bez napomene (HI14).', w.index);
           warn(
-            'TEST_DELOAD_LONG',
-            `Rasterećenje sa testom: dugi ${exp10 / 10} km < 0,8 × poslednji (${want10 / 10} km) da lagani ostanu ≥ ${P.lengths.easyMinKm} km (H16 ispred H5, HI11).`,
+            w.test ? 'TEST_DELOAD_LONG' : 'DELOAD_LONG_SHORTENED',
+            w.test
+              ? `Rasterećenje sa testom: dugi ${exp10 / 10} km < 0,8 × poslednji (${want10 / 10} km) da lagani ostanu ≥ ${P.lengths.easyMinKm} km (H16 ispred H5, HI11).`
+              : `Rasterećenje: dugi ${exp10 / 10} km < 0,8 × poslednji (${want10 / 10} km) da lagani ostanu ≥ ${P.lengths.easyMinKm} km (najmanji obim, HI14).`,
             w.index
           );
+        }
       }
     }
     if (w.phase === 'taper') {

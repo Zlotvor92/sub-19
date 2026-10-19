@@ -55,11 +55,14 @@ beginnerGrid>.node.test.ts`, pa prettier.
 … grid.node.test.ts`); primeri, K i merenja u `artifacts/segment-02/`; sabotaže 12/12.
 - Sledeće: HM-03 (po osećaju + test, početnik).
 
-## Segment 03 (hm-v2.2.0): po osećaju + test 5 km, početnik, trčanje/hodanje — ZAUSTAVLJENO
+## Segment 03 (hm-v2.2.0): po osećaju + test 5 km, početnik, trčanje/hodanje
 
-- Sudar: početnik pri najmanjem obimu (4 d 20 km, 5 d 25 km, 4 d 25 km brzi) — prvo rasterećenje ne nosi dugi 0,8 ×
-  i lagane ≥ 4 km (H5 × H13 × H17): 426 / 1890 WEEK_INFEASIBLE; opcije P1/P4/P5/P2 izmerene
-  (`reports/SEGMENT-03-STOP.md`, `artifacts/segment-03/measure-stop.ts`). Čeka odluku organizatora.
-- Urađeno: H16 (6336 planova po osećaju: K1 0, invarijante 0, tačno 1 test), H17 (1464 izvodljiva: invarijante 0),
-  HI10–HI13; planovi sa rezultatom bajt-isti kao HM-02 (169 644 ulaza, 0 razlika); sabotaže 12/12; brz nivo 26 s,
-  pun 202 s; `npm run check` zeleno.
+- Zaustavljeno na `4fc8a3c` (početnik najmanjeg obima: prvo rasterećenje H5 × lagan ≥ 4 km × H17;
+  `reports/SEGMENT-03-STOP.md`); odluke organizatora: HI14 / pouka 33 (dugi rasterećenja skraćen, cilj ostaje, za sve
+  planove), dan testa = kvalitetni dan za pouku 14, HI10 i H17 < 14 km potvrđeni. Izveštaj
+  `reports/SEGMENT-03-IMPLEMENTATION.md`.
+- Mreža 03: po osećaju 6336 i početnik 1890 — K1 0, invarijante 0, tačno 1 test po planu po osećaju; planovi sa
+  rezultatom (169 644) bajt-isti kao HM-02 osim 6 izuzetaka HI14 (`segment03.regression-exceptions.json`).
+- Testovi: brz 28 s (17 fajlova, 146), pun 205 s (29, 181); sabotaže 15/15; primeri, K i merenja u
+  `artifacts/segment-03/`.
+- Sledeće: HM-04 (adaptacija; korak A: pouka 32 i za nedelju testa — 42 testa u rasterećenju duža od dugog).

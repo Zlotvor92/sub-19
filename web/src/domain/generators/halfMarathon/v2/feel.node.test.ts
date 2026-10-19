@@ -199,6 +199,19 @@ describe('H16 validator hvata', () => {
     expect(errors(g)).toContain('TEST');
   });
 
+  it('odluka HM-03: dan testa je kvalitetni dan za upozorenje LONG_SHORTER_THAN_QUALITY (pouka 14, HI3)', () => {
+    const p = structuredClone(plan('f-d4-12w-40km-e360-A'));
+    const w = p.weeks[2]!;
+    const long = w.days.find((d) => d.role === 'long')!;
+    // Dugi kraći (po trajanju) od dana testa; Q2 ostaje kraći od dugog.
+    long.workout = {
+      ...long.workout,
+      sec: w.days.find((d) => d.role === 'test')!.workout.sec - 60
+    };
+    const v = validatePlan(p).filter((x) => x.rule === 'LONG_SHORTER_THAN_QUALITY');
+    expect(v.map((x) => [x.severity, x.week])).toEqual([['warning', 3]]);
+  });
+
   it('isti tempo za sve rasporede i broj dana (tempo zavisi samo od laganog tempa)', () => {
     const v = (days: 3 | 4 | 5 | 6) =>
       generateHmV2(

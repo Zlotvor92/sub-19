@@ -4,11 +4,42 @@
    (dugi svake nedelje ≤ max(1,1 × L, L + 1,0)); nedelja 1 ispod obima samo uz dugi na apsolutnom plafonu; skok
    dugog nedelja 1 → 2 ≤ max(10 %, 1 km). Brz nivo: svaki 8. unutar dana × r; pun: sve. */
 
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { sample } from '@/test/level';
+import { FULL, sample } from '@/test/level';
 import { generateHmV2 } from './generate.ts';
 import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
-import { DAY_COUNTS, inputOf, KM_BY_DAYS, SCHEDULES_BY_DAYS } from './testInputs.ts';
+import { DAY_COUNTS, inputOf, KM_BY_DAYS, resultHash, SCHEDULES_BY_DAYS } from './testInputs.ts';
+import type { HmV2Plan } from './types.ts';
+
+const DIR = dirname(fileURLToPath(import.meta.url));
+/** HM-02 (2285fc7): heš rezultata svakog ulaza mreže (regression-hm02.ts). */
+const HM02 = JSON.parse(
+  readFileSync(join(DIR, 'segment02.recent-hashes-2285fc7.json'), 'utf8')
+) as Record<string, string>;
+interface WeekRow {
+  targetKm: number;
+  fitted: string | null;
+  longKm: number;
+  easyKm: number[];
+  quality: number;
+}
+/** Izuzeci regresije sa razlogom (odluka organizatora HM-03, A: HI14 / pouka 33). */
+const EXCEPTIONS = JSON.parse(
+  readFileSync(join(DIR, 'segment03.regression-exceptions.json'), 'utf8')
+) as Record<string, { reason: string; week: number; before: WeekRow; after: WeekRow }>;
+const rowOf = (p: HmV2Plan, week: number): WeekRow => {
+  const w = p.weeks[week - 1]!;
+  return {
+    targetKm: w.targetKm,
+    fitted: w.fitted,
+    longKm: w.days.find((d) => d.role === 'long')!.workout.km,
+    easyKm: w.days.filter((d) => d.role === 'easy').map((d) => d.workout.km),
+    quality: w.days.filter((d) => d.workout.kind === 'quality').length
+  };
+};
 
 const ALL = DAY_COUNTS.flatMap((days) => {
   const out: { id: string; days: number; km: number; vdot: number; weeks: number; r: number }[] =
@@ -22,7 +53,14 @@ const ALL = DAY_COUNTS.flatMap((days) => {
 });
 
 describe('pouka 28: mreža skorašnjeg najdužeg trka (10 944 plana)', () => {
-  const inputs = sample(ALL, 8, (g) => `${g.days}/${g.r}`);
+  const inputs = sample(
+    ALL,
+    8,
+    (g) => `${g.days}/${g.r}`,
+    (g) => g.id in EXCEPTIONS
+  );
+  const regression: string[] = [];
+  const excepted: Record<string, WeekRow> = {};
   const tooShort: { id: string; r: number; days: number; week?: number; message: string }[] = [];
   const other: string[] = [];
   const bad: Record<string, string[]> = {};
@@ -39,6 +77,10 @@ describe('pouka 28: mreža skorašnjeg najdužeg trka (10 944 plana)', () => {
           recentLongRunKm: g.r
         })
       );
+      const same = resultHash(res) === HM02[g.id];
+      const ex = EXCEPTIONS[g.id];
+      if (ex && res.ok && !same) excepted[g.id] = rowOf(res.plan, ex.week);
+      else if (!same || ex) regression.push(g.id);
       if (res.ok) checkPlan(g.id, res.plan, bad, st);
       else if (res.reasons.length === 1 && res.reasons[0]!.code === 'RECENT_LONG_TOO_SHORT')
         tooShort.push({ id: g.id, r: g.r, days: g.days, ...res.reasons[0]! });
@@ -62,6 +104,14 @@ describe('pouka 28: mreža skorašnjeg najdužeg trka (10 944 plana)', () => {
     expect(st.week1BelowAt.recent).toBeGreaterThan(0);
     // Najveći odnos uz pravilo „+1 km": 6 → 7 km (× 1,167).
     expect(st.longJump12Max).toBeLessThanOrEqual(7 / 6 + 1e-9);
+  });
+
+  it('regresija prema HM-02: bajt-isto osim spiska izuzetaka (HI14 / pouka 33: samo prva rasteretna nedelja)', () => {
+    expect(regression).toEqual([]);
+    const ids = inputs.map((g) => g.id).filter((id) => id in EXCEPTIONS);
+    expect(Object.keys(excepted)).toEqual(ids);
+    for (const id of ids) expect(excepted[id]).toEqual(EXCEPTIONS[id]!.after);
+    if (FULL) expect(ids).toHaveLength(6);
   });
 
   it('mreža ima 10 944 ulaza', () => {

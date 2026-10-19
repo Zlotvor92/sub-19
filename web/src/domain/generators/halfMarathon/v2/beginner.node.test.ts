@@ -186,10 +186,33 @@ describe('H17 plan početnika', () => {
     }
   });
 
-  it('ZAUSTAVLJENO (SEGMENT-03-STOP.md): 4 d 20 km — prvo rasterećenje neizvodljivo (H5 × H13 × H17)', () => {
-    const r = generateHmV2(ALL.find((g) => g.id === 'b-d4-13w-20km-e330-A')!.input);
-    expect(r.ok).toBe(false);
-    if (!r.ok) expect([r.reasons[0]!.code, r.reasons[0]!.week]).toEqual(['WEEK_INFEASIBLE', 4]);
+  it('HI14 (odluka posle SEGMENT-03-STOP.md): najmanji obim — dugi rasterećenja skraćen da lagani ostanu ≥ 4 km, cilj ostaje; kvalitet otpada samo kad ni tada ne staje', () => {
+    // 4 d 20 km, lagan 5:30, 13 ned: ned 4 cilj 17,7 km; uz T 1,5 km (6,05 km) dugi bi bio < lagan → bez kvaliteta.
+    const a = plan('b-d4-13w-20km-e330-A');
+    const w4 = a.weeks[3]!;
+    expect([w4.deload, w4.targetKm, w4.nominalKm, w4.fitted]).toEqual([true, 17.7, 17.7, null]);
+    expect(w4.days.filter((d) => d.workout.kind === 'quality')).toHaveLength(0);
+    expect(w4.days.map((d) => d.workout.km).sort()).toEqual([4, 4, 4, 5.7]);
+    expect(w4.notes[0]).toContain('ni uz skraćen dugi');
+    expect(w4.notes[1]).toBe(
+      'Dugi skraćen na 5,7 km da lagani ostanu ≥ 4,0 km (rasterećenje, najmanji obim; 0,8 × poslednji = 6,4 km; HI14).'
+    );
+    const rules = (p: HmV2Plan, i: number) =>
+      p.warnings
+        .filter((v) => v.week === i)
+        .map((v) => v.rule)
+        .sort();
+    expect(rules(a, 4)).toEqual(['DELOAD_LONG_SHORTENED', 'DELOAD_NO_QUALITY']);
+    // 12 ned: ned 5 kvalitet ostaje, dugi skraćen.
+    const b = plan('b-d4-12w-20km-e330-A');
+    const w5 = b.weeks[4]!;
+    expect([
+      w5.deload,
+      w5.fitted,
+      w5.days.filter((d) => d.workout.kind === 'quality').length
+    ]).toEqual([true, null, 1]);
+    expect(w5.days.find((d) => d.role === 'long')!.workout.km).toBe(4.5);
+    expect(rules(b, 5)).toEqual(['DELOAD_LONG_SHORTENED']);
   });
 });
 

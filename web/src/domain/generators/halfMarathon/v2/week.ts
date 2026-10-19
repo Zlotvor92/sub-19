@@ -4,7 +4,14 @@
    (volume.ts traži najbliži izvodljiv cilj). */
 
 import { addDays, daysBetween, weekdayOf } from './dates.ts';
-import { buildLengths, deloadLengths, deloadLong10, longCap10, taperLengths } from './lengths.ts';
+import {
+  buildLengths,
+  deloadEasyShort,
+  deloadLengths,
+  deloadLong10,
+  longCap10,
+  taperLengths
+} from './lengths.ts';
 import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
 import {
   beginnerTaperT,
@@ -156,25 +163,39 @@ export function buildWeek(
     const d = deloadDose(quality, frame.phase, rule);
     const fits = !intro && !test && d.doseM <= capM('T', targetKm);
     if (!fits && !relax && !intro && !test) return null;
-    const tw = test ? testWorkout(p, ctx.wc) : fits ? qualityWorkout(d, p, ctx.wc, ctx.feel) : null;
     const slot = deloadSlot(rule.quality);
     const tDay = slot === 'q1' ? pat.q1 : pat.q2!;
-    const dates = easyDates(
-      frame,
-      [...qDays, ...pat.easy].filter((wd) => !tw || wd !== tDay)
+    const lengthsWith = (w: Workout | null) => {
+      const ds = easyDates(
+        frame,
+        [...qDays, ...pat.easy].filter((wd) => !w || wd !== tDay)
+      );
+      return {
+        w,
+        dates: ds,
+        len: deloadLengths(target10, w ? km100(w.km) : 0, ds.length, lastLong10, rule, p, roll10)
+      };
+    };
+    // HI14: kvalitet otpada samo kad ni sa skraćenim dugim lagani ne ostaju ≥ 4 km (cilj nedelje ostaje).
+    let c = lengthsWith(
+      test ? testWorkout(p, ctx.wc) : fits ? qualityWorkout(d, p, ctx.wc, ctx.feel) : null
     );
-    const len = deloadLengths(
-      target10,
-      tw ? km100(tw.km) : 0,
-      dates.length,
-      lastLong10,
-      rule,
-      p,
-      roll10,
-      test
-    );
+    const qualityDropped =
+      !c.len &&
+      fits &&
+      deloadEasyShort(target10, km100(c.w!.km), c.dates.length, lastLong10, rule, p, roll10);
+    if (qualityDropped) c = lengthsWith(null);
+    const { w: tw, dates, len } = c;
     if (!len) return null;
     const long0 = Math.min(deloadLong10(lastLong10), longCap10(target10, rule, p, roll10));
+    const shortNote =
+      len.long10 < long0
+        ? [
+            `Dugi skraćen na ${fmtKm(len.long10 / 10)} km da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km (rasterećenje, najmanji obim; 0,8 × poslednji = ${fmtKm(long0 / 10)} km; HI14).`
+          ]
+        : [];
+    const longText =
+      len.long10 < long0 ? 'dugi skraćen (HI14)' : 'dugi 0,8 × poslednji ne-rasteretni';
     return finish(
       [
         ...(tw ? [day(dateOf(frame, tDay), test ? 'test' : slot, tw)] : []),
@@ -190,10 +211,13 @@ export function buildWeek(
           ]
         : [
             intro
-              ? `Rasterećenje u uvodu (HI13, pouka 31): cilj ${fmtKm(targetKm)} km bez kvaliteta — sadržaj uvoda; dugi 0,8 × poslednji ne-rasteretni.`
+              ? `Rasterećenje u uvodu (HI13, pouka 31): cilj ${fmtKm(targetKm)} km bez kvaliteta — sadržaj uvoda; ${longText}.`
               : tw
-                ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T ${fmtKm(d.doseM / 1000)} km), dugi 0,8 × poslednji ne-rasteretni (H5).`
-                : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — T ${fmtKm(d.doseM / 1000)} km ne staje u plafon ${P.caps.T * 100} % (H11 ispred H5, odstupanje); dugi 0,8 × poslednji ne-rasteretni.`
+                ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T ${fmtKm(d.doseM / 1000)} km), ${longText} (H5).`
+                : qualityDropped
+                  ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni uz skraćen dugi T ${fmtKm(d.doseM / 1000)} km ne ostavlja lagane ≥ ${fmtKm(P.lengths.easyMinKm)} km (HI14, odstupanje); ${longText}.`
+                  : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — T ${fmtKm(d.doseM / 1000)} km ne staje u plafon ${P.caps.T * 100} % (H11 ispred H5, odstupanje); ${longText}.`,
+            ...shortNote
           ]
     );
   }

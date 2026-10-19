@@ -216,8 +216,16 @@ const DECISIONS: readonly Decision[] = [
       'Opreznija opcija gde H17 ne kaže (start, rasterećenje, taper početnika); isto rešenje kao 10K v2 03b (D31), gde je bez T 1,5 km 3720 nedelja izgradnje početnika ostalo bez kvaliteta. ≈ 10 min praga (1,5 km) je uobičajen početni tempo trening. Brojke mreže početnika: docs/hm-v2/reports/SEGMENT-03-IMPLEMENTATION.md.'
   },
   {
+    id: 'HI14',
+    rule: 'Pouka 33 (MASTER § 2) — odluka organizatora posle zaustavljanja HM-03 (P1, A: važi za sve planove; isto kao MAR-03 S2, 10K A9/D27): rasterećenje (H5) koje nije izvodljivo zbog minimuma laganog (lagani < 4 km uz dugi 0,8 × poslednjeg) → dugi se skraćuje na najduži koji ostavlja lagane ≥ 4 km uz dugi ≥ lagan; cilj nedelje ostaje (samo naniže, bez cilja naviše — pouka 23); kvalitet ostaje, a otpada samo kad ni sa skraćenim dugim lagani ne ostaju ≥ 4 km; napomena „Dugi skraćen na x km da lagani ostanu ≥ 4 km (rasterećenje, najmanji obim)" + upozorenje DELOAD_LONG_SHORTENED (bez kvaliteta: DELOAD_NO_QUALITY). Kad je standardna konstrukcija izvodljiva, ništa se ne menja. Jedno mesto: lengths.ts deloadLengths (dužine) i deloadEasyShort (uslov za ispuštanje kvaliteta) u konstrukciji nedelje rasterećenja (week.ts); validator čita iste funkcije.',
+    place:
+      'lengths.ts deloadLengths, deloadEasyShort; week.ts buildWeek (rasterećenje); validate.ts (DELOAD_LONG, DELOAD_CONTENT)',
+    rationale:
+      'Sudar H5 × H13 × H17 (SEGMENT-03-STOP.md): početnik 4 d 20 km / 5 d 25 km (i 4 d 25 km brzi) — 426 / 1890 planova odbijeno u prvom rasterećenju. Kraći dugi u nedelji rasterećenja je opreznija opcija od podizanja cilja (P4, krši HI2) ili novog minimuma obima (P2). Mere posle odluke: docs/hm-v2/reports/SEGMENT-03-IMPLEMENTATION.md (raspodela dugi / poslednji ne-rasteretni dugi, rasterećenja bez kvaliteta). Skraćivanje se primenjuje samo pri minimumu laganog: kad rasterećenje ne staje jer bi lagani bio duži od dugog (3 d spor trkač), ostaje pretraga cilja naniže (H6). Planovi sa rezultatom: 169 644 ulaza, 6 promenjenih (3 d, 40–45 km, VDOT 70, skorašnji najduži 5 km — samo prva rasteretna nedelja: cilj po pravilu umesto spuštenog, kvalitet umesto bez kvaliteta, dugi skraćen; spisak segment03.regression-exceptions.json).'
+  },
+  {
     id: 'HI11',
-    rule: 'Tumačenja H16 (bez novog broja): (a) u rasterećenju test stoji na danu kvaliteta rasterećenja (T slot Q2; 3 dana Q1); (b) dugi rasterećenja sa testom ≤ 0,8 × poslednji ne-rasteretni — najduži koji ostavlja lagane ≥ 4 km i ≤ dugi (upozorenje TEST_DELOAD_LONG kad je skraćen); cilj rasterećenja sa testom se ne podiže (pouka 23: naviše bi smelo samo ako nedelja zaista ima test — ovde ga ima, ali podizanje nije potrebno: mreža 03 0 odbijanja); (c) prognoza polumaratona iz procene VDOT-a služi samo za trajanje segmenta trke (procena); (d) test nema RPE broj („kontrolisano maksimalno"); (e) trajanje testa = procena vremena 5 km iz procene VDOT-a.',
+    rule: 'Tumačenja H16 (bez novog broja): (a) u rasterećenju test stoji na danu kvaliteta rasterećenja (T slot Q2; 3 dana Q1); (b) dugi rasterećenja sa testom ≤ 0,8 × poslednji ne-rasteretni — kad lagani ne bi bili ≥ 4 km, najduži koji ih ostavlja ≥ 4 km i ≤ dugi (ista funkcija kao HI14; upozorenje TEST_DELOAD_LONG); (f) odluka organizatora HM-03: dan testa se računa kao kvalitetni dan za upozorenje LONG_SHORTER_THAN_QUALITY (pouka 14, HI3), plan se ne menja; cilj rasterećenja sa testom se ne podiže (pouka 23: naviše bi smelo samo ako nedelja zaista ima test — ovde ga ima, ali podizanje nije potrebno: mreža 03 0 odbijanja); (c) prognoza polumaratona iz procene VDOT-a služi samo za trajanje segmenta trke (procena); (d) test nema RPE broj („kontrolisano maksimalno"); (e) trajanje testa = procena vremena 5 km iz procene VDOT-a.',
     place:
       'week.ts (deload sa testom); lengths.ts deloadLengths; workouts.ts testWorkout; validate.ts (TEST, DELOAD_LONG)',
     rationale:
@@ -225,7 +233,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'HI12',
-    rule: 'Odluke organizatora o otvorenim pitanjima HM-02 (bez promene koda): (a) 594 plana koje kotrljajuće pravilo pouke 28 menja bez ulaza recentLongRunKm — prihvaćeno; (b) 3 dana / 25 km: taper i rasterećenje bez kvaliteta (HI2 odstupanje) — prihvaćeno (mali obim); (c) 6 dana mali obim + brz trkač: kvalitetni dan duži od dugog (132 plana) — upozorenje LONG_SHORTER_THAN_QUALITY (pouka 14) je dovoljno.',
+    rule: 'Odluke organizatora o otvorenim pitanjima HM-02 i HM-03 (bez promene koda): HM-03 — početnik 5 d najduži dugi < 14 km samo upozorenje (H17); HI10 potvrđen. HM-02 — (a) 594 plana koje kotrljajuće pravilo pouke 28 menja bez ulaza recentLongRunKm — prihvaćeno; (b) 3 dana / 25 km: taper i rasterećenje bez kvaliteta (HI2 odstupanje) — prihvaćeno (mali obim); (c) 6 dana mali obim + brz trkač: kvalitetni dan duži od dugog (132 plana) — upozorenje LONG_SHORTER_THAN_QUALITY (pouka 14) je dovoljno.',
     place:
       'lengths.ts rollingLongCap10 (a); week.ts relax (b); validate.ts LONG_SHORTER_THAN_QUALITY (c)',
     rationale: 'Prompt HM-03, tačka 3.'
