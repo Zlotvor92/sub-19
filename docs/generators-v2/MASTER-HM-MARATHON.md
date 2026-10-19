@@ -151,7 +151,8 @@ pokrivenost, zaključani + urađeni, lanac, bol + pauza) + pouke 7, 18, 22, 23 k
   R 200/300/400.
 - H11 Plafoni po treningu: R 5 %, I 8 %, T 10 %, RP 15 %.
 - H12 Progresija: ≤ 1 nivo/ned; početni nivo = najviši ≤ 60 % plafona; prelazi T cruise ≥ T kont., RP ≥ I.
-- H13 Dužine: dugi ≤ udeo dana i ≤ 150 min sporim E; lagan ≥ 4 km; upozorenje kad je najduži dugi < 16 km.
+- H13 Dužine: dugi ≤ udeo dana i ≤ 150 min sporim E i ≤ 24 km (odluka HM-01→02: ≈ 1,15 × trka; u HM-01 1320/3696
+  planova imalo dugi > 24 km, do 28 km); lagan ≥ 4 km; upozorenje kad je najduži dugi < 16 km.
 - H14 WU/CD po trenutnom obimu: < 40 km 15/10; 40–59,9 20/15; ≥ 60 25/15. Oporavci: R isti metraž; I 1:1 (max 4:00,
   15 s); T cruise 60 s (≤ 1600 m) / 90 s; RP 90 s (≤ 3000 m) / 120 s.
 - H15 Tabela dana (02): 3 d: 1 Q + lagan + dugi, 25–45 km, max 55, dugi 45 %, min 12 | 4 d: 2 Q + 1 lagan, 30–60,
