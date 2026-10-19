@@ -1,6 +1,6 @@
-/* H1 — opseg ulaza segmenta 01 (4 dana, 10–20 nedelja, 30–60 km, rezultat ≤ 84 dana, VDOT 30–80); H15 —
-   red tabele dana (segment 01: samo 4 dana); H17 — trčanje/hodanje. Van opsega: strukturisano odbijanje
-   (kod + poruka sa preporukom). Jedino mesto provere ulaza. */
+/* H1 — opseg ulaza (3–6 dana, 10–20 nedelja, obim po redu H15, rezultat ≤ 84 dana, VDOT 30–80); H15 —
+   red tabele dana; H17 — trčanje/hodanje; HI7 — skorašnji najduži trk (5–42 km, opcion). Van opsega:
+   strukturisano odbijanje (kod + poruka sa preporukom). Jedino mesto provere ulaza. */
 
 import { addDays, dayNumber, isWeekday, weekdayIndex } from './dates.ts';
 import { round1, vdotFromResult } from './paces.ts';
@@ -52,6 +52,7 @@ export function checkInput(raw: unknown): InputCheck {
     !optional(raw['goalTimeSec'], (v) => typeof v === 'number') ||
     !optional(raw['experience'], (v) => v === 'beginner' || v === 'regular') ||
     !optional(raw['runWalk'], (v) => typeof v === 'boolean') ||
+    !optional(raw['recentLongRunKm'], isNum) ||
     !optional(
       raw['recentResult'],
       (v) =>
@@ -67,7 +68,7 @@ export function checkInput(raw: unknown): InputCheck {
         {
           code: 'INPUT_SHAPE',
           message:
-            'Ulaz mora imati startDate, raceDate (YYYY-MM-DD), runDays (niz dana), currentWeeklyKm (broj) i recentResult (distanceM, timeSec, date); goalTimeSec, longRunDay, experience (beginner/regular) i runWalk (da/ne) su opcioni.'
+            'Ulaz mora imati startDate, raceDate (YYYY-MM-DD), runDays (niz dana), currentWeeklyKm (broj) i recentResult (distanceM, timeSec, date); goalTimeSec, longRunDay, experience (beginner/regular), runWalk (da/ne) i recentLongRunKm (km) su opcioni.'
         }
       ]
     };
@@ -128,7 +129,7 @@ export function checkInput(raw: unknown): InputCheck {
       `Plan od ${weeks} nedelja je predug (najviše ${q.weeksMax}): počni plan kasnije, najranije ${addDays(raceDate, -7 * q.weeksMax + 1)}.`
     );
 
-  // Dani trčanja i dan dugog (H15: segment 01 samo red 4 dana).
+  // Dani trčanja i dan dugog (H15).
   const rd = raw['runDays'] as unknown[];
   const daysOk = rd.every(isWeekday) && new Set(rd).size === rd.length;
   const runDays = daysOk
@@ -146,9 +147,7 @@ export function checkInput(raw: unknown): InputCheck {
       'RUN_DAYS_COUNT',
       runDays.length === 7
         ? `Plan polumaratona traži najmanje jedan dan odmora nedeljno; HM v2 radi sa ${counts} dana trčanja (izabrano 7).`
-        : runDays.length <= 2
-          ? `Za polumaraton je potrebno više dana trčanja: HM v2 radi sa ${counts} dana (izabrano ${runDays.length}).`
-          : `HM v2 (${P.version}) radi sa ${counts} dana trčanja (izabrano ${runDays.length}); ostali brojevi dana dolaze u segmentu 02.`
+        : `Za polumaraton je potrebno više dana trčanja: HM v2 radi sa ${counts} dana (izabrano ${runDays.length}).`
     );
   const longRaw = raw['longRunDay'];
   let longRunDay: Weekday | null = null;
@@ -158,18 +157,41 @@ export function checkInput(raw: unknown): InputCheck {
     else longRunDay = longRaw;
   }
 
-  // Obim (H1/H15): red broja dana; bez ispravnog broja dana — red 4 dana.
+  // Obim (H1/H15): red broja dana; bez ispravnog broja dana — ceo opseg tabele. Preporuka: brojevi dana
+  // čiji red podržava obim; ispod najmanjeg reda 10K ili izgradnja osnove.
   const km = raw['currentWeeklyKm'];
-  const row = rule ?? P.days[RUN_DAYS_COUNTS[0]!];
-  if (km < row.kmMin)
+  const km10 = Math.round(km * 10);
+  const rows = RUN_DAYS_COUNTS.map((n) => ({ n, r: P.days[n] }));
+  const lo = rule ? rule.kmMin : Math.min(...rows.map((x) => x.r.kmMin));
+  const hi = rule ? rule.kmMax : Math.max(...rows.map((x) => x.r.kmMax));
+  const fits = rows
+    .filter((x) => Math.round(x.r.kmMin * 10) <= km10 && km10 <= Math.round(x.r.kmMax * 10))
+    .map((x) => x.n);
+  const advice =
+    fits.length === 0
+      ? ''
+      : ` Obim podržava ${fits.length === 1 ? fits[0] : `${fits[0]}–${fits[fits.length - 1]}`} dana trčanja.`;
+  const nDays = rule ? ` za ${runDays.length} dana trčanja` : '';
+  if (km < lo)
     no(
       'WEEKLY_KM_TOO_LOW',
-      `Trenutni obim ${km} km je ispod ${row.kmMin} km nedeljno: preporuka je 10K plan ili izgradnja osnove pre plana polumaratona.`
+      fits.length === 0
+        ? `Trenutni obim ${km} km je ispod ${lo} km nedeljno: preporuka je 10K plan ili izgradnja osnove pre plana polumaratona.`
+        : `Trenutni obim ${km} km je ispod ${lo} km${nDays}.${advice}`
     );
-  else if (km > row.kmMax)
+  else if (km > hi)
     no(
       'WEEKLY_KM_TOO_HIGH',
-      `Trenutni obim ${km} km je iznad ${row.kmMax} km za ${runDays.length || RUN_DAYS_COUNTS[0]} dana trčanja (HM v2 ${P.version}); veći obim traži više dana (segment 02).`
+      `Trenutni obim ${km} km je iznad ${hi} km${nDays}.${advice || ` HM v2 podržava najviše ${Math.max(...rows.map((x) => x.r.kmMax))} km (${RUN_DAYS_COUNTS[RUN_DAYS_COUNTS.length - 1]} dana).`}`
+    );
+
+  // HI7 (pouka 28): skorašnji najduži trk, opcion, 5–42 km.
+  const recentLong = raw['recentLongRunKm'] as number | null | undefined;
+  const rl = P.recentLong;
+  if (recentLong != null && (recentLong < rl.minKm || recentLong > rl.maxKm))
+    no(
+      'RECENT_LONG_INVALID',
+      `Skorašnji najduži trk mora biti između ${rl.minKm} i ${rl.maxKm} km (uneto ${recentLong}).`
     );
 
   // Rezultat → VDOT (H1). Bez pouzdanog rezultata: plan po osećaju je segment 03.
@@ -216,7 +238,7 @@ export function checkInput(raw: unknown): InputCheck {
       const s = suggestSchedule(runDays, longRunDay);
       no(
         'SCHEDULE_NO_RECOVERY',
-        `U danima ${daysSr(runDays)} dva kvaliteta i dugi ne mogu biti međusobno nesusedni.` +
+        `U danima ${daysSr(runDays)} ${rule.quality === 1 ? 'kvalitet i dugi ne mogu biti nesusedni' : 'dva kvaliteta i dugi ne mogu biti međusobno nesusedni'}.` +
           (s ? ` Predlog: ${daysSr(s.runDays)} (dugi ${daySr(s.long)}).` : '')
       );
     }
@@ -230,7 +252,8 @@ export function checkInput(raw: unknown): InputCheck {
     longRunDay,
     currentWeeklyKm: km,
     recentResult: res,
-    goalTimeSec: (goal as number | null | undefined) ?? null
+    goalTimeSec: (goal as number | null | undefined) ?? null,
+    ...(recentLong != null ? { recentLongRunKm: recentLong } : {})
   };
   return { ok: true, input, weeks, vdotRaw, pattern, rule };
 }

@@ -20,7 +20,7 @@ export interface HmV2Input {
   startDate: IsoDate;
   /** Dan trke = poslednji dan poslednje nedelje. */
   raceDate: IsoDate;
-  /** H1: 4 različita dana (segment 01; 3/5/6 dana: segment 02). */
+  /** H1/H15: 3, 4, 5 ili 6 različitih dana. */
   runDays: readonly Weekday[];
   /** H9: dan dugog; bez njega nedelja ako je dan trčanja, inače poslednji dan trčanja. */
   longRunDay?: Weekday | null;
@@ -30,6 +30,8 @@ export interface HmV2Input {
   recentResult?: HmV2Result | null;
   /** Ciljno vreme polumaratona [s]; samo se ocenjuje (H3), ne menja tempo. */
   goalTimeSec?: number | null;
+  /** Pouka 28 (HI7): skorašnji najduži trk [km], 5–42; opcion — u planu samo kad je dat. */
+  recentLongRunKm?: number | null;
   /** Segment 03 (početnik): u segmentu 01 privremeno odbijanje. */
   experience?: Experience | null;
   /** H17: trčanje/hodanje — polumaraton ga ne podržava (odbijanje). */
@@ -48,7 +50,7 @@ export type ReasonCode =
   /** > 20 nedelja: počni kasnije. */
   | 'PLAN_TOO_LONG'
   | 'RUN_DAYS_INVALID'
-  /** 1, 2 i 7 dana trajno; 3/5/6 dana do segmenta 02. */
+  /** 1, 2 i 7 dana trajno (H15). */
   | 'RUN_DAYS_COUNT'
   | 'LONG_DAY_INVALID'
   | 'WEEKLY_KM_TOO_LOW'
@@ -64,6 +66,8 @@ export type ReasonCode =
   | 'RESULT_AFTER_START'
   | 'VDOT_TOO_HIGH'
   | 'GOAL_INVALID'
+  /** Pouka 28: skorašnji najduži trk van 5–42 km. */
+  | 'RECENT_LONG_INVALID'
   | 'SCHEDULE_NO_RECOVERY'
   | 'WEEK_INFEASIBLE'
   | 'PLAN_VIOLATES_POLICY';
@@ -216,11 +220,11 @@ export interface PlanWeek extends WeekFrame {
   notes: string[];
 }
 
-/** H9 šablon: Q1, Q2, dugi i lagani dani (rastućim danom). */
+/** H9 šablon: Q1, Q2 (3 dana: nema), dugi i lagani dani (rastućim danom). */
 export interface Pattern {
   long: Weekday;
   q1: Weekday;
-  q2: Weekday;
+  q2: Weekday | null;
   easy: readonly Weekday[];
 }
 

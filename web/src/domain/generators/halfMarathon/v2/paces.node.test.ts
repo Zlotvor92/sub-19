@@ -10,7 +10,7 @@ import {
   round1,
   vdotFromResult
 } from './paces.ts';
-import { inputOf, SCHEDULES, timeForVdot } from './testInputs.ts';
+import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS, timeForVdot } from './testInputs.ts';
 
 describe('H2 tempo', () => {
   it('VDOT iz rezultata (Daniels–Gilbert): 10 km 45:00 → 45,3; HM 1:30:00 → 51,0; maraton 3:30:00 → 44,6', () => {
@@ -85,6 +85,19 @@ describe('H3 ocena cilja', () => {
     if (r.ok) {
       expect(r.plan.goal?.status).toBe('unrealistic');
       expect(r.plan.warnings.some((w) => w.rule === 'GOAL_UNREALISTIC')).toBe(true);
+    }
+  });
+});
+
+describe('HI9 c: RP brži od T pri VDOT ≈ 80 je u redu (Daniels–Gilbert)', () => {
+  it('VDOT 80: RP < T (s/km); plan svakog broja dana bez greške validatora', () => {
+    const p = pacesFromVdot(80);
+    expect(p.RP).toBeLessThan(p.T);
+    for (const n of [3, 4, 5, 6] as const) {
+      const r = generateHmV2(
+        inputOf({ weeks: 12, km: 45, vdot: 80, days: SCHEDULES_BY_DAYS[n].A.days })
+      );
+      expect(r.ok, `${n} dana`).toBe(true);
     }
   });
 });

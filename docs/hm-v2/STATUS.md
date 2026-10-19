@@ -38,3 +38,10 @@ const r = generateHmV2({
 - Odbijeno do sledećih segmenata: 3/5/6 dana (02), bez rezultata i početnik (03); trajno 1/2/7 dana, < 10 ned,
   < 30 km, VDOT > 80, trčanje/hodanje.
 - Sledeće: HM-02 (3/5/6 dana, H15 ostali redovi), regresija prema `segment01.baseline.json`.
+
+## Segment 02 (hm-v2.1.0): 3/5/6 dana, dugi ≤ 24 km, skorašnji najduži — ZAUSTAVLJENO
+
+- Zaustavni commit (`git log --grep "HM v2 Segment 02"`): sudar pouke 28 × pouka 2 × H11 × H15 (61 / 8928 ulaza sa
+  recentLongRunKm ≤ 6 km, 3–4 dana); `reports/SEGMENT-02-STOP.md`, predlozi P1–P3, čeka odluku organizatora.
+- Bez recentLongRunKm: mreža 02 (16 896) i gusta ned 1 (141 804) K1 = 0; regresija 4 dana: menja se samo 1320
+  planova sa dugim > 24 km.

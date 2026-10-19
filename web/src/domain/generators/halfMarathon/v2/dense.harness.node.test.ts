@@ -3,12 +3,13 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
 import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
-import type { denseWeek1Inputs } from './testInputs.ts';
+import type { denseInputs } from './testInputs.ts';
 
-export const DENSE_PARTS = 3;
+export const DENSE_PARTS = 8;
 
-/** Gusta mreža (K1 = 0 za ceo opseg obima i VDOT-a; pouka 9): ceo plan + nezavisne invarijante. */
-export function describeDense(name: string, inputs: ReturnType<typeof denseWeek1Inputs>): void {
+/** Gusta mreža (K1 = 0 za ceo opseg obima i VDOT-a svakog broja dana; pouka 9, HI8): ceo plan + nezavisne
+    invarijante. */
+export function describeDense(name: string, inputs: ReturnType<typeof denseInputs>): void {
   describe(name, () => {
     const rejected: string[] = [];
     const bad: Record<string, string[]> = {};
@@ -22,7 +23,7 @@ export function describeDense(name: string, inputs: ReturnType<typeof denseWeek1
       }
     }, 120_000);
 
-    it('K1: 0 odbijanja; invarijante 0; K2: nedelja 1 ispod obima samo uz dugi na 150 min', () => {
+    it('K1: 0 odbijanja; invarijante 0; K2: nedelja 1 ispod obima samo uz dugi na apsolutnom plafonu', () => {
       expect(inputs.length).toBeGreaterThan(0);
       expect(rejected).toEqual([]);
       expect(bad).toEqual({});

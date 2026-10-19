@@ -32,12 +32,40 @@ describe('H9 raspored', () => {
     expect(longDayOf(['mon', 'tue', 'thu', 'sat'])).toBe('sat');
   });
 
-  it('svaki rešiv izbor 4 dana: teški dani međusobno nesusedni (ciklično); nerešiv → predlog', () => {
+  it('šabloni mreže 02 (3, 5, 6 dana): 3 dana jedan kvalitet (Q2 nema), lagani rastućim danom', () => {
+    // Najveći razmak dugi → Q1 (ned → čet 4 dana).
+    expect(patternOf(['tue', 'thu', 'sun'], 'sun')).toEqual({
+      long: 'sun',
+      q1: 'thu',
+      q2: null,
+      easy: ['tue']
+    });
+    expect(patternOf(['wed', 'sat', 'sun'], 'sun')).toEqual({
+      long: 'sun',
+      q1: 'wed',
+      q2: null,
+      easy: ['sat']
+    });
+    expect(patternOf(['mon', 'tue', 'thu', 'sat', 'sun'], 'sun')).toEqual({
+      long: 'sun',
+      q1: 'tue',
+      q2: 'thu',
+      easy: ['mon', 'sat']
+    });
+    expect(patternOf(['mon', 'tue', 'wed', 'thu', 'sat', 'sun'], 'sun')).toEqual({
+      long: 'sun',
+      q1: 'tue',
+      q2: 'thu',
+      easy: ['mon', 'wed', 'sat']
+    });
+  });
+
+  it('svaki rešiv izbor 3–6 dana: teški dani međusobno nesusedni (ciklično); nerešiv → predlog', () => {
     const W: Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-    let solved = 0;
+    const solved: Record<number, number> = {};
     for (let m = 0; m < 128; m++) {
       const days = W.filter((_, i) => m & (1 << i));
-      if (days.length !== 4) continue;
+      if (days.length < 3 || days.length > 6) continue;
       for (const long of days) {
         const p = patternOf(days, long);
         if (!p) {
@@ -45,14 +73,17 @@ describe('H9 raspored', () => {
           if (s) expect(patternOf(s.runDays, s.long)).not.toBeNull();
           continue;
         }
-        solved++;
-        expect(
-          adjacentDays(p.q1, p.long) || adjacentDays(p.q2, p.long) || adjacentDays(p.q1, p.q2)
-        ).toBe(false);
-        expect([p.q1, p.q2, p.long, ...p.easy].sort()).toEqual([...days].sort());
+        solved[days.length] = (solved[days.length] ?? 0) + 1;
+        expect(p.q2 === null).toBe(days.length === 3);
+        const hard = [p.q1, ...(p.q2 ? [p.q2] : []), p.long];
+        for (const a of hard)
+          for (const b of hard) if (a !== b) expect(adjacentDays(a, b)).toBe(false);
+        expect([...hard, ...p.easy].sort()).toEqual([...days].sort());
+        expect(p.easy.length).toBe(days.length - hard.length);
       }
     }
-    expect(solved).toBeGreaterThan(0);
+    expect(Object.keys(solved)).toEqual(['3', '4', '5', '6']);
     expect(patternOf(['mon', 'fri', 'sat', 'sun'], 'sun')).toBeNull();
+    expect(patternOf(['sat', 'sun', 'mon'], 'sun')).toBeNull();
   });
 });

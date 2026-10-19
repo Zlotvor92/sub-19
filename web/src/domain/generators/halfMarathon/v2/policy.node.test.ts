@@ -1,4 +1,4 @@
-/* H1–H15: svi brojevi politike zakucani (izmena broja = svesna izmena testa i DECISIONS). */
+/* H1–H15, HI*: svi brojevi politike zakucani (izmena broja = svesna izmena testa i DECISIONS). */
 
 import { describe, expect, it } from 'vitest';
 import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
@@ -6,7 +6,7 @@ import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 describe('HM v2 politika (MASTER § 4)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('hm-v2');
-    expect(P.version).toBe('hm-v2.0.0');
+    expect(P.version).toBe('hm-v2.1.0');
   });
 
   it('H1 opseg ulaza', () => {
@@ -20,8 +20,35 @@ describe('HM v2 politika (MASTER § 4)', () => {
     });
   });
 
-  it('H15 red 4 dana (udeo dugog 40 %, odluka organizatora posle zaustavljanja) — jedini red u segmentu 01', () => {
-    expect(RUN_DAYS_COUNTS).toEqual([4]);
+  it('H15 tabela 3/4/5/6 dana (4 dana: udeo 40 %, odluka organizatora); 1/2/7 dana nema', () => {
+    expect(RUN_DAYS_COUNTS).toEqual([3, 4, 5, 6]);
+    expect(dayRule(3)).toEqual({
+      quality: 1,
+      easy: 1,
+      kmMin: 25,
+      kmMax: 45,
+      peakMaxKm: 55,
+      longMaxShare: 0.45,
+      weekMinKm: 12
+    });
+    expect(dayRule(5)).toEqual({
+      quality: 2,
+      easy: 2,
+      kmMin: 35,
+      kmMax: 75,
+      peakMaxKm: 85,
+      longMaxShare: 0.32,
+      weekMinKm: 20
+    });
+    expect(dayRule(6)).toEqual({
+      quality: 2,
+      easy: 3,
+      kmMin: 40,
+      kmMax: 90,
+      peakMaxKm: 100,
+      longMaxShare: 0.3,
+      weekMinKm: 24
+    });
     expect(dayRule(4)).toEqual({
       quality: 2,
       easy: 1,
@@ -31,7 +58,9 @@ describe('HM v2 politika (MASTER § 4)', () => {
       longMaxShare: 0.4,
       weekMinKm: 16
     });
-    for (const n of [1, 2, 3, 5, 6, 7]) expect(dayRule(n)).toBeNull();
+    for (const n of [0, 1, 2, 7]) expect(dayRule(n)).toBeNull();
+    // Minimum nedelje = dani × lagan 4 km (H15, Uslov 8).
+    for (const n of RUN_DAYS_COUNTS) expect(dayRule(n)!.weekMinKm).toBe(n * P.lengths.easyMinKm);
   });
 
   it('H2 udeli zona, RP = polumaraton; H3 pragovi cilja', () => {
@@ -121,7 +150,9 @@ describe('HM v2 politika (MASTER § 4)', () => {
   it('H11 plafoni, H12 početni nivo, H13 dužine, H14 WU/CD i oporavci', () => {
     expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, RP: 0.15 });
     expect(P.startLevel).toEqual({ capShare: 0.6 });
-    expect(P.lengths).toEqual({ longMaxSec: 9000, easyMinKm: 4.0, longWarnKm: 16 });
+    // H13: dugi ≤ 24 km (odluka organizatora HM-01 → 02); pouka 28 (HI7).
+    expect(P.lengths).toEqual({ longMaxSec: 9000, longMaxKm: 24, easyMinKm: 4.0, longWarnKm: 16 });
+    expect(P.recentLong).toEqual({ minKm: 5, maxKm: 42, factor: 1.1, addKm: 1.0 });
     expect(P.workout.warmupCooldown).toEqual([
       { fromKm: 0, warmupSec: 900, cooldownSec: 600 },
       { fromKm: 40, warmupSec: 1200, cooldownSec: 900 },
@@ -161,7 +192,11 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'HI4',
       'HI5',
       'HI2',
-      'HI3'
+      'HI3',
+      'HI6',
+      'HI7',
+      'HI8',
+      'HI9'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -169,5 +204,7 @@ describe('HM v2 politika (MASTER § 4)', () => {
       expect(d.rationale.length, d.id).toBeGreaterThan(20);
     }
     expect(P.DECISIONS.find((d) => d.id === 'H15')!.rule).toContain('40 %');
+    expect(P.DECISIONS.find((d) => d.id === 'H13')!.rule).toContain('24 km');
+    expect(P.DECISIONS.find((d) => d.id === 'H13')!.rationale).toContain('1320 / 3696');
   });
 });

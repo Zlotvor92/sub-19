@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
 import type { HmV2Plan, PlanDay, PlanWeek } from './types.ts';
-import { gridInputs, timeForVdot } from './testInputs.ts';
+import { grid02Inputs, gridInputs, inputOf, SCHEDULES, timeForVdot } from './testInputs.ts';
 import { validatePlan } from './validate.ts';
 import {
   easyWorkout,
@@ -14,7 +14,7 @@ import {
   warmupCooldown
 } from './workouts.ts';
 
-const GRID = gridInputs();
+const GRID = [...gridInputs(), ...grid02Inputs()];
 const base = (id = '12w-40km-v45-A-sun'): HmV2Plan => {
   const r = generateHmV2(GRID.find((g) => g.id === id)!.input);
   if (!r.ok) throw new Error(id);
@@ -214,6 +214,60 @@ describe('validator', () => {
     const d = dayOf(week(b, 2), 'easy');
     d.workout = { ...d.workout, km: 0, segments: [] };
     expect(errors(b)).toContain('EMPTY_WORKOUT');
+  });
+
+  it('H13: dugi > 24 km (odluka HM-01 → 02); HI7: dugi nedelje 1 > granica skorašnjeg najdužeg', () => {
+    const a = clone(base('16w-60km-v60-A-sun'));
+    const w = week(a, 2);
+    setKm(a, w, 'long', 24.1);
+    w.targetKm = Math.round(w.plannedKm * 10) / 10;
+    expect(errors(a)).toContain('LONG_KM');
+    const b = clone(base());
+    b.input = { ...b.input, recentLongRunKm: 8 }; // granica 9,0 < dugi 16,0
+    expect(errors(b)).toEqual(expect.arrayContaining(['LONG_RECENT']));
+  });
+
+  it('HI8 (pouka 9): nedelja 1 ispod obima ispravna uz dugi na granici skorašnjeg najdužeg, ne bez nje', () => {
+    const r = generateHmV2(
+      inputOf({ weeks: 12, km: 40, vdot: 45, days: SCHEDULES.A.days, recentLongRunKm: 8 })
+    );
+    if (!r.ok) throw new Error('odbijen');
+    expect(r.plan.weeks[0]!.targetKm).toBeLessThan(40);
+    expect(errors(r.plan)).toEqual([]);
+    const a = clone(r.plan);
+    delete a.input.recentLongRunKm;
+    expect(errors(a)).toContain('WEEK1_BELOW_START');
+  });
+
+  it('H15/HI6: 3 dana — I/R ili drugi kvalitet, kvalitet rasterećenja van Q1, taper sa T', () => {
+    const p3 = base('d3-14w-35km-v45-A-sun');
+    expect(errors(p3)).toEqual([]);
+    const a = clone(p3);
+    dayOf(week(a, 1), 'q1').workout = quality(a, 'R', 'R', { form: 'reps', reps: 6, repM: 200 });
+    expect(errors(a)).toContain('PHASE_QUALITY');
+    const b = clone(p3);
+    b.pattern = { ...b.pattern, q2: b.pattern.easy[0]!, easy: [] };
+    expect(errors(b)).toContain('ROLES');
+    const c = clone(p3);
+    const d = c.weeks.find((w) => w.deload)!;
+    const q = d.days.find((x) => x.role === 'q1')!;
+    q.role = 'q2';
+    expect(errors(c)).toContain('ROLES');
+    const e = clone(p3);
+    const t = e.weeks.find((w) => w.phase === 'taper')!;
+    const easy = dayOf(t, 'easy');
+    easy.role = 'q2';
+    easy.workout = quality(e, 'T_cruise', 'T', { form: 'reps', reps: 2, repM: 1000 });
+    expect(errors(e)).toEqual(expect.arrayContaining(['TAPER_QUALITY']));
+  });
+
+  it('H15: 5/6 dana lagani jednaki (razlika ≤ 0,1 km)', () => {
+    const a = clone(base('d6-12w-60km-v50-B-sun'));
+    const w = week(a, 2);
+    const e = w.days.filter((d) => d.role === 'easy');
+    e[0]!.workout = easyWorkout(e[0]!.workout.km + 0.5, a.paces);
+    e[1]!.workout = easyWorkout(e[1]!.workout.km - 0.5, a.paces);
+    expect(errors(a)).toEqual(['EASY_UNEQUAL']);
   });
 
   it('H2/H3: tempo iz rezultata, prognoza, ocena cilja', () => {

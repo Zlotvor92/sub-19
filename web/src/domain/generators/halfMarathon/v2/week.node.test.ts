@@ -1,14 +1,14 @@
-/* Sastav nedelje: H13 dužine (pouka 2), H14 WU/CD, H5 rasterećenje, H7 taper, H8 trkačka nedelja (pouka 5),
-   Uslov 8. Primeri iz mreže 01. */
+/* Sastav nedelje: H13 dužine (pouka 2; 24 km), H14 WU/CD, H5 rasterećenje, H7 taper, H8 trkačka nedelja
+   (pouka 5), H15 3/5/6 dana, HI6, HI7 (pouka 28), Uslov 8. Primeri iz mreža 01 i 02. */
 
 import { describe, expect, it } from 'vitest';
 import { daysBetween } from './dates.ts';
 import { generateHmV2 } from './generate.ts';
 import type { HmV2Plan, PlanWeek } from './types.ts';
-import { gridInputs } from './testInputs.ts';
+import { grid02Inputs, gridInputs, inputOf, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import { warmupCooldown } from './workouts.ts';
 
-const GRID = gridInputs();
+const GRID = [...gridInputs(), ...grid02Inputs()];
 const plan = (id: string): HmV2Plan => {
   const r = generateHmV2(GRID.find((g) => g.id === id)!.input);
   if (!r.ok) throw new Error(JSON.stringify(r.reasons));
@@ -60,6 +60,101 @@ describe('H13 dužine (pouka 2)', () => {
     expect(km(p.weeks[0]!, 'long')[0]).toBe(cap);
     expect(p.warnings.some((w) => w.rule === 'CAPACITY_LIMITED')).toBe(true);
     expect(p.notes.join()).toContain('uz dugi ≤ 150 min');
+  });
+});
+
+describe('H13 dugi ≤ 24 km (odluka organizatora HM-01 → 02), svi brojevi dana', () => {
+  it('brz trkač velikog obima: dugi na 24 km, ne preko (4 dana 60 km — u HM-01 do 28 km; 6 dana 90 km)', () => {
+    for (const id of ['16w-60km-v60-A-sun', 'd6-16w-90km-v60-A-sun', 'd5-16w-75km-v70-B-sun']) {
+      const p = plan(id);
+      const longs = p.weeks.flatMap((w) => km(w, 'long'));
+      expect(Math.max(...longs), id).toBe(24);
+      // Granica 24 km ne spušta vrh (merenje: 0 nižih vrhova u mreži 02) — obim ide u lagane dane.
+      expect(p.peakKm, id).toBe(p.peakCapKm);
+      for (const w of p.weeks)
+        for (const e of km(w, 'easy')) expect(e, `${id} ${w.index}`).toBeLessThanOrEqual(24);
+    }
+  });
+});
+
+describe('HI7 (pouka 28) skorašnji najduži trk', () => {
+  const gen = (o: { recentLongRunKm?: number; km?: number; vdot?: number }): HmV2Plan => {
+    const r = generateHmV2(
+      inputOf({
+        weeks: 12,
+        km: o.km ?? 40,
+        vdot: o.vdot ?? 45,
+        days: SCHEDULES_BY_DAYS[4].A.days,
+        ...o
+      })
+    );
+    if (!r.ok) throw new Error(JSON.stringify(r.reasons));
+    return r.plan;
+  };
+
+  it('dugi nedelje 1 ≤ max(1,1 × r, r + 1,0); nedelja 1 sme ispod obima kad je dugi na toj granici', () => {
+    const free = gen({});
+    expect(km(free.weeks[0]!, 'long')[0]).toBe(16); // 40 % od 40 km
+    const p8 = gen({ recentLongRunKm: 8 }); // max(8,8; 9,0) = 9,0
+    expect(km(p8.weeks[0]!, 'long')[0]).toBe(9);
+    expect(p8.weeks[0]!.targetKm).toBeLessThan(40);
+    expect(p8.weeks[0]!.notes.join()).toContain('— na granici');
+    expect(p8.notes.join()).toContain('granica skorašnjeg najdužeg trka');
+    const p20 = gen({ recentLongRunKm: 14.5, km: 50 }); // max(15,95→15,9; 15,5) = 15,9
+    expect(km(p20.weeks[0]!, 'long')[0]).toBe(15.9);
+    // Granica važi samo za nedelju 1.
+    expect(km(p8.weeks[1]!, 'long')[0]).toBeGreaterThan(9);
+    // Granica viša od dugog po udelu: plan isti kao bez ulaza (osim ulaza i napomene nedelje 1).
+    const p30 = gen({ recentLongRunKm: 30 });
+    expect(p30.weeks.slice(1)).toEqual(free.weeks.slice(1));
+    expect(p30.weeks[0]!.days).toEqual(free.weeks[0]!.days);
+  });
+
+  it('bez ulaza: napomena nedelje 1 sa pragom (najmanji r za koji je dugi u granici)', () => {
+    const n = gen({}).weeks[0]!.notes.find((x) => x.startsWith('Dugi nedelje 1'))!;
+    // Dugi 16,0 km: 1,1 × 14,6 = 16,06 ≥ 16 (14,5 → 15,95).
+    expect(n).toContain('16,0 km pretpostavlja skorašnji najduži trk od bar 14,6 km');
+  });
+});
+
+describe('H15 3/5/6 dana, HI6', () => {
+  it('3 dana: jedan kvalitet (T kont. → T cruise → RP), rasterećenje T na danu Q1, taper samo RP, trkačka 3 dana', () => {
+    const p = plan('d3-14w-35km-v45-A-sun');
+    const slots = (pred: (w: PlanWeek) => boolean): string[] => [
+      ...new Set(
+        p.weeks
+          .filter(pred)
+          .flatMap((w) =>
+            w.days
+              .filter((d) => d.workout.dose)
+              .map((d) => `${w.phase}:${d.role}:${d.workout.dose!.ladder}`)
+          )
+      )
+    ];
+    expect(slots((w) => !w.deload && w.phase !== 'race')).toEqual([
+      'base:q1:T_continuous',
+      'development:q1:T_cruise',
+      'specific:q1:RP',
+      'taper:q1:RP'
+    ]);
+    expect(slots((w) => w.deload).every((x) => /:q1:T_(continuous|cruise)$/.test(x))).toBe(true);
+    expect(p.weeks.some((w) => w.deload)).toBe(true);
+    for (const w of p.weeks.filter((x) => x.phase !== 'race')) expect(w.days).toHaveLength(3);
+    expect(p.weeks.at(-1)!.days).toHaveLength(3); // min(3, 5) sa trkom
+  });
+
+  it('5/6 dana: lagani jednaki (razlika ≤ 0,1 km, raniji dan +0,1); trkačka 6 dana = 5 dana sa trkom', () => {
+    for (const id of ['d5-12w-50km-v45-A-sun', 'd6-12w-60km-v50-B-sun']) {
+      const p = plan(id);
+      for (const w of p.weeks.filter((x) => x.phase !== 'race')) {
+        const e = w.days.filter((d) => d.role === 'easy').map((d) => Math.round(d.workout.km * 10));
+        expect(Math.max(...e) - Math.min(...e), `${id} ${w.index}`).toBeLessThanOrEqual(1);
+        expect(e, `${id} ${w.index}`).toEqual([...e].sort((a, b) => b - a));
+      }
+    }
+    const r6 = plan('d6-12w-60km-v50-B-sun').weeks.at(-1)!;
+    expect(r6.days).toHaveLength(5);
+    expect(r6.days.some((d) => d.weekday === 'tue')).toBe(false); // otpada dugi (ned = trka) i najraniji lagan
   });
 });
 

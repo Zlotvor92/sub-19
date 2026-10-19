@@ -8,6 +8,7 @@ import { gridInputs } from './testInputs.ts';
 import type { WeekFrame } from './types.ts';
 import {
   capacityMessage,
+  fewerDaysAdvice,
   fit10,
   growth10,
   INITIAL_VOLUME,
@@ -75,11 +76,29 @@ describe('H6 pravilo obima', () => {
     expect(weekMin10(rule)).toBe(160);
   });
 
-  it('poruka kapaciteta imenuje ograničenje (segment 01: nema većeg broja dana za preporuku)', () => {
-    expect(capacityMessage(4, rule, ['time'])).toBe('4 dana ne nose ovaj obim uz dugi ≤ 150 min.');
-    expect(capacityMessage(4, rule, ['time', 'share'])).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 150 min i ≤ 40 % nedelje.'
+  it('poruka kapaciteta imenuje ograničenje i preporučuje veće brojeve dana iz H15 (HI8, HI9 a)', () => {
+    expect(capacityMessage(4, rule, ['time'])).toBe(
+      '4 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 5–6 dana.'
     );
+    expect(capacityMessage(4, rule, ['time', 'share'])).toBe(
+      '4 dana ne nose ovaj obim uz dugi ≤ 150 min i ≤ 40 % nedelje; preporuka 5–6 dana.'
+    );
+    expect(capacityMessage(3, dayRule(3)!, ['share', 'km'])).toBe(
+      '3 dana ne nose ovaj obim uz dugi ≤ 45 % nedelje i ≤ 24 km; preporuka 4–6 dana.'
+    );
+    expect(capacityMessage(5, dayRule(5)!, ['recent'])).toBe(
+      '5 dana ne nose ovaj obim uz dugi ≤ granica skorašnjeg najdužeg trka (nedelja 1); preporuka 6 dana.'
+    );
+    expect(capacityMessage(6, dayRule(6)!, ['time'])).toBe(
+      '6 dana ne nose ovaj obim uz dugi ≤ 150 min.'
+    );
+  });
+
+  it('HI3: preporuka manje dana samo kad red sa manje dana podržava obim', () => {
+    expect(fewerDaysAdvice(4, 30)).toContain('preporuka 3 dana');
+    expect(fewerDaysAdvice(6, 40)).toContain('preporuka 3–5 dana');
+    expect(fewerDaysAdvice(6, 80)).toBe('');
+    expect(fewerDaysAdvice(3, 30)).toBe('');
   });
 });
 
@@ -105,6 +124,13 @@ describe('H6 u planu (pouke 1 i 9)', () => {
     expect(down.length).toBeGreaterThan(0);
     for (const w of down) expect(w.notes[0]).toContain('najbliži izvodljiv cilj');
     expect(p.warnings.filter((w) => w.rule === 'CAPACITY_LIMITED')).toHaveLength(1);
+  });
+
+  it('CAPACITY_LIMITED kod sporog trkača sa 4 dana preporučuje 5–6 dana (HI9 a)', () => {
+    const p = plan('16w-50km-v30-C-sat');
+    expect(p.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toContain(
+      'preporuka 5–6 dana'
+    );
   });
 
   it('pouka 9: nedelja 1 ispod trenutnog obima samo uz dugi nedelje 1 na 150 min', () => {
