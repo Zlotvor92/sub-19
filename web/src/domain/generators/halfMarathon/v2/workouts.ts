@@ -346,6 +346,22 @@ export function qualityWorkout(dose: Dose, p: Paces, wc: WarmupCooldown, feel = 
   return feel ? { ...w, rpe: rpeOf(zone) } : w;
 }
 
+/** Pouka 32: trajanje dana kvaliteta [s] — WU + rad + oporavci + CD, sporim krajem tempa zone gde postoji
+    opseg (džog oporavka zadat metrima ide sporim E; WU/CD i ostali oporavci su zadati vremenom, zone rada
+    imaju jedan tempo). Drugi član plafona zone (quality.ts) ga poredi sa trajanjem dugog iste nedelje. */
+export function qualityDaySec(dose: Dose, p: Paces, wc: WarmupCooldown): number {
+  const s = dose.structure;
+  const pace = p[dose.zone];
+  const work = s.form === 'continuous' ? Math.round(s.km * pace) : 0;
+  const reps = repsOf(s);
+  const rec = reps.slice(0, -1).reduce((a, m) => {
+    const r = recoveryOf(dose.ladder, m, p);
+    return a + ('m' in r ? Math.round((r.m / 1000) * p.E.slow) : r.sec);
+  }, 0);
+  const repSec = reps.reduce((a, m) => a + Math.round((m / 1000) * pace), 0);
+  return wc.warmupSec + wc.cooldownSec + work + repSec + rec;
+}
+
 /** H16: test 5 km — WU + 5 km kontrolisano maksimalno + CD (H14). Trajanje testa = procena vremena 5 km iz
     (procenjenog) VDOT-a (HI11). Računa se u obim nedelje, nije doza kvaliteta. */
 export function testWorkout(p: Paces, wc: WarmupCooldown): Workout {

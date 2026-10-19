@@ -19,15 +19,16 @@ const r = generateHmV2({
   // experience: "beginner" (H17: uvod 2 ned, jedan kvalitet, bez testa); runWalk: true → odbijanje
   goalTimeSec: 6000, // opciono (ocena H3; po osećaju posle testa)
 });
-// r.ok → r.plan (policyId 'hm-v2', policyVersion 'hm-v2.2.0', faza nedelje, paceBasis 'feel' po osećaju,
+// r.ok → r.plan (policyId 'hm-v2', policyVersion 'hm-v2.2.1', faza nedelje, paceBasis 'feel' po osećaju,
 // upozorenja); !r.ok → r.reasons
 ```
 
-- Testovi: iz `web/` `npx vitest run --project node src/domain/generators/halfMarathon/v2` (brz, ≈ 26 s);
-  `TEST_FULL=1 …` (pun, ≈ 202 s: mreža 02 u 4 dela, gusta mreža nedelje 1 u 8 delova, mreža 03 po osećaju u 3).
+- Testovi: iz `web/` `npx vitest run --project node src/domain/generators/halfMarathon/v2` (brz, ≈ 24 s);
+  `TEST_FULL=1 …` (pun, ≈ 190 s: mreža 02 u 4 dela, gusta mreža nedelje 1 u 8 delova, mreža 03 po osećaju u 3).
 - Bazne linije: `segment01.baseline.json` + `segment01.norm-hashes-3979237.json` (regresija 4 dana prema HM-01),
   `segment02.baseline.json` (16 896), `segment03-feel.baseline.json` (6336), `segment03-beginner.baseline.json`
-  (1464); osvežavanje `TEST_FULL=1 HM_V2_WRITE_BASELINE=1 npx vitest run --project node <grid | feelGrid |
+  (1464); od hm-v2.2.1 smeju da se promene samo planovi iz `segment03b.over-long-5e09a02.json` (pouka 32);
+  osvežavanje `TEST_FULL=1 HM_V2_WRITE_BASELINE=1 npx vitest run --project node <grid | feelGrid |
 beginnerGrid>.node.test.ts`, pa prettier.
 - Primeri, K1–K6, merenja i sabotaže: `docs/hm-v2/artifacts/segment-0N/` (`run.ts`, `k-metrics.ts`, `measure-*.ts`,
   `sabotage.json`; 03 i `regression-hm02.ts`).
@@ -66,3 +67,13 @@ beginnerGrid>.node.test.ts`, pa prettier.
 - Testovi: brz 28 s (17 fajlova, 146), pun 205 s (29, 181); sabotaže 15/15; primeri, K i merenja u
   `artifacts/segment-03/`.
 - Sledeće: HM-04 (adaptacija; korak A: pouka 32 i za nedelju testa — 42 testa u rasterećenju duža od dugog).
+
+## Segment 03b (hm-v2.2.1): pouka 32 za sve zone (HM-04 korak A)
+
+- Plafon zone = H11 udeo i trajanje dana ≤ dugi iste nedelje (izgradnja, rasterećenje, taper); pad doze kao kapacitet;
+  najniži nivo zone izuzet (upozorenje pouke 14 u izgradnji/rasterećenju); dugi rasterećenja sa testom naviše u
+  granicama (DECISIONS HI15). Izveštaj `reports/SEGMENT-03b-IMPLEMENTATION.md`, merenja `artifacts/segment-03b/`.
+- Iznad najnižeg nivoa dan duži od dugog: 0 na svim mrežama (bilo 02 2604, r 8997, gusta 37 643, osećaj 390 nedelja);
+  menjaju se tačno planovi koji su imali takvu nedelju, 0 novih odbijanja; K4 mreža r: vrh niži u 259 / 10 944
+  (≤ 3,8 km; pouka 28 drži dugi kratkim — otvoreno pitanje).
+- Sledeće: HM-04 korak B (adaptacija, hm-v2.3.0).

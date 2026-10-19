@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FULL, sample } from '@/test/level';
 import { generateHmV2 } from './generate.ts';
+import { OVER_LONG } from './grid.harness.node.test.ts';
 import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
 import { DAY_COUNTS, inputOf, KM_BY_DAYS, resultHash, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { HmV2Plan } from './types.ts';
@@ -79,8 +80,10 @@ describe('pouka 28: mreža skorašnjeg najdužeg trka (10 944 plana)', () => {
       );
       const same = resultHash(res) === HM02[g.id];
       const ex = EXCEPTIONS[g.id];
+      // HM-04 A (pouka 32): plan sa kvalitetnim danom dužim od dugog na 5e09a02 sme da se promeni.
+      const over = OVER_LONG.has(`r-${g.id}`);
       if (ex && res.ok && !same) excepted[g.id] = rowOf(res.plan, ex.week);
-      else if (!same || ex) regression.push(g.id);
+      else if ((!same && !over) || ex) regression.push(g.id);
       if (res.ok) checkPlan(g.id, res.plan, bad, st);
       else if (res.reasons.length === 1 && res.reasons[0]!.code === 'RECENT_LONG_TOO_SHORT')
         tooShort.push({ id: g.id, r: g.r, days: g.days, ...res.reasons[0]! });
@@ -102,8 +105,10 @@ describe('pouka 28: mreža skorašnjeg najdužeg trka (10 944 plana)', () => {
     expect(bad).toEqual({});
     expect(st.week1BelowNotTime).toBe(0);
     expect(st.week1BelowAt.recent).toBeGreaterThan(0);
-    // Najveći odnos uz pravilo „+1 km": 6 → 7 km (× 1,167).
-    expect(st.longJump12Max).toBeLessThanOrEqual(7 / 6 + 1e-9);
+    // Najveći odnos uz pravilo „+1 km": 6 → 7 km (× 1,167) prema L = max(dugi ned 1, skorašnji najduži). HM-04 A
+    // (pouka 32): niža doza ostavlja dugi ned 1 ispod r (npr. 6 d, 40 km, VDOT 70, r 7: 6,7 → 8,0 km, × 1,19
+    // prema ned 1, a ≤ max(1,1 × 7, 7 + 1) po pravilu).
+    expect(st.longJump12MaxL).toBeLessThanOrEqual(7 / 6 + 1e-9);
   });
 
   it('regresija prema HM-02: bajt-isto osim spiska izuzetaka (HI14 / pouka 33: samo prva rasteretna nedelja)', () => {

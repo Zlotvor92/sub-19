@@ -1,0 +1,140 @@
+{
+  "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-03b/sabotage.json",
+  "head": "5e09a02",
+  "level": "brz",
+  "bail": true,
+  "parallel": 2,
+  "vitestArgs": [],
+  "durationS": 8.3,
+  "hashBefore": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+  "hashAfter": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "A1 plafon zone bez člana trajanja (pouka 32)",
+      "files": ["src/domain/generators/halfMarathon/v2/quality.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/dayCap.node.test.ts",
+        "test": "pouka 32: kvalitetni dan ≤ dugi (osim najnižeg nivoa zone) > 6 d 40 km VDOT 70 (izgradnja T, I, RP)",
+        "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: R 1600 m: dan 46 min > dugi 32 min (pouka 32, plafon zone).\",\"week\":2},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: T 2500 m: dan 43 min > dugi 32 min (pouka 32, plafon zone).\",\"week\":2},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: R 1800 m: dan 46 min > dugi 36 min (pouka 32, plafon zone).\",\"week\":3},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: T 3000 m: dan 45 min > dugi 36 min (pouka 32, plafon zone).\",\"week\":3},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: T 3000 m: dan 47 min > dugi 40 min (pouka 32, plafon zone).\",\"week\":4},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: T 3200 m: dan 46 min > dugi 44 min (pouka 32, plafon zone).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: RP 5000 m: dan 53 min > dugi 48 min (pouka 32, plafon zone).\",\"week\":7},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: T 4000 m: dan 51 min > dugi 48 min (pouka 32, plafon zone).\",\"week\":7},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: RP 6000 m: dan 56 min > dugi 52 min (pouka 32, plafon zone).\",\"week\":8},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: T 4800 m: dan 53 min > dugi 52 min (pouka 32, plafon zone).\",\"week\":8}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "hashSabotaged": "99eb906a231d4c73fc1c2db67f744f2f537c9c63f68c626b7000b9a038b949d9",
+      "hashAfter": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.7
+    },
+    {
+      "index": 2,
+      "name": "A2 rasterećenje i taper bez člana trajanja (reducedStructure)",
+      "files": ["src/domain/generators/halfMarathon/v2/quality.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/dayCap.node.test.ts",
+        "test": "pouka 32: kvalitetni dan ≤ dugi (osim najnižeg nivoa zone) > 6 d 40 km VDOT 60 (rasterećenje T)",
+        "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: T 2400 m: dan 45 min > dugi 24 min (pouka 32, plafon zone).\",\"week\":9}]"
+      },
+      "failedCount": 1,
+      "hashBefore": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "hashSabotaged": "10a2e6fb6d2f9894cb90231135f400f8df498030b6dc19dc9fadcaceaa528b69",
+      "hashAfter": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.2
+    },
+    {
+      "index": 3,
+      "name": "A3 Q1 se bira uz Q2 najniže doze u osnovnoj strukturi (ne sa najviše km)",
+      "files": ["src/domain/generators/halfMarathon/v2/week.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/dayCap.node.test.ts",
+        "test": "pouka 32: kvalitetni dan ≤ dugi (osim najnižeg nivoa zone) > predikat izgradnje (buildDayLimit): Q1 uz Q2 najniže doze sa najviše km; izuzet Q2 i dalje čuva Q1",
+        "message": "AssertionError: expected 'fits' to be 'over' // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "hashSabotaged": "0f6d01c0a322ed41d2e2e31cefd0ea87c2411271e57a63c0f1d7170d94f0c7ec",
+      "hashAfter": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.2
+    },
+    {
+      "index": 4,
+      "name": "A4 izuzeće najnižeg nivoa preskače i proveru drugog dana",
+      "files": ["src/domain/generators/halfMarathon/v2/week.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/dayCap.node.test.ts",
+        "test": "pouka 32: kvalitetni dan ≤ dugi (osim najnižeg nivoa zone) > predikat izgradnje (buildDayLimit): Q1 uz Q2 najniže doze sa najviše km; izuzet Q2 i dalje čuva Q1",
+        "message": "AssertionError: expected 'fits' to be 'over' // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "hashSabotaged": "3f67b54d461ccb7f853e4a398e65c317bcd8d34bdcd570eb2bafd9b62ab80e06",
+      "hashAfter": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.2
+    },
+    {
+      "index": 5,
+      "name": "A5 dugi rasterećenja sa testom se ne podiže (minLong10 zanemaren)",
+      "files": ["src/domain/generators/halfMarathon/v2/lengths.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/dayCap.node.test.ts",
+        "test": "pouka 32: kvalitetni dan ≤ dugi (osim najnižeg nivoa zone) > rasterećenje sa testom: dugi naviše do trajanja testa u granicama (deloadLengths, pouka 32)",
+        "message": "AssertionError: expected 112 to be 130 // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "hashSabotaged": "c783b3093ef6fdf7d2510be2b6d95e57458a99c031e90a9002515c9ad001296c",
+      "hashAfter": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.3
+    },
+    {
+      "index": 6,
+      "name": "A6 validator: pad doze zbog trajanja bez provere najvišeg nivoa",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/validate.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/validate.node.test.ts",
+        "test": "validator > pouka 32 (HI15): dan iznad najnižeg nivoa duži od dugog i pad doze ispod najvišeg nivoa koji staje",
+        "message": "AssertionError: expected [ 'DOSE', 'DOSE_JUMP', 'RECOVERY' ] to include 'DOSE_DROP'"
+      },
+      "failedCount": 1,
+      "hashBefore": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "hashSabotaged": "4f5f74573fb77b9296902c0f045a184d76b1b089106b387dc6092c2c5e03aa7c",
+      "hashAfter": "6e4d9742daf78a4531c15f403e8a80eaf79f8b588e5726f611c9434af0e87143",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.6
+    }
+  ]
+}

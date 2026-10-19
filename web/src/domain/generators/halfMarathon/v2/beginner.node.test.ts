@@ -212,7 +212,8 @@ describe('H17 plan početnika', () => {
       w5.days.filter((d) => d.workout.kind === 'quality').length
     ]).toEqual([true, null, 1]);
     expect(w5.days.find((d) => d.role === 'long')!.workout.km).toBe(4.5);
-    expect(rules(b, 5)).toEqual(['DELOAD_LONG_SHORTENED']);
+    // HM-04 A (pouka 32): T 1,5 km (najniži nivo, 32 min) duži od skraćenog dugog (25 min) → upozorenje pouke 14.
+    expect(rules(b, 5)).toEqual(['DELOAD_LONG_SHORTENED', 'LONG_SHORTER_THAN_QUALITY']);
   });
 });
 

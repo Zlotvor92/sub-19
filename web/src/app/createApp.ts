@@ -40,6 +40,7 @@ import { ADMIN_UID } from '../services/config';
 import type { GeoPort } from '../services/weather/weatherSync';
 import { checkLoginReturn, parseAuthHash, jwtClaims } from '../lib/auth';
 import { createUserStateApi, type UserStateApi } from '../services/api/userStateApi';
+import { createActivityApi } from '../services/api/activityApi';
 import { createAppApi, type AppApi } from '../services/api/appApi';
 import { createAccountApi, type AccountApi } from '../services/api/accountApi';
 import {
@@ -110,6 +111,8 @@ export interface AppDeps {
   notify?: (message: string) => void;
   /** Lokacija uređaja (u pregledaču `navigator.geolocation`). */
   geo?: GeoPort;
+  /** Kako je aplikacija pokrenuta (instalirana / pregledač) — samo za praćenje korišćenja. */
+  platform?: () => string | null;
 }
 
 export interface App {
@@ -228,6 +231,14 @@ export function createApp(deps: AppDeps): App {
 
   const api = createUserStateApi({ fetcher, session, supabaseUrl, anonKey });
   const appApi = createAppApi({ fetcher, session, accountKey });
+  const activity = createActivityApi({
+    fetcher,
+    session,
+    supabaseUrl,
+    anonKey,
+    appVersion,
+    ...(deps.platform ? { platform: deps.platform } : {})
+  });
   const pwa = deps.pwa;
   const noIdb: Idb = {
     read: () => Promise.resolve(null),
@@ -497,6 +508,7 @@ export function createApp(deps: AppDeps): App {
       reconcileOwnerData(); // sesija je potvrđena: sada se pouzdano zna čiji je nalog
       await engine.start().catch(() => 'offline');
       if (session.state.userId !== startingUser) return;
+      void activity.opened();
       await integrations.consumeOAuthReturn(loc.search, deps.replaceUrl, loc.pathname);
       integrations.pullIfDue(60 * 60000);
       void ai.collectAll();
@@ -540,6 +552,7 @@ export function createApp(deps: AppDeps): App {
       void integrations.weather.refresh();
       if (!session.isAuthed()) return;
       await session.verify(deps.online ? deps.online() : true);
+      if (session.isAuthed()) void activity.opened();
       integrations.pullIfDue(15 * 60000);
       void ai.collectAll();
       void raceAi.collectAll();

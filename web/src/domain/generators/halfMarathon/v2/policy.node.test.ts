@@ -6,7 +6,7 @@ import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 describe('HM v2 politika (MASTER § 4)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('hm-v2');
-    expect(P.version).toBe('hm-v2.2.0');
+    expect(P.version).toBe('hm-v2.2.1');
   });
 
   it('H1 opseg ulaza', () => {
@@ -226,6 +226,7 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'HI14',
       'HI11',
       'HI12',
+      'HI15',
       'HI13'
     ]);
     for (const d of P.DECISIONS) {
@@ -236,5 +237,9 @@ describe('HM v2 politika (MASTER § 4)', () => {
     expect(P.DECISIONS.find((d) => d.id === 'H15')!.rule).toContain('40 %');
     expect(P.DECISIONS.find((d) => d.id === 'H13')!.rule).toContain('24 km');
     expect(P.DECISIONS.find((d) => d.id === 'H13')!.rationale).toContain('1320 / 3696');
+    // HM-04 A: pouka 32 — izuzetak od „doza ne opada" i najniži nivo zone izuzet od drugog člana.
+    const hi15 = P.DECISIONS.find((d) => d.id === 'HI15')!.rule;
+    expect(hi15).toContain('izuzetak od „doza ne opada"');
+    expect(hi15).toContain('Najniži nivo zone');
   });
 });

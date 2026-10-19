@@ -239,6 +239,14 @@ const DECISIONS: readonly Decision[] = [
     rationale: 'Prompt HM-03, tačka 3.'
   },
   {
+    id: 'HI15',
+    rule: 'Pouka 32 (MASTER § 2; HM-04 korak A, hm-v2.2.1) — dugi ostaje najduži trening nedelje: plafon zone (R, I, T kont., T cruise, RP) je jedna funkcija sa dva člana — H11 udeo i najveća doza za koju dan kvaliteta (WU + rad + oporavci + CD; sporim krajem tempa zone gde postoji opseg: džog oporavka zadat metrima sporim E) traje ≤ dugi iste nedelje (dugi nedelje sa tim danom). Važi u izgradnji, rasterećenju i taperu. H11 odlučuje izvodljivost kao pre (na dozi po pravilu); drugi član spušta dozu po lestvici na najviši nivo koji staje u oba člana — izuzetak od „doza ne opada" (pouke 3 i 12: pad doze kao kapacitet; izgradnja: korak drop, napomena „pouka 32, plafon zone", upozorenje DOSE_DROPPED; rasterećenje i taper: napomena). Najniži nivo zone (izgradnja: prvi nivo lestvice; rasterećenje i taper: najmanja doza H5/H7, početnik 1,5 km) uvek sme — njegov dan je izuzet od drugog člana (ne odbijanje, ne promena zone), upozorenje LONG_SHORTER_THAN_QUALITY po pouci 14 u izgradnji i rasterećenju (taper bez upozorenja: dugi ≤ 0,6 × najduži i RP ≥ 2 × 2000 m su oba H7, preporuka manje dana ne menja taj odnos). Dva dana kvaliteta: Q1 se bira uz Q2 najniže doze lestvice faze (struktura sa najviše km), Q2 uz izabran Q1 — oba ≤ dugi; taper: RP uz T na najmanjoj dozi, pa T uz izabran RP. Druga struktura iste doze koja bi bila duža od dugog se ne bira (bez druge → ponavljanje uz napomenu). Kad nedelja sa danom nema izvodljive dužine, član ne poredi (izvodljivost odlučuje pretraga cilja). Dan testa (doza fiksna, H16) je kvalitetni dan: u rasterećenju sa testom dugi ide naviše do trajanja dana testa u granicama udela, vremena, 24 km i pouke 28 i laganih ≥ 4 km (deloadLengths, napomena „podignut"); gde nije izvodljivo — upozorenje po pouci 14. Izuzetak nedelja 1 × pouka 9: drugi član menja samo dozu, nikad cilj nedelje, pa sudara nema.',
+    place:
+      'quality.ts pickSlot, fitsDay, reducedStructure, deloadDose, taperDoses, beginnerTaperT (dva člana); week.ts buildDayLimit, deloadDayLimit, taperDayLimit (drugi član, isti predikat čita validator); workouts.ts qualityDaySec; lengths.ts deloadLengths (minLong10), longFor10; validate.ts QUALITY_OVER_LONG, DOSE_DROP, DOSE_STALL, SLOT_REPEAT, BASE_PLATEAU, DELOAD_*, TAPER_*, LONG_SHORTER_THAN_QUALITY',
+    rationale:
+      'Prompt HM-04, korak A (pouka 32, MAR-03, M13a). Merenje 5e09a02 → hm-v2.2.1 (docs/hm-v2/reports/SEGMENT-03b-IMPLEMENTATION.md): menjaju se tačno planovi koji su imali dan kvaliteta ili testa duži od dugog (mreža 02 1932 / 16 896, r 2518 / 10 944, gusta ned 1 21 102 / 141 804, po osećaju 291 / 6336, početnik 177 / 1890), nijedan drugi; 0 novih odbijanja; posle su duži od dugog samo najniži nivo zone i test. Q1 ispred Q2: jedan redosled bez petlje; konzervativna pretpostavka za Q2 garantuje da nijedan Q2 najniže doze ne obara Q1. Dugi rasterećenja sa testom naviše: u mreži 03 nijedan slučaj nije izvodljiv (dugi već skraćen HI14 ili na udelu), upozorenje ostaje.'
+  },
+  {
     id: 'HI13',
     rule: 'Pouka 31 (struktura uvoda): nedelja uvoda početnika (1–2) nema kvaliteta ni kad je rasteretna (prinudno rasterećenje u adaptaciji, segment 04): obim rasterećenja (H5), sadržaj uvoda — dan T slota je lagan, dugi 0,8 × poslednji. Jedno mesto: week.ts (intro ispred rasterećenja); validator: nedelja uvoda bez kvaliteta.',
     place: 'week.ts buildWeek; validate.ts (INTRO)',
@@ -249,7 +257,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.2.0',
+  version: 'hm-v2.2.1',
 
   /** H1 (dani i obim: H15). */
   input: {
