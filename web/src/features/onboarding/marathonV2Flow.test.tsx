@@ -24,7 +24,7 @@ import { Wizard } from './Wizard';
 
 /* SEGMENT MAR-05 — čarobnjak maratona v2 iza prekidača: polja v2 (rezultat ili lagan tempo, iskustvo, trčanje/hodanje,
    skorašnji najduži trk, dani i dan dugog, cilj sa satima), plan v2 u skladištu, prikaz strukture (orijentir + RPE, test
-   5 km, trka 42,2 km van obima), prilagođavanje i promena cilja „stiže uskoro" (do MAR-06), odbijanje kao poruka sa
+   5 km, trka 42,2 km van obima), prilagođavanje (MAR-06: pregled v2) i promena cilja (v2), odbijanje kao poruka sa
    razlozima v2 doslovno. Prekidač isključen → čarobnjak i plan kao do sada; uključen ne dira ostale distance. Obrazac
    `hmV2Flow.test.tsx` (HM-05, kopija). */
 
@@ -167,21 +167,18 @@ describe('maraton v2 iza prekidača', () => {
     expect(v.rows?.some((r) => r[0] === 'Zagrevanje')).toBe(true);
     expect(days.find((d) => d.tag === 'lr')!.date.endsWith('-17')).toBe(true); // subota
 
-    // Prilagođavanje i cilj: „stiže uskoro" (do MAR-06) umesto alata maraton v1.
+    // Prilagođavanje i cilj (MAR-06): tok v2 (pregled iz činjenica, promena cilja v2) umesto alata maraton v1.
     useUIStore.setState({ today: '2026-02-03' });
     const adjust = render(<AdjustPlan />);
-    expect(document.getElementById('v2-unsupported')?.textContent).toContain(
-      'Prilagođavanje plana stiže uskoro.'
-    );
+    expect(document.getElementById('v2-adapt')).not.toBeNull();
+    expect(document.getElementById('plan-change-preview')).not.toBeNull();
+    expect(document.getElementById('v2-unsupported')).toBeNull();
     expect(screen.queryByText('Prilagođavanje prema izvršenju')).toBeNull();
     expect(screen.queryByText('Trenutno nema predloga za prilagođavanje plana.')).toBeNull();
-    expect(screen.queryByText('Promeni ciljno vreme')).toBeNull();
     adjust.unmount();
     const goal = render(<GoalScreen />);
-    expect(document.getElementById('v2-unsupported-goal')?.textContent).toContain(
-      'Prilagođavanje plana stiže uskoro.'
-    );
-    expect(screen.queryByRole('button', { name: 'Promeni cilj' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Promeni cilj' })).toBeTruthy();
+    expect(document.body.textContent).toContain('U planu maratona v2 cilj se samo');
     goal.unmount();
     // Napredak → Forma: bez greške.
     render(<FormScreen />);

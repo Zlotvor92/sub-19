@@ -465,5 +465,12 @@ export interface AdaptChange {
 }
 
 export type AdaptResult =
-  | { ok: true; plan: MarathonV2Plan; changes: AdaptChange[]; reasons: AdaptReason[] }
+  | {
+      ok: true;
+      plan: MarathonV2Plan;
+      changes: AdaptChange[];
+      reasons: AdaptReason[];
+      /** Pouka 20: nova ograničenja poslednjeg koraka (steps.newLimits) — prazno = bez trake. */
+      newLimits: string[];
+    }
   | { ok: false; reasons: Reason[]; violations: Violation[] };

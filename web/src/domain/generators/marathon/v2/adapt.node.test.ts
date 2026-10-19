@@ -8,6 +8,7 @@ import { adaptInvariants } from './adaptInvariants.ts';
 import { addDays, mustDay } from './dates.ts';
 import { construct, generateMarathonV2 } from './generate.ts';
 import { pacesFromVdot } from './paces.ts';
+import { newLimits } from './steps.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import {
   adaptBases,
@@ -235,6 +236,51 @@ describe('pouka 20: traka samo za novo ograničenje', () => {
     expect(adaptBanner(ok(r).plan, again, f, a)).toEqual([]);
     const old = { results: [{ distM: 10000, sec: 2700, date: '2026-01-01', kind: 'race' }] };
     expect(adaptBanner(p, adaptMarathonV2(p, old, a), {}, a)).toEqual([]);
+  });
+
+  it('MAR-06: newLimits = steps.newLimits poslednjeg koraka; sutra bez činjenica → prazno', () => {
+    const p = plan('d4-r-16w');
+    const a = p.weeks[4]!.endDate;
+    const r1 = adapt(p, painFacts(a, 5), a);
+    expect(r1.newLimits.length).toBeGreaterThan(0);
+    expect(newLimits(r1.plan.adaptation!.steps)).toEqual(r1.newLimits);
+    const r2 = adapt(r1.plan, {}, addDays(a, 1));
+    expect(r2.newLimits).toEqual([]);
+    expect(adaptBanner(r1.plan, r2, {}, addDays(a, 1))).toEqual([]);
+  });
+
+  it('MAR-06 (jedno pravilo trake): stari zapis bola kasnije — bol primenjen, plan se menja, ali bez trake; nov zapis → traka', () => {
+    const p = plan('d4-r-16w');
+    const a = p.weeks[4]!.endDate;
+    const b = addDays(a, 2);
+    // Isti stari zapis 2 dana kasnije pomera period bola (A4, asOf + 7): newLimits ga vidi, plan se menja posle asOf —
+    // traka ne (zapis bola nije noviji od poslednje adaptacije).
+    const pf = painFacts(a, 5);
+    const pain1 = adapt(p, pf, a);
+    const pain2 = adapt(pain1.plan, pf, b);
+    expect(applied(pain2, 'PAIN')).toBe(true);
+    expect(pain2.newLimits.length).toBeGreaterThan(0);
+    expect(pain2.changes.some((c) => c.date !== undefined && c.date > b)).toBe(true);
+    expect(adaptBanner(pain1.plan, pain2, pf, b)).toEqual([]);
+    // Nov zapis bola posle primene (plan se menja posle asOf) → traka.
+    const c = addDays(a, 4);
+    const pain = (date: string, level: number) => ({
+      date,
+      km: 0,
+      durationSec: 0,
+      completed: false,
+      pain: level
+    });
+    const pf2 = { workouts: [pain(a, 5), pain(c, 6)] };
+    const pain3 = adapt(pain1.plan, pf2, c);
+    expect(adaptBanner(pain1.plan, pain3, pf2, c)).toHaveLength(1);
+    // Ista prijavljena pauza sutra: bez trake.
+    const brk = { breaks: [{ kind: 'break', from: addDays(a, -9), to: a }] };
+    const pause1 = adapt(p, brk, a);
+    expect(adaptBanner(p, pause1, {}, a)).toHaveLength(1);
+    expect(
+      adaptBanner(pause1.plan, adapt(pause1.plan, brk, addDays(a, 1)), {}, addDays(a, 1))
+    ).toEqual([]);
   });
 });
 

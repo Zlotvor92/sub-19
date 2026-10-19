@@ -6,6 +6,8 @@ import {
   hmV2AdaptPreview,
   isFiveKV2Plan,
   isHmV2Plan,
+  isMarathonV2Plan,
+  marathonV2AdaptPreview,
   isTenKV2Plan,
   tenKV2AdaptPreview,
   preparationForPlan,
@@ -26,6 +28,7 @@ import {
 import type { AltRecord, GenPlanState } from '../domain/state';
 import { fiveKV2Sources } from './fiveKV2Actions';
 import { hmV2Sources } from './hmV2Actions';
+import { marathonV2Sources } from './marathonV2Actions';
 import { tenKV2Sources } from './tenKV2Actions';
 import { useRecoveryStore } from './recoveryStore';
 import { activeGenPlan, useTrainingStore } from './trainingStore';
@@ -61,6 +64,8 @@ export type PlanChangePreview =
       tenKV2?: TenKV2Details;
       /** HM v2 (segment HM-06): isti pregled za plan polumaratona v2. */
       hmV2?: HmV2Details;
+      /** Maraton v2 (segment MAR-06): isti pregled za plan maratona v2. */
+      marathonV2?: MarathonV2Details;
     }
   | {
       ok: false;
@@ -82,6 +87,11 @@ export type TenKV2Details = Pick<
 type HmV2Outcome = ReturnType<typeof hmV2AdaptPreview>;
 export type HmV2Details = Pick<
   Extract<HmV2Outcome, { ok: true }>,
+  'reasons' | 'weeks' | 'coverage' | 'needed'
+>;
+type MarathonV2Outcome = ReturnType<typeof marathonV2AdaptPreview>;
+export type MarathonV2Details = Pick<
+  Extract<MarathonV2Outcome, { ok: true }>,
   'reasons' | 'weeks' | 'coverage' | 'needed'
 >;
 type PreviewReason = Extract<PlanRevisionReason, 'execution' | 'restore' | 'goal'>;
@@ -282,7 +292,10 @@ function preview(
   reason: PreviewReason,
   summary: string,
   notes: string[],
-  extra: Pick<SuccessfulPreview, 'decision' | 'change' | 'fiveKV2' | 'tenKV2' | 'hmV2'> = {}
+  extra: Pick<
+    SuccessfulPreview,
+    'decision' | 'change' | 'fiveKV2' | 'tenKV2' | 'hmV2' | 'marathonV2'
+  > = {}
 ): SuccessfulPreview {
   const changes = planPreviewChanges(result, today);
   const value: SuccessfulPreview = {
@@ -541,6 +554,44 @@ export function previewHmV2(
     };
   return preview(out.result, today, 'execution', out.summary, out.notes, {
     hmV2: { reasons: out.reasons, weeks: out.weeks, coverage: out.coverage, needed: out.needed }
+  });
+}
+
+/**
+ * Segment MAR-06: pregled prilagođavanja plana maratona v2 iz činjenica (isti tok kao HM v2: dnevnik sa uvozom, bol,
+ * rezultati — test 5 km plana, trke —, sinhronizacija; potvrda „zapis za proteklih N dana je potpun" i prijavljene
+ * pauze iz toka). Ne upisuje ništa; primena = `commitPlanChange` (nova revizija). Odbijanje v2 vraća razloge doslovno.
+ */
+export function previewMarathonV2(
+  todayStr: string,
+  options: {
+    confirmedDays?: number | null;
+    breaks?: ReadonlyArray<{ from: string; to: string }>;
+  } = {}
+): PlanChangePreview {
+  const t = useTrainingStore.getState();
+  const today = parseIsoDate(todayStr);
+  if (!t.genPlan || !today || !isMarathonV2Plan(t.genPlan))
+    return { ok: false, reason: 'Prilagođavanje v2 traži plan maratona v2 i ispravan datum.' };
+  const out = marathonV2AdaptPreview(
+    t.genPlan,
+    today,
+    { ...replanContext(), facts: marathonV2Sources(options.confirmedDays ?? null) },
+    options.breaks ?? []
+  );
+  if (!out.ok)
+    return {
+      ok: false,
+      reason: 'Plan nije prilagođen. Razlozi:',
+      reasons: [...out.reasons.map((x) => x.message), ...out.notes]
+    };
+  return preview(out.result, today, 'execution', out.summary, out.notes, {
+    marathonV2: {
+      reasons: out.reasons,
+      weeks: out.weeks,
+      coverage: out.coverage,
+      needed: out.needed
+    }
   });
 }
 

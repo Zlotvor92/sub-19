@@ -14,8 +14,9 @@ import { CompareCard, MorningCard, WatchCard, ZonesCard, dataDate } from '../tod
 import { Description } from '../today/DayCard';
 import { DayEntry } from '../today/DayEntry';
 import { WeatherSection } from '../today/WeatherCard';
-import { isHmV2Plan, isTenKV2Plan } from '../../domain/generators/select';
+import { isHmV2Plan, isMarathonV2Plan, isTenKV2Plan } from '../../domain/generators/select';
 import { HmV2TestResult } from './HmV2TestResult';
+import { MarathonV2TestResult } from './MarathonV2TestResult';
 import { TenKV2TestResult } from './TenKV2TestResult';
 
 type Status = 'pending' | 'done' | 'skip';
@@ -43,6 +44,7 @@ export function DayScreen({ id }: { id: string }) {
   const closeScreen = useUIStore((s) => s.closeScreen);
   const tenKV2 = useTrainingStore((s) => isTenKV2Plan(s.genPlan));
   const hmV2 = useTrainingStore((s) => isHmV2Plan(s.genPlan));
+  const marathonV2 = useTrainingStore((s) => isMarathonV2Plan(s.genPlan));
 
   if (!plan || !day)
     return (
@@ -165,6 +167,7 @@ export function DayScreen({ id }: { id: string }) {
       {!pending ? adjust : null}
       {tenKV2 && day.tag === 'test' && !rest ? <TenKV2TestResult dayId={id} /> : null}
       {hmV2 && day.tag === 'test' && !rest ? <HmV2TestResult dayId={id} /> : null}
+      {marathonV2 && day.tag === 'test' && !rest ? <MarathonV2TestResult dayId={id} /> : null}
       {day.test ? (
         <Section title="Rezultat testa">
           <div className="rows">

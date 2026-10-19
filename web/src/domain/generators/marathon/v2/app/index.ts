@@ -4,10 +4,13 @@
    bira ga po oznaci politike (`marathon-v2`).
 
    Raspodela ugovora: (a) v2 implementira sam — generisanje, oznake i faza, procena za čarobnjak, proizvod, tempo po zoni,
-   prag, napor dana, izvoz na sat iz strukture; (b) adaptacija i predlog — eksplicitno nepodržano do segmenta MAR-06, sa
-   razlogom po članu (`./members.ts`); (c) prikaz stanja (bol, opterećenje, spremnost, vreme) — sopstvena kopija sa istim
+   prag, napor dana, izvoz na sat iz strukture; (b) adaptacija i predlog — segment MAR-06: kroz činjenice (`./facts.ts`) i
+   `adaptMarathonV2` (`./adapt.ts`, `./members.ts`), uz pregled pre upisa, ili „ne koristi se" sa razlogom; (c) prikaz stanja (bol, opterećenje, spremnost, vreme) — sopstvena kopija sa istim
    vrednostima kao maraton v1 (`./state/`, `./weather.ts`). */
 
+import * as adapt from './adapt.ts';
+import * as facts from './facts.ts';
+import * as form from './form.ts';
 import * as gen from './generate.ts';
 import * as b from './members.ts';
 import * as plan from './plan.ts';
@@ -40,10 +43,16 @@ export const marathonV2 = {
   workoutsForWatch: watch.workoutsForWatch,
   /** Plan maraton v2 (nosi izlaz v2 i tekuću oznaku politike). */
   isV2Plan: (p: { meta?: unknown; marathonV2?: unknown } | null | undefined): boolean =>
-    !!p && p.marathonV2 != null && plan.planPolicy(p).status === 'current',
-  /* (b) adaptacija i predlog — nepodržano do MAR-06 (razlog po članu: `UNSUPPORTED`) */
-  ADAPTATION_UNSUPPORTED: b.ADAPTATION_UNSUPPORTED,
-  UNSUPPORTED: b.UNSUPPORTED,
+    !!p && adapt.v2Of(p) !== null && plan.planPolicy(p).status === 'current',
+  /* (b) adaptacija i predlog (MAR-06): pregled, primena, vraćanje, cilj, forma iz rezultata */
+  adaptPreview: adapt.adaptPreview,
+  goalChange: adapt.goalChange,
+  sourceOf: b.sourceOf,
+  coverageText: facts.coverageText,
+  formHistory: form.formHistory,
+  TEST_FIELD: facts.TEST_FIELD,
+  ADAPTATION_V2: b.ADAPTATION_V2,
+  MEMBERS: b.MEMBERS,
   classifyMeasurement: b.classifyMeasurement,
   recomputeVdotChain: b.recomputeVdotChain,
   sessionClassFor: b.sessionClassFor,

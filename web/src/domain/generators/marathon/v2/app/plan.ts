@@ -34,10 +34,11 @@ export const POLICY_ID = P.id;
 export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `marathon-v2`; plan bez oznake je maraton v1 (`legacy-marathon`). */
 export const LEGACY_POLICY_ID = 'legacy-marathon';
-/** Verzije koje trenutni kod ume da gradi i prikazuje: samo tekuća iz politike (aplikacija pre MAR-05 nije pisala
- *  planove maratona v2; istorijske implementacije v2 se ne čuvaju; nova verzija politike je automatski jedina poznata).
- *  Svaka druga verzija je „unknown" (UNKNOWN_POLICY). */
-export const KNOWN_VERSIONS: readonly string[] = [P.version];
+/** Verzije koje trenutni kod ume da prikaže i adaptira (istorijske implementacije v2 se ne čuvaju): sve koje su mogle
+ *  biti sačuvane posle MAR-05 (aplikacija je od MAR-05 pisala samo `marathon-v2.3.1`) i tekuća. Sačuvan stariji plan
+ *  ostaje plan maratona v2; prilagođavanje ga gradi tekućim pravilima, a rezultat nosi tekuću oznaku. Svaka druga
+ *  verzija je „unknown" (UNKNOWN_POLICY). */
+export const KNOWN_VERSIONS: readonly string[] = [...new Set(['marathon-v2.3.1', P.version])];
 
 /** JEDNA mapa faze za prikaz (odluka adaptera): baza → BAZA, razvoj → RAZVOJ, specifična faza (najspecifičniji rad za
  *  tempo trke) → VRHUNAC, taper → TAPER, trkačka nedelja → TRKA; rasterećenje (bilo koje faze) → DELOAD. */

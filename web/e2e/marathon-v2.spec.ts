@@ -2,11 +2,12 @@ import { expect, test, type Page } from '@playwright/test';
 import { fixToday, installBackend, seedSession } from './support/backend';
 import { back, openTi, tab } from './support/flows';
 
-/* MARATON v2 SEGMENT MAR-05 — maraton v2 iza prekidača kroz pravi interfejs: podešavanje `ui.generatorV2Marathon` je
+/* MARATON v2 SEGMENT MAR-05 / MAR-06 — maraton v2 iza prekidača kroz pravi interfejs: podešavanje `ui.generatorV2Marathon` je
    uključeno u lokalnom stanju naloga pre pokretanja (novi korisnik bez plana vidi samo čarobnjaka; prekidač u
    Podešavanjima vidi samo administrator ili razvoj), uz povezan intervals.icu (da bi „Slanje na sat" bilo ponuđeno).
-   Tokovi: (1) čarobnjak sa rezultatom → plan `marathon-v2` na serveru → Plan tab i dan iz strukture → nedelja trke
-   (42,2 km) → Prilagodi plan i Cilj „stiže uskoro" → sat: pregled slanja bez preskočenih dana; (2) čarobnjak po osećaju
+   Tokovi: (1) čarobnjak sa rezultatom → plan `marathon-v2` na serveru → Plan tab i dan iz strukture → Cilj (v2) → sat:
+   pregled slanja bez preskočenih dana → Prilagodi plan (MAR-06): pregled iz činjenica, prijavljena pauza → pregled →
+   primena → revizija na serveru → vraćanje te revizije (pregled → primena → druga revizija) → nedelja trke (42,2 km); (2) čarobnjak po osećaju
    → RPE i tempo „orijentir (procena)", test 5 km u planu → sat: dani po osećaju preskočeni sa razlogom; (3)
    trčanje/hodanje → odbijanje v2 doslovno sa preporukom kraće distance, plan se ne pravi. Obrazac `hm-v2.spec.ts`
    (HM-05, kopija). */
@@ -94,7 +95,7 @@ test.beforeEach(async ({ page }) => {
   await enableMarathonV2(page);
 });
 
-test('maraton v2: čarobnjak (rezultat, 4 dana, cilj 3:30:00) → plan v2 → Plan tab i dan → trka 42,2 km → „stiže uskoro" → sat', async ({
+test('maraton v2: čarobnjak (rezultat, 4 dana, cilj 3:30:00) → plan v2 → Plan tab i dan → Cilj → sat → pauza → pregled → revizija → vraćanje → trka 42,2 km', async ({
   page
 }) => {
   const backend = await installBackend(page);
@@ -146,20 +147,10 @@ test('maraton v2: čarobnjak (rezultat, 4 dana, cilj 3:30:00) → plan v2 → Pl
   await expect(structure).toContainText(/Pre\s*[\d,]+ km @ \d:\d\d–\d:\d\d\/km\s*zagrevanje/);
   await expect(structure).toContainText(/\d:\d\d\/km/);
 
-  // Prilagođavanje: „stiže uskoro" umesto alata maraton v1 (MAR-06).
-  await back(page).click();
-  await tab(page, 'Plan').click();
-  await page
-    .locator('.page.active')
-    .getByRole('button', { name: /^Prilagodi plan/ })
-    .click();
-  await expect(page.locator('#v2-unsupported')).toContainText('Prilagođavanje plana stiže uskoro');
-  await expect(page.getByText('Prilagođavanje prema izvršenju')).toHaveCount(0);
   await back(page).click();
   await openTi(page, /^Trenutni cilj/);
-  await expect(page.locator('#v2-unsupported-goal')).toContainText(
-    'Prilagođavanje plana stiže uskoro'
-  );
+  await expect(page.getByRole('button', { name: 'Promeni cilj' })).toBeVisible();
+  await expect(page.locator('#v2-unsupported-goal')).toHaveCount(0);
   await back(page).click();
 
   // Sat: pregled slanja iz strukture; plan sa rezultatom nema preskočenih dana.
@@ -167,6 +158,47 @@ test('maraton v2: čarobnjak (rezultat, 4 dana, cilj 3:30:00) → plan v2 → Pl
   await expect(page.locator('#icu-pregled')).toContainText(/Pace/);
   await expect(page.locator('#icu-skipped')).toHaveCount(0);
   await expect(page.getByText(/Preskočeno dana trčanja/)).toHaveCount(0);
+
+  // Prilagođavanje (MAR-06): pregled iz činjenica → prijavljena pauza → pregled → primena → revizija → vraćanje.
+  // Plan počinje 2026-01-19 (posle „danas" čarobnjaka); prilagođava se u trećoj nedelji.
+  await fixToday(page, '2026-02-04T09:00:00');
+  await page.goto('/');
+  await tab(page, 'Plan').click();
+  await page
+    .locator('.page.active')
+    .getByRole('button', { name: /^Prilagodi plan/ })
+    .click();
+  const preview = page.locator('#plan-change-preview');
+  await expect(preview).toContainText('bez novih činjenica');
+  await expect(preview).toContainText('Budući deo plana se ne menja.');
+  await expect(page.locator('#v2-unsupported')).toHaveCount(0);
+  await expect(page.getByText('Prilagođavanje prema izvršenju')).toHaveCount(0);
+  const before = serverPlan(backend);
+  await page.getByLabel('Pauza od').fill('2026-01-26');
+  await page.getByLabel('Pauza do').fill('2026-02-04');
+  await page.getByRole('button', { name: 'Dodaj pauzu' }).click();
+  await expect(preview.getByRole('list', { name: 'Razlozi prilagođavanja' })).toContainText(
+    'Pauza (prijavljena) 10 dana'
+  );
+  await expect(preview.getByRole('table', { name: 'Promenjene nedelje' })).toBeVisible();
+  expect(serverPlan(backend)).toBe(before); // pregled ne upisuje
+  await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Plan je prilagođen' })).toBeVisible();
+  await expect.poll(() => serverPlan(backend)).toContain('Prilagođavanje 2026-02-04: pauza');
+  expect(serverPlan(backend)).toContain('"policyId":"marathon-v2"');
+  expect(serverPlan(backend)).toContain('"asOf":"2026-02-04"');
+  // Vraćanje te revizije: pregled (ništa se ne upisuje) → primena → druga revizija; plan ostaje maraton v2.
+  const adapted = serverPlan(backend);
+  await page
+    .getByRole('button', { name: 'Pregledaj vraćanje: Prilagođavanje 2026-02-04: pauza' })
+    .click();
+  await expect(preview).toContainText('Vraćanje plana: Prilagođavanje 2026-02-04: pauza');
+  expect(serverPlan(backend)).toBe(adapted);
+  await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
+  await expect
+    .poll(() => serverPlan(backend))
+    .toContain('Vraćanje plana: Prilagođavanje 2026-02-04: pauza');
+  expect(serverPlan(backend)).toContain('"policyId":"marathon-v2"');
 
   // Nedelja trke: trka 42,2 km (van obima nedelje, M8) na Plan tabu.
   await fixToday(page, '2026-05-10T09:00:00');

@@ -16,9 +16,9 @@ import { useIsOwner } from '../../stores/owner';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
 import {
-  adaptationUnsupportedFor,
   isFiveKV2Plan,
   isHmV2Plan,
+  isMarathonV2Plan,
   isTenKV2Plan
 } from '../../domain/generators/select';
 import {
@@ -38,6 +38,7 @@ import {
 import {
   changeGoalTime,
   changeGoalTimeHmV2,
+  changeGoalTimeMarathonV2,
   changeGoalTimeTenKV2,
   changeGoalTimeV2
 } from '../plan/planActions';
@@ -279,11 +280,44 @@ export function GoalScreen() {
             </p>
           </Help>
         </Section>
-      ) : genPlan && adaptationUnsupportedFor(genPlan) ? (
-        <Section>
-          <p className="note-src" id="v2-unsupported-goal">
-            {adaptationUnsupportedFor(genPlan)}
-          </p>
+      ) : genPlan && isMarathonV2Plan(genPlan) ? (
+        <Section title="Promeni ciljno vreme">
+          <div className="f-field">
+            <label htmlFor="pl-goal">Novo ciljno vreme</label>
+            <input
+              id="pl-goal"
+              inputMode="numeric"
+              placeholder={m.goalText}
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+            />
+          </div>
+          <div className="btnrow start">
+            <button
+              type="button"
+              className="btn"
+              id="pl-goal-ok"
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void changeGoalTimeMarathonV2(genPlan, goal, today)
+                  .then((ok) => {
+                    if (ok) setGoal('');
+                  })
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Promeni cilj
+            </button>
+          </div>
+          <Help summary="Šta se menja kad promeniš cilj">
+            <p>
+              U planu maratona v2 cilj se samo <b>procenjuje</b> (realističan, ambiciozan, nerealan)
+              iz trenutne forme; plan po osećaju ocenu dobija posle rezultata. Treninzi, tempo i
+              obim ostaju isti — tempo menja samo nov rezultat (test 5 km plana ili trka), kroz Plan
+              → Prilagodi plan.
+            </p>
+          </Help>
         </Section>
       ) : genPlan ? (
         <Section>
@@ -654,8 +688,8 @@ function MarathonV2Toggle() {
         Novi plan maratona pravi generator v2 (probno)
       </label>
       <p className="note-src">
-        Važi samo za novi plan maratona iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje
-        plana maratona v2 stiže uskoro.
+        Važi samo za novi plan maratona iz čarobnjaka. Postojeći plan se ne menja. Plan maratona v2
+        se prilagođava kroz Plan → Prilagodi plan (pregled, pa potvrda).
         {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
       </p>
     </>
