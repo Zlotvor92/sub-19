@@ -178,7 +178,8 @@ begin
        and t.typname = 'trigger'
        and p.proname not in (
          'user_state_touch','user_state_zapamti','ai_posao_dodirni','ai_posao_nov',
-         'ai_posao_prelaz','ai_posao_kvota_zastiti','push_pretplata_dodirni','zajednica_profil_dodirni')
+         'ai_posao_prelaz','ai_posao_kvota_zastiti','push_pretplata_dodirni','zajednica_profil_dodirni',
+         'korisnik_dogadjaj_iz_stanja')
   loop
     select count(*) into v_zavisi
       from pg_depend d
@@ -292,6 +293,7 @@ select 'ostatak', p.proname,
  where p.pronamespace = 'public'::regnamespace and t.typname = 'trigger'
    and p.proname not in (
      'user_state_touch','user_state_zapamti','ai_posao_dodirni','ai_posao_nov',
-     'ai_posao_prelaz','ai_posao_kvota_zastiti','push_pretplata_dodirni','zajednica_profil_dodirni')
+     'ai_posao_prelaz','ai_posao_kvota_zastiti','push_pretplata_dodirni','zajednica_profil_dodirni',
+         'korisnik_dogadjaj_iz_stanja')
 
 order by 1, 2;

@@ -160,6 +160,15 @@ describe('pokretanje', () => {
     expect((posts(s.fake)[0]?.body as { data: { kg: unknown[] } }).data.kg).toHaveLength(1);
   });
 
+  it('posle potvrđene sesije beleži otvaranje aplikacije (verzija i uređaj, sa tokenom)', async () => {
+    const s = setup({ localState: filled() });
+    await s.app.start();
+    await vi.waitFor(() => expect(s.fake.count('/rpc/zabelezi_otvaranje', 'POST')).toBe(1));
+    const r = s.fake.requests.find((x) => x.url.includes('/rpc/zabelezi_otvaranje'));
+    expect(r?.headers['authorization']).toMatch(/^Bearer .+/);
+    expect(r?.body).toMatchObject({ p_app_version: expect.any(String) as unknown });
+  });
+
   it('nalog obrisan dok je aplikacija bila zatvorena: kapija sa porukom, NIŠTA se ne šalje, podaci ostaju na uređaju', async () => {
     const fake = createFakeSupabase();
     fake.userStatuses = [{ status: 401 }];
