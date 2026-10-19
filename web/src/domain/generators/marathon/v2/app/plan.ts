@@ -14,6 +14,7 @@ import { checkInput } from '../input.ts';
 import { MARATHON_V2_POLICY as P } from '../policy.ts';
 import { basisAt, pacesAt } from '../steps.ts';
 import type { GoalAssessment, MarathonV2Plan, Paces, Phase, PlanDay } from '../types.ts';
+import { technicalNote } from '../volume.ts';
 import { addDays, diffDays } from './date.ts';
 import { workoutStructure } from './structure.ts';
 import type {
@@ -153,7 +154,10 @@ function weeksOf(plan: MarathonV2Plan): GeneratedWeek[] {
         (_, i) => byDate.get(addDays(wk.startDate, i)) ?? rest(i + 1)
       ),
       deload: wk.deload,
-      focus: [wk.deload ? 'Rasterećenje.' : '', ...wk.notes].filter(Boolean).join(' '),
+      // N11: tehničke napomene nedelje (domen: volume.technicalNote) ne idu korisniku.
+      focus: [wk.deload ? 'Rasterećenje.' : '', ...wk.notes.filter((n) => !technicalNote(n))]
+        .filter(Boolean)
+        .join(' '),
       ...(wk.phase === 'taper' ? { taper: true as const } : {})
     };
   });
