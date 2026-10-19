@@ -3,13 +3,12 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createElement } from 'react';
 import {
-  INSTALL_SESSION_KEY,
   captureInstallPrompt,
-  firstInSession,
   installKind,
   useInstallStore,
   type InstallPromptEvent
 } from './install';
+import { InstallButton } from '../components/ui/InstallButton';
 import { InstallSheet } from '../features/install/InstallSheet';
 import { useUIStore } from '../stores/uiStore';
 
@@ -19,15 +18,15 @@ const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chr
 const DESKTOP = 'Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0';
 
 afterEach(() => {
+  vi.restoreAllMocks();
   useInstallStore.getState().set(null);
   useUIStore.getState().closeSheet();
-  window.sessionStorage.clear();
 });
 
 describe('installKind', () => {
   const env = { standalone: false, ua: ANDROID, touch: 5, hasPrompt: false };
 
-  it('instalirana aplikacija nikad ne dobija list', () => {
+  it('instalirana aplikacija nikad ne dobija dugme', () => {
     expect(installKind({ ...env, standalone: true, hasPrompt: true })).toBeNull();
   });
 
@@ -45,24 +44,6 @@ describe('installKind', () => {
   it('Android bez događaja dobija meni pregledača; računar bez događaja ništa', () => {
     expect(installKind(env)).toBe('android');
     expect(installKind({ ...env, ua: DESKTOP, touch: 0 })).toBeNull();
-  });
-});
-
-describe('firstInSession', () => {
-  it('prvi put da, posle (i posle osvežavanja kartice) ne', () => {
-    expect(firstInSession(window)).toBe(true);
-    expect(window.sessionStorage.getItem(INSTALL_SESSION_KEY)).toBe('1');
-    expect(firstInSession(window)).toBe(false);
-  });
-
-  it('bez sessionStorage-a (privatni režim) list se vidi svaki put', () => {
-    const w = {
-      get sessionStorage(): Storage {
-        throw new Error('SecurityError');
-      }
-    };
-    expect(firstInSession(w)).toBe(true);
-    expect(firstInSession(w)).toBe(true);
   });
 });
 
@@ -85,12 +66,20 @@ describe('captureInstallPrompt', () => {
   });
 });
 
-describe('InstallSheet', () => {
-  it('„Instaliraj" otvara sistemski dijalog, troši događaj i zatvara list', async () => {
+describe('InstallButton', () => {
+  const ua = (s: string) => vi.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(s);
+
+  it('računar bez događaja: nema dugmeta', () => {
+    ua(DESKTOP);
+    render(createElement(InstallButton));
+    expect(screen.queryByRole('button', { name: 'Instaliraj' })).toBeNull();
+  });
+
+  it('sa događajem: jedan dodir otvara sistemski dijalog, bez lista', async () => {
+    ua(DESKTOP);
     const { e, prompt } = fakePrompt();
     useInstallStore.getState().set(e);
-    useUIStore.getState().openSheet({ kind: 'install', props: { kind: 'prompt' } });
-    render(createElement(InstallSheet, { kind: 'prompt' }));
+    render(createElement(InstallButton));
     await userEvent.click(screen.getByRole('button', { name: 'Instaliraj' }));
     await act(async () => {});
     expect(prompt).toHaveBeenCalledOnce();
@@ -98,11 +87,19 @@ describe('InstallSheet', () => {
     expect(useUIStore.getState().sheet).toBeNull();
   });
 
-  it('iPhone: koraci za Podeli i razlog (obaveštenja), bez dugmeta Instaliraj', () => {
+  it('iPhone: dodir otvara list sa koracima', async () => {
+    ua(IPHONE);
+    render(createElement(InstallButton));
+    await userEvent.click(screen.getByRole('button', { name: 'Instaliraj' }));
+    expect(useUIStore.getState().sheet).toEqual({ kind: 'install', props: { kind: 'ios' } });
+  });
+});
+
+describe('InstallSheet', () => {
+  it('iPhone: koraci za Podeli i razlog (obaveštenja)', () => {
     render(createElement(InstallSheet, { kind: 'ios' }));
     expect(screen.getByText('Dodaj na početni ekran')).toBeTruthy();
     expect(screen.getByText(/podsetnici za trening/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Instaliraj' })).toBeNull();
     expect(screen.getByRole('button', { name: 'U redu' })).toBeTruthy();
   });
 });

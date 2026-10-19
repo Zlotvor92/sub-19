@@ -17,9 +17,7 @@ const SHEETS: Record<string, (props: Record<string, unknown>) => ReactNode> = {
   history: () => <HistorySheet />,
   users: () => <UsersSheet />,
   install: (p) =>
-    p['kind'] === 'prompt' || p['kind'] === 'ios' || p['kind'] === 'android' ? (
-      <InstallSheet kind={p['kind']} />
-    ) : null,
+    p['kind'] === 'ios' || p['kind'] === 'android' ? <InstallSheet kind={p['kind']} /> : null,
   alt: (p) => (typeof p['id'] === 'string' ? <AltSheet id={p['id']} /> : null),
   swap: (p) =>
     typeof p['w'] === 'number' ? (

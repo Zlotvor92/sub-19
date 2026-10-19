@@ -1,11 +1,10 @@
 import { create } from 'zustand';
 
-/* POZIV NA INSTALACIJU. Ko otvori aplikaciju u pregledaču (ne instaliranu), pri svakom hladnom startu dobija list „Instaliraj". Zatvaranje ga
-   sklanja do sledećeg otvaranja kartice: oznaka je u `sessionStorage`, isto kao uvodni ekran, pa osvežavanje strane NE pali list ponovo.
-   Tri puta do instalacije:
-   - `prompt`: pregledač je poslao `beforeinstallprompt` (Chrome/Edge/Samsung na Androidu i računaru) — jedno dugme otvara sistemski dijalog;
-   - `ios`: iPhone/iPad nemaju API za instalaciju, samo Podeli → Dodaj na početni ekran — list pokazuje korake;
-   - `android`: Android bez događaja (Firefox, ili Chrome koji ga još nije poslao) — list pokazuje meni pregledača. */
+/* INSTALACIJA IZ PREGLEDAČA. Dok je aplikacija otvorena u pregledaču (ne instalirana), gornji red taba nosi dugme „Instaliraj"
+   (`components/ui/InstallButton`). Tri puta do instalacije:
+   - `prompt`: pregledač je poslao `beforeinstallprompt` (Chrome/Edge/Samsung na Androidu i računaru) — dodir otvara sistemski dijalog;
+   - `ios`: iPhone/iPad nemaju API za instalaciju, samo Podeli → Dodaj na početni ekran — dodir otvara list sa koracima;
+   - `android`: Android bez događaja (Firefox, ili Chrome koji ga još nije poslao) — list sa menijem pregledača. */
 
 export type InstallKind = 'prompt' | 'ios' | 'android';
 
@@ -14,8 +13,6 @@ export interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
-
-export const INSTALL_SESSION_KEY = 'sub20-instaliraj';
 
 export function installKind(env: {
   standalone: boolean;
@@ -42,7 +39,7 @@ export const useInstallStore = create<InstallState>()((set) => ({
   set: (prompt) => set({ prompt })
 }));
 
-/** Hvata događaj PRE Reacta: pregledač ga šalje jednom, ubrzo posle učitavanja, i ne ponavlja ga. `preventDefault` gasi Chrome-ovu malu traku — list je zamenjuje. */
+/** Hvata događaj PRE Reacta: pregledač ga šalje jednom, ubrzo posle učitavanja, i ne ponavlja ga. `preventDefault` gasi Chrome-ovu malu traku — dugme je zamenjuje. */
 export function captureInstallPrompt(w: Window): void {
   w.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -60,16 +57,4 @@ export function isStandalone(w: Window): boolean {
   } catch {
     return false;
   }
-}
-
-/** Prvi put u ovoj kartici? Ujedno beleži da jeste. Bez `sessionStorage` (privatni režim) list se vidi svaki put — bezopasno. */
-export function firstInSession(w: Pick<Window, 'sessionStorage'>): boolean {
-  try {
-    const storage = w.sessionStorage;
-    if (storage.getItem(INSTALL_SESSION_KEY) === '1') return false;
-    storage.setItem(INSTALL_SESSION_KEY, '1');
-  } catch {
-    /* privatni režim */
-  }
-  return true;
 }
