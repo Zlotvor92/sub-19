@@ -108,7 +108,7 @@ const DECISIONS: readonly Decision[] = [
     rule: 'Dugi ≤ udeo cilja po broju dana (H15: 3 d 45 %, 4 d 40 % — odluka organizatora posle zaustavljanja faf8807, 5 d 32 %, 6 d 30 %) i ≤ 150 min sporim E i ≤ 24 km (odluka organizatora HM-01 → 02, za sve brojeve dana); korak 0,1 km; dugi ≥ svaki lagan (tvrdo, pouka 2); lagan ≥ 4 km; dugi uzima najveću dozvoljenu dužinu, lagan ostatak. Upozorenje LONG_RUN_SHORT kad je najduži dugi plana < 16 km (preporuka: više dana ili obima).',
     place: 'lengths.ts (jedini vlasnik dužina); validate.ts (LONG_*, EASY_MIN, LONG_RUN_SHORT)',
     rationale:
-      '150 min: heuristika (Daniels, sekundarni izvor). 24 km ≈ 1,15 × trka (heuristika, odluka organizatora): u HM-01 1320 / 3696 planova imalo je dugi > 24 km (do 28 km nedeljama zaredom pri 50–60 km sa 4 dana) — maratonska dužina, ne polumaratonska; merenje pre/posle u docs/hm-v2/reports/SEGMENT-02-IMPLEMENTATION.md (artifacts/segment-02/measure-24.ts). Posledica: niži kapacitet → CAPACITY_LIMITED sa preporukom više dana; nedelja 1 sme ispod trenutnog obima i kad je dugi na 24 km (HI8). Udeo 40 % pri 4 dana (heuristika, odluka organizatora): plan sa 4 dana nosi dugi kao najveći deo nedelje; Danielsovih 25–30 % važi za 5–7 dana; niz udela po broju dana ostaje opadajući (3 d 45 %, 4 d 40 %, 5 d 32 %, 6 d 30 %); dugi i dalje ≤ 150 min i lagan ≤ dugi. Dugi < 16 km je kratak za polumaraton (heuristika) — upozorenje, ne odbijanje.'
+      '150 min: heuristika (Daniels, sekundarni izvor). 24 km ≈ 1,15 × trka (heuristika, odluka organizatora): u HM-01 1320 / 3696 planova imalo je dugi > 24 km (do 28 km nedeljama zaredom pri 50–60 km sa 4 dana) — maratonska dužina, ne polumaratonska; merenje pre/posle u docs/hm-v2/reports/SEGMENT-02-IMPLEMENTATION.md (artifacts/segment-02/measure-24.ts). Izmereno (measure-24.ts, mreža 02 pre/posle): dugi > 24 km 660 / 1320 / 1320 / 1980 planova (3/4/5/6 d) → 0; vrh niži 0 planova, nedelja 1 ispod obima i CAPACITY_LIMITED po obimu bez promene (4 d 774 → 774) — kapacitet ne pada, višak obima ide u lagane dane. Nedelja 1 sme ispod trenutnog obima i kad je dugi na 24 km (HI8). Udeo 40 % pri 4 dana (heuristika, odluka organizatora): plan sa 4 dana nosi dugi kao najveći deo nedelje; Danielsovih 25–30 % važi za 5–7 dana; niz udela po broju dana ostaje opadajući (3 d 45 %, 4 d 40 %, 5 d 32 %, 6 d 30 %); dugi i dalje ≤ 150 min i lagan ≤ dugi. Dugi < 16 km je kratak za polumaraton (heuristika) — upozorenje, ne odbijanje.'
   },
   {
     id: 'H14',
@@ -175,15 +175,15 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'HI7',
-    rule: 'Pouka 28 (MASTER § 2, od HM-02): opcioni ulaz recentLongRunKm (skorašnji najduži trk, 5–42 km; van opsega RECENT_LONG_INVALID): dugi nedelje 1 ≤ max(1,1 × recentLongRunKm, recentLongRunKm + 1,0) (0,1 km naniže); nedelja 1 sme ispod trenutnog obima i kad je dugi ograničen ovim (HI8). Bez ulaza: napomena nedelje 1 sa pragom (najmanji skorašnji najduži trk za koji je dugi nedelje 1 u granici, najmanje 5 km).',
+    rule: 'Pouka 28 (MASTER § 2, odluka organizatora posle MAR-02): dugi SVAKE nedelje ≤ max(1,1 × L, L + 1,0 km) (0,1 km naniže), L = najduži dugi u prethodne 4 nedelje plana; u nedeljama 1–4 u L ulazi i opcioni recentLongRunKm (skorašnji najduži trk, 5–42 km; van opsega RECENT_LONG_INVALID); uz udeo, 150 min i 24 km (H13). Jedna funkcija rollingLongCap10 za konstruktor, validator (LONG_ROLLING) i poruku. Kad konstrukcija nedelje (1, rasterećenje, taper, izgradnja) sa datim recentLongRunKm nije izvodljiva → odbijanje RECENT_LONG_TOO_SHORT (P1) sa pragom (najmanji r u koraku 0,5 km za koji je plan izvodljiv) i preporukom (duži dugi, duža priprema, manji obim, više dana, 10K). Bez ulaza: napomena nedelje 1 sa pragom (najmanji skorašnji najduži trk za koji je dugi nedelje 1 u granici, najmanje 5 km).',
     place:
-      'input.ts (opseg); lengths.ts recentLongCap10, recentLongNeeded10, week1LongCap10; generate.ts (napomena); validate.ts (LONG_RECENT, WEEK1_BELOW_START)',
+      'input.ts (opseg); lengths.ts stepCap10, rollingLongCap10, recentLongNeeded10, week1LongCap10; week.ts (sve vrste nedelje); generate.ts (istorija dugih, odbijanje, napomena); validate.ts (LONG_ROLLING, DELOAD_LONG, WEEK1_BELOW_START)',
     rationale:
-      'Heuristika iz MASTER pouke 28: prvi dugi ne sme da skoči daleko preko onoga što je trkač nedavno trčao (+10 % ili +1 km). Važi samo za nedelju 1; dalje dugi raste sa obimom (H6, H13).'
+      'Heuristika „skok dugog ≤ 10 % (ili 1 km)". Posmatračka kohorta Frandsen i sar., Br J Sports Med 2025;59:1203–1210 (5205 rekreativaca, 18 meseci, Garmin): rizik povrede od preopterećenja raste kad pojedinačni trk premaši 10 % najdužeg trka u prethodnih 30 dana (asocijacija, ne uzročnost; prozor 4 nedelje plana ≈ 30 dana). Prva verzija (samo nedelja 1) pomerala je skok na nedelju 2 (maraton MAR-02: do × 2,4); P1 umesto WEEK_INFEASIBLE: odbijanje sa razlogom, bez novog broja (pouka 6). Merenja: docs/hm-v2/reports/SEGMENT-02-IMPLEMENTATION.md (artifacts/segment-02/measure-rolling.ts).'
   },
   {
     id: 'HI8',
-    rule: 'Dopuna pouke 9 (H6): nedelja 1 < trenutni obim sme samo kad je dugi nedelje 1 na svom apsolutnom plafonu — min(150 min sporim E, 24 km, granica skorašnjeg najdužeg ako je dat) — jedna funkcija week1LongCap10 za konstruktor, poruku i validator (pouka 24). CAPACITY_LIMITED imenuje ograničenje (150 min, udeo, 24 km, skorašnji najduži) i preporučuje veće brojeve dana iz H15.',
+    rule: 'Dopuna pouke 9 (H6): nedelja 1 < trenutni obim sme samo kad je dugi nedelje 1 na svom apsolutnom plafonu — min(150 min sporim E, 24 km, kotrljajuća granica nedelje 1 = granica skorašnjeg najdužeg ako je dat) — jedna funkcija week1LongCap10 za konstruktor, poruku i validator (pouka 24). CAPACITY_LIMITED imenuje ograničenje (150 min, udeo, 24 km, kotrljajuća granica pouke 28) i preporučuje veće brojeve dana iz H15.',
     place:
       'lengths.ts week1LongCap10; volume.ts capacityLimits, capacityMessage; validate.ts WEEK1_BELOW_START',
     rationale:
@@ -394,8 +394,16 @@ export const HM_V2_POLICY = {
   /** H13 (udeo dugog: H15). longMaxKm: odluka organizatora HM-01 → 02 (≈ 1,15 × trka). */
   lengths: { longMaxSec: 9000, longMaxKm: 24, easyMinKm: 4.0, longWarnKm: 16 },
 
-  /** Pouka 28 (HI7): dugi nedelje 1 ≤ max(factor × skorašnji najduži, skorašnji + addKm). */
-  recentLong: { minKm: 5, maxKm: 42, factor: 1.1, addKm: 1.0 },
+  /** Pouka 28 (HI7): dugi svake nedelje ≤ max(factor × L, L + addKm), L = najduži dugi prethodnih
+      windowWeeks nedelja (u nedeljama 1…windowWeeks i skorašnji najduži trk, minKm–maxKm). */
+  recentLong: {
+    minKm: 5,
+    maxKm: 42,
+    factor: 1.1,
+    addKm: 1.0,
+    windowWeeks: 4,
+    thresholdStepKm: 0.5
+  },
 
   /** H12: početni nivo slota ≤ udeo plafona zone (H11). */
   startLevel: { capShare: 0.6 },

@@ -2,7 +2,7 @@
    trkačke nedelje; poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija
    nedelje (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
-import { longKmCap10, longShareCap10, longTimeCap10, recentLongCap10 } from './lengths.ts';
+import { longKmCap10, longShareCap10, longTimeCap10, rollingLongCap10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
 import { type DayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
@@ -11,8 +11,8 @@ const EPS = 1e-9;
 export const to10 = (km: number): number => Math.round(km * 10);
 
 /** Šta je seklo spuštenu nedelju izgradnje — dugi na 150 min ('time'), na udelu H15 ('share'), na 24 km
-    ('km'; HI8) i/ili u nedelji 1 na granici skorašnjeg najdužeg ('recent'; HI7). */
-export type CapacityLimit = 'time' | 'share' | 'km' | 'recent';
+    ('km'; HI8) i/ili na kotrljajućoj granici pouke 28 ('rolling'; HI7). */
+export type CapacityLimit = 'time' | 'share' | 'km' | 'rolling';
 
 /** H6/HI8: poruka CAPACITY_LIMITED — imenuje stvarna ograničenja; preporučuje više dana samo kad veći broj
     dana postoji u tabeli H15 (HI9 a: 4 dana → 5–6 dana). */
@@ -25,7 +25,7 @@ export function capacityMessage(
     time: `${Math.round(P.lengths.longMaxSec / 60)} min`,
     share: `${Math.round(rule.longMaxShare * 100)} % nedelje`,
     km: `${P.lengths.longMaxKm} km`,
-    recent: 'granica skorašnjeg najdužeg trka (nedelja 1)'
+    rolling: 'max(1,1 × najduži, najduži + 1 km) prethodne 4 nedelje (pouka 28)'
   };
   const what = limits.length > 0 ? ` uz dugi ≤ ${limits.map((l) => text[l]).join(' i ≤ ')}` : '';
   const more = RUN_DAYS_COUNTS.filter((n) => n > runDays);
@@ -49,15 +49,19 @@ export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number): strin
 }
 
 /** H6/HI8: ograničenja spuštenih (fitted 'down') ne-rasteretnih nedelja izgradnje: dugi = plafon 150 min
-    sporim E → 'time'; = udeo cilja (H15) → 'share'; = 24 km → 'km'; nedelja 1 = granica skorašnjeg
-    najdužeg (`recentKm`) → 'recent'. Redosled: time, share, km, recent. */
+    sporim E → 'time'; = udeo cilja (H15) → 'share'; = 24 km → 'km'; = kotrljajuća granica pouke 28
+    (skorašnji najduži `recentKm` u nedeljama 1–4) → 'rolling'. Redosled: time, share, km, rolling. */
 export function capacityLimits(
   weeks: readonly PlanWeek[],
   rule: DayRule,
   p: Paces,
-  recentKm: number | null = null
+  recentKm: number | null | undefined = null
 ): CapacityLimit[] {
   const hit = new Set<CapacityLimit>();
+  const longs10 = weeks.map((w) => {
+    const l = w.days.find((d) => d.role === 'long');
+    return l ? to10(l.workout.km) : null;
+  });
   for (const w of weeks) {
     if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') continue;
     const long = w.days.find((d) => d.role === 'long');
@@ -66,9 +70,9 @@ export function capacityLimits(
     if (l10 === longTimeCap10(p)) hit.add('time');
     if (l10 === longShareCap10(to10(w.targetKm), rule)) hit.add('share');
     if (l10 === longKmCap10()) hit.add('km');
-    if (w.index === 1 && recentKm !== null && l10 === recentLongCap10(recentKm)) hit.add('recent');
+    if (l10 === rollingLongCap10(w.index, longs10, recentKm)) hit.add('rolling');
   }
-  return (['time', 'share', 'km', 'recent'] as const).filter((l) => hit.has(l));
+  return (['time', 'share', 'km', 'rolling'] as const).filter((l) => hit.has(l));
 }
 
 /** Trenutni obim = cilj nedelje 1 [0,1 km]. */

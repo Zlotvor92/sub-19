@@ -1,4 +1,4 @@
-# HM v2 — Segment 02 (hm-v2.1.0): ZAUSTAVLJENO — pouka 28 (recentLongRunKm) × pouka 2 × H11 × H15
+# HM v2 — Segment 02 (hm-v2.1.0): ZAUSTAVLJENO (rešeno: P1 + pouka 28 kotrljajuće, vidi SEGMENT-02-IMPLEMENTATION.md) — pouka 28 (recentLongRunKm) × pouka 2 × H11 × H15
 
 Grana `claude/generator-isolation-5k-10k-hm-marathon`, polazni SHA `30fcb4b`. Menjano samo
 `web/src/domain/generators/halfMarathon/v2/**` i `docs/hm-v2/**`; HM v1, `halfMarathon/index.ts`, lični plan i druge

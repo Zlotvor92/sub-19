@@ -152,7 +152,14 @@ describe('HM v2 politika (MASTER § 4)', () => {
     expect(P.startLevel).toEqual({ capShare: 0.6 });
     // H13: dugi ≤ 24 km (odluka organizatora HM-01 → 02); pouka 28 (HI7).
     expect(P.lengths).toEqual({ longMaxSec: 9000, longMaxKm: 24, easyMinKm: 4.0, longWarnKm: 16 });
-    expect(P.recentLong).toEqual({ minKm: 5, maxKm: 42, factor: 1.1, addKm: 1.0 });
+    expect(P.recentLong).toEqual({
+      minKm: 5,
+      maxKm: 42,
+      factor: 1.1,
+      addKm: 1.0,
+      windowWeeks: 4,
+      thresholdStepKm: 0.5
+    });
     expect(P.workout.warmupCooldown).toEqual([
       { fromKm: 0, warmupSec: 900, cooldownSec: 600 },
       { fromKm: 40, warmupSec: 1200, cooldownSec: 900 },

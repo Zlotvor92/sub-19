@@ -11,7 +11,7 @@ import {
   longCap10,
   longKmCap10,
   longShareCap10,
-  recentLongCap10,
+  rollingLongCap10,
   taperLongCap10,
   week1LongCap10
 } from './lengths.ts';
@@ -315,6 +315,11 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
 
   // --- H13: dužine (dugi ≤ udeo i ≤ 150 min; dugi ≥ svaki lagan; korak 0,1 km).
   let longestAll10 = 0;
+  /** Pouka 28: dugi svake nedelje (null bez dugog) — ista funkcija granice kao konstruktor. */
+  const longsAll10 = weeks.map((w) => {
+    const l = w.days.find((d) => d.role === 'long');
+    return l ? to10(l.workout.km) : null;
+  });
   for (const w of weeks) {
     const long = w.days.find((d) => d.role === 'long');
     if (w.phase === 'race') {
@@ -350,15 +355,12 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         w.index,
         long.date
       );
-    if (
-      w.index === 1 &&
-      input.recentLongRunKm != null &&
-      l10 > recentLongCap10(input.recentLongRunKm)
-    )
+    const roll10 = rollingLongCap10(w.index, longsAll10, input.recentLongRunKm);
+    if (l10 > roll10)
       err(
-        'LONG_RECENT',
-        `Dugi nedelje 1 ${long.workout.km} km > ${recentLongCap10(input.recentLongRunKm) / 10} km (skorašnji najduži ${input.recentLongRunKm} km, pouka 28).`,
-        1,
+        'LONG_ROLLING',
+        `Dugi ${long.workout.km} km > ${roll10 / 10} km = max(1,1 × L, L + 1 km), L najduži prethodne 4 nedelje (u ned 1–4 i skorašnji najduži) (pouka 28).`,
+        w.index,
         long.date
       );
     if (long.workout.segments.some((s) => s.zone !== 'E'))
@@ -675,7 +677,15 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           w.index
         );
       if (long) {
-        const want10 = Math.min(deloadLong10(lastLong10), longCap10(to10(w.targetKm), rule, p));
+        const want10 = Math.min(
+          deloadLong10(lastLong10),
+          longCap10(
+            to10(w.targetKm),
+            rule,
+            p,
+            rollingLongCap10(w.index, longsAll10, input.recentLongRunKm)
+          )
+        );
         if (to10(long.workout.km) !== want10)
           err(
             'DELOAD_LONG',

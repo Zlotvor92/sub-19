@@ -48,8 +48,6 @@ export interface WeekContext {
   wc: WarmupCooldown;
   /** H15: red tabele za broj dana. */
   rule: DayRule;
-  /** Pouka 28 (HI7): granica dugog nedelje 1 iz skorašnjeg najdužeg [0,1 km]; null bez ulaza. */
-  recentCap10: number | null;
 }
 
 /** Režim kvaliteta nedelje: 'rule' po pravilu; 'relax' druga pretraga (HI2: H11 ispred H12, rasterećenje
@@ -114,7 +112,8 @@ const easyDays = (dates: readonly string[], easy10: readonly number[], p: Paces)
  * Izgradnja, rasterećenje ili taper sa ciljem `target10` [0,1 km]. `mode` 'relax' = druga pretraga cilja,
  * samo kad nijedan cilj nije izvodljiv po pravilu (generate.ts): izgradnja — H11 ispred H12 (spuštanje
  * doze); rasterećenje — bez kvaliteta kad ni najmanja T doza ne staje u plafon H11; taper — samo RP, a kad
- * ni RP 2 × 2000 m ne staje u plafon, bez kvaliteta.
+ * ni RP 2 × 2000 m ne staje u plafon, bez kvaliteta. `roll10`: kotrljajuća granica dugog nedelje (pouka 28,
+ * HI7; lengths.rollingLongCap10).
  */
 export function buildWeek(
   ctx: WeekContext,
@@ -123,7 +122,8 @@ export function buildWeek(
   quality: QualityState,
   lastLong10: number | null,
   longest10: number,
-  mode: QualityMode = 'rule'
+  mode: QualityMode = 'rule',
+  roll10 = Infinity
 ): BuiltWeek | null {
   const p = ctx.paces;
   const pat = ctx.pattern;
@@ -146,7 +146,15 @@ export function buildWeek(
       frame,
       [...qDays, ...pat.easy].filter((wd) => !tw || wd !== tDay)
     );
-    const len = deloadLengths(target10, tw ? km100(tw.km) : 0, dates.length, lastLong10, rule, p);
+    const len = deloadLengths(
+      target10,
+      tw ? km100(tw.km) : 0,
+      dates.length,
+      lastLong10,
+      rule,
+      p,
+      roll10
+    );
     if (!len) return null;
     return finish(
       [
@@ -179,7 +187,7 @@ export function buildWeek(
       frame,
       [...qDays, ...pat.easy].filter((wd) => !kept.includes(wd))
     );
-    const len = taperLengths(target10, q100, dates.length, longest10, rule, p);
+    const len = taperLengths(target10, q100, dates.length, longest10, rule, p, roll10);
     if (!len) return null;
     const rpMin = `RP ${P.taper.rpMin.reps} × ${P.taper.rpMin.repM} m`;
     const note = !w1
@@ -202,16 +210,15 @@ export function buildWeek(
     );
   }
 
-  // Izgradnja (H10, H12): Q1 i Q2 po fazi (3 dana samo Q1), dugi i lagani (H13; nedelja 1: granica
-  // skorašnjeg najdužeg, HI7).
+  // Izgradnja (H10, H12): Q1 i Q2 po fazi (3 dana samo Q1), dugi i lagani (H13; kotrljajuća granica pouke
+  // 28, HI7).
   const picks = pickBuild(quality, frame.phase, targetKm, p, relax, rule.quality);
   if (!picks) return null;
   const w1 = qualityWorkout(picks.q1, p, ctx.wc);
   const w2 = picks.q2 ? qualityWorkout(picks.q2, p, ctx.wc) : null;
   const dates = easyDates(frame, pat.easy);
-  const recent10 = frame.index === 1 ? ctx.recentCap10 : null;
   const q100 = km100(w1.km) + (w2 ? km100(w2.km) : 0);
-  const len = buildLengths(target10, q100, dates.length, rule, p, recent10);
+  const len = buildLengths(target10, q100, dates.length, rule, p, roll10);
   if (!len) return null;
   const notes: string[] = [];
   const slots: [string, Dose, SlotState | null][] = [

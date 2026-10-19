@@ -1,6 +1,7 @@
 /* H13 — dužine dugog i laganih trčanja (jedini vlasnik). Rad u desetinkama km (korak 0,1). Dugi uzima
    najveću dozvoljenu dužinu (≤ udeo cilja po broju dana H15, ≤ 150 min sporim E, ≤ 24 km, u nedelji 1 ≤
-   granica skorašnjeg najdužeg (pouka 28, HI7) i da svaki lagan ostane ≥ 4 km); lagani dele ostatak na jednake delove (razlika ≤ 0,1 km). Dugi ≥ svaki lagan je tvrdo pravilo
+   kotrljajuća granica pouke 28 (HI7: ≤ max(1,1 × L, L + 1,0), L = najduži dugi prethodne 4 nedelje i u nedeljama
+   1–4 skorašnji najduži trk) i da svaki lagan ostane ≥ 4 km); lagani dele ostatak na jednake delove (razlika ≤ 0,1 km). Dugi ≥ svaki lagan je tvrdo pravilo
    (pouka 2): kad ne može da se ispuni, nedelja nije izvodljiva (H6). */
 
 import { type DayRule, HM_V2_POLICY as P } from './policy.ts';
@@ -23,12 +24,29 @@ export function longTimeCap10(p: Paces): number {
 /** H13 (odluka HM-01 → 02): plafon dugog u km [0,1 km]. */
 export const longKmCap10 = (): number => Math.round(P.lengths.longMaxKm * 10);
 
-/** Pouka 28 (HI7): granica dugog nedelje 1 iz skorašnjeg najdužeg trka — max(1,1 × r, r + 1,0) [0,1 km,
-    naniže]. */
-export function recentLongCap10(recentKm: number): number {
-  const r10 = Math.round(recentKm * 10);
+/** Pouka 28 (HI7): granica dugog iz najdužeg prethodnog `l10` — max(1,1 × L, L + 1,0) [0,1 km, naniže]. */
+export function stepCap10(l10: number): number {
   const q = P.recentLong;
-  return Math.max(Math.floor(q.factor * r10 + EPS), r10 + Math.round(q.addKm * 10));
+  return Math.max(Math.floor(q.factor * l10 + EPS), l10 + Math.round(q.addKm * 10));
+}
+
+/** Pouka 28 (HI7): granica dugog iz skorašnjeg najdužeg trka [0,1 km]. */
+export const recentLongCap10 = (recentKm: number): number => stepCap10(Math.round(recentKm * 10));
+
+/** Pouka 28 (HI7): kotrljajuća granica dugog nedelje `index` (1-indeks) — L = najduži dugi nedelja
+    index − 4 … index − 1 (`longs10[i]` = dugi nedelje i + 1, null bez dugog) i u nedeljama 1–4 skorašnji
+    najduži trk kad je dat; bez L nema granice (∞). Jedna funkcija za konstruktor, validator i poruku. */
+export function rollingLongCap10(
+  index: number,
+  longs10: readonly (number | null)[],
+  recentKm: number | null | undefined
+): number {
+  const w = P.recentLong.windowWeeks;
+  const prev = longs10
+    .slice(Math.max(0, index - 1 - w), index - 1)
+    .filter((x): x is number => x !== null);
+  if (recentKm != null && index <= w) prev.push(Math.round(recentKm * 10));
+  return prev.length === 0 ? Infinity : stepCap10(Math.max(...prev));
 }
 
 /** Pouka 28 (HI7): najmanji skorašnji najduži trk [0,1 km] (≥ 5 km) za koji je dugi `long10` u granici. */
@@ -38,11 +56,10 @@ export function recentLongNeeded10(long10: number): number {
   return r10;
 }
 
-/** HI8: apsolutni plafon dugog nedelje 1 — min(150 min, 24 km, granica skorašnjeg najdužeg ako je dat)
-    [0,1 km]. Jedna funkcija za konstruktor, poruku i validator (pouka 9, pouka 24). */
+/** HI8: apsolutni plafon dugog nedelje 1 — min(150 min, 24 km, kotrljajuća granica nedelje 1 = granica
+    skorašnjeg najdužeg ako je dat) [0,1 km]. Jedna funkcija za konstruktor, poruku i validator (pouka 9, 24). */
 export function week1LongCap10(p: Paces, recentKm: number | null | undefined): number {
-  const abs = Math.min(longTimeCap10(p), longKmCap10());
-  return recentKm == null ? abs : Math.min(abs, recentLongCap10(recentKm));
+  return Math.min(longTimeCap10(p), longKmCap10(), rollingLongCap10(1, [], recentKm));
 }
 
 /** H13/H15: plafon dugog kao udeo cilja nedelje [0,1 km]. */
@@ -50,20 +67,10 @@ export function longShareCap10(target10: number, rule: DayRule): number {
   return Math.floor(rule.longMaxShare * target10 + EPS);
 }
 
-/** H13: najduži dozvoljen dugi [0,1 km] za cilj nedelje (udeo H15, trajanje, 24 km; `recent10` — granica
-    skorašnjeg najdužeg u nedelji 1, HI7). */
-export function longCap10(
-  target10: number,
-  rule: DayRule,
-  p: Paces,
-  recent10: number | null = null
-): number {
-  return Math.min(
-    longShareCap10(target10, rule),
-    longTimeCap10(p),
-    longKmCap10(),
-    recent10 ?? Infinity
-  );
+/** H13: najduži dozvoljen dugi [0,1 km] za cilj nedelje (udeo H15, trajanje, 24 km; `roll10` — kotrljajuća
+    granica pouke 28, HI7). */
+export function longCap10(target10: number, rule: DayRule, p: Paces, roll10 = Infinity): number {
+  return Math.min(longShareCap10(target10, rule), longTimeCap10(p), longKmCap10(), roll10);
 }
 
 /** H7: plafon dugog tapera — 0,6 × najduži dugi plana [0,1 km]. */
@@ -99,9 +106,9 @@ export function buildLengths(
   easyDays: number,
   rule: DayRule,
   p: Paces,
-  recent10: number | null = null
+  roll10 = Infinity
 ): Lengths | null {
-  return withEasy(target10 * 10 - quality100, longCap10(target10, rule, p, recent10), easyDays);
+  return withEasy(target10 * 10 - quality100, longCap10(target10, rule, p, roll10), easyDays);
 }
 
 /** H7: taper — dugi ≤ 0,6 × najduži dugi plana (i H13). */
@@ -111,9 +118,10 @@ export function taperLengths(
   easyDays: number,
   longest10: number,
   rule: DayRule,
-  p: Paces
+  p: Paces,
+  roll10 = Infinity
 ): Lengths | null {
-  const cap10 = Math.min(longCap10(target10, rule, p), taperLongCap10(longest10));
+  const cap10 = Math.min(longCap10(target10, rule, p, roll10), taperLongCap10(longest10));
   return withEasy(target10 * 10 - quality100, cap10, easyDays);
 }
 
@@ -125,9 +133,10 @@ export function deloadLengths(
   easyDays: number,
   lastLong10: number,
   rule: DayRule,
-  p: Paces
+  p: Paces,
+  roll10 = Infinity
 ): Lengths | null {
-  const long10 = Math.min(deloadLong10(lastLong10), longCap10(target10, rule, p));
+  const long10 = Math.min(deloadLong10(lastLong10), longCap10(target10, rule, p, roll10));
   const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
   if (long10 < EASY_MIN10 || easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
   return { long10, easy10 };

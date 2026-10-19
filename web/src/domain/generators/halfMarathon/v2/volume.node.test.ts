@@ -86,8 +86,8 @@ describe('H6 pravilo obima', () => {
     expect(capacityMessage(3, dayRule(3)!, ['share', 'km'])).toBe(
       '3 dana ne nose ovaj obim uz dugi ≤ 45 % nedelje i ≤ 24 km; preporuka 4–6 dana.'
     );
-    expect(capacityMessage(5, dayRule(5)!, ['recent'])).toBe(
-      '5 dana ne nose ovaj obim uz dugi ≤ granica skorašnjeg najdužeg trka (nedelja 1); preporuka 6 dana.'
+    expect(capacityMessage(5, dayRule(5)!, ['rolling'])).toBe(
+      '5 dana ne nose ovaj obim uz dugi ≤ max(1,1 × najduži, najduži + 1 km) prethodne 4 nedelje (pouka 28); preporuka 6 dana.'
     );
     expect(capacityMessage(6, dayRule(6)!, ['time'])).toBe(
       '6 dana ne nose ovaj obim uz dugi ≤ 150 min.'

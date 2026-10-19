@@ -4,12 +4,17 @@
    nedelju. Adaptacija (segment 04) dodaje korake u isti konstruktor. */
 
 import { checkInput } from './input.ts';
-import { recentLongCap10, recentLongNeeded10, week1LongCap10 } from './lengths.ts';
+import {
+  recentLongCap10,
+  recentLongNeeded10,
+  rollingLongCap10,
+  week1LongCap10
+} from './lengths.ts';
 import { assessGoal, pacesFromVdot, predictedHm } from './paces.ts';
 import { isBuildPhase, periodize } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
-import type { GenerateResult, HmV2Plan, PlanWeek } from './types.ts';
+import type { GenerateResult, HmV2Input, HmV2Plan, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 import {
   capacityLimits,
@@ -31,8 +36,8 @@ function recentLongNote(long10: number, ctx: WeekContext): string {
   const r = ctx.input.recentLongRunKm;
   const km = fmtKm(long10 / 10);
   if (r == null)
-    return `Dugi nedelje 1 ${km} km pretpostavlja skorašnji najduži trk od bar ${fmtKm(recentLongNeeded10(long10) / 10)} km; ako je bio kraći, unesi ga (dugi nedelje 1 ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).`;
-  const cap10 = ctx.recentCap10!;
+    return `Dugi nedelje 1 ${km} km pretpostavlja skorašnji najduži trk od bar ${fmtKm(recentLongNeeded10(long10) / 10)} km; ako je bio kraći, unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).`;
+  const cap10 = recentLongCap10(r);
   const at = long10 === cap10 && long10 === week1LongCap10(ctx.paces, r);
   return `Dugi nedelje 1 ${km} km ≤ ${fmtKm(cap10 / 10)} km (skorašnji najduži ${fmtKm(r)} km, pouka 28)${at ? ' — na granici' : ''}.`;
 }
@@ -42,7 +47,40 @@ const infeasible = (message: string, week?: number): GenerateResult => ({
   reasons: [{ code: 'WEEK_INFEASIBLE', message, ...(week !== undefined ? { week } : {}) }]
 });
 
+/** HM v2: plan ili strukturisano odbijanje. */
 export function generateHmV2(raw: unknown): GenerateResult {
+  return generate(raw, true);
+}
+
+/** HI7 (pouka 28, P1): nedelja neizvodljiva uz dati skorašnji najduži trk → RECENT_LONG_TOO_SHORT sa pragom
+    (najmanji r u koraku 0,5 km za koji je plan izvodljiv; računa se samo za poruku). */
+function recentTooShort(
+  raw: Record<string, unknown>,
+  input: HmV2Input,
+  week: number
+): GenerateResult {
+  const q = P.recentLong;
+  const r = input.recentLongRunKm!;
+  let threshold: number | null = null;
+  for (let k = Math.floor(r / q.thresholdStepKm) + 1; k * q.thresholdStepKm <= q.maxKm; k++)
+    if (generate({ ...raw, recentLongRunKm: k * q.thresholdStepKm }, false).ok) {
+      threshold = k * q.thresholdStepKm;
+      break;
+    }
+  const days = input.runDays.length;
+  return {
+    ok: false,
+    reasons: [
+      {
+        code: 'RECENT_LONG_TOO_SHORT',
+        message: `Skorašnji najduži trk ${fmtKm(r)} km je prekratak za plan od ${days} dana, ${fmtKm(input.currentWeeklyKm)} km nedeljno: dugi raste najviše max(10 %, 1 km) iznad najdužeg u prethodne 4 nedelje, pa nedelja ${week} ne može da se sastavi po pravilima (pouka 28).${threshold !== null ? ` Plan je izvodljiv od ${fmtKm(threshold)} km.` : ''} Preporuka: produži dugi trk, dužu pripremu, manji obim, više dana ili 10K plan.`,
+        week
+      }
+    ]
+  };
+}
+
+function generate(raw: unknown, searchThreshold: boolean): GenerateResult {
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
   const { input, weeks, vdotRaw, pattern, rule } = chk;
@@ -55,8 +93,7 @@ export function generateHmV2(raw: unknown): GenerateResult {
     pattern,
     raceSec: predictedHm(paces),
     wc: warmupCooldown(input.currentWeeklyKm),
-    rule,
-    recentCap10: input.recentLongRunKm != null ? recentLongCap10(input.recentLongRunKm) : null
+    rule
   };
   const start10 = startKm10(input.currentWeeklyKm);
   const cap10 = peakCap10(start10, rule);
@@ -69,6 +106,8 @@ export function generateHmV2(raw: unknown): GenerateResult {
   /** H8: najkraći lagan dan tapera [0,1 km] (gornja granica laganog dana trkačke nedelje). */
   let taperEasy10 = Infinity;
   const out: PlanWeek[] = [];
+  /** Pouka 28: dugi svake nedelje (null bez dugog) — osnov kotrljajuće granice. */
+  const longs10: (number | null)[] = [];
   for (const frame of frames) {
     if (frame.phase === 'race') {
       const prev = out[out.length - 1];
@@ -84,11 +123,13 @@ export function generateHmV2(raw: unknown): GenerateResult {
         days: w.days,
         notes: w.notes
       });
+      longs10.push(null);
       continue;
     }
+    const roll10 = rollingLongCap10(frame.index, longs10, input.recentLongRunKm);
     const nominal = nominal10(frame, h, start10, cap10);
     const make = (t10: number, mode: QualityMode) =>
-      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, mode);
+      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, mode, roll10);
     // HI2: druga pretraga ('relax') samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja.
     let fit: ReturnType<typeof fit10> = null;
     let mode: QualityMode = 'rule';
@@ -99,6 +140,8 @@ export function generateHmV2(raw: unknown): GenerateResult {
         break;
       }
     }
+    if (!fit && input.recentLongRunKm != null && searchThreshold)
+      return recentTooShort(raw as Record<string, unknown>, input, frame.index);
     if (!fit)
       return infeasible(
         `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
@@ -121,6 +164,7 @@ export function generateHmV2(raw: unknown): GenerateResult {
       notes
     });
     if (w.long10 !== null) longest10 = Math.max(longest10, w.long10);
+    longs10.push(w.long10);
     if (frame.phase === 'taper') {
       const q = w.days.map((d) => d.workout.dose).find((d) => d?.zone === 'RP');
       taperRpM = q ? q.doseM : 0;
@@ -152,7 +196,7 @@ export function generateHmV2(raw: unknown): GenerateResult {
   };
   if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
     plan.notes.push(
-      `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, paces, input.recentLongRunKm ?? null))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (H6).`
+      `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, paces, input.recentLongRunKm))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (H6).`
     );
   const violations = validatePlan(plan);
   const errors = violations.filter((v) => v.severity === 'error');

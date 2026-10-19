@@ -43,6 +43,9 @@ export interface GridStats {
   week1Below: number;
   week1BelowNotTime: number;
   week1BelowAt: { time: number; km: number; recent: number };
+  /** Pouka 28: najveći skok dugog nedelja 1 → 2 (odnos) i nedelja izgradnje sa dugim na kotrljajućoj granici. */
+  longJump12Max: number;
+  rollingCappedWeeks: number;
   /** K3: ne-rasteretne nedelje izgradnje sa manje kvaliteta od reda H15 (3 dana 1, inače 2). */
   buildNoQuality: number;
   /** K5. */
@@ -71,6 +74,8 @@ export const emptyStats = (): GridStats => ({
   week1Below: 0,
   week1BelowNotTime: 0,
   week1BelowAt: { time: 0, km: 0, recent: 0 },
+  longJump12Max: 0,
+  rollingCappedWeeks: 0,
   buildNoQuality: 0,
   raceOverTaper: 0,
   dropOutsideCapacity: 0,
@@ -110,12 +115,24 @@ export function checkPlan(
   const WEEK_MIN = row.weekMin;
   const one = row.q === 1;
   const time10 = Math.floor((LONG_MAX_SEC / p.paces.E.slow) * 10 + EPS);
-  // Pouka 28: granica dugog nedelje 1 = max(1,1 × r, r + 1,0) (0,1 km naniže).
+  // Pouka 28: dugi nedelje k ≤ max(1,1 × L, L + 1,0) (0,1 km naniže), L = najduži dugi nedelja k − 4 … k − 1,
+  // u nedeljama 1–4 i skorašnji najduži r.
   const r = p.input.recentLongRunKm;
-  const recent10 =
-    r == null
-      ? Infinity
-      : Math.max(Math.floor(1.1 * Math.round(r * 10) + EPS), Math.round(r * 10) + 10);
+  const r10 = r == null ? null : Math.round(r * 10);
+  const longsByWeek = p.weeks.map((w) => {
+    const l = w.days.find((d) => d.role === 'long');
+    return l ? to10(l.workout.km) : null;
+  });
+  const roll10 = (k: number): number => {
+    const prev = longsByWeek
+      .slice(Math.max(0, k - 5), k - 1)
+      .filter((x): x is number => x !== null);
+    if (r10 !== null && k <= 4) prev.push(r10);
+    if (prev.length === 0) return Infinity;
+    const L = Math.max(...prev);
+    return Math.max(Math.floor(1.1 * L + EPS), L + 10);
+  };
+  const recent10 = roll10(1);
   const longOf = (w: PlanWeek): number | null => {
     const l = w.days.find((d) => d.role === 'long');
     return l ? to10(l.workout.km) : null;
@@ -176,7 +193,8 @@ export function checkPlan(
         if (long > Math.floor(SHARE * to10(w.targetKm) + EPS) || long > time10)
           no('LONG_CAP', `${tag} ${long / 10}`);
         if (long > LONG_MAX10) no('LONG_24', `${tag} ${long / 10}`);
-        if (w.index === 1 && long > recent10) no('LONG_RECENT', `${long / 10} > ${recent10 / 10}`);
+        if (long > roll10(w.index))
+          no('LONG_ROLLING', `${tag} ${long / 10} > ${roll10(w.index) / 10}`);
       }
       if (easy.some((e) => e < EASY_MIN10)) no('EASY_MIN', tag);
       // H15: 5/6 dana lagani jednaki (razlika ≤ 0,1 km); broj dana nedelje = broj dana trčanja.
@@ -363,5 +381,32 @@ export function checkPlan(
   if (longer) st.longerQualityPlans++;
   if (longest < 160) st.longShortPlans++;
   if (longest === LONG_MAX10) st.longAt24Plans++;
+  const [l1, l2] = longsByWeek;
+  if (l1 && l2) st.longJump12Max = Math.max(st.longJump12Max, l2 / l1);
+  for (const w of p.weeks)
+    if (steady(w) && longsByWeek[w.index - 1] === roll10(w.index)) st.rollingCappedWeeks++;
   st.peakRatioSum += p.peakKm / p.startKm;
+}
+
+/** Pouka 28 (nezavisno): plan ima nedelju čiji je dugi tačno na kotrljajućoj granici, a ona je niža od udela
+    reda, 150 min i 24 km — pravilo zaista seče dugi (regresija prema HM-01: dozvoljen uzrok promene). */
+export function rollingBinds(p: HmV2Plan): boolean {
+  const row = ROWS[p.input.runDays.length]!;
+  const time10 = Math.floor((LONG_MAX_SEC / p.paces.E.slow) * 10 + EPS);
+  const r = p.input.recentLongRunKm;
+  const longs = p.weeks.map((w) => {
+    const l = w.days.find((d) => d.role === 'long');
+    return l ? to10(l.workout.km) : null;
+  });
+  return p.weeks.some((w, i) => {
+    const l = longs[i];
+    if (l === null || l === undefined) return false;
+    const prev = longs.slice(Math.max(0, i - 4), i).filter((x): x is number => x !== null);
+    if (r != null && i < 4) prev.push(Math.round(r * 10));
+    if (prev.length === 0) return false;
+    const L = Math.max(...prev);
+    const roll = Math.max(Math.floor(1.1 * L + EPS), L + 10);
+    const other = Math.min(Math.floor(row.share * to10(w.targetKm) + EPS), time10, LONG_MAX10);
+    return l === roll && roll < other;
+  });
 }

@@ -68,6 +68,8 @@ export type ReasonCode =
   | 'GOAL_INVALID'
   /** Pouka 28: skorašnji najduži trk van 5–42 km. */
   | 'RECENT_LONG_INVALID'
+  /** Pouka 28 (HI7): sa datim skorašnjim najdužim trkom nedelja nije izvodljiva (prag u poruci). */
+  | 'RECENT_LONG_TOO_SHORT'
   | 'SCHEDULE_NO_RECOVERY'
   | 'WEEK_INFEASIBLE'
   | 'PLAN_VIOLATES_POLICY';

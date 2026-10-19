@@ -165,7 +165,7 @@
         }
       ],
       "notes": [
-        "Dugi nedelje 1 13,5 km pretpostavlja skorašnji najduži trk od bar 12,3 km; ako je bio kraći, unesi ga (dugi nedelje 1 ≤ max(1,1 × najduži, najduži + 1 km), pouka 28)."
+        "Dugi nedelje 1 13,5 km pretpostavlja skorašnji najduži trk od bar 12,3 km; ako je bio kraći, unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28)."
       ]
     },
     {
