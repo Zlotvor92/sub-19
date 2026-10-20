@@ -206,3 +206,7 @@ nosi policyId/fazu cilja (`stampForStorage`). 7 nula uvoza: ciljevi kao argument
   generatora, ne sa prethodnim korakom.
 - Sudar 3c → (B): pogled izvora za v1 cilj pregrupiše dane izvora u nedelje od ponedeljka (id dana ostaje; menjaju se
   `dow` i nedelja). (C) i (D) odbijeni. Dopuna 3b u `handoff.ts` (`mondayWeeks`).
+- O8 (posle 3f): (a). Do trke više od 20 nedelja → opcija HM nedostupna sa razlogom PLAN_TOO_LONG doslovno. (b) odbijeno:
+  budući dani maratona se ne mešaju pred plan HM.
+- Predaja za 3e: plan HM v2 cilja nema `meta.preparation`; vrh dugog i obima za opciju čitati iz `hmV2`. Predaja za
+  3g: prikaz nedelja prefiksa (faze izvora) i broj nedelje u pregledu (`offset + index`).
