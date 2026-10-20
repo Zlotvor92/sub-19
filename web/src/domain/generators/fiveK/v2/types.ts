@@ -378,6 +378,9 @@ export interface AdaptStep {
   restart: boolean;
   /** Umor: fromWeek je rasterećenje. */
   deload: boolean;
+  /** 2.8.0 (pouka 36): nedelja prinudnog rasterećenja kad nije fromWeek — nedelja posle nedelje poslednjeg zapisa
+      umora već je počela (asOf u njoj): rasterećenje važi za njen ostatak. Izostavljeno = fromWeek. */
+  deloadWeek?: number;
   noQuality: DateRange[];
   oneQuality: DateRange[];
   rest: DateRange | null;

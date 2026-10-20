@@ -1,0 +1,20 @@
+{
+ "trka sub": {
+  "calls": 824,
+  "ok": 824,
+  "duplicateDates": 0,
+  "duplicateIds": 0,
+  "weekStartDow": {
+   "ned": 206
+  }
+ },
+ "trka ned": {
+  "calls": 824,
+  "ok": 824,
+  "duplicateDates": 0,
+  "duplicateIds": 0,
+  "weekStartDow": {
+   "pon": 206
+  }
+ }
+}

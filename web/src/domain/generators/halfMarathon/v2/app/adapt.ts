@@ -11,6 +11,7 @@
 
 import { adaptBanner, adaptHmV2 } from '../adapt.ts';
 import { checkInput } from '../input.ts';
+import { shorterOffer } from '../shorter.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import type { AdaptChange, AdaptReason, AdaptResult, PlanWeek, HmV2Plan } from '../types.ts';
 import { addDays } from './date.ts';
@@ -23,7 +24,7 @@ import {
   type FactsSource
 } from './facts.ts';
 import { rejection } from './generate.ts';
-import { generatedPlan, storedPlan } from './plan.ts';
+import { generatedPlan, prefixOf, storedPlan, type Prefix } from './plan.ts';
 import type {
   AppPlan,
   GoalAssessmentView,
@@ -111,14 +112,18 @@ export interface AdaptPreview {
   coverage: CoverageInfo;
   /** Aktivna ograničenja koja menjaju budući deo plana (traka „Plan treba prilagoditi"); prazno = nema. */
   needed: string[];
+  /** Faza 3 (3c, O1): posle ove adaptacije plan je ograničena priprema — ponuda „kraća distanca" (odluka o pripremi).
+   *  Polja nema kad ponude nema (pregled bajt-isti). */
+  shorterOffer?: true;
 }
 export type AdaptOutcome =
   | AdaptPreview
   | { ok: false; reasons: PlanRejectionReason[]; coverage: CoverageInfo | null; notes: string[] };
 
-/** Plan za upis iz plana v2 (+ snimak ručnih izmena u trenutku adaptacije, ako ga ima). */
-function stored(v2: HmV2Plan, edits: unknown): StoredPlan {
-  const s = storedPlan(generatedPlan(v2));
+/** Plan za upis iz plana v2 (+ snimak ručnih izmena u trenutku adaptacije, ako ga ima; 3f: nedelje izvora predaje
+ *  ispred, `prefix`). */
+function stored(v2: HmV2Plan, edits: unknown, prefix: Prefix | null = null): StoredPlan {
+  const s = storedPlan(generatedPlan(v2), prefix);
   return edits === undefined
     ? s
     : { ...s, meta: { ...s.meta, [EDITS_KEY]: edits } as StoredPlan['meta'] };
@@ -142,8 +147,13 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
   const r = adaptHmV2(v2, built.facts, src.today);
   if (!r.ok) return { ok: false, reasons: adaptRejection(r), coverage: built.coverage, notes };
   const after = r.plan;
-  const result = stored(after, { alts: copy(src.alts ?? {}), moves: copy(src.moves ?? {}) });
-  const weeks = changedWeeks(v2, after, r.changes, src.today);
+  const prefix = prefixOf(src.plan);
+  const result = stored(
+    after,
+    { alts: copy(src.alts ?? {}), moves: copy(src.moves ?? {}) },
+    prefix
+  );
+  const weeks = changedWeeks(v2, after, r.changes, src.today, prefix?.offset ?? 0);
   const applied = r.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');
   const summary = `Prilagođavanje ${src.today}: ${applied.length ? [...new Set(applied.map((x) => CONDITION[x.condition]))].join(', ') : CONDITION.NO_FACTS}`;
   return {
@@ -155,7 +165,8 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     notes,
     coverage: built.coverage,
     // Pouka 20: pravilo trake živi samo u domenu (`adaptBanner`); aplikacija ga samo zove.
-    needed: adaptBanner(v2, r, built.facts, src.today)
+    needed: adaptBanner(v2, r, built.facts, src.today),
+    ...(shorterOffer(after, src.today) ? { shorterOffer: true as const } : {})
   };
 }
 
@@ -163,7 +174,8 @@ function changedWeeks(
   before: HmV2Plan,
   after: HmV2Plan,
   changes: readonly AdaptChange[],
-  today: IsoDate
+  today: IsoDate,
+  offset = 0
 ): WeekChange[] {
   const b = weekViews(before);
   const a = weekViews(after);
@@ -172,7 +184,7 @@ function changedWeeks(
   return [...ids]
     .sort((x, y) => x - y)
     .filter((w) => (a.get(w)?.end ?? b.get(w)?.end ?? '') > today)
-    .map((w) => ({ week: w, before: b.get(w) ?? null, after: a.get(w) ?? null }));
+    .map((w) => ({ week: offset + w, before: b.get(w) ?? null, after: a.get(w) ?? null }));
 }
 
 /* ---------- vraćanje revizije ---------- */
@@ -247,7 +259,7 @@ export function restoreMerge<T extends AppPlan>(
         }
       : {})
   };
-  const out = stored(merged, metaOf(current)[EDITS_KEY]);
+  const out = stored(merged, metaOf(current)[EDITS_KEY], prefixOf(current));
   const prev = new Map(current.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
   let changedDays = 0;
   for (const w of out.weeks)
@@ -284,7 +296,7 @@ export function goalChange(plan: AppPlan, goalSec: number, today: IsoDate): Goal
   const locked = [...trainingDates(v2)].filter((d) => d > today).sort();
   const r = adaptHmV2({ ...v2, input: c.input }, { lockedDayIds: locked }, today);
   if (!r.ok) return { ok: false, reasons: adaptRejection(r) };
-  const result = stored(r.plan, metaOf(plan)[EDITS_KEY]);
+  const result = stored(r.plan, metaOf(plan)[EDITS_KEY], prefixOf(plan));
   const view = (m: unknown): GoalAssessmentView | null =>
     ((m ?? {}) as { goalAssessment?: GoalAssessmentView }).goalAssessment ?? null;
   return { ok: true, result, before: view(plan.meta), after: view(result.meta) };

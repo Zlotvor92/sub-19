@@ -640,8 +640,7 @@ function TenKV2Toggle() {
         Novi 10K plan pravi generator v2 (probno)
       </label>
       <p className="note-src">
-        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje 10K v2
-        plana stiže uskoro.
+        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja.
         {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
       </p>
     </>

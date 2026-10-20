@@ -76,7 +76,15 @@ export function buildTrainingWeek(
       }
     };
   const q1 = s.q1;
-  const q2 = s.q2;
+  // 2.8.1 (MASTER pouka 35): drugi dan kvaliteta postaje lagan kad bi sa dva dana kvaliteta dugi bio kraći od nekog
+  // dana kvaliteta (secondQualityEasy — jedino mesto, validator je čita); doza drugog kvaliteta se ne beleži.
+  const easySecond =
+    q1 !== null &&
+    s.q2 !== null &&
+    (f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen') &&
+    !(L?.rest?.length ?? 0) &&
+    secondQualityEasy(target, q1, s.q2, pattern.easy.length, f.phase, p, a) !== null;
+  const q2 = easySecond ? null : s.q2;
 
   const easyDays: { w: Weekday; stridesOnly: boolean }[] = pattern.easy.map((w) => ({
     w,
@@ -135,6 +143,7 @@ export function buildTrainingWeek(
   planDays.sort((a, b) => a.date.localeCompare(b.date));
   const plannedKm = r2(planDays.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
   const notes = [...s.notes];
+  if (easySecond) notes.push(`Dugi ostaje najduži trening nedelje: ${SECOND_EASY_NOTE}.`);
   if (easyCappedAtLong)
     notes.push(
       `Lagan trk ograničen na dužinu dugog (${longKm} km): planirano ${plannedKm} km < cilj ${target} km.`
@@ -155,7 +164,51 @@ export function buildTrainingWeek(
       days: planDays,
       notes
     },
-    dose: s.dose
+    dose: easySecond && s.dose ? secondEasyDose(s.dose, prev) : s.dose
+  };
+}
+
+/** Pouka 35: oznaka (napomena) nedelje u kojoj je drugi dan kvaliteta lagan — validator je čita. */
+export const SECOND_EASY_NOTE = 'drugi dan kvaliteta je lagan (pouka 35)';
+
+/**
+ * 2.8.1 (MASTER pouka 35) — JEDINO mesto odluke o broju dana kvaliteta nedelje izgradnje: nedelja sa dva dana
+ * kvaliteta (`q1`, `q2`) čiji bi neki dan trajao duže od dugog iste nedelje → drugi dan je lagan, prvi ostaje;
+ * vraća dužine nedelje sa jednim danom kvaliteta (oslobođen obim: dugi raste, weekLengths). null = dva dana ostaju
+ * (dugi je najduži, ili nedelja sa jednim danom nije izvodljiva — lagan < minimuma ili lagan = dugi; validator:
+ * upozorenje LONG_NOT_LONGEST). Validator čita istu funkciju.
+ */
+export function secondQualityEasy(
+  target: number,
+  q1: Workout,
+  q2: Workout,
+  nEasy: number,
+  phase: WeekFrame['phase'],
+  p: PaceModel,
+  a: Athlete
+): ReturnType<typeof weekLengths> | null {
+  const two = weekLengths(target, q1.km + q2.km, nEasy, phase, p, a);
+  const long = longRun(two.longKm, p).sec;
+  if (q1.sec <= long && q2.sec <= long) return null;
+  const one = weekLengths(target, q1.km, nEasy + 1, phase, p, a);
+  return one.capped || one.shares.some((x) => x < one.easyMin) ? null : one;
+}
+
+/** Doza nedelje bez drugog kvaliteta: drugi kvalitet (T, druga vrsta po osećaju) ostaje na prethodnoj dozi. */
+function secondEasyDose(d: WeekDose, prev: WeekDose | null): WeekDose {
+  const kind = d.kind;
+  return {
+    ...d,
+    t: prev?.t ?? null,
+    same: 1,
+    ...(d.feel
+      ? {
+          feel: {
+            ...(prev?.feel ?? {}),
+            ...(kind && kind in d.feel ? { [kind]: d.feel[kind as keyof typeof d.feel] } : {})
+          }
+        }
+      : {})
   };
 }
 

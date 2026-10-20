@@ -217,6 +217,15 @@ export function longestLong10(
   return m;
 }
 
+/** H13/H17 (LONG_RUN_SHORT) i faza 3 (O1, okidač „kraća distanca"): najduži dugi plana ispod praga upozorenja
+    `longWarnKm` — jedna definicija za validator i okidač. */
+export function longRunShort(
+  weeks: readonly { days: readonly { role: string; workout: { km: number } }[] }[],
+  longWarnKm: number
+): boolean {
+  return longestLong10(weeks) < Math.round(longWarnKm * 10);
+}
+
 /** A4 (H18): dugi na danu bola ≤ 60 min sporim E [0,1 km]. */
 export function painLong10(long10: number, p: Paces): number {
   return Math.min(long10, longTimeCap10(p, P.adapt.painLongMaxSec));

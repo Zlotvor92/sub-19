@@ -114,7 +114,7 @@ describe('10K v2 iza prekidača', () => {
     const saved = collectPersisted();
     expect(saved.genPlan!.meta).toMatchObject({
       policyId: '10k-v2',
-      policyVersion: '10k-v2.5.2',
+      policyVersion: '10k-v2.6.0',
       paceBasis: 'result',
       goalSec: 2580
     });
@@ -313,5 +313,14 @@ describe('Prekidač 10K v2: vidljiv samo uz VITE_TENK_V2 ili administratoru', ()
     expect(box.checked).toBe(false);
     await user.click(box);
     expect(collectPersisted().ui['generatorV2TenK']).toBe(true);
+  });
+
+  it('06f: tekst prekidača bez „prilagođavanje stiže uskoro" (prilagođavanje 10K v2 postoji od segmenta 06)', () => {
+    hydratePersisted(state());
+    vi.stubEnv('VITE_TENK_V2', '1');
+    render(<TrainingSettingsScreen />);
+    const note = screen.getByText(/Važi samo za novi 10K plan iz čarobnjaka\./);
+    expect(note.textContent).toContain('Postojeći plan se ne menja.');
+    expect(note.textContent).not.toMatch(/stiže uskoro/);
   });
 });

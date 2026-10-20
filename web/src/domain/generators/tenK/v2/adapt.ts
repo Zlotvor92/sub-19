@@ -10,7 +10,7 @@ import { dayNumber, mustDay } from './dates.ts';
 import { construct, preStartRef } from './generate.ts';
 import { checkInput } from './input.ts';
 import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
-import { baseFrames, framesFor, targetReducedWeek } from './steps.ts';
+import { baseFrames, framesFor, newLimits, targetReducedWeek } from './steps.ts';
 import type {
   AdaptChange,
   AdaptReason,
@@ -127,12 +127,19 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
   const locked = new Set(facts.lockedDayIds);
   const keep = (d: PlanDay): boolean =>
     mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
+  // 06f (kao maraton MAR-07b): urađeni dani posle asOf ulaze u plan (adaptation.doneDayIds) — validator ih, kao
+  // zaključane, ne sudi po danu.
+  const doneAfter = plan.weeks
+    .flatMap((w) => w.days)
+    .filter((d) => mustDay(d.date) > t && done.has(d.date))
+    .map((d) => d.date);
   const prior: Written = {
     weeks: plan.weeks,
     keep,
     asOf: t,
     at,
-    lockedDayIds: facts.lockedDayIds
+    lockedDayIds: facts.lockedDayIds,
+    doneDayIds: doneAfter
   };
 
   // (2) Isti konstruktor kao generate.
@@ -212,7 +219,13 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
       ...applied.map((x) => `Adaptacija ${at}: ${x.message}`)
     ],
     warnings: [],
-    adaptation: { asOf: at, steps, mixedWeeks: mixed, lockedDayIds: facts.lockedDayIds }
+    adaptation: {
+      asOf: at,
+      steps,
+      mixedWeeks: mixed,
+      lockedDayIds: facts.lockedDayIds,
+      ...(doneAfter.length > 0 ? { doneDayIds: doneAfter } : {})
+    }
   };
 
   // (4) Validacija.
@@ -231,4 +244,51 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
     };
   out.warnings = violations;
   return { ok: true, plan: out, changes: diff(plan, out), reasons };
+}
+
+/** Pouka 20: ograničenja (bol, pauza, umor) — traka samo kad korak donese NOVO ograničenje (steps.newLimits). */
+const LIMIT: ReadonlySet<AdaptReason['condition']> = new Set(['PAIN', 'PAUSE', 'FATIGUE']);
+/** Pouka 20: promene cilja obima ili tempa (nov rezultat je nov po definiciji — assess primenjuje samo rezultat noviji
+    od rezultata u upotrebi). Premeštanje testa (TEST_MOVED) i neprimenjen rezultat nisu razlog: posledica su drugog
+    uslova. */
+const CHANGE: ReadonlySet<AdaptReason['condition']> = new Set([
+  'NEW_RESULT',
+  'UNDER_EXECUTION',
+  'OVER_EXECUTION'
+]);
+
+/**
+ * Pouka 20 (10K 06f) — JEDINO pravilo trake „Plan treba prilagoditi" (aplikacija samo zove ovu funkciju): `asOf` je
+ * posle poslednje adaptacije plana `before` (isti dan posle primene — prazno) i plan `r` se menja u nedelji koja se
+ * završava posle `asOf`. Promena (nov rezultat, manjak, višak): kad je primenjena. Ograničenje (bol, pauza, umor):
+ * primenjeno i korak donosi NOVO ograničenje (steps.newLimits poslednjeg koraka neprazan); bol uz to samo uz zapis
+ * bola noviji od poslednje adaptacije. Umor čije je rasterećenje već u planu nije primenjen (assess, pouka 36).
+ * Oblik maraton v2 (MAR-06), sopstvena kopija.
+ */
+export function adaptBanner(
+  before: TenKV2Plan,
+  r: AdaptResult,
+  facts: { workouts?: readonly { date: string; pain?: number }[] },
+  asOf: string
+): string[] {
+  if (!r.ok) return [];
+  const last = before.adaptation?.asOf ?? null;
+  const t = mustDay(asOf);
+  if (last !== null && mustDay(last) >= t) return [];
+  const future = r.changes.some(
+    (c) => c.week > 0 && mustDay(r.plan.weeks[c.week - 1]!.endDate) > t
+  );
+  if (!future) return [];
+  const fresh = newLimits(r.plan.adaptation?.steps ?? []).length > 0;
+  const newPain = (facts.workouts ?? []).some(
+    (w) => (w.pain ?? 0) >= P.adapt.painMin && (last === null || mustDay(w.date) > mustDay(last))
+  );
+  return r.reasons
+    .filter(
+      (x) =>
+        x.applied &&
+        (CHANGE.has(x.condition) ||
+          (LIMIT.has(x.condition) && fresh && (x.condition !== 'PAIN' || newPain)))
+    )
+    .map((x) => x.message);
 }

@@ -10,13 +10,13 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.5.2', () => {
+describe('policy 10k-v2.6.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.5.2');
+    expect(P.version).toBe('10k-v2.6.0');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b) i A17 (06c), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c) i A18 (06f), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -29,7 +29,7 @@ describe('policy 10k-v2.5.2', () => {
       'D30',
       'D31',
       'D32',
-      ...Array.from({ length: 17 }, (_, i) => `A${i + 1}`)
+      ...Array.from({ length: 18 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -116,6 +116,19 @@ describe('policy 10k-v2.5.2', () => {
     expect(rule('A17')).toMatch(/70 % nivoa pre bola bilo bi x km/);
     expect(why('A17')).toMatch(/644\/2268/);
     expect(why('A17')).toMatch(/23,0 → 25,3 → 27,8 → 29,8 → 31,6/);
+    // 06f (10k-v2.6.0): pouke 36 i 18 (umor i bol vezani za zapise), 20 (traka u domenu), 25, 35.
+    expect(rule('A18')).toMatch(/prva nedelja koja počinje posle poslednjeg RPE zapisa/);
+    expect(rule('A18')).toMatch(/samo u domenu \(adapt\.adaptBanner; aplikacija ga samo zove\)/);
+    expect(rule('A18')).toMatch(/upozorenje WEEK_MIN_REST, ne WEEK_MIN_VOLUME/);
+    expect(why('A18')).toMatch(/903\/963/);
+    expect(why('A18')).toMatch(/2022 nedelje u 858\/31 122 planova/);
+    expect(why('A18')).toMatch(/620\/2712 tokova/);
+    expect(rule('A18')).toMatch(/kad asOf već pada u nju, rasterećenje važi za njen ostatak/);
+    expect(why('A18')).toMatch(/1645\/1960 odbijeno \(WARMUP\/COOLDOWN\) → 0/);
+    expect(why('A18')).toMatch(/176\/296 tekuća \+ 1/);
+    expect(rule('A18')).toMatch(/drugi dan kvaliteta je lagan \(prvi ostaje/);
+    expect(rule('A18')).toMatch(/isti zapis ne pravi nov period odmora\/bola/);
+    expect(rule('A5')).toMatch(/Dopuna \(10k-v2\.6\.0, pouka 36, A18\)/);
     expect(rule('A5')).toMatch(
       /Isto posle nedelje smanjenja pauzom, manjkom ili bolom \(A17, 10k-v2\.5\.0\)/
     );

@@ -432,7 +432,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.4.1',
+  version: 'hm-v2.5.0',
 
   /** H1 (dani i obim: H15). */
   input: {

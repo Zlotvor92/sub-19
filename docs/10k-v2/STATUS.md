@@ -160,12 +160,20 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
 - Merenje (496 planova × 3 asOf × 9 scenarija): 1488 → 0 odbijanja; prihvaćeni bajt-isti; mreže 04/P/R/E bajt-iste.
 - Mreža E + 37 008 tokova pre starta (102 707). Sabotaže 3/3. `KNOWN_VERSIONS` = 4.0, 4.1, 5.0, 5.1, 5.2.
 
-## Segment 06f — STANI posle merenja (kod nije u commitu; jezgro ostaje `10k-v2.5.2`)
+## Segment 06f (10k-v2.6.0): pouke 36 i 18 (umor i bol vezani za zapise), traka u domenu, tekst prekidača, pouke 25 i 35
 
-- Izveštaj `reports/SEGMENT-06f-STOP.md`; prototip t. 1–4 i 6 (pouka 36, traka u domenu, tekst prekidača, pouka 25,
-  `10k-v2.6.0`) kao `artifacts/segment-06f/06f-prototype.diff` (`git apply` na `7ba9717`), proveren (check, pun nivo
-  tenK/v2, `--changed` pun, E2E 3/3, sabotaže 3/3).
-- Merenje: `fatigue-repeat.ts 10K end` 903/963 → 0; promenjeni samo tokovi ponovljenog umora (9192/269 760), traka
-  bajt-ista. Otvoreno organizatoru: (1) prva adaptacija umora ponedeljkom u nedelji redovnog rasterećenja (620/2712:
-  bez drugog rasterećenja zaredom); (2) pouka 35 > 0 — generator 858/31 122 planova (2022 nedelje), adaptacija
-  3602/121 392 toka; opcije A/B/C, preporuka B.
+- STANI posle merenja (`reports/SEGMENT-06f-STOP.md`, d892fb8), pa odluke organizatora (ponedeljak prihvaćen, pouka 35
+  opcija A, nalaz ponovljenog bola); izveštaj `reports/SEGMENT-06f-IMPLEMENTATION.md`, artefakti `artifacts/segment-06f/`.
+- Umor: prinudno rasterećenje = prva nedelja koja počinje posle poslednjeg RPE zapisa (asOf u njoj → ostatak tekuće
+  nedelje); rasterećenje već u planu pokriva iste zapise (`fatigue-repeat.ts 10K end` 903/963 → 0; `fatigue-monday.ts`
+  176/296 tekuća + 1 → 0). Zaštićeni dani (≤ asOf, zaključani, urađeni — `doneDayIds`) se ne sude po danu
+  (`locked-result.ts 10K` 1645/1960 → 0). Bol: isti zapis ne pravi nov period (nalaz RACE_WEEK_OVER_TAPER → 0).
+- Traka samo u domenu (`adaptBanner` + `steps.newLimits`); tekst prekidača bez „stiže uskoro"; pouka 25: WEEK_MIN_REST
+  i uz dane bola.
+- Pouka 35: drugi dan kvaliteta lagan kad bi dan kvaliteta bio duži od dugog (week.buildWeek; validator isti predikat).
+  Generator: tačno 858 ulaza promenjeno (fixture `segment06f.p35-plans-7ba9717.json`); trajne mreže 04/E/R/P: 76 / 5436 /
+  1668 / 0 tokova, svi sa poukom 35 (`segment06f.adapt-changed-7ba9717.json`).
+- early.ts 10K 193 97 29: 0 odbijanja, 0 prekršaja; measure-06f 269 760 tokova, 0 odbijanja. `KNOWN_VERSIONS` = 4.0, 4.1,
+  5.0, 5.1, 5.2, 6.0.
+- Otvoreno: nov zapis bola sutradan u istom slučaju i dalje RACE_WEEK_OVER_TAPER (trenerski izbor); pouka 35 u mešovitoj
+  nedelji asOf (467 tokova).

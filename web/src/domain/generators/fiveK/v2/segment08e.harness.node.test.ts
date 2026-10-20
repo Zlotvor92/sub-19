@@ -167,7 +167,7 @@ export const TOTALS: Record<
     kept: number;
     changed: number;
     formerlyRejected: number;
-    /** 08g: promenjeni tokovi porodice N3/N4/F (testInputs.family08g; šira: 7 N3/N4 + 54 F, pouka 36). */
+    /** 08g: promenjeni tokovi porodice N3/N4/F (testInputs.family08g; uska 75 N3/N4 + 8 P; šira 7 N3/N4 + 270 F + 33 P (08h, pouka 35)). */
     family08g: number;
   }
 > = {
@@ -175,11 +175,11 @@ export const TOTALS: Record<
     flows: 5952,
     dropped: 988,
     kept: 0,
-    changed: 1094,
+    changed: 1102,
     formerlyRejected: 31,
-    family08g: 75
+    family08g: 83
   },
-  wide: { flows: 10852, dropped: 978, kept: 0, changed: 1068, formerlyRejected: 29, family08g: 61 }
+  wide: { flows: 10852, dropped: 978, kept: 0, changed: 1317, formerlyRejected: 29, family08g: 310 }
 };
 
 export function describeReliefGrid(title: string, search: Search): void {
@@ -258,7 +258,7 @@ export function describeReliefGrid(title: string, search: Search): void {
         const rejected = ref.rejected[f.c.key] !== undefined;
         if (!same) changed++;
         if (!same && !noted && rejected) formerly++;
-        // 08g (5k-v2.8.0): promena iz porodice N3/N4 (testInputs.family08g) — pouka 30 / pouka 29.
+        // 08g/08h: promena iz porodice N3/N4/F/P (testInputs.family08g) — pouke 30, 29, 36, 35.
         const fam =
           !same && !noted && !rejected ? family08g(f.b.plan, f.c.facts, f.c.asOf, f.res) : null;
         if (fam) later++;

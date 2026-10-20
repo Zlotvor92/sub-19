@@ -32,12 +32,15 @@ import type { AdaptResult, PlanWeek, TenKV2AdaptStep, TenKV2Facts, TenKV2Plan } 
 import { validatePlan } from './validate.ts';
 import { FULL, logCompared, sample } from '@/test/level';
 import {
+  at7ba,
   expectCounts,
   GRID_TIMEOUT,
   missingParts,
+  p35FlowErrors,
   pick,
   sumOf
 } from './level.harness.node.test.ts';
+import { deloadWeekOf } from './steps.ts';
 
 export const RELIEF_PARTS = 7;
 const A = P.adapt;
@@ -194,6 +197,8 @@ export interface ReliefSummary {
   rejected: string[];
   hash: Record<string, number>;
   h81: Record<string, number>;
+  /** 06f: tokovi sa poukom 35 u rezultatu. */
+  p35: Set<string>;
   a17: Set<string>;
   n2: Set<string>;
   dropped: Record<string, number>;
@@ -217,6 +222,7 @@ export function runReliefGrid(
     rejected: [],
     hash: {},
     h81: {},
+    p35: new Set(),
     a17: new Set(),
     n2: new Set(),
     dropped: {},
@@ -240,6 +246,7 @@ export function runReliefGrid(
     out.flows++;
     out.hash[key] = planHash06c(res);
     out.h81[key] = planHash81(res);
+    if (JSON.stringify(res).includes('Pouka 35:')) out.p35.add(key);
     if (deter(f, i))
       out.deter.push({ key, p0, facts, asOf: f.asOf, json: fnv1a(JSON.stringify(res)) });
     if (!res.ok) {
@@ -257,7 +264,7 @@ export function runReliefGrid(
     if (st.reduced !== want || (want === undefined && 'reduced' in st))
       out.reducedBad.push(`${key}: ${String(st.reduced)}`);
     const forced = (i: number): boolean =>
-      plan.adaptation!.steps.some((x) => x.deload && x.fromWeek === i);
+      plan.adaptation!.steps.some((x) => x.deload && deloadWeekOf(x) === i);
     const red = reductionWeeks(st);
     for (const w of red) {
       const next = plan.weeks[w];
@@ -367,7 +374,8 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
       for (const [key, h] of Object.entries(g.hash)) {
         const s = key.split('/').at(-1)!;
         const marked = g.a17.has(key) || g.n2.has(key);
-        if (ref.gridR[key] !== h) {
+        // 06f (pouka 35): stanje 7ba9717 za tokove koje 06f menja.
+        if (ref.gridR[key] !== at7ba('relief', key, h)) {
           changed[s] = (changed[s] ?? 0) + 1;
           if (!marked) other.push(key);
         } else {
@@ -379,6 +387,16 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
       expect(same.slice(0, 10)).toEqual([]);
       expectCounts(changed, pick(CHANGED, scenarios));
       expectCounts(reducedOnly, pick(REDUCED_ONLY, scenarios));
+    });
+
+    it('06f (10k-v2.6.0): prema 7ba9717 menjaju se tačno tokovi sa poukom 35 (nedelja u rezultatu ili bazni plan)', () => {
+      const runs = flows.map((f) => ({
+        key: f.key,
+        id: f.id,
+        hash: g.hash[f.key]!,
+        res: g.p35.has(f.key) ? 'Pouka 35:' : null
+      }));
+      expect(p35FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
     });
 
     it('J1: posle nedelje smanjenja sledeća nedelja nikad nije redovno rasterećenje (i nijedno nije zadržano zbog > 5 izgradnji); ukinuto po scenariju', () => {

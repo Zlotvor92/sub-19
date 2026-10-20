@@ -1,0 +1,29 @@
+{
+ "sources": 253,
+ "calls": 5060,
+ "ok": 1745,
+ "genRejected": {
+  "Plan od # nedelja je prekratak: polumaraton traži najmanje # nedelja; preporuka:": 1870,
+  "Trenutni obim # km je iznad # km za # dana trčanja. Obim podržava #–# dana trčan": 95,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#.": 520,
+  "Nema pouzdanog rezultata (rezultat je star # dana (> #)): za plan po osećaju une": 130,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Tr": 90,
+  "Trenutni obim # km je iznad # km za # dana trčanja. Obim podržava # dana trčanja": 130,
+  "Trenutni obim # km je iznad # km za # dana trčanja. HM v# podržava najviše # km ": 210,
+  "Početnik sa # dana trčanja: trenutni obim # km je iznad # km (opseg početnika #–": 90,
+  "Početnik: plan polumaratona traži najmanje # nedelja (izabrano #); počni plan na": 130,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Po": 50
+ },
+ "adaptRejected": 0,
+ "adaptEx": [],
+ "duplicateDates": 0,
+ "duplicateIds": 0,
+ "idMismatch": 0,
+ "common": {},
+ "byWeeksLeft": {
+  "≥12": "1435/2610 ok",
+  "10-11": "310/580 ok",
+  "<8": "0/1480 ok",
+  "8-9": "0/390 ok"
+ }
+}

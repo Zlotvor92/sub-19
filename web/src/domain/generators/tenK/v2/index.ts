@@ -1,7 +1,7 @@
 /* 10K v2 — javni API jezgra. Aplikacija ga ne uvozi: od segmenta 05 put iz aplikacije je samo adapter `./app/index.ts`
    (izvozi ga `tenK/index.ts` kao `tenKV2`, bira `select.ts`). */
 
-export { adaptTenKV2 } from './adapt.ts';
+export { adaptBanner, adaptTenKV2 } from './adapt.ts';
 export { construct, generateTenKV2 } from './generate.ts';
 export { validatePlan } from './validate.ts';
 export { TEN_K_V2_POLICY } from './policy.ts';

@@ -31,5 +31,9 @@
   "d4-9w-45km-v40-C-sat/pre1/pause35: ned 3,5",
   "d4-9w-45km-v40-C-sat/pre3/pause35: ned 3,5",
   "d4-9w-45km-v40-C-sat/pre6/pause35: ned 3,5"
- ]
+ ],
+ "after": {
+  "withP35Weeks": 467,
+  "note": "svi u nedelji asOf (sreda) — mešovita nedelja, prošli dan kvaliteta upisan (validator mešovite nedelje proverava po danu)"
+ }
 }

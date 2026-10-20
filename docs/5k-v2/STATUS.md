@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.8.0`, 08g) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.8.1`, 08h) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -15,7 +15,8 @@ rasterećenje odmah posle nedelje smanjenja (pauza, manjak, sidro bola; ne nov s
 adaptacija koju konstruktor sastavi više ne odbija validator (rast uz donju granicu, minimum za cilj uz dane bola, ostatak
 pauze u nedelji rasterećenja). 08g (5k-v2.8.0): prošlost = upisani dani (`written.ts`, pouka 29), trkačka ≤ taper
 (pouka 30), test iz upisanog plana, provere progresije u jedinici doze + DOSE_DROPPED, umor vezan za zapise (pouka 36);
-trajna rana mreža 104 800 tokova, 0 odbijanja. Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
+trajna rana mreža 104 800 tokova, 0 odbijanja. 08h (5k-v2.8.1): pouka 35 (drugi dan kvaliteta lagan kad dugi ne bi
+bio najduži). Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
 Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segmenti 01–07 (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
@@ -114,10 +115,23 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - N2a: test iz upisanog plana (`steps.writtenTest`); N2b (odluka D): jedinica doze (m/s) u BASE_R_DECREASE,
   DOSE_PROGRESSION, BASE_PLATEAU; R pada samo kad je plafon R < prethodne → napomena + DOSE_DROPPED; N3: `week.raceWeekRest`
   → `raceRest`, RACE_WEEK_TAPER / RACE_WEEK_SHORT; N4: `written.ts`, stanje iz upisanih dana, validator ne preskače mešovitu
-  nedelju (`steps.doseResetDate`); pouka 36: sidro umora iz zapisa.
+  nedelju (`steps.doseResetDate`); pouka 36 (precizno): rasterećenje = nedelja posle nedelje poslednjeg zapisa umora,
+  asOf u njoj → ostatak (`deloadWeek`); MAR-07 nalaz: zaključan budući dan kvaliteta prekida lanac doze (47/5184 → 0).
 - Merenje: 4a 29/19/11 odbijeno 92 → 0, trkačka > taper 34 → 0; 7/7/7 209 → 0, 94 → 0; fatigue-repeat 58/117 → 0;
-  generator bajt-isti (3816). Trajna mreža 104 800: promenjeno 4067 (R 399, F 2960, N4 673, N3 34, C 1), bez razloga 0.
+  generator bajt-isti (3816). Trajna mreža 104 800: promenjeno 4367 (R 399, F 3260, N4 673, N3 34, C 1), bez razloga 0.
 - byteSame: samo redovi „5K v2" (10K 19, HM 13, maraton 13). KNOWN_VERSIONS = 2.6.0, 2.6.1, 2.7.0, 2.8.0.
-- Provere: tsc/eslint/prettier exit 0; `npm run check` exit 0 (282 / 3401); `--changed f4b257d` pun 174 / 1807; pun fiveK/v2
-  22 / 675; E2E `fivek-v2` 3/3; sabotaže 8/8 PALO (51 s).
+- Provere: tsc/eslint/prettier exit 0; `npm run check` exit 0 (286 / 3433); `--changed f4b257d` pun 261 / 2516; pun fiveK/v2
+  22 / 679; E2E `fivek-v2` 3/3; sabotaže 10/10 PALO (79 s).
 - Izveštaj: `reports/SEGMENT-08g-IMPLEMENTATION.md`.
+
+## Segment 08h — pouka 35, trajne mreže pouke 36 i zaštićenog dana (5k-v2.8.1, 2026-10-20)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: e41defc
+- Pouka 35: `week.secondQualityEasy` (jedino mesto; validator SECOND_QUALITY, oznaka → ROLES; neizvodljivo → LONG_NOT_LONGEST);
+  generator 88/3816 → 0, adaptacija 1217/104 800 → 0. Tačke 1–2 (pouka 36 precizno, zaključan dan) već u 08g dopuni:
+  `fatigue-monday` 5K tekuća+0/bez novog, `locked-result` 0/108; trajne mreže `segment08h.*`.
+- Regresija: generator 88 promenjeno (sve P35); rana mreža prema e41defc 2632 promenjeno, bez razloga 0; fixture 08g
+  ponovo snimljen (klasa P); segment07 14, 08d 1, 08e 8/33 (P35).
+- Provere: tsc/eslint/prettier exit 0; `npm run check` exit 0 (289 / 3444); `--changed 23b1b88` pun 266 / 2533; pun fiveK/v2
+  25 / 686; E2E `fivek-v2` 3/3; sabotaže 08h 5/5 PALO.
+- Izveštaj: `reports/SEGMENT-08h-IMPLEMENTATION.md`.
