@@ -589,7 +589,13 @@ describe('13. ručna izmena v2 dana: samo tempo zadržava strukturu, tip je bri�
 
 describe('08d (5k-v2.6.1): sačuvan plan 5k-v2.6.0', () => {
   it('ostaje plan 5K v2 (current) i prilagođava se tekućim pravilima — rezultat nosi tekuću oznaku; druge verzije unknown', () => {
-    expect(KNOWN_VERSIONS).toEqual(['5k-v2.6.0', '5k-v2.6.1', '5k-v2.7.0', '5k-v2.8.0']);
+    expect(KNOWN_VERSIONS).toEqual([
+      '5k-v2.6.0',
+      '5k-v2.6.1',
+      '5k-v2.7.0',
+      '5k-v2.8.0',
+      '5k-v2.8.1'
+    ]);
     const plan = planOf(WITH_RESULT);
     const old = JSON.parse(JSON.stringify(plan)) as GenPlanState;
     old.meta = { ...old.meta, policyVersion: '5k-v2.6.0' } as GenPlanState['meta'];
@@ -601,7 +607,7 @@ describe('08d (5k-v2.6.1): sačuvan plan 5k-v2.6.0', () => {
     });
     expect(generatorForPlan(old)).toBe(FIVE_K_V2_GENERATOR);
     expect(planPolicy(plan).status).toBe('current');
-    for (const version of ['5k-v2.5.0', '5k-v2.6.2', '5k-v2.7.1', '5k-v2.8.1']) {
+    for (const version of ['5k-v2.5.0', '5k-v2.6.2', '5k-v2.7.1', '5k-v2.8.2']) {
       const p = { ...old, meta: { ...old.meta, policyVersion: version } } as GenPlanState;
       expect(planPolicy(p).status).toBe('unknown');
       expect(generatorForPlan(p)).toBeNull();
@@ -609,10 +615,10 @@ describe('08d (5k-v2.6.1): sačuvan plan 5k-v2.6.0', () => {
     // Bol 5 u sredu 11. 11., asOf četvrtak 12. 11.: sidro r = ned 2 (sadrži 13. 11.), ne ned 3 (kraj bola 19. 11.).
     const pain = { facts: { pain: [{ date: '2026-11-11', pain: 5 }] } };
     const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-12'), pain));
-    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.8.0' });
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.8.1' });
     const v2 = v2Of(pr.result)!;
     if (v2.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
-    expect(v2.policyVersion).toBe('5k-v2.8.0');
+    expect(v2.policyVersion).toBe('5k-v2.8.1');
     expect(v2.adaptation!.steps[0]!.returnFrom).toEqual({ week: 2, share: 0.7 });
     // Odluka 9 (5k-v2.7.0): redovno rasterećenje ned 3 posle nedelje sidra otpada (niz 3–7 = 5 ≤ 6).
     expect(v2.weeks[2]!.deload).toBe(false);
@@ -657,7 +663,7 @@ describe('08e (5k-v2.7.0): sačuvan plan 5k-v2.6.1', () => {
     // Bol 5 u sredu 18. 11., asOf četvrtak 19. 11.: sidro r = ned 3; ned 4 (redovno rasterećenje) otpada.
     const pain = { facts: { pain: [{ date: '2026-11-18', pain: 5 }] } };
     const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-19'), pain));
-    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.8.0' });
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.8.1' });
     const v2 = v2Of(pr.result)!;
     if (v2.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
     expect(v2.adaptation!.steps[0]!.returnFrom).toEqual({ week: 3, share: 0.7 });
@@ -683,6 +689,6 @@ describe('08g (5k-v2.8.0): sačuvan plan 5k-v2.7.0', () => {
     expect(generatorForPlan(old)).toBe(FIVE_K_V2_GENERATOR);
     const pain = { facts: { pain: [{ date: '2026-11-18', pain: 5 }] } };
     const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-19'), pain));
-    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.8.0' });
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.8.1' });
   });
 });

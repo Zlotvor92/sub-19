@@ -24,6 +24,7 @@ import {
   adaptNetworkFlows,
   canonResult08e,
   doneFacts,
+  hasSecondEasy,
   historyFacts,
   PAIN_GRID,
   painCases,
@@ -46,6 +47,8 @@ import { validatePlan } from './validate.ts';
 import { capacityKm, fitTargetKm } from './volume.ts';
 
 const A = P.adapt;
+/** 08h (5k-v2.8.1, pouka 35): tokovi postojećih mreža promenjeni jer je drugi dan kvaliteta lagan. */
+const P35_NETWORK = 1;
 const EPS = 1e-6;
 const round1 = (x: number): number => Math.round(x * 10) / 10;
 const floor1 = (x: number): number => Math.floor(x * 10 + 1e-9) / 10;
@@ -172,16 +175,22 @@ describe('regresija prema bf47249 (heš bez oznake verzije)', () => {
     const changed: Record<string, number> = {};
     const notBack: string[] = [];
     const backSame: string[] = [];
+    let p35 = 0;
     for (const f of net) {
       const r = f.result as Res;
       const s = f.key.split('/');
       const scenario = `${s[0]}/${s.slice(2).join('/')}`;
       if (REF.network[f.key] !== hash(r)) {
-        changed[scenario] = (changed[scenario] ?? 0) + 1;
-        if (!painBack(r)) notBack.push(f.key);
+        // 08h (5k-v2.8.1, pouka 35): promena tokova sa drugim danom kvaliteta laganim (testInputs.hasSecondEasy).
+        if (!painBack(r) && hasSecondEasy(r)) p35++;
+        else {
+          changed[scenario] = (changed[scenario] ?? 0) + 1;
+          if (!painBack(r)) notBack.push(f.key);
+        }
       } else if (painBack(r)) backSame.push(f.key);
     }
     expect(changed).toEqual({ 's06/pain5': 60 });
+    expect(p35).toBe(P35_NETWORK);
     expect(notBack).toEqual([]);
     expect(backSame).toEqual([]);
     expect(net.filter((f) => !(f.result as Res).ok).map((f) => f.key)).toEqual([]);
@@ -198,7 +207,9 @@ describe('regresija prema bf47249 (heš bez oznake verzije)', () => {
     const back = flows.filter((f) => painBack(f.res));
     expect(changed.length).toBe(380);
     expect(back.length).toBe(380);
-    expect(changed.filter((f) => !painBack(f.res)).map((f) => f.key)).toEqual([]);
+    expect(
+      changed.filter((f) => !painBack(f.res) && !hasSecondEasy(f.res)).map((f) => f.key)
+    ).toEqual([]);
     expect(back.filter((f) => !changed.includes(f)).map((f) => f.key)).toEqual([]);
     // Nepromenjeni: bez povratka (nedelja asOf pred taperom → r je taper).
     for (const f of flows.filter((x) => !changed.includes(x))) {

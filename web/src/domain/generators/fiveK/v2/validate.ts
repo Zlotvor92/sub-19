@@ -8,6 +8,7 @@ import { daysBetween, mustDay, weekdayOf } from './dates.ts';
 import { isShortPrep, periodize, phaseCounts, testWeekOf } from './periodize.ts';
 import { isRunDaysCount, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { validateRunWalk } from './runWalkValidate.ts';
+import { SECOND_EASY_NOTE, secondQualityEasy } from './week.ts';
 import { athleteAt, baseAthlete, doseResetDate, inRange, pacesAt, vdotAt } from './steps.ts';
 import type {
   FiveKV2Plan,
@@ -241,12 +242,47 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       const longs = roles.filter((r) => r === 'long').length;
       if (restN > 0 ? longs > 1 : longs !== 1)
         err('ROLES', 'Nedelja mora imati tačno jedan dugi trk.', w.index);
+      // 2.8.1 (pouka 35): nedelja izgradnje sa drugim danom kvaliteta laganim (oznaka week.SECOND_EASY_NOTE).
+      const secondEasy = isBuild(w) && w.notes.some((n) => n.includes(SECOND_EASY_NOTE));
       const oneQuality =
-        w.deload || w.taperStep === 2 || rule.qualityDays === 1 || lim?.quality === 'one';
+        w.deload ||
+        w.taperStep === 2 ||
+        rule.qualityDays === 1 ||
+        lim?.quality === 'one' ||
+        secondEasy;
       const expectedQ =
         w.stridesOnly || lim?.quality === 'none' ? 0 : oneQuality ? 1 : rule.qualityDays;
       if (limited(w) ? qualities.length > expectedQ : qualities.length !== expectedQ)
         err('ROLES', `Nedelja ima ${qualities.length} kvaliteta umesto ${expectedQ}.`, w.index);
+      // 2.8.1 (pouka 35): broj dana kvaliteta — ista funkcija kao konstruktor (week.secondQualityEasy); dugi kraći
+      // od dana kvaliteta posle nje (jedan kvalitet ili nedelja sa jednim neizvodljiva) → upozorenje (pouka 14).
+      const longD = w.days.find((d) => d.role === 'long');
+      if (isBuild(w) && !(w.limits?.rest?.length ?? 0) && longD) {
+        const q1d = w.days.find((d) => d.role === 'q1');
+        const q2d = w.days.find((d) => d.role === 'q2');
+        const nEasy = w.days.filter((d) => d.role === 'easy').length;
+        if (
+          q1d &&
+          q2d &&
+          secondQualityEasy(w.targetKm, q1d.workout, q2d.workout, nEasy, w.phase, pw(w), aw(w)) !==
+            null
+        )
+          err(
+            'SECOND_QUALITY',
+            'Sa dva dana kvaliteta dugi nije najduži trening nedelje — drugi dan kvaliteta je lagan (pouka 35).',
+            w.index
+          );
+        else if (
+          !limited(w) &&
+          (q2d || secondEasy) &&
+          qualities.some((d) => d.workout.sec > longD.workout.sec)
+        )
+          warn(
+            'LONG_NOT_LONGEST',
+            `Dan kvaliteta duži od dugog (${Math.round(longD.workout.sec / 60)} min): nedelja sa jednim kvalitetom ne vraća dugi na najduži (pouka 35/14).`,
+            w.index
+          );
+      }
       // 2.3.0 (Odluka 5): nedelja samo sa ubrzanjima je rasteretna i ima tačno jedan lagan dan sa
       // stridesOnly ubrzanjima.
       if (w.stridesOnly) {

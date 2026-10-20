@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.8.0',
+  version: '5k-v2.8.1',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -683,7 +683,7 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '„plan nije prilagođen"); sada su prihvaćeni (ned 5 = 18,2 km, R 0,80 + T 1,00).'
   },
   {
-    version: '5k-v2.8.0',
+    version: '5k-v2.8.1',
     decision:
       'Segment 08e, Odluka 9 (odluka organizatora, heuristika; ista kao 10K A17; bez novog broja). Redovno ' +
       'rasterećenje odmah posle nedelje smanjenja otpada. (1) Nedelja smanjenja: (a) korak sa ciljem koraka koji ' +
@@ -721,7 +721,7 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'prilagođava se po 2.7.0 (app/plan.ts KNOWN_VERSIONS).'
   },
   {
-    version: '5k-v2.8.0',
+    version: '5k-v2.8.1',
     decision:
       'Segment 08g, Faza 4a N2–N4 + pouka 36 (odluke organizatora; bez novog broja). (N2a, pouka 23/29) ' +
       'Kontrolno trčanje iz UPISANOG plana (steps.writtenTest): test u zaštićenom danu je urađen i ostaje u svojoj ' +
@@ -750,5 +750,21 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'plan (fatigue-repeat.ts 5K end: 58/117 → 0). Merenje (Faza 4a ' +
       'early.ts 5K 29 19 11, 75 456 tokova): odbijeno 92 → 0, trkačka > taper 34 → 0; generator bez činjenica ' +
       'bajt-isti (3816 planova). Sačuvan plan 5k-v2.6.0/2.6.1/2.7.0 se prilagođava po 2.8.0 (KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.8.1',
+    decision:
+      'Segment 08h (odluke organizatora; bez novog broja). (Pouka 35, MASTER) Dva dana kvaliteta samo kad dugi ostaje ' +
+      'najduži: u nedelji izgradnje (baza, vrhunac, oštrenje; taper i trkačka izuzeti; ne u nedelji sa danima bola/' +
+      'odmora) sa dva dana kvaliteta, kad bi neki dan kvaliteta trajao duže od dugog, drugi dan kvaliteta postaje lagan ' +
+      '(napomena), prvi ostaje, oslobođen obim ide u dugi i lagane (weekLengths); doza drugog kvaliteta se ne beleži. ' +
+      'Jedno mesto: week.secondQualityEasy (konstruktor i validator: SECOND_QUALITY; oznaka u napomeni nedelje → ROLES ' +
+      'očekuje 1). Kad nedelja sa jednim kvalitetom nije izvodljiva (lagan < minimuma ili lagan = dugi) ostaju dva ' +
+      'kvaliteta uz upozorenje LONG_NOT_LONGEST (pouka 14). Merenje: generator e41defc 88/3816 planova sa takvom ' +
+      'nedeljom → 0 (npr. f-d4-6w-15km-e300-0 ned 1: usponi 20 min > dugi 18 min); u 08h mreži nijedna nedelja ' +
+      'izvodljivosti (LONG_NOT_LONGEST 0); adaptacija (trajna rana mreža): 1217 tokova → 0. Pouka 36 (precizno) i ' +
+      'zaključan dan posle novog rezultata već su u 5k-v2.8.0 — trajne mreže 08h (umor po danima: isto rasterećenje; ' +
+      'locked-result: 0 odbijanja); urađen dan posle asOf u 5K nije činjenica (checkFacts: ADAPT_FACT_AFTER_AS_OF). ' +
+      'Sačuvan plan 5k-v2.8.0 i stariji prilagođavaju se po 2.8.1 (KNOWN_VERSIONS).'
   }
 ];

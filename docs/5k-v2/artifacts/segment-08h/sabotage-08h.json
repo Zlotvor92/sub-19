@@ -1,0 +1,57 @@
+[
+  {
+    "name": "08h-1 konstruktor bez pouke 35 (drugi kvalitet ostaje)",
+    "file": "src/domain/generators/fiveK/v2/week.ts",
+    "find": "    secondQualityEasy(target, q1, s.q2, pattern.easy.length, f.phase, p, a) !== null;",
+    "replace": "    secondQualityEasy(target, q1, s.q2, pattern.easy.length, f.phase, p, a) !== null &&\n    false;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08h-2 validator ne čita secondQualityEasy",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "          q1d &&\n          q2d &&\n",
+    "replace": "          q1d &&\n          q2d &&\n          false &&\n",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08h-3 validator ne čita oznaku pouke 35 (broj kvaliteta)",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "      const secondEasy = isBuild(w) && w.notes.some((n) => n.includes(SECOND_EASY_NOTE));",
+    "replace": "      const secondEasy = isBuild(w) && w.notes.some((n) => n.includes(SECOND_EASY_NOTE)) && false;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08h-4 umor: rasterećenje uvek sledeće nedelje (pouka 36, po danima)",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "      if (dw !== n) step.deloadWeek = dw;",
+    "replace": "      if (dw !== n && false) step.deloadWeek = dw;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08h-5 zaključan budući dan ulazi u lanac doze",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "    if (qd.some(lockedFuture)) return -w.index;",
+    "replace": "    if (qd.some(lockedFuture) && false) return -w.index;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+    ]
+  }
+]

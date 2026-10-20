@@ -10,7 +10,7 @@ import { adaptFiveKV2 } from './adapt.ts';
 import { addDays } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
 import * as policy from './policy.ts';
-import { adaptNetwork, doneFacts, historyFacts, START } from './testInputs.ts';
+import { adaptNetwork, doneFacts, hasSecondEasy, historyFacts, START } from './testInputs.ts';
 import type {
   AdaptFacts,
   AdaptResult,
@@ -695,6 +695,9 @@ function regressionInputs(): [string, Record<string, unknown>][] {
   return out;
 }
 
+/** 08h: broj planova regresione mreže sa drugim danom kvaliteta laganim (pouka 35). */
+const P35_CHANGED = 14;
+
 describe('Generisanje bez adaptacije: postojeće grane bajt-iste kao c9003aa (osim policyVersion)', () => {
   it('700 ulaza (640 planova): heš JSON-a = fixture sa c9003aa', () => {
     const fixture = JSON.parse(
@@ -712,6 +715,17 @@ describe('Generisanje bez adaptacije: postojeće grane bajt-iste kao c9003aa (os
     }
     expect(Object.keys(got)).toHaveLength(700);
     expect(Object.values(got).filter((x) => !x.startsWith('REJ')).length).toBe(640);
+    // 08h (5k-v2.8.1, pouka 35): planovi sa drugim danom kvaliteta laganim se menjaju (testInputs.hasSecondEasy),
+    // svi ostali bajt-isti.
+    const p35 = [...regressionInputs()]
+      .filter(([, input]) => hasSecondEasy(generateFiveKV2(input)))
+      .map(([id]) => id);
+    for (const id of p35) {
+      expect(got[id], id).not.toBe(fixture[id]);
+      delete got[id];
+      delete fixture[id];
+    }
+    expect(p35.length).toBe(P35_CHANGED);
     expect(got).toEqual(fixture);
   });
 });

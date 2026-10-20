@@ -1093,13 +1093,13 @@ export function earlyChecks(
 /** 08g: zašto se tok menja prema starijim heš fixture-ima (nezavisno od toka konstrukcije) — 'N3': trkačka nedelja
     skraćena po pouci 30 (raceRest u rezultatu); 'F': umor vezan za zapise (pouka 36) — rasterećenje tih zapisa je
     već u planu, novo se ne pravi (razlog FATIGUE to kaže), ili rasterećenje ostatka tekuće nedelje (deloadWeek); 'N4': konstruktor sa upisanim danima (prior, pouka 29)
-    daje drugačiji plan nego bez njih; null: ništa od toga (tok mora ostati bajt-isti). Plan trčanje/hodanje: null. */
+    daje drugačiji plan nego bez njih; 'P' (08h, pouka 35): drugi dan kvaliteta lagan u rezultatu ili u prethodnom planu (hasSecondEasy); null: ništa od toga (tok mora ostati bajt-isti). Plan trčanje/hodanje: null. */
 export function family08g(
   plan: unknown,
   facts: unknown,
   asOf: string,
   res: unknown
-): 'N3' | 'N4' | 'F' | null {
+): 'N3' | 'N4' | 'F' | 'P' | null {
   const r = res as {
     ok: boolean;
     plan?: FiveKV2Plan;
@@ -1117,6 +1117,7 @@ export function family08g(
       r.plan!.adaptation?.steps[r.plan!.adaptation.steps.length - 1]?.deloadWeek !== undefined)
   )
     return 'F';
+  if (r.ok && (hasSecondEasy(res) || hasSecondEasy(p))) return 'P';
   const ids = new Set(p.weeks.flatMap((w) => w.days.map((d) => d.date)));
   const cf = checkFacts(facts, asOf, ids);
   if (!cf.ok) return null;
@@ -1188,4 +1189,17 @@ export function earlyFlows(
         }
     }
   return out;
+}
+
+/** 08h (5k-v2.8.1, pouka 35): rezultat (plan ili plan adaptacije; i kontinuirani deo plana trčanje/hodanje) ima
+    nedelju izgradnje u kojoj je drugi dan kvaliteta lagan — oznaka week.SECOND_EASY_NOTE. */
+export function hasSecondEasy(res: unknown): boolean {
+  const r = res as { ok?: boolean; plan?: unknown };
+  const plan = (r.ok === undefined ? res : r.ok ? r.plan : null) as {
+    weeks?: { notes: string[] }[];
+    continuous?: { plan: unknown } | null;
+  } | null;
+  if (!plan) return false;
+  if (plan.weeks?.some((w) => w.notes.some((n) => n.includes('(pouka 35)')))) return true;
+  return plan.continuous ? hasSecondEasy(plan.continuous.plan) : false;
 }
