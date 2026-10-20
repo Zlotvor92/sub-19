@@ -233,3 +233,38 @@ export function appliedRestarts(
 /** Okviri generatora (periodize) — ulaz za framesFor i validator. */
 export const baseFrames = (startDate: IsoDate, weeks: number, test: boolean): WeekFrame[] | null =>
   periodize(startDate, weeks, test);
+
+/**
+ * Pouka 20 (10K 06f): traka „Plan treba prilagoditi" samo za NOVO ograničenje — datumi poslednjeg koraka sa
+ * ograničenjem (zabrana kvaliteta, jedan kvalitet, odmor, bol) kojih nema u ograničenjima prethodnih koraka, i
+ * prinudno rasterećenje / nov start koga ranije nije bilo. Posledica drugog uslova (premeštanje testa, ukinuto
+ * rasterećenje) nije ograničenje. Čita ga adaptBanner (adapt.ts); prazno = bez trake. Kopija maraton v2
+ * steps.newLimits (ne uvoz, Uslov 7).
+ */
+export function newLimits(steps: readonly TenKV2AdaptStep[]): string[] {
+  const last = steps[steps.length - 1];
+  if (!last) return [];
+  const prev = steps.slice(0, -1);
+  const days = (s: TenKV2AdaptStep, pick: (x: TenKV2AdaptStep) => readonly (DateRange | null)[]) =>
+    pick(s).flatMap((r) => {
+      if (!r) return [];
+      const out: string[] = [];
+      for (let d = r.from; mustDay(d) <= mustDay(r.to); d = addDays(d, 1)) out.push(d);
+      return out;
+    });
+  const kinds: [string, (x: TenKV2AdaptStep) => readonly (DateRange | null)[]][] = [
+    ['noQuality', (x) => x.noQuality],
+    ['oneQuality', (x) => x.oneQuality],
+    ['rest', (x) => [x.rest]],
+    ['pain', (x) => [x.pain]]
+  ];
+  const out: string[] = [];
+  for (const [k, pick] of kinds) {
+    const old = new Set(prev.flatMap((s) => days(s, pick)));
+    for (const d of days(last, pick)) if (!old.has(d)) out.push(`${k}:${d}`);
+  }
+  if (last.deload && !prev.some((s) => s.deload && s.fromWeek === last.fromWeek))
+    out.push(`deload:${last.fromWeek}`);
+  if (last.restart) out.push(`restart:${last.fromWeek}`);
+  return out;
+}

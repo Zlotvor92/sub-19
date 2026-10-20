@@ -366,22 +366,27 @@ export function buildWeek(
     : picks?.q1
       ? qualityWorkout(picks.q1, p, ctx.wc, ctx.feel)
       : null;
-  const w2 = picks?.q2 ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
+  const w2full = picks?.q2 ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
   const wo = one ? qualityWorkout(one.dose, p, ctx.wc, ctx.feel) : null;
-  const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0) + (wo ? km100(wo.km) : 0);
-  const busy = [
-    ...(w1 ? [pat.q1] : []),
-    ...(w2 && pat.q2 ? [pat.q2] : []),
-    ...(one ? [one.day] : [])
-  ];
-  const dates = easyDates(
-    frame,
-    [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !busy.includes(wd))
-  );
-  const len = buildLengths(target10, q100, dates.length, rule, p);
-  if (!len) return null;
+  const assemble = (dropQ2: boolean) => {
+    const w2 = dropQ2 ? null : w2full;
+    const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0) + (wo ? km100(wo.km) : 0);
+    const busy = [
+      ...(w1 ? [pat.q1] : []),
+      ...(w2 && pat.q2 ? [pat.q2] : []),
+      ...(one ? [one.day] : [])
+    ];
+    const dates = easyDates(
+      frame,
+      [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !busy.includes(wd))
+    );
+    const len = buildLengths(target10, q100, dates.length, rule, p);
+    return len ? { w2, dates, len } : null;
+  };
+  const full = assemble(false);
+  if (!full) return null;
   // A9/A13: u adaptiranoj nedelji test koji ne staje (dugi bi bio kraći od testa) otpada.
-  if (test && ctx.adapted && len.long10 < Math.round(P.test.km * 10)) return null;
+  if (test && ctx.adapted && full.len.long10 < Math.round(P.test.km * 10)) return null;
   const notes: string[] = [];
   if (intro)
     notes.push(
@@ -410,18 +415,54 @@ export function buildWeek(
       notes.push(
         `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (D11 ispred D12).`
       );
-  return done(
-    [
-      ...(w1 ? [day(dateOf(frame, pat.q1), test ? 'test' : 'q1', w1)] : []),
-      ...(w2 && pat.q2 ? [day(dateOf(frame, pat.q2), 'q2', w2)] : []),
-      ...(one && wo ? [day(dateOf(frame, one.day), one.day === pat.q1 ? 'q1' : 'q2', wo)] : []),
-      day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
-      ...easyDays(dates, len.easy10, p)
-    ],
-    len.long10,
-    picks,
-    notes
-  );
+  const make = (a: NonNullable<ReturnType<typeof assemble>>, extra: string[]): BuiltWeek =>
+    done(
+      [
+        ...(w1 ? [day(dateOf(frame, pat.q1), test ? 'test' : 'q1', w1)] : []),
+        ...(a.w2 && pat.q2 ? [day(dateOf(frame, pat.q2), 'q2', a.w2)] : []),
+        ...(one && wo ? [day(dateOf(frame, one.day), one.day === pat.q1 ? 'q1' : 'q2', wo)] : []),
+        day(dateOf(frame, pat.long), 'long', longWorkout(a.len.long10 / 10, p)),
+        ...easyDays(a.dates, a.len.easy10, p)
+      ],
+      a.len.long10,
+      a.w2 || !picks ? picks : { ...picks, q2: null },
+      [...notes, ...extra]
+    );
+  const two = make(full, []);
+  // Pouka 35 (10k-v2.6.0, jedino mesto odluke o broju dana kvaliteta nedelje izgradnje): kad bi u nedelji sa
+  // dva dana kvaliteta neki trajao duže od dugog, drugi dan kvaliteta je lagan (prvi ostaje); oslobođeni obim
+  // raspoređuje buildLengths (dugi raste). Nije izvodljivo sa jednim → dva ostaju uz napomenu (validator:
+  // upozorenje). Validator čita isti predikat (qualityOverLong).
+  if (frame.deload || !qualityOverLong(two.days)) return two;
+  const oneQ = assemble(true);
+  const built = oneQ ? make(oneQ, []) : null;
+  if (!built) return { ...two, notes: [...two.notes, P35_KEEP] };
+  const q2 = two.days.find((d) => d.role === 'q2')!;
+  const long = built.days.find((d) => d.role === 'long');
+  const still = qualityOverLong(built.days, 1) && long !== undefined;
+  return {
+    ...built,
+    notes: [
+      ...built.notes,
+      `${P35_DROP} (${q2.workout.title}) je lagan — sa dva dana kvaliteta dan kvaliteta bio bi duži od dugog${still ? '; prvi dan kvaliteta i dalje traje duže od dugog (D25, preporuka manje dana)' : ''}.`
+    ]
+  };
+}
+
+/** Pouka 35: napomena nedelje izgradnje u kojoj je drugi dan kvaliteta lagan (validator: uloga q2 → lagan). */
+export const P35_DROP = 'Pouka 35: drugi dan kvaliteta';
+/** Pouka 35: nedelja sa jednim kvalitetom nije izvodljiva — dva ostaju (validator: upozorenje). */
+export const P35_KEEP =
+  'Pouka 35: dva dana kvaliteta ostaju — nedelja sa jednim kvalitetom nije izvodljiva po pravilima; dan kvaliteta duži od dugog (D25).';
+
+/**
+ * Pouka 35 (jedan predikat za konstruktor i validator): nedelja ima bar `min` (podrazumevano 2) dana kvaliteta
+ * i neki od njih traje duže od dugog iste nedelje.
+ */
+export function qualityOverLong(days: readonly PlanDay[], min = 2): boolean {
+  const q = days.filter((d) => d.workout.kind === 'quality');
+  const long = days.find((d) => d.role === 'long');
+  return q.length >= min && long !== undefined && q.some((d) => d.workout.sec > long.workout.sec);
 }
 
 /** D8: oštrenje ≤ RP doza tapera — puno (3 × 1000 m) ako ga RP doza tapera nosi, inače 2 × 1000 m; taper

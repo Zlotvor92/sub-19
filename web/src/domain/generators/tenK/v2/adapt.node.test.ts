@@ -12,7 +12,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FULL, logCompared, sample } from '@/test/level';
-import { countViolations, expectCounts, GRID_TIMEOUT } from './level.harness.node.test.ts';
+import {
+  at7ba,
+  countViolations,
+  expectCounts,
+  GRID_TIMEOUT,
+  p35FlowErrors
+} from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
 import { addDays, mustDay } from './dates.ts';
@@ -61,8 +67,9 @@ const H51 = JSON.parse(
   )
 ) as { against: string; family1: string[]; grid04: Record<string, number> };
 const FAMILY1 = new Set(H51.family1);
-/** Heš toka za starije regresije: porodica 1 → stanje 51a924f. */
-const asOf51 = (key: string, h: number): number => (FAMILY1.has(key) ? H51.grid04[key]! : h);
+/** Heš toka za starije regresije: porodica 1 → stanje 51a924f; 06f (pouka 35) → stanje 7ba9717. */
+const asOf51 = (key: string, h: number): number =>
+  FAMILY1.has(key) ? H51.grid04[key]! : at7ba('grid04', key, h);
 /** 06b: promenjeni tokovi mreže 04 prema e6540a5 po scenariju (svi sa primenjenim PAIN; nepromenjeni PAIN
     tokovi su bez povratka — r je taper: asOf u taperu i kraj ned 8 u planovima od 10 ned). 06c (A17): i
     tokovi sa ukinutim rasterećenjem (heš bez polja reduced). */
@@ -123,6 +130,7 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
   const errors: Record<string, number> = {};
   const bad: string[] = [];
   const hashes: number[] = [];
+  const p35Flows: { key: string; id: string; hash: number; res: unknown }[] = [];
   /** 06b: heš bez oznake verzije po toku (`id/asOf/scenarij`) i tokovi sa primenjenim PAIN. */
   const h81: Record<string, number> = {};
   /** 06c: heš bez oznake verzije i polja reduced; tokovi sa ukinutim rasterećenjem (A17) i porukom N2. */
@@ -183,6 +191,7 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       hashes.push(fnv1a(JSON.stringify(r)));
       h81[`${id}/${k}/${s}`] = planHash81(r);
       h06c[`${id}/${k}/${s}`] = planHash06c(r);
+      p35Flows.push({ key: `${id}/${k}/${s}`, id, hash: planHash06c(r), res: r });
       const notes = r.ok ? r.plan.notes : [];
       if (notes.some((x) => x.includes('(A17)'))) a17.add(`${id}/${k}/${s}`);
       if (notes.some((x) => x.includes('nivoa pre bola bilo bi'))) n2.add(`${id}/${k}/${s}`);
@@ -343,10 +352,14 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     expect(Object.keys(H51.grid04).sort()).toEqual(all.map((c) => `${c.id}/${c.k}/${c.s}`).sort());
     expect(FAMILY1.size).toBe(18);
     logCompared('tenK.v2.51a924f.grid04', Object.keys(h06c));
-    const changed = Object.keys(h06c).filter((k) => H51.grid04[k] !== h06c[k]);
+    const changed = Object.keys(h06c).filter((k) => H51.grid04[k] !== at7ba('grid04', k, h06c[k]!));
     const sampled = Object.keys(h06c).filter((k) => FAMILY1.has(k));
     expect(changed.filter((k) => !FAMILY1.has(k))).toEqual([]);
     expect(changed.filter((k) => FAMILY1.has(k)).sort()).toEqual(sampled.sort());
+  });
+
+  it('06f (10k-v2.6.0): prema 7ba9717 menjaju se tačno tokovi sa poukom 35 (76 u celoj mreži)', () => {
+    expect(p35FlowErrors('grid04', p35Flows)).toEqual([]);
   });
 
   it('06c: reduced === true tačno u koracima A2/A3 (manjak, pauza — i nov start), === false tačno u koracima A6 (višak), odsutno u svim ostalim', () => {
@@ -729,15 +742,20 @@ describe('odluke A1–A15', () => {
     const ws = r6.plan.weeks;
     expect([ws[6]!.deload, ws[7]!.deload]).toEqual([true, false]);
     expect(ws[6]!.nominalKm).toBe(Math.round(P.deload.factor * ws[5]!.targetKm * 10) / 10);
-    // Prinudno odmah posle redovnog: 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8).
+    // Prinudno odmah posle redovnog: 0,8 × poslednja ne-rasteretna (ne 0,8 × 0,8). 06f (pouka 36): zapisi umora
+    // u nedelji redovnog rasterećenja (sreda: zapisi pon, uto) — zapisi pre nje (asOf = ponedeljak) pokriva ono samo.
     const q = plan('d4-r-18w');
     const d = q.weeks.find((w) => w.deload)!;
-    const r = ok(adaptTenKV2(q, factsOf(q, 'fatigue', d.startDate), d.startDate));
+    const wed = addDays(d.startDate, 2);
+    const r = ok(adaptTenKV2(q, factsOf(q, 'fatigue', wed), wed));
     const f = r.plan.weeks[d.index]!;
     expect(f.deload).toBe(true);
     expect(f.nominalKm).toBe(
       Math.round(P.deload.factor * q.weeks[d.index - 2]!.targetKm * 10) / 10
     );
+    const mon = ok(adaptTenKV2(q, factsOf(q, 'fatigue', d.startDate), d.startDate));
+    expect(applied(mon, 'FATIGUE')).toBe(false);
+    expect(mon.plan.weeks[d.index]!.deload).toBe(false);
   });
 
   it('A6: višak > 115 % u dva pokrivena prozora → sledeća nedelja bez rasta; ne kad je sledeća rasteretna', () => {

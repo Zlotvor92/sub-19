@@ -7,6 +7,7 @@ import { addDays, daysBetween, weekdayOf } from './dates.ts';
 import { generateTenKV2 } from './generate.ts';
 import { grid02Inputs } from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
+import { P35_DROP } from './week.ts';
 
 /** Uzorak mreže 02 (svaki 10. ulaz po broju dana); odbijeni ulazi se beleže (test ispod). */
 const rejected: string[] = [];
@@ -214,7 +215,9 @@ describe('D13 + D19: dužine', () => {
           const rest =
             Math.floor((Math.round(w.targetKm * 100) - q100 - 300 * easy.length) / 10) / 10;
           expect(long).toBe(Math.min(cap, rest));
-          expect(easy.length).toBe(n === 3 ? 1 : n - 3);
+          // 06f (pouka 35): drugi dan kvaliteta lagan → jedan lagan više.
+          const p35 = w.notes.some((x) => x.startsWith(P35_DROP));
+          expect(easy.length).toBe(n === 3 ? 1 : n - 3 + (p35 ? 1 : 0));
         }
       }
     }

@@ -22,7 +22,13 @@ import {
   runPlanGrid,
   summaryBad
 } from './planGrid.harness.node.test.ts';
-import { expectByDays, GRID_TIMEOUT, missingParts, sumOf } from './level.harness.node.test.ts';
+import {
+  expectByDays,
+  GRID_TIMEOUT,
+  missingParts,
+  P35_PLANS,
+  sumOf
+} from './level.harness.node.test.ts';
 
 export const GRID02_PARTS = 4;
 /** Brz nivo: svaki K-ti ulaz unutar (broj dana × nedelje). */
@@ -47,6 +53,10 @@ type Exceptions = {
 };
 type Hashes21 = { against: string; plans: Record<string, [number, number, number]> };
 const read = <T>(f: string): T => JSON.parse(readFileSync(f, 'utf8')) as T;
+/** 06f: uzrok promene prema 21c03f1 na 7ba9717 za planove pouke 35 (segment06f.p35-plans-7ba9717.json). */
+const P35_CAUSE21 = read<{ cause21: Record<string, string> }>(
+  `${HERE}segment06f.p35-plans-7ba9717.json`
+).cause21;
 
 /** Broj planova po broju dana (ceo skup). */
 const N: Record<Days, number> = { 3: 2640, 4: 3696, 5: 4224, 6: 5280 };
@@ -149,7 +159,8 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         days.map(() => [0, 0])
       );
       byDays((n) => g.stats[n].raceKmEasy, [636, 1428, 2004, 2538]);
-      byDays((n) => g.stats[n].longShorter, [0, 132, 132, 330]);
+      // 06f (pouka 35): D25 0 / 132 / 132 / 330 → 0 / 0 / 0 / 132 planova (drugi dan kvaliteta lagan, dugi raste).
+      byDays((n) => g.stats[n].longShorter, [0, 0, 0, 132]);
       byDays((n) => g.stats[n].doseDropped, [0, 162, 0, 0]);
     });
 
@@ -190,7 +201,9 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       expect(Object.keys(base.plans).length).toBe(15840);
       expect(Object.keys(base.plans).sort()).toEqual(all.map((c) => c.id).sort());
       logCompared('tenK.v2.segment03.baseline', Object.keys(g.rows));
-      expect(g.rows).toEqual(only(base.plans, ids));
+      // 06f (pouka 35): planovi sa nedeljom pouke 35 na 7ba9717 se menjaju (p35.node.test.ts); ostali tačno.
+      const keep = new Set([...ids].filter((id) => !P35_PLANS.has(id)));
+      expect(only(g.rows, keep)).toEqual(only(base.plans, keep));
     });
 
     it('regresija (pouka 1): vrh cilj i vrh planirano ≥ 21c03f1 za svih 15 840; niže samo uz razlog iz fajla, koji se proverava', () => {
@@ -203,6 +216,8 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       for (const [id, r0] of Object.entries(mine)) {
         const r = g.rows[id]!;
         if (r[0] >= r0[0] && r[1] >= r0[1]) continue;
+        // 06f (pouka 35): vrh cilja isti ili viši, planirano u okviru zaokruživanja (p35.node.test.ts).
+        if (P35_PLANS.has(id) && r[0] >= r0[0] && r0[1] - r[1] <= 0.1 + EPS) continue;
         // ROUNDING: isti vrh cilja, planirano niže u okviru tolerancije 0,1 km (druga RP struktura, D30a).
         lower[id] = r[0] < r0[0] ? 'PEAK_LOWER' : 'ROUNDING';
       }
@@ -264,8 +279,11 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       for (const [id, x] of Object.entries(reg)) {
         const [h0, noRws0, rws0] = fx.plans[id]!;
         const c = cause[x.days];
+        // 06f (pouka 35): uzrok na 7ba9717 (plan se menja, p35.node.test.ts).
+        const p35 = P35_CAUSE21[id];
+        if (p35) c[p35]!++;
         // D30b uklanja samo upozorenje RACE_WEEK_SHORT; D30a daje RP deonicu < 1000 m.
-        if (x.h[0] === h0) c['same']!++;
+        else if (x.h[0] === h0) c['same']!++;
         else if (rws0 === 1 && x.h[0] === noRws0) c['D30b']!++;
         else if (x.rp800) c[rws0 === 1 ? 'D30a+D30b' : 'D30a']!++;
         else other.push(id);
@@ -289,7 +307,13 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       expect(Object.keys(fx.result).sort()).toEqual(all.map((c) => c.id).sort());
       expect(Object.keys(g.h81).sort()).toEqual([...ids].sort());
       logCompared('tenK.v2.81bd351.result', Object.keys(g.h81));
-      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.result[id])).toEqual([]);
+      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717.
+      const changed = Object.keys(g.h81).filter((id) => g.h81[id] !== fx.result[id]);
+      expect(changed.sort()).toEqual(
+        Object.keys(g.h81)
+          .filter((id) => P35_PLANS.has(id))
+          .sort()
+      );
     });
     it('regresija 04: generate = construct(input, []) — ceo plan sa rezultatom bajt-isti kao b13ca17 (heš bez oznake verzije) za svih 15840', () => {
       const fx = read<{ against: string; result: Record<string, number> }>(HASHES_B13);
@@ -297,7 +321,13 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       expect(Object.keys(fx.result).sort()).toEqual(all.map((c) => c.id).sort());
       expect(Object.keys(g.h81).sort()).toEqual([...ids].sort());
       logCompared('tenK.v2.b13ca17.result', Object.keys(g.h81));
-      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.result[id])).toEqual([]);
+      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717.
+      const changed = Object.keys(g.h81).filter((id) => g.h81[id] !== fx.result[id]);
+      expect(changed.sort()).toEqual(
+        Object.keys(g.h81)
+          .filter((id) => P35_PLANS.has(id))
+          .sort()
+      );
     });
 
     extra?.();

@@ -14,13 +14,36 @@
     "file": "src/domain/generators/tenK/v2/app/adapt.ts",
     "find": "    needed: adaptBanner(v2, r, built.facts, src.today)",
     "replace": "    needed: (void adaptBanner, r.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS').map((x) => x.message))",
-    "tests": ["src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts"]
+    "tests": [
+      "src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts"
+    ]
   },
   {
     "name": "06f-c tekst prekidača 10K v2 vraćen („Prilagođavanje … stiže uskoro.\")",
     "file": "src/features/ti/screens.tsx",
     "find": "        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja.\n",
     "replace": "        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje 10K v2\n        plana stiže uskoro.\n",
-    "tests": ["src/features/onboarding/tenKV2Flow.test.tsx"]
+    "tests": [
+      "src/features/onboarding/tenKV2Flow.test.tsx"
+    ]
+  },
+  {
+    "name": "06f-d pouka 35 isključena (drugi dan kvaliteta ostaje i kad je dan kvaliteta duži od dugog)",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "  if (frame.deload || !qualityOverLong(two.days)) return two;",
+    "replace": "  if (frame.deload || two.days.length > 0) return two;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p35.node.test.ts"
+    ]
+  },
+  {
+    "name": "06f-e bol vezan za asOf (isti zapis bola ponovo pravi nov period, nalaz 3)",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "find((s) => s.pain !== null && day(s.asOf) >= lastHurt)",
+    "replace": "find((s) => s.pain !== null && day(s.asOf) > t)",
+    "tests": [
+      "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
   }
 ]
