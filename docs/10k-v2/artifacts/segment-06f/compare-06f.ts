@@ -3,6 +3,15 @@
    <pre.json> <posle.json> */
 import { readFileSync } from "node:fs";
 
+/** 06f: planovi generatora sa poukom 35 na 7ba9717 (tokovi nad njima se menjaju). */
+const P35 = new Set(
+  Object.keys(
+    JSON.parse(
+      readFileSync(new URL("../../../../web/src/domain/generators/tenK/v2/segment06f.p35-plans-7ba9717.json", import.meta.url), "utf8"),
+    ).plans,
+  ),
+);
+
 const [b, a] = process.argv.slice(2).map((f) => JSON.parse(readFileSync(f!, "utf8")));
 const out: any = { flows: Object.keys(a.flowsData).length, rejectedBefore: b.rejected, rejectedAfter: a.rejected };
 const cls: Record<string, number> = {};
@@ -20,7 +29,8 @@ for (const [k, x] of Object.entries<any>(a.flowsData)) {
   const banner = (x.nb ?? x.old) !== y.old;
   if (!hash && !banner) continue;
   const rep = /\/\+\d+$/.test(k);
-  const c = `${rep && k.includes("/fatigue/") ? "ponovljen umor" : rep ? "ponovljen drugi" : "prvi korak"}${hash ? " heš" : ""}${banner ? " traka" : ""}${x.dl !== undefined && y.dl !== undefined && x.dl < y.dl ? " (manje rasterećenja)" : ""}`;
+  const p35 = k in a.p35adapt || P35.has(k.split("/")[0]!);
+  const c = `${rep && k.includes("/fatigue/") ? "ponovljen umor" : rep && /\/pain[58]\/|\/painPause\//.test(k) ? "ponovljen bol" : rep ? "ponovljen drugi" : "prvi korak"}${p35 ? " (pouka 35)" : ""}${hash ? " heš" : ""}${banner ? " traka" : ""}${x.dl !== undefined && y.dl !== undefined && x.dl < y.dl ? " (manje rasterećenja)" : ""}`;
   cls[c] = (cls[c] ?? 0) + 1;
   (ex[c] ??= []).length < 3 && ex[c]!.push(`${k}: rasterećenja ${y.dl} → ${x.dl}, traka ${y.old} → ${x.nb ?? x.old}`);
 }

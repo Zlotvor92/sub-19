@@ -325,7 +325,20 @@ export function assess(
   // A4: bol (uvek, po datumima; prethodni koraci ostaju, pa ponovni bol produžava period). 10k-v2.4.1:
   // sidro povratka = nedelja r (prvi dan odmora ili bola), ne poslednja nedelja bola.
   const hurt = W.filter((x) => t - day(x.date) < A.painLookbackDays && (x.pain ?? 0) >= A.painMin);
-  if (hurt.length > 0) {
+  // 10k-v2.6.0 (pouke 18 i 36): bol je vezan za ZAPISE — korak bola sa asOf ≥ poslednjeg zapisa bola već ga je
+  // obradio (periodi ostaju u tom koraku); isti zapis poslat ponovo ne pravi nov period.
+  const lastHurt = hurt.length > 0 ? Math.max(...hurt.map((x) => day(x.date))) : null;
+  const seen =
+    lastHurt === null
+      ? undefined
+      : [...steps].reverse().find((s) => s.pain !== null && day(s.asOf) >= lastHurt);
+  if (seen)
+    reason(
+      'PAIN',
+      false,
+      `Bol ${Math.max(...hurt.map((x) => x.pain!))}/10 (${addDays(asOf, lastHurt! - t)}): već u planu — period bola iz prilagođavanja ${seen.asOf} ostaje (A4).`
+    );
+  else if (hurt.length > 0) {
     const max = Math.max(...hurt.map((x) => x.pain!));
     const restN = max >= A.painRestMin ? A.restDays : 0;
     if (restN > 0) step.rest = { from: next, to: addDays(asOf, restN) };
@@ -406,7 +419,14 @@ export function assess(
     );
   });
   if (easyHard.length >= A.fatigueCount) {
-    const ok = !volumeRule && build(n) && !wk(n)!.deload;
+    // 10k-v2.6.0 (pouka 36): umor je vezan za ZAPISE, ne za asOf — sidro = prva puna nedelja posle
+    // (poslednji zapis + 1). Rasterećenje (redovno ili prinudno) od sidra do pre nedelje n već je u planu i
+    // pokriva ove zapise → isti zapisi ne prave novo rasterećenje kad se adaptacija ponovi kasnije.
+    const anchor = addDays(asOf, Math.max(...easyHard.map((x) => day(x.date))) - t + 1);
+    const ra = weekOf(anchor);
+    const na = ra <= N && day(weeks[ra - 1]!.startDate) < day(anchor) ? ra + 1 : ra;
+    const covered = weeks.find((w) => w.index >= na && w.index < n && w.deload);
+    const ok = !covered && !volumeRule && build(n) && !wk(n)!.deload;
     // 10k-v2.5.2 (pouka 34): asOf pre starta (n = 1, nema prethodne izgradnje) — referenca rasterećenja je
     // nedelja 1 generatora bez činjenica.
     const ref = ok && n === 1 ? preStartRef() : null;
@@ -418,7 +438,7 @@ export function assess(
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)${ref ? ` — pre starta: 0,8 × planirana nedelja 1 (${km(ref.buildKm)} km, plan bez činjenica); nedelja 2 = cilj planirane nedelje 1, bez rasta` : ''}` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)${ref ? ` — pre starta: 0,8 × planirana nedelja 1 (${km(ref.buildKm)} km, plan bez činjenica); nedelja 2 = cilj planirane nedelje 1, bez rasta` : ''}` : covered ? `rasterećenje posle ovih zapisa je već u planu (nedelja ${covered.index}, A5)` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
     );
   }
 

@@ -89,7 +89,7 @@ describe('D4: faze', () => {
     if (!r.ok) return;
     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
     expect(r.plan.policyId).toBe('10k-v2');
-    expect(r.plan.policyVersion).toBe('10k-v2.5.2');
+    expect(r.plan.policyVersion).toBe('10k-v2.6.0');
   });
 });
 
@@ -189,6 +189,9 @@ describe('D5: gde su rasterećenja', () => {
     let none = 0;
     for (const p of plans) {
       let last: PlanWeek | null = null;
+      // 06f (pouka 35): poslednja doza T slota iz poslednje nedelje izgradnje koja ga ima (drugi dan kvaliteta
+      // nedelje pouke 35 je lagan).
+      let lastT = 0;
       const tSlot = p.input.runDays.length === 3 ? 'q1' : 'q2';
       for (const w of p.weeks) {
         if (w.deload && last) {
@@ -196,7 +199,6 @@ describe('D5: gde su rasterećenja', () => {
           if (w.fitted === null) expect(w.targetKm).toBe(nominal);
           else expect(w.targetKm).toBeLessThan(nominal);
           const q = w.days.filter((d) => d.workout.kind === 'quality');
-          const lastT = last.days.find((d) => d.role === tSlot)!.workout.dose!.doseM;
           if (q.length === 0) {
             // Odstupanje D5 (D11 ispred D5): ni T 2,0 km ne staje u plafon 10 % cilja.
             expect(2000).toBeGreaterThan(Math.floor(0.1 * w.targetKm * 1000 + 1e-6));
@@ -219,8 +221,10 @@ describe('D5: gde su rasterećenja', () => {
         if (
           !w.deload &&
           (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific')
-        )
+        ) {
           last = w;
+          lastT = w.days.find((d) => d.role === tSlot)?.workout.dose!.doseM ?? lastT;
+        }
       }
     }
     expect(none).toBeGreaterThan(0);

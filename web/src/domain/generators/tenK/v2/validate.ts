@@ -41,7 +41,7 @@ import {
   nextLevel
 } from './quality.ts';
 import { adjacentDays } from './schedule.ts';
-import { raceWeekRest } from './week.ts';
+import { P35_DROP, P35_KEEP, qualityOverLong, raceWeekRest } from './week.ts';
 import {
   A17_MAX_RUN,
   appliedRestarts,
@@ -315,6 +315,8 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       if (w.test && r === (w.deload ? tSlot : 'q1')) return 'test';
       if (w.index <= rule.introWeeks) return 'easy';
       if (w.deload) return r === tSlot && has(r) ? r : 'easy';
+      // Pouka 35: drugi dan kvaliteta nedelje izgradnje lagan (napomena konstruktora, week.ts).
+      if (r === 'q2' && isSteady(w) && w.notes.some((n) => n.startsWith(P35_DROP))) return 'easy';
       return w.phase !== 'taper' && !rule.beginner ? r : has(r) ? r : 'easy';
     };
     const want: [DayRole, string][] = [
@@ -424,13 +426,19 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         w.index
       );
     // D30: trkačka nedelja — planirano + trka (10 km) ≥ minimum (trka je opterećenje nedelje). Nedelja je
-    // potpuno zadata (D8/D20), pa je ispod minimuma upozorenje (D15), nedelja se ne puni. A4: nedelja sa
-    // danima odmora sme ispod minimuma (upozorenje).
+    // potpuno zadata (D8/D20), pa je ispod minimuma upozorenje (D15), nedelja se ne puni. A4 (pouka 25,
+    // 10k-v2.6.0): minimum važi za CILJ (TARGET_FLOOR) — nedelja sa danima odmora, ili bola van trkačke
+    // (ona ima RACE_WEEK_SHORT), sme planirano ispod minimuma (upozorenje).
     const load = w.plannedKm + (w.phase === 'race' ? P.raceWeek.raceKm : 0);
-    if (load + EPS < rule.weekMinKm && restOf(w).size > 0)
+    if (
+      load + EPS < rule.weekMinKm &&
+      (restOf(w).size > 0 || (painOf(w).size > 0 && w.phase !== 'race'))
+    )
       warn(
         'WEEK_MIN_REST',
-        `Nedelja ${w.plannedKm} km < ${rule.weekMinKm} km — dani odmora (bol, A4).`,
+        restOf(w).size > 0
+          ? `Nedelja ${w.plannedKm} km < ${rule.weekMinKm} km — dani odmora (bol, A4).`
+          : `Nedelja ${w.plannedKm} km < ${rule.weekMinKm} km — dani bola (A4, pouka 25).`,
         w.index
       );
     else if (load + EPS < rule.weekMinKm) {
@@ -506,6 +514,24 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         if (Math.abs(d.workout.km * 10 - to10(d.workout.km)) > EPS)
           err('LENGTH_STEP', 'Lagan nije u koraku 0,1 km (D13).', w.index, d.date);
       }
+  }
+
+  // --- Pouka 35 (10k-v2.6.0): dva dana kvaliteta samo kad dugi ostaje najduži (isti predikat kao week.ts);
+  // nedelja sa jednim kvalitetom neizvodljiva (napomena konstruktora) → upozorenje.
+  for (const w of weeks) {
+    if (!isSteady(w) || !checked(w) || !qualityOverLong(w.days)) continue;
+    if (w.notes.includes(P35_KEEP))
+      warn(
+        'TWO_QUALITY_LONGER',
+        `Dva dana kvaliteta, dan kvaliteta duži od dugog — nedelja sa jednim nije izvodljiva (pouka 35, D25).`,
+        w.index
+      );
+    else
+      err(
+        'QUALITY_OVER_LONG',
+        `Dva dana kvaliteta, a dan kvaliteta traje duže od dugog — drugi dan kvaliteta je lagan (pouka 35).`,
+        w.index
+      );
   }
 
   // --- D25: upozorenje — kvalitetni dan duži od dugog po trajanju u ne-rasteretnoj nedelji izgradnje.
@@ -822,7 +848,8 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const dropped =
       (['q1', 'q2'] as const).some((r) => slotDose(b, r)?.step === 'drop') ||
       noQuality(b) ||
-      reducedVolume;
+      reducedVolume ||
+      b.notes.some((n) => n.startsWith(P35_DROP));
     // D27: provera „glavna doza ne opada" preskače test nedelju.
     if (!b.test) {
       if (prevMain && mainDoseM(b) < mainDoseM(prevMain) && !dropped)
@@ -839,8 +866,9 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const a0 = prevA;
     // Odstupanje D12 (3 dana, jedan slot): kad druga struktura iste doze ne postoji (D10), slot ponavlja
     // trening uz napomenu, pa je nedelja ista kao prethodna.
+    // Pouka 35: nedelja izgradnje sa drugim danom kvaliteta laganim ima jedan slot — isto odstupanje.
     const oneSlotRepeat =
-      rule.quality === 1 &&
+      (rule.quality === 1 || b.notes.some((n) => n.startsWith(P35_DROP))) &&
       slotDose(b, 'q1')?.step === 'repeat' &&
       b.notes.some((n) => n.includes('ponovljen'));
     if (hasQuality(b) && qualityKey(a0) === qualityKey(b) && !oneSlotRepeat)
@@ -960,7 +988,9 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   let lastSlot: Record<'q1' | 'q2', Dose | null> = { q1: null, q2: null };
   /** D31: poslednja doza u zoni T iz ne-rasteretne nedelje izgradnje (rasterećenje i taper početnika). */
   let lastTDose = 0;
-  let slotKnown = true;
+  /** Stanje doze slota poznato (posle mešovite nedelje nije, dok ga nedelja izgradnje ne odredi — 06f, pouka 35:
+      nedelja pouke 35 ne određuje drugi slot). */
+  let slotKnown = { q1: true, q2: true };
   let lastLong10: number | null = null;
   let longKnown = true;
   const tFirstM = Math.round(P.beginner.tFirstKm * 1000);
@@ -969,7 +999,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   const otherSlot = (r: 'q1' | 'q2'): 'q1' | 'q2' => (r === 'q1' ? 'q2' : 'q1');
   for (const w of weeks) {
     if (doseRestarts.has(w.index))
-      [lastSlot, lastTDose, slotKnown] = [{ q1: null, q2: null }, 0, true];
+      [lastSlot, lastTDose, slotKnown] = [{ q1: null, q2: null }, 0, { q1: true, q2: true }];
     const long = w.days.find((d) => d.role === 'long');
     const pk = pw(w);
     const rest = restOf(w);
@@ -1000,7 +1030,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       else if (w.test) {
         if (nQuality !== 0 || nTest !== 1)
           err('DELOAD_CONTENT', 'Rasterećenje sa testom: test umesto kvaliteta (D27).', w.index);
-      } else if (!slotKnown) {
+      } else if (!slotKnown[tSlot]) {
         if (nQuality > 1) err('DELOAD_CONTENT', 'Rasterećenje: najviše 1 kvalitet (D5).', w.index);
       }
       // Odstupanje D5 (D11 ispred D5): kad ni T doza po pravilu ne staje u plafon, rasterećenje je bez
@@ -1102,7 +1132,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       const wantT31 = expectedReduced('T_continuous', lastTDose, t7.doseShare, tFirstM, true);
       if (noneQ(w)) {
         if (rp || t) err('TAPER_QUALITY', 'Taper bez kvaliteta (adaptacija, A3/A4/A9).', w.index);
-      } else if (!slotKnown) {
+      } else if (!slotKnown.q1 || !slotKnown.q2) {
         if (reducedQ(w) && t)
           err('TAPER_QUALITY', 'Taper: najviše 1 kvalitet (adaptacija).', w.index);
       } else if (none && rule.beginner && wantT31 <= capM('T', w.targetKm)) {
@@ -1172,7 +1202,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         (dose &&
           (dose.ladder !== deloadLadder(w.phase) ||
             dose.doseM > capM('T', w.targetKm) ||
-            (slotKnown && dose.doseM !== want)))
+            (slotKnown[tSlot] && dose.doseM !== want)))
       )
         err(
           'ONE_QUALITY',
@@ -1184,7 +1214,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       seenSteady = true;
       if (long) [lastLong10, longKnown] = [to10(long.workout.km), checked(w)];
       if (!checked(w) && !reducedQ(w)) {
-        slotKnown = false;
+        slotKnown = { q1: false, q2: false };
         // Prošlost = upisani dani (10k-v2.5.1, A11): poslednja T doza (D31) iz upisanih dana mešovite nedelje,
         // isto kao konstruktor.
         for (const r of ['q1', 'q2'] as const) {
@@ -1192,9 +1222,10 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
           if (d?.zone === 'T') lastTDose = d.doseM;
         }
       } else if (!reducedQ(w)) {
-        slotKnown = true;
         for (const r of ['q1', 'q2'] as const) {
           const d = slotDose(w, r);
+          // 06f (pouka 35): drugi slot nedelje pouke 35 je lagan — njegovo stanje ostaje nepoznato.
+          if (d || r === 'q1' || !w.notes.some((n) => n.startsWith(P35_DROP))) slotKnown[r] = true;
           lastSlot[r] = d ?? lastSlot[r];
           if (d?.zone === 'T') lastTDose = d.doseM;
         }

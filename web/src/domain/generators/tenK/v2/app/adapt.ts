@@ -7,9 +7,9 @@
    - vraćanju revizije (`restoreMerge`): budući nezaštićeni dani iz sačuvane verzije, prošlost/urađeno/ručno izmenjeno iz
      trenutnog plana — spajanje na nivou plana v2, pa iz njega plan za upis;
    - promeni cilja (`goalChange`): isti ulaz sa novim ciljem, svi budući dani zaključani → menja se samo ocena cilja;
-   - traci „Plan treba prilagoditi" (`needed`): aktivno ograničenje iz činjenica koje menja budući deo plana. */
+   - traci „Plan treba prilagoditi" (`needed`): pravilo je SAMO u domenu (`../adapt.ts` `adaptBanner`, pouka 20). */
 
-import { adaptTenKV2 } from '../adapt.ts';
+import { adaptBanner, adaptTenKV2 } from '../adapt.ts';
 import { checkInput } from '../input.ts';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
 import type { AdaptChange, AdaptReason, AdaptResult, PlanWeek, TenKV2Plan } from '../types.ts';
@@ -116,33 +116,6 @@ export type AdaptOutcome =
   | AdaptPreview
   | { ok: false; reasons: PlanRejectionReason[]; coverage: CoverageInfo | null; notes: string[] };
 
-/** Uslovi za traku. Premeštanje testa nije sam po sebi razlog: posledica je bola, pauze ili umora (njihova poruka ide). */
-const BANNER: ReadonlySet<AdaptReason['condition']> = new Set([
-  'PAIN',
-  'PAUSE',
-  'FATIGUE',
-  'NEW_RESULT',
-  'UNDER_EXECUTION',
-  'OVER_EXECUTION'
-]);
-
-/** Ograničenja za traku: primenjena, nova posle poslednje adaptacije (bol: zapis posle nje), a plan se zaista menja posle
- *  danas. Isti dan posle primene — ništa (bez ponovnog nuđenja). */
-function neededOf(
-  before: TenKV2Plan,
-  reasons: readonly AdaptReason[],
-  painDates: readonly string[],
-  today: IsoDate,
-  weeks: readonly WeekChange[]
-): string[] {
-  const last = before.adaptation?.asOf ?? null;
-  if ((last !== null && last >= today) || weeks.length === 0) return [];
-  const newPain = painDates.some((d) => last === null || d > last);
-  return reasons
-    .filter((r) => r.applied && BANNER.has(r.condition) && (r.condition !== 'PAIN' || newPain))
-    .map((r) => r.message);
-}
-
 /** Plan za upis iz plana v2 (+ snimak ručnih izmena u trenutku adaptacije, ako ga ima). */
 function stored(v2: TenKV2Plan, edits: unknown): StoredPlan {
   const s = storedPlan(generatedPlan(v2));
@@ -173,9 +146,6 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
   const weeks = changedWeeks(v2, after, r.changes, src.today);
   const applied = r.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');
   const summary = `Prilagođavanje ${src.today}: ${applied.length ? [...new Set(applied.map((x) => CONDITION[x.condition]))].join(', ') : CONDITION.NO_FACTS}`;
-  const painDates = built.facts.workouts
-    .filter((w) => (w.pain ?? 0) >= P.adapt.painMin)
-    .map((w) => w.date);
   return {
     ok: true,
     result,
@@ -184,7 +154,8 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     weeks,
     notes,
     coverage: built.coverage,
-    needed: neededOf(v2, r.reasons, painDates, src.today, weeks)
+    // Pouka 20: pravilo trake živi samo u domenu (`adaptBanner`); aplikacija ga samo zove.
+    needed: adaptBanner(v2, r, built.facts, src.today)
   };
 }
 
