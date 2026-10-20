@@ -238,6 +238,15 @@ export function framesFor(
     return l ? { ...f, limits: l } : f;
   });
   const last = steps[steps.length - 1]!.asOf;
+  // MAR-07c (pouke 23, 36): dan testa plana pre ovog koraka ≤ asOf → test je zaštićen (upisan); rasterećenje koje
+  // ovaj korak stavi na nedelju testa pomera dan testa okvira (Q1 → T slot) posle asOf, a to bi bio drugi test.
+  // Okvir tada nema test; nema ni premeštanja.
+  const before = framesFor(base, pattern, runDays, raceDate, pace, steps.slice(0, -1));
+  const tw = before.find((f) => f.test);
+  if (tw && mustDay(testDateOf(tw, pattern)) <= mustDay(last))
+    frames = frames.map((f) =>
+      f.test && mustDay(testDateOf(f, pattern)) > mustDay(last) ? withoutTest(f) : f
+    );
   const i = frames.findIndex((f) => f.test);
   const t = frames[i];
   const blocked = (f: WeekFrame, k: number): boolean =>

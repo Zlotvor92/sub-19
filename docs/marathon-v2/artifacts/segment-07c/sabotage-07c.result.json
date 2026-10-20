@@ -1,0 +1,107 @@
+{
+  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-07c/sabotage-07c.json",
+  "head": "a869e21",
+  "level": "brz",
+  "bail": true,
+  "parallel": 1,
+  "vitestArgs": [],
+  "durationS": 21.6,
+  "hashBefore": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+  "hashAfter": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "07c bez provere zaštićenog testa (test premešten iako je dan testa ≤ asOf)",
+      "files": ["src/domain/generators/marathon/v2/steps.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/segment07c.node.test.ts",
+        "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/segment07c.node.test.ts",
+        "test": "MAR-07c: umor, asOf = dan testa (ponedeljak nedelje testa) > primer organizatora: test je zaštićen (≤ asOf) i ostaje jedini; ostatak nedelje je rasterećenje",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).\"}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+      "hashSabotaged": "20913b59b41d681f20abedeb9ec55e4a850c9e1d1410f1727f023c845d29f408",
+      "hashAfter": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.3
+    },
+    {
+      "index": 2,
+      "name": "07c dan testa iz okvira posle koraka (rasterećenje: T slot) umesto iz plana pre koraka",
+      "files": ["src/domain/generators/marathon/v2/steps.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/segment07c.node.test.ts",
+        "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/segment07c.node.test.ts",
+        "test": "MAR-07c: umor, asOf = dan testa (ponedeljak nedelje testa) > primer organizatora: test je zaštićen (≤ asOf) i ostaje jedini; ostatak nedelje je rasterećenje",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).\"}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+      "hashSabotaged": "b553e2e71045540ba4be04e56b56338f8a8188829f477ef4948034fae891e1cb",
+      "hashAfter": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.3
+    },
+    {
+      "index": 3,
+      "name": "07c test uklonjen i kad nije zaštićen (dan testa posle asOf: nema premeštanja A13)",
+      "files": ["src/domain/generators/marathon/v2/steps.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/segment07c.node.test.ts",
+        "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/segment07c.node.test.ts",
+        "test": "MAR-07c: umor, asOf = dan testa (ponedeljak nedelje testa) > kontrola: asOf dan ranije (test posle asOf) → test se i dalje premešta u sledeću nedelju izgradnje (A13)",
+        "message": "AssertionError: expected [] to have a length of 1 but got +0"
+      },
+      "failedCount": 1,
+      "hashBefore": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+      "hashSabotaged": "d7c20c1577be734b9b6b5a284cce94972d5301b92387521f34c04bfb9ab2e4fc",
+      "hashAfter": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 0.9
+    },
+    {
+      "index": 4,
+      "name": "07c bez provere zaštićenog testa — samo trajna mreža (earlyGrid)",
+      "files": ["src/domain/generators/marathon/v2/steps.ts"],
+      "tests": ["src/domain/generators/marathon/v2/earlyGrid.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/earlyGrid.node.test.ts",
+        "test": "MAR-07c umor na dan testa ± 1 — uzorak > 0 odbijanja i adaptInvariants prazno (K1, Uslov 8, pouka 23)",
+        "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+      "hashSabotaged": "20913b59b41d681f20abedeb9ec55e4a850c9e1d1410f1727f023c845d29f408",
+      "hashAfter": "3bd167548cb1e02b01e08bb3e76a730e2dcd3b6ff6a5ba21b03a7d0b9c34682a",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 17.9
+    }
+  ]
+}

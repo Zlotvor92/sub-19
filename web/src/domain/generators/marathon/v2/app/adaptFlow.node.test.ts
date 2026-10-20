@@ -630,7 +630,9 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
   });
 
   it('KNOWN_VERSIONS: sačuvan plan marathon-v2.3.1 (MAR-05) ostaje plan maratona v2 i prilagođava se tekućim pravilima; druge verzije → UNKNOWN_POLICY', () => {
-    expect(KNOWN_VERSIONS).toEqual([...new Set(['marathon-v2.3.1', 'marathon-v2.4.0', P.version])]);
+    expect(KNOWN_VERSIONS).toEqual([
+      ...new Set(['marathon-v2.3.1', 'marathon-v2.4.0', 'marathon-v2.4.1', P.version])
+    ]);
     const cur = planOf(WITH_RESULT);
     const as = (p: GenPlanState, version: string): GenPlanState => ({
       ...p,

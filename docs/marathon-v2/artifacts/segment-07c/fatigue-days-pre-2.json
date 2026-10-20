@@ -1,0 +1,18 @@
+{
+  "part": 2,
+  "parts": 3,
+  "stride": 1,
+  "plans": 10080,
+  "flows": 361620,
+  "monday": 51660,
+  "rejected": {
+    "TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).": 540
+  },
+  "examples": [
+    "feel-d5-12w-40km-e270-C 2026-11-16",
+    "feel-d5-12w-40km-e315-C 2026-11-16",
+    "feel-d5-12w-40km-e360-C 2026-11-16",
+    "feel-d5-12w-40km-e405-C 2026-11-16",
+    "feel-d5-12w-40km-e450-C 2026-11-16"
+  ]
+}

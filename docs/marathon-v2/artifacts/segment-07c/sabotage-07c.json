@@ -1,0 +1,39 @@
+[
+  {
+    "name": "07c bez provere zaštićenog testa (test premešten iako je dan testa ≤ asOf)",
+    "file": "src/domain/generators/marathon/v2/steps.ts",
+    "find": "  if (tw && mustDay(testDateOf(tw, pattern)) <= mustDay(last))\n",
+    "replace": "  if (false as boolean)\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment07c.node.test.ts",
+      "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "07c dan testa iz okvira posle koraka (rasterećenje: T slot) umesto iz plana pre koraka",
+    "file": "src/domain/generators/marathon/v2/steps.ts",
+    "find": "  const tw = before.find((f) => f.test);\n",
+    "replace": "  const tw = before.length > 0 ? frames.find((f) => f.test) : undefined;\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment07c.node.test.ts",
+      "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "07c test uklonjen i kad nije zaštićen (dan testa posle asOf: nema premeštanja A13)",
+    "file": "src/domain/generators/marathon/v2/steps.ts",
+    "find": "  if (tw && mustDay(testDateOf(tw, pattern)) <= mustDay(last))\n",
+    "replace": "  if (tw)\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment07c.node.test.ts",
+      "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "07c bez provere zaštićenog testa — samo trajna mreža (earlyGrid)",
+    "file": "src/domain/generators/marathon/v2/steps.ts",
+    "find": "  if (tw && mustDay(testDateOf(tw, pattern)) <= mustDay(last))\n",
+    "replace": "  if (false as boolean)\n",
+    "tests": ["src/domain/generators/marathon/v2/earlyGrid.node.test.ts"]
+  }
+]
