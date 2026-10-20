@@ -87,9 +87,11 @@ import type {
 } from './contract';
 import * as fiveK from './fiveK';
 import * as halfMarathon from './halfMarathon';
-import { regeneratorForDistance } from './handoff';
+import { regeneratorForDistance, v1TargetForV2Source, type SourceFormat } from './handoff';
 import * as marathon from './marathon';
 import * as tenK from './tenK';
+
+export type { SourceFormat } from './handoff';
 
 export type GeneratorId = '5k' | '10k' | 'hm' | 'marathon';
 
@@ -362,7 +364,12 @@ export interface PreparationApi {
     choice: PreparationChoice,
     context: ReplanContext
   ) => ChoiceResult | { error: string };
-  isLimitedLongPreparation: (meta: GenPlanState['meta'] | undefined) => boolean;
+  /** 3b: `plan` (neobavezno) je ceo sačuvani plan — izvor v2 ocenjuje pripremu iz svojih nedelja, `meta` ih nema; v1
+   *  ga ne čita (bajt-isto). */
+  isLimitedLongPreparation: (
+    meta: GenPlanState['meta'] | undefined,
+    plan?: GenPlanState
+  ) => boolean;
 }
 
 /** Procena stanja trkača koju ekrani oporavka dobijaju od generatora distance aktivnog plana. */
@@ -713,6 +720,25 @@ export const tenKV2FormHistory = (src: {
 /** 06: polje unosa dana testa 10K v2 sa vremenom 5 km [s] (činjenica rezultata za adaptaciju). */
 export const TEN_K_V2_TEST_FIELD = t2.TEST_FIELD;
 
+/** Faza 3 (3b): vraćanje sačuvane verzije DRUGE distance (plan pre predaje „kraća distanca") se izričito odbija — ništa
+ *  se ne menja, razlog je u `meta.futureChanges.conflicts` (isti oblik kao odbijanje vraćanja u adapteru v2). */
+export const RESTORE_OTHER_DISTANCE =
+  'Sačuvana verzija je plan druge distance (pre izbora kraće distance), pa se ne može vratiti preko ovog plana.';
+function sameDistanceGraft(
+  graft: PlanGenerator['graftFuturePlan']
+): PlanGenerator['graftFuturePlan'] {
+  return (plan, fresh, today, ctx) => {
+    const from = plan.meta?.raceDistM;
+    const to = fresh.meta?.raceDistM;
+    if (from === undefined || to === undefined || from === to)
+      return graft(plan, fresh, today, ctx);
+    return {
+      ...plan,
+      meta: { ...plan.meta, futureChanges: { changedDays: 0, conflicts: [RESTORE_OTHER_DISTANCE] } }
+    } as GenPlanState;
+  };
+}
+
 /** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
 const HM_SHORTER_HANDOFF = regeneratorForDistance;
 
@@ -722,7 +748,7 @@ const HM_SHORTER_HANDOFF = regeneratorForDistance;
    (b) adaptacija i predlog (segment HM-06) — kroz činjenice i `adaptHmV2` sa pregledom pre upisa, ili „ne koristi se" sa
    razlogom (`MEMBERS`), bez zamene HM v1 generatorom;
    (c) procena stanja i vreme — sopstvena kopija v2 sa istim vrednostima kao HM v1 (v. `halfMarathon/v2/app/index.ts`).
-   Odluka o ograničenoj pripremi (`preparationForPlan`) i predaja „kraća distanca" ostaju samo HM v1 (faza 3).
+   Odluka o ograničenoj pripremi (`preparationForPlan`): HM v2 kao izvor predaje „kraća distanca" od faze 3 (3c, `hmV2Preparation`).
 
    GRANICA FORMATA (kao 10K v2): adapter `halfMarathon/v2/app/` ne uvozi ni tipove formata (strogi test izolacije HM v2,
    bez izuzetka), pa plan koji PRAVI (dan sa strukturom van unije `Day`, `meta` sa poljima koja v2 zna) ovde dobija tip
@@ -747,7 +773,11 @@ export const HALF_MARATHON_V2_GENERATOR: PlanGenerator = {
   assess: h2.assess,
   product: h2.product,
   executionModel: h2.executionModel,
-  executionBasis: h2.executionBasis,
+  // 3c: osnova predaje (činjenice bez politike); ulaz plana po osećaju nema `pb` (tip formata daje granica).
+  executionBasis: (current, today, analysis, options) =>
+    h2.executionBasis(current, today, analysis, options) as unknown as ReturnType<
+      PlanGenerator['executionBasis']
+    >,
   // HM-06: plan za upis pravi adapter (granica formata, v. gore).
   buildExecutionAdjustment: (current, today, analysis, options, context) =>
     h2.buildExecutionAdjustment(current, today, analysis, options, context) as unknown as
@@ -761,8 +791,11 @@ export const HALF_MARATHON_V2_GENERATOR: PlanGenerator = {
   planWithNewGoal: (plan, sec, today) =>
     h2.planWithNewGoal(plan, sec, today) as unknown as GoalChangeResult | ReplanError,
   planRecalibrated: h2.planRecalibrated,
-  graftFuturePlan: (plan, fresh, today, ctx) =>
-    h2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState,
+  // 3b: verzija druge distance (pre predaje „kraća distanca") se ne vraća preko ovog plana.
+  graftFuturePlan: sameDistanceGraft(
+    (plan, fresh, today, ctx) =>
+      h2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState
+  ),
   alignAutomaticOverlays: h2.alignAutomaticOverlays,
   vdotProposal: h2.vdotProposal,
   applyVdotProposal: h2.applyVdotProposal,
@@ -952,8 +985,11 @@ export const MARATHON_V2_GENERATOR: PlanGenerator = {
   planWithNewGoal: (plan, sec, today) =>
     m2.planWithNewGoal(plan, sec, today) as unknown as GoalChangeResult | ReplanError,
   planRecalibrated: m2.planRecalibrated,
-  graftFuturePlan: (plan, fresh, today, ctx) =>
-    m2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState,
+  // 3b: verzija druge distance (pre predaje „kraća distanca") se ne vraća preko ovog plana.
+  graftFuturePlan: sameDistanceGraft(
+    (plan, fresh, today, ctx) =>
+      m2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState
+  ),
   alignAutomaticOverlays: m2.alignAutomaticOverlays,
   vdotProposal: m2.vdotProposal,
   applyVdotProposal: m2.applyVdotProposal,
@@ -1181,6 +1217,32 @@ export function generatorForNewPlan(
   return generator === FIVE_K_GENERATOR && flags.fiveKV2 ? FIVE_K_V2_GENERATOR : generator;
 }
 
+/** Faza 3 (3b): cilj v2 te distance (prekidač korisnika uključen) još nema predaju — opcija je nedostupna sa razlogom,
+ *  nikad tihi prelaz na v1 cilj (DESIGN.md § 8, O4). Segment 3d ga zamenjuje predajom v2 cilja. */
+export const V2_TARGET_NOT_READY =
+  'Kraća distanca nije dostupna: plan te distance pravi generator v2, a predaja njemu još ne postoji.';
+
+/**
+ * Faza 3 (3b): „kraća distanca" za IZVOR v2 (HM v2, maraton v2). Cilj bira prekidač korisnika, isto kao za nov plan
+ * (`generatorForNewPlan`, MASTER § 6): v1 generator → v1 `handoffFuture` nad pogledom izvora bez formata v2 (`format`
+ * daje adapter izvora); HM v2 → `handoffFuture` HM v2 (3f); ostali v2 → za sada odbijanje (`V2_TARGET_NOT_READY`, 3d). Izvori v1 ostaju na
+ * `regeneratorForDistance` (O7, bajt-isto). Rezultat ima oblik argumenta `ShorterDistanceHandoff` izvora.
+ */
+export function shorterHandoffForV2Source(
+  flags: GeneratorFlags,
+  format: SourceFormat
+): (raceDistM: number | undefined) => ReturnType<typeof v1TargetForV2Source> {
+  return (raceDistM) => {
+    const target = generatorForNewPlan(raceDistM || 5000, flags);
+    if (!target) return null;
+    // 3f: polumaraton v2 je cilj (generate + adapt iz činjenica, prefiks nedelja izvora); 10K/5K v2 čekaju 3d.
+    if (target === HALF_MARATHON_V2_GENERATOR)
+      return h2.handoffFuture as unknown as ReturnType<typeof v1TargetForV2Source>;
+    if (!Object.values(GENERATORS).includes(target)) return () => ({ error: V2_TARGET_NOT_READY });
+    return v1TargetForV2Source(raceDistM, format);
+  };
+}
+
 /** 08b: plan 5K v2 (prilagođavanje kroz činjenice i pregled v2, ne kroz alate v1). */
 export function isFiveKV2Plan(plan: GenPlanState | null | undefined): boolean {
   return generatorForPlan(plan) === FIVE_K_V2_GENERATOR && v2.isV2Plan(plan);
@@ -1288,9 +1350,46 @@ export const MARATHON_PREPARATION: PreparationApi = {
   isLimitedLongPreparation: marathon.isLimitedLongPreparation
 } satisfies PreparationApi;
 
-export function preparationForPlan(plan: GenPlanState | null | undefined): PreparationApi | null {
+/** Faza 3 (3c): odluka o pripremi plana HM v2 kao IZVORA predaje „kraća distanca" (okidač i opcije su HM v2,
+ *  `halfMarathon/v2/shorter.ts` i `app/preparation.ts`). Cilj bira prekidač korisnika (`flags`) kroz
+ *  `shorterHandoffForV2Source` sa formatom izvora HM v2. Politika izvora se ne predaje (`policy: null`). */
+export function hmV2Preparation(flags: GeneratorFlags): PreparationApi {
+  const handoff = shorterHandoffForV2Source(flags, h2.SOURCE_FORMAT);
+  return {
+    basisFromPlan: (current, today) =>
+      h2.basisFromPlan(current, today) as unknown as DecisionBasis | null,
+    preparationDecision: (current, today, basis, context, status, delivered) =>
+      h2.preparationDecision(
+        current,
+        today,
+        basis as never,
+        context,
+        status,
+        delivered,
+        handoff as never
+      ) as unknown as PreparationDecision,
+    buildPreparationChoice: (current, today, basis, choice, context) =>
+      h2.buildPreparationChoice(
+        current,
+        today,
+        basis as never,
+        choice,
+        context,
+        handoff as never
+      ) as unknown as ChoiceResult | { error: string },
+    isLimitedLongPreparation: (meta, plan) => h2.isLimitedLongPreparation(meta, plan)
+  } satisfies PreparationApi;
+}
+
+/** Odluka o pripremi za plan: HM v1 / maraton v1 (kao do sada) ili HM v2 (3c). `flags` (prekidači korisnika) biraju
+ *  cilj predaje za izvor v2; bez njih su isključeni (v1 cilj). */
+export function preparationForPlan(
+  plan: GenPlanState | null | undefined,
+  flags: GeneratorFlags = { fiveKV2: false }
+): PreparationApi | null {
   const generator = generatorForPlan(plan);
   if (generator === HALF_MARATHON_GENERATOR) return HALF_MARATHON_PREPARATION;
+  if (generator === HALF_MARATHON_V2_GENERATOR) return hmV2Preparation(flags);
   if (generator === MARATHON_GENERATOR) return MARATHON_PREPARATION;
   return null;
 }

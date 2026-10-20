@@ -188,3 +188,25 @@ nosi policyId/fazu cilja (`stampForStorage`). 7 nula uvoza: ciljevi kao argument
 | `node docs/generators-v2/handoff/shorter.ts HM 193 97 29 > shorter-HM.json` (i `MAR`) | 688 s / 1 406 s |
 | `npx vitest run --config ../docs/generators-v2/handoff/vitest.measure.config.mjs` → `v1target.json` | 31 s |
 | `node docs/generators-v2/handoff/v2target.ts HM 193 97 29 > v2target-HM.json` (i `MAR`) | 24 s / 45 s |
+
+## 8. Odluke organizatora
+
+- O1: (a) Okidač je prag upozorenja v2: HM 16/14, maraton 26/24 km. Ista funkcija kao validator (jedan vlasnik). Ponuda dolazi samo na PRELAZU: posle prihvaćene adaptacije najduži dugi je < praga, a pre nje nije bio, i trka je u budućnosti. Okidač iz rezultata kod maratona je dozvoljen, jer ponuda nije prelaz na silu („zadrži plan" uvek postoji).
+- O2: (a) Samo „kraća distanca" i „zadrži plan v2". Pomeranje trke i povratni režim su van faze 3.
+- O3: (a) Obim iz čarobnjaka + adapt sa činjenicama. Nema novog broja; povratnu politiku određuje adaptacija cilja.
+- O4: (a) Opcija je nedostupna, uz razlog cilja v2 doslovno. Nikad tihi prelaz na v1 cilj.
+- O5: (a) Opcija je nedostupna, uz razlog („cilj v1 traži rezultat") — MASTER § 6.
+- O6: (b), NE (a). Tekuća nedelja ostaje nedelja izvora, i to adaptirana (kao prošle nedelje), a cilj počinje od sledećeg ponedeljka (alignedStart). Kalemi se na granici nedelje, istim mehanizmom kao P5 (prošle nedelje izvora + nedelje cilja sa ID po početku nedelje). Razlog: korisnik usred plana ne sme da ostane 0–6 dana bez plana. Nedelja izvora je već usklađena sa činjenicama adaptacijom koja je dala ponudu.
+- O7: (a) Ne. v1 izvori ostaju bajt-isti.
+- P1–P6 prihvatam, uz izmene iznad. Redosled segmenata kao u § 4.
+- O1 dopuna (posle 3c, organizator): osnova „pre adaptacije" = plan generatora za isti ulaz, izveden iz sačuvanog plana;
+  bez novog polja u planu i bez promene verzije. Ponuda važi dok je sačuvani plan ispod praga, a plan generatora nije;
+  ponovno nuđenje u sledećem pregledu je ispravno (stanje traje, korisnik zatvara). Lanac: drugi korak adaptacije čiji
+  je prethodni plan već bio ispod praga dobija ponudu (M1 brzo: 7 takvih tokova, `chain2`), jer se poredi sa planom
+  generatora, ne sa prethodnim korakom.
+- Sudar 3c → (B): pogled izvora za v1 cilj pregrupiše dane izvora u nedelje od ponedeljka (id dana ostaje; menjaju se
+  `dow` i nedelja). (C) i (D) odbijeni. Dopuna 3b u `handoff.ts` (`mondayWeeks`).
+- O8 (posle 3f): (a). Do trke više od 20 nedelja → opcija HM nedostupna sa razlogom PLAN_TOO_LONG doslovno. (b) odbijeno:
+  budući dani maratona se ne mešaju pred plan HM.
+- Predaja za 3e: plan HM v2 cilja nema `meta.preparation`; vrh dugog i obima za opciju čitati iz `hmV2`. Predaja za
+  3g: prikaz nedelja prefiksa (faze izvora) i broj nedelje u pregledu (`offset + index`).

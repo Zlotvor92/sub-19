@@ -6,6 +6,7 @@ import { generateTenKV2 } from './generate.ts';
 import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
+import { P35_DROP } from './week.ts';
 import { easyTimeWorkout } from './workouts.ts';
 
 const fresh = (): TenKV2Plan => {
@@ -364,30 +365,36 @@ describe('validator', () => {
   it('D25: kvalitetni dan duži od dugog po trajanju → upozorenje LONG_SHORTER_THAN_QUALITY (ne greška) sa preporukom manje dana', () => {
     const warns = (p: TenKV2Plan) =>
       p.warnings.filter((w) => w.rule === 'LONG_SHORTER_THAN_QUALITY');
-    // 4 dana, 25 km, VDOT 70: WU/CD 15/10 min + rad > dugi 5,6 km; red 3 dana (20–40 km) podržava 25 km.
+    // 4 dana, 25 km, VDOT 70: na 7ba9717 WU/CD 15/10 min + rad > dugi 5,6 km (upozorenje u 3 od 7 nedelja). 06f (pouka
+    // 35): u ned 1–2 drugi dan kvaliteta je lagan, dugi raste i ostaje najduži — upozorenja nema.
     const p4 = planOf(4, { weeks: 10, km: 25, vdot: 70 });
     expect(errors(p4)).toEqual([]);
-    expect(warns(p4).map((w) => [w.severity, w.week, w.message])).toEqual([
+    expect(warns(p4)).toEqual([]);
+    expect(
+      p4.weeks.filter((w) => w.notes.some((n) => n.startsWith(P35_DROP))).map((w) => w.index)
+    ).toEqual([1, 2]);
+    // 6 dana, 35 km, VDOT 70: i posle pouke 35 prvi dan kvaliteta duži od dugog → upozorenje, preporuka 3–5 dana.
+    const p6 = planOf(6, { weeks: 12, km: 35, vdot: 70 });
+    expect(errors(p6)).toEqual([]);
+    expect(warns(p6).map((w) => [w.severity, w.week, w.message])).toEqual([
       [
         'warning',
         1,
-        'Kvalitetni dan duži od dugog po trajanju u 3 od 7 nedelja izgradnje (ned 1: 32 > 23 min; D25); preporuka 3 dana (red D17 sa manje dana podržava obim 25 km, dugi dobija veći udeo).'
+        'Kvalitetni dan duži od dugog po trajanju u 3 od 8 nedelja izgradnje (ned 1: 42 > 39 min; D25); preporuka 3–5 dana (red D17 sa manje dana podržava obim 35 km, dugi dobija veći udeo).'
       ]
     ]);
-    // 6 dana, 35 km, VDOT 70: preporuka 3–5 dana; 3 dana nema manji red — bez preporuke (i bez upozorenja).
-    const p6 = planOf(6, { weeks: 12, km: 35, vdot: 70 });
-    expect(warns(p6)[0]!.message).toMatch(/; preporuka 3–5 dana \(red D17/);
+    // 3 dana nema manji red — bez preporuke (i bez upozorenja).
     expect(warns(planOf(3, { weeks: 12, km: 20, vdot: 70 }))).toEqual([]);
     // Plan se ne menja: upozorenje nastaje samo iz validatora.
-    const before = JSON.stringify(p4.weeks);
-    validatePlan(p4);
-    expect(JSON.stringify(p4.weeks)).toBe(before);
+    const before = JSON.stringify(p6.weeks);
+    validatePlan(p6);
+    expect(JSON.stringify(p6.weeks)).toBe(before);
     // Isti plan sa dugim dužim od svakog kvaliteta → bez upozorenja.
-    for (const w of p4.weeks.filter(steady)) {
+    for (const w of p6.weeks.filter(steady)) {
       const long = w.days.find((d) => d.role === 'long')!.workout;
       (long as { sec: number }).sec = 99999;
     }
-    expect(validatePlan(p4).some((v) => v.rule === 'LONG_SHORTER_THAN_QUALITY')).toBe(false);
+    expect(validatePlan(p6).some((v) => v.rule === 'LONG_SHORTER_THAN_QUALITY')).toBe(false);
   });
 
   it('D7: taper 5 dana bez jednog dana → TAPER_DAYS', () => {

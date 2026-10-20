@@ -5,6 +5,7 @@
 import { daysBetween, mustDay } from './dates.ts';
 import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import type { PlanDay, PlanWeek, TenKV2Facts, TenKV2Plan } from './types.ts';
+import { deloadWeekOf } from './steps.ts';
 
 const EPS = 1e-6;
 const isBuild = (w: PlanWeek): boolean =>
@@ -101,7 +102,7 @@ export function adaptInvariants(
       bad.push(`cilj < minimum ned ${w.index}`);
     // D5 (A5: prinudno rasterećenje sme bilo gde u izgradnji).
     if (w.deload) {
-      const forced = steps.some((s) => s.deload && s.fromWeek === w.index);
+      const forced = steps.some((s) => s.deload && deloadWeekOf(s) === w.index);
       const prev = after.weeks[w.index - 2];
       const next = after.weeks[w.index];
       if (!isBuild(w)) bad.push(`rasterećenje van izgradnje ned ${w.index}`);
@@ -152,7 +153,7 @@ export function adaptInvariants(
   // minimuma), najviše 1 kvalitet (uvod početnika: bez kvaliteta); nedelja 2 bez rasta (≤ planirana nedelja 1).
   // Referenca: nedelja 1 prethodnog plana kad je on plan generatora (bez adaptacije).
   const g1 = before.weeks[0]!;
-  if (steps.some((s) => s.deload && s.fromWeek === 1) && !before.adaptation) {
+  if (steps.some((s) => s.deload && deloadWeekOf(s) === 1) && !before.adaptation) {
     const [w1, w2] = after.weeks;
     if (!w1!.deload) bad.push('umor pre starta: ned 1 nije rasterećenje');
     else if (!mixed.has(1)) {

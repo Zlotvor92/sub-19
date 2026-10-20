@@ -1,0 +1,57 @@
+[
+  {
+    "name": "3b-a čistač ne uklanja objekat plana v2",
+    "file": "src/domain/generators/handoff.ts",
+    "find": "  const { [format.planKey]: _plan, ...rest } = current as P & Record<string, unknown>;",
+    "replace": "  const rest = current as P & Record<string, unknown>;",
+    "tests": [
+      "src/domain/generators/handoffV2Source.node.test.ts"
+    ]
+  },
+  {
+    "name": "3b-b čistač ne uklanja meta ključeve v2",
+    "file": "src/domain/generators/handoff.ts",
+    "find": ".filter(([k]) => !format.metaKeys.includes(k))",
+    "replace": ".filter(([k]) => k !== '')",
+    "tests": [
+      "src/domain/generators/handoffV2Source.node.test.ts"
+    ]
+  },
+  {
+    "name": "3b-c v1 cilj bez rezultata nije odbijen (O5)",
+    "file": "src/domain/generators/handoff.ts",
+    "find": "    if (!pb || !(Number(pb.distM) > 0) || !(Number(pb.sec) > 0))",
+    "replace": "    if (pb === null)",
+    "tests": [
+      "src/domain/generators/handoffV2Source.node.test.ts"
+    ]
+  },
+  {
+    "name": "3b-d prekidač cilja v2 tiho pada na v1 cilj (O4)",
+    "file": "src/domain/generators/select.ts",
+    "find": "    if (!Object.values(GENERATORS).includes(target)) return",
+    "replace": "    if (target === null) return",
+    "tests": [
+      "src/domain/generators/handoffV2Source.node.test.ts"
+    ]
+  },
+  {
+    "name": "3b-e vraćanje verzije druge distance nije odbijeno",
+    "file": "src/domain/generators/select.ts",
+    "find": "    if (from === undefined || to === undefined || from === to)",
+    "replace": "    if (from !== null)",
+    "tests": [
+      "src/domain/generators/handoffV2Source.node.test.ts"
+    ]
+  },
+  {
+    "name": "3b-f pogled za v1 cilj bez pregrupisanja u nedelje od ponedeljka",
+    "file": "src/domain/generators/handoff.ts",
+    "find": "  return { ...rest, weeks: mondayWeeks(current.weeks), meta } as P;",
+    "replace": "  return { ...rest, meta } as P;",
+    "tests": [
+      "src/domain/generators/handoffV2Source.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"
+    ]
+  }
+]

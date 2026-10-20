@@ -5,6 +5,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { GRID_TIMEOUT } from './level.harness.node.test.ts';
 import { generateTenKV2 } from './generate.ts';
 import { ladderFor } from './quality.ts';
+import { P35_DROP } from './week.ts';
 import { grid02Inputs } from './testInputs.ts';
 import type { Dose, Phase, PlanWeek, Structure, TenKV2Plan } from './types.ts';
 import { structuresForDose } from './workouts.ts';
@@ -29,6 +30,8 @@ it('uzorak mreže 02 se generiše bez odbijanja', () => {
 });
 const steady = (w: PlanWeek): boolean =>
   !w.deload && (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific');
+/** 06f (pouka 35): nedelja izgradnje sa drugim danom kvaliteta laganim (napomena week.ts). */
+const p35 = (w: PlanWeek): boolean => w.notes.some((n) => n.startsWith(P35_DROP));
 const slot = (w: PlanWeek, r: 'q1' | 'q2'): Dose | undefined =>
   w.days.find((d) => d.role === r)?.workout.dose ?? undefined;
 const same = (a: Structure, b: Structure): boolean => JSON.stringify(a) === JSON.stringify(b);
@@ -246,7 +249,8 @@ describe('D10/D22/D30: lestvice i strukture', () => {
         }
         const [q1, q2] = SLOT[w.phase];
         expect(q1).toContain(slot(w, 'q1')!.ladder);
-        expect(q2).toContain(slot(w, 'q2')!.ladder);
+        if (p35(w)) expect(slot(w, 'q2')).toBeUndefined();
+        else expect(q2).toContain(slot(w, 'q2')!.ladder);
       }
   });
 });
@@ -318,6 +322,8 @@ describe('D16: početni nivo', () => {
         continue;
       }
       expect(slot(w, 'q1')!.doseM).toBe(startM('R', w.targetKm));
+      // 06f (pouka 35): Q2 nedelje 1 lagan — početni nivo Q2 proverava prva nedelja koja ga ima (validator D16).
+      if (p35(w)) continue;
       expect(slot(w, 'q2')!.doseM).toBe(startM('T_continuous', w.targetKm));
       if (slot(w, 'q2')!.doseM > LADDER.T_continuous![0]!) aboveFirst++;
     }
@@ -409,14 +415,15 @@ describe('D12: progresija', () => {
       for (let i = 1; i < s.length; i++) {
         const a = s[i - 1]!;
         const b = s[i]!;
-        const dropped = slot(b, 'q1')?.step === 'drop' || slot(b, 'q2')?.step === 'drop';
+        // 06f (pouka 35): nedelja sa drugim danom kvaliteta laganim sme imati manju glavnu dozu; ima jedan slot.
+        const dropped = slot(b, 'q1')?.step === 'drop' || slot(b, 'q2')?.step === 'drop' || p35(b);
         if (!dropped) expect(main(b), `${b.index}`).toBeGreaterThanOrEqual(main(a));
         if (key(b) === key(a)) {
-          // Odstupanje D12: samo 3 dana, jedini slot bez druge strukture (napomena).
-          expect(one(p)).toBe(true);
+          // Odstupanje D12: samo 3 dana (ili nedelja pouke 35), jedini slot bez druge strukture (napomena).
+          expect(one(p) || p35(b)).toBe(true);
           expect(slot(b, 'q1')!.step).toBe('repeat');
         }
-        if (a.phase === 'base' && b.phase === 'base') {
+        if (a.phase === 'base' && b.phase === 'base' && slot(a, tSlot) && slot(b, tSlot)) {
           const ta = slot(a, tSlot)!;
           const tb = slot(b, tSlot)!;
           plateauChecks++;

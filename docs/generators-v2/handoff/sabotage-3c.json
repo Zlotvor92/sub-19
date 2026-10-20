@@ -1,0 +1,29 @@
+[
+  {
+    "name": "3c-a okidač bez provere „pre adaptacije\" (plan generatora)",
+    "file": "src/domain/generators/halfMarathon/v2/shorter.ts",
+    "find": "  return born.ok && !longRunShort(born.plan.weeks, warn);",
+    "replace": "  return born.ok;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3c-b izvor šalje izvedeni obim (odluku svoje politike) umesto obima čarobnjaka",
+    "file": "src/domain/generators/halfMarathon/v2/app/preparation.ts",
+    "find": "    weeklyKm: i.currentWeeklyKm,",
+    "replace": "    weeklyKm: Math.min(...v2.weeks.map((w) => w.targetKm)),",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3c-c čistač preskočen (prazan format izvora)",
+    "file": "src/domain/generators/select.ts",
+    "find": "  const handoff = shorterHandoffForV2Source(flags, h2.SOURCE_FORMAT);",
+    "replace": "  const handoff = shorterHandoffForV2Source(flags, { planKey: '', metaKeys: [] });",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"
+    ]
+  }
+]

@@ -409,6 +409,9 @@ export interface TenKV2AdaptStep {
   /** A5 (10k-v2.5.2, pouka 34): umor sa asOf pre starta plana — referenca prinudnog rasterećenja nedelje 1 =
       nedelja 1 generatora bez činjenica (nema prethodne izgradnje). Samo na takvom koraku (assess). */
   preStart?: PreStartRef;
+  /** A5 (10k-v2.6.0, pouka 36): nedelja prinudnog rasterećenja iz zapisa umora kad ≠ fromWeek (tekuća nedelja:
+      važi za ostatak, prošli dani zaštićeni). steps.deloadWeekOf. */
+  deloadWeek?: number;
 }
 
 /** A5 (10k-v2.5.2): nedelja 1 generatora bez činjenica — poslednja izgradnja (cilj), poslednji dugi i doza
@@ -427,6 +430,9 @@ export interface TenKV2Adaptation {
       konstrukcije: validator na njima proverava samo dane (nedeljna pravila važe za konstrukciju). */
   mixedWeeks: number[];
   lockedDayIds: string[];
+  /** 06f (kao maraton MAR-07b): urađeni dani posle asOf (zaštićeni; validator ih, kao zaključane, ne sudi po danu).
+      Polja nema kad ih nema. */
+  doneDayIds?: string[];
 }
 
 export type AdaptCondition =

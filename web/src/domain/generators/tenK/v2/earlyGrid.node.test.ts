@@ -69,20 +69,23 @@ describe('primeri N7 (10k-v2.5.0 odbijeno)', () => {
     ]);
   });
 
-  it('K2: 5 dana, 8 ned, 35 km, bol 5 u sredu ned 1 — dugi tapera ≤ 0,75 × najduži UPISAN dugi (9,2 km ned 1, ne sastavljenih 10,5)', () => {
+  // 06f (pouka 35): bazni plan se promenio — ned 1 sa jednim kvalitetom, upisan dugi ned 1 = 10,5 km (na 7ba9717 9,2 km
+  // upisan prema 10,5 sastavljenih; ta razlika više ne postoji u ovom planu). Svojstvo ostaje: dugi tapera ≤ 0,75 ×
+  // najduži UPISAN dugi.
+  it('K2: 5 dana, 8 ned, 35 km, bol 5 u sredu ned 1 — dugi tapera ≤ 0,75 × najduži UPISAN dugi (10,5 km ned 1)', () => {
     const { p0, p } = adapt('f-d5-8w-35km-e270-A-sat', 'pain5', '2026-11-04');
-    // Dugi ned 1 (nedelja 11-01, pre asOf) je zaštićen: ostaje 9,2 km iz prethodnog plana.
+    // Dugi ned 1 (nedelja 11-01, pre asOf) je zaštićen: ostaje iz prethodnog plana.
     expect(p.weeks[0]!.days.find((d) => d.role === 'long')).toEqual(
       p0.weeks[0]!.days.find((d) => d.role === 'long')
     );
     const taper = p.weeks.find((w) => w.phase === 'taper')!;
     const longest = longestLong10(p.weeks.slice(0, taper.index - 1));
-    expect(longest).toBe(92);
+    expect(longest).toBe(105);
     const long = taper.days.find((d) => d.role === 'long')!;
     expect(Math.round(long.workout.km * 10)).toBeLessThanOrEqual(
       Math.floor(P.taper.longFactor * longest + 1e-9)
     );
-    expect(long.workout.km).toBe(6.9);
+    expect(long.workout.km).toBe(7.3);
   });
 });
 

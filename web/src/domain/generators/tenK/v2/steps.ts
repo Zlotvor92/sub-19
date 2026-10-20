@@ -105,6 +105,11 @@ export function limitsOf(
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
+/** Pouka 36 (10k-v2.6.0): nedelja prinudnog rasterećenja koraka (A5) — iz zapisa umora (`deloadWeek`), inače
+    fromWeek. Jedina definicija (framesFor, newLimits, validator, adaptInvariants). Kopija maraton v2. */
+export const deloadWeekOf = (s: { fromWeek: number; deloadWeek?: number }): number =>
+  s.deloadWeek ?? s.fromWeek;
+
 /** A3: nedelje novog starta (početak nove progresije doze, D16; granica izgradnje D6 od novog starta). */
 export const restartWeeks = (steps: readonly TenKV2AdaptStep[]): Set<number> =>
   new Set(steps.filter((s) => s.restart).map((s) => s.fromWeek));
@@ -171,11 +176,16 @@ export function framesFor(
       if (re) for (const w of [...forced]) if (w >= n) forced.delete(w);
       if (re && dropped) for (const w of [...dropped.keys()]) if (w >= n) dropped.delete(w);
     }
-    const fn = frames[n - 1];
+    const dw = deloadWeekOf(s);
+    const fn = frames[dw - 1];
     if (s.deload && fn && isBuildPhase(fn.phase) && !fn.deload) {
+      // Pouka 36: prinudno rasterećenje tekuće nedelje (dw < fromWeek) čiji je test već prošao (≤ asOf, upisan) —
+      // rasterećenje bez novog testa.
+      const done = fn.test === true && mustDay(testDateOf(fn, pattern)) <= mustDay(s.asOf);
       fn.deload = true;
-      forced.add(n);
-      const next = frames[n];
+      if (done) frames[dw - 1] = withoutTest(fn);
+      forced.add(dw);
+      const next = frames[dw];
       if (next && next.deload && isBuildPhase(next.phase)) next.deload = false;
     }
     for (const w of reducedWeeks(s)) {
@@ -233,3 +243,38 @@ export function appliedRestarts(
 /** Okviri generatora (periodize) — ulaz za framesFor i validator. */
 export const baseFrames = (startDate: IsoDate, weeks: number, test: boolean): WeekFrame[] | null =>
   periodize(startDate, weeks, test);
+
+/**
+ * Pouka 20 (10K 06f): traka „Plan treba prilagoditi" samo za NOVO ograničenje — datumi poslednjeg koraka sa
+ * ograničenjem (zabrana kvaliteta, jedan kvalitet, odmor, bol) kojih nema u ograničenjima prethodnih koraka, i
+ * prinudno rasterećenje / nov start koga ranije nije bilo. Posledica drugog uslova (premeštanje testa, ukinuto
+ * rasterećenje) nije ograničenje. Čita ga adaptBanner (adapt.ts); prazno = bez trake. Kopija maraton v2
+ * steps.newLimits (ne uvoz, Uslov 7).
+ */
+export function newLimits(steps: readonly TenKV2AdaptStep[]): string[] {
+  const last = steps[steps.length - 1];
+  if (!last) return [];
+  const prev = steps.slice(0, -1);
+  const days = (s: TenKV2AdaptStep, pick: (x: TenKV2AdaptStep) => readonly (DateRange | null)[]) =>
+    pick(s).flatMap((r) => {
+      if (!r) return [];
+      const out: string[] = [];
+      for (let d = r.from; mustDay(d) <= mustDay(r.to); d = addDays(d, 1)) out.push(d);
+      return out;
+    });
+  const kinds: [string, (x: TenKV2AdaptStep) => readonly (DateRange | null)[]][] = [
+    ['noQuality', (x) => x.noQuality],
+    ['oneQuality', (x) => x.oneQuality],
+    ['rest', (x) => [x.rest]],
+    ['pain', (x) => [x.pain]]
+  ];
+  const out: string[] = [];
+  for (const [k, pick] of kinds) {
+    const old = new Set(prev.flatMap((s) => days(s, pick)));
+    for (const d of days(last, pick)) if (!old.has(d)) out.push(`${k}:${d}`);
+  }
+  if (last.deload && !prev.some((s) => s.deload && deloadWeekOf(s) === deloadWeekOf(last)))
+    out.push(`deload:${deloadWeekOf(last)}`);
+  if (last.restart) out.push(`restart:${last.fromWeek}`);
+  return out;
+}

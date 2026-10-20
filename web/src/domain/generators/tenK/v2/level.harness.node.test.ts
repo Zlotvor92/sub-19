@@ -3,13 +3,66 @@
    Mreža se računa u `beforeAll` (ne u telu `describe`): vitest raspoređuje fajlove po zabeleženom trajanju, a ono
    ne uključuje fazu collect; uz to filter imena / `--bail` ne računa mrežu za describe čiji se testovi ne pokreću. */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
 import { FULL } from '@/test/level';
 
 /** Timeout `beforeAll` koji računa mrežu (hookTimeout je podrazumevano 10 s). */
 export const GRID_TIMEOUT = 600_000;
+
+/** Segment 06f (10k-v2.6.0, pouka 35): planovi generatora sa nedeljom pouke 35 na 7ba9717 (mreže 01, 02, F, B;
+    segment06f.p35-plans-7ba9717.json) — jedini planovi generatora koji se menjaju. Starije regresije generatora ih
+    izuzimaju; tačan skup promenjenih proverava p35.node.test.ts. */
+export const P35_PLANS: ReadonlySet<string> = new Set(
+  Object.keys(
+    (
+      JSON.parse(
+        readFileSync(
+          fileURLToPath(new URL('./segment06f.p35-plans-7ba9717.json', import.meta.url)),
+          'utf8'
+        )
+      ) as { plans: Record<string, number[]> }
+    ).plans
+  )
+);
+/** Segment 06f: tokovi trajnih mreža adaptacije koje 10k-v2.6.0 menja (pouka 35) → heš na 7ba9717
+    (segment06f.adapt-changed-7ba9717.json). Starije regresije adaptacije porede stanje 7ba9717 (`at7ba`); tačan
+    skup proverava `expectP35Flows`. */
+export const ADAPT_CHANGED_7BA = (
+  JSON.parse(
+    readFileSync(
+      fileURLToPath(new URL('./segment06f.adapt-changed-7ba9717.json', import.meta.url)),
+      'utf8'
+    )
+  ) as {
+    against: string;
+    flows: Record<'grid04' | 'early' | 'relief' | 'pain', Record<string, number>>;
+  }
+).flows;
+/** Heš toka u stanju 7ba9717 (za starije regresije): promenjen u 06f → heš iz fixture-a, inače današnji. */
+export const at7ba = (net: keyof typeof ADAPT_CHANGED_7BA, key: string, h: number): number =>
+  ADAPT_CHANGED_7BA[net][key] ?? h;
+/** 06f: tok mreže `net` se razlikuje od 7ba9717 (u fixture-u, heš drugačiji) tačno kad ima pouku 35 (nedelja
+    pouke 35 u rezultatu ili bazni plan iz P35_PLANS). Vraća prekršaje. */
+export function p35FlowErrors(
+  net: keyof typeof ADAPT_CHANGED_7BA,
+  flows: readonly { key: string; id: string; hash: number; res: unknown }[]
+): string[] {
+  const bad: string[] = [];
+  for (const f of flows) {
+    const old = ADAPT_CHANGED_7BA[net][f.key];
+    const p35 = hasP35(f.res) || P35_PLANS.has(f.id);
+    if (old !== undefined && (old === f.hash || !p35))
+      bad.push(`${f.key}: u fixture-u, ${old === f.hash ? 'heš isti' : 'bez pouke 35'}`);
+    if (old === undefined && hasP35(f.res)) bad.push(`${f.key}: pouka 35, a nije u fixture-u`);
+  }
+  return bad;
+}
+/** Pouka 35 u adaptiranom rezultatu (napomena konstruktora, week.ts) — tok sme da se razlikuje od starijih
+    regresija adaptacije; bazni plan iz P35_PLANS takođe. */
+export const hasP35 = (r: unknown): boolean => JSON.stringify(r).includes('Pouka 35:');
 
 /** Fajlovi delova 2…`count` punog nivoa (`<ime>.<k>.full.node.test.ts` pored glavnog) koji NE postoje — unija
     delova je ceo skup samo ako postoje svi. */
