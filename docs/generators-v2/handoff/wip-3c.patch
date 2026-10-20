@@ -1,0 +1,950 @@
+diff --git a/docs/generators-v2/handoff/shorter-HM-3c.json b/docs/generators-v2/handoff/shorter-HM-3c.json
+new file mode 100644
+index 0000000..e69de29
+diff --git a/docs/generators-v2/handoff/shorter.ts b/docs/generators-v2/handoff/shorter.ts
+index acddf88..24b8aaa 100644
+--- a/docs/generators-v2/handoff/shorter.ts
++++ b/docs/generators-v2/handoff/shorter.ts
+@@ -11,9 +11,11 @@
+    - rejected: adaptacija odbijena (4a: 0).
+    Za longLost: preostale nedelje do trke, scenario, i da li bi kraća distanca bila pokrivena po dužini
+    (najduži dugi adaptiranog plana ≥ 10 km za 10K; maraton i ≥ 16 km za HM) — gruba procena, ne plan cilja.
++   3c: `offer` = domenski okidač HM v2 (`halfMarathon/v2/shorter.ts`) nad adaptiranim planom.
+    Iz korena repoa: node docs/generators-v2/handoff/shorter.ts <HM|MAR> <kR> <kF> <kB> > out.json */
+ 
+ import { addDays, distOf, SCENARIOS, sampleBases, wedOf, type Plan } from "../final-check/lib.ts";
++import { shorterOffer } from "../../../web/src/domain/generators/halfMarathon/v2/shorter.ts";
+ 
+ const [name, kR, kF, kB] = [process.argv[2]!, ...process.argv.slice(3, 6).map(Number)] as [string, number, number, number];
+ const d = distOf(name);
+@@ -43,6 +45,10 @@ const out = {
+   longLost: 0,
+   longLostV1: 0,
+   longLostNew: 0,
++  /** 3c: domenski okidač HM v2 (`shorterOffer`, osnova = plan generatora za isti ulaz). */
++  offer: 0,
++  offerNotLost: 0,
++  lostNotOffer: 0,
+   longLostByScenario: {} as Record<string, number>,
+   longLostWeeksLeft: {} as Record<string, number>,
+   longLostCover10K: 0,
+@@ -66,6 +72,13 @@ function flow(p: Plan, born: Plan, facts: Record<string, unknown>, at: string, k
+   const a = r.plan;
+   const before = longest(p);
+   const after = longest(a);
++  const lost = before >= thr(p) && after < thr(p);
++  if (name === "HM") {
++    const offer = shorterOffer(a as never, at);
++    if (offer) out.offer++;
++    if (offer && !lost) out.offerNotLost++;
++    if (!offer && lost) out.lostNotOffer++;
++  }
+   if (before >= v1thr && after < v1thr) out.longLostV1++;
+   if (before >= thr(p) && after < thr(p)) {
+     out.longLost++;
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/adapt.ts b/web/src/domain/generators/halfMarathon/v2/app/adapt.ts
+index cd71072..e5bca4b 100644
+--- a/web/src/domain/generators/halfMarathon/v2/app/adapt.ts
++++ b/web/src/domain/generators/halfMarathon/v2/app/adapt.ts
+@@ -11,6 +11,7 @@
+ 
+ import { adaptBanner, adaptHmV2 } from '../adapt.ts';
+ import { checkInput } from '../input.ts';
++import { shorterOffer } from '../shorter.ts';
+ import { HM_V2_POLICY as P } from '../policy.ts';
+ import type { AdaptChange, AdaptReason, AdaptResult, PlanWeek, HmV2Plan } from '../types.ts';
+ import { addDays } from './date.ts';
+@@ -111,6 +112,9 @@ export interface AdaptPreview {
+   coverage: CoverageInfo;
+   /** Aktivna ograničenja koja menjaju budući deo plana (traka „Plan treba prilagoditi"); prazno = nema. */
+   needed: string[];
++  /** Faza 3 (3c, O1): posle ove adaptacije plan je ograničena priprema — ponuda „kraća distanca" (odluka o pripremi).
++   *  Polja nema kad ponude nema (pregled bajt-isti). */
++  shorterOffer?: true;
+ }
+ export type AdaptOutcome =
+   | AdaptPreview
+@@ -155,7 +159,8 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
+     notes,
+     coverage: built.coverage,
+     // Pouka 20: pravilo trake živi samo u domenu (`adaptBanner`); aplikacija ga samo zove.
+-    needed: adaptBanner(v2, r, built.facts, src.today)
++    needed: adaptBanner(v2, r, built.facts, src.today),
++    ...(shorterOffer(after, src.today) ? { shorterOffer: true as const } : {})
+   };
+ }
+ 
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/app.node.test.ts b/web/src/domain/generators/halfMarathon/v2/app/app.node.test.ts
+index 2ed1596..5882629 100644
+--- a/web/src/domain/generators/halfMarathon/v2/app/app.node.test.ts
++++ b/web/src/domain/generators/halfMarathon/v2/app/app.node.test.ts
+@@ -56,7 +56,6 @@ import { qualityWorkout, warmupCooldown } from '../workouts.ts';
+ import {
+   ADAPTATION_V2,
+   MEMBERS,
+-  NO_PREPARATION_DECISION,
+   NO_RUN_WALK,
+   RECALIBRATION_NOT_USED,
+   T3K_NOT_USED
+@@ -374,8 +373,10 @@ describe('prekidač i rutiranje po oznaci politike', () => {
+     expect(generatorForPlan(v2)).toBe(HALF_MARATHON_V2_GENERATOR);
+     expect(isHmV2Plan(v2)).toBe(true);
+     expect(isTenKV2Plan(v2)).toBe(false);
+-    // Odluka o ograničenoj pripremi je samo HM v1.
+-    expect(preparationForPlan(v2)).toBeNull();
++    // Faza 3 (3c): HM v2 je izvor odluke o pripremi („kraća distanca"); plan bez adaptacije nije ograničen.
++    const prep = preparationForPlan(v2);
++    expect(prep).not.toBeNull();
++    expect(prep!.isLimitedLongPreparation(v2.meta, v2)).toBe(false);
+     const meta = v2.meta!;
+     const withMeta = (m: Record<string, unknown>): GenPlanState => ({
+       ...v2,
+@@ -683,8 +684,22 @@ describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad HM v1), (c)
+     expect(g.buildRunWalkAdjustment(p, today, null as never, { mode: 'hold' })).toEqual({
+       error: NO_RUN_WALK
+     });
++    // Faza 3 (3c): potvrđeno izvršenje je činjenica predaje — bez baze nema osnove; sa njom bez politike izvora.
+     expect(g.executionBasis(p, today, null as never, {})).toEqual({
+-      error: NO_PREPARATION_DECISION
++      error: 'Unesi ponovljivu nedeljnu bazu veću od nule, do 200 km.'
++    });
++    expect(
++      g.executionBasis(p, today, null as never, { breakDays: 14, weeklyKm: 20 })
++    ).toMatchObject({
++      policy: null,
++      input: { startDate: '2026-11-21', raceDistM: 21097.5 },
++      execution: {
++        date: today,
++        reason: 'confirmed-break',
++        breakDays: 14,
++        reportedBaseKm: 20,
++        startingKm: 20
++      }
+     });
+     expect(g.planRecalibrated(p, 50, today)).toEqual({ error: RECALIBRATION_NOT_USED });
+     const ex = g.executionModel(plan, today, {});
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts b/web/src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts
+new file mode 100644
+index 0000000..de0e7ca
+--- /dev/null
++++ b/web/src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts
+@@ -0,0 +1,243 @@
++import { describe, expect, it } from 'vitest';
++import { RETURN_POLICY as TEN_K_RETURN_POLICY } from '../../../tenK/plan/regenerate';
++import { V1_TARGET_NEEDS_RESULT } from '../../../handoff';
++import * as select from '../../../select';
++import type { IsoDate } from '../../../../date';
++import type { GenPlanState } from '../../../../state';
++import { adaptHmV2 } from '../adapt.ts';
++import { factsOf } from '../adaptInputs.ts';
++import { generateHmV2 } from '../generate.ts';
++import { longestLong10 } from '../lengths.ts';
++import { HM_V2_POLICY } from '../policy.ts';
++import { longWarnKmOf, shorterOffer } from '../shorter.ts';
++import { feelInputs, grid02Inputs } from '../testInputs.ts';
++import type { HmV2Plan } from '../types.ts';
++import { generatedPlan, storedPlan } from './plan.ts';
++import { HM_V2_SOURCE_FORMAT } from './preparation.ts';
++
++/* FAZA 3, SEGMENT 3c — HM v2 kao IZVOR predaje „kraća distanca" (DESIGN.md § 3 P1–P5, § 8).
++   - Okidač (O1): adaptirani plan ispod praga upozorenja najdužeg dugog, plan generatora za isti ulaz nije.
++   - Opcije (O2a): 10K, pa 5K (prva koju cilj pokriva), „zadrži plan v2"; nedostupne sa razlogom (O4a/O5a).
++   - Tok HM v2 → 10K v1 i 5K v1 kroz čistač: objekat v2 i meta v2 ne prelaze u plan cilja.
++   - T1 (obrazac Predaja-1): politika IZVORA (HM v2) ne menja plan cilja; T2 kontrola: politika CILJA ga menja. */
++
++const ofId = (id: string) => grid02Inputs().find((c) => c.id === id)!.input;
++/** Primer iz merenja M1: 10 nedelja, 3 dana, 35 km; pauza 35 d pre starta spusti najduži dugi 17,8 → 13,7 km. */
++const BASE = ofId('d3-10w-35km-v30-A-sat');
++const AS_OF = '2026-10-31' as IsoDate;
++
++function adapted(input: unknown, scenario: Parameters<typeof factsOf>[1], asOf: string): HmV2Plan {
++  const g = generateHmV2(input);
++  if (!g.ok) throw new Error('generator odbio ulaz');
++  const r = adaptHmV2(g.plan, factsOf(g.plan, scenario, asOf), asOf);
++  if (!r.ok) throw new Error('adaptacija odbijena');
++  return r.plan;
++}
++const stored = (v2: HmV2Plan): GenPlanState =>
++  select.stampForStorage(storedPlan(generatedPlan(v2)) as unknown as GenPlanState);
++
++describe('3c: okidač (O1) — jedna funkcija, prelaz', () => {
++  it('pauza 35 d: adaptirani plan < 16 km, plan generatora ≥ 16 km → ponuda', () => {
++    const v2 = adapted(BASE, 'pause35', AS_OF);
++    expect(longWarnKmOf(v2)).toBe(16);
++    expect(longestLong10(v2.weeks)).toBeLessThan(160);
++    expect(shorterOffer(v2, AS_OF)).toBe(true);
++    expect(shorterOffer(v2, v2.input.raceDate)).toBe(false); // trka nije posle asOf
++    // Validator prijavljuje isto (LONG_RUN_SHORT) — ista funkcija lengths.longRunShort.
++    expect(v2.warnings.some((w) => w.rule === 'LONG_RUN_SHORT')).toBe(true);
++  });
++
++  it('plan bez adaptacije ili bez pada ispod praga → nema ponude', () => {
++    const g = generateHmV2(BASE);
++    expect(g.ok && shorterOffer(g.plan, AS_OF)).toBe(false);
++    expect(shorterOffer(adapted(BASE, 'done100', '2026-11-08'), '2026-11-08')).toBe(false);
++  });
++
++  it('plan već iz generatora ispod praga (stanje čarobnjaka) → nikad ponuda, ni posle adaptacije', () => {
++    const born = grid02Inputs().find((c) => {
++      const g = generateHmV2(c.input);
++      return g.ok && longestLong10(g.plan.weeks) < 160;
++    })!;
++    const v2 = adapted(born.input, 'pause35', AS_OF);
++    expect(longestLong10(v2.weeks)).toBeLessThan(160);
++    expect(shorterOffer(v2, AS_OF)).toBe(false);
++  });
++});
++
++describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
++  const source = stored(adapted(BASE, 'pause35', AS_OF));
++  const today = AS_OF;
++
++  it('preparationForPlan → HM v2 izvor; ograničena priprema iz plana (meta sama nije dovoljna)', () => {
++    const prep = select.preparationForPlan(source)!;
++    expect(prep).not.toBeNull();
++    expect(prep.isLimitedLongPreparation(source.meta, source)).toBe(true);
++    expect(prep.isLimitedLongPreparation(source.meta)).toBe(false);
++    const basis = prep.basisFromPlan(source, today)!;
++    expect(basis.policy).toBeNull();
++    expect(basis.execution).toBeNull();
++    expect('guardBaseKm' in basis).toBe(false);
++  });
++
++  it('opcija 10K (v1 cilj), „zadrži plan v2" u uslovima; plan cilja bez formata HM v2', () => {
++    const prep = select.preparationForPlan(source)!;
++    const basis = prep.basisFromPlan(source, today)!;
++    const d = prep.preparationDecision(source, today, basis, {}, 'limited', undefined);
++    expect(d.options.map((o) => o.id)).toEqual(['shorter-10000']);
++    expect(d.conditions[0]).toMatch(/^Zadrži plan v2/);
++    for (const dist of [10000, 5000] as const) {
++      const c = prep.buildPreparationChoice(
++        source,
++        today,
++        basis,
++        { kind: 'shorter', raceDistM: dist },
++        {}
++      );
++      if ('error' in c) throw new Error(c.error);
++      expect(c.change.to).toEqual({
++        raceDate: basis.input.raceDate,
++        raceDistM: dist,
++        goalSec: null
++      });
++      expect('hmV2' in c.result).toBe(false);
++      const meta = c.result.meta as Record<string, unknown>;
++      for (const k of HM_V2_SOURCE_FORMAT.metaKeys) {
++        const own = JSON.stringify(meta[k]);
++        if (own !== undefined)
++          expect(own, k).not.toBe(JSON.stringify((source.meta as Record<string, unknown>)[k]));
++      }
++      expect(select.generatorForPlan(select.stampForStorage(c.result))?.id).toBe(
++        dist === 10000 ? '10k' : '5k'
++      );
++    }
++    expect(prep.buildPreparationChoice(source, today, basis, { kind: 'base' }, {})).toMatchObject({
++      error: expect.stringMatching(/samo kraću distancu/)
++    });
++  });
++
++  it('prekidač cilja v2 uključen → opcija nedostupna sa razlogom (O4a), nikad v1', () => {
++    const prep = select.preparationForPlan(source, { fiveKV2: true, tenKV2: true })!;
++    const d = prep.preparationDecision(
++      source,
++      today,
++      prep.basisFromPlan(source, today)!,
++      {},
++      'limited',
++      undefined
++    );
++    expect(d.options).toEqual([]);
++    expect(d.unavailable).toEqual([
++      `10K: ${select.V2_TARGET_NOT_READY}`,
++      `5K: ${select.V2_TARGET_NOT_READY}`
++    ]);
++  });
++
++  it('plan po osećaju → v1 cilj nedostupan (O5a)', () => {
++    const feel = feelInputs().find((c) => {
++      const v = (() => {
++        try {
++          return adapted(c.input, 'pause35', AS_OF);
++        } catch {
++          return null;
++        }
++      })();
++      return v !== null && shorterOffer(v, AS_OF);
++    })!;
++    const src = stored(adapted(feel.input, 'pause35', AS_OF));
++    const prep = select.preparationForPlan(src)!;
++    const d = prep.preparationDecision(
++      src,
++      today,
++      prep.basisFromPlan(src, today)!,
++      {},
++      'limited',
++      undefined
++    );
++    expect(d.options).toEqual([]);
++    expect(d.unavailable).toEqual([
++      `10K: ${V1_TARGET_NEEDS_RESULT}`,
++      `5K: ${V1_TARGET_NEEDS_RESULT}`
++    ]);
++  });
++});
++
++/* T1/T2: ceo tok izvor → predaja → cilj, bez i sa potvrđenom pauzom (`executionBasis`). Poredi se budući deo plana
++   cilja (dani posle danas) i ocena pripreme; prošli dani su istorija izvora (graft ih čuva). */
++type Plan = { weeks: { start: string; days: { dow: number; id?: string }[] }[]; meta?: unknown };
++function future(p: Plan, today: string): string {
++  const out: unknown[] = [];
++  for (const w of p.weeks)
++    for (const d of w.days) {
++      const date = new Date(Date.parse(w.start + 'T00:00:00Z') + d.dow * 86_400_000)
++        .toISOString()
++        .slice(0, 10);
++      if (date > today) out.push([date, d]);
++    }
++  return JSON.stringify([out, (p.meta as { preparation?: unknown }).preparation]);
++}
++function targetFlow(withPause: boolean): { source: string; target: string } {
++  const src = stored(adapted(BASE, 'pause35', AS_OF));
++  const today = AS_OF;
++  const prep = select.preparationForPlan(src)!;
++  const basis = withPause
++    ? select.HALF_MARATHON_V2_GENERATOR.executionBasis(src, today, null as never, {
++        breakDays: 35,
++        weeklyKm: 20
++      })
++    : prep.basisFromPlan(src, today)!;
++  if ('error' in basis) throw new Error(basis.error);
++  const c = prep.buildPreparationChoice(
++    src,
++    today,
++    basis,
++    { kind: 'shorter', raceDistM: 10000 },
++    {}
++  );
++  if ('error' in c) throw new Error(c.error);
++  return {
++    source: future(src as unknown as Plan, today),
++    target: future(c.result as unknown as Plan, today)
++  };
++}
++function withSourcePolicy<T>(run: () => T): T {
++  const a = HM_V2_POLICY.adapt as { returnGrowth: number; pause: { longShare: number } };
++  const saved = { returnGrowth: a.returnGrowth, longShare: a.pause.longShare };
++  try {
++    a.returnGrowth = 0.05;
++    a.pause.longShare = 0.3;
++    return run();
++  } finally {
++    a.returnGrowth = saved.returnGrowth;
++    a.pause.longShare = saved.longShare;
++  }
++}
++function withTargetPolicy<T>(run: () => T): T {
++  const t = TEN_K_RETURN_POLICY as unknown as Record<
++    string,
++    { fraction: number; easyWeeks: number }
++  >;
++  const saved = JSON.stringify(t);
++  try {
++    for (const p of Object.values(t)) {
++      p.fraction = Math.round(p.fraction * 50) / 100;
++      p.easyWeeks += 3;
++    }
++    return run();
++  } finally {
++    for (const [k, v] of Object.entries(JSON.parse(saved) as typeof t)) Object.assign(t[k]!, v);
++  }
++}
++
++describe('3c: T1/T2 — politika izvora ne menja cilj; politika cilja ga menja', () => {
++  for (const withPause of [false, true])
++    it(`HM v2 → 10K v1 (${withPause ? 'potvrđena pauza' : 'bez izvršenja'})`, () => {
++      const base = targetFlow(withPause);
++      const t1 = withSourcePolicy(() => targetFlow(withPause));
++      expect(t1.source, 'kontrola: politika izvora menja plan izvora').not.toBe(base.source);
++      expect(t1.target, 'T1: plan cilja isti').toBe(base.target);
++      if (withPause) {
++        const t2 = withTargetPolicy(() => targetFlow(withPause));
++        expect(t2.target, 'T2: politika cilja menja plan cilja').not.toBe(base.target);
++      }
++    });
++});
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/index.ts b/web/src/domain/generators/halfMarathon/v2/app/index.ts
+index b90e4ff..2b88029 100644
+--- a/web/src/domain/generators/halfMarathon/v2/app/index.ts
++++ b/web/src/domain/generators/halfMarathon/v2/app/index.ts
+@@ -14,6 +14,7 @@ import * as form from './form.ts';
+ import * as gen from './generate.ts';
+ import * as b from './members.ts';
+ import * as plan from './plan.ts';
++import * as prep from './preparation.ts';
+ import * as paces from './paces.ts';
+ import * as state from './state/index.ts';
+ import * as readiness from './state/readiness.ts';
+@@ -58,7 +59,7 @@ export const hmV2 = {
+   sessionClassFor: b.sessionClassFor,
+   currentVdot: b.currentVdot,
+   executionModel: b.executionModel,
+-  executionBasis: b.executionBasis,
++  executionBasis: prep.executionBasis,
+   buildExecutionAdjustment: b.buildExecutionAdjustment,
+   buildRunWalkAdjustment: b.buildRunWalkAdjustment,
+   assessRunWalkProgress: b.assessRunWalkProgress,
+@@ -79,6 +80,12 @@ export const hmV2 = {
+   injuryProposal: b.injuryProposal,
+   applyInjuryProposal: b.applyInjuryProposal,
+   realignPlan: b.realignPlan,
++  /* faza 3 (3c): HM v2 kao izvor predaje „kraća distanca" — odluka o pripremi; cilj daje `select.ts` (argument) */
++  SOURCE_FORMAT: prep.HM_V2_SOURCE_FORMAT,
++  basisFromPlan: prep.basisFromPlan,
++  preparationDecision: prep.preparationDecision,
++  buildPreparationChoice: prep.buildPreparationChoice,
++  isLimitedLongPreparation: prep.isLimitedLongPreparation,
+   /* (c) prikaz stanja — sopstvena kopija */
+   weatherCard: weather.weatherCard,
+   painStatus: state.painStatus,
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/members.ts b/web/src/domain/generators/halfMarathon/v2/app/members.ts
+index 494965b..ee359b9 100644
+--- a/web/src/domain/generators/halfMarathon/v2/app/members.ts
++++ b/web/src/domain/generators/halfMarathon/v2/app/members.ts
+@@ -8,9 +8,9 @@
+      plana, trka 5/10 km, polumaraton, maraton) kroz činjenice; tempo treninga se ne meri kao forma („ne koristi se");
+    - promena cilja (`planWithNewGoal`) → isti ulaz sa novim ciljem, menja se samo ocena cilja;
+    - vraćanje verzije (`graftFuturePlan`) → spajanje planova v2;
+-   - VDOT plana (`planVdotNow`) → tekući VDOT plana v2.
+-   „Ne koristi se" (sa razlogom): `executionBasis` (odluka o ograničenoj pripremi je HM v1; v2 smanjenje i povratak
+-   odlučuje adaptacija, H18), trčanje/hodanje (H17), `fitnessEvidence`/`hasRecentMeasuredForm` (ugovor nosi samo test
++   - VDOT plana (`planVdotNow`) → tekući VDOT plana v2;
++   - potvrđeno izvršenje (`executionBasis`, faza 3 / 3c) → osnova predaje „kraća distanca" (`./preparation.ts`).
++   „Ne koristi se" (sa razlogom): trčanje/hodanje (H17), `fitnessEvidence`/`hasRecentMeasuredForm` (ugovor nosi samo test
+    3 km, a on nije rezultat HM v2 — A1), `realignPlan` (trčanje ulazi sa stvarnim datumom).
+ 
+    Tipovi su lokalni ili generički (dan, izmena, zapis lanca, plan prolaze kroz član nepromenjeni); gde član PRAVI plan
+@@ -36,9 +36,6 @@ export const ADAPTATION_V2 =
+ /** Merenje forme iz tempa treninga se u v2 ne koristi (nije greška). */
+ export const MEASUREMENT_NOT_USED =
+   'Ne koristi se u ovom planu: polumaraton v2 menja tempo samo iz rezultata (test 5 km plana ili trka na 5 ili 10 km, polumaratonu ili maratonu), ne iz tempa treninga.';
+-/** Odluka o ograničenoj pripremi (produženje, kraća distanca) je HM v1; u v2 je nema. */
+-export const NO_PREPARATION_DECISION =
+-  'Odluka o ograničenoj pripremi (produženje, kraća distanca) postoji samo u planu polumaratona v1; u planu v2 smanjenje i povratak odlučuje prilagođavanje iz činjenica.';
+ export const RECALIBRATION_NOT_USED =
+   'Plan polumaratona v2 se ne preračunava prema formi iz treninga: tempo menja nov rezultat (test 5 km plana ili trka), kroz Plan → Prilagodi plan.';
+ /** HM v2 nema plan trčanje/hodanje (H17). */
+@@ -61,7 +58,11 @@ export const MEMBERS: Readonly<Record<string, { kind: 'v2' | 'not-used'; reason:
+     reason: 'forma v2 nije lanac merenja iz treninga (Napredak → Forma)'
+   },
+   executionModel: { kind: 'v2', reason: 'opis 28 dana bez odluke; odluku donosi adaptacija v2' },
+-  executionBasis: { kind: 'not-used', reason: NO_PREPARATION_DECISION },
++  executionBasis: {
++    kind: 'v2',
++    reason:
++      'faza 3 (3c): potvrđeno izvršenje kao činjenica predaje „kraća distanca" (bez politike izvora, ./preparation.ts)'
++  },
+   buildExecutionAdjustment: {
+     kind: 'v2',
+     reason: 'pregled adaptacije v2 (potvrđena pauza → prijavljena pauza)'
+@@ -252,9 +253,6 @@ export function executionModel<D extends string>(
+   };
+ }
+ 
+-/** Ne koristi se: odluka o ograničenoj pripremi je HM v1 (v. `NO_PREPARATION_DECISION`). */
+-export const executionBasis = (): { error: string } => ({ error: NO_PREPARATION_DECISION });
+-
+ /** Prilagođavanje prema izvršenju → pregled adaptacije v2. `breakDays` (potvrđena pauza) postaje prijavljena pauza do
+  *  danas; obim i dužinu v2 izvodi sam iz činjenica (uneti km/ned se ne koristi). */
+ export function buildExecutionAdjustment(
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/preparation.ts b/web/src/domain/generators/halfMarathon/v2/app/preparation.ts
+new file mode 100644
+index 0000000..e27e973
+--- /dev/null
++++ b/web/src/domain/generators/halfMarathon/v2/app/preparation.ts
+@@ -0,0 +1,328 @@
++/* HM v2 → aplikacija: HM v2 kao IZVOR predaje „kraća distanca" (faza 3, segment 3c; DESIGN.md § 3 P1–P5, § 8).
++
++   - Okidač je u domenu (`../shorter.ts`, O1): posle prihvaćene adaptacije najduži dugi je ispod praga upozorenja, a
++     plan generatora za isti ulaz nije.
++   - Opcije (O2a): kraća distanca istog datuma — 10K, pa 5K (redom kao v1); prva koju cilj pokriva. „Zadrži plan v2"
++     je uvek moguće: odluka ne menja plan, samo predlaže. Nedostupna opcija nosi razlog cilja doslovno (O4a/O5a).
++   - Činjenice (P2): izvor šalje ulaz čarobnjaka bez izvedenih polja i činjenice izvršenja. Ne šalje politiku (`policy:
++     null`), bazu zaštite rasta ni korake adaptacije (`startKm`, `levelKm`, `returnFrom` …). Potvrđeno izvršenje
++     (`executionBasis`) dolazi iz potvrde korisnika i opisa 28 dana, sa `startingKm = reportedBaseKm`. Ulaz je saglasan
++     (start = dan posle potvrde). `raw` su sirove činjenice (`./facts.ts`) bez `dayId` i zaključanih dana izvora.
++   - Format izvora za v1 cilj (`HM_V2_SOURCE_FORMAT`): JEDINO mesto spiska ključeva koje piše samo HM v2.
++   Cilj (funkciju predaje) daje `select.ts` kao argument; ovde se ne uvozi ništa van `halfMarathon/v2/`. */
++
++import { shorterOffer, longWarnKmOf } from '../shorter.ts';
++import { longestLong10 } from '../lengths.ts';
++import type { HmV2Plan } from '../types.ts';
++import { v2Of } from './adapt.ts';
++import { addDays, isIsoDate } from './date.ts';
++import { buildFacts } from './facts.ts';
++import { sourceOf } from './members.ts';
++import type { AppPlan, IsoDate } from './types.ts';
++
++const HM_M = 21097.5;
++/** Kraće distance istog datuma, redom (kao HM v1 `SHORTER`). */
++const SHORTER = [10000, 5000] as const;
++const NAME: Readonly<Record<number, string>> = { 10000: '10K', 5000: '5K' };
++const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
++
++/** Ključ objekta plana v2 i meta ključevi koje piše samo HM v2 (ili koji opisuju cilj izvora) — v1 cilj ih ne nasleđuje
++ *  (`handoff.ts` `sourceViewForV1`). Ključeve koje piše i v1 cilj (`trainingVdot`, `racePace` …) cilj prepisuje. */
++export const HM_V2_SOURCE_FORMAT = {
++  planKey: 'hmV2',
++  metaKeys: ['vdot', 'paceBasis', 'predictedHmSec', 'goalVdot', 'goalAssessment']
++} as const;
++
++/* ---------- lokalni strukturni oblici ugovora (tip formata daje granica u `select.ts`) ---------- */
++type Meta = Record<string, unknown> | undefined;
++interface Execution {
++  date: IsoDate;
++  reason?: 'confirmed-break' | 'fatigue' | 'reduced-volume';
++  breakDays: number;
++  reportedBaseKm: number;
++  startingKm: number;
++  reportedLongRunKm?: number;
++}
++export interface ContractInput {
++  startDate: string;
++  raceDate: string;
++  raceDistM?: number;
++  pb?: { distM: number; sec: number; date?: string };
++  weeklyKm: number;
++  recentLongRunKm?: number;
++  runDays: number;
++  runDows: number[];
++  lrDow?: number;
++  intensity: 'std';
++  goalSec: number | null;
++  trainedRecently: boolean;
++}
++export interface Basis {
++  input: ContractInput;
++  policy: null;
++  execution: Execution | null;
++}
++interface HandoffFacts {
++  execution: Execution | null;
++  restartFromBase: boolean;
++  notes?: string[];
++  meta?: Record<string, unknown>;
++  raw?: Readonly<Record<string, unknown>>;
++}
++type Built = { result: { meta?: Meta } & object; coverage: 'full' | 'distance' | 'insufficient' };
++type Target = (
++  current: never,
++  input: ContractInput,
++  today: IsoDate,
++  context: never,
++  facts: HandoffFacts
++) => Built | { error: string };
++/** Funkcija predaje (iz `select.ts`, `shorterHandoffForV2Source`): cilj za distancu ili `null`. */
++export type Handoff = (raceDistM: number | undefined) => Target | null;
++type Context = Parameters<typeof sourceOf>[2];
++
++/** Ulaz ugovora iz ulaza HM v2 — samo činjenice čarobnjaka (bez izvedenih polja). `intensity: 'std'`: v2 nema izbor
++ *  intenziteta; v1 cilj ga traži kao obavezno polje (neutralna vrednost, ne odluka izvora). */
++export function contractInput(v2: HmV2Plan, startDate?: IsoDate): ContractInput {
++  const i = v2.input;
++  const runDows = i.runDays.map((d) => WEEKDAYS.indexOf(d) + 1);
++  return {
++    startDate: startDate ?? i.startDate,
++    raceDate: i.raceDate,
++    raceDistM: HM_M,
++    ...(i.recentResult
++      ? {
++          pb: {
++            distM: i.recentResult.distanceM,
++            sec: i.recentResult.timeSec,
++            date: i.recentResult.date
++          }
++        }
++      : {}),
++    weeklyKm: i.currentWeeklyKm,
++    ...(i.recentLongRunKm != null ? { recentLongRunKm: i.recentLongRunKm } : {}),
++    runDays: runDows.length,
++    runDows,
++    ...(i.longRunDay ? { lrDow: WEEKDAYS.indexOf(i.longRunDay) + 1 } : {}),
++    intensity: 'std',
++    goalSec: i.goalTimeSec ?? null,
++    trainedRecently: i.experience !== 'beginner'
++  };
++}
++
++/** Sirove činjenice izvora za cilj (P2): zapisi sa datumom bez `dayId` izvora, bez zaključanih dana izvora. */
++export function rawFacts(
++  current: AppPlan,
++  today: IsoDate,
++  context: Context
++): Record<string, unknown> {
++  const v2 = v2Of(current);
++  if (!v2) return {};
++  const { lockedDayIds: _locked, ...facts } = buildFacts(
++    sourceOf(current, today, context),
++    v2
++  ).facts;
++  return { ...facts, workouts: facts.workouts.map(({ dayId: _d, ...w }) => w) };
++}
++
++/* ---------- PreparationApi ---------- */
++
++/** Osnova odluke iz sačuvanog plana: ulaz čarobnjaka, bez politike i bez izvršenja. Plan v2 nema potvrđeno izvršenje
++ *  u planu, pa ga ovde nema; potvrda ide kroz `executionBasis`. */
++export function basisFromPlan(current: AppPlan, _today: IsoDate): Basis | null {
++  const v2 = v2Of(current);
++  return v2 ? { input: contractInput(v2), policy: null, execution: null } : null;
++}
++
++/** Potvrđeno izvršenje (član `executionBasis`): potvrda korisnika (pauza, baza, dužina) + opis 28 dana. Bez politike:
++ *  `startingKm = reportedBaseKm`, a cilj sam izvodi početak. Ulaz je saglasan (start = dan posle potvrde). Razlog je
++ *  samo činjenica potvrde: pauza → `confirmed-break`, inače `reduced-volume` (umor se ne pogađa). `returning`, `base`,
++ *  `weeklyKm` (oblik ugovora) su iste potvrđene činjenice, ne izvedeni ulaz. */
++export function executionBasis(
++  current: AppPlan,
++  today: IsoDate,
++  analysis: { actualKm?: number } | null,
++  options: { breakDays?: number; weeklyKm?: number; recentLongRunKm?: number }
++): (Basis & { returning: boolean; base: number; weeklyKm: number }) | { error: string } {
++  const v2 = v2Of(current);
++  if (!v2 || !isIsoDate(today)) return { error: 'Plan nema podatke HM v2.' };
++  const brk = options.breakDays;
++  if (brk !== undefined && (!Number.isInteger(brk) || brk < 7 || brk > 365))
++    return { error: 'Potvrdi trajanje pauze od 7 do 365 dana.' };
++  const base =
++    options.weeklyKm ?? (analysis?.actualKm !== undefined ? analysis.actualKm / 4 : undefined);
++  if (typeof base !== 'number' || !Number.isFinite(base) || base <= 0 || base > 200)
++    return { error: 'Unesi ponovljivu nedeljnu bazu veću od nule, do 200 km.' };
++  const lr = options.recentLongRunKm;
++  if (lr !== undefined && (!Number.isFinite(lr) || lr <= 0 || lr > base))
++    return { error: 'Ponovljiva dužina mora biti pozitivna i ne veća od nedeljne baze.' };
++  const km = Math.round(base * 10) / 10;
++  return {
++    returning: brk !== undefined,
++    base: km,
++    weeklyKm: km,
++    input: contractInput(v2, addDays(today, 1)),
++    policy: null,
++    execution: {
++      date: today,
++      reason: brk !== undefined ? 'confirmed-break' : 'reduced-volume',
++      breakDays: brk ?? 0,
++      reportedBaseKm: km,
++      startingKm: km,
++      ...(lr !== undefined ? { reportedLongRunKm: lr } : {})
++    }
++  };
++}
++
++/** O1: plan je ograničena priprema (ponuda „kraća distanca"). `meta` sam nije dovoljan (nema nedelje). */
++export function isLimitedLongPreparation(_meta: unknown, plan?: AppPlan): boolean {
++  const v2 = plan ? v2Of(plan) : null;
++  return !!v2 && shorterOffer(v2);
++}
++
++function factsFor(basis: Basis, current: AppPlan, today: IsoDate, context: Context): HandoffFacts {
++  return {
++    execution: basis.execution,
++    restartFromBase: basis.execution !== null,
++    notes: [],
++    meta: {},
++    raw: rawFacts(current, today, context)
++  };
++}
++
++function build(
++  current: AppPlan,
++  today: IsoDate,
++  basis: Basis,
++  context: Context,
++  dist: number,
++  handoff: Handoff
++): Built | { error: string } {
++  const target = handoff(dist);
++  if (!target) return { error: `Za ${NAME[dist] ?? dist} nema generatora.` };
++  return target(
++    current as never,
++    { ...basis.input, raceDistM: dist, goalSec: null },
++    today,
++    context as never,
++    factsFor(basis, current, today, context)
++  );
++}
++
++export interface Option {
++  id: string;
++  choice: { kind: 'shorter'; raceDistM: number };
++  title: string;
++  detail: string;
++  raceDate: IsoDate;
++  raceDistM: number;
++  goalSec: number | null;
++  coverage: 'full' | 'distance' | 'insufficient';
++  peakLongRunKm: number;
++  peakWeeklyKm: number;
++}
++export interface Decision {
++  status: 'rejected' | 'limited';
++  fullPreparation: false;
++  statement: string;
++  conditions: string[];
++  options: Option[];
++  unavailable: string[];
++}
++
++/** Odluka: opcija kraće distance (prva koju cilj pokriva) i razlozi nedostupnih; plan se ne menja. */
++export function preparationDecision(
++  current: AppPlan,
++  today: IsoDate,
++  basis: Basis,
++  context: Context,
++  status: 'rejected' | 'limited',
++  _delivered: unknown,
++  handoff: Handoff
++): Decision {
++  const v2 = v2Of(current);
++  const longest = v2 ? longestLong10(v2.weeks) / 10 : 0;
++  const warn = v2 ? longWarnKmOf(v2) : null;
++  const options: Option[] = [];
++  const unavailable: string[] = [];
++  for (const dist of SHORTER) {
++    const built = build(current, today, basis, context, dist, handoff);
++    if ('error' in built) {
++      unavailable.push(`${NAME[dist]}: ${built.error}`);
++      continue;
++    }
++    if (built.coverage === 'insufficient') {
++      unavailable.push(`${NAME[dist]}: plan te distance do trke ne pokriva potrebnu dužinu.`);
++      continue;
++    }
++    const meta = (built.result.meta ?? {}) as {
++      raceName?: string;
++      preparation?: { peakLongRunKm?: number; peakWeeklyKm?: number };
++    };
++    const name = meta.raceName ?? NAME[dist]!;
++    options.push({
++      id: `shorter-${dist}`,
++      choice: { kind: 'shorter', raceDistM: dist },
++      title: `Kraća distanca: ${name} istog datuma`,
++      detail:
++        built.coverage === 'full'
++          ? `Isporučen plan ispunjava pravila pune pripreme za ${name}. Vremenski cilj polumaratona se ne prenosi.`
++          : `Dužina pokriva ${name}, ali nedeljni vrhunac ne podržava vremenski cilj. Vremenski cilj polumaratona se ne prenosi.`,
++      raceDate: basis.input.raceDate,
++      raceDistM: dist,
++      goalSec: null,
++      coverage: built.coverage,
++      peakLongRunKm: meta.preparation?.peakLongRunKm ?? 0,
++      peakWeeklyKm: meta.preparation?.peakWeeklyKm ?? 0
++    });
++    break;
++  }
++  return {
++    status,
++    fullPreparation: false,
++    statement: `Posle prilagođavanja najduži dugi u planu je ${String(longest).replace('.', ',')} km, ispod ${warn ?? ''} km: ovo nije puna priprema za polumaraton.`,
++    conditions: [
++      'Zadrži plan v2: plan polumaratona ostaje kakav je posle prilagođavanja; kraća distanca je samo predlog.'
++    ],
++    options,
++    unavailable
++  };
++}
++
++/** Pregled izabrane opcije: plan kraće distance (cilj ga pravi) za upis posle potvrde. Samo „kraća distanca". */
++export function buildPreparationChoice(
++  current: AppPlan,
++  today: IsoDate,
++  basis: Basis,
++  choice: { kind: string; raceDistM?: number },
++  context: Context,
++  handoff: Handoff
++):
++  | {
++      result: object;
++      summary: string;
++      notes: string[];
++      change: {
++        from: { raceDate: string; raceDistM: number; goalSec: number | null };
++        to: { raceDate: string; raceDistM: number; goalSec: number | null };
++      };
++    }
++  | { error: string } {
++  if (choice.kind !== 'shorter' || !SHORTER.includes(choice.raceDistM as (typeof SHORTER)[number]))
++    return {
++      error: 'Plan polumaratona v2 nudi samo kraću distancu istog datuma (ili zadržavanje plana).'
++    };
++  const dist = choice.raceDistM!;
++  const built = build(current, today, basis, context, dist, handoff);
++  if ('error' in built) return built;
++  const name = ((built.result.meta ?? {}) as { raceName?: string }).raceName ?? NAME[dist]!;
++  return {
++    result: built.result,
++    summary: `Kraća distanca: ${name} istog datuma`,
++    notes: [],
++    change: {
++      from: { raceDate: basis.input.raceDate, raceDistM: HM_M, goalSec: basis.input.goalSec },
++      to: { raceDate: basis.input.raceDate, raceDistM: dist, goalSec: null }
++    }
++  };
++}
+diff --git a/web/src/domain/generators/halfMarathon/v2/lengths.ts b/web/src/domain/generators/halfMarathon/v2/lengths.ts
+index e71c583..6bbc9ec 100644
+--- a/web/src/domain/generators/halfMarathon/v2/lengths.ts
++++ b/web/src/domain/generators/halfMarathon/v2/lengths.ts
+@@ -217,6 +217,15 @@ export function longestLong10(
+   return m;
+ }
+ 
++/** H13/H17 (LONG_RUN_SHORT) i faza 3 (O1, okidač „kraća distanca"): najduži dugi plana ispod praga upozorenja
++    `longWarnKm` — jedna definicija za validator i okidač. */
++export function longRunShort(
++  weeks: readonly { days: readonly { role: string; workout: { km: number } }[] }[],
++  longWarnKm: number
++): boolean {
++  return longestLong10(weeks) < Math.round(longWarnKm * 10);
++}
++
+ /** A4 (H18): dugi na danu bola ≤ 60 min sporim E [0,1 km]. */
+ export function painLong10(long10: number, p: Paces): number {
+   return Math.min(long10, longTimeCap10(p, P.adapt.painLongMaxSec));
+diff --git a/web/src/domain/generators/halfMarathon/v2/shorter.ts b/web/src/domain/generators/halfMarathon/v2/shorter.ts
+new file mode 100644
+index 0000000..03a900e
+--- /dev/null
++++ b/web/src/domain/generators/halfMarathon/v2/shorter.ts
+@@ -0,0 +1,35 @@
++/* FAZA 3 (segment 3c, DESIGN.md § 3 P1, § 8 O1) — okidač ponude „kraća distanca" u HM v2. Jedino mesto ove odluke.
++
++   Ponuda postoji kada je plan posle prihvaćene adaptacije ispod praga upozorenja najdužeg dugog (LONG_RUN_SHORT:
++   `lengths.longRunShort`, ista funkcija kao validator; 16 km, početnik 14 km). Plan generatora za isti ulaz (bez
++   činjenica) NIJE ispod praga. Trka mora biti posle `asOf`. Ovo je prelaz, ne stanje čarobnjaka: plan koji je već iz
++   generatora ispod praga nikad ne dobija ponudu.
++
++   „Pre adaptacije" je plan generatora za isti ulaz. On se izvodi iz sačuvanog plana, pa nema novog polja u planu. Plan
++   ostaje bajt-isti za sve tokove; ponudu računaju pregled adaptacije i odluka o pripremi. Ponuda nije prelaz na silu:
++   „zadrži plan v2" je uvek moguće. */
++
++import { generateHmV2 } from './generate.ts';
++import { longRunShort } from './lengths.ts';
++import { planRule } from './policy.ts';
++import type { HmV2Plan, IsoDate } from './types.ts';
++
++/** Prag upozorenja najdužeg dugog za ulaz plana [km]; `null` kad broj dana nije u tabeli. */
++export function longWarnKmOf(plan: HmV2Plan): number | null {
++  const rule = planRule(
++    plan.input.runDays.length,
++    plan.input.experience === 'beginner' ? 'beginner' : 'regular'
++  );
++  return rule ? rule.longWarnKm : null;
++}
++
++/** O1: adaptirani plan je ispod praga, a plan generatora za isti ulaz nije; trka je posle `asOf` (bez `asOf`: ne
++ *  proverava se — pozivalac je već proverio datum). Plan bez adaptacije nikad nema ponudu. */
++export function shorterOffer(plan: HmV2Plan, asOf?: IsoDate): boolean {
++  if (!plan.adaptation) return false;
++  if (asOf !== undefined && !(plan.input.raceDate > asOf)) return false;
++  const warn = longWarnKmOf(plan);
++  if (warn === null || !longRunShort(plan.weeks, warn)) return false;
++  const born = generateHmV2(plan.input);
++  return born.ok && !longRunShort(born.plan.weeks, warn);
++}
+diff --git a/web/src/domain/generators/halfMarathon/v2/validate.ts b/web/src/domain/generators/halfMarathon/v2/validate.ts
+index 97dddc6..64d4b1e 100644
+--- a/web/src/domain/generators/halfMarathon/v2/validate.ts
++++ b/web/src/domain/generators/halfMarathon/v2/validate.ts
+@@ -16,6 +16,7 @@ import {
+   longKmCap10,
+   longShareCap10,
+   longestLong10,
++  longRunShort,
+   longsOf10,
+   rollingLongCap10,
+   taperLongCap10,
+@@ -661,8 +662,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
+   }
+   // Faza 4a N9: najduži dugi preko SVIH nedelja plana (i mešovitih — upisani dani su plan), ista funkcija kao
+   // konstruktor; bilo samo preko proverenih nedelja (5/2928 lažnih upozorenja posle adaptacije).
++  // Faza 3 (O1): isti uslov čita okidač „kraća distanca" (lengths.longRunShort, shorter.ts).
+   const longestAll10 = longestLong10(weeks);
+-  if (longestAll10 < to10(rule.longWarnKm))
++  if (longRunShort(weeks, rule.longWarnKm))
+     warn(
+       'LONG_RUN_SHORT',
+       `Najduži dugi ${longestAll10 / 10} km < ${rule.longWarnKm} km (${rule.beginner ? 'H17' : 'H13'}): preporuka više dana ili obima.`
+diff --git a/web/src/domain/generators/select.ts b/web/src/domain/generators/select.ts
+index 01601e9..cd608e8 100644
+--- a/web/src/domain/generators/select.ts
++++ b/web/src/domain/generators/select.ts
+@@ -748,7 +748,7 @@ const HM_SHORTER_HANDOFF = regeneratorForDistance;
+    (b) adaptacija i predlog (segment HM-06) — kroz činjenice i `adaptHmV2` sa pregledom pre upisa, ili „ne koristi se" sa
+    razlogom (`MEMBERS`), bez zamene HM v1 generatorom;
+    (c) procena stanja i vreme — sopstvena kopija v2 sa istim vrednostima kao HM v1 (v. `halfMarathon/v2/app/index.ts`).
+-   Odluka o ograničenoj pripremi (`preparationForPlan`) i predaja „kraća distanca" ostaju samo HM v1 (faza 3).
++   Odluka o ograničenoj pripremi (`preparationForPlan`): HM v2 kao izvor predaje „kraća distanca" od faze 3 (3c, `hmV2Preparation`).
+ 
+    GRANICA FORMATA (kao 10K v2): adapter `halfMarathon/v2/app/` ne uvozi ni tipove formata (strogi test izolacije HM v2,
+    bez izuzetka), pa plan koji PRAVI (dan sa strukturom van unije `Day`, `meta` sa poljima koja v2 zna) ovde dobija tip
+@@ -773,7 +773,11 @@ export const HALF_MARATHON_V2_GENERATOR: PlanGenerator = {
+   assess: h2.assess,
+   product: h2.product,
+   executionModel: h2.executionModel,
+-  executionBasis: h2.executionBasis,
++  // 3c: osnova predaje (činjenice bez politike); ulaz plana po osećaju nema `pb` (tip formata daje granica).
++  executionBasis: (current, today, analysis, options) =>
++    h2.executionBasis(current, today, analysis, options) as unknown as ReturnType<
++      PlanGenerator['executionBasis']
++    >,
+   // HM-06: plan za upis pravi adapter (granica formata, v. gore).
+   buildExecutionAdjustment: (current, today, analysis, options, context) =>
+     h2.buildExecutionAdjustment(current, today, analysis, options, context) as unknown as
+@@ -1343,9 +1347,46 @@ export const MARATHON_PREPARATION: PreparationApi = {
+   isLimitedLongPreparation: marathon.isLimitedLongPreparation
+ } satisfies PreparationApi;
+ 
+-export function preparationForPlan(plan: GenPlanState | null | undefined): PreparationApi | null {
++/** Faza 3 (3c): odluka o pripremi plana HM v2 kao IZVORA predaje „kraća distanca" (okidač i opcije su HM v2,
++ *  `halfMarathon/v2/shorter.ts` i `app/preparation.ts`). Cilj bira prekidač korisnika (`flags`) kroz
++ *  `shorterHandoffForV2Source` sa formatom izvora HM v2. Politika izvora se ne predaje (`policy: null`). */
++export function hmV2Preparation(flags: GeneratorFlags): PreparationApi {
++  const handoff = shorterHandoffForV2Source(flags, h2.SOURCE_FORMAT);
++  return {
++    basisFromPlan: (current, today) =>
++      h2.basisFromPlan(current, today) as unknown as DecisionBasis | null,
++    preparationDecision: (current, today, basis, context, status, delivered) =>
++      h2.preparationDecision(
++        current,
++        today,
++        basis as never,
++        context,
++        status,
++        delivered,
++        handoff as never
++      ) as unknown as PreparationDecision,
++    buildPreparationChoice: (current, today, basis, choice, context) =>
++      h2.buildPreparationChoice(
++        current,
++        today,
++        basis as never,
++        choice,
++        context,
++        handoff as never
++      ) as unknown as ChoiceResult | { error: string },
++    isLimitedLongPreparation: (meta, plan) => h2.isLimitedLongPreparation(meta, plan)
++  } satisfies PreparationApi;
++}
++
++/** Odluka o pripremi za plan: HM v1 / maraton v1 (kao do sada) ili HM v2 (3c). `flags` (prekidači korisnika) biraju
++ *  cilj predaje za izvor v2; bez njih su isključeni (v1 cilj). */
++export function preparationForPlan(
++  plan: GenPlanState | null | undefined,
++  flags: GeneratorFlags = { fiveKV2: false }
++): PreparationApi | null {
+   const generator = generatorForPlan(plan);
+   if (generator === HALF_MARATHON_GENERATOR) return HALF_MARATHON_PREPARATION;
++  if (generator === HALF_MARATHON_V2_GENERATOR) return hmV2Preparation(flags);
+   if (generator === MARATHON_GENERATOR) return MARATHON_PREPARATION;
+   return null;
+ }
