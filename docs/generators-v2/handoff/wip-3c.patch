@@ -1,6 +1,286 @@
+diff --git a/docs/generators-v2/handoff/DESIGN.md b/docs/generators-v2/handoff/DESIGN.md
+index 34c2edd..a4672be 100644
+--- a/docs/generators-v2/handoff/DESIGN.md
++++ b/docs/generators-v2/handoff/DESIGN.md
+@@ -199,3 +199,10 @@ nosi policyId/fazu cilja (`stampForStorage`). 7 nula uvoza: ciljevi kao argument
+ - O6: (b), NE (a). Tekuća nedelja ostaje nedelja izvora, i to adaptirana (kao prošle nedelje), a cilj počinje od sledećeg ponedeljka (alignedStart). Kalemi se na granici nedelje, istim mehanizmom kao P5 (prošle nedelje izvora + nedelje cilja sa ID po početku nedelje). Razlog: korisnik usred plana ne sme da ostane 0–6 dana bez plana. Nedelja izvora je već usklađena sa činjenicama adaptacijom koja je dala ponudu.
+ - O7: (a) Ne. v1 izvori ostaju bajt-isti.
+ - P1–P6 prihvatam, uz izmene iznad. Redosled segmenata kao u § 4.
++- O1 dopuna (posle 3c, organizator): osnova „pre adaptacije" = plan generatora za isti ulaz, izveden iz sačuvanog plana;
++  bez novog polja u planu i bez promene verzije. Ponuda važi dok je sačuvani plan ispod praga, a plan generatora nije;
++  ponovno nuđenje u sledećem pregledu je ispravno (stanje traje, korisnik zatvara). Lanac: drugi korak adaptacije čiji
++  je prethodni plan već bio ispod praga dobija ponudu (M1 brzo: 7 takvih tokova, `chain2`), jer se poredi sa planom
++  generatora, ne sa prethodnim korakom.
++- Sudar 3c → (B): pogled izvora za v1 cilj pregrupiše dane izvora u nedelje od ponedeljka (id dana ostaje; menjaju se
++  `dow` i nedelja). (C) i (D) odbijeni. Dopuna 3b u `handoff.ts` (`mondayWeeks`).
+diff --git a/docs/generators-v2/handoff/SEGMENT-3c-IMPLEMENTATION.md b/docs/generators-v2/handoff/SEGMENT-3c-IMPLEMENTATION.md
+new file mode 100644
+index 0000000..95e41b0
+--- /dev/null
++++ b/docs/generators-v2/handoff/SEGMENT-3c-IMPLEMENTATION.md
+@@ -0,0 +1,101 @@
++# Segment 3c — HM v2 kao izvor predaje „kraća distanca" (+ dopuna 3b: nedelje od ponedeljka)
++
++Grana `claude/generator-isolation-5k-10k-hm-marathon`, polazni SHA `e02bca5` (kod; `672f1e5` = zakrpa nedovršenog
++rada, sada primenjena). Bez PR-a, mergea i deploya. Odluke: DESIGN.md § 8 (uključujući dopunu O1 i sudar → B).
++`tenK/v2`, `fiveK/v2`, `marathon/v2`, `stores/` i `features/` nisu dirani. Verzija HM v2 ostaje **hm-v2.4.1**: plan
++ne dobija novo polje i sačuvani plan je bajt-isti (`KNOWN_VERSIONS` nepromenjen).
++
++## 1. Izmene
++
++| Fajl | Izmena |
++|---|---|
++| `handoff.ts` (dopuna 3b, B) | `mondayWeeks`: pogled izvora za v1 cilj pregrupiše dane u nedelje od ponedeljka. Id i sadržaj dana ostaju; menjaju se samo `dow` i nedelja (broj i polja nedelje izvora koja sadrži taj ponedeljak). Nedelje koje već počinju ponedeljkom ostaju isti objekat. v1 kod se ne menja. |
++| `halfMarathon/v2/lengths.ts`, `validate.ts` | `longRunShort(weeks, longWarnKm)`: jedna definicija praga. Čita je validator (LONG_RUN_SHORT, izlaz bajt-isti) i okidač. |
++| `halfMarathon/v2/shorter.ts` (nov) | Okidač O1 `shorterOffer(plan, asOf?)`: ima adaptaciju, ispod praga (16 / početnik 14 km), plan generatora za isti ulaz nije ispod praga, trka posle `asOf`. |
++| `halfMarathon/v2/app/preparation.ts` (nov) | `HM_V2_SOURCE_FORMAT` (jedino mesto spiska: `hmV2`; `vdot`, `paceBasis`, `predictedHmSec`, `goalVdot`, `goalAssessment`). `contractInput`: ulaz čarobnjaka bez izvedenih polja. `rawFacts`: činjenice bez `dayId` i zaključanih dana. `basisFromPlan`: `policy: null`, `execution: null`, bez `guardBaseKm`. `executionBasis`: potvrda + opis 28 dana, `startingKm = reportedBaseKm`, ulaz saglasan, razlog `confirmed-break`/`reduced-volume`. `preparationDecision`: 10K, pa 5K, prva koju cilj pokriva; „Zadrži plan v2" u `conditions`; nedostupne opcije sa razlogom doslovno. `buildPreparationChoice`: samo „shorter". `isLimitedLongPreparation(meta, plan)`. |
++| `halfMarathon/v2/app/{members,index,adapt}.ts` | `executionBasis` postaje član 'v2' (`NO_PREPARATION_DECISION` uklonjen). Izvoz odluke i formata. `AdaptPreview.shorterOffer?: true` samo kad ponuda postoji. |
++| `select.ts` | `hmV2Preparation(flags)` i `preparationForPlan(plan, flags = isključeno)` → HM v2. Granični kast za `executionBasis`. Komentar HM v2. |
++
++## 2. Merenja
++
++**weekAlign** (`weekAlign.measure.ts`, HM v2 grid svaki 41. ulaz → 10K/5K v1, 1 648 predaja):
++- pre dopune: dupli datumi kod trke u subotu 824/824, kod trke u nedelju 0/824;
++- posle dopune: dupli datumi 0 i 0, dupli id 0 i 0.
++
++**M1 sa domenskim okidačem** (`shorter.ts`, 193/97/29, 114 012 tokova, 0 odbijanja; `shorter-HM-3c.json`):
++- ponuda: **3 274** (2,9 %);
++- pad ispod praga u odnosu na prethodni plan (3a): 3 018;
++- svaki pad ima ponudu (`lostNotOffer` 0);
++- ponuda bez pada u tom koraku: 256.
++
++256 je tačno broj tokova lanca čiji je PRVI korak pao ispod praga (`chain` 256). Drugi korak tog lanca (`chain2`) ostaje
++ispod praga, a plan generatora nije, pa okidač (osnova = plan generatora) ponovo nudi. Raspodela 256 po scenariju nije
++zasebno brojana; poklapanje je zaključak iz zbira. Prema dopuni O1 to je ispravno: stanje traje, a korisnik zatvara
++ponudu. Brz uzorak: 175 = 168 + 7.
++
++## 3. Testovi
++
++**`halfMarathon/v2/app/handoffSource.node.test.ts` (11):**
++- **Okidač:**
++  - pauza 35 d: 17,8 → 13,7 km → ponuda; LONG_RUN_SHORT iz iste funkcije;
++  - trka nije posle `asOf` → nema ponude;
++  - bez adaptacije ili bez pada → nema ponude;
++  - plan rođen ispod praga → nikad ponuda.
++- **Odluka i izbor:**
++  - `preparationForPlan` → HM v2; `isLimitedLongPreparation` iz plana (sama `meta` → `false`);
++  - osnova bez politike, izvršenja i `guardBaseKm`;
++  - opcija `shorter-10000` (v1 cilj); „Zadrži plan v2" u uslovima;
++  - izbor 10K i 5K: plan cilja bez `hmV2` i bez meta v2, upis bira 10K/5K v1;
++  - `base` → odbijanje.
++- **Nedostupne opcije:**
++  - prekidač cilja v2 → `V2_TARGET_NOT_READY` za 10K i 5K (O4a);
++  - plan po osećaju → `V1_TARGET_NEEDS_RESULT` (O5a).
++- **T1/T2 × trka subota/nedelja × bez izvršenja/potvrđena pauza:**
++  - politika izvora (`adapt.returnGrowth`, `pause.longShare`) menja plan izvora (kontrola), a budući deo i ocenu pripreme cilja ne menja;
++  - T2: politika cilja (10K `RETURN_POLICY`) menja cilj.
++
++**`handoffV2Source.node.test.ts` (3b, 13):**
++- izvori i sa trkom u subotu i u nedelju;
++- nema duplog datuma ni id-a;
++- prošli dani izvora ostaju (isti id i sadržaj, menja se samo `dow`);
++- budući dani su iz cilja (bez strukture v2).
++
++`app.node.test.ts`: `executionBasis` sada daje osnovu (bez baze → poruka); `preparationForPlan(v2)` nije `null`.
++
++**Sabotaže** (`node scripts/sabotage.mjs …`, brz nivo, `--bail=1`):
++- **`sabotage-3b.json`: 6/6 palo**, uključujući 3b-f (pogled bez pregrupisanja).
++- **`sabotage-3c.json`: 3/3 palo:**
++  - 3c-a okidač bez provere „pre adaptacije";
++  - 3c-b izvor šalje izvedeni obim (min. cilj nedelje) umesto obima čarobnjaka — palo 3 testa, uključujući T1;
++  - 3c-c čistač preskočen (prazan format).
++- Stanje `src` posle vraćanja isto.
++
++## 4. Provere (iz `web/`)
++
++| Komanda | Rezultat |
++|---|---|
++| `npx tsc -b --noEmit`; eslint/prettier menjanih fajlova | exit 0 |
++| `TEST_FULL=1 npx vitest run --project node src/domain/generators/halfMarathon/v2` | **52 fajla, 363/363**, 669 s |
++| `TEST_FULL=1 npx vitest run --changed e02bca5` | CHANGED_RESULT |
++| `npm run check` | CHECK_RESULT |
++| `npx playwright test e2e/hm-v2.spec.ts` | E2E_RESULT |
++
++Byte-same: tokovi HM v2 bez ponude su bajt-isti, jer pregled nema polje, a plan za upis i validator su nepromenjeni
++(reference `byteSame`, grid, dense, early i ostale u punom nivou foldera). v1 i lični plan su takođe bajt-isti (`--changed`:
++otherDistances, equivalence, personalPlan, policyIsolation).
++
++## 5. Uslovi AGENTS.md
++
++- **1** — jedan vlasnik: okidač je jedna funkcija (`shorterOffer` nad `longRunShort`); spisak formata postoji samo u `HM_V2_SOURCE_FORMAT`.
++- **5** — izvor šalje činjenice (ulaz čarobnjaka, potvrda, sirove činjenice), politiku ne šalje (`policy: null`); T1 to dokazuje za oba dana trke.
++- **6** — plan cilja nosi oznaku i fazu cilja (`stampForStorage`).
++- **7** — HM v2 ne uvozi ništa van `halfMarathon/v2/`; cilj dolazi kao argument iz `select.ts` (`isolation`, `architecture`).
++- **8** — plan cilja nema duple datume ni id; prošlost je zaštićena (test).
++
++## 6. Predaja 3g (odluke organizatora)
++
++1. `storedPreparationDecision` prosleđuje plan: `isLimitedLongPreparation(meta, plan)`. Bez toga HM v2 vraća `false`.
++2. `stores` prosleđuje prekidače korisnika: `preparationForPlan(plan, flags)`. Bez toga je cilj uvek v1.
++3. „Zadrži plan v2" je dugme „Zatvori", bez promene ugovora.
++4. `previewRestore` prikazuje `conflicts` (`RESTORE_OTHER_DISTANCE`, odluka 3b).
++5. Prikaz `AdaptPreview.shorterOffer` u pregledu adaptacije (veza ka odluci o pripremi).
+diff --git a/docs/generators-v2/handoff/sabotage-3b.json b/docs/generators-v2/handoff/sabotage-3b.json
+index 860dca6..9f0043b 100644
+--- a/docs/generators-v2/handoff/sabotage-3b.json
++++ b/docs/generators-v2/handoff/sabotage-3b.json
+@@ -4,34 +4,54 @@
+     "file": "src/domain/generators/handoff.ts",
+     "find": "  const { [format.planKey]: _plan, ...rest } = current as P & Record<string, unknown>;",
+     "replace": "  const rest = current as P & Record<string, unknown>;",
+-    "tests": ["src/domain/generators/handoffV2Source.node.test.ts"]
++    "tests": [
++      "src/domain/generators/handoffV2Source.node.test.ts"
++    ]
+   },
+   {
+     "name": "3b-b čistač ne uklanja meta ključeve v2",
+     "file": "src/domain/generators/handoff.ts",
+     "find": ".filter(([k]) => !format.metaKeys.includes(k))",
+     "replace": ".filter(([k]) => k !== '')",
+-    "tests": ["src/domain/generators/handoffV2Source.node.test.ts"]
++    "tests": [
++      "src/domain/generators/handoffV2Source.node.test.ts"
++    ]
+   },
+   {
+     "name": "3b-c v1 cilj bez rezultata nije odbijen (O5)",
+     "file": "src/domain/generators/handoff.ts",
+     "find": "    if (!pb || !(Number(pb.distM) > 0) || !(Number(pb.sec) > 0))",
+     "replace": "    if (pb === null)",
+-    "tests": ["src/domain/generators/handoffV2Source.node.test.ts"]
++    "tests": [
++      "src/domain/generators/handoffV2Source.node.test.ts"
++    ]
+   },
+   {
+     "name": "3b-d prekidač cilja v2 tiho pada na v1 cilj (O4)",
+     "file": "src/domain/generators/select.ts",
+     "find": "    if (!Object.values(GENERATORS).includes(target)) return",
+     "replace": "    if (target === null) return",
+-    "tests": ["src/domain/generators/handoffV2Source.node.test.ts"]
++    "tests": [
++      "src/domain/generators/handoffV2Source.node.test.ts"
++    ]
+   },
+   {
+     "name": "3b-e vraćanje verzije druge distance nije odbijeno",
+     "file": "src/domain/generators/select.ts",
+     "find": "    if (from === undefined || to === undefined || from === to)",
+     "replace": "    if (from !== null)",
+-    "tests": ["src/domain/generators/handoffV2Source.node.test.ts"]
++    "tests": [
++      "src/domain/generators/handoffV2Source.node.test.ts"
++    ]
++  },
++  {
++    "name": "3b-f pogled za v1 cilj bez pregrupisanja u nedelje od ponedeljka",
++    "file": "src/domain/generators/handoff.ts",
++    "find": "  return { ...rest, weeks: mondayWeeks(current.weeks), meta } as P;",
++    "replace": "  return { ...rest, meta } as P;",
++    "tests": [
++      "src/domain/generators/handoffV2Source.node.test.ts",
++      "src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"
++    ]
+   }
+ ]
+diff --git a/docs/generators-v2/handoff/sabotage-3c.json b/docs/generators-v2/handoff/sabotage-3c.json
+new file mode 100644
+index 0000000..796e3a1
+--- /dev/null
++++ b/docs/generators-v2/handoff/sabotage-3c.json
+@@ -0,0 +1,29 @@
++[
++  {
++    "name": "3c-a okidač bez provere „pre adaptacije\" (plan generatora)",
++    "file": "src/domain/generators/halfMarathon/v2/shorter.ts",
++    "find": "  return born.ok && !longRunShort(born.plan.weeks, warn);",
++    "replace": "  return born.ok;",
++    "tests": [
++      "src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"
++    ]
++  },
++  {
++    "name": "3c-b izvor šalje izvedeni obim (odluku svoje politike) umesto obima čarobnjaka",
++    "file": "src/domain/generators/halfMarathon/v2/app/preparation.ts",
++    "find": "    weeklyKm: i.currentWeeklyKm,",
++    "replace": "    weeklyKm: Math.min(...v2.weeks.map((w) => w.targetKm)),",
++    "tests": [
++      "src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"
++    ]
++  },
++  {
++    "name": "3c-c čistač preskočen (prazan format izvora)",
++    "file": "src/domain/generators/select.ts",
++    "find": "  const handoff = shorterHandoffForV2Source(flags, h2.SOURCE_FORMAT);",
++    "replace": "  const handoff = shorterHandoffForV2Source(flags, { planKey: '', metaKeys: [] });",
++    "tests": [
++      "src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"
++    ]
++  }
++]
 diff --git a/docs/generators-v2/handoff/shorter-HM-3c.json b/docs/generators-v2/handoff/shorter-HM-3c.json
 new file mode 100644
-index 0000000..e69de29
+index 0000000..6cb66e8
+--- /dev/null
++++ b/docs/generators-v2/handoff/shorter-HM-3c.json
+@@ -0,0 +1,56 @@
++{
++ "dist": "HM",
++ "step": {
++  "R": 193,
++  "F": 97,
++  "B": 29
++ },
++ "plans": 212,
++ "generatorRejected": 0,
++ "flows": 114012,
++ "rejected": 0,
++ "bornShort": 28,
++ "bornShortV1": 47,
++ "longLost": 3018,
++ "longLostV1": 2368,
++ "longLostNew": 3018,
++ "offer": 3274,
++ "offerNotLost": 256,
++ "lostNotOffer": 0,
++ "longLostByScenario": {
++  "pause35": 878,
++  "pain5": 325,
++  "pain8": 346,
++  "painPause": 403,
++  "pause20": 386,
++  "pause10": 256,
++  "chain": 256,
++  "under50": 144,
++  "chain2": 24
++ },
++ "longLostWeeksLeft": {
++  "8-11": 1370,
++  "≥12": 1307,
++  "4-7": 341
++ },
++ "longLostCover10K": 2997,
++ "longLostCoverHM": 0,
++ "longLostEx": [
++  "d3-10w-35km-v30-A-sat/2026-10-31/pause35: 17.8 → 13.7 km, 10 ned",
++  "d3-10w-35km-v30-A-sat/2026-10-31/pain5: 17.8 → 13.4 km, 10 ned",
++  "d3-10w-35km-v30-A-sat/2026-10-31/pain8: 17.8 → 12.2 km, 10 ned",
++  "d3-10w-35km-v30-A-sat/2026-10-31/painPause: 17.8 → 13.4 km, 10 ned",
++  "d3-10w-35km-v30-A-sat/2026-10-29/pause35: 17.8 → 13.7 km, 11 ned"
++ ],
++ "goalFlows": 45522,
++ "goalWorse": 3957,
++ "goalWorseByScenario": {
++  "slower": 2158,
++  "test5k": 1799
++ },
++ "goalWorseTo": {
++  "realistic→ambitious": 1066,
++  "realistic→unrealistic": 2891
++ },
++ "seconds": 756.198
++}
 diff --git a/docs/generators-v2/handoff/shorter.ts b/docs/generators-v2/handoff/shorter.ts
 index acddf88..24b8aaa 100644
 --- a/docs/generators-v2/handoff/shorter.ts
@@ -42,6 +322,95 @@ index acddf88..24b8aaa 100644
    if (before >= v1thr && after < v1thr) out.longLostV1++;
    if (before >= thr(p) && after < thr(p)) {
      out.longLost++;
+diff --git a/docs/generators-v2/handoff/weekAlign.json b/docs/generators-v2/handoff/weekAlign.json
+index 2331484..68467bb 100644
+--- a/docs/generators-v2/handoff/weekAlign.json
++++ b/docs/generators-v2/handoff/weekAlign.json
+@@ -2,7 +2,8 @@
+  "trka sub": {
+   "calls": 824,
+   "ok": 824,
+-  "duplicateDates": 824,
++  "duplicateDates": 0,
++  "duplicateIds": 0,
+   "weekStartDow": {
+    "ned": 206
+   }
+@@ -11,6 +12,7 @@
+   "calls": 824,
+   "ok": 824,
+   "duplicateDates": 0,
++  "duplicateIds": 0,
+   "weekStartDow": {
+    "pon": 206
+   }
+diff --git a/docs/generators-v2/handoff/weekAlign.measure.ts b/docs/generators-v2/handoff/weekAlign.measure.ts
+index f51acfc..65fdf74 100644
+--- a/docs/generators-v2/handoff/weekAlign.measure.ts
++++ b/docs/generators-v2/handoff/weekAlign.measure.ts
+@@ -1,6 +1,7 @@
+ /* Faza 3, 3c — sudar: v1 cilj kalemi plan po POČETKU NEDELJE (`graftFuturePlan`: `oldByStart`), a v1 nedelje počinju
+    ponedeljkom. Plan HM v2 ima nedelje od dana posle dana trke (trka u subotu → nedelje od nedelje). Meri: u koliko
+-   predaja HM v2 → 10K/5K v1 (kroz čistač 3b) plan cilja ima DVA dana istog datuma (nedelja izvora + nedelja cilja).
++   predaja HM v2 → 10K/5K v1 (kroz čistač 3b) plan cilja ima DVA dana istog datuma (nedelja izvora + nedelja cilja)
++   ili dva dana istog id-a. Pre dopune 3b (pregrupisanje u nedelje od ponedeljka): subota 824/824, nedelja 0/824.
+    Iz web/: npx vitest run --config ../docs/generators-v2/handoff/vitest.measure.config.mjs weekAlign */
+ import * as select from "../../../web/src/domain/generators/select";
+ import * as THM from "../../../web/src/domain/generators/halfMarathon/v2/testInputs";
+@@ -19,6 +20,7 @@ test("poravnanje nedelja v1 cilja", () => {
+       calls: number;
+       ok: number;
+       duplicateDates: number;
++      duplicateIds: number;
+       weekStartDow: Record<string, number>;
+     }
+   > = {};
+@@ -41,6 +43,7 @@ test("poravnanje nedelja v1 cilja", () => {
+       calls: 0,
+       ok: 0,
+       duplicateDates: 0,
++      duplicateIds: 0,
+       weekStartDow: {},
+     });
+     const startDow = ["ned", "pon", "uto", "sre", "čet", "pet", "sub"][
+@@ -83,7 +86,9 @@ test("poravnanje nedelja v1 cilja", () => {
+         o.calls++;
+         const r = (
+           h as unknown as (...a: unknown[]) => {
+-            result?: { weeks: { start: string; days: { dow: number }[] }[] };
++            result?: {
++              weeks: { start: string; days: { dow: number; id?: string }[] }[];
++            };
+           }
+         )(plan, input, at, {}, { execution: null, restartFromBase: false });
+         if (!r.result) continue;
+@@ -92,6 +97,10 @@ test("poravnanje nedelja v1 cilja", () => {
+           w.days.map((d) => addDays(w.start, d.dow)),
+         );
+         if (new Set(dates).size !== dates.length) o.duplicateDates++;
++        const ids = r.result.weeks.flatMap((w) =>
++          w.days.map((d) => (d as { id?: string }).id),
++        );
++        if (new Set(ids).size !== ids.length) o.duplicateIds++;
+       }
+   }
+   writeFileSync(
+diff --git a/docs/hm-v2/STATUS.md b/docs/hm-v2/STATUS.md
+index 1400845..326f7e3 100644
+--- a/docs/hm-v2/STATUS.md
++++ b/docs/hm-v2/STATUS.md
+@@ -83,3 +83,11 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
+   ZONE_CAP) preskaču zaštićene dane (`validate.guarded`: zaključan ili upisan). `KNOWN_VERSIONS` ∪ hm-v2.4.0.
+ - Trajna mreža `segment07b` (umor u nedelji k − 1 × asOf do kraja k; rezultat + zaključani Q1/Q2 + urađen Q1).
+   Izveštaj `reports/SEGMENT-07b-IMPLEMENTATION.md`, artefakti `artifacts/segment-07b/`.
++
++## Faza 3, segment 3c (hm-v2.4.1, bez promene verzije): HM v2 kao izvor predaje „kraća distanca"
++
++- Okidač u domenu: `shorter.ts` `shorterOffer` (O1) — `lengths.longRunShort` čitaju i validator (LONG_RUN_SHORT) i
++  okidač; osnova = plan generatora za isti ulaz. Odluka o pripremi u adapteru: `app/preparation.ts` (10K, pa 5K;
++  „zadrži plan v2"; činjenice bez politike izvora; `HM_V2_SOURCE_FORMAT`). `executionBasis` postaje član 'v2'.
++  Pregled adaptacije: `shorterOffer: true` samo kad ponuda postoji. Izveštaj
++  `docs/generators-v2/handoff/SEGMENT-3c-IMPLEMENTATION.md`.
 diff --git a/web/src/domain/generators/halfMarathon/v2/app/adapt.ts b/web/src/domain/generators/halfMarathon/v2/app/adapt.ts
 index cd71072..e5bca4b 100644
 --- a/web/src/domain/generators/halfMarathon/v2/app/adapt.ts
@@ -125,10 +494,10 @@ index 2ed1596..5882629 100644
      const ex = g.executionModel(plan, today, {});
 diff --git a/web/src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts b/web/src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts
 new file mode 100644
-index 0000000..de0e7ca
+index 0000000..03aae72
 --- /dev/null
 +++ b/web/src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts
-@@ -0,0 +1,243 @@
+@@ -0,0 +1,248 @@
 +import { describe, expect, it } from 'vitest';
 +import { RETURN_POLICY as TEN_K_RETURN_POLICY } from '../../../tenK/plan/regenerate';
 +import { V1_TARGET_NEEDS_RESULT } from '../../../handoff';
@@ -306,8 +675,8 @@ index 0000000..de0e7ca
 +    }
 +  return JSON.stringify([out, (p.meta as { preparation?: unknown }).preparation]);
 +}
-+function targetFlow(withPause: boolean): { source: string; target: string } {
-+  const src = stored(adapted(BASE, 'pause35', AS_OF));
++function targetFlow(withPause: boolean, input: unknown = BASE): { source: string; target: string } {
++  const src = stored(adapted(input, 'pause35', AS_OF));
 +  const today = AS_OF;
 +  const prep = select.preparationForPlan(src)!;
 +  const basis = withPause
@@ -360,17 +729,22 @@ index 0000000..de0e7ca
 +}
 +
 +describe('3c: T1/T2 — politika izvora ne menja cilj; politika cilja ga menja', () => {
-+  for (const withPause of [false, true])
-+    it(`HM v2 → 10K v1 (${withPause ? 'potvrđena pauza' : 'bez izvršenja'})`, () => {
-+      const base = targetFlow(withPause);
-+      const t1 = withSourcePolicy(() => targetFlow(withPause));
-+      expect(t1.source, 'kontrola: politika izvora menja plan izvora').not.toBe(base.source);
-+      expect(t1.target, 'T1: plan cilja isti').toBe(base.target);
-+      if (withPause) {
-+        const t2 = withTargetPolicy(() => targetFlow(withPause));
-+        expect(t2.target, 'T2: politika cilja menja plan cilja').not.toBe(base.target);
-+      }
-+    });
++  // Trka u subotu (nedelje izvora od nedelje) i u nedelju (od ponedeljka) — dopuna 3b.
++  for (const [race, input] of [
++    ['subota', BASE],
++    ['nedelja', ofId('d3-10w-35km-v30-A-sun')]
++  ] as const)
++    for (const withPause of [false, true])
++      it(`HM v2 (trka ${race}) → 10K v1 (${withPause ? 'potvrđena pauza' : 'bez izvršenja'})`, () => {
++        const base = targetFlow(withPause, input);
++        const t1 = withSourcePolicy(() => targetFlow(withPause, input));
++        expect(t1.source, 'kontrola: politika izvora menja plan izvora').not.toBe(base.source);
++        expect(t1.target, 'T1: plan cilja isti').toBe(base.target);
++        if (withPause) {
++          const t2 = withTargetPolicy(() => targetFlow(withPause, input));
++          expect(t2.target, 'T2: politika cilja menja plan cilja').not.toBe(base.target);
++        }
++      });
 +});
 diff --git a/web/src/domain/generators/halfMarathon/v2/app/index.ts b/web/src/domain/generators/halfMarathon/v2/app/index.ts
 index b90e4ff..2b88029 100644
@@ -874,6 +1248,149 @@ index 97dddc6..64d4b1e 100644
      warn(
        'LONG_RUN_SHORT',
        `Najduži dugi ${longestAll10 / 10} km < ${rule.longWarnKm} km (${rule.beginner ? 'H17' : 'H13'}): preporuka više dana ili obima.`
+diff --git a/web/src/domain/generators/handoff.ts b/web/src/domain/generators/handoff.ts
+index c16ea83..5d081a4 100644
+--- a/web/src/domain/generators/handoff.ts
++++ b/web/src/domain/generators/handoff.ts
+@@ -35,7 +35,50 @@ export interface SourceFormat {
+   readonly metaKeys: readonly string[];
+ }
+ 
+-/** Pogled plana izvora za v1 cilj: bez objekta plana v2 i bez meta ključeva v2. Nedelje i dani ostaju (istorija). */
++const DAY_MS = 86_400_000;
++const dayMs = (iso: string): number => Date.parse(iso + 'T00:00:00Z');
++const isoOf = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
++/** Ponedeljak na ili pre datuma (UTC, bez lokalne zone). */
++const mondayOf = (iso: string): string => {
++  const ms = dayMs(iso);
++  return isoOf(ms - ((new Date(ms).getUTCDay() + 6) % 7) * DAY_MS);
++};
++
++type Weeks = GenPlanState['weeks'];
++
++/** Dopuna 3b (DESIGN.md § 8, sudar 3c): v1 cilj kalemi plan po POČETKU nedelje, a v1 nedelje počinju ponedeljkom. Plan
++ *  v2 ima nedelje od dana posle dana trke (trka u subotu → od nedelje). Pogled zato pregrupiše dane izvora u nedelje od
++ *  ponedeljka: id dana i sadržaj dana ostaju (dnevnik, izmene i pomeranja ostaju vezani), menjaju se samo `dow` i
++ *  nedelja. Broj nedelje = broj nedelje izvora koja sadrži taj ponedeljak (pre prve: prva − 1); ostala polja nedelje
++ *  (faza, rasterećenje) iz iste nedelje izvora. Nedelje koje već počinju ponedeljkom se ne diraju (isti objekat). */
++export function mondayWeeks(weeks: Weeks): Weeks {
++  if (weeks.every((w) => mondayOf(w.start) === w.start)) return weeks;
++  const holder = (monday: string) =>
++    weeks.find(
++      (w) => dayMs(w.start) <= dayMs(monday) && dayMs(monday) < dayMs(w.start) + 7 * DAY_MS
++    );
++  const byMonday = new Map<string, Weeks[number]['days'][number][]>();
++  for (const w of weeks)
++    for (const d of w.days) {
++      const date = isoOf(dayMs(w.start) + d.dow * DAY_MS);
++      const monday = mondayOf(date);
++      const days = byMonday.get(monday) ?? [];
++      days.push({ ...d, dow: (dayMs(date) - dayMs(monday)) / DAY_MS });
++      byMonday.set(monday, days);
++    }
++  return [...byMonday.keys()].sort().map((monday) => {
++    const src = holder(monday) ?? weeks[0]!;
++    return {
++      ...src,
++      w: holder(monday) ? src.w : src.w - 1,
++      start: monday,
++      days: byMonday.get(monday)!.sort((a, b) => a.dow - b.dow)
++    };
++  });
++}
++
++/** Pogled plana izvora za v1 cilj: bez objekta plana v2 i bez meta ključeva v2; nedelje od ponedeljka
++ *  (`mondayWeeks`). Dani ostaju (istorija). */
+ export function sourceViewForV1<P extends GenPlanState>(current: P, format: SourceFormat): P {
+   const { [format.planKey]: _plan, ...rest } = current as P & Record<string, unknown>;
+   const meta = current.meta
+@@ -43,7 +86,7 @@ export function sourceViewForV1<P extends GenPlanState>(current: P, format: Sour
+         Object.entries(current.meta).filter(([k]) => !format.metaKeys.includes(k))
+       ) as P['meta'])
+     : current.meta;
+-  return { ...rest, meta } as P;
++  return { ...rest, weeks: mondayWeeks(current.weeks), meta } as P;
+ }
+ 
+ /** O5 (DESIGN.md § 8): v1 cilj gradi plan iz rezultata (`pb`); plan v2 po osećaju ga nema. */
+diff --git a/web/src/domain/generators/handoffV2Source.node.test.ts b/web/src/domain/generators/handoffV2Source.node.test.ts
+index 5782906..0e608ec 100644
+--- a/web/src/domain/generators/handoffV2Source.node.test.ts
++++ b/web/src/domain/generators/handoffV2Source.node.test.ts
+@@ -42,24 +42,26 @@ function sources(dist: 'hm' | 'marathon', feel: boolean): Src[] {
+     ['tue', 'thu', 'sat', 'sun'],
+     ['mon', 'tue', 'thu', 'fri', 'sun']
+   ];
+-  for (const weeks of weeksSet)
+-    for (const km of kmSet)
+-      for (const runDays of daysSet)
+-        for (const t of feel ? [360, 420] : [2400, 2700, 3000])
+-          out.push({
+-            id: `${dist}-${weeks}w-${km}km-${runDays.length}d-${t}`,
+-            input: {
+-              startDate: START,
+-              raceDate: addDays(START, 7 * weeks - 1),
+-              runDays: [...runDays],
+-              longRunDay: 'sun',
+-              currentWeeklyKm: km,
+-              ...(feel
+-                ? { easyPaceSecPerKm: t }
+-                : { recentResult: { distanceM: 10000, timeSec: t, date: addDays(START, -14) } }),
+-              goalTimeSec: null
+-            }
+-          });
++  // Trka u nedelju (nedelje izvora od ponedeljka) i u subotu (od nedelje) — dopuna 3b: pogled za v1 cilj pregrupiše.
++  for (const raceDay of ['sun', 'sat'] as const)
++    for (const weeks of weeksSet)
++      for (const km of kmSet)
++        for (const runDays of daysSet)
++          for (const t of feel ? [360, 420] : [2400, 2700, 3000])
++            out.push({
++              id: `${dist}-${weeks}w-${km}km-${runDays.length}d-${t}-${raceDay}`,
++              input: {
++                startDate: raceDay === 'sun' ? START : addDays(START, -1),
++                raceDate: addDays(raceDay === 'sun' ? START : addDays(START, -1), 7 * weeks - 1),
++                runDays: [...runDays],
++                longRunDay: 'sun',
++                currentWeeklyKm: km,
++                ...(feel
++                  ? { easyPaceSecPerKm: t }
++                  : { recentResult: { distanceM: 10000, timeSec: t, date: addDays(START, -14) } }),
++                goalTimeSec: null
++              }
++            });
+   // Samo ulazi koje generator izvora prihvata (odbijanje izvora nije predmet ovog testa).
+   const ok = out.filter((x) => generated(dist, x.input).ok);
+   return FULL ? ok : ok.filter((_, i) => i % 3 === 0);
+@@ -172,6 +174,28 @@ describe('3b: izvor v2 → v1 cilj (ponovljeno M2 sa čistačem)', () => {
+               for (const key of new Set([...Object.keys(a), ...Object.keys(b)]))
+                 if (JSON.stringify(a[key]) !== JSON.stringify(b[key]))
+                   leaks.push(`${k}: meta.${key}`);
++              // Dopuna 3b: nijedan dupli datum ni id; prošli dani izvora ostaju (isti id i sadržaj, menja se samo dow),
++              // budući su iz cilja (bez strukture v2).
++              const dated = res.weeks.flatMap((w) =>
++                w.days.map((d) => [addDays(w.start, d.dow), d] as const)
++              );
++              if (new Set(dated.map(([x]) => x)).size !== dated.length)
++                leaks.push(`${k}: dupli datum`);
++              if (new Set(dated.map(([, d]) => d.id)).size !== dated.length)
++                leaks.push(`${k}: dupli id`);
++              const srcByDate = new Map(
++                plan.weeks.flatMap((w) => w.days.map((d) => [addDays(w.start, d.dow), d] as const))
++              );
++              for (const [date, d] of dated) {
++                const src = srcByDate.get(date);
++                if (
++                  date <= at &&
++                  src &&
++                  JSON.stringify({ ...d, dow: 0 }) !== JSON.stringify({ ...src, dow: 0 })
++                )
++                  leaks.push(`${k}: prošli dan ${date} nije iz izvora`);
++                if (date > at && 'structure' in d) leaks.push(`${k}: budući dan ${date} iz izvora`);
++              }
+               // Upis: plan cilja bira v1 generator cilja (oznaka politike cilja).
+               const g = select.generatorForPlan(select.stampForStorage(res));
+               expect(g?.id, k).toBe(dist === 5000 ? '5k' : dist === 10000 ? '10k' : 'hm');
 diff --git a/web/src/domain/generators/select.ts b/web/src/domain/generators/select.ts
 index 01601e9..cd608e8 100644
 --- a/web/src/domain/generators/select.ts
