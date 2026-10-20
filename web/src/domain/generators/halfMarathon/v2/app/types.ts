@@ -126,6 +126,8 @@ export interface StoredPlan {
   meta: HmV2Meta;
   /** Izlaz generatora HM v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije (segment 06). */
   hmV2: unknown;
+  /** Faza 3 (3f): nedelje izvora predaje ispred plana (`plan.ts` `PREFIX_KEY`). */
+  hmV2Prefix?: { offset: number; weeks: StoredWeek[] };
 }
 /** Plan koji adapter samo čita (bilo koji plan formata). */
 export interface PlanLike {

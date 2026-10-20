@@ -11,9 +11,11 @@
    - rejected: adaptacija odbijena (4a: 0).
    Za longLost: preostale nedelje do trke, scenario, i da li bi kraća distanca bila pokrivena po dužini
    (najduži dugi adaptiranog plana ≥ 10 km za 10K; maraton i ≥ 16 km za HM) — gruba procena, ne plan cilja.
+   3c: `offer` = domenski okidač HM v2 (`halfMarathon/v2/shorter.ts`) nad adaptiranim planom.
    Iz korena repoa: node docs/generators-v2/handoff/shorter.ts <HM|MAR> <kR> <kF> <kB> > out.json */
 
 import { addDays, distOf, SCENARIOS, sampleBases, wedOf, type Plan } from "../final-check/lib.ts";
+import { shorterOffer } from "../../../web/src/domain/generators/halfMarathon/v2/shorter.ts";
 
 const [name, kR, kF, kB] = [process.argv[2]!, ...process.argv.slice(3, 6).map(Number)] as [string, number, number, number];
 const d = distOf(name);
@@ -43,6 +45,10 @@ const out = {
   longLost: 0,
   longLostV1: 0,
   longLostNew: 0,
+  /** 3c: domenski okidač HM v2 (`shorterOffer`, osnova = plan generatora za isti ulaz). */
+  offer: 0,
+  offerNotLost: 0,
+  lostNotOffer: 0,
   longLostByScenario: {} as Record<string, number>,
   longLostWeeksLeft: {} as Record<string, number>,
   longLostCover10K: 0,
@@ -66,6 +72,13 @@ function flow(p: Plan, born: Plan, facts: Record<string, unknown>, at: string, k
   const a = r.plan;
   const before = longest(p);
   const after = longest(a);
+  const lost = before >= thr(p) && after < thr(p);
+  if (name === "HM") {
+    const offer = shorterOffer(a as never, at);
+    if (offer) out.offer++;
+    if (offer && !lost) out.offerNotLost++;
+    if (!offer && lost) out.lostNotOffer++;
+  }
   if (before >= v1thr && after < v1thr) out.longLostV1++;
   if (before >= thr(p) && after < thr(p)) {
     out.longLost++;

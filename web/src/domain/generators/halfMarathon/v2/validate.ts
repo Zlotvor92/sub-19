@@ -16,6 +16,7 @@ import {
   longKmCap10,
   longShareCap10,
   longestLong10,
+  longRunShort,
   longsOf10,
   rollingLongCap10,
   taperLongCap10,
@@ -661,8 +662,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   }
   // Faza 4a N9: najduži dugi preko SVIH nedelja plana (i mešovitih — upisani dani su plan), ista funkcija kao
   // konstruktor; bilo samo preko proverenih nedelja (5/2928 lažnih upozorenja posle adaptacije).
+  // Faza 3 (O1): isti uslov čita okidač „kraća distanca" (lengths.longRunShort, shorter.ts).
   const longestAll10 = longestLong10(weeks);
-  if (longestAll10 < to10(rule.longWarnKm))
+  if (longRunShort(weeks, rule.longWarnKm))
     warn(
       'LONG_RUN_SHORT',
       `Najduži dugi ${longestAll10 / 10} km < ${rule.longWarnKm} km (${rule.beginner ? 'H17' : 'H13'}): preporuka više dana ili obima.`

@@ -12,6 +12,7 @@
    (`graftFuturePlan` spaja `meta` izvora i cilja), pa bi plan v2 u planu cilja ostavio svoj objekat (`hmV2`,
    `marathonV2`) i meta ključeve v2 (DESIGN.md M2: 100 % predaja). v1 cilj zato dobija POGLED izvora bez njih; spisak
    ključeva daje adapter izvora (jedini koji zna svoj format) kao argument, ovde se ne uvozi. v1 kod se ne menja. */
+import { addDays, diffDays, mondayOnOrBefore, type IsoDate } from '../date';
 import type { GenPlanState } from '../state';
 import { handoffFuture as fiveKHandoffFuture } from './fiveK';
 import { handoffFuture as halfMarathonHandoffFuture } from './halfMarathon';
@@ -35,7 +36,44 @@ export interface SourceFormat {
   readonly metaKeys: readonly string[];
 }
 
-/** Pogled plana izvora za v1 cilj: bez objekta plana v2 i bez meta ključeva v2. Nedelje i dani ostaju (istorija). */
+type Weeks = GenPlanState['weeks'];
+
+/** Dopuna 3b (DESIGN.md § 8, sudar 3c): v1 cilj kalemi plan po POČETKU nedelje, a v1 nedelje počinju ponedeljkom. Plan
+ *  v2 ima nedelje od dana posle dana trke (trka u subotu → od nedelje). Pogled zato pregrupiše dane izvora u nedelje od
+ *  ponedeljka: id dana i sadržaj dana ostaju (dnevnik, izmene i pomeranja ostaju vezani), menjaju se samo `dow` i
+ *  nedelja. Broj nedelje = broj nedelje izvora koja sadrži taj ponedeljak (pre prve: prva − 1); ostala polja nedelje
+ *  (faza, rasterećenje) iz iste nedelje izvora. Nedelje koje već počinju ponedeljkom se ne diraju (isti objekat). */
+export function mondayWeeks(weeks: Weeks): Weeks {
+  const iso = (d: string): IsoDate => d as IsoDate;
+  if (weeks.every((w) => mondayOnOrBefore(iso(w.start)) === w.start)) return weeks;
+  const holder = (monday: IsoDate) =>
+    weeks.find((w) => {
+      const k = diffDays(iso(w.start), monday);
+      return k >= 0 && k < 7;
+    });
+  const byMonday = new Map<IsoDate, Weeks[number]['days'][number][]>();
+  for (const w of weeks)
+    for (const d of w.days) {
+      const date = addDays(iso(w.start), d.dow);
+      const monday = mondayOnOrBefore(date);
+      const days = byMonday.get(monday) ?? [];
+      days.push({ ...d, dow: diffDays(monday, date) });
+      byMonday.set(monday, days);
+    }
+  return [...byMonday.keys()].sort().map((monday) => {
+    const own = holder(monday);
+    const src = own ?? weeks[0]!;
+    return {
+      ...src,
+      w: own ? src.w : src.w - 1,
+      start: monday,
+      days: byMonday.get(monday)!.sort((a, b) => a.dow - b.dow)
+    };
+  });
+}
+
+/** Pogled plana izvora za v1 cilj: bez objekta plana v2 i bez meta ključeva v2; nedelje od ponedeljka
+ *  (`mondayWeeks`). Dani ostaju (istorija). */
 export function sourceViewForV1<P extends GenPlanState>(current: P, format: SourceFormat): P {
   const { [format.planKey]: _plan, ...rest } = current as P & Record<string, unknown>;
   const meta = current.meta
@@ -43,7 +81,7 @@ export function sourceViewForV1<P extends GenPlanState>(current: P, format: Sour
         Object.entries(current.meta).filter(([k]) => !format.metaKeys.includes(k))
       ) as P['meta'])
     : current.meta;
-  return { ...rest, meta } as P;
+  return { ...rest, weeks: mondayWeeks(current.weeks), meta } as P;
 }
 
 /** O5 (DESIGN.md § 8): v1 cilj gradi plan iz rezultata (`pb`); plan v2 po osećaju ga nema. */
