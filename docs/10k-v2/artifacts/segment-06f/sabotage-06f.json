@@ -1,9 +1,9 @@
 [
   {
-    "name": "06f-a umor vezan za asOf (rasterećenje već u planu se ne čita, pouka 36)",
+    "name": "06f-a umor vezan za asOf (sidro iz asOf + 1, ne iz zapisa, pouka 36)",
     "file": "src/domain/generators/tenK/v2/assess.ts",
-    "find": "    const covered = weeks.find((w) => w.index >= na && w.index < n && w.deload);",
-    "replace": "    const covered = weeks.find(() => na < 0);",
+    "find": "    const anchor = addDays(asOf, Math.max(...easyHard.map((x) => day(x.date))) - t + 1);",
+    "replace": "    const anchor = addDays(asOf, 1);",
     "tests": [
       "src/domain/generators/tenK/v2/fatigue.node.test.ts",
       "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
@@ -43,6 +43,24 @@
     "replace": "find((s) => s.pain !== null && day(s.asOf) > t)",
     "tests": [
       "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06f-f umor ponedeljkom u sledećoj nedelji (bez deloadWeek, tekuća + 1)",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "      if (f !== n) step.deloadWeek = f;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06f-g validator sudi zaštićenom danu po tempu nedelje (WU/CD posle novog rezultata)",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "      if (protectedDay(d)) continue;\n",
+    "replace": "",
+    "tests": [
       "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
     ]
   }

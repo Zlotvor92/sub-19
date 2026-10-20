@@ -9,13 +9,14 @@ Menjano: `tenK/v2/**`, `docs/10k-v2/**`, jedna rečenica u `features/ti/screens.
 ## Šta i gde (jedan vlasnik)
 | tačka | mesto | pravilo |
 |---|---|---|
-| 1 pouka 36 | `assess.ts` A5 | sidro = prva puna nedelja posle (poslednji RPE zapis umora + 1); rasterećenje u planu od sidra do pre n pokriva zapise → umor nije primenjen („već u planu"). |
+| 1 pouka 36 | `assess.ts` A5, `steps.deloadWeekOf` | prinudno rasterećenje = prva nedelja koja počinje posle poslednjeg RPE zapisa umora (dopuna organizatora: kad asOf već pada u nju — ostatak tekuće nedelje, `korak.deloadWeek`; urađen test te nedelje ostaje, bez novog testa); već rasterećenje → umor nije primenjen. |
 | 3 (nalaz) pouka 18 | `assess.ts` A4 | korak bola sa asOf ≥ poslednjeg zapisa bola ga je obradio → isti zapis ne pravi nov period („već u planu"); nov zapis pravi. Uzrok nalaza: period odmora vezan za asOf pomeren za dan → taper 3 km < dan pred trku 3,3 km → RACE_WEEK_OVER_TAPER. |
 | 2 traka | `adapt.ts` `adaptBanner`, `steps.ts` `newLimits` | oblik maratona (MAR-06); `app/adapt.ts` samo poziva. newLimits iz koraka plana (nije novo polje rezultata → heševi rezultata isti). |
 | 3 tekst | `screens.tsx` | uklonjeno „Prilagođavanje 10K v2 plana stiže uskoro." |
 | 4 pouka 25 | `validate.ts` | WEEK_MIN_REST (upozorenje) i uz dane bola bez odmora (van trkačke). |
 | 5 pouka 35 | `week.ts` `buildWeek` | izgradnja (bez rasterećenja/tapera/trkačke), 2 dana kvaliteta, neki duži od dugog → q2 lagan, cilj isti, buildLengths (dugi raste), napomena `P35_DROP`; jedan kvalitet neizvodljiv → dva + `P35_KEEP`. |
 | 5 validator | `validate.ts` | isti predikat `qualityOverLong`: QUALITY_OVER_LONG (greška) / TWO_QUALITY_LONGER (upozorenje uz P35_KEEP); uloga q2 → lagan; glavna doza sme da padne; ponavljanje jedinog slota (kao 3 dana); stanje q2 posle mešovite nedelje nepoznato dok ga ne odredi nedelja sa q2. |
+| dopuna: zaštićeni dani | `validate.ts` `protectedDay`, `adapt/generate/written` `doneDayIds` | kao maraton MAR-07b (kopija): provere po danu (tipovi, WU/CD, RPE, oporavci, test, lagan ≥ min) preskaču dane ≤ asOf, zaključane i urađene; urađen dan posle asOf u `plan.adaptation.doneDayIds`. |
 | 6 verzija | `policy.ts` | `10k-v2.6.0`, odluka A18 (+ dopuna A5); KNOWN_VERSIONS = 4.0, 4.1, 5.0, 5.1, 5.2, 6.0. |
 
 Primer pouke 35: `10w-25km-v70-A-sat` ned 1: dugi 5,6 → 8,2 km (34 min), R 6 × 200 32 min, T dan lagan. 6 dana 35 km
@@ -27,7 +28,8 @@ VDOT 70: q1 i dalje duži od dugog → napomena + D25 (preporuka 3–5 dana).
 | `fatigue-repeat.ts 10K end` / bez `end` | 903/963 / 0 | **0** / 0 |
 | `early.ts 10K 193 97 29` | 121 392 toka, 0 odbijanja, 0 prekršaja | **0 / 0** (`early-after.json`) |
 | `measure-06f.ts` (uzorak 4a + iste činjenice asOf + 1; umor + 1 … + 7) | 269 760, 1057 odbijeno | **0 odbijeno** |
-| prva adaptacija umora ponedeljkom (`monday-06f.ts`) | — | 620/2712 promenjeno, svi „redovno k + prinudno k + 1 → k" |
+| umor ponedeljkom (`fatigue-monday.ts 10K`, zapisi u k − 1) | 176/296 „tekuća + 1" (organizator); e7ad505: 148/296 | **268 tekuća, 28 bez novog** (k već rasterećenje), 0 tekuća + 1 |
+| zaključan Q1 posle novog rezultata (`locked-result.ts 10K`) | 1645/1960 odbijeno (WARMUP/COOLDOWN) | **0** |
 | generator: nedelje sa 2 kvaliteta dužim od dugog | 2022 u 858/31 122 planova | **0**; 1854 nedelje sa q2 laganim |
 | adaptacija (prvi korak): isto, buduće nedelje | 3602/121 392 | 467 — svi u nedelji asOf (sreda, mešovita: prošli dan kvaliteta upisan) |
 | pouka 25 (dani bola, WEEK_MIN_*) | 0 | 0 |
@@ -45,20 +47,23 @@ Regresija (heš bez oznake verzije; `compare-06f.json`, `gen-hashes-06f.ts`, `ad
 
 ## Testovi (padaju pre izmene) i sabotaže
 - Novi: `fatigue.node.test.ts` (9: pouka 36, traka, pouka 25, nalaz 3), `p35.node.test.ts` (6: generator, validator);
-  `earlyGrid.harness`: trajne mreže „isti umor asOf + 1 … + 7 → 0 novih rasterećenja, traka bez umora" i „isti bol 7/8
+  `earlyGrid.harness`: trajne mreže „umor pet/ned k − 1, asOf ned k − 1 ili pon k → rasterećenje k, isti dani od
+  utorka" (izuzetak: pon k je dan testa), „nov rezultat + zaključan ili urađen Q1 sledeće nedelje → 0 odbijanja, dan
+  bajt-isti, doneDayIds", „isti umor asOf + 1 … + 7 → 0 novih rasterećenja, traka bez umora" i „isti bol 7/8
   kraj ned N − 3/N − 2 asOf + 1 … + 7 → 0 odbijanja, isti plan" (pun: svaki 4. tok umora; svi planovi dela za bol).
   Na 7ba9717 padaju (npr. `b-d3-10w-20km-e390-A-sat/w1end/fatigue/+1: rasterećenja 2 → 3`).
 - Ažurirani (06f): regresije grid/feelGrid/adapt/E/R (skup pouke 35), A5 (ponedeljak → sreda + slučaj ponedeljka), D25
   (p4 bez upozorenja, p6 sa), K2 (bazni plan promenjen: upisan dugi 10,5), periodize/quality/week (q2 lagan).
 - Sabotaže (`sabotage-06f.json`, alat, `--bail=1`): umor vezan za asOf (fatigue.node), traka u aplikaciji (adaptFlow:
   manjak isti dan posle primene), tekst prekidača vraćen (tenKV2Flow), pouka 35 isključena (p35.node), bol vezan za asOf
-  (fatigue.node) — 5/5, `sabotage-06f-result.json`.
+  (fatigue.node), umor ponedeljkom u sledećoj nedelji (earlyGrid), validator sudi zaštićenom danu (earlyGrid) — 7/7,
+  `sabotage-06f-result.json`.
 
 ## Provere (iz `web/`)
-`npx tsc -b --noEmit`, eslint, prettier — čisto; `npm run check` 285 fajlova / 3419 testova, 4 min 22 s; brz nivo
+`npx tsc -b --noEmit`, eslint, prettier — čisto; `npm run check` 290 fajlova / 3475 testova (posle dopune), 4 min 36 s; brz nivo
 tenK/v2 25 fajlova / 323 testa; pun nivo `TEST_FULL=1 … tenK/v2` (40 fajlova; posle ispravke tabela D25 grid/feelGrid
-8 fajlova ponovo, 90/90); `TEST_FULL=1 npx vitest run --changed 7ba9717` **236 fajlova / 1960 testova**, 23 min 37 s;
-`npx playwright test e2e/tenk-v2.spec.ts` 3/3; sabotaže 5/5 pale, `src` bajt-isti (66,7 s; pouka 35 isključena →
+8 fajlova ponovo, 90/90); `TEST_FULL=1 npx vitest run --changed 7ba9717` **302 fajla / 2966 testova** (posle dopune i mergea), 41 min 50 s;
+`npx playwright test e2e/tenk-v2.spec.ts` 3/3; sabotaže 7/7 pale, `src` bajt-isti (66,7 s; pouka 35 isključena →
 plan generatora odbijen QUALITY_OVER_LONG, pada pri učitavanju p35.node). Tabele D25 (planova sa upozorenjem): R
 0/132/132/330 → 0/0/0/132, F 0/78/78/132 → 0/36/24/78.
 

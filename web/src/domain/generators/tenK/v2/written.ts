@@ -16,6 +16,8 @@ export interface Written {
   asOf: number;
   at: string;
   lockedDayIds: readonly string[];
+  /** 06f: urađeni dani posle asOf (zaštićeni; validator ih ne sudi po danu). */
+  doneDayIds: readonly string[];
 }
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);

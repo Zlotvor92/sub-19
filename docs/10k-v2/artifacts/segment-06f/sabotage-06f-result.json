@@ -1,18 +1,18 @@
 {
  "input": "/home/user/sub-19/docs/10k-v2/artifacts/segment-06f/sabotage-06f.json",
- "head": "89a3369",
+ "head": "e8b671a",
  "level": "brz",
  "bail": true,
  "parallel": 1,
  "vitestArgs": [],
- "durationS": 66.7,
- "hashBefore": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
- "hashAfter": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
+ "durationS": 124.5,
+ "hashBefore": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+ "hashAfter": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
  "ok": true,
  "results": [
   {
    "index": 1,
-   "name": "06f-a umor vezan za asOf (rasterećenje već u planu se ne čita, pouka 36)",
+   "name": "06f-a umor vezan za asOf (sidro iz asOf + 1, ne iz zapisa, pouka 36)",
    "files": [
     "src/domain/generators/tenK/v2/assess.ts"
    ],
@@ -27,14 +27,14 @@
     "test": "pouka 36: umor vezan za zapise, ne za dan adaptacije > umor kraj ned 2 → prinudno ned 3; isti zapisi sutra (preko granice nedelje) → isti plan, bez trake",
     "message": "AssertionError: expected [ { index: 1, …(10) }, …(13) ] to deeply equal [ { index: 1, …(10) }, …(13) ]"
    },
-   "failedCount": 2,
-   "hashBefore": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
-   "hashSabotaged": "5381dea19ee2e376d33af27f453b709f8272975ac92754425fe0dbcf6a930935",
-   "hashAfter": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
+   "failedCount": 1,
+   "hashBefore": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+   "hashSabotaged": "dde45c9399d4e7eaad1e4ec974955376a80282ee879540c6f3a6d36461c451ad",
+   "hashAfter": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 24.1
+   "durationS": 1.4
   },
   {
    "index": 2,
@@ -53,13 +53,13 @@
     "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
    },
    "failedCount": 1,
-   "hashBefore": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
-   "hashSabotaged": "63683b70a0cfc37ebbea75e29e8b86b5ae14bb5262c7f6971056e1f263170bd0",
-   "hashAfter": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
+   "hashBefore": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+   "hashSabotaged": "8b9f8654c54613f75b8be900c025c50d55e42e786b33456c6f0cf80cc2fb524d",
+   "hashAfter": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.5
+   "durationS": 3.9
   },
   {
    "index": 3,
@@ -78,13 +78,13 @@
     "message": "AssertionError: expected 'Važi samo za novi 10K plan iz čarobnj…' not to match /stiže uskoro/"
    },
    "failedCount": 1,
-   "hashBefore": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
-   "hashSabotaged": "ca2bdf61e93e0a8c515cdfba1f13660297e9a2fce20403d952f70cca9298714a",
-   "hashAfter": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
+   "hashBefore": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+   "hashSabotaged": "576d77a92cdcbeb831b001099ba0d40bbf9b7fa2251a0e1c384abad0bc87890a",
+   "hashAfter": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 7
+   "durationS": 7.8
   },
   {
    "index": 4,
@@ -103,13 +103,13 @@
     "message": "[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: Dva dana kvaliteta, a dan kvaliteta traje duže od dugog — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":1},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: Dva dana kvaliteta, a dan kvaliteta traje duže od dugog — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":2},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: Dva dana kvaliteta, a dan kvaliteta traje duže od dugog — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":3}]"
    },
    "failedCount": 1,
-   "hashBefore": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
-   "hashSabotaged": "32b13ef37a5630978d6e5aa9eb0230562e4025439eddcc8fd16b47f10fd8c358",
-   "hashAfter": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
+   "hashBefore": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+   "hashSabotaged": "fb15818e00127e525d0ce5639f11eb9145f355dbd348de76cac4af927ddf4d7c",
+   "hashAfter": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 0.7
+   "durationS": 0.8
   },
   {
    "index": 5,
@@ -129,13 +129,63 @@
     "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RACE_WEEK_OVER_TAPER: Trkačka nedelja 9.3 km > taper 3 km (D23).\",\"week\":11}],\"violations\":[]}"
    },
    "failedCount": 2,
-   "hashBefore": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
-   "hashSabotaged": "e532cf3fa8851a7518e35c1420392cedd32b4ba7ec1ac5b8f2b564b91c2fb9be",
-   "hashAfter": "aee9748f75ceb1066f8133d7d94f2aee73403568f39d8dcd08b6e5d557bdf360",
+   "hashBefore": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+   "hashSabotaged": "63cbcb577f6f9256da22dfce11255a227105aad65dbf3aac67f696e2957e045e",
+   "hashAfter": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 31.1
+   "durationS": 42.2
+  },
+  {
+   "index": 6,
+   "name": "06f-f umor ponedeljkom u sledećoj nedelji (bez deloadWeek, tekuća + 1)",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 06f (pouka 36 precizno): umor pet/ned nedelje k − 1, asOf nedelja k − 1 ili ponedeljak k → rasterećenje u nedelji k, isti dani od utorka",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+   "hashSabotaged": "20e8b10ed1f86567a5b96765f859e046086993821a821a9c4ae3efe072c7040b",
+   "hashAfter": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 32.5
+  },
+  {
+   "index": 7,
+   "name": "06f-g validator sudi zaštićenom danu po tempu nedelje (WU/CD posle novog rezultata)",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 06f (zaštićeni dani, kao maraton MAR-07b): nov rezultat kraj ned k + zaključan ili urađen Q1 ned k + 1 → 0 odbijanja, dan bajt-isti",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+   "hashSabotaged": "7eb2e69e9bf3037ded5d0e588ba9f8e19991e84327d92274f6941a0090001623",
+   "hashAfter": "1c3fca80596fefd36d82148e107029f8725dcb9fefaee0503950637d8ee275c2",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 35.3
   }
  ]
 }

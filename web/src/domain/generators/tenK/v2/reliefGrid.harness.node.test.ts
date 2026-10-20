@@ -40,6 +40,7 @@ import {
   pick,
   sumOf
 } from './level.harness.node.test.ts';
+import { deloadWeekOf } from './steps.ts';
 
 export const RELIEF_PARTS = 7;
 const A = P.adapt;
@@ -263,7 +264,7 @@ export function runReliefGrid(
     if (st.reduced !== want || (want === undefined && 'reduced' in st))
       out.reducedBad.push(`${key}: ${String(st.reduced)}`);
     const forced = (i: number): boolean =>
-      plan.adaptation!.steps.some((x) => x.deload && x.fromWeek === i);
+      plan.adaptation!.steps.some((x) => x.deload && deloadWeekOf(x) === i);
     const red = reductionWeeks(st);
     for (const w of red) {
       const next = plan.weeks[w];

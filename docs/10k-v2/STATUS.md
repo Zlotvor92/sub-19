@@ -164,8 +164,10 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
 
 - STANI posle merenja (`reports/SEGMENT-06f-STOP.md`, d892fb8), pa odluke organizatora (ponedeljak prihvaćen, pouka 35
   opcija A, nalaz ponovljenog bola); izveštaj `reports/SEGMENT-06f-IMPLEMENTATION.md`, artefakti `artifacts/segment-06f/`.
-- Umor: sidro = prva puna nedelja posle poslednjeg RPE zapisa; rasterećenje već u planu pokriva iste zapise
-  (`fatigue-repeat.ts 10K end` 903/963 → 0). Bol: isti zapis ne pravi nov period (nalaz RACE_WEEK_OVER_TAPER → 0).
+- Umor: prinudno rasterećenje = prva nedelja koja počinje posle poslednjeg RPE zapisa (asOf u njoj → ostatak tekuće
+  nedelje); rasterećenje već u planu pokriva iste zapise (`fatigue-repeat.ts 10K end` 903/963 → 0; `fatigue-monday.ts`
+  176/296 tekuća + 1 → 0). Zaštićeni dani (≤ asOf, zaključani, urađeni — `doneDayIds`) se ne sude po danu
+  (`locked-result.ts 10K` 1645/1960 → 0). Bol: isti zapis ne pravi nov period (nalaz RACE_WEEK_OVER_TAPER → 0).
 - Traka samo u domenu (`adaptBanner` + `steps.newLimits`); tekst prekidača bez „stiže uskoro"; pouka 25: WEEK_MIN_REST
   i uz dane bola.
 - Pouka 35: drugi dan kvaliteta lagan kad bi dan kvaliteta bio duži od dugog (week.buildWeek; validator isti predikat).

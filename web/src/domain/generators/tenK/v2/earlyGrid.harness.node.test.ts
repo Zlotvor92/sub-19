@@ -35,6 +35,7 @@ import {
   earlyFlows,
   earlyGridBases,
   EARLY_06D,
+  factsOf,
   painFacts,
   planHash06c
 } from './testInputs.ts';
@@ -215,6 +216,107 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
       }));
       expect(p35FlowErrors('early', runs).slice(0, 10)).toEqual([]);
     });
+
+    it(
+      '06f (pouka 36 precizno): umor pet/ned nedelje k − 1, asOf nedelja k − 1 ili ponedeljak k → rasterećenje u nedelji k, isti dani od utorka',
+      () => {
+        // Pun nivo: planovi dela; brz: svaki 25. plan skupa (u planovima uzorka). Izuzetak: ponedeljak k je dan testa
+        // (asOf ponedeljak = test urađen, ostaje u nedelji k; nedelja → test prelazi u sledeću nedelju, A13).
+        const ids = new Set(flows.map((f) => f.base.id));
+        const bases = FULL
+          ? part(earlyGridBases(), partIndex, EARLY_PARTS)
+          : earlyGridBases().filter((b, i) => i % 25 === 0 && ids.has(b.id));
+        const bad: string[] = [];
+        let n = 0;
+        for (const b of bases) {
+          const p0 = earlyPlan(b);
+          for (let k = 2; k <= p0.weeks.length - 3; k++) {
+            const sun = p0.weeks[k - 2]!.endDate;
+            const mon = p0.weeks[k - 1]!.startDate;
+            const rpe = (date: string) => ({
+              date,
+              km: 6,
+              durationSec: 2400,
+              completed: true,
+              rpe: 8
+            });
+            const facts = { workouts: [rpe(addDays(sun, -2)), rpe(sun)] };
+            const a = adaptTenKV2(p0, facts, sun);
+            const c = adaptTenKV2(p0, facts, mon);
+            n++;
+            if (!a.ok || !c.ok) {
+              bad.push(`${b.id}/k${k}: odbijeno`);
+              continue;
+            }
+            const forced = (x: TenKV2Plan) =>
+              x.weeks.filter((w, j) => w.deload && !p0.weeks[j]!.deload).map((w) => w.index);
+            if (forced(c.plan).length > 0 && forced(c.plan)[0] !== k)
+              bad.push(`${b.id}/k${k}: rasterećenje ${forced(c.plan).join(',')}`);
+            if (p0.weeks[k - 1]!.days.some((d) => d.date === mon && d.role === 'test')) continue;
+            const after = (x: TenKV2Plan) =>
+              JSON.stringify(x.weeks.flatMap((w) => w.days.filter((d) => d.date > mon)));
+            if (after(a.plan) !== after(c.plan)) bad.push(`${b.id}/k${k}: drugi dani od utorka`);
+          }
+        }
+        expect(n).toBeGreaterThan(FULL ? 5000 : 200);
+        expect(bad.slice(0, 20)).toEqual([]);
+      },
+      GRID_TIMEOUT
+    );
+
+    it(
+      '06f (zaštićeni dani, kao maraton MAR-07b): nov rezultat kraj ned k + zaključan ili urađen Q1 ned k + 1 → 0 odbijanja, dan bajt-isti',
+      () => {
+        // Pun nivo: planovi dela; brz: svaki 25. plan skupa (u planovima uzorka). k = 2, 4, … ≤ N − 4.
+        const ids = new Set(flows.map((f) => f.base.id));
+        const bases = FULL
+          ? part(earlyGridBases(), partIndex, EARLY_PARTS)
+          : earlyGridBases().filter((b, i) => i % 25 === 0 && ids.has(b.id));
+        const bad: string[] = [];
+        let n = 0;
+        for (const b of bases) {
+          const p0 = earlyPlan(b);
+          for (let k = 2; k <= p0.weeks.length - 4; k += 2) {
+            const at = p0.weeks[k - 1]!.endDate;
+            const q = p0.weeks[k]!.days.find((d) => d.role === 'q1' || d.role === 'q2');
+            if (!q) continue;
+            for (const s of ['faster', 'slower'] as const)
+              for (const how of ['locked', 'done'] as const) {
+                const base = factsOf(p0, s, at);
+                const facts =
+                  how === 'locked'
+                    ? { ...base, lockedDayIds: [q.date] }
+                    : {
+                        ...base,
+                        workouts: [
+                          {
+                            // Urađen unapred (zapis danas za dan posle asOf) → adaptation.doneDayIds.
+                            date: at,
+                            dayId: q.date,
+                            km: q.workout.km,
+                            durationSec: q.workout.sec,
+                            completed: true
+                          }
+                        ]
+                      };
+                const r = adaptTenKV2(p0, facts, at);
+                n++;
+                const key = `${b.id}/k${k}/${s}/${how}`;
+                if (!r.ok) bad.push(`${key}: ${r.reasons[0]!.message.slice(0, 120)}`);
+                else {
+                  const d = r.plan.weeks[k]!.days.find((x) => x.date === q.date);
+                  if (JSON.stringify(d) !== JSON.stringify(q)) bad.push(`${key}: dan promenjen`);
+                  if (how === 'done' && !r.plan.adaptation!.doneDayIds?.includes(q.date))
+                    bad.push(`${key}: bez doneDayIds`);
+                }
+              }
+          }
+        }
+        expect(n).toBeGreaterThan(FULL ? 4000 : 100);
+        expect(bad.slice(0, 20)).toEqual([]);
+      },
+      GRID_TIMEOUT
+    );
 
     it(
       '06f (nalaz 3, pouke 18 i 23): isti bol 7/8 na kraju ned N − 3 i N − 2 ponovo asOf + 1 … + 7 → 0 odbijanja, isti plan',

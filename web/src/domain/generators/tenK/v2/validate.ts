@@ -46,6 +46,7 @@ import {
   A17_MAX_RUN,
   appliedRestarts,
   basisAt,
+  deloadWeekOf,
   framesFor,
   inRange,
   pacesAt,
@@ -180,6 +181,12 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   const steps = ad?.steps ?? [];
   const mixed = new Set(ad?.mixedWeeks ?? []);
   const checked = (w: PlanWeek): boolean => !mixed.has(w.index);
+  /** 06f (pouka 4, stalni uslov 4; kao maraton MAR-07b): zaštićen dan — ≤ asOf adaptacije, zaključan (ručna izmena)
+      ili urađen. Provere koje sude jednom danu po tempu ili strukturi ga preskaču (kao LIMITS): validator ne sudi
+      činjenicama; nedeljna pravila važe za konstrukciju. */
+  const lockedIds = new Set([...(ad?.lockedDayIds ?? []), ...(ad?.doneDayIds ?? [])]);
+  const protectedDay = (d: { date: string }): boolean =>
+    lockedIds.has(d.date) || (ad !== undefined && mustDay(d.date) <= mustDay(ad.asOf));
   const chk = ad ? checkInput(input) : null;
   const pace = chk?.ok ? chk.pace : null;
   if (ad && !pace) {
@@ -202,7 +209,8 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   const firstAdapted = steps.length > 0 ? Math.min(...steps.map((x) => x.firstWeek)) : Infinity;
   /** A9: prva nedelja posle smanjenja obima (odstupanja za mali obim). */
   const reducedFrom = steps.length > 0 ? adaptVolume(steps).reducedFrom : Infinity;
-  const forced = (w: PlanWeek): boolean => steps.some((x) => x.deload && x.fromWeek === w.index);
+  const forced = (w: PlanWeek): boolean =>
+    steps.some((x) => x.deload && deloadWeekOf(x) === w.index);
   /** A12: početak segmenta izgradnje (nov start sa rePeriodize) za nedelju i. */
   const segStart = (i: number): number => Math.max(1, ...[...restarts].filter((r) => r <= i));
   /** A4/A9: nedelja sa manje kvaliteta — ograničenje koraka ili napomena A9 konstruktora. */
@@ -394,7 +402,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         err('ARITHMETIC', 'Km dana ≠ zbir segmenata.', w.index, d.date);
       if (s.reduce((a, x) => a + x.sec, 0) !== d.workout.sec)
         err('ARITHMETIC', 'Trajanje dana ≠ zbir segmenata.', w.index, d.date);
-      if (d.role === 'easy' && d.workout.km + EPS < P.lengths.easyMinKm)
+      if (d.role === 'easy' && !protectedDay(d) && d.workout.km + EPS < P.lengths.easyMinKm)
         err(
           'EASY_MIN',
           `Lagan ${d.workout.km} km < ${P.lengths.easyMinKm} km (D13/D15).`,
@@ -594,6 +602,8 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   };
   for (const w of weeks)
     for (const d of w.days) {
+      // 06f: zaštićen dan nosi tempo i strukturu iz kojih je upisan — ne sudi se po tempu nedelje.
+      if (protectedDay(d)) continue;
       // Segment 04: tempo i osnova tempa nedelje (A1).
       const pk = pw(w);
       const mid = midEasy(pk);

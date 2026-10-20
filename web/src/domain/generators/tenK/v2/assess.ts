@@ -419,26 +419,27 @@ export function assess(
     );
   });
   if (easyHard.length >= A.fatigueCount) {
-    // 10k-v2.6.0 (pouka 36): umor je vezan za ZAPISE, ne za asOf — sidro = prva puna nedelja posle
-    // (poslednji zapis + 1). Rasterećenje (redovno ili prinudno) od sidra do pre nedelje n već je u planu i
-    // pokriva ove zapise → isti zapisi ne prave novo rasterećenje kad se adaptacija ponovi kasnije.
+    // 10k-v2.6.0 (pouka 36): umor je vezan za ZAPISE, ne za asOf — prinudno rasterećenje = prva nedelja koja
+    // počinje posle poslednjeg RPE zapisa umora (nedelja posle nedelje zapisa); kad asOf već pada u nju, važi za
+    // njen ostatak (prošli dani zaštićeni). Isti zapisi → ista nedelja; kad je ona već rasterećenje, novog nema.
     const anchor = addDays(asOf, Math.max(...easyHard.map((x) => day(x.date))) - t + 1);
     const ra = weekOf(anchor);
-    const na = ra <= N && day(weeks[ra - 1]!.startDate) < day(anchor) ? ra + 1 : ra;
-    const covered = weeks.find((w) => w.index >= na && w.index < n && w.deload);
-    const ok = !covered && !volumeRule && build(n) && !wk(n)!.deload;
+    const f = ra <= N && day(weeks[ra - 1]!.startDate) < day(anchor) ? ra + 1 : ra;
+    const covered = f < n && wk(f)?.deload === true;
+    const ok = !volumeRule && build(f) && !wk(f)!.deload;
     // 10k-v2.5.2 (pouka 34): asOf pre starta (n = 1, nema prethodne izgradnje) — referenca rasterećenja je
     // nedelja 1 generatora bez činjenica.
-    const ref = ok && n === 1 ? preStartRef() : null;
+    const ref = ok && f === 1 ? preStartRef() : null;
     if (ok) {
       step.deload = true;
+      if (f !== n) step.deloadWeek = f;
       if (ref) step.preStart = ref;
       volumeRule = true;
     }
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje (A5)${ref ? ` — pre starta: 0,8 × planirana nedelja 1 (${km(ref.buildKm)} km, plan bez činjenica); nedelja 2 = cilj planirane nedelje 1, bez rasta` : ''}` : covered ? `rasterećenje posle ovih zapisa je već u planu (nedelja ${covered.index}, A5)` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${f} je rasterećenje (A5${f < n ? ', tekuća nedelja: ostatak posle danas' : ''})${ref ? ` — pre starta: 0,8 × planirana nedelja 1 (${km(ref.buildKm)} km, plan bez činjenica); nedelja 2 = cilj planirane nedelje 1, bez rasta` : ''}` : covered ? `rasterećenje posle ovih zapisa je već u planu (nedelja ${f}, A5)` : volumeRule ? 'nadjačano pauzom (A7)' : 'sledeća nedelja je već rasterećenje, taper ili trka (A5)'}.`
     );
   }
 

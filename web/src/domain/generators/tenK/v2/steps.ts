@@ -105,6 +105,11 @@ export function limitsOf(
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
+/** Pouka 36 (10k-v2.6.0): nedelja prinudnog rasterećenja koraka (A5) — iz zapisa umora (`deloadWeek`), inače
+    fromWeek. Jedina definicija (framesFor, newLimits, validator, adaptInvariants). Kopija maraton v2. */
+export const deloadWeekOf = (s: { fromWeek: number; deloadWeek?: number }): number =>
+  s.deloadWeek ?? s.fromWeek;
+
 /** A3: nedelje novog starta (početak nove progresije doze, D16; granica izgradnje D6 od novog starta). */
 export const restartWeeks = (steps: readonly TenKV2AdaptStep[]): Set<number> =>
   new Set(steps.filter((s) => s.restart).map((s) => s.fromWeek));
@@ -171,11 +176,16 @@ export function framesFor(
       if (re) for (const w of [...forced]) if (w >= n) forced.delete(w);
       if (re && dropped) for (const w of [...dropped.keys()]) if (w >= n) dropped.delete(w);
     }
-    const fn = frames[n - 1];
+    const dw = deloadWeekOf(s);
+    const fn = frames[dw - 1];
     if (s.deload && fn && isBuildPhase(fn.phase) && !fn.deload) {
+      // Pouka 36: prinudno rasterećenje tekuće nedelje (dw < fromWeek) čiji je test već prošao (≤ asOf, upisan) —
+      // rasterećenje bez novog testa.
+      const done = fn.test === true && mustDay(testDateOf(fn, pattern)) <= mustDay(s.asOf);
       fn.deload = true;
-      forced.add(n);
-      const next = frames[n];
+      if (done) frames[dw - 1] = withoutTest(fn);
+      forced.add(dw);
+      const next = frames[dw];
       if (next && next.deload && isBuildPhase(next.phase)) next.deload = false;
     }
     for (const w of reducedWeeks(s)) {
@@ -263,8 +273,8 @@ export function newLimits(steps: readonly TenKV2AdaptStep[]): string[] {
     const old = new Set(prev.flatMap((s) => days(s, pick)));
     for (const d of days(last, pick)) if (!old.has(d)) out.push(`${k}:${d}`);
   }
-  if (last.deload && !prev.some((s) => s.deload && s.fromWeek === last.fromWeek))
-    out.push(`deload:${last.fromWeek}`);
+  if (last.deload && !prev.some((s) => s.deload && deloadWeekOf(s) === deloadWeekOf(last)))
+    out.push(`deload:${deloadWeekOf(last)}`);
   if (last.restart) out.push(`restart:${last.fromWeek}`);
   return out;
 }
