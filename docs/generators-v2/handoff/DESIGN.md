@@ -199,3 +199,10 @@ nosi policyId/fazu cilja (`stampForStorage`). 7 nula uvoza: ciljevi kao argument
 - O6: (b), NE (a). Tekuća nedelja ostaje nedelja izvora, i to adaptirana (kao prošle nedelje), a cilj počinje od sledećeg ponedeljka (alignedStart). Kalemi se na granici nedelje, istim mehanizmom kao P5 (prošle nedelje izvora + nedelje cilja sa ID po početku nedelje). Razlog: korisnik usred plana ne sme da ostane 0–6 dana bez plana. Nedelja izvora je već usklađena sa činjenicama adaptacijom koja je dala ponudu.
 - O7: (a) Ne. v1 izvori ostaju bajt-isti.
 - P1–P6 prihvatam, uz izmene iznad. Redosled segmenata kao u § 4.
+- O1 dopuna (posle 3c, organizator): osnova „pre adaptacije" = plan generatora za isti ulaz, izveden iz sačuvanog plana;
+  bez novog polja u planu i bez promene verzije. Ponuda važi dok je sačuvani plan ispod praga, a plan generatora nije;
+  ponovno nuđenje u sledećem pregledu je ispravno (stanje traje, korisnik zatvara). Lanac: drugi korak adaptacije čiji
+  je prethodni plan već bio ispod praga dobija ponudu (M1 brzo: 7 takvih tokova, `chain2`), jer se poredi sa planom
+  generatora, ne sa prethodnim korakom.
+- Sudar 3c → (B): pogled izvora za v1 cilj pregrupiše dane izvora u nedelje od ponedeljka (id dana ostaje; menjaju se
+  `dow` i nedelja). (C) i (D) odbijeni. Dopuna 3b u `handoff.ts` (`mondayWeeks`).

@@ -14,6 +14,7 @@ import * as form from './form.ts';
 import * as gen from './generate.ts';
 import * as b from './members.ts';
 import * as plan from './plan.ts';
+import * as prep from './preparation.ts';
 import * as paces from './paces.ts';
 import * as state from './state/index.ts';
 import * as readiness from './state/readiness.ts';
@@ -58,7 +59,7 @@ export const hmV2 = {
   sessionClassFor: b.sessionClassFor,
   currentVdot: b.currentVdot,
   executionModel: b.executionModel,
-  executionBasis: b.executionBasis,
+  executionBasis: prep.executionBasis,
   buildExecutionAdjustment: b.buildExecutionAdjustment,
   buildRunWalkAdjustment: b.buildRunWalkAdjustment,
   assessRunWalkProgress: b.assessRunWalkProgress,
@@ -79,6 +80,12 @@ export const hmV2 = {
   injuryProposal: b.injuryProposal,
   applyInjuryProposal: b.applyInjuryProposal,
   realignPlan: b.realignPlan,
+  /* faza 3 (3c): HM v2 kao izvor predaje „kraća distanca" — odluka o pripremi; cilj daje `select.ts` (argument) */
+  SOURCE_FORMAT: prep.HM_V2_SOURCE_FORMAT,
+  basisFromPlan: prep.basisFromPlan,
+  preparationDecision: prep.preparationDecision,
+  buildPreparationChoice: prep.buildPreparationChoice,
+  isLimitedLongPreparation: prep.isLimitedLongPreparation,
   /* (c) prikaz stanja — sopstvena kopija */
   weatherCard: weather.weatherCard,
   painStatus: state.painStatus,

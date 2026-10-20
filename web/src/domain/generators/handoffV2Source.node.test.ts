@@ -42,24 +42,26 @@ function sources(dist: 'hm' | 'marathon', feel: boolean): Src[] {
     ['tue', 'thu', 'sat', 'sun'],
     ['mon', 'tue', 'thu', 'fri', 'sun']
   ];
-  for (const weeks of weeksSet)
-    for (const km of kmSet)
-      for (const runDays of daysSet)
-        for (const t of feel ? [360, 420] : [2400, 2700, 3000])
-          out.push({
-            id: `${dist}-${weeks}w-${km}km-${runDays.length}d-${t}`,
-            input: {
-              startDate: START,
-              raceDate: addDays(START, 7 * weeks - 1),
-              runDays: [...runDays],
-              longRunDay: 'sun',
-              currentWeeklyKm: km,
-              ...(feel
-                ? { easyPaceSecPerKm: t }
-                : { recentResult: { distanceM: 10000, timeSec: t, date: addDays(START, -14) } }),
-              goalTimeSec: null
-            }
-          });
+  // Trka u nedelju (nedelje izvora od ponedeljka) i u subotu (od nedelje) — dopuna 3b: pogled za v1 cilj pregrupiše.
+  for (const raceDay of ['sun', 'sat'] as const)
+    for (const weeks of weeksSet)
+      for (const km of kmSet)
+        for (const runDays of daysSet)
+          for (const t of feel ? [360, 420] : [2400, 2700, 3000])
+            out.push({
+              id: `${dist}-${weeks}w-${km}km-${runDays.length}d-${t}-${raceDay}`,
+              input: {
+                startDate: raceDay === 'sun' ? START : addDays(START, -1),
+                raceDate: addDays(raceDay === 'sun' ? START : addDays(START, -1), 7 * weeks - 1),
+                runDays: [...runDays],
+                longRunDay: 'sun',
+                currentWeeklyKm: km,
+                ...(feel
+                  ? { easyPaceSecPerKm: t }
+                  : { recentResult: { distanceM: 10000, timeSec: t, date: addDays(START, -14) } }),
+                goalTimeSec: null
+              }
+            });
   // Samo ulazi koje generator izvora prihvata (odbijanje izvora nije predmet ovog testa).
   const ok = out.filter((x) => generated(dist, x.input).ok);
   return FULL ? ok : ok.filter((_, i) => i % 3 === 0);
@@ -172,6 +174,28 @@ describe('3b: izvor v2 → v1 cilj (ponovljeno M2 sa čistačem)', () => {
               for (const key of new Set([...Object.keys(a), ...Object.keys(b)]))
                 if (JSON.stringify(a[key]) !== JSON.stringify(b[key]))
                   leaks.push(`${k}: meta.${key}`);
+              // Dopuna 3b: nijedan dupli datum ni id; prošli dani izvora ostaju (isti id i sadržaj, menja se samo dow),
+              // budući su iz cilja (bez strukture v2).
+              const dated = res.weeks.flatMap((w) =>
+                w.days.map((d) => [addDays(w.start, d.dow), d] as const)
+              );
+              if (new Set(dated.map(([x]) => x)).size !== dated.length)
+                leaks.push(`${k}: dupli datum`);
+              if (new Set(dated.map(([, d]) => d.id)).size !== dated.length)
+                leaks.push(`${k}: dupli id`);
+              const srcByDate = new Map(
+                plan.weeks.flatMap((w) => w.days.map((d) => [addDays(w.start, d.dow), d] as const))
+              );
+              for (const [date, d] of dated) {
+                const src = srcByDate.get(date);
+                if (
+                  date <= at &&
+                  src &&
+                  JSON.stringify({ ...d, dow: 0 }) !== JSON.stringify({ ...src, dow: 0 })
+                )
+                  leaks.push(`${k}: prošli dan ${date} nije iz izvora`);
+                if (date > at && 'structure' in d) leaks.push(`${k}: budući dan ${date} iz izvora`);
+              }
               // Upis: plan cilja bira v1 generator cilja (oznaka politike cilja).
               const g = select.generatorForPlan(select.stampForStorage(res));
               expect(g?.id, k).toBe(dist === 5000 ? '5k' : dist === 10000 ? '10k' : 'hm');

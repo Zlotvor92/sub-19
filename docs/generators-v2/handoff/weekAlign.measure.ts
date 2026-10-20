@@ -1,6 +1,7 @@
 /* Faza 3, 3c — sudar: v1 cilj kalemi plan po POČETKU NEDELJE (`graftFuturePlan`: `oldByStart`), a v1 nedelje počinju
    ponedeljkom. Plan HM v2 ima nedelje od dana posle dana trke (trka u subotu → nedelje od nedelje). Meri: u koliko
-   predaja HM v2 → 10K/5K v1 (kroz čistač 3b) plan cilja ima DVA dana istog datuma (nedelja izvora + nedelja cilja).
+   predaja HM v2 → 10K/5K v1 (kroz čistač 3b) plan cilja ima DVA dana istog datuma (nedelja izvora + nedelja cilja)
+   ili dva dana istog id-a. Pre dopune 3b (pregrupisanje u nedelje od ponedeljka): subota 824/824, nedelja 0/824.
    Iz web/: npx vitest run --config ../docs/generators-v2/handoff/vitest.measure.config.mjs weekAlign */
 import * as select from "../../../web/src/domain/generators/select";
 import * as THM from "../../../web/src/domain/generators/halfMarathon/v2/testInputs";
@@ -19,6 +20,7 @@ test("poravnanje nedelja v1 cilja", () => {
       calls: number;
       ok: number;
       duplicateDates: number;
+      duplicateIds: number;
       weekStartDow: Record<string, number>;
     }
   > = {};
@@ -41,6 +43,7 @@ test("poravnanje nedelja v1 cilja", () => {
       calls: 0,
       ok: 0,
       duplicateDates: 0,
+      duplicateIds: 0,
       weekStartDow: {},
     });
     const startDow = ["ned", "pon", "uto", "sre", "čet", "pet", "sub"][
@@ -83,7 +86,9 @@ test("poravnanje nedelja v1 cilja", () => {
         o.calls++;
         const r = (
           h as unknown as (...a: unknown[]) => {
-            result?: { weeks: { start: string; days: { dow: number }[] }[] };
+            result?: {
+              weeks: { start: string; days: { dow: number; id?: string }[] }[];
+            };
           }
         )(plan, input, at, {}, { execution: null, restartFromBase: false });
         if (!r.result) continue;
@@ -92,6 +97,10 @@ test("poravnanje nedelja v1 cilja", () => {
           w.days.map((d) => addDays(w.start, d.dow)),
         );
         if (new Set(dates).size !== dates.length) o.duplicateDates++;
+        const ids = r.result.weeks.flatMap((w) =>
+          w.days.map((d) => (d as { id?: string }).id),
+        );
+        if (new Set(ids).size !== ids.length) o.duplicateIds++;
       }
   }
   writeFileSync(

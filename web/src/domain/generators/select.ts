@@ -748,7 +748,7 @@ const HM_SHORTER_HANDOFF = regeneratorForDistance;
    (b) adaptacija i predlog (segment HM-06) — kroz činjenice i `adaptHmV2` sa pregledom pre upisa, ili „ne koristi se" sa
    razlogom (`MEMBERS`), bez zamene HM v1 generatorom;
    (c) procena stanja i vreme — sopstvena kopija v2 sa istim vrednostima kao HM v1 (v. `halfMarathon/v2/app/index.ts`).
-   Odluka o ograničenoj pripremi (`preparationForPlan`) i predaja „kraća distanca" ostaju samo HM v1 (faza 3).
+   Odluka o ograničenoj pripremi (`preparationForPlan`): HM v2 kao izvor predaje „kraća distanca" od faze 3 (3c, `hmV2Preparation`).
 
    GRANICA FORMATA (kao 10K v2): adapter `halfMarathon/v2/app/` ne uvozi ni tipove formata (strogi test izolacije HM v2,
    bez izuzetka), pa plan koji PRAVI (dan sa strukturom van unije `Day`, `meta` sa poljima koja v2 zna) ovde dobija tip
@@ -773,7 +773,11 @@ export const HALF_MARATHON_V2_GENERATOR: PlanGenerator = {
   assess: h2.assess,
   product: h2.product,
   executionModel: h2.executionModel,
-  executionBasis: h2.executionBasis,
+  // 3c: osnova predaje (činjenice bez politike); ulaz plana po osećaju nema `pb` (tip formata daje granica).
+  executionBasis: (current, today, analysis, options) =>
+    h2.executionBasis(current, today, analysis, options) as unknown as ReturnType<
+      PlanGenerator['executionBasis']
+    >,
   // HM-06: plan za upis pravi adapter (granica formata, v. gore).
   buildExecutionAdjustment: (current, today, analysis, options, context) =>
     h2.buildExecutionAdjustment(current, today, analysis, options, context) as unknown as
@@ -1343,9 +1347,46 @@ export const MARATHON_PREPARATION: PreparationApi = {
   isLimitedLongPreparation: marathon.isLimitedLongPreparation
 } satisfies PreparationApi;
 
-export function preparationForPlan(plan: GenPlanState | null | undefined): PreparationApi | null {
+/** Faza 3 (3c): odluka o pripremi plana HM v2 kao IZVORA predaje „kraća distanca" (okidač i opcije su HM v2,
+ *  `halfMarathon/v2/shorter.ts` i `app/preparation.ts`). Cilj bira prekidač korisnika (`flags`) kroz
+ *  `shorterHandoffForV2Source` sa formatom izvora HM v2. Politika izvora se ne predaje (`policy: null`). */
+export function hmV2Preparation(flags: GeneratorFlags): PreparationApi {
+  const handoff = shorterHandoffForV2Source(flags, h2.SOURCE_FORMAT);
+  return {
+    basisFromPlan: (current, today) =>
+      h2.basisFromPlan(current, today) as unknown as DecisionBasis | null,
+    preparationDecision: (current, today, basis, context, status, delivered) =>
+      h2.preparationDecision(
+        current,
+        today,
+        basis as never,
+        context,
+        status,
+        delivered,
+        handoff as never
+      ) as unknown as PreparationDecision,
+    buildPreparationChoice: (current, today, basis, choice, context) =>
+      h2.buildPreparationChoice(
+        current,
+        today,
+        basis as never,
+        choice,
+        context,
+        handoff as never
+      ) as unknown as ChoiceResult | { error: string },
+    isLimitedLongPreparation: (meta, plan) => h2.isLimitedLongPreparation(meta, plan)
+  } satisfies PreparationApi;
+}
+
+/** Odluka o pripremi za plan: HM v1 / maraton v1 (kao do sada) ili HM v2 (3c). `flags` (prekidači korisnika) biraju
+ *  cilj predaje za izvor v2; bez njih su isključeni (v1 cilj). */
+export function preparationForPlan(
+  plan: GenPlanState | null | undefined,
+  flags: GeneratorFlags = { fiveKV2: false }
+): PreparationApi | null {
   const generator = generatorForPlan(plan);
   if (generator === HALF_MARATHON_GENERATOR) return HALF_MARATHON_PREPARATION;
+  if (generator === HALF_MARATHON_V2_GENERATOR) return hmV2Preparation(flags);
   if (generator === MARATHON_GENERATOR) return MARATHON_PREPARATION;
   return null;
 }

@@ -11,6 +11,7 @@
 
 import { adaptBanner, adaptHmV2 } from '../adapt.ts';
 import { checkInput } from '../input.ts';
+import { shorterOffer } from '../shorter.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import type { AdaptChange, AdaptReason, AdaptResult, PlanWeek, HmV2Plan } from '../types.ts';
 import { addDays } from './date.ts';
@@ -111,6 +112,9 @@ export interface AdaptPreview {
   coverage: CoverageInfo;
   /** Aktivna ograničenja koja menjaju budući deo plana (traka „Plan treba prilagoditi"); prazno = nema. */
   needed: string[];
+  /** Faza 3 (3c, O1): posle ove adaptacije plan je ograničena priprema — ponuda „kraća distanca" (odluka o pripremi).
+   *  Polja nema kad ponude nema (pregled bajt-isti). */
+  shorterOffer?: true;
 }
 export type AdaptOutcome =
   | AdaptPreview
@@ -155,7 +159,8 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     notes,
     coverage: built.coverage,
     // Pouka 20: pravilo trake živi samo u domenu (`adaptBanner`); aplikacija ga samo zove.
-    needed: adaptBanner(v2, r, built.facts, src.today)
+    needed: adaptBanner(v2, r, built.facts, src.today),
+    ...(shorterOffer(after, src.today) ? { shorterOffer: true as const } : {})
   };
 }
 
