@@ -427,7 +427,9 @@ describe('prekidač i rutiranje po oznaci politike', () => {
   });
 
   it('KNOWN_VERSIONS = sve verzije sačuvane posle HM-05 (hm-v2.3.0, hm-v2.4.0) i tekuća', () => {
-    expect(hm.hmV2.KNOWN_VERSIONS).toEqual([...new Set(['hm-v2.3.0', 'hm-v2.4.0', VERSION])]);
+    expect(hm.hmV2.KNOWN_VERSIONS).toEqual([
+      ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', VERSION])
+    ]);
     expect(HALF_MARATHON_V2_GENERATOR.policyVersion).toBe(VERSION);
     expect(HALF_MARATHON_V2_GENERATOR.legacyPolicyId).toBe('legacy-hm');
   });

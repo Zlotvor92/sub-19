@@ -247,8 +247,7 @@ describe('3b: izbor cilja po prekidaču korisnika (generatorForNewPlan)', () => 
   const input = contractInput(sources('hm', false)[0]!.input, 10000);
   it.each([
     [{ fiveKV2: false, tenKV2: true }, 10000],
-    [{ fiveKV2: true }, 5000],
-    [{ fiveKV2: false, hmV2: true }, 21097.5]
+    [{ fiveKV2: true }, 5000]
   ] as const)('prekidač cilja uključen %j → %d: odbijanje sa razlogom, ne v1', (flags, dist) => {
     const h = select.shorterHandoffForV2Source(flags, HM_FORMAT)(dist)!;
     expect(

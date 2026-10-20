@@ -91,3 +91,12 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
   „zadrži plan v2"; činjenice bez politike izvora; `HM_V2_SOURCE_FORMAT`). `executionBasis` postaje član 'v2'.
   Pregled adaptacije: `shorterOffer: true` samo kad ponuda postoji. Izveštaj
   `docs/generators-v2/handoff/SEGMENT-3c-IMPLEMENTATION.md`.
+
+## Faza 3, segment 3f (hm-v2.5.0): HM v2 kao cilj predaje „kraća distanca"
+
+- `app/handoffTarget.ts` `handoffFuture`: generate iz činjenica ulaza izvora (obim čarobnjaka, trka istog datuma,
+  start = granica nedelje posle potvrde) + `adaptHmV2` sa sirovim činjenicama izvora (bez `dayId`); potvrđena pauza →
+  činjenica pauze (`facts.ts` `confirmedBreakFact`). O6(b): nedelje izvora pre starta ostaju kao prefiks plana
+  (`plan.ts` `PREFIX_KEY`), nedelje v2 imaju broj `offset + index` i id kao nedelja izvora istog datuma; adaptacija,
+  vraćanje verzije i promena cilja nose prefiks. Format plana se menja (prefiks) → hm-v2.5.0, `KNOWN_VERSIONS` ∪
+  hm-v2.4.1. Izveštaj `docs/generators-v2/handoff/SEGMENT-3f-IMPLEMENTATION.md`.
